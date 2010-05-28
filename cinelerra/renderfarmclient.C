@@ -34,7 +34,6 @@
 #include "preferences.h"
 #include "renderfarm.h"
 #include "renderfarmclient.h"
-//#include "renderfarmfsclient.h"
 #include "sighandler.h"
 
 #include <arpa/inet.h>
@@ -151,14 +150,13 @@ void RenderFarmClient::main_loop()
 	}
 
 // Wait for connections
-	printf("RenderFarmClient::main_loop: client started\n");
 	while(1)
 	{
 		if(listen(socket_fd, 256) < 0)
-    	{
-    		perror(_("RenderFarmClient::main_loop: listen"));
-    		return;
-    	}
+		{
+			perror(_("RenderFarmClient::main_loop: listen"));
+			return;
+		}
 
 		int new_socket_fd;
 
@@ -168,16 +166,15 @@ void RenderFarmClient::main_loop()
 		{
 			struct sockaddr_in clientname;
 			socklen_t size = sizeof(clientname);
-    		if((new_socket_fd = accept(socket_fd,
-                		(struct sockaddr*)&clientname, 
+			if((new_socket_fd = accept(socket_fd,
+						(struct sockaddr*)&clientname,
 						&size)) < 0)
-    		{
-        		perror(_("RenderFarmClient::main_loop: accept"));
-        		return;
-    		}
+			{
+				perror(_("RenderFarmClient::main_loop: accept"));
+				return;
+			}
 			else
 			{
-//printf("RenderFarmClient::main_loop: Session started from %s\n", inet_ntoa(clientname.sin_addr));
 				RenderFarmClientThread *thread = 
 					new RenderFarmClientThread(this);
 				thread->main_loop(new_socket_fd);
@@ -187,16 +184,15 @@ void RenderFarmClient::main_loop()
 		{
 			struct sockaddr_un clientname;
 			socklen_t size = sizeof(clientname);
-    		if((new_socket_fd = accept(socket_fd,
-                		(struct sockaddr*)&clientname, 
-						&size)) < 0)
-    		{
-        		perror(_("RenderFarmClient::main_loop: accept"));
-        		return;
-    		}
+			if((new_socket_fd = accept(socket_fd,
+					(struct sockaddr*)&clientname, 
+					&size)) < 0)
+			{
+				perror(_("RenderFarmClient::main_loop: accept"));
+				return;
+			}
 			else
 			{
-//printf("RenderFarmClient::main_loop: Session started from %s\n", clientname.sun_path);
 				RenderFarmClientThread *thread = 
 					new RenderFarmClientThread(this);
 				thread->main_loop(new_socket_fd);
@@ -207,7 +203,6 @@ void RenderFarmClient::main_loop()
 
 void RenderFarmClient::kill_client()
 {
-printf("RenderFarmClient::kill_client 1\n");
 	if(deamon_path)
 	{
 printf("RenderFarmClient::kill_client 2\n");
@@ -236,7 +231,6 @@ RenderFarmClientThread::RenderFarmClientThread(RenderFarmClient *client)
 	this->client = client;
 	frames_per_second = 0;
 	Thread::set_synchronous(0);
-//	fs_client = 0;
 	mutex_lock = new Mutex("RenderFarmClientThread::mutex_lock");
 	watchdog = 0;
 	keep_alive = 0;
@@ -244,7 +238,6 @@ RenderFarmClientThread::RenderFarmClientThread(RenderFarmClient *client)
 
 RenderFarmClientThread::~RenderFarmClientThread()
 {
-//	if(fs_client) delete fs_client;
 	delete mutex_lock;
 	delete watchdog;
 	delete keep_alive;
@@ -259,8 +252,6 @@ int RenderFarmClientThread::send_request_header(int request,
 
 	int i = 1;
 	STORE_INT32(len);
-// printf("RenderFarmClientThread::send_request_header %d %02x%02x%02x%02x%02x\n",
-// request, datagram[0], datagram[1], datagram[2], datagram[3], datagram[4]);
 
 	return (write_socket((char*)datagram, 5) != 5);
 }
@@ -463,16 +454,20 @@ void RenderFarmClientThread::read_edl(int socket_fd,
 
 
 
-
-
-
-
-
 	edl->load_xml(client->plugindb,
 		&file, 
 		LOAD_ALL);
 
-
+// Open assets - fill asset info
+	if(edl->assets)
+	{
+		File file;
+		for(Asset *current = edl->assets->first; current; current = NEXT)
+		{
+			file.open_file(preferences, current, 1, 0, 0, 0);
+			file.close_file(0);
+		}
+	}
 	unlock();
 }
 
@@ -580,16 +575,10 @@ void RenderFarmClientThread::run()
 
 // Get command to run
 	int command;
-SET_TRACE
 	lock("RenderFarmClientThread::run");
-SET_TRACE
 	get_command(socket_fd, &command);
-SET_TRACE
 	unlock();
 
-//printf("RenderFarmClientThread::run command=%d\n", command);
-
-SET_TRACE
 	switch(command)
 	{
 		case RENDERFARM_TUNER:
@@ -638,7 +627,6 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 
 
 
-//printf("RenderFarmClientThread::run 2\n");
 // Read settings
 	preferences = new Preferences;
 	default_asset = new Asset;
@@ -646,48 +634,30 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	edl = new EDL;
 	edl->create_objects();
 
-//printf("RenderFarmClientThread::run 3\n");
-
-
-
-
 
 
 
 	read_preferences(socket_fd, preferences);
-//printf("RenderFarmClientThread::run 3\n");
 	read_asset(socket_fd, default_asset);
-//printf("RenderFarmClientThread::run 3\n");
 	read_edl(socket_fd, edl, preferences);
-//edl->dump();
 
 
-
-
-
-
-
-//printf("RenderFarmClientThread::run 4\n");
 
 	package_renderer.initialize(0,
 			edl, 
 			preferences, 
 			default_asset,
 			client->plugindb);
-//printf("RenderFarmClientThread::run 5\n");
 
 // Read packages
 	while(1)
 	{
 		result = read_package(socket_fd, package);
-//printf("RenderFarmClientThread::run 6 %d\n", result);
 
 
 // Finished list
 		if(result)
 		{
-//printf("RenderFarmClientThread::run 7\n");
-
 			result = send_completion(socket_fd);
 			break;
 		}
@@ -698,28 +668,20 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 // Error
 		if(package_renderer.render_package(package))
 		{
-//printf("RenderFarmClientThread::run 8\n");
+tracemsg("RenderFarmClientThread::run got error");
 			result = send_completion(socket_fd);
 			break;
 		}
 
 		frames_per_second = (double)(package->video_end - package->video_start) / 
 			((double)timer.get_difference() / 1000);
-
-//printf("RenderFarmClientThread::run 9\n");
-
-
-
 	}
 
 
-//printf("RenderFarmClientThread::run 9\n");
 	Garbage::delete_object(default_asset);
-//printf("RenderFarmClientThread::run 10\n");
 	delete edl;
-//printf("RenderFarmClientThread::run 11\n");
 	delete preferences;
-printf(_("RenderFarmClientThread::run: Session finished.\n"));
+
 }
 
 
