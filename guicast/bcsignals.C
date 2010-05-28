@@ -29,6 +29,7 @@
 #include <execinfo.h>
 #include <X11/Xlib.h>
 #include <errno.h>
+#include <stdarg.h>
 
 BC_Signals* BC_Signals::global_signals = 0;
 static int signal_done = 0;
@@ -729,7 +730,26 @@ void BC_Signals::unset_temp(const char *string)
 	pthread_mutex_unlock(&lock);
 }
 
+void BC_Signals::trace_msg(const char *file, const char *func, int line, const char *fmt, ...)
+{
+	va_list ap;
+	static char msgbuf[128];
+	int l;
 
+	l = sprintf(msgbuf, "[#%08lx] %s::%s(%d):", pthread_self(), file, func, line);
+	if(fmt)
+	{
+		va_start(ap, fmt);
+		l += vsnprintf(&msgbuf[l], 126 - l, fmt, ap);
+		va_end(ap);
+		msgbuf[l++] = '\n';
+		msgbuf[l] = 0;
+	}
+	else
+		strcpy(&msgbuf[l], "===\n");
+	fputs(msgbuf, stdout);
+	fflush(stdout);
+}
 
 
 

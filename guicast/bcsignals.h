@@ -53,6 +53,7 @@ public:
 
 #ifdef ENABLE_TRACE
 // Add a trace
+#define tracemsg(...) BC_Signals::trace_msg(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define TRACE(text) BC_Signals::new_trace(text);
 #define SET_TRACE BC_Signals::new_trace(__FILE__, __FUNCTION__, __LINE__);
 #define PRINT_TRACE { printf("%s: %d\n", __FILE__, __LINE__); fflush(stdout); }
@@ -131,6 +132,10 @@ public:
 // Handling of temporary files in crash
 #define SET_TEMP BC_Signals::set_temp
 #define UNSET_TEMP BC_Signals::unset_temp
+
+// Trace print
+	static void trace_msg(const char *file, const char *func, int line, const char *fmt, ...);
+
 
 // Temporary files
         static void delete_temps();
