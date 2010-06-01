@@ -733,14 +733,15 @@ void BC_Signals::unset_temp(const char *string)
 void BC_Signals::trace_msg(const char *file, const char *func, int line, const char *fmt, ...)
 {
 	va_list ap;
-	static char msgbuf[128];
+	static char msgbuf[1024];
 	int l;
 
+	pthread_mutex_lock(&lock);
 	l = sprintf(msgbuf, "[#%08lx] %s::%s(%d):", pthread_self(), file, func, line);
 	if(fmt)
 	{
 		va_start(ap, fmt);
-		l += vsnprintf(&msgbuf[l], 126 - l, fmt, ap);
+		l += vsnprintf(&msgbuf[l], 1020 - l, fmt, ap);
 		va_end(ap);
 		msgbuf[l++] = '\n';
 		msgbuf[l] = 0;
@@ -749,6 +750,7 @@ void BC_Signals::trace_msg(const char *file, const char *func, int line, const c
 		strcpy(&msgbuf[l], "===\n");
 	fputs(msgbuf, stdout);
 	fflush(stdout);
+	pthread_mutex_unlock(&lock);
 }
 
 
