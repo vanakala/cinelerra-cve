@@ -237,7 +237,7 @@ int Thread::get_realtime()
 	return realtime;
 }
 
-int Thread::get_tid()
+pthread_t Thread::get_tid()
 {
 	return tid;
 }
