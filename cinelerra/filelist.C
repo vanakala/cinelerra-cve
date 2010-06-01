@@ -407,7 +407,6 @@ int FileList::write_frames(VFrame ***frames, int len)
 {
 	return_value = 0;
 
-//printf("FileList::write_frames 1\n");
 	if(frames[0][0]->get_color_model() == BC_COMPRESSED)
 	{
 		for(int i = 0; i < asset->layers && !return_value; i++)
@@ -436,11 +435,7 @@ int FileList::write_frames(VFrame ***frames, int len)
 		}
 	}
 	else
-	{
-//printf("FileList::write_frames 2\n");
 		writer->write_frames(frames, len);
-//printf("FileList::write_frames 100\n");
-	}
 	return return_value;
 }
 
@@ -595,30 +590,23 @@ FrameWriterUnit::~FrameWriterUnit()
 
 void FrameWriterUnit::process_package(LoadPackage *package)
 {
-//printf("FrameWriterUnit::process_package 1\n");
 	FrameWriterPackage *ptr = (FrameWriterPackage*)package;
 
 	FILE *file;
 
-//printf("FrameWriterUnit::process_package 2 %s\n", ptr->path);
 	if(!(file = fopen(ptr->path, "wb")))
 	{
-		errormsg("Error while opening \"%s\" for writing. \n%m\n", ptr->path);
+		errormsg("Failed to open \"%s\" for writing. \n%m\n", ptr->path);
+		server->file->add_return_value(1);
 		return;
 	}
-//printf("FrameWriterUnit::process_package 3");
 
 
 	int result = server->file->write_frame(ptr->input, output, this);
 	
-//printf("FrameWriterUnit::process_package 4 %s %d\n", ptr->path, output->get_compressed_size());
 	if(!result) result = !fwrite(output->get_data(), output->get_compressed_size(), 1, file);
-//TRACE("FrameWriterUnit::process_package 4");
 	fclose(file);
-//TRACE("FrameWriterUnit::process_package 5");
-
 	server->file->add_return_value(result);
-//TRACE("FrameWriterUnit::process_package 6");
 }
 
 
@@ -669,7 +657,6 @@ void FrameWriter::write_frames(VFrame ***frames, int len)
 	this->frames = frames;
 	this->len = len;
 	set_package_count(len * file->asset->layers);
-	
 	process_packages();
 }
 

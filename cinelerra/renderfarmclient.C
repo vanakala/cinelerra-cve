@@ -28,6 +28,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "pluginserver.h"
@@ -48,6 +49,7 @@
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <libgen.h>
 
 
 
@@ -374,6 +376,7 @@ void RenderFarmClientThread::get_command(int socket_fd, int *command)
 	unsigned char data[4];
 	int error;
 	*command = read_int64(&error);
+
 	if(error)
 	{
 		*command = 0;
@@ -402,8 +405,11 @@ void RenderFarmClientThread::read_preferences(int socket_fd,
 
 
 
-void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
+int RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 {
+	char *p, strbuf[BCTEXTLEN];
+	int result = 0;
+
 	lock("RenderFarmClientThread::read_asset");
 	send_request_header(RENDERFARM_ASSET, 
 		0);
@@ -433,13 +439,21 @@ void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 
 	delete [] string1;
 	delete [] string2;
+
+	strncpy(strbuf, asset->path, BCTEXTLEN);
+	p = dirname(strbuf);
+	if(result = access(p, R_OK|W_OK|X_OK))
+		errorbox("Backgrond rendering: can't write to '%s'", p);
 	unlock();
+	return result;
 }
 
-void RenderFarmClientThread::read_edl(int socket_fd, 
+int RenderFarmClientThread::read_edl(int socket_fd, 
 	EDL *edl, 
 	Preferences *preferences)
 {
+	int result = 0;
+
 	lock("RenderFarmClientThread::read_edl");
 	send_request_header(RENDERFARM_EDL, 
 		0);
@@ -464,11 +478,12 @@ void RenderFarmClientThread::read_edl(int socket_fd,
 		File file;
 		for(Asset *current = edl->assets->first; current; current = NEXT)
 		{
-			file.open_file(preferences, current, 1, 0, 0, 0);
+			result |= file.open_file(preferences, current, 1, 0, 0, 0);
 			file.close_file(0);
 		}
 	}
 	unlock();
+	return result;
 }
 
 int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
@@ -638,8 +653,8 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 
 
 	read_preferences(socket_fd, preferences);
-	read_asset(socket_fd, default_asset);
-	read_edl(socket_fd, edl, preferences);
+	result |= read_asset(socket_fd, default_asset);
+	result |= read_edl(socket_fd, edl, preferences);
 
 
 
@@ -652,13 +667,13 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 // Read packages
 	while(1)
 	{
-		result = read_package(socket_fd, package);
+		result |= read_package(socket_fd, package);
 
 
 // Finished list
 		if(result)
 		{
-			result = send_completion(socket_fd);
+			send_completion(socket_fd);
 			break;
 		}
 
@@ -668,7 +683,6 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 // Error
 		if(package_renderer.render_package(package))
 		{
-tracemsg("RenderFarmClientThread::run got error");
 			result = send_completion(socket_fd);
 			break;
 		}
@@ -814,13 +828,3 @@ int FarmPackageRenderer::set_video_map(int64_t position, int value)
 	thread->unlock();
 	return result;
 }
-
-
-
-
-
-
-
-
-
-

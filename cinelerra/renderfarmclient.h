@@ -32,7 +32,6 @@
 #include "preferences.inc"
 #include "renderfarm.inc"
 #include "renderfarmclient.inc"
-//#include "renderfarmfsclient.inc"
 #include "thread.h"
 
 class RenderFarmClient
@@ -96,8 +95,8 @@ public:
 	void get_command(int socket_fd, int *command);
 	void read_preferences(int socket_fd, 
 		Preferences *preferences);
-	void read_asset(int socket_fd, Asset *asset);
-	void read_edl(int socket_fd, 
+	int read_asset(int socket_fd, Asset *asset);
+	int read_edl(int socket_fd, 
 		EDL *edl, 
 		Preferences *preferences);
 	int read_package(int socket_fd, RenderPackage *package);
@@ -112,7 +111,6 @@ public:
 	int socket_fd;
 // Read only
 	RenderFarmClient *client;
-//	RenderFarmFSClient *fs_client;
 	double frames_per_second;
 	Mutex *mutex_lock;
 	RenderFarmWatchdog *watchdog;

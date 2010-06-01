@@ -143,7 +143,7 @@ int PackageRenderer::initialize(MWindow *mwindow,
 
 void PackageRenderer::create_output()
 {
-	FileSystem fs;
+//	FileSystem fs;
 	asset = new Asset(*default_asset);
 
 
@@ -165,7 +165,6 @@ void PackageRenderer::create_output()
 					1, 
 					command->get_edl()->session->sample_rate, 
 					command->get_edl()->session->frame_rate);
-//printf("PackageRenderer::create_output 10 %d\n", result);
 
 	if(result && mwindow)
 	{
@@ -371,15 +370,14 @@ void PackageRenderer::do_video()
 // Construct layered output buffer
 				video_output_ptr = video_output[0][video_write_position];
 
- 				if(!result)
+				if(!result)
 					result = render_engine->vrender->process_buffer(
 						video_output_ptr, 
 						video_position, 
 						0);
 
 
-
- 				if(!result && 
+				if(!result && 
 					mwindow && 
 					video_device->output_visible())
 				{
@@ -415,18 +413,15 @@ void PackageRenderer::do_video()
 
 					if(video_write_position >= video_write_length)
 					{
-//printf("PackageRenderer::do_video 9\n");
 						result = file->write_video_buffer(video_write_position);
 // Update the brender map after writing the files.
 						if(package->use_brender)
 						{
-//printf("PackageRenderer::do_video 10\n");
 							for(int i = 0; i < video_write_position && !result; i++)
 							{
 								result = set_video_map(video_position + 1 - video_write_position + i, 
 									BRender::RENDERED);
 							}
-//printf("PackageRenderer::do_video 11 %d\n", result);
 						}
 						video_write_position = 0;
 					}
@@ -441,9 +436,7 @@ void PackageRenderer::do_video()
 		}
 	}
 	else
-	{
 		video_position += video_read_length;
-	}
 }
 
 

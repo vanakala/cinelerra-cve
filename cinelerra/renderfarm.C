@@ -24,10 +24,12 @@
 #include "clip.h"
 #include "condition.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "edl.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "packagedispatcher.h"
 #include "preferences.h"
@@ -373,9 +375,6 @@ void RenderFarmServerThread::run()
 
 	buffer = 0;
 	buffer_allocated = 0;
-//	fs_server = new RenderFarmFSServer(this);
-//	fs_server->initialize();
-
 
 
 // Send command to run package renderer.
@@ -390,7 +389,7 @@ void RenderFarmServerThread::run()
 // Requests consist of request ID's and accompanying buffers.
 // Get request ID.
 		bytes_read = read_socket((char*)header, 5);
-//printf("RenderFarmServerThread::run 1\n");
+
 		if(bytes_read != 5)
 		{
 			done = 1;
@@ -407,13 +406,11 @@ void RenderFarmServerThread::run()
 
 // Get accompanying buffer
 		bytes_read = read_socket((char*)buffer, request_size);
-//printf("RenderFarmServerThread::run 2 %d %lld %d\n", request_id, request_size, bytes_read);
 		if(bytes_read != request_size)
 		{
 			done = 1;
 			continue;
 		}
-//printf("RenderFarmServerThread::run 3\n");
 
 		switch(request_id)
 		{
@@ -450,7 +447,6 @@ void RenderFarmServerThread::run()
 				break;
 
 			case RENDERFARM_DONE:
-//printf("RenderFarmServerThread::run 10\n");
 				done = 1;
 				break;
 
@@ -458,25 +454,18 @@ void RenderFarmServerThread::run()
 				break;
 
 			default:
-//				if(!fs_server->handle_request(request_id, request_size, (unsigned char*)buffer))
-				{
-					printf(_("RenderFarmServerThread::run: unknown request %02x\n"), request_id);
-				}
+				errorbox(_("RenderFarmServerThread::run: unknown request %02x\n"), request_id);
 				break;
 		}
-//printf("RenderFarmServerThread::run 10 %d %lld\n", request_id, request_size);
 	}
 
 // Don't let watchdog kill the entire renderfarm when a client finishes
 // normally.
 	if(watchdog) 
 	{
-//printf("RenderFarmServerThread::run 20\n");
 		delete watchdog;
 		watchdog = 0;
 	}
-
-//	delete fs_server;
 }
 
 int RenderFarmServerThread::write_string(char *string)
@@ -524,7 +513,6 @@ void RenderFarmServerThread::send_asset()
 		1,
 		1);
 	defaults.save_string(string1);
-
 	FileXML file;
 	server->default_asset->write(&file, 0, 0);
 	file.terminate_string();
