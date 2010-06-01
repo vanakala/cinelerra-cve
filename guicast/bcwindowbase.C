@@ -90,7 +90,11 @@ BC_WindowBase::~BC_WindowBase()
 	}
 #endif
 	is_deleting = 1;
-	top_level->ignore_win = win;
+
+	top_level->ignore_win[top_level->last_ignore_win++] = win;
+	if(top_level->last_ignore_win >= MAX_WIN_IGNORE)
+		top_level->last_ignore_win = 0;
+
 
 	hide_tooltip();
 	if(window_type != MAIN_WINDOW)
@@ -250,7 +254,8 @@ int BC_WindowBase::initialize()
 #ifdef HAVE_GL
 	gl_win_context = 0;
 #endif
-	ignore_win = 0;
+	last_ignore_win = 0; 
+	memset(ignore_win, 0, MAX_WIN_IGNORE * sizeof(Window));
 	return 0;
 }
 
@@ -392,9 +397,11 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		XGetNormalHints(display, win, &size_hints);
 
 // Clear ignore_win
-		if(top_level->ignore_win == win)
-			top_level->ignore_win = 0;
-
+		for(int i = 0; i < MAX_WIN_IGNORE; i++)
+		{
+			if(top_level->ignore_win[i] == win)
+				top_level->ignore_win[i] = 0;
+		}
 		size_hints.flags = PSize | PMinSize | PMaxSize;
 		size_hints.width = this->w;
 		size_hints.height = this->h;
@@ -637,7 +644,23 @@ int BC_WindowBase::get_key_masks(XEvent *event)
 	return 0;
 }
 
+int BC_WindowBase::window_ignored(Window ewin)
+{
+	int i;
+	Window *wp;
 
+	if(ewin == 0)
+		return 0;
+
+	wp = top_level->ignore_win;
+
+	for(i = 0; i < MAX_WIN_IGNORE; i++)
+	{
+		if(wp[i] && wp[i] == ewin)
+			return 1;
+	}
+	return 0;
+}
 
 
 
@@ -676,7 +699,7 @@ int BC_WindowBase::dispatch_event()
 	}
 
 // Ignore events from destroyed window
-	if(top_level->ignore_win == event.xany.window)
+	if(window_ignored(event.xany.window))
 		return 0;
 
 	switch(event.type)
@@ -993,12 +1016,14 @@ int BC_WindowBase::dispatch_motion_event()
 	int result = 0;
 	unhide_cursor();
 
+	if(window_ignored(top_level->last_motion_win)){
+		motion_events = 0;
+		return 0;
+	}
 	if(top_level == this)
 	{
 		event_win = last_motion_win;
 		motion_events = 0;
-		if(event_win == ignore_win)
-			return 0;
 // Test for grab
 		if(get_button_down() && !active_menubar && !active_popup_menu)
 		{
