@@ -266,7 +266,6 @@ void PlayTransport::handle_transport(int command,
 	int do_stop = 0;
 //printf("PlayTransport::handle_transport 1 %d\n", command);
 	int prev_command = engine->command->command;
-	int prev_direction = engine->command->get_direction();
 	int prev_single_frame = engine->command->single_frame();
 
 // Dispatch command

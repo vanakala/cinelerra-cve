@@ -299,8 +299,7 @@ void Plugin::change_plugin(char *title,
 
 
 
-KeyFrame* Plugin::get_prev_keyframe(int64_t position,
-	int direction)
+KeyFrame* Plugin::get_prev_keyframe(int64_t position)
 {
 	KeyFrame *current = 0;
 
@@ -316,9 +315,7 @@ KeyFrame* Plugin::get_prev_keyframe(int64_t position,
 		current;
 		current = (KeyFrame*)PREVIOUS)
 	{
-		if(direction == PLAY_FORWARD && current->position <= position) break;
-		else
-		if(direction == PLAY_REVERSE && current->position < position) break;
+		if(current->position <= position) break;
 	}
 
 // Nothing before current position
@@ -336,8 +333,7 @@ KeyFrame* Plugin::get_prev_keyframe(int64_t position,
 	return current;
 }
 
-KeyFrame* Plugin::get_next_keyframe(int64_t position,
-	int direction)
+KeyFrame* Plugin::get_next_keyframe(int64_t position)
 {
 	KeyFrame *current;
 
@@ -354,9 +350,7 @@ KeyFrame* Plugin::get_next_keyframe(int64_t position,
 		current;
 		current = (KeyFrame*)NEXT)
 	{
-		if(direction == PLAY_FORWARD && current->position > position) break;
-		else
-		if(direction == PLAY_REVERSE && current->position >= position) break;
+		if(current->position > position) break;
 	}
 
 // Nothing after current position
@@ -378,8 +372,7 @@ KeyFrame* Plugin::get_keyframe()
 {
 // Search for keyframe on or before selection
 	KeyFrame *result = 
-		get_prev_keyframe(track->to_units(edl->local_session->get_selectionstart(1), 0), 
-			PLAY_FORWARD);
+		get_prev_keyframe(track->to_units(edl->local_session->get_selectionstart(1), 0));
 
 // Return nearest keyframe if not in automatic keyframe generation
 	if(!edl->session->auto_keyframes)

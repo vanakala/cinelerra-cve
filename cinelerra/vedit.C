@@ -62,7 +62,6 @@ int VEdit::load_properties_derived(FileXML *xml)
 
 int VEdit::read_frame(VFrame *video_out, 
 	int64_t input_position, 
-	int direction,
 	CICache *cache,
 	int use_nudge,
 	int use_cache,

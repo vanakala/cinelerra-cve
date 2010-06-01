@@ -1101,23 +1101,20 @@ SET_TRACE
 
 	if(!recalculate)
 	{
-		if(point_sets.total != keyframe_set->total_submasks(start_position_project, 
-			direction))
+		if(point_sets.total != keyframe_set->total_submasks(start_position_project))
 			recalculate = 1;
 	}
 
 	if(!recalculate)
 	{
 		for(int i = 0; 
-			i < keyframe_set->total_submasks(start_position_project, 
-				direction) && !recalculate; 
+			i < keyframe_set->total_submasks(start_position_project) && !recalculate;
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
 			keyframe_set->get_points(new_points, 
 				i, 
-				start_position_project, 
-				direction);
+				start_position_project);
 			if(!points_equivalent(new_points, point_sets.values[i])) recalculate = 1;
 			new_points->remove_all_objects();
 			delete new_points;
@@ -1153,15 +1150,13 @@ SET_TRACE
 		point_sets.remove_all_objects();
 
 		for(int i = 0; 
-			i < keyframe_set->total_submasks(start_position_project, 
-				direction); 
+			i < keyframe_set->total_submasks(start_position_project);
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
 			keyframe_set->get_points(new_points, 
 				i, 
-				start_position_project, 
-				direction);
+				start_position_project);
 			point_sets.append(new_points);
 		}
 	}

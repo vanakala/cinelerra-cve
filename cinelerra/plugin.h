@@ -108,8 +108,8 @@ public:
 	void shift(int64_t difference);
 	void dump();
 // Called by PluginClient sequence to get rendering parameters
-	KeyFrame* get_prev_keyframe(int64_t position, int direction);
-	KeyFrame* get_next_keyframe(int64_t position, int direction);
+	KeyFrame* get_prev_keyframe(int64_t position);
+	KeyFrame* get_next_keyframe(int64_t position);
 // If this is a standalone plugin fill its location in the result.
 // If it's shared copy the shared location into the result
 	void get_shared_location(SharedLocation *result);

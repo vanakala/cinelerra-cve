@@ -998,8 +998,7 @@ int CWindowCanvas::do_mask(int &redraw,
 		0);
 	ArrayList<MaskPoint*> points;
 	mask_autos->get_points(&points, mwindow->edl->session->cwindow_mask,
-		position, 
-		PLAY_FORWARD);
+		position);
 //printf("CWindowCanvas::do_mask 4\n");
 
 // Projector zooms relative to the center of the track output.

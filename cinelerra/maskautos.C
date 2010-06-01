@@ -40,10 +40,9 @@ MaskAutos::~MaskAutos()
 }
 
 
-void MaskAutos::get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position, int direction)
+void MaskAutos::get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position)
 {
 	MaskAuto *begin = 0, *end = 0;
-	position = (direction == PLAY_FORWARD) ? position : (position - 1);
 
 // Get auto before and after position
 	for(MaskAuto* current = (MaskAuto*)last; 
@@ -139,7 +138,6 @@ void MaskAutos::dump()
 int MaskAutos::mask_exists(int64_t position, int direction)
 {
 	Auto *current = 0;
-	position = (direction == PLAY_FORWARD) ? position : (position - 1);
 
 	MaskAuto* keyframe = (MaskAuto*)get_prev_auto(position, direction, current);
 
@@ -154,9 +152,8 @@ int MaskAutos::mask_exists(int64_t position, int direction)
 	return 0;
 }
 
-int MaskAutos::total_submasks(int64_t position, int direction)
+int MaskAutos::total_submasks(int64_t position)
 {
-	position = (direction == PLAY_FORWARD) ? position : (position - 1);
 	for(MaskAuto* current = (MaskAuto*)last; 
 		current; 
 		current = (MaskAuto*)PREVIOUS)

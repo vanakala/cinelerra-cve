@@ -124,7 +124,7 @@ int FloatAutos::automation_is_constant(int64_t start,
 	}
 	else
 	{
-		end = start + 1;
+		end = start;
 		start -= length;
 	}
 

@@ -745,7 +745,7 @@ Plugin* Track::get_current_plugin(double position,
 			current; 
 			current = (Plugin*)NEXT)
 		{
-			if(current->startproject < position && 
+			if(current->startproject <= position && 
 				current->startproject + current->length >= position)
 			{
 				return current;
@@ -786,7 +786,7 @@ Plugin* Track::get_current_transition(double position,
 	{
 		for(current = edits->first; current; current = NEXT)
 		{
-			if(current->startproject < position && current->startproject + current->length >= position)
+			if(current->startproject < position && current->startproject + current->length > position)
 			{
 				if(current->transition && position <= current->startproject + current->transition->length)
 				{

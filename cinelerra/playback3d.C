@@ -1178,8 +1178,7 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 
 // Draw every submask as a new polygon
 		int total_submasks = command->keyframe_set->total_submasks(
-			command->start_position_project, 
-			PLAY_FORWARD);
+			command->start_position_project);
 		float scale = command->keyframe->feather + 1;
  		int display_list = glGenLists(1);
  		glNewList(display_list, GL_COMPILE);
@@ -1190,8 +1189,7 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 			ArrayList<MaskPoint*> *points = new ArrayList<MaskPoint*>;
 			command->keyframe_set->get_points(points, 
 				k, 
-				command->start_position_project, 
-				PLAY_FORWARD);
+				command->start_position_project);
 
 			int first_point = 0;
 // Need to tabulate every vertex in persistent memory because

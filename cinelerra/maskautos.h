@@ -47,8 +47,8 @@ public:
 		int64_t position2);
 	int mask_exists(int64_t position, int direction);
 // Perform interpolation
-	void get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position, int direction);
-	int total_submasks(int64_t position, int direction);
+	void get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position);
+	int total_submasks(int64_t position);
 // Translates all mask points
 	void translate_masks(float translate_x, float translate_y);
 };

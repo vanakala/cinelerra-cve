@@ -974,7 +974,7 @@ KeyFrame* PluginServer::get_prev_keyframe(int64_t position)
 {
 	KeyFrame *result = 0;
 	if(plugin)
-		result = plugin->get_prev_keyframe(position, client->direction);
+		result = plugin->get_prev_keyframe(position);
 	else
 		result = keyframe;
 	return result;
@@ -984,7 +984,7 @@ KeyFrame* PluginServer::get_next_keyframe(int64_t position)
 {
 	KeyFrame *result = 0;
 	if(plugin)
-		result = plugin->get_next_keyframe(position, client->direction);
+		result = plugin->get_next_keyframe(position);
 	else
 		result = keyframe;
 	return result;

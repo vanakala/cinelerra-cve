@@ -672,7 +672,6 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 		if(!package->use_brender)
 			error |= ((VEdit*)playable_edit)->read_frame(compressed_output, 
 				video_position,
-				PLAY_FORWARD,
 				video_cache,
 				1,
 				0,

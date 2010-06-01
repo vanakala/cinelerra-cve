@@ -126,11 +126,6 @@ int VModule::import_frame(VFrame *output,
 
 	corrected_position = input_position;
 	corrected_position_project = input_position_project;
-	if(direction == PLAY_REVERSE)
-	{
-		corrected_position--;
-		input_position_project--;
-	}
 
 	VDeviceX11 *x11_device = 0;
 	if(use_opengl)
@@ -525,9 +520,7 @@ int VModule::render(VFrame *output,
 			transition_server->set_use_opengl(use_opengl, renderengine->video);
 		transition_server->process_transition((*transition_input), 
 			output,
-			(direction == PLAY_FORWARD) ? 
-				(start_position_project - current_edit->startproject) :
-				(start_position_project - current_edit->startproject - 1),
+			start_position_project - current_edit->startproject,
 			transition->length);
 	}
 	else
