@@ -24,6 +24,7 @@
 // adapted to libavc1394 by Dan Dennedy <dan@dennedy.org>. Released under
 // the GPL.)
 
+#include <string.h>
 #include "avc1394control.h"
 #include "mutex.h"
 #include "transportque.inc"
@@ -189,10 +190,11 @@ char *AVC1394Control::timecode()
 	return text_return;
 }
 
-void AVC1394Control::seek(char *time)
+void AVC1394Control::seek(const char *time)
 {
 //printf("AVC1394Control::seek(): 1\n");
 	device_lock->lock("AVC1394Control::seek");
-	avc1394_vcr_seek_timecode(handle, device, time);
+	strcpy(text_return, time);
+	avc1394_vcr_seek_timecode(handle, device, text_return);
 	device_lock->unlock();
 }

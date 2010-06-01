@@ -51,7 +51,7 @@ public:
 	void record();
 	void eject();
 	void get_status();
-	void seek(char *time);
+	void seek(const char *time);
 	char *timecode();
 	int device;
 	int status;
