@@ -785,7 +785,7 @@ void MWindow::stop_brender()
 	if(brender) brender->stop();
 }
 
-int MWindow::brender_available(int position)
+int MWindow::brender_available(framenum position)
 {
 	int result = 0;
 	brender_lock->lock("MWindow::brender_available 1");

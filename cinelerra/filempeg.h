@@ -79,15 +79,15 @@ public:
 
 
 	int get_index(char *index_path);
-	int set_video_position(int64_t x);
-	int set_audio_position(int64_t x);
+	int set_video_position(framenum x);
+	int set_audio_position(samplenum x);
 	int write_samples(double **buffer, 
-			int64_t len);
+			int len);
 	int write_frames(VFrame ***frames, int len);
 
 	int read_frame(VFrame *frame);
-	int read_samples(double *buffer, int64_t len);
-	int read_samples_float(float *buffer, int64_t len);
+	int read_samples(double *buffer, int len);
+	int read_samples_float(float *buffer, int len);
 	int prefer_samples_float();
 
 	int64_t get_memory_usage();
@@ -96,9 +96,9 @@ public:
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
 // This file can copy frames directly from the asset
-	int can_copy_from(Edit *edit, int64_t position); 
+	int can_copy_from(Edit *edit, framenum position); 
 	static const char *strtocompression(const char *string);
-	const static char *compressiontostr(const char *string);
+	static const char *compressiontostr(const char *string);
 
 
 private:

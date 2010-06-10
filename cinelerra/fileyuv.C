@@ -111,8 +111,9 @@ int FileYUV::open_file(int should_read, int should_write)
 	return 1;
 }
 
-int FileYUV::close_file() {
-  	if (pipe_latency && ffmpeg && stream) {
+int FileYUV::close_file()
+{
+	if (pipe_latency && ffmpeg && stream) {
 		// deal with last frame still in the pipe
 		ensure_temp(incoming_asset->width, incoming_asset->height); 
 		if (ffmpeg->decode(NULL, 0, temp) == 0) 
@@ -132,7 +133,8 @@ int FileYUV::close_file() {
 }
 
 // NOTE: set_video_position() called every time a frame is read
-int FileYUV::set_video_position(int64_t frame_number) {
+int FileYUV::set_video_position(framenum frame_number)
+{
 	return stream->seek_frame(frame_number);
 }
 
@@ -297,7 +299,7 @@ int FileYUV::check_sig(Asset *asset)
 
 // NOTE: this is called on the write stream, not the read stream!
 //       as such, I have no idea what one is supposed to do with position.
-int FileYUV::can_copy_from(Edit *edit, int64_t position)
+int FileYUV::can_copy_from(Edit *edit, framenum position)
 {
 	// NOTE: width and height already checked in file.C
 

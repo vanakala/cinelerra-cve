@@ -16,7 +16,7 @@ class FFMPEG
 	FFMPEG(Asset *asset_in);
 	~FFMPEG();
 	int init(char *codec_string);
-	int decode(uint8_t *data, long data_size, VFrame *frame_out);
+	int decode(uint8_t *data, int data_size, VFrame *frame_out);
 
 	static int convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 				  int width_in, int height_in, 

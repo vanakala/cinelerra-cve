@@ -45,9 +45,9 @@ public:
 	static int check_sig(Asset *asset);
 	int open_file(int rd, int wr);
 	int close_file();
-	int set_audio_position(int64_t sample);
-	int read_samples(double *buffer, int64_t len);
-	int write_samples(double **buffer, int64_t len);
+	int set_audio_position(samplenum sample);
+	int read_samples(double *buffer, int len);
+	int write_samples(double **buffer, int len);
 	void format_to_asset();
 	void asset_to_format();
 
@@ -61,7 +61,7 @@ public:
 	SF_INFO fd_config;
 // Temp for interleaved channels
 	double *temp_double;
-	int64_t temp_allocated;
+	int temp_allocated;
 };
 
 class SndFileConfig;

@@ -82,8 +82,6 @@ int FileBase::reset_parameters()
 	float_buffer = 0;
 	row_pointers_in = 0;
 	row_pointers_out = 0;
-	prev_buffer_position = -1;
-	prev_frame_position = -1;
 	prev_len = 0;
 	prev_bytes = 0;
 	prev_track = -1;
@@ -136,29 +134,10 @@ int FileBase::get_video_buffer(unsigned char **buffer, int depth)
 	if(!*buffer)
 	{
 // Video compression is entirely done in the library.
-		int64_t bytes = asset->width * asset->height * depth;
+		int bytes = asset->width * asset->height * depth;
 		*buffer = new unsigned char[bytes];
 	}
 	return 0;
-}
-
-int FileBase::get_row_pointers(unsigned char *buffer, unsigned char ***pointers, int depth)
-{
-// This might be fooled if a new VFrame is created at the same address with a different height.
-	if(*pointers && (*pointers)[0] != &buffer[0])
-	{
-		delete [] *pointers;
-		*pointers = 0;
-	}
-
-	if(!*pointers)
-	{
-		*pointers = new unsigned char*[asset->height];
-		for(int i = 0; i < asset->height; i++)
-		{
-			(*pointers)[i] = &buffer[i * asset->width * depth / 8];
-		}
-	}
 }
 
 int FileBase::match4(const char *in, const char *out)

@@ -435,7 +435,7 @@ int AssetEditWindow::create_objects()
 		x = x1;
 		add_subwindow(new BC_Title(x, y, "Length:"));
 		x = x2;
-		sprintf(string, "%lld", asset->video_length);
+		sprintf(string, "%d", asset->video_length);
 		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 		y += title->get_h() + 5;
 

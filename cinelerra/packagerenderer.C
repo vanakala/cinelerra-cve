@@ -501,13 +501,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 	result = 0;
 	this->package = package;
 
-// printf(
-// "PackageRenderer::render_package: audio s=%lld l=%lld video s=%lld l=%lld\n",
-// 	package->audio_start, 
-// 	package->audio_end - package->audio_start, 
-// 	package->video_start, 
-// 	package->video_end - package->video_start);
-
 
 // FIXME: The design that we only get EDL once does not give us neccessary flexiblity to do things the way they should be donek
 	default_asset->video_data = package->video_do;
@@ -641,13 +634,12 @@ int PackageRenderer::render_package(RenderPackage *package)
 // Try to copy the compressed frame directly from the input to output files
 // Return 1 on failure and 0 on success
 int PackageRenderer::direct_frame_copy(EDL *edl, 
-	int64_t &video_position, 
+	framenum &video_position, 
 	File *file,
 	int &error)
 {
 	Track *playable_track;
 	Edit *playable_edit;
-	int64_t frame_size;
 
 //printf("Render::direct_frame_copy 1\n");
 	if(direct_copy_possible(edl, 
@@ -708,7 +700,7 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 }
 
 int PackageRenderer::direct_copy_possible(EDL *edl,
-				int64_t current_position, 
+				framenum current_position, 
 				Track* playable_track,  // The one track which is playable
 				Edit* &playable_edit, // The edit which is playing
 				File *file)   // Output file
@@ -794,11 +786,11 @@ void PackageRenderer::set_result(int value)
 {
 }
 
-void PackageRenderer::set_progress(int64_t value)
+void PackageRenderer::set_progress(samplenum value)
 {
-}	
+}
 
-int PackageRenderer::set_video_map(int64_t position, int value)
+int PackageRenderer::set_video_map(framenum position, int value)
 {
 }
 

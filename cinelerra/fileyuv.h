@@ -50,9 +50,9 @@ class FileYUV : public FileBase
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame);
 	int write_frames(VFrame ***frame, int len);
-	int can_copy_from(Edit *edit, int64_t position);
+	int can_copy_from(Edit *edit, framenum position);
 	int close_file();
-	int set_video_position(int64_t x);
+	int set_video_position(framenum x);
 
 	// below here are local routines not required by interface
 	void ensure_temp(int width, int height);

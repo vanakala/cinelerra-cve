@@ -58,7 +58,7 @@ void CPlayback::stop_cursor()
 }
 
 
-int CPlayback::brender_available(long position)
+int CPlayback::brender_available(framenum position)
 {
 	return mwindow->brender_available(position);
 }

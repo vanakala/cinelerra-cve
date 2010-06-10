@@ -27,6 +27,7 @@
 #include "bcwindowbase.inc"
 #include "cache.inc"
 #include "edit.inc"
+#include "datatype.h"
 #include "edl.inc"
 #include "file.inc"
 #include "maxchannels.h"
@@ -54,10 +55,10 @@ public:
 	char path[BCTEXTLEN];
 
 // Range not including preroll
-	int64_t audio_start;
-	int64_t audio_end;
-	int64_t video_start;
-	int64_t video_end;
+	samplenum audio_start;
+	samplenum audio_end;
+	framenum video_start;
+	framenum video_end;
 	int done;
 	int use_brender;
 	int video_do;
@@ -85,12 +86,12 @@ public:
 	int render_package(RenderPackage *package);
 
 	int direct_copy_possible(EDL *edl,
-		int64_t current_position, 
+		framenum current_position, 
 		Track* playable_track,  // The one track which is playable
 		Edit* &playable_edit, // The edit which is playing
 		File *file);   // Output file
 	int direct_frame_copy(EDL *edl, 
-		int64_t &video_position, 
+		framenum &video_position, 
 		File *file,
 		int &result);
 
@@ -103,7 +104,7 @@ public:
 // Used by background rendering to mark a frame as finished.
 // If the GUI is locked for a long time this may abort, 
 // assuming the server crashed.
-	virtual int set_video_map(int64_t position, int value);
+	virtual int set_video_map(int position, int value);
 	virtual int progress_cancelled();
 
 	void create_output();
@@ -124,9 +125,9 @@ public:
 // Created locally
 	Asset *asset;
 	double **audio_output;
-	int64_t audio_position;
-	int64_t audio_preroll;
-	int64_t audio_read_length;
+	samplenum audio_position;
+	samplenum audio_preroll;
+	samplenum audio_read_length;
 	File *file;
 // This is 1 if an error is encountered.
 	int result;
@@ -148,11 +149,11 @@ public:
 	int direct_frame_copying;
 	VideoDevice *video_device;
 	VFrame *video_output_ptr;
-	int64_t video_preroll;
-	int64_t video_position;
-	int64_t video_read_length;
-	int64_t video_write_length;
-	int64_t video_write_position;
+	framenum video_preroll;
+	framenum video_position;
+	framenum video_read_length;
+	framenum video_write_length;
+	framenum video_write_position;
 };
 
 

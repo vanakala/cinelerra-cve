@@ -37,7 +37,7 @@ public:
 // basic commands for every file interpreter
 	int open_file(int rd, int wr);
 	int close_file_derived();
-	int64_t get_video_length();
+	framenum get_video_length();
 	int64_t get_memory_usage();
 
 	int read_header();

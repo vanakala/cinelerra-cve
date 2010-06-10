@@ -285,7 +285,7 @@ int FileVorbis::close_file()
 }
 
 
-int FileVorbis::write_samples(double **buffer, int64_t len)
+int FileVorbis::write_samples(double **buffer, int len)
 {
 	if(!fd) return 0;
 	int result = 0;
@@ -307,7 +307,7 @@ int FileVorbis::write_samples(double **buffer, int64_t len)
 	return result;
 }
 
-int FileVorbis::read_samples(double *buffer, int64_t len)
+int FileVorbis::read_samples(double *buffer, int len)
 {
 	if(!fd) return 0;
 
@@ -424,7 +424,7 @@ int FileVorbis::prefer_samples_float()
 	return 1;
 }
 
-int FileVorbis::read_samples_float(float *buffer, int64_t len)
+int FileVorbis::read_samples_float(float *buffer, int len)
 {
 	if(!fd) return 0;
 

@@ -104,7 +104,7 @@ VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 }
 
 int VirtualVNode::read_data(VFrame *output_temp,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate,
 	int use_opengl)
 {
@@ -115,7 +115,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 		printf("VirtualVNode::read_data output_temp=%p\n", output_temp);
 
 	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::read_data position=%lld rate=%f title=%s opengl=%d\n", 
+		printf("  VirtualVNode::read_data position=%d rate=%f title=%s opengl=%d\n", 
 			start_position,
 			frame_rate,
 			track->title, 
@@ -176,7 +176,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 
 
 int VirtualVNode::render(VFrame *output_temp, 
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate,
 	int use_opengl)
 {
@@ -201,7 +201,7 @@ int VirtualVNode::render(VFrame *output_temp,
 }
 
 void VirtualVNode::render_as_plugin(VFrame *output_temp, 
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate,
 	int use_opengl)
 {
@@ -227,7 +227,7 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 
 int VirtualVNode::render_as_module(VFrame *video_out, 
 	VFrame *output_temp,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate,
 	int use_opengl)
 {
@@ -311,13 +311,12 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 int VirtualVNode::render_fade(VFrame *output,        
 // start of input fragment in project if forward / end of input fragment if reverse
 // relative to requested frame rate
-			int64_t start_position, 
+			framenum start_position, 
 			double frame_rate, 
 			Autos *autos,
 			int direction)
 {
 	double slope, intercept;
-	int64_t slope_len = 1;
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
 	double edl_rate = renderengine->edl->session->frame_rate;
@@ -356,7 +355,7 @@ int VirtualVNode::render_fade(VFrame *output,
 
 
 void VirtualVNode::render_mask(VFrame *output_temp,
-	int64_t start_position_project,
+	framenum start_position_project,
 	double frame_rate,
 	int use_opengl)
 {
@@ -420,7 +419,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 // Start of input fragment in project if forward.  End of input fragment if reverse.
 int VirtualVNode::render_projector(VFrame *input,
 			VFrame *output,
-			int64_t start_position,
+			framenum start_position,
 			double frame_rate)
 {
 	float in_x1, in_y1, in_x2, in_y2;

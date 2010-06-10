@@ -364,29 +364,29 @@ int FileDV::close_file_derived()
 	return 0;
 }
 
-int64_t FileDV::get_video_position()
+framenum FileDV::get_video_position()
 {
 	return video_position;
 }
 
-int64_t FileDV::get_audio_position()
+samplenum FileDV::get_audio_position()
 {
 	return audio_position;
 }
 
-int FileDV::set_video_position(int64_t x)
+int FileDV::set_video_position(framenum x)
 {
 	video_position = x;
 	return 0;
 }
 
-int FileDV::set_audio_position(int64_t x)
+int FileDV::set_audio_position(samplenum x)
 {
 	audio_position = x;
 	return 0;
 }
 
-int FileDV::audio_samples_copy(double **buffer, int64_t len)
+int FileDV::audio_samples_copy(double **buffer, int len)
 {
 	// take the buffer and copy it into a queue
 	if(!audio_sample_buffer)
@@ -479,7 +479,7 @@ int FileDV::audio_samples_copy(double **buffer, int64_t len)
 	return 0;
 }
 
-int FileDV::write_samples(double **buffer, int64_t len)
+int FileDV::write_samples(double **buffer, int len)
 {
 	if(audio_samples_copy(buffer, len) != 0)
 	{
@@ -723,12 +723,12 @@ int FileDV::write_compressed_frame(VFrame *buffer)
 	return result != 0;
 }
 
-int64_t FileDV::compressed_frame_size()
+int FileDV::compressed_frame_size()
 {
 	return output_size;
 }
 
-int FileDV::read_samples(double *buffer, int64_t len)
+int FileDV::read_samples(double *buffer, int len)
 {
 	int count = 0;
 	int result = 0;
@@ -923,7 +923,7 @@ int FileDV::colormodel_supported(int colormodel)
 	return colormodel;
 }
 
-int FileDV::can_copy_from(Edit *edit, int64_t position)
+int FileDV::can_copy_from(Edit *edit, framenum position)
 {
 	if(edit->asset->format == FILE_RAWDV ||
 			(edit->asset->format == FILE_MOV &&
@@ -967,13 +967,13 @@ int FileDV::get_best_colormodel(Asset *asset, int driver)
 	return BC_RGB888;
 }
 
-int FileDV::get_audio_frame(int64_t pos)
+framenum FileDV::get_audio_frame(samplenum pos)
 {
 	return (double) pos * asset->frame_rate / asset->sample_rate;
 }
 
 // Get the sample offset from the frame start reported by get_audio_frame
-int FileDV::get_audio_offset(int64_t pos)
+framenum FileDV::get_audio_offset(samplenum pos)
 {
 	int frame = get_audio_frame(pos);
 		

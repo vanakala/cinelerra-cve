@@ -1013,7 +1013,7 @@ int FileOGG::ogg_sync_and_get_next_page(sync_window_t *sw, long serialno, ogg_pa
 // Returns:
 // >= 0, number of sample within a page
 // <  0 error
-int FileOGG::ogg_get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *og, int64_t sample)
+int FileOGG::ogg_get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *og, samplenum sample)
 {
 // First make an educated guess about position
 	if (sample >= asset->audio_length + start_sample)
@@ -1069,7 +1069,7 @@ int FileOGG::ogg_get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *
 // sample here is still the vorbis sample number (= cinelerra sample number + start_sample)
 // reinits the decoding engine
 
-int FileOGG::ogg_seek_to_sample(sync_window_t *sw, long serialno, int64_t sample)
+int FileOGG::ogg_seek_to_sample(sync_window_t *sw, long serialno, samplenum sample)
 {
 	// MAYBE FIXME - find out if we really are decoding previous two packets or not
 	// get to the sample
@@ -1151,7 +1151,7 @@ int FileOGG::ogg_seek_to_sample(sync_window_t *sw, long serialno, int64_t sample
 	return 0;
 }
 
-int FileOGG::ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, int64_t frame)
+int FileOGG::ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, framenum frame)
 {
 	if (frame >= asset->video_length + start_frame)
 	{
@@ -1237,7 +1237,7 @@ int FileOGG::ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *o
 }
 
 
-int FileOGG::ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t frame, int64_t *keyframe_number)
+int FileOGG::ogg_seek_to_keyframe(sync_window_t *sw, long serialno, framenum frame, framenum *keyframe_number)
 {
 	ogg_page og;
 	ogg_packet op;
@@ -1251,7 +1251,7 @@ int FileOGG::ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t fram
 	// Now go to previous page in order to find out the granulepos
 	// Don't do it in case this is the first page.
 //	printf("GP: %lli\n", ogg_page_granulepos(&og));
-	int64_t granulepos, iframe, pframe;
+	framenum granulepos, iframe, pframe;
 	granulepos = ogg_page_granulepos(&og);
 	iframe = granulepos >> theora_keyframe_granule_shift;
 	pframe = granulepos - (iframe << theora_keyframe_granule_shift);
@@ -1270,7 +1270,7 @@ int FileOGG::ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t fram
 		iframe = granulepos >> theora_keyframe_granule_shift;
 		pframe = granulepos - (iframe << theora_keyframe_granule_shift);
 	}
-	int64_t first_frame_on_page = theora_granule_frame(&tf->td, ogg_page_granulepos(&og)) - ogg_page_packets(&og) + 2;
+	framenum first_frame_on_page = theora_granule_frame(&tf->td, ogg_page_granulepos(&og)) - ogg_page_packets(&og) + 2;
 	if (!ogg_page_continued(&og))
 		first_frame_on_page--;
 	if (first_frame_on_page <= iframe)
@@ -1410,18 +1410,18 @@ int FileOGG::close_file_derived()
 	stream = 0;
 }
 
-int64_t FileOGG::get_video_position()
+framenum FileOGG::get_video_position()
 {
 //	printf("GVP\n");
 	return next_frame_position - start_frame;
 }
 
-int64_t FileOGG::get_audio_position()
+samplenum FileOGG::get_audio_position()
 {
 	return next_sample_position - start_sample;
 }
 
-int FileOGG::set_video_position(int64_t x)
+int FileOGG::set_video_position(framenum x)
 {
 //	x=0;
 //	printf("SVP: %lli\n", x);
@@ -1593,7 +1593,7 @@ int FileOGG::ogg_decode_more_samples(sync_window_t *sw, long serialno)
 	return 1;
 }
 
-int FileOGG::set_audio_position(int64_t x)
+int FileOGG::set_audio_position(samplenum x)
 {
 	next_sample_position = x + start_sample;
 	return 0;
@@ -1607,7 +1607,7 @@ int FileOGG::move_history(int from, int to, int len)
 	return 0;
 } 
 
-int FileOGG::read_samples(double *buffer, int64_t len)
+int FileOGG::read_samples(double *buffer, int len)
 {
 	float **vorbis_buffer;
 	if (len <= 0) 
@@ -1879,7 +1879,7 @@ void FileOGG::flush_ogg (int e_o_s)
 }
 
 
-int FileOGG::write_samples_vorbis(double **buffer, int64_t len, int e_o_s)
+int FileOGG::write_samples_vorbis(double **buffer, int len, int e_o_s)
 {
 	int i,j, count = 0;
 	float **vorbis_buffer;
@@ -1923,7 +1923,7 @@ int FileOGG::write_samples_vorbis(double **buffer, int64_t len, int e_o_s)
 
 }
 
-int FileOGG::write_samples(double **buffer, int64_t len)
+int FileOGG::write_samples(double **buffer, int len)
 {
 	if (len > 0)
 		return write_samples_vorbis(buffer, len, 0);
@@ -2494,7 +2494,7 @@ void PackagingEngineOGG::get_package_paths(ArrayList<char*> *path_list)
 	path_list->set_free();
 }
 
-int64_t PackagingEngineOGG::get_progress_max()
+samplenum PackagingEngineOGG::get_progress_max()
 {
 	return Units::to_int64(default_asset->sample_rate * 
 			(total_end - total_start)) * 2+

@@ -25,6 +25,7 @@
 #include "asset.inc"
 #include "assets.inc"
 #include "colormodels.h"
+#include "datatype.h"
 #include "edit.inc"
 #include "guicast.h"
 #include "file.inc"
@@ -74,27 +75,27 @@ public:
 	int set_dither();
 	virtual int seek_end() { return 0; };
 	virtual int seek_start() { return 0; };
-	virtual int64_t get_video_position() { return 0; };
-	virtual int64_t get_audio_position() { return 0; };
-	virtual int set_video_position(int64_t x) { return 0; };
-	virtual int set_audio_position(int64_t x) { return 0; };
+	virtual framenum get_video_position() { return 0; };
+	virtual samplenum get_audio_position() { return 0; };
+	virtual int set_video_position(framenum x) { return 0; };
+	virtual int set_audio_position(samplenum x) { return 0; };
 
 // Subclass should call this to add the base class allocation.
 // Only used in read mode.
 	virtual int64_t get_memory_usage() { return 0; };
 
 	virtual int write_samples(double **buffer, 
-		int64_t len) { return 0; };
+		int len) { return 0; };
 	virtual int write_frames(VFrame ***frames, int len) { return 0; };
 	virtual int read_compressed_frame(VFrame *buffer) { return 0; };
 	virtual int write_compressed_frame(VFrame *buffers) { return 0; };
-	virtual int64_t compressed_frame_size() { return 0; };
+	virtual int compressed_frame_size() { return 0; };
 // Doubles are used to allow resampling
-	virtual int read_samples(double *buffer, int64_t len) { return 0; };
+	virtual int read_samples(double *buffer, int len) { return 0; };
 
 
 	virtual int prefer_samples_float() {return 0;};
-	virtual int read_samples_float(float *buffer, int64_t len) { return 0; };
+	virtual int read_samples_float(float *buffer, int len) { return 0; };
 
 	virtual int read_frame(VFrame *frame) { return 1; };
 
@@ -111,55 +112,40 @@ protected:
 
 // convert samples into file format
 	int64_t samples_to_raw(char *out_buffer, 
-							float **in_buffer, // was **buffer
-							int64_t input_len, 
-							int bits, 
-							int channels,
-							int byte_order,
-							int signed_);
+					float **in_buffer, // was **buffer
+					int input_len, 
+					int bits, 
+					int channels,
+					int byte_order,
+					int signed_);
 
 // overwrites the buffer from PCM data depending on feather.
 	int raw_to_samples(float *out_buffer, const char *in_buffer, 
-		int64_t samples, int bits, int channels, int channel, int feather, 
+		int samples, int bits, int channels, int channel, int feather, 
 		float lfeather_len, float lfeather_gain, float lfeather_slope);
 
 // Overwrite the buffer from float data using feather.
 	int overlay_float_buffer(float *out_buffer, float *in_buffer, 
-		int64_t samples, 
+		int samples, 
 		float lfeather_len, float lfeather_gain, float lfeather_slope);
 
-// convert a frame to and from file format
-
-	int64_t frame_to_raw(unsigned char *out_buffer,
-					VFrame *in_frame,
-					int w,
-					int h,
-					int use_alpha,
-					int use_float,
-					int color_model);
-
 // allocate a buffer for translating int to float
-	int get_audio_buffer(char **buffer, int64_t len, int64_t bits, int64_t channels); // audio
+	int get_audio_buffer(char **buffer, int len, int bits, int channels); // audio
 
 // Allocate a buffer for feathering floats
-	int get_float_buffer(float **buffer, int64_t len);
+	int get_float_buffer(float **buffer, int len);
 
 // allocate a buffer for translating video to VFrame
 	int get_video_buffer(unsigned char **buffer, int depth); // video
-	int get_row_pointers(unsigned char *buffer, unsigned char ***pointers, int depth);
 	static int match4(const char *in, const char *out);   // match 4 bytes for a quicktime type
-
-	int64_t ima4_samples_to_bytes(int64_t samples, int channels);
-	int64_t ima4_bytes_to_samples(int64_t bytes, int channels);
 
 	char *audio_buffer_in, *audio_buffer_out;    // for raw audio reads and writes
 	float *float_buffer;          // for floating point feathering
 	unsigned char *video_buffer_in, *video_buffer_out;
 	unsigned char **row_pointers_in, **row_pointers_out;
-	int64_t prev_buffer_position;  // for audio determines if reading raw data is necessary
-	int64_t prev_frame_position;   // for video determines if reading raw video data is necessary
-	int64_t prev_bytes; // determines if new raw buffer is needed and used for getting memory usage
-	int64_t prev_len;
+
+	int prev_bytes; // determines if new raw buffer is needed and used for getting memory usage
+	int prev_len;
 	int prev_track;
 	int prev_layer;
 	Asset *asset;

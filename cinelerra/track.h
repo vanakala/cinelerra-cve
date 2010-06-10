@@ -149,14 +149,13 @@ public:
 
 // Used by PlayableTracks::is_playable
 // Returns 1 if the track is in the output boundaries.
-	virtual int is_playable(int64_t position, 
-		int direction);
+	virtual int is_playable(posnum position, int direction);
 
 // Test direct copy conditions common to all the rendering routines
 	virtual int direct_copy_possible(int64_t start, int direction, int use_nudge);
 
 // Used by PlayableTracks::is_playable
-	int plugin_used(int64_t position, int64_t direction);
+	int plugin_used(posnum position, int direction);
 
 
 
@@ -193,7 +192,7 @@ public:
 	int record;
 // Nudge in track units.  Positive shifts track earlier in time.  This way
 // the position variables only need to add the nudge.
-	int64_t nudge;
+	posnum nudge;
 // TRACK_AUDIO or TRACK_VIDEO
 	int data_type;     
 

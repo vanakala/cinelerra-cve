@@ -239,7 +239,7 @@ int PlaybackEngine::get_module_levels(ArrayList<double> *module_levels, long pos
 	return result;
 }
 
-int PlaybackEngine::brender_available(long position)
+int PlaybackEngine::brender_available(framenum position)
 {
 	return 0;
 }

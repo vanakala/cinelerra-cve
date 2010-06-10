@@ -50,10 +50,10 @@ public:
 	int open_file(int rd, int wr);
 	int close_file();
 	int write_samples(double **buffer, 
-			int64_t len);
+			int len);
 
-	int read_samples(double *buffer, int64_t len);
-	int read_samples_float(float *buffer, int64_t len);
+	int read_samples(double *buffer, int len);
+	int read_samples_float(float *buffer, int len);
 	int prefer_samples_float();
 	
 // Decoding

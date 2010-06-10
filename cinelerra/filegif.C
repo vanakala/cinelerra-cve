@@ -61,7 +61,7 @@ int FileGIF::open_file(int rd, int wr)
 	return 0;
 }
 
-int64_t FileGIF::get_video_length()
+framenum FileGIF::get_video_length()
 {
 	return -1;    // infinity
 // should be determined by whether the GIF is animated

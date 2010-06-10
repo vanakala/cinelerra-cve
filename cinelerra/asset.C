@@ -1232,7 +1232,7 @@ int Asset::dump()
 	       video_data, layers, frame_rate, width, height);
 	printf("      vcodec %c%c%c%c aspect_ratio %f interlace_mode %s\n",
 	      vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
-	printf("      length %lld subtitles %d (active %d)\n", video_length, subtitles, active_subtitle);
+	printf("      length %d subtitles %d (active %d)\n", video_length, subtitles, active_subtitle);
 	printf("   reel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
 		reel_name, reel_number, tcstart, tcend, tcformat);
 	

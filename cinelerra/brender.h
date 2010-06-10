@@ -62,6 +62,7 @@
 #include "arraylist.h"
 #include "bcwindowbase.inc"
 #include "brender.inc"
+#include "datatype.h"
 #include "condition.inc"
 #include "edl.inc"
 #include "mutex.inc"
@@ -95,11 +96,11 @@ public:
 
 // Get last contiguous frame from map, with locking.
 // Only needed by BRenderThread::start but nothing really uses it.
-	int get_last_contiguous(int64_t brender_start);
+	int get_last_contiguous(framenum brender_start);
 // Allocate map with locking
-	void allocate_map(int64_t brender_start, int64_t start, int64_t end);
+	void allocate_map(framenum brender_start, framenum start, framenum end);
 // Mark a frame as finished
-	int set_video_map(int64_t position, int value);
+	int set_video_map(framenum position, int value);
 
 	void initialize();
 	void run();
@@ -113,7 +114,7 @@ public:
 
 // Simple map of finished chunks
 	unsigned char *map;
-	int64_t map_size;
+	framenum map_size;
 	Mutex *map_lock;
 
 // Status of each map entry.  This way we get the last contiguous as well as the

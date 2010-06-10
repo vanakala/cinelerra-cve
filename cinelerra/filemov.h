@@ -48,8 +48,8 @@ public:
 
 	VFrame *input;
 	unsigned char *output;  // Output buffer
-	int64_t output_size;        // Size of output buffer
-	int64_t output_allocated;  // Allocation of output buffer
+	int output_size;        // Size of output buffer
+	int output_allocated;  // Allocation of output buffer
 	Condition *completion_lock;
 };
 
@@ -73,25 +73,25 @@ public:
 	int close_file();
 	void asset_to_format();
 	void format_to_asset();
-	int64_t get_video_length();
-	int64_t get_audio_length();
-	int set_video_position(int64_t x);
-	int set_audio_position(int64_t x);
+	framenum get_video_length();
+	samplenum get_audio_length();
+	int set_video_position(framenum x);
+	int set_audio_position(samplenum x);
 	int write_samples(double **buffer, 
-			int64_t len);
+			int len);
 	int write_frames(VFrame ***frames, int len);
-	int64_t compressed_frame_size();
+	int compressed_frame_size();
 	int read_compressed_frame(VFrame *buffer);
 	int write_compressed_frame(VFrame *buffer);
 
 	int read_frame(VFrame *frame);
-	int read_samples(double *buffer, int64_t len);
+	int read_samples(double *buffer, int len);
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);
 	int64_t get_memory_usage();
 	int colormodel_supported(int colormodel);
-	int can_copy_from(Edit *edit, int64_t position); // This file can copy frames directly from the asset
+	int can_copy_from(Edit *edit, framenum position); // This file can copy frames directly from the asset
 	static const char *strtocompression(const char *string);
 	static const char *compressiontostr(const char *string);
 
@@ -118,7 +118,6 @@ private:
 // current positions for when the file descriptor doesn't have the right position
 	quicktime_t *fd;
 	int depth;        // Depth in bits per pixel
-	int64_t frames_correction;  // Correction after 32bit overflow
 	int64_t samples_correction;  // Correction after 32bit overflow
 
 // An array of frames for threads to look up and compress on their own.
@@ -134,7 +133,7 @@ private:
 
 // Temp buffers for converting from double to float
 	float **temp_float;
-	int64_t temp_allocated;
+	int temp_allocated;
 };
 
 

@@ -818,18 +818,17 @@ int FileMPEG::get_index(char *index_path)
 }
 
 
-int FileMPEG::can_copy_from(Edit *edit, int64_t position)
-{
-	if(!fd) return 0;
-	return 0;
-}
-
-int FileMPEG::set_audio_position(int64_t sample)
+int FileMPEG::can_copy_from(Edit *edit, framenum position)
 {
 	return 0;
 }
 
-int FileMPEG::set_video_position(int64_t x)
+int FileMPEG::set_audio_position(samplenum sample)
+{
+	return 0;
+}
+
+int FileMPEG::set_video_position(framenum x)
 {
 	if(!fd) return 1;
 	if(x >= 0 && x < asset->video_length)
@@ -850,7 +849,7 @@ int64_t FileMPEG::get_memory_usage()
 }
 
 
-int FileMPEG::write_samples(double **buffer, int64_t len)
+int FileMPEG::write_samples(double **buffer, int len)
 {
 	int result = 0;
 
@@ -1206,7 +1205,7 @@ SET_TRACE
 	return result;
 }
 
-int FileMPEG::read_samples(double *buffer, int64_t len)
+int FileMPEG::read_samples(double *buffer, int len)
 {
 	if(!fd || len < 0) return 0;
 
@@ -1234,7 +1233,7 @@ int FileMPEG::prefer_samples_float()
 	return 1;
 }
 
-int FileMPEG::read_samples_float(float *buffer, int64_t len)
+int FileMPEG::read_samples_float(float *buffer, int len)
 {
 	if(!fd || len < 0) return 0;
 

@@ -25,6 +25,7 @@
 #include "arraylist.h"
 #include "asset.inc"
 #include "bchash.inc"
+#include "datatype.h"
 #include "edl.inc"
 #include "mutex.inc"
 #include "packagerenderer.h"
@@ -135,10 +136,9 @@ public:
 	
 	int get_result();
 	void set_result(int value);
-	void set_progress(int64_t total_samples);
-	int set_video_map(int64_t position, int value);
+	void set_progress(samplenum total_samples);
+	int set_video_map(framenum position, int value);
 
-	
 	int socket_fd;
 	RenderFarmClientThread *thread;
 };

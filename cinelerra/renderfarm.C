@@ -397,7 +397,7 @@ void RenderFarmServerThread::run()
 		}
 
 		int request_id = header[0];
-		int64_t request_size = (((u_int32_t)header[1]) << 24) |
+		int request_size = (((int32_t)header[1]) << 24) |
 							(((u_int32_t)header[2]) << 16) |
 							(((u_int32_t)header[3]) << 8)  |
 							(u_int32_t)header[4];
@@ -608,11 +608,11 @@ int RenderFarmServerThread::set_video_map(unsigned char *buffer)
 {
 	if(server->brender)
 	{
-		server->brender->set_video_map((int64_t)(((u_int32_t)buffer[0]) << 24) |
+		server->brender->set_video_map((((u_int32_t)buffer[0]) << 24) |
 							(((u_int32_t)buffer[1]) << 16) |
 							(((u_int32_t)buffer[2]) << 8)  |
 							((u_int32_t)buffer[3]),
-							(int64_t)(((u_int32_t)buffer[4]) << 24) |
+							(u_int32_t)(((u_int32_t)buffer[4]) << 24) |
 							(((u_int32_t)buffer[5]) << 16) |
 							(((u_int32_t)buffer[6]) << 8)  |
 							((u_int32_t)buffer[7]));

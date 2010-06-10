@@ -1478,13 +1478,13 @@ int Track::asset_used(Asset *asset)
 	return result;
 }
 
-int Track::is_playable(int64_t position, int direction)
+int Track::is_playable(posnum position, int direction)
 {
 	return 1;
 }
 
 
-int Track::plugin_used(int64_t position, int64_t direction)
+int Track::plugin_used(posnum position, int direction)
 {
 //printf("Track::plugin_used 1 %d\n", this->plugin_set.total);
 	for(int i = 0; i < this->plugin_set.total; i++)

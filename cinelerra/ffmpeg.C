@@ -365,7 +365,7 @@ int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 	return 0;
 }
 
-int FFMPEG::decode(uint8_t *data, long data_size, VFrame *frame_out) { 
+int FFMPEG::decode(uint8_t *data, int data_size, VFrame *frame_out) { 
 
 	// NOTE: frame must already have data space allocated
 	

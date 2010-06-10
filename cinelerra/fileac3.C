@@ -166,7 +166,7 @@ int FileAC3::close_file()
 // };
 
 
-int FileAC3::write_samples(double **buffer, int64_t len)
+int FileAC3::write_samples(double **buffer, int len)
 {
 // Convert buffer to encoder format
 	if(temp_raw_size + len > temp_raw_allocated)
@@ -216,7 +216,7 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 			codec_context, 
 			temp_compressed + output_size, 
 			compressed_allocated - output_size, 
-            temp_raw + current_sample * asset->channels);
+		temp_raw + current_sample * asset->channels);
 		output_size += compressed_size;
 	}
 
@@ -229,7 +229,7 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 	int bytes_written = fwrite(temp_compressed, 1, output_size, fd);
 	if(bytes_written < output_size)
 	{
-		errorbox("Error while writing samples.\n");
+		errorbox("Failed to write AC3 samples.\n");
 		return 1;
 	}
 	return 0;

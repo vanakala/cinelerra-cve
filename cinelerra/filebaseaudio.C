@@ -26,12 +26,12 @@
 
 
 int64_t FileBase::samples_to_raw(char *out_buffer, 
-							float **in_buffer,
-							int64_t input_len, 
-							int bits, 
-							int channels,
-							int byte_order,
-							int signed_)
+					float **in_buffer,
+					int input_len, 
+					int bits, 
+					int channels,
+					int byte_order,
+					int signed_)
 {
 	int output_advance;       // number of bytes in a sample
 	float *buffer_channel;    // channel in input buffer
@@ -231,7 +231,7 @@ int64_t FileBase::samples_to_raw(char *out_buffer,
 				}
 
 int FileBase::raw_to_samples(float *out_buffer, const char *in_buffer, 
-		int64_t samples, int bits, int channels, int channel, int feather, 
+		int samples, int bits, int channels, int channel, int feather, 
 		float lfeather_len, float lfeather_gain, float lfeather_slope)
 {
 	int64_t output_current = 0;  // position in output buffer
@@ -368,10 +368,10 @@ int FileBase::raw_to_samples(float *out_buffer, const char *in_buffer,
 }
 
 int FileBase::overlay_float_buffer(float *out_buffer, float *in_buffer, 
-		int64_t samples, 
+		int samples, 
 		float lfeather_len, float lfeather_gain, float lfeather_slope)
 {
-	int64_t output_current = 0;
+	int output_current = 0;
 	float sample, current_gain;
 	float feather_current;     // input position for feather
 
@@ -387,9 +387,9 @@ int FileBase::overlay_float_buffer(float *out_buffer, float *in_buffer,
 }
 
 
-int FileBase::get_audio_buffer(char **buffer, int64_t len, int64_t bits, int64_t channels)
+int FileBase::get_audio_buffer(char **buffer, int len, int bits, int channels)
 {
-	int64_t bytes = len * channels * (file->bytes_per_sample(bits));
+	int bytes = len * channels * (file->bytes_per_sample(bits));
 	if(*buffer && bytes > prev_bytes) 
 	{ 
 		delete [] *buffer; 
@@ -400,7 +400,7 @@ int FileBase::get_audio_buffer(char **buffer, int64_t len, int64_t bits, int64_t
 	if(!*buffer) *buffer = new char[bytes];
 }
 
-int FileBase::get_float_buffer(float **buffer, int64_t len)
+int FileBase::get_float_buffer(float **buffer, int len)
 {
 	if(*buffer && len > prev_len) 
 	{ 

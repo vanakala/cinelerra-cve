@@ -218,7 +218,7 @@ void BRender::stop()
 
 
 
-int BRender::get_last_contiguous(int64_t brender_start)
+int BRender::get_last_contiguous(framenum brender_start)
 {
 	int result;
 	map_lock->lock("BRender::get_last_contiguous");
@@ -230,10 +230,11 @@ int BRender::get_last_contiguous(int64_t brender_start)
 	return result;
 }
 
-void BRender::allocate_map(int64_t brender_start, int64_t start, int64_t end)
+void BRender::allocate_map(framenum brender_start, framenum start, framenum end)
 {
 	map_lock->lock("BRender::allocate_map");
 	unsigned char *old_map = map;
+
 	map = new unsigned char[end];
 	if(old_map)
 	{
@@ -254,7 +255,7 @@ void BRender::allocate_map(int64_t brender_start, int64_t start, int64_t end)
 	map_lock->unlock();
 }
 
-int BRender::set_video_map(int64_t position, int value)
+int BRender::set_video_map(framenum position, int value)
 {
 	int update_gui = 0;
 	map_lock->lock("BRender::set_video_map");
@@ -279,7 +280,7 @@ int BRender::set_video_map(int64_t position, int value)
 	else
 // Obsolete EDL
 	{
-		printf(_("BRender::set_video_map %lld: attempt to set beyond end of map %lld.\n"),
+		printf(_("BRender::set_video_map %d: attempt to set beyond end of map %d.\n"),
 			position,
 			map_size);
 	}
@@ -565,15 +566,15 @@ void BRenderThread::start()
 
 // Get last contiguous and reset map.
 // If the framerate changes, last good should be 0 from the user.
-		int brender_start = (int)(command->edl->session->brender_start *
+		framenum brender_start = (int)(command->edl->session->brender_start *
 			command->edl->session->frame_rate);
-		int last_contiguous = brender->last_contiguous;
-		int last_good = (int)(command->edl->session->frame_rate * 
+		framenum last_contiguous = brender->last_contiguous;
+		framenum last_good = (framenum)(command->edl->session->frame_rate * 
 			command->position);
 		if(last_good < 0) last_good = last_contiguous;
-		int start_frame = MIN(last_contiguous, last_good);
+		framenum start_frame = MIN(last_contiguous, last_good);
 		start_frame = MAX(start_frame, brender_start);
-		int64_t end_frame = Units::round(command->edl->tracks->total_video_length() * 
+		framenum end_frame = Units::round(command->edl->tracks->total_video_length() * 
 			command->edl->session->frame_rate);
 		if(end_frame < start_frame) end_frame = start_frame;
 

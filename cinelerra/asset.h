@@ -26,6 +26,7 @@
 #include "arraylist.h"
 #include "bcwindowbase.inc"
 #include "bchash.inc"
+#include "datatype.h"
 #include "filexml.inc"
 #include "garbage.h"
 #include "linklist.h"
@@ -155,7 +156,7 @@ public:
 	char acodec[MAX_LEN_CODECNAME];
 
 
-	int64_t audio_length;
+	samplenum audio_length;
 
 
 
@@ -188,7 +189,7 @@ public:
 	char vcodec[MAX_LEN_CODECNAME];
 
 // Length in units of asset
-	int64_t video_length;
+	framenum video_length;
 
 
 

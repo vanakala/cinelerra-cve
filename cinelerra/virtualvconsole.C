@@ -81,7 +81,7 @@ VirtualNode* VirtualVConsole::new_entry_node(Track *track,
 }
 
 // start of buffer in project if forward / end of buffer if reverse
-int VirtualVConsole::process_buffer(int64_t input_position)
+int VirtualVConsole::process_buffer(framenum input_position)
 {
 	int i, j, k;
 	int result = 0;

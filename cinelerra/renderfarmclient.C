@@ -793,7 +793,7 @@ void FarmPackageRenderer::set_result(int value)
 	thread->unlock();
 }
 
-void FarmPackageRenderer::set_progress(int64_t total_samples)
+void FarmPackageRenderer::set_progress(samplenum total_samples)
 {
 	thread->lock("FarmPackageRenderer::set_progress");
 	thread->send_request_header(RENDERFARM_PROGRESS, 
@@ -805,7 +805,7 @@ void FarmPackageRenderer::set_progress(int64_t total_samples)
 	thread->unlock();
 }
 
-int FarmPackageRenderer::set_video_map(int64_t position, int value)
+int FarmPackageRenderer::set_video_map(framenum position, int value)
 {
 	int result = 0;
 	unsigned char datagram[8];

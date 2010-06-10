@@ -112,19 +112,19 @@ public:
 	static int check_sig(Asset *asset);
 	int close_file();
 	int close_file_derived();
-	int64_t get_video_position();
-	int64_t get_audio_position();
-	int set_video_position(int64_t x);
-	int set_audio_position(int64_t x);
+	framenum get_video_position();
+	samplenum get_audio_position();
+	int set_video_position(framenum x);
+	int set_audio_position(samplenum x);
 	int colormodel_supported(int colormodel);
 	int get_best_colormodel(Asset *asset, int driver);
-	int write_samples(double **buffer, int64_t len);
+	int write_samples(double **buffer, int len);
 	int write_frames(VFrame ***frames, int len);
-	int read_samples(double *buffer, int64_t len);
+	int read_samples(double *buffer, int len);
 	int read_frame(VFrame *frame);
 
 private:
-	int write_samples_vorbis(double **buffer, int64_t len, int e_o_s);
+	int write_samples_vorbis(double **buffer, int len, int e_o_s);
 	int write_frames_theora(VFrame ***frames, int len, int e_o_s);
 	void flush_ogg(int e_o_s);
 	int write_audio_page();
@@ -145,23 +145,23 @@ private:
 	int ogg_get_next_page(sync_window_t *sw, long serialno, ogg_page *og);
 	int ogg_sync_and_get_next_page(sync_window_t *sw, long serialno, ogg_page *og);
 
-	int ogg_get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *og, int64_t sample);
-	int ogg_seek_to_sample(sync_window_t *sw, long serialno, int64_t sample);
+	int ogg_get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *og, samplenum sample);
+	int ogg_seek_to_sample(sync_window_t *sw, long serialno, samplenum sample);
 	int ogg_decode_more_samples(sync_window_t *sw, long serialno);
 
-	int ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, int64_t frame);
-	int ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t frame, int64_t *keyframe_number);
+	int ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, framenum frame);
+	int ogg_seek_to_keyframe(sync_window_t *sw, long serialno, framenum frame, framenum *keyframe_number);
 	int ogg_seek_to_databegin(sync_window_t *sw, long serialno);
 
 
-	int64_t start_sample; // first and last sample inside this file
-	int64_t last_sample;	
-	int64_t start_frame; // first and last frame inside this file
-	int64_t last_frame;	
+	samplenum start_sample; // first and last sample inside this file
+	samplenum last_sample;
+	framenum start_frame; // first and last frame inside this file
+	framenum last_frame;
 	
 
-	int64_t ogg_sample_position;  // what will be the next sample taken from vorbis decoder
-	int64_t next_sample_position; // what is the next sample read_samples must deliver
+	samplenum ogg_sample_position;  // what will be the next sample taken from vorbis decoder
+	samplenum next_sample_position; // what is the next sample read_samples must deliver
 
 	int move_history(int from, int to, int len);
 
@@ -173,8 +173,8 @@ private:
 	int64_t history_size;
 
 	int theora_cmodel;
-	int64_t ogg_frame_position;    // LAST decoded frame position
-	int64_t next_frame_position;   // what is the next sample read_frames must deliver
+	framenum ogg_frame_position;    // LAST decoded frame position
+	framenum next_frame_position;   // what is the next sample read_frames must deliver
 	char theora_keyframe_granule_shift;
 	int final_write;
 };
@@ -330,7 +330,7 @@ public:
 	RenderPackage* get_package_single_farm(double frames_per_second, 
 		int client_number,
 		int use_local_rate);
-	int64_t get_progress_max();
+	samplenum get_progress_max();
 	void get_package_paths(ArrayList<char*> *path_list);
 	int packages_are_done();
 
@@ -346,12 +346,12 @@ private:
 	int current_package;
 	double total_start;
 	double total_end;
-	int64_t audio_position;
-	int64_t video_position;
-	int64_t audio_start;
-	int64_t video_start;
-	int64_t audio_end;
-	int64_t video_end;
+	samplenum audio_position;
+	samplenum audio_start;
+	samplenum audio_end;
+	framenum video_position;
+	framenum video_start;
+	framenum video_end;
 
 };
 

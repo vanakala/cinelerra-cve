@@ -51,33 +51,33 @@ public:
 	static int check_sig(Asset *asset);
 	int close_file_derived();
 	
-	int64_t get_video_position();
-	int64_t get_audio_position();
+	framenum get_video_position();
+	samplenum get_audio_position();
 	
-	int set_video_position(int64_t x);
-	int set_audio_position(int64_t x);
+	int set_video_position(framenum x);
+	int set_audio_position(samplenum x);
 
-	int audio_samples_copy(double **buffer, int64_t len);
+	int audio_samples_copy(double **buffer, int len);
 	
-	int write_samples(double **buffer, int64_t len);
+	int write_samples(double **buffer, int len);
 	int write_frames(VFrame ***frames, int len);
 	
 	int read_compressed_frame(VFrame *buffer);
 	int write_compressed_frame(VFrame *buffers);
 	
-	int64_t compressed_frame_size();
+	int compressed_frame_size();
 	
-	int read_samples(double *buffer, int64_t len);
+	int read_samples(double *buffer, int len);
 	int read_frame(VFrame *frame);
 	
 	int colormodel_supported(int colormodel);
 	
-	int can_copy_from(Edit *edit, int64_t position);
+	int can_copy_from(Edit *edit, framenum position);
 	
 	static int get_best_colormodel(Asset *asset, int driver);
 	
-	int get_audio_frame(int64_t pos);
-	int get_audio_offset(int64_t pos);
+	framenum get_audio_frame(samplenum pos);
+	framenum get_audio_offset(samplenum pos);
 
 private:
 	FILE *stream;
@@ -90,8 +90,8 @@ private:
 	dv_encoder_t *encoder;
 	dv_encoder_t *audio_encoder;
 		
-	int64_t audio_position;
-	int64_t video_position;
+	samplenum audio_position;
+	framenum video_position;
 	
 	unsigned char *video_buffer;
 	unsigned char *audio_buffer;

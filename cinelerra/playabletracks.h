@@ -32,14 +32,14 @@ class PlayableTracks : public ArrayList<Track*>
 {
 public:
 	PlayableTracks(RenderEngine *renderengine, 
-		long current_position,  // Position in native units of tracks
+		posnum current_position,  // Position in native units of tracks
 		int data_type,
 		int use_nudge);
 	~PlayableTracks();
 
 // return 1 if the track is playable at the position
 	int is_playable(Track *current_track, 
-		long position,
+		posnum position,
 		int use_nudge);
 // return 1 if the track is in the list
 	int is_listed(Track *track);

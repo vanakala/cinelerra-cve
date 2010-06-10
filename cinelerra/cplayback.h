@@ -24,6 +24,7 @@
 
 #include "cwindow.inc"
 #include "playbackengine.h"
+#include "datatype.h"
 
 class CPlayback : public PlaybackEngine
 {
@@ -33,7 +34,7 @@ public:
 	int create_render_engine();
 	void init_cursor();
 	void stop_cursor();
-	int brender_available(long position);
+	int brender_available(framenum position);
 
 	CWindow *cwindow;
 };

@@ -45,7 +45,7 @@ public:
 	static int check_sig();
 	int open_file(int rd, int wr);
 	int close_file();
-	int write_samples(double **buffer, int64_t len);
+	int write_samples(double **buffer, int len);
 
 private:
 	AVCodec *codec;

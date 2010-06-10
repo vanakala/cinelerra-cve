@@ -262,7 +262,7 @@ int FileSndFile::close_file()
 	return 0;
 }
 
-int FileSndFile::set_audio_position(int64_t sample)
+int FileSndFile::set_audio_position(samplenum sample)
 {
 // Commented out /* && psf->dataoffset */ in sndfile.c: 761
 	if(sf_seek(fd, sample, SEEK_SET) < 0)
@@ -273,7 +273,7 @@ int FileSndFile::set_audio_position(int64_t sample)
 	return 0;
 }
 
-int FileSndFile::read_samples(double *buffer, int64_t len)
+int FileSndFile::read_samples(double *buffer, int len)
 {
 	int result = 0;
 
@@ -315,7 +315,7 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 	return result;
 }
 
-int FileSndFile::write_samples(double **buffer, int64_t len)
+int FileSndFile::write_samples(double **buffer, int len)
 {
 	int result = 0;
 

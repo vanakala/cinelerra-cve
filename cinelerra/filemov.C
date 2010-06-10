@@ -202,7 +202,6 @@ int FileMOV::reset_parameters_derived()
 	quicktime_vtracks = 0;
 	depth = 24;
 	threads = 0;
-	frames_correction = 0;
 	samples_correction = 0;
 	temp_float = 0;
 	temp_allocated = 0;
@@ -581,7 +580,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 	return BC_RGB888;
 }
 
-int FileMOV::can_copy_from(Edit *edit, int64_t position)
+int FileMOV::can_copy_from(Edit *edit, framenum position)
 {
 	if(!fd) return 0;
 
@@ -625,15 +624,15 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 }
 
 
-int64_t FileMOV::get_audio_length()
+samplenum FileMOV::get_audio_length()
 {
 	if(!fd) return 0;
-	int64_t result = quicktime_audio_length(fd, 0) + samples_correction;
+	samplenum result = quicktime_audio_length(fd, 0) + samples_correction;
 
 	return result;
 }
 
-int FileMOV::set_audio_position(int64_t x)
+int FileMOV::set_audio_position(samplenum x)
 {
 	if(!fd) return 1;
 // quicktime sets positions for each track seperately so store position in audio_position
@@ -643,7 +642,7 @@ int FileMOV::set_audio_position(int64_t x)
 		return 1;
 }
 
-int FileMOV::set_video_position(int64_t x)
+int FileMOV::set_video_position(framenum x)
 {
 	if(!fd) return 1;
 	if(x >= 0 && x < asset->video_length)
@@ -676,7 +675,7 @@ void FileMOV::new_audio_temp(int64_t len)
 
 
 
-int FileMOV::write_samples(double **buffer, int64_t len)
+int FileMOV::write_samples(double **buffer, int len)
 {
 	int i, j;
 	int64_t bytes;
@@ -1055,7 +1054,7 @@ int FileMOV::read_frame(VFrame *frame)
 
 
 
-int64_t FileMOV::compressed_frame_size()
+int FileMOV::compressed_frame_size()
 {
 	if(!fd) return 0;
 	return quicktime_frame_size(fd, file->current_frame, file->current_layer);
@@ -1063,7 +1062,7 @@ int64_t FileMOV::compressed_frame_size()
 
 int FileMOV::read_compressed_frame(VFrame *buffer)
 {
-	int64_t result;
+	int result;
 	if(!fd) return 0;
 
 	result = quicktime_read_frame(fd, buffer->get_data(), file->current_layer);
@@ -1125,7 +1124,7 @@ int FileMOV::read_raw(VFrame *frame,
 }
 
 // Overlay samples
-int FileMOV::read_samples(double *buffer, int64_t len)
+int FileMOV::read_samples(double *buffer, int len)
 {
 	int qt_track, qt_channel;
 

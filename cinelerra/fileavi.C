@@ -616,7 +616,7 @@ void FileAVI::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-int FileAVI::set_audio_position(int64_t x)
+int FileAVI::set_audio_position(samplenum x)
 {
 #ifdef USE_AVIFILE
 // quicktime sets positions for each track seperately so store position in audio_position
@@ -627,7 +627,7 @@ int FileAVI::set_audio_position(int64_t x)
 #endif
 }
 
-int FileAVI::set_video_position(int64_t x)
+int FileAVI::set_video_position(framenum x)
 {
 #ifdef USE_AVIFILE
 	if(x >= 0 && x < asset->video_length)
@@ -637,12 +637,11 @@ int FileAVI::set_video_position(int64_t x)
 #endif
 }
 
-int FileAVI::read_samples(double *buffer, int64_t len)
+int FileAVI::read_samples(double *buffer, int len)
 {
 #ifdef USE_AVIFILE
 	Unsigned samples_read, bytes_read;
 
-printf("FileAVI::read_samples 1\n");
 	if(temp_audio && temp_allocated < len * asset->bits / 8 * asset->channels)
 	{
 		delete [] temp_audio;
@@ -706,7 +705,7 @@ int FileAVI::read_frame(VFrame *frame)
 	return result;
 }
 
-int64_t FileAVI::compressed_frame_size()
+int FileAVI::compressed_frame_size()
 {
 	int result = 0;
 	return result;
@@ -732,7 +731,7 @@ int FileAVI::write_frames(VFrame ***frames, int len)
 }
 
 
-int FileAVI::write_samples(double **buffer, int64_t len)
+int FileAVI::write_samples(double **buffer, int len)
 {
 	return 0;
 }

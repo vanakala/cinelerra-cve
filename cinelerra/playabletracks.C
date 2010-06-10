@@ -35,7 +35,7 @@
 
 
 PlayableTracks::PlayableTracks(RenderEngine *renderengine, 
-	long current_position, 
+	posnum current_position, 
 	int data_type,
 	int use_nudge)
  : ArrayList<Track*>()
@@ -63,7 +63,7 @@ PlayableTracks::~PlayableTracks()
 
 
 int PlayableTracks::is_playable(Track *current_track, 
-	long position,
+	posnum position,
 	int use_nudge)
 {
 	int result = 1;
