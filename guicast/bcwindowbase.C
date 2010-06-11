@@ -95,7 +95,6 @@ BC_WindowBase::~BC_WindowBase()
 	if(top_level->last_ignore_win >= MAX_WIN_IGNORE)
 		top_level->last_ignore_win = 0;
 
-
 	hide_tooltip();
 	if(window_type != MAIN_WINDOW)
 	{
@@ -396,12 +395,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 		XGetNormalHints(display, win, &size_hints);
 
-// Clear ignore_win
-		for(int i = 0; i < MAX_WIN_IGNORE; i++)
-		{
-			if(top_level->ignore_win[i] == win)
-				top_level->ignore_win[i] = 0;
-		}
 		size_hints.flags = PSize | PMinSize | PMaxSize;
 		size_hints.width = this->w;
 		size_hints.height = this->h;
@@ -448,23 +441,21 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 					PropModeReplace, 
 					(unsigned char *)&XGroupLeader, 
 					true);
-
 		}
-		
 	}
 
 #ifdef HAVE_LIBXXF86VM
-    if(window_type == VIDMODE_SCALED_WINDOW && vm != -1)
-    {
-	    scale_vm (vm);
-	    vm_switched = 1;
-    }
+	if(window_type == VIDMODE_SCALED_WINDOW && vm != -1)
+	{
+		scale_vm (vm);
+		vm_switched = 1;
+	}
 #endif
 
 #ifdef HAVE_LIBXXF86VM
-    if(window_type == POPUP_WINDOW || window_type == VIDMODE_SCALED_WINDOW)
+	if(window_type == POPUP_WINDOW || window_type == VIDMODE_SCALED_WINDOW)
 #else
-    if(window_type == POPUP_WINDOW)
+	if(window_type == POPUP_WINDOW)
 #endif
 	{
 		mask = CWEventMask | 
@@ -546,8 +537,15 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		if(!hidden) show_window();
 
 	}
-
-
+	else
+	{
+// Clear ignore_win
+		for(int i = 0; i < MAX_WIN_IGNORE; i++)
+		{
+			if(top_level->ignore_win[i] == win)
+				top_level->ignore_win[i] = 0;
+		}
+	}
 
 
 	draw_background(0, 0, this->w, this->h);
@@ -555,9 +553,9 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 // Set up options for popup window
 #ifdef HAVE_LIBXXF86VM
-    if(window_type == POPUP_WINDOW || window_type == VIDMODE_SCALED_WINDOW)
+	if(window_type == POPUP_WINDOW || window_type == VIDMODE_SCALED_WINDOW)
 #else
-    if(window_type == POPUP_WINDOW)
+	if(window_type == POPUP_WINDOW)
 #endif
 	{
 		init_window_shape();
@@ -656,7 +654,7 @@ int BC_WindowBase::window_ignored(Window ewin)
 
 	for(i = 0; i < MAX_WIN_IGNORE; i++)
 	{
-		if(wp[i] && wp[i] == ewin)
+		if(wp[i] && (wp[i] == ewin))
 			return 1;
 	}
 	return 0;
