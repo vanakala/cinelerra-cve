@@ -141,7 +141,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    fileavi.C \
 		    filebaseaudio.C \
 		    filebase.C \
-		    filebaseima4.C \
 		    filebaseulaw.C \
 		    file.C \
 		    filecr2.C \

@@ -166,22 +166,6 @@ private:
 	int delete_ulaw_tables();
 	float *ulawtofloat_table, *ulawtofloat_ptr;
 	unsigned char *floattoulaw_table, *floattoulaw_ptr;
-
-// IMA4
-	int init_ima4();
-	int delete_ima4();
-	int ima4_decode_block(int16_t *output, unsigned char *input);
-	int ima4_decode_sample(int *predictor, int nibble, int *index, int *step);
-	int ima4_encode_block(unsigned char *output, int16_t *input, int step, int channel);
-	int ima4_encode_sample(int *last_sample, int *last_index, int *nibble, int next_sample);
-
-	static int ima4_step[89];
-	static int ima4_index[16];
-	int *last_ima4_samples;
-	int *last_ima4_indexes;
-	int ima4_block_size;
-	int ima4_block_samples;
-	OverlayFrame *overlayer;
 };
 
 #endif
