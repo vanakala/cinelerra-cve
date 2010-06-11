@@ -337,8 +337,9 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 	if(signam){
 		p = copystr(msgbuf, "Got signal '");
 		p = copystr(p, signam);
+		p = copystr(p, "'");
 		if(codnam){
-			p = copystr(p, "' with code '");
+			p = copystr(p, " with code '");
 			p = copystr(p, codnam);
 			p = copystr(p, "'\n");
 			if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
