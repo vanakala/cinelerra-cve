@@ -260,8 +260,6 @@ public:
 		int default_only);
 	int paste_auto_silence(double start, double end);
 	int scale_time(float rate_scale, int scale_edits, int scale_autos, posnum start, posnum end);
-	int purge_asset(Asset *asset);
-	int asset_used(Asset *asset);
 	int clear_handle(double start, 
 		double end, 
 		int clear_labels,
@@ -288,10 +286,6 @@ public:
 		int handle_mode,
 		int edit_labels,
 		Edits *trim_edits);
-	int select_edit(int cursor_x, 
-		int cursor_y, 
-		double &new_start, 
-		double &new_end);
 	virtual int end_translation() { return 0; };
 	virtual int reset_translation(posnum start, posnum end) { return 0; };
 

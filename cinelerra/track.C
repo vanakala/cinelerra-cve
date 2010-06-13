@@ -1226,14 +1226,6 @@ int Track::paste_silence(double start, double end, int edit_plugins)
 	return 0;
 }
 
-int Track::select_edit(int cursor_x, 
-	int cursor_y, 
-	double &new_start, 
-	double &new_end)
-{
-	return 0;
-}
-
 int Track::scale_time(float rate_scale, int scale_edits, int scale_autos, posnum start, posnum end)
 {
 	return 0;
@@ -1438,25 +1430,6 @@ posnum Track::edit_change_duration(posnum input_position,
 		return input_length;
 }
 
-int Track::purge_asset(Asset *asset)
-{
-	return 0;
-}
-
-int Track::asset_used(Asset *asset)
-{
-	Edit* current_edit;
-	int result = 0;
-
-	for(current_edit = edits->first; current_edit; current_edit = current_edit->next)
-	{
-		if(current_edit->asset == asset)
-		{
-			result++;
-		}
-	}
-	return result;
-}
 
 int Track::is_playable(posnum position, int direction)
 {

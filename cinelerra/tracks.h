@@ -55,7 +55,7 @@ public:
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
 		Track *track, 
-		int64_t position);
+		posnum position);
 
 // Construct a list of all the recordable edits which start on position
 	void get_affected_edits(ArrayList<Edit*> *drag_edits, 
@@ -98,22 +98,16 @@ public:
 		int value);
 	void translate_camera(float offset_x, float offset_y);
 	void translate_projector(float offset_x, float offset_y);
-		int total_of(int type);
+	int total_of(int type);
 // add a track
 	Track* add_audio_track(int above, Track *dst_track);
 	Track* add_video_track(int above, Track *dst_track);
-//	Track* add_audio_track(int to_end = 1);
-//	Track* add_video_track(int to_end = 1);
 // delete any track
- 	int delete_track(Track* track);       
+	int delete_track(Track* track);
 // detach shared effects referencing module
-	int detach_shared_effects(int module);	
+	int detach_shared_effects(int module);
 
 	EDL *edl;
-	
-	
-	
-	
 
 // Types for drag toggle behavior
 	enum
@@ -128,13 +122,6 @@ public:
 	};
 
 
-
-	
-	
-	
-	
-	
-	
 	int change_channels(int oldchannels, int newchannels);
 	int dump();
 
@@ -188,20 +175,10 @@ public:
 		FileXML *xml,
 		int default_only);
 	int paste_default_keyframe(FileXML *file);
-	int paste(int64_t start, int64_t end);
-// all units are samples by default
-	int paste_output(int64_t startproject, 
-				int64_t endproject, 
-				int64_t startsource_sample, 
-				int64_t endsource_sample, 
-				int64_t startsource_frame, 
-				int64_t endsource_frame, 
-				Asset *asset);
 	int paste_silence(double start, 
 		double end, 
 		int edit_plugins);
-	int purge_asset(Asset *asset);
-	int asset_used(Asset *asset);
+
 // Transition popup
 	int popup_transition(int cursor_x, int cursor_y);
 	int select_auto(int cursor_x, int cursor_y);
@@ -220,11 +197,9 @@ public:
 		Edits *trim_edits);
 	int select_handles();
 	int select_region();
-	int select_edit(int64_t cursor_position, int cursor_x, int cursor_y, int64_t &new_start, int64_t &new_end);
-	int feather_edits(int64_t start, int64_t end, int64_t samples, int audio, int video);
-	int64_t get_feather(int64_t selectionstart, int64_t selectionend, int audio, int video);
+
 // Move edit boundaries and automation during a framerate change
-	int scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, int64_t start, int64_t end);
+	int scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, samplenum start, samplenum end);
 
 // ================================== accounting
 

@@ -206,7 +206,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 	int edit_plugins,  // Ignored
 	int behaviour)
 {
-//printf("Tracks::move_edits 1\n");
 	for(Track *dest_track = track; dest_track; dest_track = dest_track->next)
 	{
 		if(dest_track->record)
@@ -249,7 +248,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				}
 			}
 
-//printf("Tracks::move_edits 2 %s %s %d\n", source_track->title, dest_track->title, source_edit->length);
 			if(source_edit)
 			{
 				int64_t position_i = source_track->to_units(position, 0);
@@ -275,7 +273,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					temp.terminate_string();
 					temp.rewind();
 // Insert new keyframes
-//printf("Tracks::move_edits 2 %d %p\n", result->startproject, result->asset);
 					source_track->automation->clear(source_edit->startproject,
 						source_edit->startproject + source_edit->length, 
 						&temp_autoconf,
@@ -365,7 +362,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 void Tracks::move_effect(Plugin *plugin,
 	PluginSet *dest_plugin_set,
 	Track *dest_track, 
-	int64_t dest_position)
+	posnum dest_position)
 {
 	Track *source_track = plugin->track;
 	Plugin *result = 0;
@@ -554,18 +551,7 @@ int Tracks::move_track_up(Track *track)
 
 	change_modules(number_of(track), number_of(next_track), 1);
 
-// printf("Tracks::move_track_up 1 %p %p\n", track, next_track);
-// int count = 0;
-// for(Track *current = first; current && count < 5; current = NEXT, count++)
-// 	printf("Tracks::move_track_up %p %p %p\n", current->previous, current, current->next);
-// printf("Tracks::move_track_up 2\n");
-// 
 	swap(track, next_track);
-
-// count = 0;
-// for(Track *current = first; current && count < 5; current = NEXT, count++)
-// 	printf("Tracks::move_track_up %p %p %p\n", current->previous, current, current->next);
-// printf("Tracks::move_track_up 3\n");
 
 	return 0;
 }
@@ -679,9 +665,9 @@ void Tracks::paste_automation(double selectionstart,
 	int result = 0;
 	double length;
 	double frame_rate = edl->session->frame_rate;
-	int64_t sample_rate = edl->session->sample_rate;
+	int sample_rate = edl->session->sample_rate;
 	char string[BCTEXTLEN];
-	sprintf(string, "");
+	string[0] = 0;
 
 // Search for start
 	do{
@@ -751,7 +737,6 @@ void Tracks::paste_automation(double selectionstart,
 // Paste it
 						if(current_vtrack)
 						{
-//printf("Tracks::paste_automation 1 %s %d\n", current_vtrack->title, current_vtrack->record);
 							current_vtrack->paste_automation(selectionstart,
 								length,
 								frame_rate,
@@ -883,32 +868,7 @@ int Tracks::modify_pluginhandles(double &oldposition,
 }
 
 
-
-int Tracks::purge_asset(Asset *asset)
-{
-	Track *current_track;
-	int result = 0;
-	
-	for(current_track = first; current_track; current_track = current_track->next)
-	{
-		result += current_track->purge_asset(asset); 
-	}
-	return result;
-}
-
-int Tracks::asset_used(Asset *asset)
-{
-	Track *current_track;
-	int result = 0;
-	
-	for(current_track = first; current_track; current_track = current_track->next)
-	{
-		result += current_track->asset_used(asset); 
-	}
-	return result;
-}
-
-int Tracks::scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, int64_t start, int64_t end)
+int Tracks::scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, samplenum start, samplenum end)
 {
 	Track *current_track;
 
