@@ -209,7 +209,6 @@ void Track::copy_from(Track *track)
 
 Track& Track::operator=(Track& track)
 {
-printf("Track::operator= 1\n");
 	copy_from(&track);
 	return *this;
 }
@@ -365,7 +364,6 @@ void Track::insert_asset(Asset *asset,
 		double position, 
 		int track_number)
 {
-//printf("Track::insert_asset %f\n", length);
 	edits->insert_asset(asset, 
 		to_units(length, 1), 
 		to_units(position, 0), 
@@ -502,8 +500,6 @@ Plugin* Track::insert_effect(const char *title,
 				length = get_length();
 			}
 		}
-//printf("Track::insert_effect %f %f %d %d\n", start, length, to_units(start, 0), 
-//			to_units(length, 0));
 
 		plugin = plugin_set->insert_plugin(title, 
 			to_units(start, 0), 
@@ -513,7 +509,6 @@ Plugin* Track::insert_effect(const char *title,
 			default_keyframe,
 			1);
 	}
-//printf("Track::insert_effect 2 %f %f\n", start, length);
 
 	expand_view = 1;
 	return plugin;
@@ -622,7 +617,6 @@ void Track::shift_effects(double position, double length, int convert_units)
 
 void Track::detach_effect(Plugin *plugin)
 {
-//printf("Track::detach_effect 1\n");		
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		PluginSet *plugin_set = this->plugin_set.values[i];
@@ -640,7 +634,6 @@ void Track::detach_effect(Plugin *plugin)
 
 // Delete 0 length pluginsets	
 				plugin_set->optimize();
-//printf("Track::detach_effect 2 %d\n", plugin_set->length());
 				if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
 					remove_pluginset(plugin_set);
 				return;
@@ -698,7 +691,7 @@ void Track::optimize()
 	{
 		PluginSet *plugin_set = this->plugin_set.values[i];
 		plugin_set->optimize();
-//printf("Track::optimize %d\n", plugin_set.values[i]->total());
+
 // new definition of empty track...
 		if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
 		{
@@ -720,17 +713,12 @@ Plugin* Track::get_current_plugin(double position,
 	
 	if(plugin_set >= this->plugin_set.total || plugin_set < 0) return 0;
 
-//printf("Track::get_current_plugin 1 %d %d %d\n", position, this->plugin_set.total, direction);
 	if(direction == PLAY_FORWARD)
 	{
 		for(current = (Plugin*)this->plugin_set.values[plugin_set]->last; 
 			current; 
 			current = (Plugin*)PREVIOUS)
 		{
-// printf("Track::get_current_plugin 2 %d %ld %ld\n", 
-// current->startproject, 
-// current->startproject + current->length, 
-// position);
 			if(current->startproject <= position && 
 				current->startproject + current->length > position)
 			{
@@ -772,7 +760,6 @@ Plugin* Track::get_current_transition(double position,
 		{
 			if(current->startproject <= position && current->startproject + current->length > position)
 			{
-//printf("Track::get_current_transition %p\n", current->transition);
 				if(current->transition && position < current->startproject + current->transition->length)
 				{
 					result = current->transition;
@@ -834,7 +821,6 @@ int Track::dump()
 
 	for(int i = 0; i < plugin_set.total; i++)
 		plugin_set.values[i]->dump();
-//printf("Track::dump 2\n");
 	return 0;
 }
 
@@ -949,13 +935,13 @@ int Track::copy_automation(double selectionstart,
 int Track::paste_automation(double selectionstart, 
 	double total_length, 
 	double frame_rate,
-	int64_t sample_rate,
+	int sample_rate,
 	FileXML *file,
 	int default_only)
 {
 // Only used for pasting automation alone.
-	int64_t start;
-	int64_t length;
+	posnum start;
+	posnum length;
 	int result;
 	double scale;
 
@@ -968,7 +954,6 @@ int Track::paste_automation(double selectionstart,
 	start = to_units(selectionstart, 0);
 	length = to_units(total_length, 1);
 	result = 0;
-//printf("Track::paste_automation 1\n");
 
 	while(!result)
 	{
@@ -992,7 +977,6 @@ int Track::paste_automation(double selectionstart,
 			else
 			if(file->tag.title_is("PLUGINSETS"))
 			{
-//printf("Track::paste_automation 2 %d\n", current_pluginset);
 				PluginSet::paste_keyframes(start, 
 					length, 
 					file,
@@ -1001,8 +985,6 @@ int Track::paste_automation(double selectionstart,
 			}
 		}
 	}
-//printf("Track::paste_automation 3\n");
-	
 
 	return 0;
 }
@@ -1150,7 +1132,6 @@ int Track::clear(double start,
 {
 // Edits::move_auto calls this routine after the units are converted to the track
 // format.
-//printf("Track::clear 1 %d %d %d\n", edit_edits, edit_labels, edit_plugins);
 	if(convert_units)
 	{
 		start = to_units(start, 0);
@@ -1253,7 +1234,7 @@ int Track::select_edit(int cursor_x,
 	return 0;
 }
 
-int Track::scale_time(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end)
+int Track::scale_time(float rate_scale, int scale_edits, int scale_autos, posnum start, posnum end)
 {
 	return 0;
 }
@@ -1300,7 +1281,7 @@ void Track::change_modules(int old_location, int new_location, int do_swap)
 }
 
 
-int Track::playable_edit(int64_t position)
+int Track::playable_edit(posnum position)
 {
 	int result = 0;
 
@@ -1309,7 +1290,6 @@ int Track::playable_edit(int64_t position)
 		if(current->startproject <= position && 
 			current->startproject + current->length > position)
 		{
-//printf("Track::playable_edit %p %p\n", current->transition, current->asset);
 			if(current->transition || current->asset) result = 1;
 		}
 	}
@@ -1323,15 +1303,15 @@ int Track::need_edit(Edit *current, int test_transitions)
 		(!test_transitions && current->asset));
 }
 
-int64_t Track::plugin_change_duration(int64_t input_position,
-	int64_t input_length,
+posnum Track::plugin_change_duration(posnum input_position,
+	posnum input_length,
 	int reverse,
 	int use_nudge)
 {
 	if(use_nudge) input_position += nudge;
 	for(int i = 0; i < plugin_set.total; i++)
 	{
-		int64_t new_duration = plugin_set.values[i]->plugin_change_duration(
+		posnum new_duration = plugin_set.values[i]->plugin_change_duration(
 			input_position, 
 			input_length, 
 			reverse);
@@ -1340,14 +1320,14 @@ int64_t Track::plugin_change_duration(int64_t input_position,
 	return input_length;
 }
 
-int64_t Track::edit_change_duration(int64_t input_position, 
-	int64_t input_length, 
+posnum Track::edit_change_duration(posnum input_position, 
+	posnum input_length, 
 	int reverse, 
 	int test_transitions,
 	int use_nudge)
 {
 	Edit *current;
-	int64_t edit_length = input_length;
+	posnum edit_length = input_length;
 	if(use_nudge) input_position += nudge;
 
 	if(reverse)
@@ -1486,7 +1466,6 @@ int Track::is_playable(posnum position, int direction)
 
 int Track::plugin_used(posnum position, int direction)
 {
-//printf("Track::plugin_used 1 %d\n", this->plugin_set.total);
 	for(int i = 0; i < this->plugin_set.total; i++)
 	{
 		Plugin *current_plugin = get_current_plugin(position, 
@@ -1495,7 +1474,6 @@ int Track::plugin_used(posnum position, int direction)
 			0,
 			0);
 
-//printf("Track::plugin_used 2 %p\n", current_plugin);
 		if(current_plugin && 
 			(current_plugin->on && 
 			current_plugin->plugin_type != PLUGIN_NONE))
@@ -1503,19 +1481,12 @@ int Track::plugin_used(posnum position, int direction)
 			return 1;
 		}
 	}
-//printf("Track::plugin_used 3 %p\n", current_plugin);
 	return 0;
 }
 
-// Audio is always rendered through VConsole
-int Track::direct_copy_possible(int64_t start, int direction, int use_nudge)
+posnum Track::to_units(double position, int round)
 {
-	return 1;
-}
-
-int64_t Track::to_units(double position, int round)
-{
-	return (int64_t)position;
+	return (posnum)position;
 }
 
 double Track::to_doubleunits(double position)
@@ -1523,7 +1494,7 @@ double Track::to_doubleunits(double position)
 	return position;
 }
 
-double Track::from_units(int64_t position)
+double Track::from_units(posnum position)
 {
 	return (double)position;
 }

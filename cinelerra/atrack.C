@@ -140,7 +140,7 @@ void ATrack::set_default_title()
 	sprintf(title, _("Audio %d"), i);
 }
 
-int64_t ATrack::to_units(double position, int round)
+posnum ATrack::to_units(double position, int round)
 {
 	if(round)
 		return Units::round(position * edl->session->sample_rate);
@@ -153,13 +153,13 @@ double ATrack::to_doubleunits(double position)
 	return position * edl->session->sample_rate;
 }
 
-double ATrack::from_units(int64_t position)
+double ATrack::from_units(posnum position)
 {
 	return (double)position / edl->session->sample_rate;
 }
 
 
-int ATrack::identical(int64_t sample1, int64_t sample2)
+int ATrack::identical(posnum sample1, posnum sample2)
 {
 // Units of samples
 	if(labs(sample1 - sample2) <= 1) return 1; else return 0;
@@ -188,7 +188,7 @@ int ATrack::identical(int64_t sample1, int64_t sample2)
 
 
 
-int64_t ATrack::length()
+posnum ATrack::length()
 {
 	return edits->length();
 }
@@ -209,7 +209,7 @@ int ATrack::get_dimensions(double &view_start,
 
 
 
-int ATrack::paste_derived(int64_t start, int64_t end, int64_t total_length, FileXML *xml, int &current_channel)
+int ATrack::paste_derived(posnum start, posnum end, posnum total_length, FileXML *xml, int &current_channel)
 {
 	if(!strcmp(xml->tag.get_title(), "PANAUTOS"))
 	{

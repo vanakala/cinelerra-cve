@@ -52,11 +52,11 @@ public:
 	int load_header(FileXML *file, uint32_t load_flags);
 	int load_derived(FileXML *file, uint32_t load_flags);
 	int copy_settings(Track *track);
-	int identical(int64_t sample1, int64_t sample2);
+	int identical(posnum sample1, posnum sample2);
 	void synchronize_params(Track *track);
-	int64_t to_units(double position, int round);
+	posnum to_units(double position, int round);
 	double to_doubleunits(double position);
-	double from_units(int64_t position);
+	double from_units(posnum position);
 
 
 
@@ -72,12 +72,9 @@ public:
 
 
 // ===================================== editing
-	int paste_derived(int64_t start, int64_t end, int64_t total_length, FileXML *xml, int &current_channel);
+	int paste_derived(posnum start, posnum end, posnum total_length, FileXML *xml, int &current_channel);
 
-
-	int modify_handles(int64_t oldposition, int64_t newposition, int currentend);
-
-	int64_t length();
+	posnum length();
 	int get_dimensions(double &view_start, 
 		double &view_units, 
 		double &zoom_units);

@@ -119,7 +119,7 @@ void VTrack::set_default_title()
 	sprintf(title, _("Video %d"), i);
 }
 
-int64_t VTrack::to_units(double position, int round)
+posnum VTrack::to_units(double position, int round)
 {
 	if(round)
 	{
@@ -139,7 +139,7 @@ double VTrack::to_doubleunits(double position)
 }
 
 
-double VTrack::from_units(int64_t position)
+double VTrack::from_units(posnum position)
 {
 	return (double)position / edl->session->frame_rate;
 }
@@ -175,7 +175,7 @@ int VTrack::load_derived(FileXML *file, uint32_t load_flags)
 }
 
 
-int VTrack::direct_copy_possible(int64_t start, int direction, int use_nudge)
+int VTrack::direct_copy_possible(posnum start, int direction, int use_nudge)
 {
 	int i;
 	if(use_nudge) start += nudge;
@@ -233,65 +233,18 @@ int VTrack::get_dimensions(double &view_start,
 	zoom_units = edl->local_session->zoom_sample / edl->session->sample_rate * edl->session->frame_rate;
 }
 
-int VTrack::copy_derived(int64_t start, int64_t end, FileXML *xml)
+int VTrack::copy_derived(posnum start, posnum end, FileXML *xml)
 {
 // automation is copied in the Track::copy
 	return 0;
 }
 
-int VTrack::copy_automation_derived(AutoConf *auto_conf, int64_t start, int64_t end, FileXML *file)
+int VTrack::paste_derived(posnum start, posnum end, posnum total_length, FileXML *xml, int &current_channel)
 {
 	return 0;
 }
 
-int VTrack::paste_derived(int64_t start, int64_t end, int64_t total_length, FileXML *xml, int &current_channel)
-{
-	return 0;
-}
-
-int VTrack::paste_output(int64_t startproject, int64_t endproject, int64_t startsource, int64_t endsource, int layer, Asset *asset)
-{
-	return 0;
-}
-
-int VTrack::clear_derived(int64_t start, int64_t end)
-{
-	return 0;
-}
-
-int VTrack::paste_automation_derived(int64_t start, int64_t end, int64_t total_length, FileXML *xml, int shift_autos, int &current_pan)
-{
-	return 0;
-}
-
-int VTrack::clear_automation_derived(AutoConf *auto_conf, int64_t start, int64_t end, int shift_autos)
-{
-	return 0;
-}
-
-int VTrack::draw_autos_derived(float view_start, float zoom_units, AutoConf *auto_conf)
-{
-	return 0;
-}
-
-
-int VTrack::select_auto_derived(float zoom_units, float view_start, AutoConf *auto_conf, int cursor_x, int cursor_y)
-{
-	return 0;
-}
-
-
-int VTrack::move_auto_derived(float zoom_units, float view_start, AutoConf *auto_conf, int cursor_x, int cursor_y, int shift_down)
-{
-	return 0;
-}
-
-int VTrack::draw_floating_autos_derived(float view_start, float zoom_units, AutoConf *auto_conf, int flash)
-{
-	return 0;
-}
-
-int VTrack::is_playable(int64_t position, int direction)
+int VTrack::is_playable(posnum position, int direction)
 {
 	int result = 0;
 	float in_x, in_y, in_w, in_h;
@@ -302,15 +255,13 @@ int VTrack::is_playable(int64_t position, int direction)
 		in_x, in_y, in_w, in_h,
 		out_x, out_y, out_w, out_h);
 
-//printf("VTrack::is_playable %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f\n", 
-//in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h);
 	if(out_w > 0 && out_h > 0) 
 		result = 1;
 	return result;
 }
 
 void VTrack::calculate_input_transfer(Asset *asset, 
-	int64_t position, 
+	framenum position, 
 	int direction, 
 	float &in_x, 
 	float &in_y, 
@@ -327,8 +278,6 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	float camera_y = asset->height / 2;
 // camera and output coords
 	float z[6], x[6], y[6];        
-
-//printf("VTrack::calculate_input_transfer %lld\n", position);
 
 // get camera center in asset
 	automation->get_camera(&auto_x, 
@@ -385,12 +334,9 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	in_y = y[0];
 	in_w = x[1] - x[0];
 	in_h = y[1] - y[0];
-// printf("VTrack::calculate_input_transfer %f %f %f %f -> %f %f %f %f\n", 
-// in_x, in_y, in_w, in_h,
-// out_x, out_y, out_w, out_h);
 }
 
-void VTrack::calculate_output_transfer(int64_t position, 
+void VTrack::calculate_output_transfer(framenum position, 
 	int direction, 
 	float &in_x, 
 	float &in_y, 
@@ -453,9 +399,6 @@ void VTrack::calculate_output_transfer(int64_t position,
 	out_y = y[2];
 	out_w = x[3] - x[2];
 	out_h = y[3] - y[2];
-// printf("VTrack::calculate_output_transfer %f %f %f %f -> %f %f %f %f\n", 
-// in_x, in_y, in_w, in_h,
-// out_x, out_y, out_w, out_h);
 }
 
 
@@ -470,7 +413,7 @@ int VTrack::get_projection(float &in_x1,
 	float &out_y2, 
 	int frame_w, 
 	int frame_h, 
-	int64_t real_position, 
+	framenum real_position, 
 	int direction)
 {
 	float center_x, center_y, center_z;

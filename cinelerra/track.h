@@ -115,15 +115,15 @@ public:
 
 // Used for determining a selection for editing so leave as int.
 // converts the selection to SAMPLES OR FRAMES and stores in value
-	virtual int64_t to_units(double position, int round);
+	virtual posnum to_units(double position, int round);
 // For drawing
 	virtual double to_doubleunits(double position);
-	virtual double from_units(int64_t position);
+	virtual double from_units(posnum position);
 
 
 
 // Positions are identical for handle modifications
-    virtual int identical(int64_t sample1, int64_t sample2) { return 0; };
+    virtual int identical(posnum sample1, posnum sample2) { return 0; };
 
 // Get the plugin belonging to the set.
 	Plugin* get_current_plugin(double position, 
@@ -152,7 +152,7 @@ public:
 	virtual int is_playable(posnum position, int direction);
 
 // Test direct copy conditions common to all the rendering routines
-	virtual int direct_copy_possible(int64_t start, int direction, int use_nudge);
+	virtual int direct_copy_possible(posnum start, int direction, int use_nudge) { return 1; };
 
 // Used by PlayableTracks::is_playable
 	int plugin_used(posnum position, int direction);
@@ -230,8 +230,8 @@ public:
 	int copy_assets(double start, 
 		double end, 
 		ArrayList<Asset*> *asset_list);
-	virtual int copy_derived(int64_t start, int64_t end, FileXML *file) { return 0; };
-	virtual int paste_derived(int64_t start, int64_t end, int64_t total_length, FileXML *file, int &current_channel) { return 0; };
+	virtual int copy_derived(posnum start, posnum end, FileXML *file) { return 0; };
+	virtual int paste_derived(posnum start, posnum end, posnum total_length, FileXML *file, int &current_channel) { return 0; };
 	int clear(double start, 
 		double end, 
 		int edit_edits,
@@ -247,38 +247,19 @@ public:
 		int default_only  /* = 0 */);
 	void straighten_automation(double selectionstart, 
 		double selectionend);
-	virtual int clear_automation_derived(AutoConf *auto_conf, 
-		double selectionstart, 
-		double selectionend, 
-		int shift_autos = 1) { return 0; };
-	virtual int clear_derived(double start, 
-		double end) { return 0; };
-
 	int copy_automation(double selectionstart, 
 		double selectionend, 
 		FileXML *file,
 		int default_only,
 		int autos_only);
-	virtual int copy_automation_derived(AutoConf *auto_conf, 
-		double selectionstart, 
-		double selectionend, 
-		FileXML *file) { return 0; };
 	int paste_automation(double selectionstart, 
 		double total_length, 
 		double frame_rate,
-		int64_t sample_rate,
+		int sample_rate,
 		FileXML *file,
 		int default_only);
-	virtual int paste_automation_derived(double selectionstart, 
-		double selectionend, 
-		double total_length, 
-		FileXML *file, 
-		int shift_autos, 
-		int &current_pan) { return 0; };
 	int paste_auto_silence(double start, double end);
-	virtual int paste_auto_silence_derived(int64_t start, int64_t end) { return 0; };
-	int scale_time(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end);
-	virtual int scale_time_derived(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end) { return 0; };
+	int scale_time(float rate_scale, int scale_edits, int scale_autos, posnum start, posnum end);
 	int purge_asset(Asset *asset);
 	int asset_used(Asset *asset);
 	int clear_handle(double start, 
@@ -290,15 +271,8 @@ public:
 	virtual int select_translation(int cursor_x, int cursor_y) { return 0; };  // select video coordinates for frame
 	virtual int update_translation(int cursor_x, int cursor_y, int shift_down) { return 0; };  // move video coordinates
 	int select_auto(AutoConf *auto_conf, int cursor_x, int cursor_y);
-	virtual int select_auto_derived(float zoom_units, float view_start, AutoConf *auto_conf, int cursor_x, int cursor_y) { return 0; };
 	int move_auto(AutoConf *auto_conf, int cursor_x, int cursor_y, int shift_down);
-	virtual int move_auto_derived(float zoom_units, float view_start, AutoConf *auto_conf, int cursor_x, int cursor_y, int shift_down) { return 0; };
 	int release_auto();
-	virtual int release_auto_derived() { return 0; };
-// Return whether automation would prevent direct frame copies.  Not fully implemented.
-	int automation_is_used(int64_t start, int64_t end);
-	virtual int automation_is_used_derived(int64_t start, int64_t end) { return 0; }
-
 	int popup_transition(int cursor_x, int cursor_y);
 
 // Return 1 if the left handle was selected 2 if the right handle was selected 3 if the track isn't recordable
@@ -319,13 +293,10 @@ public:
 		double &new_start, 
 		double &new_end);
 	virtual int end_translation() { return 0; };
-	virtual int reset_translation(int64_t start, int64_t end) { return 0; };
-	int feather_edits(int64_t start, int64_t end, int64_t units);
-	int64_t get_feather(int64_t selectionstart, int64_t selectionend);
-
+	virtual int reset_translation(posnum start, posnum end) { return 0; };
 
 // Absolute number of this track
-	int number_of();           
+	int number_of();
 
 // get_dimensions is used for getting drawing regions so use floats for partial frames
 // get the display dimensions in SAMPLES OR FRAMES
@@ -333,24 +304,24 @@ public:
 		double &view_units, 
 		double &zoom_units) { return 0; };   
 // Longest time from current_position in which nothing changes
-	int64_t edit_change_duration(int64_t input_position, 
-		int64_t input_length, 
+	posnum edit_change_duration(posnum input_position, 
+		posnum input_length, 
 		int reverse, 
 		int test_transitions,
 		int use_nudge);
-	int64_t plugin_change_duration(int64_t input_position,
-		int64_t input_length,
+	posnum plugin_change_duration(posnum input_position,
+		posnum input_length,
 		int reverse,
 		int use_nudge);
 // Utility for edit_change_duration.
 	int need_edit(Edit *current, int test_transitions);
 // If the edit under position is playable.
 // Used by PlayableTracks::is_playable.
-	int playable_edit(int64_t position);
+	int playable_edit(posnum position);
 
 // ===================================== for handles, titles, etc
 
-	int64_t old_view_start;
+	posnum old_view_start;
 	int pixel;   // pixel position from top of track view
 // Dimensions of this track if video
 	int track_w, track_h;
