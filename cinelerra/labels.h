@@ -34,17 +34,6 @@
 
 #define LABELSIZE 15
 
-class LabelToggle : public BC_Label
-{
-public:
-	LabelToggle(MWindow *mwindow, Label *label, int x, int y, long position);
-	~LabelToggle();
-	
-	int handle_event();
-	MWindow *mwindow;
-	Label *label;
-};
-
 class Label : public ListItem<Label>
 {
 public:

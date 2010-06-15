@@ -61,9 +61,6 @@ void Labels::insert_labels(Labels *labels, double start, double length, int past
 	Label *new_label;
 	Label *old_label;
 
-
-//printf("Labels::insert_labels 1 %f\n", start);
-
 // Insert silence in old labels
 	if(paste_silence)
 	{
@@ -80,7 +77,6 @@ void Labels::insert_labels(Labels *labels, double start, double length, int past
 	for(new_label = labels->first; new_label; new_label = new_label->next)
 	{
 		int exists = 0;
-//printf("Labels::insert_labels 2 %f\n", new_label->position + start);
 
 // Check every old label for existence
 		for(old_label = first; old_label; old_label = old_label->next)
@@ -108,24 +104,17 @@ void Labels::insert_labels(Labels *labels, double start, double length, int past
 int Labels::toggle_label(double start, double end)
 {
 	Label *current;
-//printf("Labels::toggle_label 1 %f %f\n", start, end);
 
 // handle selection start
 // find label the selectionstart is after
 	for(current = first; 
 		current && current->position < start && !edl->equivalent(current->position, start); 
-		current = NEXT)
-	{
-//printf("Labels::toggle_label 2 %f %f %f\n", start, end, current->position);
-		;
-	}
+		current = NEXT);
 
 	if(current)
 	{
-//printf("Labels::toggle_label 3 %f %f %f\n", start, end, current->position);
 		if(edl->equivalent(current->position, start))
 		{        // remove it
-//printf("Labels::toggle_label 1\n");
 			remove(current);
 		}
 		else
@@ -135,21 +124,15 @@ int Labels::toggle_label(double start, double end)
 	}
 	else
 	{           // insert after last
-//printf("Labels::toggle_label 1\n");
 		current = append(new Label(edl, this, start, ""));
 	}
 
 // handle selection end
 	if(!EQUIV(start, end))
 	{
-//printf("Labels::toggle_label 2 %.16e %.16e\n", start, end);
-// find label the selectionend is after
 		for(current = first; 
 			current && current->position < end && !edl->equivalent(current->position, end); 
-			current = NEXT)
-		{
-			;
-		}
+			current = NEXT);
 
 		if(current)
 		{
@@ -194,7 +177,6 @@ int Labels::copy(double start, double end, FileXML *xml)
 		xml->tag.set_title(string+1); // skip the "/" for opening tag
 		xml->tag.set_property("TIME", (double)current->position - start);
 		xml->tag.set_property("TEXTSTR", current->textstr);
-//printf("Labels::copy %f\n", current->position - start);
 		xml->append_tag();
 		xml->tag.set_title(string); // closing tag
 		xml->append_tag();
@@ -213,7 +195,7 @@ int Labels::copy_length(long start, long end) // return number of Labels in sele
 {
 	int result = 0;
 	Label *current;
-	
+
 	for(current = label_of(start); current && current->position <= end; current = NEXT)
 	{
 		result++;
@@ -235,7 +217,6 @@ void Labels::copy_from(Labels *labels)
 Labels& Labels::operator=(Labels &that)
 {
 	copy_from(&that);
-printf("Labels::operator= 1\n");
 	return *this;
 }
 
@@ -291,7 +272,6 @@ int Labels::load(FileXML *xml, uint32_t load_flags)
 				double position = xml->tag.get_property("TIME", (double)-1);
 				if(position < 0)
 					position = xml->tag.get_property("SAMPLE", (double)-1);
-//printf("Labels::load %f\n", position);
 				if(position > -1)
 				{
 					Label *current = label_of(position);
@@ -305,10 +285,6 @@ int Labels::load(FileXML *xml, uint32_t load_flags)
 				double position = xml->tag.get_property("TIME", (double)-1);
 				if(position < 0)
 					position = xml->tag.get_property("SAMPLE", (double)-1);
-				if(position > -1)
-				{
-					;
-				}
 			}
 			else
 			if(xml->tag.title_is("OUTPOINT"))
@@ -316,10 +292,6 @@ int Labels::load(FileXML *xml, uint32_t load_flags)
 				double position = xml->tag.get_property("TIME", (double)-1);
 				if(position < 0)
 					position = xml->tag.get_property("SAMPLE", (double)-1);
-				if(position > -1)
-				{
-					;
-				}
 			}
 		}
 	}while(!result);
@@ -333,9 +305,8 @@ int Labels::clear(double start, double end, int follow)
 	Label *current;
 	Label *next;
 
-//printf("Labels::clear 1\n");
 	current = label_of(start);
-//printf("Labels::clear 2\n");
+
 // remove selected labels
 	while(current && current->position < end)
 	{
@@ -343,8 +314,8 @@ int Labels::clear(double start, double end, int follow)
 		delete current;              
 		current = next;
 	}
+
 // Shift later labels
-//printf("Labels::clear 3\n");
 	if(follow)
 	{
 		while(current)
@@ -352,9 +323,7 @@ int Labels::clear(double start, double end, int follow)
 			current->position -= end - start;   // shift labels forward
 			current = NEXT;
 		}
-//printf("Labels::clear 4\n");
 		optimize();
-//printf("Labels::clear 5\n");
 	}
 
 	return 0;
@@ -368,15 +337,13 @@ Label* Labels::prev_label(double position)
 // Test for label under cursor position
 	for(current = first; 
 		current && !edl->equivalent(current->position, position); 
-		current = NEXT)
-		;
+		current = NEXT);
 
 // Test for label after cursor position
 	if(!current)
 		for(current = first;
 			current && current->position < position;
-			current = NEXT)
-			;
+			current = NEXT);
 
 // Test for label before cursor position
 	if(!current) 
@@ -395,15 +362,13 @@ Label* Labels::next_label(double position)
 // Test for label under cursor position
 	for(current = first; 
 		current && !edl->equivalent(current->position, position); 
-		current = NEXT)
-		;
+		current = NEXT);
 
 // Test for label before cursor position
 	if(!current)
 		for(current = last;
 			current && current->position > position;
-			current = PREVIOUS)
-			;
+			current = PREVIOUS);
 
 // Test for label after cursor position
 	if(!current)
@@ -525,30 +490,10 @@ Label::Label(EDL *edl, Labels *labels, double position, const char *textstr = 0)
 	if (textstr)
 		strcpy(this->textstr, textstr);
 	else
-		strcpy(this->textstr, "");
+		this->textstr[0] = 0;
 }
 
 
 Label::~Label()
 {
-//	if(toggle) delete toggle;
 }
-
-LabelToggle::LabelToggle(MWindow *mwindow, 
-	Label *label, 
-	int x, 
-	int y, 
-	long position)
- : BC_Label(x, y, 0)
-{
-	this->mwindow = mwindow;
-	this->label = label;
-}
-
-LabelToggle::~LabelToggle() { }
-
-int LabelToggle::handle_event()
-{
-	return 0;
-}
-
