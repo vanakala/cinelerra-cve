@@ -74,7 +74,6 @@ class TimeBar;
 class IntAuto;
 class IntAutos;
 class Track;
-class TrackList;
 class TrackScroll;
 class Tracks;
 class VEdit;
