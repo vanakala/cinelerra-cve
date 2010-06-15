@@ -116,7 +116,7 @@ void Track::equivalent_output(Track *track, double *result)
 		*result = 0;
 
 // Convert result to track units
-	int64_t result2 = -1;
+	posnum result2 = -1;
 	automation->equivalent_output(track->automation, &result2);
 	edits->equivalent_output(track->edits, &result2);
 

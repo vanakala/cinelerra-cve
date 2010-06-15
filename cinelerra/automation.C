@@ -101,12 +101,11 @@ int Automation::create_objects()
 
 Automation& Automation::operator=(Automation& automation)
 {
-printf("Automation::operator= 1\n");
 	copy_from(&automation);
 	return *this;
 }
 
-void Automation::equivalent_output(Automation *automation, int64_t *result)
+void Automation::equivalent_output(Automation *automation, posnum *result)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -154,8 +153,8 @@ int Automation::load(FileXML *file)
 	return 0;
 }
 
-int Automation::paste(int64_t start, 
-	int64_t length, 
+int Automation::paste(posnum start,
+	posnum length,
 	double scale,
 	FileXML *file, 
 	int default_only,
@@ -174,8 +173,8 @@ int Automation::paste(int64_t start,
 	return 0;
 }
 
-int Automation::copy(int64_t start, 
-	int64_t end, 
+int Automation::copy(posnum start,
+	posnum end,
 	FileXML *file, 
 	int default_only,
 	int autos_only)
@@ -205,8 +204,8 @@ int Automation::copy(int64_t start,
 }
 
 
-void Automation::clear(int64_t start, 
-	int64_t end, 
+void Automation::clear(posnum start,
+	posnum end,
 	AutoConf *autoconf, 
 	int shift_autos)
 {
@@ -230,8 +229,8 @@ void Automation::clear(int64_t start,
 	if(temp_autoconf) delete temp_autoconf;
 }
 
-void Automation::straighten(int64_t start, 
-	int64_t end, 
+void Automation::straighten(posnum start,
+	posnum end,
 	AutoConf *autoconf)
 {
 	AutoConf *temp_autoconf = 0;
@@ -255,7 +254,7 @@ void Automation::straighten(int64_t start,
 }
 
 
-void Automation::paste_silence(int64_t start, int64_t end)
+void Automation::paste_silence(posnum start, posnum end)
 {
 // Unit conversion done in calling routine
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
@@ -269,8 +268,8 @@ void Automation::paste_silence(int64_t start, int64_t end)
 // when inserting the first EDL of a load operation we need to replace
 // the default keyframe.
 void Automation::insert_track(Automation *automation, 
-	int64_t start_unit, 
-	int64_t length_units,
+	posnum start_unit,
+	posnum length_units,
 	int replace_default)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
@@ -297,38 +296,10 @@ void Automation::resample(double old_rate, double new_rate)
 }
 
 
-
-int Automation::direct_copy_possible(int64_t start, int direction)
+posnum Automation::get_length()
 {
-	return 1;
-}
-
-
-
-
-void Automation::get_projector(float *x, 
-	float *y, 
-	float *z, 
-	int64_t position,
-	int direction)
-{
-}
-
-void Automation::get_camera(float *x, 
-	float *y, 
-	float *z, 
-	int64_t position,
-	int direction)
-{
-}
-
-
-
-
-int64_t Automation::get_length()
-{
-	int64_t length = 0;
-	int64_t total_length = 0;
+	posnum length = 0;
+	posnum total_length = 0;
 
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -339,15 +310,14 @@ int64_t Automation::get_length()
 		}
 	}
 
-
 	return total_length;
 }
 
 void Automation::get_extents(float *min, 
 	float *max,
 	int *coords_undefined,
-	int64_t unit_start,
-	int64_t unit_end,
+	posnum unit_start,
+	posnum unit_end,
 	int autogrouptype)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)

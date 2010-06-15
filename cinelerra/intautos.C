@@ -43,7 +43,7 @@ Auto* IntAutos::new_auto()
 	return result;
 }
 
-int IntAutos::automation_is_constant(int64_t start, int64_t end)
+int IntAutos::automation_is_constant(posnum start, posnum end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
 	int result;
@@ -75,11 +75,11 @@ int IntAutos::automation_is_constant(int64_t start, int64_t end)
 	return result;
 }
 
-double IntAutos::get_automation_constant(int64_t start, int64_t end)
+double IntAutos::get_automation_constant(posnum start, posnum end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
-	
-// quickly get autos just outside range	
+
+// quickly get autos just outside range
 	get_neighbors(start, end, &before, &after);
 
 // no auto before range so use first

@@ -42,13 +42,13 @@ public:
 	static void avg_points(MaskPoint *output, 
 		MaskPoint *input1, 
 		MaskPoint *input2, 
-		int64_t output_position,
-		int64_t position1, 
-		int64_t position2);
-	int mask_exists(int64_t position, int direction);
+		posnum output_position,
+		posnum position1, 
+		posnum position2);
+	int mask_exists(posnum position, int direction);
 // Perform interpolation
-	void get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position);
-	int total_submasks(int64_t position);
+	void get_points(ArrayList<MaskPoint*> *points, int submask, posnum position);
+	int total_submasks(posnum position);
 // Translates all mask points
 	void translate_masks(float translate_x, float translate_y);
 };

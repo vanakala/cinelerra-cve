@@ -23,6 +23,7 @@
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "mainerror.h"
 #include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
@@ -43,7 +44,7 @@ FloatAutos::~FloatAutos()
 {
 }
 
-void FloatAutos::straighten(int64_t start, int64_t end)
+void FloatAutos::straighten(posnum start, posnum end)
 {
 	FloatAuto *current = (FloatAuto*)first;
 	while(current)
@@ -78,7 +79,8 @@ void FloatAutos::straighten(int64_t start, int64_t end)
 	}
 }
 
-int FloatAutos::draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, int x1, int y1, int x2, int y2)
+int FloatAutos::draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, 
+	int x1, int y1, int x2, int y2)
 {
 	if(vertical)
 		canvas->draw_line(center_pixel - y1, x1, center_pixel - y2, x2);
@@ -86,16 +88,16 @@ int FloatAutos::draw_joining_line(BC_SubWindow *canvas, int vertical, int center
 		canvas->draw_line(x1, center_pixel + y1, x2, center_pixel + y2);
 }
 
-Auto* FloatAutos::add_auto(int64_t position, float value)
+Auto* FloatAutos::add_auto(posnum position, float value)
 {
 	FloatAuto* current = (FloatAuto*)autoof(position);
 	FloatAuto* result;
-	
+
 	insert_before(current, result = (FloatAuto*)new_auto());
 
 	result->position = position;
 	result->value = value;
-	
+
 	return result;
 }
 
@@ -111,8 +113,8 @@ int FloatAutos::get_testy(float slope, int cursor_x, int ax, int ay)
 	return (int)(slope * (cursor_x - ax)) + ay;
 }
 
-int FloatAutos::automation_is_constant(int64_t start, 
-	int64_t length, 
+int FloatAutos::automation_is_constant(posnum start,
+	posnum length,
 	int direction,
 	double &constant)
 {
@@ -158,7 +160,7 @@ int FloatAutos::automation_is_constant(int64_t start,
 	}
 
 // Scan sequentially
-	int64_t prev_position = -1;
+	posnum prev_position = -1;
 	for(Auto *current = first; current; current = NEXT)
 	{
 		int test_current_next = 0;
@@ -199,7 +201,6 @@ int FloatAutos::automation_is_constant(int64_t start,
 
 		if(test_current_next)
 		{
-//printf("FloatAutos::automation_is_constant 1 %d\n", start);
 			FloatAuto *float_next = (FloatAuto*)current->next;
 
 // Change occurs between keyframes
@@ -220,14 +221,6 @@ int FloatAutos::automation_is_constant(int64_t start,
 				!EQUIV(float_current->control_in_value, 0) ||
 				!EQUIV(float_previous->control_out_value, 0))
 			{
-// printf("FloatAutos::automation_is_constant %d %d %d %f %f %f %f\n", 
-// start, 
-// float_previous->position, 
-// float_current->position, 
-// float_previous->value, 
-// float_current->value, 
-// float_previous->control_out_value, 
-// float_current->control_in_value);
 				return 0;
 			}
 		}
@@ -237,10 +230,10 @@ int FloatAutos::automation_is_constant(int64_t start,
 	return 1;
 }
 
-double FloatAutos::get_automation_constant(int64_t start, int64_t end)
+double FloatAutos::get_automation_constant(posnum start, posnum end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
-	
+
 // quickly get autos just outside range	
 	get_neighbors(start, end, &before, &after);
 
@@ -257,17 +250,17 @@ double FloatAutos::get_automation_constant(int64_t start, int64_t end)
 }
 
 
-float FloatAutos::get_value(int64_t position, 
+float FloatAutos::get_value(posnum position, 
 	int direction, 
 	FloatAuto* &previous, 
 	FloatAuto* &next)
 {
 	double slope;
 	double intercept;
-	int64_t slope_len;
+	posnum slope_len;
 // Calculate bezier equation at position
 	float y0, y1, y2, y3;
- 	float t;
+	float t;
 
 	previous = (FloatAuto*)get_prev_auto(position, direction, (Auto* &)previous, 0);
 	next = (FloatAuto*)get_next_auto(position, direction, (Auto* &)next, 0);
@@ -335,36 +328,25 @@ float FloatAutos::get_value(int64_t position,
 		if(previous->position - next->position == 0) return previous->value;
 	}
 
- 	float tpow2 = t * t;
+	float tpow2 = t * t;
 	float tpow3 = t * t * t;
 	float invt = 1 - t;
 	float invtpow2 = invt * invt;
 	float invtpow3 = invt * invt * invt;
-	
+
 	float result = (  invtpow3 * y0
 		+ 3 * t     * invtpow2 * y1
 		+ 3 * tpow2 * invt     * y2 
 		+     tpow3            * y3);
-//printf("FloatAutos::get_value %f %f %d %d %d %d\n", result, t, direction, position, previous->position, next->position);
 
 	return result;
-
-
-
-// 	get_fade_automation(slope,
-// 		intercept,
-// 		position,
-// 		slope_len,
-// 		PLAY_FORWARD);
-// 
-// 	return (float)intercept;
 }
 
 
 void FloatAutos::get_fade_automation(double &slope,
 	double &intercept,
-	int64_t input_position,
-	int64_t &slope_len,
+	posnum input_position,
+	posnum &slope_len,
 	int direction)
 {
 	Auto *current = 0;
@@ -377,9 +359,6 @@ void FloatAutos::get_fade_automation(double &slope,
 	if(direction == PLAY_FORWARD)
 	{
 		new_slope_len = next_keyframe->position - prev_keyframe->position;
-
-//printf("FloatAutos::get_fade_automation %d %d %d\n", 
-//	prev_keyframe->position, input_position, next_keyframe->position);
 
 // Two distinct automation points within range
 		if(next_keyframe->position > prev_keyframe->position)
@@ -424,18 +403,18 @@ void FloatAutos::get_fade_automation(double &slope,
 void FloatAutos::get_extents(float *min, 
 	float *max,
 	int *coords_undefined,
-	int64_t unit_start,
-	int64_t unit_end)
+	posnum unit_start,
+	posnum unit_end)
 {
 	if(!edl)
 	{
-		printf("FloatAutos::get_extents edl == NULL\n");
+		errorbox("FloatAutos::get_extents edl == NULL\n");
 		return;
 	}
 
 	if(!track)
 	{
-		printf("FloatAutos::get_extents track == NULL\n");
+		errorbox("FloatAutos::get_extents track == NULL\n");
 		return;
 	}
 
@@ -477,13 +456,13 @@ void FloatAutos::get_extents(float *min,
 // Test joining regions
 	FloatAuto *prev = 0;
 	FloatAuto *next = 0;
-	int64_t unit_step = edl->local_session->zoom_sample;
+	posnum unit_step = edl->local_session->zoom_sample;
 	if(track->data_type == TRACK_VIDEO)
-		unit_step = (int64_t)(unit_step * 
+		unit_step = (posnum)(unit_step * 
 			edl->session->frame_rate / 
 			edl->session->sample_rate);
 	unit_step = MAX(unit_step, 1);
-	for(int64_t position = unit_start; 
+	for(posnum position = unit_start; 
 		position < unit_end; 
 		position += unit_step)
 	{

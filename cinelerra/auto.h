@@ -23,6 +23,7 @@
 #define AUTO_H
 
 #include "auto.inc"
+#include "datatype.h"
 #include "edl.inc"
 #include "guicast.h"
 #include "filexml.inc"
@@ -43,20 +44,21 @@ public:
 	virtual ~Auto() {};
 
 	virtual Auto& operator=(Auto &that);
-	virtual int operator==(Auto &that);
+	virtual int operator==(Auto &that) { return 0; };
 	virtual void copy_from(Auto *that);
 	/* for interpolation creation */
-	/* if not possible, copy from a1 and return 0*/ 	
-	virtual int interpolate_from(Auto *a1, Auto *a2, int64_t position); 
-	virtual void copy(int64_t start, int64_t end, FileXML *file, int default_only);
+	/* if not possible, copy from a1 and return 0 */
+	virtual int interpolate_from(Auto *a1, Auto *a2, posnum position); 
+	virtual void copy(posnum start, posnum end, 
+		FileXML *file, int default_only) {};
 
-	virtual void load(FileXML *file);
+	virtual void load(FileXML *file) {};
 
 	virtual void get_caption(char *string) {};
 
- 	virtual float value_to_percentage();
- 	virtual float invalue_to_percentage();
- 	virtual float outvalue_to_percentage();
+	virtual float value_to_percentage() { return 0; };
+	virtual float invalue_to_percentage() { return 0; };
+	virtual float outvalue_to_percentage() { return 0; };
 
 
 	int skip;       // if added by selection event for moves
@@ -65,7 +67,7 @@ public:
 	int WIDTH, HEIGHT;
 // Units native to the track
 	int is_default;
-	int64_t position;
+	posnum position;
 
 private:
 	virtual int value_to_str(char *string, float value) {};

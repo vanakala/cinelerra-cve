@@ -53,10 +53,9 @@ int IntAuto::identical(IntAuto *that)
 void IntAuto::load(FileXML *file)
 {
 	value = file->tag.get_property("VALUE", value);
-//printf("IntAuto::load 1 %d\n", value);
 }
 
-void IntAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
+void IntAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	if(default_auto)
@@ -74,12 +73,10 @@ void IntAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 void IntAuto::copy_from(Auto *that)
 {
 	copy_from((IntAuto*)that);
-//printf("IntAuto::copy_from(Auto *that) %d\n", value);
 }
 
 void IntAuto::copy_from(IntAuto *that)
 {
-//printf("IntAuto::copy_from(IntAuto *that) %d %d\n", value, that->value);
 	Auto::copy_from(that);
 	this->value = that->value;
 }
@@ -94,5 +91,3 @@ int IntAuto::percentage_to_value(float percentage)
 {
 	return percentage > .5;
 }
-
-

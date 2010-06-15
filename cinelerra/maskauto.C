@@ -85,7 +85,7 @@ int SubMask::operator==(SubMask& ptr)
 void SubMask::copy_from(SubMask& ptr)
 {
 	points.remove_all_objects();
-//printf("SubMask::copy_from 1 %p %d\n", this, ptr.points.total);
+
 	for(int i = 0; i < ptr.points.total; i++)
 	{
 		MaskPoint *point = new MaskPoint;
@@ -118,11 +118,10 @@ void SubMask::load(FileXML *file)
 
 				MaskPoint *point = new MaskPoint;
 				char *ptr = string;
-//printf("MaskAuto::load 1 %s\n", ptr);
 
 				point->x = atof(ptr);
 				ptr = strchr(ptr, ',');
-//printf("MaskAuto::load 2 %s\n", ptr + 1);
+
 				if(ptr) 
 				{
 					point->y = atof(ptr + 1);
@@ -130,17 +129,14 @@ void SubMask::load(FileXML *file)
 				
 					if(ptr)
 					{
-//printf("MaskAuto::load 3 %s\n", ptr + 1);
 						point->control_x1 = atof(ptr + 1);
 						ptr = strchr(ptr + 1, ',');
 						if(ptr)
 						{
-//printf("MaskAuto::load 4 %s\n", ptr + 1);
 							point->control_y1 = atof(ptr + 1);
 							ptr = strchr(ptr + 1, ',');
 							if(ptr)
 							{
-//printf("MaskAuto::load 5 %s\n", ptr + 1);
 								point->control_x2 = atof(ptr + 1);
 								ptr = strchr(ptr + 1, ',');
 								if(ptr) point->control_y2 = atof(ptr + 1);
@@ -170,7 +166,6 @@ void SubMask::copy(FileXML *file)
 			file->tag.set_title("POINT");
 			file->append_tag();
 			char string[BCTEXTLEN];
-//printf("SubMask::copy 1 %p %d %p\n", this, i, points.values[i]);
 			sprintf(string, "%.7g, %.7g, %.7g, %.7g, %.7g, %.7g",
 				points.values[i]->x, 
 				points.values[i]->y, 
@@ -178,7 +173,6 @@ void SubMask::copy(FileXML *file)
 				points.values[i]->control_y1, 
 				points.values[i]->control_x2, 
 				points.values[i]->control_y2);
-//printf("SubMask::copy 2\n");
 			file->append_text(string);
 			file->tag.set_title("/POINT");
 			file->append_tag();
@@ -277,7 +271,8 @@ void MaskAuto::copy_from(MaskAuto *src)
 }
 
 
-int MaskAuto::interpolate_from(Auto *a1, Auto *a2, int64_t position) {
+int MaskAuto::interpolate_from(Auto *a1, Auto *a2, posnum position) 
+{
 	MaskAuto  *mask_auto1 = (MaskAuto *)a1;
 	MaskAuto  *mask_auto2 = (MaskAuto *)a2;
 
@@ -360,7 +355,7 @@ void MaskAuto::load(FileXML *file)
 //	dump();
 }
 
-void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
+void MaskAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	file->tag.set_property("MODE", mode);
@@ -377,9 +372,7 @@ void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 
 	for(int i = 0; i < masks.total; i++)
 	{
-//printf("MaskAuto::copy 1 %p %d %p\n", this, i, masks.values[i]);
 		masks.values[i]->copy(file);
-//printf("MaskAuto::copy 10\n");
 	}
 
 	file->append_newline();
@@ -410,6 +403,3 @@ void MaskAuto::translate_submasks(float translate_x, float translate_y)
 		}
 	}
 }
-
-
-

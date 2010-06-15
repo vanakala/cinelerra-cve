@@ -38,36 +38,37 @@ public:
 	~FloatAutos();
 
 
-	int draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, int x1, int y1, int x2, int y2);
+	int draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, 
+		int x1, int y1, int x2, int y2);
 	int get_testy(float slope, int cursor_x, int ax, int ay);
 // Return 1 if the automation is constant.
 // constant - set to the value if it is constant
-	int automation_is_constant(int64_t start, 
-		int64_t length, 
+	int automation_is_constant(posnum start,
+		posnum length,
 		int direction,
 		double &constant);
-	double get_automation_constant(int64_t start, int64_t end);
+	double get_automation_constant(posnum start, posnum end);
 // Get value at a specific point.  This needs previous and next stores
 // because it is used for every pixel in the drawing function.
-	float get_value(int64_t position, 
+	float get_value(posnum position,
 		int direction,
 		FloatAuto* &previous,
 		FloatAuto* &next);
 	void get_fade_automation(double &slope,
 		double &intercept,
-		int64_t input_position,
-		int64_t &slope_len,
+		posnum input_position,
+		posnum &slope_len,
 		int direction);
 	void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,
-		int64_t unit_start,
-		int64_t unit_end);
+		posnum unit_start,
+		posnum unit_end);
 
-	void straighten(int64_t start, int64_t end);
+	void straighten(posnum start, posnum end);
 
 	void dump();
-	Auto* add_auto(int64_t position, float value);
+	Auto* add_auto(posnum position, float value);
 	Auto* append_auto();
 	Auto* new_auto();
 	float default_;

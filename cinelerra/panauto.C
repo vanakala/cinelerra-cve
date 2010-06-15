@@ -69,7 +69,7 @@ void PanAuto::load(FileXML *file)
 	}
 }
 
-void PanAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
+void PanAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	if(default_auto)
@@ -107,5 +107,3 @@ void PanAuto::dump()
 	for(int i = 0; i < edl->session->audio_channels; i++)
 		printf("		value %d %f\n", i, values[i]);
 }
-
-

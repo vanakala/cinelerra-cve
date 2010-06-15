@@ -36,7 +36,7 @@ public:
 	Auto* new_auto();
 	void get_handle(int &handle_x,
 		int &handle_y,
-		int64_t position, 
+		posnum position,
 		int direction,
 		PanAuto* &previous,
 		PanAuto* &next);

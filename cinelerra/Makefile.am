@@ -404,7 +404,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 byteorderpopup.h \
 		 cache.h \
 		 cachebase.h \
-		 cameraauto.h \
 		 canvas.h \
 		 canvastools.h \
 		 channeledit.h \

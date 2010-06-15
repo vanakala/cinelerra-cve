@@ -42,16 +42,12 @@ public:
 	int identical(FloatAuto *src);
 	void copy_from(Auto *that);
 	void copy_from(FloatAuto *that);
-	void copy(int64_t start, int64_t end, FileXML *file, int default_only);
+	void copy(posnum start, posnum end, FileXML *file, int default_only);
 	void load(FileXML *xml);
 
- 	float value_to_percentage();
- 	float invalue_to_percentage();
- 	float outvalue_to_percentage();
-/* 	float percentage_to_value(float percentage);
- * 	float percentage_to_invalue(float percentage);
- * 	float percentage_to_outvalue(float percentage);
- */
+	float value_to_percentage();
+	float invalue_to_percentage();
+	float outvalue_to_percentage();
 
 // Control values are relative to value
 	float value, control_in_value, control_out_value;

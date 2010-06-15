@@ -27,6 +27,7 @@
 
 #include "auto.h"
 #include "edl.inc"
+#include "datatype.h"
 #include "guicast.h"
 #include "filexml.inc"
 #include "track.inc"
@@ -44,7 +45,7 @@ public:
 	void resample(double old_rate, double new_rate);
 
 	virtual void create_objects();
-	void equivalent_output(Autos *autos, int64_t startproject, int64_t *result);
+	void equivalent_output(Autos *autos, posnum startproject, posnum *result);
 	void copy_from(Autos *autos);
 	virtual Auto* new_auto();
 // Get existing auto on or before position.
@@ -52,9 +53,9 @@ public:
 // on or before position.
 // Return 0 if none exists and use_default is false.
 // If &current is nonzero it is used as a starting point for searching.
-	Auto* get_prev_auto(int64_t position, int direction, Auto* &current, int use_default = 1);
+	Auto* get_prev_auto(posnum position, int direction, Auto* &current, int use_default = 1);
 	Auto* get_prev_auto(int direction, Auto* &current);
-	Auto* get_next_auto(int64_t position, int direction, Auto* &current, int use_default = 1);
+	Auto* get_next_auto(posnum position, int direction, Auto* &current, int use_default = 1);
 // Determine if a keyframe exists before creating it.
 	int auto_exists_for_editing(double position);
 // Returns auto at exact position, null if non-existent. ignores autokeyframming and align on frames
@@ -64,17 +65,17 @@ public:
 	Auto* get_auto_for_editing(double position = -1);
 
 // Insert keyframe at the point if it doesn't exist
-	Auto* insert_auto(int64_t position);
+	Auto* insert_auto(posnum position);
 // Insert keyframe at the point if it doesn't exist
 // Interpolate it insead of copying
-	Auto* insert_auto_for_editing(int64_t position);
+	Auto* insert_auto_for_editing(posnum position);
 	void insert_track(Autos *automation, 
-		int64_t start_unit, 
-		int64_t length_units,
+		posnum start_unit, 
+		posnum length_units,
 		int replace_default);
 	virtual int load(FileXML *xml);
-	void paste(int64_t start, 
-		int64_t length, 
+	void paste(posnum start, 
+		posnum length, 
 		double scale, 
 		FileXML *file, 
 		int default_only);
@@ -83,12 +84,12 @@ public:
 
 // Returns a type enumeration
 	int get_type();
-	int64_t get_length();
+	posnum get_length();
 	virtual void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,
-		int64_t unit_start,
-		int64_t unit_end);
+		posnum unit_start,
+		posnum unit_end) {};
 
 	EDL *edl;
 	Track *track;
@@ -105,7 +106,7 @@ public:
 
 
 
-	virtual void dump();
+	virtual void dump() {};
 
 
 
@@ -113,38 +114,39 @@ public:
 
 
 	int clear_all();
-	int insert(int64_t start, int64_t end);
-	int paste_silence(int64_t start, int64_t end);
-	int copy(int64_t start, 
-		int64_t end, 
+	int insert(posnum start, posnum end);
+	int paste_silence(posnum start, posnum end);
+	int copy(posnum start,
+		posnum end, 
 		FileXML *xml, 
 		int default_only,
 		int autos_only);
 // Stores the background rendering position in result
-	void clear(int64_t start, 
-		int64_t end, 
+	void clear(posnum start,
+		posnum end,
 		int shift_autos);
-	virtual void straighten(int64_t start, int64_t end);
-	int clear_auto(int64_t position);
+	virtual void straighten(posnum start, posnum end);
+	int clear_auto(posnum position);
 	int save(FileXML *xml);
-	virtual int slope_adjustment(int64_t ax, double slope);
 	int release_auto();
 	virtual int release_auto_derived() {};
 	Auto* append_auto();
-	int scale_time(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end);
+	int scale_time(float rate_scale, int scale_edits, int scale_autos,
+			posnum start, posnum end);
 
 // rendering utilities
-	int get_neighbors(int64_t start, int64_t end, Auto **before, Auto **after);
+	int get_neighbors(posnum start, posnum end,
+			Auto **before, Auto **after);
 // 1 if automation doesn't change
-	virtual int automation_is_constant(int64_t start, int64_t end);       
-	virtual double get_automation_constant(int64_t start, int64_t end);
+	virtual int automation_is_constant(posnum start, posnum end) { return 0; };
+	virtual double get_automation_constant(posnum start, posnum end) { return 0; };
 	int init_automation(int64_t &buffer_position,
-				int64_t &input_start, 
-				int64_t &input_end, 
+				posnum &input_start, 
+				posnum &input_end, 
 				int &automate, 
 				double &constant, 
-				int64_t input_position,
-				int64_t buffer_len,
+				posnum input_position,
+				posnum buffer_len,
 				Auto **before, 
 				Auto **after,
 				int reverse);
@@ -153,8 +155,8 @@ public:
 				double &slope_start, 
 				double &slope_value,
 				double &slope_position, 
-				int64_t &input_start, 
-				int64_t &input_end, 
+				posnum &input_start,
+				posnum &input_end,
 				Auto **before, 
 				Auto **after,
 				int reverse);
@@ -164,8 +166,8 @@ public:
 				double &slope_end, 
 				double &slope_value,
 				double &slope, 
-				int64_t buffer_len, 
-				int64_t buffer_position,
+				posnum buffer_len, 
+				posnum buffer_position,
 				int reverse);
 
 	int advance_slope(Auto **current_auto, 
@@ -176,12 +178,12 @@ public:
 
 	Auto* autoof(int64_t position);   // return nearest auto equal to or after position
 										                  // 0 if after all autos
-	Auto* nearest_before(int64_t position);    // return nearest auto before or 0
-	Auto* nearest_after(int64_t position);     // return nearest auto after or 0
+	Auto* nearest_before(posnum position);    // return nearest auto before or 0
+	Auto* nearest_after(posnum position);     // return nearest auto after or 0
 
 	Auto *selected;
 	int skip_selected;      // if selected was added
-	int64_t selected_position, selected_position_;      // original position for moves
+	posnum selected_position, selected_position_;      // original position for moves
 	double selected_value, selected_value_;      // original position for moves
 	float virtual_h;  // height cursor moves to cover entire range when track height is less than this
 	int virtual_center;

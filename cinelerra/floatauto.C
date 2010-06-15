@@ -90,20 +90,6 @@ float FloatAuto::outvalue_to_percentage()
 		automation_range;
 }
 
-// float FloatAuto::percentage_to_value(float percentage)
-// {
-// 	return percentage * (autos->max - autos->min) + autos->min;
-// }
-// 
-// float FloatAuto::percentage_to_invalue(float percentage)
-// {
-// 	return percentage * (autos->max - autos->min) + autos->min - value;
-// }
-// 
-// float FloatAuto::percentage_to_outvalue(float percentage)
-// {
-// 	return percentage * (autos->max - autos->min) + autos->min - value;
-// }
 
 void FloatAuto::copy_from(Auto *that)
 {
@@ -152,7 +138,7 @@ int FloatAuto::value_to_str(char *string, float value)
 	return 0;
 }
 
-void FloatAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
+void FloatAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	if(default_auto)

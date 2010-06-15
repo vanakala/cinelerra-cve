@@ -40,7 +40,8 @@ MaskAutos::~MaskAutos()
 }
 
 
-void MaskAutos::get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position)
+void MaskAutos::get_points(ArrayList<MaskPoint*> *points, 
+	int submask, posnum position)
 {
 	MaskAuto *begin = 0, *end = 0;
 
@@ -91,9 +92,9 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points, int submask, int64_t p
 void MaskAutos::avg_points(MaskPoint *output, 
 		MaskPoint *input1, 
 		MaskPoint *input2, 
-		int64_t output_position,
-		int64_t position1, 
-		int64_t position2)
+		posnum output_position,
+		posnum position1, 
+		posnum position2)
 {
 	if(position2 == position1)
 	{
@@ -135,13 +136,11 @@ void MaskAutos::dump()
 	}
 }
 
-int MaskAutos::mask_exists(int64_t position, int direction)
+int MaskAutos::mask_exists(posnum position, int direction)
 {
 	Auto *current = 0;
 
 	MaskAuto* keyframe = (MaskAuto*)get_prev_auto(position, direction, current);
-
-
 
 	for(int i = 0; i < keyframe->masks.total; i++)
 	{
@@ -152,7 +151,7 @@ int MaskAutos::mask_exists(int64_t position, int direction)
 	return 0;
 }
 
-int MaskAutos::total_submasks(int64_t position)
+int MaskAutos::total_submasks(posnum position)
 {
 	for(MaskAuto* current = (MaskAuto*)last; 
 		current; 
@@ -183,10 +182,8 @@ void MaskAutos::translate_masks(float translate_x, float translate_y)
 			{
 				mask->points.values[j]->x += translate_x;
 				mask->points.values[j]->y += translate_y;
-				printf("mpx: %f, mpy:%f\n",mask->points.values[j]->x,mask->points.values[j]->y);
 			}
 		}
-		
 	}
 }
 

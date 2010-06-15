@@ -32,9 +32,6 @@ class PluginAutos : public Autos
 public:
 	PluginAutos(EDL *edl, Track *track);
 	~PluginAutos();
-	
-	
-	
 };
 
 #endif

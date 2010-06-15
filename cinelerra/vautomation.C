@@ -89,9 +89,9 @@ int VAutomation::create_objects()
 	return 0;
 }
 
-int VAutomation::direct_copy_possible(int64_t start, int direction)
+int VAutomation::direct_copy_possible(posnum start, int direction)
 {
-	int64_t end = (direction == PLAY_FORWARD) ? (start + 1) : (start - 1);
+	posnum end = (direction == PLAY_FORWARD) ? (start + 1) : (start - 1);
 
 	if(!Automation::direct_copy_possible(start, direction))
 		return 0;
@@ -180,7 +180,7 @@ int VAutomation::direct_copy_possible(int64_t start, int direction)
 void VAutomation::get_projector(float *x, 
 	float *y, 
 	float *z, 
-	int64_t position,
+	posnum position,
 	int direction)
 {
 	FloatAuto *before, *after;
@@ -208,7 +208,7 @@ void VAutomation::get_projector(float *x,
 void VAutomation::get_camera(float *x, 
 	float *y, 
 	float *z, 
-	int64_t position,
+	posnum position,
 	int direction)
 {
 	FloatAuto *before, *after;

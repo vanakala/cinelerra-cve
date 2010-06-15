@@ -34,13 +34,13 @@ public:
 	
 	
 	Auto* new_auto();
-	int automation_is_constant(int64_t start, int64_t end);       
-	double get_automation_constant(int64_t start, int64_t end);
+	int automation_is_constant(posnum start, posnum end);
+	double get_automation_constant(posnum start, posnum end);
 	void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,
-		int64_t unit_start,
-		int64_t unit_end);
+		posnum unit_start,
+		posnum unit_end);
 	void dump();
 	int default_;
 };

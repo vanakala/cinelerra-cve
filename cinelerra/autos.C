@@ -22,6 +22,7 @@
 #include "autos.h"
 #include "clip.h"
 #include "edl.h"
+#include "mainerror.h"
 #include "edlsession.h"
 #include "localsession.h"
 #include "filexml.h"
@@ -76,14 +77,14 @@ void Autos::resample(double old_rate, double new_rate)
 {
 	for(Auto *current = first; current; current = NEXT)
 	{
-		current->position = (int64_t)((double)current->position * 
+		current->position = (posnum)((double)current->position * 
 			new_rate / 
 			old_rate + 
 			0.5);
 	}
 }
 
-void Autos::equivalent_output(Autos *autos, int64_t startproject, int64_t *result)
+void Autos::equivalent_output(Autos *autos, posnum startproject, posnum *result)
 {
 // Default keyframe differs
 	if(!total() && !(*default_auto == *autos->default_auto))
@@ -101,8 +102,8 @@ void Autos::equivalent_output(Autos *autos, int64_t startproject, int64_t *resul
 // Total differs
 			if(current && !that_current)
 			{
-				int64_t position1 = (autos->last ? autos->last->position : startproject);
-				int64_t position2 = current->position;
+				posnum position1 = (autos->last ? autos->last->position : startproject);
+				posnum position2 = current->position;
 				if(*result < 0 || *result > MIN(position1, position2))
 					*result = MIN(position1, position2);
 				break;
@@ -110,8 +111,8 @@ void Autos::equivalent_output(Autos *autos, int64_t startproject, int64_t *resul
 			else
 			if(!current && that_current)
 			{
-				int64_t position1 = (last ? last->position : startproject);
-				int64_t position2 = that_current->position;
+				posnum position1 = (last ? last->position : startproject);
+				posnum position2 = that_current->position;
 				if(*result < 0 || *result > MIN(position1, position2))
 					*result = MIN(position1, position2);
 				break;
@@ -121,10 +122,10 @@ void Autos::equivalent_output(Autos *autos, int64_t startproject, int64_t *resul
 			if(!(*current == *that_current) || 
 				current->position != that_current->position)
 			{
-				int64_t position1 = (current->previous ? 
+				posnum position1 = (current->previous ? 
 					current->previous->position : 
 					startproject);
-				int64_t position2 = (that_current->previous ? 
+				posnum position2 = (that_current->previous ? 
 					that_current->previous->position : 
 					startproject);
 				if(*result < 0 || *result > MIN(position1, position2))
@@ -144,14 +145,12 @@ void Autos::copy_from(Autos *autos)
 // Detect common memory leak bug
 	if(autos->first && !autos->last)
 	{
-		printf("Autos::copy_from inconsistent pointers\n");
+		errorbox("Autos::copy_from inconsistent pointers\n");
 		exit(1);
 	}
 
 	for(current = autos->first; current; current = NEXT)
 	{
-//printf("Autos::copy_from 1 %p\n", current);
-//sleep(1);
 		if(!this_current)
 		{
 			append(this_current = new_auto());
@@ -173,8 +172,8 @@ void Autos::copy_from(Autos *autos)
 // when inserting the first EDL of a load operation we need to replace
 // the default keyframe.
 void Autos::insert_track(Autos *automation, 
-	int64_t start_unit, 
-	int64_t length_units,
+	posnum start_unit, 
+	posnum length_units,
 	int replace_default)
 {
 // Insert silence
@@ -190,7 +189,7 @@ void Autos::insert_track(Autos *automation,
 	}
 }
 
-Auto* Autos::get_prev_auto(int64_t position, 
+Auto* Autos::get_prev_auto(posnum position, 
 	int direction, 
 	Auto* &current, 
 	int use_default)
@@ -201,8 +200,10 @@ Auto* Autos::get_prev_auto(int64_t position,
 // Try existing result
 		if(current)
 		{
-			while(current && current->position < position) current = NEXT;
-			while(current && current->position > position) current = PREVIOUS;
+			while(current && current->position < position) 
+				current = NEXT;
+			while(current && current->position > position) 
+				current = PREVIOUS;
 		}
 
 		if(!current)
@@ -211,7 +212,8 @@ Auto* Autos::get_prev_auto(int64_t position,
 				current && current->position > position; 
 				current = PREVIOUS) ;
 		}
-		if(!current && use_default) current = (first ? first : default_auto);
+		if(!current && use_default) 
+			current = (first ? first : default_auto);
 	}
 	else
 // Get on or after position
@@ -219,8 +221,10 @@ Auto* Autos::get_prev_auto(int64_t position,
 	{
 		if(current)
 		{
-			while(current && current->position > position) current = PREVIOUS;
-			while(current && current->position < position) current = NEXT;
+			while(current && current->position > position) 
+				current = PREVIOUS;
+			while(current && current->position < position) 
+				current = NEXT;
 		}
 
 		if(!current)
@@ -230,7 +234,8 @@ Auto* Autos::get_prev_auto(int64_t position,
 				current = NEXT) ;
 		}
 
-		if(!current && use_default) current = (last ? last : default_auto);
+		if(!current && use_default) 
+			current = (last ? last : default_auto);
 	}
 
 	return current;
@@ -240,7 +245,7 @@ Auto* Autos::get_prev_auto(int direction, Auto* &current)
 {
 	double position_double = edl->local_session->get_selectionstart(1);
 	position_double = edl->align_to_frame(position_double, 0);
-	int64_t position = track->to_units(position_double, 0);
+	posnum position = track->to_units(position_double, 0);
 
 	return get_prev_auto(position, direction, current);
 
@@ -250,7 +255,7 @@ Auto* Autos::get_prev_auto(int direction, Auto* &current)
 int Autos::auto_exists_for_editing(double position)
 {
 	int result = 0;
-	
+
 	if(edl->session->auto_keyframes)
 	{
 		double unit_position = position;
@@ -268,7 +273,7 @@ int Autos::auto_exists_for_editing(double position)
 
 Auto* Autos::get_auto_at_position(double position)
 {
-	int64_t unit_position = track->to_units(position, 0);
+	posnum unit_position = track->to_units(position, 0);
 
 	for(Auto *current = first; 
 		current; 
@@ -293,11 +298,6 @@ Auto* Autos::get_auto_for_editing(double position)
 	Auto *result = 0;
 	position = edl->align_to_frame(position, 0);
 
-
-
-
-//printf("Autos::get_auto_for_editing %p %p\n", first, default_auto);
-
 	if(edl->session->auto_keyframes)
 	{
 		result = insert_auto_for_editing(track->to_units(position, 0));
@@ -307,19 +307,20 @@ Auto* Autos::get_auto_for_editing(double position)
 			PLAY_FORWARD, 
 			result);
 
-//printf("Autos::get_auto_for_editing %p %p %p\n", default_auto, first, result);
 	return result;
 }
 
 
-Auto* Autos::get_next_auto(int64_t position, int direction, Auto* &current, int use_default)
+Auto* Autos::get_next_auto(posnum position, int direction, Auto* &current, int use_default)
 {
 	if(direction == PLAY_FORWARD)
 	{
 		if(current)
 		{
-			while(current && current->position > position) current = PREVIOUS;
-			while(current && current->position < position) current = NEXT;
+			while(current && current->position > position) 
+				current = PREVIOUS;
+			while(current && current->position < position) 
+				current = NEXT;
 		}
 
 		if(!current)
@@ -330,15 +331,18 @@ Auto* Autos::get_next_auto(int64_t position, int direction, Auto* &current, int 
 				;
 		}
 
-		if(!current && use_default) current = (last ? last : default_auto);
+		if(!current && use_default) 
+			current = (last ? last : default_auto);
 	}
 	else
 	if(direction == PLAY_REVERSE)
 	{
 		if(current)
 		{
-			while(current && current->position < position) current = NEXT;
-			while(current && current->position > position) current = PREVIOUS;
+			while(current && current->position < position) 
+				current = NEXT;
+			while(current && current->position > position) 
+				current = PREVIOUS;
 		}
 
 		if(!current)
@@ -349,13 +353,14 @@ Auto* Autos::get_next_auto(int64_t position, int direction, Auto* &current, int 
 				;
 		}
 
-		if(!current && use_default) current = (first ? first : default_auto);
+		if(!current && use_default) 
+			current = (first ? first : default_auto);
 	}
 
 	return current;
 }
 
-Auto* Autos::insert_auto(int64_t position)
+Auto* Autos::insert_auto(posnum position)
 {
 	Auto *current, *result;
 
@@ -402,7 +407,7 @@ Auto* Autos::insert_auto(int64_t position)
 	return result;
 }
 
-Auto* Autos::insert_auto_for_editing(int64_t position)
+Auto* Autos::insert_auto_for_editing(posnum position)
 {
 	Auto *current, *result;
 
@@ -414,7 +419,6 @@ Auto* Autos::insert_auto_for_editing(int64_t position)
 		;
 	}
 
-//printf("Autos::insert_auto_for_editing %p\n", current);
 // Insert new
 	if(!current)
 	{
@@ -464,9 +468,9 @@ int Autos::clear_all()
 	return 0;
 }
 
-int Autos::insert(int64_t start, int64_t end)
+int Autos::insert(posnum start, posnum end)
 {
-	int64_t length;
+	posnum length;
 	Auto *current = first;
 
 	for( ; current && current->position < start; current = NEXT)
@@ -481,8 +485,8 @@ int Autos::insert(int64_t start, int64_t end)
 	return 0;
 }
 
-void Autos::paste(int64_t start, 
-	int64_t length, 
+void Autos::paste(posnum start, 
+	posnum length, 
 	double scale, 
 	FileXML *file, 
 	int default_only)
@@ -490,7 +494,6 @@ void Autos::paste(int64_t start,
 	int total = 0;
 	int result = 0;
 
-//printf("Autos::paste %ld\n", start);
 	do{
 		result = file->read_tag();
 
@@ -507,7 +510,7 @@ void Autos::paste(int64_t start,
 			{
 				Auto *current = 0;
 
-// Paste first active auto into default				
+// Paste first active auto into default
 				if(default_only)
 				{
 					if(total == 1)
@@ -521,7 +524,7 @@ void Autos::paste(int64_t start,
 					current = default_auto;
 				else
 				{
-					int64_t position = Units::to_int64(
+					posnum position = Units::to_int64(
 						(double)file->tag.get_property("POSITION", 0) *
 							scale + 
 							start);
@@ -541,27 +544,25 @@ void Autos::paste(int64_t start,
 }
 
 
-int Autos::paste_silence(int64_t start, int64_t end)
+int Autos::paste_silence(posnum start, posnum end)
 {
 	insert(start, end);
 	return 0;
 }
 
-int Autos::copy(int64_t start, 
-	int64_t end, 
+int Autos::copy(posnum start,
+	posnum end,
 	FileXML *file, 
 	int default_only,
 	int autos_only)
 {
 // First auto is always loaded into default even if it is discarded in a paste
 // operation
-//printf("Autos::copy 1 %d %d %p\n", default_only, start, autoof(start));
 	if(!autos_only)
 	{
 		default_auto->copy(0, 0, file, default_only);
 	}
 
-//printf("Autos::copy 10 %d %d %p\n", default_only, start, autoof(start));
 	if(!default_only)
 	{
 		for(Auto* current = autoof(start); 
@@ -582,7 +583,6 @@ int Autos::copy(int64_t start,
 // and default status to 0.
 		default_auto->copy(0, 0, file, default_only);
 	}
-//printf("Autos::copy 20\n");
 
 	return 0;
 }
@@ -592,7 +592,6 @@ int Autos::copy(int64_t start,
 void Autos::optimize()
 {
 	int done = 0;
-
 
 // Default auto should always be at 0
 	default_auto->position = 0;
@@ -640,15 +639,15 @@ void Autos::remove_nonsequential(Auto *keyframe)
 }
 
 
-void Autos::straighten(int64_t start, int64_t end)
+void Autos::straighten(posnum start, posnum end)
 {
 }
 
-void Autos::clear(int64_t start, 
-	int64_t end, 
+void Autos::clear(posnum start,
+	posnum end,
 	int shift_autos)
 {
-	int64_t length;
+	posnum length;
 	Auto *next, *current;
 	length = end - start;
 
@@ -675,7 +674,7 @@ void Autos::clear(int64_t start,
 	}
 }
 
-int Autos::clear_auto(int64_t position)
+int Autos::clear_auto(posnum position)
 {
 	Auto *current;
 	current = autoof(position);
@@ -727,24 +726,21 @@ int Autos::load(FileXML *file)
 
 
 
-
+/* Ei kasutata
 
 int Autos::slope_adjustment(int64_t ax, double slope)
 {
 	return (int)(ax * slope);
-}
+} */
 
 
-int Autos::scale_time(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end)
+int Autos::scale_time(float rate_scale, int scale_edits, int scale_autos, posnum start, posnum end)
 {
 	Auto *current;
 	
 	for(current = first; current && scale_autos; current = NEXT)
 	{
-//		if(current->position >= start && current->position <= end)
-//		{
-			current->position = (int64_t)((current->position - start) * rate_scale + start + 0.5);
-//		}
+		current->position = (posnum)((current->position - start) * rate_scale + start + 0.5);
 	}
 	return 0;
 }
@@ -762,63 +758,54 @@ Auto* Autos::autoof(int64_t position)
 	return current;     // return 0 on failure
 }
 
-Auto* Autos::nearest_before(int64_t position)
+Auto* Autos::nearest_before(posnum position)
 {
 	Auto *current;
 
-	for(current = last; current && current->position >= position; current = PREVIOUS)
+	for(current = last; 
+		current && current->position >= position; current = PREVIOUS)
 	{ ; }
-
 
 	return current;     // return 0 on failure
 }
 
-Auto* Autos::nearest_after(int64_t position)
+Auto* Autos::nearest_after(posnum position)
 {
 	Auto *current;
 
-	for(current = first; current && current->position <= position; current = NEXT)
+	for(current = first;
+		 current && current->position <= position; current = NEXT)
 	{ ; }
-
 
 	return current;     // return 0 on failure
 }
 
-int Autos::get_neighbors(int64_t start, int64_t end, Auto **before, Auto **after)
+int Autos::get_neighbors(posnum start, posnum end,
+		Auto **before, Auto **after)
 {
 	if(*before == 0) *before = first;
 	if(*after == 0) *after = last; 
 
 	while(*before && (*before)->next && (*before)->next->position <= start)
 		*before = (*before)->next;
-	
+
 	while(*after && (*after)->previous && (*after)->previous->position >= end)
 		*after = (*after)->previous;
 
 	while(*before && (*before)->position > start) *before = (*before)->previous;
-	
+
 	while(*after && (*after)->position < end) *after = (*after)->next;
-	return 0;
-}
-
-int Autos::automation_is_constant(int64_t start, int64_t end)
-{
-	return 0;
-}
-
-double Autos::get_automation_constant(int64_t start, int64_t end)
-{
 	return 0;
 }
 
 
 int Autos::init_automation(int64_t &buffer_position,
-				int64_t &input_start, 
-				int64_t &input_end, 
+				posnum &input_start, 
+				posnum &input_end, 
 				int &automate, 
 				double &constant, 
-				int64_t input_position,
-				int64_t buffer_len,
+				posnum input_position,
+				posnum buffer_len,
 				Auto **before, 
 				Auto **after,
 				int reverse)
@@ -847,8 +834,8 @@ int Autos::init_slope(Auto **current_auto,
 				double &slope_start, 
 				double &slope_value,
 				double &slope_position, 
-				int64_t &input_start, 
-				int64_t &input_end, 
+				posnum &input_start, 
+				posnum &input_end, 
 				Auto **before, 
 				Auto **after,
 				int reverse)
@@ -881,8 +868,8 @@ int Autos::get_slope(Auto **current_auto,
 				double &slope_end, 
 				double &slope_value,
 				double &slope, 
-				int64_t buffer_len, 
-				int64_t buffer_position,
+				posnum buffer_len,
+				posnum buffer_position,
 				int reverse)
 {
 // get the slope
@@ -890,8 +877,6 @@ int Autos::get_slope(Auto **current_auto,
 	{
 		slope_end = reverse ? slope_start - (*current_auto)->position : (*current_auto)->position - slope_start;
 		if(slope_end) 
-//			slope = ((*current_auto)->value - slope_value) / slope_end;
-//		else
 			slope = 0;
 	}
 	else
@@ -911,41 +896,16 @@ int Autos::advance_slope(Auto **current_auto,
 	if(*current_auto) 
 	{
 		slope_start = (*current_auto)->position;
-//		slope_value = (*current_auto)->value;
 		(*current_auto) = reverse ? (*current_auto)->previous : (*current_auto)->next;
 		slope_position = 0;
 	}
 	return 0;
 }
 
-int64_t Autos::get_length()
+posnum Autos::get_length()
 {
-	if(last) 
+	if(last)
 		return last->position + 1;
 	else
 		return 0;
 }
-
-void Autos::get_extents(float *min, 
-	float *max,
-	int *coords_undefined,
-	int64_t unit_start,
-	int64_t unit_end)
-{
-	
-}
-
-
-void Autos::dump()
-{
-}
-
-
-
-
-
-
-
-
-
-

@@ -37,7 +37,7 @@ public:
 	virtual ~KeyFrame();
 	
 	void load(FileXML *file);
-	void copy(int64_t start, int64_t end, FileXML *file, int default_only);
+	void copy(posnum start, posnum end, FileXML *file, int default_only);
 	void copy_from(Auto *that);
 	void copy_from(KeyFrame *that);
 	void copy_from_common(KeyFrame *that);
