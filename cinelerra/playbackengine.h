@@ -60,21 +60,21 @@ public:
 // be sure to unlock the windows
 	void interrupt_playback(int wait_tracking = 0);
 // Get levels for tracking.  Return 0 if no audio.
-	int get_output_levels(double *levels, long position);
-	int get_module_levels(ArrayList<double> *module_levels, long position);
+	int get_output_levels(double *levels, samplenum position);
+	int get_module_levels(ArrayList<double> *module_levels, samplenum position);
 // The MWindow starts the playback cursor loop
 // The other windows start a slider loop
 // For pausing only the cursor is run
-	virtual void init_cursor();
-	virtual void stop_cursor();
-	virtual int brender_available(framenum position);
+	virtual void init_cursor() {};
+	virtual void stop_cursor() {};
+	virtual int brender_available(framenum position) { return 0; };
 // For normal playback tracking and the cursor are started
 	virtual void init_tracking();
 	virtual void stop_tracking();
 // The playback cursor calls this to calculate the current tracking position
 	virtual double get_tracking_position();
 // Reset the transport after completion
-	virtual void update_transport(int command, int paused);
+	virtual void update_transport(int command, int paused) {};
 // The render engines call this to update tracking variables in the playback engine.
 	void update_tracking(double position);
 // Get the output channel table for the current device or 0 if none exists.

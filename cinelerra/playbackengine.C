@@ -216,7 +216,7 @@ void PlaybackEngine::interrupt_playback(int wait_tracking)
 
 
 // Return 1 if levels exist
-int PlaybackEngine::get_output_levels(double *levels, long position)
+int PlaybackEngine::get_output_levels(double *levels, samplenum position)
 {
 	int result = 0;
 	if(render_engine && render_engine->do_audio)
@@ -228,7 +228,7 @@ int PlaybackEngine::get_output_levels(double *levels, long position)
 }
 
 
-int PlaybackEngine::get_module_levels(ArrayList<double> *module_levels, long position)
+int PlaybackEngine::get_module_levels(ArrayList<double> *module_levels, samplenum position)
 {
 	int result = 0;
 	if(render_engine && render_engine->do_audio)
@@ -237,19 +237,6 @@ int PlaybackEngine::get_module_levels(ArrayList<double> *module_levels, long pos
 		render_engine->get_module_levels(module_levels, position);
 	}
 	return result;
-}
-
-int PlaybackEngine::brender_available(framenum position)
-{
-	return 0;
-}
-
-void PlaybackEngine::init_cursor()
-{
-}
-
-void PlaybackEngine::stop_cursor()
-{
 }
 
 
@@ -296,8 +283,6 @@ double PlaybackEngine::get_tracking_position()
 // so wait.
 	if(tracking_active == 2)
 	{
-//printf("PlaybackEngine::get_tracking_position %d %d %d\n", command->get_direction(), tracking_position, tracking_timer.get_scaled_difference(command->get_edl()->session->sample_rate));
-
 
 // Don't interpolate when every frame is played.
 		if(command->get_edl()->session->video_every_frame &&
@@ -322,7 +307,6 @@ double PlaybackEngine::get_tracking_position()
 					1000.0;
 
 // Compensate for loop
-//printf("PlaybackEngine::get_tracking_position 1 %d\n", command->get_edl()->local_session->loop_playback);
 				if(command->get_edl()->local_session->loop_playback)
 				{
 					while(result > loop_end) result -= loop_size;
@@ -349,19 +333,12 @@ double PlaybackEngine::get_tracking_position()
 		result = tracking_position;
 
 	tracking_lock->unlock();
-//printf("PlaybackEngine::get_tracking_position %f %f %d\n", result, tracking_position, tracking_active);
 
 // Adjust for loop
 
 	return result;
 }
 
-void PlaybackEngine::update_transport(int command, int paused)
-{
-//	mwindow->gui->lock_window();
-//	mwindow->gui->mbuttons->transport->update_gui_state(command, paused);
-//	mwindow->gui->unlock_window();
-}
 
 void PlaybackEngine::run()
 {
@@ -382,9 +359,6 @@ void PlaybackEngine::run()
 		command->copy_from(&que->command);
 		que->command.reset();
 		que->input_lock->unlock();
-
-//printf("PlaybackEngine::run 1 %d\n", command->command);
-
 
 		switch(command->command)
 		{
@@ -440,6 +414,4 @@ void PlaybackEngine::run()
 //printf("PlaybackEngine::run 100\n");
 	}while(!done);
 }
-
-
 
