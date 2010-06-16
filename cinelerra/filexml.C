@@ -95,7 +95,7 @@ int FileXML::append_text(const char *text)
 	return 0;
 }
 
-int FileXML::append_text(const char *text, long len)
+int FileXML::append_text(const char *text, int len)
 {
 	while(position + len > available)
 	{
@@ -144,7 +144,7 @@ int FileXML::encode_text(char *text)
 
 
 
-int FileXML::reallocate_string(long new_available)
+int FileXML::reallocate_string(int new_available)
 {
 	if(!share_string)
 	{
@@ -159,23 +159,20 @@ int FileXML::reallocate_string(long new_available)
 
 char* FileXML::read_text()
 {
-	long text_position = position;
+	int text_position = position;
 	int i;
 
 // use < to mark end of text and start of tag
 
 // find end of text
-	for(; position < length && string[position] != left_delimiter; position++)
-	{
-		;
-	}
+	for(; position < length && string[position] != left_delimiter; 
+		position++);
 
 // allocate enough space
 	if(output_length) delete [] output;
 	output_length = position - text_position;
 	output = new char[output_length + 1];
 
-//printf("FileXML::read_text %d %c\n", text_position, string[text_position]);
 	for(i = 0; text_position < position; text_position++)
 	{
 // filter out first newline
@@ -192,12 +189,12 @@ char* FileXML::read_text()
 					{
 						character = '<';
 						text_position += 3;
-					}		
+					}
 					if (string[text_position + 1] == 'g' && string[text_position + 2] == 't' && string[text_position + 3] == ';')
 					{
 						character = '>';
 						text_position += 3;
-					}		
+					}
 				}
 				if (text_position + 4 < length)
 				{
@@ -205,7 +202,7 @@ char* FileXML::read_text()
 					{
 						character = '&';
 						text_position += 4;
-					}		
+					}
 				}
 			}
 			output[i] = character;
@@ -226,7 +223,6 @@ int FileXML::read_tag()
 	}
 	tag.reset_tag();
 	if(position >= length) return 1;
-//printf("FileXML::read_tag %s\n", &string[position]);
 	return tag.read_tag(string, position, length);
 }
 
@@ -241,7 +237,6 @@ int FileXML::read_text_until(const char *tag_end, char *output, int max_len)
 	{
 		while(position < length && string[position] != left_delimiter)
 		{
-//printf("FileXML::read_text_until 1 %c\n", string[position]);
 			output[out_position++] = string[position++];
 		}
 		
@@ -250,7 +245,7 @@ int FileXML::read_text_until(const char *tag_end, char *output, int max_len)
 // tag reached
 // test for tag_end
 			result = 1;         // assume end
-			
+
 			for(test_position1 = 0, test_position2 = position + 1;   // skip < 
 				test_position2 < length &&
 				tag_end[test_position1] != 0 &&
@@ -258,7 +253,6 @@ int FileXML::read_text_until(const char *tag_end, char *output, int max_len)
 				test_position1++, test_position2++)
 			{
 // null result when first wrong character is reached
-//printf("FileXML::read_text_until 2 %c\n", string[test_position2]);
 				if(tag_end[test_position1] != string[test_position2]) result = 0;
 			}
 
@@ -289,9 +283,6 @@ int FileXML::write_to_file(const char *filename)
 				filename);
 			fclose(out);
 			return 1;
-		}
-		else
-		{
 		}
 	}
 	else
@@ -324,7 +315,7 @@ int FileXML::write_to_file(FILE *file)
 int FileXML::read_from_file(const char *filename, int ignore_error)
 {
 	FILE *in;
-	
+
 	strcpy(this->filename, filename);
 	if(in = fopen(filename, "rb"))
 	{
@@ -417,7 +408,7 @@ int XMLTag::write_tag()
 	char *current_property, *current_value;
 
 // opening bracket
-	string[len] = left_delimiter;        
+	string[len] = left_delimiter;
 	len++;
 	
 // title
@@ -427,7 +418,7 @@ int XMLTag::write_tag()
 	for(i = 0; i < total_properties && len < MAX_LENGTH; i++)
 	{
 		string[len++] = ' ';         // add a space before every property
-		
+
 		current_property = tag_properties[i];
 
 // property title
@@ -435,9 +426,9 @@ int XMLTag::write_tag()
 		{
 			string[len] = current_property[j];
 		}
-		
+
 		if(len < MAX_LENGTH) string[len++] = '=';
-		
+
 		current_value = tag_property_values[i];
 
 // property value
@@ -454,9 +445,9 @@ int XMLTag::write_tag()
 	return 0;
 }
 
-int XMLTag::read_tag(char *input, long &position, long length)
+int XMLTag::read_tag(char *input, int &position, int length)
 {
-	long tag_start;
+	int tag_start;
 	int i, j, terminating_char;
 
 // search for beginning of a tag
@@ -563,7 +554,7 @@ int XMLTag::read_tag(char *input, long &position, long length)
 // store the value in a property array
 		tag_property_values[total_properties] = new char[strlen(string) + 1];
 		strcpy(tag_property_values[total_properties], string);
-		
+
 // advance property if one was just loaded
 		if(tag_properties[total_properties][0] != 0) total_properties++;
 
@@ -783,7 +774,7 @@ int XMLTag::set_property(const char *text, const char *value)
 		}
 	}
 	tag_property_values[total_properties][j] = 0;
-	
+
 	total_properties++;
 	return 0;
 }

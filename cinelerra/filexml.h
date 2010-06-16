@@ -39,7 +39,7 @@ public:
 	int set_delimiters(char left_delimiter, char right_delimiter);
 	int reset_tag();     // clear all structures
 
-	int read_tag(char *input, long &position, long length);
+	int read_tag(char *input, int &position, int length);
 
 	int title_is(const char *title);  // test against title and return 1 if they match
 	char *get_title();
@@ -89,9 +89,9 @@ public:
 	int append_tag();           // append tag object
 	int append_text(const char *text);
 // add generic text to the string
-	int append_text(const char *text, long len);        
+	int append_text(const char *text, int len);
 // add generic text to the string which contains <>& characters
- 	int encode_text(char *text);      
+	int encode_text(char *text);
 
 // Text array is dynamically allocated and deleted when FileXML is deleted
 	char* read_text();         // read text, put it in *output, and return it
@@ -106,18 +106,18 @@ public:
 		int ignore_error = 0);          // read an entire file from disk
 	int read_from_string(const char *string);   // read from a string
 
-	int reallocate_string(long new_available);     // change size of string to accomodate new output
+	int reallocate_string(int new_available);     // change size of string to accomodate new output
 	int set_shared_string(char *shared_string, long available);    // force writing to a message buffer
 	int rewind();
 
 	char *string;      // string that contains the actual file
-	long position;    // current position in string file
-	long length;      // length of string file for reading
-	long available;    // possible length before reallocation
+	int position;    // current position in string file
+	int length;      // length of string file for reading
+	int available;    // possible length before reallocation
 	int share_string;      // string is shared between this and a message buffer so don't delete
 
 	XMLTag tag;
-	long output_length;
+	int output_length;
 	char *output;       // for reading text
 	char left_delimiter, right_delimiter;
 	char filename[1024];  // Filename used in the last read_from_file or write_to_file
