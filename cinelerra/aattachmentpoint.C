@@ -69,25 +69,11 @@ void AAttachmentPoint::new_buffer_vector(int total, int size)
 	}
 }
 
-int AAttachmentPoint::get_buffer_size()
-{
-	return renderengine->config->aconfig->fragment_size;
-// must be greater than value audio_read_length, calculated in PackageRenderer::create_engine
-// if it is not, plugin's PluginClient::in_buffer_size is below the real maximum and
-// we get a crush on rendering of audio plugins!
-// 	int audio_read_length = renderengine->command->get_edl()->session->sample_rate;
-// 	int fragment_size = renderengine->config->aconfig->fragment_size;
-// 	if(audio_read_length > fragment_size)
-// 		return audio_read_length;
-// 	else
-// 		return fragment_size;
-}
-
 void AAttachmentPoint::render(double *output, 
 	int buffer_number,
-	int64_t start_position, 
-	int64_t len,
-	int64_t sample_rate)
+	samplenum start_position, 
+	samplenum len,
+	int sample_rate)
 {
 	if(!plugin_server || !plugin->on) return;
 
@@ -140,7 +126,6 @@ void AAttachmentPoint::render(double *output,
 // Process plugin
 		double *output_temp[1];
 		output_temp[0] = output;
-//printf("AAttachmentPoint::render 1\n");
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			start_position,
 			len,
@@ -149,8 +134,6 @@ void AAttachmentPoint::render(double *output,
 				sample_rate /
 				renderengine->edl->session->sample_rate,
 			renderengine->command->get_direction());
-//printf("AAttachmentPoint::render 10\n");
 	}
 }
-
 

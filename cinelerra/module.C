@@ -180,10 +180,8 @@ void Module::render_stop()
 
 AttachmentPoint* Module::attachment_of(Plugin *plugin)
 {
-//printf("Module::attachment_of 1 %d\n", total_attachments);
 	for(int i = 0; i < total_attachments; i++)
 	{
-//printf("Module::attachment_of 2 %p\n", attachments[i]);
 		if(attachments[i] && 
 			attachments[i]->plugin == plugin) return attachments[i];
 	}
@@ -200,10 +198,8 @@ AttachmentPoint* Module::get_attachment(int number)
 
 void Module::reset_attachments()
 {
-//printf("Module::reset_attachments 1 %d\n", total_attachments);
 	for(int i = 0; i < total_attachments; i++)
 	{
-//printf("Module::reset_attachments 2 %p\n", attachments[i]);
 		AttachmentPoint *attachment = attachments[i];
 		if(attachment) attachment->reset_status();
 	}
@@ -242,7 +238,7 @@ int Module::test_plugins()
 	return 0;
 }
 
-void Module::update_transition(int64_t current_position, 
+void Module::update_transition(posnum current_position, 
 	int direction)
 {
 	transition = track->get_current_transition(current_position,
@@ -318,9 +314,3 @@ void Module::dump()
 		attachments[i]->dump();
 	}
 }
-
-
-
-
-
-

@@ -68,7 +68,6 @@ VModule::VModule(RenderEngine *renderengine,
 		masker = new MaskEngine(renderengine->preferences->processors);
 	else
 		masker = new MaskEngine(plugin_array->mwindow->preferences->processors);
-	
 }
 
 VModule::~VModule()
@@ -100,13 +99,13 @@ CICache* VModule::get_cache()
 
 int VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
-	int64_t input_position,
+	framenum input_position,
 	double frame_rate,
 	int direction,
 	int use_opengl)
 {
-	int64_t corrected_position;
-	int64_t corrected_position_project;
+	framenum corrected_position;
+	framenum corrected_position_project;
 // Translation of edit
 	float in_x1;
 	float in_y1;
@@ -118,11 +117,10 @@ int VModule::import_frame(VFrame *output,
 	float out_h1;
 	int result = 0;
 	double edl_rate = get_edl()->session->frame_rate;
-	int64_t input_position_project = (int64_t)(input_position * 
+	framenum input_position_project = (framenum)(input_position * 
 		edl_rate / 
 		frame_rate + 
 		0.001);
-	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
 
 	corrected_position = input_position;
 	corrected_position_project = input_position_project;
@@ -145,21 +143,20 @@ int VModule::import_frame(VFrame *output,
 		get_cache()->age();
 		File *source = get_cache()->check_out(current_edit->asset,
 			get_edl());
-//		get_cache()->dump();
 
 		if(source)
 		{
-			int64_t edit_startproject = (int64_t)(current_edit->startproject * 
+			framenum edit_startproject = (framenum)(current_edit->startproject * 
 				frame_rate / 
 				edl_rate);
-			int64_t edit_startsource = (int64_t)(current_edit->startsource *
+			framenum edit_startsource = (framenum)(current_edit->startsource *
 				frame_rate /
 				edl_rate);
-			uint64_t position = corrected_position - 
+			framenum position = corrected_position - 
 				edit_startproject + 
 				edit_startsource;
 			// if we hit the end of stream, freeze at last frame
-			uint64_t max_position = source->get_video_length(frame_rate) - 1;
+			framenum max_position = source->get_video_length(frame_rate) - 1;
 			if (position > max_position) position = max_position;
 			int use_cache = renderengine && 
 				renderengine->command->single_frame();
@@ -187,36 +184,23 @@ int VModule::import_frame(VFrame *output,
 				out_w1, 
 				out_h1);
 
-//
-//			printf("VModule::import_frame 1 [ilace] Project: mode (%d) Asset: autofixoption (%d), mode (%d), method (%d)\n", 
-//			get_edl()->session->interlace_mode,
-//			current_edit->asset->interlace_autofixoption,
-//			current_edit->asset->interlace_mode,
-//			current_edit->asset->interlace_fixmethod);
-
 			// Determine the interlacing method to use.
 			int interlace_fixmethod = ilaceautofixmethod2(get_edl()->session->interlace_mode,
 					current_edit->asset->interlace_autofixoption,
 					current_edit->asset->interlace_mode,
 					current_edit->asset->interlace_fixmethod);
-//
-//			char string[BCTEXTLEN];
-//			ilacefixmethod_to_text(string,interlace_fixmethod);
-//			printf("VModule::import_frame 1 [ilace] Compensating by using: '%s'\n",string);
 
 			// Compensate for the said interlacing...
 			switch (interlace_fixmethod) {
-				case BC_ILACE_FIXMETHOD_NONE:
-				
 				break;
-				case BC_ILACE_FIXMETHOD_UPONE:
-					out_y1--;
+			case BC_ILACE_FIXMETHOD_UPONE:
+				out_y1--;
 				break;
-				case BC_ILACE_FIXMETHOD_DOWNONE:
-					out_y1++;
+			case BC_ILACE_FIXMETHOD_DOWNONE:
+				out_y1++;
 				break;
-				default:
-					printf("vmodule::importframe WARNING - unknown fix method for interlacing, no compensation in effect\n");
+			default:
+				break;
 			}
 
 
@@ -283,8 +267,6 @@ int VModule::import_frame(VFrame *output,
 				if(use_cache) source->set_cache_frames(0);
 				(*input)->set_opengl_state(VFrame::RAM);
 
-//printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
-
 // Find an overlayer object to perform the camera transformation
 				OverlayFrame *overlayer = 0;
 
@@ -311,19 +293,6 @@ int VModule::import_frame(VFrame *output,
 
 					overlayer = overlay_temp;
 				}
-// printf("VModule::import_frame 1 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", 
-// 	in_x1, 
-// 	in_y1, 
-// 	in_w1, 
-// 	in_h1, 
-// 	out_x1, 
-// 	out_y1, 
-// 	out_w1, 
-// 	out_h1);
-
-// temp -> output
-// for(int j = 0; j < output->get_w() * 3 * 5; j++)
-// 	output->get_rows()[0][j] = 255;
 
 				if(use_opengl)
 				{
@@ -341,10 +310,6 @@ int VModule::import_frame(VFrame *output,
 				else
 				{
 					output->clear_frame();
-
-
-// get_cache()->check_in(current_edit->asset);
-// return;
 
 // TRANSFER_REPLACE is the fastest transfer mode but it has the disadvantage
 // of producing green borders in floating point translation of YUV
@@ -408,14 +373,13 @@ int VModule::import_frame(VFrame *output,
 		}
 	}
 
-
 	return result;
 }
 
 
 
 int VModule::render(VFrame *output,
-	int64_t start_position,
+	framenum start_position,
 	int direction,
 	double frame_rate,
 	int use_nudge,
@@ -425,11 +389,11 @@ int VModule::render(VFrame *output,
 	int result = 0;
 	double edl_rate = get_edl()->session->frame_rate;
 
-	if(use_nudge) start_position += (int64_t)(track->nudge * 
+	if(use_nudge) start_position += (framenum)(track->nudge * 
 		frame_rate / 
 		edl_rate);
 
-	int64_t start_position_project = (int64_t)(start_position *
+	framenum start_position_project = (int64_t)(start_position *
 		edl_rate /
 		frame_rate + 
 		0.5);
@@ -442,7 +406,7 @@ int VModule::render(VFrame *output,
 	VEdit* previous_edit = 0;
 
 	if(debug_render)
-		printf("    VModule::render %d %lld %s transition=%p opengl=%d current_edit=%p output=%p\n", 
+		printf("    VModule::render %d %d %s transition=%p opengl=%d current_edit=%p output=%p\n", 
 			use_nudge, 
 			start_position_project,
 			track->title,
@@ -533,8 +497,8 @@ int VModule::render(VFrame *output,
 			direction,
 			use_opengl);
 	}
-	
-	int64_t mask_position;
+
+	framenum mask_position;
 	if (renderengine)
 		mask_position = renderengine->vrender->current_position;
 	else 
@@ -560,9 +524,3 @@ void VModule::create_objects()
 {
 	Module::create_objects();
 }
-
-
-
-
-
-

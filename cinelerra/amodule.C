@@ -36,6 +36,7 @@
 #include "floatautos.h"
 #include "language.h"
 #include "module.h"
+#include "mainerror.h"
 #include "patch.h"
 #include "plugin.h"
 #include "pluginarray.h"
@@ -89,7 +90,7 @@ void AModule::create_objects()
 	if(commonrender)
 	{
 		level_history = new double[((ARender*)commonrender)->total_peaks];
-		level_samples = new int64_t[((ARender*)commonrender)->total_peaks];
+		level_samples = new samplenum[((ARender*)commonrender)->total_peaks];
 		current_level = 0;
 
 		for(int i = 0; i < ((ARender*)commonrender)->total_peaks; i++)
@@ -108,7 +109,7 @@ int AModule::get_buffer_size()
 		return plugin_array->get_bufsize();
 }
 
-void AModule::reverse_buffer(double *buffer, int64_t len)
+void AModule::reverse_buffer(double *buffer, int len)
 {
 	int start, end;
 	double temp;
@@ -131,21 +132,21 @@ CICache* AModule::get_cache()
 }
 
 int AModule::render(double *buffer, 
-	int64_t input_position,
+	samplenum input_position,
 	int input_len, 
 	int direction,
 	int sample_rate,
 	int use_nudge)
 {
-	int64_t edl_rate = get_edl()->session->sample_rate;
+	int edl_rate = get_edl()->session->sample_rate;
 	if(use_nudge) 
 		input_position += track->nudge * 
 			sample_rate /
 			edl_rate;
 
 	AEdit *playable_edit;
-	int64_t start_project = input_position;
-	int64_t end_project = input_position + input_len;
+	samplenum start_project = input_position;
+	samplenum end_project = input_position + input_len;
 	int64_t buffer_offset = 0;
 	int result = 0;
 
@@ -169,8 +170,8 @@ int AModule::render(double *buffer,
 		playable_edit;
 		playable_edit = (AEdit*)playable_edit->next)
 	{
-		int64_t edit_start = playable_edit->startproject;
-		int64_t edit_end = playable_edit->startproject + playable_edit->length;
+		samplenum edit_start = playable_edit->startproject;
+		samplenum edit_end = playable_edit->startproject + playable_edit->length;
 // Normalize to requested rate
 		edit_start = edit_start * sample_rate / edl_rate;
 		edit_end = edit_end * sample_rate / edl_rate;
@@ -190,7 +191,7 @@ int AModule::render(double *buffer,
 // Fill output one fragment at a time
 	while(start_project < end_project)
 	{
-		int64_t fragment_len = input_len;
+		int fragment_len = input_len;
 
 
 		if(fragment_len + start_project > end_project)
@@ -205,22 +206,19 @@ int AModule::render(double *buffer,
 		if(playable_edit)
 		{
 // Normalize EDL positions to requested rate
-			int64_t edit_startproject = playable_edit->startproject;
-			int64_t edit_endproject = playable_edit->startproject + playable_edit->length;
-			int64_t edit_startsource = playable_edit->startsource;
-//printf("AModule::render 52 %lld\n", fragment_len);
+			samplenum edit_startproject = playable_edit->startproject;
+			samplenum edit_endproject = playable_edit->startproject + playable_edit->length;
+			samplenum edit_startsource = playable_edit->startsource;
 
 			edit_startproject = edit_startproject * sample_rate / edl_rate;
 			edit_endproject = edit_endproject * sample_rate / edl_rate;
 			edit_startsource = edit_startsource * sample_rate / edl_rate;
-//printf("AModule::render 53 %lld\n", fragment_len);
 
 
 
 // Trim fragment_len
 			if(fragment_len + start_project > edit_endproject)
 				fragment_len = edit_endproject - start_project;
-//printf("AModule::render 56 %lld\n", fragment_len);
 
 			if(playable_edit->asset)
 			{
@@ -234,7 +232,7 @@ int AModule::render(double *buffer,
 				{
 // couldn't open source file / skip the edit
 					result = 1;
-					printf(_("VirtualAConsole::load_track Couldn't open %s.\n"), playable_edit->asset->path);
+					errorbox(_("Couldn't open %s"), playable_edit->asset->path);
 				}
 				else
 				{
@@ -245,11 +243,6 @@ int AModule::render(double *buffer,
 							edit_startproject + 
 							edit_startsource, 
 						sample_rate);
-
-// 					if(result) printf("AModule::render start_project=%d playable_edit->startproject=%d playable_edit->startsource=%d\n"
-// 						"source=%p playable_edit=%p edl=%p edlsession=%p sample_rate=%d\n",
-// 						start_project, playable_edit->startproject, playable_edit->startsource, 
-// 						source, playable_edit, get_edl(), get_edl()->session, get_edl()->session->sample_rate);
 
 					source->set_channel(playable_edit->channel);
 
@@ -269,13 +262,13 @@ int AModule::render(double *buffer,
 			AEdit *previous_edit = (AEdit*)playable_edit->previous;
 			if(transition && previous_edit)
 			{
-				int64_t transition_len = transition->length * 
+				samplenum transition_len = transition->length * 
 					sample_rate / 
 					edl_rate;
-				int64_t previous_startproject = previous_edit->startproject *
+				samplenum previous_startproject = previous_edit->startproject *
 					sample_rate /
 					edl_rate;
-				int64_t previous_startsource = previous_edit->startsource *
+				samplenum previous_startsource = previous_edit->startsource *
 					sample_rate /
 					edl_rate;
 
@@ -300,7 +293,6 @@ int AModule::render(double *buffer,
 				if(fragment_len + start_project > 
 					edit_startproject + transition_len)
 					fragment_len = edit_startproject + transition_len - start_project;
-//printf("AModule::render 54 %lld\n", fragment_len);
 
 				if(transition_fragment_len > 0)
 				{
@@ -313,7 +305,7 @@ int AModule::render(double *buffer,
 							get_edl())))
 						{
 // couldn't open source file / skip the edit
-							printf(_("VirtualAConsole::load_track Couldn't open %s.\n"), playable_edit->asset->path);
+							errorbox(_("Couldn't open '%s'."), playable_edit->asset->path);
 							result = 1;
 						}
 						else
@@ -324,17 +316,6 @@ int AModule::render(double *buffer,
 									previous_startproject + 
 									previous_startsource, 
 								get_edl()->session->sample_rate);
-
-// 							if(result) printf("AModule::render start_project=%d playable_edit->startproject=%d playable_edit->startsource=%d\n"
-// 								"source=%p playable_edit=%p edl=%p edlsession=%p sample_rate=%d\n",
-// 								start_project, 
-// 								previous_edit->startproject, 
-// 								previous_edit->startsource, 
-// 								source, 
-// 								playable_edit, 
-// 								get_edl(), 
-// 								get_edl()->session, 
-// 								get_edl()->session->sample_rate);
 
 							source->set_channel(previous_edit->channel);
 
@@ -376,12 +357,3 @@ int AModule::render(double *buffer,
 
 	return result;
 }
-
-
-
-
-
-
-
-
-

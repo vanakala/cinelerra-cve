@@ -81,19 +81,13 @@ void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 	}
 }
 
-int VAttachmentPoint::get_buffer_size()
-{
-	return 1;
-}
-
 void VAttachmentPoint::render(VFrame *output, 
 	int buffer_number,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate,
 	int debug_render,
 	int use_opengl)
 {
-	if(!this) printf("VAttachmentPoint::render NULL\n");
 	if(!plugin_server || !plugin->on) return;
 
 	if(debug_render)
@@ -119,9 +113,6 @@ void VAttachmentPoint::render(VFrame *output,
 			if(renderengine && renderengine->video)
 			{
 // Need to copy PBuffer to texture
-// printf("VAttachmentPoint::render temp=%p output=%p\n", 
-// buffer_vector[buffer_number],
-// output);
 				VDeviceX11 *x11_device = (VDeviceX11*)renderengine->video->get_output_base();
 				x11_device->copy_frame(output, buffer_vector[buffer_number]);
 			}
@@ -148,21 +139,18 @@ void VAttachmentPoint::render(VFrame *output,
 		}
 
 // Process plugin
-//printf("VAttachmentPoint::render 1 %d\n", buffer_number);
 		if(renderengine)
 			plugin_servers.values[0]->set_use_opengl(use_opengl,
 				renderengine->video);
 		plugin_servers.values[0]->process_buffer(output_temp,
 			start_position,
 			frame_rate,
-			(int64_t)Units::round(plugin->length * 
+			Units::round(plugin->length * 
 				frame_rate / 
 				renderengine->edl->session->frame_rate),
 			renderengine->command->get_direction());
-//printf("VAttachmentPoint::render 2\n");
 
 		delete [] output_temp;
-//printf("VAttachmentPoint::render 3\n");
 	}
 	else
 // process single track
@@ -175,7 +163,7 @@ void VAttachmentPoint::render(VFrame *output,
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			start_position,
 			frame_rate,
-			(int64_t)Units::round(plugin->length * 
+			Units::round(plugin->length * 
 				frame_rate / 
 				renderengine->edl->session->frame_rate),
 			renderengine->command->get_direction());

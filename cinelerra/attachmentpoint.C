@@ -24,6 +24,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "mwindow.h"
+#include "mainerror.h"
 #include "plugin.h"
 #include "pluginserver.h"
 #include "renderengine.h"
@@ -62,7 +63,6 @@ int AttachmentPoint::reset_parameters()
 
 void AttachmentPoint::reset_status()
 {
-	if(!this) printf("AttachmentPoint::reset_status NULL\n");
 	start_position = 0;
 	len = 0;
 	sample_rate = 0;
@@ -79,7 +79,6 @@ int AttachmentPoint::identical(AttachmentPoint *old)
 
 int AttachmentPoint::render_init()
 {
-	if(!this) printf("AttachmentPoint::render_init NULL\n");
 	if(plugin_server && plugin->on)
 	{
 // Start new plugin servers if the number of nodes changed.
@@ -156,14 +155,13 @@ void AttachmentPoint::render_stop()
 
 int AttachmentPoint::attach_virtual_plugin(VirtualNode *virtual_plugin)
 {
-	if(!this) printf("AttachmentPoint::attach_virtual_plugin NULL\n");
 	int buffer_number = 0;
 
 	if(plugin_server && plugin->on)
 	{
 // add virtual plugin to list of new virtual plugins
 		new_virtual_plugins.append(virtual_plugin);
-//printf("AttachmentPoint::attach_virtual_plugin 1 %d\n", new_virtual_plugins.total);
+
 // Always increment buffer number since this also corresponds to what 
 // plugin server to access if single channel.
 		buffer_number = new_virtual_plugins.total - 1;
@@ -171,12 +169,12 @@ int AttachmentPoint::attach_virtual_plugin(VirtualNode *virtual_plugin)
 	else
 	if(!plugin->on)
 	{
-		printf("AttachmentPoint::attach_virtual_plugin attempt to attach plugin when off.\n");
+		errorbox("AttachmentPoint::attach_virtual_plugin attempt to attach plugin when off");
 	}
 	else
 	if(!plugin_server)
 	{
-		printf("AttachmentPoint::attach_virtual_plugin attempt to attach when no plugin_server.\n");
+		errorbox("AttachmentPoint::attach_virtual_plugin attempt to attach when no plugin_server.");
 	}
 
 	return buffer_number;
@@ -184,7 +182,6 @@ int AttachmentPoint::attach_virtual_plugin(VirtualNode *virtual_plugin)
 
 int AttachmentPoint::multichannel_shared(int search_new)
 {
-	if(!this) printf("AttachmentPoint::multichannel_shared NULL\n");
 	if(search_new)
 	{
 		if(new_virtual_plugins.total && 
@@ -202,7 +199,6 @@ int AttachmentPoint::multichannel_shared(int search_new)
 
 int AttachmentPoint::singlechannel()
 {
-	if(!this) printf("AttachmentPoint::singlechannel NULL\n");
 	if(plugin_server && !plugin_server->multichannel) return 1;
 	return 0;
 }
@@ -210,14 +206,12 @@ int AttachmentPoint::singlechannel()
 
 void AttachmentPoint::render_gui(void *data)
 {
-	if(!this) printf("AttachmentPoint::render_gui 1 NULL\n");
 	if(renderengine && renderengine->mwindow)
 		renderengine->mwindow->render_plugin_gui(data, plugin);
 }
 
 void AttachmentPoint::render_gui(void *data, int size)
 {
-	if(!this) printf("AttachmentPoint::render_gui 2 NULL\n");
 	if(renderengine && renderengine->mwindow)
 		renderengine->mwindow->render_plugin_gui(data, size, plugin);
 }
@@ -228,14 +222,6 @@ int AttachmentPoint::gui_open()
 		return renderengine->mwindow->plugin_gui_open(plugin);
 	return 0;
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -251,7 +237,3 @@ int AttachmentPoint::dump()
 		printf("    No Plugin\n");
 	}
 }
-
-
-
-

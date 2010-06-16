@@ -62,7 +62,7 @@ public:
 	virtual int get_buffer_size() { return 0; };
 	int test_plugins();
 	AttachmentPoint* attachment_of(Plugin *plugin);
-	
+
 // Get attachment number or return 0 if out of range.
 	AttachmentPoint* get_attachment(int number);
 
@@ -73,7 +73,7 @@ public:
 	void render_stop();
 // Current_position is relative to the EDL rate.
 // If direction is REVERSE, the object before current_position is tested.
-	void update_transition(int64_t current_position, int direction);
+	void update_transition(posnum current_position, int direction);
 	EDL* get_edl();
 
 // CICache used during effect
@@ -88,7 +88,7 @@ public:
 	PluginArray *plugin_array;
 	Track *track;
 // TRACK_AUDIO or TRACK_VIDEO
-	int data_type;       
+	int data_type;
 
 // Pointer to transition in EDL
 	Plugin *transition;

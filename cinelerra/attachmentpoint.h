@@ -23,6 +23,7 @@
 #define ATTACHMENTPOINT_H
 
 #include "arraylist.h"
+#include "datatype.h"
 #include "filexml.inc"
 #include "floatauto.inc"
 #include "floatautos.inc"
@@ -103,12 +104,12 @@ public:
 // Used in shared multichannel plugin to tell of it's already been processed
 // or needs to be processed again for a different target.
 // start_position is the end of the range if playing in reverse.
-	int64_t start_position;
-	int64_t len;
-	int64_t sample_rate;
+	posnum start_position;
+	posnum len;
 	double frame_rate;
+	int sample_rate;
 	int is_processed;
-	int data_type;	
+	int data_type;
 
 
 

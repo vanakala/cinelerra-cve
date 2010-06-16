@@ -64,12 +64,12 @@ public:
 // Read frame from file and perform camera transformation
 	int import_frame(VFrame *output,
 		VEdit *current_edit,
-		int64_t input_position,
+		framenum input_position,
 		double frame_rate,
 		int direction,
 		int use_opengl);
 	int render(VFrame *output,
-		int64_t start_position,
+		framenum start_position,
 		int direction,
 		double frame_rate,
 		int use_nudge,
