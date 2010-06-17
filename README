@@ -2,7 +2,7 @@ This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of May 24, 2010
+This file describes status of this branch as of June 17, 2010
 
 Contents.
 
@@ -40,7 +40,7 @@ Changes in this branch:
 - removed BC_Windowevents (now 6 threads less)
 - fix of bug 524: 'This is a very standard format mpg 
     that is completely garbled in this player'
-- fixed most of GCC4.3.3 warnings
+- fixed most of GCC 4.3.3 warnings
 - fixed timebar cursor updating of viewer and compositor
 - trace subsystem was rewritten to static buffers, added backtrace
     dump on crash
@@ -55,7 +55,10 @@ Changes in this branch:
 - cleanup: removed unused sources from cinelerra, guicast, libmpeg3
 
 Known problems (todo list)
-- background rendering does not work (images are black, sound distorted)
+- occasional crashes in XWindowTranslateCoordinates
+- Reel name must be read from project
+- Clip comment is loaded partially from project
+- renderfarm is untested
 - filevorbis is disabled
 - cinerella crashes if video4linux2 size is different from 600x800
 - implement debugging system
