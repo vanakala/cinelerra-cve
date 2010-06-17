@@ -45,8 +45,8 @@ public:
 
 // expansions
 	VirtualNode* create_module(Plugin *real_plugin, 
-							Module *real_module, 
-							Track *track);
+					Module *real_module, 
+					Track *track);
 	VirtualNode* create_plugin(Plugin *real_plugin);
 	void arm_attachmentpoint();
 
@@ -77,15 +77,15 @@ private:
 		int use_opengl);
 
 	int render_projector(VFrame *input,
-			VFrame *output,
-			framenum start_position,
-			double frame_rate);  // Start of input fragment in project if forward.  End of input fragment if reverse.
+		VFrame *output,
+		framenum start_position,
+		double frame_rate);  // Start of input fragment in project if forward.  End of input fragment if reverse.
 
 	int render_fade(VFrame *output,        // start of output fragment
-			framenum start_position,  // start of input fragment in project if forward / end of input fragment if reverse
-			double frame_rate, 
-			Autos *autos,
-			int direction);
+		framenum start_position,  // start of input fragment in project if forward / end of input fragment if reverse
+		double frame_rate, 
+		Autos *autos,
+		int direction);
 
 	void render_mask(VFrame *output_temp,
 		framenum start_position_project,

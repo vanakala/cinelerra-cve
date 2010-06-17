@@ -37,15 +37,11 @@ public:
 	void get_playable_tracks();
 
 // process a buffer
-	int process_buffer(int buffer, 
-		int64_t input_len, 
-		int64_t input_position, 
-		int64_t absolute_position);
 
-	int process_buffer(int64_t input_len,
-		int64_t input_position,
+	int process_buffer(int input_len,
+		posnum input_position,
 		int last_buffer,
-		int64_t absolute_position);
+		posnum absolute_position);
 
 	void process_asynchronous();
 

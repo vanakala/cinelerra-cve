@@ -91,10 +91,6 @@ int VirtualVConsole::process_buffer(framenum input_position)
 // The use of single frame is determined in RenderEngine::arm_command
 	use_opengl = (renderengine->video && 
 		renderengine->video->out_config->driver == PLAYBACK_X11_GL);
-// printf("VirtualVConsole::process_buffer %p %d %d\n", 
-// renderengine->video, 
-// renderengine->video->out_config->driver,
-// use_opengl);
 
 	if(debug_tree) 
 		printf("VirtualVConsole::process_buffer begin exit_nodes=%d\n", 
@@ -117,15 +113,9 @@ int VirtualVConsole::process_buffer(framenum input_position)
 		vrender->video_out->clear_frame();
 	}
 
-
-
-
-
-
 // Reset plugin rendering status
 	reset_attachments();
 
-Timer timer;
 // Render exit nodes from bottom to top
 	for(current_exit_node = exit_nodes.total - 1; current_exit_node >= 0; current_exit_node--)
 	{
@@ -135,10 +125,6 @@ Timer timer;
 // Create temporary output to match the track size, which is acceptable since
 // most projects don't have variable track sizes.
 // If the project has variable track sizes, this object is recreated for each track.
-
-
-
-
 
 		if(output_temp && 
 			(output_temp->get_w() != track->track_w ||
@@ -163,7 +149,6 @@ Timer timer;
 		if(use_opengl)
 			output_temp->set_opengl_state(VFrame::RAM);
 
-
 // Assume openGL is used for the final stage and let console
 // disable.
 		output_temp->clear_stacks();
@@ -173,8 +158,6 @@ Timer timer;
 			use_opengl);
 
 	}
-//printf("VirtualVConsole::process_buffer timer=%lld\n", timer.get_difference());
-
 	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
 	return result;
 }

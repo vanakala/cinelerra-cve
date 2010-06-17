@@ -83,10 +83,10 @@ VirtualNode* VirtualAConsole::new_entry_node(Track *track,
 
 
 
-int VirtualAConsole::process_buffer(int64_t len,
-	int64_t start_position,
+int VirtualAConsole::process_buffer(int len,
+	posnum start_position,
 	int last_buffer,
-	int64_t absolute_position)
+	posnum absolute_position)
 {
 	int result = 0;
 
@@ -94,13 +94,10 @@ int VirtualAConsole::process_buffer(int64_t len,
 // clear output buffers
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
-// printf("VirtualAConsole::process_buffer 2 %d %p %lld\n", 
-// i, 
-// arender->audio_out[i],
-// len);
+
 		if(arender->audio_out[i])
 		{
-			bzero(arender->audio_out[i], len * sizeof(double));
+			memset(arender->audio_out[i], 0, len * sizeof(double));
 		}
 	}
 
@@ -119,7 +116,6 @@ int VirtualAConsole::process_buffer(int64_t len,
 
 // Reset plugin rendering status
 	reset_attachments();
-//printf("VirtualAConsole::process_buffer 1 %p\n", output_temp);
 
 // Render exit nodes
 	for(int i = 0; i < exit_nodes.total; i++)
@@ -127,14 +123,11 @@ int VirtualAConsole::process_buffer(int64_t len,
 		VirtualANode *node = (VirtualANode*)exit_nodes.values[i];
 		Track *track = node->track;
 
-//printf("VirtualAConsole::process_buffer 2 %d %p\n", i, output_temp);
 		result |= node->render(output_temp, 
 			start_position + track->nudge,
 			len,
 			renderengine->edl->session->sample_rate);
-//printf("VirtualAConsole::process_buffer 3 %p\n", output_temp);
 	}
-//printf("VirtualAConsole::process_buffer 4\n");
 
 
 // get peaks and limit volume in the fragment
@@ -165,30 +158,23 @@ int VirtualAConsole::process_buffer(int64_t len,
 					double *sample = &current_buffer[j];
 
 
-					if(fabs(*sample) > peak) peak = fabs(*sample);
-// Make the output device clip it
-// 					if(*sample > 1) *sample = 1;
-// 					else
-// 					if(*sample < -1) *sample = -1;
+					if(fabs(*sample) > peak) 
+						peak = fabs(*sample);
 				}
 
 
- 				if(renderengine->command->realtime)
- 				{
+				if(renderengine->command->realtime)
+				{
 					arender->level_history[i][arender->current_level[i]] = peak;
 					arender->level_samples[arender->current_level[i]] = 
 						renderengine->command->get_direction() == PLAY_REVERSE ? 
 						start_position - j : 
 						start_position + j;
- 					arender->current_level[i] = arender->get_next_peak(arender->current_level[i]);
- 				}
+					arender->current_level[i] = arender->get_next_peak(arender->current_level[i]);
+				}
 			}
 		}
 	}
-
-
-
-//printf("VirtualAConsole::process_buffer 5\n");
 
 
 // Pack channels, fix speed and send to device.
@@ -271,36 +257,8 @@ int VirtualAConsole::process_buffer(int64_t len,
 		if(renderengine->audio->get_interrupted()) interrupt = 1;
 	}
 
-
-
-
-//printf("VirtualAConsole::process_buffer 100\n");
-
-
-
-
 	return result;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

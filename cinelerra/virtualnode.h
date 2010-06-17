@@ -57,22 +57,22 @@ public:
 
 
 // expand plugins
-	int expand(int persistent_plugins, int64_t current_position);
+	int expand(int persistent_plugins, posnum current_position);
 // create convenience pointers to shared memory depending on the data type
 	virtual int create_buffer_ptrs() {};
 // create a node for a module and expand it
 	int attach_virtual_module(Plugin *plugin, 
 		int plugin_number, 
 		int duplicate, 
-		int64_t current_position);
+		posnum current_position);
 // create a node for a plugin and expand it
 	int attach_virtual_plugin(Plugin *plugin, 
 		int plugin_number, 
 		int duplicate, 
-		int64_t current_position);
+		posnum current_position);
 	virtual VirtualNode* create_module(Plugin *real_plugin, 
-							Module *real_module, 
-							Track *track) { return 0; };
+						Module *real_module, 
+						Track *track) { return 0; };
 	virtual VirtualNode* create_plugin(Plugin *real_plugin) { return 0; };
 
 
@@ -104,8 +104,6 @@ public:
 	int input_is_master;
 	int output_is_master;
 	int ring_buffers;       // number of buffers for master buffers
-	int64_t buffer_size;         // number of units in a master segment
-	int64_t fragment_size;       // number of units in a node segment
 	int plugin_type;          // type of plugin in case user changes it
 	int render_count;         // times this plugin has been added to the render list
 	int waiting_real_plugin;  //  real plugin tests this to see if virtual plugin is waiting on it when sorting
@@ -116,54 +114,17 @@ public:
 // Mute automation.
 // Return whether the next samples are muted and store the duration
 // of the next status in fragment_len
-	void get_mute_fragment(int64_t input_position,
+	void get_mute_fragment(posnum input_position,
 				int &mute_constant, 
 				int &fragment_len, 
 				Autos *autos,
 				int direction,
 				int use_nudge);
 
-// convenience routines for fade automation
-/*
- * 	void get_fade_automation(double &slope,
- * 		double &intercept,
- * 		int64_t input_position,
- * 		int64_t &slope_len,
- * 		Autos *autos);
- * 
- * 	int init_automation(int &automate, 
- * 				double &constant, 
- * 				int64_t input_position,
- * 				int64_t buffer_len,
- * 				Autos *autos,
- * 				Auto **before, 
- * 				Auto **after);
- * 
- * 	int init_slope(Autos *autos, Auto **before, Auto **after);
- * 	int get_slope(Autos *autos, int64_t buffer_len, int64_t buffer_position);
- * 	int advance_slope(Autos *autos);
- */
-
-protected:
-
-// ======================= plugin automation
-	FloatAutos *plugin_autos;
-	FloatAuto *plugin_auto_before, *plugin_auto_after;
-
-// temporary variables for automation
-	Auto *current_auto;
-	double slope_value;
-	double slope_start;
-	double slope_end;
-	double slope_position;
-	double slope;
-	double value;
-
-
 private:
 	int sort_as_module(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);
 	int sort_as_plugin(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);
-	int expand_as_module(int duplicate, int64_t current_position);
+	int expand_as_module(int duplicate, posnum current_position);
 	int expand_as_plugin(int duplicate);
 	int is_exit;
 };

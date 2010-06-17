@@ -51,7 +51,7 @@ VirtualANode::VirtualANode(RenderEngine *renderengine,
 		Track *track, 
 		VirtualNode *parent_module)
  : VirtualNode(renderengine, 
- 		vconsole, 
+		vconsole,
 		real_module, 
 		real_plugin,
 		track, 
@@ -97,9 +97,9 @@ VirtualNode* VirtualANode::create_plugin(Plugin *real_plugin)
 
 
 int VirtualANode::read_data(double *output_temp,
-	int64_t start_position,
-	int64_t len,
-	int64_t sample_rate)
+	samplenum start_position,
+	int len,
+	int sample_rate)
 {
 	VirtualNode *previous_plugin = 0;
 
@@ -107,8 +107,8 @@ int VirtualANode::read_data(double *output_temp,
 	AEdit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		int64_t edl_rate = renderengine->edl->session->sample_rate;
-		int64_t start_position_project = (int64_t)(start_position *
+		int edl_rate = renderengine->edl->session->sample_rate;
+		samplenum start_position_project = (samplenum)(start_position *
 			edl_rate /
 			sample_rate + 
 			0.5);
@@ -118,7 +118,7 @@ int VirtualANode::read_data(double *output_temp,
 
 
 	if(vconsole->debug_tree) 
-		printf("  VirtualANode::read_data position=%lld rate=%lld title=%s parent_node=%p parent_edit=%p\n", 
+		printf("  VirtualANode::read_data position=%lld rate=%d title=%s parent_node=%p parent_edit=%p\n", 
 				start_position,
 				sample_rate,
 				track->title,
@@ -163,9 +163,9 @@ int VirtualANode::read_data(double *output_temp,
 }
 
 int VirtualANode::render(double *output_temp,
-	int64_t start_position,
-	int64_t len,
-	int64_t sample_rate)
+	samplenum start_position,
+	int len,
+	int sample_rate)
 {
 	ARender *arender = ((VirtualAConsole*)vconsole)->arender;
 	if(real_module)
@@ -188,9 +188,9 @@ int VirtualANode::render(double *output_temp,
 }
 
 void VirtualANode::render_as_plugin(double *output_temp,
-	int64_t start_position, 
-	int64_t len,
-	int64_t sample_rate)
+	samplenum start_position,
+	int len,
+	int sample_rate)
 {
 	if(!attachment ||
 		!real_plugin ||
@@ -209,9 +209,9 @@ void VirtualANode::render_as_plugin(double *output_temp,
 
 int VirtualANode::render_as_module(double **audio_out, 
 				double *output_temp,
-				int64_t start_position,
-				int64_t len, 
-				int64_t sample_rate)
+				samplenum start_position,
+				int len,
+				int sample_rate)
 {
 	int in_output = 0;
 	int direction = renderengine->command->get_direction();
@@ -248,17 +248,17 @@ int VirtualANode::render_as_module(double **audio_out,
 
 // Get the peak but don't limit
 // Calculate position relative to project for meters
-	int64_t project_sample_rate = edl->session->sample_rate;
-	int64_t start_position_project = start_position * 
+	int project_sample_rate = edl->session->sample_rate;
+	samplenum start_position_project = start_position * 
 		project_sample_rate /
 		sample_rate;
 	if(real_module && renderengine->command->realtime)
 	{
 		ARender *arender = ((VirtualAConsole*)vconsole)->arender;
 // Starting sample of meter block
-		int64_t meter_render_start;
+		samplenum meter_render_start;
 // Ending sample of meter block
-		int64_t meter_render_end;
+		samplenum meter_render_end;
 // Number of samples in each meter fragment normalized to requested rate
 		int meter_render_fragment = arender->meter_render_fragment * 
 			sample_rate /
@@ -276,7 +276,7 @@ int VirtualANode::render_as_module(double **audio_out,
 				meter_render_end = len;
 // Number of samples into the fragment this meter sized fragment is,
 // normalized to project sample rate.
-			int64_t meter_render_start_project = meter_render_start *
+			samplenum meter_render_start_project = meter_render_start *
 				project_sample_rate /
 				sample_rate;
 
@@ -334,14 +334,14 @@ int VirtualANode::render_as_module(double **audio_out,
 					double *buffer = audio_out[j];
 
 					render_pan(output_temp + mute_position, 
-								buffer + mute_position,
-								mute_fragment,
-								start_position,
-								sample_rate,
-								(Autos*)track->automation->autos[AUTOMATION_PAN],
-								j,
-								direction,
-								0);
+						buffer + mute_position,
+						mute_fragment,
+						start_position,
+						sample_rate,
+						(Autos*)track->automation->autos[AUTOMATION_PAN],
+						j,
+						direction,
+						0);
 				}
 			}
 		}
@@ -355,9 +355,9 @@ int VirtualANode::render_as_module(double **audio_out,
 }
 
 int VirtualANode::render_fade(double *buffer,
-				int64_t len,
-				int64_t input_position,
-				int64_t sample_rate,
+				int len,
+				samplenum input_position,
+				int sample_rate,
 				Autos *autos,
 				int direction,
 				int use_nudge)
@@ -366,7 +366,7 @@ int VirtualANode::render_fade(double *buffer,
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
 	EDL *edl = vconsole->renderengine->edl;
-	int64_t project_sample_rate = edl->session->sample_rate;
+	int project_sample_rate = edl->session->sample_rate;
 	if(use_nudge) input_position += track->nudge * 
 		sample_rate / 
 		project_sample_rate;
@@ -374,10 +374,10 @@ int VirtualANode::render_fade(double *buffer,
 // Normalize input position to project sample rate here.
 // Automation functions are general to video and audio so it 
 // can't normalize itself.
-	int64_t input_position_project = input_position * 
+	samplenum input_position_project = input_position * 
 		project_sample_rate / 
 		sample_rate;
-	int64_t len_project = len * 
+	int len_project = len * 
 		project_sample_rate / 
 		sample_rate;
 
@@ -390,16 +390,16 @@ int VirtualANode::render_fade(double *buffer,
 			value = 0;
 		else
 			value = DB::fromdb(fade_value);
-		for(int64_t i = 0; i < len; i++)
+		for(int i = 0; i < len; i++)
 		{
 			buffer[i] *= value;
 		}
 	}
 	else
 	{
-		for(int64_t i = 0; i < len; i++)
+		for(int i = 0; i < len; i++)
 		{
-			int64_t slope_len = len - i;
+			int slope_len = len - i;
 			input_position_project = input_position * 
 				project_sample_rate / 
 				sample_rate;
@@ -428,9 +428,9 @@ int VirtualANode::render_fade(double *buffer,
 
 int VirtualANode::render_pan(double *input, // start of input fragment
 	double *output,            // start of output fragment
-	int64_t fragment_len,      // fragment length in input scale
-	int64_t input_position,    // starting sample of input buffer in project
-	int64_t sample_rate,       // sample rate of input_position
+	int fragment_len,      // fragment length in input scale
+	samplenum input_position,    // starting sample of input buffer in project
+	int sample_rate,       // sample rate of input_position
 	Autos *autos,
 	int channel,
 	int direction,
@@ -438,34 +438,35 @@ int VirtualANode::render_pan(double *input, // start of input fragment
 {
 	double slope = 0.0;
 	double intercept = 1.0;
+	double value;
+
 	EDL *edl = vconsole->renderengine->edl;
-	int64_t project_sample_rate = edl->session->sample_rate;
+	int project_sample_rate = edl->session->sample_rate;
 	if(use_nudge) input_position += track->nudge * 
 		sample_rate / 
 		project_sample_rate;
 
 	for(int i = 0; i < fragment_len; )
 	{
-		int64_t slope_len = (fragment_len - i)  *
-							project_sample_rate /
-							sample_rate;
+		int slope_len = (fragment_len - i)  *
+					project_sample_rate /
+					sample_rate;
 
 // Get slope intercept formula for next fragment
 		get_pan_automation(slope, 
-						intercept, 
-						input_position * 
-							project_sample_rate / 
-							sample_rate,
-						slope_len,
-						autos,
-						channel,
-						direction);
+				intercept,
+				input_position *
+					project_sample_rate /
+					sample_rate,
+				slope_len,
+				autos,
+				channel,
+				direction);
 
 		slope_len = slope_len * sample_rate / project_sample_rate;
 		slope = slope * sample_rate / project_sample_rate;
 		slope_len = MIN(slope_len, fragment_len - i);
 
-//printf("VirtualANode::render_pan 3 %d %lld %f %p %p\n", i, slope_len, slope, output, input);
 		if(!EQUIV(slope, 0))
 		{
 			for(double j = 0; j < slope_len; j++, i++)
@@ -488,7 +489,6 @@ int VirtualANode::render_pan(double *input, // start of input fragment
 		else
 			input_position -= slope_len;
 
-//printf("VirtualANode::render_pan 4\n");
 	}
 
 	return 0;
@@ -497,8 +497,8 @@ int VirtualANode::render_pan(double *input, // start of input fragment
 
 void VirtualANode::get_pan_automation(double &slope,
 	double &intercept,
-	int64_t input_position,
-	int64_t &slope_len,
+	samplenum input_position,
+	int &slope_len,
 	Autos *autos,
 	int channel,
 	int direction)
@@ -514,7 +514,7 @@ void VirtualANode::get_pan_automation(double &slope,
 	next_keyframe = (PanAuto*)autos->get_next_auto(input_position, 
 		direction, 
 		(Auto* &)next_keyframe);
-	
+
 	if(direction == PLAY_FORWARD)
 	{
 // Two distinct automation points within range

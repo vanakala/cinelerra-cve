@@ -43,64 +43,59 @@ public:
 	~VirtualANode();
 
 	VirtualNode* create_module(Plugin *real_plugin, 
-							Module *real_module, 
-							Track *track);
+					Module *real_module, 
+					Track *track);
 	VirtualNode* create_plugin(Plugin *real_plugin);
 
 // Called by VirtualAConsole::process_buffer to process exit_nodes.
 // read_data recurses down the tree.
 	int render(double *output_temp,
-		int64_t start_position,
-		int64_t len,
-		int64_t sample_rate);
+		samplenum start_position,
+		int len,
+		int sample_rate);
 
 // Read data from whatever comes before this node.
 // Calls render in either the parent node or the module for the track.
 	int read_data(double *output_temp,
-		int64_t start_position,
-		int64_t len,
-		int64_t sample_rate);
+		samplenum start_position,
+		int len,
+		int sample_rate);
 
 private:
 // need *arender for peak updating
 	int render_as_module(double **audio_out, 
-					double *output_temp,
-					int64_t start_position,
-					int64_t len, 
-					int64_t sample_rate);
+				double *output_temp,
+				samplenum start_position,
+				int len, 
+				int sample_rate);
 	void render_as_plugin(double *output_temp,
-		int64_t start_position, 
-		int64_t len,
-		int64_t sample_rate);
+				samplenum start_position,
+				int len,
+				int sample_rate);
 
 	int render_fade(double *buffer,
-					int64_t len,
-					int64_t input_position,
-					int64_t sample_rate,
-					Autos *autos,
-					int direction,
-					int use_nudge);
+				int len,
+				samplenum input_position,
+				int sample_rate,
+				Autos *autos,
+				int direction,
+				int use_nudge);
 	int render_pan(double *input,        // start of input fragment
 				double *output,        // start of output fragment
-				int64_t fragment_len,      // fragment length in input scale
-				int64_t input_position, // starting sample of input buffer in project
-				int64_t sample_rate,
+				int fragment_len,      // fragment length in input scale
+				samplenum input_position, // starting sample of input buffer in project
+				int sample_rate,
 				Autos *autos,
 				int channel,
 				int direction,
 				int use_nudge);
 	void get_pan_automation(double &slope,
-		double &intercept,
-		int64_t input_position,
-		int64_t &slope_len,
-		Autos *autos,
-		int channel,
-		int direction);
-
-/*
- * 	double* get_module_input(int double_buffer, int64_t fragment_position);
- * 	double* get_module_output(int double_buffer, int64_t fragment_position);
- */
+				double &intercept,
+				samplenum input_position,
+				int &slope_len,
+				Autos *autos,
+				int channel,
+				int direction);
 
 	DB db;
 

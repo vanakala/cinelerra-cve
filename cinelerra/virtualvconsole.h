@@ -36,12 +36,6 @@ public:
 	VirtualVConsole(RenderEngine *renderengine, VRender *vrender);
 	virtual ~VirtualVConsole();
 
-// Create ptrs to input buffers
-/*
- * 	void new_input_buffer(int ring_buffer);
- * 	void delete_input_buffer(int ring_buffer);
- * 	int total_ring_buffers();
- */
 	void get_playable_tracks();
 	VirtualNode* new_entry_node(Track *track, 
 		Module *module, 
@@ -58,15 +52,5 @@ public:
 // Calculated at the start of every process_buffer
 	int use_opengl;
 };
-
-
-
-
-
-
-
-
-
-
 
 #endif

@@ -41,7 +41,7 @@ public:
 	virtual ~VirtualConsole();
 
 	virtual void create_objects();
-	virtual void get_playable_tracks();
+	virtual void get_playable_tracks() {};
 	int allocate_input_buffers();
 	virtual void new_input_buffer(int ring_buffer) { };
 	virtual void delete_input_buffer(int ring_buffer) { };
@@ -60,7 +60,7 @@ public:
 // was new_toplevel_node
 	virtual VirtualNode* new_entry_node(Track *track, 
 		Module *module, 
-		int track_number);
+		int track_number) { return 0; };
 // Append exit node to table when expansion hits the end of a tree.
 	void append_exit_node(VirtualNode *node);
 
@@ -68,8 +68,8 @@ public:
 	Module* module_number(int track_number);
 // Test for reconfiguration.
 // If reconfiguration is coming up, truncate length and reset last_playback.
-	int test_reconfigure(int64_t position, 
-		int64_t &length,
+	int test_reconfigure(posnum position, 
+		posnum &length,
 		int &last_playback);
 
 

@@ -58,17 +58,13 @@ VirtualNode::VirtualNode(RenderEngine *renderengine,
 	plugin_type = 0;
 	waiting_real_plugin = 0;
 	plugin_buffer_number = 0;
-	plugin_autos = 0;
-	plugin_auto_before = plugin_auto_after = 0;
 	attachment = 0;
 	is_exit = 0;
-//printf("VirtualNode::VirtualNode 1\n");
 }
 
 VirtualNode::~VirtualNode()
 {
 	subnodes.remove_all_objects();
-//printf("VirtualNode::VirtualNode 2\n");
 }
 
 #define PRINT_INDENT for(int j = 0; j < indent; j++) printf(" ");
@@ -97,7 +93,7 @@ void VirtualNode::dump(int indent)
 	}
 }
 
-int VirtualNode::expand(int persistent_plugins, int64_t current_position)
+int VirtualNode::expand(int persistent_plugins, posnum current_position)
 {
 // module needs to know where the input data for the next process is
 	if(real_module)
@@ -115,7 +111,7 @@ int VirtualNode::expand(int persistent_plugins, int64_t current_position)
 	return 0;
 }
 
-int VirtualNode::expand_as_module(int duplicate, int64_t current_position)
+int VirtualNode::expand_as_module(int duplicate, posnum current_position)
 {
 	Transition *transition = 0;
 
@@ -192,10 +188,6 @@ int VirtualNode::expand_as_plugin(int duplicate)
 	}
 
 
-
-
-
-
 	if(plugin_type == PLUGIN_STANDALONE)
 	{
 // Get plugin server
@@ -203,10 +195,6 @@ int VirtualNode::expand_as_plugin(int duplicate)
 
 		attachment = module->attachment_of(real_plugin);
 	}
-
-
-
-
 
 // Add to real plugin's list of virtual plugins for configuration updates
 // and plugin_server initializations.
@@ -219,16 +207,13 @@ int VirtualNode::expand_as_plugin(int duplicate)
 			plugin_buffer_number = attachment->attach_virtual_plugin(this);
 	}
 
-
-
-
 	return 0;
 }
 
 int VirtualNode::attach_virtual_module(Plugin *plugin, 
 	int plugin_number, 
 	int duplicate, 
-	int64_t current_position)
+	posnum current_position)
 {
 	if(plugin->on)
 	{
@@ -242,9 +227,6 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 // Switch off if circular reference.  This happens if a track is deleted.
 		if(this->real_module && track == this->real_module->track) return 1;
 
-
-
-
 		VirtualNode *virtual_module = create_module(plugin,
 			real_module,
 			track);
@@ -256,10 +238,11 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 	return 0;
 }
 
+
 int VirtualNode::attach_virtual_plugin(Plugin *plugin, 
 	int plugin_number, 
 	int duplicate, 
-	int64_t current_position)
+	posnum current_position)
 {
 // Get real plugin and test if it is on.
 	int is_on = 1;
@@ -311,7 +294,7 @@ VirtualNode* VirtualNode::get_previous_plugin(VirtualNode *current_node)
 
 
 
-void VirtualNode::get_mute_fragment(int64_t input_position,
+void VirtualNode::get_mute_fragment(posnum input_position,
 				int &mute_constant, 
 				int &fragment_len, 
 				Autos *autos,

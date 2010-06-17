@@ -67,7 +67,6 @@ void VirtualConsole::create_objects()
 	get_playable_tracks();
 	total_exit_nodes = playable_tracks->total;
 	build_virtual_console(1);
-//dump();
 }
 
 void VirtualConsole::start_playback()
@@ -76,9 +75,6 @@ void VirtualConsole::start_playback()
 	done = 0;
 }
 
-void VirtualConsole::get_playable_tracks()
-{
-}
 
 Module* VirtualConsole::module_of(Track *track)
 {
@@ -133,15 +129,6 @@ void VirtualConsole::build_virtual_console(int persistent_plugins)
 		}
 		commonrender->restart_plugins = 1;
 	}
-//dump();
-}
-
-VirtualNode* VirtualConsole::new_entry_node(Track *track, 
-	Module *module, 
-	int track_number)
-{
-	printf("VirtualConsole::new_entry_node should not be called\n");
-	return 0;
 }
 
 void VirtualConsole::append_exit_node(VirtualNode *node)
@@ -170,8 +157,8 @@ void VirtualConsole::dump()
 }
 
 
-int VirtualConsole::test_reconfigure(int64_t position, 
-	int64_t &length, 
+int VirtualConsole::test_reconfigure(posnum position, 
+	posnum &length, 
 	int &last_playback)
 {
 	int result = 0;
@@ -220,9 +207,9 @@ int VirtualConsole::test_reconfigure(int64_t position,
 
 	int direction = renderengine->command->get_direction();
 // GCC 3.2 requires this or optimization error results.
-	int64_t longest_duration1;
-	int64_t longest_duration2;
-	int64_t longest_duration3;
+	posnum longest_duration1;
+	posnum longest_duration2;
+	posnum longest_duration3;
 
 // Length of time until next transition, edit, or effect change.
 // Why do we need the edit change?  Probably for changing to and from silence.
