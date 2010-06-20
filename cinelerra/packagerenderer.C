@@ -22,6 +22,7 @@
 #include "arender.h"
 #include "asset.h"
 #include "auto.h"
+#include "bcsignals.h"
 #include "brender.h"
 #include "cache.h"
 #include "clip.h"
@@ -74,8 +75,18 @@ RenderPackage::~RenderPackage()
 {
 }
 
-
-
+void RenderPackage::dump()
+{
+	printf("RenderPackage dump:\n");
+	if(path[0])
+		printf("    path '%s'\n", path);
+	else
+		printf("    path is empty\n");
+	printf("    audio start %lld, end %lld  video start %d end %d\n",
+		audio_start, audio_end, video_start, video_end);
+	printf("    use_brender %d audio_do %d video_do %d\n",
+		use_brender, video_do, audio_do);
+}
 
 
 
@@ -118,7 +129,6 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	this->plugindb = plugindb;
 
 
-//printf("PackageRenderer::initialize %d\n", preferences->processors);
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
 	command->get_edl()->copy_all(edl);
@@ -143,17 +153,8 @@ int PackageRenderer::initialize(MWindow *mwindow,
 
 void PackageRenderer::create_output()
 {
-//	FileSystem fs;
 	asset = new Asset(*default_asset);
-
-
-
-
-
 	strcpy(asset->path, package->path);
-
-
-	
 
 	file = new File;
 
@@ -177,7 +178,6 @@ void PackageRenderer::create_output()
 		mwindow->sighandler->push_file(file);
 		IndexFile::delete_index(preferences, asset);
 	}
-//printf("PackageRenderer::create_output 100 %d\n", result);
 }
 
 void PackageRenderer::create_engine()
@@ -235,8 +235,6 @@ void PackageRenderer::create_engine()
 		video_write_position = 0;
 		direct_frame_copying = 0;
 
-
-//printf("PackageRenderer::create_engine 1\n");
 		file->start_video_thread(video_write_length,
 			command->get_edl()->session->color_model,
 			preferences->processors > 1 ? 2 : 1,
@@ -269,7 +267,6 @@ void PackageRenderer::create_engine()
 
 void PackageRenderer::do_audio()
 {
-//printf("PackageRenderer::do_audio 1\n");
 // Do audio data
 	if(asset->audio_data)
 	{
@@ -281,19 +278,15 @@ void PackageRenderer::do_audio()
 				0;
 
 
-
-
 // Call render engine
 		result = render_engine->arender->process_buffer(audio_output_ptr, 
 			audio_read_length, 
 			audio_position,
 			0);
 
-//printf("PackageRenderer::do_audio 3\n");
-
 
 // Fix buffers for preroll
-		int64_t output_length = audio_read_length;
+		samplenum output_length = audio_read_length;
 		if(audio_preroll > 0)
 		{
 			if(audio_preroll >= output_length)
@@ -310,7 +303,6 @@ void PackageRenderer::do_audio()
 						}
 				}
 			}
-//printf("PackageRenderer::do_audio 4\n");
 
 			audio_preroll -= audio_read_length;
 		}
@@ -320,7 +312,6 @@ void PackageRenderer::do_audio()
 	}
 
 	audio_position += audio_read_length;
-//printf("PackageRenderer::do_audio 5\n");
 }
 
 
@@ -330,7 +321,7 @@ void PackageRenderer::do_video()
 	if(asset->video_data)
 	{
 // get the absolute video position from the audio position
-		int64_t video_end = video_position + video_read_length;
+		framenum video_end = video_position + video_read_length;
 
 		if(video_end > package->video_end)
 			video_end = package->video_end;
@@ -338,7 +329,6 @@ void PackageRenderer::do_video()
 		while(video_position < video_end && !result)
 		{
 // Try to copy the compressed frame directly from the input to output files
-//printf("PackageRenderer::do_video 2 video_position=%ld\n", video_position);
 			if(direct_frame_copy(command->get_edl(), 
 				video_position, 
 				file, 
@@ -469,7 +459,7 @@ void PackageRenderer::stop_output()
 					BRender::RENDERED);
 			}
 		}
-		video_write_position = 0;	
+		video_write_position = 0;
 		if(!error) file->stop_video_thread();
 		if(mwindow)
 		{
@@ -506,7 +496,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 	default_asset->video_data = package->video_do;
 	default_asset->audio_data = package->audio_do;
 	Render::check_asset(edl, *default_asset);
-	
+
 	create_output();
 
 	if(!asset->video_data) video_done = 1;
@@ -516,8 +506,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 	if(!result)
 	{
 		create_engine();
-
-//printf("PackageRenderer::render_package 5 %d\n", result);
 
 // Main loop
 		while((!audio_done || !video_done) && !result)
@@ -539,8 +527,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 				samples_rendered = audio_read_length;
 				need_audio = 1;
 			}
-
-//printf("PackageRenderer::render_package 6 %d\n", samples_rendered);
 
 			if(!video_done)
 			{
@@ -577,49 +563,27 @@ int PackageRenderer::render_package(RenderPackage *package)
 				need_video = 1;
 			}
 
-//printf("PackageRenderer::render_package 1 %d %lld %lld\n", result, audio_read_length, video_read_length);
 			if(need_video && !result) do_video();
-//printf("PackageRenderer::render_package 7 %d %d\n", result, samples_rendered);
-			if(need_audio && !result) do_audio();
 
+			if(need_audio && !result) do_audio();
 
 			if(!result) set_progress(samples_rendered);
 
-
-
-
-
 			if(!result && progress_cancelled()) result = 1;
 
-// printf("PackageRenderer::render_package 10 %d %d %d %d\n", 
-// audio_read_length, video_read_length, samples_rendered, result);
 			if(result) 
 				set_result(result);
 			else
 				result = get_result();
 		}
 
-//printf("PackageRenderer::render_package 20\n");
 		stop_engine();
-//printf("PackageRenderer::render_package 30\n");
-
 		stop_output();
-//printf("PackageRenderer::render_package 40\n");
-
 
 	}
 
-
-
-//printf("PackageRenderer::render_package 50\n");
 	close_output();
-//printf("PackageRenderer::render_package 60\n");
-
-
 	set_result(result);
-//printf("PackageRenderer::render_package 70\n");
-
-
 
 	return result;
 }
@@ -641,7 +605,6 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 	Track *playable_track;
 	Edit *playable_edit;
 
-//printf("Render::direct_frame_copy 1\n");
 	if(direct_copy_possible(edl, 
 		video_position, 
 		playable_track, 
@@ -659,7 +622,6 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 			file->stop_video_thread();
 			direct_frame_copying = 1;
 		}
-//printf("Render::direct_frame_copy 2\n");
 
 		if(!package->use_brender)
 			error |= ((VEdit*)playable_edit)->read_frame(compressed_output, 
@@ -679,9 +641,7 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 		{
 			if(package->use_brender)
 			{
-//printf("PackageRenderer::direct_frame_copy 1\n");
 				error = set_video_map(video_position, BRender::SCANNED);
-//printf("PackageRenderer::direct_frame_copy 10 %d\n", error);
 			}
 			else
 			{
@@ -727,16 +687,12 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 		}
 	}
 
-//printf("Render::direct_copy_possible 1 %d\n", result);
 	if(total_playable_tracks != 1) result = 0;
-//printf("Render::direct_copy_possible 2 %d\n", result);
 
 // Edit must have a source file
 	if(result)
 	{
-//printf("Render::direct_copy_possible 3 %d\n", result);
 		playable_edit = playable_track->edits->get_playable_edit(current_position, 1);
-//printf("Render::direct_copy_possible 4 %d %p\n", result, playable_edit);
 		if(!playable_edit)
 			result = 0;
 	}
@@ -745,66 +701,18 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 // Source file must be same size as project output.
 	if(result)
 	{
-//printf("Render::direct_copy_possible 5 %d\n", result);
 		if(!file->can_copy_from(playable_edit, 
 			current_position + playable_track->nudge,
 			edl->session->output_w, 
 			edl->session->output_h))
 			result = 0;
 	}
-//printf("Render::direct_copy_possible 6 %d\n", result);
 
 // Test conditions mutual between vrender.C and this.
 	if(result && 
 		!playable_track->direct_copy_possible(current_position, PLAY_FORWARD, 1))
 		result = 0;
-//printf("Render::direct_copy_possible 7 %d\n", result);
 
 	return result;
 }
-
-
-
-
-
-
-
-
-
-int PackageRenderer::get_master()
-{
-	return 0;
-}
-
-// Get result status from server
-int PackageRenderer::get_result()
-{
-	return 0;
-}
-
-void PackageRenderer::set_result(int value)
-{
-}
-
-void PackageRenderer::set_progress(samplenum value)
-{
-}
-
-int PackageRenderer::set_video_map(framenum position, int value)
-{
-}
-
-int PackageRenderer::progress_cancelled()
-{
-	return 0;
-}	
-
-
-
-
-
-
-
-
-
 

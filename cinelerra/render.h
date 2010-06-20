@@ -73,8 +73,8 @@ public:
 	
 	MWindow *mwindow;
 	Render *render;
-	
-	int64_t last_value;
+
+	framenum last_value;
 };
 
 
@@ -89,7 +89,7 @@ public:
 	int get_master();
 	int get_result();
 	void set_result(int value);
-	void set_progress(int64_t value);
+	void set_progress(framenum value);
 	int progress_cancelled();
 
 	Render *render;
@@ -146,13 +146,6 @@ public:
 		int &number_start, 
 		int &total_digits,
 		int min_digits = 3);
-	int direct_frame_copy(EDL *edl, int64_t &render_video_position, File *file);
-	int direct_copy_possible(EDL *edl, 
-			int64_t current_position, 
-			Track* playable_track,  // The one track which is playable
-			Edit* &playable_edit, // The edit which is playing
-			File *file);   // Output file
-
 	void start_progress();
 	void stop_progress();
 
@@ -201,7 +194,7 @@ public:
 // Total samples updated by the render farm and the local renderer.
 // This avoids rounding errors and complies with the use of samples for
 // timing.
-	int64_t total_rendered;
+	framenum total_rendered;
 // Speed for the master node
 	double frames_per_second;
 // Time used in last render
@@ -211,9 +204,9 @@ public:
 	RenderWindow *render_window;
 
 // For non interactive mode, maintain progress here.
-	int64_t progress_max;
+	posnum progress_max;
 	Timer *progress_timer;
-	int64_t last_eta;
+	posnum last_eta;
 };
 
 class RenderToTracks;
@@ -269,16 +262,6 @@ public:
 	Render *render;
 	Asset *asset;
 };
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -169,7 +169,7 @@ void MainPackageRenderer::set_result(int value)
 		render->result = value;
 }
 
-void MainPackageRenderer::set_progress(int64_t value)
+void MainPackageRenderer::set_progress(framenum value)
 {
 	render->counter_lock->lock("MainPackageRenderer::set_progress");
 	render->total_rendered += value;
@@ -177,7 +177,7 @@ void MainPackageRenderer::set_progress(int64_t value)
 // If non interactive, print progress out
 	if(!render->progress)
 	{
-		int64_t current_eta = render->progress_timer->get_scaled_difference(1000);
+		posnum current_eta = render->progress_timer->get_scaled_difference(1000);
 		if(current_eta - render->last_eta > 1000)
 		{
 			double eta = 0;
@@ -738,9 +738,6 @@ int Render::render(int test_overwrite,
 	if(!result)
 	{
 		start_progress();
-	
-
-
 
 		MainPackageRenderer package_renderer(this);
 		result = package_renderer.initialize(mwindow,
@@ -748,12 +745,6 @@ int Render::render(int test_overwrite,
 				preferences, 
 				default_asset,
 				plugindb);
-
-
-
-
-
-
 
 		while(!result)
 		{
@@ -795,10 +786,6 @@ int Render::render(int test_overwrite,
 
 
 
-
-
-
-
 		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
 		{
 			farm_server->wait_clients();
@@ -813,9 +800,6 @@ int Render::render(int test_overwrite,
 
 // Delete the progress box
 		stop_progress();
-
-
-
 
 
 	}
@@ -993,9 +977,7 @@ int Render::load_profile(int profile_slot, Asset *asset)
 	char string_name[100];
 	sprintf(string_name, "RENDER_%i_STRATEGY", profile_slot);
 	strategy = mwindow->defaults->get(string_name, SINGLE_PASS);
-// Load mode is not part of the profile
-//	printf(string_name, "RENDER_%i_LOADMODE", profile_slot);
-//	load_mode = mwindow->defaults->get(string_name, LOAD_NEW_TRACKS);
+
 	sprintf(string_name, "RENDER_%i_RANGE_TYPE", profile_slot);
 	range_type = mwindow->defaults->get(string_name, RANGE_PROJECT);
 
@@ -1104,8 +1086,7 @@ int RenderWindow::create_objects()
 		&render->strategy,
 		0);
 	add_subwindow(new BC_Title(x, 
-		y, 
-			_("Render range:")));
+		y, _("Render range:")));
 
 	x += 110;
 	add_subwindow(rangeproject = new RenderRangeProject(this, 
@@ -1181,5 +1162,3 @@ int RenderRangeInOut::handle_event()
 	rwindow->update_range_type(RANGE_INOUT);
 	return 1;
 }
-
-

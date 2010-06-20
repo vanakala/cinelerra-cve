@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "confirmsave.h"
 #include "edl.h"
@@ -80,14 +81,6 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	audio_end = Units::to_int64(total_end * default_asset->sample_rate);
 	video_end = Units::to_int64(total_end * default_asset->frame_rate);
 	current_package = 0;
-
-// sleep(1);
-// printf("PackageDispatcher::create_packages 1 %d %f %f\n", 
-// video_end, 
-// total_end, 
-// default_asset->frame_rate);
-
-
 
 	if(strategy == SINGLE_PASS)
 	{
@@ -247,15 +240,12 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	int use_local_rate)
 {
 	package_lock->lock("PackageDispatcher::get_package");
-// printf("PackageDispatcher::get_package 1 %f\n", 
-// frames_per_second);
 
 	preferences->set_rate(frames_per_second, client_number);
 	if(mwindow) mwindow->preferences->copy_rates_from(preferences);
 	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
 	RenderPackage *result = 0;
-//printf("PackageDispatcher::get_package 1 %d\n", strategy);
 	if(strategy == SINGLE_PASS || 
 		strategy == FILE_PER_LABEL || 
 		strategy == FILE_PER_LABEL_FARM)
@@ -276,7 +266,6 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	else
 	if(strategy == BRENDER_FARM)
 	{
-//printf("Dispatcher::get_package 1 %d %d\n", video_position, video_end);
 		if(video_position < video_end)
 		{
 // Allocate new packages
@@ -337,7 +326,6 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 				0,
 				total_digits,
 				number_start);
-//printf("PackageDispatcher::get_package 2 %s\n", result->path);
 
 			current_number++;
 			total_packages++;
@@ -347,7 +335,6 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 
 	package_lock->unlock();
 
-//printf("PackageDispatcher::get_package %p\n", result);
 	return result;
 }
 
@@ -369,7 +356,7 @@ ArrayList<Asset*>* PackageDispatcher::get_asset_list()
 	return assets;
 }
 
-int64_t PackageDispatcher::get_progress_max()
+posnum PackageDispatcher::get_progress_max()
 {
 	if (strategy == SINGLE_PASS_FARM)
 		return packaging_engine->get_progress_max();

@@ -52,12 +52,10 @@ public:
 // After a socket times out, kill the render node.
 	void kill_client();
 	
-//	RenderFarmClientThread *thread;
-	
 	int port;
 	const char *deamon_path;
 // PID to be returned to background render object
-	int this_pid;
+	pid_t this_pid;
 // The plugin paths must be known before any threads are started
 	BC_Hash *boot_defaults;
 	Preferences *boot_preferences;
@@ -117,7 +115,7 @@ public:
 	RenderFarmWatchdog *watchdog;
 	RenderFarmKeepalive *keep_alive;
 // pid of forked process
-	int pid;
+	pid_t pid;
 };
 
 
@@ -161,11 +159,5 @@ public:
 	RenderFarmClientThread *client_thread;
 	int done;
 };
-
-
-
-
-
-
 
 #endif

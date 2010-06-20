@@ -61,7 +61,7 @@ RenderFarmServer::RenderFarmServer(ArrayList<PluginServer*> *plugindb,
 	Preferences *preferences,
 	int use_local_rate,
 	int *result_return,
-	int64_t *total_return,
+	framenum *total_return,
 	Mutex *total_return_lock,
 	Asset *default_asset,
 	EDL *edl,
@@ -109,9 +109,7 @@ int RenderFarmServer::start_clients()
 // The render farm must wait for all the clients to finish.
 int RenderFarmServer::wait_clients()
 {
-//printf("RenderFarmServer::wait_clients 1\n");
 	clients.remove_all_objects();
-//printf("RenderFarmServer::wait_clients 2\n");
 	return 0;
 }
 
@@ -148,14 +146,11 @@ RenderFarmServerThread::RenderFarmServerThread(ArrayList<PluginServer*> *plugind
 
 RenderFarmServerThread::~RenderFarmServerThread()
 {
-//printf("RenderFarmServerThread::~RenderFarmServerThread 1 %p\n", this);
 	Thread::join();
-//printf("RenderFarmServerThread::~RenderFarmServerThread 1\n");
 	if(socket_fd >= 0) close(socket_fd);
 	if(watchdog) delete watchdog;
 	if(buffer) delete [] buffer;
 	if(datagram) delete [] datagram;
-//printf("RenderFarmServerThread::~RenderFarmServerThread 2\n");
 }
 
 
@@ -219,15 +214,15 @@ int RenderFarmServerThread::open_client(const char *hostname, int port)
 // Open port
 			struct sockaddr_in addr;
 			struct hostent *hostinfo;
-   			addr.sin_family = AF_INET;
+			addr.sin_family = AF_INET;
 			addr.sin_port = htons(port);
 			hostinfo = gethostbyname(hostname);
 			if(hostinfo == NULL)
-    		{
-    			fprintf(stderr, _("RenderFarmServerThread::open_client: unknown host %s.\n"), 
+			{
+				fprintf(stderr, _("RenderFarmServerThread::open_client: unknown host %s.\n"), 
 					hostname);
-    			result = 1;
-    		}
+				result = 1;
+			}
 			else
 			{
 				addr.sin_addr = *(struct in_addr *) hostinfo->h_addr;	
@@ -448,7 +443,7 @@ void RenderFarmServerThread::run()
 
 			case RENDERFARM_DONE:
 				done = 1;
-				break;
+    				break;
 
 			case RENDERFARM_KEEPALIVE:
 				break;
@@ -478,8 +473,6 @@ int RenderFarmServerThread::write_string(char *string)
 	STORE_INT32(len);
 	memcpy(datagram + i, string, len);
 	write_socket((char*)datagram, len + 4);
-//printf("RenderFarmServerThread::write_string %02x%02x%02x%02x\n",
-//	datagram[0], datagram[1], datagram[2], datagram[3]);
 
 	delete [] datagram;
 	datagram = 0;
@@ -534,10 +527,8 @@ void RenderFarmServerThread::send_edl()
 		0,
 		0);
 	file.terminate_string();
-//printf("RenderFarmServerThread::send_edl\n%s\n\n", file.string);
 
 	write_string(file.string);
-//printf("RenderFarmServerThread::send_edl 2\n");
 }
 
 
@@ -549,26 +540,22 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 		((u_int32_t)buffer[3])) / 
 		65536.0;
 
-//printf("RenderFarmServerThread::send_package 1 %f\n", frames_per_second);
 	RenderPackage *package = 
 		server->packages->get_package(frames_per_second, 
 			number, 
 			server->use_local_rate);
 
-//printf("RenderFarmServerThread::send_package 2\n");
 	datagram = new char[BCTEXTLEN];
 
 // No more packages
 	if(!package)
 	{
-//printf("RenderFarmServerThread::send_package 1\n");
 		datagram[0] = datagram[1] = datagram[2] = datagram[3] = 0;
 		write_socket(datagram, 4);
 	}
 	else
 // Encode package
 	{
-//printf("RenderFarmServerThread::send_package 10\n");
 		int i = 4;
 		strcpy(&datagram[i], package->path);
 		i += strlen(package->path);
@@ -596,11 +583,13 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 
 void RenderFarmServerThread::set_progress(unsigned char *buffer)
 {
+	if(!server->total_return_lock)
+		return;
 	server->total_return_lock->lock("RenderFarmServerThread::set_progress");
 	*server->total_return += (int64_t)(((u_int32_t)buffer[0]) << 24) |
-											(((u_int32_t)buffer[1]) << 16) |
-											(((u_int32_t)buffer[2]) << 8)  |
-											((u_int32_t)buffer[3]);
+					(((u_int32_t)buffer[1]) << 16) |
+					(((u_int32_t)buffer[2]) << 8)  |
+					((u_int32_t)buffer[3]);
 	server->total_return_lock->unlock();
 }
 
@@ -627,7 +616,6 @@ int RenderFarmServerThread::set_video_map(unsigned char *buffer)
 
 void RenderFarmServerThread::set_result(unsigned char *buffer)
 {
-//printf("RenderFarmServerThread::set_result %p\n", buffer);
 	if(!*server->result_return)
 		*server->result_return = buffer[0];
 }
@@ -698,14 +686,11 @@ void RenderFarmWatchdog::run()
 		{
 			if(client)
 			{
-				printf("RenderFarmWatchdog::run 1 killing pid %d\n", client->pid);
-//				client->cancel();
 				kill(client->pid, SIGKILL);
 			}
 			else
 			if(server)
 			{
-				printf("RenderFarmWatchdog::run 1 killing thread %p\n", server);
 				server->cancel();
 				unsigned char buffer[4];
 				buffer[0] = 1;
@@ -716,7 +701,3 @@ void RenderFarmWatchdog::run()
 		}
 	}
 }
-
-
-
-

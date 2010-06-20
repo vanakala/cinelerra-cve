@@ -60,15 +60,15 @@ public:
 	void get_package_paths(ArrayList<char*> *path_list);
 
 	int get_total_packages();
-	int64_t get_progress_max();
+	posnum get_progress_max();
 	int packages_are_done();
 
 private:
 	EDL *edl;
-	int64_t audio_position;
-	int64_t video_position;
-	int64_t audio_end;
-	int64_t video_end;
+	samplenum audio_position;
+	samplenum audio_end;
+	framenum video_position;
+	framenum video_end;
 	double total_start;
 	double total_end;
 	double total_len;
@@ -80,8 +80,8 @@ private:
 	int total_digits;      // Total number of digits including padding the user specified.
 	double package_len;    // Target length of a single package
 	double min_package_len; // Minimum package length after load balancing
-	int64_t total_packages;   // Total packages to base calculations on
-	int64_t total_allocated;  // Total packages to test the existence of
+	int total_packages;   // Total packages to base calculations on
+	int total_allocated;  // Total packages to test the existence of
 	int nodes;
 	MWindow *mwindow;
 	RenderPackage **packages;

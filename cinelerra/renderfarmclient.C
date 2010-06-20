@@ -84,7 +84,6 @@ RenderFarmClient::RenderFarmClient(int port,
 
 RenderFarmClient::~RenderFarmClient()
 {
-//	delete thread;
 	delete boot_defaults;
 	delete boot_preferences;
 	plugindb->remove_all_objects();
@@ -207,7 +206,6 @@ void RenderFarmClient::kill_client()
 {
 	if(deamon_path)
 	{
-printf("RenderFarmClient::kill_client 2\n");
 		remove(deamon_path);
 		kill(this_pid, SIGKILL);
 	}
@@ -424,7 +422,6 @@ int RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 	FileXML file;
 	file.read_from_string((char*)string2);
 	asset->read(&file);
-	
 
 
 	BC_Hash defaults;
@@ -503,21 +500,16 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 	write_socket((char*)datagram, 4);
 
 
-//printf("RenderFarmClientThread::read_package 1 %f %ld\n", frames_per_second, fixed);
 	char *data;
 	unsigned char *data_ptr;
 	read_string(data);
-//printf("RenderFarmClientThread::read_package 2 %p\n", data);
+
 // Signifies end of session.
 	if(!data) 
 	{
-//		printf(_("RenderFarmClientThread::read_package no output path recieved.\n"));
 		unlock();
 		return 1;
 	}
-
-//printf("RenderFarmClientThread::read_package 2\n");
-
 
 	data_ptr = (unsigned char*)data;
 	strcpy(package->path, data);
@@ -539,7 +531,6 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 
 	delete [] data;
 	unlock();
-
 	return 0;
 }
 

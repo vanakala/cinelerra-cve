@@ -26,6 +26,7 @@
 #include "arraylist.h"
 #include "asset.inc"
 #include "brender.inc"
+#include "datatype.h"
 #include "bchash.inc"
 #include "condition.inc"
 #include "edl.inc"
@@ -37,7 +38,6 @@
 #include "render.inc"
 #include "renderfarm.inc"
 #include "renderfarmclient.inc"
-//#include "renderfarmfsserver.inc"
 #include "thread.h"
 
 #include <stdint.h>
@@ -162,13 +162,12 @@ enum
 class RenderFarmServer
 {
 public:
-// MWindow is required to get the plugindb to save the EDL.
 	RenderFarmServer(ArrayList<PluginServer*> *plugindb, 
 		PackageDispatcher *packages,
 		Preferences *preferences,
 		int use_local_rate,
 		int *result_return,
-		int64_t *total_return,
+		framenum *total_return,
 		Mutex *total_return_lock,
 		Asset *default_asset,
 		EDL *edl,
@@ -187,7 +186,6 @@ public:
 
 	ArrayList<RenderFarmServerThread*> clients;
 	ArrayList<PluginServer*> *plugindb;
-//	MWindow *mwindow;
 	PackageDispatcher *packages;
 	Preferences *preferences;
 // Use master node's framerate
@@ -198,7 +196,7 @@ public:
 // Any nonzero value is an error and stops rendering.
 	int *result_return;
 // The total number of frames completed
-	int64_t *total_return;
+	framenum *total_return;
 	Mutex *total_return_lock;
 	Asset *default_asset;
 	EDL *edl;
@@ -242,7 +240,6 @@ public:
 	
 	void run();
 	
-//	MWindow *mwindow;
 	ArrayList<PluginServer*> *plugindb;
 	RenderFarmServer *server;
 	RenderFarmWatchdog *watchdog;
@@ -255,7 +252,7 @@ public:
 // These objects can be left dangling of the watchdog kills the thread.
 // They are deleted in the destructor.
 	unsigned char *buffer;
-	int64_t buffer_allocated;
+	int buffer_allocated;
 	char *datagram;
 };
 
@@ -279,11 +276,7 @@ public:
 	Condition *next_request;
 	Condition *request_complete;
 	int done;
-	int pid;
 };
-
-
-
 
 
 #endif

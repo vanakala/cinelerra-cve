@@ -96,7 +96,7 @@ public:
 
 // Get last contiguous frame from map, with locking.
 // Only needed by BRenderThread::start but nothing really uses it.
-	int get_last_contiguous(framenum brender_start);
+	framenum get_last_contiguous(framenum brender_start);
 // Allocate map with locking
 	void allocate_map(framenum brender_start, framenum start, framenum end);
 // Mark a frame as finished
@@ -130,7 +130,7 @@ public:
 	int map_valid;
 
 // Constantly recalculate this after every frame instead of searching
-	int last_contiguous;
+	framenum last_contiguous;
 
 // Wait until stop commands are finished
 	Condition *completion_lock;
@@ -196,9 +196,7 @@ public:
 // Render farm polls these.
 	int farm_result;
 	double fps_result;
-// Not used
-	int64_t total_frames;
-	Mutex *total_frames_lock;
+
 	int done;
 };
 

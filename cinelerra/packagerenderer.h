@@ -50,6 +50,7 @@ class RenderPackage
 public:
 	RenderPackage();
 	~RenderPackage();
+	void dump();
 
 // Path of output without remote prefix
 	char path[BCTEXTLEN];
@@ -96,16 +97,16 @@ public:
 		int &result);
 
 // Invoke behavior for master node
-	virtual int get_master();
+	virtual int get_master() { return 0; };
 // Get result status from server
-	virtual int get_result();
-	virtual void set_result(int value);
-	virtual void set_progress(int64_t total_samples);
+	virtual int get_result() { return 0; };
+	virtual void set_result(int value) {};
+	virtual void set_progress(samplenum total_samples) {};
 // Used by background rendering to mark a frame as finished.
 // If the GUI is locked for a long time this may abort, 
 // assuming the server crashed.
-	virtual int set_video_map(int position, int value);
-	virtual int progress_cancelled();
+	virtual int set_video_map(int position, int value) {};
+	virtual int progress_cancelled() { return 0; };
 
 	void create_output();
 	void create_engine();
@@ -141,7 +142,6 @@ public:
 	VFrame *compressed_output;
 	AudioOutConfig *aconfig;
 	VideoOutConfig *vconfig;
-//	PlaybackConfig *playback_config;
 	PlayableTracks *playable_tracks;
 	RenderEngine *render_engine;
 	RenderPackage *package;

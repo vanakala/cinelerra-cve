@@ -28,6 +28,7 @@
 #include "edlsession.h"
 #include "language.h"
 #include "mainsession.h"
+#include "mainerror.h"
 #include "mtimebar.h"
 #include "mutex.h"
 #include "mwindowgui.h"
@@ -71,50 +72,34 @@ BRender::BRender(MWindow *mwindow)
 	map = 0;
 	map_size = 0;
 	map_valid = 0;
-	last_contiguous + 0;
+	last_contiguous = 0;
 	set_synchronous(1);
 }
 
 BRender::~BRender()
 {
-TRACE("BRender::~BRender 1\n");
 	if(thread) 
 	{
-TRACE("BRender::~BRender 2\n");
 		stop();
-TRACE("BRender::~BRender 3\n");
 		delete thread;
-TRACE("BRender::~BRender 4\n");
 	}
 
 
-TRACE("BRender::~BRender 5\n");
 	if(master_pid >= 0)
 	{
 		kill(master_pid, SIGKILL);
-TRACE("BRender::~BRender 6\n");
 		Thread::join();
-TRACE("BRender::~BRender 7\n");
 	}
 
-TRACE("BRender::~BRender 8\n");
 	delete map_lock;
-TRACE("BRender::~BRender 9\n");
 	delete completion_lock;
-TRACE("BRender::~BRender 10\n");
-UNSET_TEMP(socket_path);
+	UNSET_TEMP(socket_path);
 	remove(socket_path);
-TRACE("BRender::~BRender 11\n");
 	if(arguments[0]) delete [] arguments[0];
-TRACE("BRender::~BRender 12\n");
 	if(arguments[1]) delete [] arguments[1];
-TRACE("BRender::~BRender 13\n");
 	if(arguments[2]) delete [] arguments[2];
-TRACE("BRender::~BRender 14\n");
 	if(map) delete [] map;
-TRACE("BRender::~BRender 15\n");
 	delete timer;
-TRACE("BRender::~BRender 100\n");
 }
 
 void BRender::initialize()
@@ -125,7 +110,7 @@ void BRender::initialize()
 	sprintf(socket_path, "/tmp/cinelerra.");
 	uuid_generate(socket_temp);
 	uuid_unparse(socket_temp, socket_path + strlen(socket_path));
-SET_TEMP(socket_path);
+	SET_TEMP(socket_path);
 
 // Start background instance of executable since codecs aren't reentrant
 	Thread::start();
@@ -140,8 +125,6 @@ void BRender::run()
 	char string[BCTEXTLEN];
 	int size;
 	FILE *fd;
-//printf("BRender::run 1 %d\n", getpid());
-
 
 // Construct executable command with the designated filesystem port
 	fd = fopen("/proc/self/cmdline", "r");
@@ -163,7 +146,6 @@ void BRender::run()
 
 	arguments[2] = new char[strlen(socket_path) + 1];
 	strcpy(arguments[2], socket_path);
-//printf("BRender::fork_background 1 %s\n", socket_path);
 
 	arguments[3] = 0;
 
@@ -176,7 +158,6 @@ void BRender::run()
 	}
 
 	master_pid = pid;
-//printf("BRender::fork_background 1 %d\n", master_pid);
 
 
 
@@ -192,33 +173,25 @@ void BRender::run()
 // our position.
 void BRender::restart(EDL *edl)
 {
-//printf("BRender::restart 1\n");
 	BRenderCommand *new_command = new BRenderCommand;
 	map_valid = 0;
 	new_command->copy_edl(edl);
 	new_command->command = BRenderCommand::BRENDER_RESTART;
-//printf("BRender::restart 2\n");
 	thread->send_command(new_command);
-//printf("BRender::restart 3\n");
 // Map should be reallocated before this returns.
 }
 
 void BRender::stop()
 {
-//printf("BRender::stop 1\n");
 	BRenderCommand *new_command = new BRenderCommand;
-//printf("BRender::stop 1\n");
 	new_command->command = BRenderCommand::BRENDER_STOP;
-//printf("BRender::stop 1\n");
 	thread->send_command(new_command);
-//printf("BRender::stop 1\n");
 	completion_lock->lock("BRender::stop");
-//printf("BRender::stop 2\n");
 }
 
 
 
-int BRender::get_last_contiguous(framenum brender_start)
+framenum BRender::get_last_contiguous(framenum brender_start)
 {
 	int result;
 	map_lock->lock("BRender::get_last_contiguous");
@@ -263,7 +236,7 @@ int BRender::set_video_map(framenum position, int value)
 
 	if(value == BRender::NOT_SCANNED)
 	{
-		printf(_("BRender::set_video_map called to set NOT_SCANNED\n"));
+		errorbox(_("BRender::set_video_map called to set NOT_SCANNED\n"));
 	}
 
 // Preroll
@@ -280,7 +253,7 @@ int BRender::set_video_map(framenum position, int value)
 	else
 // Obsolete EDL
 	{
-		printf(_("BRender::set_video_map %d: attempt to set beyond end of map %d.\n"),
+		errorbox(_("BRender::set_video_map %d: attempt to set beyond end of map %d.\n"),
 			position,
 			map_size);
 	}
@@ -377,7 +350,6 @@ BRenderThread::BRenderThread(MWindow *mwindow, BRender *brender)
 	this->brender = brender;
 	input_lock = new Condition(0, "BRenderThread::input_lock");
 	thread_lock = new Mutex("BRenderThread::thread_lock");
-	total_frames_lock = new Mutex("BRenderThread::total_frames_lock");
 	command_queue = 0;
 	command = 0;
 	done = 0;
@@ -395,7 +367,6 @@ BRenderThread::~BRenderThread()
 	Thread::join();
 	delete input_lock;
 	delete thread_lock;
-	delete total_frames_lock;
 	if(command) delete command;
 	if(command_queue) delete command_queue;
 	if(preferences) delete preferences;
@@ -409,9 +380,7 @@ void BRenderThread::initialize()
 
 void BRenderThread::send_command(BRenderCommand *command)
 {
-TRACE("BRenderThread::send_command 1");
 	thread_lock->lock("BRenderThread::send_command");
-TRACE("BRenderThread::send_command 10");
 
 	if(this->command_queue)
 	{
@@ -419,8 +388,6 @@ TRACE("BRenderThread::send_command 10");
 		this->command_queue = 0;
 	}
 	this->command_queue = command;
-TRACE("BRenderThread::send_command 20");
-
 
 	input_lock->unlock();
 	thread_lock->unlock();
@@ -478,8 +445,6 @@ void BRenderThread::run()
 			stop();
 			delete new_command;
 			new_command = 0;
-//			if(command) delete command;
-//			command = new_command;
 		}
 		else
 		if(new_command->command == BRenderCommand::BRENDER_RESTART)
@@ -493,21 +458,16 @@ void BRenderThread::run()
 
 
 			stop();
-//printf("BRenderThread::run 4\n");
 			brender->completion_lock->lock("BRenderThread::run 4");
-//printf("BRenderThread::run 5\n");
 
 			if(new_command->edl->tracks->total_playable_vtracks())
 			{
 				if(command) delete command;
 				command = new_command;
-//printf("BRenderThread::run 6\n");
 				start();
-//printf("BRenderThread::run 7\n");
 			}
 			else
 			{
-//printf("BRenderThread::run 8 %p\n", farm_server);
 				delete new_command;
 				new_command = 0;
 			}
@@ -536,13 +496,11 @@ void BRenderThread::start()
 // Reset return parameters
 	farm_result = 0;
 	fps_result = 0;
-	total_frames = 0;
 	int result = 0;
 
 // Allocate render farm.
 	if(!farm_server)
 	{
-//printf("BRenderThread::start 1\n");
 		preferences = new Preferences;
 		preferences->copy_from(mwindow->preferences);
 		packages = new PackageDispatcher;
@@ -557,7 +515,6 @@ void BRenderThread::start()
 			0,
 			1,
 			preferences->local_rate);
-//printf("BRenderThread::start 1 %s\n", brender->socket_path);
 		preferences->brender_asset->use_header = 0;
 		preferences->brender_asset->frame_rate = command->edl->session->frame_rate;
 		preferences->brender_asset->width = command->edl->session->output_w;
@@ -566,7 +523,7 @@ void BRenderThread::start()
 
 // Get last contiguous and reset map.
 // If the framerate changes, last good should be 0 from the user.
-		framenum brender_start = (int)(command->edl->session->brender_start *
+		framenum brender_start = (framenum)(command->edl->session->brender_start *
 			command->edl->session->frame_rate);
 		framenum last_contiguous = brender->last_contiguous;
 		framenum last_good = (framenum)(command->edl->session->frame_rate * 
@@ -579,8 +536,6 @@ void BRenderThread::start()
 		if(end_frame < start_frame) end_frame = start_frame;
 
 		brender->allocate_map(brender_start, start_frame, end_frame);
-//sleep(1);
-//printf("BRenderThread::start 2\n");
 
 		result = packages->create_packages(mwindow,
 			command->edl,
@@ -591,24 +546,19 @@ void BRenderThread::start()
 			(double)end_frame / command->edl->session->frame_rate,
 			0);
 
-//sleep(1);
-//printf("BRenderThread::start 3 %d\n", result);
 		farm_server = new RenderFarmServer(mwindow->plugindb, 
 			packages,
 			preferences,
 			0,
 			&farm_result,
-			&total_frames,
-			total_frames_lock,
+			0,
+			0,
 			preferences->brender_asset,
 			command->edl,
 			brender);
 
-//sleep(1);
-//printf("BRenderThread::start 4\n");
 		result = farm_server->start_clients();
 
-//sleep(1);
 // No local rendering because of codec problems.
 
 
@@ -616,20 +566,13 @@ void BRenderThread::start()
 		if(result)
 		{
 // No-one must be retrieving a package when packages are deleted.
-//printf("BRenderThread::start 7 %p\n", farm_server);
 			delete farm_server;
 			delete packages;
-//printf("BRenderThread::start 8 %p\n", preferences);
 			delete preferences;
-//printf("BRenderThread::start 9\n");
 			farm_server = 0;
 			packages = 0;
 			preferences = 0;
 		}
-//sleep(1);
-//printf("BRenderThread::start 10\n");
 
 	}
 }
-
-
