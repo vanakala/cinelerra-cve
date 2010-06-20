@@ -194,7 +194,7 @@ void SetFormatThread::apply_changes()
 
 void SetFormatThread::update()
 {
-	window->sample_rate->update(new_settings->session->sample_rate);
+	window->sample_rate->update((int64_t)new_settings->session->sample_rate);
 	window->channels->update((int64_t)new_settings->session->audio_channels);
 	window->frame_rate->update((float)new_settings->session->frame_rate);
 

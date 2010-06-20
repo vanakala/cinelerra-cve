@@ -45,9 +45,9 @@ public:
 	int save_xml(FileXML *xml);
 	int copy(EDLSession *session);
 	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
-    int save_audio_config(FileXML *xml);
+	int save_audio_config(FileXML *xml);
 	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
-    int save_video_config(FileXML *xml);
+	int save_video_config(FileXML *xml);
 	int load_defaults(BC_Hash *defaults);
 	int save_defaults(BC_Hash *defaults);
 // Used by CWindowGUI during initialization.
@@ -78,12 +78,12 @@ public:
 	AutoConf *auto_conf;
 	float actual_frame_rate;
 // Aspect ratio for video
-    float aspect_w;
-    float aspect_h;
+	float aspect_w;
+	float aspect_h;
 	int audio_channels;
 	int audio_tracks;
 // automation follows edits during editing
- 	int autos_follow_edits;
+	int autos_follow_edits;
 // Generate keyframes for every tweek
 	int auto_keyframes;
 // Where to start background rendering
@@ -105,7 +105,7 @@ public:
 // Current submask being edited in CWindow
 	int cwindow_mask;
 // Use the cwindow or not
-	int cwindow_meter;	
+	int cwindow_meter;
 // CWindow tool currently selected
 	int cwindow_operation;
 // Use scrollbars in the CWindow
@@ -120,7 +120,7 @@ public:
 // Length in seconds
 	double default_transition_length;
 // Edit mode to use for each mouse button
-	int edit_handle_mode[3];           
+	int edit_handle_mode[3];
 // Editing mode
 	int editing_mode;
 	EDL *edl;
@@ -144,14 +144,13 @@ public:
 	int meter_format;
 	int min_meter_db;
 	int max_meter_db;
-    int output_w;
-    int output_h;
-	int64_t playback_buffer;
+	int output_w;
+	int output_h;
+	int playback_buffer;
 	int playback_cursor_visible;
-	int64_t playback_preload;
+	int playback_preload;
 	int decode_subtitles;
 	int playback_software_position;
-//	int playback_strategy;
 // Play audio in realtime priority
 	int real_time_playback;
 	int real_time_record;
@@ -162,10 +161,10 @@ public:
 // Speed of meters
 	int record_speed;
 // Samples to write to disk at a time
-	int64_t record_write_length;
+	int record_write_length;
 // Show title and action safe regions in CWindow
 	int safe_regions;
-    int64_t sample_rate;
+	int sample_rate;
 	float scrub_speed;
 // Load files as a duration
 	int si_useduration;
@@ -193,7 +192,7 @@ public:
 	AudioInConfig *aconfig_in;
 	Asset *recording_format;
 // play every frame
-	int video_every_frame;  
+	int video_every_frame;
 // decode video asynchronously
 	int video_asynchronous;
 	int video_tracks;
@@ -211,12 +210,6 @@ public:
 	static int current_id;
 	PlaybackConfig* playback_config;
 
-private:
-// Global playback.  This is loaded from defaults but not from XML probably
-// because it was discovered to be the most convenient.
-// It is part of the EDL probably because the playback setting was 
-// going to be bound to the EDL.
-//	ArrayList<PlaybackConfig*> playback_config[PLAYBACK_STRATEGIES];
 };
 
 

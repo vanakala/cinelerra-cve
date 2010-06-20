@@ -121,7 +121,7 @@ int RecordPrefs::create_objects()
 	x2 = MAX(title1->get_w(), title2->get_w()) + 10;
 	x2 = MAX(x2, title3->get_w() + 10);
 
-	sprintf(string, "%lld", pwindow->thread->edl->session->record_write_length);
+	sprintf(string, "%d", pwindow->thread->edl->session->record_write_length);
 	add_subwindow(textbox = new RecordWriteLength(mwindow, 
 		pwindow, 
 		x2, 

@@ -125,13 +125,11 @@ int EDL::create_objects()
 	
 	local_session = new LocalSession(this);
 	labels = new Labels(this, "LABELS");
-//	last_playback_position = 0;
 	return 0;
 }
 
 EDL& EDL::operator=(EDL &edl)
 {
-printf("EDL::operator= 1\n");
 	copy_all(&edl);
 	return *this;
 }
@@ -196,7 +194,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 	if(!parent_edl)
 	{
 		do{
-		  result = file->read_tag();
+			result = file->read_tag();
 		}while(!result && 
 			!file->tag.title_is("XML") && 
 			!file->tag.title_is("EDL"));
@@ -334,7 +332,6 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 		}while(!result);
 	}
 	boundaries();
-//dump();
 
 	return 0;
 }
@@ -488,7 +485,7 @@ int EDL::copy(double start,
 	const char *output_path,
 	int rewind_it)
 {
-//printf("EDL::copy 1\n");
+
 // begin file
 	if(is_clip)
 		file->tag.set_title("CLIP_EDL");
@@ -520,12 +517,9 @@ int EDL::copy(double start,
 		file->append_newline();
 		file->append_newline();
 	}
-//printf("EDL::copy 1\n");
 
 // Sessions
 	local_session->save_xml(file, start);
-
-//printf("EDL::copy 1\n");
 
 // Top level stuff.
 //	if(!parent_edl)
@@ -584,13 +578,8 @@ int EDL::copy(double start,
 		file->append_newline();
 	}
 
-
-//printf("EDL::copy 1\n");
-
 	labels->copy(start, end, file);
-//printf("EDL::copy 1\n");
 	tracks->copy(start, end, all, file, output_path);
-//printf("EDL::copy 2\n");
 
 // terminate file
 	if(is_clip)
@@ -686,9 +675,9 @@ int EDL::equivalent(double position1, double position2)
 		threshold = (double)1 / session->sample_rate;
 
 	if(fabs(position2 - position1) < threshold)
-    	return 1;
-    else
-        return 0;
+		return 1;
+	else
+		return 0;
 }
 
 double EDL::equivalent_output(EDL *edl)
@@ -896,33 +885,9 @@ int64_t EDL::get_tracks_width()
 		int64_t pixels = current->horizontal_span();
 		if(pixels > total_pixels) total_pixels = pixels;
 	}
-//printf("EDL::get_tracks_width %d\n", total_pixels);
 	return total_pixels;
 }
 
-// int EDL::calculate_output_w(int single_channel)
-// {
-// 	if(single_channel) return session->output_w;
-// 
-// 	int widest = 0;
-// 	for(int i = 0; i < session->video_channels; i++)
-// 	{
-// 		if(session->vchannel_x[i] + session->output_w > widest) widest = session->vchannel_x[i] + session->output_w;
-// 	}
-// 	return widest;
-// }
-// 
-// int EDL::calculate_output_h(int single_channel)
-// {
-// 	if(single_channel) return session->output_h;
-// 
-// 	int tallest = 0;
-// 	for(int i = 0; i < session->video_channels; i++)
-// 	{
-// 		if(session->vchannel_y[i] + session->output_h > tallest) tallest = session->vchannel_y[i] + session->output_h;
-// 	}
-// 	return tallest;
-// }
 
 // Get the total output size scaled to aspect ratio
 void EDL::calculate_conformed_dimensions(int single_channel, float &w, float &h)
@@ -964,7 +929,7 @@ int EDL::dump()
 	{
 		printf("audio_channels: %d "
 			"audio_tracks: %d \n"
-			"sample_rate: %lld\n",
+			"sample_rate: %d\n",
 			session->audio_channels,
 			session->audio_tracks,
 			session->sample_rate);
@@ -972,24 +937,24 @@ int EDL::dump()
 			"video_tracks: %d "
 			"frame_rate: %.2f "
 			"frames_per_foot: %.2f\n"
-    		"output_w: %d "
-    		"output_h: %d "
-    		"aspect_w: %f "
-    		"aspect_h %f "
+			"output_w: %d "
+			"output_h: %d "
+			"aspect_w: %f "
+			"aspect_h %f "
 			"color_model %d\n",
-				session->video_channels,
-				session->video_tracks,
-				session->frame_rate,
-				session->frames_per_foot,
-    			session->output_w,
-    			session->output_h,
-    			session->aspect_w,
-    			session->aspect_h,
-				session->color_model);
+			session->video_channels,
+			session->video_tracks,
+			session->frame_rate,
+			session->frames_per_foot,
+			session->output_w,
+			session->output_h,
+			session->aspect_w,
+			session->aspect_h,
+			session->color_model);
 
 		printf(" EDLS\n");
 		printf("  total: %d\n", clips.total);
-	
+
 		for(int i = 0; i < clips.total; i++)
 		{
 			printf("\n\n");
@@ -1004,7 +969,6 @@ int EDL::dump()
 	labels->dump();
 	printf(" TRACKS\n");
 	tracks->dump();
-//printf("EDL::dump 2\n");
 	return 0;
 }
 
@@ -1025,7 +989,6 @@ void EDL::insert_asset(Asset *asset,
 {
 // Insert asset into asset table
 	Asset *new_asset = assets->update(asset);
-
 
 // Paste video
 	int vtrack = 0;
@@ -1102,7 +1065,6 @@ void EDL::set_index_file(Asset *asset)
 
 void EDL::optimize()
 {
-//printf("EDL::optimize 1\n");
 	double length = tracks->total_length();
 	if(local_session->preview_end > length) local_session->preview_end = length;
 	if(local_session->preview_start > length ||
@@ -1159,12 +1121,10 @@ void EDL::get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_loc
 // Convert position to frames if cursor alignment is enabled
 double EDL::align_to_frame(double position, int round)
 {
-//printf("EDL::align_to_frame 1 %f\n", position);
 	if(session->cursor_on_frames)
 	{
 // Seconds -> Frames
 		double temp = (double)position * session->frame_rate;
-//printf("EDL::align_to_frame 2 %f\n", temp);
 
 // Assert some things
 		if(session->sample_rate == 0)
@@ -1182,24 +1142,14 @@ double EDL::align_to_frame(double position, int round)
 		}
 		else
 		{
-// 			if(temp < 0)
-// 			{
-// 				temp -= 0.5;
-// 			}
-// 			else
-				temp = Units::to_int64(temp);
+			temp = Units::to_int64(temp);
 		}
-//printf("EDL::align_to_frame 3 %f\n", temp);
 
 // Frames -> Seconds
 		temp /= session->frame_rate;
 
-//printf("EDL::align_to_frame 5 %f\n", temp);
-
 		return temp;
 	}
-//printf("EDL::align_to_frame 3 %d\n", position);
-
 
 	return position;
 }

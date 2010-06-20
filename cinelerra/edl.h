@@ -195,15 +195,9 @@ public:
 	void get_shared_plugins(Track *source, ArrayList<SharedLocation*> *plugin_locations);
 	void get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_locations);
 
+	int get_tracks_height(Theme *theme);
+	int64_t get_tracks_width();
 
-    int get_tracks_height(Theme *theme);
-    int64_t get_tracks_width();
-// Return the dimension for a single pane if single_channel is set.
-// Otherwise add all panes.
-/*
- * 	int calculate_output_w(int single_channel);
- * 	int calculate_output_h(int single_channel);
- */
 // Return dimensions for canvas if smaller dimensions has zoom of 1
 	void calculate_conformed_dimensions(int single_channel, float &w, float &h);
 // Get the total output size scaled to aspect ratio

@@ -226,7 +226,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	real_time_record = defaults->get("REALTIME_RECORD", 0);
 	record_software_position = defaults->get("RECORD_SOFTWARE_POSITION", 1);
 	record_sync_drives = defaults->get("RECORD_SYNC_DRIVES", 0);
-//	record_speed = defaults->get("RECORD_SPEED", 24);
 	record_write_length = defaults->get("RECORD_WRITE_LENGTH", 131072);
 	recording_format->load_defaults(defaults,
 		"RECORD_", 
@@ -243,12 +242,11 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	
 	show_assets = defaults->get("SHOW_ASSETS", 1);
 	show_titles = defaults->get("SHOW_TITLES", 1);
-//	test_playback_edits = defaults->get("TEST_PLAYBACK_EDITS", 1);
 	time_format = defaults->get("TIME_FORMAT", TIME_HMS);
 	for(int i = 0; i < 4; i++)
 	{
 		sprintf(string, "TIMECODE_OFFSET_%d", i);
-	   timecode_offset[i] = defaults->get(string, 0);
+		timecode_offset[i] = defaults->get(string, 0);
 	}
 	nudge_seconds = defaults->get("NUDGE_FORMAT", 1);
 	tool_window = defaults->get("TOOL_WINDOW", 0);
@@ -298,10 +296,10 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 		defaults->update(string, asset_columns[i]);
 	}
 	auto_conf->save_defaults(defaults);
-    defaults->update("ACTUAL_FRAME_RATE", actual_frame_rate);
-    defaults->update("ASSETLIST_FORMAT", assetlist_format);
-    defaults->update("ASPECTW", aspect_w);
-    defaults->update("ASPECTH", aspect_h);
+	defaults->update("ACTUAL_FRAME_RATE", actual_frame_rate);
+	defaults->update("ASSETLIST_FORMAT", assetlist_format);
+	defaults->update("ASPECTW", aspect_w);
+	defaults->update("ASPECTH", aspect_h);
 	defaults->update("ATRACKS", audio_tracks);
 	defaults->update("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	defaults->update("BRENDER_START", brender_start);
@@ -326,36 +324,35 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("DEFAULT_ATRANSITION", default_atransition);
 	defaults->update("DEFAULT_VTRANSITION", default_vtransition);
 	defaults->update("DEFAULT_TRANSITION_LENGTH", default_transition_length);
-    defaults->update("EDIT_HANDLE_MODE0", edit_handle_mode[0]);
-    defaults->update("EDIT_HANDLE_MODE1", edit_handle_mode[1]);
-    defaults->update("EDIT_HANDLE_MODE2", edit_handle_mode[2]);
+	defaults->update("EDIT_HANDLE_MODE0", edit_handle_mode[0]);
+	defaults->update("EDIT_HANDLE_MODE1", edit_handle_mode[1]);
+	defaults->update("EDIT_HANDLE_MODE2", edit_handle_mode[2]);
 	defaults->update("EDITING_MODE", editing_mode);
 	defaults->update("ENABLE_DUPLEX", enable_duplex);
-    defaults->update("FOLDERLIST_FORMAT", folderlist_format);
+	defaults->update("FOLDERLIST_FORMAT", folderlist_format);
 	defaults->update("FRAMERATE", frame_rate);
 	defaults->update("FRAMES_PER_FOOT", frames_per_foot);
 	defaults->update("HIGHLIGHTED_TRACK", highlighted_track);
-    defaults->update("INTERPOLATION_TYPE", interpolation_type);
-    defaults->update("INTERPOLATE_RAW", interpolate_raw);
-    defaults->update("WHITE_BALANCE_RAW", white_balance_raw);
+	defaults->update("INTERPOLATION_TYPE", interpolation_type);
+	defaults->update("INTERPOLATE_RAW", interpolate_raw);
+	defaults->update("WHITE_BALANCE_RAW", white_balance_raw);
 	defaults->update("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	defaults->update("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	defaults->update("AUTO_KEYFRAMES", auto_keyframes);
-    defaults->update("METER_FORMAT", meter_format);
-    defaults->update("MIN_METER_DB", min_meter_db);
-    defaults->update("MAX_METER_DB", max_meter_db);
+	defaults->update("METER_FORMAT", meter_format);
+	defaults->update("MIN_METER_DB", min_meter_db);
+	defaults->update("MAX_METER_DB", max_meter_db);
 	defaults->update("MPEG4_DEBLOCK", mpeg4_deblock);
 	defaults->update("OUTPUTW", output_w);
 	defaults->update("OUTPUTH", output_h);
-    defaults->update("PLAYBACK_BUFFER", playback_buffer);
+	defaults->update("PLAYBACK_BUFFER", playback_buffer);
 	defaults->update("PLAYBACK_PRELOAD", playback_preload);
-    defaults->update("PLAYBACK_SOFTWARE_POSITION", playback_software_position);
+	defaults->update("PLAYBACK_SOFTWARE_POSITION", playback_software_position);
 	playback_config->save_defaults(defaults);
-    defaults->update("PLAYBACK_REALTIME", real_time_playback);
+	defaults->update("PLAYBACK_REALTIME", real_time_playback);
 	defaults->update("REALTIME_RECORD", real_time_record);
-    defaults->update("RECORD_SOFTWARE_POSITION", record_software_position);
+	defaults->update("RECORD_SOFTWARE_POSITION", record_software_position);
 	defaults->update("RECORD_SYNC_DRIVES", record_sync_drives);
-//	defaults->update("RECORD_SPEED", record_speed);  
 	defaults->update("RECORD_WRITE_LENGTH", record_write_length); // Heroine kernel 2.2 scheduling sucks.
 	recording_format->save_defaults(defaults,
 		"RECORD_",
@@ -366,21 +363,20 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 		1);
 	defaults->update("SAFE_REGIONS", safe_regions);
 	defaults->update("SAMPLERATE", sample_rate);
-    defaults->update("SCRUB_SPEED", scrub_speed);
-    	defaults->update("SI_USEDURATION",si_useduration);
+	defaults->update("SCRUB_SPEED", scrub_speed);
+	defaults->update("SI_USEDURATION",si_useduration);
 	defaults->update("SI_DURATION",si_duration);
 	defaults->update("SHOW_ASSETS", show_assets);
 	defaults->update("SHOW_TITLES", show_titles);
-//	defaults->update("TEST_PLAYBACK_EDITS", test_playback_edits);
 	defaults->update("TIME_FORMAT", time_format);
 	for(int i = 0; i < 4; i++)
 	{
 		sprintf(string, "TIMECODE_OFFSET_%d", i);
-	   defaults->update(string, timecode_offset[i]);
+		defaults->update(string, timecode_offset[i]);
 	}
 	defaults->update("NUDGE_FORMAT", nudge_seconds);
 	defaults->update("TOOL_WINDOW", tool_window);
-    vconfig_in->save_defaults(defaults);
+	vconfig_in->save_defaults(defaults);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		sprintf(string, "VCHANNEL_X_%d", i);
@@ -389,11 +385,11 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 		defaults->update(string, vchannel_y[i]);
 	}
 	defaults->update("VCHANNELS", video_channels);
-    defaults->update("VIDEO_EVERY_FRAME", video_every_frame);
-    defaults->update("VIDEO_ASYNCHRONOUS", video_asynchronous);
+	defaults->update("VIDEO_EVERY_FRAME", video_every_frame);
+	defaults->update("VIDEO_ASYNCHRONOUS", video_asynchronous);
 	defaults->update("VTRACKS", video_tracks);
 	defaults->update("VIDEO_WRITE_LENGTH", video_write_length);
-    defaults->update("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
+	defaults->update("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
 	defaults->update("VWINDOW_METER", vwindow_meter);
 	defaults->update("VWINDOW_ZOOM", vwindow_zoom);
 
@@ -423,7 +419,6 @@ void EDLSession::boundaries()
 	Workarounds::clamp(output_w, 16, (int)BC_INFINITY);
 	Workarounds::clamp(output_h, 16, (int)BC_INFINITY);
 	Workarounds::clamp(video_write_length, 1, 1000);
-//printf("EDLSession::boundaries 1\n");
 	output_w /= 2;
 	output_w *= 2;
 	output_h /= 2;
@@ -437,10 +432,6 @@ void EDLSession::boundaries()
 
 // Correct framerates
 	frame_rate = Units::fix_framerate(frame_rate);
-//printf("EDLSession::boundaries 1 %p %p\n", edl->assets, edl->tracks);
-//	if(vwindow_source < 0 || vwindow_source >= edl->assets->total() + 1) vwindow_source = 0;
-//	if(cwindow_dest < 0 || cwindow_dest > edl->tracks->total()) cwindow_dest = 0;
-//printf("EDLSession::boundaries 2\n");
 }
 
 
@@ -481,12 +472,10 @@ int EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_
 	if(append_mode) return 0;
 	audio_channels = file->tag.get_property("CHANNELS", (int64_t)audio_channels);
 
-
 	for(int i = 0; i < audio_channels; i++)
 	{
 		sprintf(string, "ACHANNEL_ANGLE_%d", i);
 		achannel_positions[i] = file->tag.get_property(string, achannel_positions[i]);
-//printf("EDLSession::load_audio_config 1 %d %d\n", i, achannel_positions[i]);
 	}
 
 	sample_rate = file->tag.get_property("SAMPLERATE", (int64_t)sample_rate);
@@ -541,7 +530,6 @@ int EDLSession::load_xml(FileXML *file,
 		safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
 		show_assets = file->tag.get_property("SHOW_ASSETS", 1);
 		show_titles = file->tag.get_property("SHOW_TITLES", 1);
-//		test_playback_edits = file->tag.get_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 		time_format = file->tag.get_property("TIME_FORMAT", time_format);
 		for(int i = 0; i < 4; i++)
 		{
@@ -564,7 +552,6 @@ int EDLSession::load_xml(FileXML *file,
 
 int EDLSession::save_xml(FileXML *file)
 {
-//printf("EDLSession::save_session 1\n");
 	char string[BCTEXTLEN];
 	file->tag.set_title("SESSION");
 	file->tag.set_property("ASSETLIST_FORMAT", assetlist_format);
@@ -628,7 +615,6 @@ int EDLSession::save_xml(FileXML *file)
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
-//printf("EDLSession::save_session 3\n");
 	return 0;
 }
 
@@ -643,7 +629,7 @@ int EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("COLORMODEL", string);
 	ilacemode_to_xmltext(string, interlace_mode);
 	file->tag.set_property("INTERLACE_MODE",string);
-    file->tag.set_property("CHANNELS", video_channels);
+	file->tag.set_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
 	{
 		sprintf(string, "VCHANNEL_X_%d", i);
@@ -743,7 +729,6 @@ int EDLSession::copy(EDLSession *session)
 	labels_follow_edits = session->labels_follow_edits;
 	plugins_follow_edits = session->plugins_follow_edits;
 	auto_keyframes = session->auto_keyframes;
-//	last_playback_position = session->last_playback_position;
 	meter_format = session->meter_format;
 	min_meter_db = session->min_meter_db;
 	max_meter_db = session->max_meter_db;
@@ -760,7 +745,6 @@ int EDLSession::copy(EDLSession *session)
 	real_time_playback = session->real_time_playback;
 	real_time_record = session->real_time_record;
 	record_software_position = session->record_software_position;
-//	record_speed = session->record_speed;
 	record_sync_drives = session->record_sync_drives;
 	record_write_length = session->record_write_length;
 	recording_format->copy_from(session->recording_format, 0);
@@ -789,7 +773,7 @@ int EDLSession::copy(EDLSession *session)
 	video_every_frame = session->video_every_frame;
 	video_asynchronous = session->video_asynchronous;
 	video_tracks = session->video_tracks;
-	video_write_length = session->video_write_length;	
+	video_write_length = session->video_write_length;
 	view_follows_playback = session->view_follows_playback;
 	vwindow_meter = session->vwindow_meter;
 	strcpy(vwindow_folder, session->vwindow_folder);
@@ -813,7 +797,7 @@ int64_t EDLSession::get_frame_offset()
 void EDLSession::dump()
 {
 	printf("EDLSession::dump\n");
-	printf("    audio_tracks=%d audio_channels=%d sample_rate=%lld\n"
+	printf("    audio_tracks=%d audio_channels=%d sample_rate=%d\n"
 			"video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f decode subtitles=%d\n", 
 		audio_tracks, 
 		audio_channels, 

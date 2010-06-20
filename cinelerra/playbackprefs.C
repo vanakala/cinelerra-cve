@@ -174,7 +174,7 @@ SET_TRACE
 SET_TRACE
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT));
-	sprintf(string, "%lld", pwindow->thread->edl->session->playback_preload);
+	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
 	PlaybackPreload *preload;
 	add_subwindow(preload = new PlaybackPreload(x + 210, y, pwindow, this, string));
 

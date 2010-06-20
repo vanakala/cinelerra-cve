@@ -139,16 +139,14 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("TRACK_START", track_start);
 	file->tag.set_property("VIEW_START", view_start);
 	file->tag.set_property("ZOOM_SAMPLE", zoom_sample);
-//printf("EDLSession::save_session 1\n");
 	file->tag.set_property("ZOOMY", zoom_y);
-//printf("EDLSession::save_session 1 %d\n", zoom_track);
 	file->tag.set_property("ZOOM_TRACK", zoom_track);
-	
+
 	double preview_start = this->preview_start - start;
 	if(preview_start < 0) preview_start = 0;
 	double preview_end = this->preview_end - start;
 	if(preview_end < 0) preview_end = 0;
-	
+
 	file->tag.set_property("PREVIEW_START", preview_start);
 	file->tag.set_property("PREVIEW_END", preview_end);
 	file->tag.set_property("RED", red);
@@ -186,7 +184,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 	if(load_flags & LOAD_SESSION)
 	{
 		clipboard_length = 0;
-// Overwritten by MWindow::load_filenames	
+// Overwritten by MWindow::load_filenames
 		file->tag.get_property("CLIP_TITLE", clip_title);
 		file->tag.get_property("CLIP_NOTES", clip_notes);
 		file->tag.get_property("FOLDER", folder);
@@ -244,8 +242,6 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	loop_end = defaults->get("LOOP_END", (double)0);
 	selectionstart = defaults->get("SELECTIONSTART", selectionstart);
 	selectionend = defaults->get("SELECTIONEND", selectionend);
-//	track_start = defaults->get("TRACK_START", 0);
-//	view_start = defaults->get("VIEW_START", 0);
 	zoom_sample = defaults->get("ZOOM_SAMPLE", 16384);
 	zoom_y = defaults->get("ZOOMY", 64);
 	zoom_track = defaults->get("ZOOM_TRACK", 64);
@@ -368,7 +364,4 @@ int LocalSession::outpoint_valid()
 {
 	return out_point >= 0;
 }
-
-
-
 
