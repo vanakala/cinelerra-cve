@@ -34,17 +34,6 @@ class AEdit : public Edit
 {
 public:
 	AEdit(EDL *edl, Edits *edits);
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	~AEdit();
 
 	int load_properties_derived(FileXML *xml);
@@ -52,9 +41,9 @@ public:
 
 // ========================================= editing
 
-	int copy_properties_derived(FileXML *xml, int64_t length_in_selection);
-	int dump_derived();
-	int64_t get_source_end(int64_t default_);
+/* Pole
+	int dump_derived(); */
+	posnum get_source_end(posnum default_);
 
 private:
 

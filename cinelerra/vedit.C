@@ -61,7 +61,7 @@ int VEdit::load_properties_derived(FileXML *xml)
 
 
 int VEdit::read_frame(VFrame *video_out, 
-	int64_t input_position, 
+	framenum input_position, 
 	CICache *cache,
 	int use_nudge,
 	int use_cache,
@@ -89,15 +89,10 @@ int VEdit::read_frame(VFrame *video_out,
 	}
 	else
 		result = 1;
-	
-//for(int i = 0; i < video_out->get_w() * 3 * 20; i++) video_out->get_rows()[0][i] = 128;
+
 	return result;
 }
 
-int VEdit::copy_properties_derived(FileXML *xml, int64_t length_in_selection)
-{
-	return 0;
-}
 
 int VEdit::dump_derived()
 {
@@ -106,9 +101,9 @@ int VEdit::dump_derived()
 	printf("		length %lld\n", length);
 }
 
-int64_t VEdit::get_source_end(int64_t default_)
+posnum VEdit::get_source_end(posnum default_)
 {
 	if(!asset) return default_;   // Infinity
 
-	return (int64_t)((double)asset->video_length / asset->frame_rate * edl->session->frame_rate + 0.5);
+	return (posnum)((double)asset->video_length / asset->frame_rate * edl->session->frame_rate + 0.5);
 }

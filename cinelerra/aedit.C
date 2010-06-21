@@ -50,24 +50,11 @@ int AEdit::load_properties_derived(FileXML *xml)
 	return 0;
 }
 
-// ========================================== editing
 
-int AEdit::copy_properties_derived(FileXML *xml, int64_t length_in_selection)
-{
-	return 0;
-}
-
-
-int AEdit::dump_derived()
-{
-	//printf("	channel %d\n", channel);
-}
-
-
-int64_t AEdit::get_source_end(int64_t default_)
+posnum AEdit::get_source_end(posnum default_)
 {
 	if(!asset) return default_;   // Infinity
 
-	return (int64_t)((double)asset->audio_length / asset->sample_rate * edl->session->sample_rate + 0.5);
+	return (posnum)((double)asset->audio_length / asset->sample_rate * edl->session->sample_rate + 0.5);
 }
 

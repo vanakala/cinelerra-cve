@@ -37,30 +37,15 @@ public:
 // Editing
 	Edit* create_edit();
 
-
-
-
-
-
-
-
-
-
-
-	AEdits() {printf("default edits constructor called\n");};
-	~AEdits() {};	
+	~AEdits() {};
 
 
 // ======================================= editing
 
 	Edit* append_new_edit();
 	Edit* insert_edit_after(Edit* previous_edit);
-	int clone_derived(Edit* new_edit, Edit* old_edit);
-
 private:
 	ATrack *atrack;
 };
-
-
 
 #endif

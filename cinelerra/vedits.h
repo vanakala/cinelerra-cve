@@ -39,18 +39,6 @@ public:
 // Editing
 	Edit* create_edit();
 
-
-
-
-
-
-
-
-
-
-
-
-	VEdits() {printf("default edits constructor called\n");};
 	~VEdits() {};
 
 

@@ -29,12 +29,6 @@
 #include "vtrack.h"
 
 
-
-
-
-
-
-
 VEdits::VEdits(EDL *edl, Track *track)
  : Edits(edl, track, create_edit())
 {
@@ -50,17 +44,8 @@ Edit* VEdits::insert_edit_after(Edit* previous_edit)
 	VEdit *current = new VEdit(edl, this);
 
 	List<Edit>::insert_after(previous_edit, current);
-
-//printf("VEdits::insert_edit_after %p %p\n", current->track, current->edits);
 	return (Edit*)current;
 }
-
-
-
-
-
-
-
 
 
 Edit* VEdits::append_new_edit()
@@ -69,5 +54,3 @@ Edit* VEdits::append_new_edit()
 	List<Edit>::append(current = new VEdit(edl, this));
 	return (Edit*)current;
 }
-
-

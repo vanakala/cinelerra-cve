@@ -62,9 +62,7 @@ Edit::Edit(EDL *edl, Edits *edits)
 
 Edit::~Edit()
 {
-//printf("Edit::~Edit 1\n");
 	if(transition) delete transition;
-//printf("Edit::~Edit 2\n");
 }
 
 void Edit::reset()
@@ -72,8 +70,8 @@ void Edit::reset()
 	edl = 0;
 	track = 0;
 	edits = 0;
-	startsource = 0;  
-	startproject = 0;	 
+	startsource = 0;
+	startproject = 0;
 	length = 0;  
 	asset = 0;
 	transition = 0;
@@ -81,12 +79,11 @@ void Edit::reset()
 	user_title[0] = 0;
 }
 
-int Edit::copy(int64_t start, int64_t end, FileXML *file, const char *output_path)
+int Edit::copy(posnum start, posnum end, FileXML *file, const char *output_path)
 {
 // variables
-//printf("Edit::copy 1\n");
 
-	int64_t endproject = startproject + length;
+	posnum endproject = startproject + length;
 	int result;
 
 	if((startproject >= start && startproject <= end) ||  // startproject in range
@@ -94,28 +91,26 @@ int Edit::copy(int64_t start, int64_t end, FileXML *file, const char *output_pat
 		 (startproject <= start && endproject >= end))    // range in project
 	{   
 // edit is in range
-		int64_t startproject_in_selection = startproject; // start of edit in selection in project
-		int64_t startsource_in_selection = startsource; // start of source in selection in source
-		int64_t endsource_in_selection = startsource + length; // end of source in selection
-		int64_t length_in_selection = length;             // length of edit in selection
-//printf("Edit::copy 2\n");
+		posnum startproject_in_selection = startproject; // start of edit in selection in project
+		posnum startsource_in_selection = startsource; // start of source in selection in source
+		posnum endsource_in_selection = startsource + length; // end of source in selection
+		posnum length_in_selection = length;             // length of edit in selection
 
 		if(startproject < start)
 		{         // start is after start of edit in project
-			int64_t length_difference = start - startproject;
+			posnum length_difference = start - startproject;
 
 			startsource_in_selection += length_difference;
 			startproject_in_selection += length_difference;
 			length_in_selection -= length_difference;
 		}
-//printf("Edit::copy 3\n");
 
 		if(endproject > end)
 		{         // end is before end of edit in project
 			length_in_selection = end - startproject_in_selection;
 		}
 		
-//printf("Edit::copy 4\n");
+
 		if(file)    // only if not counting
 		{
 			file->tag.set_title("EDIT");
@@ -123,30 +118,23 @@ int Edit::copy(int64_t start, int64_t end, FileXML *file, const char *output_pat
 			file->tag.set_property("CHANNEL", (int64_t)channel);
 			file->tag.set_property("LENGTH", length_in_selection);
 			if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
-//printf("Edit::copy 5\n");
 
 			copy_properties_derived(file, length_in_selection);
 
 			file->append_tag();
-//			file->append_newline();
-//printf("Edit::copy 6\n");
 
 			if(asset)
 			{
-//printf("Edit::copy 6 %s\n", asset->path);
 				char stored_path[1024];
 				char asset_directory[1024], output_directory[1024];
 				FileSystem fs;
 
-//printf("Edit::copy 6 %s\n", asset->path);
 				fs.extract_dir(asset_directory, asset->path);
-//printf("Edit::copy 6 %s\n", asset->path);
 
 				if(output_path)
 					fs.extract_dir(output_directory, output_path);
 				else
 					output_directory[0] = 0;
-//printf("Edit::copy %s, %s %s, %s\n", asset->path, asset_directory, output_path, output_directory);
 
 				if(output_path && !strcmp(asset_directory, output_directory))
 					fs.extract_name(stored_path, asset->path);
@@ -165,32 +153,27 @@ int Edit::copy(int64_t start, int64_t end, FileXML *file, const char *output_pat
 				transition->save_xml(file);
 			}
 
-//printf("Edit::copy 7\n");
 			file->tag.set_title("/EDIT");
 			file->append_tag();
 			file->append_newline();	
-//printf("Edit::copy 8\n");
 		}
-//printf("Edit::copy 9\n");
 		result = 1;
 	}
 	else
 	{
 		result = 0;
 	}
-//printf("Edit::copy 10\n");
 	return result;
 }
 
 
-int64_t Edit::get_source_end(int64_t default_)
+posnum Edit::get_source_end(posnum default_)
 {
 	return default_;
 }
 
 void Edit::insert_transition(const char *title)
 {
-//printf("Edit::insert_transition this=%p title=%p title=%s\n", this, title, title);
 	transition = new Transition(edl, 
 		this, 
 		title, 
@@ -231,7 +214,7 @@ void Edit::copy_from(Edit *edit)
 	this->channel = edit->channel;
 }
 
-void Edit::equivalent_output(Edit *edit, int64_t *result)
+void Edit::equivalent_output(Edit *edit, posnum *result)
 {
 // End of edit changed
 	if(startproject + length != edit->startproject + edit->length)
@@ -269,7 +252,6 @@ void Edit::equivalent_output(Edit *edit, int64_t *result)
 
 Edit& Edit::operator=(Edit& edit)
 {
-//printf("Edit::operator= called\n");
 	copy_from(&edit);
 	return *this;
 }
@@ -324,19 +306,20 @@ int Edit::picon_h()
 
 int Edit::dump()
 {
-	printf("     EDIT %p\n", this); fflush(stdout);
-	printf("      asset %p\n", asset); fflush(stdout);
+	printf("     EDIT %p\n", this);
+	printf("      asset %p\n", asset);
 	printf("      channel %d\n", channel);
 	if(transition) 
 	{
 		printf("      TRANSITION %p\n", transition);
 		transition->dump();
 	}
-	printf("      startsource %lld startproject %lld length %lld\n", startsource, startproject, length); fflush(stdout);
+	printf("      startsource %lld startproject %lld length %lld\n", startsource, startproject, length);
+	fflush(stdout);
 	return 0;
 }
 
-int Edit::load_properties(FileXML *file, int64_t &startproject)
+int Edit::load_properties(FileXML *file, posnum &startproject)
 {
 	startsource = file->tag.get_property("STARTSOURCE", (int64_t)0);
 	length = file->tag.get_property("LENGTH", (int64_t)0);
@@ -347,23 +330,21 @@ int Edit::load_properties(FileXML *file, int64_t &startproject)
 	return 0;
 }
 
-void Edit::shift(int64_t difference)
+void Edit::shift(posnum difference)
 {
-//printf("Edit::shift 1 %p %lld %lld\n", this, startproject, difference);
 	startproject += difference;
-//printf("Edit::shift 2 %lld %lld\n", startproject, difference);
 }
 
 int Edit::shift_start_in(int edit_mode, 
-	int64_t newposition, 
-	int64_t oldposition,
+	posnum newposition, 
+	posnum oldposition,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
 	Edits *trim_edits)
 {
-	int64_t cut_length = newposition - oldposition;
-	int64_t end_previous_source, end_source;
+	posnum cut_length = newposition - oldposition;
+	posnum end_previous_source, end_source;
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
@@ -390,7 +371,6 @@ int Edit::shift_start_in(int edit_mode,
 	if(edit_mode == MOVE_ONE_EDIT)
 	{
 // Paste silence and cut
-//printf("Edit::shift_start_in 1\n");
 		if(!previous)
 		{
 			Edit *new_edit = edits->create_edit();
@@ -399,7 +379,6 @@ int Edit::shift_start_in(int edit_mode,
 			edits->insert_before(this, 
 				new_edit);
 		}
-//printf("Edit::shift_start_in 2 %p\n", previous);
 
 		end_previous_source = previous->get_source_end(previous->startsource + previous->length + cut_length);
 		if(end_previous_source > 0 && 
@@ -412,7 +391,6 @@ int Edit::shift_start_in(int edit_mode,
 			startsource += cut_length;
 			length -= cut_length;
 			previous->length += cut_length;
-//printf("Edit::shift_start_in 2\n");
 		}
 		else
 		{		// Clear entire edit
@@ -429,7 +407,6 @@ int Edit::shift_start_in(int edit_mode,
 				edit_plugins,
 				trim_edits);
 		}
-//printf("Edit::shift_start_in 3\n");
 	}
 	else
 	if(edit_mode == MOVE_NO_EDITS)
@@ -444,20 +421,19 @@ int Edit::shift_start_in(int edit_mode,
 }
 
 int Edit::shift_start_out(int edit_mode, 
-	int64_t newposition, 
-	int64_t oldposition,
+	posnum newposition,
+	posnum oldposition,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
 	Edits *trim_edits)
 {
-	int64_t cut_length = oldposition - newposition;
+	posnum cut_length = oldposition - newposition;
 
 	if(asset)
 	{
-		int64_t end_source = get_source_end(1);
+		posnum end_source = get_source_end(1);
 
-//printf("Edit::shift_start_out 1 %lld %lld\n", startsource, cut_length);
 		if(end_source > 0 && startsource < cut_length)
 		{
 			cut_length = startsource;
@@ -466,7 +442,6 @@ int Edit::shift_start_out(int edit_mode,
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
-//printf("Edit::shift_start_out 10 %lld\n", cut_length);
 		startsource -= cut_length;
 		length += cut_length;
 
@@ -492,7 +467,6 @@ int Edit::shift_start_out(int edit_mode,
 				startproject -= cut_length;
 				startsource -= cut_length;
 				length += cut_length;
-printf("Edit::shift_start_out 2\n");
 			}
 			else
 			{   // Clear entire previous edit
@@ -516,21 +490,19 @@ printf("Edit::shift_start_out 2\n");
 }
 
 int Edit::shift_end_in(int edit_mode, 
-	int64_t newposition, 
-	int64_t oldposition,
+	posnum newposition, 
+	posnum oldposition,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
 	Edits *trim_edits)
 {
-	int64_t cut_length = oldposition - newposition;
+	posnum cut_length = oldposition - newposition;
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
-//printf("Edit::shift_end_in 1\n");
 		if(newposition > startproject)
 		{        // clear partial edit
-//printf("Edit::shift_end_in %p %p\n", track->edits, edits);
 			edits->clear_recursive(newposition, 
 				oldposition,
 				edit_edits,
@@ -555,7 +527,7 @@ int Edit::shift_end_in(int edit_mode,
 		{
 			if(next->asset)
 			{
-				int64_t end_source = next->get_source_end(1);
+				posnum end_source = next->get_source_end(1);
 
 				if(end_source > 0 && next->startsource - cut_length < 0)
 				{
@@ -569,7 +541,6 @@ int Edit::shift_end_in(int edit_mode,
 				next->startproject -= cut_length;
 				next->startsource -= cut_length;
 				next->length += cut_length;
-//printf("Edit::shift_end_in 2 %d\n", cut_length);
 			}
 			else
 			{
@@ -602,8 +573,7 @@ int Edit::shift_end_in(int edit_mode,
 // Does nothing for plugins
 	if(edit_mode == MOVE_NO_EDITS)
 	{
-//printf("Edit::shift_end_in 3\n");
-		int64_t end_source = get_source_end(1);
+		posnum end_source = get_source_end(1);
 		if(end_source > 0 && startsource < cut_length)
 		{
 			cut_length = startsource;
@@ -614,21 +584,20 @@ int Edit::shift_end_in(int edit_mode,
 }
 
 int Edit::shift_end_out(int edit_mode, 
-	int64_t newposition, 
-	int64_t oldposition,
+	posnum newposition, 
+	posnum oldposition,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
 	Edits *trim_edits)
 {
-	int64_t cut_length = newposition - oldposition;
-	int64_t endsource = get_source_end(startsource + length + cut_length);
+	posnum cut_length = newposition - oldposition;
+	posnum endsource = get_source_end(startsource + length + cut_length);
 
 // check end of edit against end of source file
 	if(endsource > 0 && startsource + length + cut_length > endsource)
 		cut_length = endsource - startsource - length;
 
-//printf("Edit::shift_end_out 1 %lld %d %d %d\n", oldposition, newposition, this->length, cut_length);
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
 // Extend length
@@ -657,7 +626,6 @@ int Edit::shift_end_out(int edit_mode,
 				next->startproject += cut_length;
 				next->startsource += cut_length;
 				next->length -= cut_length;
-//printf("Edit::shift_end_out 2 %d\n", cut_length);
 			}
 			else
 			{
@@ -684,38 +652,14 @@ int Edit::shift_end_out(int edit_mode,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int Edit::popup_transition(float view_start, float zoom_units, int cursor_x, int cursor_y)
 {
-	int64_t left, right, left_unit, right_unit;
+	posnum left, right, left_unit, right_unit;
 	if(!transition) return 0;
 	get_handle_parameters(left, right, left_unit, right_unit, view_start, zoom_units);
 
 	if(cursor_x > left && cursor_x < right)
 	{
-//		transition->popup_transition(cursor_x, cursor_y);
 		return 1;
 	}
 	return 0;
@@ -723,10 +667,10 @@ int Edit::popup_transition(float view_start, float zoom_units, int cursor_x, int
 
 int Edit::select_handle(float view_start, float zoom_units, int cursor_x, int cursor_y, int64_t &selection)
 {
-	int64_t left, right, left_unit, right_unit;
+	posnum left, right, left_unit, right_unit;
 	get_handle_parameters(left, right, left_unit, right_unit, view_start, zoom_units);
 
-	int64_t pixel1, pixel2;
+	posnum pixel1, pixel2;
 	pixel1 = left;
 	pixel2 = pixel1 + 10;
 
@@ -738,11 +682,11 @@ int Edit::select_handle(float view_start, float zoom_units, int cursor_x, int cu
 		return 1;     // left handle
 	}
 
-	int64_t endproject = startproject + length;
+	posnum endproject = startproject + length;
 	pixel2 = right;
 	pixel1 = pixel2 - 10;
 
-// test right edit	
+// test right edit
 	if(cursor_x >= pixel1 && cursor_x <= pixel2)
 	{
 		selection = right_unit;

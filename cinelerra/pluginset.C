@@ -45,7 +45,6 @@ PluginSet::~PluginSet()
 
 PluginSet& PluginSet::operator=(PluginSet& plugins)
 {
-printf("PluginSet::operator= 1\n");
 	copy_from(&plugins);
 	return *this;
 }
@@ -76,8 +75,8 @@ Plugin* PluginSet::get_first_plugin()
 	return 0;
 }
 
-int64_t PluginSet::plugin_change_duration(int64_t input_position, 
-	int64_t input_length, 
+posnum PluginSet::plugin_change_duration(posnum input_position,
+	posnum input_length,
 	int reverse)
 {
 	int result = input_length;
@@ -137,8 +136,8 @@ void PluginSet::synchronize_params(PluginSet *plugin_set)
 }
 
 Plugin* PluginSet::insert_plugin(const char *title, 
-	int64_t unit_position, 
-	int64_t unit_length,
+	posnum unit_position, 
+	posnum unit_length,
 	int plugin_type,
 	SharedLocation *shared_location,
 	KeyFrame *default_keyframe,
@@ -182,7 +181,7 @@ int PluginSet::get_number()
 	return track->plugin_set.number_of(this);
 }
 
-void PluginSet::clear(int64_t start, int64_t end)
+void PluginSet::clear(posnum start, posnum end)
 {
 // Clear keyframes
 	for(Plugin *current = (Plugin*)first;
@@ -196,25 +195,12 @@ void PluginSet::clear(int64_t start, int64_t end)
 	Edits::clear(start, end);
 }
 
-void PluginSet::clear_recursive(int64_t start, int64_t end)
+void PluginSet::clear_recursive(posnum start, posnum end)
 {
-//printf("PluginSet::clear_recursive 1\n");
 	clear(start, end);
 }
 
-void PluginSet::shift_keyframes_recursive(int64_t position, int64_t length)
-{
-// Plugin keyframes are shifted in shift_effects
-}
-
-void PluginSet::shift_effects_recursive(int64_t position, int64_t length)
-{
-// Effects are shifted in length extension
-//	shift_effects(position, length);
-}
-
-
-void PluginSet::clear_keyframes(int64_t start, int64_t end)
+void PluginSet::clear_keyframes(posnum start, posnum end)
 {
 	for(Plugin *current = (Plugin*)first; current; current = (Plugin*)NEXT)
 	{
@@ -222,13 +208,13 @@ void PluginSet::clear_keyframes(int64_t start, int64_t end)
 	}
 }
 
-void PluginSet::copy_keyframes(int64_t start, 
-	int64_t end, 
+void PluginSet::copy_keyframes(posnum start,
+	posnum end,
 	FileXML *file, 
 	int default_only,
 	int autos_only)
 {
-	file->tag.set_title("PLUGINSET");	
+	file->tag.set_title("PLUGINSET");
 	file->append_tag();
 	file->append_newline();
 
@@ -239,26 +225,26 @@ void PluginSet::copy_keyframes(int64_t start,
 		current->copy_keyframes(start, end, file, default_only, autos_only);
 	}
 
-	file->tag.set_title("/PLUGINSET");	
+	file->tag.set_title("/PLUGINSET");
 	file->append_tag();
 	file->append_newline();
 }
 
 
-void PluginSet::paste_keyframes(int64_t start, 
-	int64_t length, 
+void PluginSet::paste_keyframes(posnum start,
+	posnum length,
 	FileXML *file, 
 	int default_only,
 	Track *track)
 {
 	int result = 0;
 	Plugin *current;
-	
+
 	PluginSet *target_pluginset;
 	Plugin *first_target_plugin = 0;
 
 	ArrayList<PluginSet*> unused_pluginsets;
-	
+
 // get all available target pluginsets, we will be removing them one by one when we will paste into them
 	for (int i = 0; i < track->plugin_set.total; i++)
 	{
@@ -299,20 +285,18 @@ void PluginSet::paste_keyframes(int64_t start,
 				else
 				{
 					default_keyframe = 0;
-					file->read_text_until("/KEYFRAME", data, MESSAGESIZE);				
-				
+					file->read_text_until("/KEYFRAME", data, MESSAGESIZE);
 				}
 
-//				printf("d: a%sb\n", data);
 				Plugin *picked_first_target = 0;
 				if (!target_pluginset && default_keyframe && default_only && strlen(data_default_keyframe) > 0)
 				{
 					strcpy(data, data_default_keyframe);
 				} 
-				if ((!target_pluginset && !default_keyframe && strlen(data) > 0) ||	
-				    (!target_pluginset && default_keyframe && default_only && strlen(data_default_keyframe) > 0))	 
+				if ((!target_pluginset && !default_keyframe && strlen(data) > 0) ||
+					(!target_pluginset && default_keyframe && default_only && strlen(data_default_keyframe) > 0))
 				{
-// now try to find the target		
+// now try to find the target
 					int name_len = strchr(data, ' ') - data + 1;
 
 					PluginSet *second_choice = 0;
@@ -340,7 +324,6 @@ void PluginSet::paste_keyframes(int64_t start,
 								second_choice_first_target_plugin = current;
 								break;
 							}
-												
 						}
 					}
 					if (!target_pluginset) 
@@ -349,7 +332,6 @@ void PluginSet::paste_keyframes(int64_t start,
 						first_target_plugin = second_choice_first_target_plugin;
 					}
 				}
-//				printf(" Target: %p\n", target_pluginset);
 				if (target_pluginset) 
 				{
 					unused_pluginsets.remove(target_pluginset);
@@ -378,40 +360,12 @@ void PluginSet::paste_keyframes(int64_t start,
 						}
 					}
 				}
-				
-// Get plugin owning keyframe
-/*
-				for(current = (Plugin*)last; 
-					current;
-					current = (Plugin*)PREVIOUS)
-				{
-// We want keyframes to exist beyond the end of the last plugin to
-// make editing intuitive, but it will always be possible to 
-// paste keyframes from one plugin into an incompatible plugin.
-					if(position >= current->startproject)
-					{
-						KeyFrame *keyframe;
-						if(file->tag.get_property("DEFAULT", 0) || default_only)
-						{
-							keyframe = (KeyFrame*)current->keyframes->default_auto;
-						}
-						else
-						{
-							keyframe = 
-								(KeyFrame*)current->keyframes->insert_auto(position);
-						}
-						keyframe->load(file);
-						keyframe->position = position;
-						break;
-					}
-				}
-*/
 			}
 		}
 	}
 }
 
-void PluginSet::shift_effects(int64_t start, int64_t length)
+void PluginSet::shift_effects(posnum start, posnum length)
 {
 	for(Plugin *current = (Plugin*)first;
 		current;
@@ -442,9 +396,9 @@ void PluginSet::shift_effects(int64_t start, int64_t length)
 	}
 }
 
-void PluginSet::copy(int64_t start, int64_t end, FileXML *file)
+void PluginSet::copy(posnum start, posnum end, FileXML *file)
 {
-	file->tag.set_title("PLUGINSET");	
+	file->tag.set_title("PLUGINSET");
 	file->tag.set_property("RECORD", record);
 	file->append_tag();
 	file->append_newline();
@@ -454,7 +408,7 @@ void PluginSet::copy(int64_t start, int64_t end, FileXML *file)
 		current->copy(start, end, file);
 	}
 
-	file->tag.set_title("/PLUGINSET");	
+	file->tag.set_title("/PLUGINSET");
 	file->append_tag();
 	file->append_newline();
 }
@@ -485,7 +439,7 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 			else
 			if(file->tag.title_is("PLUGIN"))
 			{
-				int64_t length = file->tag.get_property("LENGTH", (int64_t)0);
+				posnum length = file->tag.get_property("LENGTH", (int64_t)0);
 				loaded_length += length;
 				int plugin_type = file->tag.get_property("TYPE", 1);
 				char title[BCTEXTLEN];
@@ -608,9 +562,9 @@ int PluginSet::optimize()
 
 
 // plugins identical
-   			if(next_edit->identical(current_edit))
-        	{
-        		current_edit->length += next_edit->length;
+			if(next_edit->identical(current_edit))
+			{
+				current_edit->length += next_edit->length;
 // Merge keyframes
 				for(KeyFrame *source = (KeyFrame*)next_edit->keyframes->first;
 					source;
@@ -620,13 +574,12 @@ int PluginSet::optimize()
 					*dest = *source;
 					current_edit->keyframes->append(dest);
 				}
-        		remove(next_edit);
-        		result = 1;
-        	}
+				remove(next_edit);
+				result = 1;
+			}
 
-    		current_edit = (Plugin*)current_edit->next;
+			current_edit = (Plugin*)current_edit->next;
 		}
-
 	}
 	if (!last || !last->silence())
 	{
@@ -638,11 +591,11 @@ int PluginSet::optimize()
 			empty_edit->startproject = last->startproject + last->length;
 		empty_edit->length = LAST_VIRTUAL_LENGTH;
 		insert_after(last, empty_edit);
-	} else
+	} 
+	else
 	{
 		last->length = LAST_VIRTUAL_LENGTH;
 	}
-
 
 	return 0;
 }

@@ -44,29 +44,29 @@ public:
 	virtual Plugin* create_plugin() { return 0; };
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
-	void clear_keyframes(int64_t start, int64_t end);
+	void clear_keyframes(posnum start, posnum end);
 // Clear edits only for a handle modification
-	void clear_recursive(int64_t start, int64_t end);
-	void shift_keyframes_recursive(int64_t position, int64_t length);
-	void shift_effects_recursive(int64_t position, int64_t length);
-	void clear(int64_t start, int64_t end);
+	void clear_recursive(posnum start, posnum end);
+	void shift_keyframes_recursive(posnum position, posnum length) {};
+	void shift_effects_recursive(posnum position, posnum length) {};
+	void clear(posnum start, posnum end);
 	void copy_from(PluginSet *src);
-	void copy(int64_t start, int64_t end, FileXML *file);
-	void copy_keyframes(int64_t start, 
-		int64_t end, 
+	void copy(posnum start, posnum end, FileXML *file);
+	void copy_keyframes(posnum start,
+		posnum end,
 		FileXML *file, 
 		int default_only,
 		int autos_only);
-	static void paste_keyframes(int64_t start, 
-		int64_t length, 
+	static void paste_keyframes(posnum start,
+		posnum length,
 		FileXML *file, 
 		int default_only,
 		Track *track);
 // Return the nearest boundary of any kind in the plugin edits
-	int64_t plugin_change_duration(int64_t input_position, 
-		int64_t input_length, 
+	posnum plugin_change_duration(posnum input_position,
+		posnum input_length,
 		int reverse);
-	void shift_effects(int64_t start, int64_t length);
+	void shift_effects(posnum start, posnum length);
 	Edit* insert_edit_after(Edit *previous_edit);
 	Edit* create_edit();
 // For testing output equivalency when a new pluginset is added.
@@ -80,8 +80,8 @@ public:
 
 // Insert a new plugin
 	Plugin* insert_plugin(const char *title, 
-		int64_t unit_position, 
-		int64_t unit_length,
+		posnum unit_position, 
+		posnum unit_length,
 		int plugin_type,
 		SharedLocation *shared_location,
 		KeyFrame *default_keyframe,

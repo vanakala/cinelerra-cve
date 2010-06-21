@@ -61,7 +61,7 @@ Edits::~Edits()
 }
 
 
-void Edits::equivalent_output(Edits *edits, int64_t *result)
+void Edits::equivalent_output(Edits *edits, posnum *result)
 {
 // For the case of plugin sets, a new plugin set may be created with
 // plugins only starting after 0.  We only want to restart brender at
@@ -71,11 +71,10 @@ void Edits::equivalent_output(Edits *edits, int64_t *result)
 		current = NEXT,
 		that_current = that_current->next)
 	{
-//printf("Edits::equivalent_output 1 %d\n", *result);
 		if(!current && that_current)
 		{
-			int64_t position1 = length();
-			int64_t position2 = that_current->startproject;
+			posnum position1 = length();
+			posnum position2 = that_current->startproject;
 			if(*result < 0 || *result > MIN(position1, position2))
 				*result = MIN(position1, position2);
 			break;
@@ -83,17 +82,15 @@ void Edits::equivalent_output(Edits *edits, int64_t *result)
 		else
 		if(current && !that_current)
 		{
-			int64_t position1 = edits->length();
-			int64_t position2 = current->startproject;
+			posnum position1 = edits->length();
+			posnum position2 = current->startproject;
 			if(*result < 0 || *result > MIN(position1, position2))
 				*result = MIN(position1, position2);
 			break;
 		}
 		else
 		{
-//printf("Edits::equivalent_output 2 %d\n", *result);
 			current->equivalent_output(that_current, result);
-//printf("Edits::equivalent_output 3 %d\n", *result);
 		}
 	}
 }
@@ -112,15 +109,14 @@ void Edits::copy_from(Edits *edits)
 
 Edits& Edits::operator=(Edits& edits)
 {
-printf("Edits::operator= 1\n");
 	copy_from(&edits);
 	return *this;
 }
 
 
 void Edits::insert_asset(Asset *asset,
-	int64_t length,
-	int64_t position,
+	posnum length,
+	posnum position,
 	int track_number)
 {
 	Edit *new_edit = insert_new_edit(position);
@@ -136,20 +132,19 @@ void Edits::insert_asset(Asset *asset,
 	if(asset->video_data)
 		new_edit->channel = track_number % asset->layers;
 
-//printf("Edits::insert_asset %d %d\n", new_edit->channel, new_edit->length);
 	for(Edit *current = new_edit->next; current; current = NEXT)
 	{
 		current->startproject += length;
 	}
 }
 
-void Edits::insert_edits(Edits *source_edits, int64_t position)
+void Edits::insert_edits(Edits *source_edits, posnum position)
 {
-	int64_t clipboard_length = 
+	posnum clipboard_length = 
 		track->to_units(source_edits->edl->local_session->clipboard_length, 1);
-	int64_t clipboard_end = position + clipboard_length;
+	posnum clipboard_end = position + clipboard_length;
 
-	int64_t total_length = 0;
+	posnum total_length = 0;
 	for(Edit *source_edit = source_edits->first;
 		source_edit;
 		source_edit = source_edit->next)
@@ -199,14 +194,12 @@ void Edits::insert_edits(Edits *source_edits, int64_t position)
 
 // Native units
 // Can't paste silence in here because it's used by paste_silence.
-Edit* Edits::insert_new_edit(int64_t position)
+Edit* Edits::insert_new_edit(posnum position)
 {
 	Edit *current = 0;
-//printf("Edits::insert_new_edit 1\n");
 	Edit *new_edit;
 	current = split_edit(position);
 
-//printf("Edits::insert_new_edit 1\n");
 	if (current->length == 0) // when creating a split we got 0-length edit, just use it!
 		new_edit = current;
 	else      // we need to insert 
@@ -215,14 +208,12 @@ Edit* Edits::insert_new_edit(int64_t position)
 		new_edit = create_edit();
 		insert_after(current, new_edit);
 	}
-//printf("Edits::insert_new_edit 1\n");
 	new_edit->startproject = position;
-//printf("Edits::insert_new_edit 2\n");
 	return new_edit;
 }
 
 
-Edit* Edits::split_edit(int64_t position)
+Edit* Edits::split_edit(posnum position)
 {
 // Get edit containing position
 	Edit *edit = editof(position, 0);
@@ -246,14 +237,13 @@ Edit* Edits::split_edit(int64_t position)
 			edit = empty;
 		} else
 		{  // now we are now surely in situation where we have a) broken edit list or b) negative position... report error!
-			printf("ERROR!\n");       
+			printf("ERROR!\n");
 			printf("Trying to insert edit at position, but failed: %lli\n", position);
 			printf("Dump is here:\n");
 			track->dump();
 			return 0;
-		}	
+		}
 // Split would have created a 0 length
-//	if(edit->startproject == position) return edit;
 // Create anyway so the return value comes before position
 
 	Edit *new_edit = create_edit();
@@ -316,23 +306,11 @@ void Edits::resample(double old_rate, double new_rate)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 int Edits::optimize()
 {
 	int result = 1;
 	Edit *current;
 
-//return 0;
 // Sort edits by starting point
 	while(result)
 	{
@@ -411,20 +389,18 @@ int Edits::optimize()
 		{
 // assets identical
 			Edit *next_edit = current->next;
-    		if(current->asset == next_edit->asset && 
-    		   	(!current->asset ||
-					(current->startsource + current->length == next_edit->startsource &&
-	       			current->channel == next_edit->channel)
-				)
-			)
-        	{       
+			if(current->asset == next_edit->asset && 
+				(!current->asset ||
+				(current->startsource + current->length == next_edit->startsource &&
+				current->channel == next_edit->channel)))
+			{
 // source positions are consecutive
-        		current->length += next_edit->length;
-        		remove(next_edit);
-        		result = 1;
-        	}
+				current->length += next_edit->length;
+				remove(next_edit);
+				result = 1;
+			}
 
-    		current = (Plugin*)current->next;
+			current = (Plugin*)current->next;
 		}
 
 // delete last edit of 0 length or silence
@@ -439,30 +415,14 @@ int Edits::optimize()
 			empty_edit->startproject = last->startproject + last->length;
 		empty_edit->length = LAST_VIRTUAL_LENGTH;
 		insert_after(last, empty_edit);
-	} else
+	}
+	else
 	{
 		last->length = LAST_VIRTUAL_LENGTH;
 	}
 
-//track->dump();
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -472,13 +432,12 @@ int Edits::optimize()
 int Edits::load(FileXML *file, int track_offset)
 {
 	int result = 0;
-	int64_t startproject = 0;
+	posnum startproject = 0;
 	while (last) 
 		delete last;
 	do{
 		result = file->read_tag();
 
-//printf("Edits::load 1 %s\n", file->tag.get_title());
 		if(!result)
 		{
 			if(!strcmp(file->tag.get_title(), "EDIT"))
@@ -497,29 +456,20 @@ int Edits::load(FileXML *file, int track_offset)
 		loaded_length = last->startproject + last->length;
 	else 
 		loaded_length = 0;
-//track->dump();
 	optimize();
 }
 
-int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
+int Edits::load_edit(FileXML *file, posnum &startproject, int track_offset)
 {
 	Edit* current;
 
-//printf("Edits::load_edit 1 %d\n", total());
 	current = append_new_edit();
-//printf("Edits::load_edit 2 %d\n", total());
-
 	current->load_properties(file, startproject);
-
 	startproject += current->length;
-
 	int result = 0;
-//printf("Edits::load_edit 1\n");
 
 	do{
-//printf("Edits::load_edit 2\n");
 		result = file->read_tag();
-//printf("Edits::load_edit 3 %s\n", file->tag.get_title());
 
 		if(!result)
 		{
@@ -529,7 +479,6 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 				sprintf(filename, SILENCE);
 				file->tag.get_property("SRC", filename);
 // Extend path
-//printf("Edits::load_edit 4 %s\n", filename);
 				if(strcmp(filename, SILENCE))
 				{
 					char directory[BCTEXTLEN], edl_directory[BCTEXTLEN];
@@ -548,7 +497,6 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 				{
 					current->asset = edl->assets->get_asset(SILENCE);
 				}
-//printf("Edits::load_edit 5\n");
 			}
 			else
 			if(file->tag.title_is("TRANSITION"))
@@ -562,9 +510,7 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 			else
 			if(file->tag.title_is(SILENCE))
 			{
-//printf("Edits::load_edit 6\n");
 				current->asset = edl->assets->get_asset(SILENCE);
-//printf("Edits::load_edit 7\n");
 			}
 			else
 			if(file->tag.title_is("/EDIT"))
@@ -572,10 +518,8 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 				result = 1;
 			}
 		}
-//printf("Edits::load_edit 8\n");
 	}while(!result);
 
-//printf("Edits::load_edit 5\n");
 // in case of incomplete edit tag
 	if(!current->asset) current->asset = edl->assets->get_asset(SILENCE);
 	return 0;
@@ -583,7 +527,7 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 
 // ============================================= accounting
 
-int64_t Edits::length()
+posnum Edits::length()
 {
 	if(last) 
 		return last->startproject + last->length;
@@ -591,7 +535,7 @@ int64_t Edits::length()
 		return 0;
 }
 
-Edit* Edits::editof(int64_t position, int use_nudge)
+Edit* Edits::editof(posnum position, int use_nudge)
 {
 	Edit *current = 0;
 	if(use_nudge && track) position += track->nudge;
@@ -605,7 +549,7 @@ Edit* Edits::editof(int64_t position, int use_nudge)
 	return 0;     // return 0 on failure
 }
 
-Edit* Edits::get_playable_edit(int64_t position, int use_nudge)
+Edit* Edits::get_playable_edit(posnum position, int use_nudge)
 {
 	Edit *current;
 	if(track && use_nudge) position += track->nudge;
@@ -632,7 +576,7 @@ Edit* Edits::get_playable_edit(int64_t position, int use_nudge)
 
 
 
-int Edits::copy(int64_t start, int64_t end, FileXML *file, const char *output_path)
+int Edits::copy(posnum start, posnum end, FileXML *file, const char *output_path)
 {
 	Edit *current_edit;
 
@@ -652,7 +596,7 @@ int Edits::copy(int64_t start, int64_t end, FileXML *file, const char *output_pa
 
 
 
-void Edits::clear(int64_t start, int64_t end)
+void Edits::clear(posnum start, posnum end)
 {
 	Edit* edit1 = editof(start, 0);
 	Edit* edit2 = editof(end, 0);
@@ -672,7 +616,6 @@ void Edits::clear(int64_t start, int64_t end)
 	{
 // in different edits
 
-//printf("Edits::clear 3.5 %d %d %d %d\n", edit1->startproject, edit1->length, edit2->startproject, edit2->length);
 		edit1->length = start - edit1->startproject;
 		edit2->length -= end - edit2->startproject;
 		edit2->startsource += end - edit2->startproject;
@@ -714,14 +657,13 @@ void Edits::clear(int64_t start, int64_t end)
 
 // Used by edit handle and plugin handle movement but plugin handle movement
 // can only effect other plugins.
-void Edits::clear_recursive(int64_t start, 
-	int64_t end, 
+void Edits::clear_recursive(posnum start, 
+	posnum end, 
 	int edit_edits,
 	int edit_labels, 
 	int edit_plugins,
 	Edits *trim_edits)
 {
-//printf("Edits::clear_recursive 1\n");
 	track->clear(start, 
 		end, 
 		edit_edits,
@@ -803,7 +745,6 @@ int Edits::modify_handles(double oldposition,
 	int result = 0;
 	Edit *current_edit;
 
-//printf("Edits::modify_handles 1 %d %f %f\n", currentend, newposition, oldposition);
 	if(currentend == 0)
 	{
 // left handle
@@ -813,13 +754,11 @@ int Edits::modify_handles(double oldposition,
 				oldposition))
 			{
 // edit matches selection
-//printf("Edits::modify_handles 3 %f %f\n", newposition, oldposition);
 				oldposition = track->from_units(current_edit->startproject);
 				result = 1;
 
 				if(newposition >= oldposition)
 				{
-//printf("Edits::modify_handle 1 %s %f %f\n", track->title, oldposition, newposition);
 // shift start of edit in
 					current_edit->shift_start_in(edit_mode, 
 						track->to_units(newposition, 0), 
@@ -831,7 +770,6 @@ int Edits::modify_handles(double oldposition,
 				}
 				else
 				{
-//printf("Edits::modify_handle 2 %s\n", track->title);
 // move start of edit out
 					current_edit->shift_start_out(edit_mode, 
 						track->to_units(newposition, 0), 
@@ -854,15 +792,13 @@ int Edits::modify_handles(double oldposition,
 			if(edl->equivalent(track->from_units(current_edit->startproject) + 
 				track->from_units(current_edit->length), oldposition))
 			{
-            	oldposition = track->from_units(current_edit->startproject) + 
+				oldposition = track->from_units(current_edit->startproject) +
 					track->from_units(current_edit->length);
 				result = 1;
 
-//printf("Edits::modify_handle 3\n");
 				if(newposition <= oldposition)
-				{     
+				{
 // shift end of edit in
-//printf("Edits::modify_handle 4\n");
 					current_edit->shift_end_in(edit_mode, 
 						track->to_units(newposition, 0), 
 						track->to_units(oldposition, 0),
@@ -870,12 +806,10 @@ int Edits::modify_handles(double oldposition,
 						edit_labels,
 						edit_plugins,
 						trim_edits);
-//printf("Edits::modify_handle 5\n");
 				}
 				else
-				{     
+				{
 // move end of edit out
-//printf("Edits::modify_handle 6\n");
 					current_edit->shift_end_out(edit_mode, 
 						track->to_units(newposition, 0), 
 						track->to_units(oldposition, 0),
@@ -883,12 +817,10 @@ int Edits::modify_handles(double oldposition,
 						edit_labels,
 						edit_plugins,
 						trim_edits);
-//printf("Edits::modify_handle 7\n");
 				}
 			}
 
 			if(!result) current_edit = current_edit->next;
-//printf("Edits::modify_handle 8\n");
 		}
 	}
 
@@ -901,7 +833,7 @@ int Edits::modify_handles(double oldposition,
 // If we need rutine to create new edit by pushing others forward, write new rutine and call it properly
 // This are two distinctive functions
 // This rutine leaves edits in optimized state!
-void Edits::paste_silence(int64_t start, int64_t end)
+void Edits::paste_silence(posnum start, posnum end)
 {
 	// paste silence does not do anything if 
 	// a) paste silence is on empty track
@@ -927,7 +859,7 @@ void Edits::paste_silence(int64_t start, int64_t end)
 
 // Used by other editing commands so don't optimize
 // This is separate from paste_silence, since it has to wrok also on empty tracks/beyond end of track
-Edit *Edits::create_and_insert_edit(int64_t start, int64_t end)
+Edit *Edits::create_and_insert_edit(posnum start, posnum end)
 {
 	Edit *new_edit = insert_new_edit(start);
 	new_edit->length = end - start;
@@ -937,8 +869,8 @@ Edit *Edits::create_and_insert_edit(int64_t start, int64_t end)
 	}
 	return new_edit;
 }
-				     
-Edit* Edits::shift(int64_t position, int64_t difference)
+
+Edit* Edits::shift(posnum position, posnum difference)
 {
 	Edit *new_edit = split_edit(position);
 
@@ -955,12 +887,12 @@ Edit* Edits::shift(int64_t position, int64_t difference)
 }
 
 
-void Edits::shift_keyframes_recursive(int64_t position, int64_t length)
+void Edits::shift_keyframes_recursive(posnum position, posnum length)
 {
 	track->shift_keyframes(position, length, 0);
 }
 
-void Edits::shift_effects_recursive(int64_t position, int64_t length)
+void Edits::shift_effects_recursive(posnum position, posnum length)
 {
 	track->shift_effects(position, length, 0);
 }
