@@ -87,7 +87,6 @@ Transition::Transition(EDL *edl, Edit *edit, const char *title, long unit_length
 {
 	this->edit = edit;
 	this->length = unit_length;
-//printf("Transition::Transition %p %p %p %p\n", this, keyframes, keyframes->first, keyframes->last);
 }
 
 Transition::~Transition()
@@ -101,7 +100,6 @@ KeyFrame* Transition::get_keyframe()
 
 Transition& Transition::operator=(Transition &that)
 {
-//printf("Transition::operator= 1\n");
 	copy_from(&that);
 	return *this;
 }
@@ -200,35 +198,7 @@ void Transition::load_xml(FileXML *file)
 	}while(!result);
 }
 
-
-
-int Transition::popup_transition(int x, int y)
-{
-// 	if(mwindow->session->tracks_vertical)
-// 		mwindow->gui->transition_popup->activate_menu(this, PROGRAM_NAME ": Transition", y, x);
-// 	else
-// 		mwindow->gui->transition_popup->activate_menu(this, PROGRAM_NAME ": Transition", x, y);
-}
-
-int Transition::update_derived()
-{
-// Redraw transition titles
-}
-
-int Transition::update_display()
-{
-// Don't draw anything during loads.
-	return 0;
-}
-
-const char* Transition::default_title()
-{
-	return "Transition";
-}
-
 void Transition::dump()
 {
 	printf("       title: %s length: %lld\n", title, length);
 }
-
-

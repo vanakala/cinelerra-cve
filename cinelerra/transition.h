@@ -39,7 +39,6 @@ public:
 	int handle_event();
 	int audio;
 	int video;
-//	PasteTransition *thread;
 };
 
 class PasteTransition : public Thread
@@ -75,7 +74,6 @@ public:
 
 	KeyFrame* get_keyframe();
 	int reset_parameters();
-	int update_derived();
 	Transition& operator=(Transition &that);
 	Plugin& operator=(Plugin &that);
 	Edit& operator=(Edit &that);
@@ -86,13 +84,6 @@ public:
 
 // Only the show value from the attachment point is used.
 	int set_show_derived(int value) {};
-
-	int popup_transition(int x, int y);
-// Update the widgets after loading
-	int update_display();
-// Update edit after attaching
-	int update_edit(int is_loading);
-	const char* default_title();
 	void dump();
 
 private:

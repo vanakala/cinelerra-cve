@@ -62,12 +62,12 @@ public:
 
 // Called by Edits::equivalent_output to override the keyframe behavior and check
 // title.
-	void equivalent_output(Edit *edit, int64_t *result);
+	void equivalent_output(Edit *edit, posnum *result);
 
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 	int is_synthesis(RenderEngine *renderengine, 
-		int64_t position, 
+		posnum position,
 		int direction);
 
 	virtual int operator==(Plugin& that);
@@ -84,32 +84,32 @@ public:
 	int identical_location(Plugin *that);
 	virtual void synchronize_params(Edit *edit);
 // Used by Edits::insert_edits and Plugin::shift to shift plugin keyframes
-	void shift_keyframes(int64_t position);
+	void shift_keyframes(posnum position);
 
-	void change_plugin(char *title, 
+	void change_plugin(const char *title, 
 		SharedLocation *shared_location, 
 		int plugin_type);
 // For synchronizing parameters
 	void copy_keyframes(Plugin *plugin);
 // For copying to clipboard
-	void copy_keyframes(int64_t start, 
-		int64_t end, 
+	void copy_keyframes(posnum start,
+		posnum end,
 		FileXML *file, 
 		int default_only,
 		int autos_only);
 // For editing automation.  
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
-	void clear_keyframes(int64_t start, int64_t end);
-	void copy(int64_t start, int64_t end, FileXML *file);
+	void clear_keyframes(posnum start, posnum end);
+	void copy(posnum start, posnum end, FileXML *file);
 	void paste(FileXML *file);
 	void load(FileXML *file);
 // Shift in time
-	void shift(int64_t difference);
+	void shift(posnum difference);
 	void dump();
 // Called by PluginClient sequence to get rendering parameters
-	KeyFrame* get_prev_keyframe(int64_t position);
-	KeyFrame* get_next_keyframe(int64_t position);
+	KeyFrame* get_prev_keyframe(posnum position);
+	KeyFrame* get_next_keyframe(posnum position);
 // If this is a standalone plugin fill its location in the result.
 // If it's shared copy the shared location into the result
 	void get_shared_location(SharedLocation *result);
@@ -121,14 +121,13 @@ public:
 	void calculate_title(char *string, int use_nudge);
 // Resolve objects pointed to by shared_location
 	Track* get_shared_track();
-//	Plugin* get_shared_plugin();
 
 // Need to resample keyframes
 	void resample(double old_rate, double new_rate);
 
 // The title of the plugin is stored and not the plugindb entry in case it doesn't exist in the db
 // Title of the plugin currently attached
-	char title[BCTEXTLEN];           
+	char title[BCTEXTLEN];
 	int plugin_type;
 // In and out aren't used anymore.
 	int in, out;

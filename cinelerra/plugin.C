@@ -107,7 +107,7 @@ int Plugin::silence()
 		return 1;
 }
 
-void Plugin::clear_keyframes(int64_t start, int64_t end)
+void Plugin::clear_keyframes(posnum start, posnum end)
 {
 	keyframes->clear(start, end, 0);
 }
@@ -139,8 +139,8 @@ void Plugin::copy_keyframes(Plugin *plugin)
 	keyframes->copy_from(plugin->keyframes);
 }
 
-void Plugin::copy_keyframes(int64_t start, 
-	int64_t end, 
+void Plugin::copy_keyframes(posnum start,
+	posnum end,
 	FileXML *file, 
 	int default_only,
 	int autos_only)
@@ -159,7 +159,7 @@ void Plugin::synchronize_params(Edit *edit)
 	copy_keyframes(plugin);
 }
 
-void Plugin::shift_keyframes(int64_t position)
+void Plugin::shift_keyframes(posnum position)
 {
 	for(KeyFrame *keyframe = (KeyFrame*)keyframes->first;
 		keyframe; 
@@ -170,7 +170,7 @@ void Plugin::shift_keyframes(int64_t position)
 }
 
 
-void Plugin::equivalent_output(Edit *edit, int64_t *result)
+void Plugin::equivalent_output(Edit *edit, posnum *result)
 {
 	Plugin *plugin = (Plugin*)edit;
 // End of plugin changed
@@ -200,7 +200,7 @@ void Plugin::equivalent_output(Edit *edit, int64_t *result)
 
 
 int Plugin::is_synthesis(RenderEngine *renderengine, 
-		int64_t position, 
+		posnum position,
 		int direction)
 {
 	switch(plugin_type)
@@ -288,7 +288,7 @@ int Plugin::identical_location(Plugin *that)
 	return 0;
 }
 
-void Plugin::change_plugin(char *title, 
+void Plugin::change_plugin(const char *title, 
 		SharedLocation *shared_location, 
 		int plugin_type)
 {
@@ -299,7 +299,7 @@ void Plugin::change_plugin(char *title,
 
 
 
-KeyFrame* Plugin::get_prev_keyframe(int64_t position)
+KeyFrame* Plugin::get_prev_keyframe(posnum position)
 {
 	KeyFrame *current = 0;
 
@@ -333,7 +333,7 @@ KeyFrame* Plugin::get_prev_keyframe(int64_t position)
 	return current;
 }
 
-KeyFrame* Plugin::get_next_keyframe(int64_t position)
+KeyFrame* Plugin::get_next_keyframe(posnum position)
 {
 	KeyFrame *current;
 
@@ -341,7 +341,6 @@ KeyFrame* Plugin::get_next_keyframe(int64_t position)
 // change during playback at the same rate as PluginClient::source_position.
 	if(position < 0)
 	{
-//printf("Plugin::get_next_keyframe position < 0\n");
 		position = track->to_units(edl->local_session->get_selectionstart(1), 0);
 	}
 
@@ -395,7 +394,7 @@ KeyFrame* Plugin::get_keyframe()
 	return 0;
 }
 
-void Plugin::copy(int64_t start, int64_t end, FileXML *file)
+void Plugin::copy(posnum start, posnum end, FileXML *file)
 {
 	int64_t endproject = startproject + length;
 
@@ -404,14 +403,14 @@ void Plugin::copy(int64_t start, int64_t end, FileXML *file)
 		 (startproject <= start && endproject >= end))    // range in project
 	{
 // edit is in range
-		int64_t startproject_in_selection = startproject; // start of edit in selection in project
-		int64_t startsource_in_selection = startsource; // start of source in selection in source
-		int64_t endsource_in_selection = startsource + length; // end of source in selection
-		int64_t length_in_selection = length;             // length of edit in selection
+		posnum startproject_in_selection = startproject; // start of edit in selection in project
+		posnum startsource_in_selection = startsource; // start of source in selection in source
+		posnum endsource_in_selection = startsource + length; // end of source in selection
+		posnum length_in_selection = length;             // length of edit in selection
 
 		if(startproject < start)
 		{         // start is after start of edit in project
-			int64_t length_difference = start - startproject;
+			posnum length_difference = start - startproject;
 
 			startsource_in_selection += length_difference;
 			startproject_in_selection += length_difference;
@@ -425,8 +424,7 @@ void Plugin::copy(int64_t start, int64_t end, FileXML *file)
 		}
 
 // Plugins don't store silence
-		file->tag.set_title("PLUGIN");	
-//		file->tag.set_property("STARTPROJECT", startproject_in_selection - start);
+		file->tag.set_title("PLUGIN");
 		file->tag.set_property("LENGTH", length_in_selection);
 		file->tag.set_property("TYPE", plugin_type);
 		file->tag.set_property("TITLE", title);
@@ -495,7 +493,6 @@ void Plugin::load(FileXML *file)
 	do{
 		result = file->read_tag();
 
-//printf("Plugin::load 1 %s\n", file->tag.get_title());
 		if(!result)
 		{
 			if(file->tag.title_is("/PLUGIN"))
@@ -516,11 +513,6 @@ void Plugin::load(FileXML *file)
 			if(file->tag.title_is("OUT"))
 			{
 				out = 1;
-			}
-			else
-			if(file->tag.title_is("SHOW"))
-			{
-//				show = 1;
 			}
 			else
 			if(file->tag.title_is("ON"))
@@ -597,7 +589,7 @@ void Plugin::resample(double old_rate, double new_rate)
 	keyframes->resample(old_rate, new_rate);
 }
 
-void Plugin::shift(int64_t difference)
+void Plugin::shift(posnum difference)
 {
 	Edit::shift(difference);
 	shift_keyframes(difference);
