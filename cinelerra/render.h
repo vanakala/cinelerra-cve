@@ -89,7 +89,7 @@ public:
 	int get_master();
 	int get_result();
 	void set_result(int value);
-	void set_progress(framenum value);
+	void set_progress(samplenum value);
 	int progress_cancelled();
 
 	Render *render;
@@ -194,7 +194,7 @@ public:
 // Total samples updated by the render farm and the local renderer.
 // This avoids rounding errors and complies with the use of samples for
 // timing.
-	framenum total_rendered;
+	samplenum total_rendered;
 // Speed for the master node
 	double frames_per_second;
 // Time used in last render

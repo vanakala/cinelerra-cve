@@ -485,7 +485,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 {
 	int audio_done = 0;
 	int video_done = 0;
-	int samples_rendered = 0;
+	samplenum samples_rendered = 0;
 
 
 	result = 0;

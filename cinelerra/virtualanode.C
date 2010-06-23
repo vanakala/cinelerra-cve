@@ -25,6 +25,7 @@
 #include "arender.h"
 #include "atrack.h"
 #include "automation.h"
+#include "bcsignals.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -306,7 +307,7 @@ int VirtualANode::render_as_module(double **audio_out,
 	{
 		int mute_constant;
 		int mute_fragment = len - i;
-		int mute_fragment_project = mute_fragment *
+		int mute_fragment_project = (int64_t)mute_fragment *
 			project_sample_rate /
 			sample_rate;
 		start_position_project = start_position + 
@@ -377,7 +378,7 @@ int VirtualANode::render_fade(double *buffer,
 	samplenum input_position_project = input_position * 
 		project_sample_rate / 
 		sample_rate;
-	int len_project = len * 
+	int len_project = (int64_t)len * 
 		project_sample_rate / 
 		sample_rate;
 
@@ -448,7 +449,7 @@ int VirtualANode::render_pan(double *input, // start of input fragment
 
 	for(int i = 0; i < fragment_len; )
 	{
-		int slope_len = (fragment_len - i)  *
+		int slope_len = (int64_t)(fragment_len - i)  *
 					project_sample_rate /
 					sample_rate;
 
@@ -463,7 +464,7 @@ int VirtualANode::render_pan(double *input, // start of input fragment
 				channel,
 				direction);
 
-		slope_len = slope_len * sample_rate / project_sample_rate;
+		slope_len = (int64_t)slope_len * sample_rate / project_sample_rate;
 		slope = slope * sample_rate / project_sample_rate;
 		slope_len = MIN(slope_len, fragment_len - i);
 

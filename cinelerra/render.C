@@ -24,6 +24,7 @@
 #include "auto.h"
 #include "batchrender.h"
 #include "bcprogressbox.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
 #include "compresspopup.h"
@@ -169,7 +170,7 @@ void MainPackageRenderer::set_result(int value)
 		render->result = value;
 }
 
-void MainPackageRenderer::set_progress(framenum value)
+void MainPackageRenderer::set_progress(samplenum value)
 {
 	render->counter_lock->lock("MainPackageRenderer::set_progress");
 	render->total_rendered += value;

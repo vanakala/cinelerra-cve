@@ -167,7 +167,7 @@ public:
 		Preferences *preferences,
 		int use_local_rate,
 		int *result_return,
-		framenum *total_return,
+		posnum *total_return,
 		Mutex *total_return_lock,
 		Asset *default_asset,
 		EDL *edl,
@@ -196,7 +196,7 @@ public:
 // Any nonzero value is an error and stops rendering.
 	int *result_return;
 // The total number of frames completed
-	framenum *total_return;
+	posnum *total_return;
 	Mutex *total_return_lock;
 	Asset *default_asset;
 	EDL *edl;
