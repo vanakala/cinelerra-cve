@@ -91,7 +91,7 @@ public:
 // Called by VRender to reset the timers once the first frame is done.
 	void reset_sync_position();
 // return samples since start of playback
-	int64_t session_position();
+	samplenum session_position();
 
 // Update preferences window
 	void update_framerate(float framerate);
@@ -168,21 +168,6 @@ public:
 
 // buffersize is in samples
 	int reset_parameters();
-
-	int arm_playback_audio(int64_t input_length, 
-			int64_t amodule_render_fragment, 
-			int64_t playback_buffer, 
-			int64_t output_length);
-
-	int arm_playback_video(int every_frame, 
-			int64_t read_length, 
-			int64_t output_length,
-			int track_w,
-			int track_h,
-			int output_w,
-			int output_h);
-
-	int64_t get_correction_factor(int reset);     // calling it resets the correction factor
 
 // start video since vrender is the master
 	int start_video();

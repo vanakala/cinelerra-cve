@@ -94,12 +94,12 @@ int VRender::flash_output()
 }
 
 int VRender::process_buffer(VFrame *video_out, 
-	int64_t input_position, 
+	framenum input_position, 
 	int last_buffer)
 {
 // process buffer for non realtime
 	int i, j;
-	int64_t render_len = 1;
+	posnum render_len = 1;
 	int reconfigure = 0;
 
 
@@ -118,7 +118,7 @@ int VRender::process_buffer(VFrame *video_out,
 }
 
 
-int VRender::process_buffer(int64_t input_position)
+int VRender::process_buffer(framenum input_position)
 {
 SET_TRACE
 	Edit *playable_edit = 0;
@@ -130,7 +130,6 @@ SET_TRACE
 	int use_asynchronous = 
 		renderengine->command->realtime && 
 		renderengine->edl->session->video_asynchronous;
-SET_TRACE
 
 // Determine the rendering strategy for this frame.
 	use_vconsole = get_use_vconsole(playable_edit, 
@@ -144,11 +143,6 @@ SET_TRACE
 	if(renderengine->command->realtime)
 		renderengine->video->new_output_buffer(&video_out, colormodel);
 
-
-// printf("VRender::process_buffer use_vconsole=%d colormodel=%d video_out=%p\n", 
-// use_vconsole, 
-// colormodel,
-// video_out);
 // Read directly from file to video_out
 	if(!use_vconsole)
 	{
@@ -201,7 +195,7 @@ SET_TRACE
 
 // Determine if virtual console is needed
 int VRender::get_use_vconsole(Edit* &playable_edit, 
-	int64_t position,
+	framenum position,
 	int &use_brender)
 {
 	Track *playable_track;
@@ -242,7 +236,7 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 				playable_edit->asset->interlace_autofixoption,
 				playable_edit->asset->interlace_mode,
 				playable_edit->asset->interlace_fixmethod) 
-	    != BC_ILACE_FIXMETHOD_NONE)
+			!= BC_ILACE_FIXMETHOD_NONE)
 		return 1;
 
 // If we get here the frame is going to be directly copied.  Whether it is
@@ -300,15 +294,14 @@ void VRender::run()
 // Then use this number to predict the next frame that should be rendered.
 // Be suspicious of frames that render late so have a countdown
 // before we start dropping.
-	int64_t current_sample, start_sample, end_sample; // Absolute counts.
-	int64_t next_frame;  // Actual position.
-	int64_t last_delay = 0;  // delay used before last frame
-	int64_t skip_countdown = VRENDER_THRESHOLD;    // frames remaining until drop
-	int64_t delay_countdown = VRENDER_THRESHOLD;  // Frames remaining until delay
+	samplenum current_sample, start_sample, end_sample; // Absolute counts.
+	framenum next_frame;  // Actual position.
+	framenum skip_countdown = VRENDER_THRESHOLD;    // frames remaining until drop
+	framenum delay_countdown = VRENDER_THRESHOLD;  // Frames remaining until delay
 // Number of frames before next reconfigure
-	int64_t current_input_length;
+	posnum current_input_length;
 // Number of frames to skip.
-	int64_t frame_step = 1;
+	framenum frame_step = 1;
 
 	first_frame = 1;
 
@@ -321,8 +314,6 @@ void VRender::run()
 
 
 	while(!done)
-//		!renderengine->video->interrupt
-//		&& !last_playback)
 	{
 // Perform the most time consuming part of frame decompression now.
 // Want the condition before, since only 1 frame is rendered 
@@ -337,7 +328,6 @@ void VRender::run()
 
 SET_TRACE
 		process_buffer(current_position);
-SET_TRACE
 		if(last_playback || renderengine->video->interrupt 
 		    || renderengine->command->single_frame())
 		{
@@ -350,7 +340,7 @@ SET_TRACE
 		{
 SET_TRACE
 // Determine the delay until the frame needs to be shown.
-			current_sample = (int64_t)(renderengine->sync_position() * 
+			current_sample = (samplenum)(renderengine->sync_position() * 
 				renderengine->command->get_speed());
 // latest sample at which the frame can be shown.
 			end_sample = Units::tosamples(session_frame, 
@@ -364,7 +354,6 @@ SET_TRACE
 
 			if(first_frame || end_sample < current_sample)
 			{
-SET_TRACE
 // Frame rendered late or this is the first frame.  Flash it now.
 				flash_output();
 SET_TRACE
@@ -476,8 +465,6 @@ SET_TRACE
 				framerate_timer.update();
 			}
 		}
-//if(last_playback)
-//    printf("VRender::run last_playback = 1, done =%d\n", done);
 	}
 
 SET_TRACE
@@ -490,31 +477,10 @@ SET_TRACE
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 VRender::VRender(MWindow *mwindow, RenderEngine *renderengine)
  : CommonRender(mwindow, renderengine)
 {
 	input_length = 0;
-	vmodule_render_fragment = 0;
-	playback_buffer = 0;
 	session_frame = 0;
 	asynchronous = 0;     // render 1 frame at a time
 	framerate_counter = 0;
@@ -548,17 +514,7 @@ int VRender::start_playback()
 	}
 }
 
-int VRender::wait_for_startup()
-{
-}
-
-
-
-
-
-
-
-int64_t VRender::tounits(double position, int round)
+posnum VRender::tounits(double position, int round)
 {
 	if(round)
 		return Units::round(position * renderengine->edl->session->frame_rate);
@@ -566,7 +522,7 @@ int64_t VRender::tounits(double position, int round)
 		return Units::to_int64(position * renderengine->edl->session->frame_rate);
 }
 
-double VRender::fromunits(int64_t position)
+double VRender::fromunits(posnum position)
 {
 	return (double)position / renderengine->edl->session->frame_rate;
 }

@@ -53,7 +53,6 @@ public:
 				int output_h);
 
 	void run();
-	int wait_for_startup();
 
 	int start_playback();     // start the thread
 
@@ -62,10 +61,10 @@ public:
 
 // process frames to put in buffer_out
 	int process_buffer(VFrame *video_out, 
-		int64_t input_position, 
+		framenum input_position, 
 		int last_buffer);
 // load an array of buffers for each track to send to the thread
-	int process_buffer(int64_t input_position);
+	int process_buffer(framenum input_position);
 // Flash the output on the display
 	int flash_output();
 // Determine if data can be copied directly from the file to the output device.
@@ -76,30 +75,25 @@ public:
 
 
 	int get_use_vconsole(Edit* &playable_edit, 
-		int64_t position,
+		framenum position,
 		int &get_use_vconsole);
 	int get_colormodel(Edit* &playable_edit, 
 		int use_vconsole,
 		int use_brender);
 
-	int64_t tounits(double position, int round);
-	double fromunits(int64_t position);
+	posnum tounits(double position, int round);
+	double fromunits(posnum position);
 
 // frames since start of playback
-	int64_t session_frame;           
+	framenum session_frame;
 
 // console dimensions
-	int track_w, track_h;    
+	int track_w, track_h;
 // video device dimensions
-	int output_w, output_h;    
-// frames to send to console fragment
-	int64_t vmodule_render_fragment;    
-// frames to send to video device (1)
-	int64_t playback_buffer;            
+	int output_w, output_h;
+
 // Output frame
 	VFrame *video_out;
-// Byte offset of video_out
-	int64_t output_offset;
 
 // Temp frame for VModule loading
 	VFrame *input_temp;
@@ -109,10 +103,6 @@ public:
 	OverlayFrame *overlayer;
 
 
-	
-// Total number of frames to render for transitions
-	int64_t source_length;  
-
 // Flag first frame to unlock audio
 	int first_frame;
 
@@ -121,7 +111,7 @@ private:
 	Timer timer;
 
 // for getting actual framerate
-	int64_t framerate_counter;
+	int framerate_counter;
 	Timer framerate_timer;
 	int render_strategy;
 };

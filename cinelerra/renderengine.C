@@ -64,10 +64,10 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	do_video = 0;
 	interrupted = 0;
 	actual_frame_rate = 0;
- 	this->preferences = new Preferences;
- 	this->command = new TransportCommand;
- 	this->preferences->copy_from(preferences);
- 	this->command->copy_from(command);
+	this->preferences = new Preferences;
+	this->command = new TransportCommand;
+	this->preferences->copy_from(preferences);
+	this->command->copy_from(command);
 	edl = new EDL;
 	edl->create_objects();
 // EDL only changed in construction.
@@ -186,7 +186,6 @@ void RenderEngine::get_duty()
 	do_audio = 0;
 	do_video = 0;
 
-//edl->dump();
 	if(!command->single_frame() &&
 		edl->tracks->playable_audio_tracks() &&
 		edl->session->audio_channels)
@@ -352,7 +351,7 @@ int RenderEngine::open_output()
 	return 0;
 }
 
-int64_t RenderEngine::session_position()
+samplenum RenderEngine::session_position()
 {
 	if(do_audio)
 	{
@@ -361,7 +360,7 @@ int64_t RenderEngine::session_position()
 
 	if(do_video)
 	{
-		return (int64_t)((double)vrender->session_frame / 
+		return (samplenum)((double)vrender->session_frame /
 				edl->session->frame_rate * 
 				edl->session->sample_rate /
 				command->get_speed() + 0.5);
@@ -477,12 +476,10 @@ void RenderEngine::interrupt_playback()
 	}
 	if(video)
 	{
-//printf("RenderEngine::interrupt_playback 3 %p\n", this);
 		video->interrupt_playback();
-//printf("RenderEngine::interrupt_playback 4 %p\n", this);
 	}
 	if(playback_engine)
-	    playback_engine->stop_tracking();
+		playback_engine->stop_tracking();
 	interrupt_lock->unlock();
 }
 
@@ -526,7 +523,6 @@ void RenderEngine::get_module_levels(ArrayList<double> *module_levels, int64_t p
 	{
 		for(int i = 0; i < arender->total_modules; i++)
 		{
-//printf("RenderEngine::get_module_levels %p %p\n", ((AModule*)arender->modules[i]), ((AModule*)arender->modules[i])->level_samples);
 			int history_entry = arender->get_history_number(((AModule*)arender->modules[i])->level_samples, position);
 
 			module_levels->append(((AModule*)arender->modules[i])->level_history[history_entry]);
@@ -548,7 +544,6 @@ void RenderEngine::run()
 
 	interrupt_lock->lock("RenderEngine::run");
 
-//printf("RenderEngine::run - closing_output\n");
 	close_output();
 
 // Fix the tracking position
@@ -582,8 +577,6 @@ void RenderEngine::run()
 
 		}
 		playback_engine->is_playing_back = 0;
-//printf("RenderEngine::run:corrected tracking_position %f\n", 
-//    playback_engine->tracking_position);
 	}
 
 	input_lock->unlock();
@@ -626,44 +619,6 @@ int RenderEngine::reset_parameters()
 	done = 0;
 }
 
-int RenderEngine::arm_playback_audio(int64_t input_length, 
-			int64_t amodule_render_fragment, 
-			int64_t playback_buffer, 
-			int64_t output_length)
-{
-
-	do_audio = 1;
-
-	arender = new ARender(this);
-	arender->arm_playback(current_sample, 
-							input_length, 
-							amodule_render_fragment, 
-							playback_buffer, 
-							output_length);
-}
-
-int RenderEngine::arm_playback_video(int every_frame, 
-			int64_t read_length, 
-			int64_t output_length,
-			int track_w,
-			int track_h,
-			int output_w,
-			int output_h)
-{
-	do_video = 1;
-	this->every_frame = every_frame;
-
-	vrender = new VRender(this);
-// 	vrender->arm_playback(current_sample, 
-// 							read_length, 
-// 							output_length, 
-// 							output_length, 
-// 							track_w,
-// 							track_h,
-// 							output_w,
-// 							output_h);
-}
-
 int RenderEngine::start_video()
 {
 // start video for realtime
@@ -671,17 +626,4 @@ int RenderEngine::start_video()
 	vrender->start_playback();
 }
 
-
-int64_t RenderEngine::get_correction_factor(int reset)
-{
-	if(!every_frame)
-	{
-		int64_t x;
-//		x = playbackengine->correction_factor;
-//		if(reset) playbackengine->correction_factor = 0;
-		return x;
-	}
-	else
-		return 0;
-}
 

@@ -24,6 +24,7 @@
 
 #include "cache.inc"
 #include "condition.inc"
+#include "datatype.h"
 #include "virtualconsole.inc"
 #include "module.inc"
 #include "mwindow.inc"
@@ -51,7 +52,7 @@ public:
 	virtual void init_output_buffers() {};
 	void start_plugins();
 	void stop_plugins();
-	int test_reconfigure(int64_t position, int64_t &length);
+	int test_reconfigure(posnum position, posnum &length);
 
 	void evaluate_current_position();
 	void start_command();
@@ -62,16 +63,16 @@ public:
 // Virtual console
 	VirtualConsole *vconsole;
 // Native units position in project used for all functions
-	int64_t current_position;       
+	posnum current_position;
 	Condition *start_lock;
 // flag for normally completed playback
-	int done;       
+	int done;
 // Flag for interrupted playback
 	int interrupt;
 // flag for last buffer to be played back
 	int last_playback;  
 // if this media type is being rendered asynchronously by threads
-	int asynchronous;     
+	int asynchronous;
 // Module for every track to dispatch plugins in whether the track is
 // playable or not.
 // Maintain module structures here instead of reusing the EDL so 
@@ -83,10 +84,6 @@ public:
 // If a VirtualConsole was created need to start plugins
 	int restart_plugins;
 
-	
-
-
-
 
 
 
@@ -97,32 +94,23 @@ public:
 	int wait_for_completion();
 	virtual int wait_device_completion() {};
 // renders to a device when there's a device
-	virtual int process_buffer(int64_t input_len, int64_t input_position) {};
-
+	virtual int process_buffer(posnum input_len, posnum input_position) {};
 	virtual int get_datatype() {};
 // test region against loop boundaries
-	int get_boundaries(int64_t &current_render_length);
+	int get_boundaries(posnum &current_render_length);
 // test region for playback automation changes
 	int get_automation(int64_t &current_render_length, int data_type);
 // advance the buffer position depending on the loop status
-	int advance_position(int64_t current_render_length);
+	int advance_position(posnum current_render_length);
 
 // convert to and from the native units of the render engine
-	virtual int64_t tounits(double position, int round);
-	virtual double fromunits(int64_t position);
-	virtual int64_t get_render_length(int64_t current_render_length) {};
+	virtual posnum tounits(double position, int round);
+	virtual double fromunits(posnum position);
+	virtual int get_render_length(int current_render_length) { return current_render_length; };
 
 	MWindow *mwindow;
 
-	int64_t input_length;           // frames/samples to read from disk at a time
-
-protected:
-// make sure automation agrees with playable tracks
-// automatically tests direction of playback
-// return 1 if it doesn't
-	int test_automation_before(int64_t &current_render_length, int data_type);
-	int test_automation_after(int64_t &current_render_length, int data_type);
+	int input_length;           // frames/samples to read from disk at a time
 };
-
 
 #endif

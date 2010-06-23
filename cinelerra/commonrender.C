@@ -74,7 +74,7 @@ void CommonRender::reset_parameters()
 
 void CommonRender::arm_command()
 {
-	int64_t temp_length = 1;
+	posnum temp_length = 1;
 
 	current_position = tounits(renderengine->command->playbackstart, 0);
 
@@ -131,7 +131,6 @@ void CommonRender::create_modules()
 
 void CommonRender::start_plugins()
 {
-// Only start if virtual console was created
 	if(restart_plugins)
 	{
 		for(int i = 0; i < total_modules; i++)
@@ -149,7 +148,7 @@ void CommonRender::stop_plugins()
 	}
 }
 
-int CommonRender::test_reconfigure(int64_t position, int64_t &length)
+int CommonRender::test_reconfigure(posnum position, posnum &length)
 {
 	if(!vconsole) return 1;
 	if(!modules) return 1;
@@ -201,12 +200,12 @@ void CommonRender::delete_vconsole()
 	vconsole = 0;
 }
 
-int CommonRender::get_boundaries(int64_t &current_render_length)
+int CommonRender::get_boundaries(posnum &current_render_length)
 {
-	int64_t loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
-	int64_t loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
-	int64_t start_position = tounits(renderengine->command->start_position, 0);
-	int64_t end_position = tounits(renderengine->command->end_position, 1);
+	posnum loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
+	posnum loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
+	posnum start_position = tounits(renderengine->command->start_position, 0);
+	posnum end_position = tounits(renderengine->command->end_position, 1);
 
 
 // test absolute boundaries if no loop and not infinite
@@ -223,7 +222,7 @@ int CommonRender::get_boundaries(int64_t &current_render_length)
 			}
 		}
 // reverse playback
-		else               
+		else
 		{
 			if(current_position - current_render_length <= start_position)
 			{
@@ -240,7 +239,7 @@ int CommonRender::get_boundaries(int64_t &current_render_length)
 	{
 		if(renderengine->command->get_direction() == PLAY_FORWARD)
 		{
-			int64_t segment_end = current_position + current_render_length;
+			posnum segment_end = current_position + current_render_length;
 			if(segment_end > loop_end)
 			{
 				current_render_length = loop_end - current_position;
@@ -248,7 +247,7 @@ int CommonRender::get_boundaries(int64_t &current_render_length)
 		}
 		else
 		{
-			int64_t segment_end = current_position - current_render_length;
+			posnum segment_end = current_position - current_render_length;
 			if(segment_end < loop_start)
 			{
 				current_render_length = current_position - loop_start;
@@ -267,23 +266,6 @@ void CommonRender::run()
 {
 	start_lock->unlock();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -311,10 +293,10 @@ int CommonRender::wait_for_completion()
 
 
 
-int CommonRender::advance_position(int64_t current_render_length)
+int CommonRender::advance_position(posnum current_render_length)
 {
-	int64_t loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
-	int64_t loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
+	posnum loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
+	posnum loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
 
 // advance the playback position
 	if(renderengine->command->get_direction() == PLAY_REVERSE)
@@ -340,12 +322,12 @@ int CommonRender::advance_position(int64_t current_render_length)
 	return 0;
 }
 
-int64_t CommonRender::tounits(double position, int round)
+posnum CommonRender::tounits(double position, int round)
 {
-	return (int64_t)position;
+	return (posnum)position;
 }
 
-double CommonRender::fromunits(int64_t position)
+double CommonRender::fromunits(posnum position)
 {
 	return (double)position;
 }
