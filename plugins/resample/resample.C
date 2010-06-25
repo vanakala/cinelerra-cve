@@ -181,7 +181,7 @@ int ResampleEffect::process_loop(double *buffer, int64_t &write_length)
 	int result = 0;
 
 // Length to read based on desired output size
-	int64_t size = (int64_t)((double)PluginAClient::in_buffer_size * scale);
+	int size = (int)((double)PluginAClient::in_buffer_size * scale);
 	int64_t predicted_total = (int64_t)((double)(PluginClient::end - PluginClient::start) / scale + 0.5);
 
 	double *input = new double[size];
@@ -198,7 +198,7 @@ int ResampleEffect::process_loop(double *buffer, int64_t &write_length)
 
 	if(resample->get_output_size(0))
 	{
-		int64_t output_size = resample->get_output_size(0);
+		int output_size = resample->get_output_size(0);
 
 		if(output_size)
 		{

@@ -219,7 +219,7 @@ int File::get_options(FormatTools *format,
 				audio_options, 
 				video_options);
 			break;
-	        case FILE_YUV:
+		case FILE_YUV:
 			FileYUV::get_parameters(parent_window,
 				asset,
 				format_window,
@@ -482,7 +482,6 @@ int File::open_file(Preferences *preferences,
 		case FILE_AU:
 		case FILE_AIFF:
 		case FILE_SND:
-//printf("File::open_file 1\n");
 			file = new FileSndFile(this->asset, this);
 			break;
 
@@ -830,8 +829,6 @@ int File::set_audio_position(samplenum position, int base_samplerate)
 				position, base_samplerate, asset, asset->sample_rate);
 	}
 
-//printf("File::set_audio_position %d %d %d\n", current_channel, current_sample, position);
-
 	return result;
 }
 
@@ -891,20 +888,15 @@ int File::write_frames(VFrame ***frames, int len)
 	int result;
 	int current_frame_temp = current_frame;
 	int video_length_temp = asset->video_length;
+
 	write_lock->lock("File::write_frames");
 
-
-
-
 	result = file->write_frames(frames, len);
-
-
-
-
 
 	current_frame = current_frame_temp + len;
 	asset->video_length = video_length_temp + len;
 	write_lock->unlock();
+
 	return result;
 }
 
@@ -964,27 +956,21 @@ int File::read_samples(double *buffer, int len, int base_samplerate, float *buff
 		len = asset->audio_length - current_sample;
 	}
 
-// Load with resampling	
+// Load with resampling
 	if(file)
 	{
 // Resample recursively calls this with the asset sample rate
 		if(base_samplerate == 0) base_samplerate = asset->sample_rate;
 
-//printf("File::read_samples 2 %d %d\n", base_samplerate, asset->sample_rate);
 		if(base_samplerate != asset->sample_rate)
 		{
-//printf("File::read_samples 3\n");
-//struct timeval start_time;
-//gettimeofday(&start_time, 0);
 			if (!file->prefer_samples_float())
 			{
 				if(!resample)
 				{
-	//printf("File::read_samples 4\n");
 					resample = new Resample(this, asset->channels);
 				}
 
-	//printf("File::read_samples 5\n");
 				current_sample += resample->resample(buffer, 
 					len, 
 					asset->sample_rate, 
@@ -992,16 +978,14 @@ int File::read_samples(double *buffer, int len, int base_samplerate, float *buff
 					current_channel,
 					current_sample,
 					normalized_sample);
-	//printf("File::read_samples 6\n");
-			} else
+			}
+			else
 			{
 				if(!resample_float)
 				{
-	//printf("File::read_samples 4\n");
 					resample_float = new Resample_float(this, asset->channels);
 				}
 
-	//printf("File::read_samples 5\n");
 				current_sample += resample_float->resample(buffer, 
 					len, 
 					asset->sample_rate, 
@@ -1009,21 +993,15 @@ int File::read_samples(double *buffer, int len, int base_samplerate, float *buff
 					current_channel,
 					current_sample,
 					normalized_sample);
-	//printf("File::read_samples 6\n");
-
 			}
-//printf("diff2: %lli\n", get_difference(&start_time));
-
 		}
 		else
 // Load directly
 		{
-//printf("File::read_samples 7\n");
 			if (buffer_float && file->prefer_samples_float())
 				result = file->read_samples_float(buffer_float, len);
 			else
 				result = file->read_samples(buffer, len);
-//printf("File::read_samples 8\n");
 			current_sample += len;
 		}
 
@@ -1132,8 +1110,6 @@ int File::read_frame(VFrame *frame, int is_thread)
 			current_layer,
 			asset->frame_rate,
 			1);
-// printf("File::read_frame\n");
-// frame->dump_params();
 
 		if(advance_position) current_frame++;
 		return 0;
@@ -1347,7 +1323,6 @@ int File::strtobits(char *bits)
 
 const char* File::bitstostr(int bits)
 {
-//printf("File::bitstostr\n");
 	switch(bits)
 	{
 		case BITSLINEAR8:
@@ -1521,7 +1496,6 @@ int File::supports_audio(ArrayList<PluginServer*> *plugindb, char *format)
 
 int File::supports_video(int format)
 {
-//printf("File::supports_video %d\n", format);
 	switch(format)
 	{
 		case FILE_OGG:
@@ -1531,7 +1505,7 @@ int File::supports_video(int format)
 		case FILE_CR2:
 		case FILE_EXR:
 		case FILE_EXR_LIST:
-	        case FILE_YUV:
+		case FILE_YUV:
 		case FILE_PNG:
 		case FILE_PNG_LIST:
 		case FILE_TGA:
@@ -1575,7 +1549,7 @@ int File::supports_audio(int format)
 		case FILE_AVI_AVIFILE:
 		case FILE_RAWDV:
 			return 1;
-		
+
 		default:
 			return 0;
 			break;
@@ -1628,12 +1602,3 @@ PackagingEngine *File::new_packaging_engine(Asset *asset)
 
 	return result;
 }
-
-
-
-
-
-
-
-
-
