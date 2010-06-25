@@ -31,21 +31,21 @@ extern "C" {
 }
 
 class Pipe {
- public:
-	Pipe(char *command, char *sub_str = 0, char sub_char = '%');
- 	~Pipe() ;		
+public:
+	Pipe(const char *command, const char *sub_str = 0, char sub_char = '%');
+	~Pipe() ;
 	int open_read() ;
 	int open_write() ;
 	void close() ;
 
 	int fd;
- private:
+private:
 	int substitute() ;
- 	int open(const char *mode) ;
-	
+	int open(const char *mode) ;
+
 	char sub_char;
-	char *sub_str;
-	char *command;
+	const char *sub_str;
+	const char *command;
 	char complete[BCTEXTLEN];
 	FILE *file;
 };

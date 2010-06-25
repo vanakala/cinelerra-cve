@@ -34,17 +34,17 @@ class PipePreset;
 
 class FileYUV : public FileBase
 {
- public:
+public:
 	FileYUV(Asset *asset, File *file);
 	~FileYUV();
 
 	static void get_parameters(BC_WindowBase *parent_window, 
-				   Asset *asset, 
-				   BC_WindowBase* &format_window,
-				   int video_options,
-				   FormatTools *format);
+					Asset *asset, 
+					BC_WindowBase* &format_window,
+					int video_options,
+					FormatTools *format);
 
-        int open_file(int rd, int wr);
+	int open_file(int rd, int wr);
 	static int check_sig(Asset *asset);
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
@@ -57,7 +57,7 @@ class FileYUV : public FileBase
 	// below here are local routines not required by interface
 	void ensure_temp(int width, int height);
 
- private:
+private:
 	VFrame *temp;
 	YUVStream *stream;
 	Asset *incoming_asset;
@@ -68,9 +68,9 @@ class FileYUV : public FileBase
 
 class YUVConfigVideo : public BC_Window
 {
- public:
+public:
 	YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset,
-		       FormatTools *format);
+		FormatTools *format);
 	~YUVConfigVideo();
 
 	int create_objects();
@@ -92,7 +92,7 @@ class YUVConfigVideo : public BC_Window
 
 class PipeCheckBox : public BC_CheckBox 
 {
- public:
+public:
 	PipeCheckBox(int x, int y, int value);
 	int handle_event();
 	BC_TextBox *textbox;
@@ -102,11 +102,11 @@ class PipeCheckBox : public BC_CheckBox
 
 class PipePreset : public BC_PopupMenu
 {
- public:
+public:
 	PipePreset(int x, int y, const char *title, BC_TextBox *textbox, BC_CheckBox *checkbox);
 	int handle_event();
-	
- private: 
+
+private: 
 	BC_TextBox *pipe_textbox;
 	BC_CheckBox *pipe_checkbox;
 	const char *title;

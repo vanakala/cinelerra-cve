@@ -25,9 +25,11 @@
 #include <signal.h>
 
 #include "bchash.h"
+#include "bcsignals.h"
 #include "file.h"
 #include "guicast.h"
 #include "interlacemodes.h"
+#include "mainerror.h"
 #include "pipe.h"
 
 extern "C" 
@@ -41,8 +43,8 @@ extern "C"
 	}
 }
 
-Pipe::Pipe(char *command, char *sub_str, char sub_char) 
-{ 
+Pipe::Pipe(const char *command, const char *sub_str, char sub_char) 
+{
 	this->command = command;
 	this->sub_str = sub_str;
 	this->sub_char = sub_char;
@@ -64,7 +66,7 @@ int Pipe::substitute()
 {
 	if (command == NULL) 
 	{
-		strcpy(complete, "");
+		complete[0] = 0;
 		return 0;
 	}
 
@@ -75,7 +77,7 @@ int Pipe::substitute()
 	}
 
 	int count = 0;
-	char *c = command;
+	const char *c = command;
 	char *f = complete;
 	while (*c) 
 	{
@@ -98,7 +100,7 @@ int Pipe::substitute()
 		// insert the file string at the substitution point
 		if (f + strlen(sub_str) - complete > sizeof(complete))
 		{
-			printf("Pipe::substitute(): max length exceeded\n");
+			errorbox("Pipe::substitute(): max length exceeded\n");
 			return -1;
 		}
 		strcpy(f, sub_str);
@@ -108,8 +110,7 @@ int Pipe::substitute()
 
 	return count;
 }
-	
-	
+
 
 int Pipe::open(const char *mode) 
 {
@@ -126,11 +127,10 @@ int Pipe::open(const char *mode)
 
 	if (complete == NULL || strlen(complete) == 0) 
 	{
-		printf("Pipe::open(): no pipe to open\n");
+		errorbox("Pipe::open(): no pipe to open\n");
 		return 1;
 	}
 
-	printf("trying popen(%s)\n", complete);
 	file = popen(complete, mode);
 	if (file != NULL) 
 	{
@@ -141,10 +141,10 @@ int Pipe::open(const char *mode)
 	// NOTE: popen() fails only if fork/exec fails
 	//       there is no immediate way to see if command failed
 	//       As such, one must expect to raise SIGPIPE on failure
-	printf("Pipe::open(%s,%s) failed: %s\n", 
-	       complete, mode, strerror(errno));
+	errorbox("Pipe::open(%s,%s) failed: %s\n", 
+			complete, mode, strerror(errno));
 	return 1;
-}	
+}
 
 int Pipe::open_read() 
 {
@@ -158,7 +158,9 @@ int Pipe::open_write()
 
 void Pipe::close() 
 {
-	pclose(file);
-	file = 0;
-	fd = -1;
+	if(file){
+		pclose(file);
+		file = 0;
+		fd = -1;
+	}
 }
