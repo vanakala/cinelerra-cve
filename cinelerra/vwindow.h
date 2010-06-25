@@ -58,7 +58,7 @@ public:
 	EDL* get_edl();
 // Returns last argument of change_source or 0 if it was an EDL
 	Asset* get_asset();
-		
+
 	void update_position(int change_type = CHANGE_NONE,
 		int use_slider = 1,
 		int update_slider = 0);
@@ -67,8 +67,6 @@ public:
 	void clear_inpoint();
 	void clear_outpoint();
 	void copy();
-	void splice_selection();
-	void overwrite_selection();	
 	void delete_edl();
 	void goto_start();
 	void goto_end();

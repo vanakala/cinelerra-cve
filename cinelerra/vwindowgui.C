@@ -58,7 +58,7 @@
 
 VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
  : BC_Window(PROGRAM_NAME ": Viewer",
- 	mwindow->session->vwindow_x,
+	mwindow->session->vwindow_x,
 	mwindow->session->vwindow_y,
 	mwindow->session->vwindow_w,
 	mwindow->session->vwindow_h,
@@ -98,10 +98,7 @@ void VWindowGUI::change_source(EDL *edl, char *title)
 void VWindowGUI::update_sources(char *title)
 {
 
-//printf("VWindowGUI::update_sources 1\n");
 	sources.remove_all_objects();
-//printf("VWindowGUI::update_sources 2\n");
-
 
 
 	for(int i = 0;
@@ -124,7 +121,6 @@ void VWindowGUI::update_sources(char *title)
 			sources.append(new BC_ListBoxItem(clip_title));
 		}
 	}
-//printf("VWindowGUI::update_sources 3\n");
 
 	FileSystem fs;
 	for(Asset *current = mwindow->edl->assets->first; 
@@ -148,20 +144,12 @@ void VWindowGUI::update_sources(char *title)
 			sources.append(new BC_ListBoxItem(clip_title));
 		}
 	}
-
-//printf("VWindowGUI::update_sources 4\n");
-
-//	source->update_list(&sources);
-//	source->update(title);
 }
 
 int VWindowGUI::create_objects()
 {
-	in_point = 0;
-	out_point = 0;
 	set_icon(mwindow->theme->get_image("vwindow_icon"));
 
-//printf("VWindowGUI::create_objects 1\n");
 	mwindow->theme->get_vwindow_sizes(this);
 	mwindow->theme->draw_vwindow_bg(this);
 	flash();
@@ -173,31 +161,26 @@ int VWindowGUI::create_objects()
 		mwindow->theme->vmeter_h);
 	meters->create_objects();
 
-//printf("VWindowGUI::create_objects 1\n");
 // Requires meters to build
 	edit_panel = new VWindowEditing(mwindow, vwindow);
 	edit_panel->set_meters(meters);
 	edit_panel->create_objects();
 
-//printf("VWindowGUI::create_objects 1\n");
 	add_subwindow(slider = new VWindowSlider(mwindow, 
-    	vwindow, 
-		this, 
-        mwindow->theme->vslider_x, 
-        mwindow->theme->vslider_y, 
-        mwindow->theme->vslider_w));
+			vwindow,
+			this,
+			mwindow->theme->vslider_x,
+			mwindow->theme->vslider_y,
+			mwindow->theme->vslider_w));
 
-//printf("VWindowGUI::create_objects 1\n");
 	transport = new VWindowTransport(mwindow, 
 		this, 
 		mwindow->theme->vtransport_x, 
 		mwindow->theme->vtransport_y);
-    transport->create_objects();
+	transport->create_objects();
 	transport->set_slider(slider);
 
-//printf("VWindowGUI::create_objects 1\n");
-//	add_subwindow(fps_title = new BC_Title(mwindow->theme->vedit_x, y, ""));
-    add_subwindow(clock = new MainClock(mwindow,
+	add_subwindow(clock = new MainClock(mwindow,
 		mwindow->theme->vtime_x, 
 		mwindow->theme->vtime_y,
 		mwindow->theme->vtime_w));
@@ -205,9 +188,6 @@ int VWindowGUI::create_objects()
 	canvas = new VWindowCanvas(mwindow, this);
 	canvas->create_objects(mwindow->edl);
 
-
-
-//printf("VWindowGUI::create_objects 1\n");
 	add_subwindow(timebar = new VTimeBar(mwindow, 
 		this,
 		mwindow->theme->vtimebar_x,
@@ -215,18 +195,7 @@ int VWindowGUI::create_objects()
 		mwindow->theme->vtimebar_w, 
 		mwindow->theme->vtimebar_h));
 	timebar->create_objects();
-//printf("VWindowGUI::create_objects 2\n");
 
-
-//printf("VWindowGUI::create_objects 1\n");
-// 	source = new VWindowSource(mwindow, 
-// 		this, 
-// 		mwindow->theme->vsource_x,
-// 		mwindow->theme->vsource_y);
-// 	source->create_objects();	
-	update_sources(_("None"));
-
-//printf("VWindowGUI::create_objects 2\n");
 	deactivate();
 	slider->activate();
 	return 0;
@@ -261,8 +230,6 @@ int VWindowGUI::resize_event(int w, int h)
 		mwindow->theme->vcanvas_y, 
 		mwindow->theme->vcanvas_w, 
 		mwindow->theme->vcanvas_h);
-// 	source->reposition_window(mwindow->theme->vsource_x,
-// 		mwindow->theme->vsource_y);
 	meters->reposition_window(mwindow->theme->vmeter_x,
 		mwindow->theme->vmeter_y,
 		mwindow->theme->vmeter_h);
@@ -286,7 +253,7 @@ int VWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_vwindow = 0;
-	
+
 	mwindow->gui->lock_window("VWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_vwindow->set_checked(0);
 	mwindow->gui->unlock_window();
@@ -323,7 +290,7 @@ int VWindowGUI::keypress_event()
 			break;
 	}
 	if(!result) result = transport->keypress_event();
-	
+
 	return result;
 }
 
@@ -381,8 +348,6 @@ void VWindowGUI::drag_motion()
 		cursor_x < canvas->x + canvas->w &&
 		cursor_y >= canvas->y &&
 		cursor_y < canvas->y + canvas->h);
-//printf("VWindowGUI::drag_motion 1 %d\n", mwindow->session->vcanvas_highlighted);
-
 
 	if(old_status != mwindow->session->vcanvas_highlighted)
 		canvas->draw_refresh();
@@ -444,7 +409,6 @@ VWindowMeters::~VWindowMeters()
 int VWindowMeters::change_status_event()
 {
 	mwindow->edl->session->vwindow_meter = use_meters;
-//printf("VWindowMeters::change_status_event 1 %d\n", mwindow->edl->session->vwindow_meter);
 	mwindow->theme->get_vwindow_sizes(gui);
 	gui->resize_event(gui->get_w(), gui->get_h());
 	return 1;
@@ -532,7 +496,6 @@ void VWindowEditing::prev_label()
 
 		Label *current = edl->labels->prev_label(
 			edl->local_session->get_selectionstart(1));
-		
 
 		if(!current)
 		{
@@ -624,8 +587,6 @@ void VWindowEditing::to_clip()
 			1);
 
 
-
-
 		EDL *new_edl = new EDL(mwindow->edl);
 		new_edl->create_objects();
 		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
@@ -643,8 +604,6 @@ void VWindowEditing::to_clip()
 		new_edl->local_session->set_selectionstart(0);
 		new_edl->local_session->set_selectionend(0);
 
-
-//printf("VWindowEditing::to_clip 1 %s\n", edl->local_session->clip_title);
 		new_edl->local_session->set_selectionstart(0.0);
 		new_edl->local_session->set_selectionend(0.0);
 		vwindow->clip_edit->create_clip(new_edl);
@@ -783,8 +742,8 @@ void VWindowTransport::goto_end()
 
 VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
  : Canvas(mwindow,
- 	gui,
- 	mwindow->theme->vcanvas_x, 
+	gui,
+	mwindow->theme->vcanvas_x, 
 	mwindow->theme->vcanvas_y, 
 	mwindow->theme->vcanvas_w, 
 	mwindow->theme->vcanvas_h,
@@ -885,261 +844,3 @@ void VWindowCanvas::set_fullscreen(int value)
 {
 	mwindow->session->vwindow_fullscreen = value;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#if 0
-void VWindowGUI::update_points()
-{
-	EDL *edl = vwindow->get_edl();
-
-//printf("VWindowGUI::update_points 1\n");
-	if(!edl) return;
-
-//printf("VWindowGUI::update_points 2\n");
-	long pixel = (long)((double)edl->local_session->in_point / 
-		edl->tracks->total_playable_length() *
-		(mwindow->theme->vtimebar_w - 
-			2 * 
-			mwindow->theme->in_point[0]->get_w())) + 
-		mwindow->theme->in_point[0]->get_w();
-
-//printf("VWindowGUI::update_points 3 %d\n", edl->local_session->in_point);
-	if(in_point)
-	{
-//printf("VWindowGUI::update_points 3.1\n");
-		if(edl->local_session->in_point >= 0)
-		{
-//printf("VWindowGUI::update_points 4\n");
-			if(edl->local_session->in_point != in_point->position ||
-				in_point->pixel != pixel)
-			{
-				in_point->pixel = pixel;
-				in_point->reposition();
-			}
-
-//printf("VWindowGUI::update_points 5\n");
-			in_point->position = edl->local_session->in_point;
-
-//printf("VWindowGUI::update_points 6\n");
-			if(edl->equivalent(in_point->position, edl->local_session->get_selectionstart(1)) ||
-				edl->equivalent(in_point->position, edl->local_session->get_selectionend(1)))
-				in_point->update(1);
-			else
-				in_point->update(0);
-//printf("VWindowGUI::update_points 7\n");
-		}
-		else
-		{
-			delete in_point;
-			in_point = 0;
-		}
-	}
-	else
-	if(edl->local_session->in_point >= 0)
-	{
-//printf("VWindowGUI::update_points 8 %p\n", mwindow->theme->in_point);
-		add_subwindow(in_point = 
-			new VWindowInPoint(mwindow, 
-				0, 
-				this,
-				pixel, 
-				edl->local_session->in_point));
-//printf("VWindowGUI::update_points 9\n");
-	}
-//printf("VWindowGUI::update_points 10\n");
-
-	pixel = (long)((double)edl->local_session->out_point / 
-		(edl->tracks->total_playable_length() + 0.5) *
-		(mwindow->theme->vtimebar_w - 
-			2 * 
-			mwindow->theme->in_point[0]->get_w())) + 
-		mwindow->theme->in_point[0]->get_w() * 
-		2;
-
-	if(out_point)
-	{
-		if(edl->local_session->out_point >= 0 && pixel >= 0 && pixel <= mwindow->theme->vtimebar_w)
-		{
-			if(edl->local_session->out_point != out_point->position ||
-				out_point->pixel != pixel) 
-			{
-				out_point->pixel = pixel;
-				out_point->reposition();
-			}
-			out_point->position = edl->local_session->out_point;
-
-			if(edl->equivalent(out_point->position, edl->local_session->get_selectionstart(1)) ||
-				edl->equivalent(out_point->position, edl->local_session->get_selectionend(1)))
-				out_point->update(1);
-			else
-				out_point->update(0);
-		}
-		else
-		{
-			delete out_point;
-			out_point = 0;
-		}
-	}
-	else
-	if(edl->local_session->out_point >= 0 && pixel >= 0 && pixel <= mwindow->theme->vtimebar_w)
-	{
-		add_subwindow(out_point = 
-			new VWindowOutPoint(mwindow, 
-				0, 
-				this, 
-				pixel, 
-				edl->local_session->out_point));
-	}
-}
-
-
-void VWindowGUI::update_labels()
-{
-	EDL *edl = vwindow->get_edl();
-	int output = 0;
-
-	for(Label *current = edl->labels->first;
-		current;
-		current = NEXT)
-	{
-		long pixel = (long)((current->position - edl->local_session->view_start) / edl->local_session->zoom_sample);
-
-		if(pixel >= 0 && pixel < mwindow->theme->vtimebar_w)
-		{
-// Create new label
-			if(output >= labels.total)
-			{
-				LabelGUI *new_label;
-				add_subwindow(new_label = new LabelGUI(mwindow, this, pixel, 0, current->position));
-				labels.append(new_label);
-			}
-			else
-// Reposition old label
-			if(labels.values[output]->pixel != pixel)
-			{
-				labels.values[output]->pixel = pixel;
-				labels.values[output]->position = current->position;
-				labels.values[output]->reposition();
-			}
-
-			if(mwindow->edl->local_session->get_selectionstart(1) <= current->position &&
-				mwindow->edl->local_session->get_selectionend(1) >= current->position)
-				labels.values[output]->update(1);
-			else
-			if(labels.values[output]->get_value())
-				labels.values[output]->update(0);
-			output++;
-		}
-	}
-
-// Delete excess labels
-	while(labels.total > output)
-	{
-		labels.remove_object();
-	}
-}
-
-
-
-VWindowInPoint::VWindowInPoint(MWindow *mwindow, 
-		TimeBar *timebar, 
-		VWindowGUI *gui,
-		long pixel, 
-		double position)
- : InPointGUI(mwindow, 
-		timebar, 
-		pixel, 
-		position)
-{
-	this->gui = gui;
-}
-
-int VWindowInPoint::handle_event()
-{
-	EDL *edl = gui->vwindow->get_edl();
-
-	if(edl)
-	{
-		double position = edl->align_to_frame(this->position, 0);
-
-		edl->local_session->set_selectionstart(position);
-		edl->local_session->set_selectionend(position);
-
-// Que the VWindow
-		mwindow->vwindow->update_position(CHANGE_NONE, 0, 1);
-	}
-	return 1;
-}
-
-
-
-VWindowOutPoint::VWindowOutPoint(MWindow *mwindow, 
-		TimeBar *timebar, 
-		VWindowGUI *gui,
-		long pixel, 
-		double position)
- : OutPointGUI(mwindow, 
-		timebar, 
-		pixel, 
-		position)
-{
-	this->gui = gui;
-}
-
-int VWindowOutPoint::handle_event()
-{
-	EDL *edl = gui->vwindow->get_edl();
-
-	if(edl)
-	{
-		double position = edl->align_to_frame(this->position, 0);
-
-		edl->local_session->set_selectionstart(position);
-		edl->local_session->set_selectionend(position);
-
-// Que the VWindow
-		mwindow->vwindow->update_position(CHANGE_NONE, 0, 1);
-	}
-
-	return 1;
-}
-
-
-
-#endif
-

@@ -44,8 +44,6 @@ class VWindowTransport;
 class VWindowEditing;
 class VWindowCanvas;
 class VWindowMeters;
-class VWindowInPoint;
-class VWindowOutPoint;
 
 class VWindowGUI : public BC_Window
 {
@@ -69,8 +67,6 @@ public:
 	void change_source(EDL *edl, char *title);
 	void drag_motion();
 	int drag_stop();
-//	void update_labels();
-//	void update_points();
 
 	MWindow *mwindow;
 	VWindow *vwindow;
@@ -84,13 +80,11 @@ public:
 	VWindowZoom *zoom_panel;
 	VWindowTransport *transport;
 	VWindowEditing *edit_panel;
-//	VWindowSource *source;
 	VWindowMeters *meters;
 	ArrayList<BC_ListBoxItem*> sources;
 	ArrayList<LabelGUI*> labels;
-	VWindowInPoint *in_point;
-	VWindowOutPoint *out_point;
 	char loaded_title[BCTEXTLEN];
+
 private:
 	void get_scrollbars(int &canvas_x, int &canvas_y, int &canvas_w, int &canvas_h);
 };
@@ -198,31 +192,6 @@ public:
 	void goto_start();
 	void goto_end();
 
-	VWindowGUI *gui;
-};
-
-class VWindowInPoint : public InPointGUI
-{
-public:
-	VWindowInPoint(MWindow *mwindow, 
-		TimeBar *timebar, 
-		VWindowGUI *gui,
-		long pixel, 
-		double position);
-	int handle_event();
-	VWindowGUI *gui;
-};
-
-
-class VWindowOutPoint : public OutPointGUI
-{
-public:
-	VWindowOutPoint(MWindow *mwindow, 
-		TimeBar *timebar, 
-		VWindowGUI *gui,
-		long pixel, 
-		double position);
-	int handle_event();
 	VWindowGUI *gui;
 };
 

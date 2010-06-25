@@ -51,18 +51,14 @@ VWindow::VWindow(MWindow *mwindow) : Thread()
 
 VWindow::~VWindow()
 {
-//printf("VWindow::~VWindow 1\n");
 	delete playback_engine;
-//printf("VWindow::~VWindow 1\n");
 	delete playback_cursor;
 	delete_edl();
 	delete clip_edit;
-//printf("VWindow::~VWindow 2\n");
 }
 
 void VWindow::delete_edl()
 {
-//printf("VWindow::delete_edl 1\n");
 	if(mwindow->edl->vwindow_edl && !mwindow->edl->vwindow_edl_shared)
 	{
 		delete mwindow->edl->vwindow_edl;
@@ -81,24 +77,16 @@ void VWindow::load_defaults()
 
 int VWindow::create_objects()
 {
-//printf("VWindow::create_objects 1\n");
 	gui = new VWindowGUI(mwindow, this);
-//printf("VWindow::create_objects 1\n");
 	gui->create_objects();
-//printf("VWindow::create_objects 1\n");
 
 	playback_engine = new VPlayback(mwindow, this, gui->canvas);
-//printf("VWindow::create_objects 1\n");
 
 // Start command loop
 	playback_engine->create_objects();
-//printf("VWindow::create_objects 1\n");
 	gui->transport->set_engine(playback_engine);
-//printf("VWindow::create_objects 1\n");
 	playback_cursor = new VTracking(mwindow, this);
-//printf("VWindow::create_objects 1\n");
 	playback_cursor->create_objects();
-//printf("VWindow::create_objects 2\n");
 
 	clip_edit = new ClipEdit(mwindow, 0, this);
 	return 0;
@@ -111,7 +99,6 @@ void VWindow::run()
 
 EDL* VWindow::get_edl()
 {
-//printf("VWindow::get_edl 1 %p\n", edl);
 	return mwindow->edl->vwindow_edl;
 }
 
@@ -122,7 +109,6 @@ Asset* VWindow::get_asset()
 
 void VWindow::change_source()
 {
-//printf("VWindow::change_source() 1 %p\n", mwindow->edl->vwindow_edl);
 	if(mwindow->edl->vwindow_edl)
 	{
 		gui->change_source(get_edl(), get_edl()->local_session->clip_title);
@@ -138,20 +124,11 @@ void VWindow::change_source()
 
 void VWindow::change_source(Asset *asset)
 {
-//printf("VWindow::change_source 1\n");
-// 	if(asset && this->asset &&
-// 		asset->id == this->asset->id &&
-// 		asset == this->asset) return;
-
-//printf("VWindow::change_source(Asset *asset) 1\n");
-
 	char title[BCTEXTLEN];
 	FileSystem fs;
 	fs.extract_name(title, asset->path);
-//printf("VWindow::change_source 1\n");
 
 	delete_edl();
-//printf("VWindow::change_source 1\n");
 
 // Generate EDL off of main EDL for cutting
 	this->asset = new Asset;
@@ -160,13 +137,10 @@ void VWindow::change_source(Asset *asset)
 	mwindow->edl->vwindow_edl_shared = 0;
 	mwindow->edl->vwindow_edl->create_objects();
 	mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
-//printf("VWindow::change_source 1 %d %d\n", edl->local_session->loop_playback, mwindow->edl->local_session->loop_playback);
-//edl->dump();
 
 // Update GUI
 	gui->change_source(mwindow->edl->vwindow_edl, title);
 	update_position(CHANGE_ALL, 1, 1);
-
 
 // Update master session
 	strcpy(mwindow->edl->session->vwindow_folder, MEDIA_FOLDER);
@@ -183,14 +157,10 @@ void VWindow::change_source(Asset *asset)
 		}
 		i++;
 	}
-
-//printf("VWindow::change_source 2\n");
 }
 
 void VWindow::change_source(EDL *edl)
 {
-//printf("VWindow::change_source(EDL *edl) 1\n");
-//printf("VWindow::change_source %p\n", edl);
 // EDLs are identical
 	if(edl && mwindow->edl->vwindow_edl && 
 		edl->id == mwindow->edl->vwindow_edl->id) return;
@@ -226,7 +196,6 @@ void VWindow::remove_source()
 
 void VWindow::change_source(char *folder, int item)
 {
-//printf("VWindow::change_source(char *folder, int item) 1\n");
 	int result = 0;
 // Search EDLs
 	if(!strcasecmp(folder, CLIP_FOLDER))
@@ -381,14 +350,3 @@ void VWindow::copy()
 		mwindow->gui->unlock_window();
 	}
 }
-
-void VWindow::splice_selection()
-{
-}
-
-void VWindow::overwrite_selection()
-{
-}
-
-
-
