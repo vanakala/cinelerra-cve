@@ -72,7 +72,7 @@ public:
 		int w, 
 		int h);
 	~CWindowToolGUI();
-	
+
 	virtual void create_objects() {};
 // Update the keyframe from text boxes
 	virtual void handle_event() {};
@@ -84,7 +84,7 @@ public:
 	int close_event();
 	int keypress_event();
 	int translation_event();
-	
+
 	MWindow *mwindow;
 	CWindowTool *thread;
 	CWindowCoord *event_caller;
@@ -143,24 +143,6 @@ public:
 	CWindowMaskDelete(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
 	int handle_event();
 	int keypress_event();
-	MWindow *mwindow;
-	CWindowToolGUI *gui;
-};
-
-class CWindowMaskCycleNext : public BC_GenericButton
-{
-public:
-	CWindowMaskCycleNext(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	CWindowToolGUI *gui;
-};
-
-class CWindowMaskCyclePrev : public BC_GenericButton
-{
-public:
-	CWindowMaskCyclePrev(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-	int handle_event();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
@@ -225,9 +207,6 @@ public:
 	CWindowMaskMode *mode;
 	CWindowMaskFeather *feather;
 	CWindowMaskDelete *delete_point;
-// Not necessary if all keyframes have same points
-//	CWindowMaskCycleNext *next_point;
-//	CWindowMaskCyclePrev *prev_point;
 	CWindowMaskNumber *number;
 	CWindowMaskValue *value;
 	CWindowMaskBeforePlugins *apply_before_plugins;
@@ -261,7 +240,6 @@ public:
 
 // Update the keyframe from text boxes
 	void handle_event();
-//	BezierAuto* get_keyframe();
 	CWindowCoord *x, *y, *z;
 };
 
@@ -328,7 +306,6 @@ public:
 	void update();
 	void update_preview();
 	void handle_event();
-//	BezierAuto* get_keyframe();
 	CWindowCoord *x, *y, *z;
 };
 
@@ -385,7 +362,5 @@ public:
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
 };
-
-
 
 #endif

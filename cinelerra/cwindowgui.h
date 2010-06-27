@@ -59,7 +59,7 @@ public:
 	CWindowGUI(MWindow *mwindow, CWindow *cwindow);
 	~CWindowGUI();
 
-    int create_objects();
+	int create_objects();
 	int resize_event(int w, int h);
 
 // Events for the fullscreen canvas fall through to here.
@@ -86,9 +86,8 @@ public:
 	void keyboard_zoomout();
 
 	MWindow *mwindow;
-    CWindow *cwindow;
+	CWindow *cwindow;
 	CWindowEditing *edit_panel;
-//	APanel *automation_panel;
 	CPanel *composite_panel;
 	CWindowZoom *zoom_panel;
 	CWindowSlider *slider;
@@ -98,11 +97,8 @@ public:
 	CTimeBar *timebar;
 	BC_Pixmap *active;
 	BC_Pixmap *inactive;
-//	MainClock *clock;
-
 
 	CWindowMeters *meters;
-
 
 	CWindowTool *tool_panel;
 
@@ -149,7 +145,7 @@ class CWindowEditing : public EditPanel
 {
 public:
 	CWindowEditing(MWindow *mwindow, CWindow *cwindow);
-	
+
 	void set_inpoint();
 	void set_outpoint();
 
@@ -163,9 +159,9 @@ class CWindowMeters : public MeterPanel
 public:
 	CWindowMeters(MWindow *mwindow, CWindowGUI *gui, int x, int y, int h);
 	~CWindowMeters();
-	
+
 	int change_status_event();
-	
+
 	MWindow *mwindow;
 	CWindowGUI *gui;
 };
@@ -206,15 +202,6 @@ public:
 	MWindow *mwindow;
 };
 
-// class CWindowDestination : public BC_PopupTextBox
-// {
-// public:
-// 	CWindowDestination(MWindow *mwindow, CWindowGUI *cwindow, int x, int y);
-// 	~CWindowDestination();
-// 	int handle_event();
-// 	CWindowGUI *cwindow;
-// 	MWindow *mwindow;
-// };
 
 class CWindowTransport : public PlayTransport
 {

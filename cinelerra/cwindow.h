@@ -37,8 +37,8 @@ class CWindow : public Thread
 public:
 	CWindow(MWindow *mwindow);
 	~CWindow();
-	
-    int create_objects();
+
+	int create_objects();
 // Position is inclusive of the other 2
 	void update(int position, 
 		int overlays, 
@@ -68,8 +68,8 @@ public:
 
 	int destination;
 	MWindow *mwindow;
-    CWindowGUI *gui;
-	
+	CWindowGUI *gui;
+
 	CTracking *playback_cursor;
 	CPlayback *playback_engine;
 };

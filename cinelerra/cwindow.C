@@ -68,7 +68,7 @@ int CWindow::create_objects()
 	destination = mwindow->defaults->get("CWINDOW_DESTINATION", 0);
 
 	gui = new CWindowGUI(mwindow, this);
-    gui->create_objects();
+	gui->create_objects();
 
 	playback_engine = new CPlayback(mwindow, this, gui->canvas);
 
@@ -77,7 +77,7 @@ int CWindow::create_objects()
 	gui->transport->set_engine(playback_engine);
 	playback_cursor = new CTracking(mwindow, this);
 	playback_cursor->create_objects();
-    return 0;
+	return 0;
 }
 
 
