@@ -66,18 +66,11 @@ Tracking::~Tracking()
 	{
 // Stop loop
 		state = DONE;
-// Not working in NPTL for some reason
-//		Thread::cancel();
 		Thread::join();
 	}
 
 
 	delete startup_lock;
-}
-
-void Tracking::create_objects()
-{
-//	start();
 }
 
 int Tracking::start_playback(double new_position)
@@ -99,8 +92,6 @@ int Tracking::stop_playback()
 	{
 // Stop loop
 		state = DONE;
-// Not working in NPTL for some reason
-//		Thread::cancel();
 		Thread::join();
 
 // Final position is updated continuously during playback
@@ -108,7 +99,7 @@ int Tracking::stop_playback()
 		double position = get_tracking_position();
 // Update cursor
 		update_tracker(position);
-	
+
 		stop_meters();
 		state = DONE;
 	}
@@ -127,14 +118,14 @@ double Tracking::get_tracking_position()
 
 int Tracking::get_pixel(double position)
 {
-	return (int64_t)((position - mwindow->edl->local_session->view_start) *
+	return (int)((position - mwindow->edl->local_session->view_start) *
 		mwindow->edl->session->sample_rate / 
 		mwindow->edl->local_session->zoom_sample + 
 		0.5);
 }
 
 
-void Tracking::update_meters(int64_t position)
+void Tracking::update_meters(samplenum position)
 {
 	double output_levels[MAXCHANNELS];
 	int do_audio = get_playback_engine()->get_output_levels(output_levels, position);
@@ -173,12 +164,6 @@ void Tracking::stop_meters()
 	mwindow->lwindow->gui->unlock_window();
 }
 
-
-
-
-void Tracking::update_tracker(double position)
-{
-}
 
 void Tracking::draw()
 {

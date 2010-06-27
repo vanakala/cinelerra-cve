@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include "condition.inc"
+#include "datatype.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "playbackengine.inc"
@@ -39,7 +40,7 @@ public:
 	Tracking(MWindow *mwindow);
 	virtual ~Tracking();
 
-	void create_objects();
+	void create_objects() {};
 	virtual int start_playback(double new_position);
 	virtual int stop_playback();
 
@@ -47,9 +48,9 @@ public:
 	virtual PlaybackEngine* get_playback_engine();
 	virtual double get_tracking_position();
 // Update position displayed
-	virtual void update_tracker(double position);
+	virtual void update_tracker(double position) {};
 // Update meters
-	virtual void update_meters(int64_t position);
+	virtual void update_meters(samplenum position);
 	virtual void stop_meters();
 	int get_pixel(double position);
 
@@ -65,17 +66,6 @@ public:
 // Use ArrayList to simplify module counting
 	ArrayList<double> module_levels;
 	int state;
-
-
-
-
-
-
-
-
-
-
-	void show_playback_cursor(int64_t position);
 	int view_follows_playback;
 // Delay until startup
 	Condition *startup_lock;
@@ -83,7 +73,6 @@ public:
 	MWindowGUI *gui;
 	double last_position;
 	int follow_loop;
-	int64_t current_offset;
 	int reverse;
 	int double_speed;
 	Timer timer;

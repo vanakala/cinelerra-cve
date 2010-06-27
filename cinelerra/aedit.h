@@ -41,8 +41,6 @@ public:
 
 // ========================================= editing
 
-/* Pole
-	int dump_derived(); */
 	posnum get_source_end(posnum default_);
 
 private:

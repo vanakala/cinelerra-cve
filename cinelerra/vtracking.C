@@ -55,7 +55,6 @@ PlaybackEngine* VTracking::get_playback_engine()
 void VTracking::update_tracker(double position)
 {
 	Asset *asset = vwindow->get_edl()->assets->first;
-//printf("VTracking::update_tracker %ld\n", position);
 	vwindow->gui->lock_window("VTracking::update_tracker");
 	vwindow->get_edl()->local_session->set_selectionstart(position);
 	vwindow->get_edl()->local_session->set_selectionend(position);
@@ -71,10 +70,10 @@ void VTracking::update_tracker(double position)
 
 	vwindow->gui->unlock_window();
 
-	update_meters((int64_t)(position * mwindow->edl->session->sample_rate));
+	update_meters((samplenum)(position * mwindow->edl->session->sample_rate));
 }
 
-void VTracking::update_meters(int64_t position)
+void VTracking::update_meters(samplenum position)
 {
 	double output_levels[MAXCHANNELS];
 

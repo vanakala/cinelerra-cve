@@ -100,7 +100,6 @@ int CTracking::update_scroll(double position)
 				if(pixels) 
 				{
 					mwindow->move_right(pixels);
-//printf("CTracking::update_scroll 1 %d\n", pixels);
 					updated_scroll = 1;
 				}
 			}
@@ -166,7 +165,7 @@ void CTracking::update_tracker(double position)
 	mwindow->update_plugin_guis();
 
 
-	update_meters((int64_t)(position * mwindow->edl->session->sample_rate));
+	update_meters((samplenum)(position * mwindow->edl->session->sample_rate));
 }
 
 void CTracking::draw()

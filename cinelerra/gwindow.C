@@ -44,6 +44,3 @@ void GWindow::create_objects()
 	gui = new GWindowGUI(mwindow, w, h);
 	gui->create_objects();
 }
-
-
-

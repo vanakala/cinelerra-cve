@@ -40,15 +40,15 @@ GWindowGUI::GWindowGUI(MWindow *mwindow,
 	int w,
 	int h)
  : BC_Window(PROGRAM_NAME N_(": Overlays"),
- 	mwindow->session->gwindow_x, 
-    mwindow->session->gwindow_y, 
-    w, 
-    h,
-    w,
-    h,
-    0,
-    0,
-    1)
+	mwindow->session->gwindow_x,
+	mwindow->session->gwindow_y,
+	w,
+	h,
+	w,
+	h,
+	0,
+	0,
+	1)
 {
 	this->mwindow = mwindow;
 }
@@ -207,7 +207,7 @@ GWindowToggle::GWindowToggle(MWindow *mwindow,
 	int y, 
 	toggleinfo toggleinf)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	*get_main_value(mwindow, toggleinf), 
         toggleinf.isauto ? auto_text[toggleinf.ref] : other_text[toggleinf.ref])
 {
@@ -287,6 +287,3 @@ void GWindowToggle::update()
 {
 	set_value(*get_main_value(mwindow, toggleinf));
 }
-
-
-
