@@ -22,6 +22,7 @@
 #ifndef MAINWINDOWGUI_H
 #define MAINWINDOWGUI_H
 
+#include "datatype.h"
 #include "editpopup.inc"
 #include "guicast.h"
 #include "keyframepopup.inc"
@@ -88,7 +89,7 @@ public:
 	void default_positions();
 
 // Return if the area bounded by x1 and x2 is visible between view_x1 and view_x2
-	static int visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2);
+	static int visible(posnum x1, posnum x2, posnum view_x1, posnum view_x2);
 
 	MWindow *mwindow;
 

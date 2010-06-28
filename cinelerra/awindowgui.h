@@ -37,17 +37,7 @@
 
 class AWindowAssets;
 class AWindowFolders;
-class AWindowNewFolder;
-class AWindowDeleteFolder;
-class AWindowRenameFolder;
-class AWindowDeleteDisk;
-class AWindowDeleteProject;
 class AWindowDivider;
-class AWindowInfo;
-class AWindowRedrawIndex;
-class AWindowPaste;
-class AWindowAppend;
-class AWindowView;
 
 class LabelPopup;
 class LabelPopupEdit;
@@ -171,9 +161,9 @@ public:
 	int create_custom_xatoms();
 // Function to overload to recieve customly defined atoms
 	virtual int recieve_custom_xatoms(xatom_event *event); 
-	
-	
-	
+
+
+
 private:
 	void update_folder_list();
 	void update_asset_list();
@@ -227,106 +217,6 @@ public:
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
-};
-
-class AWindowNewFolder : public BC_Button
-{
-public:
-	AWindowNewFolder(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
-};
-
-class AWindowDeleteFolder : public BC_Button
-{
-public:
-	AWindowDeleteFolder(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
-};
-
-class AWindowRenameFolder : public BC_Button
-{
-public:
-	AWindowRenameFolder(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
-};
-
-class AWindowDeleteDisk : public BC_Button
-{
-public:
-	AWindowDeleteDisk(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
-};
-
-class AWindowDeleteProject : public BC_Button
-{
-public:
-	AWindowDeleteProject(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
-};
-
-class AWindowInfo : public BC_Button
-{
-public:
-	AWindowInfo(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
-};
-
-class AWindowRedrawIndex : public BC_Button
-{
-public:
-	AWindowRedrawIndex(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
-};
-
-class AWindowPaste : public BC_Button
-{
-public:
-	AWindowPaste(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
-};
-
-class AWindowAppend : public BC_Button
-{
-public:
-	AWindowAppend(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
-};
-
-class AWindowView : public BC_Button
-{
-public:
-	AWindowView(MWindow *mwindow, AWindowGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	AWindowGUI *gui;
-	int x, y;
 };
 
 class LabelPopup : public BC_PopupMenu

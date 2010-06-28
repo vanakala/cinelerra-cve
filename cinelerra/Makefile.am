@@ -443,7 +443,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 exportedl.h \
 		 fadeengine.h \
 		 feather.h \
-		 featheredits.h \
                  ffmpeg.h \
 		 fileac3.h \
 		 fileavi.h \

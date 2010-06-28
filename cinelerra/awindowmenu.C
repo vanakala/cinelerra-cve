@@ -89,7 +89,6 @@ int AssetListFormat::handle_event()
 			break;
 	}
 
-	
 	if (!mwindow->awindow->gui->allow_iconlisting) {
 		mwindow->edl->session->assetlist_format = ASSETS_TEXT;
 	}
@@ -133,7 +132,7 @@ FolderListMenu::FolderListMenu(MWindow *mwindow, AWindowGUI *gui)
 FolderListMenu::~FolderListMenu()
 {
 }
-	
+
 void FolderListMenu::create_objects()
 {
 	add_item(format = new FolderListFormat(mwindow, this));
@@ -177,6 +176,3 @@ int FolderListFormat::handle_event()
 
 	return 1;
 }
-
-
-

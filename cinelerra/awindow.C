@@ -37,7 +37,10 @@ AWindow::AWindow(MWindow *mwindow) : Thread()
 AWindow::~AWindow()
 {
 	delete asset_edit;
-	if (label_edit) delete label_edit;
+	delete clip_edit;
+	delete asset_remove;
+	delete label_edit;
+	delete gui;
 }
 
 int AWindow::create_objects()

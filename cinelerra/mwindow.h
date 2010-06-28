@@ -35,6 +35,7 @@
 #include "channeldb.inc"
 #include "cwindow.inc"
 #include "bchash.inc"
+#include "datatype.h"
 #include "devicedvbinput.inc"
 #include "edit.inc"
 #include "edl.inc"
@@ -172,8 +173,6 @@ public:
 	void dump_plugins();
 
 
-
-	
 	int load_filenames(ArrayList<char*> *filenames, 
 		int load_mode = LOAD_REPLACE,
 // Cause the project filename on the top of the window to be updated.
@@ -182,7 +181,6 @@ public:
 		const char *reel_name = "cin0000",
 		int reel_number = 0,
 		int overwrite_reel = 0);
-	
 
 // Print out plugins which are referenced in the EDL but not loaded.
 	void test_plugins(EDL *new_edl, const char *path);
@@ -284,16 +282,13 @@ public:
 // Calculate defaults path
 	static void create_defaults_path(char *string);
 
-	void delete_folder(const char *folder);
 	void delete_inpoint();
-	void delete_outpoint();    
+	void delete_outpoint();
 
 	void delete_track();
 	void delete_track(Track *track);
 	void delete_tracks();
 	void detach_transition(Transition *transition);
-	int feather_edits(int64_t feather_samples, int audio, int video);
-	int64_t get_feather(int audio, int video);
 	float get_aspect_ratio();
 	void insert(double position, 
 		FileXML *file,
@@ -330,7 +325,7 @@ public:
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
 		Track *track,
-		int64_t position);
+		posnum position);
 	void move_plugins_up(PluginSet *plugin_set);
 	void move_plugins_down(PluginSet *plugin_set);
 	void move_track_down(Track *track);
@@ -406,11 +401,6 @@ public:
 	int modify_pluginhandles();
 	void finish_modify_handles();
 
-	
-	
-	
-	
-	
 
 // Send new EDL to caches
 	void age_caches();
@@ -423,7 +413,7 @@ public:
 
 	Playback3D *playback_3d;
 	RemoveThread *remove_thread;
-	
+
 	SplashGUI *splash_window;
 // Main undo stack
 	MainUndo *undo;
@@ -473,7 +463,7 @@ public:
 	BatchRenderThread *batch_render;
 	Render *render;
 
- 	ExportEDL *exportedl;
+	ExportEDL *exportedl;
 
 
 // Master edl
@@ -552,7 +542,7 @@ public:
 	void init_3d();
 	void init_playbackcursor();
 	void delete_plugins();
-// 
+
 	void clean_indexes();
 	SigHandler *sighandler;
 };

@@ -30,7 +30,6 @@
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "featheredits.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "keys.h"

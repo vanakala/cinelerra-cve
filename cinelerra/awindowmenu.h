@@ -34,12 +34,12 @@ class AssetListMenu : public BC_PopupMenu
 public:
 	AssetListMenu(MWindow *mwindow, AWindowGUI *gui);
 	~AssetListMenu();
-	
+
 	void create_objects();
 	void update_titles();
 
 	AssetListFormat *format;
-	
+
 	MWindow *mwindow;
 	AWindowGUI *gui;
 };
@@ -79,12 +79,12 @@ class FolderListMenu : public BC_PopupMenu
 public:
 	FolderListMenu(MWindow *mwindow, AWindowGUI *gui);
 	~FolderListMenu();
-	
+
 	void create_objects();
 	void update_titles();
 
 	FolderListFormat *format;
-	
+
 	MWindow *mwindow;
 	AWindowGUI *gui;
 };
@@ -99,7 +99,5 @@ public:
 	MWindow *mwindow;
 	FolderListMenu *menu;
 };
-
-
 
 #endif
