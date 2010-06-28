@@ -150,6 +150,7 @@ OBJS = \
 	$(OBJDIR)/tkhd.o \
 	$(OBJDIR)/trak.o \
 	$(OBJDIR)/twos.o \
+	$(OBJDIR)/sowt.o \
 	$(OBJDIR)/udta.o \
 	$(OBJDIR)/ulaw.o \
 	$(OBJDIR)/util.o \
@@ -510,6 +511,7 @@ $(OBJDIR)/stts.o:			  stts.c
 $(OBJDIR)/tkhd.o:			  tkhd.c
 $(OBJDIR)/trak.o:			  trak.c
 $(OBJDIR)/twos.o:			  twos.c
+$(OBJDIR)/sowt.o:			  sowt.c
 $(OBJDIR)/udta.o:			  udta.c
 $(OBJDIR)/ulaw.o:			  ulaw.c
 $(OBJDIR)/util.o:			  util.c

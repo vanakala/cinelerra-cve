@@ -115,6 +115,7 @@ extern "C" {
 
 /* Twos compliment 8, 16, 24 */
 #define QUICKTIME_TWOS "twos"
+#define QUICKTIME_SOWT "sowt"
 
 /* ulaw */
 #define QUICKTIME_ULAW "ulaw"

@@ -41,6 +41,7 @@ static int register_acodec(void (*init_acodec)(quicktime_audio_map_t *))
 #include "qtmp3.h"
 #include "rawaudio.h"
 #include "twos.h"
+#include "sowt.h"
 #include "ulaw.h"
 #include "wma.h"
 #include "wmx2.h"
@@ -48,6 +49,7 @@ static int register_acodec(void (*init_acodec)(quicktime_audio_map_t *))
 static void register_acodecs()
 {
 	register_acodec(quicktime_init_codec_twos);
+	register_acodec(quicktime_init_codec_sowt);
 	register_acodec(quicktime_init_codec_rawaudio);
 	register_acodec(quicktime_init_codec_ima4);
 	register_acodec(quicktime_init_codec_mp4a);
