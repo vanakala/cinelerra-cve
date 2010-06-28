@@ -191,18 +191,6 @@ int Labels::copy(double start, double end, FileXML *xml)
 	return 0;
 }
 
-int Labels::copy_length(long start, long end) // return number of Labels in selection
-{
-	int result = 0;
-	Label *current;
-
-	for(current = label_of(start); current && current->position <= end; current = NEXT)
-	{
-		result++;
-	}
-	return result;
-}
-
 void Labels::copy_from(Labels *labels)
 {
 	while(last) delete last;

@@ -45,7 +45,6 @@ public:
 	AWindow *awindow;
 	VWindow *vwindow;
 
-
 	EDL *clip;
 	int create_it;
 };
@@ -88,10 +87,5 @@ public:
 	int handle_event();
 	ClipEditWindow *window;
 };
-
-
-
-
-
 
 #endif

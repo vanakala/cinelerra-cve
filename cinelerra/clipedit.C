@@ -32,6 +32,7 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 #include "mainerror.h"
+#include "theme.h"
 #include "tracks.h"
 
 
@@ -84,13 +85,6 @@ void ClipEdit::run()
 			clip->copy_all(original);
 		}
 
-
-
-
-
-
-
-
 		ClipEditWindow *window = new ClipEditWindow(mwindow, this);
 
 		window->create_objects();
@@ -134,24 +128,13 @@ void ClipEdit::run()
 			if(!create_it)
 				original->copy_session(clip);
 
-
-//			mwindow->vwindow->gui->update_sources(mwindow->vwindow->gui->source->get_text());
-
-
 			mwindow->awindow->gui->async_update_assets();
 
-// Change VWindow to it if vwindow was called
-// But this doesn't let you easily create a lot of clips.
-			if(vwindow && create_it)
-			{
-//				vwindow->change_source(new_edl);
-			}
 		}
 		else
 		{
 			mwindow->session->clip_number--;
 		}
-		
 
 
 // For creating new clips, the original was copied in add_clip.
@@ -171,7 +154,7 @@ void ClipEdit::run()
 
 ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread)
  : BC_Window(PROGRAM_NAME ": Clip Info", 
- 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
+	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
 	mwindow->gui->get_abs_cursor_y(1) - 350 / 2,
 	400, 
 	350,
@@ -189,7 +172,7 @@ ClipEditWindow::~ClipEditWindow()
 {
 }
 
-	
+
 void ClipEditWindow::create_objects()
 {
 	this->clip = thread->clip;
@@ -200,6 +183,7 @@ void ClipEditWindow::create_objects()
 	BC_TextBox *textbox;
 	BC_Title *title;
 
+	set_icon(mwindow->theme->get_image("awindow_icon"));
 	add_subwindow(title = new BC_Title(x1, y, _("Title:")));
 	y += title->get_h() + 5;
 	add_subwindow(titlebox = new ClipEditTitle(this, x1, y, get_w() - x1 * 2));
@@ -217,8 +201,6 @@ void ClipEditWindow::create_objects()
 		BC_TextBox::pixels_to_rows(this, 
 			MEDIUMFONT, 
 			get_h() - 10 - BC_OKButton::calculate_h() - y)));
-
-
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

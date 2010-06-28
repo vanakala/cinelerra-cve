@@ -29,6 +29,7 @@
 #include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "theme.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 
@@ -79,7 +80,7 @@ void LabelEdit::run()
 
 LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
  : BC_Window(PROGRAM_NAME ": Label Info", 
- 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
+	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
 	mwindow->gui->get_abs_cursor_y(1) - 350 / 2,
 	400, 
 	350,
@@ -97,7 +98,7 @@ LabelEditWindow::~LabelEditWindow()
 {
 }
 
-	
+
 void LabelEditWindow::create_objects()
 {
 	this->label = thread->label;
@@ -108,6 +109,7 @@ void LabelEditWindow::create_objects()
 	BC_TextBox *titlebox;
 	BC_Title *title;
 
+	set_icon(mwindow->theme->get_image("awindow_icon"));
 	add_subwindow(title = new BC_Title(x1, y, _("Label Text:")));
 	y += title->get_h() + 5;
 	add_subwindow(textbox = new LabelEditComments(this, 

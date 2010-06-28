@@ -74,10 +74,8 @@ public:
 		int handle_mode,
 		int edit_labels);
 	int copy(double start, double end, FileXML *xml);
-	int copy_length(long start, long end); // return number of Labels in selection
 	int insert(double start, double length);
-	int paste(long start, long end, long total_length, FileXML *xml);
-	int paste_output(long startproject, long endproject, long startsource, long endsource, RecordLabels *labels);
+
 // Setting follow to 1 causes labels to move forward after clear.
 // Setting it to 0 implies ignoring the labels follow edits setting.
 	int clear(double start, double end, int follow = 1);

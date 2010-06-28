@@ -58,13 +58,11 @@ public:
 
 	void create_objects();
 
-
 // Use this copy of the pointer in LabelEdit since multiple windows are possible	
 	Label *label;
 	MWindow *mwindow;
 	LabelEdit *thread;
 };
-
 
 
 class LabelEditTitle : public BC_TextBox
@@ -83,10 +81,5 @@ public:
 	int handle_event();
 	LabelEditWindow *window;
 };
-
-
-
-
-
 
 #endif
