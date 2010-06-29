@@ -77,12 +77,12 @@ int YUVStream::open_read(const char *path)
 }
 
 // NOTE: path is opened as a pipe if contains '|'
-int YUVStream::open_write(const char *path, char *pipe) 
+int YUVStream::open_write(const char *path, const char *pipe) 
 {
 	if (pipe && *pipe)
 	{
 		// skip over the '|' if present
-		if (char *p = strchr(path, '|')) 
+		if (const char *p = strchr(path, '|')) 
 		{
 			pipe = p + 1;
 		}

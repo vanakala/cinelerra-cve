@@ -38,7 +38,7 @@ public:
 	~YUVStream();
 
 	int open_read(const char *path);
-	int open_write(const char *path, char *pipe);
+	int open_write(const char *path, const char *pipe);
 	void close_fd(); 
 
 	int read_frame(uint8_t *yuv[3]);
