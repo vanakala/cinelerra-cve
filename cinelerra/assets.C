@@ -51,7 +51,6 @@ int Assets::load(ArrayList<PluginServer*> *plugindb,
 {
 	int result = 0;
 
-//printf("Assets::load 1\n");
 	while(!result)
 	{
 		result = file->read_tag();
@@ -64,20 +63,14 @@ int Assets::load(ArrayList<PluginServer*> *plugindb,
 			else
 			if(file->tag.title_is("ASSET"))
 			{
-//printf("Assets::load 2\n");
 				char *path = file->tag.get_property("SRC");
-//printf("Assets::load 3\n");
 				Asset *new_asset = new Asset(path ? path : SILENCE);
-//printf("Assets::load 4\n");
 				new_asset->read(file);
-//printf("Assets::load 5\n");
 				update(new_asset);
 				Garbage::delete_object(new_asset);
-//printf("Assets::load 6\n");
 			}
 		}
 	}
-//printf("Assets::load 7\n");
 	return 0;
 }
 
@@ -115,7 +108,6 @@ void Assets::copy_from(Assets *assets)
 
 Assets& Assets::operator=(Assets &assets)
 {
-printf("Assets::operator= 1\n");
 	copy_from(&assets);
 	return *this;
 }
@@ -183,7 +175,6 @@ Asset* Assets::get_asset(const char *filename)
 
 	while(current)
 	{
-//printf("Assets::get_asset %p %s\n", filename, filename);
 		if(current->test_path(filename))
 		{
 			result = current;
@@ -192,7 +183,7 @@ Asset* Assets::get_asset(const char *filename)
 		current = current->next;
 	}
 
-	return result;	
+	return result;
 }
 
 Asset* Assets::remove_asset(Asset *asset)
@@ -207,8 +198,8 @@ int Assets::number_of(Asset *asset)
 	int i;
 	Asset *current;
 
-	for(i = 0, current = first; current && current != asset; i++, current = NEXT)
-		;
+	for(i = 0, current = first; current && current != asset; 
+		i++, current = NEXT);
 
 	return i;
 }
@@ -218,13 +209,13 @@ Asset* Assets::asset_number(int number)
 	int i;
 	Asset *current;
 
-	for(i = 0, current = first; i < number && current; i++, current = NEXT)
-		;
-	
+	for(i = 0, current = first; i < number && current; 
+		i++, current = NEXT);
+
 	return current;
 }
 
-int Assets::update_old_filename(char *old_filename, char *new_filename)
+int Assets::update_old_filename(const char *old_filename, const char *new_filename)
 {
 	for(Asset* current = first; current; current = NEXT)
 	{

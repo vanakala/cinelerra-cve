@@ -115,11 +115,6 @@ int AssetPopup::update()
 
 
 
-
-
-
-
-
 AssetPopupInfo::AssetPopupInfo(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("Info..."))
 {
@@ -159,9 +154,6 @@ int AssetPopupInfo::handle_event()
 
 
 
-
-
-
 AssetPopupBuildIndex::AssetPopupBuildIndex(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("Rebuild index"))
 {
@@ -175,7 +167,6 @@ AssetPopupBuildIndex::~AssetPopupBuildIndex()
 
 int AssetPopupBuildIndex::handle_event()
 {
-//printf("AssetPopupBuildIndex::handle_event 1\n");
 	mwindow->rebuild_indices();
 	return 1;
 }
@@ -262,10 +253,6 @@ int AssetPopupPaste::handle_event()
 
 
 
-
-
-
-
 AssetMatchSize::AssetMatchSize(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("Match project size"))
 {
@@ -282,10 +269,6 @@ int AssetMatchSize::handle_event()
 
 
 
-
-
-
-
 AssetMatchRate::AssetMatchRate(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("Match frame rate"))
 {
@@ -298,17 +281,6 @@ int AssetMatchRate::handle_event()
 	popup->match_rate();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -352,7 +324,3 @@ int AssetPopupDiskRemove::handle_event()
 	mwindow->awindow->asset_remove->start();
 	return 1;
 }
-
-
-
-

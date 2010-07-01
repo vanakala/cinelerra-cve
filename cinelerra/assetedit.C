@@ -94,12 +94,12 @@ void AssetEdit::run()
 		window->raise_window();
 		result = window->run_window();
 
- 		if(!result)
- 		{
- 			if(!asset->equivalent(*new_asset, 1, 1))
- 			{
- 				int newidx = asset->audio_data
- 					&& !asset->equivalent(*new_asset, 1, 0);
+		if(!result)
+		{
+			if(!asset->equivalent(*new_asset, 1, 1))
+			{
+				int newidx = asset->audio_data
+					&& !asset->equivalent(*new_asset, 1, 0);
 				mwindow->gui->lock_window("AssetEdit::run");
 				mwindow->remove_asset_from_caches(asset);
 // Omit index status from copy since an index rebuild may have been
@@ -136,8 +136,8 @@ void AssetEdit::run()
 
 				mwindow->restart_brender();
 				mwindow->sync_parameters(CHANGE_ALL);
- 			}
- 		}
+			}
+		}
 
 		Garbage::delete_object(new_asset);
 		delete window;
@@ -154,7 +154,7 @@ void AssetEdit::run()
 
 AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  : BC_Window(PROGRAM_NAME ": Asset Info", 
- 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
+	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - 550 / 2, 
 	400, 
 	680,
@@ -224,7 +224,6 @@ int AssetEditWindow::create_objects()
 	if(asset->format == FILE_MPEG &&
 		asset->video_data)
 	{
-
 		bytes = asset->file_length;
 	}
 	else
@@ -234,7 +233,6 @@ int AssetEditWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Bytes:")));
 	sprintf(string, "%lld", bytes);
 	Units::punctuate(string);
-	
 
 	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 	y += 20;
@@ -415,14 +413,14 @@ int AssetEditWindow::create_objects()
 		add_subwindow(framerate = new AssetEditFRate(this, string, x, y));
 		x += 105;
 		add_subwindow(new FrameRatePulldown(mwindow, framerate, x, y));
-		
+
 		y += 30;
 		x = x1;
 		add_subwindow(new BC_Title(x, y, "Size:"));
 		x = x2;
 		sprintf(string, "%d x %d", asset->width, asset->height);
 		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-		
+
 		y += vmargin;
 		if(asset->aspect_ratio > 0){
 			x = x1;
@@ -467,12 +465,12 @@ int AssetEditWindow::create_objects()
 			}
 		}
 
-		// --------------------
+// --------------------
 		add_subwindow(title = new BC_Title(x1, y, _("Fix interlacing:")));
 		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(mwindow,this, x2, y));
 		y += ilacefixoption_chkboxw->get_h() + 5;
 
-		// --------------------
+// --------------------
 		add_subwindow(title = new BC_Title(x1, y, _("Asset's interlacing:")));
 		add_subwindow(textboxw = new AssetEditILacemode(this, "", BC_ILACE_ASSET_MODEDEFAULT, x2, y, 200));
 		ilacefixoption_chkboxw->ilacemode_textbox = textboxw;
@@ -486,7 +484,7 @@ int AssetEditWindow::create_objects()
 		ilacefixoption_chkboxw->ilacemode_listbox = listboxw;
 		y += textboxw->get_h() + 5;
 
-		// --------------------
+// --------------------
 		add_subwindow(title = new BC_Title(x1, y, _("Interlace correction:")));
 		add_subwindow(textboxw = new AssetEditILacefixmethod(this, "", BC_ILACE_FIXDEFAULT, x2, y, 200));
 		ilacefixoption_chkboxw->ilacefixmethod_textbox = textboxw;
@@ -499,32 +497,32 @@ int AssetEditWindow::create_objects()
 		ilacefixoption_chkboxw->ilacefixmethod_listbox = listboxw;
 		ilacefixoption_chkboxw->showhideotherwidgets();
 		y += textboxw->get_h() + 5;
-		
+
 		x = x1;
 		add_subwindow(new BC_Title(x, y, _("Reel Name:")));
 		x = x2;
 		add_subwindow(new AssetEditReelName(this, x, y));
 		y += 30;
-		
+
 		x = x1;
 		add_subwindow(new BC_Title(x, y, _("Reel Number:")));
 		x = x2;
 		add_subwindow(new AssetEditReelNumber(this, x, y));
 		y += 30;
-		
+
 		x = x1;
 		add_subwindow(new BC_Title(x, y, _("Time Code Start:")));
 		x = x2;
 
 // Calculate values to enter into textboxes
 		char tc[12];
-		
+
 		Units::totext(tc,
 			asset->tcstart / asset->frame_rate,
 			TIME_HMSF,
 			asset->sample_rate,
 			asset->frame_rate);
-		
+
 		char *tc_hours = tc;
 		char *tc_minutes = strchr(tc, ':') + 1;
 		*(tc_minutes - 1) = 0;
@@ -532,7 +530,7 @@ int AssetEditWindow::create_objects()
 		*(tc_seconds - 1) = 0;
 		char *tc_rest = strchr(tc_seconds, ':') + 1;
 		*(tc_rest - 1) = 0;
-		
+
 		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_hours), x, y,
 			(int) (asset->frame_rate * 60 * 60)));
 		x += 30;
@@ -549,7 +547,6 @@ int AssetEditWindow::create_objects()
 		add_subwindow(new BC_Title(x, y, ":"));
 		x += 10;
 		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_rest), x, y, 1));
-
 
 		y += 30;
 	}
@@ -629,24 +626,24 @@ void Interlaceautofix::showhideotherwidgets()
   int thevalue = get_value();
 
 	if (thevalue == BC_ILACE_AUTOFIXOPTION_AUTO) 
-	  {
-	    this->ilacemode_textbox->enable(); 
-	    this->ilacemode_listbox->enable(); 
-	    this->ilacefixmethod_textbox->disable();
-	    this->ilacefixmethod_listbox->disable();
-	    int xx = ilaceautofixmethod(mwindow->edl->session->interlace_mode,fwindow->asset->interlace_mode);
-	    ilacefixmethod_to_text(string,xx);
-	    this->ilacefixmethod_textbox->update(string);
-	  }
+	{
+		this->ilacemode_textbox->enable(); 
+		this->ilacemode_listbox->enable(); 
+		this->ilacefixmethod_textbox->disable();
+		this->ilacefixmethod_listbox->disable();
+		int xx = ilaceautofixmethod(mwindow->edl->session->interlace_mode,fwindow->asset->interlace_mode);
+		ilacefixmethod_to_text(string,xx);
+		this->ilacefixmethod_textbox->update(string);
+	}
 	if (thevalue == BC_ILACE_AUTOFIXOPTION_MANUAL) 
-	  {
-	    this->ilacemode_textbox->disable(); 
-	    this->ilacemode_listbox->disable(); 
-	    this->ilacefixmethod_textbox->enable(); 
-	    this->ilacefixmethod_listbox->enable(); 
-	    ilacefixmethod_to_text(string,fwindow->asset->interlace_fixmethod);
-	    this->ilacefixmethod_textbox->update(string);
-	  }
+	{
+		this->ilacemode_textbox->disable(); 
+		this->ilacemode_listbox->disable(); 
+		this->ilacefixmethod_textbox->enable(); 
+		this->ilacefixmethod_listbox->enable(); 
+		ilacefixmethod_to_text(string,fwindow->asset->interlace_fixmethod);
+		this->ilacefixmethod_textbox->update(string);
+	}
 }
 
 InterlacefixmethodItem::InterlacefixmethodItem(const char *text, int value)
@@ -662,7 +659,7 @@ InterlacefixmethodPulldown::InterlacefixmethodPulldown(MWindow *mwindow,
 		int x, 
 		int y)
  : BC_ListBox(x,
- 	y,
+	y,
 	200,
 	150,
 	LISTBOX_TEXT,
@@ -729,7 +726,7 @@ AssetEditInterlacemodePulldown::AssetEditInterlacemodePulldown(MWindow *mwindow,
 		int x, 
 		int y)
  : BC_ListBox(x,
- 	y,
+	y,
 	200,
 	150,
 	LISTBOX_TEXT,
@@ -839,10 +836,6 @@ int AssetEditSigned::handle_event()
 
 
 
-
-
-
-
 AssetEditPathText::AssetEditPathText(AssetEditWindow *fwindow, int y)
  : BC_TextBox(5, y, 300, 1, fwindow->asset->path) 
 {
@@ -865,8 +858,6 @@ AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow,
 	this->fwindow = fwindow; 
 }
 AssetEditPath::~AssetEditPath() {}
-
-
 
 
 
@@ -916,7 +907,7 @@ AssetEditReelNumber::~AssetEditReelNumber()
 int AssetEditReelNumber::handle_event()
 {
 	char *text = get_text() + strlen(get_text()) - 1;
-	
+
 	// Don't let user enter an invalid character -- only numbers here
 	if(*text < 48 ||
 		*text > 57)
@@ -929,8 +920,6 @@ int AssetEditReelNumber::handle_event()
 
 
 
-
-
 AssetEditTCStartTextBox::AssetEditTCStartTextBox(AssetEditWindow *fwindow, int value, int x, int y, int multiplier)
  : BC_TextBox(x, y, 30, 1, value)
 {
@@ -938,9 +927,11 @@ AssetEditTCStartTextBox::AssetEditTCStartTextBox(AssetEditWindow *fwindow, int v
 	this->multiplier = multiplier;
 	previous = value;
 }
+
 AssetEditTCStartTextBox::~AssetEditTCStartTextBox()
 {
 }
+
 int AssetEditTCStartTextBox::handle_event()
 {
 	fwindow->asset->tcstart -= previous * multiplier;

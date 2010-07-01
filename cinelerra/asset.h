@@ -99,7 +99,9 @@ public:
 	int operator==(Asset &asset);
 	int operator!=(Asset &asset);
 	int test_path(const char *path);
+/* Pole
 	int test_plugin_title(const char *path);
+	*/
 	int read(FileXML *file, int expand_relative = 1);
 	int read_audio(FileXML *xml);
 	int read_video(FileXML *xml);
@@ -122,7 +124,7 @@ public:
 	int write_audio(FileXML *xml);
 	int write_video(FileXML *xml);
 	int write_index(FileXML *xml);
-	int update_path(char *new_path);
+	int update_path(const char *new_path);
 
 	double total_length_framealigned(double fps);
 
@@ -161,16 +163,8 @@ public:
 
 
 
-
-
-
-
-
-
-
-
 // contains video data
-	int video_data;       
+	int video_data;
 	int layers;
 	double frame_rate;
 // number of mpeg2 subtitles
@@ -190,10 +184,6 @@ public:
 
 // Length in units of asset
 	framenum video_length;
-
-
-
-
 
 // mpeg audio information
 	int ampeg_bitrate;
@@ -232,7 +222,7 @@ public:
 	int interlace_fixmethod;
 
 // for jpeg compression
-	int jpeg_quality;     
+	int jpeg_quality;
 
 // for mpeg video compression
 	int vmpeg_iframe_distance;
@@ -251,11 +241,6 @@ public:
 // top field first
 	int vmpeg_field_order;
 	int vmpeg_pframe_distance;
-
-
-
-
-
 
 
 
@@ -310,8 +295,6 @@ public:
 // for editing would create new assets for every image.
 	int use_header;
 
-
-
 // Edits store data for the transition
 
 // index info
@@ -328,7 +311,7 @@ public:
 	int64_t *index_sizes;
 // [ index channel      ][ index channel      ]
 // [high][low][high][low][high][low][high][low]
-	float *index_buffer;  
+	float *index_buffer;
 	int id;
 };
 

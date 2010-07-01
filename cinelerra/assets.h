@@ -62,14 +62,6 @@ public:
 
 // Parent EDL
 	EDL *edl;
-	
-
-
-
-
-
-
-
 
 	int delete_all();
 	int dump();
@@ -90,10 +82,7 @@ public:
 	int number_of(Asset *asset);
 	Asset* asset_number(int number);
 
-	int update_old_filename(char *old_filename, char *new_filename);
+	int update_old_filename(const char *old_filename, const char *new_filename);
 };
-
-
-
 
 #endif

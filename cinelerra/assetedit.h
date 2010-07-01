@@ -47,7 +47,7 @@ class AssetEdit : public Thread
 public:
 	AssetEdit(MWindow *mwindow);
 	~AssetEdit();
-	
+
 	void edit_asset(Asset *asset);
 	int set_asset(Asset *asset);
 	void run();
@@ -92,7 +92,7 @@ public:
 		const char *window_title = _(PROGRAM_NAME " Path"), 
 		const char *window_caption = _("Select a file"));
 	~AssetEditPath();
-	
+
 	AssetEditWindow *fwindow;
 };
 
@@ -114,7 +114,7 @@ class AssetEditFormat : public FormatPopup
 public:
 	AssetEditFormat(AssetEditWindow *fwindow, char* default_, int y);
 	~AssetEditFormat();
-	
+
 	int handle_event();
 	AssetEditWindow *fwindow;
 };
@@ -124,9 +124,7 @@ class AssetEditChannels : public BC_TumbleTextBox
 {
 public:
 	AssetEditChannels(AssetEditWindow *fwindow, char *text, int x, int y);
-	
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 };
 
@@ -134,9 +132,7 @@ class AssetEditRate : public BC_TextBox
 {
 public:
 	AssetEditRate(AssetEditWindow *fwindow, char *text, int x, int y);
-	
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 };
 
@@ -144,9 +140,7 @@ class AssetEditFRate : public BC_TextBox
 {
 public:
 	AssetEditFRate(AssetEditWindow *fwindow, char *text, int x, int y);
-	
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 };
 
@@ -167,7 +161,7 @@ public:
 	BC_TextBox *ilacefixmethod_textbox;
 	BC_ListBox *ilacefixmethod_listbox;
 private:
-  	char string[BCTEXTLEN];
+	char string[BCTEXTLEN];
 };
 
 class AssetEditILaceautofixoption : public BC_TextBox
@@ -186,7 +180,7 @@ public:
 	AssetEditILacemode(AssetEditWindow *fwindow, const char *text, 
 		int thedefault, int x, int y, int w);
 	int handle_event();
-	int thedefault;	
+	int thedefault;
 	AssetEditWindow *fwindow;
 };
 
@@ -207,7 +201,7 @@ public:
 	int *output_value;
 	Interlaceautofix *fixoption_chkbox;
 private:
-  	char string[BCTEXTLEN];
+	char string[BCTEXTLEN];
 };
 
 class AssetEditILacefixmethod : public BC_TextBox
@@ -224,9 +218,7 @@ class AssetEditHeader : public BC_TextBox
 {
 public:
 	AssetEditHeader(AssetEditWindow *fwindow, char *text, int x, int y);
-	
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 };
 
@@ -234,9 +226,7 @@ class AssetEditByteOrderLOHI : public BC_Radial
 {
 public:
 	AssetEditByteOrderLOHI(AssetEditWindow *fwindow, int value, int x, int y);
-	
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 };
 
@@ -244,9 +234,7 @@ class AssetEditByteOrderHILO : public BC_Radial
 {
 public:
 	AssetEditByteOrderHILO(AssetEditWindow *fwindow, int value, int x, int y);
-	
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 };
 
@@ -254,9 +242,7 @@ class AssetEditSigned : public BC_CheckBox
 {
 public:
 	AssetEditSigned(AssetEditWindow *fwindow, int value, int x, int y);
-	
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 };
 
@@ -267,7 +253,6 @@ public:
 	~AssetEditReelName();
 
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 };
 
@@ -276,9 +261,7 @@ class AssetEditReelNumber : public BC_TextBox
 public:
 	AssetEditReelNumber(AssetEditWindow *fwindow, int x, int y);
 	~AssetEditReelNumber();
-	
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 };
 
@@ -288,7 +271,6 @@ public:
 	AssetEditTCStartTextBox(AssetEditWindow *fwindow, int value, int x, int y, int multiplier);
 	~AssetEditTCStartTextBox();
 	int handle_event();
-	
 	AssetEditWindow *fwindow;
 // Multiplier is the # of frames for whatever unit of time this is.
 // fps dependent, and unit dependent

@@ -29,6 +29,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "mainerror.h"
 #include "quicktime.h"
 #include "interlacemodes.h"
 
@@ -75,7 +76,7 @@ int Asset::init_values()
 {
 	path[0] = 0;
 	strcpy(folder, MEDIA_FOLDER);
-//	format = FILE_MOV;
+
 // Has to be unknown for file probing to succeed
 	format = FILE_UNKNOWN;
 	channels = 0;
@@ -210,7 +211,7 @@ int Asset::reset_timecode()
 	tcstart = 0;
 	tcend = 0;
 	tcformat = 0;
-	
+
 	return 0;
 }
 
@@ -275,7 +276,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	vorbis_bitrate = asset->vorbis_bitrate;
 	vorbis_max_bitrate = asset->vorbis_max_bitrate;
 
-	
 	theora_fix_bitrate = asset->theora_fix_bitrate;
 	theora_bitrate = asset->theora_bitrate;
 	theora_quality = asset->theora_quality;
@@ -325,9 +325,8 @@ void Asset::copy_format(Asset *asset, int do_index)
 	ms_gop_size = asset->ms_gop_size;
 	ms_fix_bitrate = asset->ms_fix_bitrate;
 
-	
 	ac3_bitrate = asset->ac3_bitrate;
-	
+
 	png_use_alpha = asset->png_use_alpha;
 	exr_use_alpha = asset->exr_use_alpha;
 	exr_compression = asset->exr_compression;
@@ -432,10 +431,11 @@ int Asset::test_path(const char *path)
 		return 0;
 }
 
+/* Pole
 int Asset::test_plugin_title(const char *path)
 {
 }
-
+	*/
 int Asset::read(FileXML *file, 
 	int expand_relative)
 {
@@ -519,7 +519,6 @@ int Asset::read(FileXML *file,
 		}
 	}
 
-//printf("Asset::read 2\n");
 	return 0;
 }
 
@@ -616,7 +615,6 @@ int Asset::read_index(FileXML *file)
 				if(current_offset < channels)
 				{
 					index_offsets[current_offset++] = file->tag.get_property("FLOAT", 0);
-//printf("Asset::read_index %d %d\n", current_offset - 1, index_offsets[current_offset - 1]);
 				}
 			}
 			else
@@ -638,7 +636,7 @@ int Asset::write_index(char *path, int data_bytes)
 	if(!(file = fopen(path, "wb")))
 	{
 // failed to create it
-		printf(_("Asset::write_index Couldn't write index file %s to disk.\n"), path);
+		errorbox(_("Couldn't create index file '%s'\n"), path);
 	}
 	else
 	{
@@ -668,7 +666,6 @@ int Asset::write_index(char *path, int data_bytes)
 
 // Force reread of header
 	index_status = INDEX_NOTTESTED;
-//	index_status = INDEX_READY;
 	index_end = audio_length;
 	old_index_end = 0;
 	index_start = 0;
@@ -731,9 +728,10 @@ int Asset::write(FileXML *file,
 // But the only way to know if an asset doesn't have audio or video data 
 // is to not write the block.
 // So change the block name if the asset doesn't have the data.
-	/* if(audio_data) */ write_audio(file);
-	/* if(video_data) */ write_video(file);
-	if(index_status == 0 && include_index) write_index(file);  // index goes after source
+	write_audio(file);
+	write_video(file);
+	if(index_status == 0 && include_index) 
+		write_index(file);  // index goes after source
 
 	file->tag.set_title("/ASSET");
 	file->append_tag();
@@ -767,9 +765,9 @@ int Asset::write_audio(FileXML *file)
 
 	file->append_tag();
 	if(audio_data)
-	  file->tag.set_title("/AUDIO");
+		file->tag.set_title("/AUDIO");
 	else
-          file->tag.set_title("/AUDIO_OMIT");
+		file->tag.set_title("/AUDIO_OMIT");
 	file->append_tag();
 	file->append_newline();
 	return 0;
@@ -992,7 +990,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
-	// this extra 'FORMAT_' prefix is just here for legacy reasons
+// this extra 'FORMAT_' prefix is just here for legacy reasons
 	use_pipe = GET_DEFAULT("FORMAT_YUV_USE_PIPE", use_pipe);
 	GET_DEFAULT("FORMAT_YUV_PIPE", pipe);
 
@@ -1047,15 +1045,9 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
 		UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
 
-
-
 		UPDATE_DEFAULT("MP3_BITRATE", mp3_bitrate);
 		UPDATE_DEFAULT("MP4A_BITRATE", mp4a_bitrate);
 		UPDATE_DEFAULT("MP4A_QUANTQUAL", mp4a_quantqual);
-
-
-
-
 
 		UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
 		UPDATE_DEFAULT("ASPECT_RATIO", aspect_ratio);
@@ -1090,7 +1082,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
 		UPDATE_DEFAULT("DIVX_USE_DEBLOCKING", divx_use_deblocking);
 
-
 		UPDATE_DEFAULT("MS_BITRATE", ms_bitrate);
 		UPDATE_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
 		UPDATE_DEFAULT("MS_INTERLACED", ms_interlaced);
@@ -1099,7 +1090,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
 
 		UPDATE_DEFAULT("AC3_BITRATE", ac3_bitrate);
-
 
 		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
 		UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
@@ -1127,14 +1117,7 @@ void Asset::save_defaults(BC_Hash *defaults,
 }
 
 
-
-
-
-
-
-
-
-int Asset::update_path(char *new_path)
+int Asset::update_path(const char *new_path)
 {
 	strcpy(path, new_path);
 	return 0;
@@ -1147,17 +1130,16 @@ double Asset::total_length_framealigned(double fps)
 		double vid = floor(( (double)video_length / frame_rate) * fps) / fps;
 		return MIN(aud,vid);
 	}
-	
+
 	if (audio_data)
 		return (double)audio_length / sample_rate;
-	
+
 	if (video_data)
 		return (double)video_length / frame_rate;
 }
 
 void Asset::update_index(Asset *asset)
 {
-//printf("Asset::update_index 1 %d\n", index_status);
 	index_status = asset->index_status;
 	index_zoom = asset->index_zoom; 	 // zoom factor of index data
 	index_start = asset->index_start;	 // byte start of index data in the index file
@@ -1169,7 +1151,7 @@ void Asset::update_index(Asset *asset)
 	delete [] index_sizes;
 	index_offsets = 0;
 	index_sizes = 0;
-	
+
 	if(asset->index_offsets)
 	{
 		index_offsets = new int64_t[asset->channels];
@@ -1193,9 +1175,9 @@ int Asset::set_timecode(char *tc, int format, int end)
 	hr = ((int) tc[0] - 48) * 10 + (int) tc[1] - 48;
 	min = ((int) tc[3] - 48) * 10 + (int) tc[4] - 48;
 	sec = ((int) tc[6] - 48) * 10 + (int) tc[7] - 48;
-	
-	// This needs to be modified to handle drop-frame
-	
+
+// This needs to be modified to handle drop-frame
+
 	if(end)
 		tcend = (int64_t) (((hr * 3600) + (min * 60) + sec) * frame_rate);
 	else
@@ -1229,13 +1211,13 @@ int Asset::dump()
 	char string[BCTEXTLEN];
 	ilacemode_to_xmltext(string, interlace_mode);
 	printf("   video_data %d layers %d framerate %f width %d height %d\n",
-	       video_data, layers, frame_rate, width, height);
+		video_data, layers, frame_rate, width, height);
 	printf("      vcodec %c%c%c%c aspect_ratio %f interlace_mode %s\n",
-	      vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
+		vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
 	printf("      length %d subtitles %d (active %d)\n", video_length, subtitles, active_subtitle);
 	printf("   reel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
 		reel_name, reel_number, tcstart, tcend, tcformat);
-	
+
 	return 0;
 }
 
