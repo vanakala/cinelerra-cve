@@ -51,11 +51,6 @@
 
 
 
-
-
-
-
-
 VDeviceV4L2JPEG::VDeviceV4L2JPEG(VideoDevice *device)
  : VDeviceBase(device)
 {
@@ -114,8 +109,6 @@ int VDeviceV4L2JPEG::read_buffer(VFrame *frame)
 	int timed_out;
 	VFrame *buffer = thread->get_buffer(&timed_out);
 
-
-
 	if(buffer)
 	{
 		frame->allocate_compressed_data(buffer->get_compressed_size());
@@ -161,8 +154,4 @@ int VDeviceV4L2JPEG::read_buffer(VFrame *frame)
 	return result;
 }
 
-
-
 #endif
-
-

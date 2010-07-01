@@ -41,7 +41,6 @@
 #include "picture.inc"
 #include "vdevicebase.inc"
 #include "vdevicebuz.inc"
-#include "vdevicelml.inc"
 #include "vdevicev4l.inc"
 #include "vdevicex11.inc"
 #ifdef HAVE_FIREWIRE

@@ -34,10 +34,6 @@
 #include "videodevice.inc"
 #include "vdevicev4l2.inc"
 
-
-// Short delay is necessary whenn capturing a lousy source.
-//#define BUFFER_TIMEOUT 250000
-
 // Long delay is necessary to avoid losing synchronization due to spurrious
 // resets.
 #define BUFFER_TIMEOUT 10000000
@@ -115,7 +111,7 @@ public:
 	int has_signal();
 	static int cmodel_to_device(int color_model);
 	static int get_sources(VideoDevice *device,
-		char *path);
+		const char *path);
 
 	VDeviceV4L2Thread *thread;
 };

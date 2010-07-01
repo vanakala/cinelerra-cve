@@ -26,6 +26,7 @@
 #include "canvas.h"
 #include "clip.h"
 #include "condition.h"
+#include "mainerror.h"
 #include "maskautos.h"
 #include "maskauto.h"
 #include "mutex.h"
@@ -60,10 +61,10 @@ static const char *yuv_to_rgb_frag =
 	"{\n"
 	"	vec3 yuv = vec3(texture2D(tex, gl_TexCoord[0].st));\n"
 	"   yuv -= vec3(0, 0.5, 0.5);\n"
- 	"	const mat3 yuv_to_rgb_matrix = mat3(\n"
- 	"		1,       1,        1, \n"
- 	"		0,       -0.34414, 1.77200, \n"
- 	"		1.40200, -0.71414, 0);\n"
+	"	const mat3 yuv_to_rgb_matrix = mat3(\n"
+	"		1,       1,        1, \n"
+	"		0,       -0.34414, 1.77200, \n"
+	"		1.40200, -0.71414, 0);\n"
 	"	gl_FragColor = vec4(yuv_to_rgb_matrix * yuv, 1);\n"
 	"}\n";
 
@@ -73,10 +74,10 @@ static const char *yuva_to_rgba_frag =
 	"{\n"
 	"	vec4 yuva = texture2D(tex, gl_TexCoord[0].st);\n"
 	"	yuva.rgb -= vec3(0, 0.5, 0.5);\n"
- 	"	const mat3 yuv_to_rgb_matrix = mat3(\n"
- 	"		1,       1,        1, \n"
- 	"		0,       -0.34414, 1.77200, \n"
- 	"		1.40200, -0.71414, 0);\n"
+	"	const mat3 yuv_to_rgb_matrix = mat3(\n"
+	"		1,       1,        1, \n"
+	"		0,       -0.34414, 1.77200, \n"
+	"		1.40200, -0.71414, 0);\n"
 	"	gl_FragColor = vec4(yuv_to_rgb_matrix * yuva.rgb, yuva.a);\n"
 	"}\n";
 
@@ -186,7 +187,7 @@ static const char *multiply_mask3_frag =
 	"void main()\n"
 	"{\n"
 	"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
-	"   float a = texture2D(tex1, gl_TexCoord[0].st / vec2(scale, scale)).r;\n"
+	"	float a = texture2D(tex1, gl_TexCoord[0].st / vec2(scale, scale)).r;\n"
 	"	gl_FragColor.rgb *= vec3(a, a, a);\n"
 	"}\n";
 
@@ -197,7 +198,7 @@ static const char *multiply_yuvmask3_frag =
 	"void main()\n"
 	"{\n"
 	"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
-	"   float a = texture2D(tex1, gl_TexCoord[0].st / vec2(scale, scale)).r;\n"
+	"	float a = texture2D(tex1, gl_TexCoord[0].st / vec2(scale, scale)).r;\n"
 	"	gl_FragColor.gb -= vec2(0.5, 0.5);\n"
 	"	gl_FragColor.rgb *= vec3(a, a, a);\n"
 	"	gl_FragColor.gb += vec2(0.5, 0.5);\n"
@@ -293,50 +294,44 @@ BC_SynchronousCommand* Playback3D::new_command()
 
 void Playback3D::handle_command(BC_SynchronousCommand *command)
 {
-//printf("Playback3D::handle_command 1 %d\n", command->command);
 	switch(command->command)
 	{
-		case Playback3DCommand::WRITE_BUFFER:
-			write_buffer_sync((Playback3DCommand*)command);
-			break;
+	case Playback3DCommand::WRITE_BUFFER:
+		write_buffer_sync((Playback3DCommand*)command);
+		break;
 
-		case Playback3DCommand::CLEAR_OUTPUT:
-			clear_output_sync((Playback3DCommand*)command);
-			break;
+	case Playback3DCommand::CLEAR_OUTPUT:
+		clear_output_sync((Playback3DCommand*)command);
+		break;
 
-		case Playback3DCommand::CLEAR_INPUT:
-			clear_input_sync((Playback3DCommand*)command);
-			break;
+	case Playback3DCommand::CLEAR_INPUT:
+		clear_input_sync((Playback3DCommand*)command);
+		break;
 
-		case Playback3DCommand::DO_CAMERA:
-			do_camera_sync((Playback3DCommand*)command);
-			break;
+	case Playback3DCommand::DO_CAMERA:
+		do_camera_sync((Playback3DCommand*)command);
+		break;
 
-		case Playback3DCommand::OVERLAY:
-			overlay_sync((Playback3DCommand*)command);
-			break;
+	case Playback3DCommand::OVERLAY:
+		overlay_sync((Playback3DCommand*)command);
+		break;
 
-		case Playback3DCommand::DO_FADE:
-			do_fade_sync((Playback3DCommand*)command);
-			break;
+	case Playback3DCommand::DO_FADE:
+		do_fade_sync((Playback3DCommand*)command);
+		break;
 
-		case Playback3DCommand::DO_MASK:
-			do_mask_sync((Playback3DCommand*)command);
-			break;
+	case Playback3DCommand::DO_MASK:
+		do_mask_sync((Playback3DCommand*)command);
+		break;
 
-		case Playback3DCommand::PLUGIN:
-			run_plugin_sync((Playback3DCommand*)command);
-			break;
+	case Playback3DCommand::PLUGIN:
+		run_plugin_sync((Playback3DCommand*)command);
+		break;
 
-		case Playback3DCommand::COPY_FROM:
-			copy_from_sync((Playback3DCommand*)command);
-			break;
-
-// 		case Playback3DCommand::DRAW_REFRESH:
-// 			draw_refresh_sync((Playback3DCommand*)command);
-// 			break;
+	case Playback3DCommand::COPY_FROM:
+		copy_from_sync((Playback3DCommand*)command);
+		break;
 	}
-//printf("Playback3D::handle_command 10\n");
 }
 
 
@@ -370,24 +365,17 @@ void Playback3D::copy_from_sync(Playback3DCommand *command)
 			command->input->get_w() == command->frame->get_w() &&
 			command->input->get_h() == command->frame->get_h())
 		{
-// printf("Playback3D::copy_from_sync 1 %d %d %d %d %d\n", 
-// command->input->get_w(),
-// command->input->get_h(),
-// command->frame->get_w(),
-// command->frame->get_h(),
-// command->frame->get_color_model());
 			int w = command->input->get_w();
 			int h = command->input->get_h();
 // With NVidia at least,
 			if(command->input->get_w() % 4)
 			{
-				printf("Playback3D::copy_from_sync: w=%d not supported because it is not divisible by 4.\n", w);
+				errorbox("Width %d is not supported by OpenGL because it is not divisible by 4.", w);
 			}
 			else
 // Copy to texture
 			if(command->want_texture)
 			{
-//printf("Playback3D::copy_from_sync 1 dst=%p src=%p\n", command->frame, command->input);
 // Screen_to_texture requires the source pbuffer enabled.
 				command->input->enable_opengl();
 				command->frame->screen_to_texture();
@@ -411,7 +399,7 @@ void Playback3D::copy_from_sync(Playback3DCommand *command)
 		}
 		else
 		{
-			printf("Playback3D::copy_from_sync: invalid formats opengl_state=%d %dx%d -> %dx%d\n",
+			errorbox("Invalid formats for opengl_state=%d %dx%d -> %dx%d\n",
 				command->input->get_opengl_state(),
 				command->input->get_w(),
 				command->input->get_h(),
@@ -424,78 +412,6 @@ void Playback3D::copy_from_sync(Playback3DCommand *command)
 	command->canvas->unlock_canvas();
 #endif
 }
-
-
-
-
-// void Playback3D::draw_refresh(Canvas *canvas, 
-// 	VFrame *frame,
-// 	float in_x1, 
-// 	float in_y1, 
-// 	float in_x2, 
-// 	float in_y2, 
-// 	float out_x1, 
-// 	float out_y1, 
-// 	float out_x2, 
-// 	float out_y2)
-// {
-// 	Playback3DCommand command;
-// 	command.command = Playback3DCommand::DRAW_REFRESH;
-// 	command.canvas = canvas;
-// 	command.frame = frame;
-// 	command.in_x1 = in_x1;
-// 	command.in_y1 = in_y1;
-// 	command.in_x2 = in_x2;
-// 	command.in_y2 = in_y2;
-// 	command.out_x1 = out_x1;
-// 	command.out_y1 = out_y1;
-// 	command.out_x2 = out_x2;
-// 	command.out_y2 = out_y2;
-// 	send_command(&command);
-// }
-// 
-// void Playback3D::draw_refresh_sync(Playback3DCommand *command)
-// {
-// 	command->canvas->lock_canvas("Playback3D::draw_refresh_sync");
-// 	BC_WindowBase *window = command->canvas->get_canvas();
-// 	if(window)
-// 	{
-// 		window->lock_window("Playback3D:draw_refresh_sync");
-// 		window->enable_opengl();
-// 
-// // Read output pbuffer back to RAM in project colormodel
-// // RGB 8bit is fastest for OpenGL to read back.
-// 		command->frame->reallocate(0, 
-// 			0,
-// 			0,
-// 			0,
-// 			command->frame->get_w(), 
-// 			command->frame->get_h(), 
-// 			BC_RGB888, 
-// 			-1);
-// 		command->frame->to_ram();
-// 
-// 		window->clear_box(0, 
-// 						0, 
-// 						window->get_w(), 
-// 						window->get_h());
-// 		window->draw_vframe(command->frame,
-// 							(int)command->out_x1, 
-// 							(int)command->out_y1, 
-// 							(int)(command->out_x2 - command->out_x1), 
-// 							(int)(command->out_y2 - command->out_y1),
-// 							(int)command->in_x1, 
-// 							(int)command->in_y1, 
-// 							(int)(command->in_x2 - command->in_x1), 
-// 							(int)(command->in_y2 - command->in_y1),
-// 							0);
-// 
-// 		window->unlock_window();
-// 	}
-// 	command->canvas->unlock_canvas();
-// }
-
-
 
 
 
@@ -540,26 +456,24 @@ void Playback3D::write_buffer_sync(Playback3DCommand *command)
 // Make sure OpenGL is enabled first.
 		window->enable_opengl();
 
-
-//printf("Playback3D::write_buffer_sync 1 %d\n", window->get_id());
 		switch(command->frame->get_opengl_state())
 		{
 // Upload texture and composite to screen
-			case VFrame::RAM:
-				command->frame->to_texture();
-				draw_output(command);
-				break;
+		case VFrame::RAM:
+			command->frame->to_texture();
+			draw_output(command);
+			break;
 // Composite texture to screen and swap buffer
-			case VFrame::TEXTURE:
-				draw_output(command);
-				break;
-			case VFrame::SCREEN:
+		case VFrame::TEXTURE:
+			draw_output(command);
+			break;
+		case VFrame::SCREEN:
 // swap buffers only
-				window->flip_opengl();
-				break;
-			default:
-				printf("Playback3D::write_buffer_sync unknown state\n");
-				break;
+			window->flip_opengl();
+			break;
+		default:
+			printf("Playback3D::write_buffer_sync unknown state\n");
+			break;
 		}
 		window->unlock_window();
 	}
@@ -574,12 +488,6 @@ void Playback3D::draw_output(Playback3DCommand *command)
 #ifdef HAVE_GL
 	int texture_id = command->frame->get_texture_id();
 	BC_WindowBase *window = command->canvas->get_canvas();
-
-// printf("Playback3D::draw_output 1 texture_id=%d window=%p\n", 
-// texture_id,
-// command->canvas->get_canvas());
-
-
 
 
 // If virtual console is being used, everything in this function has
@@ -601,23 +509,21 @@ void Playback3D::draw_output(Playback3DCommand *command)
 		command->frame->bind_texture(0);
 
 
-
-
 // Convert colormodel
 		unsigned int frag_shader = 0;
 		switch(command->frame->get_color_model())
 		{
-			case BC_YUV888:
-				frag_shader = VFrame::make_shader(0,
-					yuv_to_rgb_frag,
-					0);
-				break;
+		case BC_YUV888:
+			frag_shader = VFrame::make_shader(0,
+				yuv_to_rgb_frag,
+				0);
+			break;
 
-			case BC_YUVA8888:
-				frag_shader = VFrame::make_shader(0,
-					yuva_to_rgba_frag,
-					0);
-				break;
+		case BC_YUVA8888:
+			frag_shader = VFrame::make_shader(0,
+				yuva_to_rgba_frag,
+				0);
+			break;
 		}
 
 
@@ -644,17 +550,6 @@ void Playback3D::draw_output(Playback3DCommand *command)
 			command->out_x2,
 			command->out_y2,
 			1);
-
-
-// printf("Playback3D::draw_output 2 %f,%f %f,%f -> %f,%f %f,%f\n",
-// command->in_x1,
-// command->in_y1,
-// command->in_x2,
-// command->in_y2,
-// command->out_x1,
-// command->out_y1,
-// command->out_x2,
-// command->out_y2);
 
 		glUseProgram(0);
 
@@ -699,8 +594,7 @@ void Playback3D::clear_output_sync(Playback3DCommand *command)
 		if(command->frame)
 		{
 			command->frame->enable_opengl();
-		}	
-
+		}
 
 		init_frame(command);
 		command->canvas->get_canvas()->unlock_window();
@@ -777,15 +671,6 @@ void Playback3D::do_camera_sync(Playback3DCommand *command)
 		command->input->bind_texture(0);
 // Must call draw_texture in input frame to get the texture coordinates right.
 
-// printf("Playback3D::do_camera_sync 1 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", 
-// command->in_x1, 
-// command->in_y2, 
-// command->in_x2, 
-// command->in_y1, 
-// command->out_x1,
-// (float)command->input->get_h() - command->out_y1,
-// command->out_x2,
-// (float)command->input->get_h() - command->out_y2);
 		command->input->draw_texture(
 			command->in_x1, 
 			command->in_y2, 
@@ -850,7 +735,6 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 
 		window->update_video_cursor();
 
-
 // Render to PBuffer
 		if(command->frame)
 		{
@@ -867,28 +751,27 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 
 		glColor4f(1, 1, 1, 1);
 
-//printf("Playback3D::overlay_sync 1 %d\n", command->input->get_opengl_state());
 		switch(command->input->get_opengl_state())
 		{
 // Upload texture and composite to screen
-			case VFrame::RAM:
-				command->input->to_texture();
-				break;
+		case VFrame::RAM:
+			command->input->to_texture();
+			break;
 // Just composite texture to screen
-			case VFrame::TEXTURE:
-				break;
+		case VFrame::TEXTURE:
+			break;
 // read from PBuffer to texture, then composite texture to screen
-			case VFrame::SCREEN:
-				command->input->enable_opengl();
-				command->input->screen_to_texture();
-				if(command->frame)
-					command->frame->enable_opengl();
-				else
-					window->enable_opengl();
-				break;
-			default:
-				printf("Playback3D::overlay_sync unknown state\n");
-				break;
+		case VFrame::SCREEN:
+			command->input->enable_opengl();
+			command->input->screen_to_texture();
+			if(command->frame)
+				command->frame->enable_opengl();
+			else
+				window->enable_opengl();
+			break;
+		default:
+			printf("Playback3D::overlay_sync unknown state\n");
+			break;
 		}
 
 
@@ -904,59 +787,59 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 // Convert colormodel.
 		switch(command->input->get_color_model())
 		{
-			case BC_YUV888:
-				shader_stack[total_shaders++] = yuv_to_rgb_frag;
-				break;
-			case BC_YUVA8888:
-				shader_stack[total_shaders++] = yuva_to_rgba_frag;
-				break;
+		case BC_YUV888:
+			shader_stack[total_shaders++] = yuv_to_rgb_frag;
+			break;
+		case BC_YUVA8888:
+			shader_stack[total_shaders++] = yuva_to_rgba_frag;
+			break;
 		}
 
 // Change blend operation
 		switch(command->mode)
 		{
-			case TRANSFER_NORMAL:
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				break;
+		case TRANSFER_NORMAL:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			break;
 
-			case TRANSFER_REPLACE:
+		case TRANSFER_REPLACE:
 // This requires overlaying an alpha multiplied image on a black screen.
-				glDisable(GL_BLEND);
-				if(command->input->get_texture_components() == 4)
-				{
-					if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
-					shader_stack[total_shaders++] = multiply_alpha_frag;
-				}
-				break;
+			glDisable(GL_BLEND);
+			if(command->input->get_texture_components() == 4)
+			{
+				if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
+				shader_stack[total_shaders++] = multiply_alpha_frag;
+			}
+			break;
 
 // To do these operations, we need to copy the input buffer to a texture
 // and blend 2 textures in another shader
-			case TRANSFER_ADDITION:
-				enable_overlay_texture(command);
-				if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
-				shader_stack[total_shaders++] = blend_add_frag;
-				break;
-			case TRANSFER_SUBTRACT:
-				enable_overlay_texture(command);
-				if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
-				shader_stack[total_shaders++] = blend_subtract_frag;
-				break;
-			case TRANSFER_MULTIPLY:
-				enable_overlay_texture(command);
-				if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
-				shader_stack[total_shaders++] = blend_multiply_frag;
-				break;
-			case TRANSFER_MAX:
-				enable_overlay_texture(command);
-				if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
-				shader_stack[total_shaders++] = blend_max_frag;
-				break;
-			case TRANSFER_DIVIDE:
-				enable_overlay_texture(command);
-				if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
-				shader_stack[total_shaders++] = blend_divide_frag;
-				break;
+		case TRANSFER_ADDITION:
+			enable_overlay_texture(command);
+			if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
+			shader_stack[total_shaders++] = blend_add_frag;
+			break;
+		case TRANSFER_SUBTRACT:
+			enable_overlay_texture(command);
+			if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
+			shader_stack[total_shaders++] = blend_subtract_frag;
+			break;
+		case TRANSFER_MULTIPLY:
+			enable_overlay_texture(command);
+			if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
+			shader_stack[total_shaders++] = blend_multiply_frag;
+			break;
+		case TRANSFER_MAX:
+			enable_overlay_texture(command);
+			if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
+			shader_stack[total_shaders++] = blend_max_frag;
+			break;
+		case TRANSFER_DIVIDE:
+			enable_overlay_texture(command);
+			if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
+			shader_stack[total_shaders++] = blend_divide_frag;
+			break;
 		}
 
 		unsigned int frag_shader = 0;
@@ -968,7 +851,6 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 				0);
 
 			glUseProgram(frag_shader);
-
 
 // Set texture unit of the texture
 			glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
@@ -984,23 +866,6 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 			glUseProgram(0);
 
 
-
-
-
-
-// printf("Playback3D::overlay_sync %f %f %f %f %f %f %f %f\n",
-// command->in_x1,
-// command->in_y1,
-// command->in_x2,
-// command->in_y2,
-// command->out_x1,
-// command->out_y1,
-// command->out_x2,
-// command->out_y2);
-
-
-
-
 		command->input->draw_texture(command->in_x1, 
 			command->in_y1,
 			command->in_x2,
@@ -1011,9 +876,7 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 			command->out_y2,
 			1);
 
-
 		glUseProgram(0);
-
 
 // Delete temp texture
 		if(temp_texture)
@@ -1025,8 +888,6 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 		}
 		glActiveTexture(GL_TEXTURE0);
 		glDisable(GL_TEXTURE_2D);
-
-
 
 		window->unlock_window();
 	}
@@ -1063,7 +924,7 @@ void Playback3D::enable_overlay_texture(Playback3DCommand *command)
 
 void Playback3D::do_mask(Canvas *canvas,
 	VFrame *output, 
-	int64_t start_position_project,
+	framenum start_position_project,
 	MaskAutos *keyframe_set, 
 	MaskAuto *keyframe,
 	MaskAuto *default_auto)
@@ -1121,17 +982,17 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		
 		switch(command->frame->get_opengl_state())
 		{
-			case VFrame::RAM:
+		case VFrame::RAM:
 // Time to upload to the texture
-				command->frame->to_texture();
-				break;
+			command->frame->to_texture();
+			break;
 
-			case VFrame::SCREEN:
+		case VFrame::SCREEN:
 // Read back from PBuffer
 // Bind context to pbuffer
-				command->frame->enable_opengl();
-				command->frame->screen_to_texture();
-				break;
+			command->frame->enable_opengl();
+			command->frame->screen_to_texture();
+			break;
 		}
 
 
@@ -1164,7 +1025,6 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		
 // Draw mask with scaling to simulate feathering
 		GLUtesselator *tesselator = gluNewTess();
 		gluTessProperty(tesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
@@ -1180,8 +1040,8 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		int total_submasks = command->keyframe_set->total_submasks(
 			command->start_position_project);
 		float scale = command->keyframe->feather + 1;
- 		int display_list = glGenLists(1);
- 		glNewList(display_list, GL_COMPILE);
+		int display_list = glGenLists(1);
+		glNewList(display_list, GL_COMPILE);
 		for(int k = 0; k < total_submasks; k++)
 		{
 			gluTessBeginPolygon(tesselator, NULL);
@@ -1336,21 +1196,21 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		unsigned int frag_shader = 0;
 		switch(temp_texture->get_texture_components())
 		{
-			case 3: 
-				if(command->frame->get_color_model() == BC_YUV888)
-					frag_shader = VFrame::make_shader(0,
-						multiply_yuvmask3_frag,
-						0);
-				else
-					frag_shader = VFrame::make_shader(0,
-						multiply_mask3_frag,
-						0);
-				break;
-			case 4: 
+		case 3: 
+			if(command->frame->get_color_model() == BC_YUV888)
 				frag_shader = VFrame::make_shader(0,
-					multiply_mask4_frag,
+					multiply_yuvmask3_frag,
 					0);
-				break;
+			else
+				frag_shader = VFrame::make_shader(0,
+					multiply_mask3_frag,
+					0);
+			break;
+		case 4: 
+			frag_shader = VFrame::make_shader(0,
+				multiply_mask4_frag,
+				0);
+			break;
 		}
 
 		if(frag_shader)
@@ -1369,7 +1229,6 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 
 // Write texture to PBuffer with multiply and scaling for feather.
 
-		
 		command->frame->draw_texture(0, 0, w, h, 0, 0, w, h);
 		command->frame->set_opengl_state(VFrame::SCREEN);
 
@@ -1393,17 +1252,6 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 #endif
 }
 
-
-
-
-
-
-
-
-
-
-
-
 void Playback3D::do_fade(Canvas *canvas, VFrame *frame, float fade)
 {
 	Playback3DCommand command;
@@ -1426,16 +1274,16 @@ void Playback3D::do_fade_sync(Playback3DCommand *command)
 
 		switch(command->frame->get_opengl_state())
 		{
-			case VFrame::RAM:
-				command->frame->to_texture();
-				break;
+		case VFrame::RAM:
+			command->frame->to_texture();
+			break;
 
-			case VFrame::SCREEN:
+		case VFrame::SCREEN:
 // Read back from PBuffer
 // Bind context to pbuffer
-				command->frame->enable_opengl();
-				command->frame->screen_to_texture();
-				break;
+			command->frame->enable_opengl();
+			command->frame->screen_to_texture();
+			break;
 		}
 
 
@@ -1443,34 +1291,32 @@ void Playback3D::do_fade_sync(Playback3DCommand *command)
 		command->frame->init_screen();
 		command->frame->bind_texture(0);
 
-//		glClearColor(0.0, 0.0, 0.0, 0.0);
-//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDisable(GL_BLEND);
 		unsigned int frag_shader = 0;
 		switch(command->frame->get_color_model())
 		{
 // For the alpha colormodels, the native function seems to multiply the 
 // components by the alpha instead of just the alpha.
-			case BC_RGBA8888:
-			case BC_RGBA_FLOAT:
-			case BC_YUVA8888:
-				frag_shader = VFrame::make_shader(0,
-					fade_rgba_frag,
-					0);
-				break;
+		case BC_RGBA8888:
+		case BC_RGBA_FLOAT:
+		case BC_YUVA8888:
+			frag_shader = VFrame::make_shader(0,
+				fade_rgba_frag,
+				0);
+			break;
 
-			case BC_RGB888:
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ZERO);
-				glColor4f(command->alpha, command->alpha, command->alpha, 1);
-				break;
+		case BC_RGB888:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ZERO);
+			glColor4f(command->alpha, command->alpha, command->alpha, 1);
+			break;
 
 
-			case BC_YUV888:
-				frag_shader = VFrame::make_shader(0,
-					fade_yuv_frag,
-					0);
-				break;
+		case BC_YUV888:
+			frag_shader = VFrame::make_shader(0,
+				fade_yuv_frag,
+				0);
+			break;
 		}
 
 
@@ -1502,15 +1348,6 @@ void Playback3D::do_fade_sync(Playback3DCommand *command)
 }
 
 
-
-
-
-
-
-
-
-
-
 int Playback3D::run_plugin(Canvas *canvas, PluginClient *client)
 {
 	Playback3DCommand command;
@@ -1535,5 +1372,4 @@ void Playback3D::run_plugin_sync(Playback3DCommand *command)
 	}
 	command->canvas->unlock_canvas();
 }
-
 

@@ -100,10 +100,7 @@ private:
 
 	int jvideo_fd;
 	char *input_buffer, *frame_buffer, *output_buffer;
-	long frame_size, frame_allocated;
 	int input_error;
-//	quicktime_mjpeg_hdr jpeg_header;
-	long last_frame_no;
 	ArrayList<int> render_strategies;
 // Temporary frame for compressing output data
 	VFrame *temp_frame;

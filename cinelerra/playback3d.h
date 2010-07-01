@@ -26,6 +26,7 @@
 #include "bcpixmap.inc"
 #include "bcsynchronous.h"
 #include "bcwindowbase.inc"
+#include "datatype.h"
 #include "canvas.inc"
 #include "condition.inc"
 #include "maskauto.inc"
@@ -43,16 +44,16 @@
 // Macros for useful fragment shaders
 #define YUV_TO_RGB_FRAG(PIXEL) \
 	PIXEL ".gb -= vec2(0.5, 0.5);\n" \
- 	PIXEL ".rgb = mat3(\n" \
- 	"	 1, 	  1,		1, \n" \
- 	"	 0, 	  -0.34414, 1.77200, \n" \
- 	"	 1.40200, -0.71414, 0) * " PIXEL ".rgb;\n"
+	PIXEL ".rgb = mat3(\n" \
+	"	1,	 1,		1, \n" \
+	"	0, 	 -0.34414, 1.77200, \n" \
+	"	1.40200, -0.71414, 0) * " PIXEL ".rgb;\n"
 
 #define RGB_TO_YUV_FRAG(PIXEL) \
- 	PIXEL ".rgb = mat3(\n" \
- 	"	 0.29900, -0.16874, 0.50000, \n" \
- 	"	 0.58700, -0.33126, -0.41869, \n" \
- 	"	 0.11400, 0.50000,  -0.08131) * " PIXEL ".rgb;\n" \
+	PIXEL ".rgb = mat3(\n" \
+	"	0.29900, -0.16874, 0.50000, \n" \
+	"	0.58700, -0.33126, -0.41869, \n" \
+	"	0.11400, 0.50000,  -0.08131) * " PIXEL ".rgb;\n" \
 	PIXEL ".gb += vec2(0.5, 0.5);\n"
 
 #define RGB_TO_HSV_FRAG(PIXEL) \
@@ -69,24 +70,24 @@
 	"v = max;\n" \
 	"delta = max - min;\n" \
 	"if(max != 0.0 && delta != 0.0)\n" \
-    "{\n" \
-	"    s = delta / max;\n" \
+	"{\n" \
+	"	s = delta / max;\n" \
 	"	if(r == max)\n" \
-    "    	h = (g - b) / delta;\n" \
+	"		h = (g - b) / delta;\n" \
 	"	else \n" \
 	"	if(g == max)\n" \
-    "    	h = 2.0 + (b - r) / delta;\n" \
+	"		h = 2.0 + (b - r) / delta;\n" \
 	"	else\n" \
-    "    	h = 4.0 + (r - g) / delta;\n" \
+	"		h = 4.0 + (r - g) / delta;\n" \
 	"\n" \
 	"	h *= 60.0;\n" \
 	"	if(h < 0.0)\n" \
-    "    	h += 360.0;\n" \
+	"	h += 360.0;\n" \
 	"}\n" \
 	"else\n"  \
 	"{\n" \
-    "    s = 0.0;\n" \
-    "    h = -1.0;\n" \
+		"s = 0.0;\n" \
+	"	h = -1.0;\n" \
 	"}\n" \
 	"" PIXEL ".r = h;\n" \
 	"" PIXEL ".g = s;\n" \
@@ -95,7 +96,7 @@
 
 #define HSV_TO_RGB_FRAG(PIXEL) \
 	"{\n" \
-    "int i;\n" \
+	"int i;\n" \
 	"float r, g, b;\n" \
 	"float h, s, v;\n" \
 	"float min, max, delta;\n" \
@@ -103,60 +104,60 @@
 	"h = " PIXEL ".r;\n" \
 	"s = " PIXEL ".g;\n" \
 	"v = " PIXEL ".b;\n" \
-    "if(s == 0.0) \n" \
+	"if(s == 0.0) \n" \
 	"{\n" \
-    "    r = g = b = v;\n" \
-    "}\n" \
+		"r = g = b = v;\n" \
+	"}\n" \
 	"else\n" \
 	"{\n" \
-    "	h /= 60.0;\n" \
-    "	i = int(h);\n" \
-    "	f = h - float(i);\n" \
-    "	p = v * (1.0 - s);\n" \
-    "	q = v * (1.0 - s * f);\n" \
-    "	t = v * (1.0 - s * (1.0 - f));\n" \
+	"	h /= 60.0;\n" \
+	"	i = int(h);\n" \
+	"	f = h - float(i);\n" \
+	"	p = v * (1.0 - s);\n" \
+	"	q = v * (1.0 - s * f);\n" \
+	"	t = v * (1.0 - s * (1.0 - f));\n" \
 	"\n" \
-    "	if(i == 0)\n" \
+	"	if(i == 0)\n" \
 	"	{\n" \
-    "        	r = v;\n" \
-    "        	g = t;\n" \
-    "        	b = p;\n" \
-    "    }\n" \
+	"		r = v;\n" \
+	"		g = t;\n" \
+	"	b = p;\n" \
+		"}\n" \
 	"	else\n" \
 	"	if(i == 1)\n" \
 	"	{\n" \
-    "        	r = q;\n" \
-    "        	g = v;\n" \
-    "        	b = p;\n" \
-    "    }\n" \
+		"	r = q;\n" \
+		"	g = v;\n" \
+	"		b = p;\n" \
+	"	}\n" \
 	"	else\n" \
 	"	if(i == 2)\n" \
 	"	{\n" \
-    "        	r = p;\n" \
-    "        	g = v;\n" \
-    "        	b = t;\n" \
-    "   }\n" \
+	"		r = p;\n" \
+	"		g = v;\n" \
+	"		b = t;\n" \
+	"	}\n" \
 	"	else\n" \
 	"	if(i == 3)\n" \
 	"	{\n" \
-    "        	r = p;\n" \
-    "        	g = q;\n" \
-    "        	b = v;\n" \
-    "   }\n" \
+	"		r = p;\n" \
+	"		g = q;\n" \
+	"		b = v;\n" \
+	"	}\n" \
 	"	else\n" \
 	"	if(i == 4)\n" \
 	"	{\n" \
-    "        	r = t;\n" \
-    "        	g = p;\n" \
-    "        	b = v;\n" \
-    "    }\n" \
+	"		r = t;\n" \
+	"		g = p;\n" \
+	"		b = v;\n" \
+	"	}\n" \
 	"	else\n" \
 	"	if(i == 5)\n" \
 	"	{\n" \
-    "        	r = v;\n" \
-    "        	g = p;\n" \
-    "        	b = q;\n" \
-    "	}\n" \
+	"		r = v;\n" \
+	"		g = p;\n" \
+	"		b = q;\n" \
+	"	}\n" \
 	"}\n" \
 	"" PIXEL ".r = r;\n" \
 	"" PIXEL ".g = g;\n" \
@@ -199,13 +200,13 @@ public:
 	float out_x2;
 	float out_y2;
 // 0 - 1
-	float alpha;       
+	float alpha;
 	int mode;
 	int interpolation_type;
 	VFrame *input;
 	int want_texture;
 
-	int64_t start_position_project;
+	framenum start_position_project;
 	MaskAutos *keyframe_set;
 	MaskAuto *keyframe;
 	MaskAuto *default_auto;
@@ -250,7 +251,7 @@ public:
 
 	void do_mask(Canvas *canvas,
 		VFrame *output, 
-		int64_t start_position_project,
+		framenum start_position_project,
 		MaskAutos *keyframe_set, 
 		MaskAuto *keyframe,
 		MaskAuto *default_auto);
@@ -303,7 +304,6 @@ private:
 	void do_mask_sync(Playback3DCommand *command);
 	void run_plugin_sync(Playback3DCommand *command);
 	void do_camera_sync(Playback3DCommand *command);
-//	void draw_refresh_sync(Playback3DCommand *command);
 	void copy_from_sync(Playback3DCommand *command);
 
 // Print errors from shader compilation
@@ -318,8 +318,5 @@ private:
 	int canvas_w;
 	int canvas_h;
 };
-
-
-
 
 #endif

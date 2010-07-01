@@ -32,6 +32,7 @@
 #include "chantables.h"
 #include "clip.h"
 #include "file.h"
+#include "mainerror.h"
 #include "picture.h"
 #include "preferences.h"
 #include "quicktime.h"
@@ -82,7 +83,7 @@ int VDeviceV4L::open_input()
 
 	if((input_fd = open(device->in_config->v4l_in_device, O_RDWR)) < 0)
 	{
-		perror("VDeviceV4L::open_input");
+		errorbox("Can't open %s: %m", device->in_config->v4l_in_device);
 		return 1;
 	}
 	else
@@ -126,7 +127,7 @@ int VDeviceV4L::v4l_init()
 	input_fd = open(device->in_config->v4l_in_device, O_RDWR);
 
 	if(input_fd < 0)
-		perror("VDeviceV4L::v4l_init");
+		errorbox("Can't open %s: %m", device->in_config->v4l_in_device);
 	else
 	{
 		set_cloexec_flag(input_fd, 1);
@@ -229,9 +230,9 @@ int VDeviceV4L::v4l1_set_mute(int muted)
 {
 	struct video_audio audio;
 
-    if(ioctl(input_fd, VIDIOCGAUDIO, &audio))
-	if(ioctl(input_fd, VIDIOCGAUDIO, &audio) < 0)
-	    perror("VDeviceV4L::ioctl VIDIOCGAUDIO");
+	if(ioctl(input_fd, VIDIOCGAUDIO, &audio))
+		if(ioctl(input_fd, VIDIOCGAUDIO, &audio) < 0)
+			perror("VDeviceV4L::ioctl VIDIOCGAUDIO");
 
 	audio.volume = 65535;
 	audio.bass = 65535;
@@ -241,7 +242,7 @@ int VDeviceV4L::v4l1_set_mute(int muted)
 	else
 		audio.flags &= ~VIDEO_AUDIO_MUTE;
 
-    if(ioctl(input_fd, VIDIOCSAUDIO, &audio) < 0)
+	if(ioctl(input_fd, VIDIOCSAUDIO, &audio) < 0)
 		perror("VDeviceV4L::ioctl VIDIOCSAUDIO");
 	return 0;
 }
@@ -257,10 +258,6 @@ int VDeviceV4L::set_cloexec_flag(int desc, int value)
 		oldflags &= ~FD_CLOEXEC;
 	return fcntl(desc, F_SETFD, oldflags);
 }
-
-
-
-
 
 int VDeviceV4L::get_best_colormodel(Asset *asset)
 {
@@ -280,11 +277,6 @@ int VDeviceV4L::get_best_colormodel(Asset *asset)
 		v4l_init();
 		initialization_complete = 1;
 	}
-// printf("VDeviceV4L::get_best_colormodel %c%c%c%c\n", 
-// 	((char*)&device_colormodel)[0],
-// 	((char*)&device_colormodel)[1],
-// 	((char*)&device_colormodel)[2],
-// 	((char*)&device_colormodel)[3]);
 	return result;
 }
 
@@ -293,14 +285,25 @@ unsigned long VDeviceV4L::translate_colormodel(int colormodel)
 	unsigned long result = 0;
 	switch(colormodel)
 	{
-		case BC_YUV422:      result = VIDEO_PALETTE_YUV422;      break;
-		case BC_YUV420P:     result = VIDEO_PALETTE_YUV420P;     break;
-		case BC_YUV422P:     result = VIDEO_PALETTE_YUV422P;     break;
-		case BC_YUV411P:     result = VIDEO_PALETTE_YUV411P;     break;
-		case BC_RGB888:      result = VIDEO_PALETTE_RGB24;       break;
-		default: result = VIDEO_PALETTE_RGB24; break;
+	case BC_YUV422:
+		result = VIDEO_PALETTE_YUV422;
+		break;
+	case BC_YUV420P:
+		result = VIDEO_PALETTE_YUV420P;
+		break;
+	case BC_YUV422P:
+		result = VIDEO_PALETTE_YUV422P;
+		break;
+	case BC_YUV411P:
+		result = VIDEO_PALETTE_YUV411P;
+		break;
+	case BC_RGB888:
+		result = VIDEO_PALETTE_RGB24;
+		break;
+	default:
+		result = VIDEO_PALETTE_RGB24;
+		break;
 	}
-//printf("VDeviceV4L::translate_colormodel %d\n", result);
 	return result;
 }
 
@@ -315,10 +318,6 @@ int VDeviceV4L::v4l1_set_channel(Channel *channel)
 	struct video_tuner tuner_struct;
 	unsigned long new_freq;
 
-// Mute changed the input to TV
-//	set_mute(1);
-
-//printf("VDeviceV4L::v4l1_set_channel 1 %d\n", channel->input);
 // Read norm/input defaults
 	channel_struct.channel = channel->input;
 	if(ioctl(input_fd, VIDIOCGCHAN, &channel_struct) < 0)
@@ -349,7 +348,6 @@ int VDeviceV4L::v4l1_set_channel(Channel *channel)
 		if(ioctl(input_fd, VIDIOCSFREQ, &new_freq) < 0)
 			perror("VDeviceV4L::v4l1_set_channel VIDIOCSFREQ");
 	}
-//	set_mute(0);
 	return 0;
 }
 
@@ -357,9 +355,12 @@ int VDeviceV4L::v4l1_get_norm(int norm)
 {
 	switch(norm)
 	{
-		case NTSC:         return VIDEO_MODE_NTSC;         break;
-		case PAL:          return VIDEO_MODE_PAL;          break;
-		case SECAM:        return VIDEO_MODE_SECAM;        break;
+	case NTSC:
+		return VIDEO_MODE_NTSC;
+	case PAL:
+		return VIDEO_MODE_PAL;
+	case SECAM:
+		return VIDEO_MODE_SECAM;
 	}
 	return 0;
 }
@@ -412,10 +413,8 @@ int VDeviceV4L::capture_frame(int capture_frame_number)
 
 int VDeviceV4L::wait_v4l_frame()
 {
-//printf("VDeviceV4L::wait_v4l_frame 1 %d\n", capture_frame_number);
 	if(ioctl(input_fd, VIDIOCSYNC, &capture_frame_number))
 		perror("VDeviceV4L::wait_v4l_frame VIDIOCSYNC");
-//printf("VDeviceV4L::wait_v4l_frame 2 %d\n", capture_frame_number);
 	return 0;
 }
 
@@ -439,59 +438,58 @@ int VDeviceV4L::frame_to_vframe(VFrame *frame, unsigned char *input)
 
 	width = MIN(inwidth, frame->get_w());
 	height = MIN(inheight, frame->get_h());
-//printf("VDeviceV4L::frame_to_vframe %d %d\n", colormodel, frame->get_color_model());
 
 	if(frame->get_color_model() == colormodel)
 	{
 		switch(frame->get_color_model())
 		{
-			case BC_RGB888:
+		case BC_RGB888:
+		{
+			unsigned char *row_in;
+			unsigned char *row_out_start, *row_out_end;
+			int bytes_per_inrow = inwidth * 3;
+			int bytes_per_outrow = frame->get_bytes_per_line();
+			unsigned char **rows_out = frame->get_rows();
+
+			for(int i = 0; i < frame->get_h(); i++)
 			{
-				unsigned char *row_in;
-				unsigned char *row_out_start, *row_out_end;
-				int bytes_per_inrow = inwidth * 3;
-				int bytes_per_outrow = frame->get_bytes_per_line();
-				unsigned char **rows_out = frame->get_rows();
+				row_in = input + bytes_per_inrow * i;
+				row_out_start = rows_out[i];
+				row_out_end = row_out_start + 
+					MIN(bytes_per_outrow, bytes_per_inrow);
 
-				for(int i = 0; i < frame->get_h(); i++)
+				while(row_out_start < row_out_end)
 				{
-					row_in = input + bytes_per_inrow * i;
-					row_out_start = rows_out[i];
-					row_out_end = row_out_start + 
-						MIN(bytes_per_outrow, bytes_per_inrow);
-
-					while(row_out_start < row_out_end)
-					{
-						*row_out_start++ = row_in[2];
-						*row_out_start++ = row_in[1];
-						*row_out_start++ = row_in[0];
-						row_in += 3;
-					}
+					*row_out_start++ = row_in[2];
+					*row_out_start++ = row_in[1];
+					*row_out_start++ = row_in[0];
+					row_in += 3;
 				}
-				break;
 			}
+			break;
+		}
 
-			case BC_YUV420P:
-			case BC_YUV411P:
-				memcpy(frame->get_y(), input, width * height);
-				memcpy(frame->get_u(), input + width * height, width * height / 4);
-				memcpy(frame->get_v(), input + width * height + width * height / 4, width * height / 4);
-				break;
+		case BC_YUV420P:
+		case BC_YUV411P:
+			memcpy(frame->get_y(), input, width * height);
+			memcpy(frame->get_u(), input + width * height, width * height / 4);
+			memcpy(frame->get_v(), input + width * height + width * height / 4, width * height / 4);
+			break;
 
-			case BC_YUV422P:
-				memcpy(frame->get_y(), input, width * height);
-				memcpy(frame->get_u(), input + width * height, width * height / 2);
-				memcpy(frame->get_v(), input + width * height + width * height / 2, width * height / 2);
-				break;
+		case BC_YUV422P:
+			memcpy(frame->get_y(), input, width * height);
+			memcpy(frame->get_u(), input + width * height, width * height / 2);
+			memcpy(frame->get_v(), input + width * height + width * height / 2, width * height / 2);
+			break;
 
-			case BC_YUV422:
-				memcpy(frame->get_data(), 
-					input, 
-					VFrame::calculate_data_size(width, 
-						height, 
-						-1, 
-						frame->get_color_model()));
-				break;
+		case BC_YUV422:
+			memcpy(frame->get_data(), 
+				input, 
+				VFrame::calculate_data_size(width, 
+					height, 
+					-1, 
+					frame->get_color_model()));
+			break;
 		}
 	}
 	else
@@ -565,14 +563,3 @@ SET_TRACE
 
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -83,7 +83,7 @@ public:
 
 // Hardware version of MaskEngine
 	void do_mask(VFrame *output_temp, 
-		int64_t start_position_project,
+		framenum start_position_project,
 		MaskAutos *keyframe_set, 
 		MaskAuto *keyframe,
 		MaskAuto *default_auto);
@@ -132,14 +132,13 @@ private:
 	int get_best_colormodel(int colormodel);
 
 // Bitmap to be written to device
-	BC_Bitmap *bitmap;        
+	BC_Bitmap *bitmap;
 // Wrapper for bitmap or intermediate buffer for user to write to
-	VFrame *output_frame;     
+	VFrame *output_frame;
 // Type of output_frame
-	int bitmap_type;           
+	int bitmap_type;
 // dimensions of buffers written to window
-	int bitmap_w, bitmap_h;   
-	ArrayList<int> render_strategies;
+	int bitmap_w, bitmap_h;
 // Canvas for output
 	Canvas *output;
 // Parameters the output texture conforms to, for OpenGL

@@ -43,8 +43,6 @@ public:
 	virtual int write_buffer(VFrame *output, EDL *edl) { return 1; };
 	virtual void new_output_buffer(VFrame **output, int colormodel) {};
 	virtual ArrayList<int>* get_render_strategies() { return 0; };
-	virtual int get_shared_data(unsigned char *data, long size) { return 0; };
-	virtual int stop_sharing() { return 0; };
 	virtual int interrupt_crash() { return 0; };
 // Extra work must sometimes be done in here to set up the device.
 	virtual int get_best_colormodel(Asset *asset);

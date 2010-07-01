@@ -623,7 +623,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vdevicebase.h \
 		 vdevicebuz.h \
 		 vdevicedvb.h \
-		 vdevicelml.h \
 		 vdeviceprefs.h \
 		 vdevicev4l.h \
 		 vdevicev4l2.h \

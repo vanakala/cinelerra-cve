@@ -29,6 +29,7 @@
 #include "clip.h"
 #include "condition.h"
 #include "file.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "picture.h"
 #include "preferences.h"
@@ -266,27 +267,6 @@ void VDeviceV4L2Thread::run()
 		if(ioctl(input_fd, VIDIOC_QUERYCAP, &cap))
 			perror("VDeviceV4L2Thread::run VIDIOC_QUERYCAP");
 
-// printf("VDeviceV4L2Thread::run input_fd=%d driver=%s card=%s bus_info=%s version=%d\n",
-// input_fd,
-// cap.driver,
-// cap.card,
-// cap.bus_info,
-// cap.version);
-// printf("    %s%s%s%s%s%s%s%s%s%s%s%s\n", 
-// (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) ? "V4L2_CAP_VIDEO_CAPTURE " : "",
-// (cap.capabilities & V4L2_CAP_VIDEO_OUTPUT) ? "V4L2_CAP_VIDEO_OUTPUT " : "",
-// (cap.capabilities & V4L2_CAP_VIDEO_OVERLAY) ? "V4L2_CAP_VIDEO_OVERLAY " : "",
-// (cap.capabilities & V4L2_CAP_VBI_CAPTURE) ? "V4L2_CAP_VBI_CAPTURE " : "",
-// (cap.capabilities & V4L2_CAP_VBI_OUTPUT) ? "V4L2_CAP_VBI_OUTPUT " : "",
-// (cap.capabilities & V4L2_CAP_RDS_CAPTURE) ? "V4L2_CAP_RDS_CAPTURE " : "",
-// (cap.capabilities & V4L2_CAP_TUNER) ? "V4L2_CAP_TUNER " : "",
-// (cap.capabilities & V4L2_CAP_AUDIO) ? "V4L2_CAP_AUDIO " : "",
-// (cap.capabilities & V4L2_CAP_RADIO) ? "V4L2_CAP_RADIO " : "",
-// (cap.capabilities & V4L2_CAP_READWRITE) ? "V4L2_CAP_READWRITE " : "",
-// (cap.capabilities & V4L2_CAP_ASYNCIO) ? "V4L2_CAP_ASYNCIO " : "",
-// (cap.capabilities & V4L2_CAP_STREAMING) ? "V4L2_CAP_STREAMING " : "");
-
-
 // Set up frame rate
 		struct v4l2_streamparm v4l2_parm;
 		v4l2_parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -357,8 +337,6 @@ void VDeviceV4L2Thread::run()
 		}
 
 
-
-
 // Set picture controls.  This driver requires the values to be set once to default
 // values and then again to different values before it takes up the values.
 // Unfortunately VIDIOC_S_CTRL resets the audio to mono in 2.6.7.
@@ -411,9 +389,6 @@ void VDeviceV4L2Thread::run()
 		if(ioctl(input_fd, VIDIOC_G_TUNER, &tuner) < 0)
 			perror("VDeviceV4L2Thread::run VIDIOC_G_INPUT");
 
-// printf("VDeviceV4L2Thread::run audmode=%d rxsubchans=%d\n",
-// tuner.audmode,
-// tuner.rxsubchans);
 		if(device_channel)
 		{
 			tuner.index = device_channel->device_index;
@@ -433,25 +408,26 @@ void VDeviceV4L2Thread::run()
 			perror("VDeviceV4L2Thread::run VIDIOC_S_INPUT");
 
 
-
-
-
-
-
-
 // Set norm
 		v4l2_std_id std_id;
 		switch(device->channel->norm)
 		{
-			case NTSC: std_id = V4L2_STD_NTSC; break;
-			case PAL: std_id = V4L2_STD_PAL; break;
-			case SECAM: std_id = V4L2_STD_SECAM; break;
-			default: std_id = V4L2_STD_NTSC_M; break;
+		case NTSC:
+			std_id = V4L2_STD_NTSC;
+			break;
+		case PAL: 
+			std_id = V4L2_STD_PAL;
+			break;
+		case SECAM: 
+			std_id = V4L2_STD_SECAM;
+			break;
+		default:
+			std_id = V4L2_STD_NTSC_M; 
+			break;
 		}
 
 		if(ioctl(input_fd, VIDIOC_S_STD, &std_id))
 			perror("VDeviceV4L2Thread::run VIDIOC_S_STD");
-
 
 		if(cap.capabilities & V4L2_CAP_TUNER)
 		{
@@ -464,10 +440,6 @@ void VDeviceV4L2Thread::run()
 			frequency.frequency = (int)(chanlists[
 				device->channel->freqtable].list[
 					device->channel->entry].freq * 0.016);
-// printf("VDeviceV4L2Thread::run tuner=%d freq=%d norm=%d\n",
-// device->channel->tuner,
-// frequency.frequency,
-// device->channel->norm);
 			if(ioctl(input_fd, VIDIOC_S_FREQUENCY, &frequency) < 0)
 				perror("VDeviceV4L2Thread::run VIDIOC_S_FREQUENCY");
 		}
@@ -489,7 +461,6 @@ void VDeviceV4L2Thread::run()
 		Thread::disable_cancel();
 		struct v4l2_requestbuffers requestbuffers;
 
-printf("VDeviceV4L2Thread::run requested %d buffers\n", total_buffers);
 		requestbuffers.count = total_buffers;
 		requestbuffers.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		requestbuffers.memory = V4L2_MEMORY_MMAP;
@@ -503,7 +474,6 @@ printf("VDeviceV4L2Thread::run requested %d buffers\n", total_buffers);
 // The requestbuffers.count changes in the 2.6.5 version of the API
 			allocate_buffers(requestbuffers.count);
 
-printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 			for(int i = 0; i < total_buffers; i++)
 			{
 				struct v4l2_buffer buffer;
@@ -544,19 +514,18 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 
 					switch(color_model)
 					{
-						case BC_YUV422P:
-							u_offset = device->in_config->w * device->in_config->h;
-							v_offset = device->in_config->w * device->in_config->h + device->in_config->w * device->in_config->h / 2;
-							break;
-						case BC_YUV420P:
-						case BC_YUV411P:
+					case BC_YUV422P:
+						u_offset = device->in_config->w * device->in_config->h;
+						v_offset = device->in_config->w * device->in_config->h + device->in_config->w * device->in_config->h / 2;
+						break;
+					case BC_YUV420P:
+					case BC_YUV411P:
 // In 2.6.7, the v and u are inverted for 420 but not 422
-							v_offset = device->in_config->w * device->in_config->h;
-							u_offset = device->in_config->w * device->in_config->h + device->in_config->w * device->in_config->h / 4;
-							break;
+						v_offset = device->in_config->w * device->in_config->h;
+						u_offset = device->in_config->w * device->in_config->h + device->in_config->w * device->in_config->h / 4;
+						break;
 					}
 
-//printf("VDeviceV4L2Thread::run color_model=%d\n", color_model);
 					frame->reallocate(data,
 						y_offset,
 						u_offset,
@@ -654,7 +623,6 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 				usleep(33000);
 			}
 		}
-//printf("VDeviceV4L2::run 100 %lld\n", timer.get_difference());
 	}
 }
 
@@ -705,20 +673,6 @@ void VDeviceV4L2Thread::put_buffer()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 VDeviceV4L2::VDeviceV4L2(VideoDevice *device)
  : VDeviceBase(device)
 {
@@ -756,10 +710,9 @@ int VDeviceV4L2::open_input()
 }
 
 int VDeviceV4L2::get_sources(VideoDevice *device,
-	char *path)
+	const char *path)
 {
 	int input_fd = -1;
-
 
 	device->channel->use_norm = 1;
 	device->channel->use_input = 1;
@@ -770,7 +723,7 @@ int VDeviceV4L2::get_sources(VideoDevice *device,
 
 	if((input_fd = open(path, O_RDWR)) < 0)
 	{
-		printf("VDeviceV4L2::open_input %s: %s\n", path, strerror(errno));
+		errorbox("Can't open %s: %s\n", path, strerror(errno));
 		return 1;
 	}
 	else
@@ -837,21 +790,17 @@ int VDeviceV4L2::cmodel_to_device(int color_model)
 {
 	switch(color_model)
 	{
-		case BC_YUV422:
-			return V4L2_PIX_FMT_YUYV;
-			break;
-		case BC_YUV411P:
-			return V4L2_PIX_FMT_Y41P;
-			break;
-		case BC_YUV420P:
-			return V4L2_PIX_FMT_YVU420;
-			break;
-		case BC_YUV422P:
-			return V4L2_PIX_FMT_YUV422P;
-			break;
-		case BC_RGB888:
-			return V4L2_PIX_FMT_RGB24;
-			break;
+	case BC_YUV422:
+		return V4L2_PIX_FMT_YUYV;
+	case BC_YUV411P:
+		return V4L2_PIX_FMT_Y41P;
+	case BC_YUV420P:
+		return V4L2_PIX_FMT_YVU420;
+	case BC_YUV422P:
+		return V4L2_PIX_FMT_YUV422P;
+	case BC_RGB888:
+		return V4L2_PIX_FMT_RGB24;
+		break;
 	}
 	return 0;
 }
