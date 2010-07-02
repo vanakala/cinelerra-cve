@@ -431,11 +431,6 @@ int Asset::test_path(const char *path)
 		return 0;
 }
 
-/* Pole
-int Asset::test_plugin_title(const char *path)
-{
-}
-	*/
 int Asset::read(FileXML *file, 
 	int expand_relative)
 {

@@ -25,7 +25,6 @@
 #include "file.h"
 #include "filejpeg.h"
 #include "interlacemodes.h"
-#include "jpegwrapper.h"
 #include "language.h"
 #include "libmjpeg.h"
 #include "mwindow.inc"
@@ -33,7 +32,9 @@
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
-
+extern "C" {
+#include <jpeglib.h>
+}
 
 FileJPEG::FileJPEG(Asset *asset, File *file)
  : FileList(asset, file, "JPEGLIST", ".jpg", FILE_JPEG, FILE_JPEG_LIST)

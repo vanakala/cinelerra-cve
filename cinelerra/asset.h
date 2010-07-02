@@ -99,9 +99,6 @@ public:
 	int operator==(Asset &asset);
 	int operator!=(Asset &asset);
 	int test_path(const char *path);
-/* Pole
-	int test_plugin_title(const char *path);
-	*/
 	int read(FileXML *file, int expand_relative = 1);
 	int read_audio(FileXML *xml);
 	int read_video(FileXML *xml);

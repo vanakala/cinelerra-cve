@@ -25,8 +25,10 @@
 #include "file.inc"
 #include "filebase.h"
 #include "filelist.h"
-#include "jpegwrapper.h"
 #include "vframe.inc"
+extern "C" {
+#include <jpeglib.h>
+}
 
 class FileJPEGList : public FileList
 {

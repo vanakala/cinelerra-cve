@@ -236,8 +236,8 @@ int YUVStream::seek_frame(framenum frame_number)
 	if (frame_number > frame_count ||
 		frame_number < 0 || frame_index == 0) 
 	{
-		errormsg("seek_frame(%d) failed (frame_count=%lld)\n", 
-		       frame_number, frame_count);
+		errormsg("seek_frame(%d) failed (frame_count=%d)",
+			frame_number, frame_count);
 		return 1;
 	}
 
