@@ -25,9 +25,6 @@
 #include "guicast.h"
 #include "libmjpeg.h"
 #include "mwindow.inc"
-/* Pole
-#include "jpegwrapper.h"
-	*/
 #include "quicktime.h"
 #include "vframe.h"
 

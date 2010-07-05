@@ -72,35 +72,47 @@ AudioConfig& AudioConfig::operator=(AudioConfig &that)
 
 int AudioConfig::load_defaults(BC_Hash *defaults)
 {
-	audio_in_driver =             defaults->get("AUDIOINDRIVER", AUDIO_OSS);
-	afirewire_in_port =           defaults->get("AFIREWIRE_IN_PORT", 0);
-	afirewire_in_channel =        defaults->get("AFIREWIRE_IN_CHANNEL", 63);
-	sprintf(oss_in_device, "/dev/dsp");
-	                              defaults->get("OSS_IN_DEVICE", oss_in_device);
-	oss_in_channels =             defaults->get("OSS_IN_CHANNELS", 2);
-	oss_in_bits =                 defaults->get("OSS_IN_BITS", 16);
-	sprintf(esound_in_server, "");
-	                              defaults->get("ESOUND_IN_SERVER", esound_in_server);
-	esound_in_port =              defaults->get("ESOUND_IN_PORT", 0);
+	audio_in_driver = defaults->get("AUDIOINDRIVER", AUDIO_OSS);
+	afirewire_in_port = defaults->get("AFIREWIRE_IN_PORT", 0);
+	afirewire_in_channel =  defaults->get("AFIREWIRE_IN_CHANNEL", 63);
 
-	audio_out_driver =  		  defaults->get("AUDIO_OUT_DRIVER", AUDIO_OSS);
-	audio_duplex_driver =		  defaults->get("AUDIO_DUPLEX_DRIVER", AUDIO_OSS);
-	sprintf(oss_out_device, "/dev/dsp");
-	                              defaults->get("OSS_OUT_DEVICE", oss_out_device);
-	oss_out_channels =  		  defaults->get("OUT_CHANNELS", 2);
-	oss_out_bits =                defaults->get("OUT_BITS", 16);
-	sprintf(esound_out_server, "");
-	                              defaults->get("ESOUND_OUT_SERVER", esound_out_server);
-	esound_out_port =             defaults->get("ESOUND_OUT_PORT", 0);
+	strcpy(oss_in_device, "/dev/dsp");
+	defaults->get("OSS_IN_DEVICE", oss_in_device);
 
-	audio_duplex_driver =         defaults->get("AUDIO_DUPLEX_DRIVER", AUDIO_OSS);
-	sprintf(oss_duplex_device, "/dev/dsp");
-	                              defaults->get("OSS_DUPLEX_DEVICE", oss_duplex_device);
-	oss_duplex_channels =         defaults->get("DUPLEX_CHANNELS", 2);
-	oss_duplex_bits =             defaults->get("DUPLEX_BITS", 16);
-	sprintf(esound_duplex_server, "");
-	                              defaults->get("ESOUND_DUPLEX_SERVER", esound_duplex_server);
-	esound_duplex_port =          defaults->get("ESOUND_DUPLEX_PORT", 0);
+	oss_in_channels = defaults->get("OSS_IN_CHANNELS", 2);
+	oss_in_bits = defaults->get("OSS_IN_BITS", 16);
+
+	esound_in_server[0] = 0;
+	defaults->get("ESOUND_IN_SERVER", esound_in_server);
+
+	esound_in_port = defaults->get("ESOUND_IN_PORT", 0);
+
+	audio_out_driver = defaults->get("AUDIO_OUT_DRIVER", AUDIO_OSS);
+	audio_duplex_driver =  defaults->get("AUDIO_DUPLEX_DRIVER", AUDIO_OSS);
+
+	strcpy(oss_out_device, "/dev/dsp");
+	defaults->get("OSS_OUT_DEVICE", oss_out_device);
+
+	oss_out_channels = defaults->get("OUT_CHANNELS", 2);
+	oss_out_bits =  defaults->get("OUT_BITS", 16);
+
+	esound_out_server[0] = 0;
+	defaults->get("ESOUND_OUT_SERVER", esound_out_server);
+
+	esound_out_port = defaults->get("ESOUND_OUT_PORT", 0);
+
+	audio_duplex_driver = defaults->get("AUDIO_DUPLEX_DRIVER", AUDIO_OSS);
+
+	strcpy(oss_duplex_device, "/dev/dsp");
+	defaults->get("OSS_DUPLEX_DEVICE", oss_duplex_device);
+
+	oss_duplex_channels = defaults->get("DUPLEX_CHANNELS", 2);
+	oss_duplex_bits = defaults->get("DUPLEX_BITS", 16);
+
+	esound_duplex_server[0] = 0;
+	defaults->get("ESOUND_DUPLEX_SERVER", esound_duplex_server);
+
+	esound_duplex_port = defaults->get("ESOUND_DUPLEX_PORT", 0);
 	return 0;
 }
 

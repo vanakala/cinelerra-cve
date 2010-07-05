@@ -26,6 +26,7 @@
 #include "audiodevice.h"
 #include "condition.h"
 #include "iec61883output.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "playbackconfig.h"
 #include "bctimer.h"
@@ -39,8 +40,6 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <sys/utsname.h>
-
-
 
 
 
@@ -148,8 +147,6 @@ static int read_frame_static(unsigned char *data, int n, unsigned int dropped, v
 
 
 
-
-
 int IEC61883Output::open(int port,
 	int channel,
 	int length,
@@ -166,8 +163,6 @@ int IEC61883Output::open(int port,
 
 // Set PAL mode based on frame height
 	if(vdevice) is_pal = (vdevice->out_h == 576);
-
-
 
 
 	if(!handle)
@@ -251,12 +246,6 @@ int IEC61883Output::read_frame(unsigned char *data, int n, unsigned int dropped)
 		}
 
 
-
-
-
-
-
-
 // Calculate number of samples needed based on given pattern for 
 // norm.
 		int samples_per_frame = 2048;
@@ -280,15 +269,11 @@ int IEC61883Output::read_frame(unsigned char *data, int n, unsigned int dropped)
 			audio_position += samples_written;
 			position_lock->unlock();
 
-
 			audio_lock->unlock();
 		}
 
-
 		buffer_lock->unlock();
 	}
-
-
 
 
 // Write next chunk of current frame
@@ -330,8 +315,6 @@ void IEC61883Output::write_frame(VFrame *input)
 {
 	VFrame *ptr = 0;
 	int result = 0;
-
-//printf("IEC61883Output::write_frame 1\n");
 
 	if(fd <= 0) return;
 	if(interrupted) return;
@@ -411,22 +394,11 @@ void IEC61883Output::write_frame(VFrame *input)
 				BC_YUV422,
 				norm);
 
-
-
 			ptr = temp_frame;
 		}
 	}
 	else
 		ptr = input;
-
-
-
-
-
-
-
-
-
 
 
 // Take over buffer table
@@ -439,8 +411,6 @@ void IEC61883Output::write_frame(VFrame *input)
 		result = video_lock->timed_lock(BUFFER_TIMEOUT);
 		buffer_lock->lock("IEC61883Output::write_frame 2");
 	}
-
-
 
 // Write buffer if there's room
 	if(!buffer_valid[current_inbuffer])
@@ -462,12 +432,10 @@ void IEC61883Output::write_frame(VFrame *input)
 
 	buffer_lock->unlock();
 	start_lock->unlock();
-//printf("IEC61883Output::write_frame 100\n");
 }
 
 void IEC61883Output::write_samples(char *data, int samples)
 {
-//printf("IEC61883Output::write_samples 1\n");
 	int result = 0;
 	int timeout = (int64_t)samples * 
 		(int64_t)1000000 * 
@@ -475,18 +443,15 @@ void IEC61883Output::write_samples(char *data, int samples)
 		(int64_t)samplerate;
 	if(interrupted) return;
 
-//printf("IEC61883Output::write_samples 2\n");
-
 // Check for maximum sample count exceeded
 	if(samples > OUTPUT_SAMPLES)
 	{
-		printf("IEC61883Output::write_samples samples=%d > OUTPUT_SAMPLES=%d\n",
+		errorbox("Too many output samples=%d > OUTPUT_SAMPLES=%d",
 			samples,
 			OUTPUT_SAMPLES);
 		return;
 	}
 
-//printf("IEC61883Output::write_samples 3\n");
 // Take over buffer table
 	buffer_lock->lock("IEC61883Output::write_samples 1");
 // Wait for buffer to become available with timeout
@@ -499,7 +464,6 @@ void IEC61883Output::write_samples(char *data, int samples)
 
 	if(!interrupted && audio_samples <= OUTPUT_SAMPLES - samples)
 	{
-//printf("IEC61883Output::write_samples 4 %d\n", audio_samples);
 		memcpy(audio_buffer + audio_samples * channels * bits / 8,
 			data,
 			samples * channels * bits / 8);
@@ -507,7 +471,6 @@ void IEC61883Output::write_samples(char *data, int samples)
 	}
 	buffer_lock->unlock();
 	start_lock->unlock();
-//printf("IEC61883Output::write_samples 100\n");
 }
 
 long IEC61883Output::get_audio_position()
@@ -527,11 +490,6 @@ void IEC61883Output::interrupt()
 // Playback should stop when the object is deleted.
 }
 
-void IEC61883Output::flush()
-{
-	
-}
-
 void IEC61883Output::increment_counter(int *counter)
 {
 	(*counter)++;
@@ -543,16 +501,6 @@ void IEC61883Output::decrement_counter(int *counter)
 	(*counter)--;
 	if(*counter < 0) *counter = total_buffers - 1;
 }
-
-
-
-
-
-
-
-
-
-
 
 #endif // HAVE_FIREWIRE
 

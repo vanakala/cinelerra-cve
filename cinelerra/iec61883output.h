@@ -68,9 +68,6 @@ public:
 	void write_samples(char *data, int samples);
 	long get_audio_position();
 	void interrupt();
-	void flush();
-
-
 
 	void increment_counter(int *counter);
 	void decrement_counter(int *counter);
@@ -107,23 +104,20 @@ public:
 	raw1394handle_t handle;
 	iec61883_dv_t frame;
 // Must break up each frame into 480 byte chunks again.
- 	char *out_buffer;
-  	int out_size;
+	char *out_buffer;
+	int out_size;
 	int out_position;
 
 
-	
-	
-	
 	VFrame *temp_frame, *temp_frame2;
 // Encoder for making DV frames
 	dv_t *audio_encoder;
 	dv_t *video_encoder;
 	unsigned char *output_buffer;
 	int output_number;
-    unsigned int packet_sizes[321];
-    unsigned char  continuity_counter;
-    int unused_buffers;
+	unsigned int packet_sizes[321];
+	unsigned char  continuity_counter;
+	int unused_buffers;
 	int avc_id;
 	int channels;
 	int samplerate;
@@ -135,18 +129,8 @@ public:
 	int is_pal;
 	VideoDevice *vdevice;
 	AudioDevice *adevice;
-
-
-
 };
 
-
-
-
 #endif
-
-
-
-
 
 #endif

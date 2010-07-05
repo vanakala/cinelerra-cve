@@ -26,6 +26,7 @@
 #include "audiodevice.h"
 #include "condition.h"
 #include "device1394output.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "playbackconfig.h"
 #include "bctimer.h"
@@ -103,41 +104,39 @@ Device1394Output::~Device1394Output()
 
 		if(get_dv1394())
 		{
-  			if(ioctl(output_fd, DV1394_IOC_WAIT_FRAMES, status.init.n_frames - 1) < 0)
-  			{
-  				fprintf(stderr,
-  					"Device1394Output::close_all: DV1394_WAIT_FRAMES %i: %s",
-  					output_mmap.nb_buffers,
-  					strerror(errno));
-  			}
-  			munmap(output_buffer, status.init.n_frames *
+			if(ioctl(output_fd, DV1394_IOC_WAIT_FRAMES, status.init.n_frames - 1) < 0)
+			{
+				fprintf(stderr,
+					"Device1394Output::close_all: DV1394_WAIT_FRAMES %i: %s",
+					output_mmap.nb_buffers,
+					strerror(errno));
+			}
+			munmap(output_buffer, status.init.n_frames *
 				(is_pal ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE));
-  			if(ioctl(output_fd, DV1394_IOC_SHUTDOWN, NULL) < 0)
-  			{
-  				perror("Device1394Output::close_all: DV1394_SHUTDOWN");
-  			}
+			if(ioctl(output_fd, DV1394_IOC_SHUTDOWN, NULL) < 0)
+			{
+				perror("Device1394Output::close_all: DV1394_SHUTDOWN");
+			}
 		}
 		else
 		{
-        	if(ioctl(output_fd, video1394_talk_wait_buffer, &output_queue) < 0) 
+			if(ioctl(output_fd, video1394_talk_wait_buffer, &output_queue) < 0) 
 			{
 				fprintf(stderr, 
 					"Device1394::close_all: VIDEO1394_TALK_WAIT_BUFFER %d: %s",
 					output_queue.buffer,
 					strerror(errno));
-        	}
-        	munmap(output_buffer, output_mmap.nb_buffers * output_mmap.buf_size);
+			}
+			munmap(output_buffer, output_mmap.nb_buffers * output_mmap.buf_size);
 
-        	if(ioctl(output_fd, video1394_untalk_channel, &output_mmap.channel) < 0)
+			if(ioctl(output_fd, video1394_untalk_channel, &output_mmap.channel) < 0)
 			{
-            	perror("Device1394::close_all: VIDEO1394_UNTALK_CHANNEL");
-        	}
+				perror("Device1394::close_all: VIDEO1394_UNTALK_CHANNEL");
+			}
 		}
 
-        close(output_fd);
+		close(output_fd);
 
-//		if(avc_handle)
-//			raw1394_destroy_handle(avc_handle);
 	}
 
 	if(temp_frame) delete temp_frame;
@@ -168,7 +167,6 @@ void Device1394Output::reset()
 	audio_buffer = 0;
 	audio_samples = 0;
 	output_fd = -1;
-//	avc_handle = 0;
 	temp_frame = 0;
 	temp_frame2 = 0;
 	audio_position = 0;
@@ -211,97 +209,92 @@ int Device1394Output::open(char *path,
 // Set PAL mode based on frame height
 	if(vdevice) is_pal = (vdevice->out_h == 576);
 
-    struct dv1394_init setup = 
+	struct dv1394_init setup = 
 	{
-       api_version: DV1394_API_VERSION,
-       channel:     channel,
-  	   n_frames:    length,
-       format:      is_pal ? DV1394_PAL : DV1394_NTSC,
-       cip_n:       0,
-       cip_d:       0,
-       syt_offset:  syt
-    };
+		api_version: DV1394_API_VERSION,
+		channel:     channel,
+		n_frames:    length,
+		format:      is_pal ? DV1394_PAL : DV1394_NTSC,
+		cip_n:       0,
+		cip_d:       0,
+		syt_offset:  syt
+	};
 
-	
-
-//printf("Device1394::open_output 2 %s %d %d %d %d\n", path, port, channel, length, syt);
 	if(output_fd < 0)
 	{
-    	output_fd = ::open(path, O_RDWR);
+		output_fd = ::open(path, O_RDWR);
 
 		if(output_fd <= 0)
 		{
-			fprintf(stderr, 
-				"Device1394Output::open path=%s: %s\n", 
-				path,
-				strerror(errno));
+			errorbox("1394 failed to open output path=%s: %s\n", path,
+					strerror(errno));
 			return 1;
 		}
 		else
 		{
-        	output_mmap.channel = channel;
-        	output_queue.channel = channel;
-        	output_mmap.sync_tag = 0;
-        	output_mmap.nb_buffers = total_buffers;
-        	output_mmap.buf_size = 320 * 512;
-        	output_mmap.packet_size = 512;
+			output_mmap.channel = channel;
+			output_queue.channel = channel;
+			output_mmap.sync_tag = 0;
+			output_mmap.nb_buffers = total_buffers;
+			output_mmap.buf_size = 320 * 512;
+			output_mmap.packet_size = 512;
 // Shouldn't this be handled by the video1394 driver?
 // dvgrab originally used 19000
 // JVC DVL300 -> 30000
-        	output_mmap.syt_offset = syt;
-        	output_mmap.flags = VIDEO1394_VARIABLE_PACKET_SIZE;
+			output_mmap.syt_offset = syt;
+			output_mmap.flags = VIDEO1394_VARIABLE_PACKET_SIZE;
 
 
 
 			if(get_dv1394())
 			{
-  				if(ioctl(output_fd, DV1394_IOC_INIT, &setup) < 0)
-  				{
-  					perror("Device1394Output::open DV1394_INIT");
-  				}
+				if(ioctl(output_fd, DV1394_IOC_INIT, &setup) < 0)
+				{
+					perror("Device1394Output::open DV1394_INIT");
+				}
 
-  				if(ioctl(output_fd, DV1394_IOC_GET_STATUS, &status) < 0)
-  				{
-  					perror("Device1394Output::open DV1394_GET_STATUS");
-  				}
+				if(ioctl(output_fd, DV1394_IOC_GET_STATUS, &status) < 0)
+				{
+					perror("Device1394Output::open DV1394_GET_STATUS");
+				}
 
-           		output_buffer = (unsigned char*)mmap(0,
-              		output_mmap.nb_buffers * (is_pal ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE),
-                 	PROT_READ | PROT_WRITE,
-              		MAP_SHARED,
-              		output_fd,
-              		0);
+				output_buffer = (unsigned char*)mmap(0,
+				output_mmap.nb_buffers * (is_pal ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE),
+						PROT_READ | PROT_WRITE,
+						MAP_SHARED,
+						output_fd,
+						0);
 
 				if(position_presented) delete [] position_presented;
-				position_presented = new long[length];
+				position_presented = new samplenum[length];
 				for (int i = 0; i < length; i++)
 					position_presented[i] = 0;
 			}
 			else
 			{
-        		if(ioctl(output_fd, video1394_talk_channel, &output_mmap) < 0)
+				if(ioctl(output_fd, video1394_talk_channel, &output_mmap) < 0)
 				{
-            		perror("Device1394Output::open VIDEO1394_TALK_CHANNEL:");
-        		}
+					perror("Device1394Output::open VIDEO1394_TALK_CHANNEL:");
+				}
 
-        		output_buffer = (unsigned char*)mmap(0, 
-					output_mmap.nb_buffers * output_mmap.buf_size,
-            		PROT_READ | PROT_WRITE, 
-					MAP_SHARED, 
-					output_fd, 
-					0);
+				output_buffer = (unsigned char*)mmap(0,
+						output_mmap.nb_buffers * output_mmap.buf_size,
+						PROT_READ | PROT_WRITE,
+						MAP_SHARED,
+						output_fd,
+						0);
 			}
 
-        	if(output_buffer == MAP_FAILED)
+			if(output_buffer == MAP_FAILED)
 			{
-            	perror("Device1394Output::open mmap");
-        	}
+				perror("Device1394Output::open mmap");
+			}
 
 			unused_buffers = output_mmap.nb_buffers;
-        	output_queue.buffer = 0;
-        	output_queue.packet_sizes = packet_sizes;
-        	continuity_counter = 0;
-        	cip_counter = 0;
+			output_queue.buffer = 0;
+			output_queue.packet_sizes = packet_sizes;
+			continuity_counter = 0;
+			cip_counter = 0;
 
 // Create buffers
 			buffer = new char*[total_buffers];
@@ -322,22 +315,21 @@ int Device1394Output::open(char *path,
 			encoder = dv_new();
 			audio_buffer = new char[OUTPUT_SAMPLES * channels * bits / 8];
 			Thread::start();
-    	}
+		}
 	}
 	return 0;
 }
 
 void Device1394Output::run()
 {
-  	unsigned char *output;
-  	char *out_buffer;
-  	int out_size;
+	unsigned char *output;
+	char *out_buffer;
+	int out_size;
 
 	Thread::enable_cancel();
 	start_lock->lock("Device1394Output::run");
 	Thread::disable_cancel();
 
-//Timer timer;
 // Write buffers continuously
 	while(!done)
 	{
@@ -349,10 +341,6 @@ void Device1394Output::run()
 		out_buffer = buffer[current_outbuffer];
 		out_size = buffer_size[current_outbuffer];
 
-
-
-
-
 // No video.  Put in a fake frame for audio only
 		if(!have_video)
 		{
@@ -361,27 +349,18 @@ void Device1394Output::run()
 			out_buffer = (char*)fake_ntsc_dv + 4;
 		}
 
-
-
-
-  		if(get_dv1394())
-  		{
-  			output = output_buffer + 
-  				out_size *
-  				status.first_clear_frame;
-  		}
-  		else
-  		{
+		if(get_dv1394())
+		{
+			output = output_buffer + 
+				out_size *
+				status.first_clear_frame;
+		}
+		else
+		{
 			output = output_buffer + 
 				output_queue.buffer * 
 				output_mmap.buf_size;
 		}
-
-
-
-
-
-
 
 
 // Got a buffer
@@ -394,7 +373,6 @@ void Device1394Output::run()
 // Encode audio
 			if(audio_samples > samples_per_frame)
 			{
-
 				int samples_written = dv_write_audio(encoder,
 					(unsigned char*)out_buffer,
 					(unsigned char*)audio_buffer,
@@ -455,44 +433,37 @@ void Device1394Output::run()
 			video_lock->unlock();
 		}
 
-
 		buffer_lock->unlock();
-//printf("Device1394Output::run 100\n");
-
-
-
 		if(out_size > 0)
 		{
-
 // Write mmap to device
 			Thread::enable_cancel();
 			unused_buffers--;
 
-
 			if(get_dv1394())
 			{
-  				if(ioctl(output_fd, DV1394_IOC_SUBMIT_FRAMES, 1) < 0)
-  				{
-  					perror("Device1394Output::run DV1394_SUBMIT_FRAMES");
-  				}
- 				if(ioctl(output_fd, DV1394_IOC_WAIT_FRAMES, 1) < 0)
+				if(ioctl(output_fd, DV1394_IOC_SUBMIT_FRAMES, 1) < 0)
+				{
+					perror("Device1394Output::run DV1394_SUBMIT_FRAMES");
+				}
+				if(ioctl(output_fd, DV1394_IOC_WAIT_FRAMES, 1) < 0)
 				{
 					perror("Device1394Output::run DV1394_WAIT_FRAMES");
 				}
-  				if(ioctl(output_fd, DV1394_IOC_GET_STATUS, &status) < 0)
-  				{
-  					perror("Device1394Output::run DV1394_GET_STATUS");
-  				}
+				if(ioctl(output_fd, DV1394_IOC_GET_STATUS, &status) < 0)
+				{
+					perror("Device1394Output::run DV1394_GET_STATUS");
+				}
 			}
 			else
 			{
 				if(ioctl(output_fd, video1394_talk_queue_buffer, &output_queue) < 0)
 				{
-        			perror("Device1394Output::run VIDEO1394_TALK_QUEUE_BUFFER");
-    			}
+					perror("Device1394Output::run VIDEO1394_TALK_QUEUE_BUFFER");
+				}
 			}
 
-    		output_queue.buffer++;
+			output_queue.buffer++;
 			if(output_queue.buffer >= output_mmap.nb_buffers) 
 				output_queue.buffer = 0;
 
@@ -500,10 +471,10 @@ void Device1394Output::run()
 			{
 				if(!get_dv1394())
 				{
-    				if(ioctl(output_fd, video1394_talk_wait_buffer, &output_queue) < 0) 
+					if(ioctl(output_fd, video1394_talk_wait_buffer, &output_queue) < 0) 
 					{
-        				perror("Device1394::run VIDEO1394_TALK_WAIT_BUFFER");
-    				}
+						perror("Device1394::run VIDEO1394_TALK_WAIT_BUFFER");
+					}
 				}
 				unused_buffers++;
 			}
@@ -511,14 +482,6 @@ void Device1394Output::run()
 
 			Thread::disable_cancel();
 		}
-		else
-		{
-// 			Thread::enable_cancel();
-// 			start_lock->lock();
-// 			Thread::disable_cancel();
-		}
-
-//printf("Device1394Output::run %lld\n", timer.get_difference());
 	}
 }
 
@@ -536,65 +499,65 @@ void Device1394Output::encrypt(unsigned char *output,
 	unsigned long vdata = 0;
 	unsigned int *packet_sizes = this->packet_sizes;
 
-    if(cip_counter == 0) 
+	if(cip_counter == 0) 
 	{
-        if(!is_pal) 
+		if(!is_pal) 
 		{
-            cip_n = CIP_N_NTSC;
-            cip_d = CIP_D_NTSC;
-            f50_60 = 0x00;
-        }
+			cip_n = CIP_N_NTSC;
+			cip_d = CIP_D_NTSC;
+			f50_60 = 0x00;
+		}
 		else 
 		{
-            cip_n = CIP_N_PAL;
-            cip_d = CIP_D_PAL;
-            f50_60 = 0x80;
-        }
-        cip_counter = cip_n;
-    }
+			cip_n = CIP_N_PAL;
+			cip_d = CIP_D_PAL;
+			f50_60 = 0x80;
+		}
+		cip_counter = cip_n;
+	}
 
 
 
 
 	for(int i = 0; i < output_size && vdata < frame_size; i++)
 	{
-        unsigned char *p = output;
-        int want_sync = (cip_counter > cip_d);
+		unsigned char *p = output;
+		int want_sync = (cip_counter > cip_d);
 
-/* Source node ID ! */
-       	*p++ = 0x01; 
-/* Packet size in quadlets (480 / 4) - this stays the same even for empty packets */
-      	*p++ = 0x78; 
-      	*p++ = 0x00;
-     	*p++ = continuity_counter;
+// Source node ID !
+		*p++ = 0x01; 
+// Packet size in quadlets (480 / 4) - this stays the same even for empty packets
+		*p++ = 0x78; 
+		*p++ = 0x00;
+		*p++ = continuity_counter;
 
-/* const */
-        *p++ = 0x80; 
-/* high bit = 50/60 indicator */
-        *p++ = f50_60; 
+// const 
+		*p++ = 0x80;
+// high bit = 50/60 indicator
+		*p++ = f50_60;
 
-/* timestamp - generated in driver */
-        *p++ = 0xff; 
-/* timestamp */
-        *p++ = 0xff; 
+// timestamp - generated in driver 
+		*p++ = 0xff; 
+// timestamp
+		*p++ = 0xff; 
 
-/* video data */
-        if(!want_sync)
+// video data
+		if(!want_sync)
 		{
-            continuity_counter++;
-            cip_counter += cip_n;
+			continuity_counter++;
+			cip_counter += cip_n;
 
-            memcpy(p, data + vdata, 480);
-            p += 480;
-            vdata += 480;
-        }
-        else
-            cip_counter -= cip_d;
+			memcpy(p, data + vdata, 480);
+			p += 480;
+			vdata += 480;
+		}
+		else
+			cip_counter -= cip_d;
 
-        *packet_sizes++ = p - output;
-        output += min_packet_size;
+		*packet_sizes++ = p - output;
+		output += min_packet_size;
 	}
-   	*packet_sizes++ = 0;
+	*packet_sizes++ = 0;
 }
 
 
@@ -604,8 +567,6 @@ void Device1394Output::write_frame(VFrame *input)
 {
 	VFrame *ptr = 0;
 	int result = 0;
-
-//printf("Device1394Output::write_frame 1\n");
 
 	if(output_fd <= 0) return;
 	if(interrupted) return;
@@ -648,7 +609,6 @@ void Device1394Output::write_frame(VFrame *input)
 					720,
 					h,
 					BC_YUV422);
-				
 			}
 
 			int norm = is_pal ? DV_PAL : DV_NTSC;
@@ -685,23 +645,11 @@ void Device1394Output::write_frame(VFrame *input)
 				BC_YUV422,
 				norm);
 
-
-
 			ptr = temp_frame;
 		}
 	}
 	else
 		ptr = input;
-
-
-
-
-
-
-
-
-
-
 
 // Take over buffer table
 	buffer_lock->lock("Device1394Output::write_frame 1");
@@ -713,8 +661,6 @@ void Device1394Output::write_frame(VFrame *input)
 		result = video_lock->timed_lock(BUFFER_TIMEOUT);
 		buffer_lock->lock("Device1394Output::write_frame 2");
 	}
-
-
 
 // Write buffer if there's room
 	if(!buffer_valid[current_inbuffer])
@@ -728,20 +674,13 @@ void Device1394Output::write_frame(VFrame *input)
 		buffer_valid[current_inbuffer] = 1;
 		increment_counter(&current_inbuffer);
 	}
-	else
-// Ignore it if there isn't room.
-	{
-		;
-	}
 
 	buffer_lock->unlock();
 	start_lock->unlock();
-//printf("Device1394Output::write_frame 100\n");
 }
 
 void Device1394Output::write_samples(char *data, int samples)
 {
-//printf("Device1394Output::write_samples 1\n");
 	int result = 0;
 	int timeout = (int64_t)samples * 
 		(int64_t)1000000 * 
@@ -749,18 +688,15 @@ void Device1394Output::write_samples(char *data, int samples)
 		(int64_t)samplerate;
 	if(interrupted) return;
 
-//printf("Device1394Output::write_samples 2\n");
-
 // Check for maximum sample count exceeded
 	if(samples > OUTPUT_SAMPLES)
 	{
-		printf("Device1394Output::write_samples samples=%d > OUTPUT_SAMPLES=%d\n",
+		errorbox("Too many output samples=%d > OUTPUT_SAMPLES=%d",
 			samples,
 			OUTPUT_SAMPLES);
 		return;
 	}
 
-//printf("Device1394Output::write_samples 3\n");
 // Take over buffer table
 	buffer_lock->lock("Device1394Output::write_samples 1");
 // Wait for buffer to become available with timeout
@@ -773,7 +709,6 @@ void Device1394Output::write_samples(char *data, int samples)
 
 	if(!interrupted && audio_samples <= OUTPUT_SAMPLES - samples)
 	{
-//printf("Device1394Output::write_samples 4 %d\n", audio_samples);
 		memcpy(audio_buffer + audio_samples * channels * bits / 8,
 			data,
 			samples * channels * bits / 8);
@@ -781,13 +716,12 @@ void Device1394Output::write_samples(char *data, int samples)
 	}
 	buffer_lock->unlock();
 	start_lock->unlock();
-//printf("Device1394Output::write_samples 100\n");
 }
 
-long Device1394Output::get_audio_position()
+samplenum Device1394Output::get_audio_position()
 {
 	position_lock->lock("Device1394Output::get_audio_position");
-	long result = audio_position;
+	samplenum result = audio_position;
 	if (get_dv1394())
 	{
 // Take delay between placing in buffer and presentation 
@@ -805,11 +739,6 @@ void Device1394Output::interrupt()
 	video_lock->unlock();
 	audio_lock->unlock();
 // Playback should stop when the object is deleted.
-}
-
-void Device1394Output::flush()
-{
-	
 }
 
 void Device1394Output::increment_counter(int *counter)
@@ -872,29 +801,18 @@ void Device1394Output::set_ioctls()
 	}
 	else	 // we are using an older kernel
 	{
-      // video1394
-      video1394_listen_channel = VIDEO1394_LISTEN_CHANNEL;
-      video1394_unlisten_channel = VIDEO1394_UNLISTEN_CHANNEL;
-      video1394_listen_queue_buffer = VIDEO1394_LISTEN_QUEUE_BUFFER;
-      video1394_listen_wait_buffer = VIDEO1394_LISTEN_WAIT_BUFFER;
-      video1394_talk_channel = VIDEO1394_TALK_CHANNEL;
-      video1394_untalk_channel = VIDEO1394_UNTALK_CHANNEL;
-      video1394_talk_queue_buffer = VIDEO1394_TALK_QUEUE_BUFFER;
-      video1394_talk_wait_buffer = VIDEO1394_TALK_WAIT_BUFFER;
-      video1394_listen_poll_buffer = VIDEO1394_LISTEN_POLL_BUFFER;
+// video1394
+		video1394_listen_channel = VIDEO1394_LISTEN_CHANNEL;
+		video1394_unlisten_channel = VIDEO1394_UNLISTEN_CHANNEL;
+		video1394_listen_queue_buffer = VIDEO1394_LISTEN_QUEUE_BUFFER;
+		video1394_listen_wait_buffer = VIDEO1394_LISTEN_WAIT_BUFFER;
+		video1394_talk_channel = VIDEO1394_TALK_CHANNEL;
+		video1394_untalk_channel = VIDEO1394_UNTALK_CHANNEL;
+		video1394_talk_queue_buffer = VIDEO1394_TALK_QUEUE_BUFFER;
+		video1394_talk_wait_buffer = VIDEO1394_TALK_WAIT_BUFFER;
+		video1394_listen_poll_buffer = VIDEO1394_LISTEN_POLL_BUFFER;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
 
 #endif // HAVE_FIREWIRE
 

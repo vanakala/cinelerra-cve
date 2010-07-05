@@ -38,7 +38,7 @@ public:
 	int write_buffer(char *buffer, int size);
 	int read_buffer(char *buffer, int size);
 	int close_all();
-	int64_t device_position();
+	samplenum device_position();
 	int flush_device();
 	int interrupt_playback();
 

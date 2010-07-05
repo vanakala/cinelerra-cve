@@ -71,13 +71,6 @@ public:
 	int fd;
 
 
-
-
-
-
-
-
-
 // Storage of all frames
 	char **buffer;
 	int *buffer_valid;
@@ -112,12 +105,5 @@ public:
 	int is_pal;
 };
 
-
-
-
-
 #endif
-
-
-
 #endif

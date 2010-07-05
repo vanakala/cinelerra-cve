@@ -189,14 +189,9 @@ void IEC61883Input::run()
 
 
 
-
-
-
-
-
 int IEC61883Input::write_frame(unsigned char *data, int len, int complete)
 {
-	if(!complete) printf("write_frame: incomplete frame received.\n");
+	if(!complete) fprintf(stderr, "write_frame: incomplete frame received.\n");
 
 	buffer_lock->lock("IEC61883Input write_frame 1");
 
@@ -209,9 +204,6 @@ int IEC61883Input::write_frame(unsigned char *data, int len, int complete)
 		is_overflow = 1;
 
 	char *src = (char*)(data);
-// static FILE *test = 0;
-// if(!test) test = fopen("/tmp/test", "w");
-// fwrite(src, buffer_size, 1, test);
 
 // Export the video
 	if(dst)
@@ -230,24 +222,24 @@ int IEC61883Input::write_frame(unsigned char *data, int len, int complete)
 				audio_samples * 2 * 2,
 			(unsigned char*)src,
 			len,
- 			channels,
+			channels,
 			bits);
 		int real_freq = decoder->decoder->audio->frequency;
- 		if (real_freq == 32000) 
- 		{
+		if (real_freq == 32000) 
+		{
 // do in-place _FAST_ && _SIMPLE_ upsampling to 48khz
 // i also think user should get a warning that his material is effectively 32khz
 // we take 16bit samples for both channels in one 32bit int
- 			int *twosample = (int*) (audio_buffer + audio_samples * 2 * 2);
- 			int from = audio_result - 1;
- 			int new_result = audio_result * 48000 / real_freq;
- 			for (int to = new_result - 1; to >=0; to--)
- 			{	
- 				if ((to % 3) == 0 || (to % 3) == 1) from --;
- 				twosample[to] = twosample[from];
- 			}
- 			audio_result = new_result;
- 		}
+			int *twosample = (int*) (audio_buffer + audio_samples * 2 * 2);
+			int from = audio_result - 1;
+			int new_result = audio_result * 48000 / real_freq;
+			for (int to = new_result - 1; to >=0; to--)
+			{
+				if ((to % 3) == 0 || (to % 3) == 1) from --;
+				twosample[to] = twosample[from];
+			}
+			audio_result = new_result;
+		}
 
 
 		audio_samples += audio_result;
@@ -260,15 +252,9 @@ int IEC61883Input::write_frame(unsigned char *data, int len, int complete)
 	if(!is_overflow)
 		increment_counter(&current_inbuffer);
 
-
 	buffer_lock->unlock();
 	return 0;
 }
-
-
-
-
-
 
 
 void IEC61883Input::increment_counter(int *counter)
@@ -282,8 +268,6 @@ void IEC61883Input::decrement_counter(int *counter)
 	(*counter)--;
 	if(*counter < 0) *counter = total_buffers - 1;
 }
-
-
 
 int IEC61883Input::read_video(VFrame *data)
 {
@@ -315,7 +299,6 @@ int IEC61883Input::read_video(VFrame *data)
 
 
 
-
 int IEC61883Input::read_audio(char *data, int samples)
 {
 	int result = 0;
@@ -344,8 +327,3 @@ int IEC61883Input::read_audio(char *data, int samples)
 	buffer_lock->unlock();
 	return result;
 }
-
-
-
-
-

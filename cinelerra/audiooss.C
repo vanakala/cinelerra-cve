@@ -25,6 +25,7 @@
 #include "clip.h"
 #include "condition.h"
 #include "errno.h"
+#include "mainerror.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -82,10 +83,9 @@ void OSSThread::run()
 		{
 			if(done) return;
 
-
 			Thread::enable_cancel();
 			if(write(fd, data, bytes) != bytes)
-				fprintf(stderr, "OSSThread::run - write error\n");
+				errormsg("Write error in OSS thread");
 			Thread::disable_cancel();
 
 
@@ -130,14 +130,6 @@ void OSSThread::wait_write()
 
 
 
-
-
-
-
-
-
-
-
 AudioOSS::AudioOSS(AudioDevice *device)
  : AudioLowLevel(device)
 {
@@ -164,9 +156,7 @@ int AudioOSS::open_input()
 	{
 		if(device->in_config->oss_enable[i])
 		{
-//printf("AudioOSS::open_input 10\n");
 			dsp_in[i] = open(device->in_config->oss_in_device[i], O_RDONLY/* | O_NDELAY*/);
-//printf("AudioOSS::open_input 20\n");
 			if(dsp_in[i] < 0) fprintf(stderr, "AudioOSS::open_input %s: %s\n", 
 				device->in_config->oss_in_device[i], 
 				strerror(errno));
@@ -188,9 +178,6 @@ int AudioOSS::open_input()
 
 			audio_buf_info recinfo;
 			ioctl(dsp_in[i], SNDCTL_DSP_GETISPACE, &recinfo);
-
-//printf("AudioOSS::open_input fragments=%d fragstotal=%d fragsize=%d bytes=%d\n", 
-//	recinfo.fragments, recinfo.fragstotal, recinfo.fragsize, recinfo.bytes);
 
 			thread[i] = new OSSThread(this);
 			thread[i]->start();
@@ -232,8 +219,6 @@ int AudioOSS::open_output()
 			if(ioctl(dsp_out[i], SNDCTL_DSP_CHANNELS, &channels) < 0) printf("SNDCTL_DSP_CHANNELS 2 failed\n");
 			if(ioctl(dsp_out[i], SNDCTL_DSP_SPEED, &device->out_samplerate) < 0) printf("SNDCTL_DSP_SPEED 2 failed\n");
 			ioctl(dsp_out[i], SNDCTL_DSP_GETOSPACE, &playinfo);
-// printf("AudioOSS::open_output fragments=%d fragstotal=%d fragsize=%d bytes=%d\n", 
-// playinfo.fragments, playinfo.fragstotal, playinfo.fragsize, playinfo.bytes);
 			device->device_buffer = playinfo.bytes;
 			thread[i] = new OSSThread(this);
 			thread[i]->start();
@@ -288,7 +273,6 @@ int AudioOSS::sizetofrag(int samples, int channels, int bits)
 		fragsize++;
 		testfrag *= 2;
 	}
-//printf("AudioOSS::sizetofrag %d\n", fragsize);
 	return (4 << 16) | fragsize;
 }
 
@@ -296,9 +280,12 @@ int AudioOSS::get_fmt(int bits)
 {
 	switch(bits)
 	{
-		case 32: return AFMT_S32_LE; break;
-		case 16: return AFMT_S16_LE; break;
-		case 8:  return AFMT_S8;  break;
+	case 32:
+		return AFMT_S32_LE;
+	case 16:
+		return AFMT_S16_LE;
+	case 8:
+		return AFMT_S8;
 	}
 	return AFMT_S16_LE;
 }
@@ -306,28 +293,26 @@ int AudioOSS::get_fmt(int bits)
 
 int AudioOSS::close_all()
 {
-//printf("AudioOSS::close_all 1\n");
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		if(dsp_in[i]) 
 		{
-			ioctl(dsp_in[i], SNDCTL_DSP_RESET, 0);         
-			close(dsp_in[i]);      
+			ioctl(dsp_in[i], SNDCTL_DSP_RESET, 0);
+			close(dsp_in[i]);
 		}
 
 		if(dsp_out[i]) 
 		{
-//printf("AudioOSS::close_all 2\n");
-			ioctl(dsp_out[i], SNDCTL_DSP_RESET, 0);        
-			close(dsp_out[i]);     
+			ioctl(dsp_out[i], SNDCTL_DSP_RESET, 0);
+			close(dsp_out[i]);
 		}
 
 		if(dsp_duplex[i]) 
 		{
-			ioctl(dsp_duplex[i], SNDCTL_DSP_RESET, 0);     
-			close(dsp_duplex[i]);  
+			ioctl(dsp_duplex[i], SNDCTL_DSP_RESET, 0);
+			close(dsp_duplex[i]);
 		}
-		
+
 		if(thread[i]) delete thread[i];
 		if(data[i]) delete [] data[i];
 	}
@@ -345,12 +330,12 @@ int AudioOSS::set_cloexec_flag(int desc, int value)
 	return fcntl(desc, F_SETFD, oldflags);
 }
 
-int64_t AudioOSS::device_position()
+samplenum AudioOSS::device_position()
 {
 	count_info info;
 	if(!ioctl(get_output(0), SNDCTL_DSP_GETOPTR, &info))
 	{
-//printf("AudioOSS::device_position %d %d %d\n", info.bytes, device->get_obits(), device->get_ochannels());
+
 // workaround for ALSA OSS emulation driver's bug
 // the problem is that if the first write to sound device was not full lenght fragment then 
 // _GETOPTR returns insanely large numbers at first moments of play
@@ -366,7 +351,6 @@ int64_t AudioOSS::device_position()
 
 int AudioOSS::interrupt_playback()
 {
-//printf("AudioOSS::interrupt_playback 1\n");
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		if(thread[i])
@@ -375,7 +359,6 @@ int AudioOSS::interrupt_playback()
 			thread[i]->write_lock->unlock();
 		}
 	}
-//printf("AudioOSS::interrupt_playback 100\n");
 	return 0;
 }
 
@@ -385,7 +368,6 @@ int AudioOSS::read_buffer(char *buffer, int bytes)
 	int out_frame_size = device->get_ichannels() * sample_size;
 	int samples = bytes / out_frame_size;
 
-//printf("AudioOSS::read_buffer 1 %d\n", bytes);
 // Fill temp buffers
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
@@ -408,7 +390,6 @@ int AudioOSS::read_buffer(char *buffer, int bytes)
 		}
 	}
 
-//printf("AudioOSS::read_buffer 1 %d\n", device->get_ibits());
 	for(int i = 0, out_channel = 0; i < MAXDEVICES; i++)
 	{
 		if(thread[i])
@@ -435,7 +416,6 @@ int AudioOSS::read_buffer(char *buffer, int bytes)
 			}
 		}
 	}
-//printf("AudioOSS::read_buffer 2\n");
 	return 0;
 }
 
@@ -465,7 +445,6 @@ int AudioOSS::write_buffer(char *buffer, int bytes)
 				out_channel < device->get_ochannels();
 				out_channel++)
 			{
-				
 				for(int k = 0; k < samples; k++)
 				{
 					for(int l = 0; l < sample_size; l++)

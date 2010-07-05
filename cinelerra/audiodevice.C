@@ -23,7 +23,6 @@
 #include "audio1394.h"
 #endif
 #include "audioalsa.h"
-#include "audiocine.h"
 #include "audiodevice.h"
 #include "audiodvb.h"
 #include "audioesound.h"
@@ -138,45 +137,37 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 		switch(driver)
 		{
 #ifdef HAVE_OSS
-			case AUDIO_OSS:
-			case AUDIO_OSS_ENVY24:
-				lowlevel = new AudioOSS(this);
-				break;
+		case AUDIO_OSS:
+		case AUDIO_OSS_ENVY24:
+			lowlevel = new AudioOSS(this);
+			break;
 #endif
 
 #ifdef HAVE_ESOUND
-			case AUDIO_ESOUND:
-				lowlevel = new AudioESound(this);
-				break;
+		case AUDIO_ESOUND:
+			lowlevel = new AudioESound(this);
+			break;
 #endif
-			case AUDIO_NAS:
-				break;
+		case AUDIO_NAS:
+			break;
 
 #ifdef HAVE_ALSA
-			case AUDIO_ALSA:
-				lowlevel = new AudioALSA(this);
-				break;
+		case AUDIO_ALSA:
+			lowlevel = new AudioALSA(this);
+			break;
 #endif
 
-#ifdef HAVE_FIREWIRE	
-			case AUDIO_1394:
-			case AUDIO_DV1394:
-			case AUDIO_IEC61883:
-				lowlevel = new Audio1394(this);
-				break;
+#ifdef HAVE_FIREWIRE
+		case AUDIO_1394:
+		case AUDIO_DV1394:
+		case AUDIO_IEC61883:
+			lowlevel = new Audio1394(this);
+			break;
 #endif
 
-
-
-			case AUDIO_DVB:
-				lowlevel = new AudioDVB(this);
-				break;
-
-
-
-			case AUDIO_CINE:
-				lowlevel = new AudioCine(this);
-				break;
+		case AUDIO_DVB:
+			lowlevel = new AudioDVB(this);
+			break;
 		}
 	}
 	return 0;
@@ -371,14 +362,6 @@ int AudioDevice::get_device_buffer()
 
 
 
-
-
-
-
-
-
-
-
 void AudioDevice::run()
 {
 	if(w)
@@ -387,4 +370,3 @@ void AudioDevice::run()
 	if(r)
 		run_input();
 }
-

@@ -69,10 +69,11 @@ public:
 // Write audio with timed blocking.
 
 	void write_samples(char *data, int samples);
-	long get_audio_position();
+	samplenum get_audio_position();
 	void interrupt();
+/*
 	void flush();
-
+	*/
 // This object is shared between audio and video.  Return what the driver is
 // based on whether vdevice or adevice exists.
 	int get_dv1394();
@@ -112,32 +113,31 @@ public:
 	Condition *video_lock;
 	Condition *audio_lock;
 	int done;
- 	struct dv1394_status status;
+	struct dv1394_status status;
 
 
 // Output
 	int output_fd;
 	struct video1394_mmap output_mmap;
 	struct video1394_queue_variable output_queue;
-//	raw1394handle_t avc_handle;
 	VFrame *temp_frame, *temp_frame2;
 // Encoder for making DV frames
 	dv_t *audio_encoder;
 	dv_t *video_encoder;
 	unsigned int cip_n, cip_d;
-    unsigned int cip_counter;
+	unsigned int cip_counter;
 	unsigned char f50_60;
 	unsigned char *output_buffer;
 	int output_number;
-    unsigned int packet_sizes[321];
-    unsigned char  continuity_counter;
-    int unused_buffers;
+	unsigned int packet_sizes[321];
+	unsigned char  continuity_counter;
+	int unused_buffers;
 	int avc_id;
 	int channels;
 	int samplerate;
 	int bits;
 	int syt;
-	long audio_position;
+	samplenum audio_position;
 	int interrupted;
 	int have_video;
 	int is_pal;
@@ -145,20 +145,20 @@ public:
 	AudioDevice *adevice;
 
 	// IOCTL # variables
-   // video1394
-   int video1394_listen_channel;
-   int video1394_unlisten_channel;
-   int video1394_listen_queue_buffer;
-   int video1394_listen_wait_buffer;
-   int video1394_talk_channel;
-   int video1394_untalk_channel;
-   int video1394_talk_queue_buffer;
-   int video1394_talk_wait_buffer;
-   int video1394_listen_poll_buffer;
+// video1394
+	int video1394_listen_channel;
+	int video1394_unlisten_channel;
+	int video1394_listen_queue_buffer;
+	int video1394_listen_wait_buffer;
+	int video1394_talk_channel;
+	int video1394_untalk_channel;
+	int video1394_talk_queue_buffer;
+	int video1394_talk_wait_buffer;
+	int video1394_listen_poll_buffer;
 
 // To keep track of the delay between putting the audio in the buffer
 // and when it is actually presented on the DV device
-	long *position_presented;
+	samplenum *position_presented;
 
 };
 

@@ -49,11 +49,9 @@ public:
 	int close_all();
 	int read_buffer(char *buffer, int bytes);
 	int write_buffer(char *buffer, int bytes);
-	int64_t device_position();
-	int flush_device();
+	samplenum device_position();
 	int interrupt_playback();
 
-	
 private:
 	Device1394Input *input_thread;
 	Device1394Output *output_thread;

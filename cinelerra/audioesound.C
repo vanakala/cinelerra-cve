@@ -22,6 +22,7 @@
 #include "audioconfig.h"
 #include "audiodevice.h"
 #include "audioesound.h"
+#include "mainerror.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -45,17 +46,17 @@ int AudioESound::get_bit_flag(int bits)
 {
 	switch(bits)
 	{
-		case 8:
-			return ESD_BITS8;
-			break;
-		
-		case 16:
-			return ESD_BITS16;
-			break;
-		
-		case 24:
-			return ESD_BITS16;
-			break;
+	case 8:
+		return ESD_BITS8;
+		break;
+
+	case 16:
+		return ESD_BITS16;
+		break;
+
+	case 24:
+		return ESD_BITS16;
+		break;
 	}
 }
 
@@ -64,17 +65,17 @@ int AudioESound::get_channels_flag(int channels)
 {
 	switch(channels)
 	{
-		case 1:
-			return ESD_MONO;
-			break;
-		
-		case 2:
-			return ESD_STEREO;
-			break;
-		
-		default:
-			return ESD_STEREO;
-			break;
+	case 1:
+		return ESD_MONO;
+		break;
+
+	case 2:
+		return ESD_STEREO;
+		break;
+
+	default:
+		return ESD_STEREO;
+		break;
 	}
 }
 
@@ -84,14 +85,14 @@ char* AudioESound::translate_device_string(char *server, int port)
 	if(port > 0 && strlen(server))
 		sprintf(device_string, "%s:%d", server, port);
 	else
-		sprintf(device_string, "");
+		device_string[0] = 0;
 	return device_string;
 }
 
 int AudioESound::open_input()
 {
 	esd_format_t format = ESD_STREAM | ESD_RECORD;
-	
+
 	device->in_channels = 2;
 	device->in_bits = 16;
 
@@ -100,12 +101,12 @@ int AudioESound::open_input()
 
 	if((esd_in = esd_open_sound(translate_device_string(device->in_config->esound_in_server, device->in_config->esound_in_port))) <= 0)
 	{
-		fprintf(stderr, "AudioESound::open_input: open failed\n");
+		errorbox("Failed to open ESound input");
 		return 1;
 	}
 	esd_in_fd = esd_record_stream_fallback(format, device->in_samplerate, 
-			    	translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port), 
-						"Cinelerra");
+					translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port),
+					"Cinelerra");
 	return 0;
 }
 
@@ -121,12 +122,12 @@ int AudioESound::open_output()
 
 	if((esd_out = esd_open_sound(translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port))) <= 0)
 	{
-		fprintf(stderr, "AudioESound::open_output: open failed\n");
+		errorbox("Failed to open ESound output");
 		return 1;
 	};
 	esd_out_fd = esd_play_stream_fallback(format, device->out_samplerate, 
-			    	translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port), 
-						"Cinelerra");
+					translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port),
+					"Cinelerra");
 
 	device->device_buffer = esd_get_latency(esd_out);
 	device->device_buffer *= device->out_bits / 8 * device->out_channels;
@@ -147,19 +148,19 @@ int AudioESound::close_all()
 {
 	if(device->r || device->d)
 	{ 
-    	close(esd_in_fd);
-		esd_close(esd_in);      
+		close(esd_in_fd);
+		esd_close(esd_in);
 	}
 
 	if(device->w || device->d)
 	{
- 	   	close(esd_out_fd);
-		esd_close(esd_out);     
+		close(esd_out_fd);
+		esd_close(esd_out);
 	}
 }
 
 // No position on ESD
-int64_t AudioESound::device_position()
+samplenum AudioESound::device_position()
 {
 	return -1;
 }

@@ -37,6 +37,7 @@
 #include "bctimer.inc"
 #include "binary.h"
 #include "condition.inc"
+#include "datatype.h"
 #include "dcoffset.inc"
 #include "device1394output.inc"
 #include "maxchannels.h"
@@ -64,7 +65,7 @@ public:
 	virtual int open_duplex() { return 1; };
 	virtual int close_all() { return 1; };
 	virtual int interrupt_crash() { return 0; };
-	virtual int64_t device_position() { return -1; };
+	virtual samplenum device_position() { return -1; };
 	virtual int write_buffer(char *buffer, int size) { return 1; };
 	virtual int read_buffer(char *buffer, int size) { return 1; };
 	virtual int flush_device() { return 1; };
@@ -138,7 +139,7 @@ public:
 // After the last buffer is written call this to terminate.
 // A separate buffer for termination is required since the audio device can be
 // finished without writing a single byte
-	int set_last_buffer();         
+	int set_last_buffer();
 
 	int wait_for_startup();
 // wait for the playback thread to clean up
@@ -156,7 +157,7 @@ public:
 	int set_software_positioning(int status = 1);
 // total samples played
 //  + audio offset from configuration if playback
-	int64_t current_position();
+	samplenum current_position();
 // If interrupted
 	int get_interrupted();
 	int get_device_buffer();
@@ -198,11 +199,11 @@ private:
 	Condition *duplex_lock;
 	Condition *startup_lock;
 // notify playback routines to test the duplex lock
-	int duplex_init;        
+	int duplex_init;
 // bits in output file
-	int rec_dither;         
+	int rec_dither;
 // 1 or 0
-	int play_dither;        
+	int play_dither;
 	int sharing;
 
 // bytes in buffer
@@ -227,7 +228,7 @@ private:
 	int position_correction;
 	int device_buffer;
 // prevent the counter from going backwards
-	int last_position;  
+	int last_position;
 	Timer *playback_timer;
 	Timer *record_timer;
 // Current operation
@@ -249,10 +250,8 @@ private:
 // Buffer being used by the hardware
 	int thread_buffer_num;
 	int thread_result;
-	int64_t total_samples_read;
+	samplenum total_samples_read;
 	MWindow *mwindow;
 };
-
-
 
 #endif

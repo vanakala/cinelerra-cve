@@ -22,6 +22,7 @@
 #include "audiodevice.h"
 #include "audioalsa.h"
 #include "bcsignals.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "playbackconfig.h"
 #include "preferences.h"
@@ -30,6 +31,8 @@
 #include <errno.h>
 
 #ifdef HAVE_ALSA
+
+#define DEFAULT_DEVICE "default"
 
 AudioALSA::AudioALSA(AudioDevice *device)
  : AudioLowLevel(device)
@@ -59,19 +62,18 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 	int error;
 	switch(mode)
 	{
-		case MODERECORD:
-			stream = SND_PCM_STREAM_CAPTURE;
-			break;
-		case MODEPLAY:
-			stream = SND_PCM_STREAM_PLAYBACK;
-			break;
+	case MODERECORD:
+		stream = SND_PCM_STREAM_CAPTURE;
+		break;
+	case MODEPLAY:
+		stream = SND_PCM_STREAM_PLAYBACK;
+		break;
 	}
 
 	snd_ctl_card_info_alloca(&info);
 	snd_pcm_info_alloca(&pcminfo);
 
 	card = -1;
-#define DEFAULT_DEVICE "default"
 	char *result = new char[strlen(DEFAULT_DEVICE) + 1];
 	devices->append(result);
 	devices->set_array_delete();     // since we are allocating by new[]
@@ -85,13 +87,13 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 
 		if((err = snd_ctl_open(&handle, name, 0)) < 0)
 		{
-			printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
+			errorbox("Failed to open ALSA card=%i: %s", card, snd_strerror(err));
 			continue;
 		}
 
 		if((err = snd_ctl_card_info(handle, info)) < 0)
 		{
-			printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
+			errorbox("Failed to get ALSA info card=%i: %s", card, snd_strerror(err));
 			snd_ctl_close(handle);
 			continue;
 		}
@@ -102,7 +104,7 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 		{
 			unsigned int count;
 			if(snd_ctl_pcm_next_device(handle, &dev) < 0)
-				printf("AudioALSA::list_devices: snd_ctl_pcm_next_device\n");
+				errorbox("Failed to get next ALSA device");
 
 			if (dev < 0)
 				break;
@@ -114,14 +116,13 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 			if((err = snd_ctl_pcm_info(handle, pcminfo)) < 0) 
 			{
 				if(err != -ENOENT)
-					printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
+					errorbox("ALSA card=%i: %s\n", card, snd_strerror(err));
 				continue;
 			}
 
 			if(pcm_title)
 			{
 				sprintf(string, "plughw:%d,%d", card, dev);
-//				strcpy(string, "cards.pcm.front");
 			}
 			else
 			{
@@ -136,9 +137,6 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 
 		snd_ctl_close(handle);
 	}
-
-//	snd_ctl_card_info_free(info);
-//	snd_pcm_info_free(pcminfo);
 }
 
 void AudioALSA::translate_name(char *output, char *input)
@@ -146,24 +144,24 @@ void AudioALSA::translate_name(char *output, char *input)
 	ArrayList<char*> titles;
 	ArrayList<char*> pcm_titles;
 	int mode;
+
 	if(device->r) mode = MODERECORD;
 	else
 	if(device->w) mode = MODEPLAY;
-	
+
 	list_devices(&titles, 0, mode);
 	list_devices(&pcm_titles, 1, mode);
 
-	sprintf(output, "default");	
+	sprintf(output, "default");
 	for(int i = 0; i < titles.total; i++)
 	{
-//printf("AudioALSA::translate_name %s %s\n", titles.values[i], pcm_titles.values[i]);
 		if(!strcasecmp(titles.values[i], input))
 		{
 			strcpy(output, pcm_titles.values[i]);
 			break;
 		}
 	}
-	
+
 	titles.remove_all_objects();
 	pcm_titles.remove_all_objects();
 }
@@ -203,7 +201,7 @@ void AudioALSA::set_params(snd_pcm_t *dsp,
 
 	if (err < 0) 
 	{
-		printf("AudioALSA::set_params: no PCM configurations available\n");
+		errorbox("ALSA: no PCM configurations available");
 		return;
 	}
 
@@ -235,8 +233,6 @@ void AudioALSA::set_params(snd_pcm_t *dsp,
 		period_time = samples * samplerate / 1000000;
 	}
 
-
-//printf("AudioALSA::set_params 1 %d %d %d\n", samples, buffer_time, period_time);
 	snd_pcm_hw_params_set_buffer_time_near(dsp, 
 		params,
 		(unsigned int*)&buffer_time, 
@@ -245,11 +241,10 @@ void AudioALSA::set_params(snd_pcm_t *dsp,
 		params,
 		(unsigned int*)&period_time, 
 		(int*)0);
-//printf("AudioALSA::set_params 5 %d %d\n", buffer_time, period_time);
 	err = snd_pcm_hw_params(dsp, params);
 	if(err < 0)
 	{
-		printf("AudioALSA::set_params: hw_params failed\n");
+		errorbox("Failed to set ALSA hw_params");
 		return;
 	}
 
@@ -257,22 +252,16 @@ void AudioALSA::set_params(snd_pcm_t *dsp,
 	snd_pcm_uframes_t buffer_size = 262144;
 	snd_pcm_hw_params_get_period_size(params, &chunk_size, 0);
 	snd_pcm_hw_params_get_buffer_size(params, &buffer_size);
-//printf("AudioALSA::set_params 10 %d %d\n", chunk_size, buffer_size);
 
 	snd_pcm_sw_params_current(dsp, swparams);
 	int n = chunk_size;
 	err = snd_pcm_sw_params_set_avail_min(dsp, swparams, n);
 	if(snd_pcm_sw_params(dsp, swparams) < 0)
 	{
-		printf("AudioALSA::set_params: snd_pcm_sw_params failed\n");
+		errorbox("Failed to set ALSA sw_params");
 	}
 
 	device->device_buffer = samples * bits / 8 * channels;
-
-//printf("AudioALSA::set_params 100 %d %d\n", samples,  device->device_buffer);
-
-//	snd_pcm_hw_params_free(params);
-//	snd_pcm_sw_params_free(swparams);
 }
 
 int AudioALSA::open_input()
@@ -286,13 +275,12 @@ int AudioALSA::open_input()
 	device->in_bits = device->in_config->alsa_in_bits;
 
 	translate_name(pcm_name, device->in_config->alsa_in_device);
-//printf("AudioALSA::open_input %s\n", pcm_name);
 
 	err = snd_pcm_open(&dsp_in, device->in_config->alsa_in_device, stream, open_mode);
 
 	if(err < 0)
 	{
-		printf("AudioALSA::open_input: %s\n", snd_strerror(err));
+		errorbox("Failed to open ALSA input: %s\n", snd_strerror(err));
 		return 1;
 	}
 
@@ -322,7 +310,7 @@ int AudioALSA::open_output()
 	if(err < 0)
 	{
 		dsp_out = 0;
-		printf("AudioALSA::open_output %s: %s\n", pcm_name, snd_strerror(err));
+		errorbox("Failed to open ALSA output %s: %s", pcm_name, snd_strerror(err));
 		return 1;
 	}
 
@@ -354,7 +342,6 @@ int AudioALSA::close_input()
 {
 	if(device->r)
 	{
-//		snd_pcm_reset(dsp_in);
 		snd_pcm_drop(dsp_in);
 		snd_pcm_drain(dsp_in);
 		snd_pcm_close(dsp_in);
@@ -376,24 +363,19 @@ int AudioALSA::close_all()
 }
 
 // Undocumented
-int64_t AudioALSA::device_position()
+samplenum AudioALSA::device_position()
 {
 	timer_lock->lock("AudioALSA::device_position");
-	int64_t result = samples_written + 
+	samplenum result = samples_written + 
 		timer->get_scaled_difference(device->out_samplerate) - 
 		delay;
-// printf("AudioALSA::device_position 1 %lld %lld %d %lld\n", 
-// samples_written,
-// timer->get_scaled_difference(device->out_samplerate),
-// delay,
-// samples_written + timer->get_scaled_difference(device->out_samplerate) - delay);
+
 	timer_lock->unlock();
 	return result;
 }
 
 int AudioALSA::read_buffer(char *buffer, int size)
 {
-//printf("AudioALSA::read_buffer 1\n");
 	int attempts = 0;
 	int done = 0;
 
@@ -411,7 +393,6 @@ int AudioALSA::read_buffer(char *buffer, int size)
 		{
 			printf("AudioALSA::read_buffer overrun at sample %lld\n", 
 				device->total_samples_read);
-//			snd_pcm_resume(get_input());
 			close_input();
 			open_input();
 			attempts++;
@@ -435,8 +416,8 @@ int AudioALSA::write_buffer(char *buffer, int size)
 	{
 // Buffers written must be equal to period_time
 // Update timing
- 		snd_pcm_sframes_t delay;
- 		snd_pcm_delay(get_output(), &delay);
+		snd_pcm_sframes_t delay;
+		snd_pcm_delay(get_output(), &delay);
 		snd_pcm_avail_update(get_output());
 
 		device->Thread::enable_cancel();
@@ -445,9 +426,8 @@ int AudioALSA::write_buffer(char *buffer, int size)
 			samples) < 0)
 		{
 			device->Thread::disable_cancel();
-			printf("AudioALSA::write_buffer underrun at sample %lld\n",
+			errormsg("ALSA write_buffer underrun at sample %lld",
 				device->current_position());
-//			snd_pcm_resume(get_output());
 			close_output();
 			open_output();
 			attempts++;
@@ -485,13 +465,6 @@ int AudioALSA::interrupt_playback()
 // With some soundcards it causes snd_pcm_writei to freeze for a few seconds.
 		if(!device->out_config->interrupt_workaround)
 			snd_pcm_drop(get_output());
-
-// Makes sure the current buffer finishes before stopping.
-//		snd_pcm_drain(get_output());
-
-// The only way to ensure snd_pcm_writei exits, but
-// got a lot of crashes when doing this.
-//		device->Thread::cancel();
 	}
 	return 0;
 }

@@ -45,7 +45,6 @@ int AudioDevice::set_last_buffer()
 	last_buffer[arm_buffer_num] = 1;
 	play_lock[arm_buffer_num]->unlock();
 
-
 	arm_buffer_num++;
 	if(arm_buffer_num >= TOTAL_BUFFERS) arm_buffer_num = 0;
 	return 0;
@@ -107,72 +106,40 @@ int AudioDevice::arm_buffer(int buffer_num,
 		buffer_in_channel = output[channel];
 		switch(bits)
 		{
-			case 8:
-				output_advance = device_channels;
-				if(play_dither)
+		case 8:
+			output_advance = device_channels;
+			if(play_dither)
+			{
+				for(output_offset = channel, input_offset = 0; input_offset < samples; output_offset += output_advance, input_offset++)
 				{
-					for(output_offset = channel, input_offset = 0; input_offset < samples; output_offset += output_advance, input_offset++)
-					{
-						sample = buffer_in_channel[input_offset];
-						CLAMP(sample, -1, 1);
-						sample *= 0x7fff;
-						int_sample = (int)sample;
-						dither_value = rand() % 255;
-						int_sample -= dither_value;
-						int_sample /= 0x100;
-						buffer_num_buffer[output_offset] = int_sample;
-					}
+					sample = buffer_in_channel[input_offset];
+					CLAMP(sample, -1, 1);
+					sample *= 0x7fff;
+					int_sample = (int)sample;
+					dither_value = rand() % 255;
+					int_sample -= dither_value;
+					int_sample /= 0x100;
+					buffer_num_buffer[output_offset] = int_sample;
 				}
-				else
+			}
+			else
+			{
+				for(output_offset = channel, input_offset = 0; input_offset < samples; output_offset += output_advance, input_offset++)
 				{
-					for(output_offset = channel, input_offset = 0; input_offset < samples; output_offset += output_advance, input_offset++)
-					{
-						sample = buffer_in_channel[input_offset];
-						CLAMP(sample, -1, 1);
-						sample *= 0x7f;
-						int_sample = (int)sample;
-						buffer_num_buffer[output_offset] = int_sample;
-					}
+					sample = buffer_in_channel[input_offset];
+					CLAMP(sample, -1, 1);
+					sample *= 0x7f;
+					int_sample = (int)sample;
+					buffer_num_buffer[output_offset] = int_sample;
 				}
-				break;
+			}
+			break;
 
-			case 16:
-				output_advance = device_channels * 2 - 1;
-				if(play_dither)
-				{
-					for(output_offset = channel * 2, input_offset = 0; 
-						input_offset < samples; 
-						output_offset += output_advance, input_offset++)
-					{
-						sample = buffer_in_channel[input_offset];
-						CLAMP(sample, -1, 1);
-						sample *= 0x7fffff;
-						int_sample = (int)sample;
-						dither_value = rand() % 255;
-						int_sample -= dither_value;
-						int_sample /= 0x100;
-						buffer_num_buffer[output_offset] = int_sample;
-					}
-				}
-				else
-				{
-					for(output_offset = channel * 2, input_offset = 0; 
-						input_offset < samples; 
-						output_offset += output_advance, input_offset++)
-					{
-						sample = buffer_in_channel[input_offset];
-						CLAMP(sample, -1, 1);
-						sample *= 0x7fff;
-						int_sample = (int)sample;
-						buffer_num_buffer[output_offset++] = (int_sample & 0xff);
-						buffer_num_buffer[output_offset] = (int_sample & 0xff00) >> 8;
-					}
-				}
-				break;
-
-			case 24:
-				output_advance = (device_channels - 1) * 3;
-				for(output_offset = channel * 3, input_offset = 0; 
+		case 16:
+			output_advance = device_channels * 2 - 1;
+			if(play_dither)
+			{
+				for(output_offset = channel * 2, input_offset = 0; 
 					input_offset < samples; 
 					output_offset += output_advance, input_offset++)
 				{
@@ -180,28 +147,60 @@ int AudioDevice::arm_buffer(int buffer_num,
 					CLAMP(sample, -1, 1);
 					sample *= 0x7fffff;
 					int_sample = (int)sample;
-					buffer_num_buffer[output_offset++] = (int_sample & 0xff);
-					buffer_num_buffer[output_offset++] = (int_sample & 0xff00) >> 8;
-					buffer_num_buffer[output_offset++] = (int_sample & 0xff0000) >> 16;
+					dither_value = rand() % 255;
+					int_sample -= dither_value;
+					int_sample /= 0x100;
+					buffer_num_buffer[output_offset] = int_sample;
 				}
-				break;
-
-			case 32:
-				output_advance = (device_channels - 1) * 4;
-				for(output_offset = channel * 4, input_offset = 0; 
+			}
+			else
+			{
+				for(output_offset = channel * 2, input_offset = 0; 
 					input_offset < samples; 
 					output_offset += output_advance, input_offset++)
 				{
 					sample = buffer_in_channel[input_offset];
 					CLAMP(sample, -1, 1);
-					sample *= 0x7fffffff;
+					sample *= 0x7fff;
 					int_sample = (int)sample;
 					buffer_num_buffer[output_offset++] = (int_sample & 0xff);
-					buffer_num_buffer[output_offset++] = (int_sample & 0xff00) >> 8;
-					buffer_num_buffer[output_offset++] = (int_sample & 0xff0000) >> 16;
-					buffer_num_buffer[output_offset++] = (int_sample & 0xff000000) >> 24;
+					buffer_num_buffer[output_offset] = (int_sample & 0xff00) >> 8;
 				}
-				break;
+			}
+			break;
+
+		case 24:
+			output_advance = (device_channels - 1) * 3;
+			for(output_offset = channel * 3, input_offset = 0; 
+				input_offset < samples; 
+				output_offset += output_advance, input_offset++)
+			{
+				sample = buffer_in_channel[input_offset];
+				CLAMP(sample, -1, 1);
+				sample *= 0x7fffff;
+				int_sample = (int)sample;
+				buffer_num_buffer[output_offset++] = (int_sample & 0xff);
+				buffer_num_buffer[output_offset++] = (int_sample & 0xff00) >> 8;
+				buffer_num_buffer[output_offset++] = (int_sample & 0xff0000) >> 16;
+			}
+			break;
+
+		case 32:
+			output_advance = (device_channels - 1) * 4;
+			for(output_offset = channel * 4, input_offset = 0; 
+				input_offset < samples; 
+				output_offset += output_advance, input_offset++)
+			{
+				sample = buffer_in_channel[input_offset];
+				CLAMP(sample, -1, 1);
+				sample *= 0x7fffffff;
+				int_sample = (int)sample;
+				buffer_num_buffer[output_offset++] = (int_sample & 0xff);
+				buffer_num_buffer[output_offset++] = (int_sample & 0xff00) >> 8;
+				buffer_num_buffer[output_offset++] = (int_sample & 0xff0000) >> 16;
+				buffer_num_buffer[output_offset++] = (int_sample & 0xff000000) >> 24;
+			}
+			break;
 		}
 	}
 
@@ -299,10 +298,10 @@ int AudioDevice::wait_for_completion()
 
 
 
-int64_t AudioDevice::current_position()
+samplenum AudioDevice::current_position()
 {
 // try to get OSS position
-	int64_t hardware_result = 0, software_result = 0, frame;
+	samplenum hardware_result = 0, software_result = 0, frame;
 
 	if(w)
 	{
@@ -329,7 +328,7 @@ int64_t AudioDevice::current_position()
 				last_position = software_result;
 		}
 
-		int64_t offset_samples = -(int64_t)(get_orate() * 
+		samplenum offset_samples = -(int64_t)(get_orate() * 
 			out_config->audio_offset);
 
 		if(hardware_result < 0 || software_position_info) 
@@ -340,7 +339,7 @@ int64_t AudioDevice::current_position()
 	else
 	if(r)
 	{
-		int64_t result = total_samples_read + 
+		samplenum result = total_samples_read + 
 			record_timer->get_scaled_difference(get_irate());
 		return result;
 	}
@@ -356,7 +355,6 @@ void AudioDevice::run_output()
 	playback_timer->update();
 
 
-//printf("AudioDevice::run 1 %d\n", Thread::calculate_realtime());
 	while(is_playing_back && !interrupt && !last_buffer[thread_buffer_num])
 	{
 // wait for buffer to become available
@@ -406,8 +404,6 @@ void AudioDevice::run_output()
 			if(thread_buffer_num >= TOTAL_BUFFERS) thread_buffer_num = 0;
 		}
 
-
-//printf("AudioDevice::run 1 %d %d\n", interrupt, last_buffer[thread_buffer_num]);
 // test for last buffer
 		if(!interrupt && last_buffer[thread_buffer_num])
 		{
@@ -418,11 +414,3 @@ void AudioDevice::run_output()
 		}
 	}
 }
-
-
-
-
-
-
-
-

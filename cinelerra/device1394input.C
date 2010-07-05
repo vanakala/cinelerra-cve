@@ -22,6 +22,7 @@
 #include "condition.h"
 #include "device1394input.h"
 #include "ieee1394-ioctl.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "vframe.h"
 #include "video1394.h"
@@ -128,7 +129,7 @@ int Device1394Input::open(const char *path,
 	{
 		if((fd = ::open(path, O_RDWR)) < 0)
 		{
-			printf("Device1394Input::open %s: %s\n", path, strerror(errno));
+			errorbox("Failed to open 1394 input %s: %s\n", path, strerror(errno));
 		}
 		else
 		{
@@ -150,19 +151,19 @@ int Device1394Input::open(const char *path,
 			};
 			if(ioctl(fd, DV1394_IOC_INIT, &init) < 0)
 			{
-				printf("Device1394Input::open DV1394_IOC_INIT: %s\n", strerror(errno));
+				errormsg("Failed to initialize 1394 input: %s\n", strerror(errno));
 			}
 
 			input_buffer = (unsigned char*)mmap(0,
-              	length * buffer_size,
-                PROT_READ | PROT_WRITE,
-              	MAP_SHARED,
-              	fd,
-              	0);
+					length * buffer_size,
+					PROT_READ | PROT_WRITE,
+					MAP_SHARED,
+					fd,
+					0);
 
 			if(ioctl(fd, DV1394_IOC_START_RECEIVE, 0) < 0)
 			{
-				perror("Device1394Input::open DV1394_START_RECEIVE");
+				errorbox("1394 Start receive failed");
 			}
 		}
 
@@ -200,13 +201,13 @@ void Device1394Input::run()
 		Thread::enable_cancel();
 		if(ioctl(fd, DV1394_IOC_WAIT_FRAMES, 1))
 		{
-			perror("Device1394Input::run DV1394_IOC_WAIT_FRAMES");
+			errormsg("1394 wait frames failed");
 			sleep(1);
 		}
 		else
 		if(ioctl(fd, DV1394_IOC_GET_STATUS, &status))
 		{
-			perror("Device1394Input::run DV1394_IOC_GET_STATUS");
+			errormsg("1394 get status failed");
 		}
 		Thread::disable_cancel();
 
@@ -225,9 +226,6 @@ void Device1394Input::run()
 				is_overflow = 1;
 
 			char *src = (char*)(input_buffer + buffer_size * status.first_clear_frame);
-// static FILE *test = 0;
-// if(!test) test = fopen("/tmp/test", "w");
-// fwrite(src, buffer_size, 1, test);
 
 // Export the video
 			if(dst)
@@ -254,17 +252,16 @@ void Device1394Input::run()
 // do in-place _FAST_ && _SIMPLE_ upsampling to 48khz
 // i also think user should get a warning that his material is effectively 32khz
 // we take 16bit samples for both channels in one 32bit int
- 					int *twosample = (int*) (audio_buffer + audio_samples * 2 * 2);
- 					int from = audio_result - 1;
- 					int new_result = audio_result * 48000 / real_freq;
- 					for (int to = new_result - 1; to >=0; to--)
- 					{	
- 						if ((to % 3) == 0 || (to % 3) == 1) from --;
- 						twosample[to] = twosample[from];
- 					}
- 					audio_result = new_result;
- 				}
-
+					int *twosample = (int*) (audio_buffer + audio_samples * 2 * 2);
+					int from = audio_result - 1;
+					int new_result = audio_result * 48000 / real_freq;
+					for (int to = new_result - 1; to >=0; to--)
+					{
+						if ((to % 3) == 0 || (to % 3) == 1) from --;
+						twosample[to] = twosample[from];
+					}
+					audio_result = new_result;
+				}
 
 				audio_samples += audio_result;
 
@@ -276,16 +273,15 @@ void Device1394Input::run()
 			if(!is_overflow)
 				increment_counter(&current_inbuffer);
 
-
 			Thread::enable_cancel();
 			if(ioctl(fd, DV1394_IOC_RECEIVE_FRAMES, 1))
 			{
-				perror("Device1394Input::run DV1394_IOC_RECEIVE_FRAMES");
+				errormsg("1394 receive frames failed");
 			}
 
 			if(ioctl(fd, DV1394_IOC_GET_STATUS, &status))
 			{
-				perror("Device1394Input::run DV1394_IOC_GET_STATUS");
+				errormsg("1394 get status failed");
 			}
 			Thread::disable_cancel();
 		}
@@ -354,7 +350,6 @@ int Device1394Input::read_audio(char *data, int samples)
 		result = audio_lock->timed_lock(timeout, "Device1394Input::read_audio 2");
 		buffer_lock->lock("Device1394Input::read_audio 3");
 	}
-//printf("Device1394Input::read_audio 1 %d %d\n", result, timeout);
 
 	if(audio_samples >= samples)
 	{
@@ -364,12 +359,6 @@ int Device1394Input::read_audio(char *data, int samples)
 			(audio_samples - samples) * bits * channels / 8);
 		audio_samples -= samples;
 	}
-//printf("Device1394Input::read_audio 100\n");
 	buffer_lock->unlock();
 	return result;
 }
-
-
-
-
-

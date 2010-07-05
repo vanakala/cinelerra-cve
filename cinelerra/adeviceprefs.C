@@ -123,9 +123,6 @@ int ADevicePrefs::initialize(int creation)
 		case AUDIO_IEC61883:
 			create_firewire_objs();
 			break;
-		case AUDIO_CINE:
-			create_cine_objs();
-			break;
 	}
 	return 0;
 }

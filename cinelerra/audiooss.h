@@ -34,14 +34,14 @@ class OSSThread : public Thread
 public:
 	OSSThread(AudioOSS *device);
 	~OSSThread();
-	
+
 	void run();
 	void write_data(int fd, unsigned char *data, int bytes);
 	void read_data(int fd, unsigned char *data, int bytes);
 // Must synchronize reads and writes
 	void wait_read();
 	void wait_write();
-	
+
 	Condition *input_lock;
 	Condition *output_lock;
 	Condition *read_lock;
@@ -58,14 +58,14 @@ class AudioOSS : public AudioLowLevel
 public:
 	AudioOSS(AudioDevice *device);
 	~AudioOSS();
-	
+
 	int open_input();
 	int open_output();
 	int open_duplex();
 	int write_buffer(char *buffer, int bytes);
 	int read_buffer(char *buffer, int bytes);
 	int close_all();
-	int64_t device_position();
+	samplenum device_position();
 	int flush_device();
 	int interrupt_playback();
 

@@ -99,12 +99,5 @@ public:
 	int is_pal;
 };
 
-
-
-
-
 #endif
-
-
-
 #endif

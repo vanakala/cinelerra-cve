@@ -198,7 +198,7 @@ int Audio1394::write_buffer(char *buffer, int bytes)
 	return 0;
 }
 
-int64_t Audio1394::device_position()
+samplenum Audio1394::device_position()
 {
 	if(output_thread)
 		return output_thread->get_audio_position();
@@ -207,17 +207,6 @@ int64_t Audio1394::device_position()
 		return output_iec->get_audio_position();
 	else
 		return 0;
-}
-
-
-int Audio1394::flush_device()
-{
-	if(output_thread)
-		output_thread->flush();
-	else
-	if(output_iec)
-		output_iec->flush();
-	return 0;
 }
 
 int Audio1394::interrupt_playback()
