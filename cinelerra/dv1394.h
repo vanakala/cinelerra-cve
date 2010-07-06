@@ -236,7 +236,7 @@ enum pal_or_ntsc {
 struct dv1394_init {
 	/* DV1394_API_VERSION */
 	unsigned int api_version;
-	
+
 	/* isochronous transmission channel to use */
 	unsigned int channel;
 
@@ -265,7 +265,7 @@ struct dv1394_init {
    would imply a different size for the ringbuffer). If you need a
    different buffer size, simply close and re-open the device, then
    initialize it with your new settings. */
-   
+
 /* Q: What are cip_n and cip_d? */
 
 /*
@@ -288,7 +288,7 @@ struct dv1394_init {
   algorithm. Empty packets are produced at an average rate of CIP_N / CIP_D.
   You can alter the empty packet rate by passing non-zero values for cip_n
   and cip_d to the INIT ioctl.
-  
+
  */
 
 

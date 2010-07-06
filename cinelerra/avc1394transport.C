@@ -100,11 +100,11 @@ int AVC1394Transport::create_objects()
 	window->add_subwindow(reverse_button = new  AVC1394GUIReverse(mwindow, avc, x, y));
 	x += reverse_button->get_w();
 	window->add_subwindow(stop_button = new  AVC1394GUIStop(mwindow, avc, x, y));
-    x += stop_button->get_w();
+	x += stop_button->get_w();
 	window->add_subwindow(pause_button = new AVC1394GUIPause(mwindow, avc, x, y));
 	x += pause_button->get_w();
 	window->add_subwindow(play_button = new  AVC1394GUIPlay(mwindow, avc, x, y));
-    x += play_button->get_w();
+	x += play_button->get_w();
 	window->add_subwindow(fforward_button = new  AVC1394GUIFForward(mwindow, avc, x, y));
 	x += fforward_button->get_w();
 	window->add_subwindow(end_button = new AVC1394GUISeekEnd(mwindow, avc, x, y));
@@ -119,18 +119,18 @@ int AVC1394Transport::keypress_event(int keypress)
 {
 	switch(keypress)
 	{
-		case ' ':
-			if(avc->current_command == PAUSE)
-			{
-				avc->current_command = NORMAL_FWD;
-				avc->play();
-			}
-			else
-			{
-				avc->current_command = PAUSE;
-				avc->pause();
-			}
-			break;
+	case ' ':
+		if(avc->current_command == PAUSE)
+		{
+			avc->current_command = NORMAL_FWD;
+			avc->play();
+		}
+		else
+		{
+			avc->current_command = PAUSE;
+			avc->pause();
+		}
+		break;
 	}
 	return 0;
 }
@@ -143,15 +143,15 @@ void AVC1394Transport::reposition_window(int x, int y)
 	start_button->reposition_window(x, y);
 	x += start_button->get_w();
 	rewind_button->reposition_window(x, y);
-   x += rewind_button->get_w();
+	x += rewind_button->get_w();
 	reverse_button->reposition_window(x, y);
-   x += reverse_button->get_w();
+	x += reverse_button->get_w();
 	stop_button->reposition_window(x, y);
-   x += stop_button->get_w();
+	x += stop_button->get_w();
 	pause_button->reposition_window(x, y);
 	x += pause_button->get_w();
 	play_button->reposition_window(x, y);
-   x += play_button->get_w();
+	x += play_button->get_w();
 	fforward_button->reposition_window(x, y);
 	x += fforward_button->get_w();
 	end_button->reposition_window(x, y);
@@ -182,8 +182,8 @@ AVC1394GUISeekStart::~AVC1394GUISeekStart()
 int AVC1394GUISeekStart::handle_event()
 {
 	avc->current_command = COMMAND_NONE;
-    avc->seek("00:00:00:00");
-    return 1;
+	avc->seek("00:00:00:00");
+	return 1;
 }
 
 int  AVC1394GUISeekStart::keypress_event()
@@ -321,20 +321,20 @@ AVC1394GUIPause::~AVC1394GUIPause()
 int AVC1394GUIPause::handle_event()
 {
 	avc->current_command = PAUSE;
-    avc->pause();
-    return 1;
+	avc->pause();
+	return 1;
 }
 
 int AVC1394GUIPause::keypress_event()
 {
-    return 0;
+	return 0;
 }
 
 AVC1394GUIFForward::AVC1394GUIFForward(MWindow *mwindow, AVC1394Control *avc, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("fastfwd"))
 {
-   this->avc = avc;
-   set_tooltip(_("Fast Forward ( Enter )"));
+	this->avc = avc;
+	set_tooltip(_("Fast Forward ( Enter )"));
 }
 
 AVC1394GUIFForward::~AVC1394GUIFForward()
@@ -344,14 +344,14 @@ AVC1394GUIFForward::~AVC1394GUIFForward()
 int AVC1394GUIFForward::handle_event()
 {
 	avc->current_command = FAST_FWD;
-    avc->fforward();
-    return 1;
+	avc->fforward();
+	return 1;
 }
 
 int AVC1394GUIFForward::keypress_event()
 {
- 	if(get_keypress() == KPENTER) return handle_event();
-    return 0;
+	if(get_keypress() == KPENTER) return handle_event();
+	return 0;
 }
 
 
@@ -361,8 +361,8 @@ AVC1394GUISeekEnd::AVC1394GUISeekEnd(MWindow *mwindow,
 	int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("end"))
 {
-   this->avc = avc;
-   set_tooltip(_("Jump to end ( End )"));
+	this->avc = avc;
+	set_tooltip(_("Jump to end ( End )"));
 }
 
 AVC1394GUISeekEnd::~AVC1394GUISeekEnd()
@@ -371,14 +371,14 @@ AVC1394GUISeekEnd::~AVC1394GUISeekEnd()
 
 int AVC1394GUISeekEnd::handle_event()
 {
-   avc->current_command = COMMAND_NONE;
-   avc->seek("ff:ff:ff:ff");
-   return 1;
+	avc->current_command = COMMAND_NONE;
+	avc->seek("ff:ff:ff:ff");
+	return 1;
 }
 
 int AVC1394GUISeekEnd::keypress_event()
 {
 	if(get_keypress() == END) return handle_event();
-     return 0;
+	return 0;
 }
 

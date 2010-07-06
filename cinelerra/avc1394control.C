@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include "avc1394control.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "transportque.inc"
 
@@ -48,27 +49,21 @@ void AVC1394Control::initialize()
 #else
 	handle = raw1394_new_handle();
 #endif
-//printf("AVC1394Control::initialize(): 1\n");
 	if(!handle)
 	{
-//printf("AVC1394Control::initialize(): 2\n");
 		if(!errno)
 		{
-//printf("AVC1394Control::initialize(): 3\n");
-			fprintf(stderr, "AVC1394Control::initialize(): Not Compatable!\n");
+			errorbox("Incompatible AVC1394 control handle");
 		} 
 		else 
 		{
-//printf("AVC1394Control::initialize(): 4\n");
-			fprintf(stderr, "AVC1394Control::initialize(): couldn't get handle\n");
+			errorbox("Could not get AVC1394 control handle");
 		}
 		return;
 	}
 
 	if(raw1394_set_port(handle, 0) < 0) {
-//printf("AVC1394Control::initialize(): 5\n");
 		perror("AVC1394Control::initialize(): couldn't set port");
-//		raw1394_destroy_handle(handle);
 		return;
 	}
 
@@ -76,16 +71,13 @@ void AVC1394Control::initialize()
 	{
 		if(rom1394_get_directory(handle, i, &rom_dir) < 0)
 		{
-//printf("AVC1394Control::initialize(): 6\n");
 			fprintf(stderr, "AVC1394Control::initialize(): node %d\n", i);
-//			raw1394_destroy_handle(handle);
 			return;
 		}
 		
 		if((rom1394_get_node_type(&rom_dir) == ROM1394_NODE_TYPE_AVC) &&
 			avc1394_check_subunit_type(handle, i, AVC1394_SUBUNIT_TYPE_VCR))
 		{
-//printf("AVC1394Control::initialize(): 7\n");
 			device = i;
 			break;
 		}
@@ -93,9 +85,7 @@ void AVC1394Control::initialize()
 
 	if(device == -1)
 	{
-//printf("AVC1394Control::initialize(): 8\n");
 		fprintf(stderr, "AVC1394Control::initialize(): No AV/C Devices\n");
-//		raw1394_destroy_handle(handle);
 		return;
 	}
 
@@ -111,7 +101,6 @@ AVC1394Control::~AVC1394Control()
 
 void AVC1394Control::play()
 {
-//printf("AVC1394Control::play(): 1\n");
 	device_lock->lock("AVC1394Control::play");
 	avc1394_vcr_play(handle, device);
 	device_lock->unlock();
@@ -119,7 +108,6 @@ void AVC1394Control::play()
 
 void AVC1394Control::stop()
 {
-//printf("AVC1394Control::stop(): 1\n");
 	device_lock->lock("AVC1394Control::stop");
 	avc1394_vcr_stop(handle, device);
 	device_lock->unlock();
@@ -127,7 +115,6 @@ void AVC1394Control::stop()
 
 void AVC1394Control::reverse()
 {
-//printf("AVC1394Control::reverse(): 1\n");
 	device_lock->lock("AVC1394Control::reverse");
 	avc1394_vcr_reverse(handle, device);
 	device_lock->unlock();
@@ -135,7 +122,6 @@ void AVC1394Control::reverse()
 
 void AVC1394Control::rewind()
 {
-//printf("AVC1394Control::rewind(): 1\n");
 	device_lock->lock("AVC1394Control::rewind");
 	avc1394_vcr_rewind(handle, device);
 	device_lock->unlock();
@@ -143,7 +129,6 @@ void AVC1394Control::rewind()
 
 void AVC1394Control::fforward()
 {
-//printf("AVC1394Control::fforward(): 1\n");
 	device_lock->lock("AVC1394Control::fforward");
 	avc1394_vcr_forward(handle, device);
 	device_lock->unlock();
@@ -151,7 +136,6 @@ void AVC1394Control::fforward()
 
 void AVC1394Control::pause()
 {
-//printf("AVC1394Control::pause(): 1\n");
 	device_lock->lock("AVC1394Control::pause");
 	avc1394_vcr_pause(handle, device);
 	device_lock->unlock();
@@ -159,7 +143,6 @@ void AVC1394Control::pause()
 
 void AVC1394Control::record()
 {
-//printf("AVC1394Control::record(): 1\n");
 	device_lock->lock("AVC1394Control::record");
 	avc1394_vcr_record(handle, device);
 	device_lock->unlock();
@@ -167,7 +150,6 @@ void AVC1394Control::record()
 
 void AVC1394Control::eject()
 {
-//printf("AVC1394Control::eject(): 1\n");
 	device_lock->lock("AVC1394Control::eject");
 	avc1394_vcr_eject(handle, device);
 	device_lock->unlock();
@@ -175,11 +157,9 @@ void AVC1394Control::eject()
 
 void AVC1394Control::get_status()
 {
-//printf("AVC1394Control::get_status(): 1\n");
 	device_lock->lock("Control::get_status");
 	status = avc1394_vcr_status(handle, device);
 	device_lock->unlock();
-//	printf("Status: %s\n", avc1394_vcr_decode_status(status));
 }
 
 char *AVC1394Control::timecode()
@@ -192,7 +172,6 @@ char *AVC1394Control::timecode()
 
 void AVC1394Control::seek(const char *time)
 {
-//printf("AVC1394Control::seek(): 1\n");
 	device_lock->lock("AVC1394Control::seek");
 	strcpy(text_return, time);
 	avc1394_vcr_seek_timecode(handle, device, text_return);
