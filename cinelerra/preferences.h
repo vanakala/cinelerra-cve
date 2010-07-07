@@ -23,7 +23,9 @@
 #define PREFERENCES_H
 
 #include "asset.inc"
+/*
 #include "audioconfig.inc"
+	*/
 #include "bchash.inc"
 #include "guicast.h"
 #include "maxchannels.h"

@@ -110,7 +110,6 @@ public:
 	MWindow *mwindow;
 	Record *record;
 	RecordGUIBatches *batch_list;
-//	RecordBatch *batch_number;
 	RecordPath *batch_path;
 	RecordStatusThread *status_thread;
 	TimeEntry *batch_start;
@@ -136,37 +135,17 @@ public:
 	LoadMode *load_mode;
 	int flash_color;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//	RecordTransport *record_transport;
 	RecordGUIModeMenu *rec_mode_menu;
 	RecordGUILoopHr *loop_hr;
 	RecordGUILoopMin *loop_min;
 	RecordGUILoopSec *loop_sec;
 	RecordGUIReset *reset;
-//	RecordGUIStartOver *startover_button;
 	RecordGUIDCOffset *dc_offset_button;
 	RecordGUIDCOffsetText *dc_offset_text[MAXCHANNELS];
 	RecordMonitor *monitor_video_window;
 	BC_Meter *meter[MAXCHANNELS];
 	long total_dropped_frames;
 	long total_clipped_samples;
-
 
 
 	char* get_path();
@@ -180,8 +159,6 @@ public:
 	int get_sample_rate();
 	int get_enable_duplex();
 	long get_playback_buffer();
-
-
 
 	int set_loop_status(int value);
 	int update_duration_boxes(); // Redraw the loop duration textboxes for a script.
@@ -197,12 +174,10 @@ public:
 	void update_labels(double new_position);
 	int update_position(double new_position);
 	int update_prev_label(long new_position);
-//	int update_next_label(long new_position);
 
 	int update_title(BC_Title *title, double position);
 
 	int goto_prev_label();
-//	int goto_next_label();
 	int toggle_label();
 };
 
@@ -216,7 +191,7 @@ public:
 	int drag_start_event();
 	int drag_motion_event();
 	int drag_stop_event();
-	
+
 	int dragging_item;
 	Record *record;
 	RecordGUI *gui;
@@ -476,20 +451,6 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class RecordGUIModeMenu : public BC_PopupMenu
 {
 public:
@@ -512,11 +473,6 @@ public:
 
 	int handle_event();
 };
-
-
-
-
-
 
 
 
@@ -559,11 +515,6 @@ public:
 	int handle_event();
 	RecordGUI *gui;
 };
-
-
-
-
-
 
 
 #endif

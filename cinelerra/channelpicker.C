@@ -277,7 +277,6 @@ PrefsChannelPicker::PrefsChannelPicker(MWindow *mwindow,
 		y,
 		prefs->dialog)
 {
-//	printf("PrefsChannelPicker::PrefsChannelPicker 1\n");
 	this->mwindow = mwindow;
 	this->prefs = prefs;
 	VDeviceBUZ::get_inputs(&input_sources);
@@ -448,23 +447,11 @@ void ChannelPicker::update_channel_list()
 }
 
 
-
-
-
-
-
-
 BC_WindowBase* ChannelPicker::get_subwindow()
 {
 	return parent_window;
 	return 0;
 }
-
-
-
-
-
-
 
 int ChannelPicker::create_objects()
 {
@@ -542,7 +529,7 @@ ChannelButton::ChannelButton(ChannelPicker *channel_picker,
 	int x, 
 	int y)
  : BC_Button(x, 
- 	y, 
+	y,
 	channel_picker->get_theme() ? 
 		channel_picker->get_theme()->get_image_set("channel") :
 		0)
@@ -569,7 +556,7 @@ ChannelText::ChannelText(ChannelPicker *channel_picker,
 	int x, 
 	int y)
  : BC_PopupTextBox(channel_picker->get_subwindow(),
- 	&channel_picker->channel_listitems,
+	&channel_picker->channel_listitems,
 	channel_picker->current_channel_name(),
 	x, 
 	y, 
@@ -595,7 +582,7 @@ int ChannelText::handle_event()
 
 ChannelList::ChannelList(ChannelPicker *channel_picker, int x, int y)
  : BC_ListBox(x, 
- 		y, 
+		y,
 		100, 
 		200,
 		LISTBOX_TEXT,                   // Display text list or icons
@@ -612,7 +599,7 @@ ChannelList::ChannelList(ChannelPicker *channel_picker, int x, int y)
 ChannelList::~ChannelList()
 {
 }
-	
+
 int ChannelList::handle_event()
 {
 	return 0;
@@ -627,19 +614,23 @@ ChannelTumbler::ChannelTumbler(ChannelPicker *channel_picker,
 {
 	this->channel_picker = channel_picker;
 }
+
 ChannelTumbler::~ChannelTumbler()
 {
 }
+
 int ChannelTumbler::handle_up_event()
 {
 	channel_picker->channel_up();
 	return 1;
 }
+
 int ChannelTumbler::handle_down_event()
 {
 	channel_picker->channel_down();
 	return 1;
 }
+
 int ChannelTumbler::keypress_event()
 {
 	if(get_keypress() == PGUP)

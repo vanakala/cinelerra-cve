@@ -19,7 +19,7 @@ endif
 
 if BUILDINFO_GIT
 GITVERSION=$(shell if [ -d $(top_srcdir)/.git ]; then cd $(top_srcdir); git rev-parse HEAD; else echo "unknown"; fi)
-	echo '#define REPOMAINTXT " GIT::$(GITVERSION) $(BUILDINFO_NONRC_S) (C) 2006 Heroine Virtual Ltd.\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
+	echo '#define REPOMAINTXT " GIT::$(GITVERSION) $(BUILDINFO_NONRC_S)\n(C) 2006 Heroine Virtual Ltd.\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
 	echo '#define REPOABOUTPREFTXT "Git SHA-1: $(GITVERSION)"' >> versioninfo.h
 else
 
@@ -260,7 +260,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    recordthread.C \
 		    recordtransport.C \
 		    recordvideo.C \
-		    recordwindow.C \
 		    removethread.C \
 		    render.C \
 		    renderengine.C \
@@ -377,7 +376,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 attachmentpoint.h \
 		 audio1394.h \
 		 audioalsa.h \
-		 audioconfig.h \
 		 audiodevice.h \
 		 audiodvb.h \
 		 audioesound.h \
@@ -575,7 +573,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 recordthread.h \
 		 recordtransport.h \
 		 recordvideo.h \
-		 recordwindow.h \
 		 removethread.h \
 		 renderengine.h \
 		 renderfarmclient.h \

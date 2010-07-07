@@ -53,10 +53,10 @@ public:
 	int resume_recording();
 	int wait_for_completion();     // For recording to a file.
 	int set_parameters(File *file,
-							RecordGUI *gui,
-							int buffer_size,    // number of frames to write to disk at a time
-							int realtime,
-							int frames);
+				RecordGUI *gui,
+				int buffer_size,    // number of frames to write to disk at a time
+				int realtime,
+				int frames);
 	void write_buffer(int skip_new = 0);
 	void start_file_thread();
 	int unhang_thread();
@@ -73,23 +73,23 @@ public:
 	RecordGUI *gui;
 	int single_frame;
 	int buffer_size;    // number of frames to write to disk at a time
-	int64_t buffer_position;   // Position in output buffer being captured to
+	int buffer_position;   // Position in output buffer being captured to
 	VFrame *capture_frame;   // Output frame for preview mode
 	Timer delayer;
 // result of every disk write
-	int write_result;   
+	int write_result;
 // result of every frame grab
-	int grab_result;  
+	int grab_result;
 // Capture frame
 	VFrame ***frame_ptr;
-	int64_t current_sample;   // Sample in time of the start of the capture
-	int64_t next_sample;      // Sample of next frame
-	int64_t total_dropped_frames;  // Total number of frames behind
-	int64_t dropped_frames;  // Number of frames currently behind
-	int64_t last_dropped_frames;  // Number of dropped frames during the last calculation
-	int64_t delay;
+	samplenum current_sample;   // Sample in time of the start of the capture
+	samplenum next_sample;      // Sample of next frame
+	framenum total_dropped_frames;  // Total number of frames behind
+	framenum dropped_frames;  // Number of frames currently behind
+	framenum last_dropped_frames;  // Number of dropped frames during the last calculation
+	int delay;
 // Frame start of this recording in the file
-	int64_t record_start;     
+	framenum record_start;
 // Want one thread to dictate the other during shared device recording.
 // Done with batch
 	int batch_done;

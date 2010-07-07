@@ -107,7 +107,7 @@ public:
 	int calibrate_dc_offset();
 	int calibrate_dc_offset(long new_value, int channel);
 
-	int update_position(long new_position);
+	int update_position(samplenum new_position);
 	int update_total_length(long new_length);
 	int update_prev_label(long new_label);
 	int update_next_label(long new_label);
@@ -138,7 +138,7 @@ public:
 	int is_duplexing;
 	int is_monitoring;
 	long total_length;
-	long current_position;
+	samplenum current_position;
 	long prev_label;
 	long next_label;
 
@@ -146,11 +146,6 @@ public:
 
 	int mode_to_text(char *string, int mode);
 	int text_to_mode(char *string);
-
-// Current sample depending on the operation
-	long absolute_monitor_position();
-	long absolute_preview_position();
-	long absolute_record_position();
 
 	ArrayList<char*>* get_video_inputs();
 	int change_channel(Channel *channel);
@@ -163,8 +158,6 @@ public:
 	int get_duplex_status();
 	int set_duplex_status(int duplex_status);
 	int set_record_mode(char *text);
-	int set_monitor_video(int value);
-	int set_monitor_audio(int value);
 	int get_record_mode(char *text);
 	int get_record_mode();
 	int get_dither();
@@ -176,10 +169,8 @@ public:
 	float get_frames_per_foot();
 	float get_min_db();
 	float get_frame_rate();
-	long get_current_position();
 	int get_bits();
-	long get_current_delay();
-	long get_current_jumps();
+	int get_current_delay();
 	int reset_current_delay();
 	int get_in_length();    // Length to read during record
 	int get_meter_over_hold(int divisions);
@@ -187,7 +178,8 @@ public:
 	int get_meter_speed();
 
 private:
-	long jump_delay[JUMP_DELAYS], current_jump_jumps[JUMP_DELAYS];
+	int jump_delay[JUMP_DELAYS]; 
+	int current_jump_jumps[JUMP_DELAYS];
 	int current_jump_delay, current_jump_jump;
 };
 

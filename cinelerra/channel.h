@@ -49,7 +49,6 @@ public:
 // Only used for channel scanning
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
-	
 
 // Flags for GUI settings the device uses
 	int use_frequency;
@@ -59,14 +58,10 @@ public:
 // Device supports scanning
 	int has_scanning;
 
-
-
 // User supplied name
 	char title[BCTEXTLEN];
 // Name given by device for the channel
 	char device_name[BCTEXTLEN];
-
-
 
 
 // Number of the table entry in the appropriate freqtable

@@ -234,9 +234,9 @@ static CHANLIST ntsc_cable[] =
     { "123",	787250 },
     { "124",	793250 },
     { "125",	799250 },
-    { "T7",       8250 },
-    { "T8",	     14250 },
-    { "T9",	     20250 },
+    { "T7",	  8250 },
+    { "T8",	 14250 },
+    { "T9",	 20250 },
     { "T10",	 26250 },
     { "T11",	 32250 },
     { "T12",	 38250 },
@@ -371,9 +371,9 @@ static CHANLIST ntsc_hrc[] =
     { "123",	 786000 },
     { "124",	 792000 },
     { "125",	 798000 },
-    { "T7",		   7000 },  
-    { "T8",		  13000 }, 
-    { "T9",		  19000 }, 
+    { "T7",	   7000 },
+    { "T8",	  13000 },
+    { "T9",	  19000 },
     { "T10",	  25000 }, 
     { "T11",	  31000 }, 
     { "T12",	  37000 }, 
@@ -508,13 +508,13 @@ static CHANLIST pal_australia[] =
     { "1",	 57250 },
     { "2",	 64250 },
     { "3",	 86250 },
-    { "4",  	 95250 },
-    { "5",  	102250 },
-    { "6",  	175250 },
-    { "7",  	182250 },
-    { "8",  	189250 },
-    { "9",  	196250 },
-    { "10", 	209250 },
+    { "4",	 95250 },
+    { "5",	102250 },
+    { "6",	175250 },
+    { "7",	182250 },
+    { "8",	189250 },
+    { "9",	196250 },
+    { "10",	209250 },
     { "11",	216250 },
     { "28",	527250 },
     { "29",	534250 },
@@ -712,18 +712,18 @@ static CHANLIST pal_australia[] =
 
 static CHANLIST pal_europe[] = 
 {
-    FREQ_CCIR_I_III,
-    FREQ_CCIR_SL_SH,
-    FREQ_CCIR_H,
-    FREQ_UHF
+	FREQ_CCIR_I_III,
+	FREQ_CCIR_SL_SH,
+	FREQ_CCIR_H,
+	FREQ_UHF
 };
 
 static CHANLIST pal_europe_east[] = 
 {
-    FREQ_OIRT_I_III,
-    FREQ_OIRT_SL_SH,
-    FREQ_CCIR_H,
-    FREQ_UHF
+	FREQ_OIRT_I_III,
+	FREQ_OIRT_SL_SH,
+	FREQ_CCIR_H,
+	FREQ_UHF
 };
 
 static CHANLIST pal_italy[] = 

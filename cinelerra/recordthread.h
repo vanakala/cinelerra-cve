@@ -45,7 +45,7 @@ public:
 	int stop_recording(int resume_monitor);
 	int pause_recording();
 	int resume_recording();
-	int64_t sync_position();
+	samplenum sync_position();
 	void do_cron();
 
 	void run();

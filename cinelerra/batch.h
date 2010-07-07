@@ -38,8 +38,8 @@ public:
 	~Batch();
 
 	int create_objects();
-	static char* mode_to_text(int record_mode);
-	static int text_to_mode(char *text);
+	static const char* mode_to_text(int record_mode);
+	static int text_to_mode(const char *text);
 	Asset* get_current_asset();
 	const char* get_source_text();
 	Channel* get_current_channel_struct();

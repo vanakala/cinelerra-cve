@@ -1,4 +1,3 @@
-
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
@@ -32,6 +31,7 @@
 #include "browsebutton.h"
 #include "channel.inc"
 #include "bchash.inc"
+#include "datatype.h"
 #include "edl.inc"
 #include "file.inc"
 #include "filexml.inc"
@@ -48,7 +48,6 @@
 #include "recordgui.inc"
 #include "recordmonitor.inc"
 #include "recordthread.inc"
-#include "recordwindow.inc"
 #include "videodevice.inc"
 
 class Record;
@@ -149,7 +148,7 @@ public:
 	Batch* get_current_batch();
 // Information about the batch being edited
 	Batch* get_editing_batch();
-	char* current_mode();
+	const char* current_mode();
 	const char* current_source();
 	int get_current_channel();
 	int get_editing_channel();
@@ -161,15 +160,15 @@ public:
 	Asset* current_asset();
 	int* current_offset_type();
 // Total number of samples since record sequence started
-	int64_t sync_position();
+	samplenum sync_position();
 // Current position for GUI relative to batch
 	double current_display_position();
-	int64_t current_audio_position();
-	int64_t current_duration_samples();
-	int64_t current_video_position();
-	int64_t current_duration_frames();
+	samplenum current_audio_position();
+	samplenum current_duration_samples();
+	framenum current_video_position();
+	framenum current_duration_frames();
 // Number of frames between the current file and the start of the batch
-	int64_t batch_video_offset();
+	framenum batch_video_offset();
 // Rewind the current file in the current batch
 	void start_over();
 
@@ -192,7 +191,6 @@ public:
 	File *file;
 
 	PlaybackEngine *duplex_engine;
-	RecordWindow *record_window;
 // Table for LML conversion
 //	unsigned char _601_to_rgb_table[256];
 // For video synchronization when no audio thread
@@ -254,30 +252,26 @@ public:
 	int get_vu_format();
 	int get_rec_mode();
 	int set_rec_mode(int value);
-	int set_loop_duration(int64_t value);
+	int set_loop_duration(int value);
 	int use_floatingpoint();
 
 	int get_out_length();   // Length to write during playback
-	int64_t get_out_buffersize();  // Same as get_out_length
+	int get_out_buffersize();  // Same as get_out_length
 	int get_software_positioning();
-	int64_t get_in_buffersize();      // Length to write to disk at a time
+	int get_in_buffersize();      // Length to write to disk at a time
 	int get_video_buffersize();    // Number of frames to write to disk at a time
 	int get_video_capturesize();    // Number of frames to read from device at a time
 	int get_meter_over_hold(int divisions);
 	int get_meter_peak_hold(int divisions);
 	int get_meter_speed();
 
-	int64_t get_playback_buffer();
+	int get_playback_buffer();
 	int enable_duplex();
 
 	int realtime;
 	int to_tracks;
-	int64_t loop_duration;
-	int64_t startsource_sample;           // start in source file of this recording
-	int64_t endsource_sample;
-	int64_t startsource_frame;
-	int64_t endsource_frame;
-	int64_t dc_offset[MAXCHANNELS];
+	int loop_duration;
+	posnum dc_offset[MAXCHANNELS];
 	int append_to_file;
 	int record_mode;
 	int frame_w;

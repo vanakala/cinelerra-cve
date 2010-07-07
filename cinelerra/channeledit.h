@@ -44,9 +44,9 @@ public:
 	~ChannelEditThread();
 	void run();
 	int close_threads();
-	char* value_to_freqtable(int value);
-	char* value_to_norm(int value);
-	char* value_to_input(int value);
+	const char* value_to_freqtable(int value);
+	const char* value_to_norm(int value);
+	const char* value_to_input(int value);
 
 	Condition *completion;
 	int in_progress;
@@ -367,7 +367,7 @@ class ChannelEditEditNormItem : public BC_MenuItem
 public:
 	ChannelEditEditNormItem(ChannelEditEditThread *thread, 
 		ChannelEditThread *edit,
-		char *text, 
+		const char *text, 
 		int value);
 	~ChannelEditEditNormItem();
 	int handle_event();
@@ -396,7 +396,7 @@ class ChannelEditEditFreqItem : public BC_MenuItem
 public:
 	ChannelEditEditFreqItem(ChannelEditEditThread *thread, 
 		ChannelEditThread *edit,
-		char *text, 
+		const char *text, 
 		int value);
 	~ChannelEditEditFreqItem();
 

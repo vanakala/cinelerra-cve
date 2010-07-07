@@ -44,15 +44,6 @@ class DnChannel;
 class ChannelPicker
 {
 public:
-/*
- * 	ChannelPicker(MWindow *mwindow, 
- * 		Record *record, 
- * 		RecordMonitor *record_monitor,
- * 		ChannelDB *channeldb, 
- * 		int x,
- * 		int y,
- * 		BC_WindowBase *parent_window);
- */
 	ChannelPicker(ChannelDB *channeldb, 
 		int x,
 		int y,
@@ -103,8 +94,6 @@ public:
 // Get a structure containing what parameters the device supports
 	virtual PictureConfig* get_picture_usage() { return 0; };
 
-	
-
 	void update_channel_list();
 	int create_objects();
 	int reposition();
@@ -116,15 +105,8 @@ public:
 
 	int x, y;
 	Channel *current_channel;
-//	MWindow *mwindow;
-//	Record *record;
-//	RecordMonitor *record_monitor;
 	ChannelDB *channeldb;
 	BC_WindowBase *parent_window;
-
-
-
-
 
 
 	ChannelText *channel_text;
@@ -144,7 +126,7 @@ public:
 		int x,
 		int y);
 	~PrefsChannelPicker();
-	
+
 	BC_WindowBase* get_subwindow();
 
 	void load_scan_defaults(Channel *scan_params);
@@ -179,7 +161,7 @@ public:
 	int get_contrast();
 	int get_whiteness();
 
-	ArrayList<Channel*> input_sources;	
+	ArrayList<Channel*> input_sources;
 	MWindow *mwindow;
 	VDevicePrefs *prefs;
 };
@@ -243,7 +225,7 @@ class ChannelText : public BC_PopupTextBox
 public:
 	ChannelText(ChannelPicker *channel_picker, int x, int y);
 	~ChannelText();
-	
+
 	int handle_event();
 
 	ChannelPicker *channel_picker;
@@ -254,7 +236,7 @@ class ChannelList : public BC_ListBox
 public:
 	ChannelList(ChannelPicker *channel_picker, int x, int y);
 	~ChannelList();
-	
+
 	int handle_event();
 	ChannelPicker *channel_picker;
 };

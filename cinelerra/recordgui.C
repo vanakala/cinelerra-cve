@@ -58,7 +58,7 @@
 
 RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
  : BC_Window(PROGRAM_NAME ": Recording", 
- 	mwindow->session->rwindow_x, 
+	mwindow->session->rwindow_x, 
 	mwindow->session->rwindow_y, 
 	mwindow->session->rwindow_w, 
 	mwindow->session->rwindow_h,
@@ -74,7 +74,6 @@ RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
 
 RecordGUI::~RecordGUI()
 {
-TRACE("RecordGUI::~RecordGUI 1");
 	delete status_thread;
 	delete batch_source;
 	delete batch_mode;
@@ -83,7 +82,6 @@ TRACE("RecordGUI::~RecordGUI 1");
 	delete batch_start;
 	delete batch_duration;
 	delete load_mode;
-TRACE("RecordGUI::~RecordGUI 2");
 }
 
 
@@ -140,7 +138,6 @@ int RecordGUI::create_objects()
 	set_icon(mwindow->theme->get_image("record_icon"));
 
 	mwindow->theme->get_recordgui_sizes(this, get_w(), get_h());
-//printf("RecordGUI::create_objects 1\n");
 	mwindow->theme->draw_rwindow_bg(this);
 
 
@@ -151,8 +148,6 @@ int RecordGUI::create_objects()
 	update_batches();
 	modes.append(new BC_ListBoxItem(Batch::mode_to_text(RECORD_INFINITE)));
 	modes.append(new BC_ListBoxItem(Batch::mode_to_text(RECORD_TIMED)));
-//	modes.append(new BC_ListBoxItem(Batch::mode_to_text(RECORD_LOOP)));
-//	modes.append(new BC_ListBoxItem(Batch::mode_to_text(RECORD_SCENETOSCENE)));
 
 	int x = 10;
 	int y = 10;
@@ -314,7 +309,7 @@ int RecordGUI::create_objects()
 			FileMOV::compressiontostr(record->default_asset->vcodec), 
 			MEDIUMFONT, 
 			mwindow->theme->recordgui_fixed_color));
-	
+
 		y += pad;
 		sprintf(string, "%0.2f", record->default_asset->frame_rate);
 		add_subwindow(new BC_Title(x, 
@@ -322,7 +317,7 @@ int RecordGUI::create_objects()
 			string, 
 			MEDIUMFONT, 
 			mwindow->theme->recordgui_fixed_color));
-	
+
 		y += pad;
 		add_subwindow(frames_dropped = new BC_Title(x, 
 			y, 
@@ -347,13 +342,6 @@ int RecordGUI::create_objects()
 
 	y += pad + 10;
 	button_y = MAX(y, button_y);
-	
-	
-	
-
-
-
-
 
 
 
@@ -425,7 +413,6 @@ int RecordGUI::create_objects()
 	add_subwindow(new RecordGUIOK(record, this));
 
 	interrupt_thread = new EndRecordThread(record, this);
-//	add_subwindow(new RecordGUISave(record, this));
 	add_subwindow(new RecordGUICancel(record, this));
 
 	startover_thread = new RecordStartoverThread(record, this);
@@ -441,8 +428,6 @@ void RecordGUI::flash_batch()
 			flash_color = RED;
 		else
 			flash_color = GREEN;
-
-//printf("RecordGUI::flash_batch %x\n", flash_color);
 
 		for(int i = 0; i < BATCH_COLUMNS; i++)
 		{
@@ -502,7 +487,7 @@ void RecordGUI::update_batches()
 		batches[5].append(new BC_ListBoxItem(string, color));
 		sprintf(string, "%s", Batch::mode_to_text(batch->record_mode));
 		batches[6].append(new BC_ListBoxItem(string, color));
-		
+
 		if(i == selection_number)
 		{
 			for(int j = 0; j < BATCH_COLUMNS; j++)
@@ -528,11 +513,9 @@ void RecordGUI::update_batches()
 
 void RecordGUI::update_batch_sources()
 {
-//printf("RecordGUI::update_batch_sources 1\n");
 	if(record->record_monitor->window->channel_picker)
 		batch_source->update_list(
 			&record->record_monitor->window->channel_picker->channel_listitems);
-//printf("RecordGUI::update_batch_sources 2\n");
 }
 
 int RecordGUI::translation_event()
@@ -562,7 +545,7 @@ int RecordGUI::resize_event(int w, int h)
 
 	int new_h = mwindow->session->rwindow_h - bottom_margin - batch_list->get_y();
 	if(new_h < 10) new_h = 10;
-printf("RecordGUI::resize_event 1 %d\n", mwindow->session->rwindow_h - bottom_margin - batch_list->get_y());
+
 	batch_list->reposition_window(batch_list->get_x(), 
 		batch_list->get_y(),
 		mwindow->session->rwindow_w - 20,
@@ -572,24 +555,15 @@ printf("RecordGUI::resize_event 1 %d\n", mwindow->session->rwindow_h - bottom_ma
 			mwindow->theme->loadmode_w / 2,
 		mwindow->session->rwindow_h - mode_margin);
 
-	
-
 	flash();
 	return 1;
 }
 
 void RecordGUI::update_batch_tools()
 {
-//printf("RecordGUI::update_batch_tools 1\n");
 	char string[BCTEXTLEN];
 	Batch *batch = record->get_editing_batch();
 	batch_path->update(batch->get_current_asset()->path);
-
-// File is open in editing batch
-// 	if(record->current_batch == record->editing_batch && record->file)
-// 		batch_path->disable();
-// 	else
-// 		batch_path->enable();
 
 	batch_start->update(&batch->start_day, &batch->start_time);
 	batch_duration->update(0, &batch->duration);
@@ -703,12 +677,6 @@ int RecordGUIBatches::drag_stop_event()
 
 
 
-
-
-
-
-
-
 RecordGUISave::RecordGUISave(Record *record, 
 	RecordGUI *record_gui)
  : BC_Button(10, 
@@ -728,12 +696,6 @@ int RecordGUISave::handle_event()
 
 int RecordGUISave::keypress_event()
 {
-// 	if(get_keypress() == RETURN)
-// 	{
-// 		handle_event();
-// 		return 1;
-// 	}
-
 	return 0;
 }
 
@@ -884,6 +846,7 @@ RecordBatch::RecordBatch(MWindow *mwindow, Record *record, RecordGUI *gui, int x
 	this->mwindow = mwindow;
 	this->record = record;
 }
+
 int RecordBatch::handle_event()
 {
 	return 1;
@@ -962,6 +925,7 @@ RecordSource::RecordSource(MWindow *mwindow, Record *record, RecordGUI *gui, int
 	this->record = record;
 	this->gui = gui;
 }
+
 int RecordSource::handle_event()
 {
 	record->set_channel(get_number());
@@ -970,7 +934,7 @@ int RecordSource::handle_event()
 
 RecordMode::RecordMode(MWindow *mwindow, Record *record, RecordGUI *gui, int x, int y)
  : BC_PopupTextBox(gui,
- 	&gui->modes,
+	&gui->modes,
 	Batch::mode_to_text(record->get_editing_batch()->record_mode),
 	x,
 	y,
@@ -1100,20 +1064,6 @@ int RecordGUILabel::keypress_event()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 EndRecordThread::EndRecordThread(Record *record, RecordGUI *record_gui)
  : Thread(1, 0, 0)
 {
@@ -1138,7 +1088,7 @@ void EndRecordThread::start(int is_ok)
 	this->is_ok = is_ok;
 	if(record->capture_state == IS_RECORDING)
 	{
-		if(!running())		
+		if(!running())
 			Thread::start();
 	}
 	else
@@ -1182,37 +1132,6 @@ void RecordStartoverThread::run()
 	if(result == 2) record->start_over();
 	delete window;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1270,11 +1189,6 @@ void RecordGUI::update_labels(double new_position)
 			prev->position);
 	else
 		update_title(prev_label_title, -1);
-
-// 	if(next)
-// 		update_title(next_label_title, (double)next->position / record->default_asset->sample_rate);
-// 	else
-// 		update_title(next_label_title, -1);
 }
 
 
@@ -1284,11 +1198,6 @@ int RecordGUI::update_prev_label(long new_position)
 	update_title(prev_label_title, new_position);
 }
 
-// int RecordGUI::update_next_label(long new_position) 
-// { 
-// 	update_title(next_label_title, new_position); 
-// }
-// 
 int RecordGUI::update_title(BC_Title *title, double position)
 {
 	static char string[256];
@@ -1313,13 +1222,6 @@ int RecordGUI::update_title(BC_Title *title, double position)
 
 int RecordGUI::update_duration_boxes()
 {
-	char string[1024];
-//	sprintf(string, "%d", engine->get_loop_hr());
-//	loop_hr->update(string);
-//	sprintf(string, "%d", engine->get_loop_min());
-//	loop_min->update(string);
-//	sprintf(string, "%d", engine->get_loop_sec());
-//	loop_sec->update(string);
 }
 
 
@@ -1354,13 +1256,11 @@ int RecordGUIModeMenu::add_items()
 {
 	add_item(linear = new RecordGUIMode(_("Untimed")));
 	add_item(timed = new RecordGUIMode(_("Timed")));
-//	add_item(loop = new RecordGUIMode("_(Loop")));
 	return 0;
 }
 
 int RecordGUIModeMenu::handle_event()
 {
-//	engine->set_record_mode(get_text());
 }
 
 RecordGUIMode::RecordGUIMode(char *text)
@@ -1378,8 +1278,6 @@ int RecordGUIMode::handle_event()
 	get_popup_menu()->handle_event();
 	return 1;
 }
-
-
 
 
 
@@ -1440,13 +1338,13 @@ void RecordStatusThread::run()
 				gui->unlock_window();
 			}
 		}
-		
+
 		if(new_position >= 0)
 		{
 			gui->update_title(gui->position_title, new_position);
 			gui->update_labels(new_position);
 		}
-		
+
 		if(new_clipped_samples >= 0)
 		{
 			if(gui->total_clipped_samples != new_clipped_samples)
@@ -1469,10 +1367,6 @@ void RecordStatusThread::run()
 
 
 
-
-
-
-
 RecordGUIDCOffset::RecordGUIDCOffset(MWindow *mwindow, int y)
  : BC_Button(230, y, mwindow->theme->calibrate_data)
 {
@@ -1482,7 +1376,6 @@ RecordGUIDCOffset::~RecordGUIDCOffset() {}
 
 int RecordGUIDCOffset::handle_event()
 {
-//	engine->calibrate_dc_offset();
 	return 1;
 }
 
@@ -1497,19 +1390,17 @@ RecordGUIDCOffsetText::RecordGUIDCOffsetText(char *text, int y, int number)
 RecordGUIDCOffsetText::~RecordGUIDCOffsetText()
 {
 }
-	
+
 int RecordGUIDCOffsetText::handle_event()
 {
-// 	if(!engine->is_previewing)
-// 	{
-// 		engine->calibrate_dc_offset(atol(get_text()), number);
-// 	}
 	return 1;
 }
 
 RecordGUIReset::RecordGUIReset(MWindow *mwindow, RecordGUI *gui, int y)
  : BC_Button(400, y, mwindow->theme->over_button)
-{ this->gui = gui; }
+{
+	this->gui = gui; 
+}
 
 RecordGUIReset::~RecordGUIReset() 
 {
@@ -1517,16 +1408,14 @@ RecordGUIReset::~RecordGUIReset()
 
 int RecordGUIReset::handle_event()
 {
-// 	for(int i = 0; i < gui->engine->get_input_channels(); i++)
-// 	{
-// 		gui->meter[i]->reset_over();
-// 	}
 	return 1;
 }
 
 RecordGUIResetTranslation::RecordGUIResetTranslation(MWindow *mwindow, RecordGUI *gui, int y)
  : BC_Button(250, y, mwindow->theme->reset_data)
-{ this->gui = gui; }
+{
+	this->gui = gui;
+}
 
 RecordGUIResetTranslation::~RecordGUIResetTranslation() 
 {
@@ -1537,8 +1426,3 @@ int RecordGUIResetTranslation::handle_event()
 	gui->set_translation(0, 0, 1);
 	return 1;
 }
-
-
-
-
-

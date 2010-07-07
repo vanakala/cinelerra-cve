@@ -21,7 +21,6 @@
 
 #include "assets.h"
 #include "audio1394.h"
-#include "audioconfig.h"
 #include "audiodevice.h"
 #include "device1394input.h"
 #include "device1394output.h"

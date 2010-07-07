@@ -61,14 +61,10 @@ int RecordLabels::toggle_label(double position)
 // find label the position is after
 	for(current = first; 
 		current && current->position < position; 
-		current = NEXT)
-	{
-		;
-	}
+		current = NEXT);
 
 	if(current)
 	{
-//printf("position %ld current->position %ld current->original %d\n", position, current->position,  current->original);
 		if(EQUIV(current->position, position))
 		{
 // remove it
@@ -83,7 +79,6 @@ int RecordLabels::toggle_label(double position)
 	}
 	else
 	{           // insert after last
-//printf("position %ld\n", position);
 		append(new RecordLabel(position));
 	}
 	return 0;
@@ -92,14 +87,10 @@ int RecordLabels::toggle_label(double position)
 double RecordLabels::get_prev_label(double position)
 {
 	RecordLabel *current;
-	
+
 	for(current = last; 
 		current && current->position > position; 
-		current = PREVIOUS)
-	{
-		;
-	}
-//printf("%ld\n", current->position);
+		current = PREVIOUS);
 	if(current && current->position <= position)
 		return current->position;
 	else
@@ -113,11 +104,11 @@ double RecordLabels::get_next_label(double position)
 
 	for(current = first; 
 		current && current->position <= position; 
-		current = NEXT)
-	{
-		;
-	}
-	if(current && current->position >= position) return current->position; else return -1;
+		current = NEXT);
+	if(current && current->position >= position) 
+		return current->position; 
+	else 
+		return -1;
 	return 0;
 }
 
@@ -127,12 +118,11 @@ double RecordLabels::goto_prev_label(double position)
 	
 	for(current = last; 
 		current && current->position >= position; 
-		current = PREVIOUS)
-	{
-		;
-	}
-//printf("%ld\n", current->position);
-	if(current && current->position <= position) return current->position; else return -1;
+		current = PREVIOUS);
+	if(current && current->position <= position) 
+		return current->position; 
+	else
+		return -1;
 	return 0;
 }
 
@@ -142,11 +132,11 @@ double RecordLabels::goto_next_label(double position)
 
 	for(current = first; 
 		current && current->position <= position; 
-		current = NEXT)
-	{
-		;
-	}
-	if(current && current->position >= position) return current->position; else return -1;
+		current = NEXT);
+	if(current && current->position >= position) 
+		return current->position; 
+	else
+		return -1;
 	return 0;
 }
 

@@ -19,7 +19,6 @@
  * 
  */
 
-#include "audioconfig.h"
 #include "audiodevice.h"
 #include "audioesound.h"
 #include "mainerror.h"

@@ -20,7 +20,6 @@
  */
 
 #include "assets.h"
-#include "audioconfig.h"
 #include "audiodevice.h"
 #include "file.h"
 #include "filexml.h"
@@ -96,10 +95,8 @@ RecordEngine::~RecordEngine()
 
 int RecordEngine::initialize()
 {
-//	monitor_thread = new RecordThread(mwindow, record, this);
 	monitor_thread->create_objects();
-	
-//	record_thread = new RecordThread(mwindow, record, this);
+
 	record_thread->create_objects();
 
 	preview_thread = new RecordPreview(record, this);
@@ -158,21 +155,6 @@ int RecordEngine::run_script(FileXML *script)
 				start_saving();
 			}
 			else
-			if(script->tag.title_is("set_monitor_video"))
-			{
-				set_monitor_video(script->tag.get_property_int(0));
-				if(!script->tag.get_property_int(0) && record->video_window_open)
-				{
-					record->video_window_open = 0;
-					gui->monitor_video_window->window->hide_window();
-				}
-			}
-			else
-			if(script->tag.title_is("set_monitor_audio"))
-			{
-				set_monitor_audio(script->tag.get_property_int(0));
-			}
-			else
 			if(script->tag.title_is("quit_when_completed"))
 			{
 				record_thread->quit_when_completed = 1;
@@ -223,7 +205,6 @@ int RecordEngine::open_input_devices(int duplex)
 {
 	int audio_opened = 0;
 	int video_opened = 0;
-	AudioConfig *aconfig /* = mwindow->preferences->aconfig */;
 
 // Initialize sharing
 	if(record->do_audio && record->do_video)
@@ -256,43 +237,9 @@ int RecordEngine::open_input_devices(int duplex)
 			aconfig->oss_in_bits == aconfig->oss_duplex_bits &&
 			aconfig->oss_in_channels == aconfig->oss_duplex_channels)
 		{
-// 			adevice->open_duplex(mwindow->preferences->aconfig, 
-// 						record->get_samplerate(), 
-// 						get_in_length());
 			audio_opened = 1;
 		}
-		else
-// two separate devices
-		{
-// 			adevice->open_output(mwindow->preferences->aconfig, 
-// 					record->get_samplerate(), 
-// 					record->get_out_length());
-		}
 	}
-
-	if(record->do_audio && !audio_opened)
-	{
-// 		adevice->open_input(mwindow->preferences->aconfig, 
-// 				record->get_samplerate(), 
-// 				get_in_length());
-	}
-
-// Initialize video
-	if(record->do_video)
-	{
-// 		vdevice->open_input(mwindow->preferences->vconfig, 
-// 			record->frame_w, 
-// 			record->frame_h,
-// 			record->video_x, 
-// 			record->video_y, 
-// 			record->video_zoom,
-// 			get_frame_rate());
-// 		vdevice->set_field_order(record->reverse_interlace);
-// 		if(record->get_current_channel())
-// 			vdevice->set_channel(record->get_current_channel());
-// 		set_video_picture();
-	}
-
 	return 0;
 }
 
@@ -318,11 +265,6 @@ int RecordEngine::start_monitor()
 
 int RecordEngine::stop_monitor()
 {
-// 	if(is_monitoring)
-// 	{
-// 		is_monitoring = 0;
-// 		monitor_thread->stop_recording();
-// 	}
 	return 0;
 }
 
@@ -370,8 +312,6 @@ int RecordEngine::start_saving(int duplex)
 			duplex_thread->start_playback();
 			is_duplexing = 1;
 		}
-
-//		record_thread->start_recording();
 
 		is_saving = 1;
 	}
@@ -464,14 +404,6 @@ int RecordEngine::set_video_picture()
 
 int RecordEngine::open_output_devices()
 {
-	if(record->do_audio)
-	{
-// 		adevice->open_output(mwindow->preferences->aconfig, 
-// 				record->get_samplerate(), 
-// 				record->get_out_length());
-		if(record->get_software_positioning()) adevice->set_software_positioning();
-	}
-
 // Video is already open for monitoring
 	return 0;
 }
@@ -496,25 +428,24 @@ int RecordEngine::unlock_window()
 	gui->unlock_window();
 }
 
-int RecordEngine::update_position(long new_position)
+int RecordEngine::update_position(samplenum new_position)
 {
 	if(new_position < 0) new_position = 0;      // fread error in filepcm
 	current_position = new_position;
-	
+
 	gui->update_position(new_position);
 
 	if(new_position > total_length) 
 	{
 		total_length = new_position;
-//		gui->update_total_length(new_position);
 	}
-	
+
 	if(prev_label != labels->get_prev_label(new_position))
 	{
 		prev_label = labels->get_prev_label(new_position);
 		gui->update_prev_label(prev_label);
 	}
-	
+
 	if(next_label != labels->get_next_label(new_position))
 	{
 		next_label = labels->get_next_label(new_position);
@@ -528,12 +459,11 @@ int RecordEngine::goto_prev_label()
 	if(!is_saving)
 	{
 		stop_operation();
-		long new_position;
+		samplenum new_position;
 
 		new_position = labels->goto_prev_label(current_position);
 		if(new_position != -1)
 		{
-//			if(record->do_audio) file->set_audio_position(new_position);
 			if(record->do_video) file->set_video_position(Units::toframes(new_position, record->get_samplerate(), record->get_framerate()), record->get_framerate());
 			update_position(new_position);
 		}
@@ -545,12 +475,11 @@ int RecordEngine::goto_next_label()
 	if(!is_saving)
 	{
 		stop_operation();
-		long new_position;
+		samplenum new_position;
 
 		new_position = labels->goto_next_label(current_position);
 		if(new_position != -1 && new_position <= total_length)
 		{
-//			if(record->do_audio) file->set_audio_position(new_position);
 			if(record->do_video) file->set_video_position(Units::toframes(new_position, record->get_samplerate(), record->get_framerate()), record->get_framerate());
 			update_position(new_position);
 		}
@@ -610,19 +539,10 @@ int RecordEngine::start_over()
 			file->close_file();
 			remove(asset->path);
 
-// reopen file
-// 			file->set_processors(mwindow->preferences->smp ? 2: 1);
-// 			file->set_preload(mwindow->preferences->playback_preload);
-// 			file->try_to_open_file(mwindow->plugindb, asset, 1, 1);
-
 // start the engine over
 			labels->delete_new_labels();
 			update_position(0);
 			total_length = 0;
-//			gui->update_total_length(0);
-
-			record->startsource_sample = 0;
-			record->startsource_frame = 0;
 		}
 	}
 }
@@ -663,13 +583,7 @@ float RecordEngine::get_min_db() { return record->get_min_db(); }
 int RecordEngine::get_meter_over_hold(int divisions) { return divisions * 15; }
 int RecordEngine::get_meter_peak_hold(int divisions) { return divisions * 2; }
 int RecordEngine::get_meter_speed() { return record->get_meter_speed(); }
-float RecordEngine::get_frames_per_foot() { /* return mwindow->preferences->frames_per_foot; */ }
-
-int RecordEngine::set_monitor_video(int value)
-{
-}
-
-int RecordEngine::set_monitor_audio(int value)
+float RecordEngine::get_frames_per_foot() 
 {
 }
 
@@ -692,9 +606,15 @@ int RecordEngine::mode_to_text(char *string, int mode)
 {
 	switch(mode)
 	{
-		case 0:        sprintf(string, _("Untimed"));       break;
-		case 1:        sprintf(string, _("Timed"));         break;
-		case 2:        sprintf(string, _("Loop"));          break;
+	case 0:
+		strcpy(string, _("Untimed"));
+		break;
+	case 1:
+		strcpy(string, _("Timed"));
+		break;
+	case 2:
+		strcpy(string, _("Loop"));
+		break;
 	}
 }
 
@@ -705,7 +625,7 @@ int RecordEngine::text_to_mode(char *string)
 	if(!strcasecmp(string, _("Loop")))    return 2;
 }
 
-long RecordEngine::get_current_delay()
+int RecordEngine::get_current_delay()
 {
 	if(current_jump_jump > 0) current_jump_jump--;
 	if(current_jump_jump == 0 && current_jump_delay < /*JUMP_DELAYS*/ 1)
@@ -738,56 +658,4 @@ int RecordEngine::get_in_length()
 	return fragment_size;
 }
 
-// Different absolute positions are defined for each operation so threads
-// can end at different times without screwing up the frame synchronization.
-long RecordEngine::absolute_monitor_position()
-{
-	if(is_monitoring)
-	{
-		if(record->do_audio)
-		{
-//			return monitor_thread->absolute_position();
-		}
-		else
-		{
-			return (long)((float)monitor_timer.get_difference() / 1000 * record->get_samplerate());
-		}
-	}
-	else
-	return -1;
-}
-
-long RecordEngine::absolute_preview_position()
-{
-	if(is_previewing)
-	{
-		if(record->do_audio)
-		{
-			return preview_thread->absolute_position();
-		}
-		else
-		{
-			return (long)((float)preview_timer.get_difference() / 1000 * record->get_samplerate());
-		}
-	}
-	else
-	return -1;
-}
-
-long RecordEngine::absolute_record_position()
-{
-	if(is_saving)
-	{
-		if(record->do_audio)
-		{
-//			return record_thread->absolute_position();
-		}
-		else
-		{
-			return (long)((float)record_timer.get_difference() / 1000 * record->get_samplerate());
-		}
-	}
-	else
-	return -1;
-}
 

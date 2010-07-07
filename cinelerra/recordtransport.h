@@ -50,21 +50,11 @@ public:
 	int get_h();
 	int get_w();
 
- 	MWindow *mwindow;
+	MWindow *mwindow;
 	BC_WindowBase *window;
 	Record *record;
 	int x, y;
 
-
-
-
-
-
-
-
-
-
-//	RecordGUIDuplex *duplex_button;
 	RecordGUIEnd *end_button;
 	RecordGUIFwd *fwd_button;
 	RecordGUIBack *back_button;
@@ -183,16 +173,4 @@ public:
 	Record *record;
 };
 
-/*
- * class RecordGUIDuplex : public BC_Button
- * {
- * public:
- * 	RecordGUIDuplex(MWindow *mwindow, int x, int y);
- * 	~RecordGUIDuplex();
- * 
- * 	int handle_event();
- * 	RecordEngine *engine;
- * };
- * 
- */
 #endif

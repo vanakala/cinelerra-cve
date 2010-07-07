@@ -20,7 +20,6 @@
  */
 
 #include "adeviceprefs.h"
-#include "audioconfig.h"
 #include "audiodevice.inc"
 #include "bcsignals.h"
 #include "clip.h"

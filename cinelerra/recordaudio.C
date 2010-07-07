@@ -80,9 +80,6 @@ int RecordAudio::arm_recording()
 	record->get_audio_write_length(buffer_size, fragment_size);
 	record_channels = record->default_asset->channels;
 
-// Realtime is set in the audio driver
-//	if(mwindow->edl->session->real_time_record) Thread::set_realtime();
-
 	timer.update();
 	trigger_lock->lock("RecordAudio::arm_recording");
 	Thread::start();
@@ -99,8 +96,6 @@ int RecordAudio::stop_recording()
 	if(record->adevice)
 	{
 		record->adevice->interrupt_crash();
-// Joined in RecordThread
-		//Thread::join();
 	}
 	return 0;
 }
@@ -114,7 +109,6 @@ void RecordAudio::run()
 	write_result = 0;
 	grab_result = 0;
 
-//printf("RecordAudio::run 1 %d\n", Thread::calculate_realtime());
 	over = new int[record_channels];
 	max = new double[record_channels];
 
@@ -135,7 +129,6 @@ void RecordAudio::run()
 		}
 	}
 
-//printf("RecordAudio::run 1\n");
 	gui->total_clipped_samples = 0;
 	gui->update_clipped_samples(0);
 
@@ -145,36 +138,29 @@ void RecordAudio::run()
 	trigger_lock->unlock();
 
 
-//printf("RecordAudio::run 2\n");
 	while(!batch_done && 
 		!write_result)
 	{
 // Handle data from the audio device.
-//printf("RecordAudio::run 3\n");
 			if(!record_thread->monitor)
 			{
 // Read into file's buffer for recording.
 // device needs to write buffer starting at fragment position
-//printf("RecordAudio::run 2.1\n");
 				grab_result = record->adevice->read_buffer(input, 
 					fragment_size, 
 					over, 
 					max, 
 					fragment_position);
-//printf("RecordAudio::run 2.2\n");
 			}
 			else
 			{
 // Read into monitor buffer for monitoring.
-//printf("RecordAudio::run 1\n");
 				grab_result = record->adevice->read_buffer(input, 
 					fragment_size, 
 					over, 
 					max, 
 					0);
-//printf("RecordAudio::run 2 %d\n", grab_result);
 			}
-//printf("RecordAudio::run 3 %d %f\n", fragment_size, max);
 
 // Update timer for synchronization
 			timer_lock->lock("RecordAudio::run");
@@ -190,7 +176,6 @@ void RecordAudio::run()
 			timer.update();
 			timer_lock->unlock();
 
-//printf("RecordAudio::run 2\n");
 // Get clipping status
 			if(record->monitor_audio || !record_thread->monitor)
 			{
@@ -202,7 +187,6 @@ void RecordAudio::run()
 			}
 
 // Update meters if monitoring
-//printf("RecordAudio::run 2 %d %d %d %d\n", record->monitor_audio, record_thread->batch_done(), record_thread->loop_done(), grab_result);
 			if(record->monitor_audio && 
 				!batch_done && 
 				!grab_result)
@@ -218,7 +202,6 @@ void RecordAudio::run()
 			}
 
 
-//printf("RecordAudio::run 2\n");
 // Write file if writing
 			if(!record_thread->monitor)
 			{
@@ -229,8 +212,6 @@ void RecordAudio::run()
 					write_buffer(0);
 				}
 
-
-//printf("RecordAudio::run 2 %f\n", record->current_display_position());
 				if(!record->default_asset->video_data) 
 					gui->update_position(record->current_display_position());
 				if(clipped_sample) 
@@ -244,29 +225,26 @@ void RecordAudio::run()
 // handle different recording modes
 					switch(record->get_current_batch()->record_mode)
 					{
-						case RECORD_TIMED:
-							if(record->current_display_position() > *record->current_duration())
-								batch_done = 1;
-							break;
-						case RECORD_LOOP:
-							if(record->current_display_position() > *record->current_duration())
-								batch_done = 1;
-							break;
-						case RECORD_SCENETOSCENE:
-							break;
+					case RECORD_TIMED:
+						if(record->current_display_position() > *record->current_duration())
+							batch_done = 1;
+						break;
+					case RECORD_LOOP:
+						if(record->current_display_position() > *record->current_duration())
+							batch_done = 1;
+						break;
+					case RECORD_SCENETOSCENE:
+						break;
 					}
 				}
 			}
-//printf("RecordAudio::run 4 %d %d\n", batch_done, write_result);
 	}
 
-TRACE("RecordAudio::run 4");
 	if(write_result && !record->default_asset->video_data)
 	{
 		errorbox(_("No space left on disk."));
 		batch_done = 1;
 	}
-TRACE("RecordAudio::run 10");
 
 	if(!record_thread->monitor)
 	{
@@ -284,7 +262,6 @@ TRACE("RecordAudio::run 10");
 		delete [] input;
 		input = 0;
 	}
-TRACE("RecordAudio::run 11");
 
 // reset meter
 	gui->lock_window("RecordAudio::run 2");
@@ -292,12 +269,10 @@ TRACE("RecordAudio::run 11");
 	{
 		record->record_monitor->window->meters->meters.values[channel]->reset();
 	}
-TRACE("RecordAudio::run 12");
 
 	gui->unlock_window();
 	delete [] max;
 	delete [] over;
-TRACE("RecordAudio::run 100");
 }
 
 void RecordAudio::write_buffer(int skip_new)
@@ -310,26 +285,22 @@ void RecordAudio::write_buffer(int skip_new)
 	if(!skip_new && !write_result) input = record->file->get_audio_buffer();
 }
 
-int64_t RecordAudio::sync_position()
+samplenum RecordAudio::sync_position()
 {
-	int64_t result;
+	samplenum result;
 	if(!batch_done)
 	{
-//printf("RecordAudio::sync_position 1\n");
 		timer_lock->lock("RecordAudio::sync_position");
 		if(!mwindow->edl->session->record_software_position)
 		{
-//printf("RecordAudio::sync_position 1\n");
 			result = record->adevice->current_position();
 		}
 		else
 		{
-//printf("RecordAudio::sync_position 1 %d\n", record->get_current_batch()->session_samples);
 			result = record->get_current_batch()->session_samples +
 				timer.get_scaled_difference(record->default_asset->sample_rate);
 		}
 		timer_lock->unlock();
-//printf("RecordAudio::sync_position 2\n");
 		return result;
 	}
 	else

@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "audioconfig.h"
 #include "audiodevice.inc"
 #include "bcmeter.inc"
 #include "cache.inc"

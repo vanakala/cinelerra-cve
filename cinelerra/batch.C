@@ -104,7 +104,7 @@ void Batch::calculate_news()
 // File open
 	if(record->get_current_batch() == this && record->file)
 	{
-		sprintf(news, _("Open"));
+		strcpy(news, _("Open"));
 	}
 	else
 	{
@@ -113,11 +113,11 @@ void Batch::calculate_news()
 
 		if(test)
 		{
-			sprintf(news, _("File exists"));
+			strcpy(news, _("File exists"));
 			fclose(test);
 		}
 		else
-			sprintf(news, _("OK"));
+			strcpy(news, _("OK"));
 	}
 }
 
@@ -148,37 +148,28 @@ void Batch::create_default_path()
 		k = strlen(path);
 	}
 
-	
 	sprintf(&path[j], "%d", record->batches.total);
 	strcat(path, &string[k]);
 }
 
 
-int Batch::text_to_mode(char *text)
+int Batch::text_to_mode(const char *text)
 {
 	if(!strcasecmp(mode_to_text(RECORD_INFINITE), text)) return RECORD_INFINITE;
 	if(!strcasecmp(mode_to_text(RECORD_TIMED), text)) return RECORD_TIMED;
-// 	if(!strcasecmp(mode_to_text(RECORD_LOOP), text)) return RECORD_LOOP;
-// 	if(!strcasecmp(mode_to_text(RECORD_SCENETOSCENE), text)) return RECORD_SCENETOSCENE;
 	return RECORD_INFINITE;
 }
 
-char* Batch::mode_to_text(int record_mode)
+const char* Batch::mode_to_text(int record_mode)
 {
 	switch(record_mode)
 	{
-		case RECORD_INFINITE:
-			return _("Untimed");
-			break;
-		case RECORD_TIMED:
-			return _("Timed");
-			break;
-// 		case RECORD_LOOP:
-// 			return "Loop";
-// 			break;
-// 		case RECORD_SCENETOSCENE:
-// 			return "Scene to scene";
-// 			break;
+	case RECORD_INFINITE:
+		return _("Untimed");
+		break;
+	case RECORD_TIMED:
+		return _("Timed");
+		break;
 	}
 	return _("Unknown");
 }
@@ -203,7 +194,6 @@ const char* Batch::get_source_text()
 {
 // Driver sensitive
 	Channel *channel = get_current_channel_struct();
-
 
 	if(channel)
 	{

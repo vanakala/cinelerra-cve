@@ -20,7 +20,6 @@
  */
 
 #include "adeviceprefs.h"
-#include "audioconfig.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"

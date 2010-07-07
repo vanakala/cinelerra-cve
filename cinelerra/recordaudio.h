@@ -41,7 +41,7 @@ public:
 		Record *record, 
 		RecordThread *record_thread);
 	~RecordAudio();
-	
+
 	void run();
 // start saving audio data to file
 	int arm_recording();
@@ -53,10 +53,7 @@ public:
 	void finish_loop();
 	void finish_timed();
 	void reset_parameters();
-
-// seek to a new location in the file 
-	int set_position(int64_t position);     
-	int64_t sync_position();
+	samplenum sync_position();
 
 	void write_buffer(int skip_new = 0);           // write the buffer
 // Want one thread to dictate the other during shared device recording.
@@ -73,7 +70,7 @@ private:
 	double **input;
 	RecordGUI *gui;
 	int buffer_size, fragment_size;
-	int64_t fragment_position;
+	samplenum fragment_position;
 	int record_channels;
 	Mutex *timer_lock;
 	Condition *trigger_lock;

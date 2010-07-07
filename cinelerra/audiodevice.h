@@ -29,7 +29,6 @@
 #include <unistd.h>
 
 #include "audioalsa.inc"
-#include "audioconfig.inc"
 #include "audiodvb.inc"
 #include "audiodevice.inc"
 #include "audioesound.inc"

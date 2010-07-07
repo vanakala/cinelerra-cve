@@ -142,13 +142,6 @@ int RecordVideo::cleanup_recording()
 		write_buffer(1);
 // stop file I/O
 	}
-	else
-	{
-// RecordMonitorThread still needs capture_frame if uncompressed.
-// 		delete [] frame_ptr[0];
-// 		delete [] frame_ptr;
-// 		delete capture_frame;
-	}
 	return 0;
 }
 
@@ -166,7 +159,6 @@ void RecordVideo::get_capture_frame()
 				record->default_asset->width, 
 				record->default_asset->height, 
 				record->vdevice->get_best_colormodel(record->default_asset));
-//printf("RecordVideo::get_capture_frame %d %d\n", capture_frame->get_w(), capture_frame->get_h());
 		}
 		frame_ptr = new VFrame**[1];
 		frame_ptr[0] = new VFrame*[1];
@@ -205,16 +197,16 @@ void RecordVideo::run()
 	{
 // Synchronize with audio or timer
 		dropped_frames = 0;
-		next_sample = (int64_t)((float)record->get_current_batch()->session_frames / 
+		next_sample = (samplenum)((float)record->get_current_batch()->session_frames / 
 			record->default_asset->frame_rate * 
 			record->default_asset->sample_rate);
- 		current_sample = record->sync_position();
+		current_sample = record->sync_position();
 
 
 		if(current_sample < next_sample && current_sample > 0)
 		{
 // Too early.
-			delay = (int64_t)((float)(next_sample - current_sample) / 
+			delay = (int)((float)(next_sample - current_sample) / 
 				record->default_asset->sample_rate * 
 				1000);
 // Sanity check and delay.
@@ -232,7 +224,7 @@ void RecordVideo::run()
 		if(current_sample > 0 && !record_thread->monitor)
 		{
 // Too late.
-			dropped_frames = (int64_t)((float)(current_sample - next_sample) / 
+			dropped_frames = (framenum)((float)(current_sample - next_sample) / 
 				record->default_asset->sample_rate * 
 				record->default_asset->frame_rate);
 			if(dropped_frames != last_dropped_frames)
@@ -279,12 +271,6 @@ void RecordVideo::run()
 			}
 		}
 
-// Monitor the frame if monitoring
-// printf("RecordVideo::run %p %d %d %d\n", 
-// capture_frame->get_data(), 
-// record->monitor_video, 
-// batch_done, 
-// grab_result);
 		if(capture_frame->get_data() && 
 			record->monitor_video && 
 			!batch_done && 
@@ -331,16 +317,16 @@ void RecordVideo::run()
 // Handle recording modes delegated to the thread
 			switch(record->get_current_batch()->record_mode)
 			{
-				case RECORD_TIMED:
-					if(record->current_display_position() > *record->current_duration())
-						batch_done = 1;
-					break;
-				case RECORD_LOOP:
-					if(record->current_display_position() > *record->current_duration())
-						batch_done = 1;
-					break;
-				case RECORD_SCENETOSCENE:
-					break;
+			case RECORD_TIMED:
+				if(record->current_display_position() > *record->current_duration())
+					batch_done = 1;
+				break;
+			case RECORD_LOOP:
+				if(record->current_display_position() > *record->current_duration())
+					batch_done = 1;
+				break;
+			case RECORD_SCENETOSCENE:
+				break;
 			}
 		}
 
@@ -350,7 +336,6 @@ void RecordVideo::run()
 		}
 	}
 
-//TRACE("RecordVideo::run 1");
 // Update dependant threads
 	if(record->default_asset->audio_data)
 	{
@@ -358,8 +343,6 @@ void RecordVideo::run()
 // Interrupt driver for IEEE1394
 		record_thread->record_audio->stop_recording();
 	}
-
-//TRACE("RecordVideo::run 2");
 
 	if(write_result)
 	{
@@ -371,7 +354,6 @@ void RecordVideo::run()
 	}
 
 	cleanup_recording();
-SET_TRACE
 }
 
 void RecordVideo::read_buffer()
@@ -384,12 +366,12 @@ void RecordVideo::read_buffer()
 		record->vdevice->is_compressed(0, 1))
 	{
 		unsigned char *data = capture_frame->get_data();
-		int64_t size = capture_frame->get_compressed_size();
-		int64_t allocation = capture_frame->get_compressed_allocated();
+		int size = capture_frame->get_compressed_size();
+		int allocation = capture_frame->get_compressed_allocated();
 
 		if(data)
 		{
-			int64_t field2_offset = mjpeg_get_field2(data, size);
+			int field2_offset = mjpeg_get_field2(data, size);
 			capture_frame->set_compressed_size(size);
 			capture_frame->set_field2_offset(field2_offset);
 		}
@@ -423,7 +405,6 @@ void RecordVideo::rewind_file()
 
 int RecordVideo::unhang_thread()
 {
-printf("RecordVideo::unhang_thread\n");
 	Thread::end();
 }
 

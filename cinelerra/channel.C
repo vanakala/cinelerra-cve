@@ -45,10 +45,10 @@ Channel::~Channel()
 void Channel::reset()
 {
 // GUI options
- 	use_frequency = 0;
- 	use_fine = 0;
- 	use_norm = 0;
- 	use_input = 0;
+	use_frequency = 0;
+	use_fine = 0;
+	use_norm = 0;
+	use_input = 0;
 
 	title[0] = 0;
 	device_name[0] = 0;
@@ -177,5 +177,3 @@ void Channel::save_defaults(BC_Hash *defaults)
 	defaults->update("SCAN_INPUT", input);
 	defaults->update("SCAN_NORM", norm);
 }
-
-

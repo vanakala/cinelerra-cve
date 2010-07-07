@@ -31,9 +31,9 @@ typedef struct
 
 typedef struct 
 {
-    const char		*name;
-    CHANLIST 		 *list;
-    int               count;
+	const char *name;
+	CHANLIST *list;
+	int count;
 } CHANLISTS;
 
 #define CHAN_COUNT(x) (sizeof(x)/sizeof(CHANLIST))

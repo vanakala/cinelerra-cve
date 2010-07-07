@@ -61,14 +61,6 @@ public:
 	VideoDevice *device;
 // Fake config for monitoring
 	VideoOutConfig *config;
-	
-	
-	
-	
-	
-	
-
-
 
 	void run();
 
@@ -102,7 +94,6 @@ public:
 
 	MeterPanel *meters;
 	Canvas *canvas;
-//	RecordTransport *record_transport;
 #ifdef HAVE_FIREWIRE
 	AVC1394Transport *avc1394_transport;
 	AVC1394TransportThread *avc1394transport_thread;
@@ -113,19 +104,6 @@ public:
 	int translate_x_origin, translate_y_origin;
 	BC_PopupMenu *monitor_menu;
 	int current_operation;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	int translation_event();
 	int button_press_event();
@@ -172,7 +150,7 @@ public:
 	void new_output_frame();
 
 // Input frame being rendered
-	VFrame *input_frame;    
+	VFrame *input_frame;
 // Frames for the rendered output
 	VFrame *output_frame;
 // Best color model given by device
@@ -222,7 +200,7 @@ public:
 		int w, 
 		int h);
 	~RecordMonitorCanvas();
-	
+
 	void zoom_resize_window(float percentage);
 	int button_press_event();
 	int button_release_event();
