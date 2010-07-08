@@ -69,7 +69,6 @@ class RecordLabels;
 class RenderEngine;
 class Save;
 class ZoomBar;
-class ThreadLoader;
 class TimeBar;
 class IntAuto;
 class IntAutos;

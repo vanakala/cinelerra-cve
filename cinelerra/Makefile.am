@@ -99,7 +99,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    bitspopup.C \
 		    brender.C \
 		    browsebutton.C \
-		    byteorderpopup.C \
 		    cache.C \
 		    cachebase.C \
 		    canvas.C \
@@ -116,7 +115,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    cplayback.C \
 		    ctimebar.C \
 		    ctracking.C \
-		    cursor.C \
 		    cwindow.C \
 		    cwindowgui.C \
 		    cwindowtool.C \
@@ -179,7 +177,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    keyframepopup.C \
 		    keyframes.C \
 		    labeledit.C \
-		    labelnavigate.C \
 		    labels.C \
 		    levelwindow.C \
 		    levelwindowgui.C \
@@ -274,15 +271,10 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    savefile.C \
 		    setformat.C \
 		    sharedlocation.C \
-		    shmemory.C \
 		    sighandler.C \
 		    splashgui.C \
 		    statusbar.C \
 		    theme.C \
-		    threadexec.C \
-		    threadfork.C \
-		    threadindexer.C \
-		    threadloader.C \
 		    timebar.C \
 		    timeentry.C \
 		    tipwindow.C \
@@ -397,7 +389,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 browsebutton.h \
 		 buz.h \
 		 byteorder.h \
-		 byteorderpopup.h \
 		 cache.h \
 		 cachebase.h \
 		 canvas.h \
@@ -413,10 +404,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 confirmsave.h \
 		 cpanel.h \
 		 cplayback.h \
-		 cropvideo.h \
 		 ctimebar.h \
 		 ctracking.h \
-		 cursor.h \
 		 cwindowgui.h \
 		 cwindow.h \
 		 cwindowtool.h \
@@ -486,7 +475,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 keyframepopup.h \
 		 keyframes.h \
 		 labeledit.h \
-		 labelnavigate.h \
 		 labels.h \
 		 ladspa.h \
 		 levelwindowgui.h \
@@ -588,15 +576,10 @@ noinst_HEADERS = aattachmentpoint.h \
 		 scale.h \
 		 setformat.h \
 		 sharedlocation.h \
-		 shmemory.h \
 		 sighandler.h \
 		 splashgui.h \
 		 statusbar.h \
 		 theme.h \
-		 threadexec.h \
-		 threadfork.h \
-		 threadindexer.h \
-		 threadloader.h \
 		 timebar.h \
 		 timeentry.h \
 		 tipwindow.h \

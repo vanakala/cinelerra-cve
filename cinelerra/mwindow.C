@@ -83,7 +83,6 @@
 #include "splashgui.h"
 #include "statusbar.h"
 #include "theme.h"
-#include "threadloader.h"
 #include "timebar.h"
 #include "tipwindow.h"
 #include "trackcanvas.h"

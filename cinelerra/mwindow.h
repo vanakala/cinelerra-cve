@@ -72,7 +72,6 @@
 #include "splashgui.inc"
 #include "theme.inc"
 #include "thread.h"
-#include "threadloader.inc"
 #include "timebar.inc"
 #include "tipwindow.inc"
 #include "track.inc"

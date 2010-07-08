@@ -39,7 +39,6 @@ class Paste;
 
 #include "editpanel.h"
 #include "guicast.h"
-#include "labelnavigate.inc"
 #include "mbuttons.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"

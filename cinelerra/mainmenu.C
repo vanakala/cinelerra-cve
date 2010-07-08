@@ -24,7 +24,6 @@
 #include "bcsignals.h"
 #include "cache.h"
 #include "cplayback.h"
-#include "cropvideo.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "bchash.h"

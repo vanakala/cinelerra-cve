@@ -21,7 +21,6 @@
 
 #include "atrack.h"
 #include "automation.h"
-#include "cursor.h"
 #include "clip.h"
 #include "bchash.h"
 #include "edit.h"

@@ -32,7 +32,6 @@
 #include "indexfile.h"
 #include "quicktime.h"
 #include "mainsession.h"
-#include "threadindexer.h"
 #include <string.h>
 
 Assets::Assets(EDL *edl) : List<Asset>()

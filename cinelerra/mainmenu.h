@@ -51,7 +51,6 @@ class Undo;
 #include "quit.inc"
 #include "record.inc"
 #include "render.inc"
-#include "threadloader.inc"
 #include "viewmenu.inc"
 
 #define TOTAL_LOADS 10      // number of files to cache
@@ -85,7 +84,6 @@ public:
 
 	MWindowGUI *gui;
 	MWindow *mwindow;
-	ThreadLoader *threadloader;
 	MenuAEffects *aeffects;
 	MenuVEffects *veffects;
 
