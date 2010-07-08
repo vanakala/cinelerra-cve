@@ -22,7 +22,6 @@
 #ifndef RECORDPREFS_H
 #define RECORDPREFS_H
 
-//class DuplexEnable;
 class RecordMinDB;
 class RecordVUDB;
 class RecordVUInt;
@@ -60,16 +59,7 @@ public:
 	PreferencesWindow *pwindow;
 };
 
-/*
- * class DuplexEnable : public BC_CheckBox
- * {
- * public:
- * 	DuplexEnable(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y, int value);
- * 	int handle_event();
- * 	PreferencesWindow *pwindow;
- * };
- * 
- */
+
 class RecordRealTime : public BC_CheckBox
 {
 public:

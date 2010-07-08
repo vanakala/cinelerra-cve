@@ -68,8 +68,6 @@ int PlaybackPrefs::create_objects()
 		_("Audio Out"), 
 		LARGEFONT));
 
-SET_TRACE
-
 	y += get_text_height(LARGEFONT) + 5;
 
 
@@ -77,7 +75,6 @@ SET_TRACE
 	add_subwindow(title2 = new BC_Title(x, y, _("Playback buffer size:"), MEDIUMFONT));
 	x2 = MAX(title2->get_w(), title2->get_w()) + 10;
 
-SET_TRACE
 	sprintf(string, "%d", playback_config->aconfig->fragment_size);
 	PlaybackModuleFragment *menu;
 	add_subwindow(menu = new PlaybackModuleFragment(x2, 
@@ -94,7 +91,6 @@ SET_TRACE
 	menu->add_item(new BC_MenuItem("131072"));
 	menu->add_item(new BC_MenuItem("262144"));
 
-SET_TRACE
 	y += menu->get_h() + 5;
 	x2 = x;
 	add_subwindow(title1 = new BC_Title(x2, y, _("Audio offset (sec):")));
@@ -106,7 +102,6 @@ SET_TRACE
 	audio_offset->create_objects();
 	y += audio_offset->get_h() + 5;
 
-SET_TRACE
 	add_subwindow(new PlaybackViewFollows(pwindow, pwindow->thread->edl->session->view_follows_playback, y));
 	y += 30;
 	add_subwindow(new PlaybackSoftwareTimer(pwindow, pwindow->thread->edl->session->playback_software_position, y));
@@ -123,22 +118,15 @@ SET_TRACE
 		MODEPLAY);
 	audio_device->initialize();
 
-SET_TRACE
-
-
-
 // Video
- 	y += audio_device->get_h();
+	y += audio_device->get_h();
 
-SET_TRACE
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
 
-SET_TRACE
 	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT));
 	y += 30;
 
-SET_TRACE
 	add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
 
 	add_subwindow(new BC_Title(x + 200, y + 5, _("Framerate achieved:")));
@@ -149,8 +137,7 @@ SET_TRACE
 	add_subwindow(asynchronous = new VideoAsynchronous(pwindow, x, y));
 	y += asynchronous->get_h() + 10;
 
-SET_TRACE
- 	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
+	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
 	y += 20;
 	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 
 		this, 
@@ -170,7 +157,6 @@ SET_TRACE
 		10, 
 		y));
 
-SET_TRACE
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT));
 	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
@@ -203,10 +189,6 @@ SET_TRACE
 	if(!pwindow->thread->edl->session->interpolate_raw) 
 		white_balance_raw->disable();
 
-
-SET_TRACE
-//	y += 30;
-//	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
 	x2 = x;
 	x += 370;
 	add_subwindow(new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT, BLACK));
@@ -233,8 +215,6 @@ SET_TRACE
 		MODEPLAY);
 	video_device->initialize();
 
-SET_TRACE	
-
 	return 0;
 }
 
@@ -243,20 +223,12 @@ void PlaybackPrefs::update(int interpolation)
 {
 	pwindow->thread->edl->session->interpolation_type = interpolation;
 	nearest_neighbor->update(interpolation == NEAREST_NEIGHBOR);
-//	cubic_cubic->update(interpolation == CUBIC_CUBIC);
 	cubic_linear->update(interpolation == CUBIC_LINEAR);
 	linear_linear->update(interpolation == LINEAR_LINEAR);
 }
 
-
-int PlaybackPrefs::get_buffer_bytes()
-{
-//	return pwindow->thread->edl->aconfig->oss_out_bits / 8 * pwindow->thread->preferences->aconfig->oss_out_channels * pwindow->thread->preferences->playback_buffer;
-}
-
 int PlaybackPrefs::draw_framerate()
 {
-//printf("PlaybackPrefs::draw_framerate 1 %f\n", pwindow->thread->edl->session->actual_frame_rate);
 	char string[BCTEXTLEN];
 	sprintf(string, "%.4f", pwindow->thread->edl->session->actual_frame_rate);
 	framerate_title->update(string);
@@ -270,7 +242,7 @@ PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(playback,
- 	playback->playback_config->aconfig->audio_offset,
+	playback->playback_config->aconfig->audio_offset,
 	-10.0,
 	10.0,
 	x,
@@ -291,14 +263,13 @@ int PlaybackAudioOffset::handle_event()
 
 
 
-
 PlaybackModuleFragment::PlaybackModuleFragment(int x, 
 	int y, 
 	PreferencesWindow *pwindow, 
 	PlaybackPrefs *playback, 
 	char *text)
  : BC_PopupMenu(x, 
- 	y, 
+	y, 
 	100, 
 	text,
 	1)
@@ -360,24 +331,18 @@ int PlaybackRealTime::handle_event()
 
 
 
-
-
-
-
 PlaybackNearest::PlaybackNearest(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
  : BC_Radial(x, y, value, _("Nearest neighbor enlarge and reduce"))
 {
 	this->pwindow = pwindow;
 	this->prefs = prefs;
 }
+
 int PlaybackNearest::handle_event()
 {
 	prefs->update(NEAREST_NEIGHBOR);
 	return 1;
 }
-
-
-
 
 
 PlaybackBicubicBicubic::PlaybackBicubicBicubic(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
@@ -391,8 +356,6 @@ int PlaybackBicubicBicubic::handle_event()
 	prefs->update(CUBIC_CUBIC);
 	return 1;
 }
-
-
 
 
 PlaybackBicubicBilinear::PlaybackBicubicBilinear(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
@@ -449,7 +412,7 @@ PlaybackInterpolateRaw::PlaybackInterpolateRaw(
 	PreferencesWindow *pwindow, 
 	PlaybackPrefs *playback)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	pwindow->thread->edl->session->interpolate_raw, 
 	_("Interpolate CR2 images"))
 {
@@ -482,7 +445,7 @@ PlaybackWhiteBalanceRaw::PlaybackWhiteBalanceRaw(
 	PreferencesWindow *pwindow, 
 	PlaybackPrefs *playback)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	pwindow->thread->edl->session->interpolate_raw &&
 		pwindow->thread->edl->session->white_balance_raw, 
 	_("White balance CR2 images"))
@@ -500,12 +463,9 @@ int PlaybackWhiteBalanceRaw::handle_event()
 
 
 
-
-
-
 VideoAsynchronous::VideoAsynchronous(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y, 
 	pwindow->thread->edl->session->video_every_frame &&
 		pwindow->thread->edl->session->video_asynchronous, 
 	_("Decode frames asynchronously"))
@@ -520,8 +480,6 @@ int VideoAsynchronous::handle_event()
 	pwindow->thread->edl->session->video_asynchronous = get_value();
 	return 1;
 }
-
-
 
 
 VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow, 
@@ -552,10 +510,6 @@ int VideoEveryFrame::handle_event()
 
 
 
-
-
-
-
 PlaybackSubtitle::PlaybackSubtitle(int x, 
 	int y, 
 	PreferencesWindow *pwindow, 
@@ -581,8 +535,8 @@ TimecodeOffset::TimecodeOffset(int x, int y, PreferencesWindow *pwindow,
       PlaybackPrefs *playback, char *text, int unit)
  : BC_TextBox(x, y, 30, 1, text)
 {
-   this->pwindow = pwindow;
-   this->playback = playback;
+	this->pwindow = pwindow;
+	this->playback = playback;
 	this->unit = unit;
 }
 
@@ -591,7 +545,3 @@ int TimecodeOffset::handle_event()
 	pwindow->thread->edl->session->timecode_offset[unit] = atol(get_text());
 	return 1;
 }
-
-
-
-

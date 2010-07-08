@@ -23,9 +23,6 @@
 #define PREFERENCES_H
 
 #include "asset.inc"
-/*
-#include "audioconfig.inc"
-	*/
 #include "bchash.inc"
 #include "guicast.h"
 #include "maxchannels.h"
@@ -63,14 +60,17 @@ public:
 	int get_enabled_nodes();
 	const char* get_node_hostname(int number);
 	int get_node_port(int number);
+
 // Copy frame rates.  Always used where the argument is the renderfarm and this is
 // the master preferences.  This way, the value for master node is properly 
 // translated from a unix socket to the local_rate.
 	void copy_rates_from(Preferences *preferences);
+
 // Set frame rate for a node.  Node -1 is the master node.
 // The node number is relative to the enabled nodes.
 	void set_rate(float rate, int node);
-// Calculate the number of cpus to use.  
+
+// Calculate the number of cpus to use.
 // Determined by /proc/cpuinfo and force_uniprocessor.
 // interactive forces it to ignore force_uniprocessor
 	int calculate_processors(int interactive = 0);
@@ -79,7 +79,7 @@ public:
 // directory to look in for indexes
 	char index_directory[BCTEXTLEN];   
 // size of index file in bytes
-	int64_t index_size;                  
+	int64_t index_size;
 	int index_count;
 // Use thumbnails in AWindow assets.
 	int use_thumbnails;

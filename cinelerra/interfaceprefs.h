@@ -34,8 +34,6 @@ class TimeFormatFeet;
 class TimeFormatSeconds;
 class MeterMinDB;
 class MeterMaxDB;
-class MeterVUDB;
-class MeterVUInt;
 class ViewBehaviourText;
 class ViewThumbnails;
 
@@ -72,8 +70,6 @@ public:
 
 	MeterMinDB *min_db;
 	MeterMaxDB *max_db;
-	MeterVUDB *vu_db;
-//	MeterVUInt *vu_int;
 	ViewBehaviourText *button1, *button2, *button3;
 	ViewThumbnails *thumbnails;
 };
@@ -195,24 +191,6 @@ public:
 	PreferencesWindow *pwindow;
 };
 
-class MeterVUDB : public BC_Radial
-{
-public:
-	MeterVUDB(PreferencesWindow *pwindow, const char *text, int y);
-	int handle_event();
-//	MeterVUInt *vu_int;
-	PreferencesWindow *pwindow;
-};
-
-class MeterVUInt : public BC_Radial
-{
-public:
-	MeterVUInt(PreferencesWindow *pwindow, const char *text, int y);
-	int handle_event();
-	MeterVUDB *vu_db;
-	PreferencesWindow *pwindow;
-};
-
 class ViewBehaviourText : public BC_PopupMenu
 {
 public:
@@ -245,10 +223,10 @@ class ViewTheme : public BC_PopupMenu
 public:
 	ViewTheme(int x, int y, PreferencesWindow *pwindow);
 	~ViewTheme();
-	
+
 	void create_objects();
 	int handle_event();
-	
+
 	PreferencesWindow *pwindow;
 };
 

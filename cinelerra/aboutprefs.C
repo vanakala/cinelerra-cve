@@ -45,12 +45,15 @@ int AboutPrefs::create_objects()
 
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
-// 	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
-// 		mwindow->theme->preferencestitle_y, 
-// 		_("About"), 
-// 		LARGEFONT, 
-// 		resources->text_default));
-	
+	x = get_w() - mwindow->theme->about_bg->get_w() - 10;
+	y = mwindow->theme->preferencesoptions_y;
+	BC_Pixmap *temp_pixmap = new BC_Pixmap(this, 
+		mwindow->theme->about_bg,
+		PIXMAP_ALPHA);
+	draw_pixmap(temp_pixmap, x, y);
+
+	delete temp_pixmap;
+
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y +
 		get_text_height(LARGEFONT);
@@ -77,19 +80,16 @@ int AboutPrefs::create_objects()
 	y += get_text_height(MEDIUMFONT) * 4;
 
 	char versions[BCTEXTLEN];
-	sprintf(versions, 
-_("Quicktime version %d.%d.%d (%s)\n"
-"Libmpeg3 version %d.%d.%d\n"),
-quicktime_major(),
-quicktime_minor(),
-quicktime_release(),
-FFMPEG_EXTERNALTEXT,
-mpeg3_major(),
-mpeg3_minor(),
-mpeg3_release());
+	sprintf(versions, _("Quicktime version %d.%d.%d (%s)\n"
+		"Libmpeg3 version %d.%d.%d\n"),
+		quicktime_major(),
+		quicktime_minor(),
+		quicktime_release(),
+		FFMPEG_EXTERNALTEXT,
+		mpeg3_major(),
+		mpeg3_minor(),
+		mpeg3_release());
 	draw_text(x, y, versions);
-
-
 
 	y += get_text_height(MEDIUMFONT) * 3;
 	set_font(LARGEFONT);
@@ -99,35 +99,33 @@ mpeg3_release());
 
 	char credits[BCTEXTLEN];
 	sprintf(credits,
-
-"Jack Crossfire\n"
-"Richard Baverstock\n"
-"Karl Bielefeldt\n"
-"Kevin Brosius\n"
-"Jean-Luc Coulon\n"
-"Jean-Michel Poure\n"
-"Jerome Cornet\n"
-"Pierre Marc Dumuid\n"
-"Alex Ferrer\n"
-"Jan Gerber\n"
-"Koen Muylkens\n"
-"Stefan de Konink\n"
-"Nathan Kurz\n"
-"Greg Mekkes\n"
-"Eric Seigne\n"
-"Joe Stewart\n"
-"Dan Streetman\n"
-);
+		"Jack Crossfire\n"
+		"Richard Baverstock\n"
+		"Karl Bielefeldt\n"
+		"Kevin Brosius\n"
+		"Jean-Luc Coulon\n"
+		"Jean-Michel Poure\n"
+		"Jerome Cornet\n"
+		"Pierre Marc Dumuid\n"
+		"Alex Ferrer\n"
+		"Jan Gerber\n"
+		"Koen Muylkens\n"
+		"Stefan de Konink\n"
+		"Nathan Kurz\n"
+		"Greg Mekkes\n"
+		"Eric Seigne\n"
+		"Joe Stewart\n"
+		"Dan Streetman\n");
 	draw_text(x, y, credits);
+
 	sprintf(credits,
-"Gustavo I\361iguez\n"
-"Johannes Sixt\n"
-"Mark Taraba\n"
-"Andraz Tori\n"
-"Jonas Wulff\n"
-"David Arendt\n"
-"Einar R\374nkaru\n"
-);
+		"Gustavo I\361iguez\n"
+		"Johannes Sixt\n"
+		"Mark Taraba\n"
+		"Andraz Tori\n"
+		"Jonas Wulff\n"
+		"David Arendt\n"
+		"Einar R\374nkaru\n");
 	draw_text(x + 180, y, credits);
 
 	y = get_h() - 135;
@@ -140,31 +138,18 @@ mpeg3_release());
 
 	char license3[BCTEXTLEN];
 	sprintf(license3, _(
-"This program is free software; you can redistribute it and/or modify it under the terms\n"
-"of the GNU General Public License as published by the Free Software Foundation; either version\n"
-"2 of the License, or (at your option) any later version.\n"
-"\n"
-"This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n"
-"without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n"
-"PURPOSE.  See the GNU General Public License for more details.\n"
-"\n"));
+		"This program is free software; you can redistribute it and/or modify it under the terms\n"
+		"of the GNU General Public License as published by the Free Software Foundation; either version\n"
+		"2 of the License, or (at your option) any later version.\n"
+		"\n"
+		"This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n"
+		"without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n"
+		"PURPOSE.  See the GNU General Public License for more details.\n"
+		"\n"));
 	draw_text(x, y, license3);
-
-	x = get_w() - mwindow->theme->about_bg->get_w() - 10;
-	y = mwindow->theme->preferencesoptions_y;
-	BC_Pixmap *temp_pixmap = new BC_Pixmap(this, 
-		mwindow->theme->about_bg,
-		PIXMAP_ALPHA);
-	draw_pixmap(temp_pixmap, 
-		x, 
-		y);
-
-	delete temp_pixmap;
-
 
 	x += mwindow->theme->about_bg->get_w() + 10;
 	y += get_text_height(LARGEFONT) * 2;
-
 
 	flash();
 	flush();

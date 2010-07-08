@@ -34,18 +34,6 @@
 #include "videodevice.inc"
 #include <string.h>
 
-//#define CLAMP(x, y, z) (x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x)))
-
-
-
-
-
-
-
-
-
-
-
 
 Preferences::Preferences()
 {
@@ -53,9 +41,8 @@ Preferences::Preferences()
 	FileSystem fs;
 
 	preferences_lock = new Mutex("Preferences::preferences_lock");
-	sprintf(index_directory, BCASTDIR);
-	if(strlen(index_directory))
-		fs.complete_path(index_directory);
+	strcpy(index_directory, BCASTDIR);
+	fs.complete_path(index_directory);
 	cache_size = 0xa00000;
 	index_size = 0x300000;
 	index_count = 100;
@@ -76,7 +63,7 @@ Preferences::Preferences()
 	brender_asset = new Asset;
 	brender_asset->audio_data = 0;
 	brender_asset->video_data = 1;
-	sprintf(brender_asset->path, "/tmp/brender");
+	strcpy(brender_asset->path, "/tmp/brender");
 	brender_asset->format = FILE_JPEG_LIST;
 	brender_asset->jpeg_quality = 80;
 
@@ -137,7 +124,6 @@ void Preferences::copy_rates_from(Preferences *preferences)
 		}
 	}
 
-//printf("Preferences::copy_rates_from 1 %f %f\n", local_rate, preferences->local_rate);
 	preferences_lock->unlock();
 }
 
@@ -207,7 +193,6 @@ void Preferences::boundaries()
 
 Preferences& Preferences::operator=(Preferences &that)
 {
-printf("Preferences::operator=\n");
 	copy_from(&that);
 	return *this;
 }
@@ -261,8 +246,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 
-	sprintf(global_plugin_dir, PLUGIN_DIR);
-//	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
+	strcpy(global_plugin_dir, PLUGIN_DIR);
 	if(getenv("GLOBAL_PLUGIN_DIR"))
 	{
 		strcpy(global_plugin_dir, getenv("GLOBAL_PLUGIN_DIR"));
@@ -280,7 +264,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 			i + 1);
 
 		defaults->get(string, string2);
-		
+
 		scan_channels(string2,
 			&channel_positions[i * MAXCHANNELS], 
 			i + 1);
@@ -294,8 +278,6 @@ int Preferences::load_defaults(BC_Hash *defaults)
 		0,
 		0);
 
-
-
 	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", 0);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
@@ -307,7 +289,6 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	brender_preroll = defaults->get("BRENDER_PREROLL", brender_preroll);
 	renderfarm_job_count = defaults->get("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	renderfarm_consolidate = defaults->get("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
-//	renderfarm_vfs = defaults->get("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->get("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	int renderfarm_total = defaults->get("RENDERFARM_TOTAL", 0);
 
@@ -354,7 +335,6 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("INDEX_SIZE", index_size);
 	defaults->update("INDEX_COUNT", index_count);
 	defaults->update("USE_THUMBNAILS", use_thumbnails);
-//	defaults->update("GLOBAL_PLUGIN_DIR", global_plugin_dir);
 	defaults->update("THEME", theme);
 
 
@@ -381,7 +361,6 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("RENDERFARM_PORT", renderfarm_port);
 	defaults->update("RENDERFARM_PREROLL", render_preroll);
 	defaults->update("BRENDER_PREROLL", brender_preroll);
-//	defaults->update("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->update("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	defaults->update("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	defaults->update("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
@@ -453,7 +432,6 @@ void Preferences::reset_rates()
 
 void Preferences::set_rate(float rate, int node)
 {
-//printf("Preferences::set_rate %f %d\n", rate, node);
 	if(node < 0)
 	{
 		local_rate = rate;
@@ -642,17 +620,3 @@ int Preferences::calculate_processors(int interactive)
 
 	return result;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

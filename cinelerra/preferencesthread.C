@@ -135,7 +135,7 @@ void PreferencesThread::run()
 	need_new_indexes = 0;
 	rerender = 0;
 
- 	int x = mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2;
+	int x = mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2;
 	int y = mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2;
 
 	window_lock->lock("PreferencesThread::run 1");
@@ -174,23 +174,19 @@ int PreferencesThread::update_framerate()
 
 int PreferencesThread::apply_settings()
 {
-// Compare sessions 											
-
+// Compare sessions
 
 	AudioOutConfig *this_aconfig = edl->session->playback_config->aconfig;
 	VideoOutConfig *this_vconfig = edl->session->playback_config->vconfig;
 	AudioOutConfig *aconfig = mwindow->edl->session->playback_config->aconfig;
 	VideoOutConfig *vconfig = mwindow->edl->session->playback_config->vconfig;
 
-	
 	rerender = 
 		edl->session->need_rerender(mwindow->edl->session) ||
 		(preferences->force_uniprocessor != preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
-
-
 
 
 	mwindow->edl->copy_session(edl, 1);
@@ -214,23 +210,17 @@ int PreferencesThread::apply_settings()
 			edl->session->max_meter_db);
 		mwindow->cwindow->gui->unlock_window();
 
-
-
 		mwindow->vwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->vwindow->gui->meters->change_format(edl->session->meter_format,
 			edl->session->min_meter_db,
 			edl->session->max_meter_db);
 		mwindow->vwindow->gui->unlock_window();
 
-
-
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 1");
 		mwindow->gui->patchbay->change_meter_format(edl->session->meter_format,
 			edl->session->min_meter_db,
 			edl->session->max_meter_db);
 		mwindow->gui->unlock_window();
-
-
 
 		mwindow->lwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->lwindow->gui->panel->change_format(edl->session->meter_format,
@@ -279,28 +269,22 @@ const char* PreferencesThread::category_to_text(int category)
 {
 	switch(category)
 	{
-		case PLAYBACK:
-			return _("Playback");
-			break;
-		case RECORD:
-			return _("Recording");
-			break;
-		case PERFORMANCE:
-			return _("Performance");
-			break;
-		case INTERFACE:
-			return _("Interface");
-			break;
-		case ABOUT:
-			return _("About");
-			break;
+	case PLAYBACK:
+		return _("Playback");
+	case RECORD:
+		return _("Recording");
+	case PERFORMANCE:
+		return _("Performance");
+	case INTERFACE:
+		return _("Interface");
+	case ABOUT:
+		return _("About");
 	}
 	return "";
 }
 
 int PreferencesThread::text_to_category(char *category)
 {
-SET_TRACE
 	int min_result = -1, result, result_num = 0;
 	for(int i = 0; i < CATEGORIES; i++)
 	{
@@ -311,14 +295,8 @@ SET_TRACE
 			result_num = i;
 		}
 	}
-SET_TRACE
 	return result_num;
 }
-
-
-
-
-
 
 
 
@@ -327,9 +305,9 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	int x,
 	int y)
  : BC_Window(PROGRAM_NAME ": Preferences", 
- 	x,
+	x,
 	y,
- 	WIDTH, 
+	WIDTH, 
 	HEIGHT,
 	(int)BC_INFINITY,
 	(int)BC_INFINITY,
@@ -376,16 +354,6 @@ int PreferencesWindow::create_objects()
 		x += category_button[i]->get_w() -
 			mwindow->theme->preferences_category_overlap;
 	}
-
-
-// 	for(int i = 0; i < CATEGORIES; i++)
-// 		categories.append(new BC_ListBoxItem(thread->category_to_text(i)));
-// 	category = new PreferencesCategory(mwindow, 
-// 		thread, 
-// 		mwindow->theme->preferencescategory_x, 
-// 		mwindow->theme->preferencescategory_y);
-// 	category->create_objects();
-
 
 	add_subwindow(button = new PreferencesOK(mwindow, thread));
 	add_subwindow(new PreferencesApply(mwindow, thread));
@@ -437,25 +405,25 @@ int PreferencesWindow::set_current_dialog(int number)
 
 	switch(number)
 	{
-		case PreferencesThread::PLAYBACK:
-			add_subwindow(dialog = new PlaybackPrefs(mwindow, this));
-			break;
-	
-		case PreferencesThread::RECORD:
-			add_subwindow(dialog = new RecordPrefs(mwindow, this));
-			break;
-	
-		case PreferencesThread::PERFORMANCE:
-			add_subwindow(dialog = new PerformancePrefs(mwindow, this));
-			break;
-	
-		case PreferencesThread::INTERFACE:
-			add_subwindow(dialog = new InterfacePrefs(mwindow, this));
-			break;
-	
-		case PreferencesThread::ABOUT:
-			add_subwindow(dialog = new AboutPrefs(mwindow, this));
-			break;
+	case PreferencesThread::PLAYBACK:
+		add_subwindow(dialog = new PlaybackPrefs(mwindow, this));
+		break;
+
+	case PreferencesThread::RECORD:
+		add_subwindow(dialog = new RecordPrefs(mwindow, this));
+		break;
+
+	case PreferencesThread::PERFORMANCE:
+		add_subwindow(dialog = new PerformancePrefs(mwindow, this));
+		break;
+
+	case PreferencesThread::INTERFACE:
+		add_subwindow(dialog = new InterfacePrefs(mwindow, this));
+		break;
+
+	case PreferencesThread::ABOUT:
+		add_subwindow(dialog = new AboutPrefs(mwindow, this));
+		break;
 	}
 
 	if(dialog)
@@ -466,15 +434,6 @@ int PreferencesWindow::set_current_dialog(int number)
 	}
 	return 0;
 }
-
-
-
-
-
-
-
-
-
 
 
 PreferencesButton::PreferencesButton(MWindow *mwindow, 
@@ -499,17 +458,11 @@ int PreferencesButton::handle_event()
 
 
 
-
-
-
-
-
-
 PreferencesDialog::PreferencesDialog(MWindow *mwindow, PreferencesWindow *pwindow)
  : BC_SubWindow(10, 
- 	40, 
+	40, 
 	pwindow->get_w() - 20, 
- 	pwindow->get_h() - BC_GenericButton::calculate_h() - 10 - 40)
+	pwindow->get_h() - BC_GenericButton::calculate_h() - 10 - 40)
 {
 	this->pwindow = pwindow;
 	this->mwindow = mwindow;
@@ -527,7 +480,7 @@ PreferencesDialog::~PreferencesDialog()
 
 PreferencesApply::PreferencesApply(MWindow *mwindow, PreferencesThread *thread)
  : BC_GenericButton(thread->window->get_w() / 2 - BC_GenericButton::calculate_w(thread->window, _("Apply")) / 2, 
- 	thread->window->get_h() - BC_GenericButton::calculate_h() - 10, 
+	thread->window->get_h() - BC_GenericButton::calculate_h() - 10, 
 	_("Apply"))
 {
 	this->mwindow = mwindow;
@@ -545,7 +498,7 @@ int PreferencesApply::handle_event()
 
 PreferencesOK::PreferencesOK(MWindow *mwindow, PreferencesThread *thread)
  : BC_GenericButton(10, 
- 	thread->window->get_h() - BC_GenericButton::calculate_h() - 10,
+	thread->window->get_h() - BC_GenericButton::calculate_h() - 10,
 	_("OK"))
 {
 	this->mwindow = mwindow;
@@ -561,6 +514,7 @@ int PreferencesOK::keypress_event()
 	}
 	return 0;
 }
+
 int PreferencesOK::handle_event()
 {
 	thread->window->set_done(0);
@@ -571,12 +525,13 @@ int PreferencesOK::handle_event()
 
 PreferencesCancel::PreferencesCancel(MWindow *mwindow, PreferencesThread *thread)
  : BC_GenericButton(thread->window->get_w() - BC_GenericButton::calculate_w(thread->window, _("Cancel")) - 10,
- 	thread->window->get_h() - BC_GenericButton::calculate_h() - 10,
- 	_("Cancel"))
+	thread->window->get_h() - BC_GenericButton::calculate_h() - 10,
+	_("Cancel"))
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
 }
+
 int PreferencesCancel::keypress_event()
 {
 	if(get_keypress() == ESC)
@@ -592,14 +547,6 @@ int PreferencesCancel::handle_event()
 	thread->window->set_done(1);
 	return 1;
 }
-
-
-
-
-
-
-
-
 
 
 PreferencesCategory::PreferencesCategory(MWindow *mwindow, PreferencesThread *thread, int x, int y)
@@ -621,8 +568,6 @@ PreferencesCategory::~PreferencesCategory()
 
 int PreferencesCategory::handle_event()
 {
-SET_TRACE
 	thread->window->set_current_dialog(thread->text_to_category(get_text()));
-SET_TRACE
 	return 1;
 }

@@ -42,6 +42,7 @@ Quit::Quit(MWindow *mwindow)
 { 
 	this->mwindow = mwindow; 
 }
+
 int Quit::create_objects(Save *save)
 { 
 	this->save = save; 
@@ -50,8 +51,6 @@ int Quit::create_objects(Save *save)
 
 int Quit::handle_event() 
 {
-
-//printf("Quit::handle_event 1 %d\n", mwindow->session->changes_made);
 	if(mwindow->session->changes_made ||
 		mwindow->gui->mainmenu->record->current_state ||
 		mwindow->render->in_progress) 
@@ -61,8 +60,6 @@ int Quit::handle_event()
 	else 
 	{        // quit
 		mwindow->interrupt_indexes();
-//		mwindow->gui->set_done(0);
-//		BC_WindowBase::get_resources()->synchronous->quit();
 		mwindow->playback_3d->quit();
 	}
 	return 0;
@@ -98,9 +95,6 @@ void Quit::run()
 			if(mwindow->gui)
 			{
 				mwindow->interrupt_indexes();
-// Last command in program
-//				mwindow->gui->set_done(0);
-//				BC_WindowBase::get_resources()->synchronous->quit();
 				mwindow->playback_3d->quit();
 			}
 			break;

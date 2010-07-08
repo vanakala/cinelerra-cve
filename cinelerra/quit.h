@@ -33,7 +33,7 @@ public:
 	int create_objects(Save *save);
 	int handle_event();
 	void run();
-	
+
 	Save *save;
 	MWindow *mwindow;
 };

@@ -29,13 +29,6 @@
 #include "interfaceprefs.h"
 #include "theme.h"
 
-#if 0
-N_("Drag all following edits")
-N_("Drag only one edit")
-N_("Drag source only")
-N_("No effect")
-#endif
-
 #define MOVE_ALL_EDITS_TITLE "Drag all following edits"
 #define MOVE_ONE_EDIT_TITLE "Drag only one edit"
 #define MOVE_NO_EDITS_TITLE "Drag source only"
@@ -121,7 +114,6 @@ int InterfacePrefs::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Index files"), LARGEFONT, resources->text_default));
 
-
 	y += 35;
 	add_subwindow(new BC_Title(x, 
 		y + 5, 
@@ -155,15 +147,11 @@ int InterfacePrefs::create_objects()
 	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 350, y));
 
 
-
-
-
 	y += 35;
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
 
 	add_subwindow(new BC_Title(x, y, _("Editing"), LARGEFONT, resources->text_default));
-
 
 	y += 35;
 	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
@@ -172,7 +160,7 @@ int InterfacePrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Dragging edit boundaries does what:")));
 	y += 25;
 	add_subwindow(new BC_Title(x, y, _("Button 1:")));
-	
+
 	ViewBehaviourText *text;
 	add_subwindow(text = new ViewBehaviourText(80, 
 		y - 5, 
@@ -226,21 +214,16 @@ const char* InterfacePrefs::behavior_to_text(int mode)
 {
 	switch(mode)
 	{
-		case MOVE_ALL_EDITS:
-			return _(MOVE_ALL_EDITS_TITLE);
-			break;
-		case MOVE_ONE_EDIT:
-			return _(MOVE_ONE_EDIT_TITLE);
-			break;
-		case MOVE_NO_EDITS:
-			return _(MOVE_NO_EDITS_TITLE);
-			break;
-		case MOVE_EDITS_DISABLED:
-			return _(MOVE_EDITS_DISABLED_TITLE);
-			break;
-		default:
-			return "";
-			break;
+	case MOVE_ALL_EDITS:
+		return _(MOVE_ALL_EDITS_TITLE);
+	case MOVE_ONE_EDIT:
+		return _(MOVE_ONE_EDIT_TITLE);
+	case MOVE_NO_EDITS:
+		return _(MOVE_NO_EDITS_TITLE);
+	case MOVE_EDITS_DISABLED:
+		return _(MOVE_EDITS_DISABLED_TITLE);
+	default:
+		return "";
 	}
 }
 
@@ -267,24 +250,8 @@ InterfacePrefs::~InterfacePrefs()
 	delete feet;
 	delete min_db;
 	delete max_db;
-//	delete vu_db;
-//	delete vu_int;
 	delete thumbnails;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 IndexPathText::IndexPathText(int x, 
@@ -321,7 +288,6 @@ int IndexSize::handle_event()
 
 	result = atol(get_text());
 	if(result < 64000) result = 64000;
-	//if(result < 500000) result = 500000;
 	pwindow->thread->preferences->index_size = result;
 	return 0;
 }
@@ -346,17 +312,6 @@ int IndexCount::handle_event()
 	pwindow->thread->preferences->index_count = result;
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -439,9 +394,6 @@ int TimeFormatFeetSetting::handle_event()
 	return 0;
 }
 
-
-
-
 ViewBehaviourText::ViewBehaviourText(int x, 
 	int y, 
 	const char *text, 
@@ -490,7 +442,6 @@ int ViewBehaviourItem::handle_event()
 
 
 
-
 MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 50, 1, text)
 { 
@@ -519,40 +470,6 @@ int MeterMaxDB::handle_event()
 	pwindow->thread->edl->session->max_meter_db = atol(get_text()); 
 	return 0;
 }
-
-
-
-
-
-MeterVUDB::MeterVUDB(PreferencesWindow *pwindow, const char *text, int y)
- : BC_Radial(145, y, pwindow->thread->edl->session->meter_format == METER_DB, text)
-{ 
-	this->pwindow = pwindow; 
-}
-
-int MeterVUDB::handle_event() 
-{ 
-	pwindow->thread->redraw_meters = 1;
-//	vu_int->update(0); 
-	pwindow->thread->edl->session->meter_format = METER_DB; 
-	return 1;
-}
-
-MeterVUInt::MeterVUInt(PreferencesWindow *pwindow, const char *text, int y)
- : BC_Radial(205, y, pwindow->thread->edl->session->meter_format == METER_INT, text)
-{ 
-	this->pwindow = pwindow; 
-}
-
-int MeterVUInt::handle_event() 
-{ 
-	pwindow->thread->redraw_meters = 1;
-	vu_db->update(0); 
-	pwindow->thread->edl->session->meter_format = METER_INT; 
-	return 1;
-}
-
-
 
 
 ViewTheme::ViewTheme(int x, int y, PreferencesWindow *pwindow)
@@ -607,7 +524,7 @@ ViewThumbnails::ViewThumbnails(int x,
 	int y, 
 	PreferencesWindow *pwindow)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	pwindow->thread->preferences->use_thumbnails, _("Use thumbnails in resource window"))
 {
 	this->pwindow = pwindow;
@@ -623,17 +540,15 @@ int ViewThumbnails::handle_event()
 
 UseTipWindow::UseTipWindow(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	pwindow->thread->preferences->use_tipwindow, 
 	_("Show tip of the day"))
 {
 	this->pwindow = pwindow;
 }
+
 int UseTipWindow::handle_event()
 {
 	pwindow->thread->preferences->use_tipwindow = get_value();
 	return 1;
 }
-
-
-

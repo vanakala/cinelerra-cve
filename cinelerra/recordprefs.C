@@ -46,7 +46,6 @@ RecordPrefs::~RecordPrefs()
 {
 	delete audio_in_device;
 	delete recording_format;
-//	delete duplex_device;
 }
 
 int RecordPrefs::create_objects()
@@ -84,13 +83,9 @@ int RecordPrefs::create_objects()
 		0, // Supply file formats for background rendering
 		1); // Horizontal layout
 
-
-
-
 // Audio hardware
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
-
 
 	add_subwindow(title = new BC_Title(x, 
 		y, 
@@ -257,7 +252,7 @@ RecordRealTime::RecordRealTime(MWindow *mwindow,
 	int y, 
 	int value)
  : BC_CheckBox(x, 
- 	y, 
+	y, 
 	value, 
 	_("Record in realtime priority (root only)"))
 { 
@@ -275,29 +270,19 @@ RecordSampleRate::RecordSampleRate(PreferencesWindow *pwindow, int x, int y)
 {
 	this->pwindow = pwindow;
 }
+
 int RecordSampleRate::handle_event()
 {
 	pwindow->thread->edl->session->aconfig_in->in_samplerate = atol(get_text());
 	return 1;
 }
 
-
-// DuplexEnable::DuplexEnable(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y, int value)
-//  : BC_CheckBox(x, y, value, _("Enable full duplex"))
-// { this->pwindow = pwindow; }
-// 
-// int DuplexEnable::handle_event()
-// {
-// 	pwindow->thread->edl->session->enable_duplex = get_value();
-// }
-// 
-
-
 RecordW::RecordW(PreferencesWindow *pwindow, int x, int y)
  : BC_TextBox(x, y, 70, 1, pwindow->thread->edl->session->vconfig_in->w)
 {
 	this->pwindow = pwindow;
 }
+
 int RecordW::handle_event()
 {
 	pwindow->thread->edl->session->vconfig_in->w = atol(get_text());
@@ -309,6 +294,7 @@ RecordH::RecordH(PreferencesWindow *pwindow, int x, int y)
 {
 	this->pwindow = pwindow;
 }
+
 int RecordH::handle_event()
 {
 	pwindow->thread->edl->session->vconfig_in->h = atol(get_text());
@@ -320,6 +306,7 @@ RecordFrameRate::RecordFrameRate(PreferencesWindow *pwindow, int x, int y)
 {
 	this->pwindow = pwindow;
 }
+
 int RecordFrameRate::handle_event()
 {
 	pwindow->thread->edl->session->vconfig_in->in_framerate = atof(get_text());
@@ -452,5 +439,3 @@ int StillImageDuration::handle_event()
 	pwindow->thread->edl->session->si_duration = atof(get_text());
 	return 1;
 }
-
-

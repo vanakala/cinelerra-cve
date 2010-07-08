@@ -27,7 +27,6 @@ class PlaybackBicubicBilinear;
 class PlaybackBilinearBilinear;
 class PlaybackBufferBytes;
 class PlaybackBufferSize;
-class PlaybackDeblock;
 class PlaybackDisableNoEdits;
 class PlaybackHead;
 class PlaybackHeadCount;
@@ -60,9 +59,6 @@ public:
 	~PlaybackPrefs();
 
 	int create_objects();
-//	int set_strategy(int strategy);
-	int get_buffer_bytes();
-
 	static char* strategy_to_string(int strategy);
 	void delete_strategy();
 
@@ -79,7 +75,6 @@ public:
 	PlaybackBicubicBicubic *cubic_cubic;
 	PlaybackBicubicBilinear *cubic_linear;
 	PlaybackBilinearBilinear *linear_linear;
-	PlaybackDeblock *mpeg4_deblock;
 	PlaybackInterpolateRaw *interpolate_raw;
 	PlaybackWhiteBalanceRaw *white_balance_raw;
 	VideoAsynchronous *asynchronous;
@@ -157,13 +152,6 @@ public:
 	PlaybackPrefs *playback_prefs;
 };
 
-class PlaybackDeblock : public BC_CheckBox
-{
-public:
-	PlaybackDeblock(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
 
 class PlaybackNearest : public BC_Radial
 {

@@ -29,8 +29,6 @@ class AboutPrefs : public PreferencesDialog
 public:
 	AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow);
 	~AboutPrefs();
-	
-
 
 	int create_objects();
 };
