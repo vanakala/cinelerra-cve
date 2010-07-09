@@ -33,7 +33,6 @@
 #include "floatautos.h"
 #include "language.h"
 #include "localsession.h"
-#include "patch.h"
 #include "mainsession.h"
 #include "theme.h"
 #include "trackcanvas.h"

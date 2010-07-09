@@ -31,7 +31,6 @@
 #include "guicast.h"
 #include "maxchannels.h"
 #include "module.inc"
-#include "patch.inc"
 #include "plugin.inc"
 #include "pluginarray.inc"
 #include "pluginserver.inc"

@@ -22,6 +22,7 @@
 #ifndef PATCHGUI_H
 #define PATCHGUI_H
 
+#include "datatype.h"
 #include "guicast.h"
 #include "mwindow.inc"
 #include "patchbay.inc"
@@ -29,12 +30,9 @@
 #include "track.inc"
 
 
-
-
 class TitlePatch;
 class PlayPatch;
 class RecordPatch;
-class AutoPatch;
 class GangPatch;
 class DrawPatch;
 class MutePatch;
@@ -61,7 +59,7 @@ public:
 	virtual void synchronize_fade(float change) {};
 	void synchronize_faders(float change, int audio, int video);
 	char* calculate_nudge_text(int *changed);
-	int64_t calculate_nudge(char *string);
+	posnum calculate_nudge(char *string);
 
 	MWindow *mwindow;
 	PatchBay *patchbay;
@@ -77,7 +75,6 @@ public:
 	TitlePatch *title;
 	RecordPatch *record;
 	PlayPatch *play;
-//	AutoPatch *automate;
 	GangPatch *gang;
 	DrawPatch *draw;
 	MutePatch *mute;
@@ -113,16 +110,6 @@ class TitlePatch : public BC_TextBox
 public:
 	TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
 	int handle_event();
-	MWindow *mwindow;
-	PatchGUI *patch;
-};
-
-class AutoPatch : public BC_Toggle
-{
-public:
-	AutoPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int button_press_event();
-	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
 };
@@ -175,8 +162,8 @@ public:
 	int handle_event();
 	int button_press_event();
 	void update();
-	void set_value(int64_t value);
-	int64_t calculate_increment();
+	void set_value(posnum value);
+	posnum calculate_increment();
 
 	MWindow *mwindow;
 	PatchGUI *patch;

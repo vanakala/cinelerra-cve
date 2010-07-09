@@ -37,7 +37,6 @@
 #include "keyframe.inc"
 #include "linklist.h"
 #include "module.inc"
-#include "patch.inc"
 #include "plugin.inc"
 #include "pluginset.inc"
 #include "renderengine.inc"

@@ -56,7 +56,6 @@ class MenuAEffects;
 class MenuAEffectItem;
 class Module;
 class Modules;
-class Patch;
 class PatchBay;
 class PlayableTracks;
 class Tracking;

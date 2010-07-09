@@ -27,7 +27,6 @@
 #include "filexml.h"
 #include "module.h"
 #include "mwindow.h"
-#include "patch.h"
 #include "patchbay.h"
 #include "plugin.h"
 #include "pluginarray.h"

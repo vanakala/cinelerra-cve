@@ -29,7 +29,6 @@
 #include "floatautos.inc"
 #include "mwindow.inc"
 #include "maxbuffers.h"
-#include "patch.h"
 #include "plugin.inc"
 #include "pluginserver.inc"
 #include "track.inc"

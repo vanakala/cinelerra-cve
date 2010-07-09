@@ -119,15 +119,9 @@ int NudgePopupNative::handle_event()
 
 
 
-
-
-
-
-
-
 PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
  : BC_SubWindow(mwindow->theme->patchbay_x,
- 	mwindow->theme->patchbay_y,
+	mwindow->theme->patchbay_y,
 	mwindow->theme->patchbay_w,
 	mwindow->theme->patchbay_h)
 {
@@ -238,7 +232,7 @@ Track *PatchBay::is_over_track()     // called from mwindow
 				over_track = track;
 			}
 		}
-	}				
+	}
 	return (over_track);
 
 }
@@ -265,45 +259,45 @@ int PatchBay::cursor_motion_event()
 				{
 					switch(drag_operation)
 					{
-						case Tracks::PLAY:
-							if(track->play != new_status)
-							{
-								track->play = new_status;
-								mwindow->restart_brender();
-								mwindow->sync_parameters(CHANGE_EDL);
-								update_gui = 1;
-							}
-							break;
-						case Tracks::RECORD:
-							if(track->record != new_status)
-							{
-								track->record = new_status;
-								update_gui = 1;
-							}
-							break;
-						case Tracks::GANG:
-							if(track->gang != new_status)
-							{
-								track->gang = new_status;
-								update_gui = 1;
-							}
-							break;
-						case Tracks::DRAW:
-							if(track->draw != new_status)
-							{
-								track->draw = new_status;
-								update_gui = 1;
-							}
-							break;
-						case Tracks::EXPAND:
-							if(track->expand_view != new_status)
-							{
-								track->expand_view = new_status;
-								mwindow->trackmovement(mwindow->edl->local_session->track_start);
-								update_gui = 0;
-							}
-							break;
-						case Tracks::MUTE:
+					case Tracks::PLAY:
+						if(track->play != new_status)
+						{
+							track->play = new_status;
+							mwindow->restart_brender();
+							mwindow->sync_parameters(CHANGE_EDL);
+							update_gui = 1;
+						}
+						break;
+					case Tracks::RECORD:
+						if(track->record != new_status)
+						{
+							track->record = new_status;
+							update_gui = 1;
+						}
+						break;
+					case Tracks::GANG:
+						if(track->gang != new_status)
+						{
+							track->gang = new_status;
+							update_gui = 1;
+						}
+						break;
+					case Tracks::DRAW:
+						if(track->draw != new_status)
+						{
+							track->draw = new_status;
+							update_gui = 1;
+						}
+						break;
+					case Tracks::EXPAND:
+						if(track->expand_view != new_status)
+						{
+							track->expand_view = new_status;
+							mwindow->trackmovement(mwindow->edl->local_session->track_start);
+							update_gui = 0;
+						}
+						break;
+					case Tracks::MUTE:
 						{
 							IntAuto *current = 0;
 							Auto *keyframe = 0;
@@ -437,12 +431,12 @@ int PatchBay::update()
 
 				switch(current->data_type)
 				{
-					case TRACK_AUDIO:
-						patchgui = patches.values[patch_count] = new APatchGUI(mwindow, this, (ATrack*)current, PATCH_X, y);
-						break;
-					case TRACK_VIDEO:
-						patchgui = patches.values[patch_count] = new VPatchGUI(mwindow, this, (VTrack*)current, PATCH_X, y);
-						break;
+				case TRACK_AUDIO:
+					patchgui = patches.values[patch_count] = new APatchGUI(mwindow, this, (ATrack*)current, PATCH_X, y);
+					break;
+				case TRACK_VIDEO:
+					patchgui = patches.values[patch_count] = new VPatchGUI(mwindow, this, (VTrack*)current, PATCH_X, y);
+					break;
 				}
 				patchgui->create_objects();
 			}
@@ -455,12 +449,12 @@ int PatchBay::update()
 		{
 			switch(current->data_type)
 			{
-				case TRACK_AUDIO:
-					patchgui = new APatchGUI(mwindow, this, (ATrack*)current, PATCH_X, y);
-					break;
-				case TRACK_VIDEO:
-					patchgui = new VPatchGUI(mwindow, this, (VTrack*)current, PATCH_X, y);
-					break;
+			case TRACK_AUDIO:
+				patchgui = new APatchGUI(mwindow, this, (ATrack*)current, PATCH_X, y);
+				break;
+			case TRACK_VIDEO:
+				patchgui = new VPatchGUI(mwindow, this, (VTrack*)current, PATCH_X, y);
+				break;
 			}
 			patches.append(patchgui);
 			patchgui->create_objects();
@@ -496,12 +490,12 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 			keyframe->value += change;
 			if(data_type == TRACK_AUDIO)
 				CLAMP(keyframe->value, 
-				      mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
-				      mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
+					mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+					mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
 			else
 				CLAMP(keyframe->value, 
-				      mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
-				      mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
+					mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
+					mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
 
 			PatchGUI *patch = get_patch_of(current);
 			if(patch) patch->update(patch->x, patch->y);
@@ -509,7 +503,7 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 	}
 }
 
-void PatchBay::synchronize_nudge(int64_t value, Track *skip)
+void PatchBay::synchronize_nudge(posnum value, Track *skip)
 {
 	for(Track *current = mwindow->edl->tracks->first;
 		current;
@@ -540,10 +534,8 @@ PatchGUI* PatchBay::get_patch_of(Track *track)
 int PatchBay::resize_event(int top, int bottom)
 {
 	reposition_window(mwindow->theme->patchbay_x,
- 		mwindow->theme->patchbay_y,
+		mwindow->theme->patchbay_y,
 		mwindow->theme->patchbay_w,
 		mwindow->theme->patchbay_h);
 	return 0;
 }
-
-

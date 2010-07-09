@@ -48,7 +48,7 @@ APatchGUI::APatchGUI(MWindow *mwindow,
 	int x, 
 	int y)
  : PatchGUI(mwindow, 
- 	patchbay, 
+	patchbay,
 	track, 
 	x, 
 	y)
@@ -121,9 +121,9 @@ int APatchGUI::update(int x, int y)
 				previous, 
 				next);
 			fade->update(fade->get_w(),
-				     value, 
-				     mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
-				     mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
+					value,
+					mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+					mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
 		}
 	}
 	else
@@ -196,7 +196,7 @@ int APatchGUI::update(int x, int y)
 	{
 		patchbay->add_subwindow(pan = new APanPatch(mwindow,
 			this,
-			x1 + x, 
+			x1 + x,
 			y1 + y));
 		x1 += pan->get_w() + 10;
 		patchbay->add_subwindow(nudge = new NudgePatch(mwindow,
@@ -223,13 +223,13 @@ void APatchGUI::synchronize_fade(float value_change)
 
 AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
  : BC_FSlider(x, 
-			y, 
-			0, 
-			w, 
-			w, 
-			mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE], 
-			mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE], 
-			get_keyframe(mwindow, patch)->value)
+	y,
+	0,
+	w,
+	w,
+	mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+	mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE],
+	get_keyframe(mwindow, patch)->value)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -288,14 +288,14 @@ FloatAuto* AFadePatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 
 	FloatAutos *ptr = (FloatAutos*)patch->atrack->automation->autos[AUTOMATION_FADE];
 	return (FloatAuto*)ptr->get_prev_auto(
-		(long)unit_position, 
+		(posnum)unit_position, 
 		PLAY_FORWARD,
 		current);
 }
 
 
 APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
- : BC_Pan(x, 
+ : BC_Pan(x,
 		y, 
 		PAN_RADIUS, 
 		MAX_PAN, 
@@ -344,7 +344,7 @@ PanAuto* APanPatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 
 	PanAutos *ptr = (PanAutos*)patch->atrack->automation->autos[AUTOMATION_PAN];
 	return (PanAuto*)ptr->get_prev_auto(
-		(long)unit_position, 
+		(posnum)unit_position, 
 		PLAY_FORWARD,
 		current);
 }
@@ -354,15 +354,15 @@ PanAuto* APanPatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 
 AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
  : BC_Meter(x, 
-			y, 
-			METER_HORIZ, 
-			patch->patchbay->get_w() - 10, 
-			mwindow->edl->session->min_meter_db, 
-			mwindow->edl->session->max_meter_db, 
-			mwindow->edl->session->meter_format, 
-			0,
-			TRACKING_RATE * 10,
-			TRACKING_RATE)
+		y,
+		METER_HORIZ,
+		patch->patchbay->get_w() - 10,
+		mwindow->edl->session->min_meter_db,
+		mwindow->edl->session->max_meter_db,
+		mwindow->edl->session->meter_format,
+		0,
+		TRACKING_RATE * 10,
+		TRACKING_RATE)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -378,8 +378,3 @@ int AMeterPatch::button_press_event()
 
 	return 0;
 }
-
-
-
-
-

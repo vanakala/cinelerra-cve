@@ -26,7 +26,6 @@
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "patch.h"
 #include "plugindialog.h"
 #include "pluginset.h"
 #include "mainsession.h"

@@ -32,7 +32,6 @@
 #include "floatautos.h"
 #include "mwindow.h"
 #include "overlayframe.h"
-#include "patch.h"
 #include "pluginarray.h"
 #include "preferences.h"
 #include "renderengine.h"

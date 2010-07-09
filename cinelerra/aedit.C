@@ -29,7 +29,6 @@
 #include "filexml.h"
 #include "indexfile.h"
 #include "mwindow.h"
-#include "patch.h"
 #include "mainsession.h"
 #include "trackcanvas.h"
 #include "tracks.h"

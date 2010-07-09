@@ -27,7 +27,6 @@
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "overlayframe.inc"
-#include "patch.h"
 #include "patchbay.inc"
 #include "patchgui.inc"
 
@@ -55,15 +54,12 @@ public:
 	int update();
 	void update_meters(ArrayList<double> *module_levels);
 	void stop_meters();
-	void synchronize_nudge(int64_t value, Track *skip);
+	void synchronize_nudge(posnum value, Track *skip);
 	void synchronize_faders(float value, int data_type, Track *skip);
 	void change_meter_format(int mode, int min, int max);
 	void reset_meters();
 
 	ArrayList<PatchGUI*> patches;
-
-
-
 
 
 

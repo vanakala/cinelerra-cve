@@ -34,7 +34,6 @@
 #include "keyframe.h"
 #include "localsession.h"
 #include "module.h"
-#include "patch.h"
 #include "patchbay.h"
 #include "plugin.h"
 #include "pluginset.h"

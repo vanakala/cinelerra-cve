@@ -37,7 +37,6 @@
 #include "language.h"
 #include "module.h"
 #include "mainerror.h"
-#include "patch.h"
 #include "plugin.h"
 #include "pluginarray.h"
 #include "preferences.h"

@@ -26,7 +26,6 @@
 #include "edlsession.h"
 #include "file.h"
 #include "mwindow.h"
-#include "patch.h"
 #include "preferences.h"
 #include "mainsession.h"
 #include "trackcanvas.h"

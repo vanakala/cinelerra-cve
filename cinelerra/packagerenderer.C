@@ -668,7 +668,6 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 	int result = 1;
 	int total_playable_tracks = 0;
 	Track* current_track;
-	Patch* current_patch;
 	Auto* current_auto;
 	int temp;
 

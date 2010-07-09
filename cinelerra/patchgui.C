@@ -59,7 +59,6 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 	title = 0;
 	record = 0;
 	play = 0;
-//	automate = 0;
 	gang = 0;
 	draw = 0;
 	mute = 0;
@@ -75,7 +74,6 @@ PatchGUI::~PatchGUI()
 	if(title) delete title;
 	if(record) delete record;
 	if(play) delete play;
-//	if(automate) delete automate;
 	if(gang) delete gang;
 	if(draw) delete draw;
 	if(mute) delete mute;
@@ -101,43 +99,30 @@ int PatchGUI::reposition(int x, int y)
 
 		if(title)
 		{
-TRACE("PatchGUI::reposition 1\n");
 			title->reposition_window(x1, y1 + y);
-TRACE("PatchGUI::reposition 2\n");
 		}
 		y1 += mwindow->theme->title_h;
 
 		if(play)
 		{
-TRACE("PatchGUI::reposition 3\n");
 			play->reposition_window(x1, y1 + y);
 			x1 += play->get_w();
-TRACE("PatchGUI::reposition 4\n");
 			record->reposition_window(x1, y1 + y);
 			x1 += record->get_w();
-TRACE("PatchGUI::reposition 5\n");
-//			automate->reposition_window(x1, y1 + y);
-//			x1 += automate->get_w();
 			gang->reposition_window(x1, y1 + y);
 			x1 += gang->get_w();
-TRACE("PatchGUI::reposition 6\n");
 			draw->reposition_window(x1, y1 + y);
 			x1 += draw->get_w();
-TRACE("PatchGUI::reposition 7\n");
 			mute->reposition_window(x1, y1 + y);
 			x1 += mute->get_w();
-TRACE("PatchGUI::reposition 8\n");
 
 			if(expand)
 			{
-TRACE("PatchGUI::reposition 9\n");
 				VFrame **expandpatch_data = mwindow->theme->get_image_set("expandpatch_data");
 				expand->reposition_window(
 					patchbay->get_w() - 10 - expandpatch_data[0]->get_w(), 
 					y1 + y);
-TRACE("PatchGUI::reposition 10\n");
 				x1 += expand->get_w();
-TRACE("PatchGUI::reposition 11\n");
 			}
 		}
 		y1 += mwindow->theme->play_h;
@@ -153,14 +138,11 @@ TRACE("PatchGUI::reposition 11\n");
 
 int PatchGUI::update(int x, int y)
 {
-//TRACE("PatchGUI::update 1");
 	reposition(x, y);
-//TRACE("PatchGUI::update 10");
 
 	int h = track->vertical_span(mwindow->theme);
 	int y1 = 0;
 	int x1 = 0;
-//printf("PatchGUI::update 10\n");
 
 	if(title)
 	{
@@ -211,7 +193,6 @@ int PatchGUI::update(int x, int y)
 	if(h - y1 >= mwindow->theme->play_h)
 	{
 		patchbay->add_subwindow(play = new PlayPatch(mwindow, this, x1 + x, y1 + y));
-//printf("PatchGUI::update 1 %p %p\n", play, &play->status);
 		x1 += play->get_w();
 		patchbay->add_subwindow(record = new RecordPatch(mwindow, this, x1 + x, y1 + y));
 		x1 += record->get_w();
@@ -231,7 +212,6 @@ int PatchGUI::update(int x, int y)
 	}
 	y1 += mwindow->theme->play_h;
 
-//UNTRACE
 	return y1;
 }
 
@@ -248,8 +228,7 @@ void PatchGUI::toggle_behavior(int type,
 // nothing previously selected
 		if(total_selected == 0)
 		{
-			mwindow->edl->tracks->select_all(type,
-				1);
+			mwindow->edl->tracks->select_all(type, 1);
 		}
 		else
 		if(total_selected == 1)
@@ -257,22 +236,19 @@ void PatchGUI::toggle_behavior(int type,
 // this patch was previously the only one on
 			if(*output)
 			{
-				mwindow->edl->tracks->select_all(type,
-					1);
+				mwindow->edl->tracks->select_all(type, 1);
 			}
 // another patch was previously the only one on
 			else
 			{
-				mwindow->edl->tracks->select_all(type,
-					0);
+				mwindow->edl->tracks->select_all(type, 0);
 				*output = 1;
 			}
 		}
 		else
 		if(total_selected > 1)
 		{
-			mwindow->edl->tracks->select_all(type,
-				0);
+			mwindow->edl->tracks->select_all(type, 0);
 			*output = 1;
 		}
 		toggle->set_value(*output);
@@ -292,36 +268,36 @@ void PatchGUI::toggle_behavior(int type,
 
 	switch(type)
 	{
-		case Tracks::PLAY:
-			mwindow->restart_brender();
-			mwindow->sync_parameters(CHANGE_EDL);
-			mwindow->undo->update_undo(_("play patch"), LOAD_PATCHES);
-			break;
+	case Tracks::PLAY:
+		mwindow->restart_brender();
+		mwindow->sync_parameters(CHANGE_EDL);
+		mwindow->undo->update_undo(_("play patch"), LOAD_PATCHES);
+		break;
 
-		case Tracks::MUTE:
-			mwindow->restart_brender();
-			mwindow->sync_parameters(CHANGE_PARAMS);
-			mwindow->undo->update_undo(_("mute patch"), LOAD_PATCHES);
-			break;
+	case Tracks::MUTE:
+		mwindow->restart_brender();
+		mwindow->sync_parameters(CHANGE_PARAMS);
+		mwindow->undo->update_undo(_("mute patch"), LOAD_PATCHES);
+		break;
 
 // Update affected tracks in cwindow
-		case Tracks::RECORD:
-			mwindow->cwindow->update(0, 1, 1);
-			mwindow->undo->update_undo(_("record patch"), LOAD_PATCHES);
-			break;
+	case Tracks::RECORD:
+		mwindow->cwindow->update(0, 1, 1);
+		mwindow->undo->update_undo(_("record patch"), LOAD_PATCHES);
+		break;
 
-		case Tracks::GANG:
-			mwindow->undo->update_undo(_("gang patch"), LOAD_PATCHES);
-			break;
+	case Tracks::GANG:
+		mwindow->undo->update_undo(_("gang patch"), LOAD_PATCHES);
+		break;
 
-		case Tracks::DRAW:
-			mwindow->undo->update_undo(_("draw patch"), LOAD_PATCHES);
-			mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
-			break;
+	case Tracks::DRAW:
+		mwindow->undo->update_undo(_("draw patch"), LOAD_PATCHES);
+		mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
+		break;
 
-		case Tracks::EXPAND:
-			mwindow->undo->update_undo(_("expand patch"), LOAD_PATCHES);
-			break;
+	case Tracks::EXPAND:
+		mwindow->undo->update_undo(_("expand patch"), LOAD_PATCHES);
+		break;
 	}
 }
 
@@ -345,7 +321,7 @@ char* PatchGUI::calculate_nudge_text(int *changed)
 }
 
 
-int64_t PatchGUI::calculate_nudge(char *string)
+posnum PatchGUI::calculate_nudge(char *string)
 {
 	if(mwindow->edl->session->nudge_seconds)
 	{
@@ -355,7 +331,7 @@ int64_t PatchGUI::calculate_nudge(char *string)
 	}
 	else
 	{
-		int64_t temp;
+		posnum temp;
 		sscanf(string, "%lld", &temp);
 		return temp;
 	}
@@ -363,18 +339,9 @@ int64_t PatchGUI::calculate_nudge(char *string)
 
 
 
-
-
-
-
-
-
-
-
-
 PlayPatch::PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, 
- 		y, 
+		y, 
 		mwindow->theme->get_image_set("playpatch_data"),
 		patch->track->play, 
 		"",
@@ -415,17 +382,9 @@ int PlayPatch::button_release_event()
 
 
 
-
-
-
-
-
-
-
-
 RecordPatch::RecordPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, 
- 		y, 
+		y, 
 		mwindow->theme->get_image_set("recordpatch_data"),
 		patch->track->record, 
 		"",
@@ -463,13 +422,6 @@ int RecordPatch::button_release_event()
 	}
 	return result;
 }
-
-
-
-
-
-
-
 
 
 
@@ -516,14 +468,6 @@ int GangPatch::button_release_event()
 
 
 
-
-
-
-
-
-
-
-
 DrawPatch::DrawPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, y, 
 		mwindow->theme->get_image_set("drawpatch_data"),
@@ -567,12 +511,6 @@ int DrawPatch::button_release_event()
 
 
 
-
-
-
-
-
-
 MutePatch::MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, y, 
 		mwindow->theme->get_image_set("mutepatch_data"),
@@ -598,7 +536,6 @@ int MutePatch::button_press_event()
 		double position = mwindow->edl->local_session->get_selectionstart(1);
 		Autos *mute_autos = patch->track->automation->autos[AUTOMATION_MUTE];
 
-
 		current = (IntAuto*)mute_autos->get_auto_for_editing(position);
 		current->value = get_value();
 
@@ -606,7 +543,6 @@ int MutePatch::button_press_event()
 			get_value(),
 			this,
 			&current->value);
-
 
 		mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
@@ -637,25 +573,15 @@ IntAuto* MutePatch::get_keyframe(MWindow *mwindow, PatchGUI *patch)
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 	unit_position = patch->track->to_units(unit_position, 0);
 	return (IntAuto*)patch->track->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
-		(int64_t)unit_position, 
+		(posnum)unit_position, 
 		PLAY_FORWARD,
 		current);
 }
 
 
-
-
-
-
-
-
-
-
-
-
 ExpandPatch::ExpandPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, 
- 		y, 
+		y, 
 		mwindow->theme->get_image_set("expandpatch_data"),
 		patch->track->expand_view, 
 		"",
@@ -695,12 +621,9 @@ int ExpandPatch::button_release_event()
 }
 
 
-
-
-
 TitlePatch::TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_TextBox(x, 
- 		y, 
+		y, 
 		patch->patchbay->get_w() - 10, 
 		1,
 		patch->track->title)
@@ -722,18 +645,13 @@ int TitlePatch::handle_event()
 
 
 
-
-
-
-
-
 NudgePatch::NudgePatch(MWindow *mwindow, 
 	PatchGUI *patch, 
 	int x, 
 	int y, 
 	int w)
  : BC_TextBox(x,
- 	y,
+	y,
 	w,
 	1,
 	patch->calculate_nudge_text(0))
@@ -749,7 +667,7 @@ int NudgePatch::handle_event()
 	return 1;
 }
 
-void NudgePatch::set_value(int64_t value)
+void NudgePatch::set_value(posnum value)
 {
 	patch->track->nudge = value;
 
@@ -803,15 +721,15 @@ int NudgePatch::button_press_event()
 		return result;
 }
 
-int64_t NudgePatch::calculate_increment()
+posnum NudgePatch::calculate_increment()
 {
 	if(patch->track->data_type == TRACK_AUDIO)
 	{
-		return (int64_t)ceil(patch->track->edl->session->sample_rate / 10);
+		return (posnum)ceil(patch->track->edl->session->sample_rate / 10);
 	}
 	else
 	{
-		return (int64_t)ceil(1.0 / patch->track->edl->session->frame_rate);
+		return (posnum)ceil(1.0 / patch->track->edl->session->frame_rate);
 	}
 }
 
@@ -822,7 +740,3 @@ void NudgePatch::update()
 	if(changed)
 		BC_TextBox::update(string);
 }
-
-
-
-

@@ -82,7 +82,6 @@ int VPatchGUI::reposition(int x, int y)
 	if(nudge) nudge->reposition_window(nudge->get_x(), 
 		y1 + y);
 
-
 	y1 += mwindow->theme->mode_h;
 
 	return y1;
@@ -108,15 +107,14 @@ int VPatchGUI::update(int x, int y)
 			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 			unit_position = vtrack->to_units(unit_position, 0);
 			int value = (int)((FloatAutos*)vtrack->automation->autos[AUTOMATION_FADE])->get_value(
-				(int64_t)unit_position,
+				(posnum)unit_position,
 				PLAY_FORWARD, 
 				previous, 
 				next);
 			fade->update(fade->get_w(),
-				     value, 
-				     mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
-				     mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
-//			fade->update((int)fade->get_keyframe(mwindow, this)->value);
+					value, 
+					mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
+					mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
 		}
 	}
 	else
@@ -161,10 +159,6 @@ int VPatchGUI::update(int x, int y)
 			patchbay->get_w() - x1 - 10));
 	}
 
-
-
-
-
 	y1 += mwindow->theme->mode_h;
 	
 	return y1;
@@ -184,13 +178,13 @@ void VPatchGUI::synchronize_fade(float value_change)
 
 VFadePatch::VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w)
  : BC_ISlider(x, 
-			y,
-			0,
-			w, 
-			w, 
-			mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
-			mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE], 
-			(int64_t)get_keyframe(mwindow, patch)->value)
+		y,
+		0,
+		w, 
+		w, 
+		mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
+		mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE], 
+		(int64_t)get_keyframe(mwindow, patch)->value)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -202,7 +196,6 @@ float VFadePatch::update_edl()
 	double position = mwindow->edl->local_session->get_selectionstart(1);
 	Autos *fade_autos = patch->vtrack->automation->autos[AUTOMATION_FADE];
 	int need_undo = !fade_autos->auto_exists_for_editing(position);
-
 
 	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
@@ -231,7 +224,6 @@ int VFadePatch::handle_event()
 
 	patch->change_source = 0;
 
-
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE])
@@ -250,17 +242,15 @@ FloatAuto* VFadePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 	Auto *current = 0;
 
 	return (FloatAuto*)patch->vtrack->automation->autos[AUTOMATION_FADE]->get_prev_auto(
-		(int64_t)unit_position, 
+		(posnum)unit_position,
 		PLAY_FORWARD,
 		current);
 }
 
 
-
-
 VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
  : BC_PopupMenu(x, 
- 	y,
+	y,
 	patch->patchbay->mode_icons[0]->get_w() + 20,
 	"",
 	1,
@@ -276,15 +266,6 @@ VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
 
 int VModePatch::handle_event()
 {
-// Set menu items
-//	for(int i = 0; i < total_items(); i++)
-//	{
-//		VModePatchItem *item = (VModePatchItem*)get_item(i);
-//		if(item->mode == mode) 
-//			item->set_checked(1);
-//		else
-//			item->set_checked(0);
-//	}
 	update(mode);
 
 // Set keyframe
@@ -292,7 +273,6 @@ int VModePatch::handle_event()
 	double position = mwindow->edl->local_session->get_selectionstart(1);
 	Autos *mode_autos = patch->vtrack->automation->autos[AUTOMATION_MODE];
 	int need_undo = !mode_autos->auto_exists_for_editing(position);
-
 
 	current = (IntAuto*)mode_autos->get_auto_for_editing(position);
 	current->value = mode;
@@ -318,7 +298,7 @@ IntAuto* VModePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 	unit_position = patch->vtrack->to_units(unit_position, 0);
 
 	return (IntAuto*)patch->vtrack->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-		(int64_t)unit_position, 
+		(posnum)unit_position, 
 		PLAY_FORWARD,
 		current);
 }
@@ -351,44 +331,32 @@ const char* VModePatch::mode_to_text(int mode)
 {
 	switch(mode)
 	{
-		case TRANSFER_NORMAL:
-			return _("Normal");
-			break;
+	case TRANSFER_NORMAL:
+		return _("Normal");
 
-		case TRANSFER_REPLACE:
-			return _("Replace");
-			break;
+	case TRANSFER_REPLACE:
+		return _("Replace");
 
-		case TRANSFER_ADDITION:
-			return _("Addition");
-			break;
+	case TRANSFER_ADDITION:
+		return _("Addition");
 
-		case TRANSFER_SUBTRACT:
-			return _("Subtract");
-			break;
+	case TRANSFER_SUBTRACT:
+		return _("Subtract");
 
-		case TRANSFER_MULTIPLY:
-			return _("Multiply");
-			break;
+	case TRANSFER_MULTIPLY:
+		return _("Multiply");
 
-		case TRANSFER_DIVIDE:
-			return _("Divide");
-			break;
+	case TRANSFER_DIVIDE:
+		return _("Divide");
 
-		case TRANSFER_MAX:
-			return _("Max");
-			break;
+	case TRANSFER_MAX:
+		return _("Max");
 
-		default:
-			return _("Normal");
-			break;
+	default:
+		return _("Normal");
 	}
 	return "";
 }
-
-
-
-
 
 
 VModePatchItem::VModePatchItem(VModePatch *popup, const char *text, int mode)
@@ -402,7 +370,6 @@ VModePatchItem::VModePatchItem(VModePatch *popup, const char *text, int mode)
 int VModePatchItem::handle_event()
 {
 	popup->mode = mode;
-//	popup->set_icon(popup->patch->patchbay->mode_to_icon(mode));
 	popup->handle_event();
 	return 1;
 }

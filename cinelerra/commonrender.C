@@ -31,7 +31,6 @@
 #include "module.h"
 #include "mwindow.h"
 #include "patchbay.h"
-#include "patch.h"
 #include "playabletracks.h"
 #include "preferences.h"
 #include "renderengine.h"

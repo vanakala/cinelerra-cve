@@ -518,7 +518,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 panautos.h \
 		 patchbay.h \
 		 patchgui.h \
-		 patch.h \
 		 performanceprefs.h \
 		 picture.h \
                  pipe.h \
