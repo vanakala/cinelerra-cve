@@ -40,7 +40,7 @@ EditHandle::EditHandle(MWindow *mwindow,
 		int x, 
 		int y)
  : CanvasTool(mwindow,
- 	trackcanvas,
+	trackcanvas,
 	edit, 
 	x,
 	y, 
@@ -57,9 +57,6 @@ int EditHandle::handle_event()
 {
 	return 0;
 }
-
-
-
 
 
 EditHandleIn::EditHandleIn(MWindow *mwindow, 
@@ -80,16 +77,10 @@ EditHandleIn::~EditHandleIn()
 {
 }
 
-
 int EditHandleIn::handle_event()
 {
 	return 1;
 }
-
-
-
-
-
 
 
 
@@ -115,19 +106,10 @@ EditHandleOut::~EditHandleOut()
 {
 }
 
-
 int EditHandleOut::handle_event()
 {
 	return 1;
 }
-
-
-
-
-
-
-
-
 
 
 EditHandles::EditHandles(MWindow *mwindow, 
@@ -157,7 +139,7 @@ void EditHandles::update()
 			if(visible(handle_x, handle_y, handle_w, handle_h))
 			{
 				int exists = 0;
-				
+
 				for(int i = 0; i < total; i++)
 				{
 					EditHandle *handle = (EditHandle*)values[i];
@@ -207,7 +189,7 @@ void EditHandles::update()
 						break;
 					}
 				}
-				
+
 				if(!exists)
 				{
 					EditHandle *handle = new EditHandle(mwindow, 

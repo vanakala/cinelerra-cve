@@ -40,7 +40,6 @@
 #include "resourcepixmap.inc"
 #include "track.inc"
 #include "tracks.inc"
-#include "transitionhandles.inc"
 #include "keyframe.inc"
 #include "floatauto.inc"
 

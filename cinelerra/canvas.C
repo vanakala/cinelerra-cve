@@ -83,8 +83,8 @@ void Canvas::reset()
 	use_scrollbars = 0;
 	output_w = 0;
 	output_h = 0;
-    xscroll = 0;
-    yscroll = 0;
+	xscroll = 0;
+	yscroll = 0;
 	refresh_frame = 0;
 	canvas_subwindow = 0;
 	canvas_fullscreen = 0;
@@ -149,10 +149,6 @@ float Canvas::get_x_offset(EDL *edl,
 	{
 		if(xscroll) 
 		{
-// If the projection is smaller than the canvas, this forces it in the center.
-//			if(conformed_w < w_visible)
-//				return -(float)(w_visible - conformed_w) / 2;
-
 			return (float)get_xscroll();
 		}
 		else
@@ -166,12 +162,12 @@ float Canvas::get_x_offset(EDL *edl,
 		int canvas_h = get_canvas()->get_h();
 		out_w = canvas_w;
 		out_h = canvas_h;
-		
+
 		if((float)out_w / out_h > conformed_w / conformed_h)
 		{
 			out_w = (int)(out_h * conformed_w / conformed_h + 0.5);
 		}
-		
+
 		if(out_w < canvas_w)
 			return -(canvas_w - out_w) / 2 / zoom_x;
 	}
@@ -189,10 +185,6 @@ float Canvas::get_y_offset(EDL *edl,
 	{
 		if(yscroll)
 		{
-// If the projection is smaller than the canvas, this forces it in the center.
-//			if(conformed_h < h_visible)
-//				return -(float)(h_visible - conformed_h) / 2;
-
 			return (float)get_yscroll();
 		}
 		else
@@ -212,22 +204,11 @@ float Canvas::get_y_offset(EDL *edl,
 			out_h = (int)((float)out_w / (conformed_w / conformed_h) + 0.5);
 		}
 
-//printf("Canvas::get_y_offset 1 %d %d %f\n", out_h, canvas_h, -((float)canvas_h - out_h) / 2);
 		if(out_h < canvas_h)
 			return -((float)canvas_h - out_h) / 2 / zoom_y;
 	}
 
 	return 0;
-}
-
-// This may not be used anymore
-void Canvas::check_boundaries(EDL *edl, int &x, int &y, float &zoom)
-{
-	if(x + w_visible > w_needed) x = w_needed - w_visible;
-	if(y + h_visible > h_needed) y = h_needed - h_visible;
-
-	if(x < 0) x = 0;
-	if(y < 0) y = 0;
 }
 
 void Canvas::update_scrollbars()
@@ -264,7 +245,7 @@ void Canvas::get_zooms(EDL *edl,
 		int out_w, out_h;
 		int canvas_w = get_canvas()->get_w();
 		int canvas_h = get_canvas()->get_h();
-	
+
 		out_w = canvas_w;
 		out_h = canvas_h;
 
@@ -279,7 +260,6 @@ void Canvas::get_zooms(EDL *edl,
 
 		zoom_x = (float)out_w / edl->session->output_w;
 		zoom_y = (float)out_h / edl->session->output_h;
-//printf("get zooms 2 %d %d %f %f\n", canvas_w, canvas_h, conformed_w, conformed_h);
 	}
 }
 
@@ -289,9 +269,6 @@ void Canvas::canvas_to_output(EDL *edl, int single_channel, float &x, float &y)
 	float zoom_x, zoom_y, conformed_w, conformed_h;
 	get_zooms(edl, single_channel, zoom_x, zoom_y, conformed_w, conformed_h);
 
-//printf("Canvas::canvas_to_output y=%f zoom_y=%f y_offset=%f\n", 
-//	y, zoom_y, get_y_offset(edl, single_channel, zoom_y, conformed_w, conformed_h));
-
 	x = (float)x / zoom_x + get_x_offset(edl, single_channel, zoom_x, conformed_w, conformed_h);
 	y = (float)y / zoom_y + get_y_offset(edl, single_channel, zoom_y, conformed_w, conformed_h);
 }
@@ -300,8 +277,6 @@ void Canvas::output_to_canvas(EDL *edl, int single_channel, float &x, float &y)
 {
 	float zoom_x, zoom_y, conformed_w, conformed_h;
 	get_zooms(edl, single_channel, zoom_x, zoom_y, conformed_w, conformed_h);
-
-//printf("Canvas::output_to_canvas x=%f zoom_x=%f x_offset=%f\n", x, zoom_x, get_x_offset(edl, single_channel, zoom_x, conformed_w));
 
 	x = (float)zoom_x * (x - get_x_offset(edl, single_channel, zoom_x, conformed_w, conformed_h));
 	y = (float)zoom_y * (y - get_y_offset(edl, single_channel, zoom_y, conformed_w, conformed_h));
@@ -321,8 +296,6 @@ void Canvas::get_transfers(EDL *edl,
 	int canvas_w,
 	int canvas_h)
 {
-// printf("Canvas::get_transfers %d %d\n", canvas_w, 
-// 		canvas_h);
 // automatic canvas size detection
 	if(canvas_w < 0) canvas_w = get_canvas()->get_w();
 	if(canvas_h < 0) canvas_h = get_canvas()->get_h();
@@ -346,9 +319,6 @@ void Canvas::get_transfers(EDL *edl,
 
 		canvas_to_output(edl, 0, in_x1, in_y1);
 		canvas_to_output(edl, 0, in_x2, in_y2);
-
-//printf("Canvas::get_transfers 1 %.0f %.0f %.0f %.0f -> %.0f %.0f %.0f %.0f\n",
-//in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
 
 		if(in_x1 < 0)
 		{
@@ -376,8 +346,6 @@ void Canvas::get_transfers(EDL *edl,
 			out_y2 -= (in_y2 - output_h) * zoom_y;
 			in_y2 = output_h;
 		}
-// printf("Canvas::get_transfers 2 %.0f %.0f %.0f %.0f -> %.0f %.0f %.0f %.0f\n",
-// 			in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
 
 		output_x1 = in_x1;
 		output_y1 = in_y1;
@@ -387,13 +355,6 @@ void Canvas::get_transfers(EDL *edl,
 		canvas_y1 = out_y1;
 		canvas_x2 = out_x2;
 		canvas_y2 = out_y2;
-
-// Center on canvas
-//		if(!scrollbars_exist())
-//		{
-//			out_x = canvas_w / 2 - out_w / 2;
-//			out_y = canvas_h / 2 - out_h / 2;
-//		}
 
 	}
 	else
@@ -448,15 +409,6 @@ void Canvas::get_transfers(EDL *edl,
 	canvas_y1 = MAX(0, canvas_y1);
 	canvas_x2 = MAX(canvas_x1, canvas_x2);
 	canvas_y2 = MAX(canvas_y1, canvas_y2);
-// printf("Canvas::get_transfers 2 %f,%f %f,%f -> %f,%f %f,%f\n",
-// output_x1,
-// output_y1,
-// output_x2,
-// output_y2,
-// canvas_x1,
-// canvas_y1,
-// canvas_x2,
-// canvas_y2);
 }
 
 int Canvas::scrollbars_exist()
@@ -483,8 +435,6 @@ int Canvas::get_output_h(EDL *edl)
 	}
 }
 
-
-
 void Canvas::get_scrollbars(EDL *edl, 
 	int &canvas_x, 
 	int &canvas_y, 
@@ -493,7 +443,6 @@ void Canvas::get_scrollbars(EDL *edl,
 {
 	int need_xscroll = 0;
 	int need_yscroll = 0;
-//	int done = 0;
 	float zoom_x, zoom_y, conformed_w, conformed_h;
 
 	if(edl)
@@ -503,49 +452,27 @@ void Canvas::get_scrollbars(EDL *edl,
 		w_visible = w_needed;
 		h_visible = h_needed;
 	}
-//printf("Canvas::get_scrollbars 1 %d %d\n", get_xscroll(), get_yscroll());
 
 	if(use_scrollbars)
 	{
 		w_needed = edl->session->output_w;
 		h_needed = edl->session->output_h;
 		get_zooms(edl, 0, zoom_x, zoom_y, conformed_w, conformed_h);
-//printf("Canvas::get_scrollbars 2 %d %d\n", get_xscroll(), get_yscroll());
 
-//		while(!done)
-//		{
-			w_visible = (int)(canvas_w / zoom_x);
-			h_visible = (int)(canvas_h / zoom_y);
-//			done = 1;
+		w_visible = (int)(canvas_w / zoom_x);
+		h_visible = (int)(canvas_h / zoom_y);
 
-//			if(w_needed > w_visible)
-			if(1)
-			{
-				if(!need_xscroll)
-				{
-					need_xscroll = 1;
-					canvas_h -= BC_ScrollBar::get_span(SCROLL_HORIZ);
-//					done = 0;
-				}
-			}
-			else
-				need_xscroll = 0;
+		if(!need_xscroll)
+		{
+			need_xscroll = 1;
+			canvas_h -= BC_ScrollBar::get_span(SCROLL_HORIZ);
+		}
 
-//			if(h_needed > h_visible)
-			if(1)
-			{
-				if(!need_yscroll)
-				{
-					need_yscroll = 1;
-					canvas_w -= BC_ScrollBar::get_span(SCROLL_VERT);
-//					done = 0;
-				}
-			}
-			else
-				need_yscroll = 0;
-//		}
-//printf("Canvas::get_scrollbars %d %d %d %d %d %d\n", canvas_w, canvas_h, w_needed, h_needed, w_visible, h_visible);
-//printf("Canvas::get_scrollbars 3 %d %d\n", get_xscroll(), get_yscroll());
+		if(!need_yscroll)
+		{
+			need_yscroll = 1;
+			canvas_w -= BC_ScrollBar::get_span(SCROLL_VERT);
+		}
 
 		w_visible = (int)(canvas_w / zoom_x);
 		h_visible = (int)(canvas_h / zoom_y);
@@ -554,10 +481,10 @@ void Canvas::get_scrollbars(EDL *edl,
 	if(need_xscroll)
 	{
 		if(!xscroll)
-			subwindow->add_subwindow(xscroll = new CanvasXScroll(edl, 
+			subwindow->add_subwindow(xscroll = new CanvasXScroll(edl,
 				this, 
-                canvas_x,
-                canvas_y + canvas_h,
+				canvas_x,
+				canvas_y + canvas_h,
 				w_needed,
 				get_xscroll(),
 				w_visible,
@@ -574,15 +501,14 @@ void Canvas::get_scrollbars(EDL *edl,
 		if(xscroll) delete xscroll;
 		xscroll = 0;
 	}
-//printf("Canvas::get_scrollbars 4 %d %d\n", get_xscroll(), get_yscroll());
 
 	if(need_yscroll)
 	{
 		if(!yscroll)
 			subwindow->add_subwindow(yscroll = new CanvasYScroll(edl, 
 				this,
-                canvas_x + canvas_w,
-                canvas_y,
+				canvas_x + canvas_w,
+				canvas_y,
 				h_needed,
 				get_yscroll(),
 				h_visible,
@@ -599,7 +525,6 @@ void Canvas::get_scrollbars(EDL *edl,
 		if(yscroll) delete yscroll;
 		yscroll = 0;
 	}
-//printf("Canvas::get_scrollbars 5 %d %d\n", get_xscroll(), get_yscroll());
 }
 
 void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
@@ -612,9 +537,7 @@ void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 	view_y = y;
 	view_w = w;
 	view_h = h;
-//printf("Canvas::reposition_window 1\n");
 	get_scrollbars(edl, view_x, view_y, view_w, view_h);
-//printf("Canvas::reposition_window %d %d %d %d\n", view_x, view_y, view_w, view_h);
 	if(canvas_subwindow)
 	{
 		canvas_subwindow->reposition_window(view_x, view_y, view_w, view_h);
@@ -630,10 +553,8 @@ void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 			canvas_subwindow->flash();
 		}
 	}
-	
 
 	draw_refresh();
-//printf("Canvas::reposition_window 2\n");
 }
 
 void Canvas::set_cursor(int cursor)
@@ -740,26 +661,19 @@ void Canvas::create_canvas()
 	int video_on = 0;
 SET_TRACE
 	lock_canvas("Canvas::create_canvas");
-SET_TRACE
-
 
 	if(!get_fullscreen())
 	{
-SET_TRACE
 		if(canvas_fullscreen)
 		{
 			video_on = canvas_fullscreen->get_video_on();
 			canvas_fullscreen->stop_video();
 		}
-SET_TRACE
 
 		if(canvas_fullscreen)
 		{
 			canvas_fullscreen->hide_window();
-//			delete canvas_fullscreen;
-//			canvas_fullscreen = 0;
 		}
-SET_TRACE
 
 		if(!canvas_subwindow)
 		{
@@ -769,7 +683,6 @@ SET_TRACE
 				view_w, 
 				view_h));
 		}
-SET_TRACE
 	}
 	else
 	{
@@ -777,31 +690,24 @@ SET_TRACE
 		{
 			video_on = canvas_subwindow->get_video_on();
 			canvas_subwindow->stop_video();
-
-//			delete canvas_subwindow;
-//			canvas_subwindow = 0;
 		}
 
 		if(!canvas_fullscreen)
 		{
 			canvas_fullscreen = new CanvasFullScreen(this,
-        		root_w,
-        		root_h);
+							root_w,
+							root_h);
 		}
 		else
 		{
 			canvas_fullscreen->show_window();
 		}
 	}
-SET_TRACE
 
 	if(!video_on) draw_refresh();
-SET_TRACE
 	if(video_on) get_canvas()->start_video();
-SET_TRACE
 	unlock_canvas();
 }
-
 
 
 int Canvas::cursor_leave_event_base(BC_WindowBase *caller)
@@ -853,21 +759,6 @@ int Canvas::keypress_event(BC_WindowBase *caller)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 CanvasOutput::CanvasOutput(Canvas *canvas,
     int x,
     int y,
@@ -914,21 +805,11 @@ int CanvasOutput::keypress_event()
 
 
 
-
-
-
-
-
-
-
-
-
-
 CanvasFullScreen::CanvasFullScreen(Canvas *canvas,
-    int w,
-    int h)
+	int w,
+	int h)
  : BC_FullScreen(canvas->subwindow, 
- 	w, 
+	w, 
 	h, 
 	BLACK,
 	0,
@@ -944,24 +825,14 @@ CanvasFullScreen::~CanvasFullScreen()
 
 
 
-
-
-
-
-
-
-
-
-
-
 CanvasXScroll::CanvasXScroll(EDL *edl, 
 	Canvas *canvas, 
-    int x, 
-    int y, 
+	int x,
+	int y,
 	int length, 
 	int position, 
 	int handle_length,
-    int pixels)
+	int pixels)
  : BC_ScrollBar(x, 
 		y, 
 		SCROLL_HORIZ, 
@@ -979,25 +850,20 @@ CanvasXScroll::~CanvasXScroll()
 
 int CanvasXScroll::handle_event()
 {
-//printf("CanvasXScroll::handle_event %d %d %d\n", get_length(), get_value(), get_handlelength());
 	canvas->update_zoom(get_value(), canvas->get_yscroll(), canvas->get_zoom());
 	canvas->draw_refresh();
 	return 1;
 }
 
 
-
-
-
-
 CanvasYScroll::CanvasYScroll(EDL *edl, 
 	Canvas *canvas, 
-    int x, 
-    int y, 
+	int x,
+	int y,
 	int length, 
 	int position, 
 	int handle_length,
-    int pixels)
+	int pixels)
  : BC_ScrollBar(x, 
 		y, 
 		SCROLL_VERT, 
@@ -1015,7 +881,6 @@ CanvasYScroll::~CanvasYScroll()
 
 int CanvasYScroll::handle_event()
 {
-//printf("CanvasYScroll::handle_event %d %d\n", get_value(), get_length());
 	canvas->update_zoom(canvas->get_xscroll(), get_value(), canvas->get_zoom());
 	canvas->draw_refresh();
 	return 1;
@@ -1057,12 +922,6 @@ int CanvasSubWindowItem::handle_event()
 	canvas->stop_fullscreen();
 	return 1;
 }
-
-
-
-
-
-
 
 
 CanvasPopup::CanvasPopup(Canvas *canvas)
@@ -1129,16 +988,16 @@ CanvasPopupSize::CanvasPopupSize(Canvas *canvas, char *text, float percentage)
 	this->canvas = canvas;
 	this->percentage = percentage;
 }
+
 CanvasPopupSize::~CanvasPopupSize()
 {
 }
+
 int CanvasPopupSize::handle_event()
 {
 	canvas->zoom_resize_window(percentage);
 	return 1;
 }
-
-
 
 CanvasPopupResetCamera::CanvasPopupResetCamera(Canvas *canvas)
  : BC_MenuItem(_("Reset camera"))
@@ -1151,8 +1010,6 @@ int CanvasPopupResetCamera::handle_event()
 	return 1;
 }
 
-
-
 CanvasPopupResetProjector::CanvasPopupResetProjector(Canvas *canvas)
  : BC_MenuItem(_("Reset projector"))
 {
@@ -1164,8 +1021,6 @@ int CanvasPopupResetProjector::handle_event()
 	return 1;
 }
 
-
-
 CanvasPopupResetTranslation::CanvasPopupResetTranslation(Canvas *canvas)
  : BC_MenuItem(_("Reset translation"))
 {
@@ -1176,8 +1031,6 @@ int CanvasPopupResetTranslation::handle_event()
 	canvas->reset_translation();
 	return 1;
 }
-
-
 
 CanvasToggleControls::CanvasToggleControls(Canvas *canvas)
  : BC_MenuItem(calculate_text(canvas->get_cwindow_controls()))
@@ -1199,17 +1052,12 @@ char* CanvasToggleControls::calculate_text(int cwindow_controls)
 		return _("Hide controls");
 }
 
-
-
-
-
-
-
 CanvasFullScreenItem::CanvasFullScreenItem(Canvas *canvas)
  : BC_MenuItem(_("Fullscreen"), "f", 'f')
 {
 	this->canvas = canvas;
 }
+
 int CanvasFullScreenItem::handle_event()
 {
 	canvas->start_fullscreen();
@@ -1217,22 +1065,14 @@ int CanvasFullScreenItem::handle_event()
 }
 
 
-
-
-
-
-
-
-
 CanvasPopupRemoveSource::CanvasPopupRemoveSource(Canvas *canvas)
  : BC_MenuItem(_("Close source"))
 {
 	this->canvas = canvas;
 }
+
 int CanvasPopupRemoveSource::handle_event()
 {
 	canvas->close_source();
 	return 1;
 }
-
-

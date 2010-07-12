@@ -173,7 +173,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    intautos.C \
 		    interfaceprefs.C \
 		    keyframe.C \
-		    keyframehandles.C \
 		    keyframepopup.C \
 		    keyframes.C \
 		    labeledit.C \
@@ -285,7 +284,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    trackscroll.C \
 		    tracksedit.C \
 		    transition.C \
-		    transitionhandles.C \
 		    transitionpopup.C \
 		    transportque.C \
 		    tunerserver.C \
@@ -470,7 +468,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 intautos.h \
 		 interfaceprefs.h \
 		 keyframe.h \
-		 keyframehandles.h \
 		 keyframepopup.h \
 		 keyframes.h \
 		 labeledit.h \
@@ -587,7 +584,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 trackscroll.h \
 		 tracks.h \
 		 transition.h \
-		 transitionhandles.h \
 		 transitionpopup.h \
 		 transportque.h \
 		 tunerserver.h \

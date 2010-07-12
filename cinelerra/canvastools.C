@@ -72,7 +72,7 @@ void CanvasTools::delete_invisible()
 		{
 			delete values[i];
 			remove(values[i]);
-		}	
+		}
 }
 
 // Region is visible on track canvas

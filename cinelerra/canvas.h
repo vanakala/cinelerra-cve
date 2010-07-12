@@ -134,7 +134,6 @@ public:
 	virtual void close_source() {};
 // Updates the stores
 	virtual void update_zoom(int x, int y, float zoom) {};
-	void check_boundaries(EDL *edl, int &x, int &y, float &zoom);
 	void update_scrollbars();
 // Get scrollbar positions relative to output.
 // No correction is done if output is smaller than canvas
@@ -235,10 +234,10 @@ class CanvasOutput : public BC_SubWindow
 {
 public:
 	CanvasOutput(Canvas *canvas,
-        int x,
-        int y,
-        int w,
-        int h);
+		int x,
+		int y,
+		int w,
+		int h);
 	~CanvasOutput();
 
 	int cursor_leave_event();
@@ -258,8 +257,8 @@ class CanvasFullScreen : public BC_FullScreen
 {
 public:
 	CanvasFullScreen(Canvas *canvas,
-        int w,
-        int h);
+		int w,
+		int h);
 	~CanvasFullScreen();
 
 	Canvas *canvas;
@@ -402,9 +401,5 @@ public:
 	int handle_event();
 	Canvas *canvas;
 };
-
-
-
-
 
 #endif
