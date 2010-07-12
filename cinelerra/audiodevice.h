@@ -34,7 +34,6 @@
 #include "audioesound.inc"
 #include "audiooss.inc"
 #include "bctimer.inc"
-#include "binary.h"
 #include "condition.inc"
 #include "datatype.h"
 #include "dcoffset.inc"

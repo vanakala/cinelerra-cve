@@ -38,7 +38,6 @@ class TimeBarRightArrow;
 class LabelGUI;
 class InPointGUI;
 class OutPointGUI;
-class PresentationGUI;
 
 // Operations for cursor
 #define TIMEBAR_NONE        0
@@ -103,16 +102,6 @@ public:
 	static int get_y(MWindow *mwindow, TimeBar *timebar);
 };
 
-class PresentationGUI : public LabelGUI
-{
-public:
-	PresentationGUI(MWindow *mwindow, 
-		TimeBar *timebar, 
-		int64_t pixel, 
-		double position);
-	~PresentationGUI();
-};
-
 class TimeBar : public BC_SubWindow
 {
 public:
@@ -133,37 +122,29 @@ public:
 
 	LabelEdit *label_edit;
 
-// Synchronize label, in/out, presentation display with master EDL
+// Synchronize label, in/out display with master EDL
 	void update(int do_range = 1, int do_others = 1);
 	virtual void draw_time();
 // Called by update and draw_time.
 	virtual void draw_range();
 	virtual void select_label(double position);
-	virtual void stop_playback();
 	virtual EDL* get_edl();
 	virtual int test_preview(int buttonpress);
-	virtual void update_preview();
+	virtual void update_preview() {};
 	virtual int64_t position_to_pixel(double position);
 	int move_preview(int &redraw);
 
 
 	void update_labels();
 	void update_points();
-	void update_presentations();
 // Make sure widgets are highlighted according to selection status
 	void update_highlights();
 // Update highlight cursor during a drag
 	void update_cursor();
 
 // ================================= file operations
-
-	int save(FileXML *xml);
 	int load(FileXML *xml, int undo_type);
-
-	int delete_project();        // clear timebar of labels
-
 	int draw();                  // draw everything over
-	int samplemovement();
 	int refresh_labels();
 
 // ========================================= editing
@@ -174,8 +155,6 @@ public:
 	MWindow *mwindow;
 	BC_WindowBase *gui;
 	int flip_vertical(int w, int h);
-	int delete_arrows();    // for flipping vertical
-
 // Operation started by a buttonpress
 	int current_operation;
 
@@ -186,8 +165,6 @@ private:
 	ArrayList<LabelGUI*> labels;
 	InPointGUI *in_point;
 	OutPointGUI *out_point;
-	ArrayList<PresentationGUI*> presentations;
-
 
 // Records for dragging operations
 	double start_position;
@@ -197,6 +174,5 @@ private:
 	double edl_length;
 	int start_cursor_x;
 };
-
 
 #endif

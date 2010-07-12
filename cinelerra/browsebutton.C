@@ -26,8 +26,6 @@
 #include "theme.h"
 
 
-
-
 BrowseButton::BrowseButton(MWindow *mwindow, 
 	BC_WindowBase *parent_window, 
 	BC_TextBox *textbox, 
@@ -107,15 +105,6 @@ void BrowseButton::run()
 
 	if(!result2)
 	{
-// 		if(want_directory)
-// 		{
-// 			textbox->update(browsewindow.get_directory());
-// 		}
-// 		else
-// 		{
-// 			textbox->update(browsewindow.get_filename());
-// 		}
-
 		textbox->update(browsewindow.get_submitted_path());
 		parent_window->flush();
 		textbox->handle_event();
@@ -126,10 +115,6 @@ void BrowseButton::run()
 }
 
 
-
-
-
-
 BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow, 
 	BrowseButton *button,
 	BC_WindowBase *parent_window, 
@@ -138,8 +123,8 @@ BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow,
 	const char *caption, 
 	int want_directory)
  : BC_FileBox(button->x - 
- 		BC_WindowBase::get_resources()->filebox_w / 2, 
- 	button->y - 
+		BC_WindowBase::get_resources()->filebox_w / 2,
+	button->y -
 		BC_WindowBase::get_resources()->filebox_h / 2,
 	init_directory,
 	title,

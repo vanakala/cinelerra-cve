@@ -60,7 +60,7 @@ LabelGUI::LabelGUI(MWindow *mwindow,
 	double position,
 	VFrame **data)
  : BC_Toggle(translate_pixel(mwindow, pixel), 
- 		y, 
+		y,
 		data ? data : mwindow->theme->label_toggle,
 		0)
 {
@@ -123,17 +123,18 @@ InPointGUI::InPointGUI(MWindow *mwindow,
 	int64_t pixel, 
 	double position)
  : LabelGUI(mwindow, 
- 	timebar, 
+	timebar,
 	pixel, 
 	get_y(mwindow, timebar), 
 	position, 
 	mwindow->theme->in_point)
 {
-//printf("InPointGUI::InPointGUI %d %d\n", pixel, get_y(mwindow, timebar));
 }
+
 InPointGUI::~InPointGUI()
 {
 }
+
 int InPointGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 {
 	int result;
@@ -148,39 +149,23 @@ OutPointGUI::OutPointGUI(MWindow *mwindow,
 	int64_t pixel, 
 	double position)
  : LabelGUI(mwindow, 
- 	timebar, 
+	timebar,
 	pixel, 
 	get_y(mwindow, timebar), 
 	position, 
 	mwindow->theme->out_point)
 {
-//printf("OutPointGUI::OutPointGUI %d %d\n", pixel, get_y(mwindow, timebar));
 }
+
 OutPointGUI::~OutPointGUI()
 {
 }
+
 int OutPointGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 {
 	return timebar->get_h() - 
 		mwindow->theme->out_point[0]->get_h();
 }
-
-
-PresentationGUI::PresentationGUI(MWindow *mwindow, 
-	TimeBar *timebar, 
-	int64_t pixel, 
-	double position)
- : LabelGUI(mwindow, timebar, pixel, get_y(mwindow, timebar), position)
-{
-}
-PresentationGUI::~PresentationGUI()
-{
-}
-
-
-
-
-
 
 
 TimeBar::TimeBar(MWindow *mwindow, 
@@ -191,7 +176,6 @@ TimeBar::TimeBar(MWindow *mwindow,
 	int h)
  : BC_SubWindow(x, y, w, h)
 {
-//printf("TimeBar::TimeBar %d %d %d %d\n", x, y, w, h);
 	this->gui = gui;
 	this->mwindow = mwindow;
 	label_edit = new LabelEdit(mwindow, mwindow->awindow, 0);
@@ -203,7 +187,6 @@ TimeBar::~TimeBar()
 	if(out_point) delete out_point;
 	if(label_edit) delete label_edit;
 	labels.remove_all_objects();
-	presentations.remove_all_objects();
 }
 
 int TimeBar::create_objects()
@@ -235,7 +218,6 @@ void TimeBar::update_labels()
 			current = NEXT)
 		{
 			int64_t pixel = position_to_pixel(current->position);
-
 			if(pixel >= 0 && pixel < get_w())
 			{
 // Create new label
@@ -412,36 +394,14 @@ void TimeBar::update_points()
 	}
 }
 
-void TimeBar::update_presentations()
-{
-}
-
-
 void TimeBar::update(int do_range, int do_others)
 {
 	draw_time();
 // Need to redo these when range is drawn to get the background updated.
 	update_labels();
 	update_points();
-	update_presentations();
 	flash();
 }
-
-
-
-int TimeBar::delete_project()
-{
-//	labels->delete_all();
-	return 0;
-}
-
-int TimeBar::save(FileXML *xml)
-{
-//	labels->save(xml);
-	return 0;
-}
-
-
 
 
 void TimeBar::draw_time()
@@ -462,7 +422,6 @@ void TimeBar::draw_range()
 	{
 		get_preview_pixels(x1, x2);
 
-//printf("TimeBar::draw_range %f %d %d\n", edl_length, x1, x2);
 		draw_3segmenth(0, 0, x1, mwindow->theme->timebar_view_data);
 		draw_top_background(get_parent(), x1, 0, x2 - x1, get_h());
 		draw_3segmenth(x2, 0, get_w() - x2, mwindow->theme->timebar_view_data);
@@ -503,22 +462,17 @@ void TimeBar::get_edl_length()
 
 	if(get_edl())
 	{
-//printf("TimeBar::get_edl_length 1 %f\n", get_edl()->tracks->total_playable_length());
 		edl_length = get_edl()->tracks->total_playable_length();
 	}
 
-//printf("TimeBar::get_edl_length 2\n");
 	if(!EQUIV(edl_length, 0))
 	{
-//printf("TimeBar::get_edl_length 3\n");
 		time_per_pixel = edl_length / get_w();
-//printf("TimeBar::get_edl_length 4\n");
 	}
 	else
 	{
 		time_per_pixel = 0;
 	}
-//printf("TimeBar::get_edl_length 5\n");
 }
 
 int TimeBar::get_preview_pixels(int &x1, int &x2)
@@ -547,11 +501,7 @@ int TimeBar::get_preview_pixels(int &x1, int &x2)
 			x2 = get_w();
 		}
 	}
-// printf("TimeBar::get_preview_pixels %f %f %d %d\n", 
-// 	get_edl()->local_session->preview_start,
-// 	get_edl()->local_session->preview_end,
-// 	x1, 
-// 	x2);
+
 	return 0;
 }
 
@@ -562,7 +512,6 @@ int TimeBar::test_preview(int buttonpress)
 	int x1, x2;
 
 	get_preview_pixels(x1, x2);
-//printf("TimeBar::test_preview %d %d %d\n", x1, x2, get_cursor_x());
 
 	if(get_edl())
 	{
@@ -643,8 +592,6 @@ int TimeBar::test_preview(int buttonpress)
 		}
 	}
 
-
-
 	return result;
 }
 
@@ -696,8 +643,6 @@ int TimeBar::move_preview(int &redraw)
 		result = 1;
 	}
 
-//printf("TimeBar::move_preview %f %f\n", get_edl()->local_session->preview_start, get_edl()->local_session->preview_end);
-
 	if(result)
 	{
 		update_preview();
@@ -705,19 +650,6 @@ int TimeBar::move_preview(int &redraw)
 	}
 
 	return result;
-}
-
-void TimeBar::update_preview()
-{
-}
-
-int TimeBar::samplemovement()
-{
-	return 0;
-}
-
-void TimeBar::stop_playback()
-{
 }
 
 int TimeBar::button_press_event()
@@ -740,7 +672,6 @@ int TimeBar::button_press_event()
 		}
 		else
 		{
-			stop_playback();
 
 // Select region between two labels
 			if(get_double_click())
@@ -813,7 +744,6 @@ int TimeBar::cursor_motion_event()
 		case TIMEBAR_DRAG:
 		{
 			update_cursor();
-//printf("TimeBar::cursor_motion_event 1\n");
 			int relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
 			if(relative_cursor_x >= mwindow->gui->canvas->get_w() || 
 				relative_cursor_x < 0)
@@ -827,7 +757,6 @@ int TimeBar::cursor_motion_event()
 				mwindow->gui->canvas->stop_dragscroll();
 			}
 			result = 1;
-//printf("TimeBar::cursor_motion_event 10\n");
 			break;
 		}
 
@@ -839,9 +768,7 @@ int TimeBar::cursor_motion_event()
 			break;
 
 		default:
-//printf("TimeBar::cursor_motion_event 20\n");
 			result = test_preview(0);
-//printf("TimeBar::cursor_motion_event 30\n");
 			break;
 	}
 
@@ -855,24 +782,23 @@ int TimeBar::cursor_motion_event()
 
 int TimeBar::button_release_event()
 {
-//printf("TimeBar::button_release_event %d\n", current_operation);
 	int result = 0;
 	switch(current_operation)
 	{
-		case TIMEBAR_DRAG:
-			mwindow->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
-			mwindow->gui->canvas->stop_dragscroll();
+	case TIMEBAR_DRAG:
+		mwindow->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
+		mwindow->gui->canvas->stop_dragscroll();
+		current_operation = TIMEBAR_NONE;
+		result = 1;
+		break;
+
+	default:
+		if(current_operation != TIMEBAR_NONE)
+		{
 			current_operation = TIMEBAR_NONE;
 			result = 1;
-			break;
-
-		default:
-			if(current_operation != TIMEBAR_NONE)
-			{
-				current_operation = TIMEBAR_NONE;
-				result = 1;
-			}
-			break;
+		}
+		break;
 	}
 	return result;
 }
@@ -886,7 +812,7 @@ void TimeBar::update_cursor()
 		(double)mwindow->edl->local_session->view_start * 
 		mwindow->edl->local_session->zoom_sample / 
 		mwindow->edl->session->sample_rate;
-	
+
 	position = mwindow->edl->align_to_frame(position, 0);
 	position = MAX(0, position);
 	current_operation = TIMEBAR_DRAG;
@@ -948,13 +874,3 @@ int TimeBar::select_region(double position)
 	update_highlights();
 	return 0;
 }
-
-
-
-
-int TimeBar::delete_arrows()
-{
-	return 0;
-}
-
-

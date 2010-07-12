@@ -176,8 +176,8 @@ class BatchRenderSaveList : public BC_GenericButton, public Thread
 {
 public:
 	BatchRenderSaveList(BatchRenderThread *thread, 
-			    int x, 
-			    int y);
+			int x,
+			int y);
 	~BatchRenderSaveList();
 	int handle_event();
 	BatchRenderThread *thread;
@@ -191,8 +191,8 @@ class BatchRenderLoadList : public BC_GenericButton, public Thread
 {
 public:
 	BatchRenderLoadList(BatchRenderThread *thread, 
-			    int x, 
-			    int y);
+			int x,
+			int y);
 	~BatchRenderLoadList();
 	int handle_event();
 	BatchRenderThread *thread;
@@ -257,8 +257,8 @@ class BatchFormat : public FormatTools
 {
 public:
 	BatchFormat(MWindow *mwindow,
-				BatchRenderGUI *gui,
-				Asset *asset);
+			BatchRenderGUI *gui,
+			Asset *asset);
 	~BatchFormat();
 
 	int handle_event();
@@ -305,9 +305,5 @@ public:
 	BatchRenderStop *stop_button;
 	BatchRenderCancel *cancel_button;
 };
-
-
-
-
 
 #endif

@@ -43,7 +43,7 @@ public:
 		int want_directory = 0,
 		const char *recent_prefix = NULL);
 	~BrowseButton();
-	
+
 	int handle_event();
 	void run();
 	int want_directory;
@@ -72,9 +72,5 @@ public:
 		int want_directory);
 	~BrowseButtonWindow();
 };
-
-
-
-
 
 #endif

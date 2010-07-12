@@ -101,11 +101,6 @@ void CPanel::set_operation(int value)
 			operation[i]->update(mwindow->edl->session->safe_regions);
 		}
 		else
-// 		if(i == CWINDOW_SHOW_METERS)
-// 		{
-// 			operation[i]->update(mwindow->edl->session->cwindow_meter);
-// 		}
-// 		else
 		{
 			if(i != value) 
 				operation[i]->update(0);
@@ -116,12 +111,9 @@ void CPanel::set_operation(int value)
 }
 
 
-
-
-
 CPanelProtect::CPanelProtect(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
- 	y, 
+	y, 
 	mwindow->theme->get_image_set("protect"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_PROTECT)
 {
@@ -129,9 +121,11 @@ CPanelProtect::CPanelProtect(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->gui = gui;
 	set_tooltip(_("Protect video from changes"));
 }
+
 CPanelProtect::~CPanelProtect()
 {
 }
+
 int CPanelProtect::handle_event()
 {
 	gui->subwindow->set_operation(CWINDOW_PROTECT);
@@ -145,7 +139,7 @@ int CPanelProtect::handle_event()
 
 CPanelMask::CPanelMask(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
- 	y, 
+	y, 
 	mwindow->theme->get_image_set("mask"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_MASK)
 {
@@ -153,9 +147,11 @@ CPanelMask::CPanelMask(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->gui = gui;
 	set_tooltip(_("Edit mask"));
 }
+
 CPanelMask::~CPanelMask()
 {
 }
+
 int CPanelMask::handle_event()
 {
 	gui->subwindow->set_operation(CWINDOW_MASK);
@@ -165,7 +161,7 @@ int CPanelMask::handle_event()
 
 CPanelMagnify::CPanelMagnify(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
- 	y, 
+	y,
 	mwindow->theme->get_image_set("magnify"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_ZOOM)
 {
@@ -173,9 +169,11 @@ CPanelMagnify::CPanelMagnify(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->gui = gui;
 	set_tooltip(_("Zoom view"));
 }
+
 CPanelMagnify::~CPanelMagnify()
 {
 }
+
 int CPanelMagnify::handle_event()
 {
 	gui->subwindow->set_operation(CWINDOW_ZOOM);
@@ -185,7 +183,7 @@ int CPanelMagnify::handle_event()
 
 CPanelCamera::CPanelCamera(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
- 	y, 
+	y,
 	mwindow->theme->get_image_set("camera"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA)
 {
@@ -193,9 +191,11 @@ CPanelCamera::CPanelCamera(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->gui = gui;
 	set_tooltip(_("Adjust camera automation"));
 }
+
 CPanelCamera::~CPanelCamera()
 {
 }
+
 int CPanelCamera::handle_event()
 {
 	gui->subwindow->set_operation(CWINDOW_CAMERA);
@@ -205,7 +205,7 @@ int CPanelCamera::handle_event()
 
 CPanelProj::CPanelProj(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
- 	y, 
+	y,
 	mwindow->theme->get_image_set("projector"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_PROJECTOR)
 {
@@ -213,9 +213,11 @@ CPanelProj::CPanelProj(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->gui = gui;
 	set_tooltip(_("Adjust projector automation"));
 }
+
 CPanelProj::~CPanelProj()
 {
 }
+
 int CPanelProj::handle_event()
 {
 	gui->subwindow->set_operation(CWINDOW_PROJECTOR);
@@ -225,7 +227,7 @@ int CPanelProj::handle_event()
 
 CPanelCrop::CPanelCrop(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
- 	y, 
+	y,
 	mwindow->theme->get_image_set("crop"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_CROP)
 {
@@ -249,7 +251,7 @@ int CPanelCrop::handle_event()
 
 CPanelEyedrop::CPanelEyedrop(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
- 	y, 
+	y,
 	mwindow->theme->get_image_set("eyedrop"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_EYEDROP)
 {
@@ -273,7 +275,7 @@ int CPanelEyedrop::handle_event()
 
 CPanelToolWindow::CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
- 	y, 
+	y,
 	mwindow->theme->get_image_set("tool"), 
 	mwindow->edl->session->tool_window)
 {
@@ -304,7 +306,7 @@ int CPanelToolWindow::set_shown(int shown)
 
 CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
- 	y, 
+	y,
 	mwindow->theme->get_image_set("titlesafe"), 
 	mwindow->edl->session->safe_regions)
 {
@@ -312,9 +314,11 @@ CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
 	this->gui = gui;
 	set_tooltip(_("Show safe regions"));
 }
+
 CPanelTitleSafe::~CPanelTitleSafe()
 {
 }
+
 int CPanelTitleSafe::handle_event()
 {
 	mwindow->edl->session->safe_regions = get_value();

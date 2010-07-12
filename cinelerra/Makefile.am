@@ -383,7 +383,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 awindowmenu.h \
 		 batch.h \
 		 batchrender.h \
-		 binary.h \
 		 bitspopup.h \
 		 brender.h \
 		 browsebutton.h \

@@ -219,109 +219,109 @@ void MTimeBar::draw_time()
 // Set text interval
 	switch(mwindow->edl->session->time_format)
 	{
-		case TIME_FEET_FRAMES:
+	case TIME_FEET_FRAMES:
+	{
+		double foot_seconds = frame_seconds * mwindow->edl->session->frames_per_foot;
+		if(frame_seconds >= min_time)
+			text_interval = frame_seconds;
+		else
+		if(foot_seconds / 8.0 > min_time)
+			text_interval = frame_seconds * mwindow->edl->session->frames_per_foot / 8.0;
+		else
+		if(foot_seconds / 4.0 > min_time)
+			text_interval = frame_seconds * mwindow->edl->session->frames_per_foot / 4.0;
+		else
+		if(foot_seconds / 2.0 > min_time)
+			text_interval = frame_seconds * mwindow->edl->session->frames_per_foot / 2.0;
+		else
+		if(foot_seconds > min_time)
+			text_interval = frame_seconds * mwindow->edl->session->frames_per_foot;
+		else
+		if(foot_seconds * 2 >= min_time)
+			text_interval = foot_seconds * 2;
+		else
+		if(foot_seconds * 5 >= min_time)
+			text_interval = foot_seconds * 5;
+		else
 		{
-			double foot_seconds = frame_seconds * mwindow->edl->session->frames_per_foot;
-			if(frame_seconds >= min_time)
-				text_interval = frame_seconds;
-			else
-			if(foot_seconds / 8.0 > min_time)
-				text_interval = frame_seconds * mwindow->edl->session->frames_per_foot / 8.0;
-			else
-			if(foot_seconds / 4.0 > min_time)
-				text_interval = frame_seconds * mwindow->edl->session->frames_per_foot / 4.0;
-			else
-			if(foot_seconds / 2.0 > min_time)
-				text_interval = frame_seconds * mwindow->edl->session->frames_per_foot / 2.0;
-			else
-			if(foot_seconds > min_time)
-				text_interval = frame_seconds * mwindow->edl->session->frames_per_foot;
-			else
-			if(foot_seconds * 2 >= min_time)
-				text_interval = foot_seconds * 2;
-			else
-			if(foot_seconds * 5 >= min_time)
-				text_interval = foot_seconds * 5;
-			else
+
+			for(int factor = 10, progression = 0; factor <= 100000; )
 			{
-
-				for(int factor = 10, progression = 0; factor <= 100000; )
+				if(foot_seconds * factor >= min_time)
 				{
-					if(foot_seconds * factor >= min_time)
-					{
-						text_interval = foot_seconds * factor;
-						break;
-					}
-
-					if(progression == 0)
-					{
-						factor = (int)(factor * 2.5);
-						progression++;
-					}
-					else
-					if(progression == 1)
-					{
-						factor = (int)(factor * 2);
-						progression++;
-					}
-					else
-					if(progression == 2)
-					{
-						factor = (int)(factor * 2);
-						progression = 0;
-					}
+					text_interval = foot_seconds * factor;
+					break;
 				}
 
+				if(progression == 0)
+				{
+					factor = (int)(factor * 2.5);
+					progression++;
+				}
+				else
+				if(progression == 1)
+				{
+					factor = (int)(factor * 2);
+					progression++;
+				}
+				else
+				if(progression == 2)
+				{
+					factor = (int)(factor * 2);
+					progression = 0;
+				}
 			}
-			break;
+
 		}
+		break;
+	}
 
-		case TIME_FRAMES:
-		case TIME_HMSF:
+	case TIME_FRAMES:
+	case TIME_HMSF:
 // One frame per text mark
-			if(frame_seconds >= min_time)
-				text_interval = frame_seconds;
-			else
-			if(frame_seconds * 2 >= min_time)
-				text_interval = frame_seconds * 2;
-			else
-			if(frame_seconds * 5 >= min_time)
-				text_interval = frame_seconds * 5;
-			else
+		if(frame_seconds >= min_time)
+			text_interval = frame_seconds;
+		else
+		if(frame_seconds * 2 >= min_time)
+			text_interval = frame_seconds * 2;
+		else
+		if(frame_seconds * 5 >= min_time)
+			text_interval = frame_seconds * 5;
+		else
+		{
+
+			for(int factor = 10, progression = 0; factor <= 100000; )
 			{
-
-				for(int factor = 10, progression = 0; factor <= 100000; )
+				if(frame_seconds * factor >= min_time)
 				{
-					if(frame_seconds * factor >= min_time)
-					{
-						text_interval = frame_seconds * factor;
-						break;
-					}
-
-					if(progression == 0)
-					{
-						factor = (int)(factor * 2.5);
-						progression++;
-					}
-					else
-					if(progression == 1)
-					{
-						factor = (int)(factor * 2);
-						progression++;
-					}
-					else
-					if(progression == 2)
-					{
-						factor = (int)(factor * 2);
-						progression = 0;
-					}
+					text_interval = frame_seconds * factor;
+					break;
 				}
 
+				if(progression == 0)
+				{
+					factor = (int)(factor * 2.5);
+					progression++;
+				}
+				else
+				if(progression == 1)
+				{
+					factor = (int)(factor * 2);
+					progression++;
+				}
+				else
+				if(progression == 2)
+				{
+					factor = (int)(factor * 2);
+					progression = 0;
+				}
 			}
-			break;
 
-		default:
-			break;
+		}
+		break;
+
+	default:
+		break;
 	}
 
 // Sanity
@@ -335,12 +335,12 @@ void MTimeBar::draw_time()
 
 	switch(mwindow->edl->session->time_format)
 	{
-		case TIME_HMSF:
-		case TIME_FEET_FRAMES:
-		case TIME_FRAMES:
-			if(frame_seconds / time_per_pixel > TICK_SPACING)
-				tick_interval = frame_seconds;
-			break;
+	case TIME_HMSF:
+	case TIME_FEET_FRAMES:
+	case TIME_FRAMES:
+		if(frame_seconds / time_per_pixel > TICK_SPACING)
+			tick_interval = frame_seconds;
+		break;
 	}
 
 // Get first text mark on or before window start
@@ -351,7 +351,6 @@ void MTimeBar::draw_time()
 	int64_t iteration = 0;
 
 
-//printf("text_interval=%f\n", text_interval);
 	while(start_position + text_interval * iteration < view_end)
 	{
 		double position1 = start_position + text_interval * iteration;
@@ -387,8 +386,6 @@ void MTimeBar::draw_time()
 		}
 		iteration++;
 	}
-
-
 }
 
 void MTimeBar::draw_range()
@@ -417,7 +414,6 @@ void MTimeBar::draw_range()
 	}
 	else
 		draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-//printf("MTimeBar::draw_range %f %f\n", mwindow->session->brender_end, time_per_pixel);
 }
 
 void MTimeBar::select_label(double position)
@@ -475,14 +471,3 @@ int MTimeBar::test_preview(int buttonpress)
 	int result = 0;
 	return result;
 }
-
-
-
-
-
-
-
-
-
-
-
