@@ -132,20 +132,6 @@ public:
 	EditPopup *popup;
 };
 
-
-class EditPopupTitle : public BC_MenuItem
-{
-public:
-	EditPopupTitle (MWindow *mwindow, EditPopup *popup);
-	~EditPopupTitle();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	EditPopup *popup;
-	EditPopupTitleWindow *window;
-};
-
 class EditPopupTitleText : public BC_TextBox
 {
 public:

@@ -56,7 +56,6 @@ void EditPopup::create_objects()
 	add_item(new EditMoveTrackDown(mwindow, this));
 	add_item(new EditPopupDeleteTrack(mwindow, this));
 	add_item(new EditPopupAddTrack(mwindow, this));
-//	add_item(new EditPopupTitle(mwindow, this));
 	resize_option = 0;
 }
 
@@ -80,13 +79,6 @@ int EditPopup::update(Track *track, Edit *edit)
 	}
 	return 0;
 }
-
-
-
-
-
-
-
 
 
 EditAttachEffect::EditAttachEffect(MWindow *mwindow, EditPopup *popup)
@@ -222,52 +214,6 @@ int EditPopupAddTrack::handle_event()
 		mwindow->add_audio_track_entry(1, popup->track);
 	else
 		mwindow->add_video_track_entry(popup->track);
-	return 1;
-}
-
-
-
-
-
-
-EditPopupTitle::EditPopupTitle(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem(_("User title..."))
-{
-	this->mwindow = mwindow;
-	this->popup = popup;
-	window = 0;
-}
-
-EditPopupTitle::~EditPopupTitle()
-{
-	delete popup;
-}
-
-int EditPopupTitle::handle_event()
-{
-	int result;
-
-	Track *trc = mwindow->session->track_highlighted;
-
-	if (trc && trc->record)
-	{
-		Edit *edt = mwindow->session->edit_highlighted;
-		if(!edt) return 1;
-
-		window = new EditPopupTitleWindow (mwindow, popup);
-		window->create_objects();
-		result = window->run_window();
-
-
-		if(!result && edt)
-		{
-			strcpy(edt->user_title, window->title_text->get_text());
-		}
-
-		delete window;
-		window = 0;
-	}
-
 	return 1;
 }
 
