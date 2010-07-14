@@ -89,7 +89,7 @@ public:
 	void default_positions();
 
 // Return if the area bounded by x1 and x2 is visible between view_x1 and view_x2
-	static int visible(posnum x1, posnum x2, posnum view_x1, posnum view_x2);
+	static int visible(int x1, int x2, int view_x1, int view_x2);
 
 	MWindow *mwindow;
 

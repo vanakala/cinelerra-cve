@@ -306,7 +306,7 @@ void MWindowGUI::update(int scrollbars,
 		mwindow->age_caches();
 }
 
-int MWindowGUI::visible(posnum x1, posnum x2, posnum view_x1, posnum view_x2)
+int MWindowGUI::visible(int x1, int x2, int view_x1, int view_x2)
 {
 	return (x1 >= view_x1 && x1 < view_x2) ||
 		(x2 > view_x1 && x2 <= view_x2) ||
@@ -536,7 +536,7 @@ int MWindowGUI::keypress_event()
 // Switch the record button
 				for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
 				{
-					int64_t track_x, track_y, track_w, track_h;
+					int track_x, track_y, track_w, track_h;
 					canvas->track_dimensions(track, track_x, track_y, track_w, track_h);
 
 					if(cursor_y >= track_y && 
@@ -556,7 +556,7 @@ int MWindowGUI::keypress_event()
 				Track *this_track = 0;
 				for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
 				{
-					int64_t track_x, track_y, track_w, track_h;
+					int track_x, track_y, track_w, track_h;
 					canvas->track_dimensions(track, track_x, track_y, track_w, track_h);
 
 					if(cursor_y >= track_y &&
