@@ -78,7 +78,7 @@ FrameCache::~FrameCache()
 
 // Returns 1 if frame exists in cache and copies it to the frame argument.
 int FrameCache::get_frame(VFrame *frame, 
-	int64_t position,
+	framenum position,
 	int layer,
 	double frame_rate,
 	int asset_id)
@@ -107,7 +107,7 @@ int FrameCache::get_frame(VFrame *frame,
 }
 
 
-VFrame* FrameCache::get_frame_ptr(int64_t position,
+VFrame* FrameCache::get_frame_ptr(framenum position,
 	int layer,
 	double frame_rate,
 	int color_model,
@@ -138,7 +138,7 @@ VFrame* FrameCache::get_frame_ptr(int64_t position,
 // Puts frame in cache if enough space exists and the frame doesn't already
 // exist.
 void FrameCache::put_frame(VFrame *frame, 
-	int64_t position,
+	framenum position,
 	int layer,
 	double frame_rate,
 	int use_copy,
@@ -193,7 +193,7 @@ void FrameCache::put_frame(VFrame *frame,
 
 
 int FrameCache::frame_exists(VFrame *format,
-	int64_t position, 
+	framenum position, 
 	int layer,
 	double frame_rate,
 	FrameCacheItem **item_return,
@@ -216,7 +216,7 @@ int FrameCache::frame_exists(VFrame *format,
 	return 0;
 }
 
-int FrameCache::frame_exists(int64_t position, 
+int FrameCache::frame_exists(framenum position, 
 	int layer,
 	double frame_rate,
 	int color_model,
@@ -242,23 +242,6 @@ int FrameCache::frame_exists(int64_t position,
 			item = (FrameCacheItem*)item->next;
 	}
 	return 0;
-}
-
-
-void FrameCache::dump()
-{
-// 	lock->lock("FrameCache::dump");
-// 	printf("FrameCache::dump 1 %d\n", items.total);
-// 	for(int i = 0; i < items.total; i++)
-// 	{
-// 		FrameCacheItem *item = (FrameCacheItem*)items.values[i];
-// 		printf("  position=%lld frame_rate=%f age=%d size=%d\n", 
-// 			item->position, 
-// 			item->frame_rate, 
-// 			item->age,
-// 			item->data->get_data_size());
-// 	}
-// 	lock->unlock();
 }
 
 

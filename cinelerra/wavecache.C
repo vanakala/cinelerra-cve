@@ -53,13 +53,13 @@ WaveCache::~WaveCache()
 
 WaveCacheItem* WaveCache::get_wave(int asset_id,
 	int channel,
-	int64_t start,
-	int64_t end)
+	samplenum start,
+	samplenum end)
 {
 	lock->lock("WaveCache::get_wave");
 	int item_number = -1;
 	WaveCacheItem *result = 0;
-	
+
 	result = (WaveCacheItem*)get_item(start);
 	while(result && result->position == start)
 	{
@@ -73,15 +73,15 @@ WaveCacheItem* WaveCache::get_wave(int asset_id,
 		else
 			result = (WaveCacheItem*)result->next;
 	}
-	
+
 	lock->unlock();
 	return 0;
 }
 
 void WaveCache::put_wave(Asset *asset,
 	int channel,
-	int64_t start,
-	int64_t end,
+	samplenum start,
+	samplenum end,
 	double high,
 	double low)
 {
@@ -94,13 +94,7 @@ void WaveCache::put_wave(Asset *asset,
 	item->end = end;
 	item->high = high;
 	item->low = low;
-	
+
 	put_item(item);
 	lock->unlock();
 }
-
-
-
-
-
-

@@ -35,10 +35,10 @@ public:
 	~WaveCacheItem();
 
 	int get_size();
-	
+
 	int channel;
 // End sample in asset samplerate.  Starting point is CacheItemBase::position
-	int64_t end;
+	samplenum end;
 	double high;
 	double low;
 };
@@ -56,13 +56,13 @@ public:
 // Returns the first item on or after the start argument or 0 if none found.
 	WaveCacheItem* get_wave(int asset_id,
 		int channel,
-		int64_t start,
-		int64_t end);
+		samplenum start,
+		samplenum end);
 // Put waveform segment into cache
 	void put_wave(Asset *asset,
 		int channel,
-		int64_t start,
-		int64_t end,
+		samplenum start,
+		samplenum end,
 		double high,
 		double low);
 };

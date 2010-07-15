@@ -58,7 +58,7 @@ public:
 
 // Returns 1 if frame exists in cache and copies it to the frame argument.
 	int get_frame(VFrame *frame, 
-		int64_t position,
+		framenum position,
 		int layer,
 		double frame_rate,
 		int asset_id = -1);
@@ -67,7 +67,7 @@ public:
 // unlock is called.  If nothing is found, the frame cache is unlocked before
 // returning.  This keeps the item from being deleted.
 // asset - supplied by user if the cache is not part of a file.
-	VFrame* get_frame_ptr(int64_t position,
+	VFrame* get_frame_ptr(framenum position,
 		int layer,
 		double frame_rate,
 		int color_model,
@@ -79,29 +79,23 @@ public:
 // The copy of the frame is deleted by FrameCache in a future delete_oldest.
 // asset - supplied by user if the cache is not part of a file.
 	void put_frame(VFrame *frame, 
-		int64_t position,
+		framenum position,
 		int layer,
 		double frame_rate,
 		int use_copy,
 		Asset *asset = 0);
-
-	void dump();
-
-
-
-
 
 
 private:
 // Return 1 if matching frame exists.
 // Return 0 if not.
 	int frame_exists(VFrame *format,
-		int64_t position,
+		framenum position,
 		int layer,
 		double frame_rate,
 		FrameCacheItem **item_return,
 		int asset_id);
-	int frame_exists(int64_t position, 
+	int frame_exists(framenum position, 
 		int layer,
 		double frame_rate,
 		int color_model,
@@ -110,7 +104,5 @@ private:
 		FrameCacheItem **item_return,
 		int asset_id);
 };
-
-
 
 #endif

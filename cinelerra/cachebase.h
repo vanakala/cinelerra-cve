@@ -24,6 +24,7 @@
 
 
 #include "asset.inc"
+#include "datatype.h"
 #include "linklist.h"
 #include "mutex.inc"
 #include <stdint.h>
@@ -40,8 +41,6 @@ public:
 	CacheItemBase();
 	virtual ~CacheItemBase();
 
-
-
 	virtual int get_size();
 
 // asset_id - supplied by user if the cache is not part of a file.
@@ -50,10 +49,11 @@ public:
 // path is needed since the item may need to be deleted based on file.
 // Used for deletion.
 	char *path;
+
 // Number of last get or put operation involving this object.
 	int age;
 // Starting point of item in asset's native rate.
-	int64_t position;
+	posnum position;
 };
 
 
@@ -75,7 +75,7 @@ public:
 	void put_item(CacheItemBase *item);
 
 // Get first item from list with matching position or 0 if none found.
-	CacheItemBase* get_item(int64_t position);
+	CacheItemBase* get_item(posnum position);
 
 // Called when done with the item returned by get_.
 // Ignore if item was 0.

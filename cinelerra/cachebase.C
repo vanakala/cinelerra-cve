@@ -40,7 +40,8 @@ CacheItemBase::CacheItemBase()
 
 CacheItemBase::~CacheItemBase()
 {
-	free(path); // path was allocated with strdup in FramceCache::put_frame()
+	if(path)
+		free(path);
 }
 
 
@@ -93,7 +94,6 @@ void CacheBase::remove_all()
 	}
 	current_item = 0;
 	lock->unlock();
-//printf("CacheBase::remove_all: removed %d entries\n", total);
 }
 
 
@@ -115,7 +115,6 @@ void CacheBase::remove_asset(Asset *asset)
 			current_item = current_item->next;
 	}
 	lock->unlock();
-//printf("CacheBase::remove_asset: removed %d entries for %s\n", total, asset->path);
 }
 
 int CacheBase::get_oldest()
@@ -151,8 +150,6 @@ int CacheBase::delete_oldest()
 	if(oldest_item)
 	{
 // Too much data to debug if audio.
-// printf("CacheBase::delete_oldest: deleted position=%lld %d bytes\n", 
-// oldest_item->position, oldest_item->get_size());
 		delete oldest_item;
 		if(current_item == oldest_item) current_item = 0;
 		lock->unlock();
@@ -200,7 +197,7 @@ void CacheBase::put_item(CacheItemBase *item)
 }
 
 // Get first item from list with matching position or 0 if none found.
-CacheItemBase* CacheBase::get_item(int64_t position)
+CacheItemBase* CacheBase::get_item(posnum position)
 {
 	if(!current_item) current_item = first;
 	while(current_item && current_item->position < position)
@@ -216,8 +213,3 @@ CacheItemBase* CacheBase::get_item(int64_t position)
 	if(!current_item || current_item->position != position) return 0;
 	return current_item;
 }
-
-
-
-
-
