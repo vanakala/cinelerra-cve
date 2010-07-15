@@ -47,23 +47,23 @@ class FormatTools
 {
 public:
 	FormatTools(MWindow *mwindow,
-				BC_WindowBase *window, 
-				Asset *asset);
+			BC_WindowBase *window, 
+			Asset *asset);
 	virtual ~FormatTools();
 
 	int create_objects(int &init_x, 
-						int &init_y, 
-						int do_audio,    // Include tools for audio
-						int do_video,   // Include tools for video
-						int prompt_audio,  // Include checkbox for audio
-						int prompt_video,  // Include checkbox for video
-						int prompt_audio_channels,
-						int prompt_video_compression,
-						const char *locked_compressor,  // Select compressors to be offered
-						int recording, // Change captions for recording
-						int *strategy,  // If nonzero, prompt for insertion strategy
-						int brender, // Supply file formats for background rendering
-						int horizontal_layout = 0); // audio & video are placed on one line
+			int &init_y,
+			int do_audio,    // Include tools for audio
+			int do_video,   // Include tools for video
+			int prompt_audio,  // Include checkbox for audio
+			int prompt_video,  // Include checkbox for video
+			int prompt_audio_channels,
+			int prompt_video_compression,
+			const char *locked_compressor,  // Select compressors to be offered
+			int recording, // Change captions for recording
+			int *strategy,  // If nonzero, prompt for insertion strategy
+			int brender, // Supply file formats for background rendering
+			int horizontal_layout = 0); // audio & video are placed on one line
 // In recording preferences, aspects of the format are locked 
 // depending on the driver used.
 	void update_driver(int driver);
@@ -134,7 +134,7 @@ public:
 	FormatPathText(int x, int y, FormatTools *format);
 	~FormatPathText();
 	int handle_event();
-	
+
 	FormatTools *format;
 };
 
@@ -145,7 +145,7 @@ class FormatFormat : public FormatPopup
 public:
 	FormatFormat(int x, int y, FormatTools *format);
 	~FormatFormat();
-	
+
 	int handle_event();
 	FormatTools *format;
 };
@@ -174,7 +174,7 @@ class FormatAThread : public Thread
 public:
 	FormatAThread(FormatTools *format);
 	~FormatAThread();
-	
+
 	void run();
 
 	FormatTools *format;
@@ -186,7 +186,7 @@ class FormatVThread : public Thread
 public:
 	FormatVThread(FormatTools *format);
 	~FormatVThread();
-	
+
 	void run();
 
 	FormatTools *format;
@@ -240,6 +240,5 @@ public:
 	int *output;
 	MWindow *mwindow;
 };
-
 
 #endif
