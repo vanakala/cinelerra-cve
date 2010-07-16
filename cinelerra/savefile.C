@@ -41,30 +41,18 @@
 
 
 
-
-
-
-
-
 SaveBackup::SaveBackup(MWindow *mwindow)
  : BC_MenuItem(_("Save backup"))
 {
 	this->mwindow = mwindow;
 }
+
 int SaveBackup::handle_event()
 {
 	mwindow->save_backup();
 	mwindow->gui->show_message(_("Saved backup."));
 	return 1;
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -107,8 +95,6 @@ int Save::handle_event()
 			mwindow->gui->show_message(_("\"%s\" %dC written"), mwindow->session->filename, strlen(file.string));
 
 		mwindow->session->changes_made = 0;
-// Last command in program
-//		if(saveas->quit_now) mwindow->gui->set_done(0);
 		if(saveas->quit_now) mwindow->playback_3d->quit();
 	}
 	return 1;
@@ -145,9 +131,8 @@ void SaveAs::run()
 {
 // ======================================= get path from user
 	int result;
-//printf("SaveAs::run 1\n");
 	char directory[1024], filename[1024];
-	sprintf(directory, "~");
+	strcpy(directory, "~");
 	mwindow->defaults->get("DIRECTORY", directory);
 
 // Loop if file exists
@@ -173,11 +158,6 @@ void SaveAs::run()
 		if(result == 1) return;          // user cancelled
 		result = ConfirmSave::test_file(mwindow, filename);
 	}while(result);        // file exists so repeat
-
-//printf("SaveAs::run 6 %s\n", filename);
-
-
-
 
 // save it
 	FileXML file;
@@ -205,23 +185,16 @@ void SaveAs::run()
 
 	mwindow->session->changes_made = 0;
 	mmenu->add_load(filename);
-// Last command in program
-//	if(quit_now) mwindow->gui->set_done(0);
 	if(quit_now) mwindow->playback_3d->quit();
 	return;
 }
 
 
 
-
-
-
-
-
 SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
  : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
- 	mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
- 	init_directory, 
+	mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
+	init_directory, 
 	PROGRAM_NAME ": Save", 
 	_("Enter a filename to save as"))
 { 
@@ -229,5 +202,7 @@ SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 }
 
-SaveFileWindow::~SaveFileWindow() {}
+SaveFileWindow::~SaveFileWindow() 
+{
+}
 

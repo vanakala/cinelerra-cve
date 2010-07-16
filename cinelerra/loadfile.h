@@ -63,8 +63,6 @@ class NewConcatenate;
 class AppendNewTracks;
 class EndofTracks;
 class ResourcesOnly;
-class ReelWindow;
-class OverwriteReel;
 
 class LoadFileWindow : public BC_FileBox
 {
@@ -157,37 +155,6 @@ public:
 	LoadBackup(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
-};
-
-class ReelWindow : public BC_Window
-{
-public:
-	ReelWindow(MWindow *mwindow);
-	~ReelWindow();
-
-	int create_objects();
-	int resize_event(int w, int h);
-
-	BC_OKButton *ok_button;
-	BC_CancelButton *cancel_button;
-	BC_Title *reel_name_title, *reel_number_title;
-	BC_TextBox *reel_name, *reel_number;
-	OverwriteReel *checkbox;
-	int overwrite_reel;
-	
-	MWindow *mwindow;
-};
-
-
-class OverwriteReel : public BC_CheckBox
-{
-public:
-	OverwriteReel(ReelWindow *lwindow,
-		int x, int y, int value);
-	
-	int handle_event();
-	
-	ReelWindow *rwindow;
 };
 
 #endif

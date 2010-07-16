@@ -42,7 +42,7 @@ public:
 	int handle_event();
 	int create_objects(SaveAs *saveas);
 	int save_before_quit();
-	
+
 	int quit_now;
 	MWindow *mwindow;
 	SaveAs *saveas;
@@ -55,7 +55,7 @@ public:
 	int set_mainmenu(MainMenu *mmenu);
 	int handle_event();
 	void run();
-	
+
 	int quit_now;
 	MWindow *mwindow;
 	MainMenu *mmenu;

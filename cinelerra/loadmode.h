@@ -45,7 +45,7 @@ public:
 		int *output,
 		int use_nothing);
 	~LoadMode();
-	
+
 	int create_objects();
 	int reposition_window(int x, int y);
 	static int calculate_h(BC_WindowBase *gui);
@@ -53,7 +53,7 @@ public:
 	int get_x();
 	int get_y();
 
-	char* mode_to_text();
+	const char* mode_to_text();
 
 	BC_Title *title;
 	BC_TextBox *textbox;

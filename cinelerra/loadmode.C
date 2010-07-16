@@ -74,7 +74,7 @@ int LoadMode::calculate_h(BC_WindowBase *gui)
 	return BC_TextBox::calculate_h(gui, MEDIUMFONT, 1, 1);
 }
 
-char* LoadMode::mode_to_text()
+const char* LoadMode::mode_to_text()
 {
 	for(int i = 0; i < load_modes.total; i++)
 	{
@@ -87,7 +87,7 @@ char* LoadMode::mode_to_text()
 int LoadMode::create_objects()
 {
 	int x = this->x, y = this->y;
-	char *default_text;
+	const char *default_text;
 	default_text = mode_to_text();
 
 	window->add_subwindow(title = new BC_Title(x, y, _("Insertion strategy:")));
@@ -141,7 +141,7 @@ LoadModeListBox::LoadModeListBox(BC_WindowBase *window,
 	int x, 
 	int y)
  : BC_ListBox(x,
- 	y,
+	y,
 	loadmode->mwindow->theme->loadmode_w,
 	150,
 	LISTBOX_TEXT,
@@ -169,8 +169,3 @@ int LoadModeListBox::handle_event()
 	}
 	return 1;
 }
-
-
-
-
-

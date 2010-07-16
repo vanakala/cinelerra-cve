@@ -60,10 +60,8 @@ int Load::create_objects()
 
 int Load::handle_event() 
 {
-//printf("Load::handle_event 1\n");
 	if(!thread->running())
 	{
-//printf("Load::handle_event 2\n");
 		thread->start();
 	}
 	return 1;
@@ -93,11 +91,8 @@ void LoadFileThread::run()
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 	char default_path[BCTEXTLEN];
-	const char *reel_name = 0;
-	int reel_number = 0;
-	int overwrite_reel = 0;
-	
-	sprintf(default_path, "~");
+
+	strcpy(default_path, "~");
 	mwindow->defaults->get("DEFAULT_LOADPATH", default_path);
 	load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
 
@@ -135,8 +130,7 @@ void LoadFileThread::run()
 
 		mwindow->defaults->update("DEFAULT_LOADPATH", 
 			window.get_submitted_path());
-		mwindow->defaults->update("LOAD_MODE", 
-			load_mode);
+		mwindow->defaults->update("LOAD_MODE", load_mode);
 	}
 
 // No file selected
@@ -145,27 +139,8 @@ void LoadFileThread::run()
 		return;
 	}
 
-//	{
-//		ReelWindow rwindow(mwindow);
-//		rwindow.create_objects();
-//		result = rwindow.run_window();
-
-//		if(result)
-//		{
-//			return;
-//		}
-		
-//		reel_name = rwindow.reel_name->get_text();
-//		reel_number = atol(rwindow.reel_number->get_text());
-//		overwrite_reel = rwindow.overwrite_reel;
-//	}
-
-	reel_name = "none";
-	reel_number = 0;
-	overwrite_reel = 0;
-
 	mwindow->interrupt_indexes();
-	result = mwindow->load_filenames(&path_list, load_mode, 0, reel_name, reel_number, overwrite_reel);
+	result = mwindow->load_filenames(&path_list, load_mode, 0);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	path_list.remove_all_objects();
 
@@ -173,7 +148,6 @@ void LoadFileThread::run()
 	mwindow->save_backup();
 
 	mwindow->restart_brender();
-//	mwindow->undo->update_undo(_("load"), LOAD_ALL);
 
 	if(load_mode == LOAD_REPLACE || load_mode == LOAD_REPLACE_CONCATENATE)
 		mwindow->session->changes_made = 0;
@@ -244,12 +218,13 @@ int LoadFileWindow::resize_event(int w, int h)
 
 NewTimeline::NewTimeline(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
- 	y, 
+	y, 
 	window->thread->load_mode == LOAD_REPLACE,
 	_("Replace current project."))
 {
 	this->window = window;
 }
+
 int NewTimeline::handle_event()
 {
 	window->newtracks->set_value(0);
@@ -261,12 +236,13 @@ int NewTimeline::handle_event()
 
 NewConcatenate::NewConcatenate(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
- 	y, 
+	y,
 	window->thread->load_mode == LOAD_REPLACE_CONCATENATE,
 	_("Replace current project and concatenate tracks."))
 {
 	this->window = window;
 }
+
 int NewConcatenate::handle_event()
 {
 	window->newtimeline->set_value(0);
@@ -278,12 +254,13 @@ int NewConcatenate::handle_event()
 
 AppendNewTracks::AppendNewTracks(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
- 	y, 
+	y, 
 	window->thread->load_mode == LOAD_NEW_TRACKS,
 	_("Append in new tracks."))
 {
 	this->window = window;
 }
+
 int AppendNewTracks::handle_event()
 {
 	window->newtimeline->set_value(0);
@@ -295,12 +272,13 @@ int AppendNewTracks::handle_event()
 
 EndofTracks::EndofTracks(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
- 	y, 
+	y,
 	window->thread->load_mode == LOAD_CONCATENATE,
 	_("Concatenate to existing tracks."))
 {
 	this->window = window;
 }
+
 int EndofTracks::handle_event()
 {
 	window->newtimeline->set_value(0);
@@ -312,12 +290,13 @@ int EndofTracks::handle_event()
 
 ResourcesOnly::ResourcesOnly(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
- 	y, 
+	y,
 	window->thread->load_mode == LOAD_RESOURCESONLY,
 	_("Create new resources only."))
 {
 	this->window = window;
 }
+
 int ResourcesOnly::handle_event()
 {
 	set_value(1);
@@ -338,7 +317,7 @@ LocateFileWindow::LocateFileWindow(MWindow *mwindow,
 	const char *init_directory, 
 	const char *old_filename)
  : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
- 		mwindow->gui->get_abs_cursor_y(1), 
+		mwindow->gui->get_abs_cursor_y(1), 
 		init_directory, 
 		PROGRAM_NAME ": Locate file", 
 		old_filename)
@@ -386,14 +365,8 @@ int LoadPrevious::handle_event()
 }
 
 
-
-
-
-
-
 void LoadPrevious::run()
 {
-//	loadfile->mwindow->load(path, loadfile->append);
 }
 
 int LoadPrevious::set_path(const char *path)
@@ -426,7 +399,7 @@ int LoadBackup::handle_event()
 	
 	path_list.append(out_path = new char[strlen(string) + 1]);
 	strcpy(out_path, string);
-	
+
 	mwindow->load_filenames(&path_list, LOAD_REPLACE, 0);
 	mwindow->edl->local_session->clip_title[0] = 0;
 // This is unique to backups since the path of the backup is different than the
@@ -440,112 +413,4 @@ int LoadBackup::handle_event()
 	mwindow->session->changes_made = 1;
 
 	return 1;
-}
-	
-
-
-// Dialog to set reel number/name
-
-ReelWindow::ReelWindow(MWindow *mwindow)
- : BC_Window(_("Please enter the reel name and number"),
- 	mwindow->gui->get_abs_cursor_x(1) - 375 / 2,
- 	mwindow->gui->get_abs_cursor_y(1) - 150 / 2,
- 	375,
- 	150,
- 	100,
- 	100,
- 	0,
- 	0,
- 	1)
-{
-	this->mwindow = mwindow;
-	overwrite_reel = 0; // TODO: this should be loaded from previous time
-}
-
-ReelWindow::~ReelWindow()
-{
-	delete reel_name_title;
-	delete reel_name;
-	delete reel_number_title;
-	delete reel_number;
-	delete checkbox;
-}
-
-int ReelWindow::create_objects()
-{
-	int y = 10;
-	int x = 0;
-
-	add_subwindow(checkbox = new OverwriteReel(this, x, y, !overwrite_reel));	
-	y += 40;
-	
-	x = 10;
-	add_subwindow(reel_name_title = new BC_Title(x, y, _("Reel Name:")));
-	x += reel_name_title->get_w() + 20;
-
-	add_subwindow(reel_name = new BC_TextBox(x,
-		y,
-		250,
-		1,
-		"cin0000"));
-	
-	y += 30;
-	
-	x = 10;
-	
-	add_subwindow(reel_number_title = new BC_Title(x, y,
-																	_("Reel Number:")));
-	// line up the text boxes
-	x += reel_name_title->get_w() + 20;
-
-	add_subwindow(reel_number = new BC_TextBox(x,
-		y,
-		50,
-		1,
-		"00"));
-
-	add_subwindow(ok_button = new BC_OKButton(this));
-	
-	add_subwindow(cancel_button = new BC_CancelButton(this));
-
-// Disable reel_name and reel_number if the user doesn't want to overwrite
-// (overwrite == accept default as well)
-	if(!overwrite_reel)
-	{
-		reel_name->disable();
-		reel_number->disable();
-	}
-	show_window();
-
-	return 0;	
-}
-
-int ReelWindow::resize_event(int w, int h)
-{
-// Doesn't resize
-	return 0;
-}
-
-OverwriteReel::OverwriteReel(ReelWindow *rwindow,
-	int x, int y, int value)
- : BC_CheckBox(x, y, value, _("Use default or previous name and number"))
-{
-	this->rwindow = rwindow;
-}
-
-int OverwriteReel::handle_event()
-{
-	rwindow->overwrite_reel = !get_value();
-// If the checkbox is not enabled, we want to enable the reel_name and
-// reel_number text boxes
-	if(!get_value())
-	{
-		rwindow->reel_name->enable();
-		rwindow->reel_number->enable();
-	}
-	else
-	{
-		rwindow->reel_name->disable();
-		rwindow->reel_number->disable();
-	}
 }
