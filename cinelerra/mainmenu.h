@@ -141,16 +141,6 @@ public:
 	MWindow *mwindow;
 };
 
-
-
-class DumpCICache : public BC_MenuItem
-{
-public:
-	DumpCICache(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
 class DumpEDL : public BC_MenuItem
 {
 public:
@@ -163,14 +153,6 @@ class DumpPlugins : public BC_MenuItem
 {
 public:
 	DumpPlugins(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class DumpAssets : public BC_MenuItem
-{
-public:
-	DumpAssets(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };
@@ -494,14 +476,6 @@ class AutosFollowEdits : public BC_MenuItem
 {
 public:
 	AutosFollowEdits(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class ScrubSpeed : public BC_MenuItem
-{
-public:
-	ScrubSpeed(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

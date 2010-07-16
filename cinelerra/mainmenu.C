@@ -83,18 +83,15 @@ int MainMenu::create_objects()
 	PreferencesMenuitem *preferences;
 
 	recent_load = new BC_RecentList("PATH", mwindow->defaults);
-SET_TRACE
 
 	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(new_project = new New(mwindow));
 	new_project->create_objects();
 
-SET_TRACE
 // file loaders
 	filemenu->add_item(load_file = new Load(mwindow, this));
 	load_file->create_objects();
 
-SET_TRACE
 // new and load can be undone so no need to prompt save
 	Save *save;                   //  affected by saveas
 	filemenu->add_item(save = new Save(mwindow));
@@ -143,8 +140,6 @@ SET_TRACE
 	keyframemenu->add_item(new PasteDefaultKeyframe(mwindow));
 
 
-
-
 	add_menu(audiomenu = new BC_Menu(_("Audio")));
 	audiomenu->add_item(new AddAudioTrack(mwindow));
 	audiomenu->add_item(new DefaultATransition(mwindow));
@@ -175,15 +170,6 @@ SET_TRACE
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
 	settingsmenu->add_item(new SetBRenderStart(mwindow));
-// set scrubbing speed
-//	ScrubSpeed *scrub_speed;
-//	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
-//	if(mwindow->edl->session->scrub_speed == .5) 
-//		scrub_speed->set_text(_("Fast Shuttle"));
-
-
-
-
 
 
 	add_menu(viewmenu = new BC_Menu(_("View")));
@@ -212,7 +198,6 @@ SET_TRACE
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
 	windowmenu->add_item(new TileWindows(mwindow));
 
-SET_TRACE
 	return 0;
 }
 
@@ -274,10 +259,10 @@ int MainMenu::quit()
 int MainMenu::init_aeffects(BC_Hash *defaults)
 {
 	total_aeffects = defaults->get("TOTAL_AEFFECTS", 0);
-	
+
 	char string[1024], title[1024];
 	if(total_aeffects) audiomenu->add_item(new BC_MenuItem("-"));
-	
+
 	for(int i = 0; i < total_aeffects; i++)
 	{
 		sprintf(string, "AEFFECTRECENT%d", i);
@@ -290,10 +275,10 @@ int MainMenu::init_aeffects(BC_Hash *defaults)
 int MainMenu::init_veffects(BC_Hash *defaults)
 {
 	total_veffects = defaults->get("TOTAL_VEFFECTS", 0);
-	
+
 	char string[1024], title[1024];
 	if(total_veffects) videomenu->add_item(new BC_MenuItem("-"));
-	
+
 	for(int i = 0; i < total_veffects; i++)
 	{
 		sprintf(string, "VEFFECTRECENT%d", i);
@@ -305,16 +290,12 @@ int MainMenu::init_veffects(BC_Hash *defaults)
 
 int MainMenu::init_loads(BC_Hash *defaults)
 {
-//printf("MainMenu::init_loads 1\n");
-//printf("MainMenu::init_loads 1\n");
 	char string[BCTEXTLEN], path[BCTEXTLEN], filename[BCTEXTLEN];
-//printf("MainMenu::init_loads 1\n");
 	FileSystem dir;
-	
+
 	recent_load->load_items();
 
 	int total_loads = recent_load->items.total;
-//printf("MainMenu::init_loads 2\n");
 	if(total_loads > 0) filemenu->add_item(new BC_MenuItem("-"));
 
 	for(int i = 0; i < total_loads; i++)
@@ -322,15 +303,10 @@ int MainMenu::init_loads(BC_Hash *defaults)
 		char *path = recent_load->items.values[i]->get_text();
 
 		filemenu->add_item(load[i] = new LoadPrevious(mwindow));
-//printf("MainMenu::init_loads 5\n");
 		dir.extract_name(filename, path, 0);
-//printf("MainMenu::init_loads 6\n");
 		load[i]->set_text(filename);
-//printf("MainMenu::init_loads 7\n");
 		load[i]->set_path(path);
-//printf("MainMenu::init_loads 8\n");
 	}
-//printf("MainMenu::init_loads 9\n");
 	return 0;
 }
 
@@ -488,16 +464,6 @@ int MainMenu::add_load(const char *new_path)
 
 // ================================== menu items
 
-
-DumpCICache::DumpCICache(MWindow *mwindow)
- : BC_MenuItem(_("Dump CICache"))
-{ this->mwindow = mwindow; }
-
-int DumpCICache::handle_event()
-{
-//	mwindow->cache->dump();
-}
-
 DumpEDL::DumpEDL(MWindow *mwindow)
  : BC_MenuItem(_("Dump EDL"))
 { 
@@ -506,9 +472,7 @@ DumpEDL::DumpEDL(MWindow *mwindow)
 
 int DumpEDL::handle_event()
 {
-//printf("DumpEDL::handle_event 1\n");
 	mwindow->edl->dump();
-//printf("DumpEDL::handle_event 2\n");
 	return 1;
 }
 
@@ -520,20 +484,8 @@ DumpPlugins::DumpPlugins(MWindow *mwindow)
 
 int DumpPlugins::handle_event()
 {
-//printf("DumpEDL::handle_event 1\n");
 	mwindow->dump_plugins();
-//printf("DumpEDL::handle_event 2\n");
 	return 1;
-}
-
-
-DumpAssets::DumpAssets(MWindow *mwindow)
- : BC_MenuItem(_("Dump Assets"))
-{ this->mwindow = mwindow; }
-
-int DumpAssets::handle_event()
-{
-	mwindow->assets->dump();
 }
 
 // ================================================= edit
@@ -542,11 +494,13 @@ Undo::Undo(MWindow *mwindow) : BC_MenuItem(_("Undo"), "z", 'z')
 { 
 	this->mwindow = mwindow; 
 }
+
 int Undo::handle_event()
 { 
 	mwindow->undo_entry(mwindow->gui);
 	return 1;
 }
+
 int Undo::update_caption(const char *new_caption)
 {
 	char string[1024];
@@ -564,9 +518,9 @@ Redo::Redo(MWindow *mwindow) : BC_MenuItem(_("Redo"), "Shift+Z", 'Z')
 int Redo::handle_event()
 { 
 	mwindow->redo_entry(mwindow->gui);
-
 	return 1;
 }
+
 int Redo::update_caption(const char *new_caption)
 {
 	char string[1024];
@@ -1118,26 +1072,6 @@ int CursorOnFrames::handle_event()
 	set_checked(mwindow->edl->session->cursor_on_frames);
 }
 
-
-ScrubSpeed::ScrubSpeed(MWindow *mwindow) : BC_MenuItem(_("Slow Shuttle"))
-{
-	this->mwindow = mwindow;
-}
-
-int ScrubSpeed::handle_event()
-{
-	if(mwindow->edl->session->scrub_speed == .5)
-	{
-		mwindow->edl->session->scrub_speed = 2;
-		set_text(_("Slow Shuttle"));
-	}
-	else
-	{
-		mwindow->edl->session->scrub_speed = .5;
-		set_text(_("Fast Shuttle"));
-	}
-}
-
 SaveSettingsNow::SaveSettingsNow(MWindow *mwindow) : BC_MenuItem(_("Save settings now")) 
 { 
 	this->mwindow = mwindow; 
@@ -1154,10 +1088,6 @@ int SaveSettingsNow::handle_event()
 
 
 // ============================================ window
-
-
-
-
 
 ShowVWindow::ShowVWindow(MWindow *mwindow)
  : BC_MenuItem(_("Show Viewer"))
