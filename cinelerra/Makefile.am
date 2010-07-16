@@ -453,7 +453,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 formatpopup.h \
 		 formatpresets.h \
 		 formattools.h \
-		 formatwindow.h \
 		 framecache.h \
 		 garbage.h \
 		 gwindow.h \
@@ -497,7 +496,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 menuaeffects.h \
 		 menueffects.h \
 		 menuveffects.h \
-		 messages.h \
 		 meterpanel.h \
 		 module.h \
 		 mtimebar.h \
@@ -532,7 +530,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 plugindialog.h \
 		 plugin.h \
 		 pluginpopup.h \
-		 pluginprefs.h \
 		 pluginserver.h \
 		 pluginset.h \
 		 plugintclient.h \

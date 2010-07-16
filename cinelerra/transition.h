@@ -27,7 +27,6 @@ class PasteTransition;
 #include "edit.inc"
 #include "filexml.inc"
 #include "mwindow.inc"
-#include "messages.inc"
 #include "plugin.h"
 #include "sharedlocation.h"
 

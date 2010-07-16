@@ -46,7 +46,6 @@
 #include "filetiff.h"
 #include "filevorbis.h"
 #include "fileyuv.h"
-#include "formatwindow.h"
 #include "formattools.h"
 #include "framecache.h"
 #include "language.h"

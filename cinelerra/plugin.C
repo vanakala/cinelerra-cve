@@ -27,7 +27,6 @@
 #include "keyframes.h"
 #include "localsession.h"
 #include "mwindow.h"
-#include "messages.h"
 #include "plugin.h"
 #include "pluginpopup.h"
 #include "pluginset.h"

@@ -31,7 +31,6 @@
 #include "file.inc"
 #include "filethread.inc"
 #include "filexml.inc"
-#include "formatwindow.inc"
 #include "formattools.h"
 #include "framecache.inc"
 #include "guicast.h"

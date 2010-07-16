@@ -22,10 +22,11 @@
 #ifndef KEYFRAME_H
 #define KEYFRAME_H
 
+#define MESSAGESIZE 4096
+
 #include "auto.h"
 #include "filexml.inc"
 #include "keyframes.inc"
-#include "messages.inc"
 
 // The default constructor is used for menu effects and pasting effects.
 

@@ -28,7 +28,6 @@
 #include "floatauto.inc"
 #include "floatautos.inc"
 #include "mwindow.inc"
-#include "messages.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
 #include "renderengine.inc"
