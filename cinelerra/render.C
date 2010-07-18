@@ -27,7 +27,6 @@
 #include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
-#include "compresspopup.h"
 #include "condition.h"
 #include "confirmsave.h"
 #include "cwindowgui.h"

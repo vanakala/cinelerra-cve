@@ -27,7 +27,6 @@
 #include "bitspopup.h"
 #include "browsebutton.h"
 #include "cache.inc"
-#include "compresspopup.h"
 #include "condition.inc"
 #include "edit.inc"
 #include "errorbox.inc"

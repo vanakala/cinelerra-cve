@@ -25,7 +25,6 @@
 #include "asset.inc"
 #include "bitspopup.h"
 #include "browsebutton.h"
-#include "compresspopup.h"
 #include "formatpopup.h"
 #include "formattools.h"
 #include "loadmode.inc"

@@ -397,7 +397,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 chantables.h \
 		 clipedit.h \
 		 commonrender.h \
-		 compresspopup.h \
 		 confirmsave.h \
 		 cpanel.h \
 		 cplayback.h \

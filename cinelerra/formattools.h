@@ -26,7 +26,6 @@
 #include "guicast.h"
 #include "bitspopup.h"
 #include "browsebutton.h"
-#include "compresspopup.h"
 #include "file.inc"
 #include "formatpopup.h"
 #include "mwindow.inc"
