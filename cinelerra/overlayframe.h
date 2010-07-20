@@ -100,7 +100,7 @@ class ScaleUnit : public LoadClient
 public:
 	ScaleUnit(ScaleEngine *server, OverlayFrame *overlay);
 	~ScaleUnit();
-	
+
 	float cubic_bspline(float x);
 
 	void tabulate_bcubic_f(float* &coef_table, 
@@ -149,7 +149,7 @@ public:
 	void dump_bilinear(bilinear_table_t *table, int total);
 
 	void process_package(LoadPackage *package);
-	
+
 	OverlayFrame *overlay;
 	ScaleEngine *engine;
 };
@@ -159,11 +159,11 @@ class ScaleEngine : public LoadServer
 public:
 	ScaleEngine(OverlayFrame *overlay, int cpus);
 	~ScaleEngine();
-	
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	
+
 	OverlayFrame *overlay;
 // Global parameters for scaling units
 	VFrame *scale_output;
@@ -176,10 +176,6 @@ public:
 	int out_h_int;
 	int interpolation_type;
 };
-
-
-
-
 
 
 
@@ -220,19 +216,19 @@ public:
 		int &out_x1_int,
 		int &out_x2_int);
 	void translate(VFrame *output, 
-			VFrame *input, 
-			float in_x1,
-			float in_y1,
-			float in_x2,
-			float in_y2,
-			float out_x1,
-			float out_y1,
-			float out_x2,
-			float out_y2,
-			float alpha,
-			int mode,
-			int row1,
-			int row2);
+		VFrame *input,
+		float in_x1,
+		float in_y1,
+		float in_x2,
+		float in_y2,
+		float out_x1,
+		float out_y1,
+		float out_x2,
+		float out_y2,
+		float alpha,
+		int mode,
+		int row1,
+		int row2);
 
 	OverlayFrame *overlay;
 	TranslateEngine *engine;
@@ -243,11 +239,11 @@ class TranslateEngine : public LoadServer
 public:
 	TranslateEngine(OverlayFrame *overlay, int cpus);
 	~TranslateEngine();
-	
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	
+
 	OverlayFrame *overlay;
 // Global parameters for translate units
 	VFrame *translate_output;
@@ -263,13 +259,6 @@ public:
 	float translate_alpha;
 	int translate_mode;
 };
-
-
-
-
-
-
-
 
 
 class ScaleTranslateEngine;
@@ -295,7 +284,7 @@ public:
 		int out_x2,
 		float in_x1,
 		float in_x2);
-	
+
 	OverlayFrame *overlay;
 	ScaleTranslateEngine *scale_translate;
 };
@@ -309,10 +298,9 @@ public:
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	
+
 	OverlayFrame *overlay;
-	
-	
+
 // Arguments
 	VFrame *output;
 	VFrame *input;
@@ -327,19 +315,6 @@ public:
 	float alpha;
 	int mode;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class BlendEngine;
@@ -370,19 +345,19 @@ public:
 		int &out_x1_int,
 		int &out_x2_int);
 	void translate(VFrame *output, 
-			VFrame *input, 
-			float in_x1,
-			float in_y1,
-			float in_x2,
-			float in_y2,
-			float out_x1,
-			float out_y1,
-			float out_x2,
-			float out_y2,
-			float alpha,
-			int mode,
-			int row1,
-			int row2);
+		VFrame *input,
+		float in_x1,
+		float in_y1,
+		float in_x2,
+		float in_y2,
+		float out_x1,
+		float out_y1,
+		float out_x2,
+		float out_y2,
+		float alpha,
+		int mode,
+		int row1,
+		int row2);
 
 	OverlayFrame *overlay;
 	BlendEngine *blend_engine;
@@ -393,31 +368,19 @@ class BlendEngine : public LoadServer
 public:
 	BlendEngine(OverlayFrame *overlay, int cpus);
 	~BlendEngine();
-	
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	
+
 	OverlayFrame *overlay;
-	
-	
+
 // Arguments
 	VFrame *output;
 	VFrame *input;
 	float alpha;
 	int mode;
 };
-
-
-
-
-
-
-
-
-
-
-
 
 
 class OverlayFrame
@@ -447,7 +410,6 @@ public:
 	ScaleEngine *scale_engine;
 	TranslateEngine *translate_engine;
 	ScaleTranslateEngine *scaletranslate_engine;
-
 
 	VFrame *temp_frame;
 	int cpus;

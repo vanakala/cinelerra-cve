@@ -97,7 +97,6 @@ int FileList::open_file(int rd, int wr)
 // Determine type of file.
 // Header isn't used for background rendering, in which case everything known
 // by the file encoder is known by the decoder.
-//printf("FileList::open_file 1 %d\n", asset->use_header);
 		if(asset->use_header)
 		{
 			FILE *stream = fopen(asset->path, "rb");
@@ -111,7 +110,6 @@ int FileList::open_file(int rd, int wr)
 
 				if(!strncasecmp(string, list_prefix, strlen(list_prefix)))
 				{
-
 					asset->format = list_type;
 
 // Open index here or get frame size from file.
@@ -120,7 +118,6 @@ int FileList::open_file(int rd, int wr)
 				}
 				else
 				{
-//printf("FileList::open_file 2\n", asset->use_header);
 					asset->format = frame_type;
 					result = read_frame_header(asset->path);
 					asset->layers = 1;
@@ -150,7 +147,6 @@ int FileList::open_file(int rd, int wr)
 
 int FileList::close_file()
 {
-//	path_list.total, asset->format, list_type, wr);
 	if(asset->format == list_type && path_list.total)
 	{
 		if(wr && asset->use_header) write_list_header();
@@ -201,8 +197,7 @@ int FileList::read_list_header()
 	char string[BCTEXTLEN], *new_entry;
 
 	FILE *stream = fopen(asset->path, "r");
-	
-	
+
 	if(stream)
 	{
 // Get information about the frames
@@ -247,7 +242,6 @@ int FileList::read_list_header()
 			}
 		}
 
-//for(int i = 0; i < path_list.total; i++) printf("%s\n", path_list.values[i]);
 		fclose(stream);
 		asset->video_length = path_list.total;
 	}
@@ -293,19 +287,19 @@ int FileList::read_frame(VFrame *frame)
 
 			switch(frame->get_color_model())
 			{
-				case BC_COMPRESSED:
-					frame->allocate_compressed_data(ostat.st_size);
-					frame->set_compressed_size(ostat.st_size);
-					if(fread(frame->get_data(), ostat.st_size, 1, fp) < 1)
-						goto emptyfile;
-					break;
-				default:
-					data->allocate_compressed_data(ostat.st_size);
-					data->set_compressed_size(ostat.st_size);
-					if(fread(data->get_data(), ostat.st_size, 1, fp) < 1)
-						goto emptyfile;
-					result = read_frame(frame, data);
-					break;
+			case BC_COMPRESSED:
+				frame->allocate_compressed_data(ostat.st_size);
+				frame->set_compressed_size(ostat.st_size);
+				if(fread(frame->get_data(), ostat.st_size, 1, fp) < 1)
+					goto emptyfile;
+				break;
+			default:
+				data->allocate_compressed_data(ostat.st_size);
+				data->set_compressed_size(ostat.st_size);
+				if(fread(data->get_data(), ostat.st_size, 1, fp) < 1)
+					goto emptyfile;
+				result = read_frame(frame, data);
+				break;
 			}
 
 
@@ -315,7 +309,6 @@ int FileList::read_frame(VFrame *frame)
 	else
 	{
 // Allocate and decompress once into temporary
-//printf("FileList::read_frame %d\n", frame->get_color_model());
 		if(!temp || temp->get_color_model() != frame->get_color_model())
 		{
 			if(temp) delete temp;
@@ -328,23 +321,23 @@ int FileList::read_frame(VFrame *frame)
 
 				switch(frame->get_color_model())
 				{
-					case BC_COMPRESSED:
-						frame->allocate_compressed_data(ostat.st_size);
-						frame->set_compressed_size(ostat.st_size);
-						if(fread(frame->get_data(), ostat.st_size, 1, fp) < 1)
-							goto emptyfile;
-						break;
-					default:
-						data->allocate_compressed_data(ostat.st_size);
-						data->set_compressed_size(ostat.st_size);
-						if(fread(data->get_data(), ostat.st_size, 1, fp) < 1)
-							goto emptyfile;
-						temp = new VFrame(0, 
-							asset->width, 
-							asset->height, 
-							frame->get_color_model());
-						read_frame(temp, data);
-						break;
+				case BC_COMPRESSED:
+					frame->allocate_compressed_data(ostat.st_size);
+					frame->set_compressed_size(ostat.st_size);
+					if(fread(frame->get_data(), ostat.st_size, 1, fp) < 1)
+						goto emptyfile;
+					break;
+				default:
+					data->allocate_compressed_data(ostat.st_size);
+					data->set_compressed_size(ostat.st_size);
+					if(fread(data->get_data(), ostat.st_size, 1, fp) < 1)
+						goto emptyfile;
+					temp = new VFrame(0,
+						asset->width,
+						asset->height,
+						frame->get_color_model());
+					read_frame(temp, data);
+					break;
 				}
 
 				fclose(fp);
@@ -358,9 +351,6 @@ int FileList::read_frame(VFrame *frame)
 
 		if(!temp) return result;
 
-// printf("FileList::read_frame frame=%d temp=%d\n", 
-// frame->get_color_model(),
-// temp->get_color_model());
 		if(frame->get_color_model() == temp->get_color_model())
 		{
 			frame->copy_from(temp);
@@ -392,11 +382,8 @@ int FileList::read_frame(VFrame *frame)
 		}
 	}
 
-
-//printf("FileList::read_frame 5 %d\n", result);
-
-
 	return result;
+
 emptyfile:
 	fclose(fp);
 	errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
@@ -438,13 +425,6 @@ int FileList::write_frames(VFrame ***frames, int len)
 		writer->write_frames(frames, len);
 	return return_value;
 }
-
-
-
-
-
-
-
 
 
 void FileList::add_return_value(int amount)
@@ -489,8 +469,6 @@ char* FileList::create_path(int number_override)
 
 	table_lock->lock("FileList::create_path");
 
-
-
 	char *path;
 	char output[BCTEXTLEN];
 	if(file->current_frame >= path_list.total || !asset->use_header)
@@ -521,9 +499,8 @@ char* FileList::create_path(int number_override)
 		path = path_list.values[file->current_frame];
 	}
 
-
 	table_lock->unlock();
-	
+
 	return path;
 }
 
@@ -553,10 +530,6 @@ FrameWriterUnit* FileList::get_unit(int number)
 
 
 
-
-
-
-
 FrameWriterPackage::FrameWriterPackage()
 {
 }
@@ -564,14 +537,6 @@ FrameWriterPackage::FrameWriterPackage()
 FrameWriterPackage::~FrameWriterPackage()
 {
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -603,19 +568,11 @@ void FrameWriterUnit::process_package(LoadPackage *package)
 
 
 	int result = server->file->write_frame(ptr->input, output, this);
-	
+
 	if(!result) result = !fwrite(output->get_data(), output->get_compressed_size(), 1, file);
 	fclose(file);
 	server->file->add_return_value(result);
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -639,10 +596,6 @@ void FrameWriter::init_packages()
 		FrameWriterPackage *package = (FrameWriterPackage*)get_package(i);
 		package->input = frames[layer][number];
 		package->path = file->create_path(package->input->get_number());
-// printf("FrameWriter::init_packages 1 %p %d %s\n", 
-// package->input,
-// package->input->get_number(), 
-// package->path);
 		number++;
 		if(number >= len)
 		{
@@ -669,6 +622,3 @@ LoadPackage* FrameWriter::new_package()
 {
 	return new FrameWriterPackage;
 }
-
-
-

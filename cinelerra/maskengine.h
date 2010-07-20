@@ -24,6 +24,7 @@
 
 
 #include "condition.inc"
+#include "datatype.h"
 #include "loadbalance.h"
 #include "maskautos.inc"
 #include "maskauto.inc"
@@ -97,7 +98,7 @@ public:
 
 
 	void do_mask(VFrame *output, 
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate,
 		double project_frame_rate,
 		MaskAutos *keyframe_set, 

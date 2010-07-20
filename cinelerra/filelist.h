@@ -33,10 +33,6 @@
 // FileList handles both frame files and indexes of frame files.
 
 
-
-
-
-
 class FileList : public FileBase
 {
 public:
@@ -108,10 +104,8 @@ class FrameWriterPackage : public LoadPackage
 public:
 	FrameWriterPackage();
 	~FrameWriterPackage();
-	
-	
+
 	VFrame *input;
-	
 	char *path;
 };
 
@@ -123,7 +117,7 @@ class FrameWriterUnit : public LoadClient
 public:
 	FrameWriterUnit(FrameWriter *server);
 	virtual ~FrameWriterUnit();
-	
+
 	void process_package(LoadPackage *package);
 
 	FrameWriter *server;
@@ -139,22 +133,16 @@ class FrameWriter : public LoadServer
 public:
 	FrameWriter(FileList *file, int cpus);
 	~FrameWriter();
-	
+
 	void write_frames(VFrame ***frames, int len);
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	
+
 	FileList *file;
 	VFrame ***frames;
 	int len;
 };
-
-
-
-
-
-
 
 
 #endif

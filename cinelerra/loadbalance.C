@@ -37,12 +37,6 @@ LoadPackage::~LoadPackage()
 
 
 
-
-
-
-
-
-
 LoadClient::LoadClient(LoadServer *server)
  : Thread()
 {
@@ -95,8 +89,7 @@ void LoadClient::run()
 		{
 // Read packet
 			LoadPackage *package;
-			
-			
+
 			server->client_lock->lock("LoadClient::run");
 			if(server->current_package < server->total_packages)
 			{
@@ -126,7 +119,6 @@ void LoadClient::run_single()
 
 void LoadClient::process_package(LoadPackage *package)
 {
-	printf("LoadClient::process_package\n");
 }
 
 
@@ -135,8 +127,6 @@ void LoadClient::process_package(LoadPackage *package)
 
 LoadServer::LoadServer(int total_clients, int total_packages)
 {
-	if(total_clients <= 0)
-		printf("LoadServer::LoadServer total_clients == %d\n", total_clients);
 	this->total_clients = total_clients;
 	this->total_packages = total_packages;
 	current_package = 0;
@@ -243,9 +233,7 @@ void LoadServer::process_packages()
 	is_single = 0;
 	create_clients();
 	create_packages();
-	
-	
-	
+
 // Set up packages
 	init_packages();
 
@@ -255,7 +243,7 @@ void LoadServer::process_packages()
 	{
 		clients[i]->input_lock->unlock();
 	}
-	
+
 // Wait for packages to get finished
 	for(int i = 0; i < total_packages; i++)
 	{

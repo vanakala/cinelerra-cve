@@ -564,7 +564,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 resourcethread.h \
 		 samplescroll.h \
 		 savefile.h \
-		 scale.h \
 		 setformat.h \
 		 sharedlocation.h \
 		 sighandler.h \

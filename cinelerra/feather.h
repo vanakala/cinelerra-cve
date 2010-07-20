@@ -4,13 +4,13 @@
 #define DO_FEATHER_3(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 2]; \
@@ -19,27 +19,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -58,13 +58,13 @@
 #define DO_FEATHER_5(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 4]; \
@@ -73,27 +73,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -117,16 +117,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_7(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 6]; \
@@ -135,27 +136,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+			out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -187,16 +188,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_9(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 8]; \
@@ -205,27 +207,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
                         { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -265,16 +267,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_11(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7, SR8, SR9; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 10]; \
@@ -283,27 +286,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -351,16 +354,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_13(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7, SR8, SR9, SR10, SR11; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 12]; \
@@ -369,27 +373,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = SR10 = SR11 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -445,16 +449,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_15(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7, SR8, SR9, SR10, SR11, SR12, SR13; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 14]; \
@@ -463,27 +468,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = SR10 = SR11 = SR12 = SR13 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -547,16 +552,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_17(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7, SR8, SR9, SR10, SR11, SR12, SR13, SR14, SR15; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 16]; \
@@ -565,27 +571,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = SR10 = SR11 = SR12 = SR13 = SR14 = SR15 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+				tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+				tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -657,16 +663,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_19(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7, SR8, SR9, SR10, SR11, SR12, SR13, SR14, SR15, SR16, SR17; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 18]; \
@@ -675,27 +682,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = SR10 = SR11 = SR12 = SR13 = SR14 = SR15 = SR16 = SR17 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+			out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+				tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+				tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -778,13 +785,13 @@
 #define DO_FEATHER_21(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7, SR8, SR9, SR10, SR11, SR12, SR13, SR14, SR15, SR16, SR17, SR18, SR19; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 20]; \
@@ -793,27 +800,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = SR10 = SR11 = SR12 = SR13 = SR14 = SR15 = SR16 = SR17 = SR18 = SR19 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -901,6 +908,7 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_23(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
@@ -919,27 +927,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = SR10 = SR11 = SR12 = SR13 = SR14 = SR15 = SR16 = SR17 = SR18 = SR19 = SR20 = SR21 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -1035,16 +1043,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_25(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7, SR8, SR9, SR10, SR11, SR12, SR13, SR14, SR15, SR16, SR17, SR18, SR19, SR20, SR21, SR22, SR23; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 24]; \
@@ -1053,27 +1062,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = SR10 = SR11 = SR12 = SR13 = SR14 = SR15 = SR16 = SR17 = SR18 = SR19 = SR20 = SR21 = SR22 = SR23 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+			out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -1177,16 +1186,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_27(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7, SR8, SR9, SR10, SR11, SR12, SR13, SR14, SR15, SR16, SR17, SR18, SR19, SR20, SR21, SR22, SR23, SR24, SR25; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 26]; \
@@ -1195,27 +1205,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = SR10 = SR11 = SR12 = SR13 = SR14 = SR15 = SR16 = SR17 = SR18 = SR19 = SR20 = SR21 = SR22 = SR23 = SR24 = SR25 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -1327,16 +1337,17 @@
 	} \
 	delete [] SC0; \
 }
+
 #define DO_FEATHER_29(type, int_type, max, N); \
 { \
 	int offset = N / 2; \
-        int frame_w = input->get_w(); \
-        int frame_h = input->get_h(); \
-        int start_in = start_out - offset; \
-        int end_in = end_out + offset; \
-        type **in_rows = (type**)input->get_rows(); \
-        type **out_rows = (type**)output->get_rows(); \
-        int i,j; \
+	int frame_w = input->get_w(); \
+	int frame_h = input->get_h(); \
+	int start_in = start_out - offset; \
+	int end_in = end_out + offset; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	int i,j; \
 	int_type tmp1, tmp2; \
 	int_type SR0, SR1, SR2, SR3, SR4, SR5, SR6, SR7, SR8, SR9, SR10, SR11, SR12, SR13, SR14, SR15, SR16, SR17, SR18, SR19, SR20, SR21, SR22, SR23, SR24, SR25, SR26, SR27; \
 	int_type *SC0 = new int_type[(frame_w + offset * 2) * 28]; \
@@ -1345,27 +1356,27 @@
 	{ \
 		type *in_row; \
 		if (i < 0) \
-	           	in_row = in_rows[0]; \
+			in_row = in_rows[0]; \
 		else if (i >= frame_h) \
 			in_row = in_rows[frame_h - 1]; \
 		else \
 			in_row = in_rows[i]; \
 		SR0 = SR1 = SR2 = SR3 = SR4 = SR5 = SR6 = SR7 = SR8 = SR9 = SR10 = SR11 = SR12 = SR13 = SR14 = SR15 = SR16 = SR17 = SR18 = SR19 = SR20 = SR21 = SR22 = SR23 = SR24 = SR25 = SR26 = SR27 = 0; \
-              { \
-                        type *out_row; \
-                        if (i >= start_out + offset && i<= end_out + offset) \
-                        	out_row = out_rows[i - offset]; \
-                        else \
-                        	out_row = 0; \
+		{ \
+			type *out_row; \
+			if (i >= start_out + offset && i<= end_out + offset) \
+				out_row = out_rows[i - offset]; \
+			else \
+				out_row = 0; \
 			int_type *SC = SC0; \
 			for (j = 0; j < frame_w + offset * 2; j++) \
-                        { \
-                        	if (j < offset) \
-                           		tmp1 = in_row[0]; \
-                           	else if (j >= frame_w + offset) \
-                           		tmp1 = in_row[frame_w - 1]; \
-                           	else \
-                           		tmp1 = in_row[j - offset]; \
+			{ \
+				if (j < offset) \
+					tmp1 = in_row[0]; \
+				else if (j >= frame_w + offset) \
+					tmp1 = in_row[frame_w - 1]; \
+				else \
+					tmp1 = in_row[j - offset]; \
 				tmp2 = SR0 + tmp1; \
 				SR0 = tmp1; \
 				tmp1 = SR1 + tmp2; \
@@ -1490,123 +1501,97 @@
 #define DO_FEATHER_N(type, int_type, max, N) \
 { \
 	switch(input->get_color_model()) \
-        { \
-	        case BC_A8: \
-			switch (N) \
-			{ \
-				case 3: \
-					DO_FEATHER_3(unsigned char, uint16_t, max, 3); \
-					return 1; \
-					break; \
-				case 5: \
-					DO_FEATHER_5(unsigned char, uint16_t, max, 5); \
-					return 1; \
-					break; \
-				case 7: \
-					DO_FEATHER_7(unsigned char, uint32_t, max, 7); \
-					return 1; \
-					break; \
-				case 9: \
-					DO_FEATHER_9(unsigned char, uint32_t, max, 9); \
-					return 1; \
-					break; \
-				case 11: \
-					DO_FEATHER_11(unsigned char, uint32_t, max, 11); \
-					return 1; \
-					break; \
-				case 13: \
-					DO_FEATHER_13(unsigned char, uint32_t, max, 13); \
-					return 1; \
-					break; \
-				case 15: \
-					DO_FEATHER_15(unsigned char, uint64_t, max, 15); \
-					return 1; \
-					break; \
-				case 17: \
-					DO_FEATHER_17(unsigned char, uint64_t, max, 17); \
-					return 1; \
-					break; \
-				case 19: \
-					DO_FEATHER_19(unsigned char, uint64_t, max, 19); \
-					return 1; \
-					break; \
-				case 21: \
-					DO_FEATHER_21(unsigned char, uint64_t, max, 21); \
-					return 1; \
-					break; \
-				case 23: \
-					DO_FEATHER_23(unsigned char, uint64_t, max, 23); \
-					return 1; \
-					break; \
-				case 25: \
-					DO_FEATHER_25(unsigned char, uint64_t, max, 25); \
-					return 1; \
-					break; \
-				case 27: \
-					DO_FEATHER_27(unsigned char, uint64_t, max, 27); \
-					return 1; \
-					break; \
-				case 29: \
-					DO_FEATHER_29(unsigned char, uint64_t, max, 29); \
-					return 1; \
-					break; \
-				default: \
-					return 0; \
-			} \
-	        case BC_A16: \
-			switch (N) \
-			{ \
-				case 3: \
-					DO_FEATHER_3(uint16_t, uint32_t, max, 3); \
-					return 1; \
-					break; \
-				case 5: \
-					DO_FEATHER_5(uint16_t, uint32_t, max, 5); \
-					return 1; \
-					break; \
-				case 7: \
-					DO_FEATHER_7(uint16_t, uint32_t, max, 7); \
-					return 1; \
-					break; \
-				case 9: \
-					DO_FEATHER_9(uint16_t, uint32_t, max, 9); \
-					return 1; \
-					break; \
-				case 11: \
-					DO_FEATHER_11(uint16_t, uint64_t, max, 11); \
-					return 1; \
-					break; \
-				case 13: \
-					DO_FEATHER_13(uint16_t, uint64_t, max, 13); \
-					return 1; \
-					break; \
-				case 15: \
-					DO_FEATHER_15(uint16_t, uint64_t, max, 15); \
-					return 1; \
-					break; \
-				case 17: \
-					DO_FEATHER_17(uint16_t, uint64_t, max, 17); \
-					return 1; \
-					break; \
-				case 19: \
-					DO_FEATHER_19(uint16_t, uint64_t, max, 19); \
-					return 1; \
-					break; \
-				case 21: \
-					DO_FEATHER_21(uint16_t, uint64_t, max, 21); \
-					return 1; \
-					break; \
-				case 23: \
-					DO_FEATHER_23(uint16_t, uint64_t, max, 23); \
-					return 1; \
-					break; \
-				case 25: \
-					DO_FEATHER_25(uint16_t, uint64_t, max, 25); \
-					return 1; \
-					break; \
-				default: \
-					return 0; \
-			} \
+	{ \
+	case BC_A8: \
+		switch (N) \
+		{ \
+		case 3: \
+			DO_FEATHER_3(unsigned char, uint16_t, max, 3); \
+			return 1; \
+		case 5: \
+			DO_FEATHER_5(unsigned char, uint16_t, max, 5); \
+			return 1; \
+		case 7: \
+			DO_FEATHER_7(unsigned char, uint32_t, max, 7); \
+			return 1; \
+		case 9: \
+			DO_FEATHER_9(unsigned char, uint32_t, max, 9); \
+			return 1; \
+		case 11: \
+			DO_FEATHER_11(unsigned char, uint32_t, max, 11); \
+			return 1; \
+		case 13: \
+			DO_FEATHER_13(unsigned char, uint32_t, max, 13); \
+			return 1; \
+		case 15: \
+			DO_FEATHER_15(unsigned char, uint64_t, max, 15); \
+			return 1; \
+		case 17: \
+			DO_FEATHER_17(unsigned char, uint64_t, max, 17); \
+			return 1; \
+		case 19: \
+			DO_FEATHER_19(unsigned char, uint64_t, max, 19); \
+			return 1; \
+		case 21: \
+			DO_FEATHER_21(unsigned char, uint64_t, max, 21); \
+			return 1; \
+		case 23: \
+			DO_FEATHER_23(unsigned char, uint64_t, max, 23); \
+			return 1; \
+		case 25: \
+			DO_FEATHER_25(unsigned char, uint64_t, max, 25); \
+			return 1; \
+		case 27: \
+			DO_FEATHER_27(unsigned char, uint64_t, max, 27); \
+			return 1; \
+		case 29: \
+			DO_FEATHER_29(unsigned char, uint64_t, max, 29); \
+			return 1; \
+		default: \
+			return 0; \
+		} \
+	case BC_A16: \
+		switch (N) \
+		{ \
+		case 3: \
+			DO_FEATHER_3(uint16_t, uint32_t, max, 3); \
+			return 1; \
+		case 5: \
+			DO_FEATHER_5(uint16_t, uint32_t, max, 5); \
+			return 1; \
+		case 7: \
+			DO_FEATHER_7(uint16_t, uint32_t, max, 7); \
+			return 1; \
+		case 9: \
+			DO_FEATHER_9(uint16_t, uint32_t, max, 9); \
+			return 1; \
+		case 11: \
+			DO_FEATHER_11(uint16_t, uint64_t, max, 11); \
+			return 1; \
+		case 13: \
+			DO_FEATHER_13(uint16_t, uint64_t, max, 13); \
+			return 1; \
+		case 15: \
+			DO_FEATHER_15(uint16_t, uint64_t, max, 15); \
+			return 1; \
+		case 17: \
+			DO_FEATHER_17(uint16_t, uint64_t, max, 17); \
+			return 1; \
+		case 19: \
+			DO_FEATHER_19(uint16_t, uint64_t, max, 19); \
+			return 1; \
+		case 21: \
+			DO_FEATHER_21(uint16_t, uint64_t, max, 21); \
+			return 1; \
+		case 23: \
+			DO_FEATHER_23(uint16_t, uint64_t, max, 23); \
+			return 1; \
+		case 25: \
+			DO_FEATHER_25(uint16_t, uint64_t, max, 25); \
+			return 1; \
+		default: \
+			return 0; \
+		} \
 	} \
 	return 0; \
-} 
+}

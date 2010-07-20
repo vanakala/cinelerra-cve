@@ -43,10 +43,8 @@ class LoadPackage
 public:
 	LoadPackage();
 	virtual ~LoadPackage();
-	
+
 	Condition *completion_lock;
-// Range to search in the total scan area
-//	int pixel1, pixel2;
 };
 
 
@@ -112,8 +110,6 @@ public:
 	void create_packages();
 
 
-
-
 private:
 	int current_package;
 	LoadPackage **packages;
@@ -125,8 +121,4 @@ private:
 	Mutex *client_lock;
 };
 
-
-
 #endif
-
-
