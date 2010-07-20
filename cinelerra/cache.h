@@ -72,12 +72,6 @@ public:
 
 	friend class CICacheItem;
 
-// Enter a new file into the cache which is already open.
-// If the file doesn't exist return the arguments.
-// If the file exists delete the arguments and return the file which exists.
-//	void update(File* &file);
-//	void set_edl(EDL *edl);
-
 // open it, lock it and add it to the cache if it isn't here already
 // If it's already checked out, the value of block causes it to wait
 // until it's checked in.
@@ -127,12 +121,6 @@ private:
 	EDL *edl;
 	Preferences *preferences;
 };
-
-
-
-
-
-
 
 
 #endif

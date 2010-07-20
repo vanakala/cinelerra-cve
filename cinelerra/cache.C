@@ -50,16 +50,12 @@ CICache::~CICache()
 	while(last)
 	{
 		CICacheItem *item = last;
-//printf("CICache::~CICache: %s\n", item->asset->path);
 		remove_pointer(item);
 		Garbage::delete_object(item);
 	}
 	delete check_out_lock;
 	delete total_lock;
 }
-
-
-
 
 
 
@@ -167,7 +163,6 @@ void CICache::remove_all()
 // Really need to give the user the CacheItem.
 		if(!current->checked_out)
 		{
-//printf("CICache::remove_all: %s\n", current->asset->path);
 			remove_pointer(current);
 			Garbage::delete_object(current);
 		}
@@ -184,7 +179,6 @@ int CICache::delete_entry(char *path)
 		{
 			if(!current->checked_out)
 			{
-//printf("CICache::delete_entry: %s\n", current->asset->path);
 				remove_pointer(current);
 				Garbage::delete_object(current);
 				break;
@@ -207,7 +201,6 @@ int CICache::delete_entry(Asset *asset)
 		{
 			if(!current->checked_out)
 			{
-//printf("CICache::delete_entry: %s\n", current->asset->path);
 				remove_pointer(current);
 				Garbage::delete_object(current);
 				break;
@@ -230,10 +223,9 @@ int CICache::age()
 	do
 	{
 		memory_usage = get_memory_usage(1);
-		
+
 		if(memory_usage > preferences->cache_size)
 		{
-//printf("CICache::age 3 %p %lld %lld\n", this, memory_usage, preferences->cache_size);
 			result = delete_oldest();
 		}
 		prev_memory_usage = memory_usage;
@@ -241,7 +233,6 @@ int CICache::age()
 	}while(prev_memory_usage != memory_usage &&
 		memory_usage > preferences->cache_size && 
 		!result);
-
 }
 
 int64_t CICache::get_memory_usage(int use_lock)
@@ -303,24 +294,20 @@ int CICache::delete_oldest()
 // Delete the file if cache already empty and not checked out.
 			if(!oldest->checked_out)
 			{
-
 				remove_pointer(oldest);
-
 				Garbage::delete_object(oldest);
-
 			}
-
 		}
 
 		total_lock->unlock();
 // success
-		return 0;    
+		return 0;
 	}
 	else
 	{
 		total_lock->unlock();
 // nothing was old enough to delete
-		return 1;   
+		return 1;
 	}
 }
 
@@ -342,12 +329,6 @@ int CICache::dump()
 
 
 
-
-
-
-
-
-
 CICacheItem::CICacheItem()
 : ListItem<CICacheItem>(), GarbageObject("CICacheItem")
 {
@@ -363,13 +344,11 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 	this->asset = new Asset;
 
 	item_lock = new Condition(1, "CICacheItem::item_lock", 0);
-	
 
 // Must copy Asset since this belongs to an EDL which won't exist forever.
 	*this->asset = *asset;
 	this->cache = cache;
 	checked_out = 0;
-
 
 	file = new File;
 	file->set_processors(cache->preferences->processors);
@@ -383,13 +362,9 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 // Copy decoding parameters from session to asset so file can see them.
 	this->asset->divx_use_deblocking = edl->session->mpeg4_deblock;
 
-
-
 	if(result = file->open_file(cache->preferences, this->asset, 1, 0, -1, -1))
 	{
-SET_TRACE
 		delete file;
-SET_TRACE
 		file = 0;
 	}
 

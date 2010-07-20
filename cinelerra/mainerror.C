@@ -41,18 +41,18 @@ MainError* MainError::main_error = 0;
 
 MainErrorGUI::MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y)
  : BC_Window(PROGRAM_NAME ": Errors",
-        x,
-        y,
-        mwindow->session->ewindow_w,
-        mwindow->session->ewindow_h,
-        50,
-        50,
-        1,
-        0,
-        1,
-        -1,
-        "",
-        1)
+	x,
+	y,
+	mwindow->session->ewindow_w,
+	mwindow->session->ewindow_h,
+	50,
+	50,
+	1,
+	0,
+	1,
+	-1,
+	"",
+	1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -71,19 +71,19 @@ void MainErrorGUI::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("The following errors occurred:")));
 	y += title->get_h() + 5;
 	add_subwindow(list = new BC_ListBox(x,
-                y,
-                get_w() - 20,
-                button->get_y() - y - 5,
-                LISTBOX_TEXT,                   // Display text list or icons
-                &thread->errors, // Each column has an ArrayList of BC_ListBoxItems.
-                0,             // Titles for columns.  Set to 0 for no titles
-                0,                // width of each column
-                1,                      // Total columns.  Only 1 in icon mode
-                0,                    // Pixel of top of window.
-                0,                     // If this listbox is a popup window with a button
-                LISTBOX_SINGLE,  // Select one item or multiple items
-                ICON_LEFT,        // Position of icon relative to text of each item
-                0));
+		y,
+		get_w() - 20,
+		button->get_y() - y - 5,
+		LISTBOX_TEXT,          // Display text list or icons
+		&thread->errors,       // Each column has an ArrayList of BC_ListBoxItems.
+		0,                     // Titles for columns.  Set to 0 for no titles
+		0,                     // width of each column
+		1,                     // Total columns.  Only 1 in icon mode
+		0,                     // Pixel of top of window.
+		0,                     // If this listbox is a popup window with a button
+		LISTBOX_SINGLE,        // Select one item or multiple items
+		ICON_LEFT,             // Position of icon relative to text of each item
+		0));
 	show_window();
 }
 
@@ -126,8 +126,8 @@ MainError::~MainError()
 BC_Window* MainError::new_gui()
 {
 	BC_DisplayInfo display_info;
-        int x = display_info.get_abs_cursor_x();
-        int y = display_info.get_abs_cursor_y();
+	int x = display_info.get_abs_cursor_x();
+	int y = display_info.get_abs_cursor_y();
 
 	MainErrorGUI *gui = new MainErrorGUI(mwindow, this, x, y);
 	gui->create_objects();
@@ -322,4 +322,3 @@ int MainErrorBox::create_objects(const char *text)
 	add_tool(new BC_OKButton(x, y));
 	return 0;
 }
-

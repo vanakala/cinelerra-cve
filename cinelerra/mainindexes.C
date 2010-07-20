@@ -116,7 +116,6 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 // Put copy of asset in stack, not the real thing.
 	if(!got_it)
 	{
-//printf("MainIndexes::add_next_asset 3\n");
 		Asset *new_asset = new Asset;
 		*new_asset = *asset;
 // If the asset existed and was overwritten, the status will be READY.
@@ -152,24 +151,16 @@ void MainIndexes::stop_loop()
 
 void MainIndexes::start_build()
 {
-//printf("MainIndexes::start_build 1\n");
 	interrupt_flag = 0;
-// Locked up when indexes were already being built and an asset was 
-// pasted.
-//	interrupt_lock.lock();
 	input_lock->unlock();
 }
 
 void MainIndexes::interrupt_build()
 {
-//printf("MainIndexes::interrupt_build 1\n");
 	interrupt_flag = 1;
 	indexfile->interrupt_index();
-//printf("MainIndexes::interrupt_build 2\n");
 	interrupt_lock->lock("MainIndexes::interrupt_build");
-//printf("MainIndexes::interrupt_build 3\n");
 	interrupt_lock->unlock();
-//printf("MainIndexes::interrupt_build 4\n");
 }
 
 void MainIndexes::load_next_assets()
@@ -198,25 +189,15 @@ void MainIndexes::run()
 		load_next_assets();
 		interrupt_flag = 0;
 
-
-
-
-
-
 // test index of each asset
 		MainProgressBar *progress = 0;
 		for(int i = 0; i < current_assets.total && !interrupt_flag; i++)
 		{
 			Asset *current_asset = current_assets.values[i];
-//printf("MainIndexes::run 3 %s %d %d\n", current_asset->path, current_asset->index_status, current_asset->audio_data);
 
 			if(current_asset->index_status == INDEX_NOTTESTED && 
 				current_asset->audio_data)
 			{
-
-
-
-
 
 // Doesn't exist if this returns 1.
 				if(indexfile->open_index(current_asset))
@@ -229,17 +210,12 @@ void MainIndexes::run()
 						if(mwindow->gui) mwindow->gui->unlock_window();
 					}
 
-//printf("MainIndexes::run 5 %p %s\n", current_asset, current_asset->path);
-
 					indexfile->create_index(current_asset, progress);
-//printf("MainIndexes::run 6 %p %s\n", current_asset, current_asset->path);
 					if(progress->is_cancelled()) interrupt_flag = 1;
-//printf("MainIndexes::run 7 %p %s\n", current_asset, current_asset->path);
 				}
 				else
 // Exists.  Update real thing.
 				{
-//printf("MainIndexes::run 8\n");
 					if(current_asset->index_status == INDEX_NOTTESTED)
 					{
 						current_asset->index_status = INDEX_READY;
@@ -249,11 +225,7 @@ void MainIndexes::run()
 					}
 					indexfile->close_index();
 				}
-
-
-//printf("MainIndexes::run 8\n");
 			}
-//printf("MainIndexes::run 9\n");
 		}
 
 		if(progress)     // progress box is only created when an index is built
@@ -265,12 +237,6 @@ void MainIndexes::run()
 			progress = 0;
 		}
 
-
-
-
-
-
 		interrupt_lock->unlock();
 	}
 }
-

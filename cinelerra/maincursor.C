@@ -44,7 +44,6 @@ MainCursor::~MainCursor()
 
 void MainCursor::create_objects()
 {
-//	draw();
 }
 
 void MainCursor::focus_in_event()
@@ -59,7 +58,6 @@ void MainCursor::focus_out_event()
 
 void MainCursor::activate()
 {
-//printf("MainCursor::activate 1 %d\n", BC_WindowBase::get_resources()->blink_rate);
 	if(!active)
 	{
 		active = 1;
@@ -103,7 +101,6 @@ void MainCursor::draw(int do_plugintoggles)
 		selectionend = mwindow->edl->local_session->get_selectionend(1);
 		view_start = mwindow->edl->local_session->view_start;
 		zoom_sample = mwindow->edl->local_session->zoom_sample;
-//printf("MainCursor::draw %f %f\n", selectionstart, selectionend);
 
 		pixel1 = Units::to_int64((selectionstart * 
 			mwindow->edl->session->sample_rate / 
@@ -116,7 +113,6 @@ void MainCursor::draw(int do_plugintoggles)
 		if(pixel1 < -10) pixel1 = -10;
 		if(pixel2 > gui->canvas->get_w() + 10) pixel2 = gui->canvas->get_w() + 10;
 		if(pixel2 < pixel1) pixel2 = pixel1;
-//printf("MainCursor::draw 2\n");
 	}
 
 	gui->canvas->set_color(WHITE);
@@ -130,8 +126,8 @@ void MainCursor::draw(int do_plugintoggles)
 // Draw the cursor in a new location
 void MainCursor::update()
 {
-	int64_t old_pixel1 = pixel1;
-	int64_t old_pixel2 = pixel2;
+	samplenum old_pixel1 = pixel1;
+	samplenum old_pixel2 = pixel2;
 
 	if(visible)
 	{

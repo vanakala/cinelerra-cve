@@ -102,13 +102,12 @@ void FormatPresets::create_objects()
 	item->edl->session->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 	preset_items.append(item);
 
-
 	item = new FormatPresetItem(mwindow, this, _("PAL"));
-  	item->edl->session->audio_channels = 2;
-  	item->edl->session->audio_tracks = 2;
-  	item->edl->session->sample_rate = 48000;
-  	item->edl->session->video_channels = 1;
-  	item->edl->session->video_tracks = 1;
+	item->edl->session->audio_channels = 2;
+	item->edl->session->audio_tracks = 2;
+	item->edl->session->sample_rate = 48000;
+	item->edl->session->video_channels = 1;
+	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = 25;
 	item->edl->session->output_w = 720;
 	item->edl->session->output_h = 576;
@@ -116,8 +115,6 @@ void FormatPresets::create_objects()
 	item->edl->session->aspect_h = 3;
 	item->edl->session->interlace_mode = BC_ILACE_MODE_BOTTOM_FIRST;
 	preset_items.append(item);
-
-
 
 	item = new FormatPresetItem(mwindow, this, _("PAL Half"));
 	item->edl->session->audio_channels = 2;
@@ -133,14 +130,12 @@ void FormatPresets::create_objects()
 	item->edl->session->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 	preset_items.append(item);
 
-
-
 	item = new FormatPresetItem(mwindow, this, _("PAL Progressive"));
-  	item->edl->session->audio_channels = 2;
-  	item->edl->session->audio_tracks = 2;
-  	item->edl->session->sample_rate = 48000;
-  	item->edl->session->video_channels = 1;
-  	item->edl->session->video_tracks = 1;
+	item->edl->session->audio_channels = 2;
+	item->edl->session->audio_tracks = 2;
+	item->edl->session->sample_rate = 48000;
+	item->edl->session->video_channels = 1;
+	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = 50;
 	item->edl->session->output_w = 720;
 	item->edl->session->output_h = 576;
@@ -149,7 +144,6 @@ void FormatPresets::create_objects()
 	item->edl->session->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 	preset_items.append(item);
 
-
 	item = new FormatPresetItem(mwindow, this, _("1080P/60"));
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
@@ -157,8 +151,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = (double)60000.0 / 1001;
-// 	item->edl->session->track_w = 1920;
-// 	item->edl->session->track_h = 1080;
 	item->edl->session->output_w = 1920;
 	item->edl->session->output_h = 1080;
 	item->edl->session->aspect_w = 16;
@@ -173,8 +165,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = 24;
-// 	item->edl->session->track_w = 1920;
-// 	item->edl->session->track_h = 1080;
 	item->edl->session->output_w = 1920;
 	item->edl->session->output_h = 1080;
 	item->edl->session->aspect_w = 16;
@@ -189,8 +179,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 1920;
-// 	item->edl->session->track_h = 1080;
 	item->edl->session->output_w = 1920;
 	item->edl->session->output_h = 1080;
 	item->edl->session->aspect_w = 16;
@@ -209,11 +197,8 @@ void FormatPresets::create_objects()
 	item->edl->session->output_h = 720;
 	item->edl->session->aspect_w = 16;
 	item->edl->session->aspect_h = 9;
-	item->edl->session->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;	
+	item->edl->session->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 	preset_items.append(item);
-
-
-
 
 	item = new FormatPresetItem(mwindow, this, _("Internet"));
 	item->edl->session->audio_channels = 1;
@@ -257,12 +242,9 @@ void FormatPresets::create_objects()
 	item->edl->session->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 	preset_items.append(item);
 
-
-
 	gui_base->add_subwindow(new BC_Title(x, y, _("Presets:")));
 	int x1 = x;
 	y += 20;
-
 
 	gui_base->add_subwindow(text = new FormatPresetsText(mwindow, 
 		this, 
@@ -320,14 +302,12 @@ EDL* FormatPresets::get_edl()
 
 
 
-
-
 FormatPresetsText::FormatPresetsText(MWindow *mwindow, 
 	FormatPresets *gui,
 	int x, 
 	int y)
  : BC_TextBox(x, 
- 	y, 
+	y,
 	200, 
 	1, 
 	gui->get_preset_text(gui->get_edl()))
@@ -344,27 +324,21 @@ int FormatPresetsText::handle_event()
 
 
 
-
-
-
-
-
-
 FormatPresetsPulldown::FormatPresetsPulldown(MWindow *mwindow, 
 	FormatPresets *gui, 
 	int x, 
 	int y)
  : BC_ListBox(x, 
-		y, 
-		200, 
-		250,
-		LISTBOX_TEXT,                   // Display text list or icons
-		(ArrayList<BC_ListBoxItem*>*)&gui->preset_items, // Each column has an ArrayList of BC_ListBoxItems.
-		0,             // Titles for columns.  Set to 0 for no titles
-		0,                // width of each column
-		1,                      // Total columns.
-		0,                    // Pixel of top of window.
-		1)
+	y, 
+	200, 
+	250,
+	LISTBOX_TEXT,       // Display text list or icons
+	(ArrayList<BC_ListBoxItem*>*)&gui->preset_items, // Each column has an ArrayList of BC_ListBoxItems.
+	0,                  // Titles for columns.  Set to 0 for no titles
+	0,                  // width of each column
+	1,                  // Total columns.
+	0,                  // Pixel of top of window.
+	1)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -396,5 +370,4 @@ FormatPresetItem::~FormatPresetItem()
 {
 	delete edl;
 }
-
 
