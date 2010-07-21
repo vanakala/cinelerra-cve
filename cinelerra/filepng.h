@@ -22,7 +22,7 @@
 #ifndef FILEPNG_H
 #define FILEPNG_H
 
-
+#include "datatype.h"
 #include "file.inc"
 #include "filebase.h"
 #include "filelist.h"
@@ -44,12 +44,10 @@ public:
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
-	int can_copy_from(Edit *edit, int64_t position);
+	int can_copy_from(Edit *edit, framenum position);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
 	int read_frame_header(char *path);
-
-
 
 	int native_cmodel;
 // For decoding only
@@ -62,7 +60,7 @@ class PNGUnit : public FrameWriterUnit
 public:
 	PNGUnit(FilePNG *file, FrameWriter *writer);
 	~PNGUnit();
-	
+
 	FilePNG *file;
 	VFrame *temp_frame;
 };

@@ -51,22 +51,18 @@ int FilePNG::check_sig(Asset *asset)
 
 	if(stream)
 	{
-
-//printf("FilePNG::check_sig 1\n");
 		char test[16];
 		l = fread(test, 16, 1, stream);
 		fclose(stream);
 		if (l) return 0;
 		if(png_check_sig((unsigned char*)test, 8))
 		{
-//printf("FilePNG::check_sig 1\n");
 			return 1;
 		}
 		else
 		if(test[0] == 'P' && test[1] == 'N' && test[2] == 'G' && 
 			test[3] == 'L' && test[4] == 'I' && test[5] == 'S' && test[6] == 'T')
 		{
-//printf("FilePNG::check_sig 1\n");
 			return 1;
 		}
 	}
@@ -92,9 +88,7 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 }
 
 
-
-
-int FilePNG::can_copy_from(Edit *edit, int64_t position)
+int FilePNG::can_copy_from(Edit *edit, framenum position)
 {
 	if(edit->asset->format == FILE_MOV)
 	{
@@ -102,7 +96,7 @@ int FilePNG::can_copy_from(Edit *edit, int64_t position)
 	}
 	else
 	if(edit->asset->format == FILE_PNG || 
-		edit->asset->format == FILE_PNG_LIST)
+			edit->asset->format == FILE_PNG_LIST)
 		return 1;
 
 	return 0;
@@ -112,18 +106,18 @@ int FilePNG::can_copy_from(Edit *edit, int64_t position)
 int FilePNG::colormodel_supported(int colormodel)
 {
 	if (((colormodel == BC_RGBA8888) && (native_cmodel == BC_RGBA16161616))
-	    || ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA16161616))
-	    || (colormodel == BC_RGB888))
+		|| ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA16161616))
+		|| (colormodel == BC_RGB888))
 	{
-	    return colormodel;
+		return colormodel;
 	}
 	else if ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA8888))
 	{
-	    return BC_RGB888;
+		return BC_RGB888;
 	}
 	else
 	{
-	    return native_cmodel;
+		return native_cmodel;
 	}
 }
 
@@ -136,16 +130,13 @@ int FilePNG::get_best_colormodel(Asset *asset, int driver)
 		return BC_RGB888;
 }
 
-
-
-
 int FilePNG::read_frame_header(char *path)
 {
 	int result = 0;
 	int color_type;
 	int color_depth;
 	int num_trans = 0;
-	
+
 	FILE *stream;
 
 	if(!(stream = fopen(path, "rb")))
@@ -166,49 +157,47 @@ int FilePNG::read_frame_header(char *path)
 
 	asset->width = png_get_image_width(png_ptr, info_ptr);
 	asset->height = png_get_image_height(png_ptr, info_ptr);
-	
+
 	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 
 	color_type = png_get_color_type(png_ptr, info_ptr);
 	color_depth = png_get_bit_depth(png_ptr,info_ptr);
-	
+
 	png_get_tRNS(png_ptr, info_ptr, NULL, &num_trans, NULL);
-	
+
 	if (color_depth == 16)
 	{
-	    if (color_type & PNG_COLOR_MASK_ALPHA)
-	    {
-	        native_cmodel = BC_RGBA16161616;
-	    }
-	    else
-	    {
-	        native_cmodel = BC_RGB161616;
-	    }
+		if (color_type & PNG_COLOR_MASK_ALPHA)
+		{
+			native_cmodel = BC_RGBA16161616;
+		}
+		else
+		{
+			native_cmodel = BC_RGB161616;
+		}
 	}
 	else 
 	if ((color_type & PNG_COLOR_MASK_ALPHA)
-	    || (num_trans > 0))
+		|| (num_trans > 0))
 	{
-	    native_cmodel = BC_RGBA8888;
+		native_cmodel = BC_RGBA8888;
 	}
 	else
 	{
-	    native_cmodel = BC_RGB888;
+		native_cmodel = BC_RGB888;
 	}
 
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 	fclose(stream);
-	
-	
-	
+
 	return result;
 }
 
 
 
 
-static void read_function(png_structp png_ptr, 
+static void read_function(png_structp png_ptr,
 	png_bytep data, 
 	png_uint_32 length)
 {
@@ -245,29 +234,27 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	VFrame *output_frame;
 	data->set_compressed_size(0);
 
-//printf("FilePNG::write_frame 1\n");
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	info_ptr = png_create_info_struct(png_ptr);
 	png_set_write_fn(png_ptr,
-               data, 
-			   (png_rw_ptr)write_function,
-               (png_flush_ptr)flush_function);
+			data,
+			(png_rw_ptr)write_function,
+			(png_flush_ptr)flush_function);
 	png_set_compression_level(png_ptr, 9);
 
 	png_set_IHDR(png_ptr, 
 		info_ptr, 
 		asset->width, 
 		asset->height,
-    	8, 
+		8,
 		asset->png_use_alpha ? 
-		  PNG_COLOR_TYPE_RGB_ALPHA : 
-		  PNG_COLOR_TYPE_RGB, 
+		PNG_COLOR_TYPE_RGB_ALPHA :
+		PNG_COLOR_TYPE_RGB, 
 		PNG_INTERLACE_NONE, 
 		PNG_COMPRESSION_TYPE_DEFAULT, 
 		PNG_FILTER_TYPE_DEFAULT);
 	png_write_info(png_ptr, info_ptr);
 
-//printf("FilePNG::write_frame 1\n");
 	native_cmodel = asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888;
 	if(frame->get_color_model() != native_cmodel)
 	{
@@ -297,18 +284,16 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
 			asset->width,       /* For planar use the luma rowspan */
 			asset->height);
-		
+
 		output_frame = png_unit->temp_frame;
 	}
 	else
 		output_frame = frame;
 
 
-//printf("FilePNG::write_frame 2\n");
 	png_write_image(png_ptr, output_frame->get_rows());
 	png_write_end(png_ptr, info_ptr);
 	png_destroy_write_struct(&png_ptr, &info_ptr);
-//printf("FilePNG::write_frame 3 %d\n", data->get_compressed_size());
 
 	return result;
 }
@@ -324,81 +309,77 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	int colormodel;
 	int size = input->get_compressed_size();
 	input->set_compressed_size(0);
-	
-	
-	//printf("FilePNG::read_frame 1 %d %d\n", native_cmodel, output->get_color_model());
+
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	info_ptr = png_create_info_struct(png_ptr);
 	png_set_read_fn(png_ptr, input, (png_rw_ptr)read_function);
 	png_read_info(png_ptr, info_ptr);
 
- 	int png_color_type = png_get_color_type(png_ptr, info_ptr);
- 	if (png_color_type == PNG_COLOR_TYPE_GRAY ||
-         	png_color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
- 	{
- 		png_set_gray_to_rgb(png_ptr);
- 	}
+	int png_color_type = png_get_color_type(png_ptr, info_ptr);
+	if (png_color_type == PNG_COLOR_TYPE_GRAY ||
+		png_color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+	{
+		png_set_gray_to_rgb(png_ptr);
+	}
 
 	colormodel = output->get_color_model();
 	color_type = png_get_color_type(png_ptr, info_ptr);
 	color_depth = png_get_bit_depth(png_ptr,info_ptr);
-	
+
 	if (((native_cmodel == BC_RGBA16161616)||(native_cmodel == BC_RGB161616))
-	    && ((colormodel == BC_RGBA8888)||(colormodel == BC_RGB888)))
+		&& ((colormodel == BC_RGBA8888)||(colormodel == BC_RGB888)))
 	{
 	    png_set_strip_16(png_ptr);
 	}
 
-	/* If we're dropping the alpha channel, use the background color of the image
-	   otherwise, use black */
+/* If we're dropping the alpha channel, use the background color of the image
+   otherwise, use black */
 	if (((native_cmodel == BC_RGBA16161616)||(native_cmodel == BC_RGBA8888))
-	    && ((colormodel == BC_RGB161616)||(colormodel == BC_RGB888)))
+		&& ((colormodel == BC_RGB161616)||(colormodel == BC_RGB888)))
 	{
-	    png_color_16 my_background;
-	    png_color_16p image_background;
-	    
-	    memset(&my_background,0,sizeof(png_color_16));
-	    
-	    if (png_get_bKGD(png_ptr, info_ptr, &image_background))
-	    {
-	        png_set_background(png_ptr, image_background, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
-	    }
-	    else
-	    {
-	        png_set_background(png_ptr, &my_background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-	    }
+		png_color_16 my_background;
+		png_color_16p image_background;
+
+		memset(&my_background, 0, sizeof(png_color_16));
+
+		if (png_get_bKGD(png_ptr, info_ptr, &image_background))
+		{
+			png_set_background(png_ptr, image_background, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
+		}
+		else
+		{
+			png_set_background(png_ptr, &my_background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+		}
 	}
-	
+
 	/* Little endian */
 	if ((color_depth == 16)
-	    &&((colormodel == BC_RGBA16161616)||(colormodel == BC_RGB161616)))
+		&&((colormodel == BC_RGBA16161616)||(colormodel == BC_RGB161616)))
 	{
-	    png_set_swap(png_ptr);
+		png_set_swap(png_ptr);
 	}
-	
+
 	if (!(color_type & PNG_COLOR_MASK_COLOR))
 	{
-	    png_set_gray_to_rgb(png_ptr);
+		png_set_gray_to_rgb(png_ptr);
 	}
-	
+
 	if (color_type & PNG_COLOR_MASK_PALETTE)
 	{
-	    png_set_palette_to_rgb(png_ptr);
+		png_set_palette_to_rgb(png_ptr);
 	}
-	
+
 	if (color_depth <= 8)
 	{
-	    png_set_expand(png_ptr);
+		png_set_expand(png_ptr);
 	}
 
 /* read the image */
 	png_read_image(png_ptr, output->get_rows());
-//printf("FilePNG::read_frame 3\n");
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
 	input->set_compressed_size(size);
 
-//printf("FilePNG::read_frame 4\n");
 	return result;
 }
 
@@ -409,38 +390,23 @@ FrameWriterUnit* FilePNG::new_writer_unit(FrameWriter *writer)
 
 
 
-
-
-
-
-
-
-
-
-
 PNGUnit::PNGUnit(FilePNG *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
 {
 	this->file = file;
 	temp_frame = 0;
 }
+
 PNGUnit::~PNGUnit()
 {
 	if(temp_frame) delete temp_frame;
 }
 
 
-
-
-
-
-
-
-
 PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	200,
 	100)
 {
@@ -478,6 +444,3 @@ int PNGUseAlpha::handle_event()
 	gui->asset->png_use_alpha = get_value();
 	return 1;
 }
-
-
-

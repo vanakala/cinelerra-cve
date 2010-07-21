@@ -34,7 +34,7 @@ FileFormat::FileFormat(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": File Format", 
 		mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1),
- 		375, 
+		375, 
 		300, 
 		375, 
 		300)
@@ -80,7 +80,7 @@ int FileFormat::create_objects_(char *string2)
 	sprintf(string, "%d", asset->sample_rate);
 	add_subwindow(rate_button = new FileFormatRate(x2, y, this, string));
 	add_subwindow(new SampleRatePulldown(mwindow, rate_button, x2 + 100, y));
-	
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Bits:")));
 	bitspopup = new BitsPopup(this, 
@@ -93,22 +93,21 @@ int FileFormat::create_objects_(char *string2)
 		0, 
 		1);
 	bitspopup->create_objects();
-	
+
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Header length:")));
 	sprintf(string, "%d", asset->header);
 	add_subwindow(header_button = new FileFormatHeader(x2, y, this, string));
-	
+
 	y += 30;
 
-//printf("FileFormat::create_objects_ 1 %d\n", asset->byte_order);
 	add_subwindow(new BC_Title(x, y, _("Byte order:")));
 	add_subwindow(lohi = new FileFormatByteOrderLOHI(x2, y, this, asset->byte_order));
 	add_subwindow(hilo = new FileFormatByteOrderHILO(x2 + 70, y, this, !asset->byte_order));
-	
+
 	y += 30;
 	add_subwindow(signed_button = new FileFormatSigned(x, y, this, asset->signed_));
-	
+
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	return 0;
@@ -116,7 +115,7 @@ int FileFormat::create_objects_(char *string2)
 
 FileFormatChannels::FileFormatChannels(int x, int y, FileFormat *fwindow, char *text)
  : BC_TumbleTextBox(fwindow, 
- 	(int)atol(text), 
+	(int)atol(text), 
 	(int)1, 
 	(int)MAXCHANNELS, 
 	x, 

@@ -180,9 +180,6 @@ int FileCR2::read_frame(VFrame *frame)
 
 	frame->get_params()->update("DCRAW_MATRIX", string);
 
-// printf("FileCR2::read_frame\n");
-// frame->dump_params();
-
 	cr2_mutex.unlock();
 	return 0;
 }

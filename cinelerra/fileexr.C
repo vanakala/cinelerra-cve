@@ -64,9 +64,9 @@ public:
 	EXROStream(VFrame *data);
 	~EXROStream();
 
-    virtual void write(const char c[], int n);
-    virtual Imf::Int64 tellp();
-    virtual void seekp(Imf::Int64 pos);
+	virtual void write(const char c[], int n);
+	virtual Imf::Int64 tellp();
+	virtual void seekp(Imf::Int64 pos);
 
 private:
 	VFrame *data;
@@ -120,14 +120,6 @@ void EXRIStream::clear()
 
 
 
-
-
-
-
-
-
-
-
 EXROStream::EXROStream(VFrame *data)
  : Imf::OStream("mypath")
 {
@@ -160,14 +152,6 @@ void EXROStream::seekp(Imf::Int64 pos)
 
 
 
-
-
-
-
-
-
-
-
 FileEXR::FileEXR(Asset *asset, File *file)
  : FileList(asset, file, "EXRLIST", ".exr", FILE_EXR, FILE_EXR_LIST)
 {
@@ -189,12 +173,12 @@ const char* FileEXR::compression_to_str(int compression)
 {
 	switch(compression)
 	{
-		case FileEXR::NONE: return "None"; break;
-		case FileEXR::PIZ: return "PIZ"; break;
-		case FileEXR::ZIP: return "ZIP"; break;
-		case FileEXR::ZIPS: return "ZIPS"; break;
-		case FileEXR::RLE: return "RLE"; break;
-		case FileEXR::PXR24: return "PXR24"; break;
+	case FileEXR::NONE: return "None"; break;
+	case FileEXR::PIZ: return "PIZ"; break;
+	case FileEXR::ZIP: return "ZIP"; break;
+	case FileEXR::ZIPS: return "ZIPS"; break;
+	case FileEXR::RLE: return "RLE"; break;
+	case FileEXR::PXR24: return "PXR24"; break;
 	}
 	return "None";
 }
@@ -203,29 +187,29 @@ int FileEXR::compression_to_exr(int compression)
 {
 	switch(compression)
 	{
-		case FileEXR::NONE: return (int)Imf::NO_COMPRESSION; break;
-		case FileEXR::PIZ: return (int)Imf::PIZ_COMPRESSION; break;
-		case FileEXR::ZIP: return (int)Imf::ZIP_COMPRESSION; break;
-		case FileEXR::ZIPS: return (int)Imf::ZIPS_COMPRESSION; break;
-		case FileEXR::RLE: return (int)Imf::RLE_COMPRESSION; break;
-		case FileEXR::PXR24: return (int)Imf::PXR24_COMPRESSION; break;
+	case FileEXR::NONE: return (int)Imf::NO_COMPRESSION; break;
+	case FileEXR::PIZ: return (int)Imf::PIZ_COMPRESSION; break;
+	case FileEXR::ZIP: return (int)Imf::ZIP_COMPRESSION; break;
+	case FileEXR::ZIPS: return (int)Imf::ZIPS_COMPRESSION; break;
+	case FileEXR::RLE: return (int)Imf::RLE_COMPRESSION; break;
+	case FileEXR::PXR24: return (int)Imf::PXR24_COMPRESSION; break;
 	}
 	return Imf::NO_COMPRESSION;
 }
 
 int FileEXR::str_to_compression(const char *string)
 {
-	if(!strcmp(compression_to_str(FileEXR::NONE), string)) 	
+	if(!strcmp(compression_to_str(FileEXR::NONE), string))
 		return FileEXR::NONE;
-	if(!strcmp(compression_to_str(FileEXR::PIZ), string)) 	
+	if(!strcmp(compression_to_str(FileEXR::PIZ), string))
 		return FileEXR::PIZ;
-	if(!strcmp(compression_to_str(FileEXR::ZIP), string)) 	
+	if(!strcmp(compression_to_str(FileEXR::ZIP), string))
 		return FileEXR::ZIP;
-	if(!strcmp(compression_to_str(FileEXR::ZIPS), string)) 	
+	if(!strcmp(compression_to_str(FileEXR::ZIPS), string))
 		return FileEXR::ZIPS;
-	if(!strcmp(compression_to_str(FileEXR::RLE), string)) 	
+	if(!strcmp(compression_to_str(FileEXR::RLE), string))
 		return FileEXR::RLE;
-	if(!strcmp(compression_to_str(FileEXR::PXR24), string)) 	
+	if(!strcmp(compression_to_str(FileEXR::PXR24), string))
 		return PXR24;
 	return FileEXR::NONE;
 }
@@ -283,27 +267,10 @@ int FileEXR::read_frame_header(char *path)
 {
 	int result = 0;
 
-// This may have been used by VFS
-// 	FILE *stream;
-// 
-// 	if(!(stream = fopen(path, "rb")))
-// 	{
-// 		perror("FileEXR::read_frame_header");
-// 		return 1;
-// 	}
-// 	int size = FileSystem::get_size(path);
-// 	char *buffer = new char[size];
-// 	fread(buffer, size, 1, stream);
-// 	fclose(stream);
-// 
-// 	EXRIStream exr_stream(buffer, size);
-// 	Imf::InputFile file(exr_stream);
-
-
 	Imf::InputFile file(path);
 
 	Imath::Box2i dw = file.header().dataWindow();
-	
+
 	asset->width = dw.max.x - dw.min.x + 1;
 	asset->height = dw.max.y - dw.min.y + 1;
 	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
@@ -317,12 +284,7 @@ int FileEXR::read_frame_header(char *path)
 
 	if(channels.findChannel("Y"))
 		is_yuv = 1;
-// for (Imf::ChannelList::ConstIterator i = channels.begin(); i != channels.end(); ++i)
-// {
-// printf("%s\n", i.name());
-// }
 
-//	delete [] buffer;
 	return result;
 }
 
@@ -331,8 +293,8 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 	EXRIStream exr_stream((char*)data->get_data(), data->get_compressed_size());
 	Imf::InputFile file(exr_stream);
 	Imath::Box2i dw = file.header().dataWindow();
-    int dx = dw.min.x;
-    int dy = dw.min.y;
+	int dx = dw.min.x;
+	int dy = dw.min.y;
 	Imf::FrameBuffer framebuffer;
 	float **rows = (float**)frame->get_rows();
 	int components = cmodel_components(frame->get_color_model());
@@ -386,8 +348,6 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 
 	file.setFrameBuffer(framebuffer);
 	file.readPixels (dw.min.y, dw.max.y);
-
-
 
 	if(is_yuv)
 	{
@@ -453,8 +413,6 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 }
 
 
-
-
 int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
 	EXRUnit *exr_unit = (EXRUnit*)unit;
@@ -462,7 +420,6 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 	VFrame *output_frame;
 	data->set_compressed_size(0);
-
 
 	int native_cmodel = asset->exr_use_alpha ? BC_RGBA_FLOAT : BC_RGB_FLOAT;
 	int components = cmodel_components(native_cmodel);
@@ -544,15 +501,6 @@ FrameWriterUnit* FileEXR::new_writer_unit(FrameWriter *writer)
 
 
 
-
-
-
-
-
-
-
-
-
 EXRUnit::EXRUnit(FileEXR *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
 {
@@ -566,19 +514,10 @@ EXRUnit::~EXRUnit()
 }
 
 
-
-
-
-
-
-
-
-
-
 EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	300,
 	BC_OKButton::calculate_h() + 100)
 {
@@ -623,16 +562,15 @@ int EXRUseAlpha::handle_event()
 	return 1;
 }
 
-
-
 EXRCompression::EXRCompression(EXRConfigVideo *gui, int x, int y, int w)
  : BC_PopupMenu(x, 
- 	y, 
+	y,
 	w, 
 	FileEXR::compression_to_str(gui->asset->exr_compression))
 {
 	this->gui = gui;
 }
+
 void EXRCompression::create_objects()
 {
 	add_item(new EXRCompressionItem(gui, FileEXR::NONE));
@@ -660,4 +598,3 @@ int EXRCompressionItem::handle_event()
 	gui->asset->exr_compression = value;
 	return 0;
 }
-

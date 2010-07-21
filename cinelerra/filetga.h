@@ -46,7 +46,7 @@ public:
 	static void read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
 	static void write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
 
-	int can_copy_from(Edit *edit, int64_t position);
+	int can_copy_from(Edit *edit, framenum position);
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);
@@ -60,7 +60,7 @@ private:
 	static void write_data(unsigned char *buffer, 
 		VFrame *data, 
 		int64_t &file_offset,
-		int64_t len);
+		int len);
 	static void read_line(unsigned char *row,
 		unsigned char *data,
 		int64_t &file_offset,

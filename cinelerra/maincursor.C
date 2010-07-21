@@ -76,7 +76,7 @@ void MainCursor::deactivate()
 	}
 }
 
-int MainCursor::repeat_event(int64_t duration)
+int MainCursor::repeat_event(int duration)
 {
 	if(!active || !gui->get_has_focus()) return 0;
 	if(duration != BC_WindowBase::get_resources()->blink_rate) return 0;
