@@ -342,7 +342,6 @@ void MaskUnit::do_feather(VFrame *output,
 void MaskUnit::process_package(LoadPackage *package)
 {
 	MaskPackage *ptr = (MaskPackage*)package;
-tracemsg("row1 %d row2 %d", ptr->row1, ptr->row2);
 
 	int start_row = SHRT_MIN;         // part for which mask exists
 	int end_row;

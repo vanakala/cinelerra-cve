@@ -47,7 +47,6 @@ Edits::Edits(EDL *edl, Track *track, Edit *default_edit)
 	this->edl = edl;
 	this->track = track;
 
-	List<Edit>::List<Edit>();
 	default_edit->edl = edl;
 	default_edit->track = track;
 	default_edit->startproject = 0;

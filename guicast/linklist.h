@@ -32,9 +32,9 @@ public:
 	List();
 	virtual ~List();
 // delete the item and the pointers to it
-	void remove(TYPE *item);   
+	void remove(TYPE *item);
 // remove the pointers to the item only
-	void remove_pointer(ListItem<TYPE> *item);  
+	void remove_pointer(ListItem<TYPE> *item);
 
 // these must be used to add an item to a list
 	TYPE *append();  // create new node and return pointer of it
@@ -93,7 +93,7 @@ int List<TYPE>::total()     // total number of nodes
 {
 	int total = 0;
 	TYPE* current;
-	
+
 	for(current = first; current; current = NEXT)
 	{
 		total++;
@@ -166,7 +166,7 @@ template<class TYPE>
 TYPE* List<TYPE>::append(TYPE *new_item)
 {
 	TYPE* current_item;
-	
+
 	if(!last)        // add first node
 	{
 		current_item = last = first = new_item;
@@ -203,11 +203,11 @@ TYPE* List<TYPE>::insert_before(TYPE *item, TYPE *new_item)
 
 	current_item->previous = item->previous;       // set this node's pointers
 	current_item->next = item;
-	
+
 	if(current_item->previous) current_item->previous->next = current_item;         // set previous node's pointers
 
 	if(current_item->next) current_item->next->previous = current_item;        // set next node's pointers
-	
+
 	current_item->owner = this;
 	return current_item;
 }
@@ -230,11 +230,11 @@ TYPE* List<TYPE>::insert_after(TYPE *item, TYPE *new_item)
 
 	current_item->previous = item;       // set this node's pointers
 	current_item->next = item->next;
-	
+
 	if(current_item->previous) current_item->previous->next = current_item;         // set previous node's pointers
 
 	if(current_item->next) current_item->next->previous = current_item;        // set next node's pointers
-	
+
 	current_item->owner = this;
 	return current_item;
 }
@@ -260,33 +260,6 @@ void List<TYPE>::swap(TYPE *item1, TYPE *item2)
 			append(temp_array[i]);
 	}
 	delete [] temp_array;
-
-#if 0
-	TYPE *new_item0, *new_item1, *new_item2, *new_item3;
-
-// old == item0 item1 item2 item3
-// new == item0 item2 item1 item3
-
-	new_item0 = item1->previous;
-	new_item1 = item2;
-	new_item2 = item1;
-	new_item3 = item2->next;
-
-	if(new_item0) 
-		new_item0->next = new_item1;
-	else
-		first = new_item1;
-
-	if(new_item1) new_item1->next = new_item2;
-	if(new_item2) new_item2->next = new_item3;
-	if(new_item3)
-		new_item3->previous = new_item2;
-	else
-		last = new_item2;
-
-	if(new_item2) new_item2->previous = new_item1;
-	if(new_item1) new_item1->previous = new_item0;
-#endif
 }
 
 template<class TYPE>
@@ -299,7 +272,6 @@ void List<TYPE>::remove(TYPE *item)
 template<class TYPE>
 void List<TYPE>::remove_pointer(ListItem<TYPE> *item)
 {
-//printf("List<TYPE>::remove_pointer %x %x %x\n", item, last, first);
 	if(!item) return;
 
 	item->owner = 0;
