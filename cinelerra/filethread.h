@@ -23,6 +23,7 @@
 #define FILETHREAD_H
 
 #include "condition.inc"
+#include "datatype.h"
 #include "file.inc"
 #include "mutex.inc"
 #include "thread.h"
@@ -42,7 +43,7 @@ public:
 	~FileThreadFrame();
 
 // Frame position in native framerate
-	int64_t position;
+	framenum position;
 	int layer;
 	VFrame *frame;
 };
@@ -90,16 +91,16 @@ public:
 // write data into next available buffer
 	int write_buffer(long size);
 // get pointer to next buffer to be written and lock it
-	double** get_audio_buffer();     
+	double** get_audio_buffer();
 // get pointer to next frame to be written and lock it
-	VFrame*** get_video_buffer();     
+	VFrame*** get_video_buffer();
 
 	void run();
 	int swap_buffer();
 
 	double ***audio_buffer;
 // (VFrame*)(VFrame array *)(Track *)[ring buffer]
-	VFrame ****video_buffer;      
+	VFrame ****video_buffer;
 	long *output_size;  // Number of frames or samples to write
 // Not used
 	int *is_compressed; // Whether to use the compressed data in the frame
@@ -145,9 +146,9 @@ public:
 // Position of first frame in read_frames.
 // Set by set_video_position and read_frame only.
 // Position is in native framerate.
-	int64_t start_position;
+	framenum start_position;
 // Position to read next frame from
-	int64_t read_position;
+	framenum read_position;
 // Last layer a frame was read from
 	int layer;
 };

@@ -81,7 +81,7 @@ void FileThread::reset()
 	disable_read = 1;
 	start_position = -1;
 	read_position = 0;
-	bzero(read_frames, sizeof(FileThreadFrame*) * MAX_READ_FRAMES);
+	memset(read_frames, 0, sizeof(FileThreadFrame*) * MAX_READ_FRAMES);
 }
 
 
@@ -120,7 +120,6 @@ void FileThread::delete_objects()
 		}
 		delete [] input_lock;
 	}
-
 
 	if(last_buffer)
 		delete [] last_buffer;
@@ -161,7 +160,7 @@ void FileThread::run()
 
 // Make local copes of the locked parameters
 			FileThreadFrame *local_frame = 0;
-			int64_t local_position = 0;
+			framenum local_position = 0;
 			int local_layer;
 
 			frame_lock->lock("FileThread::run 2");
@@ -170,7 +169,6 @@ void FileThread::run()
 				local_position = read_frames[total_frames - 1]->position + 1;
 			else
 				local_position = start_position;
-//printf("FileThread::run 1 %d %lld\n", total_frames, local_position);
 
 // Get first available frame
 			local_total_frames = total_frames;
@@ -206,7 +204,6 @@ void FileThread::run()
 				}
 
 // Read it
-//printf("FileThread::run %lld\n", local_position);
 				file->read_frame(local_frame->frame, 1);
 				local_frame->position = local_position;
 				local_frame->layer = local_layer;
@@ -232,9 +229,6 @@ void FileThread::run()
 			output_lock[local_buffer]->lock("FileThread::run 1");
 			return_value = 0;
 
-
-// Timer timer;
-// timer.update();
 			if(!last_buffer[local_buffer])
 			{
 				if(output_size[local_buffer])
@@ -315,11 +309,6 @@ int FileThread::stop_writing()
 			audio_buffer = 0;
 		}
 
-// printf("FileThread::stop_writing %d %d %d %d\n", 
-// do_video,
-// ring_buffers,
-// file->asset->layers,
-// buffer_size);
 		if(do_video)
 		{
 			for(buffer = 0; buffer < ring_buffers; buffer++)
@@ -363,8 +352,6 @@ int FileThread::start_writing(long buffer_size,
 	file_lock->lock("FileThread::start_writing 1");
 
 
-
-
 // Buffer is swapped before first get
 	last_buffer = new int[ring_buffers];
 	output_size = new long[ring_buffers];
@@ -379,8 +366,6 @@ int FileThread::start_writing(long buffer_size,
 		last_buffer[i] = 0;
 		output_size[i] = 0;
 	}
-
-
 
 	if(do_audio)
 	{
@@ -405,11 +390,6 @@ int FileThread::start_writing(long buffer_size,
 			color_model);
 
 		video_buffer = new VFrame***[ring_buffers];
-// printf("FileThread::start_writing 1 %d %d %d %p\n", 
-// ring_buffers,
-// file->asset->layers,
-// buffer_size,
-// video_buffer);
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
 			video_buffer[buffer] = new VFrame**[file->asset->layers];
@@ -427,11 +407,6 @@ int FileThread::start_writing(long buffer_size,
 								file->asset->width, 
 								file->asset->height, 
 								color_model);
-// printf("FileThread::start_writing 4 %d %d %d %p\n", 
-// buffer, 
-// layer, 
-// frame, 
-// video_buffer[buffer][layer]);
 					}
 				}
 			}
@@ -524,16 +499,10 @@ int FileThread::read_frame(VFrame *frame)
 	int got_it = 0;
 	int number = 0;
 
-//printf("FileThread::read_frame 1\n");
-
 // Search thread for frame
 	while(!got_it && !disable_read)
 	{
 		frame_lock->lock("FileThread::read_frame 1");
-// printf("FileThread::read_frame: 1 read_position=%lld ", read_position);
-// for(int i = 0; i < total_frames; i++)
-// printf("%lld ", read_frames[i]->position);
-// printf("\n");
 		for(int i = 0; i < total_frames; i++)
 		{
 			local_frame = read_frames[i];
@@ -544,7 +513,6 @@ int FileThread::read_frame(VFrame *frame)
 			{
 				got_it = 1;
 				number = i;
-//printf("FileThread::read_frame 1 %lld\n", local_frame->position);
 				break;
 			}
 		}
@@ -556,7 +524,6 @@ int FileThread::read_frame(VFrame *frame)
 			user_wait_lock->lock("FileThread::read_frame");
 		}
 	}
-//printf("FileThread::read_frame 2\n");
 
 	if(got_it)
 	{
@@ -610,16 +577,12 @@ int FileThread::read_frame(VFrame *frame)
 	}
 	else
 	{
-// printf("FileThread::read_frame 1 color_model=%d disable_read=%d\n", 
-// frame->get_color_model(), 
-// disable_read);
 // Use traditional read function
 		file->set_video_position(read_position, -1, 1);
 		file->set_layer(layer, 1);
 		read_position++;
 		return file->read_frame(frame, 1);
 	}
-//printf("FileThread::read_frame 100\n");
 }
 
 int64_t FileThread::get_memory_usage()
@@ -665,5 +628,3 @@ int FileThread::swap_buffer()
 	current_buffer++;
 	if(current_buffer >= ring_buffers) current_buffer = 0;
 }
-
-
