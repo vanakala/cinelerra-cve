@@ -23,7 +23,7 @@
 #define FILETIFF_H
 
 #include <stdlib.h>
-
+#include "datatype.h"
 #include "file.inc"
 #include "filelist.h"
 #include "mutex.inc"
@@ -46,7 +46,7 @@ public:
 	static int check_sig(Asset *asset);
 	static const char* compression_to_str(int value);
 	static const char* cmodel_to_str(int value);
-	int can_copy_from(Edit *edit, int64_t position);
+	int can_copy_from(Edit *edit, framenum position);
 	int colormodel_supported(int colormodel);
 	int get_best_colormodel(Asset *asset, int driver);
 	int read_frame_header(const char *path);
@@ -92,8 +92,6 @@ public:
 };
 
 
-
-
 class TIFFConfigVideo : public  BC_Window
 {
 public:
@@ -129,8 +127,6 @@ public:
 };
 
 
-
-
 class TIFFCompression : public BC_PopupMenu
 {
 public:
@@ -148,9 +144,5 @@ public:
 	TIFFConfigVideo *gui;
 	int value;
 };
-
-
-
-
 
 #endif
