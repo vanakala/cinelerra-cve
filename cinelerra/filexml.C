@@ -551,7 +551,6 @@ int XMLTag::read_tag(char *input, int &position, int length)
 			j < MAX_LENGTH &&
 			position < length &&
 			input[position] != right_delimiter &&
-			input[position] != '\n' &&
 			input[position] != terminating_char;
 			j++, position++)
 		{
