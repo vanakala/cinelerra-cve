@@ -116,19 +116,27 @@ int FileXML::encode_text(char *text)
 // '<' -> '&lt;' 
 // '>' -> '&gt;'
 // '&' -> '&amp;'
-	char leftb[] = "&lt;";
-	char rightb[] = "&gt;";
-	char amp[] = "&amp;";
-	char *replacement;
+	const char leftb[] = "&lt;";
+	const char rightb[] = "&gt;";
+	const char amp[] = "&amp;";
+	const char *replacement;
 	int len = strlen(text);
 	int lastpos = 0;
 	for (int i = 0; i < len; i++)
 	{
 		switch (text[i]) {
-			case '<': replacement = leftb; break;
-			case '>': replacement = rightb; break;
-			case '&': replacement = amp; break;
-			default: replacement = 0; break;
+		case '<': 
+			replacement = leftb;
+			break;
+		case '>':
+			replacement = rightb;
+			break;
+		case '&':
+			replacement = amp;
+			break;
+		default: 
+			replacement = 0;
+			break;
 		}
 		if (replacement)
 		{
@@ -232,7 +240,7 @@ int FileXML::read_text_until(const char *tag_end, char *output, int max_len)
 	int out_position = 0;
 	int test_position1, test_position2;
 	int result = 0;
-	
+
 	while(!result && position < length && out_position < max_len - 1)
 	{
 		while(position < length && string[position] != left_delimiter)
@@ -347,7 +355,7 @@ int FileXML::read_from_file(const char *filename, int ignore_error)
 
 int FileXML::read_from_string(const char *string)
 {
-	strcpy(this->filename, "");
+	this->filename[0] = 0;
 	reallocate_string(strlen(string) + 1);
 	strcpy(this->string, string);
 	length = strlen(string);
@@ -410,7 +418,7 @@ int XMLTag::write_tag()
 // opening bracket
 	string[len] = left_delimiter;
 	len++;
-	
+
 // title
 	for(i = 0; tag_title[i] != 0 && len < MAX_LENGTH; i++, len++) string[len] = tag_title[i];
 
@@ -439,8 +447,8 @@ int XMLTag::write_tag()
 			string[len] = current_value[j];
 		}
 		if(len < MAX_LENGTH) string[len++] = '\"';
-	}     // next property
-	
+	}
+
 	if(len < MAX_LENGTH) string[len++] = right_delimiter;   // terminating bracket
 	return 0;
 }
@@ -452,7 +460,7 @@ int XMLTag::read_tag(char *input, int &position, int length)
 
 // search for beginning of a tag
 	while(input[position] != left_delimiter && position < length) position++;
-	
+
 	if(position >= length) return 1;
 
 // find the start
@@ -463,9 +471,9 @@ int XMLTag::read_tag(char *input, int &position, int length)
 		position++;
 
 	if(position >= length) return 1;
-	
+
 	tag_start = position;
-	
+
 // read title
 	for(i = 0; 
 		i < MAX_TITLE && 
@@ -478,9 +486,9 @@ int XMLTag::read_tag(char *input, int &position, int length)
 		tag_title[i] = input[position];
 	}
 	tag_title[i] = 0;
-	
+
 	if(position >= length) return 1;
-	
+
 	if(input[position] == '=')
 	{
 // no title but first property
