@@ -39,11 +39,11 @@
 // Read data from buffers and calculate peaks
 
 IndexThread::IndexThread(MWindow *mwindow, 
-						IndexFile *index_file,
-						Asset *asset,
-						char *index_filename,
-						int64_t buffer_size, 
-						int64_t length_source)
+			IndexFile *index_file,
+			Asset *asset,
+			char *index_filename,
+			int buffer_size, 
+			int64_t length_source)
 {
 	this->asset = asset;
 	this->buffer_size = buffer_size;
@@ -94,7 +94,7 @@ IndexThread::~IndexThread()
 		delete output_lock[i];
 		delete input_lock[i];
 	}
-	
+
 	delete [] asset->index_buffer;
 	asset->index_buffer = 0;
 }
@@ -118,19 +118,19 @@ void IndexThread::run()
 	int done = 0;
 
 // current high samples in index
-	int64_t *highpoint;            
+	int *highpoint;
 // current low samples in the index
-	int64_t *lowpoint;             
+	int *lowpoint;
 // position in current indexframe
 	int64_t *frame_position;
 	int first_point = 1;
 
-	highpoint = new int64_t[asset->channels];
-	lowpoint = new int64_t[asset->channels];
+	highpoint = new int[asset->channels];
+	lowpoint = new int[asset->channels];
 	frame_position = new int64_t[asset->channels];
 
 // predict first highpoint for each channel plus padding and initialize it
-	for(int64_t channel = 0; channel < asset->channels; channel++)
+	for(int channel = 0; channel < asset->channels; channel++)
 	{
 		highpoint[channel] = 
 			asset->index_offsets[channel] = 
@@ -159,12 +159,12 @@ void IndexThread::run()
 
 			for(int channel = 0; channel < asset->channels; channel++)
 			{
-				int64_t *highpoint_channel = &highpoint[channel];
-				int64_t *lowpoint_channel = &lowpoint[channel];
+				int *highpoint_channel = &highpoint[channel];
+				int *lowpoint_channel = &lowpoint[channel];
 				int64_t *frame_position_channel = &frame_position[channel];
 				double *buffer_source = buffer_in[current_buffer][channel];
 
-				for(int64_t i = 0; i < fragment_size; i++)
+				for(int i = 0; i < fragment_size; i++)
 				{
 					if(*frame_position_channel == zoomx)
 					{
@@ -225,6 +225,3 @@ void IndexThread::run()
 	delete [] lowpoint;
 	delete [] frame_position;
 }
-
-
-

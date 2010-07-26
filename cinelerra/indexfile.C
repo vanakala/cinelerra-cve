@@ -33,6 +33,7 @@
 #include "indexthread.h"
 #include "language.h"
 #include "localsession.h"
+#include "mainerror.h"
 #include "mainprogress.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -50,9 +51,7 @@
 
 IndexFile::IndexFile(MWindow *mwindow)
 {
-//printf("IndexFile::IndexFile 1\n");
 	this->mwindow = mwindow;
-//printf("IndexFile::IndexFile 2\n");
 	file = 0;
 	interrupt_flag = 0;
 	redraw_timer = new Timer;
@@ -60,7 +59,6 @@ IndexFile::IndexFile(MWindow *mwindow)
 
 IndexFile::IndexFile(MWindow *mwindow, Asset *asset)
 {
-//printf("IndexFile::IndexFile 2\n");
 	file = 0;
 	this->mwindow = mwindow;
 	this->asset = asset;
@@ -70,7 +68,6 @@ IndexFile::IndexFile(MWindow *mwindow, Asset *asset)
 
 IndexFile::~IndexFile()
 {
-//printf("IndexFile::~IndexFile 1\n");
 	delete redraw_timer;
 }
 
@@ -120,7 +117,6 @@ void IndexFile::delete_index(Preferences *preferences, Asset *asset)
 		preferences->index_directory,
 		index_filename, 
 		asset->path);
-//printf("IndexFile::delete_index %s %s\n", source_filename, index_filename);
 	remove(index_filename);
 }
 
@@ -153,7 +149,7 @@ int IndexFile::open_file()
 		{
 // source file is a different size than index source file
 			result = 2;
-			fclose(file);	
+			fclose(file);
 			file = 0;
 		}
 		else
@@ -176,7 +172,6 @@ int IndexFile::open_file()
 
 int IndexFile::open_source(File *source)
 {
-//printf("IndexFile::open_source %p %s\n", asset, asset->path);
 	if(source->open_file(mwindow->preferences, 
 		asset, 
 		1, 
@@ -184,7 +179,6 @@ int IndexFile::open_source(File *source)
 		0, 
 		0))
 	{
-		//printf("IndexFile::open_source() Couldn't open %s.\n", asset->path);
 		return 1;
 	}
 	else
@@ -199,23 +193,12 @@ int64_t IndexFile::get_required_scale(File *source)
 {
 	int64_t result = 1;
 // total length of input file
-	int64_t length_source = source->get_audio_length(0);  
+	samplenum length_source = source->get_audio_length(0);
 
-// get scale of index file
-//	if(length_source > mwindow->preferences->index_size)
-//	{
-// Total peaks which may be stored in buffer
-		int64_t peak_count = mwindow->preferences->index_size / (2 * sizeof(float) * asset->channels);
-		for(result = 1; 
-			length_source / result > peak_count; 
-			result *= 2)
-			;
-//	}
-//	else
-//	{
-// too small to build an index for
-//		result = 0;
-//	}
+	int64_t peak_count = mwindow->preferences->index_size / (2 * sizeof(float) * asset->channels);
+	for(result = 1; 
+		length_source / result > peak_count; 
+		result *= 2);
 
 // Takes too long to draw from source on a CDROM.  Make indexes for
 // everything.
@@ -278,27 +261,22 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 // Test for index in stream table of contents
 	if(!source.get_index(index_filename))
 	{
-printf("IndexFile::create_index 1\n");
 		redraw_edits(1);
 	}
 	else
 // Build index from scratch
 	{
 
-
-
-
 		asset->index_zoom = get_required_scale(&source);
 
 // Indexes are now built for everything since it takes too long to draw
 // from CDROM source.
 
-
 // total length of input file
-		int64_t length_source = source.get_audio_length(0);  
+		int64_t length_source = source.get_audio_length(0);
 
 // get amount to read at a time in floats
-		int64_t buffersize = 65536;
+		int buffersize = 65536;
 		char string[BCTEXTLEN];
 		sprintf(string, _("Creating %s."), index_filename);
 
@@ -316,8 +294,8 @@ printf("IndexFile::create_index 1\n");
 		index_thread->start_build();
 
 // current sample in source file
-		int64_t position = 0;
-		int64_t fragment_size = buffersize;
+		samplenum position = 0;
+		int fragment_size = buffersize;
 		int current_buffer = 0;
 
 
@@ -371,10 +349,7 @@ printf("IndexFile::create_index 1\n");
 		delete index_thread;
 	}
 
-
 	source.close_file();
-
-
 
 	open_index(asset);
 
@@ -391,8 +366,6 @@ int IndexFile::create_index(MWindow *mwindow,
 {
 	return create_index(asset, progress);
 }
-
-
 
 int IndexFile::redraw_edits(int force)
 {
@@ -411,8 +384,6 @@ int IndexFile::redraw_edits(int force)
 	}
 	return 0;
 }
-
-
 
 
 int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
@@ -436,7 +407,6 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // samples in segment to draw relative to asset
 	double asset_over_session = (double)edit->asset->sample_rate / 
 		mwindow->edl->session->sample_rate;
-//	int64_t startsource = (int64_t)(((pixmap->pixmap_x - pixmap->edit_x + x) * 
 	int64_t startsource = (int64_t)(((pixmap->pixmap_x - virtual_edit_x + x) * 
 		mwindow->edl->local_session->zoom_sample + 
 		edit->startsource) * 
@@ -466,7 +436,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 
 
 // Actual length read from file in bytes
-	int64_t length_read;   
+	int length_read;
 // Start and length of fragment to read from file in bytes.
 	int64_t startfile, lengthfile;
 	float *buffer = 0;
@@ -510,7 +480,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 				length_read = file_length - startfile;
 
 			if(fread(buffer, length_read, 1, file) < 1)
-				fprintf(stderr, "IndexFile::draw_index - read error\n");
+				errormsg("Failed to read index");
 		}
 
 		if(length_read < lengthfile)
@@ -520,10 +490,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 				buffer[i] = 0;
 	}
 
-
-
 	pixmap->canvas->set_color(mwindow->theme->audio_color);
-
 
 	double current_frame = 0;
 	float highsample = buffer[0];
@@ -584,9 +551,6 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 		pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
 	}
 
-
-
-
 	if(!buffer_shared) delete [] buffer;
 	return 0;
 }
@@ -595,9 +559,7 @@ int IndexFile::close_index()
 {
 	if(file)
 	{
-
 		fclose(file);
-
 		file = 0;
 	}
 }
@@ -622,7 +584,7 @@ int IndexFile::read_info(Asset *test_asset)
 
 // read test_asset info from index
 		char *data;
-		
+
 		data = new char[test_asset->index_start];
 		if(fread(data, test_asset->index_start - sizeof(int64_t), 1, file))
 		{

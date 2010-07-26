@@ -39,7 +39,7 @@ public:
 		IndexFile *index_file, 
 		Asset *asset,
 		char *index_filename,
-		int64_t buffer_size, 
+		int buffer_size,
 		int64_t length_source);
 	~IndexThread();
 
@@ -53,7 +53,8 @@ public:
 	MWindow *mwindow;
 	Asset *asset;
 	char *index_filename;
-	int64_t buffer_size, length_source;
+	int buffer_size;
+	int64_t length_source;
 	int current_buffer;
 
 private:
