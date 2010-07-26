@@ -32,10 +32,9 @@
 
 
 class KeyframePopupDelete;
-class KeyframePopupShow;
 class KeyframePopupCopy;
- 
- 
+
+
 class KeyframePopup : public BC_PopupMenu
 {
 public:
@@ -48,17 +47,14 @@ public:
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
+
 // Acquired through the update command as the plugin currently being operated on
-	
 	Plugin *keyframe_plugin;
 	Autos *keyframe_autos;
 	Automation *keyframe_automation;
 	Auto *keyframe_auto;
-	
 
-	
 	KeyframePopupDelete *key_delete;
-	KeyframePopupShow *key_show;
 	KeyframePopupCopy *key_copy;
 };
 
@@ -67,17 +63,6 @@ class KeyframePopupDelete : public BC_MenuItem
 public:
 	KeyframePopupDelete(MWindow *mwindow, KeyframePopup *popup);
 	~KeyframePopupDelete();
-	int handle_event();
-	
-	MWindow *mwindow;
-	KeyframePopup *popup;
-};
-
-class KeyframePopupShow : public BC_MenuItem
-{
-public:
-	KeyframePopupShow(MWindow *mwindow, KeyframePopup *popup);
-	~KeyframePopupShow();
 	int handle_event();
 	
 	MWindow *mwindow;
@@ -94,7 +79,4 @@ public:
 	MWindow *mwindow;
 	KeyframePopup *popup;
 };
-
-
-
- #endif
+#endif

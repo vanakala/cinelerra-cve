@@ -24,8 +24,6 @@
 
 class PluginPopupChange;
 class PluginPopupDetach;
-class PluginPopupIn;
-class PluginPopupOut;
 class PluginPopupOn;
 class PluginPopupShow;
 
@@ -51,16 +49,8 @@ public:
 // Acquired through the update command as the plugin currently being operated on
 	Plugin *plugin;
 
-
-
-
-
-
-
 	PluginPopupChange *change;
 	PluginPopupDetach *detach;
-//	PluginPopupIn *in;
-//	PluginPopupOut *out;
 	PluginPopupShow *show;
 	PluginPopupOn *on;
 };
@@ -91,37 +81,11 @@ public:
    PluginDialogThread *dialog_thread;
 };
 
-
 class PluginPopupDetach : public BC_MenuItem
 {
 public:
 	PluginPopupDetach(MWindow *mwindow, PluginPopup *popup);
 	~PluginPopupDetach();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	PluginPopup *popup;
-};
-
-
-class PluginPopupIn : public BC_MenuItem
-{
-public:
-	PluginPopupIn(MWindow *mwindow, PluginPopup *popup);
-	~PluginPopupIn();
-
-	int handle_event();
-
-	MWindow *mwindow;
-	PluginPopup *popup;
-};
-
-class PluginPopupOut : public BC_MenuItem
-{
-public:
-	PluginPopupOut(MWindow *mwindow, PluginPopup *popup);
-	~PluginPopupOut();
 
 	int handle_event();
 

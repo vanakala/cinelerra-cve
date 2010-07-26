@@ -29,7 +29,6 @@
 
 class TransitionPopupOn;
 class TransitionPopupShow;
-class TransitionPopupAttach;
 class TransitionPopupDetach;
 class TransitionPopupLength;
 class TransitionLengthText;
@@ -93,22 +92,9 @@ public:
 // Needed for loading updates
 	TransitionPopupOn *on;
 	TransitionPopupShow *show;
-	TransitionPopupAttach *attach;
 	TransitionPopupDetach *detach;
 	TransitionPopupLength *length;
 	TransitionLengthThread *length_thread;
-};
-
-
-class TransitionPopupAttach : public BC_MenuItem
-{
-public:
-	TransitionPopupAttach(MWindow *mwindow, TransitionPopup *popup);
-	~TransitionPopupAttach();
-
-	int handle_event();
-	MWindow *mwindow;
-	TransitionPopup *popup;
 };
 
 class TransitionPopupDetach : public BC_MenuItem

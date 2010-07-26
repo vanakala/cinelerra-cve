@@ -22,17 +22,9 @@
 #ifndef PLUGINDIALOG_H
 #define PLUGINDIALOG_H
 
-class PluginDialogTextBox;
-class PluginDialogDetach;
 class PluginDialogNew;
 class PluginDialogShared;
 class PluginDialogModules;
-class PluginDialogAttachNew;
-class PluginDialogAttachShared;
-class PluginDialogAttachModule;
-class PluginDialogChangeNew;
-class PluginDialogChangeShared;
-class PluginDialogChangeModule;
 class PluginDialogIn;
 class PluginDialogOut;
 class PluginDialogThru;
@@ -60,19 +52,17 @@ public:
 	int set_dialog(Transition *transition, const char *title);
 	void run();
 
-
-
 	MWindow *mwindow;
 	Track *track;
 	int data_type;
 	Transition *transition;
 	PluginDialog *window;
+
 // Plugin being modified if there is one
 	Plugin *plugin;
 	Condition *completion;
 	Mutex *window_lock;
 	char window_title[BCTEXTLEN];
-
 
 // type of attached plugin
 	int plugin_type;    // 0: none  1: plugin   2: shared plugin   3: module
@@ -109,19 +99,8 @@ public:
 	BC_Title *module_title;
 	PluginDialogModules *module_list;
 
-/*
- * 
- * 	PluginDialogAttachNew *standalone_attach;
- * 	PluginDialogAttachShared *shared_attach;
- * 	PluginDialogAttachModule *module_attach;
- * 
- * 	PluginDialogChangeNew *standalone_change;
- * 	PluginDialogChangeShared *shared_change;
- * 	PluginDialogChangeModule *module_change;
- */
-
 	PluginDialogThru *thru;
-	
+
 	PluginDialogThread *thread;
 
 	ArrayList<BC_ListBoxItem*> standalone_data;
@@ -141,53 +120,6 @@ public:
 };
 
 
-/*
- * class PluginDialogTextBox : public BC_TextBox
- * {
- * public:
- * 	PluginDialogTextBox(PluginDialog *dialog, char *text, int x, int y);
- * 	~PluginDialogTextBox();
- * 
- * 	int handle_event();
- * 	PluginDialog *dialog;
- * };
- */
-
-/*
- * class PluginDialogDetach : public BC_GenericButton
- * {
- * public:
- * 	PluginDialogDetach(MWindow *mwindow, PluginDialog *dialog, int x, int y);
- * 	~PluginDialogDetach();
- * 	
- * 	int handle_event();
- * 	PluginDialog *dialog;
- * };
- */
-
-/*
- * class PluginDialogAttachNew : public BC_GenericButton
- * {
- * public:
- * 	PluginDialogAttachNew(MWindow *mwindow, PluginDialog *dialog, int x, int y);
- * 	~PluginDialogAttachNew();
- * 	
- * 	int handle_event();
- * 	PluginDialog *dialog;
- * };
- * 
- * class PluginDialogChangeNew : public BC_GenericButton
- * {
- * public:
- *    PluginDialogChangeNew(MWindow *mwindow, PluginDialog *dialog, int x, int y);
- *    ~PluginDialogChangeNew();
- * 
- *    int handle_event();
- *    PluginDialog *dialog;
- * };
- */
-
-
 class PluginDialogNew : public BC_ListBox
 {
 public:
@@ -198,7 +130,7 @@ public:
 		int w,
 		int h);
 	~PluginDialogNew();
-	
+
 	int handle_event();
 	int selection_changed();
 	PluginDialog *dialog;
@@ -214,7 +146,7 @@ public:
 		int w,
 		int h);
 	~PluginDialogShared();
-	
+
 	int handle_event();
 	int selection_changed();
 	PluginDialog *dialog;
@@ -230,55 +162,10 @@ public:
 		int w,
 		int h);
 	~PluginDialogModules();
-	
+
 	int handle_event();
 	int selection_changed();
 	PluginDialog *dialog;
 };
-
-/*
- * class PluginDialogAttachShared : public BC_GenericButton
- * {
- * public:
- * 	PluginDialogAttachShared(MWindow *mwindow, PluginDialog *dialog, int x, int y);
- * 	~PluginDialogAttachShared();
- * 	
- * 	int handle_event();
- * 	PluginDialog *dialog;
- * };
- * 
- * class PluginDialogChangeShared : public BC_GenericButton
- * {
- * public:
- *    PluginDialogChangeShared(MWindow *mwindow, PluginDialog *dialog, int x, int y);
- *    ~PluginDialogChangeShared();
- * 
- *    int handle_event();
- *    PluginDialog *dialog;
- * };
- * 
- * 
- * class PluginDialogAttachModule : public BC_GenericButton
- * {
- * public:
- * 	PluginDialogAttachModule(MWindow *mwindow, PluginDialog *dialog, int x, int y);
- * 	~PluginDialogAttachModule();
- * 	
- * 	int handle_event();
- * 	PluginDialog *dialog;
- * };
- * 
- * class PluginDialogChangeModule : public BC_GenericButton
- * {
- * public:
- *    PluginDialogChangeModule(MWindow *mwindow, PluginDialog *dialog, int x, int y);
- *    ~PluginDialogChangeModule();
- * 
- *    int handle_event();
- *    PluginDialog *dialog;
- * }
- */
-
-
 
 #endif

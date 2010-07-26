@@ -58,15 +58,15 @@ void TransitionLengthThread::run()
 
 TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow, Transition *transition)
  : BC_Window(PROGRAM_NAME ": Transition length", 
-				mwindow->gui->get_abs_cursor_x(1) - 150,
-				mwindow->gui->get_abs_cursor_y(1) - 50,
-				300, 
-				100, 
-				-1, 
-				-1, 
-				0,
-				0, 
-				1)
+		mwindow->gui->get_abs_cursor_x(1) - 150,
+		mwindow->gui->get_abs_cursor_y(1) - 50,
+		300,
+		100,
+		-1,
+		-1,
+		0,
+		0,
+		1)
 {
 	this->mwindow = mwindow;
 	this->transition = transition;
@@ -76,7 +76,7 @@ TransitionLengthDialog::~TransitionLengthDialog()
 {
 }
 
-	
+
 void TransitionLengthDialog::create_objects()
 {
 	add_subwindow(new BC_Title(10, 10, _("Seconds:")));
@@ -94,15 +94,12 @@ int TransitionLengthDialog::close_event()
 
 
 
-
-
-
 TransitionLengthText::TransitionLengthText(MWindow *mwindow, 
 	TransitionLengthDialog *gui,
 	int x, 
 	int y)
  : BC_TumbleTextBox(gui, 
- 	(float)gui->transition->edit->track->from_units(gui->transition->length),
+	(float)gui->transition->edit->track->from_units(gui->transition->length),
 	(float)0, 
 	(float)100, 
 	x,
@@ -137,15 +134,6 @@ int TransitionLengthText::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
 TransitionPopup::TransitionPopup(MWindow *mwindow, MWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
@@ -159,14 +147,13 @@ TransitionPopup::TransitionPopup(MWindow *mwindow, MWindowGUI *gui)
 
 TransitionPopup::~TransitionPopup()
 {
-//	delete dialog_thread;
+	delete length_thread;
 }
 
 
 void TransitionPopup::create_objects()
 {
 	length_thread = new TransitionLengthThread(mwindow, this);
-//	add_item(attach = new TransitionPopupAttach(mwindow, this));
 	add_item(show = new TransitionPopupShow(mwindow, this));
 	add_item(on = new TransitionPopupOn(mwindow, this));
 	add_item(length = new TransitionPopupLength(mwindow, this));
@@ -183,31 +170,6 @@ int TransitionPopup::update(Transition *transition)
 	length->set_text(len_text);
 	return 0;
 }
-
-
-
-
-
-TransitionPopupAttach::TransitionPopupAttach(MWindow *mwindow, TransitionPopup *popup)
- : BC_MenuItem(_("Attach..."))
-{
-	this->mwindow = mwindow;
-	this->popup = popup;
-}
-
-TransitionPopupAttach::~TransitionPopupAttach()
-{
-}
-
-int TransitionPopupAttach::handle_event()
-{
-//	popup->dialog_thread->start();
-}
-
-
-
-
-
 
 
 TransitionPopupDetach::TransitionPopupDetach(MWindow *mwindow, TransitionPopup *popup)
@@ -247,10 +209,6 @@ int TransitionPopupOn::handle_event()
 }
 
 
-
-
-
-
 TransitionPopupShow::TransitionPopupShow(MWindow *mwindow, TransitionPopup *popup)
  : BC_MenuItem(_("Show"))
 {
@@ -267,12 +225,6 @@ int TransitionPopupShow::handle_event()
 	mwindow->show_plugin(popup->transition);
 	return 1;
 }
-
-
-
-
-
-
 
 
 TransitionPopupLength::TransitionPopupLength(MWindow *mwindow, TransitionPopup *popup)
