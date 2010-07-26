@@ -53,13 +53,14 @@ public:
 private:
 // type of modification
 	unsigned long load_flags;
-	
+
 // data before the modification for undos
-	char *data_before;          
+	char *data_before;
 
 	MainUndo *main_undo;
 
-	void load_from_undo(FileXML *file, uint32_t load_flags);	// loads undo from the stringfile to the project
+// loads undo from the stringfile to the project
+	void load_from_undo(FileXML *file, uint32_t load_flags);
 };
 
 
@@ -110,8 +111,8 @@ void MainUndo::push_undo_item(UndoStackItem *item)
 	capture_state();
 
 	mwindow->session->changes_made = 1;
-   mwindow->gui->mainmenu->undo->update_caption(item->description);
-   mwindow->gui->mainmenu->redo->update_caption("");
+	mwindow->gui->mainmenu->undo->update_caption(item->description);
+	mwindow->gui->mainmenu->redo->update_caption("");
 }
 
 void MainUndo::capture_state()
@@ -311,6 +312,3 @@ void MainUndo::reset_creators()
 		current->set_creator(0);
 	}
 }
-
-
-

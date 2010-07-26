@@ -210,8 +210,6 @@ int MainSession::load_defaults(BC_Hash *defaults)
 	ewindow_w = defaults->get("EWINDOW_W", ewindow_w);
 	ewindow_h = defaults->get("EWINDOW_H", ewindow_h);
 
-//printf("MainSession::load_defaults 1\n");
-
 // Other windows
 	afolders_w = defaults->get("ABINS_W", 100);
 	rwindow_x = defaults->get("RWINDOW_X", rwindow_x);

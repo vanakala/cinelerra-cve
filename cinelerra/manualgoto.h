@@ -90,16 +90,9 @@ public:
 	int activate();
 	int deactivate();
 	void reshape_update(char *nums);
-	
+
 	int min_num;
 	int max_num;
 	int chars;
 };
-
-
-
-
-
-
-
 #endif

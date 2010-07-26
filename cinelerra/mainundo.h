@@ -40,10 +40,10 @@ public:
 	MainUndo(MWindow *mwindow);
 	~MainUndo();
 
-   // Use this function for UndoStackItem subclasses with custom
-   // undo and redo functions.  All fields including description must
-   // be populated before calling this function.
-   void push_undo_item(UndoStackItem *item);
+// Use this function for UndoStackItem subclasses with custom
+// undo and redo functions.  All fields including description must
+// be populated before calling this function.
+	void push_undo_item(UndoStackItem *item);
 
 	void update_undo(const char *description, 
 		uint32_t load_flags, 

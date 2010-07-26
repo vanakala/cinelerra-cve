@@ -81,7 +81,6 @@ int MainProgressBar::is_cancelled()
 {
 	if(progress_box)
 	{
-//printf("MainProgressBar::is_cancelled 1 %d\n", progress_box->is_cancelled());
 		return progress_box->is_cancelled();
 	}
 	else
@@ -96,7 +95,6 @@ int MainProgressBar::is_cancelled()
 void MainProgressBar::update_title(const char *string, int default_)
 {
 	if(default_) strcpy(default_title, string);
-//printf("MainProgressBar::update_title %p %p %s\n", progress_bar, progress_box, string);
 
 	if(progress_box)
 	{
@@ -114,7 +112,6 @@ void MainProgressBar::update_title(const char *string, int default_)
 void MainProgressBar::update_length(int64_t length)
 {
 	this->length = length;
-//printf("MainProgressBar::update_length %d\n", length);
 	if(progress_box)
 	{
 		progress_box->update_length(length, 1);
@@ -133,7 +130,6 @@ int MainProgressBar::update(int64_t value)
 // Print ETA on title
 	double current_eta = (double)eta_timer->get_scaled_difference(1000);
 
-//printf("MainProgressBar::update %f %f %f\n", current_eta, last_eta, current_eta - last_eta);
 	if(current_eta - last_eta > 1000)
 	{
 		char string[BCTEXTLEN];
@@ -150,15 +146,9 @@ int MainProgressBar::update(int64_t value)
 		else
 			eta = 0;
 
-//printf("MainProgressBar::update %f %d %d %f\n", current_eta, length, value, eta);
- 		Units::totext(time_string, 
- 			eta,
- 			TIME_HMS2);
-// 		sprintf(time_string, 
-// 			"%dh%dm%ds", 
-// 			(int64_t)eta / 3600,
-// 			((int64_t)eta / 60) % 60,
-// 			(int64_t)eta % 60);
+		Units::totext(time_string, 
+			eta,
+			TIME_HMS2);
 
 		sprintf(string, _("%s ETA: %s"), 
 			default_title, 
@@ -186,7 +176,6 @@ int MainProgressBar::update(int64_t value)
 void MainProgressBar::get_time(char *text)
 {
 	double current_time = (double)eta_timer->get_scaled_difference(1);
-//printf("MainProgressBar::get_time %f\n", current_time);
 	Units::totext(text, 
 			current_time,
 			TIME_HMS2);
@@ -196,15 +185,6 @@ double MainProgressBar::get_time()
 {
 	return (double)eta_timer->get_scaled_difference(1);
 }
-
-
-
-
-
-
-
-
-
 
 
 MainProgress::MainProgress(MWindow *mwindow, MWindowGUI *gui)
