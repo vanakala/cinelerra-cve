@@ -196,23 +196,6 @@ public:
 	NewWindow *nwindow;
 };
 
-class NewVChannels : public BC_TextBox
-{
-public:
-	NewVChannels(NewWindow *nwindow, const char *text, int x, int y);
-	int handle_event();
-	NewWindow *nwindow;
-};
-
-class NewVChannelsTumbler : public BC_Tumbler
-{
-public:
-	NewVChannelsTumbler(NewWindow *nwindow, int x, int y);
-	int handle_up_event();
-	int handle_down_event();
-	NewWindow *nwindow;
-};
-
 class NewFrameRate : public BC_TextBox
 {
 public:
@@ -228,22 +211,6 @@ public:
 	int handle_event();
 	MWindow *mwindow;
 	BC_TextBox *output;
-};
-
-class NewTrackW : public BC_TextBox
-{
-public:
-	NewTrackW(NewWindow *nwindow, int x, int y);
-	int handle_event();
-	NewWindow *nwindow;
-};
-
-class NewTrackH : public BC_TextBox
-{
-public:
-	NewTrackH(NewWindow *nwindow, int x, int y);
-	int handle_event();
-	NewWindow *nwindow;
 };
 
 class FrameSizePulldown : public BC_ListBox

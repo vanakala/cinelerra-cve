@@ -57,7 +57,6 @@ MeterPanel::~MeterPanel()
 
 int MeterPanel::get_meters_width(int meter_count, int use_meters)
 {
-//printf("MeterPanel::get_meters_width %d %d\n", BC_Meter::get_title_w(), BC_Meter::get_meter_w());
 	return use_meters ? 
 		(BC_Meter::get_title_w() + BC_Meter::get_meter_w() * meter_count) : 
 		0;
@@ -69,13 +68,8 @@ void MeterPanel::reposition_window(int x, int y, int h)
 	this->y = y;
 	this->h = h;
 
-//	reset->reposition_window(get_reset_x(), get_reset_y());
-
-//printf("MeterPanel::reposition_window 0 %d\n", meter_count);
-
 	for(int i = 0; i < meter_count; i++)
 	{
-//printf("MeterPanel::reposition_window 1 %d\n", x);
 		meters.values[i]->reposition_window(x, y, get_meter_h());
 		x += get_meter_w(i);
 	}
@@ -83,7 +77,6 @@ void MeterPanel::reposition_window(int x, int y, int h)
 
 int MeterPanel::change_status_event()
 {
-//printf("MeterPanel::change_status_event\n");
 	return 1;
 }
 
@@ -106,13 +99,12 @@ int MeterPanel::get_meter_w(int number)
 
 int MeterPanel::get_meter_h()
 {
-	return /* reset->get_y() - this->y - */ this->h - 5;
+	return this->h - 5;
 }
 
 void MeterPanel::update(double *levels)
 {
 	if(subwindow->get_hidden()) return;
-
 
 	for(int i = 0; 
 		i < meter_count; 
@@ -124,9 +116,7 @@ void MeterPanel::update(double *levels)
 
 void MeterPanel::stop_meters()
 {
-	for(int i = 0; 
-		i < meter_count; 
-		i++)
+	for(int i = 0; i < meter_count; i++)
 	{
 		meters.values[i]->reset();
 	}
@@ -148,7 +138,6 @@ int MeterPanel::set_meters(int meter_count, int use_meters)
 
 		this->meter_count = meter_count;
 		this->use_meters = use_meters;
-//		if(!use_meters) this->meter_count = 0;
 
 		if(meter_count)
 		{
@@ -165,7 +154,7 @@ int MeterPanel::set_meters(int meter_count, int use_meters)
 						h, 
 						(i == 0)));
 				meters.append(new_meter);
-        		x += get_meter_w(i);
+				x += get_meter_w(i);
 			}
 		}
 	}
@@ -194,11 +183,6 @@ void MeterPanel::change_format(int mode, int min, int max)
 
 
 
-
-
-
-
-
 MeterReset::MeterReset(MWindow *mwindow, MeterPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->over_button)
 {
@@ -209,7 +193,7 @@ MeterReset::MeterReset(MWindow *mwindow, MeterPanel *panel, int x, int y)
 MeterReset::~MeterReset()
 {
 }
-	
+
 int MeterReset::handle_event()
 {
 	for(int i = 0; i < panel->meters.total; i++)
@@ -228,7 +212,7 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	int h, 
 	int titles)
  : BC_Meter(x,
- 	y,
+	y,
 	METER_VERT,
 	h,
 	mwindow->edl->session->min_meter_db, 
@@ -265,7 +249,7 @@ int MeterMeter::button_press_event()
 
 MeterShow::MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y)
  : BC_Toggle(x, 
- 		y, 
+		y,
 		mwindow->theme->get_image_set("meters"), 
 		panel->use_meters)
 {
@@ -282,7 +266,6 @@ MeterShow::~MeterShow()
 
 int MeterShow::handle_event()
 {
-//printf("MeterShow::MeterShow 1 %d\n",panel->use_meters );
 	panel->use_meters = get_value();
 	panel->change_status_event();
 	return 1;
