@@ -40,7 +40,7 @@ RemoveThread::RemoveThread()
 	file_lock = new Mutex("RemoveThread::file_lock");
 }
 
-void RemoveThread::remove_file(char *path)
+void RemoveThread::remove_file(const char *path)
 {
 // Rename to temporary
 	uuid_t id;
@@ -49,8 +49,7 @@ void RemoveThread::remove_file(char *path)
 	strcpy(string, path);
 	uuid_unparse(id, string + strlen(string));
 	rename(path, string);
-printf("RemoveThread::run: renaming %s -> %s\n", path, string);
-	
+
 	file_lock->lock("RemoveThread::remove_file");
 	files.append(strdup(string));
 	file_lock->unlock();
@@ -78,10 +77,7 @@ void RemoveThread::run()
 		file_lock->unlock();
 		if(string[0])
 		{
-printf("RemoveThread::run: deleting %s\n", string);
 			remove(string);
 		}
 	}
 }
-
-

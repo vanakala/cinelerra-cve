@@ -37,7 +37,7 @@
 
 #define LISTWIDTH 200
 
-RenderProfileItem::RenderProfileItem(char *text, int value)
+RenderProfileItem::RenderProfileItem(const char *text, int value)
  : BC_ListBoxItem(text)
 {
 	this->value = value;
@@ -63,15 +63,11 @@ RenderProfile::RenderProfile(MWindow *mwindow,
 		mwindow->defaults->get(string_name, name);
 		if (strlen(name) != 0)
 			profiles.append(new RenderProfileItem(name, i));
-					
 	}
 }
 
 RenderProfile::~RenderProfile()
 {
-//	delete title;
-//	delete textbox;
-//	delete listbox;
 	for(int i = 0; i < profiles.total; i++)
 		delete profiles.values[i];
 }
@@ -89,8 +85,7 @@ int RenderProfile::create_objects()
 	const char *default_text = "";
 	rwindow->add_subwindow(new BC_Title(x, 
 		y, 
-			_("RenderProfile:")));
-
+		_("RenderProfile:")));
 
 	int old_y = y;
 	rwindow->add_subwindow(title = new BC_Title(x, y, _("Render profile:")));
@@ -112,8 +107,6 @@ int RenderProfile::create_objects()
 	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this, 
 		x, 
 		y));
-
-
 
 	return 0;
 }
@@ -156,7 +149,7 @@ RenderProfileListBox::RenderProfileListBox(BC_WindowBase *window,
 	int x, 
 	int y)
  : BC_ListBox(x,
- 	y,
+	y,
 	LISTWIDTH,
 	150,
 	LISTBOX_TEXT,
@@ -185,14 +178,14 @@ int RenderProfileListBox::handle_event()
 	return 1;
 }
 
-int RenderProfile::get_profile_slot_by_name(char * profile_name)
+int RenderProfile::get_profile_slot_by_name(const char * profile_name)
 {
 	for (int i = 1; i < MAX_PROFILES; i++)
 	{
 		char string_name[100];
 		char name[100] = "";
 		sprintf(string_name, "RENDER_%i_PROFILE_NAME", i);
-		
+
 		mwindow->defaults->get(string_name, name);
 		if (strcmp(name, profile_name) == 0)
 			return i;
@@ -249,9 +242,9 @@ SaveRenderProfileButton::SaveRenderProfileButton(RenderProfile *profile, int x, 
 {
 	this->profile = profile;
 }
+
 int SaveRenderProfileButton::handle_event()
 {
-	
 	char *profile_name = profile->textbox->get_text();
 	if (strlen(profile_name) == 0)     // Don't save when name not defined
 		return 1;
@@ -267,9 +260,8 @@ int SaveRenderProfileButton::handle_event()
 		
 		profile->profiles.append(new RenderProfileItem(profile_name, slot));
 		profile->listbox->update((ArrayList<BC_ListBoxItem *>*)&(profile->profiles), 0, 0, 1);
-	
 	}
-	
+
 	if (slot >= 0)
 	{
 		profile->save_to_slot(slot, profile_name);
@@ -283,6 +275,7 @@ DeleteRenderProfileButton::DeleteRenderProfileButton(RenderProfile *profile, int
 {
 	this->profile = profile;
 }
+
 int DeleteRenderProfileButton::handle_event()
 {
 	char *profile_name = profile->textbox->get_text();
@@ -295,20 +288,12 @@ int DeleteRenderProfileButton::handle_event()
 			{
 				profile->profiles.remove_object_number(i);
 				profile->save_to_slot(slot, "");
-
 				break;
 			}
 		}
 		profile->listbox->update((ArrayList<BC_ListBoxItem *>*)&(profile->profiles), 0, 0, 1);
 		profile->textbox->update("");
-
 	}
-
 
 	return 1;
 }
-
-
-
-
-

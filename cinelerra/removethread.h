@@ -32,7 +32,7 @@ class RemoveThread : public Thread
 {
 public:
 	RemoveThread();
-	void remove_file(char *path);
+	void remove_file(const char *path);
 	void create_objects();
 	void run();
 	Condition *input_lock;
