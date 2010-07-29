@@ -36,6 +36,7 @@
 #include "indexfile.h"
 #include "language.h"
 #include "localsession.h"
+#include "mainerror.h"
 #include "mwindow.h"
 #include "resourcethread.h"
 #include "resourcepixmap.h"
@@ -83,7 +84,7 @@ void ResourcePixmap::reset()
 	zoom_y = 0;
 	visible = 1;
 }
-	
+
 void ResourcePixmap::resize(int w, int h)
 {
 	int new_w = (w > get_w()) ? w : get_w();
@@ -94,11 +95,11 @@ void ResourcePixmap::resize(int w, int h)
 
 
 void ResourcePixmap::draw_data(Edit *edit,
-	int64_t edit_x,
-	int64_t edit_w, 
-	int64_t pixmap_x, 
-	int64_t pixmap_w,
-	int64_t pixmap_h,
+	int edit_x,
+	int edit_w,
+	int pixmap_x,
+	int pixmap_w,
+	int pixmap_h,
 	int mode,
 	int indexes_only)
 {
@@ -361,7 +362,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 			y,
 			refresh_x + refresh_w,
 			mwindow->edl->local_session->zoom_track + y);
-//printf("ResourcePixmap::draw_data 70\n");
 
 
 // Draw media
@@ -392,14 +392,14 @@ void ResourcePixmap::draw_data(Edit *edit,
 }
 
 void ResourcePixmap::draw_title(Edit *edit,
-	int64_t edit_x, 
-	int64_t edit_w, 
-	int64_t pixmap_x, 
-	int64_t pixmap_w)
+	int edit_x,
+	int edit_w,
+	int pixmap_x,
+	int pixmap_w)
 {
 // coords relative to pixmap
-	int64_t total_x = edit_x - pixmap_x, total_w = edit_w;
-	int64_t x = total_x, w = total_w;
+	int total_x = edit_x - pixmap_x, total_w = edit_w;
+	int x = total_x, w = total_w;
 	int left_margin = 10;
 
 	if(x < 0) 
@@ -434,8 +434,7 @@ void ResourcePixmap::draw_title(Edit *edit,
 
 		canvas->set_color(mwindow->theme->title_color);
 		canvas->set_font(mwindow->theme->title_font);
-//printf("ResourcePixmap::draw_title 1 %d\n", total_x + 10);
-		
+
 // Justify the text on the left boundary of the edit if it is visible.
 // Otherwise justify it on the left side of the screen.
 		int text_x = total_x + left_margin;
@@ -462,10 +461,6 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 		case INDEX_NOTTESTED:
 			return;
 			break;
-// Disabled.  All files have an index.
-//		case INDEX_TOOSMALL:
-//			draw_audio_source(edit, x, w);
-//			break;
 		case INDEX_BUILDING:
 		case INDEX_READY:
 		{
@@ -489,21 +484,6 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 {
 	File *source = mwindow->audio_cache->check_out(edit->asset,
@@ -511,7 +491,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 
 	if(!source)
 	{
-		printf(_("ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n"), edit->asset->path);
+		errorbox(_("Failed to check out %s for drawing."), edit->asset->path);
 		return;
 	}
 
@@ -525,7 +505,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 // Single sample zoom
 	if(mwindow->edl->local_session->zoom_sample == 1)
 	{
-		int64_t source_start = (int64_t)(((pixmap_x - edit_x + x) * 
+		samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
 			mwindow->edl->local_session->zoom_sample + edit->startsource) *
 			asset_over_session);
 		double oldsample, newsample;
@@ -574,10 +554,10 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		while(x < w)
 		{
 // Starting sample of pixel relative to asset rate.
-			int64_t source_start = (int64_t)(((pixmap_x - edit_x + x) * 
+			samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
 				mwindow->edl->local_session->zoom_sample + edit->startsource) *
 				asset_over_session);
-			int64_t source_end = (int64_t)(((pixmap_x - edit_x + x + 1) * 
+			samplenum source_end = (int64_t)(((pixmap_x - edit_x + x + 1) * 
 				mwindow->edl->local_session->zoom_sample + edit->startsource) *
 				asset_over_session);
 			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset->id,
@@ -652,36 +632,18 @@ void ResourcePixmap::draw_wave(int x, double high, double low)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void ResourcePixmap::draw_video_resource(Edit *edit, 
-	int64_t edit_x, 
-	int64_t edit_w, 
-	int64_t pixmap_x,
-	int64_t pixmap_w,
+	int edit_x,
+	int edit_w,
+	int pixmap_x,
+	int pixmap_w,
 	int refresh_x, 
 	int refresh_w,
 	int mode)
 {
 // pixels spanned by a picon
-	int64_t picon_w = Units::round(edit->picon_w());
-	int64_t picon_h = edit->picon_h();
+	int picon_w = Units::round(edit->picon_w());
+	int picon_h = edit->picon_h();
 
 
 // Don't draw video if picon is bigger than edit
@@ -699,7 +661,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	if(mwindow->edl->session->show_titles) 
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
 // Frame in project touched by current pixel
-	int64_t project_frame;
+	framenum project_frame;
 
 // Get first frame touched by x and fix x to start of frame
 	if(frames_per_picon > 1)
@@ -715,13 +677,13 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		project_frame = Units::to_int64((double)((int64_t)refresh_x + pixmap_x - edit_x) / 
 			frame_w);
 		x = Units::round((double)project_frame * frame_w + edit_x - pixmap_x);
- 	}
+	}
 
 
 // Draw only cached frames
 	while(x < refresh_x + refresh_w)
 	{
-		int64_t source_frame = project_frame + edit->startsource;
+		framenum source_frame = project_frame + edit->startsource;
 		VFrame *picon_frame = 0;
 		int use_cache = 0;
 
@@ -740,7 +702,6 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Set picon thread to display from file
 			if(mode != 3)
 			{
-
 				canvas->resource_thread->add_picon(this, 
 					x, 
 					y, 
@@ -775,9 +736,8 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		else
 		{
 			x += Units::round(frame_w);
-			project_frame = (int64_t)((double)(x + pixmap_x - edit_x) / frame_w);
+			project_frame = (framenum)((double)(x + pixmap_x - edit_x) / frame_w);
 		}
-
 
 		canvas->test_timer();
 	}
@@ -787,8 +747,5 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 void ResourcePixmap::dump()
 {
 	printf("ResourcePixmap %p\n", this);
-	printf(" edit %llx edit_x %lld pixmap_x %lld pixmap_w %lld visible %d\n", edit_id, edit_x, pixmap_x, pixmap_w, visible);
+	printf(" edit %x edit_x %d pixmap_x %d pixmap_w %d visible %d\n", edit_id, edit_x, pixmap_x, pixmap_w, visible);
 }
-
-
-

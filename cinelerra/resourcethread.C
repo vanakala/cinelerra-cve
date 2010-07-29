@@ -70,7 +70,7 @@ VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap,
 	int picon_w,
 	int picon_h,
 	double frame_rate,
-	int64_t position,
+	framenum position,
 	int layer,
 	Asset *asset,
 	int operation_count)
@@ -91,17 +91,12 @@ VResourceThreadItem::~VResourceThreadItem()
 
 
 
-
-
-
-
-
 AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap, 
 	Asset *asset,
 	int x,
 	int channel,
-	int64_t start,
-	int64_t end,
+	samplenum start,
+	samplenum end,
 	int operation_count)
  : ResourceThreadItem(pixmap, asset, TRACK_AUDIO, operation_count)
 {
@@ -117,20 +112,6 @@ AResourceThreadItem::~AResourceThreadItem()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ResourceThread::ResourceThread(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
@@ -138,7 +119,6 @@ ResourceThread::ResourceThread(MWindow *mwindow)
 	temp_picon = 0;
 	temp_picon2 = 0;
 	draw_lock = new Condition(0, "ResourceThread::draw_lock", 0);
-//	interrupted_lock = new Condition(0, "ResourceThread::interrupted_lock", 0);
 	item_lock = new Mutex("ResourceThread::item_lock");
 	audio_buffer = 0;
 	timer = new Timer;
@@ -151,7 +131,6 @@ ResourceThread::ResourceThread(MWindow *mwindow)
 ResourceThread::~ResourceThread()
 {
 	delete draw_lock;
-//	delete interrupted_lock;
 	delete item_lock;
 	delete temp_picon;
 	delete temp_picon2;
@@ -170,7 +149,7 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 	int picon_w,
 	int picon_h,
 	double frame_rate,
-	int64_t position,
+	framenum position,
 	int layer,
 	Asset *asset)
 {
@@ -193,8 +172,8 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 	Asset *asset,
 	int x,
 	int channel,
-	int64_t source_start,
-	int64_t source_end)
+	samplenum source_start,
+	samplenum source_end)
 {
 	item_lock->lock("ResourceThread::item_lock");
 

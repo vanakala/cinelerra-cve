@@ -127,12 +127,12 @@ public:
 		int x,
 		int y);
 	~ResizeTrackWindow();
-	
+
 	void create_objects();
 	void update(int changed_scale, 
 		int changed_size, 
 		int changed_all);
-	
+
 	MWindow *mwindow;
 	ResizeTrackThread *thread;
 	ResizeTrackWidth *w;

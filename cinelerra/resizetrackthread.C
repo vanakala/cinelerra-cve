@@ -107,15 +107,15 @@ ResizeTrackWindow::ResizeTrackWindow(MWindow *mwindow,
 	int x,
 	int y)
  : BC_Window(PROGRAM_NAME ": Resize Track", 
-				x - 320 / 2,
-				y - get_resources()->ok_images[0]->get_h() + 100 / 2,
-				340, 
-				get_resources()->ok_images[0]->get_h() + 100, 
-				340, 
-				get_resources()->ok_images[0]->get_h() + 100, 
-				0,
-				0, 
-				1)
+		x - 320 / 2,
+		y - get_resources()->ok_images[0]->get_h() + 100 / 2,
+		340,
+		get_resources()->ok_images[0]->get_h() + 100,
+		340,
+		get_resources()->ok_images[0]->get_h() + 100,
+		0,
+		0,
+		1)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
@@ -180,7 +180,6 @@ void ResizeTrackWindow::update(int changed_scale,
 	int changed_size, 
 	int changed_all)
 {
-//printf("ResizeTrackWindow::update %d %d %d\n", changed_scale, changed_size, changed_all);
 	if(changed_scale || changed_all)
 	{
 		thread->w = (int)(thread->w1 * thread->w_scale);
@@ -197,9 +196,6 @@ void ResizeTrackWindow::update(int changed_scale,
 		h_scale->update((float)thread->h_scale);
 	}
 }
-
-
-
 
 
 
@@ -240,6 +236,7 @@ ResizeTrackWidth::ResizeTrackWidth(ResizeTrackWindow *gui,
 	this->gui = gui;
 	this->thread = thread;
 }
+
 int ResizeTrackWidth::handle_event()
 {
 	thread->w = atol(get_text());
@@ -273,6 +270,7 @@ ResizeTrackScaleW::ResizeTrackScaleW(ResizeTrackWindow *gui,
 	this->gui = gui;
 	this->thread = thread;
 }
+
 int ResizeTrackScaleW::handle_event()
 {
 	thread->w_scale = atof(get_text());
@@ -295,10 +293,3 @@ int ResizeTrackScaleH::handle_event()
 	gui->update(1, 0, 0);
 	return 1;
 }
-
-
-
-
-
-
-

@@ -34,6 +34,7 @@
 #include "arraylist.h"
 #include "bctimer.inc"
 #include "condition.inc"
+#include "datatype.h"
 #include "mwindow.inc"
 #include "resourcepixmap.inc"
 #include "thread.h"
@@ -64,14 +65,14 @@ public:
 		Asset *asset,
 		int x,
 		int channel,
-		int64_t start,
-		int64_t end,
+		samplenum start,
+		samplenum end,
 		int operation_count);
 	~AResourceThreadItem();
 	int x;
 	int channel;
-	int64_t start;
-	int64_t end;
+	samplenum start;
+	samplenum end;
 };
 
 class VResourceThreadItem : public ResourceThreadItem
@@ -83,20 +84,18 @@ public:
 		int picon_w,
 		int picon_h,
 		double frame_rate,
-		int64_t position,
+		framenum position,
 		int layer,
 		Asset *asset,
 		int operation_count);
 	~VResourceThreadItem();
 
-
-	
 	int picon_x;
 	int picon_y;
 	int picon_w;
 	int picon_h;
 	double frame_rate;
-	int64_t position;
+	framenum position;
 	int layer;
 };
 
@@ -107,8 +106,8 @@ public:
 	ResourceThread(MWindow *mwindow);
 	~ResourceThread();
 
-
 	void create_objects();
+
 // reset - delete all picons.  Used for index building.
 	void stop_draw(int reset);
 	void start_draw();
@@ -121,7 +120,7 @@ public:
 		int picon_w,
 		int picon_h,
 		double frame_rate,
-		int64_t position,
+		framenum position,
 		int layer,
 		Asset *asset);
 
@@ -130,8 +129,8 @@ public:
 		int x,
 		int channel,
 // samples relative to asset rate
-		int64_t source_start,
-		int64_t source_end);
+		samplenum source_start,
+		samplenum source_end);
 
 	void run();
 
@@ -140,7 +139,6 @@ public:
 
 	MWindow *mwindow;
 	Condition *draw_lock;
-//	Condition *interrupted_lock;
 	Mutex *item_lock;
 	ArrayList<ResourceThreadItem*> items;
 	int interrupted;
@@ -150,7 +148,7 @@ public:
 // Current audio buffer for spanning multiple pixels
 	double *audio_buffer;
 	int audio_channel;
-	int64_t audio_start;
+	samplenum audio_start;
 	int audio_samples;
 	int audio_asset_id;
 // Timer for waveform refreshes
@@ -162,8 +160,6 @@ public:
 // Incremented after every start_draw to prevent overlapping operations
 	int operation_count;
 };
-
-
 
 #endif
 

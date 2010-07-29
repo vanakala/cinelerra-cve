@@ -43,28 +43,28 @@ public:
 
 	void resize(int w, int h);
 	void draw_data(Edit *edit,
-		int64_t edit_x,
-		int64_t edit_w, 
-		int64_t pixmap_x, 
-		int64_t pixmap_w,
-		int64_t pixmap_h,
+		int edit_x,
+		int edit_w,
+		int pixmap_x,
+		int pixmap_w,
+		int pixmap_h,
 		int mode,
 		int indexes_only);
 	void draw_audio_resource(Edit *edit, 
 		int x, 
 		int w);
 	void draw_video_resource(Edit *edit, 
-		int64_t edit_x, 
-		int64_t edit_w, 
-		int64_t pixmap_x,
-		int64_t pixmap_w,
+		int edit_x,
+		int edit_w,
+		int pixmap_x,
+		int pixmap_w,
 		int refresh_x, 
 		int refresh_w,
 		int mode);
 	void draw_audio_source(Edit *edit, int x, int w);
 // Called by ResourceThread to update pixmap
 	void draw_wave(int x, double high, double low);
-	void draw_title(Edit *edit, int64_t edit_x, int64_t edit_w, int64_t pixmap_x, int64_t pixmap_w);
+	void draw_title(Edit *edit, int edit_x, int edit_w, int pixmap_x, int pixmap_w);
 	void reset();
 // Change to hourglass if timer expired
 	void test_timer();
@@ -76,12 +76,12 @@ public:
 // Visible in entire track canvas
 	int visible;
 // Section drawn
-	int64_t edit_id;
-	int64_t edit_x, pixmap_x, pixmap_w, pixmap_h;
+	int edit_id;
+	int edit_x, pixmap_x, pixmap_w, pixmap_h;
 	int64_t zoom_sample, zoom_track, zoom_y;
-	int64_t startsource;
+	posnum startsource;
 	double source_framerate, project_framerate;
-	int64_t source_samplerate, project_samplerate;
+	int source_samplerate, project_samplerate;
 	int data_type;
 // Timer to cause an hourglass to appear
 	Timer *timer;
