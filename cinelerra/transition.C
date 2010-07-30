@@ -71,17 +71,7 @@ void PasteTransition::run()
 
 
 
-
-
-
-
-
-
-
-
-
-
-Transition::Transition(EDL *edl, Edit *edit, const char *title, long unit_length)
+Transition::Transition(EDL *edl, Edit *edit, const char *title, posnum unit_length)
  : Plugin(edl, (PluginSet*)edit->edits, title)
 {
 	this->edit = edit;
@@ -174,7 +164,7 @@ void Transition::load_xml(FileXML *file)
 	file->tag.get_property("TITLE", title);
 	length = file->tag.get_property("LENGTH", length);
 	on = 0;
-	
+
 	do{
 		result = file->read_tag();
 		if(!result)

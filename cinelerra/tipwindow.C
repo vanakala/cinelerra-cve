@@ -123,18 +123,14 @@ void TipWindow::prev_tip()
 }
 
 
-
-
-
-
 TipWindowGUI::TipWindowGUI(MWindow *mwindow, 
 	TipWindow *thread,
 	int x,
 	int y)
  : BC_Window(PROGRAM_NAME ": Tip of the day",
- 	x,
+	x,
 	y,
- 	640,
+	640,
 	100,
 	640,
 	100,
@@ -149,24 +145,23 @@ TipWindowGUI::TipWindowGUI(MWindow *mwindow,
 void TipWindowGUI::create_objects()
 {
 	int x = 10, y = 10;
-SET_TRACE
 	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip()));
 	y = get_h() - 30;
-SET_TRACE
+
 	BC_CheckBox *checkbox; 
 	add_subwindow(checkbox = new TipDisable(mwindow, this, x, y));
-SET_TRACE
+
 	BC_Button *button;
 	y = get_h() - TipClose::calculate_h(mwindow) - 10;
 	x = get_w() - TipClose::calculate_w(mwindow) - 10;
 	add_subwindow(button = new TipClose(mwindow, this, x, y));
-SET_TRACE
+
 	x -= TipNext::calculate_w(mwindow) + 10;
 	add_subwindow(button = new TipNext(mwindow, this, x, y));
-SET_TRACE
+
 	x -= TipPrev::calculate_w(mwindow) + 10;
 	add_subwindow(button = new TipPrev(mwindow, this, x, y));
-SET_TRACE
+
 	x += button->get_w() + 10;
 
 	show_window();
@@ -187,14 +182,9 @@ int TipWindowGUI::keypress_event()
 }
 
 
-
-
-
-
-
 TipDisable::TipDisable(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y, 
 	mwindow->preferences->use_tipwindow, 
 	_("Show tip of the day."))
 {
@@ -212,7 +202,7 @@ int TipDisable::handle_event()
 
 TipNext::TipNext(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
  : BC_Button(x, 
- 	y, 
+	y, 
 	mwindow->theme->get_image_set("next_tip"))
 {
 	this->mwindow = mwindow;
@@ -229,10 +219,6 @@ int TipNext::calculate_w(MWindow *mwindow)
 {
 	return mwindow->theme->get_image_set("next_tip")[0]->get_w();
 }
-
-
-
-
 
 
 TipPrev::TipPrev(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
@@ -254,13 +240,6 @@ int TipPrev::calculate_w(MWindow *mwindow)
 }
 
 
-
-
-
-
-
-
-
 TipClose::TipClose(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("close_tip"))
 {
@@ -279,10 +258,8 @@ int TipClose::calculate_w(MWindow *mwindow)
 {
 	return mwindow->theme->get_image_set("close_tip")[0]->get_w();
 }
+
 int TipClose::calculate_h(MWindow *mwindow)
 {
 	return mwindow->theme->get_image_set("close_tip")[0]->get_h();
 }
-
-
-

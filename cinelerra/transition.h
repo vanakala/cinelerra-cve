@@ -24,6 +24,7 @@
 
 class PasteTransition;
 
+#include "datatype.h"
 #include "edit.inc"
 #include "filexml.inc"
 #include "mwindow.inc"
@@ -56,7 +57,7 @@ public:
 class Transition : public Plugin
 {
 public:
-	Transition(EDL *edl, Edit *edit, const char *title, long unit_length);
+	Transition(EDL *edl, Edit *edit, const char *title, posnum unit_length);
 
 	Edit *edit;
 

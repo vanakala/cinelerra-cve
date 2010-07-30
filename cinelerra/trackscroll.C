@@ -34,7 +34,7 @@
 
 TrackScroll::TrackScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int h)
  : BC_ScrollBar(x, 
- 	y, 
+	y,
 	SCROLL_VERT, 
 	h, 
 	0, 
@@ -82,8 +82,6 @@ int TrackScroll::handle_event()
 	mwindow->gui->cursor->draw(1);
 	mwindow->gui->patchbay->update();
 	mwindow->gui->canvas->flash();
-// Scrollbar must be active to trap button release events
-//	mwindow->gui->canvas->activate();
 	old_position = get_value();
 	flush();
 	return 1;

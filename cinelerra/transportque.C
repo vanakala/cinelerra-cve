@@ -105,24 +105,24 @@ int TransportCommand::get_direction()
 {
 	switch(command)
 	{
-		case SINGLE_FRAME_FWD:
-		case NORMAL_FWD:
-		case FAST_FWD:
-		case SLOW_FWD:
-		case CURRENT_FRAME:
-			return PLAY_FORWARD;
-			break;
+	case SINGLE_FRAME_FWD:
+	case NORMAL_FWD:
+	case FAST_FWD:
+	case SLOW_FWD:
+	case CURRENT_FRAME:
+		return PLAY_FORWARD;
+		break;
 
-		case SINGLE_FRAME_REWIND:
-		case NORMAL_REWIND:
-		case FAST_REWIND:
-		case SLOW_REWIND:
-			return PLAY_REVERSE;
-			break;
+	case SINGLE_FRAME_REWIND:
+	case NORMAL_REWIND:
+	case FAST_REWIND:
+	case SLOW_REWIND:
+		return PLAY_REVERSE;
+		break;
 
-		default:
-			return PLAY_FORWARD;
-			break;
+	default:
+		return PLAY_FORWARD;
+		break;
 	}
 }
 
@@ -130,23 +130,23 @@ float TransportCommand::get_speed()
 {
 	switch(command)
 	{
-		case SLOW_FWD:
-		case SLOW_REWIND:
-			return 0.5;
-			break;
-		
-		case NORMAL_FWD:
-		case NORMAL_REWIND:
-		case SINGLE_FRAME_FWD:
-		case SINGLE_FRAME_REWIND:
-		case CURRENT_FRAME:
-			return 1;
-			break;
-		
-		case FAST_FWD:
-		case FAST_REWIND:
-			return 2;
-			break;
+	case SLOW_FWD:
+	case SLOW_REWIND:
+		return 0.5;
+		break;
+
+	case NORMAL_FWD:
+	case NORMAL_REWIND:
+	case SINGLE_FRAME_FWD:
+	case SINGLE_FRAME_REWIND:
+	case CURRENT_FRAME:
+		return 1;
+		break;
+
+	case FAST_FWD:
+	case FAST_REWIND:
+		return 2;
+		break;
 	}
 }
 
@@ -155,55 +155,50 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 {
 	if(!edl) edl = this->edl;
 
-
-
-
 	switch(command)
 	{
-		case SLOW_FWD:
-		case FAST_FWD:
-		case NORMAL_FWD:
-			start_position = edl->local_session->get_selectionstart(1);
-			if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
-				end_position = edl->tracks->total_playable_length();
-			else
-				end_position = edl->local_session->get_selectionend(1);
-// this prevents a crash if start position is after the loop when playing forwards
- 		    if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end)  
- 			{
-				    start_position = edl->local_session->loop_start;
-			}
-			break;
-		
-		case SLOW_REWIND:
-		case FAST_REWIND:
-		case NORMAL_REWIND:
+	case SLOW_FWD:
+	case FAST_FWD:
+	case NORMAL_FWD:
+		start_position = edl->local_session->get_selectionstart(1);
+		if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
+			end_position = edl->tracks->total_playable_length();
+		else
 			end_position = edl->local_session->get_selectionend(1);
-			if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
-				start_position = 0;
-			else
-				start_position = edl->local_session->get_selectionstart(1);
-// this prevents a crash if start position is before the loop when playing backwards
-			if (edl->local_session->loop_playback && start_position <= edl->local_session->loop_start)
-			{
-					start_position = edl->local_session->loop_end;
-					end_position = edl->local_session->loop_end;
-			}
-			break;
-		
-		case CURRENT_FRAME:
-		case SINGLE_FRAME_FWD:
+// this prevents a crash if start position is after the loop when playing forwards
+		if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end)  
+		{
+			start_position = edl->local_session->loop_start;
+		}
+		break;
+
+	case SLOW_REWIND:
+	case FAST_REWIND:
+	case NORMAL_REWIND:
+		end_position = edl->local_session->get_selectionend(1);
+		if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
+			start_position = 0;
+		else
 			start_position = edl->local_session->get_selectionstart(1);
-			end_position = start_position + 
-				1.0 / 
-				edl->session->frame_rate;
-			break;
-		
-		case SINGLE_FRAME_REWIND:
-			start_position = edl->local_session->get_selectionend(1);
-			end_position = start_position - 
-				1.0 / 
-				edl->session->frame_rate;
+// this prevents a crash if start position is before the loop when playing backwards
+		if (edl->local_session->loop_playback && start_position <= edl->local_session->loop_start)
+		{
+			start_position = edl->local_session->loop_end;
+			end_position = edl->local_session->loop_end;
+		}
+		break;
+
+	case CURRENT_FRAME:
+	case SINGLE_FRAME_FWD:
+		start_position = edl->local_session->get_selectionstart(1);
+		end_position = start_position + 
+			1.0 / edl->session->frame_rate;
+		break;
+
+	case SINGLE_FRAME_REWIND:
+		start_position = edl->local_session->get_selectionend(1);
+		end_position = start_position - 
+			1.0 / edl->session->frame_rate;
 			break;
 	}
 
@@ -217,13 +212,13 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 
 	switch(get_direction())
 	{
-		case PLAY_FORWARD:
-			playbackstart = start_position;
-			break;
+	case PLAY_FORWARD:
+		playbackstart = start_position;
+		break;
 
-		case PLAY_REVERSE:
-			playbackstart = end_position;
-			break;
+	case PLAY_REVERSE:
+		playbackstart = end_position;
+		break;
 	}
 }
 
