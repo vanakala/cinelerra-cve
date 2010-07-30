@@ -64,9 +64,9 @@ public:
 	virtual void initialize();
 	virtual void get_mwindow_sizes(MWindowGUI *gui, 
 		int w, 
-		int h);
-	virtual void get_vwindow_sizes(VWindowGUI *gui);
-	virtual void get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls);
+		int h) {};
+	virtual void get_vwindow_sizes(VWindowGUI *gui) {};
+	virtual void get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls) {};
 	virtual void get_awindow_sizes(AWindowGUI *gui);
 	virtual void get_rmonitor_sizes(int do_audio, 
 		int do_video,
@@ -76,7 +76,7 @@ public:
 		int audio_channels);
 	virtual void get_recordgui_sizes(RecordGUI *gui,
 		int w,
-		int h);
+		int h) {};
 	virtual void get_batchrender_sizes(BatchRenderGUI *gui,
 		int w, 
 		int h);
@@ -87,8 +87,8 @@ public:
 	virtual void draw_awindow_bg(AWindowGUI *gui);
 	virtual void draw_cwindow_bg(CWindowGUI *gui);
 	virtual void draw_lwindow_bg(LevelWindowGUI *gui);
-	virtual void draw_mwindow_bg(MWindowGUI *gui);
-	virtual void draw_vwindow_bg(VWindowGUI *gui);
+	virtual void draw_mwindow_bg(MWindowGUI *gui) {};
+	virtual void draw_vwindow_bg(VWindowGUI *gui) {};
 	virtual void draw_resource_bg(TrackCanvas *canvas,
 		ResourcePixmap *pixmap, 
 		int edit_x,
@@ -99,14 +99,13 @@ public:
 		int x2,
 		int y2);
 
-	virtual void get_preferences_sizes();
-	virtual void draw_preferences_bg(PreferencesWindow *gui);
-	virtual void get_new_sizes(NewWindow *gui);
-	virtual void draw_new_bg(NewWindow *gui);
-	virtual void draw_setformat_bg(SetFormatWindow *window);
+	virtual void get_preferences_sizes() {};
+	virtual void draw_preferences_bg(PreferencesWindow *gui) {};
+	virtual void get_new_sizes(NewWindow *gui) {};
+	virtual void draw_new_bg(NewWindow *gui) {};
+	virtual void draw_setformat_bg(SetFormatWindow *window) {};
 
 	virtual void build_menus();
-//	unsigned char* get_image(char *title);
 	void flush_images();
 
 	ArrayList<BC_ListBoxItem*> aspect_ratios;
@@ -208,7 +207,6 @@ public:
 	int menueffect_file_x, menueffect_file_y;
 	int menueffect_tools_x, menueffect_tools_y;
 
-
 	int recordgui_batches_w, recordgui_batches_h;
 	int recordgui_batches_x, recordgui_batches_y;
 	int recordgui_batch_x, recordgui_batch_y, recordgui_batchcaption_x;
@@ -245,8 +243,6 @@ public:
 	int vtime_x, vtime_y, vtime_w;
 	int vtransport_x, vtransport_y;
 	int vzoom_x, vzoom_y;
-
-
 
 // Bitmaps
 	VFrame *about_bg;
@@ -315,9 +311,8 @@ public:
 	VFrame **viewasset_data;
 	VFrame *vtimebar_bg_data;
 
-
-
 	MWindow *mwindow;
+
 // Compressed images are loaded in here.
 	char *data_buffer;
 	char *contents_buffer;

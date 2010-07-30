@@ -20,6 +20,7 @@
  */
 
 #include "awindowgui.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "colors.h"
 #include "cwindowgui.h"
@@ -87,19 +88,13 @@ Theme::Theme()
 
 #include "data/about_png.h"
 	about_bg = new VFrame(about_png);
-
-
-
-	
-
-
 }
 
 
 // Need to delete everything here
 Theme::~Theme()
 {
-	flush_images();	
+	flush_images();
 
 	aspect_ratios.remove_all_objects();
 	frame_rates.remove_all_objects();
@@ -136,12 +131,8 @@ void Theme::initialize()
 }
 
 
-
-
 void Theme::build_menus()
 {
-
-
 	aspect_ratios.append(new BC_ListBoxItem("3:2"));
 	aspect_ratios.append(new BC_ListBoxItem("4:3"));
 	aspect_ratios.append(new BC_ListBoxItem("16:9"));
@@ -151,6 +142,7 @@ void Theme::build_menus()
 	aspect_ratios.append(new BC_ListBoxItem("2.30:1"));
 	aspect_ratios.append(new BC_ListBoxItem("2.35:1"));
 	aspect_ratios.append(new BC_ListBoxItem("2.66:1"));
+
 	frame_sizes.append(new BC_ListBoxItem("160x120"));
 	frame_sizes.append(new BC_ListBoxItem("240x180"));
 	frame_sizes.append(new BC_ListBoxItem("320x240"));
@@ -164,6 +156,7 @@ void Theme::build_menus()
 	frame_sizes.append(new BC_ListBoxItem("960x1080"));
 	frame_sizes.append(new BC_ListBoxItem("1920x1080"));
 	frame_sizes.append(new BC_ListBoxItem("1920x1088"));
+
 	sample_rates.append(new BC_ListBoxItem("8000"));
 	sample_rates.append(new BC_ListBoxItem("16000"));
 	sample_rates.append(new BC_ListBoxItem("22050"));
@@ -172,6 +165,7 @@ void Theme::build_menus()
 	sample_rates.append(new BC_ListBoxItem("48000"));
 	sample_rates.append(new BC_ListBoxItem("96000"));
 	sample_rates.append(new BC_ListBoxItem("192000"));
+
 	frame_rates.append(new BC_ListBoxItem("1"));
 	frame_rates.append(new BC_ListBoxItem("5"));
 	frame_rates.append(new BC_ListBoxItem("10"));
@@ -185,6 +179,7 @@ void Theme::build_menus()
 	frame_rates.append(new BC_ListBoxItem("50"));
 	frame_rates.append(new BC_ListBoxItem("59.94"));
 	frame_rates.append(new BC_ListBoxItem("60"));
+
 	char string[BCTEXTLEN];
 	for(int i = 1; i < 17; i++)
 	{
@@ -218,46 +213,46 @@ void Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 
 	switch(src->get_color_model())
 	{
+	case BC_RGBA8888:
+		switch(dst->get_color_model())
+		{
 		case BC_RGBA8888:
-			switch(dst->get_color_model())
+			for(int i = 0; i < h; i++)
 			{
-				case BC_RGBA8888:
-					for(int i = 0; i < h; i++)
-					{
-						unsigned char *in_row = in_rows[i] + in_x1 * 4;
-						unsigned char *out_row = out_rows[i];
-						for(int j = 0; j < w; j++)
-						{
-							int opacity = in_row[3];
-							int transparency = 0xff - opacity;
-							out_row[0] = (in_row[0] * opacity + out_row[0] * transparency) / 0xff;
-							out_row[1] = (in_row[1] * opacity + out_row[1] * transparency) / 0xff;
-							out_row[2] = (in_row[2] * opacity + out_row[2] * transparency) / 0xff;
-							out_row[3] = MAX(in_row[3], out_row[3]);
-							out_row += 4;
-							in_row += 4;
-						}
-					}
-					break;
-				case BC_RGB888:
-					for(int i = 0; i < h; i++)
-					{
-						unsigned char *in_row = in_rows[i] + in_x1 * 4;
-						unsigned char *out_row = out_rows[i];
-						for(int j = 0; j < w; j++)
-						{
-							int opacity = in_row[3];
-							int transparency = 0xff - opacity;
-							out_row[0] = (in_row[0] * opacity + out_row[0] * transparency) / 0xff;
-							out_row[1] = (in_row[1] * opacity + out_row[1] * transparency) / 0xff;
-							out_row[2] = (in_row[2] * opacity + out_row[2] * transparency) / 0xff;
-							out_row += 3;
-							in_row += 4;
-						}
-					}
-					break;
+				unsigned char *in_row = in_rows[i] + in_x1 * 4;
+				unsigned char *out_row = out_rows[i];
+				for(int j = 0; j < w; j++)
+				{
+					int opacity = in_row[3];
+					int transparency = 0xff - opacity;
+					out_row[0] = (in_row[0] * opacity + out_row[0] * transparency) / 0xff;
+					out_row[1] = (in_row[1] * opacity + out_row[1] * transparency) / 0xff;
+					out_row[2] = (in_row[2] * opacity + out_row[2] * transparency) / 0xff;
+					out_row[3] = MAX(in_row[3], out_row[3]);
+					out_row += 4;
+					in_row += 4;
+				}
 			}
 			break;
+		case BC_RGB888:
+			for(int i = 0; i < h; i++)
+			{
+				unsigned char *in_row = in_rows[i] + in_x1 * 4;
+				unsigned char *out_row = out_rows[i];
+				for(int j = 0; j < w; j++)
+				{
+					int opacity = in_row[3];
+					int transparency = 0xff - opacity;
+					out_row[0] = (in_row[0] * opacity + out_row[0] * transparency) / 0xff;
+					out_row[1] = (in_row[1] * opacity + out_row[1] * transparency) / 0xff;
+					out_row[2] = (in_row[2] * opacity + out_row[2] * transparency) / 0xff;
+					out_row += 3;
+					in_row += 4;
+				}
+			}
+			break;
+		}
+		break;
 	}
 }
 
@@ -284,20 +279,20 @@ void Theme::build_transport(char *title,
 
 		switch(third)
 		{
-			case 0:
-				in_x1 = 0;
-				in_x2 = default_data.get_w();
-				break;
+		case 0:
+			in_x1 = 0;
+			in_x2 = default_data.get_w();
+			break;
 
-			case 1:
-				in_x1 = (int)(bg_data[i]->get_w() * 0.33);
-				in_x2 = in_x1 + default_data.get_w();
-				break;
+		case 1:
+			in_x1 = (int)(bg_data[i]->get_w() * 0.33);
+			in_x2 = in_x1 + default_data.get_w();
+			break;
 
-			case 2:
-				in_x1 = bg_data[i]->get_w() - default_data.get_w();
-				in_x2 = in_x1 + default_data.get_w();
-				break;
+		case 2:
+			in_x1 = bg_data[i]->get_w() - default_data.get_w();
+			in_x2 = in_x1 + default_data.get_w();
+			break;
 		}
 
 		overlay(data[i], 
@@ -310,13 +305,6 @@ void Theme::build_transport(char *title,
 
 	new_image_set_images(title, 3, data[0], data[1], data[2]);
 }
-
-
-
-
-
-
-
 
 
 void Theme::build_patches(VFrame** &data,
@@ -340,20 +328,20 @@ void Theme::build_patches(VFrame** &data,
 
 		switch(region)
 		{
-			case 0:
-				in_x1 = 0;
-				in_x2 = default_data.get_w();
-				break;
+		case 0:
+			in_x1 = 0;
+			in_x2 = default_data.get_w();
+			break;
 
-			case 1:
-				in_x1 = (int)(bg_data[i]->get_w() * 0.33);
-				in_x2 = in_x1 + default_data.get_w();
-				break;
+		case 1:
+			in_x1 = (int)(bg_data[i]->get_w() * 0.33);
+			in_x2 = in_x1 + default_data.get_w();
+			break;
 
-			case 2:
-				in_x1 = bg_data[i]->get_w() - default_data.get_w();
-				in_x2 = in_x1 + default_data.get_w();
-				break;
+		case 2:
+			in_x1 = bg_data[i]->get_w() - default_data.get_w();
+			in_x2 = in_x1 + default_data.get_w();
+			break;
 		}
 
 		overlay(data[i], 
@@ -362,12 +350,6 @@ void Theme::build_patches(VFrame** &data,
 			&default_data);
 	}
 }
-
-
-
-
-
-
 
 
 void Theme::build_button(VFrame** &data,
@@ -423,43 +405,11 @@ void Theme::build_toggle(VFrame** &data,
 			&default_data);
 }
 
-#define TIMEBAR_HEIGHT 10
-#define PATCHBAY_W 145
-#define STATUS_H 20
-#define ZOOM_H 30
-
-void Theme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
-{
-}
-
-void Theme::draw_mwindow_bg(MWindowGUI *gui)
-{
-}
-
-
-
-
 void Theme::draw_awindow_bg(AWindowGUI *gui)
 {
 	gui->clear_box(0, 0, mwindow->session->awindow_w, mwindow->session->awindow_h);
 	gui->flash();
 }
-
-void Theme::draw_vwindow_bg(VWindowGUI *gui)
-{
-// 	gui->clear_box(0, 
-// 		0, 
-// 		mwindow->session->vwindow_w, 
-// 		mwindow->session->vwindow_h);
-// // Timebar
-// 	gui->draw_3segmenth(vtimebar_x, 
-// 		vtimebar_y, 
-// 		vtimebar_w, 
-// 		vtimebar_bg_data,
-// 		0);
-// 	gui->flash();
-}
-
 
 void Theme::draw_cwindow_bg(CWindowGUI *gui)
 {
@@ -501,13 +451,25 @@ void Theme::draw_resource_bg(TrackCanvas *canvas,
 
 	switch(mwindow->edl->local_session->zoom_track)
 	{
-		case 1024: image = get_image("resource1024");  break;
-		case 512: image = get_image("resource512");  break;
-		case 256: image = get_image("resource256");  break;
-		case 128: image = get_image("resource128");  break;
-		case 64:  image = get_image("resource64");   break;
-		default:
-		case 32:  image = get_image("resource32");   break;
+	case 1024: 
+		image = get_image("resource1024");
+		break;
+	case 512:
+		image = get_image("resource512");
+		break;
+	case 256:
+		image = get_image("resource256");
+		break;
+	case 128: 
+		image = get_image("resource128");
+		break;
+	case 64:
+		image = get_image("resource64");
+		break;
+	default:
+	case 32:
+		image = get_image("resource32");
+		break;
 	}
 
 	canvas->draw_3segmenth(x1, 
@@ -519,20 +481,11 @@ void Theme::draw_resource_bg(TrackCanvas *canvas,
 		pixmap);
 }
 
-void Theme::get_vwindow_sizes(VWindowGUI *gui)
-{
-}
-
-void Theme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
-{
-}
-
 void Theme::get_awindow_sizes(AWindowGUI *gui)
 {
 	abuttons_x = 0; 
 	abuttons_y = 0;
 	afolders_x = 0;
-//	afolders_y = deletedisk_data[0]->get_h();
 	afolders_y = 0;
 	afolders_w = mwindow->session->afolders_w;
 	afolders_h = mwindow->session->awindow_h - afolders_y;
@@ -556,7 +509,6 @@ void Theme::get_rmonitor_sizes(int do_audio,
 	int x = 10;
 	int y = 3;
 
-
 	if(do_avc)
 	{
 		rmonitor_canvas_y = 30;
@@ -569,7 +521,6 @@ void Theme::get_rmonitor_sizes(int do_audio,
 		rmonitor_tx_x = 0;
 		rmonitor_tx_y = 0;
 	}
-
 
 	if(do_channel)
 	{
@@ -587,7 +538,6 @@ void Theme::get_rmonitor_sizes(int do_audio,
 		rmonitor_interlace_y = y;
 	}
 
-
 	if(do_audio)
 	{
 		rmonitor_meter_x = mwindow->session->rmonitor_w - MeterPanel::get_meters_width(audio_channels, 1);
@@ -603,10 +553,6 @@ void Theme::get_rmonitor_sizes(int do_audio,
 	rmonitor_canvas_w = rmonitor_meter_x - rmonitor_canvas_x;
 	if(do_audio) rmonitor_canvas_w -= 10;
 	rmonitor_canvas_h = mwindow->session->rmonitor_h - rmonitor_canvas_y;
-}
-
-void Theme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
-{
 }
 
 void Theme::get_batchrender_sizes(BatchRenderGUI *gui,
@@ -668,27 +614,6 @@ void Theme::get_menueffect_sizes(int use_list)
 	menueffect_tools_x = menueffect_file_x;
 	menueffect_tools_y = menueffect_file_y + 20;
 }
-
-void Theme::get_preferences_sizes()
-{
-}
-
-void Theme::draw_preferences_bg(PreferencesWindow *gui)
-{
-}
-
-void Theme::get_new_sizes(NewWindow *gui)
-{
-}
-
-void Theme::draw_new_bg(NewWindow *gui)
-{
-}
-
-void Theme::draw_setformat_bg(SetFormatWindow *window)
-{
-}
-
 
 
 

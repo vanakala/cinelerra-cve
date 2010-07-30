@@ -97,7 +97,7 @@ void SetFormatThread::run()
 	new_settings->copy_session(mwindow->edl);
 
 // This locks mwindow, so it must be done outside window_lock
- 	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->theme->setformat_w / 2;
+	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->theme->setformat_w / 2;
 	int y = mwindow->gui->get_abs_cursor_y(1) - mwindow->theme->setformat_h / 2;
 
 	window_lock->lock("SetFormatThread::run 1");
@@ -107,12 +107,10 @@ void SetFormatThread::run()
 
 	int result = window->run_window();
 
-
 	window_lock->lock("SetFormatThread::run 2");
 	delete window;
 	window = 0;
 	window_lock->unlock();
-
 
 	if(!result)
 	{
@@ -135,7 +133,6 @@ void SetFormatThread::apply_changes()
 	memcpy(&mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
 		new_settings->session->achannel_positions,
 		sizeof(int) * MAXCHANNELS);
-
 
 	mwindow->edl->copy_session(new_settings, 1);
 	mwindow->edl->session->output_w = dimension[0];
@@ -186,7 +183,6 @@ void SetFormatThread::apply_changes()
 		errormsg(_("This project's dimensions are not multiples of 4 so\n"
 			"it can't be rendered by OpenGL."));
 	}
-
 
 // Flash frame
 	mwindow->sync_parameters(CHANGE_ALL);
@@ -294,18 +290,12 @@ void SetFormatThread::update_aspect()
 
 
 
-
-
-
-
-
-
 SetFormatWindow::SetFormatWindow(MWindow *mwindow, 
 	SetFormatThread *thread,
 	int x,
 	int y)
  : BC_Window(PROGRAM_NAME ": Set Format",
- 	x,
+	x,
 	y,
 	mwindow->theme->setformat_w,
 	mwindow->theme->setformat_h,
@@ -324,11 +314,8 @@ void SetFormatWindow::create_objects()
 	int x = 10, y = mwindow->theme->setformat_y1;
 	BC_TextBox *textbox;
 	BC_Title *title;
-
-
 	mwindow->theme->draw_setformat_bg(this);
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
-
 
 	presets = new SetFormatPresets(mwindow, 
 		this, 
@@ -345,7 +332,7 @@ void SetFormatWindow::create_objects()
 		_("Audio"), 
 		LARGEFONT));
 	y = mwindow->theme->setformat_y3;
-	
+
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y,
 		_("Samplerate:")));
@@ -382,14 +369,6 @@ void SetFormatWindow::create_objects()
 		mwindow->theme->setformat_channels_w, 
 		mwindow->theme->setformat_channels_h));
 	canvas->draw();
-
-
-
-
-
-
-
-
 
 	y = mwindow->theme->setformat_y2;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
@@ -441,7 +420,7 @@ void SetFormatWindow::create_objects()
 		this, 
 		x + pulldown->get_w() + 5,
 		y - mwindow->theme->setformat_margin));
-		
+
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
@@ -504,7 +483,7 @@ void SetFormatWindow::create_objects()
 	add_subwindow(auto_aspect = new ScaleAspectAuto(x, y, thread));
 	y += mwindow->theme->setformat_margin;
 
-	// --------------------
+// --------------------
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
 		_("Interlace mode:")));
@@ -520,7 +499,6 @@ void SetFormatWindow::create_objects()
 		mwindow->theme->setformat_x4 + textbox->get_w(), 
 		y)); 
 	y += mwindow->theme->setformat_margin;
-
 
 	BC_OKTextButton *ok;
 	BC_CancelTextButton *cancel;
@@ -540,25 +518,12 @@ const char* SetFormatWindow::get_preset_text()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 SetFormatPresets::SetFormatPresets(MWindow *mwindow, 
 	SetFormatWindow *gui, 
 	int x, 
 	int y)
  : FormatPresets(mwindow, 0, gui, x, y)
 {
-	
 }
 
 SetFormatPresets::~SetFormatPresets()
@@ -577,19 +542,6 @@ EDL* SetFormatPresets::get_edl()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 SetSampleRateTextBox::SetSampleRateTextBox(SetFormatThread *thread, int x, int y)
  : BC_TextBox(x, y, 100, 1, (int64_t)thread->new_settings->session->sample_rate)
 {
@@ -606,12 +558,12 @@ SetChannelsTextBox::SetChannelsTextBox(SetFormatThread *thread, int x, int y)
 {
 	this->thread = thread;
 }
+
 int SetChannelsTextBox::handle_event()
 {
 	int new_channels = CLIP(atoi(get_text()), 1, MAXCHANNELS);
-	
-	thread->new_settings->session->audio_channels = new_channels;
 
+	thread->new_settings->session->audio_channels = new_channels;
 
 	if(new_channels > 0)
 	{
@@ -619,7 +571,6 @@ int SetChannelsTextBox::handle_event()
 			&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
 			sizeof(int) * MAXCHANNELS);
 	}
-
 
 	thread->window->canvas->draw();
 	return 1;
@@ -633,7 +584,7 @@ SetChannelsCanvas::SetChannelsCanvas(MWindow *mwindow,
 	int w,
 	int h)
  : BC_SubWindow(x, 
- 	y, 
+	y,
 	w,
 	h)
 {
@@ -649,6 +600,7 @@ SetChannelsCanvas::SetChannelsCanvas(MWindow *mwindow,
 		mwindow->theme->channel_position_data->get_w(),
 		mwindow->theme->channel_position_data->get_h());
 }
+
 SetChannelsCanvas::~SetChannelsCanvas()
 {
 	delete temp_picon;
@@ -664,10 +616,6 @@ int SetChannelsCanvas::draw(int angle)
 	int real_y = box_r;
 
 	draw_top_background(get_top_level(), 0, 0, get_w(), get_h());
-//	draw_vframe(mwindow->theme->channel_bg_data, 0, 0);
-
-
-
 
 	int x, y, w, h;
 	char string[32];
@@ -793,13 +741,6 @@ int SetChannelsCanvas::cursor_motion_event()
 }
 
 
-
-
-
-
-
-
-
 SetFrameRateTextBox::SetFrameRateTextBox(SetFormatThread *thread, int x, int y)
  : BC_TextBox(x, y, 100, 1, (float)thread->new_settings->session->frame_rate)
 {
@@ -813,30 +754,17 @@ int SetFrameRateTextBox::handle_event()
 }
 
 
-// 
-// SetVChannels::SetVChannels(SetFormatThread *thread, int x, int y)
-//  : BC_TextBox(x, y, 100, 1, thread->channels)
-// {
-// 	this->thread = thread;
-// }
-// int SetVChannels::handle_event()
-// {
-// 	thread->channels = atol(get_text());
-// 	return 1;
-// }
-
-
-
-
 ScaleSizeText::ScaleSizeText(int x, int y, SetFormatThread *thread, int *output)
  : BC_TextBox(x, y, 100, 1, *output)
 { 
 	this->thread = thread; 
 	this->output = output; 
 }
+
 ScaleSizeText::~ScaleSizeText()
 {
 }
+
 int ScaleSizeText::handle_event()
 {
 	*output = atol(get_text());
@@ -859,13 +787,14 @@ ScaleRatioText::ScaleRatioText(int x,
 	this->thread = thread; 
 	this->output = output; 
 }
+
 ScaleRatioText::~ScaleRatioText()
 {
 }
+
 int ScaleRatioText::handle_event()
 {
 	*output = atof(get_text());
-	//if(*output <= 0) *output = 1;
 	if(*output > 10000) *output = 10000;
 	if(*output < -10000) *output = -10000;
 	*output *= -1;
@@ -897,6 +826,7 @@ ScaleAspectText::ScaleAspectText(int x, int y, SetFormatThread *thread, float *o
 	this->output = output;
 	this->thread = thread;
 }
+
 ScaleAspectText::~ScaleAspectText()
 {
 }
@@ -906,10 +836,6 @@ int ScaleAspectText::handle_event()
 	*output = atof(get_text());
 	return 1;
 }
-
-
-
-
 
 
 SetFormatApply::SetFormatApply(int x, int y, SetFormatThread *thread)
@@ -923,17 +849,6 @@ int SetFormatApply::handle_event()
 	thread->apply_changes();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 FormatSwapExtents::FormatSwapExtents(MWindow *mwindow, 
@@ -961,7 +876,3 @@ int FormatSwapExtents::handle_event()
 	thread->update_window();
 	return 1;
 }
-
-
-
-

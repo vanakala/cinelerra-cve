@@ -86,9 +86,9 @@ class SetChannelsTextBox : public BC_TextBox
 {
 public:
 	SetChannelsTextBox(SetFormatThread *thread, int x, int y);
-	
+
 	int handle_event();
-	
+
 	SetFormatThread *thread;
 	MWindow *mwindow;
 };
@@ -104,18 +104,18 @@ public:
 		int w,
 		int h);
 	~SetChannelsCanvas();
-	
+
 	int draw(int angle = -1);
 	int get_dimensions(int channel_position, int &x, int &y, int &w, int &h);
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
 
-private:	
+private:
 	int active_channel;   // for selection
 	int degree_offset;
 	int box_r;
-	
+
 	int poltoxy(int &x, int &y, int r, int d);
 	int xytopol(int &d, int x, int y);
 	MWindow *mwindow;
@@ -233,12 +233,5 @@ public:
 	ScaleAspectAuto *auto_aspect;
 	InterlacemodePulldown *interlace_pulldown;
 };
-
-	
-	
-	
-
-
-
 
 #endif

@@ -34,7 +34,7 @@
 
 StatusBar::StatusBar(MWindow *mwindow, MWindowGUI *gui)
  : BC_SubWindow(mwindow->theme->mstatus_x, 
- 	mwindow->theme->mstatus_y, 
+	mwindow->theme->mstatus_y,
 	mwindow->theme->mstatus_w, 
 	mwindow->theme->mstatus_h)
 {
@@ -50,9 +50,8 @@ StatusBar::~StatusBar()
 
 int StatusBar::create_objects()
 {
-//printf("StatusBar::create_objects 1\n");
 	int x = 10, y = 5;
-//printf("StatusBar::create_objects 1\n");
+
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	add_subwindow(status_text = new BC_Title(mwindow->theme->mstatus_message_x, 
 		mwindow->theme->mstatus_message_y, 
@@ -60,29 +59,25 @@ int StatusBar::create_objects()
 		MEDIUMFONT,
 		mwindow->theme->message_normal));
 	x = get_w() - 290;
-//printf("StatusBar::create_objects 1\n");
 	add_subwindow(main_progress = 
 		new BC_ProgressBar(mwindow->theme->mstatus_progress_x, 
 			mwindow->theme->mstatus_progress_y, 
 			mwindow->theme->mstatus_progress_w, 
 			mwindow->theme->mstatus_progress_w));
 	x += main_progress->get_w() + 5;
-//printf("StatusBar::create_objects 1\n");
 	add_subwindow(main_progress_cancel = 
 		new StatusBarCancel(mwindow, 
 			mwindow->theme->mstatus_cancel_x, 
 			mwindow->theme->mstatus_cancel_y));
-//printf("StatusBar::create_objects 1\n");
 	default_message();
 	flash();
-//printf("StatusBar::create_objects 2\n");
+
 	return 0;
 }
 
 void StatusBar::resize_event()
 {
 	int x = 10, y = 1;
-
 
 	reposition_window(mwindow->theme->mstatus_x,
 		mwindow->theme->mstatus_y,
@@ -119,6 +114,7 @@ StatusBarCancel::StatusBarCancel(MWindow *mwindow, int x, int y)
 	this->mwindow = mwindow;
 	set_tooltip(_("Cancel operation"));
 }
+
 int StatusBarCancel::handle_event()
 {
 	mwindow->mainprogress->cancelled = 1;
