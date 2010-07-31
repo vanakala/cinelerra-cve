@@ -597,7 +597,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vedit.h \
 		 vedits.h \
 		 video1394.h \
-		 videodevfix.h \
 		 videodevice.h \
 		 viewmenu.h \
 		 virtualaconsole.h \

@@ -44,21 +44,6 @@ ZoomHash::~ZoomHash()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ZoomPanel::ZoomPanel(MWindow *mwindow, 
 	BC_WindowBase *subwindow, 
 	double value, 
@@ -218,41 +203,37 @@ char* ZoomPanel::value_to_text(double value, int use_table)
 	{
 		for(int i = 0; i < zoom_table.total; i++)
 		{
-//printf("ZoomPanel::value_to_text %p\n", zoom_table.values[i]);
 			if(EQUIV(zoom_table.values[i]->value, value))
 				return zoom_table.values[i]->text;
 		}
-//printf("ZoomPanel::value_to_text: should never get here\n");
 		return zoom_table.values[0]->text;
 	}
 
 	switch(zoom_type)
 	{
-		case ZOOM_PERCENTAGE:
-			sprintf(string, "%d%%", (int)(value * 100));
-			break;
+	case ZOOM_PERCENTAGE:
+		sprintf(string, "%d%%", (int)(value * 100));
+		break;
 
-		case ZOOM_FLOAT:
-			sprintf(string, "%.1f", value);
-			break;
+	case ZOOM_FLOAT:
+		sprintf(string, "%.1f", value);
+		break;
 
-		case ZOOM_LONG:
-			sprintf(string, "%ld", (long)value);
-			break;
+	case ZOOM_LONG:
+		sprintf(string, "%ld", (long)value);
+		break;
 
-		case ZOOM_TIME:
-		{
-			double total_seconds = (double)mwindow->gui->canvas->get_w() * 
-				value / 
-				mwindow->edl->session->sample_rate;
-			Units::totext(string, 
-				total_seconds, 
-				mwindow->edl->session->time_format, 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->frame_rate, 
-				mwindow->edl->session->frames_per_foot);
-			break;
-		}
+	case ZOOM_TIME:
+		double total_seconds = (double)mwindow->gui->canvas->get_w() * 
+			value /
+			mwindow->edl->session->sample_rate;
+		Units::totext(string,
+			total_seconds,
+			mwindow->edl->session->time_format, 
+			mwindow->edl->session->sample_rate, 
+			mwindow->edl->session->frame_rate, 
+			mwindow->edl->session->frames_per_foot);
+		break;
 	}
 	return string;
 }
@@ -271,47 +252,37 @@ double ZoomPanel::text_to_zoom(const char *text, int use_table)
 
 	switch(zoom_type)
 	{
-		case ZOOM_PERCENTAGE:
-			return atof(text) / 100;
-			break;
-		case ZOOM_FLOAT:
-		case ZOOM_LONG:
-			return atof(text);
-			break;
-		case ZOOM_TIME:
+	case ZOOM_PERCENTAGE:
+		return atof(text) / 100;
+	case ZOOM_FLOAT:
+	case ZOOM_LONG:
+		return atof(text);
+	case ZOOM_TIME:
+		double result = 1;
+		double total_samples = Units::fromtext(text, 
+			mwindow->edl->session->sample_rate, 
+			mwindow->edl->session->time_format, 
+			mwindow->edl->session->frame_rate,
+			mwindow->edl->session->frames_per_foot);
+		total_samples /= mwindow->gui->canvas->get_w();
+		double difference = fabs(total_samples - result);
+		while(fabs(result - total_samples) <= difference)
 		{
-			double result = 1;
-			double total_samples = Units::fromtext(text, 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->time_format, 
-				mwindow->edl->session->frame_rate,
-				mwindow->edl->session->frames_per_foot);
-			total_samples /= mwindow->gui->canvas->get_w();
-			double difference = fabs(total_samples - result);
-			while(fabs(result - total_samples) <= difference)
-			{
-				difference = fabs(result - total_samples);
-				result *= 2;
-			}
-			return result;
-			break;
+			difference = fabs(result - total_samples);
+			result *= 2;
 		}
+		return result;
 	}
 }
 
 
-
-
-
-
-
 ZoomPopup::ZoomPopup(MWindow *mwindow, ZoomPanel *panel, int x, int y)
  : BC_PopupMenu(x, 
-		y, 
-		panel->w, 
-		panel->value_to_text(panel->value, 0), 
-		1,
-		panel->menu_images)
+	y,
+	panel->w,
+	panel->value_to_text(panel->value, 0),
+	1,
+	panel->menu_images)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
@@ -329,11 +300,10 @@ int ZoomPopup::handle_event()
 }
 
 
-
 ZoomTumbler::ZoomTumbler(MWindow *mwindow, ZoomPanel *panel, int x, int y)
  : BC_Tumbler(x, 
- 	y,
- 	panel->tumbler_images)
+	y,
+	panel->tumbler_images)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;

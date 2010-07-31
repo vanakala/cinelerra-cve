@@ -32,9 +32,6 @@
 #include "trackcanvas.h"
 
 
-
-
-
 ShowAssets::ShowAssets(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show assets"), hotkey, hotkey[0])
 {
@@ -56,8 +53,6 @@ int ShowAssets::handle_event()
 	mwindow->gwindow->gui->update_toggles(1);
 	return 1;
 }
-
-
 
 
 ShowTitles::ShowTitles(MWindow *mwindow, const char *hotkey)
@@ -82,27 +77,22 @@ int ShowTitles::handle_event()
 	return 1;
 }
 
-
-
 ShowTransitions::ShowTransitions(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show transitions"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->auto_conf->transitions); 
 }
+
 int ShowTransitions::handle_event()
 {
 	set_checked(get_checked() ^ 1);
 	mwindow->edl->session->auto_conf->transitions = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
-//	mwindow->gui->mainmenu->draw_items();
 	mwindow->gwindow->gui->update_toggles(1);
 	return 1;
 }
-
-
-
 
 
 ShowAutomation::ShowAutomation(MWindow *mwindow, 
@@ -122,7 +112,6 @@ int ShowAutomation::handle_event()
 	mwindow->edl->session->auto_conf->autos[subscript] = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
-//	mwindow->gui->mainmenu->draw_items();
 	mwindow->gwindow->gui->update_toggles(1);
 	return 1;
 }
@@ -131,7 +120,6 @@ void ShowAutomation::update_toggle()
 {
 	set_checked(mwindow->edl->session->auto_conf->autos[subscript]);
 }
-
 
 
 PluginAutomation::PluginAutomation(MWindow *mwindow, const char *hotkey)
@@ -146,9 +134,6 @@ int PluginAutomation::handle_event()
 	mwindow->edl->session->auto_conf->plugins = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
-//	mwindow->gui->mainmenu->draw_items();
 	mwindow->gwindow->gui->update_toggles(1);
 	return 1;
 }
-
-

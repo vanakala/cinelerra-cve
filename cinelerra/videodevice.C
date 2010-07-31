@@ -84,12 +84,11 @@ void KeepaliveThread::run()
 		still_alive = 0;
 // Give the capture a moment
 // Should fix the delay in case users want slower frame rates.
-		timer.delay((long)(KEEPALIVE_DELAY * 1000));
+		timer.delay((KEEPALIVE_DELAY * 1000));
 
 // See if a capture happened
 		if(still_alive == 0 && capturing)
 		{
-//			printf("KeepaliveThread::run: device crashed\n");
 			failed++;
 		}
 		else
@@ -104,7 +103,8 @@ int KeepaliveThread::reset_keepalive()
 
 int KeepaliveThread::get_failed()
 {
-	if(failed) return 1; else return 0;
+	if(failed) return 1; 
+	else return 0;
 }
 
 int KeepaliveThread::stop()
@@ -115,11 +115,6 @@ int KeepaliveThread::stop()
 	Thread::end();
 	Thread::join();
 }
-
-
-
-
-
 
 
 VideoDevice::VideoDevice(MWindow *mwindow)
@@ -134,7 +129,6 @@ VideoDevice::VideoDevice(MWindow *mwindow)
 	picture_lock = new Mutex("VideoDevice::picture_lock");
 	initialize();
 }
-
 
 VideoDevice::~VideoDevice()
 {
@@ -190,55 +184,54 @@ int VideoDevice::open_input(VideoInConfig *config,
 	this->input_z = -1;   // Force initialization.
 	this->frame_rate = frame_rate;
 
-
 	switch(in_config->driver)
 	{
-		case VIDEO4LINUX:
-			keepalive = new KeepaliveThread(this);
-			keepalive->start_keepalive();
-			new_device_base();
-			result = input_base->open_input();
-			break;
-
+	case VIDEO4LINUX:
+		keepalive = new KeepaliveThread(this);
+		keepalive->start_keepalive();
+		new_device_base();
+		result = input_base->open_input();
+		break;
 
 #ifdef HAVE_VIDEO4LINUX2
-		case VIDEO4LINUX2:
-			new_device_base();
-			result = input_base->open_input();
-			break;
-		case VIDEO4LINUX2JPEG:
-			new_device_base();
-			result = input_base->open_input();
-			break;
+	case VIDEO4LINUX2:
+		new_device_base();
+		result = input_base->open_input();
+		break;
+	case VIDEO4LINUX2JPEG:
+		new_device_base();
+		result = input_base->open_input();
+		break;
 #endif
 
-		case SCREENCAPTURE:
-			this->input_x = input_x;
-			this->input_y = input_y;
-			new_device_base();
-			result = input_base->open_input();
-			break;
-		case CAPTURE_BUZ:
-//printf("VideoDevice 1\n");
-			keepalive = new KeepaliveThread(this);
-			keepalive->start_keepalive();
-			new_device_base();
-			result = input_base->open_input();
-			break;
+	case SCREENCAPTURE:
+		this->input_x = input_x;
+		this->input_y = input_y;
+		new_device_base();
+		result = input_base->open_input();
+		break;
+
+	case CAPTURE_BUZ:
+		keepalive = new KeepaliveThread(this);
+		keepalive->start_keepalive();
+		new_device_base();
+		result = input_base->open_input();
+		break;
+
 #ifdef HAVE_FIREWIRE
-		case CAPTURE_FIREWIRE:
-		case CAPTURE_IEC61883:
-			new_device_base();
-			result = input_base->open_input();
-			break;
+	case CAPTURE_FIREWIRE:
+	case CAPTURE_IEC61883:
+		new_device_base();
+		result = input_base->open_input();
+		break;
 #endif
 
-		case CAPTURE_DVB:
-			new_device_base();
-			result = input_base->open_input();
-			break;
+	case CAPTURE_DVB:
+		new_device_base();
+		result = input_base->open_input();
+		break;
 	}
-	
+
 	if(!result) capturing = 1;
 	return 0;
 }
@@ -247,31 +240,31 @@ VDeviceBase* VideoDevice::new_device_base()
 {
 	switch(in_config->driver)
 	{
-		case VIDEO4LINUX:
-			return input_base = new VDeviceV4L(this);
+	case VIDEO4LINUX:
+		return input_base = new VDeviceV4L(this);
 
 #ifdef HAVE_VIDEO4LINUX2
-		case VIDEO4LINUX2:
-			return input_base = new VDeviceV4L2(this);
+	case VIDEO4LINUX2:
+		return input_base = new VDeviceV4L2(this);
 
-		case VIDEO4LINUX2JPEG:
-			return input_base = new VDeviceV4L2JPEG(this);
+	case VIDEO4LINUX2JPEG:
+		return input_base = new VDeviceV4L2JPEG(this);
 #endif
 
-		case SCREENCAPTURE:
-			return input_base = new VDeviceX11(this, 0);
+	case SCREENCAPTURE:
+		return input_base = new VDeviceX11(this, 0);
 
-		case CAPTURE_BUZ:
-			return input_base = new VDeviceBUZ(this);
+	case CAPTURE_BUZ:
+		return input_base = new VDeviceBUZ(this);
 
 #ifdef HAVE_FIREWIRE
-		case CAPTURE_FIREWIRE:
-		case CAPTURE_IEC61883:
-			return input_base = new VDevice1394(this);
+	case CAPTURE_FIREWIRE:
+	case CAPTURE_IEC61883:
+		return input_base = new VDevice1394(this);
 #endif
 
-		case CAPTURE_DVB:
-			return input_base = new VDeviceDVB(this);
+	case CAPTURE_DVB:
+		return input_base = new VDeviceDVB(this);
 	}
 	return 0;
 }
@@ -281,21 +274,21 @@ static const char* get_channeldb_path(VideoInConfig *vconfig_in)
 	const char *path = "";
 	switch(vconfig_in->driver)
 	{
-		case VIDEO4LINUX:
-			path = "channels_v4l";
-			break;
-		case VIDEO4LINUX2:
-			path = "channels_v4l2";
-			break;
-		case VIDEO4LINUX2JPEG:
-			path = "channels_v4l2jpeg";
-			break;
-		case CAPTURE_BUZ:
-			path = "channels_buz";
-			break;
-		case CAPTURE_DVB:
-			path = "channels_dvb";
-			break;
+	case VIDEO4LINUX:
+		path = "channels_v4l";
+		break;
+	case VIDEO4LINUX2:
+		path = "channels_v4l2";
+		break;
+	case VIDEO4LINUX2JPEG:
+		path = "channels_v4l2jpeg";
+		break;
+	case CAPTURE_BUZ:
+		path = "channels_buz";
+		break;
+	case CAPTURE_DVB:
+		path = "channels_dvb";
+		break;
 	}
 	return path;
 }
@@ -337,22 +330,22 @@ void VideoDevice::fix_asset(Asset *asset, int driver)
 // Fix asset using legacy routine
 	switch(driver)
 	{
-		case CAPTURE_BUZ:
-		case CAPTURE_LML:
-		case VIDEO4LINUX2JPEG:
-			if(asset->format != FILE_AVI &&
-				asset->format != FILE_MOV)
-				asset->format = FILE_MOV;
-			strcpy(asset->vcodec, QUICKTIME_MJPA);
-			return;
-		
-		case CAPTURE_FIREWIRE:
-		case CAPTURE_IEC61883:
-			if(asset->format != FILE_AVI &&
-				asset->format != FILE_MOV)
-				asset->format = FILE_MOV;
-			strcpy(asset->vcodec, QUICKTIME_DVSD);
-			return;
+	case CAPTURE_BUZ:
+	case CAPTURE_LML:
+	case VIDEO4LINUX2JPEG:
+		if(asset->format != FILE_AVI &&
+			asset->format != FILE_MOV)
+			asset->format = FILE_MOV;
+		strcpy(asset->vcodec, QUICKTIME_MJPA);
+		return;
+
+	case CAPTURE_FIREWIRE:
+	case CAPTURE_IEC61883:
+		if(asset->format != FILE_AVI &&
+			asset->format != FILE_MOV)
+			asset->format = FILE_MOV;
+		strcpy(asset->vcodec, QUICKTIME_DVSD);
+		return;
 	}
 
 // Fix asset using inherited routine
@@ -368,40 +361,30 @@ const char* VideoDevice::drivertostr(int driver)
 {
 	switch(driver)
 	{
-		case PLAYBACK_X11:
-			return PLAYBACK_X11_TITLE;
-			break;
-		case PLAYBACK_X11_XV:
-			return PLAYBACK_X11_XV_TITLE;
-			break;
-		case PLAYBACK_X11_GL:
-			return PLAYBACK_X11_GL_TITLE;
-			break;
-		case PLAYBACK_BUZ:
-			return PLAYBACK_BUZ_TITLE;
-			break;
-		case VIDEO4LINUX:
-			return VIDEO4LINUX_TITLE;
-			break;
-		case VIDEO4LINUX2:
-			return VIDEO4LINUX2_TITLE;
-			break;
-		case VIDEO4LINUX2JPEG:
-			return VIDEO4LINUX2JPEG_TITLE;
-			break;
-		case SCREENCAPTURE:
-			return SCREENCAPTURE_TITLE;
-			break;
-		case CAPTURE_BUZ:
-			return CAPTURE_BUZ_TITLE;
-			break;
+	case PLAYBACK_X11:
+		return PLAYBACK_X11_TITLE;
+	case PLAYBACK_X11_XV:
+		return PLAYBACK_X11_XV_TITLE;
+	case PLAYBACK_X11_GL:
+		return PLAYBACK_X11_GL_TITLE;
+	case PLAYBACK_BUZ:
+		return PLAYBACK_BUZ_TITLE;
+	case VIDEO4LINUX:
+		return VIDEO4LINUX_TITLE;
+	case VIDEO4LINUX2:
+		return VIDEO4LINUX2_TITLE;
+	case VIDEO4LINUX2JPEG:
+		return VIDEO4LINUX2JPEG_TITLE;
+	case SCREENCAPTURE:
+		return SCREENCAPTURE_TITLE;
+	case CAPTURE_BUZ:
+		return CAPTURE_BUZ_TITLE;
+
 #ifdef HAVE_FIREWIRE
-		case CAPTURE_FIREWIRE:
-			return CAPTURE_FIREWIRE_TITLE;
-			break;
-		case CAPTURE_IEC61883:
-			return CAPTURE_IEC61883_TITLE;
-			break;
+	case CAPTURE_FIREWIRE:
+		return CAPTURE_FIREWIRE_TITLE;
+	case CAPTURE_IEC61883:
+		return CAPTURE_IEC61883_TITLE;
 #endif
 	}
 	return "";
@@ -435,7 +418,6 @@ int VideoDevice::close_all()
 		{
 			input_base->close_all();
 			delete input_base;
-
 			input_base = 0;
 		}
 
@@ -580,10 +562,26 @@ int VideoDevice::update_translation()
 			capture_in_frame_x2f = in_config->w;
 			capture_in_frame_y2f = in_config->h;
 
-			if(frame_in_capture_x1f < 0) { capture_in_frame_x1f -= frame_in_capture_x1f; frame_in_capture_x1f = 0; }
-			if(frame_in_capture_y1f < 0) { capture_in_frame_y1f -= frame_in_capture_y1f; frame_in_capture_y1f = 0; }
-			if(frame_in_capture_x2f > capture_w) { capture_in_frame_x2f -= frame_in_capture_x2f - capture_w; frame_in_capture_x2f = capture_w; }
-			if(frame_in_capture_y2f > capture_h) { capture_in_frame_y2f -= frame_in_capture_y2f - capture_h; frame_in_capture_y2f = capture_h; }
+			if(frame_in_capture_x1f < 0) 
+			{ 
+				capture_in_frame_x1f -= frame_in_capture_x1f;
+				frame_in_capture_x1f = 0;
+			}
+			if(frame_in_capture_y1f < 0)
+			{ 
+				capture_in_frame_y1f -= frame_in_capture_y1f;
+				frame_in_capture_y1f = 0;
+			}
+			if(frame_in_capture_x2f > capture_w)
+			{
+				capture_in_frame_x2f -= frame_in_capture_x2f - capture_w;
+				frame_in_capture_x2f = capture_w;
+			}
+			if(frame_in_capture_y2f > capture_h)
+			{
+				capture_in_frame_y2f -= frame_in_capture_y2f - capture_h;
+				frame_in_capture_y2f = capture_h;
+			}
 
 			frame_in_capture_x1 = (int)frame_in_capture_x1f;
 			frame_in_capture_y1 = (int)frame_in_capture_y1f;
@@ -619,7 +617,6 @@ int VideoDevice::read_buffer(VFrame *frame)
 	int result = 0;
 	if(!capturing) return 0;
 
-//printf("VideoDevice::read_buffer %p %p\n", frame, input_base);
 	if(input_base)
 	{
 // Reset the keepalive thread
@@ -641,49 +638,44 @@ int VideoDevice::read_buffer(VFrame *frame)
 
 
 int VideoDevice::open_output(VideoOutConfig *config, 
-					float rate, 
-					int out_w, 
-					int out_h,
-					Canvas *output,
-					int single_frame)
+			float rate,
+			int out_w,
+			int out_h,
+			Canvas *output,
+			int single_frame)
 {
 	w = 1;
-//printf("VideoDevice::open_output 1 %d\n", out_config->driver);
 	*this->out_config = *config;
-//printf("VideoDevice::open_output 1 %d\n", out_config->driver);
 	this->out_w = out_w;
 	this->out_h = out_h;
 	this->orate = rate;
 	this->single_frame = single_frame;
 
-//printf("VideoDevice::open_output 1 %d\n", out_config->driver);
 	switch(out_config->driver)
 	{
-		case PLAYBACK_BUZ:
-			output_base = new VDeviceBUZ(this);
-			break;
-		case PLAYBACK_X11:
-		case PLAYBACK_X11_XV:
-		case PLAYBACK_X11_GL:
-			output_base = new VDeviceX11(this, output);
-			break;
+	case PLAYBACK_BUZ:
+		output_base = new VDeviceBUZ(this);
+		break;
+	case PLAYBACK_X11:
+	case PLAYBACK_X11_XV:
+	case PLAYBACK_X11_GL:
+		output_base = new VDeviceX11(this, output);
+		break;
 
 #ifdef HAVE_FIREWIRE
-		case PLAYBACK_DV1394:
-		case PLAYBACK_FIREWIRE:
-		case PLAYBACK_IEC61883:
-			output_base = new VDevice1394(this);
-			break;
+	case PLAYBACK_DV1394:
+	case PLAYBACK_FIREWIRE:
+	case PLAYBACK_IEC61883:
+		output_base = new VDevice1394(this);
+		break;
 #endif
 	}
-//printf("VideoDevice::open_output 2 %d\n", out_config->driver);
 
 	if(output_base->open_output())
 	{
 		delete output_base;
 		output_base = 0;
 	}
-//printf("VideoDevice::open_output 3 %d\n", out_config->driver);
 
 	if(output_base) 
 		return 0;
@@ -731,7 +723,6 @@ int VideoDevice::interrupt_playback()
 
 int VideoDevice::write_buffer(VFrame *output, EDL *edl)
 {
-//printf("VideoDevice::write_buffer 1 %p\n", output_base);
 	if(output_base) return output_base->write_buffer(output, edl);
 	return 1;
 }
@@ -757,4 +748,3 @@ int VideoDevice::set_cloexec_flag(int desc, int value)
 		oldflags &= ~FD_CLOEXEC;
 	return fcntl(desc, F_SETFD, oldflags);
 }
-

@@ -159,11 +159,11 @@ public:
 
 // ================================== Playback
 	int open_output(VideoOutConfig *config, 
-					float rate, 
-					int out_w, 
-					int out_h,
-					Canvas *output,
-					int single_frame);
+		float rate,
+		int out_w,
+		int out_h,
+		Canvas *output,
+		int single_frame);
 	void set_cpus(int cpus);
 // Slippery is only used for hardware compression drivers
 	int start_playback();
@@ -176,21 +176,16 @@ public:
 	int output_visible();     // Whether the output is visible or not.
 	int stop_playback();
 	void goose_input();
-	long current_position();     // last frame rendered
+
 // absolute frame of last frame in buffer.
 // The EDL parameter is passed to Canvas and can be 0.
-	int write_buffer(VFrame *output, EDL *edl);   
-
-
-
-
-
+	int write_buffer(VFrame *output, EDL *edl);
 
 
 // Flag when output is interrupted
 	int interrupt;
 // Compression format in use by the output device
-	int output_format;   
+	int output_format;
 	int is_playing_back;
 // Audio device to share data with
 	AudioDevice *adevice;
@@ -201,20 +196,19 @@ public:
 	Mutex *sharing_lock;
 
 // frame rates
-	float orate, irate;               
+	float orate, irate;
 // timer for displaying frames in the current buffer
-	Timer buffer_timer;               
+	Timer buffer_timer;
 // timer for getting frame rate
-	Timer rate_timer;                 
+	Timer rate_timer;
 // size of output frame being fed to device during playback
-	int out_w, out_h;                 
+	int out_w, out_h;
 // modes
-	int r, w;                         
+	int r, w;
 // time from start of previous frame to start of next frame in ms
-	long frame_delay;
+	int frame_delay;
 // CPU count for MJPEG compression
 	int cpus;
-
 
 	int is_recording; // status of thread
 	double frame_rate; // Frame rate to set in device
@@ -256,7 +250,7 @@ public:
 
 
 // Change the capture size when ready
-	int update_translation();  
+	int update_translation();
 
 	VDeviceBase *input_base;
 	VDeviceBase *output_base;
@@ -265,7 +259,4 @@ public:
 	KeepaliveThread *keepalive;
 	MWindow *mwindow;
 };
-
-
-
 #endif

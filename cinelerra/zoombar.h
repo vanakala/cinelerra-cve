@@ -53,7 +53,7 @@ public:
 	int update();          // redraw the current values
 	void update_autozoom();
 	int update_clocks();
-	int update_playback(int64_t new_position);       // update the playback position
+	int update_playback(posnum new_position);       // update the playback position
 	int set_selection(int which_one);
 	void update_formatting(BC_TextBox *dst);
 
@@ -71,7 +71,7 @@ public:
 	FromTextBox *from_value;
 	ToTextBox *to_value;
 	char string[256], string2[256];
-	int64_t old_position;
+	posnum old_position;
 };
 
 class SampleZoomPanel : public ZoomPanel
@@ -117,9 +117,9 @@ class AutoTypeMenu : public BC_PopupMenu
 {
 public:
 	AutoTypeMenu(MWindow *mwindow,
-		     ZoomBar *zoombar,
-		     int x, 
-		     int y);
+		ZoomBar *zoombar,
+		int x,
+		int y);
 	void create_objects();
 	static char* to_text(int shape);
 	static int from_text(char *text);
@@ -140,19 +140,12 @@ public:
 };
 
 
-
-
-
-
-
-
 class FromTextBox : public BC_TextBox
 {
 public:
 	FromTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
 	int handle_event();
 	int update_position(double new_position);
-	char string[256], string2[256];
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
@@ -164,7 +157,6 @@ public:
 	LengthTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
 	int handle_event();
 	int update_position(double new_position);
-	char string[256], string2[256];
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
@@ -175,12 +167,9 @@ public:
 	ToTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
 	int handle_event();
 	int update_position(double new_position);
-	char string[256], string2[256];
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
-
-
 
 
 #endif

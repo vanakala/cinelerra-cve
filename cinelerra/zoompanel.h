@@ -120,12 +120,12 @@ class ZoomTumbler : public BC_Tumbler
 public:
 	ZoomTumbler(MWindow *mwindow, ZoomPanel *panel, int x, int y);
 	~ZoomTumbler();
-	
+
 	int handle_up_event();
 	int handle_down_event();
-	
+
 	ZoomPanel *panel;
 	MWindow *mwindow;
 };
 
-#endif 
+#endif
