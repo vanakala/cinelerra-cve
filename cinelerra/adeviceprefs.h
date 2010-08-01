@@ -63,7 +63,6 @@ private:
 	int create_esound_objs();
 	int create_firewire_objs();
 	int create_alsa_objs();
-	int create_cine_objs();
 
 	int delete_oss_objs();
 	int delete_esound_objs();

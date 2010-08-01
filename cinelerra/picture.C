@@ -25,9 +25,6 @@
 #include <string.h>
 
 
-
-
-
 PictureItem::PictureItem()
 {
 	name[0] = 0;
@@ -39,7 +36,6 @@ PictureItem::PictureItem()
 	value = 0;
 	device_id = 0;
 }
-
 
 PictureItem::~PictureItem()
 {
@@ -64,11 +60,6 @@ char* PictureItem::get_default_string(char *string)
 		string[i] = toupper(string[i]);
 	return string;
 }
-
-
-
-
-
 
 
 
@@ -100,7 +91,6 @@ void PictureConfig::copy_settings(PictureConfig *picture)
 	this->color = picture->color;
 	this->contrast = picture->contrast;
 	this->whiteness = picture->whiteness;
-
 
 	for(int i = 0; i < picture->controls.total; i++)
 	{
@@ -174,7 +164,6 @@ void PictureConfig::load_defaults()
 		char string[BCTEXTLEN];
 		item->get_default_string(string);
 		item->value = defaults->get(string, item->value);
-//printf("PictureConfig::load_defaults %s %d %d\n", item->name, item->device_id, item->value);
 	}
 }
 
@@ -196,7 +185,6 @@ void PictureConfig::save_defaults()
 		char string[BCTEXTLEN];
 		item->get_default_string(string);
 		defaults->update(string, item->value);
-//printf("PictureConfig::save_defaults %s %d %d\n", string, item->device_id, item->value);
 	}
 }
 
@@ -249,11 +237,3 @@ void PictureConfig::set_item(int device_id, int value)
 		}
 	}
 }
-
-
-
-
-
-
-
-

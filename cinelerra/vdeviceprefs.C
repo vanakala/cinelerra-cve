@@ -102,13 +102,13 @@ int VDevicePrefs::initialize(int creation)
 
 	switch(mode)
 	{
-		case MODEPLAY:
-			driver = &out_config->driver;
-			break;
+	case MODEPLAY:
+		driver = &out_config->driver;
+		break;
 
-		case MODERECORD:
-			driver = &in_config->driver;
-			break;
+	case MODERECORD:
+		driver = &in_config->driver;
+		break;
 	}
 	this->driver = *driver;
 
@@ -124,42 +124,41 @@ int VDevicePrefs::initialize(int creation)
 
 	switch(this->driver)
 	{
-		case VIDEO4LINUX:
-			create_v4l_objs();
-			break;
-		case VIDEO4LINUX2:
-			create_v4l2_objs();
-			break;
-		case VIDEO4LINUX2JPEG:
-			create_v4l2jpeg_objs();
-			break;
-		case SCREENCAPTURE:
-			create_screencap_objs();
-			break;
-		case CAPTURE_LML:
-			create_lml_objs();
-			break;
-		case CAPTURE_BUZ:
-		case PLAYBACK_BUZ:
-			create_buz_objs();
-			break;
-		case PLAYBACK_X11:
-		case PLAYBACK_X11_XV:
-		case PLAYBACK_X11_GL:
-			create_x11_objs();
-			break;
-		case PLAYBACK_DV1394:
-		case PLAYBACK_FIREWIRE:
-		case PLAYBACK_IEC61883:
-		case CAPTURE_FIREWIRE:
-		case CAPTURE_IEC61883:
-			create_firewire_objs();
-			break;
-		case CAPTURE_DVB:
-			create_dvb_objs();
-			break;
+	case VIDEO4LINUX:
+		create_v4l_objs();
+		break;
+	case VIDEO4LINUX2:
+		create_v4l2_objs();
+		break;
+	case VIDEO4LINUX2JPEG:
+		create_v4l2jpeg_objs();
+		break;
+	case SCREENCAPTURE:
+		create_screencap_objs();
+		break;
+	case CAPTURE_LML:
+		create_lml_objs();
+		break;
+	case CAPTURE_BUZ:
+	case PLAYBACK_BUZ:
+		create_buz_objs();
+		break;
+	case PLAYBACK_X11:
+	case PLAYBACK_X11_XV:
+	case PLAYBACK_X11_GL:
+		create_x11_objs();
+		break;
+	case PLAYBACK_DV1394:
+	case PLAYBACK_FIREWIRE:
+	case PLAYBACK_IEC61883:
+	case CAPTURE_FIREWIRE:
+	case CAPTURE_IEC61883:
+		create_firewire_objs();
+		break;
+	case CAPTURE_DVB:
+		create_dvb_objs();
+		break;
 	}
-
 
 
 // Update driver dependancies in file format
@@ -174,7 +173,6 @@ int VDevicePrefs::initialize(int creation)
 
 int VDevicePrefs::delete_objects()
 {
-SET_TRACE
 	delete output_title;
 	delete channel_picker;
 	delete buz_swap_channels;
@@ -193,7 +191,6 @@ SET_TRACE
 	if(firewire_path) delete firewire_path;
 	if(syt_title) delete syt_title;
 	if(firewire_syt) delete firewire_syt;
-SET_TRACE
 	reset_objects();
 	driver = -1;
 	return 0;
@@ -222,12 +219,12 @@ int VDevicePrefs::create_lml_objs()
 
 	switch(mode)
 	{
-		case MODEPLAY: 
-			output_char = out_config->lml_out_device;
-			break;
-		case MODERECORD:
-			output_char = in_config->lml_in_device;
-			break;
+	case MODEPLAY:
+		output_char = out_config->lml_out_device;
+		break;
+	case MODERECORD:
+		output_char = in_config->lml_in_device;
+		break;
 	}
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	x1 += device_title->get_w() + 10;
@@ -245,12 +242,12 @@ int VDevicePrefs::create_buz_objs()
 
 	switch(mode)
 	{
-		case MODEPLAY: 
-			output_char = out_config->buz_out_device;
-			break;
-		case MODERECORD:
-			output_char = in_config->buz_in_device;
-			break;
+	case MODEPLAY:
+		output_char = out_config->buz_out_device;
+		break;
+	case MODERECORD:
+		output_char = in_config->buz_in_device;
+		break;
 	}
 	dialog->add_subwindow(device_title = new BC_Title(x1, y1, _("Device path:"), MEDIUMFONT, resources->text_default));
 
@@ -287,17 +284,17 @@ int VDevicePrefs::create_firewire_objs()
 // Firewire path
 	switch(mode)
 	{
-		case MODEPLAY:
-			if(driver == PLAYBACK_DV1394)
-				output_char = out_config->dv1394_path;
-			else
-			if(driver == PLAYBACK_FIREWIRE)
-				output_char = out_config->firewire_path;
-			break;
-		case MODERECORD:
-			if(driver == CAPTURE_FIREWIRE)
-				output_char = in_config->firewire_path;
-			break;
+	case MODEPLAY:
+		if(driver == PLAYBACK_DV1394)
+			output_char = out_config->dv1394_path;
+		else
+		if(driver == PLAYBACK_FIREWIRE)
+			output_char = out_config->firewire_path;
+		break;
+	case MODERECORD:
+		if(driver == CAPTURE_FIREWIRE)
+			output_char = in_config->firewire_path;
+		break;
 	}
 
 	if(output_char)
@@ -310,15 +307,15 @@ int VDevicePrefs::create_firewire_objs()
 // Firewire port
 	switch(mode)
 	{
-		case MODEPLAY:
-			if(driver == PLAYBACK_DV1394)
-				output_int = &out_config->dv1394_port;
-			else
-				output_int = &out_config->firewire_port;
-			break;
-		case MODERECORD:
-			output_int = &in_config->firewire_port;
-			break;
+	case MODEPLAY:
+		if(driver == PLAYBACK_DV1394)
+			output_int = &out_config->dv1394_port;
+		else
+			output_int = &out_config->firewire_port;
+		break;
+	case MODERECORD:
+		output_int = &in_config->firewire_port;
+		break;
 	}
 	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(firewire_port = new VDeviceIntBox(x1, y + 20, output_int));
@@ -327,37 +324,36 @@ int VDevicePrefs::create_firewire_objs()
 // Firewire channel
 	switch(mode)
 	{
-		case MODEPLAY:
-			if(driver == PLAYBACK_DV1394)
-				output_int = &out_config->dv1394_channel;
-			else
-				output_int = &out_config->firewire_channel;
-			break;
-		case MODERECORD:
-			output_int = &in_config->firewire_channel;
-			break;
+	case MODEPLAY:
+		if(driver == PLAYBACK_DV1394)
+			output_int = &out_config->dv1394_channel;
+		else
+			output_int = &out_config->firewire_channel;
+		break;
+	case MODERECORD:
+		output_int = &in_config->firewire_channel;
+		break;
 	}
 
 	dialog->add_subwindow(channel_title = new BC_Title(x1, y, _("Channel:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(firewire_channel = new VDeviceIntBox(x1, y + 20, output_int));
 	x1 += firewire_channel->get_w() + 5;
 
-
 // Firewire syt
 	switch(mode)
 	{
-		case MODEPLAY:
-			if(driver == PLAYBACK_DV1394)
-				output_int = &out_config->dv1394_syt;
-			else
-			if(driver == PLAYBACK_FIREWIRE)
-				output_int = &out_config->firewire_syt;
-			else
-				output_int = 0;
-			break;
-		case MODERECORD:
+	case MODEPLAY:
+		if(driver == PLAYBACK_DV1394)
+			output_int = &out_config->dv1394_syt;
+		else
+		if(driver == PLAYBACK_FIREWIRE)
+			output_int = &out_config->firewire_syt;
+		else
 			output_int = 0;
-			break;
+		break;
+	case MODERECORD:
+		output_int = 0;
+		break;
 	}
 	if(output_int)
 	{
@@ -428,8 +424,6 @@ int VDevicePrefs::create_x11_objs()
 }
 
 
-
-
 VDriverMenu::VDriverMenu(int x, 
 	int y, 
 	VDevicePrefs *device_prefs, 
@@ -451,63 +445,63 @@ const char* VDriverMenu::driver_to_string(int driver)
 	const char *sp;
 	switch(driver)
 	{
-		case VIDEO4LINUX:
-			sp = VIDEO4LINUX_TITLE;
-			break;
-		case VIDEO4LINUX2:
-			sp = VIDEO4LINUX2_TITLE;
-			break;
-		case VIDEO4LINUX2JPEG:
-			sp = VIDEO4LINUX2JPEG_TITLE;
-			break;
-		case SCREENCAPTURE:
-			sp = SCREENCAPTURE_TITLE;
-			break;
-		case CAPTURE_BUZ:
-			sp = CAPTURE_BUZ_TITLE;
-			break;
-		case CAPTURE_LML:
-			sp = CAPTURE_LML_TITLE;
-			break;
+	case VIDEO4LINUX:
+		sp = VIDEO4LINUX_TITLE;
+		break;
+	case VIDEO4LINUX2:
+		sp = VIDEO4LINUX2_TITLE;
+		break;
+	case VIDEO4LINUX2JPEG:
+		sp = VIDEO4LINUX2JPEG_TITLE;
+		break;
+	case SCREENCAPTURE:
+		sp = SCREENCAPTURE_TITLE;
+		break;
+	case CAPTURE_BUZ:
+		sp = CAPTURE_BUZ_TITLE;
+		break;
+	case CAPTURE_LML:
+		sp = CAPTURE_LML_TITLE;
+		break;
 #ifdef HAVE_FIREWIRE
-		case CAPTURE_FIREWIRE:
-			sp = CAPTURE_FIREWIRE_TITLE;
-			break;
-		case CAPTURE_IEC61883:
-			sp = string, CAPTURE_IEC61883_TITLE;
-			break;
+	case CAPTURE_FIREWIRE:
+		sp = CAPTURE_FIREWIRE_TITLE;
+		break;
+	case CAPTURE_IEC61883:
+		sp = string, CAPTURE_IEC61883_TITLE;
+		break;
 #endif
-		case CAPTURE_DVB:
-			sp = CAPTURE_DVB_TITLE;
-			break;
-		case PLAYBACK_X11:
-			sp = PLAYBACK_X11_TITLE;
-			break;
-		case PLAYBACK_X11_XV:
-			sp = PLAYBACK_X11_XV_TITLE;
-			break;
-		case PLAYBACK_X11_GL:
-			sp = PLAYBACK_X11_GL_TITLE;
-			break;
-		case PLAYBACK_LML:
-			sp = PLAYBACK_LML_TITLE;
-			break;
-		case PLAYBACK_BUZ:
-			sp = PLAYBACK_BUZ_TITLE;
-			break;
+	case CAPTURE_DVB:
+		sp = CAPTURE_DVB_TITLE;
+		break;
+	case PLAYBACK_X11:
+		sp = PLAYBACK_X11_TITLE;
+		break;
+	case PLAYBACK_X11_XV:
+		sp = PLAYBACK_X11_XV_TITLE;
+		break;
+	case PLAYBACK_X11_GL:
+		sp = PLAYBACK_X11_GL_TITLE;
+		break;
+	case PLAYBACK_LML:
+		sp = PLAYBACK_LML_TITLE;
+		break;
+	case PLAYBACK_BUZ:
+		sp = PLAYBACK_BUZ_TITLE;
+		break;
 #ifdef HAVE_FIREWIRE
-		case PLAYBACK_FIREWIRE:
-			sp = PLAYBACK_FIREWIRE_TITLE;
-			break;
-		case PLAYBACK_DV1394:
-			sp = PLAYBACK_DV1394_TITLE;
-			break;
-		case PLAYBACK_IEC61883:
-			sp = PLAYBACK_IEC61883_TITLE;
-			break;
+	case PLAYBACK_FIREWIRE:
+		sp = PLAYBACK_FIREWIRE_TITLE;
+		break;
+	case PLAYBACK_DV1394:
+		sp = PLAYBACK_DV1394_TITLE;
+		break;
+	case PLAYBACK_IEC61883:
+		sp = PLAYBACK_IEC61883_TITLE;
+		break;
 #endif
-		default:
-			sp = "";
+	default:
+		sp = "";
 	}
 	return sp;
 }
@@ -592,7 +586,7 @@ VDeviceTumbleBox::VDeviceTumbleBox(VDevicePrefs *prefs,
 	*output,
 	min,
 	max,
- 	x, 
+	x,
 	y, 
 	60)
 { 
@@ -604,10 +598,6 @@ int VDeviceTumbleBox::handle_event()
 	*output = atol(get_text()); 
 	return 1;
 }
-
-
-
-
 
 
 VDeviceIntBox::VDeviceIntBox(int x, int y, int *output)
@@ -623,9 +613,6 @@ int VDeviceIntBox::handle_event()
 }
 
 
-
-
-
 VDeviceCheckBox::VDeviceCheckBox(int x, int y, int *output, const char *text)
  : BC_CheckBox(x, y, *output, text)
 {
@@ -636,4 +623,3 @@ int VDeviceCheckBox::handle_event()
 	*output = get_value();
 	return 1;
 }
-
