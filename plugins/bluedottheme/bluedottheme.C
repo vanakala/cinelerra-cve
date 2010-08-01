@@ -102,53 +102,52 @@ void BlueDotTheme::initialize()
 {
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
-//	about_bg = new_image("about_bg.png");
-
-
-	// COPIED FROM DEFAULT THEME 1>>
+// COPIED FROM DEFAULT THEME 1>>
 	resources->text_default = 0x000000;
 	resources->text_background = 0xffffff;
-		//listbox borders
+//listbox borders
 	resources->text_border1 = 0x4a484a; // (top outer)
 	resources->text_border2 = 0x000000; // (top inner)
 	resources->text_border3 = 0xacaeac; // (bottom inner)
 	resources->text_border4 = 0xffffff; // (bottom outer)
 	resources->text_inactive_highlight = 0xacacac;
 	resources->text_highlight = BGREY;
-	// COPIED FROM DEFAULT THEME <<1
+// COPIED FROM DEFAULT THEME <<1
+//bg of windows (where no pics...
+	resources->bg_color = FGGREY;
 
-	resources->bg_color = FGGREY;			//bg of windows (where no pics...
-	// COPIED FROM DEFAULT THEME 2>>
+// COPIED FROM DEFAULT THEME 2>>
 	resources->default_text_color = 0x000000;
 	resources->menu_title_text    = 0x000000;
 	resources->popup_title_text   = 0x000000;
-	// COPIED FROM DEFAULT THEME <<2
+// COPIED FROM DEFAULT THEME <<2
 	resources->menu_item_text = BLACK;
 
-	// COPIED FROM DEFAULT THEME 3>>
-	resources->generic_button_margin = 15;		//Length of buttons and color tabs
+// COPIED FROM DEFAULT THEME 3>>
+//Length of buttons and color tabs
+	resources->generic_button_margin = 15;
 	resources->pot_needle_color = resources->text_default;
 	resources->pot_offset = 0;
 	resources->progress_text = resources->text_default;
-	// COPIED FROM DEFAULT THEME <<3
+// COPIED FROM DEFAULT THEME <<3
 	resources->meter_font = SMALLFONT;  //Specific to BD
 	resources->meter_font_color = BLACK;
 	resources->meter_title_w = 20;  //Specific to BD
 	resources->meter_3d = 0;   //Specific to BD
 
 	resources->menu_light = FTGREY; 	//menu
-	resources->menu_highlighted = BGREY;		//NMBLUE
+	resources->menu_highlighted = BGREY;	//NMBLUE
 	resources->menu_down = BGREY;
 	resources->menu_up = FGGREY;
 	resources->menu_shadow = FTGREY;
 
-	// MIHA: COPIED FROM DEFAULT THEME M1>>
+// MIHA: COPIED FROM DEFAULT THEME M1>>
 	resources->popupmenu_margin = 10;          // ugly
 	resources->popupmenu_triangle_margin = 15; // ugly
-	// MIHA: COPIED FROM DEFAULT THEME M1<<
+// MIHA: COPIED FROM DEFAULT THEME M1<<
 
 
-	// COPIED FROM DEFAULT THEME 4>>
+// COPIED FROM DEFAULT THEME 4>>
 	resources->listbox_title_color = 0x000000;
 
 	resources->listbox_title_margin = 0;
@@ -167,12 +166,12 @@ void BlueDotTheme::initialize()
 	resources->filebox_margin = 101;
 	resources->file_color = 0x000000;
 	resources->directory_color = DKBLUE;
-	// COPIED FROM DEFAULT THEME <<4
+// COPIED FROM DEFAULT THEME <<4
 	resources->menu_highlighted_fontcolor = DDBLUE;    //Specific to BD
 
 
-//There are differences here, but we won't change until the end.	
-//Specific to BD
+// There are differences here, but we won't change until the end.
+// Specific to BD
 	resources->filebox_icons_images = new_image_set(3,
 		"file_icons_up.png",
 		"file_icons_uphi.png",
@@ -358,8 +357,8 @@ void BlueDotTheme::initialize()
 			"vscroll_fwd_hi.png",
 			"vscroll_fwd_dn.png");
 
-//Graphic Copied from default. Improve!!
-//To make this work better, it may be neccessary to replace new_button with new_image_set
+// Graphic Copied from default. Improve!!
+// To make this work better, it may be neccessary to replace new_button with new_image_set
 	new_button("prevtip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
 	new_button("nexttip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "next_tip");
 	new_button("closetip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "close_tip");
@@ -376,7 +375,6 @@ void BlueDotTheme::initialize()
 	rgui_list = new_image("recordgui_list.png");
 	rmonitor_panel = new_image("recordmonitor_panel.png");
 	rmonitor_meters = new_image("recordmonitor_meters.png");
-
 
 //COPY START >>
 	preferences_category_overlap = 0;
@@ -408,11 +406,11 @@ void BlueDotTheme::initialize()
 	new_image("statusbar_left","statusbar_left.png");
 	new_image("statusbar_right","statusbar_right.png");
 
-	//Here an improvement may be needed
+//Here an improvement may be needed
 	new_image_set("zoombar_menu", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
 	new_image_set("zoombar_tumbler", 4, "tumble_up.png", "tumble_hi.png", "tumble_bottom.png", "tumble_top.png");
 
-//Graphic Copied from default. Improve!!	
+//Graphic Copied from default. Improve!!
 	new_image_set("mode_popup", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
 	new_image("mode_add", "mode_add.png");
 	new_image("mode_divide", "mode_divide.png");
@@ -422,7 +420,7 @@ void BlueDotTheme::initialize()
 	new_image("mode_subtract", "mode_subtract.png");
 	new_image("mode_max", "mode_max.png");
 
-//Graphic Copied from default. Improve!!	
+//Graphic Copied from default. Improve!!
 	new_toggle("plugin_on.png", 
 		"pluginbutton_hi.png", 
 		"pluginbutton_hi.png", 
@@ -453,10 +451,8 @@ void BlueDotTheme::initialize()
 
 	new_image("preferences_bg", "preferences_bg.png");
 
-
 	new_image("new_bg", "new_bg.png");
 	new_image("setformat_bg", "setformat_bg2.png");
-
 
 	timebar_view_data = new_image("timebar_view.png");
 
@@ -534,9 +530,7 @@ void BlueDotTheme::initialize()
 	build_bg_data();
 	build_overlays();
 
-
-
-//Graphic Copied from default. Improve!! -> See outpoint.png/inpoint.png
+// Graphic Copied from default. Improve!! -> See outpoint.png/inpoint.png
 	out_point = new_image_set(5,
 		"out_up.png", 
 		"out_hi.png", 
@@ -577,20 +571,17 @@ void BlueDotTheme::initialize()
 	new_button("center_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "center_justify");
 	new_button("channel.png", editpanel_up, editpanel_hi, editpanel_dn, "channel");
 
-
 	new_button("copy.png", editpanel_up, editpanel_hi, editpanel_dn, "copy");
 	new_button("cut.png", editpanel_up, editpanel_hi, editpanel_dn, "cut");
 	new_button("fit.png", editpanel_up, editpanel_hi, editpanel_dn, "fit");
 	new_button("fitautos.png", editpanel_up, editpanel_hi, editpanel_dn, "fitautos");
 	new_button("inpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "inbutton");
-//	indelete_data = new_button("clearinpoint.png", editpanel_up, editpanel_hi, editpanel_dn);   //Specific to BD 
 	new_button("label.png", editpanel_up, editpanel_hi, editpanel_dn, "labelbutton");
 	new_button("left_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "left_justify");
 	new_button("magnifyS.png", "editpanelW_up.png", "editpanelW_hi.png", "editpanelW_dn.png", "magnify_button");
 	new_button("middle_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "middle_justify");
 	new_button("nextlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "nextlabel");
 	new_button("outpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "outbutton");
-//	outdelete_data = new_button("clearoutpoint.png", editpanel_up, editpanel_hi, editpanel_dn);   //Specific to BD
 	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn);
 	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn);
 	new_button("paste.png", editpanel_up, editpanel_hi, editpanel_dn, "paste");
@@ -604,18 +595,17 @@ void BlueDotTheme::initialize()
 	new_button("undo.png", editpanel_up, editpanel_hi, editpanel_dn, "undo");
 	new_button("wrench.png", "editpanelW_up.png", "editpanelW_hi.png", "editpanelW_dn.png", "wrench");
 
-//Make transparent borders
+// Make transparent borders
 #define TRANSPORT_LEFT_IMAGES  "transport_left_up.png", "transport_left_hi.png", "transport_left_dn.png"
 #define TRANSPORT_CENTER_IMAGES  "transport_center_up.png", "transport_center_hi.png", "transport_center_dn.png"
 #define TRANSPORT_RIGHT_IMAGES  "transport_right_up.png", "transport_right_hi.png", "transport_right_dn.png"
-//	build_transport(duplex_data, get_image_data("duplex.png"), transport_bg, 1);    //Specific to BD
 	new_button("end.png", TRANSPORT_RIGHT_IMAGES, "end");
 	new_button("fastfwd.png",TRANSPORT_CENTER_IMAGES, "fastfwd");
 	new_button("fastrev.png",TRANSPORT_CENTER_IMAGES, "fastrev");
 	new_button("play.png",TRANSPORT_CENTER_IMAGES, "play");
 	new_button("framefwd.png", TRANSPORT_CENTER_IMAGES, "framefwd");
 	new_button("framerev.png", TRANSPORT_CENTER_IMAGES, "framerev");
-//Graphic Copied from default. Improve!!	
+//Graphic Copied from default. Improve!!
 	new_button("pause.png", TRANSPORT_CENTER_IMAGES, "pause");
 	new_button("record.png", TRANSPORT_CENTER_IMAGES, "record");
 //Graphic Copied from default. Improve!!
@@ -625,13 +615,10 @@ void BlueDotTheme::initialize()
 	new_button("stop.png", TRANSPORT_CENTER_IMAGES, "stop");
 	new_button("stoprec.png", TRANSPORT_RIGHT_IMAGES, "stoprec");
 
-
-
 // CWindow icons
-//Graphic Copied from default. Improve!!
+// Graphic Copied from default. Improve!!
 	new_image("cwindow_inactive", "cwindow_inactive.png");
 	new_image("cwindow_active", "cwindow_active.png");
-
 
 	new_image_set("batch_render_start",
 		3,
@@ -664,21 +651,20 @@ void BlueDotTheme::initialize()
 		"preferencesbutton_dnlo.png");
 // MIHA: COPIED FROM DEFAULT THEME M2<<
 
-
 	new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "arrow");
 	new_toggle("autokeyframe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "autokeyframe");
 	new_toggle("ibeam.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "ibeam");
 	new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "meters");
 	new_toggle("blank30x30.png", 
-		   new_image("locklabels_locked.png"),
-		   new_image("locklabels_lockedhi.png"),
-		   new_image("locklabels_unlocked.png"),
-		   new_image("locklabels_dn.png"), // can't have seperate down for each!!??
-		   new_image("locklabels_unlockedhi.png"),
-		   "locklabels");
+			new_image("locklabels_locked.png"),
+			new_image("locklabels_lockedhi.png"),
+			new_image("locklabels_unlocked.png"),
+			new_image("locklabels_dn.png"), // can't have seperate down for each!!??
+			new_image("locklabels_unlockedhi.png"),
+			"locklabels");
 
 // MIHA: COPIED FROM DEFAULT THEME M3>>
-//Is that necessary??
+// Is that necessary??
 	VFrame *cpanel_up = new_image("editpanel_up.png");
 	VFrame *cpanel_hi = new_image("editpanel_hi.png");
 	VFrame *cpanel_dn = new_image("editpanel_dn.png");
@@ -697,20 +683,6 @@ void BlueDotTheme::initialize()
 
 // MIHA: COPIED FROM DEFAULT THEME M3<<
 
-// Maybe we can live without the commented part
-// MIHA: Commented out in favor of default version M4>>
-//	new_toggle("camera.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"camera");
-//	new_toggle("crop.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"crop");
-//	new_toggle("eyedrop.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"eyedrop");
-//	new_toggle("magnify.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"magnify");
-//	new_toggle("mask.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"mask");
-//	new_toggle("projector.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"projector");
-//	new_toggle("protect.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"protect");
-//	new_toggle("titlesafe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"titlesafe");
-//	new_toggle("toolwindow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"tool");
-// MIHA: Commented out in favor of default version M4<<
-
-
 	flush_images();
 
 	title_font = MEDIUMFONT;
@@ -722,7 +694,7 @@ void BlueDotTheme::initialize()
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;
 
-	// (asset) edit info text color
+// (asset) edit info text color
 	edit_font_color = BLACK;
 
 //Specific to BD
@@ -742,20 +714,12 @@ void BlueDotTheme::initialize()
 	//listbox
 
 	//labels
- 	resources->label_images = new_image_set(5,
-  		"radial_up.png", 
-  		"radial_uphi.png", 
-  		"radial_checked.png", 
-  		"radial_down.png", 
-  		"radial_checkedhi.png");
-
-	/*	resources->type_to_icon = new_image_set(5,
-            "file_folder.png",
-	        "file_unknown.png",
-          	"file_film.png",
-	        "file_sound.png",
-	        "file_column.png"); 
-   */
+	resources->label_images = new_image_set(5,
+		"radial_up.png", 
+		"radial_uphi.png", 
+		"radial_checked.png", 
+		"radial_down.png", 
+		"radial_checkedhi.png");
 
 //Specific to BD
 	resources->audiovideo_color = DKGREY;
@@ -763,7 +727,7 @@ void BlueDotTheme::initialize()
 //Specific to BD - Copied from Blonde, replace letters
 	//clock font
 	resources->medium_7segment =  new_image_set(20,
-  		"black_0.png", "black_1.png",  "black_2.png",  "black_3.png",  "black_4.png",  "black_5.png",  "black_6.png",  "black_7.png",  "black_8.png",  "black_9.png",  "black_colon.png",    "black_period.png",    "black_a.png",  "black_b.png",  "black_c.png",  "black_d.png",  "black_e.png",  "black_f.png",  "black_space.png",  "black_dash.png");      
+		"black_0.png", "black_1.png",  "black_2.png",  "black_3.png",  "black_4.png",  "black_5.png",  "black_6.png",  "black_7.png",  "black_8.png",  "black_9.png",  "black_colon.png",    "black_period.png",    "black_a.png",  "black_b.png",  "black_c.png",  "black_d.png",  "black_e.png",  "black_f.png",  "black_space.png",  "black_dash.png");      
 
 //Specific to BD
 	//tooltip
@@ -801,7 +765,6 @@ void BlueDotTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 
 // Status bar at the very bottom of the screen.
 	mstatus_x = 0;
-//	mstatus_y = mzoom_y + mzoom_h;
 	mstatus_y = mzoom_y + mzoom_h;
 	mstatus_w = w;
 	mstatus_h = h - mstatus_y;
@@ -840,7 +803,6 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 	if(cwindow_controls)
 	{
-SET_TRACE
 		ccomposite_x = 0;
 		ccomposite_y = 5;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
@@ -856,10 +818,8 @@ SET_TRACE
 		ccanvas_x = ccomposite_x + ccomposite_w;
 		ccanvas_y = 0;
 		ccanvas_h = ccomposite_h;
-//COPIED START
 		cstatus_x = 453;
 		cstatus_y = mwindow->session->cwindow_h - 66;
-//COPIED END
 		if(mwindow->edl->session->cwindow_meter)
 		{
 			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
@@ -871,11 +831,9 @@ SET_TRACE
 			cmeter_x = mwindow->session->cwindow_w;
 			ccanvas_w = cmeter_x - ccanvas_x;
 		}
-SET_TRACE
 	}
 	else
 	{
-SET_TRACE
 		ccomposite_x = -get_image("cpanel_bg")->get_w();
 		ccomposite_y = 0;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
@@ -896,14 +854,10 @@ SET_TRACE
 		cstatus_x = mwindow->session->cwindow_w;
 		cstatus_y = mwindow->session->cwindow_h;
 //COPIED END
-SET_TRACE
 	}
-
-SET_TRACE
 
 	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
 	czoom_y = ctransport_y + 5;
-
 
 	cmeter_y = 5;
 	cmeter_h = mwindow->session->cwindow_h - cmeter_y;
@@ -915,20 +869,11 @@ SET_TRACE
 	ctimebar_w = ccanvas_w;
 	ctimebar_h = 16;
 
-
 // Not used
 	ctime_x = ctransport_x + PlayTransport::get_transport_width(mwindow);
 	ctime_y = ctransport_y;
 	cdest_x = czoom_x;
 	cdest_y = czoom_y + 30;
-SET_TRACE
-}
-
-
-
-void BlueDotTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
-{
-	
 }
 
 // COPIED START--------
@@ -994,17 +939,11 @@ void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vtime_y = vedit_y + 7;
 	vtime_w = 100;
 
-
-
-
 	vzoom_x = vtime_x + 150;
 	vzoom_y = vtime_y;
 	vsource_x = vtime_x + 50;
 	vsource_y = vtransport_y + 5;
 }
-
-
-
 
 
 void BlueDotTheme::build_icons()
@@ -1049,58 +988,6 @@ void BlueDotTheme::build_overlays()
 	pankeyframe_data = new VFrame(get_image_data("pankeyframe.png"));
 	projectorkeyframe_data = new VFrame(get_image_data("projectorkeyframe.png"));
 }
-
-
-
-
-
-
-
-
-
-void BlueDotTheme::draw_rwindow_bg(RecordGUI *gui)
-{
-// 	int y;
-// 	int margin = 50;
-// 	int margin2 = 80;
-// 	gui->draw_9segment(recordgui_batch_x - margin,
-// 		0,
-// 		mwindow->session->rwindow_w - recordgui_status_x + margin,
-// 		recordgui_buttons_y,
-// 		rgui_batch);
-// 	gui->draw_3segmenth(recordgui_options_x - margin2,
-// 		recordgui_buttons_y - 5,
-// 		mwindow->session->rwindow_w - recordgui_options_x + margin2,
-// 		rgui_controls);
-// 	y = recordgui_buttons_y - 5 + rgui_controls->get_h();
-// 	gui->draw_9segment(0,
-// 		y,
-// 		mwindow->session->rwindow_w,
-// 		mwindow->session->rwindow_h - y,
-// 		rgui_list);
-}
-
-void BlueDotTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
-{
-// 	int margin = 45;
-// 	int panel_w = 300;
-// 	int x = rmonitor_meter_x - margin;
-// 	int w = mwindow->session->rmonitor_w - x;
-// 	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
-// 	gui->clear_box(0, 
-// 		0, 
-// 		mwindow->session->rmonitor_w, 
-// 		mwindow->session->rmonitor_h);
-// 	gui->draw_9segment(x,
-// 		0,
-// 		w,
-// 		mwindow->session->rmonitor_h,
-// 		rmonitor_meters);
-}
-
-
-
-
 
 //Specific to BD
 void BlueDotTheme::draw_mwindow_bg(MWindowGUI *gui)
@@ -1147,9 +1034,6 @@ void BlueDotTheme::draw_mwindow_bg(MWindowGUI *gui)
 		patchbay_h, 
 		get_image("patchbay_bg"));
 
-//patchbay_h + 10, 
-
-
 //Specific to BD
 //Drawing of Track's canvas
 	gui->draw_9segment(mcanvas_x, 
@@ -1157,7 +1041,6 @@ void BlueDotTheme::draw_mwindow_bg(MWindowGUI *gui)
 		mcanvas_w, 
 		patchbay_h + 26, 
 		get_image("tracks_bg"));
-//patchbay_h + 10, 
 
 // Timebar
 	gui->draw_3segmenth(mtimebar_x, 
@@ -1178,7 +1061,6 @@ void BlueDotTheme::draw_mwindow_bg(MWindowGUI *gui)
 			mzoom_w - ZOOMBAR_CENTER, 
 			get_image("zoombar_right"));
 
-
 // Status
 	gui->draw_3segmenth(mstatus_x, 
 		mstatus_y,
@@ -1186,11 +1068,10 @@ void BlueDotTheme::draw_mwindow_bg(MWindowGUI *gui)
 		get_image("statusbar_left"));
 
 	if(mstatus_w > ZOOMBAR_CENTER)
-	  gui->draw_3segmenth(mstatus_x + ZOOMBAR_CENTER, 
-			      mstatus_y,
-			      mstatus_w - ZOOMBAR_CENTER, 
-			      get_image("statusbar_right"));
-
+		gui->draw_3segmenth(mstatus_x + ZOOMBAR_CENTER, 
+				mstatus_y,
+				mstatus_w - ZOOMBAR_CENTER, 
+				get_image("statusbar_right"));
 }
 
 void BlueDotTheme::draw_cwindow_bg(CWindowGUI *gui)
@@ -1249,10 +1130,6 @@ void BlueDotTheme::draw_vwindow_bg(VWindowGUI *gui)
 	}
 }
 
-void BlueDotTheme::get_preferences_sizes()
-{
-}
-
 //Specific to BD
 void BlueDotTheme::draw_preferences_bg(PreferencesWindow *gui)
 {
@@ -1272,8 +1149,3 @@ void BlueDotTheme::draw_setformat_bg(SetFormatWindow *gui)
 {
 	gui->draw_vframe(get_image("setformat_bg"), 0, 0);
 }
-
-
-
-
-

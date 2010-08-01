@@ -44,17 +44,10 @@
 #include "vwindowgui.h"
 
 
-
-
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new BlondThemeMain(server);
 }
-
-
-
-
-
 
 
 BlondThemeMain::BlondThemeMain(PluginServer *server)
@@ -81,11 +74,6 @@ Theme* BlondThemeMain::new_theme()
 
 
 
-
-
-
-
-
 BlondTheme::BlondTheme()
  : Theme()
 {
@@ -98,7 +86,6 @@ BlondTheme::~BlondTheme()
 void BlondTheme::initialize()
 {
 	BC_Resources *resources = BC_WindowBase::get_resources();
-
 
 	resources->text_default = 0x000000;
 	resources->text_background = 0xffffff;
@@ -145,9 +132,6 @@ void BlondTheme::initialize()
 	resources->filebox_margin = 101;
 	resources->file_color = 0x000000;
 	resources->directory_color = 0x0000ff;
-
-
-	
 
 	resources->filebox_icons_images = new_button("icons.png",
 		"fileboxbutton_up.png",
@@ -333,7 +317,6 @@ void BlondTheme::initialize()
 			"vscroll_right_hi.png",
 			"vscroll_right_dn.png");
 
-
 	new_button("prevtip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
 	new_button("nexttip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "next_tip");
 	new_button("closetip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "close_tip");
@@ -343,14 +326,12 @@ void BlondTheme::initialize()
 		"editpanel_dn.png",
 		"swap_extents");
 
-
 // Record windows
 	rgui_batch = new_image("recordgui_batch.png");
 	rgui_controls = new_image("recordgui_controls.png");
 	rgui_list = new_image("recordgui_list.png");
 	rmonitor_panel = new_image("recordmonitor_panel.png");
 	rmonitor_meters = new_image("recordmonitor_meters.png");
-
 
 	preferences_category_overlap = 0;
 	preferencescategory_x = 5;
@@ -414,13 +395,10 @@ void BlondTheme::initialize()
 
 // VWindow
 	new_image("vbuttons_left", "vbuttons_left.png");
-
 	new_image("preferences_bg", "preferences_bg.png");
-
 
 	new_image("new_bg", "new_bg.png");
 	new_image("setformat_bg", "setformat_bg2.png");
-
 
 	timebar_view_data = new_image("timebar_view.png");
 
@@ -442,7 +420,6 @@ void BlondTheme::initialize()
 
 	loadfile_pad = 52;
 	browse_pad = 20;
-
 
 	new_image_set("playpatch_data", 
 		5,
@@ -475,7 +452,6 @@ void BlondTheme::initialize()
 		"drawpatch_checked.png",
 		"drawpatch_dn.png",
 		"drawpatch_checkedhi.png");
-
 
 	new_image_set("mutepatch_data", 
 		5,
@@ -520,12 +496,10 @@ void BlondTheme::initialize()
 		"labeltoggle_dn.png", 
 		"label_checkedhi.png");
 
-
 	statusbar_cancel_data = new_image_set(3,
 		"statusbar_cancel_up.png",
 		"statusbar_cancel_hi.png",
 		"statusbar_cancel_dn.png");
-
 
 	VFrame *editpanel_up = new_image("editpanel_up.png");
 	VFrame *editpanel_hi = new_image("editpanel_hi.png");
@@ -582,12 +556,9 @@ void BlondTheme::initialize()
 	new_button("stop.png", TRANSPORT_CENTER_IMAGES, "stop");
 	new_button("stop.png", TRANSPORT_RIGHT_IMAGES, "stoprec");
 
-
-
 // CWindow icons
 	new_image("cwindow_inactive", "cwindow_inactive.png");
 	new_image("cwindow_active", "cwindow_active.png");
-
 
 	new_image_set("batch_render_start",
 		3,
@@ -618,10 +589,6 @@ void BlondTheme::initialize()
 		"preferencesbutton_dnlo.png");
 
 
-
-
-
-
 	new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "arrow");
 	new_toggle("autokeyframe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "autokeyframe");
 	new_toggle("ibeam.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "ibeam");
@@ -633,12 +600,12 @@ void BlondTheme::initialize()
 	VFrame *cpanel_checked = new_image("editpanel_checked.png");
 	VFrame *cpanel_checkedhi = new_image("editpanel_checkedhi.png");
 	new_toggle("blank30x30.png", 
-		   new_image("locklabels_locked.png"),
-		   new_image("locklabels_lockedhi.png"),
-		   new_image("locklabels_unlocked.png"),
-		   new_image("locklabels_dn.png"), // can't have seperate down for each!!??
-		   new_image("locklabels_unlockedhi.png"),
-		   "locklabels");
+			new_image("locklabels_locked.png"),
+			new_image("locklabels_lockedhi.png"),
+			new_image("locklabels_unlocked.png"),
+			new_image("locklabels_dn.png"), // can't have seperate down for each!!??
+			new_image("locklabels_unlockedhi.png"),
+			"locklabels");
 
 
 	new_toggle("camera.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "camera");
@@ -650,8 +617,6 @@ void BlondTheme::initialize()
 	new_toggle("protect.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "protect");
 	new_toggle("titlesafe.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "titlesafe");
 	new_toggle("toolwindow.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "tool");
-
-
 
 	flush_images();
 
@@ -668,20 +633,12 @@ void BlondTheme::initialize()
 	edit_font_color = YELLOW;
 
 	//labels
- 	resources->label_images = new_image_set(5,
-  		"radial_up.png", 
-  		"radial_hi.png", 
-  		"radial_checked.png", 
-  		"radial_dn.png", 
-  		"radial_checkedhi.png");
-
-	/*	resources->type_to_icon = new_image_set(5,
-            "file_folder.png",
-	        "file_unknown.png",
-          	"file_film.png",
-	        "file_sound.png",
-	        "file_column.png"); 
-   */
+	resources->label_images = new_image_set(5,
+		"radial_up.png", 
+		"radial_hi.png", 
+		"radial_checked.png", 
+		"radial_dn.png", 
+		"radial_checkedhi.png");
 }
 
 #define CWINDOW_METER_MARGIN 5
@@ -738,7 +695,6 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 	if(cwindow_controls)
 	{
-SET_TRACE
 		ccomposite_x = 0;
 		ccomposite_y = 5;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
@@ -767,11 +723,9 @@ SET_TRACE
 			cmeter_x = mwindow->session->cwindow_w;
 			ccanvas_w = cmeter_x - ccanvas_x;
 		}
-SET_TRACE
 	}
 	else
 	{
-SET_TRACE
 		ccomposite_x = -get_image("cpanel_bg")->get_w();
 		ccomposite_y = 0;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
@@ -790,14 +744,10 @@ SET_TRACE
 		cmeter_x = mwindow->session->cwindow_w;
 		cstatus_x = mwindow->session->cwindow_w;
 		cstatus_y = mwindow->session->cwindow_h;
-SET_TRACE
 	}
-
-SET_TRACE
 
 	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
 	czoom_y = ctransport_y + 5;
-
 
 	cmeter_y = 5;
 	cmeter_h = mwindow->session->cwindow_h - cmeter_y;
@@ -808,21 +758,13 @@ SET_TRACE
 	ctimebar_w = ccanvas_w;
 	ctimebar_h = 16;
 
-
 // Not used
 	ctime_x = ctransport_x + PlayTransport::get_transport_width(mwindow);
 	ctime_y = ctransport_y;
 	cdest_x = czoom_x;
 	cdest_y = czoom_y + 30;
-SET_TRACE
 }
 
-
-
-void BlondTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
-{
-	
-}
 
 void BlondTheme::get_rmonitor_sizes(int do_audio, 
 	int do_video,
@@ -843,7 +785,6 @@ void BlondTheme::get_rmonitor_sizes(int do_audio,
 		rmonitor_meter_h += 30;
 	}
 }
-
 
 void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
 {
@@ -884,18 +825,11 @@ void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vtime_y = vedit_y + 10;
 	vtime_w = 125;
 
-
-
-
 	vzoom_x = vtime_x + 150;
 	vzoom_y = vtime_y;
 	vsource_x = vtime_x + 50;
 	vsource_y = vtransport_y + 5;
 }
-
-
-
-
 
 void BlondTheme::build_icons()
 {
@@ -906,7 +840,6 @@ void BlondTheme::build_icons()
 	new_image("record_icon", "heroine_icon.png");
 	new_image("clip_icon", "clip_icon.png");
 }
-
 
 
 void BlondTheme::build_bg_data()
@@ -928,7 +861,6 @@ void BlondTheme::build_bg_data()
 }
 
 
-
 void BlondTheme::build_overlays()
 {
 	keyframe_data = new VFrame(get_image_data("keyframe3.png"));
@@ -938,59 +870,6 @@ void BlondTheme::build_overlays()
 	pankeyframe_data = new VFrame(get_image_data("pankeyframe.png"));
 	projectorkeyframe_data = new VFrame(get_image_data("projectorkeyframe.png"));
 }
-
-
-
-
-
-
-
-
-
-void BlondTheme::draw_rwindow_bg(RecordGUI *gui)
-{
-// 	int y;
-// 	int margin = 50;
-// 	int margin2 = 80;
-// 	gui->draw_9segment(recordgui_batch_x - margin,
-// 		0,
-// 		mwindow->session->rwindow_w - recordgui_status_x + margin,
-// 		recordgui_buttons_y,
-// 		rgui_batch);
-// 	gui->draw_3segmenth(recordgui_options_x - margin2,
-// 		recordgui_buttons_y - 5,
-// 		mwindow->session->rwindow_w - recordgui_options_x + margin2,
-// 		rgui_controls);
-// 	y = recordgui_buttons_y - 5 + rgui_controls->get_h();
-// 	gui->draw_9segment(0,
-// 		y,
-// 		mwindow->session->rwindow_w,
-// 		mwindow->session->rwindow_h - y,
-// 		rgui_list);
-}
-
-void BlondTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
-{
-// 	int margin = 45;
-// 	int panel_w = 300;
-// 	int x = rmonitor_meter_x - margin;
-// 	int w = mwindow->session->rmonitor_w - x;
-// 	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
-// 	gui->clear_box(0, 
-// 		0, 
-// 		mwindow->session->rmonitor_w, 
-// 		mwindow->session->rmonitor_h);
-// 	gui->draw_9segment(x,
-// 		0,
-// 		w,
-// 		mwindow->session->rmonitor_h,
-// 		rmonitor_meters);
-}
-
-
-
-
-
 
 void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 {
@@ -1072,7 +951,6 @@ void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 			mzoom_w - ZOOMBAR_CENTER, 
 			get_image("zoombar_right"));
 
-
 // Status
 	gui->draw_3segmenth(mstatus_x, 
 		mstatus_y,
@@ -1080,10 +958,10 @@ void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 		get_image("statusbar_left"));
 
 	if(mstatus_w > ZOOMBAR_CENTER)
-	  gui->draw_3segmenth(mstatus_x + ZOOMBAR_CENTER, 
-			      mstatus_y,
-			      mstatus_w - ZOOMBAR_CENTER, 
-			      get_image("statusbar_right"));
+		gui->draw_3segmenth(mstatus_x + ZOOMBAR_CENTER, 
+				mstatus_y,
+				mstatus_w - ZOOMBAR_CENTER, 
+				get_image("statusbar_right"));
 
 }
 
@@ -1141,11 +1019,6 @@ void BlondTheme::draw_vwindow_bg(VWindowGUI *gui)
 	}
 }
 
-void BlondTheme::get_preferences_sizes()
-{
-}
-
-
 void BlondTheme::draw_preferences_bg(PreferencesWindow *gui)
 {
 	gui->draw_vframe(get_image("preferences_bg"), 0, 0);
@@ -1191,8 +1064,3 @@ void BlondTheme::get_plugindialog_sizes()
 	plugindialog_moduleattach_x = plugindialog_module_x + 20;
 	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + 10;
 }
-
-
-
-
-
