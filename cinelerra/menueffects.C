@@ -62,15 +62,11 @@ MenuEffects::~MenuEffects()
 {
 }
 
-
 int MenuEffects::handle_event()
 {
 	thread->set_title("");
 	thread->start();
 }
-
-
-
 
 
 MenuEffectPacket::MenuEffectPacket(const char *path, int64_t start, int64_t end)
@@ -85,10 +81,6 @@ MenuEffectPacket::~MenuEffectPacket()
 }
 
 
-
-
-
-
 MenuEffectThread::MenuEffectThread(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
@@ -98,9 +90,6 @@ MenuEffectThread::MenuEffectThread(MWindow *mwindow)
 MenuEffectThread::~MenuEffectThread()
 {
 }
-
-
-
 
 
 int MenuEffectThread::set_title(const char *title)
@@ -145,7 +134,6 @@ void MenuEffectThread::run()
 // get default attributes for output file
 // used after completion
 	get_derived_attributes(default_asset, defaults);
-//	to_tracks = defaults->get("RENDER_EFFECT_TO_TRACKS", 1);
 	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOAD_PASTE);
 	strategy = defaults->get("RENDER_EFFECT_STRATEGY", SINGLE_PASS);
 
@@ -244,7 +232,7 @@ void MenuEffectThread::run()
 	}
 
 // Configuration for realtime plugins.
-	KeyFrame plugin_data;        
+	KeyFrame plugin_data;
 
 // get selection to render
 // Range
@@ -273,9 +261,9 @@ void MenuEffectThread::run()
 		total_end == total_start) total_end = total_start + 1;
 
 // Units are now in the track's units.
-	int64_t total_length = (int64_t)total_end - (int64_t)total_start;
+	posnum total_length = (posnum)total_end - (posnum)total_start;
 // length of output file
-	int64_t output_start, output_end;        
+	posnum output_start, output_end;
 
 	if(!result && total_length <= 0)
 	{
@@ -357,11 +345,9 @@ void MenuEffectThread::run()
 			number_start, 
 			total_digits);
 
-
-
 // Construct all packets for single overwrite confirmation
-		for(int64_t fragment_start = (int64_t)total_start, fragment_end;
-			fragment_start < (int64_t)total_end;
+		for(posnum fragment_start = (posnum)total_start, fragment_end;
+			fragment_start < (posnum)total_end;
 			fragment_start = fragment_end)
 		{
 // Get fragment end
@@ -371,13 +357,13 @@ void MenuEffectThread::run()
 					to_units(current_label->position, 0) <= fragment_start)
 					current_label = current_label->next;
 				if(!current_label)
-					fragment_end = (int64_t)total_end;
+					fragment_end = (posnum)total_end;
 				else
 					fragment_end = to_units(current_label->position, 0);
 			}
 			else
 			{
-				fragment_end = (int64_t)total_end;
+				fragment_end = (posnum)total_end;
 			}
 
 // Get path
@@ -409,16 +395,14 @@ void MenuEffectThread::run()
 		paths.remove_all();
 	}
 
-
-
 	for(int current_packet = 0; 
 		current_packet < packets.total && !result; 
 		current_packet++)
 	{
 		Asset *asset = new Asset(*default_asset);
 		MenuEffectPacket *packet = packets.values[current_packet];
-		int64_t fragment_start = packet->start;
-		int64_t fragment_end = packet->end;
+		posnum fragment_start = packet->start;
+		posnum fragment_end = packet->end;
 		strcpy(asset->path, packet->path);
 
 		assets.append(asset);
@@ -495,11 +479,8 @@ void MenuEffectThread::run()
 			mwindow->edl->session->plugins_follow_edits,
 			0); // overwrite
 
-
 		mwindow->save_backup();
 		mwindow->undo->update_undo(title, LOAD_ALL);
-
-
 
 		mwindow->restart_brender();
 		mwindow->update_plugin_guis();
@@ -528,6 +509,7 @@ MenuEffectItem::MenuEffectItem(MenuEffects *menueffect, const char *string)
 {
 	this->menueffect = menueffect; 
 }
+
 int MenuEffectItem::handle_event()
 {
 	menueffect->thread->set_title(get_text());
@@ -535,22 +517,12 @@ int MenuEffectItem::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-
 MenuEffectWindow::MenuEffectWindow(MWindow *mwindow, 
 	MenuEffectThread *menueffects, 
 	ArrayList<BC_ListBoxItem*> *plugin_list, 
 	Asset *asset)
  : BC_Window(PROGRAM_NAME ": Render effect", 
- 		mwindow->gui->get_abs_cursor_x(1),
+		mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1) - mwindow->session->menueffect_h / 2,
 		mwindow->session->menueffect_w, 
 		mwindow->session->menueffect_h, 
@@ -670,7 +642,7 @@ int MenuEffectWindowOK::handle_event()
 { 
 	if(window->plugin_list) 
 		window->result = window->list->get_selection_number(0, 0); 
-	
+
 	window->set_done(0); 
 }
 
@@ -712,7 +684,7 @@ MenuEffectWindowList::MenuEffectWindowList(MenuEffectWindow *window,
 	int h, 
 	ArrayList<BC_ListBoxItem*> *plugin_list)
  : BC_ListBox(x, 
- 		y, 
+		y,
 		w, 
 		h, 
 		LISTBOX_TEXT, 
@@ -731,9 +703,9 @@ int MenuEffectWindowList::handle_event()
 
 MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Effect Prompt", 
- 		mwindow->gui->get_abs_cursor_x(1) - 260 / 2,
+		mwindow->gui->get_abs_cursor_x(1) - 260 / 2,
 		mwindow->gui->get_abs_cursor_y(1) - 300,
- 		MenuEffectPrompt::calculate_w(mwindow->gui), 
+		MenuEffectPrompt::calculate_w(mwindow->gui), 
 		MenuEffectPrompt::calculate_h(mwindow->gui), 
 		MenuEffectPrompt::calculate_w(mwindow->gui),
 		MenuEffectPrompt::calculate_h(mwindow->gui),
@@ -757,7 +729,6 @@ int MenuEffectPrompt::calculate_h(BC_WindowBase *gui)
 	return h;
 }
 
-
 int MenuEffectPrompt::create_objects()
 {
 	int x = 10, y = 10;
@@ -770,4 +741,3 @@ int MenuEffectPrompt::create_objects()
 	flush();
 	return 0;
 }
-

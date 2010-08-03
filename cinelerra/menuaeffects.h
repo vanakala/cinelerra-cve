@@ -46,7 +46,7 @@ public:
 	int get_derived_attributes(Asset *asset, BC_Hash *defaults);
 	int save_derived_attributes(Asset *asset, BC_Hash *defaults);
 	PluginArray* create_plugin_array();
-	int64_t to_units(double position, int round);
+	posnum to_units(double position, int round);
 	int fix_menu(const char *title);
 };
 

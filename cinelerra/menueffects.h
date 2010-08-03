@@ -25,6 +25,7 @@
 #include "asset.inc"
 #include "bitspopup.h"
 #include "browsebutton.h"
+#include "datatype.h"
 #include "formatpopup.h"
 #include "formattools.h"
 #include "loadmode.inc"
@@ -52,14 +53,14 @@ public:
 class MenuEffectPacket
 {
 public:
-	MenuEffectPacket(const char *path, int64_t start, int64_t end);
+	MenuEffectPacket(const char *path, posnum start, posnum end);
 	~MenuEffectPacket();
 
 // Path of output without remote prefix
 	char path[BCTEXTLEN];
-	
-	int64_t start;
-	int64_t end;
+
+	posnum start;
+	posnum end;
 };
 
 
@@ -75,7 +76,7 @@ public:
 	virtual int get_derived_attributes(Asset *asset, BC_Hash *defaults) { return 0; };
 	virtual int save_derived_attributes(Asset *asset, BC_Hash *defaults) { return 0; };
 	virtual PluginArray* create_plugin_array() { return 0; };
-	virtual int64_t to_units(double position, int round) { return 0; };
+	virtual posnum to_units(double position, int round) { return 0; };
 	virtual int fix_menu(const char *title) {};
 	int test_existence(Asset *asset);
 
@@ -94,10 +95,6 @@ public:
 	int handle_event();
 	MenuEffects *menueffect;
 };
-
-
-
-
 
 
 class MenuEffectWindowOK;
@@ -135,10 +132,10 @@ class MenuEffectWindowOK : public BC_OKButton
 {
 public:
 	MenuEffectWindowOK(MenuEffectWindow *window);
-	
+
 	int handle_event();
 	int keypress_event();
-	
+
 	MenuEffectWindow *window;
 };
 
@@ -178,12 +175,11 @@ public:
 	MenuEffectPrompt(MWindow *mwindow);
 
 	static int calculate_w(BC_WindowBase *gui);
-	static int calculate_h(BC_WindowBase *gui);	
+	static int calculate_h(BC_WindowBase *gui);
 	int create_objects();
 
 	MenuEffectPromptOK *ok;
 	MenuEffectPromptCancel *cancel;
 };
-
 
 #endif

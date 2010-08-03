@@ -72,7 +72,6 @@ int MenuAEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 		0,
 		1);
 
-
 // Fix asset for audio only
 	if(!File::supports_audio(asset->format)) asset->format = FILE_WAV;
 	asset->audio_data = 1;
@@ -100,7 +99,7 @@ PluginArray* MenuAEffectThread::create_plugin_array()
 	return new APluginArray();
 }
 
-int64_t MenuAEffectThread::to_units(double position, int round)
+posnum MenuAEffectThread::to_units(double position, int round)
 {
 	if(round)
 		return Units::round(position * mwindow->edl->session->sample_rate);
@@ -114,7 +113,6 @@ int MenuAEffectThread::fix_menu(const char *title)
 {
 	mwindow->gui->mainmenu->add_aeffect(title); 
 }
-
 
 
 MenuAEffectItem::MenuAEffectItem(MenuAEffects *menueffect, const char *string)

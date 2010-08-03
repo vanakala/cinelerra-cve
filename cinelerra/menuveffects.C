@@ -73,15 +73,10 @@ int MenuVEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 		0,
 		0);
 
-
-
-
 // Fix asset for video only
 	if(!File::supports_video(asset->format)) asset->format = FILE_MOV;
 	asset->audio_data = 0;
 	asset->video_data = 1;
-
-
 
 	return 0;
 }
@@ -105,13 +100,13 @@ PluginArray* MenuVEffectThread::create_plugin_array()
 	return new VPluginArray();
 }
 
-int64_t MenuVEffectThread::to_units(double position, int round)
+posnum MenuVEffectThread::to_units(double position, int round)
 {
 	if(round)
 		return Units::round(position * mwindow->edl->session->frame_rate);
 	else
-		return (int64_t)(position * mwindow->edl->session->frame_rate);
-		
+		return (posnum)(position * mwindow->edl->session->frame_rate);
+
 	return 0;
 }
 
