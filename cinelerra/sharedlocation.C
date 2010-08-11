@@ -124,12 +124,12 @@ void SharedLocation::calculate_title(char *string,
 		if(track)
 			strcpy(track_title, track->title);
 		else
-			sprintf(track_title, _("None"));
+			strcpy(track_title, _("None"));
 
 		if(plugin)
 			strcpy(plugin_title, _(plugin->title));
 		else
-			sprintf(plugin_title, _("None"));
+			strcpy(plugin_title, _("None"));
 
 		sprintf(string, "%s: %s", track_title, plugin_title);
 	}
@@ -142,8 +142,7 @@ void SharedLocation::calculate_title(char *string,
 		if(track)
 			strcpy(string, track->title);
 		else
-			sprintf(string, _("None"));
-//printf("SharedLocation::calculate_title %p %s\n", string);
+			strcpy(string, _("None"));
 	}
 }
 

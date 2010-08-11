@@ -43,18 +43,15 @@ PlayableTracks::PlayableTracks(RenderEngine *renderengine,
 	this->renderengine = renderengine;
 	this->data_type = data_type;
 
-//printf("PlayableTracks::PlayableTracks 1 %d\n", renderengine->edl->tracks->total());
 	for(Track *current_track = renderengine->edl->tracks->first; 
 		current_track; 
 		current_track = current_track->next)
 	{
 		if(is_playable(current_track, current_position, use_nudge))
 		{
-//printf("PlayableTracks::PlayableTracks 1 %p %d %d\n", this, total, current_position);
 			append(current_track);
 		}
 	}
-//printf("PlayableTracks::PlayableTracks %d %d %d\n", data_type, total, current_position);
 }
 
 PlayableTracks::~PlayableTracks()
@@ -73,10 +70,8 @@ int PlayableTracks::is_playable(Track *current_track,
 	Auto *current = 0;
 
 	if(current_track->data_type != data_type) result = 0;
-	
 
 // Track is off screen and not bounced to other modules
-
 
 	if(result)
 	{

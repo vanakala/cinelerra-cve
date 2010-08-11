@@ -30,7 +30,7 @@ class SharedLocation
 public:
 	SharedLocation();
 	SharedLocation(int module, int plugin);
-	
+
 	void save(FileXML *file);
 	void load(FileXML *file);
 	int operator==(const SharedLocation &that);
@@ -42,7 +42,7 @@ public:
 		int convert_units,
 		int plugin_type,
 		int use_nudge);
-	
+
 	int module, plugin;
 };
 

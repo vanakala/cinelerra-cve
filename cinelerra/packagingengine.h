@@ -39,9 +39,9 @@ public:
 	virtual RenderPackage* get_package_single_farm(double frames_per_second, 
 		int client_number,
 		int use_local_rate) = 0;
-	virtual int64_t get_progress_max() = 0;
+	virtual samplenum get_progress_max() = 0;
 	virtual void get_package_paths(ArrayList<char*> *path_list) = 0;
-	virtual int packages_are_done() = 0;
+	virtual int packages_are_done() { return 0; };
 };
 
 // Classes used for different packaging strategies, which allow for customary splitting of packages
@@ -61,9 +61,9 @@ public:
 	RenderPackage* get_package_single_farm(double frames_per_second, 
 		int client_number,
 		int use_local_rate);
-	int64_t get_progress_max();
+	samplenum get_progress_max();
 	void get_package_paths(ArrayList<char*> *path_list);
-	int packages_are_done();
+
 private:
 	RenderPackage **packages;
 	int64_t total_allocated;  // Total packages to test the existence of
@@ -72,11 +72,11 @@ private:
 	int total_digits;      // Total number of digits including padding the user specified.
 	double package_len;    // Target length of a single package
 	double min_package_len; // Minimum package length after load balancing
-	int64_t total_packages;   // Total packages to base calculations on
-	int64_t audio_position;
-	int64_t video_position;
-	int64_t audio_end;
-	int64_t video_end;
+	int total_packages;   // Total packages to base calculations on
+	posnum audio_position;
+	framenum video_position;
+	posnum audio_end;
+	framenum video_end;
 	int current_package;
 	Asset *default_asset;
 	Preferences *preferences;
