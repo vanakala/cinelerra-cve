@@ -24,6 +24,7 @@
 #include "edlsession.h"
 #include "language.h"
 #include "localsession.h"
+#include "mainerror.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "pluginclient.h"
@@ -71,8 +72,6 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 // Get parameters for all
 	master_gui_on = get_gui_status();
 
-
-
 // get parameters depending on video or audio
 	init_realtime_parameters();
 
@@ -87,9 +86,9 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 	return 0;
 }
 
-int PluginClient::plugin_start_loop(int64_t start, 
-	int64_t end, 
-	int64_t buffer_size, 
+int PluginClient::plugin_start_loop(posnum start,
+	posnum end,
+	int buffer_size, 
 	int total_buffers)
 {
 	this->source_start = start;
@@ -127,54 +126,37 @@ int PluginClient::plugin_get_parameters()
 
 // ========================= main loop
 
-int PluginClient::is_multichannel() { return 0; }
-int PluginClient::is_synthesis() { return 0; }
-int PluginClient::is_realtime() { return 0; }
-int PluginClient::is_fileio() { return 0; }
-int PluginClient::delete_buffer_ptrs() { return 0; }
-const char* PluginClient::plugin_title() { return _("Untitled"); }
-VFrame* PluginClient::new_picon() { return 0; }
-Theme* PluginClient::new_theme() { return 0; }
-
-
-
+const char* PluginClient::plugin_title() 
+{
+	return _("Untitled");
+}
 
 Theme* PluginClient::get_theme()
 {
 	return server->get_theme();
 }
 
+int PluginClient::get_samplerate() 
+{
+	return get_project_samplerate();
+}
 
-
-int PluginClient::is_audio() { return 0; }
-int PluginClient::is_video() { return 0; }
-int PluginClient::is_theme() { return 0; }
-int PluginClient::uses_gui() { return 1; }
-int PluginClient::is_transition() { return 0; }
-int PluginClient::load_defaults() { return 0; }
-int PluginClient::save_defaults() { return 0; }
-int PluginClient::show_gui() { return 0; }
-int PluginClient::set_string() { return 0; }
-int PluginClient::get_parameters() { return 0; }
-int PluginClient::get_samplerate() { return get_project_samplerate(); }
-double PluginClient::get_framerate() { return get_project_framerate(); }
-int PluginClient::init_realtime_parameters() { return 0; }
-int PluginClient::delete_nonrealtime_parameters() { return 0; }
-int PluginClient::start_loop() { return 0; };
-int PluginClient::process_loop() { return 0; };
-int PluginClient::stop_loop() { return 0; };
+double PluginClient::get_framerate()
+{
+	return get_project_framerate();
+}
 
 void PluginClient::set_interactive()
 {
 	interactive = 1;
 }
 
-int64_t PluginClient::get_in_buffers(int64_t recommended_size)
+int PluginClient::get_in_buffers(int recommended_size)
 {
 	return recommended_size;
 }
 
-int64_t PluginClient::get_out_buffers(int64_t recommended_size)
+int PluginClient::get_out_buffers(int recommended_size)
 {
 	return recommended_size;
 }
@@ -186,7 +168,7 @@ int PluginClient::get_gui_status()
 
 int PluginClient::start_plugin()
 {
-	printf(_("No processing defined for this plugin.\n"));
+	errorbox(_("No processing defined for this plugin."));
 	return 0;
 }
 
@@ -281,17 +263,17 @@ float PluginClient::get_blue()
 
 
 
-int64_t PluginClient::get_source_position()
+posnum PluginClient::get_source_position()
 {
 	return source_position;
 }
 
-int64_t PluginClient::get_source_start()
+posnum PluginClient::get_source_start()
 {
 	return source_start;
 }
 
-int64_t PluginClient::get_total_len()
+posnum PluginClient::get_total_len()
 {
 	return total_len;
 }
@@ -302,12 +284,12 @@ int PluginClient::get_direction()
 }
 
 
-int64_t PluginClient::local_to_edl(int64_t position)
+posnum PluginClient::local_to_edl(posnum position)
 {
 	return position;
 }
 
-int64_t PluginClient::edl_to_local(int64_t position)
+posnum PluginClient::edl_to_local(posnum position)
 {
 	return position;
 }
@@ -356,24 +338,24 @@ int PluginClient::send_configure_change()
 }
 
 
-KeyFrame* PluginClient::get_prev_keyframe(int64_t position, int is_local)
+KeyFrame* PluginClient::get_prev_keyframe(posnum position, int is_local)
 {
 	if(is_local) position = local_to_edl(position);
 	return server->get_prev_keyframe(position);
 }
 
-KeyFrame* PluginClient::get_next_keyframe(int64_t position, int is_local)
+KeyFrame* PluginClient::get_next_keyframe(posnum position, int is_local)
 {
 	if(is_local) position = local_to_edl(position);
 	return server->get_next_keyframe(position);
 }
 
-void PluginClient::get_camera(float *x, float *y, float *z, int64_t position)
+void PluginClient::get_camera(float *x, float *y, float *z, framenum position)
 {
 	server->get_camera(x, y, z, position, direction);
 }
 
-void PluginClient::get_projector(float *x, float *y, float *z, int64_t position)
+void PluginClient::get_projector(float *x, float *y, float *z, framenum position)
 {
 	server->get_projector(x, y, z, position, direction);
 }

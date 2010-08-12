@@ -108,7 +108,7 @@ void thread_class::run() \
 	window->create_objects(); \
  \
 /* Only set it here so tracking doesn't update it until everything is created. */ \
- 	plugin->thread = this; \
+	plugin->thread = this; \
 	int result = window->run_window(); \
 /* This is needed when the GUI is closed from itself */ \
 	if(result) plugin->client_side_close(); \
@@ -139,9 +139,7 @@ void thread_class::run() \
 /* This is needed when the GUI is closed from elsewhere than itself */ \
 /* Since we now use autodelete, this is all that has to be done, thread will take care of itself ... */ \
 /* Thread join will wait if this was not called from the thread itself or go on if it was */ \
-		thread->window->lock_window("PLUGIN_DESTRUCTOR_MACRO"); \
 		thread->window->set_done(0); \
-		thread->window->unlock_window(); \
 		thread->join(); \
 	} \
  \
@@ -166,10 +164,8 @@ void plugin_class::raise_window() \
 { \
 	if(thread) \
 	{ \
-		thread->window->lock_window(); \
 		thread->window->raise_window(); \
 		thread->window->flush(); \
-		thread->window->unlock_window(); \
 	} \
 }
 
@@ -178,9 +174,7 @@ int plugin_class::set_string() \
 { \
 	if(thread) \
 	{ \
-		thread->window->lock_window(); \
 		thread->window->set_title(gui_string); \
-		thread->window->unlock_window(); \
 	} \
 	return 0; \
 }
@@ -198,8 +192,8 @@ int plugin_class::load_configuration() \
 	prev_keyframe = get_prev_keyframe(get_source_position()); \
 	next_keyframe = get_next_keyframe(get_source_position()); \
  \
- 	int64_t next_position = edl_to_local(next_keyframe->position); \
- 	int64_t prev_position = edl_to_local(prev_keyframe->position); \
+	posnum next_position = edl_to_local(next_keyframe->position); \
+	posnum prev_position = edl_to_local(prev_keyframe->position); \
  \
 	config_class old_config, prev_config, next_config; \
 	old_config.copy_from(config); \
@@ -235,20 +229,20 @@ public:
 	PluginClient(PluginServer *server);
 	virtual ~PluginClient();
 
-	
 // Queries for the plugin server.
-	virtual int is_realtime();
-	virtual int is_audio();
-	virtual int is_video();
-	virtual int is_fileio();
-	virtual int is_theme();
-	virtual int uses_gui();
-	virtual int is_multichannel();
-	virtual int is_synthesis();
-	virtual int is_transition();
-	virtual const char* plugin_title();   // return the title of the plugin
-	virtual VFrame* new_picon();
-	virtual Theme* new_theme();
+	virtual int is_realtime() { return 0; };
+	virtual int is_audio() { return 0; };
+	virtual int is_video() { return 0; };
+	virtual int is_fileio() { return 0; };
+	virtual int is_theme() { return 0; };
+	virtual int uses_gui() { return 1; };
+	virtual int is_multichannel() { return 0; };
+	virtual int is_synthesis() { return 0; };
+	virtual int is_transition() { return 0; };
+// return the title of the plugin
+	virtual const char* plugin_title();
+	virtual VFrame* new_picon() { return 0; };
+	virtual Theme* new_theme() { return 0; };
 // Get theme being used by Cinelerra currently.  Used by all plugins.
 	Theme* get_theme();
 
@@ -264,26 +258,29 @@ public:
 // Give the framerate of the output for a non realtime plugin.
 // For realtime plugins give the requested framerate.
 	virtual double get_framerate();
-	virtual int delete_nonrealtime_parameters();
+	virtual int delete_nonrealtime_parameters() { return 0; };
 	virtual int start_plugin();         // run a non realtime plugin
-	virtual int get_parameters();     // get information from user before non realtime processing
-	virtual int64_t get_in_buffers(int64_t recommended_size);  // return desired size for input buffers
-	virtual int64_t get_out_buffers(int64_t recommended_size);     // return desired size for output buffers
-	virtual int start_loop();
-	virtual int process_loop();
-	virtual int stop_loop();
+// get information from user before non realtime processing
+	virtual int get_parameters() { return 0; };
 
+	virtual int get_in_buffers(int recommended_size);  // return desired size for input buffers
+	virtual int get_out_buffers(int recommended_size);     // return desired size for output buffers
 
+	virtual int start_loop() { return 0; };
+	virtual int process_loop() { return 0; };
+	virtual int stop_loop() { return 0; };
 
 
 // Realtime commands for signal processors.
 // These must be defined by the plugin itself.
-	virtual int set_string();             // Set the string identifying the plugin to modules and patches.
+// Set the string identifying the plugin to modules and patches.
+	virtual int set_string() { return 0; };
 // cause the plugin to show the gui
-	virtual int show_gui();               
+	virtual int show_gui() { return 0; };
 // cause the plugin to hide the gui
 	void client_side_close();
 	void update_display_title();
+
 // Raise the GUI
 	virtual void raise_window() {};
 	virtual void update_gui() {};
@@ -299,7 +296,7 @@ public:
 	virtual int plugin_process_loop(VFrame **buffers, int &write_length) { return 1; };
 	virtual int plugin_process_loop(double **buffers, int &write_length) { return 1; };
 // get parameters depending on video or audio
-	virtual int init_realtime_parameters();     
+	virtual int init_realtime_parameters() { return 0; };
 // release objects which are required after playback stops
 	virtual void render_stop() {};
 	int get_gui_status();
@@ -317,15 +314,15 @@ public:
 //     passing of get_source_position.
 //     If -1 the tracking position in the edl is used.
 // is_local - if 1, the position is converted to the EDL rate.
-	KeyFrame* get_prev_keyframe(int64_t position, int is_local = 1);
-	KeyFrame* get_next_keyframe(int64_t position, int is_local = 1);
+	KeyFrame* get_prev_keyframe(posnum position, int is_local = 1);
+	KeyFrame* get_next_keyframe(posnum position, int is_local = 1);
 // get current camera and projector position
-	void get_camera(float *x, float *y, float *z, int64_t position);
-	void get_projector(float *x, float *y, float *z, int64_t position);
+	void get_camera(float *x, float *y, float *z, framenum position);
+	void get_projector(float *x, float *y, float *z, framenum position);
 // When this plugin is adjusted, propogate parameters back to EDL and virtual
 // console.  This gets a keyframe from the EDL, with the position set to the
 // EDL tracking position.
-	int send_configure_change();                            
+	int send_configure_change();
 
 
 // Called from process_buffer
@@ -339,26 +336,26 @@ public:
 // it's the transition length.  Relative to the requested rate.
 // The only way to get smooth interpolation is to make all position queries
 // relative to the requested rate.
-	int64_t get_total_len();
+	posnum get_total_len();
 
 // For realtime plugins gets the lowest sample of the plugin in the requested
 // rate.  For others it's the start of the EDL selection in the EDL rate.
-	int64_t get_source_start();
+	posnum get_source_start();
 
 // Convert the position relative to the requested rate to the position 
 // relative to the EDL rate.  If the argument is < 0, it is not changed.
 // Used for interpreting keyframes.
-	virtual int64_t local_to_edl(int64_t position);
+	virtual posnum local_to_edl(posnum position);
 
 // Convert the EDL position to the local position.
-	virtual int64_t edl_to_local(int64_t position);
+	virtual posnum edl_to_local(posnum position);
 
 // For transitions the source_position is the playback position relative
 // to the start of the transition.
 // For realtime effects, the start of the most recent process_buffer in forward
 // and the end of the range to process in reverse.  Relative to start of EDL in
 // the requested rate.
-	int64_t get_source_position();
+	posnum get_source_position();
 
 // Get the EDL Session.  May return 0 if the server has no edl.
 	EDLSession* get_edlsession();
@@ -385,31 +382,24 @@ public:
 	float get_green();
 	float get_blue();
 
-
-
 // Operations for file handlers
 	virtual int open_file() { return 0; };
 	virtual int get_audio_parameters() { return 0; };
 	virtual int get_video_parameters() { return 0; };
-	virtual int check_header(char *path) { return 0; };
-	virtual int open_file(char *path, int wr, int rd) { return 1; };
+	virtual int check_header(const char *path) { return 0; };
+	virtual int open_file(const char *path, int wr, int rd) { return 1; };
 	virtual int close_file() { return 0; };
 
-
-
-
-
 // All plugins define these.
-	virtual int load_defaults();       // load default settings for the plugin
-	virtual int save_defaults();      // save the current settings as defaults
-
-
-
+// load default settings for the plugin
+	virtual int load_defaults() { return 0; };
+// save the current settings as defaults
+	virtual int save_defaults() { return 0; };
 
 // Non realtime operations for signal processors.
-	virtual int plugin_start_loop(int64_t start, 
-		int64_t end, 
-		int64_t buffer_size, 
+	virtual int plugin_start_loop(posnum start,
+		posnum end,
+		int buffer_size, 
 		int total_buffers);
 	int plugin_stop_loop();
 	int plugin_process_loop();
@@ -422,9 +412,6 @@ public:
 	int get_project_smp();
 	int get_aspect_ratio(float &aspect_w, float &aspect_h);
 
-
-	int write_frames(int64_t total_frames);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
-	int write_samples(int64_t total_samples);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
 	virtual int plugin_get_parameters();
 	const char* get_defaultdir();     // Directory defaults should be stored in
 	void set_interactive();
@@ -440,32 +427,25 @@ public:
 
 
 // create pointers to buffers of the plugin's type before realtime rendering
-	virtual int delete_buffer_ptrs();
+	virtual int delete_buffer_ptrs() { return 0; };
 
 
 
 
 // communication convenience routines for the base class
-	int stop_gui_client();     
+	int stop_gui_client();
 	int save_data_client();
 	int load_data_client();
 	int set_string_client(const char *string);  // set the string identifying the plugin
 	int send_cancelled();        // non realtime plugin sends when cancelled
 
 // ================================= Buffers ===============================
-
-// number of double buffers for each channel
-	ArrayList<int> double_buffers_in;    
-	ArrayList<int> double_buffers_out;
 // When arming buffers need to know the offsets in all the buffers and which
 // double buffers for each channel before rendering.
-	ArrayList<int64_t> offset_in_render;
-	ArrayList<int64_t> offset_out_render;
-	ArrayList<int64_t> double_buffer_in_render;
-	ArrayList<int64_t> double_buffer_out_render;
-// total size of each buffer depends on if it's a master or node
-	ArrayList<int64_t> realtime_in_size;
-	ArrayList<int64_t> realtime_out_size;
+	ArrayList<int> offset_in_render;
+	ArrayList<int> offset_out_render;
+	ArrayList<int> double_buffer_in_render;
+	ArrayList<int> double_buffer_out_render;
 
 // ================================= Automation ===========================
 
@@ -478,7 +458,7 @@ public:
 
 	int show_initially;             // set to show a realtime plugin initially
 // range in project for processing
-	int64_t start, end;                
+	posnum start, end;
 	int interactive;                // for the progress bar plugin
 	int success;
 	int total_out_buffers;          // total send buffers allocated by the server
@@ -487,12 +467,9 @@ public:
 
 // These give the largest fragment the plugin is expected to handle.
 // size of a send buffer to the server
-	int64_t out_buffer_size;  
+	int out_buffer_size;
 // size of a recieve buffer from the server
-	int64_t in_buffer_size;   
-
-
-
+	int in_buffer_size;
 
 // Direction of most recent process_buffer
 	int direction;
@@ -502,22 +479,17 @@ public:
 
 // Position relative to start of EDL in requested rate.  Calculated for every process
 // command.  Used for keyframes.
-	int64_t source_position;
+	posnum source_position;
 // For realtime plugins gets the lowest sample of the plugin in the requested
 // rate.  For others it's always 0.
-	int64_t source_start;
+	posnum source_start;
 // Length of source.  For effects it's the plugin length.  For transitions
 // it's the transition length.  Relative to the requested rate.
-	int64_t total_len;
+	posnum total_len;
 // Total number of processors available - 1
-	int smp;  
+	int smp;
 	PluginServer *server;
 
-private:
-
-// File handlers:
-//	Asset *asset;     // Point to asset structure in shared memory
 };
-
 
 #endif

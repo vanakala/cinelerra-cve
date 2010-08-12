@@ -64,7 +64,6 @@ int PluginAClient::get_render_ptrs()
 		double_buffer = double_buffer_in_render.values[i];
 		fragment_position = offset_in_render.values[i];
 		input_ptr_render[i] = &input_ptr_master.values[i][double_buffer][fragment_position];
-//printf("PluginAClient::get_render_ptrs %x\n", input_ptr_master.values[i][double_buffer]);
 	}
 
 	for(i = 0; i < total_out_buffers; i++)
@@ -73,7 +72,6 @@ int PluginAClient::get_render_ptrs()
 		fragment_position = offset_out_render.values[i];
 		output_ptr_render[i] = &output_ptr_master.values[i][double_buffer][fragment_position];
 	}
-//printf("PluginAClient::get_render_ptrs %x %x\n", input_ptr_render[0], output_ptr_render[0]);
 	return 0;
 }
 
@@ -83,23 +81,23 @@ int PluginAClient::init_realtime_parameters()
 	return 0;
 }
 
-int PluginAClient::process_realtime(int64_t size, 
+int PluginAClient::process_realtime(int size, 
 	double **input_ptr, 
 	double **output_ptr)
 {
 	return 0;
 }
 
-int PluginAClient::process_realtime(int64_t size, 
+int PluginAClient::process_realtime(int size, 
 	double *input_ptr, 
 	double *output_ptr)
 {
 	return 0;
 }
 
-int PluginAClient::process_buffer(int64_t size, 
+int PluginAClient::process_buffer(int size, 
 	double **buffer,
-	int64_t start_position,
+	posnum start_position,
 	int sample_rate)
 {
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
@@ -112,9 +110,9 @@ int PluginAClient::process_buffer(int64_t size,
 	return 0;
 }
 
-int PluginAClient::process_buffer(int64_t size, 
+int PluginAClient::process_buffer(int size, 
 	double *buffer,
-	int64_t start_position,
+	posnum start_position,
 	int sample_rate)
 {
 	read_samples(buffer, 
@@ -127,11 +125,9 @@ int PluginAClient::process_buffer(int64_t size,
 }
 
 
-
-
-int PluginAClient::plugin_start_loop(int64_t start, 
-	int64_t end, 
-	int64_t buffer_size, 
+int PluginAClient::plugin_start_loop(posnum start,
+	posnum end,
+	int buffer_size, 
 	int total_buffers)
 {
 	sample_rate = get_project_samplerate();
@@ -148,25 +144,25 @@ int PluginAClient::plugin_get_parameters()
 }
 
 
-int64_t PluginAClient::local_to_edl(int64_t position)
+posnum PluginAClient::local_to_edl(posnum position)
 {
 	if(position < 0) return position;
-	return (int64_t)(position *
+	return (posnum)(position *
 		get_project_samplerate() /
 		sample_rate);
 	return 0;
 }
 
-int64_t PluginAClient::edl_to_local(int64_t position)
+posnum PluginAClient::edl_to_local(posnum position)
 {
 	if(position < 0) return position;
-	return (int64_t)(position *
+	return (posnum)(position *
 		sample_rate /
 		get_project_samplerate());
 }
 
 
-int PluginAClient::plugin_process_loop(double **buffers, int64_t &write_length)
+int PluginAClient::plugin_process_loop(double **buffers, int &write_length)
 {
 	write_length = 0;
 
@@ -178,8 +174,8 @@ int PluginAClient::plugin_process_loop(double **buffers, int64_t &write_length)
 
 int PluginAClient::read_samples(double *buffer, 
 	int channel, 
-	int64_t start_position, 
-	int64_t total_samples)
+	samplenum start_position, 
+	samplenum total_samples)
 {
 	return server->read_samples(buffer, 
 		channel, 
@@ -188,8 +184,8 @@ int PluginAClient::read_samples(double *buffer,
 }
 
 int PluginAClient::read_samples(double *buffer, 
-	int64_t start_position, 
-	int64_t total_samples)
+	samplenum start_position, 
+	samplenum total_samples)
 {
 	return server->read_samples(buffer, 
 		0, 
@@ -200,8 +196,8 @@ int PluginAClient::read_samples(double *buffer,
 int PluginAClient::read_samples(double *buffer,
 		int channel,
 		int sample_rate,
-		int64_t start_position,
-		int64_t len)
+		samplenum start_position,
+		int len)
 {
 	return server->read_samples(buffer,
 		channel,

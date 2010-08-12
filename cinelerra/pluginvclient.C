@@ -161,7 +161,7 @@ int PluginVClient::process_realtime(VFrame *input,
 }
 
 int PluginVClient::process_buffer(VFrame **frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
@@ -172,7 +172,7 @@ int PluginVClient::process_buffer(VFrame **frame,
 }
 
 int PluginVClient::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	read_frame(frame, 0, start_position, frame_rate);
@@ -180,21 +180,6 @@ int PluginVClient::process_buffer(VFrame *frame,
 	return 0;
 }
 
-
-// Replaced by pull method
-// void PluginVClient::plugin_process_realtime(VFrame **input, 
-// 		VFrame **output, 
-// 		int64_t current_position,
-// 		int64_t total_len)
-// {
-// 	this->source_position = current_position;
-// 	this->total_len = total_len;
-// 
-// 	if(is_multichannel())
-// 		process_realtime(input, output);
-// 	else
-// 		process_realtime(input[0], output[0]);
-// }
 
 void PluginVClient::plugin_render_gui(void *data)
 {
@@ -206,9 +191,9 @@ void PluginVClient::send_render_gui(void *data)
 	server->send_render_gui(data);
 }
 
-int PluginVClient::plugin_start_loop(int64_t start, 
-	int64_t end, 
-	int64_t buffer_size, 
+int PluginVClient::plugin_start_loop(posnum start, 
+	posnum end,
+	int buffer_size, 
 	int total_buffers)
 {
 	frame_rate = get_project_framerate();
@@ -224,24 +209,24 @@ int PluginVClient::plugin_get_parameters()
 	return PluginClient::plugin_get_parameters();
 }
 
-int64_t PluginVClient::local_to_edl(int64_t position)
+posnum PluginVClient::local_to_edl(posnum position)
 {
 	if(position < 0) return position;
-	return (int64_t)Units::round(position * 
+	return (posnum)Units::round(position * 
 		get_project_framerate() /
 		frame_rate);
 	return 0;
 }
 
-int64_t PluginVClient::edl_to_local(int64_t position)
+posnum PluginVClient::edl_to_local(posnum position)
 {
 	if(position < 0) return position;
-	return (int64_t)Units::round(position * 
+	return (posnum)Units::round(position * 
 		frame_rate /
 		get_project_framerate());
 }
 
-int PluginVClient::plugin_process_loop(VFrame **buffers, int64_t &write_length)
+int PluginVClient::plugin_process_loop(VFrame **buffers, int &write_length)
 {
 	int result = 0;
 
@@ -250,9 +235,7 @@ int PluginVClient::plugin_process_loop(VFrame **buffers, int64_t &write_length)
 	else
 		result = process_loop(buffers[0]);
 
-
 	write_length = 1;
-
 	return result;
 }
 
@@ -292,7 +275,7 @@ int PluginVClient::prev_effect_is(const char *title)
 
 int PluginVClient::read_frame(VFrame *buffer, 
 	int channel, 
-	int64_t start_position)
+	framenum start_position)
 {
 	return server->read_frame(buffer, 
 		channel, 
@@ -300,7 +283,7 @@ int PluginVClient::read_frame(VFrame *buffer,
 }
 
 int PluginVClient::read_frame(VFrame *buffer, 
-	int64_t start_position)
+	framenum start_position)
 {
 	return server->read_frame(buffer, 
 		0, 
@@ -309,7 +292,7 @@ int PluginVClient::read_frame(VFrame *buffer,
 
 int PluginVClient::read_frame(VFrame *buffer, 
 		int channel, 
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate,
 		int use_opengl)
 {

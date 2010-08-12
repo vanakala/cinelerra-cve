@@ -44,13 +44,7 @@ public:
 	int init_realtime_parameters();
 	int delete_nonrealtime_parameters();
 	int is_video();
-// Replaced by pull method
-/*
- * 	void plugin_process_realtime(VFrame **input, 
- * 		VFrame **output, 
- * 		int64_t current_position,
- * 		int64_t total_len);
- */
+
 // Multichannel buffer process for backwards compatibility
 	virtual int process_realtime(VFrame **input, 
 		VFrame **output);
@@ -65,10 +59,10 @@ public:
 // sample_rate - scale of start_position.
 // These should return 1 if error or 0 if success.
 	virtual int process_buffer(VFrame **frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	virtual int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 
 
@@ -79,11 +73,11 @@ public:
 	void send_render_gui(void *data);
 	virtual int process_loop(VFrame **buffers) { return 1; };
 	virtual int process_loop(VFrame *buffer) { return 1; };
-	int plugin_process_loop(VFrame **buffers, int64_t &write_length);
+	int plugin_process_loop(VFrame **buffers, int &write_length);
 
-	int plugin_start_loop(int64_t start, 
-		int64_t end, 
-		int64_t buffer_size, 
+	int plugin_start_loop(posnum start, 
+		posnum end, 
+		int buffer_size, 
 		int total_buffers);
 	int plugin_get_parameters();
 
@@ -94,9 +88,9 @@ public:
 //     Relative to start of EDL.
 	int read_frame(VFrame *buffer, 
 		int channel, 
-		int64_t start_position);
+		framenum start_position);
 	int read_frame(VFrame *buffer, 
-		int64_t start_position);
+		framenum start_position);
 
 // Called by realtime plugin to read frame from previous entity
 // framerate - framerate start_position is relative to.  Used by preceeding plugiun
@@ -107,7 +101,7 @@ public:
 // frame_rate - frame rate position is scaled to
 	int read_frame(VFrame *buffer, 
 		int channel, 
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate,
 		int use_opengl = 0);
 
@@ -144,8 +138,8 @@ public:
 // Frame rate requested
 	double get_framerate();
 
-	int64_t local_to_edl(int64_t position);
-	int64_t edl_to_local(int64_t position);
+	posnum local_to_edl(posnum position);
+	posnum edl_to_local(posnum position);
 
 // ======================== Non realtime buffer pointers =======================
 // Channels of arrays of frames that the client uses.
@@ -174,14 +168,14 @@ public:
 	double frame_rate;
 	int project_color_model;
 // Whether user wants floating point calculations.
-	int use_float;   
+	int use_float;
 // Whether user wants alpha calculations.
-	int use_alpha;   
+	int use_alpha;
 // Whether user wants pixel interpolation.
-	int use_interpolation;   
+	int use_interpolation;
 // Aspect ratio
 	float aspect_w;
-	float aspect_h;  
+	float aspect_h;
 
 // Tempo
 	VFrame *temp;

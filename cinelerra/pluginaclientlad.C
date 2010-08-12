@@ -87,16 +87,15 @@ void PluginAClientConfig::copy_from(PluginAClientConfig &that)
 	{
 		port_type[i] = that.port_type[i];
 		port_data[i] = that.port_data[i];
-//printf("PluginAClientConfig::copy_from 1 %f %f\n", port_data[i], that.port_data[i]);
 	}
 
 }
 
 void PluginAClientConfig::interpolate(PluginAClientConfig &prev, 
 	PluginAClientConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame, 
+	posnum current_frame)
 {
 	copy_from(prev);
 }
@@ -203,28 +202,11 @@ void PluginAClientConfig::initialize(PluginServer *server)
 						lad_hint->UpperBound * 0.25;
 			}
 
-
-
-
-
-
-
-
-
 			port_data[current_port] = value;
 			current_port++;
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
 
 
 PluginACLientToggle::PluginACLientToggle(PluginAClientLAD *plugin,
@@ -245,11 +227,6 @@ int PluginACLientToggle::handle_event()
 }
 
 
-
-
-
-
-
 PluginACLientILinear::PluginACLientILinear(PluginAClientLAD *plugin,
 	int x,
 	int y,
@@ -268,10 +245,6 @@ int PluginACLientILinear::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
 
 
 PluginACLientFLinear::PluginACLientFLinear(PluginAClientLAD *plugin,
@@ -295,23 +268,17 @@ int PluginACLientFLinear::handle_event()
 }
 
 
-
-
-
-
-
 PluginACLientFreq::PluginACLientFreq(PluginAClientLAD *plugin,
 	int x,
 	int y,
 	LADSPA_Data *output,
 	int translate_linear)
  : BC_QPot(x, 
- 	y, 
+	y, 
 	translate_linear ?
 		(int)(*output * plugin->PluginAClient::project_sample_rate) :
 		(int)*output)
 {
-//printf("PluginACLientFreq::PluginACLientFreq 1 %f\n", *output);
 	this->plugin = plugin;
 	this->output = output;
 	this->translate_linear = translate_linear;
@@ -322,24 +289,16 @@ int PluginACLientFreq::handle_event()
 	*output = translate_linear ?
 		(float)get_value() / plugin->PluginAClient::project_sample_rate :
 		get_value();
-//printf("PluginACLientFreq::handle_event 1 %f %d %d\n", *output, get_value(), plugin->PluginAClient::project_sample_rate);
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
 
 
 PluginAClientWindow::PluginAClientWindow(PluginAClientLAD *plugin, 
 	int x, 
 	int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	500, 
 	plugin->config.total_ports * 30 + 60, 
@@ -390,17 +349,9 @@ int PluginAClientWindow::create_objects()
 			int use_max = LADSPA_IS_HINT_BOUNDED_ABOVE(hint_desc);
 			sprintf(string, "%s:", server->lad_descriptor->PortNames[i]);
 
-// printf("PluginAClientWindow::create_objects 1 %s type=%d lower: %d %f upper: %d %f\n", 
-// string,
-// plugin->config.port_type[current_port],
-// use_min,
-// lad_hint->LowerBound, 
-// use_max,
-// lad_hint->UpperBound);
-
 			switch(plugin->config.port_type[current_port])
 			{
-				case PluginAClientConfig::PORT_NORMAL:
+			case PluginAClientConfig::PORT_NORMAL:
 				{
 					PluginACLientFLinear *flinear;
 					float min = use_min ? lad_hint->LowerBound : 0;
@@ -418,7 +369,7 @@ int PluginAClientWindow::create_objects()
 					fpots.append(flinear);
 					break;
 				}
-				case PluginAClientConfig::PORT_FREQ_INDEX:
+			case PluginAClientConfig::PORT_FREQ_INDEX:
 				{
 					PluginACLientFreq *freq;
 					add_subwindow(new BC_Title(x, 
@@ -428,15 +379,11 @@ int PluginAClientWindow::create_objects()
 						plugin,
 						(current_port % 2) ? x2 : x3,
 						y,
-						&plugin->config.port_data[current_port],
-0
-/*						(plugin->config.port_type[current_port] == 
-							PluginAClientConfig::PORT_FREQ_INDEX
-*/));
+						&plugin->config.port_data[current_port], 0));
 					freqs.append(freq);
 					break;
 				}
-				case PluginAClientConfig::PORT_TOGGLE:
+			case PluginAClientConfig::PORT_TOGGLE:
 				{
 					PluginACLientToggle *toggle;
 					add_subwindow(new BC_Title(x, 
@@ -450,7 +397,7 @@ int PluginAClientWindow::create_objects()
 					toggles.append(toggle);
 					break;
 				}
-				case PluginAClientConfig::PORT_INTEGER:
+			case PluginAClientConfig::PORT_INTEGER:
 				{
 					PluginACLientILinear *ilinear;
 					float min = use_min ? lad_hint->LowerBound : 0;
@@ -471,7 +418,6 @@ int PluginAClientWindow::create_objects()
 			}
 			current_port++;
 			y += 30;
-//printf("PluginAClientWindow::create_objects 2\n");
 		}
 	}
 
@@ -490,20 +436,7 @@ int PluginAClientWindow::close_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(PluginAClientLAD, PluginAClientThread, PluginAClientWindow)
-
-
-
 
 
 PluginAClientLAD::PluginAClientLAD(PluginServer *server)
@@ -622,7 +555,6 @@ int PluginAClientLAD::load_defaults()
 		if(string[i] == ' ') string[i] = '_';
 // set the default directory
 	sprintf(directory, "%s%s.rc", BCASTDIR, string);
-//printf("PluginAClientLAD::load_defaults %s\n", directory);
 
 // load the defaults
 	defaults = new BC_Hash(directory);
@@ -641,7 +573,6 @@ int PluginAClientLAD::load_defaults()
 			config.port_data[current_port] = 
 				defaults->get(string, 
 					config.port_data[current_port]);
-//printf("PluginAClientLAD::load_defaults %d %f\n", current_port, config.port_data[current_port]);
 			current_port++;
 		}
 	}
@@ -663,7 +594,6 @@ int PluginAClientLAD::save_defaults()
 				(char*)server->lad_descriptor->PortNames[i]);
 
 			defaults->update(string, config.port_data[current_port]);
-//printf("PluginAClientLAD::save_defaults %d %f\n", current_port, config.port_data[current_port]);
 			current_port++;
 		}
 	}
@@ -683,7 +613,6 @@ void PluginAClientLAD::save_data(KeyFrame *keyframe)
 	output.tag.set_title(lad_to_upper(string, plugin_title()));
 
 	int current_port = 0;
-//printf("PluginAClientLAD::save_data %d\n", server->lad_descriptor->PortCount);
 	for(int i = 0; i < server->lad_descriptor->PortCount; i++)
 	{
 		if(LADSPA_IS_PORT_INPUT(server->lad_descriptor->PortDescriptors[i] &&
@@ -694,7 +623,6 @@ void PluginAClientLAD::save_data(KeyFrame *keyframe)
 				(char*)server->lad_descriptor->PortNames[i]);
 
 			output.tag.set_property(string, config.port_data[current_port]);
-//printf("PluginAClientLAD::save_data %d %f\n", current_port, config.port_data[current_port]);
 			current_port++;
 		}
 	}
@@ -718,7 +646,6 @@ void PluginAClientLAD::read_data(KeyFrame *keyframe)
 
 		if(!result)
 		{
-//printf("PluginAClientLAD::read_data %s\n", input.tag.get_title());
 			if(input.tag.title_is(lad_to_upper(string, plugin_title())))
 			{
 				int current_port = 0;
@@ -733,7 +660,6 @@ void PluginAClientLAD::read_data(KeyFrame *keyframe)
 						config.port_data[current_port] = 
 							input.tag.get_property(string, 
 								config.port_data[current_port]);
-//printf("PluginAClientLAD::read_data %d %f\n", current_port, config.port_data[current_port]);
 						current_port++;
 					}
 				}
@@ -772,7 +698,6 @@ void PluginAClientLAD::delete_plugin()
 
 void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 {
-//printf("PluginAClientLAD::init_plugin 1\n");
 	if(buffer_allocation && buffer_allocation < size)
 	{
 		delete_buffers();
@@ -818,7 +743,6 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 				server->lad_descriptor->connect_port(lad_instance,
 					i,
 					config.port_data + current_port);
-//printf("PluginAClientLAD::init_plugin %d %f\n", current_port, config.port_data[current_port]);
 				current_port++;
 			}
 			else
@@ -860,10 +784,9 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 			current_port++;
 		}
 	}
-//printf("PluginAClientLAD::init_plugin 10\n");
 }
 
-int PluginAClientLAD::process_realtime(int64_t size, 
+int PluginAClientLAD::process_realtime(int size,
 	double *input_ptr, 
 	double *output_ptr)
 {
@@ -871,7 +794,6 @@ int PluginAClientLAD::process_realtime(int64_t size,
 	int out_channels = get_outchannels();
 	init_plugin(in_channels, out_channels, size);
 
-//printf("PluginAClientLAD::process_realtime 1 %p\n", lad_instance);
 	for(int i = 0; i < in_channels; i++)
 	{
 		LADSPA_Data *in_buffer = in_buffers[i];
@@ -879,31 +801,26 @@ int PluginAClientLAD::process_realtime(int64_t size,
 			in_buffer[j] = input_ptr[j];
 	}
 	for(int i = 0; i < out_channels; i++)
-		bzero(out_buffers[i], sizeof(float) * size);
-//printf("PluginAClientLAD::process_realtime 4\n");
+		memset(out_buffers[i], 0, sizeof(float) * size);
 
 	server->lad_descriptor->run(lad_instance, size);
-//printf("PluginAClientLAD::process_realtime 5\n");
 
 	LADSPA_Data *out_buffer = out_buffers[0];
 	for(int i = 0; i < size; i++)
 	{
 		output_ptr[i] = out_buffer[i];
 	}
-//printf("PluginAClientLAD::process_realtime 6\n");
 	return size;
 }
 
-int PluginAClientLAD::process_realtime(int64_t size, 
+int PluginAClientLAD::process_realtime(int size,
 	double **input_ptr, 
 	double **output_ptr)
 {
 	int in_channels = get_inchannels();
 	int out_channels = get_outchannels();
-// printf("PluginAClientLAD::process_realtime 2 %p %d %d %d %d\n", 
-// lad_instance, in_channels, out_channels, PluginClient::total_in_buffers, PluginClient::total_out_buffers);
+
 	init_plugin(in_channels, out_channels, size);
-//printf("PluginAClientLAD::process_realtime 2 %p\n", lad_instance);
 
 	for(int i = 0; i < in_channels; i++)
 	{
@@ -916,13 +833,10 @@ int PluginAClientLAD::process_realtime(int64_t size,
 		for(int j = 0; j < size; j++)
 			in_buffer[j] = in_ptr[j];
 	}
-//printf("PluginAClientLAD::process_realtime 2 %p\n", lad_instance);
 	for(int i = 0; i < out_channels; i++)
 		bzero(out_buffers[i], sizeof(float) * size);
-//printf("PluginAClientLAD::process_realtime 2 %p\n", lad_instance);
 
 	server->lad_descriptor->run(lad_instance, size);
-//printf("PluginAClientLAD::process_realtime 2 %p\n", lad_instance);
 
 	for(int i = 0; i < PluginClient::total_out_buffers; i++)
 	{
@@ -934,9 +848,5 @@ int PluginAClientLAD::process_realtime(int64_t size,
 				out_ptr[j] = out_buffer[j];
 		}
 	}
-//printf("PluginAClientLAD::process_realtime 3 %p\n", lad_instance);
 	return size;
 }
-
-
- 
