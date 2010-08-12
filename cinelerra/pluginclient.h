@@ -296,8 +296,8 @@ public:
 // Called by plugin server to update GUI with rendered data.
 	virtual void plugin_render_gui(void *data) {};
 	virtual void plugin_render_gui(void *data, int size) {};
-	virtual int plugin_process_loop(VFrame **buffers, int64_t &write_length) { return 1; };
-	virtual int plugin_process_loop(double **buffers, int64_t &write_length) { return 1; };
+	virtual int plugin_process_loop(VFrame **buffers, int &write_length) { return 1; };
+	virtual int plugin_process_loop(double **buffers, int &write_length) { return 1; };
 // get parameters depending on video or audio
 	virtual int init_realtime_parameters();     
 // release objects which are required after playback stops
@@ -449,7 +449,7 @@ public:
 	int stop_gui_client();     
 	int save_data_client();
 	int load_data_client();
-	int set_string_client(char *string);                // set the string identifying the plugin
+	int set_string_client(const char *string);  // set the string identifying the plugin
 	int send_cancelled();        // non realtime plugin sends when cancelled
 
 // ================================= Buffers ===============================

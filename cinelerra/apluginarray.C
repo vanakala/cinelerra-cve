@@ -56,7 +56,6 @@ APluginArray::~APluginArray()
 void APluginArray::create_buffers()
 {
 	file->start_audio_thread(buffer_size, RING_BUFFERS);
-//	if(!plugin_server->realtime) realtime_buffers = file->get_audio_buffer();
 }
 
 void APluginArray::get_buffers()
@@ -77,7 +76,7 @@ void APluginArray::create_modules()
 	}
 }
 
-void APluginArray::process_realtime(int module, int64_t input_position, int64_t len)
+void APluginArray::process_realtime(int module, posnum input_position, int len)
 {
 	values[module]->process_buffer(realtime_buffers + module,
 			input_position, 
@@ -87,7 +86,7 @@ void APluginArray::process_realtime(int module, int64_t input_position, int64_t 
 			PLAY_FORWARD);
 }
 
-int APluginArray::process_loop(int module, int64_t &write_length)
+int APluginArray::process_loop(int module, int &write_length)
 {
 	if(!realtime_buffers) realtime_buffers = file->get_audio_buffer();
 	int result = values[module]->process_loop(&realtime_buffers[module], 
@@ -96,18 +95,15 @@ int APluginArray::process_loop(int module, int64_t &write_length)
 }
 
 
-int APluginArray::write_buffers(int64_t len)
+int APluginArray::write_buffers(int len)
 {
-//printf("APluginArray::write_buffers 1\n");
 	int result = file->write_audio_buffer(len);
 	realtime_buffers = 0;
 
-//	if(!plugin_server->realtime && !done && !result) 
-//		realtime_buffers = file->get_audio_buffer();
 	return result;
 }
 
-int64_t APluginArray::get_bufsize()
+int APluginArray::get_bufsize()
 {
 	return edl->session->sample_rate;
 }

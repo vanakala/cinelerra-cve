@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "clip.h"
 #include "colors.h"
 #include "edl.h"
@@ -180,7 +181,7 @@ int VAutomation::direct_copy_possible(posnum start, int direction)
 void VAutomation::get_projector(float *x, 
 	float *y, 
 	float *z, 
-	posnum position,
+	framenum position,
 	int direction)
 {
 	FloatAuto *before, *after;
@@ -208,7 +209,7 @@ void VAutomation::get_projector(float *x,
 void VAutomation::get_camera(float *x, 
 	float *y, 
 	float *z, 
-	posnum position,
+	framenum position,
 	int direction)
 {
 	FloatAuto *before, *after;

@@ -27,6 +27,7 @@
 
 #include "arraylist.h"
 #include "attachmentpoint.inc"
+#include "datatype.h"
 #include "edl.inc"
 #include "floatauto.inc"
 #include "floatautos.inc"
@@ -62,7 +63,7 @@ class PluginServer
 {
 public:
 	PluginServer();
-	PluginServer(char *path);
+	PluginServer(const char *path);
 	PluginServer(PluginServer &);
 	virtual ~PluginServer();
 
@@ -80,9 +81,9 @@ public:
 		Preferences *preferences,
 		EDL *edl, 
 		Plugin *plugin,
-		int lad_index /* = -1 */);
+		int lad_index);
 // close the plugin
-	int close_plugin();    
+	int close_plugin();
 	void dump();
 // Release any objects which are required after playback stops.
 	void render_stop();
@@ -92,13 +93,13 @@ public:
 // Generate title for display
 	void generate_display_title(char *string);
 // Get keyframes for configuration.  Position is always relative to EDL rate.
-	KeyFrame* get_prev_keyframe(int64_t position);
-	KeyFrame* get_next_keyframe(int64_t position);
+	KeyFrame* get_prev_keyframe(posnum position);
+	KeyFrame* get_next_keyframe(posnum position);
 // get camera and projector positions
 	void get_camera(float *x, float *y, float *z,
-			int64_t position, int direction);
+			framenum position, int direction);
 	void get_projector(float *x, float *y, float *z,
-			int64_t position, int direction);
+			framenum position, int direction);
 // Get interpolation used by EDL
 	int get_interpolation_type();
 // Get or create keyframe for writing, depending on whether auto keyframes
@@ -114,7 +115,7 @@ public:
 
 // =============================== for realtime plugins
 // save configuration of plugin
-	void save_data(KeyFrame *keyframe);          
+	void save_data(KeyFrame *keyframe);
 // Update EDL and playback engines to reflect changes
 	void sync_parameters();
 // set for realtime processor usage
@@ -124,7 +125,7 @@ public:
 	void raise_window();
 // cause the plugin to show the GUI
 // Called by MWindow::show_plugin
-	void show_gui();          
+	void show_gui();
 // Update GUI with keyframe settings
 	void update_gui();
 	void update_title();
@@ -144,11 +145,11 @@ public:
 	void run_opengl(PluginClient *plugin_client);
 
 // set the string that appears on the plugin title
-	int set_string(char *string);
+	int set_string(const char *string);
 // give the buffers and sizes and prepare processing realtime data
 	int init_realtime(int realtime_sched,
 		int total_in_buffers,
-		int buffer_size);   
+		int buffer_size);
 // process the data in the buffers
 // input - the current edit's data
 // output - the previous edit's data and the destination of the transition output
@@ -157,13 +158,13 @@ public:
 // total_len - total len for transition
 	void process_transition(VFrame *input, 
 		VFrame *output, 
-		int64_t current_position,
-		int64_t total_len);  
+		framenum current_position,
+		framenum total_len);
 	void process_transition(double *input, 
 		double *output,
-		int64_t current_position, 
-		int64_t fragment_size,
-		int64_t total_len);
+		samplenum current_position, 
+		int fragment_size,
+		samplenum total_len);
 
 // Process using pull method.
 // current_position - start of region if forward, end of region if reverse
@@ -175,15 +176,15 @@ public:
 // Units are kept relative to the EDL rate so plugins don't need to convert rates
 // to get the keyframes.
 	void process_buffer(VFrame **frame, 
-		int64_t current_position,
+		framenum current_position,
 		double frame_rate,
-		int64_t total_len,
+		framenum total_len,
 		int direction);
 	void process_buffer(double **buffer,
-		int64_t current_position,
-		int64_t fragment_size,
-		int64_t sample_rate,
-		int64_t total_len,
+		samplenum current_position,
+		int fragment_size,
+		int sample_rate,
+		samplenum total_len,
 		int direction);
 
 // Called by rendering client to cause the GUI to display something with the data.
@@ -217,39 +218,39 @@ public:
 
 // ============================ for non realtime plugins
 // start processing data in plugin
-	int start_loop(int64_t start, int64_t end, int64_t buffer_size, int total_buffers);
+	int start_loop(posnum start, posnum end, int buffer_size, int total_buffers);
 // Do one iteration of a nonrealtime plugin and return if finished
-	int process_loop(VFrame **buffers, int64_t &write_length);
-	int process_loop(double **buffers, int64_t &write_length);
+	int process_loop(VFrame **buffers, int &write_length);
+	int process_loop(double **buffers, int &write_length);
 	int stop_loop();
 
 
 // Called by client to read data in non-realtime effect
 	int read_frame(VFrame *buffer, 
 		int channel, 
-		int64_t start_position);
+		framenum start_position);
 	int read_samples(double *buffer, 
 		int channel, 
-		int64_t start_position, 
-		int64_t total_samples);
+		samplenum start_position, 
+		samplenum total_samples);
 
 
 // Called by client to read data in realtime effect.  
 // Returns -1 if error or 0 if success.
 	int read_frame(VFrame *buffer, 
 		int channel, 
-		int64_t start_position, 
+		framenum start_position, 
 		double frame_rate,
 // Set to 1 if the reader can use OpenGL objects.
 		int use_opengl = 0);
 	int read_samples(double *buffer,
 		int channel,
-		int64_t sample_rate,
-		int64_t start_position, 
-		int64_t len);
+		int sample_rate,
+		samplenum start_position, 
+		int len);
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
-	int get_parameters(int64_t start, int64_t end, int channels);
+	int get_parameters(posnum start, posnum end, int channels);
 	int get_samplerate();      // get samplerate produced by plugin
 	double get_framerate();     // get framerate produced by plugin
 	int get_project_samplerate();            // get samplerate of project data before processing
@@ -276,18 +277,18 @@ public:
 // reset node table after virtual console reconfiguration
 	void reset_nodes();
 
-	int64_t get_written_samples();   // after samples are written, get the number written
-	int64_t get_written_frames();   // after frames are written, get the number written
+	samplenum get_written_samples();   // after samples are written, get the number written
+	framenum get_written_frames();   // after frames are written, get the number written
 
 
 // buffers
-	int64_t out_buffer_size;   // size of a send buffer to the plugin
-	int64_t in_buffer_size;    // size of a recieve buffer from the plugin
+	int out_buffer_size;   // size of a send buffer to the plugin
+	int in_buffer_size;    // size of a recieve buffer from the plugin
 	int total_in_buffers;
 	int total_out_buffers;
 
 // number of double buffers for each channel
-	ArrayList<int> ring_buffers_in;    
+	ArrayList<int> ring_buffers_in;
 	ArrayList<int> ring_buffers_out;
 // Parameters for automation.  Setting autos to 0 disables automation.
 	FloatAuto **start_auto, **end_auto;
@@ -295,15 +296,15 @@ public:
 	int reverse;
 
 // size of each buffer
-	ArrayList<int64_t> realtime_in_size;
-	ArrayList<int64_t> realtime_out_size;
+	ArrayList<int> realtime_in_size;
+	ArrayList<int> realtime_out_size;
 
 // When arming buffers need to know the offsets in all the buffers and which
 // double buffers for each channel before rendering.
-	ArrayList<int64_t> offset_in_render;
-	ArrayList<int64_t> offset_out_render;
-	ArrayList<int64_t> double_buffer_in_render;
-	ArrayList<int64_t> double_buffer_out_render;
+	ArrayList<posnum> offset_in_render;
+	ArrayList<posnum> offset_out_render;
+	ArrayList<int> double_buffer_in_render;
+	ArrayList<int> double_buffer_out_render;
 
 // don't delete buffers if they belong to a virtual module
 	int shared_buffers;
@@ -325,7 +326,8 @@ public:
 // name of plugin in english.
 // Compared against the title value in the plugin for resolving symbols.
 	char *title;
-	int64_t written_samples, written_frames;
+	samplenum written_samples;
+	framenum written_frames;
 	char *path;           // location of plugin on disk
 	char *data_text;      // pointer to the data that was requested by a save_data command
 	char *args[4];

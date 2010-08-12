@@ -86,13 +86,13 @@ public:
 	virtual void get_projector(float *x, 
 		float *y, 
 		float *z, 
-		posnum position,
+		framenum position,
 		int direction) {};
 // Get camera coordinates if this is video automation
 	virtual void get_camera(float *x, 
 		float *y, 
 		float *z, 
-		posnum position,
+		framenum position,
 		int direction) {};
 
 // Returns the point to restart background rendering at.

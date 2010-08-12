@@ -20,6 +20,7 @@
  */
 
 #include "cache.h"
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
@@ -59,7 +60,7 @@ void VPluginArray::get_recordable_tracks()
 	tracks = new RecordableVTracks(edl->tracks);
 }
 
-int64_t VPluginArray::get_bufsize()
+int VPluginArray::get_bufsize()
 {
 	return 1;
 }
@@ -70,7 +71,6 @@ void VPluginArray::create_buffers()
 		edl->session->color_model,
 		RING_BUFFERS,
 		0);
-//	if(!plugin_server->realtime) realtime_buffers = file->get_video_buffer();
 }
 
 void VPluginArray::get_buffers()
@@ -93,8 +93,8 @@ void VPluginArray::create_modules()
 
 
 void VPluginArray::process_realtime(int module, 
-	int64_t input_position, 
-	int64_t len)
+	posnum input_position,
+	int len)
 {
 	values[module]->process_buffer(realtime_buffers[module], 
 			input_position, 
@@ -103,7 +103,7 @@ void VPluginArray::process_realtime(int module,
 			PLAY_FORWARD);
 }
 
-int VPluginArray::process_loop(int module, int64_t &write_length)
+int VPluginArray::process_loop(int module, int &write_length)
 {
 	if(!realtime_buffers) realtime_buffers = file->get_video_buffer();
 
@@ -120,12 +120,11 @@ int VPluginArray::process_loop(int module, int64_t &write_length)
 	return result;
 }
 
-int VPluginArray::write_buffers(int64_t len)
+int VPluginArray::write_buffers(int len)
 {
 	int result = file->write_video_buffer(len);
 	realtime_buffers = 0;
 
-//	if(!plugin_server->realtime && !done && !result) realtime_buffers = file->get_video_buffer();
 	return result;
 }
 

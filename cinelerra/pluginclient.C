@@ -232,7 +232,7 @@ char* PluginClient::get_path()
 	return server->path;
 }
 
-int PluginClient::set_string_client(char *string)
+int PluginClient::set_string_client(const char *string)
 {
 	strcpy(gui_string, string);
 	set_string();

@@ -50,7 +50,7 @@ PluginArray::~PluginArray()
 }
 
 
-PluginServer* PluginArray::scan_plugindb(char *title)
+PluginServer* PluginArray::scan_plugindb(const char *title)
 {
 	return mwindow->scan_plugindb(title, data_type);
 }
@@ -59,8 +59,8 @@ int PluginArray::start_plugins(MWindow *mwindow,
 	EDL *edl, 
 	PluginServer *plugin_server, 
 	KeyFrame *keyframe,
-	int64_t start,
-	int64_t end,
+	posnum start,
+	posnum end,
 	File *file)
 {
 	this->mwindow = mwindow;
@@ -119,8 +119,6 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			plugin->set_interactive();
 			plugin->start_loop(start, end, buffer_size, total_tracks());
 		}
-
-//printf("PluginArray::start_plugins 5\n");
 	}
 	else
 	{
@@ -164,7 +162,6 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			plugin->init_realtime(0, total_tracks(), get_bufsize());
 		}
 	}
-//printf("PluginArray::start_plugins 8\n");
 	return 0;
 }
 
@@ -176,13 +173,13 @@ int PluginArray::run_plugins()
 {
 	int i, j, result;
 // Length to write after process_loop
-	int64_t write_length;
+	int write_length;
 
 	done = 0;     // for when done
 	error = 0;
 	if(plugin_server->realtime)
 	{
-		int64_t len;
+		int len;
 		MainProgressBar *progress;
 		char string[BCTEXTLEN], string2[BCTEXTLEN];
 
