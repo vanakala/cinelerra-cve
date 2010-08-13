@@ -39,15 +39,6 @@ REGISTER_PLUGIN(BurnMain)
 
 
 
-
-
-
-
-
-
-
-
-
 BurnConfig::BurnConfig()
 {
 	threshold = 50;
@@ -98,7 +89,6 @@ int BurnMain::save_defaults()
 
 void BurnMain::load_configuration()
 {
-//printf("BurnMain::load_configuration %d\n", source_position);
 }
 
 
@@ -152,7 +142,6 @@ void BurnMain::make_palette(int color_model)
 		palette[0][i] = r;
 		palette[1][i] = g;
 		palette[2][i] = b;
-//printf("BurnMain::make_palette %d %d %d %d\n", i, palette[0][i], palette[1][i], palette[2][i]);
 	}
 
 
@@ -168,7 +157,6 @@ void BurnMain::make_palette(int color_model)
 		palette[0][i] = r;
 		palette[1][i] = g;
 		palette[2][i] = b;
-//printf("BurnMain::make_palette %d %d %d %d\n", i, palette[0][i], palette[1][i], palette[2][i]);
 	}
 }
 
@@ -202,7 +190,6 @@ int BurnMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	burn_server->process_packages();
 
 	total++;
-//	if(total >= config.recycle * project_frame_rate) total = 0;
 	return 0;
 }
 
@@ -219,8 +206,6 @@ LoadClient* BurnServer::new_client()
 {
 	return new BurnClient(this);
 }
-
-
 
 
 LoadPackage* BurnServer::new_package() 
@@ -241,24 +226,11 @@ void BurnServer::init_packages()
 }
 
 
-
-
-
-
-
-
 BurnClient::BurnClient(BurnServer *server)
  : LoadClient(server)
 {
 	this->plugin = server->plugin;
 }
-
-
-
-
-
-
-
 
 
 #define BURN(type, components, is_yuv) \
@@ -411,43 +383,42 @@ void BurnClient::process_package(LoadPackage *package)
 
 	switch(plugin->input_ptr->get_color_model())
 	{
-		case BC_RGB888:
-			BURN(uint8_t, 3, 0);
-			break;
-		case BC_YUV888:
-			BURN(uint8_t, 3, 1);
-			break;
+	case BC_RGB888:
+		BURN(uint8_t, 3, 0);
+		break;
+	case BC_YUV888:
+		BURN(uint8_t, 3, 1);
+		break;
 
-		case BC_RGB_FLOAT:
-			BURN(float, 3, 0);
-			break;
+	case BC_RGB_FLOAT:
+		BURN(float, 3, 0);
+		break;
 
-		case BC_RGBA_FLOAT:
-			BURN(float, 4, 0);
-			break;
+	case BC_RGBA_FLOAT:
+		BURN(float, 4, 0);
+		break;
 
-		case BC_RGBA8888:
-			BURN(uint8_t, 4, 0);
-			break;
-		case BC_YUVA8888:
-			BURN(uint8_t, 4, 1);
-			break;
+	case BC_RGBA8888:
+		BURN(uint8_t, 4, 0);
+		break;
+	case BC_YUVA8888:
+		BURN(uint8_t, 4, 1);
+		break;
 
-		case BC_RGB161616:
-			BURN(uint16_t, 3, 0);
-			break;
-		case BC_YUV161616:
-			BURN(uint16_t, 3, 1);
-			break;
+	case BC_RGB161616:
+		BURN(uint16_t, 3, 0);
+		break;
+	case BC_YUV161616:
+		BURN(uint16_t, 3, 1);
+		break;
 
-		case BC_RGBA16161616:
-			BURN(uint16_t, 4, 0);
-			break;
-		case BC_YUVA16161616:
-			BURN(uint16_t, 4, 1);
-			break;
+	case BC_RGBA16161616:
+		BURN(uint16_t, 4, 0);
+		break;
+	case BC_YUVA16161616:
+		BURN(uint16_t, 4, 1);
+		break;
 	}
-
 
 }
 
@@ -456,6 +427,3 @@ void BurnClient::process_package(LoadPackage *package)
 BurnPackage::BurnPackage()
 {
 }
-
-
-

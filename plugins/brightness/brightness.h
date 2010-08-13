@@ -39,9 +39,9 @@ public:
 	void copy_from(BrightnessConfig &that);
 	void interpolate(BrightnessConfig &prev, 
 		BrightnessConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame);
 
 	float brightness;
 	float contrast;
@@ -56,7 +56,7 @@ public:
 
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	const char* plugin_title();
@@ -73,33 +73,23 @@ public:
 	int handle_opengl();
 
 
-
-
-
-
-
-
 	BrightnessConfig config;
 // a thread for the GUI
 	BrightnessThread *thread;
 	BrightnessEngine *engine;
 	BC_Hash *defaults;
-    int redo_buffers;
+	int redo_buffers;
 	static YUV yuv;
-	
+
 	VFrame *input, *output;
 };
-
-
-
-
 
 
 class BrightnessPackage : public LoadPackage
 {
 public:
 	BrightnessPackage();
-	
+
 	int row1, row2;
 };
 
@@ -108,9 +98,9 @@ class BrightnessUnit : public LoadClient
 public:
 	BrightnessUnit(BrightnessEngine *server, BrightnessMain *plugin);
 	~BrightnessUnit();
-	
+
 	void process_package(LoadPackage *package);
-	
+
 	BrightnessMain *plugin;
 };
 
@@ -123,16 +113,8 @@ public:
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	
+
 	BrightnessMain *plugin;
 };
-
-
-
-
-
-
-
-
 
 #endif

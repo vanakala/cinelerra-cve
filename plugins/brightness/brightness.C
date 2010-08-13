@@ -73,18 +73,12 @@ void BrightnessConfig::interpolate(BrightnessConfig &prev,
 
 
 
-
-
-
-
-
-
 YUV BrightnessMain::yuv;
 
 BrightnessMain::BrightnessMain(PluginServer *server)
  : PluginVClient(server)
 {
-    redo_buffers = 1;
+	redo_buffers = 1;
 	engine = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -98,14 +92,14 @@ BrightnessMain::~BrightnessMain()
 const char* BrightnessMain::plugin_title() { return N_("Brightness/Contrast"); }
 int BrightnessMain::is_realtime() { return 1; }
 
-NEW_PICON_MACRO(BrightnessMain)	
+NEW_PICON_MACRO(BrightnessMain)
 SHOW_GUI_MACRO(BrightnessMain, BrightnessThread)
 RAISE_WINDOW_MACRO(BrightnessMain)
 SET_STRING_MACRO(BrightnessMain)
 LOAD_CONFIGURATION_MACRO(BrightnessMain, BrightnessConfig)
 
 int BrightnessMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -123,9 +117,6 @@ int BrightnessMain::process_buffer(VFrame *frame,
 		run_opengl();
 		return 0;
 	}
-
-
-
 
 	if(!engine) engine = new BrightnessEngine(this, PluginClient::smp + 1);
 
@@ -191,14 +182,14 @@ int BrightnessMain::handle_opengl()
 		"uniform float offset;\n"
 		"void main()\n"
 		"{\n"
- 		"	const mat3 yuv_to_rgb_matrix = mat3(\n"
- 		"		1,       1,        1, \n"
- 		"		0,       -0.34414, 1.77200, \n"
- 		"		1.40200, -0.71414, 0);\n"
- 		"	const mat3 rgb_to_yuv_matrix = mat3(\n"
- 		"		0.29900, -0.16874, 0.50000, \n"
- 		"		0.58700, -0.33126, -0.41869, \n"
- 		"		0.11400, 0.50000,  -0.08131);\n"
+		"	const mat3 yuv_to_rgb_matrix = mat3(\n"
+		"		1,       1,        1, \n"
+		"		0,       -0.34414, 1.77200, \n"
+		"		1.40200, -0.71414, 0);\n"
+		"	const mat3 rgb_to_yuv_matrix = mat3(\n"
+		"		0.29900, -0.16874, 0.50000, \n"
+		"		0.58700, -0.33126, -0.41869, \n"
+		"		0.11400, 0.50000,  -0.08131);\n"
 		"	vec4 rgba = texture2D(tex, gl_TexCoord[0].st);\n"
 		"	rgba.rgb = rgb_to_yuv_matrix * rgba.rgb;\n"
 		"	rgba.r += brightness;\n"
@@ -213,27 +204,27 @@ int BrightnessMain::handle_opengl()
 	unsigned int shader_id = 0;
 	switch(get_output()->get_color_model())
 	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-			if(config.luma)
-				shader_id = VFrame::make_shader(0,
-					brightness_yuvluma_frag,
-					0);
-			else
-				shader_id = VFrame::make_shader(0,
-					brightness_yuv_frag,
-					0);
-			break;
-		default:
-			if(config.luma)
-				shader_id = VFrame::make_shader(0,
-					brightness_rgbluma_frag,
-					0);
-			else
-				shader_id = VFrame::make_shader(0,
-					brightness_rgb_frag,
-					0);
-			break;
+	case BC_YUV888:
+	case BC_YUVA8888:
+		if(config.luma)
+			shader_id = VFrame::make_shader(0,
+				brightness_yuvluma_frag,
+				0);
+		else
+			shader_id = VFrame::make_shader(0,
+				brightness_yuv_frag,
+				0);
+		break;
+	default:
+		if(config.luma)
+			shader_id = VFrame::make_shader(0,
+				brightness_rgbluma_frag,
+				0);
+		else
+			shader_id = VFrame::make_shader(0,
+				brightness_rgb_frag,
+				0);
+		break;
 	}
 
 
@@ -253,12 +244,9 @@ int BrightnessMain::handle_opengl()
 	get_output()->init_screen();
 	get_output()->bind_texture(0);
 
-	
-
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
-//printf("BrightnessMain::handle_opengl 100 %x\n", glGetError());
 #endif
 }
 
@@ -314,7 +302,7 @@ void BrightnessMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("BRIGHTNESS", config.brightness);
 	output.tag.set_property("CONTRAST",  config.contrast);
 	output.tag.set_property("LUMA",  config.luma);
-//printf("BrightnessMain::save_data %d\n", config.luma);
+
 	output.append_tag();
 	output.tag.set_title("/BRIGHTNESS");
 	output.append_tag();
@@ -346,24 +334,10 @@ void BrightnessMain::read_data(KeyFrame *keyframe)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 BrightnessPackage::BrightnessPackage()
  : LoadPackage()
 {
 }
-
-
-
 
 BrightnessUnit::BrightnessUnit(BrightnessEngine *server, BrightnessMain *plugin)
  : LoadClient(server)
@@ -374,17 +348,13 @@ BrightnessUnit::BrightnessUnit(BrightnessEngine *server, BrightnessMain *plugin)
 BrightnessUnit::~BrightnessUnit()
 {
 }
-	
+
 void BrightnessUnit::process_package(LoadPackage *package)
 {
 	BrightnessPackage *pkg = (BrightnessPackage*)package;
 
-
 	VFrame *output = plugin->output;
 	VFrame *input = plugin->input;
-	
-
-
 
 
 #define DO_BRIGHTNESS(max, type, components, is_yuv) \
@@ -399,7 +369,6 @@ void BrightnessUnit::process_package(LoadPackage *package)
 	if(!EQUIV(plugin->config.brightness, 0)) \
 	{ \
 		int offset = (int)(plugin->config.brightness / 100 * max); \
-/*printf("DO_BRIGHTNESS offset=%d\n", offset);*/ \
  \
 		for(int i = row1; i < row2; i++) \
 		{ \
@@ -450,7 +419,6 @@ void BrightnessUnit::process_package(LoadPackage *package)
 		float contrast = (plugin->config.contrast < 0) ?  \
 			(plugin->config.contrast + 100) / 100 :  \
 			(plugin->config.contrast + 25) / 25; \
-/*printf("DO_BRIGHTNESS contrast=%f\n", contrast);*/ \
  \
 		int scalar = (int)(contrast * 0x100); \
 		int offset = (max << 8) / 2 - max * scalar / 2; \
@@ -461,7 +429,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 			type *input_row = input_rows[i]; \
 			type *output_row = output_rows[i]; \
  \
- 			if(plugin->config.luma) \
+			if(plugin->config.luma) \
 			{ \
 				for(int j = 0; j < width; j++) \
 				{ \
@@ -501,7 +469,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 					CLAMP(y, 0, max); \
 	 \
 	 \
- 					if(is_yuv) \
+					if(is_yuv) \
 					{ \
 						output_row[j * components] = y; \
 						output_row[j * components + 1] = input_row[j * components + 1]; \
@@ -533,8 +501,8 @@ void BrightnessUnit::process_package(LoadPackage *package)
 						input_row[j * components + 1] = g; \
 						input_row[j * components + 2] = b; \
 					} \
-	 \
- 					if(components == 4)  \
+ \
+					if(components == 4)  \
 						output_row[j * components + 3] = input_row[j * components + 3]; \
 				} \
 			} \
@@ -558,7 +526,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 					output_row[j * components + 1] = g; \
 					output_row[j * components + 2] = b; \
  \
- 					if(components == 4)  \
+					if(components == 4)  \
 						output_row[j * components + 3] = input_row[j * components + 3]; \
 				} \
 			} \
@@ -595,7 +563,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 				output_row[j * components] = r; \
 				output_row[j * components + 1] = g; \
 				output_row[j * components + 2] = b; \
- 				if(components == 4)  \
+				if(components == 4)  \
 					output_row[j * components + 3] = input_row[j * components + 3]; \
 			} \
 		} \
@@ -619,7 +587,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 			float *input_row = input_rows[i]; \
 			float *output_row = output_rows[i]; \
  \
- 			if(plugin->config.luma) \
+			if(plugin->config.luma) \
 			{ \
 				for(int j = 0; j < width; j++) \
 				{ \
@@ -679,60 +647,47 @@ void BrightnessUnit::process_package(LoadPackage *package)
 
 	switch(input->get_color_model())
 	{
-		case BC_RGB888:
-			DO_BRIGHTNESS(0xff, unsigned char, 3, 0)
-			break;
+	case BC_RGB888:
+		DO_BRIGHTNESS(0xff, unsigned char, 3, 0)
+		break;
 
-		case BC_RGB_FLOAT:
-			DO_BRIGHTNESS_F(3)
-			break;
+	case BC_RGB_FLOAT:
+		DO_BRIGHTNESS_F(3)
+		break;
 
-		case BC_YUV888:
-			DO_BRIGHTNESS(0xff, unsigned char, 3, 1)
-			break;
+	case BC_YUV888:
+		DO_BRIGHTNESS(0xff, unsigned char, 3, 1)
+		break;
 
-		case BC_RGBA8888:
-			DO_BRIGHTNESS(0xff, unsigned char, 4, 0)
-			break;
+	case BC_RGBA8888:
+		DO_BRIGHTNESS(0xff, unsigned char, 4, 0)
+		break;
 
-		case BC_RGBA_FLOAT:
-			DO_BRIGHTNESS_F(4)
-			break;
+	case BC_RGBA_FLOAT:
+		DO_BRIGHTNESS_F(4)
+		break;
 
-		case BC_YUVA8888:
-			DO_BRIGHTNESS(0xff, unsigned char, 4, 1)
-			break;
+	case BC_YUVA8888:
+		DO_BRIGHTNESS(0xff, unsigned char, 4, 1)
+		break;
 
-		case BC_RGB161616:
-			DO_BRIGHTNESS(0xffff, uint16_t, 3, 0)
-			break;
+	case BC_RGB161616:
+		DO_BRIGHTNESS(0xffff, uint16_t, 3, 0)
+		break;
 
-		case BC_YUV161616:
-			DO_BRIGHTNESS(0xffff, uint16_t, 3, 1)
-			break;
+	case BC_YUV161616:
+		DO_BRIGHTNESS(0xffff, uint16_t, 3, 1)
+		break;
 
-		case BC_RGBA16161616:
-			DO_BRIGHTNESS(0xffff, uint16_t, 4, 0)
-			break;
+	case BC_RGBA16161616:
+		DO_BRIGHTNESS(0xffff, uint16_t, 4, 0)
+		break;
 
-		case BC_YUVA16161616:
-			DO_BRIGHTNESS(0xffff, uint16_t, 4, 1)
-			break;
+	case BC_YUVA16161616:
+		DO_BRIGHTNESS(0xffff, uint16_t, 4, 1)
+		break;
 	}
-
-
-
-
-
-
-
-
-
 }
-
-
-
-
 
 
 BrightnessEngine::BrightnessEngine(BrightnessMain *plugin, int cpus)
@@ -765,8 +720,3 @@ LoadPackage* BrightnessEngine::new_package()
 {
 	return new BrightnessPackage;
 }
-
-
-
-
-

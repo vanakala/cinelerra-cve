@@ -29,10 +29,6 @@
 PLUGIN_THREAD_OBJECT(BurnMain, BurnThread, BurnWindow)
 
 
-
-
-
-
 BurnWindow::BurnWindow(BurnMain *client, int x, int y)
  : BC_Window(client->gui_string, 
 	x,
@@ -55,6 +51,9 @@ BurnWindow::~BurnWindow()
 int BurnWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	add_subwindow(new BC_Title(x, y, 
 		_("BurningTV from EffectTV\n"
 		"Copyright (C) 2001 FUKUCHI Kentarou")
@@ -62,6 +61,7 @@ int BurnWindow::create_objects()
 
 	show_window();
 	flush();
+	delete(ico);
 	return 0;
 }
 

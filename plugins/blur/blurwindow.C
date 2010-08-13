@@ -32,12 +32,9 @@
 PLUGIN_THREAD_OBJECT(BlurMain, BlurThread, BlurWindow)
 
 
-
-
-
 BlurWindow::BlurWindow(BlurMain *client, int x, int y)
  : BC_Window(client->gui_string, 
- 	x,
+	x,
 	y,
 	150, 
 	270, 
@@ -51,12 +48,14 @@ BlurWindow::BlurWindow(BlurMain *client, int x, int y)
 
 BlurWindow::~BlurWindow()
 {
-//printf("BlurWindow::~BlurWindow 1\n");
 }
 
 int BlurWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	add_subwindow(new BC_Title(x, y, _("Blur")));
 	y += 20;
 	add_subwindow(horizontal = new BlurHorizontal(client, this, x, y));
@@ -73,9 +72,10 @@ int BlurWindow::create_objects()
 	add_subwindow(g = new BlurG(client, x, y));
 	y += 30;
 	add_subwindow(b = new BlurB(client, x, y));
-	
+
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -88,16 +88,18 @@ int BlurWindow::close_event()
 
 BlurRadius::BlurRadius(BlurMain *client, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y, 
 	client->config.radius, 
 	0, 
 	MAXRADIUS)
 {
 	this->client = client;
 }
+
 BlurRadius::~BlurRadius()
 {
 }
+
 int BlurRadius::handle_event()
 {
 	client->config.radius = get_value();
@@ -107,16 +109,18 @@ int BlurRadius::handle_event()
 
 BlurVertical::BlurVertical(BlurMain *client, BlurWindow *window, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y, 
 	client->config.vertical, 
 	_("Vertical"))
 {
 	this->client = client;
 	this->window = window;
 }
+
 BlurVertical::~BlurVertical()
 {
 }
+
 int BlurVertical::handle_event()
 {
 	client->config.vertical = get_value();
@@ -125,16 +129,18 @@ int BlurVertical::handle_event()
 
 BlurHorizontal::BlurHorizontal(BlurMain *client, BlurWindow *window, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	client->config.horizontal, 
 	_("Horizontal"))
 {
 	this->client = client;
 	this->window = window;
 }
+
 BlurHorizontal::~BlurHorizontal()
 {
 }
+
 int BlurHorizontal::handle_event()
 {
 	client->config.horizontal = get_value();
@@ -142,13 +148,12 @@ int BlurHorizontal::handle_event()
 }
 
 
-
-
 BlurA::BlurA(BlurMain *client, int x, int y)
  : BC_CheckBox(x, y, client->config.a, _("Blur alpha"))
 {
 	this->client = client;
 }
+
 int BlurA::handle_event()
 {
 	client->config.a = get_value();
@@ -161,6 +166,7 @@ BlurR::BlurR(BlurMain *client, int x, int y)
 {
 	this->client = client;
 }
+
 int BlurR::handle_event()
 {
 	client->config.r = get_value();
@@ -173,6 +179,7 @@ BlurG::BlurG(BlurMain *client, int x, int y)
 {
 	this->client = client;
 }
+
 int BlurG::handle_event()
 {
 	client->config.g = get_value();
@@ -185,6 +192,7 @@ BlurB::BlurB(BlurMain *client, int x, int y)
 {
 	this->client = client;
 }
+
 int BlurB::handle_event()
 {
 	client->config.b = get_value();

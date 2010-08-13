@@ -47,10 +47,10 @@ class BlurWindow : public BC_Window
 public:
 	BlurWindow(BlurMain *client, int x, int y);
 	~BlurWindow();
-	
+
 	int create_objects();
 	int close_event();
-	
+
 	BlurMain *client;
 	BlurVertical *vertical;
 	BlurHorizontal *horizontal;
@@ -68,6 +68,7 @@ public:
 	int handle_event();
 	BlurMain *client;
 };
+
 class BlurR : public BC_CheckBox
 {
 public:
@@ -75,6 +76,7 @@ public:
 	int handle_event();
 	BlurMain *client;
 };
+
 class BlurG : public BC_CheckBox
 {
 public:
@@ -82,6 +84,7 @@ public:
 	int handle_event();
 	BlurMain *client;
 };
+
 class BlurB : public BC_CheckBox
 {
 public:

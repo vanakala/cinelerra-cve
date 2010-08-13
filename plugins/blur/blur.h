@@ -37,9 +37,9 @@ class BlurEngine;
 typedef struct
 {
 	float r;
-    float g;
-    float b;
-    float a;
+	float g;
+	float b;
+	float a;
 } pixel_f;
 
 class BlurConfig
@@ -51,9 +51,9 @@ public:
 	void copy_from(BlurConfig &that);
 	void interpolate(BlurConfig &prev, 
 		BlurConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame, 
+		posnum current_frame);
 
 	int vertical;
 	int horizontal;
@@ -102,8 +102,10 @@ public:
 	int get_constants();
 	int reconfigure();
 	int transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int size);
+/* Pole
 	int multiply_alpha(pixel_f *row, int size);
 	int separate_alpha(pixel_f *row, int size);
+	*/
 	int blur_strip3(int &size);
 	int blur_strip4(int &size);
 
@@ -111,13 +113,13 @@ public:
 	float vmax;
 	pixel_f *val_p, *val_m, *vp, *vm;
 	pixel_f *sp_p, *sp_m;
-    float n_p[5], n_m[5];
-    float d_p[5], d_m[5];
-    float bd_p[5], bd_m[5];
-    float std_dev;
+	float n_p[5], n_m[5];
+	float d_p[5], d_m[5];
+	float bd_p[5], bd_m[5];
+	float std_dev;
 	pixel_f *src, *dst;
-    pixel_f initial_p;
-    pixel_f initial_m;
+	pixel_f initial_p;
+	pixel_f initial_m;
 	int terms;
 	BlurMain *plugin;
 // A margin is introduced between the input and output to give a seemless transition between blurs

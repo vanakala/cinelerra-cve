@@ -70,15 +70,14 @@ void BlurConfig::copy_from(BlurConfig &that)
 
 void BlurConfig::interpolate(BlurConfig &prev, 
 	BlurConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 
 
-//printf("BlurConfig::interpolate %d %d %d\n", prev_frame, next_frame, current_frame);
 	this->vertical = (int)(prev.vertical * prev_scale + next.vertical * next_scale);
 	this->horizontal = (int)(prev.horizontal * prev_scale + next.horizontal * next_scale);
 	this->radius = (int)(prev.radius * prev_scale + next.radius * next_scale);
@@ -114,7 +113,6 @@ BlurMain::BlurMain(PluginServer *server)
 
 BlurMain::~BlurMain()
 {
-//printf("BlurMain::~BlurMain 1\n");
 	PLUGIN_DESTRUCTOR_MACRO
 
 	if(temp) delete temp;
@@ -152,8 +150,6 @@ int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	this->output = output_ptr;
 	need_reconfigure |= load_configuration();
 
-
-//printf("BlurMain::process_realtime 1 %d %d\n", need_reconfigure, config.radius);
 	if(need_reconfigure)
 	{
 		int y1, y2, y_increment;
@@ -316,7 +312,6 @@ void BlurMain::read_data(KeyFrame *keyframe)
 				config.vertical = input.tag.get_property("VERTICAL", config.vertical);
 				config.horizontal = input.tag.get_property("HORIZONTAL", config.horizontal);
 				config.radius = input.tag.get_property("RADIUS", config.radius);
-//printf("BlurMain::read_data 1 %d %d %s\n", get_source_position(), keyframe->position, keyframe->data);
 				config.r = input.tag.get_property("R", config.r);
 				config.g = input.tag.get_property("G", config.g);
 				config.b = input.tag.get_property("B", config.b);
@@ -489,28 +484,28 @@ void BlurEngine::run()
 
 		switch(color_model)
 		{
-			case BC_RGB888:
-			case BC_YUV888:
-				BLUR(unsigned char, 0xff, 3);
-				break;
-			case BC_RGB_FLOAT:
-				BLUR(float, 1.0, 3);
-				break;
-			case BC_RGBA8888:
-			case BC_YUVA8888:
-				BLUR(unsigned char, 0xff, 4);
-				break;
-			case BC_RGBA_FLOAT:
-				BLUR(float, 1.0, 4);
-				break;
-			case BC_RGB161616:
-			case BC_YUV161616:
-				BLUR(uint16_t, 0xffff, 3);
-				break;
-			case BC_RGBA16161616:
-			case BC_YUVA16161616:
-				BLUR(uint16_t, 0xffff, 4);
-				break;
+		case BC_RGB888:
+		case BC_YUV888:
+			BLUR(unsigned char, 0xff, 3);
+			break;
+		case BC_RGB_FLOAT:
+			BLUR(float, 1.0, 3);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			BLUR(unsigned char, 0xff, 4);
+			break;
+		case BC_RGBA_FLOAT:
+			BLUR(float, 1.0, 4);
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			BLUR(uint16_t, 0xffff, 3);
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			BLUR(uint16_t, 0xffff, 4);
+			break;
 		}
 
 		output_lock.unlock();
@@ -614,14 +609,8 @@ int BlurEngine::transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int
 	int i;
 	float sum;
 
-// printf("BlurEngine::transfer_pixels %d %d %d %d\n", 
-// plugin->config.r, 
-// plugin->config.g, 
-// plugin->config.b, 
-// plugin->config.a);
-
 	for(i = 0; i < size; i++)
-    {
+	{
 		sum = src1[i].r + src2[i].r;
 		BOUNDARY(sum);
 		dest[i].r = sum;
@@ -634,11 +623,11 @@ int BlurEngine::transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int
 		sum = src1[i].a + src2[i].a;
 		BOUNDARY(sum);
 		dest[i].a = sum;
-    }
+	}
 	return 0;
 }
 
-
+/* Pole
 int BlurEngine::multiply_alpha(pixel_f *row, int size)
 {
 	register int i;
@@ -675,11 +664,12 @@ int BlurEngine::separate_alpha(pixel_f *row, int size)
 // 	}
 	return 0;
 }
-
+	*/
 int BlurEngine::blur_strip3(int &size)
 {
+/* Pole
 	multiply_alpha(src, size);
-
+	*/
 	sp_p = src;
 	sp_m = src + size - 1;
 	vp = val_p;
@@ -734,15 +724,18 @@ int BlurEngine::blur_strip3(int &size)
 		vm--;
 	}
 	transfer_pixels(val_p, val_m, dst, size);
+/* Pole
 	separate_alpha(dst, size);
+	*/
 	return 0;
 }
 
 
 int BlurEngine::blur_strip4(int &size)
 {
+/* Pole
 	multiply_alpha(src, size);
-
+	*/
 	sp_p = src;
 	sp_m = src + size - 1;
 	vp = val_p;
@@ -810,7 +803,9 @@ int BlurEngine::blur_strip4(int &size)
 		vm--;
 	}
 	transfer_pixels(val_p, val_m, dst, size);
+/* Pole
 	separate_alpha(dst, size);
+	*/
 	return 0;
 }
 

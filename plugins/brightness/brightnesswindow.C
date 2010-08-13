@@ -27,12 +27,9 @@
 PLUGIN_THREAD_OBJECT(BrightnessMain, BrightnessThread, BrightnessWindow)
 
 
-
-
-
 BrightnessWindow::BrightnessWindow(BrightnessMain *client, int x, int y)
  : BC_Window(client->gui_string, x,
- 	y,
+	y,
 	330, 
 	160, 
 	330, 
@@ -50,6 +47,9 @@ BrightnessWindow::~BrightnessWindow()
 int BrightnessWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	add_tool(new BC_Title(x, y, _("Brightness/Contrast")));
 	y += 25;
 	add_tool(new BC_Title(x, y,_("Brightness:")));
@@ -71,6 +71,7 @@ int BrightnessWindow::create_objects()
 		y));
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -87,7 +88,7 @@ BrightnessSlider::BrightnessSlider(BrightnessMain *client,
 	int y,
 	int is_brightness)
  : BC_FSlider(x, 
- 	y, 
+	y,
 	0, 
 	200, 
 	200,
@@ -99,9 +100,11 @@ BrightnessSlider::BrightnessSlider(BrightnessMain *client,
 	this->output = output;
 	this->is_brightness = is_brightness;
 }
+
 BrightnessSlider::~BrightnessSlider()
 {
 }
+
 int BrightnessSlider::handle_event()
 {
 	*output = get_value();
@@ -131,15 +134,17 @@ BrightnessLuma::BrightnessLuma(BrightnessMain *client,
 	int x, 
 	int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	client->config.luma,
 	_("Boost luminance only"))
 {
 	this->client = client;
 }
+
 BrightnessLuma::~BrightnessLuma()
 {
 }
+
 int BrightnessLuma::handle_event()
 {
 	client->config.luma = get_value();

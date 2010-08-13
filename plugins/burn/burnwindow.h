@@ -34,8 +34,6 @@ class BurnWindow;
 
 PLUGIN_THREAD_HEADER(BurnMain, BurnThread, BurnWindow)
 
-
-
 class BurnWindow : public BC_Window
 {
 public:
@@ -47,12 +45,5 @@ public:
 
 	BurnMain *client;
 };
-
-
-
-
-
-
-
 
 #endif

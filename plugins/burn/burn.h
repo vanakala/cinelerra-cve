@@ -65,7 +65,7 @@ class BurnClient : public LoadClient
 {
 public:
 	BurnClient(BurnServer *server);
-	
+
 	void process_package(LoadPackage *package);
 
 	BurnMain *plugin;
@@ -88,13 +88,10 @@ public:
 	void load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	
+
 	int load_defaults();
 	int save_defaults();
 	VFrame* new_picon();
-
-
-
 
 	void HSItoRGB(double H, 
 		double S, 
@@ -112,7 +109,7 @@ public:
 
 	int palette[3][256];
 	unsigned char *buffer;
-	
+
 	int total;
 
 	EffectTV *effecttv;
@@ -120,14 +117,5 @@ public:
 	VFrame *input_ptr, *output_ptr;
 	YUV *yuv;
 };
-
-
-
-
-
-
-
-
-
 
 #endif
