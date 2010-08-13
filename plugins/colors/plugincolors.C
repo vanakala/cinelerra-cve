@@ -36,7 +36,7 @@ YUV HSV::yuv_static;
 
 int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 {
-    int i;
+	int i;
 	float min, max, delta;
 	float f, p, q, t;
 	min = ((r < g) ? r : g) < b ? ((r < g) ? r : g) : b;
@@ -46,83 +46,82 @@ int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 	delta = max - min;
 
 	if(max != 0 && delta != 0)
-    {
-	    s = delta / max;               // s
+	{
+		s = delta / max;               // s
 
 		if(r == max)
-        	h = (g - b) / delta;         // between yellow & magenta
+			h = (g - b) / delta;  // between yellow & magenta
 		else 
 		if(g == max)
-        	h = 2 + (b - r) / delta;     // between cyan & yellow
+			h = 2 + (b - r) / delta;     // between cyan & yellow
 		else
-        	h = 4 + (r - g) / delta;     // between magenta & cyan
+			h = 4 + (r - g) / delta;     // between magenta & cyan
 
 		h *= 60;                               // degrees
 		if(h < 0)
-        	h += 360;
+			h += 360;
 	}
 	else 
 	{
-        // r = g = b = 0                // s = 0, v is undefined
-        s = 0;
-        h = -1;
+// r = g = b = 0                // s = 0, v is undefined
+		s = 0;
+		h = -1;
 	}
-	
 	return 0;
 }
 
 int HSV::hsv_to_rgb(float &r, float &g, float &b, float h, float s, float v)
 {
-    int i;
+	int i;
 	float min, max, delta;
 	float f, p, q, t;
-    if(s == 0) 
+	if(s == 0)
 	{
-        // achromatic (grey)
-        r = g = b = v;
-        return 0;
-    }
+// achromatic (grey)
+		r = g = b = v;
+		return 0;
+	}
 
-    h /= 60;                        // sector 0 to 5
-    i = (int)h;
-    f = h - i;                      // factorial part of h
-    p = v * (1 - s);
-    q = v * (1 - s * f);
-    t = v * (1 - s * (1 - f));
+	h /= 60;                        // sector 0 to 5
+	i = (int)h;
+	f = h - i;                      // factorial part of h
+	p = v * (1 - s);
+	q = v * (1 - s * f);
+	t = v * (1 - s * (1 - f));
 
-    switch(i) 
+	switch(i)
 	{
-        case 0:
-            r = v;
-            g = t;
-            b = p;
-            break;
-        case 1:
-            r = q;
-            g = v;
-            b = p;
-            break;
-        case 2:
-            r = p;
-            g = v;
-            b = t;
-            break;
-        case 3:
-            r = p;
-            g = q;
-            b = v;
-            break;
-        case 4:
-            r = t;
-            g = p;
-            b = v;
-            break;
-        default:                // case 5:
-            r = v;
-            g = p;
-            b = q;
-            break;
-    }
+	case 0:
+		r = v;
+		g = t;
+		b = p;
+		break;
+	case 1:
+		r = q;
+		g = v;
+		b = p;
+		break;
+	case 2:
+		r = p;
+		g = v;
+		b = t;
+		break;
+	case 3:
+		r = p;
+		g = q;
+		b = v;
+		break;
+	case 4:
+		r = t;
+		g = p;
+		b = v;
+		break;
+	default:                // case 5:
+		r = v;
+		g = p;
+		b = q;
+		break;
+	}
 	return 0;
 }
 
@@ -175,27 +174,6 @@ int HSV::hsv_to_yuv(int &y, int &u, int &v, float h, float s, float va, int max)
 
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

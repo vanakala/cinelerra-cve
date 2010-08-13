@@ -192,23 +192,11 @@ private:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 class HSV
 {
 public:
 	HSV();
-    ~HSV();
+	~HSV();
 
 // All units are 0 - 1
 	static int rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v);
@@ -222,6 +210,5 @@ public:
 	static int hsv_to_yuv(float &y, float &u, float &v, float h, float s, float va, float max) { return 0; };
 	static YUV yuv_static;
 };
-
 
 #endif

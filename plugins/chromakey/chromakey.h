@@ -22,9 +22,6 @@
 #ifndef CHROMAKEY_H
 #define CHROMAKEY_H
 
-
-
-
 #include "colorpicker.h"
 #include "guicast.h"
 #include "loadbalance.h"
@@ -44,9 +41,9 @@ public:
 	int equivalent(ChromaKeyConfig &src);
 	void interpolate(ChromaKeyConfig &prev, 
 		ChromaKeyConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	int get_color();
 
 	float red;
@@ -78,6 +75,7 @@ public:
 	int handle_event();
 	ChromaKey *plugin;
 };
+
 class ChromaKeySlope : public BC_FSlider
 {
 public:
@@ -85,6 +83,7 @@ public:
 	int handle_event();
 	ChromaKey *plugin;
 };
+
 class ChromaKeyUseValue : public BC_CheckBox
 {
 public:
@@ -133,10 +132,7 @@ public:
 	ChromaKeyColorThread *color_thread;
 };
 
-
-
 PLUGIN_THREAD_HEADER(ChromaKey, ChromaKeyThread, ChromaKeyWindow)
-
 
 class ChromaKeyServer : public LoadServer
 {
@@ -164,16 +160,14 @@ public:
 };
 
 
-
-
 class ChromaKey : public PluginVClient
 {
 public:
 	ChromaKey(PluginServer *server);
 	~ChromaKey();
-	
+
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int handle_opengl();
 	int is_realtime();
@@ -196,18 +190,4 @@ public:
 	BC_Hash *defaults;
 };
 
-
-
-
-
-
-
-
 #endif
-
-
-
-
-
-
-

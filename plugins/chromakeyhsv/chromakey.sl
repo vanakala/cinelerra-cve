@@ -34,14 +34,14 @@ void main()
 	float alpha_saturation = 1.0;
 	bool has_match = true;
 	vec4 color2;
-	
+
 /* Convert to HSV */
 	color2 = yuv_to_rgb(color);
 	color2 = rgb_to_hsv(color2);
 
 /* Hue is completely out of range */
 	if (tolerance == 0.0)
-	    alpha_hue = 1.0;
+		alpha_hue = 1.0;
 	else
 	if (abs(color2.r - hue_key) < tolerance_in * 180.0)
 		alpha_hue = 0.0;
@@ -54,7 +54,7 @@ void main()
 /* If no slope, scale alpha between 1/2 and 1 */
 		alpha_hue = abs(color2.r - hue_key) / tolerance_out / 360.0; 
 	else
-		has_match = false;	
+		has_match = false;
 
 /* Test saturation */
 	if (has_match) 
@@ -77,7 +77,7 @@ void main()
 /* Test value over minimum */
 	if (has_match)
 	{
-	    if (min_v == 0.0)
+		if (min_v == 0.0)
 			alpha_value = 0.0;
 		else 
 		if ( color2.b >= min_v_in )
@@ -95,32 +95,32 @@ void main()
 /* Test value under maximum */
 	if (has_match)
 	{
-	    if (max_v == 0.0)
+		if (max_v == 0.0)
 			alpha_value_max = 1.0;
-	    else 
+		else
 		if (color2.b <= max_v_in)
 			alpha_value_max = 0.0;
-	    else 
+		else 
 		if ((out_slope != 0.0) && (color2.b < max_v))
 			alpha_value_max = (color2.b - max_v) / (max_v * 2.0);
-	    else 
+		else
 		if (color2.b < max_v_out)
 			alpha_value_max = (color2.b - max_v_out) / (max_v_out * 2.0);
-	    else
+		else
 			has_match = false;
 	}
 
 /* Take largest component as the alpha */
 	if (has_match)
-	   	color2.a = max (max (alpha_hue, alpha_value), max (alpha_saturation, alpha_value_max));
+		color2.a = max (max (alpha_hue, alpha_value), max (alpha_saturation, alpha_value_max));
 
 /* Spill light processing */
 	if ((abs(color2.r - hue_key) < spill_threshold * 180.0) || 
-	    ((abs(color2.r - hue_key) > 360.0) && 
-	    (abs(color2.r - hue_key) - 360.0 < spill_threshold * 180.0)))
+		((abs(color2.r - hue_key) > 360.0) && 
+		(abs(color2.r - hue_key) - 360.0 < spill_threshold * 180.0)))
 	{
 /* Modify saturation based on hue contribution */
-	    color2.g = color2.g * 
+		color2.g = color2.g * 
 			spill_amount * 
 			abs(color2.r - hue_key) / 
 			(spill_threshold * 180.0);
@@ -134,5 +134,3 @@ void main()
 /* Convert mask into image */
 	gl_FragColor = show_mask(color, color2);
 }
-
-

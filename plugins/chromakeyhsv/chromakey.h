@@ -50,9 +50,9 @@ public:
 	int equivalent(ChromaKeyConfig &src);
 	void interpolate(ChromaKeyConfig &prev, 
 		ChromaKeyConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	int get_color();
 
 	// Output mode
@@ -93,34 +93,34 @@ public:
 
 class ChromaKeyMinBrightness : public BC_FSlider
 {
-	public:
-		ChromaKeyMinBrightness(ChromaKeyHSV *plugin, int x, int y);
-		int handle_event();
-		ChromaKeyHSV *plugin;
+public:
+	ChromaKeyMinBrightness(ChromaKeyHSV *plugin, int x, int y);
+	int handle_event();
+	ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyMaxBrightness : public BC_FSlider
 {
-	public:
-		ChromaKeyMaxBrightness(ChromaKeyHSV *plugin, int x, int y);
-		int handle_event();
-		ChromaKeyHSV *plugin;
+public:
+	ChromaKeyMaxBrightness(ChromaKeyHSV *plugin, int x, int y);
+	int handle_event();
+	ChromaKeyHSV *plugin;
 };
 
 class ChromaKeySaturation : public BC_FSlider
 {
-	public:
-		ChromaKeySaturation(ChromaKeyHSV *plugin, int x, int y);
-		int handle_event();
-		ChromaKeyHSV *plugin;
+public:
+	ChromaKeySaturation(ChromaKeyHSV *plugin, int x, int y);
+	int handle_event();
+	ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyMinSaturation : public BC_FSlider
 {
-	public:
-		ChromaKeyMinSaturation(ChromaKeyHSV *plugin, int x, int y);
-		int handle_event();
-		ChromaKeyHSV *plugin;
+public:
+	ChromaKeyMinSaturation(ChromaKeyHSV *plugin, int x, int y);
+	int handle_event();
+	ChromaKeyHSV *plugin;
 };
 
 
@@ -135,26 +135,26 @@ public:
 
 class ChromaKeyInSlope : public BC_FSlider
 {
-	public:
-		ChromaKeyInSlope(ChromaKeyHSV *plugin, int x, int y);
-		int handle_event();
-		ChromaKeyHSV *plugin;
+public:
+	ChromaKeyInSlope(ChromaKeyHSV *plugin, int x, int y);
+	int handle_event();
+	ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyOutSlope : public BC_FSlider
 {
-	public:
-		ChromaKeyOutSlope(ChromaKeyHSV *plugin, int x, int y);
-		int handle_event();
-		ChromaKeyHSV *plugin;
+public:
+	ChromaKeyOutSlope(ChromaKeyHSV *plugin, int x, int y);
+	int handle_event();
+	ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyAlphaOffset : public BC_FSlider
 {
-	public:
-		ChromaKeyAlphaOffset(ChromaKeyHSV *plugin, int x, int y);
-		int handle_event();
-		ChromaKeyHSV *plugin;
+public:
+	ChromaKeyAlphaOffset(ChromaKeyHSV *plugin, int x, int y);
+	int handle_event();
+	ChromaKeyHSV *plugin;
 };
 
 class ChromaKeySpillThreshold : public BC_FSlider
@@ -200,7 +200,6 @@ public:
 };
 
 
-
 class ChromaKeyWindow : public BC_Window
 {
 public:
@@ -228,8 +227,6 @@ public:
 	ChromaKeyHSV *plugin;
 	ChromaKeyColorThread *color_thread;
 };
-
-
 
 
 
@@ -266,16 +263,14 @@ public:
 };
 
 
-
-
 class ChromaKeyHSV : public PluginVClient
 {
 public:
 	ChromaKeyHSV(PluginServer *server);
 	~ChromaKeyHSV();
-	
+
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int handle_opengl();
 	int is_realtime();
@@ -297,13 +292,6 @@ public:
 	ChromaKeyThread *thread;
 	BC_Hash *defaults;
 };
-
-
-
-
-
-
-
 
 #endif
 

@@ -75,9 +75,9 @@ int ChromaKeyConfig::equivalent(ChromaKeyConfig &src)
 
 void ChromaKeyConfig::interpolate(ChromaKeyConfig &prev, 
 	ChromaKeyConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -99,14 +99,9 @@ int ChromaKeyConfig::get_color()
 }
 
 
-
-
-
-
-
 ChromaKeyWindow::ChromaKeyWindow(ChromaKey *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	320, 
 	220, 
@@ -128,8 +123,9 @@ ChromaKeyWindow::~ChromaKeyWindow()
 void ChromaKeyWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 100;
-
 	BC_Title *title;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Color:")));
 	x += title->get_w() + 10;
 	add_subwindow(color = new ChromaKeyColor(plugin, this, x, y));
@@ -144,7 +140,6 @@ void ChromaKeyWindow::create_objects()
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Threshold:")));
 	add_subwindow(threshold = new ChromaKeyThreshold(plugin, x1, y));
-
 
 	y += 30;
 	add_subwindow(use_value = new ChromaKeyUseValue(plugin, x1, y));
@@ -180,9 +175,6 @@ WINDOW_CLOSE_EVENT(ChromaKeyWindow)
 
 
 
-
-
-
 ChromaKeyColor::ChromaKeyColor(ChromaKey *plugin, 
 	ChromaKeyWindow *gui, 
 	int x, 
@@ -203,21 +195,20 @@ int ChromaKeyColor::handle_event()
 }
 
 
-
-
 ChromaKeyThreshold::ChromaKeyThreshold(ChromaKey *plugin, int x, int y)
  : BC_FSlider(x, 
-			y,
-			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)100, 
-			plugin->config.threshold)
+		y,
+		0,
+		200,
+		200,
+		(float)0,
+		(float)100,
+		plugin->config.threshold)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
 }
+
 int ChromaKeyThreshold::handle_event()
 {
 	plugin->config.threshold = get_value();
@@ -228,13 +219,13 @@ int ChromaKeyThreshold::handle_event()
 
 ChromaKeySlope::ChromaKeySlope(ChromaKey *plugin, int x, int y)
  : BC_FSlider(x, 
-			y,
-			0,
-			200, 
-			200, 
-			(float)0, 
-			(float)100, 
-			plugin->config.slope)
+		y,
+		0,
+		200,
+		200,
+		(float)0,
+		(float)100,
+		plugin->config.slope)
 {
 	this->plugin = plugin;
 	set_precision(0.01);
@@ -253,6 +244,7 @@ ChromaKeyUseValue::ChromaKeyUseValue(ChromaKey *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int ChromaKeyUseValue::handle_event()
 {
 	plugin->config.use_value = get_value();
@@ -282,10 +274,8 @@ int ChromaKeyUseColorPicker::handle_event()
 }
 
 
-
-
 ChromaKeyColorThread::ChromaKeyColorThread(ChromaKey *plugin, ChromaKeyWindow *gui)
- : ColorThread(1, _("Inner color"))
+ : ColorThread(1, _("Inner color"), plugin->new_picon())
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -302,12 +292,6 @@ int ChromaKeyColorThread::handle_new_color(int output, int alpha)
 }
 
 
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(ChromaKey, ChromaKeyThread, ChromaKeyWindow)
 
 
@@ -316,6 +300,7 @@ ChromaKeyServer::ChromaKeyServer(ChromaKey *plugin)
 {
 	this->plugin = plugin;
 }
+
 void ChromaKeyServer::init_packages()
 {
 	for(int i = 0; i < get_total_packages(); i++)
@@ -324,17 +309,17 @@ void ChromaKeyServer::init_packages()
 		pkg->y1 = plugin->input->get_h() * i / get_total_packages();
 		pkg->y2 = plugin->input->get_h() * (i + 1) / get_total_packages();
 	}
-	
 }
+
 LoadClient* ChromaKeyServer::new_client()
 {
 	return new ChromaKeyUnit(plugin, this);
 }
+
 LoadPackage* ChromaKeyServer::new_package()
 {
 	return new ChromaKeyPackage;
 }
-
 
 
 ChromaKeyPackage::ChromaKeyPackage()
@@ -362,8 +347,8 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 		h,
 		s,
 		v);
- 	float min_hue = h - plugin->config.threshold * 360 / 100;
- 	float max_hue = h + plugin->config.threshold * 360 / 100;
+	float min_hue = h - plugin->config.threshold * 360 / 100;
+	float max_hue = h + plugin->config.threshold * 360 / 100;
 
 
 #define RGB_TO_VALUE(r, g, b) \
@@ -493,40 +478,35 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 }
 
 
-
-
 	switch(plugin->input->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			CHROMAKEY(float, 3, 1.0, 0);
-			break;
-		case BC_RGBA_FLOAT:
-			CHROMAKEY(float, 4, 1.0, 0);
-			break;
-		case BC_RGB888:
-			CHROMAKEY(unsigned char, 3, 0xff, 0);
-			break;
-		case BC_RGBA8888:
-			CHROMAKEY(unsigned char, 4, 0xff, 0);
-			break;
-		case BC_YUV888:
-			CHROMAKEY(unsigned char, 3, 0xff, 1);
-			break;
-		case BC_YUVA8888:
-			CHROMAKEY(unsigned char, 4, 0xff, 1);
-			break;
-		case BC_YUV161616:
-			CHROMAKEY(uint16_t, 3, 0xffff, 1);
-			break;
-		case BC_YUVA16161616:
-			CHROMAKEY(uint16_t, 4, 0xffff, 1);
-			break;
+	case BC_RGB_FLOAT:
+		CHROMAKEY(float, 3, 1.0, 0);
+		break;
+	case BC_RGBA_FLOAT:
+		CHROMAKEY(float, 4, 1.0, 0);
+		break;
+	case BC_RGB888:
+		CHROMAKEY(unsigned char, 3, 0xff, 0);
+		break;
+	case BC_RGBA8888:
+		CHROMAKEY(unsigned char, 4, 0xff, 0);
+		break;
+	case BC_YUV888:
+		CHROMAKEY(unsigned char, 3, 0xff, 1);
+		break;
+	case BC_YUVA8888:
+		CHROMAKEY(unsigned char, 4, 0xff, 1);
+		break;
+	case BC_YUV161616:
+		CHROMAKEY(uint16_t, 3, 0xffff, 1);
+		break;
+	case BC_YUVA16161616:
+		CHROMAKEY(uint16_t, 4, 0xffff, 1);
+		break;
 	}
 
 }
-
-
-
 
 
 REGISTER_PLUGIN(ChromaKey)
@@ -548,11 +528,9 @@ ChromaKey::~ChromaKey()
 
 
 int ChromaKey::process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate)
 {
-SET_TRACE
-
 	load_configuration();
 	this->input = frame;
 	this->output = frame;
@@ -574,7 +552,6 @@ SET_TRACE
 		if(!engine) engine = new ChromaKeyServer(this);
 		engine->process_packages();
 	}
-SET_TRACE
 
 	return 1;
 }
@@ -588,7 +565,6 @@ LOAD_CONFIGURATION_MACRO(ChromaKey, ChromaKeyConfig)
 
 int ChromaKey::load_defaults()
 {
-SET_TRACE
 	char directory[BCTEXTLEN];
 // set the default directory
 	sprintf(directory, "%schromakey.rc", BCASTDIR);
@@ -603,21 +579,18 @@ SET_TRACE
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
 	config.slope = defaults->get("SLOPE", config.slope);
 	config.use_value = defaults->get("USE_VALUE", config.use_value);
-SET_TRACE
 	return 0;
 }
 
 int ChromaKey::save_defaults()
 {
-SET_TRACE
 	defaults->update("RED", config.red);
 	defaults->update("GREEN", config.green);
 	defaults->update("BLUE", config.blue);
-    defaults->update("THRESHOLD", config.threshold);
-    defaults->update("SLOPE", config.slope);
-    defaults->update("USE_VALUE", config.use_value);
+	defaults->update("THRESHOLD", config.threshold);
+	defaults->update("SLOPE", config.slope);
+	defaults->update("USE_VALUE", config.use_value);
 	defaults->save();
-SET_TRACE
 	return 0;
 }
 
@@ -684,8 +657,6 @@ int ChromaKey::handle_opengl()
 {
 #ifdef HAVE_GL
 	OUTER_VARIABLES(this)
-	
-
 
 	static const char *uniform_frag =
 		"uniform sampler2D tex;\n"
@@ -753,32 +724,31 @@ int ChromaKey::handle_opengl()
 	shader_stack[current_shader++] = uniform_frag;
 	switch(get_output()->get_color_model())
 	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-			if(config.use_value)
-			{
-				shader_stack[current_shader++] = get_yuvvalue_frag;
-				shader_stack[current_shader++] = value_frag;
-			}
-			else
-			{
-				shader_stack[current_shader++] = cube_frag;
-			}
-			break;
+	case BC_YUV888:
+	case BC_YUVA8888:
+		if(config.use_value)
+		{
+			shader_stack[current_shader++] = get_yuvvalue_frag;
+			shader_stack[current_shader++] = value_frag;
+		}
+		else
+		{
+			shader_stack[current_shader++] = cube_frag;
+		}
+		break;
 
-		default:
-			if(config.use_value)
-			{
-				shader_stack[current_shader++] = get_rgbvalue_frag;
-				shader_stack[current_shader++] = value_frag;
-			}
-			else
-			{
-				shader_stack[current_shader++] = cube_frag;
-			}
-			break;
+	default:
+		if(config.use_value)
+		{
+			shader_stack[current_shader++] = get_rgbvalue_frag;
+			shader_stack[current_shader++] = value_frag;
+		}
+		else
+		{
+			shader_stack[current_shader++] = cube_frag;
+		}
+		break;
 	}
-SET_TRACE
 
 	unsigned int frag = VFrame::make_shader(0, 
 		shader_stack[0], 
@@ -804,9 +774,7 @@ SET_TRACE
 		else
 			glUniform3f(glGetUniformLocation(frag, "key"), 
 				(float)y_key / 0xff, (float)u_key / 0xff, (float)v_key / 0xff);
-		
 	}
-SET_TRACE
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -817,7 +785,6 @@ SET_TRACE
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		get_output()->clear_pbuffer();
 	}
-SET_TRACE
 
 	get_output()->draw_texture();
 
@@ -826,12 +793,5 @@ SET_TRACE
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glDisable(GL_BLEND);
-SET_TRACE
 #endif
 }
-
-
-
-
-
-

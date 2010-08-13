@@ -32,12 +32,13 @@
 #include <unistd.h>
 
 
-ColorThread::ColorThread(int do_alpha, char *title)
+ColorThread::ColorThread(int do_alpha, const char *title, VFrame* icon)
  : Thread()
 {
 	window = 0;
 	this->title = title;
 	this->do_alpha = do_alpha;
+	this->icon = icon;
 	set_synchronous(0);
 	mutex = new Mutex("ColorThread::mutex");
 	completion = new Condition(1, "ColorThread::completion");
@@ -51,6 +52,8 @@ ColorThread::~ColorThread()
 		completion->lock("ColorThread::~ColorThread");
 		completion->unlock();
 	}
+	if(icon)
+		delete icon;
 	delete mutex;
 	delete completion;
 }
@@ -77,7 +80,6 @@ void ColorThread::start_window(int output, int alpha)
 void ColorThread::run()
 {
 	BC_DisplayInfo info;
-//printf("ColorThread::run 1\n");
 	char window_title[BCTEXTLEN];
 
 	strcpy(window_title, PROGRAM_NAME ": ");
@@ -127,7 +129,7 @@ int ColorThread::handle_new_color(int output, int alpha)
 
 
 
-ColorWindow::ColorWindow(ColorThread *thread, int x, int y, char *title)
+ColorWindow::ColorWindow(ColorThread *thread, int x, int y, const char *title)
  : BC_Window(title, 
 	x,
 	y,
@@ -146,63 +148,57 @@ void ColorWindow::create_objects()
 {
 	int x = 10, init_x = 10, y = 10, init_y = 10;
 	change_values();
-	
-	
-	
-//printf("ColorWindow::create_objects 1 %p\n", this);
+
+	if(thread->icon)
+		set_icon(thread->icon);
+
 	add_tool(wheel = new PaletteWheel(this, x, y));
-//printf("ColorWindow::create_objects 1\n");
 	wheel->create_objects();
-//printf("ColorWindow::create_objects 1\n");
 
 	x += 180;
 	add_tool(wheel_value = new PaletteWheelValue(this, x, y));
-//printf("ColorWindow::create_objects 1\n");
 	wheel_value->create_objects();
 
 
 	y += 180;
 	x = init_x; 
-//printf("ColorWindow::create_objects 1\n");
 	add_tool(output = new PaletteOutput(this, x, y));
-//printf("ColorWindow::create_objects 1\n");
 	output->create_objects();
-//printf("ColorWindow::create_objects 1\n");
-	
+
 	x += 240; y = init_y;
 	add_tool(new BC_Title(x, y, _("Hue"), SMALLFONT));
 	y += 15;
-//printf("ColorWindow::create_objects 1 %p\n", this);
+
 	add_tool(hue = new PaletteHue(this, x, y));
 	y += 30;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(new BC_Title(x, y, _("Saturation"), SMALLFONT));
 	y += 15;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(saturation = new PaletteSaturation(this, x, y));
 	y += 30;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(new BC_Title(x, y, _("Value"), SMALLFONT));
 	y += 15;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(value = new PaletteValue(this, x, y));
 	y += 30;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(new BC_Title(x, y, _("Red"), SMALLFONT));
 	y += 15;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(red = new PaletteRed(this, x, y));
 	y += 30;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(new BC_Title(x, y, _("Green"), SMALLFONT));
 	y += 15;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(green = new PaletteGreen(this, x, y));
 	y += 30;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(new BC_Title(x, y, _("Blue"), SMALLFONT));
 	y += 15;
-//printf("ColorWindow::create_objects 1\n");
+
 	add_tool(blue = new PaletteBlue(this, x, y));
 
 	if(thread->do_alpha)
@@ -220,12 +216,12 @@ void ColorWindow::create_objects()
 
 
 void ColorWindow::change_values()
- {
- 	r = (float)((thread->output & 0xff0000) >> 16) / 255;
- 	g = (float)((thread->output & 0xff00) >> 8) / 255;
- 	b = (float)((thread->output & 0xff)) / 255;
- 	HSV::rgb_to_hsv(r, g, b, h, s, v);
- 	a = (float)thread->alpha / 255;
+{
+	r = (float)((thread->output & 0xff0000) >> 16) / 255;
+	g = (float)((thread->output & 0xff00) >> 8) / 255;
+	b = (float)((thread->output & 0xff)) / 255;
+	HSV::rgb_to_hsv(r, g, b, h, s, v);
+	a = (float)thread->alpha / 255;
 }
 
 
@@ -260,7 +256,7 @@ void ColorWindow::update_display()
 	if(a > 1) a = 1;
 
 	wheel->draw(wheel->oldhue, 
-				wheel->oldsaturation);
+			wheel->oldsaturation);
 	wheel->oldhue = h;
 	wheel->oldsaturation = s;
 	wheel->draw(h, s);
@@ -291,10 +287,6 @@ int ColorWindow::handle_event()
 	thread->handle_new_color(result, (int)(a * 255));
 	return 1;
 }
-
-
-
-
 
 
 
@@ -357,7 +349,6 @@ int PaletteWheel::button_release_event()
 int PaletteWheel::create_objects()
 {
 // Upper right
-//printf("PaletteWheel::create_objects 1\n");
 	float h;
 	float s;
 	float v = 1;
@@ -371,7 +362,6 @@ int PaletteWheel::create_objects()
 	default_r = (get_resources()->get_bg_color() & 0xff0000) >> 16;
 	default_g = (get_resources()->get_bg_color() & 0xff00) >> 8;
 	default_b = (get_resources()->get_bg_color() & 0xff);
-//printf("PaletteWheel::create_objects 1\n");
 
 	for(y2 = 0; y2 < get_h(); y2++)
 	{
@@ -397,7 +387,6 @@ int PaletteWheel::create_objects()
 			}
 		}
 	}
-//printf("PaletteWheel::create_objects 1\n");
 
 	draw_vframe(&frame, 
 		0, 
@@ -409,15 +398,11 @@ int PaletteWheel::create_objects()
 		get_w(), 
 		get_h(), 
 		0);
-//printf("PaletteWheel::create_objects 1\n");
 
 	oldhue = window->h;
 	oldsaturation = window->s;
-//printf("PaletteWheel::create_objects 1\n");
 	draw(oldhue, oldsaturation);
-//printf("PaletteWheel::create_objects 1\n");
 	flash();
-//printf("PaletteWheel::create_objects 2\n");
 	return 0;
 }
 
@@ -517,12 +502,10 @@ int PaletteWheelValue::create_objects()
 
 int PaletteWheelValue::button_press_event()
 {
-//printf("PaletteWheelValue::button_press 1 %d\n", is_event_win());
 	if(get_cursor_x() >= 0 && get_cursor_x() < get_w() &&
 		get_cursor_y() >= 0 && get_cursor_y() < get_h() && 
 		is_event_win())
 	{
-//printf("PaletteWheelValue::button_press 2\n");
 		button_down = 1;
 		cursor_motion_event();
 		return 1;
@@ -535,7 +518,6 @@ int PaletteWheelValue::cursor_motion_event()
 	int x1, y1, distance;
 	if(button_down && is_event_win())
 	{
-//printf("PaletteWheelValue::cursor_motion 1\n");
 		window->v = (float)(get_h() - get_cursor_y()) / get_h();
 		window->update_display();
 		window->handle_event();
@@ -548,7 +530,6 @@ int PaletteWheelValue::button_release_event()
 {
 	if(button_down)
 	{
-//printf("PaletteWheelValue::button_release 1\n");
 		button_down = 0;
 		return 1;
 	}
@@ -595,6 +576,7 @@ PaletteOutput::PaletteOutput(ColorWindow *window, int x, int y)
 {
 	this->window = window;
 }
+
 PaletteOutput::~PaletteOutput()
 {
 }
@@ -615,7 +597,7 @@ int PaletteOutput::handle_event()
 int PaletteOutput::draw()
 {
 	float r_f, g_f, b_f;
-	
+
 	HSV::hsv_to_rgb(r_f, g_f, b_f, window->h, window->s, window->v);
 	set_color(((int)(r_f * 255) << 16) | ((int)(g_f * 255) << 8) | ((int)(b_f * 255)));
 	draw_box(0, 0, get_w(), get_h());
@@ -627,6 +609,7 @@ PaletteHue::PaletteHue(ColorWindow *window, int x, int y)
 {
 	this->window = window;
 }
+
 PaletteHue::~PaletteHue()
 {
 }
@@ -651,10 +634,8 @@ PaletteSaturation::~PaletteSaturation()
 
 int PaletteSaturation::handle_event()
 {
-//printf("PaletteSaturation::handle_event 1 %f\n", get_value());
 	window->s = get_value();
 	window->update_display();
-//printf("PaletteSaturation::handle_event 2 %f\n", get_value());
 	window->handle_event();
 	return 1;
 }
@@ -684,6 +665,7 @@ PaletteRed::PaletteRed(ColorWindow *window, int x, int y)
 	this->window = window;
 	set_precision(0.01);
 }
+
 PaletteRed::~PaletteRed()
 {
 }
@@ -701,6 +683,7 @@ PaletteGreen::PaletteGreen(ColorWindow *window, int x, int y)
 	this->window = window;
 	set_precision(0.01);
 }
+
 PaletteGreen::~PaletteGreen()
 {
 }
@@ -718,6 +701,7 @@ PaletteBlue::PaletteBlue(ColorWindow *window, int x, int y)
 	this->window = window;
 	set_precision(0.01);
 }
+
 PaletteBlue::~PaletteBlue()
 {
 }
@@ -735,6 +719,7 @@ PaletteAlpha::PaletteAlpha(ColorWindow *window, int x, int y)
 	this->window = window;
 	set_precision(0.01);
 }
+
 PaletteAlpha::~PaletteAlpha()
 {
 }
@@ -745,5 +730,3 @@ int PaletteAlpha::handle_event()
 	window->handle_event();
 	return 1;
 }
-
-

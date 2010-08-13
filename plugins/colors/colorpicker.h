@@ -43,7 +43,7 @@ class PaletteAlpha;
 class ColorThread : public Thread
 {
 public:
-	ColorThread(int do_alpha = 0, char *title = 0);
+	ColorThread(int do_alpha = 0, const char *title = 0, VFrame* icon = 0);
 	~ColorThread();
 
 
@@ -58,18 +58,19 @@ private:
 	ColorWindow *window;
 	Condition *completion;
 // protects window, output, alpha
-	Mutex *mutex;	
+	Mutex *mutex;
 // Starting color
 	int output;
 	int alpha;
 	int do_alpha;
-	char *title;
+	const char *title;
+	VFrame *icon;
 };
 
 class ColorWindow : public BC_Window
 {
 public:
-	ColorWindow(ColorThread *thread, int x, int y, char *title);
+	ColorWindow(ColorThread *thread, int x, int y, const char *title);
 
 	void create_objects();
 	void change_values();
