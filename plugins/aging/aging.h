@@ -56,13 +56,11 @@ public:
 	static int dy[8];
 	int dust_interval;
 
-
 	int pits_interval;
-	
 	int scratch_lines;
 	int pit_count;
 	int dust_count;
-	
+
 	int colorage;
 	int scratch;
 	int pits;
@@ -81,7 +79,7 @@ class AgingServer : public LoadServer
 {
 public:
 	AgingServer(AgingMain *plugin, int total_clients, int total_packages);
-	
+
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	void init_packages();
@@ -92,7 +90,7 @@ class AgingClient : public LoadClient
 {
 public:
 	AgingClient(AgingServer *server);
-	
+
 	void coloraging(unsigned char **output_ptr, 
 		unsigned char **input_ptr,
 		int color_model,
@@ -132,7 +130,7 @@ public:
 	void load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	
+
 	int load_defaults();
 	int save_defaults();
 	VFrame* new_picon();
@@ -147,14 +145,5 @@ public:
 	AgingEngine **engine;
 	VFrame *input_ptr, *output_ptr;
 };
-
-
-
-
-
-
-
-
-
 
 #endif

@@ -31,17 +31,11 @@
 #include "vframe.h"
 
 
-
-
-
-
 #include <stdint.h>
 #include <string.h>
 
 
 REGISTER_PLUGIN(_1080to540Main)
-
-
 
 
 _1080to540Config::_1080to540Config()
@@ -61,20 +55,17 @@ void _1080to540Config::copy_from(_1080to540Config &that)
 
 void _1080to540Config::interpolate(_1080to540Config &prev, 
 	_1080to540Config &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	copy_from(prev);
 }
 
 
-
-
-
 _1080to540Window::_1080to540Window(_1080to540Main *client, int x, int y)
  : BC_Window(client->gui_string, 
- 	x, 
+	x, 
 	y, 
 	200, 
 	100, 
@@ -96,6 +87,7 @@ int _1080to540Window::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_tool(odd_first = new _1080to540Option(client, this, 1, x, y, _("Odd field first")));
 	y += 25;
 	add_tool(even_first = new _1080to540Option(client, this, 0, x, y, _("Even field first")));
@@ -131,7 +123,7 @@ _1080to540Option::_1080to540Option(_1080to540Main *client,
 		int y, 
 		char *text)
  : BC_Radial(x, 
- 	y, 
+	y,
 	client->config.first_field == output, 
 	text)
 {
@@ -223,28 +215,28 @@ for(int i = 0; i < OUT_ROWS; i++) \
 
 	switch(input->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			REDUCE_MACRO(unsigned char, int64_t, 3);
-			break;
-		case BC_RGB_FLOAT:
-			REDUCE_MACRO(float, float, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			REDUCE_MACRO(unsigned char, int64_t, 4);
-			break;
-		case BC_RGBA_FLOAT:
-			REDUCE_MACRO(float, float, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			REDUCE_MACRO(uint16_t, int64_t, 3);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			REDUCE_MACRO(uint16_t, int64_t, 4);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		REDUCE_MACRO(unsigned char, int64_t, 3);
+		break;
+	case BC_RGB_FLOAT:
+		REDUCE_MACRO(float, float, 3);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		REDUCE_MACRO(unsigned char, int64_t, 4);
+		break;
+	case BC_RGBA_FLOAT:
+		REDUCE_MACRO(float, float, 4);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		REDUCE_MACRO(uint16_t, int64_t, 3);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		REDUCE_MACRO(uint16_t, int64_t, 4);
+		break;
 	}
 
 }

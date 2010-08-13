@@ -34,11 +34,11 @@ class _1080to540Window : public BC_Window
 public:
 	_1080to540Window(_1080to540Main *client, int x, int y);
 	~_1080to540Window();
-	
+
 	int create_objects();
 	int close_event();
 	int set_first_field(int first_field, int send_event);
-	
+
 	_1080to540Main *client;
 	_1080to540Option *odd_first;
 	_1080to540Option *even_first;
@@ -71,9 +71,9 @@ public:
 	void copy_from(_1080to540Config &that);
 	void interpolate(_1080to540Config &prev, 
 		_1080to540Config &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame);
 
 	int first_field;
 };
@@ -86,7 +86,6 @@ public:
 
 
 	PLUGIN_CLASS_MEMBERS(_1080to540Config, _1080to540Thread)
-	
 
 // required for all realtime plugins
 	int process_realtime(VFrame *input, VFrame *output);
@@ -102,6 +101,5 @@ public:
 
 	VFrame *temp;
 };
-
 
 #endif

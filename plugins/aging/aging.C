@@ -114,9 +114,7 @@ void AgingMain::read_data(KeyFrame *keyframe)
 
 int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-//printf("AgingMain::process_realtime 1\n");
 	load_configuration();
-//printf("AgingMain::process_realtime 1\n");
 	this->input_ptr = input_ptr;
 	this->output_ptr = output_ptr;
 
@@ -124,7 +122,6 @@ int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		PluginClient::smp + 1, 
 		PluginClient::smp + 1);
 	aging_server->process_packages();
-//printf("AgingMain::process_realtime 2\n");
 
 	return 0;
 }
@@ -132,7 +129,7 @@ int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 AgingServer::AgingServer(AgingMain *plugin, int total_clients, int total_packages)
- : LoadServer(1, 1 /* total_clients, total_packages */)
+ : LoadServer(1, 1)
 {
 	this->plugin = plugin;
 }
@@ -235,33 +232,33 @@ void AgingClient::coloraging(unsigned char **output_rows,
 {
 	switch(color_model)
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			COLORAGE(uint8_t, 3);
-			break;
-		
-		case BC_RGB_FLOAT:
-			COLORAGE(float, 3);
-			break;
-			
-		case BC_RGBA_FLOAT:
-			COLORAGE(float, 4);
-			break;
-			
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			COLORAGE(uint8_t, 4);
-			break;
-		
-		case BC_RGB161616:
-		case BC_YUV161616:
-			COLORAGE(uint16_t, 3);
-			break;
-		
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			COLORAGE(uint16_t, 4);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		COLORAGE(uint8_t, 3);
+		break;
+
+	case BC_RGB_FLOAT:
+		COLORAGE(float, 3);
+		break;
+
+	case BC_RGBA_FLOAT:
+		COLORAGE(float, 4);
+		break;
+
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		COLORAGE(uint8_t, 4);
+		break;
+
+	case BC_RGB161616:
+	case BC_YUV161616:
+		COLORAGE(uint16_t, 3);
+		break;
+
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		COLORAGE(uint16_t, 4);
+		break;
 	}
 }
 
@@ -374,45 +371,45 @@ void AgingClient::scratching(unsigned char **output_rows,
 {
 	switch(color_model)
 	{
-		case BC_RGB888:
-			SCRATCHES(uint8_t, 3, 0);
-			break;
+	case BC_RGB888:
+		SCRATCHES(uint8_t, 3, 0);
+		break;
 
-		case BC_RGB_FLOAT:
-			SCRATCHES(float, 3, 0);
-			break;
+	case BC_RGB_FLOAT:
+		SCRATCHES(float, 3, 0);
+		break;
 
-		case BC_YUV888:
-			SCRATCHES(uint8_t, 3, 0x80);
-			break;
-		
-		case BC_RGBA_FLOAT:
-			SCRATCHES(float, 4, 0);
-			break;
+	case BC_YUV888:
+		SCRATCHES(uint8_t, 3, 0x80);
+		break;
 
-		case BC_RGBA8888:
-			SCRATCHES(uint8_t, 4, 0);
-			break;
+	case BC_RGBA_FLOAT:
+		SCRATCHES(float, 4, 0);
+		break;
 
-		case BC_YUVA8888:
-			SCRATCHES(uint8_t, 4, 0x80);
-			break;
-		
-		case BC_RGB161616:
-			SCRATCHES(uint16_t, 3, 0);
-			break;
+	case BC_RGBA8888:
+		SCRATCHES(uint8_t, 4, 0);
+		break;
 
-		case BC_YUV161616:
-			SCRATCHES(uint16_t, 3, 0x8000);
-			break;
-		
-		case BC_RGBA16161616:
-			SCRATCHES(uint16_t, 4, 0);
-			break;
+	case BC_YUVA8888:
+		SCRATCHES(uint8_t, 4, 0x80);
+		break;
 
-		case BC_YUVA16161616:
-			SCRATCHES(uint16_t, 4, 0x8000);
-			break;
+	case BC_RGB161616:
+		SCRATCHES(uint16_t, 3, 0);
+		break;
+
+	case BC_YUV161616:
+		SCRATCHES(uint16_t, 3, 0x8000);
+		break;
+
+	case BC_RGBA16161616:
+		SCRATCHES(uint16_t, 4, 0);
+		break;
+
+	case BC_YUVA16161616:
+		SCRATCHES(uint16_t, 4, 0x8000);
+		break;
 	}
 }
 
@@ -481,39 +478,36 @@ void AgingClient::pits(unsigned char **output_rows,
 {
 	switch(color_model)
 	{
-		case BC_RGB888:
-			PITS(uint8_t, 3, 0xc0, 0);
-			break;
-		case BC_RGB_FLOAT:
-			PITS(float, 3, (float)0xc0 / 0xff, 0);
-			break;
-		case BC_YUV888:
-			PITS(uint8_t, 3, 0xc0, 0x80);
-			break;
-		
-		case BC_RGBA_FLOAT:
-			PITS(float, 4, (float)0xc0 / 0xff, 0);
-			break;
-		case BC_RGBA8888:
-			PITS(uint8_t, 4, 0xc0, 0);
-			break;
-		case BC_YUVA8888:
-			PITS(uint8_t, 4, 0xc0, 0x80);
-			break;
-		
-		case BC_RGB161616:
-			PITS(uint16_t, 3, 0xc000, 0);
-			break;
-		case BC_YUV161616:
-			PITS(uint16_t, 3, 0xc000, 0x8000);
-			break;
-		
-		case BC_RGBA16161616:
-			PITS(uint16_t, 4, 0xc000, 0);
-			break;
-		case BC_YUVA16161616:
-			PITS(uint16_t, 4, 0xc000, 0x8000);
-			break;
+	case BC_RGB888:
+		PITS(uint8_t, 3, 0xc0, 0);
+		break;
+	case BC_RGB_FLOAT:
+		PITS(float, 3, (float)0xc0 / 0xff, 0);
+		break;
+	case BC_YUV888:
+		PITS(uint8_t, 3, 0xc0, 0x80);
+		break;
+	case BC_RGBA_FLOAT:
+		PITS(float, 4, (float)0xc0 / 0xff, 0);
+		break;
+	case BC_RGBA8888:
+		PITS(uint8_t, 4, 0xc0, 0);
+		break;
+	case BC_YUVA8888:
+		PITS(uint8_t, 4, 0xc0, 0x80);
+		break;
+	case BC_RGB161616:
+		PITS(uint16_t, 3, 0xc000, 0);
+		break;
+	case BC_YUV161616:
+		PITS(uint16_t, 3, 0xc000, 0x8000);
+		break;
+	case BC_RGBA16161616:
+		PITS(uint16_t, 4, 0xc000, 0);
+		break;
+	case BC_YUVA16161616:
+		PITS(uint16_t, 4, 0xc000, 0x8000);
+		break;
 	}
 }
 
@@ -581,45 +575,45 @@ void AgingClient::dusts(unsigned char **output_rows,
 {
 	switch(color_model)
 	{
-		case BC_RGB888:
-			DUSTS(uint8_t, 3, 0x10, 0);
-			break;
+	case BC_RGB888:
+		DUSTS(uint8_t, 3, 0x10, 0);
+		break;
 
-		case BC_RGB_FLOAT:
-			DUSTS(float, 3, (float)0x10 / 0xff, 0);
-			break;
+	case BC_RGB_FLOAT:
+		DUSTS(float, 3, (float)0x10 / 0xff, 0);
+		break;
 
-		case BC_YUV888:
-			DUSTS(uint8_t, 3, 0x10, 0x80);
-			break;
-		
-		case BC_RGBA_FLOAT:
-			DUSTS(float, 4, (float)0x10 / 0xff, 0);
-			break;
+	case BC_YUV888:
+		DUSTS(uint8_t, 3, 0x10, 0x80);
+		break;
 
-		case BC_RGBA8888:
-			DUSTS(uint8_t, 4, 0x10, 0);
-			break;
+	case BC_RGBA_FLOAT:
+		DUSTS(float, 4, (float)0x10 / 0xff, 0);
+		break;
 
-		case BC_YUVA8888:
-			DUSTS(uint8_t, 4, 0x10, 0x80);
-			break;
-		
-		case BC_RGB161616:
-			DUSTS(uint16_t, 3, 0x1000, 0);
-			break;
+	case BC_RGBA8888:
+		DUSTS(uint8_t, 4, 0x10, 0);
+		break;
 
-		case BC_YUV161616:
-			DUSTS(uint16_t, 3, 0x1000, 0x8000);
-			break;
-		
-		case BC_RGBA16161616:
-			DUSTS(uint16_t, 4, 0x1000, 0);
-			break;
+	case BC_YUVA8888:
+		DUSTS(uint8_t, 4, 0x10, 0x80);
+		break;
 
-		case BC_YUVA16161616:
-			DUSTS(uint16_t, 4, 0x1000, 0x8000);
-			break;
+	case BC_RGB161616:
+		DUSTS(uint16_t, 3, 0x1000, 0);
+		break;
+
+	case BC_YUV161616:
+		DUSTS(uint16_t, 3, 0x1000, 0x8000);
+		break;
+
+	case BC_RGBA16161616:
+		DUSTS(uint16_t, 4, 0x1000, 0);
+		break;
+
+	case BC_YUVA16161616:
+		DUSTS(uint16_t, 4, 0x1000, 0x8000);
+		break;
 	}
 }
 
@@ -627,37 +621,34 @@ void AgingClient::dusts(unsigned char **output_rows,
 
 void AgingClient::process_package(LoadPackage *package)
 {
-//printf("AgingClient::process_package 1\n");
 	AgingPackage *local_package = (AgingPackage*)package;
 	unsigned char **input_rows = plugin->input_ptr->get_rows() + local_package->row1;
 	unsigned char **output_rows = plugin->output_ptr->get_rows() + local_package->row1;
 
-//printf("AgingClient::process_package 1\n");
 	if(plugin->config.colorage)
 		coloraging(output_rows, 
 			input_rows, 
 			plugin->input_ptr->get_color_model(), 
 			plugin->input_ptr->get_w(), 
 			local_package->row2 - local_package->row1);
-//printf("AgingClient::process_package 2\n");
+
 	if(plugin->config.scratch)
 		scratching(output_rows, 
 			plugin->input_ptr->get_color_model(), 
 			plugin->input_ptr->get_w(), 
 			local_package->row2 - local_package->row1);
-//printf("AgingClient::process_package 3\n");
+
 	if(plugin->config.pits)
 		pits(output_rows, 
 			plugin->input_ptr->get_color_model(), 
 			plugin->input_ptr->get_w(), 
 			local_package->row2 - local_package->row1);
-//printf("AgingClient::process_package 4 %d\n", plugin->config.dust);
+
 	if(plugin->config.dust)
 		dusts(output_rows, 
 			plugin->input_ptr->get_color_model(), 
 			plugin->input_ptr->get_w(), 
 			local_package->row2 - local_package->row1);
-//printf("AgingClient::process_package 5\n");
 }
 
 
@@ -665,6 +656,3 @@ void AgingClient::process_package(LoadPackage *package)
 AgingPackage::AgingPackage()
 {
 }
-
-
-

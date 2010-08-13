@@ -27,24 +27,19 @@
 
 class _720to480Main;
 class _720to480Order;
-class _720to480Direction;
 
 class _720to480Window : public BC_Window
 {
 public:
 	_720to480Window(_720to480Main *client, int x, int y);
 	~_720to480Window();
-	
+
 	int create_objects();
 	int close_event();
 	int set_first_field(int first_field);
-	int set_direction(int direction);
-
 	_720to480Main *client;
 	_720to480Order *odd_first;
 	_720to480Order *even_first;
-	_720to480Direction *forward;
-	_720to480Direction *reverse;
 };
 
 
@@ -64,29 +59,12 @@ public:
 	int output;
 };
 
-class _720to480Direction : public BC_Radial
-{
-public:
-	_720to480Direction(_720to480Main *client, 
-		_720to480Window *window, 
-		int output, 
-		int x, 
-		int y, 
-		char *text);
-	int handle_event();
-
-	_720to480Main *client;
-	_720to480Window *window;
-	int output;
-};
-
 class _720to480Config
 {
 public:
 	_720to480Config();
 
 	int first_field;
-	int direction;
 };
 
 class _720to480Main : public PluginVClient
@@ -94,9 +72,6 @@ class _720to480Main : public PluginVClient
 public:
 	_720to480Main(PluginServer *server);
 	~_720to480Main();
-
-
-	
 
 // required for all non realtime plugins
 	const char* plugin_title();
@@ -121,6 +96,5 @@ public:
 	VFrame *temp;
 	int input_position;
 };
-
 
 #endif
