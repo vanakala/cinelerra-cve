@@ -82,7 +82,7 @@ public:
 	Decimate *plugin;
 	DecimateWindow *gui;
 };
-
+/* Pole
 class DecimateDifference : public BC_CheckBox
 {
 public:
@@ -102,7 +102,7 @@ public:
 	int handle_event();
 	Decimate *plugin;
 };
-
+	*/
 
 class DecimateWindow : public BC_Window
 {
@@ -118,8 +118,6 @@ public:
 	DecimateRate *rate;
 	DecimateRateMenu *rate_menu;
 	BC_Title *last_dropped;
-//	DecimateDifference *difference;
-//	DecimateAvgDifference *avg_difference;
 };
 
 
@@ -134,7 +132,7 @@ public:
 	~Decimate();
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	const char* plugin_title();
@@ -152,7 +150,7 @@ public:
 
 	int64_t calculate_difference(VFrame *frame1, VFrame *frame2);
 	void fill_lookahead(double frame_rate,
-		int64_t start_position);
+		framenum start_position);
 	void decimate_frame();
 	void init_fdct();
 	void fdct(uint16_t *block);
@@ -171,26 +169,16 @@ public:
 // Number of frames in the lookahead buffer
 	int lookahead_size;
 // Next position beyond end of lookahead buffer relative to input rate
-	int64_t lookahead_end;
+	framenum lookahead_end;
 // Framerate of lookahead buffer
 	double lookahead_rate;
 // Last requested position
-	int64_t last_position;
+	framenum last_position;
 
 	DecimateThread *thread;
 	DecimateConfig config;
 	BC_Hash *defaults;
 };
-
-
-
-
-
-
-
-
-
-
 
 
 DecimateConfig::DecimateConfig()
@@ -213,16 +201,9 @@ int DecimateConfig::equivalent(DecimateConfig *config)
 }
 
 
-
-
-
-
-
-
-
 DecimateWindow::DecimateWindow(Decimate *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	210, 
 	160, 
@@ -244,6 +225,7 @@ void DecimateWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	frame_rates.append(new BC_ListBoxItem("1"));
 	frame_rates.append(new BC_ListBoxItem("5"));
 	frame_rates.append(new BC_ListBoxItem("10"));
@@ -273,29 +255,11 @@ void DecimateWindow::create_objects()
 	add_subwindow(title = new BC_Title(x, y, _("Last frame dropped: ")));
 	add_subwindow(last_dropped = new BC_Title(x + title->get_w() + 5, y, ""));
 
-// 	y += 30;
-// 	add_subwindow(difference = new DecimateDifference(plugin,
-// 		x, 
-// 		y));
-// 	y += 30;
-// 	add_subwindow(avg_difference = new DecimateAvgDifference(plugin,
-// 		x, 
-// 		y));
 	show_window();
 	flush();
 }
 
 WINDOW_CLOSE_EVENT(DecimateWindow)
-
-
-
-
-
-
-
-
-
-
 
 
 DecimateRate::DecimateRate(Decimate *plugin, 
@@ -320,48 +284,12 @@ int DecimateRate::handle_event()
 }
 
 
-
-// DecimateDifference::DecimateDifference(Decimate *plugin,
-// 	int x, 
-// 	int y)
-//  : BC_CheckBox(x, y, plugin->config.least_difference, "Drop least difference")
-// {
-// 	this->plugin = plugin;
-// }
-// int DecimateDifference::handle_event()
-// {
-// 	plugin->config.least_difference = get_value();
-// 	plugin->send_configure_change();
-// 	return 1;
-// }
-// 
-// 
-// 
-// 
-// DecimateAvgDifference::DecimateAvgDifference(Decimate *plugin,
-// 	int x, 
-// 	int y)
-//  : BC_CheckBox(x, y, plugin->config.averaged_frames, "Drop averaged frames")
-// {
-// 	this->plugin = plugin;
-// }
-// 
-// int DecimateAvgDifference::handle_event()
-// {
-// 	plugin->config.averaged_frames = get_value();
-// 	plugin->send_configure_change();
-// 	return 1;
-// }
-// 
-
-
-
 DecimateRateMenu::DecimateRateMenu(Decimate *plugin, 
 	DecimateWindow *gui, 
 	int x, 
 	int y)
  : BC_ListBox(x,
- 	y,
+	y,
 	100,
 	200,
 	LISTBOX_TEXT,
@@ -386,31 +314,8 @@ int DecimateRateMenu::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(Decimate, DecimateThread, DecimateWindow)
-
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(Decimate)
-
-
-
-
 
 
 Decimate::Decimate(PluginServer *server)
@@ -464,44 +369,44 @@ int64_t Decimate::calculate_difference(VFrame *frame1, VFrame *frame2)
 	int64_t result = 0;
 	switch(frame1->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			DIFFERENCE_MACRO(unsigned char, int64_t, 3);
-			break;
-		case BC_RGB_FLOAT:
-			DIFFERENCE_MACRO(float, double, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			DIFFERENCE_MACRO(unsigned char, int64_t, 4);
-			break;
-		case BC_RGBA_FLOAT:
-			DIFFERENCE_MACRO(float, double, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			DIFFERENCE_MACRO(uint16_t, int64_t, 3);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			DIFFERENCE_MACRO(uint16_t, int64_t, 4);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		DIFFERENCE_MACRO(unsigned char, int64_t, 3);
+		break;
+	case BC_RGB_FLOAT:
+		DIFFERENCE_MACRO(float, double, 3);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		DIFFERENCE_MACRO(unsigned char, int64_t, 4);
+		break;
+	case BC_RGBA_FLOAT:
+		DIFFERENCE_MACRO(float, double, 4);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		DIFFERENCE_MACRO(uint16_t, int64_t, 3);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		DIFFERENCE_MACRO(uint16_t, int64_t, 4);
+		break;
 	}
 	return result;
 }
 
 void Decimate::init_fdct()
 {
-  int i, j;
-  double s;
+	int i, j;
+	double s;
 
-  for (i=0; i<8; i++)
-  {
-    s = (i==0) ? sqrt(0.125) : 0.5;
+	for (i=0; i<8; i++)
+	{
+		s = (i==0) ? sqrt(0.125) : 0.5;
 
-    for (j=0; j<8; j++)
-      c[i][j] = s * cos((M_PI/8.0)*i*(j+0.5));
-  }
+		for (j=0; j<8; j++)
+			c[i][j] = s * cos((M_PI/8.0)*i*(j+0.5));
+	}
 }
 
 void Decimate::fdct(uint16_t *block)
@@ -511,45 +416,37 @@ void Decimate::fdct(uint16_t *block)
 	double tmp[64];
 
 	for(i = 0; i < 8; i++)
-    	for(j = 0; j < 8; j++)
-    	{
-    		s = 0.0;
+		for(j = 0; j < 8; j++)
+		{
+			s = 0.0;
 
-/*
- *     		for(k = 0; k < 8; k++)
- *         		s += c[j][k] * block[8 * i + k];
- */
-        	s += c[j][0] * block[8 * i + 0];
-        	s += c[j][1] * block[8 * i + 1];
-        	s += c[j][2] * block[8 * i + 2];
-        	s += c[j][3] * block[8 * i + 3];
-        	s += c[j][4] * block[8 * i + 4];
-        	s += c[j][5] * block[8 * i + 5];
-        	s += c[j][6] * block[8 * i + 6];
-        	s += c[j][7] * block[8 * i + 7];
+			s += c[j][0] * block[8 * i + 0];
+			s += c[j][1] * block[8 * i + 1];
+			s += c[j][2] * block[8 * i + 2];
+			s += c[j][3] * block[8 * i + 3];
+			s += c[j][4] * block[8 * i + 4];
+			s += c[j][5] * block[8 * i + 5];
+			s += c[j][6] * block[8 * i + 6];
+			s += c[j][7] * block[8 * i + 7];
 
-    		tmp[8 * i + j] = s;
-    	}
+			tmp[8 * i + j] = s;
+		}
 
 	for(j = 0; j < 8; j++)
-    	for(i = 0; i < 8; i++)
-    	{
-    		s = 0.0;
+		for(i = 0; i < 8; i++)
+		{
+			s = 0.0;
 
-/*
- *     	  	for(k = 0; k < 8; k++)
- *        	    s += c[i][k] * tmp[8 * k + j];
- */
-        	s += c[i][0] * tmp[8 * 0 + j];
-        	s += c[i][1] * tmp[8 * 1 + j];
-        	s += c[i][2] * tmp[8 * 2 + j];
-        	s += c[i][3] * tmp[8 * 3 + j];
-        	s += c[i][4] * tmp[8 * 4 + j];
-        	s += c[i][5] * tmp[8 * 5 + j];
-        	s += c[i][6] * tmp[8 * 6 + j];
-        	s += c[i][7] * tmp[8 * 7 + j];
+			s += c[i][0] * tmp[8 * 0 + j];
+			s += c[i][1] * tmp[8 * 1 + j];
+			s += c[i][2] * tmp[8 * 2 + j];
+			s += c[i][3] * tmp[8 * 3 + j];
+			s += c[i][4] * tmp[8 * 4 + j];
+			s += c[i][5] * tmp[8 * 5 + j];
+			s += c[i][6] * tmp[8 * 6 + j];
+			s += c[i][7] * tmp[8 * 7 + j];
 
-    		block[8 * i + j] = (int)floor(s + 0.499999);
+			block[8 * i + j] = (int)floor(s + 0.499999);
 /*
  * reason for adding 0.499999 instead of 0.5:
  * s is quite often x.5 (at least for i and/or j = 0 or 4)
@@ -559,7 +456,7 @@ void Decimate::fdct(uint16_t *block)
  * downwards instead of upwards) is assumed to occur less often
  * (if at all)
  */
-      }
+		}
 }
 
 
@@ -659,7 +556,7 @@ void Decimate::decimate_frame()
 }
 
 void Decimate::fill_lookahead(double frame_rate,
-	int64_t start_position)
+	framenum start_position)
 {
 // Lookahead rate changed
 	if(!EQUIV(config.input_rate, lookahead_rate))
@@ -680,7 +577,7 @@ void Decimate::fill_lookahead(double frame_rate,
 // Normalize requested position to input rate
 	if(!lookahead_size)
 	{
-		lookahead_end = (int64_t)((double)start_position * 
+		lookahead_end = (framenum)((double)start_position * 
 			config.input_rate / 
 			frame_rate);
 	}
@@ -704,7 +601,7 @@ void Decimate::fill_lookahead(double frame_rate,
 
 // Decimate one if last frame in buffer and lookahead_end is behind predicted
 // end.
-		int64_t decimated_end = (int64_t)((double)(start_position + TOTAL_FRAMES) *
+		framenum decimated_end = (framenum)((double)(start_position + TOTAL_FRAMES) *
 			config.input_rate / 
 			frame_rate);
 		if(lookahead_size >= TOTAL_FRAMES &&
@@ -717,11 +614,9 @@ void Decimate::fill_lookahead(double frame_rate,
 
 
 int Decimate::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
-
-//printf("Decimate::process_buffer 1 %lld %f\n", start_position, frame_rate);
 	load_configuration();
 
 	if(!frames[0])
@@ -736,15 +631,8 @@ int Decimate::process_buffer(VFrame *frame,
 		}
 	}
 
-
 // Fill lookahead buffer at input rate with decimation
 	fill_lookahead(frame_rate, start_position);
-
-// printf("Decimate::process_buffer");
-// for(int i = 0; i < TOTAL_FRAMES; i++)
-// printf(" %lld", differences[i]);
-// printf("\n");
-
 
 // Pull first frame off lookahead
 	frame->copy_from(frames[0]);
@@ -793,8 +681,6 @@ int Decimate::load_defaults()
 	defaults->load();
 
 	config.input_rate = defaults->get("INPUT_RATE", config.input_rate);
-//	config.averaged_frames = defaults->get("AVERAGED_FRAMES", config.averaged_frames);
-//	config.least_difference = defaults->get("LEAST_DIFFERENCE", config.least_difference);
 	config.input_rate = Units::fix_framerate(config.input_rate);
 	return 0;
 }
@@ -802,8 +688,6 @@ int Decimate::load_defaults()
 int Decimate::save_defaults()
 {
 	defaults->update("INPUT_RATE", config.input_rate);
-//	defaults->update("AVERAGED_FRAMES", config.averaged_frames);
-//	defaults->update("LEAST_DIFFERENCE", config.least_difference);
 	defaults->save();
 	return 0;
 }
@@ -816,8 +700,6 @@ void Decimate::save_data(KeyFrame *keyframe)
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("DECIMATE");
 	output.tag.set_property("INPUT_RATE", config.input_rate);
-//	output.tag.set_property("AVERAGED_FRAMES", config.averaged_frames);
-//	output.tag.set_property("LEAST_DIFFERENCE", config.least_difference);
 	output.append_tag();
 	output.tag.set_title("/DECIMATE");
 	output.append_tag();
@@ -837,8 +719,6 @@ void Decimate::read_data(KeyFrame *keyframe)
 		if(input.tag.title_is("DECIMATE"))
 		{
 			config.input_rate = input.tag.get_property("INPUT_RATE", config.input_rate);
-//			config.averaged_frames = input.tag.get_property("AVERAGED_FRAMES", config.averaged_frames);
-//			config.least_difference = input.tag.get_property("LEAST_DIFFERENCE", config.least_difference);
 			config.input_rate = Units::fix_framerate(config.input_rate);
 		}
 	}
@@ -850,11 +730,7 @@ void Decimate::update_gui()
 	{
 		if(load_configuration())
 		{
-			thread->window->lock_window("Decimate::update_gui");
 			thread->window->rate->update((float)config.input_rate);
-//  		thread->window->difference->update(config.least_difference);
-//  		thread->window->avg_difference->update(config.averaged_frames);
-			thread->window->unlock_window();
 		}
 	}
 }
@@ -863,17 +739,10 @@ void Decimate::render_gui(void *data)
 {
 	if(thread)
 	{
-		thread->window->lock_window("Decimate::render_gui");
-
 		int dropped = *(int*)data;
 		char string[BCTEXTLEN];
 
 		sprintf(string, "%d", dropped);
 		thread->window->last_dropped->update(string);
-
-		thread->window->unlock_window();
 	}
 }
-
-
-

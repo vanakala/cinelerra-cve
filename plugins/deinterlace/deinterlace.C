@@ -30,20 +30,11 @@
 #include "vframe.h"
 
 
-
-
-
-
-
-
-
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
 
 REGISTER_PLUGIN(DeInterlaceMain)
-
-
 
 
 DeInterlaceConfig::DeInterlaceConfig()
@@ -70,30 +61,26 @@ void DeInterlaceConfig::copy_from(DeInterlaceConfig &that)
 	threshold = that.threshold;
 }
 
-void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev, 
-	DeInterlaceConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev,
+	DeInterlaceConfig &next,
+	samplenum prev_frame,
+	samplenum next_frame,
+	samplenum current_frame)
 {
 	copy_from(prev);
 }
-
-
 
 
 DeInterlaceMain::DeInterlaceMain(PluginServer *server)
  : PluginVClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
-//	temp = 0;
 	temp_prevframe=0;
 }
 
 DeInterlaceMain::~DeInterlaceMain()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-//	if(temp) delete temp;
 	if(temp_prevframe) delete temp_prevframe;
 }
 
@@ -123,7 +110,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
 	int h = input->get_h(); \
 	changed_rows = 0; \
  \
- 	type **in_rows = (type**)input->get_rows(); \
+	type **in_rows = (type**)input->get_rows(); \
 	type **out_rows = (type**)temp->get_rows(); \
 	int max_h = h - 1; \
 	temp_type abs_diff = 0, total = 0; \
@@ -160,17 +147,17 @@ int DeInterlaceMain::is_realtime() { return 1; }
 			accum_b /= 2; \
 			accum_a /= 2; \
  \
- 			total += *input_row3; \
+			total += *input_row3; \
 			sum = ((temp_type)*input_row3++) - accum_r; \
 			abs_diff += (sum < 0 ? -sum : sum); \
 			*temp_row2++ = accum_r; \
  \
- 			total += *input_row3; \
+			total += *input_row3; \
 			sum = ((temp_type)*input_row3++) - accum_g; \
 			abs_diff += (sum < 0 ? -sum : sum); \
 			*temp_row2++ = accum_g; \
  \
- 			total += *input_row3; \
+			total += *input_row3; \
 			sum = ((temp_type)*input_row3++) - accum_b; \
 			abs_diff += (sum < 0 ? -sum : sum); \
 			*temp_row2++ = accum_b; \
@@ -186,8 +173,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
 	} \
  \
 	temp_type threshold = (temp_type)total * config.threshold / THRESHOLD_SCALAR; \
-/* printf("total=%lld threshold=%lld abs_diff=%lld\n", total, threshold, abs_diff); */ \
- 	if(abs_diff > threshold || !config.adaptive) \
+	if(abs_diff > threshold || !config.adaptive) \
 	{ \
 		output->copy_from(temp); \
 		changed_rows = 240; \
@@ -341,28 +327,28 @@ void DeInterlaceMain::deinterlace_top(VFrame *input, VFrame *output, int dominan
 {
 	switch(input->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			DEINTERLACE_TOP_MACRO(unsigned char, 3, dominance);
-			break;
-		case BC_RGB_FLOAT:
-			DEINTERLACE_TOP_MACRO(float, 3, dominance);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			DEINTERLACE_TOP_MACRO(unsigned char, 4, dominance);
-			break;
-		case BC_RGBA_FLOAT:
-			DEINTERLACE_TOP_MACRO(float, 4, dominance);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			DEINTERLACE_TOP_MACRO(uint16_t, 3, dominance);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			DEINTERLACE_TOP_MACRO(uint16_t, 4, dominance);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		DEINTERLACE_TOP_MACRO(unsigned char, 3, dominance);
+		break;
+	case BC_RGB_FLOAT:
+		DEINTERLACE_TOP_MACRO(float, 3, dominance);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		DEINTERLACE_TOP_MACRO(unsigned char, 4, dominance);
+		break;
+	case BC_RGBA_FLOAT:
+		DEINTERLACE_TOP_MACRO(float, 4, dominance);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		DEINTERLACE_TOP_MACRO(uint16_t, 3, dominance);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		DEINTERLACE_TOP_MACRO(uint16_t, 4, dominance);
+		break;
 	}
 }
 
@@ -370,28 +356,28 @@ void DeInterlaceMain::deinterlace_avg_top(VFrame *input, VFrame *output, int dom
 {
 	switch(input->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			DEINTERLACE_AVG_TOP_MACRO(unsigned char, int64_t, 3, dominance);
-			break;
-		case BC_RGB_FLOAT:
-			DEINTERLACE_AVG_TOP_MACRO(float, double, 3, dominance);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			DEINTERLACE_AVG_TOP_MACRO(unsigned char, int64_t, 4, dominance);
-			break;
-		case BC_RGBA_FLOAT:
-			DEINTERLACE_AVG_TOP_MACRO(float, double, 4, dominance);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			DEINTERLACE_AVG_TOP_MACRO(uint16_t, int64_t, 3, dominance);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			DEINTERLACE_AVG_TOP_MACRO(uint16_t, int64_t, 4, dominance);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		DEINTERLACE_AVG_TOP_MACRO(unsigned char, int64_t, 3, dominance);
+		break;
+	case BC_RGB_FLOAT:
+		DEINTERLACE_AVG_TOP_MACRO(float, double, 3, dominance);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		DEINTERLACE_AVG_TOP_MACRO(unsigned char, int64_t, 4, dominance);
+		break;
+	case BC_RGBA_FLOAT:
+		DEINTERLACE_AVG_TOP_MACRO(float, double, 4, dominance);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		DEINTERLACE_AVG_TOP_MACRO(uint16_t, int64_t, 3, dominance);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		DEINTERLACE_AVG_TOP_MACRO(uint16_t, int64_t, 4, dominance);
+		break;
 	}
 }
 
@@ -399,28 +385,28 @@ void DeInterlaceMain::deinterlace_avg(VFrame *input, VFrame *output)
 {
 	switch(input->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			DEINTERLACE_AVG_MACRO(unsigned char, uint64_t, 3);
-			break;
-		case BC_RGB_FLOAT:
-			DEINTERLACE_AVG_MACRO(float, double, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			DEINTERLACE_AVG_MACRO(unsigned char, uint64_t, 4);
-			break;
-		case BC_RGBA_FLOAT:
-			DEINTERLACE_AVG_MACRO(float, double, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			DEINTERLACE_AVG_MACRO(uint16_t, uint64_t, 3);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			DEINTERLACE_AVG_MACRO(uint16_t, uint64_t, 4);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		DEINTERLACE_AVG_MACRO(unsigned char, uint64_t, 3);
+		break;
+	case BC_RGB_FLOAT:
+		DEINTERLACE_AVG_MACRO(float, double, 3);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		DEINTERLACE_AVG_MACRO(unsigned char, uint64_t, 4);
+		break;
+	case BC_RGBA_FLOAT:
+		DEINTERLACE_AVG_MACRO(float, double, 4);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		DEINTERLACE_AVG_MACRO(uint16_t, uint64_t, 3);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		DEINTERLACE_AVG_MACRO(uint16_t, uint64_t, 4);
+		break;
 	}
 }
 
@@ -428,28 +414,28 @@ void DeInterlaceMain::deinterlace_swap(VFrame *input, VFrame *output, int domina
 {
 	switch(input->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			DEINTERLACE_SWAP_MACRO(unsigned char, 3, dominance);
-			break;
-		case BC_RGB_FLOAT:
-			DEINTERLACE_SWAP_MACRO(float, 3, dominance);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			DEINTERLACE_SWAP_MACRO(unsigned char, 4, dominance);
-			break;
-		case BC_RGBA_FLOAT:
-			DEINTERLACE_SWAP_MACRO(float, 4, dominance);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			DEINTERLACE_SWAP_MACRO(uint16_t, 3, dominance);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			DEINTERLACE_SWAP_MACRO(uint16_t, 4, dominance);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		DEINTERLACE_SWAP_MACRO(unsigned char, 3, dominance);
+		break;
+	case BC_RGB_FLOAT:
+		DEINTERLACE_SWAP_MACRO(float, 3, dominance);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		DEINTERLACE_SWAP_MACRO(unsigned char, 4, dominance);
+		break;
+	case BC_RGBA_FLOAT:
+		DEINTERLACE_SWAP_MACRO(float, 4, dominance);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		DEINTERLACE_SWAP_MACRO(uint16_t, 3, dominance);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		DEINTERLACE_SWAP_MACRO(uint16_t, 4, dominance);
+		break;
 	}
 }
 
@@ -457,28 +443,28 @@ void DeInterlaceMain::deinterlace_temporalswap(VFrame *input, VFrame *prevframe,
 {
 	switch(input->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			DEINTERLACE_TEMPORALSWAP_MACRO(unsigned char, 3, dominance);
-			break;
-		case BC_RGB_FLOAT:
-			DEINTERLACE_TEMPORALSWAP_MACRO(float, 3, dominance);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			DEINTERLACE_TEMPORALSWAP_MACRO(unsigned char, 4, dominance);
-			break;
-		case BC_RGBA_FLOAT:
-			DEINTERLACE_TEMPORALSWAP_MACRO(float, 4, dominance);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			DEINTERLACE_TEMPORALSWAP_MACRO(uint16_t, 3, dominance);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			DEINTERLACE_TEMPORALSWAP_MACRO(uint16_t, 4, dominance);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		DEINTERLACE_TEMPORALSWAP_MACRO(unsigned char, 3, dominance);
+		break;
+	case BC_RGB_FLOAT:
+		DEINTERLACE_TEMPORALSWAP_MACRO(float, 3, dominance);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		DEINTERLACE_TEMPORALSWAP_MACRO(unsigned char, 4, dominance);
+		break;
+	case BC_RGBA_FLOAT:
+		DEINTERLACE_TEMPORALSWAP_MACRO(float, 4, dominance);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		DEINTERLACE_TEMPORALSWAP_MACRO(uint16_t, 3, dominance);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		DEINTERLACE_TEMPORALSWAP_MACRO(uint16_t, 4, dominance);
+		break;
 	}
 }
 
@@ -489,34 +475,34 @@ void DeInterlaceMain::deinterlace_bobweave(VFrame *input, VFrame *prevframe, VFr
 
 	switch(input->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			DEINTERLACE_BOBWEAVE_MACRO(unsigned char, uint64_t, 3, dominance, threshold, noise_threshold);
-			break;
-		case BC_RGB_FLOAT:
-			DEINTERLACE_BOBWEAVE_MACRO(float, double, 3, dominance, threshold, noise_threshold);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			DEINTERLACE_BOBWEAVE_MACRO(unsigned char, uint64_t, 4, dominance, threshold, noise_threshold);
-			break;
-		case BC_RGBA_FLOAT:
-			DEINTERLACE_BOBWEAVE_MACRO(float, double, 4, dominance, threshold, noise_threshold);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			DEINTERLACE_BOBWEAVE_MACRO(uint16_t, uint64_t, 3, dominance, threshold, noise_threshold);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			DEINTERLACE_BOBWEAVE_MACRO(uint16_t, uint64_t, 4, dominance, threshold, noise_threshold);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		DEINTERLACE_BOBWEAVE_MACRO(unsigned char, uint64_t, 3, dominance, threshold, noise_threshold);
+		break;
+	case BC_RGB_FLOAT:
+		DEINTERLACE_BOBWEAVE_MACRO(float, double, 3, dominance, threshold, noise_threshold);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		DEINTERLACE_BOBWEAVE_MACRO(unsigned char, uint64_t, 4, dominance, threshold, noise_threshold);
+		break;
+	case BC_RGBA_FLOAT:
+		DEINTERLACE_BOBWEAVE_MACRO(float, double, 4, dominance, threshold, noise_threshold);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		DEINTERLACE_BOBWEAVE_MACRO(uint16_t, uint64_t, 3, dominance, threshold, noise_threshold);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		DEINTERLACE_BOBWEAVE_MACRO(uint16_t, uint64_t, 4, dominance, threshold, noise_threshold);
+		break;
 	}
 }
 
 
 int DeInterlaceMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	changed_rows = frame->get_h();
@@ -532,11 +518,6 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 // an entire frame to decide if the deinterlaced output should be used.
 	temp = frame;
 
-// 	if(!temp)
-// 		temp = new VFrame(0,
-// 			frame->get_w(),
-// 			frame->get_h(),
-// 			frame->get_color_model());
 	if(!temp_prevframe)
 		temp_prevframe = new VFrame(0,
 			frame->get_w(),
@@ -545,35 +526,34 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 
 	switch(config.mode)
 	{
-		case DEINTERLACE_NONE:
-//			output->copy_from(input);
-			break;
-		case DEINTERLACE_KEEP:
-			deinterlace_top(frame, frame, config.dominance);
-			break;
-		case DEINTERLACE_AVG:
-			deinterlace_avg(frame, frame);
-			break;
-		case DEINTERLACE_AVG_1F:
-			deinterlace_avg_top(frame, frame, config.dominance);
-			break;
-		case DEINTERLACE_SWAP:
-			deinterlace_swap(frame, frame, config.dominance);
-			break;
-		case DEINTERLACE_BOBWEAVE:
-			if (get_source_position()==0)
-				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
-			else 
-				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
-			deinterlace_bobweave(frame, temp_prevframe, frame, config.dominance);
-			break;
-		case DEINTERLACE_TEMPORALSWAP:
-			if (get_source_position()==0)
-				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
-			else 
-				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
-			deinterlace_temporalswap(frame, temp_prevframe, frame, config.dominance);
-			break; 
+	case DEINTERLACE_NONE:
+		break;
+	case DEINTERLACE_KEEP:
+		deinterlace_top(frame, frame, config.dominance);
+		break;
+	case DEINTERLACE_AVG:
+		deinterlace_avg(frame, frame);
+		break;
+	case DEINTERLACE_AVG_1F:
+		deinterlace_avg_top(frame, frame, config.dominance);
+		break;
+	case DEINTERLACE_SWAP:
+		deinterlace_swap(frame, frame, config.dominance);
+		break;
+	case DEINTERLACE_BOBWEAVE:
+		if (get_source_position()==0)
+			read_frame(temp_prevframe,0, get_source_position(), get_framerate());
+		else
+			read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
+		deinterlace_bobweave(frame, temp_prevframe, frame, config.dominance);
+		break;
+	case DEINTERLACE_TEMPORALSWAP:
+		if (get_source_position()==0)
+			read_frame(temp_prevframe,0, get_source_position(), get_framerate());
+		else
+			read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
+		deinterlace_temporalswap(frame, temp_prevframe, frame, config.dominance);
+		break;
 	}
 	send_render_gui(&changed_rows);
 	return 0;
@@ -604,7 +584,7 @@ int DeInterlaceMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sdeinterlace.rc", BCASTDIR);
-	
+
 	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.mode = defaults->get("MODE", config.mode);
@@ -676,4 +656,3 @@ void DeInterlaceMain::update_gui()
 		thread->window->unlock_window();
 	}
 }
-

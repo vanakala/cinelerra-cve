@@ -54,8 +54,8 @@ public:
 	ColorBalanceSlider *cyan;
 	ColorBalanceSlider *magenta;
 	ColorBalanceSlider *yellow;
-    ColorBalanceLock *lock_params;
-    ColorBalancePreserve *preserve;
+	ColorBalanceLock *lock_params;
+	ColorBalancePreserve *preserve;
 	ColorBalanceWhite *use_eyedrop;
 	ColorBalanceReset *reset;
 };
@@ -70,7 +70,7 @@ public:
 
 	ColorBalanceMain *client;
 	float *output;
-    float old_value;
+	float old_value;
 	char string[BCTEXTLEN];
 };
 
@@ -78,20 +78,20 @@ class ColorBalancePreserve : public BC_CheckBox
 {
 public:
 	ColorBalancePreserve(ColorBalanceMain *client, int x, int y);
-    ~ColorBalancePreserve();
-    
-    int handle_event();
-    ColorBalanceMain *client;
+	~ColorBalancePreserve();
+
+	int handle_event();
+	ColorBalanceMain *client;
 };
 
 class ColorBalanceLock : public BC_CheckBox
 {
 public:
 	ColorBalanceLock(ColorBalanceMain *client, int x, int y);
-    ~ColorBalanceLock();
-    
-    int handle_event();
-    ColorBalanceMain *client;
+	~ColorBalanceLock();
+
+	int handle_event();
+	ColorBalanceMain *client;
 };
 
 class ColorBalanceWhite : public BC_GenericButton

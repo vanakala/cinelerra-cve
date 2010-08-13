@@ -44,16 +44,16 @@ public:
 	void copy_from(ColorBalanceConfig &that);
 	void interpolate(ColorBalanceConfig &prev, 
 		ColorBalanceConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 // -1000 - 1000
 	float cyan;
 	float magenta;
-    float yellow;
-    int preserve;
-    int lock_params;
+	float yellow;
+	int preserve;
+	int lock_params;
 };
 
 class ColorBalanceEngine : public Thread
@@ -83,7 +83,7 @@ public:
 
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	const char* plugin_title();
@@ -108,8 +108,8 @@ public:
 
 // parameters needed for processor
 	int reconfigure();
-    int synchronize_params(ColorBalanceSlider *slider, float difference);
-    int test_boundary(float &value);
+	int synchronize_params(ColorBalanceSlider *slider, float difference);
+	int test_boundary(float &value);
 
 	ColorBalanceConfig config;
 // a thread for the GUI
@@ -117,18 +117,15 @@ public:
 	ColorBalanceEngine **engine;
 	int total_engines;
 
-
 	BC_Hash *defaults;
-    int r_lookup_8[0x100];
-    int g_lookup_8[0x100];
-    int b_lookup_8[0x100];
-    int r_lookup_16[0x10000];
-    int g_lookup_16[0x10000];
-    int b_lookup_16[0x10000];
-    int redo_buffers;
+	int r_lookup_8[0x100];
+	int g_lookup_8[0x100];
+	int b_lookup_8[0x100];
+	int r_lookup_16[0x10000];
+	int g_lookup_16[0x10000];
+	int b_lookup_16[0x10000];
+	int redo_buffers;
 	int need_reconfigure;
 };
-
-
 
 #endif

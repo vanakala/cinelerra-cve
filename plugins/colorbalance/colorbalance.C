@@ -47,7 +47,7 @@ ColorBalanceConfig::ColorBalanceConfig()
 	magenta = 0;
 	yellow = 0;
 	lock_params = 0;
-    preserve = 0;
+	preserve = 0;
 }
 
 int ColorBalanceConfig::equivalent(ColorBalanceConfig &that)
@@ -56,7 +56,7 @@ int ColorBalanceConfig::equivalent(ColorBalanceConfig &that)
 		magenta == that.magenta && 
 		yellow == that.yellow && 
 		lock_params == that.lock_params && 
-    	preserve == that.preserve);
+		preserve == that.preserve);
 }
 
 void ColorBalanceConfig::copy_from(ColorBalanceConfig &that)
@@ -65,14 +65,14 @@ void ColorBalanceConfig::copy_from(ColorBalanceConfig &that)
 	magenta = that.magenta;
 	yellow = that.yellow;
 	lock_params = that.lock_params;
-    preserve = that.preserve;
+	preserve = that.preserve;
 }
 
 void ColorBalanceConfig::interpolate(ColorBalanceConfig &prev, 
 	ColorBalanceConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -83,13 +83,6 @@ void ColorBalanceConfig::interpolate(ColorBalanceConfig &prev,
 	this->preserve = prev.preserve;
 	this->lock_params = prev.lock_params;
 }
-
-
-
-
-
-
-
 
 
 
@@ -149,7 +142,7 @@ void ColorBalanceEngine::run()
 { \
 	int i, j, k; \
 	int y, cb, cr, r, g, b, r_n, g_n, b_n; \
-    float h, s, v, h_old, s_old, r_f, g_f, b_f; \
+	float h, s, v, h_old, s_old, r_f, g_f, b_f; \
 	type **input_rows, **output_rows; \
 	input_rows = (type**)input->get_rows(); \
 	output_rows = (type**)output->get_rows(); \
@@ -167,44 +160,44 @@ void ColorBalanceEngine::run()
 			} \
 			else \
 			{ \
-            	r = input_rows[j][k]; \
-            	g = input_rows[j][k + 1]; \
-            	b = input_rows[j][k + 2]; \
+				r = input_rows[j][k]; \
+				g = input_rows[j][k + 1]; \
+				b = input_rows[j][k + 2]; \
 			} \
  \
-            r = CLAMP(r, 0, max-1); g = CLAMP(g, 0, max-1); b = CLAMP(b, 0, max-1); \
-            r_n = plugin->r_lookup[r]; \
-            g_n = plugin->g_lookup[g]; \
-            b_n = plugin->b_lookup[b]; \
+			r = CLAMP(r, 0, max-1); g = CLAMP(g, 0, max-1); b = CLAMP(b, 0, max-1); \
+			r_n = plugin->r_lookup[r]; \
+			g_n = plugin->g_lookup[g]; \
+			b_n = plugin->b_lookup[b]; \
  \
 			if(plugin->config.preserve) \
-            { \
+			{ \
 				HSV::rgb_to_hsv((float)r_n, (float)g_n, (float)b_n, h, s, v); \
 				HSV::rgb_to_hsv((float)r, (float)g, (float)b, h_old, s_old, v); \
-                HSV::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
-                r = (type)r_f; \
-                g = (type)g_f; \
-                b = (type)b_f; \
+				HSV::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
+				r = (type)r_f; \
+				g = (type)g_f; \
+				b = (type)b_f; \
 			} \
-            else \
-            { \
-                r = r_n; \
-                g = g_n; \
-                b = b_n; \
+			else \
+			{ \
+				r = r_n; \
+				g = g_n; \
+				b = b_n; \
 			} \
  \
 			if(do_yuv) \
 			{ \
 				rgbtoyuv(CLAMP(r, 0, max), CLAMP(g, 0, max), CLAMP(b, 0, max), y, cb, cr); \
-                output_rows[j][k] = y; \
-                output_rows[j][k + 1] = cb; \
-                output_rows[j][k + 2] = cr; \
+				output_rows[j][k] = y; \
+				output_rows[j][k + 1] = cb; \
+				output_rows[j][k + 2] = cr; \
 			} \
 			else \
 			{ \
-                output_rows[j][k] = CLAMP(r, 0, max); \
-                output_rows[j][k + 1] = CLAMP(g, 0, max); \
-                output_rows[j][k + 2] = CLAMP(b, 0, max); \
+				output_rows[j][k] = CLAMP(r, 0, max); \
+				output_rows[j][k + 1] = CLAMP(g, 0, max); \
+				output_rows[j][k + 2] = CLAMP(b, 0, max); \
 			} \
 		} \
 	} \
@@ -214,7 +207,7 @@ void ColorBalanceEngine::run()
 { \
 	int i, j, k; \
 	float y, cb, cr, r, g, b, r_n, g_n, b_n; \
-    float h, s, v, h_old, s_old, r_f, g_f, b_f; \
+	float h, s, v, h_old, s_old, r_f, g_f, b_f; \
 	float **input_rows, **output_rows; \
 	input_rows = (float**)input->get_rows(); \
 	output_rows = (float**)output->get_rows(); \
@@ -226,122 +219,120 @@ void ColorBalanceEngine::run()
 	{ \
 		for(k = 0; k < input->get_w() * components; k += components) \
 		{ \
-            r = input_rows[j][k]; \
-            g = input_rows[j][k + 1]; \
-            b = input_rows[j][k + 2]; \
+			r = input_rows[j][k]; \
+			g = input_rows[j][k + 1]; \
+			b = input_rows[j][k + 2]; \
  \
-            r_n = r * cyan_f; \
-            g_n = g * magenta_f; \
-            b_n = b * yellow_f; \
+			r_n = r * cyan_f; \
+			g_n = g * magenta_f; \
+			b_n = b * yellow_f; \
  \
 			if(plugin->config.preserve) \
-            { \
+			{ \
 				HSV::rgb_to_hsv(r_n, g_n, b_n, h, s, v); \
 				HSV::rgb_to_hsv(r, g, b, h_old, s_old, v); \
-                HSV::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
-                r = (float)r_f; \
-                g = (float)g_f; \
-                b = (float)b_f; \
+				HSV::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
+				r = (float)r_f; \
+				g = (float)g_f; \
+				b = (float)b_f; \
 			} \
-            else \
-            { \
-                r = r_n; \
-                g = g_n; \
-                b = b_n; \
+			else \
+			{ \
+				r = r_n; \
+				g = g_n; \
+				b = b_n; \
 			} \
  \
-            output_rows[j][k] = r; \
-            output_rows[j][k + 1] = g; \
-            output_rows[j][k + 2] = b; \
+			output_rows[j][k] = r; \
+			output_rows[j][k + 1] = g; \
+			output_rows[j][k + 2] = b; \
 		} \
 	} \
 }
 
 		switch(input->get_color_model())
 		{
-			case BC_RGB888:
-				PROCESS(yuv.yuv_to_rgb_8, 
-					yuv.rgb_to_yuv_8, 
-					r_lookup_8, 
-					g_lookup_8, 
-					b_lookup_8, 
-					unsigned char, 
-					0xff, 
-					3,
-					0);
-				break;
+		case BC_RGB888:
+			PROCESS(yuv.yuv_to_rgb_8,
+				yuv.rgb_to_yuv_8,
+				r_lookup_8,
+				g_lookup_8,
+				b_lookup_8,
+				unsigned char,
+				0xff,
+				3,
+				0);
+			break;
 
-			case BC_RGB_FLOAT:
-				PROCESS_F(3);
-				break;
+		case BC_RGB_FLOAT:
+			PROCESS_F(3);
+			break;
 
-			case BC_YUV888:
-				PROCESS(yuv.yuv_to_rgb_8, 
-					yuv.rgb_to_yuv_8, 
-					r_lookup_8, 
-					g_lookup_8, 
-					b_lookup_8, 
-					unsigned char, 
-					0xff, 
-					3,
-					1);
-				break;
-			
-			case BC_RGBA_FLOAT:
-				PROCESS_F(4);
-				break;
+		case BC_YUV888:
+			PROCESS(yuv.yuv_to_rgb_8,
+				yuv.rgb_to_yuv_8,
+				r_lookup_8,
+				g_lookup_8,
+				b_lookup_8,
+				unsigned char,
+				0xff,
+				3,
+				1);
+			break;
 
-			case BC_RGBA8888:
-				PROCESS(yuv.yuv_to_rgb_8, 
-					yuv.rgb_to_yuv_8, 
-					r_lookup_8, 
-					g_lookup_8, 
-					b_lookup_8, 
-					unsigned char, 
-					0xff, 
-					4,
-					0);
-				break;
+		case BC_RGBA_FLOAT:
+			PROCESS_F(4);
+			break;
 
-			case BC_YUVA8888:
-				PROCESS(yuv.yuv_to_rgb_8, 
-					yuv.rgb_to_yuv_8, 
-					r_lookup_8, 
-					g_lookup_8, 
-					b_lookup_8, 
-					unsigned char, 
-					0xff, 
-					4,
-					1);
-				break;
-			
-			case BC_YUV161616:
-				PROCESS(yuv.yuv_to_rgb_16, 
-					yuv.rgb_to_yuv_16, 
-					r_lookup_16, 
-					g_lookup_16, 
-					b_lookup_16, 
-					u_int16_t, 
-					0xffff, 
-					3,
-					1);
-				break;
+		case BC_RGBA8888:
+			PROCESS(yuv.yuv_to_rgb_8,
+				yuv.rgb_to_yuv_8,
+				r_lookup_8,
+				g_lookup_8,
+				b_lookup_8,
+				unsigned char,
+				0xff,
+				4,
+				0);
+			break;
 
-			case BC_YUVA16161616:
-				PROCESS(yuv.yuv_to_rgb_16, 
-					yuv.rgb_to_yuv_16, 
-					r_lookup_16, 
-					g_lookup_16, 
-					b_lookup_16, 
-					u_int16_t, 
-					0xffff, 
-					4,
-					1);
-				break;
+		case BC_YUVA8888:
+			PROCESS(yuv.yuv_to_rgb_8,
+				yuv.rgb_to_yuv_8,
+				r_lookup_8,
+				g_lookup_8,
+				b_lookup_8,
+				unsigned char,
+				0xff,
+				4,
+				1);
+			break;
+
+		case BC_YUV161616:
+			PROCESS(yuv.yuv_to_rgb_16,
+				yuv.rgb_to_yuv_16,
+				r_lookup_16,
+				g_lookup_16,
+				b_lookup_16,
+				u_int16_t,
+				0xffff,
+				3,
+				1);
+			break;
+
+		case BC_YUVA16161616:
+			PROCESS(yuv.yuv_to_rgb_16,
+				yuv.rgb_to_yuv_16,
+				r_lookup_16,
+				g_lookup_16,
+				b_lookup_16,
+				u_int16_t,
+				0xffff,
+				4,
+				1);
+			break;
 		}
 
-		
-		
 		output_lock.unlock();
 	}
 }
@@ -360,7 +351,6 @@ ColorBalanceMain::ColorBalanceMain(PluginServer *server)
 ColorBalanceMain::~ColorBalanceMain()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-
 
 	if(engine)
 	{
@@ -384,18 +374,17 @@ int ColorBalanceMain::reconfigure()
 	float b_scale = calculate_transfer(config.yellow);
 
 
-
 #define RECONFIGURE(r_lookup, g_lookup, b_lookup, max) \
 	for(int i = 0; i <= max; i++) \
-    { \
-	    r_lookup[i] = CLIP((int)(r_scale * i), 0, max); \
-	    g_lookup[i] = CLIP((int)(g_scale * i), 0, max); \
-	    b_lookup[i] = CLIP((int)(b_scale * i), 0, max); \
-    }
+	{ \
+		r_lookup[i] = CLIP((int)(r_scale * i), 0, max); \
+		g_lookup[i] = CLIP((int)(g_scale * i), 0, max); \
+		b_lookup[i] = CLIP((int)(b_scale * i), 0, max); \
+	}
 
 	RECONFIGURE(r_lookup_8, g_lookup_8, b_lookup_8, 0xff);
 	RECONFIGURE(r_lookup_16, g_lookup_16, b_lookup_16, 0xffff);
-	
+
 	return 0;
 }
 
@@ -430,44 +419,39 @@ float ColorBalanceMain::calculate_transfer(float in)
 }
 
 
-
-
 int ColorBalanceMain::test_boundary(float &value)
 {
 
 	if(value < -1000) value = -1000;
-    if(value > 1000) value = 1000;
+	if(value > 1000) value = 1000;
 	return 0;
 }
 
 int ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float difference)
 {
 	if(thread && config.lock_params)
-    {
-	    if(slider != thread->window->cyan)
-        {
-        	config.cyan += difference;
-            test_boundary(config.cyan);
-        	thread->window->cyan->update((int64_t)config.cyan);
-        }
-	    if(slider != thread->window->magenta)
-        {
-        	config.magenta += difference;
-            test_boundary(config.magenta);
-        	thread->window->magenta->update((int64_t)config.magenta);
-        }
-	    if(slider != thread->window->yellow)
-        {
-        	config.yellow += difference;
-            test_boundary(config.yellow);
-        	thread->window->yellow->update((int64_t)config.yellow);
-        }
-    }
+	{
+		if(slider != thread->window->cyan)
+		{
+			config.cyan += difference;
+			test_boundary(config.cyan);
+			thread->window->cyan->update((int64_t)config.cyan);
+		}
+		if(slider != thread->window->magenta)
+		{
+			config.magenta += difference;
+			test_boundary(config.magenta);
+			thread->window->magenta->update((int64_t)config.magenta);
+		}
+		if(slider != thread->window->yellow)
+		{
+			config.yellow += difference;
+			test_boundary(config.yellow);
+			thread->window->yellow->update((int64_t)config.yellow);
+		}
+	}
 	return 0;
 }
-
-
-
 
 
 
@@ -478,16 +462,12 @@ RAISE_WINDOW_MACRO(ColorBalanceMain)
 SET_STRING_MACRO(ColorBalanceMain)
 
 
-
-
-
 int ColorBalanceMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	need_reconfigure |= load_configuration();
 
-//printf("ColorBalanceMain::process_realtime 1 %d\n", need_reconfigure);
 	if(need_reconfigure)
 	{
 		int i;
@@ -533,12 +513,11 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 	{
 		if(get_use_opengl())
 		{
-get_output()->dump_stacks();
 // Aggregate
 			if(next_effect_is("Histogram")) return 0;
 			return run_opengl();
 		}
-	
+
 		for(int i = 0; i < total_engines; i++)
 		{
 			engine[i]->start_process_frame(frame, 
@@ -552,7 +531,6 @@ get_output()->dump_stacks();
 			engine[i]->wait_process_frame();
 		}
 	}
-
 
 	return 0;
 }
@@ -685,7 +663,6 @@ int ColorBalanceMain::handle_opengl()
 	get_aggregation(&aggregate_interpolate,
 		&aggregate_gamma);
 
-printf("ColorBalanceMain::handle_opengl %d %d\n", aggregate_interpolate, aggregate_gamma);
 	if(aggregate_interpolate)
 		INTERPOLATE_COMPILE(shader_stack, current_shader)
 
@@ -726,10 +703,3 @@ printf("ColorBalanceMain::handle_opengl %d %d\n", aggregate_interpolate, aggrega
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
 }
-
-
-
-
-
-
-

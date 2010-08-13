@@ -45,7 +45,7 @@ class DeInterlaceWindow : public BC_Window
 public:
 	DeInterlaceWindow(DeInterlaceMain *client, int x, int y);
 	~DeInterlaceWindow();
-	
+
 	int create_objects();
 	int close_event();
 	int set_mode(int mode, int recursive);
@@ -115,7 +115,6 @@ public:
 };
 
 
-
 class DeInterlaceMode : public BC_PopupMenu
 {
 public:
@@ -130,6 +129,5 @@ public:
 	DeInterlaceMain *plugin;
 	DeInterlaceWindow *gui;
 };
-
 
 #endif

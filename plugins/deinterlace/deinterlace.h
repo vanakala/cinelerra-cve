@@ -55,9 +55,9 @@ public:
 	void copy_from(DeInterlaceConfig &that);
 	void interpolate(DeInterlaceConfig &prev, 
 		DeInterlaceConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame, 
+		posnum current_frame);
 
 	int mode;
 	int adaptive;
@@ -73,11 +73,10 @@ public:
 
 
 	PLUGIN_CLASS_MEMBERS(DeInterlaceConfig, DeInterlaceThread)
-	
 
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int hide_gui();

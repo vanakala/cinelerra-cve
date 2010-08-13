@@ -30,13 +30,9 @@
 PLUGIN_THREAD_OBJECT(ColorBalanceMain, ColorBalanceThread, ColorBalanceWindow)
 
 
-
-
-
-
 ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *client, int x, int y)
  : BC_Window(client->gui_string, x,
- 	y,
+	y,
 	330, 
 	250, 
 	330, 
@@ -54,6 +50,9 @@ ColorBalanceWindow::~ColorBalanceWindow()
 int ColorBalanceWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+	set_icon(ico);
+
 	add_tool(new BC_Title(x, y, _("Color Balance")));
 	y += 25;
 	add_tool(new BC_Title(x, y, _("Cyan")));
@@ -78,6 +77,7 @@ int ColorBalanceWindow::create_objects()
 
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -93,7 +93,7 @@ WINDOW_CLOSE_EVENT(ColorBalanceWindow)
 ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client, 
 	float *output, int x, int y)
  : BC_ISlider(x, 
- 	y, 
+	y, 
 	0, 
 	200, 
 	200,
@@ -103,7 +103,7 @@ ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client,
 {
 	this->client = client;
 	this->output = output;
-    old_value = *output;
+	old_value = *output;
 }
 
 ColorBalanceSlider::~ColorBalanceSlider()
@@ -114,7 +114,7 @@ int ColorBalanceSlider::handle_event()
 {
 	float difference = get_value() - *output;
 	*output = get_value();
-    client->synchronize_params(this, difference);
+	client->synchronize_params(this, difference);
 	client->send_configure_change();
 	return 1;
 }
@@ -127,16 +127,15 @@ char* ColorBalanceSlider::get_caption()
 }
 
 
-
-
 ColorBalancePreserve::ColorBalancePreserve(ColorBalanceMain *client, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	client->config.preserve, 
 	_("Preserve luminosity"))
 {
 	this->client = client;
 }
+
 ColorBalancePreserve::~ColorBalancePreserve()
 {
 }
@@ -150,7 +149,7 @@ int ColorBalancePreserve::handle_event()
 
 ColorBalanceLock::ColorBalanceLock(ColorBalanceMain *client, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y, 
 	client->config.lock_params, 
 	_("Lock parameters"))
 {
@@ -184,16 +183,11 @@ int ColorBalanceWhite::handle_event()
 	float red = plugin->get_red();
 	float green = plugin->get_green();
 	float blue = plugin->get_blue();
-// // Get maximum value
-// 	float max = MAX(red, green);
-// 	max  = MAX(max, blue);
-// // Get factors required to normalize other values to maximum
-// 	float r_factor = max / red;
-// 	float g_factor = max / green;
-// 	float b_factor = max / blue;
+
 // Get minimum value.  Can't use maximum because the sliders run out of room.
 	float min = MIN(red, green);
 	min = MIN(min, blue);
+
 // Get factors required to normalize other values to minimum
 	float r_factor = min / red;
 	float g_factor = min / green;
@@ -233,5 +227,3 @@ int ColorBalanceReset::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
