@@ -40,10 +40,10 @@ class FlipWindow : public BC_Window
 public:
 	FlipWindow(FlipMain *client, int x, int y);
 	~FlipWindow();
-	
+
 	int create_objects();
 	int close_event();
-	
+
 	FlipMain *client;
 	FlipToggle *flip_vertical;
 	FlipToggle *flip_horizontal;

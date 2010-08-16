@@ -37,10 +37,10 @@ public:
 	void copy_from(FlipConfig &that);
 	int equivalent(FlipConfig &that);
 	void interpolate(FlipConfig &prev, 
-		FlipConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		FlipConfig &next,
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	int flip_horizontal;
 	int flip_vertical;
 };
@@ -55,7 +55,7 @@ public:
 
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	void update_gui();
@@ -65,6 +65,4 @@ public:
 	int save_defaults();
 	int handle_opengl();
 };
-
-
 #endif

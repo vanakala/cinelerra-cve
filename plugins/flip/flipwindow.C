@@ -31,13 +31,9 @@
 PLUGIN_THREAD_OBJECT(FlipMain, FlipThread, FlipWindow)
 
 
-
-
-
-
 FlipWindow::FlipWindow(FlipMain *client, int x, int y)
  : BC_Window(client->get_gui_string(),
- 	x,
+	x,
 	y,
 	140,
 	100,
@@ -57,6 +53,9 @@ FlipWindow::~FlipWindow()
 int FlipWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	add_tool(flip_vertical = new FlipToggle(client, 
 		&(client->config.flip_vertical), 
 		_("Vertical"),
@@ -70,6 +69,7 @@ int FlipWindow::create_objects()
 		y));
 	show_window();
 	flush();
+	delete ico;
 }
 
 int FlipWindow::close_event()
@@ -84,9 +84,11 @@ FlipToggle::FlipToggle(FlipMain *client, int *output, char *string, int x, int y
 	this->client = client;
 	this->output = output;
 }
+
 FlipToggle::~FlipToggle()
 {
 }
+
 int FlipToggle::handle_event()
 {
 	*output = get_value();

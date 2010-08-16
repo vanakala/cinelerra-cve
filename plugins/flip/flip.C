@@ -34,10 +34,6 @@
 REGISTER_PLUGIN(FlipMain)
 
 
-
-
-
-
 FlipConfig::FlipConfig()
 {
 	flip_horizontal = 0;
@@ -58,21 +54,13 @@ int FlipConfig::equivalent(FlipConfig &that)
 
 void FlipConfig::interpolate(FlipConfig &prev, 
 	FlipConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	this->flip_horizontal = prev.flip_horizontal;
 	this->flip_vertical = prev.flip_vertical;
 }
-
-
-
-
-
-
-
-
 
 
 FlipMain::FlipMain(PluginServer *server)
@@ -88,7 +76,7 @@ FlipMain::~FlipMain()
 
 const char* FlipMain::plugin_title() { return N_("Flip"); }
 int FlipMain::is_realtime() { return 1; }
-	
+
 
 #define SWAP_PIXELS(type, components, in, out) \
 { \
@@ -96,7 +84,7 @@ int FlipMain::is_realtime() { return 1; }
 	in[0] = out[0]; \
 	out[0] = temp; \
  \
- 	temp = in[1]; \
+	temp = in[1]; \
 	in[1] = out[1]; \
 	out[1] = temp; \
  \
@@ -106,7 +94,7 @@ int FlipMain::is_realtime() { return 1; }
  \
 	if(components == 4) \
 	{ \
- 		temp = in[3]; \
+		temp = in[3]; \
 		in[3] = out[3]; \
 		out[3] = temp; \
 	} \
@@ -151,7 +139,7 @@ int FlipMain::is_realtime() { return 1; }
 }
 
 int FlipMain::process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate)
 {
 	int i, j, k, l;
@@ -179,28 +167,28 @@ int FlipMain::process_buffer(VFrame *frame,
 
 	switch(colormodel)
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			FLIP_MACRO(unsigned char, 3);
-			break;
-		case BC_RGB_FLOAT:
-			FLIP_MACRO(float, 3);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			FLIP_MACRO(uint16_t, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			FLIP_MACRO(unsigned char, 4);
-			break;
-		case BC_RGBA_FLOAT:
-			FLIP_MACRO(float, 4);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			FLIP_MACRO(uint16_t, 4);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		FLIP_MACRO(unsigned char, 3);
+		break;
+	case BC_RGB_FLOAT:
+		FLIP_MACRO(float, 3);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		FLIP_MACRO(uint16_t, 3);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		FLIP_MACRO(unsigned char, 4);
+		break;
+	case BC_RGBA_FLOAT:
+		FLIP_MACRO(float, 4);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		FLIP_MACRO(uint16_t, 4);
+		break;
 	}
 	return 0;
 }
@@ -245,7 +233,7 @@ void FlipMain::save_data(KeyFrame *keyframe)
 	}
 
 	if(config.flip_horizontal)
-	{	
+	{
 		output.tag.set_title("HORIZONTAL");
 		output.append_tag();
 		output.tag.set_title("/HORIZONTAL");
@@ -355,6 +343,3 @@ int FlipMain::handle_opengl()
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
 }
-
-
-

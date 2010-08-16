@@ -78,23 +78,6 @@ public:
 	FieldFrameWindow *gui;
 };
 
-// class FieldFrameFirst : public BC_Radial
-// {
-// public:
-// 	FieldFrameFirst(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
-// 	int handle_event();
-// 	FieldFrame *plugin;
-// 	FieldFrameWindow *gui;
-// };
-// 
-// class FieldFrameSecond : public BC_Radial
-// {
-// public:
-// 	FieldFrameSecond(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
-// 	int handle_event();
-// 	FieldFrame *plugin;
-// 	FieldFrameWindow *gui;
-// };
 
 class FieldFrameWindow : public BC_Window
 {
@@ -105,8 +88,6 @@ public:
 	FieldFrame *plugin;
 	FieldFrameTop *top;
 	FieldFrameBottom *bottom;
-//	FieldFrameFirst *first;
-//	FieldFrameSecond *second;
 };
 
 
@@ -122,7 +103,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(FieldFrameConfig, FieldFrameThread);
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -169,7 +150,7 @@ int FieldFrameConfig::equivalent(FieldFrameConfig &src)
 
 FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	230, 
 	100, 
@@ -185,30 +166,17 @@ FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin, int x, int y)
 void FieldFrameWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(top = new FieldFrameTop(plugin, this, x, y));
 	y += 30;
 	add_subwindow(bottom = new FieldFrameBottom(plugin, this, x, y));
-// 	y += 30;
-// 	add_subwindow(first = new FieldFrameFirst(plugin, this, x, y));
-// 	y += 30;
-// 	add_subwindow(second = new FieldFrameSecond(plugin, this, x, y));
 
 	show_window();
 	flush();
 }
 
 WINDOW_CLOSE_EVENT(FieldFrameWindow)
-
-
-
-
-
-
-
-
-
-
-
 
 
 FieldFrameTop::FieldFrameTop(FieldFrame *plugin, 
@@ -232,10 +200,6 @@ int FieldFrameTop::handle_event()
 	return 1;
 }
 
-
-
-
-
 FieldFrameBottom::FieldFrameBottom(FieldFrame *plugin, 
 	FieldFrameWindow *gui, 
 	int x, 
@@ -258,73 +222,7 @@ int FieldFrameBottom::handle_event()
 }
 
 
-
-
-
-// FieldFrameFirst::FieldFrameFirst(FieldFrame *plugin, 
-// 	FieldFrameWindow *gui, 
-// 	int x, 
-// 	int y)
-//  : BC_Radial(x, 
-// 	y, 
-// 	plugin->config.first_frame == 0,
-// 	_("First frame is first field"))
-// {
-// 	this->plugin = plugin;
-// 	this->gui = gui;
-// }
-// 
-// int FieldFrameFirst::handle_event()
-// {
-// 	plugin->config.first_frame = 0;
-// 	gui->second->update(0);
-// 	plugin->send_configure_change();
-// 	return 1;
-// }
-// 
-// 
-// 
-// 
-// FieldFrameSecond::FieldFrameSecond(FieldFrame *plugin, 
-// 	FieldFrameWindow *gui, 
-// 	int x, 
-// 	int y)
-//  : BC_Radial(x, 
-// 	y, 
-// 	plugin->config.first_frame == 1,
-// 	_("Second frame is first field"))
-// {
-// 	this->plugin = plugin;
-// 	this->gui = gui;
-// }
-// 
-// int FieldFrameSecond::handle_event()
-// {
-// 	plugin->config.first_frame = 1;
-// 	gui->first->update(0);
-// 	plugin->send_configure_change();
-// 	return 1;
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(FieldFrame, FieldFrameThread, FieldFrameWindow)
-
-
-
 
 
 FieldFrame::FieldFrame(PluginServer *server)
@@ -429,19 +327,15 @@ void FieldFrame::update_gui()
 	{
 		if(load_configuration())
 		{
-			thread->window->lock_window();
 			thread->window->top->update(config.field_dominance == TOP_FIELD_FIRST);
 			thread->window->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
-//			thread->window->first->update(config.first_frame == 0);
-//			thread->window->second->update(config.first_frame == 1);
-			thread->window->unlock_window();
 		}
 	}
 }
 
 
 int FieldFrame::process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate)
 {
 	int result = 0;
@@ -471,11 +365,6 @@ int FieldFrame::process_buffer(VFrame *frame,
 		field2_position -= 1;
 	}
 
-
-// printf("FieldFrame::process_buffer %d %lld %lld\n", 
-// config.field_dominance, 
-// field1_position, 
-// field2_position);
 	read_frame(input, 
 		0, 
 		field1_position,
@@ -490,11 +379,6 @@ int FieldFrame::process_buffer(VFrame *frame,
 	apply_field(frame, 
 		input, 
 		config.field_dominance == TOP_FIELD_FIRST ? 1 : 0);
-
-
-
-
-
 	return result;
 }
 

@@ -57,8 +57,6 @@ public:
 };
 
 
-
-
 class FrameFieldTop : public BC_Radial
 {
 public:
@@ -131,7 +129,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(FrameFieldConfig, FrameFieldThread);
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -146,13 +144,13 @@ public:
 	int handle_opengl();
 
 // Last frame requested
-	int64_t last_frame;
+	framenum last_frame;
 // Field needed
-	int64_t field_number;
+	framenum field_number;
 // Frame needed
-	int64_t current_frame_number;
+	framenum current_frame_number;
 // Frame stored
-	int64_t src_frame_number;
+	framenum src_frame_number;
 	VFrame *src_frame;
 
 // Temporary storage of input frame for OpenGL
@@ -165,17 +163,7 @@ public:
 	int rgb601_direction;
 };
 
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(FrameField)
-
-
 
 FrameFieldConfig::FrameFieldConfig()
 {
@@ -187,16 +175,9 @@ int FrameFieldConfig::equivalent(FrameFieldConfig &src)
 	return src.field_dominance == field_dominance;
 }
 
-
-
-
-
-
-
-
 FrameFieldWindow::FrameFieldWindow(FrameField *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	210, 
 	160, 
@@ -212,6 +193,8 @@ FrameFieldWindow::FrameFieldWindow(FrameField *plugin, int x, int y)
 void FrameFieldWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(top = new FrameFieldTop(plugin, this, x, y));
 	y += top->get_h() + 5;
 	add_subwindow(bottom = new FrameFieldBottom(plugin, this, x, y));
@@ -221,15 +204,6 @@ void FrameFieldWindow::create_objects()
 }
 
 WINDOW_CLOSE_EVENT(FrameFieldWindow)
-
-
-
-
-
-
-
-
-
 
 
 
@@ -279,27 +253,7 @@ int FrameFieldBottom::handle_event()
 	return 1;
 }
 
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(FrameField, FrameFieldThread, FrameFieldWindow)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 FrameField::FrameField(PluginServer *server)
@@ -330,7 +284,7 @@ FrameField::~FrameField()
 // 2 - current frame field 0, prev frame field 1
 
 int FrameField::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -419,7 +373,7 @@ int FrameField::process_buffer(VFrame *frame,
 			}
 
 // Average empty rows
-			/* if(config.avg) */ average_rows(0, frame);
+			average_rows(0, frame);
 		}
 		else
 		{
@@ -432,7 +386,7 @@ int FrameField::process_buffer(VFrame *frame,
 			}
 
 // Average empty rows
-			/* if(config.avg) */ average_rows(1, frame);
+			average_rows(1, frame);
 		}
 	}
 	else
@@ -449,7 +403,7 @@ int FrameField::process_buffer(VFrame *frame,
 			}
 
 // Average empty rows
-			/* if(config.avg) */ average_rows(1, frame);
+			average_rows(1, frame);
 		}
 		else
 		{
@@ -462,7 +416,7 @@ int FrameField::process_buffer(VFrame *frame,
 			}
 
 // Average empty rows
-			/* if(config.avg) */ average_rows(0, frame);
+			average_rows(0, frame);
 		}
 	}
 
@@ -548,31 +502,30 @@ int FrameField::process_buffer(VFrame *frame,
 
 void FrameField::average_rows(int offset, VFrame *frame)
 {
-//printf("FrameField::average_rows 1 %d\n", offset);
 	switch(frame->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			AVERAGE(unsigned char, int64_t, 3, offset);
-			break;
-		case BC_RGB_FLOAT:
-			AVERAGE(float, float, 3, offset);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			AVERAGE(unsigned char, int64_t, 4, offset);
-			break;
-		case BC_RGBA_FLOAT:
-			AVERAGE(float, float, 4, offset);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			AVERAGE(uint16_t, int64_t, 3, offset);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			AVERAGE(uint16_t, int64_t, 4, offset);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		AVERAGE(unsigned char, int64_t, 3, offset);
+		break;
+	case BC_RGB_FLOAT:
+		AVERAGE(float, float, 3, offset);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		AVERAGE(unsigned char, int64_t, 4, offset);
+		break;
+	case BC_RGBA_FLOAT:
+		AVERAGE(float, float, 4, offset);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		AVERAGE(uint16_t, int64_t, 3, offset);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		AVERAGE(uint16_t, int64_t, 4, offset);
+		break;
 	}
 }
 
@@ -713,7 +666,6 @@ int FrameField::handle_opengl()
 		"	gl_FragColor.r = gl_FragColor.r * 0.8588 + 0.0627;\n"
 		"}\n";
 
-
 	if(new_frame)
 	{
 		if(get_output()->get_opengl_state() != VFrame::SCREEN)
@@ -748,8 +700,6 @@ int FrameField::handle_opengl()
 			get_output()->get_h());
 
 // Store aggregation state only when reading a frame
-//printf("FrameField::handle_opengl %p\n", get_output());
-//get_output()->dump_stacks();
 		if(prev_effect_is("RGB - 601") ||
 			next_effect_is("RGB - 601"))
 		{
@@ -784,13 +734,10 @@ int FrameField::handle_opengl()
 		get_output()->get_h(), 
 		get_output()->get_color_model());
 
-
 	const char *shaders[3] = { 0, 0, 0 };
 	shaders[0] = field_frag;
 
-
 // Aggregate with other effect
-//printf("FrameField::handle_opengl %s\n", get_output()->get_next_effect());
 	if(aggregate_rgb601)
 	{
 		if(rgb601_direction == 1)
@@ -810,10 +757,7 @@ int FrameField::handle_opengl()
 		}
 	}
 
-
-
 	frag = VFrame::make_shader(0, shaders[0], shaders[1], shaders[2], 0);
-
 
 	if(frag)
 	{
@@ -824,8 +768,6 @@ int FrameField::handle_opengl()
 		glUniform1f(glGetUniformLocation(frag, "y_offset"), 
 			y_offset / src_texture->get_texture_h());
 	}
-
-
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
