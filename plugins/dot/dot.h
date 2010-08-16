@@ -61,7 +61,7 @@ class DotServer : public LoadServer
 {
 public:
 	DotServer(DotMain *plugin, int total_clients, int total_packages);
-	
+
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	void init_packages();
@@ -72,7 +72,7 @@ class DotClient : public LoadClient
 {
 public:
 	DotClient(DotServer *server);
-	
+
 	void process_package(LoadPackage *package);
 	void draw_dot(int xx, 
 		int yy, 
@@ -102,7 +102,7 @@ public:
 	void load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	
+
 	int load_defaults();
 	int save_defaults();
 	VFrame* new_picon();
@@ -127,14 +127,5 @@ public:
 	int need_reconfigure;
 	EffectTV *effecttv;
 };
-
-
-
-
-
-
-
-
-
 
 #endif

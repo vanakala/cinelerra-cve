@@ -33,16 +33,7 @@
 #include <string.h>
 
 
-
-
-
-
 REGISTER_PLUGIN(DotMain)
-
-
-
-
-
 
 
 DotConfig::DotConfig()
@@ -69,7 +60,7 @@ DotMain::DotMain(PluginServer *server)
 DotMain::~DotMain()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-	
+
 	if(pattern) delete [] pattern;
 	if(sampx) delete [] sampx;
 	if(sampy) delete [] sampy;
@@ -127,11 +118,8 @@ void DotMain::make_pattern()
 /* Generated pattern is a quadrant of a disk. */
 		pat = pattern + (i + 1) * dot_hsize * dot_hsize - 1;
 
-//		r = (0.2 * i / config.dot_max() + 0.8) * dot_hsize;
-//		r = r * r;
 		r = ((double)i / config.dot_max()) * dot_hsize;
 		r *= 5;
-//printf("make_pattern %f\n", r);
 
 		for(y = 0; y < dot_hsize; y++) 
 		{
@@ -154,9 +142,7 @@ void DotMain::make_pattern()
 					}
 				}
 
-
 				c = (c > 15) ? 15 : c;
-//printf("DotMain::make_pattern %d\n", c);
 				*pat-- = (c << 20) | (c << 12) | (c << 4);
 /* The upper left part of a disk is needed, but generated pattern is a bottom
  * right part. So I spin the pattern. */
@@ -203,12 +189,11 @@ void DotMain::reconfigure()
 		dot_hsize];
 	sampx = new int[input_ptr->get_w()];
 	sampy = new int[input_ptr->get_h()];
-	
+
 	make_pattern();
-	
+
 	init_sampxy_table();
-	
-	
+
 	need_reconfigure = 0;
 }
 
@@ -220,7 +205,6 @@ int DotMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	this->output_ptr = output_ptr;
 	load_configuration();
 	if(need_reconfigure) reconfigure();
-
 
 	dot_server->process_packages();
 
@@ -235,21 +219,15 @@ DotServer::DotServer(DotMain *plugin, int total_clients, int total_packages)
 	this->plugin = plugin;
 }
 
-
 LoadClient* DotServer::new_client() 
 {
 	return new DotClient(this);
 }
 
-
-
-
 LoadPackage* DotServer::new_package() 
 { 
 	return new DotPackage; 
 }
-
-
 
 void DotServer::init_packages()
 {
@@ -260,12 +238,6 @@ void DotServer::init_packages()
 		package->row2 = plugin->input_ptr->get_h() * (i + 1) / get_total_packages();
 	}
 }
-
-
-
-
-
-
 
 
 DotClient::DotClient(DotServer *server)
@@ -399,7 +371,7 @@ DotClient::DotClient(DotServer *server)
 			} \
 		} \
  \
- 		y_total++; \
+		y_total++; \
  \
 	} \
 }
@@ -412,44 +384,45 @@ void DotClient::draw_dot(int xx,
 {
 	switch(plugin->input_ptr->get_color_model())
 	{
-		case BC_RGB888:
-			DRAW_DOT(uint8_t, 3, 0x0);
-			break;
+	case BC_RGB888:
+		DRAW_DOT(uint8_t, 3, 0x0);
+		break;
 
-		case BC_RGB_FLOAT:
-			DRAW_DOT(float, 3, 0x0);
-			break;
+	case BC_RGB_FLOAT:
+		DRAW_DOT(float, 3, 0x0);
+		break;
 
-		case BC_YUV888:
-			DRAW_DOT(uint8_t, 3, 0x80);
-			break;
+	case BC_YUV888:
+		DRAW_DOT(uint8_t, 3, 0x80);
+		break;
 
-		case BC_RGBA_FLOAT:
-			DRAW_DOT(float, 4, 0x0);
-			break;
+	case BC_RGBA_FLOAT:
+		DRAW_DOT(float, 4, 0x0);
+		break;
 
-		case BC_RGBA8888:
-			DRAW_DOT(uint8_t, 4, 0x0);
-			break;
+	case BC_RGBA8888:
+		DRAW_DOT(uint8_t, 4, 0x0);
+		break;
 
-		case BC_YUVA8888:
-			DRAW_DOT(uint8_t, 4, 0x80);
-			break;
+	case BC_YUVA8888:
+		DRAW_DOT(uint8_t, 4, 0x80);
+		break;
 
-		case BC_RGB161616:
-			DRAW_DOT(uint16_t, 3, 0x0);
-			break;
+	case BC_RGB161616:
+		DRAW_DOT(uint16_t, 3, 0x0);
+		break;
 
-		case BC_YUV161616:
-			DRAW_DOT(uint16_t, 3, 0x8000);
-			break;
+	case BC_YUV161616:
+		DRAW_DOT(uint16_t, 3, 0x8000);
+		break;
 
-		case BC_RGBA16161616:
-			DRAW_DOT(uint16_t, 4, 0x0);
-			break;
-		case BC_YUVA16161616:
-			DRAW_DOT(uint16_t, 4, 0x8000);
-			break;
+	case BC_RGBA16161616:
+		DRAW_DOT(uint16_t, 4, 0x0);
+		break;
+
+	case BC_YUVA16161616:
+		DRAW_DOT(uint16_t, 4, 0x8000);
+		break;
 	}
 }
 
@@ -457,7 +430,7 @@ void DotClient::draw_dot(int xx,
 { \
 	type *row_local = (type*)row; \
  \
- 	if(sizeof(type) == 4) \
+	if(sizeof(type) == 4) \
 	{ \
 		int r = (int)(row_local[0] * 0xff); \
 		int g = (int)(row_local[0] * 0xff); \
@@ -500,26 +473,26 @@ unsigned char DotClient::RGBtoY(unsigned char *row, int color_model)
 
 	switch(color_model)
 	{
-		case BC_RGB888:
-		case BC_RGBA8888:
-			RGB_TO_Y(uint8_t, 0);
-			break;
-		case BC_RGB_FLOAT:
-		case BC_RGBA_FLOAT:
-			RGB_TO_Y(float, 0);
-			break;
-		case BC_YUV888:
-		case BC_YUVA8888:
-			RGB_TO_Y(uint8_t, 1);
-			break;
-		case BC_RGB161616:
-		case BC_RGBA16161616:
-			RGB_TO_Y(uint16_t, 0);
-			break;
-		case BC_YUV161616:
-		case BC_YUVA16161616:
-			RGB_TO_Y(uint16_t, 1);
-			break;
+	case BC_RGB888:
+	case BC_RGBA8888:
+		RGB_TO_Y(uint8_t, 0);
+		break;
+	case BC_RGB_FLOAT:
+	case BC_RGBA_FLOAT:
+		RGB_TO_Y(float, 0);
+		break;
+	case BC_YUV888:
+	case BC_YUVA8888:
+		RGB_TO_Y(uint8_t, 1);
+		break;
+	case BC_RGB161616:
+	case BC_RGBA16161616:
+		RGB_TO_Y(uint16_t, 0);
+		break;
+	case BC_YUV161616:
+	case BC_YUVA16161616:
+		RGB_TO_Y(uint16_t, 1);
+		break;
 	}
 
 	return i;
@@ -544,9 +517,6 @@ void DotClient::process_package(LoadPackage *package)
 		{
 			sx = plugin->sampx[x];
 
-//printf("DotClient::process_package %d\n", 
-//					RGBtoY(&input_rows[sy][sx * plugin->input_ptr->get_bytes_per_pixel()], 
-//					plugin->input_ptr->get_color_model()));
 			draw_dot(x, 
 				y,
 				RGBtoY(&input_rows[sy][sx * plugin->input_ptr->get_bytes_per_pixel()], 
@@ -557,11 +527,6 @@ void DotClient::process_package(LoadPackage *package)
 	}
 }
 
-
-
 DotPackage::DotPackage()
 {
 }
-
-
-

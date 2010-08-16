@@ -55,9 +55,9 @@ public:
 	void copy_from(DownSampleConfig &that);
 	void interpolate(DownSampleConfig &prev, 
 		DownSampleConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	int horizontal_x;
 	int vertical_y;
@@ -102,7 +102,7 @@ class DownSampleWindow : public BC_Window
 public:
 	DownSampleWindow(DownSampleMain *plugin, int x, int y);
 	~DownSampleWindow();
-	
+
 	int create_objects();
 	int close_event();
 
@@ -165,24 +165,7 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(DownSampleMain)
-
-
 
 DownSampleConfig::DownSampleConfig()
 {
@@ -223,9 +206,9 @@ void DownSampleConfig::copy_from(DownSampleConfig &that)
 
 void DownSampleConfig::interpolate(DownSampleConfig &prev, 
 	DownSampleConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	samplenum prev_frame, 
+	samplenum next_frame, 
+	samplenum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -240,20 +223,11 @@ void DownSampleConfig::interpolate(DownSampleConfig &prev,
 }
 
 
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(DownSampleMain, DownSampleThread, DownSampleWindow)
-
-
 
 DownSampleWindow::DownSampleWindow(DownSampleMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	230, 
 	380, 
@@ -273,6 +247,7 @@ int DownSampleWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Horizontal")));
 	y += 30;
 	add_subwindow(h = new DownSampleSize(plugin, 
@@ -347,14 +322,6 @@ int DownSampleWindow::close_event()
 }
 
 
-
-
-
-
-
-
-
-
 DownSampleToggle::DownSampleToggle(DownSampleMain *plugin, 
 	int x, 
 	int y, 
@@ -373,12 +340,6 @@ int DownSampleToggle::handle_event()
 	return 1;
 }
 
-
-
-
-
-
-
 DownSampleSize::DownSampleSize(DownSampleMain *plugin, 
 	int x, 
 	int y, 
@@ -390,20 +351,13 @@ DownSampleSize::DownSampleSize(DownSampleMain *plugin,
 	this->plugin = plugin;
 	this->output = output;
 }
+
 int DownSampleSize::handle_event()
 {
 	*output = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
-
 
 
 DownSampleMain::DownSampleMain(PluginServer *server)
@@ -497,7 +451,6 @@ int DownSampleMain::load_defaults()
 	return 0;
 }
 
-
 int DownSampleMain::save_defaults()
 {
 	defaults->update("HORIZONTAL", config.horizontal);
@@ -511,7 +464,6 @@ int DownSampleMain::save_defaults()
 	defaults->save();
 	return 0;
 }
-
 
 
 void DownSampleMain::save_data(KeyFrame *keyframe)
@@ -564,9 +516,6 @@ void DownSampleMain::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
-
-
 
 
 
@@ -654,7 +603,6 @@ DownSampleUnit::DownSampleUnit(DownSampleServer *server,
 				} \
 			} \
 		} \
-/*printf("DOWNSAMPLE 3 %d\n", i);*/ \
 	} \
 }
 
@@ -667,42 +615,38 @@ void DownSampleUnit::process_package(LoadPackage *package)
 
 	switch(plugin->input->get_color_model())
 	{
-		case BC_RGB888:
-			DOWNSAMPLE(uint8_t, int64_t, 3, 0xff)
-			break;
-		case BC_RGB_FLOAT:
-			DOWNSAMPLE(float, float, 3, 1.0)
-			break;
-		case BC_RGBA8888:
-			DOWNSAMPLE(uint8_t, int64_t, 4, 0xff)
-			break;
-		case BC_RGBA_FLOAT:
-			DOWNSAMPLE(float, float, 4, 1.0)
-			break;
-		case BC_RGB161616:
-			DOWNSAMPLE(uint16_t, int64_t, 3, 0xffff)
-			break;
-		case BC_RGBA16161616:
-			DOWNSAMPLE(uint16_t, int64_t, 4, 0xffff)
-			break;
-		case BC_YUV888:
-			DOWNSAMPLE(uint8_t, int64_t, 3, 0xff)
-			break;
-		case BC_YUVA8888:
-			DOWNSAMPLE(uint8_t, int64_t, 4, 0xff)
-			break;
-		case BC_YUV161616:
-			DOWNSAMPLE(uint16_t, int64_t, 3, 0xffff)
-			break;
-		case BC_YUVA16161616:
-			DOWNSAMPLE(uint16_t, int64_t, 4, 0xffff)
-			break;
+	case BC_RGB888:
+		DOWNSAMPLE(uint8_t, int64_t, 3, 0xff)
+		break;
+	case BC_RGB_FLOAT:
+		DOWNSAMPLE(float, float, 3, 1.0)
+		break;
+	case BC_RGBA8888:
+		DOWNSAMPLE(uint8_t, int64_t, 4, 0xff)
+		break;
+	case BC_RGBA_FLOAT:
+		DOWNSAMPLE(float, float, 4, 1.0)
+		break;
+	case BC_RGB161616:
+		DOWNSAMPLE(uint16_t, int64_t, 3, 0xffff)
+		break;
+	case BC_RGBA16161616:
+		DOWNSAMPLE(uint16_t, int64_t, 4, 0xffff)
+		break;
+	case BC_YUV888:
+		DOWNSAMPLE(uint8_t, int64_t, 3, 0xff)
+		break;
+	case BC_YUVA8888:
+		DOWNSAMPLE(uint8_t, int64_t, 4, 0xff)
+		break;
+	case BC_YUV161616:
+		DOWNSAMPLE(uint16_t, int64_t, 3, 0xffff)
+		break;
+	case BC_YUVA16161616:
+		DOWNSAMPLE(uint16_t, int64_t, 4, 0xffff)
+		break;
 	}
 }
-
-
-
-
 
 
 DownSampleServer::DownSampleServer(DownSampleMain *plugin, 
@@ -739,8 +683,3 @@ LoadPackage* DownSampleServer::new_package()
 {
 	return new DownSamplePackage;
 }
-
-
-
-
-

@@ -27,10 +27,6 @@
 PLUGIN_THREAD_OBJECT(DotMain, DotThread, DotWindow)
 
 
-
-
-
-
 DotWindow::DotWindow(DotMain *client, int x, int y)
  : BC_Window(client->gui_string, 
 	x,
@@ -53,6 +49,9 @@ DotWindow::~DotWindow()
 int DotWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	add_subwindow(new BC_Title(x, y, 
 		_("DotTV from EffectTV\n"
 		"Copyright (C) 2001 FUKUCHI Kentarou")
@@ -60,13 +59,8 @@ int DotWindow::create_objects()
 
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
 WINDOW_CLOSE_EVENT(DotWindow)
-
-
-
-
-
-

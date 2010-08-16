@@ -31,6 +31,7 @@
 #include "loadbalance.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
+#include "picon_png.h"
 
 
 #include <string.h>
@@ -50,9 +51,9 @@ public:
 	int equivalent(DiffKeyConfig &src);
 	void interpolate(DiffKeyConfig &prev, 
 		DiffKeyConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame);
 
 	float threshold;
 	float slope;
@@ -146,7 +147,7 @@ public:
 	~DiffKey();
 
 	int process_buffer(VFrame **frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int is_multichannel();
@@ -200,9 +201,9 @@ int DiffKeyConfig::equivalent(DiffKeyConfig &src)
 
 void DiffKeyConfig::interpolate(DiffKeyConfig &prev, 
 	DiffKeyConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -211,14 +212,6 @@ void DiffKeyConfig::interpolate(DiffKeyConfig &prev,
 	this->slope = prev.slope * prev_scale + next.slope * next_scale;
 	this->do_value = prev.do_value;
 }
-
-
-
-
-
-
-
-
 
 
 DiffKeyThreshold::DiffKeyThreshold(DiffKey *plugin, int x, int y)
@@ -233,12 +226,6 @@ int DiffKeyThreshold::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
 
 
 DiffKeySlope::DiffKeySlope(DiffKey *plugin, int x, int y)
@@ -271,13 +258,9 @@ int DiffKeyDoValue::handle_event()
 
 
 
-
-
-
-
 DiffKeyGUI::DiffKeyGUI(DiffKey *plugin, int x, int y)
  : BC_Window(plugin->gui_string,
- 	x,
+	x,
 	y,
 	320,
 	100,
@@ -299,6 +282,8 @@ void DiffKeyGUI::create_objects()
 {
 	int x = 10, y = 10, x2;
 	BC_Title *title;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Threshold:")));
 	x += title->get_w() + 10;
 	add_subwindow(threshold = new DiffKeyThreshold(plugin, x, y));
@@ -310,8 +295,6 @@ void DiffKeyGUI::create_objects()
 	x = 10;
 	y += slope->get_h() + 10;
 	add_subwindow(do_value = new DiffKeyDoValue(plugin, x, y));
-
-
 
 	show_window();
 }
@@ -339,7 +322,6 @@ DiffKey::~DiffKey()
 SHOW_GUI_MACRO(DiffKey, DiffKeyThread)
 RAISE_WINDOW_MACRO(DiffKey)
 SET_STRING_MACRO(DiffKey)
-#include "picon_png.h"
 NEW_PICON_MACRO(DiffKey)
 LOAD_CONFIGURATION_MACRO(DiffKey, DiffKeyConfig)
 
@@ -419,7 +401,7 @@ void DiffKey::update_gui()
 }
 
 int DiffKey::process_buffer(VFrame **frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -507,9 +489,6 @@ int DiffKey::handle_opengl()
 		"}\n";
 
 
-
-
-
 	top_frame->enable_opengl();
 	top_frame->init_screen();
 
@@ -575,7 +554,6 @@ int DiffKey::handle_opengl()
 	bottom_frame->set_opengl_state(VFrame::TEXTURE);
 	glDisable(GL_BLEND);
 
-
 #endif
 	return 0;
 }
@@ -611,15 +589,6 @@ LoadPackage* DiffKeyEngine::new_package()
 {
 	return new DiffKeyPackage;
 }
-
-
-
-
-
-
-
-
-
 
 
 DiffKeyClient::DiffKeyClient(DiffKeyEngine *engine)
@@ -759,41 +728,31 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 
 	switch(plugin->top_frame->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			DIFFKEY_MACRO(float, 3, 1.0, 0);
-			break;
-		case BC_RGBA_FLOAT:
-			DIFFKEY_MACRO(float, 4, 1.0, 0);
-			break;
-		case BC_RGB888:
-			DIFFKEY_MACRO(unsigned char, 3, 0xff, 0);
-			break;
-		case BC_RGBA8888:
-			DIFFKEY_MACRO(unsigned char, 4, 0xff, 0);
-			break;
-		case BC_YUV888:
-			DIFFKEY_MACRO(unsigned char, 3, 0xff, 0x80);
-			break;
-		case BC_YUVA8888:
-			DIFFKEY_MACRO(unsigned char, 4, 0xff, 0x80);
-			break;
+	case BC_RGB_FLOAT:
+		DIFFKEY_MACRO(float, 3, 1.0, 0);
+		break;
+	case BC_RGBA_FLOAT:
+		DIFFKEY_MACRO(float, 4, 1.0, 0);
+		break;
+	case BC_RGB888:
+		DIFFKEY_MACRO(unsigned char, 3, 0xff, 0);
+		break;
+	case BC_RGBA8888:
+		DIFFKEY_MACRO(unsigned char, 4, 0xff, 0);
+		break;
+	case BC_YUV888:
+		DIFFKEY_MACRO(unsigned char, 3, 0xff, 0x80);
+		break;
+	case BC_YUVA8888:
+		DIFFKEY_MACRO(unsigned char, 4, 0xff, 0x80);
+		break;
 	}
-
-
-
 }
-
-
 
 
 DiffKeyPackage::DiffKeyPackage()
  : LoadPackage()
 {
 }
-
-
-
-
-
 
 #endif
