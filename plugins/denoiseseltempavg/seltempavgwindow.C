@@ -51,7 +51,9 @@ SelTempAvgWindow::~SelTempAvgWindow()
 int SelTempAvgWindow::create_objects()
 {
 	int x1 = 10, x2 = 40, x3 = 80, x4 = 175, x5 = 260, y = 10;
+	VFrame *ico = client->new_picon();
 
+	set_icon(ico);
 	add_tool(new BC_Title(x1, y, _("Frames to average")));
 	y += 20;
 	add_tool(total_frames = new SelTempAvgSlider(client, x1, y));
@@ -72,21 +74,21 @@ int SelTempAvgWindow::create_objects()
 	y += 25;
 
 	add_tool(new BC_Title(x2, y, _("R / Y")));
-        add_tool(avg_threshold_RY = new SelTempAvgThreshSlider(client, x3, y, AVG_RY,client->config.avg_threshold_RY));
-        add_tool(std_threshold_RY = new SelTempAvgThreshSlider(client, x4, y, STD_RY,client->config.std_threshold_RY));
-        add_tool(mask_RY = new SelTempAvgMask(client, x5, y, MASK_RY, client->config.mask_RY));
+	add_tool(avg_threshold_RY = new SelTempAvgThreshSlider(client, x3, y, AVG_RY,client->config.avg_threshold_RY));
+	add_tool(std_threshold_RY = new SelTempAvgThreshSlider(client, x4, y, STD_RY,client->config.std_threshold_RY));
+	add_tool(mask_RY = new SelTempAvgMask(client, x5, y, MASK_RY, client->config.mask_RY));
 
 	y += 25;
 	add_tool(new BC_Title(x2, y, _("G / U")));
-        add_tool(avg_threshold_GU = new SelTempAvgThreshSlider(client, x3, y, AVG_GU,client->config.avg_threshold_GU));
-        add_tool(std_threshold_GU = new SelTempAvgThreshSlider(client, x4, y, STD_GU,client->config.std_threshold_GU));
-        add_tool(mask_GU = new SelTempAvgMask(client, x5, y, MASK_GU,client->config.mask_GU));
+	add_tool(avg_threshold_GU = new SelTempAvgThreshSlider(client, x3, y, AVG_GU,client->config.avg_threshold_GU));
+	add_tool(std_threshold_GU = new SelTempAvgThreshSlider(client, x4, y, STD_GU,client->config.std_threshold_GU));
+	add_tool(mask_GU = new SelTempAvgMask(client, x5, y, MASK_GU,client->config.mask_GU));
 
 	y += 25;
 	add_tool(new BC_Title(x2, y, _("B / V")));
-        add_tool(avg_threshold_BV = new SelTempAvgThreshSlider(client, x3, y, AVG_BV,client->config.avg_threshold_BV));
-        add_tool(std_threshold_BV = new SelTempAvgThreshSlider(client, x4, y, STD_BV,client->config.std_threshold_BV));
-        add_tool(mask_BV = new SelTempAvgMask(client, x5, y, MASK_BV,client->config.mask_BV));
+	add_tool(avg_threshold_BV = new SelTempAvgThreshSlider(client, x3, y, AVG_BV,client->config.avg_threshold_BV));
+	add_tool(std_threshold_BV = new SelTempAvgThreshSlider(client, x4, y, STD_BV,client->config.std_threshold_BV));
+	add_tool(mask_BV = new SelTempAvgMask(client, x5, y, MASK_BV,client->config.mask_BV));
 
 	y += 30;
 	add_tool(method_average = new SelTempAvgMethodRadial(client, this, x1, y, SelTempAvgConfig::METHOD_AVERAGE, _("Average")));
@@ -97,7 +99,7 @@ int SelTempAvgWindow::create_objects()
 	add_tool(new BC_Title(x1, y, _("First frame in average:")));
 	y += 20;
 	add_tool(offset_fixed = new SelTempAvgOffsetRadial(client, this, x1, y, SelTempAvgConfig::OFFSETMODE_FIXED, _("Fixed offset: ")));
-        add_tool(offset_fixed_value = new SelTempAvgOffsetValue(client, x4, y));
+	add_tool(offset_fixed_value = new SelTempAvgOffsetValue(client, x4, y));
 	y += 25;
 
 	add_tool(offset_restartmarker = new SelTempAvgOffsetRadial(client, this, x1, y, SelTempAvgConfig::OFFSETMODE_RESTARTMARKERSYS, _("Restart marker system:")));
@@ -115,10 +117,11 @@ int SelTempAvgWindow::create_objects()
 	add_tool(no_subtract = new SelTempAvgNoSubtract(client, x1, y));
 	y += 30;
 	add_tool(new BC_Title(x2, y, _("Gain:")));
-        add_tool(gain = new SelTempAvgGainValue(client, x3, y));
+	add_tool(gain = new SelTempAvgGainValue(client, x3, y));
 
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -130,14 +133,14 @@ WINDOW_CLOSE_EVENT(SelTempAvgWindow)
 SelTempAvgThreshSlider::SelTempAvgThreshSlider(SelTempAvgMain *client, int x, int y, int id, float currentval)
   : BC_TextBox(x,y, 80, 1, currentval)
 {
-  //	float val;
-  //	int   ival;
 	this->type = id;
 	this->client = client;
 }
+
 SelTempAvgThreshSlider::~SelTempAvgThreshSlider()
 {
 }
+
 int SelTempAvgThreshSlider::handle_event()
 {
 	float val = atof(get_text());
@@ -175,9 +178,11 @@ SelTempAvgOffsetValue::SelTempAvgOffsetValue(SelTempAvgMain *client, int x, int 
 {
 	this->client = client;
 }
+
 SelTempAvgOffsetValue::~SelTempAvgOffsetValue()
 {
 }
+
 int SelTempAvgOffsetValue::handle_event()
 {
 	int val = atoi(get_text());
@@ -193,9 +198,11 @@ SelTempAvgGainValue::SelTempAvgGainValue(SelTempAvgMain *client, int x, int y)
 {
 	this->client = client;
 }
+
 SelTempAvgGainValue::~SelTempAvgGainValue()
 {
 }
+
 int SelTempAvgGainValue::handle_event()
 {
 	float val = atof(get_text());
@@ -205,9 +212,6 @@ int SelTempAvgGainValue::handle_event()
 	client->send_configure_change();
 	return 1;
 }
-
-
-
 
 
 SelTempAvgSlider::SelTempAvgSlider(SelTempAvgMain *client, int x, int y)
@@ -222,9 +226,11 @@ SelTempAvgSlider::SelTempAvgSlider(SelTempAvgMain *client, int x, int y)
 {
 	this->client = client;
 }
+
 SelTempAvgSlider::~SelTempAvgSlider()
 {
 }
+
 int SelTempAvgSlider::handle_event()
 {
 	int result = get_value();
@@ -238,7 +244,7 @@ int SelTempAvgSlider::handle_event()
 
 SelTempAvgOffsetRadial::SelTempAvgOffsetRadial(SelTempAvgMain *client, SelTempAvgWindow *gui, int x, int y, int type, char *caption)
  : BC_Radial(x, 
- 	y, 
+	y,
 	client->config.offsetmode == type,
 	caption)
 {
@@ -246,6 +252,7 @@ SelTempAvgOffsetRadial::SelTempAvgOffsetRadial(SelTempAvgMain *client, SelTempAv
 	this->gui = gui;
 	this->type = type;
 }
+
 int SelTempAvgOffsetRadial::handle_event()
 {
 	int result = get_value();
@@ -262,7 +269,7 @@ int SelTempAvgOffsetRadial::handle_event()
 
 SelTempAvgMethodRadial::SelTempAvgMethodRadial(SelTempAvgMain *client, SelTempAvgWindow *gui, int x, int y, int type, char *caption)
  : BC_Radial(x, 
- 	y, 
+	y, 
 	client->config.method == type,
 	caption)
 {
@@ -270,6 +277,7 @@ SelTempAvgMethodRadial::SelTempAvgMethodRadial(SelTempAvgMain *client, SelTempAv
 	this->gui = gui;
 	this->type = type;
 }
+
 int SelTempAvgMethodRadial::handle_event()
 {
 	int result = get_value();
@@ -287,12 +295,13 @@ int SelTempAvgMethodRadial::handle_event()
 
 SelTempAvgParanoid::SelTempAvgParanoid(SelTempAvgMain *client, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	client->config.paranoid,
 	_("Reprocess frame again"))
 {
 	this->client = client;
 }
+
 int SelTempAvgParanoid::handle_event()
 {
 	int result = get_value();
@@ -304,12 +313,13 @@ int SelTempAvgParanoid::handle_event()
 
 SelTempAvgNoSubtract::SelTempAvgNoSubtract(SelTempAvgMain *client, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	client->config.nosubtract,
 	_("Disable subtraction"))
 {
 	this->client = client;
 }
+
 int SelTempAvgNoSubtract::handle_event()
 {
 	int result = get_value();
@@ -320,13 +330,14 @@ int SelTempAvgNoSubtract::handle_event()
 
 SelTempAvgMask::SelTempAvgMask(SelTempAvgMain *client, int x, int y, int type, int val)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	val,
 	"")
 {
 	this->client = client;
 	this->type = type;
 }
+
 int SelTempAvgMask::handle_event()
 {
 	int result = get_value();
@@ -349,12 +360,13 @@ int SelTempAvgMask::handle_event()
 
 SelTempAvgStartKeyframe::SelTempAvgStartKeyframe(SelTempAvgMain *client, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	client->config.nosubtract,
 	_("This Frame is a start of a section"))
 {
 	this->client = client;
 }
+
 int SelTempAvgStartKeyframe::handle_event()
 {
 	int result = get_value();

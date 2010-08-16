@@ -40,9 +40,9 @@ public:
 	void copy_from(DenoiseMJPEGConfig &that);
 	void interpolate(DenoiseMJPEGConfig &prev, 
 		DenoiseMJPEGConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame, 
+		posnum current_frame);
 
 	int radius;
 	int threshold;
@@ -204,7 +204,5 @@ public:
 	DenoiseMJPEGConfig config;
 	BC_Hash *defaults;
 };
-
-
 
 #endif

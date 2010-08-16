@@ -41,15 +41,14 @@ public:
 	void copy_from(DenoiseVideoConfig &that);
 	void interpolate(DenoiseVideoConfig &prev, 
 		DenoiseVideoConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		samplenum prev_frame, 
+		samplenum next_frame, 
+		samplenum current_frame);
 
 	int frames;
 	float threshold;
 	int do_r, do_g, do_b, do_a;
 };
-
 
 
 
@@ -78,7 +77,7 @@ public:
 		int x, 
 		int y, 
 		int *output,
-		char *text);
+		const char *text);
 	int handle_event();
 	DenoiseVideo *plugin;
 	int *output;
@@ -92,7 +91,7 @@ public:
 
 	void create_objects();
 	int close_event();
-	
+
 	DenoiseVideo *plugin;
 	DenoiseVideoFrames *frames;
 	DenoiseVideoThreshold *threshold;

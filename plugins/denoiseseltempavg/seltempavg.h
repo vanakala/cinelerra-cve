@@ -75,7 +75,7 @@ public:
 	~SelTempAvgMain();
 
 // required for all realtime plugins
-	int process_buffer(VFrame *frame, int64_t start_position, double frame_rate);
+	int process_buffer(VFrame *frame, framenum start_position, double frame_rate);
 	int is_realtime();
 	const char* plugin_title();
 	VFrame* new_picon();
@@ -94,15 +94,15 @@ public:
 	void add_accum(VFrame *frame);
 	void transfer_accum(VFrame *frame);
 
-	int64_t restartoffset;
+	framenum restartoffset;
 	int onakeyframe;
 
-	char string[64];		
+	char string[64];
 
 	VFrame **history;
 
 // Frame of history in requested framerate
-	int64_t *history_frame;
+	framenum *history_frame;
 	int *history_valid;
 	unsigned char *accumulation;
 	unsigned char *accumulation_sq;
@@ -113,9 +113,9 @@ public:
 	SelTempAvgConfig config;
 	int history_size;
 // Starting frame of history in requested framerate
-	int64_t history_start;
+	framenum history_start;
 // When subtraction is disabled, this detects no change for paranoid mode.
-	int64_t prev_frame;
+	framenum prev_frame;
 
 	BC_Hash *defaults;
 };

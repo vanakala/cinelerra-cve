@@ -35,18 +35,12 @@
 #define N_(String) gettext_noop (String)
 
 
-
-
 #include <stdint.h>
 #include <string.h>
 
 
 
 REGISTER_PLUGIN(DenoiseMJPEG)
-
-
-
-
 
 
 DenoiseMJPEGConfig::DenoiseMJPEGConfig()
@@ -91,9 +85,9 @@ void DenoiseMJPEGConfig::copy_from(DenoiseMJPEGConfig &that)
 
 void DenoiseMJPEGConfig::interpolate(DenoiseMJPEGConfig &prev, 
 	DenoiseMJPEGConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -110,13 +104,9 @@ void DenoiseMJPEGConfig::interpolate(DenoiseMJPEGConfig &prev,
 }
 
 
-
-
-
-
 DenoiseMJPEGRadius::DenoiseMJPEGRadius(DenoiseMJPEG *plugin, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y, 
 	plugin->config.radius,
 	8,
 	24)
@@ -133,13 +123,9 @@ int DenoiseMJPEGRadius::handle_event()
 }
 
 
-
-
-
-
 DenoiseMJPEGThresh::DenoiseMJPEGThresh(DenoiseMJPEG *plugin, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y,
 	plugin->config.threshold,
 	0,
 	255)
@@ -156,13 +142,9 @@ int DenoiseMJPEGThresh::handle_event()
 }
 
 
-
-
-
-
 DenoiseMJPEGThresh2::DenoiseMJPEGThresh2(DenoiseMJPEG *plugin, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y,
 	plugin->config.threshold2,
 	0,
 	255)
@@ -179,13 +161,9 @@ int DenoiseMJPEGThresh2::handle_event()
 }
 
 
-
-
-
-
 DenoiseMJPEGSharp::DenoiseMJPEGSharp(DenoiseMJPEG *plugin, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y,
 	plugin->config.sharpness,
 	0,
 	255)
@@ -202,13 +180,9 @@ int DenoiseMJPEGSharp::handle_event()
 }
 
 
-
-
-
-
 DenoiseMJPEGLContrast::DenoiseMJPEGLContrast(DenoiseMJPEG *plugin, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y, 
 	plugin->config.lcontrast,
 	0,
 	255)
@@ -225,13 +199,9 @@ int DenoiseMJPEGLContrast::handle_event()
 }
 
 
-
-
-
-
 DenoiseMJPEGCContrast::DenoiseMJPEGCContrast(DenoiseMJPEG *plugin, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y,
 	plugin->config.ccontrast,
 	0,
 	255)
@@ -248,13 +218,9 @@ int DenoiseMJPEGCContrast::handle_event()
 }
 
 
-
-
-
-
 DenoiseMJPEGDeinterlace::DenoiseMJPEGDeinterlace(DenoiseMJPEG *plugin, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	plugin->config.deinterlace,
 	_("Deinterlace"))
 {
@@ -270,13 +236,9 @@ int DenoiseMJPEGDeinterlace::handle_event()
 }
 
 
-
-
-
-
 DenoiseMJPEGModeProgressive::DenoiseMJPEGModeProgressive(DenoiseMJPEG *plugin, DenoiseMJPEGWindow *gui, int x, int y)
  : BC_Radial(x, 
- 	y, 
+	y,
 	plugin->config.mode == 0,
 	_("Progressive"))
 {
@@ -295,7 +257,7 @@ int DenoiseMJPEGModeProgressive::handle_event()
 
 DenoiseMJPEGModeInterlaced::DenoiseMJPEGModeInterlaced(DenoiseMJPEG *plugin, DenoiseMJPEGWindow *gui, int x, int y)
  : BC_Radial(x, 
- 	y, 
+	y, 
 	plugin->config.mode == 1,
 	_("Interlaced"))
 {
@@ -314,7 +276,7 @@ int DenoiseMJPEGModeInterlaced::handle_event()
 
 DenoiseMJPEGModeFast::DenoiseMJPEGModeFast(DenoiseMJPEG *plugin, DenoiseMJPEGWindow *gui, int x, int y)
  : BC_Radial(x, 
- 	y, 
+	y,
 	plugin->config.mode == 2,
 	_("Fast"))
 {
@@ -330,14 +292,9 @@ int DenoiseMJPEGModeFast::handle_event()
 	return 1;
 }
 
-
-
-
-
-
 DenoiseMJPEGDelay::DenoiseMJPEGDelay(DenoiseMJPEG *plugin, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y,
 	plugin->config.delay,
 	1,
 	8)
@@ -354,18 +311,9 @@ int DenoiseMJPEGDelay::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
 DenoiseMJPEGWindow::DenoiseMJPEGWindow(DenoiseMJPEG *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	250, 
 	350, 
@@ -382,6 +330,8 @@ DenoiseMJPEGWindow::DenoiseMJPEGWindow(DenoiseMJPEG *plugin, int x, int y)
 void DenoiseMJPEGWindow::create_objects()
 {
 	int x1 = 10, y1 = 20, x2 = 140, x3 = 180, y2 = 10, margin = 30, margin2 = 25;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x1, y1, _("Search radius:")));
 	add_subwindow(radius = new DenoiseMJPEGRadius(plugin, x2, y2));
 	y1 += margin;
@@ -441,20 +391,7 @@ int DenoiseMJPEGWindow::close_event()
 }
 
 
-
-
-
-
 PLUGIN_THREAD_OBJECT(DenoiseMJPEG, DenoiseMJPEGThread, DenoiseMJPEGWindow)
-
-
-
-
-
-
-
-
-
 
 
 DenoiseMJPEG::DenoiseMJPEG(PluginServer *server)
@@ -501,7 +438,6 @@ void DenoiseMJPEG::update_gui()
 		thread->window->unlock_window();
 	}
 }
-
 
 
 SET_STRING_MACRO(DenoiseMJPEG);
@@ -591,7 +527,3 @@ void DenoiseMJPEG::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
-
-
-

@@ -29,21 +29,10 @@
 #include "picon_png.h"
 #include "vframe.h"
 
-
-
-
-
 #include <stdint.h>
 #include <string.h>
 
-
-
-
 REGISTER_PLUGIN(DenoiseVideo)
-
-
-
-
 
 
 DenoiseVideoConfig::DenoiseVideoConfig()
@@ -78,9 +67,9 @@ void DenoiseVideoConfig::copy_from(DenoiseVideoConfig &that)
 
 void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev, 
 	DenoiseVideoConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	samplenum prev_frame,
+	samplenum next_frame,
+	samplenum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -94,13 +83,9 @@ void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev,
 }
 
 
-
-
-
-
 DenoiseVideoFrames::DenoiseVideoFrames(DenoiseVideo *plugin, int x, int y)
  : BC_ISlider(x, 
- 	y, 
+	y, 
 	0,
 	190, 
 	200, 
@@ -122,10 +107,6 @@ int DenoiseVideoFrames::handle_event()
 
 
 
-
-
-
-
 DenoiseVideoThreshold::DenoiseVideoThreshold(DenoiseVideo *plugin, int x, int y)
  : BC_TextBox(x, y, 100, 1, plugin->config.threshold)
 {
@@ -141,14 +122,12 @@ int DenoiseVideoThreshold::handle_event()
 
 
 
-
-
 DenoiseVideoToggle::DenoiseVideoToggle(DenoiseVideo *plugin, 
 	DenoiseVideoWindow *gui, 
 	int x, 
 	int y, 
 	int *output,
-	char *text)
+	const char *text)
  : BC_CheckBox(x, y, *output, text)
 {
 	this->plugin = plugin;
@@ -162,17 +141,9 @@ int DenoiseVideoToggle::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
 DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	210, 
 	240, 
@@ -189,6 +160,8 @@ DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
 void DenoiseVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
+	set_icon(new VFrame(picon_png));
+
 	add_subwindow(new BC_Title(x, y, _("Frames to accumulate:")));
 	y += 20;
 	add_subwindow(frames = new DenoiseVideoFrames(plugin, x, y));
@@ -215,19 +188,7 @@ int DenoiseVideoWindow::close_event()
 }
 
 
-
-
-
-
 PLUGIN_THREAD_OBJECT(DenoiseVideo, DenoiseVideoThread, DenoiseVideoWindow)
-
-
-
-
-
-
-
-
 
 
 
@@ -305,39 +266,35 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 }
 
 
-
-
-
-
 	switch(color_model)
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			DENOISE_MACRO(unsigned char, 3, 0xff);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		DENOISE_MACRO(unsigned char, 3, 0xff);
+		break;
 
-		case BC_RGB_FLOAT:
-			DENOISE_MACRO(float, 3, 1.0);
-			break;
+	case BC_RGB_FLOAT:
+		DENOISE_MACRO(float, 3, 1.0);
+		break;
 
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			DENOISE_MACRO(unsigned char, 4, 0xff);
-			break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		DENOISE_MACRO(unsigned char, 4, 0xff);
+		break;
 
-		case BC_RGBA_FLOAT:
-			DENOISE_MACRO(float, 4, 1.0);
-			break;
+	case BC_RGBA_FLOAT:
+		DENOISE_MACRO(float, 4, 1.0);
+		break;
 
-		case BC_RGB161616:
-		case BC_YUV161616:
-			DENOISE_MACRO(uint16_t, 3, 0xffff);
-			break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		DENOISE_MACRO(uint16_t, 3, 0xffff);
+		break;
 
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			DENOISE_MACRO(uint16_t, 4, 0xffff);
-			break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		DENOISE_MACRO(uint16_t, 4, 0xffff);
+		break;
 	}
 }
 
@@ -441,7 +398,3 @@ void DenoiseVideo::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
-
-
-
