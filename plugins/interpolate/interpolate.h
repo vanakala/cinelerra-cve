@@ -36,13 +36,13 @@ class InterpolatePixelsConfig
 {
 public:
 	InterpolatePixelsConfig();
-    int equivalent(InterpolatePixelsConfig &that);
-    void copy_from(InterpolatePixelsConfig &that);
-    void interpolate(InterpolatePixelsConfig &prev,
-     	InterpolatePixelsConfig &next,
-     	int64_t prev_position,
-     	int64_t next_position,
-     	int64_t current_position);
+	int equivalent(InterpolatePixelsConfig &that);
+	void copy_from(InterpolatePixelsConfig &that);
+	void interpolate(InterpolatePixelsConfig &prev,
+	InterpolatePixelsConfig &next,
+		posnum prev_position,
+		posnum next_position,
+		posnum current_position);
 	int x, y;
 };
 
@@ -58,7 +58,7 @@ public:
 		int y, 
 		int *output);
 	~InterpolatePixelsOffset();
-	
+
 	int handle_event();
 	InterpolatePixelsWindow *window;
 	int *output;
@@ -69,7 +69,7 @@ class InterpolatePixelsWindow : public BC_Window
 public:
 	InterpolatePixelsWindow(InterpolatePixelsMain *client, int x, int y);
 	~InterpolatePixelsWindow();
-	
+
 	int create_objects();
 	int close_event();
 
@@ -92,7 +92,7 @@ public:
 
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	void update_gui();
@@ -101,7 +101,7 @@ public:
 	int load_defaults();
 	int save_defaults();
 	int handle_opengl();
-	
+
 	InterpolatePixelsEngine *engine;
 };
 

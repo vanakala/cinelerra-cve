@@ -20,6 +20,7 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "colormodels.h"
 #include "filexml.h"
@@ -47,14 +48,13 @@ InterpolatePixelsOffset::InterpolatePixelsOffset(InterpolatePixelsWindow *window
 	int y, 
 	int *output)
  : BC_ISlider(x,
- 	y,
+	y,
 	0,
 	50,
 	50,
 	0,
 	1,
-	*output,
-	0)
+	*output)
 {
 	this->window = window;
 	this->output = output;
@@ -70,9 +70,6 @@ int InterpolatePixelsOffset::handle_event()
 	window->client->send_configure_change();
 	return 1;
 }
-
-
-
 
 
 
@@ -98,8 +95,9 @@ InterpolatePixelsWindow::~InterpolatePixelsWindow()
 int InterpolatePixelsWindow::create_objects()
 {
 	int x = 10, y = 10;
-	
 	BC_Title *title;
+
+	set_icon(new VFrame(picon_png));
 	add_tool(title = new BC_Title(x, y, _("X Offset:")));
 	add_tool(x_offset = new InterpolatePixelsOffset(this, 
 		x + title->get_w() + 5,
@@ -122,15 +120,6 @@ WINDOW_CLOSE_EVENT(InterpolatePixelsWindow)
 
 
 
-
-
-
-
-
-
-
-
-
 InterpolatePixelsConfig::InterpolatePixelsConfig()
 {
 	x = 0;
@@ -149,17 +138,14 @@ void InterpolatePixelsConfig::copy_from(InterpolatePixelsConfig &that)
 }
 
 void InterpolatePixelsConfig::interpolate(InterpolatePixelsConfig &prev,
-    InterpolatePixelsConfig &next,
-    int64_t prev_position,
-    int64_t next_position,
-    int64_t current_position)
+	InterpolatePixelsConfig &next,
+	posnum prev_position,
+	posnum next_position,
+	posnum current_position)
 {
-    this->x = prev.x;
-    this->y = prev.y;
+	this->x = prev.x;
+	this->y = prev.y;
 }
-
-
-
 
 
 
@@ -181,11 +167,8 @@ int InterpolatePixelsMain::is_realtime() { return 1; }
 
 
 SHOW_GUI_MACRO(InterpolatePixelsMain, InterpolatePixelsThread)
-
 SET_STRING_MACRO(InterpolatePixelsMain)
-
 RAISE_WINDOW_MACRO(InterpolatePixelsMain)
-
 NEW_PICON_MACRO(InterpolatePixelsMain)
 
 void InterpolatePixelsMain::update_gui()
@@ -271,7 +254,7 @@ void InterpolatePixelsMain::read_data(KeyFrame *keyframe)
 
 
 int InterpolatePixelsMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -285,7 +268,6 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 		start_position, 
 		frame_rate,
 		get_use_opengl());
-//frame->dump_params();
 
 	if(get_use_opengl())
 	{
@@ -295,10 +277,8 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 			next_effect_is("Color Balance"))
 			return 0;
 
-
 		return run_opengl();
 	}
-
 
 	if(get_output()->get_color_model() != BC_RGB_FLOAT &&
 		get_output()->get_color_model() != BC_RGBA_FLOAT)
@@ -325,10 +305,7 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 
 int InterpolatePixelsMain::handle_opengl()
 {
-printf("InterpolatePixelsMain::handle_opengl\n");
 #ifdef HAVE_GL
-
-
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -345,12 +322,10 @@ printf("InterpolatePixelsMain::handle_opengl\n");
 		INTERPOLATE_UNIFORMS(frag)
 	}
 
-
 	get_output()->init_screen();
 	get_output()->bind_texture(0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	
 
 	get_output()->draw_texture();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -363,26 +338,10 @@ printf("InterpolatePixelsMain::handle_opengl\n");
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 InterpolatePixelsPackage::InterpolatePixelsPackage()
  : LoadPackage()
 {
-	
 }
-
-
-
-
 
 
 InterpolatePixelsUnit::InterpolatePixelsUnit(InterpolatePixelsEngine *server, InterpolatePixelsMain *plugin)
@@ -504,8 +463,6 @@ void InterpolatePixelsUnit::process_package(LoadPackage *package)
 }
 
 
-
-
 InterpolatePixelsEngine::InterpolatePixelsEngine(InterpolatePixelsMain *plugin)
  : LoadServer(plugin->get_project_smp() + 1, plugin->get_project_smp() + 1)
 {
@@ -547,5 +504,3 @@ LoadPackage* InterpolatePixelsEngine::new_package()
 {
 	return new InterpolatePixelsPackage;
 }
-
-

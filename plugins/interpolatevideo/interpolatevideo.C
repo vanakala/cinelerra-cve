@@ -35,8 +35,6 @@
 #include <string.h>
 #include <stdint.h>
 
-
-
 class InterpolateVideo;
 class InterpolateVideoWindow;
 
@@ -54,8 +52,6 @@ public:
 // If 1, use the keyframes as beginning and end frames and ignore input rate
 	int use_keyframes;
 };
-
-
 
 
 class InterpolateVideoRate : public BC_TextBox
@@ -126,7 +122,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(InterpolateVideoConfig, InterpolateVideoThread)
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -135,33 +131,23 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 
-	void fill_border(double frame_rate, int64_t start_position);
+	void fill_border(double frame_rate, framenum start_position);
 
 // beginning and end frames
 	VFrame *frames[2];
 // Last requested positions
-	int64_t frame_number[2];
+	framenum frame_number[2];
 // Last output position
-	int64_t last_position;
+	framenum last_position;
 	double last_rate;
 
 // Current requested positions
-	int64_t range_start;
-	int64_t range_end;
+	framenum range_start;
+	framenum range_end;
 
 // Input rate determined by keyframe mode
 	double active_input_rate;
 };
-
-
-
-
-
-
-
-
-
-
 
 
 InterpolateVideoConfig::InterpolateVideoConfig()
@@ -183,16 +169,9 @@ int InterpolateVideoConfig::equivalent(InterpolateVideoConfig *config)
 }
 
 
-
-
-
-
-
-
-
 InterpolateVideoWindow::InterpolateVideoWindow(InterpolateVideo *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	210, 
 	160, 
@@ -212,8 +191,9 @@ InterpolateVideoWindow::~InterpolateVideoWindow()
 void InterpolateVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
-
 	BC_Title *title;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Input frames per second:")));
 	y += 30;
 	add_subwindow(rate = new InterpolateVideoRate(plugin, 
@@ -250,16 +230,6 @@ void InterpolateVideoWindow::update_enabled()
 WINDOW_CLOSE_EVENT(InterpolateVideoWindow)
 
 
-
-
-
-
-
-
-
-
-
-
 InterpolateVideoRate::InterpolateVideoRate(InterpolateVideo *plugin, 
 	InterpolateVideoWindow *gui, 
 	int x, 
@@ -289,7 +259,7 @@ InterpolateVideoRateMenu::InterpolateVideoRateMenu(InterpolateVideo *plugin,
 	int x, 
 	int y)
  : BC_ListBox(x,
- 	y,
+	y,
 	100,
 	200,
 	LISTBOX_TEXT,
@@ -314,20 +284,19 @@ int InterpolateVideoRateMenu::handle_event()
 }
 
 
-
-
 InterpolateVideoKeyframes::InterpolateVideoKeyframes(InterpolateVideo *plugin,
 	InterpolateVideoWindow *gui,
 	int x, 
 	int y)
  : BC_CheckBox(x, 
- 	y, 
+	y, 
 	plugin->config.use_keyframes, 
 	_("Use keyframes as input"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
 }
+
 int InterpolateVideoKeyframes::handle_event()
 {
 	plugin->config.use_keyframes = get_value();
@@ -337,29 +306,8 @@ int InterpolateVideoKeyframes::handle_event()
 }
 
 
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(InterpolateVideo, InterpolateVideoThread, InterpolateVideoWindow)
-
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(InterpolateVideo)
-
-
-
-
 
 
 InterpolateVideo::InterpolateVideo(PluginServer *server)
@@ -382,7 +330,7 @@ InterpolateVideo::~InterpolateVideo()
 }
 
 
-void InterpolateVideo::fill_border(double frame_rate, int64_t start_position)
+void InterpolateVideo::fill_border(double frame_rate, framenum start_position)
 {
 // A border frame changed or the start position is identical to the last 
 // start position.
@@ -390,7 +338,6 @@ void InterpolateVideo::fill_border(double frame_rate, int64_t start_position)
 		last_position != start_position ||
 		!EQUIV(last_rate, frame_rate))
 	{
-//printf("InterpolateVideo::fill_border 1 %lld\n", range_start);
 		read_frame(frames[0], 
 			0, 
 			range_start + (get_direction() == PLAY_REVERSE ? 1 : 0), 
@@ -401,7 +348,6 @@ void InterpolateVideo::fill_border(double frame_rate, int64_t start_position)
 		last_position != start_position ||
 		!EQUIV(last_rate, frame_rate))
 	{
-//printf("InterpolateVideo::fill_border 2 %lld\n", range_start);
 		read_frame(frames[1], 
 			0, 
 			range_end + (get_direction() == PLAY_REVERSE ? 1 : 0), 
@@ -437,7 +383,7 @@ void InterpolateVideo::fill_border(double frame_rate, int64_t start_position)
 
 
 int InterpolateVideo::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	if(get_direction() == PLAY_REVERSE) start_position--;
@@ -454,7 +400,6 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 				-1);
 		}
 	}
-//printf("InterpolateVideo::process_buffer 1 %lld %lld\n", range_start, range_end);
 
 	if(range_start == range_end)
 	{
@@ -471,10 +416,10 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 		fill_border(frame_rate, start_position);
 
 // Fraction of lowest frame in output
-		int64_t requested_range_start = (int64_t)((double)range_start * 
+		framenum requested_range_start = (framenum)((double)range_start * 
 			frame_rate / 
 			active_input_rate);
-		int64_t requested_range_end = (int64_t)((double)range_end * 
+		framenum requested_range_end = (framenum)((double)range_end * 
 			frame_rate / 
 			active_input_rate);
 		float highest_fraction = (float)(start_position - requested_range_start) /
@@ -485,43 +430,33 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 		CLAMP(highest_fraction, 0, 1);
 		CLAMP(lowest_fraction, 0, 1);
 
-// printf("InterpolateVideo::process_buffer %lld %lld %lld %f %f %lld %lld %f %f\n",
-// range_start,
-// range_end,
-// requested_range_start,
-// requested_range_end,
-// start_position,
-// config.input_rate,
-// frame_rate,
-// lowest_fraction,
-// highest_fraction);
-
 		int w = frame->get_w();
 		int h = frame->get_h();
+
 		switch(frame->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				AVERAGE(float, float, 3, 1);
-				break;
-			case BC_RGB888:
-			case BC_YUV888:
-				AVERAGE(unsigned char, int, 3, 0xff);
-				break;
-			case BC_RGBA_FLOAT:
-				AVERAGE(float, float, 4, 1);
-				break;
-			case BC_RGBA8888:
-			case BC_YUVA8888:
-				AVERAGE(unsigned char, int, 4, 0xff);
-				break;
-			case BC_RGB161616:
-			case BC_YUV161616:
-				AVERAGE(uint16_t, int, 3, 0xffff);
-				break;
-			case BC_RGBA16161616:
-			case BC_YUVA16161616:
-				AVERAGE(uint16_t, int, 4, 0xffff);
-				break;
+		case BC_RGB_FLOAT:
+			AVERAGE(float, float, 3, 1);
+			break;
+		case BC_RGB888:
+		case BC_YUV888:
+			AVERAGE(unsigned char, int, 3, 0xff);
+			break;
+		case BC_RGBA_FLOAT:
+			AVERAGE(float, float, 4, 1);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			AVERAGE(unsigned char, int, 4, 0xff);
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			AVERAGE(uint16_t, int, 3, 0xffff);
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			AVERAGE(uint16_t, int, 4, 0xffff);
+			break;
 		}
 	}
 	return 0;
@@ -540,11 +475,8 @@ const char* InterpolateVideo::plugin_title()
 }
 
 NEW_PICON_MACRO(InterpolateVideo) 
-
 SHOW_GUI_MACRO(InterpolateVideo, InterpolateVideoThread)
-
 RAISE_WINDOW_MACRO(InterpolateVideo)
-
 SET_STRING_MACRO(InterpolateVideo)
 
 int InterpolateVideo::load_configuration()
@@ -555,26 +487,21 @@ int InterpolateVideo::load_configuration()
 
 	next_keyframe = get_next_keyframe(get_source_position());
 	prev_keyframe = get_prev_keyframe(get_source_position());
+
 // Previous keyframe stays in config object.
 	read_data(prev_keyframe);
 
 
-	int64_t prev_position = edl_to_local(prev_keyframe->position);
-	int64_t next_position = edl_to_local(next_keyframe->position);
+	framenum prev_position = edl_to_local(prev_keyframe->position);
+	framenum next_position = edl_to_local(next_keyframe->position);
 	if(prev_position == 0 && next_position == 0)
 	{
 		next_position = prev_position = get_source_start();
 	}
-// printf("InterpolateVideo::load_configuration 1 %lld %lld %lld %lld\n",
-// prev_keyframe->position,
-// next_keyframe->position,
-// prev_position,
-// next_position);
 
 // Get range to average in requested rate
 	range_start = prev_position;
 	range_end = next_position;
-
 
 // Use keyframes to determine range
 	if(config.use_keyframes)
@@ -597,47 +524,20 @@ int InterpolateVideo::load_configuration()
 // Last frame should be inclusive of current effect
 				range_end = get_source_start() + get_total_len() - 1;
 			}
-			else
-			{
-// Should never get here
-				;
-			}
 		}
-
-
-// Make requested rate equal to input rate for this mode.
-
-// Convert requested rate to input rate
-// printf("InterpolateVideo::load_configuration 2 %lld %lld %f %f\n", 
-// range_start, 
-// range_end,
-// get_framerate(),
-// config.input_rate);
-//		range_start = (int64_t)((double)range_start / get_framerate() * active_input_rate + 0.5);
-//		range_end = (int64_t)((double)range_end / get_framerate() * active_input_rate + 0.5);
 	}
 	else
 // Use frame rate
 	{
 		active_input_rate = config.input_rate;
 // Convert to input frame rate
-		range_start = (int64_t)(get_source_position() / 
+		range_start = (framenum)(get_source_position() / 
 			get_framerate() *
 			active_input_rate);
-		range_end = (int64_t)(get_source_position() / 
+		range_end = (framenum)(get_source_position() / 
 			get_framerate() *
 			active_input_rate) + 1;
 	}
-
-// printf("InterpolateVideo::load_configuration 1 %lld %lld %lld %lld %lld %lld\n",
-// prev_keyframe->position,
-// next_keyframe->position,
-// prev_position,
-// next_position,
-// range_start,
-// range_end);
-
-
 	return !config.equivalent(&old_config);
 }
 
@@ -713,5 +613,3 @@ void InterpolateVideo::update_gui()
 		}
 	}
 }
-
-

@@ -47,9 +47,9 @@ public:
 	int equivalent(InvertVideoConfig &src);
 	void interpolate(InvertVideoConfig &prev, 
 		InvertVideoConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	int r, g, b, a;
 };
@@ -81,7 +81,7 @@ public:
 	InvertVideoEffect(PluginServer *server);
 	~InvertVideoEffect();
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	const char* plugin_title();
@@ -103,15 +103,7 @@ public:
 };
 
 
-
-
-
 REGISTER_PLUGIN(InvertVideoEffect)
-
-
-
-
-
 
 
 InvertVideoConfig::InvertVideoConfig()
@@ -140,9 +132,9 @@ int InvertVideoConfig::equivalent(InvertVideoConfig &src)
 
 void InvertVideoConfig::interpolate(InvertVideoConfig &prev, 
 	InvertVideoConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	r = prev.r;
 	g = prev.g;
@@ -151,14 +143,13 @@ void InvertVideoConfig::interpolate(InvertVideoConfig &prev,
 }
 
 
-
-
 InvertVideoEnable::InvertVideoEnable(InvertVideoEffect *plugin, int *output, int x, int y, char *text)
  : BC_CheckBox(x, y, *output, text)
 {
 	this->plugin = plugin;
 	this->output = output;
 }
+
 int InvertVideoEnable::handle_event()
 {
 	*output = get_value();
@@ -167,12 +158,9 @@ int InvertVideoEnable::handle_event()
 }
 
 
-
-
-
 InvertVideoWindow::InvertVideoWindow(InvertVideoEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	260, 
 	130, 
@@ -188,6 +176,8 @@ InvertVideoWindow::InvertVideoWindow(InvertVideoEffect *plugin, int x, int y)
 void InvertVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(r = new InvertVideoEnable(plugin, &plugin->config.r, x, y, _("Invert R")));
 	y += 30;
 	add_subwindow(g = new InvertVideoEnable(plugin, &plugin->config.g, x, y, _("Invert G")));
@@ -203,14 +193,7 @@ void InvertVideoWindow::create_objects()
 WINDOW_CLOSE_EVENT(InvertVideoWindow)
 
 
-
-
-
 PLUGIN_THREAD_OBJECT(InvertVideoEffect, InvertVideoThread, InvertVideoWindow)
-
-
-
-
 
 
 InvertVideoEffect::InvertVideoEffect(PluginServer *server)
@@ -323,7 +306,7 @@ void InvertVideoEffect::read_data(KeyFrame *keyframe)
 }
 
 int InvertVideoEffect::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -346,31 +329,30 @@ int InvertVideoEffect::process_buffer(VFrame *frame,
 
 		switch(frame->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				INVERT_MACRO(float, 3, 1.0)
-				break;
-			case BC_RGB888:
-			case BC_YUV888:
-				INVERT_MACRO(unsigned char, 3, 0xff)
-				break;
-			case BC_RGBA_FLOAT:
-				INVERT_MACRO(float, 4, 1.0)
-				break;
-			case BC_RGBA8888:
-			case BC_YUVA8888:
-				INVERT_MACRO(unsigned char, 4, 0xff)
-				break;
-			case BC_RGB161616:
-			case BC_YUV161616:
-				INVERT_MACRO(uint16_t, 3, 0xffff)
-				break;
-			case BC_RGBA16161616:
-			case BC_YUVA16161616:
-				INVERT_MACRO(uint16_t, 4, 0xffff)
-				break;
+		case BC_RGB_FLOAT:
+			INVERT_MACRO(float, 3, 1.0)
+			break;
+		case BC_RGB888:
+		case BC_YUV888:
+			INVERT_MACRO(unsigned char, 3, 0xff)
+			break;
+		case BC_RGBA_FLOAT:
+			INVERT_MACRO(float, 4, 1.0)
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			INVERT_MACRO(unsigned char, 4, 0xff)
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			INVERT_MACRO(uint16_t, 3, 0xffff)
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			INVERT_MACRO(uint16_t, 4, 0xffff)
+			break;
 		}
 	}
-
 	return 0;
 }
 
@@ -406,7 +388,6 @@ int InvertVideoEffect::handle_opengl()
 	glUniform1i(glGetUniformLocation(frag_shader, "do_b"), config.b);
 	glUniform1i(glGetUniformLocation(frag_shader, "do_a"), config.a);
 
-
 	VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
 	get_output()->bind_texture(0);
 	get_output()->draw_texture();
@@ -414,5 +395,3 @@ int InvertVideoEffect::handle_opengl()
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
 }
-
-
