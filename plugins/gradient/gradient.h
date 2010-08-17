@@ -51,9 +51,9 @@ public:
 	void copy_from(GradientConfig &that);
 	void interpolate(GradientConfig &prev, 
 		GradientConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame, 
+		posnum current_frame);
 // Int to hex triplet conversion
 	int get_in_color();
 	int get_out_color();
@@ -104,8 +104,8 @@ public:
 		int x, 
 		int y);
 	void create_objects();
-	static char* to_text(int shape);
-	static int from_text(char *text);
+	static const char* to_text(int shape);
+	static int from_text(const char *text);
 	int handle_event();
 	GradientMain *plugin;
 	GradientWindow *gui;
@@ -191,13 +191,12 @@ public:
 };
 
 
-
 class GradientWindow : public BC_Window
 {
 public:
 	GradientWindow(GradientMain *plugin, int x, int y);
 	~GradientWindow();
-	
+
 	int create_objects();
 	int close_event();
 	void update_in_color();
@@ -237,7 +236,7 @@ public:
 	~GradientMain();
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -285,7 +284,4 @@ public:
 	LoadPackage* new_package();
 	GradientMain *plugin;
 };
-
-
-
 #endif

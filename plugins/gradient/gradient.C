@@ -34,14 +34,7 @@
 #include "picon_png.h"
 #include "vframe.h"
 
-
-
-
 REGISTER_PLUGIN(GradientMain)
-
-
-
-
 
 
 GradientConfig::GradientConfig()
@@ -103,9 +96,9 @@ void GradientConfig::copy_from(GradientConfig &that)
 
 void GradientConfig::interpolate(GradientConfig &prev, 
 	GradientConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -156,7 +149,7 @@ PLUGIN_THREAD_OBJECT(GradientMain, GradientThread, GradientWindow)
 
 GradientWindow::GradientWindow(GradientMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	350, 
 	290, 
@@ -185,6 +178,7 @@ int GradientWindow::create_objects()
 	int x = 10, y = 10;
 	BC_Title *title;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Shape:")));
 	add_subwindow(shape = new GradientShape(plugin, 
 		this, 
@@ -276,7 +270,6 @@ int GradientWindow::close_event()
 
 void GradientWindow::update_in_color()
 {
-//printf("GradientWindow::update_in_color 1 %08x\n", plugin->config.get_in_color());
 	set_color(plugin->config.get_in_color());
 	draw_box(in_color_x, in_color_y, COLOR_W, COLOR_H);
 	flash(in_color_x, in_color_y, COLOR_W, COLOR_H);
@@ -284,18 +277,10 @@ void GradientWindow::update_in_color()
 
 void GradientWindow::update_out_color()
 {
-//printf("GradientWindow::update_out_color 1 %08x\n", plugin->config.get_in_color());
 	set_color(plugin->config.get_out_color());
 	draw_box(out_color_x, out_color_y, COLOR_W, COLOR_H);
 	flash(out_color_x, out_color_y, COLOR_W, COLOR_H);
 }
-
-
-
-
-
-
-
 
 
 GradientShape::GradientShape(GradientMain *plugin, 
@@ -307,11 +292,13 @@ GradientShape::GradientShape(GradientMain *plugin,
 	this->plugin = plugin;
 	this->gui = gui;
 }
+
 void GradientShape::create_objects()
 {
 	add_item(new BC_MenuItem(to_text(GradientConfig::LINEAR)));
 	add_item(new BC_MenuItem(to_text(GradientConfig::RADIAL)));
 }
+
 char* GradientShape::to_text(int shape)
 {
 	switch(shape)
@@ -322,12 +309,14 @@ char* GradientShape::to_text(int shape)
 			return _("Radial");
 	}
 }
+
 int GradientShape::from_text(char *text)
 {
 	if(!strcmp(text, to_text(GradientConfig::LINEAR))) 
 		return GradientConfig::LINEAR;
 	return GradientConfig::RADIAL;
 }
+
 int GradientShape::handle_event()
 {
 	plugin->config.shape = from_text(get_text());
@@ -335,22 +324,18 @@ int GradientShape::handle_event()
 	plugin->send_configure_change();
 }
 
-
-
-
 GradientCenterX::GradientCenterX(GradientMain *plugin, int x, int y)
  : BC_FPot(x, y, plugin->config.center_x, 0, 100)
 {
 	this->plugin = plugin;
 }
+
 int GradientCenterX::handle_event()
 {
 	plugin->config.center_x = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
-
-
 
 GradientCenterY::GradientCenterY(GradientMain *plugin, int x, int y)
  : BC_FPot(x, y, plugin->config.center_y, 0, 100)
@@ -365,12 +350,9 @@ int GradientCenterY::handle_event()
 	return 1;
 }
 
-
-
-
 GradientAngle::GradientAngle(GradientMain *plugin, int x, int y)
  : BC_FPot(x,
- 	y,
+	y,
 	plugin->config.angle,
 	-180,
 	180)
@@ -388,20 +370,22 @@ int GradientAngle::handle_event()
 
 GradientRate::GradientRate(GradientMain *plugin, int x, int y)
  : BC_PopupMenu(x,
- 	y,
+	y,
 	100,
 	to_text(plugin->config.rate),
 	1)
 {
 	this->plugin = plugin;
 }
+
 void GradientRate::create_objects()
 {
 	add_item(new BC_MenuItem(to_text(GradientConfig::LINEAR)));
 	add_item(new BC_MenuItem(to_text(GradientConfig::LOG)));
 	add_item(new BC_MenuItem(to_text(GradientConfig::SQUARE)));
 }
-char* GradientRate::to_text(int shape)
+
+const char* GradientRate::to_text(int shape)
 {
 	switch(shape)
 	{
@@ -413,7 +397,8 @@ char* GradientRate::to_text(int shape)
 			return _("Square");
 	}
 }
-int GradientRate::from_text(char *text)
+
+int GradientRate::from_text(const char *text)
 {
 	if(!strcmp(text, to_text(GradientConfig::LINEAR))) 
 		return GradientConfig::LINEAR;
@@ -421,6 +406,7 @@ int GradientRate::from_text(char *text)
 		return GradientConfig::LOG;
 	return GradientConfig::SQUARE;
 }
+
 int GradientRate::handle_event()
 {
 	plugin->config.rate = from_text(get_text());
@@ -429,10 +415,9 @@ int GradientRate::handle_event()
 }
 
 
-
 GradientInRadius::GradientInRadius(GradientMain *plugin, int x, int y)
  : BC_FSlider(x,
- 	y,
+	y,
 	0,
 	200,
 	200,
@@ -506,7 +491,7 @@ int GradientOutColorButton::handle_event()
 
 GradientInColorThread::GradientInColorThread(GradientMain *plugin, 
 	GradientWindow *window)
- : ColorThread(1, _("Inner color"))
+ : ColorThread(1, _("Inner color"), new VFrame(picon_png))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -521,16 +506,6 @@ int GradientInColorThread::handle_new_color(int output, int alpha)
 	window->update_in_color();
 	window->flush();
 	plugin->send_configure_change();
-// printf("GradientInColorThread::handle_event 1 %d %d %d %d %d %d %d %d\n",
-// plugin->config.in_r,
-// plugin->config.in_g,
-// plugin->config.in_b,
-// plugin->config.in_a,
-// plugin->config.out_r,
-// plugin->config.out_g,
-// plugin->config.out_b,
-// plugin->config.out_a);
-
 	return 1;
 }
 
@@ -538,7 +513,7 @@ int GradientInColorThread::handle_new_color(int output, int alpha)
 
 GradientOutColorThread::GradientOutColorThread(GradientMain *plugin, 
 	GradientWindow *window)
- : ColorThread(1, _("Outer color"))
+ : ColorThread(1, _("Outer color"), new VFrame(picon_png))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -553,27 +528,8 @@ int GradientOutColorThread::handle_new_color(int output, int alpha)
 	window->update_out_color();
 	window->flush();
 	plugin->send_configure_change();
-// printf("GradientOutColorThread::handle_event 1 %d %d %d %d %d %d %d %d\n",
-// plugin->config.in_r,
-// plugin->config.in_g,
-// plugin->config.in_b,
-// plugin->config.in_a,
-// plugin->config.out_r,
-// plugin->config.out_g,
-// plugin->config.out_b,
-// plugin->config.out_a);
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 GradientMain::GradientMain(PluginServer *server)
@@ -616,7 +572,7 @@ int GradientMain::is_synthesis()
 
 
 int GradientMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	this->input = frame;
@@ -637,15 +593,15 @@ int GradientMain::process_buffer(VFrame *frame,
 	{
 		switch(gradient_cmodel)
 		{
-			case BC_RGB888:
-				gradient_cmodel = BC_RGBA8888;
-				break;
-			case BC_RGB_FLOAT:
-				gradient_cmodel = BC_RGBA_FLOAT;
-				break;
-			case BC_YUV888:
-				gradient_cmodel = BC_YUVA8888;
-				break;
+		case BC_RGB888:
+			gradient_cmodel = BC_RGBA8888;
+			break;
+		case BC_RGB_FLOAT:
+			gradient_cmodel = BC_RGBA_FLOAT;
+			break;
+		case BC_YUV888:
+			gradient_cmodel = BC_YUVA8888;
+			break;
 		}
 	}
 
@@ -683,8 +639,6 @@ int GradientMain::process_buffer(VFrame *frame,
 			TRANSFER_NORMAL,
 			NEAREST_NEIGHBOR);
 	}
-
-
 	return 0;
 }
 
@@ -727,11 +681,6 @@ int GradientMain::load_defaults()
 	defaults = new BC_Hash(directory);
 	defaults->load();
 
-// printf("GradientMain::load_defaults %d %d %d %d\n",
-// config.out_r,
-// config.out_g,
-// config.out_b,
-// config.out_a);
 	config.angle = defaults->get("ANGLE", config.angle);
 	config.in_radius = defaults->get("IN_RADIUS", config.in_radius);
 	config.out_radius = defaults->get("OUT_RADIUS", config.out_radius);
@@ -910,15 +859,15 @@ int GradientMain::handle_opengl()
 
 	switch(config.rate)
 	{
-		case GradientConfig::LINEAR:
-			shader_stack[2] = linear_rate;
-			break;
-		case GradientConfig::LOG:
-			shader_stack[2] = log_rate;
-			break;
-		case GradientConfig::SQUARE:
-			shader_stack[2] = square_rate;
-			break;
+	case GradientConfig::LINEAR:
+		shader_stack[2] = linear_rate;
+		break;
+	case GradientConfig::LOG:
+		shader_stack[2] = log_rate;
+		break;
+	case GradientConfig::SQUARE:
+		shader_stack[2] = square_rate;
+		break;
 	}
 
 	shader_stack[3] = tail_frag;
@@ -978,48 +927,48 @@ int GradientMain::handle_opengl()
 
 		switch(get_output()->get_color_model())
 		{
-			case BC_YUV888:
-			case BC_YUVA8888:
-			{
-				float in1, in2, in3, in4;
-				float out1, out2, out3, out4;
-				YUV::rgb_to_yuv_f((float)config.in_r / 0xff,
-					(float)config.in_g / 0xff,
-					(float)config.in_b / 0xff,
-					in1,
-					in2,
-					in3);
-				in4 = (float)config.in_a / 0xff;
-				YUV::rgb_to_yuv_f((float)config.out_r / 0xff,
-					(float)config.out_g / 0xff,
-					(float)config.out_b / 0xff,
-					out1,
-					out2,
-					out3);
-				in2 += 0.5;
-				in3 += 0.5;
-				out2 += 0.5;
-				out3 += 0.5;
-				out4 = (float)config.out_a / 0xff;
-				glUniform4f(glGetUniformLocation(frag, "out_color"), 
-					out1, out2, out3, out4);
-				glUniform4f(glGetUniformLocation(frag, "in_color"), 
-					in1, in2, in3, in4);
-				break;
-			}
+		case BC_YUV888:
+		case BC_YUVA8888:
+		{
+			float in1, in2, in3, in4;
+			float out1, out2, out3, out4;
+			YUV::rgb_to_yuv_f((float)config.in_r / 0xff,
+				(float)config.in_g / 0xff,
+				(float)config.in_b / 0xff,
+				in1,
+				in2,
+				in3);
+			in4 = (float)config.in_a / 0xff;
+			YUV::rgb_to_yuv_f((float)config.out_r / 0xff,
+				(float)config.out_g / 0xff,
+				(float)config.out_b / 0xff,
+				out1,
+				out2,
+				out3);
+			in2 += 0.5;
+			in3 += 0.5;
+			out2 += 0.5;
+			out3 += 0.5;
+			out4 = (float)config.out_a / 0xff;
+			glUniform4f(glGetUniformLocation(frag, "out_color"), 
+				out1, out2, out3, out4);
+			glUniform4f(glGetUniformLocation(frag, "in_color"), 
+				in1, in2, in3, in4);
+			break;
+		}
 
-			default:
-				glUniform4f(glGetUniformLocation(frag, "out_color"), 
-					(float)config.out_r / 0xff,
-					(float)config.out_g / 0xff,
-					(float)config.out_b / 0xff,
-					(float)config.out_a / 0xff);
-				glUniform4f(glGetUniformLocation(frag, "in_color"), 
-					(float)config.in_r / 0xff,
-					(float)config.in_g / 0xff,
-					(float)config.in_b / 0xff,
-					(float)config.in_a / 0xff);
-				break;
+		default:
+			glUniform4f(glGetUniformLocation(frag, "out_color"), 
+				(float)config.out_r / 0xff,
+				(float)config.out_g / 0xff,
+				(float)config.out_b / 0xff,
+				(float)config.out_a / 0xff);
+			glUniform4f(glGetUniformLocation(frag, "in_color"), 
+				(float)config.in_r / 0xff,
+				(float)config.in_g / 0xff,
+				(float)config.in_b / 0xff,
+				(float)config.in_a / 0xff);
+			break;
 		}
 	}
 
@@ -1031,22 +980,10 @@ int GradientMain::handle_opengl()
 }
 
 
-
-
-
-
-
-
-
-
-
 GradientPackage::GradientPackage()
  : LoadPackage()
 {
 }
-
-
-
 
 GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
  : LoadClient(server)
@@ -1067,37 +1004,37 @@ static float calculate_opacity(float mag,
 	float opacity;
 	switch(rate)
 	{
-		case GradientConfig::LINEAR:
-			if(mag < in_radius)
-				opacity = 0.0;
-			else
-			if(mag >= out_radius)
-				opacity = 1.0;
-			else
-				opacity = (float)(mag - in_radius) / (out_radius - in_radius);
-			break;
+	case GradientConfig::LINEAR:
+		if(mag < in_radius)
+			opacity = 0.0;
+		else
+		if(mag >= out_radius)
+			opacity = 1.0;
+		else
+			opacity = (float)(mag - in_radius) / (out_radius - in_radius);
+		break;
 
-		case GradientConfig::LOG:
-			if(mag < in_radius)
-				opacity = 0;
-			else
+	case GradientConfig::LOG:
+		if(mag < in_radius)
+			opacity = 0;
+		else
 // Let this one decay beyond out_radius
-				opacity = 1 - exp(1.0 * -(float)(mag - in_radius) /
-					(out_radius - in_radius));
-			break;
+			opacity = 1 - exp(1.0 * -(float)(mag - in_radius) /
+				(out_radius - in_radius));
+		break;
 
-		case GradientConfig::SQUARE:
-			if(mag < in_radius)
-				opacity = 0.0; 
-			else
-			if(mag >= out_radius) 
-				opacity = 1.0;
-			else
-				opacity = powf((float)(mag - in_radius) /
-					(out_radius - in_radius), 2.0);
-			break;
+	case GradientConfig::SQUARE:
+		if(mag < in_radius)
+			opacity = 0.0; 
+		else
+		if(mag >= out_radius) 
+			opacity = 1.0;
+		else
+			opacity = powf((float)(mag - in_radius) /
+				(out_radius - in_radius), 2.0);
+		break;
 	}
- 	CLAMP(opacity, 0.0, 1.0);
+	CLAMP(opacity, 0.0, 1.0);
 	return opacity;
 }
 
@@ -1105,10 +1042,10 @@ static float calculate_opacity(float mag,
 { \
 /* Synthesize linear gradient for lookups */ \
  \
- 	r_table = malloc(sizeof(type) * gradient_size); \
- 	g_table = malloc(sizeof(type) * gradient_size); \
- 	b_table = malloc(sizeof(type) * gradient_size); \
- 	a_table = malloc(sizeof(type) * gradient_size); \
+	r_table = malloc(sizeof(type) * gradient_size); \
+	g_table = malloc(sizeof(type) * gradient_size); \
+	b_table = malloc(sizeof(type) * gradient_size); \
+	a_table = malloc(sizeof(type) * gradient_size); \
  \
 	for(int i = 0; i < gradient_size; i++) \
 	{ \
@@ -1127,113 +1064,113 @@ static float calculate_opacity(float mag,
 		type *gradient_row = (type*)plugin->gradient->get_rows()[i]; \
 		type *out_row = (type*)plugin->get_output()->get_rows()[i]; \
  \
- 		switch(plugin->config.shape) \
+		switch(plugin->config.shape) \
 		{ \
-			case GradientConfig::LINEAR: \
-				for(int j = 0; j < w; j++) \
-				{ \
-					int x = j - half_w; \
-					int y = -(i - half_h); \
-		 \
+		case GradientConfig::LINEAR: \
+			for(int j = 0; j < w; j++) \
+			{ \
+				int x = j - half_w; \
+				int y = -(i - half_h); \
+ \
 /* Rotate by effect angle */ \
-					int mag = (int)(gradient_size / 2 - \
-						(x * sin_angle + y * cos_angle) + \
-						0.5); \
-		 \
+				int mag = (int)(gradient_size / 2 - \
+					(x * sin_angle + y * cos_angle) + \
+					0.5); \
+ \
 /* Get gradient value from these coords */ \
-		 \
-					if(sizeof(type) == 4) \
-					{ \
-						float opacity = calculate_opacity(mag,  \
-							in_radius,  \
-							out_radius, \
-							plugin->config.rate); \
-						float transparency = 1.0 - opacity; \
-						gradient_row[0] = (type)(out1 * opacity + in1 * transparency); \
-						gradient_row[1] = (type)(out2 * opacity + in2 * transparency); \
-						gradient_row[2] = (type)(out3 * opacity + in3 * transparency); \
-						if(components == 4) gradient_row[3] = (type)(out4 * opacity + in4 * transparency); \
-					} \
-					else \
- 					if(mag < 0) \
-					{ \
-						gradient_row[0] = out1; \
-						gradient_row[1] = out2; \
-						gradient_row[2] = out3; \
-						if(components == 4) gradient_row[3] = out4; \
-					} \
-					else \
-					if(mag >= gradient_size) \
-					{ \
-						gradient_row[0] = in1; \
-						gradient_row[1] = in2; \
-						gradient_row[2] = in3; \
-						if(components == 4) gradient_row[3] = in4; \
-					} \
-					else \
-					{ \
-						gradient_row[0] = ((type*)r_table)[mag]; \
-						gradient_row[1] = ((type*)g_table)[mag]; \
-						gradient_row[2] = ((type*)b_table)[mag]; \
-						if(components == 4) gradient_row[3] = ((type*)a_table)[mag]; \
-					} \
  \
-/* Overlay mixed colormodels onto output */ \
- 					if(gradient_cmodel != output_cmodel) \
-					{ \
-						temp opacity = gradient_row[3]; \
-						temp transparency = max - opacity; \
-						out_row[0] = (transparency * out_row[0] + opacity * gradient_row[0]) / max; \
-						out_row[1] = (transparency * out_row[1] + opacity * gradient_row[1]) / max; \
-						out_row[2] = (transparency * out_row[2] + opacity * gradient_row[2]) / max; \
-						out_row += 3; \
-					} \
- \
- 					gradient_row += components; \
-				} \
-				break; \
- \
-			case GradientConfig::RADIAL: \
-				for(int j = 0; j < w; j++) \
+				if(sizeof(type) == 4) \
 				{ \
-					double x = j - center_x; \
-					double y = i - center_y; \
-					double magnitude = hypot(x, y); \
-					int mag = (int)magnitude; \
-					if(sizeof(type) == 4) \
-					{ \
-						float opacity = calculate_opacity(mag,  \
-							in_radius,  \
-							out_radius, \
-							plugin->config.rate); \
-						float transparency = 1.0 - opacity; \
-						gradient_row[0] = (type)(out1 * opacity + in1 * transparency); \
-						gradient_row[1] = (type)(out2 * opacity + in2 * transparency); \
-						gradient_row[2] = (type)(out3 * opacity + in3 * transparency); \
-						if(components == 4) gradient_row[3] = (type)(out4 * opacity + in4 * transparency); \
-					} \
-					else \
-					{ \
-						gradient_row[0] = ((type*)r_table)[mag]; \
-						gradient_row[1] = ((type*)g_table)[mag]; \
-						gradient_row[2] = ((type*)b_table)[mag]; \
-						if(components == 4) gradient_row[3] = ((type*)a_table)[mag]; \
-					} \
+					float opacity = calculate_opacity(mag,  \
+						in_radius,  \
+						out_radius, \
+						plugin->config.rate); \
+					float transparency = 1.0 - opacity; \
+					gradient_row[0] = (type)(out1 * opacity + in1 * transparency); \
+					gradient_row[1] = (type)(out2 * opacity + in2 * transparency); \
+					gradient_row[2] = (type)(out3 * opacity + in3 * transparency); \
+					if(components == 4) gradient_row[3] = (type)(out4 * opacity + in4 * transparency); \
+				} \
+				else \
+				if(mag < 0) \
+				{ \
+					gradient_row[0] = out1; \
+					gradient_row[1] = out2; \
+					gradient_row[2] = out3; \
+					if(components == 4) gradient_row[3] = out4; \
+				} \
+				else \
+				if(mag >= gradient_size) \
+				{ \
+					gradient_row[0] = in1; \
+					gradient_row[1] = in2; \
+					gradient_row[2] = in3; \
+					if(components == 4) gradient_row[3] = in4; \
+				} \
+				else \
+				{ \
+					gradient_row[0] = ((type*)r_table)[mag]; \
+					gradient_row[1] = ((type*)g_table)[mag]; \
+					gradient_row[2] = ((type*)b_table)[mag]; \
+					if(components == 4) gradient_row[3] = ((type*)a_table)[mag]; \
+				} \
  \
 /* Overlay mixed colormodels onto output */ \
- 					if(gradient_cmodel != output_cmodel) \
-					{ \
-						temp opacity = gradient_row[3]; \
-						temp transparency = max - opacity; \
-						out_row[0] = (transparency * out_row[0] + opacity * gradient_row[0]) / max; \
-						out_row[1] = (transparency * out_row[1] + opacity * gradient_row[1]) / max; \
-						out_row[2] = (transparency * out_row[2] + opacity * gradient_row[2]) / max; \
-						out_row += 3; \
-					} \
- \
-					gradient_row += components; \
+				if(gradient_cmodel != output_cmodel) \
+				{ \
+					temp opacity = gradient_row[3]; \
+					temp transparency = max - opacity; \
+					out_row[0] = (transparency * out_row[0] + opacity * gradient_row[0]) / max; \
+					out_row[1] = (transparency * out_row[1] + opacity * gradient_row[1]) / max; \
+					out_row[2] = (transparency * out_row[2] + opacity * gradient_row[2]) / max; \
+					out_row += 3; \
 				} \
-				break; \
+ \
+				gradient_row += components; \
+			} \
+			break; \
+ \
+		case GradientConfig::RADIAL: \
+			for(int j = 0; j < w; j++) \
+			{ \
+				double x = j - center_x; \
+				double y = i - center_y; \
+				double magnitude = hypot(x, y); \
+				int mag = (int)magnitude; \
+				if(sizeof(type) == 4) \
+				{ \
+					float opacity = calculate_opacity(mag,  \
+						in_radius,  \
+						out_radius, \
+						plugin->config.rate); \
+					float transparency = 1.0 - opacity; \
+					gradient_row[0] = (type)(out1 * opacity + in1 * transparency); \
+					gradient_row[1] = (type)(out2 * opacity + in2 * transparency); \
+					gradient_row[2] = (type)(out3 * opacity + in3 * transparency); \
+					if(components == 4) gradient_row[3] = (type)(out4 * opacity + in4 * transparency); \
+				} \
+				else \
+				{ \
+					gradient_row[0] = ((type*)r_table)[mag]; \
+					gradient_row[1] = ((type*)g_table)[mag]; \
+					gradient_row[2] = ((type*)b_table)[mag]; \
+					if(components == 4) gradient_row[3] = ((type*)a_table)[mag]; \
+				} \
+ \
+/* Overlay mixed colormodels onto output */ \
+				if(gradient_cmodel != output_cmodel) \
+				{ \
+					temp opacity = gradient_row[3]; \
+					temp transparency = max - opacity; \
+					out_row[0] = (transparency * out_row[0] + opacity * gradient_row[0]) / max; \
+					out_row[1] = (transparency * out_row[1] + opacity * gradient_row[1]) / max; \
+					out_row[2] = (transparency * out_row[2] + opacity * gradient_row[2]) / max; \
+					out_row += 3; \
+				} \
+ \
+				gradient_row += components; \
+			} \
+			break; \
 		} \
 	} \
 }
@@ -1261,113 +1198,113 @@ void GradientUnit::process_package(LoadPackage *package)
 
 	if(in_radius > out_radius)
 	{
-	    in_radius ^= out_radius;
-	    out_radius ^= in_radius;
-	    in_radius ^= out_radius;
+		in_radius ^= out_radius;
+		out_radius ^= in_radius;
+		in_radius ^= out_radius;
 	}
 
 
 	switch(gradient_cmodel)
 	{
-		case BC_RGB888:
-		{
-			int in1 = plugin->config.in_r;
-			int in2 = plugin->config.in_g;
-			int in3 = plugin->config.in_b;
-			int in4 = plugin->config.in_a;
-			int out1 = plugin->config.out_r;
-			int out2 = plugin->config.out_g;
-			int out3 = plugin->config.out_b;
-			int out4 = plugin->config.out_a;
-			CREATE_GRADIENT(unsigned char, int, 3, 0xff)
-			break;
-		}
+	case BC_RGB888:
+	{
+		int in1 = plugin->config.in_r;
+		int in2 = plugin->config.in_g;
+		int in3 = plugin->config.in_b;
+		int in4 = plugin->config.in_a;
+		int out1 = plugin->config.out_r;
+		int out2 = plugin->config.out_g;
+		int out3 = plugin->config.out_b;
+		int out4 = plugin->config.out_a;
+		CREATE_GRADIENT(unsigned char, int, 3, 0xff)
+		break;
+	}
 
-		case BC_RGBA8888:
-		{
-			int in1 = plugin->config.in_r;
-			int in2 = plugin->config.in_g;
-			int in3 = plugin->config.in_b;
-			int in4 = plugin->config.in_a;
-			int out1 = plugin->config.out_r;
-			int out2 = plugin->config.out_g;
-			int out3 = plugin->config.out_b;
-			int out4 = plugin->config.out_a;
-			CREATE_GRADIENT(unsigned char, int, 4, 0xff)
-			break;
-		}
+	case BC_RGBA8888:
+	{
+		int in1 = plugin->config.in_r;
+		int in2 = plugin->config.in_g;
+		int in3 = plugin->config.in_b;
+		int in4 = plugin->config.in_a;
+		int out1 = plugin->config.out_r;
+		int out2 = plugin->config.out_g;
+		int out3 = plugin->config.out_b;
+		int out4 = plugin->config.out_a;
+		CREATE_GRADIENT(unsigned char, int, 4, 0xff)
+		break;
+	}
 
-		case BC_RGB_FLOAT:
-		{
-			float in1 = (float)plugin->config.in_r / 0xff;
-			float in2 = (float)plugin->config.in_g / 0xff;
-			float in3 = (float)plugin->config.in_b / 0xff;
-			float in4 = (float)plugin->config.in_a / 0xff;
-			float out1 = (float)plugin->config.out_r / 0xff;
-			float out2 = (float)plugin->config.out_g / 0xff;
-			float out3 = (float)plugin->config.out_b / 0xff;
-			float out4 = (float)plugin->config.out_a / 0xff;
-			CREATE_GRADIENT(float, float, 3, 1.0)
-			break;
-		}
+	case BC_RGB_FLOAT:
+	{
+		float in1 = (float)plugin->config.in_r / 0xff;
+		float in2 = (float)plugin->config.in_g / 0xff;
+		float in3 = (float)plugin->config.in_b / 0xff;
+		float in4 = (float)plugin->config.in_a / 0xff;
+		float out1 = (float)plugin->config.out_r / 0xff;
+		float out2 = (float)plugin->config.out_g / 0xff;
+		float out3 = (float)plugin->config.out_b / 0xff;
+		float out4 = (float)plugin->config.out_a / 0xff;
+		CREATE_GRADIENT(float, float, 3, 1.0)
+		break;
+	}
 
-		case BC_RGBA_FLOAT:
-		{
-			float in1 = (float)plugin->config.in_r / 0xff;
-			float in2 = (float)plugin->config.in_g / 0xff;
-			float in3 = (float)plugin->config.in_b / 0xff;
-			float in4 = (float)plugin->config.in_a / 0xff;
-			float out1 = (float)plugin->config.out_r / 0xff;
-			float out2 = (float)plugin->config.out_g / 0xff;
-			float out3 = (float)plugin->config.out_b / 0xff;
-			float out4 = (float)plugin->config.out_a / 0xff;
-			CREATE_GRADIENT(float, float, 4, 1.0)
-			break;
-		}
+	case BC_RGBA_FLOAT:
+	{
+		float in1 = (float)plugin->config.in_r / 0xff;
+		float in2 = (float)plugin->config.in_g / 0xff;
+		float in3 = (float)plugin->config.in_b / 0xff;
+		float in4 = (float)plugin->config.in_a / 0xff;
+		float out1 = (float)plugin->config.out_r / 0xff;
+		float out2 = (float)plugin->config.out_g / 0xff;
+		float out3 = (float)plugin->config.out_b / 0xff;
+		float out4 = (float)plugin->config.out_a / 0xff;
+		CREATE_GRADIENT(float, float, 4, 1.0)
+		break;
+	}
 
-		case BC_YUV888:
-		{
-			int in1, in2, in3, in4;
-			int out1, out2, out3, out4;
-			yuv.rgb_to_yuv_8(plugin->config.in_r,
-				plugin->config.in_g,
-				plugin->config.in_b,
-				in1,
-				in2,
-				in3);
-			in4 = plugin->config.in_a;
-			yuv.rgb_to_yuv_8(plugin->config.out_r,
-				plugin->config.out_g,
-				plugin->config.out_b,
-				out1,
-				out2,
-				out3);
-			out4 = plugin->config.out_a;
-			CREATE_GRADIENT(unsigned char, int, 3, 0xff)
-			break;
-		}
+	case BC_YUV888:
+	{
+		int in1, in2, in3, in4;
+		int out1, out2, out3, out4;
+		yuv.rgb_to_yuv_8(plugin->config.in_r,
+			plugin->config.in_g,
+			plugin->config.in_b,
+			in1,
+			in2,
+			in3);
+		in4 = plugin->config.in_a;
+		yuv.rgb_to_yuv_8(plugin->config.out_r,
+			plugin->config.out_g,
+			plugin->config.out_b,
+			out1,
+			out2,
+			out3);
+		out4 = plugin->config.out_a;
+		CREATE_GRADIENT(unsigned char, int, 3, 0xff)
+		break;
+	}
 
-		case BC_YUVA8888:
-		{
-			int in1, in2, in3, in4;
-			int out1, out2, out3, out4;
-			yuv.rgb_to_yuv_8(plugin->config.in_r,
-				plugin->config.in_g,
-				plugin->config.in_b,
-				in1,
-				in2,
-				in3);
-			in4 = plugin->config.in_a;
-			yuv.rgb_to_yuv_8(plugin->config.out_r,
-				plugin->config.out_g,
-				plugin->config.out_b,
-				out1,
-				out2,
-				out3);
-			out4 = plugin->config.out_a;
-			CREATE_GRADIENT(unsigned char, int, 4, 0xff)
-			break;
-		}
+	case BC_YUVA8888:
+	{
+		int in1, in2, in3, in4;
+		int out1, out2, out3, out4;
+		yuv.rgb_to_yuv_8(plugin->config.in_r,
+			plugin->config.in_g,
+			plugin->config.in_b,
+			in1,
+			in2,
+			in3);
+		in4 = plugin->config.in_a;
+		yuv.rgb_to_yuv_8(plugin->config.out_r,
+			plugin->config.out_g,
+			plugin->config.out_b,
+			out1,
+			out2,
+			out3);
+		out4 = plugin->config.out_a;
+		CREATE_GRADIENT(unsigned char, int, 4, 0xff)
+		break;
+	}
 	}
 
 	if(r_table) free(r_table);
@@ -1375,11 +1312,6 @@ void GradientUnit::process_package(LoadPackage *package)
 	if(b_table) free(b_table);
 	if(a_table) free(a_table);
 }
-
-
-
-
-
 
 GradientServer::GradientServer(GradientMain *plugin, 
 	int total_clients, 
@@ -1412,8 +1344,3 @@ LoadPackage* GradientServer::new_package()
 {
 	return new GradientPackage;
 }
-
-
-
-
-

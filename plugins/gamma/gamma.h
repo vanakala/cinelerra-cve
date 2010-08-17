@@ -43,9 +43,9 @@ public:
 	void copy_from(GammaConfig &that);
 	void interpolate(GammaConfig &prev, 
 		GammaConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	float max;
 	float gamma;
@@ -98,7 +98,7 @@ public:
 
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	void calculate_max(VFrame *frame);
 	int is_realtime();
@@ -115,7 +115,5 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(GammaConfig, GammaThread)
 };
-
-
 
 #endif

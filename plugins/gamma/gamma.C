@@ -68,9 +68,9 @@ void GammaConfig::copy_from(GammaConfig &that)
 
 void GammaConfig::interpolate(GammaConfig &prev, 
 	GammaConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -82,33 +82,18 @@ void GammaConfig::interpolate(GammaConfig &prev,
 }
 
 
-
-
-
-
-
-
 GammaPackage::GammaPackage()
  : LoadPackage()
 {
 	start = end = 0;
 }
 
-
-
-
-
-
-
-
-
-
 GammaUnit::GammaUnit(GammaMain *plugin)
 {
 	this->plugin = plugin;
 }
 
-	
+
 void GammaUnit::process_package(LoadPackage *package)
 {
 	GammaPackage *pkg = (GammaPackage*)package;
@@ -142,53 +127,53 @@ void GammaUnit::process_package(LoadPackage *package)
 
 		switch(data->get_color_model())
 		{
-			case BC_RGB888:
-				HISTOGRAM_HEAD(unsigned char)
-				r = (float)row[0] / 0xff;
-				g = (float)row[1] / 0xff;
-				b = (float)row[2] / 0xff;
-				HISTOGRAM_TAIL(3)
-				break;
-			case BC_RGBA8888:
-				HISTOGRAM_HEAD(unsigned char)
-				r = (float)row[0] / 0xff;
-				g = (float)row[1] / 0xff;
-				b = (float)row[2] / 0xff;
-				HISTOGRAM_TAIL(4)
-				break;
-			case BC_RGB_FLOAT:
-				HISTOGRAM_HEAD(float)
-				r = row[0];
-				g = row[1];
-				b = row[2];
-				HISTOGRAM_TAIL(3)
-				break;
-			case BC_RGBA_FLOAT:
-				HISTOGRAM_HEAD(float)
-				r = row[0];
-				g = row[1];
-				b = row[2];
-				HISTOGRAM_TAIL(4)
-				break;
-			case BC_YUV888:
-				HISTOGRAM_HEAD(unsigned char)
-				y = row[0];
-				u = row[1];
-				v = row[2];
-				y /= 0xff;
-				u = (float)((u - 0x80) / 0xff);
-				v = (float)((v - 0x80) / 0xff);
-				YUV::yuv_to_rgb_f(r, g, b, y, u, v);
-				HISTOGRAM_TAIL(3)
-				break;
-			case BC_YUVA8888:
-				HISTOGRAM_HEAD(unsigned char)
-				y = (float)row[0] / 0xff;
-				u = (float)row[1] / 0xff;
-				v = (float)row[2] / 0xff;
-				YUV::yuv_to_rgb_f(r, g, b, y, u, v);
-				HISTOGRAM_TAIL(4)
-				break;
+		case BC_RGB888:
+			HISTOGRAM_HEAD(unsigned char)
+			r = (float)row[0] / 0xff;
+			g = (float)row[1] / 0xff;
+			b = (float)row[2] / 0xff;
+			HISTOGRAM_TAIL(3)
+			break;
+		case BC_RGBA8888:
+			HISTOGRAM_HEAD(unsigned char)
+			r = (float)row[0] / 0xff;
+			g = (float)row[1] / 0xff;
+			b = (float)row[2] / 0xff;
+			HISTOGRAM_TAIL(4)
+			break;
+		case BC_RGB_FLOAT:
+			HISTOGRAM_HEAD(float)
+			r = row[0];
+			g = row[1];
+			b = row[2];
+			HISTOGRAM_TAIL(3)
+			break;
+		case BC_RGBA_FLOAT:
+			HISTOGRAM_HEAD(float)
+			r = row[0];
+			g = row[1];
+			b = row[2];
+			HISTOGRAM_TAIL(4)
+			break;
+		case BC_YUV888:
+			HISTOGRAM_HEAD(unsigned char)
+			y = row[0];
+			u = row[1];
+			v = row[2];
+			y /= 0xff;
+			u = (float)((u - 0x80) / 0xff);
+			v = (float)((v - 0x80) / 0xff);
+			YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+			HISTOGRAM_TAIL(3)
+			break;
+		case BC_YUVA8888:
+			HISTOGRAM_HEAD(unsigned char)
+			y = (float)row[0] / 0xff;
+			u = (float)row[1] / 0xff;
+			v = (float)row[2] / 0xff;
+			YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+			HISTOGRAM_TAIL(4)
+			break;
 		}
 	}
 	else
@@ -221,105 +206,96 @@ void GammaUnit::process_package(LoadPackage *package)
 
 		switch(data->get_color_model())
 		{
-			case BC_RGB888:
-				GAMMA_HEAD(unsigned char)
-				r = (float)row[0] / 0xff;
-				g = (float)row[1] / 0xff;
-				b = (float)row[2] / 0xff;
-				GAMMA_MID
-				row[0] = (int)CLIP(r * 0xff, 0, 0xff);
-				row[1] = (int)CLIP(g * 0xff, 0, 0xff);
-				row[2] = (int)CLIP(b * 0xff, 0, 0xff);
-				GAMMA_TAIL(3)
-				break;
-			case BC_RGBA8888:
-				GAMMA_HEAD(unsigned char)
-				r = (float)row[0] / 0xff;
-				g = (float)row[1] / 0xff;
-				b = (float)row[2] / 0xff;
-				GAMMA_MID
-				row[0] = (int)CLIP(r * 0xff, 0, 0xff);
-				row[1] = (int)CLIP(g * 0xff, 0, 0xff);
-				row[2] = (int)CLIP(b * 0xff, 0, 0xff);
-				GAMMA_TAIL(4)
-				break;
-			case BC_RGB_FLOAT:
-				GAMMA_HEAD(float)
-				r = row[0];
-				g = row[1];
-				b = row[2];
-				GAMMA_MID
-				row[0] = r;
-				row[1] = g;
-				row[2] = b;
-				GAMMA_TAIL(3)
-				break;
-			case BC_RGBA_FLOAT:
-				GAMMA_HEAD(float)
-				r = row[0];
-				g = row[1];
-				b = row[2];
-				GAMMA_MID
-				row[0] = r;
-				row[1] = g;
-				row[2] = b;
-				GAMMA_TAIL(4)
-				break;
-			case BC_YUV888:
-				GAMMA_HEAD(unsigned char)
-				y = row[0];
-				u = row[1];
-				v = row[2];
-				y /= 0xff;
-				u = (float)((u - 0x80) / 0xff);
-				v = (float)((v - 0x80) / 0xff);
-				YUV::yuv_to_rgb_f(r, g, b, y, u, v);
-				GAMMA_MID
-				YUV::rgb_to_yuv_f(r, g, b, y, u, v);
-				y *= 0xff;
-				u = u * 0xff + 0x80;
-				v = v * 0xff + 0x80;
-				row[0] = (int)CLIP(y, 0, 0xff);
-				row[1] = (int)CLIP(u, 0, 0xff);
-				row[2] = (int)CLIP(v, 0, 0xff);
-				GAMMA_TAIL(3)
-				break;
-			case BC_YUVA8888:
-				GAMMA_HEAD(unsigned char)
-				y = row[0];
-				u = row[1];
-				v = row[2];
-				y /= 0xff;
-				u = (float)((u - 0x80) / 0xff);
-				v = (float)((v - 0x80) / 0xff);
-				YUV::yuv_to_rgb_f(r, g, b, y, u, v);
-				GAMMA_MID
-				YUV::rgb_to_yuv_f(r, g, b, y, u, v);
-				y *= 0xff;
-				u = u * 0xff + 0x80;
-				v = v * 0xff + 0x80;
-				row[0] = (int)CLIP(y, 0, 0xff);
-				row[1] = (int)CLIP(u, 0, 0xff);
-				row[2] = (int)CLIP(v, 0, 0xff);
-				GAMMA_TAIL(4)
-				break;
+		case BC_RGB888:
+			GAMMA_HEAD(unsigned char)
+			r = (float)row[0] / 0xff;
+			g = (float)row[1] / 0xff;
+			b = (float)row[2] / 0xff;
+			GAMMA_MID
+			row[0] = (int)CLIP(r * 0xff, 0, 0xff);
+			row[1] = (int)CLIP(g * 0xff, 0, 0xff);
+			row[2] = (int)CLIP(b * 0xff, 0, 0xff);
+			GAMMA_TAIL(3)
+			break;
+		case BC_RGBA8888:
+			GAMMA_HEAD(unsigned char)
+			r = (float)row[0] / 0xff;
+			g = (float)row[1] / 0xff;
+			b = (float)row[2] / 0xff;
+			GAMMA_MID
+			row[0] = (int)CLIP(r * 0xff, 0, 0xff);
+			row[1] = (int)CLIP(g * 0xff, 0, 0xff);
+			row[2] = (int)CLIP(b * 0xff, 0, 0xff);
+			GAMMA_TAIL(4)
+			break;
+		case BC_RGB_FLOAT:
+			GAMMA_HEAD(float)
+			r = row[0];
+			g = row[1];
+			b = row[2];
+			GAMMA_MID
+			row[0] = r;
+			row[1] = g;
+			row[2] = b;
+			GAMMA_TAIL(3)
+			break;
+		case BC_RGBA_FLOAT:
+			GAMMA_HEAD(float)
+			r = row[0];
+			g = row[1];
+			b = row[2];
+			GAMMA_MID
+			row[0] = r;
+			row[1] = g;
+			row[2] = b;
+			GAMMA_TAIL(4)
+			break;
+		case BC_YUV888:
+			GAMMA_HEAD(unsigned char)
+			y = row[0];
+			u = row[1];
+			v = row[2];
+			y /= 0xff;
+			u = (float)((u - 0x80) / 0xff);
+			v = (float)((v - 0x80) / 0xff);
+			YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+			GAMMA_MID
+			YUV::rgb_to_yuv_f(r, g, b, y, u, v);
+			y *= 0xff;
+			u = u * 0xff + 0x80;
+			v = v * 0xff + 0x80;
+			row[0] = (int)CLIP(y, 0, 0xff);
+			row[1] = (int)CLIP(u, 0, 0xff);
+			row[2] = (int)CLIP(v, 0, 0xff);
+			GAMMA_TAIL(3)
+			break;
+		case BC_YUVA8888:
+			GAMMA_HEAD(unsigned char)
+			y = row[0];
+			u = row[1];
+			v = row[2];
+			y /= 0xff;
+			u = (float)((u - 0x80) / 0xff);
+			v = (float)((v - 0x80) / 0xff);
+			YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+			GAMMA_MID
+			YUV::rgb_to_yuv_f(r, g, b, y, u, v);
+			y *= 0xff;
+			u = u * 0xff + 0x80;
+			v = v * 0xff + 0x80;
+			row[0] = (int)CLIP(y, 0, 0xff);
+			row[1] = (int)CLIP(u, 0, 0xff);
+			row[2] = (int)CLIP(v, 0, 0xff);
+			GAMMA_TAIL(4)
+			break;
 		}
 	}
 }
 
 
-
-
-
-
-
-
-
-
-
 GammaEngine::GammaEngine(GammaMain *plugin)
  : LoadServer(plugin->get_project_smp() + 1, 
- 	plugin->get_project_smp() + 1)
+	plugin->get_project_smp() + 1)
 {
 	this->plugin = plugin;
 }
@@ -369,19 +345,6 @@ void GammaEngine::process_packages(int operation, VFrame *data)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 GammaMain::GammaMain(PluginServer *server)
  : PluginVClient(server)
 {
@@ -414,7 +377,7 @@ SET_STRING_MACRO(GammaMain)
 
 
 int GammaMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	this->frame = frame;
@@ -441,7 +404,6 @@ int GammaMain::process_buffer(VFrame *frame,
 		if(next_effect_is("Color Balance"))
 			return 0;
 
-	
 		return run_opengl();
 	}
 	else
@@ -518,13 +480,11 @@ void GammaMain::render_gui(void *data)
 		thread->window->update_histogram();
 		thread->window->unlock_window();
 	}
-
-
 }
 
 int GammaMain::load_defaults()
 {
-	char directory[1024], string[1024];
+	char directory[1024];
 // set the default directory
 	sprintf(directory, "%sgamma.rc", BCASTDIR);
 
@@ -586,7 +546,6 @@ void GammaMain::read_data(KeyFrame *keyframe)
 				config.gamma = input.tag.get_property("GAMMA", config.gamma);
 				config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
 				config.plot = input.tag.get_property("PLOT", config.plot);
-//printf("GammaMain::read_data %f\n", config.max);
 			}
 		}
 	}
@@ -600,10 +559,8 @@ int GammaMain::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
-
 	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
-
 
 // Aggregate with interpolate
 	int aggregate = 0;
@@ -626,7 +583,6 @@ int GammaMain::handle_opengl()
 				shader_stack[7],
 				0);
 
-
 	if(shader > 0) 
 	{
 		glUseProgram(shader);
@@ -646,12 +602,3 @@ int GammaMain::handle_opengl()
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
 }
-
-
-
-
-
-
-
-
-

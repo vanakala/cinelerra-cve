@@ -24,23 +24,16 @@
 #include "language.h"
 
 
-
-
-
 PLUGIN_THREAD_OBJECT(GammaMain, GammaThread, GammaWindow)
-
-
-
-
 
 
 GammaWindow::GammaWindow(GammaMain *client, int x, int y)
  : BC_Window(client->gui_string, x,
- 	y,
+	y,
 	400, 
-	350, 
+	400,
 	400, 
-	350, 
+	400,
 	0, 
 	0)
 { 
@@ -50,10 +43,13 @@ GammaWindow::GammaWindow(GammaMain *client, int x, int y)
 int GammaWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	add_subwindow(histogram = new BC_SubWindow(x, 
 		y, 
 		get_w() - x * 2, 
-		get_h() - 150, 
+		get_h() - 200,
 		WHITE));
 	y += histogram->get_h() + 10;
 
@@ -99,6 +95,7 @@ int GammaWindow::create_objects()
 
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -175,7 +172,7 @@ MaxSlider::MaxSlider(GammaMain *client,
 	int y,
 	int w)
  : BC_FSlider(x, 
- 	y, 
+	y, 
 	0, 
 	w, 
 	w,
@@ -222,7 +219,7 @@ GammaSlider::GammaSlider(GammaMain *client,
 	int y,
 	int w)
  : BC_FSlider(x, 
- 	y, 
+	y,
 	0, 
 	w, 
 	w,
@@ -265,7 +262,7 @@ int GammaText::handle_event()
 
 GammaAuto::GammaAuto(GammaMain *client, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	client->config.automatic, 
 	_("Automatic"))
 {
@@ -285,6 +282,7 @@ GammaPlot::GammaPlot(GammaMain *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int GammaPlot::handle_event()
 {
 	plugin->config.plot = get_value();
@@ -315,7 +313,5 @@ int GammaColorPicker::handle_event()
 	gui->max_text->update(plugin->config.max);
 	gui->max_slider->update(plugin->config.max);
 	plugin->send_configure_change();
-	return 1;	
+	return 1;
 }
-
-

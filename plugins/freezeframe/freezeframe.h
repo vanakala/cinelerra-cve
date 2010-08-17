@@ -43,9 +43,9 @@ public:
 	int equivalent(FreezeFrameConfig &that);
 	void interpolate(FreezeFrameConfig &prev, 
 		FreezeFrameConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	int enabled;
 	int line_double;
 };
@@ -69,13 +69,12 @@ class FreezeFrameWindow : public BC_Window
 public:
 	FreezeFrameWindow(FreezeFrameMain *client, int x, int y);
 	~FreezeFrameWindow();
-	
+
 	int create_objects();
 	int close_event();
-	
+
 	FreezeFrameMain *client;
 	FreezeFrameToggle *enabled;
-//	FreezeFrameToggle *line_double;
 };
 
 PLUGIN_THREAD_HEADER(FreezeFrameMain, FreezeFrameThread, FreezeFrameWindow)
@@ -89,7 +88,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(FreezeFrameConfig, FreezeFrameThread)
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	void update_gui();
@@ -104,7 +103,7 @@ public:
 // Frame to replicate
 	VFrame *first_frame;
 // Position of frame to replicate
-	int64_t first_frame_position;
+	framenum first_frame_position;
 };
 
 

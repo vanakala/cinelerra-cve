@@ -34,9 +34,6 @@
 REGISTER_PLUGIN(FreezeFrameMain)
 
 
-
-
-
 FreezeFrameConfig::FreezeFrameConfig()
 {
 	enabled = 0;
@@ -57,9 +54,9 @@ int FreezeFrameConfig::equivalent(FreezeFrameConfig &that)
 
 void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev, 
 	FreezeFrameConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	this->enabled = prev.enabled;
 	this->line_double = prev.line_double;
@@ -67,16 +64,9 @@ void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev,
 
 
 
-
-
-
-
-
-
-
 FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *client, int x, int y)
  : BC_Window(client->get_gui_string(),
- 	x,
+	x,
 	y,
 	200,
 	100,
@@ -96,19 +86,13 @@ FreezeFrameWindow::~FreezeFrameWindow()
 int FreezeFrameWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_tool(enabled = new FreezeFrameToggle(client, 
 		&client->config.enabled,
 		x, 
 		y,
 		_("Enabled")));
-// Try using extra effect for the line double since it doesn't
-// change the overhead.
-// 	y += 30;
-// 	add_tool(line_double = new FreezeFrameToggle(client, 
-// 		&client->config.line_double,
-// 		x, 
-// 		y,
-// 		_("Line double")));
 	show_window();
 	flush();
 	return 0;
@@ -117,12 +101,7 @@ int FreezeFrameWindow::create_objects()
 WINDOW_CLOSE_EVENT(FreezeFrameWindow)
 
 
-
-
 PLUGIN_THREAD_OBJECT(FreezeFrameMain, FreezeFrameThread, FreezeFrameWindow)
-
-
-
 
 
 FreezeFrameToggle::FreezeFrameToggle(FreezeFrameMain *client, 
@@ -135,25 +114,17 @@ FreezeFrameToggle::FreezeFrameToggle(FreezeFrameMain *client,
 	this->client = client;
 	this->value = value;
 }
+
 FreezeFrameToggle::~FreezeFrameToggle()
 {
 }
+
 int FreezeFrameToggle::handle_event()
 {
 	*value = get_value();
 	client->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 FreezeFrameMain::FreezeFrameMain(PluginServer *server)
@@ -186,11 +157,11 @@ NEW_PICON_MACRO(FreezeFrameMain)
 int FreezeFrameMain::load_configuration()
 {
 	KeyFrame *prev_keyframe = get_prev_keyframe(get_source_position());
-	int64_t prev_position = edl_to_local(prev_keyframe->position);
+	posnum prev_position = edl_to_local(prev_keyframe->position);
 	if(prev_position < get_source_start()) prev_position = get_source_start();
 	read_data(prev_keyframe);
 // Invalidate stored frame
-	if(config.enabled) first_frame_position = prev_position;
+	if(config.enabled) first_frame_position = (framenum)prev_position;
 	return 0;
 }
 
@@ -201,7 +172,6 @@ void FreezeFrameMain::update_gui()
 		load_configuration();
 		thread->window->lock_window();
 		thread->window->enabled->update(config.enabled);
-//		thread->window->line_double->update(config.line_double);
 		thread->window->unlock_window();
 	}
 }
@@ -285,16 +255,11 @@ int FreezeFrameMain::save_defaults()
 	return 0;
 }
 
-
-
-
-
-
 int FreezeFrameMain::process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate)
 {
-	int64_t previous_first_frame = first_frame_position;
+	framenum previous_first_frame = first_frame_position;
 	load_configuration();
 
 // Just entered frozen range
@@ -305,7 +270,6 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 				frame->get_w(), 
 				frame->get_h(),
 				frame->get_color_model());
-printf("FreezeFrameMain::process_buffer 1 %lld\n", first_frame_position);
 		read_frame(first_frame, 
 				0, 
 				first_frame_position,
@@ -352,21 +316,6 @@ printf("FreezeFrameMain::process_buffer 1 %lld\n", first_frame_position);
 		if(get_use_opengl()) return run_opengl();
 		frame->copy_from(first_frame);
 	}
-
-
-// Line double to support interlacing
-// 	if(config.line_double && config.enabled)
-// 	{
-// 		for(int i = 0; i < frame->get_h() - 1; i += 2)
-// 		{
-// 			memcpy(frame->get_rows()[i + 1], 
-// 				frame->get_rows()[i], 
-// 				frame->get_bytes_per_line());
-// 		}
-// 	}
-
-
-
 	return 0;
 }
 
@@ -382,5 +331,3 @@ int FreezeFrameMain::handle_opengl()
 #endif
 	return 0;
 }
-
-
