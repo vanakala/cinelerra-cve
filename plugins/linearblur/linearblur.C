@@ -40,9 +40,6 @@ class LinearBlurMain;
 class LinearBlurEngine;
 
 
-
-
-
 class LinearBlurConfig
 {
 public:
@@ -52,9 +49,9 @@ public:
 	void copy_from(LinearBlurConfig &that);
 	void interpolate(LinearBlurConfig &prev, 
 		LinearBlurConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	int radius;
 	int steps;
@@ -129,7 +126,7 @@ public:
 	~LinearBlurMain();
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -182,26 +179,7 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(LinearBlurMain)
-
-
 
 LinearBlurConfig::LinearBlurConfig()
 {
@@ -239,9 +217,9 @@ void LinearBlurConfig::copy_from(LinearBlurConfig &that)
 
 void LinearBlurConfig::interpolate(LinearBlurConfig &prev, 
 	LinearBlurConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -254,21 +232,11 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 	a = prev.a;
 }
 
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(LinearBlurMain, LinearBlurThread, LinearBlurWindow)
-
-
 
 LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	230, 
 	290, 
@@ -288,6 +256,7 @@ int LinearBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Length:")));
 	y += 20;
 	add_subwindow(radius = new LinearBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));
@@ -316,15 +285,6 @@ int LinearBlurWindow::create_objects()
 
 WINDOW_CLOSE_EVENT(LinearBlurWindow)
 
-
-
-
-
-
-
-
-
-
 LinearBlurToggle::LinearBlurToggle(LinearBlurMain *plugin, 
 	int x, 
 	int y, 
@@ -343,12 +303,6 @@ int LinearBlurToggle::handle_event()
 	return 1;
 }
 
-
-
-
-
-
-
 LinearBlurSize::LinearBlurSize(LinearBlurMain *plugin, 
 	int x, 
 	int y, 
@@ -366,14 +320,6 @@ int LinearBlurSize::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
-
 
 
 LinearBlurMain::LinearBlurMain(PluginServer *server)
@@ -436,8 +382,8 @@ void LinearBlurMain::delete_tables()
 }
 
 int LinearBlurMain::process_buffer(VFrame *frame,
-							int64_t start_position,
-							double frame_rate)
+	framenum start_position,
+	double frame_rate)
 {
 	need_reconfigure |= load_configuration();
 
@@ -462,37 +408,34 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 		while(angle < 0) angle += 360;
 		switch(angle)
 		{
-			case 0:
-			case 360:
-				x_offset = radius;
-				y_offset = 0;
-				break;
-			case 90:
-				x_offset = 0;
-				y_offset = radius;
-				break;
-			case 180:
-				x_offset = radius;
-				y_offset = 0;
-				break;
-			case 270:
-				x_offset = 0;
-				y_offset = radius;
-				break;
-			default:
-				y_offset = (int)(sin((float)config.angle / 360 * 2 * M_PI) * radius);
-				x_offset = (int)(cos((float)config.angle / 360 * 2 * M_PI) * radius);
-				break;
+		case 0:
+		case 360:
+			x_offset = radius;
+			y_offset = 0;
+			break;
+		case 90:
+			x_offset = 0;
+			y_offset = radius;
+			break;
+		case 180:
+			x_offset = radius;
+			y_offset = 0;
+			break;
+		case 270:
+			x_offset = 0;
+			y_offset = radius;
+			break;
+		default:
+			y_offset = (int)(sin((float)config.angle / 360 * 2 * M_PI) * radius);
+			x_offset = (int)(cos((float)config.angle / 360 * 2 * M_PI) * radius);
+			break;
 		}
-
 
 		delete_tables();
 		scale_x_table = new int*[config.steps];
 		scale_y_table = new int*[config.steps];
 		table_entries = config.steps;
 		layer_table = new LinearBlurLayer[table_entries];
-
-//printf("LinearBlurMain::process_realtime 1 %d %d %d\n", radius, x_offset, y_offset);
 
 		for(int i = 0; i < config.steps; i++)
 		{
@@ -523,7 +466,6 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 
 	if(get_use_opengl()) return run_opengl();
 
-
 	if(!engine) engine = new LinearBlurEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
@@ -535,7 +477,6 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 	this->input = frame;
 	this->output = frame;
 
-
 	if(!temp) temp = new VFrame(0,
 		frame->get_w(),
 		frame->get_h(),
@@ -543,8 +484,7 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 	temp->copy_from(frame);
 	this->input = temp;
 
-
-	bzero(accum, 
+	memset(accum, 0,
 		frame->get_w() * 
 		frame->get_h() * 
 		cmodel_components(frame->get_color_model()) * 
@@ -574,7 +514,7 @@ void LinearBlurMain::update_gui()
 
 int LinearBlurMain::load_defaults()
 {
-	char directory[1024], string[1024];
+	char directory[1024];
 // set the default directory
 	sprintf(directory, "%slinearblur.rc", BCASTDIR);
 
@@ -592,7 +532,6 @@ int LinearBlurMain::load_defaults()
 	return 0;
 }
 
-
 int LinearBlurMain::save_defaults()
 {
 	defaults->update("RADIUS", config.radius);
@@ -605,8 +544,6 @@ int LinearBlurMain::save_defaults()
 	defaults->save();
 	return 0;
 }
-
-
 
 void LinearBlurMain::save_data(KeyFrame *keyframe)
 {
@@ -717,7 +654,6 @@ int LinearBlurMain::handle_opengl()
 			get_output()->get_h() - layer_table[i].y - h,
 			1);
 
-
 // Fill YUV black
 		glDisable(GL_TEXTURE_2D);
 		if(is_yuv)
@@ -758,9 +694,6 @@ int LinearBlurMain::handle_opengl()
 			}
 		}
 
-
-
-
 		glAccum(GL_ACCUM, fraction);
 		glEnable(GL_TEXTURE_2D);
 		glColor4f(config.r ? 1 : 0, 
@@ -779,18 +712,10 @@ int LinearBlurMain::handle_opengl()
 #endif
 }
 
-
-
-
-
-
 LinearBlurPackage::LinearBlurPackage()
  : LoadPackage()
 {
 }
-
-
-
 
 LinearBlurUnit::LinearBlurUnit(LinearBlurEngine *server, 
 	LinearBlurMain *plugin)
@@ -938,44 +863,39 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 
 		switch(plugin->input->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				BLEND_LAYER(3, float, float, 1, 0)
-				break;
-			case BC_RGB888:
-				BLEND_LAYER(3, uint8_t, int, 0xff, 0)
-				break;
-			case BC_RGBA_FLOAT:
-				BLEND_LAYER(4, float, float, 1, 0)
-				break;
-			case BC_RGBA8888:
-				BLEND_LAYER(4, uint8_t, int, 0xff, 0)
-				break;
-			case BC_RGB161616:
-				BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
-				break;
-			case BC_RGBA16161616:
-				BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
-				break;
-			case BC_YUV888:
-				BLEND_LAYER(3, uint8_t, int, 0xff, 1)
-				break;
-			case BC_YUVA8888:
-				BLEND_LAYER(4, uint8_t, int, 0xff, 1)
-				break;
-			case BC_YUV161616:
-				BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
-				break;
-			case BC_YUVA16161616:
-				BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
-				break;
+		case BC_RGB_FLOAT:
+			BLEND_LAYER(3, float, float, 1, 0)
+			break;
+		case BC_RGB888:
+			BLEND_LAYER(3, uint8_t, int, 0xff, 0)
+			break;
+		case BC_RGBA_FLOAT:
+			BLEND_LAYER(4, float, float, 1, 0)
+			break;
+		case BC_RGBA8888:
+			BLEND_LAYER(4, uint8_t, int, 0xff, 0)
+			break;
+		case BC_RGB161616:
+			BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
+			break;
+		case BC_RGBA16161616:
+			BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
+			break;
+		case BC_YUV888:
+			BLEND_LAYER(3, uint8_t, int, 0xff, 1)
+			break;
+		case BC_YUVA8888:
+			BLEND_LAYER(4, uint8_t, int, 0xff, 1)
+			break;
+		case BC_YUV161616:
+			BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
+			break;
+		case BC_YUVA16161616:
+			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
+			break;
 		}
 	}
 }
-
-
-
-
-
 
 LinearBlurEngine::LinearBlurEngine(LinearBlurMain *plugin, 
 	int total_clients, 
@@ -1004,8 +924,3 @@ LoadPackage* LinearBlurEngine::new_package()
 {
 	return new LinearBlurPackage;
 }
-
-
-
-
-

@@ -187,14 +187,12 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		temp_frame[0] = 0;
 		temp_frame[1] = 0;
-	
 		engine = new IVTCEngine(this, smp + 1);
 	}
 
 // Determine position in pattern
 	int pattern_position = (PluginClient::source_position +	config.frame_offset) % 5;
 
-//printf("IVTCMain::process_realtime %d %d\n", pattern_position, config.first_field);
 	if(!temp_frame[0]) temp_frame[0] = new VFrame(0,
 		input_ptr->get_w(),
 		input_ptr->get_h(),
@@ -220,38 +218,38 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		switch(pattern_position)
 		{
 // Direct copy
-			case 0:
-			case 4:
-				if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-					output_ptr->copy_from(input_ptr);
-				break;
+		case 0:
+		case 4:
+			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+				output_ptr->copy_from(input_ptr);
+			break;
 
-			case 1:
-				temp_frame[0]->copy_from(input_ptr);
-				if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-					output_ptr->copy_from(input_ptr);
-				break;
+		case 1:
+			temp_frame[0]->copy_from(input_ptr);
+			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+				output_ptr->copy_from(input_ptr);
+			break;
 
-			case 2:
+		case 2:
 // Save one field for next frame.  Reuse previous frame.
-				temp_frame[1]->copy_from(input_ptr);
-				output_ptr->copy_from(temp_frame[0]);
-				break;
+			temp_frame[1]->copy_from(input_ptr);
+			output_ptr->copy_from(temp_frame[0]);
+			break;
 
-			case 3:
+		case 3:
 // Combine previous field with current field.
-				for(int i = 0; i < input_ptr->get_h(); i++)
-				{
-					if((i + config.first_field) & 1)
-						memcpy(output_ptr->get_rows()[i], 
-							input_ptr->get_rows()[i],
-							row_size);
-					else
-						memcpy(output_ptr->get_rows()[i], 
-							temp_frame[1]->get_rows()[i],
-							row_size);
-				}
-				break;
+			for(int i = 0; i < input_ptr->get_h(); i++)
+			{
+				if((i + config.first_field) & 1)
+					memcpy(output_ptr->get_rows()[i], 
+						input_ptr->get_rows()[i],
+						row_size);
+				else
+					memcpy(output_ptr->get_rows()[i], 
+						temp_frame[1]->get_rows()[i],
+						row_size);
+			}
+			break;
 		}
 	}
 	else
@@ -303,10 +301,8 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			odd_vs_prev += unit->odd_vs_prev;
 		}
 
-
 		int64_t min;
 		int strategy;
-
 
 // First strategy.
 // Even lines from previous frame are more similar to 
@@ -349,70 +345,53 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		if(min > previous_min * 4 && previous_strategy == 2)
 		{
 			confident = 0;
-//			strategy = 3;
 		}
-// printf("IVTCMain::process_realtime 1: previous_min=%lld min=%lld strategy=%d confident=%d\n",
-// previous_min,
-// min,
-// strategy,
-// confident);
-
-
-
-// printf("IVTCMain::process_realtime:\n    even_vs_current=%lld\n    even_vs_prev=%lld\n    odd_vs_current=%lld\n    odd_vs_prev=%lld\n    strategy=%d confident=%d\n",
-// even_vs_current,
-// even_vs_prev,
-// odd_vs_current,
-// odd_vs_prev,
-// strategy,
-// strategy == 2 && !use_direct_copy);
 
 		switch(strategy)
 		{
-			case 0:
-				for(int i = 0; i < input_ptr->get_h(); i++)
-				{
-					if(!(i & 1))
-						memcpy(output_ptr->get_rows()[i], 
-							temp_frame[0]->get_rows()[i],
-							row_size);
-					else
-						memcpy(output_ptr->get_rows()[i],
-							input_ptr->get_rows()[i],
-							row_size);
-				}
-				break;
-			case 1:
-				for(int i = 0; i < input_ptr->get_h(); i++)
-				{
-					if(i & 1)
-						memcpy(output_ptr->get_rows()[i], 
-							temp_frame[0]->get_rows()[i],
-							row_size);
-					else
-						memcpy(output_ptr->get_rows()[i],
-							input_ptr->get_rows()[i],
-							row_size);
-				}
-				break;
-			case 2:
-				output_ptr->copy_from(input_ptr);
-				break;
-			case 3:
-//				output_ptr->copy_from(temp_frame[0]);
+		case 0:
+			for(int i = 0; i < input_ptr->get_h(); i++)
+			{
+				if(!(i & 1))
+					memcpy(output_ptr->get_rows()[i], 
+						temp_frame[0]->get_rows()[i],
+						row_size);
+				else
+					memcpy(output_ptr->get_rows()[i],
+						input_ptr->get_rows()[i],
+						row_size);
+			}
+			break;
+		case 1:
+			for(int i = 0; i < input_ptr->get_h(); i++)
+			{
+				if(i & 1)
+					memcpy(output_ptr->get_rows()[i], 
+						temp_frame[0]->get_rows()[i],
+						row_size);
+				else
+					memcpy(output_ptr->get_rows()[i],
+						input_ptr->get_rows()[i],
+						row_size);
+			}
+			break;
+		case 2:
+			output_ptr->copy_from(input_ptr);
+			break;
+		case 3:
 // Deinterlace
-				for(int i = 0; i < input_ptr->get_h(); i++)
-				{
-					if(i & 1)
-						memcpy(output_ptr->get_rows()[i], 
-							input_ptr->get_rows()[i - 1],
-							row_size);
-					else
-						memcpy(output_ptr->get_rows()[i],
-							input_ptr->get_rows()[i],
-							row_size);
-				}
-				break;
+			for(int i = 0; i < input_ptr->get_h(); i++)
+			{
+				if(i & 1)
+					memcpy(output_ptr->get_rows()[i], 
+						input_ptr->get_rows()[i - 1],
+						row_size);
+				else
+					memcpy(output_ptr->get_rows()[i],
+						input_ptr->get_rows()[i],
+						row_size);
+			}
+			break;
 		}
 
 		previous_min = min;
@@ -444,7 +423,6 @@ void IVTCMain::update_gui()
 		}
 		thread->window->frame_offset->update((int64_t)config.frame_offset);
 		thread->window->first_field->update(config.first_field);
-//		thread->window->automatic->update(config.automatic);
 		for(int i = 0; i < TOTAL_PATTERNS; i++)
 		{
 			thread->window->pattern[i]->update(config.pattern == i);
@@ -506,8 +484,8 @@ IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
 
 #define IVTC_MACRO(type, temp_type, components, is_yuv) \
 { \
- 	type **curr_rows = (type**)plugin->input->get_rows(); \
- 	type **prev_rows = (type**)plugin->temp_frame[0]->get_rows(); \
+	type **curr_rows = (type**)plugin->input->get_rows(); \
+	type **prev_rows = (type**)plugin->temp_frame[0]->get_rows(); \
 /* Components to skip for YUV */ \
 	int skip = components - 1; \
  \
@@ -601,42 +579,38 @@ void IVTCUnit::process_package(LoadPackage *package)
 
 	switch(plugin->input->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			IVTC_MACRO(float, float, 3, 0);
-			break;
-		case BC_RGB888:
-			IVTC_MACRO(unsigned char, int, 3, 0);
-			break;
-		case BC_YUV888:
-			IVTC_MACRO(unsigned char, int, 3, 1);
-			break;
-		case BC_RGBA_FLOAT:
-			IVTC_MACRO(float, float, 4, 0);
-			break;
-		case BC_RGBA8888:
-			IVTC_MACRO(unsigned char, int, 4, 0);
-			break;
-		case BC_YUVA8888:
-			IVTC_MACRO(unsigned char, int, 4, 1);
-			break;
-		case BC_RGB161616:
-			IVTC_MACRO(uint16_t, int, 3, 0);
-			break;
-		case BC_YUV161616:
-			IVTC_MACRO(uint16_t, int, 3, 1);
-			break;
-		case BC_RGBA16161616:
-			IVTC_MACRO(uint16_t, int, 4, 0);
-			break;
-		case BC_YUVA16161616:
-			IVTC_MACRO(uint16_t, int, 4, 1);
-			break;
+	case BC_RGB_FLOAT:
+		IVTC_MACRO(float, float, 3, 0);
+		break;
+	case BC_RGB888:
+		IVTC_MACRO(unsigned char, int, 3, 0);
+		break;
+	case BC_YUV888:
+		IVTC_MACRO(unsigned char, int, 3, 1);
+		break;
+	case BC_RGBA_FLOAT:
+		IVTC_MACRO(float, float, 4, 0);
+		break;
+	case BC_RGBA8888:
+		IVTC_MACRO(unsigned char, int, 4, 0);
+		break;
+	case BC_YUVA8888:
+		IVTC_MACRO(unsigned char, int, 4, 1);
+		break;
+	case BC_RGB161616:
+		IVTC_MACRO(uint16_t, int, 3, 0);
+		break;
+	case BC_YUV161616:
+		IVTC_MACRO(uint16_t, int, 3, 1);
+		break;
+	case BC_RGBA16161616:
+		IVTC_MACRO(uint16_t, int, 4, 0);
+		break;
+	case BC_YUVA16161616:
+		IVTC_MACRO(uint16_t, int, 4, 1);
+		break;
 	}
-	
 }
-
-
-
 
 
 IVTCEngine::IVTCEngine(IVTCMain *plugin, int cpus)
@@ -680,7 +654,3 @@ LoadPackage* IVTCEngine::new_package()
 {
 	return new IVTCPackage;
 }
-
-
-
-

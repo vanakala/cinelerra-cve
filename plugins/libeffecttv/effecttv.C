@@ -70,7 +70,6 @@ int EffectTV::yuv_init()
 		GtoV[i] = 	 (int)(-0.368 * i);
 		BtoY[i] = 	 (int)( 0.098 * i);
 		BtoV[i] = 	 (int)(-0.071 * i);
-//printf("EffectTV::yuv_init %d %d %d\n", RtoY[i], GtoY[i], BtoY[i]);
 	}
 	return 0;
 }
@@ -111,25 +110,25 @@ void EffectTV::frame_to_effecttv(VFrame *frame, uint32_t *tmp)
 
 	switch(frame->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			FRAME_TO_EFFECTTV(uint8_t, 3);
-			break;
-		
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			FRAME_TO_EFFECTTV(uint8_t, 4);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		FRAME_TO_EFFECTTV(uint8_t, 3);
+		break;
 
-		case BC_RGB161616:
-		case BC_YUV161616:
-			FRAME_TO_EFFECTTV(uint16_t, 3);
-			break;
-		
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			FRAME_TO_EFFECTTV(uint16_t, 4);
-			break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		FRAME_TO_EFFECTTV(uint8_t, 4);
+		break;
+
+	case BC_RGB161616:
+	case BC_YUV161616:
+		FRAME_TO_EFFECTTV(uint16_t, 3);
+		break;
+
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		FRAME_TO_EFFECTTV(uint16_t, 4);
+		break;
 	}
 }
 
@@ -172,25 +171,25 @@ void EffectTV::effecttv_to_frame(VFrame *frame, uint32_t *tmp)
 
 	switch(frame->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			EFFECTTV_TO_FRAME(uint8_t, 3);
-			break;
-		
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			EFFECTTV_TO_FRAME(uint8_t, 4);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		EFFECTTV_TO_FRAME(uint8_t, 3);
+		break;
 
-		case BC_RGB161616:
-		case BC_YUV161616:
-			EFFECTTV_TO_FRAME(uint16_t, 3);
-			break;
-		
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			EFFECTTV_TO_FRAME(uint16_t, 4);
-			break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		EFFECTTV_TO_FRAME(uint8_t, 4);
+		break;
+
+	case BC_RGB161616:
+	case BC_YUV161616:
+		EFFECTTV_TO_FRAME(uint16_t, 3);
+		break;
+
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		EFFECTTV_TO_FRAME(uint16_t, 4);
+		break;
 	}
 }
 
@@ -276,100 +275,88 @@ void EffectTV::image_set_threshold_y(int threshold)
 	result = diff; \
 }
 
-
-
-
-
-
-
 unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows, 
 	unsigned char **output_rows, 
 	int color_model)
 {
 	unsigned char *diff;
 
-
 	switch(color_model)
 	{
-		case BC_RGB888:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint8_t, 
-				3,
-				0);
-			break;
-		case BC_YUV888:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint8_t, 
-				3,
-				1);
-			break;
-		case BC_RGB_FLOAT:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				float, 
-				3,
-				0);
-			break;
-		case BC_RGBA8888:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint8_t, 
-				4,
-				0);
-			break;
-		case BC_RGBA_FLOAT:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				float, 
-				4,
-				0);
-			break;
-		case BC_YUVA8888:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint8_t, 
-				4,
-				1);
-			break;
-		case BC_RGB161616:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint16_t, 
-				3,
-				0);
-			break;
-		case BC_YUV161616:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint16_t, 
-				3,
-				1);
-			break;
-		case BC_RGBA16161616:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint16_t, 
-				4,
-				0);
-			break;
-		case BC_YUVA16161616:
-			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
-				input_rows, 
-				uint16_t, 
-				4,
-				1);
-			break;
+	case BC_RGB888:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+			input_rows,
+			uint8_t,
+			3,
+			0);
+		break;
+	case BC_YUV888:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff,
+			input_rows,
+			uint8_t,
+			3,
+			1);
+		break;
+	case BC_RGB_FLOAT:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff,
+			input_rows,
+			float,
+			3,
+			0);
+		break;
+	case BC_RGBA8888:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff,
+			input_rows,
+			uint8_t,
+			4,
+			0);
+		break;
+	case BC_RGBA_FLOAT:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+			input_rows,
+			float,
+			4,
+			0);
+		break;
+	case BC_YUVA8888:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+			input_rows,
+			uint8_t,
+			4,
+			1);
+		break;
+	case BC_RGB161616:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+			input_rows,
+			uint16_t,
+			3,
+			0);
+		break;
+	case BC_YUV161616:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+			input_rows,
+			uint16_t,
+			3,
+			1);
+		break;
+	case BC_RGBA16161616:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+			input_rows,
+			uint16_t,
+			4,
+			0);
+		break;
+	case BC_YUVA16161616:
+		IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+			input_rows,
+			uint16_t,
+			4,
+			1);
+		break;
 	}
-	
+
 	return diff;
 }
-
-
-
-
-
 
 #define IMAGE_BGSUBTRACT_Y(type, components, is_yuv) \
 { \
@@ -445,43 +432,38 @@ unsigned char* EffectTV::image_bgsubtract_y(unsigned char **input_rows,
 
 	switch(color_model)
 	{
-		case BC_RGB888:
-			IMAGE_BGSUBTRACT_Y(uint8_t, 3, 0);
-			break;
-		case BC_YUV888:
-			IMAGE_BGSUBTRACT_Y(uint8_t, 3, 1);
-			break;
-		case BC_RGB_FLOAT:
-			IMAGE_BGSUBTRACT_Y(float, 3, 0);
-			break;
-		case BC_RGBA_FLOAT:
-			IMAGE_BGSUBTRACT_Y(float, 4, 0);
-			break;
-		case BC_RGBA8888:
-			IMAGE_BGSUBTRACT_Y(uint8_t, 4, 0);
-			break;
-		case BC_YUVA8888:
-			IMAGE_BGSUBTRACT_Y(uint8_t, 4, 1);
-			break;
-		case BC_RGB161616:
-			IMAGE_BGSUBTRACT_Y(uint16_t, 3, 0);
-			break;
-		case BC_YUV161616:
-			IMAGE_BGSUBTRACT_Y(uint16_t, 3, 1);
-			break;
-		case BC_RGBA16161616:
-			IMAGE_BGSUBTRACT_Y(uint16_t, 4, 0);
-			break;
-		case BC_YUVA16161616:
-			IMAGE_BGSUBTRACT_Y(uint16_t, 4, 1);
-			break;
+	case BC_RGB888:
+		IMAGE_BGSUBTRACT_Y(uint8_t, 3, 0);
+		break;
+	case BC_YUV888:
+		IMAGE_BGSUBTRACT_Y(uint8_t, 3, 1);
+		break;
+	case BC_RGB_FLOAT:
+		IMAGE_BGSUBTRACT_Y(float, 3, 0);
+		break;
+	case BC_RGBA_FLOAT:
+		IMAGE_BGSUBTRACT_Y(float, 4, 0);
+		break;
+	case BC_RGBA8888:
+		IMAGE_BGSUBTRACT_Y(uint8_t, 4, 0);
+		break;
+	case BC_YUVA8888:
+		IMAGE_BGSUBTRACT_Y(uint8_t, 4, 1);
+		break;
+	case BC_RGB161616:
+		IMAGE_BGSUBTRACT_Y(uint16_t, 3, 0);
+		break;
+	case BC_YUV161616:
+		IMAGE_BGSUBTRACT_Y(uint16_t, 3, 1);
+		break;
+	case BC_RGBA16161616:
+		IMAGE_BGSUBTRACT_Y(uint16_t, 4, 0);
+		break;
+	case BC_YUVA16161616:
+		IMAGE_BGSUBTRACT_Y(uint16_t, 4, 1);
+		break;
 	}
-
-
-
 	return diff;
-
-
 
 
 /* The origin of subtraction function is;
@@ -496,10 +478,6 @@ unsigned char* EffectTV::image_bgsubtract_y(unsigned char **input_rows,
  * abs(src - dest) > threshold.
  */
 }
-
-
-
-
 
 
 unsigned char* EffectTV::image_diff_filter(unsigned char *diff)
@@ -534,10 +512,6 @@ unsigned char* EffectTV::image_diff_filter(unsigned char *diff)
 
 	return diff2;
 }
-
-
-
-
 
 
 #define IMAGE_BGSET_Y(type, components, is_yuv) \
@@ -606,44 +580,39 @@ unsigned char* EffectTV::image_diff_filter(unsigned char *diff)
 }
 
 
-
-
-
 void EffectTV::image_bgset_y(VFrame *frame)
 {
 	switch(frame->get_color_model())
 	{
-		case BC_RGB888:
-			IMAGE_BGSET_Y(uint8_t, 3, 0);
-			break;
-		case BC_RGB_FLOAT:
-			IMAGE_BGSET_Y(float, 3, 0);
-			break;
-		case BC_YUV888:
-			IMAGE_BGSET_Y(uint8_t, 3, 1);
-			break;
-		case BC_RGBA8888:
-			IMAGE_BGSET_Y(uint8_t, 3, 0);
-			break;
-		case BC_RGBA_FLOAT:
-			IMAGE_BGSET_Y(float, 3, 0);
-			break;
-		case BC_YUVA8888:
-			IMAGE_BGSET_Y(uint8_t, 3, 1);
-			break;
-		case BC_RGB161616:
-			IMAGE_BGSET_Y(uint16_t, 3, 0);
-			break;
-		case BC_YUV161616:
-			IMAGE_BGSET_Y(uint16_t, 3, 1);
-			break;
-		case BC_RGBA16161616:
-			IMAGE_BGSET_Y(uint16_t, 4, 0);
-			break;
-		case BC_YUVA16161616:
-			IMAGE_BGSET_Y(uint16_t, 4, 1);
-			break;
+	case BC_RGB888:
+		IMAGE_BGSET_Y(uint8_t, 3, 0);
+		break;
+	case BC_RGB_FLOAT:
+		IMAGE_BGSET_Y(float, 3, 0);
+		break;
+	case BC_YUV888:
+		IMAGE_BGSET_Y(uint8_t, 3, 1);
+		break;
+	case BC_RGBA8888:
+		IMAGE_BGSET_Y(uint8_t, 3, 0);
+		break;
+	case BC_RGBA_FLOAT:
+		IMAGE_BGSET_Y(float, 3, 0);
+		break;
+	case BC_YUVA8888:
+		IMAGE_BGSET_Y(uint8_t, 3, 1);
+		break;
+	case BC_RGB161616:
+		IMAGE_BGSET_Y(uint16_t, 3, 0);
+		break;
+	case BC_YUV161616:
+		IMAGE_BGSET_Y(uint16_t, 3, 1);
+		break;
+	case BC_RGBA16161616:
+		IMAGE_BGSET_Y(uint16_t, 4, 0);
+		break;
+	case BC_YUVA16161616:
+		IMAGE_BGSET_Y(uint16_t, 4, 1);
+		break;
 	}
 }
-
-

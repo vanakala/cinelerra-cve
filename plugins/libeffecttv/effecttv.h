@@ -32,7 +32,7 @@ class EffectTV
 public:
 	EffectTV(int w, int h);
 	virtual ~EffectTV();
-	
+
 	void image_set_threshold_y(int threshold);
 	unsigned char* image_bgsubtract_update_y(unsigned char **input_rows, 
 		unsigned char **output_rows, 
@@ -61,12 +61,12 @@ public:
 
 	int w;
 	int h;
-	 
+
 	int y_threshold;
-	
+
 	unsigned char *background;
 	unsigned char *diff, *diff2;
-	
+
 	int YtoRGB[0x100];
 	int VtoR[0x100];
 	int VtoG[0x100];
@@ -82,6 +82,5 @@ public:
 	int BtoV[0x100];
 	YUV *yuv;
 };
-
 
 #endif

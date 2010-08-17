@@ -47,14 +47,13 @@ class IVTCWindow : public BC_Window
 public:
 	IVTCWindow(IVTCMain *client, int x, int y);
 	~IVTCWindow();
-	
+
 	int create_objects();
 	int close_event();
-	
+
 	IVTCMain *client;
 	IVTCOffset *frame_offset;
 	IVTCFieldOrder *first_field;
-//	IVTCAuto *automatic;
 	IVTCAutoThreshold *threshold;
 	IVTCPattern *pattern[TOTAL_PATTERNS];
 };
@@ -77,22 +76,13 @@ public:
 	IVTCMain *client;
 };
 
-class IVTCAuto : public BC_CheckBox
-{
-public:
-	IVTCAuto(IVTCMain *client, int x, int y);
-	~IVTCAuto();
-	int handle_event();
-	IVTCMain *client;
-};
-
 class IVTCPattern : public BC_Radial
 {
 public:
 	IVTCPattern(IVTCMain *client, 
 		IVTCWindow *window, 
 		int number, 
-		char *text, 
+		const char *text,
 		int x, 
 		int y);
 	~IVTCPattern();
@@ -100,15 +90,6 @@ public:
 	IVTCWindow *window;
 	IVTCMain *client;
 	int number;
-};
-
-class IVTCAutoThreshold : public BC_TextBox
-{
-public:
-	IVTCAutoThreshold(IVTCMain *client, int x, int y);
-	~IVTCAutoThreshold();
-	int handle_event();
-	IVTCMain *client;
 };
 
 #endif
