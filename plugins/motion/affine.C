@@ -40,7 +40,7 @@
 
 AffineMatrix::AffineMatrix()
 {
-	bzero(values, sizeof(values));
+	memset(values, 0, sizeof(values));
 }
 
 void AffineMatrix::identity()
@@ -81,18 +81,18 @@ void AffineMatrix::multiply(AffineMatrix *dst)
 	AffineMatrix tmp;
 	double t1, t2, t3;
 
-  	for (i = 0; i < 3; i++)
-    {
-    	t1 = values[i][0];
-    	t2 = values[i][1];
-    	t3 = values[i][2];
-    	for (j = 0; j < 3; j++)
+	for (i = 0; i < 3; i++)
+	{
+		t1 = values[i][0];
+		t2 = values[i][1];
+		t3 = values[i][2];
+		for (j = 0; j < 3; j++)
 		{
 			tmp.values[i][j]  = t1 * dst->values[0][j];
 			tmp.values[i][j] += t2 * dst->values[1][j];
 			tmp.values[i][j] += t3 * dst->values[2][j];
 		}
-    }
+	}
 	dst->copy_from(&tmp);
 }
 
@@ -101,11 +101,11 @@ double AffineMatrix::determinant()
 	double determinant;
 
 	determinant  = 
-        values[0][0] * (values[1][1] * values[2][2] - values[1][2] * values[2][1]);
+		values[0][0] * (values[1][1] * values[2][2] - values[1][2] * values[2][1]);
 	determinant -= 
-        values[1][0] * (values[0][1] * values[2][2] - values[0][2] * values[2][1]);
+		values[1][0] * (values[0][1] * values[2][2] - values[0][2] * values[2][1]);
 	determinant += 
-        values[2][0] * (values[0][1] * values[1][2] - values[0][2] * values[1][1]);
+		values[2][0] * (values[0][1] * values[1][2] - values[0][2] * values[1][1]);
 
 	return determinant;
 }
@@ -117,36 +117,36 @@ void AffineMatrix::invert(AffineMatrix *dst)
 	det_1 = determinant();
 
 	if(det_1 == 0.0)
-      	return;
+		return;
 
 	det_1 = 1.0 / det_1;
 
-	dst->values[0][0] =   
-      (values[1][1] * values[2][2] - values[1][2] * values[2][1]) * det_1;
+	dst->values[0][0] =
+		(values[1][1] * values[2][2] - values[1][2] * values[2][1]) * det_1;
 
 	dst->values[1][0] = 
-      - (values[1][0] * values[2][2] - values[1][2] * values[2][0]) * det_1;
+		- (values[1][0] * values[2][2] - values[1][2] * values[2][0]) * det_1;
 
-	dst->values[2][0] =   
-      (values[1][0] * values[2][1] - values[1][1] * values[2][0]) * det_1;
+	dst->values[2][0] =
+		(values[1][0] * values[2][1] - values[1][1] * values[2][0]) * det_1;
 
 	dst->values[0][1] = 
-      - (values[0][1] * values[2][2] - values[0][2] * values[2][1] ) * det_1;
+		- (values[0][1] * values[2][2] - values[0][2] * values[2][1] ) * det_1;
 
 	dst->values[1][1] = 
-      (values[0][0] * values[2][2] - values[0][2] * values[2][0]) * det_1;
+		(values[0][0] * values[2][2] - values[0][2] * values[2][0]) * det_1;
 
 	dst->values[2][1] = 
-      - (values[0][0] * values[2][1] - values[0][1] * values[2][0]) * det_1;
+		- (values[0][0] * values[2][1] - values[0][1] * values[2][0]) * det_1;
 
 	dst->values[0][2] =
-      (values[0][1] * values[1][2] - values[0][2] * values[1][1]) * det_1;
+		(values[0][1] * values[1][2] - values[0][2] * values[1][1]) * det_1;
 
-	dst->values[1][2] = 
-      - (values[0][0] * values[1][2] - values[0][2] * values[1][0]) * det_1;
+	dst->values[1][2] =
+		- (values[0][0] * values[1][2] - values[0][2] * values[1][0]) * det_1;
 
-	dst->values[2][2] = 
-      (values[0][0] * values[1][1] - values[0][1] * values[1][0]) * det_1;
+	dst->values[2][2] =
+		(values[0][0] * values[1][1] - values[0][1] * values[1][0]) * det_1;
 }
 
 void AffineMatrix::copy_from(AffineMatrix *src)
@@ -164,9 +164,9 @@ void AffineMatrix::transform_point(float x,
 	w = values[2][0] * x + values[2][1] * y + values[2][2];
 
 	if (w == 0.0)
-    	w = 1.0;
+		w = 1.0;
 	else
-    	w = 1.0 / w;
+		w = 1.0 / w;
 
 	*newx = (values[0][0] * x + values[0][1] * y + values[0][2]) * w;
 	*newy = (values[1][0] * x + values[1][1] * y + values[1][2]) * w;
@@ -181,15 +181,10 @@ void AffineMatrix::dump()
 }
 
 
-
-
-
 AffinePackage::AffinePackage()
  : LoadPackage()
 {
 }
-
-
 
 
 AffineUnit::AffineUnit(AffineEngine *server)
@@ -197,13 +192,6 @@ AffineUnit::AffineUnit(AffineEngine *server)
 {
 	this->server = server;
 }
-
-
-
-
-
-
-
 
 
 void AffineUnit::calculate_matrix(
@@ -228,101 +216,74 @@ void AffineUnit::calculate_matrix(
 	scalex = scaley = 1.0;
 
 	if((in_x2 - in_x1) > 0)
-      	scalex = 1.0 / (double)(in_x2 - in_x1);
+		scalex = 1.0 / (double)(in_x2 - in_x1);
 
 	if((in_y2 - in_y1) > 0)
-      	scaley = 1.0 / (double)(in_y2 - in_y1);
+		scaley = 1.0 / (double)(in_y2 - in_y1);
 
 /* Determine the perspective transform that maps from
  * the unit cube to the transformed coordinates
  */
-    double dx1, dx2, dx3, dy1, dy2, dy3;
-    double det1, det2;
+	double dx1, dx2, dx3, dy1, dy2, dy3;
+	double det1, det2;
 
-    dx1 = out_x2 - out_x4;
-    dx2 = out_x3 - out_x4;
-    dx3 = out_x1 - out_x2 + out_x4 - out_x3;
+	dx1 = out_x2 - out_x4;
+	dx2 = out_x3 - out_x4;
+	dx3 = out_x1 - out_x2 + out_x4 - out_x3;
 
-    dy1 = out_y2 - out_y4;
-    dy2 = out_y3 - out_y4;
-    dy3 = out_y1 - out_y2 + out_y4 - out_y3;
-// printf("AffineUnit::calculate_matrix %f %f %f %f %f %f\n",
-// dx1,
-// dx2,
-// dx3,
-// dy1,
-// dy2,
-// dy3
-// );
+	dy1 = out_y2 - out_y4;
+	dy2 = out_y3 - out_y4;
+	dy3 = out_y1 - out_y2 + out_y4 - out_y3;
 
 /*  Is the mapping affine?  */
-    if((dx3 == 0.0) && (dy3 == 0.0))
-    {
-        matrix.values[0][0] = out_x2 - out_x1;
-        matrix.values[0][1] = out_x4 - out_x2;
-        matrix.values[0][2] = out_x1;
-        matrix.values[1][0] = out_y2 - out_y1;
-        matrix.values[1][1] = out_y4 - out_y2;
-        matrix.values[1][2] = out_y1;
-        matrix.values[2][0] = 0.0;
-        matrix.values[2][1] = 0.0;
-    }
-    else
-    {
-        det1 = dx3 * dy2 - dy3 * dx2;
-        det2 = dx1 * dy2 - dy1 * dx2;
-        matrix.values[2][0] = det1 / det2;
-        det1 = dx1 * dy3 - dy1 * dx3;
-        det2 = dx1 * dy2 - dy1 * dx2;
-        matrix.values[2][1] = det1 / det2;
+	if((dx3 == 0.0) && (dy3 == 0.0))
+	{
+		matrix.values[0][0] = out_x2 - out_x1;
+		matrix.values[0][1] = out_x4 - out_x2;
+		matrix.values[0][2] = out_x1;
+		matrix.values[1][0] = out_y2 - out_y1;
+		matrix.values[1][1] = out_y4 - out_y2;
+		matrix.values[1][2] = out_y1;
+		matrix.values[2][0] = 0.0;
+		matrix.values[2][1] = 0.0;
+	}
+	else
+	{
+		det1 = dx3 * dy2 - dy3 * dx2;
+		det2 = dx1 * dy2 - dy1 * dx2;
+		matrix.values[2][0] = det1 / det2;
+		det1 = dx1 * dy3 - dy1 * dx3;
+		det2 = dx1 * dy2 - dy1 * dx2;
+		matrix.values[2][1] = det1 / det2;
 
-        matrix.values[0][0] = out_x2 - out_x1 + matrix.values[2][0] * out_x2;
-        matrix.values[0][1] = out_x3 - out_x1 + matrix.values[2][1] * out_x3;
-        matrix.values[0][2] = out_x1;
+		matrix.values[0][0] = out_x2 - out_x1 + matrix.values[2][0] * out_x2;
+		matrix.values[0][1] = out_x3 - out_x1 + matrix.values[2][1] * out_x3;
+		matrix.values[0][2] = out_x1;
 
-        matrix.values[1][0] = out_y2 - out_y1 + matrix.values[2][0] * out_y2;
-        matrix.values[1][1] = out_y3 - out_y1 + matrix.values[2][1] * out_y3;
-        matrix.values[1][2] = out_y1;
-    }
+		matrix.values[1][0] = out_y2 - out_y1 + matrix.values[2][0] * out_y2;
+		matrix.values[1][1] = out_y3 - out_y1 + matrix.values[2][1] * out_y3;
+		matrix.values[1][2] = out_y1;
+	}
 
-    matrix.values[2][2] = 1.0;
-
-// printf("AffineUnit::calculate_matrix 1 %f %f\n", dx3, dy3);
-// matrix.dump();
+	matrix.values[2][2] = 1.0;
 
 	result->identity();
 	result->translate(-in_x1, -in_y1);
 	result->scale(scalex, scaley);
 	matrix.multiply(result);
-// double test[3][3] = { { 0.0896, 0.0, 0.0 },
-// 				  { 0.0, 0.0896, 0.0 },
-// 				  { -0.00126, 0.0, 1.0 } };
-// memcpy(&result->values[0][0], test, sizeof(test));
-// printf("AffineUnit::calculate_matrix 4 %p\n", result);
-// result->dump();
-
-
 }
 
 float AffineUnit::transform_cubic(float dx,
-                               float jm1,
-                               float j,
-                               float jp1,
-                               float jp2)
+	float jm1,
+	float j,
+	float jp1,
+	float jp2)
 {
 /* Catmull-Rom - not bad */
-  	float result = ((( ( - jm1 + 3.0 * j - 3.0 * jp1 + jp2 ) * dx +
-            	       ( 2.0 * jm1 - 5.0 * j + 4.0 * jp1 - jp2 ) ) * dx +
-            	       ( - jm1 + jp1 ) ) * dx + (j + j) ) / 2.0;
-// printf("%f %f %f %f %f\n", 
-// result,
-// jm1,
-// j,
-// jp1,
-// jp2);
-
-
-  	return result;
+	float result = ((( ( - jm1 + 3.0 * j - 3.0 * jp1 + jp2 ) * dx +
+		( 2.0 * jm1 - 5.0 * j + 4.0 * jp1 - jp2 ) ) * dx +
+		( - jm1 + jp1 ) ) * dx + (j + j) ) / 2.0;
+	return result;
 }
 
 
@@ -382,9 +343,6 @@ void AffineUnit::process_package(LoadPackage *package)
 		float in_y1 = (float)server->y / texture_h;
 		float in_y2 = (float)(server->y + server->h) / texture_h;
 
-// printf("%f %f %f %f\n%f,%f %f,%f %f,%f %f,%f\n", in_x1, in_y1, in_x2, in_y2,
-// out_x1, out_y1, out_x2, out_y2, out_x3, out_y3, out_x4, out_y4);
-
 		glBegin(GL_QUADS);
 		glNormal3f(0, 0, 1.0);
 
@@ -420,11 +378,6 @@ void AffineUnit::process_package(LoadPackage *package)
 		out_y4 = out_y3;
 		out_y3 = temp;
 
-
-
-
-
-
 		calculate_matrix(
 			server->x,
 			server->y,
@@ -440,15 +393,6 @@ void AffineUnit::process_package(LoadPackage *package)
 			out_y4,
 			&matrix);
 
-// printf("AffineUnit::process_package 10 %f %f %f %f %f %f %f %f\n", 
-// out_x1,
-// out_y1,
-// out_x2,
-// out_y2,
-// out_x3,
-// out_y3,
-// out_x4,
-// out_y4);
 		int interpolate = 1;
 		int reverse = !server->forward;
 		float tx, ty, tw;
@@ -478,11 +422,6 @@ void AffineUnit::process_package(LoadPackage *package)
 		matrix.transform_point(server->x, server->y + server->h, &dx3, &dy3);
 		matrix.transform_point(server->x + server->w, server->y + server->h, &dx4, &dy4);
 
-//printf("AffineUnit::process_package 1 y1=%d y2=%d\n", pkg->y1, pkg->y2);
-//printf("AffineUnit::process_package 1 %f %f %f %f\n", dy1, dy2, dy3, dy4);
-//printf("AffineUnit::process_package 2 %d ty1=%d %d ty2=%d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
-
-
 		if(server->use_opengl)
 		{
 #ifdef HAVE_GL
@@ -503,11 +442,11 @@ void AffineUnit::process_package(LoadPackage *package)
 				"	mat3 incoord_matrix = affine_matrix * coord_matrix;\n"
 				"	vec2 incoord = vec2(incoord_matrix[0][0], incoord_matrix[0][1]);\n"
 				"	incoord /= incoord_matrix[0][2];\n"
-			 	"	incoord /= texture_extents;\n"
+				"	incoord /= texture_extents;\n"
 				"	if(incoord.x > image_extents.x || incoord.y > image_extents.y)\n"
 				"		gl_FragColor = border_color;\n"
 				"	else\n"
-			 	"		gl_FragColor = texture2D(tex, incoord);\n"
+				"		gl_FragColor = texture2D(tex, incoord);\n"
 				"}\n";
 
 			float affine_matrix[9] = {
@@ -558,20 +497,15 @@ void AffineUnit::process_package(LoadPackage *package)
 #endif
 		}
 
-
-
-
-
-
 #define ROUND(x) ((int)((x > 0) ? (x) + 0.5 : (x) - 0.5))
 #define MIN4(a,b,c,d) MIN(MIN(MIN(a,b),c),d)
 #define MAX4(a,b,c,d) MAX(MAX(MAX(a,b),c),d)
 
-    	tx1 = ROUND(MIN4(dx1, dx2, dx3, dx4));
-    	ty1 = ROUND(MIN4(dy1, dy2, dy3, dy4));
+		tx1 = ROUND(MIN4(dx1, dx2, dx3, dx4));
+		ty1 = ROUND(MIN4(dy1, dy2, dy3, dy4));
 
-    	tx2 = ROUND(MAX4(dx1, dx2, dx3, dx4));
-    	ty2 = ROUND(MAX4(dy1, dy2, dy3, dy4));
+		tx2 = ROUND(MAX4(dx1, dx2, dx3, dx4));
+		ty2 = ROUND(MAX4(dy1, dy2, dy3, dy4));
 
 		CLAMP(ty1, pkg->y1, pkg->y2);
 		CLAMP(ty2, pkg->y1, pkg->y2);
@@ -599,17 +533,16 @@ void AffineUnit::process_package(LoadPackage *package)
  \
 		if(!interpolate) \
 		{ \
-        	tx = xinc * (tx1 + 0.5) + m.values[0][1] * (y + 0.5) + m.values[0][2]; \
-        	ty = yinc * (tx1 + 0.5) + m.values[1][1] * (y + 0.5) + m.values[1][2]; \
-        	tw = winc * (tx1 + 0.5) + m.values[2][1] * (y + 0.5) + m.values[2][2]; \
+			tx = xinc * (tx1 + 0.5) + m.values[0][1] * (y + 0.5) + m.values[0][2]; \
+			ty = yinc * (tx1 + 0.5) + m.values[1][1] * (y + 0.5) + m.values[1][2]; \
+			tw = winc * (tx1 + 0.5) + m.values[2][1] * (y + 0.5) + m.values[2][2]; \
 		} \
-      	else \
-        { \
-        	tx = xinc * tx1 + m.values[0][1] * y + m.values[0][2]; \
-        	ty = yinc * tx1 + m.values[1][1] * y + m.values[1][2]; \
-        	tw = winc * tx1 + m.values[2][1] * y + m.values[2][2]; \
-        } \
- \
+		else \
+		{ \
+			tx = xinc * tx1 + m.values[0][1] * y + m.values[0][2]; \
+			ty = yinc * tx1 + m.values[1][1] * y + m.values[1][2]; \
+			tw = winc * tx1 + m.values[2][1] * y + m.values[2][2]; \
+		} \
  \
 		out_row += tx1 * components; \
 		for(int x = tx1; x < tx2; x++) \
@@ -669,13 +602,13 @@ void AffineUnit::process_package(LoadPackage *package)
 			if(interpolate && x >= server->x && x < server->x + server->w) \
 			{ \
 				if ((itx + 2) >= server->x && (itx - 1) < server->x + server->w && \
-                  	(ity + 2) >= server->y && (ity - 1) < server->y + server->h) \
-                { \
-                	float dx, dy; \
+					(ity + 2) >= server->y && (ity - 1) < server->y + server->h) \
+				{ \
+					float dx, dy; \
  \
 /* the fractional error */ \
-                	dx = ttx - itx; \
-                	dy = tty - ity; \
+					dx = ttx - itx; \
+					dy = tty - ity; \
  \
 /* Row and column offsets in cubic block */ \
 					int col1 = itx - 1; \
@@ -697,10 +630,10 @@ void AffineUnit::process_package(LoadPackage *package)
 					temp_type r, g, b, a; \
  \
 					r = (temp_type)(transform_cubic(dy, \
-                    		 CUBIC_ROW(row1_ptr, 0x0), \
-                    		 CUBIC_ROW(row2_ptr, 0x0), \
-                    		 CUBIC_ROW(row3_ptr, 0x0), \
-                    		 CUBIC_ROW(row4_ptr, 0x0)) + \
+						CUBIC_ROW(row1_ptr, 0x0), \
+						CUBIC_ROW(row2_ptr, 0x0), \
+						CUBIC_ROW(row3_ptr, 0x0), \
+						CUBIC_ROW(row4_ptr, 0x0)) + \
 							 round_factor); \
  \
 					row1_ptr++; \
@@ -708,11 +641,11 @@ void AffineUnit::process_package(LoadPackage *package)
 					row3_ptr++; \
 					row4_ptr++; \
 					g = (temp_type)(transform_cubic(dy, \
-                    		 CUBIC_ROW(row1_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row2_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row3_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row4_ptr, chroma_offset)) + \
-							 round_factor); \
+						CUBIC_ROW(row1_ptr, chroma_offset), \
+						CUBIC_ROW(row2_ptr, chroma_offset), \
+						CUBIC_ROW(row3_ptr, chroma_offset), \
+						CUBIC_ROW(row4_ptr, chroma_offset)) + \
+							round_factor); \
 					g += chroma_offset; \
  \
 					row1_ptr++; \
@@ -720,10 +653,10 @@ void AffineUnit::process_package(LoadPackage *package)
 					row3_ptr++; \
 					row4_ptr++; \
 					b = (temp_type)(transform_cubic(dy, \
-                    		 CUBIC_ROW(row1_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row2_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row3_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row4_ptr, chroma_offset)) + \
+						CUBIC_ROW(row1_ptr, chroma_offset), \
+						CUBIC_ROW(row2_ptr, chroma_offset), \
+						CUBIC_ROW(row3_ptr, chroma_offset), \
+						CUBIC_ROW(row4_ptr, chroma_offset)) + \
 							 round_factor); \
 					b += chroma_offset; \
  \
@@ -734,14 +667,14 @@ void AffineUnit::process_package(LoadPackage *package)
 						row3_ptr++; \
 						row4_ptr++; \
 						a = (temp_type)(transform_cubic(dy, \
-                    			 CUBIC_ROW(row1_ptr, 0x0), \
-                    			 CUBIC_ROW(row2_ptr, 0x0), \
-                    			 CUBIC_ROW(row3_ptr, 0x0), \
-                    			 CUBIC_ROW(row4_ptr, 0x0)) +  \
+							CUBIC_ROW(row1_ptr, 0x0), \
+							CUBIC_ROW(row2_ptr, 0x0), \
+							CUBIC_ROW(row3_ptr, 0x0), \
+							CUBIC_ROW(row4_ptr, 0x0)) +  \
 								 round_factor); \
 					} \
  \
- 					if(sizeof(type) < 4) \
+					if(sizeof(type) < 4) \
 					{ \
 						*out_row++ = CLIP(r, 0, max); \
 						*out_row++ = CLIP(g, 0, max); \
@@ -755,7 +688,7 @@ void AffineUnit::process_package(LoadPackage *package)
 						*out_row++ = b; \
 						if(components == 4) *out_row++ = a; \
 					} \
-                } \
+				} \
 				else \
 /* Fill with chroma */ \
 				{ \
@@ -778,43 +711,39 @@ void AffineUnit::process_package(LoadPackage *package)
 	} \
 }
 
-
-
-
 		switch(server->input->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				TRANSFORM(3, float, float, 0x0, 1.0)
-				break;
-			case BC_RGB888:
-				TRANSFORM(3, unsigned char, int, 0x0, 0xff)
-				break;
-			case BC_RGBA_FLOAT:
-				TRANSFORM(4, float, float, 0x0, 1.0)
-				break;
-			case BC_RGBA8888:
-				TRANSFORM(4, unsigned char, int, 0x0, 0xff)
-				break;
-			case BC_YUV888:
-				TRANSFORM(3, unsigned char, int, 0x80, 0xff)
-				break;
-			case BC_YUVA8888:
-				TRANSFORM(4, unsigned char, int, 0x80, 0xff)
-				break;
-			case BC_RGB161616:
-				TRANSFORM(3, uint16_t, int, 0x0, 0xffff)
-				break;
-			case BC_RGBA16161616:
-				TRANSFORM(4, uint16_t, int, 0x0, 0xffff)
-				break;
-			case BC_YUV161616:
-				TRANSFORM(3, uint16_t, int, 0x8000, 0xffff)
-				break;
-			case BC_YUVA16161616:
-				TRANSFORM(4, uint16_t, int, 0x8000, 0xffff)
-				break;
+		case BC_RGB_FLOAT:
+			TRANSFORM(3, float, float, 0x0, 1.0)
+			break;
+		case BC_RGB888:
+			TRANSFORM(3, unsigned char, int, 0x0, 0xff)
+			break;
+		case BC_RGBA_FLOAT:
+			TRANSFORM(4, float, float, 0x0, 1.0)
+			break;
+		case BC_RGBA8888:
+			TRANSFORM(4, unsigned char, int, 0x0, 0xff)
+			break;
+		case BC_YUV888:
+			TRANSFORM(3, unsigned char, int, 0x80, 0xff)
+			break;
+		case BC_YUVA8888:
+			TRANSFORM(4, unsigned char, int, 0x80, 0xff)
+			break;
+		case BC_RGB161616:
+			TRANSFORM(3, uint16_t, int, 0x0, 0xffff)
+			break;
+		case BC_RGBA16161616:
+			TRANSFORM(4, uint16_t, int, 0x0, 0xffff)
+			break;
+		case BC_YUV161616:
+			TRANSFORM(3, uint16_t, int, 0x8000, 0xffff)
+			break;
+		case BC_YUVA16161616:
+			TRANSFORM(4, uint16_t, int, 0x8000, 0xffff)
+			break;
 		}
-
 	}
 	else
 	{
@@ -844,14 +773,10 @@ void AffineUnit::process_package(LoadPackage *package)
 		float h_f = server->h;
 		float w_f = server->w;
 
-
-
 		if(server->use_opengl)
 		{
 			return;
 		}
-
-
 
 // Projection
 #define DO_STRETCH(type, components) \
@@ -890,42 +815,38 @@ void AffineUnit::process_package(LoadPackage *package)
 
 		switch(server->input->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				DO_STRETCH(float, 3)
-				break;
-			case BC_RGB888:
-				DO_STRETCH(unsigned char, 3)
-				break;
-			case BC_RGBA_FLOAT:
-				DO_STRETCH(float, 4)
-				break;
-			case BC_RGBA8888:
-				DO_STRETCH(unsigned char, 4)
-				break;
-			case BC_YUV888:
-				DO_STRETCH(unsigned char, 3)
-				break;
-			case BC_YUVA8888:
-				DO_STRETCH(unsigned char, 4)
-				break;
-			case BC_RGB161616:
-				DO_STRETCH(uint16_t, 3)
-				break;
-			case BC_RGBA16161616:
-				DO_STRETCH(uint16_t, 4)
-				break;
-			case BC_YUV161616:
-				DO_STRETCH(uint16_t, 3)
-				break;
-			case BC_YUVA16161616:
-				DO_STRETCH(uint16_t, 4)
-				break;
+		case BC_RGB_FLOAT:
+			DO_STRETCH(float, 3)
+			break;
+		case BC_RGB888:
+			DO_STRETCH(unsigned char, 3)
+			break;
+		case BC_RGBA_FLOAT:
+			DO_STRETCH(float, 4)
+			break;
+		case BC_RGBA8888:
+			DO_STRETCH(unsigned char, 4)
+			break;
+		case BC_YUV888:
+			DO_STRETCH(unsigned char, 3)
+			break;
+		case BC_YUVA8888:
+			DO_STRETCH(unsigned char, 4)
+			break;
+		case BC_RGB161616:
+			DO_STRETCH(uint16_t, 3)
+			break;
+		case BC_RGBA16161616:
+			DO_STRETCH(uint16_t, 4)
+			break;
+		case BC_YUV161616:
+			DO_STRETCH(uint16_t, 3)
+			break;
+		case BC_YUVA16161616:
+			DO_STRETCH(uint16_t, 4)
+			break;
 		}
 	}
-
-
-
-
 }
 
 
@@ -935,10 +856,7 @@ void AffineUnit::process_package(LoadPackage *package)
 
 AffineEngine::AffineEngine(int total_clients,
 	int total_packages)
- : LoadServer(
-//1, 1 
-total_clients, total_packages 
-)
+ : LoadServer(total_clients, total_packages)
 {
 	user_viewport = 0;
 	user_pivot = 0;
@@ -993,7 +911,6 @@ void AffineEngine::process(VFrame *output,
 	this->y4 = y4;
 	this->forward = forward;
 
-
 	if(!user_viewport)
 	{
 		x = 0;
@@ -1007,9 +924,6 @@ void AffineEngine::process(VFrame *output,
 	else
 		process_packages();
 }
-
-
-
 
 void AffineEngine::rotate(VFrame *output,
 	VFrame *input, 
@@ -1055,39 +969,10 @@ void AffineEngine::rotate(VFrame *output,
 	x4 = ((pivot_x - x) - sin(angle4) * radius4) * 100 / w;
 	y4 = ((pivot_y - y) + cos(angle4) * radius4) * 100 / h;
 
-// printf("AffineEngine::rotate x=%d y=%d w=%d h=%d pivot_x=%d pivot_y=%d angle=%f\n",
-// x, y, w, h, 
-// pivot_x, 
-// pivot_y,
-// angle * 360 / 2 / M_PI);
-// 
-// printf("	angle1=%f angle2=%f angle3=%f angle4=%f\n",
-// angle1 * 360 / 2 / M_PI, 
-// angle2 * 360 / 2 / M_PI, 
-// angle3 * 360 / 2 / M_PI, 
-// angle4 * 360 / 2 / M_PI);
-// 
-// printf("	radius1=%f radius2=%f radius3=%f radius4=%f\n",
-// radius1,
-// radius2,
-// radius3,
-// radius4);
-// 
-// printf("	x1=%f y1=%f x2=%f y2=%f x3=%f y3=%f x4=%f y4=%f\n",
-// x1 * w / 100, 
-// y1 * h / 100, 
-// x2 * w / 100, 
-// y2 * h / 100, 
-// x3 * w / 100, 
-// y3 * h / 100, 
-// x4 * w / 100, 
-// y4 * h / 100);
-
 	if(use_opengl)
 		process_single();
 	else
 		process_packages();
-//	process_packages();
 }
 
 void AffineEngine::set_viewport(int x, int y, int w, int h)
@@ -1120,5 +1005,3 @@ void AffineEngine::unset_viewport()
 {
 	user_viewport = 0;
 }
-
-

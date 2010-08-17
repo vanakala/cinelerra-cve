@@ -36,7 +36,7 @@ class LoopVideoConfig
 {
 public:
 	LoopVideoConfig();
-	int64_t frames;
+	framenum frames;
 };
 
 
@@ -79,19 +79,13 @@ public:
 	int is_realtime();
 	int is_synthesis();
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 };
 
-
-
-
-
-
+#include "picon_png.h"
 
 REGISTER_PLUGIN(LoopVideo);
-
-
 
 LoopVideoConfig::LoopVideoConfig()
 {
@@ -99,12 +93,9 @@ LoopVideoConfig::LoopVideoConfig()
 }
 
 
-
-
-
 LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	210, 
 	160, 
@@ -125,6 +116,7 @@ void LoopVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Frames to loop:")));
 	y += 20;
 	add_subwindow(frames = new LoopVideoFrames(plugin, 
@@ -138,11 +130,6 @@ WINDOW_CLOSE_EVENT(LoopVideoWindow)
 
 
 PLUGIN_THREAD_OBJECT(LoopVideo, LoopVideoThread, LoopVideoWindow)
-
-
-
-
-
 
 LoopVideoFrames::LoopVideoFrames(LoopVideo *plugin, 
 	int x, 
@@ -165,13 +152,6 @@ int LoopVideoFrames::handle_event()
 }
 
 
-
-
-
-
-
-
-
 LoopVideo::LoopVideo(PluginServer *server)
  : PluginVClient(server)
 {
@@ -188,7 +168,6 @@ const char* LoopVideo::plugin_title() { return N_("Loop video"); }
 int LoopVideo::is_realtime() { return 1; }
 int LoopVideo::is_synthesis() { return 1; }
 
-#include "picon_png.h"
 NEW_PICON_MACRO(LoopVideo)
 
 SHOW_GUI_MACRO(LoopVideo, LoopVideoThread)
@@ -199,17 +178,17 @@ SET_STRING_MACRO(LoopVideo);
 
 
 int LoopVideo::process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate)
 {
-	int64_t current_loop_position;
+	framenum current_loop_position;
 
 // Truncate to next keyframe
 	if(get_direction() == PLAY_FORWARD)
 	{
 // Get start of current loop
 		KeyFrame *prev_keyframe = get_prev_keyframe(start_position);
-		int64_t prev_position = edl_to_local(prev_keyframe->position);
+		framenum prev_position = edl_to_local(prev_keyframe->position);
 		if(prev_position == 0)
 			prev_position = get_source_start();
 		read_data(prev_keyframe);
@@ -224,7 +203,7 @@ int LoopVideo::process_buffer(VFrame *frame,
 	else
 	{
 		KeyFrame *prev_keyframe = get_next_keyframe(start_position);
-		int64_t prev_position = edl_to_local(prev_keyframe->position);
+		framenum prev_position = edl_to_local(prev_keyframe->position);
 		if(prev_position == 0)
 			prev_position = get_source_start() + get_total_len();
 		read_data(prev_keyframe);
@@ -236,9 +215,6 @@ int LoopVideo::process_buffer(VFrame *frame,
 		while(current_loop_position > prev_position) current_loop_position -= config.frames;
 	}
 
-
-// printf("LoopVideo::process_buffer 100 %lld %lld %lld %d\n", 
-// current_position, current_loop_position, current_loop_end, fragment_size);
 	read_frame(frame,
 		0,
 		current_loop_position,
@@ -248,12 +224,10 @@ int LoopVideo::process_buffer(VFrame *frame,
 }
 
 
-
-
 int LoopVideo::load_configuration()
 {
 	KeyFrame *prev_keyframe;
-	int64_t old_frames = config.frames;
+	framenum old_frames = config.frames;
 	prev_keyframe = get_prev_keyframe(get_source_position());
 	read_data(prev_keyframe);
 	config.frames = MAX(config.frames, 1);
@@ -318,12 +292,7 @@ void LoopVideo::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->frames->update(config.frames);
+		thread->window->frames->update((int64_t)config.frames);
 		thread->window->unlock_window();
 	}
 }
-
-
-
-
-

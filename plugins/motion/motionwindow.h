@@ -29,8 +29,8 @@ public:
 	int handle_event();
 	void create_objects();
 	static int calculate_w(MotionWindow *gui);
-	static int from_text(char *text);
-	static char* to_text(int mode);
+	static int from_text(const char *text);
+	static const char* to_text(int mode);
 	MotionMain *plugin;
 	MotionWindow *gui;
 };
@@ -42,8 +42,8 @@ public:
 	int handle_event();
 	void create_objects();
 	static int calculate_w(MotionWindow *gui);
-	static int from_text(char *text);
-	static char* to_text(int mode);
+	static int from_text(const char *text);
+	static const char* to_text(int mode);
 	MotionMain *plugin;
 	MotionWindow *gui;
 };
@@ -55,8 +55,8 @@ public:
 	int handle_event();
 	void create_objects();
 	static int calculate_w(MotionWindow *gui);
-	static int from_text(char *text);
-	static char* to_text(int mode);
+	static int from_text(const char *text);
+	static const char* to_text(int mode);
 	MotionMain *plugin;
 	MotionWindow *gui;
 };
@@ -68,8 +68,8 @@ public:
 	int handle_event();
 	void create_objects();
 	static int calculate_w(MotionWindow *gui);
-	static void from_text(int *horizontal_only, int *vertical_only, char *text);
-	static char* to_text(int horizontal_only, int vertical_only);
+	static void from_text(int *horizontal_only, int *vertical_only, const char *text);
+	static const char* to_text(int horizontal_only, int vertical_only);
 	MotionMain *plugin;
 	MotionWindow *gui;
 };
@@ -248,7 +248,6 @@ public:
 	int handle_event();
 	MotionMain *plugin;
 };
-
 
 
 class MotionDrawVectors : public BC_CheckBox

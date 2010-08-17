@@ -58,9 +58,9 @@ public:
 	int equivalent(LiveVideoConfig &src);
 	void interpolate(LiveVideoConfig &prev, 
 		LiveVideoConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame, 
+		posnum current_frame);
 	int channel;
 };
 
@@ -127,7 +127,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(LiveVideoConfig, LiveVideoThread);
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int is_multichannel();
@@ -156,17 +156,6 @@ public:
 	mjpeg_t *mjpeg;
 };
 
-
-
-
-
-
-
-
-
-
-
-
 LiveVideoConfig::LiveVideoConfig()
 {
 	channel = 0;
@@ -184,9 +173,9 @@ int LiveVideoConfig::equivalent(LiveVideoConfig &src)
 
 void LiveVideoConfig::interpolate(LiveVideoConfig &prev, 
 	LiveVideoConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	this->channel = prev.channel;
 }
@@ -197,7 +186,7 @@ void LiveVideoConfig::interpolate(LiveVideoConfig &prev,
 
 LiveVideoWindow::LiveVideoWindow(LiveVideo *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	plugin->w, 
 	plugin->h, 
@@ -219,6 +208,7 @@ void LiveVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	for(int i = 0; i < plugin->channeldb->size(); i++)
 	{
 		BC_ListBoxItem *current;
@@ -265,9 +255,6 @@ int LiveVideoWindow::resize_event(int w, int h)
 	return 1;
 }
 
-
-
-
 LiveChannelList::LiveChannelList(LiveVideo *plugin, 
 	LiveVideoWindow *gui, 
 	int x, 
@@ -298,7 +285,7 @@ LiveChannelSelect::LiveChannelSelect(LiveVideo *plugin,
 	int x, 
 	int y)
  :  BC_Button(x, y, 
- 	BC_WindowBase::get_resources()->ok_images)
+	BC_WindowBase::get_resources()->ok_images)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -312,35 +299,8 @@ int LiveChannelSelect::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(LiveVideo, LiveVideoThread, LiveVideoWindow)
-
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(LiveVideo)
-
-
-
-
 
 
 LiveVideo::LiveVideo(PluginServer *server)
@@ -381,12 +341,10 @@ LiveVideo::~LiveVideo()
 
 
 int LiveVideo::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
-//printf("LiveVideo::process_buffer 10 start_position=%lld buffer_size=%d size=%d\n", 
-//start_position, get_buffer_size(), size);
 
 	EDLSession *session = PluginClient::get_edlsession();
 	if(!vdevice)
@@ -406,17 +364,16 @@ int LiveVideo::process_buffer(VFrame *frame,
 // Some devices can read directly to the best colormodel and some can't.
 			switch(session->vconfig_in->driver)
 			{
-				case CAPTURE_FIREWIRE:
-				case CAPTURE_IEC61883:
-				case CAPTURE_BUZ:
-				case VIDEO4LINUX2JPEG:
-					input_cmodel = BC_COMPRESSED;
-					break;
-				default:
-					input_cmodel = vdevice->get_best_colormodel(session->recording_format);
-					break;
+			case CAPTURE_FIREWIRE:
+			case CAPTURE_IEC61883:
+			case CAPTURE_BUZ:
+			case VIDEO4LINUX2JPEG:
+				input_cmodel = BC_COMPRESSED;
+				break;
+			default:
+				input_cmodel = vdevice->get_best_colormodel(session->recording_format);
+				break;
 			}
-
 
 // Load the picture config from the main defaults file.
 			if(!picture_defaults)
@@ -454,7 +411,6 @@ int LiveVideo::process_buffer(VFrame *frame,
 			vdevice->set_channel(channeldb->get(config.channel));
 		}
 
-	
 		VFrame *input = frame;
 		if(input_cmodel != frame->get_color_model() ||
 			session->vconfig_in->w != frame->get_w() ||
@@ -474,7 +430,6 @@ int LiveVideo::process_buffer(VFrame *frame,
 		{
 			if(input->get_color_model() != BC_COMPRESSED)
 			{
-SET_TRACE
 				int w = MIN(session->vconfig_in->w, frame->get_w());
 				int h = MIN(session->vconfig_in->h, frame->get_h());
 				cmodel_transfer(frame->get_rows(), /* Leave NULL if non existent */
@@ -499,43 +454,41 @@ SET_TRACE
 					input->get_bytes_per_line(),       /* For planar use the luma rowspan */
 					frame->get_bytes_per_line());     /* For planar use the luma rowspan */
 				frame->set_opengl_state(VFrame::RAM);
-SET_TRACE
 			}
 			else
 			{
 				switch(session->vconfig_in->driver)
 				{
-					case CAPTURE_FIREWIRE:
-					case CAPTURE_IEC61883:
+				case CAPTURE_FIREWIRE:
+				case CAPTURE_IEC61883:
 // Decompress a DV frame from the driver
-						if(!dv)
-							dv = dv_new();
-						dv_read_video(((dv_t*)dv), 
-							frame->get_rows(), 
-							input->get_data(), 
-							input->get_compressed_size(),
-							frame->get_color_model());
-						frame->set_opengl_state(VFrame::RAM);
-SET_TRACE
-						break;
+					if(!dv)
+						dv = dv_new();
+					dv_read_video(((dv_t*)dv), 
+						frame->get_rows(), 
+						input->get_data(), 
+						input->get_compressed_size(),
+						frame->get_color_model());
+					frame->set_opengl_state(VFrame::RAM);
+					break;
 
-					case CAPTURE_BUZ:
-					case VIDEO4LINUX2JPEG:
-						if(!mjpeg)
-							mjpeg = mjpeg_new(w, 
-								h, 
-								2);  // fields
-						mjpeg_decompress(mjpeg, 
-							input->get_data(), 
-							input->get_compressed_size(), 
-							input->get_field2_offset(), 
-							frame->get_rows(), 
-							frame->get_y(), 
-							frame->get_u(), 
-							frame->get_v(),
-							frame->get_color_model(),
-							get_project_smp() + 1);
-						break;
+				case CAPTURE_BUZ:
+				case VIDEO4LINUX2JPEG:
+					if(!mjpeg)
+						mjpeg = mjpeg_new(w, 
+							h, 
+							2);  // fields
+					mjpeg_decompress(mjpeg, 
+						input->get_data(), 
+						input->get_compressed_size(), 
+						input->get_field2_offset(), 
+						frame->get_rows(), 
+						frame->get_y(), 
+						frame->get_u(), 
+						frame->get_v(),
+						frame->get_color_model(),
+						get_project_smp() + 1);
+					break;
 				}
 			}
 		}
@@ -653,8 +606,3 @@ void LiveVideo::update_gui()
 		}
 	}
 }
-
-
-
-
-

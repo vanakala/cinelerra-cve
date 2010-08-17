@@ -77,9 +77,9 @@ public:
 	void copy_from(MotionConfig &that);
 	void interpolate(MotionConfig &prev, 
 		MotionConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	void boundaries();
 
 	int block_count;
@@ -131,7 +131,7 @@ public:
 		PREVIOUS_SAME_BLOCK
 	};
 // Number of single frame to track relative to timeline start
-	int64_t track_frame;
+	framenum track_frame;
 // Master layer
 	int bottom_is_master;
 };
@@ -146,7 +146,7 @@ public:
 	~MotionMain();
 
 	int process_buffer(VFrame **frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	void process_global();
 	void process_rotation();
