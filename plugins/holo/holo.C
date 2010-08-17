@@ -37,22 +37,11 @@
 REGISTER_PLUGIN(HoloMain)
 
 
-
-
-
-
-
-
-
-
 HoloConfig::HoloConfig()
 {
 	threshold = 40;
 	recycle = 1.0;
 }
-
-
-
 
 
 HoloMain::HoloMain(PluginServer *server)
@@ -68,7 +57,6 @@ HoloMain::HoloMain(PluginServer *server)
 HoloMain::~HoloMain()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-
 
 	if(effecttv)
 	{
@@ -168,28 +156,28 @@ void HoloMain::add_frames(VFrame *output, VFrame *input)
 {
 	switch(output->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			ADD_FRAMES(uint8_t, 3);
-			break;
-		case BC_RGB_FLOAT:
-			ADD_FRAMES(float, 3);
-			break;
-		case BC_RGBA_FLOAT:
-			ADD_FRAMES(float, 4);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			ADD_FRAMES(uint8_t, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			ADD_FRAMES(uint16_t, 3);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			ADD_FRAMES(uint16_t, 4);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		ADD_FRAMES(uint8_t, 3);
+		break;
+	case BC_RGB_FLOAT:
+		ADD_FRAMES(float, 3);
+		break;
+	case BC_RGBA_FLOAT:
+		ADD_FRAMES(float, 4);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		ADD_FRAMES(uint8_t, 4);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		ADD_FRAMES(uint16_t, 3);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		ADD_FRAMES(uint16_t, 4);
+		break;
 	}
 }
 
@@ -202,16 +190,12 @@ void HoloMain::set_background()
  * For Cinelerra, we make every frame a holograph and expect the user to
  * provide a matte.
  **/
-total = 0;
+	total = 0;
 
 	switch(total)
 	{
 		case 0:
 /* step 1: grab frame-1 to buffer-1 */
-// 			tmp = new VFrame(0, 
-// 				input_ptr->get_w(), 
-// 				input_ptr->get_h(),
-// 				project_color_model);
 			bgimage->copy_from(input_ptr);
 			break;
 
@@ -229,14 +213,10 @@ total = 0;
 /* step 4: add frame-4 to buffer-2 */
 			add_frames(tmp, input_ptr);
 
-
-
 /* step 5: add buffer-3 to buffer-1 */
 			add_frames(bgimage, tmp);
 
 			effecttv->image_bgset_y(bgimage);
-
-
 			delete tmp;
 			break;
 	}
@@ -248,12 +228,7 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	this->input_ptr = input_ptr;
 	this->output_ptr = output_ptr;
 
-
-
-
 	load_configuration();
-
-
 
 	if(do_reconfigure)
 	{
@@ -277,9 +252,9 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 
 	set_background();
-	
+
 	holo_server->process_packages();
-	
+
 	total++;
 	if(total >= config.recycle * project_frame_rate)
 		total = 0;
@@ -311,8 +286,6 @@ void HoloMain::raise_window()
 }
 
 
-
-
 HoloServer::HoloServer(HoloMain *plugin, int total_clients, int total_packages)
  : LoadServer(total_clients, total_packages)
 {
@@ -325,15 +298,10 @@ LoadClient* HoloServer::new_client()
 	return new HoloClient(this);
 }
 
-
-
-
 LoadPackage* HoloServer::new_package() 
 { 
 	return new HoloPackage; 
 }
-
-
 
 void HoloServer::init_packages()
 {
@@ -345,20 +313,12 @@ void HoloServer::init_packages()
 	}
 }
 
-
-
-
-
-
-
-
 HoloClient::HoloClient(HoloServer *server)
  : LoadClient(server)
 {
 	this->plugin = server->plugin;
 	phase = 0;
 }
-
 
 void HoloClient::process_package(LoadPackage *package)
 {
@@ -429,17 +389,12 @@ else \
 	} \
 }
 
-
-
-
 #define HOLO_CORE(type, components, is_yuv) \
 	for(y = 1; y < height - 1; y++) \
 	{ \
 		type *src = (type*)input_rows[y]; \
 		type *bg = (type*)plugin->bgimage->get_rows()[y]; \
 		type *dest = (type*)output_rows[y]; \
- \
- \
  \
 		if(((y + phase) & 0x7f) < 0x58)  \
 		{ \
@@ -475,7 +430,7 @@ else \
 					if(g > 255) g = 255; \
 					if(b > 255) b = 255; \
  \
- 					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
+					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
 					if(sizeof(type) == 4) \
 					{ \
 						dest[0] = (type)r / 0xff; \
@@ -517,7 +472,6 @@ else \
 				{ \
 					STORE_PIXEL(type, components, s, src, is_yuv); \
  \
- \
 					t = (s & 0xff) + ((s & 0xff00) >> 6) + ((s & 0xff0000) >> 16); \
 					t += plugin->noisepattern[EffectTV::fastrand() >> 24]; \
  \
@@ -542,7 +496,7 @@ else \
 					if(g > 255) g = 255; \
 					if(b > 255) b = 255; \
  \
- 					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
+					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
 					if(sizeof(type) == 4) \
 					{ \
 						dest[0] = (type)r / 0xff; \
@@ -579,52 +533,43 @@ else \
 	}
 
 
-
-
 	switch(plugin->input_ptr->get_color_model())
 	{
-		case BC_RGB888:
-			HOLO_CORE(uint8_t, 3, 0);
-			break;
-		case BC_RGB_FLOAT:
-			HOLO_CORE(float, 3, 0);
-			break;
-		case BC_YUV888:
-			HOLO_CORE(uint8_t, 3, 1);
-			break;
-		case BC_RGBA_FLOAT:
-			HOLO_CORE(float, 4, 0);
-			break;
-		case BC_RGBA8888:
-			HOLO_CORE(uint8_t, 4, 0);
-			break;
-		case BC_YUVA8888:
-			HOLO_CORE(uint8_t, 4, 1);
-			break;
-		case BC_RGB161616:
-			HOLO_CORE(uint16_t, 3, 0);
-			break;
-		case BC_YUV161616:
-			HOLO_CORE(uint16_t, 3, 1);
-			break;
-		case BC_RGBA16161616:
-			HOLO_CORE(uint16_t, 4, 0);
-			break;
-		case BC_YUVA16161616:
-			HOLO_CORE(uint16_t, 4, 1);
-			break;
+	case BC_RGB888:
+		HOLO_CORE(uint8_t, 3, 0);
+		break;
+	case BC_RGB_FLOAT:
+		HOLO_CORE(float, 3, 0);
+		break;
+	case BC_YUV888:
+		HOLO_CORE(uint8_t, 3, 1);
+		break;
+	case BC_RGBA_FLOAT:
+		HOLO_CORE(float, 4, 0);
+		break;
+	case BC_RGBA8888:
+		HOLO_CORE(uint8_t, 4, 0);
+		break;
+	case BC_YUVA8888:
+		HOLO_CORE(uint8_t, 4, 1);
+		break;
+	case BC_RGB161616:
+		HOLO_CORE(uint16_t, 3, 0);
+		break;
+	case BC_YUV161616:
+		HOLO_CORE(uint16_t, 3, 1);
+		break;
+	case BC_RGBA16161616:
+		HOLO_CORE(uint16_t, 4, 0);
+		break;
+	case BC_YUVA16161616:
+		HOLO_CORE(uint16_t, 4, 1);
+		break;
 	}
-
-
 
 	phase -= 37;
 }
 
-
-
 HoloPackage::HoloPackage()
 {
 }
-
-
-

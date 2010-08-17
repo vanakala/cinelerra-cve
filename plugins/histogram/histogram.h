@@ -38,7 +38,7 @@ public:
 	~HistogramMain();
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -64,9 +64,6 @@ public:
 	void calculate_histogram(VFrame *data, int do_value);
 // Calculate the linear, smoothed, lookup curves
 	void tabulate_curve(int subscript, int use_value);
-
-
-
 
 	YUV yuv;
 	VFrame *input, *output;
@@ -117,7 +114,6 @@ public:
 	HistogramMain *plugin;
 	int total_size;
 
-
 	int operation;
 	enum
 	{
@@ -127,15 +123,5 @@ public:
 	VFrame *data;
 	int do_value;
 };
-
-
-
-
-
-
-
-
-
-
 
 #endif

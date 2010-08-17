@@ -184,7 +184,7 @@ public:
 
 	HistogramSlider *output;
 	HistogramAuto *automatic;
-	HistogramMode *mode_v, *mode_r, *mode_g, *mode_b /*,  *mode_a */;
+	HistogramMode *mode_v, *mode_r, *mode_g, *mode_b;
 	HistogramOutputText *output_min;
 	HistogramOutputText *output_max;
 	HistogramOutputText *threshold;

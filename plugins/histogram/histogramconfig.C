@@ -26,9 +26,6 @@
 #include <math.h>
 
 
-
-
-
 HistogramPoint::HistogramPoint()
  : ListItem<HistogramPoint>()
 {
@@ -42,8 +39,6 @@ int HistogramPoint::equivalent(HistogramPoint *src)
 {
 	return EQUIV(x, src->x) && EQUIV(y, src->y);
 }
-
-
 
 
 HistogramPoints::HistogramPoints()
@@ -152,18 +147,6 @@ void HistogramPoints::interpolate(HistogramPoints *prev,
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 HistogramConfig::HistogramConfig()
 {
 	plot = 1;
@@ -175,7 +158,6 @@ void HistogramConfig::reset(int do_mode)
 {
 	reset_points(0);
 
-	
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		output_min[i] = 0.0;
@@ -246,9 +228,9 @@ void HistogramConfig::copy_from(HistogramConfig &that)
 
 void HistogramConfig::interpolate(HistogramConfig &prev, 
 	HistogramConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = 1.0 - next_scale;

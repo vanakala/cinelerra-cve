@@ -46,22 +46,18 @@ class HueEffect;
 #define MAXVALUE 100
 
 
-
-
-
-
 class HueConfig
 {
 public:
 	HueConfig();
-	
+
 	void copy_from(HueConfig &src);
 	int equivalent(HueConfig &src);
 	void interpolate(HueConfig &prev, 
 		HueConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	float hue, saturation, value;
 };
 
@@ -138,9 +134,9 @@ class HueEffect : public PluginVClient
 public:
 	HueEffect(PluginServer *server);
 	~HueEffect();
-	
+
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	const char* plugin_title();
@@ -164,46 +160,30 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 HueConfig::HueConfig()
 {
 	hue = saturation = value = 0;
 }
-	
+
 void HueConfig::copy_from(HueConfig &src)
 {
 	hue = src.hue;
 	saturation = src.saturation;
 	value = src.value;
 }
+
 int HueConfig::equivalent(HueConfig &src)
 {
 	return EQUIV(hue, src.hue) && 
 		EQUIV(saturation, src.saturation) && 
 		EQUIV(value, src.value);
 }
+
 void HueConfig::interpolate(HueConfig &prev, 
 	HueConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -212,13 +192,6 @@ void HueConfig::interpolate(HueConfig &prev,
 	this->saturation = prev.saturation * prev_scale + next.saturation * next_scale;
 	this->value = prev.value * prev_scale + next.value * next_scale;
 }
-
-
-
-
-
-
-
 
 HueSlider::HueSlider(HueEffect *plugin, int x, int y, int w)
  : BC_FSlider(x, 
@@ -240,11 +213,6 @@ int HueSlider::handle_event()
 }
 
 
-
-
-
-
-
 SaturationSlider::SaturationSlider(HueEffect *plugin, int x, int y, int w)
  : BC_FSlider(x, 
 			y,
@@ -257,6 +225,7 @@ SaturationSlider::SaturationSlider(HueEffect *plugin, int x, int y, int w)
 {
 	this->plugin = plugin;
 }
+
 int SaturationSlider::handle_event()
 {
 	plugin->config.saturation = get_value();
@@ -272,12 +241,6 @@ char* SaturationSlider::get_caption()
 	return string;
 }
 
-
-
-
-
-
-
 ValueSlider::ValueSlider(HueEffect *plugin, int x, int y, int w)
  : BC_FSlider(x, 
 			y,
@@ -290,6 +253,7 @@ ValueSlider::ValueSlider(HueEffect *plugin, int x, int y, int w)
 {
 	this->plugin = plugin;
 }
+
 int ValueSlider::handle_event()
 {
 	plugin->config.value = get_value();
@@ -303,11 +267,6 @@ char* ValueSlider::get_caption()
 	sprintf(string, "%0.4f", fraction);
 	return string;
 }
-
-
-
-
-
 
 
 HueWindow::HueWindow(HueEffect *plugin, int x, int y)
@@ -324,9 +283,13 @@ HueWindow::HueWindow(HueEffect *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 void HueWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 100;
+
+	set_icon(new VFrame(picon_png));
+
 	add_subwindow(new BC_Title(x, y, _("Hue:")));
 	add_subwindow(hue = new HueSlider(plugin, x1, y, 200));
 	y += 30;
@@ -341,13 +304,6 @@ void HueWindow::create_objects()
 
 
 WINDOW_CLOSE_EVENT(HueWindow)
-
-
-
-
-
-
-
 
 PLUGIN_THREAD_OBJECT(HueEffect, HueThread, HueWindow)
 
@@ -365,21 +321,16 @@ void HueEngine::init_packages()
 		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
 }
+
 LoadClient* HueEngine::new_client()
 {
 	return new HueUnit(plugin, this);
 }
+
 LoadPackage* HueEngine::new_package()
 {
 	return new HuePackage;
 }
-
-
-
-
-
-
-
 
 HuePackage::HuePackage()
  : LoadPackage()
@@ -391,11 +342,6 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 {
 	this->plugin = plugin;
 }
-
-
-
-
-
 
 
 #define HUESATURATION(type, max, components, use_yuv) \
@@ -438,7 +384,6 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 				b = (float)in_row[2] / max; \
 				HSV::rgb_to_hsv(r, g, b, h, s, va); \
 			} \
- \
  \
 			h += h_offset; \
 			s *= s_offset; \
@@ -495,50 +440,47 @@ void HueUnit::process_package(LoadPackage *package)
 
 	switch(plugin->input->get_color_model())
 	{
-		case BC_RGB888:
-			HUESATURATION(unsigned char, 0xff, 3, 0)
-			break;
+	case BC_RGB888:
+		HUESATURATION(unsigned char, 0xff, 3, 0)
+		break;
 
-		case BC_RGB_FLOAT:
-			HUESATURATION(float, 1, 3, 0)
-			break;
+	case BC_RGB_FLOAT:
+		HUESATURATION(float, 1, 3, 0)
+		break;
 
-		case BC_YUV888:
-			HUESATURATION(unsigned char, 0xff, 3, 1)
-			break;
+	case BC_YUV888:
+		HUESATURATION(unsigned char, 0xff, 3, 1)
+		break;
 
-		case BC_RGB161616:
-			HUESATURATION(uint16_t, 0xffff, 3, 0)
-			break;
+	case BC_RGB161616:
+		HUESATURATION(uint16_t, 0xffff, 3, 0)
+		break;
 
-		case BC_YUV161616:
-			HUESATURATION(uint16_t, 0xffff, 3, 1)
-			break;
+	case BC_YUV161616:
+		HUESATURATION(uint16_t, 0xffff, 3, 1)
+		break;
 
-		case BC_RGBA_FLOAT:
-			HUESATURATION(float, 1, 4, 0)
-			break;
+	case BC_RGBA_FLOAT:
+		HUESATURATION(float, 1, 4, 0)
+		break;
 
-		case BC_RGBA8888:
-			HUESATURATION(unsigned char, 0xff, 4, 0)
-			break;
+	case BC_RGBA8888:
+		HUESATURATION(unsigned char, 0xff, 4, 0)
+		break;
 
-		case BC_YUVA8888:
-			HUESATURATION(unsigned char, 0xff, 4, 1)
-			break;
+	case BC_YUVA8888:
+		HUESATURATION(unsigned char, 0xff, 4, 1)
+		break;
 
-		case BC_RGBA16161616:
-			HUESATURATION(uint16_t, 0xffff, 4, 0)
-			break;
+	case BC_RGBA16161616:
+		HUESATURATION(uint16_t, 0xffff, 4, 0)
+		break;
 
-		case BC_YUVA16161616:
-			HUESATURATION(uint16_t, 0xffff, 4, 1)
-			break;
-
+	case BC_YUVA16161616:
+		HUESATURATION(uint16_t, 0xffff, 4, 1)
+		break;
 	}
 }
-
-
 
 
 REGISTER_PLUGIN(HueEffect)
@@ -550,6 +492,7 @@ HueEffect::HueEffect(PluginServer *server)
 	engine = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
+
 HueEffect::~HueEffect()
 {
 	PLUGIN_DESTRUCTOR_MACRO
@@ -557,7 +500,7 @@ HueEffect::~HueEffect()
 }
 
 int HueEffect::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -567,7 +510,6 @@ int HueEffect::process_buffer(VFrame *frame,
 		start_position, 
 		frame_rate,
 		get_use_opengl());
-	
 
 	this->input = frame;
 	this->output = frame;
@@ -584,7 +526,7 @@ int HueEffect::process_buffer(VFrame *frame,
 		}
 
 		if(!engine) engine = new HueEngine(this, PluginClient::smp + 1);
-		
+
 		engine->process_packages();
 	}
 	return 0;
@@ -610,6 +552,7 @@ int HueEffect::load_defaults()
 	config.value = defaults->get("VALUE", config.value);
 	return 0;
 }
+
 int HueEffect::save_defaults()
 {
 	defaults->update("HUE", config.hue);
@@ -618,6 +561,7 @@ int HueEffect::save_defaults()
 	defaults->save();
 	return 0;
 }
+
 void HueEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -631,6 +575,7 @@ void HueEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.terminate_string();
 }
+
 void HueEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
@@ -645,6 +590,7 @@ void HueEffect::read_data(KeyFrame *keyframe)
 		}
 	}
 }
+
 void HueEffect::update_gui()
 {
 	if(thread)
@@ -675,7 +621,6 @@ int HueEffect::handle_opengl()
 		"	pixel.gb += vec2(0.5, 0.5);\n"
 		"	gl_FragColor = pixel;\n"
 		"}\n";
-
 
 	static const char *yuv_frag = 
 		"uniform sampler2D tex;\n"
@@ -715,32 +660,30 @@ int HueEffect::handle_opengl()
 		"	gl_FragColor = pixel;\n"
 		"}\n";
 
-
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
 	unsigned int frag_shader = 0;
 	switch(get_output()->get_color_model())
 	{
-		case BC_YUV888:
-		case BC_YUVA8888:
+	case BC_YUV888:
+	case BC_YUVA8888:
 // This is a lousy approximation but good enough for the masker.
-			if(EQUIV(config.hue, 0))
-				frag_shader = VFrame::make_shader(0,
-					yuv_saturation_frag,
-					0);
-			else
-				frag_shader = VFrame::make_shader(0,
-					yuv_frag,
-					0);
-			break;
-		default:
+		if(EQUIV(config.hue, 0))
 			frag_shader = VFrame::make_shader(0,
-				rgb_frag,
+				yuv_saturation_frag,
 				0);
-			break;
+		else
+			frag_shader = VFrame::make_shader(0,
+				yuv_frag,
+				0);
+		break;
+	default:
+		frag_shader = VFrame::make_shader(0,
+			rgb_frag,
+			0);
+		break;
 	}
-
 
 	if(frag_shader > 0) 
 	{
@@ -760,8 +703,3 @@ int HueEffect::handle_opengl()
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
 }
-
-
-
-
-

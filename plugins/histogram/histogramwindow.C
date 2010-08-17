@@ -37,7 +37,7 @@ PLUGIN_THREAD_OBJECT(HistogramMain, HistogramThread, HistogramWindow)
 
 HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	440, 
 	500, 
@@ -65,7 +65,9 @@ int HistogramWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 10;
 	BC_Title *title = 0;
+	VFrame *ico = plugin->new_picon();
 
+	set_icon(ico);
 	max_picon = new BC_Pixmap(this, &max_picon_image);
 	mid_picon = new BC_Pixmap(this, &mid_picon_image);
 	min_picon = new BC_Pixmap(this, &min_picon_image);
@@ -92,12 +94,6 @@ int HistogramWindow::create_objects()
 		y,
 		HISTOGRAM_BLUE,
 		_("Blue")));
-// 	x += 70;
-// 	add_subwindow(mode_a = new HistogramMode(plugin, 
-// 		x, 
-// 		y,
-// 		HISTOGRAM_ALPHA,
-// 		_("Alpha")));
 
 	x = x1;
 	y += 30;
@@ -186,7 +182,6 @@ int HistogramWindow::create_objects()
 	output->update();
 	y += 40;
 
-
 	add_subwindow(automatic = new HistogramAuto(plugin, 
 		x, 
 		y));
@@ -216,8 +211,8 @@ int HistogramWindow::create_objects()
 		x, 
 		y));
 
-
 	show_window();
+	delete ico;
 
 	return 0;
 }
@@ -330,7 +325,6 @@ void HistogramWindow::draw_canvas_overlay()
 		number++;
 	}
 
-
 // Draw 0 and 100% lines.
 	canvas->set_color(0xff0000);
 	canvas->draw_line(title2_x - canvas->get_x(), 
@@ -359,7 +353,6 @@ void HistogramWindow::update_canvas()
 		if(accum && accum[i] > normalize) normalize = accum[i];
 	}
 
-
 	if(normalize)
 	{
 		for(int i = 0; i < canvas_w; i++)
@@ -372,7 +365,6 @@ void HistogramWindow::update_canvas()
 				max = MAX(accum[j], max);
 			}
 
-//			max = max * canvas_h / normalize;
 			max = (int)(log(max) / log(normalize) * canvas_h);
 
 			canvas->set_color(0xffffff);
@@ -409,11 +401,6 @@ void HistogramWindow::get_point_extents(HistogramPoint *current,
 }
 
 
-
-
-
-
-
 HistogramCanvas::HistogramCanvas(HistogramMain *plugin,
 	HistogramWindow *gui,
 	int x,
@@ -421,7 +408,7 @@ HistogramCanvas::HistogramCanvas(HistogramMain *plugin,
 	int w,
 	int h)
  : BC_SubWindow(x,
- 	y,
+	y,
 	w,
 	h,
 	0xffffff)
@@ -550,7 +537,6 @@ int HistogramCanvas::cursor_motion_event()
 			if(new_cursor != get_cursor())
 				set_cursor(new_cursor);
 
-
 			current = NEXT;
 		}
 	}
@@ -583,12 +569,6 @@ int HistogramCanvas::button_release_event()
 	return 0;
 }
 
-
-
-
-
-
-
 HistogramReset::HistogramReset(HistogramMain *plugin, 
 	int x,
 	int y)
@@ -596,6 +576,7 @@ HistogramReset::HistogramReset(HistogramMain *plugin,
 {
 	this->plugin = plugin;
 }
+
 int HistogramReset::handle_event()
 {
 	plugin->config.reset(0);
@@ -604,13 +585,6 @@ int HistogramReset::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
 
 
 HistogramSlider::HistogramSlider(HistogramMain *plugin, 
@@ -692,16 +666,16 @@ int HistogramSlider::cursor_motion_event()
 
 		switch(operation)
 		{
-			case DRAG_MIN_OUTPUT:
-				value = MIN(plugin->config.output_max[plugin->mode], value);
-				plugin->config.output_min[plugin->mode] = value;
-				break;
-			case DRAG_MAX_OUTPUT:
-				value = MAX(plugin->config.output_min[plugin->mode], value);
-				plugin->config.output_max[plugin->mode] = value;
-				break;
+		case DRAG_MIN_OUTPUT:
+			value = MIN(plugin->config.output_max[plugin->mode], value);
+			plugin->config.output_min[plugin->mode] = value;
+			break;
+		case DRAG_MAX_OUTPUT:
+			value = MAX(plugin->config.output_min[plugin->mode], value);
+			plugin->config.output_max[plugin->mode] = value;
+			break;
 		}
-	
+
 		plugin->config.boundaries();
 		gui->update_output();
 
@@ -726,15 +700,15 @@ void HistogramSlider::update()
 
 	switch(mode)
 	{
-		case HISTOGRAM_RED:
-			g = b = 0x00;
-			break;
-		case HISTOGRAM_GREEN:
-			r = b = 0x00;
-			break;
-		case HISTOGRAM_BLUE:
-			r = g = 0x00;
-			break;
+	case HISTOGRAM_RED:
+		g = b = 0x00;
+		break;
+	case HISTOGRAM_GREEN:
+		r = b = 0x00;
+		break;
+	case HISTOGRAM_BLUE:
+		r = g = 0x00;
+		break;
 	}
 
 	for(int i = 0; i < w; i++)
@@ -764,13 +738,6 @@ void HistogramSlider::update()
 }
 
 
-
-
-
-
-
-
-
 HistogramAuto::HistogramAuto(HistogramMain *plugin, 
 	int x, 
 	int y)
@@ -785,9 +752,6 @@ int HistogramAuto::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
 
 HistogramPlot::HistogramPlot(HistogramMain *plugin, 
 	int x, 
@@ -804,9 +768,6 @@ int HistogramPlot::handle_event()
 	return 1;
 }
 
-
-
-
 HistogramSplit::HistogramSplit(HistogramMain *plugin, 
 	int x, 
 	int y)
@@ -821,8 +782,6 @@ int HistogramSplit::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
 
 HistogramMode::HistogramMode(HistogramMain *plugin, 
 	int x, 
@@ -844,7 +803,6 @@ int HistogramMode::handle_event()
 	plugin->thread->window->update_canvas();
 	plugin->thread->window->update_output();
 	plugin->thread->window->output->update();
-//	plugin->send_configure_change();
 	return 1;
 }
 

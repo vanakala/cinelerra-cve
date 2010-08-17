@@ -50,20 +50,7 @@ class HistogramEngine;
 class HistogramWindow;
 
 
-
-
-
 REGISTER_PLUGIN(HistogramMain)
-
-
-
-
-
-
-
-
-
-
 
 
 HistogramMain::HistogramMain(PluginServer *server)
@@ -119,7 +106,6 @@ void HistogramMain::render_gui(void *data)
 {
 	if(thread)
 	{
-SET_TRACE
 // Process just the RGB values to determine the automatic points or
 // all the points if manual
 		if(!config.automatic)
@@ -135,14 +121,10 @@ SET_TRACE
 
 		calculate_histogram((VFrame*)data, !config.automatic);
 
-SET_TRACE
-
 		if(config.automatic)
 		{
-SET_TRACE
 			calculate_automatic((VFrame*)data);
 
-SET_TRACE
 // Generate curves for value histogram
 // Lock out changes to curves
 			thread->window->lock_window("HistogramMain::render_gui 1");
@@ -151,13 +133,10 @@ SET_TRACE
 			tabulate_curve(HISTOGRAM_BLUE, 0);
 			thread->window->unlock_window();
 
-SET_TRACE
 // Need a second pass to get the luminance values.
 			calculate_histogram((VFrame*)data, 1);
-SET_TRACE
 		}
 
-SET_TRACE
 		thread->window->lock_window("HistogramMain::render_gui 2");
 		thread->window->update_canvas();
 		if(config.automatic)
@@ -165,7 +144,6 @@ SET_TRACE
 			thread->window->update_input();
 		}
 		thread->window->unlock_window();
-SET_TRACE
 	}
 }
 
@@ -216,7 +194,6 @@ int HistogramMain::load_defaults()
 		}
 	}
 
-
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		sprintf(string, "OUTPUT_MIN_%d", i);
@@ -240,8 +217,6 @@ int HistogramMain::save_defaults()
 {
 	char string[BCTEXTLEN];
 
-
-
 	for(int j = 0; j < HISTOGRAM_MODES; j++)
 	{
 		int total_points = config.points[j].total();
@@ -260,13 +235,12 @@ int HistogramMain::save_defaults()
 		}
 	}
 
-
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		sprintf(string, "OUTPUT_MIN_%d", i);
 		defaults->update(string, config.output_min[i]);
 		sprintf(string, "OUTPUT_MAX_%d", i);
-	   	defaults->update(string, config.output_max[i]);
+		defaults->update(string, config.output_max[i]);
 	}
 
 	defaults->update("AUTOMATIC", config.automatic);
@@ -278,8 +252,6 @@ int HistogramMain::save_defaults()
 	return 0;
 }
 
-
-
 void HistogramMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -290,14 +262,12 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 
 	char string[BCTEXTLEN];
 
-
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		sprintf(string, "OUTPUT_MIN_%d", i);
 		output.tag.set_property(string, config.output_min[i]);
 		sprintf(string, "OUTPUT_MAX_%d", i);
-	   	output.tag.set_property(string, config.output_max[i]);
-//printf("HistogramMain::save_data %d %f %d\n", config.input_min[i], config.input_mid[i], config.input_max[i]);
+		output.tag.set_property(string, config.output_max[i]);
 	}
 
 	output.tag.set_property("AUTOMATIC", config.automatic);
@@ -309,16 +279,11 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.append_newline();
 
-
-
-
-
 	for(int j = 0; j < HISTOGRAM_MODES; j++)
 	{
 		output.tag.set_title("POINTS");
 		output.append_tag();
 		output.append_newline();
-
 
 		HistogramPoint *current = config.points[j].first;
 		while(current)
@@ -331,17 +296,10 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 			current = NEXT;
 		}
 
-
 		output.tag.set_title("/POINTS");
 		output.append_tag();
 		output.append_newline();
 	}
-
-
-
-
-
-
 	output.terminate_string();
 }
 
@@ -353,7 +311,6 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 
 	int result = 0;
 	int current_input_mode = 0;
-
 
 	while(!result)
 	{
@@ -370,7 +327,6 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 					config.output_min[i] = input.tag.get_property(string, config.output_min[i]);
 					sprintf(string, "OUTPUT_MAX_%d", i);
 					config.output_max[i] = input.tag.get_property(string, config.output_max[i]);
-//printf("HistogramMain::read_data %d %f %d\n", config.input_min[i], config.input_mid[i], config.input_max[i]);
 				}
 				config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
 				config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
@@ -403,7 +359,6 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 							}
 						}
 					}
-
 				}
 				current_input_mode++;
 			}
@@ -411,7 +366,6 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 	}
 
 	config.boundaries();
-
 }
 
 float HistogramMain::calculate_linear(float input, 
@@ -421,27 +375,12 @@ float HistogramMain::calculate_linear(float input,
 	int done = 0;
 	float output;
 
-// 	if(input < 0)
-// 	{
-// 		output = 0;
-// 		done = 1;
-// 	}
-// 
-// 	if(input > 1)
-// 	{
-// 		output = 1;
-// 		done = 1;
-// 	}
-
 	if(!done)
 	{
-
 		float x1 = 0;
 		float y1 = 0;
 		float x2 = 1;
 		float y2 = 1;
-
-
 
 // Get 2 points surrounding current position
 		HistogramPoints *points = &config.points[subscript];
@@ -473,19 +412,11 @@ float HistogramMain::calculate_linear(float input,
 				current = PREVIOUS;
 		}
 
-
-
-
 // Linear
 		if(!EQUIV(x2 - x1, 0))
 			output = (input - x1) * (y2 - y1) / (x2 - x1) + y1;
 		else
 			output = input * y2;
-
-
-
-
-
 	}
 
 // Apply value curve
@@ -493,7 +424,6 @@ float HistogramMain::calculate_linear(float input,
 	{
 		output = calculate_linear(output, HISTOGRAM_VALUE, 0);
 	}
-
 
 	float output_min = config.output_min[subscript];
 	float output_max = config.output_max[subscript];
@@ -505,7 +435,6 @@ float HistogramMain::calculate_linear(float input,
 	output = output_min + 
 		output * 
 		(output_max - output_min);
-
 
 	return output;
 }
@@ -613,15 +542,10 @@ void HistogramMain::calculate_automatic(VFrame *data)
 				break;
 			}
 		}
-
-
 		config.points[i].insert(max_level, 1.0);
 		config.points[i].insert(min_level, 0.0);
 	}
 }
-
-
-
 
 
 int HistogramMain::calculate_use_opengl()
@@ -639,17 +563,12 @@ int HistogramMain::calculate_use_opengl()
 
 
 int HistogramMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
-SET_TRACE
 	int need_reconfigure = load_configuration();
-
-
-SET_TRACE
 	int use_opengl = calculate_use_opengl();
 
-//printf("%d\n", use_opengl);
 	read_frame(frame, 
 		0, 
 		start_position, 
@@ -668,7 +587,6 @@ SET_TRACE
 // Always plot to set the curves if automatic
 	if(config.plot || config.automatic) send_render_gui(frame);
 
-SET_TRACE
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
@@ -678,33 +596,26 @@ SET_TRACE
 		!linear[0] || 
 		config.automatic)
 	{
-SET_TRACE
 // Calculate new curves
 		if(config.automatic)
 		{
 			calculate_automatic(input);
 		}
-SET_TRACE
 
 // Generate transfer tables with value function for integer colormodels.
 		for(int i = 0; i < 3; i++)
 			tabulate_curve(i, 1);
-SET_TRACE
 	}
-
-
 
 // Apply histogram
 	engine->process_packages(HistogramEngine::APPLY, input, 0);
-
-SET_TRACE
-
 	return 0;
 }
 
 void HistogramMain::tabulate_curve(int subscript, int use_value)
 {
 	int i;
+
 	if(!lookup[subscript])
 		lookup[subscript] = new int[HISTOGRAM_SLOTS];
 	if(!smoothed[subscript])
@@ -713,7 +624,6 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 		linear[subscript] = new float[HISTOGRAM_SLOTS];
 	if(!preview_lookup[subscript])
 		preview_lookup[subscript] = new int[HISTOGRAM_SLOTS];
-
 
 	float *current_smooth = smoothed[subscript];
 	float *current_linear = linear[subscript];
@@ -725,19 +635,10 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 		current_linear[i] = calculate_linear(input, subscript, use_value);
 	}
 
-
-
-
-
-
 // Make smooth curve (currently a copy of the linear curve)
 	float prev = 0.0;
 	for(i = 0; i < HISTOGRAM_SLOTS; i++)
 	{
-//		current_smooth[i] = current_linear[i] * 0.001 +
-//			prev * 0.999;
-//		prev = current_smooth[i];
-
 		current_smooth[i] = current_linear[i];
 	}
 
@@ -746,18 +647,18 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 	{
 		switch(input->get_color_model())
 		{
-			case BC_RGB888:
-			case BC_RGBA8888:
-				for(i = 0; i < 0x100; i++)
-					lookup[subscript][i] = 
-						(int)(calculate_smooth((float)i / 0xff, subscript) * 0xff);
-				break;
+		case BC_RGB888:
+		case BC_RGBA8888:
+			for(i = 0; i < 0x100; i++)
+				lookup[subscript][i] = 
+					(int)(calculate_smooth((float)i / 0xff, subscript) * 0xff);
+			break;
 // All other integer colormodels are converted to 16 bit RGB
-			default:
-				for(i = 0; i < 0x10000; i++)
-					lookup[subscript][i] = 
-						(int)(calculate_smooth((float)i / 0xffff, subscript) * 0xffff);
-				break;
+		default:
+			for(i = 0; i < 0x10000; i++)
+				lookup[subscript][i] = 
+					(int)(calculate_smooth((float)i / 0xffff, subscript) * 0xffff);
+			break;
 		}
 	}
 
@@ -833,8 +734,6 @@ int HistogramMain::handle_opengl()
 		"	else\n" \
 		"		" PIXEL " = 1.0;\n"
 
-
-
 	static const char *apply_histogram_frag = 
 		APPLY_INPUT_CURVE("pixel.r", "input_min_r", "input_max_r")
 		APPLY_INPUT_CURVE("pixel.g", "input_min_g", "input_max_g")
@@ -858,8 +757,6 @@ int HistogramMain::handle_opengl()
 		"	gl_FragColor = pixel;\n"
 		"}\n";
 
-
-
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -868,6 +765,7 @@ int HistogramMain::handle_opengl()
 	int aggregate_interpolation = 0;
 	int aggregate_gamma = 0;
 	int aggregate_colorbalance = 0;
+
 // All aggregation possibilities must be accounted for because unsupported
 // effects can get in between the aggregation members.
 	if(!strcmp(get_output()->get_prev_effect(2), "Interpolate Pixels") &&
@@ -934,19 +832,19 @@ int HistogramMain::handle_opengl()
 	unsigned int shader = 0;
 	switch(get_output()->get_color_model())
 	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-			shader_stack[current_shader++] = head_frag;
-			shader_stack[current_shader++] = get_yuv_frag;
-			shader_stack[current_shader++] = apply_histogram_frag;
-			shader_stack[current_shader++] = put_yuv_frag;
-			break;
-		default:
-			shader_stack[current_shader++] = head_frag;
-			shader_stack[current_shader++] = get_rgb_frag;
-			shader_stack[current_shader++] = apply_histogram_frag;
-			shader_stack[current_shader++] = put_rgb_frag;
-			break;
+	case BC_YUV888:
+	case BC_YUVA8888:
+		shader_stack[current_shader++] = head_frag;
+		shader_stack[current_shader++] = get_yuv_frag;
+		shader_stack[current_shader++] = apply_histogram_frag;
+		shader_stack[current_shader++] = put_yuv_frag;
+		break;
+	default:
+		shader_stack[current_shader++] = head_frag;
+		shader_stack[current_shader++] = get_rgb_frag;
+		shader_stack[current_shader++] = apply_histogram_frag;
+		shader_stack[current_shader++] = put_rgb_frag;
+		break;
 	}
 
 	shader = VFrame::make_shader(0,
@@ -968,13 +866,6 @@ int HistogramMain::handle_opengl()
 		shader_stack[15],
 		0);
 
-printf("HistogramMain::handle_opengl %d %d %d %d shader=%d\n", 
-aggregate_interpolation, 
-aggregate_gamma,
-aggregate_colorbalance,
-current_shader,
-shader);
-
 	float input_min_r[2] = { 0, 0 };
 	float input_min_g[2] = { 0, 0 };
 	float input_min_b[2] = { 0, 0 };
@@ -988,7 +879,7 @@ shader);
 
 // Red
 	HistogramPoint *point1, *point2;
-	
+
 #define CONVERT_POINT(index, input_min, input_max) \
 	point1 = config.points[index].first; \
 	point2 = config.points[index].last; \
@@ -1007,12 +898,6 @@ shader);
 	CONVERT_POINT(HISTOGRAM_GREEN, input_min_g, input_max_g);
 	CONVERT_POINT(HISTOGRAM_BLUE, input_min_b, input_max_b);
 	CONVERT_POINT(HISTOGRAM_VALUE, input_min_v, input_max_v);
-
-// printf("min x    min y    max x    max y\n");
-// printf("%f %f %f %f\n", input_min_r[0], input_min_r[1], input_max_r[0], input_max_r[1]);
-// printf("%f %f %f %f\n", input_min_g[0], input_min_g[1], input_max_g[0], input_max_g[1]);
-// printf("%f %f %f %f\n", input_min_b[0], input_min_b[1], input_max_b[0], input_max_b[1]);
-// printf("%f %f %f %f\n", input_min_v[0], input_min_v[1], input_max_v[0], input_max_v[1]);
 
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
@@ -1054,7 +939,6 @@ shader);
 			0.0 / get_output()->get_texture_h());
 		glVertex3f(0.0, -(float)get_output()->get_h(), 0);
 
-
 		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(), 
 			(float)get_output()->get_h() / get_output()->get_texture_h());
 		glVertex3f((float)get_output()->get_w(), -0.0, 0);
@@ -1062,7 +946,6 @@ shader);
 		glTexCoord2f(0.0 / get_output()->get_texture_w(), 
 			(float)get_output()->get_h() / get_output()->get_texture_h());
 		glVertex3f(0.0, -0.0, 0);
-
 
 		glEnd();
 	}
@@ -1079,7 +962,6 @@ shader);
 		glBegin(GL_TRIANGLES);
 		glNormal3f(0, 0, 1.0);
 
-
 		glTexCoord2f(0.0 / get_output()->get_texture_w(), 
 			0.0 / get_output()->get_texture_h());
 		glVertex3f(0.0, -(float)get_output()->get_h(), 0);
@@ -1093,23 +975,12 @@ shader);
 			(float)get_output()->get_h() / get_output()->get_texture_h());
 		glVertex3f((float)get_output()->get_w(), -0.0, 0);
 
-
- 		glEnd();
+		glEnd();
 	}
 
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
 }
-
-
-
-
-
-
-
-
-
-
 
 
 HistogramPackage::HistogramPackage()
@@ -1144,7 +1015,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 	{
 		int do_value = server->do_value;
 
-
 #define HISTOGRAM_HEAD(type) \
 { \
 	for(int i = pkg->start; i < pkg->end; i++) \
@@ -1163,7 +1033,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 				r_out = lookup_r[r]; \
 				g_out = lookup_g[g]; \
 				b_out = lookup_b[b]; \
-/*				v = (r * 76 + g * 150 + b * 29) >> 8; */ \
 				v = MAX(r_out, g_out); \
 				v = MAX(v, b_out); \
 				v += -HISTOGRAM_MIN * 0xffff / 100; \
@@ -1185,9 +1054,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 	} \
 }
 
-
-
-
 		VFrame *data = server->data;
 		int w = data->get_w();
 		int h = data->get_h();
@@ -1203,80 +1069,80 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 		switch(data->get_color_model())
 		{
-			case BC_RGB888:
-				HISTOGRAM_HEAD(unsigned char)
-				r = (row[0] << 8) | row[0];
-				g = (row[1] << 8) | row[1];
-				b = (row[2] << 8) | row[2];
-				HISTOGRAM_TAIL(3)
-				break;
-			case BC_RGB_FLOAT:
-				HISTOGRAM_HEAD(float)
-				r = (int)(row[0] * 0xffff);
-				g = (int)(row[1] * 0xffff);
-				b = (int)(row[2] * 0xffff);
-				HISTOGRAM_TAIL(3)
-				break;
-			case BC_YUV888:
-				HISTOGRAM_HEAD(unsigned char)
-				y = (row[0] << 8) | row[0];
-				u = (row[1] << 8) | row[1];
-				v = (row[2] << 8) | row[2];
-				plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
-				HISTOGRAM_TAIL(3)
-				break;
-			case BC_RGBA8888:
-				HISTOGRAM_HEAD(unsigned char)
-				r = (row[0] << 8) | row[0];
-				g = (row[1] << 8) | row[1];
-				b = (row[2] << 8) | row[2];
-				HISTOGRAM_TAIL(4)
-				break;
-			case BC_RGBA_FLOAT:
-				HISTOGRAM_HEAD(float)
-				r = (int)(row[0] * 0xffff);
-				g = (int)(row[1] * 0xffff);
-				b = (int)(row[2] * 0xffff);
-				HISTOGRAM_TAIL(4)
-				break;
-			case BC_YUVA8888:
-				HISTOGRAM_HEAD(unsigned char)
-				y = (row[0] << 8) | row[0];
-				u = (row[1] << 8) | row[1];
-				v = (row[2] << 8) | row[2];
-				plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
-				HISTOGRAM_TAIL(4)
-				break;
-			case BC_RGB161616:
-				HISTOGRAM_HEAD(uint16_t)
-				r = row[0];
-				g = row[1];
-				b = row[2];
-				HISTOGRAM_TAIL(3)
-				break;
-			case BC_YUV161616:
-				HISTOGRAM_HEAD(uint16_t)
-				y = row[0];
-				u = row[1];
-				v = row[2];
-				plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
-				HISTOGRAM_TAIL(3)
-				break;
-			case BC_RGBA16161616:
-				HISTOGRAM_HEAD(uint16_t)
-				r = row[0];
-				g = row[1];
-				b = row[2];
-				HISTOGRAM_TAIL(3)
-				break;
-			case BC_YUVA16161616:
-				HISTOGRAM_HEAD(uint16_t)
-				y = row[0];
-				u = row[1];
-				v = row[2];
-				plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
-				HISTOGRAM_TAIL(4)
-				break;
+		case BC_RGB888:
+			HISTOGRAM_HEAD(unsigned char)
+			r = (row[0] << 8) | row[0];
+			g = (row[1] << 8) | row[1];
+			b = (row[2] << 8) | row[2];
+			HISTOGRAM_TAIL(3)
+			break;
+		case BC_RGB_FLOAT:
+			HISTOGRAM_HEAD(float)
+			r = (int)(row[0] * 0xffff);
+			g = (int)(row[1] * 0xffff);
+			b = (int)(row[2] * 0xffff);
+			HISTOGRAM_TAIL(3)
+			break;
+		case BC_YUV888:
+			HISTOGRAM_HEAD(unsigned char)
+			y = (row[0] << 8) | row[0];
+			u = (row[1] << 8) | row[1];
+			v = (row[2] << 8) | row[2];
+			plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+			HISTOGRAM_TAIL(3)
+			break;
+		case BC_RGBA8888:
+			HISTOGRAM_HEAD(unsigned char)
+			r = (row[0] << 8) | row[0];
+			g = (row[1] << 8) | row[1];
+			b = (row[2] << 8) | row[2];
+			HISTOGRAM_TAIL(4)
+			break;
+		case BC_RGBA_FLOAT:
+			HISTOGRAM_HEAD(float)
+			r = (int)(row[0] * 0xffff);
+			g = (int)(row[1] * 0xffff);
+			b = (int)(row[2] * 0xffff);
+			HISTOGRAM_TAIL(4)
+			break;
+		case BC_YUVA8888:
+			HISTOGRAM_HEAD(unsigned char)
+			y = (row[0] << 8) | row[0];
+			u = (row[1] << 8) | row[1];
+			v = (row[2] << 8) | row[2];
+			plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+			HISTOGRAM_TAIL(4)
+			break;
+		case BC_RGB161616:
+			HISTOGRAM_HEAD(uint16_t)
+			r = row[0];
+			g = row[1];
+			b = row[2];
+			HISTOGRAM_TAIL(3)
+			break;
+		case BC_YUV161616:
+			HISTOGRAM_HEAD(uint16_t)
+			y = row[0];
+			u = row[1];
+			v = row[2];
+			plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+			HISTOGRAM_TAIL(3)
+			break;
+		case BC_RGBA16161616:
+			HISTOGRAM_HEAD(uint16_t)
+			r = row[0];
+			g = row[1];
+			b = row[2];
+			HISTOGRAM_TAIL(3)
+			break;
+		case BC_YUVA16161616:
+			HISTOGRAM_HEAD(uint16_t)
+			y = row[0];
+			u = row[1];
+			v = row[2];
+			plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+			HISTOGRAM_TAIL(4)
+			break;
 		}
 	}
 	else
@@ -1293,7 +1159,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 		for(int j = 0; j < w; j++) \
 		{ \
 			if ( plugin->config.split && ((j + i * w / h) < w) ) \
-		    	continue; \
+				continue; \
 			row[0] = lookup_r[row[0]]; \
 			row[1] = lookup_g[row[1]]; \
 			row[2] = lookup_b[row[2]]; \
@@ -1310,7 +1176,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 		for(int j = 0; j < w; j++) \
 		{ \
 			if ( plugin->config.split && ((j + i * w / h) < w) ) \
-		    	continue; \
+				continue; \
 /* Convert to 16 bit RGB */ \
 			if(max == 0xff) \
 			{ \
@@ -1360,7 +1226,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 		for(int j = 0; j < w; j++) \
 		{ \
 			if ( plugin->config.split && ((j + i * w / h) < w) ) \
-		    	continue; \
+				continue; \
 			float r = row[0]; \
 			float g = row[1]; \
 			float b = row[2]; \
@@ -1369,7 +1235,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 			g = plugin->calculate_smooth(g, HISTOGRAM_GREEN); \
 			b = plugin->calculate_smooth(b, HISTOGRAM_BLUE); \
  \
- 			row[0] = r; \
+			row[0] = r; \
 			row[1] = g; \
 			row[2] = b; \
  \
@@ -1377,7 +1243,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 		} \
 	} \
 }
-
 
 		VFrame *input = plugin->input;
 		VFrame *output = plugin->output;
@@ -1389,43 +1254,39 @@ void HistogramUnit::process_package(LoadPackage *package)
 		int r, g, b, y, u, v, a;
 		switch(input->get_color_model())
 		{
-			case BC_RGB888:
-				PROCESS(unsigned char, 3)
-				break;
-			case BC_RGB_FLOAT:
-				PROCESS_FLOAT(3);
-				break;
-			case BC_RGBA8888:
-				PROCESS(unsigned char, 4)
-				break;
-			case BC_RGBA_FLOAT:
-				PROCESS_FLOAT(4);
-				break;
-			case BC_RGB161616:
-				PROCESS(uint16_t, 3)
-				break;
-			case BC_RGBA16161616:
-				PROCESS(uint16_t, 4)
-				break;
-			case BC_YUV888:
-				PROCESS_YUV(unsigned char, 3, 0xff)
-				break;
-			case BC_YUVA8888:
-				PROCESS_YUV(unsigned char, 4, 0xff)
-				break;
-			case BC_YUV161616:
-				PROCESS_YUV(uint16_t, 3, 0xffff)
-				break;
-			case BC_YUVA16161616:
-				PROCESS_YUV(uint16_t, 4, 0xffff)
-				break;
+		case BC_RGB888:
+			PROCESS(unsigned char, 3)
+			break;
+		case BC_RGB_FLOAT:
+			PROCESS_FLOAT(3);
+			break;
+		case BC_RGBA8888:
+			PROCESS(unsigned char, 4)
+			break;
+		case BC_RGBA_FLOAT:
+			PROCESS_FLOAT(4);
+			break;
+		case BC_RGB161616:
+			PROCESS(uint16_t, 3)
+			break;
+		case BC_RGBA16161616:
+			PROCESS(uint16_t, 4)
+			break;
+		case BC_YUV888:
+			PROCESS_YUV(unsigned char, 3, 0xff)
+			break;
+		case BC_YUVA8888:
+			PROCESS_YUV(unsigned char, 4, 0xff)
+			break;
+		case BC_YUV161616:
+			PROCESS_YUV(uint16_t, 3, 0xffff)
+			break;
+		case BC_YUVA16161616:
+			PROCESS_YUV(uint16_t, 4, 0xffff)
+			break;
 		}
 	}
 }
-
-
-
-
 
 
 HistogramEngine::HistogramEngine(HistogramMain *plugin, 
@@ -1440,14 +1301,13 @@ void HistogramEngine::init_packages()
 {
 	switch(operation)
 	{
-		case HISTOGRAM:
-			total_size = data->get_h();
-			break;
-		case APPLY:
-			total_size = data->get_h();
-			break;
+	case HISTOGRAM:
+		total_size = data->get_h();
+		break;
+	case APPLY:
+		total_size = data->get_h();
+		break;
 	}
-
 
 	int package_size = (int)((float)total_size / 
 			get_total_packages() + 1);
@@ -1467,7 +1327,6 @@ void HistogramEngine::init_packages()
 		for(int i = 0; i < HISTOGRAM_MODES; i++)
 			bzero(unit->accum[i], sizeof(int) * HISTOGRAM_SLOTS);
 	}
-
 }
 
 LoadClient* HistogramEngine::new_client()
@@ -1487,6 +1346,3 @@ void HistogramEngine::process_packages(int operation, VFrame *data, int do_value
 	this->do_value = do_value;
 	LoadServer::process_packages();
 }
-
-
-

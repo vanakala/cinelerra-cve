@@ -22,7 +22,7 @@
 #ifndef HISTOGRAMCONFIG_H
 #define HISTOGRAMCONFIG_H
 
-
+#include "datatype.h"
 #include "histogram.inc"
 #include "histogramconfig.inc"
 #include "linklist.h"
@@ -65,9 +65,9 @@ public:
 	void copy_from(HistogramConfig &that);
 	void interpolate(HistogramConfig &prev, 
 		HistogramConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 // Used by constructor and reset button
 	void reset(int do_mode);
 	void reset_points(int colors_only);
@@ -85,7 +85,6 @@ public:
 	int plot;
 	int split;
 };
-
 
 #endif
 

@@ -58,7 +58,7 @@ class HoloServer : public LoadServer
 {
 public:
 	HoloServer(HoloMain *plugin, int total_clients, int total_packages);
-	
+
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	void init_packages();
@@ -69,7 +69,6 @@ class HoloClient : public LoadClient
 {
 public:
 	HoloClient(HoloServer *server);
-	
 	void process_package(LoadPackage *package);
 
 	HoloMain *plugin;
@@ -118,14 +117,5 @@ public:
 	YUV *yuv;
 	int total;
 };
-
-
-
-
-
-
-
-
-
 
 #endif
