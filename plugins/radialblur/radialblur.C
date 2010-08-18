@@ -41,9 +41,6 @@ class RadialBlurMain;
 class RadialBlurEngine;
 
 
-
-
-
 class RadialBlurConfig
 {
 public:
@@ -53,9 +50,9 @@ public:
 	void copy_from(RadialBlurConfig &that);
 	void interpolate(RadialBlurConfig &prev, 
 		RadialBlurConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	int x;
 	int y;
@@ -122,7 +119,7 @@ public:
 	~RadialBlurMain();
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -169,26 +166,7 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(RadialBlurMain)
-
-
 
 RadialBlurConfig::RadialBlurConfig()
 {
@@ -229,9 +207,9 @@ void RadialBlurConfig::copy_from(RadialBlurConfig &that)
 
 void RadialBlurConfig::interpolate(RadialBlurConfig &prev, 
 	RadialBlurConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -245,21 +223,11 @@ void RadialBlurConfig::interpolate(RadialBlurConfig &prev,
 	a = prev.a;
 }
 
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(RadialBlurMain, RadialBlurThread, RadialBlurWindow)
-
-
 
 RadialBlurWindow::RadialBlurWindow(RadialBlurMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	230, 
 	340, 
@@ -279,6 +247,7 @@ int RadialBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("X:")));
 	y += 20;
 	add_subwindow(this->x = new RadialBlurSize(plugin, x, y, &plugin->config.x, 0, 100));
@@ -312,13 +281,6 @@ int RadialBlurWindow::create_objects()
 WINDOW_CLOSE_EVENT(RadialBlurWindow)
 
 
-
-
-
-
-
-
-
 RadialBlurToggle::RadialBlurToggle(RadialBlurMain *plugin, 
 	int x, 
 	int y, 
@@ -338,11 +300,6 @@ int RadialBlurToggle::handle_event()
 }
 
 
-
-
-
-
-
 RadialBlurSize::RadialBlurSize(RadialBlurMain *plugin, 
 	int x, 
 	int y, 
@@ -354,19 +311,13 @@ RadialBlurSize::RadialBlurSize(RadialBlurMain *plugin,
 	this->plugin = plugin;
 	this->output = output;
 }
+
 int RadialBlurSize::handle_event()
 {
 	*output = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
 
 
 
@@ -402,8 +353,8 @@ RAISE_WINDOW_MACRO(RadialBlurMain)
 LOAD_CONFIGURATION_MACRO(RadialBlurMain, RadialBlurConfig)
 
 int RadialBlurMain::process_buffer(VFrame *frame,
-							int64_t start_position,
-							double frame_rate)
+	framenum start_position,
+	double frame_rate)
 {
 	load_configuration();
 
@@ -412,7 +363,6 @@ int RadialBlurMain::process_buffer(VFrame *frame,
 		0,
 		get_source_position(),
 		get_framerate(),
-//		0);
 		get_use_opengl());
 
 	if(get_use_opengl()) return run_opengl();
@@ -491,8 +441,6 @@ int RadialBlurMain::save_defaults()
 	defaults->save();
 	return 0;
 }
-
-
 
 void RadialBlurMain::save_data(KeyFrame *keyframe)
 {
@@ -587,8 +535,6 @@ int RadialBlurMain::handle_opengl()
 		float w = get_output()->get_w();
 		float h = get_output()->get_h();
 
-
-
 		double current_angle = (double)config.angle *
 			i / 
 			config.steps - 
@@ -621,15 +567,6 @@ int RadialBlurMain::handle_opengl()
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
 }
-
-
-
-
-
-
-
-
-
 
 
 RadialBlurPackage::RadialBlurPackage()
@@ -785,49 +722,43 @@ void RadialBlurUnit::process_package(LoadPackage *package)
 
 	switch(plugin->input->get_color_model())
 	{
-		case BC_RGB888:
-			BLEND_LAYER(3, uint8_t, int, 0xff, 0)
-			break;
-		case BC_RGBA8888:
-			BLEND_LAYER(4, uint8_t, int, 0xff, 0)
-			break;
-		case BC_RGB_FLOAT:
-			BLEND_LAYER(3, float, float, 1, 0)
-			break;
-		case BC_RGBA_FLOAT:
-			BLEND_LAYER(4, float, float, 1, 0)
-			break;
-		case BC_RGB161616:
-			BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
-			break;
-		case BC_RGBA16161616:
-			BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
-			break;
-		case BC_YUV888:
-			BLEND_LAYER(3, uint8_t, int, 0xff, 1)
-			break;
-		case BC_YUVA8888:
-			BLEND_LAYER(4, uint8_t, int, 0xff, 1)
-			break;
-		case BC_YUV161616:
-			BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
-			break;
-		case BC_YUVA16161616:
-			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
-			break;
+	case BC_RGB888:
+		BLEND_LAYER(3, uint8_t, int, 0xff, 0)
+		break;
+	case BC_RGBA8888:
+		BLEND_LAYER(4, uint8_t, int, 0xff, 0)
+		break;
+	case BC_RGB_FLOAT:
+		BLEND_LAYER(3, float, float, 1, 0)
+		break;
+	case BC_RGBA_FLOAT:
+		BLEND_LAYER(4, float, float, 1, 0)
+		break;
+	case BC_RGB161616:
+		BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
+		break;
+	case BC_RGBA16161616:
+		BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
+		break;
+	case BC_YUV888:
+		BLEND_LAYER(3, uint8_t, int, 0xff, 1)
+		break;
+	case BC_YUVA8888:
+		BLEND_LAYER(4, uint8_t, int, 0xff, 1)
+		break;
+	case BC_YUV161616:
+		BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
+		break;
+	case BC_YUVA16161616:
+		BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
+		break;
 	}
 }
-
-
-
-
-
 
 RadialBlurEngine::RadialBlurEngine(RadialBlurMain *plugin, 
 	int total_clients, 
 	int total_packages)
  : LoadServer(total_clients, total_packages)
-// : LoadServer(1, 1)
 {
 	this->plugin = plugin;
 }
@@ -851,8 +782,3 @@ LoadPackage* RadialBlurEngine::new_package()
 {
 	return new RadialBlurPackage;
 }
-
-
-
-
-

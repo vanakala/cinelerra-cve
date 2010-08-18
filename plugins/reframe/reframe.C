@@ -27,18 +27,7 @@
 #include "reframe.h"
 
 
-
-
-
 REGISTER_PLUGIN(ReFrame)
-
-
-
-
-
-
-
-
 
 
 ReFrame::ReFrame(PluginServer *server)
@@ -89,7 +78,7 @@ int ReFrame::get_parameters()
 	ReFrameWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
 	window.create_objects();
 	int result = window.run_window();
-	
+
 	return result;
 }
 
@@ -122,8 +111,8 @@ int ReFrame::stop_loop()
 int ReFrame::process_loop(VFrame *buffer)
 {
 	int result = 0;
-	
-	int64_t input_offset = Units::to_int64((double)current_position * 
+
+	framenum input_offset = Units::to_int64((double)current_position * 
 		scale + 
 		PluginClient::start);
 
@@ -143,16 +132,6 @@ int ReFrame::process_loop(VFrame *buffer)
 }
 
 
-
-
-
-
-
-
-
-
-
-
 ReFrameOutput::ReFrameOutput(ReFrame *plugin, int x, int y)
  : BC_TextBox(x, y, 150, 1, (float)plugin->scale)
 {
@@ -169,7 +148,7 @@ int ReFrameOutput::handle_event()
 
 ReFrameWindow::ReFrameWindow(ReFrame *plugin, int x, int y)
  : BC_Window(plugin->plugin_title(), 
- 	x, 
+	x,
 	y, 
 	230, 
 	160, 
@@ -190,6 +169,8 @@ ReFrameWindow::~ReFrameWindow()
 void ReFrameWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
 	y += 20;
 	add_subwindow(new ReFrameOutput(plugin, x, y));
@@ -201,5 +182,3 @@ void ReFrameWindow::create_objects()
 }
 
 WINDOW_CLOSE_EVENT(ReFrameWindow)
-
-

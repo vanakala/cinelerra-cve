@@ -59,7 +59,6 @@ public:
 	ReFrame(PluginServer *server);
 	~ReFrame();
 
-
 	const char* plugin_title();
 	VFrame* new_picon();
 	int get_parameters();
@@ -74,12 +73,7 @@ public:
 
 	BC_Hash *defaults;
 	MainProgressBar *progress;
-	int64_t current_position;
+	framenum current_position;
 };
-
-
-
-
-
 
 #endif
