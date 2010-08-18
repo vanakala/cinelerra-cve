@@ -39,7 +39,7 @@ PLUGIN_THREAD_OBJECT(ScaleMain, ScaleThread, ScaleWin)
 
 ScaleWin::ScaleWin(ScaleMain *client, int x, int y)
  : BC_Window(client->gui_string, 
- 	x,
+	x,
 	y,
 	150, 
 	150, 
@@ -59,7 +59,9 @@ ScaleWin::~ScaleWin()
 int ScaleWin::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
 
+	set_icon(ico);
 	add_tool(new BC_Title(x, y, _("X Scale:")));
 	y += 20;
 	width = new ScaleWidth(this, client, x, y);
@@ -73,6 +75,7 @@ int ScaleWin::create_objects()
 	add_tool(constrain = new ScaleConstrain(client, x, y));
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 

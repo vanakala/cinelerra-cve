@@ -47,9 +47,9 @@ public:
 	int equivalent(ScaleConfig &src);
 	void interpolate(ScaleConfig &prev, 
 		ScaleConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame);
 
 	float w, h;
 	int constrain;
@@ -113,7 +113,7 @@ public:
 
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	void calculate_transfer(VFrame *frame,
 		float &in_x1, 

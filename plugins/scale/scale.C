@@ -46,6 +46,7 @@ void ScaleConfig::copy_from(ScaleConfig &src)
 	h = src.h;
 	constrain = src.constrain;
 }
+
 int ScaleConfig::equivalent(ScaleConfig &src)
 {
 	return EQUIV(w, src.w) && 
@@ -55,9 +56,9 @@ int ScaleConfig::equivalent(ScaleConfig &src)
 
 void ScaleConfig::interpolate(ScaleConfig &prev, 
 	ScaleConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -66,12 +67,6 @@ void ScaleConfig::interpolate(ScaleConfig &prev,
 	this->h = prev.h * prev_scale + next.h * next_scale;
 	this->constrain = prev.constrain;
 }
-
-
-
-
-
-
 
 
 ScaleMain::ScaleMain(PluginServer *server)
@@ -107,7 +102,6 @@ int ScaleMain::load_defaults()
 	config.w = defaults->get("WIDTH", config.w);
 	config.h = defaults->get("HEIGHT", config.h);
 	config.constrain = defaults->get("CONSTRAIN", config.constrain);
-//printf("ScaleMain::load_defaults %f %f\n",config.w  , config.h);
 }
 
 int ScaleMain::save_defaults()
@@ -176,19 +170,12 @@ void ScaleMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-
-
-
-
-
-
-
 int ScaleMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	VFrame *input, *output;
-	
+
 	input = frame;
 	output = frame;
 
@@ -231,20 +218,6 @@ int ScaleMain::process_buffer(VFrame *frame,
 		out_y2);
 	output->clear_frame();
 
-// printf("ScaleMain::process_realtime 3 output=%p input=%p config.w=%f config.h=%f"
-// 	"%f %f %f %f -> %f %f %f %f\n", 
-// 	output,
-// 	input,
-// 	config.w, 
-// 	config.h,
-// 	in_x1, 
-// 	in_y1, 
-// 	in_x2, 
-// 	in_y2,
-// 	out_x1, 
-// 	out_y1, 
-// 	out_x2, 
-// 	out_y2);
 	overlayer->overlay(output, 
 		input,
 		in_x1, 
@@ -283,7 +256,6 @@ void ScaleMain::calculate_transfer(VFrame *frame,
 	out_x2 = (float)center_x + (float)frame->get_w() * config.w / 2;
 	out_y1 = (float)center_y - (float)frame->get_h() * config.h / 2;
 	out_y2 = (float)center_y + (float)frame->get_h() * config.h / 2;
-
 
 
 	if(out_x1 < 0)
@@ -343,7 +315,6 @@ int ScaleMain::handle_opengl()
 }
 
 
-
 SHOW_GUI_MACRO(ScaleMain, ScaleThread)
 RAISE_WINDOW_MACRO(ScaleMain)
 SET_STRING_MACRO(ScaleMain)
@@ -360,6 +331,3 @@ void ScaleMain::update_gui()
 		thread->window->unlock_window();
 	}
 }
-
-
-

@@ -25,13 +25,7 @@
 
 
 
-
-
 PLUGIN_THREAD_OBJECT(RGB601Main, RGB601Thread, RGB601Window)
-
-
-
-
 
 
 RGB601Window::RGB601Window(RGB601Main *client, int x, int y)
@@ -56,7 +50,9 @@ RGB601Window::~RGB601Window()
 int RGB601Window::create_objects()
 {
 	int x = 10, y = 10;
-	
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	add_tool(forward = new RGB601Direction(this, 
 		x, 
 		y, 
@@ -73,6 +69,7 @@ int RGB601Window::create_objects()
 
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -91,10 +88,11 @@ RGB601Direction::RGB601Direction(RGB601Window *window, int x, int y, int *output
 	this->true_value = true_value;
 	this->window = window;
 }
+
 RGB601Direction::~RGB601Direction()
 {
 }
-	
+
 int RGB601Direction::handle_event()
 {
 	*output = get_value() ? true_value : 0;
@@ -102,4 +100,3 @@ int RGB601Direction::handle_event()
 	window->client->send_configure_change();
 	return 1;
 }
-

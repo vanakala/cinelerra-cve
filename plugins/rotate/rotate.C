@@ -35,7 +35,6 @@
 #include <string.h>
 
 
-
 #define SQR(x) ((x) * (x))
 #define MAXANGLE 360
 
@@ -53,15 +52,14 @@ public:
 	void copy_from(RotateConfig &that);
 	void interpolate(RotateConfig &prev, 
 		RotateConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	float angle;
 	float pivot_x;
 	float pivot_y;
 	int draw_pivot;
-//	int bilinear;
 };
 
 class RotateToggle : public BC_Radial
@@ -77,8 +75,8 @@ public:
 	int handle_event();
 
 	RotateEffect *plugin;
-    RotateWindow *window;
-    int value;
+	RotateWindow *window;
+	int value;
 };
 
 class RotateDrawPivot : public BC_CheckBox
@@ -90,17 +88,10 @@ public:
 		int y);
 	int handle_event();
 	RotateEffect *plugin;
-    RotateWindow *window;
-    int value;
+	RotateWindow *window;
+	int value;
 };
 
-class RotateInterpolate : public BC_CheckBox
-{
-public:
-	RotateInterpolate(RotateEffect *plugin, int x, int y);
-	int handle_event();
-	RotateEffect *plugin;
-};
 
 class RotateFine : public BC_FPot
 {
@@ -112,7 +103,7 @@ public:
 	int handle_event();
 
 	RotateEffect *plugin;
-    RotateWindow *window;
+	RotateWindow *window;
 };
 
 class RotateX : public BC_FPot
@@ -124,7 +115,7 @@ public:
 		int y);
 	int handle_event();
 	RotateEffect *plugin;
-    RotateWindow *window;
+	RotateWindow *window;
 };
 
 class RotateY : public BC_FPot
@@ -136,7 +127,7 @@ public:
 		int y);
 	int handle_event();
 	RotateEffect *plugin;
-    RotateWindow *window;
+	RotateWindow *window;
 };
 
 
@@ -150,7 +141,7 @@ public:
 	int handle_event();
 
 	RotateEffect *plugin;
-    RotateWindow *window;
+	RotateWindow *window;
 };
 
 class RotateWindow : public BC_Window
@@ -175,7 +166,6 @@ public:
 	RotateText *text;
 	RotateX *x;
 	RotateY *y;
-//	RotateInterpolate *bilinear;
 };
 
 
@@ -187,9 +177,9 @@ class RotateEffect : public PluginVClient
 public:
 	RotateEffect(PluginServer *server);
 	~RotateEffect();
-	
+
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	const char* plugin_title();
@@ -213,28 +203,7 @@ public:
 };
 
 
-
-
-
-
-
 REGISTER_PLUGIN(RotateEffect)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 RotateConfig::RotateConfig()
@@ -259,14 +228,13 @@ void RotateConfig::copy_from(RotateConfig &that)
 	pivot_x = that.pivot_x;
 	pivot_y = that.pivot_y;
 	draw_pivot = that.draw_pivot;
-//	bilinear = that.bilinear;
 }
 
 void RotateConfig::interpolate(RotateConfig &prev, 
 		RotateConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame)
+		posnum prev_frame,
+		posnum next_frame, 
+		posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -275,17 +243,7 @@ void RotateConfig::interpolate(RotateConfig &prev,
 	this->pivot_x = prev.pivot_x * prev_scale + next.pivot_x * next_scale;
 	this->pivot_y = prev.pivot_y * prev_scale + next.pivot_y * next_scale;
 	draw_pivot = prev.draw_pivot;
-//	bilinear = prev.bilinear;
 }
-
-
-
-
-
-
-
-
-
 
 
 RotateToggle::RotateToggle(RotateWindow *window, 
@@ -299,21 +257,16 @@ RotateToggle::RotateToggle(RotateWindow *window,
 {
 	this->value = value;
 	this->plugin = plugin;
-    this->window = window;
+	this->window = window;
 }
 
 int RotateToggle::handle_event()
 {
 	plugin->config.angle = (float)value;
-    window->update();
+	window->update();
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
 
 
 RotateDrawPivot::RotateDrawPivot(RotateWindow *window, 
@@ -323,7 +276,7 @@ RotateDrawPivot::RotateDrawPivot(RotateWindow *window,
  : BC_CheckBox(x, y, plugin->config.draw_pivot, _("Draw pivot"))
 {
 	this->plugin = plugin;
-    this->window = window;
+	this->window = window;
 }
 
 int RotateDrawPivot::handle_event()
@@ -334,27 +287,9 @@ int RotateDrawPivot::handle_event()
 }
 
 
-
-
-
-// RotateInterpolate::RotateInterpolate(RotateEffect *plugin, int x, int y)
-//  : BC_CheckBox(x, y, plugin->config.bilinear, _("Interpolate"))
-// {
-// 	this->plugin = plugin;
-// }
-// int RotateInterpolate::handle_event()
-// {
-// 	plugin->config.bilinear = get_value();
-// 	plugin->send_configure_change();
-// 	return 1;
-// }
-// 
-
-
-
 RotateFine::RotateFine(RotateWindow *window, RotateEffect *plugin, int x, int y)
  : BC_FPot(x, 
- 	y, 
+	y, 
 	(float)plugin->config.angle, 
 	(float)-360, 
 	(float)360)
@@ -381,7 +316,7 @@ RotateText::RotateText(RotateWindow *window,
 	int x, 
 	int y)
  : BC_TextBox(x, 
- 	y, 
+	y,
 	100,
 	1,
 	(float)plugin->config.angle)
@@ -404,7 +339,7 @@ int RotateText::handle_event()
 
 RotateX::RotateX(RotateWindow *window, RotateEffect *plugin, int x, int y)
  : BC_FPot(x, 
- 	y, 
+	y,
 	(float)plugin->config.pivot_x, 
 	(float)0, 
 	(float)100)
@@ -424,7 +359,7 @@ int RotateX::handle_event()
 
 RotateY::RotateY(RotateWindow *window, RotateEffect *plugin, int x, int y)
  : BC_FPot(x, 
- 	y, 
+	y,
 	(float)plugin->config.pivot_y, 
 	(float)0, 
 	(float)100)
@@ -441,12 +376,6 @@ int RotateY::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
 
 
 RotateWindow::RotateWindow(RotateEffect *plugin, int x, int y)
@@ -471,8 +400,7 @@ int RotateWindow::create_objects()
 	int x = 10, y = 10;
 	BC_Title *title;
 
-
-
+	set_icon(new VFrame(picon_png));
 	add_tool(new BC_Title(x, y, _("Rotate")));
 	x += 50;
 	y += 20;
@@ -483,8 +411,8 @@ int RotateWindow::create_objects()
 		y, 
 		0, 
 		"0"));
-    x += RADIUS;
-    y += RADIUS;
+	x += RADIUS;
+	y += RADIUS;
 	add_tool(toggle90 = new RotateToggle(this, 
 		plugin, 
 		plugin->config.angle == 90, 
@@ -492,8 +420,8 @@ int RotateWindow::create_objects()
 		y, 
 		90, 
 		"90"));
-    x -= RADIUS;
-    y += RADIUS;
+	x -= RADIUS;
+	y += RADIUS;
 	add_tool(toggle180 = new RotateToggle(this, 
 		plugin, 
 		plugin->config.angle == 180, 
@@ -501,8 +429,8 @@ int RotateWindow::create_objects()
 		y, 
 		180, 
 		"180"));
-    x -= RADIUS;
-    y -= RADIUS;
+	x -= RADIUS;
+	y -= RADIUS;
 	add_tool(toggle270 = new RotateToggle(this, 
 		plugin, 
 		plugin->config.angle == 270, 
@@ -510,7 +438,6 @@ int RotateWindow::create_objects()
 		y, 
 		270, 
 		"270"));
-//	add_subwindow(bilinear = new RotateInterpolate(plugin, 10, y + 60));
 	x += 120;
 	y -= 50;
 	add_tool(fine = new RotateFine(this, plugin, x, y));
@@ -518,10 +445,6 @@ int RotateWindow::create_objects()
 	add_tool(text = new RotateText(this, plugin, x, y));
 	y += 30;
 	add_tool(new BC_Title(x, y, _("Degrees")));
-	
-
-
-
 
 	y += text->get_h() + 10;
 	add_subwindow(title = new BC_Title(x, y, _("Pivot (x,y):")));
@@ -537,8 +460,6 @@ int RotateWindow::create_objects()
 	show_window();
 	flush();
 
-
-
 	return 0;
 }
 
@@ -549,7 +470,6 @@ int RotateWindow::update()
 	update_fine();
 	update_toggles();
 	update_text();
-//	bilinear->update(plugin->config.bilinear);
 	return 0;
 }
 
@@ -578,36 +498,7 @@ int RotateWindow::update_toggles()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(RotateEffect, RotateThread, RotateWindow)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 RotateEffect::RotateEffect(PluginServer *server)
@@ -623,7 +514,6 @@ RotateEffect::~RotateEffect()
 	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
 }
-
 
 
 const char* RotateEffect::plugin_title() { return N_("Rotate"); }
@@ -667,7 +557,6 @@ int RotateEffect::load_defaults()
 	config.pivot_x = defaults->get("PIVOT_X", (float)config.pivot_x);
 	config.pivot_y = defaults->get("PIVOT_Y", (float)config.pivot_y);
 	config.draw_pivot = defaults->get("DRAW_PIVOT", (int)config.draw_pivot);
-//	config.bilinear = defaults->get("INTERPOLATE", (int)config.bilinear);
 	return 0;
 }
 
@@ -677,7 +566,6 @@ int RotateEffect::save_defaults()
 	defaults->update("PIVOT_X", (float)config.pivot_x);
 	defaults->update("PIVOT_Y", (float)config.pivot_y);
 	defaults->update("DRAW_PIVOT", (int)config.draw_pivot);
-//	defaults->update("INTERPOLATE", (int)config.bilinear);
 	defaults->save();
 	return 0;
 }
@@ -693,7 +581,6 @@ void RotateEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("PIVOT_X", (float)config.pivot_x);
 	output.tag.set_property("PIVOT_Y", (float)config.pivot_y);
 	output.tag.set_property("DRAW_PIVOT", (int)config.draw_pivot);
-//	output.tag.set_property("INTERPOLATE", (int)config.bilinear);
 	output.append_tag();
 	output.tag.set_title("/ROTATE");
 	output.append_tag();
@@ -721,21 +608,18 @@ void RotateEffect::read_data(KeyFrame *keyframe)
 				config.pivot_x = input.tag.get_property("PIVOT_X", (float)config.pivot_x);
 				config.pivot_y = input.tag.get_property("PIVOT_Y", (float)config.pivot_y);
 				config.draw_pivot = input.tag.get_property("DRAW_PIVOT", (int)config.draw_pivot);
-//				config.bilinear = input.tag.get_property("INTERPOLATE", (int)config.bilinear);
 			}
 		}
 	}
 }
 
 int RotateEffect::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
 	int w = frame->get_w();
 	int h = frame->get_h();
-//printf("RotateEffect::process_realtime 1 %d %f\n", config.bilinear, config.angle);
-
 
 	if(config.angle == 0)
 	{
@@ -761,14 +645,6 @@ int RotateEffect::process_buffer(VFrame *frame,
 			get_use_opengl());
 		return run_opengl();
 	}
-
-
-// engine->set_viewport(50, 
-// 50, 
-// 100, 
-// 100);
-// engine->set_pivot(100, 100);
-
 
 	VFrame *temp_frame = PluginVClient::new_temp(get_input()->get_w(),
 		get_input()->get_h(),
@@ -824,24 +700,24 @@ int RotateEffect::process_buffer(VFrame *frame,
 		int center_y = (int)(config.pivot_y * h / 100); \
 		switch(get_output()->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				DRAW_CENTER(3, float, 1.0)
-				break;
-			case BC_RGBA_FLOAT:
-				DRAW_CENTER(4, float, 1.0)
-				break;
-			case BC_RGB888:
-				DRAW_CENTER(3, unsigned char, 0xff)
-				break;
-			case BC_RGBA8888:
-				DRAW_CENTER(4, unsigned char, 0xff)
-				break;
-			case BC_YUV888:
-				DRAW_CENTER(3, unsigned char, 0xff)
-				break;
-			case BC_YUVA8888:
-				DRAW_CENTER(4, unsigned char, 0xff)
-				break;
+		case BC_RGB_FLOAT:
+			DRAW_CENTER(3, float, 1.0)
+			break;
+		case BC_RGBA_FLOAT:
+			DRAW_CENTER(4, float, 1.0)
+			break;
+		case BC_RGB888:
+			DRAW_CENTER(3, unsigned char, 0xff)
+			break;
+		case BC_RGBA8888:
+			DRAW_CENTER(4, unsigned char, 0xff)
+			break;
+		case BC_YUV888:
+			DRAW_CENTER(3, unsigned char, 0xff)
+			break;
+		case BC_YUVA8888:
+			DRAW_CENTER(4, unsigned char, 0xff)
+			break;
 		}
 	}
 
@@ -872,7 +748,7 @@ int RotateEffect::handle_opengl()
 		int h = get_output()->get_h();
 		int center_x = (int)(config.pivot_x * w / 100); \
 		int center_y = (int)(config.pivot_y * h / 100); \
-		
+
 		glDisable(GL_TEXTURE_2D);
 		glColor4f(1.0, 1.0, 1.0, 1.0);
 		glLogicOp(GL_XOR);

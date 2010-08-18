@@ -50,7 +50,7 @@ public:
 
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	const char* plugin_title();
@@ -68,7 +68,7 @@ public:
 
 	void create_table(VFrame *input_ptr);
 	void process(int *table, VFrame *input_ptr, VFrame *output_ptr);
-	
+
 	RGB601Thread *thread;
 	RGB601Config config;
 	BC_Hash *defaults;

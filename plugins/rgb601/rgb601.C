@@ -165,19 +165,19 @@ void RGB601Main::create_table(VFrame *input_ptr)
 {
 	switch(input_ptr->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			CREATE_TABLE(0x100);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		CREATE_TABLE(0x100);
+		break;
 
-		case BC_RGB161616:
-		case BC_YUV161616:
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			CREATE_TABLE(0x10000);
-			break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		CREATE_TABLE(0x10000);
+		break;
 	}
 }
 
@@ -234,80 +234,80 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 {
 	int w = input_ptr->get_w();
 	int h = input_ptr->get_h();
-	
+
 	if(config.direction == 1)
 		switch(input_ptr->get_color_model())
 		{
-			case BC_YUV888:
-				PROCESS(forward_table, unsigned char, 3, 1);
-				break;
-			case BC_YUVA8888:
-				PROCESS(forward_table, unsigned char, 4, 1);
-				break;
-			case BC_YUV161616:
-				PROCESS(forward_table, u_int16_t, 3, 1);
-				break;
-			case BC_YUVA16161616:
-				PROCESS(forward_table, u_int16_t, 4, 1);
-				break;
-			case BC_RGB888:
-				PROCESS(forward_table, unsigned char, 3, 0);
-				break;
-			case BC_RGBA8888:
-				PROCESS(forward_table, unsigned char, 4, 0);
-				break;
-			case BC_RGB_FLOAT:
-				PROCESS(forward_table, float, 3, 0);
-				break;
-			case BC_RGBA_FLOAT:
-				PROCESS(forward_table, float, 4, 0);
-				break;
-			case BC_RGB161616:
-				PROCESS(forward_table, u_int16_t, 3, 0);
-				break;
-			case BC_RGBA16161616:
-				PROCESS(forward_table, u_int16_t, 4, 0);
-				break;
+		case BC_YUV888:
+			PROCESS(forward_table, unsigned char, 3, 1);
+			break;
+		case BC_YUVA8888:
+			PROCESS(forward_table, unsigned char, 4, 1);
+			break;
+		case BC_YUV161616:
+			PROCESS(forward_table, u_int16_t, 3, 1);
+			break;
+		case BC_YUVA16161616:
+			PROCESS(forward_table, u_int16_t, 4, 1);
+			break;
+		case BC_RGB888:
+			PROCESS(forward_table, unsigned char, 3, 0);
+			break;
+		case BC_RGBA8888:
+			PROCESS(forward_table, unsigned char, 4, 0);
+			break;
+		case BC_RGB_FLOAT:
+			PROCESS(forward_table, float, 3, 0);
+			break;
+		case BC_RGBA_FLOAT:
+			PROCESS(forward_table, float, 4, 0);
+			break;
+		case BC_RGB161616:
+			PROCESS(forward_table, u_int16_t, 3, 0);
+			break;
+		case BC_RGBA16161616:
+			PROCESS(forward_table, u_int16_t, 4, 0);
+			break;
 		}
 	else
 	if(config.direction == 2)
 		switch(input_ptr->get_color_model())
 		{
-			case BC_YUV888:
-				PROCESS(reverse_table, unsigned char, 3, 1);
-				break;
-			case BC_YUVA8888:
-				PROCESS(reverse_table, unsigned char, 4, 1);
-				break;
-			case BC_YUV161616:
-				PROCESS(reverse_table, u_int16_t, 3, 1);
-				break;
-			case BC_YUVA16161616:
-				PROCESS(reverse_table, u_int16_t, 4, 1);
-				break;
-			case BC_RGB888:
-				PROCESS(reverse_table, unsigned char, 3, 0);
-				break;
-			case BC_RGBA8888:
-				PROCESS(reverse_table, unsigned char, 4, 0);
-				break;
-			case BC_RGB_FLOAT:
-				PROCESS(reverse_table, float, 3, 0);
-				break;
-			case BC_RGBA_FLOAT:
-				PROCESS(reverse_table, float, 4, 0);
-				break;
-			case BC_RGB161616:
-				PROCESS(reverse_table, u_int16_t, 3, 0);
-				break;
-			case BC_RGBA16161616:
-				PROCESS(reverse_table, u_int16_t, 4, 0);
-				break;
+		case BC_YUV888:
+			PROCESS(reverse_table, unsigned char, 3, 1);
+			break;
+		case BC_YUVA8888:
+			PROCESS(reverse_table, unsigned char, 4, 1);
+			break;
+		case BC_YUV161616:
+			PROCESS(reverse_table, u_int16_t, 3, 1);
+			break;
+		case BC_YUVA16161616:
+			PROCESS(reverse_table, u_int16_t, 4, 1);
+			break;
+		case BC_RGB888:
+			PROCESS(reverse_table, unsigned char, 3, 0);
+			break;
+		case BC_RGBA8888:
+			PROCESS(reverse_table, unsigned char, 4, 0);
+			break;
+		case BC_RGB_FLOAT:
+			PROCESS(reverse_table, float, 3, 0);
+			break;
+		case BC_RGBA_FLOAT:
+			PROCESS(reverse_table, float, 4, 0);
+			break;
+		case BC_RGB161616:
+			PROCESS(reverse_table, u_int16_t, 3, 0);
+			break;
+		case BC_RGBA16161616:
+			PROCESS(reverse_table, u_int16_t, 4, 0);
+			break;
 		}
 }
 
 int RGB601Main::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -334,7 +334,6 @@ int RGB601Main::process_buffer(VFrame *frame,
 		run_opengl();
 		return 0;
 	}
-	
 
 	create_table(frame);
 
@@ -387,17 +386,17 @@ int RGB601Main::handle_opengl()
 	unsigned int frag_shader = 0;
 	switch(get_output()->get_color_model())
 	{
-		case BC_YUV888:
-		case BC_YUVA8888:
-			frag_shader = VFrame::make_shader(0,
-				config.direction == 1 ? yuv_fwd_frag : yuv_rev_frag,
-				0);
+	case BC_YUV888:
+	case BC_YUVA8888:
+		frag_shader = VFrame::make_shader(0,
+			config.direction == 1 ? yuv_fwd_frag : yuv_rev_frag,
+			0);
 		break;
 
-		default:
-			frag_shader = VFrame::make_shader(0,
-				config.direction == 1 ? rgb_fwd_frag : rgb_rev_frag,
-				0);
+	default:
+		frag_shader = VFrame::make_shader(0,
+			config.direction == 1 ? rgb_fwd_frag : rgb_rev_frag,
+			0);
 		break;
 	}
 
