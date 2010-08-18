@@ -45,7 +45,6 @@ public:
 	OverlayConfig();
 
 
-
 	static const char* mode_to_text(int mode);
 	int mode;
 
@@ -65,9 +64,6 @@ public:
 		BOTTOM
 	};
 };
-
-
-
 
 
 class OverlayMode : public BC_PopupMenu
@@ -130,11 +126,10 @@ public:
 	Overlay(PluginServer *server);
 	~Overlay();
 
-
 	PLUGIN_CLASS_MEMBERS(OverlayConfig, OverlayThread);
 
 	int process_buffer(VFrame **frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int is_multichannel();
@@ -157,15 +152,6 @@ public:
 
 
 
-
-
-
-
-
-
-
-
-
 OverlayConfig::OverlayConfig()
 {
 	mode = TRANSFER_NORMAL;
@@ -177,47 +163,40 @@ const char* OverlayConfig::mode_to_text(int mode)
 {
 	switch(mode)
 	{
-		case TRANSFER_NORMAL:
-			return "Normal";
-			break;
+	case TRANSFER_NORMAL:
+		return "Normal";
 
-		case TRANSFER_REPLACE:
-			return "Replace";
-			break;
+	case TRANSFER_REPLACE:
+		return "Replace";
 
-		case TRANSFER_ADDITION:
-			return "Addition";
-			break;
+	case TRANSFER_ADDITION:
+		return "Addition";
 
-		case TRANSFER_SUBTRACT:
-			return "Subtract";
-			break;
+	case TRANSFER_SUBTRACT:
+		return "Subtract";
 
-		case TRANSFER_MULTIPLY:
-			return "Multiply";
-			break;
+	case TRANSFER_MULTIPLY:
+		return "Multiply";
 
-		case TRANSFER_DIVIDE:
-			return "Divide";
-			break;
+	case TRANSFER_DIVIDE:
+		return "Divide";
 
-		case TRANSFER_MAX:
-			return "Max";
-			break;
+	case TRANSFER_MAX:
+		return "Max";
 
-		default:
-			return "Normal";
-			break;
+	default:
+		return "Normal";
 	}
-	return "";
 }
 
 const char* OverlayConfig::direction_to_text(int direction)
 {
 	switch(direction)
 	{
-		case OverlayConfig::BOTTOM_FIRST: return _("Bottom first");
-		case OverlayConfig::TOP_FIRST:    return _("Top first");
+	case OverlayConfig::BOTTOM_FIRST:
+		return _("Bottom first");
+	case OverlayConfig::TOP_FIRST:
+		return _("Top first");
 	}
 	return "";
 }
@@ -226,23 +205,19 @@ const char* OverlayConfig::output_to_text(int output_layer)
 {
 	switch(output_layer)
 	{
-		case OverlayConfig::TOP:    return _("Top");
-		case OverlayConfig::BOTTOM: return _("Bottom");
+	case OverlayConfig::TOP:
+		return _("Top");
+	case OverlayConfig::BOTTOM:
+		return _("Bottom");
 	}
 	return "";
 }
 
 
 
-
-
-
-
-
-
 OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	300, 
 	160, 
@@ -262,8 +237,9 @@ OverlayWindow::~OverlayWindow()
 void OverlayWindow::create_objects()
 {
 	int x = 10, y = 10;
-
 	BC_Title *title;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new OverlayMode(plugin, 
 		x + title->get_w() + 5, 
@@ -298,7 +274,7 @@ OverlayMode::OverlayMode(Overlay *plugin,
 	int x, 
 	int y)
  : BC_PopupMenu(x,
- 	y,
+	y,
 	150,
 	OverlayConfig::mode_to_text(plugin->config.mode),
 	1)
@@ -334,7 +310,7 @@ OverlayDirection::OverlayDirection(Overlay *plugin,
 	int x, 
 	int y)
  : BC_PopupMenu(x,
- 	y,
+	y,
 	150,
 	OverlayConfig::direction_to_text(plugin->config.direction),
 	1)
@@ -375,7 +351,7 @@ OverlayOutput::OverlayOutput(Overlay *plugin,
 	int x, 
 	int y)
  : BC_PopupMenu(x,
- 	y,
+	y,
 	100,
 	OverlayConfig::output_to_text(plugin->config.output_layer),
 	1)
@@ -413,28 +389,9 @@ int OverlayOutput::handle_event()
 
 
 
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(Overlay, OverlayThread, OverlayWindow)
 
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(Overlay)
-
-
-
-
 
 
 Overlay::Overlay(PluginServer *server)
@@ -456,7 +413,7 @@ Overlay::~Overlay()
 
 
 int Overlay::process_buffer(VFrame **frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -496,7 +453,6 @@ int Overlay::process_buffer(VFrame **frame,
 	}
 
 
-
 // Direct copy the first layer
 	output = frame[output_layer];
 	read_frame(output, 
@@ -506,8 +462,6 @@ int Overlay::process_buffer(VFrame **frame,
 		get_use_opengl());
 
 	if(get_total_buffers() == 1) return 0;
-
-
 
 	current_layer = input_layer1;
 	if(get_use_opengl()) 
@@ -542,7 +496,6 @@ int Overlay::process_buffer(VFrame **frame,
 				config.mode,
 				NEAREST_NEIGHBOR);
 	}
-
 
 	return 0;
 }
@@ -602,8 +555,6 @@ int Overlay::handle_opengl()
 	int current_shader = 0;
 
 
-
-
 // Direct copy layer
 	if(config.mode == TRANSFER_REPLACE)
 	{
@@ -658,21 +609,21 @@ int Overlay::handle_opengl()
 
 		switch(config.mode)
 		{
-			case TRANSFER_ADDITION:
-				shader_stack[current_shader++] = blend_add_frag;
-				break;
-			case TRANSFER_SUBTRACT:
-				shader_stack[current_shader++] = blend_subtract_frag;
-				break;
-			case TRANSFER_MULTIPLY:
-				shader_stack[current_shader++] = blend_multiply_frag;
-				break;
-			case TRANSFER_DIVIDE:
-				shader_stack[current_shader++] = blend_divide_frag;
-				break;
-			case TRANSFER_MAX:
-				shader_stack[current_shader++] = blend_max_frag;
-				break;
+		case TRANSFER_ADDITION:
+			shader_stack[current_shader++] = blend_add_frag;
+			break;
+		case TRANSFER_SUBTRACT:
+			shader_stack[current_shader++] = blend_subtract_frag;
+			break;
+		case TRANSFER_MULTIPLY:
+			shader_stack[current_shader++] = blend_multiply_frag;
+			break;
+		case TRANSFER_DIVIDE:
+			shader_stack[current_shader++] = blend_divide_frag;
+			break;
+		case TRANSFER_MAX:
+			shader_stack[current_shader++] = blend_max_frag;
+			break;
 		}
 
 		shader_stack[current_shader++] = put_pixels_frag;
@@ -804,8 +755,3 @@ void Overlay::update_gui()
 		thread->window->unlock_window();
 	}
 }
-
-
-
-
-

@@ -39,9 +39,6 @@ class MotionBlurMain;
 class MotionBlurEngine;
 
 
-
-
-
 class MotionBlurConfig
 {
 public:
@@ -51,9 +48,9 @@ public:
 	void copy_from(MotionBlurConfig &that);
 	void interpolate(MotionBlurConfig &prev, 
 		MotionBlurConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame);
 
 	int radius;
 	int steps;
@@ -152,26 +149,7 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(MotionBlurMain)
-
-
 
 MotionBlurConfig::MotionBlurConfig()
 {
@@ -206,9 +184,9 @@ void MotionBlurConfig::copy_from(MotionBlurConfig &that)
 
 void MotionBlurConfig::interpolate(MotionBlurConfig &prev, 
 	MotionBlurConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -221,20 +199,11 @@ void MotionBlurConfig::interpolate(MotionBlurConfig &prev,
 }
 
 
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(MotionBlurMain, MotionBlurThread, MotionBlurWindow)
-
-
 
 MotionBlurWindow::MotionBlurWindow(MotionBlurMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	260, 
 	120, 
@@ -254,6 +223,7 @@ int MotionBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Length:")));
 	y += 20;
 	add_subwindow(radius = new MotionBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));
@@ -288,14 +258,6 @@ int MotionBlurSize::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
-
 
 
 MotionBlurMain::MotionBlurMain(PluginServer *server)
@@ -356,7 +318,7 @@ void MotionBlurMain::delete_tables()
 int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	float xa,ya,za,xb,yb,zb,xd,yd,zd;
-	if (get_source_position() == 0)	
+	if (get_source_position() == 0)
 		get_camera(&xa, &ya, &za, get_source_position());
 	else
 		get_camera(&xa, &ya, &za, get_source_position()-1);
@@ -365,11 +327,9 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	xd = xb - xa;
 	yd = yb - ya;
 	zd = zb - za;
-	
-	//printf("Camera automation deltas: %.2f %.2f %.2f\n", xd, yd, zd);
+
 	load_configuration();
 
-//printf("MotionBlurMain::process_realtime 1 %d\n", config.radius);
 	if(!engine) engine = new MotionBlurEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
@@ -380,7 +340,6 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	this->input = input_ptr;
 	this->output = output_ptr;
-
 
 	if(input_ptr->get_rows()[0] == output_ptr->get_rows()[0])
 	{
@@ -415,11 +374,11 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	x_offset = (int)(xd * fradius);
 	y_offset = (int)(yd * fradius);
 
-    min_w = w * zradius;
-    min_h = h * zradius;
-    max_w = w;
-    max_h = h;
-    min_x1 = center_x - min_w / 2;
+	min_w = w * zradius;
+	min_h = h * zradius;
+	max_w = w;
+	max_h = h;
+	min_x1 = center_x - min_w / 2;
 	min_y1 = center_y - min_h / 2;
 	min_x2 = center_x + min_w / 2;
 	min_y2 = center_y + min_h / 2;
@@ -427,7 +386,7 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	max_y1 = 0;
 	max_x2 = w;
 	max_y2 = h;
-		
+
 	delete_tables();
 	scale_x_table = new int*[config.steps];
 	scale_y_table = new int*[config.steps];
@@ -453,9 +412,9 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 		int *x_table;
 		int *y_table;
-                scale_y_table[i] = y_table = new int[(int)(h + 1)];
-                scale_x_table[i] = x_table = new int[(int)(w + 1)];
-			
+		scale_y_table[i] = y_table = new int[(int)(h + 1)];
+		scale_x_table[i] = x_table = new int[(int)(w + 1)];
+
 		for(int j = 0; j < h; j++)
 		{
 			y_table[j] = (int)((j - out_y1) * scale_y) + y;
@@ -553,10 +512,6 @@ void MotionBlurMain::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
-
-
-
 
 
 MotionBlurPackage::MotionBlurPackage()
@@ -692,43 +647,39 @@ void MotionBlurUnit::process_package(LoadPackage *package)
 
 		switch(plugin->input->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				BLEND_LAYER(3, float, float, 1, 0)
-				break;
-			case BC_RGB888:
-				BLEND_LAYER(3, uint8_t, int, 0xff, 0)
-				break;
-			case BC_RGBA_FLOAT:
-				BLEND_LAYER(4, float, float, 1, 0)
-				break;
-			case BC_RGBA8888:
-				BLEND_LAYER(4, uint8_t, int, 0xff, 0)
-				break;
-			case BC_RGB161616:
-				BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
-				break;
-			case BC_RGBA16161616:
-				BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
-				break;
-			case BC_YUV888:
-				BLEND_LAYER(3, uint8_t, int, 0xff, 1)
-				break;
-			case BC_YUVA8888:
-				BLEND_LAYER(4, uint8_t, int, 0xff, 1)
-				break;
-			case BC_YUV161616:
-				BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
-				break;
-			case BC_YUVA16161616:
-				BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
-				break;
+		case BC_RGB_FLOAT:
+			BLEND_LAYER(3, float, float, 1, 0)
+			break;
+		case BC_RGB888:
+			BLEND_LAYER(3, uint8_t, int, 0xff, 0)
+			break;
+		case BC_RGBA_FLOAT:
+			BLEND_LAYER(4, float, float, 1, 0)
+			break;
+		case BC_RGBA8888:
+			BLEND_LAYER(4, uint8_t, int, 0xff, 0)
+			break;
+		case BC_RGB161616:
+			BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
+			break;
+		case BC_RGBA16161616:
+			BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
+			break;
+		case BC_YUV888:
+			BLEND_LAYER(3, uint8_t, int, 0xff, 1)
+			break;
+		case BC_YUVA8888:
+			BLEND_LAYER(4, uint8_t, int, 0xff, 1)
+			break;
+		case BC_YUV161616:
+			BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
+			break;
+		case BC_YUVA16161616:
+			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
+			break;
 		}
 	}
 }
-
-
-
-
 
 
 MotionBlurEngine::MotionBlurEngine(MotionBlurMain *plugin, 
@@ -758,8 +709,3 @@ LoadPackage* MotionBlurEngine::new_package()
 {
 	return new MotionBlurPackage;
 }
-
-
-
-
-

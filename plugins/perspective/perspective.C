@@ -25,11 +25,6 @@
 #include "perspective.h"
 
 
-
-
-
-
-
 REGISTER_PLUGIN(PerspectiveMain)
 
 
@@ -85,9 +80,9 @@ void PerspectiveConfig::copy_from(PerspectiveConfig &that)
 
 void PerspectiveConfig::interpolate(PerspectiveConfig &prev, 
 	PerspectiveConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -105,19 +100,13 @@ void PerspectiveConfig::interpolate(PerspectiveConfig &prev,
 
 
 
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(PerspectiveMain, PerspectiveThread, PerspectiveWindow)
 
 
 
 PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	plugin->config.window_w, 
 	plugin->config.window_h, 
@@ -126,7 +115,6 @@ PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
 	0, 
 	1)
 {
-//printf("PerspectiveWindow::PerspectiveWindow 1 %d %d\n", plugin->config.window_w, plugin->config.window_h);
 	this->plugin = plugin; 
 }
 
@@ -138,6 +126,7 @@ int PerspectiveWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(canvas = new PerspectiveCanvas(plugin, 
 		x, 
 		y, 
@@ -221,15 +210,6 @@ void PerspectiveWindow::update_canvas()
 	int x1, y1, x2, y2, x3, y3, x4, y4;
 	calculate_canvas_coords(x1, y1, x2, y2, x3, y3, x4, y4);
 
-// printf("PerspectiveWindow::update_canvas %d,%d %d,%d %d,%d %d,%d\n",
-// x1,
-// y1,
-// x2,
-// y2,
-// x3,
-// y3,
-// x4,
-// y4);
 	canvas->set_color(BLACK);
 
 #define DIVISIONS 10
@@ -327,8 +307,6 @@ void PerspectiveWindow::calculate_canvas_coords(int &x1,
 }
 
 
-
-
 PerspectiveCanvas::PerspectiveCanvas(PerspectiveMain *plugin, 
 	int x, 
 	int y, 
@@ -339,8 +317,6 @@ PerspectiveCanvas::PerspectiveCanvas(PerspectiveMain *plugin,
 	this->plugin = plugin;
 	state = PerspectiveCanvas::NONE;
 }
-
-
 
 
 int PerspectiveCanvas::button_press_event()
@@ -357,12 +333,6 @@ int PerspectiveCanvas::button_press_event()
 		float distance2 = DISTANCE(cursor_x, cursor_y, x2, y2);
 		float distance3 = DISTANCE(cursor_x, cursor_y, x3, y3);
 		float distance4 = DISTANCE(cursor_x, cursor_y, x4, y4);
-// printf("PerspectiveCanvas::button_press_event %f %d %d %d %d\n", 
-// distance3,
-// cursor_x,
-// cursor_y,
-// x3,
-// y3);
 		float min = distance1;
 		plugin->config.current_point = 0;
 		if(distance2 < min)
@@ -489,10 +459,6 @@ int PerspectiveCanvas::cursor_motion_event()
 }
 
 
-
-
-
-
 PerspectiveCoord::PerspectiveCoord(PerspectiveWindow *gui,
 	PerspectiveMain *plugin, 
 	int x, 
@@ -515,12 +481,6 @@ int PerspectiveCoord::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
 
 
 PerspectiveReset::PerspectiveReset(PerspectiveMain *plugin, 
@@ -547,15 +507,6 @@ int PerspectiveReset::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
 PerspectiveMode::PerspectiveMode(PerspectiveMain *plugin, 
 	int x, 
 	int y,
@@ -576,8 +527,6 @@ int PerspectiveMode::handle_event()
 }
 
 
-
-
 PerspectiveDirection::PerspectiveDirection(PerspectiveMain *plugin, 
 	int x, 
 	int y,
@@ -588,6 +537,7 @@ PerspectiveDirection::PerspectiveDirection(PerspectiveMain *plugin,
 	this->plugin = plugin;
 	this->value = value;
 }
+
 int PerspectiveDirection::handle_event()
 {
 	plugin->config.forward = value;
@@ -595,16 +545,6 @@ int PerspectiveDirection::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 PerspectiveMain::PerspectiveMain(PluginServer *server)
@@ -642,15 +582,12 @@ void PerspectiveMain::update_gui()
 {
 	if(thread)
 	{
-//printf("PerspectiveMain::update_gui 1\n");
 		thread->window->lock_window();
-//printf("PerspectiveMain::update_gui 2\n");
 		load_configuration();
 		thread->window->update_coord();
 		thread->window->update_mode();
 		thread->window->update_canvas();
 		thread->window->unlock_window();
-//printf("PerspectiveMain::update_gui 3\n");
 	}
 }
 
@@ -768,18 +705,17 @@ float PerspectiveMain::get_current_x()
 {
 	switch(config.current_point)
 	{
-		case 0:
-			return config.x1;
-			break;
-		case 1:
-			return config.x2;
-			break;
-		case 2:
-			return config.x3;
-			break;
-		case 3:
-			return config.x4;
-			break;
+	case 0:
+		return config.x1;
+
+	case 1:
+		return config.x2;
+
+	case 2:
+		return config.x3;
+
+	case 3:
+		return config.x4;
 	}
 }
 
@@ -787,18 +723,17 @@ float PerspectiveMain::get_current_y()
 {
 	switch(config.current_point)
 	{
-		case 0:
-			return config.y1;
-			break;
-		case 1:
-			return config.y2;
-			break;
-		case 2:
-			return config.y3;
-			break;
-		case 3:
-			return config.y4;
-			break;
+	case 0:
+		return config.y1;
+
+	case 1:
+		return config.y2;
+
+	case 2:
+		return config.y3;
+
+	case 3:
+		return config.y4;
 	}
 }
 
@@ -806,18 +741,18 @@ void PerspectiveMain::set_current_x(float value)
 {
 	switch(config.current_point)
 	{
-		case 0:
-			config.x1 = value;
-			break;
-		case 1:
-			config.x2 = value;
-			break;
-		case 2:
-			config.x3 = value;
-			break;
-		case 3:
-			config.x4 = value;
-			break;
+	case 0:
+		config.x1 = value;
+		break;
+	case 1:
+		config.x2 = value;
+		break;
+	case 2:
+		config.x3 = value;
+		break;
+	case 3:
+		config.x4 = value;
+		break;
 	}
 }
 
@@ -825,29 +760,28 @@ void PerspectiveMain::set_current_y(float value)
 {
 	switch(config.current_point)
 	{
-		case 0:
-			config.y1 = value;
-			break;
-		case 1:
-			config.y2 = value;
-			break;
-		case 2:
-			config.y3 = value;
-			break;
-		case 3:
-			config.y4 = value;
-			break;
+	case 0:
+		config.y1 = value;
+		break;
+	case 1:
+		config.y2 = value;
+		break;
+	case 2:
+		config.y3 = value;
+		break;
+	case 3:
+		config.y4 = value;
+		break;
 	}
 }
 
 
 
 int PerspectiveMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	int need_reconfigure = load_configuration();
-
 
 // Do nothing
 	if( EQUIV(config.x1, 0)   && EQUIV(config.y1, 0) &&
@@ -878,8 +812,6 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 
 	if(use_opengl)
 		return run_opengl();
-
-
 
 	this->input = frame;
 	this->output = frame;
@@ -953,8 +885,6 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 		config.forward);
 
 
-
-
 // Resample
 
 	if(config.mode == AffineEngine::STRETCH)
@@ -1012,36 +942,36 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 
 		switch(frame->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				RESAMPLE(float, 3, 0)
-				break;
-			case BC_RGB888:
-				RESAMPLE(unsigned char, 3, 0)
-				break;
-			case BC_RGBA_FLOAT:
-				RESAMPLE(float, 4, 0)
-				break;
-			case BC_RGBA8888:
-				RESAMPLE(unsigned char, 4, 0)
-				break;
-			case BC_YUV888:
-				RESAMPLE(unsigned char, 3, 0x80)
-				break;
-			case BC_YUVA8888:
-				RESAMPLE(unsigned char, 4, 0x80)
-				break;
-			case BC_RGB161616:
-				RESAMPLE(uint16_t, 3, 0)
-				break;
-			case BC_RGBA16161616:
-				RESAMPLE(uint16_t, 4, 0)
-				break;
-			case BC_YUV161616:
-				RESAMPLE(uint16_t, 3, 0x8000)
-				break;
-			case BC_YUVA16161616:
-				RESAMPLE(uint16_t, 4, 0x8000)
-				break;
+		case BC_RGB_FLOAT:
+			RESAMPLE(float, 3, 0)
+			break;
+		case BC_RGB888:
+			RESAMPLE(unsigned char, 3, 0)
+			break;
+		case BC_RGBA_FLOAT:
+			RESAMPLE(float, 4, 0)
+			break;
+		case BC_RGBA8888:
+			RESAMPLE(unsigned char, 4, 0)
+			break;
+		case BC_YUV888:
+			RESAMPLE(unsigned char, 3, 0x80)
+			break;
+		case BC_YUVA8888:
+			RESAMPLE(unsigned char, 4, 0x80)
+			break;
+		case BC_RGB161616:
+			RESAMPLE(uint16_t, 3, 0)
+			break;
+		case BC_RGBA16161616:
+			RESAMPLE(uint16_t, 4, 0)
+			break;
+		case BC_YUV161616:
+			RESAMPLE(uint16_t, 3, 0x8000)
+			break;
+		case BC_YUVA16161616:
+			RESAMPLE(uint16_t, 4, 0x8000)
+			break;
 		}
 	}
 
@@ -1070,9 +1000,3 @@ int PerspectiveMain::handle_opengl()
 	return 0;
 #endif
 }
-
-
-
-
-
-

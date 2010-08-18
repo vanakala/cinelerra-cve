@@ -36,12 +36,8 @@
 #include <string.h>
 
 
-
-
 // Algorithm by Torsten Martinsen
 // Ported to Cinelerra by Heroine Virtual Ltd.
-
-
 
 
 class OilEffect;
@@ -56,9 +52,9 @@ public:
 	int equivalent(OilConfig &src);
 	void interpolate(OilConfig &prev, 
 		OilConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	float radius;
 	int use_intensity;
 };
@@ -95,9 +91,6 @@ public:
 PLUGIN_THREAD_HEADER(OilEffect, OilThread, OilWindow)
 
 
-
-
-
 class OilServer : public LoadServer
 {
 public:
@@ -122,13 +115,6 @@ public:
 	void process_package(LoadPackage *package);
 	OilEffect *plugin;
 };
-
-
-
-
-
-
-
 
 
 class OilEffect : public PluginVClient
@@ -162,16 +148,6 @@ public:
 
 
 
-
-
-
-
-
-
-
-
-
-
 OilConfig::OilConfig()
 {
 	radius = 5;
@@ -192,32 +168,20 @@ int OilConfig::equivalent(OilConfig &src)
 
 void OilConfig::interpolate(OilConfig &prev, 
 		OilConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame)
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 	this->radius = prev.radius * prev_scale + next.radius * next_scale;
 	this->use_intensity = prev.use_intensity;
-// printf("OilConfig::interpolate prev_frame=%ld current_frame=%ld next_frame=%ld prev.radius=%f this->radius=%f next.radius=%f\n", 
-// 	prev_frame, current_frame, next_frame, prev.radius, this->radius, next.radius);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 OilRadius::OilRadius(OilEffect *plugin, int x, int y)
  : BC_FSlider(x, 
-	   	y, 
+		y, 
 		0,
 		200,
 		200, 
@@ -235,16 +199,12 @@ int OilRadius::handle_event()
 }
 
 
-
-
-
-
-
 OilIntensity::OilIntensity(OilEffect *plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.use_intensity, _("Use intensity"))
 {
 	this->plugin = plugin;
 }
+
 int OilIntensity::handle_event()
 {
 	plugin->config.use_intensity = get_value();
@@ -252,15 +212,9 @@ int OilIntensity::handle_event()
 	return 1;
 }
 
-
-
-
-
-
-
 OilWindow::OilWindow(OilEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	300, 
 	160, 
@@ -280,28 +234,22 @@ OilWindow::~OilWindow()
 void OilWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Radius:")));
 	add_subwindow(radius = new OilRadius(plugin, x + 70, y));
 	y += 40;
 	add_subwindow(intensity = new OilIntensity(plugin, x, y));
-	
+
 	show_window();
 	flush();
 }
 
 WINDOW_CLOSE_EVENT(OilWindow)
 
-
-
 PLUGIN_THREAD_OBJECT(OilEffect, OilThread, OilWindow)
 
-
-
-
 REGISTER_PLUGIN(OilEffect)
-
-
-
 
 OilEffect::OilEffect(PluginServer *server)
  : PluginVClient(server)
@@ -339,7 +287,6 @@ void OilEffect::update_gui()
 	{
 		thread->window->lock_window();
 		load_configuration();
-//printf("OilEffect::update_gui 1 %ld %f\n", get_source_position(), config.radius);
 
 		thread->window->radius->update(config.radius);
 		thread->window->intensity->update(config.use_intensity);
@@ -411,9 +358,6 @@ int OilEffect::process_realtime(VFrame *input, VFrame *output)
 {
 	need_reconfigure |= load_configuration();
 
-
-
-//printf("OilEffect::process_realtime %f %d\n", config.radius, config.use_intensity);
 	this->input = input;
 	this->output = output;
 
@@ -433,34 +377,21 @@ int OilEffect::process_realtime(VFrame *input, VFrame *output)
 			temp_frame->copy_from(input);
 			this->input = temp_frame;
 		}
-		
-		
+
 		if(!engine)
 		{
 			engine = new OilServer(this, (PluginClient::smp + 1));
 		}
-		
 		engine->process_packages();
 	}
-	
-	
-	
 	return 0;
 }
-
-
-
-
 
 
 OilPackage::OilPackage()
  : LoadPackage()
 {
 }
-
-
-
-
 
 
 OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
@@ -471,8 +402,8 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 
 
 #define INTENSITY(p) ((unsigned int)(((p)[0]) * 77+ \
-									((p)[1] * 150) + \
-									((p)[2] * 29)) >> 8)
+				((p)[1] * 150) + \
+				((p)[2] * 29)) >> 8)
 
 
 #define OIL_MACRO(type, hist_size, components) \
@@ -517,7 +448,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 						int subscript; \
 						type value; \
  \
-                        value = src[x2 * components + 0]; \
+						value = src[x2 * components + 0]; \
 						if(sizeof(type) == 4) \
 						{ \
 							subscript = (int)(value * hist_size); \
@@ -532,7 +463,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 							count[0] = c; \
 						} \
  \
-                        value = src[x2 * components + 1]; \
+						value = src[x2 * components + 1]; \
 						if(sizeof(type) == 4) \
 						{ \
 							subscript = (int)(value * hist_size); \
@@ -547,7 +478,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 							count[1] = c; \
 						} \
  \
-                        value = src[x2 * components + 2]; \
+						value = src[x2 * components + 2]; \
 						if(sizeof(type) == 4) \
 						{ \
 							subscript = (int)(value * hist_size); \
@@ -564,7 +495,7 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
  \
 						if(components == 4) \
 						{ \
-                        	value = src[x2 * components + 3]; \
+							value = src[x2 * components + 3]; \
 							if(sizeof(type) == 4) \
 							{ \
 								subscript = (int)(value * hist_size); \
@@ -597,9 +528,9 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 				bzero(hist2, sizeof(int) * (hist_size + 1)); \
  \
 				int x3 = CLIP((x1 - n), 0, w - 1); \
-	    		int y3 = CLIP((y1 - n), 0, h - 1); \
-	    		int x4 = CLIP((x1 + n + 1), 0, w - 1); \
-	    		int y4 = CLIP((y1 + n + 1), 0, h - 1); \
+				int y3 = CLIP((y1 - n), 0, h - 1); \
+				int x4 = CLIP((x1 + n + 1), 0, w - 1); \
+				int y4 = CLIP((y1 + n + 1), 0, h - 1); \
  \
 				for(int y2 = y3; y2 < y4; y2++) \
 				{ \
@@ -643,38 +574,30 @@ void OilUnit::process_package(LoadPackage *package)
 
 	switch(plugin->input->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			OIL_MACRO(float, 0xffff, 3)
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			OIL_MACRO(unsigned char, 0xff, 3)
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			OIL_MACRO(uint16_t, 0xffff, 3)
-			break;
-		case BC_RGBA_FLOAT:
-			OIL_MACRO(float, 0xffff, 4)
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			OIL_MACRO(unsigned char, 0xff, 4)
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			OIL_MACRO(uint16_t, 0xffff, 4)
-			break;
+	case BC_RGB_FLOAT:
+		OIL_MACRO(float, 0xffff, 3)
+		break;
+	case BC_RGB888:
+	case BC_YUV888:
+		OIL_MACRO(unsigned char, 0xff, 3)
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		OIL_MACRO(uint16_t, 0xffff, 3)
+		break;
+	case BC_RGBA_FLOAT:
+		OIL_MACRO(float, 0xffff, 4)
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		OIL_MACRO(unsigned char, 0xff, 4)
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		OIL_MACRO(uint16_t, 0xffff, 4)
+		break;
 	}
-
-
-
-
 }
-
-
-
-
 
 
 OilServer::OilServer(OilEffect *plugin, int cpus)
@@ -703,4 +626,3 @@ LoadPackage* OilServer::new_package()
 {
 	return new OilPackage;
 }
-

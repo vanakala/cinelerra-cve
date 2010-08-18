@@ -48,9 +48,9 @@ public:
 	void copy_from(PerspectiveConfig &that);
 	void interpolate(PerspectiveConfig &prev, 
 		PerspectiveConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	float x1, y1, x2, y2, x3, y3, x4, y4;
 	int mode;
@@ -181,7 +181,7 @@ public:
 	~PerspectiveMain();
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -201,15 +201,3 @@ public:
 	VFrame *temp;
 	AffineEngine *engine;
 };
-
-
-
-
-
-
-
-
-
-
-
-
