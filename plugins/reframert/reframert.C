@@ -29,6 +29,7 @@
 #include "transportque.h"
 
 #include <string.h>
+#include "picon_png.h"
 
 class ReframeRT;
 class ReframeRTWindow;
@@ -42,9 +43,9 @@ public:
 	void copy_from(ReframeRTConfig &src);
 	void interpolate(ReframeRTConfig &prev, 
 		ReframeRTConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	double scale;
 	int stretch;
 	int interp;
@@ -130,18 +131,12 @@ public:
 	int is_realtime();
 	int is_synthesis();
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 };
 
 
-
-
-
-
-
 REGISTER_PLUGIN(ReframeRT);
-
 
 
 ReframeRTConfig::ReframeRTConfig()
@@ -167,16 +162,16 @@ void ReframeRTConfig::copy_from(ReframeRTConfig &src)
 
 void ReframeRTConfig::interpolate(ReframeRTConfig &prev, 
 	ReframeRTConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	this->interp = prev.interp;
 	this->stretch = prev.stretch;
 
 	if (this->interp && prev_frame != next_frame)
 	{
-		// for interpolation, this is (for now) a simple linear slope to the next keyframe.
+// for interpolation, this is (for now) a simple linear slope to the next keyframe.
 		double slope = (next.scale - prev.scale) / (next_frame - prev_frame);
 		this->scale = (slope * (current_frame - prev_frame)) + prev.scale;
 	}
@@ -192,15 +187,9 @@ void ReframeRTConfig::boundaries()
 }
 
 
-
-
-
-
-
-
 ReframeRTWindow::ReframeRTWindow(ReframeRT *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	210, 
 	160, 
@@ -221,6 +210,7 @@ void ReframeRTWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Scale by amount:")));
 	y += 20;
 	scale = new ReframeRTScale(plugin, 
@@ -254,19 +244,15 @@ WINDOW_CLOSE_EVENT(ReframeRTWindow)
 PLUGIN_THREAD_OBJECT(ReframeRT, ReframeRTThread, ReframeRTWindow)
 
 
-
-
-
-
 ReframeRTScale::ReframeRTScale(ReframeRT *plugin, 
 	ReframeRTWindow *gui,
 	int x, 
 	int y)
  : BC_TumbleTextBox(gui,
- 	(float)plugin->config.scale,
+	(float)plugin->config.scale,
 	(float)-1000,
 	(float)1000,
- 	x, 
+	x,
 	y, 
 	100)
 {
@@ -337,8 +323,6 @@ int ReframeRTInterpolate::handle_event()
 }
 
 
-
-
 ReframeRT::ReframeRT(PluginServer *server)
  : PluginVClient(server)
 {
@@ -355,7 +339,6 @@ const char* ReframeRT::plugin_title() { return N_("ReframeRT"); }
 int ReframeRT::is_realtime() { return 1; }
 int ReframeRT::is_synthesis() { return 1; }
 
-#include "picon_png.h"
 NEW_PICON_MACRO(ReframeRT)
 
 SHOW_GUI_MACRO(ReframeRT, ReframeRTThread)
@@ -367,20 +350,20 @@ SET_STRING_MACRO(ReframeRT)
 LOAD_CONFIGURATION_MACRO(ReframeRT, ReframeRTConfig)
 
 int ReframeRT::process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate)
 {
-	int64_t input_frame = get_source_start();
+	framenum input_frame = get_source_start();
 	ReframeRTConfig prev_config, next_config;
 	KeyFrame *tmp_keyframe, *next_keyframe = get_prev_keyframe(get_source_start());
-	int64_t tmp_position, next_position;
-	int64_t segment_len;
+	framenum tmp_position, next_position;
+	framenum segment_len;
 	double input_rate = frame_rate;
 	int is_current_keyframe;
 
-	// if there are no keyframes, the default keyframe is used, and its position is always 0;
-	// if there are keyframes, the first keyframe can be after the effect start (and it controls settings before it)
-	// so let's calculate using a fake keyframe with the same settings but position == effect start
+// if there are no keyframes, the default keyframe is used, and its position is always 0;
+// if there are keyframes, the first keyframe can be after the effect start (and it controls settings before it)
+// so let's calculate using a fake keyframe with the same settings but position == effect start
 	KeyFrame *fake_keyframe = new KeyFrame();
 	fake_keyframe->copy_from(next_keyframe);
 	fake_keyframe->position = local_to_edl(get_source_start());
@@ -411,9 +394,9 @@ int ReframeRT::process_buffer(VFrame *frame,
 		prev_config.copy_from(config);
 		config.interpolate(prev_config, next_config, tmp_position, next_position, tmp_position + segment_len);
 
-		// the area under the curve is the number of frames to advance
-		// as long as interpolate() uses a linear slope we can use geometry to determine this
-		// if interpolate() changes to use a curve then this needs use (possibly) the definite integral
+// the area under the curve is the number of frames to advance
+// as long as interpolate() uses a linear slope we can use geometry to determine this
+// if interpolate() changes to use a curve then this needs use (possibly) the definite integral
 		input_frame += (int64_t)(segment_len * ((prev_config.scale + config.scale) / 2));
 	} while (!is_current_keyframe);
 
@@ -430,9 +413,6 @@ int ReframeRT::process_buffer(VFrame *frame,
 
 	return 0;
 }
-
-
-
 
 
 int ReframeRT::load_defaults()
@@ -512,8 +492,3 @@ void ReframeRT::update_gui()
 		}
 	}
 }
-
-
-
-
-

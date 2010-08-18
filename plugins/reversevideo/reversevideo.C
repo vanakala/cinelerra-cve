@@ -28,6 +28,7 @@
 #include "transportque.h"
 
 #include <string.h>
+#include "picon_png.h"
 
 class ReverseVideo;
 
@@ -77,34 +78,23 @@ public:
 	void update_gui();
 	int is_realtime();
 	int process_buffer(VFrame *frame,
-			int64_t start_position,
+			framenum start_position,
 			double frame_rate);
 
-	int64_t input_position;
+	framenum input_position;
 };
 
 
-
-
-
-
-
 REGISTER_PLUGIN(ReverseVideo);
-
-
 
 ReverseVideoConfig::ReverseVideoConfig()
 {
 	enabled = 1;
 }
 
-
-
-
-
 ReverseVideoWindow::ReverseVideoWindow(ReverseVideo *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	210, 
 	160, 
@@ -125,6 +115,7 @@ void ReverseVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(enabled = new ReverseVideoEnabled(plugin, 
 		x, 
 		y));
@@ -136,10 +127,6 @@ WINDOW_CLOSE_EVENT(ReverseVideoWindow)
 
 
 PLUGIN_THREAD_OBJECT(ReverseVideo, ReverseVideoThread, ReverseVideoWindow)
-
-
-
-
 
 
 ReverseVideoEnabled::ReverseVideoEnabled(ReverseVideo *plugin, 
@@ -161,13 +148,6 @@ int ReverseVideoEnabled::handle_event()
 }
 
 
-
-
-
-
-
-
-
 ReverseVideo::ReverseVideo(PluginServer *server)
  : PluginVClient(server)
 {
@@ -183,7 +163,6 @@ ReverseVideo::~ReverseVideo()
 const char* ReverseVideo::plugin_title() { return N_("Reverse video"); }
 int ReverseVideo::is_realtime() { return 1; }
 
-#include "picon_png.h"
 NEW_PICON_MACRO(ReverseVideo)
 
 SHOW_GUI_MACRO(ReverseVideo, ReverseVideoThread)
@@ -194,7 +173,7 @@ SET_STRING_MACRO(ReverseVideo);
 
 
 int ReverseVideo::process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate)
 {
 	load_configuration();
@@ -223,8 +202,8 @@ int ReverseVideo::load_configuration()
 // Previous keyframe stays in config object.
 	read_data(prev_keyframe);
 
-	int64_t prev_position = edl_to_local(prev_keyframe->position);
-	int64_t next_position = edl_to_local(next_keyframe->position);
+	framenum prev_position = edl_to_local(prev_keyframe->position);
+	framenum next_position = edl_to_local(next_keyframe->position);
 
 	if(prev_position == 0 && next_position == 0) 
 	{
@@ -232,8 +211,8 @@ int ReverseVideo::load_configuration()
 	}
 
 // Get range to flip in requested rate
-	int64_t range_start = prev_position;
-	int64_t range_end = next_position;
+	framenum range_start = prev_position;
+	framenum range_end = next_position;
 
 // Between keyframe and edge of range or no keyframes
 	if(range_start == range_end)
@@ -258,7 +237,6 @@ int ReverseVideo::load_configuration()
 		}
 	}
 
-
 // Convert start position to new direction
 	if(get_direction() == PLAY_FORWARD)
 	{
@@ -270,11 +248,6 @@ int ReverseVideo::load_configuration()
 		input_position = range_end - get_source_position();
 		input_position = range_start + input_position + 1;
 	}
-// printf("ReverseVideo::load_configuration 2 start=%lld end=%lld current=%lld input=%lld\n", 
-// range_start, 
-// range_end, 
-// get_source_position(),
-// input_position);
 
 	return 0;
 }
@@ -341,8 +314,3 @@ void ReverseVideo::update_gui()
 		thread->window->unlock_window();
 	}
 }
-
-
-
-
-

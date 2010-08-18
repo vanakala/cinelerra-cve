@@ -44,8 +44,6 @@ class RerouteConfig
 public:
 	RerouteConfig();
 
-
-
 	static const char* operation_to_text(int operation);
 	int operation;
 	enum
@@ -63,10 +61,6 @@ public:
 		BOTTOM
 	};
 };
-
-
-
-
 
 
 class RerouteOperation : public BC_PopupMenu
@@ -134,16 +128,6 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
 RerouteConfig::RerouteConfig()
 {
 	operation = RerouteConfig::REPLACE;
@@ -155,9 +139,12 @@ const char* RerouteConfig::operation_to_text(int operation)
 {
 	switch(operation)
 	{
-		case RerouteConfig::REPLACE: 			return _("replace Target");
-		case RerouteConfig::REPLACE_COMPONENTS: return _("Components only");
-		case RerouteConfig::REPLACE_ALPHA:    	return _("Alpha replace");
+	case RerouteConfig::REPLACE:
+		return _("replace Target");
+	case RerouteConfig::REPLACE_COMPONENTS:
+		return _("Components only");
+	case RerouteConfig::REPLACE_ALPHA:
+		return _("Alpha replace");
 	}
 	return "";
 }
@@ -166,23 +153,18 @@ const char* RerouteConfig::output_to_text(int output_track)
 {
 	switch(output_track)
 	{
-		case RerouteConfig::TOP:    return _("Top");
-		case RerouteConfig::BOTTOM: return _("Bottom");
+	case RerouteConfig::TOP:
+		return _("Top");
+	case RerouteConfig::BOTTOM:
+		return _("Bottom");
 	}
 	return "";
 }
 
 
-
-
-
-
-
-
-
 RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	300, 
 	160, 
@@ -202,10 +184,10 @@ RerouteWindow::~RerouteWindow()
 void RerouteWindow::create_objects()
 {
 	int x = 10, y = 10;
-
 	BC_Title *title;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Target track:")));
-	
 	int col2 = title->get_w() + 5;
 	add_subwindow(output = new RerouteOutput(plugin, 
 		x + col2, 
@@ -226,16 +208,11 @@ void RerouteWindow::create_objects()
 WINDOW_CLOSE_EVENT(RerouteWindow)
 
 
-
-
-
-
-
 RerouteOperation::RerouteOperation(Reroute *plugin,
 	int x, 
 	int y)
  : BC_PopupMenu(x,
- 	y,
+	y,
 	150,
 	RerouteConfig::operation_to_text(plugin->config.operation),
 	1)
@@ -284,7 +261,7 @@ RerouteOutput::RerouteOutput(Reroute *plugin,
 	int x, 
 	int y)
  : BC_PopupMenu(x,
- 	y,
+	y,
 	100,
 	RerouteConfig::output_to_text(plugin->config.output_track),
 	1)
@@ -321,18 +298,11 @@ int RerouteOutput::handle_event()
 }
 
 
-
-
-
 /***** Register Plugin ***********************************/
 
 PLUGIN_THREAD_OBJECT(Reroute, RerouteThread, RerouteWindow)
 
 REGISTER_PLUGIN(Reroute)
-
-
-
-
 
 
 
@@ -394,7 +364,7 @@ void px_type<TYPE,COMPONENTS>::transfer(VFrame *source, VFrame *target, bool do_
 
 
 int Reroute::process_buffer(VFrame **frame,
-	int64_t start_position,
+	posnum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -402,9 +372,17 @@ int Reroute::process_buffer(VFrame **frame,
 	bool do_components, do_alpha;
 	switch(config.operation)
 	{
-		case RerouteConfig::REPLACE: 			do_components      = do_alpha=true; break;
-		case RerouteConfig::REPLACE_ALPHA:      do_components=false; do_alpha=true; break;
-		case RerouteConfig::REPLACE_COMPONENTS: do_components=true; do_alpha=false; break;
+	case RerouteConfig::REPLACE:
+		do_components = do_alpha = true;
+		break;
+	case RerouteConfig::REPLACE_ALPHA:
+		do_components = false; 
+		do_alpha = true; 
+		break;
+	case RerouteConfig::REPLACE_COMPONENTS:
+		do_components=true;
+		do_alpha=false;
+		break;
 	}
 
 	if(config.output_track == RerouteConfig::TOP)
@@ -418,7 +396,6 @@ int Reroute::process_buffer(VFrame **frame,
 		output_track = get_total_buffers() - 1;
 	}
 
-
 	// output buffers for source and target track
 	VFrame *source = frame[input_track];
 	VFrame *target = frame[output_track];
@@ -430,8 +407,8 @@ int Reroute::process_buffer(VFrame **frame,
 		frame_rate,
 		false );  // no OpenGL support
 
-	 // no real operation necessary
-	//  unless applied to multiple tracks....
+// no real operation necessary
+//  unless applied to multiple tracks
 	if(get_total_buffers() <= 1)
 		return 0;
 
@@ -441,64 +418,52 @@ int Reroute::process_buffer(VFrame **frame,
 		return 0;
 	}
 
-	
-	// prepare data for output track
-	// (to be overidden partially)
+// prepare data for output track
+// (to be overidden partially)
 	read_frame(target, 
 		output_track, 
 		start_position,
 		frame_rate);
-	
+
 	switch(source->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			px_type<float,3>::transfer(source,target, do_components,do_alpha);
-			break;
-		case BC_RGBA_FLOAT:
-			px_type<float,4>::transfer(source,target, do_components,do_alpha);
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			px_type<unsigned char,3>::transfer(source,target, do_components,do_alpha);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			px_type<unsigned char,4>::transfer(source,target, do_components,do_alpha);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			px_type<uint16_t,3>::transfer(source,target, do_components,do_alpha);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			px_type<uint16_t,4>::transfer(source,target, do_components,do_alpha);
-			break;
+	case BC_RGB_FLOAT:
+		px_type<float,3>::transfer(source,target, do_components,do_alpha);
+		break;
+	case BC_RGBA_FLOAT:
+		px_type<float,4>::transfer(source,target, do_components,do_alpha);
+		break;
+	case BC_RGB888:
+	case BC_YUV888:
+		px_type<unsigned char,3>::transfer(source,target, do_components,do_alpha);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		px_type<unsigned char,4>::transfer(source,target, do_components,do_alpha);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		px_type<uint16_t,3>::transfer(source,target, do_components,do_alpha);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		px_type<uint16_t,4>::transfer(source,target, do_components,do_alpha);
+		break;
 	}
 
 	return 0;
 }
 
 
-
-
-
-
-
-
 const char* Reroute::plugin_title() { return N_("Reroute"); }
-int Reroute::is_realtime() 		{ return 1; }
-int Reroute::is_multichannel() 	{ return 1; }
+int Reroute::is_realtime() { return 1; }
+int Reroute::is_multichannel() { return 1; }
 
 
 NEW_PICON_MACRO(Reroute) 
-
 SHOW_GUI_MACRO(Reroute, RerouteThread)
-
 RAISE_WINDOW_MACRO(Reroute)
-
 SET_STRING_MACRO(Reroute);
-
-
 
 int Reroute::load_configuration()
 {
