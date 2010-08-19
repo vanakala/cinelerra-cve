@@ -29,9 +29,6 @@
 #include "vframe.inc"
 
 
-
-
-
 class SwapMain;
 
 #define RED_SRC 0
@@ -64,7 +61,6 @@ class SwapMenu : public BC_PopupMenu
 public:
 	SwapMenu(SwapMain *client, int *output, int x, int y);
 
-
 	int handle_event();
 	int create_objects();
 
@@ -90,7 +86,6 @@ public:
 	SwapWindow(SwapMain *plugin, int x, int y);
 	~SwapWindow();
 
-
 	void create_objects();
 	int close_event();
 
@@ -102,11 +97,7 @@ public:
 };
 
 
-
-
 PLUGIN_THREAD_HEADER(SwapMain, SwapThread, SwapWindow)
-
-
 
 class SwapMain : public PluginVClient
 {
@@ -127,19 +118,10 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
-
-
-
-
-
-
 	void reset();
 	void load_configuration();
 	int load_defaults();
 	int save_defaults();
-
-
-
 
 // parameters needed for processor
 	const char* output_to_text(int value);
@@ -150,6 +132,5 @@ public:
 	SwapThread *thread;
 	BC_Hash *defaults;
 };
-
 
 #endif

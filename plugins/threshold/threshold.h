@@ -36,7 +36,7 @@ class RGBA;
 // Color components are in range [0, 255].
 class RGBA
 {
- public:
+public:
 	RGBA();   // Initialize to transparent black.
 	RGBA(int r, int g, int b, int a);
 	void set(int r, int g, int b, int a);
@@ -80,9 +80,9 @@ public:
 	void copy_from(ThresholdConfig &that);
 	void interpolate(ThresholdConfig &prev,
 		ThresholdConfig &next,
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	void reset();
 	void boundaries();
 
@@ -103,7 +103,7 @@ public:
 	~ThresholdMain();
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -121,10 +121,6 @@ public:
 };
 
 
-
-
-
-
 class ThresholdPackage : public LoadPackage
 {
 public:
@@ -139,7 +135,7 @@ class ThresholdUnit : public LoadClient
 public:
 	ThresholdUnit(ThresholdEngine *server);
 	void process_package(LoadPackage *package);
-	
+
 	ThresholdEngine *server;
 private:
 	template<typename TYPE, int COMPONENTS, bool USE_YUV>
@@ -162,10 +158,5 @@ public:
 	ThresholdMain *plugin;
 	VFrame *data;
 };
-
-
-
-
-
 
 #endif

@@ -30,18 +30,11 @@
 #include "vframe.h"
 
 
-
-
 #include <stdint.h>
 #include <string.h>
 
 
-
-
 REGISTER_PLUGIN(TimeAvgMain)
-
-
-
 
 
 TimeAvgConfig::TimeAvgConfig()
@@ -67,16 +60,6 @@ int TimeAvgConfig::equivalent(TimeAvgConfig *src)
 		paranoid == src->paranoid &&
 		nosubtract == src->nosubtract;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -123,7 +106,7 @@ RAISE_WINDOW_MACRO(TimeAvgMain);
 
 
 int TimeAvgMain::process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate)
 {
 	int h = frame->get_h();
@@ -150,10 +133,10 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			if(config.frames != history_size)
 			{
 				VFrame **history2;
-				int64_t *history_frame2;
+				framenum *history_frame2;
 				int *history_valid2;
 				history2 = new VFrame*[config.frames];
-				history_frame2 = new int64_t[config.frames];
+				history_frame2 = new framenum[config.frames];
 				history_valid2 = new int[config.frames];
 
 // Copy existing frames over
@@ -174,7 +157,6 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 				delete [] history;
 				delete [] history_frame;
 				delete [] history_valid;
-
 
 // Create new frames
 				for( ; i < config.frames; i++)
@@ -198,19 +180,14 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			for(int i = 0; i < config.frames; i++)
 				history[i] = new VFrame(0, w, h, color_model);
 			history_size = config.frames;
-			history_frame = new int64_t[config.frames];
-			bzero(history_frame, sizeof(int64_t) * config.frames);
+			history_frame = new framenum[config.frames];
+			memset(history_frame, 0, sizeof(framenum) * config.frames);
 			history_valid = new int[config.frames];
 			bzero(history_valid, sizeof(int) * config.frames);
 		}
 
-
-
-
-
-
 // Create new history frames based on current frame
-		int64_t *new_history_frames = new int64_t[history_size];
+		framenum *new_history_frames = new framenum[history_size];
 		for(int i = 0; i < history_size; i++)
 		{
 			new_history_frames[history_size - i - 1] = start_position - i;
@@ -302,41 +279,22 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			clear_accum(w, h, color_model);
 		}
 
-		for(int64_t i = prev_frame; i <= start_position; i++)
+		for(framenum i = prev_frame; i <= start_position; i++)
 		{
 			read_frame(frame,
 				0,
 				i,
 				frame_rate);
 			add_accum(frame);
-printf("TimeAvgMain::process_buffer 1 %lld %lld %lld\n", prev_frame, start_position, i);
 		}
-
 		prev_frame = start_position;
 	}
-
-
-
-
-
-
 
 // Transfer accumulation to output with division if average is desired.
 	transfer_accum(frame);
 
-printf("TimeAvgMain::process_buffer 2\n");
-
-
 	return 0;
 }
-
-
-
-
-
-
-
-
 
 
 // Reset accumulation
@@ -364,30 +322,30 @@ void TimeAvgMain::clear_accum(int w, int h, int color_model)
 {
 	switch(color_model)
 	{
-		case BC_RGB888:
-			CLEAR_ACCUM(int, 3, 0x0)
-			break;
-		case BC_RGB_FLOAT:
-			CLEAR_ACCUM(float, 3, 0x0)
-			break;
-		case BC_RGBA8888:
-			CLEAR_ACCUM(int, 4, 0x0)
-			break;
-		case BC_RGBA_FLOAT:
-			CLEAR_ACCUM(float, 4, 0x0)
-			break;
-		case BC_YUV888:
-			CLEAR_ACCUM(int, 3, 0x80)
-			break;
-		case BC_YUVA8888:
-			CLEAR_ACCUM(int, 4, 0x80)
-			break;
-		case BC_YUV161616:
-			CLEAR_ACCUM(int, 3, 0x8000)
-			break;
-		case BC_YUVA16161616:
-			CLEAR_ACCUM(int, 4, 0x8000)
-			break;
+	case BC_RGB888:
+		CLEAR_ACCUM(int, 3, 0x0)
+		break;
+	case BC_RGB_FLOAT:
+		CLEAR_ACCUM(float, 3, 0x0)
+		break;
+	case BC_RGBA8888:
+		CLEAR_ACCUM(int, 4, 0x0)
+		break;
+	case BC_RGBA_FLOAT:
+		CLEAR_ACCUM(float, 4, 0x0)
+		break;
+	case BC_YUV888:
+		CLEAR_ACCUM(int, 3, 0x80)
+		break;
+	case BC_YUVA8888:
+		CLEAR_ACCUM(int, 4, 0x80)
+		break;
+	case BC_YUV161616:
+		CLEAR_ACCUM(int, 3, 0x8000)
+		break;
+	case BC_YUVA16161616:
+		CLEAR_ACCUM(int, 4, 0x8000)
+		break;
 	}
 }
 
@@ -459,30 +417,30 @@ void TimeAvgMain::subtract_accum(VFrame *frame)
 
 	switch(frame->get_color_model())
 	{
-		case BC_RGB888:
-			SUBTRACT_ACCUM(unsigned char, int, 3, 0x0)
-			break;
-		case BC_RGB_FLOAT:
-			SUBTRACT_ACCUM(float, float, 3, 0x0)
-			break;
-		case BC_RGBA8888:
-			SUBTRACT_ACCUM(unsigned char, int, 4, 0x0)
-			break;
-		case BC_RGBA_FLOAT:
-			SUBTRACT_ACCUM(float, float, 4, 0x0)
-			break;
-		case BC_YUV888:
-			SUBTRACT_ACCUM(unsigned char, int, 3, 0x80)
-			break;
-		case BC_YUVA8888:
-			SUBTRACT_ACCUM(unsigned char, int, 4, 0x80)
-			break;
-		case BC_YUV161616:
-			SUBTRACT_ACCUM(uint16_t, int, 3, 0x8000)
-			break;
-		case BC_YUVA16161616:
-			SUBTRACT_ACCUM(uint16_t, int, 4, 0x8000)
-			break;
+	case BC_RGB888:
+		SUBTRACT_ACCUM(unsigned char, int, 3, 0x0)
+		break;
+	case BC_RGB_FLOAT:
+		SUBTRACT_ACCUM(float, float, 3, 0x0)
+		break;
+	case BC_RGBA8888:
+		SUBTRACT_ACCUM(unsigned char, int, 4, 0x0)
+		break;
+	case BC_RGBA_FLOAT:
+		SUBTRACT_ACCUM(float, float, 4, 0x0)
+		break;
+	case BC_YUV888:
+		SUBTRACT_ACCUM(unsigned char, int, 3, 0x80)
+		break;
+	case BC_YUVA8888:
+		SUBTRACT_ACCUM(unsigned char, int, 4, 0x80)
+		break;
+	case BC_YUV161616:
+		SUBTRACT_ACCUM(uint16_t, int, 3, 0x8000)
+		break;
+	case BC_YUVA16161616:
+		SUBTRACT_ACCUM(uint16_t, int, 4, 0x8000)
+		break;
 	}
 }
 
@@ -594,30 +552,30 @@ void TimeAvgMain::add_accum(VFrame *frame)
 
 	switch(frame->get_color_model())
 	{
-		case BC_RGB888:
-			ADD_ACCUM(unsigned char, int, 3, 0x0, 0xff)
-			break;
-		case BC_RGB_FLOAT:
-			ADD_ACCUM(float, float, 3, 0x0, 1.0)
-			break;
-		case BC_RGBA8888:
-			ADD_ACCUM(unsigned char, int, 4, 0x0, 0xff)
-			break;
-		case BC_RGBA_FLOAT:
-			ADD_ACCUM(float, float, 4, 0x0, 1.0)
-			break;
-		case BC_YUV888:
-			ADD_ACCUM(unsigned char, int, 3, 0x80, 0xff)
-			break;
-		case BC_YUVA8888:
-			ADD_ACCUM(unsigned char, int, 4, 0x80, 0xff)
-			break;
-		case BC_YUV161616:
-			ADD_ACCUM(uint16_t, int, 3, 0x8000, 0xffff)
-			break;
-		case BC_YUVA16161616:
-			ADD_ACCUM(uint16_t, int, 4, 0x8000, 0xffff)
-			break;
+	case BC_RGB888:
+		ADD_ACCUM(unsigned char, int, 3, 0x0, 0xff)
+		break;
+	case BC_RGB_FLOAT:
+		ADD_ACCUM(float, float, 3, 0x0, 1.0)
+		break;
+	case BC_RGBA8888:
+		ADD_ACCUM(unsigned char, int, 4, 0x0, 0xff)
+		break;
+	case BC_RGBA_FLOAT:
+		ADD_ACCUM(float, float, 4, 0x0, 1.0)
+		break;
+	case BC_YUV888:
+		ADD_ACCUM(unsigned char, int, 3, 0x80, 0xff)
+		break;
+	case BC_YUVA8888:
+		ADD_ACCUM(unsigned char, int, 4, 0x80, 0xff)
+		break;
+	case BC_YUV161616:
+		ADD_ACCUM(uint16_t, int, 3, 0x8000, 0xffff)
+		break;
+	case BC_YUVA16161616:
+		ADD_ACCUM(uint16_t, int, 4, 0x8000, 0xffff)
+		break;
 	}
 }
 
@@ -703,30 +661,30 @@ void TimeAvgMain::transfer_accum(VFrame *frame)
 
 	switch(frame->get_color_model())
 	{
-		case BC_RGB888:
-			TRANSFER_ACCUM(unsigned char, int, 3, 0x0, 0xff)
-			break;
-		case BC_RGB_FLOAT:
-			TRANSFER_ACCUM(float, float, 3, 0x0, 1)
-			break;
-		case BC_RGBA8888:
-			TRANSFER_ACCUM(unsigned char, int, 4, 0x0, 0xff)
-			break;
-		case BC_RGBA_FLOAT:
-			TRANSFER_ACCUM(float, float, 4, 0x0, 1)
-			break;
-		case BC_YUV888:
-			TRANSFER_ACCUM(unsigned char, int, 3, 0x80, 0xff)
-			break;
-		case BC_YUVA8888:
-			TRANSFER_ACCUM(unsigned char, int, 4, 0x80, 0xff)
-			break;
-		case BC_YUV161616:
-			TRANSFER_ACCUM(uint16_t, int, 3, 0x8000, 0xffff)
-			break;
-		case BC_YUVA16161616:
-			TRANSFER_ACCUM(uint16_t, int, 4, 0x8000, 0xffff)
-			break;
+	case BC_RGB888:
+		TRANSFER_ACCUM(unsigned char, int, 3, 0x0, 0xff)
+		break;
+	case BC_RGB_FLOAT:
+		TRANSFER_ACCUM(float, float, 3, 0x0, 1)
+		break;
+	case BC_RGBA8888:
+		TRANSFER_ACCUM(unsigned char, int, 4, 0x0, 0xff)
+		break;
+	case BC_RGBA_FLOAT:
+		TRANSFER_ACCUM(float, float, 4, 0x0, 1)
+		break;
+	case BC_YUV888:
+		TRANSFER_ACCUM(unsigned char, int, 3, 0x80, 0xff)
+		break;
+	case BC_YUVA8888:
+		TRANSFER_ACCUM(unsigned char, int, 4, 0x80, 0xff)
+		break;
+	case BC_YUV161616:
+		TRANSFER_ACCUM(uint16_t, int, 3, 0x8000, 0xffff)
+		break;
+	case BC_YUVA16161616:
+		TRANSFER_ACCUM(uint16_t, int, 4, 0x8000, 0xffff)
+		break;
 	}
 }
 
@@ -824,13 +782,3 @@ void TimeAvgMain::update_gui()
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-

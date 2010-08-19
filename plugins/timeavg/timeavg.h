@@ -57,7 +57,7 @@ public:
 
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	const char* plugin_title();
@@ -76,10 +76,9 @@ public:
 	void add_accum(VFrame *frame);
 	void transfer_accum(VFrame *frame);
 
-
 	VFrame **history;
 // Frame of history in requested samplerate
-	int64_t *history_frame;
+	framenum *history_frame;
 	int *history_valid;
 	unsigned char *accumulation;
 
@@ -88,12 +87,11 @@ public:
 	TimeAvgConfig config;
 	int history_size;
 // Starting frame of history in requested framerate
-	int64_t history_start;
+	framenum history_start;
 // When subtraction is disabled, this detects no change for paranoid mode.
-	int64_t prev_frame;
+	framenum prev_frame;
 
 	BC_Hash *defaults;
 };
-
 
 #endif

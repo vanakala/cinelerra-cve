@@ -28,23 +28,11 @@
 #include "swapchannels.h"
 #include "vframe.h"
 
-
-
 #include <stdint.h>
 #include <string.h>
 
 
-
-
-
-
 REGISTER_PLUGIN(SwapMain)
-
-
-
-
-
-
 
 
 SwapConfig::SwapConfig()
@@ -52,7 +40,7 @@ SwapConfig::SwapConfig()
 	red = RED_SRC;
 	green = GREEN_SRC;
 	blue = BLUE_SRC;
-    alpha = ALPHA_SRC;
+	alpha = ALPHA_SRC;
 }
 
 
@@ -71,12 +59,6 @@ void SwapConfig::copy_from(SwapConfig &that)
 	blue = that.blue;
 	alpha = that.alpha;
 }
-
-
-
-
-
-
 
 
 SwapWindow::SwapWindow(SwapMain *plugin, int x, int y)
@@ -98,12 +80,12 @@ SwapWindow::~SwapWindow()
 {
 }
 
-	
 void SwapWindow::create_objects()
 {
 	int x = 10, y = 10;
 	int margin = 30;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Swap channels")));
 	y += margin;
 	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Red")));
@@ -127,11 +109,6 @@ void SwapWindow::create_objects()
 }
 
 WINDOW_CLOSE_EVENT(SwapWindow)
-
-
-
-
-
 
 
 SwapMenu::SwapMenu(SwapMain *client, int *output, int x, int y)
@@ -159,8 +136,6 @@ int SwapMenu::create_objects()
 }
 
 
-
-
 SwapItem::SwapItem(SwapMenu *menu, const char *title)
  : BC_MenuItem(title)
 {
@@ -176,21 +151,7 @@ int SwapItem::handle_event()
 }
 
 
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(SwapMain, SwapThread, SwapWindow)
-
-
-
-
-
-
-
 
 
 
@@ -204,7 +165,7 @@ SwapMain::SwapMain(PluginServer *server)
 SwapMain::~SwapMain()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-	
+
 	if(temp) delete temp;
 }
 
@@ -314,32 +275,9 @@ void SwapMain::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	prev_keyframe = get_prev_keyframe(get_source_position());
-	
- 	read_data(prev_keyframe);
+
+	read_data(prev_keyframe);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #define MAXMINSRC(src, max) \
 	(src == MAX_SRC ? max : 0)
@@ -359,7 +297,6 @@ void SwapMain::load_configuration()
 		if(green == ALPHA_SRC) green = MAX_SRC; \
 		if(blue == ALPHA_SRC) blue = MAX_SRC; \
 	} \
- \
  \
 	for(int i = 0; i < h; i++) \
 	{ \
@@ -395,7 +332,7 @@ void SwapMain::load_configuration()
 		} \
 	} \
  \
- 	output_ptr->copy_from(temp); \
+	output_ptr->copy_from(temp); \
 }
 
 
@@ -403,7 +340,6 @@ void SwapMain::load_configuration()
 int SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	load_configuration();
-
 
 	if(!temp) 
 		temp = new VFrame(0, 
@@ -413,31 +349,29 @@ int SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	switch(input_ptr->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			SWAP_CHANNELS(float, 1, 3);
-			break;
-		case BC_RGBA_FLOAT:
-			SWAP_CHANNELS(float, 1, 4);
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			SWAP_CHANNELS(unsigned char, 0xff, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			SWAP_CHANNELS(unsigned char, 0xff, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			SWAP_CHANNELS(uint16_t, 0xffff, 3);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			SWAP_CHANNELS(uint16_t, 0xffff, 4);
-			break;
+	case BC_RGB_FLOAT:
+		SWAP_CHANNELS(float, 1, 3);
+		break;
+	case BC_RGBA_FLOAT:
+		SWAP_CHANNELS(float, 1, 4);
+		break;
+	case BC_RGB888:
+	case BC_YUV888:
+		SWAP_CHANNELS(unsigned char, 0xff, 3);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		SWAP_CHANNELS(unsigned char, 0xff, 4);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		SWAP_CHANNELS(uint16_t, 0xffff, 3);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		SWAP_CHANNELS(uint16_t, 0xffff, 4);
+		break;
 	}
-	
-	
 	return 0;
 }
 
@@ -446,27 +380,26 @@ const char* SwapMain::output_to_text(int value)
 {
 	switch(value)
 	{
-		case RED_SRC:
-			return _("Red");
-			break;
-		case GREEN_SRC:
-			return _("Green");
-			break;
-		case BLUE_SRC:
-			return _("Blue");
-			break;
-		case ALPHA_SRC:
-			return _("Alpha");
-			break;
-		case NO_SRC:
-			return _("0%");
-			break;
-		case MAX_SRC:
-			return _("100%");
-			break;
-		default:
-			return "";
-			break;
+	case RED_SRC:
+		return _("Red");
+
+	case GREEN_SRC:
+		return _("Green");
+
+	case BLUE_SRC:
+		return _("Blue");
+
+	case ALPHA_SRC:
+		return _("Alpha");
+
+	case NO_SRC:
+		return _("0%");
+
+	case MAX_SRC:
+		return _("100%");
+
+	default:
+		return "";
 	}
 }
 
@@ -480,5 +413,3 @@ int SwapMain::text_to_output(const char *text)
 	if(!strcmp(text, _("100%"))) return MAX_SRC;
 	return 0;
 }
-
-

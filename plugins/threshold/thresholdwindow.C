@@ -58,13 +58,6 @@ int ThresholdMin::handle_event()
 }
 
 
-
-
-
-
-
-
-
 ThresholdMax::ThresholdMax(ThresholdMain *plugin,
 	ThresholdWindow *gui,
 	int x,
@@ -91,11 +84,6 @@ int ThresholdMax::handle_event()
 }
 
 
-
-
-
-
-
 ThresholdPlot::ThresholdPlot(ThresholdMain *plugin,
 	int x,
 	int y)
@@ -107,7 +95,7 @@ ThresholdPlot::ThresholdPlot(ThresholdMain *plugin,
 int ThresholdPlot::handle_event()
 {
 	plugin->config.plot = get_value();
-	
+
 	plugin->send_configure_change();
 	return 1;
 }
@@ -243,7 +231,6 @@ void ThresholdCanvas::draw()
 	{
 		int64_t *array = plugin->engine->accum[HISTOGRAM_VALUE];
 
-
 // Get normalizing factor
 		for(int i = 0; i < get_w(); i++)
 		{
@@ -289,7 +276,6 @@ void ThresholdCanvas::draw()
 	else
 	{
 
-
 		set_color(BLUE);
 		draw_box(x1, 0, x2 - x1, get_h());
 	}
@@ -300,10 +286,6 @@ void ThresholdCanvas::draw()
 
 	flash(1);
 }
-
-
-
-
 
 
 ThresholdLowColorButton::ThresholdLowColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y)
@@ -323,9 +305,6 @@ int ThresholdLowColorButton::handle_event()
 }
 
 
-
-
-
 ThresholdMidColorButton::ThresholdMidColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Mid Color"))
 {
@@ -341,9 +320,6 @@ int ThresholdMidColorButton::handle_event()
 		color.a);
 	return 1;
 }
-
-
-
 
 
 ThresholdHighColorButton::ThresholdHighColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y)
@@ -363,11 +339,8 @@ int ThresholdHighColorButton::handle_event()
 }
 
 
-
-
-
 ThresholdLowColorThread::ThresholdLowColorThread(ThresholdMain *plugin, ThresholdWindow *window)
- : ColorThread(1, _("Low color"))
+ : ColorThread(1, _("Low color"), plugin->new_picon())
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -382,11 +355,8 @@ int ThresholdLowColorThread::handle_new_color(int output, int alpha)
 }
 
 
-
-
-
 ThresholdMidColorThread::ThresholdMidColorThread(ThresholdMain *plugin, ThresholdWindow *window)
- : ColorThread(1, _("Mid color"))
+ : ColorThread(1, _("Mid color"), plugin->new_picon())
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -401,11 +371,8 @@ int ThresholdMidColorThread::handle_new_color(int output, int alpha)
 }
 
 
-
-
-
 ThresholdHighColorThread::ThresholdHighColorThread(ThresholdMain *plugin, ThresholdWindow *window)
- : ColorThread(1, _("High color"))
+ : ColorThread(1, _("High color"), plugin->new_picon())
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -418,10 +385,6 @@ int ThresholdHighColorThread::handle_new_color(int output, int alpha)
 	window->flush();
 	plugin->send_configure_change();
 }
-
-
-
-
 
 
 ThresholdWindow::ThresholdWindow(ThresholdMain *plugin, int x, int y)
@@ -448,6 +411,9 @@ int ThresholdWindow::create_objects()
 {
 	int x = 10;
 	int y = 10;
+
+	VFrame *ico = plugin->new_picon();
+	set_icon(ico);
 	add_subwindow(canvas = new ThresholdCanvas(plugin,
 		this,
 		x,
@@ -459,7 +425,6 @@ int ThresholdWindow::create_objects()
 
 	add_subwindow(plot = new ThresholdPlot(plugin, x, y));
 	y += plot->get_h() + 10;
-
 
 	add_subwindow(low_color = new ThresholdLowColorButton(plugin, this, x, y));
 	low_color_x = x + 10;
@@ -489,7 +454,6 @@ int ThresholdWindow::create_objects()
 	min->create_objects();
 	min->set_increment(0.1);
 
-
 	x = mid_color->get_x() + mid_color->get_w() / 2;
 	BC_Title * max_title;
 	add_subwindow(max_title = new BC_Title(x, y, _("Max:")));
@@ -502,14 +466,13 @@ int ThresholdWindow::create_objects()
 	max->create_objects();
 	max->set_increment(0.1);
 
-
 	low_color_thread  = new ThresholdLowColorThread(plugin, this);
 	mid_color_thread  = new ThresholdMidColorThread(plugin, this);
 	high_color_thread = new ThresholdHighColorThread(plugin, this);
 	update_low_color();
 	update_mid_color();
 	update_high_color();
-
+	delete ico;
 	show_window(1);
 }
 
@@ -534,13 +497,6 @@ void ThresholdWindow::update_high_color()
 	flash(high_color_x, high_color_y, COLOR_W, COLOR_H);
 }
 
-
-
 WINDOW_CLOSE_EVENT(ThresholdWindow)
 
-
-
-
 PLUGIN_THREAD_OBJECT(ThresholdMain, ThresholdThread, ThresholdWindow)
-
-

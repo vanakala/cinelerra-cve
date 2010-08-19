@@ -70,9 +70,9 @@ T interpolate(const T & prev, const double & prev_scale, const T & next, const d
 
 void ThresholdConfig::interpolate(ThresholdConfig &prev,
 	ThresholdConfig &next,
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / 
 		(next_frame - prev_frame);
@@ -103,12 +103,6 @@ void ThresholdConfig::boundaries()
 	CLAMP(min, HISTOGRAM_MIN, max);
 	CLAMP(max, min, HISTOGRAM_MAX);
 }
-
-
-
-
-
-
 
 
 REGISTER_PLUGIN(ThresholdMain)
@@ -157,7 +151,7 @@ LOAD_CONFIGURATION_MACRO(ThresholdMain, ThresholdConfig)
 
 
 int ThresholdMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	load_configuration();
@@ -178,7 +172,7 @@ int ThresholdMain::process_buffer(VFrame *frame,
 	if(!threshold_engine)
 		threshold_engine = new ThresholdEngine(this);
 	threshold_engine->process_packages(frame);
-	
+
 	return 0;
 }
 
@@ -354,55 +348,55 @@ int ThresholdMain::handle_opengl()
 			float y_high, u_high, v_high;
 
 			YUV::rgb_to_yuv_f((float)config.low_color.r / 0xff,
-					  (float)config.low_color.g / 0xff,
-					  (float)config.low_color.b / 0xff,
-					  y_low,
-					  u_low,
-					  v_low);
+					(float)config.low_color.g / 0xff,
+					(float)config.low_color.b / 0xff,
+					y_low,
+					u_low,
+					v_low);
 			u_low += 0.5;
 			v_low += 0.5;
 			YUV::rgb_to_yuv_f((float)config.mid_color.r / 0xff,
-					  (float)config.mid_color.g / 0xff,
-					  (float)config.mid_color.b / 0xff,
-					  y_mid,
-					  u_mid,
-					  v_mid);
+					(float)config.mid_color.g / 0xff,
+					(float)config.mid_color.b / 0xff,
+					y_mid,
+					u_mid,
+					v_mid);
 			u_mid += 0.5;
 			v_mid += 0.5;
 			YUV::rgb_to_yuv_f((float)config.high_color.r / 0xff,
-					  (float)config.high_color.g / 0xff,
-					  (float)config.high_color.b / 0xff,
-					  y_high,
-					  u_high,
-					  v_high);
+					(float)config.high_color.g / 0xff,
+					(float)config.high_color.b / 0xff,
+					y_high,
+					u_high,
+					v_high);
 			u_high += 0.5;
 			v_high += 0.5;
 
 			glUniform4f(glGetUniformLocation(shader, "low_color"),
-				    y_low, u_low, v_low,
-				    has_alpha ? (float)config.low_color.a / 0xff : 1.0);
+				y_low, u_low, v_low,
+				has_alpha ? (float)config.low_color.a / 0xff : 1.0);
 			glUniform4f(glGetUniformLocation(shader, "mid_color"),
-				    y_mid, u_mid, v_mid,
-				    has_alpha ? (float)config.mid_color.a / 0xff : 1.0);
+				y_mid, u_mid, v_mid,
+				has_alpha ? (float)config.mid_color.a / 0xff : 1.0);
 			glUniform4f(glGetUniformLocation(shader, "high_color"),
-				    y_high, u_high, v_high,
-				    has_alpha ? (float)config.high_color.a / 0xff : 1.0);
+				y_high, u_high, v_high,
+				has_alpha ? (float)config.high_color.a / 0xff : 1.0);
 		} else {
 			glUniform4f(glGetUniformLocation(shader, "low_color"),
-				    (float)config.low_color.r / 0xff,
-				    (float)config.low_color.g / 0xff,
-				    (float)config.low_color.b / 0xff,
-				    has_alpha ? (float)config.low_color.a / 0xff : 1.0);
+				(float)config.low_color.r / 0xff,
+				(float)config.low_color.g / 0xff,
+				(float)config.low_color.b / 0xff,
+				has_alpha ? (float)config.low_color.a / 0xff : 1.0);
 			glUniform4f(glGetUniformLocation(shader, "mid_color"),
-				    (float)config.mid_color.r / 0xff,
-				    (float)config.mid_color.g / 0xff,
-				    (float)config.mid_color.b / 0xff,
-				    has_alpha ? (float)config.mid_color.a / 0xff : 1.0);
+				(float)config.mid_color.r / 0xff,
+				(float)config.mid_color.g / 0xff,
+				(float)config.mid_color.b / 0xff,
+				has_alpha ? (float)config.mid_color.a / 0xff : 1.0);
 			glUniform4f(glGetUniformLocation(shader, "high_color"),
-				    (float)config.high_color.r / 0xff,
-				    (float)config.high_color.g / 0xff,
-				    (float)config.high_color.b / 0xff,
-				    has_alpha ? (float)config.high_color.a / 0xff : 1.0);
+				(float)config.high_color.r / 0xff,
+				(float)config.high_color.g / 0xff,
+				(float)config.high_color.b / 0xff,
+				has_alpha ? (float)config.high_color.a / 0xff : 1.0);
 		}
 	}
 
@@ -415,41 +409,11 @@ int ThresholdMain::handle_opengl()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ThresholdPackage::ThresholdPackage()
  : LoadPackage()
 {
 	start = end = 0;
 }
-
-
-
-
-
-
-
-
-
 
 
 ThresholdUnit::ThresholdUnit(ThresholdEngine *server)
@@ -494,22 +458,22 @@ inline uint16_t scale_to_range(int v)
 }
 
 static inline void rgb_to_yuv(YUV & yuv,
-			      unsigned char   r, unsigned char   g, unsigned char   b,
-			      unsigned char & y, unsigned char & u, unsigned char & v)
+			unsigned char   r, unsigned char   g, unsigned char   b,
+			unsigned char & y, unsigned char & u, unsigned char & v)
 {
 	yuv.rgb_to_yuv_8(r, g, b, y, u, v);
 }
 
 static inline void rgb_to_yuv(YUV & yuv,
-			      float   r, float   g, float   b,
-			      float & y, float & u, float & v)
+			float   r, float   g, float   b,
+			float & y, float & u, float & v)
 {
 	yuv.rgb_to_yuv_f(r, g, b, y, u, v);
 }
 
 static inline void rgb_to_yuv(YUV & yuv,
-			      uint16_t   r, uint16_t   g, uint16_t   b,
-			      uint16_t & y, uint16_t & u, uint16_t & v)
+			uint16_t   r, uint16_t   g, uint16_t   b,
+			uint16_t & y, uint16_t & u, uint16_t & v)
 {
 	yuv.rgb_to_yuv_16(r, g, b, y, u, v);
 }
@@ -524,17 +488,17 @@ void ThresholdUnit::render_data(LoadPackage *package)
 	const int max = (int)(config->max * 0xffff);
 	const int w = data->get_w();
 	const int h = data->get_h();
-	
+
 	const TYPE r_low = scale_to_range<TYPE>(config->low_color.r);
 	const TYPE g_low = scale_to_range<TYPE>(config->low_color.g);
 	const TYPE b_low = scale_to_range<TYPE>(config->low_color.b);
 	const TYPE a_low = scale_to_range<TYPE>(config->low_color.a);
-	
+
 	const TYPE r_mid = scale_to_range<TYPE>(config->mid_color.r);
 	const TYPE g_mid = scale_to_range<TYPE>(config->mid_color.g);
 	const TYPE b_mid = scale_to_range<TYPE>(config->mid_color.b);
 	const TYPE a_mid = scale_to_range<TYPE>(config->mid_color.a);
-	
+
 	const TYPE r_high = scale_to_range<TYPE>(config->high_color.r);
 	const TYPE g_high = scale_to_range<TYPE>(config->high_color.g);
 	const TYPE b_high = scale_to_range<TYPE>(config->high_color.b);
@@ -655,17 +619,9 @@ void ThresholdUnit::process_package(LoadPackage *package)
 
 
 
-
-
-
-
-
-
-
-
 ThresholdEngine::ThresholdEngine(ThresholdMain *plugin)
  : LoadServer(plugin->get_project_smp() + 1,
- 	plugin->get_project_smp() + 1)
+	plugin->get_project_smp() + 1)
 {
 	this->plugin = plugin;
 	yuv = new YUV;
@@ -703,12 +659,6 @@ LoadPackage* ThresholdEngine::new_package()
 }
 
 
-
-
-
-
-
-
 RGBA::RGBA()
 {
 	r = g = b = a = 0;
@@ -744,10 +694,10 @@ int RGBA::getRGB() const
 }
 
 static void init_RGBA_keys(const char * prefix,
-			   string & r_s,
-			   string & g_s,
-			   string & b_s,
-			   string & a_s)
+			string & r_s,
+			string & g_s,
+			string & b_s,
+			string & a_s)
 {
 	r_s = prefix;
 	g_s = prefix;
@@ -766,9 +716,9 @@ RGBA RGBA::load_default(BC_Hash * defaults, const char * prefix) const
 	init_RGBA_keys(prefix, r_s, g_s, b_s, a_s);
 
 	return RGBA(defaults->get(const_cast<char *>(r_s.c_str()), r),
-		    defaults->get(const_cast<char *>(g_s.c_str()), g),
-		    defaults->get(const_cast<char *>(b_s.c_str()), b),
-		    defaults->get(const_cast<char *>(a_s.c_str()), a));
+		defaults->get(const_cast<char *>(g_s.c_str()), g),
+		defaults->get(const_cast<char *>(b_s.c_str()), b),
+		defaults->get(const_cast<char *>(a_s.c_str()), a));
 }
 
 void RGBA::save_defaults(BC_Hash * defaults, const char * prefix) const
@@ -799,9 +749,9 @@ RGBA RGBA::get_property(XMLTag & tag, const char * prefix) const
 	init_RGBA_keys(prefix, r_s, g_s, b_s, a_s);
 
 	return RGBA(tag.get_property(const_cast<char *>(r_s.c_str()), r),
-		    tag.get_property(const_cast<char *>(g_s.c_str()), g),
-		    tag.get_property(const_cast<char *>(b_s.c_str()), b),
-		    tag.get_property(const_cast<char *>(a_s.c_str()), a));
+		tag.get_property(const_cast<char *>(g_s.c_str()), g),
+		tag.get_property(const_cast<char *>(b_s.c_str()), b),
+		tag.get_property(const_cast<char *>(a_s.c_str()), a));
 }
 
 bool operator==(const RGBA & a, const RGBA & b)
@@ -816,7 +766,7 @@ template<>
 RGBA interpolate(const RGBA & prev_color, const double & prev_scale, const RGBA &next_color, const double & next_scale)
 {
 	return RGBA(interpolate(prev_color.r, prev_scale, next_color.r, next_scale),
-		    interpolate(prev_color.g, prev_scale, next_color.g, next_scale),
-		    interpolate(prev_color.b, prev_scale, next_color.b, next_scale),
-		    interpolate(prev_color.a, prev_scale, next_color.a, next_scale));
+		interpolate(prev_color.g, prev_scale, next_color.g, next_scale),
+		interpolate(prev_color.b, prev_scale, next_color.b, next_scale),
+		interpolate(prev_color.a, prev_scale, next_color.a, next_scale));
 }

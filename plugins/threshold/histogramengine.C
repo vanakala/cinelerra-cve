@@ -62,8 +62,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 #define HISTOGRAM_TAIL(components) \
 			v = (r * 76 + g * 150 + b * 29) >> 8; \
-/*			v = MAX(r, g); */ \
-/*			v = MAX(v, b); */ \
 			r += -(int)(HISTOGRAM_MIN * 0xffff); \
 			g += -(int)(HISTOGRAM_MIN * 0xffff); \
 			b += -(int)(HISTOGRAM_MIN * 0xffff); \
@@ -76,13 +74,10 @@ void HistogramUnit::process_package(LoadPackage *package)
 			accum_g[g]++; \
 			accum_b[b]++; \
 			accum_v[v]++; \
-/*			if(components == 4) accum_a[row[3]]++; */ \
 			row += components; \
 		} \
 	} \
 }
-
-
 
 	VFrame *data = server->data;
 
@@ -97,88 +92,82 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 	switch(data->get_color_model())
 	{
-		case BC_RGB888:
-			HISTOGRAM_HEAD(unsigned char)
-			r = (row[0] << 8) | row[0];
-			g = (row[1] << 8) | row[1];
-			b = (row[2] << 8) | row[2];
-			HISTOGRAM_TAIL(3)
-			break;
-		case BC_RGB_FLOAT:
-			HISTOGRAM_HEAD(float)
-			r = (int)(row[0] * 0xffff);
-			g = (int)(row[1] * 0xffff);
-			b = (int)(row[2] * 0xffff);
-			HISTOGRAM_TAIL(3)
-			break;
-		case BC_YUV888:
-			HISTOGRAM_HEAD(unsigned char)
-			y = (row[0] << 8) | row[0];
-			u = (row[1] << 8) | row[1];
-			v = (row[2] << 8) | row[2];
-			server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
-			HISTOGRAM_TAIL(3)
-			break;
-		case BC_RGBA8888:
-			HISTOGRAM_HEAD(unsigned char)
-			r = (row[0] << 8) | row[0];
-			g = (row[1] << 8) | row[1];
-			b = (row[2] << 8) | row[2];
-			HISTOGRAM_TAIL(4)
-			break;
-		case BC_RGBA_FLOAT:
-			HISTOGRAM_HEAD(float)
-			r = (int)(row[0] * 0xffff);
-			g = (int)(row[1] * 0xffff);
-			b = (int)(row[2] * 0xffff);
-			HISTOGRAM_TAIL(4)
-			break;
-		case BC_YUVA8888:
-			HISTOGRAM_HEAD(unsigned char)
-			y = (row[0] << 8) | row[0];
-			u = (row[1] << 8) | row[1];
-			v = (row[2] << 8) | row[2];
-			server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
-			HISTOGRAM_TAIL(4)
-			break;
-		case BC_RGB161616:
-			HISTOGRAM_HEAD(uint16_t)
-			r = row[0];
-			g = row[1];
-			b = row[2];
-			HISTOGRAM_TAIL(3)
-			break;
-		case BC_YUV161616:
-			HISTOGRAM_HEAD(uint16_t)
-			y = row[0];
-			u = row[1];
-			v = row[2];
-			server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
-			HISTOGRAM_TAIL(3)
-			break;
-		case BC_RGBA16161616:
-			HISTOGRAM_HEAD(uint16_t)
-			r = row[0];
-			g = row[1];
-			b = row[2];
-			HISTOGRAM_TAIL(3);
-			break;
-		case BC_YUVA16161616:
-			HISTOGRAM_HEAD(uint16_t)
-			y = row[0];
-			u = row[1];
-			v = row[2];
-			server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
-			HISTOGRAM_TAIL(4)
-			break;
+	case BC_RGB888:
+		HISTOGRAM_HEAD(unsigned char)
+		r = (row[0] << 8) | row[0];
+		g = (row[1] << 8) | row[1];
+		b = (row[2] << 8) | row[2];
+		HISTOGRAM_TAIL(3)
+		break;
+	case BC_RGB_FLOAT:
+		HISTOGRAM_HEAD(float)
+		r = (int)(row[0] * 0xffff);
+		g = (int)(row[1] * 0xffff);
+		b = (int)(row[2] * 0xffff);
+		HISTOGRAM_TAIL(3)
+		break;
+	case BC_YUV888:
+		HISTOGRAM_HEAD(unsigned char)
+		y = (row[0] << 8) | row[0];
+		u = (row[1] << 8) | row[1];
+		v = (row[2] << 8) | row[2];
+		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		HISTOGRAM_TAIL(3)
+		break;
+	case BC_RGBA8888:
+		HISTOGRAM_HEAD(unsigned char)
+		r = (row[0] << 8) | row[0];
+		g = (row[1] << 8) | row[1];
+		b = (row[2] << 8) | row[2];
+		HISTOGRAM_TAIL(4)
+		break;
+	case BC_RGBA_FLOAT:
+		HISTOGRAM_HEAD(float)
+		r = (int)(row[0] * 0xffff);
+		g = (int)(row[1] * 0xffff);
+		b = (int)(row[2] * 0xffff);
+		HISTOGRAM_TAIL(4)
+		break;
+	case BC_YUVA8888:
+		HISTOGRAM_HEAD(unsigned char)
+		y = (row[0] << 8) | row[0];
+		u = (row[1] << 8) | row[1];
+		v = (row[2] << 8) | row[2];
+		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		HISTOGRAM_TAIL(4)
+		break;
+	case BC_RGB161616:
+		HISTOGRAM_HEAD(uint16_t)
+		r = row[0];
+		g = row[1];
+		b = row[2];
+		HISTOGRAM_TAIL(3)
+		break;
+	case BC_YUV161616:
+		HISTOGRAM_HEAD(uint16_t)
+		y = row[0];
+		u = row[1];
+		v = row[2];
+		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		HISTOGRAM_TAIL(3)
+		break;
+	case BC_RGBA16161616:
+		HISTOGRAM_HEAD(uint16_t)
+		r = row[0];
+		g = row[1];
+		b = row[2];
+		HISTOGRAM_TAIL(3);
+		break;
+	case BC_YUVA16161616:
+		HISTOGRAM_HEAD(uint16_t)
+		y = row[0];
+		u = row[1];
+		v = row[2];
+		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		HISTOGRAM_TAIL(4)
+		break;
 	}
 }
-
-
-
-	
-
-
 
 
 HistogramEngine::HistogramEngine(int total_clients, int total_packages)
@@ -217,7 +206,6 @@ void HistogramEngine::process_packages(VFrame *data)
 			}
 		}
 	}
-
 }
 
 void HistogramEngine::init_packages()

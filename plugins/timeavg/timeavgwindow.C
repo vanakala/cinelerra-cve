@@ -31,7 +31,7 @@ PLUGIN_THREAD_OBJECT(TimeAvgMain, TimeAvgThread, TimeAvgWindow)
 
 TimeAvgWindow::TimeAvgWindow(TimeAvgMain *client, int x, int y)
  : BC_Window(client->gui_string, 
- 	x, 
+	x,
 	y, 
 	210, 
 	210, 
@@ -51,6 +51,9 @@ TimeAvgWindow::~TimeAvgWindow()
 int TimeAvgWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	add_tool(new BC_Title(x, y, _("Frames to average")));
 	y += 20;
 	add_tool(total_frames = new TimeAvgSlider(client, x, y));
@@ -66,6 +69,7 @@ int TimeAvgWindow::create_objects()
 	add_tool(no_subtract = new TimeAvgNoSubtract(client, x, y));
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
