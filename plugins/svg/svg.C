@@ -50,7 +50,7 @@ struct raw_struct {
 	int32_t color_model;      // as BC_ constant, currently only BC_RGBA8888 is supported
 	int64_t time_of_creation; // in milliseconds - calculated as (tv_sec * 1000 + tv_usec / 1000);
 				// we can't trust date on the file, due to different reasons
-};	
+};
 
 
 REGISTER_PLUGIN(SvgMain)
@@ -98,9 +98,9 @@ void SvgConfig::copy_from(SvgConfig &that)
 
 void SvgConfig::interpolate(SvgConfig &prev, 
 	SvgConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -115,12 +115,6 @@ void SvgConfig::interpolate(SvgConfig &prev,
 	this->out_h = prev.out_h * prev_scale + next.out_h * next_scale;
 	strcpy(this->svg_file, prev.svg_file);
 }
-
-
-
-
-
-
 
 
 SvgMain::SvgMain(PluginServer *server)
@@ -169,7 +163,6 @@ int SvgMain::load_defaults()
 	config.out_w = defaults->get("OUT_W", config.out_w);
 	config.out_h = defaults->get("OUT_H", config.out_h);
 	strcpy(config.svg_file, "");
-//	defaults->get("SVG_FILE", config.svg_file);
 }
 
 int SvgMain::save_defaults()
@@ -243,12 +236,6 @@ void SvgMain::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
-
-
-
-
-
 
 
 int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
@@ -330,9 +317,9 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			delete temp_frame;
 			temp_frame = 0;
 		}
-		if (!temp_frame)			
+		if (!temp_frame)
 			temp_frame = new VFrame(0, 
-				        raw_data->width,
+					raw_data->width,
 					raw_data->height,
 					output_ptr->get_color_model());
 
@@ -342,35 +329,34 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		for (int i = 0; i < raw_data->height; i++) {
 			raw_rows[i] = raw_buffer + raw_data->struct_size + raw_data->pitch * i * 4;
 		}
-	        cmodel_transfer(temp_frame->get_rows(),
-	                raw_rows,
-	                0,
-	                0,
-	                0,
-	                0,
-	                0,
-	                0,
-	                0,
-	                0,
-	                raw_data->width,
-	                raw_data->height,
-	                0,
-	                0,
-	                temp_frame->get_w(),
-	                temp_frame->get_h(),
-	               	BC_RGBA8888,
-	                temp_frame->get_color_model(),
-	                0,
-	                raw_data->pitch,
-	                temp_frame->get_w());
+		cmodel_transfer(temp_frame->get_rows(),
+			raw_rows,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			raw_data->width,
+			raw_data->height,
+			0,
+			0,
+			temp_frame->get_w(),
+			temp_frame->get_h(),
+			BC_RGBA8888,
+			temp_frame->get_color_model(),
+			0,
+			raw_data->pitch,
+			temp_frame->get_w());
 		delete [] raw_rows;
 		munmap(raw_buffer, st_raw.st_size);
 		if(lockf(fh_raw, F_ULOCK, 0))
 			perror("SvgMain::process_realtime - unlock");
 		close(fh_raw);
 
-
-	}	
+	}
 	// by now we have temp_frame ready, we just need to overylay it
 
 	if(!overlayer)
@@ -378,22 +364,6 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		overlayer = new OverlayFrame(smp + 1);
 	}
 
-
-
-// printf("SvgMain::process_realtime 3 output=%p input=%p config.w=%f config.h=%f"
-// 	"%f %f %f %f -> %f %f %f %f\n", 
-// 	output,
-// 	input,
-// 	config.w, 
-// 	config.h,
-// 	in_x1, 
-// 	in_y1, 
-// 	in_x2, 
-// 	in_y2,
-// 	out_x1, 
-// 	out_y1, 
-// 	out_x2, 
-// 	out_y2);
 		output->copy_from(input);
 		overlayer->overlay(output, 
 			temp_frame,
@@ -413,10 +383,8 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 }
 
 
-
-
 SHOW_GUI_MACRO(SvgMain, SvgThread)
-                                                              
+
 RAISE_WINDOW_MACRO(SvgMain)
 
 SET_STRING_MACRO(SvgMain)
@@ -427,14 +395,8 @@ void SvgMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-//		thread->window->in_x->update(config.in_x);
-//		thread->window->in_y->update(config.in_y);
-//		thread->window->in_w->update(config.in_w);
-//		thread->window->in_h->update(config.in_h);
 		thread->window->out_x->update(config.out_x);
 		thread->window->out_y->update(config.out_y);
-//		thread->window->out_w->update(config.out_w);
-//		thread->window->out_h->update(config.out_h);
 		thread->window->svg_file_title->update(config.svg_file);
 		thread->window->unlock_window();
 	}

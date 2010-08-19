@@ -42,9 +42,9 @@ public:
 	void copy_from(SvgConfig &that);
 	void interpolate(SvgConfig &prev, 
 		SvgConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame);
 
 	float in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
 	char svg_file[BCTEXTLEN];

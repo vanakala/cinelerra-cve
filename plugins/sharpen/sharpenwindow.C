@@ -30,12 +30,6 @@
 
 PLUGIN_THREAD_OBJECT(SharpenMain, SharpenThread, SharpenWindow)
 
-
-
-
-
-
-
 SharpenWindow::SharpenWindow(SharpenMain *client, int x, int y)
  : BC_Window(client->gui_string, 
 	x,
@@ -58,6 +52,9 @@ SharpenWindow::~SharpenWindow()
 int SharpenWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	add_tool(new BC_Title(x, y, _("Sharpness")));
 	y += 20;
 	add_tool(sharpen_slider = new SharpenSlider(client, &(client->config.sharpness), x, y));
@@ -69,6 +66,7 @@ int SharpenWindow::create_objects()
 	add_tool(sharpen_luminance = new SharpenLuminance(client, x, y));
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -81,7 +79,7 @@ int SharpenWindow::close_event()
 
 SharpenSlider::SharpenSlider(SharpenMain *client, float *output, int x, int y)
  : BC_ISlider(x, 
- 	y, 
+	y,
 	0,
 	200, 
 	200,
@@ -106,16 +104,16 @@ int SharpenSlider::handle_event()
 }
 
 
-
-
 SharpenInterlace::SharpenInterlace(SharpenMain *client, int x, int y)
  : BC_CheckBox(x, y, client->config.interlace, _("Interlace"))
 {
 	this->client = client;
 }
+
 SharpenInterlace::~SharpenInterlace()
 {
 }
+
 int SharpenInterlace::handle_event()
 {
 	client->config.interlace = get_value();
@@ -124,16 +122,16 @@ int SharpenInterlace::handle_event()
 }
 
 
-
-
 SharpenHorizontal::SharpenHorizontal(SharpenMain *client, int x, int y)
  : BC_CheckBox(x, y, client->config.horizontal, _("Horizontal only"))
 {
 	this->client = client;
 }
+
 SharpenHorizontal::~SharpenHorizontal()
 {
 }
+
 int SharpenHorizontal::handle_event()
 {
 	client->config.horizontal = get_value();
@@ -148,13 +146,14 @@ SharpenLuminance::SharpenLuminance(SharpenMain *client, int x, int y)
 {
 	this->client = client;
 }
+
 SharpenLuminance::~SharpenLuminance()
 {
 }
+
 int SharpenLuminance::handle_event()
 {
 	client->config.luminance = get_value();
 	client->send_configure_change();
 	return 1;
 }
-

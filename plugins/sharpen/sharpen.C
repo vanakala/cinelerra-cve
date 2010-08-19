@@ -34,11 +34,6 @@
 REGISTER_PLUGIN(SharpenMain)
 
 
-
-
-
-
-
 SharpenConfig::SharpenConfig()
 {
 	horizontal = 0;
@@ -65,9 +60,9 @@ int SharpenConfig::equivalent(SharpenConfig &that)
 
 void SharpenConfig::interpolate(SharpenConfig &prev, 
 	SharpenConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -76,15 +71,6 @@ void SharpenConfig::interpolate(SharpenConfig &prev,
 	this->horizontal = prev.horizontal;
 	this->luminance = prev.luminance;
 }
-
-
-
-
-
-
-
-
-
 
 
 SharpenMain::SharpenMain(PluginServer *server)
@@ -197,13 +183,11 @@ int SharpenMain::load_defaults()
 	config.interlace = defaults->get("INTERLACE", config.interlace);
 	config.horizontal = defaults->get("HORIZONTAL", config.horizontal);
 	config.luminance = defaults->get("LUMINANCE", config.luminance);
-//printf("SharpenMain::load_defaults 1 %f %d %d %d\n", sharpness, interlace, horizontal, luminance);
 	return 0;
 }
 
 int SharpenMain::save_defaults()
 {
-//printf("SharpenMain::save_defaults 1 %f %d %d %d\n", sharpness, interlace, horizontal, luminance);
 	defaults->update("SHARPNESS", config.sharpness);
 	defaults->update("INTERLACE", config.interlace);
 	defaults->update("HORIZONTAL", config.horizontal);
@@ -292,7 +276,6 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("SHARPNESS"))
 			{
 				config.sharpness = input.tag.get_property("VALUE", config.sharpness);
-//printf("SharpenMain::read_data %f\n", sharpness);
 			}
 			else
 			if(input.tag.title_is("INTERLACE"))
@@ -321,9 +304,6 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 	else
 		if(config.sharpness < 0) config.sharpness = 0;
 }
-
-
-
 
 SharpenEngine::SharpenEngine(SharpenMain *plugin)
  : Thread(1, 0, 0)
@@ -365,7 +345,7 @@ int SharpenEngine::start_process_frame(VFrame *output, VFrame *input, int field)
 	if(plugin->config.horizontal) sharpness_coef /= 2;
 	if(sharpness_coef < 1) sharpness_coef = 1;
 	sharpness_coef = 800.0 / sharpness_coef;
-	
+
 	input_lock->unlock();
 	return 0;
 }
@@ -554,11 +534,6 @@ void SharpenEngine::filter(int components,
 }
 
 
-
-
-
-
-
 #define SHARPEN(components, type, temp_type, vmax) \
 { \
 	int count, row; \
@@ -681,33 +656,33 @@ void SharpenEngine::run()
 
 		switch(input->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				SHARPEN(3, float, float, 1);
-				break;
+		case BC_RGB_FLOAT:
+			SHARPEN(3, float, float, 1);
+			break;
 
-			case BC_RGB888:
-			case BC_YUV888:
-				SHARPEN(3, unsigned char, int, 0xff);
-				break;
-			
-			case BC_RGBA_FLOAT:
-				SHARPEN(4, float, float, 1);
-				break;
+		case BC_RGB888:
+		case BC_YUV888:
+			SHARPEN(3, unsigned char, int, 0xff);
+			break;
 
-			case BC_RGBA8888:
-			case BC_YUVA8888:
-				SHARPEN(4, unsigned char, int, 0xff);
-				break;
-			
-			case BC_RGB161616:
-			case BC_YUV161616:
-				SHARPEN(3, u_int16_t, int, 0xffff);
-				break;
-			
-			case BC_RGBA16161616:
-			case BC_YUVA16161616:
-				SHARPEN(4, u_int16_t, int, 0xffff);
-				break;
+		case BC_RGBA_FLOAT:
+			SHARPEN(4, float, float, 1);
+			break;
+
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			SHARPEN(4, unsigned char, int, 0xff);
+			break;
+
+		case BC_RGB161616:
+		case BC_YUV161616:
+			SHARPEN(3, u_int16_t, int, 0xffff);
+			break;
+
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			SHARPEN(4, u_int16_t, int, 0xffff);
+			break;
 		}
 
 		output_lock->unlock();

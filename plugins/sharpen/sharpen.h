@@ -46,12 +46,10 @@ public:
 	int equivalent(SharpenConfig &that);
 	void interpolate(SharpenConfig &prev, 
 		SharpenConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
-	
-	
 	int horizontal;
 	int interlace;
 	int luminance;

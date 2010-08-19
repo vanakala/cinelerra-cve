@@ -82,7 +82,7 @@ public:
 	NewSvgButton(SvgMain *client, SvgWin *window, int x, int y);
 	int handle_event();
 	void run();
-	
+
 	int quit_now;
 	SvgMain *client;
 	SvgWin *window;
@@ -95,7 +95,7 @@ public:
 	~EditSvgButton();
 	int handle_event();
 	void run();
-	
+
 	int quit_now;
 	int fh_fifo;
 	SvgMain *client;
@@ -121,6 +121,5 @@ public:
 	SvgWin *window;
 	int fh_fifo;
 };
-
 
 #endif

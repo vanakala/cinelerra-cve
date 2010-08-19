@@ -30,14 +30,8 @@
 #include "vframe.h"
 
 
-
 #include <stdint.h>
 #include <string.h>
-
-
-
-
-
 
 
 class ShiftInterlaceWindow;
@@ -52,10 +46,9 @@ public:
 	void copy_from(ShiftInterlaceConfig &that);
 	void interpolate(ShiftInterlaceConfig &prev, 
 		ShiftInterlaceConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
-
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	int odd_offset;
 	int even_offset;
@@ -95,8 +88,6 @@ public:
 PLUGIN_THREAD_HEADER(ShiftInterlaceMain, ShiftInterlaceThread, ShiftInterlaceWindow)
 
 
-
-
 class ShiftInterlaceMain : public PluginVClient
 {
 public:
@@ -118,21 +109,15 @@ public:
 	int load_defaults();
 	int save_defaults();
 
-
 	void shift_row(VFrame *input_frame, 
 		VFrame *output_frame,
 		int offset,
 		int row);
 
-
-
-
 	ShiftInterlaceConfig config;
 	ShiftInterlaceThread *thread;
 	BC_Hash *defaults;
 };
-
-
 
 
 PluginClient* new_plugin(PluginServer *server)
@@ -141,14 +126,11 @@ PluginClient* new_plugin(PluginServer *server)
 }
 
 
-
-
 ShiftInterlaceConfig::ShiftInterlaceConfig()
 {
 	odd_offset = 0;
 	even_offset = 0;
 }
-
 
 int ShiftInterlaceConfig::equivalent(ShiftInterlaceConfig &that)
 {
@@ -164,9 +146,9 @@ void ShiftInterlaceConfig::copy_from(ShiftInterlaceConfig &that)
 
 void ShiftInterlaceConfig::interpolate(ShiftInterlaceConfig &prev, 
 		ShiftInterlaceConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame)
+		posnum prev_frame,
+		posnum next_frame, 
+		posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -174,10 +156,6 @@ void ShiftInterlaceConfig::interpolate(ShiftInterlaceConfig &prev,
 	this->odd_offset = (int)(prev.odd_offset * prev_scale + next.odd_offset * next_scale);
 	this->even_offset = (int)(prev.even_offset * prev_scale + next.even_offset * next_scale);
 }
-
-
-
-
 
 
 ShiftInterlaceWindow::ShiftInterlaceWindow(ShiftInterlaceMain *plugin, 
@@ -197,12 +175,12 @@ ShiftInterlaceWindow::ShiftInterlaceWindow(ShiftInterlaceMain *plugin,
 	this->plugin = plugin;
 }
 
-	
 void ShiftInterlaceWindow::create_objects()
 {
 	int x = 10, y = 10;
 	int margin = 30;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Odd offset:")));
 	add_subwindow(odd_offset = new ShiftInterlaceOdd(plugin, x + 90, y));
 	y += margin;
@@ -217,7 +195,7 @@ WINDOW_CLOSE_EVENT(ShiftInterlaceWindow)
 
 ShiftInterlaceOdd::ShiftInterlaceOdd(ShiftInterlaceMain *plugin, int x, int y)
  : BC_ISlider(x,
- 	y,
+	y,
 	0,
 	200,
 	200,
@@ -227,6 +205,7 @@ ShiftInterlaceOdd::ShiftInterlaceOdd(ShiftInterlaceMain *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int ShiftInterlaceOdd::handle_event()
 {
 	plugin->config.odd_offset = get_value();
@@ -234,12 +213,9 @@ int ShiftInterlaceOdd::handle_event()
 	return 1;
 }
 
-
-
-
 ShiftInterlaceEven::ShiftInterlaceEven(ShiftInterlaceMain *plugin, int x, int y)
  : BC_ISlider(x,
- 	y,
+	y,
 	0,
 	200,
 	200,
@@ -250,7 +226,6 @@ ShiftInterlaceEven::ShiftInterlaceEven(ShiftInterlaceMain *plugin, int x, int y)
 	this->plugin = plugin;
 }
 
-
 int ShiftInterlaceEven::handle_event()
 {
 	plugin->config.even_offset = get_value();
@@ -259,15 +234,7 @@ int ShiftInterlaceEven::handle_event()
 }
 
 
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(ShiftInterlaceMain, ShiftInterlaceThread, ShiftInterlaceWindow)
-
-
 
 ShiftInterlaceMain::ShiftInterlaceMain(PluginServer *server)
  : PluginVClient(server)
@@ -431,36 +398,36 @@ void ShiftInterlaceMain::shift_row(VFrame *input_frame,
 	int w = input_frame->get_w();
 	switch(input_frame->get_color_model())
 	{
-		case BC_RGB888:
-			SHIFT_ROW_MACRO(3, unsigned char, 0x0)
-			break;
-		case BC_RGB_FLOAT:
-			SHIFT_ROW_MACRO(3, float, 0x0)
-			break;
-		case BC_YUV888:
-			SHIFT_ROW_MACRO(3, unsigned char, 0x80)
-			break;
-		case BC_RGBA_FLOAT:
-			SHIFT_ROW_MACRO(4, float, 0x0)
-			break;
-		case BC_RGBA8888:
-			SHIFT_ROW_MACRO(4, unsigned char, 0x0)
-			break;
-		case BC_YUVA8888:
-			SHIFT_ROW_MACRO(4, unsigned char, 0x80)
-			break;
-		case BC_RGB161616:
-			SHIFT_ROW_MACRO(3, uint16_t, 0x0)
-			break;
-		case BC_YUV161616:
-			SHIFT_ROW_MACRO(3, uint16_t, 0x8000)
-			break;
-		case BC_RGBA16161616:
-			SHIFT_ROW_MACRO(4, uint16_t, 0x0)
-			break;
-		case BC_YUVA16161616:
-			SHIFT_ROW_MACRO(4, uint16_t, 0x8000)
-			break;
+	case BC_RGB888:
+		SHIFT_ROW_MACRO(3, unsigned char, 0x0)
+		break;
+	case BC_RGB_FLOAT:
+		SHIFT_ROW_MACRO(3, float, 0x0)
+		break;
+	case BC_YUV888:
+		SHIFT_ROW_MACRO(3, unsigned char, 0x80)
+		break;
+	case BC_RGBA_FLOAT:
+		SHIFT_ROW_MACRO(4, float, 0x0)
+		break;
+	case BC_RGBA8888:
+		SHIFT_ROW_MACRO(4, unsigned char, 0x0)
+		break;
+	case BC_YUVA8888:
+		SHIFT_ROW_MACRO(4, unsigned char, 0x80)
+		break;
+	case BC_RGB161616:
+		SHIFT_ROW_MACRO(3, uint16_t, 0x0)
+		break;
+	case BC_YUV161616:
+		SHIFT_ROW_MACRO(3, uint16_t, 0x8000)
+		break;
+	case BC_RGBA16161616:
+		SHIFT_ROW_MACRO(4, uint16_t, 0x0)
+		break;
+	case BC_YUVA16161616:
+		SHIFT_ROW_MACRO(4, uint16_t, 0x8000)
+		break;
 	}
 }
 
@@ -479,5 +446,3 @@ int ShiftInterlaceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	return 0;
 }
-
-
