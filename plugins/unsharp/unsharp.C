@@ -35,8 +35,6 @@
 
 REGISTER_PLUGIN(UnsharpMain)
 
-
-
 UnsharpConfig::UnsharpConfig()
 {
 	radius = 5;
@@ -60,9 +58,9 @@ void UnsharpConfig::copy_from(UnsharpConfig &that)
 
 void UnsharpConfig::interpolate(UnsharpConfig &prev, 
 	UnsharpConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -70,23 +68,6 @@ void UnsharpConfig::interpolate(UnsharpConfig &prev,
 	this->amount = prev.amount * prev_scale + next.amount * next_scale;
 	this->threshold = (int)(prev.threshold * prev_scale + next.threshold * next_scale);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 UnsharpMain::UnsharpMain(PluginServer *server)
@@ -114,7 +95,6 @@ SET_STRING_MACRO(UnsharpMain)
 RAISE_WINDOW_MACRO(UnsharpMain)
 
 LOAD_CONFIGURATION_MACRO(UnsharpMain, UnsharpConfig)
-
 
 
 void UnsharpMain::update_gui()
@@ -158,7 +138,6 @@ int UnsharpMain::save_defaults()
 }
 
 
-
 void UnsharpMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -200,14 +179,8 @@ void UnsharpMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-
-
-
-
-
-
 int UnsharpMain::process_buffer(VFrame *frame,
-	int64_t start_position,
+	framenum start_position,
 	double frame_rate)
 {
 	int need_reconfigure = load_configuration();
@@ -223,26 +196,10 @@ int UnsharpMain::process_buffer(VFrame *frame,
 	return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 UnsharpPackage::UnsharpPackage()
  : LoadPackage()
 {
 }
-
-
-
-
-
 
 UnsharpUnit::UnsharpUnit(UnsharpEngine *server, 
 	UnsharpMain *plugin)
@@ -444,26 +401,26 @@ static void get_row(float *dst, VFrame *src, int row)
 {
 	switch(src->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			GET_ROW(unsigned char, 3);
-			break;
-		case BC_RGB_FLOAT:
-			GET_ROW(float, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			GET_ROW(unsigned char, 4);
-			break;
-		case BC_RGBA_FLOAT:
-			GET_ROW(float, 4);
-			break;
-		case BC_YUV161616:
-			GET_ROW(uint16_t, 3);
-			break;
-		case BC_YUVA16161616:
-			GET_ROW(uint16_t, 4);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		GET_ROW(unsigned char, 3);
+		break;
+	case BC_RGB_FLOAT:
+		GET_ROW(float, 3);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		GET_ROW(unsigned char, 4);
+		break;
+	case BC_RGBA_FLOAT:
+		GET_ROW(float, 4);
+		break;
+	case BC_YUV161616:
+		GET_ROW(uint16_t, 3);
+		break;
+	case BC_YUVA16161616:
+		GET_ROW(uint16_t, 4);
+		break;
 	}
 }
 
@@ -504,7 +461,6 @@ void UnsharpUnit::process_package(LoadPackage *package)
 	cmatrix_length = calculate_convolution_matrix(
 		plugin->config.radius, 
 		&cmatrix);
-
 
 	if(padded_y2 < server->src->get_h())
 	{
@@ -565,9 +521,6 @@ void UnsharpUnit::process_package(LoadPackage *package)
 	}
 
 
-//printf("%f %f %d\n", plugin->config.radius,plugin->config.amount, plugin->config.threshold);
-
-
 #define UNSHARPEN(type, components, max) \
 { \
 	float threshold = (float)plugin->config.threshold * max / 0xff; \
@@ -600,26 +553,26 @@ void UnsharpUnit::process_package(LoadPackage *package)
 	float threshold;
 	switch(color_model)
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			UNSHARPEN(unsigned char, 3, 0xff);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			UNSHARPEN(unsigned char, 4, 0xff);
-			break;
-		case BC_RGB_FLOAT:
-			UNSHARPEN(float, 3, 1.0);
-			break;
-		case BC_RGBA_FLOAT:
-			UNSHARPEN(float, 4, 1.0);
-			break;
-		case BC_YUV161616:
-			UNSHARPEN(uint16_t, 3, 0xffff);
-			break;
-		case BC_YUVA16161616:
-			UNSHARPEN(uint16_t, 4, 0xffff);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		UNSHARPEN(unsigned char, 3, 0xff);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		UNSHARPEN(unsigned char, 4, 0xff);
+		break;
+	case BC_RGB_FLOAT:
+		UNSHARPEN(float, 3, 1.0);
+		break;
+	case BC_RGBA_FLOAT:
+		UNSHARPEN(float, 4, 1.0);
+		break;
+	case BC_YUV161616:
+		UNSHARPEN(uint16_t, 3, 0xffff);
+		break;
+	case BC_YUVA16161616:
+		UNSHARPEN(uint16_t, 4, 0xffff);
+		break;
 	}
 
 	delete [] temp_in;
@@ -628,20 +581,10 @@ void UnsharpUnit::process_package(LoadPackage *package)
 }
 
 
-
-
-
-
-
-
-
 UnsharpEngine::UnsharpEngine(UnsharpMain *plugin, 
 	int total_clients,
 	int total_packages)
- : LoadServer(
-//1, 1 
-total_clients, total_packages 
-)
+ : LoadServer(total_clients, total_packages)
 {
 	this->plugin = plugin;
 }
@@ -649,7 +592,6 @@ total_clients, total_packages
 UnsharpEngine::~UnsharpEngine()
 {
 }
-
 
 void UnsharpEngine::init_packages()
 {
@@ -678,12 +620,3 @@ void UnsharpEngine::do_unsharp(VFrame *src)
 
 	process_packages();
 }
-
-
-
-
-
-
-
-
-

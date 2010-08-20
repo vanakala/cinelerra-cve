@@ -66,11 +66,6 @@ public:
 	UnsharpMain *plugin;
 };
 
-
-
 PLUGIN_THREAD_HEADER(UnsharpMain, UnsharpThread, UnsharpWindow)
-
-
-
 
 #endif

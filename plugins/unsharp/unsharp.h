@@ -46,9 +46,9 @@ public:
 	void copy_from(UnsharpConfig &that);
 	void interpolate(UnsharpConfig &prev, 
 		UnsharpConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	float radius;
 	float amount;
 	int threshold;
@@ -64,7 +64,7 @@ public:
 	~UnsharpMain();
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -114,9 +114,6 @@ public:
 
 	UnsharpMain *plugin;
 };
-
-
-
 
 #endif
 

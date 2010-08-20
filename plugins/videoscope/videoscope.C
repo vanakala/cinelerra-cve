@@ -38,8 +38,6 @@
 #include <assert.h>
 
 
-
-
 const float FLOAT_MIN = -0.1;
 const float FLOAT_MAX =  1.1;
 const int   WAVEFORM_DIVISIONS    = 12;
@@ -77,7 +75,6 @@ Vectorscope_HSV_axes[] =
 		{ 300, "Mg", MDPURPLE },
 	};
 const int Vectorscope_HSV_axes_count = sizeof(Vectorscope_HSV_axes) / sizeof(struct Vectorscope_HSV_axes);
-
 
 
 class VideoScopeEffect;
@@ -296,15 +293,6 @@ public:
 
 
 
-
-
-
-
-
-
-
-
-
 VideoScopeConfig::VideoScopeConfig()
 {
 	reset();
@@ -317,12 +305,6 @@ void VideoScopeConfig::reset()
 	show_IRE_limits    = 0;
 	draw_lines_inverse = 0;
 }
-
-
-
-
-
-
 
 
 VideoScopeWaveform::VideoScopeWaveform(VideoScopeEffect *plugin, 
@@ -347,13 +329,11 @@ VideoScopeVectorscope::VideoScopeVectorscope(VideoScopeEffect *plugin,
 }
 
 
-
-
 VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin, 
 	int x, 
 	int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	plugin->w, 
 	plugin->h, 
@@ -385,15 +365,15 @@ void VideoScopeWindow::calculate_sizes(int w, int h)
 	const int w_midpoint = w / 2;
 	const int label_width = get_label_width();
 
-	// Waveform is a rectangle in left half of window.
-	// Labels are outside the Waveform widget.
+// Waveform is a rectangle in left half of window.
+// Labels are outside the Waveform widget.
 	wave_x = label_width + H_SPACE;
 	wave_y = V_INSET;
 	wave_w = w_midpoint - H_SPACE - wave_x;
 	wave_h = h - V_INSET - wave_y;
 
-	// Vectorscope is square and centered in right half of window
-	// Labels are outside the Vectorscope widget.
+// Vectorscope is square and centered in right half of window
+// Labels are outside the Vectorscope widget.
 	const int vec_max_width  = w_midpoint - H_SPACE - label_width;
 	const int vec_max_height = h - 2 * V_INSET;
 	const int square = MIN(vec_max_width, vec_max_height);
@@ -410,9 +390,9 @@ int VideoScopeWindow::get_label_width()
 
 int VideoScopeWindow::get_widget_area_height()
 {
-	// Don't know how to get the widget height before it's drawn, so
-	// instead use twice the font height as the height for where the
-	// widgets are drawn.
+// Don't know how to get the widget height before it's drawn, so
+// instead use twice the font height as the height for where the
+// widgets are drawn.
 	return 2 * get_text_height(MEDIUMFONT, (char *) WIDGET_HSPACE_SAMPLE);
 }
 
@@ -420,6 +400,8 @@ void VideoScopeWindow::create_objects()
 {
 	int w = get_w();
 	int h = get_h();
+
+	set_icon(new VFrame(picon_png));
 
 // Widgets
 	const int widget_hspace = get_text_width(MEDIUMFONT, (char *) WIDGET_HSPACE_SAMPLE);
@@ -516,10 +498,10 @@ void VideoScopeWindow::allocate_bitmaps()
 // Hue is angle (degrees), Saturation is distance from center [0, 1].
 // Value (intensity) is not plotted.
 static void polar_to_cartesian(float h,
-			       float s,
-			       float radius,
-			       int & x,
-			       int & y)
+			float s,
+			float radius,
+			int & x,
+			int & y)
 {
 	float adjacent = cos(h / 360 * 2 * M_PI);
 	float opposite = sin(h / 360 * 2 * M_PI);
@@ -698,20 +680,13 @@ void VideoScopeGraduation::set(const char * label, int y)
 }
 
 
-
-
-
-
-
-
-
 VideoScopeShow709Limits::VideoScopeShow709Limits(VideoScopeEffect *plugin,
 		int x,
 		int y)
  : BC_CheckBox(x, y, plugin->config.show_709_limits, _("HDTV"))
 {
 	this->plugin = plugin;
- 	set_tooltip("Indicate ITU-R BT.709 limits. Use when rendering to HDTV and sRGB.");
+	set_tooltip("Indicate ITU-R BT.709 limits. Use when rendering to HDTV and sRGB.");
 }
 
 int VideoScopeShow709Limits::handle_event()
@@ -727,7 +702,7 @@ VideoScopeShow601Limits::VideoScopeShow601Limits(VideoScopeEffect *plugin,
  : BC_CheckBox(x, y, plugin->config.show_601_limits, _("MPEG"))
 {
 	this->plugin = plugin;
- 	set_tooltip("Indicate ITU-R BT.601 limits. Use when rendering to analog video and MPEG.");
+	set_tooltip("Indicate ITU-R BT.601 limits. Use when rendering to analog video and MPEG.");
 }
 
 int VideoScopeShow601Limits::handle_event()
@@ -743,7 +718,7 @@ VideoScopeShowIRELimits::VideoScopeShowIRELimits(VideoScopeEffect *plugin,
  : BC_CheckBox(x, y, plugin->config.show_IRE_limits, _("NTSC"))
 {
 	this->plugin = plugin;
- 	set_tooltip("Indicate IRE 7.5% black level.");
+	set_tooltip("Indicate IRE 7.5% black level.");
 }
 
 int VideoScopeShowIRELimits::handle_event()
@@ -759,7 +734,7 @@ VideoScopeDrawLinesInverse::VideoScopeDrawLinesInverse(VideoScopeEffect *plugin,
  : BC_CheckBox(x, y, plugin->config.draw_lines_inverse, _("Inverse"))
 {
 	this->plugin = plugin;
- 	set_tooltip("Draw graduation lines so points underneath are visible");
+	set_tooltip("Draw graduation lines so points underneath are visible");
 }
 
 int VideoScopeDrawLinesInverse::handle_event()
@@ -769,25 +744,8 @@ int VideoScopeDrawLinesInverse::handle_event()
 	return 1;
 }
 
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(VideoScopeEffect, VideoScopeThread, VideoScopeWindow)
-
-
-
-
-
 REGISTER_PLUGIN(VideoScopeEffect)
-
-
-
-
 
 
 VideoScopeEffect::VideoScopeEffect(PluginServer *server)
@@ -893,7 +851,6 @@ int VideoScopeEffect::process_realtime(VFrame *input, VFrame *output)
 {
 
 	send_render_gui(input);
-//printf("VideoScopeEffect::process_realtime 1\n");
 	if(input->get_rows()[0] != output->get_rows()[0])
 		output->copy_from(input);
 	return 1;
@@ -906,10 +863,7 @@ void VideoScopeEffect::render_gui(void *input)
 		VideoScopeWindow *window = thread->window;
 		window->lock_window();
 
-//printf("VideoScopeEffect::process_realtime 1\n");
 		this->input = (VFrame*)input;
-//printf("VideoScopeEffect::process_realtime 1\n");
-
 
 		if(!engine)
 		{
@@ -917,25 +871,21 @@ void VideoScopeEffect::render_gui(void *input)
 				(PluginClient::smp + 1));
 		}
 
-//printf("VideoScopeEffect::process_realtime 1 %d\n", PluginClient::smp);
 // Clear bitmaps
-		bzero(window->waveform_bitmap->get_data(), 
+		memset(window->waveform_bitmap->get_data(), 0,
 			window->waveform_bitmap->get_h() * 
 			window->waveform_bitmap->get_bytes_per_line());
-		bzero(window->vector_bitmap->get_data(), 
+		memset(window->vector_bitmap->get_data(), 0,
 			window->vector_bitmap->get_h() * 
 			window->vector_bitmap->get_bytes_per_line());
 
 		engine->process_packages();
-//printf("VideoScopeEffect::process_realtime 2\n");
-//printf("VideoScopeEffect::process_realtime 1\n");
 
 		window->waveform->draw_bitmap(window->waveform_bitmap, 
 			1,
 			0,
 			0);
 
-//printf("VideoScopeEffect::process_realtime 1\n");
 		window->vectorscope->draw_bitmap(window->vector_bitmap, 
 			1,
 			0,
@@ -953,17 +903,10 @@ void VideoScopeEffect::render_gui(void *input)
 }
 
 
-
-
-
 VideoScopePackage::VideoScopePackage()
  : LoadPackage()
 {
 }
-
-
-
-
 
 
 VideoScopeUnit::VideoScopeUnit(VideoScopeEffect *plugin, 
@@ -984,27 +927,27 @@ static void draw_point(unsigned char **rows,
 {
 	switch(color_model)
 	{
-		case BC_BGR8888:
-		{
-			unsigned char *pixel = rows[y] + x * 4;
-			pixel[0] = b;
-			pixel[1] = g;
-			pixel[2] = r;
-			break;
-		}
-		case BC_BGR888:
-			break;
-		case BC_RGB565:
-		{
-			unsigned char *pixel = rows[y] + x * 2;
-			pixel[0] = (r & 0xf8) | (g >> 5);
-			pixel[1] = ((g & 0xfc) << 5) | (b >> 3);
-			break;
-		}
-		case BC_BGR565:
-			break;
-		case BC_RGB8:
-			break;
+	case BC_BGR8888:
+	{
+		unsigned char *pixel = rows[y] + x * 4;
+		pixel[0] = b;
+		pixel[1] = g;
+		pixel[2] = r;
+		break;
+	}
+	case BC_BGR888:
+		break;
+	case BC_RGB565:
+	{
+		unsigned char *pixel = rows[y] + x * 2;
+		pixel[0] = (r & 0xf8) | (g >> 5);
+		pixel[1] = ((g & 0xfc) << 5) | (b >> 3);
+		break;
+	}
+	case BC_BGR565:
+		break;
+	case BC_RGB8:
+		break;
 	}
 }
 
@@ -1147,51 +1090,47 @@ void VideoScopeUnit::process_package(LoadPackage *package)
 {
 	switch(plugin->input->get_color_model())
 	{
-		case BC_RGB888:
-			render_data<unsigned char, int, 0xff, 3, 0>(package);
-			break;
+	case BC_RGB888:
+		render_data<unsigned char, int, 0xff, 3, 0>(package);
+		break;
 
-		case BC_RGB_FLOAT:
-			render_data<float, float, 1, 3, 0>(package);
-			break;
+	case BC_RGB_FLOAT:
+		render_data<float, float, 1, 3, 0>(package);
+		break;
 
-		case BC_YUV888:
-			render_data<unsigned char, int, 0xff, 3, 1>(package);
-			break;
+	case BC_YUV888:
+		render_data<unsigned char, int, 0xff, 3, 1>(package);
+		break;
 
-		case BC_RGB161616:
-			render_data<uint16_t, int, 0xffff, 3, 0>(package);
-			break;
+	case BC_RGB161616:
+		render_data<uint16_t, int, 0xffff, 3, 0>(package);
+		break;
 
-		case BC_YUV161616:
-			render_data<uint16_t, int, 0xffff, 3, 1>(package);
-			break;
+	case BC_YUV161616:
+		render_data<uint16_t, int, 0xffff, 3, 1>(package);
+		break;
 
-		case BC_RGBA8888:
-			render_data<unsigned char, int, 0xff, 4, 0>(package);
-			break;
+	case BC_RGBA8888:
+		render_data<unsigned char, int, 0xff, 4, 0>(package);
+		break;
 
-		case BC_RGBA_FLOAT:
-			render_data<float, float, 1, 4, 0>(package);
-			break;
+	case BC_RGBA_FLOAT:
+		render_data<float, float, 1, 4, 0>(package);
+		break;
 
-		case BC_YUVA8888:
-			render_data<unsigned char, int, 0xff, 4, 1>(package);
-			break;
+	case BC_YUVA8888:
+		render_data<unsigned char, int, 0xff, 4, 1>(package);
+		break;
 
-		case BC_RGBA16161616:
-			render_data<uint16_t, int, 0xffff, 4, 0>(package);
-			break;
+	case BC_RGBA16161616:
+		render_data<uint16_t, int, 0xffff, 4, 0>(package);
+		break;
 
-		case BC_YUVA16161616:
-			render_data<uint16_t, int, 0xffff, 4, 1>(package);
-			break;
+	case BC_YUVA16161616:
+		render_data<uint16_t, int, 0xffff, 4, 1>(package);
+		break;
 	}
 }
-
-
-
-
 
 
 VideoScopeEngine::VideoScopeEngine(VideoScopeEffect *plugin, int cpus)

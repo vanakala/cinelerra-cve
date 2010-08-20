@@ -35,7 +35,7 @@ PLUGIN_THREAD_OBJECT(UnsharpMain, UnsharpThread, UnsharpWindow)
 
 UnsharpWindow::UnsharpWindow(UnsharpMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	200, 
 	160, 
@@ -55,7 +55,9 @@ int UnsharpWindow::create_objects()
 {
 	int x = 10, y = 10;
 	BC_Title *title;
+	VFrame *ico = plugin->new_picon();
 
+	set_icon(ico);
 	add_subwindow(title = new BC_Title(x, y + 10, _("Radius:")));
 	add_subwindow(radius = new UnsharpRadius(plugin, 
 		x + title->get_w() + 10, 
@@ -75,6 +77,7 @@ int UnsharpWindow::create_objects()
 
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -86,14 +89,7 @@ void UnsharpWindow::update()
 	threshold->update(plugin->config.threshold);
 }
 
-
 WINDOW_CLOSE_EVENT(UnsharpWindow)
-
-
-
-
-
-
 
 
 UnsharpRadius::UnsharpRadius(UnsharpMain *plugin, int x, int y)
@@ -101,6 +97,7 @@ UnsharpRadius::UnsharpRadius(UnsharpMain *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int UnsharpRadius::handle_event()
 {
 	plugin->config.radius = get_value();
@@ -113,6 +110,7 @@ UnsharpAmount::UnsharpAmount(UnsharpMain *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int UnsharpAmount::handle_event()
 {
 	plugin->config.amount = get_value();
@@ -125,13 +123,10 @@ UnsharpThreshold::UnsharpThreshold(UnsharpMain *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int UnsharpThreshold::handle_event()
 {
 	plugin->config.threshold = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
