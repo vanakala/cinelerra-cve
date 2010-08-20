@@ -95,9 +95,9 @@ public:
 	void copy_from(TitleConfig &that);
 	void interpolate(TitleConfig &prev, 
 		TitleConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 
 // Font information
@@ -121,8 +121,8 @@ public:
 // Pixels down and right of dropshadow
 	int dropshadow;
 // Calculated during every frame for motion strategy
-	int64_t prev_keyframe_position;
-	int64_t next_keyframe_position;
+	framenum prev_keyframe_position;
+	framenum next_keyframe_position;
 // Stamp timecode
 	int timecode;
 
@@ -217,11 +217,6 @@ public:
 };
 
 
-
-
-
-
-
 // Copy a single character to the text mask
 class TitlePackage : public LoadPackage
 {
@@ -249,14 +244,6 @@ public:
 	LoadPackage* new_package();
 	TitleMain *plugin;
 };
-
-
-
-
-
-
-
-
 
 
 // Overlay text mask with fractional translation
@@ -304,24 +291,11 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 // Position of each character relative to total text extents
 typedef struct
 {
 	int x, y, w;
 } title_char_position_t;
-
 
 
 class TitleMain : public PluginVClient
@@ -346,8 +320,6 @@ public:
 	int save_defaults();
 	VFrame* new_picon();
 
-
-
 	void build_fonts();
 	void draw_glyphs();
 	int draw_mask();
@@ -364,12 +336,8 @@ public:
 		FT_Face &freetype_face,
 		const char *path);
 
-
-
-
-
-	static char* motion_to_text(int motion);
-	static int text_to_motion(char *text);
+	static const char* motion_to_text(int motion);
+	static int text_to_motion(const char *text);
 // a thread for the GUI
 	TitleThread *thread;
 // Current configuration
@@ -391,7 +359,7 @@ public:
 	TitleTranslate *translate;
 
 // Necessary to get character width
-	FT_Library freetype_library;      	// Freetype library
+	FT_Library freetype_library;      // Freetype library
 	FT_Face freetype_face;
 
 // Visible area of all text present in the mask.

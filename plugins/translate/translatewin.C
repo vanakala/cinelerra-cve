@@ -29,21 +29,12 @@
 #define N_(String) gettext_noop (String)
 
 
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(TranslateMain, TranslateThread, TranslateWin)
-
-
-
-
 
 
 TranslateWin::TranslateWin(TranslateMain *client, int x, int y)
  : BC_Window(client->gui_string, 
- 	x,
+	x,
 	y,
 	300, 
 	220, 
@@ -63,7 +54,9 @@ TranslateWin::~TranslateWin()
 int TranslateWin::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
 
+	set_icon(ico);
 	add_tool(new BC_Title(x, y, _("In X:")));
 	y += 20;
 	in_x = new TranslateCoord(this, client, x, y, &client->config.in_x);
@@ -87,7 +80,6 @@ int TranslateWin::create_objects()
 	in_h = new TranslateCoord(this, client, x, y, &client->config.in_h);
 	in_h->create_objects();
 	y += 30;
-
 
 	x += 150;
 	y = 10;
@@ -115,10 +107,9 @@ int TranslateWin::create_objects()
 	out_h->create_objects();
 	y += 30;
 
-
-
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -134,14 +125,13 @@ TranslateCoord::TranslateCoord(TranslateWin *win,
 	int y,
 	float *value)
  : BC_TumbleTextBox(win,
- 	(int)*value,
+	(int)*value,
 	(int)0,
 	(int)1000,
 	x, 
 	y, 
 	100)
 {
-//printf("TranslateWidth::TranslateWidth %f\n", client->config.w);
 	this->client = client;
 	this->win = win;
 	this->value = value;
@@ -158,5 +148,3 @@ int TranslateCoord::handle_event()
 	client->send_configure_change();
 	return 1;
 }
-
-

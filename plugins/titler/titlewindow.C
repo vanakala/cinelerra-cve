@@ -29,23 +29,7 @@
 #define N_(String) gettext_noop (String)
 
 
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(TitleMain, TitleThread, TitleWindow)
-
-
-
-
-
-
-
-
-
 
 TitleWindow::TitleWindow(TitleMain *client, int x, int y)
  : BC_Window(client->gui_string, 
@@ -79,16 +63,16 @@ TitleWindow::~TitleWindow()
 int TitleWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = client->new_picon();
+
+	set_icon(ico);
 	timecodeformats.append(new BC_ListBoxItem(TIME_SECONDS__STR));
-	timecodeformats.append(new BC_ListBoxItem(TIME_HMS__STR)); 		
-	timecodeformats.append(new BC_ListBoxItem(TIME_HMS2__STR));     		
-	timecodeformats.append(new BC_ListBoxItem(TIME_HMS3__STR));    		
-	timecodeformats.append(new BC_ListBoxItem(TIME_HMSF__STR));    		
-	//	timecodeformats.append(new BC_ListBoxItem(TIME_SAMPLES__STR)); 		
-	//	timecodeformats.append(new BC_ListBoxItem(TIME_SAMPLES_HEX__STR)); 	
-	timecodeformats.append(new BC_ListBoxItem(TIME_FRAMES__STR)); 		
-	//	timecodeformats.append(new BC_ListBoxItem(TIME_FEET_FRAMES__STR)); 	
-	
+	timecodeformats.append(new BC_ListBoxItem(TIME_HMS__STR));
+	timecodeformats.append(new BC_ListBoxItem(TIME_HMS2__STR));
+	timecodeformats.append(new BC_ListBoxItem(TIME_HMS3__STR));
+	timecodeformats.append(new BC_ListBoxItem(TIME_HMSF__STR));
+	timecodeformats.append(new BC_ListBoxItem(TIME_FRAMES__STR));
+
 	encodings.append(new BC_ListBoxItem("ISO8859-1"));
 	encodings.append(new BC_ListBoxItem("ISO8859-2"));
 	encodings.append(new BC_ListBoxItem("ISO8859-3"));
@@ -105,8 +89,6 @@ int TitleWindow::create_objects()
 	encodings.append(new BC_ListBoxItem("ISO8859-14"));
 	encodings.append(new BC_ListBoxItem("ISO8859-15"));
 	encodings.append(new BC_ListBoxItem("KOI8"));
-
-
 
 	sizes.append(new BC_ListBoxItem("8"));
 	sizes.append(new BC_ListBoxItem("9"));
@@ -137,8 +119,6 @@ int TitleWindow::create_objects()
 	paths.append(new BC_ListBoxItem(TitleMain::motion_to_text(TOP_TO_BOTTOM)));
 	paths.append(new BC_ListBoxItem(TitleMain::motion_to_text(RIGHT_TO_LEFT)));
 	paths.append(new BC_ListBoxItem(TitleMain::motion_to_text(LEFT_TO_RIGHT)));
-
-
 
 // Construct font list
 	for(int i = 0; i < client->fonts->total; i++)
@@ -173,18 +153,7 @@ int TitleWindow::create_objects()
 				done = 0;
 			}
 		}
-	}	
-
-
-
-
-
-
-
-
-
-
-
+	}
 
 	add_tool(font_title = new BC_Title(x, y, _("Font:")));
 	font = new TitleFont(client, this, x, y + 20);
@@ -215,8 +184,6 @@ int TitleWindow::create_objects()
 	add_tool(top = new TitleTop(client, this, x, y + 20));
 	add_tool(mid = new TitleMid(client, this, x, y + 50));
 	add_tool(bottom= new TitleBottom(client, this, x, y + 80));
-	
-
 
 	y += 50;
 	x = 10;
@@ -236,10 +203,10 @@ int TitleWindow::create_objects()
 	motion = new TitleMotion(client, this, x, y + 20);
 	motion->create_objects();
 	x += 150;
-	
+
 	add_tool(loop = new TitleLoop(client, x, y + 20));
 	x += 100;
-	
+
 	x = 10;
 	y += 50;
 
@@ -292,7 +259,6 @@ int TitleWindow::create_objects()
 	color_stroke_thread = new TitleColorStrokeThread(client, this);
 #endif
 
-
 	x = 10;
 	y += 50;
 
@@ -300,7 +266,6 @@ int TitleWindow::create_objects()
 
 	x += 100;
 	add_tool(timecode = new TitleTimecode(client, x, y));
-
 
 	x += timecode->get_w() + 5;
 	BC_SubWindow *thisw;
@@ -323,6 +288,7 @@ int TitleWindow::create_objects()
 
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -438,7 +404,6 @@ int TitleWindow::close_event()
 
 void TitleWindow::update_color()
 {
-//printf("TitleWindow::update_color %x\n", client->config.color);
 	set_color(client->config.color);
 	draw_box(color_x, color_y, 100, 30);
 	flash(color_x, color_y, 100, 30);
@@ -526,6 +491,7 @@ TitleItalic::TitleItalic(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleItalic::handle_event()
 {
 	client->config.style = (client->config.style & ~FONT_ITALIC) | (get_value() ? FONT_ITALIC : 0);
@@ -549,8 +515,6 @@ int TitleStroke::handle_event()
 	return 1;
 }
 
-
-
 TitleSize::TitleSize(TitleMain *client, TitleWindow *window, int x, int y, char *text)
  : BC_PopupTextBox(window, 
 		&window->sizes,
@@ -563,22 +527,25 @@ TitleSize::TitleSize(TitleMain *client, TitleWindow *window, int x, int y, char 
 	this->client = client;
 	this->window = window;
 }
+
 TitleSize::~TitleSize()
 {
 }
+
 int TitleSize::handle_event()
 {
 	client->config.size = atol(get_text());
-//printf("TitleSize::handle_event 1 %s\n", get_text());
 	client->send_configure_change();
 	return 1;
 }
+
 void TitleSize::update(int size)
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "%d", size);
 	BC_PopupTextBox::update(string);
 }
+
 TitleEncoding::TitleEncoding(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_PopupTextBox(window, 
 		&window->encodings,
@@ -595,6 +562,7 @@ TitleEncoding::TitleEncoding(TitleMain *client, TitleWindow *window, int x, int 
 TitleEncoding::~TitleEncoding()
 {
 }
+
 int TitleEncoding::handle_event()
 {
 	strcpy(client->config.encoding, get_text());
@@ -608,6 +576,7 @@ TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x
 	this->client = client;
 	this->window = window;
 }
+
 int TitleColorButton::handle_event()
 {
 	window->color_thread->start_window(client->config.color, 0);
@@ -620,6 +589,7 @@ TitleColorStrokeButton::TitleColorStrokeButton(TitleMain *client, TitleWindow *w
 	this->client = client;
 	this->window = window;
 }
+
 int TitleColorStrokeButton::handle_event()
 {
 #ifdef USE_OUTLINE
@@ -640,6 +610,7 @@ TitleMotion::TitleMotion(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleMotion::handle_event()
 {
 	client->config.motion_strategy = client->text_to_motion(get_text());
@@ -652,6 +623,7 @@ TitleLoop::TitleLoop(TitleMain *client, int x, int y)
 {
 	this->client = client;
 }
+
 int TitleLoop::handle_event()
 {
 	client->config.loop = get_value();
@@ -725,6 +697,7 @@ TitleFont::TitleFont(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleFont::handle_event()
 {
 	strcpy(client->config.font, get_text());
@@ -747,7 +720,6 @@ TitleText::TitleText(TitleMain *client,
 {
 	this->client = client;
 	this->window = window;
-//printf("TitleText::TitleText %s\n", client->config.text);
 }
 
 int TitleText::handle_event()
@@ -770,6 +742,7 @@ TitleDropShadow::TitleDropShadow(TitleMain *client, TitleWindow *window, int x, 
 	this->client = client;
 	this->window = window;
 }
+
 int TitleDropShadow::handle_event()
 {
 	client->config.dropshadow = atol(get_text());
@@ -780,7 +753,7 @@ int TitleDropShadow::handle_event()
 
 TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
- 	(int64_t)client->config.x,
+	(int64_t)client->config.x,
 	(int64_t)-2048,
 	(int64_t)2048,
 	x, 
@@ -790,6 +763,7 @@ TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleX::handle_event()
 {
 	client->config.x = atol(get_text());
@@ -799,7 +773,7 @@ int TitleX::handle_event()
 
 TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
- 	(int64_t)client->config.y, 
+	(int64_t)client->config.y, 
 	(int64_t)-2048,
 	(int64_t)2048,
 	x, 
@@ -809,6 +783,7 @@ TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleY::handle_event()
 {
 	client->config.y = atol(get_text());
@@ -831,6 +806,7 @@ TitleStrokeW::TitleStrokeW(TitleMain *client,
 	this->client = client;
 	this->window = window;
 }
+
 int TitleStrokeW::handle_event()
 {
 	client->config.stroke_width = atof(get_text());
@@ -841,7 +817,7 @@ int TitleStrokeW::handle_event()
 
 TitleSpeed::TitleSpeed(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
- 	(float)client->config.pixels_per_second, 
+	(float)client->config.pixels_per_second, 
 	(float)0,
 	(float)1000,
 	x, 
@@ -860,17 +836,13 @@ int TitleSpeed::handle_event()
 }
 
 
-
-
-
-
-
 TitleLeft::TitleLeft(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_Radial(x, y, client->config.hjustification == JUSTIFY_LEFT, _("Left"))
 {
 	this->client = client;
 	this->window = window;
 }
+
 int TitleLeft::handle_event()
 {
 	client->config.hjustification = JUSTIFY_LEFT;
@@ -899,6 +871,7 @@ TitleRight::TitleRight(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleRight::handle_event()
 {
 	client->config.hjustification = JUSTIFY_RIGHT;
@@ -915,6 +888,7 @@ TitleTop::TitleTop(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleTop::handle_event()
 {
 	client->config.vjustification = JUSTIFY_TOP;
@@ -929,6 +903,7 @@ TitleMid::TitleMid(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleMid::handle_event()
 {
 	client->config.vjustification = JUSTIFY_MID;
@@ -943,6 +918,7 @@ TitleBottom::TitleBottom(TitleMain *client, TitleWindow *window, int x, int y)
 	this->client = client;
 	this->window = window;
 }
+
 int TitleBottom::handle_event()
 {
 	client->config.vjustification = JUSTIFY_BOTTOM;
@@ -952,9 +928,8 @@ int TitleBottom::handle_event()
 }
 
 
-
 TitleColorThread::TitleColorThread(TitleMain *client, TitleWindow *window)
- : ColorThread()
+ : ColorThread(0, "Text", client->new_picon())
 {
 	this->client = client;
 	this->window = window;
@@ -968,8 +943,9 @@ int TitleColorThread::handle_new_color(int output, int /*alpha*/)
 	client->send_configure_change();
 	return 1;
 }
+
 TitleColorStrokeThread::TitleColorStrokeThread(TitleMain *client, TitleWindow *window)
- : ColorThread()
+ : ColorThread(0, "Stroke", client->new_picon())
 {
 	this->client = client;
 	this->window = window;

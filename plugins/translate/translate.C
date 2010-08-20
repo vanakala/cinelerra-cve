@@ -73,9 +73,9 @@ void TranslateConfig::copy_from(TranslateConfig &that)
 
 void TranslateConfig::interpolate(TranslateConfig &prev, 
 	TranslateConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -89,12 +89,6 @@ void TranslateConfig::interpolate(TranslateConfig &prev,
 	this->out_w = prev.out_w * prev_scale + next.out_w * next_scale;
 	this->out_h = prev.out_h * prev_scale + next.out_h * next_scale;
 }
-
-
-
-
-
-
 
 
 TranslateMain::TranslateMain(PluginServer *server)
@@ -129,7 +123,6 @@ int TranslateMain::load_defaults()
 // load the defaults
 	defaults = new BC_Hash(directory);
 	defaults->load();
-
 
 	config.in_x = defaults->get("IN_X", config.in_x);
 	config.in_y = defaults->get("IN_Y", config.in_y);
@@ -211,23 +204,15 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 }
 
 
-
-
-
-
-
-
 int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	VFrame *input, *output;
-	
-	
+
 	input = input_ptr;
 	output = output_ptr;
 
 	load_configuration();
 
-//printf("TranslateMain::process_realtime 1 %p\n", input);
 	if(input->get_rows()[0] == output->get_rows()[0])
 	{
 		if(!temp_frame) 
@@ -238,8 +223,6 @@ int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		temp_frame->copy_from(input);
 		input = temp_frame;
 	}
-//printf("TranslateMain::process_realtime 2 %p\n", input);
-
 
 	if(!overlayer)
 	{
@@ -248,21 +231,6 @@ int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	output->clear_frame();
 
-
-// printf("TranslateMain::process_realtime 3 output=%p input=%p config.w=%f config.h=%f"
-// 	"%f %f %f %f -> %f %f %f %f\n", 
-// 	output,
-// 	input,
-// 	config.w, 
-// 	config.h,
-// 	in_x1, 
-// 	in_y1, 
-// 	in_x2, 
-// 	in_y2,
-// 	out_x1, 
-// 	out_y1, 
-// 	out_x2, 
-// 	out_y2);
 		overlayer->overlay(output, 
 			input,
 			config.in_x, 
@@ -276,11 +244,7 @@ int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			1,
 			TRANSFER_REPLACE,
 			get_interpolation_type());
-
 }
-
-
-
 
 SHOW_GUI_MACRO(TranslateMain, TranslateThread)
 

@@ -48,9 +48,9 @@ public:
 	void copy_from(TimeFrontConfig &that);
 	void interpolate(TimeFrontConfig &prev, 
 		TimeFrontConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 // Int to hex triplet conversion
 	int get_in_color();
 	int get_out_color();
@@ -68,7 +68,6 @@ public:
 		OTHERTRACK,
 		ALPHA
 	};
-
 
 	double center_x;
 	double center_y;
@@ -95,8 +94,8 @@ public:
 		int x, 
 		int y);
 	void create_objects();
-	static char* to_text(int shape);
-	static int from_text(char *text);
+	static const char* to_text(int shape);
+	static int from_text(const char *text);
 	int handle_event();
 	TimeFrontMain *plugin;
 	TimeFrontWindow *gui;
@@ -110,8 +109,8 @@ public:
 		int x, 
 		int y);
 	void create_objects();
-	static char* to_text(int track_usage);
-	static int from_text(char *text);
+	static const char* to_text(int track_usage);
+	static int from_text(const char *text);
 	int handle_event();
 	TimeFrontMain *plugin;
 	TimeFrontWindow *gui;
@@ -125,7 +124,7 @@ public:
 		int x, 
 		int y);
 	void create_objects();
-	static char* to_text(int shape);
+	static const char* to_text(int shape);
 	static int from_text(char *text);
 	int handle_event();
 	TimeFrontMain *plugin;
@@ -203,7 +202,7 @@ class TimeFrontWindow : public BC_Window
 public:
 	TimeFrontWindow(TimeFrontMain *plugin, int x, int y);
 	~TimeFrontWindow();
-	
+
 	int create_objects();
 	int close_event();
 	void update_shape();
@@ -240,9 +239,8 @@ public:
 	TimeFrontMain(PluginServer *server);
 	~TimeFrontMain();
 
-//	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int process_buffer(VFrame **frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 
 	int is_realtime();
@@ -291,7 +289,5 @@ public:
 	LoadPackage* new_package();
 	TimeFrontMain *plugin;
 };
-
-
 
 #endif
