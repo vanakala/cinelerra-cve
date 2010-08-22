@@ -38,11 +38,6 @@
 #define gettext_noop(String) String
 #define N_(String) gettext_noop (String)
 
-
-
-
-
-
 class FreeverbEffect;
 
 class FreeverbConfig
@@ -50,15 +45,13 @@ class FreeverbConfig
 public:
 	FreeverbConfig();
 
-
 	int equivalent(FreeverbConfig &that);
 	void copy_from(FreeverbConfig &that);
 	void interpolate(FreeverbConfig &prev, 
 		FreeverbConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
-
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	float gain;
 	float roomsize;
@@ -136,7 +129,7 @@ public:
 	int close_event();
 
 	FreeverbEffect *plugin;
-	
+
 	FreeverbGain *gain;
 	FreeverbRoomsize *roomsize;
 	FreeverbDamp *damp;
@@ -165,16 +158,12 @@ public:
 	int is_multichannel();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(int64_t size, double **input_ptr, double **output_ptr);
-
-
-
+	int process_realtime(int size, double **input_ptr, double **output_ptr);
 
 	int load_defaults();
 	int save_defaults();
 	int load_configuration();
 	void update_gui();
-
 
 	BC_Hash *defaults;
 	FreeverbThread *thread;
@@ -185,18 +174,7 @@ public:
 	int temp_allocated;
 };
 
-
-
-
 REGISTER_PLUGIN(FreeverbEffect)
-
-
-
-
-
-
-
-
 
 
 FreeverbGain::FreeverbGain(FreeverbEffect *plugin, int x, int y)
@@ -297,18 +275,9 @@ int FreeverbMode::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
 FreeverbWindow::FreeverbWindow(FreeverbEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	180, 
 	250, 
@@ -325,6 +294,7 @@ void FreeverbWindow::create_objects()
 {
 	int x1 = 10, x2 = 100, x3 = 135, y1 = 10, y2 = 20, margin = 30;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x1, y2, _("Gain:")));
 	add_subwindow(gain = new FreeverbGain(plugin, x3, y1));
 	y1 += margin;
@@ -362,16 +332,6 @@ int FreeverbWindow::close_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-
 FreeverbConfig::FreeverbConfig()
 {
 	gain = -6.0;
@@ -407,9 +367,9 @@ void FreeverbConfig::copy_from(FreeverbConfig &that)
 
 void FreeverbConfig::interpolate(FreeverbConfig &prev, 
 	FreeverbConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -423,34 +383,7 @@ void FreeverbConfig::interpolate(FreeverbConfig &prev,
 	mode = prev.mode;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(FreeverbEffect, FreeverbThread, FreeverbWindow)
-
-
-
-
 
 FreeverbEffect::FreeverbEffect(PluginServer *server)
  : PluginAClient(server)
@@ -593,7 +526,7 @@ void FreeverbEffect::update_gui()
 	}
 }
 
-int FreeverbEffect::process_realtime(int64_t size, double **input_ptr, double **output_ptr)
+int FreeverbEffect::process_realtime(int size, double **input_ptr, double **output_ptr)
 {
 	load_configuration();
 	if(!engine) engine = new revmodel;
@@ -675,5 +608,3 @@ int FreeverbEffect::process_realtime(int64_t size, double **input_ptr, double **
 
 	return 0;
 }
-
-

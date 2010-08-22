@@ -250,8 +250,3 @@ float revmodel::getmode()
 }
 
 //ends
-
-
-
-
-

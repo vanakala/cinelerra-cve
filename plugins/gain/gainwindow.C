@@ -31,13 +31,9 @@
 PLUGIN_THREAD_OBJECT(Gain, GainThread, GainWindow)
 
 
-
-
-
-
 GainWindow::GainWindow(Gain *gain, int x, int y)
  : BC_Window(gain->gui_string, 
- 	x, 
+	x,
 	y, 
 	230, 
 	60, 
@@ -57,22 +53,23 @@ GainWindow::~GainWindow()
 int GainWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = gain->new_picon();
+
+	set_icon(ico);
 	add_tool(new BC_Title(5, y, _("Level:")));
 	y += 20;
 	add_tool(level = new GainLevel(gain, x, y));
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
 WINDOW_CLOSE_EVENT(GainWindow)
 
-
-
-
 GainLevel::GainLevel(Gain *gain, int x, int y)
  : BC_FSlider(x, 
- 	y, 
+	y,
 	0,
 	200,
 	200,
@@ -82,6 +79,7 @@ GainLevel::GainLevel(Gain *gain, int x, int y)
 {
 	this->gain = gain;
 }
+
 int GainLevel::handle_event()
 {
 	gain->config.level = get_value();

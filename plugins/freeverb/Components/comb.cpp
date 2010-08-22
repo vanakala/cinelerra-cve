@@ -46,7 +46,3 @@ float comb::getfeedback()
 }
 
 // ends
-
-
-
-

@@ -54,21 +54,14 @@ void GainConfig::copy_from(GainConfig &that)
 
 void GainConfig::interpolate(GainConfig &prev, 
 	GainConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 	level = prev.level * prev_scale + next.level * next_scale;
 }
-
-
-
-
-
-
-
 
 
 Gain::Gain(PluginServer *server)
@@ -92,13 +85,13 @@ RAISE_WINDOW_MACRO(Gain)
 NEW_PICON_MACRO(Gain)
 LOAD_CONFIGURATION_MACRO(Gain, GainConfig)
 
-int Gain::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int Gain::process_realtime(int size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 
 	double gain = db.fromdb(config.level);
 
-	for(int64_t i = 0; i < size; i++)
+	for(int i = 0; i < size; i++)
 	{
 		output_ptr[i] = input_ptr[i] * gain;
 	}
@@ -114,7 +107,7 @@ int Gain::load_defaults()
 
 // set the default directory
 	sprintf(directory, "%sgain.rc", get_defaultdir());
-	
+
 // load the defaults
 
 	defaults = new BC_Hash(directory);
@@ -177,5 +170,3 @@ void Gain::update_gui()
 		thread->window->unlock_window();
 	}
 }
-
-

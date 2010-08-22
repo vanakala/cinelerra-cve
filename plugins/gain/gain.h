@@ -36,9 +36,9 @@ public:
 	void copy_from(GainConfig &that);
 	void interpolate(GainConfig &prev, 
 		GainConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame);
 
 	double level;
 };
@@ -49,7 +49,7 @@ public:
 	Gain(PluginServer *server);
 	~Gain();
 
-	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
+	int process_realtime(int size, double *input_ptr, double *output_ptr);
 
 	PLUGIN_CLASS_MEMBERS(GainConfig, GainThread)
 	void save_data(KeyFrame *keyframe);
@@ -58,7 +58,6 @@ public:
 	int save_defaults();
 	void update_gui();
 	int is_realtime();
-
 
 	DB db;
 };

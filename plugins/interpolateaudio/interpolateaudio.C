@@ -32,16 +32,6 @@
 #include <string.h>
 
 
-
-
-
-
-
-
-
-
-
-
 class InterpolateAudioEffect : public PluginAClient
 {
 public:
@@ -51,9 +41,9 @@ public:
 	VFrame* new_picon();
 	const char* plugin_title();
 
-	int process_buffer(int64_t size, 
+	int process_buffer(int size,
 		double *buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate);
 	int is_realtime();
 
@@ -62,20 +52,12 @@ public:
 	double *end_fragment;
 	double start_sample;
 	double end_sample;
-	int64_t range_start;
-	int64_t range_end;
+	samplenum range_start;
+	samplenum range_end;
 };
 
 
-
-
 REGISTER_PLUGIN(InterpolateAudioEffect)
-
-
-
-
-
-
 
 InterpolateAudioEffect::InterpolateAudioEffect(PluginServer *server)
  : PluginAClient(server)
@@ -89,8 +71,6 @@ InterpolateAudioEffect::~InterpolateAudioEffect()
 	if(start_fragment) delete [] start_fragment;
 	if(end_fragment) delete [] end_fragment;
 }
-
-
 
 
 const char* InterpolateAudioEffect::plugin_title()
@@ -110,9 +90,9 @@ NEW_PICON_MACRO(InterpolateAudioEffect)
 
 
 
-int InterpolateAudioEffect::process_buffer(int64_t size, 
+int InterpolateAudioEffect::process_buffer(int size,
 	double *buffer,
-	int64_t start_position,
+	samplenum start_position,
 	int sample_rate)
 {
 	double slope;
@@ -130,7 +110,6 @@ int InterpolateAudioEffect::process_buffer(int64_t size,
 // seeks.
 			range_start = get_source_start();
 			range_end = get_source_start() + get_total_len();
-//printf("InterpolateAudioEffect::process_buffer 1 %p\n", start_fragment);
 			read_samples(start_fragment,
 				0,
 				sample_rate,
@@ -178,7 +157,6 @@ int InterpolateAudioEffect::process_buffer(int64_t size,
 				FRAGMENT_SIZE);
 			end_sample = end_fragment[0];
 		}
-
 
 		for(int i = 0; i < size; i++)
 		{
