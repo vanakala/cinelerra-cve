@@ -51,7 +51,7 @@ public:
 	{
 		return 1;
 	};
-	int process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+	int process_realtime(int size, double *input_ptr, double *output_ptr)
 	{
 		for(int i = 0; i < size; i++)
 			output_ptr[i] = -input_ptr[i];
@@ -60,7 +60,4 @@ public:
 };
 
 
-
-
 REGISTER_PLUGIN(InvertAudioEffect)
-

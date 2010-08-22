@@ -49,10 +49,6 @@ public:
 };
 
 
-
-
-
-
 class LiveAudioWindow : public BC_Window
 {
 public:
@@ -68,20 +64,17 @@ public:
 
 PLUGIN_THREAD_HEADER(LiveAudio, LiveAudioThread, LiveAudioWindow)
 
-
-
 class LiveAudio : public PluginAClient
 {
 public:
 	LiveAudio(PluginServer *server);
 	~LiveAudio();
 
-
 	PLUGIN_CLASS_MEMBERS(LiveAudioConfig, LiveAudioThread);
 
-	int process_buffer(int64_t size, 
+	int process_buffer(int size,
 		double **buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate);
 	int is_realtime();
 	int is_multichannel();
@@ -97,19 +90,9 @@ public:
 	double **history;
 	int history_ptr;
 	int history_channels;
-	int64_t history_position;
+	samplenum history_position;
 	int history_size;
 };
-
-
-
-
-
-
-
-
-
-
 
 
 LiveAudioConfig::LiveAudioConfig()
@@ -117,15 +100,9 @@ LiveAudioConfig::LiveAudioConfig()
 }
 
 
-
-
-
-
-
-
 LiveAudioWindow::LiveAudioWindow(LiveAudio *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	300, 
 	160, 
@@ -147,6 +124,8 @@ void LiveAudioWindow::create_objects()
 	int x = 10, y = 10;
 
 	BC_Title *title;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, "Live audio"));
 	show_window();
 	flush();
@@ -154,30 +133,9 @@ void LiveAudioWindow::create_objects()
 
 WINDOW_CLOSE_EVENT(LiveAudioWindow)
 
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(LiveAudio, LiveAudioThread, LiveAudioWindow)
 
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(LiveAudio)
-
-
-
-
 
 
 LiveAudio::LiveAudio(PluginServer *server)
@@ -212,14 +170,12 @@ LiveAudio::~LiveAudio()
 
 
 
-int LiveAudio::process_buffer(int64_t size, 
+int LiveAudio::process_buffer(int size,
 	double **buffer,
-	int64_t start_position,
+	samplenum start_position,
 	int sample_rate)
 {
 	load_configuration();
-//printf("LiveAudio::process_buffer 10 start_position=%lld buffer_size=%d size=%d\n", 
-//start_position, get_buffer_size(), size);
 	int first_buffer = 0;
 
 	if(!adevice)
@@ -251,86 +207,75 @@ int LiveAudio::process_buffer(int64_t size,
 		}
 	}
 
-SET_TRACE
-//	if(get_direction() == PLAY_FORWARD)
-	{
 // Reset history buffer to current position if before maximum history
-		if(start_position < history_position - HISTORY_SAMPLES)
-			history_position = start_position;
+	if(start_position < history_position - HISTORY_SAMPLES)
+		history_position = start_position;
 
 
 
 // Extend history buffer
-		int64_t end_position = start_position + size;
-// printf("LiveAudio::process_buffer %lld %lld %lld\n", 
-// end_position, 
-// history_position,
-// end_position - history_position);
-		if(end_position > history_position)
-		{
+	samplenum end_position = start_position + size;
+	if(end_position > history_position)
+	{
 // Reset history buffer to current position if after maximum history
-			if(start_position >= history_position + HISTORY_SAMPLES)
-				history_position = start_position;
+		if(start_position >= history_position + HISTORY_SAMPLES)
+			history_position = start_position;
 // A delay seems required because ALSA playback may get ahead of
 // ALSA recording and never recover.
-			if(first_buffer) end_position += sample_rate;
-			int done = 0;
-			while(!done && history_position < end_position)
-			{
+		if(first_buffer) end_position += sample_rate;
+		int done = 0;
+		while(!done && history_position < end_position)
+		{
 // Reading in playback buffer sized fragments seems to help
 // even though the sound driver abstracts this size.  Larger 
 // fragments probably block unnecessarily long.
-				int fragment = size;
-				if(history_ptr + fragment  > HISTORY_SAMPLES)
-				{
-					fragment = HISTORY_SAMPLES - history_ptr;
-					done = 1;
-				}
+			int fragment = size;
+			if(history_ptr + fragment  > HISTORY_SAMPLES)
+			{
+				fragment = HISTORY_SAMPLES - history_ptr;
+				done = 1;
+			}
 
 // Read rest of buffer from sound driver
-				if(adevice)
-				{
-					int over[get_total_buffers()];
-					double max[get_total_buffers()];
-					adevice->read_buffer(history, 
-						fragment, 
-						over, 
-						max, 
-						history_ptr);
-				}
-				history_ptr += fragment;
-// wrap around buffer
-				if(history_ptr >= HISTORY_SAMPLES)
-					history_ptr = 0;
-				history_position += fragment;
+			if(adevice)
+			{
+				int over[get_total_buffers()];
+				double max[get_total_buffers()];
+				adevice->read_buffer(history, 
+					fragment, 
+					over, 
+					max, 
+					history_ptr);
 			}
+			history_ptr += fragment;
+// wrap around buffer
+			if(history_ptr >= HISTORY_SAMPLES)
+				history_ptr = 0;
+			history_position += fragment;
 		}
-
-// Copy data from history buffer
-		int buffer_position = 0;
-		int history_buffer_ptr = history_ptr - history_position + start_position;
-		while(history_buffer_ptr < 0)
-			history_buffer_ptr += HISTORY_SAMPLES;
-		while(buffer_position < size)
-		{
-			int fragment = size;
-			if(history_buffer_ptr + fragment > HISTORY_SAMPLES)
-				fragment = HISTORY_SAMPLES - history_buffer_ptr;
-			if(buffer_position + fragment > size)
-				fragment = size - buffer_position;
-			for(int i = 0; i < get_total_buffers(); i++)
-				memcpy(buffer[i] + buffer_position, 
-					history[i] + history_buffer_ptr,
-					sizeof(double) * fragment);
-			history_buffer_ptr += fragment;
-			if(history_buffer_ptr >= HISTORY_SAMPLES)
-				history_buffer_ptr = 0;
-			buffer_position += fragment;
-		}
-
-SET_TRACE
 	}
 
+// Copy data from history buffer
+	int buffer_position = 0;
+	int history_buffer_ptr = history_ptr - history_position + start_position;
+	while(history_buffer_ptr < 0)
+		history_buffer_ptr += HISTORY_SAMPLES;
+	while(buffer_position < size)
+	{
+		int fragment = size;
+		if(history_buffer_ptr + fragment > HISTORY_SAMPLES)
+			fragment = HISTORY_SAMPLES - history_buffer_ptr;
+		if(buffer_position + fragment > size)
+			fragment = size - buffer_position;
+		for(int i = 0; i < get_total_buffers(); i++)
+			memcpy(buffer[i] + buffer_position, 
+				history[i] + history_buffer_ptr,
+				sizeof(double) * fragment);
+		history_buffer_ptr += fragment;
+		if(history_buffer_ptr >= HISTORY_SAMPLES)
+			history_buffer_ptr = 0;
+		buffer_position += fragment;
+	}
 
 	return 0;
 }
@@ -390,8 +335,3 @@ void LiveAudio::read_data(KeyFrame *keyframe)
 void LiveAudio::update_gui()
 {
 }
-
-
-
-
-

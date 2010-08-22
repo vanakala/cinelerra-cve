@@ -39,22 +39,7 @@
 #define gettext_noop(String) String
 #define N_(String) gettext_noop (String)
 
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(SoundLevelEffect)
-
-
-
-
-
-
-
 
 
 SoundLevelConfig::SoundLevelConfig()
@@ -74,25 +59,12 @@ int SoundLevelConfig::equivalent(SoundLevelConfig &that)
 
 void SoundLevelConfig::interpolate(SoundLevelConfig &prev, 
 	SoundLevelConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	duration = prev.duration;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 SoundLevelDuration::SoundLevelDuration(SoundLevelEffect *plugin, int x, int y)
@@ -110,10 +82,9 @@ int SoundLevelDuration::handle_event()
 }
 
 
-
 SoundLevelWindow::SoundLevelWindow(SoundLevelEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	350, 
 	120, 
@@ -128,10 +99,9 @@ SoundLevelWindow::SoundLevelWindow(SoundLevelEffect *plugin, int x, int y)
 
 void SoundLevelWindow::create_objects()
 {
-//printf("SoundLevelWindow::create_objects 1\n");
 	int x = 10, y = 10;
 
-
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Duration (seconds):")));
 	add_subwindow(duration = new SoundLevelDuration(plugin, x + 150, y));
 	y += 35;
@@ -143,35 +113,11 @@ void SoundLevelWindow::create_objects()
 
 	show_window();
 	flush();
-//printf("SoundLevelWindow::create_objects 2\n");
 }
 
 WINDOW_CLOSE_EVENT(SoundLevelWindow)
 
-
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(SoundLevelEffect, SoundLevelThread, SoundLevelWindow)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 SoundLevelEffect::SoundLevelEffect(PluginServer *server)
@@ -262,7 +208,6 @@ int SoundLevelEffect::save_defaults()
 
 void SoundLevelEffect::update_gui()
 {
-//printf("SoundLevelEffect::update_gui 1\n");
 	if(thread)
 	{
 		load_configuration();
@@ -270,7 +215,6 @@ void SoundLevelEffect::update_gui()
 		thread->window->duration->update(config.duration);
 		thread->window->unlock_window();
 	}
-//printf("SoundLevelEffect::update_gui 2\n");
 }
 
 int SoundLevelEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
@@ -287,7 +231,6 @@ int SoundLevelEffect::process_realtime(int64_t size, double *input_ptr, double *
 
 	if(accum_size > config.duration * PluginAClient::project_sample_rate)
 	{
-//printf("SoundLevelEffect::process_realtime 1 %f %d\n", rms_accum, accum_size);
 		rms_accum = sqrt(rms_accum / accum_size);
 		double arg[2];
 		arg[0] = max_accum;
