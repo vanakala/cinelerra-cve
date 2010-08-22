@@ -42,9 +42,9 @@ public:
 	int get_parameters(); 
 	int start_loop();
 	int stop_loop();
-	int process_loop(double **plugin_buffer, int64_t &write_length);
-	int load_defaults();  
-	int save_defaults();  
+	int process_loop(double **plugin_buffer, int &write_length);
+	int load_defaults();
+	int save_defaults();
 
 	BC_Hash *defaults;
 
@@ -61,12 +61,12 @@ public:
 	struct cdrom_read_audio arg;
 	int FRAME;    // 2 bytes 2 channels
 	int previewing;     // defeat bug in hardware
-	int64_t fragment_length;
-	int64_t total_length;
+	int fragment_length;
+	samplenum total_length;
 	int endofselection;
 	int i, j, k, l, attempts;
-	int64_t fragment_samples;
-	int64_t currentlength;
+	int fragment_samples;
+	samplenum currentlength;
 	int64_t startlba_fragment;
 	char *buffer;   // Temp buffer for int16 data
 	int16_t *buffer_channel;

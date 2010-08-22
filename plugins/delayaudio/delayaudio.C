@@ -77,8 +77,8 @@ void DelayAudio::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	prev_keyframe = get_prev_keyframe(get_source_position());
-	
- 	read_data(prev_keyframe);
+
+	read_data(prev_keyframe);
 }
 
 int DelayAudio::load_defaults()
@@ -91,7 +91,6 @@ int DelayAudio::load_defaults()
 	config.length = defaults->get("LENGTH", (double)1);
 	return 0;
 }
-
 
 
 int DelayAudio::save_defaults()
@@ -136,13 +135,10 @@ void DelayAudio::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int DelayAudio::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int DelayAudio::process_realtime(int size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 	int64_t num_delayed = int64_t(config.length * PluginAClient::project_sample_rate + 0.5);
-
-// printf("DelayAudio::process_realtime %d %d\n",
-// input_start, size);
 
 	// Examples:
 	//     buffer  size   num_delayed
@@ -187,7 +183,7 @@ int DelayAudio::process_realtime(int64_t size, double *input_ptr, double *output
 int DelayAudio::show_gui()
 {
 	load_configuration();
-	
+
 	thread = new DelayAudioThread(this);
 	thread->start();
 	return 0;
@@ -220,16 +216,6 @@ void DelayAudio::update_gui()
 }
 
 
-
-
-
-
-
-
-
-
-
-
 DelayAudioThread::DelayAudioThread(DelayAudio *plugin)
  : Thread()
 {
@@ -237,9 +223,6 @@ DelayAudioThread::DelayAudioThread(DelayAudio *plugin)
 	set_synchronous(0);
 	completion.lock();
 }
-
-
-
 
 DelayAudioThread::~DelayAudioThread()
 {
@@ -250,11 +233,11 @@ DelayAudioThread::~DelayAudioThread()
 void DelayAudioThread::run()
 {
 	BC_DisplayInfo info;
-	
+
 	window = new DelayAudioWindow(plugin,
 		info.get_abs_cursor_x() - 125, 
 		info.get_abs_cursor_y() - 115);
-	
+
 	window->create_objects();
 	int result = window->run_window();
 	completion.unlock();
@@ -264,16 +247,9 @@ void DelayAudioThread::run()
 
 
 
-
-
-
-
-
-
-
 DelayAudioWindow::DelayAudioWindow(DelayAudio *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	200, 
 	80, 
@@ -292,6 +268,7 @@ DelayAudioWindow::~DelayAudioWindow()
 
 int DelayAudioWindow::create_objects()
 {
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(10, 10, _("Delay seconds:")));
 	add_subwindow(length = new DelayAudioTextBox(plugin, 10, 40));
 	update_gui();
@@ -317,14 +294,6 @@ void DelayAudioWindow::update_gui()
 
 
 
-
-
-
-
-
-
-
-
 DelayAudioTextBox::DelayAudioTextBox(DelayAudio *plugin, int x, int y)
  : BC_TextBox(x, y, 150, 1, "")
 {
@@ -344,17 +313,11 @@ int DelayAudioTextBox::handle_event()
 }
 
 
-
-
-
-
-
-
 DelayAudioConfig::DelayAudioConfig()
 {
 	length = 1;
 }
-	
+
 int DelayAudioConfig::equivalent(DelayAudioConfig &that)
 {
 	return(EQUIV(this->length, that.length));
@@ -364,8 +327,3 @@ void DelayAudioConfig::copy_from(DelayAudioConfig &that)
 {
 	this->length = that.length;
 }
-
-
-
-
-

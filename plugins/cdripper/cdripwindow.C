@@ -31,9 +31,9 @@
 
 CDRipWindow::CDRipWindow(CDRipMain *cdripper, int x, int y)
  : BC_Window(PROGRAM_NAME ": CD Ripper", 
- 	x,
+	x,
 	y,
- 	450, 
+	450,
 	192, 
 	450, 
 	192,
@@ -51,6 +51,7 @@ CDRipWindow::~CDRipWindow()
 int CDRipWindow::create_objects()
 {
 	int y = 10, x = 10;
+
 	add_tool(new BC_Title(x, y, _("Select the range to transfer:"))); y += 25;
 	add_tool(new BC_Title(x, y, _("Track"))); x += 70;
 	add_tool(new BC_Title(x, y, _("Min"))); x += 70;
@@ -59,7 +60,7 @@ int CDRipWindow::create_objects()
 	add_tool(new BC_Title(x, y, _("Track"))); x += 70;
 	add_tool(new BC_Title(x, y, _("Min"))); x += 70;
 	add_tool(new BC_Title(x, y, _("Sec"))); x += 100;
-	
+
 	x = 10;  y += 25;
 	add_tool(track1 = new CDRipTextValue(this, &(cdripper->track1), x, y, 50));
 	x += 70;
@@ -67,7 +68,7 @@ int CDRipWindow::create_objects()
 	x += 70;
 	add_tool(sec1 = new CDRipTextValue(this, &(cdripper->sec1), x, y, 50));
 	x += 100;
-	
+
 	add_tool(track2 = new CDRipTextValue(this, &(cdripper->track2), x, y, 50));
 	x += 70;
 	add_tool(min2 = new CDRipTextValue(this, &(cdripper->min2), x, y, 50));
@@ -93,13 +94,6 @@ int CDRipWindow::create_objects()
 	return 0;
 }
 
-
-
-
-
-
-
-
 CDRipTextValue::CDRipTextValue(CDRipWindow *window, int *output, int x, int y, int w)
  : BC_TextBox(x, y, w, 1, *output)
 {
@@ -110,7 +104,7 @@ CDRipTextValue::CDRipTextValue(CDRipWindow *window, int *output, int x, int y, i
 CDRipTextValue::~CDRipTextValue()
 {
 }
-	
+
 int CDRipTextValue::handle_event()
 {
 	*output = atol(get_text());

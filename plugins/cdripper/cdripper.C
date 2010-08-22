@@ -19,7 +19,7 @@
  * 
  */
 
-#include "errorbox.h"
+#include "mainerror.h"
 #include "bcdisplayinfo.h"
 #include "cdripper.h"
 #include "cdripwindow.h"
@@ -109,16 +109,11 @@ int CDRipMain::get_parameters()
 	{
 		{
 			BC_DisplayInfo info;
-//printf("CDRipMain::get_parameters 1\n");
 			CDRipWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
-//printf("CDRipMain::get_parameters 2\n");
 			window.create_objects();
-//printf("CDRipMain::get_parameters 3\n");
 			result = window.run_window();
-//printf("CDRipMain::get_parameters 4\n");
 		}
 		if(!result) result2 = get_toc();
-//printf("CDRipMain::get_parameters 5 %d\n", result);
 	}
 	PluginAClient::sample_rate = 44100;
 	return result;
@@ -128,12 +123,7 @@ int CDRipMain::open_drive()
 {
 	if((cdrom = open(device, O_RDONLY)) < 0)
 	{
-		BC_DisplayInfo info;
-		ErrorBox window(PROGRAM_NAME ": CD Ripper",
-			info.get_abs_cursor_x(), 
-			info.get_abs_cursor_y());
-		window.create_objects(_("Can't open cdrom drive."));
-		window.run_window();
+		errorbox(_("Can't open cdrom drive."));
 		return 1;
 	}
 
@@ -155,64 +145,47 @@ int CDRipMain::get_toc()
 	struct cdrom_tochdr hdr;
 	struct cdrom_tocentry entry[100];
 	BC_DisplayInfo info;
-	
+
 	result = open_drive();
-	
+
 	if(ioctl(cdrom, CDROMREADTOCHDR, &hdr) < 0)
 	{
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
-			info.get_abs_cursor_x(), 
-			info.get_abs_cursor_y());
-		window.create_objects(_("Can't get total from table of contents."));
-		window.run_window();
+		errorbox(_("Can't get total from table of contents from CD."));
 		result = 1;
-  	}
+	}
 
-  	for(i = 0; i < hdr.cdth_trk1; i++)
-  	{
+	for(i = 0; i < hdr.cdth_trk1; i++)
+	{
 		entry[i].cdte_track = 1 + i;
 		entry[i].cdte_format = CDROM_LBA;
 		if(ioctl(cdrom, CDROMREADTOCENTRY, &entry[i]) < 0)
 		{
 			ioctl(cdrom, CDROMSTOP);
 			close(cdrom);
- 			ErrorBox window(PROGRAM_NAME ": CD Ripper",
-				info.get_abs_cursor_x(), 
-				info.get_abs_cursor_y());
-			window.create_objects(_("Can't get table of contents entry."));
-			window.run_window();
+			errorbox(_("Can't get table of contents entry from CD."));
 			result = 1;
 			break;
 		}
-  	}
+	}
 
-  	entry[i].cdte_track = CDROM_LEADOUT;
-  	entry[i].cdte_format = CDROM_LBA;
+	entry[i].cdte_track = CDROM_LEADOUT;
+	entry[i].cdte_format = CDROM_LBA;
 	if(ioctl(cdrom, CDROMREADTOCENTRY, &entry[i]) < 0)
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
-			info.get_abs_cursor_x(), 
-			info.get_abs_cursor_y());
-		window.create_objects(_("Can't get table of contents leadout."));
-		window.run_window();
+		errorbox(_("Can't get table of contents leadout from CD."));
 		result = 1;
 	}
-			
-			
-  	tracks = hdr.cdth_trk1+1;
+
+	tracks = hdr.cdth_trk1+1;
 
 	if(track1 <= 0 || track1 > tracks)
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
-			info.get_abs_cursor_x(), 
-			info.get_abs_cursor_y());
-		window.create_objects(_("Start track is out of range."));
-		window.run_window();
+		errorbox(_("Start track of CD is out of range."));
 		result = 1;
 	}
 
@@ -221,28 +194,20 @@ int CDRipMain::get_toc()
 	{
 		track2 = tracks;
 	}
-	
+
 	if(track2 < track1 || track2 <= 0)
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
-			info.get_abs_cursor_x(), 
-			info.get_abs_cursor_y());
-		window.create_objects(_("End track is out of range."));
-		window.run_window();
+		errorbox(_("End track of CD is out of range."));
 		result = 1;
 	}
-	
+
 	if(track1 == track2 && min2 == 0 && sec2 == 0)
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);
- 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
-			info.get_abs_cursor_x(), 
-			info.get_abs_cursor_y());
-		window.create_objects(_("End position is out of range."));
-		window.run_window();
+		errorbox(_("End position of CD is out of range."));
 		result = 1;
 	}
 
@@ -259,7 +224,6 @@ int CDRipMain::get_toc()
 		}
 	}
 
-//printf("CDRipMain::get_toc %ld %ld\n", startlba, endlba);
 	close_drive();
 	return result;
 }
@@ -269,7 +233,6 @@ int CDRipMain::start_loop()
 // get CD parameters
 	int result = 0;
 
-//printf("CDRipMain::start_loop 1\n");
 	result = get_toc();
 	FRAME = 4;    // 2 bytes 2 channels
 	previewing = 3;     // defeat bug in hardware
@@ -278,7 +241,6 @@ int CDRipMain::start_loop()
 	fragment_length *= NFRAMES * FRAMESIZE;
 	total_length = (endlba - startlba) * FRAMESIZE / fragment_length + previewing + 1;
 	result = open_drive();
-//printf("CDRipMain::start_loop 1 %d\n", interactive);
 
 // thread out progress
 	if(interactive)
@@ -287,7 +249,6 @@ int CDRipMain::start_loop()
 		sprintf(string, "%s...", plugin_title());
 		progress = start_progress(string, total_length);
 	}
-//printf("CDRipMain::start_loop 1\n");
 
 // get still more CD parameters
 	endofselection = 0;
@@ -297,7 +258,6 @@ int CDRipMain::start_loop()
 	arg.addr.lba = startlba_fragment;
 	arg.addr_format = CDROM_LBA;
 	arg.nframes = NFRAMES;
-//printf("CDRipMain::start_loop 2\n");
 
 	return result;
 }
@@ -316,10 +276,9 @@ int CDRipMain::stop_loop()
 	return 0;
 }
 
-int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
+int CDRipMain::process_loop(double **plugin_buffer, int &write_length)
 {
 	int result = 0;
-//printf("CDRipMain::process_loop 1\n");
 
 // render it
 	if(arg.addr.lba < endlba && !endofselection)
@@ -330,7 +289,6 @@ int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
 			fragment_length *= NFRAMES * FRAMESIZE;
 			endofselection = 1;
 		}
-//printf("CDRipMain::process_loop 2 %d %d\n", arg.addr.lba, endlba);
 
 		for(i = 0; i < fragment_length; 
 			i += NFRAMES * FRAMESIZE,
@@ -347,7 +305,6 @@ int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
 				if(attempts == 2 && !previewing) printf("Can't read CD audio.\n");
 			}
 		}
-//printf("CDRipMain::process_loop 3\n");
 
 		if(arg.addr.lba > startlba)
 		{
@@ -366,22 +323,18 @@ int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
 
 			write_length = fragment_samples;
 		}
-//printf("CDRipMain::process_loop 5 %d\n", interactive);
 
 		currentlength++;
 		if(interactive)
 		{
 			if(!result) result = progress->update(currentlength);
 		}
-//printf("CDRipMain::process_loop 6\n");
 	}
 	else
 	{
-//printf("CDRipMain::process_loop 7\n");
 		endofselection = 1;
 		write_length = 0;
 	}
 
-//printf("CDRipMain::process_loop 8 %d %d\n", endofselection, result);
 	return endofselection || result;
 }

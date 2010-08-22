@@ -33,9 +33,6 @@
 class CompressorEffect;
 
 
-
-
-
 class CompressorCanvas : public BC_SubWindow
 {
 public:
@@ -43,7 +40,6 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
-
 
 	enum
 	{
@@ -127,8 +123,6 @@ public:
 	CompressorEffect *plugin;
 };
 
-
-
 class CompressorWindow : public BC_Window
 {
 public:
@@ -139,8 +133,7 @@ public:
 	void update_canvas();
 	int close_event();
 	void draw_scales();
-	
-	
+
 	CompressorCanvas *canvas;
 	CompressorReaction *reaction;
 	CompressorClear *clear;
@@ -171,9 +164,9 @@ public:
 	int equivalent(CompressorConfig &that);
 	void interpolate(CompressorConfig &prev, 
 		CompressorConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame);
 
 	int total_points();
 	void remove_point(int number);
@@ -213,15 +206,14 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int64_t size, 
+	int process_buffer(int size, 
 		double **buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate);
 	double calculate_gain(double input);
 
 // Calculate linear output from linear input
 	double calculate_output(double x);
-
 
 	int load_defaults();
 	int save_defaults();
@@ -234,11 +226,11 @@ public:
 // The raw input data for each channel with readahead
 	double **input_buffer;
 // Number of samples in the input buffer 
-	int64_t input_size;
+	int input_size;
 // Number of samples allocated in the input buffer
-	int64_t input_allocated;
+	int input_allocated;
 // Starting sample of input buffer relative to project in requested rate.
-	int64_t input_start;
+	samplenum input_start;
 
 // ending input value of smoothed input
 	double next_target;
@@ -255,6 +247,5 @@ public:
 	double min_x, min_y;
 	double max_x, max_y;
 };
-
 
 #endif
