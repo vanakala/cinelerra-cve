@@ -38,10 +38,7 @@
 #include <math.h>
 #include <string.h>
 
-
-
 #define WINDOW_SIZE 16384
-
 
 // Noise collection is done either from the start of the effect or the start
 // of the previous keyframe.  It always covers the higher numbered samples
@@ -49,8 +46,6 @@
 
 class DenoiseFFTEffect;
 class DenoiseFFTWindow;
-
-
 
 
 class DenoiseFFTConfig
@@ -90,17 +85,6 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_HEADER(DenoiseFFTEffect, DenoiseFFTThread, DenoiseFFTWindow)
 
 
@@ -109,7 +93,7 @@ class DenoiseFFTRemove : public CrossfadeFFT
 public:
 	DenoiseFFTRemove(DenoiseFFTEffect *plugin);
 	int signal_process();
-	int read_samples(int64_t output_sample, 
+	int read_samples(samplenum output_sample, 
 		int samples, 
 		double *buffer);
 	DenoiseFFTEffect *plugin;
@@ -135,13 +119,11 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int64_t size, 
+	int process_buffer(int size, 
 		double *buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate);
 	void collect_noise();
-
-
 
 	int load_defaults();
 	int save_defaults();
@@ -150,35 +132,19 @@ public:
 
 	void process_window();
 
-
 	PLUGIN_CLASS_MEMBERS(DenoiseFFTConfig, DenoiseFFTThread)
 
 // Need to sample noise now.
 	int need_collection;
 // Start of sample of noise to collect
-	int64_t collection_sample;
+	samplenum collection_sample;
 	double *reference;
 	DenoiseFFTRemove *remove_engine;
 	DenoiseFFTCollect *collect_engine;
 };
 
 
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(DenoiseFFTEffect)
-
-
-
-
-
-
-
 
 
 DenoiseFFTConfig::DenoiseFFTConfig()
@@ -186,16 +152,6 @@ DenoiseFFTConfig::DenoiseFFTConfig()
 	samples = WINDOW_SIZE;
 	level = 0.0;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 DenoiseFFTLevel::DenoiseFFTLevel(DenoiseFFTEffect *plugin, int x, int y)
@@ -229,10 +185,9 @@ int DenoiseFFTSamples::handle_event()
 }
 
 
-
 DenoiseFFTWindow::DenoiseFFTWindow(DenoiseFFTEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	300, 
 	130, 
@@ -249,6 +204,7 @@ void DenoiseFFTWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Denoise power:")));
 	add_subwindow(level = new DenoiseFFTLevel(plugin, x + 130, y));
 	y += level->get_h() + 10;
@@ -272,24 +228,7 @@ void DenoiseFFTWindow::create_objects()
 
 WINDOW_CLOSE_EVENT(DenoiseFFTWindow)
 
-
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(DenoiseFFTEffect, DenoiseFFTThread, DenoiseFFTWindow)
-
-
-
-
-
-
-
 
 
 DenoiseFFTEffect::DenoiseFFTEffect(PluginServer *server)
@@ -327,10 +266,6 @@ void DenoiseFFTEffect::reset()
 
 int DenoiseFFTEffect::is_realtime() { return 1; }
 const char* DenoiseFFTEffect::plugin_title() { return N_("DenoiseFFT"); }
-
-
-
-
 
 void DenoiseFFTEffect::read_data(KeyFrame *keyframe)
 {
@@ -407,7 +342,7 @@ void DenoiseFFTEffect::update_gui()
 int DenoiseFFTEffect::load_configuration()
 {
 	KeyFrame *prev_keyframe = get_prev_keyframe(get_source_position());
-	int64_t prev_position = edl_to_local(prev_keyframe->position);
+	samplenum prev_position = edl_to_local(prev_keyframe->position);
 	read_data(prev_keyframe);
 	if(prev_position == 0) prev_position = get_source_start();
 
@@ -419,9 +354,9 @@ int DenoiseFFTEffect::load_configuration()
 	return 0;
 }
 
-int DenoiseFFTEffect::process_buffer(int64_t size, 
+int DenoiseFFTEffect::process_buffer(int size, 
 		double *buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate)
 {
 	load_configuration();
@@ -458,7 +393,7 @@ void DenoiseFFTEffect::collect_noise()
 	}
 	bzero(reference, sizeof(double) * WINDOW_SIZE / 2);
 
-	int64_t collection_start = collection_sample;
+	samplenum collection_start = collection_sample;
 	int step = 1;
 	int total_windows = 0;
 
@@ -484,13 +419,6 @@ void DenoiseFFTEffect::collect_noise()
 		reference[i] /= total_windows;
 	}
 }
-
-
-
-
-
-
-
 
 DenoiseFFTRemove::DenoiseFFTRemove(DenoiseFFTEffect *plugin)
 {
@@ -523,9 +451,6 @@ int DenoiseFFTRemove::read_samples(int64_t output_sample,
 		output_sample,
 		samples);
 }
-
-
-
 
 
 DenoiseFFTCollect::DenoiseFFTCollect(DenoiseFFTEffect *plugin)

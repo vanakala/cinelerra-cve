@@ -40,10 +40,10 @@ class DespikeWindow : public BC_Window
 public:
 	DespikeWindow(Despike *despike, int x, int y);
 	~DespikeWindow();
-	
+
 	int create_objects();
 	int close_event();
-	
+
 	Despike *despike;
 	DespikeLevel *level;
 	DespikeSlope *slope;
@@ -64,8 +64,5 @@ public:
 	int handle_event();
 	Despike *despike;
 };
-
-
-
 
 #endif

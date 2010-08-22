@@ -33,13 +33,9 @@
 PLUGIN_THREAD_OBJECT(Despike, DespikeThread, DespikeWindow)
 
 
-
-
-
-
 DespikeWindow::DespikeWindow(Despike *despike, int x, int y)
  : BC_Window(despike->gui_string, 
- 	x, 
+	x,
 	y, 
 	230, 
 	110, 
@@ -59,6 +55,9 @@ DespikeWindow::~DespikeWindow()
 int DespikeWindow::create_objects()
 {
 	int x = 10, y = 10;
+	VFrame *ico = despike->new_picon();
+
+	set_icon(ico);
 	add_tool(new BC_Title(5, y, _("Maximum level:")));
 	y += 20;
 	add_tool(level = new DespikeLevel(despike, x, y));
@@ -68,6 +67,7 @@ int DespikeWindow::create_objects()
 	add_tool(slope = new DespikeSlope(despike, x, y));
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
@@ -79,12 +79,9 @@ int DespikeWindow::close_event()
 }
 
 
-
-
-
 DespikeLevel::DespikeLevel(Despike *despike, int x, int y)
  : BC_FSlider(x, 
- 	y, 
+	y,
 	0,
 	200,
 	200,
@@ -103,7 +100,7 @@ int DespikeLevel::handle_event()
 
 DespikeSlope::DespikeSlope(Despike *despike, int x, int y)
  : BC_FSlider(x, 
- 	y, 
+	y,
 	0,
 	200,
 	200,
@@ -113,6 +110,7 @@ DespikeSlope::DespikeSlope(Despike *despike, int x, int y)
 {
 	this->despike = despike;
 }
+
 int DespikeSlope::handle_event()
 {
 	despike->config.slope = get_value();

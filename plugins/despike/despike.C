@@ -67,15 +67,14 @@ RAISE_WINDOW_MACRO(Despike)
 LOAD_CONFIGURATION_MACRO(Despike, DespikeConfig)
 
 
-int Despike::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int Despike::process_realtime(int size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 
 	double threshold = db.fromdb(config.level);
 	double change = db.fromdb(config.slope);
 
-//printf("Despike::process_realtime 1\n");
-	for(int64_t i = 0; i < size; i++)
+	for(int i = 0; i < size; i++)
 	{
 		if(fabs(input_ptr[i]) > threshold || 
 			fabs(input_ptr[i]) - fabs(last_sample) > change) 
@@ -88,7 +87,6 @@ int Despike::process_realtime(int64_t size, double *input_ptr, double *output_pt
 			last_sample = input_ptr[i];
 		}
 	}
-//printf("Despike::process_realtime 2\n");
 
 	return 0;
 }
@@ -100,7 +98,7 @@ int Despike::load_defaults()
 
 // set the default directory
 	sprintf(directory, "%sdespike.rc", get_defaultdir());
-	
+
 // load the defaults
 
 	defaults = new BC_Hash(directory);
@@ -171,20 +169,6 @@ void Despike::update_gui()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 DespikeConfig::DespikeConfig()
 {
 	level = 0;
@@ -205,9 +189,9 @@ void DespikeConfig::copy_from(DespikeConfig &that)
 
 void DespikeConfig::interpolate(DespikeConfig &prev, 
 		DespikeConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame)
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -215,9 +199,3 @@ void DespikeConfig::interpolate(DespikeConfig &prev,
 	this->level = prev.level * prev_scale + next.level * next_scale;
 	this->slope = prev.slope * prev_scale + next.slope * next_scale;
 }
-
-
-
-
-
-

@@ -62,9 +62,9 @@ public:
 	int equivalent(DenoiseConfig &that);
 	void interpolate(DenoiseConfig &prev, 
 		DenoiseConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	double level;
 };
 
@@ -73,7 +73,7 @@ class Tree
 public:
 	Tree(int input_length, int levels);
 	~Tree();
-	
+
 	int input_length;
 	int levels;
 	double **values;
@@ -84,7 +84,7 @@ class WaveletCoeffs
 public:
 	WaveletCoeffs(double alpha, double beta);
 	~WaveletCoeffs();
-	
+
 	double values[6];
 	int length;
 };
@@ -108,10 +108,7 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
-
-
-
+	int process_realtime(int size, double *input_ptr, double *output_ptr);
 
 	int load_defaults();
 	int save_defaults();
@@ -122,17 +119,17 @@ public:
 	void process_window();
 	double dot_product(double *data, double *filter, char filtlen);
 	int convolve_dec_2(double *input_sequence, 
-		int64_t length,
+		int length,
 		double *filter, 
 		int filtlen, 
 		double *output_sequence);
-	int64_t decompose_branches(double *in_data, 
-		int64_t length, 
+	int decompose_branches(double *in_data, 
+		int length,
 		WaveletFilters *decomp_filter, 
 		double *out_low, 
 		double *out_high);
 	int wavelet_decomposition(double *in_data, 
-		int64_t in_length, 
+		int in_length,
 		double **out_data);
 	int tree_copy(double **output, 
 		double **input, 
@@ -142,18 +139,18 @@ public:
 	double dot_product_even(double *data, double *filter, int filtlen);
 	double dot_product_odd(double *data, double *filter, int filtlen);
 	int convolve_int_2(double *input_sequence, 
-		int64_t length, 
+		int length,
 		double *filter, 
 		int filtlen, 
 		int sum_output, 
 		double *output_sequence);
-	int64_t reconstruct_branches(double *in_low, 
+	int reconstruct_branches(double *in_low, 
 		double *in_high, 
-		int64_t in_length,
+		int in_length,
 		WaveletFilters *recon_filter, 
 		double *output);
 	int wavelet_reconstruction(double **in_data, 
-		int64_t in_length, 
+		int in_length,
 		double *out_data);
 
 
@@ -161,16 +158,16 @@ public:
 
 // buffer for storing fragments until a complete window size is armed
 	double *input_buffer;
-	int64_t input_size;
-	int64_t input_allocation;
+	int input_size;
+	int input_allocation;
 // buffer for storing fragments until a fragment is ready to be read
 	double *output_buffer;
-	int64_t output_size;
-	int64_t output_allocation;
+	int output_size;
+	int output_allocation;
 	double *dsp_in;
 	double *dsp_out;
 // buffer for capturing output of a single iteration
-	double *dsp_iteration;   
+	double *dsp_iteration;
 	Tree *ex_coeff_d, *ex_coeff_r, *ex_coeff_rn;
 	WaveletCoeffs *wave_coeff_d, *wave_coeff_r;
 	WaveletFilters *decomp_filter, *recon_filter;
@@ -180,18 +177,18 @@ public:
 	double out_scale;
 
 // depends on the type of music
-	int64_t levels;
+	int levels;
 // higher number reduces aliasing due to a high noise_level
 // also increases high end
-	int64_t iterations;
+	int iterations;
 // daub6 coeffs
 	double alpha;
-	double beta;          
+	double beta;
 // power
 	float output_level;
 // higher number kills more noise at the expense of more aliasing
 	float noise_level;
-	int64_t window_size;
+	int window_size;
 	int first_window;
 	int initialized;
 };

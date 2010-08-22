@@ -37,15 +37,11 @@
 #define N_(String) gettext_noop (String)
 
 
-
-
 #define WINDOW_BORDER (window_size / 2)
 #define SGN(x) (x<0 ? -1: 1)
 
 
 REGISTER_PLUGIN(DenoiseEffect)
-
-
 
 
 
@@ -126,7 +122,6 @@ void DenoiseEffect::reset()
 	dsp_out = 0;
 	initialized = 0;
 
-
 	alpha = 1.359803732;
 	beta = -0.782106385;
 	window_size = 4096;
@@ -181,7 +176,7 @@ int DenoiseEffect::load_defaults()
 	sprintf(directory, "%sdenoise.rc", BCASTDIR);
 	defaults = new BC_Hash(directory);
 	defaults->load();
-	
+
 	config.level = defaults->get("LEVEL", config.level);
 	return 0;
 }
@@ -219,17 +214,17 @@ double DenoiseEffect::dot_product(double *data, double *filter, char filtlen)
 }
 
 int DenoiseEffect::convolve_dec_2(double *input_sequence, 
-	int64_t length,
+	int length,
 	double *filter, 
 	int filtlen, 
 	double *output_sequence)
 {
 // convolve the input sequence with the filter and decimate by two
 	int i, shortlen, offset;
-	int64_t lengthp4 = length + 4;
-	int64_t lengthm4 = length - 4;
-	int64_t lengthp5 = length + 5;
-	int64_t lengthp8 = length + 8;
+	int lengthp4 = length + 4;
+	int lengthm4 = length - 4;
+	int lengthp5 = length + 5;
+	int lengthp8 = length + 8;
 
 	for(i = 0; (i <= lengthp8) && ((i - filtlen) <= lengthp8); i += 2)
 	{
@@ -249,8 +244,8 @@ int DenoiseEffect::convolve_dec_2(double *input_sequence,
 	return 0;
 }
 
-int64_t DenoiseEffect::decompose_branches(double *in_data, 
-	int64_t length, 
+int DenoiseEffect::decompose_branches(double *in_data, 
+	int length, 
 	WaveletFilters *decomp_filter, 
 	double *out_low, 
 	double *out_high)
@@ -263,7 +258,7 @@ int64_t DenoiseEffect::decompose_branches(double *in_data,
 }
 
 int DenoiseEffect::wavelet_decomposition(double *in_data, 
-	int64_t in_length, 
+	int in_length, 
 	double **out_data)
 {
 	for(int i = 0; i < levels; i++)
@@ -370,7 +365,7 @@ double DenoiseEffect::dot_product_odd(double *data, double *filter, int filtlen)
 }
 
 int DenoiseEffect::convolve_int_2(double *input_sequence, 
-	int64_t length, 
+	int length,
 	double *filter, 
 	int filtlen, 
 	int sum_output, 
@@ -409,9 +404,9 @@ int DenoiseEffect::convolve_int_2(double *input_sequence,
 }
 
 
-int64_t DenoiseEffect::reconstruct_branches(double *in_low, 
+int DenoiseEffect::reconstruct_branches(double *in_low, 
 	double *in_high, 
-	int64_t in_length,
+	int in_length,
 	WaveletFilters *recon_filter, 
 	double *output)
 {
@@ -425,7 +420,7 @@ int64_t DenoiseEffect::reconstruct_branches(double *in_low,
 }
 
 int DenoiseEffect::wavelet_reconstruction(double **in_data, 
-	int64_t in_length, 
+	int in_length, 
 	double *out_data)
 {
 	double *output;
@@ -465,8 +460,7 @@ void DenoiseEffect::process_window()
 		tree_copy(ex_coeff_rn->values, ex_coeff_d->values, window_size, levels);
 
 // qualify coeffs
-//printf("DenoiseEffect::process_window %f\n", config.level);
- 		threshold(window_size, config.level * 10.0, levels);
+		threshold(window_size, config.level * 10.0, levels);
 
 		wavelet_reconstruction(ex_coeff_r->values, window_size, dsp_iteration);
 		wavelet_reconstruction(ex_coeff_rn->values, window_size, dsp_in);
@@ -477,19 +471,16 @@ void DenoiseEffect::process_window()
 }
 
 
-
-
-int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int DenoiseEffect::process_realtime(int size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 
 	if(!initialized)
 	{
-		int64_t size_factor = (int)(pow(2, levels));
+		int size_factor = (int)(pow(2, levels));
 		dsp_in = new double[window_size * size_factor];
 		dsp_out = new double[window_size * 2];
 		dsp_iteration = new double[window_size * 2];
-
 
 		ex_coeff_d = new Tree(window_size, levels);
 		ex_coeff_r = new Tree(window_size, levels);
@@ -531,23 +522,14 @@ int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *out
 		}
 		bzero(dsp_out, sizeof(double) * window_size);
 
-
-
-
-
-
 // First window produces garbage
 		if(!first_window)
 			process_window();
 		first_window = 0;
 
 
-
-
-
-
 // Crossfade into the output buffer
-		int64_t new_allocation = output_size + window_size;
+		int new_allocation = output_size + window_size;
 		if(new_allocation > output_allocation)
 		{
 			double *new_output = new double[new_allocation];
@@ -555,9 +537,7 @@ int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *out
 			if(output_buffer)
 			{
 				memcpy(new_output, output_buffer, sizeof(double) * output_size);
-//printf("CrossfadeFFT::process_fifo 1 %p\n", output_buffer);
 				delete [] output_buffer;
-//printf("CrossfadeFFT::process_fifo 2\n");
 			}
 			output_buffer = new_output;
 			output_allocation = new_allocation;
@@ -587,7 +567,6 @@ int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *out
 			output_size += window_size;
 		}
 
-
 // Shift input buffer forward
 		for(int i = window_size - WINDOW_BORDER, j = 0; 
 			i < input_size; 
@@ -595,7 +574,6 @@ int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *out
 			input_buffer[j] = input_buffer[i];
 		input_size -= window_size - WINDOW_BORDER;
 	}
-
 
 // Have enough to send to output
 	if(output_size - WINDOW_BORDER >= size)
@@ -607,17 +585,11 @@ int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *out
 	}
 	else
 	{
-//printf("DenoiseEffect::process_realtime 1\n");
-		bzero(output_ptr, sizeof(double) * size);
+		memset(output_ptr, 0, sizeof(double) * size);
 	}
 
 	return 0;
 }
-
-
-
-
-
 
 
 Tree::Tree(int input_length, int levels)
@@ -731,13 +703,6 @@ WaveletFilters::~WaveletFilters()
 }
 
 
-
-
-
-
-
-
-
 DenoiseConfig::DenoiseConfig()
 {
 	level = 1.0;
@@ -755,38 +720,21 @@ int DenoiseConfig::equivalent(DenoiseConfig &that)
 
 void DenoiseConfig::interpolate(DenoiseConfig &prev, 
 	DenoiseConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	samplenum prev_frame, 
+	samplenum next_frame, 
+	samplenum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 	this->level = prev.level * prev_scale + next.level * next_scale;
 }
 
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(DenoiseEffect, DenoiseThread, DenoiseWindow)
-
-
-
-
-
-
-
-
 
 
 DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	150, 
 	50, 
@@ -802,7 +750,8 @@ DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin, int x, int y)
 void DenoiseWindow::create_objects()
 {
 	int x = 10, y = 10;
-	
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Level:")));
 	x += 70;
 	add_subwindow(scale = new DenoiseLevel(plugin, x, y));
@@ -823,16 +772,6 @@ void DenoiseWindow::update()
 }
 
 
-
-
-
-
-
-
-
-
-
-
 DenoiseLevel::DenoiseLevel(DenoiseEffect *plugin, int x, int y)
  : BC_FPot(x, y, (float)plugin->config.level, 0, 1.0)
 {
@@ -846,19 +785,3 @@ int DenoiseLevel::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
