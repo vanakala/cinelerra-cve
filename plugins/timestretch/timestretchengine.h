@@ -22,7 +22,7 @@
 #ifndef TIMESTRETCHENGINE_H
 #define TIMESTRETCHENGINE_H
 
-
+#include "datatype.h"
 #include <stdint.h>
 
 
@@ -52,18 +52,14 @@ private:
 	int output_allocation;
 	int output_size;
 // Sample at beginning of output buffer
-	int64_t output_sample;
+	samplenum output_sample;
 	double *input;
 	int input_allocation;
 	int input_size;
 // Sample at beginning of input buffer
-	int64_t input_sample;
+	samplenum input_sample;
 	double scale;
 };
-
-
-
-
 
 #endif
 

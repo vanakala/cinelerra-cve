@@ -45,12 +45,6 @@ SpectrogramConfig::SpectrogramConfig()
 	level = 0.0;
 }
 
-
-
-
-
-
-
 SpectrogramLevel::SpectrogramLevel(Spectrogram *plugin, int x, int y)
  : BC_FPot(x, y, plugin->config.level, INFINITYGAIN, 0)
 {
@@ -65,18 +59,9 @@ int SpectrogramLevel::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
 SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	640, 
 	480, 
@@ -99,6 +84,7 @@ void SpectrogramWindow::create_objects()
 	int divisions = 5;
 	char string[BCTEXTLEN];
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(canvas = new BC_SubWindow(x, 
 		y, 
 		get_w() - x - 10, 
@@ -132,23 +118,7 @@ void SpectrogramWindow::update_gui()
 	level->update(plugin->config.level);
 }
 
-
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(Spectrogram, SpectrogramThread, SpectrogramWindow)
-
-
-
-
-
-
-
 
 
 SpectrogramFFT::SpectrogramFFT(Spectrogram *plugin)
@@ -188,13 +158,6 @@ int SpectrogramFFT::read_samples(int64_t output_sample,
 }
 
 
-
-
-
-
-
-
-
 Spectrogram::Spectrogram(PluginServer *server)
  : PluginAClient(server)
 {
@@ -223,9 +186,9 @@ void Spectrogram::reset()
 const char* Spectrogram::plugin_title() { return N_("Spectrogram"); }
 int Spectrogram::is_realtime() { return 1; }
 
-int Spectrogram::process_buffer(int64_t size, 
+int Spectrogram::process_buffer(int size, 
 		double *buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate)
 {
 	load_configuration();

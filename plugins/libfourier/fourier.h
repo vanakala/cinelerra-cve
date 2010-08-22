@@ -23,7 +23,7 @@
 #define FOURIER_H
 
 
-
+#include "datatype.h"
 #include <stdint.h>
 #include <fftw3.h>
 
@@ -43,11 +43,11 @@ public:
 	~FFT();
 
 	int do_fft(unsigned int samples,  // must be a power of 2
-	    	int inverse,         // 0 = forward FFT, 1 = inverse
-	    	double *real_in,     // array of input's real samples
-	    	double *imag_in,     // array of input's imag samples
-    		double *real_out,    // array of output's reals
-    		double *imag_out);   // array of output's imaginaries
+		int inverse,         // 0 = forward FFT, 1 = inverse
+		double *real_in,     // array of input's real samples
+		double *imag_in,     // array of input's imag samples
+		double *real_out,    // array of output's reals
+		double *imag_out);   // array of output's imaginaries
 	int symmetry(int size, double *freq_real, double *freq_imag);
 	unsigned int samples_to_bits(unsigned int samples);
 	unsigned int reverse_bits(unsigned int index, unsigned int bits);
@@ -62,8 +62,6 @@ public:
 // We have to get around the thread unsafety of fftw
 	static fftw_plan_desc *fftw_plans;
 	static Mutex plans_lock;
-
-
 };
 
 
@@ -81,7 +79,6 @@ public:
 	int delete_fft();
 	// functioy to be called to initialize oversampling
 	void set_oversample(int oversample); // 2, 4,8 are good values
-	
 
 
 // Read enough samples from input to generate the requested number of samples.
@@ -91,32 +88,31 @@ public:
 //               It's always contiguous.
 // output_ptr - if nonzero, output is put here
 // direction - PLAY_FORWARD or PLAY_REVERSE
-	int process_buffer(int64_t output_sample,
-		long size, 
+	int process_buffer(samplenum output_sample,
+		int size,
 		double *output_ptr,
 		int direction);
 
-	int process_buffer_oversample(int64_t output_sample,
-		long size, 
+	int process_buffer_oversample(samplenum output_sample,
+		int size,
 		double *output_ptr,
 		int direction);
 
 // Called by process_buffer to read samples from input.
 // Returns 1 on error or 0 on success.
-	virtual int read_samples(int64_t output_sample, 
+	virtual int read_samples(samplenum output_sample, 
 		int samples, 
 		double *buffer);
 
 // Process a window in the frequency domain, called by process_buffer()
-	virtual int signal_process();        
+	virtual int signal_process();
 
 // Process a window in the frequency domain, called by process_buffer_oversample()
 // Reset parameter should cause to reset all accumulated data
 	virtual int signal_process_oversample(int reset);
-   
 
 // Size of a window.  Automatically fixed to a power of 2
-	long window_size;   
+	int window_size;
 
 // Output of FFT
 	double *freq_real;
@@ -135,17 +131,17 @@ private:
 	double *temp_imag;
 
 // samples in input_buffer
-	long input_size;
+	int input_size;
 // window_size
-	long input_allocation;
+	int input_allocation;
 // Samples in output buffer less window border
-	long output_size;
+	int output_size;
 // Space in output buffer including window border
-	long output_allocation;
+	int output_allocation;
 // Starting sample of output buffer in project
-	int64_t output_sample;
+	samplenum output_sample;
 // Starting sample of input buffer in project
-	int64_t input_sample;
+	samplenum input_sample;
 // Don't crossfade the first window
 	int first_window;
 

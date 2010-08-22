@@ -54,11 +54,11 @@ public:
 // sample_rate - scale of start_position.
 	virtual int process_buffer(int size,
 		double **buffer,
-		posnum start_position,
+		samplenum start_position,
 		int sample_rate);
 	virtual int process_buffer(int size,
 		double *buffer,
-		posnum start_position,
+		samplenum start_position,
 		int sample_rate);
 
 

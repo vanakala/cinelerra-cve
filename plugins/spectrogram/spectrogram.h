@@ -70,8 +70,6 @@ public:
 
 PLUGIN_THREAD_HEADER(Spectrogram, SpectrogramThread, SpectrogramWindow)
 
-
-
 class SpectrogramFFT : public CrossfadeFFT
 {
 public:
@@ -100,13 +98,13 @@ class Spectrogram : public PluginAClient
 public:
 	Spectrogram(PluginServer *server);
 	~Spectrogram();
-	
+
 	VFrame* new_picon();
 	const char* plugin_title();
 	int is_realtime();
-	int process_buffer(int64_t size, 
+	int process_buffer(int size, 
 		double *buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate);
 	int show_gui();
 	void raise_window();
@@ -117,8 +115,8 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void update_gui();
-	void render_gui(void *data, int size);	
-	
+	void render_gui(void *data, int size);
+
 	void reset();
 
 	int done;

@@ -67,15 +67,13 @@ class TimeStretchConfig
 public:
 	TimeStretchConfig();
 
-
 	int equivalent(TimeStretchConfig &that);
 	void copy_from(TimeStretchConfig &that);
 	void interpolate(TimeStretchConfig &prev, 
 		TimeStretchConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
-
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	double scale;
 };
@@ -87,8 +85,7 @@ public:
 	PitchEngine(TimeStretch *plugin);
 	~PitchEngine();
 
-
-	int read_samples(int64_t output_sample, 
+	int read_samples(samplenum output_sample, 
 		int samples, 
 		double *buffer);
 	int signal_process_oversample(int reset);
@@ -98,8 +95,8 @@ public:
 	double *input_buffer;
 	int input_size;
 	int input_allocated;
-	int64_t current_input_sample;
-	int64_t current_output_sample;
+	samplenum current_input_sample;
+	samplenum current_output_sample;
 
 	double *last_phase;
 	double *new_freq;
@@ -116,33 +113,26 @@ class TimeStretch : public PluginAClient
 public:
 	TimeStretch(PluginServer *server);
 	~TimeStretch();
-	
-	
+
 	VFrame* new_picon();
 	const char* plugin_title();
 	int is_realtime();
 	int get_parameters();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-
-	int process_buffer(int64_t size, 
+	int process_buffer(int size, 
 		double *buffer,
-		int64_t start_position,
+		posnum start_position,
 		int sample_rate);
-
-
 	int show_gui();
 	void raise_window();
 	int set_string();
 
-	
 	int load_configuration();
 	int load_defaults();
 	int save_defaults();
-	
+
 	void update_gui();
-	
-	
 
 	PitchEngine *pitch;
 	Resample *resample;
@@ -158,6 +148,5 @@ public:
 	TimeStretchThread *thread;
 
 };
-
 
 #endif

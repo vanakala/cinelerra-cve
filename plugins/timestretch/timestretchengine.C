@@ -77,7 +77,6 @@ void TimeStretchEngine::overlay(double *out, double *in, int size, int skirt)
 
 int TimeStretchEngine::process(double *in_buffer, int in_size)
 {
-//printf("TimeStretchEngine::process 1\n");
 // Stack on input buffer
 	if(input_size + in_size > input_allocation)
 	{
@@ -92,12 +91,9 @@ int TimeStretchEngine::process(double *in_buffer, int in_size)
 		input_allocation = new_input_allocation;
 	}
 
-//printf("TimeStretchEngine::process 10\n");
-
 	memcpy(input + input_size, in_buffer, in_size * sizeof(double));
 	input_size += in_size;
 
-//printf("TimeStretchEngine::process 20\n");
 // Overlay windows from input buffer into output buffer
 	int done = 0;
 	do
@@ -119,11 +115,9 @@ int TimeStretchEngine::process(double *in_buffer, int in_size)
 			input_size -= current_in_sample - input_sample;
 			input_sample = current_in_sample;
 			done = 1;
-//printf("TimeStretchEngine::process 10\n");
 		}
 		else
 		{
-//printf("TimeStretchEngine::process 20\n");
 // Allocate output buffer
 			if(output_size + window_size + window_skirt > output_allocation)
 			{
@@ -147,11 +141,9 @@ int TimeStretchEngine::process(double *in_buffer, int in_size)
 				window_size,
 				window_skirt);
 			output_size += window_size;
-//printf("TimeStretchEngine::process 30 %d\n", output_size);
 		}
 	}while(!done);
 
-//printf("TimeStretchEngine::process 100 %d\n", output_size);
 	return output_size;
 }
 
@@ -167,12 +159,3 @@ double* TimeStretchEngine::get_samples()
 {
 	return output;
 }
-
-
-
-
-
-
-
-
-

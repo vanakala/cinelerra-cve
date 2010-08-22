@@ -61,15 +61,13 @@ class PitchConfig
 public:
 	PitchConfig();
 
-
 	int equivalent(PitchConfig &that);
 	void copy_from(PitchConfig &that);
 	void interpolate(PitchConfig &prev, 
 		PitchConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
-
+		posnum prev_frame, 
+		posnum next_frame, 
+		posnum current_frame);
 
 	double scale;
 };
@@ -80,11 +78,12 @@ public:
 	PitchFFT(PitchEffect *plugin);
 	~PitchFFT();
 	int signal_process_oversample(int reset);
-	int read_samples(int64_t output_sample, 
+	int read_samples(samplenum output_sample,
 		int samples, 
 		double *buffer);
+
 	PitchEffect *plugin;
-	
+
 	double *last_phase;
 	double *new_freq;
 	double *new_magn;
@@ -104,16 +103,15 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int64_t size, 
+
+	int process_buffer(int size, 
 		double *buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate);
+
 	int show_gui();
 	void raise_window();
 	int set_string();
-
-
-
 
 	int load_defaults();
 	int save_defaults();
@@ -121,12 +119,10 @@ public:
 	void reset();
 	void update_gui();
 
-
 	BC_Hash *defaults;
 	PitchThread *thread;
 	PitchFFT *fft;
 	PitchConfig config;
 };
-
 
 #endif

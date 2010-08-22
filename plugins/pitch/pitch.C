@@ -43,9 +43,6 @@
 REGISTER_PLUGIN(PitchEffect);
 
 
-
-
-
 PitchEffect::PitchEffect(PluginServer *server)
  : PluginAClient(server)
 {
@@ -106,7 +103,7 @@ int PitchEffect::load_defaults()
 	sprintf(directory, "%spitch.rc", BCASTDIR);
 	defaults = new BC_Hash(directory);
 	defaults->load();
-	
+
 	config.scale = defaults->get("SCALE", config.scale);
 	return 0;
 }
@@ -151,13 +148,12 @@ void PitchEffect::update_gui()
 
 
 
-int PitchEffect::process_buffer(int64_t size, 
+int PitchEffect::process_buffer(int size, 
 		double *buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate)
 {
 	load_configuration();
-
 
 	if(!fft)
 	{
@@ -173,12 +169,6 @@ int PitchEffect::process_buffer(int64_t size,
 
 	return 0;
 }
-
-
-
-
-
-
 
 
 
@@ -209,22 +199,21 @@ PitchFFT::~PitchFFT()
 int PitchFFT::signal_process_oversample(int reset)
 {
 	double scale = plugin->config.scale;
-	
+
 	memset(new_freq, 0, window_size * sizeof(double));
 	memset(new_magn, 0, window_size * sizeof(double));
-	
+
 	if (reset)
 	{
 		memset (last_phase, 0, WINDOW_SIZE * sizeof(double));
 		memset (sum_phase, 0, WINDOW_SIZE * sizeof(double));
 	}
-	
+
 // expected phase difference between windows
 	double expected_phase_diff = 2.0 * M_PI / oversample; 
 // frequency per bin
 	double freq_per_bin = (double)plugin->PluginAClient::project_sample_rate / window_size;
 
-//scale = 1.0;
 	for (int i = 0; i < window_size/2; i++) 
 	{
 // Convert to magnitude and phase
@@ -245,43 +234,22 @@ int PitchFFT::signal_process_oversample(int reset)
 			qpd += qpd&1;
 		else 
 			qpd -= qpd&1;
-		temp -= M_PI*(double)qpd;	
+		temp -= M_PI*(double)qpd;
 
 // Deviation from bin frequency	
 		temp = oversample * temp / (2.0 * M_PI);
 
 		temp = (double)(temp + i) * freq_per_bin;
 
-//		anal_magn[i] = magn;
-//		anal_freq[i] = temp;
-
 // Now temp is the real freq... move it!
-//		int new_bin = (int)(temp * scale / freq_per_bin + 0.5);
 		int new_bin = (int)(i * scale);
 		if (new_bin >= 0 && new_bin < window_size/2)
 		{
-//			double tot_magn = new_magn[new_bin] + magn;
-
-//			new_freq[new_bin] = (new_freq[new_bin] * new_magn[new_bin] + temp *scale* magn) / tot_magn;
 			new_freq[new_bin] = temp*scale;
 			new_magn[new_bin] += magn;
 		}
-
 	}
 
-/*	for (int k = 0; k <= window_size/2; k++) {
-		int index = k/scale;
-		if (index <= window_size/2) {
-			new_magn[k] += anal_magn[index];
-			new_freq[k] = anal_freq[index] * scale;
-		} else{
-
-		new_magn[k] = 0;
-		new_freq[k] = 0;
-		}
-	}
-
-*/
 	// Synthesize back the fft window 
 	for (int i = 0; i < window_size/2; i++) 
 	{
@@ -308,7 +276,6 @@ int PitchFFT::signal_process_oversample(int reset)
 		fftw_data[i][1] = magn * sin(phase);
 	}
 
-//symmetry(window_size, freq_real, freq_imag);
 	for (int i = window_size/2; i< window_size; i++)
 	{
 		fftw_data[i][0] = 0;
@@ -319,7 +286,7 @@ int PitchFFT::signal_process_oversample(int reset)
 	return 0;
 }
 
-int PitchFFT::read_samples(int64_t output_sample, 
+int PitchFFT::read_samples(samplenum output_sample, 
 	int samples, 
 	double *buffer)
 {
@@ -329,11 +296,6 @@ int PitchFFT::read_samples(int64_t output_sample,
 		output_sample,
 		samples);
 }
-
-
-
-
-
 
 
 PitchConfig::PitchConfig()
@@ -353,9 +315,9 @@ void PitchConfig::copy_from(PitchConfig &that)
 
 void PitchConfig::interpolate(PitchConfig &prev, 
 	PitchConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -363,25 +325,11 @@ void PitchConfig::interpolate(PitchConfig &prev,
 }
 
 
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(PitchEffect, PitchThread, PitchWindow) 
-
-
-
-
-
-
-
-
 
 PitchWindow::PitchWindow(PitchEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	150, 
 	50, 
@@ -397,7 +345,8 @@ PitchWindow::PitchWindow(PitchEffect *plugin, int x, int y)
 void PitchWindow::create_objects()
 {
 	int x = 10, y = 10;
-	
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Scale:")));
 	x += 70;
 	add_subwindow(scale = new PitchScale(plugin, x, y));
@@ -413,16 +362,6 @@ void PitchWindow::update()
 }
 
 
-
-
-
-
-
-
-
-
-
-
 PitchScale::PitchScale(PitchEffect *plugin, int x, int y)
  : BC_FPot(x, y, (float)plugin->config.scale, .5, 1.5)
 {
@@ -436,19 +375,3 @@ int PitchScale::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
