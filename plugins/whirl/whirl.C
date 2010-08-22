@@ -57,10 +57,10 @@ public:
 	int equivalent(WhirlConfig &src);
 	void interpolate(WhirlConfig &prev, 
 		WhirlConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
-	
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
+
 	float angle;
 	float pinch;
 	float radius;
@@ -76,7 +76,6 @@ public:
 };
 
 
-
 class WhirlPinch : public BC_FSlider
 {
 public:
@@ -84,7 +83,6 @@ public:
 	int handle_event();
 	WhirlEffect *plugin;
 };
-
 
 
 class WhirlRadius : public BC_FSlider
@@ -125,7 +123,6 @@ public:
 	void process_package(LoadPackage *package);
 	WhirlEngine *server;
 	WhirlEffect *plugin;
-	
 };
 
 
@@ -138,7 +135,6 @@ public:
 	LoadPackage* new_package();
 	WhirlEffect *plugin;
 };
-
 
 
 class WhirlEffect : public PluginVClient
@@ -170,27 +166,9 @@ public:
 	int need_reconfigure;
 };
 
-
-
-
 PLUGIN_THREAD_OBJECT(WhirlEffect, WhirlThread, WhirlWindow)
 
-
 REGISTER_PLUGIN(WhirlEffect)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 WhirlConfig::WhirlConfig()
@@ -216,9 +194,9 @@ int WhirlConfig::equivalent(WhirlConfig &src)
 
 void WhirlConfig::interpolate(WhirlConfig &prev, 
 	WhirlConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -229,17 +207,9 @@ void WhirlConfig::interpolate(WhirlConfig &prev,
 }
 
 
-
-
-
-
-
-
-
-
 WhirlWindow::WhirlWindow(WhirlEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	220, 
 	200, 
@@ -253,10 +223,11 @@ WhirlWindow::WhirlWindow(WhirlEffect *plugin, int x, int y)
 }
 
 
-
 void WhirlWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Radius")));
 	y += 20;
 	add_subwindow(radius = new WhirlRadius(plugin, x, y));
@@ -280,17 +251,6 @@ int WhirlWindow::close_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 WhirlAngle::WhirlAngle(WhirlEffect *plugin, int x, int y)
  : BC_FSlider(x, 
 	   	y, 
@@ -303,6 +263,7 @@ WhirlAngle::WhirlAngle(WhirlEffect *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int WhirlAngle::handle_event()
 {
 	plugin->config.angle = get_value();
@@ -311,11 +272,9 @@ int WhirlAngle::handle_event()
 }
 
 
-
-
 WhirlPinch::WhirlPinch(WhirlEffect *plugin, int x, int y)
  : BC_FSlider(x, 
-	   	y, 
+		y,
 		0,
 		200,
 		200, 
@@ -325,6 +284,7 @@ WhirlPinch::WhirlPinch(WhirlEffect *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int WhirlPinch::handle_event()
 {
 	plugin->config.pinch = get_value();
@@ -333,11 +293,9 @@ int WhirlPinch::handle_event()
 }
 
 
-
-
 WhirlRadius::WhirlRadius(WhirlEffect *plugin, int x, int y)
  : BC_FSlider(x, 
-	   	y, 
+		y,
 		0,
 		200,
 		200, 
@@ -347,21 +305,13 @@ WhirlRadius::WhirlRadius(WhirlEffect *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int WhirlRadius::handle_event()
 {
 	plugin->config.radius = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
 
 
 WhirlEffect::WhirlEffect(PluginServer *server)
@@ -379,10 +329,6 @@ WhirlEffect::~WhirlEffect()
 	if(engine) delete engine;
 	if(temp_frame) delete temp_frame;
 }
-
-
-
-
 
 
 const char* WhirlEffect::plugin_title() { return N_("Whirl"); }
@@ -410,8 +356,6 @@ void WhirlEffect::update_gui()
 }
 
 LOAD_CONFIGURATION_MACRO(WhirlEffect, WhirlConfig)
-
-
 
 
 int WhirlEffect::load_defaults()
@@ -501,7 +445,6 @@ int WhirlEffect::process_realtime(VFrame *input, VFrame *output)
 				input->get_color_model());
 			temp_frame->copy_from(input);
 			this->input = temp_frame;
-//printf("WhirlEffect::process_realtime 1\n");
 		}
 
 		if(!engine) engine = new WhirlEngine(this, PluginClient::smp + 1);
@@ -511,17 +454,10 @@ int WhirlEffect::process_realtime(VFrame *input, VFrame *output)
 }
 
 
-
-
-
-
-
-
 WhirlPackage::WhirlPackage()
  : LoadPackage()
 {
 }
-
 
 
 WhirlUnit::WhirlUnit(WhirlEffect *plugin, WhirlEngine *server)
@@ -529,7 +465,6 @@ WhirlUnit::WhirlUnit(WhirlEffect *plugin, WhirlEngine *server)
 {
 	this->plugin = plugin;
 }
-
 
 
 static int calc_undistorted_coords(double cen_x,
@@ -568,28 +503,28 @@ static int calc_undistorted_coords(double cen_x,
 	inside = (d < radius2);
 
 	if(inside)
-    {
-    	dist = sqrt(d / radius3) / radius;
+	{
+		dist = sqrt(d / radius3) / radius;
 
 /* Pinch */
 
-    	factor = pow(sin(M_PI / 2 * dist), -pinch);
+		factor = pow(sin(M_PI / 2 * dist), -pinch);
 
-    	dx *= factor;
-    	dy *= factor;
+		dx *= factor;
+		dy *= factor;
 
 /* Whirl */
 
-    	factor = 1.0 - dist;
+		factor = 1.0 - dist;
 
-    	ang = whirl * factor * factor;
+		ang = whirl * factor * factor;
 
-    	sina = sin(ang);
-    	cosa = cos(ang);
+		sina = sin(ang);
+		cosa = cos(ang);
 
-    	x = (cosa * dx - sina * dy) / scale_x + cen_x;
-    	y = (sina * dx + cosa * dy) / scale_y + cen_y;
-    }
+		x = (cosa * dx - sina * dy) / scale_x + cen_x;
+		y = (sina * dx + cosa * dy) / scale_y + cen_y;
+	}
 
 	return inside;
 }
@@ -598,10 +533,6 @@ static int calc_undistorted_coords(double cen_x,
 
 #define GET_PIXEL(components, x, y, input_rows) \
 	input_rows[CLIP(y, 0, (h - 1))] + components * CLIP(x, 0, (w - 1))
-
-
-
-
 
 
 static float bilinear(double x, double y, double *values)
@@ -696,25 +627,23 @@ static float bilinear(double x, double y, double *values)
 				top_p += components; \
  \
 /* Do bottom */ \
-	    		cx = cen_x + (cen_x - cx); \
-	    		cy = cen_y + (cen_y - cy); \
+				cx = cen_x + (cen_x - cx); \
+				cy = cen_y + (cen_y - cy); \
  \
-	    		if(cx >= 0.0) \
-					ix = (int)cx; \
-	    		else \
+				if(cx >= 0.0) \
+						ix = (int)cx; \
+				else \
 					ix = -((int)-cx + 1); \
  \
-	    		if(cy >= 0.0) \
+				if(cy >= 0.0) \
 					iy = (int)cy; \
-	    		else \
+				else \
 					iy = -((int)-cy + 1); \
  \
 				pixel1 = GET_PIXEL(components, ix,     iy,     input_rows); \
 				pixel2 = GET_PIXEL(components, ix + 1, iy,     input_rows); \
 				pixel3 = GET_PIXEL(components, ix,     iy + 1, input_rows); \
 				pixel4 = GET_PIXEL(components, ix + 1, iy + 1, input_rows); \
- \
- \
  \
 				values[0] = pixel1[0]; \
 				values[1] = pixel2[0]; \
@@ -745,7 +674,6 @@ static float bilinear(double x, double y, double *values)
  \
 				bot_p -= components; \
  \
- \
 			} \
 			else \
 			{ \
@@ -755,7 +683,6 @@ static float bilinear(double x, double y, double *values)
 				top_p[1] = input_rows[row][components * col + 1]; \
 				top_p[2] = input_rows[row][components * col + 2]; \
 				if(components == 4) top_p[3] = input_rows[row][components * col + 3]; \
- \
  \
 				top_p += components; \
  \
@@ -779,70 +706,59 @@ void WhirlUnit::process_package(LoadPackage *package)
 	int h = plugin->input->get_h();
 	double whirl = plugin->config.angle * M_PI / 180;
 	double pinch = plugin->config.pinch / MAXPINCH;
-  	double cx, cy;
-    int ix, iy;
+		double cx, cy;
+	int ix, iy;
 	double cen_x = (double)(w - 1) / 2.0;
 	double cen_y = (double)(h - 1) / 2.0;
 	double radius = MAX(w, h);
 	double radius3 = plugin->config.radius / MAXRADIUS;
-  	double radius2 = radius * radius * radius3;
+	double radius2 = radius * radius * radius3;
 	double scale_x;
 	double scale_y;
 
-
-//printf("WhirlUnit::process_package 1 %f %f %f\n", 
-//	plugin->config.angle, plugin->config.pinch, plugin->config.radius);
 	if(w < h)
 	{
-    	scale_x = (double)h / w;
-    	scale_y = 1.0;
+		scale_x = (double)h / w;
+		scale_y = 1.0;
 	}
 	else
 	if(w > h)
 	{
-    	scale_x = 1.0;
-    	scale_y = (double)w / h;
+		scale_x = 1.0;
+		scale_y = (double)w / h;
 	}
 	else
 	{
-    	scale_x = 1.0;
-    	scale_y = 1.0;
+		scale_x = 1.0;
+		scale_y = 1.0;
 	}
-
-
 
 	switch(plugin->input->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			WHIRL_MACRO(float, 1, 3);
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			WHIRL_MACRO(unsigned char, 0xff, 3);
-			break;
-		case BC_RGBA_FLOAT:
-			WHIRL_MACRO(float, 1, 4);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			WHIRL_MACRO(unsigned char, 0xff, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			WHIRL_MACRO(uint16_t, 0xffff, 3);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			WHIRL_MACRO(uint16_t, 0xffff, 4);
-			break;
-		
+	case BC_RGB_FLOAT:
+		WHIRL_MACRO(float, 1, 3);
+		break;
+	case BC_RGB888:
+	case BC_YUV888:
+		WHIRL_MACRO(unsigned char, 0xff, 3);
+		break;
+	case BC_RGBA_FLOAT:
+		WHIRL_MACRO(float, 1, 4);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		WHIRL_MACRO(unsigned char, 0xff, 4);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		WHIRL_MACRO(uint16_t, 0xffff, 3);
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		WHIRL_MACRO(uint16_t, 0xffff, 4);
+		break;
 	}
 }
-
-
-
-
-
 
 
 WhirlEngine::WhirlEngine(WhirlEffect *plugin, int cpus)
@@ -850,6 +766,7 @@ WhirlEngine::WhirlEngine(WhirlEffect *plugin, int cpus)
 {
 	this->plugin = plugin;
 }
+
 void WhirlEngine::init_packages()
 {
 	for(int i = 0; i < LoadServer::get_total_packages(); i++)
@@ -870,4 +787,3 @@ LoadPackage* WhirlEngine::new_package()
 {
 	return new WhirlPackage;
 }
-

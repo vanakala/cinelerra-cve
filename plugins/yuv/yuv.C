@@ -46,10 +46,9 @@ public:
 	int equivalent(YUVConfig &src);
 	void interpolate(YUVConfig &prev, 
 		YUVConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
-
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	float y, u, v;
 };
 
@@ -99,16 +98,7 @@ public:
 };
 
 
-
-
-
 REGISTER_PLUGIN(YUVEffect)
-
-
-
-
-
-
 
 YUVConfig::YUVConfig()
 {
@@ -131,9 +121,9 @@ int YUVConfig::equivalent(YUVConfig &src)
 
 void YUVConfig::interpolate(YUVConfig &prev, 
 	YUVConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -142,10 +132,6 @@ void YUVConfig::interpolate(YUVConfig &prev,
 	u = prev.u * prev_scale + next.u * next_scale;
 	v = prev.v * prev_scale + next.v * next_scale;
 }
-
-
-
-
 
 
 #define MAXVALUE 100
@@ -174,7 +160,7 @@ int YUVLevel::handle_event()
 
 YUVWindow::YUVWindow(YUVEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	260, 
 	100, 
@@ -190,6 +176,8 @@ YUVWindow::YUVWindow(YUVEffect *plugin, int x, int y)
 void YUVWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 50;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Y:")));
 	add_subwindow(this->y = new YUVLevel(plugin, &plugin->config.y, x1, y));
 	y += 30;
@@ -210,22 +198,14 @@ int YUVWindow::close_event()
 	return 1;
 }
 
-
-
-
-
 PLUGIN_THREAD_OBJECT(YUVEffect, YUVThread, YUVWindow)
-
-
-
-
-
 
 YUVEffect::YUVEffect(PluginServer *server)
  : PluginVClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
 }
+
 YUVEffect::~YUVEffect()
 {
 	PLUGIN_DESTRUCTOR_MACRO
@@ -343,7 +323,7 @@ static YUV yuv_static;
 					yuv_static.rgb_to_yuv_8(in_row[0], in_row[1], in_row[2], y, u, v); \
 				} \
  \
- 				if(sizeof(type) < 4) \
+				if(sizeof(type) < 4) \
 				{ \
 					CLAMP(y, 0, max); \
 					CLAMP(u, 0, max); \
@@ -382,7 +362,7 @@ static YUV yuv_static;
 int YUVEffect::process_realtime(VFrame *input, VFrame *output)
 {
 	load_configuration();
-	
+
 	if(EQUIV(config.y, 0) && EQUIV(config.u, 0) && EQUIV(config.v, 0))
 	{
 		if(input->get_rows()[0] != output->get_rows()[0])
@@ -401,51 +381,46 @@ int YUVEffect::process_realtime(VFrame *input, VFrame *output)
 
 		switch(input->get_color_model())
 		{
-			case BC_RGB_FLOAT:
-				YUV_MACRO(float, float, 1, 3, 0)
-				break;
+		case BC_RGB_FLOAT:
+			YUV_MACRO(float, float, 1, 3, 0)
+			break;
 
-			case BC_RGB888:
-				YUV_MACRO(unsigned char, int, 0xff, 3, 0)
-				break;
+		case BC_RGB888:
+			YUV_MACRO(unsigned char, int, 0xff, 3, 0)
+			break;
 
-			case BC_YUV888:
-				YUV_MACRO(unsigned char, int, 0xff, 3, 1)
-				break;
+		case BC_YUV888:
+			YUV_MACRO(unsigned char, int, 0xff, 3, 1)
+			break;
 
-			case BC_RGB161616:
-				YUV_MACRO(uint16_t, int, 0xffff, 3, 0)
-				break;
+		case BC_RGB161616:
+			YUV_MACRO(uint16_t, int, 0xffff, 3, 0)
+			break;
 
-			case BC_YUV161616:
-				YUV_MACRO(uint16_t, int, 0xffff, 3, 1)
-				break;
+		case BC_YUV161616:
+			YUV_MACRO(uint16_t, int, 0xffff, 3, 1)
+			break;
 
-			case BC_RGBA_FLOAT:
-				YUV_MACRO(float, float, 1, 4, 0)
-				break;
+		case BC_RGBA_FLOAT:
+			YUV_MACRO(float, float, 1, 4, 0)
+			break;
 
-			case BC_RGBA8888:
-				YUV_MACRO(unsigned char, int, 0xff, 4, 0)
-				break;
+		case BC_RGBA8888:
+			YUV_MACRO(unsigned char, int, 0xff, 4, 0)
+			break;
 
-			case BC_YUVA8888:
-				YUV_MACRO(unsigned char, int, 0xff, 4, 1)
-				break;
+		case BC_YUVA8888:
+			YUV_MACRO(unsigned char, int, 0xff, 4, 1)
+			break;
 
-			case BC_RGBA16161616:
-				YUV_MACRO(uint16_t, int, 0xffff, 4, 0)
-				break;
+		case BC_RGBA16161616:
+			YUV_MACRO(uint16_t, int, 0xffff, 4, 0)
+			break;
 
-			case BC_YUVA16161616:
-				YUV_MACRO(uint16_t, int, 0xffff, 4, 1)
-				break;
+		case BC_YUVA16161616:
+			YUV_MACRO(uint16_t, int, 0xffff, 4, 1)
+			break;
 		}
-
-
-
 	}
 	return 0;
 }
-
-

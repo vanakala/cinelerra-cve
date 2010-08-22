@@ -36,11 +36,8 @@
 #include "vframe.h"
 
 
-
 class ZoomBlurMain;
 class ZoomBlurEngine;
-
-
 
 
 
@@ -53,9 +50,9 @@ public:
 	void copy_from(ZoomBlurConfig &that);
 	void interpolate(ZoomBlurConfig &prev, 
 		ZoomBlurConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 
 	int x;
 	int y;
@@ -131,7 +128,7 @@ public:
 	~ZoomBlurMain();
 
 	int process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate);
 	int is_realtime();
 	int load_defaults();
@@ -184,25 +181,7 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 REGISTER_PLUGIN(ZoomBlurMain)
-
 
 
 ZoomBlurConfig::ZoomBlurConfig()
@@ -244,9 +223,9 @@ void ZoomBlurConfig::copy_from(ZoomBlurConfig &that)
 
 void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev, 
 	ZoomBlurConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -260,21 +239,11 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 	a = prev.a;
 }
 
-
-
-
-
-
-
-
-
 PLUGIN_THREAD_OBJECT(ZoomBlurMain, ZoomBlurThread, ZoomBlurWindow)
-
-
 
 ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x,
+	x,
 	y,
 	230, 
 	340, 
@@ -294,6 +263,7 @@ int ZoomBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("X:")));
 	y += 20;
 	add_subwindow(this->x = new ZoomBlurSize(plugin, x, y, &plugin->config.x, 0, 100));
@@ -332,14 +302,6 @@ int ZoomBlurWindow::close_event()
 }
 
 
-
-
-
-
-
-
-
-
 ZoomBlurToggle::ZoomBlurToggle(ZoomBlurMain *plugin, 
 	int x, 
 	int y, 
@@ -358,12 +320,6 @@ int ZoomBlurToggle::handle_event()
 	return 1;
 }
 
-
-
-
-
-
-
 ZoomBlurSize::ZoomBlurSize(ZoomBlurMain *plugin, 
 	int x, 
 	int y, 
@@ -381,13 +337,6 @@ int ZoomBlurSize::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
 
 
 
@@ -452,27 +401,22 @@ void ZoomBlurMain::delete_tables()
 }
 
 int ZoomBlurMain::process_buffer(VFrame *frame,
-		int64_t start_position,
+		framenum start_position,
 		double frame_rate)
 {
 	need_reconfigure |= load_configuration();
 
-
-SET_TRACE
 	read_frame(frame,
 		0,
 		get_source_position(),
 		get_framerate(),
 		get_use_opengl());
 
-SET_TRACE
-
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
 	if(need_reconfigure)
 	{
-SET_TRACE
 		float w = frame->get_w();
 		float h = frame->get_h();
 		float center_x = (float)config.x / 100 * w;
@@ -489,12 +433,6 @@ SET_TRACE
 		float max_y1;
 		float max_x2;
 		float max_y2;
-		
-SET_TRACE
-
-// printf("ZoomBlurMain::process_realtime 1 %d %d\n", 
-// config.x,
-// config.y);
 
 		center_x = (center_x - w / 2) * (1.0 - radius) + w / 2;
 		center_y = (center_y - h / 2) * (1.0 - radius) + h / 2;
@@ -511,22 +449,13 @@ SET_TRACE
 		max_x2 = w;
 		max_y2 = h;
 
-SET_TRACE
-// printf("ZoomBlurMain::process_realtime 2 w=%f radius=%f center_x=%f\n", 
-// w,
-// radius,
-// center_x);
-
-
 // Dimensions of outermost rectangle
-
 		delete_tables();
 		table_entries = steps;
 		scale_x_table = new int*[steps];
 		scale_y_table = new int*[steps];
 		layer_table = new ZoomBlurLayer[table_entries];
 
-SET_TRACE
 		for(int i = 0; i < steps; i++)
 		{
 			float fraction = (float)i / steps;
@@ -546,12 +475,11 @@ SET_TRACE
 			int *y_table;
 			scale_y_table[i] = y_table = new int[(int)(h + 1)];
 			scale_x_table[i] = x_table = new int[(int)(w + 1)];
-SET_TRACE
+
 			layer_table[i].x1 = out_x1;
 			layer_table[i].y1 = out_y1;
 			layer_table[i].x2 = out_x2;
 			layer_table[i].y2 = out_y2;
-SET_TRACE
 
 			for(int j = 0; j < h; j++)
 			{
@@ -560,19 +488,12 @@ SET_TRACE
 			for(int j = 0; j < w; j++)
 			{
 				x_table[j] = (int)((j - out_x1) * scale_x);
-//printf("ZoomBlurMain::process_realtime %d %d\n", j, x_table[j]);
 			}
 		}
-SET_TRACE
 		need_reconfigure = 0;
 	}
 
-SET_TRACE
 	if(get_use_opengl()) return run_opengl();
-
-SET_TRACE
-
-
 
 	if(!engine) engine = new ZoomBlurEngine(this,
 		get_project_smp() + 1,
@@ -593,7 +514,7 @@ SET_TRACE
 	temp->copy_from(frame);
 	this->input = temp;
 
-	bzero(accum, 
+	memset(accum, 0,
 		frame->get_w() * 
 		frame->get_h() *
 		cmodel_components(frame->get_color_model()) *
@@ -826,25 +747,10 @@ int ZoomBlurMain::handle_opengl()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ZoomBlurPackage::ZoomBlurPackage()
  : LoadPackage()
 {
 }
-
-
-
 
 ZoomBlurUnit::ZoomBlurUnit(ZoomBlurEngine *server, 
 	ZoomBlurMain *plugin)
@@ -1025,43 +931,39 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 
 		switch(plugin->input->get_color_model())
 		{
-			case BC_RGB888:
-				BLEND_LAYER(3, uint8_t, int, 0xff, 0)
-				break;
-			case BC_RGB_FLOAT:
-				BLEND_LAYER(3, float, float, 1, 0)
-				break;
-			case BC_RGBA_FLOAT:
-				BLEND_LAYER(4, float, float, 1, 0)
-				break;
-			case BC_RGBA8888:
-				BLEND_LAYER(4, uint8_t, int, 0xff, 0)
-				break;
-			case BC_RGB161616:
-				BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
-				break;
-			case BC_RGBA16161616:
-				BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
-				break;
-			case BC_YUV888:
-				BLEND_LAYER(3, uint8_t, int, 0xff, 1)
-				break;
-			case BC_YUVA8888:
-				BLEND_LAYER(4, uint8_t, int, 0xff, 1)
-				break;
-			case BC_YUV161616:
-				BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
-				break;
-			case BC_YUVA16161616:
-				BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
-				break;
+		case BC_RGB888:
+			BLEND_LAYER(3, uint8_t, int, 0xff, 0)
+			break;
+		case BC_RGB_FLOAT:
+			BLEND_LAYER(3, float, float, 1, 0)
+			break;
+		case BC_RGBA_FLOAT:
+			BLEND_LAYER(4, float, float, 1, 0)
+			break;
+		case BC_RGBA8888:
+			BLEND_LAYER(4, uint8_t, int, 0xff, 0)
+			break;
+		case BC_RGB161616:
+			BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
+			break;
+		case BC_RGBA16161616:
+			BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
+			break;
+		case BC_YUV888:
+			BLEND_LAYER(3, uint8_t, int, 0xff, 1)
+			break;
+		case BC_YUVA8888:
+			BLEND_LAYER(4, uint8_t, int, 0xff, 1)
+			break;
+		case BC_YUV161616:
+			BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
+			break;
+		case BC_YUVA16161616:
+			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
+			break;
 		}
 	}
 }
-
-
-
-
 
 
 ZoomBlurEngine::ZoomBlurEngine(ZoomBlurMain *plugin, 
@@ -1091,8 +993,3 @@ LoadPackage* ZoomBlurEngine::new_package()
 {
 	return new ZoomBlurPackage;
 }
-
-
-
-
-
