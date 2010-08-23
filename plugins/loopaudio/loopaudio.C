@@ -27,6 +27,7 @@
 #include "language.h"
 #include "pluginaclient.h"
 #include "transportque.h"
+#include "picon_png.h"
 
 #include <string.h>
 
@@ -36,7 +37,7 @@ class LoopAudioConfig
 {
 public:
 	LoopAudioConfig();
-	int64_t samples;
+	samplenum samples;
 };
 
 
@@ -78,16 +79,11 @@ public:
 	void update_gui();
 	int is_realtime();
 	int is_synthesis();
-	int process_buffer(int64_t size, 
+	int process_buffer(int size, 
 		double *buffer,
-		int64_t start_position,
+		samplenum start_position,
 		int sample_rate);
 };
-
-
-
-
-
 
 
 REGISTER_PLUGIN(LoopAudio);
@@ -100,12 +96,9 @@ LoopAudioConfig::LoopAudioConfig()
 }
 
 
-
-
-
 LoopAudioWindow::LoopAudioWindow(LoopAudio *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	210, 
 	160, 
@@ -126,6 +119,7 @@ void LoopAudioWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Samples to loop:")));
 	y += 20;
 	add_subwindow(samples = new LoopAudioSamples(plugin, 
@@ -139,10 +133,6 @@ WINDOW_CLOSE_EVENT(LoopAudioWindow)
 
 
 PLUGIN_THREAD_OBJECT(LoopAudio, LoopAudioThread, LoopAudioWindow)
-
-
-
-
 
 
 LoopAudioSamples::LoopAudioSamples(LoopAudio *plugin, 
@@ -167,19 +157,11 @@ int LoopAudioSamples::handle_event()
 }
 
 
-
-
-
-
-
-
-
 LoopAudio::LoopAudio(PluginServer *server)
  : PluginAClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
 }
-
 
 LoopAudio::~LoopAudio()
 {
@@ -191,7 +173,6 @@ int LoopAudio::is_realtime() { return 1; }
 int LoopAudio::is_synthesis() { return 1; }
 
 
-#include "picon_png.h"
 NEW_PICON_MACRO(LoopAudio)
 
 SHOW_GUI_MACRO(LoopAudio, LoopAudioThread)
@@ -201,17 +182,15 @@ RAISE_WINDOW_MACRO(LoopAudio)
 SET_STRING_MACRO(LoopAudio);
 
 
-int LoopAudio::process_buffer(int64_t size, 
+int LoopAudio::process_buffer(int size, 
 	double *buffer,
-	int64_t start_position,
+	posnum start_position,
 	int sample_rate)
 {
-	int64_t current_position = start_position;
+	samplenum current_position = start_position;
 	int step = (get_direction() == PLAY_FORWARD) ? 1 : -1;
 	int fragment_size;
-	int64_t current_loop_end;
-
-//printf("LoopAudio::process_buffer 1 %lld %d\n", start_position, size);
+	samplenum current_loop_end;
 
 	current_position = start_position;
 
@@ -220,19 +199,19 @@ int LoopAudio::process_buffer(int64_t size,
 // Truncate to end of buffer
 		fragment_size = MIN(size - i, size);
 
-		int64_t current_loop_position;
+		samplenum current_loop_position;
 
 // Truncate to next keyframe
 		if(get_direction() == PLAY_FORWARD)
 		{
 			KeyFrame *next_keyframe = get_next_keyframe(current_position);
-			int64_t next_position = edl_to_local(next_keyframe->position);
+			samplenum next_position = edl_to_local(next_keyframe->position);
 			if(next_position > current_position)
 				fragment_size = MIN(fragment_size, next_position - current_position);
 
 // Get start of current loop
 			KeyFrame *prev_keyframe = get_prev_keyframe(current_position);
-			int64_t prev_position = edl_to_local(prev_keyframe->position);
+			samplenum prev_position = edl_to_local(prev_keyframe->position);
 			if(prev_position == 0)
 				prev_position = get_source_start();
 			read_data(prev_keyframe);
@@ -255,19 +234,19 @@ int LoopAudio::process_buffer(int64_t size,
 		else
 		{
 			KeyFrame *next_keyframe = get_prev_keyframe(current_position);
-			int64_t next_position = edl_to_local(next_keyframe->position);
+			samplenum next_position = edl_to_local(next_keyframe->position);
 			if(next_position < current_position)
 				fragment_size = MIN(fragment_size, current_position - next_position);
 
 			KeyFrame *prev_keyframe = get_next_keyframe(current_position);
-			int64_t prev_position = edl_to_local(prev_keyframe->position);
+			samplenum prev_position = edl_to_local(prev_keyframe->position);
 			if(prev_position == 0)
 				prev_position = get_source_start() + get_total_len();
 			read_data(prev_keyframe);
 
 			current_loop_position = prev_position - 
 				((prev_position - current_position) %
-					  config.samples);
+					config.samples);
 			while(current_loop_position <= prev_position - config.samples) current_loop_position += config.samples;
 			while(current_loop_position > prev_position) current_loop_position -= config.samples;
 
@@ -280,30 +259,23 @@ int LoopAudio::process_buffer(int64_t size,
 				fragment_size);
 		}
 
-
-// printf("LoopAudio::process_buffer 100 %lld %lld %lld %d\n", 
-// current_position, current_loop_position, current_loop_end, fragment_size);
 		read_samples(buffer + i,
 			0,
 			sample_rate,
 			current_loop_position,
 			fragment_size);
 
-
 		current_position += step * fragment_size;
 	}
-	
 
 	return 0;
 }
 
 
-
-
 int LoopAudio::load_configuration()
 {
 	KeyFrame *prev_keyframe;
-	int64_t old_samples = config.samples;
+	samplenum old_samples = config.samples;
 	prev_keyframe = get_prev_keyframe(get_source_position());
 	read_data(prev_keyframe);
 	return old_samples != config.samples;
@@ -371,8 +343,3 @@ void LoopAudio::update_gui()
 		thread->window->unlock_window();
 	}
 }
-
-
-
-
-

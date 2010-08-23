@@ -39,9 +39,9 @@ public:
 	void copy_from(OverlayAudioConfig &that);
 	void interpolate(OverlayAudioConfig &prev, 
 		OverlayAudioConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	static const char* output_to_text(int output_layer);
 	int output_track;
 	enum
@@ -85,9 +85,9 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int64_t size, 
+	int process_buffer(int size,
 		double **buffer,
-		int64_t start_position,
+		posnum start_position,
 		int sample_rate);
 	int load_defaults();
 	int save_defaults();
@@ -96,12 +96,6 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(OverlayAudioConfig, OverlayAudioThread)
 };
-
-
-
-
-
-
 
 
 OverlayAudioConfig::OverlayAudioConfig()
@@ -121,9 +115,9 @@ void OverlayAudioConfig::copy_from(OverlayAudioConfig &that)
 
 void OverlayAudioConfig::interpolate(OverlayAudioConfig &prev, 
 	OverlayAudioConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame,
+	posnum next_frame,
+	posnum current_frame)
 {
 	output_track = prev.output_track;
 }
@@ -132,21 +126,18 @@ const char* OverlayAudioConfig::output_to_text(int output_layer)
 {
 	switch(output_layer)
 	{
-		case OverlayAudioConfig::TOP:    return _("Top");
-		case OverlayAudioConfig::BOTTOM: return _("Bottom");
+	case OverlayAudioConfig::TOP:
+		return _("Top");
+	case OverlayAudioConfig::BOTTOM:
+		return _("Bottom");
 	}
 	return "";
 }
 
 
-
-
-
-
-
 OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	400, 
 	100, 
@@ -162,6 +153,8 @@ OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin, int x, int y)
 int OverlayAudioWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, "Output track:"));
 	x += title->get_w() + 10;
@@ -174,11 +167,9 @@ int OverlayAudioWindow::create_objects()
 WINDOW_CLOSE_EVENT(OverlayAudioWindow)
 
 
-
-
 OutputTrack::OutputTrack(OverlayAudio *plugin, int x , int y)
  : BC_PopupMenu(x, 
- 	y, 
+	y, 
 	100,
 	OverlayAudioConfig::output_to_text(plugin->config.output_track),
 	1)
@@ -217,13 +208,7 @@ int OutputTrack::handle_event()
 
 PLUGIN_THREAD_OBJECT(OverlayAudio, OverlayAudioThread, OverlayAudioWindow)
 
-
-
-
 REGISTER_PLUGIN(OverlayAudio)
-
-
-
 
 OverlayAudio::OverlayAudio(PluginServer *server)
  : PluginAClient(server)
@@ -317,9 +302,9 @@ SET_STRING_MACRO(OverlayAudio)
 LOAD_CONFIGURATION_MACRO(OverlayAudio, OverlayAudioConfig)
 
 
-int OverlayAudio::process_buffer(int64_t size, 
+int OverlayAudio::process_buffer(int size, 
 	double **buffer,
-	int64_t start_position,
+	samplenum start_position,
 	int sample_rate)
 {
 	load_configuration();
@@ -357,9 +342,3 @@ int OverlayAudio::process_buffer(int64_t size,
 
 	return 0;
 }
-
-
-
-
-
-

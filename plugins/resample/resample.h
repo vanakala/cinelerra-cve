@@ -63,23 +63,19 @@ public:
 	int get_parameters();
 	VFrame* new_picon();
 	int start_loop();
-	int process_loop(double *buffer, int64_t &write_length);
+	int process_loop(double *buffer, int &write_length);
 	int stop_loop();
 	int load_defaults();
 	int save_defaults();
 	void reset();
 
-
 	Resample *resample;
 	double scale;
 	BC_Hash *defaults;
 	MainProgressBar *progress;
-	int64_t total_written;
-	int64_t current_position;
+	samplenum total_written;
+	samplenum current_position;
 };
-
-
-
 
 
 #endif

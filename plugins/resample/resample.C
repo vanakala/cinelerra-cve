@@ -52,15 +52,11 @@ int ResampleFraction::handle_event()
 
 
 
-
-
-
-
 ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
  : BC_Window(PROGRAM_NAME ": Resample", 
- 				x - 160,
+				x - 160,
 				y - 75,
- 				320, 
+				320, 
 				150, 
 				320, 
 				150,
@@ -74,6 +70,8 @@ ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
 void ResampleWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
 	y += 20;
 	add_subwindow(new ResampleFraction(plugin, x, y));
@@ -82,11 +80,6 @@ void ResampleWindow::create_objects()
 	show_window();
 	flush();
 }
-
-
-
-
-
 
 
 
@@ -121,7 +114,7 @@ int ResampleEffect::get_parameters()
 	ResampleWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
 	window.create_objects();
 	int result = window.run_window();
-	
+
 	return result;
 }
 
@@ -176,13 +169,13 @@ int ResampleEffect::stop_loop()
 	return 0;
 }
 
-int ResampleEffect::process_loop(double *buffer, int64_t &write_length)
+int ResampleEffect::process_loop(double *buffer, int &write_length)
 {
 	int result = 0;
 
 // Length to read based on desired output size
 	int size = (int)((double)PluginAClient::in_buffer_size * scale);
-	int64_t predicted_total = (int64_t)((double)(PluginClient::end - PluginClient::start) / scale + 0.5);
+	samplenum predicted_total = (samplenum)((double)(PluginClient::end - PluginClient::start) / scale + 0.5);
 
 	double *input = new double[size];
 
@@ -218,21 +211,7 @@ int ResampleEffect::process_loop(double *buffer, int64_t &write_length)
 	}
 
 	if(PluginClient::interactive) result = progress->update(total_written);
-//printf("TimeStretch::process_loop 1\n");
 
 	delete [] input;
-//printf("TimeStretch::process_loop 2\n");
 	return result;
 }
-
-
-
-
-
-
-
-
-
-
-
-

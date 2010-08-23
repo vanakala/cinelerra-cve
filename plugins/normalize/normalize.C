@@ -39,10 +39,6 @@
 REGISTER_PLUGIN(NormalizeMain)
 
 
-
-
-
-
 NormalizeMain::NormalizeMain(PluginServer *server)
  : PluginAClient(server)
 {
@@ -72,7 +68,7 @@ int NormalizeMain::load_defaults()
 
 // set the default directory
 	sprintf(directory, "%snormalize.rc", BCASTDIR);
-	
+
 // load the defaults
 
 	defaults = new BC_Hash(directory);
@@ -96,7 +92,7 @@ int NormalizeMain::get_parameters()
 {
 	BC_DisplayInfo info;
 	NormalizeWindow window(info.get_abs_cursor_x(), info.get_abs_cursor_y());
-	window.create_objects(&db_over, &separate_tracks);
+	window.create_objects(new VFrame(picon_png), &db_over, &separate_tracks);
 	int result = window.run_window();
 	return result;
 }
@@ -116,17 +112,15 @@ int NormalizeMain::start_loop()
 }
 
 
-int NormalizeMain::process_loop(double **buffer, int64_t &write_length)
+int NormalizeMain::process_loop(double **buffer, int &write_length)
 {
 	int result = 0;
-	int64_t fragment_len;
+	int fragment_len;
 
-//printf("NormalizeMain::process_loop 1\n");
 	if(writing)
 	{
 		fragment_len = PluginClient::in_buffer_size;
 		if(current_position + fragment_len > PluginClient::end) fragment_len = PluginClient::end - current_position;
-//printf("NormalizeMain::process_loop 2 %d %f\n", current_position, scale[0]);
 
 		for(int i = 0; i < PluginClient::total_in_buffers; i++)
 		{
@@ -135,7 +129,6 @@ int NormalizeMain::process_loop(double **buffer, int64_t &write_length)
 				buffer[i][j] *= scale[i];
 		}
 
-//printf("NormalizeMain::process_loop 1 %d %f\n", current_position, scale[0]);
 		current_position += fragment_len;
 		write_length = fragment_len;
 		result = progress->update(PluginClient::end - 
@@ -147,29 +140,23 @@ int NormalizeMain::process_loop(double **buffer, int64_t &write_length)
 	else
 	{
 // Get peak
-//printf("NormalizeMain::process_loop 4\n");
 		for(int i = PluginClient::start; 
 			i < PluginClient::end && !result; 
 			i += fragment_len)
 		{
 			fragment_len = PluginClient::in_buffer_size;
 			if(i + fragment_len > PluginClient::end) fragment_len = PluginClient::end - i;
-//printf("NormalizeMain::process_loop 5\n");
 
 			for(int j = 0; j < PluginClient::total_in_buffers; j++)
 			{
-//printf("NormalizeMain::process_loop 6 %p\n", buffer);
 				read_samples(buffer[j], j, i, fragment_len);
-//printf("NormalizeMain::process_loop 7\n");
-				
+
 				for(int k = 0; k < fragment_len; k++)
 				{
 					if(peak[j] < fabs(buffer[j][k])) peak[j] = fabs(buffer[j][k]);
 				}
 			}
-//printf("NormalizeMain::process_loop 8\n");
 			result = progress->update(i - PluginClient::start);
-//printf("NormalizeMain::process_loop 9\n");
 		}
 
 // Normalize all tracks
@@ -190,7 +177,6 @@ int NormalizeMain::process_loop(double **buffer, int64_t &write_length)
 		{
 			scale[i] = DB::fromdb(db_over) / peak[i];
 		}
-//printf("NormalizeMain::process_loop 10\n");
 
 		char string[BCTEXTLEN];
 		sprintf(string, "%s %.0f%%...", plugin_title(), (DB::fromdb(db_over) / max) * 100);

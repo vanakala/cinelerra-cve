@@ -29,15 +29,15 @@
 
 NormalizeWindow::NormalizeWindow(int x, int y)
  : BC_Window(PROGRAM_NAME ": Normalize", 
- 				x - 160,
-				y - 75,
- 				320, 
-				150, 
-				320, 
-				150,
-				0,
-				0,
-				1)
+	x - 160,
+	y - 75,
+	320,
+	150,
+	320,
+	150,
+	0,
+	0,
+	1)
 { 
 }
 
@@ -45,9 +45,11 @@ NormalizeWindow::~NormalizeWindow()
 {
 }
 
-int NormalizeWindow::create_objects(float *db_over, int *separate_tracks)
+int NormalizeWindow::create_objects(VFrame *icon_img, float *db_over, int *separate_tracks)
 {
 	int x = 10, y = 10;
+
+	set_icon(icon_img);
 	this->db_over = db_over;
 	this->separate_tracks = separate_tracks;
 	add_subwindow(new BC_Title(x, y, _("Enter the DB to overload by:")));
@@ -77,7 +79,7 @@ NormalizeWindowOverload::NormalizeWindowOverload(int x, int y, float *db_over)
 NormalizeWindowOverload::~NormalizeWindowOverload()
 {
 }
-	
+
 int NormalizeWindowOverload::handle_event()
 {
 	*db_over = atof(get_text());
@@ -94,7 +96,7 @@ NormalizeWindowSeparate::NormalizeWindowSeparate(int x, int y, int *separate_tra
 NormalizeWindowSeparate::~NormalizeWindowSeparate()
 {
 }
-	
+
 int NormalizeWindowSeparate::handle_event()
 {
 	*separate_tracks = get_value();

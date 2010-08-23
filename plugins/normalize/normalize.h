@@ -50,7 +50,7 @@ public:
 	int is_multichannel();
 	int get_parameters();
 	int start_loop();
-	int process_loop(double **buffer, int64_t &write_length);
+	int process_loop(double **buffer, int &write_length);
 	int stop_loop();
 
 	int load_defaults();  
@@ -61,7 +61,7 @@ public:
 
 // Current state of process_loop
 	int writing;
-	int64_t current_position;
+	samplenum current_position;
 	double *peak, *scale;
 };
 
