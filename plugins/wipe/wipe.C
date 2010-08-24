@@ -37,9 +37,6 @@
 REGISTER_PLUGIN(WipeMain)
 
 
-
-
-
 WipeLeft::WipeLeft(WipeMain *plugin, 
 	WipeWindow *window,
 	int x,
@@ -84,16 +81,9 @@ int WipeRight::handle_event()
 	return 0;
 }
 
-
-
-
-
-
-
-
 WipeWindow::WipeWindow(WipeMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	320, 
 	50, 
@@ -116,6 +106,8 @@ int WipeWindow::close_event()
 void WipeWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(left = new WipeLeft(plugin, 

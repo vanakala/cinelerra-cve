@@ -24,6 +24,7 @@
 #include "edl.inc"
 #include "filexml.h"
 #include "language.h"
+#include "mainerror.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
@@ -176,7 +177,8 @@ ShapeWipeLoad::ShapeWipeLoad(
 	_("Choose Shape"), 
 	_("Choose a Wipe Shape"))
 {
-   this->filename = filename;
+	set_icon(new VFrame(picon_png));
+	this->filename = filename;
 }
 
 ShapeWipeWindow::ShapeWipeWindow(ShapeWipeMain *plugin, int x, int y)
@@ -203,6 +205,8 @@ int ShapeWipeWindow::close_event()
 void ShapeWipeWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(left = new ShapeWipeW2B(plugin, 
@@ -417,34 +421,34 @@ erret:
 	width  = png_get_image_width (png_ptr, info_ptr);
 	height = png_get_image_height(png_ptr, info_ptr);
 
-	/* Skip the alpha channel if present 
-	* stripping alpha currently doesn't work in conjunction with 
-	* converting to grayscale in libpng */
+/* Skip the alpha channel if present 
+ * stripping alpha currently doesn't work in conjunction with 
+ * converting to grayscale in libpng */
 	if (color_type & PNG_COLOR_MASK_ALPHA)
 		pixel_width = 2;
 	else
 		pixel_width = 1;
 
-	/* Convert 16 bit data to 8 bit */
+/* Convert 16 bit data to 8 bit */
 	if (bit_depth == 16) png_set_strip_16(png_ptr);
 
-	/* Expand to 1 pixel per byte if necessary */
+/* Expand to 1 pixel per byte if necessary */
 	if (bit_depth < 8) png_set_packing(png_ptr);
 
-	/* Convert to grayscale */
+/* Convert to grayscale */
 	if (color_type == PNG_COLOR_TYPE_RGB || 
 		color_type == PNG_COLOR_TYPE_RGB_ALPHA)
 	png_set_rgb_to_gray_fixed(png_ptr, 1, -1, -1);
 
-	/* Allocate memory to hold the original png image */
+/* Allocate memory to hold the original png image */
 	image = (png_bytep*)malloc(sizeof(png_bytep)*height);
 	for (row = 0; row < height; row++)
 	{
 		image[row] = (png_byte*)malloc(sizeof(png_byte)*width*pixel_width);
 	}
 
-	/* Allocate memory for the pattern image that will actually be
-	* used for the wipe */
+/* Allocate memory for the pattern image that will actually be
+ * used for the wipe */
 	pattern_image = (unsigned char**)malloc(sizeof(unsigned char*)*frame_height);
 
 
@@ -493,7 +497,7 @@ erret:
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 	fclose(fp);
-	/* Deallocate the original image as it is no longer needed */
+/* Deallocate the original image as it is no longer needed */
 	for (row = 0; row < height; row++)
 	{
 		free(image[row]);
@@ -655,8 +659,8 @@ void ShapeWipeMain::reset_pattern_image()
 		case BC_YUVA16161616: \
 			BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000,x,y); \
 			break; \
-      } \
-   } \
+		} \
+	} \
 }
 
 int ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
@@ -673,7 +677,7 @@ int ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int w = incoming->get_w();
 	int h = incoming->get_h();
 
-	if (strncmp(filename,last_read_filename,BCTEXTLEN)
+	if (strncmp(filename,last_read_filename, BCTEXTLEN)
 		|| preserve_aspect != last_preserve_aspect)
 	{
 		reset_pattern_image();
@@ -687,7 +691,7 @@ int ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	if (!pattern_image)
 	{
-		fprintf(stderr, "Shape Wipe: cannot load shape %s\n", filename);
+		errormsg("Shape Wipe: cannot load shape %s", filename);
 		return 0;
 	}
 
