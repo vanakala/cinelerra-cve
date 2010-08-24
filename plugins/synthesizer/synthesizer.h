@@ -144,9 +144,9 @@ class SynthScroll : public BC_ScrollBar
 public:
 	SynthScroll(Synth *synth, SynthWindow *window, int x, int y, int h);
 	~SynthScroll();
-	
+
 	int handle_event();
-	
+
 	Synth *synth;
 	SynthWindow *window;
 };
@@ -156,9 +156,9 @@ class SynthAddOsc : public BC_GenericButton
 public:
 	SynthAddOsc(Synth *synth, SynthWindow *window, int x, int y);
 	~SynthAddOsc();
-	
+
 	int handle_event();
-	
+
 	Synth *synth;
 	SynthWindow *window;
 };
@@ -169,9 +169,9 @@ class SynthDelOsc : public BC_GenericButton
 public:
 	SynthDelOsc(Synth *synth, SynthWindow *window, int x, int y);
 	~SynthDelOsc();
-	
+
 	int handle_event();
-	
+
 	Synth *synth;
 	SynthWindow *window;
 };
@@ -209,9 +209,9 @@ class SynthWaveFormItem : public BC_MenuItem
 public:
 	SynthWaveFormItem(Synth *synth, char *text, int value);
 	~SynthWaveFormItem();
-	
+
 	int handle_event();
-	
+
 	int value;
 	Synth *synth;
 };
@@ -442,7 +442,7 @@ class SynthOscillatorConfig
 public:
 	SynthOscillatorConfig(int number);
 	~SynthOscillatorConfig();
-	
+
 	int equivalent(SynthOscillatorConfig &that);
 	void copy_from(SynthOscillatorConfig& that);
 	void reset();
@@ -465,18 +465,18 @@ class SynthConfig
 public:
 	SynthConfig();
 	~SynthConfig();
-	
+
 	int equivalent(SynthConfig &that);
 	void copy_from(SynthConfig &that);
 	void interpolate(SynthConfig &prev, 
 		SynthConfig &next, 
-		int64_t prev_frame, 
-		int64_t next_frame, 
-		int64_t current_frame);
+		posnum prev_frame,
+		posnum next_frame,
+		posnum current_frame);
 	void reset();
-	
+
 	float wetness;
-	int64_t base_freq;         // base frequency for oscillators
+	int base_freq;         // base frequency for oscillators
 	int wavefunction;        // SINE, SAWTOOTH, etc
 	ArrayList<SynthOscillatorConfig*> oscillator_config;
 };
@@ -487,8 +487,6 @@ class Synth : public PluginAClient
 public:
 	Synth(PluginServer *server);
 	~Synth();
-
-
 
 	int is_realtime();
 	int is_synthesis();
@@ -502,13 +500,7 @@ public:
 	int show_gui();
 	void raise_window();
 	int set_string();
-	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
-
-
-
-
-
-
+	int process_realtime(int size, double *input_ptr, double *output_ptr);
 
 	void add_oscillator();
 	void delete_oscillator();
@@ -528,11 +520,9 @@ public:
 	double function_sawtooth(double x);
 	double function_triangle(double x);
 	void reconfigure();
-	int overlay_synth(int64_t start, int64_t length, double *input, double *output);
+	int overlay_synth(samplenum start, int length, double *input, double *output);
 	void update_gui();
 	void reset();
-
-
 
 	double *dsp_buffer;
 	int need_reconfigure;
@@ -541,9 +531,9 @@ public:
 	SynthConfig config;
 	int w, h;
 	DB db;
-	int64_t waveform_length;           // length of loop buffer
-	int64_t waveform_sample;           // current sample in waveform of loop
-	int64_t samples_rendered;          // samples of the dsp_buffer rendered since last buffer redo
+	int waveform_length;           // length of loop buffer
+	int samples_rendered;          // samples of the dsp_buffer rendered since last buffer redo
+	samplenum waveform_sample;     // current sample in waveform of loop
 	float period;            // number of samples in a period for this frequency
 };
 

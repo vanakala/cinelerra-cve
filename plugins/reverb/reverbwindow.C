@@ -38,7 +38,7 @@ PLUGIN_THREAD_OBJECT(Reverb, ReverbThread, ReverbWindow)
 
 ReverbWindow::ReverbWindow(Reverb *reverb, int x, int y)
  : BC_Window(reverb->gui_string, 
- 	x, 
+	x,
 	y, 
 	250, 
 	230, 
@@ -58,6 +58,9 @@ ReverbWindow::~ReverbWindow()
 int ReverbWindow::create_objects()
 {
 	int x = 170, y = 10;
+	VFrame *ico = reverb->new_picon();
+
+	set_icon(ico);
 	add_tool(new BC_Title(5, y + 10, _("Initial signal level:")));
 	add_tool(level_init = new ReverbLevelInit(reverb, x, y)); y += 25;
 	add_tool(new BC_Title(5, y + 10, _("ms before reflections:")));
@@ -76,49 +79,48 @@ int ReverbWindow::create_objects()
 	add_tool(lowpass2 = new ReverbLowPass2(reverb, x + 35, y)); y += 40;
 	show_window();
 	flush();
+	delete ico;
 	return 0;
 }
 
 WINDOW_CLOSE_EVENT(ReverbWindow)
 
 
-
-
-
 ReverbLevelInit::ReverbLevelInit(Reverb *reverb, int x, int y)
  : BC_FPot(x, 
- 	y, 
+	y,
 	reverb->config.level_init, 
 	INFINITYGAIN, 
 	0)
 {
 	this->reverb = reverb;
 }
+
 ReverbLevelInit::~ReverbLevelInit() 
 {
 }
+
 int ReverbLevelInit::handle_event()
 {
-//printf("ReverbLevelInit::handle_event 1 %p\n", reverb);
 	reverb->config.level_init = get_value();
-//printf("ReverbLevelInit::handle_event 1\n");
 	reverb->send_configure_change();
-//printf("ReverbLevelInit::handle_event 2\n");
 	return 1;
 }
 
 ReverbDelayInit::ReverbDelayInit(Reverb *reverb, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y, 
 	reverb->config.delay_init, 
 	0, 
 	1000)
 {
 	this->reverb = reverb;
 }
+
 ReverbDelayInit::~ReverbDelayInit() 
 {
 }
+
 int ReverbDelayInit::handle_event()
 {
 	reverb->config.delay_init = get_value();
@@ -128,14 +130,18 @@ int ReverbDelayInit::handle_event()
 
 ReverbRefLevel1::ReverbRefLevel1(Reverb *reverb, int x, int y)
  : BC_FPot(x, 
- 	y, 
+	y, 
 	reverb->config.ref_level1, 
 	INFINITYGAIN, 
 	0)
 {
 	this->reverb = reverb;
 }
-ReverbRefLevel1::~ReverbRefLevel1() {}
+
+ReverbRefLevel1::~ReverbRefLevel1() 
+{
+}
+
 int ReverbRefLevel1::handle_event()
 {
 	reverb->config.ref_level1 = get_value();
@@ -146,14 +152,18 @@ int ReverbRefLevel1::handle_event()
 
 ReverbRefLevel2::ReverbRefLevel2(Reverb *reverb, int x, int y)
  : BC_FPot(x, 
- 	y, 
+	y, 
 	reverb->config.ref_level2, 
 	INFINITYGAIN, 
 	0)
 {
 	this->reverb = reverb;
 }
-ReverbRefLevel2::~ReverbRefLevel2() {}
+
+ReverbRefLevel2::~ReverbRefLevel2()
+{
+}
+
 int ReverbRefLevel2::handle_event()
 {
 	reverb->config.ref_level2 = get_value();
@@ -163,14 +173,18 @@ int ReverbRefLevel2::handle_event()
 
 ReverbRefTotal::ReverbRefTotal(Reverb *reverb, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y,
 	reverb->config.ref_total, 
 	1, 
 	250)
 {
 	this->reverb = reverb;
 }
-ReverbRefTotal::~ReverbRefTotal() {}
+
+ReverbRefTotal::~ReverbRefTotal()
+{
+}
+
 int ReverbRefTotal::handle_event()
 {
 	reverb->config.ref_total = get_value();
@@ -181,14 +195,18 @@ int ReverbRefTotal::handle_event()
 
 ReverbRefLength::ReverbRefLength(Reverb *reverb, int x, int y)
  : BC_IPot(x, 
- 	y, 
+	y,
 	reverb->config.ref_length, 
 	0, 
 	5000)
 {
 	this->reverb = reverb;
 }
-ReverbRefLength::~ReverbRefLength() {}
+
+ReverbRefLength::~ReverbRefLength() 
+{
+}
+
 int ReverbRefLength::handle_event()
 {
 	reverb->config.ref_length = get_value();
@@ -198,12 +216,16 @@ int ReverbRefLength::handle_event()
 
 ReverbLowPass1::ReverbLowPass1(Reverb *reverb, int x, int y)
  : BC_QPot(x, 
- 	y, 
+	y, 
 	reverb->config.lowpass1)
 {
 	this->reverb = reverb;
 }
-ReverbLowPass1::~ReverbLowPass1() {}
+
+ReverbLowPass1::~ReverbLowPass1() 
+{
+}
+
 int ReverbLowPass1::handle_event()
 {
 	reverb->config.lowpass1 = get_value();
@@ -213,12 +235,16 @@ int ReverbLowPass1::handle_event()
 
 ReverbLowPass2::ReverbLowPass2(Reverb *reverb, int x, int y)
  : BC_QPot(x, 
- 	y, 
+	y,
 	reverb->config.lowpass2)
 {
 	this->reverb = reverb;
 }
-ReverbLowPass2::~ReverbLowPass2() {}
+
+ReverbLowPass2::~ReverbLowPass2() 
+{
+}
+
 int ReverbLowPass2::handle_event()
 {
 	reverb->config.lowpass2 = get_value();
@@ -237,7 +263,6 @@ ReverbMenu::~ReverbMenu()
 {
 	delete load;
 	delete save;
-	//delete set_default;
 	for(int i = 0; i < total_loads; i++)
 	{
 		delete prev_load[i];
@@ -250,7 +275,6 @@ int ReverbMenu::create_objects(BC_Hash *defaults)
 	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(load = new ReverbLoad(reverb, this));
 	filemenu->add_item(save = new ReverbSave(reverb, this));
-	//filemenu->add_item(set_default = new ReverbSetDefault);
 	load_defaults(defaults);
 	prev_load_thread = new ReverbLoadPrevThread(reverb, this);
 	return 0;
@@ -264,13 +288,12 @@ int ReverbMenu::load_defaults(BC_Hash *defaults)
 	{
 		filemenu->add_item(new BC_MenuItem("-"));
 		char string[1024], path[1024], filename[1024];
-	
+
 		for(int i = 0; i < total_loads; i++)
 		{
 			sprintf(string, "LOADPREVIOUS%d", i);
 			defaults->get(string, path);
 			fs.extract_name(filename, path);
-//printf("ReverbMenu::load_defaults %s\n", path);
 			filemenu->add_item(prev_load[i] = new ReverbLoadPrev(reverb, this, filename, path));
 		}
 	}
@@ -305,7 +328,7 @@ int ReverbMenu::add_load(char *path)
 	char text[1024], new_path[1024];      // get text and path
 	fs.extract_name(text, path);
 	strcpy(new_path, path);
-	
+
 	for(int i = 0; i < total_loads; i++)
 	{
 		if(!strcmp(prev_load[i]->get_text(), text))     // already exists
@@ -320,14 +343,14 @@ int ReverbMenu::add_load(char *path)
 			return 1;
 		}
 	}
-	
+
 // add another load
 	if(total_loads < TOTAL_LOADS)
 	{
 		filemenu->add_item(prev_load[total_loads] = new ReverbLoadPrev(reverb, this));
 		total_loads++;
 	}
-	
+
 // cycle loads down
 	for(int i = total_loads - 1; i > 0; i--)
 	{         
@@ -350,10 +373,12 @@ ReverbLoad::ReverbLoad(Reverb *reverb, ReverbMenu *menu)
 	this->menu = menu;
 	thread = new ReverbLoadThread(reverb, menu);
 }
+
 ReverbLoad::~ReverbLoad()
 {
 	delete thread;
 }
+
 int ReverbLoad::handle_event()
 {
 	thread->start();
@@ -367,24 +392,18 @@ ReverbSave::ReverbSave(Reverb *reverb, ReverbMenu *menu)
 	this->menu = menu;
 	thread = new ReverbSaveThread(reverb, menu);
 }
+
 ReverbSave::~ReverbSave()
 {
 	delete thread;
 }
+
 int ReverbSave::handle_event()
 {
 	thread->start();
 	return 0;
 }
 
-ReverbSetDefault::ReverbSetDefault()
- : BC_MenuItem(_("Set default"))
-{
-}
-int ReverbSetDefault::handle_event()
-{
-	return 0;
-}
 
 ReverbLoadPrev::ReverbLoadPrev(Reverb *reverb, ReverbMenu *menu, char *filename, char *path)
  : BC_MenuItem(filename)
@@ -393,17 +412,20 @@ ReverbLoadPrev::ReverbLoadPrev(Reverb *reverb, ReverbMenu *menu, char *filename,
 	this->menu = menu;
 	strcpy(this->path, path);
 }
+
 ReverbLoadPrev::ReverbLoadPrev(Reverb *reverb, ReverbMenu *menu)
  : BC_MenuItem("")
 {
 	this->reverb = reverb;
 	this->menu = menu;
 }
+
 int ReverbLoadPrev::handle_event()
 {
 	menu->prev_load_thread->set_path(path);
 	menu->prev_load_thread->start();
 }
+
 int ReverbLoadPrev::set_path(char *path)
 {
 	strcpy(this->path, path);
@@ -416,9 +438,11 @@ ReverbSaveThread::ReverbSaveThread(Reverb *reverb, ReverbMenu *menu)
 	this->reverb = reverb;
 	this->menu = menu;
 }
+
 ReverbSaveThread::~ReverbSaveThread()
 {
 }
+
 void ReverbSaveThread::run()
 {
 	int result = 0;
@@ -426,7 +450,6 @@ void ReverbSaveThread::run()
 		ReverbSaveDialog dialog(reverb);
 		dialog.create_objects();
 		result = dialog.run_window();
-//		if(!result) strcpy(reverb->config_directory, dialog.get_path());
 	}
 	if(!result) 
 	{
@@ -437,27 +460,29 @@ void ReverbSaveThread::run()
 
 ReverbSaveDialog::ReverbSaveDialog(Reverb *reverb)
  : BC_FileBox(0,
- 			0, 
- 			reverb->config_directory, 
- 			_("Save reverb"), 
-	                 _("Select the reverb file to save as")) 
+	0,
+	reverb->config_directory,
+	_("Save reverb"),
+	_("Select the reverb file to save as"))
 {
 	this->reverb = reverb;
 }
+
 ReverbSaveDialog::~ReverbSaveDialog()
 {
 }
+
 int ReverbSaveDialog::ok_event()
 {
 	set_done(0);
 	return 0;
 }
+
 int ReverbSaveDialog::cancel_event()
 {
 	set_done(1);
 	return 0;
 }
-
 
 
 ReverbLoadThread::ReverbLoadThread(Reverb *reverb, ReverbMenu *menu)
@@ -466,9 +491,11 @@ ReverbLoadThread::ReverbLoadThread(Reverb *reverb, ReverbMenu *menu)
 	this->reverb = reverb;
 	this->menu = menu;
 }
+
 ReverbLoadThread::~ReverbLoadThread()
 {
 }
+
 void ReverbLoadThread::run()
 {
 	int result = 0;
@@ -476,7 +503,6 @@ void ReverbLoadThread::run()
 		ReverbLoadDialog dialog(reverb);
 		dialog.create_objects();
 		result = dialog.run_window();
-//		if(!result) strcpy(reverb->config_directory, dialog.get_path());
 	}
 	if(!result) 
 	{
@@ -494,9 +520,11 @@ ReverbLoadPrevThread::ReverbLoadPrevThread(Reverb *reverb, ReverbMenu *menu) : T
 	this->reverb = reverb;
 	this->menu = menu;
 }
+
 ReverbLoadPrevThread::~ReverbLoadPrevThread()
 {
 }
+
 void ReverbLoadPrevThread::run()
 {
 	int result = 0;
@@ -508,6 +536,7 @@ void ReverbLoadPrevThread::run()
 		reverb->send_configure_change();
 	}
 }
+
 int ReverbLoadPrevThread::set_path(char *path)
 {
 	strcpy(this->path, path);
@@ -516,25 +545,26 @@ int ReverbLoadPrevThread::set_path(char *path)
 
 
 
-
-
 ReverbLoadDialog::ReverbLoadDialog(Reverb *reverb)
  : BC_FileBox(0,
- 			0, 
- 			reverb->config_directory, 
- 			_("Load reverb"), 
- 			_("Select the reverb file to load from"), 0, 0)
+	0,
+	reverb->config_directory,
+	_("Load reverb"),
+	_("Select the reverb file to load from"), 0, 0)
 {
 	this->reverb = reverb;
 }
+
 ReverbLoadDialog::~ReverbLoadDialog()
 {
 }
+
 int ReverbLoadDialog::ok_event()
 {
 	set_done(0);
 	return 0;
 }
+
 int ReverbLoadDialog::cancel_event()
 {
 	set_done(1);

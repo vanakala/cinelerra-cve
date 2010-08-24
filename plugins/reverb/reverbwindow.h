@@ -143,7 +143,7 @@ public:
 
 class ReverbLoad;
 class ReverbSave;
-class ReverbSetDefault;
+
 class ReverbLoadPrev;
 class ReverbLoadPrevThread;
 
@@ -166,7 +166,6 @@ public:
 	Reverb *reverb;
 	ReverbLoad *load;
 	ReverbSave *save;
-	ReverbSetDefault *set_default;
 	ReverbLoadPrev *prev_load[TOTAL_LOADS];
 };
 
@@ -195,12 +194,6 @@ public:
 	ReverbMenu *menu;
 };
 
-class ReverbSetDefault : public BC_MenuItem
-{
-public:
-	ReverbSetDefault();
-	int handle_event();
-};
 
 class ReverbLoadPrev : public BC_MenuItem
 {
@@ -244,7 +237,7 @@ class ReverbSaveDialog : public BC_FileBox
 public:
 	ReverbSaveDialog(Reverb *reverb);
 	~ReverbSaveDialog();
-	
+
 	int ok_event();
 	int cancel_event();
 	Reverb *reverb;
@@ -266,14 +259,10 @@ class ReverbLoadDialog : public BC_FileBox
 public:
 	ReverbLoadDialog(Reverb *reverb);
 	~ReverbLoadDialog();
-	
+
 	int ok_event();
 	int cancel_event();
 	Reverb *reverb;
 };
-
-
-
-
 
 #endif

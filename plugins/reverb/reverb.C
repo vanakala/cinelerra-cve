@@ -22,7 +22,7 @@
 #include "clip.h"
 #include "confirmsave.h"
 #include "bchash.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
@@ -101,37 +101,34 @@ int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 int Reverb::is_synthesis() { return 1; }
 
-int Reverb::process_realtime(int64_t size, 
+int Reverb::process_realtime(int size,
 	double **input_ptr, 
 	double **output_ptr)
 {
-	int64_t new_dsp_length, i, j;
+	int new_dsp_length, i, j;
 	main_in = input_ptr;
 	main_out = output_ptr;
-//printf("Reverb::process_realtime 1\n");
 	redo_buffers |= load_configuration();
 
-//printf("Reverb::process_realtime 1\n");
 	if(!config.ref_total) return 0;
-
 
 	if(!initialized)
 	{
 		dsp_in = new double*[total_in_buffers];
-		ref_channels = new int64_t*[total_in_buffers];
-		ref_offsets = new int64_t*[total_in_buffers];
+		ref_channels = new int*[total_in_buffers];
+		ref_offsets = new int*[total_in_buffers];
 		ref_levels = new double*[total_in_buffers];
-		ref_lowpass = new int64_t*[total_in_buffers];
+		ref_lowpass = new int*[total_in_buffers];
 		lowpass_in1 = new double*[total_in_buffers];
 		lowpass_in2 = new double*[total_in_buffers];
 
 		for(i = 0; i < total_in_buffers; i++)
 		{
 			dsp_in[i] = new double[1];
-			ref_channels[i] = new int64_t[1];
-			ref_offsets[i] = new int64_t[1];
+			ref_channels[i] = new int[1];
+			ref_offsets[i] = new int[1];
 			ref_levels[i] = new double[1];
-			ref_lowpass[i] = new int64_t[1];
+			ref_lowpass[i] = new int[1];
 			lowpass_in1[i] = new double[1];
 			lowpass_in2[i] = new double[1];
 		}
@@ -140,9 +137,6 @@ int Reverb::process_realtime(int64_t size,
 		for(i = 0; i < (smp + 1); i++)
 		{
 			engine[i] = new ReverbEngine(this);
-//printf("Reverb::start_realtime %d\n", Thread::calculate_realtime());
-// Realtime priority moved to sound driver
-//		engine[i]->set_realtime(realtime_priority);
 			engine[i]->start();
 		}
 		initialized = 1;
@@ -150,8 +144,8 @@ int Reverb::process_realtime(int64_t size,
 	}
 
 	new_dsp_length = size + 
-		(config.delay_init + config.ref_length) * project_sample_rate / 1000 + 1;
-//printf("Reverb::process_realtime 1 %d %d\n", in_buffer_size, size);
+		(config.delay_init + config.ref_length) * 
+		project_sample_rate / 1000 + 1;
 
 	if(redo_buffers || new_dsp_length != dsp_in_length)
 	{
@@ -169,7 +163,6 @@ int Reverb::process_realtime(int64_t size,
 		dsp_in_length = new_dsp_length;
 		redo_buffers = 1;
 	}
-//printf("Reverb::process_realtime 1\n");
 
 	if(redo_buffers)
 	{
@@ -181,15 +174,15 @@ int Reverb::process_realtime(int64_t size,
 			delete [] ref_levels[i];
 			delete [] lowpass_in1[i];
 			delete [] lowpass_in2[i];
-			
-			ref_channels[i] = new int64_t[config.ref_total + 1];
-			ref_offsets[i] = new int64_t[config.ref_total + 1];
-			ref_lowpass[i] = new int64_t[config.ref_total + 1];
+
+			ref_channels[i] = new int[config.ref_total + 1];
+			ref_offsets[i] = new int[config.ref_total + 1];
+			ref_lowpass[i] = new int[config.ref_total + 1];
 			ref_levels[i] = new double[config.ref_total + 1];
 			lowpass_in1[i] = new double[config.ref_total + 1];
 			lowpass_in2[i] = new double[config.ref_total + 1];
 
-// set channels			
+// set channels
 			ref_channels[i][0] = i;         // primary noise
 			ref_channels[i][1] = i;         // first reflection
 // set offsets
@@ -206,7 +199,7 @@ int Reverb::process_realtime(int64_t size,
 			lowpass_in1[i][1] = 0;
 			lowpass_in2[i][1] = 0;
 
-			int64_t ref_division = config.ref_length * project_sample_rate / 1000 / (config.ref_total + 1);
+			int ref_division = config.ref_length * project_sample_rate / 1000 / (config.ref_total + 1);
 			for(j = 2; j < config.ref_total + 1; j++)
 			{
 // set random channels for remaining reflections
@@ -218,10 +211,9 @@ int Reverb::process_realtime(int64_t size,
 
 // set changing levels
 				ref_levels[i][j] = db.fromdb(config.ref_level1 + (config.ref_level2 - config.ref_level1) / (config.ref_total - 1) * (j - 2));
-				//ref_levels[i][j] /= 100;
 
 // set changing lowpass as linear
-				ref_lowpass[i][j] = (int64_t)(config.lowpass1 + (double)(config.lowpass2 - config.lowpass1) / (config.ref_total - 1) * (j - 2));
+				ref_lowpass[i][j] = config.lowpass1 + (double)(config.lowpass2 - config.lowpass1) / (config.ref_total - 1) * (j - 2);
 				lowpass_in1[i][j] = 0;
 				lowpass_in2[i][j] = 0;
 			}
@@ -229,7 +221,6 @@ int Reverb::process_realtime(int64_t size,
 		
 		redo_buffers = 0;
 	}
-//printf("Reverb::process_realtime 1\n");
 
 	for(i = 0; i < total_in_buffers; )
 	{
@@ -237,13 +228,12 @@ int Reverb::process_realtime(int64_t size,
 		{
 			engine[j]->process_overlays(i + j, size);
 		}
-		
+
 		for(j = 0; j < (smp + 1) && i < total_in_buffers; j++, i++)
 		{
 			engine[j]->wait_process_overlays();
 		}
 	}
-//printf("Reverb::process_realtime 2 %d %d\n", total_in_buffers, size);
 
 	for(i = 0; i < total_in_buffers; i++)
 	{
@@ -252,12 +242,12 @@ int Reverb::process_realtime(int64_t size,
 
 		for(j = 0; j < size; j++) current_out[j] = current_in[j];
 
-		int64_t k;
-		for(k = 0; j < dsp_in_length; j++, k++) current_in[k] = current_in[j];
-		
+		int k;
+		for(k = 0; j < dsp_in_length; j++, k++) 
+			current_in[k] = current_in[j];
+
 		for(; k < dsp_in_length; k++) current_in[k] = 0;
 	}
-//printf("Reverb::process_realtime 2 %d %d\n", total_in_buffers, size);
 	return 0;
 }
 
@@ -294,7 +284,6 @@ int Reverb::load_defaults()
 	sprintf(config_directory, "~");
 	defaults->get("CONFIG_DIRECTORY", config_directory);
 
-//printf("Reverb::load_defaults config.ref_level2 %f\n", config.ref_level2);
 	return 0;
 }
 
@@ -318,13 +307,10 @@ LOAD_CONFIGURATION_MACRO(Reverb, ReverbConfig)
 
 void Reverb::save_data(KeyFrame *keyframe)
 {
-//printf("Reverb::save_data 1\n");
 	FileXML output;
-//printf("Reverb::save_data 1\n");
 
 // cause xml file to store data directly in text
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
-//printf("Reverb::save_data 1\n");
 
 	output.tag.set_title("REVERB");
 	output.tag.set_property("LEVELINIT", config.level_init);
@@ -332,21 +318,15 @@ void Reverb::save_data(KeyFrame *keyframe)
 	output.tag.set_property("REF_LEVEL1", config.ref_level1);
 	output.tag.set_property("REF_LEVEL2", config.ref_level2);
 	output.tag.set_property("REF_TOTAL", config.ref_total);
-//printf("Reverb::save_data 1\n");
 	output.tag.set_property("REF_LENGTH", config.ref_length);
 	output.tag.set_property("LOWPASS1", config.lowpass1);
 	output.tag.set_property("LOWPASS2", config.lowpass2);
-//printf("Reverb::save_data config.ref_level2 %f\n", config.ref_level2);
 	output.append_tag();
 	output.tag.set_title("/REVERB");
 	output.append_tag();
 	output.append_newline();
-//printf("Reverb::save_data 1\n");
-	
-	
-	
+
 	output.terminate_string();
-//printf("Reverb::save_data 2\n");
 }
 
 void Reverb::read_data(KeyFrame *keyframe)
@@ -392,38 +372,32 @@ void Reverb::update_gui()
 }
 
 
-
-
 int Reverb::load_from_file(const char *path)
 {
 	FILE *in;
 	int result = 0;
 	int length;
 	char string[1024];
-	
+
 	if(in = fopen(path, "rb"))
 	{
 		fseek(in, 0, SEEK_END);
 		length = ftell(in);
 		fseek(in, 0, SEEK_SET);
 		if(fread(string, length, 1, in) != 1)
-			goto openfail;
+		{
+			result = 1;
+			errorbox(_("Failed to read from %s"), path);
+		}
 		fclose(in);
-//		read_data(string);
 	}
 	else
 	{
-openfail:
-		perror("Reverb::load_from_file");
 // failed
-		ErrorBox errorbox("");
-		char string[1024];
-		sprintf(string, _("Couldn't open %s."), path);
-		errorbox.create_objects(string);
-		errorbox.run_window();
+		errorbox(_("Couldn't open %s. (%m)"), path);
 		result = 1;
 	}
-	
+
 	return result;
 }
 
@@ -432,17 +406,11 @@ int Reverb::save_to_file(const char *path)
 	FILE *out;
 	int result = 0;
 	char string[1024];
-	
-	{
-// 		ConfirmSave confirm;
-// 		result = confirm.test_file("", path);
-	}
-	
+
 	if(!result)
 	{
 		if(out = fopen(path, "wb"))
 		{
-//			save_data(string);
 			fwrite(string, strlen(string), 1, out);
 			fclose(out);
 		}
@@ -450,15 +418,11 @@ int Reverb::save_to_file(const char *path)
 		{
 			result = 1;
 // failed
-			ErrorBox errorbox("");
-			char string[1024];
-			sprintf(string, _("Couldn't save %s."), path);
-			errorbox.create_objects(string);
-			errorbox.run_window();
+			errorbox(_("Couldn't save %s."), path);
 			result = 1;
 		}
 	}
-	
+
 	return result;
 }
 
@@ -478,7 +442,7 @@ ReverbEngine::~ReverbEngine()
 	join();
 }
 
-int ReverbEngine::process_overlays(int output_buffer, int64_t size)
+int ReverbEngine::process_overlays(int output_buffer, int size)
 {
 	this->output_buffer = output_buffer;
 	this->size = size;
@@ -489,8 +453,10 @@ int ReverbEngine::wait_process_overlays()
 {
 	output_lock.lock();
 }
-	
-int ReverbEngine::process_overlay(double *in, double *out, double &out1, double &out2, double level, int64_t lowpass, int64_t samplerate, int64_t size)
+
+int ReverbEngine::process_overlay(double *in, double *out, double &out1, 
+	double &out2, double level, 
+	int lowpass, int samplerate, int size)
 {
 // Modern niquist frequency is 44khz but pot limit is 20khz so can't use
 // niquist
@@ -520,7 +486,6 @@ int ReverbEngine::process_overlay(double *in, double *out, double &out1, double 
 void ReverbEngine::run()
 {
 	int j, i;
-//printf("ReverbEngine::run 1 %d\n", calculate_realtime());
 	while(1)
 	{
 		input_lock.lock();
@@ -533,24 +498,19 @@ void ReverbEngine::run()
 			{
 				if(plugin->ref_channels[i][j] == output_buffer)
 					process_overlay(plugin->main_in[i], 
-								&(plugin->dsp_in[plugin->ref_channels[i][j]][plugin->ref_offsets[i][j]]), 
-								plugin->lowpass_in1[i][j], 
-								plugin->lowpass_in2[i][j], 
-								plugin->ref_levels[i][j], 
-								plugin->ref_lowpass[i][j], 
-								plugin->project_sample_rate, 
-								size);
+						&(plugin->dsp_in[plugin->ref_channels[i][j]][plugin->ref_offsets[i][j]]),
+						plugin->lowpass_in1[i][j],
+						plugin->lowpass_in2[i][j],
+						plugin->ref_levels[i][j],
+						plugin->ref_lowpass[i][j],
+						plugin->project_sample_rate,
+						size);
 			}
 		}
 
 		output_lock.unlock();
 	}
 }
-
-
-
-
-
 
 
 ReverbConfig::ReverbConfig()
@@ -583,9 +543,9 @@ void ReverbConfig::copy_from(ReverbConfig &that)
 
 void ReverbConfig::interpolate(ReverbConfig &prev, 
 	ReverbConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	posnum prev_frame, 
+	posnum next_frame, 
+	posnum current_frame)
 {
 	level_init = prev.level_init;
 	delay_init = prev.delay_init;
@@ -599,7 +559,7 @@ void ReverbConfig::interpolate(ReverbConfig &prev,
 
 void ReverbConfig::dump()
 {
-	printf("ReverbConfig::dump %f %lld %f %f %lld %lld %lld %lld\n", 
+	printf("ReverbConfig::dump %f %d %f %f %d %d %d %d\n",
 	level_init,
 	delay_init, 
 	ref_level1, 
