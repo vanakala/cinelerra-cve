@@ -37,9 +37,6 @@
 REGISTER_PLUGIN(IrisSquareMain)
 
 
-
-
-
 IrisSquareIn::IrisSquareIn(IrisSquareMain *plugin, 
 	IrisSquareWindow *window,
 	int x,
@@ -85,15 +82,9 @@ int IrisSquareOut::handle_event()
 }
 
 
-
-
-
-
-
-
 IrisSquareWindow::IrisSquareWindow(IrisSquareMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	320, 
 	50, 
@@ -106,7 +97,6 @@ IrisSquareWindow::IrisSquareWindow(IrisSquareMain *plugin, int x, int y)
 	this->plugin = plugin;
 }
 
-
 int IrisSquareWindow::close_event()
 {
 	set_done(1);
@@ -116,6 +106,8 @@ int IrisSquareWindow::close_event()
 void IrisSquareWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(in = new IrisSquareIn(plugin, 
@@ -132,13 +124,7 @@ void IrisSquareWindow::create_objects()
 }
 
 
-
-
 PLUGIN_THREAD_OBJECT(IrisSquareMain, IrisSquareThread, IrisSquareWindow)
-
-
-
-
 
 
 IrisSquareMain::IrisSquareMain(PluginServer *server)
@@ -220,10 +206,6 @@ void IrisSquareMain::load_configuration()
 {
 	read_data(get_prev_keyframe(get_source_position()));
 }
-
-
-
-
 
 
 #define IRISSQUARE(type, components) \
@@ -320,9 +302,6 @@ void IrisSquareMain::load_configuration()
 }
 
 
-
-
-
 int IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	load_configuration();
@@ -333,28 +312,28 @@ int IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	switch(incoming->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			IRISSQUARE(float, 3);
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			IRISSQUARE(unsigned char, 3)
-			break;
-		case BC_RGBA_FLOAT:
-			IRISSQUARE(float, 4);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			IRISSQUARE(unsigned char, 4)
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			IRISSQUARE(uint16_t, 3)
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			IRISSQUARE(uint16_t, 4)
-			break;
+	case BC_RGB_FLOAT:
+		IRISSQUARE(float, 3);
+		break;
+	case BC_RGB888:
+	case BC_YUV888:
+		IRISSQUARE(unsigned char, 3)
+		break;
+	case BC_RGBA_FLOAT:
+		IRISSQUARE(float, 4);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		IRISSQUARE(unsigned char, 4)
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		IRISSQUARE(uint16_t, 3)
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		IRISSQUARE(uint16_t, 4)
+		break;
 	}
 	return 0;
 }

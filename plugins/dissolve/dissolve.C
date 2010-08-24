@@ -34,9 +34,6 @@ PluginClient* new_plugin(PluginServer *server)
 }
 
 
-
-
-
 DissolveMain::DissolveMain(PluginServer *server)
  : PluginVClient(server)
 {
@@ -76,8 +73,8 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 // In order to make it dissolve correctly, we have to manually decrese alpha of big picture.
 	switch (outgoing->get_color_model())
 	{
-		case BC_RGBA8888:
-		case BC_YUVA8888:
+	case BC_RGBA8888:
+	case BC_YUVA8888:
 		{
 			uint8_t** data_rows = (uint8_t **)outgoing->get_rows();
 			int w = outgoing->get_w();
@@ -93,7 +90,7 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			}
 			break;
 		}
-		case BC_YUVA16161616:
+	case BC_YUVA16161616:
 		{
 			uint16_t** data_rows = (uint16_t **)outgoing->get_rows();
 			int w = outgoing->get_w();
@@ -109,7 +106,7 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			}
 			break;
 		}
-		case BC_RGBA_FLOAT:
+	case BC_RGBA_FLOAT:
 		{
 			float** data_rows = (float **)outgoing->get_rows();
 			int w = outgoing->get_w();
@@ -125,8 +122,8 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			}
 			break;
 		}
-		default:
-			break;
+	default:
+		break;
 	}
 
 
