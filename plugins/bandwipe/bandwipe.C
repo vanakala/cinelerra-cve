@@ -33,15 +33,7 @@
 #include <stdint.h>
 #include <string.h>
 
-
-
-
-
-
 REGISTER_PLUGIN(BandWipeMain)
-
-
-
 
 
 BandWipeCount::BandWipeCount(BandWipeMain *plugin, 
@@ -67,60 +59,9 @@ int BandWipeCount::handle_event()
 	return 0;
 }
 
-
-BandWipeIn::BandWipeIn(BandWipeMain *plugin, 
-	BandWipeWindow *window,
-	int x,
-	int y)
- : BC_Radial(x, 
-		y, 
-		plugin->direction == 0, 
-		_("In"))
-{
-	this->plugin = plugin;
-	this->window = window;
-}
-
-int BandWipeIn::handle_event()
-{
-	update(1);
-	plugin->direction = 0;
-	window->out->update(0);
-	plugin->send_configure_change();
-	return 0;
-}
-
-BandWipeOut::BandWipeOut(BandWipeMain *plugin, 
-	BandWipeWindow *window,
-	int x,
-	int y)
- : BC_Radial(x, 
-		y, 
-		plugin->direction == 1, 
-		_("Out"))
-{
-	this->plugin = plugin;
-	this->window = window;
-}
-
-int BandWipeOut::handle_event()
-{
-	update(1);
-	plugin->direction = 1;
-	window->in->update(0);
-	plugin->send_configure_change();
-	return 0;
-}
-
-
-
-
-
-
-
 BandWipeWindow::BandWipeWindow(BandWipeMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x,
 	y, 
 	320, 
 	50, 
@@ -143,6 +84,8 @@ int BandWipeWindow::close_event()
 void BandWipeWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Bands:")));
 	x += 50;
 	count = new BandWipeCount(plugin, 
@@ -150,32 +93,13 @@ void BandWipeWindow::create_objects()
 		x,
 		y);
 	count->create_objects();
-// 	y += 30;
-// 	add_subwindow(new BC_Title(x, y, _("Direction:")));
-// 	x += 100;
-// 	add_subwindow(in = new BandWipeIn(plugin, 
-// 		this,
-// 		x,
-// 		y));
-// 	x += 100;
-// 	x = 10;
-// 	add_subwindow(out = new BandWipeOut(plugin, 
-// 		this,
-// 		x,
-// 		y));
-	
+
 	show_window();
 	flush();
 }
 
 
-
-
 PLUGIN_THREAD_OBJECT(BandWipeMain, BandWipeThread, BandWipeWindow)
-
-
-
-
 
 
 BandWipeMain::BandWipeMain(PluginServer *server)

@@ -113,15 +113,9 @@ int BandSlideOut::handle_event()
 }
 
 
-
-
-
-
-
-
 BandSlideWindow::BandSlideWindow(BandSlideMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	320, 
 	100, 
@@ -134,7 +128,6 @@ BandSlideWindow::BandSlideWindow(BandSlideMain *plugin, int x, int y)
 	this->plugin = plugin;
 }
 
-
 int BandSlideWindow::close_event()
 {
 	set_done(1);
@@ -144,6 +137,8 @@ int BandSlideWindow::close_event()
 void BandSlideWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Bands:")));
 	x += 50;
 	count = new BandSlideCount(plugin, 
@@ -174,9 +169,6 @@ void BandSlideWindow::create_objects()
 
 
 PLUGIN_THREAD_OBJECT(BandSlideMain, BandSlideThread, BandSlideWindow)
-
-
-
 
 
 
@@ -378,28 +370,28 @@ int BandSlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	switch(incoming->get_color_model())
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			BANDSLIDE(unsigned char, 3)
-			break;
-		case BC_RGB_FLOAT:
-			BANDSLIDE(float, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			BANDSLIDE(unsigned char, 4)
-			break;
-		case BC_RGBA_FLOAT:
-			BANDSLIDE(float, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			BANDSLIDE(uint16_t, 3)
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			BANDSLIDE(uint16_t, 4)
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		BANDSLIDE(unsigned char, 3)
+		break;
+	case BC_RGB_FLOAT:
+		BANDSLIDE(float, 3);
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		BANDSLIDE(unsigned char, 4)
+		break;
+	case BC_RGBA_FLOAT:
+		BANDSLIDE(float, 4);
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		BANDSLIDE(uint16_t, 3)
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		BANDSLIDE(uint16_t, 4)
+		break;
 	}
 
 	return 0;

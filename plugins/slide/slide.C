@@ -40,9 +40,6 @@
 REGISTER_PLUGIN(SlideMain)
 
 
-
-
-
 SlideLeft::SlideLeft(SlideMain *plugin, 
 	SlideWindow *window,
 	int x,
@@ -132,15 +129,9 @@ int SlideOut::handle_event()
 }
 
 
-
-
-
-
-
-
 SlideWindow::SlideWindow(SlideMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
- 	x, 
+	x, 
 	y, 
 	320, 
 	100, 
@@ -163,6 +154,8 @@ int SlideWindow::close_event()
 void SlideWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(left = new SlideLeft(plugin, 
@@ -197,9 +190,6 @@ void SlideWindow::create_objects()
 
 
 PLUGIN_THREAD_OBJECT(SlideMain, SlideThread, SlideWindow)
-
-
-
 
 
 
@@ -288,9 +278,6 @@ void SlideMain::load_configuration()
 	read_data(get_prev_keyframe(get_source_position()));
 }
 
-
-
-
 #define SLIDE(type, components) \
 { \
 	if(direction == 0) \
@@ -355,9 +342,6 @@ void SlideMain::load_configuration()
 }
 
 
-
-
-
 int SlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	load_configuration();
@@ -365,37 +349,31 @@ int SlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int w = incoming->get_w();
 	int h = incoming->get_h();
 
-//	struct timeval start_time;
-//	gettimeofday(&start_time, 0);
-
 	switch(incoming->get_color_model())
 	{
-		case BC_RGB_FLOAT:
-			SLIDE(float, 3)
-			break;
-		case BC_RGBA_FLOAT:
-			SLIDE(float, 4)
-			break;
-		case BC_RGB888:
-		case BC_YUV888:
-			SLIDE(unsigned char, 3)
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			SLIDE(unsigned char, 4)
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			SLIDE(uint16_t, 3)
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			SLIDE(uint16_t, 4)
-			break;
+	case BC_RGB_FLOAT:
+		SLIDE(float, 3)
+		break;
+	case BC_RGBA_FLOAT:
+		SLIDE(float, 4)
+		break;
+	case BC_RGB888:
+	case BC_YUV888:
+		SLIDE(unsigned char, 3)
+		break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		SLIDE(unsigned char, 4)
+		break;
+	case BC_RGB161616:
+	case BC_YUV161616:
+		SLIDE(uint16_t, 3)
+		break;
+	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+		SLIDE(uint16_t, 4)
+		break;
 	}
-	
-//	int64_t dif= get_difference(&start_time);
-//	printf("diff: %lli\n", dif);
 
 	return 0;
 }

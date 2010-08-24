@@ -31,8 +31,6 @@ class BandSlideWindow;
 #include "vframe.inc"
 
 
-
-
 class BandSlideCount : public BC_TumbleTextBox
 {
 public:
@@ -68,8 +66,6 @@ public:
 	BandSlideMain *plugin;
 	BandSlideWindow *window;
 };
-
-
 
 
 class BandSlideWindow : public BC_Window
