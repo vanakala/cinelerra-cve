@@ -76,5 +76,7 @@ private:
 	y4m_stream_info_t stream_info;
 	y4m_frame_info_t frame_info;
 	Pipe *stream_pipe; // used for pipes
-	ArrayList<off_t> *frame_index;
+
+	off_t frame_offset;
+	off_t frame_bytes;
 };

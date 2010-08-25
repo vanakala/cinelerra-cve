@@ -37,14 +37,14 @@ YUVStream::YUVStream()
 	stream_fd = -1;
 	stream_pipe= 0;
 	frame_count = 0;
-	frame_index = 0;
+	frame_offset = 0;
+	frame_bytes = 0;
 }
 
 YUVStream::~YUVStream()
 {
 	y4m_fini_stream_info(&stream_info);
 	y4m_fini_frame_info(&frame_info);
-	if (frame_index) delete frame_index;
 	close_fd();
 }
 
@@ -67,7 +67,7 @@ int YUVStream::open_read(const char *path)
 	}
 
 	// generate index to frame position if not done yet
-	if (frame_index == 0)
+	if (frame_offset == 0)
 	{
 		if (make_index() != 0)
 			return 1;
@@ -193,55 +193,40 @@ int YUVStream::write_frame_raw(uint8_t *data, int frame_size)
 int YUVStream::make_index()
 {
 	off_t position;
+	int ret = 0;
 	uint8_t *yuv[3];
 
 	// NOTE: make_index() must be called after read_header().
-
-	// NOTE: storing frame_index locally means it is destroyed too often.
-	//       make_index() will be called 3 times per file.  If this
-	//       becomes a performance problem, the index should be cached.
-	//       Storing in 'asset' helps some, but still is done twice.
-	if (frame_index) delete frame_index;
-	frame_index = new ArrayList<off_t>;
 
 	VFrame *frame = new VFrame(0, get_width(), get_height(), BC_YUV420P);
 	yuv[0] = frame->get_y();
 	yuv[1] = frame->get_u();
 	yuv[2] = frame->get_v();
 
-	// note the start of the first frame
-	position = lseek(stream_fd, 0, SEEK_CUR);
-
-	// reset the frame count
-	frame_count = 0;
-
-	while (read_frame(yuv) == 0) 
-	{
-		// index is start position of each frame
-		frame_index->append(position);
-		position = lseek(stream_fd, 0, SEEK_CUR);
-		frame_count++;
+	frame_offset = lseek(stream_fd, 0, SEEK_CUR);
+	if (read_frame(yuv) == 0) {
+		frame_bytes = lseek(stream_fd, 0, SEEK_CUR) - frame_offset;
+		frame_count = (lseek(stream_fd, 0, SEEK_END)- frame_offset) / frame_bytes;
+		ret = 0;
 	}
 
-	// rewind to the start of the first frame
-	lseek(stream_fd, frame_index->values[0], SEEK_SET);
-
+	lseek(stream_fd, frame_offset, SEEK_SET);
 	delete frame;
 
-	return 0;
+	return ret;
 }
 
 int YUVStream::seek_frame(framenum frame_number)
 {
 	if (frame_number > frame_count ||
-		frame_number < 0 || frame_index == 0) 
+		frame_number < 0 || frame_offset == 0) 
 	{
 		errormsg("seek_frame(%d) failed (frame_count=%d)",
 			frame_number, frame_count);
 		return 1;
 	}
 
-	off_t position = frame_index->values[frame_number];
+	off_t position = frame_number * frame_bytes + frame_offset;
 	if (position == 0) 
 	{
 		// because of header, position should never be zero
