@@ -2,11 +2,12 @@
 
 #ifdef HAVE_SWSCALER
 extern "C" {
-#include <swscale.h>
+#include <libswscale/swscale.h>
 }
 #endif
 
 #include "mainerror.h"
+#include "bcsignals.h"
 #include "filebase.h"
 #include "quicktime.h"
 #include "ffmpeg.h"
@@ -93,7 +94,7 @@ PixelFormat FFMPEG::color_model_to_pix_fmt(int color_model)
 		return PIX_FMT_RGB565;
 	};
 
-	return PIX_FMT_NB;
+	return PIX_FMT_NONE;
 }
 
 int FFMPEG::pix_fmt_to_color_model(PixelFormat pix_fmt)
@@ -133,16 +134,8 @@ int FFMPEG::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 
 	if (size < 0)
 	{
-		printf("FFMPEG::init_picture failed\n");
+		errorbox("FFMPEG::init_picture failed");
 		return 1;
-	}
-
-	if (cmodel_is_planar(frame->get_color_model()))
-	{
-		// override avpicture_fill() for planar types
-		picture->data[0] = frame->get_y();
-		picture->data[1] = frame->get_u();
-		picture->data[2] = frame->get_v();
 	}
 
 	return size;
@@ -158,9 +151,10 @@ int FFMPEG::convert_cmodel(VFrame *frame_in,  VFrame *frame_out)
 #ifdef HAVE_SWSCALER
 	// We need a context for swscale
 	struct SwsContext *convert_ctx;
+	av_log_set_level(AV_LOG_QUIET);
 #endif
 	// do conversion within libavcodec if possible
-	if (pix_fmt_in != PIX_FMT_NB && pix_fmt_out != PIX_FMT_NB) {
+	if (pix_fmt_in != PIX_FMT_NONE && pix_fmt_out != PIX_FMT_NONE) {
 		// set up a temporary pictures from frame_in and frame_out
 		AVPicture picture_in, picture_out;
 		init_picture_from_frame(&picture_in, frame_in);
@@ -172,7 +166,11 @@ int FFMPEG::convert_cmodel(VFrame *frame_in,  VFrame *frame_out)
 				&picture_in,
 				pix_fmt_in,
 				frame_in->get_w(),
-				frame_out->get_h());
+				frame_in->get_h());
+		if (result)
+		{
+			errorbox("Failed to convert image with ffmpeg");
+		}
 #else
 		convert_ctx = sws_getContext(frame_in->get_w(), frame_in->get_h(),pix_fmt_in,
 				frame_out->get_w(),frame_out->get_h(),pix_fmt_out,
@@ -185,19 +183,18 @@ int FFMPEG::convert_cmodel(VFrame *frame_in,  VFrame *frame_out)
 
 		result = sws_scale(convert_ctx, 
 				picture_in.data, picture_in.linesize,
-				frame_in->get_w(), frame_in->get_h(),
+				0, frame_in->get_h(),
 				picture_out.data, picture_out.linesize);
 
 		sws_freeContext(convert_ctx);
-#endif
-		if (result)
+		if (!result)
 		{
 			errorbox("Failed to convert image with ffmpeg");
 		}
+#endif
 
 		return result;
 	}
-
 
 	// failing the fast method, use the failsafe cmodel_transfer()
 	return convert_cmodel_transfer(frame_in, frame_out);
@@ -251,7 +248,7 @@ int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 	int result;
 #ifndef HAVE_SWSCALER
 	// do conversion within libavcodec if possible
-	if (pix_fmt_out != PIX_FMT_NB) {
+	if (pix_fmt_out != PIX_FMT_NONE) {
 		result = img_convert(&picture_out,
 				pix_fmt_out,
 				picture_in,
@@ -260,10 +257,11 @@ int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 				height_in);
 	} else
 		result = 1;
+	if (result)
 #else
-	convert_ctx = sws_getContext(width_in, height_in,pix_fmt_in,
-				frame_out->get_w(),frame_out->get_h(),pix_fmt_out,
-				SWS_BICUBIC, NULL, NULL, NULL);
+	convert_ctx = sws_getContext(width_in, height_in, pix_fmt_in,
+			frame_out->get_w(),frame_out->get_h(), pix_fmt_out,
+			SWS_BICUBIC, NULL, NULL, NULL);
 
 	if(convert_ctx == NULL){
 		errorbox("FFMPEG: swscale context initialization failed");
@@ -272,15 +270,15 @@ int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 
 	result = sws_scale(convert_ctx, 
 			picture_in->data, picture_in->linesize,
-			width_in, height_in,
+			0, height_in,
 			picture_out.data, picture_out.linesize);
 
 	sws_freeContext(convert_ctx);
+	if(!result)
 #endif
-	if (result)
 	{
 		errorbox("Failed to convert image with ffmpeg");
-		return result;
+		return 1;
 	}
 
 	// make an intermediate temp frame only if necessary
