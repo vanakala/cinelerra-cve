@@ -958,6 +958,45 @@ int VFrame::equal_stacks(VFrame *src)
 	return 1;
 }
 
+void VFrame::dump()
+{
+	printf("VFrame dump\n");
+	printf("    Size %dx%d, cmodel %d offsets %ld %ld %ld\n", w, h, 
+		color_model, y_offset, u_offset, v_offset);
+	printf("    data:%p rows: %p y:%p, u:%p, v:%p\n", data, rows,
+		y, u, v);
+	printf("    compressed size %ld, compressed_allocated %ld\n",
+		compressed_size, compressed_allocated);
+}
+
+void VFrame::dump_file(const char *filename)
+{
+	FILE *fp;
+	int i;
+
+	if(w == 0 || h == 0)
+		return;
+	if(rows)
+	{
+		if(fp = fopen(filename, "wb"))
+		{
+			for(i = 0; i < h; i++)
+				fwrite(rows[i], w, 1, fp);
+			fclose(fp);
+		}
+		return;
+	}
+	if(y)
+	{
+		if(fp = fopen(filename, "wb"))
+		{
+			fwrite(y, w * h, 1, fp);
+			fclose(fp);
+		}
+		return;
+	}
+}
+
 void VFrame::dump_stacks()
 {
 	printf("VFrame::dump_stacks\n");

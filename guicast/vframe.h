@@ -300,6 +300,9 @@ public:
 // This clears the stacks and the param table
 	void clear_stacks();
 
+	void dump();
+// Dump bitmamps to named file
+	void dump_file(const char *filename);
 	void dump_stacks();
 	void dump_params();
 
