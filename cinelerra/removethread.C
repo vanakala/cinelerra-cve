@@ -20,18 +20,12 @@
  */
 
 #include "bcwindowbase.inc"
+#include "bcsignals.h"
 #include "condition.h"
 #include "mutex.h"
 #include "removethread.h"
 
 #include <string.h>
-
-extern "C"
-{
-#include <uuid/uuid.h>
-}
-
-
 
 RemoveThread::RemoveThread()
  : Thread()
@@ -43,17 +37,16 @@ RemoveThread::RemoveThread()
 void RemoveThread::remove_file(const char *path)
 {
 // Rename to temporary
-	uuid_t id;
-	uuid_generate(id);
 	char string[BCTEXTLEN];
-	strcpy(string, path);
-	uuid_unparse(id, string + strlen(string));
+	sprintf(string, "%s.%05d", path, number++);
 	rename(path, string);
 
 	file_lock->lock("RemoveThread::remove_file");
 	files.append(strdup(string));
 	file_lock->unlock();
 	input_lock->unlock();
+	if(number > 100000)
+		number %= 100000;
 }
 
 void RemoveThread::create_objects()
@@ -63,6 +56,7 @@ void RemoveThread::create_objects()
 
 void RemoveThread::run()
 {
+	number = (int)(get_tid() % 100000);
 	while(1)
 	{
 		char string[BCTEXTLEN];

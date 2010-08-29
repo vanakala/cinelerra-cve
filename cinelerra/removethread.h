@@ -34,9 +34,11 @@ public:
 	RemoveThread();
 	void remove_file(const char *path);
 	void create_objects();
+private:
 	void run();
 	Condition *input_lock;
 	Mutex *file_lock;
+	int number;
 	ArrayList<char*> files;
 };
 
