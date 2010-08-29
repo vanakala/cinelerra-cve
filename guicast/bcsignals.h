@@ -134,7 +134,8 @@ public:
 #define UNSET_TEMP BC_Signals::unset_temp
 
 // Trace print
-	static void trace_msg(const char *file, const char *func, int line, const char *fmt, ...);
+	static void trace_msg(const char *file, const char *func, int line, const char *fmt, ...)
+		__attribute__ ((__format__(__printf__, 4, 5)));
 
 
 // Temporary files
