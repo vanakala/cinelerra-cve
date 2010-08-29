@@ -283,9 +283,21 @@ int MainError::show_boxmsg(const char *title, const char *message, int confirm)
 	else
 	{
 		if(title)
-			fprintf(stderr, "%s: %s\n", title, message);
+			fprintf(stderr, "%s: %s", title, message);
 		else
-			fprintf(stderr, "%s\n", message);
+			fprintf(stderr, "%s", message);
+		if(confirm)
+		{
+			int ch;
+			fputs(" [Yn]", stderr);
+			ch = getchar();
+			if(ch == 'y' || ch == 'Y' || ch == '\n')
+				res = 0;
+			else
+				res = 1;
+		}
+		else
+			fputc('\n', stderr);
 	}
 	if(confirm)
 		return res;
