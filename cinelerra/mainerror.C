@@ -260,9 +260,10 @@ const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
 	return msgbuf;
 }
 
-void MainError::show_boxmsg(const char *title, const char *message)
+int MainError::show_boxmsg(const char *title, const char *message, int confirm)
 {
 	char bufr[BCTEXTLEN];
+	int res;
 
 	if(main_error)
 	{
@@ -276,8 +277,8 @@ void MainError::show_boxmsg(const char *title, const char *message)
 			strcat(bufr, title);
 		}
 		MainErrorBox ebox(main_error->mwindow, x, y);
-		ebox.create_objects(bufr, message);
-		ebox.run_window();
+		ebox.create_objects(bufr, message, confirm);
+		res = ebox.run_window();
 	}
 	else
 	{
@@ -286,6 +287,9 @@ void MainError::show_boxmsg(const char *title, const char *message)
 		else
 			fprintf(stderr, "%s\n", message);
 	}
+	if(confirm)
+		return res;
+	return 0;
 }
 
 void MainError::ErrorBoxMsg(const char *fmt, ...)
@@ -321,6 +325,17 @@ void MainError::MessageBox(const char *fmt, ...)
 	show_boxmsg(_("Message"), bufr);
 }
 
+int MainError::ConfirmBox(const char *fmt, ...)
+{
+	char bufr[BCTEXTLEN];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(bufr, BCTEXTLEN, fmt, ap);
+	va_end(ap);
+	return show_boxmsg(_("Confirmation"), bufr, 1);
+}
+
 MainErrorBox::MainErrorBox(MWindow *mwindow, int x, int y, int w, int h)
 : BC_Window(PROGRAM_NAME, x, y, w, h, w, h, 0)
 {
@@ -331,7 +346,7 @@ MainErrorBox::~MainErrorBox()
 {
 }
 
-int MainErrorBox::create_objects(const char *title, const char *text)
+int MainErrorBox::create_objects(const char *title, const char *text, int confirm)
 {
 	int x, y;
 	const char *btext;
@@ -347,8 +362,19 @@ int MainErrorBox::create_objects(const char *title, const char *text)
 		MEDIUMFONT,
 		get_resources()->default_text_color,
 		1));
-	x = get_w() / 2 - 30;
+
 	y = get_h() - 50;
-	add_tool(new BC_OKButton(x, y));
+	if(confirm)
+	{
+		x = get_w() / 4;
+		add_tool(new BC_OKButton(x - 30, y));
+		x *= 3;
+		add_tool(new BC_CancelButton(x - 30, y));
+	}
+	else
+	{
+		x = get_w() / 2 - 30;
+		add_tool(new BC_OKButton(x, y));
+	}
 	return 0;
 }

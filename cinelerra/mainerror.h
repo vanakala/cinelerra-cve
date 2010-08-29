@@ -38,7 +38,8 @@
 #define errorbox(...) MainError::ErrorBoxMsg(__VA_ARGS__)
 // Display simple message in a box
 #define messagebox(...)  MainError::MessageBox(__VA_ARGS__)
-
+// Ask confirmation, returns 0, if user confirmes
+#define confirmbox(...) MainError::ConfirmBox(__VA_ARGS__)
 
 class MainErrorGUI : public BC_Window
 {
@@ -80,10 +81,12 @@ public:
 // Display message
 	static void MessageBox(const char *fmt, ...)
 		__attribute__ ((__format__(__printf__, 1, 2)));
-
+// Ask confirmation
+	static int ConfirmBox(const char *fmt, ...)
+		__attribute__ ((__format__(__printf__, 1, 2)));
 private:
 	void show_error_local(const char *string);
-	static void show_boxmsg(const char *title, const char *message);
+	static int show_boxmsg(const char *title, const char *message, int confirm = 0);
 
 // Split errors into multiple lines based on carriage returns.
 	void append_error(const char *string);
@@ -107,7 +110,7 @@ public:
 		int h = 120);
 	virtual ~MainErrorBox();
 
-	int create_objects(const char *title, const char *text);
+	int create_objects(const char *title, const char *text, int confirm );
 };
 
 #endif
