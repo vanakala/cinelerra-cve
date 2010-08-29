@@ -21,7 +21,6 @@
 
 #include "assetedit.h"
 #include "assetpopup.h"
-#include "assetremove.h"
 #include "awindow.h"
 #include "awindowgui.h"
 #include "awindowmenu.h"
@@ -29,6 +28,7 @@
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "edl.h"
+#include "mainerror.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainindexes.h"
@@ -321,6 +321,7 @@ AssetPopupDiskRemove::~AssetPopupDiskRemove()
 
 int AssetPopupDiskRemove::handle_event()
 {
-	mwindow->awindow->asset_remove->start();
+	if(!confirmbox(_("Remove this asset from disk?")))
+		mwindow->remove_assets_from_disk();
 	return 1;
 }

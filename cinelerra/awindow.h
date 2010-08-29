@@ -23,7 +23,6 @@
 #define AWINDOW_H
 
 #include "assetedit.inc"
-#include "assetremove.inc"
 #include "awindowgui.inc"
 #include "bcwindowbase.inc"
 #include "clipedit.inc"
@@ -45,7 +44,6 @@ public:
 	AWindowGUI *gui;
 	MWindow *mwindow;
 	AssetEdit *asset_edit;
-	AssetRemoveThread *asset_remove;
 	ClipEdit *clip_edit;
 	LabelEdit *label_edit;
 };

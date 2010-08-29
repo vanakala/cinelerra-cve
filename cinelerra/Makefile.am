@@ -76,7 +76,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    asset.C \
 		    assetedit.C \
 		    assetpopup.C \
-		    assetremove.C \
 		    assets.C \
 		    atrack.C \
 		    attachmentpoint.C \
@@ -360,7 +359,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 asset.h \
 		 assetedit.h \
 		 assetpopup.h \
-		 assetremove.h \
 		 assets.h \
 		 atrack.h \
 		 attachmentpoint.h \
