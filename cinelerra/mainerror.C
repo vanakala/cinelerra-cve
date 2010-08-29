@@ -217,7 +217,7 @@ const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
 	int linelen;
 	int w;
 	char *p, *q, *r;
-	static char msgbuf[1024];
+	static char msgbuf[BCTEXTLEN];
 
 	if(win->get_text_width(font, text) < boxwidth)
 		return text;
@@ -260,41 +260,69 @@ const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
 	return msgbuf;
 }
 
-void MainError::ErrorBoxMsg(const char *fmt, ...)
+void MainError::show_boxmsg(const char *title, const char *message)
 {
-	char bufr[1024];
-	va_list ap;
+	char bufr[BCTEXTLEN];
 
-	va_start(ap, fmt);
-	vsnprintf(bufr, 1024, fmt, ap);
-	va_end(ap);
 	if(main_error)
 	{
 		BC_DisplayInfo display_info;
 		int x = display_info.get_abs_cursor_x();
 		int y = display_info.get_abs_cursor_y();
-
+		strcpy(bufr, PROGRAM_NAME);
+		if(title)
+		{
+			strcat(bufr, ": ");
+			strcat(bufr, title);
+		}
 		MainErrorBox ebox(main_error->mwindow, x, y);
-		ebox.create_objects(bufr);
+		ebox.create_objects(bufr, message);
 		ebox.run_window();
 	}
 	else
-		fprintf(stderr, "ERROR: %s\n", bufr);
+	{
+		if(title)
+			fprintf(stderr, "%s: %s\n", title, message);
+		else
+			fprintf(stderr, "%s\n", message);
+	}
+}
+
+void MainError::ErrorBoxMsg(const char *fmt, ...)
+{
+	char bufr[BCTEXTLEN];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(bufr, BCTEXTLEN, fmt, ap);
+	va_end(ap);
+	show_boxmsg(_("Error"), bufr);
 }
 
 void MainError::ErrorMsg(const char *fmt, ...)
 {
-	char bufr[1024];
+	char bufr[BCTEXTLEN];
 	va_list ap;
 
 	va_start(ap, fmt);
-	vsnprintf(bufr, 1024, fmt, ap);
+	vsnprintf(bufr, BCTEXTLEN, fmt, ap);
 	va_end(ap);
 	show_error(bufr);
 }
 
+void MainError::MessageBox(const char *fmt, ...)
+{
+	char bufr[BCTEXTLEN];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(bufr, BCTEXTLEN, fmt, ap);
+	va_end(ap);
+	show_boxmsg(_("Message"), bufr);
+}
+
 MainErrorBox::MainErrorBox(MWindow *mwindow, int x, int y, int w, int h)
-: BC_Window(PROGRAM_NAME ": Error", x, y, w, h, w, h, 0)
+: BC_Window(PROGRAM_NAME, x, y, w, h, w, h, 0)
 {
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 }
@@ -303,11 +331,13 @@ MainErrorBox::~MainErrorBox()
 {
 }
 
-int MainErrorBox::create_objects(const char *text)
+int MainErrorBox::create_objects(const char *title, const char *text)
 {
 	int x, y;
-	BC_Title *title;
 	const char *btext;
+
+	if(title)
+		set_title(title);
 
 	btext = MainError::StringBreaker(MEDIUMFONT, text, get_w() - 30, this);
 

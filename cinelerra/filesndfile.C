@@ -280,10 +280,10 @@ int FileSndFile::read_samples(double *buffer, int len)
 //printf("FileSndFile::read_samples %lld %lld\n", file->current_sample, len);
 // Get temp buffer for interleaved channels
 	if(len <= 0 || len > 1000000)
-		errormsg("Illegal length=%lld\n", len);
+		errormsg("Illegal length=%d", len);
 
 	if(!buffer)
-		errormsg("Missing buffer=%p\n", buffer);
+		errormsg("Missing buffer=%p", buffer);
 
 	if(temp_allocated && temp_allocated < len)
 	{
@@ -301,7 +301,7 @@ int FileSndFile::read_samples(double *buffer, int len)
 	result = !sf_read_double(fd, temp_double, len * asset->channels);
 
 	if(result)
-		errormsg("fd=%p temp_double=%p len=%lld asset=%p asset->channels=%d\n",
+		errormsg("fd=%p temp_double=%p len=%d asset=%p asset->channels=%d\n",
 			fd, temp_double, len, asset, asset->channels);
 
 // Extract single channel

@@ -183,7 +183,7 @@ int YUVStream::write_frame_raw(uint8_t *data, int frame_size)
 	result = y4m_write(stream_fd, data, frame_size);
 	if (result != Y4M_OK) 
 	{
-		errormsg("y4m_write(%ld) failed: %s\n", 
+		errormsg("y4m_write(%d) failed: %s\n", 
 			frame_size, y4m_strerr(result));
 		return 1;
 	}

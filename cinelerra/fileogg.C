@@ -1466,7 +1466,7 @@ int FileOGG::read_frame(VFrame *frame)
 	{
 		if (!ogg_seek_to_keyframe(tf->videosync, tf->to.serialno, next_frame_position, &ogg_frame_position))
 		{
-			errorbox("Error while seeking to frame's keyframe (frame: %lli, keyframe: %lli)\n", next_frame_position, ogg_frame_position);
+			errorbox("Error while seeking to frame's keyframe (frame: %i, keyframe: %i)", next_frame_position, ogg_frame_position);
 			return 1;
 		}
 //		printf("For frame: %lli, keyframe is: %lli\n", next_frame_position,ogg_frame_position);
@@ -1475,7 +1475,7 @@ int FileOGG::read_frame(VFrame *frame)
 		ogg_frame_position --; // ogg_frame_position is at last decoded frame, so it will point right 
 		if (decode_frames <= 0) 
 		{
-			errorbox("Error while seeking to keyframe, wrong keyframe number (frame: %lli, keyframe: %lli)\n", next_frame_position, ogg_frame_position);
+			errorbox("Error while seeking to keyframe, wrong keyframe number (frame: %i, keyframe: %i)", next_frame_position, ogg_frame_position);
 			return 1;
 			
 		}
@@ -1748,7 +1748,7 @@ int FileOGG::read_samples(double *buffer, int len)
 	// now we can be sure our history is correct, just copy it out
 	if (next_sample_position < history_start || next_sample_position + len > history_start + history_size)
 	{
-		errorbox("History not aligned properly \n\tnext_sample_position: %lli, length: %lld\n\thistory_start: %lld, length: %lld\n", next_sample_position, len, history_start, history_size);
+		errorbox("History not aligned properly \n\tnext_sample_position: %lli, length: %d\n\thistory_start: %lld, length: %lld\n", next_sample_position, len, history_start, history_size);
 		return 1;
 	}
 	float *input = pcm_history[file->current_channel] + next_sample_position - history_start;
