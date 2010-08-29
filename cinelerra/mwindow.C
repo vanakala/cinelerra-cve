@@ -851,7 +851,7 @@ SET_TRACE
 
 // File not found
 			case FILE_NOT_FOUND:
-				errormsg(string, _("Failed to open %s"), new_asset->path);
+				errormsg(_("Failed to open %s"), new_asset->path);
 				result = 1;
 				break;
 
@@ -1868,7 +1868,7 @@ void MWindow::remove_assets_from_disk()
 // Remove from disk
 	for(int i = 0; i < session->drag_assets->total; i++)
 	{
-		remove(session->drag_assets->values[i]->path);
+		remove_thread->remove_file(session->drag_assets->values[i]->path);
 	}
 
 	remove_assets_from_project(1);
