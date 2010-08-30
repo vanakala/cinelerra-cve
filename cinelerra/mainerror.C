@@ -214,8 +214,6 @@ const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
 		BC_Window *win)
 {
 	int txlen = strlen(text);
-	int linelen;
-	int w;
 	char *p, *q, *r;
 	static char msgbuf[BCTEXTLEN];
 
@@ -253,10 +251,14 @@ const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
 				else
 					r = q;
 			}
-			q++;
+			if(*++q == 0)
+			{
+// There was a very long word if we reach here
+				*r = '\n';
+				return msgbuf;
+			}
 		}
 	}
-// There was a very long word if we reach here
 	return msgbuf;
 }
 
