@@ -156,7 +156,7 @@ void SaveAs::run()
 // ======================================= try to save it
 		if(filename[0] == 0) return;              // no filename given
 		if(result == 1) return;          // user cancelled
-		result = ConfirmSave::test_file(mwindow, filename);
+		result = ConfirmSave::test_file(filename);
 	}while(result);        // file exists so repeat
 
 // save it

@@ -38,7 +38,7 @@ public:
 // Return values:
 // 1 cancel
 // 0 replace or doesn't exist yet
-	static int test_file(MWindow *mwindow, char *path);
+	static int test_file(const char *path);
 	static int test_files(MWindow *mwindow, ArrayList<char*> *paths);
 
 };
@@ -55,6 +55,7 @@ public:
 	ArrayList<BC_ListBoxItem*> *list;
 	BC_Title *title;
 	BC_ListBox *listbox;
+	MWindow *mwindow;
 };
 
 #endif

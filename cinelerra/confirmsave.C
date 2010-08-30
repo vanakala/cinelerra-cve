@@ -20,12 +20,16 @@
  */
 
 #include "asset.h"
+#include "bcsignals.h"
 #include "confirmsave.h"
 #include "language.h"
+#include "mainerror.h"
+#include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "theme.h"
 
-
+#include <unistd.h>
 
 
 ConfirmSave::ConfirmSave()
@@ -36,28 +40,26 @@ ConfirmSave::~ConfirmSave()
 {
 }
 
-int ConfirmSave::test_file(MWindow *mwindow, char *path)
+int ConfirmSave::test_file(const char *path)
 {
-	ArrayList<char*> paths;
-	paths.append(path);
-	int result = test_files(mwindow, &paths);
-	paths.remove_all();
+	int result = 0;
+
+	if(access(path, F_OK) == 0)
+		result = confirmbox(_("File %s exists. Overwrite?"), path);
 	return result;
 }
 
 int ConfirmSave::test_files(MWindow *mwindow, 
 	ArrayList<char*> *paths)
 {
-	FILE *file;
 	ArrayList<BC_ListBoxItem*> list;
 	int result = 0;
 
 	for(int i = 0; i < paths->total; i++)
 	{
 		char *path = paths->values[i];
-		if(file = fopen(path, "r"))
+		if(access(path, F_OK) == 0)
 		{
-			fclose(file);
 			list.append(new BC_ListBoxItem(path));
 		}
 	}
@@ -73,14 +75,12 @@ int ConfirmSave::test_files(MWindow *mwindow,
 		}
 		else
 		{
-			printf("The following files exist.\n");
+			fprintf(stderr, "The following files exist:\n");
 			for(int i = 0; i < list.total; i++)
 			{
-				printf("    %s\n", list.values[i]->get_text());
+				fprintf(stderr, "    %s\n", list.values[i]->get_text());
 			}
-			printf("It's so hard to configure non-interactive rendering that\n"
-				"we'll assume you didn't want to overwrite them and crash here.\n");
-			result = 1;
+			result = confirmbox("Overwrite?");
 		}
 		list.remove_all_objects();
 		return result;
@@ -104,12 +104,14 @@ int ConfirmSave::test_files(MWindow *mwindow,
 
 ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow, 
 	ArrayList<BC_ListBoxItem*> *list)
- : BC_Window(PROGRAM_NAME ": File Exists", 
- 		mwindow->gui->get_abs_cursor_x(1) - 160, 
+ : BC_Window(PROGRAM_NAME ": Files Exist",
+		mwindow->gui->get_abs_cursor_x(1) - 160, 
 		mwindow->gui->get_abs_cursor_y(1) - 120, 
-		320, 
-		320)
+		mwindow->session->ewindow_w,
+		mwindow->session->ewindow_h,
+		50, 50)
 {
+	this->mwindow = mwindow;
 	this->list = list;
 }
 
@@ -121,8 +123,8 @@ ConfirmSaveWindow::~ConfirmSaveWindow()
 int ConfirmSaveWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
+
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 
 	add_subwindow(title = new BC_Title(x, 
 		y, 
@@ -149,7 +151,9 @@ int ConfirmSaveWindow::resize_event(int w, int h)
 	listbox->reposition_window(x,
 		y,
 		w - x - 10,
-		h - y - 50);
+		h - y - BC_OKButton::calculate_h() - 10);
+	mwindow->session->ewindow_w = w;
+	mwindow->session->ewindow_h = h;
 	return 1;
 }
 
