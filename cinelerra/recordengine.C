@@ -23,11 +23,11 @@
 #include "audiodevice.h"
 #include "file.h"
 #include "filexml.h"
+#include "mainerror.h"
 #include "mwindow.h"
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "preferences.h"
-#include "recconfirmdelete.h"
 #include "record.h"
 #include "recordengine.h"
 #include "recordgui.h"
@@ -529,9 +529,7 @@ int RecordEngine::start_over()
 	if((record->do_audio && file->get_audio_length() > 0) ||
 		(record->do_video && file->get_video_length(record->get_framerate()) > 0))
 	{
-		RecConfirmDelete dialog(mwindow);
-		dialog.create_objects("start over");
-		int result = dialog.run_window();
+		int result = confirmbox("Delete this file and start over?");
 		if(!result)
 		{
 			stop_operation();

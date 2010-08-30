@@ -242,7 +242,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    preferencesthread.C \
 		    question.C \
 		    quit.C \
-		    recconfirmdelete.C \
 		    recordableatracks.C \
 		    recordablevtracks.C \
 		    recordaudio.C \
@@ -536,7 +535,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 preferencesthread.h \
 		 question.h \
 		 quit.h \
-		 recconfirmdelete.h \
 		 recordableatracks.h \
 		 recordablevtracks.h \
 		 recordaudio.h \

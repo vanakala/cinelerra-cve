@@ -39,7 +39,6 @@
 #include "mwindowgui.h"
 #include "preferences.h"
 #include "question.h"
-#include "recconfirmdelete.h"
 #include "recordgui.h"
 #include "record.h"
 #include "recordlabel.h"
