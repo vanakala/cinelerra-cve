@@ -1161,13 +1161,6 @@ int Track::clear_handle(double start,
 	edits->clear_handle(start, end, clear_plugins, distance);
 }
 
-int Track::popup_transition(int cursor_x, int cursor_y)
-{
-	return 0;
-}
-
-
-
 int Track::modify_edithandles(double oldposition, 
 	double newposition, 
 	int currentend, 
@@ -1222,11 +1215,6 @@ int Track::paste_silence(double start, double end, int edit_plugins)
 	if(edit_plugins) shift_effects(start, end - start, 0);
 
 	edits->optimize();
-	return 0;
-}
-
-int Track::scale_time(float rate_scale, int scale_edits, int scale_autos, posnum start, posnum end)
-{
 	return 0;
 }
 

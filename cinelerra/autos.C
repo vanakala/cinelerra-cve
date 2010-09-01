@@ -724,28 +724,7 @@ int Autos::load(FileXML *file)
 }
 
 
-
-
-/* Ei kasutata
-
-int Autos::slope_adjustment(int64_t ax, double slope)
-{
-	return (int)(ax * slope);
-} */
-
-
-int Autos::scale_time(float rate_scale, int scale_edits, int scale_autos, posnum start, posnum end)
-{
-	Auto *current;
-	
-	for(current = first; current && scale_autos; current = NEXT)
-	{
-		current->position = (posnum)((current->position - start) * rate_scale + start + 0.5);
-	}
-	return 0;
-}
-
-Auto* Autos::autoof(int64_t position)
+Auto* Autos::autoof(posnum position)
 {
 	Auto *current;
 

@@ -131,8 +131,6 @@ public:
 	int release_auto();
 	virtual int release_auto_derived() {};
 	Auto* append_auto();
-	int scale_time(float rate_scale, int scale_edits, int scale_autos,
-			posnum start, posnum end);
 
 // rendering utilities
 	int get_neighbors(posnum start, posnum end,

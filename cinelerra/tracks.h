@@ -177,8 +177,6 @@ public:
 		double end, 
 		int edit_plugins);
 
-// Transition popup
-	int popup_transition(int cursor_x, int cursor_y);
 	int select_auto(int cursor_x, int cursor_y);
 	int move_auto(int cursor_x, int cursor_y, int shift_down);
 	int modify_edithandles(double &oldposition, 
@@ -195,9 +193,6 @@ public:
 		Edits *trim_edits);
 	int select_handles();
 	int select_region();
-
-// Move edit boundaries and automation during a framerate change
-	int scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, samplenum start, samplenum end);
 
 // ================================== accounting
 

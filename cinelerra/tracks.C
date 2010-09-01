@@ -606,17 +606,6 @@ void Tracks::select_all(int type,
 
 // ===================================== file operations
 
-int Tracks::popup_transition(int cursor_x, int cursor_y)
-{
-	int result = 0;
-	for(Track* current = first; current && !result; current = NEXT)
-	{
-		result = current->popup_transition(cursor_x, cursor_y);
-	}
-	return result;
-}
-
-
 int Tracks::change_channels(int oldchannels, int newchannels)
 {
 	for(Track *current = first; current; current = NEXT)

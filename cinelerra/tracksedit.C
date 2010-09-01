@@ -866,22 +866,3 @@ int Tracks::modify_pluginhandles(double &oldposition,
 	}
 	return 0;
 }
-
-
-int Tracks::scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, samplenum start, samplenum end)
-{
-	Track *current_track;
-
-	for(current_track = first; 
-		current_track; 
-		current_track = current_track->next)
-	{
-		if((current_track->record || ignore_record) && 
-			current_track->data_type == TRACK_VIDEO)
-		{
-			current_track->scale_time(rate_scale, scale_edits, scale_autos, start, end);
-		}
-	}
-	return 0;
-}
-

@@ -258,7 +258,6 @@ public:
 		FileXML *file,
 		int default_only);
 	int paste_auto_silence(double start, double end);
-	int scale_time(float rate_scale, int scale_edits, int scale_autos, posnum start, posnum end);
 	int clear_handle(double start, 
 		double end, 
 		int clear_labels,
@@ -270,7 +269,6 @@ public:
 	int select_auto(AutoConf *auto_conf, int cursor_x, int cursor_y);
 	int move_auto(AutoConf *auto_conf, int cursor_x, int cursor_y, int shift_down);
 	int release_auto();
-	int popup_transition(int cursor_x, int cursor_y);
 
 // Return 1 if the left handle was selected 2 if the right handle was selected 3 if the track isn't recordable
 	int modify_edithandles(double oldposition, 
