@@ -162,8 +162,7 @@ int Record::load_defaults()
 
 // Fix encoding parameters depending on driver.
 // These are locked by a specific driver.
-	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_LML ||
-		mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
+	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
 		mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG)
 		strncpy(default_asset->vcodec, QUICKTIME_MJPA, 4);
 

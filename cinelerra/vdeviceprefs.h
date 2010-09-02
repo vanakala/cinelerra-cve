@@ -68,7 +68,6 @@ public:
 	PrefsChannelPicker *channel_picker;
 
 private:
-	int create_lml_objs();
 	int create_v4l_objs();
 	int create_v4l2_objs();
 	int create_v4l2jpeg_objs();

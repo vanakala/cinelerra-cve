@@ -151,7 +151,6 @@ VideoInConfig::VideoInConfig()
 	strcpy(v4l_in_device, "/dev/video0");
 	strcpy(v4l2_in_device, "/dev/video0");
 	strcpy(v4l2jpeg_in_device, "/dev/video0");
-	strcpy(lml_in_device, "/dev/mvideo/stream");
 	strcpy(buz_in_device, "/dev/video0");
 	screencapture_display[0] = 0;
 
@@ -196,7 +195,6 @@ void VideoInConfig::copy_from(VideoInConfig *src)
 	strcpy(v4l_in_device, src->v4l_in_device);
 	strcpy(v4l2_in_device, src->v4l2_in_device);
 	strcpy(v4l2jpeg_in_device, src->v4l2jpeg_in_device);
-	strcpy(lml_in_device, src->lml_in_device);
 	strcpy(buz_in_device, src->buz_in_device);
 	strcpy(screencapture_display, src->screencapture_display);
 
@@ -222,7 +220,6 @@ int VideoInConfig::load_defaults(BC_Hash *defaults)
 	defaults->get("V4L_IN_DEVICE", v4l_in_device);
 	defaults->get("V4L2_IN_DEVICE", v4l2_in_device);
 	defaults->get("V4L2JPEG_IN_DEVICE", v4l2jpeg_in_device);
-	defaults->get("LML_IN_DEVICE", lml_in_device);
 	defaults->get("BUZ_IN_DEVICE", buz_in_device);
 	defaults->get("SCREENCAPTURE_DISPLAY", screencapture_display);
 
@@ -243,7 +240,6 @@ int VideoInConfig::save_defaults(BC_Hash *defaults)
 	defaults->update("V4L_IN_DEVICE", v4l_in_device);
 	defaults->update("V4L2_IN_DEVICE", v4l2_in_device);
 	defaults->update("V4L2JPEG_IN_DEVICE", v4l2jpeg_in_device);
-	defaults->update("LML_IN_DEVICE", lml_in_device);
 	defaults->update("BUZ_IN_DEVICE", buz_in_device);
 	defaults->update("SCREENCAPTURE_DISPLAY", screencapture_display);
 

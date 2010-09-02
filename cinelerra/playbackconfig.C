@@ -185,7 +185,6 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults)
 
 VideoOutConfig::VideoOutConfig()
 {
-	sprintf(lml_out_device, "/dev/mvideo/stream");
 	sprintf(buz_out_device, "/dev/video0");
 	driver = PLAYBACK_X11_XV;
 	buz_out_channel = 0;
@@ -212,7 +211,6 @@ int VideoOutConfig::operator!=(VideoOutConfig &that)
 int VideoOutConfig::operator==(VideoOutConfig &that)
 {
 	return (driver == that.driver) &&
-		!strcmp(lml_out_device, that.lml_out_device) && 
 		!strcmp(buz_out_device, that.buz_out_device) && 
 		(buz_out_channel == that.buz_out_channel) && 
 		(buz_swap_fields == that.buz_swap_fields) &&
@@ -239,7 +237,6 @@ VideoOutConfig& VideoOutConfig::operator=(VideoOutConfig &that)
 void VideoOutConfig::copy_from(VideoOutConfig *src)
 {
 	this->driver = src->driver;
-	strcpy(this->lml_out_device, src->lml_out_device);
 	strcpy(this->buz_out_device, src->buz_out_device);
 	this->buz_out_channel = src->buz_out_channel;
 	this->buz_swap_fields = src->buz_swap_fields;
@@ -267,8 +264,6 @@ int VideoOutConfig::load_defaults(BC_Hash *defaults)
 	char string[BCTEXTLEN];
 	sprintf(string, "VIDEO_OUT_DRIVER");
 	driver = defaults->get(string, driver);
-	sprintf(string, "LML_OUT_DEVICE");
-	defaults->get(string, lml_out_device);
 	sprintf(string, "BUZ_OUT_DEVICE");
 	defaults->get(string, buz_out_device);
 	sprintf(string, "BUZ_OUT_CHANNEL");
@@ -287,8 +282,6 @@ int VideoOutConfig::save_defaults(BC_Hash *defaults)
 	char string[BCTEXTLEN];
 	sprintf(string, "VIDEO_OUT_DRIVER");
 	defaults->update(string, driver);
-	sprintf(string, "LML_OUT_DEVICE");
-	defaults->update(string, lml_out_device);
 	sprintf(string, "BUZ_OUT_DEVICE");
 	defaults->update(string, buz_out_device);
 	sprintf(string, "BUZ_OUT_CHANNEL");

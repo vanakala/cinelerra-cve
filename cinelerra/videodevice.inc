@@ -29,7 +29,6 @@ class VideoDevice;
 #define VIDEO4LINUX2         1
 #define VIDEO4LINUX2JPEG     2
 #define SCREENCAPTURE        3
-#define CAPTURE_LML          4
 #define CAPTURE_BUZ          6
 #define CAPTURE_DVB          8
 
@@ -37,7 +36,6 @@ class VideoDevice;
 #define VIDEO4LINUX2_TITLE     "Video4Linux2"
 #define VIDEO4LINUX2JPEG_TITLE "Video4Linux2 JPEG"
 #define SCREENCAPTURE_TITLE    "Screencapture"
-#define CAPTURE_LML_TITLE      "LML 33"
 #define CAPTURE_BUZ_TITLE      "Buz"
 #define CAPTURE_DVB_TITLE      "DVB"
 
@@ -45,7 +43,6 @@ class VideoDevice;
 #define PLAYBACK_X11_XV   14
 #define PLAYBACK_X11_GL   17
 #define PLAYBACK_BUZ 	  11
-#define PLAYBACK_LML 	  12
 
 // This is passed to File::get_best_colormodel by FileThread so FileThread can
 // do the colorspace conversion using the shortest path.
@@ -55,7 +52,6 @@ class VideoDevice;
 #define PLAYBACK_X11_XV_TITLE   "X11-XV"
 #define PLAYBACK_X11_GL_TITLE   "X11-OpenGL"
 #define PLAYBACK_BUZ_TITLE  	"Buz"
-#define PLAYBACK_LML_TITLE  	"LML 33"
 
 // Output formats required for direct frame copy
 // RGB is for either RGB or RGBA as defined in the VFrame

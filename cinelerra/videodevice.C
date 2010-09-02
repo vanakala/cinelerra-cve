@@ -296,8 +296,7 @@ int VideoDevice::is_compressed(int driver, int use_file, int use_fixed)
 {
 // FileMOV needs to have write_frames called so the start codes get scanned.
 	return ((driver == CAPTURE_BUZ && use_fixed) ||
-		(driver == VIDEO4LINUX2JPEG && use_fixed) || 
-		driver == CAPTURE_LML);
+		(driver == VIDEO4LINUX2JPEG && use_fixed));
 }
 
 int VideoDevice::is_compressed(int use_file, int use_fixed)
@@ -312,7 +311,6 @@ void VideoDevice::fix_asset(Asset *asset, int driver)
 	switch(driver)
 	{
 	case CAPTURE_BUZ:
-	case CAPTURE_LML:
 	case VIDEO4LINUX2JPEG:
 		if(asset->format != FILE_AVI &&
 			asset->format != FILE_MOV)

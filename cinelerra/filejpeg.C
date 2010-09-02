@@ -131,14 +131,12 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 		return BC_YUV420P;
 	case PLAYBACK_X11_GL:
 		return BC_YUV888;
-	case PLAYBACK_LML:
 	case PLAYBACK_BUZ:
 		return BC_YUV422P;
 	case VIDEO4LINUX:
 	case VIDEO4LINUX2:
 		return BC_YUV420P;
 	case CAPTURE_BUZ:
-	case CAPTURE_LML:
 	case VIDEO4LINUX2JPEG:
 		return BC_YUV422;
 	}

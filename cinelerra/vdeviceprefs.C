@@ -127,9 +127,6 @@ int VDevicePrefs::initialize(int creation)
 	case SCREENCAPTURE:
 		create_screencap_objs();
 		break;
-	case CAPTURE_LML:
-		create_lml_objs();
-		break;
 	case CAPTURE_BUZ:
 	case PLAYBACK_BUZ:
 		create_buz_objs();
@@ -189,27 +186,6 @@ int VDevicePrefs::create_dvb_objs()
 	dialog->add_subwindow(number_title = new BC_Title(x1, y, _("Adaptor:")));
 	device_number = new VDeviceTumbleBox(this, x1, y + 20,  &in_config->dvb_in_number, 0, 16);
 	device_number->create_objects();
-}
-
-int VDevicePrefs::create_lml_objs()
-{
-	char *output_char;
-	int x1 = x + menu->get_w() + 5;
-	BC_Resources *resources = BC_WindowBase::get_resources();
-
-	switch(mode)
-	{
-	case MODEPLAY:
-		output_char = out_config->lml_out_device;
-		break;
-	case MODERECORD:
-		output_char = in_config->lml_in_device;
-		break;
-	}
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
-	x1 += device_title->get_w() + 10;
-	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-	return 0;
 }
 
 int VDevicePrefs::create_buz_objs()
@@ -350,9 +326,6 @@ const char* VDriverMenu::driver_to_string(int driver)
 	case CAPTURE_BUZ:
 		sp = CAPTURE_BUZ_TITLE;
 		break;
-	case CAPTURE_LML:
-		sp = CAPTURE_LML_TITLE;
-		break;
 	case CAPTURE_DVB:
 		sp = CAPTURE_DVB_TITLE;
 		break;
@@ -364,9 +337,6 @@ const char* VDriverMenu::driver_to_string(int driver)
 		break;
 	case PLAYBACK_X11_GL:
 		sp = PLAYBACK_X11_GL_TITLE;
-		break;
-	case PLAYBACK_LML:
-		sp = PLAYBACK_LML_TITLE;
 		break;
 	case PLAYBACK_BUZ:
 		sp = PLAYBACK_BUZ_TITLE;

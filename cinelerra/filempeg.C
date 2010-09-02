@@ -734,7 +734,6 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_X11_GL:
 			return BC_YUV888;
 			break;
-		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:
 			return BC_YUV422P;
 			break;
@@ -744,7 +743,6 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 			if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
 			break;
 		case CAPTURE_BUZ:
-		case CAPTURE_LML:
 			return BC_YUV422;
 			break;
 	}

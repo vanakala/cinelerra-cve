@@ -945,14 +945,12 @@ int FileDV::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_X11_XV:
 			return BC_YUV422;
 			break;
-		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:
 			return BC_YUV422P;
 			break;
 		case VIDEO4LINUX:
 		case VIDEO4LINUX2:
 		case CAPTURE_BUZ:
-		case CAPTURE_LML:
 		case VIDEO4LINUX2JPEG:
 			return BC_YUV422;
 			break;
