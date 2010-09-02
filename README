@@ -2,7 +2,7 @@ This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of June 17, 2010
+This file describes status of this branch as of September 2, 2010
 
 Contents.
 
@@ -52,12 +52,18 @@ Changes in this branch:
 - OpenGL is enabled while server glx version is >= 1.3
 - new one-line internal api for error messages (macros errormsg
     and errorbox)
-- cleanup: removed unused sources from cinelerra, guicast, libmpeg3
+- cleanup: removed unused sources from cinelerra, guicast, libmpeg3, plugins
+- added SOWT audio decoder
+- multiline comments of clips and labels are not truncated
 
 Known problems (todo list)
+- handling input devices is buggy (only selected devices may work)
+- to clean up messes in position handling implement position handling
+    in time units
+- trimming does not work as described in manual or as expected,
+    occasionally crashes
 - occasional crashes in XWindowTranslateCoordinates
 - Reel name must be read from project
-- Clip comment is loaded partially from project
 - renderfarm is untested
 - filevorbis is disabled
 - cinerella crashes if video4linux2 size is different from 600x800
