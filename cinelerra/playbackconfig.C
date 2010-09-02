@@ -47,17 +47,6 @@ AudioOutConfig::AudioOutConfig(int duplex)
 	sprintf(alsa_out_device, "default");
 	alsa_out_bits = 16;
 	interrupt_workaround = 0;
-
-	firewire_channel = 63;
-	firewire_port = 0;
-	strcpy(firewire_path, "/dev/video1394");
-	firewire_syt = 30000;
-
-	dv1394_channel = 63;
-	dv1394_port = 0;
-	strcpy(dv1394_path, "/dev/dv1394");
-	dv1394_syt = 30000;
-
 }
 
 AudioOutConfig::~AudioOutConfig()
@@ -91,17 +80,7 @@ int AudioOutConfig::operator==(AudioOutConfig &that)
 
 		!strcmp(alsa_out_device, that.alsa_out_device) &&
 		(alsa_out_bits == that.alsa_out_bits) &&
-		(interrupt_workaround == that.interrupt_workaround) &&
-
-		firewire_channel == that.firewire_channel &&
-		firewire_port == that.firewire_port &&
-		firewire_syt == that.firewire_syt &&
-		!strcmp(firewire_path, that.firewire_path) &&
-
-		dv1394_channel == that.dv1394_channel &&
-		dv1394_port == that.dv1394_port &&
-		dv1394_syt == that.dv1394_syt &&
-		!strcmp(dv1394_path, that.dv1394_path);
+		(interrupt_workaround == that.interrupt_workaround);
 }
 
 
@@ -130,17 +109,6 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 	strcpy(alsa_out_device, src->alsa_out_device);
 	alsa_out_bits = src->alsa_out_bits;
 	interrupt_workaround = src->interrupt_workaround;
-
-	firewire_channel = src->firewire_channel;
-	firewire_port = src->firewire_port;
-	firewire_syt = src->firewire_syt;
-	strcpy(firewire_path, src->firewire_path);
-
-	dv1394_channel = src->dv1394_channel;
-	dv1394_port = src->dv1394_port;
-	dv1394_syt = src->dv1394_syt;
-	strcpy(dv1394_path, src->dv1394_path);
-
 }
 
 int AudioOutConfig::load_defaults(BC_Hash *defaults)
@@ -170,24 +138,6 @@ int AudioOutConfig::load_defaults(BC_Hash *defaults)
 	defaults->get(string, esound_out_server);
 	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
 	esound_out_port =             defaults->get(string, esound_out_port);
-
-	sprintf(string, "AFIREWIRE_OUT_CHANNEL");
-	firewire_channel = defaults->get(string, firewire_channel);
-	sprintf(string, "AFIREWIRE_OUT_PORT");
-	firewire_port = defaults->get(string, firewire_port);
-	sprintf(string, "AFIREWIRE_OUT_PATH");
-	defaults->get(string, firewire_path);
-	sprintf(string, "AFIREWIRE_OUT_SYT");
-	firewire_syt = defaults->get(string, firewire_syt);
-
-	sprintf(string, "ADV1394_OUT_CHANNEL");
-	dv1394_channel = defaults->get(string, dv1394_channel);
-	sprintf(string, "ADV1394_OUT_PORT");
-	dv1394_port = defaults->get(string, dv1394_port);
-	sprintf(string, "ADV1394_OUT_PATH");
-	defaults->get(string, dv1394_path);
-	sprintf(string, "ADV1394_OUT_SYT");
-	dv1394_syt = defaults->get(string, dv1394_syt);
 
 	return 0;
 }
@@ -221,26 +171,6 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults)
 	defaults->update(string, esound_out_server);
 	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
 	defaults->update(string, esound_out_port);
-
-	sprintf(string, "AFIREWIRE_OUT_CHANNEL");
-	defaults->update(string, firewire_channel);
-	sprintf(string, "AFIREWIRE_OUT_PORT");
-	defaults->update(string, firewire_port);
-	sprintf(string, "AFIREWIRE_OUT_PATH");
-	defaults->update(string, firewire_path);
-	sprintf(string, "AFIREWIRE_OUT_SYT");
-	defaults->update(string, firewire_syt);
-
-
-	sprintf(string, "ADV1394_OUT_CHANNEL");
-	defaults->update(string, dv1394_channel);
-	sprintf(string, "ADV1394_OUT_PORT");
-	defaults->update(string, dv1394_port);
-	sprintf(string, "ADV1394_OUT_PATH");
-	defaults->update(string, dv1394_path);
-	sprintf(string, "ADV1394_OUT_SYT");
-	defaults->update(string, dv1394_syt);
-
 	return 0;
 }
 
@@ -262,17 +192,6 @@ VideoOutConfig::VideoOutConfig()
 	buz_swap_fields = 0;
 	sprintf(x11_host, "");
 	x11_use_fields = USE_NO_FIELDS;
-
-	firewire_channel = 63;
-	firewire_port = 0;
-	strcpy(firewire_path, "/dev/video1394");
-	firewire_syt = 30000;
-
-	dv1394_channel = 63;
-	dv1394_port = 0;
-	strcpy(dv1394_path, "/dev/dv1394");
-	dv1394_syt = 30000;
-
 	brightness = 32768;
 	hue = 32768;
 	color = 32768;
@@ -303,17 +222,7 @@ int VideoOutConfig::operator==(VideoOutConfig &that)
 		(hue == that.hue) && 
 		(color == that.color) && 
 		(contrast == that.contrast) && 
-		(whiteness == that.whiteness) &&
-
-		(firewire_channel == that.firewire_channel) &&
-		(firewire_port == that.firewire_port) &&
-		!strcmp(firewire_path, that.firewire_path) &&
-		(firewire_syt == that.firewire_syt) &&
-
-		(dv1394_channel == that.dv1394_channel) &&
-		(dv1394_port == that.dv1394_port) &&
-		!strcmp(dv1394_path, that.dv1394_path) &&
-		(dv1394_syt == that.dv1394_syt);
+		(whiteness == that.whiteness);
 }
 
 
@@ -336,16 +245,6 @@ void VideoOutConfig::copy_from(VideoOutConfig *src)
 	this->buz_swap_fields = src->buz_swap_fields;
 	strcpy(this->x11_host, src->x11_host);
 	this->x11_use_fields = src->x11_use_fields;
-
-	firewire_channel = src->firewire_channel;
-	firewire_port = src->firewire_port;
-	strcpy(firewire_path, src->firewire_path);
-	firewire_syt = src->firewire_syt;
-
-	dv1394_channel = src->dv1394_channel;
-	dv1394_port = src->dv1394_port;
-	strcpy(dv1394_path, src->dv1394_path);
-	dv1394_syt = src->dv1394_syt;
 }
 
 char* VideoOutConfig::get_path()
@@ -358,12 +257,6 @@ char* VideoOutConfig::get_path()
 		case PLAYBACK_X11:
 		case PLAYBACK_X11_XV:
 			return x11_host;
-			break;
-		case PLAYBACK_DV1394:
-			return dv1394_path;
-			break;
-		case PLAYBACK_FIREWIRE:
-			return firewire_path;
 			break;
 	};
 	return buz_out_device;
@@ -386,25 +279,6 @@ int VideoOutConfig::load_defaults(BC_Hash *defaults)
 	defaults->get(string, x11_host);
 	x11_use_fields = defaults->get("X11_USE_FIELDS", x11_use_fields);
 
-
-
-	sprintf(string, "VFIREWIRE_OUT_CHANNEL");
-	firewire_channel = defaults->get(string, firewire_channel);
-	sprintf(string, "VFIREWIRE_OUT_PORT");
-	firewire_port = defaults->get(string, firewire_port);
-	sprintf(string, "VFIREWIRE_OUT_PATH");
-	defaults->get(string, firewire_path);
-	sprintf(string, "VFIREWIRE_OUT_SYT");
-	firewire_syt = defaults->get(string, firewire_syt);
-
-	sprintf(string, "VDV1394_OUT_CHANNEL");
-	dv1394_channel = defaults->get(string, dv1394_channel);
-	sprintf(string, "VDV1394_OUT_PORT");
-	dv1394_port = defaults->get(string, dv1394_port);
-	sprintf(string, "VDV1394_OUT_PATH");
-	defaults->get(string, dv1394_path);
-	sprintf(string, "VDV1394_OUT_SYT");
-	dv1394_syt = defaults->get(string, dv1394_syt);
 	return 0;
 }
 
@@ -425,23 +299,6 @@ int VideoOutConfig::save_defaults(BC_Hash *defaults)
 	defaults->update(string, x11_host);
 	defaults->update("X11_USE_FIELDS", x11_use_fields);
 
-	sprintf(string, "VFIREWIRE_OUT_CHANNEL");
-	defaults->update(string, firewire_channel);
-	sprintf(string, "VFIREWIRE_OUT_PORT");
-	defaults->update(string, firewire_port);
-	sprintf(string, "VFIREWIRE_OUT_PATH");
-	defaults->update(string, firewire_path);
-	sprintf(string, "VFIREWIRE_OUT_SYT");
-	defaults->update(string, firewire_syt);
-
-	sprintf(string, "VDV1394_OUT_CHANNEL");
-	defaults->update(string, dv1394_channel);
-	sprintf(string, "VDV1394_OUT_PORT");
-	defaults->update(string, dv1394_port);
-	sprintf(string, "VDV1394_OUT_PATH");
-	defaults->update(string, dv1394_path);
-	sprintf(string, "VDV1394_OUT_SYT");
-	defaults->update(string, dv1394_syt);
 	return 0;
 }
 

@@ -198,13 +198,7 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	this->record = record;
-#ifdef HAVE_FIREWIRE
-	avc = 0;
-	avc1394_transport = 0;
-	avc1394transport_title = 0;
-	avc1394transport_timecode = 0;
-	avc1394transport_thread = 0;
-#endif
+
 	bitmap = 0;
 	channel_picker = 0;
 	reverse_interlace = 0;
@@ -218,20 +212,6 @@ RecordMonitorGUI::~RecordMonitorGUI()
 	delete canvas;
 	if(bitmap) delete bitmap;
 	if(channel_picker) delete channel_picker;
-#ifdef HAVE_FIREWIRE
-	if(avc1394transport_thread)
-		delete avc1394transport_thread;
-	if(avc)
-	{
-		delete avc;
-	}
-	if(avc1394_transport)
-	{
-		delete avc1394_transport;
-	}
-	if(avc1394transport_title)
-		delete avc1394transport_title;
-#endif
 }
 
 int RecordMonitorGUI::create_objects()
@@ -255,47 +235,6 @@ int RecordMonitorGUI::create_objects()
 	if(record->default_asset->video_data)
 	{
 		int driver = mwindow->edl->session->vconfig_in->driver;
-
-#ifdef HAVE_FIREWIRE
-		if(driver == CAPTURE_FIREWIRE ||
-			driver == CAPTURE_IEC61883)
-		{
-			avc = new AVC1394Control;
-			if(avc->device > -1)
-			{
-				mwindow->theme->get_rmonitor_sizes(record->default_asset->audio_data, 
-					record->default_asset->video_data,
-					do_channel,
-					do_interlace,
-					1,
-					record->default_asset->channels);
-				mwindow->theme->draw_rmonitor_bg(this);
-				background_done = 1;
-
-				avc1394_transport = new AVC1394Transport(mwindow,
-					avc,
-					this,
-					mwindow->theme->rmonitor_tx_x,
-					mwindow->theme->rmonitor_tx_y);
-				avc1394_transport->create_objects();
-
-				add_subwindow(avc1394transport_timecode =
-					new BC_Title(avc1394_transport->x_end,
-						mwindow->theme->rmonitor_tx_y + 10,
-						_("00:00:00:00"),
-						MEDIUM_7SEGMENT,
-						BLACK));
-
-				avc1394transport_thread =
-					new AVC1394TransportThread(avc1394transport_timecode,
-						avc);
-
-				avc1394transport_thread->start();
-
-			}
-		}
-#endif
-
 
 		if(!background_done)
 		{
@@ -476,10 +415,6 @@ int RecordMonitorGUI::keypress_event()
 		break;
 	default:
 		result = canvas->keypress_event(this);
-#ifdef HAVE_FIREWIRE
-		if(!result && avc1394_transport)
-			result = avc1394_transport->keypress_event(get_keypress());
-#endif
 		break;
 	}
 	return result;
@@ -502,9 +437,6 @@ int RecordMonitorGUI::resize_event(int w, int h)
 	int do_interlace = (mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
 		mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG);
 	int do_avc = 0;
-#ifdef HAVE_FIREWIRE
-	do_avc = avc1394_transport ? 1 : 0;
-#endif
 
 	mwindow->session->rmonitor_x = get_x();
 	mwindow->session->rmonitor_y = get_y();
@@ -520,14 +452,6 @@ int RecordMonitorGUI::resize_event(int w, int h)
 	mwindow->theme->draw_rmonitor_bg(this);
 	flash();
 
-#ifdef HAVE_FIREWIRE
-	if(avc1394_transport)
-	{
-		avc1394_transport->reposition_window(mwindow->theme->rmonitor_tx_x,
-			mwindow->theme->rmonitor_tx_y);
-	}
-#endif
-	
 	if(channel_picker) channel_picker->reposition();
 	if(reverse_interlace) reverse_interlace->reposition_window(reverse_interlace->get_x(),
 		reverse_interlace->get_y());
@@ -775,7 +699,9 @@ void RecordMonitorThread::reset_parameters()
 	output_frame = 0;
 	shared_data = 0;
 	jpeg_engine = 0;
+/*
 	dv_engine = 0;
+	*/
 	ready = 0;
 }
 
@@ -801,13 +727,6 @@ void RecordMonitorThread::init_output_format()
 	case VIDEO4LINUX2JPEG:
 		jpeg_engine = new RecVideoMJPGThread(record, this);
 		jpeg_engine->start_rendering();
-		output_colormodel = BC_YUV422P;
-		break;
-
-	case CAPTURE_FIREWIRE:
-	case CAPTURE_IEC61883:
-		dv_engine = new RecVideoDVThread(record, this);
-		dv_engine->start_rendering();
 		output_colormodel = BC_YUV422P;
 		break;
 
@@ -841,15 +760,6 @@ int RecordMonitorThread::stop_playback()
 		{
 			jpeg_engine->stop_rendering();
 			delete jpeg_engine;
-		}
-		break;
-
-	case CAPTURE_FIREWIRE:
-	case CAPTURE_IEC61883:
-		if(dv_engine)
-		{
-			dv_engine->stop_rendering();
-			delete dv_engine;
 		}
 		break;
 	}
@@ -895,12 +805,6 @@ int RecordMonitorThread::render_jpeg()
 	return 0;
 }
 
-int RecordMonitorThread::render_dv()
-{
-	dv_engine->render_frame(input_frame, input_frame->get_compressed_size());
-	return 0;
-}
-
 void RecordMonitorThread::render_uncompressed()
 {
 	output_frame->copy_from(input_frame);
@@ -923,11 +827,6 @@ int RecordMonitorThread::render_frame()
 	case CAPTURE_BUZ:
 	case VIDEO4LINUX2JPEG:
 		render_jpeg();
-		break;
-
-	case CAPTURE_FIREWIRE:
-	case CAPTURE_IEC61883:
-		render_dv();
 		break;
 
 	default:
@@ -1005,47 +904,5 @@ int RecVideoMJPGThread::render_frame(VFrame *frame, long size)
 		thread->output_frame->get_v(),
 		thread->output_frame->get_color_model(),
 		record->mwindow->preferences->processors);
-	return 0;
-}
-
-
-
-
-RecVideoDVThread::RecVideoDVThread(Record *record, RecordMonitorThread *thread)
-{
-	this->record = record;
-	this->thread = thread;
-	dv = 0;
-}
-
-RecVideoDVThread::~RecVideoDVThread()
-{
-}
-
-
-int RecVideoDVThread::start_rendering()
-{
-	dv = dv_new();
-	return 0;
-}
-
-int RecVideoDVThread::stop_rendering()
-{
-	if(dv) dv_delete(((dv_t*)dv));
-	return 0;
-}
-
-int RecVideoDVThread::render_frame(VFrame *frame, long size)
-{
-	unsigned char *yuv_planes[3];
-	yuv_planes[0] = thread->output_frame->get_y();
-	yuv_planes[1] = thread->output_frame->get_u();
-	yuv_planes[2] = thread->output_frame->get_v();
-	dv_read_video(((dv_t*)dv), 
-		yuv_planes, 
-		frame->get_data(), 
-		frame->get_compressed_size(),
-		thread->output_frame->get_color_model());
-
 	return 0;
 }

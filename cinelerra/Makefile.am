@@ -49,18 +49,6 @@ SUBDIRS = data
 
 bin_PROGRAMS = cinelerra
 
-if HAVE_FIREWIRE
-firewire_SOURCES = \
-	audio1394.C \
-	avc1394control.C \
-	avc1394transport.C \
-	device1394input.C \
-	device1394output.C \
-	iec61883input.C \
-	iec61883output.C \
-	vdevice1394.C
-endif
-
 cinelerra_SOURCES = aattachmentpoint.C \
 		    aautomation.C \
 		    aboutprefs.C \
@@ -321,8 +309,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    wavecache.C \
                     yuvstream.C \
 		    zoombar.C \
-		    zoompanel.C \
-	$(firewire_SOURCES)
+		    zoompanel.C
 
 # guicast must come first, to pick up correct workarounds.h
 INCLUDES = \
@@ -332,7 +319,6 @@ INCLUDES = \
 
 AM_CXXFLAGS = \
 	$(LARGEFILE_CFLAGS) \
-	$(FIREWIRE_CFLAGS) \
 	$(SOUND_CFLAGS) \
 	$(XIPH_CFLAGS) \
 	$(MJPEG_CFLAGS) \
@@ -361,7 +347,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 assets.h \
 		 atrack.h \
 		 attachmentpoint.h \
-		 audio1394.h \
 		 audioalsa.h \
 		 audiodevice.h \
 		 audiodvb.h \
@@ -371,8 +356,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 auto.h \
 		 automation.h \
 		 autos.h \
-		 avc1394control.h \
-		 avc1394transport.h \
 		 awindowgui.h \
 		 awindow.h \
 		 awindowmenu.h \
@@ -405,8 +388,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 datatype.h \
 		 dcoffset.h \
 		 deleteallindexes.h \
-		 device1394input.h \
-		 device1394output.h \
 		 devicedvbinput.h \
 		 drivesync.h \
 		 dv1394.h \
@@ -454,9 +435,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 gwindow.h \
 		 gwindowgui.h \
 		 headers.h \
-		 iec61883input.h \
-		 iec61883output.h \
-		 ieee1394-ioctl.h \
 		 indexfile.h \
 		 indexthread.h \
 		 intauto.h \
@@ -581,7 +559,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 undostackitem.h \
 		 vattachmentpoint.h \
 		 vautomation.h \
-		 vdevice1394.h \
 		 vdevicebase.h \
 		 vdevicebuz.h \
 		 vdevicedvb.h \
@@ -592,7 +569,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vdevicex11.h \
 		 vedit.h \
 		 vedits.h \
-		 video1394.h \
 		 videodevice.h \
 		 viewmenu.h \
 		 virtualaconsole.h \
@@ -633,7 +609,6 @@ cinelerra_LDADD = \
 	-lsndfile \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
-	$(FIREWIRE_LDFLAGS) \
 	$(LIBDV_LIBS) \
 	-luuid \
 	$(MJPEG_LIBS)

@@ -61,10 +61,6 @@ ADevicePrefs::~ADevicePrefs()
 void ADevicePrefs::reset()
 {
 	menu = 0;
-	firewire_path = 0;
-	firewire_syt = 0;
-	syt_title = 0;
-	path_title = 0;
 
 	alsa_drivers = 0;
 	path_title = 0;
@@ -118,11 +114,6 @@ int ADevicePrefs::initialize(int creation)
 	case AUDIO_ESOUND:
 		create_esound_objs();
 		break;
-	case AUDIO_1394:
-	case AUDIO_DV1394:
-	case AUDIO_IEC61883:
-		create_firewire_objs();
-		break;
 	}
 	return 0;
 }
@@ -148,11 +139,6 @@ int ADevicePrefs::delete_objects()
 		break;
 	case AUDIO_ESOUND:
 		delete_esound_objs();
-		break;
-	case AUDIO_1394:
-	case AUDIO_DV1394:
-	case AUDIO_IEC61883:
-		delete_firewire_objs();
 		break;
 	}
 
@@ -183,27 +169,6 @@ int ADevicePrefs::delete_esound_objs()
 	delete port_title;
 	delete esound_server;
 	delete esound_port;
-	return 0;
-}
-
-int ADevicePrefs::delete_firewire_objs()
-{
-	delete port_title;
-	delete channel_title;
-	delete firewire_port;
-	delete firewire_channel;
-	if(firewire_path)
-	{
-		delete path_title;
-		delete firewire_path;
-	}
-	firewire_path = 0;
-	if(firewire_syt)
-	{
-		delete firewire_syt;
-		delete syt_title;
-	}
-	firewire_syt = 0;
 	return 0;
 }
 
@@ -410,98 +375,6 @@ int ADevicePrefs::create_esound_objs()
 	return 0;
 }
 
-int ADevicePrefs::create_firewire_objs()
-{
-	int x1 = x + menu->get_w() + 5;
-	int *output_int = 0;
-	char *output_char = 0;
-	BC_Resources *resources = BC_WindowBase::get_resources();
-
-// Firewire path
-	switch(mode)
-	{
-	case MODEPLAY:
-		if(driver == AUDIO_DV1394)
-			output_char = out_config->dv1394_path;
-		else
-		if(driver == AUDIO_1394)
-			output_char = out_config->firewire_path;
-		break;
-	case MODERECORD:
-		if(driver == AUDIO_DV1394 || driver == AUDIO_1394)
-			output_char = in_config->firewire_path;
-		break;
-	}
-
-	if(output_char)
-	{
-		dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, resources->text_default));
-		dialog->add_subwindow(firewire_path = new ADeviceTextBox(x1, y + 20, output_char));
-		x1 += firewire_path->get_w() + 5;
-	}
-
-// Firewire port
-	switch(mode)
-	{
-	case MODEPLAY: 
-		if(driver == AUDIO_DV1394)
-			output_int = &out_config->dv1394_port;
-		else
-			output_int = &out_config->firewire_port;
-		break;
-	case MODERECORD:
-		output_int = &in_config->firewire_port;
-		break;
-	}
-	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
-	dialog->add_subwindow(firewire_port = new ADeviceIntBox(x1, y + 20, output_int));
-
-	x1 += firewire_port->get_w() + 5;
-
-// Firewire channel
-	switch(mode)
-	{
-	case MODEPLAY: 
-		if(driver == AUDIO_DV1394)
-			output_int = &out_config->dv1394_channel;
-		else
-			output_int = &out_config->firewire_channel;
-		break;
-	case MODERECORD:
-		output_int = &in_config->firewire_channel;
-		break;
-	}
-	dialog->add_subwindow(channel_title = new BC_Title(x1, y, _("Channel:"), MEDIUMFONT, resources->text_default));
-	dialog->add_subwindow(firewire_channel = new ADeviceIntBox(x1, y + 20, output_int));
-	x1 += firewire_channel->get_w() + 5;
-
-// Syt offset
-	switch(mode)
-	{
-	case MODEPLAY:
-		if(driver == AUDIO_DV1394)
-			output_int = &out_config->dv1394_syt;
-		else
-		if(driver == AUDIO_1394)
-			output_int = &out_config->firewire_syt;
-		else
-			output_int = 0;
-		break;
-	case MODERECORD:
-		output_int = 0;
-		break;
-	}
-
-	if(output_int)
-	{
-		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, resources->text_default));
-		dialog->add_subwindow(firewire_syt = new ADeviceIntBox(x1, y + 20, output_int));
-		x1 += firewire_syt->get_w() + 5;
-	}
-
-	return 0;
-}
-
 ADriverMenu::ADriverMenu(int x, 
 	int y, 
 	ADevicePrefs *device_prefs, 
@@ -528,11 +401,7 @@ void ADriverMenu::create_objects()
 #endif
 
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
-#ifdef HAVE_FIREWIRE
-	if(!do_input) add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
-	add_item(new ADriverItem(this, AUDIO_DV1394_TITLE, AUDIO_DV1394));
-	add_item(new ADriverItem(this, AUDIO_IEC61883_TITLE, AUDIO_IEC61883));
-#endif
+
 	add_item(new ADriverItem(this, AUDIO_DVB_TITLE, AUDIO_DVB));
 }
 
@@ -555,17 +424,6 @@ char* ADriverMenu::adriver_to_string(int driver)
 		case AUDIO_ALSA:
 			sprintf(string, AUDIO_ALSA_TITLE);
 			break;
-#ifdef HAVE_FIREWIRE
-		case AUDIO_1394:
-			sprintf(string, AUDIO_1394_TITLE);
-			break;
-		case AUDIO_DV1394:
-			sprintf(string, AUDIO_DV1394_TITLE);
-			break;
-		case AUDIO_IEC61883:
-			sprintf(string, AUDIO_IEC61883_TITLE);
-			break;
-#endif
 		case AUDIO_DVB:
 			sprintf(string, AUDIO_DVB_TITLE);
 			break;

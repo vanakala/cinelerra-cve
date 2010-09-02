@@ -471,12 +471,6 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			match4(asset->vcodec, QUICKTIME_HV64) ||
 			match4(asset->vcodec, QUICKTIME_DIV3) || 
 			match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV888;
-	case PLAYBACK_DV1394:
-	case PLAYBACK_FIREWIRE:
-		if(match4(asset->vcodec, QUICKTIME_DV) || 
-			match4(asset->vcodec, QUICKTIME_DVSD) || 
-			match4(asset->vcodec, QUICKTIME_DVCP)) return BC_COMPRESSED;
-		return BC_YUV422P;
 	case PLAYBACK_LML:
 	case PLAYBACK_BUZ:
 		if(match4(asset->vcodec, QUICKTIME_MJPA)) 
@@ -498,14 +492,6 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 	case CAPTURE_LML:
 	case VIDEO4LINUX2JPEG:
 		if(!strncasecmp(asset->vcodec, QUICKTIME_MJPA, 4)) 
-			return BC_COMPRESSED;
-		else
-			return BC_YUV422;
-	case CAPTURE_FIREWIRE:
-	case CAPTURE_IEC61883:
-		if(!strncasecmp(asset->vcodec, QUICKTIME_DV, 4) ||
-				!strncasecmp(asset->vcodec, QUICKTIME_DVSD, 4) ||
-				!strncasecmp(asset->vcodec, QUICKTIME_DVCP, 4)) 
 			return BC_COMPRESSED;
 		else
 			return BC_YUV422;

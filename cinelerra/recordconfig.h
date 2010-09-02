@@ -45,10 +45,6 @@ public:
 	int oss_enable[MAXDEVICES];
 	char oss_in_device[MAXDEVICES][BCTEXTLEN];
 	int oss_in_bits;
-
-	int firewire_port, firewire_channel;
-	char firewire_path[BCTEXTLEN];
-
 	char esound_in_server[BCTEXTLEN];
 	int esound_in_port;
 	char alsa_in_device[BCTEXTLEN];
@@ -85,9 +81,6 @@ public:
 	char dvb_in_host[BCTEXTLEN];
 	int dvb_in_port;
 	int dvb_in_number;
-
-	int firewire_port, firewire_channel;
-	char firewire_path[BCTEXTLEN];
 
 // number of frames to read from device during video recording.
 	int capture_length;   

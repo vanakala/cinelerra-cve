@@ -22,9 +22,6 @@
 #ifndef RECORDMONITOR_H
 #define RECORDMONITOR_H
 
-#ifdef HAVE_FIREWIRE
-#include "avc1394transport.h"
-#endif
 #include "canvas.h"
 #include "channelpicker.inc"
 #include "condition.inc"
@@ -94,10 +91,6 @@ public:
 
 	MeterPanel *meters;
 	Canvas *canvas;
-#ifdef HAVE_FIREWIRE
-	AVC1394Transport *avc1394_transport;
-	AVC1394TransportThread *avc1394transport_thread;
-#endif
 	RecordChannelPicker *channel_picker;
 	ReverseInterlace *reverse_interlace;
 	int cursor_x_origin, cursor_y_origin;
@@ -118,11 +111,6 @@ public:
 	BC_Bitmap *bitmap;
 	RecordMonitor *thread;
 	Record *record;
-#ifdef HAVE_FIREWIRE
-	AVC1394Control *avc;
-	BC_Title *avc1394transport_title;
-	BC_Title *avc1394transport_timecode;
-#endif
 };
 
 
@@ -130,7 +118,6 @@ public:
 
 
 class RecVideoMJPGThread;
-class RecVideoDVThread;
 
 class RecordMonitorThread : public Thread
 {
@@ -169,12 +156,9 @@ private:
 	void show_output_frame();
 	void render_uncompressed();
 	int render_jpeg();
-	int render_dv();
-
 	int ready;   // Ready to recieve the next frame
 	int done;
 	RecVideoMJPGThread *jpeg_engine;
-	RecVideoDVThread *dv_engine;
 };
 
 class RecordMonitorFullsize : public BC_MenuItem
@@ -244,24 +228,6 @@ public:
 
 private:
 	mjpeg_t *mjpeg;
-};
-
-class RecVideoDVThread
-{
-public:
-	RecVideoDVThread(Record *record, RecordMonitorThread *thread);
-	~RecVideoDVThread();
-
-	int start_rendering();
-	int stop_rendering();
-	int render_frame(VFrame *frame, long size);
-
-	RecordMonitorThread *thread;
-	Record *record;
-
-private:
-// Don't want theme to need libdv to compile
-	void *dv;
 };
 
 #endif

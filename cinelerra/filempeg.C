@@ -738,10 +738,6 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_BUZ:
 			return BC_YUV422P;
 			break;
-		case PLAYBACK_DV1394:
-		case PLAYBACK_FIREWIRE:
-			return BC_YUV422P;
-			break;
 		case VIDEO4LINUX:
 		case VIDEO4LINUX2:
 			if(asset->vmpeg_cmodel == MPEG_YUV420) return BC_YUV420P;
@@ -751,12 +747,7 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 		case CAPTURE_LML:
 			return BC_YUV422;
 			break;
-		case CAPTURE_FIREWIRE:
-		case CAPTURE_IEC61883:
-			return BC_YUV422P;
-			break;
 	}
-//printf("FileMPEG::get_best_colormodel 100\n");
 }
 
 int FileMPEG::colormodel_supported(int colormodel)

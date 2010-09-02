@@ -35,11 +35,6 @@ AudioInConfig::AudioInConfig()
 		sprintf(oss_in_device[i], "/dev/dsp");
 	}
 	oss_in_bits = 16;
-	firewire_port = 0;
-	firewire_channel = 63;
-	strcpy(firewire_path, "/dev/dv1394");
-	sprintf(esound_in_server, "");
-	esound_in_port = 0;
 
 	strcpy(alsa_in_device, "default");
 	alsa_in_bits = 16;
@@ -76,10 +71,6 @@ void AudioInConfig::copy_from(AudioInConfig *src)
 {
 	driver = src->driver;
 
-	firewire_port = src->firewire_port;
-	firewire_channel = src->firewire_channel;
-	strcpy(firewire_path, src->firewire_path);
-
 	strcpy(esound_in_server, src->esound_in_server);
 	esound_in_port = src->esound_in_port;
 
@@ -107,9 +98,7 @@ int AudioInConfig::load_defaults(BC_Hash *defaults)
 	char string[BCTEXTLEN];
 
 	driver = defaults->get("AUDIOINDRIVER", driver);
-	firewire_port =  defaults->get("AFIREWIRE_IN_PORT", firewire_port);
-	firewire_channel =  defaults->get("AFIREWIRE_IN_CHANNEL", firewire_channel);
-	defaults->get("AFIREWIRE_IN_PATH", firewire_path);
+
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		sprintf(string, "OSS_ENABLE_%d", i);
@@ -133,9 +122,6 @@ int AudioInConfig::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 	defaults->update("AUDIOINDRIVER", driver);
-	defaults->update("AFIREWIRE_IN_PORT", firewire_port);
-	defaults->update("AFIREWIRE_IN_CHANNEL", firewire_channel);
-	defaults->update("AFIREWIRE_IN_PATH", firewire_path);
 
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
@@ -175,9 +161,6 @@ VideoInConfig::VideoInConfig()
 	dvb_in_port = 400;
 	dvb_in_number = 0;
 
-	firewire_port = 0;
-	firewire_channel = 63;
-	sprintf(firewire_path, "/dev/dv1394");
 // number of frames to read from device during video recording.
 	capture_length = 2;
 	w = 720;
@@ -221,9 +204,6 @@ void VideoInConfig::copy_from(VideoInConfig *src)
 	dvb_in_port = src->dvb_in_port;
 	dvb_in_number = src->dvb_in_number;
 
-	firewire_port = src->firewire_port;
-	firewire_channel = src->firewire_channel;
-	strcpy(firewire_path, src->firewire_path);
 	capture_length = src->capture_length;
 	w = src->w;
 	h = src->h;
@@ -250,9 +230,6 @@ int VideoInConfig::load_defaults(BC_Hash *defaults)
 	dvb_in_port = defaults->get("DVB_IN_PORT", dvb_in_port);
 	dvb_in_number = defaults->get("DVB_IN_NUMBER", dvb_in_number);
 
-	firewire_port = defaults->get("VFIREWIRE_IN_PORT", firewire_port);
-	firewire_channel = defaults->get("VFIREWIRE_IN_CHANNEL", firewire_channel);
-	defaults->get("VFIREWIRE_IN_PATH", firewire_path);
 	capture_length = defaults->get("VIDEO_CAPTURE_LENGTH", capture_length);
 	w = defaults->get("RECORD_W", w);
 	h = defaults->get("RECORD_H", h);
@@ -274,9 +251,6 @@ int VideoInConfig::save_defaults(BC_Hash *defaults)
 	defaults->update("DVB_IN_PORT", dvb_in_port);
 	defaults->update("DVB_IN_NUMBER", dvb_in_number);
 
-	defaults->update("VFIREWIRE_IN_PORT", firewire_port);
-	defaults->update("VFIREWIRE_IN_CHANNEL", firewire_channel);
-	defaults->update("VFIREWIRE_IN_PATH", firewire_path);
 	defaults->update("VIDEO_CAPTURE_LENGTH", capture_length);
 	defaults->update("RECORD_W", w);
 	defaults->update("RECORD_H", h);

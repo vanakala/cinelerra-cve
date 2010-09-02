@@ -61,12 +61,10 @@ public:
 private:
 	int create_oss_objs();
 	int create_esound_objs();
-	int create_firewire_objs();
 	int create_alsa_objs();
 
 	int delete_oss_objs();
 	int delete_esound_objs();
-	int delete_firewire_objs();
 	int delete_alsa_objs();
 
 // The output config resolved from playback strategy and render engine.
@@ -84,11 +82,6 @@ private:
 	BitsPopup *oss_bits;
 	ADeviceTextBox *esound_server;
 	ADeviceIntBox *esound_port;
-	ADeviceIntBox *firewire_port;
-	ADeviceIntBox *firewire_channel;
-	ADeviceTextBox *firewire_path;
-	ADeviceIntBox *firewire_syt;
-
 
 	ALSADevice *alsa_device;
 	BitsPopup *alsa_bits;

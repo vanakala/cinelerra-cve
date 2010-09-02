@@ -127,8 +127,6 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 	case PLAYBACK_X11:
 		return BC_RGB888;
 	case PLAYBACK_X11_XV:
-	case PLAYBACK_DV1394:
-	case PLAYBACK_FIREWIRE:
 	case PLAYBACK_ASYNCHRONOUS:
 		return BC_YUV420P;
 	case PLAYBACK_X11_GL:
@@ -143,9 +141,6 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 	case CAPTURE_LML:
 	case VIDEO4LINUX2JPEG:
 		return BC_YUV422;
-	case CAPTURE_FIREWIRE:
-	case CAPTURE_IEC61883:
-		return BC_YUV420P;
 	}
 	return BC_YUV420P;
 }

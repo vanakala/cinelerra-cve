@@ -19,9 +19,6 @@
  * 
  */
 
-#ifdef HAVE_FIREWIRE
-#include "audio1394.h"
-#endif
 #include "audioalsa.h"
 #include "audiodevice.h"
 #include "audiodvb.h"
@@ -154,14 +151,6 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 #ifdef HAVE_ALSA
 		case AUDIO_ALSA:
 			lowlevel = new AudioALSA(this);
-			break;
-#endif
-
-#ifdef HAVE_FIREWIRE
-		case AUDIO_1394:
-		case AUDIO_DV1394:
-		case AUDIO_IEC61883:
-			lowlevel = new Audio1394(this);
 			break;
 #endif
 

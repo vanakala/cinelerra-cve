@@ -37,7 +37,6 @@
 #include "condition.inc"
 #include "datatype.h"
 #include "dcoffset.inc"
-#include "device1394output.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
 #include "mwindow.inc"
@@ -46,11 +45,6 @@
 #include "sema.inc"
 #include "thread.h"
 #include "videodevice.inc"
-#ifdef HAVE_FIREWIRE
-#include "audio1394.inc"
-#include "device1394output.inc"
-#include "vdevice1394.inc"
-#endif
 
 class AudioLowLevel
 {
@@ -84,9 +78,6 @@ public:
 	friend class AudioDVB;
 	friend class AudioOSS;
 	friend class AudioESound;
-	friend class Audio1394;
-	friend class VDevice1394;
-	friend class Device1394Output;
 
 	int open_input(AudioInConfig *config, 
 		VideoInConfig *vconfig,

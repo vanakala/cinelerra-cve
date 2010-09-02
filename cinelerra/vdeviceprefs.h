@@ -69,8 +69,6 @@ public:
 
 private:
 	int create_lml_objs();
-	int create_firewire_objs();
-	int create_dv1394_objs();
 	int create_v4l_objs();
 	int create_v4l2_objs();
 	int create_v4l2jpeg_objs();
@@ -86,16 +84,9 @@ private:
 	BC_Title *number_title;
 	BC_Title *channel_title;
 	BC_Title *output_title;
-	BC_Title *syt_title;
 	VDeviceTextBox *device_text;
 	VDeviceTumbleBox *device_port;
 	VDeviceTumbleBox *device_number;
-	VDeviceIntBox *firewire_port;
-	VDeviceIntBox *firewire_channel;
-	VDeviceIntBox *firewire_channels;
-	VDeviceIntBox *firewire_syt;
-	VDeviceTextBox *firewire_path;
-
 	VDeviceCheckBox *buz_swap_channels;
 	int driver, mode;
 	int x;

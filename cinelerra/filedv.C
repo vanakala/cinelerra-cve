@@ -945,10 +945,6 @@ int FileDV::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_X11_XV:
 			return BC_YUV422;
 			break;
-		case PLAYBACK_DV1394:
-		case PLAYBACK_FIREWIRE:
-			return BC_COMPRESSED;
-			break;
 		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:
 			return BC_YUV422P;
@@ -959,9 +955,6 @@ int FileDV::get_best_colormodel(Asset *asset, int driver)
 		case CAPTURE_LML:
 		case VIDEO4LINUX2JPEG:
 			return BC_YUV422;
-			break;
-		case CAPTURE_FIREWIRE:
-			return BC_COMPRESSED;
 			break;
 	}
 	return BC_RGB888;

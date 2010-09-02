@@ -239,22 +239,6 @@ void FormatTools::update_driver(int driver)
 		video_switch->update(1);
 		break;
 
-	case CAPTURE_IEC61883:
-	case CAPTURE_FIREWIRE:
-		if(asset->format != FILE_AVI &&
-			asset->format != FILE_MOV)
-		{
-			format_text->update(MOV_NAME);
-			asset->format = FILE_MOV;
-		}
-		else
-			format_text->update(File::formattostr(asset->format));
-		locked_compressor = QUICKTIME_DVSD;
-		strcpy(asset->vcodec, QUICKTIME_DVSD);
-		audio_switch->update(asset->audio_data);
-		video_switch->update(asset->video_data);
-		break;
-
 	case CAPTURE_BUZ:
 	case VIDEO4LINUX2JPEG:
 		if(asset->format != FILE_AVI &&

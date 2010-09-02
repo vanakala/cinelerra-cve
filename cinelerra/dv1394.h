@@ -220,9 +220,6 @@
 #define DV1394_PAL_FRAME_SIZE  (480 * DV1394_PAL_PACKETS_PER_FRAME)
 
 
-/* ioctl() commands */
-#include "ieee1394-ioctl.h"
-
 
 enum pal_or_ntsc {
 	DV1394_NTSC = 0,

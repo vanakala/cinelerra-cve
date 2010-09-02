@@ -30,7 +30,6 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
-#include "libdv.h"
 #include "libmjpeg.h"
 #include "mwindow.h"
 #include "picon_png.h"
@@ -152,7 +151,6 @@ public:
 	int prev_channel;
 	int w, h;
 // Decompressors for different video drivers
-	dv_t *dv;
 	mjpeg_t *mjpeg;
 };
 
@@ -312,7 +310,6 @@ LiveVideo::LiveVideo(PluginServer *server)
 	w = 320;
 	h = 640;
 	prev_channel = 0;
-	dv = 0;
 	mjpeg = 0;
 	picture = 0;
 	picture_defaults = 0;
@@ -332,7 +329,6 @@ LiveVideo::~LiveVideo()
 
 	delete channeldb;
 	delete temp;
-	if(dv) dv_delete(dv);
 	if(mjpeg) mjpeg_delete(mjpeg);
 	delete picture;
 	delete picture_defaults;
@@ -364,8 +360,6 @@ int LiveVideo::process_buffer(VFrame *frame,
 // Some devices can read directly to the best colormodel and some can't.
 			switch(session->vconfig_in->driver)
 			{
-			case CAPTURE_FIREWIRE:
-			case CAPTURE_IEC61883:
 			case CAPTURE_BUZ:
 			case VIDEO4LINUX2JPEG:
 				input_cmodel = BC_COMPRESSED;
@@ -459,19 +453,6 @@ int LiveVideo::process_buffer(VFrame *frame,
 			{
 				switch(session->vconfig_in->driver)
 				{
-				case CAPTURE_FIREWIRE:
-				case CAPTURE_IEC61883:
-// Decompress a DV frame from the driver
-					if(!dv)
-						dv = dv_new();
-					dv_read_video(((dv_t*)dv), 
-						frame->get_rows(), 
-						input->get_data(), 
-						input->get_compressed_size(),
-						frame->get_color_model());
-					frame->set_opengl_state(VFrame::RAM);
-					break;
-
 				case CAPTURE_BUZ:
 				case VIDEO4LINUX2JPEG:
 					if(!mjpeg)

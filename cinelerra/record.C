@@ -166,13 +166,6 @@ int Record::load_defaults()
 		mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
 		mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG)
 		strncpy(default_asset->vcodec, QUICKTIME_MJPA, 4);
-	else
-	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_FIREWIRE ||
-		mwindow->edl->session->vconfig_in->driver == CAPTURE_IEC61883)
-	{
-		strncpy(default_asset->vcodec, QUICKTIME_DVSD, 4);
-	}
-
 
 // Load batches
 	int total_batches = defaults->get("TOTAL_BATCHES", 1);

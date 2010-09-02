@@ -30,7 +30,6 @@
 #include "canvas.inc"
 #include "channel.inc"
 #include "channeldb.inc"
-#include "device1394output.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "mwindow.inc"
@@ -43,11 +42,6 @@
 #include "vdevicebuz.inc"
 #include "vdevicev4l.inc"
 #include "vdevicex11.inc"
-#ifdef HAVE_FIREWIRE
-#include "audio1394.inc"
-#include "device1394output.inc"
-#include "vdevice1394.inc"
-#endif
 
 
 // The keepalive thread runs continuously during recording.

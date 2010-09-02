@@ -36,9 +36,6 @@
 #include "quicktime.h"
 #include "recordconfig.h"
 #include "recordmonitor.h"
-#ifdef HAVE_FIREWIRE
-#include "vdevice1394.h"
-#endif
 #include "vdevicebuz.h"
 #include "vdevicedvb.h"
 #include "vdevicev4l.h"
@@ -218,14 +215,6 @@ int VideoDevice::open_input(VideoInConfig *config,
 		result = input_base->open_input();
 		break;
 
-#ifdef HAVE_FIREWIRE
-	case CAPTURE_FIREWIRE:
-	case CAPTURE_IEC61883:
-		new_device_base();
-		result = input_base->open_input();
-		break;
-#endif
-
 	case CAPTURE_DVB:
 		new_device_base();
 		result = input_base->open_input();
@@ -256,12 +245,6 @@ VDeviceBase* VideoDevice::new_device_base()
 
 	case CAPTURE_BUZ:
 		return input_base = new VDeviceBUZ(this);
-
-#ifdef HAVE_FIREWIRE
-	case CAPTURE_FIREWIRE:
-	case CAPTURE_IEC61883:
-		return input_base = new VDevice1394(this);
-#endif
 
 	case CAPTURE_DVB:
 		return input_base = new VDeviceDVB(this);
@@ -314,9 +297,7 @@ int VideoDevice::is_compressed(int driver, int use_file, int use_fixed)
 // FileMOV needs to have write_frames called so the start codes get scanned.
 	return ((driver == CAPTURE_BUZ && use_fixed) ||
 		(driver == VIDEO4LINUX2JPEG && use_fixed) || 
-		driver == CAPTURE_LML || 
-		driver == CAPTURE_FIREWIRE ||
-		driver == CAPTURE_IEC61883);
+		driver == CAPTURE_LML);
 }
 
 int VideoDevice::is_compressed(int use_file, int use_fixed)
@@ -337,14 +318,6 @@ void VideoDevice::fix_asset(Asset *asset, int driver)
 			asset->format != FILE_MOV)
 			asset->format = FILE_MOV;
 		strcpy(asset->vcodec, QUICKTIME_MJPA);
-		return;
-
-	case CAPTURE_FIREWIRE:
-	case CAPTURE_IEC61883:
-		if(asset->format != FILE_AVI &&
-			asset->format != FILE_MOV)
-			asset->format = FILE_MOV;
-		strcpy(asset->vcodec, QUICKTIME_DVSD);
 		return;
 	}
 
@@ -379,13 +352,6 @@ const char* VideoDevice::drivertostr(int driver)
 		return SCREENCAPTURE_TITLE;
 	case CAPTURE_BUZ:
 		return CAPTURE_BUZ_TITLE;
-
-#ifdef HAVE_FIREWIRE
-	case CAPTURE_FIREWIRE:
-		return CAPTURE_FIREWIRE_TITLE;
-	case CAPTURE_IEC61883:
-		return CAPTURE_IEC61883_TITLE;
-#endif
 	}
 	return "";
 }
@@ -661,14 +627,6 @@ int VideoDevice::open_output(VideoOutConfig *config,
 	case PLAYBACK_X11_GL:
 		output_base = new VDeviceX11(this, output);
 		break;
-
-#ifdef HAVE_FIREWIRE
-	case PLAYBACK_DV1394:
-	case PLAYBACK_FIREWIRE:
-	case PLAYBACK_IEC61883:
-		output_base = new VDevice1394(this);
-		break;
-#endif
 	}
 
 	if(output_base->open_output())
