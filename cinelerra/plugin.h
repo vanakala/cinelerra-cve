@@ -92,12 +92,12 @@ public:
 // For synchronizing parameters
 	void copy_keyframes(Plugin *plugin);
 // For copying to clipboard
-	void copy_keyframes(posnum start,
-		posnum end,
+	void copy_keyframes(ptstime start,
+		ptstime end,
 		FileXML *file, 
 		int default_only,
 		int autos_only);
-// For editing automation.  
+// For editing automation.
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
 	void clear_keyframes(posnum start, posnum end);

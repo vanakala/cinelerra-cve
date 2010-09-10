@@ -26,6 +26,7 @@
 #include "assets.inc"
 #include "auto.inc"
 #include "bchash.inc"
+#include "datatype.h"
 #include "edit.inc"
 #include "edits.inc"
 #include "edl.inc"
@@ -96,7 +97,7 @@ public:
 	int drag_origin_x, drag_origin_y;
 // Value of keyframe when button was pressed
 	float drag_start_percentage;
-	long drag_start_position;
+	ptstime drag_start_postime;
 // Records for redrawing brender position in timebar
 	double brender_end;
 

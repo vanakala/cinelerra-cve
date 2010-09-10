@@ -533,7 +533,7 @@ int MutePatch::button_press_event()
 		set_status(BC_Toggle::TOGGLE_DOWN);
 		update(!get_value());
 		IntAuto *current;
-		double position = mwindow->edl->local_session->get_selectionstart(1);
+		ptstime position = mwindow->edl->local_session->get_selectionstart(1);
 		Autos *mute_autos = patch->track->automation->autos[AUTOMATION_MUTE];
 
 		current = (IntAuto*)mute_autos->get_auto_for_editing(position);
@@ -569,11 +569,11 @@ int MutePatch::button_release_event()
 IntAuto* MutePatch::get_keyframe(MWindow *mwindow, PatchGUI *patch)
 {
 	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->track->to_units(unit_position, 0);
+
 	return (IntAuto*)patch->track->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
-		(posnum)unit_position, 
+		unit_position,
 		PLAY_FORWARD,
 		current);
 }

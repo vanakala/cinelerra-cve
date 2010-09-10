@@ -153,8 +153,7 @@ int VirtualVConsole::process_buffer(framenum input_position)
 // disable.
 		output_temp->clear_stacks();
 		result |= node->render(output_temp,
-			input_position + track->nudge,
-			renderengine->edl->session->frame_rate,
+			(input_position + track->nudge) / renderengine->edl->session->frame_rate,
 			use_opengl);
 
 	}

@@ -90,9 +90,10 @@ int VAutomation::create_objects()
 	return 0;
 }
 
-int VAutomation::direct_copy_possible(posnum start, int direction)
+int VAutomation::direct_copy_possible(ptstime start, int direction)
 {
-	posnum end = (direction == PLAY_FORWARD) ? (start + 1) : (start - 1);
+	ptstime len = pos2pts(1);
+	ptstime end = (direction == PLAY_FORWARD) ? (start + len) : (start - len);
 
 	if(!Automation::direct_copy_possible(start, direction))
 		return 0;
@@ -100,7 +101,7 @@ int VAutomation::direct_copy_possible(posnum start, int direction)
 // Automation is constant
 	double constant;
 	if(((FloatAutos*)autos[AUTOMATION_FADE])->automation_is_constant(
-		start, 1, direction, constant))
+		start, len, direction, constant))
 	{
 		if(!EQUIV(constant, 100))
 			return 0;
@@ -181,7 +182,7 @@ int VAutomation::direct_copy_possible(posnum start, int direction)
 void VAutomation::get_projector(float *x, 
 	float *y, 
 	float *z, 
-	framenum position,
+	ptstime position,
 	int direction)
 {
 	FloatAuto *before, *after;
@@ -209,7 +210,7 @@ void VAutomation::get_projector(float *x,
 void VAutomation::get_camera(float *x, 
 	float *y, 
 	float *z, 
-	framenum position,
+	ptstime position,
 	int direction)
 {
 	FloatAuto *before, *after;

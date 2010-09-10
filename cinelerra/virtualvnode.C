@@ -104,17 +104,15 @@ VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 }
 
 int VirtualVNode::read_data(VFrame *output_temp,
-	framenum start_position,
-	double frame_rate,
+	ptstime start_position,
 	int use_opengl)
 {
 	VirtualNode *previous_plugin = 0;
 	int result = 0;
 
 	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::read_data position=%d rate=%f title=%s opengl=%d\n", 
+		printf("  VirtualVNode::read_data position=%.3lf title=%s opengl=%d\n", 
 			start_position,
-			frame_rate,
 			track->title, 
 			use_opengl);
 
@@ -125,10 +123,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	if(parent_node && parent_node->track && renderengine)
 	{
 		double edl_rate = renderengine->edl->session->frame_rate;
-		framenum start_position_project = (framenum)(start_position *
-			edl_rate /
-			frame_rate + 
-			0.5);
+		framenum start_position_project = (framenum)(start_position * edl_rate);
 		parent_edit = (VEdit*)parent_node->track->edits->editof(start_position_project, 
 			0);
 	}
@@ -140,7 +135,6 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	{
 		result = ((VirtualVNode*)previous_plugin)->render(output_temp,
 			start_position,
-			frame_rate,
 			use_opengl);
 	}
 	else
@@ -152,15 +146,15 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	{
 		result = ((VirtualVNode*)parent_node)->read_data(output_temp,
 			start_position,
-			frame_rate,
 			use_opengl);
 	}
 	else
 	if(real_module)
 	{
+		double frame_rate = renderengine->edl->session->frame_rate;
 // This is the first node in the tree
 		result = ((VModule*)real_module)->render(output_temp,
-			start_position,
+			start_position * frame_rate,
 			renderengine->command->get_direction(),
 			frame_rate,
 			0,
@@ -173,17 +167,16 @@ int VirtualVNode::read_data(VFrame *output_temp,
 
 
 int VirtualVNode::render(VFrame *output_temp, 
-	framenum start_position,
-	double frame_rate,
+	ptstime start_position,
 	int use_opengl)
 {
+
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(real_module)
 	{
 		render_as_module(vrender->video_out, 
 			output_temp,
 			start_position,
-			frame_rate,
 			use_opengl);
 	}
 	else
@@ -191,15 +184,13 @@ int VirtualVNode::render(VFrame *output_temp,
 	{
 		render_as_plugin(output_temp,
 			start_position,
-			frame_rate,
 			use_opengl);
 	}
 	return 0;
 }
 
 void VirtualVNode::render_as_plugin(VFrame *output_temp, 
-	framenum start_position,
-	double frame_rate,
+	ptstime start_position,
 	int use_opengl)
 {
 	if(!attachment ||
@@ -215,8 +206,8 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 	((VAttachmentPoint*)attachment)->render(
 		output_temp,
 		plugin_buffer_number,
-		start_position,
-		frame_rate,
+		start_position * renderengine->edl->session->frame_rate,
+		renderengine->edl->session->frame_rate,
 		vconsole->debug_tree,
 		use_opengl);
 }
@@ -224,16 +215,10 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 
 int VirtualVNode::render_as_module(VFrame *video_out, 
 	VFrame *output_temp,
-	framenum start_position,
-	double frame_rate,
+	ptstime start_position,
 	int use_opengl)
 {
 	int direction = renderengine->command->get_direction();
-	double edl_rate = renderengine->edl->session->frame_rate;
-// Get position relative to project
-	framenum start_position_project = (framenum)(start_position *
-		edl_rate / 
-		frame_rate);
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_as_module title=%s use_opengl=%d video_out=%p output_temp=%p\n", 
@@ -251,7 +236,6 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 		VirtualVNode *node = (VirtualVNode*)subnodes.values[subnodes.total - 1];
 		node->render(output_temp,
 			start_position,
-			frame_rate,
 			use_opengl);
 	}
 	else
@@ -259,7 +243,6 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 	{
 		read_data(output_temp,
 			start_position,
-			frame_rate,
 			use_opengl);
 	}
 
@@ -267,11 +250,10 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 
 	render_fade(output_temp,
 			start_position,
-			frame_rate,
 			track->automation->autos[AUTOMATION_FADE],
 			direction);
 
-	render_mask(output_temp, start_position_project, frame_rate, use_opengl);
+	render_mask(output_temp, start_position);
 
 
 // overlay on the final output
@@ -294,8 +276,7 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 // Frame is playable
 		render_projector(output_temp,
 			video_out,
-			start_position,
-			frame_rate);
+			start_position);
 	}
 
 	output_temp->push_prev_effect("VirtualVNode::render_as_module");
@@ -304,25 +285,18 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 }
 
 int VirtualVNode::render_fade(VFrame *output,
-// start of input fragment in project if forward / end of input fragment if reverse
-// relative to requested frame rate
-			framenum start_position, 
-			double frame_rate, 
+			ptstime start_position, 
 			Autos *autos,
 			int direction)
 {
 	double slope, intercept;
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
-	double edl_rate = renderengine->edl->session->frame_rate;
-	framenum start_position_project = (framenum)(start_position *
-		edl_rate /
-		frame_rate);
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_fade title=%s\n", track->title);
 
-	intercept = ((FloatAutos*)autos)->get_value(start_position_project, 
+	intercept = ((FloatAutos*)autos)->get_value(start_position,
 		direction,
 		previous,
 		next);
@@ -350,16 +324,14 @@ int VirtualVNode::render_fade(VFrame *output,
 
 
 void VirtualVNode::render_mask(VFrame *output_temp,
-	framenum start_position_project,
-	double frame_rate,
-	int use_opengl)
+	ptstime start_position)
 {
 	MaskAutos *keyframe_set = 
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
 
 	Auto *current = 0;
 	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_position_project, 
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_position, 
 		PLAY_FORWARD,
 		current);
 
@@ -389,7 +361,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 	{
 		((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_mask(
 			output_temp, 
-			start_position_project,
+			keyframe->autos->pts2pos(start_position),
 			keyframe_set, 
 			keyframe,
 			default_auto);
@@ -400,9 +372,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 		int direction = renderengine->command->get_direction();
 		double edl_rate = renderengine->edl->session->frame_rate;
 		masker->do_mask(output_temp, 
-			start_position_project,
-			frame_rate,
-			edl_rate,
+			start_position,
 			keyframe_set, 
 			direction,
 			0);
@@ -413,15 +383,11 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 // Start of input fragment in project if forward.  End of input fragment if reverse.
 int VirtualVNode::render_projector(VFrame *input,
 			VFrame *output,
-			framenum start_position,
-			double frame_rate)
+			ptstime start_position)
 {
 	float in_x1, in_y1, in_x2, in_y2;
 	float out_x1, out_y1, out_x2, out_y2;
-	double edl_rate = renderengine->edl->session->frame_rate;
-	framenum start_position_project = (framenum)(start_position * 
-		edl_rate /
-		frame_rate);
+
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_projector input=%p output=%p title=%s\n", 
@@ -429,7 +395,7 @@ int VirtualVNode::render_projector(VFrame *input,
 
 	if(output)
 	{
-		((VTrack*)track)->calculate_output_transfer(start_position_project,
+		((VTrack*)track)->calculate_output_transfer(start_position,
 			renderengine->command->get_direction(),
 			in_x1, 
 			in_y1, 
@@ -454,7 +420,7 @@ int VirtualVNode::render_projector(VFrame *input,
 			IntAuto *mode_keyframe = 0;
 			mode_keyframe = 
 				(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-					start_position_project, 
+					start_position, 
 					direction,
 					(Auto* &)mode_keyframe);
 

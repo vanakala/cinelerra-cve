@@ -227,8 +227,8 @@ int ReverseAudio::load_configuration()
 // Previous keyframe stays in config object.
 	read_data(prev_keyframe);
 
-	samplenum prev_position = edl_to_local(prev_keyframe->position);
-	samplenum next_position = edl_to_local(next_keyframe->position);
+	samplenum prev_position = edl_to_local(prev_keyframe->get_position());
+	samplenum next_position = edl_to_local(next_keyframe->get_position());
 
 // Defeat default keyframe
 	if(prev_position == 0 && next_position == 0) 

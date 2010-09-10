@@ -661,8 +661,7 @@ int PluginServer::read_frame(VFrame *buffer,
 	if(nodes->total > channel)
 	{
 		result = ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
-			start_position,
-			frame_rate,
+			start_position / frame_rate,
 			use_opengl);
 	}
 	else
@@ -698,9 +697,8 @@ int PluginServer::read_samples(double *buffer,
 
 	if(nodes->total > channel)
 		return ((VirtualANode*)nodes->values[channel])->read_data(buffer,
-			start_position,
-			len,
-			sample_rate);
+			(ptstime)start_position / sample_rate,
+			len);
 	else
 	if(modules->total > channel)
 		return ((AModule*)modules->values[channel])->render(buffer,
@@ -965,13 +963,15 @@ KeyFrame* PluginServer::get_keyframe()
 void PluginServer::get_camera(float *x, float *y, float *z,
 	framenum position, int direction)
 {
-	plugin->track->automation->get_camera(x, y, z, position, direction);
+	plugin->track->automation->get_camera(x, y, z, 
+		plugin->track->automation->pos2pts(position), direction);
 }
 
 void PluginServer::get_projector(float *x, float *y, float *z,
 	framenum position, int direction)
 {
-	plugin->track->automation->get_projector(x, y, z, position, direction);
+	plugin->track->automation->get_projector(x, y, z, 
+		plugin->track->automation->pos2pts(position), direction);
 }
 
 

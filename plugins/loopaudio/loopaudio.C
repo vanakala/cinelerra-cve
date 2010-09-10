@@ -205,13 +205,13 @@ int LoopAudio::process_buffer(int size,
 		if(get_direction() == PLAY_FORWARD)
 		{
 			KeyFrame *next_keyframe = get_next_keyframe(current_position);
-			samplenum next_position = edl_to_local(next_keyframe->position);
+			samplenum next_position = edl_to_local(next_keyframe->get_position());
 			if(next_position > current_position)
 				fragment_size = MIN(fragment_size, next_position - current_position);
 
 // Get start of current loop
 			KeyFrame *prev_keyframe = get_prev_keyframe(current_position);
-			samplenum prev_position = edl_to_local(prev_keyframe->position);
+			samplenum prev_position = edl_to_local(prev_keyframe->get_position());
 			if(prev_position == 0)
 				prev_position = get_source_start();
 			read_data(prev_keyframe);
@@ -234,12 +234,12 @@ int LoopAudio::process_buffer(int size,
 		else
 		{
 			KeyFrame *next_keyframe = get_prev_keyframe(current_position);
-			samplenum next_position = edl_to_local(next_keyframe->position);
+			samplenum next_position = edl_to_local(next_keyframe->get_position());
 			if(next_position < current_position)
 				fragment_size = MIN(fragment_size, current_position - next_position);
 
 			KeyFrame *prev_keyframe = get_next_keyframe(current_position);
-			samplenum prev_position = edl_to_local(prev_keyframe->position);
+			samplenum prev_position = edl_to_local(prev_keyframe->get_position());
 			if(prev_position == 0)
 				prev_position = get_source_start() + get_total_len();
 			read_data(prev_keyframe);

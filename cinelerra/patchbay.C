@@ -301,7 +301,7 @@ int PatchBay::cursor_motion_event()
 						{
 							IntAuto *current = 0;
 							Auto *keyframe = 0;
-							double position = mwindow->edl->local_session->get_selectionstart(1);
+							ptstime position = mwindow->edl->local_session->get_selectionstart(1);
 							Autos *mute_autos = track->automation->autos[AUTOMATION_MUTE];
 
 							current = (IntAuto*)mute_autos->get_prev_auto(PLAY_FORWARD, 
@@ -482,7 +482,7 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 			current != skip)
 		{
 			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
-			double position = mwindow->edl->local_session->get_selectionstart(1);
+			ptstime position = mwindow->edl->local_session->get_selectionstart(1);
 
 
 			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);

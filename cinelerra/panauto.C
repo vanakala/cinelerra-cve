@@ -29,7 +29,7 @@
 PanAuto::PanAuto(EDL *edl, PanAutos *autos)
  : Auto(edl, (Autos*)autos)
 {
-	bzero(values, MAXCHANNELS * sizeof(float));
+	memset(values, 0, MAXCHANNELS * sizeof(float));
 	handle_x = handle_y = 0;
 }
 
@@ -59,8 +59,8 @@ void PanAuto::rechannel()
 void PanAuto::load(FileXML *file)
 {
 	bzero(values, MAXCHANNELS * sizeof(float));
-	handle_x = file->tag.get_property("HANDLE_X", (int64_t)handle_x);
-	handle_y = file->tag.get_property("HANDLE_Y", (int64_t)handle_y);
+	handle_x = file->tag.get_property("HANDLE_X", handle_x);
+	handle_y = file->tag.get_property("HANDLE_Y", handle_y);
 	for(int i = 0; i < edl->session->audio_channels; i++)
 	{
 		char string[BCTEXTLEN];
@@ -69,15 +69,15 @@ void PanAuto::load(FileXML *file)
 	}
 }
 
-void PanAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
+void PanAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	if(default_auto)
-		file->tag.set_property("POSITION", 0);
+		file->tag.set_property("POSTIME", 0);
 	else
-		file->tag.set_property("POSITION", position - start);
-	file->tag.set_property("HANDLE_X", (int64_t)handle_x);
-	file->tag.set_property("HANDLE_Y", (int64_t)handle_y);
+		file->tag.set_property("POSTIME", pos_time - start);
+	file->tag.set_property("HANDLE_X", handle_x);
+	file->tag.set_property("HANDLE_Y", handle_y);
 	for(int i = 0; i < edl->session->audio_channels; i++)
 	{
 		char  string[BCTEXTLEN];
@@ -102,8 +102,8 @@ void PanAuto::copy_from(Auto *that)
 
 void PanAuto::dump()
 {
-	printf("		handle_x %d\n", handle_x);
-	printf("		handle_y %d\n", handle_y);
+	printf("        handle_x %d\n", handle_x);
+	printf("        handle_y %d\n", handle_y);
 	for(int i = 0; i < edl->session->audio_channels; i++)
-		printf("		value %d %f\n", i, values[i]);
+		printf("           value %d %f\n", i, values[i]);
 }

@@ -98,9 +98,7 @@ public:
 
 
 	void do_mask(VFrame *output, 
-		framenum start_position,
-		double frame_rate,
-		double project_frame_rate,
+		ptstime start_position,
 		MaskAutos *keyframe_set, 
 		int direction,
 		int before_plugins);

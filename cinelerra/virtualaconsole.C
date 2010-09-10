@@ -124,9 +124,8 @@ int VirtualAConsole::process_buffer(int len,
 		Track *track = node->track;
 
 		result |= node->render(output_temp, 
-			start_position + track->nudge,
-			len,
-			renderengine->edl->session->sample_rate);
+			(ptstime)(start_position + track->nudge) / renderengine->edl->session->sample_rate,
+			len);
 	}
 
 

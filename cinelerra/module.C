@@ -237,12 +237,12 @@ int Module::test_plugins()
 	return 0;
 }
 
-void Module::update_transition(posnum current_position, 
+void Module::update_transition(ptstime current_position, 
 	int direction)
 {
 	transition = track->get_current_transition(current_position,
 		direction,
-		0,
+		1,
 		0); // position is already nudged in amodule.C and vmodule.C before calling update_transition!
 
 // For situations where we had a transition but not anymore, 

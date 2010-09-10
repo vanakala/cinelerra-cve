@@ -138,13 +138,14 @@ void Plugin::copy_keyframes(Plugin *plugin)
 	keyframes->copy_from(plugin->keyframes);
 }
 
-void Plugin::copy_keyframes(posnum start,
-	posnum end,
+void Plugin::copy_keyframes(ptstime start,
+	ptstime end,
 	FileXML *file, 
 	int default_only,
 	int autos_only)
 {
-	keyframes->copy(start, end, file, default_only, autos_only);
+	keyframes->copy(start, end,
+		file, default_only, autos_only);
 }
 
 void Plugin::synchronize_params(Edit *edit)
@@ -160,11 +161,15 @@ void Plugin::synchronize_params(Edit *edit)
 
 void Plugin::shift_keyframes(posnum position)
 {
+	ptstime postime;
+// FIXPOS
+	postime = keyframes->pos2pts(position);
+
 	for(KeyFrame *keyframe = (KeyFrame*)keyframes->first;
 		keyframe; 
 		keyframe = (KeyFrame*)keyframe->next)
 	{
-		keyframe->position += position;
+		keyframe->pos_time += postime;
 	}
 }
 
@@ -193,7 +198,10 @@ void Plugin::equivalent_output(Edit *edit, posnum *result)
 	}
 
 // Test keyframes
-	keyframes->equivalent_output(plugin->keyframes, startproject, result);
+	ptstime respts = keyframes->pos2pts(*result);
+	keyframes->equivalent_output(plugin->keyframes, 
+		keyframes->pos2pts(startproject), &respts);
+	*result = keyframes->pts2pos(respts);
 }
 
 
@@ -309,12 +317,15 @@ KeyFrame* Plugin::get_prev_keyframe(posnum position)
 		position = track->to_units(edl->local_session->get_selectionstart(1), 0);
 	}
 
+	ptstime postime = 0;
+	postime = keyframes->pos2pts(position);
+
 // Get keyframe on or before current position
 	for(current = (KeyFrame*)keyframes->last;
 		current;
 		current = (KeyFrame*)PREVIOUS)
 	{
-		if(current->position <= position) break;
+		if(current->pos_time <= postime) break;
 	}
 
 // Nothing before current position
@@ -343,12 +354,15 @@ KeyFrame* Plugin::get_next_keyframe(posnum position)
 		position = track->to_units(edl->local_session->get_selectionstart(1), 0);
 	}
 
+	ptstime postime = 0;
+	postime = keyframes->pos2pts(position);
+
 // Get keyframe after current position
 	for(current = (KeyFrame*)keyframes->first;
 		current;
 		current = (KeyFrame*)NEXT)
 	{
-		if(current->position > position) break;
+		if(current->pos_time > postime) break;
 	}
 
 // Nothing after current position
@@ -380,9 +394,9 @@ KeyFrame* Plugin::get_keyframe()
 	else
 // Return new keyframe
 	if(result == (KeyFrame*)keyframes->default_auto || 
-		result->position != track->to_units(edl->local_session->get_selectionstart(1), 0))
+		!PTSEQU(result->pos_time, edl->local_session->get_selectionstart(1)))
 	{
-		return (KeyFrame*)keyframes->insert_auto(track->to_units(edl->local_session->get_selectionstart(1), 0));
+		return (KeyFrame*)keyframes->insert_auto(edl->local_session->get_selectionstart(1));
 	}
 	else
 // Return existing keyframe
@@ -395,7 +409,7 @@ KeyFrame* Plugin::get_keyframe()
 
 void Plugin::copy(posnum start, posnum end, FileXML *file)
 {
-	int64_t endproject = startproject + length;
+	posnum endproject = startproject + length;
 
 	if((startproject >= start && startproject <= end) ||  // startproject in range
 		 (endproject <= end && endproject >= start) ||	   // endproject in range
@@ -470,9 +484,10 @@ void Plugin::copy(posnum start, posnum end, FileXML *file)
 		file->append_newline();
 
 // Keyframes
-		keyframes->copy(start, end, file, 0, 0);
+		keyframes->copy(keyframes->pos2pts(start), keyframes->pos2pts(end),
+			file, 0, 0);
 
-		file->tag.set_title("/PLUGIN");	
+		file->tag.set_title("/PLUGIN");
 		file->append_tag();
 		file->append_newline();
 	}
@@ -531,7 +546,12 @@ void Plugin::load(FileXML *file)
 // Override default keyframe
 				{
 					KeyFrame *keyframe = (KeyFrame*)keyframes->append(new KeyFrame(edl, keyframes));
-					keyframe->position = file->tag.get_property("POSITION", (int64_t)0);
+// Convert from old position
+					posnum position = file->tag.get_property("POSITION", (posnum)0);
+					ptstime postime = 0;
+					if(position)
+						postime = keyframe->autos->pos2pts(position);
+					keyframe->pos_time = file->tag.get_property("POSTIME", postime);
 					keyframe->load(file);
 				}
 			}

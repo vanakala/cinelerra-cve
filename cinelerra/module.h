@@ -72,7 +72,7 @@ public:
 	void render_stop();
 // Current_position is relative to the EDL rate.
 // If direction is REVERSE, the object before current_position is tested.
-	void update_transition(posnum current_position, int direction);
+	void update_transition(ptstime current_position, int direction);
 	EDL* get_edl();
 
 // CICache used during effect

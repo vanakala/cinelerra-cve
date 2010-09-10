@@ -24,10 +24,10 @@
 #include "intauto.h"
 #include "intautos.h"
 
-IntAutos::IntAutos(EDL *edl, Track *track, int default_)
+IntAutos::IntAutos(EDL *edl, Track *track, int default_value)
  : Autos(edl, track)
 {
-	this->default_ = default_;
+	this->default_value = default_value;
 	type = AUTOMATION_TYPE_INT;
 }
 
@@ -39,11 +39,11 @@ IntAutos::~IntAutos()
 Auto* IntAutos::new_auto()
 {
 	IntAuto *result = new IntAuto(edl, this);
-	result->value = default_;
+	result->value = default_value;
 	return result;
 }
 
-int IntAutos::automation_is_constant(posnum start, posnum end)
+int IntAutos::automation_is_constant(ptstime start, ptstime end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
 	int result;
@@ -60,11 +60,11 @@ int IntAutos::automation_is_constant(posnum start, posnum end)
 	else 
 		current_auto = first;
 
-// test autos in range	
+// test autos in range
 	for( ; result && 
 		current_auto && 
 		current_auto->next && 
-		current_auto->position < end; 
+		current_auto->pos_time < end; 
 		current_auto = current_auto->next)
 	{
 // not constant
@@ -75,7 +75,7 @@ int IntAutos::automation_is_constant(posnum start, posnum end)
 	return result;
 }
 
-double IntAutos::get_automation_constant(posnum start, posnum end)
+double IntAutos::get_automation_constant(ptstime start, ptstime end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
 
@@ -98,8 +98,8 @@ double IntAutos::get_automation_constant(posnum start, posnum end)
 void IntAutos::get_extents(float *min, 
 	float *max,
 	int *coords_undefined,
-	int64_t unit_start,
-	int64_t unit_end)
+	ptstime start,
+	ptstime end)
 {
 	if(!first)
 	{
@@ -116,9 +116,9 @@ void IntAutos::get_extents(float *min,
 
 	for(IntAuto *current = (IntAuto*)first; current; current = (IntAuto*)NEXT)
 	{
-		if(current->position >= unit_start && current->position < unit_end)
+		if(current->pos_time >= start && current->pos_time < end)
 		{
-			if(coords_undefined)
+			if(*coords_undefined)
 			{
 				*max = *min = current->value;
 				*coords_undefined = 0;
@@ -134,9 +134,12 @@ void IntAutos::get_extents(float *min,
 
 void IntAutos::dump()
 {
-	printf("	Default %p: position: %lld value: %d\n", default_auto, default_auto->position, ((IntAuto*)default_auto)->value);
+	printf("      Default %p: postime %.3lf value: %d\n", 
+		default_auto, default_auto->pos_time,
+		((IntAuto*)default_auto)->value);
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	%p position: %lld value: %d\n", current, current->position, ((IntAuto*)current)->value);
+		printf("        %p postime %.3lf value: %d\n", 
+			current, current->pos_time, ((IntAuto*)current)->value);
 	}
 }

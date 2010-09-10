@@ -1037,6 +1037,7 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 
 
 // Draw every submask as a new polygon
+// POSNUM
 		int total_submasks = command->keyframe_set->total_submasks(
 			command->start_position_project);
 		float scale = command->keyframe->feather + 1;

@@ -36,16 +36,16 @@ public:
 	void get_projector(float *x, 
 		float *y, 
 		float *z, 
-		framenum position,
+		ptstime position,
 		int direction);
 // Get camera coordinates if this is video automation
 	void get_camera(float *x, 
 		float *y, 
 		float *z, 
-		framenum position,
+		ptstime position,
 		int direction);
 
-	int direct_copy_possible(posnum start, int direction);
+	int direct_copy_possible(ptstime start, int direction);
 };
 
 

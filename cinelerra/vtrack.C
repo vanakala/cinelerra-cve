@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "autoconf.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
 #include "datatype.h"
@@ -249,7 +250,7 @@ int VTrack::is_playable(posnum position, int direction)
 	float in_x, in_y, in_w, in_h;
 	float out_x, out_y, out_w, out_h;
 
-	calculate_output_transfer(position, 
+	calculate_output_transfer(from_units(position), 
 		direction, 
 		in_x, in_y, in_w, in_h,
 		out_x, out_y, out_w, out_h);
@@ -260,7 +261,7 @@ int VTrack::is_playable(posnum position, int direction)
 }
 
 void VTrack::calculate_input_transfer(Asset *asset, 
-	framenum position, 
+	ptstime position,
 	int direction, 
 	float &in_x, 
 	float &in_y, 
@@ -276,7 +277,7 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	float camera_x = asset->width / 2;
 	float camera_y = asset->height / 2;
 // camera and output coords
-	float z[6], x[6], y[6];        
+	float z[6], x[6], y[6];
 
 // get camera center in asset
 	automation->get_camera(&auto_x, 
@@ -335,7 +336,7 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	in_h = y[1] - y[0];
 }
 
-void VTrack::calculate_output_transfer(framenum position, 
+void VTrack::calculate_output_transfer(ptstime position, 
 	int direction, 
 	float &in_x, 
 	float &in_y, 
@@ -357,7 +358,7 @@ void VTrack::calculate_output_transfer(framenum position,
 	automation->get_projector(&center_x, 
 		&center_y, 
 		&center_z, 
-		position, 
+		position,
 		direction);
 
 	center_x += edl->session->output_w / 2;
@@ -400,75 +401,6 @@ void VTrack::calculate_output_transfer(framenum position,
 	out_h = y[3] - y[2];
 }
 
-
-
-int VTrack::get_projection(float &in_x1, 
-	float &in_y1, 
-	float &in_x2, 
-	float &in_y2, 
-	float &out_x1, 
-	float &out_y1, 
-	float &out_x2, 
-	float &out_y2, 
-	int frame_w, 
-	int frame_h, 
-	framenum real_position, 
-	int direction)
-{
-	float center_x, center_y, center_z;
-	float x[4], y[4];
-
-	automation->get_projector(&center_x, 
-		&center_y, 
-		&center_z, 
-		real_position, 
-		direction);
-
-	x[0] = y[0] = 0;
-	x[1] = frame_w;
-	y[1] = frame_h;
-
-	center_x += edl->session->output_w / 2;
-	center_y += edl->session->output_h / 2;
-
-	x[2] = center_x - (frame_w / 2) * center_z;
-	y[2] = center_y - (frame_h / 2) * center_z;
-	x[3] = x[2] + frame_w * center_z;
-	y[3] = y[2] + frame_h * center_z;
-
-	if(x[2] < 0)
-	{
-		x[0] -= x[2] / center_z;
-		x[2] = 0;
-	}
-	if(y[2] < 0)
-	{
-		y[0] -= y[2] / center_z;
-		y[2] = 0;
-	}
-	if(x[3] > edl->session->output_w)
-	{
-		x[1] -= (x[3] - edl->session->output_w) / center_z;
-		x[3] = edl->session->output_w;
-	}
-	if(y[3] > edl->session->output_h)
-	{
-		y[1] -= (y[3] - edl->session->output_h) / center_z;
-		y[3] = edl->session->output_h;
-	}
-
-	in_x1 = x[0];
-	in_y1 = y[0];
-	in_x2 = x[1];
-	in_y2 = y[1];
-	out_x1 = x[2];
-	out_y1 = y[2];
-	out_x2 = x[3];
-	out_y2 = y[3];
-	return 0;
-}
-
-
 void VTrack::translate(float offset_x, float offset_y, int do_camera)
 {
 	int subscript;
@@ -476,7 +408,7 @@ void VTrack::translate(float offset_x, float offset_y, int do_camera)
 		subscript = AUTOMATION_CAMERA_X;
 	else
 		subscript = AUTOMATION_PROJECTOR_X;
-	
+
 // Translate default keyframe
 	((FloatAuto*)automation->autos[subscript]->default_auto)->value += offset_x;
 	((FloatAuto*)automation->autos[subscript + 1]->default_auto)->value += offset_y;

@@ -32,11 +32,11 @@ class PanAutos : public Autos
 public:
 	PanAutos(EDL *edl, Track *track);
 	~PanAutos();
-	
+
 	Auto* new_auto();
 	void get_handle(int &handle_x,
 		int &handle_y,
-		posnum position,
+		ptstime position,
 		int direction,
 		PanAuto* &previous,
 		PanAuto* &next);

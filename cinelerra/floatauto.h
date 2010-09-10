@@ -42,7 +42,7 @@ public:
 	int identical(FloatAuto *src);
 	void copy_from(Auto *that);
 	void copy_from(FloatAuto *that);
-	void copy(posnum start, posnum end, FileXML *file, int default_only);
+	void copy(ptstime start, ptstime end, FileXML *file, int default_only);
 	void load(FileXML *xml);
 
 	float value_to_percentage();
@@ -50,10 +50,12 @@ public:
 	float outvalue_to_percentage();
 
 // Control values are relative to value
-	float value, control_in_value, control_out_value;
+	float value;
+	float control_in_value;
+	float control_out_value;
 // X control positions relative to value position for drawing.
-// In native units of the track.
-	int64_t control_in_position, control_out_position;
+	ptstime control_in_pts;
+	ptstime control_out_pts;
 
 private:
 	int value_to_str(char *string, float value);

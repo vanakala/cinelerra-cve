@@ -189,7 +189,7 @@ void SubMask::dump()
 {
 	for(int i = 0; i < points.total; i++)
 	{
-		printf("	  point=%d x=%.2f y=%.2f in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
+		printf("         point=%d x=%.2f y=%.2f in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
 			i,
 			points.values[i]->x, 
 			points.values[i]->y, 
@@ -271,7 +271,7 @@ void MaskAuto::copy_from(MaskAuto *src)
 }
 
 
-int MaskAuto::interpolate_from(Auto *a1, Auto *a2, posnum position) 
+int MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position) 
 {
 	MaskAuto  *mask_auto1 = (MaskAuto *)a1;
 	MaskAuto  *mask_auto2 = (MaskAuto *)a2;
@@ -285,7 +285,7 @@ int MaskAuto::interpolate_from(Auto *a1, Auto *a2, posnum position)
 	this->feather = mask_auto1->feather;
 	this->value = mask_auto1->value;
 	this->apply_before_plugins = mask_auto1->apply_before_plugins;
-	this->position = position;
+	this->pos_time = position;
 	masks.remove_all_objects();
 
 	for(int i = 0; 
@@ -305,12 +305,11 @@ int MaskAuto::interpolate_from(Auto *a1, Auto *a2, posnum position)
 			MaskAutos::avg_points(point, 
 				mask1->points.values[j], 
 				mask2->points.values[j],
-				position,
-				mask_auto1->position,
-				mask_auto2->position);
+				pos_time,
+				mask_auto1->pos_time,
+				mask_auto2->pos_time);
 			new_submask->points.append(point);
 		}
-
 	}
 
 
@@ -352,10 +351,9 @@ void MaskAuto::load(FileXML *file)
 			}
 		}
 	}
-//	dump();
 }
 
-void MaskAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
+void MaskAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	file->tag.set_property("MODE", mode);
@@ -364,9 +362,9 @@ void MaskAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
 	file->tag.set_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 
 	if(default_auto)
-		file->tag.set_property("POSITION", 0);
+		file->tag.set_property("POSTIME", 0);
 	else
-		file->tag.set_property("POSITION", position - start);
+		file->tag.set_property("POSTIME", pos_time - start);
 	file->append_tag();
 	file->append_newline();
 
@@ -383,10 +381,10 @@ void MaskAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
 
 void MaskAuto::dump()
 {
-	printf("	 mode=%d value=%d\n", mode, value);
+	printf("         mode=%d value=%d\n", mode, value);
 	for(int i = 0; i < masks.total; i++)
 	{
-		printf("	 submask %d\n", i);
+		printf("         submask %d\n", i);
 		masks.values[i]->dump();
 	}
 }

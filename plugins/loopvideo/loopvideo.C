@@ -188,7 +188,7 @@ int LoopVideo::process_buffer(VFrame *frame,
 	{
 // Get start of current loop
 		KeyFrame *prev_keyframe = get_prev_keyframe(start_position);
-		framenum prev_position = edl_to_local(prev_keyframe->position);
+		framenum prev_position = edl_to_local(prev_keyframe->get_position());
 		if(prev_position == 0)
 			prev_position = get_source_start();
 		read_data(prev_keyframe);
@@ -203,7 +203,7 @@ int LoopVideo::process_buffer(VFrame *frame,
 	else
 	{
 		KeyFrame *prev_keyframe = get_next_keyframe(start_position);
-		framenum prev_position = edl_to_local(prev_keyframe->position);
+		framenum prev_position = edl_to_local(prev_keyframe->get_position());
 		if(prev_position == 0)
 			prev_position = get_source_start() + get_total_len();
 		read_data(prev_keyframe);

@@ -136,8 +136,8 @@ void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, T
 
 void Tracks::get_automation_extents(float *min, 
 	float *max,
-	double start,
-	double end,
+	ptstime start,
+	ptstime end,
 	int autogrouptype)
 {
 	*min = 0;
@@ -150,8 +150,8 @@ void Tracks::get_automation_extents(float *min,
 			current->automation->get_extents(min,
 				max,
 				&coords_undefined,
-				current->to_units(start, 0),
-				current->to_units(end, 1),
+				start,
+				end,
 				autogrouptype);
 		}
 	}
@@ -343,13 +343,13 @@ int Tracks::total_of(int type)
 {
 	int result = 0;
 	IntAuto *mute_keyframe = 0;
-	
+
 	for(Track *current = first; current; current = NEXT)
 	{
-		long unit_start = current->to_units(edl->local_session->get_selectionstart(1), 0);
+		ptstime unit_start = edl->local_session->get_selectionstart(1);
 		mute_keyframe = 
 			(IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
-			unit_start, 
+			unit_start,
 			PLAY_FORWARD,
 			(Auto* &)mute_keyframe);
 
@@ -547,7 +547,7 @@ void Tracks::select_all(int type,
 {
 	for(Track* current = first; current; current = NEXT)
 	{
-		double position = edl->local_session->get_selectionstart(1);
+		ptstime position = edl->local_session->get_selectionstart(1);
 
 		if(type == PLAY) current->play = value;
 		if(type == RECORD) current->record = value;

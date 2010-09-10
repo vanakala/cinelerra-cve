@@ -32,20 +32,18 @@
 #include "filexml.inc"
 #include "track.inc"
 
-#define AUTOS_VIRTUAL_HEIGHT 160
-
 class Autos : public List<Auto>
 {
 public:
 	Autos(EDL *edl, 
 		Track *track);
-		
+
 	virtual ~Autos();
 
 	void resample(double old_rate, double new_rate);
 
 	virtual void create_objects();
-	void equivalent_output(Autos *autos, posnum startproject, posnum *result);
+	void equivalent_output(Autos *autos, ptstime startproject, ptstime *result);
 	void copy_from(Autos *autos);
 	virtual Auto* new_auto();
 // Get existing auto on or before position.
@@ -53,29 +51,29 @@ public:
 // on or before position.
 // Return 0 if none exists and use_default is false.
 // If &current is nonzero it is used as a starting point for searching.
-	Auto* get_prev_auto(posnum position, int direction, Auto* &current, int use_default = 1);
+	Auto* get_prev_auto(ptstime position, int direction, Auto* &current, int use_default = 1);
 	Auto* get_prev_auto(int direction, Auto* &current);
-	Auto* get_next_auto(posnum position, int direction, Auto* &current, int use_default = 1);
+	Auto* get_next_auto(ptstime position, int direction, Auto* &current, int use_default = 1);
 // Determine if a keyframe exists before creating it.
-	int auto_exists_for_editing(double position);
+	int auto_exists_for_editing(ptstime position);
 // Returns auto at exact position, null if non-existent. ignores autokeyframming and align on frames
-	Auto* get_auto_at_position(double position = -1);
+	Auto* get_auto_at_position(ptstime position = -1);
 
 // Get keyframe for editing with automatic creation if enabled
-	Auto* get_auto_for_editing(double position = -1);
+	Auto* get_auto_for_editing(ptstime position = -1);
 
 // Insert keyframe at the point if it doesn't exist
-	Auto* insert_auto(posnum position);
+	Auto* insert_auto(ptstime position);
 // Insert keyframe at the point if it doesn't exist
 // Interpolate it insead of copying
-	Auto* insert_auto_for_editing(posnum position);
+	Auto* insert_auto_for_editing(ptstime position);
 	void insert_track(Autos *automation, 
-		posnum start_unit, 
-		posnum length_units,
+		ptstime start_unit, 
+		ptstime length_units,
 		int replace_default);
 	virtual int load(FileXML *xml);
-	void paste(posnum start, 
-		posnum length, 
+	void paste(ptstime start,
+		ptstime length,
 		double scale, 
 		FileXML *file, 
 		int default_only);
@@ -84,12 +82,12 @@ public:
 
 // Returns a type enumeration
 	int get_type();
-	posnum get_length();
+	ptstime get_length();
 	virtual void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,
-		posnum unit_start,
-		posnum unit_end) {};
+		ptstime start,
+		ptstime end) {};
 
 	EDL *edl;
 	Track *track;
@@ -104,94 +102,40 @@ public:
 	int autogrouptype;
 	int type;
 
-
-
 	virtual void dump() {};
 
-
-
-
-
-
 	int clear_all();
-	int insert(posnum start, posnum end);
-	int paste_silence(posnum start, posnum end);
-	int copy(posnum start,
-		posnum end, 
+	int insert(ptstime start, ptstime end);
+	int paste_silence(ptstime start, ptstime end);
+	int copy(ptstime start,
+		ptstime end, 
 		FileXML *xml, 
 		int default_only,
 		int autos_only);
 // Stores the background rendering position in result
-	void clear(posnum start,
-		posnum end,
+	void clear(ptstime start,
+		ptstime end,
 		int shift_autos);
-	virtual void straighten(posnum start, posnum end);
-	int clear_auto(posnum position);
+	virtual void straighten(ptstime start, ptstime end) {};
+
 	int save(FileXML *xml);
 	int release_auto();
-	virtual int release_auto_derived() {};
+	ptstime pos2pts(posnum position);
+	posnum pts2pos(ptstime position);
 	Auto* append_auto();
 
 // rendering utilities
-	int get_neighbors(posnum start, posnum end,
+	int get_neighbors(ptstime start, ptstime end,
 			Auto **before, Auto **after);
 // 1 if automation doesn't change
-	virtual int automation_is_constant(posnum start, posnum end) { return 0; };
-	virtual double get_automation_constant(posnum start, posnum end) { return 0; };
-	int init_automation(int64_t &buffer_position,
-				posnum &input_start, 
-				posnum &input_end, 
-				int &automate, 
-				double &constant, 
-				posnum input_position,
-				posnum buffer_len,
-				Auto **before, 
-				Auto **after,
-				int reverse);
+	virtual int automation_is_constant(ptstime start, ptstime end) { return 0; };
+	virtual double get_automation_constant(ptstime start, ptstime end) { return 0; };
 
-	int init_slope(Auto **current_auto, 
-				double &slope_start, 
-				double &slope_value,
-				double &slope_position, 
-				posnum &input_start,
-				posnum &input_end,
-				Auto **before, 
-				Auto **after,
-				int reverse);
+	Auto* autoof(ptstime position);   // return nearest auto equal to or after position
+                                          // 0 if after all autos
+	Auto* nearest_before(ptstime position);    // return nearest auto before or 0
+	Auto* nearest_after(ptstime position);     // return nearest auto after or 0
 
-	int get_slope(Auto **current_auto, 
-				double &slope_start, 
-				double &slope_end, 
-				double &slope_value,
-				double &slope, 
-				posnum buffer_len, 
-				posnum buffer_position,
-				int reverse);
-
-	int advance_slope(Auto **current_auto, 
-				double &slope_start, 
-				double &slope_value,
-				double &slope_position, 
-				int reverse);
-
-	Auto* autoof(int64_t position);   // return nearest auto equal to or after position
-										                  // 0 if after all autos
-	Auto* nearest_before(posnum position);    // return nearest auto before or 0
-	Auto* nearest_after(posnum position);     // return nearest auto after or 0
-
-	Auto *selected;
-	int skip_selected;      // if selected was added
-	posnum selected_position, selected_position_;      // original position for moves
-	double selected_value, selected_value_;      // original position for moves
-	float virtual_h;  // height cursor moves to cover entire range when track height is less than this
-	int virtual_center;
-	int stack_number;
-	int stack_total;
 };
-
-
-
-
-
 
 #endif

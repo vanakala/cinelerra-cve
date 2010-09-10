@@ -251,8 +251,8 @@ public:
 		FileXML *file,
 		int default_only,
 		int autos_only);
-	int paste_automation(double selectionstart, 
-		double total_length, 
+	int paste_automation(ptstime selectionstart, 
+		ptstime total_length, 
 		double frame_rate,
 		int sample_rate,
 		FileXML *file,

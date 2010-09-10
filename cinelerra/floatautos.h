@@ -34,44 +34,35 @@ public:
 	FloatAutos(EDL *edl, 
 		Track *track,
 // Value for default auto
-		float default_);
+		float default_value);
 	~FloatAutos();
 
-
-	int draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, 
-		int x1, int y1, int x2, int y2);
-	int get_testy(float slope, int cursor_x, int ax, int ay);
 // Return 1 if the automation is constant.
 // constant - set to the value if it is constant
-	int automation_is_constant(posnum start,
-		posnum length,
+	int automation_is_constant(ptstime start,
+		ptstime length,
 		int direction,
 		double &constant);
-	double get_automation_constant(posnum start, posnum end);
+	double get_automation_constant(ptstime start, ptstime end);
 // Get value at a specific point.  This needs previous and next stores
 // because it is used for every pixel in the drawing function.
-	float get_value(posnum position,
+	float get_value(ptstime position,
 		int direction,
 		FloatAuto* &previous,
 		FloatAuto* &next);
-	void get_fade_automation(double &slope,
-		double &intercept,
-		posnum input_position,
-		posnum &slope_len,
-		int direction);
+
 	void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,
-		posnum unit_start,
-		posnum unit_end);
-
-	void straighten(posnum start, posnum end);
+		ptstime start,
+		ptstime end);
+	void straighten(ptstime start, ptstime end);
 
 	void dump();
-	Auto* add_auto(posnum position, float value);
+	Auto* add_auto(ptstime position, float value);
 	Auto* append_auto();
 	Auto* new_auto();
-	float default_;
+	float default_value;
 };
 
 

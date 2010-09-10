@@ -342,7 +342,7 @@ void DenoiseFFTEffect::update_gui()
 int DenoiseFFTEffect::load_configuration()
 {
 	KeyFrame *prev_keyframe = get_prev_keyframe(get_source_position());
-	samplenum prev_position = edl_to_local(prev_keyframe->position);
+	samplenum prev_position = edl_to_local(prev_keyframe->get_position());
 	read_data(prev_keyframe);
 	if(prev_position == 0) prev_position = get_source_start();
 

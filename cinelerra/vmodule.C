@@ -98,7 +98,7 @@ CICache* VModule::get_cache()
 
 int VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
-	framenum input_position,
+	ptstime input_position,
 	double frame_rate,
 	int direction,
 	int use_opengl)
@@ -117,11 +117,9 @@ int VModule::import_frame(VFrame *output,
 	int result = 0;
 	double edl_rate = get_edl()->session->frame_rate;
 	framenum input_position_project = (framenum)(input_position * 
-		edl_rate / 
-		frame_rate + 
+		edl_rate +
 		0.001);
-
-	corrected_position = input_position;
+	corrected_position = input_position * frame_rate;
 	corrected_position_project = input_position_project;
 
 	VDeviceX11 *x11_device = 0;
@@ -172,7 +170,7 @@ int VModule::import_frame(VFrame *output,
 			source->set_layer(current_edit->channel);
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
-				input_position_project, 
+				input_position, 
 				direction, 
 				in_x1, 
 				in_y1, 
@@ -397,7 +395,7 @@ int VModule::render(VFrame *output,
 		frame_rate + 
 		0.5);
 
-	update_transition(start_position_project, 
+	update_transition(start_position_project / frame_rate, 
 		direction);
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(start_position_project, 
@@ -422,9 +420,6 @@ int VModule::render(VFrame *output,
 		// in this case we would call masking here too...
 		return 0;
 	}
-
-
-
 
 // Process transition
 	if(transition && transition->on)
@@ -462,7 +457,7 @@ int VModule::render(VFrame *output,
 
 		result = import_frame((*transition_input), 
 			current_edit, 
-			start_position,
+			start_position / frame_rate,
 			frame_rate,
 			direction,
 			use_opengl);
@@ -473,7 +468,7 @@ int VModule::render(VFrame *output,
 
 		result |= import_frame(output, 
 			previous_edit, 
-			start_position,
+			start_position / frame_rate,
 			frame_rate,
 			direction,
 			use_opengl);
@@ -491,7 +486,7 @@ int VModule::render(VFrame *output,
 // Load output buffer
 		result = import_frame(output, 
 			current_edit, 
-			start_position,
+			start_position / frame_rate,
 			frame_rate,
 			direction,
 			use_opengl);
@@ -503,9 +498,7 @@ int VModule::render(VFrame *output,
 	else 
 		mask_position = start_position;
 	masker->do_mask(output, 
-		mask_position,
-		edl_rate,
-		edl_rate,
+		mask_position / frame_rate,
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
 		direction,
 		1);      // we are calling before plugins

@@ -52,16 +52,17 @@ public:
 	void clear(posnum start, posnum end);
 	void copy_from(PluginSet *src);
 	void copy(posnum start, posnum end, FileXML *file);
-	void copy_keyframes(posnum start,
-		posnum end,
+	void copy_keyframes(ptstime start,
+		ptstime end,
 		FileXML *file, 
 		int default_only,
 		int autos_only);
-	static void paste_keyframes(posnum start,
-		posnum length,
+	static void paste_keyframes(ptstime start,
+		ptstime length,
 		FileXML *file, 
 		int default_only,
 		Track *track);
+
 // Return the nearest boundary of any kind in the plugin edits
 	posnum plugin_change_duration(posnum input_position,
 		posnum input_length,

@@ -32,8 +32,8 @@ FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
 	value = 0;
 	control_in_value = 0;
 	control_out_value = 0;
-	control_in_position = 0;
-	control_out_position = 0;
+	control_in_pts = 0;
+	control_out_pts = 0;
 }
 
 FloatAuto::~FloatAuto()
@@ -57,8 +57,8 @@ int FloatAuto::identical(FloatAuto *src)
 	return EQUIV(value, src->value) &&
 		EQUIV(control_in_value, src->control_in_value) &&
 		EQUIV(control_out_value, src->control_out_value) &&
-		control_in_position == src->control_in_position &&
-		control_out_position == src->control_out_position;
+		PTSEQU(control_in_pts, src->control_in_pts) &&
+		PTSEQU(control_out_pts, src->control_out_pts);
 }
 
 float FloatAuto::value_to_percentage()
@@ -102,8 +102,8 @@ void FloatAuto::copy_from(FloatAuto *that)
 	this->value = that->value;
 	this->control_in_value = that->control_in_value;
 	this->control_out_value = that->control_out_value;
-	this->control_in_position = that->control_in_position;
-	this->control_out_position = that->control_out_position;
+	this->control_in_pts = that->control_in_pts;
+	this->control_out_pts = that->control_out_pts;
 }
 
 int FloatAuto::value_to_str(char *string, float value)
@@ -138,18 +138,18 @@ int FloatAuto::value_to_str(char *string, float value)
 	return 0;
 }
 
-void FloatAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
+void FloatAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	if(default_auto)
-		file->tag.set_property("POSITION", 0);
+		file->tag.set_property("POSTIME", 0);
 	else
-		file->tag.set_property("POSITION", position - start);
+		file->tag.set_property("POSTIME", pos_time - start);
 	file->tag.set_property("VALUE", value);
 	file->tag.set_property("CONTROL_IN_VALUE", control_in_value);
 	file->tag.set_property("CONTROL_OUT_VALUE", control_out_value);
-	file->tag.set_property("CONTROL_IN_POSITION", control_in_position);
-	file->tag.set_property("CONTROL_OUT_POSITION", control_out_position);
+	file->tag.set_property("CONTROL_IN_PTS", control_in_pts);
+	file->tag.set_property("CONTROL_OUT_PTS", control_out_pts);
 	file->append_tag();
 	file->tag.set_title("/AUTO");
 	file->append_tag();
@@ -158,9 +158,18 @@ void FloatAuto::copy(posnum start, posnum end, FileXML *file, int default_auto)
 
 void FloatAuto::load(FileXML *file)
 {
+	posnum control_position;
+
 	value = file->tag.get_property("VALUE", value);
 	control_in_value = file->tag.get_property("CONTROL_IN_VALUE", control_in_value);
 	control_out_value = file->tag.get_property("CONTROL_OUT_VALUE", control_out_value);
-	control_in_position = file->tag.get_property("CONTROL_IN_POSITION", control_in_position);
-	control_out_position = file->tag.get_property("CONTROL_OUT_POSITION", control_out_position);
+// Convert from old position
+	control_position = file->tag.get_property("CONTROL_IN_POSITION", (posnum)0);
+	if(control_position)
+		control_in_pts = autos->pos2pts(control_position);
+	control_position = file->tag.get_property("CONTROL_OUT_POSITION", (posnum)0);
+	if(control_position)
+		control_out_pts = autos->pos2pts(control_position);
+	control_in_pts = file->tag.get_property("CONTROL_IN_PTS", control_in_pts);
+	control_out_pts = file->tag.get_property("CONTROL_OUT_PTS", control_out_pts);
 }

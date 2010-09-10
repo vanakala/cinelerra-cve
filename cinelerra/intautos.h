@@ -29,20 +29,19 @@
 class IntAutos : public Autos
 {
 public:
-	IntAutos(EDL *edl, Track *track, int default_);
+	IntAutos(EDL *edl, Track *track, int default_value);
 	~IntAutos();
-	
-	
+
 	Auto* new_auto();
-	int automation_is_constant(posnum start, posnum end);
-	double get_automation_constant(posnum start, posnum end);
+	int automation_is_constant(ptstime start, ptstime end);
+	double get_automation_constant(ptstime start, ptstime end);
 	void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,
-		posnum unit_start,
-		posnum unit_end);
+		ptstime start,
+		ptstime end);
 	void dump();
-	int default_;
+	int default_value;
 };
 
 #endif

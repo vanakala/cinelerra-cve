@@ -114,8 +114,8 @@ public:
 		FloatAuto *previous,
 		FloatAuto *current,
 		FloatAutos *autos,
-		double unit_start,
-		double zoom_units,
+		double view_start,
+		double xzoom,
 		double yscale,
 		int ax,
 		int ay,
@@ -125,8 +125,8 @@ public:
 		int autogrouptype);
 	int test_floatline(int center_pixel, 
 		FloatAutos *autos,
-		double unit_start,
-		double zoom_units,
+		double view_start,
+		double xzoom,
 		double yscale,
 		int x1,
 		int x2,
@@ -192,14 +192,11 @@ public:
 
 
 	void calculate_viewport(Track *track, 
-		double &view_start,
-		double &unit_start,
-		double &view_end,
-		double &unit_end,
+		ptstime &view_start,
+		ptstime &view_end,
 		double &yscale,
-		int &center_pixel,
-		double &zoom_sample,
-		double &zoom_units);
+		double &xzoom,
+		int &center_pixel);
 
 // Convert percentage position inside track to value.
 // if is_toggle is 1, the result is either 0 or 1.
@@ -218,8 +215,8 @@ public:
 		double *out_x,
 		double *out_y,
 		Auto *current,
-		double unit_start,
-		double zoom_units,
+		ptstime start,
+		double zoom,
 		double yscale,
 		int autogrouptype);
 	void synchronize_autos(float change, Track *skip, FloatAuto *fauto, int fill_gangs);

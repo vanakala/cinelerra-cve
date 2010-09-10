@@ -360,28 +360,29 @@ int ReframeRT::process_buffer(VFrame *frame,
 	framenum segment_len;
 	double input_rate = frame_rate;
 	int is_current_keyframe;
-
+	Autos *autos = next_keyframe->autos;
+// FIXPOS
 // if there are no keyframes, the default keyframe is used, and its position is always 0;
 // if there are keyframes, the first keyframe can be after the effect start (and it controls settings before it)
 // so let's calculate using a fake keyframe with the same settings but position == effect start
 	KeyFrame *fake_keyframe = new KeyFrame();
 	fake_keyframe->copy_from(next_keyframe);
-	fake_keyframe->position = local_to_edl(get_source_start());
+	fake_keyframe->pos_time = autos->pos2pts(local_to_edl(get_source_start()));
 	next_keyframe = fake_keyframe;
 
 	// calculate input_frame accounting for all previous keyframes
 	do
 	{
 		tmp_keyframe = next_keyframe;
-		next_keyframe = get_next_keyframe(tmp_keyframe->position+1, 0);
+		next_keyframe = get_next_keyframe(autos->pts2pos(tmp_keyframe->pos_time)+1, 0);
 
-		tmp_position = edl_to_local(tmp_keyframe->position);
-		next_position = edl_to_local(next_keyframe->position);
+		tmp_position = edl_to_local(autos->pts2pos(tmp_keyframe->pos_time));
+		next_position = edl_to_local(autos->pts2pos(next_keyframe->pos_time));
 
 		is_current_keyframe =
 			next_position > start_position // the next keyframe is after the current position
-			|| next_keyframe->position == tmp_keyframe->position // there are no more keyframes
-			|| !next_keyframe->position; // there are no keyframes at all
+			|| PTSEQU(next_keyframe->pos_time, tmp_keyframe->pos_time) // there are no more keyframes
+			|| !next_keyframe->pos_time; // there are no keyframes at all
 
 		if (is_current_keyframe)
 			segment_len = start_position - tmp_position;

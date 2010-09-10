@@ -30,6 +30,7 @@ class PluginClient;
 
 
 #include "arraylist.h"
+#include "autos.h"
 #include "condition.h"
 #include "edlsession.inc"
 #include "keyframe.h"
@@ -192,8 +193,8 @@ int plugin_class::load_configuration() \
 	prev_keyframe = get_prev_keyframe(get_source_position()); \
 	next_keyframe = get_next_keyframe(get_source_position()); \
  \
-	posnum next_position = edl_to_local(next_keyframe->position); \
-	posnum prev_position = edl_to_local(prev_keyframe->position); \
+	posnum next_position = edl_to_local(next_keyframe->get_position()); \
+	posnum prev_position = edl_to_local(prev_keyframe->get_position()); \
  \
 	config_class old_config, prev_config, next_config; \
 	old_config.copy_from(config); \

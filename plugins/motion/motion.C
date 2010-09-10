@@ -808,8 +808,8 @@ int MotionMain::process_buffer(VFrame **frame,
 			else
 			{
 				KeyFrame *keyframe = get_prev_keyframe(start_position, 1);
-				if(keyframe->position > 0 &&
-					actual_previous_number < keyframe->position)
+				if(keyframe->pos_time > 0 &&
+					actual_previous_number < keyframe->get_position())
 					skip_current = 1;
 			}
 		}
@@ -821,8 +821,8 @@ int MotionMain::process_buffer(VFrame **frame,
 			else
 			{
 				KeyFrame *keyframe = get_next_keyframe(start_position, 1);
-				if(keyframe->position > 0 &&
-					actual_previous_number >= keyframe->position)
+				if(keyframe->pos_time > 0 &&
+					actual_previous_number >= keyframe->get_position())
 					skip_current = 1;
 			}
 		}

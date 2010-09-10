@@ -64,20 +64,20 @@ class MaskAuto : public Auto
 public:
 	MaskAuto(EDL *edl, MaskAutos *autos);
 	~MaskAuto();
-	
+
 	int operator==(Auto &that);
 	int operator==(MaskAuto &that);
 	int identical(MaskAuto *src);
 	void load(FileXML *file);
-	void copy(posnum start, posnum end, FileXML *file, int default_auto);
+	void copy(ptstime start, ptstime end, FileXML *file, int default_auto);
 	void copy_from(Auto *src);
-	int interpolate_from(Auto *a1, Auto *a2, posnum position); 
+	int interpolate_from(Auto *a1, Auto *a2, ptstime position); 
 	void copy_from(MaskAuto *src);
 
 	void dump();
 // Retrieve submask with clamping
 	SubMask* get_submask(int number);
-// Translates all submasks	
+// Translates all submasks
 	void translate_submasks(float translate_x, float translate_y);	
 
 

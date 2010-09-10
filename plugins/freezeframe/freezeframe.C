@@ -157,7 +157,7 @@ NEW_PICON_MACRO(FreezeFrameMain)
 int FreezeFrameMain::load_configuration()
 {
 	KeyFrame *prev_keyframe = get_prev_keyframe(get_source_position());
-	posnum prev_position = edl_to_local(prev_keyframe->position);
+	posnum prev_position = edl_to_local(prev_keyframe->get_position());
 	if(prev_position < get_source_start()) prev_position = get_source_start();
 	read_data(prev_keyframe);
 // Invalidate stored frame

@@ -116,7 +116,7 @@ void Track::equivalent_output(Track *track, double *result)
 
 // Convert result to track units
 	posnum result2 = -1;
-	automation->equivalent_output(track->automation, &result2);
+	automation->equivalent_output(track->automation, result);
 	edits->equivalent_output(track->edits, &result2);
 
 	int plugin_sets = MIN(plugin_set.total, track->plugin_set.total);
@@ -230,11 +230,11 @@ int Track::vertical_span(Theme *theme)
 
 double Track::get_length()
 {
-	double total_length = 0;
-	double length = 0;
+	ptstime total_length = 0;
+	ptstime length = 0;
 
 // Test edits
-	int64_t unit_end;
+	posnum unit_end;
 	unit_end = edits->last->startproject;
 	if (edits->last->transition)
 		unit_end += edits->last->transition->length + 1; // add one so transition is finished...
@@ -249,9 +249,8 @@ double Track::get_length()
 	}
 
 // Test keyframes
-	length = from_units(automation->get_length());
+	length = automation->get_length();
 	if(length > total_length) total_length = length;
-	
 
 	return total_length;
 }
@@ -385,7 +384,7 @@ void Track::insert_asset(Asset *asset,
 // necessary.
 
 void Track::insert_track(Track *track, 
-	double position, 
+	ptstime position,
 	int replace_default,
 	int edit_plugins)
 {
@@ -399,8 +398,8 @@ void Track::insert_track(Track *track,
 		insert_plugin_set(track, position);
 
 	automation->insert_track(track->automation, 
-		to_units(position, 0), 
-		to_units(track->get_length(), 1),
+		position,
+		track->get_length(),
 		replace_default);
 
 	optimize();
@@ -589,14 +588,13 @@ void Track::remove_pluginset(PluginSet *plugin_set)
 
 void Track::shift_keyframes(double position, double length, int convert_units)
 {
-	if(convert_units)
+	if(!convert_units)
 	{
-		position = to_units(position, 0);
-		length = to_units(length, 1);
+		position = from_units(position);
+		length = from_units(length);
 	}
 
-	automation->paste_silence(Units::to_int64(position), 
-		Units::to_int64(position + length));
+	automation->paste_silence(position, position + length);
 // Effect keyframes are shifted in shift_effects
 }
 
@@ -891,16 +889,13 @@ int Track::copy_automation(double selectionstart,
 	int default_only,
 	int autos_only)
 {
-	int64_t start = to_units(selectionstart, 0);
-	int64_t end = to_units(selectionend, 1);
-
 	file->tag.set_title("TRACK");
 // Video or audio
-    save_header(file);
+	save_header(file);
 	file->append_tag();
 	file->append_newline();
 
-	automation->copy(start, end, file, default_only, autos_only);
+	automation->copy(selectionstart, selectionend, file, default_only, autos_only);
 
 	if(edl->session->auto_conf->plugins)
 	{
@@ -910,8 +905,8 @@ int Track::copy_automation(double selectionstart,
 		for(int i = 0; i < plugin_set.total; i++)
 		{
 		
-			plugin_set.values[i]->copy_keyframes(start, 
-				end, 
+			plugin_set.values[i]->copy_keyframes(selectionstart,
+				selectionend,
 				file, 
 				default_only,
 				autos_only);
@@ -931,8 +926,8 @@ int Track::copy_automation(double selectionstart,
 	return 0;
 }
 
-int Track::paste_automation(double selectionstart, 
-	double total_length, 
+int Track::paste_automation(ptstime selectionstart, 
+	ptstime total_length, 
 	double frame_rate,
 	int sample_rate,
 	FileXML *file,
@@ -963,21 +958,20 @@ int Track::paste_automation(double selectionstart,
 			if(file->tag.title_is("/TRACK"))
 				result = 1;
 			else
-			if(automation->paste(start, 
-					length, 
+			if(automation->paste(selectionstart,
+					total_length,
 					scale,
 					file,
 					default_only,
 					0))
-			/* strstr(file->tag.get_title(), "AUTOS")) */
 			{
 				;
 			}
 			else
 			if(file->tag.title_is("PLUGINSETS"))
 			{
-				PluginSet::paste_keyframes(start, 
-					length, 
+				PluginSet::paste_keyframes(selectionstart, 
+					total_length, 
 					file,
 					default_only,
 					this);
@@ -988,15 +982,15 @@ int Track::paste_automation(double selectionstart,
 	return 0;
 }
 
-void Track::clear_automation(double selectionstart, 
-	double selectionend, 
+void Track::clear_automation(ptstime selectionstart, 
+	ptstime selectionend, 
 	int shift_autos,
 	int default_only)
 {
 	int64_t start = to_units(selectionstart, 0);
 	int64_t end = to_units(selectionend, 1);
 
-	automation->clear(start, end, edl->session->auto_conf, 0);
+	automation->clear(selectionstart, selectionend, edl->session->auto_conf, 0);
 
 	if(edl->session->auto_conf->plugins)
 	{
@@ -1008,20 +1002,15 @@ void Track::clear_automation(double selectionstart,
 
 }
 
-void Track::straighten_automation(double selectionstart, 
-	double selectionend)
+void Track::straighten_automation(ptstime selectionstart, 
+	ptstime selectionend)
 {
-	int64_t start = to_units(selectionstart, 0);
-	int64_t end = to_units(selectionend, 1);
-
-	automation->straighten(start, end, edl->session->auto_conf);
+	automation->straighten(selectionstart, selectionend, edl->session->auto_conf);
 }
 
 
-
-
-int Track::copy(double start, 
-	double end, 
+int Track::copy(ptstime start,
+	ptstime end,
 	FileXML *file, 
 	const char *output_path)
 {
@@ -1053,14 +1042,6 @@ int Track::copy(double start,
 	file->tag.set_title("/TITLE");
 	file->append_tag();
 	file->append_newline();
-
-// 	if(data_type == TRACK_AUDIO)
-// 		file->tag.set_property("TYPE", "AUDIO");
-// 	else
-// 		file->tag.set_property("TYPE", "VIDEO");
-// 
-// 	file->append_tag();
-// 	file->append_newline();
 
 	edits->copy(start_unit, end_unit, file, output_path);
 

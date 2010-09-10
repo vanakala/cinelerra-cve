@@ -50,52 +50,49 @@ public:
 // Called by VirtualAConsole::process_buffer to process exit_nodes.
 // read_data recurses down the tree.
 	int render(double *output_temp,
-		samplenum start_position,
-		int len,
-		int sample_rate);
+		ptstime start_postime,
+		int len);
 
 // Read data from whatever comes before this node.
 // Calls render in either the parent node or the module for the track.
 	int read_data(double *output_temp,
-		samplenum start_position,
-		int len,
-		int sample_rate);
+		ptstime start_postime,
+		int len);
 
 private:
 // need *arender for peak updating
 	int render_as_module(double **audio_out, 
-				double *output_temp,
-				samplenum start_position,
-				int len, 
-				int sample_rate);
+		double *output_temp,
+		ptstime start_position,
+		int len);
+
 	void render_as_plugin(double *output_temp,
-				samplenum start_position,
-				int len,
-				int sample_rate);
+		ptstime start_postime,
+		int len);
 
 	int render_fade(double *buffer,
-				int len,
-				samplenum input_position,
-				int sample_rate,
-				Autos *autos,
-				int direction,
-				int use_nudge);
+		int len,
+		ptstime input_position,
+		Autos *autos,
+		int direction,
+		int use_nudge);
+
 	int render_pan(double *input,        // start of input fragment
-				double *output,        // start of output fragment
-				int fragment_len,      // fragment length in input scale
-				samplenum input_position, // starting sample of input buffer in project
-				int sample_rate,
-				Autos *autos,
-				int channel,
-				int direction,
-				int use_nudge);
+		double *output,        // start of output fragment
+		int fragment_len,      // fragment length in input scale
+		ptstime input_position, // starting sample of input buffer in project
+		Autos *autos,
+		int channel,
+		int direction,
+		int use_nudge);
+
 	void get_pan_automation(double &slope,
-				double &intercept,
-				samplenum input_position,
-				int &slope_len,
-				Autos *autos,
-				int channel,
-				int direction);
+		double &intercept,
+		ptstime input_postime,
+		ptstime &slope_len,
+		Autos *autos,
+		int channel,
+		int direction);
 
 	DB db;
 

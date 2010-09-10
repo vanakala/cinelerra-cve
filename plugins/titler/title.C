@@ -2016,8 +2016,8 @@ int TitleMain::load_configuration()
 	read_data(next_keyframe);
 	next_config.copy_from(config);
 
-	config.prev_keyframe_position = prev_keyframe->position;
-	config.next_keyframe_position = next_keyframe->position;
+	config.prev_keyframe_position = prev_keyframe->get_position();
+	config.next_keyframe_position = next_keyframe->get_position();
 
 // if no previous keyframe exists, it should be start of the plugin, not start of the track
 	if(config.next_keyframe_position == config.prev_keyframe_position)
@@ -2027,12 +2027,12 @@ int TitleMain::load_configuration()
 
 	config.interpolate(prev_config, 
 		next_config, 
-		(next_keyframe->position == prev_keyframe->position) ?
+		(PTSEQU(next_keyframe->pos_time, prev_keyframe->pos_time)) ?
 			get_source_position() :
-			prev_keyframe->position,
-		(next_keyframe->position == prev_keyframe->position) ?
+			prev_keyframe->get_position(),
+		(PTSEQU(next_keyframe->pos_time, prev_keyframe->pos_time)) ?
 			get_source_position() + 1 :
-			next_keyframe->position,
+			next_keyframe->get_position(),
 		get_source_position());
 
 	if(!config.equivalent(old_config))
@@ -2090,7 +2090,7 @@ void TitleMain::read_data(KeyFrame *keyframe)
 	int new_horizontal = 0;
 	int new_luminance = 0;
 
-	config.prev_keyframe_position = keyframe->position;
+	config.prev_keyframe_position = keyframe->get_position();
 	while(!result)
 	{
 		result = input.read_tag();

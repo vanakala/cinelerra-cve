@@ -265,30 +265,33 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 
 					temp_autoconf.set_all(1);
 
-					source_track->automation->copy(source_edit->startproject, 
-						source_edit->startproject + source_edit->length, 
+					ptstime stp_pts = source_track->from_units(source_edit->startproject);
+					ptstime stp_end = source_track->from_units(source_edit->startproject + source_edit->length);
+					source_track->automation->copy(stp_pts,
+						stp_end,
 						&temp, 
 						0,
 						0);
 					temp.terminate_string();
 					temp.rewind();
 // Insert new keyframes
-					source_track->automation->clear(source_edit->startproject,
-						source_edit->startproject + source_edit->length, 
+					source_track->automation->clear(stp_pts,
+						stp_end,
 						&temp_autoconf,
 						1);
-					int64_t position_a = position_i;
+					posnum position_a = position_i;
 					if (dest_track == source_track)
 					{
 						if (position_a > source_edit->startproject)
 							position_a -= source_length;
-					}	        
-
-					dest_track->automation->paste_silence(position_a, 
-						position_a + source_length);
+					}
+					ptstime posa_pts = dest_track->from_units(position_a);
+					ptstime len_pts = dest_track->from_units(source_length);
+					dest_track->automation->paste_silence(posa_pts,
+						posa_pts + len_pts);
 					while(!temp.read_tag())
-						dest_track->automation->paste(position_a, 
-							source_length, 
+						dest_track->automation->paste(posa_pts,
+							len_pts,
 							1.0, 
 							&temp, 
 							0,

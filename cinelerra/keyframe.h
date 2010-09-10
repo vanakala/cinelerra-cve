@@ -36,12 +36,11 @@ public:
 	KeyFrame();
 	KeyFrame(EDL *edl, KeyFrames *autos);
 	virtual ~KeyFrame();
-	
+
 	void load(FileXML *file);
-	void copy(posnum start, posnum end, FileXML *file, int default_only);
+	void copy(ptstime start, ptstime end, FileXML *file, int default_only);
 	void copy_from(Auto *that);
 	void copy_from(KeyFrame *that);
-	void copy_from_common(KeyFrame *that);
 	int operator==(Auto &that);
 	int operator==(KeyFrame &that);
 	void dump();

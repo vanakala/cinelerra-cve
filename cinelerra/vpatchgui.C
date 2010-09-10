@@ -193,7 +193,7 @@ VFadePatch::VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w)
 float VFadePatch::update_edl()
 {
 	FloatAuto *current;
-	double position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime position = mwindow->edl->local_session->get_selectionstart(1);
 	Autos *fade_autos = patch->vtrack->automation->autos[AUTOMATION_FADE];
 	int need_undo = !fade_autos->auto_exists_for_editing(position);
 
@@ -236,13 +236,13 @@ int VFadePatch::handle_event()
 
 FloatAuto* VFadePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 {
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->vtrack->to_units(unit_position, 0);
+
 	Auto *current = 0;
 
 	return (FloatAuto*)patch->vtrack->automation->autos[AUTOMATION_FADE]->get_prev_auto(
-		(posnum)unit_position,
+		unit_position,
 		PLAY_FORWARD,
 		current);
 }
@@ -270,7 +270,7 @@ int VModePatch::handle_event()
 
 // Set keyframe
 	IntAuto *current;
-	double position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime position = mwindow->edl->local_session->get_selectionstart(1);
 	Autos *mode_autos = patch->vtrack->automation->autos[AUTOMATION_MODE];
 	int need_undo = !mode_autos->auto_exists_for_editing(position);
 
@@ -293,9 +293,8 @@ int VModePatch::handle_event()
 IntAuto* VModePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 {
 	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->vtrack->to_units(unit_position, 0);
 
 	return (IntAuto*)patch->vtrack->automation->autos[AUTOMATION_MODE]->get_prev_auto(
 		(posnum)unit_position, 

@@ -80,9 +80,9 @@ int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyfr
 	this->keyframe_autos = autos;
 	this->keyframe_auto = auto_keyframe;
 
-	/* snap to cursor */
+	/* FIXPOS snap to cursor */
 	double current_position = mwindow->edl->local_session->get_selectionstart(1);
-	double new_position = keyframe_automation->track->from_units(keyframe_auto->position);
+	double new_position = keyframe_auto->pos_time;
 	mwindow->edl->local_session->set_selectionstart(new_position);
 	mwindow->edl->local_session->set_selectionend(new_position);
 	if (current_position != new_position)

@@ -49,7 +49,7 @@ Automation::Automation(EDL *edl, Track *track)
 {
 	this->edl = edl;
 	this->track = track;
-	bzero(autos, sizeof(Autos*) * AUTOMATION_TOTAL);
+	memset(autos, 0, sizeof(Autos*) * AUTOMATION_TOTAL);
 }
 
 Automation::~Automation()
@@ -65,27 +65,27 @@ int Automation::autogrouptype(int autoidx, Track *track)
 	int autogrouptype = -1;
 	switch (autoidx) 
 	{
-		case AUTOMATION_CAMERA_X:
-		case AUTOMATION_PROJECTOR_X:
-			autogrouptype = AUTOGROUPTYPE_X;
-			break;
-		case AUTOMATION_CAMERA_Y:
-		case AUTOMATION_PROJECTOR_Y:
-			autogrouptype = AUTOGROUPTYPE_Y;
-			break;
-		case AUTOMATION_CAMERA_Z:
-		case AUTOMATION_PROJECTOR_Z:
-			autogrouptype = AUTOGROUPTYPE_ZOOM;
-			break;
-		case AUTOMATION_FADE:
-			if (track->data_type == TRACK_AUDIO)
-				autogrouptype = AUTOGROUPTYPE_AUDIO_FADE;
-			else
-				autogrouptype = AUTOGROUPTYPE_VIDEO_FADE;
-			break;
-		case AUTOMATION_MUTE:
-			autogrouptype = AUTOGROUPTYPE_INT255;
-			break;
+	case AUTOMATION_CAMERA_X:
+	case AUTOMATION_PROJECTOR_X:
+		autogrouptype = AUTOGROUPTYPE_X;
+		break;
+	case AUTOMATION_CAMERA_Y:
+	case AUTOMATION_PROJECTOR_Y:
+		autogrouptype = AUTOGROUPTYPE_Y;
+		break;
+	case AUTOMATION_CAMERA_Z:
+	case AUTOMATION_PROJECTOR_Z:
+		autogrouptype = AUTOGROUPTYPE_ZOOM;
+		break;
+	case AUTOMATION_FADE:
+		if (track->data_type == TRACK_AUDIO)
+			autogrouptype = AUTOGROUPTYPE_AUDIO_FADE;
+		else
+			autogrouptype = AUTOGROUPTYPE_VIDEO_FADE;
+		break;
+	case AUTOMATION_MUTE:
+		autogrouptype = AUTOGROUPTYPE_INT255;
+		break;
 	}
 	return (autogrouptype);
 }
@@ -105,7 +105,7 @@ Automation& Automation::operator=(Automation& automation)
 	return *this;
 }
 
-void Automation::equivalent_output(Automation *automation, posnum *result)
+void Automation::equivalent_output(Automation *automation, ptstime *result)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -153,8 +153,8 @@ int Automation::load(FileXML *file)
 	return 0;
 }
 
-int Automation::paste(posnum start,
-	posnum length,
+int Automation::paste(ptstime start,
+	ptstime length,
 	double scale,
 	FileXML *file, 
 	int default_only,
@@ -173,8 +173,8 @@ int Automation::paste(posnum start,
 	return 0;
 }
 
-int Automation::copy(posnum start,
-	posnum end,
+int Automation::copy(ptstime start,
+	ptstime end,
 	FileXML *file, 
 	int default_only,
 	int autos_only)
@@ -188,10 +188,10 @@ int Automation::copy(posnum start,
 			file->append_tag();
 			file->append_newline();
 			autos[i]->copy(start, 
-							end, 
-							file, 
-							default_only,
-							autos_only);
+					end,
+					file,
+					default_only,
+					autos_only);
 			char string[BCTEXTLEN];
 			sprintf(string, "/%s", xml_titles[i]);
 			file->tag.set_title(string);
@@ -204,8 +204,8 @@ int Automation::copy(posnum start,
 }
 
 
-void Automation::clear(posnum start,
-	posnum end,
+void Automation::clear(ptstime start,
+	ptstime end,
 	AutoConf *autoconf, 
 	int shift_autos)
 {
@@ -229,8 +229,8 @@ void Automation::clear(posnum start,
 	if(temp_autoconf) delete temp_autoconf;
 }
 
-void Automation::straighten(posnum start,
-	posnum end,
+void Automation::straighten(ptstime start,
+	ptstime end,
 	AutoConf *autoconf)
 {
 	AutoConf *temp_autoconf = 0;
@@ -254,7 +254,7 @@ void Automation::straighten(posnum start,
 }
 
 
-void Automation::paste_silence(posnum start, posnum end)
+void Automation::paste_silence(ptstime start, ptstime end)
 {
 // Unit conversion done in calling routine
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
@@ -268,8 +268,8 @@ void Automation::paste_silence(posnum start, posnum end)
 // when inserting the first EDL of a load operation we need to replace
 // the default keyframe.
 void Automation::insert_track(Automation *automation, 
-	posnum start_unit,
-	posnum length_units,
+	ptstime start_unit,
+	ptstime length_units,
 	int replace_default)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
@@ -295,11 +295,10 @@ void Automation::resample(double old_rate, double new_rate)
 	}
 }
 
-
-posnum Automation::get_length()
+ptstime Automation::get_length()
 {
-	posnum length = 0;
-	posnum total_length = 0;
+	ptstime length = 0;
+	ptstime total_length = 0;
 
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -316,8 +315,8 @@ posnum Automation::get_length()
 void Automation::get_extents(float *min, 
 	float *max,
 	int *coords_undefined,
-	posnum unit_start,
-	posnum unit_end,
+	ptstime start,
+	ptstime end,
 	int autogrouptype)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
@@ -325,16 +324,14 @@ void Automation::get_extents(float *min,
 		if(autos[i] && edl->session->auto_conf->autos[i])
 		{
 			if (autos[i]->autogrouptype == autogrouptype)
-				autos[i]->get_extents(min, max, coords_undefined, unit_start, unit_end);
+				autos[i]->get_extents(min, max, coords_undefined, start, end);
 		}
 	}
 }
 
-
 void Automation::dump()
 {
 	printf("   Automation: %p\n", this);
-
 
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -345,4 +342,19 @@ void Automation::dump()
 		}
 	}
 
+}
+
+// Coversions between position and ptstime
+ptstime Automation::pos2pts(posnum position)
+{
+	if(track)
+		return track->from_units(position);
+	return 0;
+}
+
+posnum Automation::pts2pos(ptstime position)
+{
+	if(track)
+		return track->to_units(position, 0);
+	return 0;
 }

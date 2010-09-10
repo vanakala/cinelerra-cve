@@ -21,14 +21,16 @@
 
 #include "auto.h"
 #include "autos.h"
+#include "bcsignals.h"
 #include "filexml.h"
+#include "track.h"
 
 Auto::Auto()
  : ListItem<Auto>()
 {
 	this->edl = 0;
 	this->autos = 0;
-	position = 0;
+	pos_time = 0;
 	skip = 0;
 	WIDTH = 10;
 	HEIGHT = 10;
@@ -40,7 +42,7 @@ Auto::Auto(EDL *edl, Autos *autos)
 {
 	this->edl = edl;
 	this->autos = autos;
-	position = 0;
+	pos_time = 0;
 	skip = 0;
 	WIDTH = 10;
 	HEIGHT = 10;
@@ -55,12 +57,18 @@ Auto& Auto::operator=(Auto& that)
 
 void Auto::copy_from(Auto *that)
 {
-	this->position = that->position;
+	this->pos_time = that->pos_time;
 }
 
-int Auto::interpolate_from(Auto *a1, Auto *a2, posnum position)
+int Auto::interpolate_from(Auto *a1, Auto *a2, ptstime position)
 {
 	copy_from(a1);
 	return 0;
 }
 
+posnum Auto::get_position(void)
+{
+	if(autos && autos->track)
+		return autos->track->to_units(pos_time, 0);
+	return 0;
+}

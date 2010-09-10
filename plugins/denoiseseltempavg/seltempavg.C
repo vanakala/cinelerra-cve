@@ -774,7 +774,7 @@ int SelTempAvgMain::load_configuration()
 	prev_keyframe = get_prev_keyframe(curpos);
 	read_data(prev_keyframe);
 
-	if (curpos == prev_keyframe->position) 
+	if (curpos == prev_keyframe->get_position())
 		onakeyframe = 1; 
 	else 
 		onakeyframe = 0;
@@ -786,30 +786,30 @@ int SelTempAvgMain::load_configuration()
 	{
 		temp_keyframe = get_next_keyframe(i);
 		if ( 
-			(temp_keyframe->position < curpos + config.frames/2) && 
-			(temp_keyframe->position > curpos) &&
+			(temp_keyframe->get_position() < curpos + config.frames/2) && 
+			(temp_keyframe->get_position() > curpos) &&
 			nextkeyframeisoffsetrestart(temp_keyframe) 
 			) 
 		{
-			next_restart_keyframe = temp_keyframe->position; 
+			next_restart_keyframe = temp_keyframe->get_position();
 			i = curpos + config.frames;
-		} else if (temp_keyframe->position > i)
-			i = temp_keyframe->position;
+		} else if (temp_keyframe->get_position() > i)
+			i = temp_keyframe->get_position();
 	}
 
 	for (int i = curpos; i > curpos - config.frames; i--) 
 	{
 		temp_keyframe = get_prev_keyframe(i);
 		if ( 
-			(temp_keyframe->position > curpos - config.frames/2) && 
-			(temp_keyframe->position < curpos) && 
+			(temp_keyframe->get_position() > curpos - config.frames/2) && 
+			(temp_keyframe->get_position() < curpos) && 
 			nextkeyframeisoffsetrestart(temp_keyframe) 
 			) 
 		{
-			prev_restart_keyframe = temp_keyframe->position; 
+			prev_restart_keyframe = temp_keyframe->get_position();
 			i = curpos - config.frames;
-		} else if (temp_keyframe->position < i)
-			i = temp_keyframe->position;
+		} else if (temp_keyframe->get_position() < i)
+			i = temp_keyframe->get_position();
 	}
 
 	restartoffset = -config.frames/2;

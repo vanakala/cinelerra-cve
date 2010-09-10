@@ -41,7 +41,7 @@ MaskAutos::~MaskAutos()
 
 
 void MaskAutos::get_points(ArrayList<MaskPoint*> *points, 
-	int submask, posnum position)
+	int submask, ptstime position)
 {
 	MaskAuto *begin = 0, *end = 0;
 
@@ -50,7 +50,7 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 		current; 
 		current = (MaskAuto*)PREVIOUS)
 	{
-		if(current->position <= position)
+		if(current->pos_time <= position)
 		{
 			begin = current;
 			end = NEXT ? (MaskAuto*)NEXT : current;
@@ -83,8 +83,8 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 			mask1->points.values[i], 
 			mask2->points.values[i],
 			position,
-			begin->position,
-			end->position);
+			begin->pos_time,
+			end->pos_time);
 		points->append(point);
 	}
 }
@@ -92,9 +92,9 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 void MaskAutos::avg_points(MaskPoint *output, 
 		MaskPoint *input1, 
 		MaskPoint *input2, 
-		posnum output_position,
-		posnum position1, 
-		posnum position2)
+		ptstime output_position,
+		ptstime position1,
+		ptstime position2)
 {
 	if(position2 == position1)
 	{
@@ -102,7 +102,7 @@ void MaskAutos::avg_points(MaskPoint *output,
 	}
 	else
 	{
-		float fraction2 = (float)(output_position - position1) / (position2 - position1);
+		float fraction2 = (output_position - position1) / (position2 - position1);
 		float fraction1 = 1 - fraction2;
 		output->x = input1->x * fraction1 + input2->x * fraction2;
 		output->y = input1->y * fraction1 + input2->y * fraction2;
@@ -111,7 +111,6 @@ void MaskAutos::avg_points(MaskPoint *output,
 		output->control_x2 = input1->control_x2 * fraction1 + input2->control_x2 * fraction2;
 		output->control_y2 = input1->control_y2 * fraction1 + input2->control_y2 * fraction2;
 	}
-	
 }
 
 
@@ -122,21 +121,20 @@ Auto* MaskAutos::new_auto()
 
 void MaskAutos::dump()
 {
-	printf("	MaskAutos::dump %p\n", this);
-	printf("	Default: position %lld submasks %d\n", 
-		default_auto->position, 
+	printf("        MaskAutos::dump %p\n", this);
+	printf("        Default: postime %.3lf submasks %d\n", 
+		default_auto->pos_time,
 		((MaskAuto*)default_auto)->masks.total);
 	((MaskAuto*)default_auto)->dump();
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %lld masks %d\n", 
-			current->position, 
-			((MaskAuto*)current)->masks.total);
+		printf("         postime %.3lf masks %d\n", 
+			current->pos_time, ((MaskAuto*)current)->masks.total);
 		((MaskAuto*)current)->dump();
 	}
 }
 
-int MaskAutos::mask_exists(posnum position, int direction)
+int MaskAutos::mask_exists(ptstime position, int direction)
 {
 	Auto *current = 0;
 
@@ -151,13 +149,13 @@ int MaskAutos::mask_exists(posnum position, int direction)
 	return 0;
 }
 
-int MaskAutos::total_submasks(posnum position)
+int MaskAutos::total_submasks(ptstime position)
 {
 	for(MaskAuto* current = (MaskAuto*)last; 
 		current; 
 		current = (MaskAuto*)PREVIOUS)
 	{
-		if(current->position <= position)
+		if(current->pos_time <= position)
 		{
 			return current->masks.total;
 		}

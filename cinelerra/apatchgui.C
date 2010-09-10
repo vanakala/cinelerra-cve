@@ -176,13 +176,12 @@ int APatchGUI::update(int x, int y)
 			{
 				int handle_x, handle_y;
 				PanAuto *previous = 0, *next = 0;
-				double unit_position = mwindow->edl->local_session->get_selectionstart(1);
-				unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-				unit_position = atrack->to_units(unit_position, 0);
+				double position = mwindow->edl->local_session->get_selectionstart(1);
+				position = mwindow->edl->align_to_frame(position, 0);
 				PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
 				ptr->get_handle(handle_x,
 					handle_y,
-					(long)unit_position, 
+					position, 
 					PLAY_FORWARD,
 					previous,
 					next);
@@ -238,7 +237,7 @@ AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
 float AFadePatch::update_edl()
 {
 	FloatAuto *current;
-	double position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime position = mwindow->edl->local_session->get_selectionstart(1);
 	Autos *fade_autos = patch->atrack->automation->autos[AUTOMATION_FADE];
 	int need_undo = !fade_autos->auto_exists_for_editing(position);
 
@@ -282,13 +281,12 @@ int AFadePatch::handle_event()
 FloatAuto* AFadePatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 {
 	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->atrack->to_units(unit_position, 0);
 
 	FloatAutos *ptr = (FloatAutos*)patch->atrack->automation->autos[AUTOMATION_FADE];
 	return (FloatAuto*)ptr->get_prev_auto(
-		(posnum)unit_position, 
+		unit_position,
 		PLAY_FORWARD,
 		current);
 }
@@ -313,7 +311,7 @@ APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 int APanPatch::handle_event()
 {
 	PanAuto *current;
-	double position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime position = mwindow->edl->local_session->get_selectionstart(1);
 	Autos *pan_autos = patch->atrack->automation->autos[AUTOMATION_PAN];
 	int need_undo = !pan_autos->auto_exists_for_editing(position);
 
@@ -338,9 +336,8 @@ int APanPatch::handle_event()
 PanAuto* APanPatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 {
 	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->atrack->to_units(unit_position, 0);
 
 	PanAutos *ptr = (PanAutos*)patch->atrack->automation->autos[AUTOMATION_PAN];
 	return (PanAuto*)ptr->get_prev_auto(

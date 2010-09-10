@@ -42,7 +42,7 @@ Auto* PanAutos::new_auto()
 
 void PanAutos::get_handle(int &handle_x,
 		int &handle_y,
-		posnum position, 
+		ptstime position,
 		int direction,
 		PanAuto* &previous,
 		PanAuto* &next)
@@ -60,15 +60,15 @@ void PanAutos::get_handle(int &handle_x,
 	}
 
 // Interpolate
-	posnum total = llabs(next->position - previous->position);
+	ptstime total = fabs(next->pos_time - previous->pos_time);
 	double fraction;
 	if(direction == PLAY_FORWARD)
 	{
-		fraction = (double)(position - previous->position) / total;
+		fraction = (position - previous->pos_time) / total;
 	}
 	else
 	{
-		fraction = (double)(previous->position - position) / total;
+		fraction = (previous->pos_time - position) / total;
 	}
 
 	handle_x = (int)(previous->handle_x + (next->handle_x - previous->handle_x) * fraction);
@@ -77,12 +77,12 @@ void PanAutos::get_handle(int &handle_x,
 
 void PanAutos::dump()
 {
-	printf("	PanAutos::dump %p\n", this);
-		printf("	Default: position %lld\n", default_auto->position);
+	printf("      PanAutos::dump %p\n", this);
+		printf("       Default: postime %.3lf\n", default_auto->pos_time);
 		((PanAuto*)default_auto)->dump();
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %lld\n", current->position);
+		printf("        postime %.3lf\n", current->pos_time);
 		((PanAuto*)current)->dump();
 	}
 }

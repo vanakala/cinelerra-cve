@@ -47,13 +47,13 @@ void KeyFrame::load(FileXML *file)
 	file->read_text_until("/KEYFRAME", data, MESSAGESIZE);
 }
 
-void KeyFrame::copy(posnum start, posnum end, FileXML *file, int default_auto)
+void KeyFrame::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("KEYFRAME");
 	if(default_auto)
-		file->tag.set_property("POSITION", 0);
+		file->tag.set_property("POSTIME", 0);
 	else
-		file->tag.set_property("POSITION", position - start);
+		file->tag.set_property("POSTIME", pos_time - start);
 // default_auto converts a default auto to a normal auto
 	if(is_default && !default_auto)
 		file->tag.set_property("DEFAULT", 1);
@@ -77,7 +77,6 @@ void KeyFrame::copy_from(KeyFrame *that)
 	Auto::copy_from(that);
 	KeyFrame *keyframe = (KeyFrame*)that;
 	strcpy(data, keyframe->data);
-	position = keyframe->position;
 }
 
 
@@ -100,6 +99,6 @@ int KeyFrame::operator==(KeyFrame &that)
 
 void KeyFrame::dump()
 {
-	printf("     position: %lld\n", position);
+	printf("     postime %.3lf\n", pos_time);
 	printf("     data: %s\n", data);
 }

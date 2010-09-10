@@ -63,9 +63,6 @@ AModule::AModule(RenderEngine *renderengine,
 	current_level = 0;
 }
 
-
-
-
 AModule::~AModule()
 {
 	if(transition_temp) delete [] transition_temp;
@@ -146,7 +143,7 @@ int AModule::render(double *buffer,
 	AEdit *playable_edit;
 	samplenum start_project = input_position;
 	samplenum end_project = input_position + input_len;
-	int64_t buffer_offset = 0;
+	int buffer_offset = 0;
 	int result = 0;
 
 
@@ -181,25 +178,16 @@ int AModule::render(double *buffer,
 		}
 	}
 
-
-
-
-
-
-
 // Fill output one fragment at a time
 	while(start_project < end_project)
 	{
 		int fragment_len = input_len;
 
-
 		if(fragment_len + start_project > end_project)
 			fragment_len = end_project - start_project;
 
 // Normalize position here since update_transition is a boolean operation.
-		update_transition(start_project * 
-				edl_rate / 
-				sample_rate, 
+		update_transition(start_project * sample_rate,
 			PLAY_FORWARD);
 
 		if(playable_edit)
@@ -213,8 +201,6 @@ int AModule::render(double *buffer,
 			edit_endproject = edit_endproject * sample_rate / edl_rate;
 			edit_startsource = edit_startsource * sample_rate / edl_rate;
 
-
-
 // Trim fragment_len
 			if(fragment_len + start_project > edit_endproject)
 				fragment_len = edit_endproject - start_project;
@@ -223,8 +209,6 @@ int AModule::render(double *buffer,
 			{
 				File *source;
 				get_cache()->age();
-
-
 
 				if(!(source = get_cache()->check_out(playable_edit->asset,
 					get_edl())))
@@ -236,7 +220,6 @@ int AModule::render(double *buffer,
 				else
 				{
 					int result = 0;
-
 
 					result = source->set_audio_position(start_project - 
 							edit_startproject + 
@@ -252,10 +235,6 @@ int AModule::render(double *buffer,
 					get_cache()->check_in(playable_edit->asset);
 				}
 			}
-
-
-
-
 
 // Read transition into temp and render
 			AEdit *previous_edit = (AEdit*)playable_edit->previous;
@@ -284,8 +263,6 @@ int AModule::render(double *buffer,
 					transition_temp = new double[fragment_len];
 					transition_temp_alloc = fragment_len;
 				}
-
-
 
 // Trim transition_len
 				int transition_fragment_len = fragment_len;
@@ -347,7 +324,6 @@ int AModule::render(double *buffer,
 		buffer_offset += fragment_len;
 		start_project += fragment_len;
 	}
-
 
 // Reverse buffer here so plugins always render forward.
 	if(direction == PLAY_REVERSE)

@@ -113,7 +113,7 @@ public:
 // Mute automation.
 // Return whether the next samples are muted and store the duration
 // of the next status in fragment_len
-	void get_mute_fragment(posnum input_position,
+	void get_mute_fragment(ptstime input_position,
 				int &mute_constant, 
 				int &fragment_len, 
 				Autos *autos,

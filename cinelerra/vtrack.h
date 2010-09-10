@@ -57,44 +57,25 @@ public:
 	double to_doubleunits(double position);
 	double from_units(posnum position);
 
-	void calculate_input_transfer(Asset *asset, framenum position, int direction, 
+	void calculate_input_transfer(Asset *asset, ptstime position, int direction, 
 		float &in_x, float &in_y, float &in_w, float &in_h,
 		float &out_x, float &out_y, float &out_w, float &out_h);
 
-	void calculate_output_transfer(framenum position, int direction, 
+	void calculate_output_transfer(ptstime position, int direction, 
 		float &in_x, float &in_y, float &in_w, float &in_h,
 		float &out_x, float &out_y, float &out_w, float &out_h);
 
 	int vertical_span(Theme *theme);
-	
-	
-	
-	
-	
-	
-	
+
+
 // ====================================== initialization
 	VTrack() {};
 	int create_derived_objs(int flash);
 
-
 // ===================================== rendering
 
-	int get_projection(float &in_x1, 
-		float &in_y1, 
-		float &in_x2, 
-		float &in_y2, 
-		float &out_x1, 
-		float &out_y1, 
-		float &out_x2, 
-		float &out_y2, 
-		int frame_w, 
-		int frame_h, 
-		framenum real_position, 
-		int direction);
 // Give whether compressed data can be copied directly from the track to the output file
 	int direct_copy_possible(posnum current_frame, int direction, int use_nudge);
-
 
 // ===================================== editing
 

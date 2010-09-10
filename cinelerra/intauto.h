@@ -41,7 +41,7 @@ public:
 
 	int identical(IntAuto *that);
 	void load(FileXML *file);
-	void copy(posnum start, posnum end, FileXML *file, int default_only);
+	void copy(ptstime start, ptstime end, FileXML *file, int default_only);
 	float value_to_percentage();
 	int percentage_to_value(float percentage);
 

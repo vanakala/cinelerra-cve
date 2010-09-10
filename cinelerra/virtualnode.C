@@ -294,7 +294,7 @@ VirtualNode* VirtualNode::get_previous_plugin(VirtualNode *current_node)
 
 
 
-void VirtualNode::get_mute_fragment(posnum input_position,
+void VirtualNode::get_mute_fragment(ptstime input_position,
 				int &mute_constant, 
 				int &fragment_len, 
 				Autos *autos,
@@ -315,12 +315,12 @@ void VirtualNode::get_mute_fragment(posnum input_position,
 	if(direction == PLAY_FORWARD)
 	{
 // Two distinct keyframes within range
-		if(next_keyframe->position > prev_keyframe->position)
+		if(next_keyframe->pos_time > prev_keyframe->pos_time)
 		{
 			mute_constant = prev_keyframe->value;
 
-			if(next_keyframe->position < input_position + fragment_len)
-				fragment_len = next_keyframe->position - input_position;
+			if(next_keyframe->pos_time < input_position + next_keyframe->autos->pos2pts(fragment_len))
+				fragment_len = next_keyframe->autos->pts2pos(next_keyframe->pos_time - input_position);
 		}
 		else
 // One keyframe within range
@@ -331,12 +331,12 @@ void VirtualNode::get_mute_fragment(posnum input_position,
 	else
 	{
 // Two distinct keyframes within range
-		if(next_keyframe->position < prev_keyframe->position)
+		if(next_keyframe->pos_time < prev_keyframe->pos_time)
 		{
 			mute_constant = next_keyframe->value;
 
-			if(next_keyframe->position > input_position - fragment_len)
-				fragment_len = input_position - next_keyframe->position;
+			if(next_keyframe->pos_time > input_position - next_keyframe->autos->pos2pts(fragment_len))
+				fragment_len = next_keyframe->autos->pts2pos(input_position - next_keyframe->pos_time);
 		}
 		else
 // One keyframe within range

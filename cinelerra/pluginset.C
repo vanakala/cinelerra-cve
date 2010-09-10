@@ -155,7 +155,8 @@ Plugin* PluginSet::insert_plugin(const char *title,
 
 	if(default_keyframe) 
 		*plugin->keyframes->default_auto = *default_keyframe;
-	plugin->keyframes->default_auto->position = unit_position;
+	plugin->keyframes->default_auto->pos_time =
+		plugin->keyframes->pos2pts(unit_position);
 
 // May delete the plugin we just added so not desirable while loading.
 	if(do_optimize) optimize();
@@ -208,8 +209,8 @@ void PluginSet::clear_keyframes(posnum start, posnum end)
 	}
 }
 
-void PluginSet::copy_keyframes(posnum start,
-	posnum end,
+void PluginSet::copy_keyframes(ptstime start,
+	ptstime end,
 	FileXML *file, 
 	int default_only,
 	int autos_only)
@@ -231,8 +232,8 @@ void PluginSet::copy_keyframes(posnum start,
 }
 
 
-void PluginSet::paste_keyframes(posnum start,
-	posnum length,
+void PluginSet::paste_keyframes(ptstime start,
+	ptstime length,
 	FileXML *file, 
 	int default_only,
 	Track *track)
@@ -250,12 +251,12 @@ void PluginSet::paste_keyframes(posnum start,
 	{
 		unused_pluginsets.append(track->plugin_set.values[i]);
 	}
-	
+
 	char data[MESSAGESIZE];
 	char data_default_keyframe[MESSAGESIZE];
 	int default_keyframe;
 	int do_default_keyframe = 0;
-	
+
 	while(!result)
 	{
 		result = file->read_tag();
@@ -273,7 +274,7 @@ void PluginSet::paste_keyframes(posnum start,
 			else
 			if(file->tag.title_is("KEYFRAME"))
 			{
-				int64_t position = file->tag.get_property("POSITION", 0);
+				ptstime position = file->tag.get_property("POSTIME", 0);
 				position += start;
 				if(file->tag.get_property("DEFAULT", 0))
 				{
@@ -305,19 +306,22 @@ void PluginSet::paste_keyframes(posnum start,
 					{
 						PluginSet *pluginset = unused_pluginsets.values[i];
 						Plugin *current;
+						ptstime stproj, stlen;
 						for(current = (Plugin*)(pluginset->last); 
 							current;
 							current = (Plugin*)PREVIOUS)
 						{
-							if(position >= current->startproject 
-							&& position <= current->length + current->startproject 
+							stproj =  track->from_units(current->startproject);
+							stlen = track->from_units(current->length);
+							if(position >= stproj
+							&& position <= stlen + stproj
 							&& !strncmp(((KeyFrame *)current->keyframes->default_auto)->data, data, name_len))
 							{
 								target_pluginset = pluginset;
 								first_target_plugin = current;
 								break;
 							}
-							if(position >= current->startproject 
+							if(position >= stproj
 							&& !strncmp(((KeyFrame *)current->keyframes->default_auto)->data, data, name_len))
 							{
 								second_choice = pluginset;
@@ -340,21 +344,23 @@ void PluginSet::paste_keyframes(posnum start,
 // default plugin is always delayed
 						KeyFrame *keyframe = (KeyFrame*)first_target_plugin->keyframes->default_auto;
 						strcpy(keyframe->data, data_default_keyframe);
-						keyframe->position = position;
+						keyframe->pos_time = position;
 						do_default_keyframe = 0;
 					}
 					if (!default_only && !default_keyframe)
 					{
+						ptstime stproj;
 						for(current = (Plugin*)target_pluginset->last; 
 							current;
 							current = (Plugin*)PREVIOUS)
 						{
-							if(position >= current->startproject)
+							stproj =  track->from_units(current->startproject);
+							if(position >= stproj)
 							{
 								KeyFrame *keyframe;
 								keyframe = (KeyFrame*)current->keyframes->insert_auto(position);
 								strcpy(keyframe->data, data);
-								keyframe->position = position;
+								keyframe->pos_time = position;
 								break;
 							}
 						}
@@ -389,10 +395,12 @@ void PluginSet::shift_effects(posnum start, posnum length)
 // Shift keyframes in this effect.
 // If the default keyframe lands on the starting point, it must be shifted
 // since the effect start is shifted.
-		if(current->keyframes->default_auto->position >= start)
-			current->keyframes->default_auto->position += length;
+		ptstime st_pts = current->keyframes->pos2pts(start);
+		ptstime ln_pts = current->keyframes->pos2pts(length);
+		if(current->keyframes->default_auto->pos_time >= st_pts)
+			current->keyframes->default_auto->pos_time += ln_pts;
 
-		current->keyframes->paste_silence(start, start + length);
+		current->keyframes->paste_silence(st_pts, st_pts + ln_pts);
 	}
 }
 
@@ -489,14 +497,14 @@ int PluginSet::optimize()
 		current_edit; 
 		current_edit = (Plugin*)current_edit->next)
 	{
-		current_edit->keyframes->default_auto->position = 0;
+		current_edit->keyframes->default_auto->pos_time = 0;
 		for(KeyFrame *current_keyframe = (KeyFrame*)current_edit->keyframes->last;
 			current_keyframe; )
 		{
 			KeyFrame *previous_keyframe = (KeyFrame*)current_keyframe->previous;
-			if(current_keyframe->position > 
+			if(current_keyframe->get_position() >
 				current_edit->startproject + current_edit->length ||
-				current_keyframe->position < current_edit->startproject)
+				current_keyframe->get_position() < current_edit->startproject)
 			{
 				delete current_keyframe;
 			}

@@ -492,8 +492,8 @@ int InterpolateVideo::load_configuration()
 	read_data(prev_keyframe);
 
 
-	framenum prev_position = edl_to_local(prev_keyframe->position);
-	framenum next_position = edl_to_local(next_keyframe->position);
+	framenum prev_position = edl_to_local(prev_keyframe->get_position());
+	framenum next_position = edl_to_local(next_keyframe->get_position());
 	if(prev_position == 0 && next_position == 0)
 	{
 		next_position = prev_position = get_source_start();

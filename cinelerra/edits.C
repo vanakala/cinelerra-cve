@@ -707,8 +707,8 @@ int Edits::clear_handle(double start,
 					length += current_edit->length;
 
 // Lengthen automation
-					track->automation->paste_silence(current_edit->next->startproject, 
-						current_edit->next->startproject + length);
+					track->automation->paste_silence(track->from_units(current_edit->next->startproject), 
+						track->from_units(current_edit->next->startproject + length));
 
 // Lengthen effects
 					if(edit_plugins)

@@ -49,7 +49,7 @@
 #define AUTOMATIONVIEWCLAMPS(value, autogrouptype)			\
 	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < 0)		\
 		value = 0;
-		
+
 class Automation
 {
 public:
@@ -59,24 +59,22 @@ public:
 
 	int autogrouptype(int autoidx, Track *track);
 	virtual int create_objects();
-	void equivalent_output(Automation *automation, posnum *result);
+	void equivalent_output(Automation *automation, ptstime *result);
 	virtual Automation& operator=(Automation& automation);
 	virtual void copy_from(Automation *automation);
 	int load(FileXML *file);
 // For copy automation, copy, and save
-	int copy(posnum start,
-		posnum end,
+	int copy(ptstime start,
+		ptstime end,
 		FileXML *xml, 
 		int default_only,
 		int autos_only);
 	virtual void dump();
-	virtual int direct_copy_possible(posnum start, int direction) { return 1; };
-/* Kasutamata
-	virtual int direct_copy_possible_derived(int64_t start, int direction) { return 1; };
-	*/
+	virtual int direct_copy_possible(ptstime start, int direction) { return 1; };
+
 // For paste automation only
-	int paste(posnum start,
-		posnum length,
+	int paste(ptstime start,
+		ptstime length,
 		double scale,
 		FileXML *file, 
 		int default_only,
@@ -86,44 +84,42 @@ public:
 	virtual void get_projector(float *x, 
 		float *y, 
 		float *z, 
-		framenum position,
+		ptstime position,
 		int direction) {};
 // Get camera coordinates if this is video automation
 	virtual void get_camera(float *x, 
 		float *y, 
 		float *z, 
-		framenum position,
+		ptstime position,
 		int direction) {};
 
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
-	void clear(posnum start,
-		posnum end,
+	void clear(ptstime start,
+		ptstime end,
 		AutoConf *autoconf, 
 		int shift_autos);
-	void straighten(posnum start, 
-		posnum end,
+	void straighten(ptstime start, 
+		ptstime end,
 		AutoConf *autoconf);
-	void paste_silence(posnum start, posnum end);
+	void paste_silence(ptstime start, ptstime end);
 	void insert_track(Automation *automation, 
-		posnum start_unit,
-		posnum length_units,
+		ptstime start_unit,
+		ptstime length_units,
 		int replace_default);
 	void resample(double old_rate, double new_rate);
-	int64_t get_length();
+	ptstime get_length();
 	virtual void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,
-		posnum unit_start,
-		posnum unit_end,
+		ptstime start,
+		ptstime end,
 		int autogrouptype);
 
-
-
-
+	ptstime pos2pts(posnum position);
+	posnum pts2pos(ptstime position);
 
 	Autos *autos[AUTOMATION_TOTAL];
-
 
 	EDL *edl;
 	Track *track;
