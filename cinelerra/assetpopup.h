@@ -47,7 +47,6 @@ public:
 	int update();
 	void paste_assets();
 	void match_size();
-	void match_rate();
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
@@ -124,17 +123,6 @@ class AssetMatchSize : public BC_MenuItem
 {
 public:
 	AssetMatchSize(MWindow *mwindow, AssetPopup *popup);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	AssetPopup *popup;
-};
-
-class AssetMatchRate : public BC_MenuItem
-{
-public:
-	AssetMatchRate(MWindow *mwindow, AssetPopup *popup);
 
 	int handle_event();
 

@@ -76,11 +76,9 @@ public:
 
 // Get number of pixels to display
 	virtual int vertical_span(Theme *theme);
-	int64_t horizontal_span();
-	void resample(double old_rate, double new_rate);
 
 // Get length of track in seconds
-	double get_length();
+	ptstime get_length();
 // Get dimensions of source for convenience functions
 	void get_source_dimensions(double position, int &w, int &h);
 

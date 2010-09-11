@@ -88,20 +88,16 @@ public:
 		const char *output_path,
 		int is_clip,
 		int is_vwindow);
-    int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
-    int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
-
-
+	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
+	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
 
 // Convert position to frames if cursor alignment is enabled
-	double align_to_frame(double position, int round);
-
-
+	ptstime align_to_frame(ptstime position, int round);
 
 // Scale all sample values since everything is locked to audio
 	void rechannel();
-	void resample(double old_rate, double new_rate, int data_type);
 	void copy_tracks(EDL *edl);
+
 // Copies project path, folders, EDLSession, and LocalSession from edl argument.
 // session_only - used by preferences and format specify 
 // whether to only copy EDLSession
@@ -109,11 +105,14 @@ public:
 	int copy_all(EDL *edl);
 	void copy_assets(EDL *edl);
 	void copy_clips(EDL *edl);
+
 // Copy pan and fade settings from edl
 	void synchronize_params(EDL *edl);
+
 // Determine if the positions are equivalent if they're within half a frame
 // of each other.
 	int equivalent(double position1, double position2);
+
 // Determine if the EDL's produce equivalent video output to the old EDL.
 // The new EDL is this and the old EDL is the argument.
 // Return the number of seconds from the beginning of this which are 
@@ -121,19 +120,25 @@ public:
 // If they're completely equivalent, -1 is returned;
 // This is used by BRender.
 	double equivalent_output(EDL *edl);
+
 // Set project path for saving a backup
 	void set_project_path(const char *path);
+
 // Set points and labels
 	void set_inpoint(double position);
 	void set_outpoint(double position);
+
 // Redraw resources during index builds
 	void set_index_file(Asset *asset);
+
 // Add assets from the src to the destination
 	void update_assets(EDL *src);
 	void optimize();
+
 // Debug
 	int dump();
 	static int next_id();
+
 // Create a new folder if it doesn't exist already
 	void new_folder(const char *folder);
 	void delete_folder(const char *folder);
@@ -196,7 +201,6 @@ public:
 	void get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_locations);
 
 	int get_tracks_height(Theme *theme);
-	int64_t get_tracks_width();
 
 // Return dimensions for canvas if smaller dimensions has zoom of 1
 	void calculate_conformed_dimensions(int single_channel, float &w, float &h);
@@ -217,8 +221,6 @@ public:
 // Shared between all EDLs
 	Assets *assets;
 
-
-
 	Tracks *tracks;
 	Labels *labels;
 // Shared between all EDLs in a tree, for projects.
@@ -232,7 +234,6 @@ public:
 // This can't use the output_path argument to save_xml because that points
 // to the backup file, not the project file.
 	char project_path[BCTEXTLEN];
-
 
 
 // Use parent Assets if nonzero

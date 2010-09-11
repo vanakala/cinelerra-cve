@@ -92,22 +92,18 @@ MWindowGUI::~MWindowGUI()
 	delete edit_menu;
 	delete plugin_menu;
 	delete keyframe_menu;
- 	delete transition_menu;
+	delete transition_menu;
 }
 
 void MWindowGUI::get_scrollbars()
 {
-	int h_needed = mwindow->edl->get_tracks_height(mwindow->theme);
-	int w_needed = mwindow->edl->get_tracks_width();
-	int need_xscroll = 0;
-	int need_yscroll = 0;
+	int need_xscroll;
+	int need_yscroll;
 	view_w = mwindow->theme->mcanvas_w;
 	view_h = mwindow->theme->mcanvas_h;
 
 // Scrollbars are constitutive
 	need_xscroll = need_yscroll = 1;
-	view_h = mwindow->theme->mcanvas_h;
-	view_w = mwindow->theme->mcanvas_w;
 
 	if(canvas && (view_w != canvas->get_w() || view_h != canvas->get_h()))
 	{

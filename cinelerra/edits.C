@@ -278,32 +278,6 @@ int Edits::save(FileXML *xml, const char *output_path)
 	return 0;
 }
 
-void Edits::resample(double old_rate, double new_rate)
-{
-	for(Edit *current = first; current; current = NEXT)
-	{
-		current->startproject = Units::to_int64((double)current->startproject / 
-			old_rate * 
-			new_rate);
-		if(PREVIOUS) PREVIOUS->length = current->startproject - PREVIOUS->startproject;
-		current->startsource = Units::to_int64((double)current->startsource /
-			old_rate *
-			new_rate);
-		if(!NEXT) current->length = Units::to_int64((double)current->length /
-			old_rate *
-			new_rate);
-		if(current->transition)
-		{
-			current->transition->length = Units::to_int64(
-				(double)current->transition->length /
-				old_rate *
-				new_rate);
-		}
-		current->resample(old_rate, new_rate);
-	}
-}
-
-
 
 int Edits::optimize()
 {

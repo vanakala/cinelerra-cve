@@ -268,8 +268,8 @@ void Automation::paste_silence(ptstime start, ptstime end)
 // when inserting the first EDL of a load operation we need to replace
 // the default keyframe.
 void Automation::insert_track(Automation *automation, 
-	ptstime start_unit,
-	ptstime length_units,
+	ptstime start,
+	ptstime length,
 	int replace_default)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
@@ -277,23 +277,13 @@ void Automation::insert_track(Automation *automation,
 		if(autos[i] && automation->autos[i])
 		{
 			autos[i]->insert_track(automation->autos[i], 
-				start_unit, 
-				length_units, 
+				start,
+				length,
 				replace_default);
 		}
 	}
-
-
 }
 
-void Automation::resample(double old_rate, double new_rate)
-{
-// Run resample for all the autos structures and all the keyframes
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		if(autos[i]) autos[i]->resample(old_rate, new_rate);
-	}
-}
 
 ptstime Automation::get_length()
 {

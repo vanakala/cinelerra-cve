@@ -228,7 +228,7 @@ int Track::vertical_span(Theme *theme)
 	return result;
 }
 
-double Track::get_length()
+ptstime Track::get_length()
 {
 	ptstime total_length = 0;
 	ptstime length = 0;
@@ -271,15 +271,6 @@ void Track::get_source_dimensions(double position, int &w, int &h)
 			return;
 		}
 	}
-}
-
-
-int64_t Track::horizontal_span()
-{
-	return (int64_t)(get_length() * 
-		edl->session->sample_rate / 
-		edl->local_session->zoom_sample + 
-		0.5);
 }
 
 
@@ -629,7 +620,7 @@ void Track::detach_effect(Plugin *plugin)
 				plugin_set->clear(start, end);
 				plugin_set->paste_silence(start, end);
 
-// Delete 0 length pluginsets	
+// Delete 0 length pluginsets
 				plugin_set->optimize();
 				if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
 					remove_pluginset(plugin_set);
@@ -637,15 +628,6 @@ void Track::detach_effect(Plugin *plugin)
 			}
 		}
 	}
-}
-
-void Track::resample(double old_rate, double new_rate)
-{
-	edits->resample(old_rate, new_rate);
-	automation->resample(old_rate, new_rate);
-	for(int i = 0; i < plugin_set.total; i++)
-		plugin_set.values[i]->resample(old_rate, new_rate);
-	nudge = (int64_t)(nudge * new_rate / old_rate);
 }
 
 void Track::detach_shared_effects(int module)

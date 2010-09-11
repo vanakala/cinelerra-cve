@@ -74,16 +74,6 @@ Auto* Autos::new_auto()
 	return new Auto(edl, this);
 }
 
-void Autos::resample(double old_rate, double new_rate)
-{
-	for(Auto *current = first; current; current = NEXT)
-	{
-		current->pos_time = ((double)current->pos_time * 
-			new_rate / 
-			old_rate);
-	}
-}
-
 void Autos::equivalent_output(Autos *autos, ptstime startproject, ptstime *result)
 {
 // Default keyframe differs

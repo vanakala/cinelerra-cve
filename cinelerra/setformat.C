@@ -138,8 +138,7 @@ void SetFormatThread::apply_changes()
 	mwindow->edl->session->output_w = dimension[0];
 	mwindow->edl->session->output_h = dimension[1];
 	mwindow->edl->rechannel();
-	mwindow->edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
-	mwindow->edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
+
 	mwindow->save_backup();
 	mwindow->undo->update_undo(_("set format"), LOAD_ALL);
 

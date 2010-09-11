@@ -64,8 +64,6 @@ public:
 	double frame_w();
 	double frames_per_picon();
 	int copy(posnum start, posnum end, FileXML *xml, const char *output_path);
-// When inherited by a plugin need to resample keyframes
-	virtual void resample(double old_rate, double new_rate) {};
 
 // Shift in time
 	virtual void shift(posnum difference);

@@ -621,17 +621,6 @@ void EDL::rechannel()
 	}
 }
 
-void EDL::resample(double old_rate, double new_rate, int data_type)
-{
-	for(Track *current = tracks->first; current; current = NEXT)
-	{
-		if(current->data_type == data_type)
-		{
-			current->resample(old_rate, new_rate);
-		}
-	}
-}
-
 
 void EDL::synchronize_params(EDL *edl)
 {
@@ -875,20 +864,6 @@ int EDL::get_tracks_height(Theme *theme)
 	return total_pixels;
 }
 
-int64_t EDL::get_tracks_width()
-{
-	int64_t total_pixels = 0;
-	for(Track *current = tracks->first;
-		current;
-		current = NEXT)
-	{
-		int64_t pixels = current->horizontal_span();
-		if(pixels > total_pixels) total_pixels = pixels;
-	}
-	return total_pixels;
-}
-
-
 // Get the total output size scaled to aspect ratio
 void EDL::calculate_conformed_dimensions(int single_channel, float &w, float &h)
 {
@@ -1119,12 +1094,12 @@ void EDL::get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_loc
 }
 
 // Convert position to frames if cursor alignment is enabled
-double EDL::align_to_frame(double position, int round)
+ptstime EDL::align_to_frame(ptstime position, int round)
 {
 	if(session->cursor_on_frames)
 	{
 // Seconds -> Frames
-		double temp = (double)position * session->frame_rate;
+		ptstime temp = (double)position * session->frame_rate;
 
 // Assert some things
 		if(session->sample_rate == 0)

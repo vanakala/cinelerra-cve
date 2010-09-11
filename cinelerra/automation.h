@@ -107,7 +107,6 @@ public:
 		ptstime start_unit,
 		ptstime length_units,
 		int replace_default);
-	void resample(double old_rate, double new_rate);
 	ptstime get_length();
 	virtual void get_extents(float *min, 
 		float *max,

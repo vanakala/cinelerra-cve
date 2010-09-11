@@ -80,21 +80,12 @@ public:
 // Returns the newly created edit
 	Edit *create_and_insert_edit(posnum start, posnum end);
 
-	void resample(double old_rate, double new_rate);
 // Shift edits on or after position by distance
 // Return the edit now on the position.
 	virtual Edit* shift(posnum position, posnum difference);
 
 	EDL *edl;
 	Track *track;
-
-
-
-
-
-
-
-
 
 
 // ============================= initialization commands ====================

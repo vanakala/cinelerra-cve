@@ -602,12 +602,6 @@ void Plugin::paste(FileXML *file)
 	length = file->tag.get_property("LENGTH", (int64_t)0);
 }
 
-void Plugin::resample(double old_rate, double new_rate)
-{
-// Resample keyframes in here
-	keyframes->resample(old_rate, new_rate);
-}
-
 void Plugin::shift(posnum difference)
 {
 	Edit::shift(difference);

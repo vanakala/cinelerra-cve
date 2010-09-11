@@ -262,7 +262,7 @@ public:
 	int add_video_track(int above, Track *dst);
 
 	void asset_to_size();
-	void asset_to_rate();
+
 // Entry point for clear operations.
 	void clear_entry();
 // Clears active region in EDL.
