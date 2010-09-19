@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 
+#include "datatype.h"
 #include "edl.inc"
 #include "guicast.h"
 #include "filexml.inc"
@@ -37,7 +38,7 @@
 class Label : public ListItem<Label>
 {
 public:
-	Label(EDL *edl, Labels *labels, double position, const char *textstr);
+	Label(EDL *edl, Labels *labels, ptstime position, const char *textstr);
 	Label();
 	~Label();
 
@@ -46,7 +47,7 @@ public:
 	Labels *labels;
 	char textstr[BCTEXTLEN];
 // Seconds
-	double position;
+	ptstime position;
 };
 
 class Labels : public List<Label>
@@ -59,13 +60,13 @@ public:
 
 	Labels& operator=(Labels &that);
 	void copy_from(Labels *labels);
-	int toggle_label(double start, double end);
+	int toggle_label(ptstime start, ptstime end);
 	int delete_all();
 	int save(FileXML *xml);
 	int load(FileXML *xml, uint32_t load_flags);
 	void insert_labels(Labels *labels, 
-		double start, 
-		double length, 
+		ptstime start,
+		ptstime length,
 		int paste_silence = 1);
 
 	int modify_handles(double oldposition, 
@@ -73,19 +74,19 @@ public:
 		int currentend, 
 		int handle_mode,
 		int edit_labels);
-	int copy(double start, double end, FileXML *xml);
-	int insert(double start, double length);
+	int copy(ptstime start, ptstime end, FileXML *xml);
+	int insert(ptstime start, ptstime length);
 
 // Setting follow to 1 causes labels to move forward after clear.
 // Setting it to 0 implies ignoring the labels follow edits setting.
-	int clear(double start, double end, int follow = 1);
-	int paste_silence(double start, double end);
+	int clear(ptstime start, ptstime end, int follow = 1);
+	int paste_silence(ptstime start, ptstime end);
 	int optimize();  // delete duplicates
 // Get nearest labels or 0 if start or end of timeline
-	Label* prev_label(double position);
-	Label* next_label(double position);
+	Label* prev_label(ptstime position);
+	Label* next_label(ptstime position);
 
-	Label* label_of(double position); // first label on or after position
+	Label* label_of(ptstime position); // first label on or after position
 	MWindow *mwindow;
 	TimeBar *timebar;
 	EDL *edl;

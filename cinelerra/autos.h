@@ -39,9 +39,6 @@ public:
 		Track *track);
 
 	virtual ~Autos();
-/* Pole
-	void resample(double old_rate, double new_rate);
-	*/
 	virtual void create_objects();
 	void equivalent_output(Autos *autos, ptstime startproject, ptstime *result);
 	void copy_from(Autos *autos);

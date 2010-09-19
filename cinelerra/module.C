@@ -106,7 +106,6 @@ void Module::create_new_attachments()
 					track->get_current_plugin(commonrender->current_position, 
 						i, 
 						renderengine->command->get_direction(),
-						0,
 						1);
 
 				if(plugin && plugin->plugin_type != PLUGIN_NONE && plugin->on)
@@ -217,7 +216,6 @@ int Module::test_plugins()
 			commonrender->current_position, 
 			i, 
 			renderengine->command->get_direction(),
-			0,
 			1);
 // One exists and one doesn't
 		int use_plugin = plugin &&
@@ -242,7 +240,6 @@ void Module::update_transition(ptstime current_position,
 {
 	transition = track->get_current_transition(current_position,
 		direction,
-		1,
 		0); // position is already nudged in amodule.C and vmodule.C before calling update_transition!
 
 // For situations where we had a transition but not anymore, 

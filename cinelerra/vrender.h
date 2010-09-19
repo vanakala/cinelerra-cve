@@ -75,7 +75,7 @@ public:
 
 
 	int get_use_vconsole(Edit* &playable_edit, 
-		framenum position,
+		ptstime position,
 		int &get_use_vconsole);
 	int get_colormodel(Edit* &playable_edit, 
 		int use_vconsole,

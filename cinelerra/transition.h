@@ -57,17 +57,12 @@ public:
 class Transition : public Plugin
 {
 public:
-	Transition(EDL *edl, Edit *edit, const char *title, posnum unit_length);
+	Transition(EDL *edl, Edit *edit, const char *title, ptstime length);
 
 	Edit *edit;
 
-
-
 	void save_xml(FileXML *file);
 	void load_xml(FileXML *file);
-
-
-
 
 	Transition(Transition *that, Edit *edit);
 	~Transition();
@@ -82,8 +77,6 @@ public:
 	int operator==(Edit &that);
 	int identical(Transition *that);
 
-// Only the show value from the attachment point is used.
-	int set_show_derived(int value) {};
 	void dump();
 
 private:

@@ -55,7 +55,7 @@ ExportEDLAsset::ExportEDLAsset(MWindow *mwindow, EDL *edl)
 {
 	this->mwindow = mwindow;
 	this->edl = edl;
-	
+
 	path[0] = 0;
 	edl_type = EDLTYPE_CMX3600;
 	track_number = -1;
@@ -109,19 +109,19 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sou
 			reel_name[i] = ' ';
 
 		edit_sourcestart = (double)asset->tcstart / asset->frame_rate
-			+ track->from_units(edit->startsource);
+			+ edit->source_pts;
 		edit_sourceend = (double)asset->tcstart / asset->frame_rate
-			+ track->from_units(edit->startsource + edit->length);
+			+ edit->source_pts + edit->length_time;
 
 	} else
 	{
 		strcpy(reel_name, "   BL   ");
 		edit_sourcestart = 0;
-		edit_sourceend = track->from_units(edit->length);
+		edit_sourceend = edit->length_time;
 	}
 
-	edit_deststart = track->from_units(edit->startproject);
-	edit_destend = track->from_units(edit->startproject + edit->length);
+	edit_deststart = edit->project_pts;
+	edit_destend = edit->project_pts + edit->length_time;
 
 	double_to_CMX3600(edit_sourcestart, frame_rate, sourceinpoint);
 	double_to_CMX3600(edit_sourceend, frame_rate, sourceoutpoint);
@@ -194,7 +194,7 @@ int ExportEDLAsset::export_it()
 					colnum --;
 				}
 				edittype[0] = 'D';
-				fprintf(fh, "%03d %8s %s %4s %03lld", colnum, reel_name, avselect, edittype, edit->transition->length);
+				fprintf(fh, "%03d %8s %s %4s %03lld", colnum, reel_name, avselect, edittype, track->to_units(edit->transition->length_time));
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);
 				fprintf(fh,"\n");
@@ -208,18 +208,13 @@ int ExportEDLAsset::export_it()
 				fprintf(fh,"\n");
 				last_dissolve = 0;
 			}
-
 			colnum ++;
-			
 		}
 		
 	}
-		
+
 	fclose(fh);
-
-
 }
-
 
 
 int ExportEDLAsset::load_defaults()
@@ -240,8 +235,6 @@ int ExportEDLAsset::save_defaults()
 }
 
 
-
-
 ExportEDLItem::ExportEDLItem(MWindow *mwindow)
  : BC_MenuItem(_("Export EDL..."), "Shift+E", 'E')
 {
@@ -254,9 +247,6 @@ int ExportEDLItem::handle_event()
 	mwindow->exportedl->start_interactive();
 	return 1;
 }
-
-
-
 
 
 ExportEDL::ExportEDL(MWindow *mwindow)
@@ -281,7 +271,7 @@ void ExportEDL::run()
 {
 	int result = 0;
 	exportasset = new ExportEDLAsset(mwindow, mwindow->edl);
-	
+
 	exportasset->load_defaults();
 
 // Get format from user
@@ -306,7 +296,7 @@ void ExportEDL::run()
 			if (!result)
 			{
 				ArrayList<char*> paths;
-			
+
 				paths.append(exportasset->path);
 				filesok = ConfirmSave::test_files(mwindow, &paths);
 			}
@@ -317,17 +307,8 @@ void ExportEDL::run()
 
 // FIX
 	if(!result) exportasset->export_it();
-
-
 	delete exportasset;
-
 }
-
-
-
-
-
-
 
 
 #define WIDTH 410
@@ -345,7 +326,7 @@ static int list_widths[] =
 	40,
 	200
 };
-	
+
 ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportEDLAsset *exportasset)
  : BC_Window(PROGRAM_NAME ": Export EDL", 
 	mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2,

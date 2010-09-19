@@ -710,15 +710,18 @@ void MWindow::stop_brender()
 	if(brender) brender->stop();
 }
 
-int MWindow::brender_available(framenum position)
+int MWindow::brender_available(ptstime postime)
 {
+	framenum position;
 	int result = 0;
+
 	brender_lock->lock("MWindow::brender_available 1");
 	if(brender)
 	{
 		if(brender->map_valid)
 		{
 			brender->map_lock->lock("MWindow::brender_available 2");
+			position = postime * edl->session->frame_rate;
 			if(position < brender->map_size &&
 				position >= 0)
 			{
@@ -1673,7 +1676,6 @@ int MWindow::asset_to_edl(EDL *new_edl,
 	{
 		double edl_length = new_edl->tracks->total_length_framealigned(edl->session->frame_rate);
 		new_edl->tracks->clear(edl_length, new_edl->tracks->total_length() + 100, 1);
-		new_edl->tracks->loaded_lengths_to_tracklengths(1);
 	}
 
 

@@ -62,12 +62,12 @@ public:
 
 // Called by Edits::equivalent_output to override the keyframe behavior and check
 // title.
-	void equivalent_output(Edit *edit, posnum *result);
+	void equivalent_output(Edit *edit, ptstime *result);
 
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 	int is_synthesis(RenderEngine *renderengine, 
-		posnum position,
+		ptstime position,
 		int direction);
 
 	virtual int operator==(Plugin& that);
@@ -84,7 +84,7 @@ public:
 	int identical_location(Plugin *that);
 	virtual void synchronize_params(Edit *edit);
 // Used by Edits::insert_edits and Plugin::shift to shift plugin keyframes
-	void shift_keyframes(posnum position);
+	void shift_keyframes(ptstime postime);
 
 	void change_plugin(const char *title, 
 		SharedLocation *shared_location, 
@@ -100,16 +100,16 @@ public:
 // For editing automation.
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
-	void clear_keyframes(posnum start, posnum end);
-	void copy(posnum start, posnum end, FileXML *file);
+	void clear_keyframes(ptstime start, ptstime end);
+	void copy(ptstime start, ptstime end, FileXML *file);
 	void paste(FileXML *file);
 	void load(FileXML *file);
 // Shift in time
-	void shift(posnum difference);
+	void shift(ptstime difference);
 	void dump();
 // Called by PluginClient sequence to get rendering parameters
-	KeyFrame* get_prev_keyframe(posnum position);
-	KeyFrame* get_next_keyframe(posnum position);
+	KeyFrame* get_prev_keyframe(ptstime postime);
+	KeyFrame* get_next_keyframe(ptstime postime);
 // If this is a standalone plugin fill its location in the result.
 // If it's shared copy the shared location into the result
 	void get_shared_location(SharedLocation *result);

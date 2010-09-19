@@ -46,7 +46,7 @@ public:
 	int load_properties_derived(FileXML *xml);
 
 	int dump_derived();
-	posnum get_source_end(posnum default_);
+	ptstime get_source_end(ptstime default_value);
 
 private:
 	VEdits *vedits;

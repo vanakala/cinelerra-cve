@@ -307,13 +307,13 @@ char* PatchGUI::calculate_nudge_text(int *changed)
 	if(changed) *changed = 0;
 	if(track->edl->session->nudge_seconds)
 	{
-		sprintf(string_return, "%.4f", track->from_units(track->nudge));
+		sprintf(string_return, "%.4f", track->nudge);
 		if(changed && nudge && atof(nudge->get_text()) - atof(string_return) != 0)
 			*changed = 1;
 	}
 	else
 	{
-		sprintf(string_return, "%lld", track->nudge);
+		sprintf(string_return, "%lld", track->to_units(track->nudge, 0));
 		if(changed && nudge && atoi(nudge->get_text()) - atoi(string_return) != 0)
 			*changed = 1;
 	}
@@ -321,19 +321,19 @@ char* PatchGUI::calculate_nudge_text(int *changed)
 }
 
 
-posnum PatchGUI::calculate_nudge(char *string)
+ptstime PatchGUI::calculate_nudge(char *string)
 {
 	if(mwindow->edl->session->nudge_seconds)
 	{
-		float result;
-		sscanf(string, "%f", &result);
-		return track->to_units(result, 0);
+		ptstime result;
+		sscanf(string, "%lf", &result);
+		return result;
 	}
 	else
 	{
 		posnum temp;
 		sscanf(string, "%lld", &temp);
-		return temp;
+		return track->from_units(temp);
 	}
 }
 
@@ -667,7 +667,7 @@ int NudgePatch::handle_event()
 	return 1;
 }
 
-void NudgePatch::set_value(posnum value)
+void NudgePatch::set_value(ptstime value)
 {
 	patch->track->nudge = value;
 
@@ -692,7 +692,7 @@ int NudgePatch::button_press_event()
 	{
 		if(get_buttonpress() == 4)
 		{
-			int value = patch->calculate_nudge(get_text());
+			ptstime value = patch->calculate_nudge(get_text());
 			value += calculate_increment();
 			set_value(value);
 			update();
@@ -721,15 +721,15 @@ int NudgePatch::button_press_event()
 		return result;
 }
 
-posnum NudgePatch::calculate_increment()
+ptstime NudgePatch::calculate_increment()
 {
 	if(patch->track->data_type == TRACK_AUDIO)
 	{
-		return (posnum)ceil(patch->track->edl->session->sample_rate / 10);
+		return 0.01;
 	}
 	else
 	{
-		return (posnum)ceil(1.0 / patch->track->edl->session->frame_rate);
+		return (ptstime)ceil(1.0 / patch->track->edl->session->frame_rate);
 	}
 }
 

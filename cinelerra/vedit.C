@@ -69,7 +69,7 @@ int VEdit::read_frame(VFrame *video_out,
 	File *file = cache->check_out(asset,
 		edl);
 	int result = 0;
-	if(use_nudge) input_position += track->nudge;
+	if(use_nudge) input_position += track->to_units(track->nudge);
 
 	if(file)
 	{
@@ -79,7 +79,7 @@ int VEdit::read_frame(VFrame *video_out,
 			file->stop_video_thread();
 
 		file->set_layer(channel);
-		file->set_video_position(input_position - startproject + startsource, edl->session->frame_rate);
+		file->set_video_position(input_position - track->to_units(project_pts + source_pts), edl->session->frame_rate);
 		if(use_cache) file->set_cache_frames(use_cache);
 		result = file->read_frame(video_out);
 		if(use_cache) file->set_cache_frames(0);
@@ -88,21 +88,20 @@ int VEdit::read_frame(VFrame *video_out,
 	}
 	else
 		result = 1;
-
 	return result;
 }
 
 
 int VEdit::dump_derived()
 {
-	printf("	VEdit::dump_derived\n");
-	printf("		startproject %lld\n", startproject);
-	printf("		length %lld\n", length);
+	printf("        VEdit::dump_derived\n");
+	printf("           project pts %.3f\n", project_pts);
+	printf("           length %.3f\n", length_time);
 }
 
-posnum VEdit::get_source_end(posnum default_)
+ptstime VEdit::get_source_end(ptstime default_value)
 {
-	if(!asset) return default_;   // Infinity
+	if(!asset) return default_value;   // Infinity
 
-	return (posnum)((double)asset->video_length / asset->frame_rate * edl->session->frame_rate + 0.5);
+	return ((ptstime)asset->video_length / asset->frame_rate);
 }

@@ -66,7 +66,7 @@ public:
 	virtual int save_derived(FileXML *file) { return 0; };
 	virtual int load_header(FileXML *file, uint32_t load_flags) { return 0; };
 	virtual int load_derived(FileXML *file, uint32_t load_flags) { return 0; };
-	void equivalent_output(Track *track, double *result);
+	void equivalent_output(Track *track, ptstime *result);
 
 	virtual void copy_from(Track *track);
 	Track& operator=(Track& track);
@@ -80,30 +80,29 @@ public:
 // Get length of track in seconds
 	ptstime get_length();
 // Get dimensions of source for convenience functions
-	void get_source_dimensions(double position, int &w, int &h);
+	void get_source_dimensions(ptstime position, int &w, int &h);
 
 // Editing
 	void insert_asset(Asset *asset, 
-		double length, 
-		double position, 
+		ptstime length,
+		ptstime position,
 		int track_number);
 	Plugin* insert_effect(const char *title, 
 		SharedLocation *shared_location, 
 		KeyFrame *keyframe,
 		PluginSet *plugin_set,
-		double start,
-		double length,
+		ptstime start,
+		ptstime length,
 		int plugin_type);
-	void insert_plugin_set(Track *track, double position);
+	void insert_plugin_set(Track *track, ptstime position);
 	void detach_effect(Plugin *plugin);
 // Insert a track from another EDL
 	void insert_track(Track *track, 
-		double position, 
+		ptstime position,
 		int replace_default,
 		int edit_plugins);
 // Optimize editing
 	void optimize();
-	int is_muted(int64_t position, int direction);  // Test muting status
 
 	void move_plugins_up(PluginSet *plugin_set);
 	void move_plugins_down(PluginSet *plugin_set);
@@ -112,55 +111,47 @@ public:
 
 // Used for determining a selection for editing so leave as int.
 // converts the selection to SAMPLES OR FRAMES and stores in value
-	virtual posnum to_units(double position, int round);
+	virtual posnum to_units(ptstime position, int round = 0);
 // For drawing
-	virtual double to_doubleunits(double position);
-	virtual double from_units(posnum position);
+	virtual ptstime from_units(posnum position);
 
 
 
 // Positions are identical for handle modifications
-    virtual int identical(posnum sample1, posnum sample2) { return 0; };
+	int identical(ptstime sample1, ptstime sample2);
 
 // Get the plugin belonging to the set.
-	Plugin* get_current_plugin(double position, 
+	Plugin* get_current_plugin(ptstime postime,
 		int plugin_set, 
 		int direction, 
-		int convert_units,
 		int use_nudge);
-	Plugin* get_current_transition(double position, 
+	Plugin* get_current_transition(ptstime position,
 		int direction, 
-		int convert_units,
 		int use_nudge);
 
 // detach shared effects referencing module
-	void detach_shared_effects(int module);	
-
+	void detach_shared_effects(int module);
 
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 // Used by PlayableTracks::is_playable.
 	int is_synthesis(RenderEngine *renderengine, 
-		int64_t position, 
+		ptstime position,
 		int direction);
 
 // Used by PlayableTracks::is_playable
 // Returns 1 if the track is in the output boundaries.
-	virtual int is_playable(posnum position, int direction);
+	virtual int is_playable(ptstime position, int direction);
 
 // Test direct copy conditions common to all the rendering routines
-	virtual int direct_copy_possible(posnum start, int direction, int use_nudge) { return 1; };
+	virtual int direct_copy_possible(ptstime start, int direction, int use_nudge) { return 1; };
 
 // Used by PlayableTracks::is_playable
-	int plugin_used(posnum position, int direction);
-
-
-
-
+	int plugin_used(ptstime position, int direction);
 
 	virtual int copy_settings(Track *track);
-	void shift_keyframes(double position, double length, int convert_units);
-	void shift_effects(double position, double length, int convert_units);
+	void shift_keyframes(ptstime position, ptstime length);
+	void shift_effects(ptstime position, ptstime length);
 	void change_plugins(SharedLocation &old_location, 
 		SharedLocation &new_location, 
 		int do_swap);
@@ -187,29 +178,11 @@ public:
 	char title[BCTEXTLEN];
 	int play;
 	int record;
-// Nudge in track units.  Positive shifts track earlier in time.  This way
+// Nudge in seconds.  Positive shifts track earlier in time.  This way
 // the position variables only need to add the nudge.
-	posnum nudge;
+	ptstime nudge;
 // TRACK_AUDIO or TRACK_VIDEO
-	int data_type;     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	int data_type;
 
 	int load_automation(FileXML *file);
 	int load_edits(FileXML *file);
@@ -217,35 +190,33 @@ public:
 	virtual int change_channels(int oldchannels, int newchannels) { return 0; };
 	virtual int dump();
 
-
-
 // ===================================== editing
-	int copy(double start, 
-		double end, 
+	int copy(ptstime start,
+		ptstime end,
 		FileXML *file, 
 		const char *output_path = "");
-	int copy_assets(double start, 
-		double end, 
+	int copy_assets(ptstime start,
+		ptstime end,
 		ArrayList<Asset*> *asset_list);
-	virtual int copy_derived(posnum start, posnum end, FileXML *file) { return 0; };
-	virtual int paste_derived(posnum start, posnum end, posnum total_length, FileXML *file, int &current_channel) { return 0; };
-	int clear(double start, 
-		double end, 
+	virtual int copy_derived(ptstime start, ptstime end, FileXML *file) { return 0; };
+	virtual int paste_derived(ptstime start, ptstime end, 
+		ptstime total_length, FileXML *file, int &current_channel) { return 0; };
+	int clear(ptstime start,
+		ptstime end,
 		int edit_edits,
 		int edit_labels,
 		int clear_plugins, 
-		int convert_units,
 		Edits *trim_edits);
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
 	void clear_automation(double selectionstart, 
 		double selectionend, 
-		int shift_autos   /* = 1 */,
-		int default_only  /* = 0 */);
+		int shift_autos,
+		int default_only);
 	void straighten_automation(double selectionstart, 
 		double selectionend);
-	int copy_automation(double selectionstart, 
-		double selectionend, 
+	int copy_automation(ptstime selectionstart,
+		ptstime selectionend,
 		FileXML *file,
 		int default_only,
 		int autos_only);
@@ -255,69 +226,51 @@ public:
 		int sample_rate,
 		FileXML *file,
 		int default_only);
-	int paste_auto_silence(double start, double end);
-	int clear_handle(double start, 
-		double end, 
+	int clear_handle(ptstime start,
+		ptstime end,
 		int clear_labels,
 		int clear_plugins, 
-		double &distance);
-	int paste_silence(double start, double end, int edit_plugins);
+		ptstime &distance);
+	int paste_silence(ptstime start, ptstime end, int edit_plugins);
 	virtual int select_translation(int cursor_x, int cursor_y) { return 0; };  // select video coordinates for frame
 	virtual int update_translation(int cursor_x, int cursor_y, int shift_down) { return 0; };  // move video coordinates
-	int select_auto(AutoConf *auto_conf, int cursor_x, int cursor_y);
-	int move_auto(AutoConf *auto_conf, int cursor_x, int cursor_y, int shift_down);
-	int release_auto();
 
 // Return 1 if the left handle was selected 2 if the right handle was selected 3 if the track isn't recordable
-	int modify_edithandles(double oldposition, 
-		double newposition, 
+	int modify_edithandles(ptstime oldposition,
+		ptstime newposition,
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
 		int edit_plugins);
-	int modify_pluginhandles(double oldposition, 
-		double newposition, 
+	int modify_pluginhandles(ptstime oldposition,
+		ptstime newposition,
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
 		Edits *trim_edits);
-	virtual int end_translation() { return 0; };
-	virtual int reset_translation(posnum start, posnum end) { return 0; };
 
 // Absolute number of this track
 	int number_of();
-
-// get_dimensions is used for getting drawing regions so use floats for partial frames
-// get the display dimensions in SAMPLES OR FRAMES
-	virtual int get_dimensions(double &view_start, 
-		double &view_units, 
-		double &zoom_units) { return 0; };   
 // Longest time from current_position in which nothing changes
-	posnum edit_change_duration(posnum input_position, 
-		posnum input_length, 
+	ptstime edit_change_duration(ptstime input_position, 
+		ptstime input_length, 
 		int reverse, 
 		int test_transitions,
 		int use_nudge);
-	posnum plugin_change_duration(posnum input_position,
-		posnum input_length,
+	ptstime plugin_change_duration(ptstime input_position,
+		ptstime input_length,
 		int reverse,
 		int use_nudge);
 // Utility for edit_change_duration.
 	int need_edit(Edit *current, int test_transitions);
 // If the edit under position is playable.
 // Used by PlayableTracks::is_playable.
-	int playable_edit(posnum position);
+	int playable_edit(ptstime position);
 
-// ===================================== for handles, titles, etc
-
-	posnum old_view_start;
-	int pixel;   // pixel position from top of track view
 // Dimensions of this track if video
 	int track_w, track_h;
-
-
-
-
+// Length of one unit on seconds
+	ptstime one_unit;
 private:
 // Identification of the track
 	int id;

@@ -223,7 +223,7 @@ int RenderEngine::get_output_h()
 	return edl->session->output_h;
 }
 
-int RenderEngine::brender_available(int position)
+int RenderEngine::brender_available(ptstime position)
 {
 	if(playback_engine)
 	{
@@ -553,7 +553,7 @@ void RenderEngine::run()
 		{
 			playback_engine->tracking_position = command->playbackstart;
 			if(command->command != CURRENT_FRAME){
-    			    playback_engine->stop_tracking();
+				playback_engine->stop_tracking();
 			}
 		}
 		else
@@ -572,7 +572,7 @@ void RenderEngine::run()
 						(double)vrender->current_position / 
 							command->get_edl()->session->frame_rate;
 				}
-			    playback_engine->stop_tracking();
+				playback_engine->stop_tracking();
 			}
 
 		}

@@ -52,32 +52,17 @@ public:
 	int load_header(FileXML *file, uint32_t load_flags);
 	int load_derived(FileXML *file, uint32_t load_flags);
 	int copy_settings(Track *track);
-	int identical(posnum sample1, posnum sample2);
 	void synchronize_params(Track *track);
-	posnum to_units(double position, int round);
-	double to_doubleunits(double position);
-	double from_units(posnum position);
-
-
-
-
-
-
-
+	posnum to_units(ptstime position, int round = 0);
+	ptstime from_units(posnum position);
 
 // ====================================== initialization
 	int create_derived_objs(int flash);
 
-
-
-
 // ===================================== editing
-	int paste_derived(posnum start, posnum end, posnum total_length, FileXML *xml, int &current_channel);
+	int paste_derived(ptstime start, ptstime end, ptstime total_length, FileXML *xml, int &current_channel);
 
-	posnum length();
-	int get_dimensions(double &view_start, 
-		double &view_units, 
-		double &zoom_units);
+	ptstime length();
 };
 
 #endif

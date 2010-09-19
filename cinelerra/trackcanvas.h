@@ -294,8 +294,8 @@ public:
 	int start_selection(double position);
 	int drag_motion();
 	int drag_stop();
-	posnum get_drop_position (int *is_insertion, Edit *moved_edit, 
-		posnum moved_edit_length);
+	ptstime get_drop_position (int *is_insertion, Edit *moved_edit,
+		ptstime moved_edit_length);
 	void end_edithandle_selection();
 	void end_pluginhandle_selection();
 // Number of seconds spanned by the trackcanvas

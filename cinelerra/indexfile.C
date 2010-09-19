@@ -399,7 +399,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	if(edit->channel > asset->channels) return 1;
 
 // calculate a virtual x where the edit_x should be in floating point
-	double virtual_edit_x = 1.0 * edit->track->from_units(edit->startproject) * 
+	double virtual_edit_x = 1.0 * edit->project_pts * 
 			mwindow->edl->session->sample_rate /
 			mwindow->edl->local_session->zoom_sample - 
 			mwindow->edl->local_session->view_start;
@@ -409,7 +409,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 		mwindow->edl->session->sample_rate;
 	int64_t startsource = (int64_t)(((pixmap->pixmap_x - virtual_edit_x + x) * 
 		mwindow->edl->local_session->zoom_sample + 
-		edit->startsource) * 
+		edit->track->to_units(edit->source_pts)) *
 		asset_over_session);
 // just in case we get a numerical error 
 	if (startsource < 0) startsource = 0;

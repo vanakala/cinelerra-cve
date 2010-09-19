@@ -93,7 +93,7 @@ void VirtualNode::dump(int indent)
 	}
 }
 
-int VirtualNode::expand(int persistent_plugins, posnum current_position)
+int VirtualNode::expand(int persistent_plugins, ptstime current_position)
 {
 // module needs to know where the input data for the next process is
 	if(real_module)
@@ -111,17 +111,16 @@ int VirtualNode::expand(int persistent_plugins, posnum current_position)
 	return 0;
 }
 
-int VirtualNode::expand_as_module(int duplicate, posnum current_position)
+int VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 {
 	Transition *transition = 0;
 
 // create the plugins for this module
 	for(int i = 0; i < track->plugin_set.total; i++)
 	{
-		Plugin *plugin = track->get_current_plugin(current_position, 
+		Plugin *plugin = track->get_current_plugin(current_postime,
 			i, 
 			renderengine->command->get_direction(),
-			0,
 			1);
 
 // Switch off if circular reference.  This happens if a plugin set or a track is deleted.
@@ -137,7 +136,7 @@ int VirtualNode::expand_as_module(int duplicate, posnum current_position)
 				attach_virtual_module(plugin,
 					i, 
 					duplicate, 
-					current_position);
+					current_postime);
 			}
 			else
 			if(plugin_type == PLUGIN_SHAREDPLUGIN ||
@@ -147,7 +146,7 @@ int VirtualNode::expand_as_module(int duplicate, posnum current_position)
 				attach_virtual_plugin(plugin, 
 					i, 
 					duplicate, 
-					current_position);
+					current_postime);
 			}
 		}
 	}
@@ -213,7 +212,7 @@ int VirtualNode::expand_as_plugin(int duplicate)
 int VirtualNode::attach_virtual_module(Plugin *plugin, 
 	int plugin_number, 
 	int duplicate, 
-	posnum current_position)
+	ptstime current_postime)
 {
 	if(plugin->on)
 	{
@@ -232,7 +231,7 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 			track);
 
 		subnodes.append(virtual_module);
-		virtual_module->expand(duplicate, current_position);
+		virtual_module->expand(duplicate, current_postime);
 	}
 
 	return 0;
@@ -242,7 +241,7 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 int VirtualNode::attach_virtual_plugin(Plugin *plugin, 
 	int plugin_number, 
 	int duplicate, 
-	posnum current_position)
+	ptstime current_postime)
 {
 // Get real plugin and test if it is on.
 	int is_on = 1;
@@ -271,7 +270,7 @@ int VirtualNode::attach_virtual_plugin(Plugin *plugin,
 	{
 		VirtualNode *virtual_plugin = create_plugin(plugin);
 		subnodes.append(virtual_plugin);
-		virtual_plugin->expand(duplicate, current_position);
+		virtual_plugin->expand(duplicate, current_postime);
 	}
 	return 0;
 }
@@ -296,7 +295,7 @@ VirtualNode* VirtualNode::get_previous_plugin(VirtualNode *current_node)
 
 void VirtualNode::get_mute_fragment(ptstime input_position,
 				int &mute_constant, 
-				int &fragment_len, 
+				ptstime &fragment_len, 
 				Autos *autos,
 				int direction,
 				int use_nudge)
@@ -319,8 +318,8 @@ void VirtualNode::get_mute_fragment(ptstime input_position,
 		{
 			mute_constant = prev_keyframe->value;
 
-			if(next_keyframe->pos_time < input_position + next_keyframe->autos->pos2pts(fragment_len))
-				fragment_len = next_keyframe->autos->pts2pos(next_keyframe->pos_time - input_position);
+			if(next_keyframe->pos_time < input_position + fragment_len)
+				fragment_len = next_keyframe->pos_time - input_position;
 		}
 		else
 // One keyframe within range
@@ -335,8 +334,8 @@ void VirtualNode::get_mute_fragment(ptstime input_position,
 		{
 			mute_constant = next_keyframe->value;
 
-			if(next_keyframe->pos_time > input_position - next_keyframe->autos->pos2pts(fragment_len))
-				fragment_len = next_keyframe->autos->pts2pos(input_position - next_keyframe->pos_time);
+			if(next_keyframe->pos_time > input_position - fragment_len)
+				fragment_len = input_position - next_keyframe->pos_time;
 		}
 		else
 // One keyframe within range
@@ -345,9 +344,3 @@ void VirtualNode::get_mute_fragment(ptstime input_position,
 		}
 	}
 }
-
-
-
-
-
-

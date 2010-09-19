@@ -59,7 +59,7 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 
 	this->mwindow = mwindow;
 	this->canvas = canvas;
-	startsource = edit->startsource;
+	source_pts = edit->source_pts;
 	data_type = edit->track->data_type;
 	source_framerate = edit->asset->frame_rate;
 	project_framerate = edit->edl->session->frame_rate;
@@ -112,9 +112,9 @@ void ResourcePixmap::draw_data(Edit *edit,
 	if(mode == 3) return;
 
 	int y = 0;
-	if(mwindow->edl->session->show_titles) y += mwindow->theme->get_image("title_bg_data")->get_h();
+	if(mwindow->edl->session->show_titles)
+		y += mwindow->theme->get_image("title_bg_data")->get_h();
 	Track *track = edit->edits->track;
-
 
 // If index can't be drawn, don't do anything.
 	int need_redraw = 0;
@@ -147,12 +147,9 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 
 // Redraw everything
-	if(edit->startsource != this->startsource ||
-/* Incremental drawing is not possible with resource thread */
-		(data_type == TRACK_AUDIO /* && 
-			edit->asset->sample_rate != source_samplerate*/ ) ||
-		(data_type == TRACK_VIDEO /* && 
-			!EQUIV(edit->asset->frame_rate, source_framerate) */ ) ||
+	if(!PTSEQU(edit->source_pts, this->source_pts) ||
+		(data_type == TRACK_AUDIO) ||
+		(data_type == TRACK_VIDEO) ||
 		mwindow->edl->session->sample_rate != project_samplerate ||
 		mwindow->edl->session->frame_rate != project_framerate ||
 		mwindow->edl->local_session->zoom_sample != zoom_sample || 
@@ -191,10 +188,10 @@ void ResourcePixmap::draw_data(Edit *edit,
 					y);
 			}
 		}
- 		else
+		else
 // Start translated left
- 		if(pixmap_w == this->pixmap_w && edit_x > this->edit_x && edit_w != pixmap_w)
- 		{
+		if(pixmap_w == this->pixmap_w && edit_x > this->edit_x && edit_w != pixmap_w)
+		{
 			refresh_x = 0;
 			refresh_w = edit_x - this->edit_x;
 
@@ -220,7 +217,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 		{
 			refresh_w = (this->edit_x + edit_w) - (this->pixmap_x + this->pixmap_w);
 			refresh_x = pixmap_w - refresh_w;
-			
+
 			if(refresh_w >= pixmap_w)
 			{
 				refresh_x = 0;
@@ -336,7 +333,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 // Update pixmap settings
 	this->edit_id = edit->id;
-	this->startsource = edit->startsource;
+	this->source_pts = edit->source_pts;
 	this->source_framerate = edit->asset->frame_rate;
 	this->source_samplerate = edit->asset->sample_rate;
 	this->project_framerate = edit->edl->session->frame_rate;
@@ -348,8 +345,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 	this->zoom_sample = mwindow->edl->local_session->zoom_sample;
 	this->zoom_track = mwindow->edl->local_session->zoom_track;
 	this->zoom_y = mwindow->edl->local_session->zoom_y;
-
-
 
 // Draw in new background
 	if(refresh_w > 0)
@@ -363,26 +358,25 @@ void ResourcePixmap::draw_data(Edit *edit,
 			refresh_x + refresh_w,
 			mwindow->edl->local_session->zoom_track + y);
 
-
 // Draw media
 	if(track->draw)
 	{
 		switch(track->data_type)
 		{
-			case TRACK_AUDIO:
-				draw_audio_resource(edit, refresh_x, refresh_w);
-				break;
+		case TRACK_AUDIO:
+			draw_audio_resource(edit, refresh_x, refresh_w);
+			break;
 
-			case TRACK_VIDEO:
-				draw_video_resource(edit, 
-					edit_x, 
-					edit_w, 
-					pixmap_x,
-					pixmap_w,
-					refresh_x, 
-					refresh_w,
-					mode);
-				break;
+		case TRACK_VIDEO:
+			draw_video_resource(edit,
+				edit_x,
+				edit_w,
+				pixmap_x,
+				pixmap_w,
+				refresh_x,
+				refresh_w,
+				mode);
+			break;
 		}
 	}
 
@@ -458,18 +452,18 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 // Develop strategy for drawing
 	switch(edit->asset->index_status)
 	{
-		case INDEX_NOTTESTED:
-			return;
-			break;
-		case INDEX_BUILDING:
-		case INDEX_READY:
+	case INDEX_NOTTESTED:
+		return;
+
+	case INDEX_BUILDING:
+	case INDEX_READY:
 		{
 			IndexFile indexfile(mwindow);
 			if(!indexfile.open_index(edit->asset))
 			{
 				if(edit->asset->index_zoom > 
-						mwindow->edl->local_session->zoom_sample * 
-						asset_over_session)
+					mwindow->edl->local_session->zoom_sample * 
+					asset_over_session)
 				{
 					draw_audio_source(edit, x, w);
 				}
@@ -481,7 +475,6 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 		}
 	}
 }
-
 
 
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
@@ -500,13 +493,15 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		mwindow->edl->session->sample_rate;
 	int source_len = w * mwindow->edl->local_session->zoom_sample;
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
-	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
+	if(mwindow->edl->session->show_titles) 
+		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 
 // Single sample zoom
 	if(mwindow->edl->local_session->zoom_sample == 1)
 	{
 		samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
-			mwindow->edl->local_session->zoom_sample + edit->startsource) *
+			mwindow->edl->local_session->zoom_sample + 
+			edit->track->to_units(edit->source_pts)) *
 			asset_over_session);
 		double oldsample, newsample;
 		int total_source_samples = (int)((double)(source_len + 1) * 
@@ -555,10 +550,12 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		{
 // Starting sample of pixel relative to asset rate.
 			samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
-				mwindow->edl->local_session->zoom_sample + edit->startsource) *
+				mwindow->edl->local_session->zoom_sample + 
+				edit->track->to_units(edit->source_pts)) *
 				asset_over_session);
 			samplenum source_end = (int64_t)(((pixmap_x - edit_x + x + 1) * 
-				mwindow->edl->local_session->zoom_sample + edit->startsource) *
+				mwindow->edl->local_session->zoom_sample + 
+				edit->track->to_units(edit->source_pts)) *
 				asset_over_session);
 			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset->id,
 					edit->channel,
@@ -683,7 +680,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Draw only cached frames
 	while(x < refresh_x + refresh_w)
 	{
-		framenum source_frame = project_frame + edit->startsource;
+		framenum source_frame = project_frame + edit->track->to_units(edit->source_pts);
 		VFrame *picon_frame = 0;
 		int use_cache = 0;
 
@@ -727,7 +724,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Unlock the get_frame_ptr command
 		if(use_cache)
 			mwindow->frame_cache->unlock();
-		
+
 		if(frames_per_picon > 1)
 		{
 			x += Units::round(picon_w);

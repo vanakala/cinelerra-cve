@@ -616,9 +616,8 @@ int MWindow::prev_label(int shift_down)
 
 int MWindow::next_edit_handle(int shift_down)
 {
-	double position = edl->local_session->get_selectionend(1);
-	Units::fix_double(&position);
-	double new_position = INFINITY;
+	ptstime position = edl->local_session->get_selectionend(1);
+	ptstime new_position = INFINITY;
 // Test for edit handles after cursor position
 	for (Track *track = edl->tracks->first; track; track = track->next)
 	{
@@ -626,8 +625,7 @@ int MWindow::next_edit_handle(int shift_down)
 		{
 			for (Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
-				double edit_end = track->from_units(edit->startproject + edit->length);
-				Units::fix_double(&edit_end);
+				ptstime edit_end = edit->project_pts + edit->length_time;
 				if (edit_end > position && edit_end < new_position)
 					new_position = edit_end;
 			}
@@ -638,7 +636,6 @@ int MWindow::next_edit_handle(int shift_down)
 	{
 
 		edl->local_session->set_selectionend(new_position);
-printf("MWindow::next_edit_handle %d\n", shift_down);
 		if(!shift_down) 
 			edl->local_session->set_selectionstart(
 				edl->local_session->get_selectionend(1));
@@ -690,8 +687,7 @@ int MWindow::prev_edit_handle(int shift_down)
 		{
 			for (Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
-				double edit_end = track->from_units(edit->startproject);
-				Units::fix_double(&edit_end);
+				double edit_end = edit->project_pts;
 				if (edit_end < position && edit_end > new_position)
 					new_position = edit_end;
 			}

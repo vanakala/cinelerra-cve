@@ -22,6 +22,7 @@
 #include "auto.h"
 #include "automation.h"
 #include "autos.h"
+#include "bcsignals.h"
 #include "commonrender.h"
 #include "condition.h"
 #include "edl.h"
@@ -174,7 +175,7 @@ int VirtualConsole::test_reconfigure(posnum position,
 		{
 // Playable status changed
 			if(playable_tracks->is_playable(current_track, 
-				commonrender->current_position,
+				current_track->from_units(commonrender->current_position),
 				1))
 			{
 				if(!playable_tracks->is_listed(current_track))
@@ -193,23 +194,17 @@ int VirtualConsole::test_reconfigure(posnum position,
 		result = commonrender->modules[i]->test_plugins();
 
 
-
-
-
 // Now get the length of time until next reconfiguration.
 // This part is not concerned with result.
 // Don't clip input length if only rendering 1 frame.
 	if(length == 1) return result;
 
 
-
-
-
 	int direction = renderengine->command->get_direction();
 // GCC 3.2 requires this or optimization error results.
-	posnum longest_duration1;
-	posnum longest_duration2;
-	posnum longest_duration3;
+	ptstime longest_duration1;
+	ptstime longest_duration2;
+	ptstime longest_duration3;
 
 // Length of time until next transition, edit, or effect change.
 // Why do we need the edit change?  Probably for changing to and from silence.
@@ -219,10 +214,12 @@ int VirtualConsole::test_reconfigure(posnum position,
 	{
 		if(current_track->data_type == data_type)
 		{
+			ptstime postime = current_track->from_units(commonrender->current_position);
+			ptstime lentime = current_track->from_units(length);
 // Test the transitions
 			longest_duration1 = current_track->edit_change_duration(
-				commonrender->current_position, 
-				length, 
+				postime,
+				lentime,
 				direction == PLAY_REVERSE, 
 				1,
 				1);
@@ -230,8 +227,8 @@ int VirtualConsole::test_reconfigure(posnum position,
 
 // Test the edits
 			longest_duration2 = current_track->edit_change_duration(
-				commonrender->current_position, 
-				length, 
+				postime,
+				lentime,
 				direction, 
 				0,
 				1);
@@ -239,30 +236,29 @@ int VirtualConsole::test_reconfigure(posnum position,
 
 // Test the plugins
 			longest_duration3 = current_track->plugin_change_duration(
-				commonrender->current_position,
-				length,
+				postime,
+				lentime,
 				direction == PLAY_REVERSE,
 				1);
 
-			if(longest_duration1 < length)
+			if(longest_duration1 < lentime)
 			{
-				length = longest_duration1;
+				lentime = longest_duration1;
 				last_playback = 0;
 			}
-			if(longest_duration2 < length)
+			if(longest_duration2 < lentime)
 			{
-				length = longest_duration2;
+				lentime = longest_duration2;
 				last_playback = 0;
 			}
-			if(longest_duration3 < length)
+			if(longest_duration3 < lentime)
 			{
-				length = longest_duration3;
+				lentime = longest_duration3;
 				last_playback = 0;
 			}
-
+			length = current_track->to_units(lentime);
 		}
 	}
-
 	return result;
 }
 

@@ -789,7 +789,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 void MWindow::move_effect(Plugin *plugin,
 	PluginSet *dest_plugin_set,
 	Track *dest_track,
-	posnum dest_position)
+	ptstime dest_position)
 {
 
 	edl->tracks->move_effect(plugin, 
@@ -1409,7 +1409,6 @@ SET_TRACE
 								1, // edit edits
 								edit_labels,
 								edit_plugins, 
-								1, // convert units
 								0); // trim edits
 
 

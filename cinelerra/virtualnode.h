@@ -56,19 +56,19 @@ public:
 
 
 // expand plugins
-	int expand(int persistent_plugins, posnum current_position);
+	int expand(int persistent_plugins, ptstime current_position);
 // create convenience pointers to shared memory depending on the data type
 	virtual int create_buffer_ptrs() {};
 // create a node for a module and expand it
 	int attach_virtual_module(Plugin *plugin, 
 		int plugin_number, 
 		int duplicate, 
-		posnum current_position);
+		ptstime current_position);
 // create a node for a plugin and expand it
 	int attach_virtual_plugin(Plugin *plugin, 
 		int plugin_number, 
 		int duplicate, 
-		posnum current_position);
+		ptstime current_position);
 	virtual VirtualNode* create_module(Plugin *real_plugin, 
 						Module *real_module, 
 						Track *track) { return 0; };
@@ -110,12 +110,13 @@ public:
 // a multichannel plugin
 	int plugin_buffer_number;
 
+protected:
 // Mute automation.
 // Return whether the next samples are muted and store the duration
 // of the next status in fragment_len
 	void get_mute_fragment(ptstime input_position,
 				int &mute_constant, 
-				int &fragment_len, 
+				ptstime &fragment_len,
 				Autos *autos,
 				int direction,
 				int use_nudge);
@@ -123,7 +124,7 @@ public:
 private:
 	int sort_as_module(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);
 	int sort_as_plugin(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);
-	int expand_as_module(int duplicate, posnum current_position);
+	int expand_as_module(int duplicate, ptstime current_position);
 	int expand_as_plugin(int duplicate);
 	int is_exit;
 };

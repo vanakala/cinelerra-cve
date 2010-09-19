@@ -45,7 +45,7 @@
 #include "vtrack.h"
 #include <string.h>
 
-int Tracks::clear(double start, double end, int clear_plugins)
+void Tracks::clear(ptstime start, ptstime end, int clear_plugins)
 {
 	Track *current_track;
 
@@ -60,14 +60,12 @@ int Tracks::clear(double start, double end, int clear_plugins)
 				1, 
 				1, 
 				clear_plugins, 
-				1,
 				0); 
 		}
 	}
-	return 0;
 }
 
-void Tracks::clear_automation(double selectionstart, double selectionend)
+void Tracks::clear_automation(ptstime selectionstart, ptstime selectionend)
 {
 	Track* current_track;
 
@@ -83,7 +81,7 @@ void Tracks::clear_automation(double selectionstart, double selectionend)
 	}
 }
 
-void Tracks::straighten_automation(double selectionstart, double selectionend)
+void Tracks::straighten_automation(ptstime selectionstart, ptstime selectionend)
 {
 	Track* current_track;
 
@@ -97,24 +95,23 @@ void Tracks::straighten_automation(double selectionstart, double selectionend)
 	}
 }
 
-int Tracks::clear_default_keyframe()
+void Tracks::clear_default_keyframe(void)
 {
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->record)
 			current->clear_automation(0, 0, 0, 1);
 	}
-	return 0;
 }
 
-int Tracks::clear_handle(double start, 
-	double end,
-	double &longest_distance,
+void Tracks::clear_handle(ptstime start,
+	ptstime end,
+	ptstime &longest_distance,
 	int clear_labels,
 	int clear_plugins)
 {
 	Track* current_track;
-	double distance;
+	ptstime distance;
 
 	for(current_track = first; current_track; current_track = current_track->next)
 	{
@@ -128,12 +125,10 @@ int Tracks::clear_handle(double start,
 			if(distance > longest_distance) longest_distance = distance;
 		}
 	}
-
-	return 0;
 }
 
-int Tracks::copy_automation(double selectionstart, 
-	double selectionend, 
+void Tracks::copy_automation(ptstime selectionstart,
+	ptstime selectionend,
 	FileXML *file,
 	int default_only,
 	int autos_only)
@@ -167,16 +162,14 @@ int Tracks::copy_automation(double selectionstart,
 	file->append_tag();
 	file->append_newline();
 	file->terminate_string();
-	return 0;
 }
 
-int Tracks::copy_default_keyframe(FileXML *file)
+void Tracks::copy_default_keyframe(FileXML *file)
 {
 	copy_automation(0, 0, file, 1, 0);
-	return 0;
 }
 
-int Tracks::delete_tracks()
+int Tracks::delete_tracks(void)
 {
 	int total_deleted = 0;
 	int done = 0;
@@ -201,7 +194,7 @@ int Tracks::delete_tracks()
 
 void Tracks::move_edits(ArrayList<Edit*> *edits, 
 	Track *track,
-	double position,
+	ptstime postime,
 	int edit_labels,  // Ignored
 	int edit_plugins,  // Ignored
 	int behaviour)
@@ -250,11 +243,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 
 			if(source_edit)
 			{
-				int64_t position_i = source_track->to_units(position, 0);
-// Source edit changes
-				int64_t source_length = source_edit->length;
-				int64_t source_startproject = source_edit->startproject;
-
 				if (behaviour == 0)
 				{
 				// This works like this: CUT edit, INSERT edit at final position, keyframes also follow
@@ -265,50 +253,46 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 
 					temp_autoconf.set_all(1);
 
-					ptstime stp_pts = source_track->from_units(source_edit->startproject);
-					ptstime stp_end = source_track->from_units(source_edit->startproject + source_edit->length);
-					source_track->automation->copy(stp_pts,
-						stp_end,
+					source_track->automation->copy(source_edit->project_pts,
+						source_edit->project_pts + source_edit->length_time,
 						&temp, 
 						0,
 						0);
 					temp.terminate_string();
 					temp.rewind();
 // Insert new keyframes
-					source_track->automation->clear(stp_pts,
-						stp_end,
+					source_track->automation->clear(source_edit->project_pts,
+						source_edit->project_pts + source_edit->length_time,
 						&temp_autoconf,
 						1);
-					posnum position_a = position_i;
+					ptstime postime_a = postime;
 					if (dest_track == source_track)
 					{
-						if (position_a > source_edit->startproject)
-							position_a -= source_length;
+						if (postime_a > source_edit->project_pts)
+							postime_a -= source_edit->length_time;
 					}
-					ptstime posa_pts = dest_track->from_units(position_a);
-					ptstime len_pts = dest_track->from_units(source_length);
-					dest_track->automation->paste_silence(posa_pts,
-						posa_pts + len_pts);
+					dest_track->automation->paste_silence(postime_a,
+						postime_a + source_edit->length_time);
 					while(!temp.read_tag())
-						dest_track->automation->paste(posa_pts,
-							len_pts,
+						dest_track->automation->paste(postime_a,
+							source_edit->length_time,
 							1.0, 
 							&temp, 
 							0,
 							&temp_autoconf);
 
 // Insert new edit
-					Edit *dest_edit = dest_track->edits->shift(position_i, 
-						source_length);
+					Edit *dest_edit = dest_track->edits->shift(postime,
+						source_edit->length_time);
 					Edit *result = dest_track->edits->insert_before(dest_edit, 
 						dest_track->edits->create_edit());
 					result->copy_from(source_edit);
-					result->startproject = position_i;
-					result->length = source_length;
+					result->project_pts = postime;
+					result->length_time = source_edit->length_time;
 
 // Clear source
-					source_track->edits->clear(source_edit->startproject, 
-						source_edit->startproject + source_length);
+					source_track->edits->clear(source_edit->project_pts,
+						source_edit->project_pts + source_edit->length_time);
 
 	/*
 //this is outline for future thinking how it is supposed to be done trough C&P mechanisms
@@ -340,19 +324,19 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					Edit *temp_edit = dest_track->edits->create_edit(); 
 					temp_edit->copy_from(source_edit);
 					// we call the edits directly since we do not want to move keyframes or anything else
-					source_track->edits->clear(source_startproject, 
-						source_startproject + source_length);
-					source_track->edits->paste_silence(source_startproject, 
-						source_startproject + source_length); 
+					source_track->edits->clear(source_edit->project_pts,
+						source_edit->project_pts + source_edit->length_time);
+					source_track->edits->paste_silence(source_edit->project_pts,
+						source_edit->project_pts + source_edit->length_time);
 
-					dest_track->edits->clear(position_i, 
-						position_i + source_length);
-					Edit *dest_edit = dest_track->edits->shift(position_i,  source_length);
+					dest_track->edits->clear(postime,
+						postime + source_edit->length_time);
+					Edit *dest_edit = dest_track->edits->shift(postime, source_edit->length_time);
 					Edit *result = dest_track->edits->insert_before(dest_edit, 
 						dest_track->edits->create_edit());
 					result->copy_from(temp_edit);
-					result->startproject = position_i;
-					result->length = source_length;
+					result->project_pts = postime;
+					result->length_time = source_edit->length_time;
 					delete temp_edit;
 				}
 				source_track->optimize();
@@ -365,7 +349,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 void Tracks::move_effect(Plugin *plugin,
 	PluginSet *dest_plugin_set,
 	Track *dest_track, 
-	posnum dest_position)
+	ptstime dest_postime)
 {
 	Track *source_track = plugin->track;
 	Plugin *result = 0;
@@ -378,12 +362,13 @@ void Tracks::move_effect(Plugin *plugin,
 
 // Assume this operation never splits a plugin
 // Shift destination plugins back
-		dest_plugin_set->shift(dest_position, plugin->length);
+		dest_plugin_set->shift(dest_postime, plugin->length_time);
 
 // Insert new plugin
 		Plugin *current = 0;
 		for(current = (Plugin*)dest_plugin_set->first; current; current = (Plugin*)NEXT)
-			if(current->startproject >= dest_position) break;
+			if(current->project_pts >= dest_postime)
+				break;
 
 		result = (Plugin*)dest_plugin_set->insert_before(current, 
 			new Plugin(edl, dest_plugin_set, ""));
@@ -391,26 +376,21 @@ void Tracks::move_effect(Plugin *plugin,
 	else
 // Create a new plugin set
 	{
-		double start = dest_track->from_units(dest_position);
-		double length = dest_track->from_units(plugin->length);
-
 		result = dest_track->insert_effect("", 
 				&plugin->shared_location, 
 				0,
 				0,
-				start,
-				length,
+				dest_postime,
+				plugin->length_time,
 				plugin->plugin_type);
-
 	}
 
-
 	result->copy_from(plugin);
-	result->shift(dest_position - plugin->startproject);
+	result->shift(dest_postime - plugin->project_pts);
 
 // Clear new plugin from old set
-	plugin->plugin_set->clear(plugin->startproject, plugin->startproject + plugin->length);
-
+	plugin->plugin_set->clear(plugin->project_pts, 
+		plugin->project_pts + plugin->length_time);
 
 	source_track->optimize();
 }
@@ -421,7 +401,7 @@ int Tracks::concatenate_tracks(int edit_plugins)
 {
 	Track *output_track, *first_output_track, *input_track;
 	int i, data_type = TRACK_AUDIO;
-	double output_start;
+	ptstime output_start;
 	FileXML *clipboard;
 	int result = 0;
 	IntAuto *play_keyframe = 0;
@@ -447,7 +427,6 @@ int Tracks::concatenate_tracks(int edit_plugins)
 				input_track->play && 
 				!input_track->record) break;
 		}
-
 
 		if(output_track && input_track)
 		{
@@ -493,10 +472,9 @@ int Tracks::concatenate_tracks(int edit_plugins)
 	return result;
 }
 
-int Tracks::delete_all_tracks()
+void Tracks::delete_all_tracks()
 {
 	while(last) delete last;
-	return 0;
 }
 
 
@@ -517,18 +495,16 @@ void Tracks::change_plugins(SharedLocation &old_location, SharedLocation &new_lo
 }
 
 
-
 // =========================================== EDL editing
 
-
-int Tracks::copy(double start, 
-	double end, 
+int Tracks::copy(ptstime start,
+	ptstime end,
 	int all, 
 	FileXML *file, 
 	const char *output_path)
 {
 // nothing selected
-	if(start == end && !all) return 1;
+	if(PTSEQU(start, end) && !all) return 1;
 
 	Track* current;
 
@@ -541,13 +517,11 @@ int Tracks::copy(double start,
 			current->copy(start, end, file,output_path);
 		}
 	}
-
 	return 0;
 }
 
 
-
-int Tracks::move_track_up(Track *track)
+void Tracks::move_track_up(Track *track)
 {
 	Track *next_track = track->previous;
 	if(!next_track) next_track = last;
@@ -555,22 +529,19 @@ int Tracks::move_track_up(Track *track)
 	change_modules(number_of(track), number_of(next_track), 1);
 
 	swap(track, next_track);
-
-	return 0;
 }
 
-int Tracks::move_track_down(Track *track)
+void Tracks::move_track_down(Track *track)
 {
 	Track *next_track = track->next;
 	if(!next_track) next_track = first;
 
 	change_modules(number_of(track), number_of(next_track), 1);
 	swap(track, next_track);
-	return 0;
 }
 
 
-int Tracks::move_tracks_up()
+int Tracks::move_tracks_up(void)
 {
 	Track *track, *next_track;
 	int result = 0;
@@ -596,11 +567,11 @@ int Tracks::move_tracks_up()
 	return result;
 }
 
-int Tracks::move_tracks_down()
+int Tracks::move_tracks_down(void)
 {
 	Track *track, *previous_track;
 	int result = 0;
-	
+
 	for(track = last;
 		track; 
 		track = previous_track)
@@ -618,7 +589,7 @@ int Tracks::move_tracks_down()
 			}
 		}
 	}
-	
+
 	return result;
 }
 
@@ -631,8 +602,8 @@ void Tracks::paste_audio_transition(PluginServer *server)
 		if(current->data_type == TRACK_AUDIO &&
 			current->record)
 		{
-			int64_t position = current->to_units(
-				edl->local_session->get_selectionstart(), 0);
+			ptstime position = 
+				edl->local_session->get_selectionstart();
 			Edit *current_edit = current->edits->editof(position, 
 				0);
 			if(current_edit)
@@ -643,30 +614,14 @@ void Tracks::paste_audio_transition(PluginServer *server)
 	}
 }
 
-void Tracks::loaded_lengths_to_tracklengths(int includerecordtracks)
-{
-	Track *current_track;
-	
-	for(current_track = first; 
-	    current_track; 
-	    current_track = current_track->next)
-	{
-		if(current_track->record || includerecordtracks) 
-		{
-// Reset the loaded_length value. (the last edit should always be a silence going to infinityish)
-			current_track->edits->loaded_length = current_track->edits->last->startproject;
-		}
-	}
-}
-
-void Tracks::paste_automation(double selectionstart, 
+void Tracks::paste_automation(ptstime selectionstart, 
 	FileXML *file,
 	int default_only)
 {
 	Track* current_atrack = 0;
 	Track* current_vtrack = 0;
 	int result = 0;
-	double length;
+	ptstime length;
 	double frame_rate = edl->session->frame_rate;
 	int sample_rate = edl->session->sample_rate;
 	char string[BCTEXTLEN];
@@ -674,16 +629,15 @@ void Tracks::paste_automation(double selectionstart,
 
 // Search for start
 	do{
-	  result = file->read_tag();
+		result = file->read_tag();
 	}while(!result && 
 		!file->tag.title_is("AUTO_CLIPBOARD"));
 
 	if(!result)
 	{
-		length = file->tag.get_property("LENGTH", 0);
+		length = file->tag.get_property("LENGTH_TIME", (ptstime)0);
 		frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
 		sample_rate = file->tag.get_property("SAMPLERATE", sample_rate);
-
 
 		do
 		{
@@ -754,10 +708,9 @@ void Tracks::paste_automation(double selectionstart,
 	}
 }
 
-int Tracks::paste_default_keyframe(FileXML *file)
+void Tracks::paste_default_keyframe(FileXML *file)
 {
 	paste_automation(0, file, 1);
-	return 0;
 }
 
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
@@ -772,8 +725,8 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 		if(current->data_type == TRACK_VIDEO &&
 			current->record)
 		{
-			int64_t position = current->to_units(
-				edl->local_session->get_selectionstart(), 0);
+			ptstime position = 
+				edl->local_session->get_selectionstart();
 			Edit *current_edit = current->edits->editof(position, 
 				0);
 			if(current_edit)
@@ -786,7 +739,7 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 }
 
 
-int Tracks::paste_silence(double start, double end, int edit_plugins)
+void Tracks::paste_silence(ptstime start, ptstime end, int edit_plugins)
 {
 	Track* current_track;
 
@@ -799,31 +752,10 @@ int Tracks::paste_silence(double start, double end, int edit_plugins)
 			current_track->paste_silence(start, end, edit_plugins); 
 		}
 	}
-	return 0;
 }
 
-
-
-int Tracks::select_auto(int cursor_x, int cursor_y)
-{
-	int result = 0;
-	for(Track* current = first; current && !result; current = NEXT) { result = current->select_auto(&auto_conf, cursor_x, cursor_y); }
-	return result;
-}
-
-int Tracks::move_auto(int cursor_x, int cursor_y, int shift_down)
-{
-	int result = 0;
-
-	for(Track* current = first; current && !result; current = NEXT) 
-	{
-		result = current->move_auto(&auto_conf, cursor_x, cursor_y, shift_down); 
-	}
-	return 0;
-}
-
-int Tracks::modify_edithandles(double &oldposition, 
-	double &newposition, 
+void Tracks::modify_edithandles(ptstime &oldposition,
+	ptstime &newposition,
 	int currentend, 
 	int handle_mode,
 	int edit_labels,
@@ -843,11 +775,10 @@ int Tracks::modify_edithandles(double &oldposition,
 				edit_plugins);
 		}
 	}
-	return 0;
 }
 
-int Tracks::modify_pluginhandles(double &oldposition, 
-	double &newposition, 
+void Tracks::modify_pluginhandles(ptstime &oldposition,
+	ptstime &newposition,
 	int currentend, 
 	int handle_mode,
 	int edit_labels,
@@ -867,5 +798,4 @@ int Tracks::modify_pluginhandles(double &oldposition,
 				trim_edits);
 		}
 	}
-	return 0;
 }

@@ -61,20 +61,18 @@ public:
 	int get_buffer_size();
 
 	CICache* get_cache();
+	int render(VFrame *output,
+		ptstime start_position,
+		int direction,
+		int use_nudge,
+		int use_opengl = 0);
+private:
 // Read frame from file and perform camera transformation
 	int import_frame(VFrame *output,
 		VEdit *current_edit,
 		ptstime input_position,
-		double frame_rate,
 		int direction,
 		int use_opengl);
-	int render(VFrame *output,
-		framenum start_position,
-		int direction,
-		double frame_rate,
-		int use_nudge,
-		int debug_render,
-		int use_opengl = 0);
 
 // synchronization with tracks
 	FloatAutos* get_fade_automation();       // get the fade automation for this module

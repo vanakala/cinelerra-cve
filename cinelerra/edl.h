@@ -125,8 +125,8 @@ public:
 	void set_project_path(const char *path);
 
 // Set points and labels
-	void set_inpoint(double position);
-	void set_outpoint(double position);
+	void set_inpoint(ptstime position);
+	void set_outpoint(ptstime position);
 
 // Redraw resources during index builds
 	void set_index_file(Asset *asset);
@@ -142,34 +142,34 @@ public:
 // Create a new folder if it doesn't exist already
 	void new_folder(const char *folder);
 	void delete_folder(const char *folder);
-	void modify_edithandles(double oldposition, 
-		double newposition, 
+	void modify_edithandles(ptstime oldposition,
+		ptstime newposition,
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
 		int edit_plugins);
 
-	void modify_pluginhandles(double oldposition, 
-		double newposition, 
+	void modify_pluginhandles(ptstime oldposition,
+		ptstime newposition,
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
 		Edits *trim_edits);
 
-	int trim_selection(double start, 
-		double end,
+	int trim_selection(ptstime start, 
+		ptstime end,
 		int edit_labels,
 		int edit_plugins);
 
 // Editing functions
-	int copy_assets(double start, 
-		double end, 
+	int copy_assets(ptstime start,
+		ptstime end,
 		FileXML *file, 
 		int all, 
 		ArrayList<PluginServer*> *plugindb,
 		const char *output_path);
-	int copy(double start, 
-		double end, 
+	int copy(ptstime start,
+		ptstime end,
 		int all,   // Ignore recordable status of tracks for saving
 		int is_clip,
 		int is_vwindow,
@@ -177,14 +177,14 @@ public:
 		ArrayList<PluginServer*> *plugindb,
 		const char *output_path,
 		int rewind_it);     // Rewind EDL for easy pasting
-	void paste_silence(double start, 
-		double end, 
-		int edit_labels /* = 1 */, 
+	void paste_silence(ptstime start,
+		ptstime end,
+		int edit_labels, 
 		int edit_plugins);
 	void remove_from_project(ArrayList<Asset*> *assets);
 	void remove_from_project(ArrayList<EDL*> *clips);
-	int clear(double start, 
-		double end, 
+	int clear(ptstime start,
+		ptstime end,
 		int clear_labels,
 		int clear_plugins);
 // Insert the asset at a point in the EDL

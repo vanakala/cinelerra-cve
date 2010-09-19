@@ -41,7 +41,7 @@ public:
 
 // ========================================= editing
 
-	posnum get_source_end(posnum default_);
+	ptstime get_source_end(ptstime default_value);
 
 private:
 

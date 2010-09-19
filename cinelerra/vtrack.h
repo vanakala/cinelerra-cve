@@ -32,9 +32,6 @@
 #include "vedit.inc"
 #include "vframe.inc"
 
-// CONVERTS FROM SAMPLES TO FRAMES
-
-
 
 class VTrack : public Track
 {
@@ -46,16 +43,14 @@ public:
 	int load_defaults(BC_Hash *defaults);
 	void set_default_title();
 	PluginSet* new_plugins();
-	int is_playable(posnum position, int direction);
 	int save_header(FileXML *file);
 	int save_derived(FileXML *file);
 	int load_header(FileXML *file, uint32_t load_flags);
 	int load_derived(FileXML *file, uint32_t load_flags);
 	int copy_settings(Track *track);
 	void synchronize_params(Track *track);
-	posnum to_units(double position, int round);
-	double to_doubleunits(double position);
-	double from_units(posnum position);
+	posnum to_units(ptstime position, int round = 0);
+	ptstime from_units(posnum position);
 
 	void calculate_input_transfer(Asset *asset, ptstime position, int direction, 
 		float &in_x, float &in_y, float &in_w, float &in_h,
@@ -67,7 +62,6 @@ public:
 
 	int vertical_span(Theme *theme);
 
-
 // ====================================== initialization
 	VTrack() {};
 	int create_derived_objs(int flash);
@@ -75,22 +69,15 @@ public:
 // ===================================== rendering
 
 // Give whether compressed data can be copied directly from the track to the output file
-	int direct_copy_possible(posnum current_frame, int direction, int use_nudge);
+	int direct_copy_possible(ptstime start, int direction, int use_nudge);
 
 // ===================================== editing
 
-	int copy_derived(posnum start, posnum end, FileXML *xml);
-	int paste_derived(posnum start, posnum end, posnum total_length, FileXML *xml, int &current_channel);
+	int copy_derived(ptstime start, ptstime end, FileXML *xml);
+	int paste_derived(ptstime start, ptstime end, posnum total_length, FileXML *xml, int &current_channel);
 	void translate(float offset_x, float offset_y, int do_camera);
 
 // ===================================== for handles, titles, etc
-
-// rounds up to integer frames for editing
-	int identical(posnum sample1, posnum sample2);
-// no rounding for drawing
-	int get_dimensions(double &view_start, 
-		double &view_units, 
-		double &zoom_units);
 
 private:
 };

@@ -99,7 +99,7 @@ TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(gui, 
-	(float)gui->transition->edit->track->from_units(gui->transition->length),
+	gui->transition->length_time,
 	(float)0, 
 	(float)100, 
 	x,
@@ -113,10 +113,11 @@ TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 int TransitionLengthText::handle_event()
 {
 	double result = atof(get_text());
-	if(!EQUIV(result, gui->transition->length))
+	if(!EQUIV(result, gui->transition->length_time))
 	{
-		gui->transition->length = gui->transition->track->to_units(result, 1);
-		if(gui->transition->edit->track->data_type == TRACK_VIDEO) mwindow->restart_brender();
+		gui->transition->length_time = result;
+		if(gui->transition->edit->track->data_type == TRACK_VIDEO) 
+			mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->edl->session->default_transition_length = result;
 		mwindow->gui->lock_window("TransitionLengthText::handle_event");
@@ -166,7 +167,7 @@ int TransitionPopup::update(Transition *transition)
 	show->set_checked(transition->show);
 	on->set_checked(transition->on);
 	char len_text[50];
-	sprintf(len_text, _("Length: %2.2f sec"), transition->track->from_units(transition->length));
+	sprintf(len_text, _("Length: %2.2f sec"), transition->length_time);
 	length->set_text(len_text);
 	return 0;
 }

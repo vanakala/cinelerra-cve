@@ -107,9 +107,7 @@ int VirtualANode::read_data(double *output_temp,
 	AEdit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		int edl_rate = renderengine->edl->session->sample_rate;
-		samplenum start_position_project = (samplenum)(start_postime * edl_rate);
-		parent_edit = (AEdit*)parent_node->track->edits->editof(start_position_project, 
+		parent_edit = (AEdit*)parent_node->track->edits->editof(start_postime,
 			0);
 	}
 
@@ -285,7 +283,7 @@ int VirtualANode::render_as_module(double **audio_out,
 	{
 		int mute_constant;
 		int mute_fragment = len - i;
-		int mute_fragment_project = mute_fragment;
+		ptstime mute_fragment_project = track->from_units(mute_fragment);
 
 		start_position_project = (start_postime * project_sample_rate) +
 			((direction == PLAY_FORWARD) ? i : -i);
@@ -340,7 +338,7 @@ int VirtualANode::render_fade(double *buffer,
 	FloatAuto *next = 0;
 	EDL *edl = vconsole->renderengine->edl;
 	int project_sample_rate = edl->session->sample_rate;
-	if(use_nudge) input_postime += (double)track->nudge / project_sample_rate;
+	if(use_nudge) input_postime += track->nudge;
 
 // Normalize input position to project sample rate here.
 // Automation functions are general to video and audio so it 
@@ -365,8 +363,6 @@ int VirtualANode::render_fade(double *buffer,
 	}
 	else
 	{
-		ptstime stp = autos->pos2pts(1);
-
 		for(int i = 0; i < len; i++)
 		{
 			fade_value = ((FloatAutos*)autos)->get_value(input_postime, 
@@ -382,9 +378,9 @@ int VirtualANode::render_fade(double *buffer,
 			buffer[i] *= value;
 
 			if(direction == PLAY_FORWARD)
-				input_postime += stp;
+				input_postime += track->one_unit;
 			else
-				input_postime -= stp;
+				input_postime -= track->one_unit;
 		}
 	}
 
@@ -406,9 +402,9 @@ int VirtualANode::render_pan(double *input, // start of input fragment
 
 	EDL *edl = vconsole->renderengine->edl;
 	int project_sample_rate = edl->session->sample_rate;
-	if(use_nudge) input_postime += track->nudge * project_sample_rate;
+	if(use_nudge) input_postime += track->nudge;
 
-	ptstime slope_step = autos->pos2pts(1);
+	ptstime slope_step = track->one_unit;
 
 	for(int i = 0; i < fragment_len; )
 	{

@@ -70,56 +70,55 @@ void Edit::reset()
 	edl = 0;
 	track = 0;
 	edits = 0;
-	startsource = 0;
-	startproject = 0;
-	length = 0;  
+	source_pts = 0;
+	project_pts = 0;
+	length_time = 0;
 	asset = 0;
 	transition = 0;
 	channel = 0;
 	user_title[0] = 0;
 }
 
-int Edit::copy(posnum start, posnum end, FileXML *file, const char *output_path)
+int Edit::copy(ptstime start, ptstime end, FileXML *file, const char *output_path)
 {
 // variables
 
-	posnum endproject = startproject + length;
+	ptstime endpts = project_pts + length_time;
 	int result;
 
-	if((startproject >= start && startproject <= end) ||  // startproject in range
-		 (endproject <= end && endproject >= start) ||	   // endproject in range
-		 (startproject <= start && endproject >= end))    // range in project
-	{   
+	if((project_pts >= start && project_pts <= end) ||  // startproject in range
+		(endpts <= end && endpts >= start) ||   // endproject in range
+		(project_pts <= start && endpts >= end))    // range in project
+	{
 // edit is in range
-		posnum startproject_in_selection = startproject; // start of edit in selection in project
-		posnum startsource_in_selection = startsource; // start of source in selection in source
-		posnum endsource_in_selection = startsource + length; // end of source in selection
-		posnum length_in_selection = length;             // length of edit in selection
+		ptstime startproj_in_selection = project_pts; // start of edit in selection in project
+		ptstime startsrc_in_selection = source_pts; // start of source in selection in source
+		ptstime endsrc_in_selection = source_pts + length_time; // end of source in selection
+		ptstime len_in_selection = length_time;             // length of edit in selection
 
-		if(startproject < start)
+		if(project_pts < start)
 		{         // start is after start of edit in project
-			posnum length_difference = start - startproject;
+			ptstime len_difference = start - project_pts;
 
-			startsource_in_selection += length_difference;
-			startproject_in_selection += length_difference;
-			length_in_selection -= length_difference;
+			startsrc_in_selection += len_difference;
+			startproj_in_selection += len_difference;
+			len_in_selection -= len_difference;
 		}
 
-		if(endproject > end)
+		if(endpts > end)
 		{         // end is before end of edit in project
-			length_in_selection = end - startproject_in_selection;
+			len_in_selection = end - startproj_in_selection;
 		}
-		
 
 		if(file)    // only if not counting
 		{
 			file->tag.set_title("EDIT");
-			file->tag.set_property("STARTSOURCE", startsource_in_selection);
+			file->tag.set_property("START_PTS", startsrc_in_selection);
 			file->tag.set_property("CHANNEL", (int64_t)channel);
-			file->tag.set_property("LENGTH", length_in_selection);
+			file->tag.set_property("LENGTH_TIME", len_in_selection);
 			if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
 
-			copy_properties_derived(file, length_in_selection);
+			copy_properties_derived(file, len_in_selection);
 
 			file->append_tag();
 
@@ -155,7 +154,7 @@ int Edit::copy(posnum start, posnum end, FileXML *file, const char *output_path)
 
 			file->tag.set_title("/EDIT");
 			file->append_tag();
-			file->append_newline();	
+			file->append_newline();
 		}
 		result = 1;
 	}
@@ -167,9 +166,9 @@ int Edit::copy(posnum start, posnum end, FileXML *file, const char *output_path)
 }
 
 
-posnum Edit::get_source_end(posnum default_)
+ptstime Edit::get_source_end(ptstime default_value)
 {
-	return default_;
+	return default_value;
 }
 
 void Edit::insert_transition(const char *title)
@@ -198,9 +197,9 @@ int Edit::silence()
 void Edit::copy_from(Edit *edit)
 {
 	this->asset = edl->assets->update(edit->asset);
-	this->startsource = edit->startsource;
-	this->startproject = edit->startproject;
-	this->length = edit->length;
+	this->source_pts = edit->source_pts;
+	this->project_pts = edit->project_pts;
+	this->length_time = edit->length_time;
 	strcpy (this->user_title, edit->user_title);
 
 	if(edit->transition)
@@ -208,18 +207,18 @@ void Edit::copy_from(Edit *edit)
 		if(!transition) transition = new Transition(edl, 
 			this, 
 			edit->transition->title,
-			edit->transition->length);
+			edit->transition->length_time);
 		*this->transition = *edit->transition;
 	}
 	this->channel = edit->channel;
 }
-
-void Edit::equivalent_output(Edit *edit, posnum *result)
+// Pooleli
+void Edit::equivalent_output(Edit *edit, ptstime *result)
 {
 // End of edit changed
-	if(startproject + length != edit->startproject + edit->length)
+	if(project_pts + length_time != edit->project_pts + edit->length_time)
 	{
-		int64_t new_length = MIN(startproject + length, edit->startproject + edit->length);
+		ptstime new_length = MIN(project_pts + length_time, edit->project_pts + edit->length_time);
 		if(*result < 0 || new_length < *result) 
 			*result = new_length;
 	}
@@ -233,8 +232,8 @@ void Edit::equivalent_output(Edit *edit, posnum *result)
 		edit->transition == 0 && transition != 0 ||
 		edit->transition != 0 && transition == 0 ||
 // Position changed
-		startproject != edit->startproject ||
-		startsource != edit->startsource ||
+		!PTSEQU(project_pts, edit->project_pts) ||
+		!PTSEQU(source_pts, edit->source_pts) ||
 // Transition changed
 		(transition && 
 			edit->transition && 
@@ -245,7 +244,8 @@ void Edit::equivalent_output(Edit *edit, posnum *result)
 			!asset->equivalent(*edit->asset, 1, 1))
 		)
 	{
-		if(*result < 0 || startproject < *result) *result = startproject;
+		if(*result < 0 || project_pts < *result)
+			*result = project_pts;
 	}
 }
 
@@ -266,11 +266,11 @@ void Edit::synchronize_params(Edit *edit)
 int Edit::identical(Edit &edit)
 {
 	int result = (this->asset == edit.asset &&
-	this->startsource == edit.startsource &&
-	this->startproject == edit.startproject &&
-	this->length == edit.length &&
-	this->transition == edit.transition &&
-	this->channel == edit.channel);
+		PTSEQU(this->source_pts, edit.source_pts) &&
+		PTSEQU(this->project_pts, edit.project_pts) &&
+		PTSEQU(this->length_time, edit.length_time) &&
+		this->transition == edit.transition &&
+		this->channel == edit.channel);
 	return result;
 }
 
@@ -286,7 +286,7 @@ double Edit::frames_per_picon()
 
 double Edit::frame_w()
 {
-	return track->from_units(1) * 
+	return track->one_unit * 
 		edl->session->sample_rate / 
 		edl->local_session->zoom_sample;
 }
@@ -314,44 +314,53 @@ int Edit::dump()
 		printf("      TRANSITION %p\n", transition);
 		transition->dump();
 	}
-	printf("      startsource %lld startproject %lld length %lld\n", startsource, startproject, length);
+	printf("      source_pts %.3f project_pts %.3f length_time %.3f\n",
+		source_pts, project_pts, length_time);
 	fflush(stdout);
 	return 0;
 }
 
-int Edit::load_properties(FileXML *file, posnum &startproject)
+int Edit::load_properties(FileXML *file, ptstime &startproject)
 {
+	posnum startsource, length;
+
 	startsource = file->tag.get_property("STARTSOURCE", (int64_t)0);
+	if(startsource)
+		source_pts = track->from_units(startsource);
+	source_pts = file->tag.get_property("START_PTS", source_pts);
 	length = file->tag.get_property("LENGTH", (int64_t)0);
+	if(length)
+		length_time = track->from_units(length);
+	length_time = file->tag.get_property("LENGTH_TIME", length_time);
 	user_title[0] = 0;
 	file->tag.get_property("USER_TITLE", user_title);
-	this->startproject = startproject;
+	this->project_pts = startproject;
 	load_properties_derived(file);
 	return 0;
 }
 
-void Edit::shift(posnum difference)
+void Edit::shift(ptstime difference)
 {
-	startproject += difference;
+	project_pts += difference;
 }
 
 int Edit::shift_start_in(int edit_mode, 
-	posnum newposition, 
-	posnum oldposition,
+	ptstime newpostime,
+	ptstime oldpostime,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
 	Edits *trim_edits)
 {
-	posnum cut_length = newposition - oldposition;
-	posnum end_previous_source, end_source;
+	ptstime cut_length = newpostime - oldpostime;
+	ptstime end_previous_source, end_source;
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
-		if(cut_length < length)
+		if(cut_length < length_time)
 		{        // clear partial 
-			edits->clear_recursive(oldposition, 
-				newposition,
+			edits->clear_recursive(oldpostime,
+				newpostime,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
@@ -359,8 +368,8 @@ int Edit::shift_start_in(int edit_mode,
 		}
 		else
 		{        // clear entire
-			edits->clear_recursive(oldposition, 
-				startproject + length,
+			edits->clear_recursive(oldpostime,
+				project_pts + length_time,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
@@ -374,34 +383,34 @@ int Edit::shift_start_in(int edit_mode,
 		if(!previous)
 		{
 			Edit *new_edit = edits->create_edit();
-			new_edit->startproject = this->startproject;
-			new_edit->length = 0;
+			new_edit->project_pts = this->project_pts;
+			new_edit->length_time = 0;
 			edits->insert_before(this, 
 				new_edit);
 		}
 
-		end_previous_source = previous->get_source_end(previous->startsource + previous->length + cut_length);
+		end_previous_source = previous->get_source_end(previous->source_pts + previous->length_time + cut_length);
 		if(end_previous_source > 0 && 
-			previous->startsource + previous->length + cut_length > end_previous_source)
-			cut_length = end_previous_source - previous->startsource - previous->length;
+			previous->source_pts + previous->length_time + cut_length > end_previous_source)
+			cut_length = end_previous_source - previous->source_pts - previous->length_time;
 
-		if(cut_length < length)
+		if(cut_length < length_time)
 		{		// Move in partial
-			startproject += cut_length;
-			startsource += cut_length;
-			length -= cut_length;
-			previous->length += cut_length;
+			project_pts += cut_length;
+			source_pts += cut_length;
+			length_time -= cut_length;
+			previous->length_time += cut_length;
 		}
 		else
 		{		// Clear entire edit
-			cut_length = length;
-			previous->length += cut_length;
+			cut_length = length_time;
+			previous->length_time += cut_length;
 			for(Edit* current_edit = this; current_edit; current_edit = current_edit->next)
 			{
-				current_edit->startproject += cut_length;
+				current_edit->project_pts += cut_length;
 			}
-			edits->clear_recursive(oldposition + cut_length, 
-				startproject + cut_length,
+			edits->clear_recursive(oldpostime + cut_length, 
+				project_pts + cut_length,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
@@ -411,49 +420,49 @@ int Edit::shift_start_in(int edit_mode,
 	else
 	if(edit_mode == MOVE_NO_EDITS)
 	{
-		end_source = get_source_end(startsource + length + cut_length);
-		if(end_source > 0 && startsource + length + cut_length > end_source)
-			cut_length = end_source - startsource - length;
-		
-		startsource += cut_length;
+		end_source = get_source_end(source_pts + length_time + cut_length);
+		if(end_source > 0 && source_pts + length_time + cut_length > end_source)
+			cut_length = end_source - source_pts - length_time;
+
+		source_pts += cut_length;
 	}
 	return 0;
 }
 
 int Edit::shift_start_out(int edit_mode, 
-	posnum newposition,
-	posnum oldposition,
+	ptstime newpostime,
+	ptstime oldpostime,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
 	Edits *trim_edits)
 {
-	posnum cut_length = oldposition - newposition;
+	ptstime cut_length = oldpostime - newpostime;
 
 	if(asset)
 	{
-		posnum end_source = get_source_end(1);
+		ptstime end_source = get_source_end(1);
 
-		if(end_source > 0 && startsource < cut_length)
+		if(end_source > 0 && source_pts < cut_length)
 		{
-			cut_length = startsource;
+			cut_length = source_pts;
 		}
 	}
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
-		startsource -= cut_length;
-		length += cut_length;
+		source_pts -= cut_length;
+		length_time += cut_length;
 
-		edits->shift_keyframes_recursive(startproject, 
+		edits->shift_keyframes_recursive(project_pts, 
 			cut_length);
 		if(edit_plugins)
-			edits->shift_effects_recursive(startproject, 
+			edits->shift_effects_recursive(project_pts,
 				cut_length);
 
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
 		{
-			current_edit->startproject += cut_length;
+			current_edit->project_pts += cut_length;
 		}
 	}
 	else
@@ -461,50 +470,50 @@ int Edit::shift_start_out(int edit_mode,
 	{
 		if(previous)
 		{
-			if(cut_length < previous->length)
+			if(cut_length < previous->length_time)
 			{   // Cut into previous edit
-				previous->length -= cut_length;
-				startproject -= cut_length;
-				startsource -= cut_length;
-				length += cut_length;
+				previous->length_time -= cut_length;
+				project_pts -= cut_length;
+				source_pts -= cut_length;
+				length_time += cut_length;
 			}
 			else
 			{   // Clear entire previous edit
-				cut_length = previous->length;
-				previous->length = 0;
-				length += cut_length;
-				startsource -= cut_length;
-				startproject -= cut_length;
+				cut_length = previous->length_time;
+				previous->length_time = 0;
+				length_time += cut_length;
+				source_pts -= cut_length;
+				project_pts -= cut_length;
 			}
 		}
 	}
 	else
 	if(edit_mode == MOVE_NO_EDITS)
 	{
-		startsource -= cut_length;
+		source_pts -= cut_length;
 	}
 
 // Fix infinite length files
-	if(startsource < 0) startsource = 0;
+	if(source_pts < 0) source_pts = 0;
 	return 0;
 }
 
 int Edit::shift_end_in(int edit_mode, 
-	posnum newposition, 
-	posnum oldposition,
+	ptstime newpostime,
+	ptstime oldpostime,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
 	Edits *trim_edits)
 {
-	posnum cut_length = oldposition - newposition;
+	ptstime cut_length = oldpostime - newpostime;
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
-		if(newposition > startproject)
+		if(newpostime > project_pts)
 		{        // clear partial edit
-			edits->clear_recursive(newposition, 
-				oldposition,
+			edits->clear_recursive(newpostime,
+				oldpostime,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
@@ -512,8 +521,8 @@ int Edit::shift_end_in(int edit_mode,
 		}
 		else
 		{        // clear entire edit
-			edits->clear_recursive(startproject, 
-				oldposition,
+			edits->clear_recursive(project_pts,
+				oldpostime,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
@@ -527,41 +536,41 @@ int Edit::shift_end_in(int edit_mode,
 		{
 			if(next->asset)
 			{
-				posnum end_source = next->get_source_end(1);
+				ptstime end_source = next->get_source_end(1);
 
-				if(end_source > 0 && next->startsource - cut_length < 0)
+				if(end_source > 0 && next->source_pts - cut_length < 0)
 				{
-					cut_length = next->startsource;
+					cut_length = next->source_pts;
 				}
 			}
 
-			if(cut_length < length)
+			if(cut_length < length_time)
 			{
-				length -= cut_length;
-				next->startproject -= cut_length;
-				next->startsource -= cut_length;
-				next->length += cut_length;
+				length_time -= cut_length;
+				next->project_pts -= cut_length;
+				next->source_pts -= cut_length;
+				next->length_time += cut_length;
 			}
 			else
 			{
-				cut_length = length;
-				next->length += cut_length;
-				next->startsource -= cut_length;
-				next->startproject -= cut_length;
-				length -= cut_length;
+				cut_length = length_time;
+				next->length_time += cut_length;
+				next->source_pts -= cut_length;
+				next->project_pts -= cut_length;
+				length_time -= cut_length;
 			}
 		}
 		else
 		{
-			if(cut_length < length)
+			if(cut_length < length_time)
 			{
-				length -= cut_length;
+				length_time -= cut_length;
 			}
 			else
 			{
-				cut_length = length;
-				edits->clear_recursive(startproject, 
-					oldposition,
+				cut_length = length_time;
+				edits->clear_recursive(project_pts,
+					oldpostime,
 					edit_edits,
 					edit_labels,
 					edit_plugins,
@@ -573,46 +582,46 @@ int Edit::shift_end_in(int edit_mode,
 // Does nothing for plugins
 	if(edit_mode == MOVE_NO_EDITS)
 	{
-		posnum end_source = get_source_end(1);
-		if(end_source > 0 && startsource < cut_length)
+		ptstime end_source = get_source_end(1);
+		if(end_source > 0 && source_pts < cut_length)
 		{
-			cut_length = startsource;
+			cut_length = source_pts;
 		}
-		startsource -= cut_length;
+		source_pts -= cut_length;
 	}
 	return 0;
 }
 
 int Edit::shift_end_out(int edit_mode, 
-	posnum newposition, 
-	posnum oldposition,
+	ptstime newpostime,
+	ptstime oldpostime,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
 	Edits *trim_edits)
 {
-	posnum cut_length = newposition - oldposition;
-	posnum endsource = get_source_end(startsource + length + cut_length);
+	ptstime cut_length = newpostime - oldpostime;
+	ptstime endsource = get_source_end(source_pts + length_time + cut_length);
 
 // check end of edit against end of source file
-	if(endsource > 0 && startsource + length + cut_length > endsource)
-		cut_length = endsource - startsource - length;
+	if(endsource > 0 && source_pts + length_time + cut_length > endsource)
+		cut_length = endsource - source_pts - length_time;
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
 // Extend length
-		this->length += cut_length;
+		this->length_time += cut_length;
 
 // Effects are shifted in length extension
 		if(edit_plugins)
-			edits->shift_effects_recursive(oldposition /* startproject */, 
+			edits->shift_effects_recursive(oldpostime /* startproject */, 
 				cut_length);
-		edits->shift_keyframes_recursive(oldposition /* startproject */, 
+		edits->shift_keyframes_recursive(oldpostime /* startproject */, 
 			cut_length);
 
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
 		{
-			current_edit->startproject += cut_length;
+			current_edit->project_pts += cut_length;
 		}
 	}
 	else
@@ -620,78 +629,29 @@ int Edit::shift_end_out(int edit_mode,
 	{
 		if(next)
 		{
-			if(cut_length < next->length)
+			if(cut_length < next->length_time)
 			{
-				length += cut_length;
-				next->startproject += cut_length;
-				next->startsource += cut_length;
-				next->length -= cut_length;
+				length_time += cut_length;
+				next->project_pts += cut_length;
+				next->source_pts += cut_length;
+				next->length_time -= cut_length;
 			}
 			else
 			{
-				cut_length = next->length;
-				next->length = 0;
-				length += cut_length;
+				cut_length = next->length_time;
+				next->length_time = 0;
+				length_time += cut_length;
 			}
 		}
 		else
 		{
-			length += cut_length;
+			length_time += cut_length;
 		}
 	}
 	else
 	if(edit_mode == MOVE_NO_EDITS)
 	{
-		startsource += cut_length;
+		source_pts += cut_length;
 	}
 	return 0;
 }
-
-
-
-
-
-
-int Edit::popup_transition(float view_start, float zoom_units, int cursor_x, int cursor_y)
-{
-	posnum left, right, left_unit, right_unit;
-	if(!transition) return 0;
-	get_handle_parameters(left, right, left_unit, right_unit, view_start, zoom_units);
-
-	if(cursor_x > left && cursor_x < right)
-	{
-		return 1;
-	}
-	return 0;
-}
-
-int Edit::select_handle(float view_start, float zoom_units, int cursor_x, int cursor_y, int64_t &selection)
-{
-	posnum left, right, left_unit, right_unit;
-	get_handle_parameters(left, right, left_unit, right_unit, view_start, zoom_units);
-
-	posnum pixel1, pixel2;
-	pixel1 = left;
-	pixel2 = pixel1 + 10;
-
-// test left edit
-// cursor_x is faked in acanvas
-	if(cursor_x >= pixel1 && cursor_x <= pixel2)
-	{
-		selection = left_unit;
-		return 1;     // left handle
-	}
-
-	posnum endproject = startproject + length;
-	pixel2 = right;
-	pixel1 = pixel2 - 10;
-
-// test right edit
-	if(cursor_x >= pixel1 && cursor_x <= pixel2)
-	{
-		selection = right_unit;
-		return 2;     // right handle
-	}
-	return 0;
-}
-

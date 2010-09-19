@@ -51,46 +51,46 @@ public:
 	virtual int identical(Edit &edit);
 	virtual Edit& operator=(Edit& edit);
 // Called by Edits and PluginSet
-	virtual void equivalent_output(Edit *edit, posnum *result);
+	virtual void equivalent_output(Edit *edit, ptstime *result);
 	virtual int operator==(Edit& edit);
 // When inherited by a plugin need to resample keyframes
 	virtual void synchronize_params(Edit *edit);
 // Used by Edits::insert_edits to shift plugin keyframes
-	virtual void shift_keyframes(posnum position) {};
+	virtual void shift_keyframes(ptstime postime) {};
 
 // Get size of frame to draw on timeline
 	double picon_w();
 	int picon_h();
 	double frame_w();
 	double frames_per_picon();
-	int copy(posnum start, posnum end, FileXML *xml, const char *output_path);
+	int copy(ptstime start, ptstime end, FileXML *xml, const char *output_path);
 
 // Shift in time
-	virtual void shift(posnum difference);
-	int shift_start_in(int edit_mode, 
-		posnum newposition, 
-		posnum oldposition,
+	virtual void shift(ptstime difference);
+	int shift_start_in(int edit_mode,
+		ptstime newpostime,
+		ptstime oldpostime,
 		int edit_edits,
 		int edit_labels,
 		int edit_plugins,
 		Edits *trim_edits);
 	int shift_start_out(int edit_mode, 
-		posnum newposition, 
-		posnum oldposition,
+		ptstime newpostime,
+		ptstime oldpostime,
 		int edit_edits,
 		int edit_labels,
 		int edit_plugins,
 		Edits *trim_edits);
 	int shift_end_in(int edit_mode, 
-		posnum newposition, 
-		posnum oldposition,
+		ptstime newpostime,
+		ptstime oldpostime,
 		int edit_edits,
 		int edit_labels,
 		int edit_plugins,
 		Edits *trim_edits);
 	int shift_end_out(int edit_mode, 
-		posnum newposition, 
-		posnum oldposition,
+		ptstime newpostime,
+		ptstime oldpostime,
 		int edit_edits,
 		int edit_labels,
 		int edit_plugins,
@@ -102,15 +102,13 @@ public:
 	virtual int silence();
 
 // Media edit information
-// Units are native units for the track.
-// Start of edit in source file normalized to project sample rate.
-// Normalized because all the editing operations clip startsource relative
-// to the project sample rate;
-	posnum startsource;
-// Start of edit in project file.
-	posnum startproject;
-// # of units in edit.
-	posnum length;
+// Units are seconds
+// Start of edit in source file in seconds
+	ptstime source_pts;
+// Start of edit in project
+	ptstime project_pts;
+// Length in seconds
+	ptstime length_time;
 // Channel or layer of source
 	int channel;
 // ID for resource pixmaps
@@ -131,33 +129,15 @@ public:
 // Asset is 0 if silence, otherwise points an object in edl->assets
 	Asset *asset;
 
-
-
-
 // ============================= initialization
 
-	int load_properties(FileXML *xml, posnum &startproject);
+	int load_properties(FileXML *xml, ptstime &startproject);
 	virtual int load_properties_derived(FileXML *xml) {};
-
-// ============================= drawing
-
-	virtual int draw(int flash, int center_pixel, int x, int w, int y, int h, int set_index_file) {};
-	virtual int set_index_file(int flash, int center_pixel, int x, int y, int w, int h) {};
-	int draw_transition(int flash, int center_pixel, int x, int w, int y, int h, int set_index_file);
-
-	int draw_handles(BC_SubWindow *canvas, float view_start, float view_units, float zoom_units, int view_pixels, int center_pixel);
-	int draw_titles(BC_SubWindow *canvas, float view_start, float zoom_units, int view_pixels, int center_pixel);
 
 // ============================= editing
 
-	virtual int copy_properties_derived(FileXML *xml, posnum length_in_selection) { return 0; };
-
-	int popup_transition(float view_start, float zoom_units, int cursor_x, int cursor_y);
-
-// Return 1 if the left handle was selected 2 if the right handle was selected
-	int select_handle(float view_start, float zoom_units, int cursor_x, int cursor_y, int64_t &selection);
-	virtual int get_handle_parameters(int64_t &left, int64_t &right, int64_t &left_sample, int64_t &right_sample, float view_start, float zoom_units) {};
-	virtual posnum get_source_end(posnum default_);
+	virtual int copy_properties_derived(FileXML *xml, ptstime len_in_selection) { return 0; };
+	virtual ptstime get_source_end(ptstime default_value);
 	int dump();
 	virtual int dump_derived() {};
 

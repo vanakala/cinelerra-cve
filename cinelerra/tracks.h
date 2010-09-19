@@ -46,18 +46,18 @@ public:
 	int load(FileXML *xml, int &track_offset, uint32_t load_flags);
 	void move_edits(ArrayList<Edit*> *edits, 
 		Track *track,
-		double position,
+		ptstime position,
 		int edit_labels,
 		int edit_plugins,
 		int behaviour);
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
 		Track *track, 
-		posnum position);
+		ptstime position);
 
 // Construct a list of all the recordable edits which start on position
 	void get_affected_edits(ArrayList<Edit*> *drag_edits, 
-		double position, 
+		ptstime position,
 		Track *start_track);
 
 	void get_automation_extents(float *min, 
@@ -66,12 +66,12 @@ public:
 		ptstime end,
 		int autogrouptype);
 
-	void equivalent_output(Tracks *tracks, double *result);
+	void equivalent_output(Tracks *tracks, ptstime *result);
 
-	int move_track_up(Track *track);        // move recordable tracks up
-	int move_track_down(Track *track);      // move recordable tracks down
-	int move_tracks_up();                   // move recordable tracks up
-	int move_tracks_down();                 // move recordable tracks down
+	void move_track_up(Track *track);        // move recordable tracks up
+	void move_track_down(Track *track);      // move recordable tracks down
+	int move_tracks_up(void);                // move recordable tracks up
+	int move_tracks_down(void);              // move recordable tracks down
 	void paste_audio_transition(PluginServer *server);
 	void paste_video_transition(PluginServer *server, int first_track = 0);
 
@@ -85,15 +85,14 @@ public:
 	int total_audio_tracks();
 	int total_video_tracks();
 // return the longest track in all the tracks in seconds
- 	double total_length();
- 	double total_audio_length();
- 	double total_video_length();
-	double total_length_framealigned(double fps);
+	ptstime total_length();
+	ptstime total_audio_length();
+	ptstime total_video_length();
+	ptstime total_length_framealigned(double fps);
 // Update y pixels after a zoom
 	void update_y_pixels(Theme *theme);
 // Total number of tracks where the following toggles are selected
-	void select_all(int type,
-		int value);
+	void select_all(int type, int value);
 	void translate_camera(float offset_x, float offset_y);
 	void translate_projector(float offset_x, float offset_y);
 	int total_of(int type);
@@ -133,77 +132,64 @@ public:
 // Change references to shared plugins in all tracks
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
 
-	int delete_tracks();     // delete all the recordable tracks
-	int delete_all_tracks();      // delete just the tracks
+	int delete_tracks(void);     // delete all the recordable tracks
+	void delete_all_tracks();      // delete just the tracks
 
 	void copy_from(Tracks *tracks);
 
 // ================================== EDL editing
-	int copy(double start, 
-		double end, 
+	int copy(ptstime start,
+		ptstime end,
 		int all, 
 		FileXML *file, 
 		const char *output_path = "");
-
-
 
 	int copy_assets(FileXML *xml, 
 		double start, 
 		double end, 
 		int all);
-	int clear(double start, double end, int clear_plugins);
-	void clear_automation(double selectionstart, 
-		double selectionend);
-	void straighten_automation(double selectionstart, 
-		double selectionend);
-	int clear_default_keyframe();
-	int clear_handle(double start, 
-		double end,
+	void clear(ptstime start, ptstime end, int clear_plugins);
+	void clear_automation(ptstime selectionstart,
+		ptstime selectionend);
+	void straighten_automation(ptstime selectionstart,
+		ptstime selectionend);
+	void clear_default_keyframe(void);
+	void clear_handle(ptstime start,
+		ptstime end,
 		double &longest_distance,
 		int clear_labels,
 		int clear_plugins);
-	int copy_automation(double selectionstart, 
-		double selectionend, 
+	void copy_automation(ptstime selectionstart,
+		ptstime selectionend,
 		FileXML *file,
 		int default_only,
 		int autos_only);
-	int copy_default_keyframe(FileXML *file);
-	void loaded_lengths_to_tracklengths(int includerecordtracks);
-	void paste_automation(double selectionstart, 
+	void copy_default_keyframe(FileXML *file);
+	void paste_automation(ptstime selectionstart,
 		FileXML *xml,
 		int default_only);
-	int paste_default_keyframe(FileXML *file);
-	int paste_silence(double start, 
-		double end, 
+	void paste_default_keyframe(FileXML *file);
+	void paste_silence(ptstime start,
+		ptstime end,
 		int edit_plugins);
 
-	int select_auto(int cursor_x, int cursor_y);
-	int move_auto(int cursor_x, int cursor_y, int shift_down);
-	int modify_edithandles(double &oldposition, 
-		double &newposition, 
+	void modify_edithandles(ptstime &oldposition,
+		ptstime &newposition,
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
 		int edit_plugins);
-	int modify_pluginhandles(double &oldposition, 
-		double &newposition, 
+	void modify_pluginhandles(ptstime &oldposition,
+		ptstime &newposition,
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
 		Edits *trim_edits);
-	int select_handles();
-	int select_region();
 
-// ================================== accounting
-
-	int handles, titles;     // show handles or titles
-	int show_output;         // what type of video to draw
-	AutoConf auto_conf;      // which autos are visible
-	int overlays_visible;
-	double total_playable_length();     // Longest track.
+	ptstime total_playable_length();     // Longest track.
 // Used by equivalent_output
 	int total_playable_vtracks();
-	double total_recordable_length();   // Longest track with recording on
+	ptstime total_recordable_length();   // Longest track with recording on
 	int totalpixels();       // height of all tracks in pixels
 	int number_of(Track *track);        // track number of pointer
 	Track* number(int number);      // pointer to track number

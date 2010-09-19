@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -106,7 +107,7 @@ int Plugin::silence()
 		return 1;
 }
 
-void Plugin::clear_keyframes(posnum start, posnum end)
+void Plugin::clear_keyframes(ptstime start, ptstime end)
 {
 	keyframes->clear(start, end, 0);
 }
@@ -116,9 +117,9 @@ void Plugin::copy_from(Edit *edit)
 {
 	Plugin *plugin = (Plugin*)edit;
 
-	this->startsource = edit->startsource;
-	this->startproject = edit->startproject;
-	this->length = edit->length;
+	this->source_pts = edit->source_pts;
+	this->project_pts = edit->project_pts;
+	this->length_time = edit->length_time;
 
 
 	this->plugin_type = plugin->plugin_type;
@@ -159,12 +160,8 @@ void Plugin::synchronize_params(Edit *edit)
 	copy_keyframes(plugin);
 }
 
-void Plugin::shift_keyframes(posnum position)
+void Plugin::shift_keyframes(ptstime postime)
 {
-	ptstime postime;
-// FIXPOS
-	postime = keyframes->pos2pts(position);
-
 	for(KeyFrame *keyframe = (KeyFrame*)keyframes->first;
 		keyframe; 
 		keyframe = (KeyFrame*)keyframe->next)
@@ -174,82 +171,69 @@ void Plugin::shift_keyframes(posnum position)
 }
 
 
-void Plugin::equivalent_output(Edit *edit, posnum *result)
+void Plugin::equivalent_output(Edit *edit, ptstime *result)
 {
 	Plugin *plugin = (Plugin*)edit;
 // End of plugin changed
-	if(startproject + length != plugin->startproject + plugin->length)
+	if(!PTSEQU(project_pts + length_time, plugin->project_pts + plugin->length_time))
 	{
-		if(*result < 0 || startproject + length < *result)
-			*result = startproject + length;
+		if(*result < 0 || project_pts + length_time < *result)
+			*result = project_pts + length_time;
 	}
 
 // Start of plugin changed
-	if(
-		startproject != plugin->startproject ||
+	if(!PTSEQU(project_pts, plugin->project_pts) ||
 		plugin_type != plugin->plugin_type ||
 		on != plugin->on ||
 		!(shared_location == plugin->shared_location) ||
-		strcmp(title, plugin->title)
-		)
+		strcmp(title, plugin->title))
 	{
-		if(*result < 0 || startproject < *result)
-			*result = startproject;
+		if(*result < 0 || project_pts < *result)
+			*result = project_pts;
 	}
 
 // Test keyframes
-	ptstime respts = keyframes->pos2pts(*result);
 	keyframes->equivalent_output(plugin->keyframes, 
-		keyframes->pos2pts(startproject), &respts);
-	*result = keyframes->pts2pos(respts);
+		project_pts, result);
 }
 
 
 
 int Plugin::is_synthesis(RenderEngine *renderengine, 
-		posnum position,
+		ptstime postime,
 		int direction)
 {
 	switch(plugin_type)
 	{
-		case PLUGIN_STANDALONE:
+	case PLUGIN_STANDALONE:
 		{
-			if(!track)
-			{
-				printf("Plugin::is_synthesis track not defined\n");
-				return 0;
-			}
 			PluginServer *plugin_server = renderengine->scan_plugindb(title,
 				track->data_type);
 			return plugin_server->synthesis;
-			break;
 		}
 
 // Dereference real plugin and descend another level
-		case PLUGIN_SHAREDPLUGIN:
+	case PLUGIN_SHAREDPLUGIN:
 		{
 			int real_module_number = shared_location.module;
 			int real_plugin_number = shared_location.plugin;
 			Track *track = edl->tracks->number(real_module_number);
 // Get shared plugin from master track
-			Plugin *plugin = track->get_current_plugin(position, 
+			Plugin *plugin = track->get_current_plugin(postime, 
 				real_plugin_number, 
 				direction, 
-				0,
 				0);
 
 			if(plugin)
-				return plugin->is_synthesis(renderengine, position, direction);
-			break;
+				return plugin->is_synthesis(renderengine, postime, direction);
 		}
 
 // Dereference the real track and descend
-		case PLUGIN_SHAREDMODULE:
+	case PLUGIN_SHAREDMODULE:
 		{
 			int real_module_number = shared_location.module;
 			Track *track = edl->tracks->number(real_module_number);
-			return track->is_synthesis(renderengine, position, direction);
-			break;
+			return track->is_synthesis(renderengine, postime, direction);
 		}
 	}
 	return 0;
@@ -265,16 +249,16 @@ int Plugin::identical(Plugin *that)
 // Test title or location
 	switch(plugin_type)
 	{
-		case PLUGIN_STANDALONE:
-			if(strcmp(title, that->title)) return 0;
-			break;
-		case PLUGIN_SHAREDPLUGIN:
-			if(shared_location.module != that->shared_location.module ||
-				shared_location.plugin != that->shared_location.plugin) return 0;
-			break;
-		case PLUGIN_SHAREDMODULE:
-			if(shared_location.module != that->shared_location.module) return 0;
-			break;
+	case PLUGIN_STANDALONE:
+		if(strcmp(title, that->title)) return 0;
+		break;
+	case PLUGIN_SHAREDPLUGIN:
+		if(shared_location.module != that->shared_location.module ||
+			shared_location.plugin != that->shared_location.plugin) return 0;
+		break;
+	case PLUGIN_SHAREDMODULE:
+		if(shared_location.module != that->shared_location.module) return 0;
+		break;
 	}
 
 // Test remaining fields
@@ -290,7 +274,7 @@ int Plugin::identical_location(Plugin *that)
 
 	if(plugin_set->track->number_of() == that->plugin_set->track->number_of() &&
 		plugin_set->get_number() == that->plugin_set->get_number() &&
-		startproject == that->startproject) return 1;
+		PTSEQU(project_pts, that->project_pts)) return 1;
 
 	return 0;
 }
@@ -306,19 +290,16 @@ void Plugin::change_plugin(const char *title,
 
 
 
-KeyFrame* Plugin::get_prev_keyframe(posnum position)
+KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
 {
 	KeyFrame *current = 0;
 
 // This doesn't work because edl->selectionstart doesn't change during
 // playback at the same rate as PluginClient::source_position.
-	if(position < 0)
+	if(postime < 0)
 	{
-		position = track->to_units(edl->local_session->get_selectionstart(1), 0);
+		postime = edl->local_session->get_selectionstart(1);
 	}
-
-	ptstime postime = 0;
-	postime = keyframes->pos2pts(position);
 
 // Get keyframe on or before current position
 	for(current = (KeyFrame*)keyframes->last;
@@ -343,19 +324,16 @@ KeyFrame* Plugin::get_prev_keyframe(posnum position)
 	return current;
 }
 
-KeyFrame* Plugin::get_next_keyframe(posnum position)
+KeyFrame* Plugin::get_next_keyframe(ptstime postime)
 {
 	KeyFrame *current;
 
 // This doesn't work for playback because edl->selectionstart doesn't 
 // change during playback at the same rate as PluginClient::source_position.
-	if(position < 0)
+	if(postime < 0)
 	{
-		position = track->to_units(edl->local_session->get_selectionstart(1), 0);
+		postime = edl->local_session->get_selectionstart(1);
 	}
-
-	ptstime postime = 0;
-	postime = keyframes->pos2pts(position);
 
 // Get keyframe after current position
 	for(current = (KeyFrame*)keyframes->first;
@@ -384,7 +362,7 @@ KeyFrame* Plugin::get_keyframe()
 {
 // Search for keyframe on or before selection
 	KeyFrame *result = 
-		get_prev_keyframe(track->to_units(edl->local_session->get_selectionstart(1), 0));
+		get_prev_keyframe(edl->local_session->get_selectionstart(1));
 
 // Return nearest keyframe if not in automatic keyframe generation
 	if(!edl->session->auto_keyframes)
@@ -407,51 +385,48 @@ KeyFrame* Plugin::get_keyframe()
 	return 0;
 }
 
-void Plugin::copy(posnum start, posnum end, FileXML *file)
+void Plugin::copy(ptstime start, ptstime end, FileXML *file)
 {
-	posnum endproject = startproject + length;
+	ptstime endproject = project_pts + length_time;
 
-	if((startproject >= start && startproject <= end) ||  // startproject in range
-		 (endproject <= end && endproject >= start) ||	   // endproject in range
-		 (startproject <= start && endproject >= end))    // range in project
+	if((project_pts >= start && project_pts <= end) ||  // startproject in range
+		(endproject <= end && endproject >= start) ||   // endproject in range
+		(project_pts <= start && project_pts >= end))    // range in project
 	{
 // edit is in range
-		posnum startproject_in_selection = startproject; // start of edit in selection in project
-		posnum startsource_in_selection = startsource; // start of source in selection in source
-		posnum endsource_in_selection = startsource + length; // end of source in selection
-		posnum length_in_selection = length;             // length of edit in selection
+		ptstime startprj_in_selection = project_pts; // start of edit in selection in project
+		ptstime startsrc_in_selection = source_pts; // start of source in selection in source
+		posnum endsrc_in_selection = source_pts + length_time; // end of source in selection
+		posnum len_in_selection = length_time;             // length of edit in selection
 
-		if(startproject < start)
+		if(project_pts < start)
 		{         // start is after start of edit in project
-			posnum length_difference = start - startproject;
+			ptstime length_difference = start - project_pts;
 
-			startsource_in_selection += length_difference;
-			startproject_in_selection += length_difference;
-			length_in_selection -= length_difference;
+			startsrc_in_selection += length_difference;
+			startprj_in_selection += length_difference;
+			len_in_selection -= length_difference;
 		}
 
 // end is before end of edit in project
 		if(endproject > end)
-		{         
-			length_in_selection = end - startproject_in_selection;
+		{
+			len_in_selection = end - startprj_in_selection;
 		}
 
 // Plugins don't store silence
 		file->tag.set_title("PLUGIN");
-		file->tag.set_property("LENGTH", length_in_selection);
+		file->tag.set_property("LENGTH_TIME", len_in_selection);
 		file->tag.set_property("TYPE", plugin_type);
 		file->tag.set_property("TITLE", title);
 		file->append_tag();
 		file->append_newline();
-
 
 		if(plugin_type == PLUGIN_SHAREDPLUGIN ||
 			plugin_type == PLUGIN_SHAREDMODULE)
 		{
 			shared_location.save(file);
 		}
-
-
 
 		if(in)
 		{
@@ -484,8 +459,7 @@ void Plugin::copy(posnum start, posnum end, FileXML *file)
 		file->append_newline();
 
 // Keyframes
-		keyframes->copy(keyframes->pos2pts(start), keyframes->pos2pts(end),
-			file, 0, 0);
+		keyframes->copy(start, end, file, 0, 0);
 
 		file->tag.set_title("/PLUGIN");
 		file->append_tag();
@@ -589,8 +563,7 @@ void Plugin::calculate_title(char *string, int use_nudge)
 	{
 		shared_location.calculate_title(string, 
 			edl, 
-			startproject, 
-			0, 
+			project_pts,
 			plugin_type,
 			use_nudge);
 	}
@@ -599,10 +572,14 @@ void Plugin::calculate_title(char *string, int use_nudge)
 
 void Plugin::paste(FileXML *file)
 {
+	posnum length;
 	length = file->tag.get_property("LENGTH", (int64_t)0);
+	if(length)
+		length_time = track->from_units(length);
+	length_time = file->tag.get_property("LENGTH_TIME", length_time);
 }
 
-void Plugin::shift(posnum difference)
+void Plugin::shift(ptstime difference)
 {
 	Edit::shift(difference);
 	shift_keyframes(difference);
@@ -616,9 +593,8 @@ void Plugin::dump()
 		on, 
 		shared_location.module, 
 		shared_location.plugin);
-	printf("    startproject %lld length %lld\n", startproject, length);
+	printf("    project_pts %.3f length_time %.3f\n", project_pts, length_time);
 
 	keyframes->dump();
 }
-
 

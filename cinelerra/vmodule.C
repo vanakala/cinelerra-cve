@@ -98,13 +98,11 @@ CICache* VModule::get_cache()
 
 int VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
-	ptstime input_position,
-	double frame_rate,
+	ptstime input_postime,
 	int direction,
 	int use_opengl)
 {
-	framenum corrected_position;
-	framenum corrected_position_project;
+
 // Translation of edit
 	float in_x1;
 	float in_y1;
@@ -115,12 +113,6 @@ int VModule::import_frame(VFrame *output,
 	float out_w1;
 	float out_h1;
 	int result = 0;
-	double edl_rate = get_edl()->session->frame_rate;
-	framenum input_position_project = (framenum)(input_position * 
-		edl_rate +
-		0.001);
-	corrected_position = input_position * frame_rate;
-	corrected_position_project = input_position_project;
 
 	VDeviceX11 *x11_device = 0;
 	if(use_opengl)
@@ -143,17 +135,12 @@ int VModule::import_frame(VFrame *output,
 
 		if(source)
 		{
-			framenum edit_startproject = (framenum)(current_edit->startproject * 
-				frame_rate / 
-				edl_rate);
-			framenum edit_startsource = (framenum)(current_edit->startsource *
-				frame_rate /
-				edl_rate);
-			framenum position = corrected_position - 
-				edit_startproject + 
-				edit_startsource;
+			framenum position = track->to_units(input_postime - 
+				current_edit->project_pts +
+				current_edit->source_pts);
+
 			// if we hit the end of stream, freeze at last frame
-			framenum max_position = source->get_video_length(frame_rate) - 1;
+			framenum max_position = source->get_video_length(get_edl()->session->frame_rate) - 1;
 			if (position > max_position) position = max_position;
 			int use_cache = renderengine && 
 				renderengine->command->single_frame();
@@ -165,12 +152,11 @@ int VModule::import_frame(VFrame *output,
 				source->start_video_decode_thread();
 			else
 				source->stop_video_thread();
-
-			source->set_video_position(position, frame_rate);
+			source->set_video_position(position, get_edl()->session->frame_rate);
 			source->set_layer(current_edit->channel);
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
-				input_position, 
+				input_postime,
 				direction, 
 				in_x1, 
 				in_y1, 
@@ -200,7 +186,6 @@ int VModule::import_frame(VFrame *output,
 				break;
 			}
 
-
 // file -> temp -> output
 			if( !EQUIV(in_x1, 0) || 
 				!EQUIV(in_y1, 0) || 
@@ -213,10 +198,6 @@ int VModule::import_frame(VFrame *output,
 				!EQUIV(in_w1, current_edit->asset->width) ||
 				!EQUIV(in_h1, current_edit->asset->height))
 			{
-
-
-
-
 // Get temporary input buffer
 				VFrame **input = 0;
 // Realtime playback
@@ -231,7 +212,6 @@ int VModule::import_frame(VFrame *output,
 					input = &input_temp;
 				}
 
-
 				if((*input) && 
 					((*input)->get_w() != current_edit->asset->width ||
 					(*input)->get_h() != current_edit->asset->height))
@@ -239,10 +219,6 @@ int VModule::import_frame(VFrame *output,
 					delete (*input);
 					(*input) = 0;
 				}
-
-
-
-
 
 				if(!(*input))
 				{
@@ -252,8 +228,6 @@ int VModule::import_frame(VFrame *output,
 						get_edl()->session->color_model,
 						-1);
 				}
-
-
 
 				(*input)->copy_stacks(output);
 
@@ -374,43 +348,22 @@ int VModule::import_frame(VFrame *output,
 }
 
 
-
 int VModule::render(VFrame *output,
-	framenum start_position,
+	ptstime start_postime,
 	int direction,
-	double frame_rate,
 	int use_nudge,
-	int debug_render,
 	int use_opengl)
 {
 	int result = 0;
-	double edl_rate = get_edl()->session->frame_rate;
 
-	if(use_nudge) start_position += (framenum)(track->nudge * 
-		frame_rate / 
-		edl_rate);
+	if(use_nudge) start_postime += track->nudge;
 
-	framenum start_position_project = (int64_t)(start_position *
-		edl_rate /
-		frame_rate + 
-		0.5);
+	framenum start_position_project = track->to_units(start_postime);
 
-	update_transition(start_position_project / frame_rate, 
-		direction);
+	update_transition(start_postime, direction);
 
-	VEdit* current_edit = (VEdit*)track->edits->editof(start_position_project, 
-		0);
+	VEdit* current_edit = (VEdit*)track->edits->editof(start_postime, 0);
 	VEdit* previous_edit = 0;
-
-	if(debug_render)
-		printf("    VModule::render %d %d %s transition=%p opengl=%d current_edit=%p output=%p\n", 
-			use_nudge, 
-			start_position_project,
-			track->title,
-			transition,
-			use_opengl,
-			current_edit,
-			output);
 
 	if(!current_edit)
 	{
@@ -457,8 +410,7 @@ int VModule::render(VFrame *output,
 
 		result = import_frame((*transition_input), 
 			current_edit, 
-			start_position / frame_rate,
-			frame_rate,
+			start_postime,
 			direction,
 			use_opengl);
 
@@ -468,8 +420,7 @@ int VModule::render(VFrame *output,
 
 		result |= import_frame(output, 
 			previous_edit, 
-			start_position / frame_rate,
-			frame_rate,
+			start_postime,
 			direction,
 			use_opengl);
 
@@ -478,27 +429,26 @@ int VModule::render(VFrame *output,
 			transition_server->set_use_opengl(use_opengl, renderengine->video);
 		transition_server->process_transition((*transition_input), 
 			output,
-			start_position_project - current_edit->startproject,
-			transition->length);
+			start_position_project - track->to_units(current_edit->project_pts),
+			track->to_units(transition->length_time));
 	}
 	else
 	{
 // Load output buffer
 		result = import_frame(output, 
 			current_edit, 
-			start_position / frame_rate,
-			frame_rate,
+			start_postime,
 			direction,
 			use_opengl);
 	}
 
-	framenum mask_position;
+	ptstime mask_postime;
 	if (renderengine)
-		mask_position = renderengine->vrender->current_position;
+		mask_postime = track->from_units(renderengine->vrender->current_position);
 	else 
-		mask_position = start_position;
+		mask_postime = start_postime;
 	masker->do_mask(output, 
-		mask_position / frame_rate,
+		mask_postime,
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
 		direction,
 		1);      // we are calling before plugins

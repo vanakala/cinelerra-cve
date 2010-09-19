@@ -130,12 +130,10 @@ SET_TRACE
 	int use_asynchronous = 
 		renderengine->command->realtime && 
 		renderengine->edl->session->video_asynchronous;
-
 // Determine the rendering strategy for this frame.
 	use_vconsole = get_use_vconsole(playable_edit, 
-		input_position,
+		fromunits(input_position),
 		use_brender);
-
 // Negotiate color model
 	colormodel = get_colormodel(playable_edit, use_vconsole, use_brender);
 
@@ -189,23 +187,19 @@ SET_TRACE
 		result = ((VirtualVConsole*)vconsole)->process_buffer(input_position);
 	}
 
-
 	return result;
 }
 
 // Determine if virtual console is needed
 int VRender::get_use_vconsole(Edit* &playable_edit, 
-	framenum position,
+	ptstime position,
 	int &use_brender)
 {
 	Track *playable_track;
 
-
 // Background rendering completed
 	if((use_brender = renderengine->brender_available(position)) != 0) 
 		return 0;
-
-
 
 // Total number of playable tracks is 1
 	if(vconsole->total_exit_nodes != 1) return 1;

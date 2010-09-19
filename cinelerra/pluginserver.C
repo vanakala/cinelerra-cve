@@ -433,8 +433,7 @@ void PluginServer::process_buffer(VFrame **frame,
 		vclient->output[i] = frame[i];
 	}
 	vclient->source_start = (int64_t)(plugin ? 
-		plugin->startproject * 
-		frame_rate /
+		plugin->project_pts * 
 		vclient->project_frame_rate :
 		0);
 	vclient->direction = direction;
@@ -472,8 +471,7 @@ void PluginServer::process_buffer(double **buffer,
 	aclient->total_len = total_len;
 	aclient->sample_rate = sample_rate;
 	if(plugin)
-		aclient->source_start = plugin->startproject * 
-			sample_rate /
+		aclient->source_start = plugin->project_pts * 
 			aclient->project_sample_rate;
 	aclient->direction = direction;
 	if(multichannel)
@@ -616,9 +614,8 @@ int PluginServer::read_frame(VFrame *buffer,
 	framenum start_position)
 {
 	((VModule*)modules->values[channel])->render(buffer,
-		start_position,
+		plugin->track->from_units(start_position),
 		PLAY_FORWARD,
-		mwindow->edl->session->frame_rate,
 		0,
 		0);
 	return 0;
@@ -670,8 +667,6 @@ int PluginServer::read_frame(VFrame *buffer,
 		result = ((VModule*)modules->values[channel])->render(buffer,
 			start_position,
 			PLAY_FORWARD,
-			frame_rate,
-			0,
 			0,
 			use_opengl);
 	}
@@ -736,8 +731,8 @@ void PluginServer::show_gui()
 {
 	if(!plugin_open) return;
 	client->smp = preferences->processors - 1;
-	if(plugin) client->total_len = plugin->length;
-	if(plugin) client->source_start = plugin->startproject;
+	if(plugin) client->total_len = plugin->track->to_units(plugin->length_time);
+	if(plugin) client->source_start = plugin->track->to_units(plugin->project_pts);
 	if(video)
 	{
 		client->source_position = Units::to_int64(
@@ -759,8 +754,8 @@ void PluginServer::update_gui()
 {
 	if(!plugin_open || !plugin) return;
 
-	client->total_len = plugin->length;
-	client->source_start = plugin->startproject;
+	client->total_len = plugin->track->to_units(plugin->length_time);
+	client->source_start = plugin->track->to_units(plugin->project_pts);
 	if(video)
 	{
 		client->source_position = Units::to_int64(
@@ -936,7 +931,7 @@ KeyFrame* PluginServer::get_prev_keyframe(posnum position)
 {
 	KeyFrame *result = 0;
 	if(plugin)
-		result = plugin->get_prev_keyframe(position);
+		result = plugin->get_prev_keyframe(plugin->track->from_units(position));
 	else
 		result = keyframe;
 	return result;
@@ -946,7 +941,7 @@ KeyFrame* PluginServer::get_next_keyframe(posnum position)
 {
 	KeyFrame *result = 0;
 	if(plugin)
-		result = plugin->get_next_keyframe(position);
+		result = plugin->get_next_keyframe(plugin->track->from_units(position));
 	else
 		result = keyframe;
 	return result;

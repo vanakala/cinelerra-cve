@@ -375,14 +375,14 @@ int TrackCanvas::drag_stop()
 					mwindow->move_effect(mwindow->session->drag_plugin,
 						mwindow->session->plugin_highlighted->plugin_set,
 						0,
-						mwindow->session->plugin_highlighted->startproject);
+						mwindow->session->plugin_highlighted->project_pts);
 				}
 				else
 				{
 					mwindow->move_effect(mwindow->session->drag_plugin,
 						mwindow->session->pluginset_highlighted,
 						0,
-						mwindow->session->pluginset_highlighted->last->startproject);
+						mwindow->session->pluginset_highlighted->last->project_pts);
 				}
 				result = 1;
 			}
@@ -393,7 +393,7 @@ int TrackCanvas::drag_stop()
 				mwindow->move_effect(mwindow->session->drag_plugin,
 					0,
 					mwindow->session->track_highlighted,
-					mwindow->session->edit_highlighted->startproject);
+					mwindow->session->edit_highlighted->project_pts);
 				result = 1;
 			}
 			else
@@ -425,14 +425,14 @@ int TrackCanvas::drag_stop()
 
 			if(mwindow->session->plugin_highlighted)
 			{
-				start = track->from_units(mwindow->session->plugin_highlighted->startproject);
-				length = track->from_units(mwindow->session->plugin_highlighted->length);
+				start = mwindow->session->plugin_highlighted->project_pts;
+				length = mwindow->session->plugin_highlighted->length_time;
 				if(length <= 0) length = track->get_length();
 			}
 			else
 			if(mwindow->session->pluginset_highlighted)
 			{
-				start = track->from_units(plugin_set->last->startproject);
+				start = plugin_set->last->project_pts;
 				length = track->get_length() - start;
 				if(length <= 0) length = track->get_length();
 			}
@@ -448,10 +448,8 @@ int TrackCanvas::drag_stop()
 			else
 			if(mwindow->session->edit_highlighted)
 			{
-				start = mwindow->session->track_highlighted->from_units(
-					mwindow->session->edit_highlighted->startproject);
-				length = mwindow->session->track_highlighted->from_units(
-					mwindow->session->edit_highlighted->length);
+				start = mwindow->session->edit_highlighted->project_pts;
+				length = mwindow->session->edit_highlighted->length_time;
 			}
 
 			mwindow->insert_effects_canvas(start, length);
@@ -464,9 +462,8 @@ int TrackCanvas::drag_stop()
 	case DRAG_ASSET:
 		if(mwindow->session->track_highlighted)
 		{
-			float asset_length_float;
-			posnum asset_length_units;
-			posnum position = 0;
+			ptstime asset_length_float;
+			ptstime position = 0;
 
 			if(mwindow->session->current_operation == DRAG_ASSET &&
 				mwindow->session->drag_assets->total)
@@ -504,19 +501,15 @@ int TrackCanvas::drag_stop()
 			{
 				printf("DRAG_ASSET error: Asset dropped, but both drag_clips and drag_assets total is zero\n");
 			}
-
-			asset_length_units = mwindow->session->track_highlighted->to_units(asset_length_float, 1);
-			position = get_drop_position (&insertion, NULL, asset_length_units);
+			position = get_drop_position (&insertion, NULL, asset_length_float);
 			if (position == -1)
 			{
 				result = 1;
 				break;		// Do not do anything
 			}
-
-			double position_f = mwindow->session->track_highlighted->from_units(position);
 			Track *track = mwindow->session->track_highlighted;
 
-			mwindow->paste_assets(position_f, track, !insertion);
+			mwindow->paste_assets(mwindow->session->track_highlighted->to_units(position), track, !insertion);
 			result = 1;    // need to be one no matter what, since we have track highlited so we have to cleanup....
 		}
 		break;
@@ -527,21 +520,19 @@ int TrackCanvas::drag_stop()
 		{
 			if(mwindow->session->track_highlighted->data_type == mwindow->session->drag_edit->track->data_type)
 			{
-				posnum position = 0;
+				ptstime position = 0;
 
-				position = get_drop_position (&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length);
+				position = get_drop_position (&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length_time);
 
-				if (position == -1)
+				if (position < -0.5)
 				{
 					result = 1;
 					break;		// Do not do anything
 				}
-
-				double position_f = mwindow->session->track_highlighted->from_units(position);
 				Track *track = mwindow->session->track_highlighted;
 				mwindow->move_edits(mwindow->session->drag_edits,
 					track,
-					position_f,
+					position,
 					!insertion);
 			}
 
@@ -580,14 +571,14 @@ int TrackCanvas::drag_stop()
 }
 
 
-posnum TrackCanvas::get_drop_position (int *is_insertion, 
-	Edit *moved_edit, posnum moved_edit_length)
+ptstime TrackCanvas::get_drop_position(int *is_insertion,
+	Edit *moved_edit, ptstime moved_edit_length)
 {
 	*is_insertion = 0;
 
 // get the canvas/track position
 	int cursor_x = get_relative_cursor_x();
-	double pos = (double)cursor_x * 
+	ptstime pos = (double)cursor_x * 
 			mwindow->edl->local_session->zoom_sample /
 			mwindow->edl->session->sample_rate +
 			(double)mwindow->edl->local_session->view_start *
@@ -598,19 +589,19 @@ posnum TrackCanvas::get_drop_position (int *is_insertion,
 	Track *track = mwindow->session->track_highlighted;
 
 // cursor relative position - depending on where we started the drag inside the edit
-	posnum cursor_position;
+	ptstime cursor_position;
 	if (moved_edit)  // relative cursor position depends upon grab point
-		cursor_position = track->to_units (pos - (mwindow->session->drag_position - moved_edit->track->from_units(moved_edit->startproject)), 1);
+		cursor_position = pos - (mwindow->session->drag_position - moved_edit->project_pts);
 	else             // for clips and assets acts as they were grabbed in the middle
-		cursor_position = track->to_units (pos , 1) - moved_edit_length / 2;
+		cursor_position = pos - moved_edit_length / 2;
 
 // we use real cursor position for affinity calculations
-	posnum real_cursor_position = track->to_units (pos, 0); 
+	ptstime real_cursor_position = pos;
 	if (cursor_position < 0) cursor_position = 0;
 	if (real_cursor_position < 0) real_cursor_position = 0;
-	posnum position = -1;
-	posnum span_start = 0;
-	posnum span_length = 0;
+	ptstime position = -1;
+	ptstime span_start = 0;
+	ptstime span_length = 0;
 	int span_asset = 0;
 	int last_ignore = 0; // used to make sure we can ignore the last edit if that is what we are dragging
 
@@ -637,12 +628,12 @@ posnum TrackCanvas::get_drop_position (int *is_insertion,
 				((moved_edit && edit == moved_edit && edit->previous && !edit->previous->asset) ||
 				(moved_edit && edit->previous == moved_edit  && !edit->asset)))
 			{
-				span_length += edit->length;        // our fake edit spans over the edit we are moving
+				span_length += edit->length_time;        // our fake edit spans over the edit we are moving
 				last_ignore = 1;
 			} else
 			{ // This is a virtual edit
-				fake_edit->startproject = span_start;
-				fake_edit->length = span_length;
+				fake_edit->project_pts = span_start;
+				fake_edit->length_time = span_length;
 				int edit_x, edit_y, edit_w, edit_h;
 				edit_dimensions(fake_edit, edit_x, edit_y, edit_w, edit_h);
 				if (labs(edit_x - cursor_x) < HANDLE_W)			// cursor is close to the beginning of an edit -> insertion
@@ -666,7 +657,7 @@ posnum TrackCanvas::get_drop_position (int *is_insertion,
 					real_cursor_position < span_start + span_length && 
 					span_length >= moved_edit_length)
 				{
-					if (llabs(real_cursor_position - span_start) < llabs(real_cursor_position - span_start - span_length))
+					if (fabs(real_cursor_position - span_start) < fabs(real_cursor_position - span_start - span_length))
 						position = span_start;
 					else
 						position = span_start + span_length - moved_edit_length;
@@ -688,8 +679,8 @@ posnum TrackCanvas::get_drop_position (int *is_insertion,
 				// This is the new edit
 				if (edit)
 				{
-						span_length = edit->length;
-						span_start = edit->startproject;
+						span_length = edit->length_time;
+						span_start = edit->project_pts;
 						last_ignore = 0;
 						if (!edit->asset || (!moved_edit || moved_edit == edit)) 
 						{
@@ -715,7 +706,7 @@ posnum TrackCanvas::get_drop_position (int *is_insertion,
 		delete fake_edit;
 
 	}
-	if (real_cursor_position == 0) 
+	if (PTSEQU(real_cursor_position, 0))
 	{
 		position = 0;
 		*is_insertion = 1;
@@ -959,13 +950,13 @@ void TrackCanvas::edit_dimensions(Edit *edit,
 {
 	h = resource_h();
 
-	x = Units::round(edit->track->from_units(edit->startproject) * 
+	x = Units::round(edit->project_pts * 
 			mwindow->edl->session->sample_rate /
 			mwindow->edl->local_session->zoom_sample - 
 			mwindow->edl->local_session->view_start);
 
 // Method for calculating w so when edits are together we never get off by one error due to rounding
-	int64_t x_next = Units::round(edit->track->from_units(edit->startproject + edit->length) * 
+	int64_t x_next = Units::round(edit->project_pts + edit->length_time * 
 			mwindow->edl->session->sample_rate /
 			mwindow->edl->local_session->zoom_sample - 
 			mwindow->edl->local_session->view_start);
@@ -995,7 +986,7 @@ void TrackCanvas::draw_paste_destination()
 	int current_vedit = 0;
 	int w = 0;
 	int x;
-	double position;
+	ptstime position;
 	int insertion  = 0;
 
 	if((mwindow->session->current_operation == DRAG_ASSET &&
@@ -1017,10 +1008,10 @@ void TrackCanvas::draw_paste_destination()
 			clip = mwindow->session->drag_clips->values[0];
 
 // 'Align cursor of frame' lengths calculations
-		double paste_audio_length, paste_video_length;
-		posnum asset_length;
-		double desta_position = 0;
-		double destv_position = 0;
+		ptstime paste_audio_length, paste_video_length;
+		ptstime asset_length;
+		ptstime desta_position = 0;
+		ptstime destv_position = 0;
 
 		if (asset)
 		{
@@ -1044,23 +1035,23 @@ void TrackCanvas::draw_paste_destination()
 					paste_video_length = 1.0 / asset->frame_rate;  // bit confused!! (this is 1 frame)
 			}
 
-			posnum asset_length = 0;
+			ptstime asset_length = 0;
 
 			if(asset->audio_data)
 			{
 				// we use video if we are over video and audio if we are over audio
 				if(asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
-					asset_length = mwindow->session->track_highlighted->to_units(paste_video_length, 1);
+					asset_length = paste_video_length;
 				else
-					asset_length = mwindow->session->track_highlighted->to_units(paste_audio_length, 1);
+					asset_length = paste_audio_length;
 
-				desta_position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+				desta_position = get_drop_position(&insertion, NULL, asset_length);
 			}
 
 			if(asset->video_data)
 			{
-				asset_length = mwindow->session->track_highlighted->to_units((double)paste_video_length, 1);
-				destv_position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+				asset_length = paste_video_length;
+				destv_position = get_drop_position(&insertion, NULL, asset_length);
 			}
 		}
 
@@ -1071,10 +1062,9 @@ void TrackCanvas::draw_paste_destination()
 			else
 				paste_audio_length = paste_video_length = clip->tracks->total_length();
 
-			posnum asset_length;
+			ptstime asset_length;
 
-			asset_length   = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 1);
-			desta_position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+			desta_position = get_drop_position(&insertion, NULL, clip->tracks->total_length());
 		}
 
 // Get destination track
@@ -1089,12 +1079,10 @@ void TrackCanvas::draw_paste_destination()
 
 // Use start of highlighted edit
 				if(mwindow->session->edit_highlighted)
-					position = mwindow->session->track_highlighted->from_units(
-						mwindow->session->edit_highlighted->startproject);
+					position = mwindow->session->edit_highlighted->project_pts;
 				else
 // Use end of highlighted track, disregarding effects
-					position = mwindow->session->track_highlighted->from_units(
-						mwindow->session->track_highlighted->edits->last->startproject);
+					position = mwindow->session->track_highlighted->edits->last->project_pts;
 
 
 				if(dest->data_type == TRACK_AUDIO)
@@ -1103,7 +1091,6 @@ void TrackCanvas::draw_paste_destination()
 						|| (clip  && current_atrack < clip->tracks->total_audio_tracks()) )
 					{
 						w = Units::to_int64(paste_audio_length *
-							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
 
 						position = desta_position;
@@ -1127,9 +1114,9 @@ void TrackCanvas::draw_paste_destination()
 						if(current_aedit < mwindow->session->drag_edits->total)
 						{
 							edit = mwindow->session->drag_edits->values[current_aedit];
-							w = Units::to_int64(edit->length / mwindow->edl->local_session->zoom_sample);
+							w = Units::to_int64(edit->length_time * mwindow->edl->session->frame_rate / mwindow->edl->local_session->zoom_sample);
 
-							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length));
+							position = get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length_time);
 							if (position < 0) 
 								w = -1;
 							else
@@ -1148,7 +1135,6 @@ void TrackCanvas::draw_paste_destination()
 					{
 						// Images have length -1
 						w = Units::to_int64((double)paste_video_length *
-							mwindow->edl->session->sample_rate /
 							mwindow->edl->local_session->zoom_sample);
 
 						position = destv_position;
@@ -1172,11 +1158,10 @@ void TrackCanvas::draw_paste_destination()
 						if(current_vedit < mwindow->session->drag_edits->total)
 						{
 							edit = mwindow->session->drag_edits->values[current_vedit];
-							w = Units::to_int64(edit->track->from_units(edit->length) *
-								mwindow->edl->session->sample_rate / 
+							w = Units::to_int64(edit->length_time *
 								mwindow->edl->local_session->zoom_sample);
 
-							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length));
+							position = get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length_time);
 							if (position < 0) 
 								w = -1;
 							else
@@ -1211,11 +1196,11 @@ void TrackCanvas::draw_paste_destination()
 void TrackCanvas::plugin_dimensions(Plugin *plugin, 
 	int &x, int &y, int &w, int &h)
 {
-	x = Units::round(plugin->track->from_units(plugin->startproject) *
+	x = Units::round(plugin->project_pts *
 		mwindow->edl->session->sample_rate / 
 		mwindow->edl->local_session->zoom_sample - 
 		mwindow->edl->local_session->view_start);
-	w = Units::round(plugin->track->from_units(plugin->length) *
+	w = Units::round(plugin->length_time *
 		mwindow->edl->session->sample_rate / 
 		mwindow->edl->local_session->zoom_sample);
 	y = plugin->track->y_pixel + 
@@ -1527,14 +1512,14 @@ void TrackCanvas::draw_highlighting()
 // Calculate length of plugin based on data type of track and units
 			if(mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
 			{
-				w = (int)((double)mwindow->session->drag_plugin->length / 
-					mwindow->edl->session->frame_rate *
+				w = (int)((double)mwindow->session->drag_plugin->length_time *
 					mwindow->edl->session->sample_rate /
 					mwindow->edl->local_session->zoom_sample);
 			}
 			else
 			{
-				w = (int)mwindow->session->drag_plugin->length /
+				w = (int)(mwindow->session->drag_plugin->length_time *
+					mwindow->edl->session->sample_rate) /
 					mwindow->edl->local_session->zoom_sample;
 			}
 
@@ -1755,7 +1740,7 @@ void TrackCanvas::draw_transitions()
 					strip_y += mwindow->theme->get_image("title_bg_data")->get_h();
 
 				get_transition_coords(x, y, w, h);
-				strip_w = Units::round(edit->track->from_units(edit->transition->length) * 
+				strip_w = Units::round(edit->transition->length_time * 
 					mwindow->edl->session->sample_rate / 
 					mwindow->edl->local_session->zoom_sample);
 
@@ -4145,16 +4130,16 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 	update_cursor = 1;
 	if(result)
 	{
-		double position;
+		ptstime position;
 		if(handle_result == 0)
 		{
-			position = edit_result->track->from_units(edit_result->startproject);
+			position = edit_result->project_pts;
 			new_cursor = LEFT_CURSOR;
 		}
 		else
 		if(handle_result == 1)
 		{
-			position = edit_result->track->from_units(edit_result->startproject + edit_result->length);
+			position = edit_result->project_pts + edit_result->length_time;
 			new_cursor = RIGHT_CURSOR;
 		}
 
@@ -4232,16 +4217,16 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 	update_cursor = 1;
 	if(result)
 	{
-		double position;
+		ptstime position;
 		if(handle_result == 0)
 		{
-			position = plugin_result->track->from_units(plugin_result->startproject);
+			position = plugin_result->project_pts;
 			new_cursor = LEFT_CURSOR;
 		}
 		else
 		if(handle_result == 1)
 		{
-			position = plugin_result->track->from_units(plugin_result->startproject + plugin_result->length);
+			position = plugin_result->project_pts + plugin_result->length_time;
 			new_cursor = RIGHT_CURSOR;
 		}
 		
@@ -4330,9 +4315,9 @@ int TrackCanvas::do_edits(int cursor_x,
 				{
 					if(get_double_click() && !drag_start)
 					{
-						mwindow->edl->local_session->set_selectionstart(edit->track->from_units(edit->startproject));
-						mwindow->edl->local_session->set_selectionend(edit->track->from_units(edit->startproject) + 
-							edit->track->from_units(edit->length));
+						mwindow->edl->local_session->set_selectionstart(edit->project_pts);
+						mwindow->edl->local_session->set_selectionend(edit->project_pts + 
+							edit->length_time);
 						if(mwindow->edl->session->cursor_on_frames) 
 						{
 							mwindow->edl->local_session->set_selectionstart(
@@ -4364,7 +4349,7 @@ int TrackCanvas::do_edits(int cursor_x,
 						{
 							mwindow->edl->tracks->get_affected_edits(
 								mwindow->session->drag_edits, 
-								edit->track->from_units(edit->startproject),
+								edit->project_pts,
 								edit->track);
 						}
 						mwindow->session->drag_origin_x = cursor_x;
@@ -4455,9 +4440,9 @@ int TrackCanvas::do_plugins(int cursor_x,
 // Select range of plugin on doubleclick over plugin
 			if (get_double_click() && !drag_start)
 			{
-				mwindow->edl->local_session->set_selectionstart(plugin->track->from_units(plugin->startproject));
-				mwindow->edl->local_session->set_selectionend(plugin->track->from_units(plugin->startproject) + 
-					plugin->track->from_units(plugin->length));
+				mwindow->edl->local_session->set_selectionstart(plugin->project_pts);
+				mwindow->edl->local_session->set_selectionend(plugin->project_pts +
+					plugin->length_time);
 				if(mwindow->edl->session->cursor_on_frames) 
 				{
 					mwindow->edl->local_session->set_selectionstart(

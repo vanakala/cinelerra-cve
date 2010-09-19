@@ -79,7 +79,7 @@ public:
 	int edit_id;
 	int edit_x, pixmap_x, pixmap_w, pixmap_h;
 	int64_t zoom_sample, zoom_track, zoom_y;
-	posnum startsource;
+	ptstime source_pts;
 	double source_framerate, project_framerate;
 	int source_samplerate, project_samplerate;
 	int data_type;

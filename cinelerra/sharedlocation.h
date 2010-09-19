@@ -22,6 +22,7 @@
 #ifndef SHAREDPLUGINLOCATION_H
 #define SHAREDPLUGINLOCATION_H
 
+#include "datatype.h"
 #include "edl.inc"
 #include "filexml.inc"
 
@@ -38,8 +39,7 @@ public:
 	int get_type();
 	void calculate_title(char *string, 
 		EDL *edl, 
-		double position, 
-		int convert_units,
+		ptstime position,
 		int plugin_type,
 		int use_nudge);
 

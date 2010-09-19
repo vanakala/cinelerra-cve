@@ -34,7 +34,7 @@
 #include "transition.inc"
 
 
-
+// less than 6 hours - get rid of it
 #define LAST_VIRTUAL_LENGTH 1000000000
 
 // Generic list of edits of something
@@ -45,44 +45,44 @@ public:
 	Edits(EDL *edl, Track *track, Edit *default_edit);
 	virtual ~Edits();
 
-	void equivalent_output(Edits *edits, posnum *result);
+	void equivalent_output(Edits *edits, ptstime *result);
 	virtual void copy_from(Edits *edits);
 	virtual Edits& operator=(Edits& edits);
 // Editing
-	void insert_edits(Edits *edits, posnum position);
-	void insert_asset(Asset *asset, posnum length, posnum sample, int track_number);
+	void insert_edits(Edits *edits, ptstime position);
+	void insert_asset(Asset *asset, ptstime length_time, ptstime postime, int track_number);
 // Split edit containing position.
 // Return the second edit in the split.
-	Edit* split_edit(posnum position);
+	Edit* split_edit(ptstime postime);
 // Create a blank edit in the native data format
-	int clear_handle(double start, 
-		double end, 
-		int edit_plugins, 
-		double &distance);
+	int clear_handle(ptstime start,
+		ptstime end,
+		int edit_plugins,
+		ptstime &distance);
 	virtual Edit* create_edit() { return 0; };
 // Insert a 0 length edit at the position
-	Edit* insert_new_edit(posnum sample);
+	Edit* insert_new_edit(ptstime postime);
 	int save(FileXML *xml, const char *output_path);
-	int copy(posnum start, posnum end, FileXML *xml, const char *output_path);
+	int copy(ptstime start, ptstime end, FileXML *xml, const char *output_path);
 // Clear region of edits
-	virtual void clear(posnum start, posnum end);
+	virtual void clear(ptstime start, ptstime end);
 // Clear edits and plugins for a handle modification
-	virtual void clear_recursive(posnum start,
-		posnum end,
+	virtual void clear_recursive(ptstime start,
+		ptstime end,
 		int edit_edits,
 		int edit_labels,
 		int edit_plugins,
 		Edits *trim_edits);
-	virtual void shift_keyframes_recursive(posnum position, posnum length);
-	virtual void shift_effects_recursive(posnum position, posnum length);
+	virtual void shift_keyframes_recursive(ptstime position, ptstime length);
+	virtual void shift_effects_recursive(ptstime position, ptstime length);
 // Does not return an edit - does what it says, nothing more or less
-	void paste_silence(posnum start, posnum end);
+	void paste_silence(ptstime start, ptstime end);
 // Returns the newly created edit
-	Edit *create_and_insert_edit(posnum start, posnum end);
+	Edit *create_and_insert_edit(ptstime start, ptstime end);
 
 // Shift edits on or after position by distance
 // Return the edit now on the position.
-	virtual Edit* shift(posnum position, posnum difference);
+	virtual Edit* shift(ptstime position, ptstime difference);
 
 	EDL *edl;
 	Track *track;
@@ -94,7 +94,7 @@ public:
 // ================================== file operations
 
 	int load(FileXML *xml, int track_offset);
-	int load_edit(FileXML *xml, posnum &startproject, int track_offset);
+	int load_edit(FileXML *xml, ptstime &project_time, int track_offset);
 
 	virtual Edit* append_new_edit() {};
 	virtual Edit* insert_edit_after(Edit *previous_edit) { return 0; };
@@ -103,15 +103,15 @@ public:
 
 // ==================================== accounting
 
-	Edit* editof(posnum position, int use_nudge);
+	Edit* editof(ptstime postime, int use_nudge);
 // Return an edit if position is over an edit and the edit has a source file
-	Edit* get_playable_edit(int64_t position, int use_nudge);
-	posnum length();         // end position of last edit
+	Edit* get_playable_edit(ptstime postime, int use_nudge);
+	ptstime length();         // end position of last edit
 
 // ==================================== editing
 
-	int modify_handles(double oldposition, 
-		double newposition, 
+	int modify_handles(ptstime oldposition,
+		ptstime newposition,
 		int currentend,
 		int edit_mode, 
 		int edit_edits,
@@ -120,7 +120,7 @@ public:
 		Edits *trim_edits);
 	virtual int optimize();
 
-	int64_t loaded_length;
+	ptstime loaded_length;
 private:
 	virtual int clone_derived(Edit* new_edit, Edit* old_edit) {};
 };

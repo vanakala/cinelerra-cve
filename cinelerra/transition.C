@@ -71,11 +71,11 @@ void PasteTransition::run()
 
 
 
-Transition::Transition(EDL *edl, Edit *edit, const char *title, posnum unit_length)
+Transition::Transition(EDL *edl, Edit *edit, const char *title, ptstime length)
  : Plugin(edl, (PluginSet*)edit->edits, title)
 {
 	this->edit = edit;
-	this->length = unit_length;
+	this->length_time = length;
 }
 
 Transition::~Transition()
@@ -105,7 +105,6 @@ Edit& Transition::operator=(Edit &that)
 	return *this;
 }
 
-
 int Transition::operator==(Transition &that)
 {
 	return identical(&that);
@@ -129,7 +128,7 @@ void Transition::copy_from(Transition *that)
 
 int Transition::identical(Transition *that)
 {
-	return this->length == that->length && Plugin::identical(that);
+	return PTSEQU(this->length_time, that->length_time) && Plugin::identical(that);
 }
 
 
@@ -143,7 +142,7 @@ void Transition::save_xml(FileXML *file)
 	file->append_newline();
 	file->tag.set_title("TRANSITION");
 	file->tag.set_property("TITLE", title);
-	file->tag.set_property("LENGTH", length);
+	file->tag.set_property("LENGTH_TIME", length_time);
 	file->append_tag();
 	if(on)
 	{
@@ -160,9 +159,14 @@ void Transition::save_xml(FileXML *file)
 
 void Transition::load_xml(FileXML *file)
 {
+	posnum length;
 	int result = 0;
+
 	file->tag.get_property("TITLE", title);
 	length = file->tag.get_property("LENGTH", length);
+	if(length)
+		length_time = track->from_units(length_time);
+	length_time = file->tag.get_property("LENGTH_TIME", length_time);
 	on = 0;
 
 	do{
@@ -189,5 +193,5 @@ void Transition::load_xml(FileXML *file)
 
 void Transition::dump()
 {
-	printf("       title: %s length: %lld\n", title, length);
+	printf("       title: %s length: %.3f\n", title, length_time);
 }

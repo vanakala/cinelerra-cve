@@ -51,6 +51,7 @@ ATrack::ATrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
 {
 	data_type = TRACK_AUDIO;
+	one_unit = (ptstime)1.0 / edl->session->sample_rate;
 }
 
 ATrack::~ATrack()
@@ -140,7 +141,7 @@ void ATrack::set_default_title()
 	sprintf(title, _("Audio %d"), i);
 }
 
-posnum ATrack::to_units(double position, int round)
+posnum ATrack::to_units(ptstime position, int round)
 {
 	if(round)
 		return Units::round(position * edl->session->sample_rate);
@@ -148,79 +149,24 @@ posnum ATrack::to_units(double position, int round)
 		return Units::to_int64(position * edl->session->sample_rate);
 }
 
-double ATrack::to_doubleunits(double position)
-{
-	return position * edl->session->sample_rate;
-}
-
-double ATrack::from_units(posnum position)
+ptstime ATrack::from_units(posnum position)
 {
 	return (double)position / edl->session->sample_rate;
 }
 
 
-int ATrack::identical(posnum sample1, posnum sample2)
-{
-// Units of samples
-	if(labs(sample1 - sample2) <= 1) return 1; else return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-posnum ATrack::length()
+ptstime ATrack::length()
 {
 	return edits->length();
 }
 
-int ATrack::get_dimensions(double &view_start, 
-	double &view_units, 
-	double &zoom_units)
-{
-	view_start = (double)edl->local_session->view_start * edl->session->sample_rate;
-	view_units = (double)0;
-//	view_units = (double)tracks->view_samples();
-	zoom_units = (double)edl->local_session->zoom_sample;
-}
 
-
-
-
-
-
-
-int ATrack::paste_derived(posnum start, posnum end, posnum total_length, FileXML *xml, int &current_channel)
+int ATrack::paste_derived(ptstime start, ptstime end, ptstime total_length, FileXML *xml, int &current_channel)
 {
 	if(!strcmp(xml->tag.get_title(), "PANAUTOS"))
 	{
 		current_channel = xml->tag.get_property("CHANNEL", current_channel);
-//		pan_autos->paste(start, end, total_length, xml, "/PANAUTOS", mwindow->session->autos_follow_edits);
 		return 1;
 	}
 	return 0;
 }
-
-
-
-
-

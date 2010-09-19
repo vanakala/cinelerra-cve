@@ -109,7 +109,6 @@ int VirtualVNode::read_data(VFrame *output_temp,
 {
 	VirtualNode *previous_plugin = 0;
 	int result = 0;
-
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::read_data position=%.3lf title=%s opengl=%d\n", 
 			start_position,
@@ -122,9 +121,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	VEdit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		double edl_rate = renderengine->edl->session->frame_rate;
-		framenum start_position_project = (framenum)(start_position * edl_rate);
-		parent_edit = (VEdit*)parent_node->track->edits->editof(start_position_project, 
+		parent_edit = (VEdit*)parent_node->track->edits->editof(start_position,
 			0);
 	}
 
@@ -154,11 +151,9 @@ int VirtualVNode::read_data(VFrame *output_temp,
 		double frame_rate = renderengine->edl->session->frame_rate;
 // This is the first node in the tree
 		result = ((VModule*)real_module)->render(output_temp,
-			start_position * frame_rate,
+			start_position,
 			renderengine->command->get_direction(),
-			frame_rate,
 			0,
-			vconsole->debug_tree,
 			use_opengl);
 	}
 
@@ -170,7 +165,6 @@ int VirtualVNode::render(VFrame *output_temp,
 	ptstime start_position,
 	int use_opengl)
 {
-
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(real_module)
 	{
@@ -259,9 +253,7 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 // overlay on the final output
 // Get mute status
 	int mute_constant;
-	int mute_fragment = 1;
-	framenum mute_position = 0;
-
+	ptstime mute_fragment = 1;
 
 // Is frame muted?
 	get_mute_fragment(start_position,

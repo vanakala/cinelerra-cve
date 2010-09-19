@@ -137,8 +137,7 @@ int AModule::render(double *buffer,
 	int edl_rate = get_edl()->session->sample_rate;
 	if(use_nudge) 
 		input_position += track->nudge * 
-			sample_rate /
-			edl_rate;
+			sample_rate;
 
 	AEdit *playable_edit;
 	samplenum start_project = input_position;
@@ -166,8 +165,8 @@ int AModule::render(double *buffer,
 		playable_edit;
 		playable_edit = (AEdit*)playable_edit->next)
 	{
-		samplenum edit_start = playable_edit->startproject;
-		samplenum edit_end = playable_edit->startproject + playable_edit->length;
+		samplenum edit_start = track->to_units(playable_edit->project_pts);
+		samplenum edit_end = track->to_units(playable_edit->project_pts + playable_edit->length_time);
 // Normalize to requested rate
 		edit_start = edit_start * sample_rate / edl_rate;
 		edit_end = edit_end * sample_rate / edl_rate;
@@ -193,9 +192,9 @@ int AModule::render(double *buffer,
 		if(playable_edit)
 		{
 // Normalize EDL positions to requested rate
-			samplenum edit_startproject = playable_edit->startproject;
-			samplenum edit_endproject = playable_edit->startproject + playable_edit->length;
-			samplenum edit_startsource = playable_edit->startsource;
+			samplenum edit_startproject = track->to_units(playable_edit->project_pts);
+			samplenum edit_endproject = track->to_units(playable_edit->project_pts + playable_edit->length_time);
+			samplenum edit_startsource = track->to_units(playable_edit->source_pts);
 
 			edit_startproject = edit_startproject * sample_rate / edl_rate;
 			edit_endproject = edit_endproject * sample_rate / edl_rate;
@@ -240,14 +239,11 @@ int AModule::render(double *buffer,
 			AEdit *previous_edit = (AEdit*)playable_edit->previous;
 			if(transition && previous_edit)
 			{
-				samplenum transition_len = transition->length * 
-					sample_rate / 
+				samplenum transition_len = transition->length_time * 
 					edl_rate;
-				samplenum previous_startproject = previous_edit->startproject *
-					sample_rate /
+				samplenum previous_startproject = previous_edit->project_pts *
 					edl_rate;
-				samplenum previous_startsource = previous_edit->startsource *
-					sample_rate /
+				samplenum previous_startsource = previous_edit->source_pts *
 					edl_rate;
 
 // Read into temp buffers
@@ -304,7 +300,7 @@ int AModule::render(double *buffer,
 					}
 					else
 					{
-						bzero(transition_temp, transition_fragment_len * sizeof(double));
+						memset(transition_temp, 0, transition_fragment_len * sizeof(double));
 					}
 
 					double *output = buffer + buffer_offset;
@@ -313,7 +309,7 @@ int AModule::render(double *buffer,
 						output,
 						start_project - edit_startproject,
 						transition_fragment_len,
-						transition->length);
+						track->to_units(transition->length_time));
 				}
 			}
 

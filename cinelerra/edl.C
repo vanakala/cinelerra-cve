@@ -147,7 +147,7 @@ int EDL::save_defaults(BC_Hash *defaults)
 {
 	if(!parent_edl)
 		session->save_defaults(defaults);
-	
+
 	local_session->save_defaults(defaults);
 	return 0;
 }
@@ -420,8 +420,8 @@ void EDL::copy_session(EDL *edl, int session_only)
 	}
 }
 
-int EDL::copy_assets(double start, 
-	double end, 
+int EDL::copy_assets(ptstime start, 
+	ptstime end, 
 	FileXML *file, 
 	int all, 
 	ArrayList<PluginServer*> *plugindb,
@@ -475,8 +475,8 @@ int EDL::copy_assets(double start,
 	return 0;
 }
 
-int EDL::copy(double start, 
-	double end, 
+int EDL::copy(ptstime start, 
+	ptstime end, 
 	int all, 
 	int is_clip,
 	int is_vwindow,
@@ -558,7 +558,6 @@ int EDL::copy(double start,
 		{
 			if(vwindow_edl)
 			{
-				
 				vwindow_edl->save_xml(plugindb, 
 					file, 
 					output_path,
@@ -634,8 +633,8 @@ void EDL::synchronize_params(EDL *edl)
 	}
 }
 
-int EDL::trim_selection(double start, 
-	double end,
+int EDL::trim_selection(ptstime start, 
+	ptstime end,
 	int edit_labels,
 	int edit_plugins)
 {
@@ -655,9 +654,9 @@ int EDL::trim_selection(double start,
 }
 
 
-int EDL::equivalent(double position1, double position2)
+int EDL::equivalent(ptstime position1, ptstime position2)
 {
-	double threshold = (double).5 / session->frame_rate;
+	double threshold;
 	if(session->cursor_on_frames) 
 		threshold = (double).5 / session->frame_rate;
 	else
@@ -683,7 +682,7 @@ void EDL::set_project_path(const char *path)
 	strcpy(this->project_path, path);
 }
 
-void EDL::set_inpoint(double position)
+void EDL::set_inpoint(ptstime position)
 {
 	if(equivalent(local_session->get_inpoint(), position) && 
 		local_session->get_inpoint() >= 0)
@@ -698,7 +697,7 @@ void EDL::set_inpoint(double position)
 	}
 }
 
-void EDL::set_outpoint(double position)
+void EDL::set_outpoint(ptstime position)
 {
 	if(equivalent(local_session->get_outpoint(), position) && 
 		local_session->get_outpoint() >= 0)
@@ -714,12 +713,12 @@ void EDL::set_outpoint(double position)
 }
 
 
-int EDL::clear(double start, 
-	double end, 
+int EDL::clear(ptstime start,
+	ptstime end,
 	int clear_labels,
 	int clear_plugins)
 {
-	if(start == end)
+	if(PTSEQU(start, end))
 	{
 		double distance = 0;
 		tracks->clear_handle(start, 
@@ -750,8 +749,8 @@ int EDL::clear(double start,
 	return 0;
 }
 
-void EDL::modify_edithandles(double oldposition, 
-	double newposition, 
+void EDL::modify_edithandles(ptstime oldposition,
+	ptstime newposition,
 	int currentend,
 	int handle_mode,
 	int edit_labels,
@@ -770,8 +769,8 @@ void EDL::modify_edithandles(double oldposition,
 		edit_labels);
 }
 
-void EDL::modify_pluginhandles(double oldposition, 
-	double newposition, 
+void EDL::modify_pluginhandles(ptstime oldposition,
+	ptstime newposition,
 	int currentend, 
 	int handle_mode,
 	int edit_labels,
@@ -786,8 +785,8 @@ void EDL::modify_pluginhandles(double oldposition,
 	optimize();
 }
 
-void EDL::paste_silence(double start, 
-	double end, 
+void EDL::paste_silence(ptstime start,
+	ptstime end,
 	int edit_labels, 
 	int edit_plugins)
 {
@@ -894,7 +893,7 @@ int EDL::dump()
 	else
 		printf("EDL\n");
 	printf("clip_title: %s parent_edl: %p\n", local_session->clip_title, parent_edl);
-	printf("selectionstart %f selectionend %f loop_start %f loop_end %f\n", 
+	printf("selectionstart %.3f selectionend %.3f loop_start %.3f loop_end %.3f\n", 
 		local_session->get_selectionstart(1), 
 		local_session->get_selectionend(1),
 		local_session->loop_start,
@@ -914,8 +913,8 @@ int EDL::dump()
 			"frames_per_foot: %.2f\n"
 			"output_w: %d "
 			"output_h: %d "
-			"aspect_w: %f "
-			"aspect_h %f "
+			"aspect_w: %.3f "
+			"aspect_h %.3f "
 			"color_model %d\n",
 			session->video_channels,
 			session->video_tracks,
@@ -958,7 +957,7 @@ EDL* EDL::add_clip(EDL *edl)
 }
 
 void EDL::insert_asset(Asset *asset, 
-	double position, 
+	ptstime position, 
 	Track *first_track, 
 	RecordLabels *labels)
 {
@@ -969,23 +968,21 @@ void EDL::insert_asset(Asset *asset,
 	int vtrack = 0;
 	Track *current = first_track ? first_track : tracks->first;
 
-
 // Fix length of single frame
 	double length;
 
-
 	if(new_asset->video_length < 0) 
 	{
-	if(session->si_useduration)
-		length = session->si_duration;
-	else	
+		if(session->si_useduration)
+			length = session->si_duration;
+		else
 		length = 1.0 / session->frame_rate; 
 	}
 	else
-	if(new_asset->frame_rate > 0)
-		length = ((double)new_asset->video_length / new_asset->frame_rate);
-	else
-		length = 1.0 / session->frame_rate;
+		if(new_asset->frame_rate > 0)
+			length = ((double)new_asset->video_length / new_asset->frame_rate);
+		else
+			length = 1.0 / session->frame_rate;
 
 	for( ;
 		current && vtrack < new_asset->layers;
@@ -1017,7 +1014,6 @@ void EDL::insert_asset(Asset *asset,
 				new_asset->sample_rate, 
 			position, 
 			atrack);
-
 
 		atrack++;
 	}
@@ -1070,7 +1066,6 @@ void EDL::get_shared_plugins(Track *source,
 					local_session->get_selectionstart(1), 
 					i, 
 					PLAY_FORWARD, 
-					1,
 					0);
 				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
 				{

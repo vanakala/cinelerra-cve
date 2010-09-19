@@ -30,6 +30,7 @@
 #include "intautos.h"
 #include "maskautos.h"
 #include "overlayframe.inc"
+#include "track.h"
 #include "transportque.inc"
 #include "vautomation.h"
 
@@ -92,7 +93,7 @@ int VAutomation::create_objects()
 
 int VAutomation::direct_copy_possible(ptstime start, int direction)
 {
-	ptstime len = pos2pts(1);
+	ptstime len = track->one_unit;
 	ptstime end = (direction == PLAY_FORWARD) ? (start + len) : (start - len);
 
 	if(!Automation::direct_copy_possible(start, direction))

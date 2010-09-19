@@ -254,9 +254,8 @@ void PackageRenderer::create_engine()
 		}
 	}
 
-
 	playable_tracks = new PlayableTracks(render_engine, 
-		video_position, 
+		(ptstime)video_position / command->get_edl()->session->frame_rate, 
 		TRACK_VIDEO,
 		1);
 
@@ -310,7 +309,6 @@ void PackageRenderer::do_audio()
 // Must perform writes even if 0 length so get_audio_buffer doesn't block
 		result |= file->write_audio_buffer(output_length);
 	}
-
 	audio_position += audio_read_length;
 }
 
@@ -678,7 +676,7 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 	{
 		if(current_track->data_type == TRACK_VIDEO)
 		{
-			if(playable_tracks->is_playable(current_track, current_position, 1))
+			if(playable_tracks->is_playable(current_track, current_track->from_units(current_position), 1))
 			{
 				playable_track = current_track;
 				total_playable_tracks++;
@@ -691,7 +689,7 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 // Edit must have a source file
 	if(result)
 	{
-		playable_edit = playable_track->edits->get_playable_edit(current_position, 1);
+		playable_edit = playable_track->edits->get_playable_edit(playable_track->from_units(current_position), 1);
 		if(!playable_edit)
 			result = 0;
 	}
@@ -701,7 +699,7 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 	if(result)
 	{
 		if(!file->can_copy_from(playable_edit, 
-			current_position + playable_track->nudge,
+			playable_track->from_units(current_position + playable_track->nudge),
 			edl->session->output_w, 
 			edl->session->output_h))
 			result = 0;
@@ -709,9 +707,8 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 
 // Test conditions mutual between vrender.C and this.
 	if(result && 
-		!playable_track->direct_copy_possible(current_position, PLAY_FORWARD, 1))
+		!playable_track->direct_copy_possible(playable_track->from_units(current_position), PLAY_FORWARD, 1))
 		result = 0;
-
 	return result;
 }
 

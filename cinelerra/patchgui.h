@@ -59,7 +59,7 @@ public:
 	virtual void synchronize_fade(float change) {};
 	void synchronize_faders(float change, int audio, int video);
 	char* calculate_nudge_text(int *changed);
-	posnum calculate_nudge(char *string);
+	ptstime calculate_nudge(char *string);
 
 	MWindow *mwindow;
 	PatchBay *patchbay;
@@ -162,8 +162,8 @@ public:
 	int handle_event();
 	int button_press_event();
 	void update();
-	void set_value(posnum value);
-	posnum calculate_increment();
+	void set_value(ptstime value);
+	ptstime calculate_increment();
 
 	MWindow *mwindow;
 	PatchGUI *patch;

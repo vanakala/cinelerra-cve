@@ -20,9 +20,9 @@
  */
 
 #include "automation.h"
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "mwindow.h"
 #include "patchbay.h"
 #include "playabletracks.h"
 #include "plugin.h"
@@ -35,7 +35,7 @@
 
 
 PlayableTracks::PlayableTracks(RenderEngine *renderengine, 
-	posnum current_position, 
+	ptstime current_position, 
 	int data_type,
 	int use_nudge)
  : ArrayList<Track*>()
@@ -60,7 +60,7 @@ PlayableTracks::~PlayableTracks()
 
 
 int PlayableTracks::is_playable(Track *current_track, 
-	posnum position,
+	ptstime position,
 	int use_nudge)
 {
 	int result = 1;
@@ -100,7 +100,6 @@ int PlayableTracks::is_playable(Track *current_track,
 			}
 		}
 	}
-
 	return result;
 }
 

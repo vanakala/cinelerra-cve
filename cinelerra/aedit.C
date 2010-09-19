@@ -50,10 +50,10 @@ int AEdit::load_properties_derived(FileXML *xml)
 }
 
 
-posnum AEdit::get_source_end(posnum default_)
+ptstime AEdit::get_source_end(ptstime default_value)
 {
-	if(!asset) return default_;   // Infinity
+	if(!asset) return default_value;   // Infinity
 
-	return (posnum)((double)asset->audio_length / asset->sample_rate * edl->session->sample_rate + 0.5);
+	return ((ptstime)asset->audio_length / asset->sample_rate);
 }
 

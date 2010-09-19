@@ -324,7 +324,7 @@ public:
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
 		Track *track,
-		posnum position);
+		ptstime position);
 	void move_plugins_up(PluginSet *plugin_set);
 	void move_plugins_down(PluginSet *plugin_set);
 	void move_track_down(Track *track);
@@ -509,7 +509,7 @@ public:
 	void stop_brender();
 // This one happens asynchronously of the others.  Used by playback to
 // see what frame is background rendered.
-	int brender_available(int position);
+	int brender_available(ptstime position);
 	void set_brender_start();
 
 	void init_error();

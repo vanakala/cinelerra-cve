@@ -21,6 +21,7 @@
 
 #include "atrack.h"
 #include "automation.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
 #include "edit.h"
@@ -67,7 +68,7 @@ Tracks::~Tracks()
 
 
 
-void Tracks::equivalent_output(Tracks *tracks, double *result)
+void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 {
 	if(total_playable_vtracks() != tracks->total_playable_vtracks())
 	{
@@ -108,7 +109,7 @@ void Tracks::equivalent_output(Tracks *tracks, double *result)
 
 
 
-void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, Track *start_track)
+void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, ptstime position, Track *start_track)
 {
 	drag_edits->remove_all();
 
@@ -116,13 +117,11 @@ void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, T
 		track;
 		track = track->next)
 	{
-//printf("Tracks::get_affected_edits 1 %p %d %d\n", track, track->data_type, track->record);
 		if(track->record)
 		{
 			for(Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
-				double startproject = track->from_units(edit->startproject);
-//printf("Tracks::get_affected_edits 1 %d\n", edl->equivalent(startproject, position));
+				ptstime startproject = edit->project_pts;
 				if(edl->equivalent(startproject, position))
 				{
 					drag_edits->append(edit);
@@ -167,12 +166,12 @@ void Tracks::copy_from(Tracks *tracks)
 	{
 		switch(current->data_type)
 		{
-			case TRACK_AUDIO: 
-				new_track = add_audio_track(0, 0); 
-				break;
-			case TRACK_VIDEO: 
-				new_track = add_video_track(0, 0); 
-				break;
+		case TRACK_AUDIO: 
+			new_track = add_audio_track(0, 0); 
+			break;
+		case TRACK_VIDEO: 
+			new_track = add_video_track(0, 0); 
+			break;
 		}
 		new_track->copy_from(current);
 	}
@@ -180,7 +179,6 @@ void Tracks::copy_from(Tracks *tracks)
 
 Tracks& Tracks::operator=(Tracks &tracks)
 {
-printf("Tracks::operator= 1\n");
 	copy_from(&tracks);
 	return *this;
 }
@@ -191,7 +189,7 @@ int Tracks::load(FileXML *xml, int &track_offset, uint32_t load_flags)
 	char string[BCTEXTLEN];
 	Track *track = 0;
 	sprintf(string, "");
-	
+
 	xml->tag.get_property("TYPE", string);
 
 	if((load_flags & LOAD_ALL) == LOAD_ALL ||
@@ -259,8 +257,6 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 		if(current_pan >= edl->session->audio_channels) current_pan = 0;
 	}
 
-
-
 	PanAuto* pan_auto = 
 		(PanAuto*)new_track->automation->autos[AUTOMATION_PAN]->default_auto;
 	pan_auto->values[current_pan] = 1.0;
@@ -291,8 +287,6 @@ Track* Tracks::add_video_track(int above, Track *dst_track)
 		insert_after(dst_track, (Track*)new_track);
 	}
 
-
-
 // Shift effects referenced below the new track
 	for(Track *track = last; 
 		track && track != new_track; 
@@ -300,8 +294,6 @@ Track* Tracks::add_video_track(int above, Track *dst_track)
 	{
 		change_modules(number_of(track) - 1, number_of(track), 0);
 	}
-
-
 
 	new_track->create_objects();
 	new_track->set_default_title();
@@ -346,10 +338,10 @@ int Tracks::total_of(int type)
 
 	for(Track *current = first; current; current = NEXT)
 	{
-		ptstime unit_start = edl->local_session->get_selectionstart(1);
+		ptstime start = edl->local_session->get_selectionstart(1);
 		mute_keyframe = 
 			(IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
-			unit_start,
+			start,
 			PLAY_FORWARD,
 			(Auto* &)mute_keyframe);
 
@@ -428,18 +420,19 @@ int Tracks::total_video_tracks()
 	return result;
 }
 
-double Tracks::total_playable_length() 
+ptstime Tracks::total_playable_length() 
 {
-	double total = 0;
+	ptstime total = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
-		double length = current->get_length();
+		ptstime length = current->get_length();
 		if(length > total) total = length;
 	}
+
 	return total; 
 }
 
-double Tracks::total_recordable_length() 
+ptstime Tracks::total_recordable_length() 
 {
 	double total = 0;
 	for(Track *current = first; current; current = NEXT)
@@ -453,9 +446,9 @@ double Tracks::total_recordable_length()
 	return total; 
 }
 
-double Tracks::total_length() 
+ptstime Tracks::total_length() 
 {
-	double total = 0;
+	ptstime total = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->get_length() > total) total = current->get_length();
@@ -463,9 +456,9 @@ double Tracks::total_length()
 	return total; 
 }
 
-double Tracks::total_audio_length() 
+ptstime Tracks::total_audio_length() 
 {
-	double total = 0;
+	ptstime total = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->data_type == TRACK_AUDIO &&
@@ -474,9 +467,9 @@ double Tracks::total_audio_length()
 	return total; 
 }
 
-double Tracks::total_video_length() 
+ptstime Tracks::total_video_length() 
 {
-	double total = 0;
+	ptstime total = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->data_type == TRACK_VIDEO &&
@@ -485,7 +478,7 @@ double Tracks::total_video_length()
 	return total; 
 }
 
-double Tracks::total_length_framealigned(double fps)
+ptstime Tracks::total_length_framealigned(double fps)
 {
 	if (total_audio_tracks() && total_video_tracks())
 		return MIN(floor(total_audio_length() * fps), floor(total_video_length() * fps)) / fps;
@@ -509,6 +502,7 @@ void Tracks::translate_camera(float offset_x, float offset_y)
 		}
 	}
 }
+
 void Tracks::translate_projector(float offset_x, float offset_y)
 {
 	for(Track *current = first; current; current = NEXT)
@@ -525,7 +519,6 @@ void Tracks::update_y_pixels(Theme *theme)
 	int y = -edl->local_session->track_start;
 	for(Track *current = first; current; current = NEXT)
 	{
-//printf("Tracks::update_y_pixels %d\n", y);
 		current->y_pixel = y;
 		y += current->vertical_span(theme);
 	}
@@ -542,8 +535,7 @@ int Tracks::dump()
 	return 0;
 }
 
-void Tracks::select_all(int type,
-		int value)
+void Tracks::select_all(int type, int value)
 {
 	for(Track* current = first; current; current = NEXT)
 	{
@@ -564,56 +556,16 @@ void Tracks::select_all(int type,
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ===================================== file operations
 
 int Tracks::change_channels(int oldchannels, int newchannels)
 {
 	for(Track *current = first; current; current = NEXT)
-	{ current->change_channels(oldchannels, newchannels); }
+	{
+		current->change_channels(oldchannels, newchannels);
+	}
 	return 0;
 }
-
-
 
 int Tracks::totalpixels()
 {
@@ -645,7 +597,6 @@ Track* Tracks::number(int number)
 	}
 	return current;
 }
-
 
 int Tracks::total_playable_vtracks()
 {

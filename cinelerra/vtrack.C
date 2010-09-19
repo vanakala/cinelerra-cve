@@ -53,6 +53,7 @@ VTrack::VTrack(EDL *edl, Tracks *tracks)
 {
 	data_type = TRACK_VIDEO;
 	draw = 1;
+	one_unit = (ptstime)1.0 / edl->session->frame_rate;
 }
 
 VTrack::~VTrack()
@@ -119,7 +120,7 @@ void VTrack::set_default_title()
 	sprintf(title, _("Video %d"), i);
 }
 
-posnum VTrack::to_units(double position, int round)
+posnum VTrack::to_units(ptstime position, int round)
 {
 	if(round)
 	{
@@ -133,24 +134,9 @@ posnum VTrack::to_units(double position, int round)
 	}
 }
 
-double VTrack::to_doubleunits(double position)
-{
-	return position * edl->session->frame_rate;
-}
-
-
 double VTrack::from_units(posnum position)
 {
 	return (double)position / edl->session->frame_rate;
-}
-
-
-
-
-int VTrack::identical(int64_t sample1, int64_t sample2)
-{
-// Units of frames
-	if(labs(sample1 - sample2) <= 1) return 1; else return 0;
 }
 
 int VTrack::save_header(FileXML *file)
@@ -175,7 +161,7 @@ int VTrack::load_derived(FileXML *file, uint32_t load_flags)
 }
 
 
-int VTrack::direct_copy_possible(posnum start, int direction, int use_nudge)
+int VTrack::direct_copy_possible(ptstime start, int direction, int use_nudge)
 {
 	int i;
 	if(use_nudge) start += nudge;
@@ -193,26 +179,11 @@ int VTrack::direct_copy_possible(posnum start, int direction, int use_nudge)
 		return 0;
 
 // No transition
-	if(get_current_transition(start, direction, 0, 0))
+	if(get_current_transition(start, direction, 0))
 		return 0;
 
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 int VTrack::create_derived_objs(int flash)
@@ -222,42 +193,15 @@ int VTrack::create_derived_objs(int flash)
 	return 0;
 }
 
-
-int VTrack::get_dimensions(double &view_start, 
-	double &view_units, 
-	double &zoom_units)
-{
-	view_start = edl->local_session->view_start * edl->session->frame_rate;
-	view_units = 0;
-//	view_units = Units::toframes(tracks->view_samples(), mwindow->session->sample_rate, mwindow->session->frame_rate);
-	zoom_units = edl->local_session->zoom_sample / edl->session->sample_rate * edl->session->frame_rate;
-}
-
-int VTrack::copy_derived(posnum start, posnum end, FileXML *xml)
+int VTrack::copy_derived(ptstime start, ptstime end, FileXML *xml)
 {
 // automation is copied in the Track::copy
 	return 0;
 }
 
-int VTrack::paste_derived(posnum start, posnum end, posnum total_length, FileXML *xml, int &current_channel)
+int VTrack::paste_derived(ptstime start, ptstime end, posnum total_length, FileXML *xml, int &current_channel)
 {
 	return 0;
-}
-
-int VTrack::is_playable(posnum position, int direction)
-{
-	int result = 0;
-	float in_x, in_y, in_w, in_h;
-	float out_x, out_y, out_w, out_h;
-
-	calculate_output_transfer(from_units(position), 
-		direction, 
-		in_x, in_y, in_w, in_h,
-		out_x, out_y, out_w, out_h);
-
-	if(out_w > 0 && out_h > 0) 
-		result = 1;
-	return result;
 }
 
 void VTrack::calculate_input_transfer(Asset *asset, 
@@ -428,12 +372,3 @@ void VTrack::translate(float offset_x, float offset_y, int do_camera)
 		((FloatAuto*)current)->value += offset_y;
 	}
 }
-
-
-
-
-
-
-
-
-
