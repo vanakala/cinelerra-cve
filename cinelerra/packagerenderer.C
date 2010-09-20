@@ -620,15 +620,16 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 			file->stop_video_thread();
 			direct_frame_copying = 1;
 		}
-
 		if(!package->use_brender)
+		{
+			ptstime postime = playable_edit->track->from_units(video_position);
 			error |= ((VEdit*)playable_edit)->read_frame(compressed_output, 
-				video_position,
+				postime,
 				video_cache,
 				1,
 				0,
 				0);
-
+		}
 
 		if(!error && video_preroll > 0)
 		{

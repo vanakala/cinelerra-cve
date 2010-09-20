@@ -37,7 +37,7 @@ public:
 	~VEdit();
 
 	int read_frame(VFrame *video_out, 
-			framenum input_position, 
+			ptstime input_postime,
 			CICache *cache,
 			int use_nudge,
 			int use_cache,

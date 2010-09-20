@@ -47,6 +47,7 @@ public:
 	virtual ~Edit();
 
 	void reset();
+	ptstime length(void);
 	virtual void copy_from(Edit *edit);
 	virtual int identical(Edit &edit);
 	virtual Edit& operator=(Edit& edit);

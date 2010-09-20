@@ -212,7 +212,7 @@ void Edit::copy_from(Edit *edit)
 	}
 	this->channel = edit->channel;
 }
-// Pooleli
+
 void Edit::equivalent_output(Edit *edit, ptstime *result)
 {
 // End of edit changed
@@ -303,6 +303,13 @@ int Edit::picon_h()
 	return edl->local_session->zoom_track;
 }
 
+ptstime Edit::length(void)
+{
+	if(next)
+		return next->project_pts - project_pts;
+	return 0;
+}
+
 
 int Edit::dump()
 {
@@ -316,6 +323,7 @@ int Edit::dump()
 	}
 	printf("      source_pts %.3f project_pts %.3f length_time %.3f\n",
 		source_pts, project_pts, length_time);
+	printf("      length() = %.3f\n", length());
 	fflush(stdout);
 	return 0;
 }

@@ -172,7 +172,7 @@ SET_TRACE
 		if(playable_edit)
 		{
 			result = ((VEdit*)playable_edit)->read_frame(video_out, 
-				current_position, 
+				fromunits(current_position),
 				renderengine->get_vcache(),
 				1,
 				use_cache,

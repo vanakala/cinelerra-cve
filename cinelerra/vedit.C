@@ -58,9 +58,8 @@ int VEdit::load_properties_derived(FileXML *xml)
 // ================================================== editing
 
 
-
 int VEdit::read_frame(VFrame *video_out, 
-	framenum input_position, 
+	ptstime input_postime,
 	CICache *cache,
 	int use_nudge,
 	int use_cache,
@@ -69,7 +68,7 @@ int VEdit::read_frame(VFrame *video_out,
 	File *file = cache->check_out(asset,
 		edl);
 	int result = 0;
-	if(use_nudge) input_position += track->to_units(track->nudge);
+	if(use_nudge) input_postime += track->nudge;
 
 	if(file)
 	{
@@ -79,7 +78,7 @@ int VEdit::read_frame(VFrame *video_out,
 			file->stop_video_thread();
 
 		file->set_layer(channel);
-		file->set_video_position(input_position - track->to_units(project_pts + source_pts), edl->session->frame_rate);
+		file->set_video_position(track->to_units(input_postime - project_pts + source_pts), edl->session->frame_rate);
 		if(use_cache) file->set_cache_frames(use_cache);
 		result = file->read_frame(video_out);
 		if(use_cache) file->set_cache_frames(0);
@@ -90,7 +89,6 @@ int VEdit::read_frame(VFrame *video_out,
 		result = 1;
 	return result;
 }
-
 
 int VEdit::dump_derived()
 {
