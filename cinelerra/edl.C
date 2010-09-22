@@ -633,24 +633,20 @@ void EDL::synchronize_params(EDL *edl)
 	}
 }
 
-int EDL::trim_selection(ptstime start, 
+void EDL::trim_selection(ptstime start, 
 	ptstime end,
-	int edit_labels,
-	int edit_plugins)
+	int actions)
 {
 	if(start != end)
 	{
 // clear the data
 		clear(0, 
 			start,
-			edit_labels,
-			edit_plugins);
+			actions);
 		clear(end - start, 
 			tracks->total_length(),
-			edit_labels,
-			edit_plugins);
+			actions);
 	}
-	return 0;
 }
 
 
@@ -713,10 +709,9 @@ void EDL::set_outpoint(ptstime position)
 }
 
 
-int EDL::clear(ptstime start,
+void EDL::clear(ptstime start,
 	ptstime end,
-	int clear_labels,
-	int clear_plugins)
+	int actions)
 {
 	if(PTSEQU(start, end))
 	{
@@ -724,9 +719,8 @@ int EDL::clear(ptstime start,
 		tracks->clear_handle(start, 
 			end,
 			distance, 
-			clear_labels,
-			clear_plugins);
-		if(clear_labels && distance > 0)
+			actions);
+		if((actions & EDIT_LABELS) && distance > 0)
 			labels->paste_silence(start, 
 				start + distance);
 	}
@@ -734,8 +728,8 @@ int EDL::clear(ptstime start,
 	{
 		tracks->clear(start, 
 			end,
-			clear_plugins);
-		if(clear_labels) 
+			actions & EDIT_PLUGINS);
+		if(actions & EDIT_LABELS)
 			labels->clear(start, 
 				end, 
 				1);
@@ -746,27 +740,24 @@ int EDL::clear(ptstime start,
 	double position = local_session->get_selectionstart();
 	local_session->set_selectionend(position);
 	local_session->set_selectionstart(position);
-	return 0;
 }
 
 void EDL::modify_edithandles(ptstime oldposition,
 	ptstime newposition,
 	int currentend,
 	int handle_mode,
-	int edit_labels,
-	int edit_plugins)
+	int actions)
 {
 	tracks->modify_edithandles(oldposition, 
 		newposition, 
 		currentend,
 		handle_mode,
-		edit_labels, 
-		edit_plugins);
+		actions);
 	labels->modify_handles(oldposition, 
 		newposition, 
 		currentend,
 		handle_mode,
-		edit_labels);
+		actions & EDIT_LABELS);
 }
 
 void EDL::modify_pluginhandles(ptstime oldposition,
@@ -969,7 +960,7 @@ void EDL::insert_asset(Asset *asset,
 	Track *current = first_track ? first_track : tracks->first;
 
 // Fix length of single frame
-	double length;
+	ptstime length;
 
 	if(new_asset->video_length < 0) 
 	{

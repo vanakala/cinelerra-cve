@@ -68,6 +68,9 @@ public:
 // calculates the frame offset for programme timecode
 	int64_t get_frame_offset();
 
+// calculate actions for edit
+	int edit_actions(void);
+
 // Audio
 	int achannel_positions[MAXCHANNELS];
 	AudioOutConfig *aconfig_duplex;

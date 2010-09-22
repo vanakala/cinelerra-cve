@@ -28,7 +28,7 @@
 #include "vedits.inc"
 #include "vframe.inc"
 
-// UNITS ARE FRAMES
+// UNITS ARE SECONDS
 
 class VEdit : public Edit
 {
@@ -43,9 +43,9 @@ public:
 			int use_cache,
 			int use_asynchronous);
 
-	int load_properties_derived(FileXML *xml);
+	void load_properties_derived(FileXML *xml);
 
-	int dump_derived();
+	void dump_derived(void);
 	ptstime get_source_end(ptstime default_value);
 
 private:

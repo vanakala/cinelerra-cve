@@ -1015,16 +1015,14 @@ SET_TRACE
 			if(!EQUIV(start, end))
 				edl->clear(start, 
 					end,
-					edl->session->labels_follow_edits,
-					edl->session->plugins_follow_edits);
+					edl->session->edit_actions());
 		}
 
 		paste_edls(&new_edls, 
 			load_mode,
 			0,
 			-1,
-			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits,
+			edl->session->edit_actions(),
 			0); // overwrite
 	}
 
@@ -1674,10 +1672,9 @@ int MWindow::asset_to_edl(EDL *new_edl,
 // Align cursor on frames:: clip the new_edl to the minimum of the last joint frame.
 	if(edl->session->cursor_on_frames)
 	{
-		double edl_length = new_edl->tracks->total_length_framealigned(edl->session->frame_rate);
+		ptstime edl_length = new_edl->tracks->total_length_framealigned(edl->session->frame_rate);
 		new_edl->tracks->clear(edl_length, new_edl->tracks->total_length() + 100, 1);
 	}
-
 
 	char string[BCTEXTLEN];
 	FileSystem fs;

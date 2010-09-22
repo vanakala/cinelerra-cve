@@ -37,7 +37,7 @@
 #include <string.h>
 
 
-Edit::Edit()
+Edit::Edit(void)
 {
 	reset();
 }
@@ -65,7 +65,7 @@ Edit::~Edit()
 	if(transition) delete transition;
 }
 
-void Edit::reset()
+void Edit::reset(void)
 {
 	edl = 0;
 	track = 0;
@@ -176,16 +176,16 @@ void Edit::insert_transition(const char *title)
 	transition = new Transition(edl, 
 		this, 
 		title, 
-		track->to_units(edl->session->default_transition_length, 1));
+		edl->session->default_transition_length);
 }
 
-void Edit::detach_transition()
+void Edit::detach_transition(void)
 {
 	if(transition) delete transition;
 	transition = 0;
 }
 
-int Edit::silence()
+int Edit::silence(void)
 {
 	if(asset) 
 		return 0;
@@ -279,26 +279,26 @@ int Edit::operator==(Edit &edit)
 	return identical(edit);
 }
 
-double Edit::frames_per_picon()
+double Edit::frames_per_picon(void)
 {
 	return Units::round(picon_w()) / frame_w();
 }
 
-double Edit::frame_w()
+double Edit::frame_w(void)
 {
 	return track->one_unit * 
 		edl->session->sample_rate / 
 		edl->local_session->zoom_sample;
 }
 
-double Edit::picon_w()
+double Edit::picon_w(void)
 {
 	return (double)edl->local_session->zoom_track * 
 		asset->width / 
 		asset->height;
 }
 
-int Edit::picon_h()
+int Edit::picon_h(void)
 {
 	return edl->local_session->zoom_track;
 }
@@ -311,7 +311,7 @@ ptstime Edit::length(void)
 }
 
 
-int Edit::dump()
+void Edit::dump(void)
 {
 	printf("     EDIT %p\n", this);
 	printf("      asset %p\n", asset);
@@ -325,10 +325,9 @@ int Edit::dump()
 		source_pts, project_pts, length_time);
 	printf("      length() = %.3f\n", length());
 	fflush(stdout);
-	return 0;
 }
 
-int Edit::load_properties(FileXML *file, ptstime &startproject)
+void Edit::load_properties(FileXML *file, ptstime &startproject)
 {
 	posnum startsource, length;
 
@@ -344,7 +343,6 @@ int Edit::load_properties(FileXML *file, ptstime &startproject)
 	file->tag.get_property("USER_TITLE", user_title);
 	this->project_pts = startproject;
 	load_properties_derived(file);
-	return 0;
 }
 
 void Edit::shift(ptstime difference)
@@ -352,12 +350,10 @@ void Edit::shift(ptstime difference)
 	project_pts += difference;
 }
 
-int Edit::shift_start_in(int edit_mode, 
+void Edit::shift_start_in(int edit_mode, 
 	ptstime newpostime,
 	ptstime oldpostime,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
+	int actions,
 	Edits *trim_edits)
 {
 	ptstime cut_length = newpostime - oldpostime;
@@ -369,18 +365,14 @@ int Edit::shift_start_in(int edit_mode,
 		{        // clear partial 
 			edits->clear_recursive(oldpostime,
 				newpostime,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
+				actions,
 				trim_edits);
 		}
 		else
 		{        // clear entire
 			edits->clear_recursive(oldpostime,
 				project_pts + length_time,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
+				actions,
 				trim_edits);
 		}
 	}
@@ -419,9 +411,7 @@ int Edit::shift_start_in(int edit_mode,
 			}
 			edits->clear_recursive(oldpostime + cut_length, 
 				project_pts + cut_length,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
+				actions,
 				trim_edits);
 		}
 	}
@@ -434,15 +424,12 @@ int Edit::shift_start_in(int edit_mode,
 
 		source_pts += cut_length;
 	}
-	return 0;
 }
 
-int Edit::shift_start_out(int edit_mode, 
+void Edit::shift_start_out(int edit_mode, 
 	ptstime newpostime,
 	ptstime oldpostime,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
+	int actions,
 	Edits *trim_edits)
 {
 	ptstime cut_length = oldpostime - newpostime;
@@ -464,7 +451,7 @@ int Edit::shift_start_out(int edit_mode,
 
 		edits->shift_keyframes_recursive(project_pts, 
 			cut_length);
-		if(edit_plugins)
+		if(actions & EDIT_PLUGINS)
 			edits->shift_effects_recursive(project_pts,
 				cut_length);
 
@@ -502,16 +489,14 @@ int Edit::shift_start_out(int edit_mode,
 	}
 
 // Fix infinite length files
-	if(source_pts < 0) source_pts = 0;
-	return 0;
+	if(source_pts < 0) 
+		source_pts = 0;
 }
 
-int Edit::shift_end_in(int edit_mode, 
+void Edit::shift_end_in(int edit_mode, 
 	ptstime newpostime,
 	ptstime oldpostime,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
+	int actions,
 	Edits *trim_edits)
 {
 	ptstime cut_length = oldpostime - newpostime;
@@ -522,18 +507,14 @@ int Edit::shift_end_in(int edit_mode,
 		{        // clear partial edit
 			edits->clear_recursive(newpostime,
 				oldpostime,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
+				actions,
 				trim_edits);
 		}
 		else
 		{        // clear entire edit
 			edits->clear_recursive(project_pts,
 				oldpostime,
-				edit_edits,
-				edit_labels,
-				edit_plugins,
+				actions,
 				trim_edits);
 		}
 	}
@@ -579,9 +560,7 @@ int Edit::shift_end_in(int edit_mode,
 				cut_length = length_time;
 				edits->clear_recursive(project_pts,
 					oldpostime,
-					edit_edits,
-					edit_labels,
-					edit_plugins,
+					actions,
 					trim_edits);
 			}
 		}
@@ -597,15 +576,12 @@ int Edit::shift_end_in(int edit_mode,
 		}
 		source_pts -= cut_length;
 	}
-	return 0;
 }
 
-int Edit::shift_end_out(int edit_mode, 
+void Edit::shift_end_out(int edit_mode, 
 	ptstime newpostime,
 	ptstime oldpostime,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
+	int actions,
 	Edits *trim_edits)
 {
 	ptstime cut_length = newpostime - oldpostime;
@@ -621,7 +597,7 @@ int Edit::shift_end_out(int edit_mode,
 		this->length_time += cut_length;
 
 // Effects are shifted in length extension
-		if(edit_plugins)
+		if(actions & EDIT_PLUGINS)
 			edits->shift_effects_recursive(oldpostime /* startproject */, 
 				cut_length);
 		edits->shift_keyframes_recursive(oldpostime /* startproject */, 
@@ -661,5 +637,4 @@ int Edit::shift_end_out(int edit_mode,
 	{
 		source_pts += cut_length;
 	}
-	return 0;
 }

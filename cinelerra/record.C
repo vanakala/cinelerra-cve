@@ -467,8 +467,7 @@ void Record::run()
 				load_mode,
 				0,
 				-1,
-				mwindow->edl->session->labels_follow_edits,
-				mwindow->edl->session->plugins_follow_edits,
+				mwindow->edl->session->edit_actions(),
 				0); // overwrite
 
 			new_edls.remove_all_objects();

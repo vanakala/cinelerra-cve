@@ -45,10 +45,9 @@ VEdit::VEdit(EDL *edl, Edits *edits)
 
 VEdit::~VEdit() { }
 
-int VEdit::load_properties_derived(FileXML *xml)
+void VEdit::load_properties_derived(FileXML *xml)
 {
 	channel = xml->tag.get_property("CHANNEL", (int64_t)0);
-	return 0;
 }
 
 
@@ -90,7 +89,7 @@ int VEdit::read_frame(VFrame *video_out,
 	return result;
 }
 
-int VEdit::dump_derived()
+void VEdit::dump_derived(void)
 {
 	printf("        VEdit::dump_derived\n");
 	printf("           project pts %.3f\n", project_pts);

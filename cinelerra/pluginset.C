@@ -481,7 +481,7 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 
 
 
-int PluginSet::optimize()
+void PluginSet::optimize(void)
 {
 	int result = 1;
 	Plugin *current_edit;
@@ -545,7 +545,7 @@ int PluginSet::optimize()
 		for(current_edit = (Plugin*)first; 
 			current_edit && !result; )
 		{
-			if(current_edit->length_time == 0)
+			if(PTSEQU(current_edit->length_time, 0))
 			{
 				Plugin* next = (Plugin*)current_edit->next;
 				delete current_edit;
@@ -597,8 +597,6 @@ int PluginSet::optimize()
 	{
 		last->length_time = LAST_VIRTUAL_LENGTH;
 	}
-
-	return 0;
 }
 
 

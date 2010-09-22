@@ -43,10 +43,9 @@ AEdit::AEdit(EDL *edl, Edits *edits)
 
 AEdit::~AEdit() { }
 
-int AEdit::load_properties_derived(FileXML *xml)
+void AEdit::load_properties_derived(FileXML *xml)
 {
 	channel = xml->tag.get_property("CHANNEL", (int32_t)0);
-	return 0;
 }
 
 

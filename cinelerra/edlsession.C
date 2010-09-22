@@ -794,6 +794,18 @@ int64_t EDLSession::get_frame_offset()
 				timecode_offset[0]);
 }
 
+// FIXIT: use bits instead of ..follow_edits
+int EDLSession::edit_actions(void)
+{
+	int result = 0;
+
+	if(labels_follow_edits)
+		result |= EDIT_LABELS;
+	if(plugins_follow_edits)
+		result |= EDIT_PLUGINS;
+	return result;
+}
+
 void EDLSession::dump()
 {
 	printf("EDLSession::dump\n");

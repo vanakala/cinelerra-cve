@@ -22,6 +22,14 @@
 #ifndef EDIT_INC
 #define EDIT_INC
 
+// Bits of editt action flag
+#define EDIT_NONE    0
+#define EDIT_EDITS   1
+#define EDIT_PLUGINS 2
+#define EDIT_LABELS  4
+
+#define EDIT_ALL (EDIT_EDITS|EDIT_PLUGINS|EDIT_PLUGINS)
+
 class Edit;
 
 #endif

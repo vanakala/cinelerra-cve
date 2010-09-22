@@ -201,11 +201,9 @@ public:
 	virtual int copy_derived(ptstime start, ptstime end, FileXML *file) { return 0; };
 	virtual int paste_derived(ptstime start, ptstime end, 
 		ptstime total_length, FileXML *file, int &current_channel) { return 0; };
-	int clear(ptstime start,
+	void clear(ptstime start,
 		ptstime end,
-		int edit_edits,
-		int edit_labels,
-		int clear_plugins, 
+		int actions,
 		Edits *trim_edits);
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
@@ -226,23 +224,21 @@ public:
 		int sample_rate,
 		FileXML *file,
 		int default_only);
-	int clear_handle(ptstime start,
+	void clear_handle(ptstime start,
 		ptstime end,
-		int clear_labels,
-		int clear_plugins, 
+		int actions,
 		ptstime &distance);
 	int paste_silence(ptstime start, ptstime end, int edit_plugins);
 	virtual int select_translation(int cursor_x, int cursor_y) { return 0; };  // select video coordinates for frame
 	virtual int update_translation(int cursor_x, int cursor_y, int shift_down) { return 0; };  // move video coordinates
 
 // Return 1 if the left handle was selected 2 if the right handle was selected 3 if the track isn't recordable
-	int modify_edithandles(ptstime oldposition,
+	void modify_edithandles(ptstime oldposition,
 		ptstime newposition,
 		int currentend, 
 		int handle_mode,
-		int edit_labels,
-		int edit_plugins);
-	int modify_pluginhandles(ptstime oldposition,
+		int actions);
+	void modify_pluginhandles(ptstime oldposition,
 		ptstime newposition,
 		int currentend, 
 		int handle_mode,

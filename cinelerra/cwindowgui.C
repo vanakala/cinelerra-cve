@@ -534,8 +534,7 @@ int CWindowGUI::drag_stop()
 				LOAD_PASTE,
 				mwindow->session->track_highlighted,
 				0,
-				mwindow->edl->session->labels_follow_edits, 
-				mwindow->edl->session->plugins_follow_edits,
+				mwindow->edl->session->edit_actions(),
 				0); // overwrite
 		}
 
@@ -546,8 +545,7 @@ int CWindowGUI::drag_stop()
 				LOAD_PASTE, 
 				mwindow->session->track_highlighted,
 				mwindow->edl->local_session->get_selectionstart(),
-				mwindow->edl->session->labels_follow_edits, 
-				mwindow->edl->session->plugins_follow_edits,
+				mwindow->edl->session->edit_actions(),
 				0); // overwrite
 		}
 

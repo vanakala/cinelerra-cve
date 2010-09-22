@@ -475,8 +475,7 @@ void MenuEffectThread::run()
 			load_mode,
 			0,
 			0,
-			mwindow->edl->session->labels_follow_edits, 
-			mwindow->edl->session->plugins_follow_edits,
+			mwindow->edl->session->edit_actions(),
 			0); // overwrite
 
 		mwindow->save_backup();

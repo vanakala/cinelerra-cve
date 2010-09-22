@@ -43,10 +43,10 @@ class Edit : public ListItem<Edit>
 public:
 	Edit(EDL *edl, Edits *edits);
 	Edit(EDL *edl, Track *track);
-	Edit();
+	Edit(void);
 	virtual ~Edit();
 
-	void reset();
+	void reset(void);
 	ptstime length(void);
 	virtual void copy_from(Edit *edit);
 	virtual int identical(Edit &edit);
@@ -60,47 +60,39 @@ public:
 	virtual void shift_keyframes(ptstime postime) {};
 
 // Get size of frame to draw on timeline
-	double picon_w();
-	int picon_h();
-	double frame_w();
-	double frames_per_picon();
+	double picon_w(void);
+	int picon_h(void);
+	double frame_w(void);
+	double frames_per_picon(void);
 	int copy(ptstime start, ptstime end, FileXML *xml, const char *output_path);
 
 // Shift in time
 	virtual void shift(ptstime difference);
-	int shift_start_in(int edit_mode,
+	void shift_start_in(int edit_mode,
 		ptstime newpostime,
 		ptstime oldpostime,
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
+		int actions,
 		Edits *trim_edits);
-	int shift_start_out(int edit_mode, 
+	void shift_start_out(int edit_mode, 
 		ptstime newpostime,
 		ptstime oldpostime,
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
+		int actions,
 		Edits *trim_edits);
-	int shift_end_in(int edit_mode, 
+	void shift_end_in(int edit_mode, 
 		ptstime newpostime,
 		ptstime oldpostime,
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
+		int actions,
 		Edits *trim_edits);
-	int shift_end_out(int edit_mode, 
+	void shift_end_out(int edit_mode, 
 		ptstime newpostime,
 		ptstime oldpostime,
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
+		int actions,
 		Edits *trim_edits);
 
 	void insert_transition(const char  *title);
-	void detach_transition();
+	void detach_transition(void);
 // Determine if silence depending on existance of asset or plugin title
-	virtual int silence();
+	virtual int silence(void);
 
 // Media edit information
 // Units are seconds
@@ -132,15 +124,15 @@ public:
 
 // ============================= initialization
 
-	int load_properties(FileXML *xml, ptstime &startproject);
-	virtual int load_properties_derived(FileXML *xml) {};
+	void load_properties(FileXML *xml, ptstime &startproject);
+	virtual void load_properties_derived(FileXML *xml) {};
 
 // ============================= editing
 
 	virtual int copy_properties_derived(FileXML *xml, ptstime len_in_selection) { return 0; };
 	virtual ptstime get_source_end(ptstime default_value);
-	int dump();
-	virtual int dump_derived() {};
+	void dump(void);
+	virtual void dump_derived() {};
 
 };
 

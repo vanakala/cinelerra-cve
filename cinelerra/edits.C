@@ -276,7 +276,7 @@ int Edits::save(FileXML *xml, const char *output_path)
 }
 
 
-int Edits::optimize()
+void Edits::optimize(void)
 {
 	int result = 1;
 	Edit *current;
@@ -289,7 +289,7 @@ int Edits::optimize()
 		for(current = first; current; current = NEXT)
 		{
 			Edit *next_edit = NEXT;
-			
+
 			if(next_edit && next_edit->project_pts < current->project_pts)
 			{
 				swap(next_edit, current);
@@ -389,14 +389,12 @@ int Edits::optimize()
 	{
 		last->length_time = LAST_VIRTUAL_LENGTH;
 	}
-
-	return 0;
 }
 
 
 // ===================================== file operations
 
-int Edits::load(FileXML *file, int track_offset)
+void Edits::load(FileXML *file, int track_offset)
 {
 	int result = 0;
 	ptstime project_time = 0;
@@ -426,7 +424,7 @@ int Edits::load(FileXML *file, int track_offset)
 	optimize();
 }
 
-int Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
+void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 {
 	Edit* current;
 
@@ -488,8 +486,8 @@ int Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 	}while(!result);
 
 // in case of incomplete edit tag
-	if(!current->asset) current->asset = edl->assets->get_asset(SILENCE);
-	return 0;
+	if(!current->asset)
+		current->asset = edl->assets->get_asset(SILENCE);
 }
 
 // ============================================= accounting
@@ -610,11 +608,10 @@ void Edits::clear(ptstime start, ptstime end)
 		for(current_edit = current_edit->next; 
 			current_edit; 
 			current_edit = current_edit->next)
-		{            
+		{
 			current_edit->project_pts -= end - start;
 		}
 	}
-
 	optimize();
 }
 
@@ -622,23 +619,19 @@ void Edits::clear(ptstime start, ptstime end)
 // can only effect other plugins.
 void Edits::clear_recursive(ptstime start,
 	ptstime end,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
+	int actions,
 	Edits *trim_edits)
 {
 	track->clear(start, 
 		end, 
-		edit_edits,
-		edit_labels,
-		edit_plugins,
+		actions,
 		trim_edits);
 }
 
 
-int Edits::clear_handle(double start, 
+void Edits::clear_handle(double start, 
 	double end, 
-	int edit_plugins, 
+	int actions,
 	ptstime &distance)
 {
 	Edit *current_edit;
@@ -671,7 +664,7 @@ int Edits::clear_handle(double start,
 						current_edit->next->project_pts + length);
 
 // Lengthen effects
-					if(edit_plugins)
+					if(actions & EDIT_PLUGINS)
 						track->shift_effects(current_edit->next->project_pts,
 							length);
 
@@ -687,17 +680,13 @@ int Edits::clear_handle(double start,
 			}
 		}
 	}
-
-	return 0;
 }
 
 int Edits::modify_handles(ptstime oldposition,
 	ptstime newposition,
 	int currentend,
 	int edit_mode, 
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
+	int actions,
 	Edits *trim_edits)
 {
 	int result = 0;
@@ -721,9 +710,7 @@ int Edits::modify_handles(ptstime oldposition,
 					current_edit->shift_start_in(edit_mode, 
 						newposition,
 						oldposition,
-						edit_edits,
-						edit_labels,
-						edit_plugins,
+						actions,
 						trim_edits);
 				}
 				else
@@ -732,9 +719,7 @@ int Edits::modify_handles(ptstime oldposition,
 					current_edit->shift_start_out(edit_mode,
 						newposition,
 						oldposition,
-						edit_edits,
-						edit_labels,
-						edit_plugins,
+						actions,
 						trim_edits);
 				}
 			}
@@ -760,9 +745,7 @@ int Edits::modify_handles(ptstime oldposition,
 					current_edit->shift_end_in(edit_mode, 
 						newposition,
 						oldposition,
-						edit_edits,
-						edit_labels,
-						edit_plugins,
+						actions,
 						trim_edits);
 				}
 				else
@@ -771,9 +754,7 @@ int Edits::modify_handles(ptstime oldposition,
 					current_edit->shift_end_out(edit_mode, 
 						newposition,
 						oldposition,
-						edit_edits,
-						edit_labels,
-						edit_plugins,
+						actions,
 						trim_edits);
 				}
 			}

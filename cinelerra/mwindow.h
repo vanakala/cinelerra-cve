@@ -136,17 +136,15 @@ public:
 	void load_assets(ArrayList<Asset*> *new_assets, 
 		double position, 
 		int load_mode,
-		Track *first_track /* = 0 */,
-		RecordLabels *labels /* = 0 */,
-		int edit_labels,
-		int edit_plugins,
+		Track *first_track,
+		RecordLabels *labels,
+		int actions,
 		int overwrite);
 	int paste_edls(ArrayList<EDL*> *new_edls, 
 		int load_mode, 
-		Track *first_track /* = 0 */,
-		double current_position /* = -1 */,
-		int edit_labels,
-		int edit_plugins,
+		Track *first_track,
+		double current_position,
+		int actions,
 		int overwrite);
 // Reset everything for a load
 	void update_project(int load_mode);
@@ -291,8 +289,7 @@ public:
 	float get_aspect_ratio();
 	void insert(double position, 
 		FileXML *file,
-		int edit_labels,
-		int edit_plugins,
+		int actions,
 		EDL *parent_edl = 0);
 
 // TrackCanvas calls this to insert multiple effects from the drag_pluginservers
@@ -337,11 +334,10 @@ public:
 // For clipboard commands
 	void paste();
 // For splice and overwrite
-	int paste(double start, 
+	void paste(double start, 
 		double end, 
 		FileXML *file,
-		int edit_labels,
-		int edit_plugins);
+		int actions);
 	int paste_output(int64_t startproject, 
 				int64_t endproject, 
 				int64_t startsource_sample, 
@@ -396,8 +392,8 @@ public:
 	int paste_default_keyframe();
 	int clear_default_keyframe();
 
-	int modify_edithandles();
-	int modify_pluginhandles();
+	void modify_edithandles(void);
+	void modify_pluginhandles(void);
 	void finish_modify_handles();
 
 

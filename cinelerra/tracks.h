@@ -157,8 +157,7 @@ public:
 	void clear_handle(ptstime start,
 		ptstime end,
 		double &longest_distance,
-		int clear_labels,
-		int clear_plugins);
+		int actions);
 	void copy_automation(ptstime selectionstart,
 		ptstime selectionend,
 		FileXML *file,
@@ -177,8 +176,7 @@ public:
 		ptstime &newposition,
 		int currentend, 
 		int handle_mode,
-		int edit_labels,
-		int edit_plugins);
+		int actions);
 	void modify_pluginhandles(ptstime &oldposition,
 		ptstime &newposition,
 		int currentend, 

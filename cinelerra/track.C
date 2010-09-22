@@ -992,56 +992,48 @@ int Track::copy_assets(ptstime start,
 
 
 
-int Track::clear(ptstime start,
+void Track::clear(ptstime start,
 	ptstime end,
-	int edit_edits,
-	int edit_labels,
-	int edit_plugins,
+	int actions,
 	Edits *trim_edits)
 {
-	if(edit_edits)
+	if(actions & EDIT_EDITS)
 		automation->clear(start, end, 0, 1);
 
-	if(edit_plugins)
+	if(actions & EDIT_PLUGINS)
 		for(int i = 0; i < plugin_set.total; i++)
 		{
 			if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
 				plugin_set.values[i]->clear(start, end);
 		}
 
-	if(edit_edits)
+	if(actions & EDIT_EDITS)
 		edits->clear(start, end);
-	return 0;
 }
 
-int Track::clear_handle(ptstime start,
+void Track::clear_handle(ptstime start,
 	ptstime end,
-	int clear_labels,
-	int clear_plugins, 
+	int actions,
 	ptstime &distance)
 {
-	edits->clear_handle(start, end, clear_plugins, distance);
+	edits->clear_handle(start, end, actions, distance);
 }
 
-int Track::modify_edithandles(ptstime oldposition,
+void Track::modify_edithandles(ptstime oldposition,
 	ptstime newposition,
 	int currentend,
 	int handle_mode,
-	int edit_labels,
-	int edit_plugins)
+	int actions)
 {
 	edits->modify_handles(oldposition,
 		newposition,
 		currentend,
 		handle_mode,
-		1,
-		edit_labels,
-		edit_plugins,
+		actions | EDIT_EDITS,
 		0);
-	return 0;
 }
 
-int Track::modify_pluginhandles(ptstime oldposition,
+void Track::modify_pluginhandles(ptstime oldposition,
 	ptstime newposition,
 	int currentend, 
 	int handle_mode,
@@ -1056,12 +1048,9 @@ int Track::modify_pluginhandles(ptstime oldposition,
 				currentend, 
 				handle_mode,
 // Don't allow plugin tweeks to affect edits.
-				0,
-				edit_labels,
-				1,
+				(edit_labels ? EDIT_LABELS : 0) | EDIT_PLUGINS,
 				trim_edits);
 	}
-	return 0;
 }
 
 

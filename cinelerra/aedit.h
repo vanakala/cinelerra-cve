@@ -36,7 +36,7 @@ public:
 	AEdit(EDL *edl, Edits *edits);
 	~AEdit();
 
-	int load_properties_derived(FileXML *xml);
+	void load_properties_derived(FileXML *xml);
 
 
 // ========================================= editing

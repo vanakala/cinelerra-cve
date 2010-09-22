@@ -146,8 +146,7 @@ public:
 		ptstime newposition,
 		int currentend, 
 		int handle_mode,
-		int edit_labels,
-		int edit_plugins);
+		int actions);
 
 	void modify_pluginhandles(ptstime oldposition,
 		ptstime newposition,
@@ -156,10 +155,9 @@ public:
 		int edit_labels,
 		Edits *trim_edits);
 
-	int trim_selection(ptstime start, 
+	void trim_selection(ptstime start, 
 		ptstime end,
-		int edit_labels,
-		int edit_plugins);
+		int actions);
 
 // Editing functions
 	int copy_assets(ptstime start,
@@ -183,10 +181,9 @@ public:
 		int edit_plugins);
 	void remove_from_project(ArrayList<Asset*> *assets);
 	void remove_from_project(ArrayList<EDL*> *clips);
-	int clear(ptstime start,
+	void clear(ptstime start,
 		ptstime end,
-		int clear_labels,
-		int clear_plugins);
+		int actions);
 // Insert the asset at a point in the EDL
 	void insert_asset(Asset *asset, 
 		double position, 

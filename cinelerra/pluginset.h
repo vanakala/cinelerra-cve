@@ -77,7 +77,7 @@ public:
 	void save(FileXML *file);
 	void load(FileXML *file, uint32_t load_flags);
 	void dump();
-	int optimize();
+	void optimize(void);
 
 // Insert a new plugin
 	Plugin* insert_plugin(const char *title, 

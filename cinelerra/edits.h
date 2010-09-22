@@ -55,9 +55,9 @@ public:
 // Return the second edit in the split.
 	Edit* split_edit(ptstime postime);
 // Create a blank edit in the native data format
-	int clear_handle(ptstime start,
+	void clear_handle(ptstime start,
 		ptstime end,
-		int edit_plugins,
+		int actions,
 		ptstime &distance);
 	virtual Edit* create_edit() { return 0; };
 // Insert a 0 length edit at the position
@@ -69,9 +69,7 @@ public:
 // Clear edits and plugins for a handle modification
 	virtual void clear_recursive(ptstime start,
 		ptstime end,
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
+		int actions,
 		Edits *trim_edits);
 	virtual void shift_keyframes_recursive(ptstime position, ptstime length);
 	virtual void shift_effects_recursive(ptstime position, ptstime length);
@@ -93,10 +91,10 @@ public:
 
 // ================================== file operations
 
-	int load(FileXML *xml, int track_offset);
-	int load_edit(FileXML *xml, ptstime &project_time, int track_offset);
+	void load(FileXML *xml, int track_offset);
+	void load_edit(FileXML *xml, ptstime &project_time, int track_offset);
 
-	virtual Edit* append_new_edit() {};
+	virtual Edit* append_new_edit() { return 0; };
 	virtual Edit* insert_edit_after(Edit *previous_edit) { return 0; };
 	virtual int load_edit_properties(FileXML *xml) {};
 
@@ -113,12 +111,10 @@ public:
 	int modify_handles(ptstime oldposition,
 		ptstime newposition,
 		int currentend,
-		int edit_mode, 
-		int edit_edits,
-		int edit_labels,
-		int edit_plugins,
+		int edit_mode,
+		int actions,
 		Edits *trim_edits);
-	virtual int optimize();
+	virtual void optimize(void);
 
 	ptstime loaded_length;
 private:

@@ -22,6 +22,7 @@
 #include "assets.h"
 #include "atrack.h"
 #include "automation.h"
+#include "bcsignals.h"
 #include "aedits.h"
 #include "edit.h"
 #include "edits.h"
@@ -57,9 +58,7 @@ void Tracks::clear(ptstime start, ptstime end, int clear_plugins)
 		{
 			current_track->clear(start, 
 				end, 
-				1, 
-				1, 
-				clear_plugins, 
+				EDIT_EDITS | EDIT_LABELS | (clear_plugins ? EDIT_PLUGINS : 0),
 				0); 
 		}
 	}
@@ -107,8 +106,7 @@ void Tracks::clear_default_keyframe(void)
 void Tracks::clear_handle(ptstime start,
 	ptstime end,
 	ptstime &longest_distance,
-	int clear_labels,
-	int clear_plugins)
+	int actions)
 {
 	Track* current_track;
 	ptstime distance;
@@ -119,8 +117,7 @@ void Tracks::clear_handle(ptstime start,
 		{
 			current_track->clear_handle(start, 
 				end, 
-				clear_labels,
-				clear_plugins, 
+				actions,
 				distance);
 			if(distance > longest_distance) longest_distance = distance;
 		}
@@ -758,8 +755,7 @@ void Tracks::modify_edithandles(ptstime &oldposition,
 	ptstime &newposition,
 	int currentend, 
 	int handle_mode,
-	int edit_labels,
-	int edit_plugins)
+	int actions)
 {
 	Track *current;
 
@@ -771,8 +767,7 @@ void Tracks::modify_edithandles(ptstime &oldposition,
 				newposition, 
 				currentend,
 				handle_mode,
-				edit_labels,
-				edit_plugins);
+				actions);
 		}
 	}
 }
