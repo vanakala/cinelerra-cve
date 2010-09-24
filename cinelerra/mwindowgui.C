@@ -264,9 +264,9 @@ int MWindowGUI::resize_event(int w, int h)
 	statusbar->resize_event();
 	timebar->resize_event();
 	patchbay->resize_event();
-	zoombar->resize_event();
 	get_scrollbars();
 	canvas->resize_event();
+	zoombar->resize_event();
 	return 0;
 }
 

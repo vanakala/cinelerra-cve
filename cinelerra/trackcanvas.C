@@ -4580,14 +4580,10 @@ int TrackCanvas::button_press_event()
 
 	if(is_event_win() && cursor_inside())
 	{
-		double position = (double)cursor_x * 
-			mwindow->edl->local_session->zoom_sample /
-			mwindow->edl->session->sample_rate + 
-			(double)mwindow->edl->local_session->view_start * 
-			mwindow->edl->local_session->zoom_sample /
-			mwindow->edl->session->sample_rate;
-
-
+		double position = (double)cursor_x *
+			mwindow->edl->local_session->zoom_time +
+			(double)mwindow->edl->local_session->view_start *
+			mwindow->edl->local_session->zoom_time;
 		if(!active)
 		{
 			activate();

@@ -91,6 +91,7 @@ public:
 	int64_t view_start;
 // Zooming of the timeline.  Number of samples per pixel.  
 	int64_t zoom_sample;
+	ptstime zoom_time;
 // Amplitude zoom
 	int64_t zoom_y;
 // Track zoom

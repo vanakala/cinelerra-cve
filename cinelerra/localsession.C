@@ -20,6 +20,7 @@
  */
 
 #include "automation.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
@@ -63,6 +64,7 @@ LocalSession::LocalSession(EDL *edl)
 	loop_start = 0;
 	loop_end = 0;
 	zoom_sample = 16384;
+	zoom_time = 0;
 	zoom_y = 0;
 	zoom_track = 0;
 	view_start = 0;
@@ -109,6 +111,7 @@ void LocalSession::copy_from(LocalSession *that)
 	track_start = that->track_start;
 	view_start = that->view_start;
 	zoom_sample = that->zoom_sample;
+	zoom_time = that->zoom_time;
 	zoom_y = that->zoom_y;
 	zoom_track = that->zoom_track;
 	preview_start = that->preview_start;
@@ -138,7 +141,7 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("FOLDER", folder);
 	file->tag.set_property("TRACK_START", track_start);
 	file->tag.set_property("VIEW_START", view_start);
-	file->tag.set_property("ZOOM_SAMPLE", zoom_sample);
+	file->tag.set_property("ZOOM_TIME", zoom_time);
 	file->tag.set_property("ZOOMY", zoom_y);
 	file->tag.set_property("ZOOM_TRACK", zoom_track);
 
@@ -196,6 +199,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		track_start = file->tag.get_property("TRACK_START", track_start);
 		view_start = file->tag.get_property("VIEW_START", view_start);
 		zoom_sample = file->tag.get_property("ZOOM_SAMPLE", zoom_sample);
+		zoom_time = file->tag.get_property("ZOOM_TIME", zoom_time);
 		zoom_y = file->tag.get_property("ZOOMY", zoom_y);
 		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
 		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
@@ -232,6 +236,8 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 
 void LocalSession::boundaries()
 {
+	if(zoom_time)
+		zoom_time = CLIP(zoom_time, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
 	zoom_sample = MAX(1, zoom_sample);
 }
 
@@ -243,6 +249,7 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	selectionstart = defaults->get("SELECTIONSTART", selectionstart);
 	selectionend = defaults->get("SELECTIONEND", selectionend);
 	zoom_sample = defaults->get("ZOOM_SAMPLE", 16384);
+	zoom_time = defaults->get("ZOOM_TIME", (ptstime)16384/48000);
 	zoom_y = defaults->get("ZOOMY", 64);
 	zoom_track = defaults->get("ZOOM_TRACK", 64);
 	red = defaults->get("RED", 0.0);
@@ -268,7 +275,7 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("SELECTIONEND", selectionend);
 	defaults->update("TRACK_START", track_start);
 	defaults->update("VIEW_START", view_start);
-	defaults->update("ZOOM_SAMPLE", zoom_sample);
+	defaults->update("ZOOM_TIME", zoom_time);
 	defaults->update("ZOOMY", zoom_y);
 	defaults->update("ZOOM_TRACK", zoom_track);
 	defaults->update("RED", red);

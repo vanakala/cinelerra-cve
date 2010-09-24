@@ -20,10 +20,12 @@
  */
 
 #include "automation.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
+#include "datatype.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -105,48 +107,51 @@ int MWindow::zoom_in_sample(double fixed_sample)
 	return 0;
 }
 
-int MWindow::zoom_sample(int64_t zoom_sample, int64_t view_start)
+void MWindow::zoom_sample(int64_t zoom_sample, int64_t view_start)
 {
-	CLIP(zoom_sample, 1, 0x100000);
 	edl->local_session->zoom_sample = zoom_sample;
+	edl->local_session->zoom_time = (ptstime)zoom_sample / edl->session->sample_rate;
 	if (view_start < 0)
 		find_cursor();
 	else
 		edl->local_session->view_start = view_start;
- 			
+
 	gui->get_scrollbars();
 
 	if(!gui->samplescroll) edl->local_session->view_start = 0;
 	samplemovement(edl->local_session->view_start);
-	gui->zoombar->sample_zoom->update(zoom_sample);
-	return 0;
+}
+
+void MWindow::synchronize_zoom(void)
+{
+	if(edl->local_session->zoom_time < MIN_ZOOM_TIME)
+		edl->local_session->zoom_time =
+			(ptstime)edl->local_session->zoom_sample / edl->session->sample_rate;
+	else
+		edl->local_session->zoom_sample =
+			round(edl->local_session->zoom_time * edl->session->sample_rate);
+}
+
+void MWindow::zoom_time(ptstime zoom)
+{
+	edl->local_session->zoom_time = zoom;
+	synchronize_zoom();
+	zoom_sample(edl->local_session->zoom_sample);
 }
 
 void MWindow::find_cursor()
 {
-// 	if((edl->local_session->selectionend > 
-// 		(double)gui->canvas->get_w() * 
-// 		edl->local_session->zoom_sample / 
-// 		edl->session->sample_rate) ||
-// 		(edl->local_session->selectionstart > 
-// 		(double)gui->canvas->get_w() * 
-// 		edl->local_session->zoom_sample / 
-// 		edl->session->sample_rate))
-// 	{
-		edl->local_session->view_start = 
-			Units::round((edl->local_session->get_selectionend(1) + 
-			edl->local_session->get_selectionstart(1)) / 
-			2 *
-			edl->session->sample_rate /
-			edl->local_session->zoom_sample - 
-			(double)gui->canvas->get_w() / 
-			2);
-// 	}
-// 	else
-// 		edl->local_session->view_start = 0;
+	edl->local_session->view_start = 
+		Units::round((edl->local_session->get_selectionend(1) + 
+		edl->local_session->get_selectionstart(1)) / 
+		2 *
+		edl->session->sample_rate /
+		edl->local_session->zoom_sample - 
+		(double)gui->canvas->get_w() / 
+		2);
 
-//printf("MWindow::find_cursor %f\n", edl->local_session->view_start);
-	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
+	if(edl->local_session->view_start < 0)
+		edl->local_session->view_start = 0;
 }
 
 

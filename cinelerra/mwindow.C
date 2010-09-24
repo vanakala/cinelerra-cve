@@ -957,6 +957,7 @@ SET_TRACE
 				xml_file.read_from_file(filenames->values[i]);
 // Load EDL for pasting
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
+				synchronize_zoom();
 				test_plugins(new_edl, filenames->values[i]);
 
 // We don't want a valid reel name/number for projects
@@ -1192,6 +1193,8 @@ void MWindow::create_objects(int want_gui,
 	init_theme();
 // Default project created here
 	init_edl();
+// Syncronize zoom FIXIT - will be removed
+	synchronize_zoom();
 
 	init_awindow();
 	init_compositor();

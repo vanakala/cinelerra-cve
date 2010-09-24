@@ -76,7 +76,7 @@ public:
 	char* get_text();
 	void set_text(const char *text);
 	char* value_to_text(double value, int use_table = 1);
-	double text_to_zoom(const char *text, int use_table = 1);
+	double text_to_zoom(const char *text);
 	void update(double value);
 	void update(const char *value);
 	void reposition_window(int x, int y);

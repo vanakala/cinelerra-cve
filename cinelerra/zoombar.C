@@ -151,7 +151,7 @@ void ZoomBar::redraw_time_dependancies()
 {
 // Recalculate sample zoom menu
 	sample_zoom->update_menu();
-	sample_zoom->update(mwindow->edl->local_session->zoom_sample);
+	sample_zoom->update(mwindow->edl->local_session->zoom_time);
 	update_formatting(from_value);
 	update_formatting(length_value);
 	update_formatting(to_value);
@@ -193,7 +193,7 @@ void ZoomBar::update_autozoom()
 
 int ZoomBar::update()
 {
-	sample_zoom->update(mwindow->edl->local_session->zoom_sample);
+	sample_zoom->update(mwindow->edl->local_session->zoom_time);
 	amp_zoom->update(mwindow->edl->local_session->zoom_y);
 	track_zoom->update(mwindow->edl->local_session->zoom_track);
 	update_autozoom();
@@ -335,7 +335,7 @@ SampleZoomPanel::SampleZoomPanel(MWindow *mwindow,
 	int y)
  : ZoomPanel(mwindow, 
 	zoombar,
-	mwindow->edl->local_session->zoom_sample, 
+	mwindow->edl->local_session->zoom_time, 
 	x, 
 	y, 
 	110, 
@@ -349,7 +349,7 @@ SampleZoomPanel::SampleZoomPanel(MWindow *mwindow,
 
 int SampleZoomPanel::handle_event()
 {
-	mwindow->zoom_sample((int64_t)get_value());
+	mwindow->zoom_time((ptstime)get_value());
 	return 1;
 }
 

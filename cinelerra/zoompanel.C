@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -225,8 +226,7 @@ char* ZoomPanel::value_to_text(double value, int use_table)
 
 	case ZOOM_TIME:
 		double total_seconds = (double)mwindow->gui->canvas->get_w() * 
-			value /
-			mwindow->edl->session->sample_rate;
+			value;
 		Units::totext(string,
 			total_seconds,
 			mwindow->edl->session->time_format, 
@@ -238,41 +238,16 @@ char* ZoomPanel::value_to_text(double value, int use_table)
 	return string;
 }
 
-double ZoomPanel::text_to_zoom(const char *text, int use_table)
+double ZoomPanel::text_to_zoom(const char *text)
 {
-	if(use_table)
+	for(int i = 0; i < zoom_table.total; i++)
 	{
-		for(int i = 0; i < zoom_table.total; i++)
+		if(!strcasecmp(text, zoom_table.values[i]->text))
 		{
-			if(!strcasecmp(text, zoom_table.values[i]->text))
-				return zoom_table.values[i]->value;
+			return zoom_table.values[i]->value;
 		}
-		return zoom_table.values[0]->value;
 	}
-
-	switch(zoom_type)
-	{
-	case ZOOM_PERCENTAGE:
-		return atof(text) / 100;
-	case ZOOM_FLOAT:
-	case ZOOM_LONG:
-		return atof(text);
-	case ZOOM_TIME:
-		double result = 1;
-		double total_samples = Units::fromtext(text, 
-			mwindow->edl->session->sample_rate, 
-			mwindow->edl->session->time_format, 
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
-		total_samples /= mwindow->gui->canvas->get_w();
-		double difference = fabs(total_samples - result);
-		while(fabs(result - total_samples) <= difference)
-		{
-			difference = fabs(result - total_samples);
-			result *= 2;
-		}
-		return result;
-	}
+	return zoom_table.values[0]->value;
 }
 
 
