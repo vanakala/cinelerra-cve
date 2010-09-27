@@ -33,10 +33,8 @@ public:
 	~SampleScroll();
 
 	int create_objects();
-	int flip_vertical();
-	int in_use();
-	int resize_event();
-	int set_position();
+	void resize_event(void);
+	void set_position(void);
 	int handle_event();
 	double oldposition;
 

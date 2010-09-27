@@ -286,9 +286,8 @@ double Edit::frames_per_picon(void)
 
 double Edit::frame_w(void)
 {
-	return track->one_unit * 
-		edl->session->sample_rate / 
-		edl->local_session->zoom_sample;
+	return track->one_unit /
+		edl->local_session->zoom_time;
 }
 
 double Edit::picon_w(void)

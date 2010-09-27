@@ -53,68 +53,28 @@ void MWindow::update_plugins()
 }
 
 
-int MWindow::expand_sample(double fixed_sample)
+void MWindow::expand_sample(void)
 {
 	if(gui)
 	{
-		if(edl->local_session->zoom_sample < 0x100000)
-		{
-			int64_t new_zoom_sample = edl->local_session->zoom_sample * 2;
-			int64_t view_start;
-			if (fixed_sample < 0)
-				view_start = -1;
-			else
-			{
-				double viewstart_position = (double)edl->local_session->view_start * 
-					edl->local_session->zoom_sample /
-					edl->session->sample_rate * 2 - fixed_sample;
-				view_start = Units::round(viewstart_position *
-					edl->session->sample_rate /
-					new_zoom_sample);
-			}
-
-			zoom_sample(new_zoom_sample, view_start);
-		}
+		if(edl->local_session->zoom_time < MAX_ZOOM_TIME)
+			zoom_time(edl->local_session->zoom_time * 2);
 	}
-	return 0;
 }
 
-int MWindow::zoom_in_sample(double fixed_sample)
+void MWindow::zoom_in_sample(void)
 {
 	if(gui)
 	{
-		if(edl->local_session->zoom_sample > 1)
-		{
-			int64_t new_zoom_sample = edl->local_session->zoom_sample / 2;
-			int64_t view_start;
-			if (fixed_sample < 0)
-				view_start = -1;
-			else
-			{
-				double viewstart_position = (double)edl->local_session->view_start * 
-					edl->local_session->zoom_sample /
-					edl->session->sample_rate;
-				viewstart_position = viewstart_position + (fixed_sample - viewstart_position) / 2;
-
-				view_start = Units::round(viewstart_position *
-					edl->session->sample_rate /
-					new_zoom_sample);
-			}
-			
-			zoom_sample(new_zoom_sample, view_start);
-		}
+		if(edl->local_session->zoom_time > MIN_ZOOM_TIME)
+			zoom_time(edl->local_session->zoom_time / 2);
 	}
-	return 0;
 }
 
-void MWindow::zoom_sample(int64_t zoom_sample, int64_t view_start)
+void MWindow::zoom_time(ptstime zoom)
 {
-	edl->local_session->zoom_sample = zoom_sample;
-	edl->local_session->zoom_time = (ptstime)zoom_sample / edl->session->sample_rate;
-	if (view_start < 0)
-		find_cursor();
-	else
-		edl->local_session->view_start = view_start;
+	edl->local_session->zoom_time = zoom;
+	find_cursor();
 
 	gui->get_scrollbars();
 
@@ -122,65 +82,41 @@ void MWindow::zoom_sample(int64_t zoom_sample, int64_t view_start)
 	samplemovement(edl->local_session->view_start);
 }
 
-void MWindow::synchronize_zoom(void)
-{
-	if(edl->local_session->zoom_time < MIN_ZOOM_TIME)
-		edl->local_session->zoom_time =
-			(ptstime)edl->local_session->zoom_sample / edl->session->sample_rate;
-	else
-		edl->local_session->zoom_sample =
-			round(edl->local_session->zoom_time * edl->session->sample_rate);
-}
-
-void MWindow::zoom_time(ptstime zoom)
-{
-	edl->local_session->zoom_time = zoom;
-	synchronize_zoom();
-	zoom_sample(edl->local_session->zoom_sample);
-}
-
-void MWindow::find_cursor()
+void MWindow::find_cursor(void)
 {
 	edl->local_session->view_start = 
 		Units::round((edl->local_session->get_selectionend(1) + 
-		edl->local_session->get_selectionstart(1)) / 
-		2 *
-		edl->session->sample_rate /
-		edl->local_session->zoom_sample - 
-		(double)gui->canvas->get_w() / 
-		2);
+		edl->local_session->get_selectionstart(1)) / 2 /
+		edl->local_session->zoom_time -
+		(double)gui->canvas->get_w() / 2);
 
 	if(edl->local_session->view_start < 0)
 		edl->local_session->view_start = 0;
 }
 
 
-void MWindow::fit_selection()
+void MWindow::fit_selection(void)
 {
+	ptstime selection_length;
 	if(EQUIV(edl->local_session->get_selectionstart(1),
 		edl->local_session->get_selectionend(1)))
 	{
-		double total_samples = edl->tracks->total_length() * 
-			edl->session->sample_rate;
-		for(edl->local_session->zoom_sample = 1; 
-			gui->canvas->get_w() * edl->local_session->zoom_sample < total_samples; 
-			edl->local_session->zoom_sample *= 2)
-			;
+		selection_length = edl->tracks->total_length();
 	}
 	else
 	{
-		double total_samples = (edl->local_session->get_selectionend(1) - 
-			edl->local_session->get_selectionstart(1)) * 
-			edl->session->sample_rate;
-		for(edl->local_session->zoom_sample = 1; 
-			gui->canvas->get_w() * edl->local_session->zoom_sample < total_samples; 
-			edl->local_session->zoom_sample *= 2)
-			;
+		selection_length = (edl->local_session->get_selectionend(1) - 
+			edl->local_session->get_selectionstart(1));
 	}
 
-	edl->local_session->zoom_sample = MIN(0x100000, 
-		edl->local_session->zoom_sample);
-	zoom_sample(edl->local_session->zoom_sample);
+	for(edl->local_session->zoom_time = MIN_ZOOM_TIME; 
+		gui->canvas->get_w() * edl->local_session->zoom_time < selection_length;
+
+		edl->local_session->zoom_time *= 2);
+
+	edl->local_session->zoom_time = MIN(MAX_ZOOM_TIME, 
+		edl->local_session->zoom_time);
+	zoom_time(edl->local_session->zoom_time);
 }
 
 
@@ -205,7 +141,7 @@ void MWindow::fit_autos(int doall)
 
 	int forstart = edl->local_session->zoombar_showautotype;
 	int forend   = edl->local_session->zoombar_showautotype + 1;
-	
+
 	if (doall) {
 		forstart = 0;
 		forend   = AUTOGROUPTYPE_COUNT;
@@ -215,7 +151,6 @@ void MWindow::fit_autos(int doall)
 	{
 // Adjust min and max
 		edl->tracks->get_automation_extents(&min, &max, start, end, i);
-//printf("MWindow::fit_autos %d %f %f results in ", i, min, max);
 
 		float range = max - min;
 		switch (i) 
@@ -241,7 +176,6 @@ void MWindow::fit_autos(int doall)
 			}
 			break;
 		}
-//printf("%f %f\n", min, max);
 		if (!Automation::autogrouptypes_fixedrange[i]) 
 		{
 			edl->local_session->automation_mins[i] = min;
@@ -374,7 +308,6 @@ void MWindow::zoom_track(int64_t zoom_track)
 	CLAMP(edl->local_session->zoom_y, MIN_AMP_ZOOM, MAX_AMP_ZOOM);
 	edl->local_session->zoom_track = zoom_track;
 	trackmovement(edl->local_session->track_start);
-//printf("MWindow::zoom_track %d %d\n", edl->local_session->zoom_y, edl->local_session->zoom_track);
 }
 
 void MWindow::trackmovement(int track_start)
@@ -405,18 +338,16 @@ void MWindow::move_down(int64_t distance)
 	trackmovement(edl->local_session->track_start);
 }
 
-int MWindow::goto_end()
+void MWindow::goto_end(void)
 {
 	int64_t old_view_start = edl->local_session->view_start;
 
-	if(edl->tracks->total_length() > (double)gui->canvas->get_w() * 
-		edl->local_session->zoom_sample / 
-		edl->session->sample_rate)
+	if(edl->tracks->total_length() > (ptstime)gui->canvas->get_w() *
+		edl->local_session->zoom_time)
 	{
 		edl->local_session->view_start = 
-			Units::round(edl->tracks->total_length() * 
-				edl->session->sample_rate /
-				edl->local_session->zoom_sample - 
+			Units::round(edl->tracks->total_length() /
+				edl->local_session->zoom_time -
 				gui->canvas->get_w() / 
 				2);
 	}
@@ -444,10 +375,9 @@ int MWindow::goto_end()
 	gui->canvas->activate();
 	gui->zoombar->update();
 	cwindow->update(1, 0, 0, 0, 1);
-	return 0;
 }
 
-int MWindow::goto_start()
+void MWindow::goto_start(void)
 {
 	int64_t old_view_start = edl->local_session->view_start;
 
@@ -471,10 +401,9 @@ int MWindow::goto_start()
 	gui->canvas->activate();
 	gui->zoombar->update();
 	cwindow->update(1, 0, 0, 0, 1);
-	return 0;
 }
 
-int MWindow::samplemovement(int64_t view_start)
+void MWindow::samplemovement(int64_t view_start)
 {
 	edl->local_session->view_start = view_start;
 	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
@@ -485,10 +414,9 @@ int MWindow::samplemovement(int64_t view_start)
 	gui->zoombar->update();
 
 	if(gui->samplescroll) gui->samplescroll->set_position();
-	return 0;
 }
 
-int MWindow::move_left(int64_t distance)
+void MWindow::move_left(int64_t distance)
 {
 	if(!distance) 
 		distance = gui->canvas->get_w() / 
@@ -496,20 +424,18 @@ int MWindow::move_left(int64_t distance)
 	edl->local_session->view_start -= distance;
 	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
 	samplemovement(edl->local_session->view_start);
-	return 0;
 }
 
-int MWindow::move_right(int64_t distance)
+void MWindow::move_right(int64_t distance)
 {
 	if(!distance) 
 		distance = gui->canvas->get_w() / 
 			10;
 	edl->local_session->view_start += distance;
 	samplemovement(edl->local_session->view_start);
-	return 0;
 }
 
-void MWindow::select_all()
+void MWindow::select_all(void)
 {
 	edl->local_session->set_selectionstart(0);
 	edl->local_session->set_selectionend(edl->tracks->total_length());
@@ -518,7 +444,7 @@ void MWindow::select_all()
 	cwindow->update(1, 0, 0);
 }
 
-int MWindow::next_label(int shift_down)
+void MWindow::next_label(int shift_down)
 {
 	Label *current = edl->labels->next_label(
 			edl->local_session->get_selectionstart(1));
@@ -535,16 +461,13 @@ int MWindow::next_label(int shift_down)
 		gui->patchbay->update();
 		if(edl->local_session->get_selectionend(1) >= 
 			(double)edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate + 
+			edl->local_session->zoom_time +
 			gui->canvas->time_visible() ||
 			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate)
+			edl->local_session->zoom_time)
 		{
-			samplemovement((int64_t)(edl->local_session->get_selectionend(1) *
-				edl->session->sample_rate /
-				edl->local_session->zoom_sample - 
+			samplemovement((int64_t)(edl->local_session->get_selectionend(1) /
+				edl->local_session->zoom_time - 
 				gui->canvas->get_w() / 
 				2));
 		}
@@ -563,10 +486,9 @@ int MWindow::next_label(int shift_down)
 	{
 		goto_end();
 	}
-	return 0;
 }
 
-int MWindow::prev_label(int shift_down)
+void MWindow::prev_label(int shift_down)
 {
 	Label *current = edl->labels->prev_label(
 			edl->local_session->get_selectionstart(1));;
@@ -581,17 +503,14 @@ int MWindow::prev_label(int shift_down)
 		gui->patchbay->update();
 // Scroll the display
 		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate + 
+			edl->local_session->zoom_time +
 			gui->canvas->time_visible() 
 		||
 			edl->local_session->get_selectionstart(1) < edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate)
+			edl->local_session->zoom_time)
 		{
-			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) *
-				edl->session->sample_rate /
-				edl->local_session->zoom_sample - 
+			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) /
+				edl->local_session->zoom_time -
 				gui->canvas->get_w() / 
 				2));
 		}
@@ -611,15 +530,9 @@ int MWindow::prev_label(int shift_down)
 	{
 		goto_start();
 	}
-	return 0;
 }
 
-
-
-
-
-
-int MWindow::next_edit_handle(int shift_down)
+void MWindow::next_edit_handle(int shift_down)
 {
 	ptstime position = edl->local_session->get_selectionend(1);
 	ptstime new_position = INFINITY;
@@ -649,16 +562,13 @@ int MWindow::next_edit_handle(int shift_down)
 		gui->patchbay->update();
 		if(edl->local_session->get_selectionend(1) >= 
 			(double)edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate + 
+			edl->local_session->zoom_time +
 			gui->canvas->time_visible() ||
 			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate)
+			edl->local_session->zoom_time)
 		{
-			samplemovement((int64_t)(edl->local_session->get_selectionend(1) *
-				edl->session->sample_rate /
-				edl->local_session->zoom_sample - 
+			samplemovement((int64_t)(edl->local_session->get_selectionend(1) /
+				edl->local_session->zoom_time -
 				gui->canvas->get_w() / 
 				2));
 		}
@@ -677,14 +587,13 @@ int MWindow::next_edit_handle(int shift_down)
 	{
 		goto_end();
 	}
-	return 0;
 }
 
-int MWindow::prev_edit_handle(int shift_down)
+void MWindow::prev_edit_handle(int shift_down)
 {
-	double position = edl->local_session->get_selectionstart(1);
-	double new_position = -1;
-	Units::fix_double(&position);
+	ptstime position = edl->local_session->get_selectionstart(1);
+	ptstime new_position = -1;
+
 // Test for edit handles before cursor position
 	for (Track *track = edl->tracks->first; track; track = track->next)
 	{
@@ -692,7 +601,7 @@ int MWindow::prev_edit_handle(int shift_down)
 		{
 			for (Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
-				double edit_end = edit->project_pts;
+				ptstime edit_end = edit->project_pts;
 				if (edit_end < position && edit_end > new_position)
 					new_position = edit_end;
 			}
@@ -701,9 +610,8 @@ int MWindow::prev_edit_handle(int shift_down)
 
 	if(new_position != -1)
 	{
-
 		edl->local_session->set_selectionstart(new_position);
-printf("MWindow::next_edit_handle %d\n", shift_down);
+
 		if(!shift_down) 
 			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 
@@ -711,17 +619,14 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 		gui->patchbay->update();
 // Scroll the display
 		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate + 
+			edl->local_session->zoom_time +
 			gui->canvas->time_visible() 
 		||
 			edl->local_session->get_selectionstart(1) < edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate)
+			edl->local_session->zoom_time)
 		{
-			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) *
-				edl->session->sample_rate /
-				edl->local_session->zoom_sample - 
+			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) /
+				edl->local_session->zoom_time - 
 				gui->canvas->get_w() / 
 				2));
 		}
@@ -741,49 +646,37 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 	{
 		goto_start();
 	}
-	return 0;
 }
 
-
-
-
-
-
-
-
-int MWindow::expand_y()
+void MWindow::expand_y(void)
 {
 	int result = edl->local_session->zoom_y * 2;
 	result = MIN(result, MAX_AMP_ZOOM);
 	zoom_amp(result);
 	gui->zoombar->update();
-	return 0;
 }
 
-int MWindow::zoom_in_y()
+void MWindow::zoom_in_y(void)
 {
 	int result = edl->local_session->zoom_y / 2;
 	result = MAX(result, MIN_AMP_ZOOM);
 	zoom_amp(result);
 	gui->zoombar->update();
-	return 0;
 }
 
-int MWindow::expand_t()
+void MWindow::expand_t(void)
 {
 	int result = edl->local_session->zoom_track * 2;
 	result = MIN(result, MAX_TRACK_ZOOM);
 	zoom_track(result);
 	gui->zoombar->update();
-	return 0;
 }
 
-int MWindow::zoom_in_t()
+void MWindow::zoom_in_t(void)
 {
 	int result = edl->local_session->zoom_track / 2;
 	result = MAX(result, MIN_TRACK_ZOOM);
 	zoom_track(result);
 	gui->zoombar->update();
-	return 0;
 }
 

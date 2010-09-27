@@ -149,14 +149,14 @@ public:
 // Reset everything for a load
 	void update_project(int load_mode);
 // Fit selected time to horizontal display range
-	void fit_selection();
+	void fit_selection(void);
 // Fit selected autos to the vertical display range
 	void fit_autos(int doall);
 	void change_currentautorange(int autogrouptype, int increment, int changemax);
 	void expand_autos(int changeall, int domin, int domax);
 	void shrink_autos(int changeall, int domin, int domax);
 // move the window to include the cursor
-	void find_cursor();
+	void find_cursor(void);
 // Append a plugindb with pointers to the master plugindb
 	void create_plugindb(int do_audio, 
 		int do_video, 
@@ -193,36 +193,34 @@ public:
 	void prev_time_format();
 	void time_format_common();
 	int reposition_timebar(int new_pixel, int new_height);
-	int expand_sample(double fixed_sample = -1);    // fixed_sample is the sample that should hold fixed position on the screen after zooming, -1 = selection
-	int zoom_in_sample(double fixed_sample = -1);
-	void zoom_sample(int64_t zoom_sample, int64_t view_start = -1); // what's the supposed view start
-	void synchronize_zoom(void);
+	void expand_sample(void);
+	void zoom_in_sample(void);
 	void zoom_time(ptstime zoom);
 	void zoom_amp(int64_t zoom_amp);
 	void zoom_track(int64_t zoom_track);
 	int fit_sample();
-	int move_left(int64_t distance = 0);
-	int move_right(int64_t distance = 0);
+	void move_left(int64_t distance = 0);
+	void move_right(int64_t distance = 0);
 	void move_up(int64_t distance = 0);
 	void move_down(int64_t distance = 0);
 
 // seek to labels
 // shift_down must be passed by the caller because different windows call
 // into this
-	int next_label(int shift_down);
-	int prev_label(int shift_down);
+	void next_label(int shift_down);
+	void prev_label(int shift_down);
 // seek to edit handles
-	int next_edit_handle(int shift_down);
-	int prev_edit_handle(int shift_down);  
+	void next_edit_handle(int shift_down);
+	void prev_edit_handle(int shift_down);
 	void trackmovement(int track_start);
-	int samplemovement(int64_t view_start);     // view_start is pixels
-	void select_all();
-	int goto_start();
-	int goto_end();
-	int expand_y();
-	int zoom_in_y();
-	int expand_t();
-	int zoom_in_t();
+	void samplemovement(int64_t view_start);     // view_start is pixels
+	void select_all(void);
+	void goto_start(void);
+	void goto_end(void);
+	void expand_y(void);
+	void zoom_in_y(void);
+	void expand_t(void);
+	void zoom_in_t(void);
 	void crop_video();
 	void update_plugins();
 // Call after every edit operation

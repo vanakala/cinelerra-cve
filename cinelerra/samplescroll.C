@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "samplescroll.h"
@@ -55,32 +56,19 @@ SampleScroll::~SampleScroll()
 {
 }
 
-int SampleScroll::flip_vertical()
-{
-	return 0;
-}
-
-int SampleScroll::in_use()
-{
-	return in_use();
-}
-
-
-int SampleScroll::resize_event()
+void SampleScroll::resize_event(void)
 {
 	reposition_window(mwindow->theme->mhscroll_x,
 		mwindow->theme->mhscroll_y, 
 		mwindow->theme->mhscroll_w);
-	return 0;
 }
 
-int SampleScroll::set_position()
+void SampleScroll::set_position(void)
 {
-	if(!gui->canvas) return 0;
-	samplenum length = Units::round(mwindow->edl->tracks->total_length() * 
-		mwindow->edl->session->sample_rate / 
-		mwindow->edl->local_session->zoom_sample);
-	samplenum position = mwindow->edl->local_session->view_start;
+	if(!gui->canvas) return;
+	int64_t length = Units::round(mwindow->edl->tracks->total_length() /
+		mwindow->edl->local_session->zoom_time);
+	int64_t position = mwindow->edl->local_session->view_start;
 	int handle_size = mwindow->theme->mcanvas_w - 
 		BC_ScrollBar::get_span(SCROLL_VERT);
 
@@ -89,7 +77,6 @@ int SampleScroll::set_position()
 			handle_size);
 
 	oldposition = position;
-	return 0;
 }
 
 int SampleScroll::handle_event()

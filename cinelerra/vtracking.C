@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "bcsignals.h"
 #include "assets.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -92,8 +93,4 @@ void VTracking::stop_meters()
 	vwindow->gui->lock_window("VTracking::stop_meters");
 	vwindow->gui->meters->stop_meters();
 	vwindow->gui->unlock_window();
-}
-
-void VTracking::draw()
-{
 }

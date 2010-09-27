@@ -100,6 +100,7 @@ class EDL;
 #define CWINDOW_MASK_CONTROL_OUT 0x16
 #define CWINDOW_MASK_TRANSLATE 0x17
 
+# define DEFAULT_ZOOM_TIME (exp2(-2))
 // Inclusive limits for zoom panel
 #define MIN_ZOOM_TIME (exp2(-10))
 #define MAX_ZOOM_TIME (exp2(6))

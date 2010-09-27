@@ -391,7 +391,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // check against index_end when being built
 	if(asset->index_zoom == 0)
 	{
-		printf(_("IndexFile::draw_index: index has 0 zoom\n"));
+		errorbox(_("IndexFile::draw_index: index has 0 zoom"));
 		return 0;
 	}
 
@@ -399,22 +399,20 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	if(edit->channel > asset->channels) return 1;
 
 // calculate a virtual x where the edit_x should be in floating point
-	double virtual_edit_x = 1.0 * edit->project_pts * 
-			mwindow->edl->session->sample_rate /
-			mwindow->edl->local_session->zoom_sample - 
+	double virtual_edit_x = edit->project_pts /
+			mwindow->edl->local_session->zoom_time -
 			mwindow->edl->local_session->view_start;
-
 // samples in segment to draw relative to asset
 	double asset_over_session = (double)edit->asset->sample_rate / 
 		mwindow->edl->session->sample_rate;
 	int64_t startsource = (int64_t)(((pixmap->pixmap_x - virtual_edit_x + x) * 
-		mwindow->edl->local_session->zoom_sample + 
+		(mwindow->edl->local_session->zoom_time * mwindow->edl->session->sample_rate) + 
 		edit->track->to_units(edit->source_pts)) *
 		asset_over_session);
 // just in case we get a numerical error 
 	if (startsource < 0) startsource = 0;
 	int64_t length = (int64_t)(w * 
-		mwindow->edl->local_session->zoom_sample * 
+		mwindow->edl->local_session->zoom_time * mwindow->edl->session->sample_rate *
 		asset_over_session);
 
 	if(asset->index_status == INDEX_BUILDING)
@@ -447,8 +445,9 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	int miny = center_pixel - mwindow->edl->local_session->zoom_track / 2;
 	int maxy = center_pixel + mwindow->edl->local_session->zoom_track / 2;
 	int x1 = 0, y1, y2;
-// get zoom_sample relative to index zoomx
-	double index_frames_per_pixel = mwindow->edl->local_session->zoom_sample / 
+
+	double index_frames_per_pixel = mwindow->edl->local_session->zoom_time *
+		mwindow->edl->session->sample_rate /
 		asset->index_zoom * 
 		asset_over_session;
 
@@ -512,7 +511,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 
 // A different algorithm has to be used if it's 1 sample per pixel and the
 // index is used.  Now the min and max values are equal so we join the max samples.
-			if(mwindow->edl->local_session->zoom_sample == 1)
+			if(mwindow->edl->local_session->zoom_time * mwindow->edl->session->sample_rate == 1)
 			{
 				pixmap->canvas->draw_line(x1 + x - 1, prev_y1, x1 + x, y1, pixmap);
 			}

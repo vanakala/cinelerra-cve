@@ -72,17 +72,16 @@ int CTracking::stop_playback()
 #define SCROLL_THRESHOLD 0
 
 
-int CTracking::update_scroll(double position)
+int CTracking::update_scroll(ptstime position)
 {
 	int updated_scroll = 0;
 
 	if(mwindow->edl->session->view_follows_playback)
 	{
-		double seconds_per_pixel = (double)mwindow->edl->local_session->zoom_sample / 
-			mwindow->edl->session->sample_rate;
-		double half_canvas = seconds_per_pixel * 
+		ptstime seconds_per_pixel = mwindow->edl->local_session->zoom_time;
+		ptstime half_canvas = seconds_per_pixel * 
 			mwindow->gui->canvas->get_w() / 2;
-		double midpoint = mwindow->edl->local_session->view_start * 
+		ptstime midpoint = mwindow->edl->local_session->view_start * 
 			seconds_per_pixel +
 			half_canvas;
 
@@ -94,9 +93,8 @@ int CTracking::update_scroll(double position)
 			if(position > left_boundary &&
 				position < right_boundary)
 			{
-				int pixels = Units::to_int64((position - midpoint) * 
-					mwindow->edl->session->sample_rate /
-					mwindow->edl->local_session->zoom_sample);
+				int pixels = Units::to_int64((position - midpoint) /
+					mwindow->edl->local_session->zoom_time);
 				if(pixels) 
 				{
 					mwindow->move_right(pixels);
@@ -106,16 +104,15 @@ int CTracking::update_scroll(double position)
 		}
 		else
 		{
-			double right_boundary = midpoint - SCROLL_THRESHOLD * half_canvas;
-			double left_boundary = midpoint - half_canvas;
+			ptstime right_boundary = midpoint - SCROLL_THRESHOLD * half_canvas;
+			ptstime left_boundary = midpoint - half_canvas;
 
 			if(position < right_boundary &&
 				position > left_boundary && 
 				mwindow->edl->local_session->view_start > 0)
 			{
-				int pixels = Units::to_int64((midpoint - position) * 
-						mwindow->edl->session->sample_rate /
-						mwindow->edl->local_session->zoom_sample);
+				int pixels = Units::to_int64((midpoint - position) /
+						mwindow->edl->local_session->zoom_time);
 				if(pixels) 
 				{
 					mwindow->move_left(pixels);
@@ -166,8 +163,4 @@ void CTracking::update_tracker(double position)
 
 
 	update_meters((samplenum)(position * mwindow->edl->session->sample_rate));
-}
-
-void CTracking::draw()
-{
 }

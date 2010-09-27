@@ -55,9 +55,8 @@ MTimeBar::MTimeBar(MWindow *mwindow,
 
 int64_t MTimeBar::position_to_pixel(double position)
 {
-	return (int64_t)(position * 
-		mwindow->edl->session->sample_rate / 
-		mwindow->edl->local_session->zoom_sample - 
+	return (int64_t)(position /
+		mwindow->edl->local_session->zoom_time -
 		mwindow->edl->local_session->view_start);
 }
 
@@ -77,7 +76,6 @@ void MTimeBar::draw_time()
 	char string[BCTEXTLEN];
 	int sample_rate = mwindow->edl->session->sample_rate;
 	double frame_rate = mwindow->edl->session->frame_rate;
-	int64_t windowspan = 0;
 // Seconds between text markings
 	double text_interval = 3600.0;
 // Seconds between tick marks
@@ -98,18 +96,10 @@ void MTimeBar::draw_time()
 // framerate.
 // For low zoom, mark individual frames.
 
-	windowspan = mwindow->edl->local_session->zoom_sample * get_w();
-
-
 	draw_range();
 
-
-
-
-
 // Number of seconds per pixel
-	double time_per_pixel = (double)mwindow->edl->local_session->zoom_sample / 
-		sample_rate;
+	double time_per_pixel = mwindow->edl->local_session->zoom_time;
 // Seconds in each frame
 	double frame_seconds = (double)1.0 / frame_rate;
 // Starting time of view in seconds.
@@ -137,9 +127,7 @@ void MTimeBar::draw_time()
 
 // Minimum seconds between text marks
 	double min_time = (double)min_pixels * 
-		mwindow->edl->local_session->zoom_sample /
-		sample_rate;
-
+		mwindow->edl->local_session->zoom_time;
 
 // Get first text mark on or before window start
 	int64_t starting_mark = 0;
@@ -394,8 +382,7 @@ void MTimeBar::draw_range()
 	if(mwindow->edl->tracks->total_playable_vtracks() &&
 		mwindow->preferences->use_brender)
 	{
-		double time_per_pixel = (double)mwindow->edl->local_session->zoom_sample /
-			mwindow->edl->session->sample_rate;
+		double time_per_pixel = (double)mwindow->edl->local_session->zoom_time;
 		x1 = (int)(mwindow->edl->session->brender_start / time_per_pixel) - 
 			mwindow->edl->local_session->view_start;
 		x2 = (int)(mwindow->session->brender_end / time_per_pixel) - 

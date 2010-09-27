@@ -37,7 +37,6 @@ public:
 	void update_tracker(double position);
 	void update_meters(samplenum position);
 	void stop_meters();
-	void draw();
 
 	VWindow *vwindow;
 };

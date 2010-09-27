@@ -20,6 +20,7 @@
  */
 
 #include "automation.inc"
+#include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -387,12 +388,8 @@ void FloatAutos::get_extents(float *min,
 // Test joining regions
 	FloatAuto *prev = 0;
 	FloatAuto *next = 0;
-	posnum unit_step = edl->local_session->zoom_sample;
-	if(track->data_type == TRACK_VIDEO)
-		unit_step = (posnum)(unit_step * 
-			edl->session->frame_rate / 
-			edl->session->sample_rate);
-	ptstime step = pos2pts(MAX(unit_step, 1));
+	ptstime step = MAX(track->one_unit, edl->local_session->zoom_time);
+
 	for(ptstime position = start;
 		position < end;
 		position += step)

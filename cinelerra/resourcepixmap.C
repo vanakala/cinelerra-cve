@@ -22,6 +22,7 @@
 #include "aedit.h"
 #include "asset.h"
 #include "asset.inc"
+#include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
 #include "colormodels.h"
@@ -79,7 +80,6 @@ void ResourcePixmap::reset()
 	pixmap_x = 0;
 	pixmap_w = 0;
 	pixmap_h = 0;
-	zoom_sample = 0;
 	zoom_track = 0;
 	zoom_y = 0;
 	visible = 1;
@@ -118,9 +118,9 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 // If index can't be drawn, don't do anything.
 	int need_redraw = 0;
-	int64_t index_zoom = 0;
 	if(indexes_only)
 	{
+		int64_t index_zoom = 0;
 		IndexFile indexfile(mwindow);
 		if(!indexfile.open_index(edit->asset))
 		{
@@ -134,8 +134,9 @@ void ResourcePixmap::draw_data(Edit *edit,
 			{
 				double asset_over_session = (double)edit->asset->sample_rate / 
 					mwindow->edl->session->sample_rate;
-					asset_over_session;
-				if(index_zoom <= mwindow->edl->local_session->zoom_sample *
+				if(index_zoom <=
+				mwindow->edl->session->sample_rate *
+				mwindow->edl->local_session->zoom_time *
 					asset_over_session)
 					need_redraw = 1;
 			}
@@ -152,7 +153,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 		(data_type == TRACK_VIDEO) ||
 		mwindow->edl->session->sample_rate != project_samplerate ||
 		mwindow->edl->session->frame_rate != project_framerate ||
-		mwindow->edl->local_session->zoom_sample != zoom_sample || 
+		mwindow->edl->local_session->zoom_time != zoom_time || 
 		mwindow->edl->local_session->zoom_track != zoom_track ||
 		this->pixmap_h != pixmap_h ||
 		(data_type == TRACK_AUDIO && 
@@ -342,7 +343,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	this->pixmap_x = pixmap_x;
 	this->pixmap_w = pixmap_w;
 	this->pixmap_h = pixmap_h;
-	this->zoom_sample = mwindow->edl->local_session->zoom_sample;
+	this->zoom_time = mwindow->edl->local_session->zoom_time;
 	this->zoom_track = mwindow->edl->local_session->zoom_track;
 	this->zoom_y = mwindow->edl->local_session->zoom_y;
 
@@ -462,7 +463,8 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 			if(!indexfile.open_index(edit->asset))
 			{
 				if(edit->asset->index_zoom > 
-					mwindow->edl->local_session->zoom_sample * 
+					mwindow->edl->local_session->zoom_time *
+					mwindow->edl->session->sample_rate *
 					asset_over_session)
 				{
 					draw_audio_source(edit, x, w);
@@ -491,16 +493,19 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	w++;
 	double asset_over_session = (double)edit->asset->sample_rate / 
 		mwindow->edl->session->sample_rate;
-	int source_len = w * mwindow->edl->local_session->zoom_sample;
+	int source_len = round(w * mwindow->edl->local_session->zoom_time *
+		mwindow->edl->session->sample_rate);
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
 	if(mwindow->edl->session->show_titles) 
 		center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 
 // Single sample zoom
-	if(mwindow->edl->local_session->zoom_sample == 1)
+	if(round(mwindow->edl->local_session->zoom_time *
+		mwindow->edl->session->sample_rate) == 1)
 	{
 		samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
-			mwindow->edl->local_session->zoom_sample + 
+			round(mwindow->edl->local_session->zoom_time *
+			mwindow->edl->session->sample_rate) + 
 			edit->track->to_units(edit->source_pts)) *
 			asset_over_session);
 		double oldsample, newsample;
@@ -550,11 +555,13 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		{
 // Starting sample of pixel relative to asset rate.
 			samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
-				mwindow->edl->local_session->zoom_sample + 
+				round(mwindow->edl->local_session->zoom_time *
+				mwindow->edl->session->sample_rate) +
 				edit->track->to_units(edit->source_pts)) *
 				asset_over_session);
 			samplenum source_end = (int64_t)(((pixmap_x - edit_x + x + 1) * 
-				mwindow->edl->local_session->zoom_sample + 
+				round(mwindow->edl->local_session->zoom_time *
+				mwindow->edl->session->sample_rate) +
 				edit->track->to_units(edit->source_pts)) *
 				asset_over_session);
 			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset->id,

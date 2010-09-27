@@ -50,8 +50,6 @@ public:
 	MWindowGUI *gui;
 	int visible;
 	double selectionstart, selectionend;
-	samplenum zoom_sample;
-	double view_start;
 	samplenum pixel2, pixel1;
 	int active;
 	int playing_back;

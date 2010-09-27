@@ -52,13 +52,6 @@ public:
 // Update meters
 	virtual void update_meters(samplenum position);
 	virtual void stop_meters();
-	int get_pixel(double position);
-
-// Erase cursor if it's visible.  Called by start_playback
-// Draw new cursor at last_position if invisible
-	virtual void draw();
-
-
 
 	void run();
 

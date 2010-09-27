@@ -20,6 +20,7 @@
  */
 
 #include "arender.h"
+#include "bcsignals.h"
 #include "condition.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -79,7 +80,6 @@ int Tracking::start_playback(double new_position)
 	{
 		last_position = new_position;
 		state = PLAYING;
-		draw();
 		Thread::start();
 		startup_lock->lock("Tracking::start_playback");
 	}
@@ -115,15 +115,6 @@ double Tracking::get_tracking_position()
 {
 	return get_playback_engine()->get_tracking_position();
 }
-
-int Tracking::get_pixel(double position)
-{
-	return (int)((position - mwindow->edl->local_session->view_start) *
-		mwindow->edl->session->sample_rate / 
-		mwindow->edl->local_session->zoom_sample + 
-		0.5);
-}
-
 
 void Tracking::update_meters(samplenum position)
 {
@@ -163,25 +154,6 @@ void Tracking::stop_meters()
 	mwindow->lwindow->gui->panel->stop_meters();
 	mwindow->lwindow->gui->unlock_window();
 }
-
-
-void Tracking::draw()
-{
-	gui->lock_window("Tracking::draw");
-	if(!visible)
-	{
-		pixel = get_pixel(last_position);
-	}
-
-	gui->canvas->set_color(GREEN);
-	gui->canvas->set_inverse();
-	gui->canvas->draw_line(pixel, 0, pixel, gui->canvas->get_h());
-	gui->canvas->set_opaque();
-	gui->canvas->flash(pixel, 0, pixel + 1, gui->canvas->get_h());
-	visible ^= 1;
-	gui->unlock_window();
-}
-
 
 void Tracking::run()
 {

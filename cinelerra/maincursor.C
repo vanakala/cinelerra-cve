@@ -95,20 +95,19 @@ int MainCursor::repeat_event(int duration)
 
 void MainCursor::draw(int do_plugintoggles)
 {
+	double view_start;
+
 	if(!visible)
 	{
 		selectionstart = mwindow->edl->local_session->get_selectionstart(1);
 		selectionend = mwindow->edl->local_session->get_selectionend(1);
 		view_start = mwindow->edl->local_session->view_start;
-		zoom_sample = mwindow->edl->local_session->zoom_sample;
 
-		pixel1 = Units::to_int64((selectionstart * 
-			mwindow->edl->session->sample_rate / 
-			zoom_sample - 
+		pixel1 = Units::to_int64((selectionstart /
+			mwindow->edl->local_session->zoom_time -
 			view_start));
-		pixel2 = Units::to_int64((selectionend *
-			mwindow->edl->session->sample_rate / 
-			zoom_sample - 
+		pixel2 = Units::to_int64((selectionend /
+			mwindow->edl->local_session->zoom_time -
 			view_start));
 		if(pixel1 < -10) pixel1 = -10;
 		if(pixel2 > gui->canvas->get_w() + 10) pixel2 = gui->canvas->get_w() + 10;

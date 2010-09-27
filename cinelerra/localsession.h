@@ -89,8 +89,7 @@ public:
 // Horizontal start of view in pixels.  This has to be pixels since either
 // samples or seconds would require drawing in fractional pixels.
 	int64_t view_start;
-// Zooming of the timeline.  Number of samples per pixel.  
-	int64_t zoom_sample;
+// Zooming of the timeline. Length of media per pixel
 	ptstime zoom_time;
 // Amplitude zoom
 	int64_t zoom_y;

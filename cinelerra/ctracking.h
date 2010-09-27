@@ -36,13 +36,11 @@ public:
 	PlaybackEngine* get_playback_engine();
 	void update_tracker(double position);
 // Move Track Canvas left or right to track playback
-	int update_scroll(double position);
+	int update_scroll(ptstime position);
 
 // Move sliders and insertion point to track playback
 	int start_playback(double new_position);
 	int stop_playback();
-	void draw();
-
 	CWindow *cwindow;
 };
 

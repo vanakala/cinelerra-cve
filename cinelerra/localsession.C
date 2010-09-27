@@ -24,6 +24,7 @@
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
+#include "edlsession.h"
 #include "filexml.h"
 #include "localsession.h"
 
@@ -63,7 +64,6 @@ LocalSession::LocalSession(EDL *edl)
 	loop_playback = 0;
 	loop_start = 0;
 	loop_end = 0;
-	zoom_sample = 16384;
 	zoom_time = 0;
 	zoom_y = 0;
 	zoom_track = 0;
@@ -110,7 +110,6 @@ void LocalSession::copy_from(LocalSession *that)
 	selectionstart = that->selectionstart;
 	track_start = that->track_start;
 	view_start = that->view_start;
-	zoom_sample = that->zoom_sample;
 	zoom_time = that->zoom_time;
 	zoom_y = that->zoom_y;
 	zoom_track = that->zoom_track;
@@ -198,7 +197,9 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		selectionend = file->tag.get_property("SELECTION_END", (double)0);
 		track_start = file->tag.get_property("TRACK_START", track_start);
 		view_start = file->tag.get_property("VIEW_START", view_start);
-		zoom_sample = file->tag.get_property("ZOOM_SAMPLE", zoom_sample);
+		int64_t zoom_sample = file->tag.get_property("ZOOM_SAMPLE", (int64_t)0);
+		if(zoom_sample)
+			zoom_time = (ptstime)zoom_sample / edl->session->sample_rate;
 		zoom_time = file->tag.get_property("ZOOM_TIME", zoom_time);
 		zoom_y = file->tag.get_property("ZOOMY", zoom_y);
 		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
@@ -236,9 +237,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 
 void LocalSession::boundaries()
 {
-	if(zoom_time)
-		zoom_time = CLIP(zoom_time, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
-	zoom_sample = MAX(1, zoom_sample);
+	zoom_time = CLIP(zoom_time, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
 }
 
 int LocalSession::load_defaults(BC_Hash *defaults)
@@ -248,8 +247,13 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	loop_end = defaults->get("LOOP_END", (double)0);
 	selectionstart = defaults->get("SELECTIONSTART", selectionstart);
 	selectionend = defaults->get("SELECTIONEND", selectionend);
-	zoom_sample = defaults->get("ZOOM_SAMPLE", 16384);
-	zoom_time = defaults->get("ZOOM_TIME", (ptstime)16384/48000);
+// For backwards compatibility
+	int64_t zoom_sample = defaults->get("ZOOM_SAMPLE", (int64_t)0);
+	if(zoom_sample)
+		zoom_time = (ptstime)zoom_sample / edl->session->sample_rate;
+	else
+		zoom_time = DEFAULT_ZOOM_TIME;
+	zoom_time = defaults->get("ZOOM_TIME", zoom_time);
 	zoom_y = defaults->get("ZOOMY", 64);
 	zoom_track = defaults->get("ZOOM_TRACK", 64);
 	red = defaults->get("RED", 0.0);

@@ -677,11 +677,9 @@ int TimeBar::button_press_event()
 			if(get_double_click())
 			{
 				double position = (double)get_cursor_x() * 
-					mwindow->edl->local_session->zoom_sample / 
-					mwindow->edl->session->sample_rate + 
+					mwindow->edl->local_session->zoom_time +
 					(double)mwindow->edl->local_session->view_start *
-					mwindow->edl->local_session->zoom_sample / 
-					mwindow->edl->session->sample_rate;
+					mwindow->edl->local_session->zoom_time;
 // Test labels
 				select_region(position);
 				return 1;
@@ -806,13 +804,10 @@ int TimeBar::button_release_event()
 // Update the selection cursor during a dragging operation
 void TimeBar::update_cursor()
 {
-	double position = (double)get_cursor_x() * 
-		mwindow->edl->local_session->zoom_sample / 
-		mwindow->edl->session->sample_rate + 
+	ptstime position = (double)get_cursor_x() * 
+		mwindow->edl->local_session->zoom_time +
 		(double)mwindow->edl->local_session->view_start * 
-		mwindow->edl->local_session->zoom_sample / 
-		mwindow->edl->session->sample_rate;
-
+		mwindow->edl->local_session->zoom_time;
 	position = mwindow->edl->align_to_frame(position, 0);
 	position = MAX(0, position);
 	current_operation = TIMEBAR_DRAG;

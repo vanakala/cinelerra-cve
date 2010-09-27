@@ -299,7 +299,7 @@ public:
 	void end_edithandle_selection();
 	void end_pluginhandle_selection();
 // Number of seconds spanned by the trackcanvas
-	double time_visible();
+	ptstime time_visible(void);
 	void update_drag_handle();
 	int update_drag_floatauto(int cursor_x, int cursor_y);
 	int update_drag_toggleauto(int cursor_x, int cursor_y);
