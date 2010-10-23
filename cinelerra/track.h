@@ -58,14 +58,14 @@ public:
 	Track();
 	virtual ~Track();
 
-	int create_objects();
+	void create_objects();
 	int get_id();
 	virtual int load_defaults(BC_Hash *defaults);
 	int load(FileXML *file, int track_offset, uint32_t load_flags);
-	virtual int save_header(FileXML *file) { return 0; };
-	virtual int save_derived(FileXML *file) { return 0; };
-	virtual int load_header(FileXML *file, uint32_t load_flags) { return 0; };
-	virtual int load_derived(FileXML *file, uint32_t load_flags) { return 0; };
+	virtual void save_header(FileXML *file) {};
+	virtual void save_derived(FileXML *file) {};
+	virtual void load_header(FileXML *file, uint32_t load_flags) {};
+	virtual void load_derived(FileXML *file, uint32_t load_flags) {};
 	void equivalent_output(Track *track, ptstime *result);
 
 	virtual void copy_from(Track *track);
@@ -191,16 +191,13 @@ public:
 	virtual int dump();
 
 // ===================================== editing
-	int copy(ptstime start,
+	void copy(ptstime start,
 		ptstime end,
 		FileXML *file, 
 		const char *output_path = "");
-	int copy_assets(ptstime start,
+	void copy_assets(ptstime start,
 		ptstime end,
 		ArrayList<Asset*> *asset_list);
-	virtual int copy_derived(ptstime start, ptstime end, FileXML *file) { return 0; };
-	virtual int paste_derived(ptstime start, ptstime end, 
-		ptstime total_length, FileXML *file, int &current_channel) { return 0; };
 	void clear(ptstime start,
 		ptstime end,
 		int actions,

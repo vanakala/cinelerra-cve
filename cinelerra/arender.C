@@ -159,7 +159,7 @@ VirtualConsole* ARender::new_vconsole_object()
 	return new VirtualAConsole(renderengine, this);
 }
 
-posnum ARender::tounits(double position, int round)
+posnum ARender::tounits(ptstime position, int round)
 {
 	if(round)
 		return Units::round(position * renderengine->edl->session->sample_rate);
@@ -167,7 +167,7 @@ posnum ARender::tounits(double position, int round)
 		return (posnum)(position * renderengine->edl->session->sample_rate);
 }
 
-double ARender::fromunits(posnum position)
+ptstime ARender::fromunits(posnum position)
 {
 	return (double)position / renderengine->edl->session->sample_rate;
 }

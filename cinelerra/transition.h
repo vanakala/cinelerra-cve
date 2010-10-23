@@ -76,8 +76,11 @@ public:
 	int operator==(Plugin &that);
 	int operator==(Edit &that);
 	int identical(Transition *that);
+	ptstime length(void);
 
 	void dump();
+
+	ptstime length_time;
 
 private:
 // Only used by operator= and copy constructor

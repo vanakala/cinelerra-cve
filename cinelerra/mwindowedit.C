@@ -747,14 +747,12 @@ void MWindow::match_output_size(Track *track)
 
 void MWindow::move_edits(ArrayList<Edit*> *edits, 
 		Track *track,
-		double position,
+		ptstime position,
 		int behaviour)
 {
 	edl->tracks->move_edits(edits, 
 		track, 
 		position,
-		edl->session->labels_follow_edits, 
-		edl->session->plugins_follow_edits,
 		behaviour);
 
 	save_backup();

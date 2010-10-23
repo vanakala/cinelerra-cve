@@ -44,8 +44,6 @@ public:
 			int use_asynchronous);
 
 	void load_properties_derived(FileXML *xml);
-
-	void dump_derived(void);
 	ptstime get_source_end(ptstime default_value);
 
 private:

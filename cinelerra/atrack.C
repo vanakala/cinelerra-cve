@@ -75,37 +75,17 @@ int ATrack::copy_settings(Track *track)
 }
 
 
-int ATrack::save_header(FileXML *file)
+void ATrack::save_header(FileXML *file)
 {
 	file->tag.set_property("TYPE", "AUDIO");
-	return 0;
 }
 
-int ATrack::save_derived(FileXML *file)
-{
-	char string[BCTEXTLEN];
-	file->append_newline();
-	return 0;
-}
-
-int ATrack::load_header(FileXML *file, uint32_t load_flags)
-{
-	return 0;
-}
-
-
-int ATrack::load_derived(FileXML *file, uint32_t load_flags)
-{
-	return 0;
-}
-
-int ATrack::create_objects()
+void ATrack::create_objects()
 {
 	Track::create_objects();
 	automation = new AAutomation(edl, this);
 	automation->create_objects();
 	edits = new AEdits(edl, this);
-	return 0;
 }
 
 int ATrack::vertical_span(Theme *theme)
@@ -152,21 +132,4 @@ posnum ATrack::to_units(ptstime position, int round)
 ptstime ATrack::from_units(posnum position)
 {
 	return (double)position / edl->session->sample_rate;
-}
-
-
-ptstime ATrack::length()
-{
-	return edits->length();
-}
-
-
-int ATrack::paste_derived(ptstime start, ptstime end, ptstime total_length, FileXML *xml, int &current_channel)
-{
-	if(!strcmp(xml->tag.get_title(), "PANAUTOS"))
-	{
-		current_channel = xml->tag.get_property("CHANNEL", current_channel);
-		return 1;
-	}
-	return 0;
 }

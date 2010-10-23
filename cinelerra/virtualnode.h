@@ -124,8 +124,8 @@ protected:
 private:
 	int sort_as_module(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);
 	int sort_as_plugin(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);
-	int expand_as_module(int duplicate, ptstime current_position);
-	int expand_as_plugin(int duplicate);
+	void expand_as_module(int duplicate, ptstime current_position);
+	void expand_as_plugin(int duplicate);
 	int is_exit;
 };
 

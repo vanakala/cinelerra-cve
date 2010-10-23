@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -88,7 +89,7 @@ ptstime PluginSet::plugin_change_duration(ptstime input_position,
 		for(current = last; current; current = PREVIOUS)
 		{
 			ptstime start = current->project_pts;
-			ptstime end = start + current->length_time;
+			ptstime end = current->end_pts();
 			if(end > input_start && end < input_position)
 			{
 				result = input_position - end;
@@ -108,7 +109,7 @@ ptstime PluginSet::plugin_change_duration(ptstime input_position,
 		for(current = first; current; current = NEXT)
 		{
 			ptstime start = current->project_pts;
-			ptstime end = start + current->length_time;
+			ptstime end = current->end_pts();
 			if(start > input_position && start < input_end)
 			{
 				result = start - input_position;
@@ -163,8 +164,7 @@ Plugin* PluginSet::insert_plugin(const char *title,
 
 Edit* PluginSet::create_edit()
 {
-	Plugin* result = new Plugin(edl, this, "");
-	return result;
+	return new Plugin(edl, this, "");
 }
 
 Edit* PluginSet::insert_edit_after(Edit *previous_edit)
@@ -309,15 +309,15 @@ void PluginSet::paste_keyframes(ptstime start,
 							current = (Plugin*)PREVIOUS)
 						{
 							if(position >= current->project_pts
-							&& position <= current->length_time + current->project_pts
-							&& !strncmp(((KeyFrame *)current->keyframes->default_auto)->data, data, name_len))
+								&& position <= current->end_pts()
+								&& !strncmp(((KeyFrame *)current->keyframes->default_auto)->data, data, name_len))
 							{
 								target_pluginset = pluginset;
 								first_target_plugin = current;
 								break;
 							}
 							if(position >= current->project_pts
-							&& !strncmp(((KeyFrame *)current->keyframes->default_auto)->data, data, name_len))
+								&& !strncmp(((KeyFrame *)current->keyframes->default_auto)->data, data, name_len))
 							{
 								second_choice = pluginset;
 								second_choice_first_target_plugin = current;
@@ -380,9 +380,9 @@ void PluginSet::shift_effects(ptstime start, ptstime length)
 // In loading new files, the effect should extend to fill the entire track.
 // In muting, the effect must extend to fill the gap if another effect follows.
 // The user should use Settings->edit effects to disable this.
-		if(current->project_pts + current->length_time >= start)
+		if(current->end_pts() >= start)
 		{
-			current->length_time += length;
+			current->next->project_pts += length;
 		}
 
 // Shift keyframes in this effect.
@@ -442,7 +442,7 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 				ptstime length = 0;
 				if(length_units)
 					length = track->from_units(length_units);
-				file->tag.get_property("LENGTH_TIME", length);
+				startproject = file->tag.get_property("POSTIME", startproject);
 				loaded_length += length;
 				int plugin_type = file->tag.get_property("TYPE", 1);
 				char title[BCTEXTLEN];
@@ -486,7 +486,6 @@ void PluginSet::optimize(void)
 	int result = 1;
 	Plugin *current_edit;
 
-
 // Delete keyframes out of range
 	for(current_edit = (Plugin*)first;
 		current_edit; 
@@ -497,8 +496,7 @@ void PluginSet::optimize(void)
 			current_keyframe; )
 		{
 			KeyFrame *previous_keyframe = (KeyFrame*)current_keyframe->previous;
-			if(current_keyframe->pos_time >
-				current_edit->project_pts + current_edit->length_time ||
+			if(current_keyframe->pos_time > current_edit->end_pts() ||
 				current_keyframe->pos_time < current_edit->project_pts)
 			{
 				delete current_keyframe;
@@ -506,36 +504,11 @@ void PluginSet::optimize(void)
 			current_keyframe = previous_keyframe;
 		}
 	}
-
-// Insert silence between plugins
-	for(Plugin *current = (Plugin*)last; current; current = (Plugin*)PREVIOUS)
+	if(first->project_pts > 0)
 	{
-		if(current->previous)
-		{
-			Plugin *previous = (Plugin*)PREVIOUS;
-
-			if(current->project_pts -
-				previous->project_pts -
-				previous->length_time > 0)
-			{
-				Plugin *new_plugin = (Plugin*)create_edit();
-				insert_before(current, new_plugin);
-				new_plugin->project_pts = previous->project_pts +
-					previous->length_time;
-				new_plugin->length_time = current->project_pts -
-					previous->project_pts -
-					previous->length_time;
-			}
-		}
-		else
-		if(current->project_pts > 0)
-		{
-			Plugin *new_plugin = (Plugin*)create_edit();
-			insert_before(current, new_plugin);
-			new_plugin->length_time = current->project_pts;
-		}
+		Plugin *new_plugin = (Plugin*)create_edit();
+		insert_before(first, new_plugin);
 	}
-
 
 // delete 0 length plugins
 	while(result)
@@ -543,9 +516,9 @@ void PluginSet::optimize(void)
 		result = 0;
 
 		for(current_edit = (Plugin*)first; 
-			current_edit && !result; )
+			current_edit && current_edit->next && !result; )
 		{
-			if(PTSEQU(current_edit->length_time, 0))
+			if(current_edit->length() < track->one_unit)
 			{
 				Plugin* next = (Plugin*)current_edit->next;
 				delete current_edit;
@@ -565,7 +538,6 @@ void PluginSet::optimize(void)
 // plugins identical
 			if(next_edit->identical(current_edit))
 			{
-				current_edit->length_time += next_edit->length_time;
 // Merge keyframes
 				for(KeyFrame *source = (KeyFrame*)next_edit->keyframes->first;
 					source;
@@ -589,13 +561,8 @@ void PluginSet::optimize(void)
 		if (!last) 
 			empty_edit->project_pts = 0;
 		else
-			empty_edit->project_pts = last->project_pts + last->length_time;
-		empty_edit->length_time = LAST_VIRTUAL_LENGTH;
+			empty_edit->project_pts = last->end_pts();
 		insert_after(last, empty_edit);
-	} 
-	else
-	{
-		last->length_time = LAST_VIRTUAL_LENGTH;
 	}
 }
 

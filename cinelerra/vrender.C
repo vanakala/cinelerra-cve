@@ -182,11 +182,9 @@ SET_TRACE
 	else
 // Read into virtual console
 	{
-
 // process this buffer now in the virtual console
 		result = ((VirtualVConsole*)vconsole)->process_buffer(input_position);
 	}
-
 	return result;
 }
 
@@ -205,7 +203,6 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 	if(vconsole->total_exit_nodes != 1) return 1;
 
 	playable_track = vconsole->playable_tracks->values[0];
-
 // Test mutual conditions between render.C and this.
 	if(!playable_track->direct_copy_possible(position, 
 		renderengine->command->get_direction(),
@@ -270,7 +267,6 @@ int VRender::get_colormodel(Edit* &playable_edit,
 			renderengine->get_vcache()->check_in(asset);
 		}
 	}
-
 	return colormodel;
 }
 
@@ -319,7 +315,6 @@ void VRender::run()
 			last_playback);
 
 		if(reconfigure) restart_playback();
-
 SET_TRACE
 		process_buffer(current_position);
 		if(last_playback || renderengine->video->interrupt 
@@ -508,7 +503,7 @@ int VRender::start_playback()
 	}
 }
 
-posnum VRender::tounits(double position, int round)
+posnum VRender::tounits(ptstime position, int round)
 {
 	if(round)
 		return Units::round(position * renderengine->edl->session->frame_rate);
@@ -516,7 +511,7 @@ posnum VRender::tounits(double position, int round)
 		return Units::to_int64(position * renderengine->edl->session->frame_rate);
 }
 
-double VRender::fromunits(posnum position)
+ptstime VRender::fromunits(posnum position)
 {
-	return (double)position / renderengine->edl->session->frame_rate;
+	return (ptstime)position / renderengine->edl->session->frame_rate;
 }

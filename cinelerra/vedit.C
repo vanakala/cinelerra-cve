@@ -89,13 +89,6 @@ int VEdit::read_frame(VFrame *video_out,
 	return result;
 }
 
-void VEdit::dump_derived(void)
-{
-	printf("        VEdit::dump_derived\n");
-	printf("           project pts %.3f\n", project_pts);
-	printf("           length %.3f\n", length_time);
-}
-
 ptstime VEdit::get_source_end(ptstime default_value)
 {
 	if(!asset) return default_value;   // Infinity

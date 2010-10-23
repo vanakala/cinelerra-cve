@@ -33,9 +33,6 @@
 #include "track.inc"
 #include "transition.inc"
 
-// UNITS ARE SAMPLES FOR AUDIO / FRAMES FOR VIDEO
-// zoom_units was mwindow->zoom_sample for AEdit
-
 // Generic edit of something
 
 class Edit : public ListItem<Edit>
@@ -47,7 +44,8 @@ public:
 	virtual ~Edit();
 
 	void reset(void);
-	ptstime length(void);
+	virtual ptstime length(void);
+	ptstime end_pts(void);
 	virtual void copy_from(Edit *edit);
 	virtual int identical(Edit &edit);
 	virtual Edit& operator=(Edit& edit);
@@ -100,8 +98,7 @@ public:
 	ptstime source_pts;
 // Start of edit in project
 	ptstime project_pts;
-// Length in seconds
-	ptstime length_time;
+
 // Channel or layer of source
 	int channel;
 // ID for resource pixmaps
@@ -124,7 +121,7 @@ public:
 
 // ============================= initialization
 
-	void load_properties(FileXML *xml, ptstime &startproject);
+	ptstime load_properties(FileXML *xml, ptstime project_pts);
 	virtual void load_properties_derived(FileXML *xml) {};
 
 // ============================= editing

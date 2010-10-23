@@ -20,6 +20,7 @@
  */
 
 #include "auto.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "commonrender.h"
 #include "condition.h"
@@ -321,12 +322,12 @@ int CommonRender::advance_position(posnum current_render_length)
 	return 0;
 }
 
-posnum CommonRender::tounits(double position, int round)
+posnum CommonRender::tounits(ptstime position, int round)
 {
 	return (posnum)position;
 }
 
-double CommonRender::fromunits(posnum position)
+ptstime CommonRender::fromunits(posnum position)
 {
-	return (double)position;
+	return (ptstime)position;
 }

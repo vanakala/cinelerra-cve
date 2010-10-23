@@ -39,30 +39,18 @@ class ATrack : public Track
 {
 public:
 	ATrack(EDL *edl, Tracks *tracks);
-	ATrack() { };
 	~ATrack();
 
-	int create_objects();
+	void create_objects();
 	int load_defaults(BC_Hash *defaults);
 	void set_default_title();
 	PluginSet* new_plugins();
 	int vertical_span(Theme *theme);
-	int save_header(FileXML *file);
-	int save_derived(FileXML *file);
-	int load_header(FileXML *file, uint32_t load_flags);
-	int load_derived(FileXML *file, uint32_t load_flags);
+	void save_header(FileXML *file);
 	int copy_settings(Track *track);
 	void synchronize_params(Track *track);
 	posnum to_units(ptstime position, int round = 0);
 	ptstime from_units(posnum position);
-
-// ====================================== initialization
-	int create_derived_objs(int flash);
-
-// ===================================== editing
-	int paste_derived(ptstime start, ptstime end, ptstime total_length, FileXML *xml, int &current_channel);
-
-	ptstime length();
 };
 
 #endif

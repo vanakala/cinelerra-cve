@@ -47,8 +47,6 @@ public:
 	void move_edits(ArrayList<Edit*> *edits, 
 		Track *track,
 		ptstime position,
-		int edit_labels,
-		int edit_plugins,
 		int behaviour);
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
@@ -100,9 +98,9 @@ public:
 	Track* add_audio_track(int above, Track *dst_track);
 	Track* add_video_track(int above, Track *dst_track);
 // delete any track
-	int delete_track(Track* track);
+	void delete_track(Track* track);
 // detach shared effects referencing module
-	int detach_shared_effects(int module);
+	void detach_shared_effects(int module);
 
 	EDL *edl;
 

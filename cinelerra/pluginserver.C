@@ -731,8 +731,11 @@ void PluginServer::show_gui()
 {
 	if(!plugin_open) return;
 	client->smp = preferences->processors - 1;
-	if(plugin) client->total_len = plugin->track->to_units(plugin->length_time);
-	if(plugin) client->source_start = plugin->track->to_units(plugin->project_pts);
+	if(plugin)
+	{
+		client->total_len = plugin->track->to_units(plugin->length());
+		client->source_start = plugin->track->to_units(plugin->project_pts);
+	}
 	if(video)
 	{
 		client->source_position = Units::to_int64(
@@ -754,7 +757,7 @@ void PluginServer::update_gui()
 {
 	if(!plugin_open || !plugin) return;
 
-	client->total_len = plugin->track->to_units(plugin->length_time);
+	client->total_len = plugin->track->to_units(plugin->length());
 	client->source_start = plugin->track->to_units(plugin->project_pts);
 	if(video)
 	{

@@ -23,7 +23,6 @@
 #define AUTOS_H
 
 // Base class for automation lists.
-// Units are the native units for the track data type.
 
 #include "auto.h"
 #include "edl.inc"
@@ -65,8 +64,8 @@ public:
 // Interpolate it insead of copying
 	Auto* insert_auto_for_editing(ptstime position);
 	void insert_track(Autos *automation, 
-		ptstime start_unit, 
-		ptstime length_units,
+		ptstime start,
+		ptstime length,
 		int replace_default);
 	virtual int load(FileXML *xml);
 	void paste(ptstime start,

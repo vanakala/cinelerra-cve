@@ -113,7 +113,7 @@ void AAttachmentPoint::render(double *output,
 			start_position,
 			len,
 			sample_rate,
-			plugin->length_time *
+			plugin->length() *
 				renderengine->edl->session->sample_rate,
 			renderengine->command->get_direction());
 
@@ -129,7 +129,7 @@ void AAttachmentPoint::render(double *output,
 			start_position,
 			len,
 			sample_rate,
-			plugin->length_time *
+			plugin->length() *
 				renderengine->edl->session->sample_rate,
 			renderengine->command->get_direction());
 	}

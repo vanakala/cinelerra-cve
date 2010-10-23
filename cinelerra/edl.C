@@ -652,7 +652,7 @@ void EDL::trim_selection(ptstime start,
 
 int EDL::equivalent(ptstime position1, ptstime position2)
 {
-	double threshold;
+	ptstime threshold;
 	if(session->cursor_on_frames) 
 		threshold = (double).5 / session->frame_rate;
 	else

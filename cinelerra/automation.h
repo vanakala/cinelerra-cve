@@ -104,8 +104,8 @@ public:
 		AutoConf *autoconf);
 	void paste_silence(ptstime start, ptstime end);
 	void insert_track(Automation *automation, 
-		ptstime start_unit,
-		ptstime length_units,
+		ptstime start,
+		ptstime length,
 		int replace_default);
 	ptstime get_length();
 	virtual void get_extents(float *min, 

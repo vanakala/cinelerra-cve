@@ -165,7 +165,7 @@ void Transition::load_xml(FileXML *file)
 	file->tag.get_property("TITLE", title);
 	length = file->tag.get_property("LENGTH", length);
 	if(length)
-		length_time = track->from_units(length_time);
+		length_time = track->from_units(length);
 	length_time = file->tag.get_property("LENGTH_TIME", length_time);
 	on = 0;
 
@@ -189,6 +189,11 @@ void Transition::load_xml(FileXML *file)
 			}
 		}
 	}while(!result);
+}
+
+ptstime Transition::length(void)
+{
+	return length_time;
 }
 
 void Transition::dump()

@@ -60,13 +60,12 @@ VTrack::~VTrack()
 {
 }
 
-int VTrack::create_objects()
+void VTrack::create_objects()
 {
 	Track::create_objects();
 	automation = new VAutomation(edl, this);
 	automation->create_objects();
 	edits = new VEdits(edl, this);
-	return 0;
 }
 
 // Used by PlaybackEngine
@@ -139,27 +138,10 @@ double VTrack::from_units(posnum position)
 	return (double)position / edl->session->frame_rate;
 }
 
-int VTrack::save_header(FileXML *file)
+void VTrack::save_header(FileXML *file)
 {
 	file->tag.set_property("TYPE", "VIDEO");
-	return 0;
 }
-
-int VTrack::save_derived(FileXML *file)
-{
-	return 0;
-}
-
-int VTrack::load_header(FileXML *file, uint32_t load_flags)
-{
-	return 0;
-}
-
-int VTrack::load_derived(FileXML *file, uint32_t load_flags)
-{
-	return 0;
-}
-
 
 int VTrack::direct_copy_possible(ptstime start, int direction, int use_nudge)
 {
@@ -169,39 +151,17 @@ int VTrack::direct_copy_possible(ptstime start, int direction, int use_nudge)
 // Track size must equal output size
 	if(track_w != edl->session->output_w || track_h != edl->session->output_h)
 		return 0;
-
 // No automation must be present in the track
 	if(!automation->direct_copy_possible(start, direction))
 		return 0;
-
 // No plugin must be present
 	if(plugin_used(start, direction)) 
 		return 0;
-
 // No transition
 	if(get_current_transition(start, direction, 0))
 		return 0;
 
 	return 1;
-}
-
-
-int VTrack::create_derived_objs(int flash)
-{
-	int i;
-	edits = new VEdits(edl, this);
-	return 0;
-}
-
-int VTrack::copy_derived(ptstime start, ptstime end, FileXML *xml)
-{
-// automation is copied in the Track::copy
-	return 0;
-}
-
-int VTrack::paste_derived(ptstime start, ptstime end, posnum total_length, FileXML *xml, int &current_channel)
-{
-	return 0;
 }
 
 void VTrack::calculate_input_transfer(Asset *asset, 

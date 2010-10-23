@@ -64,7 +64,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	nudge = 0;
 	track_w = edl->session->output_w;
 	track_h = edl->session->output_h;
-	one_unit = 0;
+	one_unit = (ptstime) 1 / 48000;
 	id = EDL::next_id();
 }
 
@@ -75,9 +75,8 @@ Track::~Track()
 	plugin_set.remove_all_objects();
 }
 
-int Track::create_objects()
+void Track::create_objects()
 {
-	return 0;
 }
 
 
@@ -234,8 +233,6 @@ ptstime Track::get_length()
 
 // Test edits
 	length = edits->last->project_pts;
-	if (edits->last->transition)
-		length += edits->last->transition->length_time + one_unit; // add one so transition is finished...
 
 	if(length > total_length) total_length = length;
 
@@ -245,7 +242,6 @@ ptstime Track::get_length()
 		length = plugin_set.values[i]->last->project_pts;
 		if(length > total_length) total_length = length;
 	}
-
 // Test keyframes
 	length = automation->get_length();
 	if(length > total_length) total_length = length;
@@ -260,7 +256,7 @@ void Track::get_source_dimensions(ptstime position, int &w, int &h)
 	for(Edit *current = edits->first; current; current = NEXT)
 	{
 		if(current->project_pts <= position &&
-			current->project_pts + current->length_time > position &&
+			current->end_pts() > position &&
 			current->asset)
 		{
 			w = current->asset->width;
@@ -444,7 +440,7 @@ Plugin* Track::insert_effect(const char *title,
 			{
 				plugin = plugin_set->insert_plugin(title, 
 					source_plugin->project_pts,
-					source_plugin->length_time,
+					source_plugin->length(),
 					plugin_type, 
 					shared_location,
 					default_keyframe,
@@ -593,16 +589,7 @@ void Track::detach_effect(Plugin *plugin)
 		{
 			if(dest == plugin)
 			{
-				ptstime start = plugin->project_pts;
-				ptstime end = plugin->project_pts + plugin->length_time;
-
-				plugin_set->clear(start, end);
-				plugin_set->paste_silence(start, end);
-
-// Delete 0 length pluginsets
-				plugin_set->optimize();
-				if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
-					remove_pluginset(plugin_set);
+				remove_pluginset(plugin_set);
 				return;
 			}
 		}
@@ -623,19 +610,8 @@ void Track::detach_shared_effects(int module)
 				&&
 				dest->shared_location.module == module)
 			{
-				ptstime start = dest->project_pts;
-				ptstime end = dest->project_pts + dest->length_time;
-
-				plugin_set->clear(start, end);
-				plugin_set->paste_silence(start, end);
-
-// Delete 0 length pluginsets
-				plugin_set->optimize();
-				if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
-				{
-					this->plugin_set.remove_object_number(i);
-					--i;
-				}
+				this->plugin_set.remove_object_number(i);
+				--i;
 			}
 		}
 	}
@@ -677,7 +653,7 @@ Plugin* Track::get_current_plugin(ptstime postime,
 			current = (Plugin*)PREVIOUS)
 		{
 			if(current->project_pts <= postime && 
-				current->project_pts + current->length_time > postime)
+				current->end_pts() > postime)
 			{
 				return current;
 			}
@@ -691,7 +667,7 @@ Plugin* Track::get_current_plugin(ptstime postime,
 			current = (Plugin*)NEXT)
 		{
 			if(current->project_pts <= postime && 
-				current->project_pts + current->length_time >= postime)
+				current->end_pts() >= postime)
 			{
 				return current;
 			}
@@ -714,9 +690,9 @@ Plugin* Track::get_current_transition(ptstime position,
 	{
 		for(current = edits->last; current; current = PREVIOUS)
 		{
-			if(current->project_pts <= position && current->project_pts + current->length_time > position)
+			if(current->project_pts <= position && current->end_pts() > position)
 			{
-				if(current->transition && position < current->project_pts + current->transition->length_time)
+				if(current->transition && position < current->project_pts + current->transition->length())
 				{
 					result = current->transition;
 					break;
@@ -729,9 +705,9 @@ Plugin* Track::get_current_transition(ptstime position,
 	{
 		for(current = edits->first; current; current = NEXT)
 		{
-			if(current->project_pts < position && current->project_pts + current->length_time > position)
+			if(current->project_pts < position && current->end_pts() > position)
 			{
-				if(current->transition && position <= current->project_pts + current->transition->length_time)
+				if(current->transition && position <= current->project_pts + current->transition->length())
 				{
 					result = current->transition;
 					break;
@@ -911,7 +887,7 @@ void Track::straighten_automation(ptstime selectionstart, ptstime selectionend)
 }
 
 
-int Track::copy(ptstime start,
+void Track::copy(ptstime start,
 	ptstime end,
 	FileXML *file, 
 	const char *output_path)
@@ -948,19 +924,15 @@ int Track::copy(ptstime start,
 		plugin_set.values[i]->copy(start, end, file);
 	}
 
-	copy_derived(start, end, file);
-
 	file->tag.set_title("/TRACK");
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
 	file->append_newline();
 	file->append_newline();
-
-	return 0;
 }
 
-int Track::copy_assets(ptstime start,
+void Track::copy_assets(ptstime start,
 	ptstime end,
 	ArrayList<Asset*> *asset_list)
 {
@@ -984,8 +956,6 @@ int Track::copy_assets(ptstime start,
 
 		current = NEXT;
 	}
-
-	return 0;
 }
 
 
@@ -1113,7 +1083,7 @@ int Track::playable_edit(ptstime position)
 	for(Edit *current = edits->first; current && !result; current = NEXT)
 	{
 		if(current->project_pts <= position && 
-			current->project_pts + current->length_time > position)
+			current->end_pts() > position)
 		{
 			if(current->transition || current->asset) result = 1;
 		}
@@ -1160,7 +1130,7 @@ ptstime Track::edit_change_duration(ptstime input_position,
 // ================================= Reverse playback
 // Get first edit on or after position
 		for(current = edits->first; 
-			current && current->project_pts + current->length_time <= input_position;
+			current && current->end_pts() <= input_position;
 			current = NEXT)
 			;
 
@@ -1184,15 +1154,15 @@ ptstime Track::edit_change_duration(ptstime input_position,
 // Search for next edit of interest.
 				for(current = PREVIOUS ; 
 					current && 
-					current->project_pts + current->length_time > input_position - input_length &&
+					current->end_pts() > input_position - input_length &&
 					!need_edit(current, test_transitions);
 					current = PREVIOUS)
 					;
 
 					if(current && 
 						need_edit(current, test_transitions) &&
-						current->project_pts + current->length_time > input_position - input_length)
-					edit_length = input_position - current->project_pts - current->length_time + one_unit;
+						current->end_pts() > input_position - input_length)
+					edit_length = input_position - current->end_pts() + one_unit;
 			}
 		}
 		else
@@ -1216,7 +1186,7 @@ ptstime Track::edit_change_duration(ptstime input_position,
 
 		if(current)
 		{
-			if(current->project_pts + current->length_time <= input_position)
+			if(current->end_pts() <= input_position)
 			{
 // Beyond last edit.
 				;
@@ -1226,8 +1196,8 @@ ptstime Track::edit_change_duration(ptstime input_position,
 			{
 // Over an edit of interest.
 // Next edit is going to require a change.
-				if(current->length_time + current->project_pts - input_position < input_length)
-					edit_length = current->project_pts + current->length_time - input_position;
+				if(current->end_pts() - input_position < input_length)
+					edit_length = current->end_pts() - input_position;
 			}
 			else
 			{

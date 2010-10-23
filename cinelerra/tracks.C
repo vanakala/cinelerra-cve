@@ -300,14 +300,12 @@ Track* Tracks::add_video_track(int above, Track *dst_track)
 	return new_track;
 }
 
-
-int Tracks::delete_track(Track *track)
+void Tracks::delete_track(Track *track)
 {
 	if (!track)
-		return 0;
+		return;
 
-	int old_location = number_of(track);
-	detach_shared_effects(old_location);
+	detach_shared_effects(number_of(track));
 
 // Shift effects referencing effects below the deleted track
 	for(Track *current = track; 
@@ -317,19 +315,15 @@ int Tracks::delete_track(Track *track)
 		change_modules(number_of(current), number_of(current) - 1, 0);
 	}
 	if(track) delete track;
-
-	return 0;
 }
 
-int Tracks::detach_shared_effects(int module)
+void Tracks::detach_shared_effects(int module)
 {
 	for(Track *current = first; current; current = NEXT)
 	{
 		current->detach_shared_effects(module);
 	}
- 
- 	return 0;
- }
+}
 
 int Tracks::total_of(int type)
 {
@@ -434,12 +428,12 @@ ptstime Tracks::total_playable_length()
 
 ptstime Tracks::total_recordable_length() 
 {
-	double total = 0;
+	ptstime total = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->record)
 		{
-			double length = current->get_length();
+			ptstime length = current->get_length();
 			if(length > total) total = length;
 		}
 	}
@@ -475,7 +469,7 @@ ptstime Tracks::total_video_length()
 		if(current->data_type == TRACK_VIDEO &&
 			current->get_length() > total) total = current->get_length();
 	}
-	return total; 
+	return total;
 }
 
 ptstime Tracks::total_length_framealigned(double fps)

@@ -102,11 +102,10 @@ public:
 // -1 means nothing changed.
 	void clear_keyframes(ptstime start, ptstime end);
 	void copy(ptstime start, ptstime end, FileXML *file);
-	void paste(FileXML *file);
 	void load(FileXML *file);
 // Shift in time
 	void shift(ptstime difference);
-	void dump();
+	void dump(void);
 // Called by PluginClient sequence to get rendering parameters
 	KeyFrame* get_prev_keyframe(ptstime postime);
 	KeyFrame* get_next_keyframe(ptstime postime);

@@ -237,7 +237,8 @@ public:
 	void draw_indexes(Asset *asset);
 
 // Get location of edit on screen without boundary checking
-	void edit_dimensions(Edit *edit, int &x, int &y, int &w, int &h);
+	void edit_dimensions(Track *track, ptstime start, ptstime end,
+		int &x, int &y, int &w, int &h);
 	void track_dimensions(Track *track, int &x, int &y, int &w, int &h);
 	void plugin_dimensions(Plugin *plugin, int &x, int &y, int &w, int &h);
 	void get_pixmap_size(Edit *edit, int edit_x, int edit_w, int &pixmap_x, int &pixmap_w, int &pixmap_h);

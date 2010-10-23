@@ -192,8 +192,6 @@ int Tracks::delete_tracks(void)
 void Tracks::move_edits(ArrayList<Edit*> *edits, 
 	Track *track,
 	ptstime postime,
-	int edit_labels,  // Ignored
-	int edit_plugins,  // Ignored
 	int behaviour)
 {
 	for(Track *dest_track = track; dest_track; dest_track = dest_track->next)
@@ -204,7 +202,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 // change in the editing operation.
 			Edit *source_edit = 0;
 			Track *source_track = 0;
-
+			ptstime source_length;
 
 // Get source track
 			if(dest_track->data_type == TRACK_AUDIO)
@@ -219,6 +217,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				{
 					source_edit = edits->values[current_aedit];
 					source_track = source_edit->track;
+					source_length = source_edit->length();
 					edits->remove_number(current_aedit);
 				}
 			}
@@ -229,11 +228,11 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				while(current_vedit < edits->total &&
 					edits->values[current_vedit]->track->data_type != TRACK_VIDEO)
 					current_vedit++;
-
 				if(current_vedit < edits->total)
 				{
 					source_edit = edits->values[current_vedit];
 					source_track = source_edit->track;
+					source_length = source_edit->length();
 					edits->remove_number(current_vedit);
 				}
 			}
@@ -249,9 +248,8 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					AutoConf temp_autoconf;
 
 					temp_autoconf.set_all(1);
-
 					source_track->automation->copy(source_edit->project_pts,
-						source_edit->project_pts + source_edit->length_time,
+						source_edit->end_pts(),
 						&temp, 
 						0,
 						0);
@@ -259,82 +257,47 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					temp.rewind();
 // Insert new keyframes
 					source_track->automation->clear(source_edit->project_pts,
-						source_edit->project_pts + source_edit->length_time,
+						source_edit->end_pts(),
 						&temp_autoconf,
 						1);
 					ptstime postime_a = postime;
 					if (dest_track == source_track)
 					{
 						if (postime_a > source_edit->project_pts)
-							postime_a -= source_edit->length_time;
+							postime_a -= source_length;
 					}
 					dest_track->automation->paste_silence(postime_a,
-						postime_a + source_edit->length_time);
+						postime_a + source_length);
 					while(!temp.read_tag())
 						dest_track->automation->paste(postime_a,
-							source_edit->length_time,
+							source_length,
 							1.0, 
 							&temp, 
 							0,
 							&temp_autoconf);
 
-// Insert new edit
-					Edit *dest_edit = dest_track->edits->shift(postime,
-						source_edit->length_time);
-					Edit *result = dest_track->edits->insert_before(dest_edit, 
-						dest_track->edits->create_edit());
+// Insert new edit (shift creates new edit)
+					Edit *result = dest_track->edits->shift(postime, source_length);
 					result->copy_from(source_edit);
 					result->project_pts = postime;
-					result->length_time = source_edit->length_time;
-
 // Clear source
 					source_track->edits->clear(source_edit->project_pts,
-						source_edit->project_pts + source_edit->length_time);
-
-	/*
-//this is outline for future thinking how it is supposed to be done trough C&P mechanisms
-					temp.reset_tag();
-					source_track->cut(source_edit->startproject, 
-						source_edit->startproject + source_edit->length, 
-						&temp, 
-						NULL);
-					temp.terminate_string();
-					temp.rewind();
-					dest_track->paste_silence(position_a, 
-						position_a + source_length,
-						edit_plugins);
-					while(!temp.read_tag())
-						dest_track->paste(position_a,          // MISSING PIECE OF FUNCTIONALITY 
-							source_length, 
-							1.0, 
-							&temp, 
-							0,
-							&temp_autoconf);
-	*/
-
+						source_edit->project_pts + source_length);
 
 				} else
 				if (behaviour == 1)
 				// ONLY edit is moved, all other edits stay where they are
 				{
-					// Copy edit to temp, delete the edit, insert the edit
-					Edit *temp_edit = dest_track->edits->create_edit(); 
-					temp_edit->copy_from(source_edit);
+					dest_track->edits->clear(postime,
+						postime + source_length);
+					Edit *result = dest_track->edits->shift(postime, source_length);
+					result->copy_from(source_edit);
+					result->project_pts = postime;
 					// we call the edits directly since we do not want to move keyframes or anything else
 					source_track->edits->clear(source_edit->project_pts,
-						source_edit->project_pts + source_edit->length_time);
+						source_edit->end_pts());
 					source_track->edits->paste_silence(source_edit->project_pts,
-						source_edit->project_pts + source_edit->length_time);
-
-					dest_track->edits->clear(postime,
-						postime + source_edit->length_time);
-					Edit *dest_edit = dest_track->edits->shift(postime, source_edit->length_time);
-					Edit *result = dest_track->edits->insert_before(dest_edit, 
-						dest_track->edits->create_edit());
-					result->copy_from(temp_edit);
-					result->project_pts = postime;
-					result->length_time = source_edit->length_time;
-					delete temp_edit;
+						source_edit->end_pts());
 				}
 				source_track->optimize();
 				dest_track->optimize();
@@ -352,23 +315,13 @@ void Tracks::move_effect(Plugin *plugin,
 	Plugin *result = 0;
 
 // Insert on an existing plugin set
-	if(!dest_track && dest_plugin_set)
+	if(!dest_track && dest_plugin_set && plugin->plugin_set == dest_plugin_set)
 	{
-		Track *dest_track = dest_plugin_set->track;
-
-
-// Assume this operation never splits a plugin
-// Shift destination plugins back
-		dest_plugin_set->shift(dest_postime, plugin->length_time);
-
-// Insert new plugin
-		Plugin *current = 0;
-		for(current = (Plugin*)dest_plugin_set->first; current; current = (Plugin*)NEXT)
-			if(current->project_pts >= dest_postime)
-				break;
-
-		result = (Plugin*)dest_plugin_set->insert_before(current, 
-			new Plugin(edl, dest_plugin_set, ""));
+		ptstime opos = plugin->project_pts;
+		ptstime length = plugin->length();
+		plugin->project_pts = dest_postime;
+		plugin->next->project_pts = dest_postime + length;
+		plugin->shift_keyframes(dest_postime - opos);
 	}
 	else
 // Create a new plugin set
@@ -378,16 +331,16 @@ void Tracks::move_effect(Plugin *plugin,
 				0,
 				0,
 				dest_postime,
-				plugin->length_time,
+				plugin->length(),
 				plugin->plugin_type);
-	}
 
 	result->copy_from(plugin);
 	result->shift(dest_postime - plugin->project_pts);
 
 // Clear new plugin from old set
 	plugin->plugin_set->clear(plugin->project_pts, 
-		plugin->project_pts + plugin->length_time);
+		plugin->end_pts());
+	}
 
 	source_track->optimize();
 }

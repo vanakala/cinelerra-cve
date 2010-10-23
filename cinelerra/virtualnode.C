@@ -23,6 +23,7 @@
 #include "auto.h"
 #include "automation.h"
 #include "autos.h"
+#include "bcsignals.h"
 #include "floatauto.h"
 #include "floatautos.h"
 #include "intauto.h"
@@ -111,7 +112,7 @@ int VirtualNode::expand(int persistent_plugins, ptstime current_position)
 	return 0;
 }
 
-int VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
+void VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 {
 	Transition *transition = 0;
 
@@ -151,13 +152,10 @@ int VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 		}
 	}
 
-
 	if(!parent_node) vconsole->append_exit_node(this);
-
-	return 0;
 }
 
-int VirtualNode::expand_as_plugin(int duplicate)
+void VirtualNode::expand_as_plugin(int duplicate)
 {
 	plugin_type = real_plugin->plugin_type;
 
@@ -205,8 +203,6 @@ int VirtualNode::expand_as_plugin(int duplicate)
 		if(attachment)
 			plugin_buffer_number = attachment->attach_virtual_plugin(this);
 	}
-
-	return 0;
 }
 
 int VirtualNode::attach_virtual_module(Plugin *plugin, 

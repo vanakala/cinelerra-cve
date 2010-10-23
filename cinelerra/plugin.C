@@ -119,8 +119,6 @@ void Plugin::copy_from(Edit *edit)
 
 	this->source_pts = edit->source_pts;
 	this->project_pts = edit->project_pts;
-	this->length_time = edit->length_time;
-
 
 	this->plugin_type = plugin->plugin_type;
 	this->in = plugin->in;
@@ -175,10 +173,12 @@ void Plugin::equivalent_output(Edit *edit, ptstime *result)
 {
 	Plugin *plugin = (Plugin*)edit;
 // End of plugin changed
-	if(!PTSEQU(project_pts + length_time, plugin->project_pts + plugin->length_time))
+	ptstime thisend = end_pts();
+	ptstime plugend = end_pts();
+	if(!PTSEQU(thisend, plugend))
 	{
-		if(*result < 0 || project_pts + length_time < *result)
-			*result = project_pts + length_time;
+		if(*result < 0 || thisend < *result)
+			*result = thisend;
 	}
 
 // Start of plugin changed
@@ -387,7 +387,7 @@ KeyFrame* Plugin::get_keyframe()
 
 void Plugin::copy(ptstime start, ptstime end, FileXML *file)
 {
-	ptstime endproject = project_pts + length_time;
+	ptstime endproject = end_pts();
 
 	if((project_pts >= start && project_pts <= end) ||  // startproject in range
 		(endproject <= end && endproject >= start) ||   // endproject in range
@@ -395,28 +395,16 @@ void Plugin::copy(ptstime start, ptstime end, FileXML *file)
 	{
 // edit is in range
 		ptstime startprj_in_selection = project_pts; // start of edit in selection in project
-		ptstime startsrc_in_selection = source_pts; // start of source in selection in source
-		posnum endsrc_in_selection = source_pts + length_time; // end of source in selection
-		posnum len_in_selection = length_time;             // length of edit in selection
+		ptstime len_in_selection = length();             // length of edit in selection
 
 		if(project_pts < start)
 		{         // start is after start of edit in project
-			ptstime length_difference = start - project_pts;
-
-			startsrc_in_selection += length_difference;
-			startprj_in_selection += length_difference;
-			len_in_selection -= length_difference;
-		}
-
-// end is before end of edit in project
-		if(endproject > end)
-		{
-			len_in_selection = end - startprj_in_selection;
+			startprj_in_selection += start - project_pts;
 		}
 
 // Plugins don't store silence
 		file->tag.set_title("PLUGIN");
-		file->tag.set_property("LENGTH_TIME", len_in_selection);
+		file->tag.set_property("POSTIME", startprj_in_selection);
 		file->tag.set_property("TYPE", plugin_type);
 		file->tag.set_property("TITLE", title);
 		file->append_tag();
@@ -471,7 +459,7 @@ void Plugin::load(FileXML *file)
 {
 	int result = 0;
 	int first_keyframe = 1;
- 	in = 0;
+	in = 0;
 	out = 0;
 // Currently show is ignored when loading
 	show = 0;
@@ -569,31 +557,41 @@ void Plugin::calculate_title(char *string, int use_nudge)
 	}
 }
 
-
-void Plugin::paste(FileXML *file)
-{
-	posnum length;
-	length = file->tag.get_property("LENGTH", (int64_t)0);
-	if(length)
-		length_time = track->from_units(length);
-	length_time = file->tag.get_property("LENGTH_TIME", length_time);
-}
-
 void Plugin::shift(ptstime difference)
 {
 	Edit::shift(difference);
 	shift_keyframes(difference);
 }
 
-void Plugin::dump()
+void Plugin::dump(void)
 {
-	printf("    PLUGIN: type=%d title=\"%s\" on=%d track=%d plugin=%d\n", 
-		plugin_type, 
+	const char *s;
+	switch(plugin_type){
+	case 0:
+		s = "None";
+		break;
+	case 1:
+		s = "Standalone";
+		break;
+	case 2:
+		s = "SharedPlugin";
+		break;
+	case 3:
+		s = "SharedModule";
+		break;
+	default:
+		s = "Unknown";
+		break;
+	}
+
+	printf("    PLUGIN: type=\"%s\" title=\"%s\" on=%d track=%d plugin=%d\n", 
+		s,
 		title, 
 		on, 
 		shared_location.module, 
 		shared_location.plugin);
-	printf("    project_pts %.3f length_time %.3f\n", project_pts, length_time);
+	printf("    project_pts %.3f length %.3f\n", 
+		project_pts, length());
 
 	keyframes->dump();
 }

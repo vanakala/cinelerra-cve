@@ -343,7 +343,6 @@ int VModule::import_frame(VFrame *output,
 			output->clear_frame();
 		}
 	}
-
 	return result;
 }
 
@@ -423,14 +422,13 @@ int VModule::render(VFrame *output,
 			start_postime,
 			direction,
 			use_opengl);
-
 // Execute plugin with transition_input and output here
 		if(renderengine) 
 			transition_server->set_use_opengl(use_opengl, renderengine->video);
 		transition_server->process_transition((*transition_input), 
 			output,
 			start_position_project - track->to_units(current_edit->project_pts),
-			track->to_units(transition->length_time));
+			track->to_units(transition->length()));
 	}
 	else
 	{
@@ -452,7 +450,6 @@ int VModule::render(VFrame *output,
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
 		direction,
 		1);      // we are calling before plugins
-
 
 	return result;
 }

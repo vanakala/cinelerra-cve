@@ -1102,10 +1102,6 @@ int FileMPEG::read_frame(VFrame *frame)
 	int result = 0;
 	int src_cmodel;
 
-// printf("FileMPEG::read_frame\n");
-// frame->dump_stacks();
-// frame->dump_params();
-
 	if(mpeg3_colormodel(fd, 0) == MPEG3_YUV420P)
 		src_cmodel = BC_YUV420P;
 	else

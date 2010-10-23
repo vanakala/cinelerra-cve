@@ -163,20 +163,20 @@ void Autos::copy_from(Autos *autos)
 // when inserting the first EDL of a load operation we need to replace
 // the default keyframe.
 void Autos::insert_track(Autos *automation, 
-	ptstime start_unit, 
-	ptstime length_units,
+	ptstime start,
+	ptstime length,
 	int replace_default)
 {
 // Insert silence
-	insert(start_unit, start_unit + length_units);
+	insert(start, start + length);
 
 	if(replace_default) default_auto->copy_from(automation->default_auto);
 	for(Auto *current = automation->first; current; current = NEXT)
 	{
-		Auto *new_auto = insert_auto(start_unit + current->pos_time);
+		Auto *new_auto = insert_auto(start + current->pos_time);
 		new_auto->copy_from(current);
 // Override copy_from
-		new_auto->pos_time = current->pos_time + start_unit;
+		new_auto->pos_time = current->pos_time + start;
 	}
 }
 

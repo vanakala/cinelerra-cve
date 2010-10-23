@@ -145,7 +145,7 @@ void VAttachmentPoint::render(VFrame *output,
 		plugin_servers.values[0]->process_buffer(output_temp,
 			start_position,
 			frame_rate,
-			Units::round(plugin->length_time *
+			Units::round(plugin->length() *
 				renderengine->edl->session->frame_rate),
 			renderengine->command->get_direction());
 
@@ -162,7 +162,7 @@ void VAttachmentPoint::render(VFrame *output,
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			start_position,
 			frame_rate,
-			Units::round(plugin->length_time *
+			Units::round(plugin->length() *
 				renderengine->edl->session->frame_rate),
 			renderengine->command->get_direction());
 	}

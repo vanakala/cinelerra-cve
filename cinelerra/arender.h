@@ -38,8 +38,8 @@ public:
 	int get_total_tracks();
 	Module* new_module(Track *track);
 
-	posnum tounits(double position, int round);
-	double fromunits(posnum position);
+	posnum tounits(ptstime position, int round);
+	ptstime fromunits(posnum position);
 
 	void run();
 // Calculate number of samples in each meter fragment and how many

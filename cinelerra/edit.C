@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "bcsignals.h"
 #include "assets.h"
 #include "clip.h"
 #include "edit.h"
@@ -72,7 +73,6 @@ void Edit::reset(void)
 	edits = 0;
 	source_pts = 0;
 	project_pts = 0;
-	length_time = 0;
 	asset = 0;
 	transition = 0;
 	channel = 0;
@@ -81,9 +81,7 @@ void Edit::reset(void)
 
 int Edit::copy(ptstime start, ptstime end, FileXML *file, const char *output_path)
 {
-// variables
-
-	ptstime endpts = project_pts + length_time;
+	ptstime endpts = end_pts();
 	int result;
 
 	if((project_pts >= start && project_pts <= end) ||  // startproject in range
@@ -93,8 +91,7 @@ int Edit::copy(ptstime start, ptstime end, FileXML *file, const char *output_pat
 // edit is in range
 		ptstime startproj_in_selection = project_pts; // start of edit in selection in project
 		ptstime startsrc_in_selection = source_pts; // start of source in selection in source
-		ptstime endsrc_in_selection = source_pts + length_time; // end of source in selection
-		ptstime len_in_selection = length_time;             // length of edit in selection
+		ptstime len_in_selection = length();             // length of edit in selection
 
 		if(project_pts < start)
 		{         // start is after start of edit in project
@@ -113,7 +110,7 @@ int Edit::copy(ptstime start, ptstime end, FileXML *file, const char *output_pat
 		if(file)    // only if not counting
 		{
 			file->tag.set_title("EDIT");
-			file->tag.set_property("START_PTS", startsrc_in_selection);
+			file->tag.set_property("SOURCE_PTS", startsrc_in_selection);
 			file->tag.set_property("CHANNEL", (int64_t)channel);
 			file->tag.set_property("LENGTH_TIME", len_in_selection);
 			if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
@@ -199,7 +196,6 @@ void Edit::copy_from(Edit *edit)
 	this->asset = edl->assets->update(edit->asset);
 	this->source_pts = edit->source_pts;
 	this->project_pts = edit->project_pts;
-	this->length_time = edit->length_time;
 	strcpy (this->user_title, edit->user_title);
 
 	if(edit->transition)
@@ -207,7 +203,7 @@ void Edit::copy_from(Edit *edit)
 		if(!transition) transition = new Transition(edl, 
 			this, 
 			edit->transition->title,
-			edit->transition->length_time);
+			edit->transition->length());
 		*this->transition = *edit->transition;
 	}
 	this->channel = edit->channel;
@@ -216,9 +212,12 @@ void Edit::copy_from(Edit *edit)
 void Edit::equivalent_output(Edit *edit, ptstime *result)
 {
 // End of edit changed
-	if(project_pts + length_time != edit->project_pts + edit->length_time)
+	ptstime curend = end_pts();
+	ptstime edend = edit->end_pts();
+
+	if(!PTSEQU(curend, edend))
 	{
-		ptstime new_length = MIN(project_pts + length_time, edit->project_pts + edit->length_time);
+		ptstime new_length = MIN(curend, edend);
 		if(*result < 0 || new_length < *result) 
 			*result = new_length;
 	}
@@ -265,10 +264,13 @@ void Edit::synchronize_params(Edit *edit)
 // Comparison for ResourcePixmap drawing
 int Edit::identical(Edit &edit)
 {
+	ptstime len = this->length();
+	ptstime elen = edit.length();
+
 	int result = (this->asset == edit.asset &&
 		PTSEQU(this->source_pts, edit.source_pts) &&
 		PTSEQU(this->project_pts, edit.project_pts) &&
-		PTSEQU(this->length_time, edit.length_time) &&
+		PTSEQU(len, elen) &&
 		this->transition == edit.transition &&
 		this->channel == edit.channel);
 	return result;
@@ -309,6 +311,12 @@ ptstime Edit::length(void)
 	return 0;
 }
 
+ptstime Edit::end_pts(void)
+{
+	if(next)
+		return next->project_pts;
+	return project_pts;
+}
 
 void Edit::dump(void)
 {
@@ -320,28 +328,29 @@ void Edit::dump(void)
 		printf("      TRANSITION %p\n", transition);
 		transition->dump();
 	}
-	printf("      source_pts %.3f project_pts %.3f length_time %.3f\n",
-		source_pts, project_pts, length_time);
-	printf("      length() = %.3f\n", length());
+	printf("      source_pts %.3f project_pts %.3f length %.3f\n",
+		source_pts, project_pts, length());
 	fflush(stdout);
 }
 
-void Edit::load_properties(FileXML *file, ptstime &startproject)
+ptstime Edit::load_properties(FileXML *file, ptstime project_pts)
 {
 	posnum startsource, length;
+	ptstime length_time;
 
-	startsource = file->tag.get_property("STARTSOURCE", (int64_t)0);
+	startsource = file->tag.get_property("STARTSOURCE", (posnum)0);
 	if(startsource)
 		source_pts = track->from_units(startsource);
-	source_pts = file->tag.get_property("START_PTS", source_pts);
+	source_pts = file->tag.get_property("SOURCE_PTS", source_pts);
 	length = file->tag.get_property("LENGTH", (int64_t)0);
 	if(length)
 		length_time = track->from_units(length);
 	length_time = file->tag.get_property("LENGTH_TIME", length_time);
 	user_title[0] = 0;
 	file->tag.get_property("USER_TITLE", user_title);
-	this->project_pts = startproject;
+	this->project_pts = project_pts;
 	load_properties_derived(file);
+	return length_time;
 }
 
 void Edit::shift(ptstime difference)
@@ -360,7 +369,7 @@ void Edit::shift_start_in(int edit_mode,
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
-		if(cut_length < length_time)
+		if(cut_length < length())
 		{        // clear partial 
 			edits->clear_recursive(oldpostime,
 				newpostime,
@@ -370,7 +379,7 @@ void Edit::shift_start_in(int edit_mode,
 		else
 		{        // clear entire
 			edits->clear_recursive(oldpostime,
-				project_pts + length_time,
+				end_pts(),
 				actions,
 				trim_edits);
 		}
@@ -383,27 +392,23 @@ void Edit::shift_start_in(int edit_mode,
 		{
 			Edit *new_edit = edits->create_edit();
 			new_edit->project_pts = this->project_pts;
-			new_edit->length_time = 0;
 			edits->insert_before(this, 
 				new_edit);
 		}
 
-		end_previous_source = previous->get_source_end(previous->source_pts + previous->length_time + cut_length);
+		end_previous_source = previous->get_source_end(previous->source_pts + previous->length() + cut_length);
 		if(end_previous_source > 0 && 
-			previous->source_pts + previous->length_time + cut_length > end_previous_source)
-			cut_length = end_previous_source - previous->source_pts - previous->length_time;
+			previous->source_pts + previous->length() + cut_length > end_previous_source)
+			cut_length = end_previous_source - previous->end_pts();
 
-		if(cut_length < length_time)
+		if(cut_length < length())
 		{		// Move in partial
 			project_pts += cut_length;
 			source_pts += cut_length;
-			length_time -= cut_length;
-			previous->length_time += cut_length;
 		}
 		else
 		{		// Clear entire edit
-			cut_length = length_time;
-			previous->length_time += cut_length;
+			cut_length = length();
 			for(Edit* current_edit = this; current_edit; current_edit = current_edit->next)
 			{
 				current_edit->project_pts += cut_length;
@@ -417,9 +422,9 @@ void Edit::shift_start_in(int edit_mode,
 	else
 	if(edit_mode == MOVE_NO_EDITS)
 	{
-		end_source = get_source_end(source_pts + length_time + cut_length);
-		if(end_source > 0 && source_pts + length_time + cut_length > end_source)
-			cut_length = end_source - source_pts - length_time;
+		end_source = get_source_end(end_pts() + cut_length);
+		if(end_source > 0 && end_pts() + cut_length > end_source)
+			cut_length = end_source - source_pts - length();
 
 		source_pts += cut_length;
 	}
@@ -446,7 +451,6 @@ void Edit::shift_start_out(int edit_mode,
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
 		source_pts -= cut_length;
-		length_time += cut_length;
 
 		edits->shift_keyframes_recursive(project_pts, 
 			cut_length);
@@ -464,18 +468,14 @@ void Edit::shift_start_out(int edit_mode,
 	{
 		if(previous)
 		{
-			if(cut_length < previous->length_time)
+			if(cut_length < previous->length())
 			{   // Cut into previous edit
-				previous->length_time -= cut_length;
 				project_pts -= cut_length;
 				source_pts -= cut_length;
-				length_time += cut_length;
 			}
 			else
 			{   // Clear entire previous edit
-				cut_length = previous->length_time;
-				previous->length_time = 0;
-				length_time += cut_length;
+				cut_length = previous->length();
 				source_pts -= cut_length;
 				project_pts -= cut_length;
 			}
@@ -532,36 +532,24 @@ void Edit::shift_end_in(int edit_mode,
 				}
 			}
 
-			if(cut_length < length_time)
+			if(cut_length < length())
 			{
-				length_time -= cut_length;
 				next->project_pts -= cut_length;
 				next->source_pts -= cut_length;
-				next->length_time += cut_length;
 			}
 			else
 			{
-				cut_length = length_time;
-				next->length_time += cut_length;
+				cut_length = length();
 				next->source_pts -= cut_length;
 				next->project_pts -= cut_length;
-				length_time -= cut_length;
 			}
 		}
 		else
 		{
-			if(cut_length < length_time)
-			{
-				length_time -= cut_length;
-			}
-			else
-			{
-				cut_length = length_time;
-				edits->clear_recursive(project_pts,
-					oldpostime,
-					actions,
-					trim_edits);
-			}
+			edits->clear_recursive(project_pts,
+				oldpostime,
+				actions,
+				trim_edits);
 		}
 	}
 	else
@@ -584,22 +572,20 @@ void Edit::shift_end_out(int edit_mode,
 	Edits *trim_edits)
 {
 	ptstime cut_length = newpostime - oldpostime;
-	ptstime endsource = get_source_end(source_pts + length_time + cut_length);
+	ptstime endsource = get_source_end(source_pts + length() + cut_length);
 
 // check end of edit against end of source file
-	if(endsource > 0 && source_pts + length_time + cut_length > endsource)
-		cut_length = endsource - source_pts - length_time;
+	if(endsource > 0 && source_pts + length() + cut_length > endsource)
+		cut_length = endsource - source_pts - length();
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
-// Extend length
-		this->length_time += cut_length;
 
 // Effects are shifted in length extension
 		if(actions & EDIT_PLUGINS)
-			edits->shift_effects_recursive(oldpostime /* startproject */, 
+			edits->shift_effects_recursive(oldpostime,
 				cut_length);
-		edits->shift_keyframes_recursive(oldpostime /* startproject */, 
+		edits->shift_keyframes_recursive(oldpostime,
 			cut_length);
 
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
@@ -612,23 +598,16 @@ void Edit::shift_end_out(int edit_mode,
 	{
 		if(next)
 		{
-			if(cut_length < next->length_time)
+			if(cut_length < next->length())
 			{
-				length_time += cut_length;
 				next->project_pts += cut_length;
 				next->source_pts += cut_length;
-				next->length_time -= cut_length;
 			}
 			else
 			{
-				cut_length = next->length_time;
-				next->length_time = 0;
-				length_time += cut_length;
+				cut_length = next->length();
+				next->project_pts += cut_length;
 			}
-		}
-		else
-		{
-			length_time += cut_length;
 		}
 	}
 	else

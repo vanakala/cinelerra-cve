@@ -34,9 +34,6 @@
 #include "transition.inc"
 
 
-// less than 6 hours - get rid of it
-#define LAST_VIRTUAL_LENGTH 1000000000
-
 // Generic list of edits of something
 
 class Edits : public List<Edit>
@@ -105,6 +102,7 @@ public:
 // Return an edit if position is over an edit and the edit has a source file
 	Edit* get_playable_edit(ptstime postime, int use_nudge);
 	ptstime length();         // end position of last edit
+	virtual void dump(void);
 
 // ==================================== editing
 
@@ -117,8 +115,6 @@ public:
 	virtual void optimize(void);
 
 	ptstime loaded_length;
-private:
-	virtual int clone_derived(Edit* new_edit, Edit* old_edit) {};
 };
 
 

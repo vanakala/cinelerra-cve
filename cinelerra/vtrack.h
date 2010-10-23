@@ -39,14 +39,11 @@ public:
 	VTrack(EDL *edl, Tracks *tracks);
 	~VTrack();
 
-	int create_objects();
+	void create_objects();
 	int load_defaults(BC_Hash *defaults);
 	void set_default_title();
 	PluginSet* new_plugins();
-	int save_header(FileXML *file);
-	int save_derived(FileXML *file);
-	int load_header(FileXML *file, uint32_t load_flags);
-	int load_derived(FileXML *file, uint32_t load_flags);
+	void save_header(FileXML *file);
 	int copy_settings(Track *track);
 	void synchronize_params(Track *track);
 	posnum to_units(ptstime position, int round = 0);
@@ -62,24 +59,11 @@ public:
 
 	int vertical_span(Theme *theme);
 
-// ====================================== initialization
-	VTrack() {};
-	int create_derived_objs(int flash);
-
-// ===================================== rendering
-
 // Give whether compressed data can be copied directly from the track to the output file
 	int direct_copy_possible(ptstime start, int direction, int use_nudge);
 
-// ===================================== editing
-
-	int copy_derived(ptstime start, ptstime end, FileXML *xml);
-	int paste_derived(ptstime start, ptstime end, posnum total_length, FileXML *xml, int &current_channel);
 	void translate(float offset_x, float offset_y, int do_camera);
 
-// ===================================== for handles, titles, etc
-
-private:
 };
 
 #endif

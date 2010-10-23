@@ -111,17 +111,17 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sou
 		edit_sourcestart = (double)asset->tcstart / asset->frame_rate
 			+ edit->source_pts;
 		edit_sourceend = (double)asset->tcstart / asset->frame_rate
-			+ edit->source_pts + edit->length_time;
+			+ edit->end_pts();
 
 	} else
 	{
 		strcpy(reel_name, "   BL   ");
 		edit_sourcestart = 0;
-		edit_sourceend = edit->length_time;
+		edit_sourceend = edit->length();
 	}
 
 	edit_deststart = edit->project_pts;
-	edit_destend = edit->project_pts + edit->length_time;
+	edit_destend = edit->end_pts();
 
 	double_to_CMX3600(edit_sourcestart, frame_rate, sourceinpoint);
 	double_to_CMX3600(edit_sourceend, frame_rate, sourceoutpoint);
@@ -194,7 +194,7 @@ int ExportEDLAsset::export_it()
 					colnum --;
 				}
 				edittype[0] = 'D';
-				fprintf(fh, "%03d %8s %s %4s %03lld", colnum, reel_name, avselect, edittype, track->to_units(edit->transition->length_time));
+				fprintf(fh, "%03d %8s %s %4s %03lld", colnum, reel_name, avselect, edittype, track->to_units(edit->transition->length()));
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);
 				fprintf(fh,"\n");

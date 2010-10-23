@@ -104,8 +104,8 @@ public:
 	int advance_position(posnum current_render_length);
 
 // convert to and from the native units of the render engine
-	virtual posnum tounits(double position, int round);
-	virtual double fromunits(posnum position);
+	virtual posnum tounits(ptstime position, int round);
+	virtual ptstime fromunits(posnum position);
 	virtual int get_render_length(int current_render_length) { return current_render_length; };
 
 	MWindow *mwindow;

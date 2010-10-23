@@ -99,7 +99,7 @@ TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(gui, 
-	gui->transition->length_time,
+	gui->transition->length(),
 	(float)0, 
 	(float)100, 
 	x,
@@ -113,7 +113,7 @@ TransitionLengthText::TransitionLengthText(MWindow *mwindow,
 int TransitionLengthText::handle_event()
 {
 	double result = atof(get_text());
-	if(!EQUIV(result, gui->transition->length_time))
+	if(!EQUIV(result, gui->transition->length()))
 	{
 		gui->transition->length_time = result;
 		if(gui->transition->edit->track->data_type == TRACK_VIDEO) 
