@@ -75,11 +75,11 @@ PixelFormat FFMPEG::color_model_to_pix_fmt(int color_model)
 	switch (color_model) 
 	{
 	case BC_YUV422: 
-		return PIX_FMT_YUV422;
+		return PIX_FMT_YUYV422;
 	case BC_RGB888:
 		return PIX_FMT_RGB24;
 	case BC_BGR8888:  // NOTE: order flipped
-		return PIX_FMT_RGBA32;
+		return PIX_FMT_RGB32;
 	case BC_BGR888:
 		return PIX_FMT_BGR24;
 	case BC_YUV420P: 
@@ -101,11 +101,11 @@ int FFMPEG::pix_fmt_to_color_model(PixelFormat pix_fmt)
 {
 	switch (pix_fmt) 
 	{
-	case PIX_FMT_YUV422:
+	case PIX_FMT_YUYV422:
 		return BC_YUV422;
 	case PIX_FMT_RGB24:
 		return BC_RGB888;
-	case PIX_FMT_RGBA32:
+	case PIX_FMT_RGB32:
 		return BC_BGR8888;
 	case PIX_FMT_BGR24:
 		return BC_BGR888;
@@ -285,7 +285,7 @@ int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 	int cmodel_in = pix_fmt_to_color_model(pix_fmt_in);
 	if (cmodel_in == BC_TRANSPARENCY)
 	{
-		if (pix_fmt_in == PIX_FMT_RGBA32) {
+		if (pix_fmt_in == PIX_FMT_RGB32) {
 			// avoid infinite recursion if things are broken
 			printf("FFMPEG::convert_cmodel pix_fmt_in broken!\n");
 			return 1;
