@@ -67,17 +67,16 @@ int AboutPrefs::create_objects()
 
 	y += get_text_height(LARGEFONT);
 	char license2[BCTEXTLEN];
-	sprintf(license2, "%s%s%s%s", 
-		_("(C) 2006 Heroine Virtual Ltd.\n\n"),
-		REPOABOUTPREFTXT,
-		_("\nBuild date: "), 
-		BUILDDATE);
+	sprintf(license2, "%s%s",
+		"(C) 2006 Heroine Virtual Ltd.\n",
+		"(C) 2006-2010 The CinelerraCV Community\n\n",
+		REPOABOUTPREFTXT);
 	set_font(MEDIUMFONT);
 	draw_text(x, y, license2);
 
 
 
-	y += get_text_height(MEDIUMFONT) * 4;
+	y += get_text_height(MEDIUMFONT) * 3;
 
 	char versions[BCTEXTLEN];
 	sprintf(versions, _("Quicktime version %d.%d.%d (%s)\n"
@@ -91,7 +90,7 @@ int AboutPrefs::create_objects()
 		mpeg3_release());
 	draw_text(x, y, versions);
 
-	y += get_text_height(MEDIUMFONT) * 3;
+	y += get_text_height(MEDIUMFONT) * 4;
 	set_font(LARGEFONT);
 	draw_text(x, y, "Credits:");
 	y += get_text_height(LARGEFONT);
@@ -125,7 +124,8 @@ int AboutPrefs::create_objects()
 		"Andraz Tori\n"
 		"Jonas Wulff\n"
 		"David Arendt\n"
-		"Einar R\374nkaru\n");
+		"Einar R\374nkaru\n"
+		"Monty Montgomery\n");
 	draw_text(x + 180, y, credits);
 
 	y = get_h() - 135;
