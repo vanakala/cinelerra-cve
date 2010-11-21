@@ -68,8 +68,7 @@ public:
 	Module* module_number(int track_number);
 // Test for reconfiguration.
 // If reconfiguration is coming up, truncate length and reset last_playback.
-	int test_reconfigure(posnum position, 
-		posnum &length,
+	int test_reconfigure(ptstime &length,
 		int &last_playback);
 
 

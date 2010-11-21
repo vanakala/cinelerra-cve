@@ -128,7 +128,7 @@ CICache* AModule::get_cache()
 }
 
 int AModule::render(double *buffer, 
-	samplenum input_position,
+	ptstime input_postime,
 	int input_len, 
 	int direction,
 	int sample_rate,
@@ -136,74 +136,67 @@ int AModule::render(double *buffer,
 {
 	int edl_rate = get_edl()->session->sample_rate;
 	if(use_nudge) 
-		input_position += track->nudge * 
-			sample_rate;
+		input_postime += track->nudge;
 
 	AEdit *playable_edit;
-	samplenum start_project = input_position;
-	samplenum end_project = input_position + input_len;
+	ptstime length_pts = track->from_units(input_len);
+	ptstime start_projpts = input_postime;
+	ptstime end_projpts = start_projpts + length_pts;
+
 	int buffer_offset = 0;
 	int result = 0;
-
 
 // Flip range around so start_project < end_project
 	if(direction == PLAY_REVERSE)
 	{
-		start_project -= input_len;
-		end_project -= input_len;
+		start_projpts -= length_pts;
+		end_projpts -= length_pts;
 	}
 
 
 // Clear buffer
-	bzero(buffer, input_len * sizeof(double));
+	memset(buffer, 0, input_len * sizeof(double));
 
-// The EDL is normalized to the requested sample rate because the requested rate may
-// be the project sample rate and a sample rate 
-// might as well be directly from the source rate to the requested rate.
 // Get first edit containing the range
 	for(playable_edit = (AEdit*)track->edits->first; 
 		playable_edit;
 		playable_edit = (AEdit*)playable_edit->next)
 	{
-		samplenum edit_start = track->to_units(playable_edit->project_pts);
-		samplenum edit_end = track->to_units(playable_edit->end_pts());
-// Normalize to requested rate
-		edit_start = edit_start * sample_rate / edl_rate;
-		edit_end = edit_end * sample_rate / edl_rate;
+		ptstime edit_start = playable_edit->project_pts;
+		ptstime edit_end = playable_edit->end_pts();
 
-		if(start_project < edit_end && start_project + input_len > edit_start)
+		if(start_projpts < edit_end && start_projpts + input_len > edit_start)
 		{
 			break;
 		}
 	}
 
 // Fill output one fragment at a time
-	while(start_project < end_project)
+	while(start_projpts < end_projpts)
 	{
-		int fragment_len = input_len;
+		ptstime fragment_lenpts = length_pts;
 
-		if(fragment_len + start_project > end_project)
-			fragment_len = end_project - start_project;
+		if(fragment_lenpts + start_projpts > end_projpts)
+			fragment_lenpts = end_projpts - start_projpts;
+		int fragment_len = track->to_units(fragment_lenpts, 1);
 
 // Normalize position here since update_transition is a boolean operation.
-		update_transition(start_project * sample_rate,
+		update_transition(start_projpts,
 			PLAY_FORWARD);
 
 		if(playable_edit)
 		{
 // Normalize EDL positions to requested rate
-			samplenum edit_startproject = track->to_units(playable_edit->project_pts);
-			samplenum edit_endproject = track->to_units(playable_edit->end_pts());
-			samplenum edit_startsource = track->to_units(playable_edit->source_pts);
-
-			edit_startproject = edit_startproject * sample_rate / edl_rate;
-			edit_endproject = edit_endproject * sample_rate / edl_rate;
-			edit_startsource = edit_startsource * sample_rate / edl_rate;
+			ptstime edit_start = playable_edit->project_pts;
+			ptstime edit_end = playable_edit->end_pts();
+			ptstime edit_src = playable_edit->source_pts;
 
 // Trim fragment_len
-			if(fragment_len + start_project > edit_endproject)
-				fragment_len = edit_endproject - start_project;
-
+			if(fragment_lenpts + start_projpts > edit_end)
+			{
+				fragment_lenpts = edit_end - start_projpts;
+				fragment_len = track->to_units(fragment_lenpts, 1);
+			}
 			if(playable_edit->asset)
 			{
 				File *source;
@@ -214,15 +207,14 @@ int AModule::render(double *buffer,
 				{
 // couldn't open source file / skip the edit
 					result = 1;
-					errorbox(_("Couldn't open %s"), playable_edit->asset->path);
 				}
 				else
 				{
 					int result = 0;
 
-					result = source->set_audio_position(start_project - 
-							edit_startproject + 
-							edit_startsource, 
+					result = source->set_audio_position(track->to_units(start_projpts - 
+							edit_start +
+							edit_src, 1),
 						sample_rate);
 
 					source->set_channel(playable_edit->channel);
@@ -239,12 +231,9 @@ int AModule::render(double *buffer,
 			AEdit *previous_edit = (AEdit*)playable_edit->previous;
 			if(transition && previous_edit)
 			{
-				samplenum transition_len = transition->length() *
-					edl_rate;
-				samplenum previous_startproject = previous_edit->project_pts *
-					edl_rate;
-				samplenum previous_startsource = previous_edit->source_pts *
-					edl_rate;
+				ptstime transition_len = transition->length();
+				ptstime previous_start = previous_edit->project_pts;
+				ptstime previous_src = previous_edit->source_pts;
 
 // Read into temp buffers
 // Temp + master or temp + temp ? temp + master
@@ -262,9 +251,12 @@ int AModule::render(double *buffer,
 
 // Trim transition_len
 				int transition_fragment_len = fragment_len;
-				if(fragment_len + start_project > 
-					edit_startproject + transition_len)
-					fragment_len = edit_startproject + transition_len - start_project;
+				if(fragment_lenpts + start_projpts > 
+					edit_start + transition_len)
+				{
+					fragment_lenpts = edit_start + transition_len - start_projpts;
+					fragment_len = track->to_units(fragment_lenpts, 1);
+				}
 
 				if(transition_fragment_len > 0)
 				{
@@ -277,16 +269,15 @@ int AModule::render(double *buffer,
 							get_edl())))
 						{
 // couldn't open source file / skip the edit
-							errorbox(_("Couldn't open '%s'."), playable_edit->asset->path);
 							result = 1;
 						}
 						else
 						{
 							int result = 0;
 
-							result = source->set_audio_position(start_project - 
-									previous_startproject + 
-									previous_startsource, 
+							result = source->set_audio_position(track->to_units(start_projpts -
+									previous_start +
+									previous_src, 1),
 								get_edl()->session->sample_rate);
 
 							source->set_channel(previous_edit->channel);
@@ -307,24 +298,22 @@ int AModule::render(double *buffer,
 					transition_server->process_transition(
 						transition_temp,
 						output,
-						start_project - edit_startproject,
+						start_projpts - edit_start,
 						transition_fragment_len,
-						track->to_units(transition->length()));
+						transition->length());
 				}
 			}
 
-			if(playable_edit && start_project + fragment_len >= edit_endproject)
+			if(playable_edit && start_projpts + fragment_lenpts >= edit_end)
 				playable_edit = (AEdit*)playable_edit->next;
 		}
-
 		buffer_offset += fragment_len;
-		start_project += fragment_len;
+		start_projpts += fragment_lenpts;
 	}
 
 // Reverse buffer here so plugins always render forward.
 	if(direction == PLAY_REVERSE)
 		reverse_buffer(buffer, input_len);
-
 
 	return result;
 }

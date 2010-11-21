@@ -54,7 +54,7 @@ public:
 	void create_objects();
 	CICache* get_cache();
 	int render(double *buffer, 
-		samplenum input_position,
+		ptstime input_postime,
 		int input_len, 
 		int direction,
 		int sample_rate,

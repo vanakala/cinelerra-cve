@@ -38,7 +38,7 @@ public:
 	int get_total_tracks();
 	Module* new_module(Track *track);
 
-	posnum tounits(ptstime position, int round);
+	posnum tounits(ptstime position, int round = 0);
 	ptstime fromunits(posnum position);
 
 	void run();
@@ -77,9 +77,9 @@ public:
 // process a buffer
 // renders into buffer_out argument when no audio device
 // handles playback autos
-	int process_buffer(double **buffer_out, int input_len, samplenum input_position, int last_buffer);
+	int process_buffer(double **buffer_out, int input_len, ptstime input_postime, int last_buffer);
 // renders to a device when there's a device
-	int process_buffer(posnum input_len, posnum input_position);
+	int process_buffer(int input_len, ptstime input_postime);
 
 	void send_last_buffer();
 	int wait_device_completion();

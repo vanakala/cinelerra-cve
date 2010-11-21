@@ -83,7 +83,7 @@ void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 
 void VAttachmentPoint::render(VFrame *output, 
 	int buffer_number,
-	framenum start_position,
+	ptstime start_postime,
 	double frame_rate,
 	int debug_render,
 	int use_opengl)
@@ -100,7 +100,7 @@ void VAttachmentPoint::render(VFrame *output,
 	{
 // Test against previous parameters for reuse of previous data
 		if(is_processed &&
-			this->start_position == start_position &&
+			PTSEQU(this->start_postime, start_postime) &&
 			EQUIV(this->frame_rate, frame_rate))
 		{
 // Need to copy PBuffer if OpenGL, regardless of use_opengl
@@ -120,7 +120,7 @@ void VAttachmentPoint::render(VFrame *output,
 		}
 
 		is_processed = 1;
-		this->start_position = start_position;
+		this->start_postime = start_postime;
 		this->frame_rate = frame_rate;
 
 // Allocate buffer vector for subsequent render calls
@@ -143,10 +143,9 @@ void VAttachmentPoint::render(VFrame *output,
 			plugin_servers.values[0]->set_use_opengl(use_opengl,
 				renderengine->video);
 		plugin_servers.values[0]->process_buffer(output_temp,
-			start_position,
+			start_postime,
 			frame_rate,
-			Units::round(plugin->length() *
-				renderengine->edl->session->frame_rate),
+			plugin->length(),
 			renderengine->command->get_direction());
 
 		delete [] output_temp;
@@ -160,10 +159,9 @@ void VAttachmentPoint::render(VFrame *output,
 			plugin_servers.values[buffer_number]->set_use_opengl(use_opengl,
 				renderengine->video);
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
-			start_position,
+			start_postime,
 			frame_rate,
-			Units::round(plugin->length() *
-				renderengine->edl->session->frame_rate),
+			plugin->length(),
 			renderengine->command->get_direction());
 	}
 }

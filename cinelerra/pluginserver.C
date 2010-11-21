@@ -351,12 +351,11 @@ void PluginServer::render_stop()
 }
 
 
-int PluginServer::init_realtime(int realtime_sched,
+void PluginServer::init_realtime(int realtime_sched,
 		int total_in_buffers, 
 		int buffer_size)
 {
-
-	if(!plugin_open) return 0;
+	if(!plugin_open) return;
 
 // set for realtime priority
 // initialize plugin
@@ -365,22 +364,21 @@ int PluginServer::init_realtime(int realtime_sched,
 	client->plugin_init_realtime(realtime_sched, 
 		total_in_buffers, 
 		buffer_size);
-
 }
 
 
 // Replaced by pull method but still needed for transitions
 void PluginServer::process_transition(VFrame *input,
 		VFrame *output, 
-		framenum current_position,
-		framenum total_len)
+		ptstime current_postime,
+		ptstime total_len)
 {
 	if(!plugin_open) return;
 	PluginVClient *vclient = (PluginVClient*)client;
 
-	vclient->source_position = current_position;
+	vclient->source_position = plugin->track->to_units(current_postime);
 	vclient->source_start = 0;
-	vclient->total_len = total_len;
+	vclient->total_len = plugin->track->to_units(total_len);
 
 	vclient->input = new VFrame*[1];
 	vclient->output = new VFrame*[1];
@@ -397,15 +395,15 @@ void PluginServer::process_transition(VFrame *input,
 
 void PluginServer::process_transition(double *input, 
 		double *output,
-		samplenum current_position, 
+		ptstime current_postime,
 		int fragment_size,
-		samplenum total_len)
+		ptstime total_len)
 {
 	if(!plugin_open) return;
 	PluginAClient *aclient = (PluginAClient*)client;
 
-	aclient->source_position = current_position;
-	aclient->total_len = total_len;
+	aclient->source_position = round(current_postime * get_project_samplerate());
+	aclient->total_len = round(total_len * get_project_samplerate());
 	aclient->source_start = 0;
 	aclient->process_realtime(fragment_size,
 		input, 
@@ -414,16 +412,16 @@ void PluginServer::process_transition(double *input,
 
 
 void PluginServer::process_buffer(VFrame **frame, 
-	framenum current_position,
+	ptstime current_postime,
 	double frame_rate,
-	framenum total_len,
+	ptstime total_length,
 	int direction)
 {
 	if(!plugin_open) return;
 	PluginVClient *vclient = (PluginVClient*)client;
 
-	vclient->source_position = current_position;
-	vclient->total_len = total_len;
+	vclient->source_position = round(current_postime * frame_rate);
+	vclient->total_len = round(total_length * frame_rate);
 	vclient->frame_rate = frame_rate;
 	vclient->input = new VFrame*[total_in_buffers];
 	vclient->output = new VFrame*[total_in_buffers];
@@ -433,19 +431,18 @@ void PluginServer::process_buffer(VFrame **frame,
 		vclient->output[i] = frame[i];
 	}
 	vclient->source_start = (int64_t)(plugin ? 
-		plugin->project_pts * 
-		vclient->project_frame_rate :
+		round(plugin->project_pts * frame_rate) :
 		0);
 	vclient->direction = direction;
 
 
 	if(multichannel)
 	{
-		vclient->process_buffer(frame, current_position, frame_rate);
+		vclient->process_buffer(frame, vclient->source_position, frame_rate);
 	}
 	else
 	{
-		vclient->process_buffer(frame[0], current_position, frame_rate);
+		vclient->process_buffer(frame[0], vclient->source_position, frame_rate);
 	}
 
 	for(int i = 0; i < total_in_buffers; i++)
@@ -459,31 +456,31 @@ void PluginServer::process_buffer(VFrame **frame,
 }
 
 void PluginServer::process_buffer(double **buffer,
-	samplenum current_position,
+	ptstime current_postime,
 	int fragment_size,
 	int sample_rate,
-	samplenum total_len,
+	ptstime total_len,
 	int direction)
 {
 	if(!plugin_open) return;
 	PluginAClient *aclient = (PluginAClient*)client;
-	aclient->source_position = current_position;
-	aclient->total_len = total_len;
+	aclient->source_position = round(current_postime * sample_rate);
+	aclient->total_len = round(total_len * sample_rate);
 	aclient->sample_rate = sample_rate;
 	if(plugin)
-		aclient->source_start = plugin->project_pts * 
-			aclient->project_sample_rate;
+		aclient->source_start = round(plugin->project_pts *
+			aclient->project_sample_rate);
 	aclient->direction = direction;
 	if(multichannel)
 		aclient->process_buffer(fragment_size, 
 			buffer, 
-			current_position, 
+			aclient->source_position, 
 			sample_rate);
 	else
 	{
 		aclient->process_buffer(fragment_size, 
 			buffer[0], 
-			current_position, 
+			aclient->source_position, 
 			sample_rate);
 	}
 }
@@ -624,10 +621,10 @@ int PluginServer::read_frame(VFrame *buffer,
 int PluginServer::read_samples(double *buffer, 
 	int channel, 
 	samplenum start_position, 
-	samplenum total_samples)
+	int total_samples)
 {
 	((AModule*)modules->values[channel])->render(buffer, 
-		start_position,
+		plugin->track->from_units(start_position),
 		total_samples, 
 		PLAY_FORWARD,
 		mwindow->edl->session->sample_rate,
@@ -658,14 +655,14 @@ int PluginServer::read_frame(VFrame *buffer,
 	if(nodes->total > channel)
 	{
 		result = ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
-			start_position / frame_rate,
+			(ptstime)start_position / frame_rate,
 			use_opengl);
 	}
 	else
 	if(modules->total > channel)
 	{
 		result = ((VModule*)modules->values[channel])->render(buffer,
-			start_position,
+			(ptstime)start_position / frame_rate,
 			PLAY_FORWARD,
 			0,
 			use_opengl);
@@ -697,7 +694,7 @@ int PluginServer::read_samples(double *buffer,
 	else
 	if(modules->total > channel)
 		return ((AModule*)modules->values[channel])->render(buffer,
-			start_position,
+			(ptstime)start_position / sample_rate,
 			len,
 			PLAY_FORWARD,
 			sample_rate,
@@ -881,7 +878,7 @@ double PluginServer::get_project_framerate()
 
 
 
-int PluginServer::detach_buffers()
+void PluginServer::detach_buffers(void)
 {
 	ring_buffers_out.remove_all();
 	offset_out_render.remove_all();
@@ -898,10 +895,9 @@ int PluginServer::detach_buffers()
 	total_out_buffers = 0;
 	in_buffer_size = 0;
 	total_in_buffers = 0;
-	return 0;
 }
 
-int PluginServer::arm_buffer(int buffer_number, 
+void PluginServer::arm_buffer(int buffer_number, 
 		posnum offset_in, 
 		posnum offset_out,
 		int double_buffer_in,
@@ -914,7 +910,7 @@ int PluginServer::arm_buffer(int buffer_number,
 }
 
 
-int PluginServer::set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse)
+void PluginServer::set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse)
 {
 	this->autos = autos;
 	this->start_auto = start_auto;

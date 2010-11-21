@@ -82,10 +82,10 @@ public:
 	int read_samples(double *buffer, 
 		int channel, 
 		samplenum start_position, 
-		samplenum len);
+		int len);
 	int read_samples(double *buffer, 
 		samplenum start_position, 
-		samplenum len);
+		int len);
 
 // Called by realtime plugin to read audio from previous entity
 // sample_rate - scale of start_position.  Provided so the client can get data

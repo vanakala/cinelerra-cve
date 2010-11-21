@@ -35,8 +35,8 @@ public:
 	void new_buffer_vector(int total, int size);
 	void render(double *output, 
 		int buffer_number,
-		samplenum start_position, 
-		samplenum len,
+		ptstime start_position, 
+		int len,
 		int sample_rate);
 
 // Storage for multichannel plugins

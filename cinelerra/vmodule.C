@@ -102,7 +102,6 @@ int VModule::import_frame(VFrame *output,
 	int direction,
 	int use_opengl)
 {
-
 // Translation of edit
 	float in_x1;
 	float in_y1;
@@ -354,11 +353,7 @@ int VModule::render(VFrame *output,
 	int use_opengl)
 {
 	int result = 0;
-
 	if(use_nudge) start_postime += track->nudge;
-
-	framenum start_position_project = track->to_units(start_postime);
-
 	update_transition(start_postime, direction);
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(start_postime, 0);
@@ -427,8 +422,8 @@ int VModule::render(VFrame *output,
 			transition_server->set_use_opengl(use_opengl, renderengine->video);
 		transition_server->process_transition((*transition_input), 
 			output,
-			start_position_project - track->to_units(current_edit->project_pts),
-			track->to_units(transition->length()));
+			start_postime - current_edit->project_pts,
+			transition->length());
 	}
 	else
 	{
@@ -450,7 +445,6 @@ int VModule::render(VFrame *output,
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
 		direction,
 		1);      // we are calling before plugins
-
 	return result;
 }
 

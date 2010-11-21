@@ -82,8 +82,8 @@ public:
 	char folder[BCTEXTLEN];
 
 	int loop_playback;
-	double loop_start;
-	double loop_end;
+	ptstime loop_start;
+	ptstime loop_end;
 // Vertical start of track view
 	int64_t track_start;
 // Horizontal start of view in pixels.  This has to be pixels since either

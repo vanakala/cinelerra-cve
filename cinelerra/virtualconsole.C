@@ -158,13 +158,13 @@ void VirtualConsole::dump()
 }
 
 
-int VirtualConsole::test_reconfigure(posnum position, 
-	posnum &length, 
+int VirtualConsole::test_reconfigure(ptstime &len,
 	int &last_playback)
 {
 	int result = 0;
 	Track *current_track;
 	Module *module;
+	ptstime track_unit = 1.0;
 
 // Test playback status against virtual console for current position.
 	for(current_track = renderengine->edl->tracks->first;
@@ -175,7 +175,7 @@ int VirtualConsole::test_reconfigure(posnum position,
 		{
 // Playable status changed
 			if(playable_tracks->is_playable(current_track, 
-				current_track->from_units(commonrender->current_position),
+				commonrender->current_postime,
 				1))
 			{
 				if(!playable_tracks->is_listed(current_track))
@@ -186,6 +186,7 @@ int VirtualConsole::test_reconfigure(posnum position,
 			{
 				result = 1;
 			}
+			track_unit = current_track->one_unit;
 		}
 	}
 
@@ -197,7 +198,7 @@ int VirtualConsole::test_reconfigure(posnum position,
 // Now get the length of time until next reconfiguration.
 // This part is not concerned with result.
 // Don't clip input length if only rendering 1 frame.
-	if(length == 1) return result;
+	if(len <= track_unit) return result;
 
 
 	int direction = renderengine->command->get_direction();
@@ -214,49 +215,49 @@ int VirtualConsole::test_reconfigure(posnum position,
 	{
 		if(current_track->data_type == data_type)
 		{
-			ptstime postime = current_track->from_units(commonrender->current_position);
-			ptstime lentime = current_track->from_units(length);
 // Test the transitions
 			longest_duration1 = current_track->edit_change_duration(
-				postime,
-				lentime,
+				commonrender->current_postime,
+				len,
 				direction == PLAY_REVERSE, 
 				1,
 				1);
 
-
 // Test the edits
 			longest_duration2 = current_track->edit_change_duration(
-				postime,
-				lentime,
+				commonrender->current_postime,
+				len,
 				direction, 
 				0,
 				1);
 
-
 // Test the plugins
 			longest_duration3 = current_track->plugin_change_duration(
-				postime,
-				lentime,
+				commonrender->current_postime,
+				len,
 				direction == PLAY_REVERSE,
 				1);
 
-			if(longest_duration1 < lentime)
+			if(longest_duration1 < len)
 			{
-				lentime = longest_duration1;
+				len = longest_duration1;
 				last_playback = 0;
 			}
-			if(longest_duration2 < lentime)
+			if(longest_duration2 < len)
 			{
-				lentime = longest_duration2;
+				len = longest_duration2;
 				last_playback = 0;
 			}
-			if(longest_duration3 < lentime)
+			if(longest_duration3 < len)
 			{
-				lentime = longest_duration3;
+				len = longest_duration3;
 				last_playback = 0;
 			}
-			length = current_track->to_units(lentime);
+			if(len < track_unit)
+			{
+				len = track_unit;
+				break;
+			}
 		}
 	}
 	return result;

@@ -53,7 +53,7 @@ public:
 
 // Move new_virtual_plugins to virtual_plugins.
 // Called after virtual console expansion.
-	int render_init();
+	void render_init();
 
 // Cause plugins to free any resources which are required after stopping
 	void render_stop();
@@ -103,6 +103,7 @@ public:
 // Used in shared multichannel plugin to tell of it's already been processed
 // or needs to be processed again for a different target.
 // start_position is the end of the range if playing in reverse.
+	ptstime start_postime;
 	posnum start_position;
 	posnum len;
 	double frame_rate;
@@ -125,7 +126,7 @@ public:
 
 
 
-	int dump();
+	void dump();
 
 };
 

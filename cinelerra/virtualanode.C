@@ -68,13 +68,9 @@ VirtualANode::~VirtualANode()
 {
 }
 
-
-
-
-
 VirtualNode* VirtualANode::create_module(Plugin *real_plugin, 
-							Module *real_module, 
-							Track *track)
+	Module *real_module,
+	Track *track)
 {
 	return new VirtualANode(renderengine, 
 		vconsole, 
@@ -83,7 +79,6 @@ VirtualNode* VirtualANode::create_module(Plugin *real_plugin,
 		track,
 		this);
 }
-
 
 VirtualNode* VirtualANode::create_plugin(Plugin *real_plugin)
 {
@@ -144,16 +139,17 @@ int VirtualANode::read_data(double *output_temp,
 	{
 		int sample_rate = renderengine->edl->session->sample_rate;
 		((AModule*)real_module)->render(output_temp,
-			(samplenum)(start_postime * sample_rate),
+			start_postime,
 			len,
 			renderengine->command->get_direction(),
 			sample_rate,
 			0);
 	}
+
 	return 0;
 }
 
-int VirtualANode::render(double *output_temp,
+void VirtualANode::render(double *output_temp,
 	ptstime start_postime,
 	int len)
 {
@@ -172,7 +168,6 @@ int VirtualANode::render(double *output_temp,
 			start_postime,
 			len);
 	}
-	return 0;
 }
 
 void VirtualANode::render_as_plugin(double *output_temp,
@@ -189,12 +184,12 @@ void VirtualANode::render_as_plugin(double *output_temp,
 	((AAttachmentPoint*)attachment)->render(
 		output_temp, 
 		plugin_buffer_number,
-		start_postime * renderengine->edl->session->sample_rate,
+		start_postime,
 		len, 
 		renderengine->edl->session->sample_rate);
 }
 
-int VirtualANode::render_as_module(double **audio_out, 
+void VirtualANode::render_as_module(double **audio_out, 
 				double *output_temp,
 				ptstime start_postime,
 				int len)
@@ -231,7 +226,7 @@ int VirtualANode::render_as_module(double **audio_out,
 // Get the peak but don't limit
 // Calculate position relative to project for meters
 	int project_sample_rate = edl->session->sample_rate;
-	samplenum start_position_project = start_postime * project_sample_rate;
+	samplenum start_position_project = round(start_postime * project_sample_rate);
 
 	if(real_module && renderengine->command->realtime)
 	{
@@ -285,7 +280,7 @@ int VirtualANode::render_as_module(double **audio_out,
 		int mute_fragment = len - i;
 		ptstime mute_fragment_project = track->from_units(mute_fragment);
 
-		start_position_project = (start_postime * project_sample_rate) +
+		start_position_project = round(start_postime * project_sample_rate) +
 			((direction == PLAY_FORWARD) ? i : -i);
 
 // How many samples until the next mute?
@@ -322,11 +317,9 @@ int VirtualANode::render_as_module(double **audio_out,
 		i += mute_fragment;
 		mute_position += mute_fragment;
 	}
-
-	return 0;
 }
 
-int VirtualANode::render_fade(double *buffer,
+void VirtualANode::render_fade(double *buffer,
 				int len,
 				ptstime input_postime,
 				Autos *autos,
@@ -343,8 +336,6 @@ int VirtualANode::render_fade(double *buffer,
 // Normalize input position to project sample rate here.
 // Automation functions are general to video and audio so it 
 // can't normalize itself.
-	samplenum input_position_project = input_postime * project_sample_rate;
-
 	ptstime len_pts = autos->pos2pts(len);
 
 	if(((FloatAutos*)autos)->automation_is_constant(input_postime,
@@ -383,11 +374,9 @@ int VirtualANode::render_fade(double *buffer,
 				input_postime -= track->one_unit;
 		}
 	}
-
-	return 0;
 }
 
-int VirtualANode::render_pan(double *input, // start of input fragment
+void VirtualANode::render_pan(double *input, // start of input fragment
 	double *output,            // start of output fragment
 	int fragment_len,      // fragment length in input scale
 	ptstime input_postime,    // starting sample of input buffer in project
@@ -443,8 +432,6 @@ int VirtualANode::render_pan(double *input, // start of input fragment
 		else
 			input_postime -= slope_len;
 	}
-
-	return 0;
 }
 
 

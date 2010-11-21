@@ -74,14 +74,15 @@ void CommonRender::reset_parameters()
 
 void CommonRender::arm_command()
 {
-	posnum temp_length = 1;
+	ptstime temp_length = fromunits(1);
 
-	current_position = tounits(renderengine->command->playbackstart, 0);
+	current_postime = renderengine->command->playbackstart;
+	current_position = tounits(renderengine->command->playbackstart, 1);
 
 	init_output_buffers();
 
 	last_playback = 0;
-	if(test_reconfigure(current_position, temp_length))
+	if(test_reconfigure(temp_length))
 	{
 		restart_playback();
 	}
@@ -148,12 +149,12 @@ void CommonRender::stop_plugins()
 	}
 }
 
-int CommonRender::test_reconfigure(posnum position, posnum &length)
+int CommonRender::test_reconfigure(ptstime &length)
 {
 	if(!vconsole) return 1;
 	if(!modules) return 1;
-	
-	return vconsole->test_reconfigure(position, length, last_playback);
+
+	return vconsole->test_reconfigure(length, last_playback);
 }
 
 
@@ -180,7 +181,7 @@ void CommonRender::start_command()
 	}
 }
 
-int CommonRender::restart_playback()
+void CommonRender::restart_playback()
 {
 	delete_vconsole();
 	create_modules();
@@ -191,7 +192,6 @@ int CommonRender::restart_playback()
 	interrupt = 0;
 	last_playback = 0;
 	restart_plugins = 0;
-	return 0;
 }
 
 void CommonRender::delete_vconsole()
@@ -276,6 +276,7 @@ CommonRender::CommonRender(MWindow *mwindow, RenderEngine *renderengine)
 	this->mwindow = mwindow;
 	this->renderengine = renderengine;
 	current_position = 0;
+	current_postime = 0;
 	interrupt = 0;
 	done = 0;
 	last_playback = 0;
@@ -293,16 +294,20 @@ int CommonRender::wait_for_completion()
 
 
 
-int CommonRender::advance_position(posnum current_render_length)
+void CommonRender::advance_position(posnum current_render_length)
 {
+// Using integer arithmetics here to correct to round time
+//    to physical units
 	posnum loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
 	posnum loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
+	posnum length = current_render_length;
 
 // advance the playback position
+	current_position = tounits(current_postime, 1);
 	if(renderengine->command->get_direction() == PLAY_REVERSE)
-		current_position -= current_render_length;
+		current_position -= length;
 	else
-		current_position += current_render_length;
+		current_position += length;
 
 // test loop again
 	if(renderengine->edl->local_session->loop_playback && 
@@ -319,7 +324,7 @@ int CommonRender::advance_position(posnum current_render_length)
 				current_position = loop_start + (current_position - loop_end);
 		}
 	}
-	return 0;
+	current_postime = fromunits(current_position);
 }
 
 posnum CommonRender::tounits(ptstime position, int round)

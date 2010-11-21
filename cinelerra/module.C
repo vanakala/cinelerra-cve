@@ -205,7 +205,7 @@ void Module::reset_attachments()
 
 // Test plugins for reconfiguration.
 // Used in playback
-int Module::test_plugins()
+int Module::test_plugins(void)
 {
 	if(total_attachments != track->plugin_set.total) return 1;
 
@@ -213,7 +213,7 @@ int Module::test_plugins()
 	{
 		AttachmentPoint *attachment = attachments[i];
 		Plugin *plugin = track->get_current_plugin(
-			track->from_units(commonrender->current_position),
+			commonrender->current_postime,
 			i, 
 			renderengine->command->get_direction(),
 			1);
@@ -235,7 +235,7 @@ int Module::test_plugins()
 	return 0;
 }
 
-void Module::update_transition(ptstime current_position, 
+void Module::update_transition(ptstime current_position,
 	int direction)
 {
 	transition = track->get_current_transition(current_position,

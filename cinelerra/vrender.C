@@ -94,31 +94,31 @@ int VRender::flash_output()
 }
 
 int VRender::process_buffer(VFrame *video_out, 
-	framenum input_position, 
+	ptstime input_postime,
 	int last_buffer)
 {
 // process buffer for non realtime
 	int i, j;
-	posnum render_len = 1;
+	ptstime render_len = fromunits(1);
 	int reconfigure = 0;
 
 
 	this->video_out = video_out;
 	this->last_playback = last_buffer;
 
-	current_position = input_position;
+	current_postime = input_postime;
+	current_position = tounits(input_postime, 1);
 
 // test for automation configuration and shorten the fragment len if necessary
-	reconfigure = vconsole->test_reconfigure(input_position, 
-		render_len,
+	reconfigure = vconsole->test_reconfigure(render_len,
 		last_playback);
 
 	if(reconfigure) restart_playback();
-	return process_buffer(input_position);
+	return process_buffer(current_postime);
 }
 
 
-int VRender::process_buffer(framenum input_position)
+int VRender::process_buffer(ptstime input_postime)
 {
 SET_TRACE
 	Edit *playable_edit = 0;
@@ -132,7 +132,7 @@ SET_TRACE
 		renderengine->edl->session->video_asynchronous;
 // Determine the rendering strategy for this frame.
 	use_vconsole = get_use_vconsole(playable_edit, 
-		fromunits(input_position),
+		input_postime,
 		use_brender);
 // Negotiate color model
 	colormodel = get_colormodel(playable_edit, use_vconsole, use_brender);
@@ -172,7 +172,7 @@ SET_TRACE
 		if(playable_edit)
 		{
 			result = ((VEdit*)playable_edit)->read_frame(video_out, 
-				fromunits(current_position),
+				current_postime,
 				renderengine->get_vcache(),
 				1,
 				use_cache,
@@ -183,7 +183,7 @@ SET_TRACE
 // Read into virtual console
 	{
 // process this buffer now in the virtual console
-		result = ((VirtualVConsole*)vconsole)->process_buffer(input_position);
+		((VirtualVConsole*)vconsole)->process_buffer(input_postime);
 	}
 	return result;
 }
@@ -290,6 +290,7 @@ void VRender::run()
 	framenum delay_countdown = VRENDER_THRESHOLD;  // Frames remaining until delay
 // Number of frames before next reconfigure
 	posnum current_input_length;
+	ptstime len_pts = fromunits(1);
 // Number of frames to skip.
 	framenum frame_step = 1;
 
@@ -302,23 +303,21 @@ void VRender::run()
 
 	start_lock->unlock();
 
-
 	while(!done)
 	{
 // Perform the most time consuming part of frame decompression now.
 // Want the condition before, since only 1 frame is rendered 
-// and the number of frames skipped after this frame varies.
+// and the number of frames skipped after this frame varies
 		current_input_length = 1;
 
-		reconfigure = vconsole->test_reconfigure(current_position, 
-			current_input_length,
+		reconfigure = vconsole->test_reconfigure(len_pts,
 			last_playback);
 
 		if(reconfigure) restart_playback();
 SET_TRACE
-		process_buffer(current_position);
+		process_buffer(current_postime);
 		if(last_playback || renderengine->video->interrupt 
-		    || renderengine->command->single_frame())
+				|| renderengine->command->single_frame())
 		{
 			flash_output();
 			frame_step = 1;
@@ -441,7 +440,7 @@ SET_TRACE
 			if(renderengine->playback_engine &&
 				renderengine->command->command != CURRENT_FRAME)
 			{
-				renderengine->playback_engine->update_tracking(fromunits(current_position));
+				renderengine->playback_engine->update_tracking(current_postime);
 			}
 
 // Calculate the framerate counter

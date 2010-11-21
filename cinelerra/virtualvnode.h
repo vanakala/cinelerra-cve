@@ -49,13 +49,12 @@ public:
 					Module *real_module, 
 					Track *track);
 	VirtualNode* create_plugin(Plugin *real_plugin);
-	void arm_attachmentpoint();
 
 // Called by VirtualVConsole::process_buffer to process exit nodes.
 // start_position - end of frame if reverse.  start of frame if forward.
 // frame_rate - rate start_position is relative to
 // use_opengl - if opengl is available for this step
-	int render(VFrame *output_temp, 
+	void render(VFrame *output_temp, 
 		ptstime start_position,
 		int use_opengl);
 
@@ -65,7 +64,7 @@ public:
 		int use_opengl);
 
 private:
-	int render_as_module(VFrame *video_out, 
+	void render_as_module(VFrame *video_out, 
 		VFrame *output_temp,
 		ptstime start_position,
 		int use_opengl);
@@ -73,11 +72,11 @@ private:
 		ptstime start_position,
 		int use_opengl);
 
-	int render_projector(VFrame *input,
+	void render_projector(VFrame *input,
 		VFrame *output,
 		ptstime start_position);  // Start of input fragment in project if forward.  End of input fragment if reverse.
 
-	int render_fade(VFrame *output,        // start of output fragment
+	void render_fade(VFrame *output,  // start of output fragment
 		ptstime start_position,  // start of input fragment in project if forward / end of input fragment if reverse
 		Autos *autos,
 		int direction);

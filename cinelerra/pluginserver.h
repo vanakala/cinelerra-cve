@@ -147,7 +147,7 @@ public:
 // set the string that appears on the plugin title
 	int set_string(const char *string);
 // give the buffers and sizes and prepare processing realtime data
-	int init_realtime(int realtime_sched,
+	void init_realtime(int realtime_sched,
 		int total_in_buffers,
 		int buffer_size);
 // process the data in the buffers
@@ -158,33 +158,32 @@ public:
 // total_len - total len for transition
 	void process_transition(VFrame *input, 
 		VFrame *output, 
-		framenum current_position,
-		framenum total_len);
+		ptstime current_postime,
+		ptstime total_len);
 	void process_transition(double *input, 
 		double *output,
-		samplenum current_position, 
+		ptstime current_postime,
 		int fragment_size,
-		samplenum total_len);
+		ptstime total_len);
 
 // Process using pull method.
 // current_position - start of region if forward, end of region if reverse
-//     relative to requested rate
-// fragment_size - amount of data to put in buffer relative to requested rate
+// fragment_size - amount of data to put in buffer in units
 // sample_rate - sample rate of requested output
 // frame_rate - frame rate of requested output
-// total_len - length of plugin in track units relative to the EDL rate
+// total_len - length of plugin in track units in units
 // Units are kept relative to the EDL rate so plugins don't need to convert rates
 // to get the keyframes.
 	void process_buffer(VFrame **frame, 
-		framenum current_position,
+		ptstime current_position,
 		double frame_rate,
-		framenum total_len,
+		ptstime total_len,
 		int direction);
 	void process_buffer(double **buffer,
-		samplenum current_position,
+		ptstime current_position,
 		int fragment_size,
 		int sample_rate,
-		samplenum total_len,
+		ptstime total_len,
 		int direction);
 
 // Called by rendering client to cause the GUI to display something with the data.
@@ -195,18 +194,18 @@ public:
 	void render_gui(void *data, int size);
 
 // Send the boundary autos of the next fragment
-	int set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse);
+	void set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse);
 
 
 
 // set the fragment position of a buffer before rendering
-	int arm_buffer(int buffer_number, 
-				int64_t in_fragment_position, 
-				int64_t out_fragment_position,
-				int double_buffer_in,
-				int double_buffer_out);
+	void arm_buffer(int buffer_number,
+		posnum in_fragment_position,
+		posnum out_fragment_position,
+		int double_buffer_in,
+		int double_buffer_out);
 // Detach all the shared buffers.
-	int detach_buffers();
+	void detach_buffers(void);
 
 	int send_buffer_info();
 
@@ -232,7 +231,7 @@ public:
 	int read_samples(double *buffer, 
 		int channel, 
 		samplenum start_position, 
-		samplenum total_samples);
+		int total_samples);
 
 
 // Called by client to read data in realtime effect.  

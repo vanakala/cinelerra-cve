@@ -159,10 +159,10 @@ VirtualConsole* ARender::new_vconsole_object()
 	return new VirtualAConsole(renderengine, this);
 }
 
-posnum ARender::tounits(ptstime position, int round)
+posnum ARender::tounits(ptstime position, int roundfl)
 {
-	if(round)
-		return Units::round(position * renderengine->edl->session->sample_rate);
+	if(roundfl)
+		return round(position * renderengine->edl->session->sample_rate);
 	else
 		return (posnum)(position * renderengine->edl->session->sample_rate);
 }
@@ -175,16 +175,16 @@ ptstime ARender::fromunits(posnum position)
 
 int ARender::process_buffer(double **buffer_out, 
 	int input_len, 
-	samplenum input_position, 
+	ptstime input_postime,
 	int last_buffer)
 {
 	int result = 0;
-
 	this->last_playback = last_buffer;
 	int fragment_position = 0;
 	posnum fragment_len = input_len;
 	int reconfigure = 0;
-	current_position = input_position;
+	current_postime = input_postime;
+	current_position = tounits(current_position, 1);
 
 	while(fragment_position < input_len)
 	{
@@ -200,17 +200,19 @@ int ARender::process_buffer(double **buffer_out,
 		if(fragment_position + fragment_len > input_len)
 			fragment_len = input_len - fragment_position;
 
-		reconfigure = vconsole->test_reconfigure(input_position, 
-			fragment_len,
+		ptstime len_pts = fromunits(fragment_len);
+		reconfigure = vconsole->test_reconfigure(len_pts,
 			last_playback);
+		fragment_len = tounits(len_pts);
 
 		if(reconfigure) restart_playback();
 
-		result = process_buffer(fragment_len, input_position);
+		result = process_buffer(fragment_len, input_postime);
 
 		fragment_position += fragment_len;
-		input_position += fragment_len;
-		current_position = input_position;
+		input_postime += fromunits(fragment_len);
+		current_postime = input_postime;
+		current_position = tounits(current_postime, 1);
 	}
 
 // Don't delete audio_out on completion
@@ -221,12 +223,11 @@ int ARender::process_buffer(double **buffer_out,
 }
 
 
-int ARender::process_buffer(posnum input_len, posnum input_position)
+int ARender::process_buffer(int input_len, ptstime input_postime)
 {
 	int result = ((VirtualAConsole*)vconsole)->process_buffer(input_len,
-		input_position,
-		last_playback,
-		session_position);
+		input_postime,
+		last_playback);
 
 // advance counters
 	session_position += input_len;
@@ -267,7 +268,6 @@ void ARender::run()
 	int reconfigure = 0;
 
 	first_buffer = 1;
-
 	start_lock->unlock();
 
 	while(!done && !interrupt && !last_playback)
@@ -278,9 +278,11 @@ void ARender::run()
 
 		if(current_input_length)
 		{
-			reconfigure = vconsole->test_reconfigure(current_position, 
-				current_input_length,
+			ptstime len_pts = fromunits(current_input_length);
+			reconfigure = vconsole->test_reconfigure(len_pts,
 				last_playback);
+			current_input_length = tounits(len_pts, 1);
+
 			if(reconfigure) restart_playback();
 		}
 
@@ -304,9 +306,9 @@ void ARender::run()
 			renderengine->playback_engine->update_tracking(position);
 		}
 
-		process_buffer(current_input_length, current_position);
+		process_buffer(current_input_length, current_postime);
 
-		advance_position(get_render_length(current_input_length));
+		advance_position(current_input_length);
 
 		if(vconsole->interrupt) interrupt = 1;
 	}

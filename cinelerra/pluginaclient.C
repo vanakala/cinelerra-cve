@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "pluginaclient.h"
@@ -97,7 +98,7 @@ int PluginAClient::process_realtime(int size,
 
 int PluginAClient::process_buffer(int size, 
 	double **buffer,
-	posnum start_position,
+	samplenum start_position,
 	int sample_rate)
 {
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
@@ -112,7 +113,7 @@ int PluginAClient::process_buffer(int size,
 
 int PluginAClient::process_buffer(int size, 
 	double *buffer,
-	posnum start_position,
+	samplenum start_position,
 	int sample_rate)
 {
 	read_samples(buffer, 
@@ -175,7 +176,7 @@ int PluginAClient::plugin_process_loop(double **buffers, int &write_length)
 int PluginAClient::read_samples(double *buffer, 
 	int channel, 
 	samplenum start_position, 
-	samplenum total_samples)
+	int total_samples)
 {
 	return server->read_samples(buffer, 
 		channel, 
@@ -185,7 +186,7 @@ int PluginAClient::read_samples(double *buffer,
 
 int PluginAClient::read_samples(double *buffer, 
 	samplenum start_position, 
-	samplenum total_samples)
+	int total_samples)
 {
 	return server->read_samples(buffer, 
 		0, 

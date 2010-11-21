@@ -64,11 +64,10 @@ int PluginClient::reset()
 
 
 // For realtime plugins initialize buffers
-int PluginClient::plugin_init_realtime(int realtime_priority, 
+void PluginClient::plugin_init_realtime(int realtime_priority, 
 	int total_in_buffers,
 	int buffer_size)
 {
-
 // Get parameters for all
 	master_gui_on = get_gui_status();
 
@@ -82,8 +81,6 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
 
 	this->out_buffer_size = this->in_buffer_size = buffer_size;
-
-	return 0;
 }
 
 int PluginClient::plugin_start_loop(posnum start,

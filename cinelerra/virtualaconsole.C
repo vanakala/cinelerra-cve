@@ -25,6 +25,7 @@
 #include "assets.h"
 #include "atrack.h"
 #include "audiodevice.h"
+#include "bcsignals.h"
 #include "condition.h"
 #include "edit.h"
 #include "edits.h"
@@ -62,7 +63,7 @@ void VirtualAConsole::get_playable_tracks()
 {
 	if(!playable_tracks)
 		playable_tracks = new PlayableTracks(renderengine, 
-			(ptstime)commonrender->current_position / renderengine->edl->session->sample_rate,
+			commonrender->current_postime,
 			TRACK_AUDIO,
 			1);
 }
@@ -78,23 +79,19 @@ VirtualNode* VirtualAConsole::new_entry_node(Track *track,
 		0,
 		track,
 		0);
-	return 0;
 }
 
 
 
 int VirtualAConsole::process_buffer(int len,
-	posnum start_position,
-	int last_buffer,
-	posnum absolute_position)
+	ptstime start_postime,
+	int last_buffer)
 {
 	int result = 0;
-
 
 // clear output buffers
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
-
 		if(arender->audio_out[i])
 		{
 			memset(arender->audio_out[i], 0, len * sizeof(double));
@@ -123,8 +120,8 @@ int VirtualAConsole::process_buffer(int len,
 		VirtualANode *node = (VirtualANode*)exit_nodes.values[i];
 		Track *track = node->track;
 
-		result |= node->render(output_temp, 
-			(ptstime)(start_position + track->nudge) / renderengine->edl->session->sample_rate,
+		node->render(output_temp, 
+			start_postime + track->nudge,
 			len);
 	}
 
@@ -136,7 +133,7 @@ int VirtualAConsole::process_buffer(int len,
 
 		if(current_buffer)
 		{
-
+			samplenum start_position = arender->tounits(start_postime, 1);
 			for(int j = 0; j < len; )
 			{
 				int meter_render_end;
@@ -225,7 +222,7 @@ int VirtualAConsole::process_buffer(int len,
 			if(renderengine->command->get_speed() < 1)
 			{
 // number of samples to skip
- 				int interpolate_len = (int)(1.0 / renderengine->command->get_speed());
+				int interpolate_len = (int)(1.0 / renderengine->command->get_speed());
 				real_output_len = len * interpolate_len;
 
 				for(in = len - 1, out = real_output_len - 1; in >= 0; )
@@ -255,23 +252,5 @@ int VirtualAConsole::process_buffer(int len,
 
 		if(renderengine->audio->get_interrupted()) interrupt = 1;
 	}
-
 	return result;
 }
-
-
-
-
-
-int VirtualAConsole::init_rendering(int duplicate)
-{
-	return 0;
-}
-
-
-int VirtualAConsole::send_last_output_buffer()
-{
-	renderengine->audio->set_last_buffer();
-	return 0;
-}
-

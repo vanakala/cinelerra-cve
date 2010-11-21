@@ -20,6 +20,7 @@
  */
 
 #include "aattachmentpoint.h"
+#include "bcsignals.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -71,8 +72,8 @@ void AAttachmentPoint::new_buffer_vector(int total, int size)
 
 void AAttachmentPoint::render(double *output, 
 	int buffer_number,
-	samplenum start_position, 
-	samplenum len,
+	ptstime start_postime,
+	int len,
 	int sample_rate)
 {
 	if(!plugin_server || !plugin->on) return;
@@ -81,7 +82,7 @@ void AAttachmentPoint::render(double *output,
 	{
 // Test against previous parameters for reuse of previous data
 		if(is_processed &&
-			this->start_position == start_position && 
+			this->start_postime == start_postime && 
 			this->len == len && 
 			this->sample_rate == sample_rate)
 		{
@@ -90,7 +91,7 @@ void AAttachmentPoint::render(double *output,
 		}
 
 // Update status
-		this->start_position = start_position;
+		this->start_postime = start_postime;
 		this->len = len;
 		this->sample_rate = sample_rate;
 		is_processed = 1;
@@ -110,11 +111,10 @@ void AAttachmentPoint::render(double *output,
 
 // Process plugin
 		plugin_servers.values[0]->process_buffer(output_temp,
-			start_position,
+			start_postime,
 			len,
 			sample_rate,
-			plugin->length() *
-				renderengine->edl->session->sample_rate,
+			plugin->length(),
 			renderengine->command->get_direction());
 
 // Delete temporary buffer vector
@@ -126,11 +126,10 @@ void AAttachmentPoint::render(double *output,
 		double *output_temp[1];
 		output_temp[0] = output;
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
-			start_position,
+			start_postime,
 			len,
 			sample_rate,
-			plugin->length() *
-				renderengine->edl->session->sample_rate,
+			plugin->length(),
 			renderengine->command->get_direction());
 	}
 }

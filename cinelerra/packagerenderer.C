@@ -279,8 +279,8 @@ void PackageRenderer::do_audio()
 
 // Call render engine
 		result = render_engine->arender->process_buffer(audio_output_ptr, 
-			audio_read_length, 
-			audio_position,
+			audio_read_length,
+			render_engine->arender->fromunits(audio_position),
 			0);
 
 
@@ -361,7 +361,7 @@ void PackageRenderer::do_video()
 				if(!result)
 					result = render_engine->vrender->process_buffer(
 						video_output_ptr, 
-						video_position, 
+						render_engine->vrender->fromunits(video_position),
 						0);
 
 

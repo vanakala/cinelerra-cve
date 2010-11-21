@@ -45,7 +45,7 @@ public:
 
 // Composite a frame
 // start_position - start of buffer in project if forward. end of buffer if reverse
-	int process_buffer(framenum input_position);
+	void process_buffer(ptstime input_postime);
 
 	VFrame *output_temp;
 	VRender *vrender;

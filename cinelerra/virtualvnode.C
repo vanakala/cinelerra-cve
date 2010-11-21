@@ -92,7 +92,6 @@ VirtualNode* VirtualVNode::create_module(Plugin *real_plugin,
 		this);
 }
 
-
 VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 {
 	return new VirtualVNode(renderengine, 
@@ -130,7 +129,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 // Get data from preceeding effect on parent module.
 	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
 	{
-		result = ((VirtualVNode*)previous_plugin)->render(output_temp,
+		((VirtualVNode*)previous_plugin)->render(output_temp,
 			start_position,
 			use_opengl);
 	}
@@ -141,7 +140,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 // Read data from parent module
 	if(parent_node && (parent_edit || !real_module))
 	{
-		result = ((VirtualVNode*)parent_node)->read_data(output_temp,
+		((VirtualVNode*)parent_node)->read_data(output_temp,
 			start_position,
 			use_opengl);
 	}
@@ -156,12 +155,11 @@ int VirtualVNode::read_data(VFrame *output_temp,
 			0,
 			use_opengl);
 	}
-
 	return result;
 }
 
 
-int VirtualVNode::render(VFrame *output_temp, 
+void VirtualVNode::render(VFrame *output_temp, 
 	ptstime start_position,
 	int use_opengl)
 {
@@ -180,7 +178,6 @@ int VirtualVNode::render(VFrame *output_temp,
 			start_position,
 			use_opengl);
 	}
-	return 0;
 }
 
 void VirtualVNode::render_as_plugin(VFrame *output_temp, 
@@ -200,14 +197,14 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 	((VAttachmentPoint*)attachment)->render(
 		output_temp,
 		plugin_buffer_number,
-		start_position * renderengine->edl->session->frame_rate,
+		start_position,
 		renderengine->edl->session->frame_rate,
 		vconsole->debug_tree,
 		use_opengl);
 }
 
 
-int VirtualVNode::render_as_module(VFrame *video_out, 
+void VirtualVNode::render_as_module(VFrame *video_out, 
 	VFrame *output_temp,
 	ptstime start_position,
 	int use_opengl)
@@ -272,11 +269,9 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 	}
 
 	output_temp->push_prev_effect("VirtualVNode::render_as_module");
-
-	return 0;
 }
 
-int VirtualVNode::render_fade(VFrame *output,
+void VirtualVNode::render_fade(VFrame *output,
 			ptstime start_position, 
 			Autos *autos,
 			int direction)
@@ -309,8 +304,6 @@ int VirtualVNode::render_fade(VFrame *output,
 		else
 			fader->do_fade(output, output, intercept / 100);
 	}
-
-	return 0;
 }
 
 
@@ -373,13 +366,12 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 
 
 // Start of input fragment in project if forward.  End of input fragment if reverse.
-int VirtualVNode::render_projector(VFrame *input,
+void VirtualVNode::render_projector(VFrame *input,
 			VFrame *output,
 			ptstime start_position)
 {
 	float in_x1, in_y1, in_x2, in_y2;
 	float out_x1, out_y1, out_x2, out_y2;
-
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_projector input=%p output=%p title=%s\n", 
@@ -464,6 +456,5 @@ int VirtualVNode::render_projector(VFrame *input,
 			}
 		}
 	}
-	return 0;
 }
 

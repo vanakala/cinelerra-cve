@@ -81,11 +81,9 @@ VirtualNode* VirtualVConsole::new_entry_node(Track *track,
 }
 
 // start of buffer in project if forward / end of buffer if reverse
-int VirtualVConsole::process_buffer(framenum input_position)
+void VirtualVConsole::process_buffer(ptstime input_postime)
 {
 	int i, j, k;
-	int result = 0;
-
 
 
 // The use of single frame is determined in RenderEngine::arm_command
@@ -152,12 +150,11 @@ int VirtualVConsole::process_buffer(framenum input_position)
 // Assume openGL is used for the final stage and let console
 // disable.
 		output_temp->clear_stacks();
-		result |= node->render(output_temp,
-			(input_position + track->nudge) / renderengine->edl->session->frame_rate,
+		node->render(output_temp,
+			input_postime + track->nudge,
 			use_opengl);
 
 	}
 	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
-	return result;
 }
 

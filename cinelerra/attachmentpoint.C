@@ -20,6 +20,7 @@
  */
 
 #include "attachmentpoint.h"
+#include "bcsignals.h"
 #include "filexml.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -77,7 +78,7 @@ int AttachmentPoint::identical(AttachmentPoint *old)
 }
 
 
-int AttachmentPoint::render_init()
+void AttachmentPoint::render_init()
 {
 	if(plugin_server && plugin->on)
 	{
@@ -137,9 +138,6 @@ int AttachmentPoint::render_init()
 	for(int i = 0; i < new_virtual_plugins.total; i++)
 		virtual_plugins.append(new_virtual_plugins.values[i]);
 	new_virtual_plugins.remove_all();
-
-
-	return 0;
 }
 
 void AttachmentPoint::render_stop()
@@ -225,15 +223,8 @@ int AttachmentPoint::gui_open()
 
 
 
-int AttachmentPoint::dump()
+void AttachmentPoint::dump()
 {
-	if(this)
-	{
-		printf("    Attachmentpoint %p virtual_plugins=%d\n", this, new_virtual_plugins.total);
-		if(plugin_server) plugin_server->dump();
-	}
-	else
-	{
-		printf("    No Plugin\n");
-	}
+	printf("    Attachmentpoint %p virtual_plugins=%d\n", this, new_virtual_plugins.total);
+	if(plugin_server) plugin_server->dump();
 }

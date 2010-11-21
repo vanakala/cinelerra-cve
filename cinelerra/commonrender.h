@@ -52,11 +52,11 @@ public:
 	virtual void init_output_buffers() {};
 	void start_plugins();
 	void stop_plugins();
-	int test_reconfigure(posnum position, posnum &length);
+	int test_reconfigure(ptstime &length);
 
 	void evaluate_current_position();
 	void start_command();
-	virtual int restart_playback();
+	void restart_playback(void);
 	virtual void run();
 
 	RenderEngine *renderengine;
@@ -64,6 +64,9 @@ public:
 	VirtualConsole *vconsole;
 // Native units position in project used for all functions
 	posnum current_position;
+// Pts units position in project used for all functions
+	ptstime current_postime;
+
 	Condition *start_lock;
 // flag for normally completed playback
 	int done;
@@ -98,15 +101,12 @@ public:
 	virtual int get_datatype() {};
 // test region against loop boundaries
 	int get_boundaries(posnum &current_render_length);
-// test region for playback automation changes
-	int get_automation(int64_t &current_render_length, int data_type);
 // advance the buffer position depending on the loop status
-	int advance_position(posnum current_render_length);
+	void advance_position(posnum current_render_length);
 
 // convert to and from the native units of the render engine
 	virtual posnum tounits(ptstime position, int round);
 	virtual ptstime fromunits(posnum position);
-	virtual int get_render_length(int current_render_length) { return current_render_length; };
 
 	MWindow *mwindow;
 

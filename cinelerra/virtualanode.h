@@ -49,7 +49,7 @@ public:
 
 // Called by VirtualAConsole::process_buffer to process exit_nodes.
 // read_data recurses down the tree.
-	int render(double *output_temp,
+	void render(double *output_temp,
 		ptstime start_postime,
 		int len);
 
@@ -61,7 +61,7 @@ public:
 
 private:
 // need *arender for peak updating
-	int render_as_module(double **audio_out, 
+	void render_as_module(double **audio_out, 
 		double *output_temp,
 		ptstime start_position,
 		int len);
@@ -70,17 +70,17 @@ private:
 		ptstime start_postime,
 		int len);
 
-	int render_fade(double *buffer,
+	void render_fade(double *buffer,
 		int len,
-		ptstime input_position,
+		ptstime input_postime,
 		Autos *autos,
 		int direction,
 		int use_nudge);
 
-	int render_pan(double *input,        // start of input fragment
-		double *output,        // start of output fragment
-		int fragment_len,      // fragment length in input scale
-		ptstime input_position, // starting sample of input buffer in project
+	void render_pan(double *input,
+		double *output,
+		int fragment_len,
+		ptstime input_postime,
 		Autos *autos,
 		int channel,
 		int direction,

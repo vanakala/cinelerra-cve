@@ -42,16 +42,6 @@ public:
 	int get_total_tracks();
 	Module* new_module(Track *track);
 
-// set up and start thread
-	int arm_playback(int64_t current_position,
-				int64_t input_length, 
-				int64_t module_render_fragment, 
-				int64_t playback_buffer, 
-				int track_w,
-				int track_h,
-				int output_w,
-				int output_h);
-
 	void run();
 
 	int start_playback();     // start the thread
@@ -61,18 +51,12 @@ public:
 
 // process frames to put in buffer_out
 	int process_buffer(VFrame *video_out, 
-		framenum input_position, 
+		ptstime input_postime,
 		int last_buffer);
 // load an array of buffers for each track to send to the thread
-	int process_buffer(framenum input_position);
+	int process_buffer(ptstime input_postime);
 // Flash the output on the display
 	int flash_output();
-// Determine if data can be copied directly from the file to the output device.
-	void get_render_strategy(Edit* &playable_edit, 
-		int &colormodel, 
-		int &use_vconsole,
-		int64_t position);
-
 
 	int get_use_vconsole(Edit* &playable_edit, 
 		ptstime position,
@@ -81,7 +65,7 @@ public:
 		int use_vconsole,
 		int use_brender);
 
-	posnum tounits(double position, int round);
+	posnum tounits(double position, int round = 0);
 	double fromunits(posnum position);
 
 // frames since start of playback

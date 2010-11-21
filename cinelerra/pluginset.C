@@ -80,7 +80,7 @@ ptstime PluginSet::plugin_change_duration(ptstime input_position,
 	ptstime input_length,
 	int reverse)
 {
-	int result = input_length;
+	ptstime result = input_length;
 	Edit *current;
 
 	if(reverse)
