@@ -38,8 +38,8 @@ class PngReadFunction
 {
 public:
 	static void png_read_function(png_structp png_ptr,
-            	   png_bytep data, 
-				   png_size_t length)
+		png_bytep data,
+		png_size_t length)
 	{
 		VFrame *frame = (VFrame*)png_get_io_ptr(png_ptr);
 		if(frame->image_size - frame->image_offset < length) 
@@ -49,14 +49,6 @@ public:
 		frame->image_offset += length;
 	};
 };
-
-
-
-
-
-
-
-//static BCCounter counter;
 
 
 VFrame::VFrame(unsigned char *png_data)
@@ -114,16 +106,6 @@ VFrame::VFrame()
 	this->color_model = BC_COMPRESSED;
 }
 
-
-
-
-
-
-
-
-
-
-
 VFrame::~VFrame()
 {
 	clear_objects(1);
@@ -166,7 +148,7 @@ int VFrame::params_match(int w, int h, int color_model)
 }
 
 
-int VFrame::reset_parameters(int do_opengl)
+void VFrame::reset_parameters(int do_opengl)
 {
 	field2_offset = -1;
 	shared = 0;
@@ -196,10 +178,9 @@ int VFrame::reset_parameters(int do_opengl)
 
 	prev_effects.set_array_delete();
 	next_effects.set_array_delete();
-	return 0;
 }
 
-int VFrame::clear_objects(int do_opengl)
+void VFrame::clear_objects(int do_opengl)
 {
 // Remove texture
 	if(do_opengl)
@@ -214,11 +195,6 @@ int VFrame::clear_objects(int do_opengl)
 // Delete data
 	if(!shared)
 	{
-
-// Memory check
-//int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
-//if(size > 2560 * 1920)
-UNBUFFER(data);
 		if(data) delete [] data;
 		data = 0;
 	}
@@ -226,17 +202,14 @@ UNBUFFER(data);
 // Delete row pointers
 	switch(color_model)
 	{
-		case BC_COMPRESSED:
-		case BC_YUV420P:
-			break;
+	case BC_COMPRESSED:
+	case BC_YUV420P:
+		break;
 
-		default:
-			delete [] rows;
-			break;
+	default:
+		delete [] rows;
+		break;
 	}
-
-
-	return 0;
 }
 
 int VFrame::get_field2_offset()
@@ -274,55 +247,53 @@ long VFrame::get_bytes_per_line()
 long VFrame::get_data_size()
 {
 	return calculate_data_size(w, h, bytes_per_line, color_model) - 4;
-//	return h * bytes_per_line;
 }
 
 long VFrame::calculate_data_size(int w, int h, int bytes_per_line, int color_model)
 {
 	return cmodel_calculate_datasize(w, h, bytes_per_line, color_model);
-	return 0;
 }
 
 void VFrame::create_row_pointers()
 {
 	switch(color_model)
 	{
-		case BC_YUV420P:
-		case BC_YUV411P:
-			if(!this->v_offset)
-			{
-				this->y_offset = 0;
-				this->u_offset = w * h;
-				this->v_offset = w * h + w * h / 4;
-			}
-			y = this->data + this->y_offset;
-			u = this->data + this->u_offset;
-			v = this->data + this->v_offset;
-			break;
+	case BC_YUV420P:
+	case BC_YUV411P:
+		if(!this->v_offset)
+		{
+			this->y_offset = 0;
+			this->u_offset = w * h;
+			this->v_offset = w * h + w * h / 4;
+		}
+		y = this->data + this->y_offset;
+		u = this->data + this->u_offset;
+		v = this->data + this->v_offset;
+		break;
 
-		case BC_YUV422P:
-			if(!this->v_offset)
-			{
-				this->y_offset = 0;
-				this->u_offset = w * h;
-				this->v_offset = w * h + w * h / 2;
-			}
-			y = this->data + this->y_offset;
-			u = this->data + this->u_offset;
-			v = this->data + this->v_offset;
-			break;
+	case BC_YUV422P:
+		if(!this->v_offset)
+		{
+			this->y_offset = 0;
+			this->u_offset = w * h;
+			this->v_offset = w * h + w * h / 2;
+		}
+		y = this->data + this->y_offset;
+		u = this->data + this->u_offset;
+		v = this->data + this->v_offset;
+		break;
 
-		default:
-			rows = new unsigned char*[h];
-			for(int i = 0; i < h; i++)
-			{
-				rows[i] = &this->data[i * this->bytes_per_line];
-			}
-			break;
+	default:
+		rows = new unsigned char*[h];
+		for(int i = 0; i < h; i++)
+		{
+			rows[i] = &this->data[i * this->bytes_per_line];
+		}
+		break;
 	}
 }
 
-int VFrame::allocate_data(unsigned char *data, 
+void VFrame::allocate_data(unsigned char *data, 
 	long y_offset,
 	long u_offset,
 	long v_offset,
@@ -361,21 +332,10 @@ int VFrame::allocate_data(unsigned char *data,
 			this->bytes_per_line, 
 			this->color_model);
 		this->data = new unsigned char[size];
-
-// Memory check
-//if(size >= 720 * 480 * 3)
-//BUFFER2(this->data, "VFrame::allocate_data");
-
-if(!this->data)
-printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
-
-//printf("VFrame::allocate_data %p %d %d\n", this, this->w, this->h);
-//if(size > 1000000) printf("VFrame::allocate_data %d\n", size);
 	}
 
 // Create row pointers
 	create_row_pointers();
-	return 0;
 }
 
 void VFrame::set_memory(unsigned char *data, 
@@ -407,7 +367,7 @@ void VFrame::set_compressed_memory(unsigned char *data,
 
 
 // Reallocate uncompressed buffer with or without alpha
-int VFrame::reallocate(unsigned char *data, 
+void VFrame::reallocate(unsigned char *data, 
 		long y_offset,
 		long u_offset,
 		long v_offset,
@@ -426,19 +386,16 @@ int VFrame::reallocate(unsigned char *data,
 		h, 
 		color_model, 
 		bytes_per_line);
-	return 0;
 }
 
-int VFrame::allocate_compressed_data(long bytes)
+void VFrame::allocate_compressed_data(long bytes)
 {
-	if(bytes < 1) return 1;
-
+	if(bytes < 1) return;
 // Want to preserve original contents
 	if(data && compressed_allocated < bytes)
 	{
 		unsigned char *new_data = new unsigned char[bytes];
-		bcopy(data, new_data, compressed_allocated);
-UNBUFFER(data);
+		memcpy(new_data, data, compressed_allocated);
 		delete [] data;
 		data = new_data;
 		compressed_allocated = bytes;
@@ -450,11 +407,9 @@ UNBUFFER(data);
 		compressed_allocated = bytes;
 		compressed_size = 0;
 	}
-
-	return 0;
 }
 
-int VFrame::read_png(unsigned char *data)
+void VFrame::read_png(unsigned char *data)
 {
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	png_infop info_ptr = png_create_info_struct(png_ptr);
@@ -521,7 +476,6 @@ int VFrame::read_png(unsigned char *data)
 	}
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-	return 0;
 }
 
 unsigned char* VFrame::get_data()
@@ -574,41 +528,40 @@ int VFrame::equals(VFrame *frame)
 	} \
 }
 
-int VFrame::clear_frame()
+void VFrame::clear_frame(void)
 {
 	switch(color_model)
 	{
-		case BC_COMPRESSED:
-			break;
+	case BC_COMPRESSED:
+		break;
 
-		case BC_YUV420P:
-			bzero(data, h * w * 2);
-			break;
+	case BC_YUV420P:
+		memset(data, 0, h * w * 2);
+		break;
 
-		case BC_YUV888:
-			ZERO_YUV(3, unsigned char, 0xff);
-			break;
-		
-		case BC_YUVA8888:
-			ZERO_YUV(4, unsigned char, 0xff);
-			break;
+	case BC_YUV888:
+		ZERO_YUV(3, unsigned char, 0xff);
+		break;
 
-		case BC_YUV161616:
-			ZERO_YUV(3, uint16_t, 0xffff);
-			break;
-		
-		case BC_YUVA16161616:
-			ZERO_YUV(4, uint16_t, 0xffff);
-			break;
-		
-		default:
-			bzero(data, h * bytes_per_line);
-			break;
+	case BC_YUVA8888:
+		ZERO_YUV(4, unsigned char, 0xff);
+		break;
+
+	case BC_YUV161616:
+		ZERO_YUV(3, uint16_t, 0xffff);
+		break;
+
+	case BC_YUVA16161616:
+		ZERO_YUV(4, uint16_t, 0xffff);
+		break;
+
+	default:
+		memset(data, 0, h * bytes_per_line);
+		break;
 	}
-	return 0;
 }
 
-void VFrame::rotate90()
+void VFrame::rotate90(void)
 {
 // Allocate new frame
 	int new_w = h, new_h = w, new_bytes_per_line = bytes_per_pixel * new_w;
@@ -639,7 +592,7 @@ void VFrame::rotate90()
 	h = new_h;
 }
 
-void VFrame::rotate270()
+void VFrame::rotate270(void)
 {
 // Allocate new frame
 	int new_w = h, new_h = w, new_bytes_per_line = bytes_per_pixel * new_w;
@@ -670,7 +623,7 @@ void VFrame::rotate270()
 	h = new_h;
 }
 
-void VFrame::flip_vert()
+void VFrame::flip_vert(void)
 {
 	unsigned char *temp = new unsigned char[bytes_per_line];
 	for(int i = 0, j = h - 1; i < j; i++, j--)
@@ -684,47 +637,38 @@ void VFrame::flip_vert()
 
 
 
-int VFrame::copy_from(VFrame *frame)
+void VFrame::copy_from(VFrame *frame)
 {
 	int w = MIN(this->w, frame->get_w());
 	int h = MIN(this->h, frame->get_h());
-	
 
 	switch(frame->color_model)
 	{
-		case BC_COMPRESSED:
-			allocate_compressed_data(frame->compressed_size);
-			memcpy(data, frame->data, frame->compressed_size);
-			this->compressed_size = frame->compressed_size;
-			break;
+	case BC_COMPRESSED:
+		allocate_compressed_data(frame->compressed_size);
+		memcpy(data, frame->data, frame->compressed_size);
+		this->compressed_size = frame->compressed_size;
+		break;
 
-		case BC_YUV420P:
-//printf("%d %d %p %p %p %p %p %p\n", w, h, get_y(), get_u(), get_v(), frame->get_y(), frame->get_u(), frame->get_v());
-			memcpy(get_y(), frame->get_y(), w * h);
-			memcpy(get_u(), frame->get_u(), w * h / 4);
-			memcpy(get_v(), frame->get_v(), w * h / 4);
-			break;
+	case BC_YUV420P:
+		memcpy(get_y(), frame->get_y(), w * h);
+		memcpy(get_u(), frame->get_u(), w * h / 4);
+		memcpy(get_v(), frame->get_v(), w * h / 4);
+		break;
 
-		case BC_YUV422P:
-//printf("%d %d %p %p %p %p %p %p\n", w, h, get_y(), get_u(), get_v(), frame->get_y(), frame->get_u(), frame->get_v());
-			memcpy(get_y(), frame->get_y(), w * h);
-			memcpy(get_u(), frame->get_u(), w * h / 2);
-			memcpy(get_v(), frame->get_v(), w * h / 2);
-			break;
+	case BC_YUV422P:
+		memcpy(get_y(), frame->get_y(), w * h);
+		memcpy(get_u(), frame->get_u(), w * h / 2);
+		memcpy(get_v(), frame->get_v(), w * h / 2);
+		break;
 
-		default:
-// printf("VFrame::copy_from %d\n", calculate_data_size(w, 
-// 				h, 
-// 				-1, 
-// 				frame->color_model));
-			memcpy(data, frame->data, calculate_data_size(w, 
-				h, 
-				-1, 
-				frame->color_model));
-			break;
+	default:
+		memcpy(data, frame->data, calculate_data_size(w, 
+			h, 
+			-1, 
+			frame->color_model));
+		break;
 	}
-
-	return 0;
 }
 
 
@@ -768,15 +712,14 @@ void VFrame::overlay(VFrame *src,
 {
 	switch(get_color_model())
 	{
-		case BC_RGBA8888:
-			OVERLAY(unsigned char, 0xff, 4);
-			break;
+	case BC_RGBA8888:
+		OVERLAY(unsigned char, 0xff, 4);
+		break;
 	}
 }
 
 
-
-int VFrame::get_scale_tables(int *column_table, int *row_table, 
+void VFrame::get_scale_tables(int *column_table, int *row_table, 
 			int in_x1, int in_y1, int in_x2, int in_y2,
 			int out_x1, int out_y1, int out_x2, int out_y2)
 {
@@ -798,15 +741,14 @@ int VFrame::get_scale_tables(int *column_table, int *row_table,
 	{
 		row_table[i] = (int)(vscale * i) + in_y1;
 	}
-	return 0;
 }
 
-int VFrame::get_bytes_per_pixel()
+int VFrame::get_bytes_per_pixel(void)
 {
 	return bytes_per_pixel;
 }
 
-unsigned char** VFrame::get_rows()
+unsigned char** VFrame::get_rows(void)
 {
 	if(rows)
 	{
@@ -815,37 +757,37 @@ unsigned char** VFrame::get_rows()
 	return 0;
 }
 
-int VFrame::get_w()
+int VFrame::get_w(void)
 {
 	return w;
 }
 
-int VFrame::get_h()
+int VFrame::get_h(void)
 {
 	return h;
 }
 
-int VFrame::get_w_fixed()
+int VFrame::get_w_fixed(void)
 {
 	return w - 1;
 }
 
-int VFrame::get_h_fixed()
+int VFrame::get_h_fixed(void)
 {
 	return h - 1;
 }
 
-unsigned char* VFrame::get_y()
+unsigned char* VFrame::get_y(void)
 {
 	return y;
 }
 
-unsigned char* VFrame::get_u()
+unsigned char* VFrame::get_u(void)
 {
 	return u;
 }
 
-unsigned char* VFrame::get_v()
+unsigned char* VFrame::get_v(void)
 {
 	return v;
 }
@@ -855,7 +797,7 @@ void VFrame::set_number(long number)
 	sequence_number = number;
 }
 
-long VFrame::get_number()
+long VFrame::get_number(void)
 {
 	return sequence_number;
 }
@@ -868,7 +810,7 @@ void VFrame::push_prev_effect(const char *name)
 	if(prev_effects.total > MAX_STACK_ELEMENTS) prev_effects.remove_object(0);
 }
 
-void VFrame::pop_prev_effect()
+void VFrame::pop_prev_effect(void)
 {
 	if(prev_effects.total)
 		prev_effects.remove_object(prev_effects.last());
@@ -882,7 +824,7 @@ void VFrame::push_next_effect(const char *name)
 	if(next_effects.total > MAX_STACK_ELEMENTS) next_effects.remove_object(0);
 }
 
-void VFrame::pop_next_effect()
+void VFrame::pop_next_effect(void)
 {
 	if(next_effects.total)
 		next_effects.remove_object(next_effects.last());
@@ -906,12 +848,12 @@ const char* VFrame::get_prev_effect(int number)
 	return prev_effects.values[prev_effects.total - number - 1];
 }
 
-BC_Hash* VFrame::get_params()
+BC_Hash* VFrame::get_params(void)
 {
 	return params;
 }
 
-void VFrame::clear_stacks()
+void VFrame::clear_stacks(void)
 {
 	next_effects.remove_all_objects();
 	prev_effects.remove_all_objects();
@@ -958,7 +900,7 @@ int VFrame::equal_stacks(VFrame *src)
 	return 1;
 }
 
-void VFrame::dump()
+void VFrame::dump(void)
 {
 	printf("VFrame dump\n");
 	printf("    Size %dx%d, cmodel %d offsets %ld %ld %ld\n", w, h, 
@@ -997,7 +939,7 @@ void VFrame::dump_file(const char *filename)
 	}
 }
 
-void VFrame::dump_stacks()
+void VFrame::dump_stacks(void)
 {
 	printf("VFrame::dump_stacks\n");
 	printf("	next_effects:\n");
@@ -1008,10 +950,7 @@ void VFrame::dump_stacks()
 		printf("		%s\n", prev_effects.values[i]);
 }
 
-void VFrame::dump_params()
+void VFrame::dump_params(void)
 {
 	params->dump();
 }
-
-
-

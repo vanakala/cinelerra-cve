@@ -43,7 +43,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int VFrame::get_opengl_state()
+int VFrame::get_opengl_state(void)
 {
 	return opengl_state;
 }
@@ -53,43 +53,34 @@ void VFrame::set_opengl_state(int value)
 	opengl_state = value;
 }
 
-int VFrame::get_window_id()
+int VFrame::get_window_id(void)
 {
 	return texture ? texture->window_id : -1;
 }
 
-int VFrame::get_texture_id()
+int VFrame::get_texture_id(void)
 {
 	return texture ? texture->texture_id : -1;
 }
 
-int VFrame::get_texture_w()
+int VFrame::get_texture_w(void)
 {
 	return texture ? texture->texture_w : 0;
 }
 
-int VFrame::get_texture_h()
+int VFrame::get_texture_h(void)
 {
 	return texture ? texture->texture_h : 0;
 }
 
 
-int VFrame::get_texture_components()
+int VFrame::get_texture_components(void)
 {
 	return texture ? texture->texture_components : 0;
 }
 
 
-
-
-
-
-
-
-
-
-
-void VFrame::to_texture()
+void VFrame::to_texture(void)
 {
 #ifdef HAVE_GL
 
@@ -103,117 +94,114 @@ void VFrame::to_texture()
 // Determine what to do based on state
 	switch(opengl_state)
 	{
-		case VFrame::TEXTURE:
-			return;
+	case VFrame::TEXTURE:
+		return;
 
-		case VFrame::SCREEN:
-			if((get_w() % 4) || (get_h() % 4)) 
-			{
-				printf("VFrame::to_texture w=%d h=%d\n", get_w(), get_h());
-				return;
-			}
-			if(pbuffer)
-			{
-				enable_opengl();
-				screen_to_texture();
-			}
-			opengl_state = VFrame::TEXTURE;
+	case VFrame::SCREEN:
+		if((get_w() % 4) || (get_h() % 4)) 
+		{
+			printf("VFrame::to_texture w=%d h=%d\n", get_w(), get_h());
 			return;
+		}
+		if(pbuffer)
+		{
+			enable_opengl();
+			screen_to_texture();
+		}
+		opengl_state = VFrame::TEXTURE;
+		return;
 	}
-
-//printf("VFrame::to_texture %d\n", texture_id);
 
 	switch(color_model)
 	{
-		case BC_RGB888:
-		case BC_YUV888:
-			glTexSubImage2D(GL_TEXTURE_2D,
-				0,
-				0,
-				0,
-				get_w(),
-				get_h(),
-				GL_RGB,
-				GL_UNSIGNED_BYTE,
-				get_rows()[0]);
-			break;
+	case BC_RGB888:
+	case BC_YUV888:
+		glTexSubImage2D(GL_TEXTURE_2D,
+			0,
+			0,
+			0,
+			get_w(),
+			get_h(),
+			GL_RGB,
+			GL_UNSIGNED_BYTE,
+			get_rows()[0]);
+		break;
 
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			glTexSubImage2D(GL_TEXTURE_2D,
-				0,
-				0,
-				0,
-				get_w(),
-				get_h(),
-				GL_RGBA,
-				GL_UNSIGNED_BYTE,
-				get_rows()[0]);
-			break;
+	case BC_RGBA8888:
+	case BC_YUVA8888:
+		glTexSubImage2D(GL_TEXTURE_2D,
+			0,
+			0,
+			0,
+			get_w(),
+			get_h(),
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			get_rows()[0]);
+		break;
 
-		case BC_RGB_FLOAT:
-			glTexSubImage2D(GL_TEXTURE_2D,
-				0,
-				0,
-				0,
-				get_w(),
-				get_h(),
-				GL_RGB,
-				GL_FLOAT,
-				get_rows()[0]);
-			break;
+	case BC_RGB_FLOAT:
+		glTexSubImage2D(GL_TEXTURE_2D,
+			0,
+			0,
+			0,
+			get_w(),
+			get_h(),
+			GL_RGB,
+			GL_FLOAT,
+			get_rows()[0]);
+		break;
 
-		case BC_RGBA_FLOAT:
-			glTexSubImage2D(GL_TEXTURE_2D,
-				0,
-				0,
-				0,
-				get_w(),
-				get_h(),
-				GL_RGBA,
-				GL_FLOAT,
-				get_rows()[0]);
-			break;
+	case BC_RGBA_FLOAT:
+		glTexSubImage2D(GL_TEXTURE_2D,
+			0,
+			0,
+			0,
+			get_w(),
+			get_h(),
+			GL_RGBA,
+			GL_FLOAT,
+			get_rows()[0]);
+		break;
 
-		default:
-			fprintf(stderr, 
-				"VFrame::to_texture: unsupported color model %d.\n", 
-				color_model);
-			break;
+	default:
+		fprintf(stderr, 
+			"VFrame::to_texture: unsupported color model %d.\n", 
+			color_model);
+		break;
 	}
 
 	opengl_state = VFrame::TEXTURE;
 #endif
 }
 
-void VFrame::to_ram()
+void VFrame::to_ram(void)
 {
 #ifdef HAVE_GL
 	switch(opengl_state)
 	{
 // Only pbuffer is supported since this is only called after the 
 // overlay operation onto the pbuffer.
-		case VFrame::SCREEN:
-			if(pbuffer)
-			{
-				enable_opengl();
-printf("VFrame::to_ram %d %d\n", get_w(), get_h());
-				glReadPixels(0, 
-					0, 
-					get_w(), 
-					get_h(), 
-					GL_RGB,
-					GL_UNSIGNED_BYTE,
-					get_rows()[0]);
-				flip_vert();
-			}
-			opengl_state = VFrame::RAM;
-			return;
+	case VFrame::SCREEN:
+		if(pbuffer)
+		{
+			enable_opengl();
+			glReadPixels(0, 
+				0, 
+				get_w(), 
+				get_h(), 
+				GL_RGB,
+				GL_UNSIGNED_BYTE,
+				get_rows()[0]);
+			flip_vert();
+		}
+		opengl_state = VFrame::RAM;
+		return;
 	}
 #endif
 }
 
-void VFrame::create_pbuffer()
+void VFrame::create_pbuffer(void)
 {
 SET_TRACE
 	if(pbuffer && 
@@ -239,7 +227,7 @@ SET_TRACE
 SET_TRACE
 }
 
-void VFrame::enable_opengl()
+void VFrame::enable_opengl(void)
 {
 	create_pbuffer();
 	if(pbuffer)
@@ -248,7 +236,7 @@ void VFrame::enable_opengl()
 	}
 }
 
-BC_PBuffer* VFrame::get_pbuffer()
+BC_PBuffer* VFrame::get_pbuffer(void)
 {
 	return pbuffer;
 }
@@ -313,9 +301,7 @@ void VFrame::draw_texture(float in_x1,
 	glTexCoord2f(in_x1 / get_texture_w(), in_y2 / get_texture_h());
 	glVertex3f(out_x1, flip_y ? -out_y2 : -out_y1, 0);
 
-
 	glEnd();
-
 #endif
 }
 
@@ -343,10 +329,6 @@ void VFrame::bind_texture(int texture_unit)
 }
 
 
-
-
-
-
 void VFrame::init_screen(int w, int h)
 {
 #ifdef HAVE_GL
@@ -356,7 +338,7 @@ void VFrame::init_screen(int w, int h)
 	float near = 1;
 	float far = 100;
 	float frustum_ratio = near / ((near + far) / 2);
- 	float near_h = (float)h * 
+	float near_h = (float)h * 
 		frustum_ratio;
 	float near_w = (float)w * 
 		frustum_ratio;
@@ -387,15 +369,6 @@ void VFrame::init_screen(int w, int h)
 	const GLfloat light_position[] = { 0, 0, -1, 0 };
 	const GLfloat light_direction[] = { 0, 0, 1, 0 };
 
-// 	glEnable(GL_LIGHT0);
-// 	glLightfv(GL_LIGHT0, GL_AMBIENT, zero);
-// 	glLightfv(GL_LIGHT0, GL_DIFFUSE, one);
-// 	glLightfv(GL_LIGHT0, GL_SPECULAR, one);
-// 	glLighti(GL_LIGHT0, GL_SPOT_CUTOFF, 180);
-// 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-// 	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
-// 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-// 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, zero);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, zero);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
@@ -404,7 +377,7 @@ void VFrame::init_screen(int w, int h)
 #endif
 }
 
-void VFrame::init_screen()
+void VFrame::init_screen(void)
 {
 	init_screen(get_w(), get_h());
 }
@@ -412,9 +385,9 @@ void VFrame::init_screen()
 static int print_error(char *source, unsigned int object, int is_program)
 {
 #ifdef HAVE_GL
-    char string[BCTEXTLEN];
+	char string[BCTEXTLEN];
 	int len = 0;
-    if(is_program)
+	if(is_program)
 		glGetProgramInfoLog(object, BCTEXTLEN, &len, string);
 	else
 		glGetShaderInfoLog(object, BCTEXTLEN, &len, string);
@@ -423,9 +396,6 @@ static int print_error(char *source, unsigned int object, int is_program)
 	return 0;
 #endif
 }
-
-
-
 
 
 unsigned int VFrame::make_shader(int x, ...)
@@ -444,19 +414,13 @@ unsigned int VFrame::make_shader(int x, ...)
 	{
 		char *text = va_arg(list, char*);
 		if(!text) break;
-
 SET_TRACE
 // Replace one occurrance in each source of main() with a unique id.
 		char main_replacement[BCTEXTLEN];
-SET_TRACE
 		sprintf(main_replacement, "main%03d()", current_shader);
-//printf("VFrame::make_shader %s %s\n", text, main_replacement);
-SET_TRACE
 		char *source_replacement = new char[strlen(text) + strlen(main_replacement) + 1];
-SET_TRACE
 		char *ptr = strstr(text, "main()");
 SET_TRACE
-
 		if(ptr)
 		{
 			memcpy(source_replacement, text, ptr - text);
@@ -472,7 +436,6 @@ SET_TRACE
 			source_replacement[strlen(text)] = 0;
 		}
 SET_TRACE
-
 		if(!complete_program)
 		{
 			complete_size = strlen(source_replacement) + 1;
@@ -485,7 +448,6 @@ SET_TRACE
 			complete_program = (char*)realloc(complete_program, complete_size);
 			strcat(complete_program, source_replacement);
 		}
-
 		delete [] source_replacement;
 SET_TRACE
 	}
@@ -518,10 +480,6 @@ SET_TRACE
 		strcat(complete_program, main_function);
 	}
 
-
-
-
-
 	int got_it = 0;
 	result = BC_WindowBase::get_synchronous()->get_shader(complete_program, 
 		&got_it);
@@ -542,14 +500,9 @@ SET_TRACE
 		glLinkProgram(result);
 		if(!error) error = print_error(complete_program, result, 1);
 
-
-// printf("BC_WindowBase::make_shader: shader=%d window_id=%d\n", 
-// result,
-// BC_WindowBase::get_synchronous()->current_window->get_id());
 		BC_WindowBase::get_synchronous()->put_shader(result, complete_program);
 	}
 
-//printf("VFrame::make_shader\n%s\n", complete_program);
 	delete [] complete_program;
 
 #endif
@@ -562,7 +515,7 @@ void VFrame::dump_shader(int shader_id)
 }
 
 
-void VFrame::clear_pbuffer()
+void VFrame::clear_pbuffer(void)
 {
 #ifdef HAVE_GL
 	if(cmodel_is_yuv(get_color_model()))
@@ -572,4 +525,3 @@ void VFrame::clear_pbuffer()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 }
-

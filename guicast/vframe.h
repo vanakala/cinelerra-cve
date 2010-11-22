@@ -70,7 +70,7 @@ public:
 	int equivalent(VFrame *src, int test_stacks = 0);
 
 // Reallocate a frame without deleting the class
-	int reallocate(unsigned char *data, 
+	void reallocate(unsigned char *data, 
 		long y_offset,
 		long u_offset,
 		long v_offset,
@@ -89,7 +89,7 @@ public:
 		int data_allocated);
 
 // Read a PNG into the frame with alpha
-	int read_png(unsigned char *data);
+	void read_png(unsigned char *data);
 
 // if frame points to the same data as this return 1
 	int equals(VFrame *frame);
@@ -100,15 +100,15 @@ public:
 	long get_shm_offset();
 
 // direct copy with no alpha
-	int copy_from(VFrame *frame);
+	void copy_from(VFrame *frame);
 // Required for YUV
-	int clear_frame();
-	int allocate_compressed_data(long bytes);
+	void clear_frame(void);
+	void allocate_compressed_data(long bytes);
 
 // Sequence number. -1 means invalid.  Passing frames to the encoder is
 // asynchronous.  The sequence number must be preserved in the image itself
 // to encode discontinuous frames.
-	long get_number();
+	long get_number(void);
 	void set_number(long number);
 
 	long get_compressed_allocated();
@@ -118,19 +118,19 @@ public:
 // Get the data pointer
 	unsigned char* get_data();
 // return an array of pointers to rows
-	unsigned char** get_rows();       
+	unsigned char** get_rows();
 // return yuv planes
-	unsigned char* get_y();
-	unsigned char* get_u();
-	unsigned char* get_v();
-	int get_w();
-	int get_h();
-	int get_w_fixed();
-	int get_h_fixed();
-	static int get_scale_tables(int *column_table, int *row_table, 
+	unsigned char* get_y(void);
+	unsigned char* get_u(void);
+	unsigned char* get_v(void);
+	int get_w(void);
+	int get_h(void);
+	int get_w_fixed(void);
+	int get_h_fixed(void);
+	static void get_scale_tables(int *column_table, int *row_table, 
 			int in_x1, int in_y1, int in_x2, int in_y2,
 			int out_x1, int out_y1, int out_x2, int out_y2);
-	int get_bytes_per_pixel();
+	int get_bytes_per_pixel(void);
 	long get_bytes_per_line();
 // Return 1 if the buffer is shared.
 	int get_shared();
@@ -144,9 +144,9 @@ public:
 		int color_model = BC_RGB888);
 // Get size of uncompressed frame buffer
 	long get_data_size();
-	void rotate270();
-	void rotate90();
-	void flip_vert();
+	void rotate270(void);
+	void rotate90(void);
+	void flip_vert(void);
 
 // Convenience storage.
 // Returns -1 if not set.
@@ -171,10 +171,10 @@ public:
 // If the textures already exist, they are reused.
 // Textures are resized to match the current dimensions.
 // Must be called from a synchronous opengl thread after enable_opengl.
-	void to_texture();
+	void to_texture(void);
 
 // Transfer from PBuffer to RAM.  Only used after Playback3D::overlay_sync
-	void to_ram();
+	void to_ram(void);
 
 // Transfer contents of current pbuffer to texture, 
 // creating a new texture if necessary.
@@ -207,7 +207,7 @@ public:
 
 // ================================ OpenGL functions ===========================
 // Location of working image if OpenGL playback
-	int get_opengl_state();
+	int get_opengl_state(void);
 	void set_opengl_state(int value);
 // OpenGL states
 	enum
@@ -223,23 +223,23 @@ public:
 	};
 
 // Texture ID
-	int get_texture_id();
+	int get_texture_id(void);
 	void set_texture_id(int id);
 // Get window ID the texture is bound to
-	int get_window_id();
-	int get_texture_w();
-	int get_texture_h();
-	int get_texture_components();
+	int get_window_id(void);
+	int get_texture_w(void);
+	int get_texture_h(void);
+	int get_texture_components(void);
 
 
 // Binds the opengl context to this frame's PBuffer
-	void enable_opengl();
+	void enable_opengl(void);
 
 // Clears the pbuffer with the right values depending on YUV
-	void clear_pbuffer();
+	void clear_pbuffer(void);
 
 // Get the pbuffer
-	BC_PBuffer* get_pbuffer();
+	BC_PBuffer* get_pbuffer(void);
 
 // Bind the frame's texture to GL_TEXTURE_2D and enable it.
 // If a texture_unit is supplied, the texture unit is made active
@@ -247,13 +247,11 @@ public:
 // initialize it to our preferred specifications.
 	void bind_texture(int texture_unit = -1);
 
-
-
 // Create a frustum with 0,0 in the upper left and w,-h in the bottom right.
 // Set preferred opengl settings.
 	static void init_screen(int w, int h);
 // Calls init_screen with the current frame's dimensions.
-	void init_screen();
+	void init_screen(void);
 
 // Compiles and links the shaders into a program.
 // Adds the program with put_shader.
@@ -274,9 +272,9 @@ public:
 // if an object calls read_frame with a temporary, the stack before and after
 // the temporary is lost.
 	void push_prev_effect(const char *name);
-	void pop_prev_effect();
+	void pop_prev_effect(void);
 	void push_next_effect(const char *name);
-	void pop_next_effect();
+	void pop_next_effect(void);
 // These are called by plugins to determine aggregation.
 // They access any member of the stack based on the number argument.
 // next effect 0 is the one that called read_frame most recently.
@@ -286,7 +284,7 @@ public:
 
 // It isn't enough to know the name of the neighboring effects.
 // Relevant configuration parameters must be passed on.
-	BC_Hash* get_params();	
+	BC_Hash* get_params(void);
 
 // Compare stacks and params from 2 images and return 1 if equal.
 	int equal_stacks(VFrame *src);
@@ -298,13 +296,13 @@ public:
 	void copy_params(VFrame *src);
 
 // This clears the stacks and the param table
-	void clear_stacks();
+	void clear_stacks(void);
 
-	void dump();
+	void dump(void);
 // Dump bitmamps to named file
 	void dump_file(const char *filename);
-	void dump_stacks();
-	void dump_params();
+	void dump_stacks(void);
+	void dump_params(void);
 
 private:
 
@@ -315,14 +313,14 @@ private:
 // This allows PBuffers, textures, and bitmaps to travel through the entire
 // rendering chain without requiring the user to manage a lot of objects.
 // Must be called from a synchronous opengl thread after enable_opengl.
-	void create_pbuffer();
+	void create_pbuffer(void);
 
 
 
-	int clear_objects(int do_opengl);
-	int reset_parameters(int do_opengl);
+	void clear_objects(int do_opengl);
+	void reset_parameters(int do_opengl);
 	void create_row_pointers();
-	int allocate_data(unsigned char *data, 
+	void allocate_data(unsigned char *data, 
 		long y_offset,
 		long u_offset,
 		long v_offset,
