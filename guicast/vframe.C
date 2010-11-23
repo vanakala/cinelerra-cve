@@ -414,6 +414,7 @@ void VFrame::read_png(unsigned char *data)
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	int new_color_model;
+	int have_alpha = 0;
 
 	image_offset = 0;
 	image = data + 4;
@@ -428,12 +429,48 @@ void VFrame::read_png(unsigned char *data)
 	h = png_get_image_height(png_ptr, info_ptr);
 
 	int src_color_model = png_get_color_type(png_ptr, info_ptr);
+
+	/* tell libpng to strip 16 bit/color files down to 8 bits/color */
+	png_set_strip_16(png_ptr);
+
+	/* extract multiple pixels with bit depths of 1, 2, and 4 from a single
+	 * byte into separate bytes (useful for paletted and grayscale images).
+	 */
+	png_set_packing(png_ptr);
+
+	/* expand paletted colors into true RGB triplets */
+	if (src_color_model == PNG_COLOR_TYPE_PALETTE)
+		png_set_expand(png_ptr);
+
+	/* expand grayscale images to the full 8 bits from 1, 2, or 4 bits/pixel */
+	if (src_color_model == PNG_COLOR_TYPE_GRAY && png_get_bit_depth(png_ptr, info_ptr) < 8)
+		png_set_expand(png_ptr);
+
+	if (src_color_model == PNG_COLOR_TYPE_GRAY ||
+			src_color_model == PNG_COLOR_TYPE_GRAY_ALPHA)
+		png_set_gray_to_rgb(png_ptr);
+
+	/* expand paletted or RGB images with transparency to full alpha channels
+	 * so the data will be available as RGBA quartets */
+	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+	{
+		have_alpha = 1;
+		png_set_expand(png_ptr);
+	}
+
 	switch(src_color_model)
 	{
+		case PNG_COLOR_TYPE_GRAY:
 		case PNG_COLOR_TYPE_RGB:
 			new_color_model = BC_RGB888;
 			break;
 
+		case PNG_COLOR_TYPE_PALETTE:
+			if(have_alpha)
+				new_color_model = BC_RGBA8888;
+			else
+				new_color_model = BC_RGB888;
+			break;
 
 		case PNG_COLOR_TYPE_GRAY_ALPHA:
 		case PNG_COLOR_TYPE_RGB_ALPHA:
@@ -452,28 +489,6 @@ void VFrame::read_png(unsigned char *data)
 		-1);
 
 	png_read_image(png_ptr, get_rows());
-
-
-
-	if(src_color_model == PNG_COLOR_TYPE_GRAY_ALPHA)
-	{
-		for(int i = 0; i < get_h(); i++)
-		{
-			unsigned char *row = get_rows()[i];
-			unsigned char *out_ptr = row + get_w() * 4 - 4;
-			unsigned char *in_ptr = row + get_w() * 2 - 2;
-
-			for(int j = get_w() - 1; j >= 0; j--)
-			{
-				out_ptr[0] = in_ptr[0];
-				out_ptr[1] = in_ptr[0];
-				out_ptr[2] = in_ptr[0];
-				out_ptr[3] = in_ptr[1];
-				out_ptr -= 4;
-				in_ptr -= 2;
-			}
-		}
-	}
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 }
