@@ -447,7 +447,7 @@ int FileThread::stop_reading()
 	return 0;
 }
 
-int FileThread::set_video_position(int64_t position)
+int FileThread::set_video_position(framenum position)
 {
 // If the new position can't be added to the buffer without restarting,
 // disable reading.

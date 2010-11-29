@@ -134,25 +134,25 @@ int VModule::import_frame(VFrame *output,
 
 		if(source)
 		{
-			framenum position = track->to_units(input_postime - 
+			ptstime src_pts = input_postime -
 				current_edit->project_pts +
-				current_edit->source_pts);
+				current_edit->source_pts;
 
 			// if we hit the end of stream, freeze at last frame
-			framenum max_position = source->get_video_length(get_edl()->session->frame_rate) - 1;
-			if (position > max_position) position = max_position;
+			ptstime max_pts = source->get_video_ptslen();
+			if (src_pts > max_pts) 
+				src_pts = max_pts;
 			int use_cache = renderengine && 
 				renderengine->command->single_frame();
 			int use_asynchronous = !use_cache && renderengine &&
 				renderengine->command->realtime &&
 				renderengine->edl->session->video_asynchronous;
-
 			if(use_asynchronous)
 				source->start_video_decode_thread();
 			else
 				source->stop_video_thread();
-			source->set_video_position(position, get_edl()->session->frame_rate);
-			source->set_layer(current_edit->channel);
+			output->set_source_pts(src_pts);
+			output->set_layer(current_edit->channel);
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
 				input_postime,
@@ -229,11 +229,11 @@ int VModule::import_frame(VFrame *output,
 				}
 
 				(*input)->copy_stacks(output);
-
+				(*input)->copy_pts(output);
 // file -> temp
 // Cache for single frame only
 				if(use_cache) source->set_cache_frames(1);
-				result = source->read_frame((*input));
+				result = source->get_frame((*input));
 				if(use_cache) source->set_cache_frames(0);
 				(*input)->set_opengl_state(VFrame::RAM);
 
@@ -304,16 +304,21 @@ int VModule::import_frame(VFrame *output,
 				}
 				result = 1;
 				output->copy_stacks((*input));
+				output->copy_pts((*input));
 			}
 			else
 // file -> output
 			{
 // Cache single frames only
 				if(use_cache) source->set_cache_frames(1);
-				result = source->read_frame(output);
+				result = source->get_frame(output);
 				if(use_cache) source->set_cache_frames(0);
 				output->set_opengl_state(VFrame::RAM);
 			}
+// Set pts
+			output->set_pts(output->get_source_pts() -
+				current_edit->source_pts +
+				current_edit->project_pts);
 
 			get_cache()->check_in(current_edit->asset);
 		}

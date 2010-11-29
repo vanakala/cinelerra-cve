@@ -159,11 +159,12 @@ SET_TRACE
 					file->start_video_decode_thread();
 				else
 					file->stop_video_thread();
+
 				if(use_cache) file->set_cache_frames(1);
-				file->set_video_position(current_position, 
-					renderengine->edl->session->frame_rate);
-				file->read_frame(video_out);
+				video_out->set_source_pts(current_postime);
+				file->get_frame(video_out);
 				if(use_cache) file->set_cache_frames(0);
+				video_out->set_pts(video_out->get_source_pts());
 				renderengine->get_vcache()->check_in(asset);
 			}
 SET_TRACE

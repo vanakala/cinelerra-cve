@@ -124,18 +124,17 @@ int VFrame::equivalent(VFrame *src, int test_stacks)
 		(!test_stacks || equal_stacks(src)));
 }
 
-long VFrame::set_shm_offset(long offset)
+void VFrame::set_shm_offset(long offset)
 {
 	shm_offset = offset;
-	return 0;
 }
 
-long VFrame::get_shm_offset()
+long VFrame::get_shm_offset(void)
 {
 	return shm_offset;
 }
 
-int VFrame::get_shared()
+int VFrame::get_shared(void)
 {
 	return shared;
 }
@@ -166,6 +165,7 @@ void VFrame::reset_parameters(int do_opengl)
 	u_offset = 0;
 	v_offset = 0;
 	sequence_number = -1;
+	clear_pts();
 	is_keyframe = 0;
 
 	if(do_opengl)
@@ -508,10 +508,9 @@ long VFrame::get_compressed_size()
 	return compressed_size;
 }
 
-long VFrame::set_compressed_size(long size)
+void VFrame::set_compressed_size(long size)
 {
 	compressed_size = size;
-	return 0;
 }
 
 int VFrame::get_color_model()
@@ -656,6 +655,8 @@ void VFrame::copy_from(VFrame *frame)
 {
 	int w = MIN(this->w, frame->get_w());
 	int h = MIN(this->h, frame->get_h());
+
+	copy_pts(frame);
 
 	switch(frame->color_model)
 	{
@@ -817,6 +818,74 @@ long VFrame::get_number(void)
 	return sequence_number;
 }
 
+void VFrame::clear_pts(void)
+{
+	pts = -1;
+	source_pts = 0;
+	layer = 0;
+	duration = 0;
+	frame_number = -1;
+}
+
+void VFrame::copy_pts(VFrame *frame)
+{
+	pts = frame->pts;
+	source_pts = frame->source_pts;
+	layer = frame->layer;
+	duration = frame->duration;
+	frame_number = frame->frame_number;
+}
+
+void VFrame::set_frame_number(framenum number)
+{
+	frame_number = number;
+}
+
+framenum VFrame::get_frame_number(void)
+{
+	return frame_number;
+}
+
+void VFrame::set_layer(int layer)
+{
+	this->layer = layer;
+}
+
+int VFrame::get_layer(void)
+{
+	return layer;
+}
+
+void VFrame::set_source_pts(ptstime pts)
+{
+	this->source_pts = pts;
+}
+
+ptstime VFrame::get_source_pts(void)
+{
+	return source_pts;
+}
+
+void VFrame::set_pts(ptstime pts)
+{
+	this->pts = pts;
+}
+
+ptstime VFrame::get_pts(void)
+{
+	return pts;
+}
+
+void VFrame::set_duration(ptstime duration)
+{
+	this->duration = duration;
+}
+
+ptstime VFrame::get_duration(void)
+{
+	return duration;
+}
+
 void VFrame::push_prev_effect(const char *name)
 {
 	char *ptr;
@@ -918,6 +987,8 @@ int VFrame::equal_stacks(VFrame *src)
 void VFrame::dump(void)
 {
 	printf("VFrame dump\n");
+	printf("    pts %.3f, duration %.3f src_pts %.3f frame %d layer %d\n", 
+		pts, duration, source_pts, frame_number, layer);
 	printf("    Size %dx%d, cmodel %d offsets %ld %ld %ld\n", w, h, 
 		color_model, y_offset, u_offset, v_offset);
 	printf("    data:%p rows: %p y:%p, u:%p, v:%p\n", data, rows,
@@ -957,12 +1028,12 @@ void VFrame::dump_file(const char *filename)
 void VFrame::dump_stacks(void)
 {
 	printf("VFrame::dump_stacks\n");
-	printf("	next_effects:\n");
+	printf("        next_effects:\n");
 	for(int i = next_effects.total - 1; i >= 0; i--)
-		printf("		%s\n", next_effects.values[i]);
-	printf("	prev_effects:\n");
+		printf("                %s\n", next_effects.values[i]);
+	printf("        prev_effects:\n");
 	for(int i = prev_effects.total - 1; i >= 0; i--)
-		printf("		%s\n", prev_effects.values[i]);
+		printf("                %s\n", prev_effects.values[i]);
 }
 
 void VFrame::dump_params(void)

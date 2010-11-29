@@ -746,6 +746,10 @@ framenum File::get_video_length(float base_framerate)
 		return -1;  // infinity
 }
 
+ptstime File::get_video_ptslen(void)
+{
+	return (ptstime)asset->video_length / asset->frame_rate;
+}
 
 framenum File::get_video_position(float base_framerate) 
 {
@@ -1026,8 +1030,35 @@ int File::compressed_frame_size()
 		return 0;
 }
 
+int File::get_frame(VFrame *frame, int is_thread)
+{
+	return get_this_frame((frame->get_source_pts() + EPSILON) * asset->frame_rate, frame, is_thread);
+}
 
+int File::get_next_frame(VFrame *frame)
+{
+	return get_this_frame(frame->get_frame_number() + 1, frame);
+}
 
+int File::get_this_frame(framenum pos, VFrame *frame, int is_thread)
+{
+	if(video_thread && !is_thread)
+	{
+		video_thread->set_video_position(pos);
+		video_thread->set_layer(frame->get_layer());
+	}
+	else
+	if(file)
+	{
+		if(current_frame != pos)
+		{
+			current_frame = pos;
+			file->set_video_position(pos);
+		}
+		current_layer = frame->get_layer();
+	}
+	return read_frame(frame, is_thread);
+}
 
 int File::read_frame(VFrame *frame, int is_thread)
 {
@@ -1102,6 +1133,10 @@ int File::read_frame(VFrame *frame, int is_thread)
 		{
 // Can't advance position here because it needs to be added to cache
 			file->read_frame(frame);
+// Set frame pts (will be later moved to file type dependant classes)
+			frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
+			frame->set_duration((ptstime)1/ asset->frame_rate);
+			frame->set_frame_number(current_frame);
 		}
 
 		if(use_cache) frame_cache->put_frame(frame,

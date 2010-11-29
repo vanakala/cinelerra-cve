@@ -169,9 +169,6 @@ void AssetPicon::create_objects()
 				{
 					pixmap_w = pixmap_h * asset->width / asset->height;
 
-					file->set_layer(0);
-					file->set_video_position(0, mwindow->edl->session->frame_rate);
-
 					if(gui->temp_picon && 
 						(gui->temp_picon->get_w() != asset->width ||
 						gui->temp_picon->get_h() != asset->height))
@@ -187,8 +184,8 @@ void AssetPicon::create_objects()
 							asset->height, 
 							BC_RGB888);
 					}
-
-					file->read_frame(gui->temp_picon);
+					gui->temp_picon->clear_pts();
+					file->get_frame(gui->temp_picon);
 
 					icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
 					icon->draw_vframe(gui->temp_picon,

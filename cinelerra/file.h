@@ -122,6 +122,8 @@ public:
 // get length of file normalized to base samplerate
 	samplenum get_audio_length(int base_samplerate = -1);
 	framenum get_video_length(float base_framerate = -1);
+// get length of file in seconds
+	ptstime get_video_ptslen(void);
 
 // get current position
 	samplenum get_audio_position(int base_samplerate = -1);
@@ -175,6 +177,10 @@ public:
 // set position in frames
 // is_thread is used by FileThread::run to prevent recursive lockup.
 	int set_video_position(framenum position, float base_framerate = -1, int is_thread = 0);
+
+// pts API - frame must have source_pts, and layer set
+	int get_frame(VFrame *frame, int is_thread = 0);
+	int get_next_frame(VFrame *frame);
 
 // Read frame of video into the argument
 // is_thread is used by FileThread::run to prevent recursive lockup.
@@ -262,6 +268,7 @@ public:
 
 private:
 	void reset_parameters();
+	int get_this_frame(framenum pos, VFrame *frame, int is_thread = 0);
 
 	int getting_options;
 	BC_WindowBase *format_window;

@@ -385,7 +385,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cwindowgui.h \
 		 cwindow.h \
 		 cwindowtool.h \
-		 datatype.h \
 		 dcoffset.h \
 		 deleteallindexes.h \
 		 devicedvbinput.h \

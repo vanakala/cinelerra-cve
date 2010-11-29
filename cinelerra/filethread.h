@@ -83,7 +83,7 @@ public:
 	int read_frame(VFrame *frame);
 // Set native framerate.
 // Called by File::set_video_position.
-	int set_video_position(int64_t position);
+	int set_video_position(framenum position);
 	int set_layer(int layer);
 	int read_buffer();
 	int64_t get_memory_usage();

@@ -33,7 +33,9 @@ typedef int64_t posnum;
 // timestamp (pts)
 typedef double ptstime;
 
-#define PTSEQU(x, y) (fabs((x) - (y)) < 0.001)
+#define EPSILON (2e-5)
+
+#define PTSEQU(x, y) (fabs((x) - (y)) < EPSILON)
 
 #define TRACK_AUDIO 0
 #define TRACK_VIDEO 1

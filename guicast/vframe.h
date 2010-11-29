@@ -27,6 +27,7 @@
 #include "bcpbuffer.inc"
 #include "bctexture.inc"
 #include "bcwindowbase.inc"
+#include "datatype.h"
 #include "colormodels.h"
 #include "vframe.inc"
 
@@ -96,8 +97,8 @@ public:
 // Test if frame already matches parameters
 	int params_match(int w, int h, int color_model);
 
-	long set_shm_offset(long offset);
-	long get_shm_offset();
+	void set_shm_offset(long offset);
+	long get_shm_offset(void);
 
 // direct copy with no alpha
 	void copy_from(VFrame *frame);
@@ -111,9 +112,24 @@ public:
 	long get_number(void);
 	void set_number(long number);
 
+// Frame number in media file
+	void set_frame_number(framenum number);
+	framenum get_frame_number(void);
+// Frame position and duration
+	void set_source_pts(ptstime pts);
+	ptstime get_source_pts(void);
+	void set_pts(ptstime pts);
+	ptstime get_pts(void);
+	void set_layer(int layer);
+	int get_layer(void);
+	void clear_pts(void);
+	void copy_pts(VFrame *frame);
+	void set_duration(ptstime duration);
+	ptstime get_duration(void);
+
 	long get_compressed_allocated();
 	long get_compressed_size();
-	long set_compressed_size(long size);
+	void set_compressed_size(long size);
 	int get_color_model();
 // Get the data pointer
 	unsigned char* get_data();
@@ -133,7 +149,7 @@ public:
 	int get_bytes_per_pixel(void);
 	long get_bytes_per_line();
 // Return 1 if the buffer is shared.
-	int get_shared();
+	int get_shared(void);
 
 
 
@@ -329,6 +345,17 @@ private:
 		int color_model, 
 		long bytes_per_line);
 
+// Frame position in source
+	ptstime source_pts;
+// Frame position in project
+	ptstime pts;
+// Frame duration
+	ptstime duration;
+// Frame number in source
+	framenum frame_number;
+// Layer
+	int layer;
+
 // Convenience storage
 	int field2_offset;
 // Data is pointing to someone else's buffer.
@@ -346,7 +373,7 @@ private:
 // Allocated space for compressed data
 	long compressed_allocated;
 // Size of stored compressed image
-	long compressed_size;   
+	long compressed_size;
 // Pointers to yuv planes
 	unsigned char *y, *u, *v;
 	long y_offset;
