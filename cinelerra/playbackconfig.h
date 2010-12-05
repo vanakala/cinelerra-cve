@@ -24,6 +24,7 @@
 
 #include "audiodevice.inc"
 #include "bcwindowbase.inc"
+#include "datatype.h"
 #include "bchash.inc"
 #include "playbackconfig.inc"
 
@@ -45,7 +46,7 @@ public:
 
 
 // Offset for synchronization in seconds
-	float audio_offset;
+	ptstime audio_offset;
 
 // Change default titles for duplex
 	int duplex;

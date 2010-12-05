@@ -144,9 +144,9 @@ public:
 	int set_play_dither(int status);
 // set software positioning on or off
 	int set_software_positioning(int status = 1);
-// total samples played
+// total audio time played
 //  + audio offset from configuration if playback
-	samplenum current_position();
+	ptstime current_postime(float speed = 1.0);
 // If interrupted
 	int get_interrupted();
 	int get_device_buffer();

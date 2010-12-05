@@ -68,9 +68,6 @@ public:
 	posnum tounits(double position, int round = 0);
 	double fromunits(posnum position);
 
-// frames since start of playback
-	framenum session_frame;
-
 // console dimensions
 	int track_w, track_h;
 // video device dimensions

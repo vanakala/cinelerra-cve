@@ -426,8 +426,8 @@ int AudioALSA::write_buffer(char *buffer, int size)
 			samples) < 0)
 		{
 			device->Thread::disable_cancel();
-			errormsg("ALSA write_buffer underrun at sample %lld",
-				device->current_position());
+			errormsg("ALSA write_buffer underrun at %.3f",
+				device->current_postime());
 			close_output();
 			open_output();
 			attempts++;

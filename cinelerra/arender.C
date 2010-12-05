@@ -184,7 +184,7 @@ int ARender::process_buffer(double **buffer_out,
 	posnum fragment_len = input_len;
 	int reconfigure = 0;
 	current_postime = input_postime;
-	current_position = tounits(current_position, 1);
+	current_position = tounits(current_postime, 1);
 
 	while(fragment_position < input_len)
 	{
@@ -292,8 +292,7 @@ void ARender::run()
 			renderengine->playback_engine &&
 			!renderengine->do_video)
 		{
-			double position = (double)renderengine->audio->current_position() / 
-				renderengine->edl->session->sample_rate * 
+			ptstime position = (double)renderengine->audio->current_postime() *
 				renderengine->command->get_speed();
 
 			if(renderengine->command->get_direction() == PLAY_FORWARD) 

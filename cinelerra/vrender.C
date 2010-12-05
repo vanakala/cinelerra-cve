@@ -281,24 +281,16 @@ void VRender::run()
 {
 	int reconfigure;
 
-// Want to know how many samples rendering each frame takes.
-// Then use this number to predict the next frame that should be rendered.
-// Be suspicious of frames that render late so have a countdown
-// before we start dropping.
-	samplenum current_sample, start_sample, end_sample; // Absolute counts.
-	framenum next_frame;  // Actual position.
-	framenum skip_countdown = VRENDER_THRESHOLD;    // frames remaining until drop
-	framenum delay_countdown = VRENDER_THRESHOLD;  // Frames remaining until delay
+	ptstime current_pts, start_pts, end_pts;
+	ptstime init_pos = current_postime;
 // Number of frames before next reconfigure
 	posnum current_input_length;
 	ptstime len_pts = fromunits(1);
 // Number of frames to skip.
-	framenum frame_step = 1;
+	ptstime frame_step = len_pts;
 
 	first_frame = 1;
 
-// Number of frames since start of rendering
-	session_frame = 0;
 	framerate_counter = 0;
 	framerate_timer.update();
 
@@ -315,97 +307,59 @@ void VRender::run()
 			last_playback);
 
 		if(reconfigure) restart_playback();
-SET_TRACE
+
 		process_buffer(current_postime);
 		if(last_playback || renderengine->video->interrupt 
 				|| renderengine->command->single_frame())
 		{
 			flash_output();
-			frame_step = 1;
+			frame_step = len_pts;
 			done = 1;
 		}
 		else
 // Perform synchronization
 		{
-SET_TRACE
 // Determine the delay until the frame needs to be shown.
-			current_sample = (samplenum)(renderengine->sync_position() * 
-				renderengine->command->get_speed());
-// latest sample at which the frame can be shown.
-			end_sample = Units::tosamples(session_frame, 
-				renderengine->edl->session->sample_rate, 
-				renderengine->edl->session->frame_rate);
-// earliest sample by which the frame needs to be shown.
-			start_sample = Units::tosamples(session_frame - 1, 
-				renderengine->edl->session->sample_rate, 
-				renderengine->edl->session->frame_rate);
-SET_TRACE
+			current_pts = renderengine->sync_postime() *
+				renderengine->command->get_speed() + init_pos;
+// earliest time by which the frame needs to be shown.
+			start_pts = video_out->get_pts();
+// latest time at which the frame can be shown.
+			len_pts = video_out->get_duration();
+			end_pts = start_pts + len_pts;
 
-			if(first_frame || end_sample < current_sample)
+			if(first_frame)
+			{
+				flash_output();
+			}
+			if(end_pts < current_pts)
 			{
 // Frame rendered late or this is the first frame.  Flash it now.
-				flash_output();
-SET_TRACE
+				if(!first_frame)
+					flash_output();
 
 				if(renderengine->edl->session->video_every_frame)
 				{
 // User wants every frame.
-					frame_step = 1;
-				}
-				else
-				if(skip_countdown > 0)
-				{
-// Maybe just a freak.
-					frame_step = 1;
-					skip_countdown--;
+					frame_step = len_pts;
 				}
 				else
 				{
 // Get the frames to skip.
-					delay_countdown = VRENDER_THRESHOLD;
-					frame_step = 1;
-					frame_step += (int64_t)Units::toframes(current_sample, 
-							renderengine->edl->session->sample_rate, 
-							renderengine->edl->session->frame_rate);
-					frame_step -= (int64_t)Units::toframes(end_sample, 
-								renderengine->edl->session->sample_rate, 
-								renderengine->edl->session->frame_rate);
+					frame_step = current_pts - end_pts + len_pts;
 				}
 			}
 			else
 			{
 // Frame rendered early or just in time.
-				frame_step = 1;
-SET_TRACE
-
-				if(delay_countdown > 0)
+				frame_step = len_pts;
+				if(start_pts > current_pts)
 				{
-// Maybe just a freak
-					delay_countdown--;
+					int64_t delay_time = (int64_t)((start_pts - current_pts) * 1000);
+					timer.delay(delay_time);
 				}
-				else
-				{
-					skip_countdown = VRENDER_THRESHOLD;
-					if(start_sample > current_sample)
-					{
-SET_TRACE
-						int64_t delay_time = (int64_t)((float)(start_sample - current_sample) * 
-							1000 / 
-							renderengine->edl->session->sample_rate);
-SET_TRACE
-						timer.delay(delay_time);
-SET_TRACE
-					}
-					else
-					{
-// Came after the earliest sample so keep going
-					}
-				}
-
 // Flash frame now.
-SET_TRACE
 				flash_output();
-SET_TRACE
 			}
 		}
 
@@ -414,24 +368,20 @@ SET_TRACE
 		{
 			renderengine->first_frame_lock->unlock();
 			first_frame = 0;
-			renderengine->reset_sync_position();
+			renderengine->reset_sync_postime();
 		}
 
-		session_frame += frame_step;
-
 // advance position in project
-		current_input_length = frame_step;
-
+		current_input_length = tounits(frame_step, 1);
 
 // Subtract frame_step in a loop to allow looped playback to drain
-		while(frame_step && current_input_length && !last_playback)
+		while(current_input_length && !last_playback)
 		{
 // set last_playback if necessary and trim current_input_length to range
 			get_boundaries(current_input_length);
-// advance 1 frame
 			advance_position(current_input_length);
-			frame_step -= current_input_length;
-			current_input_length = frame_step;
+			frame_step -= fromunits(current_input_length);
+			current_input_length = tounits(frame_step);
 		}
 
 // Update tracking.
@@ -443,7 +393,6 @@ SET_TRACE
 			{
 				renderengine->playback_engine->update_tracking(current_postime);
 			}
-
 // Calculate the framerate counter
 			framerate_counter++;
 			if(framerate_counter >= renderengine->edl->session->frame_rate)
@@ -456,7 +405,6 @@ SET_TRACE
 		}
 	}
 
-SET_TRACE
 // In case we were interrupted before the first loop
 	renderengine->first_frame_lock->unlock();
 	stop_plugins();
@@ -470,7 +418,6 @@ VRender::VRender(MWindow *mwindow, RenderEngine *renderengine)
  : CommonRender(mwindow, renderengine)
 {
 	input_length = 0;
-	session_frame = 0;
 	asynchronous = 0;     // render 1 frame at a time
 	framerate_counter = 0;
 	video_out = 0;

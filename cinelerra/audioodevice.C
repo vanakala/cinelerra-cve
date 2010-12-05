@@ -21,6 +21,7 @@
 
 #include "audiodevice.h"
 #include "bctimer.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
 #include "mutex.h"
@@ -298,7 +299,7 @@ int AudioDevice::wait_for_completion()
 
 
 
-samplenum AudioDevice::current_position()
+ptstime AudioDevice::current_postime(float speed)
 {
 // try to get OSS position
 	samplenum hardware_result = 0, software_result = 0, frame;
@@ -328,20 +329,17 @@ samplenum AudioDevice::current_position()
 				last_position = software_result;
 		}
 
-		samplenum offset_samples = -(int64_t)(get_orate() * 
-			out_config->audio_offset);
-
 		if(hardware_result < 0 || software_position_info) 
-			return software_result + offset_samples;
+			return (ptstime)software_result / get_orate() - (out_config->audio_offset / speed);
 		else
-			return hardware_result + offset_samples;
+			return (ptstime)hardware_result / get_orate() - (out_config->audio_offset/ speed);
 	}
 	else
 	if(r)
 	{
-		samplenum result = total_samples_read + 
-			record_timer->get_scaled_difference(get_irate());
-		return result;
+		int r = get_irate();
+		return (ptstime)(total_samples_read + 
+			record_timer->get_scaled_difference(r)) / r;
 	}
 
 	return 0;

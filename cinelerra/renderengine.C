@@ -351,42 +351,24 @@ int RenderEngine::open_output()
 	return 0;
 }
 
-samplenum RenderEngine::session_position()
-{
-	if(do_audio)
-	{
-		return audio->current_position();
-	}
-
-	if(do_video)
-	{
-		return (samplenum)((double)vrender->session_frame /
-				edl->session->frame_rate * 
-				edl->session->sample_rate /
-				command->get_speed() + 0.5);
-	}
-}
-
-void RenderEngine::reset_sync_position()
+void RenderEngine::reset_sync_postime(void)
 {
 	timer.update();
 }
 
-int64_t RenderEngine::sync_position()
+ptstime RenderEngine::sync_postime(void)
 {
 // Use audio device
 // No danger of race conditions because the output devices are closed after all
 // threads join.
 	if(do_audio)
 	{
-		return audio->current_position();
+		return audio->current_postime(command->get_speed());
 	}
 
 	if(do_video)
 	{
-		int64_t result = timer.get_scaled_difference(
-			edl->session->sample_rate);
-		return result;
+		return (ptstime)timer.get_difference() / 1000;
 	}
 }
 

@@ -293,7 +293,8 @@ samplenum RecordAudio::sync_position()
 		timer_lock->lock("RecordAudio::sync_position");
 		if(!mwindow->edl->session->record_software_position)
 		{
-			result = record->adevice->current_position();
+			result = record->adevice->current_postime() *
+					record->default_asset->sample_rate;
 		}
 		else
 		{

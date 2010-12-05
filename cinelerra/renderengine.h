@@ -87,12 +87,9 @@ public:
 	int open_output();
 	int close_output();
 // return position to synchronize video against
-	int64_t sync_position();
+	ptstime sync_postime(void);
 // Called by VRender to reset the timers once the first frame is done.
-	void reset_sync_position();
-// return samples since start of playback
-	samplenum session_position();
-
+	void reset_sync_postime(void);
 // Update preferences window
 	void update_framerate(float framerate);
 
