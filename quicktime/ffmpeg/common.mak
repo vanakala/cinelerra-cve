@@ -34,9 +34,9 @@ CFLAGS = -DHAVE_AV_CONFIG_H -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE \
 
 %$(EXESUF): %.c
 
-install: install-libs install-headers
+install: install-libs
 
-uninstall: uninstall-libs uninstall-headers
+uninstall: uninstall-libs
 
 .PHONY: all depend dep clean distclean install* uninstall* tests
 endif
