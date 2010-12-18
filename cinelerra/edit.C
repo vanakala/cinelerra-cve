@@ -281,17 +281,6 @@ int Edit::operator==(Edit &edit)
 	return identical(edit);
 }
 
-double Edit::frames_per_picon(void)
-{
-	return Units::round(picon_w()) / frame_w();
-}
-
-double Edit::frame_w(void)
-{
-	return track->one_unit /
-		edl->local_session->zoom_time;
-}
-
 double Edit::picon_w(void)
 {
 	return (double)edl->local_session->zoom_track * 

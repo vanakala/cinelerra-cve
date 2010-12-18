@@ -62,10 +62,6 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 	this->canvas = canvas;
 	source_pts = edit->source_pts;
 	data_type = edit->track->data_type;
-	source_framerate = edit->asset->frame_rate;
-	project_framerate = edit->edl->session->frame_rate;
-	source_samplerate = edit->asset->sample_rate;
-	project_samplerate = edit->edl->session->sample_rate;
 	edit_id = edit->id;
 }
 
@@ -151,8 +147,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 	if(!PTSEQU(edit->source_pts, this->source_pts) ||
 		(data_type == TRACK_AUDIO) ||
 		(data_type == TRACK_VIDEO) ||
-		mwindow->edl->session->sample_rate != project_samplerate ||
-		mwindow->edl->session->frame_rate != project_framerate ||
 		mwindow->edl->local_session->zoom_time != zoom_time || 
 		mwindow->edl->local_session->zoom_track != zoom_track ||
 		this->pixmap_h != pixmap_h ||
@@ -164,6 +158,8 @@ void ResourcePixmap::draw_data(Edit *edit,
 // Shouldn't draw at all if zoomed in below index zoom.
 		refresh_x = 0;
 		refresh_w = pixmap_w;
+		if(mwindow->edl->local_session->zoom_time != zoom_time)
+			mwindow->frame_cache->remove_all();
 	}
 	else
 	{
@@ -335,10 +331,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 // Update pixmap settings
 	this->edit_id = edit->id;
 	this->source_pts = edit->source_pts;
-	this->source_framerate = edit->asset->frame_rate;
-	this->source_samplerate = edit->asset->sample_rate;
-	this->project_framerate = edit->edl->session->frame_rate;
-	this->project_samplerate = edit->edl->session->sample_rate;
 	this->edit_x = edit_x;
 	this->pixmap_x = pixmap_x;
 	this->pixmap_w = pixmap_w;
@@ -649,57 +641,43 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int picon_w = Units::round(edit->picon_w());
 	int picon_h = edit->picon_h();
 
-
 // Don't draw video if picon is bigger than edit
 	if(picon_w > edit_w) return;
-
-// pixels spanned by a frame
-	double frame_w = edit->frame_w();
-
-// Frames spanned by a picon
-	double frames_per_picon = edit->frames_per_picon();
 
 // Current pixel relative to pixmap
 	int x = 0;
 	int y = 0;
 	if(mwindow->edl->session->show_titles) 
 		y += mwindow->theme->get_image("title_bg_data")->get_h();
-// Frame in project touched by current pixel
-	framenum project_frame;
 
-// Get first frame touched by x and fix x to start of frame
-	if(frames_per_picon > 1)
-	{
-		int picon = Units::to_int64(
-			(double)((int64_t)refresh_x + pixmap_x - edit_x) / 
-			picon_w);
-		x = picon_w * picon + edit_x - pixmap_x;
-		project_frame = Units::to_int64((double)picon * frames_per_picon);
-	}
-	else
-	{
-		project_frame = Units::to_int64((double)((int64_t)refresh_x + pixmap_x - edit_x) / 
-			frame_w);
-		x = Units::round((double)project_frame * frame_w + edit_x - pixmap_x);
-	}
+	double picons = ((double)(refresh_x + pixmap_x - edit_x) / picon_w);
+	double picount = trunc(picons);
+	x = -round((picons - picount) * picon_w);
+	ptstime picon_len = picon_w * zoom_time;
 
+	ptstime picon_src = picount * picon_len;
 
 // Draw only cached frames
 	while(x < refresh_x + refresh_w)
 	{
-		framenum source_frame = project_frame + edit->track->to_units(edit->source_pts);
+		ptstime source_pts = edit->source_pts + picon_src;
 		VFrame *picon_frame = 0;
 		int use_cache = 0;
-
-		if((picon_frame = mwindow->frame_cache->get_frame_ptr(source_frame,
+		if((picon_frame = mwindow->frame_cache->get_frame_ptr(source_pts,
 			edit->channel,
-			mwindow->edl->session->frame_rate,
 			BC_RGB888,
 			picon_w,
 			picon_h,
 			edit->asset->id)) != 0)
 		{
-			use_cache = 1;
+			draw_vframe(picon_frame, 
+				x, 
+				y, 
+				picon_w, 
+				picon_h, 
+				0, 
+				0);
+			mwindow->frame_cache->unlock();
 		}
 		else
 		{
@@ -711,38 +689,14 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 					y, 
 					picon_w,
 					picon_h,
-					mwindow->edl->session->frame_rate,
-					source_frame,
+					source_pts,
+					picon_len,
 					edit->channel,
 					edit->asset);
 			}
 		}
-
-		if(picon_frame)
-			draw_vframe(picon_frame, 
-				x, 
-				y, 
-				picon_w, 
-				picon_h, 
-				0, 
-				0);
-
-
-// Unlock the get_frame_ptr command
-		if(use_cache)
-			mwindow->frame_cache->unlock();
-
-		if(frames_per_picon > 1)
-		{
-			x += Units::round(picon_w);
-			project_frame = Units::to_int64(frames_per_picon * (int64_t)((double)(x + pixmap_x - edit_x) / picon_w));
-		}
-		else
-		{
-			x += Units::round(frame_w);
-			project_frame = (framenum)((double)(x + pixmap_x - edit_x) / frame_w);
-		}
-
+		picon_src += picon_len;
+		x += picon_w;
 		canvas->test_timer();
 	}
 }

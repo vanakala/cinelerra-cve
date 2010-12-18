@@ -1071,10 +1071,7 @@ int File::read_frame(VFrame *frame, int is_thread)
 
 // Test cache
 		if(use_cache &&
-			frame_cache->get_frame(frame,
-				current_frame,
-				current_layer,
-				asset->frame_rate))
+			frame_cache->get_frame(frame))
 		{
 // Can't advance position if cache used.
 			advance_position = 0;
@@ -1139,11 +1136,8 @@ int File::read_frame(VFrame *frame, int is_thread)
 			frame->set_frame_number(current_frame);
 		}
 
-		if(use_cache) frame_cache->put_frame(frame,
-			current_frame,
-			current_layer,
-			asset->frame_rate,
-			1);
+		if(use_cache)
+			frame_cache->put_frame(frame, 1);
 
 		if(advance_position) current_frame++;
 		return 0;

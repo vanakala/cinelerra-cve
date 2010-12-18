@@ -44,15 +44,16 @@ CacheItemBase::~CacheItemBase()
 		free(path);
 }
 
-
-
-
 int CacheItemBase::get_size()
 {
 	return 0;
 }
 
-
+void CacheItemBase::dump(void)
+{
+	printf("    pos %lld pts %.3f duration %.3f size %d age %d\n", 
+		position, postime, duration, get_size(), age);
+}
 
 
 
@@ -80,17 +81,15 @@ int CacheBase::get_age()
 // Ignore if item was 0.
 void CacheBase::unlock()
 {
-    lock->unlock();
+	lock->unlock();
 }
 
 void CacheBase::remove_all()
 {
-	int total = 0;
 	lock->lock("CacheBase::remove_all");
 	while(last)
 	{
 		delete last;
-		total++;
 	}
 	current_item = 0;
 	lock->unlock();
@@ -212,4 +211,31 @@ CacheItemBase* CacheBase::get_item(posnum position)
 		current_item = current_item->next;
 	if(!current_item || current_item->position != position) return 0;
 	return current_item;
+}
+
+// Get first item from list with matching postime or 0 if none found.
+CacheItemBase* CacheBase::get_item(ptstime postime)
+{
+	if(!current_item) current_item = first;
+	while(current_item && current_item->postime < postime)
+		current_item = current_item->next;
+	if(!current_item) current_item = last;
+	while(current_item && current_item->postime >= postime)
+		current_item = current_item->previous;
+	if(!current_item)
+		current_item = first;
+	else
+	if(current_item->next)
+		current_item = current_item->next;
+	if(!current_item || !PTSEQU(current_item->postime, postime)) return 0;
+	return current_item;
+}
+
+void CacheBase::dump(void)
+{
+	CacheItemBase *item;
+	printf("CacheBase::dump: count %d, size %lld\n",
+		total(), get_memory_usage());
+	for(item = first; item; item = item->next)
+		item->dump();
 }

@@ -69,8 +69,8 @@ VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap,
 	int picon_y, 
 	int picon_w,
 	int picon_h,
-	double frame_rate,
-	framenum position,
+	ptstime postime,
+	ptstime duration,
 	int layer,
 	Asset *asset,
 	int operation_count)
@@ -80,8 +80,8 @@ VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap,
 	this->picon_y = picon_y;
 	this->picon_w = picon_w;
 	this->picon_h = picon_h;
-	this->frame_rate = frame_rate;
-	this->position = position;
+	this->postime = postime;
+	this->duration = duration;
 	this->layer = layer;
 }
 
@@ -148,8 +148,8 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 	int picon_y, 
 	int picon_w,
 	int picon_h,
-	double frame_rate,
-	framenum position,
+	ptstime postime,
+	ptstime duration,
 	int layer,
 	Asset *asset)
 {
@@ -160,8 +160,8 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 		picon_y, 
 		picon_w,
 		picon_h,
-		frame_rate,
-		position,
+		postime,
+		duration,
 		layer,
 		asset,
 		operation_count));
@@ -186,15 +186,6 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 		operation_count));
 	item_lock->unlock();
 }
-
-
-
-
-
-
-
-
-
 
 
 void ResourceThread::stop_draw(int reset)
@@ -236,7 +227,6 @@ void ResourceThread::run()
 
 		draw_lock->lock("ResourceThread::run");
 
-
 		while(!interrupted)
 		{
 
@@ -256,7 +246,6 @@ void ResourceThread::run()
 
 			if(item->data_type == TRACK_VIDEO)
 			{
-
 				do_video((VResourceThreadItem*)item);
 			}
 			else
@@ -269,8 +258,6 @@ void ResourceThread::run()
 		}
 	}
 }
-
-
 
 
 void ResourceThread::do_video(VResourceThreadItem *item)
@@ -308,15 +295,12 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			BC_RGB888);
 	}
 
-
-
 // Search frame cache again.
 
 	VFrame *picon_frame = 0;
 
-	if((picon_frame = mwindow->frame_cache->get_frame_ptr(item->position,
+	if((picon_frame = mwindow->frame_cache->get_frame_ptr(item->postime,
 		item->layer,
-		item->frame_rate,
 		BC_RGB888,
 		item->picon_w,
 		item->picon_h,
@@ -335,10 +319,11 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			return;
 		}
 		temp_picon->set_layer(item->layer);
-		temp_picon->set_source_pts(item->position / item->frame_rate);
+		temp_picon->set_source_pts(item->postime);
 
 		source->get_frame(temp_picon);
 		picon_frame = new VFrame(0, item->picon_w, item->picon_h, BC_RGB888);
+		picon_frame->copy_pts(temp_picon);
 		cmodel_transfer(picon_frame->get_rows(),
 			temp_picon->get_rows(),
 			0,
@@ -361,10 +346,9 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			temp_picon->get_bytes_per_line(),
 			picon_frame->get_bytes_per_line());
 		temp_picon2->copy_from(picon_frame);
+		picon_frame->set_source_pts(item->postime);
+		picon_frame->set_duration(item->duration);
 		mwindow->frame_cache->put_frame(picon_frame, 
-			item->position,
-			item->layer,
-			mwindow->edl->session->frame_rate,
 			0,
 			item->asset);
 		mwindow->video_cache->check_in(item->asset);
@@ -377,7 +361,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		return;
 	}
 
-
 // Draw the picon
 	mwindow->gui->lock_window("ResourceThread::do_video");
 
@@ -386,8 +369,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		mwindow->gui->unlock_window();
 		return;
 	}
-
-
 
 // Test for pixmap existence first
 	if(item->operation_count == operation_count)
@@ -410,7 +391,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);
 		}
 	}
-
 	mwindow->gui->unlock_window();
 }
 
@@ -544,7 +524,3 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 	mwindow->gui->unlock_window();
 
 }
-
-
-
-

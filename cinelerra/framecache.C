@@ -37,8 +37,8 @@ FrameCacheItem::FrameCacheItem()
  : CacheItemBase()
 {
 	data = 0;
-	position = 0;
-	frame_rate = (double)30000.0 / 1001;
+	postime = 0;
+	duration = 0;
 }
 
 FrameCacheItem::~FrameCacheItem()
@@ -52,18 +52,14 @@ int FrameCacheItem::get_size()
 	return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+void FrameCacheItem::dump(void)
+{
+	printf("FrameCacheItem:\n");
+	CacheItemBase::dump();
+	printf("    layer %d data %p\n", layer, data);
+	if(data)
+		data->dump();
+}
 
 
 FrameCache::FrameCache()
@@ -78,18 +74,12 @@ FrameCache::~FrameCache()
 
 // Returns 1 if frame exists in cache and copies it to the frame argument.
 int FrameCache::get_frame(VFrame *frame, 
-	framenum position,
-	int layer,
-	double frame_rate,
 	int asset_id)
 {
 	lock->lock("FrameCache::get_frame");
 	FrameCacheItem *result = 0;
 
 	if(frame_exists(frame,
-		position, 
-		layer,
-		frame_rate,
 		&result,
 		asset_id))
 	{
@@ -107,9 +97,8 @@ int FrameCache::get_frame(VFrame *frame,
 }
 
 
-VFrame* FrameCache::get_frame_ptr(framenum position,
+VFrame* FrameCache::get_frame_ptr(ptstime postime,
 	int layer,
-	double frame_rate,
 	int color_model,
 	int w,
 	int h,
@@ -117,9 +106,8 @@ VFrame* FrameCache::get_frame_ptr(framenum position,
 {
 	lock->lock("FrameCache::get_frame_ptr");
 	FrameCacheItem *result = 0;
-	if(frame_exists(position,
+	if(frame_exists(postime,
 		layer,
-		frame_rate,
 		color_model,
 		w,
 		h,
@@ -138,18 +126,12 @@ VFrame* FrameCache::get_frame_ptr(framenum position,
 // Puts frame in cache if enough space exists and the frame doesn't already
 // exist.
 void FrameCache::put_frame(VFrame *frame, 
-	framenum position,
-	int layer,
-	double frame_rate,
 	int use_copy,
 	Asset *asset)
 {
 	lock->lock("FrameCache::put_frame");
 	FrameCacheItem *item = 0;
 	if(frame_exists(frame,
-		position, 
-		layer,
-		frame_rate,
 		&item,
 		asset ? asset->id : -1))
 	{
@@ -157,7 +139,6 @@ void FrameCache::put_frame(VFrame *frame,
 		lock->unlock();
 		return;
 	}
-
 
 	item = new FrameCacheItem;
 
@@ -171,9 +152,10 @@ void FrameCache::put_frame(VFrame *frame,
 	}
 
 // Copy metadata
-	item->position = position;
-	item->layer = layer;
-	item->frame_rate = frame_rate;
+	item->postime = frame->get_source_pts();
+	item->position = frame->get_frame_number();
+	item->duration = frame->get_duration();
+	item->layer = frame->get_layer();
 	if(asset)
 	{
 		item->asset_id = asset->id;
@@ -190,20 +172,16 @@ void FrameCache::put_frame(VFrame *frame,
 }
 
 
-
-
 int FrameCache::frame_exists(VFrame *format,
-	framenum position, 
-	int layer,
-	double frame_rate,
 	FrameCacheItem **item_return,
 	int asset_id)
 {
-	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
-	while(item && item->position == position)
+	ptstime postime = format->get_source_pts();
+
+	FrameCacheItem *item = (FrameCacheItem*)get_item(postime);
+	while(item && item->postime <= postime && item->postime + item->duration > postime)
 	{
-		if(EQUIV(item->frame_rate, frame_rate) &&
-			layer == item->layer &&
+		if(format->get_layer() == item->layer &&
 			format->equivalent(item->data, 1) &&
 			(asset_id == -1 || item->asset_id == -1 || asset_id == item->asset_id))
 		{
@@ -216,20 +194,18 @@ int FrameCache::frame_exists(VFrame *format,
 	return 0;
 }
 
-int FrameCache::frame_exists(framenum position, 
+int FrameCache::frame_exists(ptstime postime,
 	int layer,
-	double frame_rate,
 	int color_model,
 	int w,
 	int h,
 	FrameCacheItem **item_return,
 	int asset_id)
 {
-	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
-	while(item && item->position == position)
+	FrameCacheItem *item = (FrameCacheItem*)get_item(postime);
+	while(item && item->postime <= postime && item->postime + item->duration > postime)
 	{
-		if(EQUIV(item->frame_rate, frame_rate) &&
-			layer == item->layer &&
+		if(layer == item->layer &&
 			color_model == item->data->get_color_model() &&
 			w == item->data->get_w() &&
 			h == item->data->get_h() &&
@@ -243,7 +219,3 @@ int FrameCache::frame_exists(framenum position,
 	}
 	return 0;
 }
-
-
-
-

@@ -42,6 +42,7 @@ public:
 	virtual ~CacheItemBase();
 
 	virtual int get_size();
+	virtual void dump(void);
 
 // asset_id - supplied by user if the cache is not part of a file.
 // Used for fast accesses.
@@ -54,6 +55,9 @@ public:
 	int age;
 // Starting point of item in asset's native rate.
 	posnum position;
+// Starting time
+	ptstime postime;
+	ptstime duration;
 };
 
 
@@ -76,6 +80,7 @@ public:
 
 // Get first item from list with matching position or 0 if none found.
 	CacheItemBase* get_item(posnum position);
+	CacheItemBase* get_item(ptstime postime);
 
 // Called when done with the item returned by get_.
 // Ignore if item was 0.
@@ -90,6 +95,8 @@ public:
 
 // Calculate current size of cache in bytes
 	int64_t get_memory_usage();
+
+	void dump(void);
 
 	Mutex *lock;
 // Current position of search

@@ -83,8 +83,8 @@ public:
 		int picon_y, 
 		int picon_w,
 		int picon_h,
-		double frame_rate,
-		framenum position,
+		ptstime postime,
+		ptstime duration,
 		int layer,
 		Asset *asset,
 		int operation_count);
@@ -94,8 +94,8 @@ public:
 	int picon_y;
 	int picon_w;
 	int picon_h;
-	double frame_rate;
-	framenum position;
+	ptstime postime;
+	ptstime duration;
 	int layer;
 };
 
@@ -119,8 +119,8 @@ public:
 		int picon_y, 
 		int picon_w,
 		int picon_h,
-		double frame_rate,
-		framenum position,
+		ptstime position,
+		ptstime duration,
 		int layer,
 		Asset *asset);
 

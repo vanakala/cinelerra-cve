@@ -65,6 +65,7 @@ VFrame::VFrame(VFrame &frame)
 	allocate_data(0, 0, 0, 0, frame.w, frame.h, frame.color_model, frame.bytes_per_line);
 	memcpy(data, frame.data, bytes_per_line * h);
 	copy_stacks(&frame);
+	copy_pts(&frame);
 }
 
 VFrame::VFrame(unsigned char *data, 

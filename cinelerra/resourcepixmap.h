@@ -81,8 +81,6 @@ public:
 	int64_t zoom_track, zoom_y;
 	ptstime zoom_time;
 	ptstime source_pts;
-	double source_framerate, project_framerate;
-	int source_samplerate, project_samplerate;
 	int data_type;
 // Timer to cause an hourglass to appear
 	Timer *timer;

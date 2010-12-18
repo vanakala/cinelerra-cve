@@ -23,6 +23,7 @@
 #define DATATYPE_H
 
 #include <sys/types.h>
+#include <math.h>
 // integer media positions
 // number of frame
 typedef int framenum;
