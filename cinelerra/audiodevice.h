@@ -55,14 +55,14 @@ public:
 	virtual int open_input() { return 1; };
 	virtual int open_output() { return 1; };
 	virtual int open_duplex() { return 1; };
-	virtual int close_all() { return 1; };
+	virtual void close_all() { return; };
 	virtual int interrupt_crash() { return 0; };
 	virtual samplenum device_position() { return -1; };
 	virtual int write_buffer(char *buffer, int size) { return 1; };
 	virtual int read_buffer(char *buffer, int size) { return 1; };
-	virtual int flush_device() { return 1; };
-	virtual int interrupt_playback() { return 1; };
-	
+	virtual void flush_device() { return; };
+	virtual void interrupt_playback() { return; };
+
 	AudioDevice *device;
 };
 

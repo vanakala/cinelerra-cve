@@ -290,7 +290,7 @@ int AudioOSS::get_fmt(int bits)
 }
 
 
-int AudioOSS::close_all()
+void AudioOSS::close_all()
 {
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
@@ -315,7 +315,6 @@ int AudioOSS::close_all()
 		if(thread[i]) delete thread[i];
 		if(data[i]) delete [] data[i];
 	}
-	return 0;
 }
 
 int AudioOSS::set_cloexec_flag(int desc, int value)
@@ -348,7 +347,7 @@ samplenum AudioOSS::device_position()
 	return 0;
 }
 
-int AudioOSS::interrupt_playback()
+void AudioOSS::interrupt_playback()
 {
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
@@ -358,7 +357,6 @@ int AudioOSS::interrupt_playback()
 			thread[i]->write_lock->unlock();
 		}
 	}
-	return 0;
 }
 
 int AudioOSS::read_buffer(char *buffer, int bytes)
@@ -468,11 +466,10 @@ int AudioOSS::write_buffer(char *buffer, int bytes)
 	return 0;
 }
 
-int AudioOSS::flush_device()
+void AudioOSS::flush_device()
 {
 	for(int i = 0; i < MAXDEVICES; i++)
 		if(thread[i]) ioctl(get_output(i), SNDCTL_DSP_SYNC, 0);
-	return 0;
 }
 
 int AudioOSS::get_output(int number)

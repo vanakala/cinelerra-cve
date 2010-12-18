@@ -143,7 +143,7 @@ int AudioESound::open_duplex()
 	return 0;
 }
 
-int AudioESound::close_all()
+void AudioESound::close_all()
 {
 	if(device->r || device->d)
 	{ 
@@ -179,17 +179,4 @@ int AudioESound::write_buffer(char *buffer, int size)
 	else
 		return 0;
 }
-
-// No flushing in ESD
-int AudioESound::flush_device()
-{
-	return 0;
-}
-
-// No interrupting ESD
-int AudioESound::interrupt_playback()
-{
-	return 0;
-}
-
 #endif // HAVE_ESOUND

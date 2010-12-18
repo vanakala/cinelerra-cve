@@ -45,14 +45,13 @@ int AudioDVB::open_input()
 	return 0;
 }
 
-int AudioDVB::close_all()
+void AudioDVB::close_all()
 {
 	if(input_thread)
 	{
 		DeviceDVBInput::put_input_thread(device->mwindow);
 	}
 	input_thread = 0;
-	return 0;
 }
 
 void AudioDVB::reset()

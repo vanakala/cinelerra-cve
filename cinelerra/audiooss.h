@@ -64,10 +64,10 @@ public:
 	int open_duplex();
 	int write_buffer(char *buffer, int bytes);
 	int read_buffer(char *buffer, int bytes);
-	int close_all();
+	void close_all();
 	samplenum device_position();
-	int flush_device();
-	int interrupt_playback();
+	void flush_device();
+	void interrupt_playback();
 
 private:
 	int get_fmt(int bits);

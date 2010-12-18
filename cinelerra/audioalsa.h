@@ -41,17 +41,17 @@ public:
 	int open_duplex();
 	int write_buffer(char *buffer, int size);
 	int read_buffer(char *buffer, int size);
-	int close_all();
-	int close_input();
+	void close_all();
+	void close_input();
 	posnum device_position();
-	int flush_device();
-	int interrupt_playback();
+	void flush_device();
+	void interrupt_playback();
 
 private:
-	int close_output();
+	void close_output();
 	void translate_name(char *output, char *input);
 	snd_pcm_format_t translate_format(int format);
-	void set_params(snd_pcm_t *dsp, 
+	int set_params(snd_pcm_t *dsp, 
 		int channels, 
 		int bits,
 		int samplerate,
