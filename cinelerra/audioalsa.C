@@ -394,7 +394,6 @@ samplenum AudioALSA::device_position()
 	samplenum result = samples_written + 
 		timer->get_scaled_difference(device->out_samplerate) - 
 		delay;
-
 	timer_lock->unlock();
 	return result;
 }
@@ -440,11 +439,6 @@ int AudioALSA::write_buffer(char *buffer, int size)
 	while(attempts < 2 && !done && !interrupted)
 	{
 // Buffers written must be equal to period_time
-// Update timing
-		snd_pcm_sframes_t delay;
-		snd_pcm_delay(get_output(), &delay);
-		snd_pcm_avail_update(get_output());
-
 		device->Thread::enable_cancel();
 		if(snd_pcm_writei(get_output(), 
 			buffer, 
@@ -467,7 +461,7 @@ int AudioALSA::write_buffer(char *buffer, int size)
 	if(done)
 	{
 		timer_lock->lock("AudioALSA::write_buffer");
-		this->delay = delay;
+		snd_pcm_delay(get_output(), &delay);
 		timer->update();
 		samples_written += samples;
 		timer_lock->unlock();
