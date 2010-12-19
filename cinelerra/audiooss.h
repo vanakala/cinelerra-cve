@@ -41,6 +41,7 @@ public:
 // Must synchronize reads and writes
 	void wait_read();
 	void wait_write();
+	int64_t device_position();
 
 	Condition *input_lock;
 	Condition *output_lock;
@@ -51,6 +52,11 @@ public:
 	int bytes;
 	int done;
 	AudioOSS *device;
+
+	int64_t bytes_written;
+	Timer *timer;
+	int delay;
+	Mutex *timer_lock;
 };
 
 class AudioOSS : public AudioLowLevel
