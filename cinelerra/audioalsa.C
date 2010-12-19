@@ -294,7 +294,7 @@ int AudioALSA::open_input()
 
 	translate_name(pcm_name, device->in_config->alsa_in_device);
 
-	if(err = snd_pcm_open(&dsp_in, device->in_config->alsa_in_device, stream, open_mode))
+	if(err = snd_pcm_open(&dsp_in, pcm_name, stream, open_mode))
 	{
 		dsp_in = 0;
 		errorbox("Failed to open ALSA input: %s\n", snd_strerror(err));
@@ -327,7 +327,7 @@ int AudioALSA::open_output()
 
 	translate_name(pcm_name, device->out_config->alsa_out_device);
 
-	if((err = snd_pcm_open(&dsp_out, device->out_config->alsa_out_device, stream, open_mode)) < 0)
+	if((err = snd_pcm_open(&dsp_out, pcm_name, stream, open_mode)) < 0)
 	{
 		dsp_out = 0;
 		errorbox("Failed to open ALSA output %s: %s", pcm_name, snd_strerror(err));
