@@ -486,6 +486,7 @@ void BC_Signals::initialize2()
 	sigaction(SIGFPE, &nact, NULL);
 	sigaction(SIGBUS, &nact, NULL);
 	sigaction(SIGILL, &nact, NULL);
+	sigaction(SIGABRT, &nact, NULL);
 }
 
 void BC_Signals::initXErrors()
