@@ -50,12 +50,6 @@
 
 #define MJPEG_EXE PLUGIN_DIR "/mpeg2enc.plugin"
 
-
-
-
-
-
-
 // M JPEG dependancies
 static double frame_rate_codes[] = 
 {
@@ -78,12 +72,6 @@ static double aspect_ratio_codes[] =
 	1.777,
 	2.11
 };
-
-
-
-
-
-
 
 
 FileMPEG::FileMPEG(Asset *asset, File *file)
@@ -142,9 +130,7 @@ int FileMPEG::reset_parameters_derived()
 	mjpeg_eof = 0;
 	mjpeg_error = 0;
 
-
 	dvb_out = 0;
-
 
 	fd = 0;
 	video_out = 0;
@@ -169,7 +155,6 @@ int FileMPEG::reset_parameters_derived()
 // for reopening.
 int FileMPEG::open_file(int rd, int wr)
 {
-SET_TRACE
 	int result = 0;
 	this->rd = rd;
 	this->wr = wr;
@@ -233,21 +218,21 @@ SET_TRACE
 				{
 					switch(i)
 					{
-					    case MPEG3_PROGRESSIVE:
+					case MPEG3_PROGRESSIVE:
 						i = BC_ILACE_MODE_NOTINTERLACED;
 						break;
-					    case MPEG3_BOTTOMFIRST:
+					case MPEG3_BOTTOMFIRST:
 						i = BC_ILACE_MODE_BOTTOM_FIRST;
 						break;
-					    case MPEG3_TOPFIRST:
+					case MPEG3_TOPFIRST:
 						i = BC_ILACE_MODE_TOP_FIRST;
 						break;
-					    default:
+					default:
 						i = BC_ILACE_MODE_UNDETECTED;
 						break;
 					}
 					asset->interlace_mode = i;
-				}    				
+				}
 				asset->video_length = mpeg3_video_frames(fd, 0);
 				asset->vmpeg_cmodel = 
 					(mpeg3_colormodel(fd, 0) == MPEG3_YUV422P) ? MPEG_YUV422 : MPEG_YUV420;
@@ -258,15 +243,13 @@ SET_TRACE
 
 				asset->file_length = mpeg3_get_bytes(fd);
 				asset->subtitles = mpeg3_subtitle_tracks(fd);
-		
+
 // Enable subtitles
 				mpeg3_show_subtitle(fd, file->playback_subtitle);
 			}
 		}
 	}
 
-
-	
 	if(wr && asset->format == FILE_VMPEG)
 	{
 // Heroine Virtual encoder
@@ -284,7 +267,6 @@ SET_TRACE
 			if(!result)
 			{
 				append_vcommand_line("mpeg2enc");
-
 
 				if(asset->aspect_ratio > 0)
 				{
@@ -336,12 +318,10 @@ SET_TRACE
 // Must disable interlacing if MPEG-1
 			switch (asset->vmpeg_preset)
 			{
-				case 0: asset->vmpeg_progressive = 1; break;
-				case 1: asset->vmpeg_progressive = 1; break;
-				case 2: asset->vmpeg_progressive = 1; break;
+			case 0: asset->vmpeg_progressive = 1; break;
+			case 1: asset->vmpeg_progressive = 1; break;
+			case 2: asset->vmpeg_progressive = 1; break;
 			}
-
-
 
 // The current usage of mpeg2enc requires bitrate of 0 when quantization is fixed and
 // quantization of 1 when bitrate is fixed.  Perfectly intuitive.
@@ -354,11 +334,6 @@ SET_TRACE
 				sprintf(string, " -b 0 -q %d", asset->vmpeg_quantization);
 			}
 			strcat(mjpeg_command, string);
-
-
-
-
-
 
 // Aspect ratio
 			int aspect_ratio_code = -1;
@@ -381,14 +356,9 @@ SET_TRACE
 			sprintf(string, " -a %d", aspect_ratio_code);
 			strcat(mjpeg_command, string);
 
-
-
-
-
-
 // Frame rate
 			int frame_rate_code = -1;
-    		for(int i = 1; sizeof(frame_rate_codes) / sizeof(double); ++i)
+			for(int i = 1; sizeof(frame_rate_codes) / sizeof(double); ++i)
 			{
 				if(EQUIV(asset->frame_rate, frame_rate_codes[i]))
 				{
@@ -404,43 +374,30 @@ SET_TRACE
 			sprintf(string, " -F %d", frame_rate_code);
 			strcat(mjpeg_command, string);
 
-
-
-
-
 			strcat(mjpeg_command, 
 				asset->vmpeg_progressive ? " -I 0" : " -I 1");
-			
-
 
 			sprintf(string, " -M %d", file->cpus);
 			strcat(mjpeg_command, string);
-
 
 			if(!asset->vmpeg_progressive)
 			{
 				strcat(mjpeg_command, asset->vmpeg_field_order ? " -z b" : " -z t");
 			}
 
-
 			sprintf(string, " -f %d", asset->vmpeg_preset);
 			strcat(mjpeg_command, string);
-
 
 			sprintf(string, " -g %d -G %d", asset->vmpeg_iframe_distance, asset->vmpeg_iframe_distance);
 			strcat(mjpeg_command, string);
 
-
 			if(asset->vmpeg_seq_codes) strcat(mjpeg_command, " -s");
-
 
 			sprintf(string, " -R %d", CLAMP(asset->vmpeg_pframe_distance, 0, 2));
 			strcat(mjpeg_command, string);
 
 			sprintf(string, " -o '%s'", asset->path);
 			strcat(mjpeg_command, string);
-
-
 
 			errormsg("Running %s\n", mjpeg_command);
 			if(!(mjpeg_out = popen(mjpeg_command, "w")))
@@ -459,7 +416,6 @@ SET_TRACE
 		char encoder_string[BCTEXTLEN];
 		char argument_string[BCTEXTLEN];
 
-//printf("FileMPEG::open_file 1 %d\n", asset->ampeg_derivative);
 		encoder_string[0] = 0;
 
 		if(asset->ampeg_derivative == 2)
@@ -522,16 +478,8 @@ SET_TRACE
 		}
 		
 	}
-
-SET_TRACE
 	return result;
 }
-
-
-
-
-
-
 
 
 int FileMPEG::create_index()
@@ -555,14 +503,14 @@ int FileMPEG::create_index()
 
 	mpeg3_t *fd_toc;
 
-
 // Test existing copy of TOC
 	mpeg3_close(fd);     // Always free old fd
 	if((fd_toc = mpeg3_open(index_filename, &error)))
 	{
 // Just exchange old fd 
 		fd = fd_toc;
-	} else
+	}
+	else
 	{
 // Create progress window.
 // This gets around the fact that MWindowGUI is locked.
@@ -603,15 +551,11 @@ int FileMPEG::create_index()
 					eta / 60,
 					eta % 60);
 				progress->update_title(string, 1);
-// 				fprintf(stderr, "ETA: %dm%ds        \r", 
-// 					bytes_processed * 100 / total_bytes,
-// 					eta / 60,
-// 					eta % 60);
-// 				fflush(stdout);
 				prev_time = new_time;
 			}
+
 			if(bytes_processed >= total_bytes) break;
-			if(progress->is_cancelled()) 
+			if(progress->is_cancelled())
 			{
 				result = 1;
 				break;
@@ -637,10 +581,6 @@ int FileMPEG::create_index()
 
 	return 0;
 }
-
-
-
-
 
 
 void FileMPEG::append_vcommand_line(const char *string)
@@ -706,7 +646,6 @@ int FileMPEG::close_file()
 
 	if(mjpeg_out) fclose(mjpeg_out);
 
-
 	if(dvb_out)
 		fclose(dvb_out);
 
@@ -718,34 +657,33 @@ int FileMPEG::close_file()
 
 int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 {
-//printf("FileMPEG::get_best_colormodel 1\n");
 	switch(driver)
 	{
-		case PLAYBACK_X11:
-			return BC_RGB888;
-			if(asset->vmpeg_cmodel == MPEG_YUV420) return BC_YUV420P;
-			if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
-			break;
-		case PLAYBACK_X11_XV:
-		case PLAYBACK_ASYNCHRONOUS:
-			if(asset->vmpeg_cmodel == MPEG_YUV420) return BC_YUV420P;
-			if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
-			break;
-		case PLAYBACK_X11_GL:
-			return BC_YUV888;
-			break;
-		case PLAYBACK_BUZ:
-			return BC_YUV422P;
-			break;
-		case VIDEO4LINUX:
-		case VIDEO4LINUX2:
-			if(asset->vmpeg_cmodel == MPEG_YUV420) return BC_YUV420P;
-			if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
-			break;
-		case CAPTURE_BUZ:
-			return BC_YUV422;
-			break;
+	case PLAYBACK_X11:
+		return BC_RGB888;
+
+	case PLAYBACK_X11_XV:
+	case PLAYBACK_ASYNCHRONOUS:
+		if(asset->vmpeg_cmodel == MPEG_YUV420) return BC_YUV420P;
+		if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
+		break;
+
+	case PLAYBACK_X11_GL:
+		return BC_YUV888;
+
+	case PLAYBACK_BUZ:
+		return BC_YUV422P;
+
+	case VIDEO4LINUX:
+	case VIDEO4LINUX2:
+		if(asset->vmpeg_cmodel == MPEG_YUV420) return BC_YUV420P;
+		if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
+		break;
+
+	case CAPTURE_BUZ:
+		return BC_YUV422;
 	}
+	return BC_RGB888;
 }
 
 int FileMPEG::colormodel_supported(int colormodel)
@@ -756,7 +694,6 @@ int FileMPEG::colormodel_supported(int colormodel)
 int FileMPEG::get_index(char *index_path)
 {
 	if(!fd) return 1;
-
 
 // Convert the index tables from tracks to channels.
 	if(mpeg3_index_tracks(fd))
@@ -842,7 +779,6 @@ int FileMPEG::write_samples(double **buffer, int len)
 {
 	int result = 0;
 
-//printf("FileMPEG::write_samples 1\n");
 	if(asset->ampeg_derivative == 2)
 	{
 // Convert to int16
@@ -948,28 +884,22 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 		int temp_w = (int)((asset->width + 15) / 16) * 16;
 		int temp_h;
 
-
 		int output_cmodel = 
 			(asset->vmpeg_cmodel == MPEG_YUV420) ? BC_YUV420P : BC_YUV422P;
-		
-		
+
 // Height depends on progressiveness
 		if(asset->vmpeg_progressive || asset->vmpeg_derivative == 1)
 			temp_h = (int)((asset->height + 15) / 16) * 16;
 		else
 			temp_h = (int)((asset->height + 31) / 32) * 32;
 
-//printf("FileMPEG::write_frames 1\n");
-		
 // Only 1 layer is supported in MPEG output
 		for(int i = 0; i < 1; i++)
 		{
 			for(int j = 0; j < len && !result; j++)
 			{
 				VFrame *frame = frames[i][j];
-				
-				
-				
+
 				if(asset->vmpeg_cmodel == MPEG_YUV422)
 				{
 					if(frame->get_w() == temp_w &&
@@ -991,7 +921,6 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 							delete temp_frame;
 							temp_frame = 0;
 						}
-
 
 						if(!temp_frame)
 						{
@@ -1075,24 +1004,13 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 						mjpeg_v = temp_frame->get_v();
 					}
 
-
-
-
 					next_frame_lock->unlock();
 					next_frame_done->lock("FileMPEG::write_frames");
 					if(mjpeg_error) result = 1;
 				}
-
-
-
-
-
 			}
 		}
 	}
-
-
-
 	return result;
 }
 
@@ -1110,83 +1028,78 @@ int FileMPEG::read_frame(VFrame *frame)
 
 	switch(frame->get_color_model())
 	{
-		case MPEG3_RGB565:
-		case MPEG3_BGR888:
-		case MPEG3_BGRA8888:
-		case MPEG3_RGB888:
-		case MPEG3_RGBA8888:
-		case MPEG3_RGBA16161616:
-SET_TRACE
-			mpeg3_read_frame(fd, 
-					frame->get_rows(), /* Array of pointers to the start of each output row */
-					0,                    /* Location in input frame to take picture */
-					0, 
-					asset->width, 
-					asset->height, 
-					asset->width,                   /* Dimensions of output_rows */
-					asset->height, 
-					frame->get_color_model(),             /* One of the color model #defines */
-					file->current_layer);
-SET_TRACE
+	case MPEG3_RGB565:
+	case MPEG3_BGR888:
+	case MPEG3_BGRA8888:
+	case MPEG3_RGB888:
+	case MPEG3_RGBA8888:
+	case MPEG3_RGBA16161616:
+
+		mpeg3_read_frame(fd, 
+			frame->get_rows(), /* Array of pointers to the start of each output row */
+			0,                    /* Location in input frame to take picture */
+			0, 
+			asset->width,
+			asset->height,
+			asset->width,                   /* Dimensions of output_rows */
+			asset->height,
+			frame->get_color_model(),             /* One of the color model #defines */
+			file->current_layer);
 			break;
 
 // Use Temp
-		default:
+	default:
 // Read these directly
-			if(frame->get_color_model() == src_cmodel)
+		if(frame->get_color_model() == src_cmodel)
+		{
+			mpeg3_read_yuvframe(fd,
+				(char*)frame->get_y(),
+				(char*)frame->get_u(),
+				(char*)frame->get_v(),
+				0,
+				0,
+				asset->width,
+				asset->height,
+				file->current_layer);
+		}
+		else
+// Process through temp frame
+		{
+			char *y, *u, *v;
+			mpeg3_read_yuvframe_ptr(fd,
+				&y,
+				&u,
+				&v,
+				file->current_layer);
+
+			if(y && u && v)
 			{
-SET_TRACE
-				mpeg3_read_yuvframe(fd,
-					(char*)frame->get_y(),
-					(char*)frame->get_u(),
-					(char*)frame->get_v(),
+				cmodel_transfer(frame->get_rows(), 
+					0,
+					frame->get_y(),
+					frame->get_u(),
+					frame->get_v(),
+					(unsigned char*)y,
+					(unsigned char*)u,
+					(unsigned char*)v,
 					0,
 					0,
 					asset->width,
 					asset->height,
-					file->current_layer);
-SET_TRACE
+					0,
+					0,
+					asset->width,
+					asset->height,
+					src_cmodel,
+					frame->get_color_model(),
+					0,
+					(asset->width + 15) & ~15,
+					frame->get_w());
 			}
-			else
-// Process through temp frame
-			{
-				char *y, *u, *v;
-SET_TRACE
-				mpeg3_read_yuvframe_ptr(fd,
-					&y,
-					&u,
-					&v,
-					file->current_layer);
-SET_TRACE
-				if(y && u && v)
-				{
-					cmodel_transfer(frame->get_rows(), 
-						0,
-						frame->get_y(),
-						frame->get_u(),
-						frame->get_v(),
-						(unsigned char*)y,
-						(unsigned char*)u,
-						(unsigned char*)v,
-						0,
-						0,
-						asset->width,
-						asset->height,
-						0,
-						0,
-						asset->width,
-						asset->height,
-						src_cmodel, 
-						frame->get_color_model(),
-						0, 
-						(asset->width + 15) & ~15,
-						frame->get_w());
-				}
-			}
-			break;
+		}
+		break;
 	}
 
-SET_TRACE
 	return result;
 }
 
@@ -1222,19 +1135,18 @@ int FileMPEG::read_samples_float(float *buffer, int len)
 {
 	if(!fd || len < 0) return 0;
 
-	mpeg3_set_sample(fd, 
+	mpeg3_set_sample(fd,
 		file->current_sample,
 		asset->current_astream);
-	mpeg3_read_audio(fd, 
-		buffer,      	/* Pointer to pre-allocated buffer of floats */
-		0,		/* Pointer to pre-allocated buffer of int16's */
+	mpeg3_read_audio(fd,
+		buffer,         /* Pointer to pre-allocated buffer of floats */
+		0,              /* Pointer to pre-allocated buffer of int16's */
 		file->current_channel,          /* Channel to decode */
-		len,         /* Number of samples to decode */
+		len,            /* Number of samples to decode */
 		asset->current_astream);          /* Stream containing the channel */
 
 	return 0;
 }
-
 
 
 const char* FileMPEG::strtocompression(const char *string)
@@ -1248,17 +1160,11 @@ const char* FileMPEG::compressiontostr(const char *string)
 }
 
 
-
-
-
-
-
 FileMPEGVideo::FileMPEGVideo(FileMPEG *file)
  : Thread(1, 0, 0)
 {
 	this->file = file;
-	
-	
+
 	if(file->asset->vmpeg_cmodel == MPEG_YUV422)
 	{
 		mpeg2enc_init_buffers();
@@ -1293,8 +1199,6 @@ void FileMPEGVideo::run()
 				file->next_frame_done->unlock();
 				break;
 			}
-
-
 
 // YUV4 sequence header
 			if(!file->wrote_header)
@@ -1343,24 +1247,6 @@ void FileMPEGVideo::run()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 FileMPEGAudio::FileMPEGAudio(FileMPEG *file)
  : Thread(1, 0, 0)
 {
@@ -1379,16 +1265,10 @@ void FileMPEGAudio::run()
 }
 
 
-
-
-
-
-
-
 MPEGConfigAudio::MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	310,
 	120,
 	-1,
@@ -1411,13 +1291,11 @@ int MPEGConfigAudio::create_objects()
 	int x1 = 150;
 	MPEGLayer *layer;
 
-
 	if(asset->format == FILE_MPEG)
 	{
 		add_subwindow(new BC_Title(x, y, _("No options for MPEG transport stream.")));
 		return 0;
 	}
-
 
 	add_tool(new BC_Title(x, y, _("Layer:")));
 	add_tool(layer = new MPEGLayer(x1, y, this));
@@ -1427,8 +1305,7 @@ int MPEGConfigAudio::create_objects()
 	add_tool(new BC_Title(x, y, _("Kbits per second:")));
 	add_tool(bitrate = new MPEGABitrate(x1, y, this));
 	bitrate->create_objects();
-	
-	
+
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 	flush();
@@ -1440,11 +1317,6 @@ int MPEGConfigAudio::close_event()
 	set_done(0);
 	return 1;
 }
-
-
-
-
-
 
 
 MPEGLayer::MPEGLayer(int x, int y, MPEGConfigAudio *gui)
@@ -1464,7 +1336,7 @@ int MPEGLayer::handle_event()
 	gui->asset->ampeg_derivative = string_to_layer(get_text());
 	gui->bitrate->set_layer(gui->asset->ampeg_derivative);
 	return 1;
-};
+}
 
 int MPEGLayer::string_to_layer(char *string)
 {
@@ -1480,31 +1352,26 @@ char* MPEGLayer::layer_to_string(int layer)
 {
 	switch(layer)
 	{
-		case 2:
-			return _("II");
-			break;
-		
-		case 3:
-			return _("III");
-			break;
-			
-		default:
-			return _("II");
-			break;
+	case 2:
+		return _("II");
+		break;
+
+	case 3:
+		return _("III");
+		break;
+
+	default:
+		return _("II");
+		break;
 	}
 }
 
 
-
-
-
-
-
 MPEGABitrate::MPEGABitrate(int x, int y, MPEGConfigAudio *gui)
  : BC_PopupMenu(x, 
- 	y, 
+	y, 
 	100, 
- 	bitrate_to_string(gui->string, gui->asset->ampeg_bitrate))
+	bitrate_to_string(gui->string, gui->asset->ampeg_bitrate))
 {
 	this->gui = gui;
 }
@@ -1564,7 +1431,6 @@ int MPEGABitrate::string_to_bitrate(char *string)
 	return atol(string);
 }
 
-
 char* MPEGABitrate::bitrate_to_string(char *string, int bitrate)
 {
 	sprintf(string, "%d", bitrate);
@@ -1572,18 +1438,11 @@ char* MPEGABitrate::bitrate_to_string(char *string, int bitrate)
 }
 
 
-
-
-
-
-
-
-
 MPEGConfigVideo::MPEGConfigVideo(BC_WindowBase *parent_window, 
 	Asset *asset)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	500,
 	400,
 	-1,
@@ -1713,14 +1572,14 @@ void MPEGConfigVideo::update_cmodel_objs()
 
 	if(asset->vmpeg_cmodel == MPEG_YUV420)
 	{
-  		add_subwindow(title = new BC_Title(x, y, _("P frame distance:")));
+		add_subwindow(title = new BC_Title(x, y, _("P frame distance:")));
 		titles.append(title);
 		pframe_distance = new MPEGPFrameDistance(x1, y, this);
 		pframe_distance->create_objects();
-  		y += 30;
+		y += 30;
 
 		add_subwindow(top_field_first = new BC_CheckBox(x, y, &asset->vmpeg_field_order, _("Bottom field first")));
-  		y += 30;
+		y += 30;
 	}
 
 	add_subwindow(progressive = new BC_CheckBox(x, y, &asset->vmpeg_progressive, _("Progressive frames")));
@@ -1730,17 +1589,6 @@ void MPEGConfigVideo::update_cmodel_objs()
 	add_subwindow(seq_codes = new BC_CheckBox(x, y, &asset->vmpeg_seq_codes, _("Sequence start codes in every GOP")));
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 MPEGDerivative::MPEGDerivative(int x, int y, MPEGConfigVideo *gui)
@@ -1775,28 +1623,16 @@ char* MPEGDerivative::derivative_to_string(int derivative)
 {
 	switch(derivative)
 	{
-		case 1:
-			return _("MPEG-1");
-			break;
-		
-		case 2:
-			return _("MPEG-2");
-			break;
-			
-		default:
-			return _("MPEG-1");
-			break;
+	case 1:
+		return _("MPEG-1");
+
+	case 2:
+		return _("MPEG-2");
+
+	default:
+		return _("MPEG-1");
 	}
 }
-
-
-
-
-
-
-
-
-
 
 
 MPEGPreset::MPEGPreset(int x, int y, MPEGConfigVideo *gui)
@@ -1833,28 +1669,19 @@ char* MPEGPreset::value_to_string(int derivative)
 {
 	switch(derivative)
 	{
-		case 0: return _("Generic MPEG-1"); break;
-		case 1: return _("standard VCD"); break;
-		case 2: return _("user VCD"); break;
-		case 3: return _("Generic MPEG-2"); break;
-		case 4: return _("standard SVCD"); break;
-		case 5: return _("user SVCD"); break;
-		case 6: return _("VCD Still sequence"); break;
-		case 7: return _("SVCD Still sequence"); break;
-		case 8: return _("DVD NAV"); break;
-		case 9: return _("DVD"); break;
-		default: return _("Generic MPEG-1"); break;
+	case 0: return _("Generic MPEG-1"); break;
+	case 1: return _("standard VCD"); break;
+	case 2: return _("user VCD"); break;
+	case 3: return _("Generic MPEG-2"); break;
+	case 4: return _("standard SVCD"); break;
+	case 5: return _("user SVCD"); break;
+	case 6: return _("VCD Still sequence"); break;
+	case 7: return _("SVCD Still sequence"); break;
+	case 8: return _("DVD NAV"); break;
+	case 9: return _("DVD"); break;
+	default: return _("Generic MPEG-1"); break;
 	}
 }
-
-
-
-
-
-
-
-
-
 
 
 MPEGBitrate::MPEGBitrate(int x, int y, MPEGConfigVideo *gui)
@@ -1863,7 +1690,6 @@ MPEGBitrate::MPEGBitrate(int x, int y, MPEGConfigVideo *gui)
 	this->gui = gui;
 }
 
-
 int MPEGBitrate::handle_event()
 {
 	gui->asset->vmpeg_bitrate = atol(get_text());
@@ -1871,12 +1697,9 @@ int MPEGBitrate::handle_event()
 };
 
 
-
-
-
 MPEGQuant::MPEGQuant(int x, int y, MPEGConfigVideo *gui)
  : BC_TumbleTextBox(gui, 
- 	(int64_t)gui->asset->vmpeg_quantization, 
+	(int64_t)gui->asset->vmpeg_quantization, 
 	(int64_t)1,
 	(int64_t)100,
 	x, 
@@ -1890,7 +1713,7 @@ int MPEGQuant::handle_event()
 {
 	gui->asset->vmpeg_quantization = atol(get_text());
 	return 1;
-};
+}
 
 MPEGFixedBitrate::MPEGFixedBitrate(int x, int y, MPEGConfigVideo *gui)
  : BC_Radial(x, y, gui->asset->vmpeg_fix_bitrate, _("Fixed bitrate"))
@@ -1904,7 +1727,7 @@ int MPEGFixedBitrate::handle_event()
 	gui->asset->vmpeg_fix_bitrate = 1;
 	gui->fixed_quant->update(0);
 	return 1;
-};
+}
 
 MPEGFixedQuant::MPEGFixedQuant(int x, int y, MPEGConfigVideo *gui)
  : BC_Radial(x, y, !gui->asset->vmpeg_fix_bitrate, _("Fixed quantization"))
@@ -1918,19 +1741,12 @@ int MPEGFixedQuant::handle_event()
 	gui->asset->vmpeg_fix_bitrate = 0;
 	gui->fixed_bitrate->update(0);
 	return 1;
-};
-
-
-
-
-
-
-
+}
 
 
 MPEGIFrameDistance::MPEGIFrameDistance(int x, int y, MPEGConfigVideo *gui)
  : BC_TumbleTextBox(gui, 
- 	(int64_t)gui->asset->vmpeg_iframe_distance, 
+	(int64_t)gui->asset->vmpeg_iframe_distance, 
 	(int64_t)1,
 	(int64_t)100,
 	x, 
@@ -1947,14 +1763,9 @@ int MPEGIFrameDistance::handle_event()
 }
 
 
-
-
-
-
-
 MPEGPFrameDistance::MPEGPFrameDistance(int x, int y, MPEGConfigVideo *gui)
  : BC_TumbleTextBox(gui, 
- 	(int64_t)gui->asset->vmpeg_pframe_distance, 
+	(int64_t)gui->asset->vmpeg_pframe_distance, 
 	(int64_t)0,
 	(int64_t)2,
 	x, 
@@ -1969,12 +1780,6 @@ int MPEGPFrameDistance::handle_event()
 	gui->asset->vmpeg_pframe_distance = atoi(get_text());
 	return 1;
 }
-
-
-
-
-
-
 
 
 MPEGColorModel::MPEGColorModel(int x, int y, MPEGConfigVideo *gui)
@@ -2009,22 +1814,13 @@ char* MPEGColorModel::cmodel_to_string(int cmodel)
 {
 	switch(cmodel)
 	{
-		case MPEG_YUV420:
-			return _("YUV 4:2:0");
-			break;
-		
-		case MPEG_YUV422:
-			return _("YUV 4:2:2");
-			break;
-			
-		default:
-			return _("YUV 4:2:0");
-			break;
+	case MPEG_YUV420:
+		return _("YUV 4:2:0");
+
+	case MPEG_YUV422:
+		return _("YUV 4:2:2");
+
+	default:
+		return _("YUV 4:2:0");
 	}
 }
-
-
-
-
-
-

@@ -45,30 +45,13 @@
 #define gettext_noop(String) String
 #define N_(String) gettext_noop (String)
 
-
-
-
-
 #ifdef USE_AVIFILE
 int FileAVI::avifile_initialized = 0;
 #endif
 
-
-
-
 // Status of AVI derivatives:
 // Arne2 - depends on Kino, DV only
 // Lavtools - 2 gig limited
-
-
-
-
-
-
-
-
-
-
 
 
 FileAVI::FileAVI(Asset *asset, File *file)
@@ -91,10 +74,6 @@ int FileAVI::check_sig(Asset *asset)
 	int score_avifile = 0;
 	int final = 0;
 	int result = 0;
-
-
-
-
 
 	check_sig_lavtools(asset, score_lavtools);
 	check_sig_arne2(asset, score_arne2);
@@ -121,13 +100,6 @@ int FileAVI::check_sig(Asset *asset)
 		final = score_avifile;
 		result = FILE_AVI_AVIFILE;
 	}
-
-
-
-
-
-
-
 	return result;
 }
 
@@ -288,12 +260,12 @@ void FileAVI::initialize_avifile()
 #ifdef USE_AVIFILE
 	if(!avifile_initialized)
 	{
-    	BITMAPINFOHEADER bih;
-    	bih.biCompression = 0xffffffff;
-    	Creators::CreateVideoDecoder(bih, 0, 0);
+		BITMAPINFOHEADER bih;
+		bih.biCompression = 0xffffffff;
+		Creators::CreateVideoDecoder(bih, 0, 0);
 
-    	WAVEFORMATEX wih;
-    	memset(&wih, 0xff, sizeof(WAVEFORMATEX));
+		WAVEFORMATEX wih;
+		memset(&wih, 0xff, sizeof(WAVEFORMATEX));
 		Creators::CreateAudioDecoder(&wih, 0);
 		avifile_initialized = 1;
 	}
@@ -307,21 +279,17 @@ int FileAVI::open_file(int rd, int wr)
 	{
 		switch(asset->format)
 		{
-			case FILE_AVI_LAVTOOLS:
-				return open_lavtools_out(asset);
-				break;
+		case FILE_AVI_LAVTOOLS:
+			return open_lavtools_out(asset);
 
-			case FILE_AVI_ARNE2:
-				return open_arne2_out(asset);
-				break;
+		case FILE_AVI_ARNE2:
+			return open_arne2_out(asset);
 
-			case FILE_AVI_ARNE1:
-				return open_arne1_out(asset);
-				break;
+		case FILE_AVI_ARNE1:
+			return open_arne1_out(asset);
 
-			case FILE_AVI_AVIFILE:
-				return open_avifile_out(asset);
-				break;
+		case FILE_AVI_AVIFILE:
+			return open_avifile_out(asset);
 		}
 	}
 	else
@@ -329,27 +297,21 @@ int FileAVI::open_file(int rd, int wr)
 	{
 		asset->format = check_sig(asset);
 
-
 		switch(asset->format)
 		{
-			case FILE_AVI_LAVTOOLS:
-				return open_lavtools_in(asset);
-				break;
+		case FILE_AVI_LAVTOOLS:
+			return open_lavtools_in(asset);
 
-			case FILE_AVI_ARNE2:
-				return open_arne2_in(asset);
-				break;
+		case FILE_AVI_ARNE2:
+			return open_arne2_in(asset);
 
-			case FILE_AVI_ARNE1:
-				return open_arne1_in(asset);
-				break;
+		case FILE_AVI_ARNE1:
+			return open_arne1_in(asset);
 
-			case FILE_AVI_AVIFILE:
-				return open_avifile_in(asset);
-				break;
+		case FILE_AVI_AVIFILE:
+			return open_avifile_in(asset);
 		}
 	}
-
 	return 0;
 }
 
@@ -411,7 +373,6 @@ int FileAVI::open_avifile_out(Asset *asset)
 
 int FileAVI::open_arne2_out(Asset *asset)
 {
-	
 	return 0;
 }
 
@@ -424,10 +385,6 @@ int FileAVI::open_lavtools_out(Asset *asset)
 {
 	return 0;
 }
-
-	
-	
-	
 
 
 int FileAVI::open_avifile_in(Asset *asset)
@@ -453,7 +410,6 @@ int FileAVI::open_avifile_in(Asset *asset)
 			vstream_in[i]->StartStreaming();
 			vstream_in[i]->GetDecoder()->SetDestFmt(24);
 			vstream_in[i]->Seek(0);
-//printf("FileAVI::open_file %d %p\n", i, vstream[i]);
 		}
 
 		StreamInfo *stream_info = vstream_in[0]->GetStreamInfo();
@@ -461,10 +417,10 @@ int FileAVI::open_avifile_in(Asset *asset)
 		if(!asset->frame_rate)
 			asset->frame_rate = (double)1 / vstream_in[0]->GetFrameTime();
 		asset->video_length = stream_info->GetStreamFrames();
-	    BITMAPINFOHEADER bh;
+		BITMAPINFOHEADER bh;
 		vstream_in[0]->GetVideoFormatInfo(&bh, sizeof(bh));
-	    asset->width = bh.biWidth;
-	    asset->height = bh.biHeight;
+		asset->width = bh.biWidth;
+		asset->height = bh.biHeight;
 		asset->interlace_mode = BC_ILACE_MODE_UNDETECTED; // FIXME
 
 		uint32_t fourcc = stream_info->GetFormat();
@@ -496,7 +452,6 @@ int FileAVI::open_avifile_in(Asset *asset)
 		asset->audio_length = stream_info->GetStreamFrames();
 		delete stream_info;
 	}
-asset->dump();
 	return 0;
 #endif
 	return 1;
@@ -516,23 +471,6 @@ int FileAVI::open_lavtools_in(Asset *asset)
 {
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 int FileAVI::close_file()
 {
@@ -581,7 +519,6 @@ int FileAVI::get_best_colormodel(int driver, int colormodel)
 	}
 	else
 	{
-		
 		return BC_RGB888;
 	}
 }
@@ -605,7 +542,6 @@ void FileAVI::get_parameters(BC_WindowBase *parent_window,
 	else
 	if(video_options)
 	{
-//printf("FileAVI::get_parameters 1\n");
 		AVIConfigVideo *window = new AVIConfigVideo(parent_window,
 			asset,
 			locked_compressor);
@@ -674,10 +610,7 @@ int FileAVI::read_samples(double *buffer, int len)
 			break;
 		}
 	}
-
 #endif
-
-
 	return 0;
 }
 
@@ -688,18 +621,18 @@ int FileAVI::read_frame(VFrame *frame)
 #ifdef USE_AVIFILE
 	vstream_in[file->current_layer]->ReadFrame();
 	CImage *temp_image = vstream_in[file->current_layer]->GetFrame();
-//printf("FileAVI::read_frame 1 %d %d\n", source_cmodel, frame->get_color_model());
+
 	switch(source_cmodel)
 	{
-		case BC_RGB888:
-			if(frame->get_color_model() == BC_RGB888)
-				bcopy(temp_image->Data(), 
-					frame->get_data(), 
-					VFrame::calculate_data_size(asset->width, 
-						asset->height, 
-						-1, 
-						BC_RGB888));
-			break;
+	case BC_RGB888:
+		if(frame->get_color_model() == BC_RGB888)
+			bcopy(temp_image->Data(), 
+				frame->get_data(), 
+				VFrame::calculate_data_size(asset->width, 
+					asset->height, 
+					-1, 
+					BC_RGB888));
+		break;
 	}
 #endif
 	return result;
@@ -713,16 +646,12 @@ int FileAVI::compressed_frame_size()
 
 int FileAVI::read_compressed_frame(VFrame *buffer)
 {
-	int64_t result = 0;
-
-	return result;
+	return 0;
 }
 
 int FileAVI::write_compressed_frame(VFrame *buffer)
 {
-	int result = 0;
-
-	return result;
+	return 0;
 }
 
 int FileAVI::write_frames(VFrame ***frames, int len)
@@ -737,12 +666,9 @@ int FileAVI::write_samples(double **buffer, int len)
 }
 
 
-
-
-
 AVIConfigAudio::AVIConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio compression",
- 	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	calculate_w(asset->format),
 	calculate_h(asset->format))
@@ -759,8 +685,8 @@ int AVIConfigAudio::calculate_w(int format)
 {
 	switch(format)
 	{
-		case FILE_AVI_AVIFILE: return 400; break;
-		case FILE_AVI_ARNE2: return 250; break;
+	case FILE_AVI_AVIFILE: return 400; break;
+	case FILE_AVI_ARNE2: return 250; break;
 	}
 }
 
@@ -768,8 +694,8 @@ int AVIConfigAudio::calculate_h(int format)
 {
 	switch(format)
 	{
-		case FILE_AVI_AVIFILE: return 200; break;
-		case FILE_AVI_ARNE2: return 100; break;
+	case FILE_AVI_AVIFILE: return 200; break;
+	case FILE_AVI_ARNE2: return 100; break;
 	}
 }
 
@@ -778,23 +704,23 @@ int AVIConfigAudio::create_objects()
 	switch(asset->format)
 	{
 #ifdef USE_AVIFILE
-		case FILE_AVI_AVIFILE:
-		{
-			generate_codeclist();
+	case FILE_AVI_AVIFILE:
+	{
+		generate_codeclist();
 
-			int x = 10, y = 10;
-			BC_Title *title;
-			add_subwindow(title = new BC_Title(x, y, _("Codec: ")));
-			list = new AVIACodecList(this, x, y);
-			list->create_objects();
-			y += list->get_h();
-			break;
-		}
+		int x = 10, y = 10;
+		BC_Title *title;
+		add_subwindow(title = new BC_Title(x, y, _("Codec: ")));
+		list = new AVIACodecList(this, x, y);
+		list->create_objects();
+		y += list->get_h();
+		break;
+	}
 #endif
 
-		case FILE_AVI_ARNE2:
-			add_subwindow(new BC_Title(10, 10, _("Compressor: 16 bit PCM")));
-			break;
+	case FILE_AVI_ARNE2:
+		add_subwindow(new BC_Title(10, 10, _("Compressor: 16 bit PCM")));
+		break;
 	}
 
 	add_subwindow(new BC_OKButton(this));
@@ -814,17 +740,17 @@ int AVIConfigAudio::generate_codeclist()
 	switch(asset->format)
 	{
 #ifdef USE_AVIFILE
-		case FILE_AVI_AVIFILE:
-			for(avm::vector<CodecInfo>::iterator i = audio_codecs.begin();
-				i < audio_codecs.end();
-				i++)
+	case FILE_AVI_AVIFILE:
+		for(avm::vector<CodecInfo>::iterator i = audio_codecs.begin();
+			i < audio_codecs.end();
+			i++)
+		{
+			if(i->direction & CodecInfo::Encode)
 			{
-				if(i->direction & CodecInfo::Encode)
-				{
-					codec_items.append(new BC_ListBoxItem((char*)i->GetName()));
-				}
+				codec_items.append(new BC_ListBoxItem((char*)i->GetName()));
 			}
-			break;
+		}
+		break;
 #endif
 	}
 
@@ -833,22 +759,13 @@ int AVIConfigAudio::generate_codeclist()
 
 void AVIConfigAudio::update_codecs()
 {
-	
 }
-
-
-
-
-
-
-
-
 
 AVIACodecList::AVIACodecList(AVIConfigAudio *gui, int x, int y)
  : BC_PopupTextBox(gui,
- 		&gui->codec_items,
+		&gui->codec_items,
 		FileAVI::fourcc_to_acodec(gui->asset->acodec, gui->string),
- 		x, 
+		x,
 		y,
 		200,
 		400)
@@ -867,15 +784,12 @@ int AVIACodecList::handle_event()
 }
 
 
-
-
-
 AVIConfigVideo::AVIConfigVideo(BC_WindowBase *parent_window, 
 		Asset *asset, 
 		const char *locked_compressor)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	calculate_w(asset->format),
 	calculate_h(asset->format))
 {
@@ -902,8 +816,8 @@ int AVIConfigVideo::calculate_w(int format)
 {
 	switch(format)
 	{
-		case FILE_AVI_AVIFILE: return 400; break;
-		case FILE_AVI_ARNE2: return 250; break;
+	case FILE_AVI_AVIFILE: return 400; break;
+	case FILE_AVI_ARNE2: return 250; break;
 	}
 }
 
@@ -911,8 +825,8 @@ int AVIConfigVideo::calculate_h(int format)
 {
 	switch(format)
 	{
-		case FILE_AVI_AVIFILE: return 320; break;
-		case FILE_AVI_ARNE2: return 100; break;
+	case FILE_AVI_AVIFILE: return 320; break;
+	case FILE_AVI_ARNE2: return 100; break;
 	}
 }
 
@@ -921,7 +835,7 @@ int AVIConfigVideo::create_objects()
 	switch(asset->format)
 	{
 #ifdef USE_AVIFILE
-		case FILE_AVI_AVIFILE:
+	case FILE_AVI_AVIFILE:
 		{
 			generate_codeclist();
 			generate_attributelist();
@@ -943,9 +857,9 @@ int AVIConfigVideo::create_objects()
 		}
 #endif
 
-		case FILE_AVI_ARNE2:
-			add_subwindow(new BC_Title(10, 10, _("Compressor: Consumer DV")));
-			break;
+	case FILE_AVI_ARNE2:
+		add_subwindow(new BC_Title(10, 10, _("Compressor: Consumer DV")));
+		break;
 	}
 
 	add_subwindow(new BC_OKButton(this));
@@ -962,20 +876,20 @@ int AVIConfigVideo::generate_codeclist()
 	FileAVI::initialize_avifile();
 	switch(asset->format)
 	{
-		case FILE_AVI_AVIFILE:
+	case FILE_AVI_AVIFILE:
 #ifdef USE_AVIFILE
 // Construct codec item list
-			for(avm::vector<CodecInfo>::iterator i = video_codecs.begin();
-				i < video_codecs.end();
-				i++)
+		for(avm::vector<CodecInfo>::iterator i = video_codecs.begin();
+			i < video_codecs.end();
+			i++)
+		{
+			if(i->direction & CodecInfo::Encode)
 			{
-				if(i->direction & CodecInfo::Encode)
-				{
-					codec_items.append(new BC_ListBoxItem((char*)i->GetName()));
-				}
+				codec_items.append(new BC_ListBoxItem((char*)i->GetName()));
 			}
+		}
 #endif
-			break;
+		break;
 	}
 
 	return 0;
@@ -1006,10 +920,9 @@ void AVIConfigVideo::generate_attributelist()
 				char value[BCTEXTLEN];
 				value[0] = 0;
 
-//printf("AVIConfigVideo::generate_attributelist %d\n", j->kind);
 				switch(j->kind)
 				{
-					case AttributeInfo::Integer:
+				case AttributeInfo::Integer:
 					{
 						int temp = 0;
 						Creators::GetCodecAttr(*i, name, temp);
@@ -1017,7 +930,7 @@ void AVIConfigVideo::generate_attributelist()
 						break;
 					}
 
-					case AttributeInfo::Select:
+				case AttributeInfo::Select:
 					{
 						int temp = 0;
 						Creators::GetCodecAttr(*i, name, temp);
@@ -1025,7 +938,7 @@ void AVIConfigVideo::generate_attributelist()
 						break;
 					}
 
-					case AttributeInfo::String:
+				case AttributeInfo::String:
 					{
 						const char * temp = 0;
 						Creators::GetCodecAttr(*i, name, &temp);
@@ -1093,22 +1006,20 @@ void AVIConfigVideo::set_current_attribute(const char *text)
 
 				switch(attribute.kind)
 				{
-					case AttributeInfo::Integer:
-						Creators::SetCodecAttr(*i, attribute.GetName(), atol(text));
-						break;
+				case AttributeInfo::Integer:
+					Creators::SetCodecAttr(*i, attribute.GetName(), atol(text));
+					break;
 
-					case AttributeInfo::Select:
-						Creators::SetCodecAttr(*i, attribute.GetName(), atol(text));
-						break;
+				case AttributeInfo::Select:
+					Creators::SetCodecAttr(*i, attribute.GetName(), atol(text));
+					break;
 
-					case AttributeInfo::String:
-						Creators::SetCodecAttr(*i, attribute.GetName(), text);
-						break;
+				case AttributeInfo::String:
+					Creators::SetCodecAttr(*i, attribute.GetName(), text);
+					break;
 				}
 			}
 		}
-		
-		
 		update_attribute(1);
 	}
 #endif
@@ -1120,30 +1031,23 @@ void AVIConfigVideo::update_attribute(int recursive)
 {
 	generate_attributelist();
 	attributes->update(attribute_items,
-						0,
-						0,
-						2,
-						attributes->get_xposition(),
-						attributes->get_yposition(), 
-						0,
-						1);
+			0,
+			0,
+			2,
+			attributes->get_xposition(),
+			attributes->get_yposition(), 
+			0,
+			1);
 
 	if(!recursive) attribute->update(get_current_attribute_value());
 }
 
 
-
-
-
-
-
-
-
 AVIVCodecList::AVIVCodecList(AVIConfigVideo *gui, int x, int y)
  : BC_PopupTextBox(gui,
- 		&gui->codec_items,
+		&gui->codec_items,
 		FileAVI::fourcc_to_vcodec(gui->asset->vcodec, gui->string),
- 		x, 
+		x, 
 		y,
 		280,
 		400)
@@ -1191,8 +1095,6 @@ int AVIVAttributeList::selection_changed()
 }
 
 
-
-
 AVIVAttribute::AVIVAttribute(AVIConfigVideo *gui, int x, int y)
  : BC_TextBox(x, y, 300, 1, gui->get_current_attribute_value())
 {
@@ -1204,6 +1106,3 @@ int AVIVAttribute::handle_event()
 	gui->set_current_attribute(get_text());
 	return 1;
 }
-
-
-

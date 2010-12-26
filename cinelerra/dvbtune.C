@@ -125,13 +125,6 @@ int DVBTune::open_tuner()
 		get_device_number(),
 		0);
 
-
-
-
-
-
-
-
 	if((frontend_fd = ::open(frontend_path, O_RDWR)) < 0) 
 	{
 		fprintf(stderr, 
@@ -140,7 +133,6 @@ int DVBTune::open_tuner()
 			strerror(errno));
 		return 1;
 	}
-
 
 // Open transport stream for reading
 	if((dvr_fd = ::open(dvr_path, O_RDONLY)) < 0)
@@ -165,11 +157,10 @@ int DVBTune::open_tuner()
 			frontend_param.u.vsb.modulation = VSB_8;
 			break;
 		case NETTUNE_CABLE:
-    		frontend_param.frequency = catv_dvb[index] * 1000000;
-    		frontend_param.u.vsb.modulation = QAM_AUTO;
+			frontend_param.frequency = catv_dvb[index] * 1000000;
+			frontend_param.u.vsb.modulation = QAM_AUTO;
 			break;
 	}
-
 
 	if(ioctl(frontend_fd, FE_SET_FRONTEND, &frontend_param) < 0)
 	{
@@ -189,7 +180,6 @@ int DVBTune::open_tuner()
 		return 1;
 	}
 
-//printf("DVBTune::open_tuner 0x%x 0x%x\n", get_audio_pid(), get_video_pid());
 // Setting exactly one PES filter to 0x2000 dumps the entire
 // transport stream.
 	struct dmx_pes_filter_params pesfilter;
@@ -209,16 +199,13 @@ int DVBTune::open_tuner()
 		}
 	}
 
-
 	if(get_video_pid())
 	{
-
-
-    	pesfilter.pid = get_video_pid();
-    	pesfilter.input = DMX_IN_FRONTEND;
-    	pesfilter.output = DMX_OUT_TS_TAP;
-    	pesfilter.pes_type = DMX_PES_VIDEO;
-    	pesfilter.flags = DMX_IMMEDIATE_START;
+		pesfilter.pid = get_video_pid();
+		pesfilter.input = DMX_IN_FRONTEND;
+		pesfilter.output = DMX_OUT_TS_TAP;
+		pesfilter.pes_type = DMX_PES_VIDEO;
+		pesfilter.flags = DMX_IMMEDIATE_START;
 		if(ioctl(video_fd, DMX_SET_PES_FILTER, &pesfilter) < 0)
 		{
 			fprintf(stderr, 
@@ -239,11 +226,11 @@ int DVBTune::open_tuner()
 			return 1;
 		}
 
-    	pesfilter.pid = get_audio_pid();
-    	pesfilter.input = DMX_IN_FRONTEND;
-    	pesfilter.output = DMX_OUT_TS_TAP;
-    	pesfilter.pes_type = DMX_PES_AUDIO;
-    	pesfilter.flags = DMX_IMMEDIATE_START;
+		pesfilter.pid = get_audio_pid();
+		pesfilter.input = DMX_IN_FRONTEND;
+		pesfilter.output = DMX_OUT_TS_TAP;
+		pesfilter.pes_type = DMX_PES_AUDIO;
+		pesfilter.flags = DMX_IMMEDIATE_START;
 		if(ioctl(audio_fd, DMX_SET_PES_FILTER, &pesfilter) < 0)
 		{
 			fprintf(stderr, 
@@ -252,11 +239,6 @@ int DVBTune::open_tuner()
 			return 1;
 		}
 	}
-
-
-
-
-
 
 	if(!thread)
 	{
@@ -285,7 +267,7 @@ int DVBTune::close_tuner()
 	if(video_fd >= 0) close(video_fd);
 	if(dvr_fd >= 0) close(dvr_fd);
 	reset();
-	
+
 	return 0;
 }
 
@@ -303,7 +285,6 @@ int DVBTune::get_signal_strength(int *current_power, int *current_lock)
 		*current_power = 0;
 		*current_lock = 0;
 	}
-	
 
 	return 0;
 }
@@ -323,7 +304,6 @@ int DVBTune::read_data(unsigned char *data, int size)
 		return 0;
 	}
 
-
 // Copy data over
 	memcpy(data, buffer, size);
 // Shift buffer over
@@ -335,14 +315,8 @@ int DVBTune::read_data(unsigned char *data, int size)
 	}
 	this->buffer_size -= size;
 	buffer_lock->unlock();
-
 	return size;
 }
-
-
-
-
-
 
 
 #define BUFFER_SIZE 0x100000
@@ -372,7 +346,6 @@ void DVBTuneThread::run()
 		{
 			usleep(1000000);
 		}
-
 
 		int result = ::read(server->dvr_fd, temp, BUFFER_SIZE);
 		Thread::disable_cancel();
@@ -412,15 +385,6 @@ void DVBTuneThread::run()
 }
 
 
-
-
-
-
-
-
-
-
-
 DVBTuneStatus::DVBTuneStatus(DVBTune *server)
  : Thread(1, 0, 0)
 {
@@ -442,7 +406,6 @@ void DVBTuneStatus::run()
 		uint16_t snr, signal;
 		uint32_t ber, uncorrected_blocks;
 
-
 		bzero(&status, sizeof(status));
 		Thread::enable_cancel();
 		ioctl(server->frontend_fd, FE_READ_STATUS, &status);
@@ -452,9 +415,6 @@ void DVBTuneStatus::run()
 		ioctl(server->frontend_fd, FE_READ_UNCORRECTED_BLOCKS, &uncorrected_blocks);
 		Thread::disable_cancel();
 
-// 	printf ("DVBTuneStatus::run %02x | signal %04x | snr %04x | "
-// 		"ber %08x | unc %08x | ",
-// 		status, signal, snr, ber, uncorrected_blocks);
 		if (status & FE_HAS_LOCK)
 		{
 			printf("DVBTuneStatus::run FE_HAS_LOCK\n");
@@ -465,16 +425,3 @@ void DVBTuneStatus::run()
 	}
 #endif
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

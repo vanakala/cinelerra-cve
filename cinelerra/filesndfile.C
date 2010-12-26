@@ -63,79 +63,76 @@ void FileSndFile::asset_to_format()
 {
 	switch(asset->format)
 	{
-		case FILE_PCM:  fd_config.format = SF_FORMAT_RAW;  break;
-		case FILE_WAV:  fd_config.format = SF_FORMAT_WAV;  break;
-		case FILE_AU:   fd_config.format = SF_FORMAT_AU;   break;
-		case FILE_AIFF: fd_config.format = SF_FORMAT_AIFF; break;
+	case FILE_PCM:  fd_config.format = SF_FORMAT_RAW;  break;
+	case FILE_WAV:  fd_config.format = SF_FORMAT_WAV;  break;
+	case FILE_AU:   fd_config.format = SF_FORMAT_AU;   break;
+	case FILE_AIFF: fd_config.format = SF_FORMAT_AIFF; break;
 	}
 
 // Not all of these are allowed in all sound formats.
 // Raw can't be float.
 	switch(asset->bits)
 	{
-		case BITSLINEAR8:
-			if(asset->format == FILE_WAV)
-				fd_config.format |= SF_FORMAT_PCM_U8;
-			else
-			if(asset->signed_)
-				fd_config.format |= SF_FORMAT_PCM_S8;
-			else
-				fd_config.format |= SF_FORMAT_PCM_U8;
-			break;
+	case BITSLINEAR8:
+		if(asset->format == FILE_WAV)
+			fd_config.format |= SF_FORMAT_PCM_U8;
+		else
+		if(asset->signed_)
+			fd_config.format |= SF_FORMAT_PCM_S8;
+		else
+			fd_config.format |= SF_FORMAT_PCM_U8;
+		break;
 
-		case BITSLINEAR16:
-			fd_config.format |= SF_FORMAT_PCM_16;
+	case BITSLINEAR16:
+		fd_config.format |= SF_FORMAT_PCM_16;
+		if(asset->byte_order || asset->format == FILE_WAV)
+			fd_config.format |= SF_ENDIAN_LITTLE;
+		else
+			fd_config.format |= SF_ENDIAN_BIG;
+		break;
 
-			if(asset->byte_order || asset->format == FILE_WAV)
-				fd_config.format |= SF_ENDIAN_LITTLE;
-			else
-				fd_config.format |= SF_ENDIAN_BIG;
-			break;
+	case BITSLINEAR24:
+		fd_config.format |= SF_FORMAT_PCM_24;
 
-		case BITSLINEAR24:
-			fd_config.format |= SF_FORMAT_PCM_24;
+		if(asset->byte_order || asset->format == FILE_WAV)
+			fd_config.format |= SF_ENDIAN_LITTLE;
+		else
+			fd_config.format |= SF_ENDIAN_BIG;
+		break;
 
-			if(asset->byte_order || asset->format == FILE_WAV)
-				fd_config.format |= SF_ENDIAN_LITTLE;
-			else
-				fd_config.format |= SF_ENDIAN_BIG;
-			break;
+	case BITSLINEAR32:
+		fd_config.format |= SF_FORMAT_PCM_32;
 
-		case BITSLINEAR32:
-			fd_config.format |= SF_FORMAT_PCM_32;
+		if(asset->byte_order || asset->format == FILE_WAV)
+			fd_config.format |= SF_ENDIAN_LITTLE;
+		else
+			fd_config.format |= SF_ENDIAN_BIG;
+		break;
 
-			if(asset->byte_order || asset->format == FILE_WAV)
-				fd_config.format |= SF_ENDIAN_LITTLE;
-			else
-				fd_config.format |= SF_ENDIAN_BIG;
-			break;
+	case BITSULAW: 
+		fd_config.format |= SF_FORMAT_ULAW; 
+		break;
 
-		case BITSULAW: 
-			fd_config.format |= SF_FORMAT_ULAW; 
-			break;
+	case BITSFLOAT: 
+		fd_config.format |= SF_FORMAT_FLOAT; 
+		break;
 
-		case BITSFLOAT: 
-			fd_config.format |= SF_FORMAT_FLOAT; 
-			break;
-
-		case BITS_ADPCM: 
-			if(fd_config.format == FILE_WAV)
-				fd_config.format |= SF_FORMAT_MS_ADPCM;
-			else
-				fd_config.format |= SF_FORMAT_IMA_ADPCM; 
-			fd_config.format |= SF_FORMAT_PCM_16;
-			break;
+	case BITS_ADPCM: 
+		if(fd_config.format == FILE_WAV)
+			fd_config.format |= SF_FORMAT_MS_ADPCM;
+		else
+			fd_config.format |= SF_FORMAT_IMA_ADPCM; 
+		fd_config.format |= SF_FORMAT_PCM_16;
+		break;
 	}
 
 	fd_config.seekable = 1;
 	fd_config.samplerate = asset->sample_rate;
 	fd_config.channels  = asset->channels;
-//printf("FileSndFile::asset_to_format %x %d %d\n", fd_config.format, fd_config.pcmbitwidth, fd_config.channels);
 }
 
 void FileSndFile::format_to_asset()
 {
-//printf("FileSndFile::format_to_asset 1\n");
 // User supplies values if PCM
 	if(asset->format == 0)
 	{
@@ -143,61 +140,61 @@ void FileSndFile::format_to_asset()
 		asset->signed_ = 1;
 		switch(fd_config.format & SF_FORMAT_TYPEMASK)
 		{
-			case SF_FORMAT_WAV:  
-				asset->format = FILE_WAV;  
-				asset->byte_order = 1;
-				asset->header = 44;
-				break;
-			case SF_FORMAT_AIFF: asset->format = FILE_AIFF; break;
-			case SF_FORMAT_AU:   asset->format = FILE_AU;   break;
-			case SF_FORMAT_RAW:  asset->format = FILE_PCM;  break;
-			case SF_FORMAT_PAF:  asset->format = FILE_SND;  break;
-			case SF_FORMAT_SVX:  asset->format = FILE_SND;  break;
-			case SF_FORMAT_NIST: asset->format = FILE_SND;  break;
+		case SF_FORMAT_WAV:
+			asset->format = FILE_WAV;  
+			asset->byte_order = 1;
+			asset->header = 44;
+			break;
+		case SF_FORMAT_AIFF: asset->format = FILE_AIFF; break;
+		case SF_FORMAT_AU:   asset->format = FILE_AU;   break;
+		case SF_FORMAT_RAW:  asset->format = FILE_PCM;  break;
+		case SF_FORMAT_PAF:  asset->format = FILE_SND;  break;
+		case SF_FORMAT_SVX:  asset->format = FILE_SND;  break;
+		case SF_FORMAT_NIST: asset->format = FILE_SND;  break;
 		}
 
 		switch(fd_config.format & SF_FORMAT_SUBMASK)
 		{
-			case SF_FORMAT_FLOAT: 
-				asset->bits = BITSFLOAT; 
-				break;
-			case SF_FORMAT_ULAW: 
-				asset->bits = BITSULAW; 
-				break;
-			case SF_FORMAT_IMA_ADPCM:
-			case SF_FORMAT_MS_ADPCM:
-				asset->bits = BITS_ADPCM;
-				break;
-			case SF_FORMAT_PCM_16:
-				asset->signed_ = 1;
-				asset->bits = 16;
-				break;
-			case SF_FORMAT_PCM_24:
-				asset->signed_ = 1;
-				asset->bits = 24;
-				break;
-			case SF_FORMAT_PCM_32:
-				asset->signed_ = 1;
-				asset->bits = 32;
-				break;
-			case SF_FORMAT_PCM_S8:
-				asset->signed_ = 1;
-				asset->bits = BITSLINEAR8;
-				break;
-			case SF_FORMAT_PCM_U8:
-				asset->signed_ = 0;
-				asset->bits = BITSLINEAR8;
-				break;
+		case SF_FORMAT_FLOAT: 
+			asset->bits = BITSFLOAT; 
+			break;
+		case SF_FORMAT_ULAW: 
+			asset->bits = BITSULAW; 
+			break;
+		case SF_FORMAT_IMA_ADPCM:
+		case SF_FORMAT_MS_ADPCM:
+			asset->bits = BITS_ADPCM;
+			break;
+		case SF_FORMAT_PCM_16:
+			asset->signed_ = 1;
+			asset->bits = 16;
+			break;
+		case SF_FORMAT_PCM_24:
+			asset->signed_ = 1;
+			asset->bits = 24;
+			break;
+		case SF_FORMAT_PCM_32:
+			asset->signed_ = 1;
+			asset->bits = 32;
+			break;
+		case SF_FORMAT_PCM_S8:
+			asset->signed_ = 1;
+			asset->bits = BITSLINEAR8;
+			break;
+		case SF_FORMAT_PCM_U8:
+			asset->signed_ = 0;
+			asset->bits = BITSLINEAR8;
+			break;
 		}
 
 		switch(fd_config.format & SF_FORMAT_ENDMASK)
 		{
-			case SF_ENDIAN_LITTLE:
-				asset->byte_order = 1;
-				break;
-			case SF_ENDIAN_BIG:
-				asset->byte_order = 0;
-				break;
+		case SF_ENDIAN_LITTLE:
+			asset->byte_order = 1;
+			break;
+		case SF_ENDIAN_BIG:
+			asset->byte_order = 0;
+			break;
 		}
 
 		asset->channels = fd_config.channels;
@@ -207,8 +204,6 @@ void FileSndFile::format_to_asset()
 	asset->audio_length = fd_config.frames;
 	if(!asset->sample_rate)
 		asset->sample_rate = fd_config.samplerate;
-//printf("FileSndFile::format_to_asset %x %d %d %x\n", fd_config.format & SF_FORMAT_TYPEMASK, fd_config.pcmbitwidth, fd_config.samples, fd_config.format & SF_FORMAT_SUBMASK);
-//asset->dump();
 }
 
 int FileSndFile::open_file(int rd, int wr)
@@ -237,11 +232,8 @@ SET_TRACE
 	else
 	if(wr)
 	{
-printf("FileSNDFile::open 1\n");
 		asset_to_format();
-printf("FileSNDFile::open 1\n");
 		fd = sf_open(asset->path, SFM_WRITE, &fd_config);
-printf("FileSNDFile::open 10 %p\n", fd);
 	}
 
 	if(!fd) 
@@ -277,7 +269,6 @@ int FileSndFile::read_samples(double *buffer, int len)
 {
 	int result = 0;
 
-//printf("FileSndFile::read_samples %lld %lld\n", file->current_sample, len);
 // Get temp buffer for interleaved channels
 	if(len <= 0 || len > 1000000)
 		errormsg("Illegal length=%d", len);
@@ -320,7 +311,6 @@ int FileSndFile::write_samples(double **buffer, int len)
 	int result = 0;
 
 // Get temp buffer for interleaved channels
-//printf("FileSndFile::read_samples 1\n");
 	if(temp_allocated && temp_allocated < len)
 	{
 		temp_allocated = 0;
@@ -328,7 +318,6 @@ int FileSndFile::write_samples(double **buffer, int len)
 		temp_double = 0;
 	}
 
-//printf("FileSndFile::read_samples 2\n");
 	if(!temp_allocated)
 	{
 		temp_allocated = len;
@@ -342,8 +331,6 @@ int FileSndFile::write_samples(double **buffer, int len)
 		{
 			double sample = buffer[i][j];
 // Libsndfile does not limit values
-//if(sample > 1.0 || sample < -1.0) printf("FileSndFile::write_samples %f\n", sample);
-//printf("FileSndFile::write_samples %d %d\n", asset->bits, BITSFLOAT);
 			if(asset->bits != BITSFLOAT) CLAMP(sample, -1.0, (32767.0 / 32768.0));
 			temp_double[j * asset->channels + i] = sample;
 		}
@@ -372,8 +359,8 @@ void FileSndFile::get_parameters(BC_WindowBase *parent_window,
 
 SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	250,
 	250)
 {
@@ -385,6 +372,7 @@ SndFileConfig::~SndFileConfig()
 {
 	if(bits_popup) delete bits_popup;
 }
+
 int SndFileConfig::create_objects()
 {
 	int x = 10, y = 10;
@@ -392,18 +380,18 @@ int SndFileConfig::create_objects()
 	bits_popup = 0;
 	switch(asset->format)
 	{
-		case FILE_WAV:
-		case FILE_PCM:
-		case FILE_AIFF:
-			add_tool(new BC_Title(x, y, _("Compression:")));
-			y += 25;
-			if(asset->format == FILE_WAV)
-				bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 1, 1, 0);
-			else
-				bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 0, 0, 0);
-			y += 40;
-			bits_popup->create_objects();
-			break;
+	case FILE_WAV:
+	case FILE_PCM:
+	case FILE_AIFF:
+		add_tool(new BC_Title(x, y, _("Compression:")));
+		y += 25;
+		if(asset->format == FILE_WAV)
+			bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 1, 1, 0);
+		else
+			bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 0, 0, 0);
+		y += 40;
+		bits_popup->create_objects();
+		break;
 	}
 
 	x = 10;
@@ -429,7 +417,6 @@ int SndFileConfig::close_event()
 }
 
 
-
 SndFileHILO::SndFileHILO(SndFileConfig *gui, int x, int y)
  : BC_Radial(x, y, gui->asset->byte_order == 0, _("Hi Lo"))
 {
@@ -443,8 +430,6 @@ int SndFileHILO::handle_event()
 }
 
 
-
-
 SndFileLOHI::SndFileLOHI(SndFileConfig *gui, int x, int y)
  : BC_Radial(x, y, gui->asset->byte_order == 1, _("Lo Hi"))
 {
@@ -456,5 +441,3 @@ int SndFileLOHI::handle_event()
 	gui->hilo->update(0);
 	return 1;
 }
-
-

@@ -26,12 +26,12 @@
 
 
 int64_t FileBase::samples_to_raw(char *out_buffer, 
-					float **in_buffer,
-					int input_len, 
-					int bits, 
-					int channels,
-					int byte_order,
-					int signed_)
+		float **in_buffer,
+		int input_len,
+		int bits,
+		int channels,
+		int byte_order,
+		int signed_)
 {
 	int output_advance;       // number of bytes in a sample
 	float *buffer_channel;    // channel in input buffer
@@ -45,134 +45,131 @@ int64_t FileBase::samples_to_raw(char *out_buffer,
 
 	switch(bits)
 	{
-		case BITSLINEAR8:
+	case BITSLINEAR8:
+		{
+			char *output_ptr, *output_end;
+			output_advance = channels;
+			for(channel = 0; channel < channels; channel++)
 			{
-				char *output_ptr, *output_end;
-				output_advance = channels;
-				for(channel = 0; channel < channels; channel++)
-				{
-					output_ptr = out_buffer + channel;
-					buffer_channel = in_buffer[channel];
-					buffer_channel_end = buffer_channel + input_len;
+				output_ptr = out_buffer + channel;
+				buffer_channel = in_buffer[channel];
+				buffer_channel_end = buffer_channel + input_len;
 
-					if(dither)
+				if(dither)
+				{
+					for( ; buffer_channel < buffer_channel_end; buffer_channel++)
 					{
-						for( ; buffer_channel < buffer_channel_end; buffer_channel++)
-						{
-							float_sample = *buffer_channel * 0x7fff;
-							int_sample = (int64_t)float_sample;
-							if(int_sample > -0x7f00) { dither_value = rand() % dither_scale; int_sample -= dither_value; }
-							int_sample /= 0x100;  // rotating bits screws up the signs
-							*output_ptr = int_sample;
-							output_ptr += output_advance;
-						}
-					}
-					else
-					{
-						for( ; buffer_channel < buffer_channel_end; buffer_channel++)
-						{
-							float_sample = *buffer_channel * 0x7f;
-							*output_ptr = (char)float_sample;
-							output_ptr += output_advance;
-						}
+						float_sample = *buffer_channel * 0x7fff;
+						int_sample = (int64_t)float_sample;
+						if(int_sample > -0x7f00) { dither_value = rand() % dither_scale; int_sample -= dither_value; }
+						int_sample /= 0x100;  // rotating bits screws up the signs
+						*output_ptr = int_sample;
+						output_ptr += output_advance;
 					}
 				}
+				else
+				{
+					for( ; buffer_channel < buffer_channel_end; buffer_channel++)
+					{
+						float_sample = *buffer_channel * 0x7f;
+						*output_ptr = (char)float_sample;
+						output_ptr += output_advance;
+					}
+				}
+			}
 
 // fix signed
-				if(!signed_)
-				{
-					output_ptr = out_buffer;
-					output_end = out_buffer + bytes;
-
-					for( ; output_ptr < output_end; output_ptr++)
-						*output_ptr ^= 0x80;
-				}
-			}
-			break;
-
-		case BITSLINEAR16:
+			if(!signed_)
 			{
-				int16_t *output_ptr, *output_end;
-				output_advance = channels;
-				for(channel = 0; channel < channels; channel++)
-				{
-					output_ptr = (int16_t*)out_buffer + channel;
-					buffer_channel = in_buffer[channel];
-					buffer_channel_end = buffer_channel + input_len;
+				output_ptr = out_buffer;
+				output_end = out_buffer + bytes;
 
-					if(dither)
-					{
-						for( ; buffer_channel < buffer_channel_end; buffer_channel++)
-						{
-							float_sample = *buffer_channel * 0x7fffff;
-							int_sample = (int64_t)float_sample;
-							if(int_sample > -0x7fff00) { dither_value = rand() % dither_scale; int_sample -= dither_value; }
-							int_sample /= 0x100;
-							*output_ptr = int_sample;
-							output_ptr += output_advance;
-						}
-					}
-					else
-					{
-						for( ; buffer_channel < buffer_channel_end; buffer_channel++)
-						{
-							float_sample = *buffer_channel * 0x7fff;
-							*output_ptr = (int16_t)float_sample;
-							output_ptr += output_advance;
-						}
-					}
-				}
+				for( ; output_ptr < output_end; output_ptr++)
+					*output_ptr ^= 0x80;
 			}
-			break;
+		}
+		break;
 
-		case BITSLINEAR24:
+	case BITSLINEAR16:
+		{
+			int16_t *output_ptr, *output_end;
+			output_advance = channels;
+			for(channel = 0; channel < channels; channel++)
 			{
-				char *output_ptr, *output_end;
-				output_advance = asset->channels * 3 - 2;
-				for(channel = 0; channel < channels; channel++)
-				{
-					output_ptr = out_buffer + channel * 3;
-					buffer_channel = in_buffer[channel];
-					buffer_channel_end = buffer_channel + input_len;
+				output_ptr = (int16_t*)out_buffer + channel;
+				buffer_channel = in_buffer[channel];
+				buffer_channel_end = buffer_channel + input_len;
 
-// don't bother dithering 24 bits
+				if(dither)
+				{
 					for( ; buffer_channel < buffer_channel_end; buffer_channel++)
 					{
 						float_sample = *buffer_channel * 0x7fffff;
 						int_sample = (int64_t)float_sample;
-						int_sample2 = int_sample & 0xff0000;
-						*output_ptr++ = (int_sample & 0xff);
-						int_sample &= 0xff00;
-						*output_ptr++ = (int_sample >> 8);
-						*output_ptr = (int_sample2 >> 16);
+						if(int_sample > -0x7fff00) { dither_value = rand() % dither_scale; int_sample -= dither_value; }
+						int_sample /= 0x100;
+						*output_ptr = int_sample;
 						output_ptr += output_advance;
 					}
 				}
-			}
-			break;
-		
-		case BITSULAW:
-			{
-				char *output_ptr;
-				output_advance = asset->channels;
-//printf("FileBase::samples_to_raw 1\n");
-				generate_ulaw_tables();
-//printf("FileBase::samples_to_raw 2\n");
-
-				for(channel = 0; channel < channels; channel++)
+				else
 				{
-					output_ptr = out_buffer + channel;
-					buffer_channel = in_buffer[channel];
-					buffer_channel_end = buffer_channel + input_len;
 					for( ; buffer_channel < buffer_channel_end; buffer_channel++)
 					{
-						*output_ptr = floattoulaw(*buffer_channel);
+						float_sample = *buffer_channel * 0x7fff;
+						*output_ptr = (int16_t)float_sample;
 						output_ptr += output_advance;
 					}
 				}
-//printf("FileBase::samples_to_raw 3\n");
 			}
-			break;
+		}
+		break;
+
+	case BITSLINEAR24:
+		{
+			char *output_ptr, *output_end;
+			output_advance = asset->channels * 3 - 2;
+			for(channel = 0; channel < channels; channel++)
+			{
+				output_ptr = out_buffer + channel * 3;
+				buffer_channel = in_buffer[channel];
+				buffer_channel_end = buffer_channel + input_len;
+
+// don't bother dithering 24 bits
+				for( ; buffer_channel < buffer_channel_end; buffer_channel++)
+				{
+					float_sample = *buffer_channel * 0x7fffff;
+					int_sample = (int64_t)float_sample;
+					int_sample2 = int_sample & 0xff0000;
+					*output_ptr++ = (int_sample & 0xff);
+					int_sample &= 0xff00;
+					*output_ptr++ = (int_sample >> 8);
+					*output_ptr = (int_sample2 >> 16);
+					output_ptr += output_advance;
+				}
+			}
+		}
+		break;
+
+	case BITSULAW:
+		{
+			char *output_ptr;
+			output_advance = asset->channels;
+			generate_ulaw_tables();
+
+			for(channel = 0; channel < channels; channel++)
+			{
+				output_ptr = out_buffer + channel;
+				buffer_channel = in_buffer[channel];
+				buffer_channel_end = buffer_channel + input_len;
+				for( ; buffer_channel < buffer_channel_end; buffer_channel++)
+				{
+					*output_ptr = floattoulaw(*buffer_channel);
+					output_ptr += output_advance;
+				}
+			}
+		}
+		break;
 	}
 
 // swap bytes
@@ -243,33 +240,33 @@ int FileBase::raw_to_samples(float *out_buffer, const char *in_buffer,
 	const char *inbuffer_8;               // point to actual byte being read
 	int16_t *inbuffer_16;
 	const char *inbuffer_24;
-	int sample_24;                                         
+	int sample_24;
 	float current_gain;
 	int input_frame;                   // amount to advance the input buffer pointer
 
 // set up the parameters
 	switch(bits)
 	{
-		case BITSLINEAR8:  
-			inbuffer_8 = in_buffer + channel;
-			input_frame = channels;
-			break;
-			
-		case BITSLINEAR16: 
-			inbuffer_16 = (int16_t *)in_buffer + channel;          
-			input_frame = channels;
-			break;
-			 
-		case BITSLINEAR24: 
-			inbuffer_24 = in_buffer + channel * 3;
-			input_frame = channels * file->bytes_per_sample(bits) - 2; 
-			break;
-		
-		case BITSULAW:
-			generate_ulaw_tables();
-			inbuffer_8 = in_buffer + channel;
-			input_frame = channels;
-			break;
+	case BITSLINEAR8:
+		inbuffer_8 = in_buffer + channel;
+		input_frame = channels;
+		break;
+
+	case BITSLINEAR16: 
+		inbuffer_16 = (int16_t *)in_buffer + channel;          
+		input_frame = channels;
+		break;
+
+	case BITSLINEAR24: 
+		inbuffer_24 = in_buffer + channel * 3;
+		input_frame = channels * file->bytes_per_sample(bits) - 2; 
+		break;
+
+	case BITSULAW:
+		generate_ulaw_tables();
+		inbuffer_8 = in_buffer + channel;
+		input_frame = channels;
+		break;
 	}
 
 // read the data
@@ -279,58 +276,57 @@ int FileBase::raw_to_samples(float *out_buffer, const char *in_buffer,
 // left feather
 		switch(bits)
 		{
-			case BITSLINEAR8:
-				LFEATHER_MACRO1;                                             
-				READ_8_MACRO; 
-				LFEATHER_MACRO2;
-				break;
+		case BITSLINEAR8:
+			LFEATHER_MACRO1;
+			READ_8_MACRO; 
+			LFEATHER_MACRO2;
+			break;
 
-			case BITSLINEAR16:
-				LFEATHER_MACRO1;                                             
-				READ_16_MACRO; 
-				LFEATHER_MACRO2;
-				break;
+		case BITSLINEAR16:
+			LFEATHER_MACRO1;
+			READ_16_MACRO; 
+			LFEATHER_MACRO2;
+			break;
 
-			case BITSLINEAR24:                                               
-				LFEATHER_MACRO1;                                             
-				READ_24_MACRO; 
-				LFEATHER_MACRO2;
-				break;
-			
-			case BITSULAW:
-				LFEATHER_MACRO1;
-				READ_ULAW_MACRO;
-				LFEATHER_MACRO2;
-				break;
+		case BITSLINEAR24:
+			LFEATHER_MACRO1;
+			READ_24_MACRO;
+			LFEATHER_MACRO2;
+			break;
+
+		case BITSULAW:
+			LFEATHER_MACRO1;
+			READ_ULAW_MACRO;
+			LFEATHER_MACRO2;
+			break;
 		}
-	
 
 // central region
 		switch(bits)
 		{
-			case BITSLINEAR8:                                                  
-				CENTER_MACRO1;
-				READ_8_MACRO; 
-				CENTER_MACRO2;
-				break;
+		case BITSLINEAR8:
+			CENTER_MACRO1;
+			READ_8_MACRO; 
+			CENTER_MACRO2;
+			break;
 
-			case BITSLINEAR16:
-				CENTER_MACRO1;
-				READ_16_MACRO;
-				CENTER_MACRO2;
-				break;
+		case BITSLINEAR16:
+			CENTER_MACRO1;
+			READ_16_MACRO;
+			CENTER_MACRO2;
+			break;
 
-			case BITSLINEAR24:
-				CENTER_MACRO1;
-				READ_24_MACRO;
-				CENTER_MACRO2;
-				break;
-			
-			case BITSULAW:
-				CENTER_MACRO1;
-				READ_ULAW_MACRO;
-				CENTER_MACRO2;
-				break;
+		case BITSLINEAR24:
+			CENTER_MACRO1;
+			READ_24_MACRO;
+			CENTER_MACRO2;
+			break;
+
+		case BITSULAW:
+			CENTER_MACRO1;
+			READ_ULAW_MACRO;
+			CENTER_MACRO2;
+			break;
 		}
 	}
 	else
@@ -338,29 +334,41 @@ int FileBase::raw_to_samples(float *out_buffer, const char *in_buffer,
 	{
 		switch(bits)
 		{
-			case BITSLINEAR8:
-				for(; output_current < input_len; 
-					output_current++) 
-				{ READ_8_MACRO; out_buffer[output_current] = sample; }
-				break;
+		case BITSLINEAR8:
+			for(; output_current < input_len; 
+				output_current++)
+			{ 
+				READ_8_MACRO;
+				out_buffer[output_current] = sample;
+			}
+			break;
 
-			case BITSLINEAR16:
-				for(; output_current < input_len; 
-					output_current++) 
-				{ READ_16_MACRO; out_buffer[output_current] = sample; }
-				break;
+		case BITSLINEAR16:
+			for(; output_current < input_len;
+				output_current++)
+			{
+				READ_16_MACRO;
+				out_buffer[output_current] = sample;
+			}
+			break;
 
-			case BITSLINEAR24:
-				for(; output_current < input_len; 
-					output_current++) 
-				{ READ_24_MACRO; out_buffer[output_current] = sample; }
-				break;
-			
-			case BITSULAW:
-				for(; output_current < input_len; 
-					output_current++) 
-				{ READ_ULAW_MACRO; out_buffer[output_current] = sample; }
-				break;
+		case BITSLINEAR24:
+			for(; output_current < input_len;
+				output_current++)
+			{
+				READ_24_MACRO;
+				out_buffer[output_current] = sample;
+			}
+			break;
+
+		case BITSULAW:
+			for(; output_current < input_len;
+				output_current++)
+			{
+				READ_ULAW_MACRO;
+				out_buffer[output_current] = sample;
+			}
+			break;
 		}
 	}
 
