@@ -31,6 +31,7 @@ class PluginClient;
 
 #include "arraylist.h"
 #include "autos.h"
+#include "bcsignals.h"
 #include "condition.h"
 #include "edlsession.inc"
 #include "keyframe.h"
@@ -133,7 +134,7 @@ void thread_class::run() \
 #define PLUGIN_CONSTRUCTOR_MACRO \
 	thread = 0; \
 	defaults = 0; \
-	load_defaults(); \
+	load_defaults();
 
 #define PLUGIN_DESTRUCTOR_MACRO \
 	if(thread) \
@@ -142,7 +143,6 @@ void thread_class::run() \
 /* Since we now use autodelete, this is all that has to be done, thread will take care of itself ... */ \
 /* Thread join will wait if this was not called from the thread itself or go on if it was */ \
 		thread->window->set_done(0); \
-		thread->join(); \
 	} \
  \
  \
