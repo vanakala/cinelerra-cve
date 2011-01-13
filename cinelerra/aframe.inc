@@ -19,11 +19,9 @@
  * 
  */
 
-#ifndef PLUGINSERVER_INC
-#define PLUGINSERVER_INC
+#ifndef AFRAME_INC
+#define AFRAME_INC
 
-#define AFRAMES_IN_PLUGIN 32
-class PluginServer;
-class PluginGUIServer;
+class AFrame;
 
 #endif

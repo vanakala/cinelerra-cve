@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "aframe.h"
 #include "bcsignals.h"
 #include "byteorder.h"
 #include "cache.inc"
@@ -867,10 +868,10 @@ int File::set_video_position(framenum position, float base_framerate, int is_thr
 }
 
 // No resampling here.
-int File::write_samples(double **buffer, int len)
+int File::write_samples(AFrame **buffer, int len)
 { 
 	int result = 1;
-	
+
 	if(file)
 	{
 		write_lock->lock("File::write_samples");
@@ -936,7 +937,7 @@ int File::write_video_buffer(int len)
 	return result;
 }
 
-double** File::get_audio_buffer()
+AFrame** File::get_audio_buffer()
 {
 	if(audio_thread) return audio_thread->get_audio_buffer();
 	return 0;
@@ -948,12 +949,41 @@ VFrame*** File::get_video_buffer()
 	return 0;
 }
 
+int File::get_samples(AFrame *aframe)
+{
+	int result;
+
+	if(aframe->samplerate == 0)
+		aframe->samplerate = asset->sample_rate;
+	if(aframe->buffer_length <= 0)
+		return 0;
+	if(aframe->source_duration <= 0)
+	{
+		if(aframe->source_length > 0)
+			aframe->source_duration = (ptstime)aframe->source_length / aframe->samplerate;
+		else
+			return 0;
+	} else
+		aframe->source_length = round(aframe->source_duration * aframe->samplerate);
+	aframe->position = round(aframe->source_pts * aframe->samplerate);
+	if(aframe->length + aframe->source_length > aframe->buffer_length)
+		aframe->source_length = aframe->buffer_length - aframe->length;
+	if(aframe->source_length <= 0)
+		return 0;
+	current_sample = aframe->position;
+	current_channel = aframe->channel;
+	if(current_sample + aframe->source_length > asset->audio_length)
+		aframe->source_length = asset->audio_length - current_sample;
+	result = read_samples(aframe->buffer + aframe->length, aframe->source_length, aframe->samplerate);
+	aframe->length += aframe->source_length;
+	aframe->duration = (ptstime)aframe->length / aframe->samplerate;
+	return result;
+}
 
 int File::read_samples(double *buffer, int len, int base_samplerate, float *buffer_float)
 {
 	int result = 0;
 	if(len < 0) return 0;
-
 // Never try to read more samples than exist in the file
 	if (current_sample + len > asset->audio_length) {
 		len = asset->audio_length - current_sample;

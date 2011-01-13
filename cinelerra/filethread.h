@@ -22,6 +22,7 @@
 #ifndef FILETHREAD_H
 #define FILETHREAD_H
 
+#include "aframe.inc"
 #include "condition.inc"
 #include "datatype.h"
 #include "file.inc"
@@ -91,14 +92,14 @@ public:
 // write data into next available buffer
 	int write_buffer(long size);
 // get pointer to next buffer to be written and lock it
-	double** get_audio_buffer();
+	AFrame** get_audio_buffer();
 // get pointer to next frame to be written and lock it
 	VFrame*** get_video_buffer();
 
 	void run();
 	int swap_buffer();
 
-	double ***audio_buffer;
+	AFrame ***audio_buffer;
 // (VFrame*)(VFrame array *)(Track *)[ring buffer]
 	VFrame ****video_buffer;
 	long *output_size;  // Number of frames or samples to write

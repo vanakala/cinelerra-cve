@@ -30,6 +30,7 @@ class AModuleInv;
 class AModuleMute;
 class AModuleReset;
 
+#include "aframe.inc"
 #include "amodule.inc"
 #include "aplugin.inc"
 #include "datatype.h"
@@ -53,18 +54,11 @@ public:
 
 	void create_objects();
 	CICache* get_cache();
-	int render(double *buffer, 
-		ptstime input_postime,
-		int input_len, 
-		int direction,
-		int sample_rate,
-		int use_nudge);
-	void reverse_buffer(double *buffer, int len);
+
+	int render(AFrame *aframe);
 	int get_buffer_size();
 
 	AttachmentPoint* new_attachment(Plugin *plugin);
-
-
 
 
 // synchronization with tracks
@@ -77,8 +71,7 @@ public:
 	int current_level;
 
 // Temporary buffer for rendering transitions
-	double *transition_temp;
-	int transition_temp_alloc;
+	AFrame *transition_temp;
 };
 
 

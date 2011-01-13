@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "arender.h"
 #include "asset.h"
 #include "auto.h"
@@ -266,6 +267,8 @@ void PackageRenderer::create_engine()
 
 void PackageRenderer::do_audio()
 {
+	AFrame *audio_output_ptr[MAX_CHANNELS];
+	AFrame **audio_output;
 // Do audio data
 	if(asset->audio_data)
 	{
@@ -276,13 +279,11 @@ void PackageRenderer::do_audio()
 				audio_output[i] : 
 				0;
 
-
 // Call render engine
 		result = render_engine->arender->process_buffer(audio_output_ptr, 
-			audio_read_length,
 			render_engine->arender->fromunits(audio_position),
+			render_engine->arender->fromunits(audio_read_length),
 			0);
-
 
 // Fix buffers for preroll
 		samplenum output_length = audio_read_length;
@@ -298,7 +299,7 @@ void PackageRenderer::do_audio()
 					if(audio_output_ptr[i])
 						for(int j = 0; j < output_length; j++)
 						{
-							audio_output_ptr[i][j] = audio_output_ptr[i][j + audio_read_length - output_length];
+							audio_output_ptr[i]->buffer[j] = audio_output_ptr[i]->buffer[j + audio_read_length - output_length];
 						}
 				}
 			}

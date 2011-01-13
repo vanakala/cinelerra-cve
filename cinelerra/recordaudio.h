@@ -67,7 +67,7 @@ private:
 	RecordThread *record_thread;
 	double *max;
 	int *over;
-	double **input;
+	AFrame **input;
 	RecordGUI *gui;
 	int buffer_size, fragment_size;
 	samplenum fragment_position;

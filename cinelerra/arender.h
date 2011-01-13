@@ -23,6 +23,7 @@
 #define ARENDER_H
 
 #include "atrack.inc"
+#include "aframe.inc"
 #include "commonrender.h"
 #include "maxchannels.h"
 
@@ -49,7 +50,7 @@ public:
 	int get_history_number(int64_t *table, samplenum position);
 
 // output buffers for audio device
-	double *audio_out[MAXCHANNELS];
+	AFrame *audio_out[MAXCHANNELS];
 // information for meters
 	int get_next_peak(int current_peak);
 // samples to use for one meter update.  Must be multiple of fragment_len
@@ -77,15 +78,13 @@ public:
 // process a buffer
 // renders into buffer_out argument when no audio device
 // handles playback autos
-	int process_buffer(double **buffer_out, int input_len, ptstime input_postime, int last_buffer);
+	int process_buffer(AFrame **buffer_out, ptstime input_postime, 
+		ptstime input_duration, int last_buffer);
 // renders to a device when there's a device
 	int process_buffer(int input_len, ptstime input_postime);
 
 	void send_last_buffer();
 	int wait_device_completion();
-
-// reverse the data in a buffer
-	int reverse_buffer(double *buffer, int len);
 
 private:
 // initialize buffer_out

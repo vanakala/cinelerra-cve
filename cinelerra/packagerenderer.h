@@ -125,7 +125,6 @@ public:
 
 // Created locally
 	Asset *asset;
-	double **audio_output;
 	samplenum audio_position;
 	samplenum audio_preroll;
 	samplenum audio_read_length;
@@ -136,7 +135,6 @@ public:
 // A nonzero mwindow signals master render engine to the engine.
 // A zero mwindow signals client or non interactive.
 	MWindow *mwindow;
-	double *audio_output_ptr[MAX_CHANNELS];
 	CICache *audio_cache;
 	CICache *video_cache;
 	VFrame *compressed_output;

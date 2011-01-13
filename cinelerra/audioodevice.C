@@ -30,17 +30,16 @@
 
 #include <string.h>
 
-int AudioDevice::write_buffer(double **output, int samples)
+void AudioDevice::write_buffer(double **output, int samples)
 {
 // find free buffer to fill
-	if(interrupt) return 0;
+	if(interrupt) return;
 	arm_buffer(arm_buffer_num, output, samples);
 	arm_buffer_num++;
 	if(arm_buffer_num >= TOTAL_BUFFERS) arm_buffer_num = 0;
-	return 0;
 }
 
-int AudioDevice::set_last_buffer()
+void AudioDevice::set_last_buffer(void)
 {
 	arm_lock[arm_buffer_num]->lock("AudioDevice::set_last_buffer");
 	last_buffer[arm_buffer_num] = 1;
@@ -48,19 +47,17 @@ int AudioDevice::set_last_buffer()
 
 	arm_buffer_num++;
 	if(arm_buffer_num >= TOTAL_BUFFERS) arm_buffer_num = 0;
-	return 0;
 }
 
 
 // must run before threading once to allocate buffers
 // must send maximum size buffer the first time or risk reallocation while threaded
-int AudioDevice::arm_buffer(int buffer_num, 
+void AudioDevice::arm_buffer(int buffer_num, 
 	double **output, 
 	int samples)
 {
 	int bits;
 	int new_size;
-
 	int i, j;
 	int input_offset;
 	int output_offset;
@@ -80,11 +77,11 @@ int AudioDevice::arm_buffer(int buffer_num,
 
 	new_size = frame * samples;
 
-	if(interrupt) return 1;
+	if(interrupt) return;
 
 // wait for buffer to become available for writing
 	arm_lock[buffer_num]->lock("AudioDevice::arm_buffer");
-	if(interrupt) return 1;
+	if(interrupt) return;
 
 	if(new_size > buffer_size[buffer_num])
 	{
@@ -96,8 +93,8 @@ int AudioDevice::arm_buffer(int buffer_num,
 	buffer_size[buffer_num] = new_size;
 
 	buffer_num_buffer = output_buffer[buffer_num];
-	bzero(buffer_num_buffer, new_size);
-	
+	memset(buffer_num_buffer, 0, new_size);
+
 	last_input_channel = device_channels - 1;
 // copy data
 // intel byte order only to correspond with bits_to_fmt
@@ -207,10 +204,9 @@ int AudioDevice::arm_buffer(int buffer_num,
 
 // make buffer available for playback
 	play_lock[buffer_num]->unlock();
-	return 0;
 }
 
-int AudioDevice::reset_output()
+void AudioDevice::reset_output()
 {
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
@@ -231,23 +227,20 @@ int AudioDevice::reset_output()
 	arm_buffer_num = 0;
 	last_position = 0;
 	interrupt = 0;
-	return 0;
 }
 
 
-int AudioDevice::set_play_dither(int status)
+void AudioDevice::set_play_dither(int status)
 {
 	play_dither = status;
-	return 0;
 }
 
-int AudioDevice::set_software_positioning(int status)
+void AudioDevice::set_software_positioning(int status)
 {
 	software_position_info = status;
-	return 0;
 }
 
-int AudioDevice::start_playback()
+void AudioDevice::start_playback()
 {
 // arm buffer before doing this
 	is_playing_back = 1;
@@ -260,7 +253,7 @@ int AudioDevice::start_playback()
 	Thread::start();                  // synchronize threads by starting playback here and blocking
 }
 
-int AudioDevice::interrupt_playback()
+void AudioDevice::interrupt_playback()
 {
 	interrupt = 1;
 
@@ -278,23 +271,19 @@ int AudioDevice::interrupt_playback()
 // When TRACE_LOCKS is enabled, this
 // locks up when run() is waiting on it at just the right time.
 // Seems there may be a cancel after the trace lock is locked.
-		play_lock[i]->unlock();  
+		play_lock[i]->unlock();
 		arm_lock[i]->unlock();
 	}
-
-	return 0;
 }
 
-int AudioDevice::wait_for_startup()
+void AudioDevice::wait_for_startup()
 {
 	startup_lock->lock("AudioDevice::wait_for_startup");
-	return 0;
 }
 
-int AudioDevice::wait_for_completion()
+void AudioDevice::wait_for_completion()
 {
 	Thread::join();
-	return 0;
 }
 
 

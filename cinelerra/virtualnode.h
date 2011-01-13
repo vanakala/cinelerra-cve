@@ -117,9 +117,7 @@ protected:
 	void get_mute_fragment(ptstime input_position,
 				int &mute_constant, 
 				ptstime &fragment_len,
-				Autos *autos,
-				int direction,
-				int use_nudge);
+				Autos *autos);
 
 private:
 	int sort_as_module(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);

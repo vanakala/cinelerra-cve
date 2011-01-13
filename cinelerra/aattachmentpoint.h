@@ -22,7 +22,7 @@
 #ifndef AATTACHMENTPOINT_H
 #define AATTACHMENTPOINT_H
 
-
+#include "aframe.h"
 #include "attachmentpoint.h"
 
 class AAttachmentPoint : public AttachmentPoint
@@ -33,14 +33,10 @@ public:
 
 	void delete_buffer_vector();
 	void new_buffer_vector(int total, int size);
-	void render(double *output, 
-		int buffer_number,
-		ptstime start_position, 
-		int len,
-		int sample_rate);
+	void render(AFrame *output, int buffer_number);
 
 // Storage for multichannel plugins
-	double **buffer_vector;
+	AFrame **buffer_vector;
 	int buffer_allocation;
 };
 

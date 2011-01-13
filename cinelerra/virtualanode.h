@@ -49,54 +49,35 @@ public:
 
 // Called by VirtualAConsole::process_buffer to process exit_nodes.
 // read_data recurses down the tree.
-	void render(double *output_temp,
-		ptstime start_postime,
-		int len);
+	void render(AFrame *aframe);
 
 // Read data from whatever comes before this node.
 // Calls render in either the parent node or the module for the track.
-	int read_data(double *output_temp,
-		ptstime start_postime,
-		int len);
+	int read_data(AFrame *aframe);
 
 private:
 // need *arender for peak updating
-	void render_as_module(double **audio_out, 
-		double *output_temp,
-		ptstime start_position,
-		int len);
+	void render_as_module(AFrame **audio_out, 
+		AFrame *output_temp);
 
-	void render_as_plugin(double *output_temp,
-		ptstime start_postime,
-		int len);
+	void render_as_plugin(AFrame *output_temp);
 
-	void render_fade(double *buffer,
-		int len,
-		ptstime input_postime,
-		Autos *autos,
-		int direction,
-		int use_nudge);
+	void render_fade(AFrame *buffer, Autos *autos);
 
-	void render_pan(double *input,
-		double *output,
-		int fragment_len,
-		ptstime input_postime,
-		Autos *autos,
-		int channel,
-		int direction,
-		int use_nudge);
+	void render_pan(AFrame *iframe,
+		AFrame *oframe,
+		int offset,
+		ptstime fragment_duration,
+		Autos *autos);
 
 	void get_pan_automation(double &slope,
 		double &intercept,
 		ptstime input_postime,
 		ptstime &slope_len,
 		Autos *autos,
-		int channel,
-		int direction);
+		int channel);
 
 	DB db;
-
-	Auto *pan_before[MAXCHANNELS], *pan_after[MAXCHANNELS];
 };
 
 

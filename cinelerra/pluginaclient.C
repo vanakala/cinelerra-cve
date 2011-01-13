@@ -178,20 +178,22 @@ int PluginAClient::read_samples(double *buffer,
 	samplenum start_position, 
 	int total_samples)
 {
-	return server->read_samples(buffer, 
+	server->read_samples(buffer, 
 		channel, 
 		start_position, 
 		total_samples);
+	return 0;
 }
 
 int PluginAClient::read_samples(double *buffer, 
 	samplenum start_position, 
 	int total_samples)
 {
-	return server->read_samples(buffer, 
+	server->read_samples(buffer, 
 		0, 
 		start_position, 
 		total_samples);
+	return 0;
 }
 
 int PluginAClient::read_samples(double *buffer,

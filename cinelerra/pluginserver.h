@@ -24,7 +24,7 @@
 
 // inherited by plugins
 
-
+#include "aframe.inc"
 #include "arraylist.h"
 #include "attachmentpoint.inc"
 #include "datatype.h"
@@ -160,10 +160,9 @@ public:
 		VFrame *output, 
 		ptstime current_postime,
 		ptstime total_len);
-	void process_transition(double *input, 
-		double *output,
+	void process_transition(AFrame *input, 
+		AFrame *output,
 		ptstime current_postime,
-		int fragment_size,
 		ptstime total_len);
 
 // Process using pull method.
@@ -179,10 +178,7 @@ public:
 		double frame_rate,
 		ptstime total_len,
 		int direction);
-	void process_buffer(double **buffer,
-		ptstime current_position,
-		int fragment_size,
-		int sample_rate,
+	void process_buffer(AFrame **buffer,
 		ptstime total_len,
 		int direction);
 
@@ -220,21 +216,22 @@ public:
 	int start_loop(posnum start, posnum end, int buffer_size, int total_buffers);
 // Do one iteration of a nonrealtime plugin and return if finished
 	int process_loop(VFrame **buffers, int &write_length);
-	int process_loop(double **buffers, int &write_length);
+	int process_loop(AFrame **buffers, int &write_length);
 	int stop_loop();
 
 
 // Called by client to read data in non-realtime effect
-	int read_frame(VFrame *buffer, 
+	void read_frame(VFrame *buffer, 
 		int channel, 
 		framenum start_position);
-	int read_samples(double *buffer, 
-		int channel, 
-		samplenum start_position, 
+
+	void read_samples(double *buffer,
+		int channel,
+		samplenum start_position,
 		int total_samples);
 
 
-// Called by client to read data in realtime effect.  
+// Called by client to read data in realtime effect.
 // Returns -1 if error or 0 if success.
 	int read_frame(VFrame *buffer, 
 		int channel, 
@@ -360,6 +357,14 @@ public:
 private:
 	int reset_parameters();
 	int cleanup_plugin();
+// Temporary hack until fixing API for plugins
+	int put_aframe(AFrame *af);
+	AFrame *find_aframe(double *buffer);
+	void pop_aframe(AFrame *af);
+	void mark_as_filled(AFrame *aframe);
+
+// AFrames currenty in process
+	AFrame *aframes_used[AFRAMES_IN_PLUGIN];
 
 // Base class created by client
 	PluginClient *client;

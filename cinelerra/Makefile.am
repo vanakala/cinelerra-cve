@@ -55,6 +55,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    adeviceprefs.C \
 		    aedit.C \
 		    aedits.C \
+		    aframe.C \
 		    amodule.C \
 		    apatchgui.C \
 		    apluginarray.C \
@@ -120,7 +121,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    edlsession.C \
 		    exportedl.C \
 		    fadeengine.C \
-                    ffmpeg.C \
+		    ffmpeg.C \
 		    fileac3.C \
 		    fileavi.C \
 		    filebaseaudio.C \
@@ -206,7 +207,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    patchgui.C \
 		    performanceprefs.C \
 		    picture.C \
-                    pipe.C \
+		    pipe.C \
 		    playabletracks.C \
 		    playback3d.C \
 		    playbackconfig.C \
@@ -335,6 +336,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 adeviceprefs.h \
 		 aedit.h \
 		 aedits.h \
+		 aframe.h \
 		 amodule.h \
 		 apatchgui.h \
 		 apluginarray.h \
@@ -401,15 +403,15 @@ noinst_HEADERS = aattachmentpoint.h \
 		 exportedl.h \
 		 fadeengine.h \
 		 feather.h \
-                 ffmpeg.h \
+		 ffmpeg.h \
 		 fileac3.h \
 		 fileavi.h \
 		 filebase.h \
 		 fileformat.h \
 		 file.h \
 		 filecr2.h \
-	    filedv.h \
-	    fileogg.h \
+		 filedv.h \
+		 fileogg.h \
 		 fileexr.h \
 		 filejpeg.h \
 		 filelist.h \
@@ -487,7 +489,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 patchgui.h \
 		 performanceprefs.h \
 		 picture.h \
-                 pipe.h \
+		 pipe.h \
 		 playabletracks.h \
 		 playback3d.h \
 		 playbackconfig.h \

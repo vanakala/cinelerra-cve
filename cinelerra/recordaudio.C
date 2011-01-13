@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "asset.h"
 #include "audiodevice.h"
 #include "batch.h"
@@ -111,21 +112,28 @@ void RecordAudio::run()
 
 	over = new int[record_channels];
 	max = new double[record_channels];
+	double *samples[record_channels];
 
 // thread out I/O
 	if(!record_thread->monitor)
 	{
 // Get a buffer from the file to record into.
 		input = record->file->get_audio_buffer();
+		for(int i = 0; i < record_channels; i++)
+			samples[i] = input[i]->buffer;
+
 	}
 	else
 	{
 // Make up a fake buffer.
-		input = new double*[record_channels];
+		input = new AFrame*[record_channels];
 
 		for(int i = 0; i < record_channels; i++)
 		{
-			input[i] = new double[buffer_size];
+			input[i] = new AFrame(buffer_size);
+			input[i]->samplerate = record->default_asset->sample_rate;
+			input[i]->channel = i;
+			samples[i] = input[i]->buffer;
 		}
 	}
 
@@ -146,7 +154,7 @@ void RecordAudio::run()
 			{
 // Read into file's buffer for recording.
 // device needs to write buffer starting at fragment position
-				grab_result = record->adevice->read_buffer(input, 
+				grab_result = record->adevice->read_buffer(samples, 
 					fragment_size, 
 					over, 
 					max, 
@@ -155,7 +163,7 @@ void RecordAudio::run()
 			else
 			{
 // Read into monitor buffer for monitoring.
-				grab_result = record->adevice->read_buffer(input, 
+				grab_result = record->adevice->read_buffer(samples,
 					fragment_size, 
 					over, 
 					max, 

@@ -292,51 +292,28 @@ VirtualNode* VirtualNode::get_previous_plugin(VirtualNode *current_node)
 void VirtualNode::get_mute_fragment(ptstime input_position,
 				int &mute_constant, 
 				ptstime &fragment_len, 
-				Autos *autos,
-				int direction,
-				int use_nudge)
+				Autos *autos)
 {
-	if(use_nudge) input_position += track->nudge;
-
 	IntAuto *prev_keyframe = 0;
 	IntAuto *next_keyframe = 0;
 	prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position, 
-		direction, 
+		PLAY_FORWARD, 
 		(Auto* &)prev_keyframe);
 	next_keyframe = (IntAuto*)autos->get_next_auto(input_position, 
-		direction, 
+		PLAY_FORWARD, 
 		(Auto* &)next_keyframe);
 
-	if(direction == PLAY_FORWARD)
-	{
 // Two distinct keyframes within range
-		if(next_keyframe->pos_time > prev_keyframe->pos_time)
-		{
-			mute_constant = prev_keyframe->value;
+	if(next_keyframe->pos_time > prev_keyframe->pos_time)
+	{
+		mute_constant = prev_keyframe->value;
 
-			if(next_keyframe->pos_time < input_position + fragment_len)
-				fragment_len = next_keyframe->pos_time - input_position;
-		}
-		else
-// One keyframe within range
-		{
-			mute_constant = prev_keyframe->value;
-		}
+		if(next_keyframe->pos_time < input_position + fragment_len)
+			fragment_len = next_keyframe->pos_time - input_position;
 	}
 	else
-	{
-// Two distinct keyframes within range
-		if(next_keyframe->pos_time < prev_keyframe->pos_time)
-		{
-			mute_constant = next_keyframe->value;
-
-			if(next_keyframe->pos_time > input_position - fragment_len)
-				fragment_len = input_position - next_keyframe->pos_time;
-		}
-		else
 // One keyframe within range
-		{
-			mute_constant = next_keyframe->value;
-		}
+	{
+		mute_constant = prev_keyframe->value;
 	}
 }

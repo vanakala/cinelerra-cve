@@ -91,7 +91,7 @@ public:
 		int channels,
 		int realtime);
 	int close_all();
-	int reset_output();
+	void reset_output();
 	int restart();
 
 // Specify a video device to pass data to if the same device handles video
@@ -116,7 +116,7 @@ public:
 // ================================== dc offset
 
 // writes to whichever buffer is free or blocks until one becomes free
-	int write_buffer(double **output, int samples); 
+	void write_buffer(double **output, int samples); 
 
 // background loop for buffering
 	void run();
@@ -128,22 +128,22 @@ public:
 // After the last buffer is written call this to terminate.
 // A separate buffer for termination is required since the audio device can be
 // finished without writing a single byte
-	int set_last_buffer();
+	void set_last_buffer(void);
 
-	int wait_for_startup();
+	void wait_for_startup();
 // wait for the playback thread to clean up
-	int wait_for_completion();
+	void wait_for_completion();
 
 // start the thread processing buffers
-	int start_playback();
+	void start_playback();
 
 
 
 // interrupt the playback thread
-	int interrupt_playback();
-	int set_play_dither(int status);
+	void interrupt_playback();
+	void set_play_dither(int status);
 // set software positioning on or off
-	int set_software_positioning(int status = 1);
+	void set_software_positioning(int status = 1);
 // total audio time played
 //  + audio offset from configuration if playback
 	ptstime current_postime(float speed = 1.0);
@@ -158,7 +158,7 @@ private:
 	int initialize();
 // Create a lowlevel driver out of the driver ID
 	int create_lowlevel(AudioLowLevel* &lowlevel, int driver);
-	int arm_buffer(int buffer, double **output, int samples);
+	void arm_buffer(int buffer, double **output, int samples);
 	int get_obits();
 	int get_ochannels();
 	int get_ibits();

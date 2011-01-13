@@ -79,9 +79,6 @@ void APluginArray::create_modules()
 void APluginArray::process_realtime(int module, posnum input_position, int len)
 {
 	values[module]->process_buffer(realtime_buffers + module,
-			input_position, 
-			len,
-			edl->session->sample_rate,
 			0,
 			PLAY_FORWARD);
 }

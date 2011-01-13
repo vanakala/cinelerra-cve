@@ -22,6 +22,7 @@
 #ifndef APLUGINARRAY_H
 #define APLUGINARRAY_H
 
+#include "aframe.inc"
 #include "amodule.inc"
 #include "edl.inc"
 #include "pluginarray.h"
@@ -51,7 +52,7 @@ public:
 	double **buffer;         // Buffer for processing
 // Pointer to file output
 	double **output_buffer;
-	double **realtime_buffers;
+	AFrame **realtime_buffers;
 };
 
 #endif

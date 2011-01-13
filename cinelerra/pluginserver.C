@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "amodule.h"
 #include "atrack.h"
 #include "attachmentpoint.h"
@@ -156,6 +157,8 @@ int PluginServer::reset_parameters()
 	is_lad = 0;
 	lad_descriptor_function = 0;
 	lad_descriptor = 0;
+	for(int i = 0; i < AFRAMES_IN_PLUGIN; i++)
+		aframes_used[i] = 0;
 }
 
 
@@ -393,21 +396,23 @@ void PluginServer::process_transition(VFrame *input,
 	use_opengl = 0;
 }
 
-void PluginServer::process_transition(double *input, 
-		double *output,
+void PluginServer::process_transition(AFrame *input, 
+		AFrame *output,
 		ptstime current_postime,
-		int fragment_size,
 		ptstime total_len)
 {
 	if(!plugin_open) return;
-	PluginAClient *aclient = (PluginAClient*)client;
 
-	aclient->source_position = round(current_postime * get_project_samplerate());
-	aclient->total_len = round(total_len * get_project_samplerate());
+	int offset = round((output->pts - input->pts) * output->samplerate);
+	if(offset < 0)
+		offset = 0;
+	PluginAClient *aclient = (PluginAClient*)client;
+	aclient->source_position = round(current_postime * output->samplerate);
+	aclient->total_len = round(total_len * output->samplerate);
 	aclient->source_start = 0;
-	aclient->process_realtime(fragment_size,
-		input, 
-		output);
+	aclient->process_realtime(input->length,
+		input->buffer,
+		output->buffer + offset);
 }
 
 
@@ -455,33 +460,62 @@ void PluginServer::process_buffer(VFrame **frame,
 	use_opengl = 0;
 }
 
-void PluginServer::process_buffer(double **buffer,
-	ptstime current_postime,
-	int fragment_size,
-	int sample_rate,
+/*
+ * Hack: mark AFrame as filled
+ */
+void PluginServer::mark_as_filled(AFrame *aframe)
+{
+	int l;
+	if(aframe->length == 0)
+	{
+		l = aframe->length = aframe->source_length;
+		aframe->duration = (ptstime)l / aframe->samplerate;
+	}
+}
+
+void PluginServer::process_buffer(AFrame **buffer,
 	ptstime total_len,
 	int direction)
 {
 	if(!plugin_open) return;
 	PluginAClient *aclient = (PluginAClient*)client;
-	aclient->source_position = round(current_postime * sample_rate);
-	aclient->total_len = round(total_len * sample_rate);
-	aclient->sample_rate = sample_rate;
+	AFrame *aframe = buffer[0];
+	int fragment_size = aframe->source_length;
+
+	aclient->source_position = round(aframe->pts * aframe->samplerate);
+	aclient->total_len = round(total_len * aframe->samplerate);
+	aclient->sample_rate = aframe->samplerate;
 	if(plugin)
 		aclient->source_start = round(plugin->project_pts *
 			aclient->project_sample_rate);
 	aclient->direction = direction;
-	if(multichannel)
+	if(multichannel){
+		double *samples[total_in_buffers];
+		for(int i = 0; i < total_in_buffers; i++)
+		{
+			samples[i] = buffer[i]->buffer;
+			put_aframe(buffer[i]);
+		}
 		aclient->process_buffer(fragment_size, 
-			buffer, 
+			samples,
 			aclient->source_position, 
-			sample_rate);
+			aclient->sample_rate);
+		for(int i = 0; i < total_in_buffers; i++)
+		{
+			pop_aframe(buffer[i]);
+			mark_as_filled(buffer[i]);
+		}
+	}
 	else
 	{
+		put_aframe(buffer[0]);
 		aclient->process_buffer(fragment_size, 
-			buffer[0], 
+			buffer[0]->buffer, 
 			aclient->source_position, 
-			sample_rate);
+			aclient->sample_rate);
+// Hack - hope that buffer is filled by plugin
+		pop_aframe(buffer[0]);
+		mark_as_filled(buffer[0]);
 	}
 }
 
@@ -583,10 +617,13 @@ int PluginServer::process_loop(VFrame **buffers, int &write_length)
 	return client->plugin_process_loop(buffers, write_length);
 }
 
-int PluginServer::process_loop(double **buffers, int &write_length)
+int PluginServer::process_loop(AFrame **buffers, int &write_length)
 {
 	if(!plugin_open) return 1;
-	return client->plugin_process_loop(buffers, write_length);
+	double *samples[total_in_buffers];
+	for(int i = 0; i < total_in_buffers; i++)
+		samples[i] = buffers[i]->buffer;
+	return client->plugin_process_loop(samples, write_length);
 }
 
 
@@ -606,7 +643,7 @@ int PluginServer::stop_loop()
 	return client->plugin_stop_loop();
 }
 
-int PluginServer::read_frame(VFrame *buffer, 
+void PluginServer::read_frame(VFrame *buffer, 
 	int channel, 
 	framenum start_position)
 {
@@ -615,21 +652,19 @@ int PluginServer::read_frame(VFrame *buffer,
 		PLAY_FORWARD,
 		0,
 		0);
-	return 0;
 }
 
-int PluginServer::read_samples(double *buffer, 
-	int channel, 
+void PluginServer::read_samples(double *buffer, 
+	int channel,
 	samplenum start_position, 
 	int total_samples)
 {
-	((AModule*)modules->values[channel])->render(buffer, 
-		plugin->track->from_units(start_position),
-		total_samples, 
-		PLAY_FORWARD,
-		mwindow->edl->session->sample_rate,
-		0);
-	return 0;
+	AFrame *aframe = find_aframe(buffer);
+
+	aframe->channel = channel;
+	aframe->pts = (ptstime)start_position/aframe->samplerate;
+	aframe->source_length = total_samples;
+	((AModule*)modules->values[aframe->channel])->render(aframe);
 }
 
 int PluginServer::read_frame(VFrame *buffer, 
@@ -685,26 +720,31 @@ int PluginServer::read_samples(double *buffer,
 	samplenum start_position, 
 	int len)
 {
-	if(!multichannel) channel = 0;
+	AFrame *aframe = find_aframe(buffer);
+	AFrame localframe;
 
-	if(nodes->total > channel)
-		return ((VirtualANode*)nodes->values[channel])->read_data(buffer,
-			(ptstime)start_position / sample_rate,
-			len);
+	if(!aframe){
+		aframe = &localframe;
+		aframe->set_buffer(buffer, len);
+	}
+	aframe->channel = channel;
+	aframe->pts = (ptstime)start_position / sample_rate;
+	aframe->source_length = len;
+	aframe->source_pts = 0;
+	aframe->samplerate = sample_rate;
+
+	if(!multichannel) aframe->channel = 0;
+
+	if(nodes->total > aframe->channel)
+		return ((VirtualANode*)nodes->values[aframe->channel])->read_data(aframe);
 	else
-	if(modules->total > channel)
-		return ((AModule*)modules->values[channel])->render(buffer,
-			(ptstime)start_position / sample_rate,
-			len,
-			PLAY_FORWARD,
-			sample_rate,
-			0);
+	if(modules->total > aframe->channel)
+		return ((AModule*)modules->values[aframe->channel])->render(aframe);
 	else
 	{
 		errorbox("PluginServer::read_samples no object available for channel=%d",
-			channel);
+			aframe->channel);
 	}
-
 	return -1;
 }
 
@@ -1003,6 +1043,39 @@ void PluginServer::sync_parameters()
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();
 	}
+}
+
+int PluginServer::put_aframe(AFrame *af)
+{
+	for(int i = 0; i < AFRAMES_IN_PLUGIN; i++)
+		if(aframes_used[i] == 0)
+		{
+			aframes_used[i] = af;
+			return i;
+		}
+	errormsg("Out of aframes_used in '%s'", title);
+	return -1;
+}
+
+AFrame* PluginServer::find_aframe(double *buffer)
+{
+	for(int i = 0; i < AFRAMES_IN_PLUGIN; i++)
+		if(aframes_used[i] && aframes_used[i]->buffer == buffer)
+		{
+			return aframes_used[i];
+		}
+	return 0;
+}
+
+void PluginServer::pop_aframe(AFrame *af)
+{
+	for(int i = 0; i < AFRAMES_IN_PLUGIN; i++)
+		if(aframes_used[i] && aframes_used[i] == af)
+		{
+			aframes_used[i] = 0;
+			return;
+		}
+	errorbox("AFrame lost from pluginserver");
 }
 
 void PluginServer::dump()

@@ -285,10 +285,10 @@ void VRender::run()
 	ptstime init_pos = current_postime;
 // Number of frames before next reconfigure
 	posnum current_input_length;
-	ptstime len_pts = fromunits(1);
+	ptstime len_pts;
 // Number of frames to skip.
-	ptstime frame_step = len_pts;
-
+	ptstime frame_step;
+	int direction = renderengine->command->get_direction();
 	first_frame = 1;
 
 	framerate_counter = 0;
@@ -301,8 +301,6 @@ void VRender::run()
 // Perform the most time consuming part of frame decompression now.
 // Want the condition before, since only 1 frame is rendered 
 // and the number of frames skipped after this frame varies
-		current_input_length = 1;
-
 		reconfigure = vconsole->test_reconfigure(len_pts,
 			last_playback);
 
@@ -313,25 +311,42 @@ void VRender::run()
 				|| renderengine->command->single_frame())
 		{
 			flash_output();
-			frame_step = len_pts;
+			frame_step = video_out->get_duration();
 			done = 1;
 		}
 		else
 // Perform synchronization
 		{
-// Determine the delay until the frame needs to be shown.
-			current_pts = renderengine->sync_postime() *
-				renderengine->command->get_speed() + init_pos;
-// earliest time by which the frame needs to be shown.
-			start_pts = video_out->get_pts();
-// latest time at which the frame can be shown.
-			len_pts = video_out->get_duration();
-			end_pts = start_pts + len_pts;
-
 			if(first_frame)
 			{
+				renderengine->first_frame_lock->unlock();
+				first_frame = 0;
+				renderengine->reset_sync_postime();
 				flash_output();
 			}
+// Determine the delay until the frame needs to be shown.
+			current_pts = renderengine->sync_postime() *
+				renderengine->command->get_speed();
+// earliest time by which the frame needs to be shown.
+			start_pts = video_out->get_pts();
+
+			if((len_pts = video_out->get_duration()) < EPSILON){
+// We have no current frame
+				len_pts = fromunits(1);
+				start_pts = init_pos;
+			}
+// latest time at which the frame can be shown.
+			end_pts = start_pts + len_pts;
+
+			if(direction == PLAY_REVERSE)
+			{
+				ptstime t = start_pts;
+				start_pts = -end_pts;
+				end_pts = -t;
+				current_pts -=  init_pos;
+			} else
+				current_pts += init_pos;
+
 			if(end_pts < current_pts)
 			{
 // Frame rendered late or this is the first frame.  Flash it now.
@@ -363,21 +378,12 @@ void VRender::run()
 			}
 		}
 
-// Trigger audio to start
-		if(first_frame)
-		{
-			renderengine->first_frame_lock->unlock();
-			first_frame = 0;
-			renderengine->reset_sync_postime();
-		}
-
 // advance position in project
 		current_input_length = tounits(frame_step, 1);
 
 // Subtract frame_step in a loop to allow looped playback to drain
-		while(current_input_length && !last_playback)
+		if(!last_playback)
 		{
-// set last_playback if necessary and trim current_input_length to range
 			get_boundaries(current_input_length);
 			advance_position(current_input_length);
 			frame_step -= fromunits(current_input_length);
@@ -422,16 +428,6 @@ VRender::VRender(MWindow *mwindow, RenderEngine *renderengine)
 	framerate_counter = 0;
 	video_out = 0;
 	render_strategy = -1;
-}
-
-int VRender::init_device_buffers()
-{
-// allocate output buffer if there is a video device
-	if(renderengine->video)
-	{
-		video_out = 0;
-		render_strategy = -1;
-	}
 }
 
 int VRender::get_datatype()

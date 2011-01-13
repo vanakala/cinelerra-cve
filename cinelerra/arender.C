@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "amodule.h"
 #include "arender.h"
 #include "atrack.h"
@@ -63,7 +64,7 @@ ARender::~ARender()
 {
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
-		if(audio_out[i]) delete [] audio_out[i];
+		if(audio_out[i]) delete audio_out[i];
 		if(level_history[i]) delete [] level_history[i];
 	}
 	if(level_samples) delete [] level_samples;
@@ -142,12 +143,14 @@ void ARender::init_output_buffers()
 		for(int i = 0; i < MAXCHANNELS; i++)
 		{
 // Reset the output buffers in case speed changed
-			delete [] audio_out[i];
-			audio_out[i] = 0;
-
 			if(i < renderengine->edl->session->audio_channels)
 			{
-				audio_out[i] = new double[renderengine->adjusted_fragment_len];
+				if(audio_out[i])
+					audio_out[i]->check_buffer(renderengine->adjusted_fragment_len);
+				else
+					audio_out[i] = new AFrame(renderengine->adjusted_fragment_len);
+				audio_out[i]->samplerate = renderengine->edl->session->sample_rate;
+				audio_out[i]->channel = i;
 			}
 		}
 	}
@@ -173,51 +176,39 @@ ptstime ARender::fromunits(posnum position)
 }
 
 
-int ARender::process_buffer(double **buffer_out, 
-	int input_len, 
+int ARender::process_buffer(AFrame **buffer_out,
 	ptstime input_postime,
+	ptstime input_duration,
 	int last_buffer)
 {
 	int result = 0;
 	this->last_playback = last_buffer;
-	int fragment_position = 0;
-	posnum fragment_len = input_len;
+	ptstime fragment_len = input_duration;
+	ptstime fragment_end = input_postime + input_duration;
 	int reconfigure = 0;
 	current_postime = input_postime;
 	current_position = tounits(current_postime, 1);
 
-	while(fragment_position < input_len)
+	for(int i = 0; i < MAXCHANNELS; i++)
 	{
-		for(int i = 0; i < MAXCHANNELS; i++)
-		{
-			if(buffer_out[i])
-				this->audio_out[i] = buffer_out[i] + fragment_position;
-			else
-				this->audio_out[i] = 0;
-		}
+		if(buffer_out[i])
+			this->audio_out[i] = buffer_out[i];
+		else
+			this->audio_out[i] = 0;
+	}
+	while(current_postime < fragment_end)
+	{
+		if(vconsole->test_reconfigure(fragment_len, last_playback))
+			restart_playback();
 
-		fragment_len = input_len;
-		if(fragment_position + fragment_len > input_len)
-			fragment_len = input_len - fragment_position;
+		result = process_buffer(fragment_len, current_postime);
 
-		ptstime len_pts = fromunits(fragment_len);
-		reconfigure = vconsole->test_reconfigure(len_pts,
-			last_playback);
-		fragment_len = tounits(len_pts);
-
-		if(reconfigure) restart_playback();
-
-		result = process_buffer(fragment_len, input_postime);
-
-		fragment_position += fragment_len;
-		input_postime += fromunits(fragment_len);
-		current_postime = input_postime;
+		current_postime += fragment_len;
 		current_position = tounits(current_postime, 1);
 	}
 
 // Don't delete audio_out on completion
-	memset(this->audio_out, 0, sizeof(double*) * MAXCHANNELS);
-
+	memset(this->audio_out, 0, sizeof(AFrame*) * MAXCHANNELS);
 
 	return result;
 }
@@ -323,19 +314,6 @@ void ARender::run()
 int ARender::get_datatype()
 {
 	return TRACK_AUDIO;
-}
-
-int ARender::reverse_buffer(double *buffer, int len)
-{
-	register int start, end;
-	double temp;
-
-	for(start = 0, end = len - 1; end > start; start++, end--)
-	{
-		temp = buffer[start];
-		buffer[start] = buffer[end];
-		buffer[end] = temp;
-	}
 }
 
 int ARender::get_next_peak(int current_peak)

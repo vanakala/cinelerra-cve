@@ -277,17 +277,19 @@ int PluginVClient::read_frame(VFrame *buffer,
 	int channel, 
 	framenum start_position)
 {
-	return server->read_frame(buffer, 
+	server->read_frame(buffer, 
 		channel, 
 		start_position);
+	return 0;
 }
 
 int PluginVClient::read_frame(VFrame *buffer, 
 	framenum start_position)
 {
-	return server->read_frame(buffer, 
+	server->read_frame(buffer, 
 		0, 
 		start_position);
+	return 0;
 }
 
 int PluginVClient::read_frame(VFrame *buffer, 

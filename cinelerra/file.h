@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 
+#include "aframe.inc"
 #include "asset.inc"
 #include "condition.inc"
 #include "edit.inc"
@@ -135,7 +136,7 @@ public:
 // written to disk and file pointer updated after last channel is written
 // return 1 if failed
 // subsequent writes must be <= than first write's size because of buffers
-	int write_samples(double **buffer, int len);
+	int write_samples(AFrame **buffer, int len);
 
 // Only called by filethread to write an array of an array of channels of frames.
 	int write_frames(VFrame ***frames, int len);
@@ -144,7 +145,7 @@ public:
 
 // For writing buffers in a background thread use these functions to get the buffer.
 // Get a pointer to a buffer to write to.
-	double** get_audio_buffer();
+	AFrame** get_audio_buffer();
 	VFrame*** get_video_buffer();
 
 // Used by ResourcePixmap to directly access the cache.
@@ -162,6 +163,10 @@ public:
 	int set_channel(int channel);
 // set position in samples
 	int set_audio_position(samplenum position, int base_samplerate);
+
+// Read audio into aframe
+// aframe->source_duration secs starting from aframe->source_pts
+	int get_samples(AFrame *aframe);
 
 // Read samples for one channel into a shared memory segment.
 // The offset is the offset in floats from the beginning of the buffer and the len

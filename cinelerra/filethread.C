@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "asset.h"
 #include "bcsignals.h"
 #include "condition.h"
@@ -302,7 +303,7 @@ int FileThread::stop_writing()
 			for(buffer = 0; buffer < ring_buffers; buffer++)
 			{
 				for(i = 0; i < file->asset->channels; i++)
-					delete [] audio_buffer[buffer][i];
+					delete audio_buffer[buffer][i];
 				delete [] audio_buffer[buffer];
 			}
 			delete [] audio_buffer;
@@ -369,14 +370,15 @@ int FileThread::start_writing(long buffer_size,
 
 	if(do_audio)
 	{
-		audio_buffer = new double**[ring_buffers];
+		audio_buffer = new AFrame**[ring_buffers];
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
-			audio_buffer[buffer] = new double*[file->asset->channels];
+			audio_buffer[buffer] = new AFrame*[file->asset->channels];
 
 			for(int channel = 0; channel < file->asset->channels; channel++)
 			{
-				audio_buffer[buffer][channel] = new double[buffer_size];
+				audio_buffer[buffer][channel] = new AFrame(buffer_size);
+				audio_buffer[buffer][channel]->channel = channel;
 			}
 		}
 	}
@@ -597,7 +599,7 @@ int64_t FileThread::get_memory_usage()
 }
 
 
-double** FileThread::get_audio_buffer()
+AFrame** FileThread::get_audio_buffer()
 {
 	swap_buffer();
 

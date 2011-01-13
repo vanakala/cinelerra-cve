@@ -88,7 +88,6 @@ public:
 	int first_frame;
 
 private:
-	int init_device_buffers();
 	Timer timer;
 
 // for getting actual framerate

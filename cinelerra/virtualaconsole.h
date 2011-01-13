@@ -24,6 +24,7 @@
 
 
 #include "arender.inc"
+#include "aframe.inc"
 #include "filethread.inc"     // RING_BUFFERS
 #include "virtualconsole.h"
 
@@ -36,7 +37,6 @@ public:
 	void get_playable_tracks();
 
 // process a buffer
-
 	int process_buffer(int input_len,
 		ptstime input_position,
 		int last_buffer);
@@ -47,10 +47,12 @@ public:
 
 // Temporary for audio rendering.  This stores each track's output before it is
 // mixed into the device buffer.
-	double *output_temp;
-	int output_allocation;
+	AFrame *output_temp;
 
 	ARender *arender;
+
+	double *audio_out_packed[MAX_CHANNELS];
+	int packed_buffer_len;
 };
 
 
