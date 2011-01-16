@@ -277,7 +277,7 @@ void FileThread::run()
 
 
 
-int FileThread::stop_writing()
+void FileThread::stop_writing()
 {
 	if(is_writing)
 	{
@@ -330,10 +330,9 @@ int FileThread::stop_writing()
 
 		file_lock->unlock();
 	}
-	return 0;
 }
 
-int FileThread::start_writing(long buffer_size, 
+void FileThread::start_writing(int buffer_size, 
 		int color_model, 
 		int ring_buffers, 
 		int compressed)
@@ -352,10 +351,9 @@ int FileThread::start_writing(long buffer_size,
 
 	file_lock->lock("FileThread::start_writing 1");
 
-
 // Buffer is swapped before first get
 	last_buffer = new int[ring_buffers];
-	output_size = new long[ring_buffers];
+	output_size = new int[ring_buffers];
 
 
 	output_lock = new Condition*[ring_buffers];
@@ -424,7 +422,6 @@ int FileThread::start_writing(long buffer_size,
 	is_writing = 1;
 	done = 0;
 	Thread::start();
-	return 0;
 }
 
 int FileThread::start_reading()
@@ -615,7 +612,7 @@ VFrame*** FileThread::get_video_buffer()
 	return video_buffer[current_buffer];
 }
 
-int FileThread::write_buffer(long size)
+int FileThread::write_buffer(int size)
 {
 	output_size[current_buffer] = size;
 

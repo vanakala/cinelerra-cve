@@ -85,7 +85,7 @@ public:
 	int use_thumbnails;
 // Title of theme
 	char theme[BCTEXTLEN];
-	double render_preroll;
+	ptstime render_preroll;
 	int brender_preroll;
 	int force_uniprocessor;
 // The number of cpus to use when rendering.

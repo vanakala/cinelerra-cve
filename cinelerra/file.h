@@ -96,8 +96,8 @@ public:
 	int get_index(char *index_path);
 
 // start a thread for writing to avoid blocking during record
-	int start_audio_thread(int buffer_size, int ring_buffers);
-	int stop_audio_thread();
+	void start_audio_thread(int buffer_size, int ring_buffers);
+	void stop_audio_thread();
 // The ring buffer must either be 1 or 2.
 // The buffer_size for video needs to be > 1 on SMP systems to utilize 
 // multiple processors.

@@ -201,21 +201,18 @@ void PackageRenderer::create_engine()
 
 	if(package->use_brender)
 	{
-		audio_preroll = Units::to_int64((double)preferences->brender_preroll /
-			default_asset->frame_rate *
-			default_asset->sample_rate);
+		audio_preroll = round((ptstime)preferences->brender_preroll *
+			default_asset->frame_rate);
 		video_preroll = preferences->brender_preroll;
 	}
 	else
 	{
-		audio_preroll = Units::to_int64(preferences->render_preroll * 
-			default_asset->sample_rate);
+		audio_preroll = preferences->render_preroll;
 		video_preroll = Units::to_int64(preferences->render_preroll * 
 			default_asset->frame_rate);
 	}
-	audio_position = package->audio_start - audio_preroll;
+	audio_pts = (ptstime)package->audio_start / default_asset->sample_rate - audio_preroll;
 	video_position = package->video_start - video_preroll;
-
 
 
 
@@ -269,48 +266,60 @@ void PackageRenderer::do_audio()
 {
 	AFrame *audio_output_ptr[MAX_CHANNELS];
 	AFrame **audio_output;
+	AFrame *af;
+	ptstime buffer_duration;
+
 // Do audio data
 	if(asset->audio_data)
 	{
 		audio_output = file->get_audio_buffer();
 // Zero unused channels in output vector
 		for(int i = 0; i < MAX_CHANNELS; i++)
-			audio_output_ptr[i] = (i < asset->channels) ? 
-				audio_output[i] : 
-				0;
-
+		{
+			if(i < asset->channels)
+			{
+				af = audio_output[i];
+				if(af)
+				{
+					af->init_aframe(audio_pts, audio_read_length);
+					af->source_length = audio_read_length;
+					af->samplerate = default_asset->sample_rate;
+				}
+			}
+			else
+				af = 0;
+			audio_output_ptr[i] = af;
+		}
 // Call render engine
-		result = render_engine->arender->process_buffer(audio_output_ptr, 
-			render_engine->arender->fromunits(audio_position),
-			render_engine->arender->fromunits(audio_read_length),
-			0);
+		result = render_engine->arender->process_buffer(audio_output_ptr);
 
 // Fix buffers for preroll
-		samplenum output_length = audio_read_length;
+		int output_length = audio_read_length;
 		if(audio_preroll > 0)
 		{
-			if(audio_preroll >= output_length)
+			int preroll_len = round(audio_preroll * default_asset->sample_rate);
+			if(preroll_len >= output_length)
 				output_length = 0;
 			else
 			{
-				output_length -= audio_preroll;
+				output_length -= preroll_len;
 				for(int i = 0; i < MAX_CHANNELS; i++)
 				{
-					if(audio_output_ptr[i])
+					if(audio_output_ptr[i]){
 						for(int j = 0; j < output_length; j++)
-						{
 							audio_output_ptr[i]->buffer[j] = audio_output_ptr[i]->buffer[j + audio_read_length - output_length];
-						}
+						audio_output_ptr[i]->length = output_length;
+						audio_output_ptr[i]->duration -= audio_preroll;
+					}
 				}
 			}
-
-			audio_preroll -= audio_read_length;
+			audio_preroll -= (ptstime)audio_read_length / default_asset->sample_rate;
 		}
 
 // Must perform writes even if 0 length so get_audio_buffer doesn't block
 		result |= file->write_audio_buffer(output_length);
 	}
-	audio_position += audio_read_length;
+	audio_pts += (ptstime)audio_read_length / default_asset->sample_rate;
 }
 
 
@@ -486,7 +495,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 	int video_done = 0;
 	samplenum samples_rendered = 0;
 
-
 	result = 0;
 	this->package = package;
 
@@ -510,9 +518,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 		while((!audio_done || !video_done) && !result)
 		{
 			int need_audio = 0, need_video = 0;
-
-
-
+			samplenum audio_position = round(audio_pts * default_asset->sample_rate);
 
 // Calculate lengths to process.  Audio fragment is constant.
 			if(!audio_done)
@@ -701,7 +707,7 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 	if(result)
 	{
 		if(!file->can_copy_from(playable_edit, 
-			playable_track->from_units(current_position + playable_track->nudge),
+			playable_track->from_units(current_position) + playable_track->nudge,
 			edl->session->output_w, 
 			edl->session->output_h))
 			result = 0;

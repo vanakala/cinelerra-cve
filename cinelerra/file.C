@@ -625,14 +625,13 @@ int File::get_index(char *index_path)
 
 
 
-int File::start_audio_thread(int buffer_size, int ring_buffers)
+void File::start_audio_thread(int buffer_size, int ring_buffers)
 {
 	if(!audio_thread)
 	{
 		audio_thread = new FileThread(this, 1, 0);
 		audio_thread->start_writing(buffer_size, 0, ring_buffers, 0);
 	}
-	return 0;
 }
 
 int File::start_video_thread(int buffer_size, 
@@ -662,7 +661,7 @@ int File::start_video_decode_thread()
 	}
 }
 
-int File::stop_audio_thread()
+void File::stop_audio_thread()
 {
 	if(audio_thread)
 	{
@@ -670,7 +669,6 @@ int File::stop_audio_thread()
 		delete audio_thread;
 		audio_thread = 0;
 	}
-	return 0;
 }
 
 int File::stop_video_thread()
@@ -869,13 +867,21 @@ int File::set_video_position(framenum position, float base_framerate, int is_thr
 
 // No resampling here.
 int File::write_samples(AFrame **buffer, int len)
-{ 
+{
+	double *samples[MAX_CHANNELS];
 	int result = 1;
 
 	if(file)
 	{
 		write_lock->lock("File::write_samples");
-		result = file->write_samples(buffer, len);
+		for(int i = 0; i < asset->channels; i++)
+		{
+			if(buffer[i])
+				samples[i] = buffer[i]->buffer;
+			else
+				samples[i] = 0;
+		}
+		result = file->write_samples(samples, len);
 		current_sample += len;
 		normalized_sample += len;
 		asset->audio_length += len;

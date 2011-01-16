@@ -125,9 +125,9 @@ public:
 
 // Created locally
 	Asset *asset;
-	samplenum audio_position;
-	samplenum audio_preroll;
-	samplenum audio_read_length;
+	ptstime audio_pts;
+	ptstime audio_preroll;
+	int audio_read_length;
 	File *file;
 // This is 1 if an error is encountered.
 	int result;

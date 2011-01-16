@@ -117,8 +117,9 @@ void AFrame::dump(int dumpdata)
 	double avg, min, max;
 
 	printf("AFrame::dump: %p\n", this);
-	printf("    pts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] chnl %d rate %d sample %lld shared %d\n",
-		pts, duration, length, source_pts, source_duration, source_length, channel, samplerate, position, shared);
+	printf("    pts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] chnl %d rate %d sample %lld\n",
+		pts, duration, length, source_pts, source_duration, source_length, channel, samplerate, position);
+	printf("    buffer %p buffer_length %d shared %d\n", buffer, buffer_length, shared);
 	if(dumpdata && length > 0)
 	{
 		avg = min = max = 0;

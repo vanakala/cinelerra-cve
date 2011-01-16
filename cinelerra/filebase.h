@@ -85,8 +85,7 @@ public:
 // Only used in read mode.
 	virtual int64_t get_memory_usage() { return 0; };
 
-	virtual int write_samples(AFrame **buffer,
-		int len) { return 0; };
+	virtual int write_samples(double **buffer, int len) { return 0; };
 	virtual int write_frames(VFrame ***frames, int len) { return 0; };
 	virtual int read_compressed_frame(VFrame *buffer) { return 0; };
 	virtual int write_compressed_frame(VFrame *buffers) { return 0; };

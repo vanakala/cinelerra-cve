@@ -78,8 +78,7 @@ public:
 // process a buffer
 // renders into buffer_out argument when no audio device
 // handles playback autos
-	int process_buffer(AFrame **buffer_out, ptstime input_postime, 
-		ptstime input_duration, int last_buffer);
+	int process_buffer(AFrame **buffer_out);
 // renders to a device when there's a device
 	int process_buffer(int input_len, ptstime input_postime);
 

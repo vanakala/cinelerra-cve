@@ -176,18 +176,17 @@ ptstime ARender::fromunits(posnum position)
 }
 
 
-int ARender::process_buffer(AFrame **buffer_out,
-	ptstime input_postime,
-	ptstime input_duration,
-	int last_buffer)
+int ARender::process_buffer(AFrame **buffer_out)
 {
 	int result = 0;
-	this->last_playback = last_buffer;
-	ptstime fragment_len = input_duration;
-	ptstime fragment_end = input_postime + input_duration;
-	int reconfigure = 0;
-	current_postime = input_postime;
-	current_position = tounits(current_postime, 1);
+	int fragment_len =  buffer_out[0]->source_length;
+	int samplerate =  buffer_out[0]->samplerate;
+	current_postime = buffer_out[0]->pts;
+	ptstime fragment_duration = (ptstime)fragment_len / samplerate;
+	ptstime fragment_end = current_postime + fragment_duration;
+
+	current_position = round(current_postime * buffer_out[0]->samplerate);
+	last_playback = 0;
 
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -198,13 +197,14 @@ int ARender::process_buffer(AFrame **buffer_out,
 	}
 	while(current_postime < fragment_end)
 	{
-		if(vconsole->test_reconfigure(fragment_len, last_playback))
+		if(vconsole->test_reconfigure(fragment_duration, last_playback))
 			restart_playback();
 
+		fragment_len = round(fragment_duration * samplerate);
 		result = process_buffer(fragment_len, current_postime);
 
-		current_postime += fragment_len;
-		current_position = tounits(current_postime, 1);
+		current_postime += fragment_duration;
+		current_position = round(current_postime * buffer_out[0]->samplerate);
 	}
 
 // Don't delete audio_out on completion

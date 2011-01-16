@@ -63,15 +63,14 @@ public:
 
 
 // ============================== writing section ==============================
-	int start_writing();
 // Allocate the buffers and start loop for writing.
 // compressed - if 1 write_compressed_frames is called in the file
 //            - if 0 write_frames is called
-	int start_writing(long buffer_size, 
+	void start_writing(int buffer_size, 
 			int color_model, 
 			int ring_buffers, 
 			int compressed);
-	int stop_writing();
+	void stop_writing();
 
 
 
@@ -90,7 +89,7 @@ public:
 	int64_t get_memory_usage();
 
 // write data into next available buffer
-	int write_buffer(long size);
+	int write_buffer(int size);
 // get pointer to next buffer to be written and lock it
 	AFrame** get_audio_buffer();
 // get pointer to next frame to be written and lock it
@@ -102,7 +101,7 @@ public:
 	AFrame ***audio_buffer;
 // (VFrame*)(VFrame array *)(Track *)[ring buffer]
 	VFrame ****video_buffer;
-	long *output_size;  // Number of frames or samples to write
+	int *output_size;  // Number of frames or samples to write
 // Not used
 	int *is_compressed; // Whether to use the compressed data in the frame
 	Condition **output_lock, **input_lock;

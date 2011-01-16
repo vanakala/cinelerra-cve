@@ -319,7 +319,6 @@ void Render::run()
 {
 	int format_error;
 
-
 	result = 0;
 
 	if(mode == Render::INTERACTIVE)
@@ -645,12 +644,6 @@ int Render::render(int test_overwrite,
 		}
 	}
 
-
-
-
-
-
-
 // Generate packages
 	if(!result)
 	{
@@ -669,15 +662,6 @@ int Render::render(int test_overwrite,
 			total_end,
 			test_overwrite);
 	}
-
-
-
-
-
-
-
-
-
 
 	done = 0;
 	total_rendered = 0;
@@ -729,16 +713,10 @@ int Render::render(int test_overwrite,
 		}
 	}
 
-
-
-
 // Perform local rendering
-
-
 	if(!result)
 	{
 		start_progress();
-
 		MainPackageRenderer package_renderer(this);
 		result = package_renderer.initialize(mwindow,
 				command->get_edl(),   // Copy of master EDL
