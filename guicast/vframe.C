@@ -985,9 +985,112 @@ int VFrame::equal_stacks(VFrame *src)
 	return 1;
 }
 
-void VFrame::dump(void)
+void VFrame::calc_minmax8(unsigned char *buf, int len, 
+		unsigned int &avg, int &min, int &max)
 {
-	printf("VFrame dump\n");
+	max = avg = 0;
+	min = 256;
+	if(buf == 0)
+		return;
+	for(int i = 0; i < len; i++)
+	{
+		avg += buf[i];
+		if(min > buf[i])
+			min = buf[i];
+		if(max < data[i])
+			max = buf[i];
+	}
+	avg /= len;
+}
+
+void VFrame::calc_minmax8n(unsigned char *buf, int len, int pixlen,
+		int *avg, int *min, int *max)
+{
+	int i, j, v;
+
+	for(i = 0; i < pixlen; i++)
+	{
+		max[i] = avg[i] = 0;
+		min[i] = 256;
+	}
+	for(i = 0; i < len; i++)
+	{
+		for(j = 0; j < pixlen; j++)
+		{
+			v = *buf++;
+			avg[j] += v;
+			if(min[j] > v)
+				min[j] = v;
+			if(max[j] < v)
+				max[j] = v;
+		}
+	}
+	for(i = 0; i < pixlen; i++)
+	{
+		avg[i] /= len;
+	}
+}
+
+void VFrame::calc_minmax16(uint16_t *buf, int len, int pixlen,
+		uint64_t *avg, uint64_t *min, uint64_t *max)
+{
+	int i, j, v;
+
+	for(i = 0; i < pixlen; i++)
+	{
+		max[i] = avg[i] = 0;
+		min[i] = 256;
+	}
+	for(i = 0; i < len; i++)
+	{
+		for(j = 0; j < pixlen; j++)
+		{
+			v = *buf++;
+			avg[j] += v;
+			if(min[j] > v)
+				min[j] = v;
+			if(max[j] < v)
+				max[j] = v;
+		}
+	}
+	for(i = 0; i < pixlen; i++)
+	{
+		avg[i] /= len;
+	}
+}
+
+void VFrame::calc_minmaxfl(float *buf, int len, int pixlen,
+		float *avg, float *min, float *max)
+{
+	int i, j;
+	float v;
+
+	for(i = 0; i < pixlen; i++)
+	{
+		max[i] = avg[i] = 0;
+		min[i] = 256;
+	}
+	for(i = 0; i < len; i++)
+	{
+		for(j = 0; j < pixlen; j++)
+		{
+			v = *buf++;
+			avg[j] += v;
+			if(min[j] > v)
+				min[j] = v;
+			if(max[j] < v)
+				max[j] = v;
+		}
+	}
+	for(i = 0; i < pixlen; i++)
+	{
+		avg[i] /= len;
+	}
+}
+
+void VFrame::dump(int minmax)
+{
+	printf("VFrame %p dump\n", this);
 	printf("    pts %.3f, duration %.3f src_pts %.3f frame %d layer %d\n", 
 		pts, duration, source_pts, frame_number, layer);
 	printf("    Size %dx%d, cmodel %d offsets %ld %ld %ld\n", w, h, 
@@ -996,6 +1099,86 @@ void VFrame::dump(void)
 		y, u, v);
 	printf("    compressed size %ld, compressed_allocated %ld\n",
 		compressed_size, compressed_allocated);
+	if(minmax)
+	{
+		int min, max;
+		unsigned int avg;
+		int amin[4], amax[4], aavg[4];
+		uint64_t lmin[4], lmax[4], lavg[4];
+		float fmin[4], fmax[4], favg[4];
+		int anum = 0;
+		int lnum = 0;
+		int fnum = 0;
+
+		switch(color_model)
+		{
+		case BC_COMPRESSED:
+			calc_minmax8(data, compressed_size, avg, min, max);
+			printf("    avg %d min %d max %d\n", avg, min, max);
+			break;
+		case BC_YUV420P:
+			calc_minmax8(get_y(), w * h, avg, min, max);
+			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			calc_minmax8(get_u(), w * h / 4, avg, min, max);
+			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			calc_minmax8(get_v(), w * h / 4, avg, min, max);
+			printf("    v: avg %d min %d max %d\n", avg, min, max);
+			break;
+		case BC_YUV422P:
+			calc_minmax8(get_y(), w * h, avg, min, max);
+			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			calc_minmax8(get_u(), w * h / 2, avg, min, max);
+			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			calc_minmax8(get_v(), w * h / 2, avg, min, max);
+			printf("    v: avg %d min %d max %d\n", avg, min, max);
+			break;
+		case BC_RGB888:
+		case BC_YUV888:
+		case BC_VYU888:
+		case BC_BGR888:
+			calc_minmax8n(data, w * h, 3, aavg, amin, amax);
+			anum = 3;
+			break;
+		case BC_ARGB8888:
+		case BC_ABGR8888:
+		case BC_RGBA8888:
+		case BC_BGR8888:
+		case BC_YUVA8888:
+		case BC_UYVA8888:
+			calc_minmax8n(data, w * h, 4, aavg, amin, amax);
+			anum = 4;
+			break;
+		case BC_YUV161616:
+		case BC_RGB161616:
+			calc_minmax16((uint16_t *)data, w * h, 3, lavg, lmin, lmax);
+			lnum = 3;
+			break;
+		case BC_YUVA16161616:
+		case BC_RGBA16161616:
+			calc_minmax16((uint16_t *)data, w * h, 4, lavg, lmin, lmax);
+			lnum = 4;
+			break;
+		case BC_RGB_FLOAT:
+			calc_minmaxfl((float *)data, w * h, 3, favg, fmin, fmax);
+			fnum = 3;
+			break;
+		case BC_RGBA_FLOAT:
+			calc_minmaxfl((float *)data, w * h, 4, favg, fmin, fmax);
+			fnum = 3;
+			break;
+		default:
+			calc_minmax8(data, calculate_data_size(w, h, bytes_per_line, color_model),
+				avg, min, max);
+			printf("    avg %d min %d max %d\n", avg, min, max);
+			break;
+		}
+		for(int i = 0; i < anum; i++)
+			printf("    l:%d avg %d min %d max %d\n", i, aavg[i], amin[i], amax[i]);
+		for(int i = 0; i < lnum; i++)
+			printf("    l:%d avg %lld min %lld max %lld\n", i, lavg[i], lmin[i], lmax[i]);
+		for(int i = 0; i < fnum; i++)
+			printf("    l:%d avg %.3f min %.3f max %.3f\n", i, favg[i], fmin[i], fmax[i]);
+	}
 }
 
 void VFrame::dump_file(const char *filename)

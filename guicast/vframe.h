@@ -22,6 +22,7 @@
 #ifndef VFRAME_H
 #define VFRAME_H
 
+#include <stdint.h>
 #include "arraylist.h"
 #include "bchash.inc"
 #include "bcpbuffer.inc"
@@ -314,7 +315,7 @@ public:
 // This clears the stacks and the param table
 	void clear_stacks(void);
 
-	void dump(void);
+	void dump(int minmax = 0);
 // Dump bitmamps to named file
 	void dump_file(const char *filename);
 	void dump_stacks(void);
@@ -344,6 +345,14 @@ private:
 		int h, 
 		int color_model, 
 		long bytes_per_line);
+	void calc_minmax8(unsigned char *buf, int len,
+		unsigned int &avg, int &min, int &max);
+	void calc_minmax8n(unsigned char *buf, int len, int pixlen,
+		int *avg, int *min, int *max);
+	void calc_minmax16(uint16_t *buf, int len, int pixlen,
+		uint64_t *avg, uint64_t *min, uint64_t *max);
+	void calc_minmaxfl(float *buf, int len, int pixlen,
+		float *avg, float *min, float *max);
 
 // Frame position in source
 	ptstime source_pts;
