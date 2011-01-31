@@ -62,6 +62,7 @@
 #include "mainprogress.h"
 #include "mainsession.h"
 #include "mainundo.h"
+#include "maplist.h"
 #include "mbuttons.h"
 #include "mutex.h"
 #include "mwindowgui.h"
@@ -712,7 +713,6 @@ void MWindow::stop_brender()
 
 int MWindow::brender_available(ptstime postime)
 {
-	framenum position;
 	int result = 0;
 
 	brender_lock->lock("MWindow::brender_available 1");
@@ -721,13 +721,8 @@ int MWindow::brender_available(ptstime postime)
 		if(brender->map_valid)
 		{
 			brender->map_lock->lock("MWindow::brender_available 2");
-			position = postime * edl->session->frame_rate;
-			if(position < brender->map_size &&
-				position >= 0)
-			{
-				if(brender->map[position] == BRender::RENDERED)
-					result = 1;
-			}
+			if(postime >= 0)
+				result = brender->videomap.is_set(postime);
 			brender->map_lock->unlock();
 		}
 	}

@@ -40,7 +40,8 @@ GarbageObject::GarbageObject(const char *title)
 GarbageObject::~GarbageObject()
 {
 	if(!deleted) 
-		printf("GarbageObject::~GarbageObject: title=%s users=%d was not deleted by Garbage::delete_object\n", title, users);
+		printf("GarbageObject::~GarbageObject %p: title=%s users=%d was not deleted by Garbage::delete_object\n", 
+			this, title, users);
 	delete [] title;
 }
 

@@ -104,13 +104,13 @@ public:
 // For audio it's the number of samples per buffer.
 // compressed - if 1 write_compressed_frame is called
 //              if 0 write_frames is called
-	int start_video_thread(int buffer_size, 
+	void start_video_thread(int buffer_size, 
 		int color_model, 
 		int ring_buffers, 
 		int compressed);
-	int stop_video_thread();
+	void stop_video_thread();
 
-	int start_video_decode_thread();
+	void start_video_decode_thread();
 
 // Return the thread.
 // Used by functions that read only.

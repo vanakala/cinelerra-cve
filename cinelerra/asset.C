@@ -1182,11 +1182,11 @@ int Asset::set_timecode(char *tc, int format, int end)
 	return 0;
 }
 
-int Asset::dump()
+void Asset::dump(void)
 {
 	int i;
 
-	printf("  asset::dump\n");
+	printf("  Asset %p dump\n", this);
 	printf("   this=%p %s\n", this, path);
 	printf("   index_status %d\n", index_status);
 	printf("   file format %s, length %lld\n", File::formattostr(format), file_length);
@@ -1212,8 +1212,6 @@ int Asset::dump()
 	printf("      length %d subtitles %d (active %d)\n", video_length, subtitles, active_subtitle);
 	printf("   reel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
 		reel_name, reel_number, tcstart, tcend, tcformat);
-
-	return 0;
 }
 
 

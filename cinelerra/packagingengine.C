@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "packagingengine.h"
 #include "preferences.h"
 #include "edlsession.h"
@@ -49,21 +50,21 @@ int PackagingEngineDefault::create_packages_single_farm(
 		EDL *edl,
 		Preferences *preferences,
 		Asset *default_asset, 
-		double total_start, 
-		double total_end)
+		ptstime total_start,
+		ptstime total_end)
 {
 	this->total_start = total_start;
 	this->total_end = total_end;
 
 	this->preferences = preferences;
 	this->default_asset = default_asset;
-	audio_position = Units::to_int64(total_start * default_asset->sample_rate);
-	video_position = Units::to_int64(total_start * default_asset->frame_rate);
-	audio_end = Units::to_int64(total_end * default_asset->sample_rate);
-	video_end = Units::to_int64(total_end * default_asset->frame_rate);
+	audio_pts = total_start;
+	video_pts = total_start;
+	audio_end_pts = total_end;
+	video_end_pts = total_end;
 	current_package = 0;
 
-	double total_len = total_end - total_start;
+	ptstime total_len = total_end - total_start;
 	total_packages = preferences->renderfarm_job_count;
 	total_allocated = total_packages + preferences->get_enabled_nodes();
 	packages = new RenderPackage*[total_allocated];
@@ -103,23 +104,23 @@ RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per
 	RenderPackage *result = 0;
 	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
-	if(audio_position < audio_end ||
-		video_position < video_end)
+	if(audio_pts < audio_end_pts ||
+		video_pts < video_end_pts)
 	{
 // Last package
-		double scaled_len;
+		ptstime scaled_len;
 		result = packages[current_package];
-		result->audio_start = audio_position;
-		result->video_start = video_position;
+		result->audio_start_pts = audio_pts;
+		result->video_start_pts = video_pts;
 		result->video_do = default_asset->video_data;
 		result->audio_do = default_asset->audio_data;
 
 		if(current_package >= total_allocated - 1)
 		{
-			result->audio_end = audio_end;
-			result->video_end = video_end;
-			audio_position = result->audio_end;
-			video_position = result->video_end;
+			result->audio_end_pts = audio_end_pts;
+			result->video_end_pts = video_end_pts;
+			audio_pts = result->audio_end_pts;
+			video_pts = result->video_end_pts;
 		}
 		else
 // No useful speed data.  May get infinity for real fast jobs.
@@ -129,25 +130,23 @@ RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per
 		{
 			scaled_len = MAX(package_len, min_package_len);
 
-			result->audio_end = audio_position + 
-				Units::round(scaled_len * default_asset->sample_rate);
-			result->video_end = video_position + 
-				Units::round(scaled_len * default_asset->frame_rate);
+			result->audio_end_pts = audio_pts + scaled_len;
+			result->video_end_pts = video_pts + scaled_len;
 
 // If we get here without any useful speed data render the whole thing.
 			if(current_package >= total_packages - 1)
 			{
-				result->audio_end = audio_end;
-				result->video_end = video_end;
+				result->audio_end_pts = audio_end_pts;
+				result->video_end_pts = video_end_pts;
 			}
 			else
 			{
-				result->audio_end = MIN(audio_end, result->audio_end);
-				result->video_end = MIN(video_end, result->video_end);
+				result->audio_end_pts = MIN(audio_end_pts, result->audio_end_pts);
+				result->video_end_pts = MIN(video_end_pts, result->video_end_pts);
 			}
 
-			audio_position = result->audio_end;
-			video_position = result->video_end;
+			audio_pts = result->audio_end_pts;
+			video_pts = result->video_end_pts;
 		}
 		else
 // Useful speed data and future packages exist.  Scale the 
@@ -158,23 +157,20 @@ RenderPackage* PackagingEngineDefault::get_package_single_farm(double frames_per
 				avg_frames_per_second;
 			scaled_len = MAX(scaled_len, min_package_len);
 
-			result->audio_end = result->audio_start + 
-				Units::to_int64(scaled_len * default_asset->sample_rate);
-			result->video_end = result->video_start +
-				Units::to_int64(scaled_len * default_asset->frame_rate);
+			result->audio_end_pts = result->audio_start_pts + scaled_len;
+			result->video_end_pts = result->video_start_pts + scaled_len;
 
-			result->audio_end = MIN(audio_end, result->audio_end);
-			result->video_end = MIN(video_end, result->video_end);
+			result->audio_end_pts = MIN(audio_end_pts, result->audio_end_pts);
+			result->video_end_pts = MIN(video_end_pts, result->video_end_pts);
 
-			audio_position = result->audio_end;
-			video_position = result->video_end;
+			audio_pts = result->audio_end_pts;
+			video_pts = result->video_end_pts;
 
 // Package size is no longer touched between total_packages and total_allocated
 			if(current_package < total_packages - 1)
 			{
-				package_len = (double)(audio_end - audio_position) / 
-					(double)default_asset->sample_rate /
-					(double)(total_packages - current_package);
+				package_len = (audio_end_pts - audio_pts) / 
+					(ptstime)(total_packages - current_package);
 			}
 		}
 
@@ -193,11 +189,8 @@ void PackagingEngineDefault::get_package_paths(ArrayList<char*> *path_list)
 	path_list->set_free();
 }
 
-samplenum PackagingEngineDefault::get_progress_max()
+ptstime PackagingEngineDefault::get_progress_max()
 {
-	return Units::to_int64(default_asset->sample_rate * 
-			(total_end - total_start)) +
-		Units::to_int64(preferences->render_preroll * 
-			2 * 
-			default_asset->sample_rate);
+	return (total_end - total_start) + preferences->render_preroll * total_packages +
+		(preferences->render_preroll >= total_start ? total_start - preferences->render_preroll : 0);
 }

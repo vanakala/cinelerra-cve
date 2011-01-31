@@ -34,12 +34,12 @@ public:
 		EDL *edl,
 		Preferences *preferences,
 		Asset *default_asset, 
-		double total_start, 
-		double total_end) = 0;
+		ptstime total_start, 
+		ptstime total_end) = 0;
 	virtual RenderPackage* get_package_single_farm(double frames_per_second, 
 		int client_number,
 		int use_local_rate) = 0;
-	virtual samplenum get_progress_max() = 0;
+	virtual ptstime get_progress_max() = 0;
 	virtual void get_package_paths(ArrayList<char*> *path_list) = 0;
 	virtual int packages_are_done() { return 0; };
 };
@@ -56,34 +56,32 @@ public:
 		EDL *edl,
 		Preferences *preferences,
 		Asset *default_asset, 
-		double total_start, 
-		double total_end);
+		ptstime total_start,
+		ptstime total_end);
 	RenderPackage* get_package_single_farm(double frames_per_second, 
 		int client_number,
 		int use_local_rate);
-	samplenum get_progress_max();
+	ptstime get_progress_max();
 	void get_package_paths(ArrayList<char*> *path_list);
 
 private:
 	RenderPackage **packages;
-	int64_t total_allocated;  // Total packages to test the existence of
+	int total_allocated;   // Total packages to test the existence of
 	int current_number;    // The number being injected into the filename.
 	int number_start;      // Character in the filename path at which the number begins
 	int total_digits;      // Total number of digits including padding the user specified.
-	double package_len;    // Target length of a single package
-	double min_package_len; // Minimum package length after load balancing
+	ptstime package_len;   // Target length of a single package
+	ptstime min_package_len; // Minimum package length after load balancing
 	int total_packages;   // Total packages to base calculations on
-	posnum audio_position;
-	framenum video_position;
-	posnum audio_end;
-	framenum video_end;
+	ptstime audio_pts;
+	ptstime video_pts;
+	ptstime audio_end_pts;
+	ptstime video_end_pts;
 	int current_package;
 	Asset *default_asset;
 	Preferences *preferences;
-	double total_start;
-	double total_end;
+	ptstime total_start;
+	ptstime total_end;
 };
-
-
 
 #endif

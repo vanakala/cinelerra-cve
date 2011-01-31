@@ -65,6 +65,8 @@
 #include "datatype.h"
 #include "condition.inc"
 #include "edl.inc"
+#include "linklist.h"
+#include "maplist.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "packagedispatcher.inc"
@@ -72,11 +74,6 @@
 #include "renderfarm.inc"
 #include "thread.h"
 #include "bctimer.inc"
-
-
-
-
-
 
 
 class BRender : public Thread
@@ -93,44 +90,22 @@ public:
 // it really stops.
 	void stop();
 
-
-// Get last contiguous frame from map, with locking.
-// Only needed by BRenderThread::start but nothing really uses it.
-	framenum get_last_contiguous(framenum brender_start);
 // Allocate map with locking
-	void allocate_map(framenum brender_start, framenum start, framenum end);
+	void allocate_map(ptstime brender_start, ptstime start, ptstime end);
 // Mark a frame as finished
-	int set_video_map(framenum position, int value);
+	void set_video_map(ptstime start, ptstime end);
 
 	void initialize();
 	void run();
 
-
-
 	MWindow *mwindow;
 
-
-
-
 // Simple map of finished chunks
-	unsigned char *map;
-	framenum map_size;
+	MapList videomap;
 	Mutex *map_lock;
-
-// Status of each map entry.  This way we get the last contiguous as well as the
-// ones which are actually rendered.
-	enum
-	{
-		NOT_SCANNED,
-		SCANNED,
-		RENDERED
-	};
 
 // Invalidate the map until reallocation when a new edit operation is performed.
 	int map_valid;
-
-// Constantly recalculate this after every frame instead of searching
-	framenum last_contiguous;
 
 // Wait until stop commands are finished
 	Condition *completion_lock;
@@ -156,12 +131,14 @@ public:
 	void copy_edl(EDL *edl);
 
 	EDL *edl;
+
 	enum
 	{
 		BRENDER_NONE,
 		BRENDER_RESTART,
 		BRENDER_STOP
 	};
+
 	int command;
 // The location of the last change.
 	double position;
@@ -199,11 +176,6 @@ public:
 
 	int done;
 };
-
-
-
-
-
 
 
 #endif

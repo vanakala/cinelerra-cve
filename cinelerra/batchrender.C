@@ -379,7 +379,7 @@ int BatchRenderThread::test_edl_files()
 			FILE *fd = fopen(jobs.values[i]->edl_path, "r");
 			if(!fd)
 			{
-				errorbox(_("EDL %s not found.\n"), jobs.values[i]->edl_path);
+				errorbox(_("EDL '%s' is not found."), basename(jobs.values[i]->edl_path));
 				if(mwindow)
 				{
 					gui->new_batch->enable();
@@ -479,7 +479,6 @@ void BatchRenderThread::start_rendering(char *config_path,
 
 // Abort on any existing file because it's so hard to set this up.
 	if(result) return;
-
 	render = new Render(0);
 	render->start_batches(&jobs, 
 		boot_defaults,
@@ -489,11 +488,11 @@ void BatchRenderThread::start_rendering(char *config_path,
 
 void BatchRenderThread::start_rendering()
 {
-	if(is_rendering) return;
-
-	is_rendering = 1;
 	char path[BCTEXTLEN];
 	path[0] = 0;
+
+	if(is_rendering) return;
+	is_rendering = 1;
 	save_jobs(path);
 	save_defaults(mwindow->defaults);
 	gui->new_batch->disable();
@@ -520,7 +519,6 @@ void BatchRenderThread::start_rendering()
 		gui->delete_batch->enable();
 		return;
 	}
-
 	mwindow->render->start_batches(&jobs);
 }
 

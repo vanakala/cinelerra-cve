@@ -61,8 +61,8 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	Preferences *preferences,
 	int strategy, 
 	Asset *default_asset, 
-	double total_start, 
-	double total_end,
+	ptstime total_start,
+	ptstime total_end,
 	int test_overwrite)
 {
 	int result = 0;
@@ -76,10 +76,10 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	this->total_end = total_end;
 
 	nodes = preferences->get_enabled_nodes();
-	audio_position = Units::to_int64(total_start * default_asset->sample_rate);
-	video_position = Units::to_int64(total_start * default_asset->frame_rate);
-	audio_end = Units::to_int64(total_end * default_asset->sample_rate);
-	video_end = Units::to_int64(total_end * default_asset->frame_rate);
+	audio_pts = total_start;
+	video_pts = total_start;
+	audio_end_pts = total_end;
+	video_end_pts = total_end;
 	current_package = 0;
 
 	if(strategy == SINGLE_PASS)
@@ -91,10 +91,10 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		total_allocated = 1;
 		packages = new RenderPackage*[total_allocated];
 		packages[0] = new RenderPackage;
-		packages[0]->audio_start = audio_position;
-		packages[0]->audio_end = audio_end;
-		packages[0]->video_start = video_position;
-		packages[0]->video_end = video_end;
+		packages[0]->audio_start_pts = audio_pts;
+		packages[0]->audio_end_pts = audio_end_pts;
+		packages[0]->video_start_pts = video_pts;
+		packages[0]->video_end_pts = video_end_pts;
 		packages[0]->audio_do = default_asset->audio_data;
 		packages[0]->video_do = default_asset->video_data;
 		strcpy(packages[0]->path, default_asset->path);
@@ -123,47 +123,47 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 			total_digits,
 			2);
 
-		while(audio_position < audio_end)
+		while(audio_pts < audio_end_pts)
 		{
 			RenderPackage *package = 
 				packages[total_packages] = 
 				new RenderPackage;
-			package->audio_start = audio_position;
-			package->video_start = video_position;
+			package->audio_start_pts = audio_pts;
+			package->video_start_pts = video_pts;
 			package->audio_do = default_asset->audio_data;
 			package->video_do = default_asset->video_data;
 
 
 			while(label && 
-				(label->position < (double)audio_position / default_asset->sample_rate ||
-				EQUIV(label->position, (double)audio_position / default_asset->sample_rate)))
+				(label->position < audio_pts ||
+				EQUIV(label->position, audio_pts)))
 			{
 				label = label->next;
 			}
 
 			if(!label)
 			{
-				package->audio_end = Units::to_int64(total_end * default_asset->sample_rate);
-				package->video_end = Units::to_int64(total_end * default_asset->frame_rate);
+				package->audio_end_pts = total_end;
+				package->video_end_pts = total_end;
 			}
 			else
 			{
-				package->audio_end = Units::to_int64(label->position * default_asset->sample_rate);
-				package->video_end = Units::to_int64(label->position * default_asset->frame_rate);
+				package->audio_end_pts = label->position;
+				package->video_end_pts = label->position;
 			}
 
-			if(package->audio_end > audio_end)
+			if(package->audio_end_pts > audio_end_pts)
 			{
-				package->audio_end = audio_end;
+				package->audio_end_pts = audio_end_pts;
 			}
 
-			if(package->video_end > video_end)
+			if(package->video_end_pts > video_end_pts)
 			{
-				package->video_end = video_end;
+				package->video_end_pts = video_end_pts;
 			}
 
-			audio_position = package->audio_end;
-			video_position = package->video_end;
+			audio_pts = package->audio_end_pts;
+			video_pts = package->video_end_pts;
 // Create file number differently if image file sequence
 			Render::create_filename(package->path, 
 				default_asset->path, 
@@ -218,7 +218,6 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		result = ConfirmSave::test_files(mwindow, &paths);
 		paths.remove_all_objects();
 	}
-	
 	return result;
 }
 
@@ -266,7 +265,7 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	else
 	if(strategy == BRENDER_FARM)
 	{
-		if(video_position < video_end)
+		if(video_pts < video_end_pts)
 		{
 // Allocate new packages
 			if(total_packages == 0)
@@ -307,18 +306,16 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 			scaled_len = MAX(scaled_len, min_package_len);
 
 // Always an image file sequence
-			result->audio_start = audio_position;
-			result->video_start = video_position;
-			result->audio_end = result->audio_start + 
-				Units::to_int64(scaled_len * default_asset->sample_rate);
-			result->video_end = result->video_start + 
-				Units::to_int64(scaled_len * default_asset->frame_rate);
-			if(result->video_end == result->video_start) result->video_end++;
-			audio_position = result->audio_end;
-			video_position = result->video_end;
+			result->audio_start_pts = audio_pts;
+			result->video_start_pts = video_pts;
+			result->audio_end_pts = result->audio_start_pts + scaled_len;
+			result->video_end_pts = result->video_start_pts + scaled_len;
+			if(PTSEQU(result->video_end_pts, result->video_start_pts)) 
+				result->video_end_pts += 1.0 / default_asset->frame_rate;
+			audio_pts = result->audio_end_pts;
+			video_pts = result->video_end_pts;
 			result->audio_do = default_asset->audio_data;
 			result->video_do = default_asset->video_data;
-
 
 // The frame numbers are read from the vframe objects themselves.
 			Render::create_filename(result->path,
@@ -348,24 +345,25 @@ ArrayList<Asset*>* PackageDispatcher::get_asset_list()
 		Asset *asset = new Asset;
 		*asset = *default_asset;
 		strcpy(asset->path, packages[i]->path);
-		asset->video_length = packages[i]->video_end - packages[i]->video_start;
-		asset->audio_length = packages[i]->audio_end - packages[i]->audio_start;
+		asset->video_length = round((packages[i]->video_end_pts - packages[i]->video_start_pts) * asset->frame_rate);
+		asset->audio_length = round((packages[i]->audio_end_pts - packages[i]->audio_start_pts) * asset->sample_rate);
 		assets->append(asset);
 	}
 
 	return assets;
 }
 
-posnum PackageDispatcher::get_progress_max()
+ptstime PackageDispatcher::get_progress_max()
 {
 	if (strategy == SINGLE_PASS_FARM)
 		return packaging_engine->get_progress_max();
 	else
-		return Units::to_int64(default_asset->sample_rate * 
-				(total_end - total_start)) +
-			Units::to_int64(preferences->render_preroll * 
-				total_allocated * 
-				default_asset->sample_rate);
+	{
+		return (total_end - total_start) + 
+				preferences->render_preroll * total_packages +
+				(preferences->render_preroll >= total_start ? 
+				total_start - preferences->render_preroll : 0);
+	}
 }
 
 int PackageDispatcher::get_total_packages()

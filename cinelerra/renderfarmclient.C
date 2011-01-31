@@ -72,14 +72,11 @@ RenderFarmClient::RenderFarmClient(int port,
 	if(nice(nice_value) < 0)
 		perror("RenderFarmClient::RenderFarmClient - nice");
 
-
 	MWindow::init_defaults(boot_defaults, config_path);
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);
 	MWindow::init_plugins(boot_preferences, plugindb, 0);
 }
-
-
 
 
 RenderFarmClient::~RenderFarmClient()
@@ -94,8 +91,6 @@ RenderFarmClient::~RenderFarmClient()
 void RenderFarmClient::main_loop()
 {
 	int socket_fd;
-
-
 
 // Open listening port
 
@@ -161,8 +156,6 @@ void RenderFarmClient::main_loop()
 
 		int new_socket_fd;
 
-
-
 		if(!deamon_path)
 		{
 			struct sockaddr_in clientname;
@@ -210,14 +203,6 @@ void RenderFarmClient::kill_client()
 		kill(this_pid, SIGKILL);
 	}
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -458,12 +443,9 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 	char *string;
 	read_string(string);
 
-
 	FileXML file;
 	file.read_from_string((char*)string);
 	delete [] string;
-
-
 
 	edl->load_xml(client->plugindb,
 		&file, 
@@ -486,19 +468,14 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 {
 	lock("RenderFarmClientThread::read_package");
-	send_request_header(RENDERFARM_PACKAGE, 
-		4);
 
-	unsigned char datagram[5];
+	unsigned char datagram[32];
 	int i = 0;
+	char *q;
 
-
-// Fails if -ieee isn't set.
-	int64_t fixed = !EQUIV(frames_per_second, 0.0) ? 
-		(int64_t)(frames_per_second * 65536.0) : 0;
-	STORE_INT32(fixed);
-	write_socket((char*)datagram, 4);
-
+	i = pts2str((char *)datagram, frames_per_second);
+	send_request_header(RENDERFARM_PACKAGE, i + 1);
+	write_socket((char*)datagram, i + 1);
 
 	char *data;
 	unsigned char *data_ptr;
@@ -515,20 +492,16 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 	strcpy(package->path, data);
 	data_ptr += strlen(package->path);
 	data_ptr++;
-	package->audio_start = READ_INT32(data_ptr);
-	data_ptr += 4;
-	package->audio_end = READ_INT32(data_ptr);
-	data_ptr += 4;
-	package->video_start = READ_INT32(data_ptr);
-	data_ptr += 4;
-	package->video_end = READ_INT32(data_ptr);
-	data_ptr += 4;
+	package->audio_start_pts = str2pts((const char*)data_ptr, &q);
+	package->audio_end_pts = str2pts(q, &q);
+	package->video_start_pts = str2pts(q, &q);
+	package->video_end_pts = str2pts(q, &q);
+	data_ptr = (unsigned char*)q + 1;
 	package->use_brender = READ_INT32(data_ptr);
 	data_ptr += 4;
 	package->audio_do = READ_INT32(data_ptr);
 	data_ptr += 4;
 	package->video_do = READ_INT32(data_ptr);
-
 	delete [] data;
 	unlock();
 	return 0;
@@ -551,7 +524,6 @@ void RenderFarmClientThread::ping_server()
 }
 
 
-
 void RenderFarmClientThread::main_loop(int socket_fd)
 {
 	this->socket_fd = socket_fd;
@@ -572,8 +544,6 @@ void RenderFarmClientThread::run()
 
 // Get the pid of the fork if inside the fork
 	pid = getpid();
-
-
 
 	int socket_fd = this->socket_fd;
 
@@ -608,7 +578,6 @@ void RenderFarmClientThread::init_client_keepalive()
 }
 
 
-
 void RenderFarmClientThread::do_tuner(int socket_fd)
 {
 // Currently only 1 tuner driver.  Maybe more someday.
@@ -620,18 +589,13 @@ void RenderFarmClientThread::do_tuner(int socket_fd)
 
 void RenderFarmClientThread::do_packages(int socket_fd)
 {
-
 	EDL *edl;
 	RenderPackage *package;
 	Asset *default_asset;
 	Preferences *preferences;
 
-
-
 	FarmPackageRenderer package_renderer(this, socket_fd);
 	int result = 0;
-
-
 
 // Read settings
 	preferences = new Preferences;
@@ -640,14 +604,9 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	edl = new EDL;
 	edl->create_objects();
 
-
-
-
 	read_preferences(socket_fd, preferences);
 	result |= read_asset(socket_fd, default_asset);
 	result |= read_edl(socket_fd, edl, preferences);
-
-
 
 	package_renderer.initialize(0,
 			edl, 
@@ -659,7 +618,6 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	while(1)
 	{
 		result |= read_package(socket_fd, package);
-
 
 // Finished list
 		if(result)
@@ -678,27 +636,16 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 			break;
 		}
 
-		frames_per_second = (double)(package->video_end - package->video_start) / 
+		frames_per_second = (ptstime)package->count /
 			((double)timer.get_difference() / 1000);
 	}
-
 
 	Garbage::delete_object(default_asset);
 	delete edl;
 	delete preferences;
-
 }
 
-
-
-
-
-
-
-
-
-RenderFarmKeepalive::RenderFarmKeepalive(
-	RenderFarmClientThread *client_thread)
+RenderFarmKeepalive::RenderFarmKeepalive(RenderFarmClientThread *client_thread)
  : Thread(1, 0, 0)
 {
 	this->client_thread = client_thread;
@@ -729,19 +676,6 @@ void RenderFarmKeepalive::run()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 FarmPackageRenderer::FarmPackageRenderer(RenderFarmClientThread *thread,
 		int socket_fd)
  : PackageRenderer()
@@ -749,7 +683,6 @@ FarmPackageRenderer::FarmPackageRenderer(RenderFarmClientThread *thread,
 	this->thread = thread;
 	this->socket_fd = socket_fd;
 }
-
 
 
 FarmPackageRenderer::~FarmPackageRenderer()
@@ -760,8 +693,7 @@ FarmPackageRenderer::~FarmPackageRenderer()
 int FarmPackageRenderer::get_result()
 {
 	thread->lock("FarmPackageRenderer::get_result");
-	thread->send_request_header(RENDERFARM_GET_RESULT, 
-		0);
+	thread->send_request_header(RENDERFARM_GET_RESULT, 0);
 	unsigned char data[1];
 	data[0] = 1;
 	if(thread->read_socket((char*)data, 1) != 1)
@@ -776,46 +708,39 @@ int FarmPackageRenderer::get_result()
 void FarmPackageRenderer::set_result(int value)
 {
 	thread->lock("FarmPackageRenderer::set_result");
-	thread->send_request_header(RENDERFARM_SET_RESULT, 
-		1);
+	thread->send_request_header(RENDERFARM_SET_RESULT, 1);
 	unsigned char data[1];
 	data[0] = value;
 	thread->write_socket((char*)data, 1);
 	thread->unlock();
 }
 
-void FarmPackageRenderer::set_progress(samplenum total_samples)
+void FarmPackageRenderer::set_progress(ptstime value)
 {
+	char datagram[32];
+	int l;
+
 	thread->lock("FarmPackageRenderer::set_progress");
-	thread->send_request_header(RENDERFARM_PROGRESS, 
-		4);
-	unsigned char datagram[4];
-	int i = 0;
-	STORE_INT32(total_samples);
-	thread->write_socket((char*)datagram, 4);
+	l = pts2str(datagram, value);
+	thread->send_request_header(RENDERFARM_PROGRESS, l + 1);
+	thread->write_socket((char*)datagram, l + 1);
 	thread->unlock();
 }
 
-int FarmPackageRenderer::set_video_map(framenum position, int value)
+void FarmPackageRenderer::set_video_map(ptstime start, ptstime end)
 {
 	int result = 0;
-	unsigned char datagram[8];
+	char datagram[72];
 	char return_value[1];
-	int i = 0;
+	int l;
 
 	thread->lock("FarmPackageRenderer::set_video_map");
-	thread->send_request_header(RENDERFARM_SET_VMAP, 
-		8);
-	STORE_INT32(position);
-	STORE_INT32(value);
-	thread->write_socket((char*)datagram, 8);
+	l = pts2str(datagram, start);
+	l += pts2str(&datagram[l], end);
+	thread->send_request_header(RENDERFARM_SET_VMAP, l + 1);
+	thread->write_socket((char*)datagram, l+1);
 
-// Get completion since the GUI may be locked for a long time.
-	if(!thread->read_socket(return_value, 1))
-	{
-		result = 1;
-	}
+	thread->read_socket(return_value, 1);
 
 	thread->unlock();
-	return result;
 }

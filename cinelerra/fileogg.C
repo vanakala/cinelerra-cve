@@ -2114,13 +2114,12 @@ PackagingEngineOGG::~PackagingEngineOGG()
 }
 
 
-
 int PackagingEngineOGG::create_packages_single_farm(
 		EDL *edl,
 		Preferences *preferences,
 		Asset *default_asset, 
-		double total_start, 
-		double total_end)
+		ptstime total_start,
+		ptstime total_end)
 {
 	this->total_start = total_start;
 	this->total_end = total_end;
@@ -2132,12 +2131,12 @@ int PackagingEngineOGG::create_packages_single_farm(
 // Should be taken care of somewhere else actually
 	this->default_asset = new Asset(*default_asset);
 
-	audio_start = Units::to_int64(total_start * default_asset->sample_rate);
-	video_start = Units::to_int64(total_start * default_asset->frame_rate);
-	audio_position = audio_start;
-	video_position = video_start;
-	audio_end = Units::to_int64(total_end * default_asset->sample_rate);
-	video_end = Units::to_int64(total_end * default_asset->frame_rate);
+	audio_start_pts = total_start;
+	video_start_pts = total_start;
+	audio_pts = audio_start_pts;
+	video_pts = video_start_pts;
+	audio_end_pts = total_end;
+	video_end_pts = total_end;
 	current_package = 0;
 
 	double total_len = total_end - total_start;
@@ -2196,10 +2195,10 @@ RenderPackage* PackagingEngineOGG::get_package_single_farm(double frames_per_sec
 	if (current_package == 0 && default_asset->audio_data)
 	{
 		result = packages[0];
-		result->audio_start = audio_start;
-		result->video_start = video_start;
-		result->audio_end = audio_end;
-		result->video_end = video_end;
+		result->audio_start_pts = audio_start_pts;
+		result->video_start_pts = video_start_pts;
+		result->audio_end_pts = audio_end_pts;
+		result->video_end_pts = video_end_pts;
 		result->audio_do = 1;
 		result->video_do = 0;
 	} else if (default_asset->video_data)
@@ -2209,27 +2208,24 @@ RenderPackage* PackagingEngineOGG::get_package_single_farm(double frames_per_sec
 		result->audio_do = 0;
 		result->video_do = 1;
 
-		result->audio_start = audio_position;
-		result->video_start = video_position;
-		result->audio_end = audio_position + 
-			Units::round(video_package_len * default_asset->sample_rate);
-		result->video_end = video_position + 
-			Units::round(video_package_len * default_asset->frame_rate);
+		result->audio_start_pts = audio_pts;
+		result->video_start_pts = video_pts;
+		result->audio_end_pts = result->audio_start_pts + video_package_len;
+		result->video_end_pts = result->video_start_pts + video_package_len;
 
 // Last package... take it all!
 		if (current_package == total_packages -1 ) 
 		{
-			result->audio_end = audio_end;
-			result->video_end = video_end;
+			result->audio_end_pts = audio_end_pts;
+			result->video_end_pts = video_end_pts;
 		}
 
-		audio_position = result->audio_end;
-		video_position = result->video_end;
+		audio_pts = result->audio_end_pts;
+		video_pts = result->video_end_pts;
 	}
 
 	current_package ++;
 	return result;
-
 }
 
 void PackagingEngineOGG::get_package_paths(ArrayList<char*> *path_list)
@@ -2243,21 +2239,17 @@ void PackagingEngineOGG::get_package_paths(ArrayList<char*> *path_list)
 	path_list->set_free();
 }
 
-samplenum PackagingEngineOGG::get_progress_max()
+ptstime PackagingEngineOGG::get_progress_max()
 {
-	return Units::to_int64(default_asset->sample_rate * 
-			(total_end - total_start)) * 2+
-		Units::to_int64(preferences->render_preroll * 
-			total_packages *
-			default_asset->sample_rate);
+	return (total_end - total_start) * 2 +
+		preferences->render_preroll * total_packages +
+		(preferences->render_preroll >= total_start ?
+		(total_start - preferences->render_preroll) * 2 : 0);
 }
 
 int PackagingEngineOGG::packages_are_done()
 {
 // Mux audio and video into one file
-
-// First fix our asset... have to workaround the bug of corruption of local asset
-
 	Asset *video_asset, *audio_asset;
 	File *audio_file_gen, *video_file_gen;
 	FileOGG *video_file, *audio_file;
@@ -2268,7 +2260,6 @@ int PackagingEngineOGG::packages_are_done()
 	{
 		audio_asset = new Asset(packages[local_current_package]->path);
 		local_current_package++;
-
 		audio_file_gen = new File();
 		audio_file_gen->open_file(preferences, 
 			audio_asset, 
@@ -2285,7 +2276,6 @@ int PackagingEngineOGG::packages_are_done()
 	{
 		video_asset = new Asset(packages[local_current_package]->path);
 		local_current_package++;
-
 		video_file_gen = new File();
 		video_file_gen->open_file(preferences, 
 			video_asset, 
@@ -2297,7 +2287,6 @@ int PackagingEngineOGG::packages_are_done()
 		ogg_stream_init(&video_in_stream, video_file->tf->to.serialno);
 		video_file->ogg_seek_to_databegin(video_file->tf->videosync, video_file->tf->to.serialno);
 	}
-
 // Output file
 	File *output_file_gen = new File();
 	output_file_gen->open_file(preferences,
@@ -2332,7 +2321,7 @@ int PackagingEngineOGG::packages_are_done()
 						ogg_stream_clear(&video_in_stream);
 						video_file_gen->close_file();
 						delete video_file_gen;
-						delete video_asset;
+						Garbage::delete_object(video_asset);
 						video_asset = new Asset(packages[local_current_package]->path);
 						local_current_package++;
 
@@ -2402,7 +2391,6 @@ int PackagingEngineOGG::packages_are_done()
 		}
 		output_file->flush_ogg(0);
 	}
-
 // Just prevent thet write_samples and write_frames are called
 	output_file->final_write = 0;
 
@@ -2411,16 +2399,15 @@ int PackagingEngineOGG::packages_are_done()
 		ogg_stream_clear(&audio_in_stream);
 		audio_file_gen->close_file();
 		delete audio_file_gen;
-		delete audio_asset;
+		Garbage::delete_object(audio_asset);
 	}
 	if (default_asset->video_data)
 	{
 		ogg_stream_clear(&video_in_stream);
 		video_file_gen->close_file();
 		delete video_file_gen;
-		delete video_asset;
+		Garbage::delete_object(video_asset);
 	}
-
 	output_file_gen->close_file();
 	delete output_file_gen;
 

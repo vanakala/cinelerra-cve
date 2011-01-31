@@ -39,23 +39,16 @@
 #include "tracks.h"
 #include "units.h"
 
-
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-
-
 extern "C"
 {
 #include <uuid/uuid.h>
 }
-
-
-
-
 
 
 BRender::BRender(MWindow *mwindow)
@@ -69,10 +62,7 @@ BRender::BRender(MWindow *mwindow)
 	thread = 0;
 	master_pid = -1;
 	arguments[0] = arguments[1] = arguments[2] = 0;
-	map = 0;
-	map_size = 0;
 	map_valid = 0;
-	last_contiguous = 0;
 	set_synchronous(1);
 }
 
@@ -98,7 +88,6 @@ BRender::~BRender()
 	if(arguments[0]) delete [] arguments[0];
 	if(arguments[1]) delete [] arguments[1];
 	if(arguments[2]) delete [] arguments[2];
-	if(map) delete [] map;
 	delete timer;
 }
 
@@ -159,8 +148,6 @@ void BRender::run()
 
 	master_pid = pid;
 
-
-
 	int return_value;
 	if(waitpid(master_pid, &return_value, WUNTRACED) < 0)
 	{
@@ -189,88 +176,36 @@ void BRender::stop()
 	completion_lock->lock("BRender::stop");
 }
 
-
-
-framenum BRender::get_last_contiguous(framenum brender_start)
-{
-	int result;
-	map_lock->lock("BRender::get_last_contiguous");
-	if(map_valid)
-		result = last_contiguous;
-	else
-		result = brender_start;
-	map_lock->unlock();
-	return result;
-}
-
-void BRender::allocate_map(framenum brender_start, framenum start, framenum end)
+void BRender::allocate_map(ptstime brender_start, ptstime start, ptstime end)
 {
 	map_lock->lock("BRender::allocate_map");
-	unsigned char *old_map = map;
 
-	map = new unsigned char[end];
-	if(old_map)
-	{
-		memcpy(map, old_map, start);
-		delete [] old_map;
-	}
-
-// Zero all before brender start
-	bzero(map, brender_start);
-// Zero all after current start
-	bzero(map + start, end - start);
-
-	map_size = end;
+	videomap.set_map(0, brender_start, 0);
+	videomap.set_map(start, end, 0);
 	map_valid = 1;
-	last_contiguous = start;
-	mwindow->session->brender_end = (double)last_contiguous / 
-		mwindow->edl->session->frame_rate;
+	mwindow->session->brender_end = start;
 	map_lock->unlock();
 }
 
-int BRender::set_video_map(framenum position, int value)
+void BRender::set_video_map(ptstime start, ptstime end)
 {
 	int update_gui = 0;
 	map_lock->lock("BRender::set_video_map");
 
-
-	if(value == BRender::NOT_SCANNED)
-	{
-		errorbox(_("BRender::set_video_map called to set NOT_SCANNED\n"));
-	}
-
-// Preroll
-	if(position < 0)
-	{
-		;
-	}
-	else
-// In range
-	if(position < map_size)
-	{
-		map[position] = value;
-	}
-	else
-// Obsolete EDL
-	{
-		errorbox(_("BRender::set_video_map %d: attempt to set beyond end of map %d.\n"),
-			position,
-			map_size);
-	}
+	if(start < 0)
+		start = 0;
+	if(end < 0)
+		end = 0;
+	if(PTSEQU(start, end))
+		return;
+	videomap.set_map(start, end, 1);
 
 // Maintain last contiguous here to reduce search time
-	if(position == last_contiguous)
+	if(videomap.last->pts > mwindow->session->brender_end)
 	{
-		int i;
-		for(i = position + 1; i < map_size && map[i]; i++)
-		{
-			;
-		}
-		last_contiguous = i;
-		mwindow->session->brender_end = (double)last_contiguous / 
-			mwindow->edl->session->frame_rate;
+		mwindow->session->brender_end = videomap.last->pts;
 
-		if(timer->get_difference() > 1000 || last_contiguous >= map_size)
+		if(timer->get_difference() > 1000)
 		{
 			update_gui = 1;
 			timer->update();
@@ -286,20 +221,7 @@ int BRender::set_video_map(framenum position, int value)
 		mwindow->gui->timebar->flush();
 		mwindow->gui->unlock_window();
 	}
-	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 BRenderCommand::BRenderCommand()
@@ -331,13 +253,6 @@ void BRenderCommand::copy_edl(EDL *edl)
 	this->edl->copy_all(edl);
 	this->position = 0;
 }
-
-
-
-
-
-
-
 
 
 
@@ -430,9 +345,6 @@ void BRenderThread::run()
 
 		thread_lock->unlock();
 
-
-
-
 // Process the command here to avoid delay.
 // Quit condition
 		if(!new_command)
@@ -523,27 +435,24 @@ void BRenderThread::start()
 
 // Get last contiguous and reset map.
 // If the framerate changes, last good should be 0 from the user.
-		framenum brender_start = (framenum)(command->edl->session->brender_start *
-			command->edl->session->frame_rate);
-		framenum last_contiguous = brender->last_contiguous;
-		framenum last_good = (framenum)(command->edl->session->frame_rate * 
-			command->position);
+		ptstime brender_start = command->edl->session->brender_start;
+		ptstime last_contiguous = brender->videomap.last->pts;
+		ptstime last_good = command->position;
 		if(last_good < 0) last_good = last_contiguous;
-		framenum start_frame = MIN(last_contiguous, last_good);
-		start_frame = MAX(start_frame, brender_start);
-		framenum end_frame = Units::round(command->edl->tracks->total_video_length() * 
-			command->edl->session->frame_rate);
-		if(end_frame < start_frame) end_frame = start_frame;
+		ptstime start_pts = MIN(last_contiguous, last_good);
+		start_pts = MAX(start_pts, brender_start);
+		ptstime end_pts = command->edl->tracks->total_video_length();
+		if(end_pts < start_pts) end_pts = start_pts;
 
-		brender->allocate_map(brender_start, start_frame, end_frame);
+		brender->allocate_map(brender_start, start_pts, end_pts);
 
 		result = packages->create_packages(mwindow,
 			command->edl,
 			preferences,
 			BRENDER_FARM, 
 			preferences->brender_asset, 
-			(double)start_frame / command->edl->session->frame_rate, 
-			(double)end_frame / command->edl->session->frame_rate,
+			start_pts,
+			end_pts,
 			0);
 
 		farm_server = new RenderFarmServer(mwindow->plugindb, 
@@ -561,7 +470,6 @@ void BRenderThread::start()
 
 // No local rendering because of codec problems.
 
-
 // Abort
 		if(result)
 		{
@@ -573,6 +481,5 @@ void BRenderThread::start()
 			packages = 0;
 			preferences = 0;
 		}
-
 	}
 }

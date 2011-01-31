@@ -93,21 +93,17 @@ int VRender::flash_output()
 	return renderengine->video->write_buffer(video_out, renderengine->edl);
 }
 
-int VRender::process_buffer(VFrame *video_out, 
-	ptstime input_postime,
-	int last_buffer)
+int VRender::process_buffer(VFrame *video_out)
 {
 // process buffer for non realtime
 	int i, j;
 	ptstime render_len = fromunits(1);
 	int reconfigure = 0;
 
-
 	this->video_out = video_out;
-	this->last_playback = last_buffer;
 
-	current_postime = input_postime;
-	current_position = tounits(input_postime, 1);
+	current_postime = video_out->get_pts();
+	current_position = tounits(current_postime, 1);
 
 // test for automation configuration and shorten the fragment len if necessary
 	reconfigure = vconsole->test_reconfigure(render_len,
@@ -153,7 +149,6 @@ SET_TRACE
 				renderengine->edl);
 			if(file)
 			{
-
 // Cache single frames only
 				if(use_asynchronous)
 					file->start_video_decode_thread();

@@ -325,12 +325,12 @@ public:
 		EDL *edl,
 		Preferences *preferences,
 		Asset *default_asset, 
-		double total_start, 
-		double total_end);
+		ptstime total_start,
+		ptstime total_end);
 	RenderPackage* get_package_single_farm(double frames_per_second, 
 		int client_number,
 		int use_local_rate);
-	samplenum get_progress_max();
+	ptstime get_progress_max();
 	void get_package_paths(ArrayList<char*> *path_list);
 	int packages_are_done();
 
@@ -344,14 +344,14 @@ private:
 	Asset *default_asset;
 	Preferences *preferences;
 	int current_package;
-	double total_start;
-	double total_end;
-	samplenum audio_position;
-	samplenum audio_start;
-	samplenum audio_end;
-	framenum video_position;
-	framenum video_start;
-	framenum video_end;
+	ptstime total_start;
+	ptstime total_end;
+	ptstime audio_pts;
+	ptstime audio_start_pts;
+	ptstime audio_end_pts;
+	ptstime video_pts;
+	ptstime video_start_pts;
+	ptstime video_end_pts;
 
 };
 

@@ -83,12 +83,11 @@ class MainPackageRenderer : public PackageRenderer
 public:
 	MainPackageRenderer(Render *render);
 	~MainPackageRenderer();
-	
-	
+
 	int get_master();
 	int get_result();
 	void set_result(int value);
-	void set_progress(samplenum value);
+	void set_progress(ptstime value);
 	int progress_cancelled();
 
 	Render *render;
@@ -125,9 +124,9 @@ public:
 		int strategy,
 		int range_type);
 
-	int load_defaults(Asset *asset);
-	int save_defaults(Asset *asset);
-	int load_profile(int profile_slot, Asset *asset);
+	void load_defaults(Asset *asset);
+	void save_defaults(Asset *asset);
+	void load_profile(int profile_slot, Asset *asset);
 // force asset parameters regardless of window
 // This should be integrated into the Asset Class.
 	static int check_asset(EDL *edl, Asset &asset); 
@@ -179,7 +178,7 @@ public:
 	int strategy;
 	int range_type;
 // Total selection to render in seconds
-	double total_start, total_end;
+	ptstime total_start, total_end;
 // External Render farm checks this every frame.
 	int result;
 	Asset *default_asset;
@@ -190,10 +189,8 @@ public:
 	Condition *completion;
 
 
-// Total samples updated by the render farm and the local renderer.
-// This avoids rounding errors and complies with the use of samples for
-// timing.
-	samplenum total_rendered;
+// Total time updated by the render farm and the local renderer.
+	ptstime total_rendered;
 // Speed for the master node
 	double frames_per_second;
 // Time used in last render
@@ -203,9 +200,9 @@ public:
 	RenderWindow *render_window;
 
 // For non interactive mode, maintain progress here.
-	posnum progress_max;
+	ptstime progress_max;
 	Timer *progress_timer;
-	posnum last_eta;
+	int64_t last_eta;
 };
 
 class RenderToTracks;
@@ -237,23 +234,22 @@ public:
 };
 
 
-
 class RenderWindow : public BC_Window
 {
 public:
 	RenderWindow(MWindow *mwindow, Render *render, Asset *asset);
 	~RenderWindow();
 
-	int create_objects();
+	void create_objects();
 	void update_range_type(int range_type);
-	int load_profile(int profile_slot);
-	
+	void load_profile(int profile_slot);
+
 	RenderRangeProject *rangeproject;
 	RenderRangeSelection *rangeselection;
 	RenderRangeInOut *rangeinout;
 
 	RenderProfile *renderprofile;
-	
+
 	LoadMode *loadmode;
 	FormatTools *format_tools;
 

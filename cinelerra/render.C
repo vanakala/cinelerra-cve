@@ -21,6 +21,7 @@
 
 #include "arender.h"
 #include "asset.h"
+#include "assets.h"
 #include "auto.h"
 #include "batchrender.h"
 #include "bcprogressbox.h"
@@ -90,14 +91,6 @@ int RenderItem::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
 RenderProgress::RenderProgress(MWindow *mwindow, Render *render)
  : Thread()
 {
@@ -132,20 +125,11 @@ void RenderProgress::run()
 }
 
 
-
-
-
-
-
-
-
-
 MainPackageRenderer::MainPackageRenderer(Render *render)
  : PackageRenderer()
 {
 	this->render = render;
 }
-
 
 
 MainPackageRenderer::~MainPackageRenderer()
@@ -169,7 +153,7 @@ void MainPackageRenderer::set_result(int value)
 		render->result = value;
 }
 
-void MainPackageRenderer::set_progress(samplenum value)
+void MainPackageRenderer::set_progress(ptstime value)
 {
 	render->counter_lock->lock("MainPackageRenderer::set_progress");
 	render->total_rendered += value;
@@ -177,11 +161,10 @@ void MainPackageRenderer::set_progress(samplenum value)
 // If non interactive, print progress out
 	if(!render->progress)
 	{
-		posnum current_eta = render->progress_timer->get_scaled_difference(1000);
+		int64_t current_eta = render->progress_timer->get_scaled_difference(1000);
 		if(current_eta - render->last_eta > 1000)
 		{
 			double eta = 0;
-
 
 			if(render->total_rendered)
 			{
@@ -199,7 +182,7 @@ void MainPackageRenderer::set_progress(samplenum value)
 				TIME_HMS2);
 
 			printf("\r%d%% ETA: %s      ", (int)(100 * 
-				(float)render->total_rendered / 
+					render->total_rendered / 
 					render->progress_max),
 				string);
 			fflush(stdout);
@@ -215,14 +198,6 @@ int MainPackageRenderer::progress_cancelled()
 	return (render->progress && render->progress->is_cancelled()) || 
 		render->batch_cancelled;
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -336,7 +311,6 @@ void Render::run()
 			{
 				format_error = 0;
 				result = 0;
-
 				{
 					RenderWindow window(mwindow, this, asset);
 					window.create_objects();
@@ -359,6 +333,10 @@ void Render::run()
 		save_defaults(asset);
 		mwindow->save_defaults();
 
+		if(!preferences)
+			preferences = new Preferences;
+		preferences->copy_from(mwindow->preferences);
+
 		if(!result) render(1, asset, mwindow->edl, strategy, range_type);
 
 		Garbage::delete_object(asset);
@@ -374,6 +352,9 @@ void Render::run()
 				if(mwindow)
 				{
 					mwindow->batch_render->update_active(i);
+					if(!preferences)
+						preferences = new Preferences;
+					preferences->copy_from(mwindow->preferences);
 				}
 				else
 				{
@@ -387,11 +368,23 @@ void Render::run()
 				file->read_from_file(job->edl_path);
 				if(!plugindb && mwindow)
 					plugindb = mwindow->plugindb;
-				edl->load_xml(plugindb, file, LOAD_ALL);
-
-				check_asset(edl, *job->asset);
-				render(0, job->asset, edl, job->strategy, RANGE_BACKCOMPAT);
-
+				if(!edl->load_xml(plugindb, file, LOAD_ALL))
+				{
+					File assetfile;
+					for(Asset *ap = edl->assets->first; ap; ap = ap->next){
+						if(assetfile.open_file(preferences, ap, 1, 0, 0, 0) == FILE_OK)
+							assetfile.close_file(0);
+						else
+						{
+							errorbox("Failed to open '%s'", basename(ap->path));
+							result = 1;
+							break;
+						}
+					}
+					if(!result && !check_asset(edl, *job->asset))
+						render(0, job->asset, edl, job->strategy, RANGE_BACKCOMPAT);
+				} else
+					result = 1;
 				delete edl;
 				delete file;
 				if(!result)
@@ -426,7 +419,6 @@ void Render::run()
 		}
 	}
 }
-
 
 
 int Render::check_asset(EDL *edl, Asset &asset)
@@ -513,7 +505,6 @@ void Render::start_progress()
 	FileSystem fs;
 
 	progress_max = packages->get_progress_max();
-
 	progress_timer->update();
 	last_eta = 0;
 	if(mwindow)
@@ -557,37 +548,16 @@ int Render::render(int test_overwrite,
 	int strategy,
 	int range_type)
 {
-	char string[BCTEXTLEN];
-// Total length in seconds
-	double total_length;
-	int last_audio_buffer;
 	RenderFarmServer *farm_server = 0;
 	FileSystem fs;
 	int total_digits;      // Total number of digits including padding the user specified.
 	int number_start;      // Character in the filename path at which the number begins
 	int current_number;    // The number the being injected into the filename.
-// Pointer from file
-// (VFrame*)(VFrame array [])(Channel [])
-	VFrame ***video_output;
-// Pointer to output buffers
-	VFrame *video_output_ptr[MAX_CHANNELS];
-	double *audio_output_ptr[MAX_CHANNELS];
 	int done = 0;
 	in_progress = 1;
-
-
 	this->default_asset = asset;
 	progress = 0;
 	result = 0;
-
-	if(mwindow)
-	{
-		if(!preferences)
-			preferences = new Preferences;
-
-		preferences->copy_from(mwindow->preferences);
-	}
-
 
 // Create rendering command
 	command = new TransportCommand;
@@ -615,7 +585,6 @@ int Render::render(int test_overwrite,
 	}
 	packages = new PackageDispatcher;
 
-
 // Configure preview monitor
 	VideoOutConfig vconfig;
 	PlaybackConfig *playback_config = new PlaybackConfig;
@@ -635,10 +604,9 @@ int Render::render(int test_overwrite,
 // Get total range to render
 		total_start = command->start_position;
 		total_end = command->end_position;
-		total_length = total_end - total_start;
 
 // Nothing to render
-		if(EQUIV(total_length, 0))
+		if(EQUIV(total_start, total_end))
 		{
 			result = 1;
 		}
@@ -730,13 +698,9 @@ int Render::render(int test_overwrite,
 			RenderPackage *package;
 
 			if(strategy == SINGLE_PASS_FARM)
-			{
 				package = packages->get_package(frames_per_second, -1, 1);
-			}
 			else
-			{
 				package = packages->get_package(0, -1, 1);
-			}
 
 // Exit point
 			if(!package) 
@@ -745,8 +709,6 @@ int Render::render(int test_overwrite,
 				break;
 			}
 
-
-
 			Timer timer;
 			timer.update();
 
@@ -754,22 +716,14 @@ int Render::render(int test_overwrite,
 				result = 1;
 
 // Result is also set directly by the RenderFarm.
-
-			frames_per_second = (double)(package->video_end - package->video_start) / 
-				(double)(timer.get_difference() / 1000);
-
-
+			frames_per_second = (ptstime)package->count /
+				((double)timer.get_difference() / 1000);
 		} // file_number
-
-
-
-
 		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
 		{
 			farm_server->wait_clients();
 			result |= packages->packages_are_done();
 		}
-
 
 // Notify of error
 		if(result && (!progress || !progress->is_cancelled()) &&
@@ -778,22 +732,15 @@ int Render::render(int test_overwrite,
 
 // Delete the progress box
 		stop_progress();
-
-
 	}
 
-
 // Paste all packages into timeline if desired
-
 	if(!result && 
 		load_mode != LOAD_NOTHING && 
 		mwindow &&
 		mode != Render::BATCH)
 	{
 		mwindow->gui->lock_window("Render::render 3");
-
-
-
 
 		ArrayList<Asset*> *assets = packages->get_asset_list();
 		if(load_mode == LOAD_PASTE)
@@ -806,7 +753,6 @@ int Render::render(int test_overwrite,
 			mwindow->edl->session->edit_actions(),
 			0); // overwrite
 		delete assets;
-
 
 		mwindow->save_backup();
 		mwindow->undo->update_undo(_("render"), LOAD_ALL);
@@ -821,7 +767,6 @@ int Render::render(int test_overwrite,
 		mwindow->sync_parameters(CHANGE_ALL);
 		mwindow->gui->unlock_window();
 	}
-
 
 // Disable hourglass
 	if(mwindow)
@@ -843,7 +788,6 @@ int Render::render(int test_overwrite,
 	delete packages;
 	in_progress = 0;
 	completion->unlock();
-
 	return result;
 }
 
@@ -914,7 +858,6 @@ void Render::get_starting_number(char *path,
 		total_digits = strlen(number_text);
 	}
 
-
 // No number found or number not long enough
 	if(total_digits < min_digits)
 	{
@@ -925,17 +868,11 @@ void Render::get_starting_number(char *path,
 }
 
 
-
-
-
-
-
-int Render::load_defaults(Asset *asset)
+void Render::load_defaults(Asset *asset)
 {
 	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOAD_NEW_TRACKS);
 	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
-
 
 	asset->load_defaults(mwindow->defaults, 
 		"RENDER_", 
@@ -944,12 +881,9 @@ int Render::load_defaults(Asset *asset)
 		1,
 		1,
 		1);
-
-
-	return 0;
 }
 
-int Render::load_profile(int profile_slot, Asset *asset)
+void Render::load_profile(int profile_slot, Asset *asset)
 {
 	char string_name[100];
 	sprintf(string_name, "RENDER_%i_STRATEGY", profile_slot);
@@ -967,21 +901,13 @@ int Render::load_profile(int profile_slot, Asset *asset)
 		1,
 		1,
 		1);
-
-
-	return 0;
 }
 
-
-
-int Render::save_defaults(Asset *asset)
+void Render::save_defaults(Asset *asset)
 {
 	mwindow->defaults->update("RENDER_STRATEGY", strategy);
 	mwindow->defaults->update("RENDER_LOADMODE", load_mode);
 	mwindow->defaults->update("RENDER_RANGE_TYPE", range_type);
-
-
-
 
 	asset->save_defaults(mwindow->defaults, 
 		"RENDER_",
@@ -990,22 +916,17 @@ int Render::save_defaults(Asset *asset)
 		1,
 		1,
 		1);
-
-	return 0;
 }
-
-
 
 
 #define WIDTH 410
 #define HEIGHT 455
 
-
 RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Render", 
- 	mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
+	mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
 	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
- 	WIDTH, 
+	WIDTH, 
 	HEIGHT,
 	(int)BC_INFINITY,
 	(int)BC_INFINITY,
@@ -1025,7 +946,7 @@ RenderWindow::~RenderWindow()
 }
 
 
-int RenderWindow::load_profile(int profile_slot)
+void RenderWindow::load_profile(int profile_slot)
 {
 	render->load_profile(profile_slot, asset);
 	update_range_type(render->range_type);
@@ -1033,8 +954,7 @@ int RenderWindow::load_profile(int profile_slot)
 }
 
 
-
-int RenderWindow::create_objects()
+void RenderWindow::create_objects()
 {
 	int x = 5, y = 5;
 
@@ -1094,7 +1014,6 @@ int RenderWindow::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	return 0;
 }
 
 void RenderWindow::update_range_type(int range_type)
@@ -1122,6 +1041,7 @@ RenderRangeSelection::RenderRangeSelection(RenderWindow *rwindow, int value, int
 {
 	this->rwindow = rwindow;
 }
+
 int RenderRangeSelection::handle_event()
 {
 	rwindow->update_range_type(RANGE_SELECTION);
@@ -1134,6 +1054,7 @@ RenderRangeInOut::RenderRangeInOut(RenderWindow *rwindow, int value, int x, int 
 {
 	this->rwindow = rwindow;
 }
+
 int RenderRangeInOut::handle_event()
 {
 	rwindow->update_range_type(RANGE_INOUT);

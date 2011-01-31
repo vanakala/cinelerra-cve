@@ -43,11 +43,8 @@ public:
 		int nice_value,
 		const char *config_path);
 	~RenderFarmClient();
-	
+
 	void main_loop();
-
-
-
 
 // After a socket times out, kill the render node.
 	void kill_client();
@@ -61,6 +58,7 @@ public:
 	Preferences *boot_preferences;
 	ArrayList<PluginServer*> *plugindb;
 };
+
 
 class RenderFarmClientThread : public Thread
 {
@@ -85,11 +83,8 @@ public:
 	void lock(const char *location);
 	void unlock();
 
-
-
 	void do_tuner(int socket_fd);
 	void do_packages(int socket_fd);
-
 
 	void get_command(int socket_fd, int *command);
 	void read_preferences(int socket_fd, 
@@ -119,33 +114,21 @@ public:
 };
 
 
-
-
-
-
-
 class FarmPackageRenderer : public PackageRenderer
 {
 public:
 	FarmPackageRenderer(RenderFarmClientThread *thread,
 		int socket_fd);
 	~FarmPackageRenderer();
-	
-	
+
 	int get_result();
 	void set_result(int value);
-	void set_progress(samplenum total_samples);
-	int set_video_map(framenum position, int value);
+	void set_progress(ptstime value);
+	void set_video_map(ptstime start, ptstime end);
 
 	int socket_fd;
 	RenderFarmClientThread *thread;
 };
-
-
-
-
-
-
 
 
 class RenderFarmKeepalive : public Thread

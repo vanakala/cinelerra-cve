@@ -19,31 +19,10 @@
  * 
  */
 
-#ifndef DATATYPE_H
-#define DATATYPE_H
+#ifndef MAPLIST_INC
+#define MAPLIST_INC
 
-#include <sys/types.h>
-#include <math.h>
-// integer media positions
-// number of frame
-typedef int framenum;
-// number of sample
-typedef int64_t samplenum;
-// variable that can hold either frame or sample number
-typedef int64_t posnum;
-// timestamp (pts)
-typedef double ptstime;
-
-#define pts2str(buf, pts) sprintf((buf), " %16.10e", (pts))
-#define str2pts(buf, ptr) strtod((buf), (ptr))
-
-#define EPSILON (2e-5)
-
-#define PTSEQU(x, y) (fabs((x) - (y)) < EPSILON)
-
-#define TRACK_AUDIO 0
-#define TRACK_VIDEO 1
-#define TRACK_VTRANSITION 2
-#define TRACK_ATRANSITION 3
+class MapItem;
+class MapList;
 
 #endif

@@ -181,6 +181,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    mainsession.C \
 		    mainundo.C \
 		    manualgoto.C \
+		    maplist.C \
 		    maskauto.C \
 		    maskautos.C \
 		    maskengine.C \
@@ -308,7 +309,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    vwindow.C \
 		    vwindowgui.C \
 		    wavecache.C \
-                    yuvstream.C \
+		    yuvstream.C \
 		    zoombar.C \
 		    zoompanel.C
 
@@ -462,6 +463,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 mainsession.h \
 		 mainundo.h \
 		 manualgoto.h \
+		 maplist.h \
 		 maskauto.h \
 		 maskautos.h \
 		 maskengine.h \

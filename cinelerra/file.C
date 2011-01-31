@@ -339,7 +339,6 @@ int File::open_file(Preferences *preferences,
 	this->asset->copy_from(asset, 1);
 	file = 0;
 
-
 	switch(this->asset->format)
 	{
 // get the format now
@@ -634,7 +633,7 @@ void File::start_audio_thread(int buffer_size, int ring_buffers)
 	}
 }
 
-int File::start_video_thread(int buffer_size, 
+void File::start_video_thread(int buffer_size, 
 	int color_model, 
 	int ring_buffers, 
 	int compressed)
@@ -647,10 +646,9 @@ int File::start_video_thread(int buffer_size,
 			ring_buffers, 
 			compressed);
 	}
-	return 0;
 }
 
-int File::start_video_decode_thread()
+void File::start_video_decode_thread()
 {
 // Currently, CR2 is the only one which won't work asynchronously, so
 // we're not using a virtual function yet.
@@ -671,7 +669,7 @@ void File::stop_audio_thread()
 	}
 }
 
-int File::stop_video_thread()
+void File::stop_video_thread()
 {
 	if(video_thread)
 	{
@@ -680,7 +678,6 @@ int File::stop_video_thread()
 		delete video_thread;
 		video_thread = 0;
 	}
-	return 0;
 }
 
 FileThread* File::get_video_thread()
@@ -1104,7 +1101,6 @@ int File::read_frame(VFrame *frame, int is_thread)
 	{
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
 		int advance_position = 1;
-
 // Test cache
 		if(use_cache &&
 			frame_cache->get_frame(frame))
@@ -1119,7 +1115,6 @@ int File::read_frame(VFrame *frame, int is_thread)
 			frame->get_w() != asset->width ||
 			frame->get_h() != asset->height))
 		{
-
 // Can't advance position here because it needs to be added to cache
 			if(temp_frame)
 			{
@@ -1137,8 +1132,8 @@ int File::read_frame(VFrame *frame, int is_thread)
 					asset->height,
 					supported_colormodel);
 			}
-
 			temp_frame->copy_stacks(frame);
+			temp_frame->copy_pts(frame);
 			file->read_frame(temp_frame);
 			cmodel_transfer(frame->get_rows(), 
 				temp_frame->get_rows(),
@@ -1161,16 +1156,17 @@ int File::read_frame(VFrame *frame, int is_thread)
 				0,
 				temp_frame->get_w(),
 				frame->get_w());
+			frame->copy_pts(temp_frame);
 		}
 		else
 		{
 // Can't advance position here because it needs to be added to cache
 			file->read_frame(frame);
-// Set frame pts (will be later moved to file type dependant classes)
-			frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
-			frame->set_duration((ptstime)1/ asset->frame_rate);
-			frame->set_frame_number(current_frame);
 		}
+// Set frame pts (will be later moved to file type dependant classes)
+		frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
+		frame->set_duration((ptstime)1/ asset->frame_rate);
+		frame->set_frame_number(current_frame);
 
 		if(use_cache)
 			frame_cache->put_frame(frame, 1);
@@ -1435,30 +1431,26 @@ int File::bytes_per_sample(int bits)
 {
 	switch(bits)
 	{
-		case BITSLINEAR8:
-			return 1;
-			break;
-		case BITSLINEAR16:
-			return 2;
-			break;
-		case BITSLINEAR24:
-			return 3;
-			break;
-		case BITSLINEAR32:
-			return 4;
-			break;
-		case BITSULAW:
-			return 1;
-			break;
-		case BITSIMA4:
-			return 1;
-			break;
+	case BITSLINEAR8:
+		return 1;
+
+	case BITSLINEAR16:
+		return 2;
+
+	case BITSLINEAR24:
+		return 3;
+
+	case BITSLINEAR32:
+		return 4;
+
+	case BITSULAW:
+		return 1;
+
+	case BITSIMA4:
+		return 1;
 	}
 	return 1;
 }
-
-
-
 
 
 int File::get_best_colormodel(int driver)
@@ -1470,45 +1462,36 @@ int File::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(asset->format)
 	{
-		case FILE_RAWDV:
-			return FileDV::get_best_colormodel(asset, driver);
-			break;
+	case FILE_RAWDV:
+		return FileDV::get_best_colormodel(asset, driver);
 
-		case FILE_MOV:
-			return FileMOV::get_best_colormodel(asset, driver);
-			break;
-		
-        case FILE_AVI:
-			return FileMOV::get_best_colormodel(asset, driver);
-			break;
+	case FILE_MOV:
+		return FileMOV::get_best_colormodel(asset, driver);
 
-		case FILE_MPEG:
-			return FileMPEG::get_best_colormodel(asset, driver);
-			break;
-		
-		case FILE_JPEG:
-		case FILE_JPEG_LIST:
-			return FileJPEG::get_best_colormodel(asset, driver);
-			break;
+	case FILE_AVI:
+		return FileMOV::get_best_colormodel(asset, driver);
 
-		case FILE_EXR:
-		case FILE_EXR_LIST:
-			return FileEXR::get_best_colormodel(asset, driver);
-			break;
-		
-		case FILE_YUV:
-			return FileYUV::get_best_colormodel(asset, driver);
-			break;
+	case FILE_MPEG:
+		return FileMPEG::get_best_colormodel(asset, driver);
 
-		case FILE_PNG:
-		case FILE_PNG_LIST:
-			return FilePNG::get_best_colormodel(asset, driver);
-			break;
-		
-		case FILE_TGA:
-		case FILE_TGA_LIST:
-			return FileTGA::get_best_colormodel(asset, driver);
-			break;
+	case FILE_JPEG:
+	case FILE_JPEG_LIST:
+		return FileJPEG::get_best_colormodel(asset, driver);
+
+	case FILE_EXR:
+	case FILE_EXR_LIST:
+		return FileEXR::get_best_colormodel(asset, driver);
+
+	case FILE_YUV:
+		return FileYUV::get_best_colormodel(asset, driver);
+
+	case FILE_PNG:
+	case FILE_PNG_LIST:
+		return FilePNG::get_best_colormodel(asset, driver);
+
+	case FILE_TGA:
+	case FILE_TGA_LIST:
+		return FileTGA::get_best_colormodel(asset, driver);
 	}
 
 	return BC_RGB888;
@@ -1654,6 +1637,7 @@ const char* File::get_tag(int format)
 PackagingEngine *File::new_packaging_engine(Asset *asset)
 {
 	PackagingEngine *result;
+
 	switch (asset->format)
 	{
 		case FILE_OGG:

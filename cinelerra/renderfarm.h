@@ -167,7 +167,7 @@ public:
 		Preferences *preferences,
 		int use_local_rate,
 		int *result_return,
-		posnum *total_return,
+		ptstime *total_return,
 		Mutex *total_return_lock,
 		Asset *default_asset,
 		EDL *edl,
@@ -196,7 +196,7 @@ public:
 // Any nonzero value is an error and stops rendering.
 	int *result_return;
 // The total number of frames completed
-	posnum *total_return;
+	ptstime *total_return;
 	Mutex *total_return_lock;
 	Asset *default_asset;
 	EDL *edl;
@@ -230,16 +230,14 @@ public:
 	void send_preferences();
 	void send_asset();
 	void send_edl();
-	void send_package(unsigned char *buffer);
-	void set_progress(unsigned char *buffer);
-	int set_video_map(unsigned char *buffer);
-	void set_result(unsigned char *buffer);
+	void send_package(const unsigned char *buffer);
+	void set_progress(const char *buffer);
+	void set_video_map(const char *buffer);
+	void set_result(const char *buffer);
 	void get_result();
 	void reallocate_buffer(int size);
-
-	
 	void run();
-	
+
 	ArrayList<PluginServer*> *plugindb;
 	RenderFarmServer *server;
 	RenderFarmWatchdog *watchdog;

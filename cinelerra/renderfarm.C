@@ -61,7 +61,7 @@ RenderFarmServer::RenderFarmServer(ArrayList<PluginServer*> *plugindb,
 	Preferences *preferences,
 	int use_local_rate,
 	int *result_return,
-	posnum *total_return,
+	ptstime *total_return,
 	Mutex *total_return_lock,
 	Asset *default_asset,
 	EDL *edl,
@@ -114,16 +114,6 @@ int RenderFarmServer::wait_clients()
 }
 
 
-
-
-
-
-
-
-
-
-
-
 // Waits for requests from every client.
 // Joins when the client is finished.
 RenderFarmServerThread::RenderFarmServerThread(ArrayList<PluginServer*> *plugindb, 
@@ -142,8 +132,6 @@ RenderFarmServerThread::RenderFarmServerThread(ArrayList<PluginServer*> *plugind
 	Thread::set_synchronous(1);
 }
 
-
-
 RenderFarmServerThread::~RenderFarmServerThread()
 {
 	Thread::join();
@@ -153,12 +141,10 @@ RenderFarmServerThread::~RenderFarmServerThread()
 	if(datagram) delete [] datagram;
 }
 
-
 int RenderFarmServerThread::open_client(const char *hostname, int port)
 {
 	int socket_fd = -1;
 	int result = 0;
-
 // Open file for master node
 	if(hostname[0] == '/')
 	{
@@ -264,15 +250,6 @@ int RenderFarmServerThread::start_loop()
 }
 
 
-
-
-
-
-
-
-
-
-
 int64_t RenderFarmServerThread::read_int64(int *error)
 {
 	int temp = 0;
@@ -313,7 +290,6 @@ int RenderFarmServerThread::write_int64(int64_t value)
 	return (write_socket((char*)data, sizeof(int64_t)) !=
 		sizeof(int64_t));
 }
-
 
 
 int RenderFarmServerThread::read_socket(char *data, int len)
@@ -367,15 +343,11 @@ void RenderFarmServerThread::run()
 	int done = 0;
 	int bytes_read = 0;
 
-
 	buffer = 0;
 	buffer_allocated = 0;
 
-
 // Send command to run package renderer.
 	write_int64(RENDERFARM_PACKAGES);
-
-
 
 	while(!done)
 	{
@@ -393,9 +365,9 @@ void RenderFarmServerThread::run()
 
 		int request_id = header[0];
 		int request_size = (((int32_t)header[1]) << 24) |
-							(((u_int32_t)header[2]) << 16) |
-							(((u_int32_t)header[3]) << 8)  |
-							(u_int32_t)header[4];
+			(((u_int32_t)header[2]) << 16) |
+			(((u_int32_t)header[3]) << 8)  |
+			(u_int32_t)header[4];
 
 		reallocate_buffer(request_size);
 
@@ -409,48 +381,48 @@ void RenderFarmServerThread::run()
 
 		switch(request_id)
 		{
-			case RENDERFARM_PREFERENCES:
-				send_preferences();
-				break;
-			
-			case RENDERFARM_ASSET:
-				send_asset();
-				break;
-			
-			case RENDERFARM_EDL:
-				send_edl();
-				break;
-			
-			case RENDERFARM_PACKAGE:
-				send_package(buffer);
-				break;
-			
-			case RENDERFARM_PROGRESS:
-				set_progress(buffer);
-				break;
+		case RENDERFARM_PREFERENCES:
+			send_preferences();
+			break;
 
-			case RENDERFARM_SET_RESULT:
-				set_result(buffer);
-				break;
+		case RENDERFARM_ASSET:
+			send_asset();
+			break;
 
-			case RENDERFARM_SET_VMAP:
-				set_video_map(buffer);
-				break;
+		case RENDERFARM_EDL:
+			send_edl();
+			break;
 
-			case RENDERFARM_GET_RESULT:
-				get_result();
-				break;
+		case RENDERFARM_PACKAGE:
+			send_package((unsigned const char *)buffer);
+			break;
 
-			case RENDERFARM_DONE:
-				done = 1;
-    				break;
+		case RENDERFARM_PROGRESS:
+			set_progress((const char *)buffer);
+			break;
 
-			case RENDERFARM_KEEPALIVE:
-				break;
+		case RENDERFARM_SET_RESULT:
+			set_result((const char *)buffer);
+			break;
 
-			default:
-				errorbox(_("RenderFarmServerThread::run: unknown request %02x\n"), request_id);
-				break;
+		case RENDERFARM_SET_VMAP:
+			set_video_map((const char *)buffer);
+			break;
+
+		case RENDERFARM_GET_RESULT:
+			get_result();
+			break;
+
+		case RENDERFARM_DONE:
+			done = 1;
+			break;
+
+		case RENDERFARM_KEEPALIVE:
+			break;
+
+		default:
+			errorbox(_("RenderFarmServerThread::run: unknown request %02x\n"), request_id);
+			break;
 		}
 	}
 
@@ -532,13 +504,9 @@ void RenderFarmServerThread::send_edl()
 }
 
 
-void RenderFarmServerThread::send_package(unsigned char *buffer)
+void RenderFarmServerThread::send_package(const unsigned char *buffer)
 {
-	this->frames_per_second = (double)((((u_int32_t)buffer[0]) << 24) |
-		(((u_int32_t)buffer[1]) << 16) |
-		(((u_int32_t)buffer[2]) << 8)  |
-		((u_int32_t)buffer[3])) / 
-		65536.0;
+	this->frames_per_second = str2pts((const char *)buffer, 0);
 
 	RenderPackage *package = 
 		server->packages->get_package(frames_per_second, 
@@ -561,10 +529,10 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 		i += strlen(package->path);
 		datagram[i++] = 0;
 
-		STORE_INT32(package->audio_start);
-		STORE_INT32(package->audio_end);
-		STORE_INT32(package->video_start);
-		STORE_INT32(package->video_end);
+		i += pts2str(&datagram[i], package->audio_start_pts);
+		i += pts2str(&datagram[i], package->audio_end_pts);
+		i += pts2str(&datagram[i], package->video_start_pts);
+		i += pts2str(&datagram[i], package->video_end_pts) + 1;
 		int use_brender = (server->brender ? 1 : 0);
 		STORE_INT32(use_brender);
 		STORE_INT32(package->audio_do);
@@ -581,40 +549,37 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 }
 
 
-void RenderFarmServerThread::set_progress(unsigned char *buffer)
+void RenderFarmServerThread::set_progress(const char *buffer)
 {
+	ptstime val;
+
 	if(!server->total_return_lock)
 		return;
 	server->total_return_lock->lock("RenderFarmServerThread::set_progress");
-	*server->total_return += (int64_t)(((u_int32_t)buffer[0]) << 24) |
-					(((u_int32_t)buffer[1]) << 16) |
-					(((u_int32_t)buffer[2]) << 8)  |
-					((u_int32_t)buffer[3]);
+	val = str2pts(buffer, NULL);
+	*server->total_return += val;
 	server->total_return_lock->unlock();
 }
 
-int RenderFarmServerThread::set_video_map(unsigned char *buffer)
+void RenderFarmServerThread::set_video_map(const char *buffer)
 {
+	char *p;
+	ptstime start, end;
+
 	if(server->brender)
 	{
-		server->brender->set_video_map((((u_int32_t)buffer[0]) << 24) |
-							(((u_int32_t)buffer[1]) << 16) |
-							(((u_int32_t)buffer[2]) << 8)  |
-							((u_int32_t)buffer[3]),
-							(u_int32_t)(((u_int32_t)buffer[4]) << 24) |
-							(((u_int32_t)buffer[5]) << 16) |
-							(((u_int32_t)buffer[6]) << 8)  |
-							((u_int32_t)buffer[7]));
+		start = str2pts(buffer, &p);
+		end = str2pts(p, &p);
+		server->brender->set_video_map(start, end);
+
 		char return_value[1];
 		return_value[0] = 0;
 		write_socket(return_value, 1);
-		return 0;
 	}
-	return 1;
 }
 
 
-void RenderFarmServerThread::set_result(unsigned char *buffer)
+void RenderFarmServerThread::set_result(const char *buffer)
 {
 	if(!*server->result_return)
 		*server->result_return = buffer[0];
@@ -629,20 +594,7 @@ void RenderFarmServerThread::get_result()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-RenderFarmWatchdog::RenderFarmWatchdog(
-	RenderFarmServerThread *server,
+RenderFarmWatchdog::RenderFarmWatchdog(RenderFarmServerThread *server,
 	RenderFarmClientThread *client)
  : Thread(1, 0, 0)
 {
@@ -694,10 +646,11 @@ void RenderFarmWatchdog::run()
 				server->cancel();
 				unsigned char buffer[4];
 				buffer[0] = 1;
-				server->set_result(buffer);
+				server->set_result((const char *)buffer);
 			}
 
 			done = 1;
 		}
 	}
 }
+

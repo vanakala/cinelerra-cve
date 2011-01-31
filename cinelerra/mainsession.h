@@ -99,7 +99,7 @@ public:
 	float drag_start_percentage;
 	ptstime drag_start_postime;
 // Records for redrawing brender position in timebar
-	double brender_end;
+	ptstime brender_end;
 
 // Show controls in CWindow
 	int cwindow_controls;

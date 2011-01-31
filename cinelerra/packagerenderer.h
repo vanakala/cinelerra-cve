@@ -56,17 +56,16 @@ public:
 	char path[BCTEXTLEN];
 
 // Range not including preroll
-	samplenum audio_start;
-	samplenum audio_end;
-	framenum video_start;
-	framenum video_end;
+	ptstime audio_start_pts;
+	ptstime audio_end_pts;
+	ptstime video_start_pts;
+	ptstime video_end_pts;
+	framenum count;
 	int done;
 	int use_brender;
 	int video_do;
 	int audio_do;
 };
-
-
 
 
 // Used by Render and BRender to do packages.
@@ -87,12 +86,12 @@ public:
 	int render_package(RenderPackage *package);
 
 	int direct_copy_possible(EDL *edl,
-		framenum current_position, 
+		ptstime current_postime,
 		Track* playable_track,  // The one track which is playable
 		Edit* &playable_edit, // The edit which is playing
 		File *file);   // Output file
 	int direct_frame_copy(EDL *edl, 
-		framenum &video_position, 
+		ptstime &video_position, 
 		File *file,
 		int &result);
 
@@ -101,11 +100,11 @@ public:
 // Get result status from server
 	virtual int get_result() { return 0; };
 	virtual void set_result(int value) {};
-	virtual void set_progress(samplenum total_samples) {};
+	virtual void set_progress(ptstime duration) {};
 // Used by background rendering to mark a frame as finished.
 // If the GUI is locked for a long time this may abort, 
 // assuming the server crashed.
-	virtual int set_video_map(int position, int value) {};
+	virtual void set_video_map(ptstime start, ptstime end) {};
 	virtual int progress_cancelled() { return 0; };
 
 	void create_output();
@@ -115,7 +114,6 @@ public:
 	void stop_engine();
 	void stop_output();
 	void close_output();
-
 
 // Passed in from outside
 	EDL *edl;
@@ -147,14 +145,12 @@ public:
 	int direct_frame_copying;
 	VideoDevice *video_device;
 	VFrame *video_output_ptr;
-	framenum video_preroll;
-	framenum video_position;
-	framenum video_read_length;
-	framenum video_write_length;
-	framenum video_write_position;
+	ptstime video_preroll;
+	ptstime video_pts;
+	ptstime video_read_length;
+	ptstime brender_base;
+	int video_write_length;
+	int video_write_position;
 };
-
-
-
 
 #endif

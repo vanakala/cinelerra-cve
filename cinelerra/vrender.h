@@ -50,9 +50,8 @@ public:
 	int get_datatype();
 
 // process frames to put in buffer_out
-	int process_buffer(VFrame *video_out, 
-		ptstime input_postime,
-		int last_buffer);
+	int process_buffer(VFrame *video_out);
+
 // load an array of buffers for each track to send to the thread
 	int process_buffer(ptstime input_postime);
 // Flash the output on the display

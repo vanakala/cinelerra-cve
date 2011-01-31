@@ -90,7 +90,7 @@ public:
 // Generate keyframes for every tweek
 	int auto_keyframes;
 // Where to start background rendering
-	double brender_start;
+	ptstime brender_start;
 // Length of clipboard if pasting
 	double clipboard_length;
 // Colormodel for intermediate frames
