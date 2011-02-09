@@ -671,8 +671,7 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 	}
 
 // Test conditions mutual between vrender.C and this.
-	if(result && 
-		!playable_track->direct_copy_possible(current_pts, PLAY_FORWARD, 1))
+	if(result && !playable_track->direct_copy_possible(current_pts, 1))
 		result = 0;
 	return result;
 }

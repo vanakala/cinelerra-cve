@@ -289,7 +289,6 @@ void VirtualANode::render_fade(AFrame *aframe, Autos *autos)
 
 	if(((FloatAutos*)autos)->automation_is_constant(input_postime,
 		len_pts,
-		PLAY_FORWARD,
 		fade_value))
 	{
 		if(EQUIV(fade_value, 0))
@@ -308,7 +307,6 @@ void VirtualANode::render_fade(AFrame *aframe, Autos *autos)
 		for(int i = 0; i < len; i++)
 		{
 			fade_value = ((FloatAutos*)autos)->get_value(input_postime + (ptstime)i / aframe->samplerate,
-				PLAY_FORWARD,
 				previous,
 				next);
 			if(fade_value <= INFINITYGAIN)
@@ -389,10 +387,8 @@ void VirtualANode::get_pan_automation(double &slope,
 	PanAuto *prev_keyframe = 0;
 	PanAuto *next_keyframe = 0;
 	prev_keyframe = (PanAuto*)autos->get_prev_auto(input_postime,
-		PLAY_FORWARD,
 		(Auto* &)prev_keyframe);
 	next_keyframe = (PanAuto*)autos->get_next_auto(input_postime,
-		PLAY_FORWARD,
 		(Auto* &)next_keyframe);
 
 	if(next_keyframe->pos_time > prev_keyframe->pos_time)

@@ -574,7 +574,6 @@ IntAuto* MutePatch::get_keyframe(MWindow *mwindow, PatchGUI *patch)
 
 	return (IntAuto*)patch->track->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
 		unit_position,
-		PLAY_FORWARD,
 		current);
 }
 

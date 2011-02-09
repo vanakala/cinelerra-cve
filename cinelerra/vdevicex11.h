@@ -83,7 +83,6 @@ public:
 
 // Hardware version of MaskEngine
 	void do_mask(VFrame *output_temp, 
-		framenum start_position_project,
 		MaskAutos *keyframe_set, 
 		MaskAuto *keyframe,
 		MaskAuto *default_auto);

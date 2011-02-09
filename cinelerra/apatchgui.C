@@ -111,13 +111,11 @@ int APatchGUI::update(int x, int y)
 		else
 		{
 			FloatAuto *previous = 0, *next = 0;
-			double unit_position = mwindow->edl->local_session->get_selectionstart(1);
+			ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-			unit_position = atrack->to_units(unit_position, 0);
 			FloatAutos *ptr = (FloatAutos*)atrack->automation->autos[AUTOMATION_FADE];
 			float value = ptr->get_value(
-				(long)unit_position,
-				PLAY_FORWARD, 
+				unit_position,
 				previous, 
 				next);
 			fade->update(fade->get_w(),
@@ -176,13 +174,12 @@ int APatchGUI::update(int x, int y)
 			{
 				int handle_x, handle_y;
 				PanAuto *previous = 0, *next = 0;
-				double position = mwindow->edl->local_session->get_selectionstart(1);
+				ptstime position = mwindow->edl->local_session->get_selectionstart(1);
 				position = mwindow->edl->align_to_frame(position, 0);
 				PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
 				ptr->get_handle(handle_x,
 					handle_y,
 					position, 
-					PLAY_FORWARD,
 					previous,
 					next);
 				pan->update(handle_x, handle_y);
@@ -287,7 +284,6 @@ FloatAuto* AFadePatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 	FloatAutos *ptr = (FloatAutos*)patch->atrack->automation->autos[AUTOMATION_FADE];
 	return (FloatAuto*)ptr->get_prev_auto(
 		unit_position,
-		PLAY_FORWARD,
 		current);
 }
 
@@ -341,8 +337,7 @@ PanAuto* APanPatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 
 	PanAutos *ptr = (PanAutos*)patch->atrack->automation->autos[AUTOMATION_PAN];
 	return (PanAuto*)ptr->get_prev_auto(
-		(posnum)unit_position, 
-		PLAY_FORWARD,
+		unit_position, 
 		current);
 }
 

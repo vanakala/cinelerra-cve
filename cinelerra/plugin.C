@@ -200,8 +200,7 @@ void Plugin::equivalent_output(Edit *edit, ptstime *result)
 
 
 int Plugin::is_synthesis(RenderEngine *renderengine, 
-		ptstime postime,
-		int direction)
+		ptstime postime)
 {
 	switch(plugin_type)
 	{
@@ -221,11 +220,10 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 // Get shared plugin from master track
 			Plugin *plugin = track->get_current_plugin(postime, 
 				real_plugin_number, 
-				direction, 
 				0);
 
 			if(plugin)
-				return plugin->is_synthesis(renderengine, postime, direction);
+				return plugin->is_synthesis(renderengine, postime);
 		}
 
 // Dereference the real track and descend
@@ -233,7 +231,7 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 		{
 			int real_module_number = shared_location.module;
 			Track *track = edl->tracks->number(real_module_number);
-			return track->is_synthesis(renderengine, postime, direction);
+			return track->is_synthesis(renderengine, postime);
 		}
 	}
 	return 0;

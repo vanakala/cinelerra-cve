@@ -121,7 +121,6 @@ void VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 	{
 		Plugin *plugin = track->get_current_plugin(current_postime,
 			i, 
-			renderengine->command->get_direction(),
 			1);
 
 // Switch off if circular reference.  This happens if a plugin set or a track is deleted.
@@ -297,10 +296,8 @@ void VirtualNode::get_mute_fragment(ptstime input_position,
 	IntAuto *prev_keyframe = 0;
 	IntAuto *next_keyframe = 0;
 	prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position, 
-		PLAY_FORWARD, 
 		(Auto* &)prev_keyframe);
 	next_keyframe = (IntAuto*)autos->get_next_auto(input_position, 
-		PLAY_FORWARD, 
 		(Auto* &)next_keyframe);
 
 // Two distinct keyframes within range

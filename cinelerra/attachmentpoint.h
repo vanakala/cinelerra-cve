@@ -106,25 +106,13 @@ public:
 	ptstime start_postime;
 	posnum start_position;
 	posnum len;
-	double frame_rate;
+	ptstime duration;
 	int sample_rate;
 	int is_processed;
 	int data_type;
 
-
-
-
-
-
-
-
-
-
-
 	int multichannel_shared(int search_new);
 	int singlechannel();
-
-
 
 	void dump();
 

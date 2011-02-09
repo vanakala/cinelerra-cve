@@ -97,10 +97,7 @@ void VPluginArray::process_realtime(int module,
 	int len)
 {
 	values[module]->process_buffer(realtime_buffers[module], 
-			input_position, 
-			edl->session->frame_rate,
-			0,
-			PLAY_FORWARD);
+			(ptstime)input_position / edl->session->frame_rate);
 }
 
 int VPluginArray::process_loop(int module, int &write_length)

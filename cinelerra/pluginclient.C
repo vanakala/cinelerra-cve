@@ -349,12 +349,12 @@ KeyFrame* PluginClient::get_next_keyframe(posnum position, int is_local)
 
 void PluginClient::get_camera(float *x, float *y, float *z, framenum position)
 {
-	server->get_camera(x, y, z, position, direction);
+	server->get_camera(x, y, z, position);
 }
 
 void PluginClient::get_projector(float *x, float *y, float *z, framenum position)
 {
-	server->get_projector(x, y, z, position, direction);
+	server->get_projector(x, y, z, position);
 }
 
 

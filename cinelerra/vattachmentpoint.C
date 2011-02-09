@@ -83,13 +83,10 @@ void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 
 void VAttachmentPoint::render(VFrame *output, 
 	int buffer_number,
-	ptstime start_postime,
-	double frame_rate,
 	int debug_render,
 	int use_opengl)
 {
 	if(!plugin_server || !plugin->on) return;
-
 	if(debug_render)
 		printf("    VAttachmentPoint::render \"%s\" multi=%d opengl=%d\n", 
 			plugin_server->title,
@@ -100,8 +97,8 @@ void VAttachmentPoint::render(VFrame *output,
 	{
 // Test against previous parameters for reuse of previous data
 		if(is_processed &&
-			PTSEQU(this->start_postime, start_postime) &&
-			EQUIV(this->frame_rate, frame_rate))
+			PTSEQU(this->start_postime, output->get_pts()) &&
+			EQUIV(this->duration, output->get_duration()))
 		{
 // Need to copy PBuffer if OpenGL, regardless of use_opengl
 			if(buffer_vector[buffer_number]->get_opengl_state() == VFrame::RAM)
@@ -120,8 +117,8 @@ void VAttachmentPoint::render(VFrame *output,
 		}
 
 		is_processed = 1;
-		this->start_postime = start_postime;
-		this->frame_rate = frame_rate;
+		this->start_postime = output->get_pts();
+		this->duration = output->get_duration();
 
 // Allocate buffer vector for subsequent render calls
 		new_buffer_vector(output->get_w(), 
@@ -135,7 +132,10 @@ void VAttachmentPoint::render(VFrame *output,
 			if(i == buffer_number)
 				output_temp[i] = output;
 			else
+			{
 				output_temp[i] = buffer_vector[i];
+				output_temp[i]->copy_pts(output);
+			}
 		}
 
 // Process plugin
@@ -143,10 +143,7 @@ void VAttachmentPoint::render(VFrame *output,
 			plugin_servers.values[0]->set_use_opengl(use_opengl,
 				renderengine->video);
 		plugin_servers.values[0]->process_buffer(output_temp,
-			start_postime,
-			frame_rate,
-			plugin->length(),
-			renderengine->command->get_direction());
+			plugin->length());
 
 		delete [] output_temp;
 	}
@@ -159,11 +156,6 @@ void VAttachmentPoint::render(VFrame *output,
 			plugin_servers.values[buffer_number]->set_use_opengl(use_opengl,
 				renderengine->video);
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
-			start_postime,
-			frame_rate,
-			plugin->length(),
-			renderengine->command->get_direction());
+			plugin->length());
 	}
 }
-
-

@@ -151,7 +151,7 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 	}
 	else
 	{
-		affected_auto = autos->get_prev_auto(PLAY_FORWARD, affected_auto);
+		affected_auto = autos->get_prev_auto(affected_auto);
 	}
 
 	return affected_auto;

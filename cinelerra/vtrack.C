@@ -143,7 +143,7 @@ void VTrack::save_header(FileXML *file)
 	file->tag.set_property("TYPE", "VIDEO");
 }
 
-int VTrack::direct_copy_possible(ptstime start, int direction, int use_nudge)
+int VTrack::direct_copy_possible(ptstime start, int use_nudge)
 {
 	int i;
 	if(use_nudge) start += nudge;
@@ -152,13 +152,13 @@ int VTrack::direct_copy_possible(ptstime start, int direction, int use_nudge)
 	if(track_w != edl->session->output_w || track_h != edl->session->output_h)
 		return 0;
 // No automation must be present in the track
-	if(!automation->direct_copy_possible(start, direction))
+	if(!automation->direct_copy_possible(start))
 		return 0;
 // No plugin must be present
-	if(plugin_used(start, direction)) 
+	if(plugin_used(start))
 		return 0;
 // No transition
-	if(get_current_transition(start, direction, 0))
+	if(get_current_transition(start))
 		return 0;
 
 	return 1;
@@ -166,7 +166,6 @@ int VTrack::direct_copy_possible(ptstime start, int direction, int use_nudge)
 
 void VTrack::calculate_input_transfer(Asset *asset, 
 	ptstime position,
-	int direction, 
 	float &in_x, 
 	float &in_y, 
 	float &in_w, 
@@ -187,9 +186,7 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	automation->get_camera(&auto_x, 
 		&auto_y, 
 		&auto_z, 
-		position, 
-		direction);
-
+		position);
 	camera_z *= auto_z;
 	camera_x += auto_x;
 	camera_y += auto_y;
@@ -241,7 +238,6 @@ void VTrack::calculate_input_transfer(Asset *asset,
 }
 
 void VTrack::calculate_output_transfer(ptstime position, 
-	int direction, 
 	float &in_x, 
 	float &in_y, 
 	float &in_w, 
@@ -253,7 +249,6 @@ void VTrack::calculate_output_transfer(ptstime position,
 {
 	float center_x, center_y, center_z;
 	float x[4], y[4];
-
 	x[0] = 0;
 	y[0] = 0;
 	x[1] = track_w;
@@ -262,8 +257,7 @@ void VTrack::calculate_output_transfer(ptstime position,
 	automation->get_projector(&center_x, 
 		&center_y, 
 		&center_z, 
-		position,
-		direction);
+		position);
 
 	center_x += edl->session->output_w / 2;
 	center_y += edl->session->output_h / 2;

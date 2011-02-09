@@ -47,9 +47,9 @@ public:
 // on or before position.
 // Return 0 if none exists and use_default is false.
 // If &current is nonzero it is used as a starting point for searching.
-	Auto* get_prev_auto(ptstime position, int direction, Auto* &current, int use_default = 1);
-	Auto* get_prev_auto(int direction, Auto* &current);
-	Auto* get_next_auto(ptstime position, int direction, Auto* &current, int use_default = 1);
+	Auto* get_prev_auto(ptstime position, Auto* &current, int use_default = 1);
+	Auto* get_prev_auto(Auto* &current);
+	Auto* get_next_auto(ptstime position, Auto* &current, int use_default = 1);
 // Determine if a keyframe exists before creating it.
 	int auto_exists_for_editing(ptstime position);
 // Returns auto at exact position, null if non-existent. ignores autokeyframming and align on frames

@@ -67,7 +67,7 @@ void AttachmentPoint::reset_status()
 	start_position = 0;
 	len = 0;
 	sample_rate = 0;
-	frame_rate = 0;
+	duration = 0;
 	is_processed = 0;
 }
 

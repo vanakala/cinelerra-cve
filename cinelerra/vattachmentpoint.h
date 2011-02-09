@@ -36,8 +36,6 @@ public:
 	void new_buffer_vector(int width, int height, int colormodel);
 	void render(VFrame *output, 
 		int buffer_number,
-		ptstime start_postime,
-		double frame_rate,
 		int debug_render,
 		int use_opengl = 0);
 	VFrame **buffer_vector;

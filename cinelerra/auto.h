@@ -30,10 +30,6 @@
 #include "autos.inc"
 
 
-
-
-
-
 // The default constructor is used for menu effects.
 
 class Auto : public ListItem<Auto>

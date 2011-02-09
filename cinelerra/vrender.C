@@ -116,7 +116,6 @@ int VRender::process_buffer(VFrame *video_out)
 
 int VRender::process_buffer(ptstime input_postime)
 {
-SET_TRACE
 	Edit *playable_edit = 0;
 	int colormodel;
 	int use_vconsole = 1;
@@ -143,7 +142,6 @@ SET_TRACE
 
 		if(use_brender)
 		{
-SET_TRACE
 			Asset *asset = renderengine->preferences->brender_asset;
 			File *file = renderengine->get_vcache()->check_out(asset,
 				renderengine->edl);
@@ -162,7 +160,6 @@ SET_TRACE
 				video_out->set_pts(video_out->get_source_pts());
 				renderengine->get_vcache()->check_in(asset);
 			}
-SET_TRACE
 		}
 		else
 		if(playable_edit)
@@ -201,7 +198,6 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 	playable_track = vconsole->playable_tracks->values[0];
 // Test mutual conditions between render.C and this.
 	if(!playable_track->direct_copy_possible(position, 
-		renderengine->command->get_direction(),
 		1))
 		return 1;
 
@@ -266,16 +262,9 @@ int VRender::get_colormodel(Edit* &playable_edit,
 	return colormodel;
 }
 
-
-
-
-
-
-
 void VRender::run()
 {
 	int reconfigure;
-
 	ptstime current_pts, start_pts, end_pts;
 	ptstime init_pos = current_postime;
 // Number of frames before next reconfigure

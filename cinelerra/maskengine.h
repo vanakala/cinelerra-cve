@@ -81,9 +81,9 @@ private:
 		int size,
 		T max);
 
-    float n_p[5], n_m[5];
-    float d_p[5], d_m[5];
-    float bd_p[5], bd_m[5];
+	float n_p[5], n_m[5];
+	float d_p[5], d_m[5];
+	float bd_p[5], bd_m[5];
 	MaskEngine *engine;
 	short **row_spans;
 	short row_spans_h;
@@ -96,12 +96,10 @@ public:
 	MaskEngine(int cpus);
 	~MaskEngine();
 
-
 	void do_mask(VFrame *output, 
-		ptstime start_position,
 		MaskAutos *keyframe_set, 
-		int direction,
 		int before_plugins);
+
 	int points_equivalent(ArrayList<MaskPoint*> *new_points, 
 		ArrayList<MaskPoint*> *points);
 

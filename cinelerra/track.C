@@ -161,15 +161,13 @@ void Track::equivalent_output(Track *track, ptstime *result)
 
 
 int Track::is_synthesis(RenderEngine *renderengine, 
-	ptstime position,
-	int direction)
+	ptstime position)
 {
 	int is_synthesis = 0;
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		Plugin *plugin = get_current_plugin(position,
 			i,
-			direction,
 			0);
 		if(plugin)
 		{
@@ -178,8 +176,7 @@ int Track::is_synthesis(RenderEngine *renderengine,
 				is_synthesis = 1;
 			else
 				is_synthesis = plugin->is_synthesis(renderengine, 
-					position, 
-					direction);
+					position);
 			if(is_synthesis) break;
 		}
 	}
@@ -432,7 +429,6 @@ Plugin* Track::insert_effect(const char *title,
 			Plugin *source_plugin = source_track->get_current_plugin(
 				edl->local_session->get_selectionstart(), 
 				shared_location->plugin, 
-				PLAY_FORWARD, 
 				0);
 
 // From an attach operation
@@ -637,7 +633,6 @@ void Track::optimize()
 
 Plugin* Track::get_current_plugin(ptstime postime,
 	int plugin_set, 
-	int direction, 
 	int use_nudge)
 {
 	Plugin *current;
@@ -646,72 +641,33 @@ Plugin* Track::get_current_plugin(ptstime postime,
 
 	if(plugin_set >= this->plugin_set.total || plugin_set < 0) return 0;
 
-	if(direction == PLAY_FORWARD)
+	for(current = (Plugin*)this->plugin_set.values[plugin_set]->last; 
+		current; 
+		current = (Plugin*)PREVIOUS)
 	{
-		for(current = (Plugin*)this->plugin_set.values[plugin_set]->last; 
-			current; 
-			current = (Plugin*)PREVIOUS)
+		if(current->project_pts <= postime && 
+			current->end_pts() > postime)
 		{
-			if(current->project_pts <= postime && 
-				current->end_pts() > postime)
-			{
-				return current;
-			}
-		}
-	}
-	else
-	if(direction == PLAY_REVERSE)
-	{
-		for(current = (Plugin*)this->plugin_set.values[plugin_set]->first; 
-			current; 
-			current = (Plugin*)NEXT)
-		{
-			if(current->project_pts <= postime && 
-				current->end_pts() >= postime)
-			{
-				return current;
-			}
+			return current;
 		}
 	}
 
 	return 0;
 }
 
-Plugin* Track::get_current_transition(ptstime position, 
-	int direction, 
-	int use_nudge)
+Plugin* Track::get_current_transition(ptstime position)
 {
 	Edit *current;
 	Plugin *result = 0;
 
-	if(use_nudge) position += nudge;
-
-	if(direction == PLAY_FORWARD)
+	for(current = edits->last; current; current = PREVIOUS)
 	{
-		for(current = edits->last; current; current = PREVIOUS)
+		if(current->project_pts <= position && current->end_pts() > position)
 		{
-			if(current->project_pts <= position && current->end_pts() > position)
+			if(current->transition && position < current->project_pts + current->transition->length())
 			{
-				if(current->transition && position < current->project_pts + current->transition->length())
-				{
-					result = current->transition;
-					break;
-				}
-			}
-		}
-	}
-	else
-	if(direction == PLAY_REVERSE)
-	{
-		for(current = edits->first; current; current = NEXT)
-		{
-			if(current->project_pts < position && current->end_pts() > position)
-			{
-				if(current->transition && position <= current->project_pts + current->transition->length())
-				{
-					result = current->transition;
-					break;
-				}
+				result = current->transition;
+				break;
 			}
 		}
 	}
@@ -1234,19 +1190,18 @@ ptstime Track::edit_change_duration(ptstime input_position,
 }
 
 
-int Track::is_playable(ptstime position, int direction)
+int Track::is_playable(ptstime position)
 {
 	return 1;
 }
 
 
-int Track::plugin_used(ptstime position, int direction)
+int Track::plugin_used(ptstime position)
 {
 	for(int i = 0; i < this->plugin_set.total; i++)
 	{
 		Plugin *current_plugin = get_current_plugin(position, 
 			i, 
-			direction, 
 			0);
 
 		if(current_plugin && 

@@ -145,8 +145,7 @@ int AModule::render(AFrame *aframe)
 			fragment_duration = end_projpts - start_projpts;
 
 // Normalize position here since update_transition is a boolean operation.
-		update_transition(start_projpts,
-			PLAY_FORWARD);
+		update_transition(start_projpts);
 
 		if(playable_edit)
 		{

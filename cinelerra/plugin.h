@@ -67,8 +67,7 @@ public:
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 	int is_synthesis(RenderEngine *renderengine, 
-		ptstime position,
-		int direction);
+		ptstime position);
 
 	virtual int operator==(Plugin& that);
 	virtual int operator==(Edit& that);

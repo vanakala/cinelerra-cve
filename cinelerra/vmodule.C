@@ -98,8 +98,6 @@ CICache* VModule::get_cache()
 
 int VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
-	ptstime input_postime,
-	int direction,
 	int use_opengl)
 {
 // Translation of edit
@@ -134,7 +132,7 @@ int VModule::import_frame(VFrame *output,
 
 		if(source)
 		{
-			ptstime src_pts = input_postime -
+			ptstime src_pts = output->get_pts() -
 				current_edit->project_pts +
 				current_edit->source_pts;
 
@@ -155,8 +153,7 @@ int VModule::import_frame(VFrame *output,
 			output->set_layer(current_edit->channel);
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
-				input_postime,
-				direction, 
+				output->get_pts(),
 				in_x1, 
 				in_y1, 
 				in_w1, 
@@ -227,7 +224,6 @@ int VModule::import_frame(VFrame *output,
 						get_edl()->session->color_model,
 						-1);
 				}
-
 				(*input)->copy_stacks(output);
 				(*input)->copy_pts(output);
 // file -> temp
@@ -352,16 +348,14 @@ int VModule::import_frame(VFrame *output,
 
 
 int VModule::render(VFrame *output,
-	ptstime start_postime,
-	int direction,
 	int use_nudge,
 	int use_opengl)
 {
 	int result = 0;
-	if(use_nudge) start_postime += track->nudge;
-	update_transition(start_postime, direction);
+	if(use_nudge) output->set_pts(output->get_pts() + track->nudge);
+	update_transition(output->get_pts());
 
-	VEdit* current_edit = (VEdit*)track->edits->editof(start_postime, 0);
+	VEdit* current_edit = (VEdit*)track->edits->editof(output->get_pts(), 0);
 	VEdit* previous_edit = 0;
 
 	if(!current_edit)
@@ -376,7 +370,6 @@ int VModule::render(VFrame *output,
 // Process transition
 	if(transition && transition->on)
 	{
-
 // Get temporary buffer
 		VFrame **transition_input = 0;
 		if(commonrender)
@@ -406,11 +399,9 @@ int VModule::render(VFrame *output,
 				get_edl()->session->color_model,
 				-1);
 		}
-
+		(*transition_input)->copy_pts(output);
 		result = import_frame((*transition_input), 
 			current_edit, 
-			start_postime,
-			direction,
 			use_opengl);
 
 
@@ -419,15 +410,13 @@ int VModule::render(VFrame *output,
 
 		result |= import_frame(output, 
 			previous_edit, 
-			start_postime,
-			direction,
 			use_opengl);
 // Execute plugin with transition_input and output here
 		if(renderengine) 
 			transition_server->set_use_opengl(use_opengl, renderengine->video);
 		transition_server->process_transition((*transition_input), 
 			output,
-			start_postime - current_edit->project_pts,
+			output->get_pts() - current_edit->project_pts,
 			transition->length());
 	}
 	else
@@ -435,28 +424,13 @@ int VModule::render(VFrame *output,
 // Load output buffer
 		result = import_frame(output, 
 			current_edit, 
-			start_postime,
-			direction,
 			use_opengl);
 	}
-
-	ptstime mask_postime;
-	if (renderengine)
-		mask_postime = track->from_units(renderengine->vrender->current_position);
-	else 
-		mask_postime = start_postime;
 	masker->do_mask(output, 
-		mask_postime,
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
-		direction,
 		1);      // we are calling before plugins
 	return result;
 }
-
-
-
-
-
 
 void VModule::create_objects()
 {

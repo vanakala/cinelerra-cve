@@ -43,12 +43,11 @@ Auto* PanAutos::new_auto()
 void PanAutos::get_handle(int &handle_x,
 		int &handle_y,
 		ptstime position,
-		int direction,
 		PanAuto* &previous,
 		PanAuto* &next)
 {
-	previous = (PanAuto*)get_prev_auto(position, direction, (Auto* &)previous);
-	next = (PanAuto*)get_next_auto(position, direction, (Auto* &)next);
+	previous = (PanAuto*)get_prev_auto(position, (Auto* &)previous);
+	next = (PanAuto*)get_next_auto(position, (Auto* &)next);
 
 // Constant
 	if(previous->handle_x == next->handle_x &&
@@ -62,14 +61,7 @@ void PanAutos::get_handle(int &handle_x,
 // Interpolate
 	ptstime total = fabs(next->pos_time - previous->pos_time);
 	double fraction;
-	if(direction == PLAY_FORWARD)
-	{
-		fraction = (position - previous->pos_time) / total;
-	}
-	else
-	{
-		fraction = (previous->pos_time - position) / total;
-	}
+	fraction = (position - previous->pos_time) / total;
 
 	handle_x = (int)(previous->handle_x + (next->handle_x - previous->handle_x) * fraction);
 	handle_y = (int)(previous->handle_y + (next->handle_y - previous->handle_y) * fraction);

@@ -70,7 +70,7 @@ public:
 		int default_only,
 		int autos_only);
 	virtual void dump();
-	virtual int direct_copy_possible(ptstime start, int direction) { return 1; };
+	virtual int direct_copy_possible(ptstime start) { return 1; };
 
 // For paste automation only
 	int paste(ptstime start,
@@ -84,14 +84,12 @@ public:
 	virtual void get_projector(float *x, 
 		float *y, 
 		float *z, 
-		ptstime position,
-		int direction) {};
+		ptstime position) {};
 // Get camera coordinates if this is video automation
 	virtual void get_camera(float *x, 
 		float *y, 
 		float *z, 
-		ptstime position,
-		int direction) {};
+		ptstime position) {};
 
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.

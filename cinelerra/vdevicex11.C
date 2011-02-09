@@ -678,14 +678,13 @@ void VDeviceX11::do_fade(VFrame *output_temp, float fade)
 }
 
 void VDeviceX11::do_mask(VFrame *output_temp, 
-		framenum start_position_project,
 		MaskAutos *keyframe_set, 
 		MaskAuto *keyframe,
 		MaskAuto *default_auto)
 {
 	this->output->mwindow->playback_3d->do_mask(output,
 		output_temp,
-		start_position_project,
+		output_temp->get_pts() / output_temp->get_duration(),
 		keyframe_set,
 		keyframe,
 		default_auto);

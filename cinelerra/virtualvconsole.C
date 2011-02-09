@@ -85,7 +85,6 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 {
 	int i, j, k;
 
-
 // The use of single frame is determined in RenderEngine::arm_command
 	use_opengl = (renderengine->video && 
 		renderengine->video->out_config->driver == PLAYBACK_X11_GL);
@@ -150,8 +149,8 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 // Assume openGL is used for the final stage and let console
 // disable.
 		output_temp->clear_stacks();
+		output_temp->set_pts(input_postime + track->nudge);
 		node->render(output_temp,
-			input_postime + track->nudge,
 			use_opengl);
 
 	}

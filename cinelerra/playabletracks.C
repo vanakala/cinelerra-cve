@@ -64,7 +64,6 @@ int PlayableTracks::is_playable(Track *current_track,
 	int use_nudge)
 {
 	int result = 1;
-	int direction = renderengine->command->get_direction();
 	if(use_nudge) position += current_track->nudge;
 
 	Auto *current = 0;
@@ -75,8 +74,8 @@ int PlayableTracks::is_playable(Track *current_track,
 
 	if(result)
 	{
-		if(!current_track->plugin_used(position, direction) &&
-			!current_track->is_playable(position, direction))
+		if(!current_track->plugin_used(position) &&
+			!current_track->is_playable(position))
 			result = 0;
 	}
 
@@ -93,8 +92,7 @@ int PlayableTracks::is_playable(Track *current_track,
 		{
 // Test for playable effect
 			if(!current_track->is_synthesis(renderengine,
-						position,
-						direction))
+						position))
 			{
 				result = 0;
 			}

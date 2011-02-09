@@ -336,7 +336,6 @@ int Tracks::total_of(int type)
 		mute_keyframe = 
 			(IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
 			start,
-			PLAY_FORWARD,
 			(Auto* &)mute_keyframe);
 
 		result += 

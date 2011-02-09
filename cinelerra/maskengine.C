@@ -885,15 +885,13 @@ int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points,
 }
 
 void MaskEngine::do_mask(VFrame *output, 
-	ptstime start_position,
 	MaskAutos *keyframe_set, 
-	int direction,
 	int before_plugins)
 {
 	Auto *current = 0;
+	ptstime start_pts = output->get_pts();
 	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_position,
-		direction,
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_pts,
 		current);
 
 	if (keyframe->apply_before_plugins != before_plugins)
@@ -961,20 +959,20 @@ void MaskEngine::do_mask(VFrame *output,
 
 	if(!recalculate)
 	{
-		if(point_sets.total != keyframe_set->total_submasks(start_position))
+		if(point_sets.total != keyframe_set->total_submasks(start_pts))
 			recalculate = 1;
 	}
 
 	if(!recalculate)
 	{
 		for(int i = 0; 
-			i < keyframe_set->total_submasks(start_position) && !recalculate;
+			i < keyframe_set->total_submasks(start_pts) && !recalculate;
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
 			keyframe_set->get_points(new_points, 
 				i, 
-				start_position);
+				start_pts);
 			if(!points_equivalent(new_points, point_sets.values[i])) recalculate = 1;
 			new_points->remove_all_objects();
 			delete new_points;
@@ -1010,13 +1008,13 @@ void MaskEngine::do_mask(VFrame *output,
 		point_sets.remove_all_objects();
 
 		for(int i = 0; 
-			i < keyframe_set->total_submasks(start_position);
+			i < keyframe_set->total_submasks(start_pts);
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
 			keyframe_set->get_points(new_points, 
 				i, 
-				start_position);
+				start_pts);
 			point_sets.append(new_points);
 		}
 	}

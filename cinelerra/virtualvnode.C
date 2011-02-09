@@ -103,14 +103,13 @@ VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 }
 
 int VirtualVNode::read_data(VFrame *output_temp,
-	ptstime start_position,
 	int use_opengl)
 {
 	VirtualNode *previous_plugin = 0;
 	int result = 0;
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::read_data position=%.3lf title=%s opengl=%d\n", 
-			start_position,
+			output_temp->get_pts(),
 			track->title, 
 			use_opengl);
 
@@ -120,7 +119,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	VEdit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		parent_edit = (VEdit*)parent_node->track->edits->editof(start_position,
+		parent_edit = (VEdit*)parent_node->track->edits->editof(output_temp->get_pts(),
 			0);
 	}
 
@@ -130,7 +129,6 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
 	{
 		((VirtualVNode*)previous_plugin)->render(output_temp,
-			start_position,
 			use_opengl);
 	}
 	else
@@ -141,17 +139,13 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	if(parent_node && (parent_edit || !real_module))
 	{
 		((VirtualVNode*)parent_node)->read_data(output_temp,
-			start_position,
 			use_opengl);
 	}
 	else
 	if(real_module)
 	{
-		double frame_rate = renderengine->edl->session->frame_rate;
 // This is the first node in the tree
 		result = ((VModule*)real_module)->render(output_temp,
-			start_position,
-			renderengine->command->get_direction(),
 			0,
 			use_opengl);
 	}
@@ -160,7 +154,6 @@ int VirtualVNode::read_data(VFrame *output_temp,
 
 
 void VirtualVNode::render(VFrame *output_temp, 
-	ptstime start_position,
 	int use_opengl)
 {
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
@@ -168,20 +161,17 @@ void VirtualVNode::render(VFrame *output_temp,
 	{
 		render_as_module(vrender->video_out, 
 			output_temp,
-			start_position,
 			use_opengl);
 	}
 	else
 	if(real_plugin)
 	{
 		render_as_plugin(output_temp,
-			start_position,
 			use_opengl);
 	}
 }
 
 void VirtualVNode::render_as_plugin(VFrame *output_temp, 
-	ptstime start_position,
 	int use_opengl)
 {
 	if(!attachment ||
@@ -197,8 +187,6 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 	((VAttachmentPoint*)attachment)->render(
 		output_temp,
 		plugin_buffer_number,
-		start_position,
-		renderengine->edl->session->frame_rate,
 		vconsole->debug_tree,
 		use_opengl);
 }
@@ -206,11 +194,8 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 
 void VirtualVNode::render_as_module(VFrame *video_out, 
 	VFrame *output_temp,
-	ptstime start_position,
 	int use_opengl)
 {
-	int direction = renderengine->command->get_direction();
-
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_as_module title=%s use_opengl=%d video_out=%p output_temp=%p\n", 
 			track->title,
@@ -226,25 +211,21 @@ void VirtualVNode::render_as_module(VFrame *video_out,
 	{
 		VirtualVNode *node = (VirtualVNode*)subnodes.values[subnodes.total - 1];
 		node->render(output_temp,
-			start_position,
 			use_opengl);
 	}
 	else
 // Read data from previous entity
 	{
 		read_data(output_temp,
-			start_position,
 			use_opengl);
 	}
 
 	output_temp->pop_next_effect();
 
 	render_fade(output_temp,
-			start_position,
-			track->automation->autos[AUTOMATION_FADE],
-			direction);
+			track->automation->autos[AUTOMATION_FADE]);
 
-	render_mask(output_temp, start_position);
+	render_mask(output_temp);
 
 
 // overlay on the final output
@@ -253,42 +234,35 @@ void VirtualVNode::render_as_module(VFrame *video_out,
 	ptstime mute_fragment = 1;
 
 // Is frame muted?
-	get_mute_fragment(start_position,
-			mute_constant, 
-			mute_fragment, 
-			(Autos*)((VTrack*)track)->automation->autos[AUTOMATION_MUTE]);
+	get_mute_fragment(output_temp->get_pts(),
+		mute_constant,
+		mute_fragment,
+		(Autos*)((VTrack*)track)->automation->autos[AUTOMATION_MUTE]);
 
 	if(!mute_constant)
 	{
 // Frame is playable
-		render_projector(output_temp,
-			video_out,
-			start_position);
+		render_projector(output_temp, video_out);
 	}
 
 	output_temp->push_prev_effect("VirtualVNode::render_as_module");
 }
 
 void VirtualVNode::render_fade(VFrame *output,
-			ptstime start_position, 
-			Autos *autos,
-			int direction)
+			Autos *autos)
 {
-	double slope, intercept;
+	double intercept;
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_fade title=%s\n", track->title);
 
-	intercept = ((FloatAutos*)autos)->get_value(start_position,
-		direction,
+	intercept = ((FloatAutos*)autos)->get_value(output->get_pts(),
 		previous,
 		next);
 
-
 	CLAMP(intercept, 0, 100);
-
 
 // Can't use overlay here because overlayer blends the frame with itself.
 // The fade engine can compensate for lack of alpha channels by multiplying the 
@@ -306,16 +280,14 @@ void VirtualVNode::render_fade(VFrame *output,
 
 
 
-void VirtualVNode::render_mask(VFrame *output_temp,
-	ptstime start_position)
+void VirtualVNode::render_mask(VFrame *output_temp)
 {
 	MaskAutos *keyframe_set = 
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
 
 	Auto *current = 0;
 	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_position, 
-		PLAY_FORWARD,
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(output_temp->get_pts(),
 		current);
 
 	int total_points = 0;
@@ -344,7 +316,6 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 	{
 		((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_mask(
 			output_temp, 
-			keyframe->autos->pts2pos(start_position),
 			keyframe_set, 
 			keyframe,
 			default_auto);
@@ -352,33 +323,25 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 	else
 	{
 // Revert to software
-		int direction = renderengine->command->get_direction();
 		double edl_rate = renderengine->edl->session->frame_rate;
-		masker->do_mask(output_temp, 
-			start_position,
-			keyframe_set, 
-			direction,
-			0);
+		masker->do_mask(output_temp, keyframe_set, 0);
 	}
 }
 
 
-// Start of input fragment in project if forward.  End of input fragment if reverse.
-void VirtualVNode::render_projector(VFrame *input,
-			VFrame *output,
-			ptstime start_position)
+void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 {
 	float in_x1, in_y1, in_x2, in_y2;
 	float out_x1, out_y1, out_x2, out_y2;
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
+
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_projector input=%p output=%p title=%s\n", 
 			input, output, track->title);
 
 	if(output)
 	{
-		((VTrack*)track)->calculate_output_transfer(start_position,
-			renderengine->command->get_direction(),
+		((VTrack*)track)->calculate_output_transfer(input->get_pts(),
 			in_x1, 
 			in_y1, 
 			in_x2, 
@@ -398,12 +361,10 @@ void VirtualVNode::render_projector(VFrame *input,
 			in_x2 > in_x1 && 
 			in_y2 > in_y1)
 		{
- 			int direction = renderengine->command->get_direction();
 			IntAuto *mode_keyframe = 0;
 			mode_keyframe = 
 				(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-					start_position, 
-					direction,
+					input->get_pts(), 
 					(Auto* &)mode_keyframe);
 
 			int mode = mode_keyframe->value;
@@ -453,6 +414,7 @@ void VirtualVNode::render_projector(VFrame *input,
 					renderengine->edl->session->interpolation_type);
 			}
 		}
+		output->copy_pts(input);
 	}
 }
 

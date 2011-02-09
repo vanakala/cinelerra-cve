@@ -45,7 +45,7 @@ public:
 		ptstime output_position,
 		ptstime position1, 
 		ptstime position2);
-	int mask_exists(ptstime position, int direction);
+	int mask_exists(ptstime position);
 // Perform interpolation
 	void get_points(ArrayList<MaskPoint*> *points, int submask, ptstime position);
 	int total_submasks(ptstime position);

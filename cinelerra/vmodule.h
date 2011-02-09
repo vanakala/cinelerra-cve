@@ -62,16 +62,12 @@ public:
 
 	CICache* get_cache();
 	int render(VFrame *output,
-		ptstime start_position,
-		int direction,
 		int use_nudge,
 		int use_opengl = 0);
 private:
 // Read frame from file and perform camera transformation
 	int import_frame(VFrame *output,
 		VEdit *current_edit,
-		ptstime input_position,
-		int direction,
 		int use_opengl);
 
 // synchronization with tracks

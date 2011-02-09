@@ -112,7 +112,6 @@ void SharedLocation::calculate_title(char *string,
 		{
 			plugin = track->get_current_plugin(position, 
 				this->plugin, 
-				PLAY_FORWARD,
 				use_nudge);
 		}
 

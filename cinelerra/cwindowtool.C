@@ -20,6 +20,7 @@
  */
 
 #include "automation.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
 #include "cpanel.h"
@@ -487,7 +488,7 @@ void CWindowEyedropGUI::update()
 
 CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
- 	thread,
+	thread,
 	PROGRAM_NAME ": Camera",
 	170,
 	170)

@@ -134,11 +134,11 @@ void MaskAutos::dump()
 	}
 }
 
-int MaskAutos::mask_exists(ptstime position, int direction)
+int MaskAutos::mask_exists(ptstime position)
 {
 	Auto *current = 0;
 
-	MaskAuto* keyframe = (MaskAuto*)get_prev_auto(position, direction, current);
+	MaskAuto* keyframe = (MaskAuto*)get_prev_auto(position, current);
 
 	for(int i = 0; i < keyframe->masks.total; i++)
 	{

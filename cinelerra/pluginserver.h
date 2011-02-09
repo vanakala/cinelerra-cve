@@ -97,9 +97,9 @@ public:
 	KeyFrame* get_next_keyframe(posnum position);
 // get camera and projector positions
 	void get_camera(float *x, float *y, float *z,
-			framenum position, int direction);
+			framenum position);
 	void get_projector(float *x, float *y, float *z,
-			framenum position, int direction);
+			framenum position);
 // Get interpolation used by EDL
 	int get_interpolation_type();
 // Get or create keyframe for writing, depending on whether auto keyframes
@@ -174,10 +174,7 @@ public:
 // Units are kept relative to the EDL rate so plugins don't need to convert rates
 // to get the keyframes.
 	void process_buffer(VFrame **frame, 
-		ptstime current_position,
-		double frame_rate,
-		ptstime total_len,
-		int direction);
+		ptstime total_len);
 	void process_buffer(AFrame **buffer,
 		ptstime total_len,
 		int direction);

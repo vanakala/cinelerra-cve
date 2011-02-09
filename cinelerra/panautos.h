@@ -37,7 +37,6 @@ public:
 	void get_handle(int &handle_x,
 		int &handle_y,
 		ptstime position,
-		int direction,
 		PanAuto* &previous,
 		PanAuto* &next);
 	void dump();

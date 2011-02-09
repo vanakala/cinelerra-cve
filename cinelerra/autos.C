@@ -181,63 +181,37 @@ void Autos::insert_track(Autos *automation,
 }
 
 Auto* Autos::get_prev_auto(ptstime position, 
-	int direction, 
 	Auto* &current, 
 	int use_default)
 {
 // Get on or before position
-	if(direction == PLAY_FORWARD)
-	{
 // Try existing result
-		if(current)
-		{
-			while(current && current->pos_time < position) 
-				current = NEXT;
-			while(current && current->pos_time > position) 
-				current = PREVIOUS;
-		}
-
-		if(!current)
-		{
-			for(current = last; 
-				current && current->pos_time > position; 
-				current = PREVIOUS) ;
-		}
-		if(!current && use_default) 
-			current = (first ? first : default_auto);
-	}
-	else
-// Get on or after position
-	if(direction == PLAY_REVERSE)
+	if(current)
 	{
-		if(current)
-		{
-			while(current && current->pos_time > position) 
-				current = PREVIOUS;
-			while(current && current->pos_time < position) 
-				current = NEXT;
-		}
-
-		if(!current)
-		{
-			for(current = first; 
-				current && current->pos_time < position; 
-				current = NEXT) ;
-		}
-
-		if(!current && use_default) 
-			current = (last ? last : default_auto);
+		while(current && current->pos_time < position) 
+			current = NEXT;
+		while(current && current->pos_time > position) 
+			current = PREVIOUS;
 	}
+
+	if(!current)
+	{
+		for(current = last; 
+			current && current->pos_time > position; 
+			current = PREVIOUS) ;
+	}
+	if(!current && use_default) 
+		current = (first ? first : default_auto);
 
 	return current;
 }
 
-Auto* Autos::get_prev_auto(int direction, Auto* &current)
+Auto* Autos::get_prev_auto(Auto* &current)
 {
 	ptstime position = edl->local_session->get_selectionstart(1);
-	position = edl->align_to_frame(position, 0);
 
-	return get_prev_auto(position, direction, current);
+	position = edl->align_to_frame(position, 0);
+	return get_prev_auto(position, current);
 
 	return current;
 }
@@ -281,68 +255,40 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 	{
 		position = edl->local_session->get_selectionstart(1);
 	}
-
 	Auto *result = 0;
 	position = edl->align_to_frame(position, 0);
-
 	if(edl->session->auto_keyframes)
 	{
 		result = insert_auto_for_editing(position);
 	}
 	else
 		result = get_prev_auto(position,
-			PLAY_FORWARD, 
 			result);
 
 	return result;
 }
 
 
-Auto* Autos::get_next_auto(ptstime position, int direction, Auto* &current, int use_default)
+Auto* Autos::get_next_auto(ptstime position, Auto* &current, int use_default)
 {
-	if(direction == PLAY_FORWARD)
+	if(current)
 	{
-		if(current)
-		{
-			while(current && current->pos_time > position) 
-				current = PREVIOUS;
-			while(current && current->pos_time < position) 
-				current = NEXT;
-		}
-
-		if(!current)
-		{
-			for(current = first;
-				current && current->pos_time <= position;
-				current = NEXT)
-				;
-		}
-
-		if(!current && use_default) 
-			current = (last ? last : default_auto);
+		while(current && current->pos_time > position) 
+			current = PREVIOUS;
+		while(current && current->pos_time < position) 
+			current = NEXT;
 	}
-	else
-	if(direction == PLAY_REVERSE)
+
+	if(!current)
 	{
-		if(current)
-		{
-			while(current && current->pos_time < position) 
-				current = NEXT;
-			while(current && current->pos_time > position) 
-				current = PREVIOUS;
-		}
-
-		if(!current)
-		{
-			for(current = last;
-				current && current->pos_time > position;
-				current = PREVIOUS)
-				;
-		}
-
-		if(!current && use_default) 
-			current = (first ? first : default_auto);
+		for(current = first;
+			current && current->pos_time <= position;
+			current = NEXT)
+			;
 	}
+
+	if(!current && use_default) 
+		current = (last ? last : default_auto);
 
 	return current;
 }

@@ -101,22 +101,12 @@ Auto* FloatAutos::new_auto()
 
 int FloatAutos::automation_is_constant(ptstime start,
 	ptstime length,
-	int direction,
 	double &constant)
 {
 	int total_autos = total();
 	ptstime end;
 
-	if(direction == PLAY_FORWARD)
-	{
-		end = start + length;
-	}
-	else
-	{
-		end = start;
-		start -= length;
-	}
-
+	end = start + length;
 
 // No keyframes on track
 	if(total_autos == 0)
@@ -238,8 +228,7 @@ double FloatAutos::get_automation_constant(ptstime start, ptstime end)
 
 
 float FloatAutos::get_value(ptstime position, 
-	int direction, 
-	FloatAuto* &previous, 
+	FloatAuto* &previous,
 	FloatAuto* &next)
 {
 	double slope;
@@ -249,8 +238,8 @@ float FloatAutos::get_value(ptstime position,
 	float y0, y1, y2, y3;
 	float t;
 
-	previous = (FloatAuto*)get_prev_auto(position, direction, (Auto* &)previous, 0);
-	next = (FloatAuto*)get_next_auto(position, direction, (Auto* &)next, 0);
+	previous = (FloatAuto*)get_prev_auto(position, (Auto* &)previous, 0);
+	next = (FloatAuto*)get_next_auto(position, (Auto* &)next, 0);
 
 // Constant
 	if(!next && !previous)
@@ -274,21 +263,10 @@ float FloatAutos::get_value(ptstime position,
 	}
 	else
 	{
-		if(direction == PLAY_FORWARD &&
-			EQUIV(previous->value, next->value) &&
-			EQUIV(previous->control_out_value, 0) &&
-			EQUIV(next->control_in_value, 0))
-		{
+		if(EQUIV(previous->value, next->value) &&
+				EQUIV(previous->control_out_value, 0) &&
+				EQUIV(next->control_in_value, 0))
 			return previous->value;
-		}
-		else
-		if(direction == PLAY_REVERSE &&
-			EQUIV(previous->value, next->value) &&
-			EQUIV(previous->control_in_value, 0) &&
-			EQUIV(next->control_out_value, 0))
-		{
-			return previous->value;
-		}
 	}
 
 
@@ -296,26 +274,14 @@ float FloatAutos::get_value(ptstime position,
 	y0 = previous->value;
 	y3 = next->value;
 
-	if(direction == PLAY_FORWARD)
-	{
 // division by 0
-		if(EQUIV(next->pos_time, previous->pos_time)) 
-			return previous->value;
-		y1 = previous->value + previous->control_out_value * 2;
-		y2 = next->value + next->control_in_value * 2;
-		t =  (position - previous->pos_time) / 
-			(next->pos_time - previous->pos_time);
-	}
-	else
-	{
-// division by 0
-		if(EQUIV(previous->pos_time, next->pos_time)) 
-			return previous->value;
-		y1 = previous->value + previous->control_in_value * 2;
-		y2 = next->value + next->control_out_value * 2;
-		t = (double)(previous->pos_time - position) / 
-			(previous->pos_time - next->pos_time);
-	}
+	if(EQUIV(next->pos_time, previous->pos_time))
+		return previous->value;
+
+	y1 = previous->value + previous->control_out_value * 2;
+	y2 = next->value + next->control_in_value * 2;
+	t =  (position - previous->pos_time) / 
+		(next->pos_time - previous->pos_time);
 
 	float tpow2 = t * t;
 	float tpow3 = t * t * t;
@@ -395,7 +361,6 @@ void FloatAutos::get_extents(float *min,
 		position += step)
 	{
 		float value = get_value(position,
-			PLAY_FORWARD,
 			prev,
 			next);
 		if(*coords_undefined)

@@ -54,35 +54,27 @@ public:
 // start_position - end of frame if reverse.  start of frame if forward.
 // frame_rate - rate start_position is relative to
 // use_opengl - if opengl is available for this step
-	void render(VFrame *output_temp, 
-		ptstime start_position,
+	void render(VFrame *output_temp,
 		int use_opengl);
 
 // Read data from what comes before this node.
 	int read_data(VFrame *output_temp,
-		ptstime start_position,
 		int use_opengl);
 
 private:
 	void render_as_module(VFrame *video_out, 
 		VFrame *output_temp,
-		ptstime start_position,
 		int use_opengl);
 	void render_as_plugin(VFrame *output_temp, 
-		ptstime start_position,
 		int use_opengl);
 
 	void render_projector(VFrame *input,
-		VFrame *output,
-		ptstime start_position);  // Start of input fragment in project if forward.  End of input fragment if reverse.
+		VFrame *output);
 
 	void render_fade(VFrame *output,  // start of output fragment
-		ptstime start_position,  // start of input fragment in project if forward / end of input fragment if reverse
-		Autos *autos,
-		int direction);
+		Autos *autos);
 
-	void render_mask(VFrame *output_temp,
-		ptstime start_position);
+	void render_mask(VFrame *output_temp);
 
 	FadeEngine *fader;
 	MaskEngine *masker;

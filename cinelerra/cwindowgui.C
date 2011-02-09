@@ -942,8 +942,7 @@ int CWindowCanvas::do_mask(int &redraw,
 	track->automation->get_projector(&projector_x,
 		&projector_y,
 		&projector_z,
-		position,
-		PLAY_FORWARD);
+		position);
 
 
 // Get position of cursor relative to mask
@@ -2006,8 +2005,7 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	track->automation->get_projector(&center_x, 
 		&center_y, 
 		&center_z, 
-		position,
-		PLAY_FORWARD);
+		position);
 
 	center_x += mwindow->edl->session->output_w / 2;
 	center_y += mwindow->edl->session->output_h / 2;
@@ -2115,7 +2113,6 @@ int CWindowCanvas::test_bezier(int button_press,
 					FloatAuto *next = 0;
 					float new_z = affected_z_autos->get_value(
 						position,
-						PLAY_FORWARD,
 						previous,
 						next);
 					gui->affected_z = 
@@ -2137,14 +2134,12 @@ int CWindowCanvas::test_bezier(int button_press,
 					FloatAuto *next = 0;
 					float new_x = affected_x_autos->get_value(
 						position,
-						PLAY_FORWARD,
 						previous,
 						next);
 					previous = 0;
 					next = 0;
 					float new_y = affected_y_autos->get_value(
 						position, 
-						PLAY_FORWARD,
 						previous,
 						next);
 					gui->affected_x = 

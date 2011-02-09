@@ -105,7 +105,6 @@ void Module::create_new_attachments()
 				Plugin *plugin = 
 					track->get_current_plugin(track->from_units(commonrender->current_position),
 						i, 
-						renderengine->command->get_direction(),
 						1);
 
 				if(plugin && plugin->plugin_type != PLUGIN_NONE && plugin->on)
@@ -215,7 +214,6 @@ int Module::test_plugins(void)
 		Plugin *plugin = track->get_current_plugin(
 			commonrender->current_postime,
 			i, 
-			renderengine->command->get_direction(),
 			1);
 // One exists and one doesn't
 		int use_plugin = plugin &&
@@ -235,12 +233,9 @@ int Module::test_plugins(void)
 	return 0;
 }
 
-void Module::update_transition(ptstime current_position,
-	int direction)
+void Module::update_transition(ptstime current_position)
 {
-	transition = track->get_current_transition(current_position,
-		direction,
-		0); // position is already nudged in amodule.C and vmodule.C before calling update_transition!
+	transition = track->get_current_transition(current_position);
 
 // For situations where we had a transition but not anymore, 
 // keep the server open.

@@ -103,12 +103,11 @@ int VPatchGUI::update(int x, int y)
 		else
 		{
 			FloatAuto *previous = 0, *next = 0;
-			double unit_position = mwindow->edl->local_session->get_selectionstart(1);
+			ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-			unit_position = vtrack->to_units(unit_position, 0);
+
 			int value = (int)((FloatAutos*)vtrack->automation->autos[AUTOMATION_FADE])->get_value(
-				(posnum)unit_position,
-				PLAY_FORWARD, 
+				unit_position,
 				previous, 
 				next);
 			fade->update(fade->get_w(),
@@ -243,7 +242,6 @@ FloatAuto* VFadePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 
 	return (FloatAuto*)patch->vtrack->automation->autos[AUTOMATION_FADE]->get_prev_auto(
 		unit_position,
-		PLAY_FORWARD,
 		current);
 }
 
@@ -298,7 +296,6 @@ IntAuto* VModePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 
 	return (IntAuto*)patch->vtrack->automation->autos[AUTOMATION_MODE]->get_prev_auto(
 		(posnum)unit_position, 
-		PLAY_FORWARD,
 		current);
 }
 

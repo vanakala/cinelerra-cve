@@ -261,7 +261,6 @@ int PluginDialog::create_objects()
 		int number = plugin_locations.values[i]->plugin;
 		Plugin *plugin = track->get_current_plugin(mwindow->edl->local_session->get_selectionstart(1), 
 			number, 
-			PLAY_FORWARD,
 			0);
 		char *plugin_title = plugin->title;
 		char string[BCTEXTLEN];

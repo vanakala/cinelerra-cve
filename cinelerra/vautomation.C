@@ -91,18 +91,18 @@ int VAutomation::create_objects()
 	return 0;
 }
 
-int VAutomation::direct_copy_possible(ptstime start, int direction)
+int VAutomation::direct_copy_possible(ptstime start)
 {
 	ptstime len = track->one_unit;
-	ptstime end = (direction == PLAY_FORWARD) ? (start + len) : (start - len);
+	ptstime end = start + len;
 
-	if(!Automation::direct_copy_possible(start, direction))
+	if(!Automation::direct_copy_possible(start))
 		return 0;
 
 // Automation is constant
 	double constant;
 	if(((FloatAutos*)autos[AUTOMATION_FADE])->automation_is_constant(
-		start, len, direction, constant))
+		start, len, constant))
 	{
 		if(!EQUIV(constant, 100))
 			return 0;
@@ -123,43 +123,34 @@ int VAutomation::direct_copy_possible(ptstime start, int direction)
 // Projector must be centered.
 	FloatAuto *previous = 0, *next = 0;
 	float z = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_value(
-		start, direction, previous, next);
+		start, previous, next);
 	if(!EQUIV(z, 1)) return 0;
 
 	previous = 0;
 	next = 0;
 	float x = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_value(start,
-				direction,
 				previous, 
 				next);
 	if(!EQUIV(x, 0)) return 0;
 	previous = 0;
 	next = 0;
 	float y = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_value(start,
-				direction,
 				previous, 
 				next);
 	if(!EQUIV(y, 0)) return 0;
-
-
-
 
 // Camera must be centered
 	previous = 0;
 	next = 0;
 	z = ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_value(
 		start, 
-		direction, 
 		previous, 
 		next);
 	if(!EQUIV(z, 1)) return 0;
 
-
-
 	previous = 0;
 	next = 0;
 	x = ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_value(start,
-				direction,
 				previous, 
 				next);
 	if(!EQUIV(x, 0)) return 0;
@@ -167,14 +158,13 @@ int VAutomation::direct_copy_possible(ptstime start, int direction)
 	previous = 0;
 	next = 0;
 	y = ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_value(start,
-				direction,
 				previous, 
 				next);
 
 	if(!EQUIV(y, 0)) return 0;
 
 // No mask must exist
-	if(((MaskAutos*)autos[AUTOMATION_MASK])->mask_exists(start, direction))
+	if(((MaskAutos*)autos[AUTOMATION_MASK])->mask_exists(start))
 		return 0;
 
 	return 1;
@@ -183,26 +173,22 @@ int VAutomation::direct_copy_possible(ptstime start, int direction)
 void VAutomation::get_projector(float *x, 
 	float *y, 
 	float *z, 
-	ptstime position,
-	int direction)
+	ptstime position)
 {
 	FloatAuto *before, *after;
 	before = 0;
 	after = 0;
 	*x = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_value(position,
-		direction,
 		before,
 		after);
 	before = 0;
 	after = 0;
 	*y = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_value(position,
-		direction,
 		before,
 		after);
 	before = 0;
 	after = 0;
 	*z = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_value(position,
-		direction,
 		before,
 		after);
 }
@@ -211,26 +197,22 @@ void VAutomation::get_projector(float *x,
 void VAutomation::get_camera(float *x, 
 	float *y, 
 	float *z, 
-	ptstime position,
-	int direction)
+	ptstime position)
 {
 	FloatAuto *before, *after;
 	before = 0;
 	after = 0;
 	*x = ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_value(position,
-		direction,
 		before,
 		after);
 	before = 0;
 	after = 0;
 	*y = ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_value(position,
-		direction,
 		before,
 		after);
 	before = 0;
 	after = 0;
 	*z = ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_value(position,
-		direction,
 		before,
 		after);
 }

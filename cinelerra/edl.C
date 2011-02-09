@@ -1056,7 +1056,6 @@ void EDL::get_shared_plugins(Track *source,
 				Plugin *plugin = track->get_current_plugin(
 					local_session->get_selectionstart(1), 
 					i, 
-					PLAY_FORWARD, 
 					0);
 				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
 				{

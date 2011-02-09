@@ -123,11 +123,8 @@ public:
 // Get the plugin belonging to the set.
 	Plugin* get_current_plugin(ptstime postime,
 		int plugin_set, 
-		int direction, 
 		int use_nudge);
-	Plugin* get_current_transition(ptstime position,
-		int direction, 
-		int use_nudge);
+	Plugin* get_current_transition(ptstime position);
 
 // detach shared effects referencing module
 	void detach_shared_effects(int module);
@@ -136,18 +133,17 @@ public:
 // Descends the plugin tree without creating a virtual console.
 // Used by PlayableTracks::is_playable.
 	int is_synthesis(RenderEngine *renderengine, 
-		ptstime position,
-		int direction);
+		ptstime position);
 
 // Used by PlayableTracks::is_playable
 // Returns 1 if the track is in the output boundaries.
-	virtual int is_playable(ptstime position, int direction);
+	virtual int is_playable(ptstime position);
 
 // Test direct copy conditions common to all the rendering routines
-	virtual int direct_copy_possible(ptstime start, int direction, int use_nudge) { return 1; };
+	virtual int direct_copy_possible(ptstime start, int use_nudge) { return 1; };
 
 // Used by PlayableTracks::is_playable
-	int plugin_used(ptstime position, int direction);
+	int plugin_used(ptstime position);
 
 	virtual int copy_settings(Track *track);
 	void shift_keyframes(ptstime position, ptstime length);
