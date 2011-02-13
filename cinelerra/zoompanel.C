@@ -203,10 +203,8 @@ char* ZoomPanel::value_to_text(double value, int use_table)
 	if(use_table)
 	{
 		for(int i = 0; i < zoom_table.total; i++)
-		{
-			if(EQUIV(zoom_table.values[i]->value, value))
+			if(PTSEQU(zoom_table.values[i]->value, value))
 				return zoom_table.values[i]->text;
-		}
 		return zoom_table.values[0]->text;
 	}
 
@@ -294,7 +292,8 @@ int ZoomTumbler::handle_up_event()
 	{
 		int current_index = 0;
 		for(current_index = 0; current_index < panel->user_size; current_index++)
-			if(EQUIV(panel->user_table[current_index], panel->value)) break;
+			if(PTSEQU(panel->user_table[current_index], panel->value)) 
+				break;
 		current_index++;
 		CLAMP(current_index, 0, panel->user_size - 1);
 		panel->value = panel->user_table[current_index];
@@ -316,7 +315,8 @@ int ZoomTumbler::handle_down_event()
 	{
 		int current_index = 0;
 		for(current_index = 0; current_index < panel->user_size; current_index++)
-			if(EQUIV(panel->user_table[current_index], panel->value)) break;
+			if(PTSEQU(panel->user_table[current_index], panel->value))
+				break;
 		current_index--;
 		CLAMP(current_index, 0, panel->user_size - 1);
 		panel->value = panel->user_table[current_index];
