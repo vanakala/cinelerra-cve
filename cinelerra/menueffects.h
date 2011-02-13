@@ -53,14 +53,14 @@ public:
 class MenuEffectPacket
 {
 public:
-	MenuEffectPacket(const char *path, posnum start, posnum end);
+	MenuEffectPacket(const char *path, ptstime start, ptstime end);
 	~MenuEffectPacket();
 
 // Path of output without remote prefix
 	char path[BCTEXTLEN];
 
-	posnum start;
-	posnum end;
+	ptstime start;
+	ptstime end;
 };
 
 
@@ -76,7 +76,8 @@ public:
 	virtual int get_derived_attributes(Asset *asset, BC_Hash *defaults) { return 0; };
 	virtual int save_derived_attributes(Asset *asset, BC_Hash *defaults) { return 0; };
 	virtual PluginArray* create_plugin_array() { return 0; };
-	virtual posnum to_units(double position, int round) { return 0; };
+	virtual ptstime one_unit() { return 0; };
+	virtual posnum to_units(ptstime position, int round) { return 0; };
 	virtual int fix_menu(const char *title) {};
 	int test_existence(Asset *asset);
 

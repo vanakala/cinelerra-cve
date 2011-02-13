@@ -47,7 +47,8 @@ public:
 	PluginArray* create_plugin_array();
 	int fix_menu(const char *title);
 
-	posnum to_units(double position, int round);
+	ptstime one_unit();
+	posnum to_units(ptstime position, int round);
 };
 
 class MenuVEffectItem : public MenuEffectItem

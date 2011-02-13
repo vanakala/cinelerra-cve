@@ -166,18 +166,12 @@ public:
 		ptstime total_len);
 
 // Process using pull method.
-// current_position - start of region if forward, end of region if reverse
-// fragment_size - amount of data to put in buffer in units
-// sample_rate - sample rate of requested output
-// frame_rate - frame rate of requested output
-// total_len - length of plugin in track units in units
-// Units are kept relative to the EDL rate so plugins don't need to convert rates
-// to get the keyframes.
+// frame/buffer - video/audio fame to process
+// total_len - length of plugin
 	void process_buffer(VFrame **frame, 
 		ptstime total_len);
 	void process_buffer(AFrame **buffer,
-		ptstime total_len,
-		int direction);
+		ptstime total_len);
 
 // Called by rendering client to cause the GUI to display something with the data.
 	void send_render_gui(void *data);
@@ -203,14 +197,9 @@ public:
 	int send_buffer_info();
 
 
-
-
-
-
-
 // ============================ for non realtime plugins
 // start processing data in plugin
-	int start_loop(posnum start, posnum end, int buffer_size, int total_buffers);
+	void start_loop(ptstime start, ptstime end, int buffer_size, int total_buffers);
 // Do one iteration of a nonrealtime plugin and return if finished
 	int process_loop(VFrame **buffers, int &write_length);
 	int process_loop(AFrame **buffers, int &write_length);
@@ -243,7 +232,7 @@ public:
 		int len);
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
-	int get_parameters(posnum start, posnum end, int channels);
+	int get_parameters(ptstime start, ptstime end, int channels);
 	int get_samplerate();      // get samplerate produced by plugin
 	double get_framerate();     // get framerate produced by plugin
 	int get_project_samplerate();            // get samplerate of project data before processing

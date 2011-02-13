@@ -69,7 +69,7 @@ int MenuEffects::handle_event()
 }
 
 
-MenuEffectPacket::MenuEffectPacket(const char *path, int64_t start, int64_t end)
+MenuEffectPacket::MenuEffectPacket(const char *path, ptstime start, ptstime end)
 {
 	this->start = start;
 	this->end = end;
@@ -236,10 +236,9 @@ void MenuEffectThread::run()
 
 // get selection to render
 // Range
-	double total_start, total_end;
+	ptstime total_start, total_end;
 
 	total_start = mwindow->edl->local_session->get_selectionstart();
-
 
 	if(mwindow->edl->local_session->get_selectionend() == 
 		mwindow->edl->local_session->get_selectionstart())
@@ -247,25 +246,14 @@ void MenuEffectThread::run()
 	else
 		total_end = mwindow->edl->local_session->get_selectionend();
 
-
-
-// get native units for range
-	total_start = to_units(total_start, 0);
-	total_end = to_units(total_end, 1);
-
-
-
 // Trick boundaries in case of a non-realtime synthesis plugin
 	if(plugin && 
 		!plugin->realtime && 
-		total_end == total_start) total_end = total_start + 1;
+		PTSEQU(total_end, total_start)) total_end = total_start + one_unit();
 
-// Units are now in the track's units.
-	posnum total_length = (posnum)total_end - (posnum)total_start;
-// length of output file
-	posnum output_start, output_end;
+	ptstime total_length = total_end - total_start;
 
-	if(!result && total_length <= 0)
+	if(!result && total_length <= EPSILON)
 	{
 		result = 1;        // no output path given
 		errorbox(_("No selected range to process."));
@@ -290,8 +278,8 @@ void MenuEffectThread::run()
 			plugin->set_prompt(&prompt);
 			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
 // Must set parameters since there is no plugin object to draw from.
-			plugin->get_parameters((int64_t)total_start,
-				(int64_t)total_end,
+			plugin->get_parameters(total_start,
+				total_end,
 				1);
 			plugin->show_gui();
 
@@ -310,11 +298,10 @@ void MenuEffectThread::run()
 		{
 			plugin->set_mwindow(mwindow);
 			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
-			result = plugin->get_parameters((int64_t)total_start, 
-				(int64_t)total_end, 
+			result = plugin->get_parameters(total_start,
+				total_end,
 				get_recordable_tracks(default_asset));
 // some plugins can change the sample rate and the frame rate
-
 
 			if(!result)
 			{
@@ -346,24 +333,24 @@ void MenuEffectThread::run()
 			total_digits);
 
 // Construct all packets for single overwrite confirmation
-		for(posnum fragment_start = (posnum)total_start, fragment_end;
-			fragment_start < (posnum)total_end;
+		for(ptstime fragment_start = total_start, fragment_end;
+			fragment_start < total_end;
 			fragment_start = fragment_end)
 		{
 // Get fragment end
 			if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM)
 			{
 				while(current_label  &&
-					to_units(current_label->position, 0) <= fragment_start)
+					current_label->position <= fragment_start)
 					current_label = current_label->next;
 				if(!current_label)
-					fragment_end = (posnum)total_end;
+					fragment_end = total_end;
 				else
-					fragment_end = to_units(current_label->position, 0);
+					fragment_end = current_label->position;
 			}
 			else
 			{
-				fragment_end = (posnum)total_end;
+				fragment_end = total_end;
 			}
 
 // Get path
@@ -384,7 +371,6 @@ void MenuEffectThread::run()
 			packets.append(packet);
 		}
 
-
 // Test existence of files
 		ArrayList<char*> paths;
 		for(int i = 0; i < packets.total; i++)
@@ -401,8 +387,8 @@ void MenuEffectThread::run()
 	{
 		Asset *asset = new Asset(*default_asset);
 		MenuEffectPacket *packet = packets.values[current_packet];
-		posnum fragment_start = packet->start;
-		posnum fragment_end = packet->end;
+		ptstime fragment_start = packet->start;
+		ptstime fragment_end = packet->end;
 		strcpy(asset->path, packet->path);
 
 		assets.append(asset);
@@ -435,9 +421,6 @@ void MenuEffectThread::run()
 // run plugins
 		if(!result)
 		{
-// position file
-			output_start = 0;
-
 			PluginArray *plugin_array;
 			plugin_array = create_plugin_array();
 
@@ -712,6 +695,7 @@ MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
 		0,
 		1)
 {
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 }
 
 int MenuEffectPrompt::calculate_w(BC_WindowBase *gui)

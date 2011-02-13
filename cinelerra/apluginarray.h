@@ -40,18 +40,20 @@ public:
 	void create_buffers();
 	void create_modules();
 	void get_buffers();
-	void process_realtime(int module, posnum input_position, int len);
+	void process_realtime(int module, ptstime pts, ptstime len);
 	int process_loop(int module, int &write_length);
 	int write_buffers(int len);
 	int total_tracks();
 	void get_recordable_tracks();
 	Track* track_number(int number);
+	posnum to_units(ptstime pts);
+	ptstime from_units(posnum pos);
 
 	RecordableATracks *tracks;
 // Pointers to plugin buffers for plugin output
-	double **buffer;         // Buffer for processing
+	AFrame **buffer;         // Buffer for processing
 // Pointer to file output
-	double **output_buffer;
+	AFrame **output_buffer;
 	AFrame **realtime_buffers;
 };
 

@@ -40,12 +40,14 @@ public:
 	void create_buffers();
 	void get_buffers();
 	void create_modules();
-	void process_realtime(int module, posnum input_position, int len);
+	void process_realtime(int module, ptstime pts, ptstime len);
 	int process_loop(int module, int &write_length);
 	int write_buffers(int len);
 	int total_tracks();
 	void get_recordable_tracks();
 	Track* track_number(int number);
+	posnum to_units(ptstime pts);
+	ptstime from_units(posnum pos);
 
 	RecordableVTracks *tracks;
 // fake buffer for plugin output

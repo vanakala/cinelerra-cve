@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "bcsignals.h"
 #include "apluginarray.h"
 #include "bchash.h"
 #include "edl.h"
@@ -99,14 +100,17 @@ PluginArray* MenuAEffectThread::create_plugin_array()
 	return new APluginArray();
 }
 
-posnum MenuAEffectThread::to_units(double position, int round)
+ptstime MenuAEffectThread::one_unit()
+{
+	return (ptstime)1 / mwindow->edl->session->sample_rate;
+}
+
+posnum MenuAEffectThread::to_units(ptstime position, int round)
 {
 	if(round)
 		return Units::round(position * mwindow->edl->session->sample_rate);
 	else
 		return (int64_t)(position * mwindow->edl->session->sample_rate);
-		
-	return 0;
 }
 
 int MenuAEffectThread::fix_menu(const char *title)

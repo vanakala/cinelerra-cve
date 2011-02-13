@@ -46,27 +46,27 @@ public:
 	virtual ~PluginArray();
 
 	PluginServer* scan_plugindb(const char *title);
-	int start_plugins(MWindow *mwindow, 
+	void start_plugins(MWindow *mwindow, 
 		EDL *edl, 
 		PluginServer *plugin_server, 
 		KeyFrame *keyframe,
-		posnum start,
-		posnum end,
+		ptstime start,
+		ptstime end,
 		File *file);
 	int run_plugins();
-	int stop_plugins();
+	void stop_plugins();
 	virtual void create_modules() {};
 	virtual void create_buffers() {};
 	virtual void get_buffers() {};
-	virtual void process_realtime(int module, 
-		posnum input_position,
-		int len) {};
+	virtual void process_realtime(int module, ptstime pts, ptstime len) {};
 	virtual int process_loop(int module, int &write_length) {};
 	virtual int write_buffers(int len) { return 0; };
 	virtual int get_bufsize() { return 0; };
 	virtual int total_tracks() { return 0; };
 	virtual void get_recordable_tracks() {};
 	virtual Track* track_number(int number) { return 0; };
+	virtual posnum to_units(ptstime pts) { return 0; };
+	virtual ptstime from_units(posnum pos) { return 0; };
 
 	Module **modules;
 	MWindow *mwindow;
@@ -78,12 +78,11 @@ public:
 	File *file;
 	int buffer_size;
 // Start and end of segment in units
-	posnum start, end;
+	ptstime start;
+	ptstime end;
 	int done;
 	int error;
 	int data_type;
 };
-
-
 
 #endif

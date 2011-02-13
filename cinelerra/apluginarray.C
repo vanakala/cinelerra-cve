@@ -19,9 +19,11 @@
  * 
  */
 
+#include "aframe.h"
 #include "amodule.h"
 #include "apluginarray.h"
 #include "atrack.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -76,19 +78,18 @@ void APluginArray::create_modules()
 	}
 }
 
-void APluginArray::process_realtime(int module, posnum input_position, int len)
+void APluginArray::process_realtime(int module, ptstime pts, ptstime len)
 {
-	values[module]->process_buffer(realtime_buffers + module,
-			0,
-			PLAY_FORWARD);
+	realtime_buffers[module]->pts = pts;
+	realtime_buffers[module]->source_duration = len;
+	values[module]->process_buffer(realtime_buffers + module, 0);
 }
 
 int APluginArray::process_loop(int module, int &write_length)
 {
 	if(!realtime_buffers) realtime_buffers = file->get_audio_buffer();
-	int result = values[module]->process_loop(&realtime_buffers[module], 
+	return values[module]->process_loop(&realtime_buffers[module],
 		write_length);
-	return result;
 }
 
 
@@ -119,4 +120,14 @@ int APluginArray::total_tracks()
 Track* APluginArray::track_number(int number)
 {
 	return (Track*)tracks->values[number];
+}
+
+posnum APluginArray::to_units(ptstime pts)
+{
+	return round(pts * edl->session->sample_rate);
+}
+
+ptstime APluginArray::from_units(posnum pos)
+{
+	return (ptstime)pos / edl->session->sample_rate;
 }

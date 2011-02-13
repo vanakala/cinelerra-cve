@@ -429,7 +429,6 @@ void PluginServer::process_buffer(VFrame **frame,
 		framerate = edl->session->frame_rate;
 
 	vclient->source_position = round(frame[0]->get_pts() * framerate);
-	vclient->total_len = round(total_length * framerate);
 	vclient->frame_rate = framerate;
 	vclient->input = new VFrame*[total_in_buffers];
 	vclient->output = new VFrame*[total_in_buffers];
@@ -438,8 +437,11 @@ void PluginServer::process_buffer(VFrame **frame,
 		vclient->input[i] = frame[i];
 		vclient->output[i] = frame[i];
 	}
-	vclient->source_start = (int64_t)(plugin ? 
-		round(plugin->project_pts * framerate) : 0);
+	if(plugin)
+	{
+		vclient->source_start = round(plugin->project_pts * framerate);
+		vclient->total_len = round(total_length * framerate);
+	}
 	vclient->direction = PLAY_FORWARD;
 
 	if(multichannel)
@@ -475,21 +477,31 @@ void PluginServer::mark_as_filled(AFrame *aframe)
 }
 
 void PluginServer::process_buffer(AFrame **buffer,
-	ptstime total_len,
-	int direction)
+	ptstime total_len)
 {
 	if(!plugin_open) return;
 	PluginAClient *aclient = (PluginAClient*)client;
 	AFrame *aframe = buffer[0];
-	int fragment_size = aframe->source_length;
+	int fragment_size;
+
+	if(aframe->source_duration > 0)
+		fragment_size = round(aframe->source_duration * aframe->samplerate);
+	else
+		fragment_size = aframe->source_length;
+
+	if(aframe->samplerate <= 0)
+		aframe->samplerate = aclient->project_sample_rate;
 
 	aclient->source_position = round(aframe->pts * aframe->samplerate);
-	aclient->total_len = round(total_len * aframe->samplerate);
 	aclient->sample_rate = aframe->samplerate;
 	if(plugin)
+	{
 		aclient->source_start = round(plugin->project_pts *
 			aclient->project_sample_rate);
-	aclient->direction = direction;
+		aclient->total_len = round(total_len * aframe->samplerate);
+	}
+
+	aclient->direction = PLAY_FORWARD;
 	if(multichannel){
 		double *samples[total_in_buffers];
 		for(int i = 0; i < total_in_buffers; i++)
@@ -564,14 +576,21 @@ framenum PluginServer::get_written_frames()
 
 // ======================= Non-realtime plugin
 
-int PluginServer::get_parameters(posnum start, posnum end, int channels)
+int PluginServer::get_parameters(ptstime start, ptstime end, int channels)
 {
+	double rate;
+
 	if(!plugin_open) return 0;
 
-	client->start = start;
-	client->end = end;
-	client->source_start = start;
-	client->total_len = end - start;
+	if(video)
+		rate = edl->session->frame_rate;
+	else
+		rate = edl->session->sample_rate;
+
+	client->start = round(start * rate);
+	client->end = round(end * rate);
+	client->source_start = client->start;
+	client->total_len = client->end - client->start;
 	client->total_in_buffers = channels;
 	return client->plugin_get_parameters();
 }
@@ -620,22 +639,41 @@ int PluginServer::process_loop(VFrame **buffers, int &write_length)
 
 int PluginServer::process_loop(AFrame **buffers, int &write_length)
 {
-	if(!plugin_open) return 1;
 	double *samples[total_in_buffers];
+	int result;
+
+	if(!plugin_open) return 1;
 	for(int i = 0; i < total_in_buffers; i++)
+	{
 		samples[i] = buffers[i]->buffer;
-	return client->plugin_process_loop(samples, write_length);
+		put_aframe(buffers[i]);
+	}
+	result = client->plugin_process_loop(samples, write_length);
+	for(int i = 0; i < total_in_buffers; i++)
+	{
+		pop_aframe(buffers[i]);
+	}
+	return result;
 }
 
 
-int PluginServer::start_loop(posnum start, 
-	posnum end,
+void PluginServer::start_loop(ptstime start,
+	ptstime end,
 	int buffer_size, 
 	int total_buffers)
 {
-	if(!plugin_open) return 0;
-	client->plugin_start_loop(start, end, buffer_size, total_buffers);
-	return 0;
+	double rate;
+
+	if(!plugin_open) return;
+
+	if(video)
+		rate = edl->session->frame_rate;
+	else
+		rate = edl->session->sample_rate;
+	total_in_buffers = total_buffers;
+	client->plugin_start_loop(round(start * rate), round(end * rate),
+		buffer_size, total_buffers);
+	return;
 }
 
 int PluginServer::stop_loop()
@@ -661,7 +699,16 @@ void PluginServer::read_samples(double *buffer,
 	int total_samples)
 {
 	AFrame *aframe = find_aframe(buffer);
+	AFrame localframe;
 
+	if(!aframe)
+	{
+		aframe = &localframe;
+		aframe->set_buffer(buffer, total_samples);
+	} else
+		aframe->reset_buffer();
+	if(aframe->samplerate == 0)
+		aframe->samplerate = edl->session->sample_rate;
 	aframe->channel = channel;
 	aframe->pts = (ptstime)start_position/aframe->samplerate;
 	aframe->source_length = total_samples;

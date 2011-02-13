@@ -20,6 +20,7 @@
  */
 
 #include "atrack.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -55,12 +56,12 @@ PluginServer* PluginArray::scan_plugindb(const char *title)
 	return mwindow->scan_plugindb(title, data_type);
 }
 
-int PluginArray::start_plugins(MWindow *mwindow, 
+void PluginArray::start_plugins(MWindow *mwindow, 
 	EDL *edl, 
 	PluginServer *plugin_server, 
 	KeyFrame *keyframe,
-	posnum start,
-	posnum end,
+	ptstime start,
+	ptstime end,
 	File *file)
 {
 	this->mwindow = mwindow;
@@ -162,11 +163,7 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			plugin->init_realtime(0, total_tracks(), get_bufsize());
 		}
 	}
-	return 0;
 }
-
-
-
 
 
 int PluginArray::run_plugins()
@@ -174,23 +171,22 @@ int PluginArray::run_plugins()
 	int i, j, result;
 // Length to write after process_loop
 	int write_length;
-
 	done = 0;     // for when done
 	error = 0;
 	if(plugin_server->realtime)
 	{
-		int len;
+		ptstime len;
 		MainProgressBar *progress;
 		char string[BCTEXTLEN], string2[BCTEXTLEN];
 
 		sprintf(string, _("%s..."), plugin_server->title);
 		progress = mwindow->mainprogress->start_progress(string, end - start);
 
-		for(int current_position = start; 
+		for(ptstime current_position = start; 
 			current_position < end && !done && !error;
 			current_position += len)
 		{
-			len = buffer_size;
+			len = from_units(buffer_size);
 			if(current_position + len > end) len = end - current_position;
 
 // Process in plugin.  This pulls data from the modules
@@ -201,7 +197,7 @@ int PluginArray::run_plugins()
 			}
 
 // Write to file
-			error = write_buffers(len);
+			error = write_buffers(to_units(len));
 			done = progress->update(current_position - start + len);
 		}
 
@@ -226,17 +222,15 @@ int PluginArray::run_plugins()
 				done += process_loop(i, write_length);
 			}
 
-
 			if(write_length)
 				error = write_buffers(write_length);
 		}
 	}
-
 	return error;
 }
 
 
-int PluginArray::stop_plugins()
+void PluginArray::stop_plugins()
 {
 	if(plugin_server->realtime)
 	{
@@ -253,8 +247,6 @@ int PluginArray::stop_plugins()
 			values[i]->close_plugin();
 		}
 	}
-
 	delete cache;
-	return 0;
 }
 

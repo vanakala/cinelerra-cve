@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
@@ -100,14 +101,17 @@ PluginArray* MenuVEffectThread::create_plugin_array()
 	return new VPluginArray();
 }
 
-posnum MenuVEffectThread::to_units(double position, int round)
+ptstime MenuVEffectThread::one_unit()
+{
+	return (ptstime)1 / mwindow->edl->session->frame_rate;
+}
+
+posnum MenuVEffectThread::to_units(ptstime position, int round)
 {
 	if(round)
 		return Units::round(position * mwindow->edl->session->frame_rate);
 	else
 		return (posnum)(position * mwindow->edl->session->frame_rate);
-
-	return 0;
 }
 
 int MenuVEffectThread::fix_menu(const char *title)

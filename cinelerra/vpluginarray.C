@@ -91,13 +91,10 @@ void VPluginArray::create_modules()
 	}
 }
 
-
-void VPluginArray::process_realtime(int module, 
-	posnum input_position,
-	int len)
+void VPluginArray::process_realtime(int module, ptstime pts, ptstime len)
 {
-	values[module]->process_buffer(realtime_buffers[module], 
-			(ptstime)input_position / edl->session->frame_rate);
+	(*realtime_buffers[module])->set_pts(pts);
+	values[module]->process_buffer(realtime_buffers[module], len);
 }
 
 int VPluginArray::process_loop(int module, int &write_length)
@@ -136,4 +133,12 @@ Track* VPluginArray::track_number(int number)
 	return (Track*)tracks->values[number];
 }
 
+posnum VPluginArray::to_units(ptstime pts)
+{
+	return round(pts * edl->session->frame_rate);
+}
 
+ptstime VPluginArray::from_units(posnum pos)
+{
+	return (ptstime)pos / edl->session->frame_rate;
+}
