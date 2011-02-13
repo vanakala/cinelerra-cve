@@ -301,6 +301,7 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 			codnam = "Unknown si_code";
 			break;
 		}
+		break;
 	case SIGSEGV:
 		switch(inf->si_code){
 		case SEGV_MAPERR:
