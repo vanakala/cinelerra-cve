@@ -161,6 +161,7 @@ public:
 	void create_plugindb(int do_audio, 
 		int do_video, 
 		int is_realtime, 
+		int is_multichannel,
 		int is_transition,
 		int is_theme,
 		ArrayList<PluginServer*> &plugindb);

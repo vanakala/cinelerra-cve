@@ -637,6 +637,7 @@ void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
 	mwindow->create_plugindb(do_audio, 
 			do_video, 
 			is_realtime, 
+			-1,
 			is_transition,
 			0,
 			plugindb);

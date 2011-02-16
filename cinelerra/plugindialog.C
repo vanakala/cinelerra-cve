@@ -239,7 +239,8 @@ int PluginDialog::create_objects()
 // GET A LIST OF ALL THE PLUGINS AVAILABLE
 	mwindow->create_plugindb(thread->data_type == TRACK_AUDIO, 
 		thread->data_type == TRACK_VIDEO, 
-		1, 
+		1,
+		-1,
 		0,
 		0,
 		plugindb);

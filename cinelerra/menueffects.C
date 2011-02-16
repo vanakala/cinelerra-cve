@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "clip.h"
 #include "confirmsave.h"
+#include "datatype.h"
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -152,6 +153,7 @@ void MenuEffectThread::run()
 			-1, 
 			0,
 			0,
+			0,
 			local_plugindb);
 
 		for(int i = 0; i < local_plugindb.total; i++)
@@ -240,8 +242,7 @@ void MenuEffectThread::run()
 
 	total_start = mwindow->edl->local_session->get_selectionstart();
 
-	if(mwindow->edl->local_session->get_selectionend() == 
-		mwindow->edl->local_session->get_selectionstart())
+	if(PTSEQU(mwindow->edl->local_session->get_selectionend(), total_start))
 		total_end = mwindow->edl->tracks->total_playable_length();
 	else
 		total_end = mwindow->edl->local_session->get_selectionend();

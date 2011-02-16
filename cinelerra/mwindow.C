@@ -370,6 +370,7 @@ void MWindow::delete_plugins()
 void MWindow::create_plugindb(int do_audio, 
 		int do_video, 
 		int is_realtime, 
+		int is_multichannel,
 		int is_transition,
 		int is_theme,
 		ArrayList<PluginServer*> &plugindb)
@@ -382,6 +383,7 @@ void MWindow::create_plugindb(int do_audio,
 		if(current->audio == do_audio &&
 			current->video == do_video &&
 			(current->realtime == is_realtime || is_realtime < 0) &&
+			(current->multichannel == is_multichannel || is_multichannel < 0) &&
 			current->transition == is_transition &&
 			current->theme == is_theme)
 			plugindb.append(current);

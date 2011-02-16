@@ -488,6 +488,7 @@ void ViewTheme::create_objects()
 		0, 
 		0, 
 		0,
+		0,
 		1,
 		themes);
 
