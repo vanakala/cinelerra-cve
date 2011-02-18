@@ -219,24 +219,16 @@ int VirtualConsole::test_reconfigure(ptstime &len,
 			longest_duration1 = current_track->edit_change_duration(
 				commonrender->current_postime,
 				len,
-				direction == PLAY_REVERSE, 
-				1,
 				1);
-
 // Test the edits
 			longest_duration2 = current_track->edit_change_duration(
 				commonrender->current_postime,
 				len,
-				direction, 
-				0,
-				1);
-
+				0);
 // Test the plugins
 			longest_duration3 = current_track->plugin_change_duration(
 				commonrender->current_postime,
-				len,
-				direction == PLAY_REVERSE,
-				1);
+				len);
 
 			if(longest_duration1 < len)
 			{
@@ -262,9 +254,6 @@ int VirtualConsole::test_reconfigure(ptstime &len,
 	}
 	return result;
 }
-
-
-
 
 
 int VirtualConsole::delete_virtual_console()

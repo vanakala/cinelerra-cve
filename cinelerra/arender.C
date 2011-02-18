@@ -257,6 +257,7 @@ void ARender::run()
 {
 	posnum current_input_length;
 	int reconfigure = 0;
+	int revert = 0;
 
 	first_buffer = 1;
 	start_lock->unlock();
@@ -269,14 +270,21 @@ void ARender::run()
 
 		if(current_input_length)
 		{
-			ptstime len_pts = fromunits(current_input_length);
+			ptstime len_pts, len0_pts;
+			len0_pts = len_pts = fromunits(current_input_length);
 			reconfigure = vconsole->test_reconfigure(len_pts,
 				last_playback);
+			if(len_pts < len0_pts && 
+				renderengine->command->get_direction() == PLAY_REVERSE)
+			{
+				current_postime += len_pts;
+				len_pts = len0_pts - len_pts;
+				revert = 1;
+			}
 			current_input_length = tounits(len_pts, 1);
 
 			if(reconfigure) restart_playback();
 		}
-
 
 // Update tracking if no video is playing.
 		if(renderengine->command->realtime && 
@@ -298,6 +306,11 @@ void ARender::run()
 
 		process_buffer(current_input_length, current_postime);
 
+		if(revert)
+		{
+			current_input_length = renderengine->fragment_len;
+			revert = 0;
+		}
 		advance_position(current_input_length);
 
 		if(vconsole->interrupt) interrupt = 1;

@@ -77,50 +77,26 @@ Plugin* PluginSet::get_first_plugin()
 }
 
 ptstime PluginSet::plugin_change_duration(ptstime input_position,
-	ptstime input_length,
-	int reverse)
+	ptstime input_length)
 {
 	ptstime result = input_length;
 	Edit *current;
 
-	if(reverse)
+	ptstime input_end = input_position + input_length;
+	for(current = first; current; current = NEXT)
 	{
-		ptstime input_start = input_position - input_length;
-		for(current = last; current; current = PREVIOUS)
+		ptstime start = current->project_pts;
+		ptstime end = current->end_pts();
+		if(start > input_position && start < input_end)
 		{
-			ptstime start = current->project_pts;
-			ptstime end = current->end_pts();
-			if(end > input_start && end < input_position)
-			{
-				result = input_position - end;
-				return result;
-			}
-			else
-			if(start > input_start && start < input_position)
-			{
-				result = input_position - start;
-				return result;
-			}
+			result = start - input_position;
+			return result;
 		}
-	}
-	else
-	{
-		ptstime input_end = input_position + input_length;
-		for(current = first; current; current = NEXT)
+		else
+		if(end > input_position && end < input_end)
 		{
-			ptstime start = current->project_pts;
-			ptstime end = current->end_pts();
-			if(start > input_position && start < input_end)
-			{
-				result = start - input_position;
-				return result;
-			}
-			else
-			if(end > input_position && end < input_end)
-			{
-				result = end - input_position;
-				return result;
-			}
+			result = end - input_position;
+			return result;
 		}
 	}
 	return input_length;

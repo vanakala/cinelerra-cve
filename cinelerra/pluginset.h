@@ -65,8 +65,7 @@ public:
 
 // Return the nearest boundary of any kind in the plugin edits
 	ptstime plugin_change_duration(ptstime input_position,
-		ptstime input_length,
-		int reverse);
+		ptstime input_length);
 	void shift_effects(ptstime start, ptstime length);
 	Edit* insert_edit_after(Edit *previous_edit);
 	Edit* create_edit();

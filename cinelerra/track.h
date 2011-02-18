@@ -243,13 +243,9 @@ public:
 // Longest time from current_position in which nothing changes
 	ptstime edit_change_duration(ptstime input_position, 
 		ptstime input_length, 
-		int reverse, 
-		int test_transitions,
-		int use_nudge);
+		int test_transitions);
 	ptstime plugin_change_duration(ptstime input_position,
-		ptstime input_length,
-		int reverse,
-		int use_nudge);
+		ptstime input_length);
 // Utility for edit_change_duration.
 	int need_edit(Edit *current, int test_transitions);
 // If the edit under position is playable.

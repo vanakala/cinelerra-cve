@@ -1055,17 +1055,14 @@ int Track::need_edit(Edit *current, int test_transitions)
 }
 
 ptstime Track::plugin_change_duration(ptstime input_position,
-	ptstime input_length,
-	int reverse,
-	int use_nudge)
+	ptstime input_length)
 {
-	if(use_nudge) input_position += nudge;
+	input_position += nudge;
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		ptstime new_duration = plugin_set.values[i]->plugin_change_duration(
 			input_position, 
-			input_length, 
-			reverse);
+			input_length);
 		if(new_duration < input_length) input_length = new_duration;
 	}
 	return input_length;
@@ -1073,114 +1070,59 @@ ptstime Track::plugin_change_duration(ptstime input_position,
 
 ptstime Track::edit_change_duration(ptstime input_position, 
 	ptstime input_length, 
-	int reverse, 
-	int test_transitions,
-	int use_nudge)
+	int test_transitions)
 {
 	Edit *current;
 	ptstime edit_length = input_length;
-	if(use_nudge) input_position += nudge;
+	input_position += nudge;
 
-	if(reverse)
+// =================================== forward playback
+// Get first edit on or before position
+	for(current = edits->last; 
+		current && current->project_pts > input_position;
+		current = PREVIOUS)
+		;
+
+	if(current)
 	{
-// ================================= Reverse playback
-// Get first edit on or after position
-		for(current = edits->first; 
-			current && current->end_pts() <= input_position;
-			current = NEXT)
-			;
-
-		if(current)
+		if(current->end_pts() <= input_position)
 		{
-			if(current->project_pts > input_position)
-			{
-// Before first edit
-				;
-			}
-			else
-			if(need_edit(current, test_transitions))
-			{
+// Beyond last edit.
+			;
+		}
+		else
+		if(need_edit(current, test_transitions))
+		{
 // Over an edit of interest.
-				if(input_position - current->project_pts < input_length)
-					edit_length = input_position - current->project_pts + one_unit;
-			}
-			else
-			{
-// Over an edit that isn't of interest.
-// Search for next edit of interest.
-				for(current = PREVIOUS ; 
-					current && 
-					current->end_pts() > input_position - input_length &&
-					!need_edit(current, test_transitions);
-					current = PREVIOUS)
-					;
-
-					if(current && 
-						need_edit(current, test_transitions) &&
-						current->end_pts() > input_position - input_length)
-					edit_length = input_position - current->end_pts() + one_unit;
-			}
+// Next edit is going to require a change.
+			if(current->end_pts() - input_position < input_length)
+				edit_length = current->end_pts() - input_position;
 		}
 		else
 		{
-// Not over an edit.  Try the last edit.
-			current = edits->last;
-			if(current && 
-				((test_transitions && current->transition) ||
-				(!test_transitions && current->asset)))
-				edit_length = input_position - edits->length() + one_unit;
+// Over an edit that isn't of interest.
+// Search for next edit of interest.
+			for(current = NEXT;
+				current && 
+				current->project_pts < input_position + input_length &&
+				!need_edit(current, test_transitions);
+				current = NEXT)
+				;
+
+				if(current && 
+					need_edit(current, test_transitions) &&
+					current->project_pts < input_position + input_length) 
+					edit_length = current->project_pts - input_position;
 		}
 	}
 	else
 	{
-// =================================== forward playback
-// Get first edit on or before position
-		for(current = edits->last; 
-			current && current->project_pts > input_position;
-			current = PREVIOUS)
-			;
-
-		if(current)
-		{
-			if(current->end_pts() <= input_position)
-			{
-// Beyond last edit.
-				;
-			}
-			else
-			if(need_edit(current, test_transitions))
-			{
-// Over an edit of interest.
-// Next edit is going to require a change.
-				if(current->end_pts() - input_position < input_length)
-					edit_length = current->end_pts() - input_position;
-			}
-			else
-			{
-// Over an edit that isn't of interest.
-// Search for next edit of interest.
-				for(current = NEXT;
-					current && 
-					current->project_pts < input_position + input_length &&
-					!need_edit(current, test_transitions);
-					current = NEXT)
-					;
-
-					if(current && 
-						need_edit(current, test_transitions) &&
-						current->project_pts < input_position + input_length) 
-						edit_length = current->project_pts - input_position;
-			}
-		}
-		else
-		{
 // Not over an edit.  Try the first edit.
-			current = edits->first;
-			if(current && 
-				((test_transitions && current->transition) ||
-				(!test_transitions && current->asset)))
-				edit_length = edits->first->project_pts - input_position;
-		}
+		current = edits->first;
+		if(current && 
+			((test_transitions && current->transition) ||
+			(!test_transitions && current->asset)))
+			edit_length = edits->first->project_pts - input_position;
 	}
 
 	if(edit_length < input_length)
