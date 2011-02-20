@@ -73,7 +73,7 @@ public:
 // Flag for interrupted playback
 	int interrupt;
 // flag for last buffer to be played back
-	int last_playback;  
+	int last_playback;
 // if this media type is being rendered asynchronously by threads
 	int asynchronous;
 // Module for every track to dispatch plugins in whether the track is
@@ -87,30 +87,23 @@ public:
 // If a VirtualConsole was created need to start plugins
 	int restart_plugins;
 
-
-
-
 	CommonRender(MWindow *mwindow, RenderEngine *renderengine);
 
 // clean up rendering
 	int virtual stop_rendering() {};
 	int wait_for_completion();
 	virtual int wait_device_completion() {};
-// renders to a device when there's a device
-	virtual int process_buffer(posnum input_len, posnum input_position) {};
 	virtual int get_datatype() {};
 // test region against loop boundaries
-	int get_boundaries(posnum &current_render_length);
+	void get_boundaries(ptstime &current_render_duration, ptstime min_duration);
 // advance the buffer position depending on the loop status
-	void advance_position(posnum current_render_length);
+	int advance_position(ptstime pts, ptstime current_render_duration);
 
 // convert to and from the native units of the render engine
 	virtual posnum tounits(ptstime position, int round);
 	virtual ptstime fromunits(posnum position);
 
 	MWindow *mwindow;
-
-	int input_length;           // frames/samples to read from disk at a time
 };
 
 #endif

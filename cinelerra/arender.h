@@ -67,11 +67,6 @@ public:
 	int first_buffer;
 
 
-
-
-
-
-
 // get the data type for certain commonrender routines
 	int get_datatype();
 
@@ -87,11 +82,6 @@ public:
 
 private:
 // initialize buffer_out
-	int init_meters();
-// Samples since start of playback
-	posnum session_position;
+	void init_meters();
 };
-
-
-
 #endif

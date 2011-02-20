@@ -44,7 +44,7 @@
 
 
 RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
- 	Preferences *preferences, 
+	Preferences *preferences, 
 	TransportCommand *command,
 	Canvas *output,
 	ArrayList<PluginServer*> *plugindb,
@@ -64,6 +64,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	do_video = 0;
 	interrupted = 0;
 	actual_frame_rate = 0;
+	sync_basetime = 0;
 	this->preferences = new Preferences;
 	this->command = new TransportCommand;
 	this->preferences->copy_from(preferences);
@@ -85,7 +86,9 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	output_lock = new Condition(1, "RenderEngine::output_lock");
 	interrupt_lock = new Mutex("RenderEngine::interrupt_lock");
 	first_frame_lock = new Condition(1, "RenderEngine::first_frame_lock");
-	reset_parameters();
+	do_audio = 0;
+	do_video = 0;
+	done = 0;
 }
 
 RenderEngine::~RenderEngine()
@@ -112,9 +115,7 @@ int RenderEngine::arm_command(TransportCommand *command,
 // Since the renderengine is often deleted after the input_lock command it must
 // be locked here as well as in the calling routine.
 
-
 	input_lock->lock("RenderEngine::arm_command");
-
 
 	this->command->copy_from(command);
 
@@ -146,19 +147,11 @@ int RenderEngine::arm_command(TransportCommand *command,
 		vconfig->driver = PLAYBACK_X11;
 	}
 
-
-
 	get_duty();
 
 	if(do_audio)
 	{
 		fragment_len = aconfig->fragment_size;
-// Larger of audio_module_fragment and fragment length adjusted for speed
-// Extra memory must be allocated for rendering slow motion.
-		adjusted_fragment_len = (int64_t)((float)aconfig->fragment_size / 
-			command->get_speed() + 0.5);
-		if(adjusted_fragment_len < aconfig->fragment_size)
-			adjusted_fragment_len = aconfig->fragment_size;
 	}
 
 // Set lock so audio doesn't start until video has started.
@@ -247,7 +240,6 @@ Channel* RenderEngine::get_current_channel()
 				}
 				break;
 			case VIDEO4LINUX2JPEG:
-				
 				break;
 		}
 	}
@@ -289,7 +281,7 @@ double RenderEngine::get_tracking_position()
 		return 0;
 }
 
-int RenderEngine::open_output()
+void RenderEngine::open_output()
 {
 	if(command->realtime)
 	{
@@ -299,7 +291,7 @@ int RenderEngine::open_output()
 			audio = new AudioDevice;
 			if (audio->open_output(config->aconfig, 
 				edl->session->sample_rate, 
-				adjusted_fragment_len,
+				fragment_len,
 				edl->session->audio_channels,
 				edl->session->real_time_playback))
 			{
@@ -316,7 +308,6 @@ int RenderEngine::open_output()
 
 // Initialize sharing
 
-
 // Start playback
 		if(do_audio && do_video)
 		{
@@ -324,11 +315,9 @@ int RenderEngine::open_output()
 			audio->set_vdevice(video);
 		}
 
-
-
 // Retool playback configuration
 		if(do_audio)
-		{	
+		{
 			audio->set_software_positioning(edl->session->playback_software_position);
 			audio->start_playback();
 		}
@@ -347,13 +336,13 @@ int RenderEngine::open_output()
 			video->set_cpus(preferences->processors);
 		}
 	}
-
-	return 0;
 }
 
 void RenderEngine::reset_sync_postime(void)
 {
 	timer.update();
+	if(do_audio)
+		sync_basetime = audio->current_postime(command->get_speed());
 }
 
 ptstime RenderEngine::sync_postime(void)
@@ -363,7 +352,7 @@ ptstime RenderEngine::sync_postime(void)
 // threads join.
 	if(do_audio)
 	{
-		return audio->current_postime(command->get_speed());
+		return audio->current_postime(command->get_speed()) - sync_basetime;
 	}
 
 	if(do_video)
@@ -465,7 +454,7 @@ void RenderEngine::interrupt_playback()
 	interrupt_lock->unlock();
 }
 
-int RenderEngine::close_output()
+void RenderEngine::close_output()
 {
 	if(audio)
 	{
@@ -474,15 +463,12 @@ int RenderEngine::close_output()
 		audio = 0;
 	}
 
-
-
 	if(video)
 	{
 		video->close_all();
 		delete video;
 		video = 0;
 	}
-	return 0;
 }
 
 void RenderEngine::get_output_levels(double *levels, int64_t position)
@@ -511,9 +497,6 @@ void RenderEngine::get_module_levels(ArrayList<double> *module_levels, int64_t p
 		}
 	}
 }
-
-
-
 
 
 void RenderEngine::run()
@@ -565,47 +548,9 @@ void RenderEngine::run()
 	interrupt_lock->unlock();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int RenderEngine::reset_parameters()
-{
-	start_position = 0;
-	follow_loop = 0;
-	end_position = 0;
-	infinite = 0;
-	start_position = 0;
-	do_audio = 0;
-	do_video = 0;
-	done = 0;
-}
-
 int RenderEngine::start_video()
 {
 // start video for realtime
 	if(video) video->start_playback();
 	vrender->start_playback();
 }
-
-

@@ -60,12 +60,12 @@ public:
 	int command;
 	int change_type;
 // lowest numbered second in playback range
-	double start_position;
+	ptstime start_position;
 // highest numbered second in playback range
-	double end_position;
+	ptstime end_position;
 	int infinite;
 // Position used when starting playback
-	double playbackstart;
+	ptstime playbackstart;
 // Send output to device
 	int realtime;
 // Use persistant starting point

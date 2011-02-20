@@ -166,7 +166,7 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 		else
 			end_position = edl->local_session->get_selectionend(1);
 // this prevents a crash if start position is after the loop when playing forwards
-		if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end)  
+		if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end)
 		{
 			start_position = edl->local_session->loop_start;
 		}
@@ -181,9 +181,8 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 		else
 			start_position = edl->local_session->get_selectionstart(1);
 // this prevents a crash if start position is before the loop when playing backwards
-		if (edl->local_session->loop_playback && start_position <= edl->local_session->loop_start)
+		if (edl->local_session->loop_playback && end_position > edl->local_session->loop_end)
 		{
-			start_position = edl->local_session->loop_end;
 			end_position = edl->local_session->loop_end;
 		}
 		break;

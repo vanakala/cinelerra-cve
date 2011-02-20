@@ -200,74 +200,69 @@ void CommonRender::delete_vconsole()
 	vconsole = 0;
 }
 
-int CommonRender::get_boundaries(posnum &current_render_length)
+void CommonRender::get_boundaries(ptstime &current_render_duration, ptstime min_duration)
 {
-	posnum loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
-	posnum loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
-	posnum start_position = tounits(renderengine->command->start_position, 0);
-	posnum end_position = tounits(renderengine->command->end_position, 1);
-
-
-// test absolute boundaries if no loop and not infinite
-	if(renderengine->command->single_frame() || 
-		(!renderengine->edl->local_session->loop_playback && 
-		!renderengine->command->infinite))
-	{
-		if(renderengine->command->get_direction() == PLAY_FORWARD)
-		{
-			if(current_position + current_render_length >= end_position)
-			{
-				last_playback = 1;
-				current_render_length = end_position - current_position;
-			}
-		}
-// reverse playback
-		else
-		{
-			if(current_position - current_render_length <= start_position)
-			{
-				last_playback = 1;
-				current_render_length = current_position - start_position;
-			}
-		}
-	}
-
-// test against loop boundaries
-	if(!renderengine->command->single_frame() &&
-		renderengine->edl->local_session->loop_playback && 
-		!renderengine->command->infinite)
-	{
-		if(renderengine->command->get_direction() == PLAY_FORWARD)
-		{
-			posnum segment_end = current_position + current_render_length;
-			if(segment_end > loop_end)
-			{
-				current_render_length = loop_end - current_position;
-			}
-		}
-		else
-		{
-			posnum segment_end = current_position - current_render_length;
-			if(segment_end < loop_start)
-			{
-				current_render_length = current_position - loop_start;
-			}
-		}
-	}
-
 	if(renderengine->command->single_frame())
-		current_render_length = 1;
+	{
+		last_playback = 1;
+		return;
+	}
 
-	if(current_render_length < 0) current_render_length = 0;
-	return 0;
+	ptstime start_position = renderengine->command->start_position;
+	ptstime end_position = renderengine->command->end_position;
+	int direction = renderengine->command->get_direction();
+
+	if(!renderengine->command->infinite)
+	{
+// test absolute boundaries if no loop and not infinite
+		if(!renderengine->edl->local_session->loop_playback)
+		{
+			if(direction == PLAY_FORWARD)
+			{
+				if(current_postime + current_render_duration >= end_position)
+				{
+					last_playback = 1;
+					current_render_duration = end_position - current_postime;
+				}
+			}
+// reverse playback
+			else
+			{
+				if(current_postime - current_render_duration <= start_position)
+				{
+					last_playback = 1;
+					current_render_duration = current_postime - start_position;
+				}
+			}
+		}
+		else
+// test against loop boundaries
+		{
+			ptstime loop_pts;
+			if(renderengine->command->get_direction() == PLAY_FORWARD)
+			{
+				loop_pts = renderengine->edl->local_session->loop_end;
+
+				if(current_postime + current_render_duration > loop_pts)
+					current_render_duration = loop_pts - current_postime;
+			}
+			else
+			{
+				loop_pts = renderengine->edl->local_session->loop_start;
+				if(current_postime - current_render_duration < loop_pts)
+					current_render_duration = current_postime - loop_pts;
+			}
+		}
+	}
+
+	if(current_render_duration < min_duration) 
+		current_render_duration = min_duration;
 }
 
 void CommonRender::run()
 {
 	start_lock->unlock();
 }
-
-
 
 
 CommonRender::CommonRender(MWindow *mwindow, RenderEngine *renderengine)
@@ -284,47 +279,47 @@ CommonRender::CommonRender(MWindow *mwindow, RenderEngine *renderengine)
 	asynchronous = 1;
 }
 
-
 int CommonRender::wait_for_completion()
 {
 	join();
 }
 
 
-
-
-
-void CommonRender::advance_position(posnum current_render_length)
+int CommonRender::advance_position(ptstime current_pts, ptstime current_render_duration)
 {
-// Using integer arithmetics here to correct to round time
-//    to physical units
-	posnum loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
-	posnum loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
-	posnum length = current_render_length;
+	int result = 0;
 
 // advance the playback position
-	current_position = tounits(current_postime, 1);
 	if(renderengine->command->get_direction() == PLAY_REVERSE)
-		current_position -= length;
+		current_postime = current_pts - current_render_duration;
 	else
-		current_position += length;
+		current_postime = current_pts + current_render_duration;
 
 // test loop again
 	if(renderengine->edl->local_session->loop_playback && 
 		!renderengine->command->infinite)
 	{
+		ptstime loop_end = renderengine->edl->local_session->loop_end;
+		ptstime loop_start = renderengine->edl->local_session->loop_start;
 		if(renderengine->command->get_direction() == PLAY_REVERSE)
 		{
-			if(current_position <= loop_start)
-				current_position = loop_end;
+			if(current_postime <= loop_start)
+			{
+				current_postime = loop_end;
+				result = 1;
+			}
 		}
 		else
 		{
-			if(current_position >= loop_end)
-				current_position = loop_start + (current_position - loop_end);
+			if(current_postime >= loop_end)
+			{
+				current_postime = loop_start;
+				result = 1;
+			}
 		}
 	}
-	current_postime = fromunits(current_position);
+	current_position = tounits(current_postime, 1);
+	return result;
 }
 
 posnum CommonRender::tounits(ptstime position, int round)

@@ -268,16 +268,13 @@ void VRender::run()
 	ptstime current_pts, start_pts, end_pts;
 	ptstime init_pos = current_postime;
 // Number of frames before next reconfigure
-	posnum current_input_length;
+	ptstime current_input_duration;
 	ptstime len_pts;
-// Number of frames to skip.
-	ptstime frame_step;
 	int direction = renderengine->command->get_direction();
 	first_frame = 1;
 
 	framerate_counter = 0;
 	framerate_timer.update();
-
 	start_lock->unlock();
 
 	while(!done)
@@ -289,13 +286,13 @@ void VRender::run()
 			last_playback);
 
 		if(reconfigure) restart_playback();
-
 		process_buffer(current_postime);
+		current_postime = video_out->get_pts();
 		if(last_playback || renderengine->video->interrupt 
 				|| renderengine->command->single_frame())
 		{
 			flash_output();
-			frame_step = video_out->get_duration();
+			current_input_duration = video_out->get_duration();
 			done = 1;
 		}
 		else
@@ -304,7 +301,6 @@ void VRender::run()
 			if(first_frame)
 			{
 				renderengine->first_frame_lock->unlock();
-				first_frame = 0;
 				renderengine->reset_sync_postime();
 				flash_output();
 			}
@@ -312,8 +308,7 @@ void VRender::run()
 			current_pts = renderengine->sync_postime() *
 				renderengine->command->get_speed();
 // earliest time by which the frame needs to be shown.
-			start_pts = video_out->get_pts();
-
+			start_pts = current_postime;
 			if((len_pts = video_out->get_duration()) < EPSILON){
 // We have no current frame
 				len_pts = fromunits(1);
@@ -340,18 +335,18 @@ void VRender::run()
 				if(renderengine->edl->session->video_every_frame)
 				{
 // User wants every frame.
-					frame_step = len_pts;
+					current_input_duration = len_pts;
 				}
 				else
 				{
 // Get the frames to skip.
-					frame_step = current_pts - end_pts + len_pts;
+					current_input_duration = current_pts - end_pts + len_pts;
 				}
 			}
 			else
 			{
 // Frame rendered early or just in time.
-				frame_step = len_pts;
+				current_input_duration = len_pts;
 				if(start_pts > current_pts)
 				{
 					int64_t delay_time = (int64_t)((start_pts - current_pts) * 1000);
@@ -360,18 +355,14 @@ void VRender::run()
 // Flash frame now.
 				flash_output();
 			}
+			first_frame = 0;
 		}
 
 // advance position in project
-		current_input_length = tounits(frame_step, 1);
-
-// Subtract frame_step in a loop to allow looped playback to drain
 		if(!last_playback)
 		{
-			get_boundaries(current_input_length);
-			advance_position(current_input_length);
-			frame_step -= fromunits(current_input_length);
-			current_input_length = tounits(frame_step);
+			get_boundaries(current_input_duration, video_out->get_duration());
+			first_frame = advance_position(video_out->get_pts(), current_input_duration);
 		}
 
 // Update tracking.
@@ -407,7 +398,6 @@ void VRender::run()
 VRender::VRender(MWindow *mwindow, RenderEngine *renderengine)
  : CommonRender(mwindow, renderengine)
 {
-	input_length = 0;
 	asynchronous = 0;     // render 1 frame at a time
 	framerate_counter = 0;
 	video_out = 0;

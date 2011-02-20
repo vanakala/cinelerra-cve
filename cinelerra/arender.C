@@ -108,7 +108,7 @@ int ARender::calculate_history_size()
 	}
 }
 
-int ARender::init_meters()
+void ARender::init_meters()
 {
 // not providing enough peaks results in peaks that are ahead of the sound
 	if(level_samples) delete [] level_samples;
@@ -133,7 +133,6 @@ int ARender::init_meters()
 			for(int i = 0; i < total_peaks; i++)
 				level_history[j][i] = 0;
 	}
-	return 0;
 }
 
 void ARender::init_output_buffers()
@@ -146,9 +145,9 @@ void ARender::init_output_buffers()
 			if(i < renderengine->edl->session->audio_channels)
 			{
 				if(audio_out[i])
-					audio_out[i]->check_buffer(renderengine->adjusted_fragment_len);
+					audio_out[i]->check_buffer(renderengine->fragment_len);
 				else
-					audio_out[i] = new AFrame(renderengine->adjusted_fragment_len);
+					audio_out[i] = new AFrame(renderengine->fragment_len);
 				audio_out[i]->samplerate = renderengine->edl->session->sample_rate;
 				audio_out[i]->channel = i;
 			}
@@ -179,8 +178,8 @@ ptstime ARender::fromunits(posnum position)
 int ARender::process_buffer(AFrame **buffer_out)
 {
 	int result = 0;
-	int fragment_len =  buffer_out[0]->source_length;
-	int samplerate =  buffer_out[0]->samplerate;
+	int fragment_len = buffer_out[0]->source_length;
+	int samplerate = buffer_out[0]->samplerate;
 	current_postime = buffer_out[0]->pts;
 	ptstime fragment_duration = (ptstime)fragment_len / samplerate;
 	ptstime fragment_end = current_postime + fragment_duration;
@@ -220,8 +219,6 @@ int ARender::process_buffer(int input_len, ptstime input_postime)
 		input_postime,
 		last_playback);
 
-// advance counters
-	session_position += input_len;
 	return result;
 }
 
@@ -255,7 +252,8 @@ int ARender::wait_device_completion()
 
 void ARender::run()
 {
-	posnum current_input_length;
+	samplenum current_input_length;
+	ptstime current_input_duration;
 	int reconfigure = 0;
 	int revert = 0;
 
@@ -265,23 +263,24 @@ void ARender::run()
 	while(!done && !interrupt && !last_playback)
 	{
 		current_input_length = renderengine->fragment_len;
+		current_input_duration = fromunits(current_input_length);
 
-		get_boundaries(current_input_length);
+		get_boundaries(current_input_duration, EPSILON);
 
-		if(current_input_length)
+		if(current_input_duration)
 		{
-			ptstime len_pts, len0_pts;
-			len0_pts = len_pts = fromunits(current_input_length);
-			reconfigure = vconsole->test_reconfigure(len_pts,
+			ptstime duration;
+			duration = current_input_duration;
+			reconfigure = vconsole->test_reconfigure(current_input_duration,
 				last_playback);
-			if(len_pts < len0_pts && 
+			if(current_input_duration < duration && 
 				renderengine->command->get_direction() == PLAY_REVERSE)
 			{
-				current_postime += len_pts;
-				len_pts = len0_pts - len_pts;
+				current_postime += current_input_duration;
+				current_input_duration = duration - current_input_duration;
 				revert = 1;
 			}
-			current_input_length = tounits(len_pts, 1);
+			current_input_length = tounits(current_input_duration, 1);
 
 			if(reconfigure) restart_playback();
 		}
@@ -309,9 +308,10 @@ void ARender::run()
 		if(revert)
 		{
 			current_input_length = renderengine->fragment_len;
+			current_input_duration = fromunits(current_input_length);
 			revert = 0;
 		}
-		advance_position(current_input_length);
+		advance_position(audio_out[0]->pts, current_input_duration);
 
 		if(vconsole->interrupt) interrupt = 1;
 	}

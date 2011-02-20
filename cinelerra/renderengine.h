@@ -84,8 +84,8 @@ public:
 // Start the command
 	int start_command();
 
-	int open_output();
-	int close_output();
+	void open_output();
+	void close_output();
 // return position to synchronize video against
 	ptstime sync_postime(void);
 // Called by VRender to reset the timers once the first frame is done.
@@ -135,26 +135,10 @@ public:
 	ChannelDB *channeldb;
 
 // Samples in audio buffer to process
-	int64_t fragment_len;
-// Samples to send to audio device after speed adjustment
-	int64_t adjusted_fragment_len;              
+	int fragment_len;
+
 // CICaches for use if no playbackengine exists
 	CICache *audio_cache, *video_cache;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // constructing with an audio device forces output buffer allocation
 // constructing without an audio device puts in one buffer at a time mode
@@ -163,30 +147,11 @@ public:
 		VideoDevice *video = 0,
 		PlaybackEngine *playbackengine = 0);
 
-// buffersize is in samples
-	int reset_parameters();
-
 // start video since vrender is the master
 	int start_video();
 
-
-// information for playback
-	int follow_loop;       // loop if mwindow is looped
-	int infinite;          // don't stop rendering at the end of the range or loops
-
-	int64_t start_position;      // lowest numbered sample in playback range
-	int64_t end_position;        // highest numbered sample in playback range
-	int64_t current_sample;
-	int every_frame;
-
+	ptstime sync_basetime;
 	MWindow *mwindow;
 };
-
-
-
-
-
-
-
 
 #endif
