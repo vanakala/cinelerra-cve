@@ -43,13 +43,12 @@ public:
 	int timed_lock(int microseconds, const char *location = 0);
 	int get_value();
 
-    pthread_cond_t cond;
-    pthread_mutex_t mutex;
-    int value;
+	pthread_cond_t cond;
+	pthread_mutex_t mutex;
+	int value;
 	int init_value;
 	int is_binary;
 	const char *title;
 };
-
 
 #endif

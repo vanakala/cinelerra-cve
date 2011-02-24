@@ -39,8 +39,8 @@ Condition::Condition(int init_value, const char *title, int is_binary)
 
 Condition:: ~Condition()
 {
-    pthread_cond_destroy(&cond);
-    pthread_mutex_destroy(&mutex);
+	pthread_cond_destroy(&cond);
+	pthread_mutex_destroy(&mutex);
 #ifndef NO_GUICAST
 	UNSET_ALL_LOCKS(this);
 #endif
@@ -48,8 +48,8 @@ Condition:: ~Condition()
 
 void Condition::reset()
 {
-    pthread_cond_destroy(&cond);
-    pthread_mutex_destroy(&mutex);
+	pthread_cond_destroy(&cond);
+	pthread_mutex_destroy(&mutex);
 #ifndef NO_GUICAST
 	UNSET_ALL_LOCKS(this);
 #endif
@@ -60,11 +60,11 @@ void Condition::reset()
 
 void Condition::lock(const char *location)
 {
-    pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(&mutex);
 #ifndef NO_GUICAST
 	SET_CLOCK(this, title, location);
 #endif
-    while(value <= 0) pthread_cond_wait(&cond, &mutex);
+	while(value <= 0) pthread_cond_wait(&cond, &mutex);
 #ifndef NO_GUICAST
 	UNSET_LOCK2
 #endif
@@ -72,58 +72,56 @@ void Condition::lock(const char *location)
 		value = 0;
 	else
 		value--;
-    pthread_mutex_unlock(&mutex);
+	pthread_mutex_unlock(&mutex);
 }
 
 void Condition::unlock()
 {
-    pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(&mutex);
 // The lock trace is created and removed by the acquirer
-    if(is_binary)
+	if(is_binary)
 		value = 1;
 	else
 		value++;
-    pthread_cond_signal(&cond);
-    pthread_mutex_unlock(&mutex);
+	pthread_cond_signal(&cond);
+	pthread_mutex_unlock(&mutex);
 }
 
 int Condition::timed_lock(int microseconds, const char *location)
 {
-    struct timeval now;
-    struct timespec timeout;
-    int result = 0;
+	struct timeval now;
+	struct timespec timeout;
+	int result = 0;
 
-    pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(&mutex);
 #ifndef NO_GUICAST
 	SET_CLOCK(this, title, location);
 #endif
-    gettimeofday(&now, 0);
-    timeout.tv_sec = now.tv_sec + microseconds / 1000000;
-    timeout.tv_nsec = now.tv_usec * 1000 + (microseconds % 1000000) * 1000;
+	gettimeofday(&now, 0);
+	timeout.tv_sec = now.tv_sec + microseconds / 1000000;
+	timeout.tv_nsec = now.tv_usec * 1000 + (microseconds % 1000000) * 1000;
 
-    while(value <= 0 && result != ETIMEDOUT)
+	while(value <= 0 && result != ETIMEDOUT)
 	{
 		result = pthread_cond_timedwait(&cond, &mutex, &timeout);
-    }
+	}
 #ifndef NO_GUICAST
 		UNSET_LOCK2
 #endif
 
-    if(result == ETIMEDOUT) 
+	if(result == ETIMEDOUT) 
 	{
-//printf("Condition::timed_lock 1 %s %s\n", title, location);
 		result = 1;
-    } 
-	else 
+	}
+	else
 	{
-//printf("Condition::timed_lock 2 %s %s\n", title, location);
 		if(is_binary)
 			value = 0;
 		else
 			value--;
 		result = 0;
-    }
-    pthread_mutex_unlock(&mutex);
+	}
+	pthread_mutex_unlock(&mutex);
 	return result;
 }
 
