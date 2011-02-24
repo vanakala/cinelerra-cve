@@ -300,13 +300,18 @@ void VRender::run()
 		{
 			if(first_frame)
 			{
-				renderengine->first_frame_lock->unlock();
-				renderengine->reset_sync_postime();
 				flash_output();
+				renderengine->first_frame_lock->unlock();
+
+				if(!renderengine->first_audio_lock->get_value())
+					renderengine->first_audio_lock->lock("VRender::run");
+
+				renderengine->reset_sync_postime();
 			}
 // Determine the delay until the frame needs to be shown.
 			current_pts = renderengine->sync_postime() *
 				renderengine->command->get_speed();
+
 // earliest time by which the frame needs to be shown.
 			start_pts = current_postime;
 			if((len_pts = video_out->get_duration()) < EPSILON){
@@ -388,6 +393,7 @@ void VRender::run()
 
 // In case we were interrupted before the first loop
 	renderengine->first_frame_lock->unlock();
+	renderengine->first_audio_lock->unlock();
 	stop_plugins();
 }
 

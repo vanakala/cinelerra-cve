@@ -85,7 +85,8 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	start_lock = new Condition(1, "RenderEngine::start_lock");
 	output_lock = new Condition(1, "RenderEngine::output_lock");
 	interrupt_lock = new Mutex("RenderEngine::interrupt_lock");
-	first_frame_lock = new Condition(1, "RenderEngine::first_frame_lock");
+	first_frame_lock = new Condition(1, "RenderEngine::first_frame_lock", 1);
+	first_audio_lock = new Condition(1, "RenderEngine::first_audio_lock", 1);
 	do_audio = 0;
 	do_video = 0;
 	done = 0;
@@ -104,12 +105,11 @@ RenderEngine::~RenderEngine()
 	delete output_lock;
 	delete interrupt_lock;
 	delete first_frame_lock;
+	delete first_audio_lock;
 	delete config;
 }
 
-int RenderEngine::arm_command(TransportCommand *command,
-	int &current_vchannel, 
-	int &current_achannel)
+int RenderEngine::arm_command(TransportCommand *command)
 {
 // Prevent this renderengine from accepting another command until finished.
 // Since the renderengine is often deleted after the input_lock command it must
@@ -154,24 +154,22 @@ int RenderEngine::arm_command(TransportCommand *command,
 		fragment_len = aconfig->fragment_size;
 	}
 
-// Set lock so audio doesn't start until video has started.
-	if(do_video)
+// Set locks to enable audio and video start simultaneously
+	if(do_video && do_audio)
 	{
-		while(first_frame_lock->get_value() > 0) 
-			first_frame_lock->lock("RenderEngine::arm_command");
+		first_frame_lock->lock("RenderEngine::arm_command");
+		first_audio_lock->lock("RenderEngine::arm_command");
 	}
 	else
-// Set lock so audio doesn't wait for video which is never to come.
+// Only audio or video no locks needed
 	{
-		while(first_frame_lock->get_value() <= 0)
-			first_frame_lock->unlock();
+		first_frame_lock->unlock();
+		first_audio_lock->unlock();
 	}
 
 	open_output();
 	create_render_threads();
 	arm_render_threads();
-
-	return 0;
 }
 
 void RenderEngine::get_duty()
@@ -273,7 +271,7 @@ void RenderEngine::set_vcache(CICache *cache)
 }
 
 
-double RenderEngine::get_tracking_position()
+ptstime RenderEngine::get_tracking_position()
 {
 	if(playback_engine) 
 		return playback_engine->get_tracking_position();
@@ -375,7 +373,7 @@ PluginServer* RenderEngine::scan_plugindb(char *title,
 	return 0;
 }
 
-int RenderEngine::start_command()
+void RenderEngine::start_command()
 {
 	if(command->realtime)
 	{
@@ -385,7 +383,6 @@ int RenderEngine::start_command()
 		start_lock->lock("RenderEngine::start_command 2");
 		start_lock->unlock();
 	}
-	return 0;
 }
 
 void RenderEngine::arm_render_threads()
@@ -517,9 +514,8 @@ void RenderEngine::run()
 		if(command->single_frame())
 		{
 			playback_engine->tracking_position = command->playbackstart;
-			if(command->command != CURRENT_FRAME){
+			if(command->command != CURRENT_FRAME)
 				playback_engine->stop_tracking();
-			}
 		}
 		else
 		{
@@ -528,14 +524,12 @@ void RenderEngine::run()
 			{
 				if(do_audio)
 					playback_engine->tracking_position = 
-						(double)arender->current_position / 
-							command->get_edl()->session->sample_rate;
+						arender->current_postime;
 				else
 				if(do_video)
 				{
 					playback_engine->tracking_position = 
-						(double)vrender->current_position / 
-							command->get_edl()->session->frame_rate;
+						vrender->current_postime;
 				}
 				playback_engine->stop_tracking();
 			}

@@ -38,17 +38,15 @@ AudioALSA::AudioALSA(AudioDevice *device)
  : AudioLowLevel(device)
 {
 	samples_written = 0;
-	timer = new Timer;
 	delay = 0;
-	timer_lock = new Mutex("AudioALSA::timer_lock");
+	timing_lock = new Mutex("AudioALSA::timing_lock");
 	interrupted = 0;
 	dsp_out = 0;
 }
 
 AudioALSA::~AudioALSA()
 {
-	delete timer_lock;
-	delete timer;
+	delete timing_lock;
 }
 
 void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
@@ -170,19 +168,19 @@ snd_pcm_format_t AudioALSA::translate_format(int format)
 {
 	switch(format)
 	{
-		case 8:
-			return SND_PCM_FORMAT_S8;
-			break;
-		case 16:
-			return SND_PCM_FORMAT_S16_LE;
-			break;
-		case 24:
-			return SND_PCM_FORMAT_S24_LE;
-			break;
-		case 32:
-			return SND_PCM_FORMAT_S32_LE;
-			break;
+	case 8:
+		return SND_PCM_FORMAT_S8;
+
+	case 16:
+		return SND_PCM_FORMAT_S16_LE;
+
+	case 24:
+		return SND_PCM_FORMAT_S24_LE;
+
+	case 32:
+		return SND_PCM_FORMAT_S32_LE;
 	}
+	return SND_PCM_FORMAT_UNKNOWN;
 }
 
 int AudioALSA::set_params(snd_pcm_t *dsp, 
@@ -199,7 +197,7 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 
 	if(snd_pcm_hw_params_any(dsp, params) < 0)
 	{
-		errorbox("ALSA: no PCM configurations available");
+		errormsg("ALSA: no PCM configurations available");
 		return 1;
 	}
 
@@ -207,7 +205,7 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		params,
 		SND_PCM_ACCESS_RW_INTERLEAVED))
 	{
-		errorbox("ALSA: failed to set up interleaved device access.");
+		errormsg("ALSA: failed to set up interleaved device access.");
 		return 1;
 	}
 
@@ -215,7 +213,7 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		params, 
 		translate_format(bits)))
 	{
-		errorbox("ALSA: failed to set output format.");
+		errormsg("ALSA: failed to set output format.");
 		return 1;
 	}
 
@@ -223,7 +221,7 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		params, 
 		channels))
 	{
-		errorbox("ALSA: Configured ALSA device does not support %d channel operation.", channels);
+		errormsg("ALSA: Configured ALSA device does not support %d channel operation.", channels);
 		return 1;
 	}
 
@@ -232,7 +230,7 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		(unsigned int*)&samplerate, 
 		(int*)0))
 	{
-		errorbox("ALSA: Configured ALSA device does not support %u Hz playback.", samplerate);
+		errormsg("ALSA: Configured ALSA device does not support %u Hz playback.", samplerate);
 		return 1;
 	}
 
@@ -246,8 +244,9 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 	}
 	else
 	{
-		buffer_time = (int)((int64_t)samples * 1000000 * 2 / samplerate + 0.5);
-		period_time = samples * samplerate / 1000000;
+		buffer_time = (int)((int64_t)samples * 1000000 * 4 / samplerate + 0.5);
+		period_time = ((int64_t)samples * 1000000) / samplerate;
+		sleep_delay = period_time / 4;
 	}
 
 	snd_pcm_hw_params_set_buffer_time_near(dsp, 
@@ -260,7 +259,7 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		(int*)0);
 	if(snd_pcm_hw_params(dsp, params) < 0)
 	{
-		errorbox("Failed to set ALSA hw_params");
+		errormsg("Failed to set ALSA hw_params");
 		return 1;
 	}
 
@@ -270,7 +269,8 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 	snd_pcm_hw_params_get_buffer_size(params, &buffer_size);
 
 	snd_pcm_sw_params_current(dsp, swparams);
-	int n = chunk_size;
+	snd_pcm_uframes_t n = chunk_size;
+
 	snd_pcm_sw_params_set_avail_min(dsp, swparams, n);
 	if(snd_pcm_sw_params(dsp, swparams) < 0)
 	{
@@ -307,7 +307,7 @@ int AudioALSA::open_input()
 		device->in_samplerate,
 		device->in_samples))
 	{
-		errorbox("ALSA: open_input: set_params failed. Aborting sampling.");
+		errormsg("ALSA: open_input: set_params failed. Aborting sampling.");
 		close_input();
 		return 1;
 	}
@@ -340,11 +340,10 @@ int AudioALSA::open_output()
 		device->out_samplerate,
 		device->out_samples))
 	{
-		errorbox("ALSA: open_output: set_params failed.  Aborting playback.");
+		errormsg("ALSA: open_output: set_params failed.  Aborting playback.");
 		close_output();
 		return 1;
 	}
-	timer->update();
 	return 0;
 }
 
@@ -387,14 +386,15 @@ void AudioALSA::close_all()
 	interrupted = 0;
 }
 
-// Undocumented
 samplenum AudioALSA::device_position()
 {
-	timer_lock->lock("AudioALSA::device_position");
-	samplenum result = samples_written + 
-		timer->get_scaled_difference(device->out_samplerate) - 
-		delay;
-	timer_lock->unlock();
+	snd_pcm_sframes_t delay;
+	samplenum result;
+
+	timing_lock->lock("AudioALSA::device_position");
+	snd_pcm_delay(get_output(), &delay);
+	result = samples_written - delay;
+	timing_lock->unlock();
 	return result;
 }
 
@@ -431,18 +431,26 @@ int AudioALSA::write_buffer(char *buffer, int size)
 {
 // Don't give up and drop the buffer on the first error.
 	int attempts = 0;
-	int done = 0;
-	int samples = size / (device->out_bits / 8) / device->get_ochannels();
+	snd_pcm_sframes_t samples = size / (device->out_bits / 8) / device->get_ochannels();
+	snd_pcm_sframes_t written, avail;
 
 	if(!get_output()) return 0;
+// Wait until enough buffer frees
+// We want to avoid snd_pcm_writei blocking
+	snd_pcm_wait(get_output(), -1);
+	while((avail = snd_pcm_avail(get_output())) < samples)
+	{
+		usleep(sleep_delay);
+	}
 
-	while(attempts < 2 && !done && !interrupted)
+	timing_lock->lock("AudioALSA::write_buffer");
+	while(attempts < 2 && !interrupted)
 	{
 // Buffers written must be equal to period_time
 		device->Thread::enable_cancel();
-		if(snd_pcm_writei(get_output(), 
+		if((written = snd_pcm_writei(get_output(), 
 			buffer, 
-			samples) < 0)
+			samples)) < 0)
 		{
 			device->Thread::disable_cancel();
 			errormsg("ALSA write_buffer underrun at %.3f",
@@ -453,19 +461,13 @@ int AudioALSA::write_buffer(char *buffer, int size)
 		}
 		else
 		{
+			samples_written += written;
 			device->Thread::disable_cancel();
-			done = 1;
+			break;
 		}
 	}
+	timing_lock->unlock();
 
-	if(done)
-	{
-		timer_lock->lock("AudioALSA::write_buffer");
-		snd_pcm_delay(get_output(), &delay);
-		timer->update();
-		samples_written += samples;
-		timer_lock->unlock();
-	}
 	return 0;
 }
 
@@ -481,8 +483,10 @@ void AudioALSA::interrupt_playback()
 		interrupted = 1;
 // Interrupts the playback but may not have caused snd_pcm_writei to exit.
 // With some soundcards it causes snd_pcm_writei to freeze for a few seconds.
-		if(!device->out_config->interrupt_workaround)
-			snd_pcm_drop(get_output());
+// Use lock to avoid snd_pcm_drop called during snd_pcm_writei
+		timing_lock->lock("AudioALSA::interrupt_playback");
+		snd_pcm_drop(get_output());
+		timing_lock->unlock();
 	}
 }
 

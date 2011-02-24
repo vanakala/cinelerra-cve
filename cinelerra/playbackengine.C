@@ -140,11 +140,8 @@ void PlaybackEngine::delete_render_engine()
 
 void PlaybackEngine::arm_render_engine()
 {
-	int current_achannel = 0, current_vchannel = 0;
 	if(render_engine)
-		render_engine->arm_command(command,
-			current_achannel,
-			current_vchannel);
+		render_engine->arm_command(command);
 }
 
 void PlaybackEngine::start_render_engine()

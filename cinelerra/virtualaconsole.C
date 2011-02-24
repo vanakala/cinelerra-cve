@@ -298,15 +298,17 @@ int VirtualAConsole::process_buffer(int len,
 // Wait until video is ready
 		if(arender->first_buffer)
 		{
-			renderengine->first_frame_lock->lock("VirtualAConsole::process_buffer");
-			arender->first_buffer = 0;
+			if(!renderengine->first_frame_lock->get_value())
+				renderengine->first_frame_lock->lock("VirtualAConsole::process_buffer");
 		}
 		if(!renderengine->audio->get_interrupted())
-		{
 			renderengine->audio->write_buffer(in_process,
 				real_output_len);
+		if(arender->first_buffer)
+		{
+			renderengine->first_audio_lock->unlock();
+			arender->first_buffer = 0;
 		}
-
 		if(renderengine->audio->get_interrupted()) interrupt = 1;
 	}
 	return result;

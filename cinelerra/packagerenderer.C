@@ -177,7 +177,6 @@ void PackageRenderer::create_output()
 
 void PackageRenderer::create_engine()
 {
-	int current_achannel = 0, current_vchannel = 0;
 	audio_read_length = command->get_edl()->session->sample_rate;
 
 	aconfig->fragment_size = audio_read_length;
@@ -190,7 +189,7 @@ void PackageRenderer::create_engine()
 		0);
 	render_engine->set_acache(audio_cache);
 	render_engine->set_vcache(video_cache);
-	render_engine->arm_command(command, current_achannel, current_vchannel);
+	render_engine->arm_command(command);
 
 	if(package->use_brender)
 	{

@@ -72,7 +72,7 @@ public:
 	virtual void init_tracking();
 	virtual void stop_tracking();
 // The playback cursor calls this to calculate the current tracking position
-	virtual double get_tracking_position();
+	virtual ptstime get_tracking_position();
 // Reset the transport after completion
 	virtual void update_transport(int command, int paused) {};
 // The render engines call this to update tracking variables in the playback engine.
@@ -87,7 +87,7 @@ public:
 // Maintain playback cursor on GUI
 	int tracking_active;
 // Tracking variables updated by render engines
-	double tracking_position;
+	ptstime tracking_position;
 // Not accurate until the first update_tracking, at which time
 // tracking_active is incremented to 2.
 	Timer tracking_timer;

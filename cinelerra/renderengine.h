@@ -78,11 +78,9 @@ public:
 
 	void run();
 // Sends the command sequence, compensating for network latency
-	int arm_command(TransportCommand *command,
-		int &current_vchannel, 
-		int &current_achannel);
+	int arm_command(TransportCommand *command);
 // Start the command
-	int start_command();
+	void start_command();
 
 	void open_output();
 	void close_output();
@@ -114,6 +112,7 @@ public:
 	Condition *output_lock;
 // Lock out audio and synchronization timers until first frame is done
 	Condition *first_frame_lock;
+	Condition *first_audio_lock;
 // Lock out interrupts before and after renderengine is active
 	Mutex *interrupt_lock;
 

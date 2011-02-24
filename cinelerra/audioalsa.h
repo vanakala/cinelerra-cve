@@ -61,9 +61,9 @@ private:
 	snd_pcm_t* get_input();
 	snd_pcm_t *dsp_in, *dsp_out, *dsp_duplex;
 	samplenum samples_written;
-	Timer *timer;
 	snd_pcm_sframes_t delay;
-	Mutex *timer_lock;
+	int sleep_delay;
+	Mutex *timing_lock;
 	int interrupted;
 };
 
