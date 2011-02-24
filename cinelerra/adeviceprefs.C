@@ -254,7 +254,7 @@ int ADevicePrefs::create_oss_objs()
 	return 0;
 }
 
-int ADevicePrefs::create_alsa_objs()
+void ADevicePrefs::create_alsa_objs()
 {
 #ifdef HAVE_ALSA
 	char *output_char;
@@ -322,17 +322,7 @@ int ADevicePrefs::create_alsa_objs()
 	y1 += alsa_bits->get_h() + 20 + 5;
 	x1 = x2;
 
-	if(mode == MODEPLAY)
-	{
-		dialog->add_subwindow(alsa_workaround = 
-			new BC_CheckBox(x1, 
-				y1, 
-				&out_config->interrupt_workaround,
-				_("Stop playback locks up.")));
-	}
 #endif
-
-	return 0;
 }
 
 int ADevicePrefs::create_esound_objs()

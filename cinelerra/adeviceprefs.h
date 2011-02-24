@@ -61,7 +61,7 @@ public:
 private:
 	int create_oss_objs();
 	int create_esound_objs();
-	int create_alsa_objs();
+	void create_alsa_objs();
 
 	int delete_oss_objs();
 	int delete_esound_objs();

@@ -63,7 +63,6 @@ public:
 // ALSA options
 	char alsa_out_device[BCTEXTLEN];
 	int alsa_out_bits;
-	int interrupt_workaround;
 };
 
 // This structure is passed to the driver

@@ -46,7 +46,6 @@ AudioOutConfig::AudioOutConfig(int duplex)
 
 	sprintf(alsa_out_device, "default");
 	alsa_out_bits = 16;
-	interrupt_workaround = 0;
 }
 
 AudioOutConfig::~AudioOutConfig()
@@ -67,22 +66,15 @@ int AudioOutConfig::operator==(AudioOutConfig &that)
 		driver == that.driver &&
 		EQUIV(audio_offset, that.audio_offset) &&
 
-
 		!strcmp(oss_out_device[0], that.oss_out_device[0]) && 
 		(oss_out_bits == that.oss_out_bits) && 
-
-
 
 		!strcmp(esound_out_server, that.esound_out_server) && 
 		(esound_out_port == that.esound_out_port) && 
 
-
-
 		!strcmp(alsa_out_device, that.alsa_out_device) &&
-		(alsa_out_bits == that.alsa_out_bits) &&
-		(interrupt_workaround == that.interrupt_workaround);
+		(alsa_out_bits == that.alsa_out_bits);
 }
-
 
 
 AudioOutConfig& AudioOutConfig::operator=(AudioOutConfig &that)
@@ -108,7 +100,6 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 
 	strcpy(alsa_out_device, src->alsa_out_device);
 	alsa_out_bits = src->alsa_out_bits;
-	interrupt_workaround = src->interrupt_workaround;
 }
 
 int AudioOutConfig::load_defaults(BC_Hash *defaults)
@@ -132,12 +123,11 @@ int AudioOutConfig::load_defaults(BC_Hash *defaults)
 
 	defaults->get("ALSA_OUT_DEVICE", alsa_out_device);
 	alsa_out_bits = defaults->get("ALSA_OUT_BITS", alsa_out_bits);
-	interrupt_workaround = defaults->get("ALSA_INTERRUPT_WORKAROUND", interrupt_workaround);
 
 	sprintf(string, "ESOUND_OUT_SERVER_%d", duplex);
 	defaults->get(string, esound_out_server);
 	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
-	esound_out_port =             defaults->get(string, esound_out_port);
+	esound_out_port = defaults->get(string, esound_out_port);
 
 	return 0;
 }
@@ -165,7 +155,6 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults)
 
 	defaults->update("ALSA_OUT_DEVICE", alsa_out_device);
 	defaults->update("ALSA_OUT_BITS", alsa_out_bits);
-	defaults->update("ALSA_INTERRUPT_WORKAROUND", interrupt_workaround);
 
 	sprintf(string, "ESOUND_OUT_SERVER_%d", duplex);
 	defaults->update(string, esound_out_server);
