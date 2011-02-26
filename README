@@ -2,7 +2,7 @@ This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of September 2, 2010
+This file describes status of this branch as of February 26, 2011
 
 Contents.
 
@@ -55,8 +55,17 @@ Changes in this branch:
 - cleanup: removed unused sources from cinelerra, guicast, libmpeg3, plugins
 - added SOWT audio decoder
 - multiline comments of clips and labels are not truncated
+- implemented pts based timing on video and audio making possible
+    projects without constant framerate
+- improved synchronization with Alsa output: no jumping around on playback
+- projects created or modified with this branch are incompatible with
+    other branches
+- removed playback direction dependancy from core rendering
+- replaced samplerate based timing with clock based timing
 
 Known problems (todo list)
+- implement pts in plugins (seems that there is buffer overflow in fourier.C)
+- implement pts in encoders, decoders
 - handling input devices is buggy (only selected devices may work)
 - to clean up messes in position handling implement position handling
     in time units

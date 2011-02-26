@@ -19,26 +19,26 @@ endif
 
 if BUILDINFO_GIT
 GITVERSION=$(shell if [ -d $(top_srcdir)/.git ]; then cd $(top_srcdir); git rev-parse HEAD; else echo "unknown"; fi)
-	echo '#define REPOMAINTXT " GIT::$(GITVERSION) $(BUILDINFO_NONRC_S)\n(C) 2006 Heroine Virtual Ltd.\n(C) 2006-2010 The CinelerraCV Community\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
+	echo '#define REPOMAINTXT " GIT::$(GITVERSION) $(BUILDINFO_NONRC_S)\n(C) 2006 Heroine Virtual Ltd.\n(C) 2006-2011 The CinelerraCV Community\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
 	echo '#define REPOABOUTPREFTXT "Git SHA-1: $(GITVERSION)"' >> versioninfo.h
 else
 
 if BUILDINFO_SVN
 SVNVERSION=$(shell if [ -d $(top_srcdir)/.svn ]; then svnversion $(top_srcdir); else echo "unknown"; fi)
-	echo '#define REPOMAINTXT      " SVN $(SVNVERSION) $(BUILDINFO_NONRC_S) (C) 2006 Heroine Virtual Ltd.\n(C) 2006-2010 The CinelerraCV Community\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
+	echo '#define REPOMAINTXT      " SVN $(SVNVERSION) $(BUILDINFO_NONRC_S) (C) 2006 Heroine Virtual Ltd.\n(C) 2006-2011 The CinelerraCV Community\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
 	echo '#define REPOABOUTPREFTXT "SVN Version: $(SVNVERSION) $(BUILDINFO_NONRC_S)"' >> versioninfo.h
 
 else
 if BUILDINFO_CUST
 
-	echo '#define REPOMAINTXT      " $(BUILDINFO_CUSTOM_TAG) (C) 2006 Heroine Virtual Ltd.\n(C) 2006-2010 The CinelerraCV Community\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
+	echo '#define REPOMAINTXT      " $(BUILDINFO_CUSTOM_TAG) (C) 2006 Heroine Virtual Ltd.\n(C) 2006-2011 The CinelerraCV Community\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
 	echo '#define REPOABOUTPREFTXT "$(BUILDINFO_CUSTOM_TAG)"' >> versioninfo.h
 
 
 else # (no repository)
 
 
-	echo '#define REPOMAINTXT      "(C) 2006 Heroine Virtual Ltd.\n(C) 2006-2010 The CinelerraCV Community\nCompiled on $(BUILDDATE)"' >> versioninfo.h
+	echo '#define REPOMAINTXT      "(C) 2006 Heroine Virtual Ltd.\n(C) 2006-2011 The CinelerraCV Community\nCompiled on $(BUILDDATE)"' >> versioninfo.h
 	echo '#define REPOABOUTPREFTXT ""' >> versioninfo.h
 endif
 endif

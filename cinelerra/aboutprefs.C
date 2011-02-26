@@ -69,7 +69,7 @@ int AboutPrefs::create_objects()
 	char license2[BCTEXTLEN];
 	sprintf(license2, "%s%s",
 		"(C) 2006 Heroine Virtual Ltd.\n",
-		"(C) 2006-2010 The CinelerraCV Community\n\n",
+		"(C) 2006-2011 The CinelerraCV Community\n\n",
 		REPOABOUTPREFTXT);
 	set_font(MEDIUMFONT);
 	draw_text(x, y, license2);
