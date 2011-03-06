@@ -99,7 +99,6 @@ int VirtualAConsole::process_buffer(int len,
 	int last_buffer)
 {
 	int result = 0;
-
 // clear output buffers
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
@@ -115,18 +114,34 @@ int VirtualAConsole::process_buffer(int len,
 
 // Reset plugin rendering status
 	reset_attachments();
-
 // Render exit nodes
-	for(int i = 0; i < exit_nodes.total; i++)
+	if(exit_nodes.total)
 	{
-		VirtualANode *node = (VirtualANode*)exit_nodes.values[i];
-		output_temp->init_aframe(start_postime + node->track->nudge, len);
-		output_temp->source_length = len;
-		output_temp->samplerate = renderengine->edl->session->sample_rate;
-		output_temp->channel = i;
-		node->render(output_temp);
+		for(int i = 0; i < exit_nodes.total; i++)
+		{
+			VirtualANode *node = (VirtualANode*)exit_nodes.values[i];
+			output_temp->init_aframe(start_postime + node->track->nudge, len);
+			output_temp->source_length = len;
+			output_temp->samplerate = renderengine->edl->session->sample_rate;
+			output_temp->channel = i;
+			node->render(output_temp);
+		}
 	}
-
+	else
+	{
+// Fill buffer with silence
+		for(int i = 0; i < MAX_CHANNELS; i++)
+		{
+			AFrame *current_aframe = arender->audio_out[i];
+			if(current_aframe)
+			{
+				current_aframe->init_aframe(start_postime, len);
+				current_aframe->length = len;
+				current_aframe->samplerate = renderengine->edl->session->sample_rate;
+				current_aframe->duration = (ptstime)len / output_temp->samplerate;
+			}
+		}
+	}
 
 // get peaks and limit volume in the fragment
 	for(int i = 0; i < MAX_CHANNELS; i++)

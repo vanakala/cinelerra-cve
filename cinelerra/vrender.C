@@ -308,17 +308,16 @@ void VRender::run()
 
 				renderengine->reset_sync_postime();
 			}
+
 // Determine the delay until the frame needs to be shown.
 			current_pts = renderengine->sync_postime() *
 				renderengine->command->get_speed();
-
 // earliest time by which the frame needs to be shown.
 			start_pts = current_postime;
-			if((len_pts = video_out->get_duration()) < EPSILON){
+			if((len_pts = video_out->get_duration()) < EPSILON)
 // We have no current frame
 				len_pts = fromunits(1);
-				start_pts = init_pos;
-			}
+
 // latest time at which the frame can be shown.
 			end_pts = start_pts + len_pts;
 
@@ -333,7 +332,7 @@ void VRender::run()
 
 			if(end_pts < current_pts)
 			{
-// Frame rendered late or this is the first frame.  Flash it now.
+// Frame rendered late. Flash it now.
 				if(!first_frame)
 					flash_output();
 

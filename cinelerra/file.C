@@ -1065,7 +1065,7 @@ int File::compressed_frame_size()
 
 int File::get_frame(VFrame *frame, int is_thread)
 {
-	return get_this_frame((frame->get_source_pts() + EPSILON) * asset->frame_rate, frame, is_thread);
+	return get_this_frame(round((frame->get_source_pts() + EPSILON) * asset->frame_rate), frame, is_thread);
 }
 
 int File::get_next_frame(VFrame *frame)

@@ -154,6 +154,10 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 			use_opengl);
 
 	}
+	if(!exit_nodes.total)
+	{
+		vrender->video_out->set_pts(input_postime);
+	}
 	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
 }
 

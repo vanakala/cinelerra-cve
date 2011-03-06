@@ -273,9 +273,10 @@ void ARender::run()
 			duration = current_input_duration;
 			reconfigure = vconsole->test_reconfigure(current_input_duration,
 				last_playback);
-			if(current_input_duration < duration && 
+			if(duration - current_input_duration > EPSILON && 
 				renderengine->command->get_direction() == PLAY_REVERSE)
 			{
+// Reverse playback: play end of buffer
 				current_postime += current_input_duration;
 				current_input_duration = duration - current_input_duration;
 				revert = 1;
