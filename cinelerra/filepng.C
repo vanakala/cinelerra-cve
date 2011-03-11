@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "bcsignals.h"
 #include "edit.h"
 #include "file.h"
 #include "filepng.h"
@@ -54,7 +55,7 @@ int FilePNG::check_sig(Asset *asset)
 		char test[16];
 		l = fread(test, 16, 1, stream);
 		fclose(stream);
-		if (l) return 0;
+		if (!l) return 0;
 		if(png_check_sig((unsigned char*)test, 8))
 		{
 			return 1;
