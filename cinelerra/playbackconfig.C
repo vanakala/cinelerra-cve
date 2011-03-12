@@ -30,7 +30,11 @@ AudioOutConfig::AudioOutConfig(int duplex)
 	this->duplex = duplex;
 
 	fragment_size = 16384;
+#ifdef HAVE_ALSA
+	driver = AUDIO_ALSA;
+#else
 	driver = AUDIO_OSS;
+#endif
 
 	audio_offset = 0.0;
 

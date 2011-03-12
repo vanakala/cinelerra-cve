@@ -28,7 +28,11 @@
 
 AudioInConfig::AudioInConfig()
 {
+#ifdef HAVE_ALSA
+	driver = AUDIO_ALSA;
+#else
 	driver = AUDIO_OSS;
+#endif
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		oss_enable[i] = (i == 0);
@@ -147,7 +151,11 @@ int AudioInConfig::save_defaults(BC_Hash *defaults)
 
 VideoInConfig::VideoInConfig()
 {
+#ifdef HAVE_VIDEO4LINUX2
 	driver = VIDEO4LINUX;
+#else
+	driver = VIDEO4LINUX2;
+#endif
 	strcpy(v4l_in_device, "/dev/video0");
 	strcpy(v4l2_in_device, "/dev/video0");
 	strcpy(v4l2jpeg_in_device, "/dev/video0");

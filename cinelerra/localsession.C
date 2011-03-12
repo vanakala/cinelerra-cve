@@ -70,7 +70,7 @@ LocalSession::LocalSession(EDL *edl)
 	view_start = 0;
 	track_start = 0;
 
-	automation_mins[AUTOGROUPTYPE_AUDIO_FADE] = -80;
+	automation_mins[AUTOGROUPTYPE_AUDIO_FADE] = -40;
 	automation_maxs[AUTOGROUPTYPE_AUDIO_FADE] = 6;
 
 	automation_mins[AUTOGROUPTYPE_VIDEO_FADE] = 0;

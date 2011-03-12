@@ -45,7 +45,7 @@ Preferences::Preferences()
 	fs.complete_path(index_directory);
 	cache_size = 0xa00000;
 	index_size = 0x300000;
-	index_count = 100;
+	index_count = 500;
 	use_thumbnails = 1;
 	theme[0] = 0;
 	use_renderfarm = 0;
