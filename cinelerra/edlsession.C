@@ -24,6 +24,7 @@
 #include "autoconf.h"
 #include "colormodels.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -160,21 +161,21 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	aconfig_in->load_defaults(defaults);
 	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", (float)-1);
 	assetlist_format = defaults->get("ASSETLIST_FORMAT", ASSETS_ICONS);
-	aspect_w = defaults->get("ASPECTW", (float)4);
-	aspect_h = defaults->get("ASPECTH", (float)3);
+	aspect_w = defaults->get("ASPECTW", aspect_w);
+	aspect_h = defaults->get("ASPECTH", aspect_h);
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 	{
 		sprintf(string, "ASSET_COLUMN%d", i);
 		asset_columns[i] = defaults->get(string, 100);
 	}
-	audio_channels = defaults->get("ACHANNELS", 2);
-	audio_tracks = defaults->get("ATRACKS", 2);
+	audio_channels = defaults->get("ACHANNELS", audio_channels);
+	audio_tracks = defaults->get("ATRACKS", audio_tracks);
 	auto_conf->load_defaults(defaults);
 	autos_follow_edits = defaults->get("AUTOS_FOLLOW_EDITS", 1);
 	brender_start = defaults->get("BRENDER_START", brender_start);
-	cmodel_to_text(string, BC_YUVA8888);
+	cmodel_to_text(string, color_model);
 	color_model = cmodel_from_text(defaults->get("COLOR_MODEL", string));
-	ilacemode_to_xmltext(string, BC_ILACE_MODE_NOTINTERLACED);
+	ilacemode_to_xmltext(string, interlace_mode);
 	interlace_mode = ilacemode_from_xmltext(defaults->get("INTERLACE_MODE",string), BC_ILACE_MODE_NOTINTERLACED);
 	crop_x1 = defaults->get("CROP_X1", 0);
 	crop_x2 = defaults->get("CROP_X2", 320);
@@ -202,7 +203,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	editing_mode = defaults->get("EDITING_MODE", EDITING_IBEAM);
 	enable_duplex = defaults->get("ENABLE_DUPLEX", 1);
 	folderlist_format = defaults->get("FOLDERLIST_FORMAT", FOLDERS_ICONS);
-	frame_rate = defaults->get("FRAMERATE", (double)30000.0/1001);
+	frame_rate = defaults->get("FRAMERATE", frame_rate);
 	frames_per_foot = defaults->get("FRAMES_PER_FOOT", (float)16);
 	interpolation_type = defaults->get("INTERPOLATION_TYPE", interpolation_type);
 	interpolate_raw = defaults->get("INTERPOLATE_RAW", interpolate_raw);
@@ -214,8 +215,8 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	min_meter_db = defaults->get("MIN_METER_DB", -85);
 	max_meter_db = defaults->get("MAX_METER_DB", 6);
 	mpeg4_deblock = defaults->get("MPEG4_DEBLOCK", mpeg4_deblock);
-	output_w = defaults->get("OUTPUTW", 720);
-	output_h = defaults->get("OUTPUTH", 480);
+	output_w = defaults->get("OUTPUTW", output_w);
+	output_h = defaults->get("OUTPUTH", output_h);
 	playback_buffer = defaults->get("PLAYBACK_BUFFER", 4096);
 	playback_preload = defaults->get("PLAYBACK_PRELOAD", 0);
 	playback_software_position = defaults->get("PLAYBACK_SOFTWARE_POSITION", 0);
@@ -235,7 +236,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 		1,
 		1);
 	safe_regions = defaults->get("SAFE_REGIONS", 1);
-	sample_rate = defaults->get("SAMPLERATE", 48000);
+	sample_rate = defaults->get("SAMPLERATE", sample_rate);
 	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);
 	si_useduration = defaults->get("SI_USEDURATION",1);
 	si_duration = defaults->get("SI_DURATION",3);
@@ -259,10 +260,10 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 		sprintf(string, "VCHANNEL_Y_%d", i);
 		vchannel_y[i] = defaults->get(string, 0);
 	}
-	video_channels = defaults->get("VCHANNELS", 1);
+	video_channels = defaults->get("VCHANNELS", video_channels);
 	video_every_frame = defaults->get("VIDEO_EVERY_FRAME", 0);
 	video_asynchronous = defaults->get("VIDEO_ASYNCHRONOUS", 0);
-	video_tracks = defaults->get("VTRACKS", 1);
+	video_tracks = defaults->get("VTRACKS", video_tracks);
 	video_write_length = defaults->get("VIDEO_WRITE_LENGTH", 30);
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
 	vwindow_meter = defaults->get("VWINDOW_METER", 1);
@@ -273,7 +274,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	vwindow_source = -1;
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
 	boundaries();
-
 	return 0;
 }
 

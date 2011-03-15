@@ -389,6 +389,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cwindow.h \
 		 cwindowtool.h \
 		 dcoffset.h \
+		 defaultformats.h \
 		 deleteallindexes.h \
 		 devicedvbinput.h \
 		 drivesync.h \
@@ -481,6 +482,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 newfolder.h \
 		 new.h \
 		 newpresets.h \
+		 ntsczones.h \
 		 overlayframe.h \
 		 packagedispatcher.h \
 		 packagerenderer.h \
