@@ -89,7 +89,7 @@ public:
 class FormatPresetItem : public BC_ListBoxItem
 {
 public:
-	FormatPresetItem(MWindow *mwindow, FormatPresets *gui, char *text);
+	FormatPresetItem(MWindow *mwindow, FormatPresets *gui, const char *text);
 	~FormatPresetItem();
 
 	MWindow *mwindow;

@@ -36,6 +36,7 @@ class NewThread;
 class NewWindow;
 class NewPresets;
 class InterlacemodePulldown;
+class ColormodelPulldown;
 
 class New : public BC_MenuItem
 {
@@ -61,7 +62,7 @@ class NewThread : public Thread
 public:
 	NewThread(MWindow *mwindow, New *new_project);
 	~NewThread();
-	
+
 	void run();
 
 	int load_defaults();
@@ -80,9 +81,9 @@ class NewWindow : public BC_Window
 public:
 	NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y);
 	~NewWindow();
-	
-	int create_objects();
-	int update();
+
+	void create_objects();
+	void update();
 
 	MWindow *mwindow;
 	NewThread *new_thread;
@@ -96,6 +97,7 @@ public:
 	BC_TextBox *aspect_w_text, *aspect_h_text;
 	BC_TextBox *output_w_text, *output_h_text;
 	InterlacemodePulldown *interlace_pulldown;
+	ColormodelPulldown *color_model;
 	NewPresets *format_presets;
 };
 
@@ -171,12 +173,6 @@ public:
 	MWindow *mwindow;
 	BC_TextBox *output;
 };
-
-
-
-
-
-
 
 
 class NewVTracks : public BC_TextBox
@@ -299,6 +295,7 @@ public:
 		int y);
 	int handle_event();
 	const char* colormodel_to_text();
+	void update_value(int value);
 	MWindow *mwindow;
 	BC_TextBox *output_text;
 	int *output_value;
@@ -327,7 +324,7 @@ public:
 	BC_TextBox *output_text;
 	int *output_value;
 private:
-  	char string[BCTEXTLEN];
+	char string[BCTEXTLEN];
 };
 
 class InterlacefixmethodItem : public BC_ListBoxItem
@@ -341,18 +338,18 @@ class InterlacefixmethodPulldown : public BC_ListBox
 {
 public:
 	InterlacefixmethodPulldown(MWindow *mwindow, 
-				   BC_TextBox *output_text, 
-				   int *output_value,
-				   ArrayList<BC_ListBoxItem*> *data,
-				   int x, 
-				   int y);
+		BC_TextBox *output_text,
+		int *output_value,
+		ArrayList<BC_ListBoxItem*> *data,
+		int x,
+		int y);
 	int handle_event();
 	char* interlacefixmethod_to_text();
 	MWindow *mwindow;
 	BC_TextBox *output_text;
 	int *output_value;
 private:
-  	char string[BCTEXTLEN];
+	char string[BCTEXTLEN];
 };
 
 

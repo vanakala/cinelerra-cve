@@ -24,6 +24,7 @@
 #include "cwindowgui.h"
 #include "datatype.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "formatpresets.h"
@@ -123,10 +124,6 @@ void SetFormatThread::run()
 
 void SetFormatThread::apply_changes()
 {
-	double new_samplerate = new_settings->session->sample_rate;
-	double old_samplerate = mwindow->edl->session->sample_rate;
-	double new_framerate = new_settings->session->frame_rate;
-	double old_framerate = mwindow->edl->session->frame_rate;
 	int new_channels = new_settings->session->audio_channels;
 	CLAMP(new_channels, 1, MAXCHANNELS);
 
@@ -201,15 +198,14 @@ void SetFormatThread::update()
 	window->dimension[0]->update((int64_t)dimension[0]);
 	dimension[1] = new_settings->session->output_h;
 	window->dimension[1]->update((int64_t)dimension[1]);
-
 	ratio[0] = (float)dimension[0] / orig_dimension[0];
 	window->ratio[0]->update(ratio[0]);
 	ratio[1] = (float)dimension[1] / orig_dimension[1];
 	window->ratio[1]->update(ratio[1]);
-
 	window->aspect_w->update(new_settings->session->aspect_w);
 	window->aspect_h->update(new_settings->session->aspect_h);
 	window->interlace_pulldown->update(new_settings->session->interlace_mode);
+	window->color_model->update_value(new_settings->session->color_model);
 
 	window->canvas->draw();
 }
@@ -443,14 +439,14 @@ void SetFormatWindow::create_objects()
 		y, 
 		_("Color model:")));
 	x = mwindow->theme->setformat_x4;
-	add_subwindow(color_model = new BC_TextBox(x, 
+	add_subwindow(textbox = new BC_TextBox(x, 
 		y, 
 		100, 
 		1, 
 		""));
-	x += color_model->get_w();
-	add_subwindow(new ColormodelPulldown(mwindow, 
-		color_model, 
+	x += textbox->get_w();
+	add_subwindow(color_model = new ColormodelPulldown(mwindow, 
+		textbox,
 		&thread->new_settings->session->color_model,
 		x, 
 		y));

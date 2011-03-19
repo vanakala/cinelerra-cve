@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -233,7 +234,7 @@ NewWindow::~NewWindow()
 	if(format_presets) delete format_presets;
 }
 
-int NewWindow::create_objects()
+void NewWindow::create_objects()
 {
 	int x = 10, y = 10, x1, y1;
 	BC_TextBox *textbox;
@@ -340,7 +341,7 @@ int NewWindow::create_objects()
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
 	add_subwindow(textbox = new BC_TextBox(x + 100, y, 200, 1, ""));
-	add_subwindow(new ColormodelPulldown(mwindow, 
+	add_subwindow(color_model = new ColormodelPulldown(mwindow, 
 		textbox, 
 		&new_edl->session->color_model,
 		x + 100 + textbox->get_w(),
@@ -365,12 +366,10 @@ int NewWindow::create_objects()
 	flash();
 	update();
 	show_window();
-	return 0;
 }
 
-int NewWindow::update()
+void NewWindow::update()
 {
-	char string[BCTEXTLEN];
 	atracks->update((int64_t)new_edl->session->audio_tracks);
 	achannels->update((int64_t)new_edl->session->audio_channels);
 	sample_rate->update((int64_t)new_edl->session->sample_rate);
@@ -381,7 +380,7 @@ int NewWindow::update()
 	aspect_w_text->update((float)new_edl->session->aspect_w);
 	aspect_h_text->update((float)new_edl->session->aspect_h);
 	interlace_pulldown->update(new_edl->session->interlace_mode);
-	return 0;
+	color_model->update_value(new_edl->session->color_model);
 }
 
 
@@ -776,6 +775,12 @@ const char* ColormodelPulldown::colormodel_to_text()
 		if(mwindow->colormodels.values[i]->value == *output_value) 
 			return mwindow->colormodels.values[i]->get_text();
 	return "Unknown";
+}
+
+void ColormodelPulldown::update_value(int value)
+{
+	*output_value = value;
+	output_text->update(colormodel_to_text());
 }
 
 InterlacemodeItem::InterlacemodeItem(const char *text, int value)

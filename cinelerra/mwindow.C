@@ -230,7 +230,7 @@ void MWindow::fill_preset_defaults(const char *preset, EDLSession *session)
 
 	for(fpr = &format_presets[0]; fpr->name; fpr++)
 	{
-		if(strcmp(fpr->name, default_standard) == 0)
+		if(strcmp(fpr->name, preset) == 0)
 		{
 			session->audio_channels = fpr->audio_channels;
 			session->audio_tracks = fpr->audio_tracks;
@@ -247,6 +247,13 @@ void MWindow::fill_preset_defaults(const char *preset, EDLSession *session)
 			return;
 		}
 	}
+}
+
+const char *MWindow::get_preset_name(int index)
+{
+	if(index >= MAX_NUM_PRESETS || index < 0)
+		return 0;
+	return format_presets[index].name;
 }
 
 void MWindow::init_defaults(BC_Hash* &defaults, const char *config_path)
