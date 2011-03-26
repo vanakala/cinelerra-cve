@@ -244,11 +244,10 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 	}
 	else
 	{
-		buffer_time = (int)((int64_t)samples * 1000000 * 4 / samplerate + 0.5);
-		period_time = ((int64_t)samples * 1000000) / samplerate;
-		sleep_delay = period_time / 4;
+		buffer_time = (int)((int64_t)samples * 1000000 * 4 / samplerate);
+		period_time = buffer_time / 2;
+		sleep_delay = period_time / 8;
 	}
-
 	snd_pcm_hw_params_set_buffer_time_near(dsp, 
 		params,
 		(unsigned int*)&buffer_time, 
@@ -262,16 +261,9 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		errormsg("Failed to set ALSA hw_params");
 		return 1;
 	}
-
-	snd_pcm_uframes_t chunk_size = 1024;
-	snd_pcm_uframes_t buffer_size = 262144;
-	snd_pcm_hw_params_get_period_size(params, &chunk_size, 0);
-	snd_pcm_hw_params_get_buffer_size(params, &buffer_size);
-
 	snd_pcm_sw_params_current(dsp, swparams);
-	snd_pcm_uframes_t n = chunk_size;
 
-	snd_pcm_sw_params_set_avail_min(dsp, swparams, n);
+	snd_pcm_sw_params_set_avail_min(dsp, swparams, samples);
 	if(snd_pcm_sw_params(dsp, swparams) < 0)
 	{
 		errorbox("Failed to set ALSA sw_params");
@@ -433,6 +425,7 @@ int AudioALSA::write_buffer(char *buffer, int size)
 	int attempts = 0;
 	snd_pcm_sframes_t samples = size / (device->out_bits / 8) / device->get_ochannels();
 	snd_pcm_sframes_t written, avail;
+	int rc;
 
 	if(!get_output()) return 0;
 // Wait until enough buffer frees
@@ -446,34 +439,46 @@ int AudioALSA::write_buffer(char *buffer, int size)
 	timing_lock->lock("AudioALSA::write_buffer");
 	while(attempts < 2 && !interrupted)
 	{
-// Buffers written must be equal to period_time
-		device->Thread::enable_cancel();
 		if((written = snd_pcm_writei(get_output(), 
 			buffer, 
 			samples)) < 0)
 		{
-			device->Thread::disable_cancel();
-			errormsg("ALSA write_buffer underrun at %.3f",
-				device->current_postime());
-			close_output();
-			open_output();
-			attempts++;
+			if(written == -EPIPE)
+			{
+// Underrun
+				if((rc = snd_pcm_prepare(get_output())) < 0 && attempts == 0)
+				{
+					errorbox("ALSA write underrun at %.3f: %s. Recovery failed.",
+						device->current_postime(), snd_strerror(rc));
+				}
+				attempts++;
+			}
+			else
+			{
+				timing_lock->unlock();
+				errorbox("ALSA write failed: %s", snd_strerror(written));
+				return -1;
+			}
 		}
 		else
 		{
 			samples_written += written;
-			device->Thread::disable_cancel();
 			break;
 		}
 	}
 	timing_lock->unlock();
 
+	if(attempts >= 2)
+		return -1;
+// Give time to video decoding
+	usleep(sleep_delay);
 	return 0;
 }
 
 void AudioALSA::flush_device()
 {
-	if(get_output()) snd_pcm_drain(get_output());
+	if(get_output())
+		snd_pcm_drain(get_output());
 }
 
 void AudioALSA::interrupt_playback()
