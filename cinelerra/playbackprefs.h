@@ -89,7 +89,7 @@ public:
 		int y, 
 		PreferencesWindow *pwindow, 
 		PlaybackPrefs *playback, 
-		char *text);
+		const char *text);
 	int handle_event();
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback;

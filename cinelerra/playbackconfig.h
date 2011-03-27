@@ -41,9 +41,10 @@ public:
 	void copy_from(AudioOutConfig *src);
 	int load_defaults(BC_Hash *defaults);
 	int save_defaults(BC_Hash *defaults);
-
-	int fragment_size;
-
+	void set_fragment_size(const char *val);
+	void set_fragment_size(int val);
+	int get_fragment_size(int sample_rate);
+	const char *fragment_size_text(void);
 
 // Offset for synchronization in seconds
 	ptstime audio_offset;
@@ -55,14 +56,15 @@ public:
 	char oss_out_device[MAXDEVICES][BCTEXTLEN];
 	int oss_out_bits;
 
-
-
 	char esound_out_server[BCTEXTLEN];
 	int esound_out_port;
 
 // ALSA options
 	char alsa_out_device[BCTEXTLEN];
 	int alsa_out_bits;
+private:
+	int fragment_size;
+	char frag_text[32];
 };
 
 // This structure is passed to the driver

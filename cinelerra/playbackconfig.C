@@ -19,17 +19,19 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
 #include "playbackconfig.h"
 #include "videodevice.inc"
 #include <string.h>
+#include <stdlib.h>
 
 AudioOutConfig::AudioOutConfig(int duplex)
 {
 	this->duplex = duplex;
 
-	fragment_size = 16384;
+	fragment_size = 0;
 #ifdef HAVE_ALSA
 	driver = AUDIO_ALSA;
 #else
@@ -167,14 +169,40 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults)
 	return 0;
 }
 
+void AudioOutConfig::set_fragment_size(const char *val)
+{
+	fragment_size = atol(val);
+	if(fragment_size < 0)
+		fragment_size = 0;
+}
 
+void AudioOutConfig::set_fragment_size(int val)
+{
+	fragment_size = val;
+	if(fragment_size < 0)
+		fragment_size = 0;
+}
 
+int AudioOutConfig::get_fragment_size(int sample_rate)
+{
+	int j;
 
+	if(fragment_size)
+		return fragment_size;
+	if(!sample_rate)
+		return 16384;
+	sample_rate = sample_rate / 4;
+	for(j = 2048; j < sample_rate; j *= 2);
+	return j;
+}
 
-
-
-
-
+const char *AudioOutConfig::fragment_size_text(void)
+{
+	if(!fragment_size)
+		return "Auto";
+	sprintf(frag_text, "%d", fragment_size);
+	return frag_text;
+}
 
 VideoOutConfig::VideoOutConfig()
 {

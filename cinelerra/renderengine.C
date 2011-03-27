@@ -151,7 +151,7 @@ int RenderEngine::arm_command(TransportCommand *command)
 
 	if(do_audio)
 	{
-		fragment_len = aconfig->fragment_size;
+		fragment_len = aconfig->get_fragment_size(command->get_edl()->session->sample_rate);
 	}
 
 // Set locks to enable audio and video start simultaneously

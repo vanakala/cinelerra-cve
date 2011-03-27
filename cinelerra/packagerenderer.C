@@ -179,7 +179,7 @@ void PackageRenderer::create_engine()
 {
 	audio_read_length = command->get_edl()->session->sample_rate;
 
-	aconfig->fragment_size = audio_read_length;
+	aconfig->set_fragment_size(audio_read_length);
 
 	render_engine = new RenderEngine(0,
 		preferences,

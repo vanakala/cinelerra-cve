@@ -75,13 +75,13 @@ int PlaybackPrefs::create_objects()
 	add_subwindow(title2 = new BC_Title(x, y, _("Playback buffer size:"), MEDIUMFONT));
 	x2 = MAX(title2->get_w(), title2->get_w()) + 10;
 
-	sprintf(string, "%d", playback_config->aconfig->fragment_size);
 	PlaybackModuleFragment *menu;
 	add_subwindow(menu = new PlaybackModuleFragment(x2, 
 		y, 
 		pwindow, 
 		this, 
-		string));
+		playback_config->aconfig->fragment_size_text()));
+	menu->add_item(new BC_MenuItem("Auto"));
 	menu->add_item(new BC_MenuItem("2048"));
 	menu->add_item(new BC_MenuItem("4096"));
 	menu->add_item(new BC_MenuItem("8192"));
@@ -267,7 +267,7 @@ PlaybackModuleFragment::PlaybackModuleFragment(int x,
 	int y, 
 	PreferencesWindow *pwindow, 
 	PlaybackPrefs *playback, 
-	char *text)
+	const char *text)
  : BC_PopupMenu(x, 
 	y, 
 	100, 
@@ -280,7 +280,7 @@ PlaybackModuleFragment::PlaybackModuleFragment(int x,
 
 int PlaybackModuleFragment::handle_event() 
 {
-	playback->playback_config->aconfig->fragment_size = atol(get_text()); 
+	playback->playback_config->aconfig->set_fragment_size(get_text());
 	return 1;
 }
 
