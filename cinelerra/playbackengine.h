@@ -76,7 +76,7 @@ public:
 // Reset the transport after completion
 	virtual void update_transport(int command, int paused) {};
 // The render engines call this to update tracking variables in the playback engine.
-	void update_tracking(double position);
+	void update_tracking(ptstime position);
 // Get the output channel table for the current device or 0 if none exists.
 	ChannelDB* get_channeldb();
 
@@ -88,11 +88,6 @@ public:
 	int tracking_active;
 // Tracking variables updated by render engines
 	ptstime tracking_position;
-// Not accurate until the first update_tracking, at which time
-// tracking_active is incremented to 2.
-	Timer tracking_timer;
-// Lock access to tracking data
-	Mutex *tracking_lock;
 // Block returns until tracking loop is finished
 	Condition *tracking_done;
 // Pause the main loop for the PAUSE command

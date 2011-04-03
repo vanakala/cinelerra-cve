@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "cache.h"
 #include "condition.h"
 #include "bchash.h"
@@ -52,7 +53,6 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	audio_cache = 0;
 	video_cache = 0;
 	last_command = STOP;
-	tracking_lock = new Mutex("PlaybackEngine::tracking_lock");
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
 	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
@@ -76,7 +76,6 @@ PlaybackEngine::~PlaybackEngine()
 	delete_render_engine();
 	delete audio_cache;
 	delete video_cache;
-	delete tracking_lock;
 	delete tracking_done;
 	delete pause_lock;
 	delete start_lock;
@@ -256,84 +255,14 @@ void PlaybackEngine::stop_tracking()
 	tracking_done->unlock();
 }
 
-void PlaybackEngine::update_tracking(double position)
+void PlaybackEngine::update_tracking(ptstime position)
 {
-	tracking_lock->lock("PlaybackEngine::update_tracking");
-
 	tracking_position = position;
-
-// Signal that the timer is accurate.
-	if(tracking_active) tracking_active = 2;
-	tracking_timer.update();
-	tracking_lock->unlock();
 }
 
-double PlaybackEngine::get_tracking_position()
+ptstime PlaybackEngine::get_tracking_position()
 {
-	double result = 0;
-
-	tracking_lock->lock("PlaybackEngine::get_tracking_position");
-
-
-// Adjust for elapsed time since last update_tracking.
-// But tracking timer isn't accurate until the first update_tracking
-// so wait.
-	if(tracking_active == 2)
-	{
-
-// Don't interpolate when every frame is played.
-		if(command->get_edl()->session->video_every_frame &&
-			render_engine &&
-			render_engine->do_video)
-		{
-			result = tracking_position;
-		}
-		else
-// Interpolate
-		{
-			double loop_start = command->get_edl()->local_session->loop_start;
-			double loop_end = command->get_edl()->local_session->loop_end;
-			double loop_size = loop_end - loop_start;
-
-			if(command->get_direction() == PLAY_FORWARD)
-			{
-// Interpolate
-				result = tracking_position + 
-					command->get_speed() * 
-					tracking_timer.get_difference() /
-					1000.0;
-
-// Compensate for loop
-				if(command->get_edl()->local_session->loop_playback)
-				{
-					while(result > loop_end) result -= loop_size;
-				}
-			}
-			else
-			{
-// Interpolate
-				result = tracking_position - 
-					command->get_speed() * 
-					tracking_timer.get_difference() /
-					1000.0;
-
-// Compensate for loop
-				if(command->get_edl()->local_session->loop_playback)
-				{
-					while(result < loop_start) result += loop_size;
-				}
-			}
-
-		}
-	}
-	else
-		result = tracking_position;
-
-	tracking_lock->unlock();
-
-// Adjust for loop
-
-	return result;
+	return tracking_position;
 }
 
 
