@@ -100,8 +100,6 @@ void File::reset_parameters()
 	current_frame = 0;
 	current_channel = 0;
 	current_layer = 0;
-	normalized_sample = 0;
-	normalized_sample_rate = 0;
 	resample = 0;
 	resample_float = 0;
 	use_cache = 0;
@@ -755,80 +753,19 @@ framenum File::get_video_position(float base_framerate)
 		return current_frame;
 }
 
-samplenum File::get_audio_position(int base_samplerate) 
-{ 
-	if(base_samplerate > 0)
-	{
-		if(normalized_sample_rate == base_samplerate)
-			return normalized_sample;
-		else
-			return (int64_t)((double)current_sample / 
-				asset->sample_rate * 
-				base_samplerate + 
-				0.5);
-	}
-	else
-		return current_sample;
+samplenum File::get_audio_position(void)
+{
+	return current_sample;
 }
-
-
 
 // The base samplerate must be nonzero if the base samplerate in the calling
 // function is expected to change as this forces the resampler to reset.
 
-int File::set_audio_position(samplenum position, int base_samplerate) 
+int File::set_audio_position(samplenum position)
 {
-	int result = 0;
-
 	if(!file) return 1;
 
-#define REPOSITION(x, y) \
-	(labs((x) - (y)) > 1)
-
-
-
-	if((base_samplerate && REPOSITION(normalized_sample, position)) ||
-		(!base_samplerate && REPOSITION(current_sample, position)))
-	{
-// Can't reset resampler since one seek operation is done 
-// for every channel to be read at the same position.
-
-// Use a conditional reset for just the case of different base_samplerates
-		if(base_samplerate > 0)
-		{
-			if(normalized_sample_rate &&
-				normalized_sample_rate != base_samplerate && 
-				resample)
-				resample->reset(-1);
-
-			normalized_sample = position;
-			normalized_sample_rate = (int)((base_samplerate > 0) ? 
-				base_samplerate : 
-				asset->sample_rate);
-
-// Convert position to file's rate
-			if(base_samplerate > 0)
-				current_sample = Units::round((double)position / 
-					base_samplerate * 
-					asset->sample_rate);
-		}
-		else
-		{
-			current_sample = position;
-			normalized_sample = Units::round((double)position / 
-					asset->sample_rate * 
-					normalized_sample_rate);
-// Can not set the normalized sample rate since this would reset the resampler.
-		}
-
-		result = file->set_audio_position(current_sample);
-
-		if(result)
-			printf("File::set_audio_position position=%lld base_samplerate=%d asset=%p asset->sample_rate=%d\n",
-				position, base_samplerate, asset, asset->sample_rate);
-	}
-
-	return result;
+	return file->set_audio_position(current_sample = position);
 }
 
 int File::set_video_position(framenum position, float base_framerate, int is_thread) 
@@ -880,7 +817,6 @@ int File::write_samples(AFrame **buffer, int len)
 		}
 		result = file->write_samples(samples, len);
 		current_sample += len;
-		normalized_sample += len;
 		asset->audio_length += len;
 		write_lock->unlock();
 	}
@@ -975,8 +911,6 @@ int File::get_samples(AFrame *aframe)
 		return 0;
 	current_sample = aframe->position;
 	current_channel = aframe->channel;
-	if(current_sample + aframe->source_length > asset->audio_length)
-		aframe->source_length = asset->audio_length - current_sample;
 	result = read_samples(aframe->buffer + aframe->length, aframe->source_length, aframe->samplerate);
 	aframe->length += aframe->source_length;
 	aframe->duration = (ptstime)aframe->length / aframe->samplerate;
@@ -987,10 +921,6 @@ int File::read_samples(double *buffer, int len, int base_samplerate, float *buff
 {
 	int result = 0;
 	if(len < 0) return 0;
-// Never try to read more samples than exist in the file
-	if (current_sample + len > asset->audio_length) {
-		len = asset->audio_length - current_sample;
-	}
 
 // Load with resampling
 	if(file)
@@ -1006,14 +936,12 @@ int File::read_samples(double *buffer, int len, int base_samplerate, float *buff
 				{
 					resample = new Resample(this, asset->channels);
 				}
-
 				current_sample += resample->resample(buffer, 
 					len, 
 					asset->sample_rate, 
 					base_samplerate,
 					current_channel,
-					current_sample,
-					normalized_sample);
+					current_sample);
 			}
 			else
 			{
@@ -1021,19 +949,21 @@ int File::read_samples(double *buffer, int len, int base_samplerate, float *buff
 				{
 					resample_float = new Resample_float(this, asset->channels);
 				}
-
 				current_sample += resample_float->resample(buffer, 
 					len, 
 					asset->sample_rate, 
 					base_samplerate,
 					current_channel,
-					current_sample,
-					normalized_sample);
+					current_sample);
 			}
 		}
 		else
 // Load directly
 		{
+// Never try to read more samples than exist in the file
+			if (current_sample + len > asset->audio_length) 
+				len = asset->audio_length - current_sample;
+
 			if (buffer_float && file->prefer_samples_float())
 				result = file->read_samples_float(buffer_float, len);
 			else
@@ -1041,7 +971,6 @@ int File::read_samples(double *buffer, int len, int base_samplerate, float *buff
 			current_sample += len;
 		}
 
-		normalized_sample += len;
 	}
 	return result;
 }

@@ -53,13 +53,7 @@ public:
 		int in_rate,
 		int out_rate,
 		int channel,
-		samplenum in_position,      // Starting sample in input samplerate
 		samplenum out_position);      // Starting sample in output samplerate
-	virtual void read_chunk(double *input, 
-		int len, 
-		int &reseek, 
-		int iteration);   // True once for every resample call
-
 // History buffer for resampling.
 	double **old;
 	double *itime;
@@ -74,9 +68,6 @@ public:
 // Tied to each channel independantly
 	int *output_size;
 
-
-// Sample start of output_temp in the resampled domain.
-	samplenum *output_temp_start;
 // Allocation of unaligned output
 	int output_allocation;
 // input chunk
@@ -120,30 +111,19 @@ public:
 		int in_rate,
 		int out_rate,
 		int channel,
-		samplenum in_position,      // Starting sample in input samplerate
 		samplenum out_position);      // Starting sample in output samplerate
-	virtual void read_chunk(float *input, 
-		int len, 
-		int &reseek, 
-		int iteration);   // True once for every resample call
 
 // History buffer for resampling.
 	float **old;
 	float *itime;
 
-
-
 // Unaligned resampled output
 	double **output_temp;
-
 
 // Total samples in unaligned output
 // Tied to each channel independantly
 	int *output_size;
 
-
-// Sample start of output_temp in the resampled domain.
-	samplenum *output_temp_start;
 // Allocation of unaligned output
 	int output_allocation;
 // input chunk

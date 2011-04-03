@@ -440,7 +440,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 					return;
 					
 				source->set_channel(item->channel);
-				source->set_audio_position(sample, item->asset->sample_rate);
+				source->set_audio_position(sample);
 				int64_t total_samples = source->get_audio_length(-1);
 				if(!audio_buffer) audio_buffer = new double[BUFFERSIZE];
 				int fragment = BUFFERSIZE;

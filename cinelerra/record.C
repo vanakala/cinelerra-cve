@@ -657,7 +657,7 @@ void Record::rewind_file()
 	if(file)
 	{
 		if(default_asset->audio_data) 
-			file->set_audio_position(0, default_asset->frame_rate);
+			file->set_audio_position(0);
 		if(default_asset->video_data)
 			file->set_video_position(0, default_asset->frame_rate);
 	}
@@ -765,7 +765,7 @@ samplenum Record::current_audio_position()
 {
 	if(file)
 	{
-		return (samplenum)(file->get_audio_position(default_asset->sample_rate) + 
+		return (samplenum)(file->get_audio_position() +
 			get_current_batch()->file_offset + 0.5);
 	}
 	return 0;

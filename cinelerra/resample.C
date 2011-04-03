@@ -28,6 +28,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define REPOSITION(x, y) (llabs((x) - (y)) > 1)
+
 // Resampling from Lame
 
 Resample::Resample(File *file, int channels)
@@ -40,8 +42,6 @@ Resample::Resample(File *file, int channels)
 		old[i] = new double[BLACKSIZE];
 	}
 	itime = new double[channels];
-	output_temp_start = new samplenum[channels];
-	memset(output_temp_start, 0, sizeof(samplenum) * channels);
 	resample_init = new int[channels];
 	memset(resample_init, 0, sizeof(int) * channels);
 	last_ratio = 0;
@@ -77,7 +77,6 @@ Resample::~Resample()
 	delete [] input;
 	delete [] old;
 	delete [] itime;
-	delete [] output_temp_start;
 	delete [] output_size;
 	delete [] last_out_end;
 }
@@ -239,39 +238,15 @@ void Resample::resample_chunk(double *input,
 	last_ratio = resample_ratio;
 }
 
-void Resample::read_chunk(double *input, int len, int &reseek, int iteration)
-{
-	if(reseek)
-	{
-		file->set_audio_position(file->current_sample, 0);
-		reseek= 0;
-	}
-	else
-	if(iteration == 0)
-	{
-// Resume at the end of the last resample call
-		file->set_audio_position(input_chunk_end[file->current_channel], 0);
-	}
-
-	file->read_samples(input, len, 0);
-	input_chunk_end[file->current_channel] = file->current_sample;
-
-}
-
 int Resample::resample(double *output, 
 	int out_len,
 	int in_rate,
 	int out_rate,
 	int channel,
-	samplenum in_position,
 	samplenum out_position)
 {
-	int total_input = 0;
+	int total_output = 0;
 	int reseek = 0;
-
-#define REPOSITION(x, y) \
-	(llabs((x) - (y)) > 1)
-
 
 	if(REPOSITION(last_out_end[channel], out_position))
 	{
@@ -279,8 +254,6 @@ int Resample::resample(double *output,
 		reset(channel);
 	}
 
-
-	output_temp_start[channel] = file->get_audio_position(out_rate) + out_len;
 	last_out_end[channel] = out_position + out_len;
 
 	int i = 0;
@@ -299,24 +272,33 @@ int Resample::resample(double *output,
 			output_size[channel] -= fragment_len;
 			out_len -= fragment_len;
 			output += fragment_len;
+			out_position += fragment_len;
+			total_output += fragment_len;
 		}
 
 // Import new samples
 		if(out_len > 0)
 		{
-			read_chunk(input, input_size, reseek, i);
+			if(reseek)
+			{
+				file->set_audio_position(round((double)out_position / out_rate * in_rate));
+				reseek = 0;
+			}
+			else
+				file->set_audio_position(input_chunk_end[file->current_channel]);
+			file->read_samples(input, input_size, 0);
+			input_chunk_end[file->current_channel] = file->current_sample;
 			resample_chunk(input,
 				input_size,
 				in_rate,
 				out_rate,
 				channel);
-			total_input += input_size;
 		}
 
 		i++;
 	}
 
-	return total_input;
+	return total_output;
 }
 
 
@@ -331,8 +313,6 @@ Resample_float::Resample_float(File *file, int channels)
 		old[i] = new float[BLACKSIZE];
 	}
 	itime = new float[channels];
-	output_temp_start = new samplenum[channels];
-	memset(output_temp_start, 0, sizeof(samplenum) * channels);
 	resample_init = new int[channels];
 	memset(resample_init, 0, sizeof(int) * channels);
 	last_ratio = 0;
@@ -368,7 +348,6 @@ Resample_float::~Resample_float()
 	delete [] input;
 	delete [] old;
 	delete [] itime;
-	delete [] output_temp_start;
 	delete [] output_size;
 	delete [] last_out_end;
 }
@@ -530,46 +509,21 @@ void Resample_float::resample_chunk(float *input,
 	last_ratio = resample_ratio;
 }
 
-void Resample_float::read_chunk(float *input, int len, int &reseek, int iteration)
-{
-	if(reseek)
-	{
-		file->set_audio_position(file->current_sample, 0);
-		reseek= 0;
-	}
-	else
-	if(iteration == 0)
-	{
-// Resume at the end of the last resample call
-		file->set_audio_position(input_chunk_end[file->current_channel], 0);
-	}
-
-	file->read_samples(0, len, 0, input);
-	input_chunk_end[file->current_channel] = file->current_sample;
-}
-
 int Resample_float::resample(double *output, 
 	int out_len,
 	int in_rate,
 	int out_rate,
 	int channel,
-	samplenum in_position,
 	samplenum out_position)
 {
-	int total_input = 0;
+	int total_output = 0;
 	int reseek = 0;
-
-#define REPOSITION(x, y) \
-	(llabs((x) - (y)) > 1)
-
 
 	if(REPOSITION(last_out_end[channel], out_position))
 	{
 		reseek = 1;
 		reset(channel);
 	}
-
-	output_temp_start[channel] = file->get_audio_position(out_rate) + out_len;
 	last_out_end[channel] = out_position + out_len;
 
 	int i = 0;
@@ -580,7 +534,6 @@ int Resample_float::resample(double *output,
 		{
 			int fragment_len = output_size[channel];
 			if(fragment_len > out_len) fragment_len = out_len;
-
 			memcpy(output, output_temp[channel], fragment_len * sizeof(double));
 
 // Shift leftover forward
@@ -589,22 +542,31 @@ int Resample_float::resample(double *output,
 			output_size[channel] -= fragment_len;
 			out_len -= fragment_len;
 			output += fragment_len;
+			out_position += fragment_len;
+			total_output += fragment_len;
 		}
 
 // Import new samples
 		if(out_len > 0)
 		{
-			read_chunk(input, input_size, reseek, i);
+			if(reseek)
+			{
+				file->set_audio_position(round((double)out_position / out_rate * in_rate));
+				reseek = 0;
+			}
+			else
+				file->set_audio_position(input_chunk_end[file->current_channel]);
+			file->read_samples(0, input_size, 0, input);
+			input_chunk_end[file->current_channel] = file->current_sample;
 			resample_chunk(input,
 				input_size,
 				in_rate,
 				out_rate,
 				channel);
-			total_input += input_size;
 		}
 
 		i++;
 	}
 
-	return total_input;
+	return total_output;
 }

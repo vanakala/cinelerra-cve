@@ -505,8 +505,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			asset_over_session);
 		double *buffer = new double[total_source_samples];
 
-		source->set_audio_position(source_start, 
-			edit->asset->sample_rate);
+		source->set_audio_position(source_start);
 		source->set_channel(edit->channel);
 		canvas->set_color(mwindow->theme->audio_color);
 

@@ -127,7 +127,7 @@ public:
 	ptstime get_video_ptslen(void);
 
 // get current position
-	samplenum get_audio_position(int base_samplerate = -1);
+	samplenum get_audio_position(void);
 	framenum get_video_position(float base_framerate = -1);
 
 
@@ -162,7 +162,7 @@ public:
 // set channel for buffer accesses
 	int set_channel(int channel);
 // set position in samples
-	int set_audio_position(samplenum position, int base_samplerate);
+	int set_audio_position(samplenum position);
 
 // Read audio into aframe
 // aframe->source_duration secs starting from aframe->source_pts
@@ -264,9 +264,6 @@ public:
 	int current_channel;
 	int current_layer;
 
-// Position information normalized
-	int64_t normalized_sample;
-	int normalized_sample_rate;
 	Preferences *preferences;
 
 	static PackagingEngine *new_packaging_engine(Asset *asset);

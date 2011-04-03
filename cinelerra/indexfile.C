@@ -317,7 +317,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 
 			for(int channel = 0; !result && channel < asset->channels; channel++)
 			{
-				source.set_audio_position(position, 0);
+				source.set_audio_position(position);
 				source.set_channel(channel);
 
 // Read from source file
