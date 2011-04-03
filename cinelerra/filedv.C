@@ -339,16 +339,6 @@ int FileDV::close_file_derived()
 	return 0;
 }
 
-framenum FileDV::get_video_position()
-{
-	return video_position;
-}
-
-samplenum FileDV::get_audio_position()
-{
-	return audio_position;
-}
-
 int FileDV::set_video_position(framenum x)
 {
 	video_position = x;

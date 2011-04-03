@@ -1228,16 +1228,6 @@ int FileOGG::close_file_derived()
 	stream = 0;
 }
 
-framenum FileOGG::get_video_position()
-{
-	return next_frame_position - start_frame;
-}
-
-samplenum FileOGG::get_audio_position()
-{
-	return next_sample_position - start_sample;
-}
-
 int FileOGG::set_video_position(framenum x)
 {
 	next_frame_position = x + start_frame;

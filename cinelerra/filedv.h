@@ -50,10 +50,7 @@ public:
 
 	static int check_sig(Asset *asset);
 	int close_file_derived();
-	
-	framenum get_video_position();
-	samplenum get_audio_position();
-	
+
 	int set_video_position(framenum x);
 	int set_audio_position(samplenum x);
 
