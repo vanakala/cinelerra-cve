@@ -58,14 +58,8 @@
 class DB
 {
 public:
-	DB(float infinitygain = INFINITYGAIN);
+	DB();
 	virtual ~DB() {};
-	
-// return power of db using a table
-	float fromdb_table();
-	float fromdb_table(float db);
-// return power from db using log10
-	float fromdb();
 	static float fromdb(float db);
 
 // convert db to power using a formula
@@ -78,11 +72,7 @@ public:
 	inline int operator==(DB &newdb) { return db == newdb.db; };
 	inline int operator==(int newdb) { return db == newdb; };
 
-	static float *topower;
 	float db;
-	float infinitygain;
- private:
-	static float *allocated;
 };
 
 // Third octave frequency table
@@ -105,7 +95,7 @@ public:
 // increment frequency by one
 	Freq& operator++();
 	Freq& operator--();
-	
+
 	int operator>(Freq &newfreq);
 	int operator<(Freq &newfreq);
 	Freq& operator=(const Freq &newfreq);
@@ -133,10 +123,8 @@ public:
 	static double fix_framerate(double value);
 	static double atoframerate(const char *text);
 
-
 // Punctuate with commas
 	static void punctuate(char *string);
-
 
 // separator strings for BC_TextBox::set_separators
 // Returns 0 if the format has no separators.
@@ -156,7 +144,7 @@ public:
 				int time_format, 
 				int sample_rate = 0,
 				float frame_rate = 0, 
-				float frames_per_foot = 0);    
+				float frames_per_foot = 0);
 // convert time to samples
 	static int64_t fromtext(const char *text, 
 				int samplerate, 
@@ -168,7 +156,7 @@ public:
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 
-				float frames_per_foot);   
+				float frames_per_foot);
 
 	static char* print_time_format(int time_format, char *string);
 

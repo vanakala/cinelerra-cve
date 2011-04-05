@@ -26,54 +26,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-// NOTE: DB::allocated is the original allocation, to which we keep a
-// pointer so that in theory we could have a destructor. DB::topower
-// is a pointer into the middle of DB::allocated, which allows us to
-// do lookups using negative array coefficients.
-float* DB::topower = 0;
-float* DB::allocated = NULL;
-
 int* Freq::freqtable = 0;
 
 
-DB::DB(float infinitygain)
+DB::DB()
 {
-	this->infinitygain = infinitygain;
-	if(allocated == NULL)
-	{
-		int i;
-		float value;
-
-		// db to power table
-		allocated = new float[(MAXGAIN - INFINITYGAIN) * 10 + 1];
-		topower = allocated + (-INFINITYGAIN * 10);
-		for(i = INFINITYGAIN * 10; i <= MAXGAIN * 10; i++)
-		{
-			topower[i] = pow(10, (float)i / 10 / 20);
-			
-//printf("%f %f\n", (float)i/10, topower[i]);
-		}
-		topower[INFINITYGAIN * 10] = 0;   // infinity gain
-	}
 	db = 0;
-}
-
-// FUTURE: would bounds checking be possible here?  Or at least make private?
-float DB::fromdb_table() 
-{ 
-	return db = topower[(int)(db * 10)]; 
-}
-
-float DB::fromdb_table(float db) 
-{ 
-	if(db > MAXGAIN) db = MAXGAIN;
-	if(db <= INFINITYGAIN) return 0;
-	return db = topower[(int)(db * 10)]; 
-}
-
-float DB::fromdb()
-{
-	return pow(10, db / 20);
 }
 
 float DB::fromdb(float db)
@@ -113,22 +71,21 @@ void Freq::init_table()
 	{
 		freqtable = new int[TOTALFREQS + 1];
 // starting frequency
-  		double freq1 = 27.5, freq2 = 55;  
+		double freq1 = 27.5, freq2 = 55;  
 // Some number divisable by three.  This depends on the value of TOTALFREQS
-  		int scale = 105;   
+		int scale = 105;
 
-  		freqtable[0] = 0;
-  		for(int i = 1, j = 0; i <= TOTALFREQS; i++, j++)
-  		{
-    		freqtable[i] = (int)(freq1 + (freq2 - freq1) / scale * j + 0.5);
-//printf("Freq::init_table %d\n", freqtable[i]);
-    		if(j >= scale)
+		freqtable[0] = 0;
+		for(int i = 1, j = 0; i <= TOTALFREQS; i++, j++)
+		{
+			freqtable[i] = (int)(freq1 + (freq2 - freq1) / scale * j + 0.5);
+			if(j >= scale)
 			{
 				freq1 = freq2;
 				freq2 *= 2;
 				j = 0;
 			}
-  		}
+		}
 	}
 }
 
@@ -136,19 +93,19 @@ int Freq::fromfreq()
 {
 	int i;
 
-  	for(i = 0; i < TOTALFREQS && freqtable[i] < freq; i++)
-    	;
-  	return(i);
+	for(i = 0; i < TOTALFREQS && freqtable[i] < freq; i++)
+		;
+	return(i);
 };
 
 int Freq::fromfreq(int index) 
 {
 	int i;
 
- 	init_table();
- 	for(i = 0; i < TOTALFREQS && freqtable[i] < index; i++)
-    	;
-  	return(i);
+	init_table();
+	for(i = 0; i < TOTALFREQS && freqtable[i] < index; i++)
+		;
+	return(i);
 };
 
 int Freq::tofreq(int index)
@@ -163,13 +120,13 @@ Freq& Freq::operator++()
 	if(freq < TOTALFREQS) freq++;
 	return *this;
 }
-	
+
 Freq& Freq::operator--()
 {
 	if(freq > 0) freq--;
 	return *this;
 }
-	
+
 int Freq::operator>(Freq &newfreq) { return freq > newfreq.freq; }
 int Freq::operator<(Freq &newfreq) { return freq < newfreq.freq; }
 Freq& Freq::operator=(const Freq &newfreq) { freq = newfreq.freq; return *this; }
@@ -194,56 +151,49 @@ char* Units::totext(char *text,
 			seconds = fabs(seconds);
 			sprintf(text, "%04d.%03d", (int)seconds, (int)(seconds * 1000) % 1000);
 			return text;
-			break;
 
 		case TIME_HMS:
 			seconds = fabs(seconds);
-  			hour = (int)(seconds / 3600);
-  			minute = (int)(seconds / 60 - hour * 60);
-  			second = (int)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
+			hour = (int)(seconds / 3600);
+			minute = (int)(seconds / 60 - hour * 60);
+			second = (int)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
 			thousandths = (int)(seconds * 1000) % 1000;
-  			sprintf(text, "%d:%02d:%02d.%03d", 
+			sprintf(text, "%d:%02d:%02d.%03d", 
 				hour, 
 				minute, 
 				second, 
 				thousandths);
 			return text;
-		  break;
-		
+
 		case TIME_HMS2:
 		{
 			float second;
 			seconds = fabs(seconds);
-  			hour = (int)(seconds / 3600);
-  			minute = (int)(seconds / 60 - hour * 60);
-  			second = (float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
-  			sprintf(text, "%d:%02d:%02d", hour, minute, (int)second);
+			hour = (int)(seconds / 3600);
+			minute = (int)(seconds / 60 - hour * 60);
+			second = (float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
+			sprintf(text, "%d:%02d:%02d", hour, minute, (int)second);
 			return text;
 		}
-		  break;
 
 		case TIME_HMS3:
 		{
 			float second;
 			seconds = fabs(seconds);
-  			hour = (int)(seconds / 3600);
-  			minute = (int)(seconds / 60 - hour * 60);
-  			second = (float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
-  			sprintf(text, "%02d:%02d:%02d", hour, minute, (int)second);
+			hour = (int)(seconds / 3600);
+			minute = (int)(seconds / 60 - hour * 60);
+			second = (float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
+			sprintf(text, "%02d:%02d:%02d", hour, minute, (int)second);
 			return text;
 		}
-		  break;
 
 		case TIME_HMSF:
 		{
 			int second;
 			seconds = fabs(seconds);
-  			hour = (int)(seconds / 3600);
-  			minute = (int)(seconds / 60 - hour * 60);
-  			second = (int)(seconds - hour * 3600 - minute * 60);
-//   			frame = (int64_t)round(frame_rate * 
-//   	 			 (float)((float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60 - second));
-//   			sprintf(text, "%01d:%02d:%02d:%02ld", hour, minute, second, frame);
+			hour = (int)(seconds / 3600);
+			minute = (int)(seconds / 60 - hour * 60);
+			second = (int)(seconds - hour * 3600 - minute * 60);
 			frame = (int64_t)((double)frame_rate * 
 					seconds + 
 					0.0000001) - 
@@ -257,22 +207,21 @@ char* Units::totext(char *text,
 			sprintf(text, "%01d:%02d:%02d:%02lld", hour, minute, second, frame);
 			return text;
 		}
-			break;
-			
+
 		case TIME_SAMPLES:
 			sprintf(text, "%09lld", to_int64(seconds * sample_rate));
 			break;
-		
+
 		case TIME_SAMPLES_HEX:
-  			sprintf(text, "%08llx", to_int64(seconds * sample_rate));
+			sprintf(text, "%08llx", to_int64(seconds * sample_rate));
 			break;
-		
+
 		case TIME_FRAMES:
 			frame = to_int64(seconds * frame_rate);
 			sprintf(text, "%06lld", frame);
 			return text;
 			break;
-		
+
 		case TIME_FEET_FRAMES:
 			frame = to_int64(seconds * frame_rate);
 			feet = (int64_t)(frame / frames_per_foot);
@@ -295,7 +244,7 @@ char* Units::totext(char *text,
 		float frames_per_foot)
 {
 	return totext(text, (double)samples / samplerate, time_format, samplerate, frame_rate, frames_per_foot);
-}    
+}
 
 int64_t Units::fromtext(const char *text, 
 			int samplerate, 
@@ -307,7 +256,7 @@ int64_t Units::fromtext(const char *text,
 	int64_t feet;
 	double seconds;
 	char string[BCTEXTLEN];
-	
+
 	switch(time_format)
 	{
 		case TIME_SECONDS:
@@ -331,7 +280,7 @@ int64_t Units::fromtext(const char *text,
 			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
 			string[j] = 0;
 			minutes = atol(string);
-			
+
 // get seconds
 			j = 0;
 // skip separator
@@ -351,7 +300,7 @@ int64_t Units::fromtext(const char *text,
 			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
 			string[j] = 0;
 			hours = atol(string);
-			
+
 // get minutes
 			j = 0;
 // skip separator
@@ -359,7 +308,7 @@ int64_t Units::fromtext(const char *text,
 			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
 			string[j] = 0;
 			minutes = atol(string);
-			
+
 // get seconds
 			j = 0;
 // skip separator
@@ -367,7 +316,7 @@ int64_t Units::fromtext(const char *text,
 			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
 			string[j] = 0;
 			seconds = atof(string);
-			
+
 // skip separator
 			while((text[i] < 48 || text[i] > 57) && text[i] != 0) i++;
 // get frames
@@ -375,7 +324,7 @@ int64_t Units::fromtext(const char *text,
 			while(text[i] >=48 && text[i] <= 57 && j < 10) string[j++] = text[i++];
 			string[j] = 0;
 			frames = atol(string);
-			
+
 			total_samples = (int64_t)(((float)frames / frame_rate + seconds + minutes*60 + hours*3600) * samplerate);
 			return total_samples;
 			break;
@@ -383,15 +332,15 @@ int64_t Units::fromtext(const char *text,
 		case TIME_SAMPLES:
 			return atol(text);
 			break;
-		
+
 		case TIME_SAMPLES_HEX:
 			sscanf(text, "%llx", &total_samples);
 			return total_samples;
-		
+
 		case TIME_FRAMES:
 			return (int64_t)(atof(text) / frame_rate * samplerate);
 			break;
-		
+
 		case TIME_FEET_FRAMES:
 // Get feet
 			i = 0;
@@ -427,10 +376,8 @@ double Units::text_to_seconds(const char *text,
 		frames_per_foot) / samplerate;
 }
 
-
-
-
-int Units::timeformat_totype(const char *tcf) {
+int Units::timeformat_totype(const char *tcf) 
+{
 	if (!strcmp(tcf,TIME_SECONDS__STR)) return(TIME_SECONDS);
 	if (!strcmp(tcf,TIME_HMS__STR)) return(TIME_HMS);
 	if (!strcmp(tcf,TIME_HMS2__STR)) return(TIME_HMS2);
@@ -467,7 +414,7 @@ double Units::fix_framerate(double value)
 	else
 	if(value > 23.5 && value < 24) 
 		value = (double)24000 / (double)1001;
-	
+
 	return value;
 }
 
@@ -481,7 +428,7 @@ double Units::atoframerate(const char *text)
 int64_t Units::tosamples(float frames, int sample_rate, float framerate) 
 { 
 	float result = (frames / framerate * sample_rate);
-	
+
 	if(result - (int)result) result += 1;
 	return (int64_t)result;
 } // give position in samples
@@ -574,7 +521,7 @@ char* Units::print_time_format(int time_format, char *string)
 		case 5: sprintf(string, "Feet-frames"); break;
 		case 8: sprintf(string, "Seconds"); break;
 	}
-	
+
 	return string;
 }
 
@@ -693,6 +640,3 @@ void Units::fix_double(double *x)
 {
 	*x = *x;
 }
-
-
-
