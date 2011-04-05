@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 
-#define INFINITYGAIN -40
+#define INFINITYGAIN -96
 #define MAXGAIN 50
 #define TOTALFREQS 1024
 
