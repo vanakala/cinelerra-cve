@@ -222,6 +222,7 @@ private:
 	Timer *record_timer;
 // Current operation
 	int is_playing_back;
+	int is_flushing;
 	int is_recording;
 	int global_timer_started;
 	int software_position_info;

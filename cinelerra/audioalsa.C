@@ -491,6 +491,8 @@ void AudioALSA::interrupt_playback()
 // Use lock to avoid snd_pcm_drop called during snd_pcm_writei
 		timing_lock->lock("AudioALSA::interrupt_playback");
 		snd_pcm_drop(get_output());
+// Prepare is needed to end snd_pcm_drain
+		snd_pcm_prepare(get_output());
 		timing_lock->unlock();
 	}
 }

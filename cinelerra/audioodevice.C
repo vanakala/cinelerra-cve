@@ -219,6 +219,7 @@ void AudioDevice::reset_output()
 	}
 
 	is_playing_back = 0;
+	is_flushing = 0;
 	software_position_info = 0;
 	position_correction = 0;
 	last_buffer_size = 0;
@@ -257,7 +258,7 @@ void AudioDevice::interrupt_playback()
 {
 	interrupt = 1;
 
-	if(is_playing_back)
+	if(is_playing_back || is_flushing)
 	{
 // cancel thread
 		is_playing_back = 0;
@@ -395,9 +396,11 @@ void AudioDevice::run_output()
 		if(!interrupt && last_buffer[thread_buffer_num])
 		{
 // no more buffers
-			is_playing_back = 0;
 // flush the audio device
+			is_flushing = 1;
+			is_playing_back = 0;
 			get_lowlevel_out()->flush_device();
+			is_flushing = 0;
 		}
 	}
 }
