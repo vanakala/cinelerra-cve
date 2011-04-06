@@ -143,7 +143,7 @@ void FolderListMenu::create_objects()
 
 void FolderListMenu::update_titles()
 {
-	format->set_text(mwindow->edl->session->folderlist_format == FOLDERS_TEXT ?
+	format->set_text(mwindow->edl->session->folderlist_format == ASSETS_TEXT ?
 		(char*)_("Display icons") : (char*)_("Display text"));
 }
 

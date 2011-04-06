@@ -1035,7 +1035,7 @@ AWindowFolders::AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, 
 		y,
 		w, 
 		h,
-		mwindow->edl->session->folderlist_format == FOLDERS_ICONS ? 
+		mwindow->edl->session->folderlist_format == ASSETS_ICONS ? 
 			LISTBOX_ICONS : LISTBOX_TEXT, 
 		&gui->folders, // Each column has an ArrayList of BC_ListBoxItems.
 		0,             // Titles for columns.  Set to 0 for no titles

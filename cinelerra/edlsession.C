@@ -59,7 +59,7 @@ EDLSession::EDLSession(EDL *edl)
 	strcpy(default_atransition, "");
 	strcpy(default_vtransition, "");
 	default_transition_length = 1.0;
-	folderlist_format = ASSETS_ICONS;
+	folderlist_format = ASSETS_TEXT;
 	frame_rate = 25; // just has to be something by default
 	autos_follow_edits = 1; // this is needed for predictability
 	labels_follow_edits = 1;
@@ -202,7 +202,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	edit_handle_mode[2] = defaults->get("EDIT_HANDLE_MODE2", MOVE_NO_EDITS);
 	editing_mode = defaults->get("EDITING_MODE", EDITING_IBEAM);
 	enable_duplex = defaults->get("ENABLE_DUPLEX", 1);
-	folderlist_format = defaults->get("FOLDERLIST_FORMAT", FOLDERS_ICONS);
+	folderlist_format = defaults->get("FOLDERLIST_FORMAT", ASSETS_TEXT);
 	frame_rate = defaults->get("FRAMERATE", frame_rate);
 	frames_per_foot = defaults->get("FRAMES_PER_FOOT", (float)16);
 	interpolation_type = defaults->get("INTERPOLATION_TYPE", interpolation_type);

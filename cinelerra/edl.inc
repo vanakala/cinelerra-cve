@@ -66,14 +66,11 @@ class EDL;
 #define CLIP_FOLDER "Clips"
 #define MEDIA_FOLDER "Media"
 
-
-
 #define AWINDOW_MODES 2
+
 // Modes for AWindow views
 #define ASSETS_TEXT 0
 #define ASSETS_ICONS 1
-#define FOLDERS_TEXT 0
-#define FOLDERS_ICONS 1
 
 #define ASSET_COLUMNS 2
 
