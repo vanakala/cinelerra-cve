@@ -83,6 +83,8 @@ FileMPEG::FileMPEG(Asset *asset, File *file)
 	asset->byte_order = 0;
 	next_frame_lock = new Condition(0, "FileMPEG::next_frame_lock");
 	next_frame_done = new Condition(0, "FileMPEG::next_frame_done");
+	temp_float = 0;
+	temp_float_allocated = 0;
 }
 
 FileMPEG::~FileMPEG()
@@ -90,6 +92,8 @@ FileMPEG::~FileMPEG()
 	close_file();
 	delete next_frame_lock;
 	delete next_frame_done;
+	if(temp_float)
+		delete [] temp_float;
 }
 
 void FileMPEG::get_parameters(BC_WindowBase *parent_window, 
@@ -1107,8 +1111,13 @@ int FileMPEG::read_samples(double *buffer, int len)
 {
 	if(!fd || len < 0) return 0;
 
-// This is directed to a FileMPEGBuffer
-	float *temp_float = new float[len];
+	if(temp_float_allocated < len)
+	{
+		if(temp_float)
+			delete [] temp_float;
+		temp_float = new float[len];
+		temp_float_allocated = len;
+	}
 
 	mpeg3_set_sample(fd, 
 		file->current_sample,
@@ -1122,7 +1131,6 @@ int FileMPEG::read_samples(double *buffer, int len)
 
 	for(int i = 0; i < len; i++) buffer[i] = temp_float[i];
 
-	delete [] temp_float;
 	return 0;
 }
 

@@ -112,16 +112,15 @@ private:
 	ArrayList<char*> vcommand_line;
 	void append_vcommand_line(const char *string);
 
-
+// Temp buffer
+	float *temp_float;
+	int temp_float_allocated;
 
 // DVB capture
 	FILE *dvb_out;
 
-
-
-
 // MJPEGtools encoder
-	FILE *mjpeg_out;	
+	FILE *mjpeg_out;
 	int mjpeg_error;
 	Condition *next_frame_lock;
 	Condition *next_frame_done;
@@ -132,17 +131,11 @@ private:
 	unsigned char *mjpeg_v;	
 	char mjpeg_command[BCTEXTLEN];
 
-
-
-
-
-
 // Thread for audio encoder
 	FileMPEGAudio *audio_out;
 // Command line for audio encoder
 	ArrayList<char*> acommand_line;
 	void append_acommand_line(const char *string);
-
 
 // Temporary for color conversion
 	VFrame *temp_frame;
@@ -150,7 +143,6 @@ private:
 	unsigned char *toolame_temp;
 	int toolame_allocation;
 	int toolame_result;
-
 
 	float *lame_temp[2];
 	int lame_allocation;
