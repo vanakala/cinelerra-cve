@@ -32,24 +32,24 @@ public:
 	FileItem(const char *path, 
 		const char *name, 
 		int is_dir, 
-		int64_t size, 
+		off_t size, 
 		int month, 
 		int day, 
 		int year,
-		int64_t calendar_time);
+		time_t calendar_time);
 	~FileItem();
 
-	int set_path(const char *path);
-	int set_name(const char *name);
-	int reset();
+	void set_path(const char *path);
+	void set_name(const char *name);
+	void reset();
 	char *path;
 	char *name;
 	int is_dir;
-	int64_t size;
+	off_t size;
 	int month;
 	int day;
 	int year;
-	int64_t calendar_time;
+	time_t calendar_time;
 };
 
 class FileSystem
@@ -65,38 +65,38 @@ public:
 	int update(const char *new_dir = 0);
 
 // Complete the path in the string and change to the directory in the string.
-// Does not change new_dir
-	int change_dir(const char *new_dir);
+	void change_dir(const char *new_dir);
+
 // Set the current_dir to something without completing the path.
-	int set_current_dir(const char *new_dir);
+	void set_current_dir(const char *new_dir);
 
 	int move_up();
 	char *get_current_dir();
 // Syntax of filter is
 // single filter without [].
 // multiple filters enclosed in [].
-	int set_filter(const char *new_filter);
-	int set_show_all();     // show hidden files
-	int set_want_directory();
-	int set_sort_order(int value);
-	int set_sort_field(int field);
-	int create_dir(const char *new_dir_);    // create a new directory
+	void set_filter(const char *new_filter);
+	void set_show_all();     // show hidden files
+	void set_want_directory();
+	void set_sort_order(int value);
+	void set_sort_field(int field);
+	void create_dir(const char *new_dir_);    // create a new directory
 	int complete_path(char *filename);   // use the filename and the current_dir to create a complete filename
 // return 1 if the text is a directory
-	int is_dir(const char *new_dir_);	  
-	int extract_dir(char *out, const char *in);    // extract the directory from the path
-	int extract_name(char *out, const char *in, int test_dir = 1);	// extract the name from the path
-	int join_names(char *out, const char *dir_in, 
+	int is_dir(const char *new_dir_);
+	void extract_dir(char *out, const char *in);    // extract the directory from the path
+	void extract_name(char *out, const char *in, int test_dir = 1);	// extract the name from the path
+	void join_names(char *out, const char *dir_in, 
 		const char *name_in);    // combine a directory and filename
-	static int64_t get_date(const char *filename);  // get the date of the filename modification
-	static int64_t get_size(const char *filename);  // Get the number of bytes in the file.
-	int add_end_slash(char *new_dir);
+	static time_t get_date(const char *filename);  // get the date of the filename modification
+	static off_t get_size(const char *filename);  // Get the number of bytes in the file.
+	void add_end_slash(char *new_dir);
 	int total_files();
 	FileItem* get_entry(int entry);
 
 	int parse_tildas(char *new_dir);     // expand tildas
-	int parse_directories(char *new_dir);  // add directories
-	int parse_dots(char *new_dir);         // move up directory tree after expanding tildas
+	void parse_directories(char *new_dir);  // add directories
+	void parse_dots(char *new_dir);         // move up directory tree after expanding tildas
 
 // Alphabetize all the directories and files.  By default
 // directories come first.
@@ -123,19 +123,19 @@ public:
 	};
 
 private:
-	int dot_reverse_filename(char *out, const char *in);
+	void dot_reverse_filename(char *out, const char *in);
 	int compare_items(ArrayList<FileItem*> *dir_list, int item1, int item2);
-	int sort_table(ArrayList<FileItem*> *dir_list);
+	void sort_table(ArrayList<FileItem*> *dir_list);
 
 
 // Combine the directories and files into the master list, directories first.
-	int combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *file_list);
+	void combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *file_list);
 // Return whether or not the string is the root directory.
 	int is_root_dir(char *path);
 // Whether or not the file passes the current filter.
 	int test_filter(FileItem *file);
-	int reset_parameters();
-	int delete_directory();
+	void reset_parameters();
+	void delete_directory();
 	char filter[BCTEXTLEN];     // what filenames have to end in to get displayed
 	int want_directory;
 	int show_all_files;       // shows . files

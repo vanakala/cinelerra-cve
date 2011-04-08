@@ -31,6 +31,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "bcsignals.h"
 #include "filesystem.h"
 
 FileItem::FileItem()
@@ -43,11 +44,11 @@ FileItem::FileItem()
 FileItem::FileItem(const char *path, 
 	const char *name, 
 	int is_dir, 
-	int64_t size, 
+	off_t size,
 	int month, 
 	int day, 
 	int year,
-	int64_t calendar_time)
+	time_t calendar_time)
 {
 	this->path = new char[strlen(path)];
 	this->name = new char[strlen(name)];
@@ -66,7 +67,7 @@ FileItem::~FileItem()
 	reset();
 }
 
-int FileItem::reset()
+void FileItem::reset()
 {
 	if(this->path) delete [] this->path;
 	if(this->name) delete [] this->name;
@@ -78,30 +79,28 @@ int FileItem::reset()
 	day = 0;
 	year = 0;
 	calendar_time = 0;
-	return 0;
 }
 
-int FileItem::set_path(const char *path)
+void FileItem::set_path(const char *path)
 {
 	if(this->path) delete [] this->path;
 	this->path = new char[strlen(path) + 1];
 	strcpy(this->path, path);
-	return 0;
 }
 
-int FileItem::set_name(const char *name)
+void FileItem::set_name(const char *name)
 {
 	if(this->name) delete [] this->name;
 	this->name = new char[strlen(name) + 1];
 	strcpy(this->name, name);
-	return 0;
 }
 
 
 FileSystem::FileSystem()
 {
 	reset_parameters();
-	if(getcwd(current_dir, BCTEXTLEN) == 0){
+	if(getcwd(current_dir, BCTEXTLEN) == 0)
+	{
 		perror("get current working directory");
 		abort();
 	}
@@ -112,33 +111,31 @@ FileSystem::~FileSystem()
 	delete_directory();
 }
 
-int FileSystem::reset_parameters()
+void FileSystem::reset_parameters()
 {
- 	show_all_files = 0;
+	show_all_files = 0;
 	want_directory = 0;
 	strcpy(filter, "");
 	strcpy(current_dir, "");
 	sort_order = SORT_ASCENDING;
 	sort_field = SORT_PATH;
-	return 0;
 }
 
-int FileSystem::delete_directory()
+void FileSystem::delete_directory()
 {
 	for(int i = 0; i < dir_list.total; i++)
 	{
 		delete dir_list.values[i];
 	}
 	dir_list.remove_all();
-	return 0;
 }
 
-int FileSystem::set_sort_order(int value)
+void FileSystem::set_sort_order(int value)
 {
 	this->sort_order = value;
 }
 
-int FileSystem::set_sort_field(int field)
+void FileSystem::set_sort_field(int field)
 {
 	this->sort_field = field;
 }
@@ -147,7 +144,7 @@ int FileSystem::set_sort_field(int field)
 //   becomes
 // extension.dots.with.filename
 
-int FileSystem::dot_reverse_filename(char *out, const char *in)
+void FileSystem::dot_reverse_filename(char *out, const char *in)
 {
 	int i, i2, j=0, lastdot;
 	lastdot = strlen(in);
@@ -166,7 +163,6 @@ int FileSystem::dot_reverse_filename(char *out, const char *in)
 		while (i < lastdot) out[j++] = in[i++];
 	}
 	out[j++] = '\0';
-	return 0;
 }
 
 int FileSystem::compare_items(ArrayList<FileItem*> *dir_list, 
@@ -176,52 +172,51 @@ int FileSystem::compare_items(ArrayList<FileItem*> *dir_list,
 	int result = 0;
 	FileItem *ptr1 = dir_list->values[item1];
 	FileItem *ptr2 = dir_list->values[item2];
+	char dotreversedname1[BCTEXTLEN], dotreversedname2[BCTEXTLEN];
 
 // Default to name in ascending order
 	switch(sort_field)
 	{
-		char dotreversedname1[BCTEXTLEN], dotreversedname2[BCTEXTLEN];
+	case SORT_PATH:
+		result = (sort_order == SORT_ASCENDING) ? 
+			strcasecmp(ptr1->name, ptr2->name) :
+			strcasecmp(ptr2->name, ptr1->name);
+		break;
+	case SORT_SIZE:
+		if(ptr1->size == ptr2->size || ptr1->is_dir)
+			result = strcasecmp(ptr1->name, ptr2->name);
+		else
+			result = (sort_order == SORT_ASCENDING) ?
+				(ptr1->size > ptr2->size) :
+				(ptr2->size > ptr1->size);
+		break;
+	case SORT_DATE:
+		if(ptr1->calendar_time == ptr2->calendar_time)
+			result = strcasecmp(ptr1->name, ptr2->name);
+		else
+			result = (sort_order == SORT_ASCENDING) ?
+				(ptr1->calendar_time > ptr2->calendar_time) :
+				(ptr2->calendar_time > ptr1->calendar_time);
+		break;
+	case SORT_EXTENSION:
+		dot_reverse_filename(dotreversedname1,ptr1->name);
+		dot_reverse_filename(dotreversedname2,ptr2->name);
 
-		case SORT_PATH:
-			result = (sort_order == SORT_ASCENDING) ? 
-				strcasecmp(ptr1->name, ptr2->name) :
-				strcasecmp(ptr2->name, ptr1->name);
-			break;
-		case SORT_SIZE:
-			if(ptr1->size == ptr2->size || ptr1->is_dir)
-				result = strcasecmp(ptr1->name, ptr2->name);
-			else
-				result = (sort_order == SORT_ASCENDING) ?
-					(ptr1->size > ptr2->size) :
-					(ptr2->size > ptr1->size);
-			break;
-		case SORT_DATE:
-			if(ptr1->calendar_time == ptr2->calendar_time)
-				result = strcasecmp(ptr1->name, ptr2->name);
-			else
-				result = (sort_order == SORT_ASCENDING) ?
-					(ptr1->calendar_time > ptr2->calendar_time) :
-					(ptr2->calendar_time > ptr1->calendar_time);
-			break;
-		case SORT_EXTENSION:
-			dot_reverse_filename(dotreversedname1,ptr1->name);
-			dot_reverse_filename(dotreversedname2,ptr2->name);
-
-			result = (sort_order == SORT_ASCENDING) ? 
-			strcasecmp(dotreversedname1, dotreversedname2) :
-			strcasecmp(dotreversedname2, dotreversedname1);
-			break;
+		result = (sort_order == SORT_ASCENDING) ? 
+		strcasecmp(dotreversedname1, dotreversedname2) :
+		strcasecmp(dotreversedname2, dotreversedname1);
+		break;
 	}
 	return result;
 }
 
 
-int FileSystem::sort_table(ArrayList<FileItem*> *dir_list)
+void FileSystem::sort_table(ArrayList<FileItem*> *dir_list)
 {
 	int changed;
 	FileItem *temp;
 	int i;
-	
+
 	changed = 1;
 	while(changed)
 	{
@@ -229,7 +224,6 @@ int FileSystem::sort_table(ArrayList<FileItem*> *dir_list)
 		for(i = 0; i < dir_list->total - 1; i++)
 		{
 			if(compare_items(dir_list, i, i + 1) > 0)
-//			if(strcasecmp(dir_list->values[i]->name, dir_list->values[i + 1]->name) > 0)
 			{
 				temp = dir_list->values[i];
 				dir_list->values[i] = dir_list->values[i+1];
@@ -238,14 +232,13 @@ int FileSystem::sort_table(ArrayList<FileItem*> *dir_list)
 			}
 		}
 	}
-	return 0;
 }
 
-int FileSystem::combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *file_list)
+void FileSystem::combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *file_list)
 {
 	int i;
 	FileItem *new_entry, *entry;
-	
+
 	sort_table(dir_list);
 	for(i = 0; i < dir_list->total; i++)
 	{
@@ -257,7 +250,6 @@ int FileSystem::combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *fi
 	{
 		this->dir_list.append(file_list->values[i]);
 	}
-	return 0;
 }
 
 void FileSystem::alphabetize()
@@ -362,7 +354,6 @@ int FileSystem::test_filter(FileItem *file)
 // Subfilter must exist at this point in the string
 					{
 						if(strncmp(path, string2, strlen(string2))) 
-//						if(strncasecmp(path, string2, strlen(string2))) 
 						{
 							result = 1;
 							token_done = 1;
@@ -422,8 +413,8 @@ int FileSystem::update(const char *new_dir)
 		if(include_this && !show_all_files && new_filename->d_name[0] == '.') include_this = 0;
 
 // file not hidden
-  		if(include_this)
-    	{
+		if(include_this)
+		{
 			new_file = new FileItem;
 			sprintf(full_path, "%s", current_dir);
 			if(!is_root_dir(current_dir)) strcat(full_path, "/");
@@ -450,14 +441,12 @@ int FileSystem::update(const char *new_dir)
 
 // File is excluded from filter
 				if(include_this && test_filter(new_file)) include_this = 0;
-//printf("FileSystem::update 3 %d %d\n", include_this, test_filter(new_file));
 
 // File is not a directory and we just want directories
 				if(include_this && want_directory && !new_file->is_dir) include_this = 0;
 			}
 			else
 			{
-//printf("FileSystem::update 3 %s\n", full_path);
 				printf("FileSystem::update %s: %s\n",
 					full_path,
 					strerror(errno));
@@ -487,22 +476,19 @@ int FileSystem::update(const char *new_dir)
 // success
 }
 
-int FileSystem::set_filter(const char *new_filter)
+void FileSystem::set_filter(const char *new_filter)
 {
 	strcpy(filter, new_filter);
-	return 0;
 }
 
-int FileSystem::set_show_all()
+void FileSystem::set_show_all()
 {
 	show_all_files = 1;
-	return 0;
 }
 
-int FileSystem::set_want_directory()
+void FileSystem::set_want_directory()
 {
 	want_directory = 1;
-	return 0;
 }
 
 int FileSystem::is_dir(const char *path)      // return 0 if the text is a directory
@@ -520,14 +506,13 @@ int FileSystem::is_dir(const char *path)      // return 0 if the text is a direc
 		return 0;
 }
 
-int FileSystem::create_dir(const char *new_dir_)
+void FileSystem::create_dir(const char *new_dir_)
 {
 	char new_dir[BCTEXTLEN];
 	strcpy(new_dir, new_dir_);
 	complete_path(new_dir);
 
 	mkdir(new_dir, S_IREAD | S_IWRITE | S_IEXEC);
-	return 0;
 }
 
 int FileSystem::parse_tildas(char *new_dir)
@@ -552,17 +537,17 @@ int FileSystem::parse_tildas(char *new_dir)
 		}
 		else
 // Another user's home directory
-		{                
+		{
 			char string[BCTEXTLEN], new_user[BCTEXTLEN];
 			struct passwd *pw;
 			int i, j;
-      
+
 			for(i = 1, j = 0; new_dir[i] != 0 && new_dir[i] != '/'; i++, j++)
 			{                // copy user name
 				new_user[j] = new_dir[i];
 			}
 			new_user[j] = 0;
-      
+
 			setpwent();
 			while(pw = getpwent())
 			{
@@ -570,10 +555,10 @@ int FileSystem::parse_tildas(char *new_dir)
 				if(!strcmp(pw->pw_name, new_user))
 				{
 // print starting after tilda
-      				sprintf(string, "%s%s", pw->pw_dir, &new_dir[i]);
-      				strcpy(new_dir, string);
-      				break;
-      			}
+					sprintf(string, "%s%s", pw->pw_dir, &new_dir[i]);
+					strcpy(new_dir, string);
+					break;
+				}
 			}
 			endpwent();
 			return 0;
@@ -582,14 +567,12 @@ int FileSystem::parse_tildas(char *new_dir)
 	return 0;
 }
 
-int FileSystem::parse_directories(char *new_dir)
+void FileSystem::parse_directories(char *new_dir)
 {
-//printf("FileSystem::parse_directories 1 %s\n", new_dir);
 	if(new_dir[0] != '/')
 	{
 // extend path completely
 		char string[BCTEXTLEN];
-//printf("FileSystem::parse_directories 2 %s\n", current_dir);
 		if(!strlen(current_dir))
 		{
 // no current directory
@@ -601,22 +584,19 @@ int FileSystem::parse_directories(char *new_dir)
 // current directory is not root
 			if(current_dir[strlen(current_dir) - 1] == '/')
 // current_dir already has ending /
-			sprintf(string, "%s%s", current_dir, new_dir);
+				sprintf(string, "%s%s", current_dir, new_dir);
 			else
 // need ending /
-			sprintf(string, "%s/%s", current_dir, new_dir);
+				sprintf(string, "%s/%s", current_dir, new_dir);
 		}
 		else
 			sprintf(string, "%s%s", current_dir, new_dir);
-		
-//printf("FileSystem::parse_directories 3 %s %s\n", new_dir, string);
+
 		strcpy(new_dir, string);
-//printf("FileSystem::parse_directories 4\n");
 	}
-	return 0;
 }
 
-int FileSystem::parse_dots(char *new_dir)
+void FileSystem::parse_dots(char *new_dir)
 {
 // recursively remove ..s
 	int changed = 1;
@@ -664,25 +644,18 @@ int FileSystem::parse_dots(char *new_dir)
 			}
 		}
 	}
-	return 0;
 }
 
 int FileSystem::complete_path(char *filename)
 {
-//printf("FileSystem::complete_path 1\n");
 	if(!strlen(filename)) return 1;
-//printf("FileSystem::complete_path 1\n");
 	parse_tildas(filename);
-//printf("FileSystem::complete_path 1\n");
 	parse_directories(filename);
-//printf("FileSystem::complete_path 1\n");
 	parse_dots(filename);
-// don't add end slash since this requires checking if dir
-//printf("FileSystem::complete_path 2\n");
 	return 0;
 }
 
-int FileSystem::extract_dir(char *out, const char *in)
+void FileSystem::extract_dir(char *out, const char *in)
 {
 	strcpy(out, in);
 	if(!is_dir(in))
@@ -698,10 +671,9 @@ int FileSystem::extract_dir(char *out, const char *in)
 		}
 		if(i >= 0) out[i] = 0;
 	}
-	return 0;
 }
 
-int FileSystem::extract_name(char *out, const char *in, int test_dir)
+void FileSystem::extract_name(char *out, const char *in, int test_dir)
 {
 	int i;
 
@@ -716,10 +688,9 @@ int FileSystem::extract_name(char *out, const char *in, int test_dir)
 		if(in[i] == '/') i++;
 		strcpy(out, &in[i]);
 	}
-	return 0;
 }
 
-int FileSystem::join_names(char *out, const char *dir_in, const char *name_in)
+void FileSystem::join_names(char *out, const char *dir_in, const char *name_in)
 {
 	strcpy(out, dir_in);
 	int len = strlen(out);
@@ -727,36 +698,35 @@ int FileSystem::join_names(char *out, const char *dir_in, const char *name_in)
 
 	while(!result)
 		if(len == 0 || out[len] != 0) result = 1; else len--;
-	
+
 	if(len != 0)
 	{
 		if(out[len] != '/') strcat(out, "/");
 	}
-	
+
 	strcat(out, name_in);
-	return 0;
 }
 
-int64_t FileSystem::get_date(const char *filename)
+time_t FileSystem::get_date(const char *filename)
 {
 	struct stat file_status;
-	bzero(&file_status, sizeof(struct stat));
+	memset(&file_status, 0, sizeof(struct stat));
 	stat(filename, &file_status);
 	return file_status.st_mtime;
 }
 
-int64_t FileSystem::get_size(const char *filename)
+off_t FileSystem::get_size(const char *filename)
 {
 	struct stat file_status;
-	bzero(&file_status, sizeof(struct stat));
+	memset(&file_status, 0, sizeof(struct stat));
 	stat(filename, &file_status);
 	return file_status.st_size;
 }
 
-int FileSystem::change_dir(const char *new_dir)
+void FileSystem::change_dir(const char *new_dir)
 {
 	char new_dir_full[BCTEXTLEN];
-	
+
 	strcpy(new_dir_full, new_dir);
 
 	complete_path(new_dir_full);
@@ -765,19 +735,16 @@ int FileSystem::change_dir(const char *new_dir)
 		new_dir_full[strlen(new_dir_full) - 1] == '/') 
 		new_dir_full[strlen(new_dir_full) - 1] = 0;
 	update(new_dir_full);
-	return 0;
 }
 
-int FileSystem::set_current_dir(const char *new_dir)
+void FileSystem::set_current_dir(const char *new_dir)
 {
 	strcpy(current_dir, new_dir);
-	return 0;
 }
 
-int FileSystem::add_end_slash(char *new_dir)
+void FileSystem::add_end_slash(char *new_dir)
 {
 	if(new_dir[strlen(new_dir) - 1] != '/') strcat(new_dir, "/");
-	return 0;
 }
 
 char* FileSystem::get_current_dir()
