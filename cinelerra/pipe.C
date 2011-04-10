@@ -164,3 +164,30 @@ void Pipe::close()
 		fd = -1;
 	}
 }
+
+char *Pipe::search_executable(const char *name, char *exepath)
+{
+	char *p, *q;
+
+	if(name == 0 || *name == 0)
+		return 0;
+	if((p = getenv("PATH")) == 0)
+		return 0;
+
+	for(q = p; q; p = q + 1)
+	{
+		q = strchr(p, ':');
+		if(q)
+		{
+			strncpy(exepath, p, q - p);
+			exepath[q - p] = 0;
+		}
+		else
+			strcpy(exepath, p);
+		strcat(exepath, "/");
+		strcat(exepath, name);
+		if(access(exepath, X_OK) == 0)
+			return exepath;
+	}
+	return 0;
+}
