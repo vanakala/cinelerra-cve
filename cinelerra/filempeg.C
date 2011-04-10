@@ -37,6 +37,7 @@
 #include "mainerror.h"
 #include "mwindow.inc"
 #include "preferences.h"
+#include "pipe.h"
 #include "vframe.h"
 #include "videodevice.inc"
 
@@ -48,7 +49,7 @@
 #define MPEG_YUV422 1
 
 
-#define MJPEG_EXE PLUGIN_DIR "/mpeg2enc.plugin"
+#define MJPEG_EXE "mpeg2enc"
 
 // M JPEG dependancies
 static double frame_rate_codes[] = 
@@ -256,9 +257,9 @@ int FileMPEG::open_file(int rd, int wr)
 
 	if(wr && asset->format == FILE_VMPEG)
 	{
-// Heroine Virtual encoder
 		if(asset->vmpeg_cmodel == MPEG_YUV422)
 		{
+// Heroine Virtual encoder
 			char bitrate_string[BCTEXTLEN];
 			char quant_string[BCTEXTLEN];
 			char iframe_string[BCTEXTLEN];
@@ -314,19 +315,24 @@ int FileMPEG::open_file(int rd, int wr)
 			}
 		}
 		else
-// mjpegtools encoder
 		{
+// mjpegtools encoder
 			char string[BCTEXTLEN];
-			sprintf(mjpeg_command, MJPEG_EXE);
 
+			if(Pipe::search_executable(MJPEG_EXE, mjpeg_command) == 0)
+			{
+				errorbox("Could not find encoder " MJPEG_EXE);
+				return 1;
+			}
 // Must disable interlacing if MPEG-1
 			switch (asset->vmpeg_preset)
 			{
-			case 0: asset->vmpeg_progressive = 1; break;
-			case 1: asset->vmpeg_progressive = 1; break;
-			case 2: asset->vmpeg_progressive = 1; break;
+			case 0:
+			case 1:
+			case 2: 
+				asset->vmpeg_progressive = 1; 
+				break;
 			}
-
 // The current usage of mpeg2enc requires bitrate of 0 when quantization is fixed and
 // quantization of 1 when bitrate is fixed.  Perfectly intuitive.
 			if(asset->vmpeg_fix_bitrate)
@@ -403,10 +409,10 @@ int FileMPEG::open_file(int rd, int wr)
 			sprintf(string, " -o '%s'", asset->path);
 			strcat(mjpeg_command, string);
 
-			errormsg("Running %s\n", mjpeg_command);
 			if(!(mjpeg_out = popen(mjpeg_command, "w")))
 			{
 				errormsg("Error while opening \"%s\" for writing. \n%m\n", mjpeg_command);
+				return 1;
 			}
 
 			video_out = new FileMPEGVideo(this);
@@ -416,12 +422,6 @@ int FileMPEG::open_file(int rd, int wr)
 	else
 	if(wr && asset->format == FILE_AMPEG)
 	{
-		char command_line[BCTEXTLEN];
-		char encoder_string[BCTEXTLEN];
-		char argument_string[BCTEXTLEN];
-
-		encoder_string[0] = 0;
-
 		if(asset->ampeg_derivative == 2)
 		{
 			char string[BCTEXTLEN];
