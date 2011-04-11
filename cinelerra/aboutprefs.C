@@ -58,21 +58,21 @@ int AboutPrefs::create_objects()
 	y = mwindow->theme->preferencesoptions_y +
 		get_text_height(LARGEFONT);
 
-	char license1[BCTEXTLEN];
-	sprintf(license1, "%s %s", _("Cinelerra "), CINELERRA_VERSION);
-
 	set_font(LARGEFONT);
 	set_color(resources->text_default);
-	draw_text(x, y, license1);
+	draw_text(x, y, PROGRAM_NAME " " CINELERRA_VERSION);
 
 	y += get_text_height(LARGEFONT);
-	char license2[BCTEXTLEN];
-	sprintf(license2, "%s%s",
-		"(C) 2006 Heroine Virtual Ltd.\n",
-		"(C) 2006-2011 The CinelerraCV Community\n\n",
-		REPOABOUTPREFTXT);
 	set_font(MEDIUMFONT);
-	draw_text(x, y, license2);
+
+	draw_text(x, y, COPYRIGHTTEXT1
+#if defined(COPYRIGHTTEXT2)
+	"\n" COPYRIGHTTEXT2
+#endif
+#if defined(REPOMAINTXT)
+	"\n" REPOMAINTXT
+#endif
+	);
 
 
 

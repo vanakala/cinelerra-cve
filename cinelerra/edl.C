@@ -48,7 +48,7 @@
 #include "tracks.h"
 #include "transportque.inc"
 #include "vtrack.h"
-
+#include "versioninfo.h"
 
 
 
