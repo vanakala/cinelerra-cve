@@ -55,9 +55,6 @@ public:
 
 	void run();
 
-// Values to return from playback_engine to update_meter .
-// Use ArrayList to simplify module counting
-	ArrayList<double> module_levels;
 	int state;
 	int view_follows_playback;
 // Delay until startup

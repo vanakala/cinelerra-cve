@@ -151,6 +151,7 @@ int VirtualAConsole::process_buffer(int len,
 		if(current_aframe)
 		{
 			samplenum start_position = arender->tounits(start_postime, 1);
+
 			for(int j = 0; j < len; )
 			{
 				int meter_render_end;
@@ -168,13 +169,11 @@ int VirtualAConsole::process_buffer(int len,
 				for( ; j < meter_render_end; j++)
 				{
 // Level history comes before clipping to get over status
-					double *sample = &current_aframe->buffer[j];
+					double sample = fabs(current_aframe->buffer[j]);
 
-
-					if(fabs(*sample) > peak) 
-						peak = fabs(*sample);
+					if(sample > peak)
+						peak = sample;
 				}
-
 
 				if(renderengine->command->realtime)
 				{

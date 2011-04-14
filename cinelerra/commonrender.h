@@ -83,6 +83,8 @@ public:
 // Modules can persist after vconsole is restarted.
 	int total_modules;
 	Module **modules;
+	double *module_levels;
+
 	int data_type;
 // If a VirtualConsole was created need to start plugins
 	int restart_plugins;

@@ -55,7 +55,8 @@ CommonRender::~CommonRender()
 	{
 		for(int i = 0; i < total_modules; i++)
 			delete modules[i];
-	 	delete [] modules;
+		delete [] modules;
+		delete [] module_levels;
 	}
 	delete start_lock;
 }
@@ -70,6 +71,7 @@ void CommonRender::reset_parameters()
 	last_playback = 0;
 	asynchronous = 0;
 	restart_plugins = 0;
+	module_levels = 0;
 }
 
 void CommonRender::arm_command()
@@ -109,6 +111,7 @@ void CommonRender::create_modules()
 	{
 		total_modules = get_total_tracks();
 		modules = new Module*[total_modules];
+		module_levels = new double[total_modules];
 
 		for(module = 0; module < total_modules && current; current = NEXT)
 		{

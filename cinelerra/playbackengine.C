@@ -224,15 +224,15 @@ int PlaybackEngine::get_output_levels(double *levels, samplenum position)
 }
 
 
-int PlaybackEngine::get_module_levels(ArrayList<double> *module_levels, samplenum position)
+int PlaybackEngine::get_module_levels(double **module_levels, samplenum position)
 {
-	int result = 0;
 	if(render_engine && render_engine->do_audio)
 	{
-		result = 1;
-		render_engine->get_module_levels(module_levels, position);
+		int n;
+		*module_levels = render_engine->get_module_levels(&n, position);
+		return n;
 	}
-	return result;
+	return 0;
 }
 
 

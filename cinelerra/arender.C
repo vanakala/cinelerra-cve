@@ -113,7 +113,7 @@ void ARender::init_meters()
 // not providing enough peaks results in peaks that are ahead of the sound
 	if(level_samples) delete [] level_samples;
 	calculate_history_size();
-	level_samples = new int64_t[total_peaks];
+	level_samples = new samplenum[total_peaks];
 
 	for(int i = 0; i < MAXCHANNELS;i++)
 	{
@@ -222,16 +222,16 @@ int ARender::process_buffer(int input_len, ptstime input_postime)
 	return result;
 }
 
-int ARender::get_history_number(int64_t *table, samplenum position)
+int ARender::get_history_number(samplenum *table, samplenum position)
 {
 // Get the entry closest to position
 	int result = 0;
-	int64_t min_difference = 0x7fffffff;
+	samplenum min_difference = 0x7fffffff;
 	for(int i = 0; i < total_peaks; i++)
 	{
-		if(labs(table[i] - position) < min_difference)
+		if(llabs(table[i] - position) < min_difference)
 		{
-			min_difference = labs(table[i] - position);
+			min_difference = llabs(table[i] - position);
 			result = i;
 		}
 	}

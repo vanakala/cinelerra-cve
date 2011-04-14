@@ -61,7 +61,7 @@ public:
 	void interrupt_playback(int wait_tracking = 0);
 // Get levels for tracking.  Return 0 if no audio.
 	int get_output_levels(double *levels, samplenum position);
-	int get_module_levels(ArrayList<double> *module_levels, samplenum position);
+	int get_module_levels(double **module_levels, samplenum position);
 // The MWindow starts the playback cursor loop
 // The other windows start a slider loop
 // For pausing only the cursor is run

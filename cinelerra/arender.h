@@ -47,18 +47,18 @@ public:
 // meter fragments to buffer.
 	int calculate_history_size();
 // Get subscript of history entry corresponding to sample
-	int get_history_number(int64_t *table, samplenum position);
+	int get_history_number(samplenum *table, samplenum position);
 
 // output buffers for audio device
 	AFrame *audio_out[MAXCHANNELS];
 // information for meters
 	int get_next_peak(int current_peak);
 // samples to use for one meter update.  Must be multiple of fragment_len
-	samplenum meter_render_fragment;
+	int meter_render_fragment;
 // Level history of output buffers
 	double *level_history[MAXCHANNELS];
 // sample position of each level
-	int64_t *level_samples;
+	samplenum *level_samples;
 // total entries in level_history
 	int total_peaks;
 // Next level to store value in

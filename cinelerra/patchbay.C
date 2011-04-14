@@ -357,10 +357,10 @@ void PatchBay::change_meter_format(int mode, int min, int max)
 	}
 }
 
-void PatchBay::update_meters(ArrayList<double> *module_levels)
+void PatchBay::update_meters(double *module_levels, int total)
 {
 	for(int level_number = 0, patch_number = 0;
-		patch_number < patches.total && level_number < module_levels->total;
+		patch_number < patches.total && level_number < total;
 		patch_number++)
 	{
 		APatchGUI *patchgui = (APatchGUI*)patches.values[patch_number];
@@ -369,7 +369,7 @@ void PatchBay::update_meters(ArrayList<double> *module_levels)
 		{
 			if(patchgui->meter)
 			{
-				double level = module_levels->values[level_number];
+				double level = module_levels[level_number];
 				patchgui->meter->update(level, level > 1);
 			}
 

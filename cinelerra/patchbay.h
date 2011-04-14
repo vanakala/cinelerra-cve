@@ -52,7 +52,7 @@ public:
 
 // Synchronize with Master EDL
 	int update();
-	void update_meters(ArrayList<double> *module_levels);
+	void update_meters(double *module_levels, int total);
 	void stop_meters();
 	void synchronize_nudge(posnum value, Track *skip);
 	void synchronize_faders(float value, int data_type, Track *skip);

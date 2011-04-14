@@ -468,7 +468,7 @@ void RenderEngine::close_output()
 	}
 }
 
-void RenderEngine::get_output_levels(double *levels, int64_t position)
+void RenderEngine::get_output_levels(double *levels, samplenum position)
 {
 	if(do_audio)
 	{
@@ -482,17 +482,22 @@ void RenderEngine::get_output_levels(double *levels, int64_t position)
 	}
 }
 
-void RenderEngine::get_module_levels(ArrayList<double> *module_levels, int64_t position)
+double* RenderEngine::get_module_levels(int *num_modules, samplenum position)
 {
 	if(do_audio)
 	{
+		double *mlv = arender->module_levels;
+
 		for(int i = 0; i < arender->total_modules; i++)
 		{
 			int history_entry = arender->get_history_number(((AModule*)arender->modules[i])->level_samples, position);
 
-			module_levels->append(((AModule*)arender->modules[i])->level_history[history_entry]);
+			mlv[i] = ((AModule*)arender->modules[i])->level_history[history_entry];
 		}
+		*num_modules = arender->total_modules;
+		return mlv;
 	}
+	return 0;
 }
 
 
