@@ -86,11 +86,10 @@ int BC_Meter::get_meter_w()
 }
 
 
-int BC_Meter::set_delays(int over_delay, int peak_delay)
+void BC_Meter::set_delays(int over_delay, int peak_delay)
 {
 	this->over_delay = over_delay;
 	this->peak_delay = peak_delay;
-	return 0;
 }
 
 int BC_Meter::initialize()
@@ -132,7 +131,7 @@ void BC_Meter::set_images(VFrame **data)
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
 }
 
-int BC_Meter::reposition_window(int x, int y, int pixels)
+void BC_Meter::reposition_window(int x, int y, int pixels)
 {
 	if(pixels < 0) pixels = this->pixels;
 	this->pixels = pixels;
@@ -141,19 +140,13 @@ int BC_Meter::reposition_window(int x, int y, int pixels)
 	else
 		BC_SubWindow::reposition_window(x, y, pixels, get_h());
 
-//printf("BC_Meter::reposition_window 1 %d %d %d %d\n", x, y, w, h);
 	get_divisions();
 
-//set_color(WHITE);
-//draw_box(0, 0, w, h);
-//flash();	
-//return 0;
 	draw_titles();
 	draw_face();
-	return 0;
 }
 
-int BC_Meter::reset()
+void BC_Meter::reset()
 {
 	level = min;
 	peak = min;
@@ -162,7 +155,6 @@ int BC_Meter::reset()
 	over_timer = 0;
 	over_count = 0;
 	draw_face();
-	return 0;
 }
 
 int BC_Meter::button_press_event()
@@ -176,19 +168,17 @@ int BC_Meter::button_press_event()
 }
 
 
-int BC_Meter::reset_over()
+void BC_Meter::reset_over()
 {
 	over_timer = 0;
-	return 0;
 }
 
-int BC_Meter::change_format(int mode, int min, int max)
+void BC_Meter::change_format(int mode, int min, int max)
 {
 	this->mode = mode;
 	this->min = min;
 	this->max = max;
 	reposition_window(get_x(), get_y(), pixels);
-	return 0;
 }
 
 int BC_Meter::level_to_pixel(float level)
@@ -206,7 +196,7 @@ int BC_Meter::level_to_pixel(float level)
 // Not implemented anymore
 		result = 0;
 	}
-	
+
 	return result;
 }
 
@@ -218,7 +208,6 @@ void BC_Meter::get_divisions()
 	int division, division_step;
 	char string[BCTEXTLEN];
 	char *new_string;
-
 
 	db_titles.remove_all_objects();
 	title_pixels.remove_all();
@@ -282,9 +271,6 @@ void BC_Meter::get_divisions()
 			high_division = current_pixel;
 		}
 	}
-// if(orientation == METER_VERT)
-// printf("BC_Meter::get_divisions %d %d %d %d\n",
-// low_division, medium_division, high_division, pixels);
 }
 
 void BC_Meter::draw_titles()
@@ -364,7 +350,7 @@ int BC_Meter::region_pixels(int region)
 	int x2;
 	int result;
 	VFrame **reference_images = get_resources()->xmeter_images;
-	
+
 	x1 = region * reference_images[0]->get_w() / 4;
 	x2 = (region + 1) * reference_images[0]->get_w() / 4;
 	if(region == METER_MID) 
@@ -389,7 +375,6 @@ void BC_Meter::draw_face()
 	int w = use_titles ? this->w - get_title_w() : this->w;
 
 	draw_top_background(parent_window, x, 0, w, h);
-//printf("BC_Meter::draw_face %d %d\n", w, h);
 
 	while(pixel < pixels)
 	{
@@ -434,7 +419,6 @@ void BC_Meter::draw_face()
 			in_span = region_pixels(region) - (in_start - region_pixel(region));;
 		}
 
-//printf("BC_Meter::draw_face region %d pixel %d pixels %d in_start %d in_span %d\n", region, pixel, pixels, in_start, in_span);
 		if(in_span > 0)
 		{
 // Clip length to peaks
@@ -464,8 +448,6 @@ void BC_Meter::draw_face()
 			if(pixel < right_pixel && pixel + in_span > right_pixel)
 				in_span = right_pixel - pixel;
 
-//printf("BC_Meter::draw_face image_number %d pixel %d pixels %d in_start %d in_span %d\n", image_number, pixel, pixels, in_start, in_span);
-//printf("BC_Meter::draw_face %d %d %d %d\n", orientation, region, images[image_number]->get_h() - in_start - in_span);
 			if(orientation == METER_HORIZ)
 				draw_pixmap(images[image_number], 
 					pixel, 
@@ -506,14 +488,14 @@ void BC_Meter::draw_face()
 		over_timer--;
 	}
 
-   	if(orientation == METER_HORIZ)
+	if(orientation == METER_HORIZ)
 		flash(0, 0, pixels, get_h());
 	else
 		flash(x, 0, w, pixels);
 	flush();
 }
 
-int BC_Meter::update(float new_value, int over)
+void BC_Meter::update(float new_value, int over)
 {
 	peak_timer++;
 
@@ -531,11 +513,8 @@ int BC_Meter::update(float new_value, int over)
 		peak_timer = 0;
 	}
 
-// if(orientation == METER_HORIZ)
-// printf("BC_Meter::update %f\n", level);
-	if(over) over_timer = over_delay;	
+	if(over) over_timer = over_delay;
 // only draw if window is visible
 
 	draw_face();
-	return 0;
 }

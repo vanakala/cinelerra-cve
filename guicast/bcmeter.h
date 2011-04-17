@@ -55,18 +55,18 @@ public:
 
 	int initialize();
 	void set_images(VFrame **data);
-	int set_delays(int over_delay, int peak_delay);
+	void set_delays(int over_delay, int peak_delay);
 	int region_pixel(int region);
 	int region_pixels(int region);
 	virtual int button_press_event();
 
 	static int get_title_w();
 	static int get_meter_w();
-	int update(float new_value, int over);
-	int reposition_window(int x, int y, int pixels);
-	int reset();
-	int reset_over();
-	int change_format(int mode, int min, int max);
+	void update(float new_value, int over);
+	void reposition_window(int x, int y, int pixels);
+	void reset();
+	void reset_over();
+	void change_format(int mode, int min, int max);
 
 private:
 	void draw_titles();
