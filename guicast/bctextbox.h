@@ -78,7 +78,7 @@ public:
 	void enable();
 	int get_enabled();
 
-	int initialize();
+	void initialize();
 
 	int focus_in_event();
 	int focus_out_event();

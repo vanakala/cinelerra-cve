@@ -61,7 +61,7 @@ public:
 	int dispatch_cursor_leave();
 	int dispatch_key_press();
 	int add_item(BC_MenuItem *item);
-	int initialize(BC_WindowBase *top_level, BC_MenuBar *menu_bar, BC_MenuPopup *menu_popup);
+	void initialize(BC_WindowBase *top_level, BC_MenuBar *menu_bar, BC_MenuPopup *menu_popup);
 	int draw();
 	BC_WindowBase* get_top_level();
 	BC_PopupMenu* get_popup_menu();

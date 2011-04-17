@@ -169,7 +169,7 @@ void BC_Pixmap::reset()
 #endif
 }
 
-int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
+void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 {
 	this->w = w;
 	this->h = h;
@@ -232,15 +232,11 @@ int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 #endif
 	}
 
-
-
 // // For some reason, this is required in 32 bit.
 // #ifdef HAVE_XFT
 // 	if(BC_WindowBase::get_resources()->use_xft)
 // 		XSync(top_level->display, False);
 // #endif
-	
-	return 0;
 }
 
 void BC_Pixmap::resize(int w, int h)

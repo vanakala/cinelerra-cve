@@ -127,7 +127,7 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font)
 	return 0;
 }
 
-int BC_TextBox::initialize()
+void BC_TextBox::initialize()
 {
 	if (!skip_cursor)
 		skip_cursor = new Timer;
@@ -169,7 +169,6 @@ int BC_TextBox::initialize()
 
 	draw();
 	set_cursor(IBEAM_CURSOR);
-	return 0;
 }
 
 int BC_TextBox::calculate_h(BC_WindowBase *gui, 

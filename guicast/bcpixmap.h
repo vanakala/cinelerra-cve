@@ -94,7 +94,7 @@ public:
 	int use_opaque();
 
 private:
-	int initialize(BC_WindowBase *parent_window, int w, int h, int mode);
+	void initialize(BC_WindowBase *parent_window, int w, int h, int mode);
 
 	BC_WindowBase *parent_window;
 	BC_WindowBase *top_level;

@@ -59,7 +59,7 @@ public:
 		float *values);
 	virtual ~BC_Pan();
 
-	int initialize();
+	void initialize();
 	int update(int x, int y);
 	int button_press_event();
 	int cursor_motion_event();

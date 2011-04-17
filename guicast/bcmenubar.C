@@ -57,7 +57,7 @@ BC_MenuBar::~BC_MenuBar()
 		delete menu_title_bg[i];
 }
 
-int BC_MenuBar::initialize()
+void BC_MenuBar::initialize()
 {
 	BC_Resources *resources = get_resources();
 // Initialize dimensions
@@ -80,7 +80,6 @@ int BC_MenuBar::initialize()
 	if(resources->menu_bg) 
 		set_background(resources->menu_bg);
 	draw_face();
-	return 0;
 }
 
 int BC_MenuBar::calculate_height(BC_WindowBase *window)

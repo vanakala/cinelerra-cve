@@ -33,7 +33,7 @@ public:
 	BC_PixmapSW(int x, int y, BC_Pixmap *thepixmap);
 	virtual ~BC_PixmapSW();
 
-	int initialize();
+	void initialize();
 	virtual int handle_event() { return 0; };
 	virtual const char* get_caption() { return ""; };
 

@@ -74,7 +74,7 @@ BC_Button::~BC_Button()
 
 
 
-int BC_Button::initialize()
+void BC_Button::initialize()
 {
 // Get the image
 	set_images(data);
@@ -84,7 +84,6 @@ int BC_Button::initialize()
 
 // Display the bitmap
 	draw_face();
-	return 0;
 }
 
 int BC_Button::reposition_window(int x, int y)

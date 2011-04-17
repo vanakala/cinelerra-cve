@@ -34,7 +34,7 @@ public:
 	virtual int handle_down_event() { return 0; };
 	int repeat_event(int64_t repeat_id);
 
-	int initialize();
+	void initialize();
 	int set_images(VFrame **data);
 	int cursor_enter_event();
 	int cursor_leave_event();

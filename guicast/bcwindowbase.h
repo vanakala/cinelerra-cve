@@ -577,7 +577,7 @@ private:
 // Get display from top level
 	Display* get_display();
 	int get_screen();
-	virtual int initialize();
+	virtual void initialize();
 	int get_atoms();
 // Function to overload to recieve customly defined atoms
 	virtual int recieve_custom_xatoms(xatom_event *event); 

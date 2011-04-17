@@ -118,7 +118,7 @@ public:
 
 	friend class BC_ListBoxToggle;
 
-	int initialize();
+	void initialize();
 
 	int enable();
 	int disable();

@@ -55,7 +55,7 @@ public:
 	int set_text(char *text);
 
 // Called by BC_Menubar
-	int initialize(BC_WindowBase *top_level, BC_MenuBar *menu_bar, int x, int y, int w, int h);
+	void initialize(BC_WindowBase *top_level, BC_MenuBar *menu_bar, int x, int y, int w, int h);
 	int dispatch_button_press();
 	int dispatch_button_release();
 	int dispatch_keypress();

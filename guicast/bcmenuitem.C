@@ -75,12 +75,11 @@ void BC_MenuItem::reset()
 	icon = 0;
 }
 
-int BC_MenuItem::initialize(BC_WindowBase *top_level, BC_MenuBar *menu_bar, BC_MenuPopup *menu_popup)
+void BC_MenuItem::initialize(BC_WindowBase *top_level, BC_MenuBar *menu_bar, BC_MenuPopup *menu_popup)
 {
 	this->top_level = top_level;
 	this->menu_popup = menu_popup;
 	this->menu_bar = menu_bar;
-	return 0;
 }
 
 int BC_MenuItem::set_checked(int value)

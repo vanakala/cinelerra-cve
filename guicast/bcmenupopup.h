@@ -45,7 +45,7 @@ public:
 	friend class BC_MenuItem;
 	friend class BC_PopupMenu;
 
-	int initialize(BC_WindowBase *top_level, 
+	void initialize(BC_WindowBase *top_level, 
 		BC_MenuBar *menu_bar, 
 		BC_Menu *menu, 
 		BC_MenuItem *menu_item, 

@@ -30,7 +30,7 @@ public:
 	BC_ProgressBar(int x, int y, int w, int64_t length, int do_text = 1);
 	~BC_ProgressBar();
 
-	int initialize();
+	void initialize();
 	int reposition_window(int x, int y, int w = -1, int h = -1);
 	void set_do_text(int value);
 

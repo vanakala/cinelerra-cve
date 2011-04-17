@@ -39,7 +39,7 @@ BC_Bar::~BC_Bar()
 	delete image;
 }
 
-int BC_Bar::initialize()
+void BC_Bar::initialize()
 {
 	if(data)
 		set_image(data);
@@ -50,7 +50,6 @@ int BC_Bar::initialize()
 	BC_SubWindow::initialize();
 
 	draw();
-	return 0;
 }
 
 void BC_Bar::set_image(VFrame *data)

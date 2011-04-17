@@ -67,7 +67,7 @@ BC_Toggle::~BC_Toggle()
 }
 
 
-int BC_Toggle::initialize()
+void BC_Toggle::initialize()
 {
 // Get the image
 	set_images(data);
@@ -90,7 +90,6 @@ int BC_Toggle::initialize()
 	set_cursor(UPRIGHT_ARROW_CURSOR);
 // Display the bitmap
 	draw_face();
-	return 0;
 }
 
 

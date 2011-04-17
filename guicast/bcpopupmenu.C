@@ -122,7 +122,7 @@ void BC_PopupMenu::set_icon(BC_Pixmap *icon)
 	}
 }
 
-int BC_PopupMenu::initialize()
+void BC_PopupMenu::initialize()
 {
 	if(use_title)
 	{
@@ -153,8 +153,6 @@ int BC_PopupMenu::initialize()
 		this);
 
 	if(use_title) draw_title();
-
-	return 0;
 }
 
 int BC_PopupMenu::set_images(VFrame **data)

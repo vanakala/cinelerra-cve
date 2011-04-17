@@ -31,7 +31,7 @@ public:
 	BC_SubWindow(int x, int y, int w, int h, int bg_color = -1);
 	virtual ~BC_SubWindow();
 
-	virtual int initialize();
+	virtual void initialize();
 private:
 };
 

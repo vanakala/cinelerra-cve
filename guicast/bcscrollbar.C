@@ -67,16 +67,12 @@ BC_ScrollBar::~BC_ScrollBar()
 		if(images[i]) delete images[i];
 }
 
-int BC_ScrollBar::initialize()
+void BC_ScrollBar::initialize()
 {
-//printf("BC_ScrollBar::initialize 1\n");
 	set_images(data);
-//printf("BC_ScrollBar::initialize 1\n");
 
 	BC_SubWindow::initialize();
-//printf("BC_ScrollBar::initialize 1\n");
 	draw();
-	return 0;
 }
 
 void BC_ScrollBar::set_images(VFrame **data)

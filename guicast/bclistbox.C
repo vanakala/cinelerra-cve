@@ -534,7 +534,7 @@ void BC_ListBox::init_column_width()
 	}
 }
 
-int BC_ListBox::initialize()
+void BC_ListBox::initialize()
 {
 	if(is_popup)
 	{
@@ -596,7 +596,6 @@ int BC_ListBox::initialize()
 
 	draw_button();
 	draw_items(1);
-	return 0;
 }
 
 void BC_ListBox::deactivate_selection()

@@ -80,7 +80,7 @@ BC_Bitmap::~BC_Bitmap()
 	delete_data();
 }
 
-int BC_Bitmap::initialize(BC_WindowBase *parent_window, 
+void BC_Bitmap::initialize(BC_WindowBase *parent_window, 
 	int w, 
 	int h, 
 	int color_model, 
@@ -111,7 +111,6 @@ int BC_Bitmap::initialize(BC_WindowBase *parent_window,
 		ring_buffers = 1;
 
 	allocate_data();
-	return 0;
 }
 
 int BC_Bitmap::match_params(int w, int h, int color_model, int use_shm)

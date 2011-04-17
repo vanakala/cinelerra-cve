@@ -64,7 +64,7 @@ public:
 		int *text_h, 
 		const char *caption);
 
-	int initialize();
+	void initialize();
 	int set_images(VFrame **data);
 	void set_underline(int number);
 	int cursor_enter_event();

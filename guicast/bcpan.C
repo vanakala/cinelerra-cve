@@ -95,7 +95,7 @@ BC_Pan::~BC_Pan()
 //printf("BC_Pan::~BC_Pan 2\n");
 }
 
-int BC_Pan::initialize()
+void BC_Pan::initialize()
 {
 	set_images(get_resources()->pan_data);
 
@@ -108,7 +108,6 @@ int BC_Pan::initialize()
 		get_resources()->pan_data[PAN_CHANNEL]->get_w(),
 		get_resources()->pan_data[PAN_CHANNEL]->get_h());
 	draw();
-	return 0;
 }
 
 void BC_Pan::set_images(VFrame **data)

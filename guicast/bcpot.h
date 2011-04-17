@@ -49,7 +49,7 @@ public:
 
 
 	static int calculate_h();
-	int initialize();
+	void initialize();
 	virtual float get_percentage() { return 0; };
 	virtual int percentage_to_value(float percentage) { return 0; };
 	virtual int handle_event() { return 0; };

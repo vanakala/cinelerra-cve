@@ -48,14 +48,13 @@ BC_ProgressBar::~BC_ProgressBar()
   	    if (images[i]) delete images[i];
 }
 
-int BC_ProgressBar::initialize()
+void BC_ProgressBar::initialize()
 {
 	set_images();
 	h = images[PROGRESS_UP]->get_h();
 
 	BC_SubWindow::initialize();
 	draw(1);
-	return 0;
 }
 
 int BC_ProgressBar::reposition_window(int x, int y, int w, int h)

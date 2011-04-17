@@ -60,7 +60,7 @@ BC_MenuPopup::~BC_MenuPopup()
 	delete item_bg[2];
 }
 
-int BC_MenuPopup::initialize(BC_WindowBase *top_level, 
+void BC_MenuPopup::initialize(BC_WindowBase *top_level, 
 		BC_MenuBar *menu_bar, 
 		BC_Menu *menu, 
 		BC_MenuItem *menu_item, 
@@ -91,8 +91,6 @@ int BC_MenuPopup::initialize(BC_WindowBase *top_level,
 		item_bg[1] = new BC_Pixmap(top_level, resources->menu_item_bg[1], PIXMAP_ALPHA);
 		item_bg[2] = new BC_Pixmap(top_level, resources->menu_item_bg[2], PIXMAP_ALPHA);
 	}
-
-	return 0;
 }
 
 int BC_MenuPopup::add_item(BC_MenuItem *item)

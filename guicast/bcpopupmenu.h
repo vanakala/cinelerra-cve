@@ -55,7 +55,7 @@ public:
 	static int calculate_h(VFrame **data = 0);
 	virtual int handle_event() { return 0; };
 	char* get_text();
-	int initialize();
+	void initialize();
 	int add_item(BC_MenuItem *item);
 	int remove_item(BC_MenuItem *item);
 	int total_items();

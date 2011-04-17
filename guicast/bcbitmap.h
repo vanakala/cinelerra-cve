@@ -125,7 +125,7 @@ public:
 	int invert();
 
 private:
-	int initialize(BC_WindowBase *parent_window, int w, int h, int color_model, int use_shm);
+	void initialize(BC_WindowBase *parent_window, int w, int h, int color_model, int use_shm);
 	int allocate_data();
 	int delete_data();
 	int get_default_depth();

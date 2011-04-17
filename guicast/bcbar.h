@@ -31,8 +31,8 @@ class BC_Bar : public BC_SubWindow
 public:
 	BC_Bar(int x, int y, int w, VFrame *data = 0);
 	virtual ~BC_Bar();
-	
-	int initialize();
+
+	void initialize();
 	void set_image(VFrame *data);
 	void draw();
 	int reposition_window(int x, int y, int w);

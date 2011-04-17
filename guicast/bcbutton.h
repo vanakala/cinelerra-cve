@@ -44,7 +44,7 @@ public:
 	void disable();
 	void enable();
 
-	int initialize();
+	void initialize();
 	virtual int set_images(VFrame **data);
 	int cursor_enter_event();
 	int cursor_leave_event();

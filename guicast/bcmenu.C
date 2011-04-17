@@ -45,7 +45,7 @@ BC_Menu::~BC_Menu()
 	delete menu_popup;
 }
 
-int BC_Menu::initialize(BC_WindowBase *top_level, 
+void BC_Menu::initialize(BC_WindowBase *top_level, 
 		BC_MenuBar *menu_bar, 
 		int x, 
 		int y, 
@@ -61,7 +61,6 @@ int BC_Menu::initialize(BC_WindowBase *top_level,
 	menu_popup = new BC_MenuPopup;
 	menu_popup->initialize(top_level, menu_bar, this, 0, 0);
 	draw_title();
-	return 0;
 }
 
 int BC_Menu::add_item(BC_MenuItem* menuitem)

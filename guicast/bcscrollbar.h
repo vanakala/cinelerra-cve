@@ -73,7 +73,7 @@ public:
 	friend class BC_ListBox;
 
 	virtual int handle_event() { return 0; };
-	int initialize();
+	void initialize();
 	int cursor_motion_event();
 	int cursor_leave_event();
 	int cursor_enter_event();

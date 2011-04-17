@@ -38,7 +38,7 @@ public:
 	int add_menu(BC_Menu* menu);
 	static int calculate_height(BC_WindowBase *window);
 
-	int initialize();
+	void initialize();
 	int focus_out_event();
 	int keypress_event();
 	int button_press_event();

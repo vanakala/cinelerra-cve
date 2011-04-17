@@ -528,14 +528,13 @@ BC_Resources::~BC_Resources()
 {
 }
 
-int BC_Resources::initialize_display(BC_WindowBase *window)
+void BC_Resources::initialize_display(BC_WindowBase *window)
 {
 // Set up IPC cleanup handlers
 //	bc_init_ipc();
 
 // Test for shm.  Must come before yuv test
 	init_shm(window);
-	return 0;
 }
 
 

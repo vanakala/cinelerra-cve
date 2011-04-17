@@ -52,7 +52,7 @@ public:
 		int peak_delay /* = 15 */);
 	virtual ~BC_Meter();
 
-	int initialize();
+	void initialize();
 	void set_images(VFrame **data);
 	void set_delays(int over_delay, int peak_delay);
 	int region_pixel(int region);

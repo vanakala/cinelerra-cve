@@ -86,7 +86,7 @@ public:
 	void set_expand(int value);
 
 private:
-	int initialize();
+	void initialize();
 	int get_icon_w();
 	int get_icon_h();
 

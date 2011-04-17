@@ -39,7 +39,7 @@ public:
 				BC_Pixmap *bg_pixmap = 0);
 	virtual ~BC_Popup();
 
-	int initialize() { return 0; };
+	void initialize() {};
 private:
 };
 

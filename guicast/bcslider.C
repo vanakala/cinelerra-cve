@@ -73,7 +73,7 @@ BC_Slider::~BC_Slider()
 	if(pixmaps) delete [] pixmaps;
 }
 
-int BC_Slider::initialize()
+void BC_Slider::initialize()
 {
 	if(!images)
 	{
@@ -100,7 +100,6 @@ int BC_Slider::initialize()
 
 	BC_SubWindow::initialize();
 	draw_face();
-	return 0;
 }
 
 int BC_Slider::get_span(int vertical)

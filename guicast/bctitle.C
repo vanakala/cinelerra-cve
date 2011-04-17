@@ -49,7 +49,7 @@ BC_Title::~BC_Title()
 }
 
 
-int BC_Title::initialize()
+void BC_Title::initialize()
 {
 	if(w <= 0 || h <= 0)
 		get_size(this, font, text, fixed_w, w, h);
@@ -58,7 +58,6 @@ int BC_Title::initialize()
 
 	BC_SubWindow::initialize();
 	draw();
-	return 0;
 }
 
 int BC_Title::set_color(int color)

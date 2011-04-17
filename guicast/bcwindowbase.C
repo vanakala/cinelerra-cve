@@ -187,7 +187,7 @@ BC_WindowBase::~BC_WindowBase()
 	UNSET_ALL_LOCKS(this)
 }
 
-int BC_WindowBase::initialize()
+void BC_WindowBase::initialize()
 {
 	test_keypress = 0;
 	is_deleting = 0;
@@ -255,7 +255,6 @@ int BC_WindowBase::initialize()
 #endif
 	last_ignore_win = 0; 
 	memset(ignore_win, 0, MAX_WIN_IGNORE * sizeof(Window));
-	return 0;
 }
 
 #define DEFAULT_EVENT_MASKS EnterWindowMask | \

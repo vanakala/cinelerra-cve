@@ -53,7 +53,7 @@ public:
 	BC_Resources(); // The window parameter is used to get the display information initially
 	~BC_Resources();
 
-	int initialize_display(BC_WindowBase *window);
+	void initialize_display(BC_WindowBase *window);
 
 // Get unique ID
 	int get_id();

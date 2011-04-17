@@ -41,14 +41,13 @@ BC_PixmapSW::~BC_PixmapSW()
 {
 }
 
-int BC_PixmapSW::initialize()
+void BC_PixmapSW::initialize()
 {
 	w = thepixmap->get_w();
 	h = thepixmap->get_h();
 
 	BC_SubWindow::initialize();
 	draw();
-	return 0;
 }
 
 int BC_PixmapSW::reposition_widget(int x, int y)

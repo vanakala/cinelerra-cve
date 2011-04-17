@@ -51,7 +51,7 @@ BC_Tumbler::~BC_Tumbler()
 
 
 
-int BC_Tumbler::initialize()
+void BC_Tumbler::initialize()
 {
 // Get the image
 	if(data)
@@ -66,7 +66,6 @@ int BC_Tumbler::initialize()
 
 // Display the bitmap
 	draw_face();
-	return 0;
 }
 
 int BC_Tumbler::reposition_window(int x, int y, int w, int h)

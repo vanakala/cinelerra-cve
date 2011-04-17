@@ -90,7 +90,7 @@ void BC_Meter::set_delays(int over_delay, int peak_delay)
 	this->peak_delay = peak_delay;
 }
 
-int BC_Meter::initialize()
+void BC_Meter::initialize()
 {
 	peak_timer = 0;
 	level_pixel = peak_pixel = 0;
@@ -119,7 +119,6 @@ int BC_Meter::initialize()
 	BC_SubWindow::initialize();
 	draw_titles();
 	draw_face();
-	return 0;
 }
 
 void BC_Meter::set_images(VFrame **data)

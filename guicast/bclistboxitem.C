@@ -76,7 +76,7 @@ BC_ListBoxItem::~BC_ListBoxItem()
 	}
 }
 
-int BC_ListBoxItem::initialize()
+void BC_ListBoxItem::initialize()
 {
 	autoplace_icon = 1;
 	autoplace_text = 1;
@@ -93,7 +93,6 @@ int BC_ListBoxItem::initialize()
 	sublist = 0;
 	columns = 0;
 	expand = 0;
-	return 0;
 }
 
 int BC_ListBoxItem::get_icon_x()

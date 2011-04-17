@@ -37,8 +37,8 @@ public:
 		int centered = 0,
 		int fixed_w = 0);
 	virtual ~BC_Title();
-	
-	int initialize();
+
+	void initialize();
 	static int calculate_w(BC_WindowBase *gui, const char *text, int font = MEDIUMFONT);
 	static int calculate_h(BC_WindowBase *gui, const char *text, int font = MEDIUMFONT);
 	int resize(int w, int h);
