@@ -144,7 +144,6 @@ public:
 	int labels_follow_edits;
 	int mpeg4_deblock;
 	int plugins_follow_edits;
-	int meter_format;
 	int min_meter_db;
 	int max_meter_db;
 	int output_w;

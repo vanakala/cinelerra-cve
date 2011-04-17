@@ -45,12 +45,11 @@ public:
 		int pixels, 
 		int min, /* = -40, */
 		int max,
-		int mode, /* = METER_DB, */
 		int use_titles, /* = 0, */
 // Number of updates before over dissappears
-		long over_delay, /* = 150, */
+		int over_delay, /* = 150, */
 // Number of updates before peak updates
-		long peak_delay /* = 15 */);
+		int peak_delay /* = 15 */);
 	virtual ~BC_Meter();
 
 	int initialize();
@@ -66,7 +65,7 @@ public:
 	void reposition_window(int x, int y, int pixels);
 	void reset();
 	void reset_over();
-	void change_format(int mode, int min, int max);
+	void change_format(int min, int max);
 
 private:
 	void draw_titles();
@@ -88,21 +87,15 @@ private:
 	ArrayList<int> title_pixels;
 	ArrayList<char*> db_titles;
 	float level, peak;
-	int mode;
 	DB db;
 	int peak_timer;
-
-
-
-
-
 
 	int peak_pixel, level_pixel, peak_pixel1, peak_pixel2;
 	int over_count, over_timer;
 	int min;
 	int max;
-	long over_delay;       // Number of updates the over warning lasts.
-	long peak_delay;       // Number of updates the peak lasts.
+	int over_delay;       // Number of updates the over warning lasts.
+	int peak_delay;       // Number of updates the peak lasts.
 };
 
 #endif

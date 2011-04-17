@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -169,14 +170,14 @@ void MeterPanel::reset_meters()
 }
 
 
-void MeterPanel::change_format(int mode, int min, int max)
+void MeterPanel::change_format(int min, int max)
 {
 	for(int i = 0; i < meters.total; i++)
 	{
 		if(use_recording)
-			meters.values[i]->change_format(mode, min, 0);
+			meters.values[i]->change_format(min, 0);
 		else
-			meters.values[i]->change_format(mode, min, max);
+			meters.values[i]->change_format(min, max);
 	}
 }
 
@@ -217,7 +218,6 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	h,
 	mwindow->edl->session->min_meter_db, 
 	panel->use_recording ? 0 : mwindow->edl->session->max_meter_db, 
-	mwindow->edl->session->meter_format,
 	titles,
 	TRACKING_RATE * 10,
 	TRACKING_RATE)

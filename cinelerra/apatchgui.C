@@ -20,6 +20,7 @@
  */
 
 #include "apatchgui.h"
+#include "bcsignals.h"
 #include "apatchgui.inc"
 #include "atrack.h"
 #include "autoconf.h"
@@ -351,7 +352,6 @@ AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 		patch->patchbay->get_w() - 10,
 		mwindow->edl->session->min_meter_db,
 		mwindow->edl->session->max_meter_db,
-		mwindow->edl->session->meter_format,
 		0,
 		TRACKING_RATE * 10,
 		TRACKING_RATE)

@@ -1179,7 +1179,6 @@ int Record::set_loop_duration(int value)
 	return 0;
 }
 
-int Record::get_vu_format() { return mwindow->edl->session->meter_format; }
 float Record::get_min_db() { return mwindow->edl->session->min_meter_db; }
 
 int Record::get_rec_mode() { return record_mode; }

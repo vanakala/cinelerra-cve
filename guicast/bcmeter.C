@@ -49,10 +49,9 @@ BC_Meter::BC_Meter(int x,
 	int pixels, 
 	int min, 
 	int max,
-	int mode, 
 	int use_titles,
-	long over_delay,
-	long peak_delay)
+	int over_delay,
+	int peak_delay)
  : BC_SubWindow(x, y, -1, -1)
 {
 	this->use_titles = use_titles;
@@ -60,7 +59,6 @@ BC_Meter::BC_Meter(int x,
 	this->peak_delay = peak_delay;
 	this->min = min;
 	this->max = max;
-	this->mode = mode;
 	this->orientation = orientation;
 	this->pixels = pixels;
 	for(int i = 0; i < TOTAL_METER_IMAGES; i++) images[i] = 0;
@@ -173,9 +171,8 @@ void BC_Meter::reset_over()
 	over_timer = 0;
 }
 
-void BC_Meter::change_format(int mode, int min, int max)
+void BC_Meter::change_format(int min, int max)
 {
-	this->mode = mode;
 	this->min = min;
 	this->max = max;
 	reposition_window(get_x(), get_y(), pixels);
@@ -184,18 +181,11 @@ void BC_Meter::change_format(int mode, int min, int max)
 int BC_Meter::level_to_pixel(float level)
 {
 	int result;
-	if(mode == METER_DB)
-	{
-		result = (int)(pixels * 
-			(level - min) / 
-			(max - min));
-		if(level <= min) result = 0;
-	}
-	else
-	{
-// Not implemented anymore
-		result = 0;
-	}
+
+	result = (int)(pixels * 
+		(level - min) / 
+		(max - min));
+	if(level <= min) result = 0;
 
 	return result;
 }
@@ -499,13 +489,10 @@ void BC_Meter::update(float new_value, int over)
 {
 	peak_timer++;
 
-	if(mode == METER_DB)
-	{
-		if(new_value == 0) 
-			level = min;
-		else
-			level = db.todb(new_value);        // db value
-	}
+	if(new_value == 0) 
+		level = min;
+	else
+		level = db.todb(new_value);        // db value
 
 	if(level > peak || peak_timer > peak_delay)
 	{

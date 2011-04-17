@@ -561,7 +561,6 @@ ArrayList<char*>* RecordEngine::get_video_inputs()
 		return 0;
 }
 
-int RecordEngine::get_vu_format() { return record->get_vu_format(); }
 int RecordEngine::get_dither() { return record->default_asset->dither * record->default_asset->bits; }
 int RecordEngine::get_input_channels() { return asset->channels; }
 int RecordEngine::get_format(char *string)

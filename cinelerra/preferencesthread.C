@@ -205,25 +205,25 @@ int PreferencesThread::apply_settings()
 	if(redraw_meters)
 	{
 		mwindow->cwindow->gui->lock_window("PreferencesThread::apply_settings");
-		mwindow->cwindow->gui->meters->change_format(edl->session->meter_format,
+		mwindow->cwindow->gui->meters->change_format(
 			edl->session->min_meter_db,
 			edl->session->max_meter_db);
 		mwindow->cwindow->gui->unlock_window();
 
 		mwindow->vwindow->gui->lock_window("PreferencesThread::apply_settings");
-		mwindow->vwindow->gui->meters->change_format(edl->session->meter_format,
+		mwindow->vwindow->gui->meters->change_format(
 			edl->session->min_meter_db,
 			edl->session->max_meter_db);
 		mwindow->vwindow->gui->unlock_window();
 
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 1");
-		mwindow->gui->patchbay->change_meter_format(edl->session->meter_format,
+		mwindow->gui->patchbay->change_meter_format(
 			edl->session->min_meter_db,
 			edl->session->max_meter_db);
 		mwindow->gui->unlock_window();
 
 		mwindow->lwindow->gui->lock_window("PreferencesThread::apply_settings");
-		mwindow->lwindow->gui->panel->change_format(edl->session->meter_format,
+		mwindow->lwindow->gui->panel->change_format(
 			edl->session->min_meter_db,
 			edl->session->max_meter_db);
 		mwindow->lwindow->gui->unlock_window();

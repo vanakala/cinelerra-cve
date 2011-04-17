@@ -341,7 +341,7 @@ int PatchBay::cursor_motion_event()
 	return 0;
 }
 
-void PatchBay::change_meter_format(int mode, int min, int max)
+void PatchBay::change_meter_format(int min, int max)
 {
 	for(int i = 0; i < patches.total; i++)
 	{
@@ -351,7 +351,7 @@ void PatchBay::change_meter_format(int mode, int min, int max)
 			APatchGUI *apatchgui = (APatchGUI*)patchgui;
 			if(apatchgui->meter)
 			{
-				apatchgui->meter->change_format(mode, min, max);
+				apatchgui->meter->change_format(min, max);
 			}
 		}
 	}

@@ -211,7 +211,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	labels_follow_edits = defaults->get("LABELS_FOLLOW_EDITS", 1);
 	plugins_follow_edits = defaults->get("PLUGINS_FOLLOW_EDITS", 1);
 	auto_keyframes = defaults->get("AUTO_KEYFRAMES", 0);
-	meter_format = defaults->get("METER_FORMAT", METER_DB);
 	min_meter_db = defaults->get("MIN_METER_DB", -85);
 	max_meter_db = defaults->get("MAX_METER_DB", 6);
 	mpeg4_deblock = defaults->get("MPEG4_DEBLOCK", mpeg4_deblock);
@@ -339,7 +338,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	defaults->update("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	defaults->update("AUTO_KEYFRAMES", auto_keyframes);
-	defaults->update("METER_FORMAT", meter_format);
 	defaults->update("MIN_METER_DB", min_meter_db);
 	defaults->update("MAX_METER_DB", max_meter_db);
 	defaults->update("MPEG4_DEBLOCK", mpeg4_deblock);
@@ -729,7 +727,6 @@ int EDLSession::copy(EDLSession *session)
 	labels_follow_edits = session->labels_follow_edits;
 	plugins_follow_edits = session->plugins_follow_edits;
 	auto_keyframes = session->auto_keyframes;
-	meter_format = session->meter_format;
 	min_meter_db = session->min_meter_db;
 	max_meter_db = session->max_meter_db;
 	mpeg4_deblock = session->mpeg4_deblock;

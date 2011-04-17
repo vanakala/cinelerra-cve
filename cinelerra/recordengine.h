@@ -149,7 +149,6 @@ public:
 
 	ArrayList<char*>* get_video_inputs();
 	int change_channel(Channel *channel);
-	int get_vu_format();
 	int get_loop_hr();
 	int get_loop_min();
 	int get_loop_sec();

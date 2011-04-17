@@ -56,7 +56,7 @@ public:
 	void stop_meters();
 	void synchronize_nudge(posnum value, Track *skip);
 	void synchronize_faders(float value, int data_type, Track *skip);
-	void change_meter_format(int mode, int min, int max);
+	void change_meter_format(int min, int max);
 	void reset_meters();
 
 	ArrayList<PatchGUI*> patches;

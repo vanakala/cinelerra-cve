@@ -249,7 +249,6 @@ public:
 	char* get_in_path();
 	char* get_video_inpath();
 	int get_video_driver();
-	int get_vu_format();
 	int get_rec_mode();
 	int set_rec_mode(int value);
 	int set_loop_duration(int value);

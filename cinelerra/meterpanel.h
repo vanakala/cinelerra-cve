@@ -51,7 +51,7 @@ public:
 	int get_meter_w(int number);
 	void update(double *levels);
 	void stop_meters();
-	void change_format(int mode, int min, int max);
+	void change_format(int min, int max);
 	virtual int change_status_event();
 	void reset_meters();
 
