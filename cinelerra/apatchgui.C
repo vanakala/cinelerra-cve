@@ -353,8 +353,8 @@ AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 		mwindow->edl->session->min_meter_db,
 		mwindow->edl->session->max_meter_db,
 		0,
-		TRACKING_RATE * 10,
-		TRACKING_RATE)
+		mwindow->edl->session->meter_over_delay * TRACKING_RATE,
+		mwindow->edl->session->meter_peak_delay * TRACKING_RATE)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;

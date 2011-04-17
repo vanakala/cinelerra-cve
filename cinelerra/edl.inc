@@ -106,6 +106,10 @@ class EDL;
 #define MIN_TRACK_ZOOM 32
 #define MAX_TRACK_ZOOM 1024
 
+// Meter delays (in seconds)
+#define OVER_DELAY 3
+#define PEAK_DELAY 1
+
 #define MAX_PAN 1.0
 #define PAN_RADIUS 50
 

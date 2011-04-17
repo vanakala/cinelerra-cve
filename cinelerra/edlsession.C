@@ -71,6 +71,8 @@ EDLSession::EDLSession(EDL *edl)
 	sample_rate = -10;
 	frame_rate = -10;
 	frames_per_foot = -10;
+	meter_over_delay = OVER_DELAY;
+	meter_peak_delay = PEAK_DELAY;
 	min_meter_db = -1000;
 	max_meter_db = -1000;
 	output_w = -1000;

@@ -219,8 +219,8 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	mwindow->edl->session->min_meter_db, 
 	panel->use_recording ? 0 : mwindow->edl->session->max_meter_db, 
 	titles,
-	TRACKING_RATE * 10,
-	TRACKING_RATE)
+	mwindow->edl->session->meter_over_delay * TRACKING_RATE,
+	mwindow->edl->session->meter_peak_delay * TRACKING_RATE)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
