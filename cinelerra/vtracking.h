@@ -34,9 +34,10 @@ public:
 	~VTracking();
 
 	PlaybackEngine* get_playback_engine();
-	void update_tracker(double position);
+	void update_tracker(ptstime position);
 	void update_meters(samplenum position);
 	void stop_meters();
+	void set_delays(float over_delay, float peak_delay);
 
 	VWindow *vwindow;
 };

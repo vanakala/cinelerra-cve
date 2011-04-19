@@ -99,7 +99,7 @@ int ARender::calculate_history_size()
 		meter_render_fragment = renderengine->fragment_len;
 // This number and the timer in tracking.C determine the rate
 		while(meter_render_fragment > 
-			renderengine->edl->session->sample_rate / TRACKING_RATE) 
+			renderengine->edl->session->sample_rate / TRACKING_RATE_DEFAULT) 
 			meter_render_fragment /= 2;
 		total_peaks = 16 * 
 			renderengine->fragment_len / 

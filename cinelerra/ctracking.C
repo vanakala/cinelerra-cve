@@ -52,21 +52,18 @@ PlaybackEngine* CTracking::get_playback_engine()
 	return cwindow->playback_engine;
 }
 
-int CTracking::start_playback(double new_position)
+void CTracking::start_playback(ptstime new_position)
 {
 	mwindow->gui->cursor->playing_back = 1;
 
 	Tracking::start_playback(new_position);
-	return 0;
 }
 
-int CTracking::stop_playback()
+void CTracking::stop_playback()
 {
 	mwindow->gui->cursor->playing_back = 0;
 
-
 	Tracking::stop_playback();
-	return 0;
 }
 
 #define SCROLL_THRESHOLD 0
@@ -125,7 +122,7 @@ int CTracking::update_scroll(ptstime position)
 	return updated_scroll;
 }
 
-void CTracking::update_tracker(double position)
+void CTracking::update_tracker(ptstime position)
 {
 	int updated_scroll = 0;
 // Update cwindow slider
@@ -160,7 +157,6 @@ void CTracking::update_tracker(double position)
 
 // Plugin GUI's hold lock on mwindow->gui here during user interface handlers.
 	mwindow->update_plugin_guis();
-
 
 	update_meters((samplenum)(position * mwindow->edl->session->sample_rate));
 }

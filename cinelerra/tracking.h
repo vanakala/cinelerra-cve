@@ -41,17 +41,18 @@ public:
 	virtual ~Tracking();
 
 	void create_objects() {};
-	virtual int start_playback(double new_position);
-	virtual int stop_playback();
+	virtual void start_playback(ptstime new_position);
+	virtual void stop_playback();
 
 // Called by the tracker to get the current position
 	virtual PlaybackEngine* get_playback_engine();
-	virtual double get_tracking_position();
+	virtual ptstime get_tracking_position();
 // Update position displayed
-	virtual void update_tracker(double position) {};
+	virtual void update_tracker(ptstime position) {};
 // Update meters
 	virtual void update_meters(samplenum position);
 	virtual void stop_meters();
+	virtual void set_delays(float over_delay, float peak_delay);
 
 	void run();
 
@@ -61,7 +62,7 @@ public:
 	Condition *startup_lock;
 	MWindow *mwindow;
 	MWindowGUI *gui;
-	double last_position;
+	ptstime last_position;
 	int follow_loop;
 	int reverse;
 	int double_speed;
@@ -70,6 +71,8 @@ public:
 	int pixel;
 // Cursor is visible
 	int visible;
+protected:
+	int tracking_rate;
 };
 
 #endif

@@ -54,6 +54,7 @@ public:
 	void change_format(int min, int max);
 	virtual int change_status_event();
 	void reset_meters();
+	void set_delays(int over_delay, int peak_delay);
 
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;

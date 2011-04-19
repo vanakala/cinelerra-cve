@@ -69,13 +69,20 @@ Tracking::~Tracking()
 		state = DONE;
 		Thread::join();
 	}
-
-
 	delete startup_lock;
 }
 
-int Tracking::start_playback(double new_position)
+void Tracking::start_playback(ptstime new_position)
 {
+// Calculate tracking rate
+	tracking_rate = mwindow->edl->session->frame_rate;
+	if(tracking_rate <= 0)
+		tracking_rate = TRACKING_RATE_DEFAULT;
+	while(tracking_rate > TRACKING_RATE_MAX)
+		tracking_rate /= 2;
+	set_delays(mwindow->edl->session->meter_over_delay,
+		mwindow->edl->session->meter_peak_delay);
+
 	if(state != PLAYING)
 	{
 		last_position = new_position;
@@ -83,10 +90,9 @@ int Tracking::start_playback(double new_position)
 		Thread::start();
 		startup_lock->lock("Tracking::start_playback");
 	}
-	return 0;
 }
 
-int Tracking::stop_playback()
+void Tracking::stop_playback()
 {
 	if(state != DONE)
 	{
@@ -96,14 +102,13 @@ int Tracking::stop_playback()
 
 // Final position is updated continuously during playback
 // Get final position
-		double position = get_tracking_position();
+		ptstime position = get_tracking_position();
 // Update cursor
 		update_tracker(position);
 
 		stop_meters();
 		state = DONE;
 	}
-	return 0;
 }
 
 PlaybackEngine* Tracking::get_playback_engine()
@@ -111,7 +116,7 @@ PlaybackEngine* Tracking::get_playback_engine()
 	return mwindow->cwindow->playback_engine;
 }
 
-double Tracking::get_tracking_position()
+ptstime Tracking::get_tracking_position()
 {
 	return get_playback_engine()->get_tracking_position();
 }
@@ -156,15 +161,35 @@ void Tracking::stop_meters()
 	mwindow->lwindow->gui->unlock_window();
 }
 
+void Tracking::set_delays(float over_delay, float peak_delay)
+{
+	int over = over_delay * tracking_rate;
+	int peak = peak_delay * tracking_rate;
+
+	mwindow->cwindow->gui->lock_window("Tracking::set_delays 1");
+	mwindow->cwindow->gui->meters->set_delays(over, peak);
+	mwindow->cwindow->gui->unlock_window();
+
+	mwindow->gui->lock_window("Tracking::set_delays 2");
+	mwindow->gui->patchbay->set_delays(over, peak);
+	mwindow->gui->unlock_window();
+
+	mwindow->lwindow->gui->lock_window("Tracking::set_delays 3");
+	mwindow->lwindow->gui->panel->set_delays(over, peak);
+	mwindow->lwindow->gui->unlock_window();
+}
+
 void Tracking::run()
 {
 	startup_lock->unlock();
 
-	double position;
+	ptstime position;
+	int delay = 1000 / tracking_rate;
+
 	while(state != DONE)
 	{
 		Thread::enable_cancel();
-		timer.delay(1000 / TRACKING_RATE);
+		timer.delay(delay);
 		Thread::disable_cancel();
 
 		if(state != DONE)

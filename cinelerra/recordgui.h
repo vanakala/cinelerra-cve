@@ -143,7 +143,6 @@ public:
 	RecordGUIDCOffset *dc_offset_button;
 	RecordGUIDCOffsetText *dc_offset_text[MAXCHANNELS];
 	RecordMonitor *monitor_video_window;
-	BC_Meter *meter[MAXCHANNELS];
 	long total_dropped_frames;
 	long total_clipped_samples;
 

@@ -45,15 +45,14 @@ public:
 		int pixels, 
 		int min, /* = -40, */
 		int max,
-		int use_titles, /* = 0, */
-// Number of updates before over dissappears
-		int over_delay, /* = 150, */
-// Number of updates before peak updates
-		int peak_delay /* = 15 */);
+		int use_titles); /* = 0, */
 	virtual ~BC_Meter();
 
 	void initialize();
 	void set_images(VFrame **data);
+
+// over_delay - number of updates before over dissappears
+// peak_delay - number of updates before peak updates
 	void set_delays(int over_delay, int peak_delay);
 	int region_pixel(int region);
 	int region_pixels(int region);

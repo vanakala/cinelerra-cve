@@ -406,6 +406,19 @@ void PatchBay::stop_meters()
 	}
 }
 
+void PatchBay::set_delays(int over_delay, int peak_delay)
+{
+	for(int patch_number = 0;
+		patch_number < patches.total;
+		patch_number++)
+	{
+		APatchGUI *patchgui = (APatchGUI*)patches.values[patch_number];
+		if(patchgui->data_type == TRACK_AUDIO && patchgui->meter)
+		{
+			patchgui->meter->set_delays(over_delay, peak_delay);
+		}
+	}
+}
 
 #define PATCH_X 3
 

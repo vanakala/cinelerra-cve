@@ -25,6 +25,7 @@
 class Tracking;
 
 // Number of updates every second
-#define TRACKING_RATE 24
+#define TRACKING_RATE_MAX 30
+#define TRACKING_RATE_DEFAULT 15
 
 #endif

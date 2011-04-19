@@ -53,7 +53,7 @@ PlaybackEngine* VTracking::get_playback_engine()
 	return vwindow->playback_engine;
 }
 
-void VTracking::update_tracker(double position)
+void VTracking::update_tracker(ptstime position)
 {
 	Asset *asset = vwindow->get_edl()->assets->first;
 	vwindow->gui->lock_window("VTracking::update_tracker");
@@ -92,5 +92,15 @@ void VTracking::stop_meters()
 {
 	vwindow->gui->lock_window("VTracking::stop_meters");
 	vwindow->gui->meters->stop_meters();
+	vwindow->gui->unlock_window();
+}
+
+void VTracking::set_delays(float over_delay, float peak_delay)
+{
+	int over = over_delay * tracking_rate;
+	int peak = peak_delay * tracking_rate;
+
+	vwindow->gui->lock_window("VTracking::stop_meters");
+	vwindow->gui->meters->set_delays(over, peak);
 	vwindow->gui->unlock_window();
 }

@@ -58,6 +58,7 @@ public:
 	void synchronize_faders(float value, int data_type, Track *skip);
 	void change_meter_format(int min, int max);
 	void reset_meters();
+	void set_delays(int over_delay, int peak_delay);
 
 	ArrayList<PatchGUI*> patches;
 

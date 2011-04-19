@@ -170,6 +170,13 @@ void MeterPanel::reset_meters()
 }
 
 
+void MeterPanel::set_delays(int over_delay, int peak_delay)
+{
+	for(int i = 0; i < meters.total; i++)
+		meters.values[i]->set_delays(over_delay, peak_delay);
+}
+
+
 void MeterPanel::change_format(int min, int max)
 {
 	for(int i = 0; i < meters.total; i++)
@@ -218,9 +225,7 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	h,
 	mwindow->edl->session->min_meter_db, 
 	panel->use_recording ? 0 : mwindow->edl->session->max_meter_db, 
-	titles,
-	mwindow->edl->session->meter_over_delay * TRACKING_RATE,
-	mwindow->edl->session->meter_peak_delay * TRACKING_RATE)
+	titles)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;

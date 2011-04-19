@@ -49,14 +49,10 @@ BC_Meter::BC_Meter(int x,
 	int pixels, 
 	int min, 
 	int max,
-	int use_titles,
-	int over_delay,
-	int peak_delay)
+	int use_titles)
  : BC_SubWindow(x, y, -1, -1)
 {
 	this->use_titles = use_titles;
-	this->over_delay = over_delay;
-	this->peak_delay = peak_delay;
 	this->min = min;
 	this->max = max;
 	this->orientation = orientation;
