@@ -166,17 +166,9 @@ void Tracking::set_delays(float over_delay, float peak_delay)
 	int over = over_delay * tracking_rate;
 	int peak = peak_delay * tracking_rate;
 
-	mwindow->cwindow->gui->lock_window("Tracking::set_delays 1");
 	mwindow->cwindow->gui->meters->set_delays(over, peak);
-	mwindow->cwindow->gui->unlock_window();
-
-	mwindow->gui->lock_window("Tracking::set_delays 2");
 	mwindow->gui->patchbay->set_delays(over, peak);
-	mwindow->gui->unlock_window();
-
-	mwindow->lwindow->gui->lock_window("Tracking::set_delays 3");
 	mwindow->lwindow->gui->panel->set_delays(over, peak);
-	mwindow->lwindow->gui->unlock_window();
 }
 
 void Tracking::run()
