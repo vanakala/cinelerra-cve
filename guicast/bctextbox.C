@@ -1860,9 +1860,9 @@ int BC_PopupTextBox::handle_event()
 	return 1;
 }
 
-int BC_PopupTextBox::reposition_widget(int x, int y, int w, int h) {
+void BC_PopupTextBox::reposition_widget(int x, int y, int w, int h) 
+{
 	reposition_window(x, y);
-	return(0);
 }
 
 void BC_PopupTextBox::reposition_window(int x, int y)
@@ -2155,9 +2155,9 @@ int BC_TumbleTextBox::handle_event()
 	return 1;
 }
 
-int BC_TumbleTextBox::reposition_widget(int x, int y, int w, int h) {
+void BC_TumbleTextBox::reposition_widget(int x, int y, int w, int h) 
+{
 	reposition_window(x, y);
-	return(0);
 }
 
 void BC_TumbleTextBox::reposition_window(int x, int y)

@@ -97,13 +97,6 @@
 #include <GL/glx.h>
 #endif
 
-
-
-#ifdef HAVE_GL
-//typedef void* GLXContext;
-#endif
-
-
 // Struct for async event marshalling, the same as XClientMessageEvent currently, but can be changed if we change toolkit ever
 // it is defined here so we don't use X headers in /cinelerra
 typedef struct {
@@ -199,11 +192,11 @@ public:
 // Get color model adjusted for byte order and pixel size
 	int get_color_model();
 // return the colormap pixel of the color for all bit depths
-	int get_color(int64_t color);
+	int get_color(int color);
 // return the currently selected color
-	int64_t get_color();
-	int show_window(int flush = 1);
-	int hide_window(int flush = 1);
+	int get_color();
+	void show_window(int flush = 1);
+	void hide_window(int flush = 1);
 	int get_hidden();
 	int get_video_on();
 // Shouldn't deference a pointer to delete a window if a parent is 
@@ -235,8 +228,8 @@ public:
 	void flush();
 	void sync_display();
 // Lock out other threads
-	int lock_window(const char *location = 0);
-	int unlock_window();
+	void lock_window(const char *location = 0);
+	void unlock_window();
 	int get_window_lock();
 
 	BC_MenuBar* add_menubar(BC_MenuBar *menu_bar);
@@ -254,7 +247,6 @@ public:
 	virtual int get_h();
 	virtual int get_x();
 	virtual int get_y();
-	virtual int reposition_widgets(){ printf("foo1"); return 0; }
 	int get_root_w(int ignore_dualhead = 0, int lock_display = 0);
 	int get_root_h(int lock_display);
 // Get current position
@@ -316,7 +308,7 @@ public:
 	int get_toggle_drag();
 
 // Set the gc to the color
-	void set_color(int64_t color);
+	void set_color(int color);
 	int get_bgcolor();
 	void set_font(int font);
 // Set the cursor to a macro from cursors.h
@@ -360,22 +352,7 @@ public:
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
 	void draw_rectangle(int x, int y, int w, int h);
-	void draw_3segment(int x, 
-		int y, 
-		int w, 
-		int h, 
-		BC_Pixmap *left_image,
-		BC_Pixmap *mid_image,
-		BC_Pixmap *right_image,
-		BC_Pixmap *pixmap = 0);
-	void draw_3segment(int x, 
-		int y, 
-		int w, 
-		int h, 
-		VFrame *left_image,
-		VFrame *mid_image,
-		VFrame *right_image,
-		BC_Pixmap *pixmap = 0);
+
 // For drawing a changing level
 	void draw_3segmenth(int x, 
 		int y, 
@@ -524,39 +501,37 @@ public:
 	void slide_up(int distance);
 	void slide_down(int distance);
 
-	int cycle_textboxes(int amount);
+	void cycle_textboxes(int amount);
 
-	int raise_window(int do_flush = 1);
-	int set_tooltips(int tooltips_enabled);
-	int resize_window(int w, int h);
-	int reposition_widget(int x, int y, int w = -1, int h = -1);
-	int reposition_window(int x, int y, int w = -1, int h = -1);
+	void raise_window(int do_flush = 1);
+	void set_tooltips(int tooltips_enabled);
+	void resize_window(int w, int h);
+	void reposition_widget(int x, int y, int w = -1, int h = -1);
+	void reposition_window(int x, int y, int w = -1, int h = -1);
 // Cause a repeat event to be dispatched every duration.
 // duration is milliseconds
-	int set_repeat(int64_t duration);
+	void set_repeat(int64_t duration);
 // Stop a repeat event from being dispatched.
-	int unset_repeat(int64_t duration);
-	int set_tooltip(const char *text);
-	int show_tooltip(int w = -1, int h = -1);
-	int hide_tooltip();
-	int set_icon(VFrame *data);
-	int load_defaults(BC_Hash *defaults);
-	int save_defaults(BC_Hash *defaults);
+	void unset_repeat(int64_t duration);
+	void set_tooltip(const char *text);
+	void show_tooltip(int w = -1, int h = -1);
+	void hide_tooltip();
+	void set_icon(VFrame *data);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 
 #ifdef HAVE_LIBXXF86VM
 // Mode switch methods.
-   void closest_vm(int *vm, int *width, int *height);
-   void scale_vm(int vm);
-   void restore_vm();
+	void closest_vm(int *vm, int *width, int *height);
+	void scale_vm(int vm);
+	void restore_vm();
 #endif
 
-	
 	int test_keypress;
-
 
 private:
 // Create a window
-	virtual int create_window(BC_WindowBase *parent_window,
+	void create_window(BC_WindowBase *parent_window,
 				const char *title, 
 				int x,
 				int y,
@@ -578,61 +553,61 @@ private:
 	Display* get_display();
 	int get_screen();
 	virtual void initialize();
-	int get_atoms();
+	void get_atoms();
 // Function to overload to recieve customly defined atoms
 	virtual int recieve_custom_xatoms(xatom_event *event); 
-	
+
 	void init_cursors();
-	int init_colors();
-	int init_window_shape();
+	void init_colors();
+	void init_window_shape();
 	static int evaluate_color_model(int client_byte_order, int server_byte_order, int depth);
-	int create_private_colors();
-	int create_color(int color);
-	int create_shared_colors();
+	void create_private_colors();
+	void create_color(int color);
+	void create_shared_colors();
 // Get width of a single line.  Used by get_text_width
 	int get_single_text_width(int font, const char *text, int length);
-	int allocate_color_table();
-	int init_gc();
-	int init_fonts();
+	void allocate_color_table();
+	void init_gc();
+	void init_fonts();
 	void init_xft();
 	int get_color_rgb8(int color);
-	int64_t get_color_rgb16(int color);
-	int64_t get_color_bgr16(int color);
-	int64_t get_color_bgr24(int color);
+	int get_color_rgb16(int color);
+	int get_color_bgr16(int color);
+	int get_color_bgr24(int color);
 	XFontStruct* get_font_struct(int font);
 #ifdef HAVE_XFT
 	XftFont* get_xft_struct(int font);
 #endif
 	Cursor get_cursor_struct(int cursor);
-    XFontSet get_fontset(int font);
-    XFontSet get_curr_fontset(void);
-    void set_fontset(int font);	
-	int dispatch_event();
+	XFontSet get_fontset(int font);
+	XFontSet get_curr_fontset(void);
+	void set_fontset(int font);
+	void dispatch_event();
 // Check if window event must be ignored
 	int window_ignored(Window ewin);
 
-	int get_key_masks(XEvent *event);
+	void get_key_masks(XEvent *event);
 
 	int trigger_tooltip();
 	int untrigger_tooltip();
 	void draw_tooltip();
-	int arm_repeat(int64_t duration);
+	void arm_repeat(int64_t duration);
 // delete all repeater opjects for a close
-	int unset_all_repeaters();
+	void unset_all_repeaters();
 
 // Recursive event dispatchers
-	int dispatch_resize_event(int w, int h);
-	int dispatch_focus_in();
-	int dispatch_focus_out();
+	void dispatch_resize_event(int w, int h);
+	void dispatch_focus_in();
+	void dispatch_focus_out();
 	int dispatch_motion_event();
 	int dispatch_keypress_event();
-	int dispatch_repeat_event(int64_t duration);
+	void dispatch_repeat_event(int64_t duration);
 	int dispatch_repeat_event_master(int64_t duration);
 	int dispatch_button_press();
 	int dispatch_button_release();
-	int dispatch_cursor_leave();
+	void dispatch_cursor_leave();
 	int dispatch_cursor_enter();
-	int dispatch_translation_event();
+	void dispatch_translation_event();
 	int dispatch_drag_start();
 	int dispatch_drag_motion();
 	int dispatch_drag_stop();
@@ -641,8 +616,8 @@ private:
 // Get the port ID for a color model or return -1 for failure
 	int grab_port_id(BC_WindowBase *window, int color_model);
 
-	int find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result);
-	int find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
+	void find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result);
+	void find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
 
 
 	void translate_coordinates(Window src_w, 
@@ -682,7 +657,7 @@ private:
 // last color found in table
 	int current_color_value, current_color_pixel;
 // table for every color allocated
-	int color_table[256][2];    
+	int color_table[256][2];
 // Turn on optimization
 	int video_on;
 // Event handler completion
@@ -692,7 +667,7 @@ private:
 // Motion event compression
 	int motion_events, last_motion_x, last_motion_y;
 // window of buffered motion
-	Window last_motion_win;       
+	Window last_motion_win;
 // Resize event compression
 	int resize_events, last_resize_w, last_resize_h;
 	int translation_events, last_translate_x, last_translate_y;
@@ -723,7 +698,6 @@ private:
 	static BC_Resources resources;
 // Array of repeaters for multiple repeating objects.
 	ArrayList<BC_Repeater*> repeaters;
-//	int64_t next_repeat_id;
 // Text for tooltip if one exists
 	char tooltip_text[BCTEXTLEN];
 // If the current window's tooltip is visible
@@ -737,10 +711,8 @@ private:
 // If the tooltip shouldn't be hidden
 	int persistant_tooltip;
 
-
-
 // Font sets
-    XFontSet largefontset, mediumfontset, smallfontset, curr_fontset;
+	XFontSet largefontset, mediumfontset, smallfontset, curr_fontset;
 
 // Fonts
 	int current_font;
@@ -749,8 +721,7 @@ private:
 // Must be void so users don't need to include the wrong libpng version.
 	void *largefont_xft, *mediumfont_xft, *smallfont_xft;
 
-
-	int64_t current_color;
+	int current_color;
 // Coordinate of drag start
 	int drag_x, drag_y;
 // Boundaries the cursor must pass to start a drag
@@ -824,8 +795,8 @@ private:
 	BC_Clipboard *clipboard;
 #ifdef HAVE_LIBXXF86VM
 // Mode switch information.
-   int vm_switched;
-   XF86VidModeModeInfo orig_modeline;
+	int vm_switched;
+	XF86VidModeModeInfo orig_modeline;
 #endif
 	int is_deleting;
 // Hide cursor when video is enabled
@@ -840,9 +811,7 @@ private:
 
 protected:
 	Atom create_xatom(const char *atom_name);
-	int send_custom_xatom(xatom_event *event);
+	void send_custom_xatom(xatom_event *event);
 };
-
-
 
 #endif

@@ -56,7 +56,7 @@ public:
 
 	void move_widgets();
 	void print();
-	int  reposition_widget(int x, int y, int w = -1, int h = -1);
+	void reposition_widget(int x, int y, int w = -1, int h = -1);
 
 	void set_align(int r,int c,int va, int ha);
 	void set_crspan(int r,int c,int cs, int rs);

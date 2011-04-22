@@ -62,22 +62,12 @@ BC_ResizeCall::BC_ResizeCall(int w, int h)
 }
 
 
-
-
-
-
-
-
-
-
-
 BC_Resources BC_WindowBase::resources;
 
 Window XGroupLeader = 0;
 
 BC_WindowBase::BC_WindowBase()
 {
-//printf("BC_WindowBase::BC_WindowBase 1\n");
 	BC_WindowBase::initialize();
 }
 
@@ -86,7 +76,7 @@ BC_WindowBase::~BC_WindowBase()
 #ifdef HAVE_LIBXXF86VM
 	if(window_type == VIDMODE_SCALED_WINDOW && vm_switched)
 	{
-		restore_vm();   
+		restore_vm();
 	}
 #endif
 	is_deleting = 1;
@@ -119,13 +109,13 @@ BC_WindowBase::~BC_WindowBase()
 
 	if(widgetgrids)
 	{
-                while (widgetgrids->total) 
-                {
+		while (widgetgrids->total)
+		{
 			delete widgetgrids->last();
 			widgetgrids->remove();
-                }
-                delete widgetgrids;
-        }
+		}
+		delete widgetgrids;
+	}
 
 	delete pixmap;
 
@@ -139,10 +129,6 @@ BC_WindowBase::~BC_WindowBase()
 	if(icon_pixmap) delete icon_pixmap;
 	if(icon_window) delete icon_window;
 	if(temp_bitmap) delete temp_bitmap;
-
-
-
-
 
 	if(window_type == MAIN_WINDOW) 
 	{
@@ -221,7 +207,6 @@ void BC_WindowBase::initialize()
 	bg_pixmap = 0;
 	tooltip_text[0] = 0;
 	persistant_tooltip = 0;
-//	next_repeat_id = 0;
 	tooltip_popup = 0;
 	tooltip_done = 0;
 	current_font = MEDIUMFONT;
@@ -244,7 +229,7 @@ void BC_WindowBase::initialize()
 	is_hourglass = 0;
 	is_transparent = 0;
 #ifdef HAVE_LIBXXF86VM
-    vm_switched = 0;
+	vm_switched = 0;
 #endif
 	largefont_xft = 0;
 	mediumfont_xft = 0;
@@ -263,9 +248,9 @@ void BC_WindowBase::initialize()
 			ButtonReleaseMask | \
 			PointerMotionMask | \
 			FocusChangeMask
-			
 
-int BC_WindowBase::create_window(BC_WindowBase *parent_window,
+
+void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 				const char *title, 
 				int x,
 				int y,
@@ -288,19 +273,18 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	int root_w;
 	int root_h;
 #ifdef HAVE_LIBXXF86VM
-    int vm;
+	int vm;
 #endif
 
 	id = get_resources()->get_id();
 
-
 	get_resources()->create_window_lock->lock("BC_WindowBase::create_window");
 
-    if(parent_window) top_level = parent_window->top_level;
+	if(parent_window) top_level = parent_window->top_level;
 
 #ifdef HAVE_LIBXXF86VM
-    if(window_type == VIDMODE_SCALED_WINDOW)
-	    closest_vm(&vm,&w,&h);
+	if(window_type == VIDMODE_SCALED_WINDOW)
+		closest_vm(&vm,&w,&h);
 #endif
 
 	this->x = x;
@@ -341,13 +325,11 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		screen = DefaultScreen(display);
 		rootwin = RootWindow(display, screen);
 
-
 		vis = DefaultVisual(display, screen);
 		default_depth = DefaultDepth(display, screen);
 
 		client_byte_order = (*(u_int32_t*)"a   ") & 0x00000001;
 		server_byte_order = (XImageByteOrder(display) == MSBFirst) ? 0 : 1;
-
 
 // This must be done before fonts to know if antialiasing is available.
 		init_colors();
@@ -358,9 +340,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
 
-// printf("bcwindowbase 1 %s\n", title);
-// if(window_type == MAIN_WINDOW) sleep(1);
-// printf("bcwindowbase 10\n");
 		init_fonts();
 		init_gc();
 		init_cursors();
@@ -417,7 +396,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			0, 
 			&size_hints);
 		get_atoms();
-		
+
 		clipboard = new BC_Clipboard(display_name);
 		clipboard->start_clipboard();
 
@@ -522,7 +501,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 // Create pixmap for all windows
 	pixmap = new BC_Pixmap(this, this->w, this->h);
 
-
 // Set up options for main window
 	if(window_type == MAIN_WINDOW)
 	{
@@ -546,7 +524,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		}
 	}
 
-
 	draw_background(0, 0, this->w, this->h);
 	flash();
 
@@ -561,8 +538,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		if(!hidden) show_window();
 	}
 	get_resources()->create_window_lock->unlock();
-
-	return 0;
 }
 
 Display* BC_WindowBase::init_display(const char *display_name)
@@ -572,12 +547,12 @@ Display* BC_WindowBase::init_display(const char *display_name)
 	if(display_name && display_name[0] == 0) display_name = NULL;
 	if((display = XOpenDisplay(display_name)) == NULL)
 	{
-  		printf("BC_WindowBase::init_display: cannot connect to X server %s\n", 
+		printf("BC_WindowBase::init_display: cannot connect to X server %s\n", 
 			display_name);
-  		if(getenv("DISPLAY") == NULL)
-    	{
+		if(getenv("DISPLAY") == NULL)
+		{
 			printf("'DISPLAY' environment variable not set.\n");
-  			exit(1);
+			exit(1);
 		}
 		else
 // Try again with default display.
@@ -588,7 +563,7 @@ Display* BC_WindowBase::init_display(const char *display_name)
 				exit(1);
 			}
 		}
- 	}
+	}
 	return display;
 }
 
@@ -612,7 +587,6 @@ int BC_WindowBase::run_window()
 // Start tooltips
 	if(window_type == MAIN_WINDOW)
 	{
-//		tooltip_id = get_repeat_id();
 		set_repeat(get_resources()->tooltip_delay);
 	}
 
@@ -629,16 +603,13 @@ int BC_WindowBase::run_window()
 	return return_value;
 }
 
-int BC_WindowBase::get_key_masks(XEvent *event)
+void BC_WindowBase::get_key_masks(XEvent *event)
 {
-// printf("BC_WindowBase::get_key_masks %llx\n", 
-// event->xkey.state);
 // ctrl key down
 	ctrl_mask = (event->xkey.state & ControlMask) ? 1 : 0;
 // shift key down
 	shift_mask = (event->xkey.state & ShiftMask) ? 1 : 0;
 	alt_mask = (event->xkey.state & Mod1Mask) ? 1 : 0;
-	return 0;
 }
 
 int BC_WindowBase::window_ignored(Window ewin)
@@ -659,11 +630,7 @@ int BC_WindowBase::window_ignored(Window ewin)
 	return 0;
 }
 
-
-
-
-
-int BC_WindowBase::dispatch_event()
+void BC_WindowBase::dispatch_event()
 {
 	XEvent event;
 	Window tempwin;
@@ -692,12 +659,12 @@ int BC_WindowBase::dispatch_event()
 		if(translation_events)
 			dispatch_translation_event();
 
-		return 0;
+		return;
 	}
 
 // Ignore events from destroyed window
 	if(window_ignored(event.xany.window))
-		return 0;
+		return;
 
 	switch(event.type)
 	{
@@ -780,11 +747,11 @@ int BC_WindowBase::dispatch_event()
 		get_key_masks(&event);
 		button_number = event.xbutton.button;
 		event_win = event.xany.window;
+
 		if (button_number != 4 && button_number != 5) 
 			button_down = 0;
 
 		dispatch_button_release();
-
 		break;
 
 	case Expose:
@@ -938,7 +905,6 @@ int BC_WindowBase::dispatch_event()
 		dispatch_cursor_enter();
 		break;
 	}
-	return 0;
 }
 
 int BC_WindowBase::dispatch_expose_event()
@@ -954,7 +920,7 @@ int BC_WindowBase::dispatch_expose_event()
 	return result;
 }
 
-int BC_WindowBase::dispatch_resize_event(int w, int h)
+void BC_WindowBase::dispatch_resize_event(int w, int h)
 {
 // Can't store new w and h until the event is handles 
 // because bcfilebox depends on the old w and h to
@@ -982,10 +948,9 @@ int BC_WindowBase::dispatch_resize_event(int w, int h)
 		this->w = w;
 		this->h = h;
 	}
-	return 0;
 }
 
-int BC_WindowBase::dispatch_translation_event()
+void BC_WindowBase::dispatch_translation_event()
 {
 	translation_events = 0;
 	if(window_type == MAIN_WINDOW)
@@ -1005,7 +970,6 @@ int BC_WindowBase::dispatch_translation_event()
 	}
 
 	translation_event();
-	return 0;
 }
 
 int BC_WindowBase::dispatch_motion_event()
@@ -1054,7 +1018,6 @@ int BC_WindowBase::dispatch_motion_event()
 		result = subwindows->values[i]->dispatch_motion_event();
 	}
 
-
 	if(!result) result = cursor_motion_event();    // give to user
 	return result;
 }
@@ -1076,7 +1039,7 @@ int BC_WindowBase::dispatch_keypress_event()
 	return result;
 }
 
-int BC_WindowBase::dispatch_focus_in()
+void BC_WindowBase::dispatch_focus_in()
 {
 	for(int i = 0; i < subwindows->total; i++)
 	{
@@ -1084,11 +1047,9 @@ int BC_WindowBase::dispatch_focus_in()
 	}
 
 	focus_in_event();
-
-	return 0;
 }
 
-int BC_WindowBase::dispatch_focus_out()
+void BC_WindowBase::dispatch_focus_out()
 {
 	for(int i = 0; i < subwindows->total; i++)
 	{
@@ -1096,8 +1057,6 @@ int BC_WindowBase::dispatch_focus_out()
 	}
 
 	focus_out_event();
-
-	return 0;
 }
 
 int BC_WindowBase::get_has_focus()
@@ -1158,9 +1117,8 @@ int BC_WindowBase::dispatch_button_release()
 }
 
 
-int BC_WindowBase::dispatch_repeat_event(int64_t duration)
+void BC_WindowBase::dispatch_repeat_event(int64_t duration)
 {
-
 // all repeat event handlers get called and decide based on activity and duration
 // whether to respond
 	for(int i = 0; i < subwindows->total; i++)
@@ -1168,10 +1126,7 @@ int BC_WindowBase::dispatch_repeat_event(int64_t duration)
 		subwindows->values[i]->dispatch_repeat_event(duration);
 	}
 
-
 	repeat_event(duration);
-
-
 
 // Unlock next repeat signal
 	if(window_type == MAIN_WINDOW)
@@ -1184,8 +1139,6 @@ int BC_WindowBase::dispatch_repeat_event(int64_t duration)
 			}
 		}
 	}
-
-	return 0;
 }
 
 void BC_WindowBase::unhide_cursor()
@@ -1220,7 +1173,7 @@ void BC_WindowBase::update_video_cursor()
 }
 
 
-int BC_WindowBase::dispatch_cursor_leave()
+void BC_WindowBase::dispatch_cursor_leave()
 {
 	unhide_cursor();
 
@@ -1230,7 +1183,6 @@ int BC_WindowBase::dispatch_cursor_leave()
 	}
 
 	cursor_leave_event();
-	return 0;
 }
 
 int BC_WindowBase::dispatch_cursor_enter()
@@ -1271,10 +1223,11 @@ int BC_WindowBase::close_event()
 int BC_WindowBase::dispatch_drag_start()
 {
 	int result = 0;
+
 	if(active_menubar) result = active_menubar->dispatch_drag_start();
 	if(!result && active_popup_menu) result = active_popup_menu->dispatch_drag_start();
 	if(!result && active_subwindow) result = active_subwindow->dispatch_drag_start();
-	
+
 	for(int i = 0; i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_drag_start();
@@ -1306,25 +1259,22 @@ int BC_WindowBase::dispatch_drag_stop()
 int BC_WindowBase::dispatch_drag_motion()
 {
 	int result = 0;
+
 	for(int i = 0; i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_drag_motion();
 	}
-	
+
 	if(is_dragging && !result)
 	{
 		drag_motion_event();
 		result = 1;
 	}
-	
+
 	return result;
 }
 
-
-
-
-
-int BC_WindowBase::show_tooltip(int w, int h)
+void BC_WindowBase::show_tooltip(int w, int h)
 {
 	Window tempwin;
 
@@ -1343,7 +1293,7 @@ int BC_WindowBase::show_tooltip(int w, int h)
 		w += TOOLTIP_MARGIN * 2;
 		h += TOOLTIP_MARGIN * 2;
 
-               lock_window("BC_WindowBase::show_tooltip");
+		lock_window("BC_WindowBase::show_tooltip");
 		XTranslateCoordinates(top_level->display, 
 				win, 
 				top_level->rootwin, 
@@ -1365,16 +1315,15 @@ int BC_WindowBase::show_tooltip(int w, int h)
 		tooltip_popup->flash();
 		tooltip_popup->flush();
 	}
-	return 0;
 }
 
-int BC_WindowBase::hide_tooltip()
+void BC_WindowBase::hide_tooltip()
 {
 	if(subwindows)
+	{
 		for(int i = 0; i < subwindows->total; i++)
-		{
 			subwindows->values[i]->hide_tooltip();
-		}
+	}
 
 	if(tooltip_on)
 	{
@@ -1382,28 +1331,27 @@ int BC_WindowBase::hide_tooltip()
 		delete tooltip_popup;
 		tooltip_popup = 0;
 	}
-	return 0;
 }
 
-int BC_WindowBase::set_tooltip(const char *text)
+void BC_WindowBase::set_tooltip(const char *text)
 {
 	strcpy(this->tooltip_text, text);
+
 // Update existing tooltip if it is visible
 	if(tooltip_on)
 	{
 		draw_tooltip();
 		tooltip_popup->flash();
 	}
-	return 0;
 }
 
 // signal the event handler to repeat
-int BC_WindowBase::set_repeat(int64_t duration)
+void BC_WindowBase::set_repeat(int64_t duration)
 {
 	if(duration <= 0)
 	{
 		printf("BC_WindowBase::set_repeat duration=%lld\n", duration);
-		return 0;
+		return;
 	}
 	if(window_type != MAIN_WINDOW) return top_level->set_repeat(duration);
 
@@ -1414,44 +1362,43 @@ int BC_WindowBase::set_repeat(int64_t duration)
 		if(repeaters.values[i]->delay == duration)
 		{
 			repeaters.values[i]->start_repeating();
-			return 0;
+			return;
 		}
 	}
 
 	BC_Repeater *repeater = new BC_Repeater(this, duration);
 	repeater->initialize();
 	repeaters.append(repeater);
-    repeater->start_repeating();
-	return 0;
+	repeater->start_repeating();
+	return;
 }
 
-int BC_WindowBase::unset_repeat(int64_t duration)
+void BC_WindowBase::unset_repeat(int64_t duration)
 {
-	if(window_type != MAIN_WINDOW) return top_level->unset_repeat(duration);
+	if(window_type != MAIN_WINDOW)
+	{
+		top_level->unset_repeat(duration);
+		return;
+	}
 
-	BC_Repeater *repeater = 0;
 	for(int i = 0; i < repeaters.total; i++)
 	{
 		if(repeaters.values[i]->delay == duration)
-		{
 			repeaters.values[i]->stop_repeating();
-		}
 	}
-	return 0;
 }
 
 
-int BC_WindowBase::unset_all_repeaters()
+void BC_WindowBase::unset_all_repeaters()
 {
 	for(int i = 0; i < repeaters.total; i++)
 	{
 		repeaters.values[i]->stop_repeating();
 	}
 	repeaters.remove_all_objects();
-	return 0;
 }
 
-int BC_WindowBase::arm_repeat(int64_t duration)
+void BC_WindowBase::arm_repeat(int64_t duration)
 {
 	XEvent event;
 
@@ -1468,7 +1415,6 @@ int BC_WindowBase::arm_repeat(int64_t duration)
 		0, 
 		&event);
 	flush();
-	return 0;
 }
 
 int BC_WindowBase::recieve_custom_xatoms(xatom_event *event)
@@ -1476,7 +1422,7 @@ int BC_WindowBase::recieve_custom_xatoms(xatom_event *event)
 	return 0;
 }
 
-int BC_WindowBase::send_custom_xatom(xatom_event *event)
+void BC_WindowBase::send_custom_xatom(xatom_event *event)
 {
 	XEvent myevent;
 
@@ -1497,9 +1443,7 @@ int BC_WindowBase::send_custom_xatom(xatom_event *event)
 		0, 
 		&myevent);
 	flush();
-	return 0;
 }
-
 
 
 Atom BC_WindowBase::create_xatom(const char *atom_name)
@@ -1507,15 +1451,13 @@ Atom BC_WindowBase::create_xatom(const char *atom_name)
 	return XInternAtom(display, atom_name, False);
 }
 
-int BC_WindowBase::get_atoms()
+void BC_WindowBase::get_atoms()
 {
 	SetDoneXAtom =  create_xatom("BC_REPEAT_EVENT");
 	RepeaterXAtom = create_xatom("BC_CLOSE_EVENT");
 	DelWinXAtom =   create_xatom("WM_DELETE_WINDOW");
 	if(ProtoXAtom = create_xatom("WM_PROTOCOLS"))
 		XChangeProperty(display, win, ProtoXAtom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&DelWinXAtom, True);
-	return 0;
-	
 }
 
 
@@ -1536,7 +1478,6 @@ void BC_WindowBase::init_cursors()
 	downright_resize_cursor = XCreateFontCursor(display, XC_bottom_right_corner);
 	hourglass_cursor = XCreateFontCursor(display, XC_watch);
 
-
 	char cursor_data[] = { 0,0,0,0, 0,0,0,0 };
 	Colormap colormap = DefaultColormap(display, screen);
 	Pixmap pixmap_bottom = XCreateBitmapFromData(display, 
@@ -1545,7 +1486,7 @@ void BC_WindowBase::init_cursors()
 		8,
 		8);
 	XColor black, dummy;
-    XAllocNamedColor(display, colormap, "black", &black, &dummy);
+	XAllocNamedColor(display, colormap, "black", &black, &dummy);
 	transparent_cursor = XCreatePixmapCursor(display,
 		pixmap_bottom,
 		pixmap_bottom,
@@ -1553,32 +1494,32 @@ void BC_WindowBase::init_cursors()
 		&black,
 		0,
 		0);
-//	XDefineCursor(display, win, transparent_cursor);
 	XFreePixmap(display, pixmap_bottom);
 }
 
 int BC_WindowBase::evaluate_color_model(int client_byte_order, int server_byte_order, int depth)
 {
 	int color_model;
+
 	switch(depth)
 	{
-		case 8:
-			color_model = BC_RGB8;
-			break;
-		case 16:
-			color_model = (server_byte_order == client_byte_order) ? BC_RGB565 : BC_BGR565;
-			break;
-		case 24:
-			color_model = server_byte_order ? BC_BGR888 : BC_RGB888;
-			break;
-		case 32:
-			color_model = server_byte_order ? BC_BGR8888 : BC_ARGB8888;
-			break;
+	case 8:
+		color_model = BC_RGB8;
+		break;
+	case 16:
+		color_model = (server_byte_order == client_byte_order) ? BC_RGB565 : BC_BGR565;
+		break;
+	case 24:
+		color_model = server_byte_order ? BC_BGR888 : BC_RGB888;
+		break;
+	case 32:
+		color_model = server_byte_order ? BC_BGR8888 : BC_ARGB8888;
+		break;
 	}
 	return color_model;
 }
 
-int BC_WindowBase::init_colors()
+void BC_WindowBase::init_colors()
 {
 	total_colors = 0;
 	current_color_value = current_color_pixel = 0;
@@ -1605,31 +1546,30 @@ int BC_WindowBase::init_colors()
 // Get the color model
 	switch(color_model)
 	{
-		case BC_RGB8:
-			if(private_color)
-			{
-  				cmap = XCreateColormap(display, rootwin, vis, AllocNone);
-				create_private_colors();
-			}
-			else
-			{
-	 		  	cmap = DefaultColormap(display, screen);
-				create_shared_colors();
-			}
+	case BC_RGB8:
+		if(private_color)
+		{
+			cmap = XCreateColormap(display, rootwin, vis, AllocNone);
+			create_private_colors();
+		}
+		else
+		{
+			cmap = DefaultColormap(display, screen);
+			create_shared_colors();
+		}
 
-			allocate_color_table();
+		allocate_color_table();
 // No antialiasing
-			get_resources()->use_xft = 0;
-			break;
+		get_resources()->use_xft = 0;
+		break;
 
-		default:
- 			cmap = DefaultColormap(display, screen);
-			break;
+	default:
+		cmap = DefaultColormap(display, screen);
+		break;
 	}
-	return 0;
 }
 
-int BC_WindowBase::create_private_colors()
+void BC_WindowBase::create_private_colors()
 {
 	int color;
 	total_colors = 256;
@@ -1642,11 +1582,10 @@ int BC_WindowBase::create_private_colors()
 		color_table[i][0] = color;
 	}
 	create_shared_colors();        // overwrite the necessary colors on the table
-	return 0;
 }
 
 
-int BC_WindowBase::create_color(int color)
+void BC_WindowBase::create_color(int color)
 {
 	if(total_colors == 256)
 	{
@@ -1659,55 +1598,52 @@ int BC_WindowBase::create_color(int color)
 		color_table[total_colors][0] = color;
 		total_colors++;
 	}
-	return 0;
 }
 
-int BC_WindowBase::create_shared_colors()
+void BC_WindowBase::create_shared_colors()
 {
 	create_color(BLACK);
-	create_color(WHITE);   
+	create_color(WHITE);
 
-	create_color(LTGREY);  
-	create_color(MEGREY);  
-	create_color(MDGREY);  
-	create_color(DKGREY);   		  	
+	create_color(LTGREY);
+	create_color(MEGREY);
+	create_color(MDGREY);
+	create_color(DKGREY);
 
-	create_color(LTCYAN);  
-	create_color(MECYAN);  
-	create_color(MDCYAN);  
-	create_color(DKCYAN);  
+	create_color(LTCYAN);
+	create_color(MECYAN);
+	create_color(MDCYAN);
+	create_color(DKCYAN);
 
-	create_color(LTGREEN); 
-	create_color(GREEN);   
-	create_color(DKGREEN); 
+	create_color(LTGREEN);
+	create_color(GREEN);
+	create_color(DKGREEN);
 
-	create_color(LTPINK);  
+	create_color(LTPINK);
 	create_color(PINK);
-	create_color(RED);     
+	create_color(RED);
 
-	create_color(LTBLUE);  
-	create_color(BLUE);    
-	create_color(DKBLUE);  
+	create_color(LTBLUE);
+	create_color(BLUE);
+	create_color(DKBLUE);
 
-	create_color(LTYELLOW); 
-	create_color(MEYELLOW); 
-	create_color(MDYELLOW); 
-	create_color(DKYELLOW); 
+	create_color(LTYELLOW);
+	create_color(MEYELLOW);
+	create_color(MDYELLOW);
+	create_color(DKYELLOW);
 
-	create_color(LTPURPLE); 
-	create_color(MEPURPLE); 
-	create_color(MDPURPLE); 
-	create_color(DKPURPLE); 
+	create_color(LTPURPLE);
+	create_color(MEPURPLE);
+	create_color(MDPURPLE);
+	create_color(DKPURPLE);
 
-	create_color(FGGREY); 
+	create_color(FGGREY);
 	create_color(MNBLUE);
 	create_color(ORANGE);
 	create_color(FTGREY);
-
-	return 0;
 }
 
-int BC_WindowBase::allocate_color_table()
+void BC_WindowBase::allocate_color_table()
 {
 	int red, green, blue, color;
 	int result;
@@ -1730,26 +1666,23 @@ int BC_WindowBase::allocate_color_table()
 	}
 
 	XInstallColormap(display, cmap);
-	return 0;
 }
 
-int BC_WindowBase::init_window_shape()
+void BC_WindowBase::init_window_shape()
 {
 	if(bg_pixmap && bg_pixmap->use_alpha()) 
 	{
 		XShapeCombineMask(top_level->display,
-    		this->win,
-    		ShapeBounding,
-    		0,
-    		0,
-    		bg_pixmap->get_alpha(),
-    		ShapeSet);
+			this->win,
+			ShapeBounding,
+			0,
+			0,
+			bg_pixmap->get_alpha(),
+			ShapeSet);
 	}
-	return 0;
 }
 
-
-int BC_WindowBase::init_gc()
+void BC_WindowBase::init_gc()
 {
 	unsigned long gcmask;
 	gcmask = GCFont | GCGraphicsExposures;
@@ -1758,10 +1691,9 @@ int BC_WindowBase::init_gc()
 	gcvalues.font = mediumfont->fid;        // set the font
 	gcvalues.graphics_exposures = 0;        // prevent expose events for every redraw
 	gc = XCreateGC(display, rootwin, gcmask, &gcvalues);
-	return 0;
 }
 
-int BC_WindowBase::init_fonts()
+void BC_WindowBase::init_fonts()
 {
 	if((largefont = XLoadQueryFont(display, _(resources.large_font))) == NULL)
 		if((largefont = XLoadQueryFont(display, _(resources.large_font2))) == NULL)
@@ -1783,23 +1715,25 @@ int BC_WindowBase::init_fonts()
 
 // FIXME: should check the m,d,n values
 		if((largefontset = XCreateFontSet(display, 
-			resources.large_fontset,
-            &m, 
-			&n, 
-			&d)) == 0)
-            largefontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
+				resources.large_fontset,
+				&m,
+				&n,
+				&d)) == 0)
+			largefontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
+
 		if((mediumfontset = XCreateFontSet(display, 
-			resources.medium_fontset,
-            &m, 
-			&n, 
-			&d)) == 0)
-            mediumfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
+				resources.medium_fontset,
+				&m,
+				&n,
+				&d)) == 0)
+			mediumfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
+
 		if((smallfontset = XCreateFontSet(display, 
-			resources.small_fontset,
-            &m, 
-			&n, 
-			&d)) == 0)
-            smallfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
+				resources.small_fontset,
+				&m,
+				&n,
+				&d)) == 0)
+			smallfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
 
 		if(largefontset && mediumfontset && smallfontset)
 		{
@@ -1812,8 +1746,6 @@ int BC_WindowBase::init_fonts()
 			get_resources()->use_fontset = 0;
 		}
 	}
-
-	return 0;
 }
 
 
@@ -1821,37 +1753,34 @@ void BC_WindowBase::init_xft()
 {
 #ifdef HAVE_XFT
 	if(!(largefont_xft = XftFontOpenXlfd(display,
-		screen,
-		resources.large_font_xft)))
-		if(!(largefont_xft = XftFontOpenXlfd(display,
 			screen,
-			resources.large_font_xft2)))
+			resources.large_font_xft)))
+		if(!(largefont_xft = XftFontOpenXlfd(display,
+				screen,
+				resources.large_font_xft2)))
 			largefont_xft = XftFontOpenXlfd(display,
-		    	screen,
-		    	"fixed");
-
+				screen,
+				"fixed");
 
 	if(!(mediumfont_xft = XftFontOpenXlfd(display,
-		  screen,
-		  resources.medium_font_xft)))
+			screen,
+			resources.medium_font_xft)))
 		if(!(mediumfont_xft = XftFontOpenXlfd(display,
-			  screen,
-			  resources.medium_font_xft2)))
+				screen,
+				resources.medium_font_xft2)))
 			mediumfont_xft = XftFontOpenXlfd(display,
-		    	screen,
-		    	"fixed");
-
+				screen,
+				"fixed");
 
 	if(!(smallfont_xft = XftFontOpenXlfd(display,
-	      screen,
-	      resources.small_font_xft)))
+			screen,
+			resources.small_font_xft)))
 		if(!(smallfont_xft = XftFontOpenXlfd(display,
-	    	  screen,
-	    	  resources.small_font_xft2)))
-			  smallfont_xft = XftFontOpenXlfd(display,
-		    	  screen,
-		    	  "fixed");
-
+				screen,
+				resources.small_font_xft2)))
+			smallfont_xft = XftFontOpenXlfd(display,
+				screen,
+				"fixed");
 
 // Extension failed to locate fonts
 	if(!largefont_xft || !mediumfont_xft || !smallfont_xft)
@@ -1869,72 +1798,71 @@ void BC_WindowBase::init_xft()
 }
 
 
-int BC_WindowBase::get_color(int64_t color) 
+int BC_WindowBase::get_color(int color) 
 {
 // return pixel of color
 // use this only for drawing subwindows not for bitmaps
-	 int i, test, difference, result;
+	int i, test, difference, result;
 
 	switch(color_model)
 	{
-		case BC_RGB8:
-			if(private_color)
-			{
-				return get_color_rgb8(color);
-			}
-			else
-			{
+	case BC_RGB8:
+		if(private_color)
+		{
+			return get_color_rgb8(color);
+		}
+		else
+		{
 // test last color looked up
-				if(current_color_value == color) return current_color_pixel;
+			if(current_color_value == color) return current_color_pixel;
 
 // look up in table
-				current_color_value = color;
-				for(i = 0; i < total_colors; i++)
+			current_color_value = color;
+			for(i = 0; i < total_colors; i++)
+			{
+				if(color_table[i][0] == color)
 				{
-					if(color_table[i][0] == color)
-					{
-						current_color_pixel = color_table[i][1];
-						return current_color_pixel;
-					}
+					current_color_pixel = color_table[i][1];
+					return current_color_pixel;
 				}
+			}
 
 // find nearest match
-				difference = 0xFFFFFF;
+			difference = 0xFFFFFF;
 
-				for(i = 0, result = 0; i < total_colors; i++)
+			for(i = 0, result = 0; i < total_colors; i++)
+			{
+				test = abs((int)(color_table[i][0] - color));
+
+				if(test < difference) 
 				{
-					test = abs((int)(color_table[i][0] - color));
-
-					if(test < difference) 
-					{
-						current_color_pixel = color_table[i][1]; 
-						difference = test;
-					}
+					current_color_pixel = color_table[i][1]; 
+					difference = test;
 				}
-
-				return current_color_pixel;
 			}
-			break;	
 
-		case BC_RGB565:
-			return get_color_rgb16(color);
-			break;
+			return current_color_pixel;
+		}
+		break;
 
-		case BC_BGR565:
-			return get_color_bgr16(color);
-			break;
+	case BC_RGB565:
+		return get_color_rgb16(color);
+		break;
 
-		case BC_RGB888:
-		case BC_BGR888:
-			if(client_byte_order == server_byte_order)
-				return color;
-			else
-				get_color_bgr24(color);
-			break;
+	case BC_BGR565:
+		return get_color_bgr16(color);
+		break;
 
-		default:
+	case BC_RGB888:
+	case BC_BGR888:
+		if(client_byte_order == server_byte_order)
 			return color;
-			break;	
+		else
+			get_color_bgr24(color);
+		break;
+
+	default:
+		return color;
 	}
 	return 0;
 }
@@ -1949,29 +1877,30 @@ int BC_WindowBase::get_color_rgb8(int color)
 	return pixel;
 }
 
-int64_t BC_WindowBase::get_color_rgb16(int color)
+int BC_WindowBase::get_color_rgb16(int color)
 {
-	int64_t result;
+	int result;
+
 	result = (color & 0xf80000) >> 8;
 	result += (color & 0xfc00) >> 5;
 	result += (color & 0xf8) >> 3;
-	
 	return result;
 }
 
-int64_t BC_WindowBase::get_color_bgr16(int color)
+int BC_WindowBase::get_color_bgr16(int color)
 {
-	int64_t result;
+	int result;
+
 	result = (color & 0xf80000) >> 19;
 	result += (color & 0xfc00) >> 5;
 	result += (color & 0xf8) << 8;
-
 	return result;
 }
 
-int64_t BC_WindowBase::get_color_bgr24(int color)
+int BC_WindowBase::get_color_bgr24(int color)
 {
-	int64_t result;
+	int result;
+
 	result = (color & 0xff) << 16;
 	result += (color & 0xff00);
 	result += (color & 0xff0000) >> 16;
@@ -1982,9 +1911,6 @@ void BC_WindowBase::start_video()
 {
 	cursor_timer->update();
 	video_on = 1;
-//	set_color(BLACK);
-//	draw_box(0, 0, get_w(), get_h());
-//	flash();
 }
 
 void BC_WindowBase::stop_video()
@@ -1993,14 +1919,12 @@ void BC_WindowBase::stop_video()
 	unhide_cursor();
 }
 
-
-
-int64_t BC_WindowBase::get_color()
+int BC_WindowBase::get_color()
 {
 	return top_level->current_color;
 }
 
-void BC_WindowBase::set_color(int64_t color)
+void BC_WindowBase::set_color(int color)
 {
 	top_level->current_color = color;
 	XSetForeground(top_level->display, 
@@ -2022,21 +1946,36 @@ Cursor BC_WindowBase::get_cursor_struct(int cursor)
 {
 	switch(cursor)
 	{
-		case ARROW_CURSOR:  	   return top_level->arrow_cursor;  	    	   break;
-		case CROSS_CURSOR:         return top_level->cross_cursor;
-		case IBEAM_CURSOR:  	   return top_level->ibeam_cursor;  	    	   break;
-		case VSEPARATE_CURSOR:     return top_level->vseparate_cursor;      	   break;
-		case HSEPARATE_CURSOR:     return top_level->hseparate_cursor;      	   break;
-		case MOVE_CURSOR:  	       return top_level->move_cursor;          	       break;
-		case LEFT_CURSOR:   	   return top_level->left_cursor;   	    	   break;
-		case RIGHT_CURSOR:         return top_level->right_cursor;  	    	   break;
-		case UPRIGHT_ARROW_CURSOR: return top_level->upright_arrow_cursor;  	   break;
-		case UPLEFT_RESIZE:        return top_level->upleft_resize_cursor;     	   break;
-		case UPRIGHT_RESIZE:       return top_level->upright_resize_cursor;    	   break;
-		case DOWNLEFT_RESIZE:      return top_level->downleft_resize_cursor;   	   break;
-		case DOWNRIGHT_RESIZE:     return top_level->downright_resize_cursor;  	   break;
-		case HOURGLASS_CURSOR:     return top_level->hourglass_cursor;  	       break;
-		case TRANSPARENT_CURSOR:   return top_level->transparent_cursor;  	       break;
+	case ARROW_CURSOR:
+		return top_level->arrow_cursor;
+	case CROSS_CURSOR:
+		return top_level->cross_cursor;
+	case IBEAM_CURSOR:
+		return top_level->ibeam_cursor;
+	case VSEPARATE_CURSOR:
+		return top_level->vseparate_cursor;
+	case HSEPARATE_CURSOR:
+		return top_level->hseparate_cursor;
+	case MOVE_CURSOR:
+		return top_level->move_cursor;
+	case LEFT_CURSOR:
+		return top_level->left_cursor;
+	case RIGHT_CURSOR:
+		return top_level->right_cursor;
+	case UPRIGHT_ARROW_CURSOR:
+		return top_level->upright_arrow_cursor;
+	case UPLEFT_RESIZE:
+		return top_level->upleft_resize_cursor;
+	case UPRIGHT_RESIZE:
+		return top_level->upright_resize_cursor;
+	case DOWNLEFT_RESIZE:
+		return top_level->downleft_resize_cursor;
+	case DOWNRIGHT_RESIZE:
+		return top_level->downright_resize_cursor;
+	case HOURGLASS_CURSOR:
+		return top_level->hourglass_cursor;
+	case TRANSPARENT_CURSOR:
+		return top_level->transparent_cursor;
 	}
 	return 0;
 }
@@ -2121,20 +2060,19 @@ void BC_WindowBase::stop_hourglass_recursive()
 }
 
 
-
-
-
-
 XFontStruct* BC_WindowBase::get_font_struct(int font)
 {
 // Clear out unrelated flags
 	if(font & BOLDFACE) font ^= BOLDFACE;
-	
+
 	switch(font)
 	{
-		case MEDIUMFONT: return top_level->mediumfont; break;
-		case SMALLFONT:  return top_level->smallfont;  break;
-		case LARGEFONT:  return top_level->largefont;  break;
+	case MEDIUMFONT:
+		return top_level->mediumfont;
+	case SMALLFONT:
+		return top_level->smallfont;
+	case LARGEFONT:
+		return top_level->largefont;
 	}
 	return 0;
 }
@@ -2147,12 +2085,17 @@ XFontSet BC_WindowBase::get_fontset(int font)
 	{
 		switch(font)
 		{
-			case SMALLFONT:  fs = top_level->smallfontset; break;
-			case LARGEFONT:  fs = top_level->largefontset; break;
-			case MEDIUMFONT: fs = top_level->mediumfontset; break;
+		case SMALLFONT:  
+			fs = top_level->smallfontset;
+			break;
+		case LARGEFONT:
+			fs = top_level->largefontset;
+			break;
+		case MEDIUMFONT:
+			fs = top_level->mediumfontset;
+			break;
 		}
 	}
-
 	return fs;
 }
 
@@ -2164,29 +2107,21 @@ XftFont* BC_WindowBase::get_xft_struct(int font)
 
 	switch(font)
 	{
-		case MEDIUMFONT:   return (XftFont*)top_level->mediumfont_xft; break;
-		case SMALLFONT:    return (XftFont*)top_level->smallfont_xft;  break;
-		case LARGEFONT:    return (XftFont*)top_level->largefont_xft;  break;
+	case MEDIUMFONT:
+		return (XftFont*)top_level->mediumfont_xft;
+	case SMALLFONT:
+		return (XftFont*)top_level->smallfont_xft;
+	case LARGEFONT:
+		return (XftFont*)top_level->largefont_xft;  
 	}
 
 	return 0;
 }
 #endif
 
-
-
-
-
-
-
-
-
-
-
 void BC_WindowBase::set_font(int font)
 {
 	top_level->current_font = font;
-
 
 #ifdef HAVE_XFT
 	if(get_resources()->use_xft)
@@ -2216,15 +2151,19 @@ void BC_WindowBase::set_fontset(int font)
 	{
 		switch(font)
 		{
-			case SMALLFONT:  fs = top_level->smallfontset; break;
-			case LARGEFONT:  fs = top_level->largefontset; break;
-			case MEDIUMFONT: fs = top_level->mediumfontset; break;
+		case SMALLFONT:
+			fs = top_level->smallfontset;
+			break;
+		case LARGEFONT:
+			fs = top_level->largefontset;
+			break;
+		case MEDIUMFONT:
+			fs = top_level->mediumfontset;
+			break;
 		}
 	}
-
 	curr_fontset = fs;
 }
-
 
 XFontSet BC_WindowBase::get_curr_fontset(void)
 {
@@ -2258,12 +2197,11 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 		int w = 0;
 		switch(font)
 		{
-			case MEDIUM_7SEGMENT:
-				return get_resources()->medium_7segment[0]->get_w() * length;
-				break;
+		case MEDIUM_7SEGMENT:
+			return get_resources()->medium_7segment[0]->get_w() * length;
 
-			default:
-				return 0;
+		default:
+			return 0;
 		}
 		return w;
 	}
@@ -2294,7 +2232,6 @@ int BC_WindowBase::get_text_width(int font, const char *text, int length)
 	{
 		w = get_single_text_width(font, text, length);
 	}
-
 	return w;
 }
 
@@ -2315,10 +2252,10 @@ int BC_WindowBase::get_text_ascent(int font)
 #endif
 	if(get_resources()->use_fontset && top_level->get_fontset(font))
 	{
-        XFontSetExtents *extents;
+		XFontSetExtents *extents;
 
-        extents = XExtentsOfFontSet(top_level->get_fontset(font));
-        return -extents->max_logical_extent.y;
+		extents = XExtentsOfFontSet(top_level->get_fontset(font));
+		return -extents->max_logical_extent.y;
 	}
 	else
 	if(get_font_struct(font))
@@ -2326,12 +2263,11 @@ int BC_WindowBase::get_text_ascent(int font)
 	else
 	switch(font)
 	{
-		case MEDIUM_7SEGMENT:
-			return get_resources()->medium_7segment[0]->get_h();
-			break;
+	case MEDIUM_7SEGMENT:
+		return get_resources()->medium_7segment[0]->get_h();
 
-		default:
-			return 0;
+	default:
+		return 0;
 	}
 }
 
@@ -2350,23 +2286,18 @@ int BC_WindowBase::get_text_descent(int font)
 	}
 	else
 #endif
-    if(get_resources()->use_fontset && top_level->get_fontset(font))
-    {
-        XFontSetExtents *extents;
+	if(get_resources()->use_fontset && top_level->get_fontset(font))
+	{
+		XFontSetExtents *extents;
 
-        extents = XExtentsOfFontSet(top_level->get_fontset(font));
-        return (extents->max_logical_extent.height
-                        + extents->max_logical_extent.y);
-    }
-    else
+		extents = XExtentsOfFontSet(top_level->get_fontset(font));
+		return (extents->max_logical_extent.height
+			+ extents->max_logical_extent.y);
+	}
+	else
 	if(get_font_struct(font))
 		return top_level->get_font_struct(font)->descent;
-	else
-	switch(font)
-	{
-		default:
-			return 0;
-	}
+	return 0;
 }
 
 int BC_WindowBase::get_text_height(int font, const char *text)
@@ -2402,42 +2333,38 @@ int BC_WindowBase::accel_available(int color_model, int lock_it)
 	if(lock_it) lock_window("BC_WindowBase::accel_available");
 	switch(color_model)
 	{
-		case BC_YUV420P:
-			result = grab_port_id(this, color_model);
-			if(result >= 0)
-			{
-				xvideo_port_id = result;
-				result = 1;
-			}
-			else
-				result = 0;
-			break;
-
-		case BC_YUV422P:
+	case BC_YUV420P:
+		result = grab_port_id(this, color_model);
+		if(result >= 0)
+		{
+			xvideo_port_id = result;
+			result = 1;
+		}
+		else
 			result = 0;
-			break;
+		break;
 
-		case BC_YUV422:
-//printf("BC_WindowBase::accel_available 1\n");
-			result = grab_port_id(this, color_model);
-//printf("BC_WindowBase::accel_available 2 %d\n", result);
-			if(result >= 0)
-			{
-				xvideo_port_id = result;
-				result = 1;
-			}
-			else
-				result = 0;
-//printf("BC_WindowBase::accel_available 3 %d\n", xvideo_port_id);
-			break;
+	case BC_YUV422P:
+		result = 0;
+		break;
 
-		default:
+	case BC_YUV422:
+		result = grab_port_id(this, color_model);
+		if(result >= 0)
+		{
+			xvideo_port_id = result;
+			result = 1;
+		}
+		else
 			result = 0;
-			break;
+		break;
+
+	default:
+		result = 0;
+		break;
 	}
 
 	if(lock_it) unlock_window();
-//printf("BC_WindowBase::accel_available %d %d\n", color_model, result);
 	return result;
 }
 
@@ -2447,8 +2374,8 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 	int numFormats, i, j, k;
 	unsigned int ver, rev, numAdapt, reqBase, eventBase, errorBase;
 	int port_id = -1;
-    XvAdaptorInfo *info;
-    XvImageFormatValues *formats;
+	XvAdaptorInfo *info;
+	XvImageFormatValues *formats;
 	int x_color_model;
 
 	if(!get_resources()->use_xvideo) return -1;
@@ -2460,15 +2387,15 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 	if(!resources.use_shm) return -1;
 
 // XV extension is available
-    if(Success != XvQueryExtension(window->display, 
-				  &ver, 
-				  &rev, 
-				  &reqBase, 
-				  &eventBase, 
-				  &errorBase))
-    {
+	if(Success != XvQueryExtension(window->display, 
+			&ver,
+			&rev,
+			&reqBase, 
+			&eventBase, 
+			&errorBase))
+	{
 		return -1;
-    }
+	}
 
 // XV adaptors are available
 	XvQueryAdaptors(window->display, 
@@ -2482,19 +2409,16 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 	}
 
 // Get adaptor with desired color model
-    for(i = 0; i < numAdapt && xvideo_port_id == -1; i++)
-    {
+	for(i = 0; i < numAdapt && xvideo_port_id == -1; i++)
+	{
 /* adaptor supports XvImages */
 		if(info[i].type & XvImageMask) 
-		{  
-	    	formats = XvListImageFormats(window->display, 
+		{
+			formats = XvListImageFormats(window->display, 
 							info[i].base_id, 
 							&numFormats);
-// for(j = 0; j < numFormats; j++)
-// 	printf("%08x\n", formats[j].id);
-
-	    	for(j = 0; j < numFormats && xvideo_port_id < 0; j++) 
-	    	{
+			for(j = 0; j < numFormats && xvideo_port_id < 0; j++) 
+			{
 /* this adaptor supports the desired format */
 				if(formats[j].id == x_color_model)
 				{
@@ -2506,38 +2430,34 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 							info[i].base_id + k, 
 							CurrentTime))
 						{
-//printf("BC_WindowBase::grab_port_id %llx\n", info[i].base_id);
 							xvideo_port_id = info[i].base_id + k;
 							break;
 						}
 					}
 				}
 			}
-	    	if(formats) XFree(formats);
+			if(formats) XFree(formats);
 		}
 	}
 
-    XvFreeAdaptorInfo(info);
+	XvFreeAdaptorInfo(info);
 
 	return xvideo_port_id;
 }
 
 
-int BC_WindowBase::show_window(int flush) 
+void BC_WindowBase::show_window(int flush) 
 {
 	XMapWindow(top_level->display, win); 
 	if(flush) XFlush(top_level->display);
-//	XSync(top_level->display, 0);
-	hidden = 0; 
-	return 0;
+	hidden = 0;
 }
 
-int BC_WindowBase::hide_window(int flush) 
-{ 
+void BC_WindowBase::hide_window(int flush) 
+{
 	XUnmapWindow(top_level->display, win); 
 	if(flush) XFlush(top_level->display);
-	hidden = 1; 
-	return 0;
+	hidden = 1;
 }
 
 BC_MenuBar* BC_WindowBase::add_menubar(BC_MenuBar *menu_bar)
@@ -2618,7 +2538,7 @@ int BC_WindowBase::get_window_lock()
 	return top_level->window_lock;
 }
 
-int BC_WindowBase::lock_window(const char *location) 
+void BC_WindowBase::lock_window(const char *location) 
 {
 	if(top_level && top_level != this)
 	{
@@ -2636,10 +2556,9 @@ int BC_WindowBase::lock_window(const char *location)
 	{
 		printf("BC_WindowBase::lock_window top_level NULL\n");
 	}
-	return 0;
 }
 
-int BC_WindowBase::unlock_window() 
+void BC_WindowBase::unlock_window()
 {
 	if(top_level && top_level != this)
 	{
@@ -2650,14 +2569,13 @@ int BC_WindowBase::unlock_window()
 	{
 		UNSET_LOCK(this);
 		if(--top_level->window_lock < 0)
-		    top_level->window_lock = 0;
+			top_level->window_lock = 0;
 		XUnlockDisplay(display);
 	}
 	else
 	{
 		printf("BC_WindowBase::unlock_window top_level NULL\n");
 	}
-	return 0;
 }
 
 void BC_WindowBase::set_done(int return_value)
@@ -2710,7 +2628,8 @@ int BC_WindowBase::get_root_w(int ignore_dualhead, int lock_display)
 	Screen *screen_ptr = XDefaultScreenOfDisplay(display);
 	int result = WidthOfScreen(screen_ptr);
 // Wider than 16:9, narrower than dual head
-	if(!ignore_dualhead) if((float)result / HeightOfScreen(screen_ptr) > 1.8) result /= 2;
+	if(!ignore_dualhead) 
+		if((float)result / HeightOfScreen(screen_ptr) > 1.8) result /= 2;
 
 	if(lock_display) unlock_window();
 	return result;
@@ -2814,7 +2733,7 @@ int BC_WindowBase::deactivate()
 	return 0;
 }
 
-int BC_WindowBase::cycle_textboxes(int amount)
+void BC_WindowBase::cycle_textboxes(int amount)
 {
 	int result = 0;
 	BC_WindowBase *new_textbox = 0;
@@ -2824,7 +2743,6 @@ int BC_WindowBase::cycle_textboxes(int amount)
 		BC_WindowBase *first_textbox = 0;
 		find_next_textbox(&first_textbox, &new_textbox, result);
 		if(!new_textbox) new_textbox = first_textbox;
-		
 	}
 	else
 	if(amount < 0)
@@ -2832,7 +2750,6 @@ int BC_WindowBase::cycle_textboxes(int amount)
 		BC_WindowBase *last_textbox = 0;
 		find_prev_textbox(&last_textbox, &new_textbox, result);
 		if(!new_textbox) new_textbox = last_textbox;
-		
 	}
 
 	if(new_textbox != active_subwindow)
@@ -2840,11 +2757,9 @@ int BC_WindowBase::cycle_textboxes(int amount)
 		deactivate();
 		new_textbox->activate();
 	}
-	
-	return 0;
 }
 
-int BC_WindowBase::find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result)
+void BC_WindowBase::find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result)
 {
 // Search subwindows for textbox
 	for(int i = 0; i < subwindows->total && result < 2; i++)
@@ -2871,10 +2786,9 @@ int BC_WindowBase::find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBas
 			}
 		}
 	}
-	return 0;
 }
 
-int BC_WindowBase::find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result)
+void BC_WindowBase::find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result)
 {
 	if(result < 2)
 	{
@@ -2901,7 +2815,6 @@ int BC_WindowBase::find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase
 		BC_WindowBase *test_subwindow = subwindows->values[i];
 		test_subwindow->find_prev_textbox(last_textbox, prev_textbox, result);
 	}
-	return 0;
 }
 
 BC_Clipboard* BC_WindowBase::get_clipboard()
@@ -2915,16 +2828,16 @@ int BC_WindowBase::get_relative_cursor_x()
 	unsigned int temp_mask;
 	Window temp_win;
 
-        lock_window("BC_WindowBase::get_relative_cursor_x");
+	lock_window("BC_WindowBase::get_relative_cursor_x");
 	XQueryPointer(top_level->display, 
-	   top_level->win, 
-	   &temp_win, 
-	   &temp_win,
-       &abs_x, 
-	   &abs_y, 
-	   &win_x, 
-	   &win_y, 
-	   &temp_mask);
+			top_level->win,
+			&temp_win,
+			&temp_win,
+			&abs_x,
+			&abs_y,
+			&win_x,
+			&win_y,
+			&temp_mask);
 
 	XTranslateCoordinates(top_level->display, 
 			top_level->rootwin, 
@@ -2946,14 +2859,14 @@ int BC_WindowBase::get_relative_cursor_y()
 
 	lock_window("BC_WindowBase::get_relative_cursor_y");
 	XQueryPointer(top_level->display, 
-	   top_level->win, 
-	   &temp_win, 
-	   &temp_win,
-       &abs_x, 
-	   &abs_y, 
-	   &win_x, 
-	   &win_y, 
-	   &temp_mask);
+			top_level->win,
+			&temp_win,
+			&temp_win,
+			&abs_x,
+			&abs_y,
+			&win_x,
+			&win_y,
+			&temp_mask);
 
 	XTranslateCoordinates(top_level->display, 
 			top_level->rootwin, 
@@ -2995,10 +2908,10 @@ int BC_WindowBase::get_abs_cursor_y(int lock_window)
 
 	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_y");
 	XQueryPointer(top_level->display, 
-	 	top_level->win, 
+		top_level->win, 
 		&temp_win, 
 		&temp_win,
-        &abs_x, 
+		&abs_x,
 		&abs_y, 
 		&win_x, 
 		&win_y, 
@@ -3039,7 +2952,7 @@ int BC_WindowBase::get_cursor_over_window()
 		&temp_mask))
 		return 0;
 
-	int result = match_window(temp_win2)	;
+	int result = match_window(temp_win2);
 	return result;
 }
 
@@ -3147,7 +3060,7 @@ int BC_WindowBase::get_bgcolor()
 	return bg_color;
 }
 
-int BC_WindowBase::resize_window(int w, int h)
+void BC_WindowBase::resize_window(int w, int h)
 {
 	if(window_type == MAIN_WINDOW && !allow_resize)
 	{
@@ -3177,7 +3090,6 @@ int BC_WindowBase::resize_window(int w, int h)
 	draw_background(0, 0, w, h);
 	if(top_level == this && get_resources()->recursive_resizing)
 		resize_history.append(new BC_ResizeCall(w, h));
-	return 0;
 }
 
 // The only way for resize events to be propagated is by updating the internal w and h
@@ -3191,12 +3103,12 @@ int BC_WindowBase::resize_event(int w, int h)
 	return 0;
 }
 
-int BC_WindowBase::reposition_widget(int x, int y, int w, int h) 
+void BC_WindowBase::reposition_widget(int x, int y, int w, int h) 
 {
-  return(reposition_window(x, y, w, h));
+	reposition_window(x, y, w, h);
 }
 
-int BC_WindowBase::reposition_window(int x, int y, int w, int h)
+void BC_WindowBase::reposition_window(int x, int y, int w, int h)
 {
 	int resize = 0;
 
@@ -3216,13 +3128,6 @@ int BC_WindowBase::reposition_window(int x, int y, int w, int h)
 		resize = 1;
 		this->h = h;
 	}
-
-//printf("BC_WindowBase::reposition_window %d %d %d\n", translation_count, x_correction, y_correction);
-
-	if(this->w <= 0)
-		printf("BC_WindowBase::reposition_window this->w == %d\n", this->w);
-	if(this->h <= 0)
-		printf("BC_WindowBase::reposition_window this->h == %d\n", this->h);
 
 	if(translation_count && window_type == MAIN_WINDOW)
 	{
@@ -3254,24 +3159,18 @@ int BC_WindowBase::reposition_window(int x, int y, int w, int h)
 		{
 			subwindows->values[i]->dispatch_resize_event(this->w, this->h);
 		}
-
-//		draw_background(0, 0, w, h);
 	}
-
-	return 0;
 }
 
-int BC_WindowBase::set_tooltips(int tooltips_enabled)
+void BC_WindowBase::set_tooltips(int tooltips_enabled)
 {
 	get_resources()->tooltips_enabled = tooltips_enabled;
-	return 0;
 }
 
-int BC_WindowBase::raise_window(int do_flush)
+void BC_WindowBase::raise_window(int do_flush)
 {
 	XRaiseWindow(top_level->display, win);
 	if(do_flush) XFlush(top_level->display);
-	return 0;
 }
 
 void BC_WindowBase::set_background(VFrame *bitmap)
@@ -3307,7 +3206,7 @@ int BC_WindowBase::get_toggle_drag()
 	return toggle_drag;
 }
 
-int BC_WindowBase::set_icon(VFrame *data)
+void BC_WindowBase::set_icon(VFrame *data)
 {
 	top_level->lock_window("BC_WindowBase::set_icon");
 	if(icon_pixmap) delete icon_pixmap;
@@ -3333,14 +3232,9 @@ int BC_WindowBase::set_icon(VFrame *data)
 	wm_hints.icon_window = icon_window->win;
 	wm_hints.window_group = XGroupLeader;
 
-// for(int i = 0; i < 1000; i++)
-// printf("02x ", icon_pixmap->get_alpha()->get_row_pointers()[0][i]);
-// printf("\n");
-
 	XSetWMHints(top_level->display, top_level->win, &wm_hints);
 	XSync(top_level->display, 0);
 	top_level->unlock_window();
-	return 0;
 }
 
 int BC_WindowBase::set_w(int w)
@@ -3355,7 +3249,7 @@ int BC_WindowBase::set_h(int h)
 	return 0;
 }
 
-int BC_WindowBase::load_defaults(BC_Hash *defaults)
+void BC_WindowBase::load_defaults(BC_Hash *defaults)
 {
 	BC_Resources *resources = get_resources();
 	char string[BCTEXTLEN];
@@ -3369,10 +3263,9 @@ int BC_WindowBase::load_defaults(BC_Hash *defaults)
 	resources->filebox_w = defaults->get("FILEBOX_W", get_resources()->filebox_w);
 	resources->filebox_h = defaults->get("FILEBOX_H", get_resources()->filebox_h);
 	defaults->get("FILEBOX_FILTER", resources->filebox_filter);
-	return 0;
 }
 
-int BC_WindowBase::save_defaults(BC_Hash *defaults)
+void BC_WindowBase::save_defaults(BC_Hash *defaults)
 {
 	BC_Resources *resources = get_resources();
 	char string[BCTEXTLEN];
@@ -3385,7 +3278,6 @@ int BC_WindowBase::save_defaults(BC_Hash *defaults)
 	defaults->update("FILEBOX_W", resources->filebox_w);
 	defaults->update("FILEBOX_H", resources->filebox_h);
 	defaults->update("FILEBOX_FILTER", resources->filebox_filter);
-	return 0;
 }
 
 
@@ -3421,68 +3313,63 @@ void BC_WindowBase::translate_coordinates(Window src_w,
 	}
 }
 
-
-
-
-
-
-
 #ifdef HAVE_LIBXXF86VM
 void BC_WindowBase::closest_vm(int *vm, int *width, int *height)
 {
-   int foo,bar;
-   *vm = 0;
-   if(XF86VidModeQueryExtension(top_level->display,&foo,&bar)) {
-	   int vm_count,i;
-	   XF86VidModeModeInfo **vm_modelines;
-	   XF86VidModeGetAllModeLines(top_level->display,XDefaultScreen(top_level->display),&vm_count,&vm_modelines);
-	   for (i = 0; i < vm_count; i++) {
-		   if (vm_modelines[i]->hdisplay < vm_modelines[*vm]->hdisplay && vm_modelines[i]->hdisplay >= *width)
-			   *vm = i;
-	   }
-	   display = top_level->display;
-	   if (vm_modelines[*vm]->hdisplay == *width)
-		   *vm = -1;
-	   else
-	   {
-		   *width = vm_modelines[*vm]->hdisplay;
-		   *height = vm_modelines[*vm]->vdisplay;
-	   }
-   }
+	int foo, bar;
+	*vm = 0;
+	if(XF86VidModeQueryExtension(top_level->display,&foo,&bar))
+	{
+		int vm_count, i;
+		XF86VidModeModeInfo **vm_modelines;
+		XF86VidModeGetAllModeLines(top_level->display,XDefaultScreen(top_level->display),&vm_count,&vm_modelines);
+		for (i = 0; i < vm_count; i++)
+		{
+			if (vm_modelines[i]->hdisplay < vm_modelines[*vm]->hdisplay && vm_modelines[i]->hdisplay >= *width)
+				*vm = i;
+		}
+		display = top_level->display;
+		if (vm_modelines[*vm]->hdisplay == *width)
+			*vm = -1;
+		else
+		{
+			*width = vm_modelines[*vm]->hdisplay;
+			*height = vm_modelines[*vm]->vdisplay;
+		}
+	}
 }
 
 void BC_WindowBase::scale_vm(int vm)
 {
-   int foo,bar,dotclock;
-   if(XF86VidModeQueryExtension(top_level->display,&foo,&bar))
-   {
-	   int vm_count;
-	   XF86VidModeModeInfo **vm_modelines;
-	   XF86VidModeModeLine vml;
-	   XF86VidModeGetAllModeLines(top_level->display,XDefaultScreen(top_level->display),&vm_count,&vm_modelines);
-	   XF86VidModeGetModeLine(top_level->display,XDefaultScreen(top_level->display),&dotclock,&vml);
-	   orig_modeline.dotclock = dotclock;
-	   orig_modeline.hdisplay = vml.hdisplay;
-	   orig_modeline.hsyncstart = vml.hsyncstart;
-	   orig_modeline.hsyncend = vml.hsyncend;
-	   orig_modeline.htotal = vml.htotal;
-	   orig_modeline.vdisplay = vml.vdisplay;
-	   orig_modeline.vsyncstart = vml.vsyncstart;
-	   orig_modeline.vsyncend = vml.vsyncend;
-	   orig_modeline.vtotal = vml.vtotal;
-	   orig_modeline.flags = vml.flags;
-	   orig_modeline.privsize = vml.privsize;
-	   // orig_modeline.private = vml.private;
-	   XF86VidModeSwitchToMode(top_level->display,XDefaultScreen(top_level->display),vm_modelines[vm]);
-	   XF86VidModeSetViewPort(top_level->display,XDefaultScreen(top_level->display),0,0);
-	   XFlush(top_level->display);
-   }
+	int foo,bar,dotclock;
+	if(XF86VidModeQueryExtension(top_level->display,&foo,&bar))
+	{
+		int vm_count;
+		XF86VidModeModeInfo **vm_modelines;
+		XF86VidModeModeLine vml;
+		XF86VidModeGetAllModeLines(top_level->display, XDefaultScreen(top_level->display), &vm_count, &vm_modelines);
+		XF86VidModeGetModeLine(top_level->display, XDefaultScreen(top_level->display), &dotclock, &vml);
+		orig_modeline.dotclock = dotclock;
+		orig_modeline.hdisplay = vml.hdisplay;
+		orig_modeline.hsyncstart = vml.hsyncstart;
+		orig_modeline.hsyncend = vml.hsyncend;
+		orig_modeline.htotal = vml.htotal;
+		orig_modeline.vdisplay = vml.vdisplay;
+		orig_modeline.vsyncstart = vml.vsyncstart;
+		orig_modeline.vsyncend = vml.vsyncend;
+		orig_modeline.vtotal = vml.vtotal;
+		orig_modeline.flags = vml.flags;
+		orig_modeline.privsize = vml.privsize;
+		XF86VidModeSwitchToMode(top_level->display, XDefaultScreen(top_level->display), vm_modelines[vm]);
+		XF86VidModeSetViewPort(top_level->display, XDefaultScreen(top_level->display), 0, 0);
+		XFlush(top_level->display);
+	}
 }
 
 void BC_WindowBase::restore_vm()
 {
-   XF86VidModeSwitchToMode(top_level->display,XDefaultScreen(top_level->display),&orig_modeline);
-   XFlush(top_level->display);
+	XF86VidModeSwitchToMode(top_level->display, XDefaultScreen(top_level->display), &orig_modeline);
+	XFlush(top_level->display);
 }
 
 
@@ -3493,8 +3380,3 @@ int BC_WindowBase::get_id()
 {
 	return id;
 }
-
-
-
-
-

@@ -229,11 +229,11 @@ void BC_WidgetGrid::print(){
 
 }
 
-int BC_WidgetGrid::reposition_widget(int x, int y, int w1, int h){
+void BC_WidgetGrid::reposition_widget(int x, int y, int w1, int h)
+{
 	x_l = x;
 	y_t = y;
 	move_widgets();
-	return(0);
 }
 
 void BC_WidgetGrid::set_align(int r,int c,int va, int ha){

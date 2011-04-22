@@ -254,7 +254,7 @@ public:
 	int get_h();
 	void update(const char *text);
 	void update_list(ArrayList<BC_ListBoxItem*> *data);
-	int  reposition_widget(int x, int y, int w = -1, int h = -1);
+	void reposition_widget(int x, int y, int w = -1, int h = -1);
 	void reposition_window(int x, int y);
 
 	friend class BC_PopupTextBoxText;
@@ -327,7 +327,7 @@ public:
 	int get_y();
 	int get_w();
 	int get_h();
-	int  reposition_widget(int x, int y, int w = -1, int h = -1);
+	void reposition_widget(int x, int y, int w = -1, int h = -1);
 	void reposition_window(int x, int y);
 	void set_boundaries(int64_t min, int64_t max);
 	void set_boundaries(float min, float max);
