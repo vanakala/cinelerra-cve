@@ -3707,7 +3707,7 @@ void BC_ListBox::activate()
 			{
 				x = get_x();
 			}
-
+			lock_window("BC_ListBox::activate");
 			XTranslateCoordinates(top_level->display, 
 				parent_window->win, 
 				top_level->rootwin, 
@@ -3730,6 +3730,7 @@ void BC_ListBox::activate()
 				0,
 				0));
 			draw_items(1);
+			unlock_window();
 		}
 	}
 }
