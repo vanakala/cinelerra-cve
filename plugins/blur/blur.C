@@ -33,11 +33,6 @@
 #include <string.h>
 
 
-
-
-
-
-
 BlurConfig::BlurConfig()
 {
 	vertical = 1;
@@ -77,7 +72,6 @@ void BlurConfig::interpolate(BlurConfig &prev,
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 
-
 	this->vertical = (int)(prev.vertical * prev_scale + next.vertical * next_scale);
 	this->horizontal = (int)(prev.horizontal * prev_scale + next.horizontal * next_scale);
 	this->radius = (int)(prev.radius * prev_scale + next.radius * next_scale);
@@ -87,18 +81,7 @@ void BlurConfig::interpolate(BlurConfig &prev,
 	b = prev.b;
 }
 
-
-
-
-
-
 REGISTER_PLUGIN(BlurMain)
-
-
-
-
-
-
 
 
 BlurMain::BlurMain(PluginServer *server)
@@ -127,7 +110,6 @@ BlurMain::~BlurMain()
 const char* BlurMain::plugin_title() { return N_("Blur"); }
 int BlurMain::is_realtime() { return 1; }
 
-
 NEW_PICON_MACRO(BlurMain)
 
 SHOW_GUI_MACRO(BlurMain, BlurThread)
@@ -137,8 +119,6 @@ SET_STRING_MACRO(BlurMain)
 RAISE_WINDOW_MACRO(BlurMain)
 
 LOAD_CONFIGURATION_MACRO(BlurMain, BlurConfig)
-
-
 
 
 int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
@@ -170,7 +150,6 @@ int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			engine[i]->reconfigure();
 		need_reconfigure = 0;
 	}
-
 
 	if(temp && 
 		(temp->get_w() != input_ptr->get_w() ||
@@ -236,7 +215,6 @@ void BlurMain::update_gui()
 	}
 }
 
-
 int BlurMain::load_defaults()
 {
 	char directory[1024], string[1024];
@@ -257,7 +235,6 @@ int BlurMain::load_defaults()
 	return 0;
 }
 
-
 int BlurMain::save_defaults()
 {
 	defaults->update("VERTICAL", config.vertical);
@@ -270,7 +247,6 @@ int BlurMain::save_defaults()
 	defaults->save();
 	return 0;
 }
-
 
 
 void BlurMain::save_data(KeyFrame *keyframe)
@@ -321,14 +297,6 @@ void BlurMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-
-
-
-
-
-
-
-
 BlurEngine::BlurEngine(BlurMain *plugin, int start_out, int end_out)
  : Thread()
 {
@@ -354,25 +322,22 @@ BlurEngine::~BlurEngine()
 	join();
 }
 
-int BlurEngine::start_process_frame(VFrame *output, VFrame *input)
+void BlurEngine::start_process_frame(VFrame *output, VFrame *input)
 {
 	this->output = output;
 	this->input = input;
 	input_lock.unlock();
-	return 0;
 }
 
-int BlurEngine::wait_process_frame()
+void BlurEngine::wait_process_frame()
 {
 	output_lock.lock();
-	return 0;
 }
 
 void BlurEngine::run()
 {
 	int i, j, k, l;
 	int strip_size;
-
 
 	while(1)
 	{
@@ -391,9 +356,6 @@ void BlurEngine::run()
 		color_model = input->get_color_model();
 		int w = input->get_w();
 		int h = input->get_h();
-
-
-
 
 
 #define BLUR(type, max, components) \
@@ -481,7 +443,6 @@ void BlurEngine::run()
 }
 
 
-
 		switch(color_model)
 		{
 		case BC_RGB888:
@@ -512,14 +473,14 @@ void BlurEngine::run()
 	}
 }
 
-int BlurEngine::reconfigure()
+void BlurEngine::reconfigure()
 {
 	std_dev = sqrt(-(double)(plugin->config.radius * plugin->config.radius) / 
 		(2 * log (1.0 / 255.0)));
 	get_constants();
 }
 
-int BlurEngine::get_constants()
+void BlurEngine::get_constants()
 {
 	int i;
 	double constants[8];
@@ -599,12 +560,11 @@ int BlurEngine::get_constants()
 		bd_p[i] = d_p[i] * a;
 		bd_m[i] = d_m[i] * b;
 	}
-	return 0;
 }
 
 #define BOUNDARY(x) if((x) > vmax) (x) = vmax; else if((x) < 0) (x) = 0;
 
-int BlurEngine::transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int size)
+void BlurEngine::transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int size)
 {
 	int i;
 	float sum;
@@ -624,52 +584,11 @@ int BlurEngine::transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int
 		BOUNDARY(sum);
 		dest[i].a = sum;
 	}
-	return 0;
 }
 
-/* Pole
-int BlurEngine::multiply_alpha(pixel_f *row, int size)
-{
-	register int i;
-	register float alpha;
 
-// 	for(i = 0; i < size; i++)
-// 	{
-// 		alpha = (float)row[i].a / vmax;
-// 		row[i].r *= alpha;
-// 		row[i].g *= alpha;
-// 		row[i].b *= alpha;
-// 	}
-	return 0;
-}
-
-int BlurEngine::separate_alpha(pixel_f *row, int size)
+void BlurEngine::blur_strip3(int &size)
 {
-	register int i;
-	register float alpha;
-	register float result;
-	
-// 	for(i = 0; i < size; i++)
-// 	{
-// 		if(row[i].a > 0 && row[i].a < vmax)
-// 		{
-// 			alpha = (float)row[i].a / vmax;
-// 			result = (float)row[i].r / alpha;
-// 			row[i].r = (result > vmax ? vmax : result);
-// 			result = (float)row[i].g / alpha;
-// 			row[i].g = (result > vmax ? vmax : result);
-// 			result = (float)row[i].b / alpha;
-// 			row[i].b = (result > vmax ? vmax : result);
-// 		}
-// 	}
-	return 0;
-}
-	*/
-int BlurEngine::blur_strip3(int &size)
-{
-/* Pole
-	multiply_alpha(src, size);
-	*/
 	sp_p = src;
 	sp_m = src + size - 1;
 	vp = val_p;
@@ -724,18 +643,10 @@ int BlurEngine::blur_strip3(int &size)
 		vm--;
 	}
 	transfer_pixels(val_p, val_m, dst, size);
-/* Pole
-	separate_alpha(dst, size);
-	*/
-	return 0;
 }
 
-
-int BlurEngine::blur_strip4(int &size)
+void BlurEngine::blur_strip4(int &size)
 {
-/* Pole
-	multiply_alpha(src, size);
-	*/
 	sp_p = src;
 	sp_m = src + size - 1;
 	vp = val_p;
@@ -803,14 +714,4 @@ int BlurEngine::blur_strip4(int &size)
 		vm--;
 	}
 	transfer_pixels(val_p, val_m, dst, size);
-/* Pole
-	separate_alpha(dst, size);
-	*/
-	return 0;
 }
-
-
-
-
-
-

@@ -50,7 +50,7 @@ BlurWindow::~BlurWindow()
 {
 }
 
-int BlurWindow::create_objects()
+void BlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 	VFrame *ico = client->new_picon();
@@ -76,13 +76,8 @@ int BlurWindow::create_objects()
 	show_window();
 	flush();
 	delete ico;
-	return 0;
 }
 
-void BlurWindow::close_event()
-{
-	set_done(1);
-}
 
 BlurRadius::BlurRadius(BlurMain *client, int x, int y)
  : BC_IPot(x, 
@@ -143,6 +138,7 @@ int BlurHorizontal::handle_event()
 {
 	client->config.horizontal = get_value();
 	client->send_configure_change();
+	return 1;
 }
 
 
@@ -197,5 +193,3 @@ int BlurB::handle_event()
 	client->send_configure_change();
 	return 1;
 }
-
-

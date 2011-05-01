@@ -95,19 +95,15 @@ public:
 	~BlurEngine();
 
 	void run();
-	int start_process_frame(VFrame *output, VFrame *input);
-	int wait_process_frame();
+	void start_process_frame(VFrame *output, VFrame *input);
+	void wait_process_frame();
 
 // parameters needed for blur
-	int get_constants();
-	int reconfigure();
-	int transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int size);
-/* Pole
-	int multiply_alpha(pixel_f *row, int size);
-	int separate_alpha(pixel_f *row, int size);
-	*/
-	int blur_strip3(int &size);
-	int blur_strip4(int &size);
+	void get_constants();
+	void reconfigure();
+	void transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int size);
+	void blur_strip3(int &size);
+	void blur_strip4(int &size);
 
 	int color_model;
 	float vmax;

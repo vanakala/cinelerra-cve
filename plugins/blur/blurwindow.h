@@ -48,8 +48,7 @@ public:
 	BlurWindow(BlurMain *client, int x, int y);
 	~BlurWindow();
 
-	int create_objects();
-	void close_event();
+	void create_objects();
 
 	BlurMain *client;
 	BlurVertical *vertical;
