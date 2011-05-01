@@ -79,7 +79,7 @@ public:
 	int cursor_enter_event();
 	int button_press_event();
 	int button_release_event();
-	void repeat_event(int64_t repeat_id);
+	void repeat_event(int repeat_id);
 	int64_t get_value();
 	int64_t get_position();
 	int64_t get_length();

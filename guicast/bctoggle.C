@@ -252,7 +252,7 @@ void BC_Toggle::set_status(int value)
 	this->status = value;
 }
 
-void BC_Toggle::repeat_event(int64_t duration)
+void BC_Toggle::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&

@@ -34,7 +34,7 @@ public:
 	~MainCursor();
 
 	void create_objects();
-	int repeat_event(int duration);
+	void repeat_event(int duration);
 	void draw(int flash);
 	void hide(int do_plugintoggles = 1);
 	void flash();

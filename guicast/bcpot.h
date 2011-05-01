@@ -59,7 +59,7 @@ public:
 	void set_use_caption(int value);
 
 	void reposition_window(int x, int y);
-	void repeat_event(int64_t repeat_id);
+	void repeat_event(int repeat_id);
 	int cursor_enter_event();
 	void cursor_leave_event();
 	int button_press_event();

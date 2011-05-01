@@ -85,7 +85,7 @@ public:
 	int cursor_motion_event();
 	virtual int button_press_event();
 	int button_release_event();
-	void repeat_event(int64_t repeat_id);
+	void repeat_event(int repeat_id);
 	int keypress_event();
 	void activate();
 	void deactivate();

@@ -289,7 +289,7 @@ public:
 	int cursor_motion_event();
 	void activate();
 	void deactivate();
-	int repeat_event(int duration);
+	void repeat_event(int duration);
 	void start_dragscroll();
 	void stop_dragscroll();
 	int start_selection(double position);

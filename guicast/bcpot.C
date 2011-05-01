@@ -189,7 +189,7 @@ void BC_Pot::show_value_tooltip()
 	}
 }
 
-void BC_Pot::repeat_event(int64_t duration)
+void BC_Pot::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{

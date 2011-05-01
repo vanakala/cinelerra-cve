@@ -31,14 +31,14 @@
 class BC_Repeater : public Thread
 {
 public:
-	BC_Repeater(BC_WindowBase *top_level, long delay);
+	BC_Repeater(BC_WindowBase *top_level, int delay);
 	~BC_Repeater();
 
 	void initialize();
 	void start_repeating();
 	void stop_repeating();
 	void run();
-	long delay;
+	int delay;
 	int repeating;
 	int interrupted;
 // Prevent new signal until existing event is processed
@@ -52,7 +52,5 @@ private:
 	Condition *pause_lock;
 	Condition *startup_lock;
 };
-
-
 
 #endif

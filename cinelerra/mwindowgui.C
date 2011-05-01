@@ -382,7 +382,7 @@ void MWindowGUI::default_positions()
 
 
 
-void MWindowGUI::repeat_event(int64_t duration)
+void MWindowGUI::repeat_event(int duration)
 {
 	cursor->repeat_event(duration);
 }

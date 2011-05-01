@@ -1115,7 +1115,7 @@ int BC_WindowBase::dispatch_button_release()
 }
 
 
-void BC_WindowBase::dispatch_repeat_event(int64_t duration)
+void BC_WindowBase::dispatch_repeat_event(int duration)
 {
 // all repeat event handlers get called and decide based on activity and duration
 // whether to respond
@@ -1333,14 +1333,15 @@ void BC_WindowBase::set_tooltip(const char *text)
 }
 
 // signal the event handler to repeat
-void BC_WindowBase::set_repeat(int64_t duration)
+void BC_WindowBase::set_repeat(int duration)
 {
 	if(duration <= 0)
-	{
-		printf("BC_WindowBase::set_repeat duration=%lld\n", duration);
+		return;
+	if(window_type != MAIN_WINDOW)
+	{ 
+		top_level->set_repeat(duration);
 		return;
 	}
-	if(window_type != MAIN_WINDOW) return top_level->set_repeat(duration);
 
 // test repeater database for duplicates
 	for(int i = 0; i < repeaters.total; i++)
@@ -1360,7 +1361,7 @@ void BC_WindowBase::set_repeat(int64_t duration)
 	return;
 }
 
-void BC_WindowBase::unset_repeat(int64_t duration)
+void BC_WindowBase::unset_repeat(int duration)
 {
 	if(window_type != MAIN_WINDOW)
 	{
@@ -1385,7 +1386,7 @@ void BC_WindowBase::unset_all_repeaters()
 	repeaters.remove_all_objects();
 }
 
-void BC_WindowBase::arm_repeat(int64_t duration)
+void BC_WindowBase::arm_repeat(int duration)
 {
 	XEvent event;
 

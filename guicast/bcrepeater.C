@@ -26,7 +26,7 @@
 
 #include <unistd.h>
 
-BC_Repeater::BC_Repeater(BC_WindowBase *top_level, long delay)
+BC_Repeater::BC_Repeater(BC_WindowBase *top_level, int delay)
  : Thread()
 {
 	set_synchronous(1);

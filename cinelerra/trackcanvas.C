@@ -3839,17 +3839,16 @@ void TrackCanvas::stop_dragscroll()
 	}
 }
 
-int TrackCanvas::repeat_event(int duration)
+void TrackCanvas::repeat_event(int duration)
 {
-	if(!drag_scroll) return 0;
-	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return 0;
+	if(!drag_scroll) return;
+	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return;
 
 	int sample_movement = 0;
 	int track_movement = 0;
 	int x_distance = 0;
 	int y_distance = 0;
 	double position = 0;
-	int result = 0;
 
 	switch(mwindow->session->current_operation)
 	{
@@ -3877,7 +3876,6 @@ int TrackCanvas::repeat_event(int duration)
 			y_distance = get_cursor_y();
 			track_movement = 1;
 		}
-		result = 1;
 		break;
 	}
 
@@ -3922,8 +3920,6 @@ int TrackCanvas::repeat_event(int duration)
 		mwindow->trackmovement(mwindow->edl->local_session->track_start + 
 			y_distance);
 	}
-
-	return result;
 }
 
 int TrackCanvas::button_release_event()

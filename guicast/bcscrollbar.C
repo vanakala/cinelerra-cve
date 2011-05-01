@@ -449,7 +449,7 @@ int BC_ScrollBar::button_press_event()
 	return 0;
 }
 
-void BC_ScrollBar::repeat_event(int64_t duration)
+void BC_ScrollBar::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->scroll_repeat && 
 		selection_status)

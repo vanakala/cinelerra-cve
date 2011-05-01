@@ -76,10 +76,10 @@ void MainCursor::deactivate()
 	}
 }
 
-int MainCursor::repeat_event(int duration)
+void MainCursor::repeat_event(int duration)
 {
-	if(!active || !gui->get_has_focus()) return 0;
-	if(duration != BC_WindowBase::get_resources()->blink_rate) return 0;
+	if(!active || !gui->get_has_focus()) return;
+	if(duration != BC_WindowBase::get_resources()->blink_rate) return;
 
 // Only flash a single sample selection
 	if(selectionstart == selectionend)
@@ -90,7 +90,6 @@ int MainCursor::repeat_event(int duration)
 			flash();
 		}
 	}
-	return 1;
 }
 
 void MainCursor::draw(int do_plugintoggles)

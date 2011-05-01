@@ -68,7 +68,7 @@ public:
 	void activate_menu();
 	void deactivate_menu();
 	void focus_out_event();
-	void repeat_event(int64_t duration);
+	void repeat_event(int duration);
 	int button_press_event();
 	int button_release_event();
 	void cursor_leave_event();

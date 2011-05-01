@@ -195,7 +195,7 @@ public:
 	void activate();
 	virtual int keypress_event();
 	void translation_event();
-	void repeat_event(int64_t duration);
+	void repeat_event(int duration);
 	BC_DragWindow* get_drag_popup();
 
 // change the contents

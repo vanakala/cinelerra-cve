@@ -32,7 +32,7 @@ public:
 
 	virtual void handle_up_event() {};
 	virtual void handle_down_event() {};
-	void repeat_event(int64_t repeat_id);
+	void repeat_event(int repeat_id);
 
 	void initialize();
 	void set_images(VFrame **data);

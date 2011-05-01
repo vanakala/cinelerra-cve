@@ -2275,7 +2275,7 @@ int BC_ListBox::get_cursor_item(ArrayList<BC_ListBoxItem*> *data,
 	return -1;
 }
 
-void BC_ListBox::repeat_event(int64_t duration)
+void BC_ListBox::repeat_event(int duration)
 {
 	switch(current_operation)
 	{

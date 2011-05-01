@@ -146,7 +146,7 @@ void BC_Button::draw_face()
 	flash();
 }
 
-void BC_Button::repeat_event(int64_t duration)
+void BC_Button::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&

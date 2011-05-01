@@ -697,7 +697,7 @@ int TimeBar::button_press_event()
 	return 0;
 }
 
-void TimeBar::repeat_event(int64_t duration)
+void TimeBar::repeat_event(int duration)
 {
 	if(!mwindow->gui->canvas->drag_scroll) return;
 	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return;

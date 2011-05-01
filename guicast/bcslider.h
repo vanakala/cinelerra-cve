@@ -59,7 +59,7 @@ public:
 	virtual int button_release_event();
 	int get_pointer_motion_range();
 	int cursor_motion_event();
-	void repeat_event(int64_t repeat_id);
+	void repeat_event(int repeat_id);
 	void reposition_window(int x, int y, int w = -1, int h = -1);
 	void activate();
 	void deactivate();

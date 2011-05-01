@@ -73,7 +73,7 @@ public:
 	virtual int button_press_event();
 	virtual int button_release_event();
 	int cursor_motion_event();
-	void repeat_event(int64_t repeat_id);
+	void repeat_event(int repeat_id);
 	void draw_face();
 
 	enum

@@ -39,7 +39,7 @@ public:
 	friend class BC_GenericButton;
 
 	virtual int handle_event() { return 0; };
-	void repeat_event(int64_t repeat_id);
+	void repeat_event(int repeat_id);
 	virtual void draw_face();
 	void disable();
 	void enable();

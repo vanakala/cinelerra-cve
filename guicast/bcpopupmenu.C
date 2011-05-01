@@ -318,7 +318,7 @@ void BC_PopupMenu::focus_out_event()
 	deactivate();
 }
 
-void BC_PopupMenu::repeat_event(int64_t duration)
+void BC_PopupMenu::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&

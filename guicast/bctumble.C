@@ -103,7 +103,7 @@ void BC_Tumbler::draw_face()
 	flash();
 }
 
-void BC_Tumbler::repeat_event(int64_t duration)
+void BC_Tumbler::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{

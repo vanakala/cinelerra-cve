@@ -82,7 +82,7 @@ public:
 	int show_message(const char *fmt, ...);
 // Pop up a box if the statusbar is taken and show an error.
 	void show_error(char *message, int color = BLACK);
-	void repeat_event(int64_t duration);
+	void repeat_event(int duration);
 // Entry point for drag events in all windows
 	int drag_motion();
 	int drag_stop();

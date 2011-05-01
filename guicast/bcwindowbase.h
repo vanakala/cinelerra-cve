@@ -170,7 +170,7 @@ public:
 // Terminal event dispatchers
 	virtual void close_event();
 	virtual void resize_event(int w, int h);
-	virtual void repeat_event(int64_t duration) {};
+	virtual void repeat_event(int duration) {};
 	virtual void focus_in_event() {};
 	virtual void focus_out_event() {};
 	virtual int button_press_event() { return 0; };
@@ -511,9 +511,9 @@ public:
 	void reposition_window(int x, int y, int w = -1, int h = -1);
 // Cause a repeat event to be dispatched every duration.
 // duration is milliseconds
-	void set_repeat(int64_t duration);
+	void set_repeat(int duration);
 // Stop a repeat event from being dispatched.
-	void unset_repeat(int64_t duration);
+	void unset_repeat(int duration);
 	void set_tooltip(const char *text);
 	void show_tooltip(int w = -1, int h = -1);
 	void hide_tooltip();
@@ -592,7 +592,7 @@ private:
 	int trigger_tooltip();
 	int untrigger_tooltip();
 	void draw_tooltip();
-	void arm_repeat(int64_t duration);
+	void arm_repeat(int duration);
 // delete all repeater opjects for a close
 	void unset_all_repeaters();
 
@@ -602,8 +602,10 @@ private:
 	void dispatch_focus_out();
 	int dispatch_motion_event();
 	int dispatch_keypress_event();
-	void dispatch_repeat_event(int64_t duration);
+	void dispatch_repeat_event(int duration);
+/* Pole
 	int dispatch_repeat_event_master(int64_t duration);
+	*/
 	int dispatch_button_press();
 	int dispatch_button_release();
 	void dispatch_cursor_leave();

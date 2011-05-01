@@ -66,7 +66,7 @@ public:
 	int button_release_event();
 	int cursor_enter_event();
 	void cursor_leave_event();
-	void repeat_event(int64_t duration);
+	void repeat_event(int duration);
 	virtual int handle_event() { return 0; };
 // change radial positions of channels
 	void change_channels(int new_channels, int *value_positions);
@@ -122,7 +122,7 @@ private:
 	float *values;
 	int highlighted;
 // virtual x and y positions
-	int *value_x, *value_y;     	
+	int *value_x, *value_y;
 	int active;
 
 // Used in popup
