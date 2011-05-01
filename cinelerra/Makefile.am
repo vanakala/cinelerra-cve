@@ -311,7 +311,8 @@ cinelerra_SOURCES = aattachmentpoint.C \
 INCLUDES = \
 	-I$(top_srcdir)/guicast \
 	-I$(top_srcdir)/quicktime \
-	-I$(top_srcdir)/libmpeg3
+	-I$(top_srcdir)/libmpeg3 \
+	-I$(top_srcdir)/include
 
 AM_CXXFLAGS = \
 	$(LARGEFILE_CFLAGS) \

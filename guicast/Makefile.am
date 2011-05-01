@@ -187,7 +187,7 @@ noinst_HEADERS = \
 	workarounds.h \
 	condition.h
 
-INCLUDES = -I$(top_srcdir)/quicktime
+INCLUDES = -I$(top_srcdir)/quicktime -I$(top_srcdir)/include
 AM_CXXFLAGS = $(LARGEFILE_CFLAGS) $(X_CFLAGS)
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
