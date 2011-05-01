@@ -97,24 +97,6 @@
 #include <GL/glx.h>
 #endif
 
-// Struct for async event marshalling, the same as XClientMessageEvent currently, but can be changed if we change toolkit ever
-// it is defined here so we don't use X headers in /cinelerra
-typedef struct {
-	int type;			/* ClientMessage */
-	unsigned long serial;		/* # of last request processed by server */
-	Bool send_event;		/* true if this came from a SendEvent request */
-	Display *display;		/* Display the event was read from */
-	Window window;
-	Atom message_type;
-	int format;
-	union {
-		char b[20];
-		short s[10];
-		long l[5];
-	} data;
-} xatom_event;
-
-
 class BC_ResizeCall
 {
 public:
@@ -556,7 +538,7 @@ private:
 	virtual void initialize();
 	void get_atoms();
 // Function to overload to recieve customly defined atoms
-	virtual int recieve_custom_xatoms(xatom_event *event); 
+	virtual void recieve_custom_xatoms(XClientMessageEvent *event) {};
 
 	void init_cursors();
 	void init_colors();
@@ -603,9 +585,6 @@ private:
 	int dispatch_motion_event();
 	int dispatch_keypress_event();
 	void dispatch_repeat_event(int duration);
-/* Pole
-	int dispatch_repeat_event_master(int64_t duration);
-	*/
 	int dispatch_button_press();
 	int dispatch_button_release();
 	void dispatch_cursor_leave();
@@ -814,7 +793,7 @@ private:
 
 protected:
 	Atom create_xatom(const char *atom_name);
-	void send_custom_xatom(xatom_event *event);
+	void send_custom_xatom(XClientMessageEvent *event);
 };
 
 #endif

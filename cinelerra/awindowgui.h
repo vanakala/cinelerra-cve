@@ -156,11 +156,11 @@ public:
 	VFrame *temp_picon;
 
 	int allow_iconlisting;
-	
+
 // Create custom atoms to be used for async messages between windows
-	int create_custom_xatoms();
+	void create_custom_xatoms();
 // Function to overload to recieve customly defined atoms
-	virtual int recieve_custom_xatoms(xatom_event *event); 
+	virtual void recieve_custom_xatoms(XClientMessageEvent *event);
 
 
 

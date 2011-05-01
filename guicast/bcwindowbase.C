@@ -691,7 +691,7 @@ void BC_WindowBase::dispatch_event()
 			done = 1;
 		} 
 		else
-			recieve_custom_xatoms((xatom_event *)ptr);
+			recieve_custom_xatoms(ptr);
 		break;
 
 	case FocusIn:
@@ -1405,31 +1405,17 @@ void BC_WindowBase::arm_repeat(int duration)
 	flush();
 }
 
-int BC_WindowBase::recieve_custom_xatoms(xatom_event *event)
+void BC_WindowBase::send_custom_xatom(XClientMessageEvent *event)
 {
-	return 0;
-}
-
-void BC_WindowBase::send_custom_xatom(xatom_event *event)
-{
-	XEvent myevent;
-
-	myevent.type = ClientMessage;
-	myevent.xclient.display = top_level->display;
-	myevent.xclient.window = top_level->win;
-	myevent.xclient.message_type = event->message_type;
-	myevent.xclient.format = event->format;
-	myevent.xclient.data.l[0] = event->data.l[0];
-	myevent.xclient.data.l[1] = event->data.l[1];
-	myevent.xclient.data.l[2] = event->data.l[2];
-	myevent.xclient.data.l[3] = event->data.l[3];
-	myevent.xclient.data.l[4] = event->data.l[4];
+	event->type = ClientMessage;
+	event->display = top_level->display;
+	event->window = top_level->win;
 
 	XSendEvent(top_level->display, 
 		top_level->win, 
 		0, 
 		0, 
-		&myevent);
+		(XEvent *)event);
 	flush();
 }
 

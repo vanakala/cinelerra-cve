@@ -548,24 +548,20 @@ int AWindowGUI::keypress_event()
 
 
 
-int AWindowGUI::create_custom_xatoms()
+void AWindowGUI::create_custom_xatoms()
 {
 	UpdateAssetsXAtom = create_xatom("CWINDOWGUI_UPDATE_ASSETS");
-	return 0;
 }
-int AWindowGUI::recieve_custom_xatoms(xatom_event *event)
+
+void AWindowGUI::recieve_custom_xatoms(XClientMessageEvent *event)
 {
-	if (event->message_type == UpdateAssetsXAtom)
-	{
+	if(event->message_type == UpdateAssetsXAtom)
 		update_assets();
-		return 1;
-	} else
-	return 0;
 }
 
 void AWindowGUI::async_update_assets()
 {
-	xatom_event event;
+	XClientMessageEvent event;
 	event.message_type = UpdateAssetsXAtom;
 	event.format = 32;
 	send_custom_xatom(&event);
