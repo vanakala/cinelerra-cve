@@ -795,9 +795,7 @@ void BatchRenderGUI::translation_event()
 void BatchRenderGUI::close_event()
 {
 // Stop batch rendering
-	unlock_window();
 	thread->stop_rendering();
-	lock_window("BatchRenderGUI::close_event");
 	set_done(1);
 }
 
