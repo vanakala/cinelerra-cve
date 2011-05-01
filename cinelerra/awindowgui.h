@@ -86,9 +86,9 @@ public:
 	~AWindowGUI();
 
 	int create_objects();
-	int resize_event(int w, int h);
-	int translation_event();
-	int close_event();
+	void resize_event(int w, int h);
+	void translation_event();
+	void close_event();
 	int keypress_event();
 	void async_update_assets();     // Sends update asset event
 	void sort_assets();
@@ -178,13 +178,13 @@ class AWindowAssets : public BC_ListBox
 public:
 	AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h);
 	~AWindowAssets();
-	
+
 	int handle_event();
-	int selection_changed();
+	void selection_changed();
 	void draw_background();
 	int drag_start_event();
-	int drag_motion_event();
-	int drag_stop_event();
+	void drag_motion_event();
+	void drag_stop_event();
 	int button_press_event();
 	int column_resize_event();
 
@@ -211,8 +211,8 @@ class AWindowFolders : public BC_ListBox
 public:
 	AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h);
 	~AWindowFolders();
-	
-	int selection_changed();
+
+	void selection_changed();
 	int button_press_event();
 
 	MWindow *mwindow;

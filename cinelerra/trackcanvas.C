@@ -306,21 +306,20 @@ int TrackCanvas::drag_start_event()
 	return result;
 }
 
-int TrackCanvas::drag_motion_event()
+void TrackCanvas::drag_motion_event()
 {
-	return drag_motion();
+	drag_motion();
 }
 
-int TrackCanvas::drag_stop_event()
+void TrackCanvas::drag_stop_event()
 {
-	int result = drag_stop();
+	drag_stop();
 
 	if(drag_popup)
 	{
 		delete drag_popup;
 		drag_popup = 0;
 	}
-	return result;
 }
 
 
@@ -3224,7 +3223,7 @@ void TrackCanvas::draw_overlays()
 
 }
 
-int TrackCanvas::activate()
+void TrackCanvas::activate()
 {
 	if(!active)
 	{
@@ -3233,17 +3232,15 @@ int TrackCanvas::activate()
 		set_active_subwindow(this);
 		gui->cursor->activate();
 	}
-	return 0;
 }
 
-int TrackCanvas::deactivate()
+void TrackCanvas::deactivate()
 {
 	if(active)
 	{
 		active = 0;
 		gui->cursor->deactivate();
 	}
-	return 0;
 }
 
 

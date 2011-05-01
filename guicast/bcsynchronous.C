@@ -46,7 +46,7 @@ TextureID::TextureID(int window_id, int id, int w, int h, int components)
 	in_use = 1;
 }
 
-ShaderID::ShaderID(int window_id, unsigned int handle, char *source)
+ShaderID::ShaderID(int window_id, unsigned int handle, const char *source)
 {
 	this->window_id = window_id;
 	this->handle = handle;
@@ -74,8 +74,6 @@ PBufferID::PBufferID(int window_id,
 }
 #endif
 
-
-
 BC_SynchronousCommand::BC_SynchronousCommand()
 {
 	command = BC_SynchronousCommand::NONE;
@@ -92,20 +90,18 @@ BC_SynchronousCommand::~BC_SynchronousCommand()
 
 void BC_SynchronousCommand::copy_from(BC_SynchronousCommand *command)
 {
-	this->command = 	      command->command;
-	this->colormodel =      command->colormodel;
-	this->window = 	      command->window;
-	this->frame = 	      command->frame;
-	this->window_id =       command->window_id;
+	this->command = command->command;
+	this->colormodel = command->colormodel;
+	this->window = command->window;
+	this->frame = command->frame;
+	this->window_id = command->window_id;
 
-	this->frame_return =    command->frame_return;
+	this->frame_return = command->frame_return;
 
-	this->id = 		      command->id;
-	this->w = 		      command->w;
-	this->h = 		      command->h;
+	this->id = command->id;
+	this->w = command->w;
+	this->h = command->h;
 }
-
-
 
 
 BC_Synchronous::BC_Synchronous()
@@ -159,7 +155,6 @@ int BC_Synchronous::send_command(BC_SynchronousCommand *command)
 	command_lock->unlock();
 
 	next_command->unlock();
-//printf("BC_Synchronous::send_command 1 %d\n", next_command->get_value());
 
 // Wait for completion
 	command2->command_done->lock("BC_Synchronous::send_command");
@@ -175,7 +170,6 @@ void BC_Synchronous::run()
 	{
 		next_command->lock("BC_Synchronous::run");
 
-
 		command_lock->lock("BC_Synchronous::run");
 		BC_SynchronousCommand *command = 0;
 		if(commands.total)
@@ -185,29 +179,25 @@ void BC_Synchronous::run()
 		}
 // Prevent executing the same command twice if spurious unlock.
 		command_lock->unlock();
-//printf("BC_Synchronous::run %d\n", command->command);
 
 		handle_command_base(command);
-//		delete command;
 	}
 	is_running = 0;
 }
 
 void BC_Synchronous::handle_command_base(BC_SynchronousCommand *command)
 {
-
 	if(command)
 	{
-//printf("BC_Synchronous::handle_command_base 1 %d\n", command->command);
 		switch(command->command)
 		{
-			case BC_SynchronousCommand::QUIT:
-				done = 1;
-				break;
+		case BC_SynchronousCommand::QUIT:
+			done = 1;
+			break;
 
-			default:
-				handle_command(command);
-				break;
+		default:
+			handle_command(command);
+			break;
 		}
 	}
 
@@ -240,13 +230,13 @@ void BC_Synchronous::handle_garbage()
 
 		switch(command->command)
 		{
-			case BC_SynchronousCommand::DELETE_WINDOW:
-				delete_window_sync(command);
-				break;
+		case BC_SynchronousCommand::DELETE_WINDOW:
+			delete_window_sync(command);
+			break;
 
-			case BC_SynchronousCommand::DELETE_PIXMAP:
-				delete_pixmap_sync(command);
-				break;
+		case BC_SynchronousCommand::DELETE_PIXMAP:
+			delete_pixmap_sync(command);
+			break;
 		}
 
 		delete command;
@@ -327,9 +317,6 @@ void BC_Synchronous::release_texture(int window_id, int id)
 	}
 	table_lock->unlock();
 }
-
-
-
 
 
 unsigned int BC_Synchronous::get_shader(char *source, int *got_it)
@@ -413,10 +400,6 @@ int debug = 0;
 		{
 			GLuint id = texture_ids.values[i]->id;
 			glDeleteTextures(1, &id);
-if(debug)
-printf("BC_Synchronous::delete_window_sync texture_id=%d window_id=%d\n", 
-id,
-window_id);
 			texture_ids.remove_object_number(i);
 			i--;
 		}
@@ -427,10 +410,6 @@ window_id);
 		if(shader_ids.values[i]->window_id == window_id)
 		{
 			glDeleteShader(shader_ids.values[i]->handle);
-if(debug)
-printf("BC_Synchronous::delete_window_sync shader_id=%d window_id=%d\n", 
-shader_ids.values[i]->handle,
-window_id);
 			shader_ids.remove_object_number(i);
 			i--;
 		}
@@ -478,7 +457,6 @@ void BC_Synchronous::put_pbuffer(int w,
 			break;
 		}
 	}
-
 
 	if(!exists)
 	{
@@ -561,8 +539,6 @@ void BC_Synchronous::delete_pixmap_sync(BC_SynchronousCommand *command)
 #endif
 }
 
-
-
 void BC_Synchronous::send_garbage(BC_SynchronousCommand *command)
 {
 	table_lock->lock("BC_Synchronous::delete_window");
@@ -576,10 +552,3 @@ BC_WindowBase* BC_Synchronous::get_window()
 {
 	return current_window;
 }
-
-
-
-
-
-
-

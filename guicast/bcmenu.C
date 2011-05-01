@@ -28,8 +28,6 @@
 #include "bcsignals.h"
 #include <string.h>
 
-
-
 // ==================================== Menu ===================================
 
 BC_Menu::BC_Menu(char *text)
@@ -63,16 +61,14 @@ void BC_Menu::initialize(BC_WindowBase *top_level,
 	draw_title();
 }
 
-int BC_Menu::add_item(BC_MenuItem* menuitem)
+void BC_Menu::add_item(BC_MenuItem* menuitem)
 {
 	menu_popup->add_item(menuitem);
-	return 0;
 }
 
-int BC_Menu::remove_item(BC_MenuItem *item)
+void BC_Menu::remove_item(BC_MenuItem *item)
 {
 	menu_popup->remove_item(item);
-	return 0;
 }
 
 int BC_Menu::total_menuitems()
@@ -193,26 +189,24 @@ int BC_Menu::dispatch_motion_event()
 	return result;
 }
 
-int BC_Menu::dispatch_cursor_leave()
+void BC_Menu::dispatch_cursor_leave()
 {
 	if(active)
 	{
 		menu_popup->dispatch_cursor_leave();
 	}
 	unhighlight();
-	return 0;
 }
 
-int BC_Menu::dispatch_translation_event()
+void BC_Menu::dispatch_translation_event()
 {
 	if(active)
 	{
 		menu_popup->dispatch_translation_event();
 	}
-	return 0;
 }
 
-int BC_Menu::activate_menu()
+void BC_Menu::activate_menu()
 {
 	Window tempwin;
 	int new_x, new_y, top_w, top_h;
@@ -235,7 +229,6 @@ int BC_Menu::activate_menu()
 
 	active = 1;
 	draw_title();
-	return 0;
 }
 
 void BC_Menu::draw_items()
@@ -243,14 +236,13 @@ void BC_Menu::draw_items()
 	if(active) menu_popup->draw_items();
 }
 
-int BC_Menu::set_text(char *text)
+void BC_Menu::set_text(const char *text)
 {
 	strcpy(this->text, text);
 	draw_title();
-	return 0;
 }
 
-int BC_Menu::draw_title()
+void BC_Menu::draw_title()
 {
 	BC_Resources *resources = top_level->get_resources();
 	int text_offset = 0;
@@ -261,7 +253,6 @@ int BC_Menu::draw_title()
 
 		if(menu_bar->menu_title_bg[0])
 		{
-
 			menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[2]);
 		}
 		else
@@ -280,10 +271,8 @@ int BC_Menu::draw_title()
 	{
 		if(highlighted)
 		{
-
 			if(menu_bar->menu_title_bg[0])
 			{
-
 				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[1]);
 			}
 			else
@@ -294,10 +283,8 @@ int BC_Menu::draw_title()
 		}
 		else
 		{
-
 			if(menu_bar->menu_title_bg[0])
 			{
-
 				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[0]);
 			}
 			else
@@ -313,11 +300,9 @@ int BC_Menu::draw_title()
 		h - menu_bar->get_text_descent(MEDIUMFONT) + text_offset, 
 		text);
 	menu_bar->flash();
-
-	return 0;
 }
 
-int BC_Menu::deactivate_menu()
+void BC_Menu::deactivate_menu()
 {
 	if(active)
 	{
@@ -325,15 +310,13 @@ int BC_Menu::deactivate_menu()
 		active = 0;
 		draw_title();
 	}
-	return 0;
 }
 
-int BC_Menu::unhighlight()
+void BC_Menu::unhighlight()
 {
 	if(highlighted)
 	{
 		highlighted = 0;
 		draw_title();
 	}
-	return 0;
 }

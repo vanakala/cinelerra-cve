@@ -50,18 +50,16 @@ void BC_PixmapSW::initialize()
 	draw();
 }
 
-int BC_PixmapSW::reposition_widget(int x, int y)
+void BC_PixmapSW::reposition_widget(int x, int y)
 {
 	BC_WindowBase::reposition_window(x, y);
 	draw();
-	return 0;
 }
 
-int BC_PixmapSW::draw()
+void BC_PixmapSW::draw()
 {
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	draw_pixmap(thepixmap);
 	flash();
-	return 0;
 }
 

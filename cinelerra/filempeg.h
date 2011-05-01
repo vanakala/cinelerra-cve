@@ -190,7 +190,7 @@ public:
 	~MPEGConfigAudio();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 	BC_WindowBase *parent_window;
 	MPEGABitrate *bitrate;
@@ -335,7 +335,7 @@ public:
 	~MPEGConfigVideo();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 	void delete_cmodel_objs();
 	void reset_cmodel();
 	void update_cmodel_objs();

@@ -51,14 +51,14 @@ public:
 	virtual ~BC_Bitmap();
 
 // transfer VFrame
-	int read_frame(VFrame *frame,
+	void read_frame(VFrame *frame,
 		int in_x, int in_y, int in_w, int in_h,
 		int out_x, int out_y, int out_w, int out_h);
 // x1, y1, x2, y2 dimensions of output area
-	int read_frame(VFrame *frame, 
+	void read_frame(VFrame *frame, 
 		int x1, int y1, int x2, int y2);
 // Reset bitmap to match the new parameters
-	int match_params(int w, 
+	void match_params(int w,
 		int h, 
 		int color_model, 
 		int use_shm);
@@ -69,7 +69,7 @@ public:
 	void rewind_ring();
 // If dont_wait is true, the XSync comes before the flash.
 // For YUV bitmaps, the image is scaled to fill dest_x ... w * dest_y ... h
-	int write_drawable(Drawable &pixmap, 
+	void write_drawable(Drawable &pixmap, 
 			GC &gc,
 			int source_x, 
 			int source_y, 
@@ -80,7 +80,7 @@ public:
 			int dest_w, 
 			int dest_h, 
 			int dont_wait);
-	int write_drawable(Drawable &pixmap, 
+	void write_drawable(Drawable &pixmap, 
 			GC &gc,
 			int dest_x, 
 			int dest_y, 
@@ -90,7 +90,7 @@ public:
 			int dest_h, 
 			int dont_wait);
 // the bitmap must be wholly contained in the source during a GetImage
-	int read_drawable(Drawable &pixmap, int source_x, int source_y);
+	void read_drawable(Drawable &pixmap, int source_x, int source_y);
 
 	int rotate_90(int side);
 	int get_w();
@@ -106,28 +106,24 @@ public:
 	int hardware_scaling();
 	unsigned char** get_row_pointers();
 	int get_bytes_per_line();
-	long get_shm_id();
-	long get_shm_size();
+
 // Offset of current ringbuffer in shared memory
 	long get_shm_offset();
-// Returns plane offset + ringbuffer offset
-	long get_y_shm_offset();
-	long get_u_shm_offset();
-	long get_v_shm_offset();
+
 // Returns just the plane offset
 	long get_y_offset();
 	long get_u_offset();
 	long get_v_offset();
-	
+
 // Rewing ringbuffer to the previous frame
 	void rewind_ringbuffer();
-	int set_bg_color(int color);
-	int invert();
+	void set_bg_color(int color);
+	void invert();
 
 private:
 	void initialize(BC_WindowBase *parent_window, int w, int h, int color_model, int use_shm);
-	int allocate_data();
-	int delete_data();
+	void allocate_data();
+	void delete_data();
 	int get_default_depth();
 	char byte_bitswap(char src);
 
@@ -142,9 +138,9 @@ private:
 	BC_WindowBase *top_level;
 	BC_WindowBase *parent_window;
 // Points directly to the frame buffer
-	unsigned char *data[BITMAP_RING];   
+	unsigned char *data[BITMAP_RING];
 // Row pointers to the frame buffer
-	unsigned char **row_data[BITMAP_RING];   
+	unsigned char **row_data[BITMAP_RING];
 	int xv_portid;
 // This differs from the depth parameter of top_level
 	int bits_per_pixel;
@@ -164,11 +160,5 @@ private:
 	XvImage *xv_image[BITMAP_RING];
 	XShmSegmentInfo shm_info;
 };
-
-
-
-
-
-
 
 #endif

@@ -47,7 +47,7 @@ public:
 	DenoiseWindow(DenoiseEffect *plugin, int x, int y);
 	void create_objects();
 	void update();
-	int close_event();
+	void close_event();
 	DenoiseLevel *scale;
 	DenoiseEffect *plugin;
 };

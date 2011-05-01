@@ -77,7 +77,7 @@ public:
 	ShiftInterlaceWindow(ShiftInterlaceMain *plugin, int x, int y);
 
 	void create_objects();
-	int close_event();
+	void close_event();
 
 	ShiftInterlaceOdd *odd_offset;
 	ShiftInterlaceEven *even_offset;

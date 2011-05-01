@@ -727,9 +727,8 @@ int AVIConfigAudio::create_objects()
 	return 0;
 }
 
-int AVIConfigAudio::close_event()
+void AVIConfigAudio::close_event()
 {
-	return 1;
 }
 
 int AVIConfigAudio::generate_codeclist()
@@ -866,9 +865,8 @@ int AVIConfigVideo::create_objects()
 	return 0;
 }
 
-int AVIConfigVideo::close_event()
+void AVIConfigVideo::close_event()
 {
-	return 1;
 }
 
 int AVIConfigVideo::generate_codeclist()
@@ -1088,10 +1086,9 @@ int AVIVAttributeList::handle_event()
 	return 1;
 }
 
-int AVIVAttributeList::selection_changed()
+void AVIVAttributeList::selection_changed()
 {
 	gui->update_attribute(0);
-	return 1;
 }
 
 

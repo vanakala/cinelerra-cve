@@ -57,7 +57,6 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 			0, 
 			frame->get_w(), 
 			frame->get_h());
-		
 	}
 
 	if(use_alpha())
@@ -85,14 +84,14 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 	if(use_opaque())
 	{
 		opaque_bitmap->write_drawable(opaque_pixmap, 
-								top_level->gc,
-								0, 
-								0, 
-								0, 
-								0, 
-								w, 
-								h, 
-								1);
+			top_level->gc,
+			0,
+			0,
+			0,
+			0,
+			w,
+			h,
+			1);
 		delete opaque_bitmap;
 	}
 
@@ -120,7 +119,6 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window, int w, int h)
 	initialize(parent_window, w, h, PIXMAP_OPAQUE);
 }
 
-
 BC_Pixmap::~BC_Pixmap()
 {
 	if(use_opaque())
@@ -141,7 +139,6 @@ BC_Pixmap::~BC_Pixmap()
 #endif
 		XFreePixmap(top_level->display, alpha_pixmap);
 	}
-
 
 // Have to delete GL objects because pixmaps are deleted during resizes.
 #ifdef HAVE_GL
@@ -188,9 +185,9 @@ void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 		if(BC_WindowBase::get_resources()->use_xft)
 		{
 			opaque_xft_draw = XftDrawCreate(top_level->display,
-		    	   opaque_pixmap,
-		    	   top_level->vis,
-		    	   top_level->cmap);
+				opaque_pixmap,
+				top_level->vis,
+				top_level->cmap);
 		}
 #endif
 	}
@@ -231,12 +228,6 @@ void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 		}
 #endif
 	}
-
-// // For some reason, this is required in 32 bit.
-// #ifdef HAVE_XFT
-// 	if(BC_WindowBase::get_resources()->use_xft)
-// 		XSync(top_level->display, False);
-// #endif
 }
 
 void BC_Pixmap::resize(int w, int h)
@@ -251,14 +242,11 @@ void BC_Pixmap::resize(int w, int h)
 	if(BC_WindowBase::get_resources()->use_xft)
 	{
 		new_xft_draw = XftDrawCreate(top_level->display,
-		       new_pixmap,
-		       top_level->vis,
-		       top_level->cmap);
+			new_pixmap,
+			top_level->vis,
+			top_level->cmap);
 	}
 #endif
-
-
-
 
 	XCopyArea(top_level->display,
 		opaque_pixmap,
@@ -300,7 +288,7 @@ void BC_Pixmap::copy_area(int x, int y, int w, int h, int x2, int y2)
 		y2);
 }
 
-int BC_Pixmap::write_drawable(Drawable &pixmap, 
+void BC_Pixmap::write_drawable(Drawable &pixmap, 
 			int dest_x, 
 			int dest_y,
 			int dest_w,
@@ -308,7 +296,6 @@ int BC_Pixmap::write_drawable(Drawable &pixmap,
 			int src_x,
 			int src_y)
 {
-//printf("BC_Pixmap::write_drawable 1\n");
 	if(dest_w < 0)
 	{
 		dest_w = w;
@@ -349,9 +336,6 @@ int BC_Pixmap::write_drawable(Drawable &pixmap,
 			dest_x, 
 			dest_y);
 	}
-//printf("BC_Pixmap::write_drawable 2\n");
-
-	return 0;
 }
 
 void BC_Pixmap::draw_vframe(VFrame *frame, 
@@ -390,16 +374,6 @@ void BC_Pixmap::draw_pixmap(BC_Pixmap *pixmap,
 			src_x,
 			src_y);
 }
-
-
-
-
-
-
-
-
-
-
 
 int BC_Pixmap::get_w()
 {
@@ -441,50 +415,20 @@ int BC_Pixmap::use_alpha()
 	return mode == PIXMAP_ALPHA;
 }
 
-
 void BC_Pixmap::enable_opengl()
 {
-printf("BC_Pixmap::enable_opengl called but it doesn't work.\n");
 #ifdef HAVE_GL
 	BC_WindowBase *current_window = BC_WindowBase::get_synchronous()->current_window;
 	if(!gl_pixmap_context)
 	{
-		
-// 		XVisualInfo viproto;
-// 		int nvi;
-// 		viproto.screen = current_window->get_screen();
-// 		static int framebuffer_attributes[] = 
-// 		{
-//         	GLX_RGBA,
-//         	GLX_RED_SIZE, 1,
-//         	GLX_GREEN_SIZE, 1,
-//         	GLX_BLUE_SIZE, 1,
-// 			None
-// 		};
-// 		XVisualInfo *visinfo = glXChooseVisual(current_window->get_display(),
-// 			current_window->get_screen(),
-// 			framebuffer_attributes);
-// printf("BC_Pixmap::enable_opengl 1 %p\n", visinfo->visual);
-// 		gl_pixmap = glXCreateGLXPixmap(current_window->get_display(),
-//             visinfo,
-//             opaque_pixmap);
-// printf("BC_Pixmap::enable_opengl 2 %p\n", gl_pixmap);
-// // This context must be indirect, but because it's indirect, it can't share
-// // ID's with the window context.
-// 		gl_pixmap_context = glXCreateContext(current_window->get_display(),
-// 			visinfo,
-// 			0,
-// 			0);
-// printf("BC_Pixmap::enable_opengl 3 %p\n", gl_pixmap_context);
-
 		static int framebuffer_attributes[] = 
 		{
-        	GLX_RENDER_TYPE, GLX_RGBA_BIT,
+			GLX_RENDER_TYPE, GLX_RGBA_BIT,
 			GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT,
 			GLX_DOUBLEBUFFER, 0,
-        	GLX_RED_SIZE, 1,
-        	GLX_GREEN_SIZE, 1,
-        	GLX_BLUE_SIZE, 1,
+			GLX_RED_SIZE, 1,
+			GLX_GREEN_SIZE, 1,
+			GLX_BLUE_SIZE, 1,
 			None
 		};
 		XVisualInfo *visinfo = 0;
@@ -512,9 +456,8 @@ printf("BC_Pixmap::enable_opengl called but it doesn't work.\n");
 					0,
 					0);
 		}
-
 		if(config_result) XFree(config_result);
-    	if(visinfo) XFree(visinfo);
+		if(visinfo) XFree(visinfo);
 	}
 
 	if(gl_pixmap_context)

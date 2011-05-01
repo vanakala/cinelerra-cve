@@ -95,9 +95,9 @@ public:
 		int x, 
 		int y);
 
-	int handle_up_event();
-	int handle_down_event();
-	
+	void handle_up_event();
+	void handle_down_event();
+
 	TimeEntry *timeentry;
 	DayText *text;
 };

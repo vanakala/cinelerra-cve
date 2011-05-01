@@ -28,11 +28,8 @@
 #include "units.h"
 #include "vframe.h"
 
-
-
 #include <ctype.h>
 #include <string.h>
-
 
 
 BC_Slider::BC_Slider(int x, 
@@ -114,11 +111,10 @@ int BC_Slider::get_span(int vertical)
 	}
 }
 
-int BC_Slider::draw_face()
+void BC_Slider::draw_face()
 {
 // Clear background
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
-
 
 	if(vertical)
 	{
@@ -151,17 +147,15 @@ int BC_Slider::draw_face()
 	}
 
 	flash();
-	return 0;
 }
 
-int BC_Slider::set_images(VFrame **images)
+void BC_Slider::set_images(VFrame **images)
 {
 	for(int i = 0; i < SLIDER_IMAGES; i++)
 	{
 		if(pixmaps[i]) delete pixmaps[i];
 		pixmaps[i] = new BC_Pixmap(parent_window, images[i], PIXMAP_ALPHA);
 	}
-	return 0;
 }
 
 int BC_Slider::get_button_pixels()
@@ -172,14 +166,13 @@ int BC_Slider::get_button_pixels()
 
 void BC_Slider::show_value_tooltip()
 {
-//printf("BC_Slider::show_value_tooltip %s\n", get_caption());
 	set_tooltip(get_caption());
 	keypress_tooltip_timer = 2000;
 	show_tooltip(50);
 }
 
 
-int BC_Slider::repeat_event(int64_t duration)
+void BC_Slider::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{
@@ -205,15 +198,12 @@ int BC_Slider::repeat_event(int64_t duration)
 			}
 			else
 			{
-//printf("BC_Slider::repeat_event 1 %s\n", tooltip_text);
 				set_tooltip(get_caption());
 				show_tooltip();
 			}
 			tooltip_done = 1;
-			return 1;
 		}
 	}
-	return 0;
 }
 
 
@@ -225,22 +215,22 @@ int BC_Slider::keypress_event()
 
 	switch(get_keypress())
 	{
-		case UP:
-			increase_value_big();
-			result = 1;
-			break;
-		case DOWN:
-			decrease_value_big();
-			result = 1;
-			break;
-		case LEFT:
-			decrease_value();
-			result = 1;
-			break;
-		case RIGHT:
-			increase_value();
-			result = 1;
-			break;
+	case UP:
+		increase_value_big();
+		result = 1;
+		break;
+	case DOWN:
+		decrease_value_big();
+		result = 1;
+		break;
+	case LEFT:
+		decrease_value();
+		result = 1;
+		break;
+	case RIGHT:
+		increase_value();
+		result = 1;
+		break;
 	}
 
 	if(result)
@@ -254,18 +244,16 @@ int BC_Slider::keypress_event()
 
 int BC_Slider::cursor_enter_event()
 {
-//printf("BC_Slider::cursor_enter_event 1\n");
 	if(top_level->event_win == win && status == SLIDER_UP)
 	{
 		tooltip_done = 0;
 		status = SLIDER_HI;
 		draw_face();
 	}
-//printf("BC_Slider::cursor_enter_event 2\n");
 	return 0;
 }
 
-int BC_Slider::cursor_leave_event()
+void BC_Slider::cursor_leave_event()
 {
 	if(status == SLIDER_HI)
 	{
@@ -273,16 +261,14 @@ int BC_Slider::cursor_leave_event()
 		draw_face();
 		hide_tooltip();
 	}
-	return 0;
 }
 
-int BC_Slider::deactivate()
+void BC_Slider::deactivate()
 {
 	active = 0;
-	return 0;
 }
 
-int BC_Slider::activate()
+void BC_Slider::activate()
 {
 	top_level->active_subwindow = this;
 	active = 1;
@@ -363,12 +349,11 @@ int BC_Slider::cursor_motion_event()
 	return 0;
 }
 
-int BC_Slider::reposition_window(int x, int y, int w, int h)
+void BC_Slider::reposition_window(int x, int y, int w, int h)
 {
 	BC_SubWindow::reposition_window(x, y, w, h);
 	button_pixel = value_to_pixel();
 	draw_face();
-	return 0;
 }
 
 
@@ -376,9 +361,6 @@ int BC_Slider::get_pointer_motion_range()
 {
 	return pointer_motion_range;
 }
-
-
-
 
 
 BC_ISlider::BC_ISlider(int x, 
@@ -421,7 +403,7 @@ int BC_ISlider::value_to_pixel()
 	}
 }
 
-int BC_ISlider::update(int64_t value)
+void BC_ISlider::update(int64_t value)
 {
 	if(this->value != value)
 	{
@@ -430,10 +412,9 @@ int BC_ISlider::update(int64_t value)
 		button_pixel = value_to_pixel();
 		if(button_pixel != old_pixel) draw_face();
 	}
-	return 0;
 }
 
-int BC_ISlider::update(int pointer_motion_range, 
+void BC_ISlider::update(int pointer_motion_range, 
 	int64_t value, 
 	int64_t minvalue, 
 	int64_t maxvalue)
@@ -446,7 +427,6 @@ int BC_ISlider::update(int pointer_motion_range,
 	int old_pixel = button_pixel;
 	button_pixel = value_to_pixel();
 	if(button_pixel != old_pixel) draw_face();
-	return 0;
 }
 
 
@@ -466,39 +446,35 @@ char* BC_ISlider::get_caption()
 	return caption;
 }
 
-int BC_ISlider::increase_value()
+void BC_ISlider::increase_value()
 {
 	value++;
 	if(value > maxvalue) value = maxvalue;
 	button_pixel = value_to_pixel();
-	return 0;
 }
 
-int BC_ISlider::decrease_value()
+void BC_ISlider::decrease_value()
 {
 	value-=10;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
-	return 0;
 }
 
-int BC_ISlider::increase_value_big()
+void BC_ISlider::increase_value_big()
 {
 	value+=10;
 	if(value > maxvalue) value = maxvalue;
 	button_pixel = value_to_pixel();
-	return 0;
 }
 
-int BC_ISlider::decrease_value_big()
+void BC_ISlider::decrease_value_big()
 {
 	value--;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
-	return 0;
 }
 
-int BC_ISlider::init_selection(int cursor_x, int cursor_y)
+void BC_ISlider::init_selection(int cursor_x, int cursor_y)
 {
 	if(vertical)
 	{
@@ -511,7 +487,6 @@ int BC_ISlider::init_selection(int cursor_x, int cursor_y)
 		min_pixel += cursor_x;
 	}
 	max_pixel = min_pixel + pointer_motion_range;
-	return 0;
 }
 
 int BC_ISlider::update_selection(int cursor_x, int cursor_y)
@@ -551,12 +526,6 @@ int BC_ISlider::handle_event()
 }
 
 
-
-
-
-
-
-
 BC_FSlider::BC_FSlider(int x, 
 			int y,
 			int vertical,
@@ -586,7 +555,6 @@ BC_FSlider::BC_FSlider(int x,
 
 int BC_FSlider::value_to_pixel()
 {
-//printf("BC_FSlider::value_to_pixel %f %f\n", maxvalue, minvalue);
 	if(maxvalue == minvalue) return 0;
 	{
 		if(vertical)
@@ -598,20 +566,18 @@ int BC_FSlider::value_to_pixel()
 	}
 }
 
-int BC_FSlider::update(float value)
+void BC_FSlider::update(float value)
 {
 	if(this->value != value)
 	{
 		this->value = value;
 		int old_pixel = button_pixel;
 		button_pixel = value_to_pixel();
-//printf("BC_FSlider::update 1 %f %d\n", value, button_pixel);
 		if(button_pixel != old_pixel) draw_face();
 	}
-	return 0;
 }
 
-int BC_FSlider::update(int pointer_motion_range, float value, float minvalue, float maxvalue)
+void BC_FSlider::update(int pointer_motion_range, float value, float minvalue, float maxvalue)
 {
 	this->minvalue = minvalue;
 	this->maxvalue = maxvalue;
@@ -620,7 +586,6 @@ int BC_FSlider::update(int pointer_motion_range, float value, float minvalue, fl
 	int old_pixel = button_pixel;
 	button_pixel = value_to_pixel();
 	if(button_pixel != old_pixel) draw_face();
-	return 0;
 }
 
 
@@ -640,39 +605,35 @@ char* BC_FSlider::get_caption()
 	return caption;
 }
 
-int BC_FSlider::increase_value()
+void BC_FSlider::increase_value()
 {
 	value += small_change;
 	if(value > maxvalue) value = maxvalue;
 	button_pixel = value_to_pixel();
-	return 0;
 }
 
-int BC_FSlider::decrease_value()
+void BC_FSlider::decrease_value()
 {
 	value -= small_change;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
-	return 0;
 }
 
-int BC_FSlider::increase_value_big()
+void BC_FSlider::increase_value_big()
 {
 	value += big_change;
 	if(value > maxvalue) value = maxvalue;
 	button_pixel = value_to_pixel();
-	return 0;
 }
 
-int BC_FSlider::decrease_value_big()
+void BC_FSlider::decrease_value_big()
 {
 	value -= big_change;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
-	return 0;
 }
 
-int BC_FSlider::init_selection(int cursor_x, int cursor_y)
+void BC_FSlider::init_selection(int cursor_x, int cursor_y)
 {
 	if(vertical)
 	{
@@ -685,13 +646,11 @@ int BC_FSlider::init_selection(int cursor_x, int cursor_y)
 		min_pixel += cursor_x;
 	}
 	max_pixel = min_pixel + pointer_motion_range;
-	return 0;
 }
 
 int BC_FSlider::update_selection(int cursor_x, int cursor_y)
 {
 	float old_value = value;
-
 
 	if(vertical)
 	{
@@ -712,13 +671,6 @@ int BC_FSlider::update_selection(int cursor_x, int cursor_y)
 	if(value > maxvalue) value = maxvalue;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
-// printf("BC_FSlider::update_selection 1 %d %d %d %d %f %f\n", 
-// pointer_motion_range, 
-// min_pixel,
-// max_pixel,
-// cursor_x, 
-// precision,
-// value);
 
 	if(old_value != value)
 	{
@@ -737,7 +689,6 @@ void BC_FSlider::set_pagination(float small_change, float big_change)
 	this->small_change = small_change;
 	this->big_change = big_change;
 }
-
 
 
 BC_PercentageSlider::BC_PercentageSlider(int x, 
@@ -766,9 +717,9 @@ BC_PercentageSlider::BC_PercentageSlider(int x,
 char* BC_PercentageSlider::get_caption()
 {
 	double val = 0;
+
 	if(maxvalue > minvalue)
-	    val = floor((value - minvalue) / (maxvalue - minvalue) * 100);
+		val = floor((value - minvalue) / (maxvalue - minvalue) * 100);
 	sprintf(caption, "%.0f%%", val);
 	return caption;
 }
-

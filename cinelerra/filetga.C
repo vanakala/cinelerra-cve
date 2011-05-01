@@ -883,10 +883,9 @@ int TGAConfigVideo::create_objects()
 	return 0;
 }
 
-int TGAConfigVideo::close_event()
+void TGAConfigVideo::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

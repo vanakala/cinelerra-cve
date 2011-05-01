@@ -186,7 +186,7 @@ public:
 	PrefsRenderFarmNodes(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y);
 	~PrefsRenderFarmNodes();
 	int handle_event();
-	int selection_changed();
+	void selection_changed();
 	int column_resize_event();
 
 	PreferencesWindow *pwindow;

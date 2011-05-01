@@ -246,8 +246,8 @@ class ChannelTumbler : public BC_Tumbler
 public:
 	ChannelTumbler(ChannelPicker *channel_picker, int x, int y);
 	~ChannelTumbler();
-	int handle_up_event();
-	int handle_down_event();
+	void handle_up_event();
+	void handle_down_event();
 	int keypress_event();
 	ChannelPicker *channel_picker;
 };

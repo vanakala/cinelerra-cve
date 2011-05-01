@@ -73,8 +73,8 @@ public:
 	~TitleWindow();
 	
 	int create_objects();
-	int close_event();
-	int resize_event(int w, int h);
+	void close_event();
+	void resize_event(int w, int h);
 	void update_color();
 	void update_justification();
 	void update();
@@ -147,8 +147,8 @@ class TitleFontTumble : public BC_Tumbler
 public:
 	TitleFontTumble(TitleMain *client, TitleWindow *window, int x, int y);
 	
-	int handle_up_event();
-	int handle_down_event();
+	void handle_up_event();
+	void handle_down_event();
 	
 	TitleMain *client;
 	TitleWindow *window;

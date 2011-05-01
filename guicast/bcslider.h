@@ -54,19 +54,19 @@ public:
 	virtual int value_to_pixel() { return 0; };
 	int keypress_event();
 	int cursor_enter_event();
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int button_press_event();
 	virtual int button_release_event();
 	int get_pointer_motion_range();
 	int cursor_motion_event();
-	int repeat_event(int64_t repeat_id);
-	int reposition_window(int x, int y, int w = -1, int h = -1);
-	int activate();
-	int deactivate();
-	virtual int increase_value() { return 0; };
-	virtual int decrease_value() { return 0; };
-	virtual int increase_value_big() { return 0; };
-	virtual int decrease_value_big() { return 0; };
+	void repeat_event(int64_t repeat_id);
+	void reposition_window(int x, int y, int w = -1, int h = -1);
+	void activate();
+	void deactivate();
+	virtual void increase_value() {};
+	virtual void decrease_value() {};
+	virtual void increase_value_big() {};
+	virtual void decrease_value_big() {};
 	virtual char* get_caption() { return caption; };
 
 private:
@@ -79,10 +79,10 @@ private:
 #define SLIDER_BG_DN 2
 #define SLIDER_IMAGES 6
 
-	virtual int init_selection(int cursor_x, int cursor_y) { return 0; };
+	virtual void init_selection(int cursor_x, int cursor_y) {};
 	virtual int update_selection(int cursor_x, int cursor_y) { return 0; };
-	int set_images(VFrame **images);
-	int draw_face();
+	void set_images(VFrame **images);
+	void draw_face();
 	void show_value_tooltip();
 
 	VFrame **images;
@@ -117,20 +117,20 @@ public:
 			VFrame **data = 0,
 			int *output = 0);
 
-	int update(int64_t value);
-	int update(int pointer_motion_range, int64_t value, int64_t minvalue, int64_t maxvalue);
+	void update(int64_t value);
+	void update(int pointer_motion_range, int64_t value, int64_t minvalue, int64_t maxvalue);
 	int64_t get_value();
 	int64_t get_length();
-	int increase_value();
-	int decrease_value();
-	int increase_value_big();
-	int decrease_value_big();
+	void increase_value();
+	void decrease_value();
+	void increase_value_big();
+	void decrease_value_big();
 	virtual int handle_event();
 	virtual char* get_caption();
 
 private:
 	int value_to_pixel();
-	int init_selection(int cursor_x, int cursor_y);
+	void init_selection(int cursor_x, int cursor_y);
 	int update_selection(int cursor_x, int cursor_y);
 	int64_t minvalue, maxvalue, value;
 	int *output;
@@ -152,21 +152,21 @@ public:
 
 	friend class BC_PercentageSlider;
 
-	int update(float value);
-	int update(int pointer_motion_range, float value, float minvalue, float maxvalue);
+	void update(float value);
+	void update(int pointer_motion_range, float value, float minvalue, float maxvalue);
 	float get_value();
 	float get_length();
-	virtual int increase_value();
-	virtual int decrease_value();
-	virtual int increase_value_big();
-	virtual int decrease_value_big();
+	virtual void increase_value();
+	virtual void decrease_value();
+	virtual void increase_value_big();
+	virtual void decrease_value_big();
 	virtual char* get_caption();
 	void set_precision(float value);
 	void set_pagination(float small_change, float big_change);
 
 private:
 	int value_to_pixel();
-	int init_selection(int cursor_x, int cursor_y);
+	void init_selection(int cursor_x, int cursor_y);
 	int update_selection(int cursor_x, int cursor_y);
 	float minvalue, maxvalue, value;
 	float precision;
@@ -188,8 +188,6 @@ public:
 			VFrame **data = 0);
 
 	char* get_caption();
-private:
 };
-
 
 #endif

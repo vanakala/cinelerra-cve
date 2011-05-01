@@ -87,7 +87,7 @@ public:
 	~SwapWindow();
 
 	void create_objects();
-	int close_event();
+	void close_event();
 
 	SwapMain *plugin;
 	SwapMenu *red;

@@ -48,7 +48,7 @@ public:
 	~MainErrorGUI();
 
 	void create_objects();
-	int resize_event(int w, int h);
+	void resize_event(int w, int h);
 
 	MWindow *mwindow;
 	MainError *thread;

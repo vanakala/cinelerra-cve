@@ -134,8 +134,8 @@ class NewATracksTumbler : public BC_Tumbler
 {
 public:
 	NewATracksTumbler(NewWindow *nwindow, int x, int y);
-	int handle_up_event();
-	int handle_down_event();
+	void handle_up_event();
+	void handle_down_event();
 	NewWindow *nwindow;
 };
 
@@ -151,8 +151,8 @@ class NewAChannelsTumbler : public BC_Tumbler
 {
 public:
 	NewAChannelsTumbler(NewWindow *nwindow, int x, int y);
-	int handle_up_event();
-	int handle_down_event();
+	void handle_up_event();
+	void handle_down_event();
 	NewWindow *nwindow;
 };
 
@@ -187,8 +187,8 @@ class NewVTracksTumbler : public BC_Tumbler
 {
 public:
 	NewVTracksTumbler(NewWindow *nwindow, int x, int y);
-	int handle_up_event();
-	int handle_down_event();
+	void handle_up_event();
+	void handle_down_event();
 	NewWindow *nwindow;
 };
 

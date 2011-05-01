@@ -67,7 +67,7 @@ public:
 		Asset *asset);
 
 	void create_objects();
-	int close_event();
+	void close_event();
 
 	Asset *asset;
 	BC_WindowBase *parent_window;

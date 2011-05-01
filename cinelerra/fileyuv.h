@@ -74,7 +74,7 @@ public:
 	~YUVConfigVideo();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 	BC_WindowBase *parent_window;
 	Asset *asset;

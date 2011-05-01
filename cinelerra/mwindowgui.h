@@ -56,8 +56,8 @@ public:
 // Replace with update
 	void redraw_time_dependancies();
 
-	int focus_in_event();
-	int focus_out_event();
+	void focus_in_event();
+	void focus_out_event();
 
 // canvas - 1 for incremental drawing of resources
 //          2 for delete and redraw of resources
@@ -71,10 +71,10 @@ public:
 		int buttonbar);
 
 	void update_title(char *path);
-	int translation_event();
-	int resize_event(int w, int h);          // handle a resize event
+	void translation_event();
+	void resize_event(int w, int h);          // handle a resize event
 	int keypress_event();
-	int close_event();
+	void close_event();
 	int quit();
 	int save_defaults(BC_Hash *defaults);
 	int menu_h();
@@ -82,7 +82,7 @@ public:
 	int show_message(const char *fmt, ...);
 // Pop up a box if the statusbar is taken and show an error.
 	void show_error(char *message, int color = BLACK);
-	int repeat_event(int64_t duration);
+	void repeat_event(int64_t duration);
 // Entry point for drag events in all windows
 	int drag_motion();
 	int drag_stop();

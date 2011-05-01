@@ -30,26 +30,26 @@ public:
 	BC_Tumbler(int x, int y, VFrame **data = 0);
 	virtual ~BC_Tumbler();
 
-	virtual int handle_up_event() { return 0; };
-	virtual int handle_down_event() { return 0; };
-	int repeat_event(int64_t repeat_id);
+	virtual void handle_up_event() {};
+	virtual void handle_down_event() {};
+	void repeat_event(int64_t repeat_id);
 
 	void initialize();
-	int set_images(VFrame **data);
+	void set_images(VFrame **data);
 	int cursor_enter_event();
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
-	int update_bitmaps(VFrame **data);
-	int reposition_window(int x, int y, int w=-1, int h=-1); // w & h don't do anything, except to inherit BC_Subwindow::(reposition_window)
+	void update_bitmaps(VFrame **data);
+	void reposition_window(int x, int y, int w=-1, int h=-1); // w & h don't do anything, except to inherit BC_Subwindow::(reposition_window)
 	virtual void set_boundaries(int64_t min, int64_t max) {};
 	virtual void set_boundaries(float min, float max) {};
 	virtual void set_increment(float value) {};
 	virtual void set_log_floatincrement(int value) {};
 
 private:
-	int draw_face();
+	void draw_face();
 
 	BC_Pixmap *images[4];
 	int status;
@@ -63,8 +63,8 @@ public:
 	BC_ITumbler(BC_TextBox *textbox, int64_t min, int64_t max, int x, int y);
 	virtual ~BC_ITumbler();
 
-	int handle_up_event();
-	int handle_down_event();
+	void handle_up_event();
+	void handle_down_event();
 	void set_increment(float value);
 	void set_boundaries(int64_t min, int64_t max);
 
@@ -78,9 +78,9 @@ class BC_FTumbler : public BC_Tumbler
 public:
 	BC_FTumbler(BC_TextBox *textbox, float min, float max, int x, int y);
 	virtual ~BC_FTumbler();
-	
-	int handle_up_event();
-	int handle_down_event();
+
+	void handle_up_event();
+	void handle_down_event();
 	void set_boundaries(float min, float max);
 	void set_increment(float value);
 	void set_log_floatincrement(int value);

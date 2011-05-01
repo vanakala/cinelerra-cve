@@ -90,7 +90,7 @@ class SlideWindow : public BC_Window
 public:
 	SlideWindow(SlideMain *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	SlideMain *plugin;
 	SlideLeft *left;
 	SlideRight *right;

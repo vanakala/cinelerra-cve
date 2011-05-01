@@ -75,10 +75,9 @@ BandWipeWindow::BandWipeWindow(BandWipeMain *plugin, int x, int y)
 }
 
 
-int BandWipeWindow::close_event()
+void BandWipeWindow::close_event()
 {
 	set_done(1);
-	return 1;
 }
 
 void BandWipeWindow::create_objects()

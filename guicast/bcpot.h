@@ -54,28 +54,28 @@ public:
 	virtual int percentage_to_value(float percentage) { return 0; };
 	virtual int handle_event() { return 0; };
 	virtual const char* get_caption() { return ""; };
-	virtual int increase_value() { return 0; };
-	virtual int decrease_value() { return 0; };
+	virtual void increase_value() {};
+	virtual void decrease_value() {};
 	void set_use_caption(int value);
 
-	int reposition_window(int x, int y);
-	int repeat_event(int64_t repeat_id);
+	void reposition_window(int x, int y);
+	void repeat_event(int64_t repeat_id);
 	int cursor_enter_event();
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int button_press_event();
 	virtual int button_release_event();
 	int cursor_motion_event();
 	int keypress_event();
 
 private:
-	int set_data(VFrame **data);
-	int draw();
+	void set_data(VFrame **data);
+	void draw();
 	float percentage_to_angle(float percentage);
 	float angle_to_percentage(float angle);
-	int angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle);
+	void angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle);
 	float coords_to_angle(int x2, int y2);
 	void show_value_tooltip();
-	
+
 	VFrame **data;
 	BC_Pixmap *images[POT_STATES];
 	char caption[BCTEXTLEN], temp_tooltip_text[BCTEXTLEN];
@@ -100,8 +100,8 @@ public:
 	~BC_FPot();
 
 	const char* get_caption();
-	int increase_value();
-	int decrease_value();
+	void increase_value();
+	void decrease_value();
 	float get_percentage();
 	float get_value();
 	int percentage_to_value(float percentage);
@@ -126,8 +126,8 @@ public:
 	~BC_IPot();
 
 	const char* get_caption();
-	int increase_value();
-	int decrease_value();
+	void increase_value();
+	void decrease_value();
 	float get_percentage();
 	int percentage_to_value(float percentage);
 	int64_t get_value();
@@ -148,8 +148,8 @@ public:
 	~BC_QPot();
 
 	const char* get_caption();
-	int increase_value();
-	int decrease_value();
+	void increase_value();
+	void decrease_value();
 	float get_percentage();
 	int percentage_to_value(float percentage);
 // Units of frequencies
@@ -174,8 +174,8 @@ public:
 	~BC_PercentagePot();
 
 	const char* get_caption();
-	int increase_value();
-	int decrease_value();
+	void increase_value();
+	void decrease_value();
 	float get_percentage();
 	float get_value();
 	int percentage_to_value(float percentage);

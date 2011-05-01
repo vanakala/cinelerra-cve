@@ -84,7 +84,7 @@ class FieldFrameWindow : public BC_Window
 public:
 	FieldFrameWindow(FieldFrame *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	FieldFrame *plugin;
 	FieldFrameTop *top;
 	FieldFrameBottom *bottom;

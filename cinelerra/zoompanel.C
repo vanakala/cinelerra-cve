@@ -286,7 +286,7 @@ ZoomTumbler::~ZoomTumbler()
 {
 }
 
-int ZoomTumbler::handle_up_event()
+void ZoomTumbler::handle_up_event()
 {
 	if(panel->user_table)
 	{
@@ -306,10 +306,9 @@ int ZoomTumbler::handle_up_event()
 
 	panel->zoom_text->set_text(panel->value_to_text(panel->value));
 	panel->handle_event();
-	return 1;
 }
 
-int ZoomTumbler::handle_down_event()
+void ZoomTumbler::handle_down_event()
 {
 	if(panel->user_table)
 	{
@@ -328,5 +327,4 @@ int ZoomTumbler::handle_down_event()
 	}
 	panel->zoom_text->set_text(panel->value_to_text(panel->value));
 	panel->handle_event();
-	return 1;
 }

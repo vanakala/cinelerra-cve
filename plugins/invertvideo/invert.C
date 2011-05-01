@@ -68,7 +68,7 @@ class InvertVideoWindow : public BC_Window
 public:
 	InvertVideoWindow(InvertVideoEffect *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	InvertVideoEnable *r, *g, *b, *a;
 	InvertVideoEffect *plugin;
 };

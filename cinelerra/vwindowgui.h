@@ -52,12 +52,12 @@ public:
 	~VWindowGUI();
 
 	int create_objects();
-	int resize_event(int w, int h);
-	int translation_event();
-	int close_event();
+	void resize_event(int w, int h);
+	void translation_event();
+	void close_event();
 	int keypress_event();
 	int button_press_event();
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int cursor_enter_event();
 	int button_release_event();
 	int cursor_motion_event();

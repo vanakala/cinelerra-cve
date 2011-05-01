@@ -27,10 +27,7 @@
 #include "bcmenupopup.inc"
 #include "bcsubwindow.h"
 
-
 // A menu that pops up in the middle of a window or under a button.
-
-
 
 class BC_PopupMenu : public BC_SubWindow
 {
@@ -56,8 +53,8 @@ public:
 	virtual int handle_event() { return 0; };
 	char* get_text();
 	void initialize();
-	int add_item(BC_MenuItem *item);
-	int remove_item(BC_MenuItem *item);
+	void add_item(BC_MenuItem *item);
+	void remove_item(BC_MenuItem *item);
 	int total_items();
 	BC_MenuItem* get_item(int i);
 // Set title of menu
@@ -65,23 +62,21 @@ public:
 // Set icon of menu.  Disables text.
 	void set_icon(BC_Pixmap *pixmap);
 // Draw title of menu
-	int draw_title();
-	int reposition_window(int x, int y);
-	int deactivate();
-	int activate_menu();
-	int deactivate_menu();
-	int focus_out_event();
-	int repeat_event(int64_t duration);
+	void draw_title();
+	void reposition_window(int x, int y);
+	void deactivate();
+	void activate_menu();
+	void deactivate_menu();
+	void focus_out_event();
+	void repeat_event(int64_t duration);
 	int button_press_event();
 	int button_release_event();
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int cursor_enter_event();
 	int cursor_motion_event();
-	int translation_event();
+	void translation_event();
 	int drag_start_event();
-	int drag_stop_event();
-	int drag_motion_event();
-	int set_images(VFrame **data);
+	void set_images(VFrame **data);
 
 private:
 	char text[BCTEXTLEN];

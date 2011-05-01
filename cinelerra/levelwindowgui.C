@@ -68,7 +68,7 @@ int LevelWindowGUI::create_objects()
 }
 
 
-int LevelWindowGUI::resize_event(int w, int h)
+void LevelWindowGUI::resize_event(int w, int h)
 {
 	mwindow->session->lwindow_x = get_x();
 	mwindow->session->lwindow_y = get_y();
@@ -82,17 +82,15 @@ int LevelWindowGUI::resize_event(int w, int h)
 		h - 10);
 
 	BC_WindowBase::resize_event(w, h);
-	return 1;
 }
 
-int LevelWindowGUI::translation_event()
+void LevelWindowGUI::translation_event()
 {
 	mwindow->session->lwindow_x = get_x();
 	mwindow->session->lwindow_y = get_y();
-	return 0;
 }
 
-int LevelWindowGUI::close_event()
+void LevelWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_lwindow = 0;
@@ -100,7 +98,6 @@ int LevelWindowGUI::close_event()
 	mwindow->gui->mainmenu->show_lwindow->set_checked(0);
 	mwindow->gui->unlock_window();
 	mwindow->save_defaults();
-	return 1;
 }
 
 int LevelWindowGUI::keypress_event()

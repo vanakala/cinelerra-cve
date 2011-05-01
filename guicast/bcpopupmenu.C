@@ -36,10 +36,8 @@
 #define BUTTON_DN 2
 #define TOTAL_IMAGES 3
 
-
 #define TRIANGLE_W 10
 #define TRIANGLE_H 10
-
 
 BC_PopupMenu::BC_PopupMenu(int x, 
 		int y, 
@@ -155,7 +153,7 @@ void BC_PopupMenu::initialize()
 	if(use_title) draw_title();
 }
 
-int BC_PopupMenu::set_images(VFrame **data)
+void BC_PopupMenu::set_images(VFrame **data)
 {
 	BC_Resources *resources = get_resources();
 	for(int i = 0; i < 3; i++)
@@ -174,7 +172,6 @@ int BC_PopupMenu::set_images(VFrame **data)
 			resources->popupmenu_triangle_margin;
 
 	h = images[BUTTON_UP]->get_h();
-	return 0;
 }
 
 int BC_PopupMenu::calculate_h(VFrame **data)
@@ -187,26 +184,22 @@ int BC_PopupMenu::calculate_h(VFrame **data)
 	else
 		data = BC_WindowBase::get_resources()->generic_button_images;
 
-	
 	return data[BUTTON_UP]->get_h();
 }
 
-int BC_PopupMenu::add_item(BC_MenuItem *item)
+void BC_PopupMenu::add_item(BC_MenuItem *item)
 {
 	menu_popup->add_item(item);
-	return 0;
 }
 
-int BC_PopupMenu::remove_item(BC_MenuItem *item)
+void BC_PopupMenu::remove_item(BC_MenuItem *item)
 {
 	menu_popup->remove_item(item);
-	return 0;
 }
 
 int BC_PopupMenu::total_items()
 {
 	return menu_popup->total_menuitems();
-	return 0;
 }
 
 BC_MenuItem* BC_PopupMenu::get_item(int i)
@@ -214,9 +207,9 @@ BC_MenuItem* BC_PopupMenu::get_item(int i)
 	return menu_popup->menu_items.values[i];
 }
 
-int BC_PopupMenu::draw_title()
+void BC_PopupMenu::draw_title()
 {
-	if(!use_title) return 0;
+	if(!use_title) return;
 	BC_Resources *resources = get_resources();
 
 // Background
@@ -249,10 +242,9 @@ int BC_PopupMenu::draw_title()
 		TRIANGLE_W, TRIANGLE_H);
 
 	flash();
-	return 0;
 }
 
-int BC_PopupMenu::deactivate()
+void BC_PopupMenu::deactivate()
 {
 	if(popup_down)
 	{
@@ -262,10 +254,9 @@ int BC_PopupMenu::deactivate()
 
 		if(use_title) draw_title();    // draw the title
 	}
-	return 0;
 }
 
-int BC_PopupMenu::activate_menu()
+void BC_PopupMenu::activate_menu()
 {
 	if(!popup_down)
 	{
@@ -309,31 +300,25 @@ int BC_PopupMenu::activate_menu()
 		top_level->unlock_window();
 		if(use_title) draw_title();
 	}
-	return 0;
 }
 
-int BC_PopupMenu::deactivate_menu()
+void BC_PopupMenu::deactivate_menu()
 {
 	deactivate();
-	return 0;
 }
 
-
-int BC_PopupMenu::reposition_window(int x, int y)
+void BC_PopupMenu::reposition_window(int x, int y)
 {
 	BC_WindowBase::reposition_window(x, y);
 	draw_title();
-	return 0;
 }
 
-int BC_PopupMenu::focus_out_event()
+void BC_PopupMenu::focus_out_event()
 {
 	deactivate();
-	return 0;
 }
 
-
-int BC_PopupMenu::repeat_event(int64_t duration)
+void BC_PopupMenu::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&
@@ -342,9 +327,7 @@ int BC_PopupMenu::repeat_event(int64_t duration)
 	{
 		show_tooltip();
 		tooltip_done = 1;
-		return 1;
 	}
-	return 0;
 }
 
 int BC_PopupMenu::button_press_event()
@@ -365,9 +348,8 @@ int BC_PopupMenu::button_press_event()
 	// Scrolling section
 	if (is_event_win() 
 		&& (get_buttonpress() == 4 || get_buttonpress() == 5) 
-		&& menu_popup->total_menuitems() > 1
-	) 
-	{ 
+		&& menu_popup->total_menuitems() > 1)
+	{
 		int theval = -1;
 		for (int i = 0; i < menu_popup->total_menuitems(); i++) {
 			if (!strcmp(menu_popup->menu_items.values[i]->get_text(),get_text())) {
@@ -387,10 +369,9 @@ int BC_PopupMenu::button_press_event()
 
 		BC_MenuItem *tmp = menu_popup->menu_items.values[theval];
 		set_text(tmp->get_text());
- 		if (!tmp->handle_event())
+		if (!tmp->handle_event())
 			this->handle_event();
 	}
-
 
 	if(popup_down)
 	{
@@ -441,65 +422,21 @@ int BC_PopupMenu::button_release_event()
 		result = 1;
 	}
 
-
 	if(!result && popup_down)
 	{
 // Button was released outside any menu.
 		deactivate();
 		result = 1;
 	}
-
-	return result;
-
-
-
-
-
-
-
-
-
-
-	if(popup_down)
-	{
-// Menu is down so dispatch to popup.
-		result = menu_popup->dispatch_button_release();
-	}
-
-	if(!result && use_title && cursor_inside() && top_level->event_win == win)
-	{
-// Inside title
-		if(button_releases >= 2)
-		{
-			highlighted = 1;
-			deactivate();
-		}
-		result = 1;
-	}
-	else
-	if(!result && !use_title && button_releases < 2)
-	{
-// First release outside a floating menu
-// Released outside a fictitious title area
-// 		if(top_level->cursor_x < button_press_x - 5 ||
-// 			top_level->cursor_y < button_press_y - 5 ||
-// 			top_level->cursor_x > button_press_x + 5 ||
-// 			top_level->cursor_y > button_press_y + 5)	
-			deactivate();
-		result = 1;
-	}
-
 	return result;
 }
 
-int BC_PopupMenu::translation_event()
+void BC_PopupMenu::translation_event()
 {
-//printf("BC_PopupMenu::translation_event 1\n");
 	if(popup_down) menu_popup->dispatch_translation_event();
-	return 0;
 }
 
-int BC_PopupMenu::cursor_leave_event()
+void BC_PopupMenu::cursor_leave_event()
 {
 
 	if(status == BUTTON_HI && use_title)
@@ -514,10 +451,7 @@ int BC_PopupMenu::cursor_leave_event()
 	{
 		menu_popup->dispatch_cursor_leave();
 	}
-
-	return 0;
 }
-
 
 int BC_PopupMenu::cursor_enter_event()
 {
@@ -533,7 +467,6 @@ int BC_PopupMenu::cursor_enter_event()
 			status = BUTTON_HI;
 		draw_title();
 	}
-
 	return 0;
 }
 
@@ -573,26 +506,6 @@ int BC_PopupMenu::cursor_motion_event()
 
 int BC_PopupMenu::drag_start_event()
 {
-//printf("BC_PopupMenu::drag_start_event %d\n", popup_down);
 	if(popup_down) return 1;
 	return 0;
 }
-
-int BC_PopupMenu::drag_stop_event()
-{
-	if(popup_down) return 1;
-	return 0;
-}
-
-int BC_PopupMenu::drag_motion_event()
-{
-	if(popup_down) return 1;
-	return 0;
-}
-
-
-
-
-
-
-

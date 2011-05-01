@@ -72,7 +72,7 @@ public:
 	~ChannelEditWindow();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 	int add_channel();  // Start the thread for adding a channel
 	int delete_channel(int channel);
 	int delete_channel(Channel *channel);
@@ -316,8 +316,8 @@ class ChannelEditEditSourceTumbler : public BC_Tumbler
 public:
 	ChannelEditEditSourceTumbler(int x, int y, ChannelEditEditThread *thread);
 	~ChannelEditEditSourceTumbler();
-	int handle_up_event();
-	int handle_down_event();
+	void handle_up_event();
+	void handle_down_event();
 	ChannelEditEditThread *thread;
 };
 

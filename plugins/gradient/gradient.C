@@ -261,11 +261,9 @@ void GradientWindow::update_shape()
 	}
 }
 
-int GradientWindow::close_event()
+void GradientWindow::close_event()
 {
-// Set result to 1 to indicate a plugin side close
 	set_done(1);
-	return 1;
 }
 
 void GradientWindow::update_in_color()

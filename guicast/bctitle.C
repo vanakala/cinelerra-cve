@@ -60,29 +60,26 @@ void BC_Title::initialize()
 	draw();
 }
 
-int BC_Title::set_color(int color)
+void BC_Title::set_color(int color)
 {
 	this->color = color;
 	draw();
-	return 0;
 }
 
-int BC_Title::resize(int w, int h)
+void BC_Title::resize(int w, int h)
 {
 	resize_window(w, h);
 	draw();
-	return 0;
 }
 
-int BC_Title::reposition(int x, int y)
+void BC_Title::reposition(int x, int y)
 {
 	reposition_window(x, y, w, h);
 	draw();
-	return 0;
 }
 
 
-int BC_Title::update(const char *text)
+void BC_Title::update(const char *text)
 {
 	int new_w, new_h;
 
@@ -93,7 +90,6 @@ int BC_Title::update(const char *text)
 		resize_window(new_w, new_h);
 	}
 	draw();
-	return 0;
 }
 
 void BC_Title::update(float value)
@@ -108,24 +104,24 @@ char* BC_Title::get_text()
 	return text;
 }
 
-int BC_Title::draw()
+void BC_Title::draw()
 {
 	int i, j, x, y;
 
 // Fix background for block fonts.
 // This should eventually be included in a BC_WindowBase::is_blocked_font()
 
- 	if(font == MEDIUM_7SEGMENT)
- 	{
-	  //leave it up to the theme to decide if we need a background or not.
-	  if (top_level->get_resources()->draw_clock_background)
-	  {
-	      BC_WindowBase::set_color(BLACK);
-	      draw_box(0, 0, w, h);
-	  }
- 	}
+	if(font == MEDIUM_7SEGMENT)
+	{
+	//leave it up to the theme to decide if we need a background or not.
+		if (top_level->get_resources()->draw_clock_background)
+		{
+			BC_WindowBase::set_color(BLACK);
+			draw_box(0, 0, w, h);
+		}
+	}
 	else
- 		draw_top_background(parent_window, 0, 0, w, h);
+		draw_top_background(parent_window, 0, 0, w, h);
 
 	set_font(font);
 	BC_WindowBase::set_color(color);
@@ -157,7 +153,6 @@ int BC_Title::draw()
 	set_font(MEDIUMFONT);    // reset
 	flash();
 	flush();
-	return 0;
 }
 
 int BC_Title::calculate_w(BC_WindowBase *gui, const char *text, int font)
@@ -173,8 +168,6 @@ int BC_Title::calculate_h(BC_WindowBase *gui, const char *text, int font)
 	get_size(gui, font, text, 0, temp_w, temp_h);
 	return temp_h;
 }
-
-
 
 void BC_Title::get_size(BC_WindowBase *gui, int font, const char *text, int fixed_w, int &w, int &h)
 {

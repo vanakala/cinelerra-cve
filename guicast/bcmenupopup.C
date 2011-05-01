@@ -93,14 +93,13 @@ void BC_MenuPopup::initialize(BC_WindowBase *top_level,
 	}
 }
 
-int BC_MenuPopup::add_item(BC_MenuItem *item)
+void BC_MenuPopup::add_item(BC_MenuItem *item)
 {
 	menu_items.append(item);
 	item->initialize(top_level, menu_bar, this);
-	return 0;
 }
 
-int BC_MenuPopup::remove_item(BC_MenuItem *item)
+void BC_MenuPopup::remove_item(BC_MenuItem *item)
 {
 	if(!item)
 	{
@@ -108,7 +107,6 @@ int BC_MenuPopup::remove_item(BC_MenuItem *item)
 		delete item;
 	}
 	if(item) menu_items.remove(item);
-	return 0;
 }
 
 int BC_MenuPopup::total_menuitems()
@@ -173,7 +171,7 @@ int BC_MenuPopup::dispatch_motion_event()
 	return result;
 }
 
-int BC_MenuPopup::dispatch_translation_event()
+void BC_MenuPopup::dispatch_translation_event()
 {
 	if(popup)
 	{
@@ -186,11 +184,6 @@ int BC_MenuPopup::dispatch_translation_event()
 			top_level->prev_y -
 			top_level->get_resources()->get_top_border());
 
-// printf("BC_MenuPopup::dispatch_translation_event %d %d %d %d\n", 
-// top_level->prev_x, 
-// top_level->last_translate_x, 
-// top_level->prev_y, 
-// top_level->last_translate_y);
 		popup->reposition_window(new_x, new_y, popup->get_w(), popup->get_h());
 		top_level->flush();
 		this->x = new_x;
@@ -201,26 +194,21 @@ int BC_MenuPopup::dispatch_translation_event()
 			menu_items.values[i]->dispatch_translation_event();
 		}
 	}
-	return 0;
 }
 
-
-int BC_MenuPopup::dispatch_cursor_leave()
+void BC_MenuPopup::dispatch_cursor_leave()
 {
-	int result = 0;
-	
 	if(popup)
 	{
 		for(int i = 0; i < menu_items.total; i++)
 		{
-			result |= menu_items.values[i]->dispatch_cursor_leave();
+			menu_items.values[i]->dispatch_cursor_leave();
 		}
-		if(result) draw_items();
+		draw_items();
 	}
-	return 0;
 }
 
-int BC_MenuPopup::activate_menu(int x, 
+void BC_MenuPopup::activate_menu(int x, 
 	int y, 
 	int w, 
 	int h, 
@@ -296,34 +284,29 @@ int BC_MenuPopup::activate_menu(int x,
 					top_level->get_resources()->menu_up,
 					1,
 					0);
-//		popup->set_background(top_level->get_resources()->menu_bg);
 	}
 	draw_items();
 	popup->show_window();
-	return 0;
 }
 
-int BC_MenuPopup::deactivate_submenus(BC_MenuPopup *exclude)
+void BC_MenuPopup::deactivate_submenus(BC_MenuPopup *exclude)
 {
 	for(int i = 0; i < menu_items.total; i++)
 	{
 		menu_items.values[i]->deactivate_submenus(exclude);
 	}
-	return 0;
 }
 
-int BC_MenuPopup::deactivate_menu()
+void BC_MenuPopup::deactivate_menu()
 {
 	deactivate_submenus(0);
 
 	if(popup) delete popup;
 	popup = 0;
 	active = 0;
-
-	return 0;
 }
 
-int BC_MenuPopup::draw_items()
+void BC_MenuPopup::draw_items()
 {
 	if(menu_bar)
 		popup->draw_top_tiles(menu_bar, 0, 0, w, h);
@@ -352,12 +335,9 @@ int BC_MenuPopup::draw_items()
 		menu_items.values[i]->draw();
 	}
 	popup->flash();
-
-
-	return 0;
 }
 
-int BC_MenuPopup::get_dimensions()
+void BC_MenuPopup::get_dimensions()
 {
 	int widest_text = 10, widest_key = 10;
 	int text_w, key_w;
@@ -392,7 +372,6 @@ int BC_MenuPopup::get_dimensions()
 	key_x = widest_text + 5;
 // pad for border
 	h += 2;
-	return 0;
 }
 
 int BC_MenuPopup::get_key_x()
@@ -411,9 +390,6 @@ int BC_MenuPopup::get_w()
 }
 
 
-
-
-
 // ================================= Sub Menu ==================================
 
 BC_SubMenu::BC_SubMenu() : BC_MenuPopup()
@@ -424,9 +400,7 @@ BC_SubMenu::~BC_SubMenu()
 {
 }
 
-int BC_SubMenu::add_submenuitem(BC_MenuItem *item)
+void BC_SubMenu::add_submenuitem(BC_MenuItem *item)
 {
 	add_item(item);
-	return 0;
 }
-

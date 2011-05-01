@@ -100,7 +100,7 @@ public:
 	~ZoomBlurWindow();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 	ZoomBlurSize *x, *y, *radius, *steps;
 	ZoomBlurToggle *r, *g, *b, *a;
@@ -294,11 +294,9 @@ int ZoomBlurWindow::create_objects()
 	return 0;
 }
 
-int ZoomBlurWindow::close_event()
+void ZoomBlurWindow::close_event()
 {
-// Set result to 1 to indicate a plugin side close
 	set_done(1);
-	return 1;
 }
 
 

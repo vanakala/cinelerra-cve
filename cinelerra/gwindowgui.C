@@ -160,14 +160,13 @@ void GWindowGUI::update_toggles(int use_lock)
 	if(use_lock) unlock_window();
 }
 
-int GWindowGUI::translation_event()
+void GWindowGUI::translation_event()
 {
 	mwindow->session->gwindow_x = get_x();
 	mwindow->session->gwindow_y = get_y();
-	return 0;
 }
 
-int GWindowGUI::close_event()
+void GWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_gwindow = 0;
@@ -177,7 +176,6 @@ int GWindowGUI::close_event()
 	mwindow->gui->unlock_window();
 
 	mwindow->save_defaults();
-	return 1;
 }
 
 int GWindowGUI::keypress_event()

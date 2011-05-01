@@ -1843,10 +1843,9 @@ int OGGConfigAudio::create_objects()
 	return 0;
 }
 
-int OGGConfigAudio::close_event()
+void OGGConfigAudio::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 OGGVorbisFixedBitrate::OGGVorbisFixedBitrate(int x, int y, OGGConfigAudio *gui)
@@ -1981,10 +1980,9 @@ int OGGConfigVideo::create_objects()
 }
 
 
-int OGGConfigVideo::close_event()
+void OGGConfigVideo::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 OGGTheoraBitrate::OGGTheoraBitrate(int x, int y, OGGConfigVideo *gui)

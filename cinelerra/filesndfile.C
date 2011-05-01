@@ -410,10 +410,9 @@ int SndFileConfig::create_objects()
 	return 0;
 }
 
-int SndFileConfig::close_event()
+void SndFileConfig::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

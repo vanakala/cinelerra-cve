@@ -237,7 +237,7 @@ CWindowToolGUI::~CWindowToolGUI()
 {
 }
 
-int CWindowToolGUI::close_event()
+void CWindowToolGUI::close_event()
 {
 	hide_window();
 	flush();
@@ -247,22 +247,12 @@ int CWindowToolGUI::close_event()
 	thread->gui->composite_panel->set_operation(mwindow->edl->session->cwindow_operation);
 	thread->gui->flush();
 	thread->gui->unlock_window();
-
-	return 1;
 }
 
-int CWindowToolGUI::keypress_event()
-{
-	if(get_keypress() == 'w' || get_keypress() == 'W')
-		return close_event();
-	return 0;
-}
-
-int CWindowToolGUI::translation_event()
+void CWindowToolGUI::translation_event()
 {
 	mwindow->session->ctool_x = get_x();
 	mwindow->session->ctool_y = get_y();
-	return 0;
 }
 
 

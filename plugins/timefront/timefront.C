@@ -328,11 +328,9 @@ void TimeFrontWindow::update_shape()
 
 }
 
-int TimeFrontWindow::close_event()
+void TimeFrontWindow::close_event()
 {
-// Set result to 1 to indicate a plugin side close
 	set_done(1);
-	return 1;
 }
 
 

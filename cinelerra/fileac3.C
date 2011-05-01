@@ -275,10 +275,9 @@ void AC3ConfigAudio::create_objects()
 	flush();
 }
 
-int AC3ConfigAudio::close_event()
+void AC3ConfigAudio::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

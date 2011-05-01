@@ -76,23 +76,15 @@ BC_Pan::BC_Pan(int x,
 
 BC_Pan::~BC_Pan()
 {
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete [] values;
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete [] value_positions;
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete [] value_x;
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete [] value_y;
-//printf("BC_Pan::~BC_Pan 1\n");
 	if(popup) delete popup;
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete temp_channel;
-//printf("BC_Pan::~BC_Pan 1\n");
 	delete rotater;
 	for(int i = 0; i < PAN_IMAGES; i++)
 		if(images[i]) delete images[i];
-//printf("BC_Pan::~BC_Pan 2\n");
 }
 
 void BC_Pan::initialize()
@@ -182,7 +174,7 @@ int BC_Pan::button_release_event()
 	return 0;
 }
 
-int BC_Pan::repeat_event(int64_t duration)
+void BC_Pan::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&
@@ -192,9 +184,7 @@ int BC_Pan::repeat_event(int64_t duration)
 	{
 		show_tooltip();
 		tooltip_done = 1;
-		return 1;
 	}
-	return 0;
 }
 
 int BC_Pan::cursor_enter_event()
@@ -208,7 +198,7 @@ int BC_Pan::cursor_enter_event()
 	return 0;
 }
 
-int BC_Pan::cursor_leave_event()
+void BC_Pan::cursor_leave_event()
 {
 	if(highlighted)
 	{
@@ -216,20 +206,16 @@ int BC_Pan::cursor_leave_event()
 		hide_tooltip();
 		draw();
 	}
-	return 0;
 }
 
-
-
-int BC_Pan::deactivate()
+void BC_Pan::deactivate()
 {
 	if(popup) delete popup;
 	popup = 0;
 	active = 0;
-	return 0;
 }
 
-int BC_Pan::activate(int popup_x, int popup_y)
+void BC_Pan::activate(int popup_x, int popup_y)
 {
 	int x, y;
 	Window tempwin;
@@ -264,8 +250,7 @@ int BC_Pan::activate(int popup_x, int popup_y)
 		if (x < 0) x = 0;
 	}
 	top_level->unlock_window();
-	
-	
+
 	if (popup) delete popup;
 	popup = new BC_Popup(this, 
 				x, 
@@ -277,10 +262,9 @@ int BC_Pan::activate(int popup_x, int popup_y)
 				images[PAN_POPUP]);
 	draw_popup();
 	flush();
-	return 0;
 }
 
-int BC_Pan::update(int x, int y)
+void BC_Pan::update(int x, int y)
 {
 	if(x != stick_x ||
 		y != stick_y)
@@ -290,7 +274,6 @@ int BC_Pan::update(int x, int y)
 		stick_to_values();
 		draw();
 	}
-	return 0;
 }
 
 void BC_Pan::draw_popup()
@@ -340,7 +323,7 @@ void BC_Pan::draw_popup()
 void BC_Pan::draw()
 {
 	draw_top_background(parent_window, 0, 0, w, h);
-	
+
 	draw_pixmap(images[highlighted ? PAN_HI : PAN_UP]);
 	get_channel_positions(value_x, 
 		value_y, 
@@ -355,41 +338,29 @@ void BC_Pan::draw()
 
 	for(int i = 0; i < total_values; i++)
 	{
-// printf("BC_Pan::draw 1 %d %d %d %d\n", 
-// 	i, 
-// 	value_positions[i], 
-// 	value_x[i], 
-// 	value_y[i]);
 		x1 = (int)(value_x[i] * scale);
 		y1 = (int)(value_y[i] * scale);
-//printf("BC_Pan::draw 2 %d %d\n", x1, y1);
 		CLAMP(x1, 0, get_w() - PICON_W);
 		CLAMP(y1, 0, get_h() - PICON_H);
 		draw_pixmap(images[PAN_CHANNEL_SMALL], x1, y1);
-//		draw_box(x1, y1, PICON_W, PICON_H);
 	}
 
 // draw stick
- 	set_color(GREEN);
- 	x1 = (int)(stick_x * scale);
- 	y1 = (int)(stick_y * scale);
+	set_color(GREEN);
+	x1 = (int)(stick_x * scale);
+	y1 = (int)(stick_y * scale);
 
-//printf("BC_Pan::draw 2 %d %d\n", x1, y1);
 	CLAMP(x1, 0, get_w() - PICON_W);
 	CLAMP(y1, 0, get_h() - PICON_H);
 
 	draw_pixmap(images[PAN_STICK_SMALL], x1, y1);
-//  	x2 = x1 + PICON_W;
-//  	y2 = y1 + PICON_H;
-//  	draw_line(x1, y1, x2, y2);
-//  	draw_line(x2, y1, x1, y2);
 
 	flash();
 }
 
-int BC_Pan::stick_to_values()
+void BC_Pan::stick_to_values()
 {
-	return stick_to_values(values,
+	stick_to_values(values,
 		total_values, 
 		value_positions, 
 		stick_x, 
@@ -398,7 +369,7 @@ int BC_Pan::stick_to_values()
 		maxvalue);
 }
 
-int BC_Pan::stick_to_values(float *values,
+void BC_Pan::stick_to_values(float *values,
 		int total_values, 
 		int *value_positions, 
 		int stick_x, 
@@ -454,7 +425,6 @@ int BC_Pan::stick_to_values(float *values,
 
 	delete [] value_x;
 	delete [] value_y;
-	return 0;
 }
 
 
@@ -463,13 +433,13 @@ float BC_Pan::distance(int x1, int x2, int y1, int y2)
 	return hypot(x2 - x1, y2 - y1);
 }
 
-int BC_Pan::change_channels(int new_channels, int *value_positions)
+void BC_Pan::change_channels(int new_channels, int *value_positions)
 {
 	delete values;
 	delete this->value_positions;
 	delete value_x;
 	delete value_y;
-	
+
 	values = new float[new_channels];
 	this->value_positions = new int[new_channels];
 	value_x = new int[new_channels];
@@ -486,10 +456,9 @@ int BC_Pan::change_channels(int new_channels, int *value_positions)
 		total_values);
 	stick_to_values();
 	draw();
-	return 0;
 }
 
-int BC_Pan::get_channel_positions(int *value_x, 
+void BC_Pan::get_channel_positions(int *value_x, 
 	int *value_y, 
 	int *value_positions,
 	int virtual_r,
@@ -499,7 +468,6 @@ int BC_Pan::get_channel_positions(int *value_x,
 	{
 		rdtoxy(value_x[i], value_y[i], value_positions[i], virtual_r);
 	}
-	return 0;
 }
 
 int BC_Pan::get_total_values()
@@ -527,7 +495,7 @@ float* BC_Pan::get_values()
 	return values;
 }
 
-int BC_Pan::rdtoxy(int &x, int &y, int a, int virtual_r)
+void BC_Pan::rdtoxy(int &x, int &y, int a, int virtual_r)
 {
 	float radians = (float)a / 360 * 2 * M_PI;
 
@@ -535,7 +503,6 @@ int BC_Pan::rdtoxy(int &x, int &y, int a, int virtual_r)
 	x = (int)(cos(radians) * virtual_r);
 	x += virtual_r;
 	y = virtual_r - y;
-	return 0;
 }
 
 void BC_Pan::calculate_stick_position(int total_values, 
@@ -590,4 +557,3 @@ void BC_Pan::calculate_stick_position(int total_values,
 	}
 
 }
-

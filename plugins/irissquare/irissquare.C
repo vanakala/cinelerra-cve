@@ -97,10 +97,9 @@ IrisSquareWindow::IrisSquareWindow(IrisSquareMain *plugin, int x, int y)
 	this->plugin = plugin;
 }
 
-int IrisSquareWindow::close_event()
+void IrisSquareWindow::close_event()
 {
 	set_done(1);
-	return 1;
 }
 
 void IrisSquareWindow::create_objects()

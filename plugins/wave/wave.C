@@ -93,7 +93,7 @@ public:
 	WaveWindow(WaveEffect *plugin, int x, int y);
 	~WaveWindow();
 	void create_objects();
-	int close_event();
+	void close_event();
 	void update_mode();
 	WaveEffect *plugin;
 	WaveAmplitude *amplitude;
@@ -302,10 +302,9 @@ void WaveWindow::create_objects()
 	flush();
 }
 
-int WaveWindow::close_event()
+void WaveWindow::close_event()
 {
 	set_done(1);
-	return 1;
 }
 
 void WaveWindow::update_mode()

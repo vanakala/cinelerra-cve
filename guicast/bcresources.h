@@ -22,12 +22,7 @@
 #ifndef BCRESOURCES_H
 #define BCRESOURCES_H
 
-
-
 // Global objects for the user interface
-
-
-
 
 #include "bcdisplayinfo.inc"
 #include "bcfilebox.h"
@@ -44,7 +39,6 @@ typedef struct
 	const char *suffix;
 	int icon_type;
 } suffix_to_type_t;
-
 
 
 class BC_Resources
@@ -87,11 +81,11 @@ public:
 
 
 // beveled box colors
-	int button_light;      
+	int button_light;
 	int button_highlighted;
-	int button_down;       
-	int button_up;         
-	int button_shadow;     
+	int button_down;
+	int button_up;
+	int button_shadow;
 	int button_uphighlighted;
 
 // highlighting
@@ -223,7 +217,6 @@ public:
 // Default text color
 	int listbox_text;
 
-
 // Sliders
 	VFrame **horizontal_slider_data;
 	VFrame **vertical_slider_data;
@@ -285,7 +278,6 @@ public:
 	int directory_color;
 	int file_color;
 
-
 // fonts
 	static const char *large_font;
 	static const char *medium_font;
@@ -317,8 +309,6 @@ public:
 // This must be constitutive since applications access the private members here.
 	int use_xft;
 
-
-
 // Available display extensions
 	int use_shm;
 	static int error;
@@ -331,12 +321,12 @@ public:
 
 private:
 // Test for availability of shared memory pixmaps
-	int init_shm(BC_WindowBase *window);
+	void init_shm(BC_WindowBase *window);
 	void init_sizes(BC_WindowBase *window);
 	BC_DisplayInfo *display_info;
- 	VFrame **list_pointers[100];
- 	int list_lengths[100];
- 	int list_total;
+	VFrame **list_pointers[100];
+	int list_lengths[100];
+	int list_total;
 
 	Mutex *id_lock;
 
@@ -346,6 +336,4 @@ private:
 
 	int id;
 };
-
-
 #endif

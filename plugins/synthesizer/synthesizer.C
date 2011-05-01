@@ -613,14 +613,12 @@ int SynthWindow::create_objects()
 	return 0;
 }
 
-int SynthWindow::close_event()
+void SynthWindow::close_event()
 {
-// Set result to 1 to indicate a client side close
 	set_done(1);
-	return 1;
 }
 
-int SynthWindow::resize_event(int w, int h)
+void SynthWindow::resize_event(int w, int h)
 {
 	clear_box(0, 0, w, h);
 	subwindow->reposition_window(subwindow->get_x(), 
@@ -635,7 +633,6 @@ int SynthWindow::resize_event(int w, int h)
 	update_oscillators();
 	synth->w = w;
 	synth->h = h;
-	return 1;
 }
 
 void SynthWindow::update_gui()

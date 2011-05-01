@@ -81,26 +81,23 @@ void BC_ScrollBar::set_images(VFrame **data)
 	{
 		if(images[i]) delete images[i];
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
-//printf("BC_ScrollBar::set_images %d %p\n", i, data[i]);
 	}
 	calculate_dimensions(w, h);
 }
-
-
 
 void BC_ScrollBar::calculate_dimensions(int &w, int &h)
 {
 	switch(orientation)
 	{
-		case SCROLL_HORIZ:
-			w = pixels;
-			h = data[SCROLL_HANDLE_UP]->get_h();
-			break;
+	case SCROLL_HORIZ:
+		w = pixels;
+		h = data[SCROLL_HANDLE_UP]->get_h();
+		break;
 
-		case SCROLL_VERT:
-			w = data[SCROLL_HANDLE_UP]->get_w();
-			h = pixels;
-			break;
+	case SCROLL_VERT:
+		w = data[SCROLL_HANDLE_UP]->get_w();
+		h = pixels;
+		break;
 	}
 }
 
@@ -108,13 +105,11 @@ int BC_ScrollBar::get_span(int orientation)
 {
 	switch(orientation)
 	{
-		case SCROLL_HORIZ:
-			return BC_WindowBase::get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h();
-			break;
+	case SCROLL_HORIZ:
+		return BC_WindowBase::get_resources()->hscroll_data[SCROLL_HANDLE_UP]->get_h();
 
-		case SCROLL_VERT:
-			return BC_WindowBase::get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w();
-			break;
+	case SCROLL_VERT:
+		return BC_WindowBase::get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w();
 	}
 	return 0;
 }
@@ -123,13 +118,11 @@ int BC_ScrollBar::get_span()
 {
 	switch(orientation)
 	{
-		case SCROLL_HORIZ:
-			return data[SCROLL_HANDLE_UP]->get_h();
-			break;
+	case SCROLL_HORIZ:
+		return data[SCROLL_HANDLE_UP]->get_h();
 
-		case SCROLL_VERT:
-			return data[SCROLL_HANDLE_UP]->get_w();
-			break;
+	case SCROLL_VERT:
+		return data[SCROLL_HANDLE_UP]->get_w();
 	}
 	return 0;
 }
@@ -138,13 +131,11 @@ int BC_ScrollBar::get_arrow_pixels()
 {
 	switch(orientation)
 	{
-		case SCROLL_HORIZ:
-			return data[SCROLL_BACKARROW_UP]->get_w();
-			break;
+	case SCROLL_HORIZ:
+		return data[SCROLL_BACKARROW_UP]->get_w();
 
-		case SCROLL_VERT:
-			return data[SCROLL_BACKARROW_UP]->get_h();
-			break;
+	case SCROLL_VERT:
+		return data[SCROLL_BACKARROW_UP]->get_h();
 	}
 	return 0;
 }
@@ -157,201 +148,143 @@ void BC_ScrollBar::draw()
 
 	switch(orientation)
 	{
-		case SCROLL_HORIZ:
-
-
-//printf("BC_ScrollBar::draw 1 %d %d\n", selection_status, highlight_status == SCROLL_BACKARROW);
+	case SCROLL_HORIZ:
 // Too small to draw anything
-			if(get_w() < get_arrow_pixels() * 2 + 5)
-			{
-				draw_3segmenth(0, 
-					0, 
-					get_w(),
-					images[SCROLL_HANDLE_UP]);
-			}
-			else
-			{
-
-
-
-
+		if(get_w() < get_arrow_pixels() * 2 + 5)
+		{
+			draw_3segmenth(0,
+				0,
+				get_w(),
+				images[SCROLL_HANDLE_UP]);
+		}
+		else
+		{
 // back arrow
-//printf("BC_ScrollBar::draw 2 %p\n", images[SCROLL_BACKARROW_HI]);
-				if(selection_status == SCROLL_BACKARROW)
-					draw_pixmap(images[SCROLL_BACKARROW_DN],
-						0,
-						0);
-				else
-				if(highlight_status == SCROLL_BACKARROW)
-					draw_pixmap(images[SCROLL_BACKARROW_HI],
-						0,
-						0);
-				else
-					draw_pixmap(images[SCROLL_BACKARROW_UP],
-						0,
-						0);
-//printf("BC_ScrollBar::draw 2\n");
-
-
-
-
-
-
+			if(selection_status == SCROLL_BACKARROW)
+				draw_pixmap(images[SCROLL_BACKARROW_DN],
+					0,
+					0);
+			else
+			if(highlight_status == SCROLL_BACKARROW)
+				draw_pixmap(images[SCROLL_BACKARROW_HI],
+					0,
+					0);
+			else
+				draw_pixmap(images[SCROLL_BACKARROW_UP],
+					0,
+					0);
 // forward arrow
-				if(selection_status == SCROLL_FWDARROW)
-					draw_pixmap(images[SCROLL_FWDARROW_DN],
-						get_w() - get_arrow_pixels(),
-						0);
-				else
-				if(highlight_status == SCROLL_FWDARROW)
-					draw_pixmap(images[SCROLL_FWDARROW_HI],
-						get_w() - get_arrow_pixels(),
-						0);
-				else
-					draw_pixmap(images[SCROLL_FWDARROW_UP],
-						get_w() - get_arrow_pixels(),
-						0);
-
-
-
-
-
-//printf("BC_ScrollBar::draw 2\n");
-
+			if(selection_status == SCROLL_FWDARROW)
+				draw_pixmap(images[SCROLL_FWDARROW_DN],
+					get_w() - get_arrow_pixels(),
+					0);
+			else
+			if(highlight_status == SCROLL_FWDARROW)
+				draw_pixmap(images[SCROLL_FWDARROW_HI],
+					get_w() - get_arrow_pixels(),
+					0);
+			else
+				draw_pixmap(images[SCROLL_FWDARROW_UP],
+					get_w() - get_arrow_pixels(),
+					0);
 // handle background
-				draw_3segmenth(get_arrow_pixels(),
-					0,
-					handle_pixel - get_arrow_pixels(),
-					images[SCROLL_HANDLE_BG]);
-
+			draw_3segmenth(get_arrow_pixels(),
+				0,
+				handle_pixel - get_arrow_pixels(),
+				images[SCROLL_HANDLE_BG]);
 // handle foreground
-//printf("BC_ScrollBar::draw 2 %d %d\n", handle_pixel, handle_pixels);
-				if(selection_status == SCROLL_HANDLE)
-					draw_3segmenth(handle_pixel,
-						0,
-						handle_pixels,
-						images[SCROLL_HANDLE_DN]);
-				else
-				if(highlight_status == SCROLL_HANDLE)
-					draw_3segmenth(handle_pixel,
-						0,
-						handle_pixels,
-						images[SCROLL_HANDLE_HI]);
-				else
-					draw_3segmenth(handle_pixel,
-						0,
-						handle_pixels,
-						images[SCROLL_HANDLE_UP]);
-//printf("BC_ScrollBar::draw 2\n");
-
-// handle background
-				draw_3segmenth(handle_pixel + handle_pixels,
+			if(selection_status == SCROLL_HANDLE)
+				draw_3segmenth(handle_pixel,
 					0,
-					get_w() - get_arrow_pixels() - handle_pixel - handle_pixels,
-					images[SCROLL_HANDLE_BG]);
-//printf("BC_ScrollBar::draw 3 %d %d\n", handle_pixel, handle_pixels);
+					handle_pixels,
+					images[SCROLL_HANDLE_DN]);
+			else
+			if(highlight_status == SCROLL_HANDLE)
+				draw_3segmenth(handle_pixel,
+					0,
+					handle_pixels,
+					images[SCROLL_HANDLE_HI]);
+			else
+				draw_3segmenth(handle_pixel,
+					0,
+					handle_pixels,
+					images[SCROLL_HANDLE_UP]);
+// handle background
+			draw_3segmenth(handle_pixel + handle_pixels,
+				0,
+				get_w() - get_arrow_pixels() - handle_pixel - handle_pixels,
+				images[SCROLL_HANDLE_BG]);
 			}
 			break;
 
-
-
-
-
-
-
-
-		case SCROLL_VERT:
+	case SCROLL_VERT:
 // Too small to draw anything
-			if(get_h() < get_arrow_pixels() * 2 + 5)
-			{
-				draw_3segmentv(0, 
-					0, 
-					get_w(),
-					images[SCROLL_HANDLE_UP]);
-			}
-			else
-			{
-
-
-
-
+		if(get_h() < get_arrow_pixels() * 2 + 5)
+		{
+			draw_3segmentv(0,
+				0,
+				get_w(),
+				images[SCROLL_HANDLE_UP]);
+		}
+		else
+		{
 // back arrow
-//printf("BC_ScrollBar::draw 2 %p\n", images[SCROLL_BACKARROW_HI]);
-				if(selection_status == SCROLL_BACKARROW)
-					draw_pixmap(images[SCROLL_BACKARROW_DN],
-						0,
-						0);
-				else
-				if(highlight_status == SCROLL_BACKARROW)
-					draw_pixmap(images[SCROLL_BACKARROW_HI],
-						0,
-						0);
-				else
-					draw_pixmap(images[SCROLL_BACKARROW_UP],
-						0,
-						0);
-//printf("BC_ScrollBar::draw 2\n");
-
-
-
-
-
-
+			if(selection_status == SCROLL_BACKARROW)
+				draw_pixmap(images[SCROLL_BACKARROW_DN],
+					0,
+					0);
+			else
+			if(highlight_status == SCROLL_BACKARROW)
+				draw_pixmap(images[SCROLL_BACKARROW_HI],
+					0,
+					0);
+			else
+				draw_pixmap(images[SCROLL_BACKARROW_UP],
+					0,
+					0);
 // forward arrow
-				if(selection_status == SCROLL_FWDARROW)
-					draw_pixmap(images[SCROLL_FWDARROW_DN],
-						0,
-						get_h() - get_arrow_pixels());
-				else
-				if(highlight_status == SCROLL_FWDARROW)
-					draw_pixmap(images[SCROLL_FWDARROW_HI],
-						0,
-						get_h() - get_arrow_pixels());
-				else
-					draw_pixmap(images[SCROLL_FWDARROW_UP],
-						0,
-						get_h() - get_arrow_pixels());
-
-
-
-
-
-//printf("BC_ScrollBar::draw 2\n");
-
+			if(selection_status == SCROLL_FWDARROW)
+				draw_pixmap(images[SCROLL_FWDARROW_DN],
+					0,
+					get_h() - get_arrow_pixels());
+			else
+			if(highlight_status == SCROLL_FWDARROW)
+				draw_pixmap(images[SCROLL_FWDARROW_HI],
+					0,
+					get_h() - get_arrow_pixels());
+			else
+				draw_pixmap(images[SCROLL_FWDARROW_UP],
+					0,
+					get_h() - get_arrow_pixels());
 // handle background
-				draw_3segmentv(0,
-					get_arrow_pixels(),
-					handle_pixel - get_arrow_pixels(),
-					images[SCROLL_HANDLE_BG]);
-
+			draw_3segmentv(0,
+				get_arrow_pixels(),
+				handle_pixel - get_arrow_pixels(),
+				images[SCROLL_HANDLE_BG]);
 // handle foreground
-//printf("BC_ScrollBar::draw 2 %d %d\n", handle_pixel, handle_pixels);
-				if(selection_status == SCROLL_HANDLE)
-					draw_3segmentv(0,
-						handle_pixel,
-						handle_pixels,
-						images[SCROLL_HANDLE_DN]);
-				else
-				if(highlight_status == SCROLL_HANDLE)
-					draw_3segmentv(0,
-						handle_pixel,
-						handle_pixels,
-						images[SCROLL_HANDLE_HI]);
-				else
-					draw_3segmentv(0,
-						handle_pixel,
-						handle_pixels,
-						images[SCROLL_HANDLE_UP]);
-//printf("BC_ScrollBar::draw 2\n");
-
-// handle background
+			if(selection_status == SCROLL_HANDLE)
 				draw_3segmentv(0,
-					handle_pixel + handle_pixels,
-					get_h() - get_arrow_pixels() - handle_pixel - handle_pixels,
-					images[SCROLL_HANDLE_BG]);
-//printf("BC_ScrollBar::draw 3 %d %d\n", handle_pixel, handle_pixels);
-			}
-			break;
+					handle_pixel,
+					handle_pixels,
+					images[SCROLL_HANDLE_DN]);
+			else
+			if(highlight_status == SCROLL_HANDLE)
+				draw_3segmentv(0,
+					handle_pixel,
+					handle_pixels,
+					images[SCROLL_HANDLE_HI]);
+			else
+				draw_3segmentv(0,
+					handle_pixel,
+					handle_pixels,
+					images[SCROLL_HANDLE_UP]);
+// handle background
+			draw_3segmentv(0,
+				handle_pixel + handle_pixels,
+				get_h() - get_arrow_pixels() - handle_pixel - handle_pixels,
+				images[SCROLL_HANDLE_BG]);
+		}
+		break;
 	}
 	flash();
 }
@@ -403,11 +336,6 @@ void BC_ScrollBar::get_handle_dimensions()
 
 	CLAMP(handle_pixel, get_arrow_pixels(), (int)(pixels - get_arrow_pixels()));
 	CLAMP(handle_pixels, 0, total_pixels);
-
-// printf("BC_ScrollBar::get_handle_dimensions %d %d %d\n", 
-// total_pixels, 
-// handle_pixel,
-// handle_pixels);
 }
 
 int BC_ScrollBar::cursor_enter_event()
@@ -425,14 +353,13 @@ int BC_ScrollBar::cursor_enter_event()
 	return 0;
 }
 
-int BC_ScrollBar::cursor_leave_event()
+void BC_ScrollBar::cursor_leave_event()
 {
 	if(highlight_status)
 	{
 		highlight_status = 0;
 		draw();
 	}
-	return 0;
 }
 
 int BC_ScrollBar::cursor_motion_event()
@@ -452,14 +379,12 @@ int BC_ScrollBar::cursor_motion_event()
 		else
 		if(selection_status == SCROLL_HANDLE)
 		{
-//printf("BC_ScrollBar::cursor_motion_event 1\n");
 			double total_pixels = pixels - get_arrow_pixels() * 2;
 			int64_t cursor_pixel = (orientation == SCROLL_HORIZ) ? 
 				top_level->cursor_x : 
 				top_level->cursor_y;
 			int64_t new_position = (int64_t)((double)(cursor_pixel - min_pixel) / 
 				total_pixels * length);
-//printf("BC_ScrollBar::cursor_motion_event 2\n");
 
 			if(new_position > length - handlelength) 
 				new_position = length - handlelength;
@@ -467,11 +392,9 @@ int BC_ScrollBar::cursor_motion_event()
 
 			if(new_position != position)
 			{
-//printf("BC_ScrollBar::cursor_motion_event 3\n");
 				position = new_position;
 				draw();
 				handle_event();
-//printf("BC_ScrollBar::cursor_motion_event 4\n");
 			}
 		}
 		return 1;
@@ -526,28 +449,28 @@ int BC_ScrollBar::button_press_event()
 	return 0;
 }
 
-int BC_ScrollBar::repeat_event(int64_t duration)
+void BC_ScrollBar::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->scroll_repeat && 
 		selection_status)
 	{
 		repeat_count++;
-		if(repeat_count == 2) return 0;
+		if(repeat_count == 2) return;
 		int64_t new_position = position;
 		switch(selection_status)
 		{
-			case SCROLL_BACKPAGE:
-				new_position -= handlelength;
-				break;
-			case SCROLL_FWDPAGE:
-				new_position += handlelength;
-				break;
-			case SCROLL_BACKARROW:
-				new_position -= handlelength / 10;
-				break;
-			case SCROLL_FWDARROW:
-				new_position += handlelength / 10;
-				break;
+		case SCROLL_BACKPAGE:
+			new_position -= handlelength;
+			break;
+		case SCROLL_FWDPAGE:
+			new_position += handlelength;
+			break;
+		case SCROLL_BACKARROW:
+			new_position -= handlelength / 10;
+			break;
+		case SCROLL_FWDARROW:
+			new_position += handlelength / 10;
+			break;
 		}
 
 		if(new_position > length - handlelength) new_position = length - handlelength;
@@ -558,14 +481,11 @@ int BC_ScrollBar::repeat_event(int64_t duration)
 			draw();
 			handle_event();
 		}
-		return 1;
 	}
-	return 0;
 }
 
 int BC_ScrollBar::button_release_event()
 {
-//printf("BC_ScrollBar::button_release_event %d\n", selection_status);
 	if(selection_status)
 	{
 		if(selection_status != SCROLL_HANDLE)
@@ -587,8 +507,6 @@ int BC_ScrollBar::get_cursor_zone(int cursor_x, int cursor_y)
 		cursor_x ^= cursor_y;
 	}
 
-
-
 	if(cursor_x >= pixels - get_arrow_pixels())
 		return SCROLL_FWDARROW;
 	else
@@ -605,17 +523,12 @@ int BC_ScrollBar::get_cursor_zone(int cursor_x, int cursor_y)
 	else
 		return SCROLL_BACKARROW;
 
-
-
-
 	return 0;
 }
 
-int BC_ScrollBar::activate()
+void BC_ScrollBar::activate()
 {
 	top_level->active_subwindow = this;
-//printf("BC_ScrollBar::activate %p %p\n", top_level->active_subwindow, this);
-	return 0;
 }
 
 int64_t BC_ScrollBar::get_value()
@@ -648,23 +561,21 @@ int64_t BC_ScrollBar::get_handlelength()
 	return handlelength;
 }
 
-int BC_ScrollBar::update_value(int64_t value)
+void BC_ScrollBar::update_value(int64_t value)
 {
 	this->position = value;
 	draw();
-	return 0;
 }
 
-int BC_ScrollBar::update_length(int64_t length, int64_t position, int64_t handlelength)
+void BC_ScrollBar::update_length(int64_t length, int64_t position, int64_t handlelength)
 {
 	this->length = length;
 	this->position = position;
 	this->handlelength = handlelength;
 	draw();
-	return 0;
 }
 
-int BC_ScrollBar::reposition_window(int x, int y, int pixels)
+void BC_ScrollBar::reposition_window(int x, int y, int pixels)
 {
 	if(x != get_x() || y != get_y() || pixels != this->pixels)
 	{
@@ -674,6 +585,4 @@ int BC_ScrollBar::reposition_window(int x, int y, int pixels)
 		BC_WindowBase::reposition_window(x, y, new_w, new_h);
 	}
 	draw();
-	return 0;
 }
-

@@ -35,11 +35,6 @@
 #include <sys/stat.h>
 
 
-
-
-
-
-
 BC_FileBoxRecent::BC_FileBoxRecent(BC_FileBox *filebox, int x, int y)
  : BC_ListBox(x, 
 	y, 
@@ -68,30 +63,21 @@ int BC_FileBoxRecent::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
 BC_FileBoxListBox::BC_FileBoxListBox(int x, int y, BC_FileBox *filebox)
  : BC_ListBox(x, 
- 			y, 
- 			filebox->get_listbox_w(), 
-			filebox->get_listbox_h(y), 
- 			filebox->get_display_mode(), 
- 			filebox->list_column, 
-			filebox->column_titles,
-			filebox->column_width,
-			filebox->columns,
-			0,
-			0,
-			filebox->select_multiple ? LISTBOX_MULTIPLE : LISTBOX_SINGLE,
-			ICON_LEFT,
-			0)
+		y,
+		filebox->get_listbox_w(),
+		filebox->get_listbox_h(y),
+		filebox->get_display_mode(),
+		filebox->list_column,
+		filebox->column_titles,
+		filebox->column_width,
+		filebox->columns,
+		0,
+		0,
+		filebox->select_multiple ? LISTBOX_MULTIPLE : LISTBOX_SINGLE,
+		ICON_LEFT,
+		0)
 { 
 	this->filebox = filebox;
 	set_sort_column(filebox->sort_column);
@@ -109,7 +95,7 @@ int BC_FileBoxListBox::handle_event()
 	return 1;
 }
 
-int BC_FileBoxListBox::selection_changed()
+void BC_FileBoxListBox::selection_changed()
 {
 	BC_ListBoxItem *item = get_selection(
 		filebox->column_of_type(FILEBOX_NAME), 0);
@@ -125,7 +111,6 @@ int BC_FileBoxListBox::selection_changed()
 		strcpy(filebox->current_path, path);
 		strcpy(filebox->submitted_path, path);
 	}
-	return 1;
 }
 
 int BC_FileBoxListBox::column_resize_event()
@@ -160,8 +145,6 @@ int BC_FileBoxListBox::evaluate_query(int list_item, char *string)
 }
 
 
-
-
 BC_FileBoxTextBox::BC_FileBoxTextBox(int x, int y, BC_FileBox *filebox)
  : BC_TextBox(x, y, filebox->get_w() - 50, 1, filebox->filename)
 {
@@ -174,11 +157,8 @@ BC_FileBoxTextBox::~BC_FileBoxTextBox()
 
 int BC_FileBoxTextBox::handle_event()
 {
-//	filebox->handle_event();
 	return 1;
 }
-
-
 
 
 BC_FileBoxDirectoryText::BC_FileBoxDirectoryText(int x, int y, BC_FileBox *filebox)
@@ -202,9 +182,6 @@ int BC_FileBoxDirectoryText::handle_event()
 }
 
 
-
-
-
 BC_FileBoxFilterText::BC_FileBoxFilterText(int x, int y, BC_FileBox *filebox)
  : BC_TextBox(x, y, filebox->get_w() - 50, 1, filebox->get_resources()->filebox_filter)
 {
@@ -222,7 +199,7 @@ int BC_FileBoxFilterText::handle_event()
 
 BC_FileBoxFilterMenu::BC_FileBoxFilterMenu(int x, int y, BC_FileBox *filebox)
  : BC_ListBox(x, 
- 	y, 
+	y, 
 	filebox->get_w() - 30, 
 	120, 
 	LISTBOX_TEXT, 
@@ -247,14 +224,6 @@ int BC_FileBoxFilterMenu::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
 BC_FileBoxCancel::BC_FileBoxCancel(BC_FileBox *filebox)
  : BC_CancelButton(filebox)
 {
@@ -268,22 +237,16 @@ BC_FileBoxCancel::~BC_FileBoxCancel()
 
 int BC_FileBoxCancel::handle_event()
 {
-//	filebox->submit_file(filebox->textbox->get_text());
 	filebox->newfolder_thread->interrupt();
 	filebox->set_done(1);
 	return 1;
 }
 
 
-
-
-
-
-
 BC_FileBoxUseThis::BC_FileBoxUseThis(BC_FileBox *filebox)
  : BC_Button(filebox->get_w() / 2 - 
- 		BC_WindowBase::get_resources()->usethis_button_images[0]->get_w() / 2, 
- 	filebox->ok_button->get_y(), 
+		BC_WindowBase::get_resources()->usethis_button_images[0]->get_w() / 2, 
+	filebox->ok_button->get_y(), 
 	BC_WindowBase::get_resources()->usethis_button_images)
 {
 	this->filebox = filebox; 
@@ -301,12 +264,9 @@ int BC_FileBoxUseThis::handle_event()
 }
 
 
-
-
-
 BC_FileBoxOK::BC_FileBoxOK(BC_FileBox *filebox)
  : BC_OKButton(filebox, 
- 	!filebox->want_directory ? 
+	!filebox->want_directory ? 
 		BC_WindowBase::get_resources()->ok_images :
 		BC_WindowBase::get_resources()->filebox_descend_images)
 {
@@ -328,16 +288,13 @@ int BC_FileBoxOK::handle_event()
 }
 
 
-
-
-
-
 BC_FileBoxText::BC_FileBoxText(int x, int y, BC_FileBox *filebox)
  : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_text_images)
 {
 	this->filebox = filebox; 
 	set_tooltip(_("Display text"));
 }
+
 int BC_FileBoxText::handle_event()
 {
 	filebox->create_listbox(filebox->listbox->get_x(), filebox->listbox->get_y(), LISTBOX_TEXT);
@@ -370,12 +327,14 @@ int BC_FileBoxNewfolder::handle_event()
 	return 1;
 }
 
+
 BC_FileBoxUpdir::BC_FileBoxUpdir(int x, int y, BC_FileBox *filebox)
  : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_updir_images)
 {
 	this->filebox = filebox; 
 	set_tooltip(_("Up a directory"));
 }
+
 int BC_FileBoxUpdir::handle_event()
 {
 // Need a temp so submit_file can expand it
@@ -390,11 +349,13 @@ BC_FileBoxDelete::BC_FileBoxDelete(int x, int y, BC_FileBox *filebox)
 	this->filebox = filebox; 
 	set_tooltip(_("Delete files"));
 }
+
 int BC_FileBoxDelete::handle_event()
 {
 	filebox->delete_thread->start();
 	return 1;
 }
+
 
 BC_FileBoxReload::BC_FileBoxReload(int x, int y, BC_FileBox *filebox)
  : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_reload_images)
@@ -409,14 +370,6 @@ int BC_FileBoxReload::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
 BC_FileBox::BC_FileBox(int x, 
 		int y, 
 		const char *init_path,
@@ -427,9 +380,9 @@ BC_FileBox::BC_FileBox(int x,
 		int multiple_files,
 		int h_padding)
  : BC_Window(title, 
- 	x,
+	x,
 	y,
- 	BC_WindowBase::get_resources()->filebox_w, 
+	BC_WindowBase::get_resources()->filebox_w, 
 	BC_WindowBase::get_resources()->filebox_h, 
 	10, 
 	10,
@@ -438,16 +391,7 @@ BC_FileBox::BC_FileBox(int x,
 	1)
 {
 	fs = new FileSystem;
-// 	if(want_directory)
-// 	{
-// 		fs->set_want_directory();
-// 		columns = DIRBOX_COLUMNS;
-// 		columns = FILEBOX_COLUMNS;
-// 	}
-// 	else
-	{
-		columns = FILEBOX_COLUMNS;
-	}
+	columns = FILEBOX_COLUMNS;
 
 	list_column = new ArrayList<BC_ListBoxItem*>[columns];
 	column_type = new int[columns];
@@ -468,31 +412,14 @@ BC_FileBox::BC_FileBox(int x,
 	fs->extract_dir(directory, this->current_path);
 	fs->extract_name(filename, this->current_path);
 
-
-// 	if(want_directory)
-// 	{
-// 		for(int i = 0; i < columns; i++)
-// 		{
-// 			column_type[i] = get_resources()->dirbox_columntype[i];
-// 			column_width[i] = get_resources()->dirbox_columnwidth[i];
-// 			column_titles[i] = BC_FileBox::columntype_to_text(column_type[i]);
-// 		}
-// 		sort_column = get_resources()->dirbox_sortcolumn;
-// 		sort_order = get_resources()->dirbox_sortorder;
-// 	}
-// 	else
+	for(int i = 0; i < columns; i++)
 	{
-		for(int i = 0; i < columns; i++)
-		{
-			column_type[i] = get_resources()->filebox_columntype[i];
-			column_width[i] = get_resources()->filebox_columnwidth[i];
-			column_titles[i] = BC_FileBox::columntype_to_text(column_type[i]);
-		}
-		sort_column = get_resources()->filebox_sortcolumn;
-		sort_order = get_resources()->filebox_sortorder;
+		column_type[i] = get_resources()->filebox_columntype[i];
+		column_width[i] = get_resources()->filebox_columnwidth[i];
+		column_titles[i] = BC_FileBox::columntype_to_text(column_type[i]);
 	}
-
-
+	sort_column = get_resources()->filebox_sortcolumn;
+	sort_order = get_resources()->filebox_sortorder;
 
 // Test directory
 	if(fs->update(directory))
@@ -503,7 +430,6 @@ BC_FileBox::BC_FileBox(int x,
 		strcpy(directory, fs->get_current_dir());
 		sprintf(filename, "");
 	}
-
 
 	if(h_padding == -1)
 	{
@@ -603,7 +529,6 @@ int BC_FileBox::create_objects()
 	add_subwindow(textbox = new BC_FileBoxTextBox(x, y, this));
 	y += textbox->get_h() + 10;
 
-
 	if(!want_directory)
 	{
 		add_subwindow(filter_text = new BC_FileBoxFilterText(x, y, this));
@@ -612,9 +537,9 @@ int BC_FileBox::create_objects()
 	}
 
 // listbox has to be active because refresh might be called from newfolder_thread
- 	listbox->activate();
+	listbox->activate();
 	newfolder_thread = new BC_NewFolderThread(this);
-	
+
 	show_window();
 	return 0;
 }
@@ -637,7 +562,7 @@ int BC_FileBox::get_listbox_h(int y)
 	return result;
 }
 
-int BC_FileBox::create_icons()
+void BC_FileBox::create_icons()
 {
 	for(int i = 0; i < TOTAL_ICONS; i++)
 	{
@@ -645,27 +570,19 @@ int BC_FileBox::create_icons()
 			BC_WindowBase::get_resources()->type_to_icon[i],
 			PIXMAP_ALPHA);
 	}
-	return 0;
 }
 
-int BC_FileBox::resize_event(int w, int h)
+void BC_FileBox::resize_event(int w, int h)
 {
 	draw_background(0, 0, w, h);
 	flash();
 
-// OK button handles resize event itself
-// 	ok_button->reposition_window(ok_button->get_x(), 
-// 		h - (get_h() - ok_button->get_y()));
-// 	cancel_button->reposition_window(w - (get_w() - cancel_button->get_x()), 
-// 		h - (get_h() - cancel_button->get_y()));
 	if(usethis_button)
 		usethis_button->reposition_window(w / 2 - 50, h - (get_h() - usethis_button->get_y()));
-
 
 	if(filter_popup) filter_popup->reposition_window(w - (get_w() - filter_popup->get_x()), 
 		h - (get_h() - filter_popup->get_y()),
 		w - 30);
-
 
 	if(filter_text) filter_text->reposition_window(filter_text->get_x(), 
 		h - (get_h() - filter_text->get_y()),
@@ -705,7 +622,6 @@ int BC_FileBox::resize_event(int w, int h)
 	set_h(h);
 	get_resources()->filebox_w = get_w();
 	get_resources()->filebox_h = get_h();
-	return 1;
 }
 
 int BC_FileBox::keypress_event()
@@ -715,15 +631,8 @@ int BC_FileBox::keypress_event()
 		case 'w':
 			if(ctrl_down()) set_done(1);
 			return 1;
-			break;
 	}
 	return 0;
-}
-
-int BC_FileBox::close_event()
-{
-	set_done(1);
-	return 1;
 }
 
 int BC_FileBox::handle_event()
@@ -731,24 +640,21 @@ int BC_FileBox::handle_event()
 	return 0;
 }
 
-int BC_FileBox::extract_extension(char *out, const char *in)
+void BC_FileBox::extract_extension(char *out, const char *in)
 {
 	int i;
 
-	for(i = strlen(in)-1; i > 0 && in[i] != '.'; i--)
-	  {
-	    ;
-	  }
-	if(in[i] == '.') {
-	  i++;
-	  strcpy(out, &in[i]);
+	for(i = strlen(in)-1; i > 0 && in[i] != '.'; i--);
+	if(in[i] == '.')
+	{
+		i++;
+		strcpy(out, &in[i]);
 	}
 	else
-	  out[0] = '\0';
-	return 0;
+		out[0] = '\0';
 }
 
-int BC_FileBox::create_tables()
+void BC_FileBox::create_tables()
 {
 	delete_tables();
 	char string[BCTEXTLEN];
@@ -771,22 +677,18 @@ int BC_FileBox::create_tables()
 			is_dir ? get_resources()->directory_color : get_resources()->file_color);
 		if(is_dir) new_item->set_searchable(0);
 		list_column[column_of_type(FILEBOX_NAME)].append(new_item);
-	
-// Size entry
-// 		if(!want_directory)
-// 		{
-			if(!is_dir)
-			{
-				sprintf(string, "%lld", file_item->size);
-				new_item = new BC_ListBoxItem(string, get_resources()->file_color);
-			}
-			else
-			{
-				new_item = new BC_ListBoxItem("", get_resources()->directory_color);
-			}
 
-	 		list_column[column_of_type(FILEBOX_SIZE)].append(new_item);
-//		}
+		if(!is_dir)
+		{
+			sprintf(string, "%lld", file_item->size);
+			new_item = new BC_ListBoxItem(string, get_resources()->file_color);
+		}
+		else
+		{
+			new_item = new BC_ListBoxItem("", get_resources()->directory_color);
+		}
+
+		list_column[column_of_type(FILEBOX_SIZE)].append(new_item);
 
 // Date entry
 		if(!is_dir || 1)
@@ -822,31 +724,25 @@ int BC_FileBox::create_tables()
 		list_column[column_of_type(FILEBOX_DATE)].append(new_item);
 
 // Extension entry
-//		if(!want_directory)
-//		{
-			if(!is_dir)
-			{
-				extract_extension(string, file_item->name);
-				new_item = new BC_ListBoxItem(string, get_resources()->file_color);
-			}
-			else
-			{
-				new_item = new BC_ListBoxItem("", get_resources()->directory_color);
-			}
-			list_column[column_of_type(FILEBOX_EXTENSION)].append(new_item);
-//		}
+		if(!is_dir)
+		{
+			extract_extension(string, file_item->name);
+			new_item = new BC_ListBoxItem(string, get_resources()->file_color);
+		}
+		else
+		{
+			new_item = new BC_ListBoxItem("", get_resources()->directory_color);
+		}
+		list_column[column_of_type(FILEBOX_EXTENSION)].append(new_item);
 	}
-
-	return 0;
 }
 
-int BC_FileBox::delete_tables()
+void BC_FileBox::delete_tables()
 {
 	for(int j = 0; j < columns; j++)
 	{
 		list_column[j].remove_all_objects();
 	}
-	return 0;
 }
 
 BC_Pixmap* BC_FileBox::get_icon(char *path, int is_dir)
@@ -879,18 +775,17 @@ const char* BC_FileBox::columntype_to_text(int type)
 {
 	switch(type)
 	{
-		case FILEBOX_NAME:
-			return FILEBOX_NAME_TEXT;
-			break;
-		case FILEBOX_SIZE:
-			return FILEBOX_SIZE_TEXT;
-			break;
-		case FILEBOX_DATE:
-			return FILEBOX_DATE_TEXT;
-			break;
-		case FILEBOX_EXTENSION:
-			return FILEBOX_EXTENSION_TEXT;
-			break; 
+	case FILEBOX_NAME:
+		return FILEBOX_NAME_TEXT;
+
+	case FILEBOX_SIZE:
+		return FILEBOX_SIZE_TEXT;
+
+	case FILEBOX_DATE:
+		return FILEBOX_DATE_TEXT;
+
+	case FILEBOX_EXTENSION:
+		return FILEBOX_EXTENSION_TEXT;
 	}
 	return "";
 }
@@ -903,8 +798,7 @@ int BC_FileBox::column_of_type(int type)
 }
 
 
-
-int BC_FileBox::refresh()
+void BC_FileBox::refresh()
 {
 	create_tables();
 	listbox->set_master_column(column_of_type(FILEBOX_NAME), 0);
@@ -916,18 +810,14 @@ int BC_FileBox::refresh()
 		0,
 		-1, 
 		1);
-
-	return 0;
 }
 
-int BC_FileBox::update_filter(const char *filter)
+void BC_FileBox::update_filter(const char *filter)
 {
 	fs->set_filter(filter);
 	fs->update(0);
 	refresh();
 	strcpy(get_resources()->filebox_filter, filter);
-
-	return 0;
 }
 
 
@@ -982,13 +872,12 @@ void BC_FileBox::move_column(int src, int dst)
 		get_resources()->filebox_columnwidth[i] = column_width[i];
 		column_titles[i] = BC_FileBox::columntype_to_text(column_type[i]);
 	}
-	
 
 	refresh();
 }
 
 
-int BC_FileBox::submit_dir(char *dir)
+void BC_FileBox::submit_dir(char *dir)
 {
 	strcpy(directory, dir);
 	fs->join_names(current_path, directory, filename);
@@ -1001,7 +890,6 @@ int BC_FileBox::submit_dir(char *dir)
 	else
 		textbox->update(filename);
 	listbox->reset_query();
-	return 0;
 }
 
 int BC_FileBox::submit_file(char *path, int use_this)
@@ -1043,7 +931,7 @@ int BC_FileBox::submit_file(char *path, int use_this)
 // Is a file or desired directory.  Quit the operation.
 	{
 // save directory for defaults
-		fs->extract_dir(directory, path);     
+		fs->extract_dir(directory, path);
 
 // Just take the directory
 		if(want_directory)
@@ -1125,7 +1013,6 @@ void BC_FileBox::create_history()
 	}
 }
 
-
 int BC_FileBox::get_display_mode()
 {
 	return top_level->get_resources()->filebox_mode;
@@ -1170,7 +1057,6 @@ char* BC_FileBox::get_submitted_path()
 
 char* BC_FileBox::get_current_path()
 {
-//printf("BC_FileBox::get_current_path 1 %s\n", current_path);
 	return current_path;
 }
 
@@ -1178,6 +1064,7 @@ char* BC_FileBox::get_newfolder_title()
 {
 	char *letter2 = strchr(title, ':');
 	new_folder_title[0] = 0;
+
 	if(letter2)
 	{
 		memcpy(new_folder_title, title, letter2 - title);
@@ -1193,6 +1080,7 @@ char* BC_FileBox::get_delete_title()
 {
 	char *letter2 = strchr(title, ':');
 	new_folder_title[0] = 0;
+
 	if(letter2)
 	{
 		memcpy(new_folder_title, title, letter2 - title);
@@ -1215,7 +1103,6 @@ void BC_FileBox::delete_files()
 // Not directory.  Remove it.
 		if(!fs.is_dir(path))
 		{
-printf("BC_FileBox::delete_files: removing \"%s\"\n", path);
 			remove(path);
 		}
 		i++;
@@ -1232,4 +1119,3 @@ BC_Button* BC_FileBox::get_cancel_button()
 {
 	return cancel_button;
 }
-

@@ -37,7 +37,6 @@ BC_Repeater::BC_Repeater(BC_WindowBase *top_level, long delay)
 	interrupted = 0;
 	this->delay = delay;
 	this->top_level = top_level;
-
 }
 
 BC_Repeater::~BC_Repeater()
@@ -61,34 +60,29 @@ void BC_Repeater::initialize()
 	startup_lock->lock("BC_Repeater::initialize");
 }
 
-int BC_Repeater::start_repeating()
+void BC_Repeater::start_repeating()
 {
-// printf("Repeater %s start %d\n", top_level->title, delay);
 	repeating++;
 	if(repeating == 1)
 	{
 // Resume the loop
 		pause_lock->unlock();
 	}
-	return 0;
 }
 
-int BC_Repeater::stop_repeating()
+void BC_Repeater::stop_repeating()
 {
 // Recursive calling happens when mouse wheel is used.
-// printf("Repeater %s stop %d\n", top_level->title, delay);
 	if(repeating > 0)
 	{
 		repeating--;
 // Pause the loop
 		if(repeating == 0) pause_lock->lock("BC_Repeater::stop_repeating");
 	}
-	return 0;
 }
 
 void BC_Repeater::run()
 {
-//printf("BC_Repeater::run 1 %d\n", getpid());
 	next_delay = delay;
 	Thread::disable_cancel();
 	startup_lock->unlock();
@@ -98,12 +92,9 @@ void BC_Repeater::run()
 		Thread::enable_cancel();
 		timer.delay(next_delay);
 		Thread::disable_cancel();
-//if(next_delay <= 0) printf("BC_Repeater::run delay=%d next_delay=%d\n", delay, next_delay);
 
 // Test exit conditions
 		if(interrupted) return;
-// Busy wait here
-//		if(repeating <= 0) continue;
 
 // Test for pause
 		pause_lock->lock("BC_Repeater::run");
@@ -142,7 +133,6 @@ void BC_Repeater::run()
 		}
 
 // Stick event into queue
-// printf("101 Repeater %s delay %ld\n", top_level->title, delay);
 		top_level->arm_repeat(delay);
 		next_delay = delay - timer.get_difference();
 		if(next_delay <= 0) next_delay = 0;

@@ -36,7 +36,6 @@
 #include "config.h"
 #endif
 
-
 #ifdef HAVE_GL
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -60,7 +59,6 @@
 // add specific commands.
 
 
-
 class TextureID
 {
 public:
@@ -77,10 +75,10 @@ public:
 class ShaderID
 {
 public:
-	ShaderID(int window_id, unsigned int handle, char *source);
+	ShaderID(int window_id, unsigned int handle, const char *source);
 	~ShaderID();
 
-// Should really use an MD5 to compare sources but this is easiest.	
+// Should really use an MD5 to compare sources but this is easiest.
 	char *source;
 	int window_id;
 	unsigned int handle;
@@ -175,7 +173,6 @@ public:
 // Contains a switch statement starting with LAST_COMMAND
 	virtual void handle_command(BC_SynchronousCommand *command);
 
-
 // OpenGL texture removal doesn't work.  Need to store the ID's of all the deleted
 // textures in this stack and reuse them.  Also since OpenGL needs synchronous
 // commands, be sure this is always called synchronously.
@@ -201,7 +198,6 @@ public:
 	void put_shader(unsigned int handle, char *source);
 	void dump_shader(unsigned int handle);
 
-
 #ifdef HAVE_GL
 // Push a pbuffer when it's created.
 // Must be called inside synchronous loop.
@@ -226,13 +222,10 @@ public:
 		GLXContext context);
 #endif
 
-
-
 // Called by ~BC_WindowBase to delete OpenGL objects related to the window.
 // This function returns immediately instead of waiting for the synchronous
 // part to finish.
 	void delete_window(BC_WindowBase *window);
-
 
 	int send_command(BC_SynchronousCommand *command);
 	void send_garbage(BC_SynchronousCommand *command);
@@ -269,8 +262,8 @@ private:
 	BC_WindowBase *current_window;
 
 	ArrayList<ShaderID*> shader_ids;
- 	ArrayList<TextureID*> texture_ids;
- 	ArrayList<PBufferID*> pbuffer_ids;
+	ArrayList<TextureID*> texture_ids;
+	ArrayList<PBufferID*> pbuffer_ids;
 // Commands which can't be executed until the caller returns.
 	ArrayList<BC_SynchronousCommand*> garbage;
 
@@ -278,8 +271,4 @@ private:
 // signals glCopyTexSubImage2D to use the front buffer.
 	int is_pbuffer;
 };
-
-
-
-
 #endif

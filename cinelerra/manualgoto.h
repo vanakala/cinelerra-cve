@@ -61,7 +61,7 @@ public:
 	~ManualGotoWindow();
 
 	void create_objects();
-	int activate();
+	void activate();
 	double get_entered_position_sec();
 	void set_entered_position_sec(double position);
 	int split_timestr(char *timestr);
@@ -87,8 +87,8 @@ public:
 	int handle_event();
 	ManualGotoWindow *window;
 	int keypress_event();
-	int activate();
-	int deactivate();
+	void activate();
+	void deactivate();
 	void reshape_update(char *nums);
 
 	int min_num;

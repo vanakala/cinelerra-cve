@@ -119,7 +119,7 @@ public:
 	~ChromaKeyWindow();
 
 	void create_objects();
-	int close_event();
+	void close_event();
 	void update_sample();
 
 	ChromaKeyColor *color;

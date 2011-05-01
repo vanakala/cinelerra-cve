@@ -67,7 +67,7 @@ public:
 	OverlayAudioWindow(OverlayAudio *plugin, int x, int y);
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 	OverlayAudio *plugin;
 	OutputTrack *output;

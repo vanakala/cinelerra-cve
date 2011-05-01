@@ -42,14 +42,11 @@ BC_Tumbler::BC_Tumbler(int x, int y, VFrame **data)
 	this->data = data;
 }
 
-
 BC_Tumbler::~BC_Tumbler()
 {
 	for(int i = 0; i < TOTAL_STATES; i ++)
 		delete images[i];
 }
-
-
 
 void BC_Tumbler::initialize()
 {
@@ -68,37 +65,32 @@ void BC_Tumbler::initialize()
 	draw_face();
 }
 
-int BC_Tumbler::reposition_window(int x, int y, int w, int h)
+void BC_Tumbler::reposition_window(int x, int y, int w, int h)
 {
 	if (w > 0 || h > 0) 
 		printf("BC_Tumbler::reposition_window - w & h haven't been implemented yet!! (probably never will be)");
 
 	BC_WindowBase::reposition_window(x, y);
 	draw_face();
-	return 0;
 }
 
-
-int BC_Tumbler::update_bitmaps(VFrame **data)
+void BC_Tumbler::update_bitmaps(VFrame **data)
 {
 	set_images(data);
 	draw_top_background(parent_window, 0, 0, w, h);
 	draw_face();
-	return 0;
 }
 
-int BC_Tumbler::set_images(VFrame **data)
+void BC_Tumbler::set_images(VFrame **data)
 {
 	for(int i = 0; i < TOTAL_STATES; i++)
 	{
 		if(images[i]) delete images[i];
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
 	}
-
-	return 0;
 }
 
-int BC_Tumbler::draw_face()
+void BC_Tumbler::draw_face()
 {
 	draw_top_background(parent_window, 0, 0, w, h);
 	pixmap->draw_pixmap(images[status], 
@@ -109,12 +101,10 @@ int BC_Tumbler::draw_face()
 			0,
 			0);
 	flash();
-	return 0;
 }
 
-int BC_Tumbler::repeat_event(int64_t duration)
+void BC_Tumbler::repeat_event(int64_t duration)
 {
-//printf("BC_Tumbler::repeat_event 1 %d\n", duration);
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{
 		if(tooltip_text[0] != 0 &&
@@ -123,28 +113,26 @@ int BC_Tumbler::repeat_event(int64_t duration)
 		{
 			show_tooltip();
 			tooltip_done = 1;
-			return 1;
+			return;
 		}
 	}
 	else
 	if(duration == top_level->get_resources()->tumble_duration)
 	{
-//printf("BC_Tumbler::repeat_event 2\n");
 		repeat_count++;
-		if(repeat_count == 2) return 0;
+		if(repeat_count == 2) return;
 		if(status == TUMBLETOP_DN)
 		{
 			handle_up_event();
-			return 1;
+			return;
 		}
 		else
 		if(status == TUMBLEBOTTOM_DN)
 		{
 			handle_down_event();
-			return 1;
+			return;
 		}
 	}
-	return 0;
 }
 
 int BC_Tumbler::cursor_enter_event()
@@ -161,7 +149,7 @@ int BC_Tumbler::cursor_enter_event()
 	return 0;
 }
 
-int BC_Tumbler::cursor_leave_event()
+void BC_Tumbler::cursor_leave_event()
 {
 	hide_tooltip();
 	if(status == TUMBLE_UPHI)
@@ -169,7 +157,6 @@ int BC_Tumbler::cursor_leave_event()
 		status = TUMBLE_UP;
 		draw_face();
 	}
-	return 0;
 }
 
 int BC_Tumbler::button_press_event()
@@ -177,15 +164,12 @@ int BC_Tumbler::button_press_event()
 	hide_tooltip();
 	if(top_level->event_win == win)
 	{
-//printf("BC_Tumbler::button_press_event 1 %d\n", get_buttonpress());
 		if(get_buttonpress() == 4)
 		{
 			status = TUMBLETOP_DN;
 			draw_face();
 			flush();
 			handle_up_event();
-//			repeat_count = 0;
-//			repeat_event(top_level->get_resources()->tumble_duration);
 		}
 		else
 		if(get_buttonpress() == 5)
@@ -194,8 +178,6 @@ int BC_Tumbler::button_press_event()
 			draw_face();
 			flush();
 			handle_down_event();
-//			repeat_count = 0;
-//			repeat_event(top_level->get_resources()->tumble_duration);
 		}
 		else
 		{
@@ -214,7 +196,6 @@ int BC_Tumbler::button_press_event()
 			top_level->set_repeat(top_level->get_resources()->tumble_duration);
 			repeat_count = 0;
 			repeat_event(top_level->get_resources()->tumble_duration);
-//printf("BC_Tumbler::button_press_event 2 %d\n", get_buttonpress());
 		}
 		return 1;
 	}
@@ -252,8 +233,6 @@ int BC_Tumbler::cursor_motion_event()
 }
 
 
-
-
 BC_ITumbler::BC_ITumbler(BC_TextBox *textbox, int64_t min, int64_t max, int x, int y)
  : BC_Tumbler(x, y)
 {
@@ -273,24 +252,22 @@ void BC_ITumbler::set_increment(float value)
 	if(increment < 1) increment = 1;
 }
 
-int BC_ITumbler::handle_up_event()
+void BC_ITumbler::handle_up_event()
 {
 	int64_t value = atol(textbox->get_text());
 	value += increment;
 	if(value > max) value = max;
 	textbox->update(value);
 	textbox->handle_event();
-	return 1;
 }
 
-int BC_ITumbler::handle_down_event()
+void BC_ITumbler::handle_down_event()
 {
 	int64_t value = atol(textbox->get_text());
 	value -= increment;
 	if(value < min) value = min;
 	textbox->update(value);
 	textbox->handle_event();
-	return 1;
 }
 
 void BC_ITumbler::set_boundaries(int64_t min, int64_t max)
@@ -298,14 +275,6 @@ void BC_ITumbler::set_boundaries(int64_t min, int64_t max)
 	this->min = min;
 	this->max = max;
 }
-
-
-
-
-
-
-
-
 
 
 BC_FTumbler::BC_FTumbler(BC_TextBox *textbox, 
@@ -326,7 +295,7 @@ BC_FTumbler::~BC_FTumbler()
 {
 }
 
-int BC_FTumbler::handle_up_event()
+void BC_FTumbler::handle_up_event()
 {
 	float value = atof(textbox->get_text());
 	if (log_floatincrement) {
@@ -340,10 +309,9 @@ int BC_FTumbler::handle_up_event()
 	if(value > max) value = max;
 	textbox->update(value);
 	textbox->handle_event();
-	return 1;
 }
 
-int BC_FTumbler::handle_down_event()
+void BC_FTumbler::handle_down_event()
 {
 	float value = atof(textbox->get_text());
 	if (log_floatincrement) {
@@ -359,7 +327,6 @@ int BC_FTumbler::handle_down_event()
 	if(value < min) value = min;
 	textbox->update(value);
 	textbox->handle_event();
-	return 1;
 }
 
 void BC_FTumbler::set_boundaries(float min, float max)

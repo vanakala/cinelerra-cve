@@ -52,8 +52,8 @@ public:
 	int create_objects();
 	void resize_event();
 	int drag_start_event();
-	int drag_motion_event();
-	int drag_stop_event();
+	void drag_motion_event();
+	void drag_stop_event();
 // mode - 1 causes incremental drawing of pixmaps.  Used for navigation and index refresh.
 //        2 causes all resource pixmaps to be redrawn from scratch.  Used by editing.
 //        3 causes resource pixmaps to ignore picon thread.  Used by Piconthread.
@@ -287,8 +287,8 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
-	int activate();
-	int deactivate();
+	void activate();
+	void deactivate();
 	int repeat_event(int duration);
 	void start_dragscroll();
 	void stop_dragscroll();

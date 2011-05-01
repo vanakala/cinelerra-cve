@@ -198,7 +198,7 @@ public:
 	~GradientWindow();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 	void update_in_color();
 	void update_out_color();
 	void update_shape();

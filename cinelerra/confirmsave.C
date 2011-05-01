@@ -143,7 +143,7 @@ int ConfirmSaveWindow::create_objects()
 	return 0;
 }
 
-int ConfirmSaveWindow::resize_event(int w, int h)
+void ConfirmSaveWindow::resize_event(int w, int h)
 {
 	int x = 10, y = 10;
 	title->reposition_window(x, y);
@@ -154,7 +154,6 @@ int ConfirmSaveWindow::resize_event(int w, int h)
 		h - y - BC_OKButton::calculate_h() - 10);
 	mwindow->session->ewindow_w = w;
 	mwindow->session->ewindow_h = h;
-	return 1;
 }
 
 

@@ -197,7 +197,7 @@ public:
 	~ParametricWindow();
 
 	void create_objects();
-	int close_event();
+	void close_event();
 	void update_gui();
 	void update_canvas();
 

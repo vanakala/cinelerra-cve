@@ -171,7 +171,7 @@ public:
 	~MOVConfigAudio();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 	void update_parameters();
 	void reset();
 
@@ -253,7 +253,7 @@ public:
 	~MOVConfigVideo();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 	void reset();
 
 	void update_parameters();

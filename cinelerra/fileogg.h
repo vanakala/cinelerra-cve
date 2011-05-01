@@ -238,7 +238,7 @@ public:
 	~OGGConfigAudio();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 	Asset *asset;
 	OGGVorbisFixedBitrate *fixed_bitrate;
@@ -306,7 +306,7 @@ public:
 	~OGGConfigVideo();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 	OGGTheoraFixedBitrate *fixed_bitrate;
 	OGGTheoraFixedQuality *fixed_quality;

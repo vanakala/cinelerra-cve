@@ -135,7 +135,7 @@ public:
 	~VorbisConfigAudio();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 	VorbisFixedBitrate *fixed_bitrate;
 	VorbisVariableBitrate *variable_bitrate;

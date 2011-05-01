@@ -60,20 +60,20 @@ public:
 	virtual ~BC_Pan();
 
 	void initialize();
-	int update(int x, int y);
+	void update(int x, int y);
 	int button_press_event();
 	int cursor_motion_event();
 	int button_release_event();
 	int cursor_enter_event();
-	int cursor_leave_event();
-	int repeat_event(int64_t duration);
+	void cursor_leave_event();
+	void repeat_event(int64_t duration);
 	virtual int handle_event() { return 0; };
 // change radial positions of channels
-	int change_channels(int new_channels, int *value_positions);
+	void change_channels(int new_channels, int *value_positions);
 // update values from stick position
-	int stick_to_values();
+	void stick_to_values();
 // Generic conversion from stick to values for channel changes with no GUI
-	static int stick_to_values(float *values,
+	static void stick_to_values(float *values,
 		int total_values, 
 		int *value_positions, 
 		int stick_x, 
@@ -92,9 +92,9 @@ public:
 		int virtual_r,
 		int &stick_x,
 		int &stick_y);
-	static int rdtoxy(int &x, int &y, int a, int virtual_r);
-	int activate(int popup_x = -1, int popup_y = -1);
-	int deactivate();
+	static void rdtoxy(int &x, int &y, int a, int virtual_r);
+	void activate(int popup_x = -1, int popup_y = -1);
+	void deactivate();
 	float* get_values();
 
 private:
@@ -103,7 +103,7 @@ private:
 // update values from stick position
 	static float distance(int x1, int x2, int y1, int y2);
 // get x and y positions of channels
-	static int get_channel_positions(int *value_x, 
+	static void get_channel_positions(int *value_x, 
 		int *value_y, 
 		int *value_positions,
 		int virtual_r,

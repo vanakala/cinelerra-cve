@@ -84,7 +84,7 @@ public:
 	~RecordMonitorGUI();
 
 	int create_objects();
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int cursor_enter_event();
 	int button_release_event();
 	int cursor_motion_event();
@@ -98,11 +98,11 @@ public:
 	BC_PopupMenu *monitor_menu;
 	int current_operation;
 
-	int translation_event();
+	void translation_event();
 	int button_press_event();
-	int resize_event(int w, int h);
+	void resize_event(int w, int h);
 	int set_title();
-	int close_event();
+	void close_event();
 	int create_bitmap();
 	int keypress_event();
 

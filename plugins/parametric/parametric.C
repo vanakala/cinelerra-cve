@@ -411,11 +411,9 @@ void ParametricWindow::create_objects()
 	show_window();
 }
 
-int ParametricWindow::close_event()
+void ParametricWindow::close_event()
 {
-// Set result to 1 to indicate a client side close
 	set_done(1);
-	return 1;
 }
 
 void ParametricWindow::update_gui()

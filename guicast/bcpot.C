@@ -65,30 +65,27 @@ void BC_Pot::initialize()
 	draw();
 }
 
-int BC_Pot::reposition_window(int x, int y)
+void BC_Pot::reposition_window(int x, int y)
 {
 	BC_WindowBase::reposition_window(x, y);
 	draw();
-	return 0;
 }
 
-int BC_Pot::set_data(VFrame **data)
+void BC_Pot::set_data(VFrame **data)
 {
 	for(int i = 0; i < POT_STATES; i++)
 		if(images[i]) delete images[i];
 
 	for(int i = 0; i < POT_STATES; i++)
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
-	return 0;
 }
-
 
 void BC_Pot::set_use_caption(int value)
 {
 	use_caption = value;
 }
 
-int BC_Pot::draw()
+void BC_Pot::draw()
 {
 	int x1, y1, x2, y2;
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
@@ -99,7 +96,6 @@ int BC_Pot::draw()
 	draw_line(x1, y1, x2, y2);
 
 	flash();
-	return 0;
 }
 
 float BC_Pot::percentage_to_angle(float percentage)
@@ -112,8 +108,7 @@ float BC_Pot::angle_to_percentage(float angle)
 	return (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE);
 }
 
-
-int BC_Pot::angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle)
+void BC_Pot::angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle)
 {
 	BC_Resources *resources = get_resources();
 	x1 = resources->pot_x1;
@@ -128,7 +123,6 @@ int BC_Pot::angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle)
 
 	x2 = (int)(cos(angle / 360 * (2 * M_PI)) * resources->pot_r + x1);
 	y2 = (int)(-sin(angle / 360 * (2 * M_PI)) * resources->pot_r + y1);
-	return 0;
 }
 
 float BC_Pot::coords_to_angle(int x2, int y2)
@@ -185,9 +179,6 @@ float BC_Pot::coords_to_angle(int x2, int y2)
 	return angle;
 }
 
-
-
-
 void BC_Pot::show_value_tooltip()
 {
 	if(use_caption)
@@ -198,7 +189,7 @@ void BC_Pot::show_value_tooltip()
 	}
 }
 
-int BC_Pot::repeat_event(int64_t duration)
+void BC_Pot::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{
@@ -228,10 +219,8 @@ int BC_Pot::repeat_event(int64_t duration)
 					show_tooltip();
 				tooltip_done = 1;
 			}
-			return 1;
 		}
 	}
-	return 0;
 }
 
 int BC_Pot::keypress_event()
@@ -239,22 +228,22 @@ int BC_Pot::keypress_event()
 	int result = 0;
 	switch(get_keypress())
 	{
-		case UP:
-			increase_value();
-			result = 1;
-			break;
-		case DOWN:
-			decrease_value();
-			result = 1;
-			break;
-		case LEFT:
-			decrease_value();
-			result = 1;
-			break;
-		case RIGHT:
-			increase_value();
-			result = 1;
-			break;
+	case UP:
+		increase_value();
+		result = 1;
+		break;
+	case DOWN:
+		decrease_value();
+		result = 1;
+		break;
+	case LEFT:
+		decrease_value();
+		result = 1;
+		break;
+	case RIGHT:
+		increase_value();
+		result = 1;
+		break;
 	}
 
 	if(result)
@@ -280,7 +269,7 @@ int BC_Pot::cursor_enter_event()
 	return 0;
 }
 
-int BC_Pot::cursor_leave_event()
+void BC_Pot::cursor_leave_event()
 {
 	if(status == POT_HIGH)
 	{
@@ -288,7 +277,6 @@ int BC_Pot::cursor_leave_event()
 		draw();
 		hide_tooltip();
 	}
-	return 0;
 }
 
 int BC_Pot::button_press_event()
@@ -386,16 +374,6 @@ int BC_Pot::cursor_motion_event()
 	return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
 BC_FPot::BC_FPot(int x, 
 	int y, 
 	float value, 
@@ -414,18 +392,16 @@ BC_FPot::~BC_FPot()
 {
 }
 
-int BC_FPot::increase_value()
+void BC_FPot::increase_value()
 {
 	value += precision;
 	if(value > maxvalue) value = maxvalue;
-	return 0;
 }
 
-int BC_FPot::decrease_value()
+void BC_FPot::decrease_value()
 {
 	value -= precision;
 	if(value < minvalue) value = minvalue;
-	return 0;
 }
 
 void BC_FPot::set_precision(float value)
@@ -482,13 +458,6 @@ void BC_FPot::update(float value, float minvalue, float maxvalue)
 	}
 }
 
-
-
-
-
-
-
-
 BC_IPot::BC_IPot(int x, 
 	int y, 
 	int64_t value, 
@@ -506,18 +475,16 @@ BC_IPot::~BC_IPot()
 {
 }
 
-int BC_IPot::increase_value()
+void BC_IPot::increase_value()
 {
 	value++;
 	if(value > maxvalue) value = maxvalue;
-	return 0;
 }
 
-int BC_IPot::decrease_value()
+void BC_IPot::decrease_value()
 {
 	value--;
 	if(value < minvalue) value = minvalue;
-	return 0;
 }
 
 const char*  BC_IPot::get_caption()
@@ -569,10 +536,6 @@ void BC_IPot::update(int64_t value, int64_t minvalue, int64_t maxvalue)
 }
 
 
-
-
-
-
 BC_QPot::BC_QPot(int x, 
 	int y, 
 	int64_t value, 
@@ -588,18 +551,16 @@ BC_QPot::~BC_QPot()
 {
 }
 
-int BC_QPot::increase_value()
+void BC_QPot::increase_value()
 {
 	value++;
 	if(value > maxvalue) value = maxvalue;
-	return 0;
 }
 
-int BC_QPot::decrease_value()
+void BC_QPot::decrease_value()
 {
 	value--;
 	if(value < minvalue) value = minvalue;
-	return 0;
 }
 
 const char*  BC_QPot::get_caption()
@@ -638,12 +599,6 @@ void BC_QPot::update(int64_t value)
 }
 
 
-
-
-
-
-
-
 BC_PercentagePot::BC_PercentagePot(int x, 
 	int y, 
 	float value, 
@@ -661,18 +616,16 @@ BC_PercentagePot::~BC_PercentagePot()
 {
 }
 
-int BC_PercentagePot::increase_value()
+void BC_PercentagePot::increase_value()
 {
 	value++;
 	if(value > maxvalue) value = maxvalue;
-	return 0;
 }
 
-int BC_PercentagePot::decrease_value()
+void BC_PercentagePot::decrease_value()
 {
 	value--;
 	if(value < minvalue) value = minvalue;
-	return 0;
 }
 
 const char*  BC_PercentagePot::get_caption()
@@ -709,11 +662,3 @@ void BC_PercentagePot::update(float value)
 		draw();
 	}
 }
-
-
-
-
-
-
-
-

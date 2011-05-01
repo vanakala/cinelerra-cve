@@ -36,21 +36,6 @@
 #include "mutex.inc"
 #include "thread.h"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class BC_FileBoxListBox : public BC_ListBox
 {
 public:
@@ -58,7 +43,7 @@ public:
 	virtual ~BC_FileBoxListBox();
 
 	int handle_event();
-	int selection_changed();
+	void selection_changed();
 	int column_resize_event();
 	int sort_order_event();
 	int move_column_event();
@@ -230,14 +215,14 @@ public:
 
 	virtual int create_objects();
 	virtual int keypress_event();
-	virtual int close_event();
+
 // When file is submitted this is called for the user to retrieve it before the
 // window is deleted.
 	virtual int handle_event();
 
 	void create_history();
 	void update_history();
-	int refresh();
+	void refresh();
 
 // The OK and Use This button submits a path.
 // The cancel button has a current path highlighted but possibly different from the
@@ -250,8 +235,8 @@ public:
 // Give the path of any selected item or 0.  Used when many items are
 // selected in the list.  Should only be called when OK is pressed.
 	char* get_path(int selection);
-	int update_filter(const char *filter);
-	virtual int resize_event(int w, int h);
+	void update_filter(const char *filter);
+	virtual void resize_event(int w, int h);
 	char* get_newfolder_title();
 	char* get_delete_title();
 	void delete_files();
@@ -260,13 +245,13 @@ public:
 	FileSystem *fs;
 
 private:
-	int create_icons();
-	int extract_extension(char *out, const char *in);
-	int create_tables();
-	int delete_tables();
+	void create_icons();
+	void extract_extension(char *out, const char *in);
+	void create_tables();
+	void delete_tables();
 // Called by directory history menu to change directories but leave
 // filename untouched.
-	int submit_dir(char *dir);
+	void submit_dir(char *dir);
 	int submit_file(char *path, int use_this = 0);
 // Called by move_column_event
 	void move_column(int src, int dst);

@@ -199,7 +199,7 @@ int LoadFileWindow::create_objects()
 	return 0;
 }
 
-int LoadFileWindow::resize_event(int w, int h)
+void LoadFileWindow::resize_event(int w, int h)
 {
 	int x = w / 2 - 200;
 	int y = get_cancel_button()->get_y() - 50;
@@ -207,7 +207,7 @@ int LoadFileWindow::resize_event(int w, int h)
 
 	loadmode->reposition_window(x, y);
 
-	return BC_FileBox::resize_event(w, h);
+	BC_FileBox::resize_event(w, h);
 }
 
 

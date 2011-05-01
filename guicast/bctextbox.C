@@ -103,7 +103,7 @@ BC_TextBox::~BC_TextBox()
 	if(skip_cursor) delete skip_cursor;
 }
 
-int BC_TextBox::reset_parameters(int rows, int has_border, int font)
+void BC_TextBox::reset_parameters(int rows, int has_border, int font)
 {
 	this->rows = rows;
 	this->has_border = has_border;
@@ -124,7 +124,6 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font)
 	keypress_draw = 1;
 	last_keypress = 0;
 	separators = 0;
-	return 0;
 }
 
 void BC_TextBox::initialize()
@@ -194,39 +193,33 @@ void BC_TextBox::set_selection(int char1, int char2, int ibeam)
 	draw();
 }
 
-int BC_TextBox::update(const char *text)
+void BC_TextBox::update(const char *text)
 {
-//printf("BC_TextBox::update 1 %d %s %s\n", strcmp(text, this->text), text, this->text);
 	int text_len = strlen(text);
 // Don't update if contents are the same
-	if(!strcmp(text, this->text)) return 0;
-
+	if(!strcmp(text, this->text)) return;
 
 	strcpy(this->text, text);
 	if(highlight_letter1 > text_len) highlight_letter1 = text_len;
 	if(highlight_letter2 > text_len) highlight_letter2 = text_len;
 	if(ibeam_letter > text_len) ibeam_letter = text_len;
 	draw();
-	return 0;
 }
 
-int BC_TextBox::update(int64_t value)
+void BC_TextBox::update(int64_t value)
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "%lld", value);
 
-
 	update(string);
-	return 0;
 }
 
-int BC_TextBox::update(float value)
+void BC_TextBox::update(float value)
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "%0.*f", precision, value);
 
 	update(string);
-	return 0;
 }
 
 void BC_TextBox::disable()
@@ -299,7 +292,7 @@ int BC_TextBox::get_row_h(int rows)
 	return rows * text_height + top_margin + bottom_margin;
 }
 
-int BC_TextBox::reposition_window(int x, int y, int w, int rows)
+void BC_TextBox::reposition_window(int x, int y, int w, int rows)
 {
 	int new_h = get_h();
 	if(w < 0) w = get_w();
@@ -314,12 +307,9 @@ int BC_TextBox::reposition_window(int x, int y, int w, int rows)
 		w != get_w() || 
 		new_h != get_h())
 	{
-// printf("BC_TextBox::reposition_window 1 %d %d %d %d %d %d %d %d\n",
-// x, get_x(), y, get_y(), w, get_w(), new_h, get_h());
 		BC_WindowBase::reposition_window(x, y, w, new_h);
 		draw();
 	}
-	return 0;
 }
 
 void BC_TextBox::draw_border()
@@ -336,8 +326,8 @@ void BC_TextBox::draw_border()
 			draw_3d_border(0, 0, w, h,
 				resources->button_shadow, 
 				resources->button_uphighlighted,
-			        resources->button_highlighted,
-			        resources->button_light);
+				resources->button_highlighted,
+				resources->button_light);
 		else
 			draw_3d_border(0, 0, w, h, 
 				resources->text_border1, 
@@ -349,7 +339,6 @@ void BC_TextBox::draw_border()
 
 void BC_TextBox::draw_cursor()
 {
-//	set_color(background_color);
 	set_color(WHITE);
 	set_inverse();
 
@@ -360,7 +349,6 @@ void BC_TextBox::draw_cursor()
 	set_opaque();
 }
 
-
 void BC_TextBox::draw()
 {
 	int i, j, k, text_len;
@@ -369,7 +357,6 @@ void BC_TextBox::draw()
 	int need_ibeam = 1;
 	BC_Resources *resources = get_resources();
 
-//printf("BC_TextBox::draw 1 %s\n", text);
 // Background
 	if(has_border)
 	{
@@ -393,7 +380,6 @@ void BC_TextBox::draw()
 // Draw text with selection
 	set_font(font);
 	text_len = strlen(text);
-//printf("BC_TextBox::draw 0 %s %d %d %d %d\n", text, text_y, text_len, get_w(), text_height);
 
 	for(i = 0, k = text_y; i < text_len && k < get_h(); k += text_height)
 	{
@@ -406,8 +392,6 @@ void BC_TextBox::draw()
 		}
 		row_end = i;
 		text_row[j] = 0;
-
-//printf("BC_TextBox::draw 1 %d %d %c\n", row_begin, row_end, text_row[j - 1]);
 
 		if(k > -text_height + top_margin && k < get_h() - bottom_margin)
 		{
@@ -454,14 +438,12 @@ void BC_TextBox::draw()
 		}
 	}
 
-//printf("BC_TextBox::draw 3 %d\n", ibeam_y);
 	if(need_ibeam)
 	{
 		ibeam_x = 0;
 		ibeam_y = 0;
 	}
 
-//printf("BC_TextBox::draw 4 %d\n", ibeam_y);
 // Draw solid cursor
 	if (active) 
 		draw_cursor();
@@ -469,19 +451,17 @@ void BC_TextBox::draw()
 // Border
 	draw_border();
 	flash();
-	flush();   
+	flush();
 }
 
-int BC_TextBox::focus_in_event()
+void BC_TextBox::focus_in_event()
 {
 	draw();
-	return 1;
 }
 
-int BC_TextBox::focus_out_event()
+void BC_TextBox::focus_out_event()
 {
 	draw();
-	return 1;
 }
 
 int BC_TextBox::cursor_enter_event()
@@ -495,13 +475,13 @@ int BC_TextBox::cursor_enter_event()
 			highlighted = 1;
 			draw_border();
 			flash();
-			flush();   
+			flush();
 		}
 	}
 	return 0;
 }
 
-int BC_TextBox::cursor_leave_event()
+void BC_TextBox::cursor_leave_event()
 {
 	if(highlighted)
 	{
@@ -509,9 +489,8 @@ int BC_TextBox::cursor_leave_event()
 		draw_border();
 		hide_tooltip();
 		flash();
-		flush();   
+		flush();
 	}
-	return 0;
 }
 
 int BC_TextBox::button_press_event()
@@ -617,7 +596,7 @@ int BC_TextBox::cursor_motion_event()
 				highlight_letter1 = highlight_letter3;
 				ibeam_letter = letter2;
 			}
-			
+
 			copy_selection(PRIMARY_SELECTION);
 			find_ibeam(1);
 			draw();
@@ -627,59 +606,48 @@ int BC_TextBox::cursor_motion_event()
 	return 0;
 }
 
-int BC_TextBox::activate()
+void BC_TextBox::activate()
 {
 	top_level->active_subwindow = this;
 	active = 1;
 	draw();
 	top_level->set_repeat(top_level->get_resources()->blink_rate);
-	return 0;
 }
 
-int BC_TextBox::deactivate()
+void BC_TextBox::deactivate()
 {
 	active = 0;
 	top_level->unset_repeat(top_level->get_resources()->blink_rate);
 	draw();
-	return 0;
 }
 
-int BC_TextBox::repeat_event(int64_t duration)
+void BC_TextBox::repeat_event(int64_t duration)
 {
-	int result = 0;
-
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&
 		highlighted)
 	{
 		show_tooltip();
 		tooltip_done = 1;
-		result = 1;
 	}
-		
+
 	if(duration == top_level->get_resources()->blink_rate && 
 		active &&
 		get_has_focus())
 	{
 		if(skip_cursor->get_difference() < duration)
 		{
-// printf("BC_TextBox::repeat_event 1 %lld %lld\n", 
-// skip_cursor->get_difference(), 
-// duration);
-			return 1;
+			return;
 		}
 		draw_cursor();
 		flash();
-		flush();   
-		result = 1;
+		flush();
 	}
-	return result;
 }
 
 void BC_TextBox::default_keypress(int &dispatch_event, int &result)
 {
-    if((top_level->get_keypress() == RETURN) ||
-//		(top_level->get_keypress() > 30 && top_level->get_keypress() < 127))
+	if((top_level->get_keypress() == RETURN) ||
 		(top_level->get_keypress() > 30 && top_level->get_keypress() <= 255))
 	{
 // Substitute UNIX linefeed
@@ -702,7 +670,7 @@ int BC_TextBox::select_whole_text(int select)
 	{
 		highlight_letter1 = 0;
 		highlight_letter2 = strlen(text);
-		text_selected = word_selected = 0;	
+		text_selected = word_selected = 0;
 		ibeam_letter = highlight_letter1;
 		find_ibeam(1);
 		if(keypress_draw) draw();
@@ -739,326 +707,313 @@ int BC_TextBox::keypress_event()
 	last_keypress = get_keypress();
 	switch(get_keypress())
 	{
-		case ESC:
-			top_level->deactivate();
-			result = 0;
-			break;
+	case ESC:
+		top_level->deactivate();
+		result = 0;
+		break;
 
-		case RETURN:
-			if(rows == 1)
+	case RETURN:
+		if(rows == 1)
+		{
+			top_level->deactivate();
+			dispatch_event = 1;
+			result = 0;
+		}
+		else
+		{
+			default_keypress(dispatch_event, result);
+		}
+		break;
+// Handle like a default keypress
+
+	case TAB:
+		cycle_textboxes(1);
+		result = 1;
+		break;
+
+	case LEFTTAB:
+		cycle_textboxes(-1);
+		result = 1;
+		break;
+
+	case LEFT:
+		if(ibeam_letter > 0)
+		{
+			int old_ibeam_letter = ibeam_letter;
+// Single character
+			if(!ctrl_down())
 			{
-				top_level->deactivate();
-				dispatch_event = 1;
-				result = 0;
+				ibeam_letter--;
+			}
+			else
+// Word
+			{
+				ibeam_letter--;
+				while(ibeam_letter > 0 && isalnum(text[ibeam_letter - 1]))
+					ibeam_letter--;
+			}
+
+// Extend selection
+			if(top_level->shift_down())
+			{
+// Initialize highlighting
+				if(highlight_letter1 == highlight_letter2)
+				{
+					highlight_letter1 = ibeam_letter;
+					highlight_letter2 = old_ibeam_letter;
+				}
+				else
+// Extend left highlight
+				if(highlight_letter1 == old_ibeam_letter)
+				{
+					highlight_letter1 = ibeam_letter;
+				}
+				else
+// Shrink right highlight
+				if(highlight_letter2 == old_ibeam_letter)
+				{
+					highlight_letter2 = ibeam_letter;
+				}
 			}
 			else
 			{
-				default_keypress(dispatch_event, result);
+				highlight_letter1 = highlight_letter2 = ibeam_letter;
 			}
-			break;
-// Handle like a default keypress
 
-		case TAB:
-			cycle_textboxes(1);
-			result = 1;
-			break;
+			find_ibeam(1);
+			if(keypress_draw) draw();
+		}
+		result = 1;
+		break;
 
-		case LEFTTAB:
-			cycle_textboxes(-1);
-			result = 1;
-			break;
-
-		case LEFT:
-			if(ibeam_letter > 0)
-			{
-				int old_ibeam_letter = ibeam_letter;
+	case RIGHT:
+		if(ibeam_letter < text_len)
+		{
+			int old_ibeam_letter = ibeam_letter;
 // Single character
-				if(!ctrl_down())
-				{
-					ibeam_letter--;
-				}
-				else
+			if(!ctrl_down())
+			{
+				ibeam_letter++;
+			}
+			else
 // Word
-				{
-					ibeam_letter--;
-					while(ibeam_letter > 0 && isalnum(text[ibeam_letter - 1]))
-						ibeam_letter--;
-				}
-
-
-// Extend selection
-				if(top_level->shift_down())
-				{
-// Initialize highlighting
-					if(highlight_letter1 == highlight_letter2)
-					{
-						highlight_letter1 = ibeam_letter;
-						highlight_letter2 = old_ibeam_letter;
-					}
-					else
-// Extend left highlight
-					if(highlight_letter1 == old_ibeam_letter)
-					{
-						highlight_letter1 = ibeam_letter;
-					}
-					else
-// Shrink right highlight
-					if(highlight_letter2 == old_ibeam_letter)
-					{
-						highlight_letter2 = ibeam_letter;
-					}
-				}
-				else
-				{
-					highlight_letter1 = highlight_letter2 = ibeam_letter;
-				}
-
-
-				find_ibeam(1);
-				if(keypress_draw) draw();
-			}
-			result = 1;
-			break;
-
-		case RIGHT:
-			if(ibeam_letter < text_len)
 			{
-				int old_ibeam_letter = ibeam_letter;
-// Single character
-				if(!ctrl_down())
-				{
-					ibeam_letter++;
-				}
-				else
-// Word
-				{
-					while(ibeam_letter < text_len && isalnum(text[ibeam_letter++]))
-						;
-				}
-
-
+				while(ibeam_letter < text_len && isalnum(text[ibeam_letter++]))
+					;
+			}
 
 // Extend selection
-				if(top_level->shift_down())
-				{
+			if(top_level->shift_down())
+			{
 // Initialize highlighting
-					if(highlight_letter1 == highlight_letter2)
-					{
-						highlight_letter1 = old_ibeam_letter;
-						highlight_letter2 = ibeam_letter;
-					}
-					else
+				if(highlight_letter1 == highlight_letter2)
+				{
+					highlight_letter1 = old_ibeam_letter;
+					highlight_letter2 = ibeam_letter;
+				}
+				else
 // Shrink left highlight
-					if(highlight_letter1 == old_ibeam_letter)
-					{
-						highlight_letter1 = ibeam_letter;
-					}
-					else
-// Expand right highlight
-					if(highlight_letter2 == old_ibeam_letter)
-					{
-						highlight_letter2 = ibeam_letter;
-					}
+				if(highlight_letter1 == old_ibeam_letter)
+				{
+					highlight_letter1 = ibeam_letter;
 				}
 				else
+// Expand right highlight
+				if(highlight_letter2 == old_ibeam_letter)
 				{
-					highlight_letter1 = highlight_letter2 = ibeam_letter;
+					highlight_letter2 = ibeam_letter;
 				}
-
-				find_ibeam(1);
-				if(keypress_draw) draw();
 			}
-			result = 1;
-			break;
-
-		case UP:
-			if(ibeam_letter > 0)
+			else
 			{
-//printf("BC_TextBox::keypress_event 1 %d %d %d\n", ibeam_x, ibeam_y, ibeam_letter);
-				int new_letter = get_cursor_letter(ibeam_x + text_x, 
-					ibeam_y + text_y - text_height);
-//printf("BC_TextBox::keypress_event 2 %d %d %d\n", ibeam_x, ibeam_y, new_letter);
+				highlight_letter1 = highlight_letter2 = ibeam_letter;
+			}
 
+			find_ibeam(1);
+			if(keypress_draw) draw();
+		}
+		result = 1;
+		break;
+
+	case UP:
+		if(ibeam_letter > 0)
+		{
+			int new_letter = get_cursor_letter(ibeam_x + text_x, 
+				ibeam_y + text_y - text_height);
 // Extend selection
-				if(top_level->shift_down())
-				{
+			if(top_level->shift_down())
+			{
 // Initialize highlighting
-					if(highlight_letter1 == highlight_letter2)
-					{
-						highlight_letter1 = new_letter;
-						highlight_letter2 = ibeam_letter;
-					}
-					else
+				if(highlight_letter1 == highlight_letter2)
+				{
+					highlight_letter1 = new_letter;
+					highlight_letter2 = ibeam_letter;
+				}
+				else
 // Expand left highlight
-					if(highlight_letter1 == ibeam_letter)
-					{
-						highlight_letter1 = new_letter;
-					}
-					else
-// Shrink right highlight
-					if(highlight_letter2 == ibeam_letter)
-					{
-						highlight_letter2 = new_letter;
-					}
+				if(highlight_letter1 == ibeam_letter)
+				{
+					highlight_letter1 = new_letter;
 				}
 				else
-					highlight_letter1 = highlight_letter2 = new_letter;
-
-				if(highlight_letter1 > highlight_letter2)
+// Shrink right highlight
+				if(highlight_letter2 == ibeam_letter)
 				{
-					int temp = highlight_letter1;
-					highlight_letter1 = highlight_letter2;
-					highlight_letter2 = temp;
+					highlight_letter2 = new_letter;
 				}
-				ibeam_letter = new_letter;
-
-				find_ibeam(1);
-				if(keypress_draw) draw();
 			}
-			result = 1;
-			break;
+			else
+				highlight_letter1 = highlight_letter2 = new_letter;
 
-		case PGUP:
-			if(ibeam_letter > 0)
+			if(highlight_letter1 > highlight_letter2)
 			{
-				int new_letter = get_cursor_letter(ibeam_x + text_x, 
-					ibeam_y + text_y - get_h());
+				int temp = highlight_letter1;
+				highlight_letter1 = highlight_letter2;
+				highlight_letter2 = temp;
+			}
+			ibeam_letter = new_letter;
 
+			find_ibeam(1);
+			if(keypress_draw) draw();
+		}
+		result = 1;
+		break;
+
+	case PGUP:
+		if(ibeam_letter > 0)
+		{
+			int new_letter = get_cursor_letter(ibeam_x + text_x, 
+				ibeam_y + text_y - get_h());
 // Extend selection
-				if(top_level->shift_down())
-				{
+			if(top_level->shift_down())
+			{
 // Initialize highlighting
-					if(highlight_letter1 == highlight_letter2)
-					{
-						highlight_letter1 = new_letter;
-						highlight_letter2 = ibeam_letter;
-					}
-					else
+				if(highlight_letter1 == highlight_letter2)
+				{
+					highlight_letter1 = new_letter;
+					highlight_letter2 = ibeam_letter;
+				}
+				else
 // Expand left highlight
-					if(highlight_letter1 == ibeam_letter)
-					{
-						highlight_letter1 = new_letter;
-					}
-					else
+				if(highlight_letter1 == ibeam_letter)
+				{
+					highlight_letter1 = new_letter;
+				}
+				else
 // Shrink right highlight
-					if(highlight_letter2 == ibeam_letter)
-					{
-						highlight_letter2 = new_letter;
-					}
-				}
-				else
-					highlight_letter1 = highlight_letter2 = new_letter;
-
-				if(highlight_letter1 > highlight_letter2)
+				if(highlight_letter2 == ibeam_letter)
 				{
-					int temp = highlight_letter1;
-					highlight_letter1 = highlight_letter2;
-					highlight_letter2 = temp;
+					highlight_letter2 = new_letter;
 				}
-				ibeam_letter = new_letter;
-
-				find_ibeam(1);
-				if(keypress_draw) draw();
 			}
-			result = 1;
-			break;
+			else
+				highlight_letter1 = highlight_letter2 = new_letter;
 
-		case DOWN:
-//			if(ibeam_letter > 0)
+			if(highlight_letter1 > highlight_letter2)
 			{
-// Extend selection
-				int new_letter = get_cursor_letter(ibeam_x + text_x, 
-					ibeam_y + text_y + text_height);
-//printf("BC_TextBox::keypress_event 10 %d\n", new_letter);
-
-				if(top_level->shift_down())
-				{
-// Initialize highlighting
-					if(highlight_letter1 == highlight_letter2)
-					{
-						highlight_letter1 = new_letter;
-						highlight_letter2 = ibeam_letter;
-					}
-					else
-// Shrink left highlight
-					if(highlight_letter1 == ibeam_letter)
-					{
-						highlight_letter1 = new_letter;
-					}
-					else
-// Expand right highlight
-					if(highlight_letter2 == ibeam_letter)
-					{
-						highlight_letter2 = new_letter;
-					}
-				}
-				else
-					highlight_letter1 = highlight_letter2 = new_letter;
-
-				if(highlight_letter1 > highlight_letter2)
-				{
-					int temp = highlight_letter1;
-					highlight_letter1 = highlight_letter2;
-					highlight_letter2 = temp;
-				}
-				ibeam_letter = new_letter;
-
-				find_ibeam(1);
-				if(keypress_draw) draw();
-
-//printf("BC_TextBox::keypress_event 20 %d\n", ibeam_letter);
+				int temp = highlight_letter1;
+				highlight_letter1 = highlight_letter2;
+				highlight_letter2 = temp;
 			}
-			result = 1;
-			break;
+			ibeam_letter = new_letter;
 
-		case PGDN:
+			find_ibeam(1);
+			if(keypress_draw) draw();
+		}
+		result = 1;
+		break;
+
+	case DOWN:
+		{
+// Extend selection
+			int new_letter = get_cursor_letter(ibeam_x + text_x, 
+				ibeam_y + text_y + text_height);
+
+			if(top_level->shift_down())
 			{
-// Extend selection
-				int new_letter = get_cursor_letter(ibeam_x + text_x, 
-					ibeam_y + text_y + get_h());
-//printf("BC_TextBox::keypress_event 10 %d\n", new_letter);
-
-				if(top_level->shift_down())
-				{
 // Initialize highlighting
-					if(highlight_letter1 == highlight_letter2)
-					{
-						highlight_letter1 = new_letter;
-						highlight_letter2 = ibeam_letter;
-					}
-					else
-// Shrink left highlight
-					if(highlight_letter1 == ibeam_letter)
-					{
-						highlight_letter1 = new_letter;
-					}
-					else
-// Expand right highlight
-					if(highlight_letter2 == ibeam_letter)
-					{
-						highlight_letter2 = new_letter;
-					}
+				if(highlight_letter1 == highlight_letter2)
+				{
+					highlight_letter1 = new_letter;
+					highlight_letter2 = ibeam_letter;
 				}
 				else
-					highlight_letter1 = highlight_letter2 = new_letter;
-
-				if(highlight_letter1 > highlight_letter2)
+// Shrink left highlight
+				if(highlight_letter1 == ibeam_letter)
 				{
-					int temp = highlight_letter1;
-					highlight_letter1 = highlight_letter2;
-					highlight_letter2 = temp;
+					highlight_letter1 = new_letter;
 				}
-				ibeam_letter = new_letter;
-
-				find_ibeam(1);
-				if(keypress_draw) draw();
-
-//printf("BC_TextBox::keypress_event 20 %d\n", ibeam_letter);
+				else
+// Expand right highlight
+				if(highlight_letter2 == ibeam_letter)
+				{
+					highlight_letter2 = new_letter;
+				}
 			}
-			result = 1;
-			break;
-		
-		case END:
+			else
+				highlight_letter1 = highlight_letter2 = new_letter;
+
+			if(highlight_letter1 > highlight_letter2)
+			{
+			int temp = highlight_letter1;
+			highlight_letter1 = highlight_letter2;
+			highlight_letter2 = temp;
+			}
+			ibeam_letter = new_letter;
+
+			find_ibeam(1);
+			if(keypress_draw) draw();
+
+		}
+		result = 1;
+		break;
+
+	case PGDN:
+		{
+// Extend selection
+			int new_letter = get_cursor_letter(ibeam_x + text_x, 
+				ibeam_y + text_y + get_h());
+
+			if(top_level->shift_down())
+			{
+// Initialize highlighting
+				if(highlight_letter1 == highlight_letter2)
+				{
+					highlight_letter1 = new_letter;
+					highlight_letter2 = ibeam_letter;
+				}
+				else
+// Shrink left highlight
+				if(highlight_letter1 == ibeam_letter)
+				{
+					highlight_letter1 = new_letter;
+				}
+				else
+// Expand right highlight
+				if(highlight_letter2 == ibeam_letter)
+				{
+					highlight_letter2 = new_letter;
+				}
+			}
+			else
+				highlight_letter1 = highlight_letter2 = new_letter;
+
+			if(highlight_letter1 > highlight_letter2)
+			{
+				int temp = highlight_letter1;
+				highlight_letter1 = highlight_letter2;
+				highlight_letter2 = temp;
+			}
+			ibeam_letter = new_letter;
+
+			find_ibeam(1);
+			if(keypress_draw) draw();
+
+		}
+		result = 1;
+		break;
+
+	case END:
 		{
 			int old_ibeam_letter = ibeam_letter;
 
@@ -1092,11 +1047,11 @@ int BC_TextBox::keypress_event()
 
 			find_ibeam(1);
 			if(keypress_draw) draw();
-			result = 1;
-			break;
 		}
+		result = 1;
+		break;
 
-		case HOME:
+	case HOME:
 		{
 			int old_ibeam_letter = ibeam_letter;
 
@@ -1130,103 +1085,97 @@ int BC_TextBox::keypress_event()
 
 			find_ibeam(1);
 			if(keypress_draw) draw();
-			result = 1;
+		}
+		result = 1;
+		break;
+
+	case BACKSPACE:
+		if(highlight_letter1 == highlight_letter2)
+		{
+			if(ibeam_letter > 0)
+			{
+				delete_selection(ibeam_letter - 1, ibeam_letter, text_len);
+				ibeam_letter--;
+			}
+		}
+		else
+		{
+			delete_selection(highlight_letter1, highlight_letter2, text_len);
+			highlight_letter2 = ibeam_letter = highlight_letter1;
+		}
+
+		find_ibeam(1);
+		if(keypress_draw) draw();
+		dispatch_event = 1;
+		result = 1;
+		break;
+
+	case DELETE:
+		if(highlight_letter1 == highlight_letter2)
+		{
+			if(ibeam_letter < text_len)
+			{
+				delete_selection(ibeam_letter, ibeam_letter + 1, text_len);
+			}
+		}
+		else
+		{
+			delete_selection(highlight_letter1, highlight_letter2, text_len);
+			highlight_letter2 = ibeam_letter = highlight_letter1;
+		}
+
+		find_ibeam(1);
+		if(keypress_draw) draw();
+		dispatch_event = 1;
+		result = 1;
+		break;
+
+	default:
+		if(ctrl_down())
+		{
+			if(get_keypress() == 'c' || get_keypress() == 'C')
+			{
+				if(highlight_letter1 != highlight_letter2)
+				{
+					copy_selection(SECONDARY_SELECTION);
+					result = 1;
+				}
+			}
+			else
+			if(get_keypress() == 'v' || get_keypress() == 'V')
+			{
+				paste_selection(SECONDARY_SELECTION);
+				find_ibeam(1);
+				if(keypress_draw) draw();
+				dispatch_event = 1;
+				result = 1;
+			}
+			else
+			if(get_keypress() == 'x' || get_keypress() == 'X')
+			{
+				if(highlight_letter1 != highlight_letter2)
+				{
+					copy_selection(SECONDARY_SELECTION);
+					delete_selection(highlight_letter1, highlight_letter2, text_len);
+					highlight_letter2 = ibeam_letter = highlight_letter1;
+				}
+
+				find_ibeam(1);
+				if(keypress_draw) draw();
+				dispatch_event = 1;
+				result = 1;
+			}
 			break;
 		}
 
-    	case BACKSPACE:
-			if(highlight_letter1 == highlight_letter2)
-			{
-				if(ibeam_letter > 0)
-				{
-					delete_selection(ibeam_letter - 1, ibeam_letter, text_len);
-					ibeam_letter--;
-				}
-			}
-			else
-			{
-				delete_selection(highlight_letter1, highlight_letter2, text_len);
-				highlight_letter2 = ibeam_letter = highlight_letter1;
-			}
-
-			find_ibeam(1);
-			if(keypress_draw) draw();
-			dispatch_event = 1;
-			result = 1;
-    		break;
-
-		case DELETE:
-			if(highlight_letter1 == highlight_letter2)
-			{
-				if(ibeam_letter < text_len)
-				{
-					delete_selection(ibeam_letter, ibeam_letter + 1, text_len);
-				}
-			}
-			else
-			{
-				delete_selection(highlight_letter1, highlight_letter2, text_len);
-				highlight_letter2 = ibeam_letter = highlight_letter1;
-			}
-			
-			find_ibeam(1);
-			if(keypress_draw) draw();
-			dispatch_event = 1;
-			result = 1;
-			break;
-
-
-
-		default:
-			if(ctrl_down())
-			{
-				if(get_keypress() == 'c' || get_keypress() == 'C')
-				{
-					if(highlight_letter1 != highlight_letter2)
-					{
-						copy_selection(SECONDARY_SELECTION);
-						result = 1;
-					}
-				}
-				else
-				if(get_keypress() == 'v' || get_keypress() == 'V')
-				{
-					paste_selection(SECONDARY_SELECTION);
-					find_ibeam(1);
-					if(keypress_draw) draw();
-					dispatch_event = 1;
-					result = 1;
-				}
-				else
-				if(get_keypress() == 'x' || get_keypress() == 'X')
-				{
-					if(highlight_letter1 != highlight_letter2)
-					{
-						copy_selection(SECONDARY_SELECTION);
-						delete_selection(highlight_letter1, highlight_letter2, text_len);
-						highlight_letter2 = ibeam_letter = highlight_letter1;
-					}
-
-					find_ibeam(1);
-					if(keypress_draw) draw();
-					dispatch_event = 1;
-					result = 1;
-				}
-				
-				break;
-			}
-
-			default_keypress(dispatch_event, result);
-			break;
+		default_keypress(dispatch_event, result);
+		break;
 	}
 
 	if(dispatch_event) skip_cursor->update();
 	if(dispatch_event) handle_event();
-//printf("BC_TextBox::keypress_event 100 %d\n", ibeam_letter);
 	return result;
 }
-
-
 
 int BC_TextBox::uses_text()
 {
@@ -1236,7 +1185,7 @@ int BC_TextBox::uses_text()
 void BC_TextBox::delete_selection(int letter1, int letter2, int text_len)
 {
 	int i, j;
-	
+
 	for(i = letter1, j = letter2; j < text_len; i++, j++)
 	{
 		text[i] = text[j];
@@ -1291,11 +1240,6 @@ void BC_TextBox::do_separators(int ibeam_left)
 		}
 		text[text_len] = 0;
 
-
-
-
-
-
 // Insert separators into text
 		for(int i = 0; i < separator_len; i++)
 		{
@@ -1323,7 +1267,6 @@ void BC_TextBox::do_separators(int ibeam_left)
 // Truncate text
 		text[separator_len] = 0;
 	}
-
 }
 
 void BC_TextBox::get_ibeam_position(int &x, int &y)
@@ -1347,7 +1290,6 @@ void BC_TextBox::get_ibeam_position(int &x, int &y)
 		if(ibeam_letter >= row_begin && ibeam_letter <= row_end)
 		{
 			x = get_text_width(font, text_row, ibeam_letter - row_begin);
-//printf("BC_TextBox::get_ibeam_position 9 %d %d\n", x, y);
 			return;
 		}
 
@@ -1357,7 +1299,6 @@ void BC_TextBox::get_ibeam_position(int &x, int &y)
 			y += text_height;
 		}
 	}
-//printf("BC_TextBox::get_ibeam_position 10 %d %d\n", x, y);
 
 	x = 0;
 	return;
@@ -1396,8 +1337,6 @@ void BC_TextBox::find_ibeam(int dispatch_event)
 	while(y + text_y >= get_h() - text_height - bottom_margin)
 	{
 		text_y -= text_height;
-// 		text_y = -(y - (get_h() / 2)) + top_margin;
-// 		if(text_y > top_margin) text_y = top_margin;
 	}
 
 	while(y + text_y < top_margin)
@@ -1452,7 +1391,7 @@ int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 			}
 		}
 		if(text[i] == '\n') i++;
-		
+
 		if(i >= text_len && !done)
 		{
 			result = text_len;
@@ -1541,20 +1480,6 @@ void BC_TextBox::set_separators(const char *separators)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window, 
 	int x, 
 	int y, 
@@ -1612,7 +1537,6 @@ int BC_ScrollTextBox::get_rows()
 	return rows;
 }
 
-
 char* BC_ScrollTextBox::get_text()
 {
 	return text->get_text();
@@ -1646,16 +1570,9 @@ void BC_ScrollTextBox::reposition_window(int x, int y, int w, int rows)
 }
 
 
-
-
-
-
-
-
-
 BC_ScrollTextBoxText::BC_ScrollTextBoxText(BC_ScrollTextBox *gui)
  : BC_TextBox(gui->x, 
- 	gui->y, 
+	gui->y, 
 	gui->w - get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w(), 
 	gui->rows,
 	gui->default_text)
@@ -1680,18 +1597,17 @@ int BC_ScrollTextBoxText::handle_event()
 	return gui->handle_event();
 }
 
-int BC_ScrollTextBoxText::motion_event()
+void BC_ScrollTextBoxText::motion_event()
 {
 	gui->yscroll->update_length(get_text_rows(),
 		get_text_row(),
 		gui->yscroll->get_handlelength());
-	return 1;
 }
 
 
 BC_ScrollTextBoxYScroll::BC_ScrollTextBoxYScroll(BC_ScrollTextBox *gui)
  : BC_ScrollBar(gui->x + 
- 			gui->w - 
+			gui->w - 
 			get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w(), 
 		gui->y, 
 		SCROLL_VERT, 
@@ -1715,14 +1631,6 @@ int BC_ScrollTextBoxYScroll::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
 BC_PopupTextBoxText::BC_PopupTextBoxText(BC_PopupTextBox *popup, int x, int y)
  : BC_TextBox(x, y, popup->text_w, 1, popup->default_text)
 {
@@ -1739,16 +1647,16 @@ BC_PopupTextBoxText::~BC_PopupTextBoxText()
 	}
 }
 
-
 int BC_PopupTextBoxText::handle_event()
 {
 	popup->handle_event();
 	return 1;
 }
 
+
 BC_PopupTextBoxList::BC_PopupTextBoxList(BC_PopupTextBox *popup, int x, int y)
  : BC_ListBox(x,
- 	y,
+	y,
 	popup->text_w + BC_WindowBase::get_resources()->listbox_button[0]->get_w(),
 	popup->list_h,
 	LISTBOX_TEXT,
@@ -1761,6 +1669,7 @@ BC_PopupTextBoxList::BC_PopupTextBoxList(BC_PopupTextBox *popup, int x, int y)
 {
 	this->popup = popup;
 }
+
 int BC_PopupTextBoxList::handle_event()
 {
 	BC_ListBoxItem *item = get_selection(0, 0);
@@ -1771,8 +1680,6 @@ int BC_PopupTextBoxList::handle_event()
 	}
 	return 1;
 }
-
-
 
 
 BC_PopupTextBox::BC_PopupTextBox(BC_WindowBase *parent_window, 
@@ -1802,13 +1709,12 @@ BC_PopupTextBox::~BC_PopupTextBox()
 	}
 }
 
-int BC_PopupTextBox::create_objects()
+void BC_PopupTextBox::create_objects()
 {
 	int x = this->x, y = this->y;
 	parent_window->add_subwindow(textbox = new BC_PopupTextBoxText(this, x, y));
 	x += textbox->get_w();
 	parent_window->add_subwindow(listbox = new BC_PopupTextBoxList(this, x, y));
-	return 0;
 }
 
 void BC_PopupTextBox::update(const char *text)
@@ -1823,7 +1729,6 @@ void BC_PopupTextBox::update_list(ArrayList<BC_ListBoxItem*> *data)
 		0,
 		1);
 }
-
 
 char* BC_PopupTextBox::get_text()
 {
@@ -1877,17 +1782,6 @@ void BC_PopupTextBox::reposition_window(int x, int y)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 
 	int64_t default_value,
 	int64_t min,
@@ -1895,13 +1789,14 @@ BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
 	int x, 
 	int y)
  : BC_TextBox(x, 
- 	y, 
+	y, 
 	popup->text_w, 
 	1, 
 	default_value)
 {
 	this->popup = popup;
 }
+
 
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 
 	float default_value,
@@ -1910,7 +1805,7 @@ BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
 	int x, 
 	int y)
  : BC_TextBox(x, 
- 	y, 
+	y, 
 	popup->text_w, 
 	1, 
 	default_value)
@@ -1927,8 +1822,6 @@ BC_TumbleTextBoxText::~BC_TumbleTextBoxText()
 		popup = 0;
 	}
 }
-
-
 
 int BC_TumbleTextBoxText::handle_event()
 {
@@ -1955,9 +1848,6 @@ int BC_TumbleTextBoxText::button_press_event()
 	return 0;
 }
 
-
-
-
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
 		int64_t default_value,
 		int64_t min,
@@ -1979,6 +1869,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	increment = 1;
 	log_floatincrement = 0;
 }
+
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
 		int default_value,
@@ -2064,7 +1955,7 @@ void BC_TumbleTextBox::set_log_floatincrement(int value)
 	if(tumbler) tumbler->set_log_floatincrement(value);
 }
 
-int BC_TumbleTextBox::create_objects()
+void BC_TumbleTextBox::create_objects()
 {
 	int x = this->x, y = this->y;
 
@@ -2090,20 +1981,19 @@ int BC_TumbleTextBox::create_objects()
 
 	if(use_float)
 		parent_window->add_subwindow(tumbler = new BC_FTumbler(textbox, 
- 			min_f,
+			min_f,
 			max_f,
 			x, 
 			y));
 	else
 		parent_window->add_subwindow(tumbler = new BC_ITumbler(textbox, 
- 			min, 
+			min, 
 			max, 
 			x, 
 			y));
 
 	tumbler->set_increment(increment);
 	tumbler->set_log_floatincrement(log_floatincrement);
-	return 0;
 }
 
 char* BC_TumbleTextBox::get_text()
@@ -2111,24 +2001,20 @@ char* BC_TumbleTextBox::get_text()
 	return textbox->get_text();
 }
 
-int BC_TumbleTextBox::update(const char *value)
+void BC_TumbleTextBox::update(const char *value)
 {
 	textbox->update(value);
-	return 0;
 }
 
-int BC_TumbleTextBox::update(int64_t value)
+void BC_TumbleTextBox::update(int64_t value)
 {
 	textbox->update(value);
-	return 0;
 }
 
-int BC_TumbleTextBox::update(float value)
+void BC_TumbleTextBox::update(float value)
 {
 	textbox->update(value);
-	return 0;
 }
-
 
 int BC_TumbleTextBox::get_x()
 {
@@ -2164,9 +2050,9 @@ void BC_TumbleTextBox::reposition_window(int x, int y)
 {
 	this->x = x;
 	this->y = y;
-	
+
 	textbox->reposition_window(x, 
- 		y, 
+		y, 
 		text_w, 
 		1);
 	tumbler->reposition_window(x + textbox->get_w(),

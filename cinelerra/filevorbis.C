@@ -531,10 +531,9 @@ int VorbisConfigAudio::create_objects()
 	return 0;
 }
 
-int VorbisConfigAudio::close_event()
+void VorbisConfigAudio::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

@@ -29,14 +29,13 @@
 
 #include "vframe.inc"
 
-
 class BC_Capture
 {
 public:
 	BC_Capture(int w, int h, char *display_path = "");
 	virtual ~BC_Capture();
 
-	int init_window(char *display_path);
+	void init_window(char *display_path);
 // x1 and y1 are automatically adjusted if out of bounds
 	int capture_frame(VFrame *frame, int &x1, int &y1);
 	int get_w();
@@ -46,11 +45,11 @@ public:
 	unsigned char **row_data;
 
 private:
-	int allocate_data();
-	int delete_data();
+	void allocate_data();
+	void delete_data();
 	int get_top_w();
 	int get_top_h();
-	
+
 	inline void import_RGB565_to_RGB888(unsigned char* &output, unsigned char* &input)
 	{
 		*output++ = (*input & 0xf800) >> 8;

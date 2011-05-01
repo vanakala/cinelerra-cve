@@ -906,10 +906,9 @@ int DVConfigAudio::create_objects()
 	return 0;
 }
 
-int DVConfigAudio::close_event()
+void DVConfigAudio::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 
@@ -935,8 +934,7 @@ int DVConfigVideo::create_objects()
 	return 0;
 }
 
-int DVConfigVideo::close_event()
+void DVConfigVideo::close_event()
 {
 	set_done(0);
-	return 1;
 }

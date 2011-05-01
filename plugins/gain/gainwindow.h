@@ -44,7 +44,7 @@ public:
 	~GainWindow();
 	
 	int create_objects();
-	int close_event();
+	void close_event();
 	
 	Gain *gain;
 	GainLevel *level;

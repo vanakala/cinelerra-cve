@@ -56,7 +56,7 @@ public:
 	LoopVideoWindow(LoopVideo *plugin, int x, int y);
 	~LoopVideoWindow();
 	void create_objects();
-	int close_event();
+	void close_event();
 	LoopVideo *plugin;
 	LoopVideoFrames *frames;
 };

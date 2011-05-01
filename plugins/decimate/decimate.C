@@ -82,27 +82,6 @@ public:
 	Decimate *plugin;
 	DecimateWindow *gui;
 };
-/* Pole
-class DecimateDifference : public BC_CheckBox
-{
-public:
-	DecimateDifference(Decimate *plugin,
-		int x, 
-		int y);
-	int handle_event();
-	Decimate *plugin;
-};
-
-class DecimateAvgDifference : public BC_CheckBox
-{
-public:
-	DecimateAvgDifference(Decimate *plugin,
-		int x, 
-		int y);
-	int handle_event();
-	Decimate *plugin;
-};
-	*/
 
 class DecimateWindow : public BC_Window
 {
@@ -111,7 +90,7 @@ public:
 	~DecimateWindow();
 
 	void create_objects();
-	int close_event();
+	void close_event();
 
 	ArrayList<BC_ListBoxItem*> frame_rates;
 	Decimate *plugin;

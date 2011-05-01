@@ -367,7 +367,7 @@ CaptureLengthTumbler::CaptureLengthTumbler(PreferencesWindow *pwindow, BC_TextBo
 	this->text = text;
 }
 
-int CaptureLengthTumbler::handle_up_event()
+void CaptureLengthTumbler::handle_up_event()
 {
 	int value = atol(text->get_text());
 	value++;
@@ -375,10 +375,9 @@ int CaptureLengthTumbler::handle_up_event()
 	sprintf(string, "%d", value);
 	text->update(string);
 	text->handle_event();
-	return 1;
 }
 
-int CaptureLengthTumbler::handle_down_event()
+void CaptureLengthTumbler::handle_down_event()
 {
 	int value = atol(text->get_text());
 	value--;
@@ -387,7 +386,6 @@ int CaptureLengthTumbler::handle_down_event()
 	sprintf(string, "%d", value);
 	text->update(string);
 	text->handle_event();
-	return 1;
 }
 
 

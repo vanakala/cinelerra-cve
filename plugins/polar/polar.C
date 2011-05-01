@@ -89,7 +89,7 @@ class PolarWindow : public BC_Window
 public:
 	PolarWindow(PolarEffect *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	PolarEffect *plugin;
 	PolarDepth *depth;
 	PolarAngle *angle;

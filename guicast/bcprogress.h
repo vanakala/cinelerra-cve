@@ -31,15 +31,15 @@ public:
 	~BC_ProgressBar();
 
 	void initialize();
-	int reposition_window(int x, int y, int w = -1, int h = -1);
+	void reposition_window(int x, int y, int w = -1, int h = -1);
 	void set_do_text(int value);
 
-	int update(int64_t position);
-	int update_length(int64_t length);
-	int set_images();
+	void update(int64_t position);
+	void update_length(int64_t length);
+	void set_images();
 
 private:
-	int draw(int force = 0);
+	void draw(int force = 0);
 
 	int64_t length, position;
 	int pixel;

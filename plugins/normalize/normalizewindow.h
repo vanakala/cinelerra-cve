@@ -31,7 +31,7 @@ public:
 	~NormalizeWindow();
 
 	int create_objects(VFrame *icon_img, float *db_over, int *seperate_tracks);
-	int close_event();
+	void close_event();
 
 	float *db_over;
 	int *separate_tracks;

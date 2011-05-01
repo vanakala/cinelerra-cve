@@ -37,9 +37,9 @@ public:
 	~LevelWindowGUI();
 
 	int create_objects();
-	int resize_event(int w, int h);
-	int translation_event();
-	int close_event();
+	void resize_event(int w, int h);
+	void translation_event();
+	void close_event();
 	int reset_over();
 	int keypress_event();
 

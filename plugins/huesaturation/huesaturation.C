@@ -94,7 +94,7 @@ class HueWindow : public BC_Window
 public:
 	HueWindow(HueEffect *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	HueEffect *plugin;
 	HueSlider *hue;
 	SaturationSlider *saturation;

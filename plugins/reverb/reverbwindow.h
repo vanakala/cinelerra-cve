@@ -54,7 +54,7 @@ public:
 	~ReverbWindow();
 	
 	int create_objects();
-	int close_event();
+	void close_event();
 	
 	Reverb *reverb;
 	ReverbLevelInit *level_init;

@@ -196,10 +196,9 @@ ShapeWipeWindow::ShapeWipeWindow(ShapeWipeMain *plugin, int x, int y)
 	this->plugin = plugin;
 }
 
-int ShapeWipeWindow::close_event()
+void ShapeWipeWindow::close_event()
 {
 	set_done(1);
-	return 1;
 }
 
 void ShapeWipeWindow::create_objects()

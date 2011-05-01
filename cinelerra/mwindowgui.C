@@ -239,20 +239,18 @@ void MWindowGUI::redraw_time_dependancies()
 	mainclock->update(mwindow->edl->local_session->get_selectionstart(1));
 }
 
-int MWindowGUI::focus_in_event()
+void MWindowGUI::focus_in_event()
 {
 	cursor->focus_in_event();
-	return 1;
 }
 
-int MWindowGUI::focus_out_event()
+void MWindowGUI::focus_out_event()
 {
 	cursor->focus_out_event();
-	return 1;
 }
 
 
-int MWindowGUI::resize_event(int w, int h)
+void MWindowGUI::resize_event(int w, int h)
 {
 	mwindow->session->mwindow_w = w;
 	mwindow->session->mwindow_h = h;
@@ -267,7 +265,6 @@ int MWindowGUI::resize_event(int w, int h)
 	get_scrollbars();
 	canvas->resize_event();
 	zoombar->resize_event();
-	return 0;
 }
 
 
@@ -385,16 +382,15 @@ void MWindowGUI::default_positions()
 
 
 
-int MWindowGUI::repeat_event(int64_t duration)
+void MWindowGUI::repeat_event(int64_t duration)
 {
-	return cursor->repeat_event(duration);
+	cursor->repeat_event(duration);
 }
 
-int MWindowGUI::translation_event()
+void MWindowGUI::translation_event()
 {
 	mwindow->session->mwindow_x = get_x();
 	mwindow->session->mwindow_y = get_y();
-	return 0;
 }
 
 
@@ -624,9 +620,9 @@ int MWindowGUI::keypress_event()
 }
 
 
-int MWindowGUI::close_event() 
-{ 
-	mainmenu->quit(); 
+void MWindowGUI::close_event() 
+{
+	mainmenu->quit();
 }
 
 int MWindowGUI::menu_h()

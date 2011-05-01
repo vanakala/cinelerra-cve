@@ -292,7 +292,7 @@ int TitleWindow::create_objects()
 	return 0;
 }
 
-int TitleWindow::resize_event(int w, int h)
+void TitleWindow::resize_event(int w, int h)
 {
 	client->window_w = w;
 	client->window_h = h;
@@ -353,8 +353,6 @@ int TitleWindow::resize_event(int w, int h)
 	speed->reposition_window(speed->get_x(), speed->get_y());
 	update_color();
 	flash();
-
-	return 1;
 }
 
 
@@ -395,11 +393,9 @@ void  TitleWindow::next_font()
 }
 
 
-int TitleWindow::close_event()
+void TitleWindow::close_event()
 {
-// Set result to 1 to indicate a client side close
 	set_done(1);
-	return 1;
 }
 
 void TitleWindow::update_color()
@@ -459,16 +455,14 @@ TitleFontTumble::TitleFontTumble(TitleMain *client, TitleWindow *window, int x, 
 	this->client = client;
 	this->window = window;
 }
-int TitleFontTumble::handle_up_event()
+void TitleFontTumble::handle_up_event()
 {
 	window->previous_font();
-	return 1;
 }
 
-int TitleFontTumble::handle_down_event()
+void TitleFontTumble::handle_down_event()
 {
 	window->next_font();
-	return 1;
 }
 
 TitleBold::TitleBold(TitleMain *client, TitleWindow *window, int x, int y)

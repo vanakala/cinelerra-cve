@@ -75,11 +75,11 @@ public:
 	virtual int handle_event() { return 0; };
 	void initialize();
 	int cursor_motion_event();
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int cursor_enter_event();
 	int button_press_event();
 	int button_release_event();
-	int repeat_event(int64_t repeat_id);
+	void repeat_event(int64_t repeat_id);
 	int64_t get_value();
 	int64_t get_position();
 	int64_t get_length();
@@ -87,16 +87,16 @@ public:
 	int get_pixels();
 	void set_images(VFrame **data);
 	int in_use();
-	int update_value(int64_t value);
-	int update_length(int64_t length, int64_t position, int64_t handlelength);
-	int reposition_window(int x, int y, int pixels);
+	void update_value(int64_t value);
+	void update_length(int64_t length, int64_t position, int64_t handlelength);
+	void reposition_window(int x, int y, int pixels);
 	int get_span();
 	static int get_span(int orientation);
 	int get_arrow_pixels();
 
 private:
 	void calculate_dimensions(int &w, int &h);
-	int activate();
+	void activate();
 	void draw();
 	void get_handle_dimensions();
 	int get_cursor_zone(int cursor_x, int cursor_y);

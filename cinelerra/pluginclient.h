@@ -69,11 +69,9 @@ PluginClient* new_plugin(PluginServer *server) \
 
 
 #define WINDOW_CLOSE_EVENT(window_class) \
-int window_class::close_event() \
+void window_class::close_event() \
 { \
-/* Set result to 1 to indicate a client side close */ \
 	set_done(1); \
-	return 1; \
 }
 
 

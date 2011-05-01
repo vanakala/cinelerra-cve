@@ -206,8 +206,8 @@ public:
 	int get_label_width();
 	int get_widget_area_height();
 	void create_objects();
-	int close_event();
-	int resize_event(int w, int h);
+	void close_event();
+	void resize_event(int w, int h);
 	void allocate_bitmaps();
 	void draw_labels();
 
@@ -445,7 +445,7 @@ void VideoScopeWindow::create_objects()
 
 WINDOW_CLOSE_EVENT(VideoScopeWindow)
 
-int VideoScopeWindow::resize_event(int w, int h)
+void VideoScopeWindow::resize_event(int w, int h)
 {
 	const int widget_height = get_widget_area_height();
 
@@ -474,8 +474,6 @@ int VideoScopeWindow::resize_event(int w, int h)
 	draw_labels();
 
 	flash();
-
-	return 1;
 }
 
 void VideoScopeWaveform::redraw()

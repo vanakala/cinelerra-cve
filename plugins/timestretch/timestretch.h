@@ -54,7 +54,7 @@ public:
 	TimeStretchWindow(TimeStretch *plugin, int x, int y);
 	void create_objects();
 	void update();
-	int close_event();
+	void close_event();
 	TimeStretchScale *scale;
 	TimeStretch *plugin;
 };

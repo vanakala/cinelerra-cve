@@ -240,7 +240,7 @@ public:
 		int h);
 	~CanvasOutput();
 
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int cursor_enter_event();
 	int button_press_event();
 	int button_release_event();

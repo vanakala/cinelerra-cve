@@ -65,7 +65,7 @@ class WipeWindow : public BC_Window
 public:
 	WipeWindow(WipeMain *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	WipeMain *plugin;
 	WipeLeft *left;
 	WipeRight *right;

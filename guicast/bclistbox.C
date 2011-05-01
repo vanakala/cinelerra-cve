@@ -40,13 +40,13 @@
 
 
 BC_ListBoxYScroll::BC_ListBoxYScroll(BC_ListBox *listbox, 
-	                  int total_height, 
-					  int view_height, 
-	                  int position)
+		int total_height,
+		int view_height,
+		int position)
  : BC_ScrollBar(listbox->get_yscroll_x(), 
- 	listbox->get_yscroll_y(), 
+	listbox->get_yscroll_y(),
 	SCROLL_VERT, 
- 	listbox->get_yscroll_height(), 
+	listbox->get_yscroll_height(),
 	total_height, 
 	position, 
 	view_height)
@@ -65,19 +65,14 @@ int BC_ListBoxYScroll::handle_event()
 }
 
 
-
-
-
-
-
 BC_ListBoxXScroll::BC_ListBoxXScroll(BC_ListBox *listbox, 
-	                  int total_width, 
-					  int view_width,
-	                  int position)
+		int total_width,
+		int view_width,
+		int position)
  : BC_ScrollBar(listbox->get_xscroll_x(), 
- 	listbox->get_xscroll_y(), 
+	listbox->get_xscroll_y(),
 	SCROLL_HORIZ, 
- 	listbox->get_xscroll_width(), 
+	listbox->get_xscroll_width(),
 	total_width, 
 	position, 
 	view_width)
@@ -94,12 +89,6 @@ int BC_ListBoxXScroll::handle_event()
 	listbox->set_xposition(get_value());
 	return 1;
 }
-
-
-
-
-
-
 
 
 BC_ListBoxToggle::BC_ListBoxToggle(BC_ListBox *listbox, 
@@ -131,34 +120,32 @@ void BC_ListBoxToggle::update(BC_ListBoxItem *item,
 // update state
 	switch(state)
 	{
-		case TOGGLE_UP:
-			if(value)
-				state = TOGGLE_CHECKED;
-			break;
+	case TOGGLE_UP:
+		if(value)
+			state = TOGGLE_CHECKED;
+		break;
 
-		case TOGGLE_UPHI:
-			if(value)
-				state = TOGGLE_CHECKEDHI;
-			break;
+	case TOGGLE_UPHI:
+		if(value)
+			state = TOGGLE_CHECKEDHI;
+		break;
 
-		case TOGGLE_CHECKED:
-			if(!value)
-				state = TOGGLE_UP;
-			break;
+	case TOGGLE_CHECKED:
+		if(!value)
+			state = TOGGLE_UP;
+		break;
 
-		case TOGGLE_DOWN:
-			break;
+	case TOGGLE_DOWN:
+		break;
 
-		case TOGGLE_CHECKEDHI:
-			if(!value)
-				state = TOGGLE_UPHI;
-			break;
+	case TOGGLE_CHECKEDHI:
+		if(!value)
+			state = TOGGLE_UPHI;
+		break;
 
-		case TOGGLE_DOWN_EXIT:
-			break;
+	case TOGGLE_DOWN_EXIT:
+		break;
 	}
-
-
 	draw(flash);
 }
 
@@ -174,55 +161,55 @@ int BC_ListBoxToggle::cursor_motion_event(int *redraw_toggles)
 
 	switch(state)
 	{
-		case BC_ListBoxToggle::TOGGLE_UPHI:
-			if(!cursor_inside)
-			{
-				state = BC_ListBoxToggle::TOGGLE_UP;
-				*redraw_toggles = 1;
-			}
-			break;
+	case BC_ListBoxToggle::TOGGLE_UPHI:
+		if(!cursor_inside)
+		{
+			state = BC_ListBoxToggle::TOGGLE_UP;
+			*redraw_toggles = 1;
+		}
+		break;
 
-		case BC_ListBoxToggle::TOGGLE_CHECKEDHI:
-			if(!cursor_inside)
-			{
-				state = BC_ListBoxToggle::TOGGLE_CHECKED;
-				*redraw_toggles = 1;
-			}
-			break;
+	case BC_ListBoxToggle::TOGGLE_CHECKEDHI:
+		if(!cursor_inside)
+		{
+			state = BC_ListBoxToggle::TOGGLE_CHECKED;
+			*redraw_toggles = 1;
+		}
+		break;
 
-		case BC_ListBoxToggle::TOGGLE_DOWN:
-			if(!cursor_inside)
-			{
-				state = BC_ListBoxToggle::TOGGLE_DOWN_EXIT;
-				*redraw_toggles = 1;
-			}
-			result = 1;
-			break;
+	case BC_ListBoxToggle::TOGGLE_DOWN:
+		if(!cursor_inside)
+		{
+			state = BC_ListBoxToggle::TOGGLE_DOWN_EXIT;
+			*redraw_toggles = 1;
+		}
+		result = 1;
+		break;
 
-		case BC_ListBoxToggle::TOGGLE_DOWN_EXIT:
-			if(cursor_inside)
-			{
-				state = BC_ListBoxToggle::TOGGLE_DOWN;
-				*redraw_toggles = 1;
-			}
-			result = 1;
-			break;
+	case BC_ListBoxToggle::TOGGLE_DOWN_EXIT:
+		if(cursor_inside)
+		{
+			state = BC_ListBoxToggle::TOGGLE_DOWN;
+			*redraw_toggles = 1;
+		}
+		result = 1;
+		break;
 
-		default:
-			if(cursor_inside)
-			{
-				if(value)
-					state = BC_ListBoxToggle::TOGGLE_CHECKEDHI;
-				else
-					state = BC_ListBoxToggle::TOGGLE_UPHI;
-				*redraw_toggles = 1;
-			}
-			break;
+	default:
+		if(cursor_inside)
+		{
+			if(value)
+				state = BC_ListBoxToggle::TOGGLE_CHECKEDHI;
+			else
+				state = BC_ListBoxToggle::TOGGLE_UPHI;
+			*redraw_toggles = 1;
+		}
+		break;
 	}
 	return result;
 }
 
-int BC_ListBoxToggle::cursor_leave_event(int *redraw_toggles)
+void BC_ListBoxToggle::cursor_leave_event(int *redraw_toggles)
 {
 	if(value)
 		state = BC_ListBoxToggle::TOGGLE_CHECKED;
@@ -251,24 +238,24 @@ int BC_ListBoxToggle::button_release_event(int *redraw_toggles)
 	int result = 0;
 	switch(state)
 	{
-		case BC_ListBoxToggle::TOGGLE_DOWN:
-			value = !value;
-			if(value)
-				state = BC_ListBoxToggle::TOGGLE_CHECKEDHI;
-			else
-				state = BC_ListBoxToggle::TOGGLE_UPHI;
-			listbox->expand_item(item, value);
-			result = 1;
-			break;
+	case BC_ListBoxToggle::TOGGLE_DOWN:
+		value = !value;
+		if(value)
+			state = BC_ListBoxToggle::TOGGLE_CHECKEDHI;
+		else
+			state = BC_ListBoxToggle::TOGGLE_UPHI;
+		listbox->expand_item(item, value);
+		result = 1;
+		break;
 
-		case BC_ListBoxToggle::TOGGLE_DOWN_EXIT:
-			if(value)
-				state = BC_ListBoxToggle::TOGGLE_CHECKED;
-			else
-				state = BC_ListBoxToggle::TOGGLE_UP;
-			*redraw_toggles = 1;
-			result = 1;
-			break;
+	case BC_ListBoxToggle::TOGGLE_DOWN_EXIT:
+		if(value)
+			state = BC_ListBoxToggle::TOGGLE_CHECKED;
+		else
+			state = BC_ListBoxToggle::TOGGLE_UP;
+		*redraw_toggles = 1;
+		result = 1;
+		break;
 	}
 	return result;
 }
@@ -283,24 +270,32 @@ void BC_ListBoxToggle::draw(int flash)
 
 		switch(state)
 		{
-			case BC_ListBoxToggle::TOGGLE_UP: image_number = 0; break;
-			case BC_ListBoxToggle::TOGGLE_UPHI: image_number = 1; break;
-			case BC_ListBoxToggle::TOGGLE_CHECKED: image_number = 2; break;
-			case BC_ListBoxToggle::TOGGLE_DOWN: image_number = 3; break;
-			case BC_ListBoxToggle::TOGGLE_CHECKEDHI: image_number = 4; break;
-			case BC_ListBoxToggle::TOGGLE_DOWN_EXIT:
-				if(value)
-					image_number = 2;
-				else
-					image_number = 0;
-				break;
+		case BC_ListBoxToggle::TOGGLE_UP:
+			image_number = 0;
+			break;
+		case BC_ListBoxToggle::TOGGLE_UPHI:
+			image_number = 1;
+			break;
+		case BC_ListBoxToggle::TOGGLE_CHECKED:
+			image_number = 2;
+			break;
+		case BC_ListBoxToggle::TOGGLE_DOWN:
+			image_number = 3;
+			break;
+		case BC_ListBoxToggle::TOGGLE_CHECKEDHI:
+			image_number = 4;
+			break;
+		case BC_ListBoxToggle::TOGGLE_DOWN_EXIT:
+			if(value)
+				image_number = 2;
+			else
+				image_number = 0;
+			break;
 		}
 
-//printf("BC_ListBoxToggle::draw 1 %d\n", state);
 		listbox->gui->draw_pixmap(listbox->toggle_images[image_number],
 			x,
 			y);
-
 
 		if(flash)
 		{
@@ -309,18 +304,6 @@ void BC_ListBoxToggle::draw(int flash)
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // ====================================================== box
@@ -358,21 +341,21 @@ BC_ListBox::BC_ListBox(int x,
 	new_value = 0;
 	need_xscroll = 0;
 	need_yscroll = 0;
- 	bg_tile = 0;
- 	drag_popup = 0;
- 	selection_number1 = -1;
+	bg_tile = 0;
+	drag_popup = 0;
+	selection_number1 = -1;
 	selection_number2 = -1;
 	bg_surface = 0;
- 	bg_pixmap = 0;
+	bg_pixmap = 0;
 
- 	current_operation = NO_OPERATION;
+	current_operation = NO_OPERATION;
 	button_highlighted = 0;
 
 	disabled = 0;
 
 	list_highlighted = 0;
 
- 	allow_drag_scroll = 1;
+	allow_drag_scroll = 1;
 	process_drag = 1;
 
 	sort_column = -1;
@@ -397,7 +380,6 @@ BC_ListBox::BC_ListBox(int x,
 	column_sort_up = 0;
 	column_sort_dn = 0;
 
-//printf("BC_ListBox::BC_ListBox 1\n");
 	this->data = data;
 	this->columns = columns;
 	this->yposition = yposition;
@@ -408,29 +390,22 @@ BC_ListBox::BC_ListBox(int x,
 	this->allow_drag = allow_drag;
 	this->column_titles = 0;
 	this->column_width = 0;
-//printf("BC_ListBox::BC_ListBox 1\n");
 
 	if((!column_titles && column_width) ||
 		(column_titles && !column_width))
 	{
 		printf("BC_ListBox::BC_ListBox either column_titles or column_widths == NULL but not both.\n");
+		abort();
 	}
-//printf("BC_ListBox::BC_ListBox 2 %p %p\n", column_titles, column_width);
-	set_columns(column_titles, 
-		column_width, 
+	set_columns(column_titles,
+		column_width,
 		columns);
-
-//printf("BC_ListBox::BC_ListBox 3\n");
 
 	drag_icon_vframe = 0;
 	drag_column_icon_vframe = 0;
 
-
-
 // reset the search engine
-//printf("BC_ListBox::BC_ListBox 4\n");
 	reset_query();
-//printf("BC_ListBox::BC_ListBox 5\n");
 }
 
 BC_ListBox::~BC_ListBox()
@@ -453,18 +428,16 @@ BC_ListBox::~BC_ListBox()
 	if(drag_popup) delete drag_popup;
 }
 
-int BC_ListBox::enable()
+void BC_ListBox::enable()
 {
-  disabled = 0;
-  draw_button();
-  return 1;
+	disabled = 0;
+	draw_button();
 }
 
-int BC_ListBox::disable()
+void BC_ListBox::disable()
 {
-  disabled = 1;
-  draw_button();
-  return 1;
+	disabled = 1;
+	draw_button();
 }
 
 void BC_ListBox::reset_query()
@@ -576,15 +549,9 @@ void BC_ListBox::initialize()
 		BC_WindowBase::get_resources()->listbox_dn, 
 		PIXMAP_ALPHA);
 
-//printf("BC_ListBox::initialize 10\n");
 	drag_icon_vframe = get_resources()->type_to_icon[ICON_UNKNOWN];
 	drag_column_icon_vframe = get_resources()->type_to_icon[ICON_COLUMN];
-// = new BC_Pixmap(parent_window, 
-//		get_resources()->type_to_icon[ICON_UNKNOWN], 
-//		PIXMAP_ALPHA);
-//	drag_column_icon = new BC_Pixmap(parent_window,
-//		get_resources()->type_to_icon[ICON_COLUMN],
-//		PIXMAP_ALPHA);
+
 	BC_SubWindow::initialize();
 
 	init_column_width();
@@ -603,7 +570,7 @@ void BC_ListBox::deactivate_selection()
 	current_operation = NO_OPERATION;
 }
 
-int BC_ListBox::draw_button()
+void BC_ListBox::draw_button()
 {
 // Draw the button for a popup listbox
 	if(is_popup)
@@ -619,7 +586,6 @@ int BC_ListBox::draw_button()
 		if(disabled)
 			image_number = 3;
 
-
 		pixmap->draw_pixmap(button_images[image_number], 
 			0, 
 			0,
@@ -629,21 +595,20 @@ int BC_ListBox::draw_button()
 			0);
 		flash();
 	}
-	return 0;
 }
 
-int BC_ListBox::calculate_item_coords()
+void BC_ListBox::calculate_item_coords()
 {
-	if(!data) return 0;
+	if(!data) return;
 
 	int icon_x = 0;
 	int next_icon_x = 0;
 	int next_icon_y = 0;
 	int next_text_y = 0;
+
 // Change the display_format to get the right item dimensions for both
 // text and icons.
 	int display_format_temp = display_format;
-
 
 // Scan the first column for lowest y coord of all text
 // and lowest right x and y coord for all icons which aren't auto placable
@@ -663,11 +628,7 @@ int BC_ListBox::calculate_item_coords()
 		&next_text_y,
 		1);
 
-
-
 	display_format = display_format_temp;
-
-	return 0;
 }
 
 void BC_ListBox::calculate_last_coords_recursive(
@@ -739,9 +700,6 @@ void BC_ListBox::calculate_item_coords_recursive(
 	int *next_text_y,
 	int top_level)
 {
-
-
-
 // Set up items which need autoplacement.
 // Should fill icons down and then across
 	for(int i = 0; i < data[0].total; i++)
@@ -769,15 +727,12 @@ void BC_ListBox::calculate_item_coords_recursive(
 				if(*icon_x + get_item_w(item) > *next_icon_x)
 					*next_icon_x = *icon_x + get_item_w(item);
 
-
 				item->set_icon_x(*icon_x);
 				item->set_icon_y(*next_icon_y);
 
 				*next_icon_y += get_item_h(item);
 			}
 		}
-
-
 
 // Set up a text row
 		int next_text_x = 0;
@@ -790,13 +745,6 @@ void BC_ListBox::calculate_item_coords_recursive(
 				item->set_text_x(next_text_x);
 				item->set_text_y(*next_text_y);
 
-// printf("BC_ListBox::calculate_item_coords_recursive %p %d %d %d %d %s \n", 
-// item->get_sublist(), 
-// item->get_columns(), 
-// item->get_expand(), 
-// next_text_x, 
-// *next_text_y,
-// item->get_text());
 // Increment position of next column
 				if(j < columns - 1)
 					next_text_x += (column_width ? 
@@ -812,7 +760,6 @@ void BC_ListBox::calculate_item_coords_recursive(
 						&default_column_width[j]);
 					if(new_w > *previous_w)
 						*previous_w = new_w;
-//printf("BC_ListBox::calculate_item_coords_recursive 1 %d\n", new_w);
 				}
 				total_autoplaced_columns++;
 			}
@@ -899,10 +846,6 @@ void BC_ListBox::set_sort_order(int value, int redraw)
 	}
 }
 
-
-
-
-
 int BC_ListBox::get_display_mode()
 {
 	return display_format;
@@ -922,7 +865,6 @@ int BC_ListBox::get_highlighted_item()
 {
 	return highlighted_item;
 }
-
 
 int BC_ListBox::get_item_x(BC_ListBoxItem *item)
 {
@@ -978,11 +920,7 @@ int BC_ListBox::get_item_h(BC_ListBoxItem *item)
 		else
 			return icon_h + text_h;
 	}
-	else
-	{
-		return get_text_height(MEDIUMFONT);
-	}
-	return 0;
+	return get_text_height(MEDIUMFONT);
 }
 
 
@@ -1046,10 +984,6 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 		top_level = 1;
 	}
 
-
-
-
-
 	for(int j = 0; j < (data ? data[master_column].total : 0); j++)
 	{
 		int y1, x, y, w, h;
@@ -1068,7 +1002,6 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 			get_text_mask(item, x, y, w, h);
 			*result += h;
 
-
 // Descend into sublist
 			if(item->get_sublist() &&
 				item->get_expand())
@@ -1084,25 +1017,22 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 		highest = LISTBOX_MARGIN + *result;
 	}
 
-
 	return highest;
 }
 
-int BC_ListBox::set_yposition(int position, int draw_items)
+void BC_ListBox::set_yposition(int position, int draw_items)
 {
 	this->yposition = position;
 	if(draw_items)
 	{
 		this->draw_items(1);
 	}
-	return 0;
 }
 
-int BC_ListBox::set_xposition(int position)
+void BC_ListBox::set_xposition(int position)
 {
 	this->xposition = position;
 	draw_items(1);
-	return 0;
 }
 
 void BC_ListBox::expand_item(BC_ListBoxItem *item, int expand)
@@ -1115,9 +1045,7 @@ void BC_ListBox::expand_item(BC_ListBoxItem *item, int expand)
 		if(item->get_sublist())
 			collapse_recursive(item->get_sublist(), master_column);
 
-
 // Set everything for autoplacement
-		
 		set_autoplacement(data, 0, 1);
 
 		draw_items(1);
@@ -1157,8 +1085,6 @@ void BC_ListBox::set_autoplacement(ArrayList<BC_ListBoxItem*> *data,
 		}
 	}
 }
-
-
 
 int BC_ListBox::get_w()
 {
@@ -1269,7 +1195,7 @@ int BC_ListBox::get_column_width(int column, int clamp_right)
 			get_column_offset(column);
 }
 
-int BC_ListBox::get_icon_mask(BC_ListBoxItem *item, 
+void BC_ListBox::get_icon_mask(BC_ListBoxItem *item, 
 	int &x, 
 	int &y, 
 	int &w, 
@@ -1287,10 +1213,9 @@ int BC_ListBox::get_icon_mask(BC_ListBoxItem *item,
 	{
 		x = y = w = h = 0;
 	}
-	return 0;
 }
 
-int BC_ListBox::get_text_mask(BC_ListBoxItem *item, 
+void BC_ListBox::get_text_mask(BC_ListBoxItem *item, 
 	int &x, 
 	int &y, 
 	int &w, 
@@ -1320,7 +1245,6 @@ int BC_ListBox::get_text_mask(BC_ListBoxItem *item,
 		w = get_text_width(MEDIUMFONT, item->text) + LISTBOX_MARGIN * 2;
 		h = get_text_height(MEDIUMFONT);
 	}
-	return 0;
 }
 
 int BC_ListBox::get_item_highlight(ArrayList<BC_ListBoxItem*> *data, 
@@ -1384,7 +1308,6 @@ BC_ListBoxItem* BC_ListBox::get_selection_recursive(
 			selection_number--;
 			if(selection_number < 0)
 			{
-
 				return data[column].values[i];
 			}
 		}
@@ -1444,11 +1367,9 @@ int BC_ListBox::get_selection_number_recursive(
 	return -1;
 }
 
-
-int BC_ListBox::set_selection_mode(int mode)
+void BC_ListBox::set_selection_mode(int mode)
 {
 	this->selection_mode = mode;
-	return 0;
 }
 
 void BC_ListBox::delete_columns()
@@ -1463,7 +1384,7 @@ void BC_ListBox::delete_columns()
 	}
 
 	if(column_width) delete [] column_width;
-	
+
 	column_titles = 0;
 	column_width = 0;
 }
@@ -1480,7 +1401,6 @@ void BC_ListBox::set_columns(const char **column_titles,
 		return;
 	}
 
-
 	delete_columns();
 
 	if(column_titles)
@@ -1492,7 +1412,7 @@ void BC_ListBox::set_columns(const char **column_titles,
 			strcpy(this->column_titles[i], column_titles[i]);
 		}
 	}
-	
+
 	if(column_width)
 	{
 		this->column_width = new int[columns];
@@ -1501,13 +1421,12 @@ void BC_ListBox::set_columns(const char **column_titles,
 			this->column_width[i] = column_width[i];
 		}
 	}
-	
-	this->columns = columns;
 
+	this->columns = columns;
 }
 
 
-int BC_ListBox::update(ArrayList<BC_ListBoxItem*> *data,
+void BC_ListBox::update(ArrayList<BC_ListBoxItem*> *data,
 	const char **column_titles,
 	int *column_widths,
 	int columns,
@@ -1539,8 +1458,6 @@ int BC_ListBox::update(ArrayList<BC_ListBoxItem*> *data,
 		draw_items(1);
 		update_scrollbars();
 	}
-
-	return 0;
 }
 
 void BC_ListBox::center_selection()
@@ -1550,21 +1467,12 @@ void BC_ListBox::center_selection()
 	calculate_item_coords();
 	center_selection(selection);
 
-
 	if(gui)
 	{
 		draw_background();
 		draw_items(1);
 		update_scrollbars();
 	}
-}
-
-void BC_ListBox::move_vertical(int pixels)
-{
-}
-
-void BC_ListBox::move_horizontal(int pixels)
-{
 }
 
 int BC_ListBox::select_previous(int skip, 
@@ -1721,7 +1629,6 @@ int BC_ListBox::select_next(int skip,
 	return -1;
 }
 
-
 void BC_ListBox::clamp_positions()
 {
 	items_w = get_items_width();
@@ -1759,7 +1666,6 @@ int BC_ListBox::center_selection(int selection,
 		if((*counter) == selection)
 		{
 			BC_ListBoxItem *top_item = this->data[master_column].values[0];
-
 
 			if(display_format == LISTBOX_ICONS)
 			{
@@ -1810,9 +1716,6 @@ void BC_ListBox::update_scrollbars()
 	int h_needed = items_h = get_items_height(data, columns);
 	int w_needed = items_w = get_items_width();
 
-// if(columns > 0 && column_width)
-// printf("BC_ListBox::update_scrollbars 1 %d %d\n", column_width[columns - 1], w_needed);
-
 	if(xscrollbar)
 	{
 		if(xposition != xscrollbar->get_value())
@@ -1833,12 +1736,10 @@ void BC_ListBox::update_scrollbars()
 	}
 }
 
-int BC_ListBox::get_scrollbars()
+void BC_ListBox::get_scrollbars()
 {
 	int h_needed = items_h = get_items_height(data, columns);
 	int w_needed = items_w = get_items_width();
-
-
 
 	title_h = get_title_h();
 
@@ -1898,7 +1799,7 @@ int BC_ListBox::get_scrollbars()
 		}
 		else
 		{
-		    xscrollbar->update_length(w_needed, xposition, view_w);
+			xscrollbar->update_length(w_needed, xposition, view_w);
 			xscrollbar->reposition_window(get_xscroll_x(),
 				get_xscroll_y(),
 				get_xscroll_width());
@@ -1936,7 +1837,7 @@ int BC_ListBox::get_scrollbars()
 		yscrollbar = 0;
 		yposition = 0;
 	}
-	
+
 	if(!bg_surface ||
 		view_w + 4 != bg_surface->get_w() ||
 		view_h + 4 != bg_surface->get_h())
@@ -1945,11 +1846,7 @@ int BC_ListBox::get_scrollbars()
 		bg_surface = new BC_Pixmap(gui, view_w + 4, view_h + 4);
 		draw_background();
 	}
-
-	return 0;
 }
-
-
 
 void BC_ListBox::set_drag_scroll(int value)
 {
@@ -1958,7 +1855,6 @@ void BC_ListBox::set_drag_scroll(int value)
 
 
 // Test for scrolling by dragging
-
 int BC_ListBox::test_drag_scroll(int cursor_x, int cursor_y)
 {
 	int result = 0;
@@ -2151,7 +2047,6 @@ int BC_ListBox::reposition_item(ArrayList<BC_ListBoxItem*> *data,
 	int temp = -1;
 	if(!counter) counter = &temp;
 
-
 	for(int i = 0; i < data[master_column].total; i++)
 	{
 		BC_ListBoxItem *item = data[master_column].values[i];
@@ -2232,16 +2127,14 @@ int BC_ListBox::put_selection(ArrayList<BC_ListBoxItem*> *data,
 		if(item->get_sublist())
 		{
 			if(put_selection(item->get_sublist(),
-				src,
-				destination,
-				counter))
+					src,
+					destination,
+					counter))
 				return 1;
 		}
 	}
 	return 0;
 }
-
-
 
 int BC_ListBox::item_to_index(ArrayList<BC_ListBoxItem*> *data,
 		BC_ListBoxItem *item,
@@ -2256,7 +2149,7 @@ int BC_ListBox::item_to_index(ArrayList<BC_ListBoxItem*> *data,
 		for(int j = 0; j < columns; j++)
 		{
 			BC_ListBoxItem *new_item = data[j].values[i];
-//printf("BC_ListBox::item_to_index 1 %d %d %p\n", j, i, new_item);
+
 			if(new_item == item)
 			{
 				return (*counter);
@@ -2361,7 +2254,6 @@ int BC_ListBox::get_cursor_item(ArrayList<BC_ListBoxItem*> *data,
 					cursor_y >= get_item_y(item) &&
 					cursor_y < get_item_y(item) + get_item_h(item))
 				{
-//printf("BC_ListBox::get_cursor_item %d %d %p\n", master_column, i, item);
 					if(item_return) (*item_return) = item;
 					return (*counter);
 				}
@@ -2383,36 +2275,34 @@ int BC_ListBox::get_cursor_item(ArrayList<BC_ListBoxItem*> *data,
 	return -1;
 }
 
-int BC_ListBox::repeat_event(int64_t duration)
+void BC_ListBox::repeat_event(int64_t duration)
 {
 	switch(current_operation)
 	{
 // Repeat out of bounds selection
-		case SELECT_RECT:
-			if(duration == get_resources()->scroll_repeat)
-				return rectangle_scroll_event();
-			break;
+	case SELECT_RECT:
+		if(duration == get_resources()->scroll_repeat)
+			rectangle_scroll_event();
+		break;
 
-		case SELECT:
-			if(duration == get_resources()->scroll_repeat)
-				return select_scroll_event();
-			break;
+	case SELECT:
+		if(duration == get_resources()->scroll_repeat)
+			select_scroll_event();
+		break;
 
-		case NO_OPERATION:
+	case NO_OPERATION:
 // Show tooltip
-			if(button_highlighted &&
-				duration == get_resources()->tooltip_delay &&
-				tooltip_text[0] != 0 &&
-				is_popup &&
-				!tooltip_done)
-			{
-				show_tooltip();
-				tooltip_done = 1;
-				return 1;
-			}
-			break;
+		if(button_highlighted &&
+			duration == get_resources()->tooltip_delay &&
+			tooltip_text[0] != 0 &&
+			is_popup &&
+			!tooltip_done)
+		{
+			show_tooltip();
+			tooltip_done = 1;
+		}
+		break;
 	}
-	return 0;
 }
 
 
@@ -2423,46 +2313,46 @@ int BC_ListBox::cursor_enter_event()
 	switch(current_operation)
 	{
 // Cursor moved over button, pressed, and exited.
-		case BUTTON_DOWN_SELECT:
-			if(top_level->event_win == win)
-			{
-				current_operation = BUTTON_DN;
-				result = 1;
-				button_highlighted = 1;
-				draw_button();
-			}
-			break;
+	case BUTTON_DOWN_SELECT:
+		if(top_level->event_win == win)
+		{
+			current_operation = BUTTON_DN;
+			result = 1;
+			button_highlighted = 1;
+			draw_button();
+		}
+		break;
 
-		case NO_OPERATION:
+	case NO_OPERATION:
 // Cursor entered button
-			if(is_popup && top_level->event_win == win)
-			{
-				button_highlighted = 1;
-				result = 1;
-				draw_button();
-			}
-			else
+		if(is_popup && top_level->event_win == win)
+		{
+			button_highlighted = 1;
+			result = 1;
+			draw_button();
+		}
+		else
 // TODO: Need to get the highlighted column title or item
-			if(gui && top_level->event_win == gui->win)
-			{
-				list_highlighted = 1;
-				draw_border(1);
-				result = 1;
-			}
-			break;
+		if(gui && top_level->event_win == gui->win)
+		{
+			list_highlighted = 1;
+			draw_border(1);
+			result = 1;
+		}
+		break;
 	}
 
 	return result;
 }
 
-int BC_ListBox::cursor_leave_event()
+void BC_ListBox::cursor_leave_event()
 {
 	int redraw_button = 0;
 	int redraw_border = 0;
 	int redraw_titles = 0;
 	int redraw_items = 0;
 
-	if(current_operation == COLUMN_DRAG) return 0;
+	if(current_operation == COLUMN_DRAG) return;
 
 // Left button area
 	if(button_highlighted)
@@ -2484,8 +2374,6 @@ int BC_ListBox::cursor_leave_event()
 
 		draw_items(1);
 	}
-
-	return 0;
 }
 
 int BC_ListBox::get_first_selection(ArrayList<BC_ListBoxItem*> *data, int *result)
@@ -2596,10 +2484,6 @@ int BC_ListBox::expand_selection(int button_press, int selection_number)
 	int old_selection_start = selection_start;
 	int old_selection_end = selection_end;
 
-// printf("BC_ListBox::expand_selection %d %d\n", 
-// selection_center, 
-// selection_number);
-
 // Calculate the range to select based on selection_center and selection_number
 	if(selection_number < selection_center)
 	{
@@ -2610,7 +2494,6 @@ int BC_ListBox::expand_selection(int button_press, int selection_number)
 		selection_end = selection_number + 1;
 	}
 
-//printf("BC_ListBox::expand_selection %d %d %d %d\n", old_selection_start, old_selection_end, selection_start, selection_end);
 // Recurse through all the items and select the desired range
 	select_range(data, selection_start, selection_end);
 
@@ -2752,10 +2635,9 @@ void BC_ListBox::promote_selections(ArrayList<BC_ListBoxItem*> *data,
 	}
 }
 
-int BC_ListBox::focus_out_event()
+void BC_ListBox::focus_out_event()
 {
 	deactivate();
-	return 0;
 }
 
 int BC_ListBox::button_press_event()
@@ -2766,7 +2648,6 @@ int BC_ListBox::button_press_event()
 	int do_selection_change = 0;
 
 	hide_tooltip();
-
 
 // Pressed in button
 	if(is_popup && top_level->event_win == win)
@@ -2885,7 +2766,6 @@ int BC_ListBox::button_press_event()
 			selection_start = -1;
 			selection_end = -1;
 
-
 // Multiple item selection is possible
 			if(selection_mode == LISTBOX_MULTIPLE && 
 				(ctrl_down() || shift_down()))
@@ -2907,7 +2787,6 @@ int BC_ListBox::button_press_event()
 					{
 						selection_center = selection_number;
 					}
-
 
 // Deselect everything.
 					set_all_selected(data, 0);
@@ -2934,7 +2813,6 @@ int BC_ListBox::button_press_event()
 				}
 				new_value = 1;
 			}
-
 
 			current_operation = SELECT;
 			highlighted_item = selection_number;
@@ -2977,7 +2855,6 @@ int BC_ListBox::button_press_event()
 			}
 		}
 
-
 		reset_query();
 	}
 	else
@@ -2986,7 +2863,6 @@ int BC_ListBox::button_press_event()
 		deactivate();
 		result = 1;
 	}
-
 
 	if(do_selection_change) selection_changed();
 
@@ -3000,123 +2876,119 @@ int BC_ListBox::button_release_event()
 	int do_event = 0;
 	new_value = 0;
 
-//printf("BC_ListBox::button_release_event 1 %d\n", current_operation);
 	switch(current_operation)
 	{
-		case DRAG_DIVISION:
-			current_operation = NO_OPERATION;
-			result = 1;
-			break;
+	case DRAG_DIVISION:
+		current_operation = NO_OPERATION;
+		result = 1;
+		break;
 
-		case WHEEL:
-			current_operation = NO_OPERATION;
-			result = 1;
-			break;
+	case WHEEL:
+		current_operation = NO_OPERATION;
+		result = 1;
+		break;
 
 // Release item selection
-		case BUTTON_DOWN_SELECT:
-		case SELECT:
-//printf("BC_ListBox::button_release_event 10\n");
-			unset_repeat(get_resources()->scroll_repeat);
-			current_operation = NO_OPERATION;
-			translate_coordinates(top_level->event_win,
-				gui->win,
-				gui->get_cursor_x(),
-				gui->get_cursor_y(),
-				&cursor_x,
-				&cursor_y);
+	case BUTTON_DOWN_SELECT:
+	case SELECT:
+		unset_repeat(get_resources()->scroll_repeat);
+		current_operation = NO_OPERATION;
+		translate_coordinates(top_level->event_win,
+			gui->win,
+			gui->get_cursor_x(),
+			gui->get_cursor_y(),
+			&cursor_x,
+			&cursor_y);
 
-			selection_number1 = 
-				selection_number = 
-				get_cursor_item(data, cursor_x, cursor_y);
-//printf("BC_ListBox::button_release_event %d %d\n", selection_number2, selection_number1);
+		selection_number1 = 
+			selection_number = 
+			get_cursor_item(data, cursor_x, cursor_y);
 
-			if(is_popup)
+		if(is_popup)
+		{
+			button_releases++;
+			if(selection_number >= 0)
 			{
-				button_releases++;
-				if(selection_number >= 0)
-				{
-					deactivate();
-					do_event = 1;
-				}
-				else
-// Second button release outside button
-				if(button_releases > 1)
-				{
-					deactivate();
-				}
+				deactivate();
+				do_event = 1;
 			}
 			else
-			{
-				if(top_level->get_double_click() &&
-					selection_number2 == selection_number1 &&
-					selection_number2 >= 0 &&
-					selection_number1 >= 0)
-				{
-					do_event = 1;
-				}
-				result = 1;
-			}
-			break;
-
-
-		case SELECT_RECT:
-			unset_repeat(get_resources()->scroll_repeat);
-			if(data)
-			{
-// Demote selections from rectangle selection
-				promote_selections(data, 2, 1);
-			}
-
-// Hide rectangle overlay
-			draw_rectangle(1);
-			current_operation = NO_OPERATION;
-			result = 1;
-			break;
-
-// Release popup button
-		case BUTTON_DN:
-			hide_tooltip();
-			current_operation = NO_OPERATION;
-			button_releases++;
-			draw_button();
-
-// Second button release inside button
+// Second button release outside button
 			if(button_releases > 1)
 			{
 				deactivate();
 			}
+		}
+		else
+		{
+			if(top_level->get_double_click() &&
+				selection_number2 == selection_number1 &&
+				selection_number2 >= 0 &&
+				selection_number1 >= 0)
+			{
+				do_event = 1;
+			}
 			result = 1;
-			break;
+		}
+		break;
 
-		case COLUMN_DN:
-			current_operation = NO_OPERATION;
+	case SELECT_RECT:
+		unset_repeat(get_resources()->scroll_repeat);
+		if(data)
+		{
+// Demote selections from rectangle selection
+			promote_selections(data, 2, 1);
+		}
+
+// Hide rectangle overlay
+		draw_rectangle(1);
+		current_operation = NO_OPERATION;
+		result = 1;
+		break;
+
+// Release popup button
+	case BUTTON_DN:
+		hide_tooltip();
+		current_operation = NO_OPERATION;
+		button_releases++;
+		draw_button();
+
+// Second button release inside button
+		if(button_releases > 1)
+		{
+			deactivate();
+		}
+		result = 1;
+		break;
+
+	case COLUMN_DN:
+		current_operation = NO_OPERATION;
 // Update the sort column and the sort order for the user only if the existing
 // sort column is valid.
-			if(sort_column >= 0)
-			{
+		if(sort_column >= 0)
+		{
 // Invert order only if column is the same
-				if(highlighted_title == sort_column)
-					sort_order = 
-						(sort_order == SORT_ASCENDING) ? 
-						SORT_DESCENDING : 
+			if(highlighted_title == sort_column)
+				sort_order =
+					(sort_order == SORT_ASCENDING) ?
+						SORT_DESCENDING :
 						SORT_ASCENDING;
 // Set the new sort column
-				sort_column = highlighted_title;
-				if(!sort_order_event())
-				{
-					draw_titles(1);
-				}
-			}
-			else
-// Sorting not enabled.  Redraw the title state.
+			sort_column = highlighted_title;
+			if(!sort_order_event())
 			{
 				draw_titles(1);
 			}
-			result = 1;
-			break;
+		}
+		else
+// Sorting not enabled.  Redraw the title state.
+		{
+			draw_titles(1);
+		}
+		result = 1;
+		break;
 
-		case EXPAND_DN:
+	case EXPAND_DN:
 		{
 			int redraw_toggles = 0;
 			for(int i = 0; i < expanders.total && !result; i++)
@@ -3132,11 +3004,10 @@ int BC_ListBox::button_release_event()
 			break;
 		}
 
-		default:
+	default:
 // Can't default to NO_OPERATION because it may be used in a drag event.
-			break;
+		break;
 	}
-
 
 	if(do_event) handle_event();
 
@@ -3235,7 +3106,7 @@ int BC_ListBox::test_expanders()
 			return 1;
 		}
 	}
-	return 0 ;
+	return 0;
 }
 
 int BC_ListBox::cursor_motion_event()
@@ -3245,20 +3116,19 @@ int BC_ListBox::cursor_motion_event()
 
 	selection_number = -1;
 
-
 	switch(current_operation)
 	{
-		case BUTTON_DN:
+	case BUTTON_DN:
 // Button pressed and slid off button
-			if(!cursor_inside())
-			{
-				current_operation = BUTTON_DOWN_SELECT;
-				draw_button();
-				result = 1;
-			}
-			break;
+		if(!cursor_inside())
+		{
+			current_operation = BUTTON_DOWN_SELECT;
+			draw_button();
+			result = 1;
+		}
+		break;
 
-		case DRAG_DIVISION:
+	case DRAG_DIVISION:
 		{
 			int new_w = get_cursor_x() + 
 				xposition - 
@@ -3287,7 +3157,7 @@ int BC_ListBox::cursor_motion_event()
 			break;
 		}
 
-		case SELECT_RECT:
+	case SELECT_RECT:
 		{
 			if(test_drag_scroll(get_cursor_x(), get_cursor_y()))
 			{
@@ -3316,9 +3186,9 @@ int BC_ListBox::cursor_motion_event()
 				if(data)
 				{
 					redraw = select_rectangle(data,
-						x1, 
+						x1,
 						y1,
-						x2, 
+						x2,
 						y2);
 				}
 
@@ -3344,21 +3214,20 @@ int BC_ListBox::cursor_motion_event()
 			break;
 		}
 
-		case SELECT:
+	case SELECT:
 		{
 			int old_highlighted_item = highlighted_item;
 			int old_highlighted_title = highlighted_title;
 			BC_ListBoxItem *old_highlighted_ptr = highlighted_ptr;
 
 			if(test_drag_scroll(get_cursor_x(), 
-				get_cursor_y()))
+					get_cursor_y()))
 			{
 				set_repeat(get_resources()->scroll_repeat);
 			}
 
-
 			highlighted_item = selection_number = get_cursor_item(data, 
-				get_cursor_x(), 
+				get_cursor_x(),
 				get_cursor_y(),
 				&highlighted_ptr);
 			result = 1;
@@ -3374,7 +3243,7 @@ int BC_ListBox::cursor_motion_event()
 			}
 			else
 			if(selection_mode == LISTBOX_MULTIPLE &&
-				(shift_down() || ctrl_down()))
+					(shift_down() || ctrl_down()))
 // Expand multiple selection
 			{
 // Expand selected region in text mode centered around initial range
@@ -3401,47 +3270,46 @@ int BC_ListBox::cursor_motion_event()
 				clamp_positions();
 				draw_items(1);
 				update_scrollbars();
-//printf("BC_ListBox::cursor_motion_event %d %d\n", highlighted_item, old_highlighted_item);
 				selection_changed();
 			}
 			break;
 		}
 
-		case BUTTON_DOWN_SELECT:
+	case BUTTON_DOWN_SELECT:
 // Went back into button area
-			if(cursor_inside())
-			{
-				current_operation = BUTTON_DN;
-				draw_button();
-				result = 1;
-			}
-			else
+		if(cursor_inside())
+		{
+			current_operation = BUTTON_DN;
+			draw_button();
+			result = 1;
+		}
+		else
 // Went into item area
-			if(gui)
+		if(gui)
+		{
+			int cursor_x = 0, cursor_y = 0;
+			translate_coordinates(top_level->event_win, 
+				gui->win,
+				top_level->cursor_x,
+				top_level->cursor_y,
+				&cursor_x,
+				&cursor_y);
+			int old_highlighted_item = highlighted_item;
+			highlighted_item = selection_number = get_cursor_item(data, 
+					cursor_x, 
+					cursor_y,
+					&highlighted_ptr);
+
+			if(highlighted_item != old_highlighted_item)
 			{
-				int cursor_x = 0, cursor_y = 0;
-				translate_coordinates(top_level->event_win, 
-					gui->win,
-					top_level->cursor_x,
-					top_level->cursor_y,
-					&cursor_x,
-					&cursor_y);
-				int old_highlighted_item = highlighted_item;
-				highlighted_item = selection_number = get_cursor_item(data, 
-						cursor_x, 
-						cursor_y,
-						&highlighted_ptr);
-
-				if(highlighted_item != old_highlighted_item)
-				{
-					update_selection(data, selection_number);
-					draw_items(1);
-					selection_changed();
-				}
+				update_selection(data, selection_number);
+				draw_items(1);
+				selection_changed();
 			}
-			break;
+		}
+		break;
 
-		case EXPAND_DN:
+	case EXPAND_DN:
 		{
 			int redraw_toggles = 0;
 			for(int i = 0; i < expanders.total && !result; i++)
@@ -3457,9 +3325,10 @@ int BC_ListBox::cursor_motion_event()
 			break;
 		}
 
-		case NO_OPERATION:
+	case NO_OPERATION:
 		{
 			int cursor_x = get_cursor_x(), cursor_y = get_cursor_y();
+
 			if(gui && top_level->event_win == gui->win)
 			{
 				int old_highlighted_title = highlighted_title;
@@ -3471,7 +3340,6 @@ int BC_ListBox::cursor_motion_event()
 				int redraw_items = 0;
 				int redraw_toggles = 0;
 				result = 1;
-
 
 // Test if cursor moved over a title division
 				test_column_divisions(cursor_x, cursor_y, new_cursor);
@@ -3492,19 +3360,17 @@ int BC_ListBox::cursor_motion_event()
 						expanders.values[i]->cursor_motion_event(
 							&redraw_toggles);
 					}
-//printf("BC_ListBox::cursor_motion_event %d\n", redraw_toggles);
 				}
 
 // Test if cursor moved over an item
 				if(highlighted_division < 0 && 
 					highlighted_title < 0)
 				{
-					highlighted_item = get_cursor_item(data, 
-						cursor_x, 
+					highlighted_item = get_cursor_item(data,
+						cursor_x,
 						cursor_y,
 						&highlighted_ptr);
 				}
-
 
 // Clear title highlighting if moved over division
 				if(old_highlighted_title != highlighted_title)
@@ -3524,8 +3390,6 @@ int BC_ListBox::cursor_motion_event()
 					redraw_items = 1;
 				}
 
-//printf("BC_ListBox::cursor_motion_event 1 %d\n", highlighted_item);
-
 // Change cursor to title division adjustment
 				reset_cursor(new_cursor);
 
@@ -3543,16 +3407,15 @@ int BC_ListBox::cursor_motion_event()
 						draw_toggles(0);
 				}
 
-				if(redraw_items || 
-					redraw_titles || 
-					redraw_border || 
+				if(redraw_items ||
+					redraw_titles ||
+					redraw_border ||
 					redraw_toggles)
 				{
 					gui->flash();
 					gui->flush();
 				}
 			}
-
 
 			if(!result && list_highlighted)
 			{
@@ -3567,8 +3430,6 @@ int BC_ListBox::cursor_motion_event()
 			break;
 		}
 	}
-
-
 	return result;
 }
 
@@ -3576,72 +3437,69 @@ int BC_ListBox::drag_start_event()
 {
 	switch(current_operation)
 	{
-		case SELECT:
-			if(gui && 
-				gui->is_event_win() && 
-				allow_drag)
-			{
-				BC_ListBoxItem *item_return = 0;
-				selection_number = get_cursor_item(data, 
-					top_level->cursor_x, 
-					top_level->cursor_y,
-					&item_return);
+	case SELECT:
+		if(gui && 
+			gui->is_event_win() && 
+			allow_drag)
+		{
+			BC_ListBoxItem *item_return = 0;
+			selection_number = get_cursor_item(data, 
+				top_level->cursor_x, 
+				top_level->cursor_y,
+				&item_return);
 
-				if(selection_number >= 0)
+			if(selection_number >= 0)
+			{
+				if (item_return->icon_vframe)
 				{
-					
-					if (item_return->icon_vframe)
-					{
-						drag_popup = new BC_DragWindow(this, 
-							item_return->icon_vframe, 
-							get_abs_cursor_x(0) - item_return->icon_vframe->get_w() / 2,
-							get_abs_cursor_y(0) - item_return->icon_vframe->get_h() / 2);
-					}
-					else	
-// this probably works not!
-					if (item_return->icon)  
-						drag_popup = new BC_DragWindow(this, 
-							item_return->icon, 
-							get_abs_cursor_x(0) - item_return->icon->get_w() / 2,
-							get_abs_cursor_y(0) - item_return->icon->get_h() / 2);
-					else
-						drag_popup = new BC_DragWindow(this, 
-							drag_icon_vframe, 
-							get_abs_cursor_x(0) - drag_icon_vframe->get_w() / 2,
-							get_abs_cursor_y(0) - drag_icon_vframe->get_h() / 2);
-					current_operation = DRAG_ITEM;
-					return 1;
+					drag_popup = new BC_DragWindow(this, 
+						item_return->icon_vframe, 
+						get_abs_cursor_x(0) - item_return->icon_vframe->get_w() / 2,
+						get_abs_cursor_y(0) - item_return->icon_vframe->get_h() / 2);
 				}
-			}
-			break;
-
-		case COLUMN_DN:
-			if(gui && gui->is_event_win() && allow_drag_column)
-			{
-				drag_popup = new BC_DragWindow(this, 
-					drag_column_icon_vframe, 
-					get_abs_cursor_x(0) - drag_column_icon_vframe->get_w() / 2,
-					get_abs_cursor_y(0) - drag_column_icon_vframe->get_h() / 2);
-				dragged_title = highlighted_title;
-				current_operation = COLUMN_DRAG;
-				draw_titles(1);
+				else
+// this probably works not!
+				if (item_return->icon)
+					drag_popup = new BC_DragWindow(this, 
+						item_return->icon, 
+						get_abs_cursor_x(0) - item_return->icon->get_w() / 2,
+						get_abs_cursor_y(0) - item_return->icon->get_h() / 2);
+				else
+					drag_popup = new BC_DragWindow(this, 
+						drag_icon_vframe, 
+						get_abs_cursor_x(0) - drag_icon_vframe->get_w() / 2,
+						get_abs_cursor_y(0) - drag_icon_vframe->get_h() / 2);
+				current_operation = DRAG_ITEM;
 				return 1;
 			}
-			break;
+		}
+		break;
+
+	case COLUMN_DN:
+		if(gui && gui->is_event_win() && allow_drag_column)
+		{
+			drag_popup = new BC_DragWindow(this, 
+				drag_column_icon_vframe, 
+				get_abs_cursor_x(0) - drag_column_icon_vframe->get_w() / 2,
+				get_abs_cursor_y(0) - drag_column_icon_vframe->get_h() / 2);
+			dragged_title = highlighted_title;
+			current_operation = COLUMN_DRAG;
+			draw_titles(1);
+			return 1;
+		}
+		break;
 	}
 
 	return 0;
 }
 
-int BC_ListBox::drag_motion_event()
+void BC_ListBox::drag_motion_event()
 {
-//printf("BC_ListBox::drag_motion_event 1 %d\n", current_operation);
 	switch(current_operation)
 	{
-		case DRAG_ITEM:
+	case DRAG_ITEM:
 		{
 			int redraw = 0;
-
 			int new_highlighted_item = -1;
 			BC_ListBoxItem *new_highlighted_ptr = 0;
 			int new_highlight = new_highlighted_item = get_cursor_item(data,
@@ -3657,7 +3515,6 @@ int BC_ListBox::drag_motion_event()
 // Always update highlighted value for drag_stop
 			highlighted_item = new_highlighted_item;
 			highlighted_ptr = new_highlighted_ptr;
-//printf("BC_ListBox::drag_motion_event 1 %p\n", highlighted_ptr);
 			if(redraw)
 			{
 				clamp_positions();
@@ -3665,11 +3522,11 @@ int BC_ListBox::drag_motion_event()
 				update_scrollbars();
 			}
 
-			return drag_popup->cursor_motion_event();
+			drag_popup->cursor_motion_event();
 			break;
 		}
 
-		case COLUMN_DRAG:
+	case COLUMN_DRAG:
 		{
 			int old_highlighted_title = highlighted_title;
 			test_column_titles(get_cursor_x(), get_cursor_y());
@@ -3677,97 +3534,88 @@ int BC_ListBox::drag_motion_event()
 			{
 				draw_titles(1);
 			}
-			return drag_popup->cursor_motion_event();
+			drag_popup->cursor_motion_event();
 			break;
 		}
 	}
-	return 0;
 }
 
-int BC_ListBox::drag_stop_event()
+void BC_ListBox::drag_stop_event()
 {
 	switch(current_operation)
 	{
-		case DRAG_ITEM:
+	case DRAG_ITEM:
 // Inside window boundary
-			if(top_level->cursor_x > 0 && 
-				top_level->cursor_x < gui->get_w() - drag_popup->get_w() / 2 && 
-				top_level->cursor_y > 0 &&
-				top_level->cursor_y < gui->get_h() - drag_popup->get_h() / 2)
-			{
+		if(top_level->cursor_x > 0 && 
+			top_level->cursor_x < gui->get_w() - drag_popup->get_w() / 2 && 
+			top_level->cursor_y > 0 &&
+			top_level->cursor_y < gui->get_h() - drag_popup->get_h() / 2)
+		{
 // Move icon
-
-
-				if(display_format == LISTBOX_ICONS)
-				{
-					reposition_item(data, 
-						selection_number, 
-						top_level->cursor_x + 
-							drag_popup->get_offset_x() - 
-							LISTBOX_MARGIN - 
-							2 + 
-							xposition,
-						top_level->cursor_y + 
-							drag_popup->get_offset_y() - 
-							LISTBOX_MARGIN - 
-							2 + 
-							yposition);
-				}
-				else
-// Move rows
-				if(process_drag)
-				{
-// Get destination
-					int destination = highlighted_item = item_to_index(data,
-						highlighted_ptr);
-//printf("BC_ListBox::drag_stop_event 1 %p %d\n", highlighted_ptr, destination);
-
-// Move selected items from data to temporary
-					ArrayList<BC_ListBoxItem*> *src_items = 
-						new ArrayList<BC_ListBoxItem*>[columns];
-
-					move_selection(src_items, data);
-
-// Insert items from temporary to data
-					put_selection(data,
-						src_items,
-						destination);
-
-
-					delete [] src_items;				
-					set_autoplacement(data, 0, 1);
-				}
-
-			
-				draw_items(1);
+			if(display_format == LISTBOX_ICONS)
+			{
+				reposition_item(data, 
+					selection_number, 
+					top_level->cursor_x + 
+						drag_popup->get_offset_x() - 
+						LISTBOX_MARGIN - 
+						2 + 
+						xposition,
+					top_level->cursor_y + 
+						drag_popup->get_offset_y() - 
+						LISTBOX_MARGIN - 
+						2 + 
+						yposition);
 			}
 			else
-				drag_popup->drag_failure_event();
+// Move rows
+			if(process_drag)
+			{
+// Get destination
+				int destination = highlighted_item = item_to_index(data,
+					highlighted_ptr);
+
+// Move selected items from data to temporary
+				ArrayList<BC_ListBoxItem*> *src_items = 
+					new ArrayList<BC_ListBoxItem*>[columns];
+
+				move_selection(src_items, data);
+
+// Insert items from temporary to data
+				put_selection(data,
+					src_items,
+					destination);
+
+				delete [] src_items;
+				set_autoplacement(data, 0, 1);
+			}
+
+			draw_items(1);
+		}
+		else
+			drag_popup->drag_failure_event();
 
 			delete drag_popup;
 			drag_popup = 0;
 			current_operation = NO_OPERATION;
 			new_value = 0;
-			return 1;
-			break;
+			return;
 
-		case COLUMN_DRAG:
-			if(dragged_title != highlighted_title)
+	case COLUMN_DRAG:
+		if(dragged_title != highlighted_title)
+		{
+			if(highlighted_title >= 0)
 			{
-				if(highlighted_title >= 0)
-				{
-					if(!move_column_event()) draw_titles(1);
-				}
-				else
-					drag_popup->drag_failure_event();
+				if(!move_column_event()) draw_titles(1);
 			}
-			current_operation = NO_OPERATION;
-			delete drag_popup;
-			drag_popup = 0;
-			return 1;
-			break;
+			else
+				drag_popup->drag_failure_event();
+		}
+		current_operation = NO_OPERATION;
+		delete drag_popup;
+		drag_popup = 0;
+		return;
 	}
-	return 0;
 }
 
 BC_DragWindow* BC_ListBox::get_drag_popup()
@@ -3775,7 +3623,7 @@ BC_DragWindow* BC_ListBox::get_drag_popup()
 	return drag_popup;
 }
 
-int BC_ListBox::translation_event()
+void BC_ListBox::translation_event()
 {
 	if(is_popup && gui)
 	{
@@ -3789,18 +3637,15 @@ int BC_ListBox::translation_event()
 				top_level->get_resources()->get_top_border());
 
 		gui->reposition_window(new_x, new_y);
-		
 	}
-	return 0;
 }
 
-int BC_ListBox::reposition_window(int x, int y, int w, int h)
+void BC_ListBox::reposition_window(int x, int y, int w, int h)
 {
 	if(w != -1)
 	{
 		if(w != -1) popup_w = w;
 		if(h != -1) popup_h = h;
-//printf("BC_ListBox::reposition_window %d %d\n", popup_w, popup_h);
 
 		if(!is_popup)
 		{
@@ -3817,14 +3662,12 @@ int BC_ListBox::reposition_window(int x, int y, int w, int h)
 		}
 	}
 
-
 	BC_WindowBase::reposition_window(x, y, w, h);
 	draw_button();
 	draw_items(1);
-	return 0;
 }
 
-int BC_ListBox::deactivate()
+void BC_ListBox::deactivate()
 {
 	if(active)
 	{
@@ -3840,10 +3683,9 @@ int BC_ListBox::deactivate()
 		}
 		top_level->active_subwindow = 0;
 	}
-	return 0;
 }
 
-int BC_ListBox::activate()
+void BC_ListBox::activate()
 {
 	if(!active)
 	{
@@ -3866,7 +3708,6 @@ int BC_ListBox::activate()
 				x = get_x();
 			}
 
-			
 			XTranslateCoordinates(top_level->display, 
 				parent_window->win, 
 				top_level->rootwin, 
@@ -3880,7 +3721,6 @@ int BC_ListBox::activate()
 			if(new_y + popup_h > top_level->get_root_h(0)) 
 				new_y -= get_h() + popup_h;
 
-//printf("BC_ListBox::activate %d %d\n", popup_w, popup_h);
 			add_subwindow(gui = new BC_Popup(this, 
 				new_x, 
 				new_y, 
@@ -3892,13 +3732,12 @@ int BC_ListBox::activate()
 			draw_items(1);
 		}
 	}
-	return 0;
 }
 
 int BC_ListBox::keypress_event()
 {
 	if(!active) return 0;
-	
+
 	int result = 0, redraw = 0, done, view_items = view_h / get_text_height(MEDIUMFONT);
 	int new_item = -1, new_selection = 0;
 
@@ -3913,7 +3752,6 @@ int BC_ListBox::keypress_event()
 		case UP:
 			new_selection = new_item = select_previous(0);
 
-//printf("BC_ListBox::keypress_event 1 %d\n", new_item);
 			if(new_item >= 0)
 			{
 				center_selection(new_item);
@@ -4052,26 +3890,17 @@ int BC_ListBox::get_format()
 	return display_format;
 }
 
-
-
-int BC_ListBox::draw_items(int flash)
+void BC_ListBox::draw_items(int flash)
 {
 	if(gui)
 	{
 		BC_Resources *resources = get_resources();
 
-//dump(data, columns);
-
 // Calculate items width 
 		calculate_item_coords();
 
-
 // Create and destroy scrollbars as needed
 		get_scrollbars();
-
-
-
-//		draw_background();
 
 // Icon display
 		if(display_format == LISTBOX_ICONS)
@@ -4094,7 +3923,6 @@ int BC_ListBox::draw_items(int flash)
 // Draw highlights
 					get_icon_mask(item, icon_x, icon_y, icon_w, icon_h);
 					get_text_mask(item, text_x, text_y, text_w, text_h);
-
 
 					if(item_color != resources->listbox_inactive)
 					{
@@ -4175,7 +4003,6 @@ int BC_ListBox::draw_items(int flash)
 // Draw borders
 		draw_border(0);
 
-
 		if(current_operation == SELECT_RECT)
 			draw_rectangle(0);
 
@@ -4185,8 +4012,6 @@ int BC_ListBox::draw_items(int flash)
 			gui->flush();
 		}
 	}
-
-	return 0;
 }
 
 
@@ -4196,7 +4021,6 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 	int *current_toggle)
 {
 	if(!data) return;
-
 
 	BC_Resources *resources = get_resources();
 
@@ -4253,7 +4077,6 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 
 			gui->set_color(get_item_color(data, column, i));
 
-
 // Indent only applies to first column
 			gui->draw_text(
 				x + 
@@ -4262,7 +4085,6 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 					(column == 0 ? indent + subindent : 0), 
 				y + get_text_ascent(MEDIUMFONT), 
 				item->text);
-
 
 // Update expander
 			if(column == 0 &&
@@ -4284,7 +4106,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 // Reposition existing expander
 				{
 					BC_ListBoxToggle *toggle = expanders.values[*current_toggle];
-//printf("BC_ListBox::draw_text_recursive 1 %d\n", *current_toggle);
+
 					toggle->update(item, 
 						x + LISTBOX_BORDER + LISTBOX_MARGIN + indent,
 						y,
@@ -4292,9 +4114,6 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 				}
 				(*current_toggle)++;
 			}
-
-
-
 		}
 
 // Descend into sublist
@@ -4308,11 +4127,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 	}
 }
 
-
-
-
-
-int BC_ListBox::draw_border(int flash)
+void BC_ListBox::draw_border(int flash)
 {
 	BC_Resources *resources = top_level->get_resources();
 	gui->draw_3d_border(0, 
@@ -4333,18 +4148,14 @@ int BC_ListBox::draw_border(int flash)
 		gui->flash();
 		gui->flush();
 	}
-	return 0;
 }
 
-int BC_ListBox::draw_titles(int flash)
+void BC_ListBox::draw_titles(int flash)
 {
 	if(column_titles && display_format == LISTBOX_TEXT)
 	{
-//printf("BC_ListBox::draw_titles 1 %d\n", highlighted_title);
 		for(int i = 0; i < columns; i++)
 		{
-
-
 // Column title background
 			int image_number = 0;
 			if(i == highlighted_title)
@@ -4380,7 +4191,6 @@ int BC_ListBox::draw_titles(int flash)
 					title_h / 2 - src->get_h() / 2 + LISTBOX_BORDER);
 			}
 
-
 			int x = -xposition + 
 				get_column_offset(i) + 
 				LISTBOX_MARGIN + 
@@ -4407,7 +4217,6 @@ void BC_ListBox::draw_toggles(int flash)
 	for(int i = 0; i < expanders.total; i++)
 		expanders.values[i]->draw(0);
 
-//printf("BC_ListBox::draw_toggles 1 %d\n", flash);
 	if(flash && expanders.total)
 	{
 		gui->flash();
@@ -4415,27 +4224,25 @@ void BC_ListBox::draw_toggles(int flash)
 	}
 }
 
-int BC_ListBox::draw_rectangle(int flash)
+void BC_ListBox::draw_rectangle(int flash)
 {
 	int x1 = MIN(rect_x1, rect_x2);
 	int x2 = MAX(rect_x1, rect_x2);
 	int y1 = MIN(rect_y1, rect_y2);
 	int y2 = MAX(rect_y1, rect_y2);
 
-	if(x1 == x2 || y1 == y2) return 0;
+	if(x1 == x2 || y1 == y2) return;
 
 	gui->set_inverse();
 	gui->set_color(WHITE);
 	gui->draw_rectangle(x1, y1, x2 - x1, y2 - y1);
 	gui->set_opaque();
 
-
 	if(flash)
 	{
 		gui->flash();
 		gui->flush();
 	}
-	return 0;
 }
 
 void BC_ListBox::dump(ArrayList<BC_ListBoxItem*> *data, 
@@ -4471,10 +4278,4 @@ void BC_ListBox::dump(ArrayList<BC_ListBoxItem*> *data,
 				master_column);
 		}
 	}
-
-	
 }
-
-
-
-

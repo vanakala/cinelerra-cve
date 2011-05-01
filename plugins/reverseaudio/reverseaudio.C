@@ -56,7 +56,7 @@ public:
 	ReverseAudioWindow(ReverseAudio *plugin, int x, int y);
 	~ReverseAudioWindow();
 	void create_objects();
-	int close_event();
+	void close_event();
 	ReverseAudio *plugin;
 	ReverseAudioEnabled *enabled;
 };

@@ -239,17 +239,16 @@ void ManualGotoWindow::set_entered_position_sec(double position)
 
 }
 
-int ManualGotoWindow::activate()
+void ManualGotoWindow::activate()
 {
 	int i;
 
 	for(i = 0; i < numboxes; i++)
 		boxes[i]->reshape_update(0);
-	int result = BC_Window::activate();
+	BC_Window::activate();
 	for(i = 1; i < numboxes; i++)
 		boxes[i]->deactivate();
 	boxes[0]->activate();
-	return result;
 }
 
 void ManualGotoWindow::create_objects()
@@ -332,17 +331,16 @@ int ManualGotoNumber::handle_event()
 	return 1;
 }
 
-int ManualGotoNumber::deactivate()
+void ManualGotoNumber::deactivate()
 {
 	reshape_update(0);
-	return BC_TextBox::deactivate();
+	BC_TextBox::deactivate();
 }
 
-int ManualGotoNumber::activate()
+void ManualGotoNumber::activate()
 {
-	int retval = BC_TextBox::activate();
+	BC_TextBox::activate();
 	select_whole_text(1);
-	return retval;
 }
 
 

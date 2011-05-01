@@ -773,9 +773,9 @@ CanvasOutput::~CanvasOutput()
 {
 }
 
-int CanvasOutput::cursor_leave_event()
+void CanvasOutput::cursor_leave_event()
 {
-	return canvas->cursor_leave_event_base(this);
+	canvas->cursor_leave_event_base(this);
 }
 
 int CanvasOutput::cursor_enter_event()

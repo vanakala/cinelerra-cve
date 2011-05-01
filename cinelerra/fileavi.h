@@ -139,7 +139,7 @@ public:
 	static int calculate_w(int format);
 	static int calculate_h(int format);
 	int create_objects();
-	int close_event();
+	void close_event();
 	int generate_codeclist();
 	void update_codecs();
 
@@ -170,7 +170,7 @@ class AVIVAttributeList : public BC_ListBox
 public:
 	AVIVAttributeList(AVIConfigVideo *gui, int x, int y);
 	int handle_event();
-	int selection_changed();
+	void selection_changed();
 	AVIConfigVideo *gui;
 };
 
@@ -193,7 +193,7 @@ public:
 	static int calculate_w(int format);
 	static int calculate_h(int format);
 	int create_objects();
-	int close_event();
+	void close_event();
 	int generate_codeclist();
 	void generate_attributelist();
 	void update_attribute(int recursive);

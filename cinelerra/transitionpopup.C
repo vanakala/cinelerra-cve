@@ -86,10 +86,9 @@ void TransitionLengthDialog::create_objects()
 	show_window();
 }
 
-int TransitionLengthDialog::close_event()
+void TransitionLengthDialog::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

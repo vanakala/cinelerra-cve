@@ -91,8 +91,8 @@ public:
 	void update_batch_sources();
 // Update the batch editing tools
 	void update_batch_tools();
-	int resize_event(int w, int h);
-	int translation_event();
+	void resize_event(int w, int h);
+	void translation_event();
 
 	ArrayList<BC_ListBoxItem*> batches[BATCH_COLUMNS];
 // Menu items
@@ -185,11 +185,10 @@ class RecordGUIBatches : public BC_ListBox
 public:
 	RecordGUIBatches(Record *record, RecordGUI *gui, int x, int y, int w, int h);
 	int handle_event();
-	int selection_changed();
+	void selection_changed();
 	int column_resize_event();
 	int drag_start_event();
-	int drag_motion_event();
-	int drag_stop_event();
+	void drag_stop_event();
 
 	int dragging_item;
 	Record *record;

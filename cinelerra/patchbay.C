@@ -544,11 +544,10 @@ PatchGUI* PatchBay::get_patch_of(Track *track)
 	return 0;
 }
 
-int PatchBay::resize_event(int top, int bottom)
+void PatchBay::resize_event(int top, int bottom)
 {
 	reposition_window(mwindow->theme->patchbay_x,
 		mwindow->theme->patchbay_y,
 		mwindow->theme->patchbay_w,
 		mwindow->theme->patchbay_h);
-	return 0;
 }

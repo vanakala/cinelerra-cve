@@ -243,10 +243,9 @@ EditPopupTitleWindow::~EditPopupTitleWindow()
 {
 }
 
-int EditPopupTitleWindow::close_event()
+void EditPopupTitleWindow::close_event()
 {
 	set_done(1);
-	return 1;
 }
 
 int EditPopupTitleWindow::create_objects()

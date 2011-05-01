@@ -57,7 +57,7 @@ public:
 	LoopAudioWindow(LoopAudio *plugin, int x, int y);
 	~LoopAudioWindow();
 	void create_objects();
-	int close_event();
+	void close_event();
 	LoopAudio *plugin;
 	LoopAudioSamples *samples;
 };

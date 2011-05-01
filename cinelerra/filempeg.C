@@ -1320,10 +1320,9 @@ int MPEGConfigAudio::create_objects()
 	return 0;
 }
 
-int MPEGConfigAudio::close_event()
+void MPEGConfigAudio::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 
@@ -1493,10 +1492,9 @@ int MPEGConfigVideo::create_objects()
 	return 0;
 }
 
-int MPEGConfigVideo::close_event()
+void MPEGConfigVideo::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

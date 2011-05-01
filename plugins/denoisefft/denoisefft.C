@@ -78,7 +78,7 @@ class DenoiseFFTWindow : public BC_Window
 public:
 	DenoiseFFTWindow(DenoiseFFTEffect *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	DenoiseFFTLevel *level;
 	DenoiseFFTSamples *samples;
 	DenoiseFFTEffect *plugin;

@@ -35,7 +35,7 @@ public:
 	~_720to480Window();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 	int set_first_field(int first_field);
 	_720to480Main *client;
 	_720to480Order *odd_first;

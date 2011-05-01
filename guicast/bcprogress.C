@@ -44,8 +44,8 @@ BC_ProgressBar::BC_ProgressBar(int x, int y, int w, int64_t length, int do_text)
 
 BC_ProgressBar::~BC_ProgressBar()
 {
-    for(int i = 0; i < 2; i++)
-  	    if (images[i]) delete images[i];
+	for(int i = 0; i < 2; i++)
+	if (images[i]) delete images[i];
 }
 
 void BC_ProgressBar::initialize()
@@ -57,7 +57,7 @@ void BC_ProgressBar::initialize()
 	draw(1);
 }
 
-int BC_ProgressBar::reposition_window(int x, int y, int w, int h)
+void BC_ProgressBar::reposition_window(int x, int y, int w, int h)
 {
 	if(w < 0) w = get_w();
 	if(h < 0) h = get_h();
@@ -70,7 +70,7 @@ void BC_ProgressBar::set_do_text(int value)
 	this->do_text = value;
 }
 
-int BC_ProgressBar::set_images()
+void BC_ProgressBar::set_images()
 {
 	for(int i = 0; i < 2; i++)
 		if(images[i]) delete images[i];
@@ -81,11 +81,9 @@ int BC_ProgressBar::set_images()
 			get_resources()->progress_images[i], 
 			PIXMAP_ALPHA);
 	}
-	return 0;
 }
 
-
-int BC_ProgressBar::draw(int force)
+void BC_ProgressBar::draw(int force)
 {
 	char string[32];
 	int new_pixel;
@@ -110,22 +108,18 @@ int BC_ProgressBar::draw(int force)
 		}
 		flash();
 	}
-	return 0;
 }
 
-int BC_ProgressBar::update(int64_t position)
+void BC_ProgressBar::update(int64_t position)
 {
 	this->position = position;
 	draw();
-	return 0;
 }
 
-int BC_ProgressBar::update_length(int64_t length)
+void BC_ProgressBar::update_length(int64_t length)
 {
 	this->length = length;
 	position = 0;
 
 	draw();
-	return 0;
 }
-

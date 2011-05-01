@@ -72,10 +72,9 @@ int FlipWindow::create_objects()
 	delete ico;
 }
 
-int FlipWindow::close_event()
+void FlipWindow::close_event()
 {
 	set_done(1);
-	return 1;
 }
 
 FlipToggle::FlipToggle(FlipMain *client, int *output, char *string, int x, int y)

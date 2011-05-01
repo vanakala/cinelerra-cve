@@ -319,7 +319,7 @@ int PluginDialog::create_objects()
 	return 0;
 }
 
-int PluginDialog::resize_event(int w, int h)
+void PluginDialog::resize_event(int w, int h)
 {
 	mwindow->session->plugindialog_w = w;
 	mwindow->session->plugindialog_h = h;
@@ -410,7 +410,7 @@ int PluginDialogNew::handle_event()
 	return 1;
 }
 
-int PluginDialogNew::selection_changed()
+void PluginDialogNew::selection_changed()
 {
 	dialog->selected_available = get_selection_number(0, 0);
 	dialog->shared_list->set_all_selected(&dialog->shared_data, 0);
@@ -419,7 +419,6 @@ int PluginDialogNew::selection_changed()
 	dialog->module_list->draw_items(1);
 	dialog->selected_shared = -1;
 	dialog->selected_modules = -1;
-	return 1;
 }
 
 
@@ -449,7 +448,7 @@ int PluginDialogShared::handle_event()
 	return 1;
 }
 
-int PluginDialogShared::selection_changed()
+void PluginDialogShared::selection_changed()
 {
 	dialog->selected_shared = get_selection_number(0, 0);
 	dialog->standalone_list->set_all_selected(&dialog->standalone_data, 0);
@@ -458,7 +457,6 @@ int PluginDialogShared::selection_changed()
 	dialog->module_list->draw_items(1);
 	dialog->selected_available = -1;
 	dialog->selected_modules = -1;
-	return 1;
 }
 
 
@@ -488,7 +486,7 @@ int PluginDialogModules::handle_event()
 	return 1;
 }
 
-int PluginDialogModules::selection_changed()
+void PluginDialogModules::selection_changed()
 {
 	dialog->selected_modules = get_selection_number(0, 0);
 	dialog->standalone_list->set_all_selected(&dialog->standalone_data, 0);
@@ -497,7 +495,6 @@ int PluginDialogModules::selection_changed()
 	dialog->shared_list->draw_items(1);
 	dialog->selected_available = -1;
 	dialog->selected_shared = -1;
-	return 1;
 }
 
 

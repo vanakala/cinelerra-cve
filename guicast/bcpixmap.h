@@ -61,7 +61,7 @@ public:
 	void enable_opengl();
 	void copy_area(int x, int y, int w, int h, int x2, int y2);
 // Draw this pixmap onto the drawable pointed to by pixmap.
-	int write_drawable(Drawable &pixmap,
+	void write_drawable(Drawable &pixmap,
 			int dest_x, 
 			int dest_y,
 			int dest_w = -1,

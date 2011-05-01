@@ -50,7 +50,7 @@ public:
 	~ConfirmSaveWindow();
 
 	int create_objects();
-	int resize_event(int w, int h);
+	void resize_event(int w, int h);
 
 	ArrayList<BC_ListBoxItem*> *list;
 	BC_Title *title;

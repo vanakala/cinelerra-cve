@@ -199,14 +199,13 @@ int CWindowGUI::create_objects()
 	return 0;
 }
 
-int CWindowGUI::translation_event()
+void CWindowGUI::translation_event()
 {
 	mwindow->session->cwindow_x = get_x();
 	mwindow->session->cwindow_y = get_y();
-	return 0;
 }
 
-int CWindowGUI::resize_event(int w, int h)
+void CWindowGUI::resize_event(int w, int h)
 {
 	mwindow->session->cwindow_x = get_x();
 	mwindow->session->cwindow_y = get_y();
@@ -250,7 +249,6 @@ int CWindowGUI::resize_event(int w, int h)
 	draw_status();
 
 	BC_WindowBase::resize_event(w, h);
-	return 1;
 }
 
 int CWindowGUI::button_press_event()
@@ -260,11 +258,10 @@ int CWindowGUI::button_press_event()
 	return 0;
 }
 
-int CWindowGUI::cursor_leave_event()
+void CWindowGUI::cursor_leave_event()
 {
 	if(canvas->get_canvas())
-		return canvas->cursor_leave_event_base(canvas->get_canvas());
-	return 0;
+		canvas->cursor_leave_event_base(canvas->get_canvas());
 }
 
 int CWindowGUI::cursor_enter_event()
@@ -381,10 +378,9 @@ void CWindowGUI::update_tool()
 	tool_panel->update_values();
 }
 
-int CWindowGUI::close_event()
+void CWindowGUI::close_event()
 {
 	cwindow->hide_window();
-	return 1;
 }
 
 
@@ -736,16 +732,14 @@ void CWindowSlider::set_position()
 }
 
 
-int CWindowSlider::increase_value()
+void CWindowSlider::increase_value()
 {
 	cwindow->gui->transport->handle_transport(SINGLE_FRAME_FWD);
-	return 1;
 }
 
-int CWindowSlider::decrease_value()
+void CWindowSlider::decrease_value()
 {
 	cwindow->gui->transport->handle_transport(SINGLE_FRAME_REWIND);
-	return 1;
 }
 
 

@@ -46,7 +46,7 @@ public:
 	~TimeAvgWindow();
 	
 	int create_objects();
-	int close_event();
+	void close_event();
 	
 	TimeAvgMain *client;
 	TimeAvgSlider *total_frames;

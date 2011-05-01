@@ -73,7 +73,7 @@ public:
 	~LoadFileWindow();
 
 	int create_objects();
-	int resize_event(int w, int h);
+	void resize_event(int w, int h);
 
 	LoadFileThread *thread;
 	LoadMode *loadmode;

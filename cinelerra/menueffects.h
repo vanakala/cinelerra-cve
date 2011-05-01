@@ -114,7 +114,7 @@ public:
 	virtual ~MenuEffectWindow();
 
 	int create_objects();
-	int resize_event(int w, int h);
+	void resize_event(int w, int h);
 
 	BC_Title *list_title;
 	MenuEffectWindowList *list;

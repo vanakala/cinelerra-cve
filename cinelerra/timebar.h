@@ -118,7 +118,7 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
-	int repeat_event(int64_t duration);
+	void repeat_event(int64_t duration);
 
 	LabelEdit *label_edit;
 

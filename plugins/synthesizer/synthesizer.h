@@ -62,8 +62,8 @@ public:
 	~SynthWindow();
 
 	int create_objects();
-	int close_event();
-	int resize_event(int w, int h);
+	void close_event();
+	void resize_event(int w, int h);
 	void update_gui();
 	int waveform_to_text(char *text, int waveform);
 	void update_scrollbar();

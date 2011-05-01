@@ -113,7 +113,7 @@ public:
 	~DVConfigAudio();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 private:
 	Asset *asset;
@@ -129,7 +129,7 @@ public:
 	~DVConfigVideo();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 private:
 	Asset *asset;

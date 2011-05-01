@@ -545,10 +545,9 @@ int PrefsRenderFarmNodes::handle_event()
 	return 1;
 }	
 
-int PrefsRenderFarmNodes::selection_changed()
+void PrefsRenderFarmNodes::selection_changed()
 {
 	handle_event();
-	return 1;
 }
 
 

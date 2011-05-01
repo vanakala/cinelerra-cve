@@ -120,7 +120,7 @@ class ShapeWipeWindow : public BC_Window
 public:
 	ShapeWipeWindow(ShapeWipeMain *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	void reset_pattern_image();
 	ShapeWipeMain *plugin;
 	ShapeWipeW2B *left;

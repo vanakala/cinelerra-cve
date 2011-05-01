@@ -59,13 +59,11 @@ BC_Toggle::BC_Toggle(int x, int y,
 	is_radial = 0;
 }
 
-
 BC_Toggle::~BC_Toggle()
 {
 	for(int i = 0; i < 5; i++) if(images[i]) delete images[i];
 	delete bg_image;
 }
-
 
 void BC_Toggle::initialize()
 {
@@ -91,7 +89,6 @@ void BC_Toggle::initialize()
 // Display the bitmap
 	draw_face();
 }
-
 
 void BC_Toggle::calculate_extents(BC_WindowBase *gui, 
 	VFrame **images,
@@ -147,12 +144,10 @@ void BC_Toggle::calculate_extents(BC_WindowBase *gui,
 
 		*w = *text_x + *text_w;
 	}
-
-
 }
 
 
-int BC_Toggle::set_images(VFrame **data)
+void BC_Toggle::set_images(VFrame **data)
 {
 	delete bg_image;
 	bg_image = 0;
@@ -168,7 +163,6 @@ int BC_Toggle::set_images(VFrame **data)
 			resources->toggle_highlight_bg, 
 			PIXMAP_ALPHA);
 	}
-	return 0;
 }
 
 void BC_Toggle::set_underline(int number)
@@ -176,13 +170,12 @@ void BC_Toggle::set_underline(int number)
 	this->underline = number;
 }
 
-
 void BC_Toggle::set_select_drag(int value)
 {
 	this->select_drag = value;
 }
 
-int BC_Toggle::draw_face()
+void BC_Toggle::draw_face()
 {
 	BC_Resources *resources = get_resources();
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
@@ -240,7 +233,6 @@ int BC_Toggle::draw_face()
 
 	draw_pixmap(images[status]);
 	flash();
-	return 0;
 }
 
 void BC_Toggle::enable()
@@ -260,8 +252,7 @@ void BC_Toggle::set_status(int value)
 	this->status = value;
 }
 
-
-int BC_Toggle::repeat_event(int64_t duration)
+void BC_Toggle::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&
@@ -270,9 +261,7 @@ int BC_Toggle::repeat_event(int64_t duration)
 	{
 		show_tooltip();
 		tooltip_done = 1;
-		return 1;
 	}
-	return 0;
 }
 
 int BC_Toggle::cursor_enter_event()
@@ -289,7 +278,7 @@ int BC_Toggle::cursor_enter_event()
 	return 0;
 }
 
-int BC_Toggle::cursor_leave_event()
+void BC_Toggle::cursor_leave_event()
 {
 	hide_tooltip();
 	if(!value && status == BC_Toggle::TOGGLE_UPHI)
@@ -303,7 +292,6 @@ int BC_Toggle::cursor_leave_event()
 		status = BC_Toggle::TOGGLE_CHECKED;
 		draw_face();
 	}
-	return 0;
 }
 
 int BC_Toggle::button_press_event()
@@ -400,7 +388,7 @@ int BC_Toggle::get_value()
 	return value;
 }
 
-int BC_Toggle::set_value(int value, int draw)
+void BC_Toggle::set_value(int value, int draw)
 {
 	if(value != this->value)
 	{
@@ -429,12 +417,11 @@ int BC_Toggle::set_value(int value, int draw)
 		}
 		if(draw) draw_face();
 	}
-	return 0;
 }
 
-int BC_Toggle::update(int value, int draw)
+void BC_Toggle::update(int value, int draw)
 {
-	return set_value(value, draw);
+	set_value(value, draw);
 }
 
 void BC_Toggle::reposition_window(int x, int y)
@@ -456,7 +443,7 @@ BC_Radial::BC_Radial(int x,
 	int font,
 	int color)
  : BC_Toggle(x, 
- 	y, 
+	y,
 	BC_WindowBase::get_resources()->radial_images, 
 	value, 
 	caption, 
@@ -468,13 +455,13 @@ BC_Radial::BC_Radial(int x,
 }
 
 BC_CheckBox::BC_CheckBox(int x, 
-	int y, 
+	int y,
 	int value, 
 	const char *caption, 
 	int font,
 	int color)
  : BC_Toggle(x, 
- 	y, 
+	y, 
 	BC_WindowBase::get_resources()->checkbox_images, 
 	value, 
 	caption, 
@@ -492,7 +479,7 @@ BC_CheckBox::BC_CheckBox(int x,
 	int font,
 	int color)
  : BC_Toggle(x, 
- 	y, 
+	y,
 	BC_WindowBase::get_resources()->checkbox_images, 
 	*value, 
 	caption, 
@@ -510,14 +497,13 @@ int BC_CheckBox::handle_event()
 }
 
 
-
 BC_Label::BC_Label(int x, 
 	int y, 
 	int value, 
 	int font,
 	int color)
  : BC_Toggle(x, 
- 	y, 
+	y, 
 	BC_WindowBase::get_resources()->label_images, 
 	value, 
 	"", 

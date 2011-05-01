@@ -40,12 +40,12 @@ public:
 	BC_Clipboard(const char *display_name);
 	~BC_Clipboard();
 
-	int start_clipboard();
+	void start_clipboard();
 	void run();
-	int stop_clipboard();
+	void stop_clipboard();
 	long clipboard_len(int clipboard_num);
-	int to_clipboard(char *data, long len, int clipboard_num);
-	int from_clipboard(char *data, long maxlen, int clipboard_num);
+	void to_clipboard(char *data, long len, int clipboard_num);
+	void from_clipboard(char *data, long maxlen, int clipboard_num);
 
 private:
 	void handle_selectionrequest(XSelectionRequestEvent *request);

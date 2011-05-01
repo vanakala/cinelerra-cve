@@ -93,7 +93,7 @@ public:
 	~RerouteWindow();
 
 	void create_objects();
-	int close_event();
+	void close_event();
 
 	Reroute *plugin;
 	RerouteOperation *operation;

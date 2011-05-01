@@ -543,10 +543,9 @@ int EXRConfigVideo::create_objects()
 	return 0;
 }
 
-int EXRConfigVideo::close_event()
+void EXRConfigVideo::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

@@ -429,20 +429,18 @@ NewATracksTumbler::NewATracksTumbler(NewWindow *nwindow, int x, int y)
 	this->nwindow = nwindow;
 }
 
-int NewATracksTumbler::handle_up_event()
+void NewATracksTumbler::handle_up_event()
 {
 	nwindow->new_edl->session->audio_tracks++;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
-	return 1;
 }
 
-int NewATracksTumbler::handle_down_event()
+void NewATracksTumbler::handle_down_event()
 {
 	nwindow->new_edl->session->audio_tracks--;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
-	return 1;
 }
 
 NewAChannels::NewAChannels(NewWindow *nwindow, const char *text, int x, int y)
@@ -463,20 +461,18 @@ NewAChannelsTumbler::NewAChannelsTumbler(NewWindow *nwindow, int x, int y)
 	this->nwindow = nwindow;
 }
 
-int NewAChannelsTumbler::handle_up_event()
+void NewAChannelsTumbler::handle_up_event()
 {
 	nwindow->new_edl->session->audio_channels++;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
-	return 1;
 }
 
-int NewAChannelsTumbler::handle_down_event()
+void NewAChannelsTumbler::handle_down_event()
 {
 	nwindow->new_edl->session->audio_channels--;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
-	return 1;
 }
 
 
@@ -536,20 +532,18 @@ NewVTracksTumbler::NewVTracksTumbler(NewWindow *nwindow, int x, int y)
 	this->nwindow = nwindow;
 }
 
-int NewVTracksTumbler::handle_up_event()
+void NewVTracksTumbler::handle_up_event()
 {
 	nwindow->new_edl->session->video_tracks++;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
-	return 1;
 }
 
-int NewVTracksTumbler::handle_down_event()
+void NewVTracksTumbler::handle_down_event()
 {
 	nwindow->new_edl->session->video_tracks--;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
-	return 1;
 }
 
 NewFrameRate::NewFrameRate(NewWindow *nwindow, const char *text, int x, int y)

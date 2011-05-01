@@ -81,9 +81,8 @@ public:
 // Update EDL and preview only
 	virtual void update_preview() {};
 	int current_operation;
-	int close_event();
-	int keypress_event();
-	int translation_event();
+	void close_event();
+	void translation_event();
 
 	MWindow *mwindow;
 	CWindowTool *thread;

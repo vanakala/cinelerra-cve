@@ -39,35 +39,30 @@ public:
 	static int calculate_height(BC_WindowBase *window);
 
 	void initialize();
-	int focus_out_event();
+	void focus_out_event();
 	int keypress_event();
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
 	int cursor_enter_event();
-	int cursor_leave_event();
-	int resize_event(int w, int h);
-	int translation_event();
-	int deactivate();
-	int unhighlight();
+	void cursor_leave_event();
+	void resize_event(int w, int h);
+	void translation_event();
+	void deactivate();
+	void unhighlight();
 // Redraws items in active menu
 	void draw_items();
 
 private:
-	int draw_face();
-	int activate();
+	void draw_face();
+	void activate();
 // Array of menu titles
 	ArrayList<BC_Menu*> menu_titles;  
 // number of button releases since activation
-	int button_releases;        
+	int button_releases;
 // When a menu is pulled down
 	int active;
 	BC_Pixmap *menu_bar_bg;
 	BC_Pixmap *menu_title_bg[3];
 };
-
-
-
-
-
 #endif

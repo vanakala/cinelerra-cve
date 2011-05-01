@@ -1422,10 +1422,9 @@ void MOVConfigAudio::update_parameters()
 	}
 }
 
-int MOVConfigAudio::close_event()
+void MOVConfigAudio::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 
@@ -1591,10 +1590,9 @@ int MOVConfigVideo::create_objects()
 	return 0;
 }
 
-int MOVConfigVideo::close_event()
+void MOVConfigVideo::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

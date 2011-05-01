@@ -907,17 +907,15 @@ void BC_WindowBase::dispatch_event()
 	}
 }
 
-int BC_WindowBase::dispatch_expose_event()
+void BC_WindowBase::dispatch_expose_event()
 {
-	int result = 0;
-	for(int i = 0; i < subwindows->total && !result; i++)
+	for(int i = 0; i < subwindows->total; i++)
 	{
-		result = subwindows->values[i]->dispatch_expose_event();
+		subwindows->values[i]->dispatch_expose_event();
 	}
 
 // Propagate to user
-	if(!result) expose_event();
-	return result;
+	expose_event();
 }
 
 void BC_WindowBase::dispatch_resize_event(int w, int h)
@@ -1204,20 +1202,9 @@ int BC_WindowBase::dispatch_cursor_enter()
 	return result;
 }
 
-int BC_WindowBase::cursor_enter_event()
-{
-	return 0;
-}
-
-int BC_WindowBase::cursor_leave_event()
-{
-	return 0;
-}
-
-int BC_WindowBase::close_event()
+void BC_WindowBase::close_event()
 {
 	set_done(1);
-	return 1;
 }
 
 int BC_WindowBase::dispatch_drag_start()
@@ -2713,12 +2700,7 @@ void BC_WindowBase::set_active_subwindow(BC_WindowBase *subwindow)
 	top_level->active_subwindow = subwindow;
 }
 
-int BC_WindowBase::activate()
-{
-	return 0;
-}
-
-int BC_WindowBase::deactivate()
+void BC_WindowBase::deactivate()
 {
 	if(window_type == MAIN_WINDOW)
 	{
@@ -2730,7 +2712,6 @@ int BC_WindowBase::deactivate()
 		top_level->active_popup_menu = 0;
 		top_level->active_subwindow = 0;
 	}
-	return 0;
 }
 
 void BC_WindowBase::cycle_textboxes(int amount)
@@ -3093,14 +3074,13 @@ void BC_WindowBase::resize_window(int w, int h)
 }
 
 // The only way for resize events to be propagated is by updating the internal w and h
-int BC_WindowBase::resize_event(int w, int h)
+void BC_WindowBase::resize_event(int w, int h)
 {
 	if(window_type == MAIN_WINDOW)
 	{
 		this->w = w;
 		this->h = h;
 	}
-	return 0;
 }
 
 void BC_WindowBase::reposition_widget(int x, int y, int w, int h) 

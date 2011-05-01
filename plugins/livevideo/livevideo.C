@@ -101,8 +101,8 @@ public:
 	~LiveVideoWindow();
 
 	void create_objects();
-	int close_event();
-	int resize_event(int w, int h);
+	void close_event();
+	void resize_event(int w, int h);
 
 	ArrayList<BC_ListBoxItem*> channel_list;
 	BC_Title *title;
@@ -234,7 +234,7 @@ void LiveVideoWindow::create_objects()
 
 WINDOW_CLOSE_EVENT(LiveVideoWindow)
 
-int LiveVideoWindow::resize_event(int w, int h)
+void LiveVideoWindow::resize_event(int w, int h)
 {
 	int list_bottom = get_h() - list->get_y() - list->get_h();
 	int list_side = get_w() - list->get_x() - list->get_w();
@@ -250,7 +250,6 @@ int LiveVideoWindow::resize_event(int w, int h)
 		h - select_top);
 	plugin->w = w;
 	plugin->h = h;
-	return 1;
 }
 
 LiveChannelList::LiveChannelList(LiveVideo *plugin, 

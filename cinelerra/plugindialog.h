@@ -90,7 +90,7 @@ public:
 	int attach_shared(int number);
 	int attach_module(int number);
 	int save_settings();
-	int resize_event(int w, int h);
+	void resize_event(int w, int h);
 
 	BC_Title *standalone_title;
 	PluginDialogNew *standalone_list;
@@ -132,7 +132,7 @@ public:
 	~PluginDialogNew();
 
 	int handle_event();
-	int selection_changed();
+	void selection_changed();
 	PluginDialog *dialog;
 };
 
@@ -148,7 +148,7 @@ public:
 	~PluginDialogShared();
 
 	int handle_event();
-	int selection_changed();
+	void selection_changed();
 	PluginDialog *dialog;
 };
 
@@ -164,7 +164,7 @@ public:
 	~PluginDialogModules();
 
 	int handle_event();
-	int selection_changed();
+	void selection_changed();
 	PluginDialog *dialog;
 };
 

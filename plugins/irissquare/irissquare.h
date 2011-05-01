@@ -65,7 +65,7 @@ class IrisSquareWindow : public BC_Window
 public:
 	IrisSquareWindow(IrisSquareMain *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	IrisSquareMain *plugin;
 	IrisSquareIn *in;
 	IrisSquareOut *out;

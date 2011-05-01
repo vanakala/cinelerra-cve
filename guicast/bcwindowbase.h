@@ -168,24 +168,25 @@ public:
 // Main loop
 	int run_window();
 // Terminal event dispatchers
-	virtual int close_event();
-	virtual int resize_event(int w, int h);
-	virtual int repeat_event(int64_t duration) { return 0; };
-	virtual int focus_in_event() { return 0; };
-	virtual int focus_out_event() { return 0; };
+	virtual void close_event();
+	virtual void resize_event(int w, int h);
+	virtual void repeat_event(int64_t duration) {};
+	virtual void focus_in_event() {};
+	virtual void focus_out_event() {};
 	virtual int button_press_event() { return 0; };
 	virtual int button_release_event() { return 0; };
 	virtual int cursor_motion_event() { return 0; };
-	virtual int cursor_leave_event();
-	virtual int cursor_enter_event();
+	virtual void cursor_leave_event() {};
+	virtual int cursor_enter_event() { return 0; };
 	virtual int keypress_event() { return 0; };
-	virtual int translation_event() { return 0; };
+	virtual void translation_event() {};
 	virtual int drag_start_event() { return 0; };
-	virtual int drag_motion_event() { return 0; };
-	virtual int drag_stop_event() { return 0; };
+	virtual void drag_motion_event() {};
+	virtual void drag_stop_event() {};
+
 	virtual int uses_text() { return 0; };
 // Only if opengl is enabled
-	virtual int expose_event() { return 0; };
+	virtual void expose_event() {};
 
 // Check if a hardware accelerated colormodel is available and reserve it
 	int accel_available(int color_model, int lock_it); 
@@ -298,9 +299,9 @@ public:
 	int is_event_win();
 	int cursor_inside();
 // Deactivate everything and activate this subwindow
-	virtual int activate();
+	virtual void activate() {};
 // Deactivate this subwindow
-	virtual int deactivate();
+	virtual void deactivate();
 	void set_active_subwindow(BC_WindowBase *subwindow);
 // Get value of toggle value when dragging a selection
 	int get_toggle_value();
@@ -611,7 +612,7 @@ private:
 	int dispatch_drag_start();
 	int dispatch_drag_motion();
 	int dispatch_drag_stop();
-	int dispatch_expose_event();
+	void dispatch_expose_event();
 
 // Get the port ID for a color model or return -1 for failure
 	int grab_port_id(BC_WindowBase *window, int color_model);

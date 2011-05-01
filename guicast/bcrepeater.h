@@ -35,11 +35,9 @@ public:
 	~BC_Repeater();
 
 	void initialize();
-	int start_repeating();
-	int stop_repeating();
+	void start_repeating();
+	void stop_repeating();
 	void run();
-
-	long repeat_id;
 	long delay;
 	int repeating;
 	int interrupted;

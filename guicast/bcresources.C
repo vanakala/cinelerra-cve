@@ -37,10 +37,6 @@
 #include <sys/shm.h>
 #include <X11/extensions/XShm.h>
 #include <unistd.h>
- 
-
-
-
 
 int BC_Resources::error = 0;
 
@@ -52,6 +48,7 @@ VFrame* BC_Resources::menu_bg = 0;
 #include "images/file_sound_png.h"
 #include "images/file_unknown_png.h"
 #include "images/file_column_png.h"
+
 VFrame* BC_Resources::type_to_icon[] = 
 {
 	new VFrame(file_folder_png),
@@ -93,7 +90,6 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
 BC_Signals* BC_Resources::signal_handler = 0;
 
 
-
 BC_Resources::BC_Resources()
 {
 	synchronous = 0;
@@ -111,12 +107,9 @@ BC_Resources::BC_Resources()
 
 	use_xvideo = 1;
 
-
 #include "images/bar_png.h"
 	static VFrame* default_bar = new VFrame(bar_png);
 	bar_data = default_bar;
-
-
 
 #include "images/cancel_up_png.h"
 #include "images/cancel_hi_png.h"
@@ -147,7 +140,6 @@ BC_Resources::BC_Resources()
 		new VFrame(usethis_uphi_png),
 		new VFrame(usethis_dn_png)
 	};
-
 
 #include "images/checkbox_checked_png.h"
 #include "images/checkbox_dn_png.h"
@@ -298,7 +290,7 @@ BC_Resources::BC_Resources()
 	listbox_title_margin = 0;
 	listbox_title_color = BLACK;
 	listbox_title_hotspot = 5;
-	
+
 	listbox_border1 = DKGREY;
 	listbox_border2_hi = RED;
 	listbox_border2 = BLACK;
@@ -426,8 +418,6 @@ BC_Resources::BC_Resources()
 	menu_highlighted_fontcolor = BLACK;
 	progress_text = BLACK;
 
-
-
 	text_default = BLACK;
 	highlight_inverse = WHITE ^ BLUE;
 	text_background = WHITE;
@@ -487,7 +477,6 @@ BC_Resources::BC_Resources()
 	dirbox_sortcolumn = 0;
 	dirbox_sortorder = BC_ListBox::SORT_ASCENDING;
 
-
 	pot_images = default_pot_images;
 	pot_offset = 2;
 	pot_x1 = pot_images[0]->get_w() / 2 - pot_offset;
@@ -517,11 +506,8 @@ BC_Resources::BC_Resources()
 	use_xft = 0;
 #endif
 
-
 	drag_radius = 10;
 	recursive_resizing = 1;
-
-	
 }
 
 BC_Resources::~BC_Resources()
@@ -530,15 +516,11 @@ BC_Resources::~BC_Resources()
 
 void BC_Resources::initialize_display(BC_WindowBase *window)
 {
-// Set up IPC cleanup handlers
-//	bc_init_ipc();
-
 // Test for shm.  Must come before yuv test
 	init_shm(window);
 }
 
-
-int BC_Resources::init_shm(BC_WindowBase *window)
+void BC_Resources::init_shm(BC_WindowBase *window)
 {
 	use_shm = 1;
 
@@ -550,20 +532,19 @@ int BC_Resources::init_shm(BC_WindowBase *window)
 		XImage *test_image;
 		unsigned char *data;
 		test_image = XShmCreateImage(window->display, window->vis, window->default_depth,
-                ZPixmap, (char*)NULL, &test_shm, 5, 5);
+			ZPixmap, (char*)NULL, &test_shm, 5, 5);
 
 		test_shm.shmid = shmget(IPC_PRIVATE, 5 * test_image->bytes_per_line, (IPC_CREAT | 0777 ));
 		data = (unsigned char *)shmat(test_shm.shmid, NULL, 0);
-    	shmctl(test_shm.shmid, IPC_RMID, 0);
+		shmctl(test_shm.shmid, IPC_RMID, 0);
 		BC_Resources::error = 0;
- 	   	XShmAttach(window->display, &test_shm);
-    	XSync(window->display, False);
+		XShmAttach(window->display, &test_shm);
+		XSync(window->display, False);
 		if(BC_Resources::error) use_shm = 0;
 		XDestroyImage(test_image);
 		shmdt(test_shm.shmaddr);
 		window->unlock_window();
 	}
-	return 0;
 }
 
 

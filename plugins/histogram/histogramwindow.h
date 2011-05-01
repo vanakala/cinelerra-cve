@@ -166,7 +166,7 @@ public:
 	~HistogramWindow();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 	void update(int do_input);
 	void update_mode();
 	void update_canvas();

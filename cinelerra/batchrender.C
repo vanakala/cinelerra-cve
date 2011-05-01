@@ -726,7 +726,7 @@ void BatchRenderGUI::create_objects()
 	show_window();
 }
 
-int BatchRenderGUI::resize_event(int w, int h)
+void BatchRenderGUI::resize_event(int w, int h)
 {
 	mwindow->session->batchrender_w = w;
 	mwindow->session->batchrender_h = h;
@@ -784,24 +784,21 @@ int BatchRenderGUI::resize_event(int w, int h)
 		cancel_button->get_w() - 
 		10;
 	cancel_button->reposition_window(x, y);
-	return 1;
 }
 
-int BatchRenderGUI::translation_event()
+void BatchRenderGUI::translation_event()
 {
 	mwindow->session->batchrender_x = get_x();
 	mwindow->session->batchrender_y = get_y();
-	return 1;
 }
 
-int BatchRenderGUI::close_event()
+void BatchRenderGUI::close_event()
 {
 // Stop batch rendering
 	unlock_window();
 	thread->stop_rendering();
 	lock_window("BatchRenderGUI::close_event");
 	set_done(1);
-	return 1;
 }
 
 void BatchRenderGUI::create_list(int update_widget)
@@ -1145,7 +1142,7 @@ int BatchRenderList::handle_event()
 	return 1;
 }
 
-int BatchRenderList::selection_changed()
+void BatchRenderList::selection_changed()
 {
 	thread->current_job = get_selection_number(0, 0);
 	thread->gui->change_job();
@@ -1155,7 +1152,6 @@ int BatchRenderList::selection_changed()
 		job->enabled = !job->enabled;
 		thread->gui->create_list(1);
 	}
-	return 1;
 }
 
 int BatchRenderList::column_resize_event()
@@ -1178,16 +1174,7 @@ int BatchRenderList::drag_start_event()
 	return 0;
 }
 
-int BatchRenderList::drag_motion_event()
-{
-	if(BC_ListBox::drag_motion_event())
-	{
-		return 1;
-	}
-	return 0;
-}
-
-int BatchRenderList::drag_stop_event()
+void BatchRenderList::drag_stop_event()
 {
 	if(dragging_item)
 	{

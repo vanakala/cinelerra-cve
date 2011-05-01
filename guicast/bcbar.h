@@ -35,8 +35,8 @@ public:
 	void initialize();
 	void set_image(VFrame *data);
 	void draw();
-	int reposition_window(int x, int y, int w);
-	int resize_event(int w, int h);
+	void reposition_window(int x, int y, int w);
+	void resize_event(int w, int h);
 
 	BC_Pixmap *image;
 	VFrame *data;

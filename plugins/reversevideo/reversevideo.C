@@ -56,7 +56,7 @@ public:
 	ReverseVideoWindow(ReverseVideo *plugin, int x, int y);
 	~ReverseVideoWindow();
 	void create_objects();
-	int close_event();
+	void close_event();
 	ReverseVideo *plugin;
 	ReverseVideoEnabled *enabled;
 };

@@ -449,10 +449,9 @@ int YUVConfigVideo::create_objects()
 	return 0;
 }
 
-int YUVConfigVideo::close_event()
+void YUVConfigVideo::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

@@ -153,7 +153,7 @@ public:
 	~EditPopupTitleWindow ();
 
 	int create_objects();
-	int close_event();
+	void close_event();
 
 	EditPopupTitleText *title_text;
 	Edit *edt;

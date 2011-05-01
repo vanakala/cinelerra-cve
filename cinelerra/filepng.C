@@ -427,10 +427,9 @@ int PNGConfigVideo::create_objects()
 	return 0;
 }
 
-int PNGConfigVideo::close_event()
+void PNGConfigVideo::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

@@ -53,7 +53,7 @@ public:
 	~TransitionLengthDialog();
 	
 	void create_objects();
-	int close_event();
+	void close_event();
 	
 	MWindow *mwindow;
 	Transition *transition;

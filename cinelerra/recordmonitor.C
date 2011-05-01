@@ -326,11 +326,10 @@ int RecordMonitorGUI::button_press_event()
 	return 0;
 }
 
-int RecordMonitorGUI::cursor_leave_event()
+void RecordMonitorGUI::cursor_leave_event()
 {
 	if(canvas && canvas->get_canvas())
-		return canvas->cursor_leave_event_base(canvas->get_canvas());
-	return 0;
+		canvas->cursor_leave_event_base(canvas->get_canvas());
 }
 
 int RecordMonitorGUI::cursor_enter_event()
@@ -421,14 +420,13 @@ int RecordMonitorGUI::keypress_event()
 }
 
 
-int RecordMonitorGUI::translation_event()
+void RecordMonitorGUI::translation_event()
 {
 	mwindow->session->rmonitor_x = get_x();
 	mwindow->session->rmonitor_y = get_y();
-	return 0;
 }
 
-int RecordMonitorGUI::resize_event(int w, int h)
+void RecordMonitorGUI::resize_event(int w, int h)
 {
 	int do_channel = (mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX ||
 			mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
@@ -475,7 +473,6 @@ int RecordMonitorGUI::resize_event(int w, int h)
 	BC_WindowBase::resize_event(w, h);
 	flash();
 	flush();
-	return 1;
 }
 
 int RecordMonitorGUI::set_title()
@@ -483,7 +480,7 @@ int RecordMonitorGUI::set_title()
 	return 0;
 }
 
-int RecordMonitorGUI::close_event()
+void RecordMonitorGUI::close_event()
 {
 	thread->record->monitor_video = 0;
 	thread->record->monitor_audio = 0;
@@ -496,7 +493,6 @@ int RecordMonitorGUI::close_event()
 	record->record_gui->unlock_window();
 
 	hide_window();
-	return 0;
 }
 
 int RecordMonitorGUI::create_bitmap()

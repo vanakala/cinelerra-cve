@@ -150,7 +150,7 @@ public:
 	RotateWindow(RotateEffect *plugin, int x, int y);
 
 	int create_objects();
-	int close_event();
+	void close_event();
 	int update();
 	int update_fine();
 	int update_text();

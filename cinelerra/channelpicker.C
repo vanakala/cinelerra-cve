@@ -619,16 +619,14 @@ ChannelTumbler::~ChannelTumbler()
 {
 }
 
-int ChannelTumbler::handle_up_event()
+void ChannelTumbler::handle_up_event()
 {
 	channel_picker->channel_up();
-	return 1;
 }
 
-int ChannelTumbler::handle_down_event()
+void ChannelTumbler::handle_down_event()
 {
 	channel_picker->channel_down();
-	return 1;
 }
 
 int ChannelTumbler::keypress_event()

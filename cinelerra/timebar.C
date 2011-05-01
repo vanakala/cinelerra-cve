@@ -697,10 +697,10 @@ int TimeBar::button_press_event()
 	return 0;
 }
 
-int TimeBar::repeat_event(int64_t duration)
+void TimeBar::repeat_event(int64_t duration)
 {
-	if(!mwindow->gui->canvas->drag_scroll) return 0;
-	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return 0;
+	if(!mwindow->gui->canvas->drag_scroll) return;
+	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return;
 
 	int distance = 0;
 	int x_movement = 0;
@@ -727,9 +727,7 @@ int TimeBar::repeat_event(int64_t duration)
 			mwindow->samplemovement(mwindow->edl->local_session->view_start + 
 				distance);
 		}
-		return 1;
 	}
-	return 0;
 }
 
 int TimeBar::cursor_motion_event()

@@ -66,13 +66,12 @@ BC_Clipboard::~BC_Clipboard()
 	XCloseDisplay(out_display);
 }
 
-int BC_Clipboard::start_clipboard()
+void BC_Clipboard::start_clipboard()
 {
 	Thread::start();
-	return 0;
 }
 
-int BC_Clipboard::stop_clipboard()
+void BC_Clipboard::stop_clipboard()
 {
 	XEvent event;
 	XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
@@ -83,7 +82,6 @@ int BC_Clipboard::stop_clipboard()
 	XSendEvent(out_display, out_win, 0, 0, &event);
 	XSync(out_display, False);
 	Thread::join();
-	return 0;
 }
 
 void BC_Clipboard::run()
@@ -94,33 +92,27 @@ void BC_Clipboard::run()
 
 	while(!done)
 	{
-//printf("BC_Clipboard::run 1\n");					
 		XNextEvent(out_display, &event);
-//printf("BC_Clipboard::run 2 %d\n", event.type);					
 
 		switch(event.type)
 		{
 // Termination signal
-			case ClientMessage:
-				ptr = (XClientMessageEvent*)&event;
-				if(ptr->message_type == completion_atom)
-				{
-					done = 1;
-				}
-//printf("ClientMessage %x %x %d\n", ptr->message_type, ptr->data.l[0], primary_atom);
-				break;
+		case ClientMessage:
+			ptr = (XClientMessageEvent*)&event;
+			if(ptr->message_type == completion_atom)
+			{
+				done = 1;
+			}
+			break;
 
+		case SelectionRequest:
+			handle_selectionrequest((XSelectionRequestEvent*)&event);
+			break;
 
-			case SelectionRequest:
-				handle_selectionrequest((XSelectionRequestEvent*)&event);
-				break;
-			
-			
-			
-			case SelectionClear:
-				if(data[0]) data[0][0] = 0;
-				if(data[1]) data[1][0] = 0;
-				break;
+		case SelectionClear:
+			if(data[0]) data[0][0] = 0;
+			if(data[1]) data[1][0] = 0;
+			break;
 		}
 	}
 }
@@ -143,12 +135,10 @@ void BC_Clipboard::handle_selectionrequest(XSelectionRequestEvent *request)
 	reply.xselection.selection = request->selection;
 	reply.xselection.target    = request->target;
 	reply.xselection.time      = request->time;
-					
 
 	XSendEvent(out_display, request->requestor, 0, 0, &reply);
 	XFlush(out_display);
 	XUnlockDisplay(out_display);
-//printf("SelectionRequest\n");
 }
 
 int BC_Clipboard::handle_request_string(XSelectionRequestEvent *request)
@@ -180,17 +170,11 @@ int BC_Clipboard::handle_request_targets(XSelectionRequestEvent *request)
 			PropModeReplace,
 			(unsigned char*)targets,
 			sizeof(targets)/sizeof(targets[0]));
-//printf("BC_Clipboard::handle_request_targets\n");
 	return 1;
 }
 
-int BC_Clipboard::to_clipboard(char *data, long len, int clipboard_num)
+void BC_Clipboard::to_clipboard(char *data, long len, int clipboard_num)
 {
-
-#if 0
-	XStoreBuffer(display, data, len, clipboard_num);
-#endif
-
 	XLockDisplay(out_display);
 
 // Store in local buffer
@@ -216,37 +200,19 @@ int BC_Clipboard::to_clipboard(char *data, long len, int clipboard_num)
 	XFlush(out_display);
 
 	XUnlockDisplay(out_display);
-	return 0;
 }
 
-int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
+void BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 {
-
-
-
-#if 0
-	char *data2;
-	int len, i;
-	data2 = XFetchBuffer(display, &len, clipboard_num);
-	for(i = 0; i < len && i < maxlen; i++)
-		data[i] = data2[i];
-
-	data[i] = 0;
-
-	XFree(data2);
-
-#endif
-
-
 	XLockDisplay(in_display);
 
 	XEvent event;
-    Atom type_return, pty;
-    int format;
-    unsigned long nitems, size, new_size, total;
+	Atom type_return, pty;
+	int format;
+	unsigned long nitems, size, new_size, total;
 	char *temp_data = 0;
 
-    pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary; 
+	pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary; 
 						/* a property of our window
 						   for apps to put their
 						   selection into */
@@ -255,48 +221,47 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 		clipboard_num == PRIMARY_SELECTION ? primary : secondary, 
 		XA_STRING, 
 		pty,
-       	in_win, 
+		in_win,
 		CurrentTime);
 
 	data[0] = 0;
 	do
 	{
 		XNextEvent(in_display, &event);
-	}while(event.type != SelectionNotify && event.type != None);
+	} while(event.type != SelectionNotify && event.type != None);
 
 	if(event.type != None)
 	{
 // Get size
-   	XGetWindowProperty(in_display,
-        	in_win,
-        	pty,
-        	0,
-        	0,
-        	False,
-        	AnyPropertyType,
-        	&type_return,
-        	&format,
-        	&nitems,
-        	&size,
-        	(unsigned char**)&temp_data);
+		XGetWindowProperty(in_display,
+			in_win,
+			pty,
+			0,
+			0,
+			False,
+			AnyPropertyType,
+			&type_return,
+			&format,
+			&nitems,
+			&size,
+			(unsigned char**)&temp_data);
 
-	if(temp_data) XFree(temp_data);
-	temp_data = 0;
+		if(temp_data) XFree(temp_data);
+		temp_data = 0;
 
 // Get data
-   	XGetWindowProperty(in_display,
-        	in_win,
-        	pty,
-        	0,
-        	size,
-        	False,
-        	AnyPropertyType,
-        	&type_return,
-        	&format,
-        	&nitems,
-        	&new_size,
-        	(unsigned char**)&temp_data);
-
+		XGetWindowProperty(in_display,
+			in_win,
+			pty,
+			0,
+			size,
+			False,
+			AnyPropertyType,
+			&type_return,
+			&format,
+			&nitems,
+			&new_size,
+			(unsigned char**)&temp_data);
 
 		if(type_return && temp_data)
 		{
@@ -310,34 +275,20 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 	}
 
 	XUnlockDisplay(in_display);
-
-	return 0;
 }
 
 long BC_Clipboard::clipboard_len(int clipboard_num)
 {
-
-#if 0
-	char *data2;
-	int len;
-
-	data2 = XFetchBuffer(display, &len, clipboard_num);
-	XFree(data2);
-	return len;
-#endif
-
-
-
 	XLockDisplay(in_display);
 
 	XEvent event;
-    Atom type_return, pty;
-    int format;
-    unsigned long nitems, pty_size, total;
+	Atom type_return, pty;
+	int format;
+	unsigned long nitems, pty_size, total;
 	char *temp_data = 0;
 	int result = 0;
 
-    pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary; 
+	pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary; 
 						/* a property of our window
 						   for apps to put their
 						   selection into */
@@ -345,29 +296,29 @@ long BC_Clipboard::clipboard_len(int clipboard_num)
 		(clipboard_num == PRIMARY_SELECTION) ? primary : secondary, 
 		XA_STRING, 
 		pty,
-       	in_win, 
+		in_win,
 		CurrentTime);
 
 	do
 	{
 		XNextEvent(in_display, &event);
-	}while(event.type != SelectionNotify && event.type != None);
+	} while(event.type != SelectionNotify && event.type != None);
 
 	if(event.type != None)
 	{
 // Get size
-    	XGetWindowProperty(in_display,
-        	in_win,
-        	pty,
-        	0,
-        	0,
-        	False,
-        	AnyPropertyType,
-        	&type_return,
-        	&format,
-        	&nitems,
-        	&pty_size,
-        	(unsigned char**)&temp_data);
+		XGetWindowProperty(in_display,
+			in_win,
+			pty,
+			0,
+			0,
+			False,
+			AnyPropertyType,
+			&type_return,
+			&format,
+			&nitems,
+			&pty_size,
+			(unsigned char**)&temp_data);
 
 		if(type_return)
 		{
@@ -376,11 +327,8 @@ long BC_Clipboard::clipboard_len(int clipboard_num)
 		else
 			result = 0;
 
-
-
 		if(temp_data)
 			XFree(temp_data);
-
 	}
 
 	XUnlockDisplay(in_display);

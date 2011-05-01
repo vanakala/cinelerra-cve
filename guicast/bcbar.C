@@ -25,8 +25,6 @@
 #include "vframe.h"
 
 
-
-
 BC_Bar::BC_Bar(int x, int y, int w, VFrame *data)
  : BC_SubWindow(x, y, w, 0, -1)
 {
@@ -59,17 +57,15 @@ void BC_Bar::set_image(VFrame *data)
 	h = image->get_h();
 }
 
-int BC_Bar::reposition_window(int x, int y, int w)
+void BC_Bar::reposition_window(int x, int y, int w)
 {
 	BC_WindowBase::reposition_window(x, y, w, -1);
 	draw();
-	return 0;
 }
 
-int BC_Bar::resize_event(int w, int h)
+void BC_Bar::resize_event(int w, int h)
 {
 	reposition_window(x, y, get_w());
-	return 1;
 }
 
 

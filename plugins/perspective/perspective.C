@@ -199,11 +199,6 @@ int PerspectiveWindow::create_objects()
 
 WINDOW_CLOSE_EVENT(PerspectiveWindow)
 
-int PerspectiveWindow::resize_event(int w, int h)
-{
-	return 1;
-}
-
 void PerspectiveWindow::update_canvas()
 {
 	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());

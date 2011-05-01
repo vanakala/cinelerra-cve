@@ -460,7 +460,7 @@ SET_TRACE
 	return 0;
 }
 
-int AWindowGUI::resize_event(int w, int h)
+void AWindowGUI::resize_event(int w, int h)
 {
 	mwindow->session->awindow_x = get_x();
 	mwindow->session->awindow_y = get_y();
@@ -476,14 +476,12 @@ int AWindowGUI::resize_event(int w, int h)
 	int y = mwindow->theme->abuttons_y;
 
 	BC_WindowBase::resize_event(w, h);
-	return 1;
 }
 
-int AWindowGUI::translation_event()
+void AWindowGUI::translation_event()
 {
 	mwindow->session->awindow_x = get_x();
 	mwindow->session->awindow_y = get_y();
-	return 0;
 }
 
 void AWindowGUI::reposition_objects()
@@ -519,7 +517,7 @@ void AWindowGUI::reposition_objects()
 	flush();
 }
 
-int AWindowGUI::close_event()
+void AWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_awindow = 0;
@@ -529,7 +527,6 @@ int AWindowGUI::close_event()
 	mwindow->gui->unlock_window();
 
 	mwindow->save_defaults();
-	return 1;
 }
 
 
@@ -1056,7 +1053,7 @@ AWindowFolders::~AWindowFolders()
 {
 }
 
-int AWindowFolders::selection_changed()
+void AWindowFolders::selection_changed()
 {
 	AssetPicon *picon = (AssetPicon*)get_selection(0, 0);
 	if(picon)
@@ -1065,7 +1062,6 @@ int AWindowFolders::selection_changed()
 		gui->asset_list->draw_background();
 		gui->async_update_assets();
 	}
-	return 1;
 }
 
 int AWindowFolders::button_press_event()
@@ -1175,7 +1171,7 @@ int AWindowAssets::handle_event()
 	return 0;
 }
 
-int AWindowAssets::selection_changed()
+void AWindowAssets::selection_changed()
 {
 // Show popup window
 	if(get_button_down() && get_buttonpress() == 3 && get_selection(0, 0))
@@ -1206,9 +1202,7 @@ int AWindowAssets::selection_changed()
 		}
 
 		BC_ListBox::deactivate_selection();
-		return 1;
 	}
-	return 0;
 }
 
 void AWindowAssets::draw_background()
@@ -1289,7 +1283,7 @@ int AWindowAssets::drag_start_event()
 	return 0;
 }
 
-int AWindowAssets::drag_motion_event()
+void AWindowAssets::drag_motion_event()
 {
 	BC_ListBox::drag_motion_event();
 
@@ -1304,10 +1298,9 @@ int AWindowAssets::drag_motion_event()
 	mwindow->cwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->cwindow->gui->drag_motion();
 	mwindow->cwindow->gui->unlock_window();
-	return 0;
 }
 
-int AWindowAssets::drag_stop_event()
+void AWindowAssets::drag_stop_event()
 {
 	int result = 0;
 
@@ -1339,7 +1332,6 @@ int AWindowAssets::drag_stop_event()
 
 	BC_ListBox::drag_stop_event();
 	mwindow->session->current_operation = ::NO_OPERATION; // since NO_OPERATION is also defined in listbox, we have to reach for global scope...
-	return 0;
 }
 
 int AWindowAssets::column_resize_event()

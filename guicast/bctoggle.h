@@ -43,9 +43,9 @@ public:
 
 	virtual int handle_event() { return 0; };
 	int get_value();
-	int set_value(int value, int draw = 1);
+	void set_value(int value, int draw = 1);
 	void set_select_drag(int value);
-	int update(int value, int draw = 1);
+	void update(int value, int draw = 1);
 	void reposition_window(int x, int y);
 	void enable();
 	void disable();
@@ -65,16 +65,16 @@ public:
 		const char *caption);
 
 	void initialize();
-	int set_images(VFrame **data);
+	void set_images(VFrame **data);
 	void set_underline(int number);
 	int cursor_enter_event();
-	int cursor_leave_event();
+	void cursor_leave_event();
 // In select drag mode these 3 need to be overridden and called back to.
 	virtual int button_press_event();
 	virtual int button_release_event();
 	int cursor_motion_event();
-	int repeat_event(int64_t repeat_id);
-	int draw_face();
+	void repeat_event(int64_t repeat_id);
+	void draw_face();
 
 	enum
 	{

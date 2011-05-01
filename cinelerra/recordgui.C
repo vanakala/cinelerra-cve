@@ -517,15 +517,14 @@ void RecordGUI::update_batch_sources()
 			&record->record_monitor->window->channel_picker->channel_listitems);
 }
 
-int RecordGUI::translation_event()
+void RecordGUI::translation_event()
 {
 	mwindow->session->rwindow_x = get_x();
 	mwindow->session->rwindow_y = get_y();
-	return 0;
 }
 
 
-int RecordGUI::resize_event(int w, int h)
+void RecordGUI::resize_event(int w, int h)
 {
 	int x, y, x1;
 
@@ -555,7 +554,6 @@ int RecordGUI::resize_event(int w, int h)
 		mwindow->session->rwindow_h - mode_margin);
 
 	flash();
-	return 1;
 }
 
 void RecordGUI::update_batch_tools()
@@ -599,7 +597,7 @@ int RecordGUIBatches::handle_event()
 	return 1;
 }
 
-int RecordGUIBatches::selection_changed()
+void RecordGUIBatches::selection_changed()
 {
 	if(get_selection_number(0, 0) >= 0)
 	{
@@ -612,7 +610,6 @@ int RecordGUIBatches::selection_changed()
 			gui->update_batches();
 		}
 	}
-	return 1;
 }
 
 int RecordGUIBatches::column_resize_event()
@@ -635,16 +632,7 @@ int RecordGUIBatches::drag_start_event()
 	return 0;
 }
 
-int RecordGUIBatches::drag_motion_event()
-{
-	if(BC_ListBox::drag_motion_event())
-	{
-		return 1;
-	}
-	return 0;
-}
-
-int RecordGUIBatches::drag_stop_event()
+void RecordGUIBatches::drag_stop_event()
 {
 	if(dragging_item)
 	{

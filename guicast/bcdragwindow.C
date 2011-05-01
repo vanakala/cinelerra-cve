@@ -30,7 +30,7 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	int icon_x, 
 	int icon_y)
  : BC_Popup(parent_window, 
- 	icon_x, 
+	icon_x, 
 	icon_y,
 	pixmap->get_w(),
 	pixmap->get_h(),
@@ -44,7 +44,6 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	end_y = BC_INFINITY;
 	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);
 	icon_offset_y = init_y - parent_window->get_abs_cursor_y(0);
-//printf("BC_DragWindow::BC_DragWindow 1 %d %d\n", icon_offset_x, icon_offset_y);
 	do_animation = 1;
 }
 
@@ -54,7 +53,7 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	int icon_x, 
 	int icon_y)
  : BC_Popup(parent_window, 
- 	icon_x, 
+	icon_x, 
 	icon_y,
 	frame->get_w(),
 	frame->get_h(),
@@ -69,7 +68,6 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	end_y = BC_INFINITY;
 	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);
 	icon_offset_y = init_y - parent_window->get_abs_cursor_y(0);
-//printf("BC_DragWindow::BC_DragWindow 1 %d %d\n", icon_offset_x, icon_offset_y);
 	do_animation = 1;
 }
 
@@ -81,7 +79,7 @@ int BC_DragWindow::get_init_x(BC_WindowBase *parent_window, int icon_x)
 {
 	int output_x, temp = 0;
 	Window tempwin;
-	
+
 	parent_window->top_level->lock_window("BC_DragWindow::get_init_x");
 	XTranslateCoordinates(parent_window->top_level->display, 
 		parent_window->win, 

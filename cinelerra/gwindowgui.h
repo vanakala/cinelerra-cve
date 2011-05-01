@@ -48,8 +48,8 @@ public:
 	GWindowGUI(MWindow *mwindow, int w, int h);
 	static void calculate_extents(BC_WindowBase *gui, int *w, int *h);
 	void create_objects();
-	int translation_event();
-	int close_event();
+	void translation_event();
+	void close_event();
 	int keypress_event();
 	void update_toggles(int use_lock);
 	void update_mwindow();

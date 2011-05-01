@@ -64,10 +64,9 @@ int NormalizeWindow::create_objects(VFrame *icon_img, float *db_over, int *separ
 	return 0;
 }
 
-int NormalizeWindow::close_event()
+void NormalizeWindow::close_event()
 {
 	set_done(1);
-	return 1;
 }
 
 NormalizeWindowOverload::NormalizeWindowOverload(int x, int y, float *db_over)

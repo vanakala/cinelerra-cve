@@ -48,7 +48,7 @@ public:
 	int create_objects();
 	void resize_event();
 	int draw();
-	int resize_event(int w, int h);
+	void resize_event(int w, int h);
 	void redraw_time_dependancies();
 	int update();          // redraw the current values
 	void update_autozoom();
@@ -105,8 +105,8 @@ class AutoZoom : public BC_Tumbler
 {
 public:
 	AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changemax);
-	int handle_up_event();
-	int handle_down_event();
+	void handle_up_event();
+	void handle_down_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 	int changemax;

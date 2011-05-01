@@ -213,11 +213,10 @@ public:
 		int w,
 		int h);
 	int handle_event();
-	int selection_changed();
+	void selection_changed();
 	int column_resize_event();
 	int drag_start_event();
-	int drag_motion_event();
-	int drag_stop_event();
+	void drag_stop_event();
 	int dragging_item;
 	BatchRenderThread *thread;
 };
@@ -280,9 +279,9 @@ public:
 	~BatchRenderGUI();
 
 	void create_objects();
-	int resize_event(int w, int h);
-	int translation_event();
-	int close_event();
+	void resize_event(int w, int h);
+	void translation_event();
+	void close_event();
 	void create_list(int update_widget);
 	void change_job();
 

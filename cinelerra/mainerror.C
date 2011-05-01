@@ -87,7 +87,7 @@ void MainErrorGUI::create_objects()
 	show_window();
 }
 
-int MainErrorGUI::resize_event(int w, int h)
+void MainErrorGUI::resize_event(int w, int h)
 {
 	title->reposition_window(title->get_x(), title->get_y());
 	int list_h = h - 
@@ -102,7 +102,6 @@ int MainErrorGUI::resize_event(int w, int h)
 		list_h);
 	mwindow->session->ewindow_w = w;
 	mwindow->session->ewindow_h = h;
-	return 1;
 }
 
 

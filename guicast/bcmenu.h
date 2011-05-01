@@ -22,22 +22,16 @@
 #ifndef BCMENU_H
 #define BCMENU_H
 
-
-
-
 #include "bcmenubar.inc"
 #include "bcmenuitem.inc"
 #include "bcmenupopup.inc"
 #include "bcwindowbase.inc"
-
 
 // Subscripts for menu images
 #define MENU_BG 0
 #define MENU_ITEM_UP 1
 #define MENU_ITEM_HI 1
 #define MENU_ITEM_DN 1
-
-
 
 class BC_Menu
 {
@@ -48,11 +42,11 @@ public:
 	friend class BC_MenuBar;
 
 // Called by user to add items
-	int add_item(BC_MenuItem* menuitem);
+	void add_item(BC_MenuItem* menuitem);
 // Remove the item ptr and the object
-	int remove_item(BC_MenuItem* item = 0);
+	void remove_item(BC_MenuItem* item = 0);
 	int total_menuitems();
-	int set_text(char *text);
+	void set_text(const char *text);
 
 // Called by BC_Menubar
 	void initialize(BC_WindowBase *top_level, BC_MenuBar *menu_bar, int x, int y, int w, int h);
@@ -60,15 +54,15 @@ public:
 	int dispatch_button_release();
 	int dispatch_keypress();
 	int dispatch_motion_event();
-	int dispatch_cursor_leave();
-	int dispatch_translation_event();
-	int deactivate_menu();
-	int activate_menu();
-	int unhighlight();
+	void dispatch_cursor_leave();
+	void dispatch_translation_event();
+	void deactivate_menu();
+	void activate_menu();
+	void unhighlight();
 	void draw_items();
 
 private:
-	int draw_title();
+	void draw_title();
 // If this menu is pulled down
 	int active;
 	char text[1024];
@@ -81,7 +75,5 @@ private:
 // Dimensions relative to menubar.
 	int x, y, w, h; 
 };
-
-
 
 #endif

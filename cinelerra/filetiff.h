@@ -100,7 +100,7 @@ public:
 
 
 	int create_objects();
-	int close_event();
+	void close_event();
 	static char* alpha_to_codec(int use_alpha);
 	static int codec_to_alpha(char *codec);
 	BC_WindowBase *parent_window;

@@ -226,11 +226,10 @@ int ZoomBar::update_playback(posnum new_position)
 	return 0;
 }
 
-int ZoomBar::resize_event(int w, int h)
+void ZoomBar::resize_event(int w, int h)
 {
 // don't change anything but y and width
 	reposition_window(0, h - this->get_h(), w, this->get_h());
-	return 0;
 }
 
 
@@ -414,7 +413,7 @@ AutoZoom::AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changem
 		set_tooltip(_("Automation range minimum"));
 }
 
-int AutoZoom::handle_up_event()
+void AutoZoom::handle_up_event()
 {
 	mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype,1,changemax);
 
@@ -422,10 +421,9 @@ int AutoZoom::handle_up_event()
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->patchbay->update();
 	mwindow->gui->canvas->flash();
-	return 1;
 }
 
-int AutoZoom::handle_down_event()
+void AutoZoom::handle_down_event()
 {
 	mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype,0,changemax);
 
@@ -433,7 +431,6 @@ int AutoZoom::handle_down_event()
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->patchbay->update();
 	mwindow->gui->canvas->flash();
-	return 1;
 }
 
 

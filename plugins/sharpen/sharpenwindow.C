@@ -70,11 +70,9 @@ int SharpenWindow::create_objects()
 	return 0;
 }
 
-int SharpenWindow::close_event()
+void SharpenWindow::close_event()
 {
-// Set result to 1 to indicate a client side close
 	set_done(1);
-	return 1;
 }
 
 SharpenSlider::SharpenSlider(SharpenMain *client, float *output, int x, int y)

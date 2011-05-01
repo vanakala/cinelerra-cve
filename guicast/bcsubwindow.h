@@ -41,11 +41,6 @@ public:
 	BC_SubWindowList();
 	~BC_SubWindowList();
 
-
-private:
-	
 };
-
-
 
 #endif

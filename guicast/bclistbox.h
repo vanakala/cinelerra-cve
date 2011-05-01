@@ -33,19 +33,18 @@
 #define BCPOPUPLISTBOX_W 25
 #define BCPOPUPLISTBOX_H 25
 
-
 #define MIN_COLUMN_WIDTH 10
-
 
 class BC_ListBoxYScroll : public BC_ScrollBar
 {
 public:
 	BC_ListBoxYScroll(BC_ListBox *listbox, 
-	                  int total_height, 
-					  int view_height, 
-	                  int position);
+		int total_height,
+		int view_height,
+		int position);
 	~BC_ListBoxYScroll();
 	int handle_event();
+
 private:
 	BC_ListBox *listbox;
 };
@@ -54,11 +53,12 @@ class BC_ListBoxXScroll : public BC_ScrollBar
 {
 public:
 	BC_ListBoxXScroll(BC_ListBox *listbox, 
-	                  int total_width, 
-					  int view_width,
-	                  int position);
+		int total_width, 
+		int view_width,
+		int position);
 	~BC_ListBoxXScroll();
 	int handle_event();
+
 private:
 	BC_ListBox *listbox;
 };
@@ -72,7 +72,7 @@ public:
 		int y);
 
 	int cursor_motion_event(int *redraw_toggles);
-	int cursor_leave_event(int *redraw_toggles);
+	void cursor_leave_event(int *redraw_toggles);
 	int button_press_event();
 	int button_release_event(int *redraw_toggles);
 	void update(BC_ListBoxItem *item, int x, int y, int flash);
@@ -120,11 +120,11 @@ public:
 
 	void initialize();
 
-	int enable();
-	int disable();
+	void enable();
+	void disable();
 
 // User event handler for new selections
-	virtual int selection_changed() { return 0; };
+	virtual void selection_changed() {};
 // User event handler for triggering a selection
 	virtual int handle_event() { return 0; };
 // User event handler for a column resize
@@ -180,35 +180,34 @@ public:
 		int *result /* = 0 */,
 		int master_column);
 
-
-	int focus_out_event();
+	void focus_out_event();
 	virtual int button_press_event();
 	int button_release_event();
 	int cursor_enter_event();
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int cursor_motion_event();
 	virtual int drag_start_event();
-	virtual int drag_motion_event();
-	virtual int drag_stop_event();
-	int deactivate();
+	virtual void drag_motion_event();
+	virtual void drag_stop_event();
+	void deactivate();
 // After popping up a menu call this to interrupt the selection process
 	void deactivate_selection();
-	int activate();
+	void activate();
 	virtual int keypress_event();
-	int translation_event();
-	int repeat_event(int64_t duration);
+	void translation_event();
+	void repeat_event(int64_t duration);
 	BC_DragWindow* get_drag_popup();
 
 // change the contents
-	int update(ArrayList<BC_ListBoxItem*> *data,
-						const char **column_titles,
-						int *column_widths,
-						int columns,
-						int xposition = 0,
-						int yposition = 0, 
-						int highlighted_number = -1,  // Flat index of item cursor is over
-						int recalc_positions = 0,     // set all autoplace flags to 1
-						int draw = 1);
+	void update(ArrayList<BC_ListBoxItem*> *data,
+		const char **column_titles,
+		int *column_widths,
+		int columns,
+		int xposition = 0,
+		int yposition = 0,
+		int highlighted_number = -1,  // Flat index of item cursor is over
+		int recalc_positions = 0,     // set all autoplace flags to 1
+		int draw = 1);
 	void center_selection();
 	void update_format(int display_format, int redraw);
 	int get_format();
@@ -224,10 +223,10 @@ public:
 	void set_master_column(int value, int redraw);
 // Set column to search
 	void set_search_column(int value);
-	int set_selection_mode(int mode);
-	int set_yposition(int position, int draw_items = 1);
+	void set_selection_mode(int mode);
+	void set_yposition(int position, int draw_items = 1);
 	int get_yposition();
-	int set_xposition(int position);
+	void set_xposition(int position);
 	int get_xposition();
 // Return the flat index of the highlighted item
 	int get_highlighted_item();
@@ -244,8 +243,6 @@ public:
 	int get_display_mode();
 	void set_justify(int value);
 
-
-
 	enum
 	{
 		SORT_ASCENDING,
@@ -257,9 +254,8 @@ public:
 	int get_sort_order();
 	void set_sort_order(int value, int redraw = 0);
 
-
 	void reset_query();
-	int reposition_window(int x, int y, int w = -1, int h = -1);
+	void reposition_window(int x, int y, int w = -1, int h = -1);
 	BC_Pixmap* get_bg_surface();
 // Set all items for autoplacement with recursion into sublists
 	void set_autoplacement(ArrayList<BC_ListBoxItem*> *data,
@@ -300,20 +296,8 @@ public:
 		int indent /* = 0 */,
 		int master_column);
 
-
-
-
-
 // Draw the list items
-	int draw_items(int flash);
-
-
-
-
-
-
-
-
+	void draw_items(int flash);
 
 private:
 	void delete_columns();
@@ -321,16 +305,15 @@ private:
 		int *column_widths, 
 		int columns);
 // Draw the button for a popup listbox
-	int draw_button();
+	void draw_button();
 // Draw list border
-	int draw_border(int flash);
+	void draw_border(int flash);
 // Draw column titles
-	int draw_titles(int flash);
+	void draw_titles(int flash);
 // Draw expanders
 	void draw_toggles(int flash);
 // Draw selection rectangle
-	int draw_rectangle(int flash);
-
+	void draw_rectangle(int flash);
 
 	void draw_text_recursive(ArrayList<BC_ListBoxItem*> *data, 
 		int column,
@@ -368,13 +351,12 @@ private:
 		int old_value,
 		int new_value);
 
-
 	int test_column_divisions(int cursor_x, int cursor_y, int &new_cursor);
 	int test_column_titles(int cursor_x, int cursor_y);
 	int test_expanders();
 
 	int get_title_h();
-	int calculate_item_coords();
+	void calculate_item_coords();
 	void calculate_last_coords_recursive(
 		ArrayList<BC_ListBoxItem*> *data,
 		int *icon_x,
@@ -402,8 +384,8 @@ private:
 	int get_item_h(BC_ListBoxItem *item);
 	int get_item_highlight(ArrayList<BC_ListBoxItem*> *data, int column, int item);
 	int get_item_color(ArrayList<BC_ListBoxItem*> *data, int column, int item);
-	int get_icon_mask(BC_ListBoxItem *item, int &x, int &y, int &w, int &h);
-	int get_text_mask(BC_ListBoxItem *item, int &x, int &y, int &w, int &h);
+	void get_icon_mask(BC_ListBoxItem *item, int &x, int &y, int &w, int &h);
+	void get_text_mask(BC_ListBoxItem *item, int &x, int &y, int &w, int &h);
 // Copy sections of the bg_surface to the gui
 	void clear_listbox(int x, int y, int w, int h);
 
@@ -413,13 +395,9 @@ private:
 	int drag_scroll_event();
 	int select_scroll_event();
 	int rectangle_scroll_event();
-
-
-	void move_vertical(int pixels);
-	void move_horizontal(int pixels);
 	void clamp_positions();
 
-	int get_scrollbars();
+	void get_scrollbars();
 	void update_scrollbars();
 
 // Flat index of the item the cursor is over.  
@@ -464,10 +442,8 @@ private:
 // Array of one list of pointers for each column
 	ArrayList<BC_ListBoxItem*> *data;
 
-
 // 1 if a button is used to make the listbox display
 	int is_popup;      // popup
-
 
 // Dimensions for a popup if there is one
 	int popup_w, popup_h;
@@ -478,10 +454,6 @@ private:
 // dimensions of a row in the list
 	int row_height, row_ascent, row_descent;
 
-
-
-
-
 	int selection_mode;
 	int display_format;
 	int icon_position;
@@ -490,7 +462,6 @@ private:
 	BC_ListBoxYScroll *yscrollbar;
 	ArrayList<BC_ListBoxToggle*> expanders;
 	char query[BCTEXTLEN];
-
 
 // Window containing the listbox
 	BC_WindowBase *gui;
@@ -502,7 +473,7 @@ private:
 	int columns;
 	int master_column;
 	int search_column;
-	
+
 	int view_h, view_w;
 	int title_h;
 // Maximum width of items.  Calculated by get_items_width
@@ -519,8 +490,6 @@ private:
 // Background color of listbox
 	int list_background;
 
-
-
 // Popup button
 	BC_Pixmap *button_images[4];
 // Expander
@@ -536,24 +505,16 @@ private:
 // Background picon to be drawn in the upper right
 	BC_Pixmap *bg_pixmap;
 
-
 // Column title backgrounds
 	BC_Pixmap *column_bg[3];
 // Column sort order
 	BC_Pixmap *column_sort_up;
 	BC_Pixmap *column_sort_dn;
 
-
-
-
 // Number of column to sort
 	int sort_column;
 // Sort order.  -1 means no column is being sorted.
 	int sort_order;
-
-
-
-
 
 // State of the list box and button when the mouse button is pressed.
 	int current_operation;
@@ -573,7 +534,6 @@ private:
 		COLUMN_DRAG,      // column title is being dragged
 		EXPAND_DN         // Expander is down
 	};
-
 
 // More state variables
 	int button_highlighted;
@@ -599,9 +559,6 @@ private:
 // Used in button_press_event and button_release_event to detect double clicks
 	int selection_number1, selection_number2;
 
-
-
-
 	int active;
 
 // Button release counter for double clicking
@@ -611,14 +568,8 @@ private:
 	int rect_x1, rect_y1;
 	int rect_x2, rect_y2;
 
-
-
 // Window for dragging
 	BC_DragWindow *drag_popup;
 	int justify;
 };
-
-
-
-
 #endif

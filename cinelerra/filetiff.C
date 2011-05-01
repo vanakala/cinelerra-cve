@@ -586,10 +586,9 @@ int TIFFConfigVideo::create_objects()
 	return 0;
 }
 
-int TIFFConfigVideo::close_event()
+void TIFFConfigVideo::close_event()
 {
 	set_done(0);
-	return 1;
 }
 
 

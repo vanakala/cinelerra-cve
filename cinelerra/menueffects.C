@@ -589,7 +589,7 @@ int MenuEffectWindow::create_objects()
 	return 0;
 }
 
-int MenuEffectWindow::resize_event(int w, int h)
+void MenuEffectWindow::resize_event(int w, int h)
 {
 	mwindow->session->menueffect_w = w;
 	mwindow->session->menueffect_h = h;

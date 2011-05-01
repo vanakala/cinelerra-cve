@@ -66,7 +66,7 @@ class YUVWindow : public BC_Window
 public:
 	YUVWindow(YUVEffect *plugin, int x, int y);
 	void create_objects();
-	int close_event();
+	void close_event();
 	YUVLevel *y, *u, *v;
 	YUVEffect *plugin;
 };
@@ -191,11 +191,9 @@ void YUVWindow::create_objects()
 	flush();
 }
 
-int YUVWindow::close_event()
+void YUVWindow::close_event()
 {
-// Set result to 1 to indicate a client side close
 	set_done(1);
-	return 1;
 }
 
 PLUGIN_THREAD_OBJECT(YUVEffect, YUVThread, YUVWindow)

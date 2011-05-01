@@ -37,10 +37,10 @@ public:
 	virtual int handle_event() { return 0; };
 	virtual const char* get_caption() { return ""; };
 
-	int reposition_widget(int x, int y);
+	void reposition_widget(int x, int y);
 
 private:
-	int draw();
+	void draw();
 	BC_Pixmap *thepixmap;
 };
 

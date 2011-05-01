@@ -116,10 +116,9 @@ int BC_MenuBar::add_menu(BC_Menu* menu)
 	return 0;
 }
 
-int BC_MenuBar::focus_out_event()
+void BC_MenuBar::focus_out_event()
 {
 	deactivate();
-	return 0;
 }
 
 int BC_MenuBar::button_press_event()
@@ -150,12 +149,10 @@ int BC_MenuBar::button_release_event()
 	{
 		deactivate();
 	}
-//printf("BC_MenuBar::button_release_event %d\n", result);
-
 	return result;
 }
 
-int BC_MenuBar::resize_event(int w, int h)
+void BC_MenuBar::resize_event(int w, int h)
 {
 	resize_window(w, get_h());
 	draw_face();
@@ -163,7 +160,6 @@ int BC_MenuBar::resize_event(int w, int h)
 	{
 		menu_titles.values[i]->draw_title();
 	}
-	return 0;
 }
 
 int BC_MenuBar::keypress_event()
@@ -189,13 +185,12 @@ int BC_MenuBar::cursor_motion_event()
 	return result;
 }
 
-int BC_MenuBar::cursor_leave_event()
+void BC_MenuBar::cursor_leave_event()
 {
 	for(int i = 0; i < menu_titles.total; i++)
 	{
 		menu_titles.values[i]->dispatch_cursor_leave();
 	}
-	return 0;
 }
 
 int BC_MenuBar::cursor_enter_event()
@@ -204,7 +199,7 @@ int BC_MenuBar::cursor_enter_event()
 	return 0;
 }
 
-int BC_MenuBar::translation_event()
+void BC_MenuBar::translation_event()
 {
 	if(active)
 	{
@@ -213,18 +208,16 @@ int BC_MenuBar::translation_event()
 			menu_titles.values[i]->dispatch_translation_event();
 		}
 	}
-	return 0;
 }
 
-int BC_MenuBar::activate()
+void BC_MenuBar::activate()
 {
 	top_level->deactivate();
 	top_level->active_menubar = this;
 	active = 1;
-	return 0;
 }
 
-int BC_MenuBar::deactivate()
+void BC_MenuBar::deactivate()
 {
 	for(int i = 0; i < menu_titles.total; i++)
 	{
@@ -232,19 +225,17 @@ int BC_MenuBar::deactivate()
 	}
 	top_level->active_menubar = 0;
 	active = 0;
-	return 0;
 }
 
-int BC_MenuBar::unhighlight()
+void BC_MenuBar::unhighlight()
 {
 	for(int i = 0; i < menu_titles.total; i++)
 	{
 		menu_titles.values[i]->unhighlight();
 	}
-	return 0;
 }
 
-int BC_MenuBar::draw_face()
+void BC_MenuBar::draw_face()
 {
 	if(menu_bar_bg)
 	{
@@ -276,10 +267,4 @@ int BC_MenuBar::draw_face()
 
 	flash();
 	flush();
-	return 0;
 }
-
-
-
-
-

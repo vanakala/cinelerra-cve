@@ -211,24 +211,22 @@ DayTumbler::DayTumbler(TimeEntry *timeentry,
 }
 
 
-int DayTumbler::handle_up_event()
+void DayTumbler::handle_up_event()
 {
 	*timeentry->output_day += 1;
 	if(*timeentry->output_day >= text->table_items)
 		*timeentry->output_day = 0;
 	text->update(text->table[*timeentry->output_day]);
 	timeentry->handle_event();
-	return 1;
 }
 
-int DayTumbler::handle_down_event()
+void DayTumbler::handle_down_event()
 {
 	*timeentry->output_day -= 1;
 	if(*timeentry->output_day < 0)
 		*timeentry->output_day = text->table_items - 1;
 	text->update(text->table[*timeentry->output_day]);
 	timeentry->handle_event();
-	return 1;
 }
 
 

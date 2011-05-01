@@ -257,7 +257,7 @@ int ChannelEditWindow::create_objects()
 	return 0;
 }
 
-int ChannelEditWindow::close_event()
+void ChannelEditWindow::close_event()
 {
 	set_done(0);
 }
@@ -1109,12 +1109,12 @@ ChannelEditEditSourceTumbler::~ChannelEditEditSourceTumbler()
 {
 }
 
-int ChannelEditEditSourceTumbler::handle_up_event()
+void ChannelEditEditSourceTumbler::handle_up_event()
 {
 	thread->source_up();
 }
 
-int ChannelEditEditSourceTumbler::handle_down_event()
+void ChannelEditEditSourceTumbler::handle_down_event()
 {
 	thread->source_down();
 }

@@ -41,18 +41,18 @@ public:
 	void initialize();
 	static int calculate_w(BC_WindowBase *gui, const char *text, int font = MEDIUMFONT);
 	static int calculate_h(BC_WindowBase *gui, const char *text, int font = MEDIUMFONT);
-	int resize(int w, int h);
-	int reposition(int x, int y);
-	int set_color(int color);
-	int update(const char *text);
+	void resize(int w, int h);
+	void reposition(int x, int y);
+	void set_color(int color);
+	void update(const char *text);
 	void update(float value);
 	char* get_text();
 
 private:
-	int draw();
+	void draw();
 	static void get_size(BC_WindowBase *gui, int font, const char *text, 
 		int fixed_w, int &w, int &h);
-	
+
 	char text[BCTEXTLEN];
 	int color;
 	int font;
@@ -60,5 +60,4 @@ private:
 // Width if fixed
 	int fixed_w;
 };
-
 #endif

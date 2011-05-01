@@ -74,7 +74,7 @@ public:
 
 	void create_objects();
 	void change_values();
-	int close_event();
+	void close_event();
 	void update_display();
 	void update_rgb();
 	int handle_event();

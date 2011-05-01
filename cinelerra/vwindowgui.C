@@ -201,7 +201,7 @@ int VWindowGUI::create_objects()
 	return 0;
 }
 
-int VWindowGUI::resize_event(int w, int h)
+void VWindowGUI::resize_event(int w, int h)
 {
 	mwindow->session->vwindow_x = get_x();
 	mwindow->session->vwindow_y = get_y();
@@ -235,21 +235,19 @@ int VWindowGUI::resize_event(int w, int h)
 		mwindow->theme->vmeter_h);
 
 	BC_WindowBase::resize_event(w, h);
-	return 1;
 }
 
 
 
 
 
-int VWindowGUI::translation_event()
+void VWindowGUI::translation_event()
 {
 	mwindow->session->vwindow_x = get_x();
 	mwindow->session->vwindow_y = get_y();
-	return 0;
 }
 
-int VWindowGUI::close_event()
+void VWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_vwindow = 0;
@@ -259,7 +257,6 @@ int VWindowGUI::close_event()
 	mwindow->gui->unlock_window();
 
 	mwindow->save_defaults();
-	return 1;
 }
 
 int VWindowGUI::keypress_event()
@@ -301,11 +298,10 @@ int VWindowGUI::button_press_event()
 	return 0;
 }
 
-int VWindowGUI::cursor_leave_event()
+void VWindowGUI::cursor_leave_event()
 {
 	if(canvas->get_canvas())
-		return canvas->cursor_leave_event_base(canvas->get_canvas());
-	return 0;
+		canvas->cursor_leave_event_base(canvas->get_canvas());
 }
 
 int VWindowGUI::cursor_enter_event()

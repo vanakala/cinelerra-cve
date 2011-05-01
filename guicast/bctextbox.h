@@ -30,8 +30,6 @@
 
 #define BCCURSORW 2
 
-
-
 class BC_TextBox : public BC_SubWindow
 {
 public:
@@ -69,34 +67,34 @@ public:
 // Whenever the contents of the text change
 	virtual int handle_event() { return 0; };
 // Whenever the position of the text changes
-	virtual int motion_event() { return 0; };
+	virtual void motion_event() {};
 	void set_selection(int char1, int char2, int ibeam);
-	int update(const char *text);
-	int update(int64_t value);
-	int update(float value);
+	void update(const char *text);
+	void update(int64_t value);
+	void update(float value);
 	void disable();
 	void enable();
 	int get_enabled();
 
 	void initialize();
 
-	int focus_in_event();
-	int focus_out_event();
+	void focus_in_event();
+	void focus_out_event();
 	int cursor_enter_event();
-	int cursor_leave_event();
+	void cursor_leave_event();
 	int cursor_motion_event();
 	virtual int button_press_event();
 	int button_release_event();
-	int repeat_event(int64_t repeat_id);
+	void repeat_event(int64_t repeat_id);
 	int keypress_event();
-	int activate();
-	int deactivate();
+	void activate();
+	void deactivate();
 	char* get_text();
 	int get_text_rows();
 // Set top left of text view
 	void set_text_row(int row);
 	int get_text_row();
-	int reposition_window(int x, int y, int w = -1, int rows = -1);
+	void reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
 	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
@@ -118,9 +116,9 @@ public:
 // in all cases it returns text_selected after the operation
 	int select_whole_text(int select);
 	void cycle_textboxes(int amout);
-	
+
 private:
-	int reset_parameters(int rows, int has_border, int font);
+	void reset_parameters(int rows, int has_border, int font);
 	void draw();
 	void draw_border();
 	void draw_cursor();
@@ -137,7 +135,6 @@ private:
 	int get_cursor_letter(int cursor_x, int cursor_y);
 	int get_row_h(int rows);
 	void default_keypress(int &dispatch_event, int &result);
-
 
 // Top left of text relative to window
 	int text_x, text_y;
@@ -170,7 +167,6 @@ private:
 };
 
 
-
 class BC_ScrollTextBoxText;
 class BC_ScrollTextBoxYScroll;
 
@@ -187,7 +183,7 @@ public:
 	virtual ~BC_ScrollTextBox();
 	void create_objects();
 	virtual int handle_event();
-	
+
 	char* get_text();
 	void update(const char *text);
 	void reposition_window(int x, int y, int w, int rows);
@@ -214,7 +210,7 @@ public:
 	BC_ScrollTextBoxText(BC_ScrollTextBox *gui);
 	virtual ~BC_ScrollTextBoxText();
 	int handle_event();
-	int motion_event();
+	void motion_event();
 	BC_ScrollTextBox *gui;
 };
 
@@ -226,8 +222,6 @@ public:
 	int handle_event();
 	BC_ScrollTextBox *gui;
 };
-
-
 
 
 class BC_PopupTextBoxText;
@@ -244,7 +238,7 @@ public:
 		int text_w,
 		int list_h);
 	virtual ~BC_PopupTextBox();
-	int create_objects();
+	void create_objects();
 	virtual int handle_event();
 	char* get_text();
 	int get_number();
@@ -290,6 +284,7 @@ public:
 class BC_TumbleTextBoxText;
 class BC_TumbleTextBoxTumble;
 
+
 class BC_TumbleTextBox : public BC_RelocatableWidget
 {
 public:
@@ -316,13 +311,13 @@ public:
 		int text_w);
 	virtual ~BC_TumbleTextBox();
 
-	int create_objects();
+	void create_objects();
 	void reset();
 	virtual int handle_event();
 	char* get_text();
-	int update(const char *value);
-	int update(int64_t value);
-	int update(float value);
+	void update(const char *value);
+	void update(int64_t value);
+	void update(float value);
 	int get_x();
 	int get_y();
 	int get_w();
@@ -372,6 +367,4 @@ public:
 	int button_press_event();
 	BC_TumbleTextBox *popup;
 };
-
-
 #endif
