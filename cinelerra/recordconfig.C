@@ -21,6 +21,10 @@
 
 #include "audiodevice.inc"
 #include "bchash.h"
+#include "bcsignals.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "playbackconfig.h"
 #include "recordconfig.h"
 #include "videodevice.inc"
@@ -148,19 +152,19 @@ int AudioInConfig::save_defaults(BC_Hash *defaults)
 }
 
 
-
 VideoInConfig::VideoInConfig()
 {
 #ifdef HAVE_VIDEO4LINUX2
 	driver = VIDEO4LINUX2;
-#else
+#elif defined(HAVE_VIDEO4LINUX)
 	driver = VIDEO4LINUX;
+#else
+	driver = SCREENCAPTURE;
 #endif
 	strcpy(v4l_in_device, "/dev/video0");
 	strcpy(v4l2_in_device, "/dev/video0");
 	strcpy(v4l2jpeg_in_device, "/dev/video0");
 	screencapture_display[0] = 0;
-
 
 // DVB
 	strcpy(dvb_in_host, "echephyle");

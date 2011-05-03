@@ -41,6 +41,8 @@
 #include "vframe.h"
 #include "videodevice.h"
 
+#ifdef HAVE_VIDEO4LINUX
+
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -563,3 +565,5 @@ SET_TRACE
 
 	return 0;
 }
+
+#endif

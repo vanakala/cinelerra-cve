@@ -22,6 +22,11 @@
 #ifndef VDEVICEV4L_H
 #define VDEVICEV4L_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifdef HAVE_VIDEO4LINUX
+
 #include "vdevicebase.h"
 #include <linux/videodev.h>
 #include "videodevice.inc"
@@ -80,4 +85,5 @@ private:
 	int got_first_frame;
 };
 
+#endif
 #endif

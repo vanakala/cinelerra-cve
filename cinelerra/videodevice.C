@@ -182,13 +182,14 @@ int VideoDevice::open_input(VideoInConfig *config,
 
 	switch(in_config->driver)
 	{
+#ifdef HAVE_VIDEO4LINUX
 	case VIDEO4LINUX:
 		keepalive = new KeepaliveThread(this);
 		keepalive->start_keepalive();
 		new_device_base();
 		result = input_base->open_input();
 		break;
-
+#endif
 #ifdef HAVE_VIDEO4LINUX2
 	case VIDEO4LINUX2:
 		new_device_base();
@@ -221,9 +222,10 @@ VDeviceBase* VideoDevice::new_device_base()
 {
 	switch(in_config->driver)
 	{
+#ifdef HAVE_VIDEO4LINUX
 	case VIDEO4LINUX:
 		return input_base = new VDeviceV4L(this);
-
+#endif
 #ifdef HAVE_VIDEO4LINUX2
 	case VIDEO4LINUX2:
 		return input_base = new VDeviceV4L2(this);

@@ -296,7 +296,9 @@ int VDriverMenu::create_objects()
 {
 	if(do_input)
 	{
+#ifdef HAVE_VIDEO4LINUX
 		add_item(new VDriverItem(this, VIDEO4LINUX_TITLE, VIDEO4LINUX));
+#endif
 #ifdef HAVE_VIDEO4LINUX2
 		add_item(new VDriverItem(this, VIDEO4LINUX2_TITLE, VIDEO4LINUX2));
 		add_item(new VDriverItem(this, VIDEO4LINUX2JPEG_TITLE, VIDEO4LINUX2JPEG));
