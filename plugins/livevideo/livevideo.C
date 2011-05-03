@@ -359,7 +359,6 @@ int LiveVideo::process_buffer(VFrame *frame,
 // Some devices can read directly to the best colormodel and some can't.
 			switch(session->vconfig_in->driver)
 			{
-			case CAPTURE_BUZ:
 			case VIDEO4LINUX2JPEG:
 				input_cmodel = BC_COMPRESSED;
 				break;
@@ -452,7 +451,6 @@ int LiveVideo::process_buffer(VFrame *frame,
 			{
 				switch(session->vconfig_in->driver)
 				{
-				case CAPTURE_BUZ:
 				case VIDEO4LINUX2JPEG:
 					if(!mjpeg)
 						mjpeg = mjpeg_new(w, 

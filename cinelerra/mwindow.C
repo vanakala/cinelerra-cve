@@ -118,7 +118,6 @@ MWindow::MWindow()
 	brender_lock = new Mutex("MWindow::brender_lock");
 	brender = 0;
 	session = 0;
-	channeldb_buz = new ChannelDB;
 	channeldb_v4l2jpeg = new ChannelDB;
 	dvb_input = 0;
 	dvb_input_lock = new Mutex("MWindow::dvb_input_lock");
@@ -679,7 +678,6 @@ void MWindow::init_cache()
 
 void MWindow::init_channeldb()
 {
-	channeldb_buz->load("channeldb_buz");
 	channeldb_v4l2jpeg->load("channeldb_v4l2jpeg");
 }
 

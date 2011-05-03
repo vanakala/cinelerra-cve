@@ -239,7 +239,6 @@ void FormatTools::update_driver(int driver)
 		video_switch->update(1);
 		break;
 
-	case CAPTURE_BUZ:
 	case VIDEO4LINUX2JPEG:
 		if(asset->format != FILE_AVI &&
 			asset->format != FILE_MOV)

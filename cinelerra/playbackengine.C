@@ -105,10 +105,6 @@ ChannelDB* PlaybackEngine::get_channeldb()
 	{
 		case VIDEO4LINUX2JPEG:
 			return mwindow->channeldb_v4l2jpeg;
-			break;
-		case PLAYBACK_BUZ:
-			return mwindow->channeldb_buz;
-			break;
 	}
 	return 0;
 }

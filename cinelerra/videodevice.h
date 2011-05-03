@@ -39,7 +39,6 @@
 #include "thread.h"
 #include "picture.inc"
 #include "vdevicebase.inc"
-#include "vdevicebuz.inc"
 #include "vdevicev4l.inc"
 #include "vdevicex11.inc"
 

@@ -39,7 +39,6 @@
 #include "recordgui.h"
 #include "recordmonitor.h"
 #include "theme.h"
-#include "vdevicebuz.h"
 #include "vdeviceprefs.h"
 #include "videodevice.h"
 
@@ -279,7 +278,6 @@ PrefsChannelPicker::PrefsChannelPicker(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->prefs = prefs;
-	VDeviceBUZ::get_inputs(&input_sources);
 }
 
 PrefsChannelPicker::~PrefsChannelPicker()
@@ -321,7 +319,7 @@ Channel* PrefsChannelPicker::get_current_channel_struct()
 
 int PrefsChannelPicker::get_current_channel_number()
 {
-	return prefs->out_config->buz_out_channel;
+	return 0;
 }
 
 ArrayList<Channel*>* PrefsChannelPicker::get_video_inputs()
@@ -344,7 +342,6 @@ void PrefsChannelPicker::set_channel(Channel *channel)
 void PrefsChannelPicker::set_channel_number(int number)
 {
 	CLAMP(number, 0, channeldb->size() - 1);
-	prefs->out_config->buz_out_channel = number;
 	set_channel(get_current_channel_struct());
 }
 

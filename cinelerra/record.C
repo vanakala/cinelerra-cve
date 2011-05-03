@@ -162,8 +162,7 @@ int Record::load_defaults()
 
 // Fix encoding parameters depending on driver.
 // These are locked by a specific driver.
-	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
-		mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG)
+	if(mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG)
 		strncpy(default_asset->vcodec, QUICKTIME_MJPA, 4);
 
 // Load batches
@@ -302,7 +301,6 @@ void Record::source_to_text(char *string, Batch *batch)
 	{
 	case VIDEO4LINUX:
 	case VIDEO4LINUX2:
-	case CAPTURE_BUZ:
 	case VIDEO4LINUX2JPEG:
 		if(batch->channel < 0 || batch->channel >= channeldb->size())
 			strcpy(string, _("None"));

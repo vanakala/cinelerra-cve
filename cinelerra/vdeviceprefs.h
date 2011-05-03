@@ -72,7 +72,6 @@ private:
 	int create_v4l2_objs();
 	int create_v4l2jpeg_objs();
 	int create_screencap_objs();
-	int create_buz_objs();
 	int create_x11_objs();
 	int create_dvb_objs();
 
@@ -86,7 +85,6 @@ private:
 	VDeviceTextBox *device_text;
 	VDeviceTumbleBox *device_port;
 	VDeviceTumbleBox *device_number;
-	VDeviceCheckBox *buz_swap_channels;
 	int driver, mode;
 	int x;
 	int y;

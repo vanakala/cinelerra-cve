@@ -206,10 +206,7 @@ const char *AudioOutConfig::fragment_size_text(void)
 
 VideoOutConfig::VideoOutConfig()
 {
-	sprintf(buz_out_device, "/dev/video0");
 	driver = PLAYBACK_X11_XV;
-	buz_out_channel = 0;
-	buz_swap_fields = 0;
 	sprintf(x11_host, "");
 	x11_use_fields = USE_NO_FIELDS;
 	brightness = 32768;
@@ -232,9 +229,6 @@ int VideoOutConfig::operator!=(VideoOutConfig &that)
 int VideoOutConfig::operator==(VideoOutConfig &that)
 {
 	return (driver == that.driver) &&
-		!strcmp(buz_out_device, that.buz_out_device) && 
-		(buz_out_channel == that.buz_out_channel) && 
-		(buz_swap_fields == that.buz_swap_fields) &&
 		!strcmp(x11_host, that.x11_host) && 
 		(x11_use_fields == that.x11_use_fields) &&
 		(brightness == that.brightness) && 
@@ -258,26 +252,13 @@ VideoOutConfig& VideoOutConfig::operator=(VideoOutConfig &that)
 void VideoOutConfig::copy_from(VideoOutConfig *src)
 {
 	this->driver = src->driver;
-	strcpy(this->buz_out_device, src->buz_out_device);
-	this->buz_out_channel = src->buz_out_channel;
-	this->buz_swap_fields = src->buz_swap_fields;
 	strcpy(this->x11_host, src->x11_host);
 	this->x11_use_fields = src->x11_use_fields;
 }
 
 char* VideoOutConfig::get_path()
 {
-	switch(driver)
-	{
-		case PLAYBACK_BUZ:
-			return buz_out_device;
-			break;
-		case PLAYBACK_X11:
-		case PLAYBACK_X11_XV:
-			return x11_host;
-			break;
-	};
-	return buz_out_device;
+	return x11_host;
 }
 
 int VideoOutConfig::load_defaults(BC_Hash *defaults)
@@ -285,12 +266,6 @@ int VideoOutConfig::load_defaults(BC_Hash *defaults)
 	char string[BCTEXTLEN];
 	sprintf(string, "VIDEO_OUT_DRIVER");
 	driver = defaults->get(string, driver);
-	sprintf(string, "BUZ_OUT_DEVICE");
-	defaults->get(string, buz_out_device);
-	sprintf(string, "BUZ_OUT_CHANNEL");
-	buz_out_channel = defaults->get(string, buz_out_channel);
-	sprintf(string, "BUZ_SWAP_FIELDS");
-	buz_swap_fields = defaults->get(string, buz_swap_fields);
 	sprintf(string, "X11_OUT_DEVICE");
 	defaults->get(string, x11_host);
 	x11_use_fields = defaults->get("X11_USE_FIELDS", x11_use_fields);
@@ -303,12 +278,6 @@ int VideoOutConfig::save_defaults(BC_Hash *defaults)
 	char string[BCTEXTLEN];
 	sprintf(string, "VIDEO_OUT_DRIVER");
 	defaults->update(string, driver);
-	sprintf(string, "BUZ_OUT_DEVICE");
-	defaults->update(string, buz_out_device);
-	sprintf(string, "BUZ_OUT_CHANNEL");
-	defaults->update(string, buz_out_channel);
-	sprintf(string, "BUZ_SWAP_FIELDS");
-	defaults->update(string, buz_swap_fields);
 	sprintf(string, "X11_OUT_DEVICE");
 	defaults->update(string, x11_host);
 	defaults->update("X11_USE_FIELDS", x11_use_fields);

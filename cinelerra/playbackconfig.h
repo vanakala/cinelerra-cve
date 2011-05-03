@@ -84,10 +84,6 @@ public:
 
 	int driver;
 	char lml_out_device[BCTEXTLEN];
-	char buz_out_device[BCTEXTLEN];
-// Entry in the buz channel table
-	int buz_out_channel;
-	int buz_swap_fields;
 
 // X11 options
 	char x11_host[BCTEXTLEN];

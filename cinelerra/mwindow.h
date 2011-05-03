@@ -441,7 +441,6 @@ public:
 	int reset_meters();
 
 // Channel DB for playback only.  Record channel DB's are in record.C
-	ChannelDB *channeldb_buz;
 	ChannelDB *channeldb_v4l2jpeg;
 
 // ====================================== plugins ==============================

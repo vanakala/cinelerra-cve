@@ -65,7 +65,6 @@ VDevicePrefs::~VDevicePrefs()
 {
 	delete_objects();
 	if(menu) delete menu;
-	pwindow->mwindow->channeldb_buz->save("channeldb_buz");
 }
 
 
@@ -81,7 +80,6 @@ void VDevicePrefs::reset_objects()
 	device_number = 0;
 
 	channel_title = 0;
-	buz_swap_channels = 0;
 	output_title = 0;
 	channel_picker = 0;
 }
@@ -127,10 +125,6 @@ int VDevicePrefs::initialize(int creation)
 	case SCREENCAPTURE:
 		create_screencap_objs();
 		break;
-	case CAPTURE_BUZ:
-	case PLAYBACK_BUZ:
-		create_buz_objs();
-		break;
 	case PLAYBACK_X11:
 	case PLAYBACK_X11_XV:
 	case PLAYBACK_X11_GL:
@@ -157,7 +151,6 @@ int VDevicePrefs::delete_objects()
 {
 	delete output_title;
 	delete channel_picker;
-	delete buz_swap_channels;
 	delete device_title;
 	delete device_text;
 
@@ -186,48 +179,6 @@ int VDevicePrefs::create_dvb_objs()
 	dialog->add_subwindow(number_title = new BC_Title(x1, y, _("Adaptor:")));
 	device_number = new VDeviceTumbleBox(this, x1, y + 20,  &in_config->dvb_in_number, 0, 16);
 	device_number->create_objects();
-}
-
-int VDevicePrefs::create_buz_objs()
-{
-	char *output_char;
-	int x1 = x + menu->get_w() + 5;
-	int x2 = x1 + 210;
-	int y1 = y;
-	BC_Resources *resources = BC_WindowBase::get_resources();
-
-	switch(mode)
-	{
-	case MODEPLAY:
-		output_char = out_config->buz_out_device;
-		break;
-	case MODERECORD:
-		output_char = in_config->buz_in_device;
-		break;
-	}
-	dialog->add_subwindow(device_title = new BC_Title(x1, y1, _("Device path:"), MEDIUMFONT, resources->text_default));
-
-	y1 += 20;
-	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y1, output_char));
-
-	if(driver == PLAYBACK_BUZ)
-	{
-		dialog->add_subwindow(buz_swap_channels = 
-			new VDeviceCheckBox(x2, y1, &out_config->buz_swap_fields, _("Swap fields")));
-	}
-	y1 += 30;
-	if(driver == PLAYBACK_BUZ)
-	{
-		dialog->add_subwindow(output_title = new BC_Title(x1, y1, _("Output channel:")));
-		y1 += 20;
-		channel_picker = new PrefsChannelPicker(pwindow->mwindow, 
-			this, 
-			pwindow->mwindow->channeldb_buz, 
-			x1,
-			y1);
-		channel_picker->create_objects();
-	}
-	return 0;
 }
 
 int VDevicePrefs::create_v4l_objs()
@@ -323,9 +274,6 @@ const char* VDriverMenu::driver_to_string(int driver)
 	case SCREENCAPTURE:
 		sp = SCREENCAPTURE_TITLE;
 		break;
-	case CAPTURE_BUZ:
-		sp = CAPTURE_BUZ_TITLE;
-		break;
 	case CAPTURE_DVB:
 		sp = CAPTURE_DVB_TITLE;
 		break;
@@ -337,9 +285,6 @@ const char* VDriverMenu::driver_to_string(int driver)
 		break;
 	case PLAYBACK_X11_GL:
 		sp = PLAYBACK_X11_GL_TITLE;
-		break;
-	case PLAYBACK_BUZ:
-		sp = PLAYBACK_BUZ_TITLE;
 		break;
 	default:
 		sp = "";
@@ -357,7 +302,6 @@ int VDriverMenu::create_objects()
 		add_item(new VDriverItem(this, VIDEO4LINUX2JPEG_TITLE, VIDEO4LINUX2JPEG));
 #endif
 		add_item(new VDriverItem(this, SCREENCAPTURE_TITLE, SCREENCAPTURE));
-		add_item(new VDriverItem(this, CAPTURE_BUZ_TITLE, CAPTURE_BUZ));
 		add_item(new VDriverItem(this, CAPTURE_DVB_TITLE, CAPTURE_DVB));
 	}
 	else
@@ -369,7 +313,6 @@ int VDriverMenu::create_objects()
 		if(get_opengl_version() >= 103)
 			add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
 #endif
-		add_item(new VDriverItem(this, PLAYBACK_BUZ_TITLE, PLAYBACK_BUZ));
 	}
 	return 0;
 }

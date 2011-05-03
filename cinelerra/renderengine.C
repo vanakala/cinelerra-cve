@@ -226,21 +226,6 @@ int RenderEngine::brender_available(ptstime position)
 
 Channel* RenderEngine::get_current_channel()
 {
-	if(channeldb)
-	{
-		switch(config->vconfig->driver)
-		{
-			case PLAYBACK_BUZ:
-				if(config->vconfig->buz_out_channel >= 0 && 
-					config->vconfig->buz_out_channel < channeldb->size())
-				{
-					return channeldb->get(config->vconfig->buz_out_channel);
-				}
-				break;
-			case VIDEO4LINUX2JPEG:
-				break;
-		}
-	}
 	return 0;
 }
 

@@ -36,7 +36,6 @@
 #include "quicktime.h"
 #include "recordconfig.h"
 #include "recordmonitor.h"
-#include "vdevicebuz.h"
 #include "vdevicedvb.h"
 #include "vdevicev4l.h"
 #include "vdevicev4l2.h"
@@ -208,13 +207,6 @@ int VideoDevice::open_input(VideoInConfig *config,
 		result = input_base->open_input();
 		break;
 
-	case CAPTURE_BUZ:
-		keepalive = new KeepaliveThread(this);
-		keepalive->start_keepalive();
-		new_device_base();
-		result = input_base->open_input();
-		break;
-
 	case CAPTURE_DVB:
 		new_device_base();
 		result = input_base->open_input();
@@ -243,9 +235,6 @@ VDeviceBase* VideoDevice::new_device_base()
 	case SCREENCAPTURE:
 		return input_base = new VDeviceX11(this, 0);
 
-	case CAPTURE_BUZ:
-		return input_base = new VDeviceBUZ(this);
-
 	case CAPTURE_DVB:
 		return input_base = new VDeviceDVB(this);
 	}
@@ -265,9 +254,6 @@ static const char* get_channeldb_path(VideoInConfig *vconfig_in)
 		break;
 	case VIDEO4LINUX2JPEG:
 		path = "channels_v4l2jpeg";
-		break;
-	case CAPTURE_BUZ:
-		path = "channels_buz";
 		break;
 	case CAPTURE_DVB:
 		path = "channels_dvb";
@@ -295,8 +281,7 @@ VDeviceBase* VideoDevice::get_output_base()
 int VideoDevice::is_compressed(int driver, int use_file, int use_fixed)
 {
 // FileMOV needs to have write_frames called so the start codes get scanned.
-	return ((driver == CAPTURE_BUZ && use_fixed) ||
-		(driver == VIDEO4LINUX2JPEG && use_fixed));
+	return ((driver == VIDEO4LINUX2JPEG && use_fixed));
 }
 
 int VideoDevice::is_compressed(int use_file, int use_fixed)
@@ -310,7 +295,6 @@ void VideoDevice::fix_asset(Asset *asset, int driver)
 // Fix asset using legacy routine
 	switch(driver)
 	{
-	case CAPTURE_BUZ:
 	case VIDEO4LINUX2JPEG:
 		if(asset->format != FILE_AVI &&
 			asset->format != FILE_MOV)
@@ -338,8 +322,6 @@ const char* VideoDevice::drivertostr(int driver)
 		return PLAYBACK_X11_XV_TITLE;
 	case PLAYBACK_X11_GL:
 		return PLAYBACK_X11_GL_TITLE;
-	case PLAYBACK_BUZ:
-		return PLAYBACK_BUZ_TITLE;
 	case VIDEO4LINUX:
 		return VIDEO4LINUX_TITLE;
 	case VIDEO4LINUX2:
@@ -348,8 +330,6 @@ const char* VideoDevice::drivertostr(int driver)
 		return VIDEO4LINUX2JPEG_TITLE;
 	case SCREENCAPTURE:
 		return SCREENCAPTURE_TITLE;
-	case CAPTURE_BUZ:
-		return CAPTURE_BUZ_TITLE;
 	}
 	return "";
 }
@@ -617,9 +597,6 @@ int VideoDevice::open_output(VideoOutConfig *config,
 
 	switch(out_config->driver)
 	{
-	case PLAYBACK_BUZ:
-		output_base = new VDeviceBUZ(this);
-		break;
 	case PLAYBACK_X11:
 	case PLAYBACK_X11_XV:
 	case PLAYBACK_X11_GL:

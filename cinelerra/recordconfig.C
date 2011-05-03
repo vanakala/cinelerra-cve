@@ -159,7 +159,6 @@ VideoInConfig::VideoInConfig()
 	strcpy(v4l_in_device, "/dev/video0");
 	strcpy(v4l2_in_device, "/dev/video0");
 	strcpy(v4l2jpeg_in_device, "/dev/video0");
-	strcpy(buz_in_device, "/dev/video0");
 	screencapture_display[0] = 0;
 
 
@@ -189,8 +188,6 @@ char* VideoInConfig::get_path()
 		return v4l2_in_device;
 	case VIDEO4LINUX2JPEG:
 		return v4l2jpeg_in_device;
-	case CAPTURE_BUZ:
-		return buz_in_device;
 	case CAPTURE_DVB:
 		return dvb_in_host;
 	}
@@ -203,7 +200,6 @@ void VideoInConfig::copy_from(VideoInConfig *src)
 	strcpy(v4l_in_device, src->v4l_in_device);
 	strcpy(v4l2_in_device, src->v4l2_in_device);
 	strcpy(v4l2jpeg_in_device, src->v4l2jpeg_in_device);
-	strcpy(buz_in_device, src->buz_in_device);
 	strcpy(screencapture_display, src->screencapture_display);
 
 	strcpy(dvb_in_host, src->dvb_in_host);
@@ -228,7 +224,6 @@ int VideoInConfig::load_defaults(BC_Hash *defaults)
 	defaults->get("V4L_IN_DEVICE", v4l_in_device);
 	defaults->get("V4L2_IN_DEVICE", v4l2_in_device);
 	defaults->get("V4L2JPEG_IN_DEVICE", v4l2jpeg_in_device);
-	defaults->get("BUZ_IN_DEVICE", buz_in_device);
 	defaults->get("SCREENCAPTURE_DISPLAY", screencapture_display);
 
 	defaults->get("DVB_IN_HOST", dvb_in_host);
@@ -248,7 +243,6 @@ int VideoInConfig::save_defaults(BC_Hash *defaults)
 	defaults->update("V4L_IN_DEVICE", v4l_in_device);
 	defaults->update("V4L2_IN_DEVICE", v4l2_in_device);
 	defaults->update("V4L2JPEG_IN_DEVICE", v4l2jpeg_in_device);
-	defaults->update("BUZ_IN_DEVICE", buz_in_device);
 	defaults->update("SCREENCAPTURE_DISPLAY", screencapture_display);
 
 	defaults->update("DVB_IN_HOST", dvb_in_host);
