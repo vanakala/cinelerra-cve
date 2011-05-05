@@ -42,7 +42,7 @@ FFT::~FFT()
 {
 }
 
-int FFT::do_fft(unsigned int samples,  // must be a power of 2
+void FFT::do_fft(unsigned int samples,  // must be a power of 2
 	int inverse,         // 0 = forward FFT, 1 = inverse
 	double *real_in,     // array of input's real samples
 	double *imag_in,     // array of input's imag samples
@@ -135,14 +135,12 @@ int FFT::do_fft(unsigned int samples,  // must be a power of 2
 			imag_out[i] /= denom;
 		}
 	}
-	return 0;
 }
-
-int FFT::update_progress(int current_position)
+/* Pole
+void FFT::update_progress(int current_position)
 {
-	return 0;
 }
-
+	*/
 unsigned int FFT::samples_to_bits(unsigned int samples)
 {
 	unsigned int i;
@@ -168,7 +166,7 @@ unsigned int FFT::reverse_bits(unsigned int index, unsigned int bits)
 	return rev;
 }
 
-int FFT::symmetry(int size, double *freq_real, double *freq_imag)
+void FFT::symmetry(int size, double *freq_real, double *freq_imag)
 {
 	int h = size / 2;
 	for(int i = h + 1; i < size; i++)
@@ -176,11 +174,10 @@ int FFT::symmetry(int size, double *freq_real, double *freq_imag)
 		freq_real[i] = freq_real[size - i];
 		freq_imag[i] = -freq_imag[size - i];
 	}
-	return 0;
 }
 
 // Create a proper fftw plan to be used later
-int FFT::ready_fftw(unsigned int samples)
+void FFT::ready_fftw(unsigned int samples)
 {
 // FFTW plan generation is not thread safe, so we have to take precausions
 	FFT::plans_lock.lock();
@@ -211,10 +208,9 @@ int FFT::ready_fftw(unsigned int samples)
 	}
 	
 	FFT::plans_lock.unlock();
-	return 0;
 }
 
-int FFT::do_fftw_inplace(unsigned int samples,
+void FFT::do_fftw_inplace(unsigned int samples,
 		int inverse,
 		fftw_complex *data)
 {
@@ -237,7 +233,7 @@ CrossfadeFFT::~CrossfadeFFT()
 	delete_fft();
 }
 
-int CrossfadeFFT::reset()
+void CrossfadeFFT::reset()
 {
 	input_buffer = 0;
 	output_buffer = 0;
@@ -258,10 +254,9 @@ int CrossfadeFFT::reset()
 	pre_window = 0;
 	post_window = 0;
 	fftw_data = 0;
-	return 0;
 }
 
-int CrossfadeFFT::delete_fft()
+void CrossfadeFFT::delete_fft()
 {
 	if(input_buffer) delete [] input_buffer;
 	if(output_buffer) delete [] output_buffer;
@@ -273,10 +268,9 @@ int CrossfadeFFT::delete_fft()
 	if(post_window) delete [] post_window;
 	if(fftw_data) fftw_free(fftw_data);
 	reset();
-	return 0;
 }
 
-int CrossfadeFFT::fix_window_size()
+void CrossfadeFFT::fix_window_size()
 {
 // fix the window size
 // window size must be a power of 2
@@ -284,15 +278,13 @@ int CrossfadeFFT::fix_window_size()
 	while(new_size < window_size) new_size *= 2;
 	window_size = MIN(131072, window_size);
 	window_size = new_size;
-	return 0;
 }
 
-int CrossfadeFFT::initialize(int window_size)
+void CrossfadeFFT::initialize(int window_size)
 {
 	this->window_size = window_size;
 	first_window = 1;
 	reconfigure();
-	return 0;
 }
 
 long CrossfadeFFT::get_delay()
@@ -300,16 +292,15 @@ long CrossfadeFFT::get_delay()
 	return window_size + HALF_WINDOW;
 }
 
-int CrossfadeFFT::reconfigure()
+void CrossfadeFFT::reconfigure()
 {
 	delete_fft();
 	fix_window_size();
-	return 0;
 }
 
 
 
-int CrossfadeFFT::process_buffer(samplenum output_sample, 
+void CrossfadeFFT::process_buffer(samplenum output_sample, 
 	int size,
 	double *output_ptr,
 	int direction)
@@ -425,8 +416,6 @@ int CrossfadeFFT::process_buffer(samplenum output_sample,
 		output_buffer[i] = output_buffer[j];
 	this->output_sample += step * size;
 	this->output_size -= size;
-
-	return 0;
 }
 
 void CrossfadeFFT::set_oversample(int oversample) 

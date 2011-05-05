@@ -42,20 +42,22 @@ public:
 	FFT();
 	~FFT();
 
-	int do_fft(unsigned int samples,  // must be a power of 2
+	void do_fft(unsigned int samples,  // must be a power of 2
 		int inverse,         // 0 = forward FFT, 1 = inverse
 		double *real_in,     // array of input's real samples
 		double *imag_in,     // array of input's imag samples
 		double *real_out,    // array of output's reals
 		double *imag_out);   // array of output's imaginaries
-	int symmetry(int size, double *freq_real, double *freq_imag);
+	void symmetry(int size, double *freq_real, double *freq_imag);
 	unsigned int samples_to_bits(unsigned int samples);
 	unsigned int reverse_bits(unsigned int index, unsigned int bits);
-	virtual int update_progress(int current_position);
+/* Pole
+	virtual void update_progress(int current_position);
+	*/
 
 	fftw_plan_desc *my_fftw_plan;
-	int ready_fftw(unsigned int samples);
-	int do_fftw_inplace(unsigned int samples,
+	void ready_fftw(unsigned int samples);
+	void do_fftw_inplace(unsigned int samples,
 		int inverse,
 		fftw_complex *data);
 
@@ -71,12 +73,12 @@ public:
 	CrossfadeFFT();
 	virtual ~CrossfadeFFT();
 
-	int reset();
-	int initialize(int window_size);
+	void reset();
+	void initialize(int window_size);
 	long get_delay();     // Number of samples fifo is delayed
-	int reconfigure();
-	int fix_window_size();
-	int delete_fft();
+	void reconfigure();
+	void fix_window_size();
+	void delete_fft();
 	// functioy to be called to initialize oversampling
 	void set_oversample(int oversample); // 2, 4,8 are good values
 
@@ -88,7 +90,7 @@ public:
 //               It's always contiguous.
 // output_ptr - if nonzero, output is put here
 // direction - PLAY_FORWARD or PLAY_REVERSE
-	int process_buffer(samplenum output_sample,
+	void process_buffer(samplenum output_sample,
 		int size,
 		double *output_ptr,
 		int direction);
