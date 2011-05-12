@@ -92,7 +92,7 @@ public:
 	DotMain(PluginServer *server);
 	~DotMain();
 
-	PLUGIN_CLASS_MEMBERS(DotConfig, DotThread);
+	PLUGIN_CLASS_MEMBERS_NC(DotConfig, DotThread);
 
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);

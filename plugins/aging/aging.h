@@ -120,7 +120,7 @@ public:
 	AgingMain(PluginServer *server);
 	~AgingMain();
 
-	PLUGIN_CLASS_MEMBERS(AgingConfig, AgingThread);
+	PLUGIN_CLASS_MEMBERS_NC(AgingConfig, AgingThread);
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 

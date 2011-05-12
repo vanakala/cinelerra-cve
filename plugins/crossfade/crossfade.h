@@ -34,7 +34,7 @@ public:
 	CrossfadeMain(PluginServer *server);
 	~CrossfadeMain();
 
-	PLUGIN_CLASS_MEMBERS(int, int);
+	PLUGIN_CLASS_MEMBERS_TRANSITION;
 
 // required for all transition plugins
 	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);

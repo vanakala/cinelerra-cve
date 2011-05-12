@@ -34,7 +34,7 @@ public:
 	DissolveMain(PluginServer *server);
 	~DissolveMain();
 
-	PLUGIN_CLASS_MEMBERS(int, int);
+	PLUGIN_CLASS_MEMBERS_TRANSITION;
 
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);

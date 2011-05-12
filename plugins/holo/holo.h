@@ -82,7 +82,7 @@ public:
 	HoloMain(PluginServer *server);
 	~HoloMain();
 
-	PLUGIN_CLASS_MEMBERS(HoloConfig, HoloThread);
+	PLUGIN_CLASS_MEMBERS_NC(HoloConfig, HoloThread);
 
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);

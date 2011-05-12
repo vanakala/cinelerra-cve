@@ -78,13 +78,15 @@ public:
 	BurnMain(PluginServer *server);
 	~BurnMain();
 
-	PLUGIN_CLASS_MEMBERS(BurnConfig, BurnThread);
+	PLUGIN_CLASS_MEMBERS_NC(BurnConfig, BurnThread);
 
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
+/* Pole
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
+	*/
 
 	void HSItoRGB(double H, 
 		double S, 

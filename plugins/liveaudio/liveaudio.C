@@ -70,7 +70,7 @@ public:
 	LiveAudio(PluginServer *server);
 	~LiveAudio();
 
-	PLUGIN_CLASS_MEMBERS(LiveAudioConfig, LiveAudioThread);
+	PLUGIN_CLASS_MEMBERS_NC(LiveAudioConfig, LiveAudioThread);
 
 	int process_buffer(int size,
 		double **buffer,
@@ -79,13 +79,6 @@ public:
 	int is_realtime();
 	int is_multichannel();
 	int is_synthesis();
-/* Pole
-	void load_defaults();
-	void save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	*/
 	void render_stop();
 
 	AudioDevice *adevice;

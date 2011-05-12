@@ -107,6 +107,25 @@ void thread_class::run() \
 	plugin->thread = 0; \
 }
 
+#define PLUGIN_CLASS_MEMBERS_NRT \
+	VFrame* new_picon(); \
+	const char* plugin_title(); \
+	BC_Hash *defaults;
+
+#define PLUGIN_CLASS_MEMBERS_TRANSITION \
+	VFrame* new_picon(); \
+	const char* plugin_title();
+
+#define PLUGIN_CLASS_MEMBERS_NC(config_name, thread_name) \
+	VFrame* new_picon(); \
+	const char* plugin_title(); \
+	void show_gui(); \
+	void set_string(); \
+	void raise_window(); \
+	BC_Hash *defaults; \
+	config_name config; \
+	thread_name *thread;
+
 #define PLUGIN_CLASS_MEMBERS(config_name, thread_name) \
 	int load_configuration(); \
 	VFrame* new_picon(); \

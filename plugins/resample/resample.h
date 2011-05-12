@@ -59,7 +59,7 @@ public:
 	ResampleEffect(PluginServer *server);
 	~ResampleEffect();
 
-	PLUGIN_CLASS_MEMBERS(int, int);
+	PLUGIN_CLASS_MEMBERS_NRT;
 
 	int get_parameters();
 	void start_loop();
