@@ -34,12 +34,12 @@ public:
 	CrossfadeMain(PluginServer *server);
 	~CrossfadeMain();
 
+	PLUGIN_CLASS_MEMBERS(int, int);
+
 // required for all transition plugins
 	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 	int uses_gui();
 	int is_transition();
-	const char* plugin_title();
-	VFrame* new_picon();
 };
 
 #endif

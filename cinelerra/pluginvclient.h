@@ -75,7 +75,7 @@ public:
 	virtual int process_loop(VFrame *buffer) { return 1; };
 	int plugin_process_loop(VFrame **buffers, int &write_length);
 
-	int plugin_start_loop(posnum start, 
+	void plugin_start_loop(posnum start, 
 		posnum end, 
 		int buffer_size, 
 		int total_buffers);

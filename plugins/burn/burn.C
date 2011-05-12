@@ -77,31 +77,6 @@ SHOW_GUI_MACRO(BurnMain, BurnThread)
 SET_STRING_MACRO(BurnMain)
 RAISE_WINDOW_MACRO(BurnMain)
 
-int BurnMain::load_defaults()
-{
-	return 0;
-}
-
-int BurnMain::save_defaults()
-{
-	return 0;
-}
-
-void BurnMain::load_configuration()
-{
-}
-
-
-void BurnMain::save_data(KeyFrame *keyframe)
-{
-}
-
-void BurnMain::read_data(KeyFrame *keyframe)
-{
-}
-
-
-
 #define MAXCOLOR 120
 
 void BurnMain::HSItoRGB(double H, 

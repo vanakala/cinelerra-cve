@@ -135,27 +135,20 @@ public:
 	HueEffect(PluginServer *server);
 	~HueEffect();
 
+	PLUGIN_CLASS_MEMBERS(HueConfig, HueThread);
+
 	int process_buffer(VFrame *frame,
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int load_configuration();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	int set_string();
-	void raise_window();
 	void update_gui();
 	int handle_opengl();
 
-	HueConfig config;
 	VFrame *input, *output;
-	BC_Hash *defaults;
-	HueThread *thread;
 	HueEngine *engine;
 };
 
@@ -541,7 +534,7 @@ SET_STRING_MACRO(HueEffect)
 RAISE_WINDOW_MACRO(HueEffect)
 LOAD_CONFIGURATION_MACRO(HueEffect, HueConfig)
 
-int HueEffect::load_defaults()
+void HueEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%shuesaturation.rc", BCASTDIR);
@@ -550,16 +543,14 @@ int HueEffect::load_defaults()
 	config.hue = defaults->get("HUE", config.hue);
 	config.saturation = defaults->get("SATURATION", config.saturation);
 	config.value = defaults->get("VALUE", config.value);
-	return 0;
 }
 
-int HueEffect::save_defaults()
+void HueEffect::save_defaults()
 {
 	defaults->update("HUE", config.hue);
 	defaults->update("SATURATION", config.saturation);
 	defaults->update("VALUE", config.value);
 	defaults->save();
-	return 0;
 }
 
 void HueEffect::save_data(KeyFrame *keyframe)

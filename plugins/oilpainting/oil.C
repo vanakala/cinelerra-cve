@@ -123,25 +123,18 @@ public:
 	OilEffect(PluginServer *server);
 	~OilEffect();
 
+	PLUGIN_CLASS_MEMBERS(OilConfig, OilThread);
+
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int load_configuration();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	int set_string();
-	void raise_window();
 	void update_gui();
 
-	OilConfig config;
 	VFrame *temp_frame;
 	VFrame *input, *output;
-	BC_Hash *defaults;
-	OilThread *thread;
 	OilServer *engine;
 	int need_reconfigure;
 };
@@ -297,7 +290,7 @@ void OilEffect::update_gui()
 
 LOAD_CONFIGURATION_MACRO(OilEffect, OilConfig)
 
-int OilEffect::load_defaults()
+void OilEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -309,15 +302,13 @@ int OilEffect::load_defaults()
 
 	config.radius = defaults->get("RADIUS", config.radius);
 	config.use_intensity = defaults->get("USE_INTENSITY", config.use_intensity);
-	return 0;
 }
 
-int OilEffect::save_defaults()
+void OilEffect::save_defaults()
 {
 	defaults->update("RADIUS", config.radius);
 	defaults->update("USE_INTENSITY", config.use_intensity);
 	defaults->save();
-	return 0;
 }
 
 void OilEffect::save_data(KeyFrame *keyframe)

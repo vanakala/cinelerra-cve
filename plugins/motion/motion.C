@@ -310,7 +310,7 @@ void MotionMain::update_gui()
 }
 
 
-int MotionMain::load_defaults()
+void MotionMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -345,11 +345,10 @@ int MotionMain::load_defaults()
 	config.horizontal_only = defaults->get("HORIZONTAL_ONLY", config.horizontal_only);
 	config.vertical_only = defaults->get("VERTICAL_ONLY", config.vertical_only);
 	config.boundaries();
-	return 0;
 }
 
 
-int MotionMain::save_defaults()
+void MotionMain::save_defaults()
 {
 	defaults->update("BLOCK_COUNT", config.block_count);
 	defaults->update("GLOBAL_POSITIONS", config.global_positions);
@@ -376,7 +375,6 @@ int MotionMain::save_defaults()
 	defaults->update("HORIZONTAL_ONLY", config.horizontal_only);
 	defaults->update("VERTICAL_ONLY", config.vertical_only);
 	defaults->save();
-	return 0;
 }
 
 

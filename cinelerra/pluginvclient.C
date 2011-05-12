@@ -191,13 +191,13 @@ void PluginVClient::send_render_gui(void *data)
 	server->send_render_gui(data);
 }
 
-int PluginVClient::plugin_start_loop(posnum start, 
+void PluginVClient::plugin_start_loop(posnum start, 
 	posnum end,
 	int buffer_size, 
 	int total_buffers)
 {
 	frame_rate = get_project_framerate();
-	return PluginClient::plugin_start_loop(start, 
+	PluginClient::plugin_start_loop(start, 
 		end, 
 		buffer_size, 
 		total_buffers);

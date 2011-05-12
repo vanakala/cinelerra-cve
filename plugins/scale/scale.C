@@ -89,7 +89,7 @@ int ScaleMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(ScaleMain)
 
-int ScaleMain::load_defaults()
+void ScaleMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -104,7 +104,7 @@ int ScaleMain::load_defaults()
 	config.constrain = defaults->get("CONSTRAIN", config.constrain);
 }
 
-int ScaleMain::save_defaults()
+void ScaleMain::save_defaults()
 {
 	defaults->update("WIDTH", config.w);
 	defaults->update("HEIGHT", config.h);

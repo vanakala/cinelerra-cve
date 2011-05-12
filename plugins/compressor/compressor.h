@@ -215,8 +215,8 @@ public:
 // Calculate linear output from linear input
 	double calculate_output(double x);
 
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void reset();
 	void update_gui();
 	void delete_dsp();

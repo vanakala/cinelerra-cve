@@ -48,7 +48,7 @@ const char* ReFrame::plugin_title() { return N_("Reframe"); }
 NEW_PICON_MACRO(ReFrame) 
 
 
-int ReFrame::load_defaults()
+void ReFrame::load_defaults()
 {
 	char directory[1024];
 
@@ -62,14 +62,12 @@ int ReFrame::load_defaults()
 	defaults->load();
 
 	scale = defaults->get("SCALE", (double)1);
-	return 0;
 }
 
-int ReFrame::save_defaults()
+void ReFrame::save_defaults()
 {
 	defaults->update("SCALE", scale);
 	defaults->save();
-	return 0;
 }
 
 int ReFrame::get_parameters()
@@ -83,7 +81,7 @@ int ReFrame::get_parameters()
 }
 
 
-int ReFrame::start_loop()
+void ReFrame::start_loop()
 {
 	if(PluginClient::interactive)
 	{
@@ -94,17 +92,15 @@ int ReFrame::start_loop()
 	}
 
 	current_position = 0;
-	return 0;
 }
 
-int ReFrame::stop_loop()
+void ReFrame::stop_loop()
 {
 	if(PluginClient::interactive)
 	{
 		progress->stop_progress();
 		delete progress;
 	}
-	return 0;
 }
 
 

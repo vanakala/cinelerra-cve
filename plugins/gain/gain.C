@@ -101,7 +101,7 @@ int Gain::process_realtime(int size, double *input_ptr, double *output_ptr)
 
 
 
-int Gain::load_defaults()
+void Gain::load_defaults()
 {
 	char directory[BCTEXTLEN];
 
@@ -115,15 +115,12 @@ int Gain::load_defaults()
 	defaults->load();
 
 	config.level = defaults->get("LEVEL", config.level);
-
-	return 0;
 }
 
-int Gain::save_defaults()
+void Gain::save_defaults()
 {
 	defaults->update("LEVEL", config.level);
 	defaults->save();
-	return 0;
 }
 
 void Gain::save_data(KeyFrame *keyframe)

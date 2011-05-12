@@ -326,7 +326,7 @@ void DenoiseVideo::update_gui()
 
 
 
-int DenoiseVideo::load_defaults()
+void DenoiseVideo::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -342,10 +342,9 @@ int DenoiseVideo::load_defaults()
 	config.do_g = defaults->get("DO_G", config.do_g);
 	config.do_b = defaults->get("DO_B", config.do_b);
 	config.do_a = defaults->get("DO_A", config.do_a);
-	return 0;
 }
 
-int DenoiseVideo::save_defaults()
+void DenoiseVideo::save_defaults()
 {
 	defaults->update("THRESHOLD", config.threshold);
 	defaults->update("FRAMES", config.frames);
@@ -354,7 +353,6 @@ int DenoiseVideo::save_defaults()
 	defaults->update("DO_B", config.do_b);
 	defaults->update("DO_A", config.do_a);
 	defaults->save();
-	return 0;
 }
 
 void DenoiseVideo::save_data(KeyFrame *keyframe)

@@ -122,8 +122,8 @@ public:
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -406,7 +406,7 @@ void RadialBlurMain::update_gui()
 }
 
 
-int RadialBlurMain::load_defaults()
+void RadialBlurMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -424,11 +424,10 @@ int RadialBlurMain::load_defaults()
 	config.g = defaults->get("G", config.g);
 	config.b = defaults->get("B", config.b);
 	config.a = defaults->get("A", config.a);
-	return 0;
 }
 
 
-int RadialBlurMain::save_defaults()
+void RadialBlurMain::save_defaults()
 {
 	defaults->update("X", config.x);
 	defaults->update("Y", config.y);
@@ -439,7 +438,6 @@ int RadialBlurMain::save_defaults()
 	defaults->update("B", config.b);
 	defaults->update("A", config.a);
 	defaults->save();
-	return 0;
 }
 
 void RadialBlurMain::save_data(KeyFrame *keyframe)

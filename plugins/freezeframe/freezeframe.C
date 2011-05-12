@@ -232,7 +232,7 @@ void FreezeFrameMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-int FreezeFrameMain::load_defaults()
+void FreezeFrameMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -244,15 +244,13 @@ int FreezeFrameMain::load_defaults()
 
 	config.enabled = defaults->get("ENABLED", config.enabled);
 	config.line_double = defaults->get("LINE_DOUBLE", config.line_double);
-	return 0;
 }
 
-int FreezeFrameMain::save_defaults()
+void FreezeFrameMain::save_defaults()
 {
 	defaults->update("ENABLED", config.enabled);
 	defaults->update("LINE_DOUBLE", config.line_double);
 	defaults->save();
-	return 0;
 }
 
 int FreezeFrameMain::process_buffer(VFrame *frame,

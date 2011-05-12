@@ -151,8 +151,8 @@ public:
 		double frame_rate);
 	int is_realtime();
 	int is_multichannel();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -329,7 +329,7 @@ const char* DiffKey::plugin_title() { return N_("Difference key"); }
 int DiffKey::is_realtime() { return 1; }
 int DiffKey::is_multichannel() { return 1; }
 
-int DiffKey::load_defaults()
+void DiffKey::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -342,16 +342,14 @@ int DiffKey::load_defaults()
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
 	config.slope = defaults->get("SLOPE", config.slope);
 	config.do_value = defaults->get("DO_VALUE", config.do_value);
-	return 0;
 }
 
-int DiffKey::save_defaults()
+void DiffKey::save_defaults()
 {
 	defaults->update("THRESHOLD", config.threshold);
 	defaults->update("SLOPE", config.slope);
 	defaults->update("DO_VALUE", config.do_value);
 	defaults->save();
-	return 0;
 }
 
 void DiffKey::save_data(KeyFrame *keyframe)

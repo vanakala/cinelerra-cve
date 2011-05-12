@@ -76,7 +76,7 @@ VFrame* HoloMain::new_picon()
 {
 	return new VFrame(picon_png);
 }
-
+/* Pole
 int HoloMain::load_defaults()
 {
 	return 0;
@@ -86,7 +86,6 @@ int HoloMain::save_defaults()
 {
 	return 0;
 }
-
 void HoloMain::load_configuration()
 {
 }
@@ -99,7 +98,7 @@ void HoloMain::save_data(KeyFrame *keyframe)
 void HoloMain::read_data(KeyFrame *keyframe)
 {
 }
-
+	*/
 void HoloMain::reconfigure()
 {
 	do_reconfigure = 0;
@@ -262,28 +261,11 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	return 0;
 }
 
-int HoloMain::show_gui()
-{
-	load_configuration();
-	thread = new HoloThread(this);
-	thread->start();
-	return 0;
-}
+SHOW_GUI_MACRO(HoloMain, HoloThread);
 
-int HoloMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
+SET_STRING_MACRO(HoloMain);
 
-void HoloMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
+RAISE_WINDOW_MACRO(HoloMain);
 
 
 HoloServer::HoloServer(HoloMain *plugin, int total_clients, int total_packages)

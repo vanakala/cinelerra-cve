@@ -79,11 +79,13 @@ public:
 	int is_realtime();
 	int is_multichannel();
 	int is_synthesis();
-	int load_defaults();
-	int save_defaults();
+/* Pole
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
+	*/
 	void render_stop();
 
 	AudioDevice *adevice;
@@ -308,7 +310,7 @@ SHOW_GUI_MACRO(LiveAudio, LiveAudioThread)
 RAISE_WINDOW_MACRO(LiveAudio)
 
 SET_STRING_MACRO(LiveAudio);
-
+/* Pole
 int LiveAudio::load_configuration()
 {
 	return 0;
@@ -335,3 +337,4 @@ void LiveAudio::read_data(KeyFrame *keyframe)
 void LiveAudio::update_gui()
 {
 }
+	*/

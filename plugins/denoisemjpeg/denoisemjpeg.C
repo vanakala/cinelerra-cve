@@ -25,19 +25,13 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
+#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
 #include <stdint.h>
 #include <string.h>
-
 
 
 REGISTER_PLUGIN(DenoiseMJPEG)
@@ -443,7 +437,7 @@ SET_STRING_MACRO(DenoiseMJPEG);
 
 LOAD_CONFIGURATION_MACRO(DenoiseMJPEG, DenoiseMJPEGConfig)
 
-int DenoiseMJPEG::load_defaults()
+void DenoiseMJPEG::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -462,10 +456,9 @@ int DenoiseMJPEG::load_defaults()
 	config.deinterlace = defaults->get("DEINTERLACE", config.deinterlace);
 	config.mode = defaults->get("MODE", config.mode);
 	config.delay = defaults->get("DELAY", config.delay);
-	return 0;
 }
 
-int DenoiseMJPEG::save_defaults()
+void DenoiseMJPEG::save_defaults()
 {
 	defaults->update("RADIUS", config.radius);
 	defaults->update("THRESHOLD", config.threshold);
@@ -477,7 +470,6 @@ int DenoiseMJPEG::save_defaults()
 	defaults->update("MODE", config.mode);
 	defaults->update("DELAY", config.delay);
 	defaults->save();
-	return 0;
 }
 
 void DenoiseMJPEG::save_data(KeyFrame *keyframe)

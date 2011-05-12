@@ -236,8 +236,8 @@ public:
 		samplenum start_position,
 		int sample_rate);
 
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void reset();
 	void reconfigure();
 	void update_gui();

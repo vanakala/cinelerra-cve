@@ -125,8 +125,8 @@ public:
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -541,7 +541,7 @@ int InterpolateVideo::load_configuration()
 	return !config.equivalent(&old_config);
 }
 
-int InterpolateVideo::load_defaults()
+void InterpolateVideo::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -554,15 +554,13 @@ int InterpolateVideo::load_defaults()
 	config.input_rate = defaults->get("INPUT_RATE", config.input_rate);
 	config.input_rate = Units::fix_framerate(config.input_rate);
 	config.use_keyframes = defaults->get("USE_KEYFRAMES", config.use_keyframes);
-	return 0;
 }
 
-int InterpolateVideo::save_defaults()
+void InterpolateVideo::save_defaults()
 {
 	defaults->update("INPUT_RATE", config.input_rate);
 	defaults->update("USE_KEYFRAMES", config.use_keyframes);
 	defaults->save();
-	return 0;
 }
 
 void InterpolateVideo::save_data(KeyFrame *keyframe)

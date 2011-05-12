@@ -288,7 +288,7 @@ VFrame* ShapeWipeMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int ShapeWipeMain::load_defaults()
+void ShapeWipeMain::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -302,17 +302,15 @@ int ShapeWipeMain::load_defaults()
 	antialias = defaults->get("ANTIALIAS", antialias);
 	preserve_aspect = defaults->get("PRESERVE_ASPECT", preserve_aspect);
 	defaults->get("FILENAME", filename);
-	return 0;
 }
 
-int ShapeWipeMain::save_defaults()
+void ShapeWipeMain::save_defaults()
 {
 	defaults->update("DIRECTION", direction);
 	defaults->update("ANTIALIAS", antialias);
 	defaults->update("PRESERVE_ASPECT", preserve_aspect);
 	defaults->update("FILENAME", filename);
 	defaults->save();
-	return 0;
 }
 
 void ShapeWipeMain::save_data(KeyFrame *keyframe)
@@ -348,9 +346,10 @@ void ShapeWipeMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void ShapeWipeMain::load_configuration()
+int ShapeWipeMain::load_configuration()
 {
 	read_data(get_prev_keyframe(get_source_position()));
+	return 0;
 }
 
 int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)

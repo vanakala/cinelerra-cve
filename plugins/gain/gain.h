@@ -54,8 +54,8 @@ public:
 	PLUGIN_CLASS_MEMBERS(GainConfig, GainThread)
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void update_gui();
 	int is_realtime();
 

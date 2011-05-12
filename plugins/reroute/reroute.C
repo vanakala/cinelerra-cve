@@ -117,8 +117,8 @@ public:
 	int process_buffer(VFrame **frame, int64_t start_position, double frame_rate);
 	int is_realtime();
 	int is_multichannel();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -473,7 +473,7 @@ int Reroute::load_configuration()
 	return 0;
 }
 
-int Reroute::load_defaults()
+void Reroute::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -485,15 +485,13 @@ int Reroute::load_defaults()
 
 	config.operation = defaults->get("OPERATION", config.operation);
 	config.output_track = defaults->get("OUTPUT_TRACK", config.output_track);
-	return 0;
 }
 
-int Reroute::save_defaults()
+void Reroute::save_defaults()
 {
 	defaults->update("OPERATION", config.operation);
 	defaults->update("OUTPUT_TRACK", config.output_track);
 	defaults->save();
-	return 0;
 }
 
 void Reroute::save_data(KeyFrame *keyframe)

@@ -129,7 +129,7 @@ VFrame* BandWipeMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int BandWipeMain::load_defaults()
+void BandWipeMain::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -141,15 +141,13 @@ int BandWipeMain::load_defaults()
 
 	bands = defaults->get("BANDS", bands);
 	direction = defaults->get("DIRECTION", direction);
-	return 0;
 }
 
-int BandWipeMain::save_defaults()
+void BandWipeMain::save_defaults()
 {
 	defaults->update("BANDS", bands);
 	defaults->update("DIRECTION", direction);
 	defaults->save();
-	return 0;
 }
 
 void BandWipeMain::save_data(KeyFrame *keyframe)
@@ -181,9 +179,10 @@ void BandWipeMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void BandWipeMain::load_configuration()
+int BandWipeMain::load_configuration()
 {
 	read_data(get_prev_keyframe(get_source_position()));
+	return 0;
 }
 
 

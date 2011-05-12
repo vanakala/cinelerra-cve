@@ -103,8 +103,8 @@ public:
 
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -448,7 +448,7 @@ void MotionBlurMain::update_gui()
 }
 
 
-int MotionBlurMain::load_defaults()
+void MotionBlurMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -460,16 +460,14 @@ int MotionBlurMain::load_defaults()
 
 	config.radius = defaults->get("RADIUS", config.radius);
 	config.steps = defaults->get("STEPS", config.steps);
-	return 0;
 }
 
 
-int MotionBlurMain::save_defaults()
+void MotionBlurMain::save_defaults()
 {
 	defaults->update("RADIUS", config.radius);
 	defaults->update("STEPS", config.steps);
 	defaults->save();
-	return 0;
 }
 
 

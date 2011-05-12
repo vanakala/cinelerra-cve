@@ -97,7 +97,7 @@ void PitchEffect::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int PitchEffect::load_defaults()
+void PitchEffect::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%spitch.rc", BCASTDIR);
@@ -105,17 +105,14 @@ int PitchEffect::load_defaults()
 	defaults->load();
 
 	config.scale = defaults->get("SCALE", config.scale);
-	return 0;
 }
 
-int PitchEffect::save_defaults()
+void PitchEffect::save_defaults()
 {
 	char string[BCTEXTLEN];
 
 	defaults->update("SCALE", config.scale);
 	defaults->save();
-
-	return 0;
 }
 
 

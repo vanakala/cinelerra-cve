@@ -59,19 +59,18 @@ public:
 	ResampleEffect(PluginServer *server);
 	~ResampleEffect();
 
-	const char* plugin_title();
+	PLUGIN_CLASS_MEMBERS(int, int);
+
 	int get_parameters();
-	VFrame* new_picon();
-	int start_loop();
+	void start_loop();
 	int process_loop(double *buffer, int &write_length);
-	int stop_loop();
-	int load_defaults();
-	int save_defaults();
+	void stop_loop();
+	void load_defaults();
+	void save_defaults();
 	void reset();
 
 	Resample *resample;
 	double scale;
-	BC_Hash *defaults;
 	MainProgressBar *progress;
 	samplenum total_written;
 	samplenum current_position;

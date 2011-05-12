@@ -75,7 +75,9 @@ int PolarWindow::close_event()
 {
 	client->save_defaults();
 	hide_window();
+/* Pole
 	client->send_hide_gui();
+	*/
 }
 
 DepthSlider::DepthSlider(PolarMain *client, int x, int y)

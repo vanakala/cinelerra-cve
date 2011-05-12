@@ -220,7 +220,7 @@ VFrame* SlideMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int SlideMain::load_defaults()
+void SlideMain::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -232,15 +232,13 @@ int SlideMain::load_defaults()
 
 	motion_direction = defaults->get("MOTION_DIRECTION", motion_direction);
 	direction = defaults->get("DIRECTION", direction);
-	return 0;
 }
 
-int SlideMain::save_defaults()
+void SlideMain::save_defaults()
 {
 	defaults->update("MOTION_DIRECTION", motion_direction);
 	defaults->update("DIRECTION", direction);
 	defaults->save();
-	return 0;
 }
 
 void SlideMain::save_data(KeyFrame *keyframe)
@@ -272,9 +270,10 @@ void SlideMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void SlideMain::load_configuration()
+int SlideMain::load_configuration()
 {
 	read_data(get_prev_keyframe(get_source_position()));
+	return 0;
 }
 
 #define SLIDE(type, components) \

@@ -185,7 +185,7 @@ NEW_PICON_MACRO(SwapMain)
 SET_STRING_MACRO(SwapMain)
 RAISE_WINDOW_MACRO(SwapMain)
 
-int SwapMain::load_defaults()
+void SwapMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -199,17 +199,15 @@ int SwapMain::load_defaults()
 	config.green = defaults->get("GREEN", config.green);
 	config.blue = defaults->get("BLUE", config.blue);
 	config.alpha = defaults->get("ALPHA", config.alpha);
-	return 0;
 }
 
-int SwapMain::save_defaults()
+void SwapMain::save_defaults()
 {
 	defaults->update("RED", config.red);
 	defaults->update("GREEN", config.green);
 	defaults->update("BLUE", config.blue);
 	defaults->update("ALPHA", config.alpha);
 	defaults->save();
-	return 0;
 }
 
 void SwapMain::save_data(KeyFrame *keyframe)
@@ -271,12 +269,13 @@ void SwapMain::update_gui()
 }
 
 
-void SwapMain::load_configuration()
+int SwapMain::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	prev_keyframe = get_prev_keyframe(get_source_position());
 
 	read_data(prev_keyframe);
+	return 0;
 }
 
 #define MAXMINSRC(src, max) \

@@ -170,7 +170,7 @@ void DenoiseEffect::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int DenoiseEffect::load_defaults()
+void DenoiseEffect::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sdenoise.rc", BCASTDIR);
@@ -178,17 +178,14 @@ int DenoiseEffect::load_defaults()
 	defaults->load();
 
 	config.level = defaults->get("LEVEL", config.level);
-	return 0;
 }
 
-int DenoiseEffect::save_defaults()
+void DenoiseEffect::save_defaults()
 {
 	char string[BCTEXTLEN];
 
 	defaults->update("LEVEL", config.level);
 	defaults->save();
-
-	return 0;
 }
 
 void DenoiseEffect::update_gui()

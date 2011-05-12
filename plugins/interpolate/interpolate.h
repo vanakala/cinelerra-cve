@@ -98,8 +98,8 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	int handle_opengl();
 
 	InterpolatePixelsEngine *engine;

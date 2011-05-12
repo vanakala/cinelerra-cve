@@ -587,7 +587,7 @@ void PerspectiveMain::update_gui()
 }
 
 
-int PerspectiveMain::load_defaults()
+void PerspectiveMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -610,11 +610,10 @@ int PerspectiveMain::load_defaults()
 	config.forward = defaults->get("FORWARD", config.forward);
 	config.window_w = defaults->get("WINDOW_W", config.window_w);
 	config.window_h = defaults->get("WINDOW_H", config.window_h);
-	return 0;
 }
 
 
-int PerspectiveMain::save_defaults()
+void PerspectiveMain::save_defaults()
 {
 	defaults->update("X1", config.x1);
 	defaults->update("X2", config.x2);
@@ -630,7 +629,6 @@ int PerspectiveMain::save_defaults()
 	defaults->update("WINDOW_W", config.window_w);
 	defaults->update("WINDOW_H", config.window_h);
 	defaults->save();
-	return 0;
 }
 
 

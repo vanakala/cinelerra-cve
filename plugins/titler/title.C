@@ -1870,28 +1870,9 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	return 0;
 }
 
-int TitleMain::show_gui()
-{
-	load_configuration();
-	thread = new TitleThread(this);
-	thread->start();
-	return 0;
-}
-
-int TitleMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void TitleMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
+SHOW_GUI_MACRO(TitleMain, TitleThread);
+SET_STRING_MACRO(TitleMain);
+RAISE_WINDOW_MACRO(TitleMain);
 
 void TitleMain::update_gui()
 {
@@ -1908,7 +1889,7 @@ void TitleMain::update_gui()
 	}
 }
 
-int TitleMain::load_defaults()
+void TitleMain::load_defaults()
 {
 	char directory[1024], text_path[1024];
 // set the default directory
@@ -1959,10 +1940,9 @@ int TitleMain::load_defaults()
 	}
 	else
 		config.text[0] = 0;
-	return 0;
 }
 
-int TitleMain::save_defaults()
+void TitleMain::save_defaults()
 {
 	char text_path[1024];
 
@@ -1999,7 +1979,6 @@ int TitleMain::save_defaults()
 		fwrite(config.text, strlen(config.text), 1, fd);
 		fclose(fd);
 	}
-	return 0;
 }
 
 

@@ -62,7 +62,7 @@ VFrame* NormalizeMain::new_picon()
 }
 
 
-int NormalizeMain::load_defaults()
+void NormalizeMain::load_defaults()
 {
 	char directory[BCTEXTLEN];
 
@@ -77,15 +77,13 @@ int NormalizeMain::load_defaults()
 
 	db_over = defaults->get("DBOVER", 0);
 	separate_tracks = defaults->get("SEPERATE_TRACKS", 1);
-	return 0;
 }
 
-int NormalizeMain::save_defaults()
+void NormalizeMain::save_defaults()
 {
 	defaults->update("DBOVER", db_over);
 	defaults->update("SEPERATE_TRACKS", separate_tracks);
 	defaults->save();
-	return 0;
 }
 
 int NormalizeMain::get_parameters()
@@ -97,7 +95,7 @@ int NormalizeMain::get_parameters()
 	return result;
 }
 
-int NormalizeMain::start_loop()
+void NormalizeMain::start_loop()
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "%s...", plugin_title());
@@ -108,7 +106,6 @@ int NormalizeMain::start_loop()
 	peak = new double[PluginClient::total_in_buffers];
 	scale = new double[PluginClient::total_in_buffers];
 	bzero(peak, sizeof(double) * PluginClient::total_in_buffers);
-	return 0;
 }
 
 
@@ -188,11 +185,10 @@ int NormalizeMain::process_loop(double **buffer, int &write_length)
 	return result;
 }
 
-int NormalizeMain::stop_loop()
+void NormalizeMain::stop_loop()
 {
 	progress->stop_progress();
 	delete [] peak;
 	delete [] scale;
 	delete progress;
-	return 0;
 }

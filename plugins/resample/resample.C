@@ -119,7 +119,7 @@ int ResampleEffect::get_parameters()
 }
 
 
-int ResampleEffect::load_defaults()
+void ResampleEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 
@@ -130,19 +130,17 @@ int ResampleEffect::load_defaults()
 	defaults->load();
 
 	scale = defaults->get("SCALE", (double)1);
-	return 0;
 }
 
-int ResampleEffect::save_defaults()
+void ResampleEffect::save_defaults()
 {
 	defaults->update("SCALE", scale);
 	defaults->save();
-	return 0;
 }
 
 
 
-int ResampleEffect::start_loop()
+void ResampleEffect::start_loop()
 {
 	if(PluginClient::interactive)
 	{
@@ -156,17 +154,15 @@ int ResampleEffect::start_loop()
 	total_written = 0;
 
 	resample = new Resample(0, 1);
-	return 0;
 }
 
-int ResampleEffect::stop_loop()
+void ResampleEffect::stop_loop()
 {
 	if(PluginClient::interactive)
 	{
 		progress->stop_progress();
 		delete progress;
 	}
-	return 0;
 }
 
 int ResampleEffect::process_loop(double *buffer, int &write_length)

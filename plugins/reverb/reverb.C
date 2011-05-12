@@ -259,7 +259,7 @@ SET_STRING_MACRO(Reverb)
 
 RAISE_WINDOW_MACRO(Reverb)
 
-int Reverb::load_defaults()
+void Reverb::load_defaults()
 {
 	char directory[1024];
 
@@ -283,11 +283,9 @@ int Reverb::load_defaults()
 
 	sprintf(config_directory, "~");
 	defaults->get("CONFIG_DIRECTORY", config_directory);
-
-	return 0;
 }
 
-int Reverb::save_defaults()
+void Reverb::save_defaults()
 {
 	defaults->update("LEVEL_INIT", config.level_init);
 	defaults->update("DELAY_INIT", config.delay_init);
@@ -299,7 +297,6 @@ int Reverb::save_defaults()
 	defaults->update("LOWPASS2", config.lowpass2);
 	defaults->update("CONFIG_DIRECTORY", config_directory);
 	defaults->save();
-	return 0;
 }
 
 LOAD_CONFIGURATION_MACRO(Reverb, ReverbConfig)

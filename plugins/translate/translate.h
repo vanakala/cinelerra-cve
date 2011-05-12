@@ -54,28 +54,19 @@ public:
 	TranslateMain(PluginServer *server);
 	~TranslateMain();
 
+	PLUGIN_CLASS_MEMBERS(TranslateConfig, TranslateThread);
+
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	const char* plugin_title();
-	int show_gui();
-	void raise_window();
 	void update_gui();
-	int set_string();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	VFrame* new_picon();
-	int load_defaults();
-	int save_defaults();
-	int load_configuration();
-
-// a thread for the GUI
-	TranslateThread *thread;
+	void load_defaults();
+	void save_defaults();
 
 	OverlayFrame *overlayer;   // To translate images
 	VFrame *temp_frame;        // Used if buffers are the same
-	BC_Hash *defaults;
-	TranslateConfig config;
 };
 
 #endif

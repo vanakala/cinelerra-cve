@@ -80,26 +80,19 @@ class InvertVideoEffect : public PluginVClient
 public:
 	InvertVideoEffect(PluginServer *server);
 	~InvertVideoEffect();
+
+	PLUGIN_CLASS_MEMBERS(InvertVideoConfig, InvertVideoThread);
+
 	int process_buffer(VFrame *frame,
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
-	int show_gui();
-	void raise_window();
-	int set_string();
-	int load_configuration();
 	int handle_opengl();
-
-	InvertVideoConfig config;
-	InvertVideoThread *thread;
-	BC_Hash *defaults;
 };
 
 
@@ -229,7 +222,7 @@ void InvertVideoEffect::update_gui()
 	}
 }
 
-int InvertVideoEffect::load_defaults()
+void InvertVideoEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%sinvertvideo.rc", BCASTDIR);
@@ -239,17 +232,15 @@ int InvertVideoEffect::load_defaults()
 	config.g = defaults->get("G", config.g);
 	config.b = defaults->get("B", config.b);
 	config.a = defaults->get("A", config.a);
-	return 0;
 }
 
-int InvertVideoEffect::save_defaults()
+void InvertVideoEffect::save_defaults()
 {
 	defaults->update("R", config.r);
 	defaults->update("G", config.g);
 	defaults->update("B", config.b);
 	defaults->update("A", config.a);
 	defaults->save();
-	return 0;
 }
 
 void InvertVideoEffect::save_data(KeyFrame *keyframe)

@@ -120,28 +120,13 @@ public:
 	AgingMain(PluginServer *server);
 	~AgingMain();
 
-// required for all realtime plugins
+	PLUGIN_CLASS_MEMBERS(AgingConfig, AgingThread);
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	const char* plugin_title();
-	int show_gui();
-	void raise_window();
-	int set_string();
-	void load_configuration();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
 
-	int load_defaults();
-	int save_defaults();
-	VFrame* new_picon();
-
-// a thread for the GUI
-	AgingThread *thread;
 	AgingServer *aging_server;
 	AgingClient *aging_client;
-	AgingConfig config;
 
-	BC_Hash *defaults;
 	AgingEngine **engine;
 	VFrame *input_ptr, *output_ptr;
 };

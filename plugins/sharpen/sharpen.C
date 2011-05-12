@@ -169,7 +169,7 @@ void SharpenMain::update_gui()
 	}
 }
 
-int SharpenMain::load_defaults()
+void SharpenMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -183,17 +183,15 @@ int SharpenMain::load_defaults()
 	config.interlace = defaults->get("INTERLACE", config.interlace);
 	config.horizontal = defaults->get("HORIZONTAL", config.horizontal);
 	config.luminance = defaults->get("LUMINANCE", config.luminance);
-	return 0;
 }
 
-int SharpenMain::save_defaults()
+void SharpenMain::save_defaults()
 {
 	defaults->update("SHARPNESS", config.sharpness);
 	defaults->update("INTERLACE", config.interlace);
 	defaults->update("HORIZONTAL", config.horizontal);
 	defaults->update("LUMINANCE", config.luminance);
 	defaults->save();
-	return 0;
 }
 
 

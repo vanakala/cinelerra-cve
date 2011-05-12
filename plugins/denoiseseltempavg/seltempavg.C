@@ -705,7 +705,7 @@ void SelTempAvgMain::transfer_accum(VFrame *frame)
 }
 
 
-int SelTempAvgMain::load_defaults()
+void SelTempAvgMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -733,10 +733,9 @@ int SelTempAvgMain::load_defaults()
 	config.mask_RY = defaults->get("MASK_RY", config.mask_GU); 
 	config.mask_GU = defaults->get("MASK_GU", config.mask_GU); 
 	config.mask_BV = defaults->get("MASK_BV", config.mask_BV); 
-	return 0;
 }
 
-int SelTempAvgMain::save_defaults()
+void SelTempAvgMain::save_defaults()
 {
 	defaults->update("FRAMES", config.frames);
 	defaults->update("METHOD", config.method);
@@ -759,7 +758,6 @@ int SelTempAvgMain::save_defaults()
 	defaults->update("MASK_BV", config.mask_BV);
 
 	defaults->save();
-	return 0;
 }
 
 int SelTempAvgMain::load_configuration()

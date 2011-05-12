@@ -123,8 +123,8 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(ReframeRTConfig, ReframeRTThread)
 
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -416,7 +416,7 @@ int ReframeRT::process_buffer(VFrame *frame,
 }
 
 
-int ReframeRT::load_defaults()
+void ReframeRT::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -429,16 +429,14 @@ int ReframeRT::load_defaults()
 	config.scale = defaults->get("SCALE", config.scale);
 	config.stretch = defaults->get("STRETCH", config.stretch);
 	config.interp = defaults->get("INTERPOLATE", config.interp);
-	return 0;
 }
 
-int ReframeRT::save_defaults()
+void ReframeRT::save_defaults()
 {
 	defaults->update("SCALE", config.scale);
 	defaults->update("STRETCH", config.stretch);
 	defaults->update("INTERPOLATE", config.interp);
 	defaults->save();
-	return 0;
 }
 
 void ReframeRT::save_data(KeyFrame *keyframe)

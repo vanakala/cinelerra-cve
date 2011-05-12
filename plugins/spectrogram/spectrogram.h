@@ -99,19 +99,15 @@ public:
 	Spectrogram(PluginServer *server);
 	~Spectrogram();
 
-	VFrame* new_picon();
-	const char* plugin_title();
+	PLUGIN_CLASS_MEMBERS(SpectrogramConfig, SpectrogramThread);
+
 	int is_realtime();
 	int process_buffer(int size, 
 		double *buffer,
 		samplenum start_position,
 		int sample_rate);
-	int show_gui();
-	void raise_window();
-	int set_string();
-	void load_configuration();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void update_gui();
@@ -122,9 +118,6 @@ public:
 	int done;
 
 	int need_reconfigure;
-	BC_Hash *defaults;
-	SpectrogramConfig config;
-	SpectrogramThread *thread;
 	SpectrogramFFT *fft;
 	float *data;
 	int total_windows;

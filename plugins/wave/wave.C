@@ -137,25 +137,18 @@ public:
 	WaveEffect(PluginServer *server);
 	~WaveEffect();
 
+	PLUGIN_CLASS_MEMBERS(WaveConfig, WaveThread);
+
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int load_configuration();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	int set_string();
-	void raise_window();
 	void update_gui();
 
-	WaveConfig config;
 	VFrame *temp_frame;
 	VFrame *input, *output;
-	BC_Hash *defaults;
-	WaveThread *thread;
 	WaveServer *engine;
 };
 
@@ -367,7 +360,7 @@ void WaveEffect::update_gui()
 
 LOAD_CONFIGURATION_MACRO(WaveEffect, WaveConfig)
 
-int WaveEffect::load_defaults()
+void WaveEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -382,10 +375,9 @@ int WaveEffect::load_defaults()
 	config.amplitude = defaults->get("AMPLITUDE", config.amplitude);
 	config.phase = defaults->get("PHASE", config.phase);
 	config.wavelength = defaults->get("WAVELENGTH", config.wavelength);
-	return 0;
 }
 
-int WaveEffect::save_defaults()
+void WaveEffect::save_defaults()
 {
 	defaults->update("MODE", config.mode);
 	defaults->update("REFLECTIVE", config.reflective);
@@ -393,7 +385,6 @@ int WaveEffect::save_defaults()
 	defaults->update("PHASE", config.phase);
 	defaults->update("WAVELENGTH", config.wavelength);
 	defaults->save();
-	return 0;
 }
 
 void WaveEffect::save_data(KeyFrame *keyframe)

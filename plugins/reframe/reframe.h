@@ -62,10 +62,10 @@ public:
 	const char* plugin_title();
 	VFrame* new_picon();
 	int get_parameters();
-	int load_defaults();  
-	int save_defaults();  
-	int start_loop();
-	int stop_loop();
+	void load_defaults();
+	void save_defaults();
+	void start_loop();
+	void stop_loop();
 	int process_loop(VFrame *buffer);
 
 

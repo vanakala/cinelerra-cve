@@ -114,8 +114,8 @@ public:
 	TimeStretch(PluginServer *server);
 	~TimeStretch();
 
-	VFrame* new_picon();
-	const char* plugin_title();
+	PLUGIN_CLASS_MEMBERS(TimeStretchConfig, TimeStretchThread);
+
 	int is_realtime();
 	int get_parameters();
 	void read_data(KeyFrame *keyframe);
@@ -124,13 +124,9 @@ public:
 		double *buffer,
 		posnum start_position,
 		int sample_rate);
-	int show_gui();
-	void raise_window();
-	int set_string();
 
-	int load_configuration();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 
 	void update_gui();
 
@@ -142,11 +138,6 @@ public:
 	int input_allocated;
 
 	TimeStretchEngine *stretch;
-
-	BC_Hash *defaults;
-	TimeStretchConfig config;
-	TimeStretchThread *thread;
-
 };
 
 #endif

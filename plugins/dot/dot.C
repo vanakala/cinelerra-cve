@@ -83,29 +83,6 @@ SET_STRING_MACRO(DotMain)
 RAISE_WINDOW_MACRO(DotMain)
 
 
-int DotMain::load_defaults()
-{
-	return 0;
-}
-
-int DotMain::save_defaults()
-{
-	return 0;
-}
-
-void DotMain::load_configuration()
-{
-}
-
-
-void DotMain::save_data(KeyFrame *keyframe)
-{
-}
-
-void DotMain::read_data(KeyFrame *keyframe)
-{
-}
-
 void DotMain::make_pattern()
 {
 	int i, x, y, c;

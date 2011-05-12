@@ -266,7 +266,7 @@ void BrightnessMain::update_gui()
 	}
 }
 
-int BrightnessMain::load_defaults()
+void BrightnessMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -279,16 +279,14 @@ int BrightnessMain::load_defaults()
 	config.brightness = defaults->get("BRIGHTNESS", config.brightness);
 	config.contrast = defaults->get("CONTRAST", config.contrast);
 	config.luma = defaults->get("LUMA", config.luma);
-	return 0;
 }
 
-int BrightnessMain::save_defaults()
+void BrightnessMain::save_defaults()
 {
 	defaults->update("BRIGHTNESS", config.brightness);
 	defaults->update("CONTRAST", config.contrast);
 	defaults->update("LUMA", config.luma);
 	defaults->save();
-	return 0;
 }
 
 

@@ -299,12 +299,13 @@ void Spectrogram::render_gui(void *data, int size)
 	}
 }
 
-void Spectrogram::load_configuration()
+int Spectrogram::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	prev_keyframe = get_prev_keyframe(get_source_position());
 
- 	read_data(prev_keyframe);
+	read_data(prev_keyframe);
+	return 0;
 }
 
 void Spectrogram::read_data(KeyFrame *keyframe)
@@ -341,7 +342,7 @@ void Spectrogram::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int Spectrogram::load_defaults()
+void Spectrogram::load_defaults()
 {
 	char directory[BCTEXTLEN];
 
@@ -349,14 +350,12 @@ int Spectrogram::load_defaults()
 	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.level = defaults->get("LEVEL", config.level);
-	return 0;
 }
 
-int Spectrogram::save_defaults()
+void Spectrogram::save_defaults()
 {
 	defaults->update("LEVEL", config.level);
 	defaults->save();
-	return 0;
 }
 
 

@@ -106,8 +106,8 @@ public:
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -264,7 +264,7 @@ int FieldFrame::load_configuration()
 }
 
 
-int FieldFrame::load_defaults()
+void FieldFrame::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -276,15 +276,13 @@ int FieldFrame::load_defaults()
 
 	config.field_dominance = defaults->get("DOMINANCE", config.field_dominance);
 	config.first_frame = defaults->get("FIRST_FRAME", config.first_frame);
-	return 0;
 }
 
-int FieldFrame::save_defaults()
+void FieldFrame::save_defaults()
 {
 	defaults->update("DOMINANCE", config.field_dominance);
 	defaults->update("FIRST_FRAME", config.first_frame);
 	defaults->save();
-	return 0;
 }
 
 void FieldFrame::save_data(KeyFrame *keyframe)

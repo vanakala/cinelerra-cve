@@ -54,30 +54,20 @@ public:
 	BrightnessMain(PluginServer *server);
 	~BrightnessMain();
 
-// required for all realtime plugins
+	PLUGIN_CLASS_MEMBERS(BrightnessConfig, BrightnessThread);
+
 	int process_buffer(VFrame *frame,
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-	const char* plugin_title();
-	int show_gui();
-	void raise_window();
 	void update_gui();
-	int set_string();
-	int load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
-	VFrame* new_picon();
+	void load_defaults();
+	void save_defaults();
 	int handle_opengl();
 
-
-	BrightnessConfig config;
-// a thread for the GUI
-	BrightnessThread *thread;
 	BrightnessEngine *engine;
-	BC_Hash *defaults;
 	int redo_buffers;
 	static YUV yuv;
 

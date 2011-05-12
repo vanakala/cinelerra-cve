@@ -24,6 +24,7 @@
 #include "cdripper.h"
 #include "cdripwindow.h"
 #include "bchash.h"
+#include "language.h"
 #include "mainprogress.h"
 #include "mwindow.inc"
 
@@ -32,10 +33,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 PluginClient* new_plugin(PluginServer *server)
 {
@@ -60,7 +57,7 @@ int CDRipMain::is_realtime() { return 0; }
 int CDRipMain::is_multichannel() { return 1; }
 
 
-int CDRipMain::load_defaults()
+void CDRipMain::load_defaults()
 {
 // set the default directory
 	char directory[1024];
@@ -80,10 +77,9 @@ int CDRipMain::load_defaults()
 	defaults->get("DEVICE", device);
 	startlba = defaults->get("STARTLBA", 0);
 	endlba = defaults->get("ENDLBA", 0);
-	return 0;
 }
 
-int CDRipMain::save_defaults()
+void CDRipMain::save_defaults()
 {
 	defaults->update("TRACK1", track1);
 	defaults->update("MIN1", min1);
@@ -95,7 +91,6 @@ int CDRipMain::save_defaults()
 	defaults->update("STARTLBA", startlba);
 	defaults->update("ENDLBA", endlba);
 	defaults->save();
-	return 0;
 }
 
 int CDRipMain::get_parameters()
@@ -228,19 +223,17 @@ int CDRipMain::get_toc()
 	return result;
 }
 
-int CDRipMain::start_loop()
+void CDRipMain::start_loop()
 {
 // get CD parameters
-	int result = 0;
-
-	result = get_toc();
+	get_toc();
 	FRAME = 4;    // 2 bytes 2 channels
 	previewing = 3;     // defeat bug in hardware
 	fragment_length = PluginClient::in_buffer_size * FRAME;
 	fragment_length /= NFRAMES * FRAMESIZE;
 	fragment_length *= NFRAMES * FRAMESIZE;
 	total_length = (endlba - startlba) * FRAMESIZE / fragment_length + previewing + 1;
-	result = open_drive();
+	open_drive();
 
 // thread out progress
 	if(interactive)
@@ -258,12 +251,10 @@ int CDRipMain::start_loop()
 	arg.addr.lba = startlba_fragment;
 	arg.addr_format = CDROM_LBA;
 	arg.nframes = NFRAMES;
-
-	return result;
 }
 
 
-int CDRipMain::stop_loop()
+void CDRipMain::stop_loop()
 {
 	if(interactive)
 	{
@@ -273,7 +264,6 @@ int CDRipMain::stop_loop()
 
 	delete buffer;
 	close_drive();
-	return 0;
 }
 
 int CDRipMain::process_loop(double **plugin_buffer, int &write_length)

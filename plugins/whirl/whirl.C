@@ -143,26 +143,28 @@ public:
 	WhirlEffect(PluginServer *server);
 	~WhirlEffect();
 
+	PLUGIN_CLASS_MEMBERS(WhirlConfig, WhirlThread);
+
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	void raise_window();
+//	const char* plugin_title();
+//	VFrame* new_picon();
+//	int show_gui();
+//	void raise_window();
 	void update_gui();
-	int set_string();
-	int load_configuration();
-	int load_defaults();
-	int save_defaults();
+//	int set_string();
+//	int load_configuration();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
 	WhirlEngine *engine;
 	VFrame *temp_frame;
 	VFrame *input, *output;
-	WhirlConfig config;
-	BC_Hash *defaults;
-	WhirlThread *thread;
+//	WhirlConfig config;
+//	BC_Hash *defaults;
+//	WhirlThread *thread;
 	int need_reconfigure;
 };
 
@@ -357,7 +359,7 @@ void WhirlEffect::update_gui()
 LOAD_CONFIGURATION_MACRO(WhirlEffect, WhirlConfig)
 
 
-int WhirlEffect::load_defaults()
+void WhirlEffect::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -372,7 +374,7 @@ int WhirlEffect::load_defaults()
 	config.radius = defaults->get("RADIUS", config.radius);
 }
 
-int WhirlEffect::save_defaults()
+void WhirlEffect::save_defaults()
 {
 	defaults->update("ANGLE", config.angle);
 	defaults->update("PINCH", config.pinch);

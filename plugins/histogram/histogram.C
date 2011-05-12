@@ -166,7 +166,7 @@ void HistogramMain::update_gui()
 }
 
 
-int HistogramMain::load_defaults()
+void HistogramMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -209,11 +209,10 @@ int HistogramMain::load_defaults()
 	config.plot = defaults->get("PLOT", config.plot);
 	config.split = defaults->get("SPLIT", config.split);
 	config.boundaries();
-	return 0;
 }
 
 
-int HistogramMain::save_defaults()
+void HistogramMain::save_defaults()
 {
 	char string[BCTEXTLEN];
 
@@ -249,7 +248,6 @@ int HistogramMain::save_defaults()
 	defaults->update("PLOT", config.plot);
 	defaults->update("SPLIT", config.split);
 	defaults->save();
-	return 0;
 }
 
 void HistogramMain::save_data(KeyFrame *keyframe)

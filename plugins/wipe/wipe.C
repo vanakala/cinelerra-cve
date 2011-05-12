@@ -159,7 +159,7 @@ VFrame* WipeMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int WipeMain::load_defaults()
+void WipeMain::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -170,14 +170,12 @@ int WipeMain::load_defaults()
 	defaults->load();
 
 	direction = defaults->get("DIRECTION", direction);
-	return 0;
 }
 
-int WipeMain::save_defaults()
+void WipeMain::save_defaults()
 {
 	defaults->update("DIRECTION", direction);
 	defaults->save();
-	return 0;
 }
 
 void WipeMain::save_data(KeyFrame *keyframe)
@@ -207,9 +205,10 @@ void WipeMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void WipeMain::load_configuration()
+int WipeMain::load_configuration()
 {
 	read_data(get_prev_keyframe(get_source_position()));
+	return 0;
 }
 
 

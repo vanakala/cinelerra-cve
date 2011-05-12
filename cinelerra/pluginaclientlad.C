@@ -23,18 +23,13 @@
 #include "data/lad_picon_png.h"
 #include "bchash.h"
 #include "filexml.h"
+#include "language.h"
 #include "pluginaclientlad.h"
 #include "pluginserver.h"
 #include "vframe.h"
 
 #include <ctype.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 
 
 PluginAClientConfig::PluginAClientConfig()
@@ -543,7 +538,7 @@ char* PluginAClientLAD::lad_to_upper(char *string, const char *input)
 }
 
 
-int PluginAClientLAD::load_defaults()
+void PluginAClientLAD::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	char string[BCTEXTLEN];
@@ -575,11 +570,10 @@ int PluginAClientLAD::load_defaults()
 			current_port++;
 		}
 	}
-	return 0;
 }
 
 
-int PluginAClientLAD::save_defaults()
+void PluginAClientLAD::save_defaults()
 {
 	char string[BCTEXTLEN];
 	int current_port = 0;
@@ -597,7 +591,6 @@ int PluginAClientLAD::save_defaults()
 		}
 	}
 	defaults->save();
-	return 0;
 }
 
 

@@ -57,13 +57,15 @@ public:
 	Reverb(PluginServer *server);
 	~Reverb();
 
+	PLUGIN_CLASS_MEMBERS(ReverbConfig, ReverbThread);
+
 	void update_gui();
 	int load_from_file(const char *data);
 	int save_to_file(const char *data);
-	int load_configuration();
+//	int load_configuration();
 
 // data for reverb
-	ReverbConfig config;
+//	ReverbConfig config;
 
 	char config_directory[1024];
 
@@ -82,20 +84,13 @@ public:
 	int is_realtime();
 	int is_synthesis();
 	int is_multichannel();
-	const char* plugin_title();
-	int show_gui();
-	int set_string();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void raise_window();
-	VFrame* new_picon();
 
 // non realtime support
-	int load_defaults();
-	int save_defaults();
-	BC_Hash *defaults;
+	void load_defaults();
+	void save_defaults();
 
-	ReverbThread *thread;
 	ReverbEngine **engine;
 	int initialized;
 };

@@ -114,16 +114,13 @@ public:
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	int load_configuration();
-	int set_string();
-	int load_defaults();
-	int save_defaults();
+
+	PLUGIN_CLASS_MEMBERS(DecimateConfig, DecimateThread);
+
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void raise_window();
 	void update_gui();
 	void render_gui(void *data);
 
@@ -153,10 +150,6 @@ public:
 	double lookahead_rate;
 // Last requested position
 	framenum last_position;
-
-	DecimateThread *thread;
-	DecimateConfig config;
-	BC_Hash *defaults;
 };
 
 
@@ -649,7 +642,7 @@ int Decimate::load_configuration()
 	return !old_config.equivalent(&config);
 }
 
-int Decimate::load_defaults()
+void Decimate::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -661,14 +654,12 @@ int Decimate::load_defaults()
 
 	config.input_rate = defaults->get("INPUT_RATE", config.input_rate);
 	config.input_rate = Units::fix_framerate(config.input_rate);
-	return 0;
 }
 
-int Decimate::save_defaults()
+void Decimate::save_defaults()
 {
 	defaults->update("INPUT_RATE", config.input_rate);
 	defaults->save();
-	return 0;
 }
 
 void Decimate::save_data(KeyFrame *keyframe)

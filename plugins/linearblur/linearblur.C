@@ -129,8 +129,8 @@ public:
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -512,7 +512,7 @@ void LinearBlurMain::update_gui()
 }
 
 
-int LinearBlurMain::load_defaults()
+void LinearBlurMain::load_defaults()
 {
 	char directory[1024];
 // set the default directory
@@ -529,10 +529,9 @@ int LinearBlurMain::load_defaults()
 	config.g = defaults->get("G", config.g);
 	config.b = defaults->get("B", config.b);
 	config.a = defaults->get("A", config.a);
-	return 0;
 }
 
-int LinearBlurMain::save_defaults()
+void LinearBlurMain::save_defaults()
 {
 	defaults->update("RADIUS", config.radius);
 	defaults->update("ANGLE", config.angle);
@@ -542,7 +541,6 @@ int LinearBlurMain::save_defaults()
 	defaults->update("B", config.b);
 	defaults->update("A", config.a);
 	defaults->save();
-	return 0;
 }
 
 void LinearBlurMain::save_data(KeyFrame *keyframe)

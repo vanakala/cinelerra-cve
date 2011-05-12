@@ -215,7 +215,7 @@ void BlurMain::update_gui()
 	}
 }
 
-int BlurMain::load_defaults()
+void BlurMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -232,10 +232,9 @@ int BlurMain::load_defaults()
 	config.g = defaults->get("G", config.g);
 	config.b = defaults->get("B", config.b);
 	config.a = defaults->get("A", config.a);
-	return 0;
 }
 
-int BlurMain::save_defaults()
+void BlurMain::save_defaults()
 {
 	defaults->update("VERTICAL", config.vertical);
 	defaults->update("HORIZONTAL", config.horizontal);
@@ -245,7 +244,6 @@ int BlurMain::save_defaults()
 	defaults->update("B", config.b);
 	defaults->update("A", config.a);
 	defaults->save();
-	return 0;
 }
 
 

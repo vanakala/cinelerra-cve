@@ -891,7 +891,7 @@ NEW_PICON_MACRO(ChromaKeyHSV)
 
 LOAD_CONFIGURATION_MACRO(ChromaKeyHSV, ChromaKeyConfig)
 
-int ChromaKeyHSV::load_defaults()
+void ChromaKeyHSV::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -919,10 +919,9 @@ int ChromaKeyHSV::load_defaults()
 	config.out_slope = defaults->get("OUT_SLOPE", config.out_slope);
 	config.alpha_offset = defaults->get("ALPHA_OFFSET", config.alpha_offset);
 	config.show_mask = defaults->get("SHOW_MASK", config.show_mask);
-	return 0;
 }
 
-int ChromaKeyHSV::save_defaults()
+void ChromaKeyHSV::save_defaults()
 {
 	defaults->update("RED", config.red);
 	defaults->update("GREEN", config.green);
@@ -939,7 +938,6 @@ int ChromaKeyHSV::save_defaults()
 	defaults->update("SPILL_AMOUNT", config.spill_amount);
 	defaults->update("SHOW_MASK", config.show_mask);
 	defaults->save();
-	return 0;
 }
 
 void ChromaKeyHSV::save_data(KeyFrame * keyframe)

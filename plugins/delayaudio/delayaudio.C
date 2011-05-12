@@ -73,15 +73,16 @@ const char* DelayAudio::plugin_title() { return N_("Delay audio"); }
 int DelayAudio::is_realtime() { return 1; }
 
 
-void DelayAudio::load_configuration()
+int DelayAudio::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	prev_keyframe = get_prev_keyframe(get_source_position());
 
 	read_data(prev_keyframe);
+	return 0;
 }
 
-int DelayAudio::load_defaults()
+void DelayAudio::load_defaults()
 {
 	char directory[BCTEXTLEN];
 
@@ -89,15 +90,12 @@ int DelayAudio::load_defaults()
 	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.length = defaults->get("LENGTH", (double)1);
-	return 0;
 }
 
-
-int DelayAudio::save_defaults()
+void DelayAudio::save_defaults()
 {
 	defaults->update("LENGTH", config.length);
 	defaults->save();
-	return 0;
 }
 
 void DelayAudio::read_data(KeyFrame *keyframe)
@@ -180,20 +178,8 @@ int DelayAudio::process_realtime(int size, double *input_ptr, double *output_ptr
 	return 0;
 }
 
-int DelayAudio::show_gui()
-{
-	load_configuration();
-
-	thread = new DelayAudioThread(this);
-	thread->start();
-	return 0;
-}
-
-int DelayAudio::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
+SHOW_GUI_MACRO(DelayAudio, DelayAudioThread);
+SET_STRING_MACRO(DelayAudio);
 
 void DelayAudio::raise_window()
 {

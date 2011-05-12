@@ -268,26 +268,19 @@ public:
 	VideoScopeEffect(PluginServer *server);
 	~VideoScopeEffect();
 
+	PLUGIN_CLASS_MEMBERS(VideoScopeConfig, VideoScopeThread);
+
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	int set_string();
-	void raise_window();
 	void render_gui(void *input);
-	int load_configuration();
 
 	int w, h;
 	VFrame *input;
-	VideoScopeConfig config;
 	VideoScopeEngine *engine;
-	BC_Hash *defaults;
-	VideoScopeThread *thread;
 };
 
 
@@ -780,7 +773,7 @@ RAISE_WINDOW_MACRO(VideoScopeEffect)
 
 SET_STRING_MACRO(VideoScopeEffect)
 
-int VideoScopeEffect::load_defaults()
+void VideoScopeEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -796,11 +789,9 @@ int VideoScopeEffect::load_defaults()
 	config.show_601_limits = defaults->get("SHOW_601_LIMITS", config.show_601_limits);
 	config.show_IRE_limits = defaults->get("SHOW_IRE_LIMITS", config.show_IRE_limits);
 	config.draw_lines_inverse = defaults->get("DRAW_LINES_INVERSE", config.draw_lines_inverse);
-
-	return 0;
 }
 
-int VideoScopeEffect::save_defaults()
+void VideoScopeEffect::save_defaults()
 {
 	defaults->update("W", w);
 	defaults->update("H", h);
@@ -809,7 +800,6 @@ int VideoScopeEffect::save_defaults()
 	defaults->update("SHOW_IRE_LIMITS",    config.show_IRE_limits);
 	defaults->update("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	defaults->save();
-	return 0;
 }
 
 void VideoScopeEffect::save_data(KeyFrame *keyframe)

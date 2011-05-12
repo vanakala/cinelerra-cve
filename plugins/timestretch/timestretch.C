@@ -302,7 +302,7 @@ void TimeStretch::save_data(KeyFrame *keyframe)
 
 
 
-int TimeStretch::load_defaults()
+void TimeStretch::load_defaults()
 {
 	char directory[BCTEXTLEN];
 
@@ -313,14 +313,12 @@ int TimeStretch::load_defaults()
 	defaults->load();
 
 	config.scale = defaults->get("SCALE", (double)1);
-	return 0;
 }
 
-int TimeStretch::save_defaults()
+void TimeStretch::save_defaults()
 {
 	defaults->update("SCALE", config.scale);
 	defaults->save();
-	return 0;
 }
 
 

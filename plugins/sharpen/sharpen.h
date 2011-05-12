@@ -62,33 +62,25 @@ public:
 	SharpenMain(PluginServer *server);
 	~SharpenMain();
 
+	PLUGIN_CLASS_MEMBERS(SharpenConfig, SharpenThread);
+
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	const char* plugin_title();
-	int show_gui();
-	void raise_window();
-	int set_string();
 	void update_gui();
-	int load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
-	VFrame* new_picon();
+	void load_defaults();
+	void save_defaults();
 
 // parameters needed for sharpness
 	int row_step;
 
-// a thread for the GUI
-	SharpenThread *thread;
 	int pos_lut[0x10000], neg_lut[0x10000];
-	SharpenConfig config;
 	VFrame *output, *input;
 
 private:
 	int get_luts(int *pos_lut, int *neg_lut, int color_model);
-	BC_Hash *defaults;
 	SharpenEngine **engine;
 	int total_engines;
 };

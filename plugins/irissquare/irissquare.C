@@ -153,7 +153,7 @@ VFrame* IrisSquareMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int IrisSquareMain::load_defaults()
+void IrisSquareMain::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -164,14 +164,12 @@ int IrisSquareMain::load_defaults()
 	defaults->load();
 
 	direction = defaults->get("DIRECTION", direction);
-	return 0;
 }
 
-int IrisSquareMain::save_defaults()
+void IrisSquareMain::save_defaults()
 {
 	defaults->update("DIRECTION", direction);
 	defaults->save();
-	return 0;
 }
 
 void IrisSquareMain::save_data(KeyFrame *keyframe)
@@ -201,9 +199,10 @@ void IrisSquareMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void IrisSquareMain::load_configuration()
+int IrisSquareMain::load_configuration()
 {
 	read_data(get_prev_keyframe(get_source_position()));
+	return 0;
 }
 
 

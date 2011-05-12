@@ -26,26 +26,15 @@
 #include "aging.h"
 #include "agingwindow.h"
 #include "effecttv.h"
+#include "language.h"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
-
-
 
 REGISTER_PLUGIN(AgingMain)
-
-
-
-
 
 
 int AgingConfig::dx[] = { 1, 1, 0, -1, -1, -1,  0, 1};
@@ -87,30 +76,6 @@ SHOW_GUI_MACRO(AgingMain, AgingThread)
 SET_STRING_MACRO(AgingMain)
 
 RAISE_WINDOW_MACRO(AgingMain)
-
-int AgingMain::load_defaults()
-{
-	return 0;
-}
-
-int AgingMain::save_defaults()
-{
-	return 0;
-}
-
-void AgingMain::load_configuration()
-{
-}
-
-
-void AgingMain::save_data(KeyFrame *keyframe)
-{
-}
-
-void AgingMain::read_data(KeyFrame *keyframe)
-{
-}
-
 
 int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {

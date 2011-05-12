@@ -143,7 +143,7 @@ int SvgMain::is_synthesis() { return 1; }
 
 NEW_PICON_MACRO(SvgMain)
 
-int SvgMain::load_defaults()
+void SvgMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -165,7 +165,7 @@ int SvgMain::load_defaults()
 	strcpy(config.svg_file, "");
 }
 
-int SvgMain::save_defaults()
+void SvgMain::save_defaults()
 {
 	defaults->update("IN_X", config.in_x);
 	defaults->update("IN_Y", config.in_y);

@@ -563,7 +563,7 @@ NEW_PICON_MACRO(ChromaKey)
 
 LOAD_CONFIGURATION_MACRO(ChromaKey, ChromaKeyConfig)
 
-int ChromaKey::load_defaults()
+void ChromaKey::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -579,10 +579,9 @@ int ChromaKey::load_defaults()
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
 	config.slope = defaults->get("SLOPE", config.slope);
 	config.use_value = defaults->get("USE_VALUE", config.use_value);
-	return 0;
 }
 
-int ChromaKey::save_defaults()
+void ChromaKey::save_defaults()
 {
 	defaults->update("RED", config.red);
 	defaults->update("GREEN", config.green);
@@ -591,7 +590,6 @@ int ChromaKey::save_defaults()
 	defaults->update("SLOPE", config.slope);
 	defaults->update("USE_VALUE", config.use_value);
 	defaults->save();
-	return 0;
 }
 
 void ChromaKey::save_data(KeyFrame *keyframe)

@@ -149,25 +149,18 @@ public:
 	FreeverbEffect(PluginServer *server);
 	~FreeverbEffect();
 
-	VFrame* new_picon();
-	const char* plugin_title();
-	int show_gui();
-	void raise_window();
-	int set_string();
+	PLUGIN_CLASS_MEMBERS(FreeverbConfig, FreeverbThread);
+
 	int is_realtime();
 	int is_multichannel();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_realtime(int size, double **input_ptr, double **output_ptr);
 
-	int load_defaults();
-	int save_defaults();
-	int load_configuration();
+	void load_defaults();
+	void save_defaults();
 	void update_gui();
 
-	BC_Hash *defaults;
-	FreeverbThread *thread;
-	FreeverbConfig config;
 	revmodel *engine;
 	float **temp;
 	float **temp_out;
@@ -473,7 +466,7 @@ void FreeverbEffect::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int FreeverbEffect::load_defaults()
+void FreeverbEffect::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sfreeverb.rc", BCASTDIR);
@@ -487,10 +480,9 @@ int FreeverbEffect::load_defaults()
 	config.dry = defaults->get("DRY", config.dry);
 	config.width = defaults->get("WIDTH", config.width);
 	config.mode = defaults->get("MODE", config.mode);
-	return 0;
 }
 
-int FreeverbEffect::save_defaults()
+void FreeverbEffect::save_defaults()
 {
 	char string[BCTEXTLEN];
 
@@ -502,8 +494,6 @@ int FreeverbEffect::save_defaults()
 	defaults->update("WIDTH", config.width);
 	defaults->update("MODE", config.mode);
 	defaults->save();
-
-	return 0;
 }
 
 

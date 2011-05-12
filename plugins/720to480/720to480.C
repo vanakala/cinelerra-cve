@@ -149,7 +149,7 @@ double _720to480Main::get_framerate()
 
 
 
-int _720to480Main::load_defaults()
+void _720to480Main::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%s720to480.rc", BCASTDIR);
@@ -157,15 +157,13 @@ int _720to480Main::load_defaults()
 	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
-	return 0;
 }
 
 
-int _720to480Main::save_defaults()
+void _720to480Main::save_defaults()
 {
 	defaults->update("FIRST_FIELD", config.first_field);
 	defaults->save();
-	return 0;
 }
 
 int _720to480Main::get_parameters()
@@ -179,7 +177,7 @@ int _720to480Main::get_parameters()
 	return result;
 }
 
-int _720to480Main::start_loop()
+void _720to480Main::start_loop()
 {
 	if(PluginClient::interactive)
 	{
@@ -190,18 +188,16 @@ int _720to480Main::start_loop()
 	}
 
 	input_position = PluginClient::start;
-	return 0;
 }
 
 
-int _720to480Main::stop_loop()
+void _720to480Main::stop_loop()
 {
 	if(PluginClient::interactive)
 	{
 		progress->stop_progress();
 		delete progress;
 	}
-	return 0;
 }
 
 

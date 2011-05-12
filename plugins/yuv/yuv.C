@@ -78,23 +78,16 @@ class YUVEffect : public PluginVClient
 public:
 	YUVEffect(PluginServer *server);
 	~YUVEffect();
+
+	PLUGIN_CLASS_MEMBERS(YUVConfig, YUVThread);
+
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
-	int show_gui();
-	void raise_window();
-	int set_string();
-	int load_configuration();
-
-	YUVConfig config;
-	YUVThread *thread;
-	BC_Hash *defaults;
 };
 
 
@@ -232,7 +225,7 @@ void YUVEffect::update_gui()
 	}
 }
 
-int YUVEffect::load_defaults()
+void YUVEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%syuv.rc", BCASTDIR);
@@ -241,16 +234,14 @@ int YUVEffect::load_defaults()
 	config.y = defaults->get("Y", config.y);
 	config.u = defaults->get("U", config.u);
 	config.v = defaults->get("V", config.v);
-	return 0;
 }
 
-int YUVEffect::save_defaults()
+void YUVEffect::save_defaults()
 {
 	defaults->update("Y", config.y);
 	defaults->update("U", config.u);
 	defaults->update("V", config.v);
 	defaults->save();
-	return 0;
 }
 
 void YUVEffect::save_data(KeyFrame *keyframe)

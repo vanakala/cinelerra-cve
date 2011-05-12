@@ -89,8 +89,8 @@ public:
 		double **buffer,
 		posnum start_position,
 		int sample_rate);
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void update_gui();
 
 
@@ -261,7 +261,7 @@ void OverlayAudio::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int OverlayAudio::load_defaults()
+void OverlayAudio::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%soverlayaudio.rc", BCASTDIR);
@@ -269,15 +269,12 @@ int OverlayAudio::load_defaults()
 	defaults->load();
 
 	config.output_track = defaults->get("OUTPUT", config.output_track);
-	return 0;
 }
 
-int OverlayAudio::save_defaults()
+void OverlayAudio::save_defaults()
 {
 	defaults->update("OUTPUT", config.output_track);
 	defaults->save();
-
-	return 0;
 }
 
 

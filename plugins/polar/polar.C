@@ -130,23 +130,25 @@ public:
 	PolarEffect(PluginServer *server);
 	~PolarEffect();
 
+	PLUGIN_CLASS_MEMBERS(PolarConfig, PolarThread);
+
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int load_configuration();
-	int load_defaults();
-	int save_defaults();
+//	const char* plugin_title();
+//	VFrame* new_picon();
+//	int load_configuration();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	int set_string();
-	void raise_window();
+//	int show_gui();
+//	int set_string();
+//	void raise_window();
 	void update_gui();
 
-	PolarConfig config;
-	BC_Hash *defaults;
-	PolarThread *thread;
+//	PolarConfig config;
+//	BC_Hash *defaults;
+//	PolarThread *thread;
 	PolarEngine *engine;
 	VFrame *temp_frame;
 	VFrame *input, *output;
@@ -324,7 +326,7 @@ void PolarEffect::update_gui()
 LOAD_CONFIGURATION_MACRO(PolarEffect, PolarConfig)
 
 
-int PolarEffect::load_defaults()
+void PolarEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -336,15 +338,13 @@ int PolarEffect::load_defaults()
 
 	config.depth = defaults->get("DEPTH", config.depth);
 	config.angle = defaults->get("ANGLE", config.angle);
-	return 0;
 }
 
-int PolarEffect::save_defaults()
+void PolarEffect::save_defaults()
 {
 	defaults->update("DEPTH", config.depth);
 	defaults->update("ANGLE", config.angle);
 	defaults->save();
-	return 0;
 }
 
 void PolarEffect::save_data(KeyFrame *keyframe)

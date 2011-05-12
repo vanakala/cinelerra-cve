@@ -114,7 +114,7 @@ int TranslateMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(TranslateMain)
 
-int TranslateMain::load_defaults()
+void TranslateMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -134,7 +134,7 @@ int TranslateMain::load_defaults()
 	config.out_h = defaults->get("OUT_H", config.out_h);
 }
 
-int TranslateMain::save_defaults()
+void TranslateMain::save_defaults()
 {
 	defaults->update("IN_X", config.in_x);
 	defaults->update("IN_Y", config.in_y);

@@ -134,8 +134,8 @@ public:
 	int is_realtime();
 	int is_multichannel();
 	int is_synthesis();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -684,7 +684,7 @@ int Overlay::load_configuration()
 	return 0;
 }
 
-int Overlay::load_defaults()
+void Overlay::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -697,16 +697,14 @@ int Overlay::load_defaults()
 	config.mode = defaults->get("MODE", config.mode);
 	config.direction = defaults->get("DIRECTION", config.direction);
 	config.output_layer = defaults->get("OUTPUT_LAYER", config.output_layer);
-	return 0;
 }
 
-int Overlay::save_defaults()
+void Overlay::save_defaults()
 {
 	defaults->update("MODE", config.mode);
 	defaults->update("DIRECTION", config.direction);
 	defaults->update("OUTPUT_LAYER", config.output_layer);
 	defaults->save();
-	return 0;
 }
 
 void Overlay::save_data(KeyFrame *keyframe)

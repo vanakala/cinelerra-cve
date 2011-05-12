@@ -1075,7 +1075,7 @@ void TimeFrontMain::update_gui()
 }
 
 
-int TimeFrontMain::load_defaults()
+void TimeFrontMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -1096,11 +1096,10 @@ int TimeFrontMain::load_defaults()
 	config.center_y = defaults->get("CENTER_Y", config.center_y);
 	config.invert = defaults->get("INVERT", config.invert);
 	config.show_grayscale = defaults->get("SHOW_GRAYSCALE", config.show_grayscale);
-	return 0;
 }
 
 
-int TimeFrontMain::save_defaults()
+void TimeFrontMain::save_defaults()
 {
 	defaults->update("ANGLE", config.angle);
 	defaults->update("IN_RADIUS", config.in_radius);
@@ -1114,7 +1113,6 @@ int TimeFrontMain::save_defaults()
 	defaults->update("INVERT", config.invert);
 	defaults->update("SHOW_GRAYSCALE", config.show_grayscale);
 	defaults->save();
-	return 0;
 }
 
 

@@ -136,21 +136,17 @@ public:
 	ShapeWipeMain(PluginServer *server);
 	~ShapeWipeMain();
 
+	PLUGIN_CLASS_MEMBERS(int, ShapeWipeThread);
+
 // required for all realtime plugins
-	void load_configuration();
 	int process_realtime(VFrame *incoming, VFrame *outgoing);
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	void raise_window();
 	int uses_gui();
 	int is_transition();
 	int is_video();
-	const char* plugin_title();
-	int set_string();
-	VFrame* new_picon();
 	int read_pattern_image(int new_frame_width, int new_frame_height);
 	void reset_pattern_image();
 
@@ -165,8 +161,6 @@ public:
 	int antialias;
 	int preserve_aspect;
 	int last_preserve_aspect;
-	ShapeWipeThread *thread;
-	BC_Hash *defaults;
 };
 
 #endif

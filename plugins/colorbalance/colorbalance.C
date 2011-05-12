@@ -553,7 +553,7 @@ void ColorBalanceMain::update_gui()
 
 
 
-int ColorBalanceMain::load_defaults()
+void ColorBalanceMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -568,10 +568,9 @@ int ColorBalanceMain::load_defaults()
 	config.yellow = defaults->get("YELLOW", config.yellow);
 	config.preserve = defaults->get("PRESERVELUMINOSITY", config.preserve);
 	config.lock_params = defaults->get("LOCKPARAMS", config.lock_params);
-	return 0;
 }
 
-int ColorBalanceMain::save_defaults()
+void ColorBalanceMain::save_defaults()
 {
 	defaults->update("CYAN", config.cyan);
 	defaults->update("MAGENTA", config.magenta);
@@ -579,7 +578,6 @@ int ColorBalanceMain::save_defaults()
 	defaults->update("PRESERVELUMINOSITY", config.preserve);
 	defaults->update("LOCKPARAMS", config.lock_params);
 	defaults->save();
-	return 0;
 }
 
 void ColorBalanceMain::save_data(KeyFrame *keyframe)

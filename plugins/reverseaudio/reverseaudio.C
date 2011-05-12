@@ -71,8 +71,8 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(ReverseAudioConfig, ReverseAudioThread)
 
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -277,7 +277,7 @@ int ReverseAudio::load_configuration()
 	return 0;
 }
 
-int ReverseAudio::load_defaults()
+void ReverseAudio::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -288,14 +288,12 @@ int ReverseAudio::load_defaults()
 	defaults->load();
 
 	config.enabled = defaults->get("ENABLED", config.enabled);
-	return 0;
 }
 
-int ReverseAudio::save_defaults()
+void ReverseAudio::save_defaults()
 {
 	defaults->update("ENABLED", config.enabled);
 	defaults->save();
-	return 0;
 }
 
 void ReverseAudio::save_data(KeyFrame *keyframe)

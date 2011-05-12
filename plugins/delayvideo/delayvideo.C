@@ -261,19 +261,17 @@ void DelayVideo::update_gui()
 	}
 }
 
-int DelayVideo::load_defaults()
+void DelayVideo::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%sdelayvideo.rc", BCASTDIR);
 	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.length = defaults->get("LENGTH", (double)1);
-	return 0;
 }
 
-int DelayVideo::save_defaults()
+void DelayVideo::save_defaults()
 {
 	defaults->update("LENGTH", config.length);
 	defaults->save();
-	return 0;
 }

@@ -76,13 +76,13 @@ public:
 // required for all non realtime plugins
 	const char* plugin_title();
 	int get_parameters();
-	int start_loop();
-	int stop_loop();
+	void start_loop();
+	void stop_loop();
 	int is_realtime();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	double get_framerate();
 	int process_loop(VFrame *output);
 

@@ -203,7 +203,7 @@ public:
 // Do one iteration of a nonrealtime plugin and return if finished
 	int process_loop(VFrame **buffers, int &write_length);
 	int process_loop(AFrame **buffers, int &write_length);
-	int stop_loop();
+	void stop_loop();
 
 
 // Called by client to read data in non-realtime effect

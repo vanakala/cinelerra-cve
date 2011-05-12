@@ -713,7 +713,7 @@ int ParametricEQ::process_buffer(int size,
 }
 
 
-int ParametricEQ::load_defaults()
+void ParametricEQ::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sparametriceq.rc", BCASTDIR);
@@ -732,10 +732,9 @@ int ParametricEQ::load_defaults()
 		sprintf(string, "MODE_%d", i);
 		config.band[i].mode = defaults->get(string, config.band[i].mode);
 	}
-	return 0;
 }
 
-int ParametricEQ::save_defaults()
+void ParametricEQ::save_defaults()
 {
 	char string[BCTEXTLEN];
 
@@ -754,7 +753,6 @@ int ParametricEQ::save_defaults()
 	}
 
 	defaults->save();
-	return 0;
 }
 
 

@@ -88,7 +88,7 @@ void Synth::reset()
 LOAD_CONFIGURATION_MACRO(Synth, SynthConfig)
 
 
-int Synth::load_defaults()
+void Synth::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 
@@ -109,8 +109,6 @@ int Synth::load_defaults()
 		config.oscillator_config.append(new SynthOscillatorConfig(i));
 		config.oscillator_config.values[i]->load_defaults(defaults);
 	}
-
-	return 0;
 }
 
 
@@ -176,7 +174,7 @@ void Synth::save_data(KeyFrame *keyframe)
 // data is now in *text
 }
 
-int Synth::save_defaults()
+void Synth::save_defaults()
 {
 	char string[BCTEXTLEN];
 
@@ -192,33 +190,12 @@ int Synth::save_defaults()
 		config.oscillator_config.values[i]->save_defaults(defaults);
 	}
 	defaults->save();
-
-	return 0;
 }
 
-int Synth::show_gui()
-{
-	load_configuration();
+SHOW_GUI_MACRO(Synth, SynthThread);
+SET_STRING_MACRO(Synth);
+RAISE_WINDOW_MACRO(Synth);
 
-	thread = new SynthThread(this);
-	thread->start();
-	return 0;
-}
-
-int Synth::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void Synth::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
 
 void Synth::update_gui()
 {

@@ -94,29 +94,21 @@ public:
 	ShiftInterlaceMain(PluginServer *server);
 	~ShiftInterlaceMain();
 
+	PLUGIN_CLASS_MEMBERS(ShiftInterlaceConfig, ShiftInterlaceThread);
+
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	void raise_window();
 	void update_gui();
-	int set_string();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_configuration();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 
 	void shift_row(VFrame *input_frame, 
 		VFrame *output_frame,
 		int offset,
 		int row);
-
-	ShiftInterlaceConfig config;
-	ShiftInterlaceThread *thread;
-	BC_Hash *defaults;
 };
 
 
@@ -263,7 +255,7 @@ LOAD_CONFIGURATION_MACRO(ShiftInterlaceMain, ShiftInterlaceConfig)
 RAISE_WINDOW_MACRO(ShiftInterlaceMain)
 
 
-int ShiftInterlaceMain::load_defaults()
+void ShiftInterlaceMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -275,15 +267,13 @@ int ShiftInterlaceMain::load_defaults()
 
 	config.odd_offset = defaults->get("ODD_OFFSET", config.odd_offset);
 	config.even_offset = defaults->get("EVEN_OFFSET", config.even_offset);
-	return 0;
 }
 
-int ShiftInterlaceMain::save_defaults()
+void ShiftInterlaceMain::save_defaults()
 {
 	defaults->update("ODD_OFFSET", config.odd_offset);
 	defaults->update("EVEN_OFFSET", config.even_offset);
 	defaults->save();
-	return 0;
 }
 
 void ShiftInterlaceMain::save_data(KeyFrame *keyframe)

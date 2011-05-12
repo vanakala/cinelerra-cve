@@ -107,26 +107,16 @@ public:
 	DenoiseVideo(PluginServer *server);
 	~DenoiseVideo();
 
+	PLUGIN_CLASS_MEMBERS(DenoiseVideoConfig, DenoiseVideoThread);
+
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	int load_configuration();
-	int set_string();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void raise_window();
 	void update_gui();
 
 	float *accumulation;
-	DenoiseVideoThread *thread;
-	DenoiseVideoConfig config;
-	BC_Hash *defaults;
 };
-
-
-
 #endif

@@ -49,12 +49,12 @@ public:
 	int is_realtime();
 	int is_multichannel();
 	int get_parameters();
-	int start_loop();
+	void start_loop();
 	int process_loop(double **buffer, int &write_length);
-	int stop_loop();
+	void stop_loop();
 
-	int load_defaults();  
-	int save_defaults();  
+	void load_defaults();
+	void save_defaults();
 
 	BC_Hash *defaults;
 	MainProgressBar *progress;

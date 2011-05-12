@@ -304,21 +304,17 @@ public:
 	TitleMain(PluginServer *server);
 	~TitleMain();
 
+	PLUGIN_CLASS_MEMBERS(TitleConfig, TitleThread);
+
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	int is_synthesis();
-	const char* plugin_title();
-	int show_gui();
-	void raise_window();
 	void update_gui();
-	int set_string();
-	int load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
-	VFrame* new_picon();
+	void load_defaults();
+	void save_defaults();
 
 	void build_fonts();
 	void draw_glyphs();
@@ -338,16 +334,13 @@ public:
 
 	static const char* motion_to_text(int motion);
 	static int text_to_motion(const char *text);
-// a thread for the GUI
-	TitleThread *thread;
-// Current configuration
-	TitleConfig config;
+
 // Size of window
 	int window_w, window_h;
 
 	static ArrayList<FontEntry*> *fonts;
 
-	BC_Hash *defaults;
+//	BC_Hash *defaults;
 	ArrayList<TitleGlyph*> glyphs;
 	Mutex glyph_lock;
 

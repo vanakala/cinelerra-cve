@@ -44,13 +44,11 @@ PluginClient::~PluginClient()
 {
 }
 
-int PluginClient::reset()
+void PluginClient::reset()
 {
 	interactive = 0;
 	show_initially = 0;
 	wr = rd = 0;
-	master_gui_on = 0;
-	client_gui_on = 0;
 	realtime_priority = 0;
 	gui_string[0] = 0;
 	total_in_buffers = 0;
@@ -68,9 +66,6 @@ void PluginClient::plugin_init_realtime(int realtime_priority,
 	int total_in_buffers,
 	int buffer_size)
 {
-// Get parameters for all
-	master_gui_on = get_gui_status();
-
 // get parameters depending on video or audio
 	init_realtime_parameters();
 
@@ -83,7 +78,7 @@ void PluginClient::plugin_init_realtime(int realtime_priority,
 	this->out_buffer_size = this->in_buffer_size = buffer_size;
 }
 
-int PluginClient::plugin_start_loop(posnum start,
+void PluginClient::plugin_start_loop(posnum start,
 	posnum end,
 	int buffer_size, 
 	int total_buffers)
@@ -95,7 +90,6 @@ int PluginClient::plugin_start_loop(posnum start,
 	this->in_buffer_size = this->out_buffer_size = buffer_size;
 	this->total_in_buffers = this->total_out_buffers = total_buffers;
 	start_loop();
-	return 0;
 }
 
 int PluginClient::plugin_process_loop()
@@ -103,9 +97,9 @@ int PluginClient::plugin_process_loop()
 	return process_loop();
 }
 
-int PluginClient::plugin_stop_loop()
+void PluginClient::plugin_stop_loop()
 {
-	return stop_loop();
+	stop_loop();
 }
 
 MainProgressBar* PluginClient::start_progress(char *string, int64_t length)
@@ -113,12 +107,9 @@ MainProgressBar* PluginClient::start_progress(char *string, int64_t length)
 	return server->start_progress(string, length);
 }
 
-
-
 int PluginClient::plugin_get_parameters()
 {
-	int result = get_parameters();
-	return result;
+	return get_parameters();
 }
 
 // ========================= main loop
@@ -163,24 +154,11 @@ int PluginClient::get_gui_status()
 	return server->get_gui_status();
 }
 
-int PluginClient::start_plugin()
-{
-	errorbox(_("No processing defined for this plugin."));
-	return 0;
-}
-
 // close event from client side
 void PluginClient::client_side_close()
 {
 // Last command executed
 	server->client_side_close();
-}
-
-int PluginClient::stop_gui_client()
-{
-	if(!client_gui_on) return 0;
-	client_gui_on = 0;
-	return 0;
 }
 
 int PluginClient::get_project_samplerate()
@@ -193,7 +171,6 @@ double PluginClient::get_project_framerate()
 	return server->get_project_framerate();
 }
 
-
 void PluginClient::update_display_title()
 {
 	server->generate_display_title(gui_string);
@@ -205,25 +182,21 @@ char* PluginClient::get_gui_string()
 	return gui_string;
 }
 
-
 char* PluginClient::get_path()
 {
 	return server->path;
 }
 
-int PluginClient::set_string_client(const char *string)
+void PluginClient::set_string_client(const char *string)
 {
 	strcpy(gui_string, string);
 	set_string();
-	return 0;
 }
-
 
 int PluginClient::get_interpolation_type()
 {
 	return server->get_interpolation_type();
 }
-
 
 float PluginClient::get_red()
 {
@@ -258,8 +231,6 @@ float PluginClient::get_blue()
 		return 0;
 }
 
-
-
 posnum PluginClient::get_source_position()
 {
 	return source_position;
@@ -279,7 +250,6 @@ int PluginClient::get_direction()
 {
 	return direction;
 }
-
 
 posnum PluginClient::local_to_edl(posnum position)
 {
@@ -316,24 +286,14 @@ const char* PluginClient::get_defaultdir()
 	return BCASTDIR;
 }
 
-
-int PluginClient::send_hide_gui()
-{
-// Stop the GUI server and delete GUI messages
-	client_gui_on = 0;
-	return 0;
-}
-
-int PluginClient::send_configure_change()
+void PluginClient::send_configure_change()
 {
 	KeyFrame* keyframe = server->get_keyframe();
 	save_data(keyframe);
 	if(server->mwindow)
 		server->mwindow->undo->update_undo("tweek", LOAD_AUTOMATION, this);
 	server->sync_parameters();
-	return 0;
 }
-
 
 KeyFrame* PluginClient::get_prev_keyframe(posnum position, int is_local)
 {
@@ -356,7 +316,6 @@ void PluginClient::get_projector(float *x, float *y, float *z, framenum position
 {
 	server->get_projector(x, y, z, position);
 }
-
 
 EDLSession* PluginClient::get_edlsession()
 {

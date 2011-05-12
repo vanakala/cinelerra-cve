@@ -34,14 +34,14 @@ public:
 	DissolveMain(PluginServer *server);
 	~DissolveMain();
 
+	PLUGIN_CLASS_MEMBERS(int, int);
+
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int handle_opengl();
 	int uses_gui();
 	int is_transition();
 	int is_video();
-	const char* plugin_title();
-	VFrame* new_picon();
 	OverlayFrame *overlayer;
 	float fade;
 };

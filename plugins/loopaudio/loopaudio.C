@@ -72,8 +72,8 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(LoopAudioConfig, LoopAudioThread)
 
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -281,7 +281,7 @@ int LoopAudio::load_configuration()
 	return old_samples != config.samples;
 }
 
-int LoopAudio::load_defaults()
+void LoopAudio::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -292,14 +292,12 @@ int LoopAudio::load_defaults()
 	defaults->load();
 
 	config.samples = defaults->get("SAMPLES", config.samples);
-	return 0;
 }
 
-int LoopAudio::save_defaults()
+void LoopAudio::save_defaults()
 {
 	defaults->update("SAMPLES", config.samples);
 	defaults->save();
-	return 0;
 }
 
 void LoopAudio::save_data(KeyFrame *keyframe)

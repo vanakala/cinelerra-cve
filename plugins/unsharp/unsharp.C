@@ -111,7 +111,7 @@ void UnsharpMain::update_gui()
 }
 
 
-int UnsharpMain::load_defaults()
+void UnsharpMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -124,17 +124,15 @@ int UnsharpMain::load_defaults()
 	config.radius = defaults->get("RADIUS", config.radius);
 	config.amount = defaults->get("AMOUNT", config.amount);
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	return 0;
 }
 
 
-int UnsharpMain::save_defaults()
+void UnsharpMain::save_defaults()
 {
 	defaults->update("RADIUS", config.radius);
 	defaults->update("AMOUNT", config.amount);
 	defaults->update("THRESHOLD", config.threshold);
 	defaults->save();
-	return 0;
 }
 
 

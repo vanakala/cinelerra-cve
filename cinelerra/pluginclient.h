@@ -24,10 +24,7 @@
 
 // Base class inherited by all the different types of plugins.
 
-#define BCASTDIR "~/.bcast/"
-
 class PluginClient;
-
 
 #include "arraylist.h"
 #include "autos.h"
@@ -39,9 +36,9 @@ class PluginClient;
 #include "maxbuffers.h"
 #include "plugincommands.h"
 #include "pluginserver.inc"
+#include "preferences.inc"
 #include "theme.inc"
 #include "vframe.h"
-
 
 extern "C"
 {
@@ -57,8 +54,6 @@ public:
 };
 
 
-
-
 // Convenience functions
 
 #define REGISTER_PLUGIN(class_title) \
@@ -67,13 +62,11 @@ PluginClient* new_plugin(PluginServer *server) \
 	return new class_title(server); \
 }
 
-
 #define WINDOW_CLOSE_EVENT(window_class) \
 void window_class::close_event() \
 { \
 	set_done(1); \
 }
-
 
 #define PLUGIN_THREAD_HEADER(plugin_class, thread_class, window_class) \
 class thread_class : public Thread \
@@ -85,7 +78,6 @@ public: \
 	window_class *window; \
 	plugin_class *plugin; \
 };
-
 
 #define PLUGIN_THREAD_OBJECT(plugin_class, thread_class, window_class) \
 thread_class::thread_class(plugin_class *plugin) \
@@ -115,15 +107,12 @@ void thread_class::run() \
 	plugin->thread = 0; \
 }
 
-
-
-
 #define PLUGIN_CLASS_MEMBERS(config_name, thread_name) \
 	int load_configuration(); \
 	VFrame* new_picon(); \
 	const char* plugin_title(); \
-	int show_gui(); \
-	int set_string(); \
+	void show_gui(); \
+	void set_string(); \
 	void raise_window(); \
 	BC_Hash *defaults; \
 	config_name config; \
@@ -147,16 +136,12 @@ void thread_class::run() \
 	if(defaults) save_defaults(); \
 	if(defaults) delete defaults;
 
-
-
-
 #define SHOW_GUI_MACRO(plugin_class, thread_class) \
-int plugin_class::show_gui() \
+void plugin_class::show_gui() \
 { \
 	load_configuration(); \
 	thread_class *new_thread = new thread_class(this); \
 	new_thread->start(); \
-	return 0; \
 }
 
 #define RAISE_WINDOW_MACRO(plugin_class) \
@@ -170,13 +155,12 @@ void plugin_class::raise_window() \
 }
 
 #define SET_STRING_MACRO(plugin_class) \
-int plugin_class::set_string() \
+void plugin_class::set_string() \
 { \
 	if(thread) \
 	{ \
 		thread->window->set_title(gui_string); \
 	} \
-	return 0; \
 }
 
 #define NEW_PICON_MACRO(plugin_class) \
@@ -219,10 +203,6 @@ int plugin_class::load_configuration() \
 }
 
 
-
-
-
-
 class PluginClient
 {
 public:
@@ -246,11 +226,6 @@ public:
 // Get theme being used by Cinelerra currently.  Used by all plugins.
 	Theme* get_theme();
 
-
-
-
-
-
 // Non realtime signal processors define these.
 // Give the samplerate of the output for a non realtime plugin.
 // For realtime plugins give the requested samplerate.
@@ -259,24 +234,23 @@ public:
 // For realtime plugins give the requested framerate.
 	virtual double get_framerate();
 	virtual int delete_nonrealtime_parameters() { return 0; };
-	virtual int start_plugin();         // run a non realtime plugin
+
 // get information from user before non realtime processing
 	virtual int get_parameters() { return 0; };
 
 	virtual int get_in_buffers(int recommended_size);  // return desired size for input buffers
 	virtual int get_out_buffers(int recommended_size);     // return desired size for output buffers
 
-	virtual int start_loop() { return 0; };
+	virtual void start_loop() {};
 	virtual int process_loop() { return 0; };
-	virtual int stop_loop() { return 0; };
-
+	virtual void stop_loop() {};
 
 // Realtime commands for signal processors.
 // These must be defined by the plugin itself.
 // Set the string identifying the plugin to modules and patches.
-	virtual int set_string() { return 0; };
+	virtual void set_string() {};
 // cause the plugin to show the gui
-	virtual int show_gui() { return 0; };
+	virtual void show_gui() {};
 // cause the plugin to hide the gui
 	void client_side_close();
 	void update_display_title();
@@ -322,15 +296,12 @@ public:
 // When this plugin is adjusted, propogate parameters back to EDL and virtual
 // console.  This gets a keyframe from the EDL, with the position set to the
 // EDL tracking position.
-	int send_configure_change();
-
+	void send_configure_change();
 
 // Called from process_buffer
 // Returns 1 if a GUI is open so OpenGL routines can determine if
 // they can run.
 	int gui_open();
-
-
 
 // Length of source.  For effects it's the plugin length.  For transitions
 // it's the transition length.  Relative to the requested rate.
@@ -359,7 +330,6 @@ public:
 
 // Get the EDL Session.  May return 0 if the server has no edl.
 	EDLSession* get_edlsession();
-
 
 // Get the direction of the most recent process_buffer
 	int get_direction();
@@ -392,16 +362,17 @@ public:
 
 // All plugins define these.
 // load default settings for the plugin
-	virtual int load_defaults() { return 0; };
+	virtual void load_defaults() {};
 // save the current settings as defaults
-	virtual int save_defaults() { return 0; };
+	virtual void save_defaults() {};
+	virtual int load_configuration() { return 0; }
 
 // Non realtime operations for signal processors.
-	virtual int plugin_start_loop(posnum start,
+	virtual void plugin_start_loop(posnum start,
 		posnum end,
 		int buffer_size, 
 		int total_buffers);
-	int plugin_stop_loop();
+	void plugin_stop_loop();
 	int plugin_process_loop();
 	MainProgressBar* start_progress(char *string, int64_t length);
 // get samplerate of EDL
@@ -417,26 +388,20 @@ public:
 	void set_interactive();
 
 // Realtime operations.
-	int reset();
+	void reset();
 	virtual int plugin_command_derived(int plugin_command) {}; // Extension of plugin_run for derived plugins
 	int plugin_get_range();
 	void plugin_init_realtime(int realtime_priority, 
 		int total_in_buffers,
 		int buffer_size);
 
-
-
 // create pointers to buffers of the plugin's type before realtime rendering
 	virtual int delete_buffer_ptrs() { return 0; };
 
-
-
-
 // communication convenience routines for the base class
-	int stop_gui_client();
 	int save_data_client();
 	int load_data_client();
-	int set_string_client(const char *string);  // set the string identifying the plugin
+	void set_string_client(const char *string);  // set the string identifying the plugin
 	int send_cancelled();        // non realtime plugin sends when cancelled
 
 // ================================= Buffers ===============================
@@ -453,8 +418,6 @@ public:
 
 // ================================== Messages ===========================
 	char gui_string[BCTEXTLEN];          // string identifying module and plugin
-	int master_gui_on;              // Status of the master gui plugin
-	int client_gui_on;              // Status of this client's gui
 
 	int show_initially;             // set to show a realtime plugin initially
 // range in project for processing
@@ -489,7 +452,6 @@ public:
 // Total number of processors available - 1
 	int smp;
 	PluginServer *server;
-
 };
 
 #endif

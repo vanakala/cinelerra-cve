@@ -199,7 +199,7 @@ VFrame* BandSlideMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int BandSlideMain::load_defaults()
+void BandSlideMain::load_defaults()
 {
 	char directory[BCTEXTLEN];
 // set the default directory
@@ -211,15 +211,13 @@ int BandSlideMain::load_defaults()
 
 	bands = defaults->get("BANDS", bands);
 	direction = defaults->get("DIRECTION", direction);
-	return 0;
 }
 
-int BandSlideMain::save_defaults()
+void BandSlideMain::save_defaults()
 {
 	defaults->update("BANDS", bands);
 	defaults->update("DIRECTION", direction);
 	defaults->save();
-	return 0;
 }
 
 void BandSlideMain::save_data(KeyFrame *keyframe)
@@ -251,9 +249,10 @@ void BandSlideMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void BandSlideMain::load_configuration()
+int BandSlideMain::load_configuration()
 {
 	read_data(get_prev_keyframe(get_source_position()));
+	return 0;
 }
 
 

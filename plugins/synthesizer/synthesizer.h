@@ -488,18 +488,14 @@ public:
 	Synth(PluginServer *server);
 	~Synth();
 
+	PLUGIN_CLASS_MEMBERS(SynthConfig, SynthThread);
+
 	int is_realtime();
 	int is_synthesis();
-	int load_configuration();
-	int load_defaults();
-	VFrame* new_picon();
-	const char* plugin_title();
+	void load_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int save_defaults();
-	int show_gui();
-	void raise_window();
-	int set_string();
+	void save_defaults();
 	int process_realtime(int size, double *input_ptr, double *output_ptr);
 
 	void add_oscillator();
@@ -526,9 +522,6 @@ public:
 
 	double *dsp_buffer;
 	int need_reconfigure;
-	BC_Hash *defaults;
-	SynthThread *thread;
-	SynthConfig config;
 	int w, h;
 	DB db;
 	int waveform_length;           // length of loop buffer

@@ -482,7 +482,7 @@ void GammaMain::render_gui(void *data)
 	}
 }
 
-int GammaMain::load_defaults()
+void GammaMain::load_defaults()
 {
 	char directory[1024];
 // set the default directory
@@ -496,17 +496,15 @@ int GammaMain::load_defaults()
 	config.gamma = defaults->get("GAMMA", config.gamma);
 	config.automatic = defaults->get("AUTOMATIC", config.automatic);
 	config.plot = defaults->get("PLOT", config.plot);
-	return 0;
 }
 
-int GammaMain::save_defaults()
+void GammaMain::save_defaults()
 {
 	defaults->update("MAX", config.max);
 	defaults->update("GAMMA", config.gamma);
 	defaults->update("AUTOMATIC", config.automatic);
 	defaults->update("PLOT", config.plot);
 	defaults->save();
-	return 0;
 }
 
 void GammaMain::save_data(KeyFrame *keyframe)

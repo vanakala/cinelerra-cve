@@ -40,11 +40,11 @@ public:
 	int is_realtime();
 	int is_multichannel();
 	int get_parameters(); 
-	int start_loop();
-	int stop_loop();
+	void start_loop();
+	void stop_loop();
 	int process_loop(double **plugin_buffer, int &write_length);
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 
 	BC_Hash *defaults;
 

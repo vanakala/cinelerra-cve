@@ -76,7 +76,7 @@ void RGB601Main::update_gui()
 	}
 }
 
-int RGB601Main::load_defaults()
+void RGB601Main::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -87,23 +87,22 @@ int RGB601Main::load_defaults()
 	defaults->load();
 
 	config.direction = defaults->get("DIRECTION", config.direction);
-	return 0;
 }
 
-int RGB601Main::save_defaults()
+void RGB601Main::save_defaults()
 {
 	defaults->update("DIRECTION", config.direction);
 	defaults->save();
-	return 0;
 }
 
-void RGB601Main::load_configuration()
+int RGB601Main::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 
 	prev_keyframe = get_prev_keyframe(get_source_position());
 // Must also switch between interpolation between keyframes and using first keyframe
 	read_data(prev_keyframe);
+	return 0;
 }
 
 

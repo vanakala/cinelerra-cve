@@ -676,10 +676,10 @@ void PluginServer::start_loop(ptstime start,
 	return;
 }
 
-int PluginServer::stop_loop()
+void PluginServer::stop_loop()
 {
-	if(!plugin_open) return 0;
-	return client->plugin_stop_loop();
+	if(plugin_open)
+		client->plugin_stop_loop();
 }
 
 void PluginServer::read_frame(VFrame *buffer, 

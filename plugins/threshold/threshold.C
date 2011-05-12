@@ -176,7 +176,7 @@ int ThresholdMain::process_buffer(VFrame *frame,
 	return 0;
 }
 
-int ThresholdMain::load_defaults()
+void ThresholdMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sthreshold.rc", BCASTDIR);
@@ -189,10 +189,9 @@ int ThresholdMain::load_defaults()
 	config.mid_color.load_default(defaults,  "MID_COLOR");
 	config.high_color.load_default(defaults, "HIGH_COLOR");
 	config.boundaries();
-	return 0;
 }
 
-int ThresholdMain::save_defaults()
+void ThresholdMain::save_defaults()
 {
 	defaults->update("MIN", config.min);
 	defaults->update("MAX", config.max);
@@ -200,7 +199,6 @@ int ThresholdMain::save_defaults()
 	config.low_color.save_defaults(defaults,  "LOW_COLOR");
 	config.mid_color.save_defaults(defaults,  "MID_COLOR");
 	config.high_color.save_defaults(defaults, "HIGH_COLOR");
-	defaults->save();
 }
 
 void ThresholdMain::save_data(KeyFrame *keyframe)

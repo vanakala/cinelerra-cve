@@ -689,7 +689,7 @@ void TimeAvgMain::transfer_accum(VFrame *frame)
 }
 
 
-int TimeAvgMain::load_defaults()
+void TimeAvgMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -703,17 +703,15 @@ int TimeAvgMain::load_defaults()
 	config.mode = defaults->get("MODE", config.mode);
 	config.paranoid = defaults->get("PARANOID", config.paranoid);
 	config.nosubtract = defaults->get("NOSUBTRACT", config.nosubtract);
-	return 0;
 }
 
-int TimeAvgMain::save_defaults()
+void TimeAvgMain::save_defaults()
 {
 	defaults->update("FRAMES", config.frames);
 	defaults->update("MODE", config.mode);
 	defaults->update("PARANOID", config.paranoid);
 	defaults->update("NOSUBTRACT", config.nosubtract);
 	defaults->save();
-	return 0;
 }
 
 int TimeAvgMain::load_configuration()

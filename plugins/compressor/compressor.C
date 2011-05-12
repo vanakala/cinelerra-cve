@@ -172,7 +172,7 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int CompressorEffect::load_defaults()
+void CompressorEffect::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%scompression.rc", BCASTDIR);
@@ -195,10 +195,9 @@ int CompressorEffect::load_defaults()
 		sprintf(string, "Y_%d", i);
 		config.levels.values[i].y = defaults->get(string, (double)0);
 	}
-	return 0;
 }
 
-int CompressorEffect::save_defaults()
+void CompressorEffect::save_defaults()
 {
 	char string[BCTEXTLEN];
 
@@ -219,8 +218,6 @@ int CompressorEffect::save_defaults()
 	}
 
 	defaults->save();
-
-	return 0;
 }
 
 

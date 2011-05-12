@@ -92,31 +92,19 @@ public:
 	DotMain(PluginServer *server);
 	~DotMain();
 
+	PLUGIN_CLASS_MEMBERS(DotConfig, DotThread);
+
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	const char* plugin_title();
-	int show_gui();
-	void raise_window();
-	int set_string();
-	void load_configuration();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
 
-	int load_defaults();
-	int save_defaults();
-	VFrame* new_picon();
 	void make_pattern();
 	void init_sampxy_table();
 	void reconfigure();
 
-// a thread for the GUI
-	DotThread *thread;
 	DotServer *dot_server;
 	DotClient *dot_client;
-	DotConfig config;
 
-	BC_Hash *defaults;
 	VFrame *input_ptr, *output_ptr;
 	int dots_width;
 	int dots_height;

@@ -126,13 +126,13 @@ int PluginAClient::process_buffer(int size,
 }
 
 
-int PluginAClient::plugin_start_loop(posnum start,
+void PluginAClient::plugin_start_loop(posnum start,
 	posnum end,
 	int buffer_size, 
 	int total_buffers)
 {
 	sample_rate = get_project_samplerate();
-	return PluginClient::plugin_start_loop(start, 
+	PluginClient::plugin_start_loop(start, 
 		end, 
 		buffer_size, 
 		total_buffers);

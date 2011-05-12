@@ -669,7 +669,7 @@ void GradientMain::update_gui()
 }
 
 
-int GradientMain::load_defaults()
+void GradientMain::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -694,11 +694,10 @@ int GradientMain::load_defaults()
 	config.rate = defaults->get("RATE", config.rate);
 	config.center_x = defaults->get("CENTER_X", config.center_x);
 	config.center_y = defaults->get("CENTER_Y", config.center_y);
-	return 0;
 }
 
 
-int GradientMain::save_defaults()
+void GradientMain::save_defaults()
 {
 	defaults->update("ANGLE", config.angle);
 	defaults->update("IN_RADIUS", config.in_radius);
@@ -716,7 +715,6 @@ int GradientMain::save_defaults()
 	defaults->update("CENTER_X", config.center_x);
 	defaults->update("CENTER_Y", config.center_y);
 	defaults->save();
-	return 0;
 }
 
 

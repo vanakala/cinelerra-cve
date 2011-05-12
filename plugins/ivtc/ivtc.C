@@ -76,7 +76,7 @@ const char* IVTCMain::plugin_title() { return N_("Inverse Telecine"); }
 int IVTCMain::is_realtime() { return 1; }
 
 
-int IVTCMain::load_defaults()
+void IVTCMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -91,10 +91,9 @@ int IVTCMain::load_defaults()
 	config.automatic = defaults->get("AUTOMATIC", config.automatic);
 	config.auto_threshold = defaults->get("AUTO_THRESHOLD", config.auto_threshold);
 	config.pattern = defaults->get("PATTERN", config.pattern);
-	return 0;
 }
 
-int IVTCMain::save_defaults()
+void IVTCMain::save_defaults()
 {
 	defaults->update("FRAME_OFFSET", config.frame_offset);
 	defaults->update("FIRST_FIELD", config.first_field);
@@ -102,7 +101,6 @@ int IVTCMain::save_defaults()
 	defaults->update("AUTO_THRESHOLD", config.auto_threshold);
 	defaults->update("PATTERN", config.pattern);
 	defaults->save();
-	return 0;
 }
 
 #include "picon_png.h"

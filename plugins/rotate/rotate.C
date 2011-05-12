@@ -178,27 +178,29 @@ public:
 	RotateEffect(PluginServer *server);
 	~RotateEffect();
 
+	PLUGIN_CLASS_MEMBERS(RotateConfig, RotateThread);
+
 	int process_buffer(VFrame *frame,
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	void raise_window();
+//	const char* plugin_title();
+//	VFrame* new_picon();
+//	int show_gui();
+//	void raise_window();
 	void update_gui();
-	int set_string();
-	int load_configuration();
-	int load_defaults();
-	int save_defaults();
+//	int set_string();
+//	int load_configuration();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	int handle_opengl();
 
-	RotateConfig config;
+//	RotateConfig config;
 	AffineEngine *engine;
-	RotateThread *thread;
-	BC_Hash *defaults;
+//	RotateThread *thread;
+//	BC_Hash *defaults;
 	int need_reconfigure;
 };
 
@@ -543,7 +545,7 @@ LOAD_CONFIGURATION_MACRO(RotateEffect, RotateConfig)
 
 
 
-int RotateEffect::load_defaults()
+void RotateEffect::load_defaults()
 {
 	char directory[1024], string[1024];
 // set the default directory
@@ -557,17 +559,15 @@ int RotateEffect::load_defaults()
 	config.pivot_x = defaults->get("PIVOT_X", (float)config.pivot_x);
 	config.pivot_y = defaults->get("PIVOT_Y", (float)config.pivot_y);
 	config.draw_pivot = defaults->get("DRAW_PIVOT", (int)config.draw_pivot);
-	return 0;
 }
 
-int RotateEffect::save_defaults()
+void RotateEffect::save_defaults()
 {
 	defaults->update("ANGLE", (float)config.angle);
 	defaults->update("PIVOT_X", (float)config.pivot_x);
 	defaults->update("PIVOT_Y", (float)config.pivot_y);
 	defaults->update("DRAW_PIVOT", (int)config.draw_pivot);
 	defaults->save();
-	return 0;
 }
 
 void RotateEffect::save_data(KeyFrame *keyframe)

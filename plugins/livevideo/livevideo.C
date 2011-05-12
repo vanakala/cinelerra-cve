@@ -131,8 +131,8 @@ public:
 	int is_realtime();
 	int is_multichannel();
 	int is_synthesis();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -507,7 +507,7 @@ SET_STRING_MACRO(LiveVideo);
 
 LOAD_CONFIGURATION_MACRO(LiveVideo, LiveVideoConfig)
 
-int LiveVideo::load_defaults()
+void LiveVideo::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -523,16 +523,14 @@ int LiveVideo::load_defaults()
 	config.channel = defaults->get("CHANNEL", 0);
 	w = defaults->get("W", w);
 	h = defaults->get("H", h);
-	return 0;
 }
 
-int LiveVideo::save_defaults()
+void LiveVideo::save_defaults()
 {
 	defaults->update("CHANNEL", config.channel);
 	defaults->update("W", w);
 	defaults->update("H", h);
 	defaults->save();
-	return 0;
 }
 
 void LiveVideo::save_data(KeyFrame *keyframe)

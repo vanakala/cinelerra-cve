@@ -92,7 +92,7 @@ int Despike::process_realtime(int size, double *input_ptr, double *output_ptr)
 }
 
 
-int Despike::load_defaults()
+void Despike::load_defaults()
 {
 	char directory[1024];
 
@@ -107,16 +107,13 @@ int Despike::load_defaults()
 
 	config.level = defaults->get("LEVEL", (double)0);
 	config.slope = defaults->get("SLOPE", (double)0);
-
-	return 0;
 }
 
-int Despike::save_defaults()
+void Despike::save_defaults()
 {
 	defaults->update("LEVEL", config.level);
 	defaults->update("SLOPE", config.slope);
 	defaults->save();
-	return 0;
 }
 
 

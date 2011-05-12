@@ -262,7 +262,7 @@ int _1080to540Main::process_realtime(VFrame *input, VFrame *output)
 }
 
 
-int _1080to540Main::load_defaults()
+void _1080to540Main::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%s1080to540.rc", BCASTDIR);
@@ -270,15 +270,13 @@ int _1080to540Main::load_defaults()
 	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
-	return 0;
 }
 
 
-int _1080to540Main::save_defaults()
+void _1080to540Main::save_defaults()
 {
 	defaults->update("FIRST_FIELD", config.first_field);
 	defaults->save();
-	return 0;
 }
 
 void _1080to540Main::save_data(KeyFrame *keyframe)

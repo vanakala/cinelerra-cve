@@ -125,8 +125,8 @@ public:
 		int sample_rate);
 	void collect_noise();
 
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void reset();
 	void update_gui();
 
@@ -304,25 +304,22 @@ void DenoiseFFTEffect::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int DenoiseFFTEffect::load_defaults()
+void DenoiseFFTEffect::load_defaults()
 {
 	defaults = new BC_Hash(BCASTDIR "denoisefft.rc");
 	defaults->load();
 
 	config.level = defaults->get("LEVEL", config.level);
 	config.samples = defaults->get("SAMPLES", config.samples);
-	return 0;
 }
 
-int DenoiseFFTEffect::save_defaults()
+void DenoiseFFTEffect::save_defaults()
 {
 	char string[BCTEXTLEN];
 
 	defaults->update("LEVEL", config.level);
 	defaults->update("SAMPLES", config.samples);
 	defaults->save();
-
-	return 0;
 }
 
 void DenoiseFFTEffect::update_gui()

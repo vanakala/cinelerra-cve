@@ -166,28 +166,21 @@ public:
 	ChromaKey(PluginServer *server);
 	~ChromaKey();
 
+	PLUGIN_CLASS_MEMBERS(ChromaKeyConfig, ChromaKeyThread);
+
 	int process_buffer(VFrame *frame,
 		framenum start_position,
 		double frame_rate);
 	int handle_opengl();
 	int is_realtime();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int load_configuration();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	int set_string();
-	void raise_window();
 	void update_gui();
 
-	ChromaKeyConfig config;
 	VFrame *input, *output;
 	ChromaKeyServer *engine;
-	ChromaKeyThread *thread;
-	BC_Hash *defaults;
 };
 
 #endif

@@ -105,32 +105,25 @@ public:
 	SwapMain(PluginServer *server);
 	~SwapMain();
 
+	PLUGIN_CLASS_MEMBERS(SwapConfig, SwapThread);
+
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	int is_synthesis();
-	const char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	void raise_window();
 	void update_gui();
-	int set_string();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
 	void reset();
-	void load_configuration();
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 
 // parameters needed for processor
 	const char* output_to_text(int value);
 	int text_to_output(const char *text);
 
 	VFrame *temp;
-	SwapConfig config;
-	SwapThread *thread;
-	BC_Hash *defaults;
 };
 
 #endif

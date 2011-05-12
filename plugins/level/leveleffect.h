@@ -91,8 +91,8 @@ public:
 
 
 
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void reset();
 	void update_gui();
 	void render_gui(void *data, int size);

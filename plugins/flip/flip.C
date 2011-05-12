@@ -273,7 +273,7 @@ void FlipMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-int FlipMain::load_defaults()
+void FlipMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
@@ -285,15 +285,13 @@ int FlipMain::load_defaults()
 
 	config.flip_horizontal = defaults->get("FLIP_HORIZONTAL", config.flip_horizontal);
 	config.flip_vertical = defaults->get("FLIP_VERTICAL", config.flip_vertical);
-	return 0;
 }
 
-int FlipMain::save_defaults()
+void FlipMain::save_defaults()
 {
 	defaults->update("FLIP_HORIZONTAL", config.flip_horizontal);
 	defaults->update("FLIP_VERTICAL", config.flip_vertical);
 	defaults->save();
-	return 0;
 }
 
 int FlipMain::handle_opengl()

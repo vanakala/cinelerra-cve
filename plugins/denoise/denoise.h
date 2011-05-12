@@ -110,8 +110,8 @@ public:
 	void save_data(KeyFrame *keyframe);
 	int process_realtime(int size, double *input_ptr, double *output_ptr);
 
-	int load_defaults();
-	int save_defaults();
+	void load_defaults();
+	void save_defaults();
 	void reset();
 	void update_gui();
 	void delete_dsp();
