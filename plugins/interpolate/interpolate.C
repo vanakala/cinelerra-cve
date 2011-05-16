@@ -274,7 +274,8 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 			next_effect_is("Color Balance"))
 			return 0;
 
-		return run_opengl();
+		run_opengl();
+		return 0;
 	}
 
 	if(get_output()->get_color_model() != BC_RGB_FLOAT &&
@@ -300,7 +301,7 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 // The color values are interpolated in the most basic way.
 // No adaptive algorithm is used.
 
-int InterpolatePixelsMain::handle_opengl()
+void InterpolatePixelsMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	get_output()->to_texture();
@@ -329,9 +330,7 @@ int InterpolatePixelsMain::handle_opengl()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
-
 #endif
-	return 0;
 }
 
 

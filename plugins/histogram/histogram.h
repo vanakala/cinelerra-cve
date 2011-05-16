@@ -48,7 +48,7 @@ public:
 	void update_gui();
 	void render_gui(void *data);
 	int calculate_use_opengl();
-	int handle_opengl();
+	void handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(HistogramConfig, HistogramThread)
 

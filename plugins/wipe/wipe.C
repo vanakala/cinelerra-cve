@@ -262,7 +262,7 @@ int WipeMain::load_configuration()
 
 
 
-int WipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
+void WipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	load_configuration();
 
@@ -295,5 +295,4 @@ int WipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			WIPE(uint16_t, 4)
 			break;
 	}
-	return 0;
 }

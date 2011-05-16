@@ -336,7 +336,7 @@ int SwapMain::load_configuration()
 
 
 
-int SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	load_configuration();
 
@@ -371,7 +371,6 @@ int SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		SWAP_CHANNELS(uint16_t, 0xffff, 4);
 		break;
 	}
-	return 0;
 }
 
 

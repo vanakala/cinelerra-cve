@@ -68,7 +68,7 @@ public:
 	~BlurMain();
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	void load_defaults();
 	void save_defaults();

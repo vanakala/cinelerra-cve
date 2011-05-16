@@ -92,7 +92,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
-	int handle_opengl();
+	void handle_opengl();
 };
 
 
@@ -347,7 +347,7 @@ int InvertVideoEffect::process_buffer(VFrame *frame,
 	return 0;
 }
 
-int InvertVideoEffect::handle_opengl()
+void InvertVideoEffect::handle_opengl()
 {
 #ifdef HAVE_GL
 	static const char *invert_frag = 

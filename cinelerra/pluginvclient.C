@@ -91,7 +91,7 @@ VFrame* PluginVClient::get_temp()
 {
 	return temp;
 }
-
+/* Pole
 // Run before every realtime buffer is to be rendered.
 int PluginVClient::get_render_ptrs()
 {
@@ -112,7 +112,8 @@ int PluginVClient::get_render_ptrs()
 	}
 	return 0;
 }
-
+	*/
+/* Pole
 // Run after the non realtime plugin is run.
 int PluginVClient::delete_nonrealtime_parameters()
 {
@@ -138,7 +139,8 @@ int PluginVClient::delete_nonrealtime_parameters()
 
 	return 0;
 }
-
+	*/
+/* Pole
 int PluginVClient::init_realtime_parameters()
 {
 	project_frame_rate = server->edl->session->frame_rate;
@@ -147,7 +149,8 @@ int PluginVClient::init_realtime_parameters()
 	aspect_h = server->edl->session->aspect_h;
 	return 0;
 }
-
+	*/
+/* Pole
 int PluginVClient::process_realtime(VFrame **input, 
 	VFrame **output)
 {
@@ -159,7 +162,7 @@ int PluginVClient::process_realtime(VFrame *input,
 {
 	return 0; 
 }
-
+	*/
 int PluginVClient::process_buffer(VFrame **frame,
 	framenum start_position,
 	double frame_rate)
@@ -179,7 +182,6 @@ int PluginVClient::process_buffer(VFrame *frame,
 	process_realtime(frame, frame);
 	return 0;
 }
-
 
 void PluginVClient::plugin_render_gui(void *data)
 {
@@ -240,15 +242,9 @@ int PluginVClient::plugin_process_loop(VFrame **buffers, int &write_length)
 }
 
 
-int PluginVClient::run_opengl()
+void PluginVClient::run_opengl()
 {
 	server->run_opengl(this);
-	return 0;
-}
-
-int PluginVClient::handle_opengl()
-{
-	return 0;
 }
 
 VFrame* PluginVClient::get_input(int channel)
@@ -270,8 +266,6 @@ int PluginVClient::prev_effect_is(const char *title)
 {
 	return !strcmp(title, output[0]->get_prev_effect());
 }
-
-
 
 int PluginVClient::read_frame(VFrame *buffer, 
 	int channel, 
@@ -304,7 +298,6 @@ int PluginVClient::read_frame(VFrame *buffer,
 		frame_rate,
 		use_opengl);
 }
-
 
 double PluginVClient::get_project_framerate()
 {

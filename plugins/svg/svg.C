@@ -238,7 +238,7 @@ void SvgMain::read_data(KeyFrame *keyframe)
 }
 
 
-int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	char filename_raw[1024];
 	int fh_raw;
@@ -253,7 +253,7 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	if (config.svg_file[0] == 0) {
 		output->copy_from(input);
-		return(0);
+		return;
 	}
 
 	strcpy(filename_raw, config.svg_file);
@@ -270,14 +270,14 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		printf(_("Running command %s\n"), command);
 		if(system(command) < 0) {
 			printf("Failed to execute command\n");
-			return 0;
+			return;
 		}
 		stat(filename_raw, &st_raw);
 		force_raw_render = 0;
 		fh_raw = open(filename_raw, O_RDWR); // in order for lockf to work it has to be open for writing
 		if (!fh_raw) {
 			printf(_("Export of %s to %s failed\n"), config.svg_file, filename_raw);
-			return 0;
+			return;
 		}
 	}
 
@@ -285,7 +285,7 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	// file exists, ... lock it, mmap it and check time_of_creation
 	if(lockf(fh_raw, F_LOCK, 0) < 0){    // Blocking call - will wait for inkscape to finish!
 		perror("SvgMain::process_realtime - lock");
-		return 0;
+		return;
 	}
 	fstat (fh_raw, &st_raw);
 	raw_buffer = (unsigned char *)mmap (NULL, st_raw.st_size, PROT_READ, MAP_SHARED, fh_raw, 0); 
@@ -297,7 +297,7 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		if(lockf(fh_raw, F_ULOCK, 0))
 			perror("SvgMain::process_realtime - unlock");
 		close(fh_raw);
-		return (0);
+		return;
 	}
 	if (raw_data->struct_version > 1) 
 	{
@@ -305,7 +305,7 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		if(lockf(fh_raw, F_ULOCK, 0))
 			perror("SvgMain::process_realtime - unlock");
 		close(fh_raw);
-		return (0);
+		return;
 	}
 	// Ok, we can now be sure we have valid RAWC file on our hands
 	if (need_reconfigure || config.last_load < raw_data->time_of_creation) {    // the file was updated or is new (then last_load is zero)
@@ -378,8 +378,6 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			1,
 			TRANSFER_NORMAL,
 			get_interpolation_type());
-
-	return(0);
 }
 
 

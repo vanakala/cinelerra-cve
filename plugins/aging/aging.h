@@ -121,7 +121,7 @@ public:
 	~AgingMain();
 
 	PLUGIN_CLASS_MEMBERS_NC(AgingConfig, AgingThread);
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 
 	AgingServer *aging_server;

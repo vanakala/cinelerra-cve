@@ -300,7 +300,7 @@ int IrisSquareMain::load_configuration()
 }
 
 
-int IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
+void IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	load_configuration();
 
@@ -333,5 +333,4 @@ int IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		IRISSQUARE(uint16_t, 4)
 		break;
 	}
-	return 0;
 }

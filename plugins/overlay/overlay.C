@@ -139,7 +139,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
-	int handle_opengl();
+	void handle_opengl();
 
 	OverlayFrame *overlayer;
 	VFrame *temp;
@@ -500,7 +500,7 @@ int Overlay::process_buffer(VFrame **frame,
 	return 0;
 }
 
-int Overlay::handle_opengl()
+void Overlay::handle_opengl()
 {
 #ifdef HAVE_GL
 	static const char *get_pixels_frag = 

@@ -131,7 +131,7 @@ int BrightnessMain::process_buffer(VFrame *frame,
 	return 0;
 }
 
-int BrightnessMain::handle_opengl()
+void BrightnessMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	static const char *brightness_yuvluma_frag = 

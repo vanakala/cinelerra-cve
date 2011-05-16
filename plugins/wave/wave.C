@@ -139,7 +139,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(WaveConfig, WaveThread);
 
-	int process_realtime(VFrame *input, VFrame *output);
+	void process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
 	void load_defaults();
 	void save_defaults();
@@ -425,7 +425,7 @@ void WaveEffect::read_data(KeyFrame *keyframe)
 }
 
 
-int WaveEffect::process_realtime(VFrame *input, VFrame *output)
+void WaveEffect::process_realtime(VFrame *input, VFrame *output)
 {
 	load_configuration();
 
@@ -456,7 +456,6 @@ int WaveEffect::process_realtime(VFrame *input, VFrame *output)
 
 		engine->process_packages();
 	}
-	return 0;
 }
 
 WavePackage::WavePackage()

@@ -171,7 +171,7 @@ public:
 	int process_buffer(VFrame *frame,
 		framenum start_position,
 		double frame_rate);
-	int handle_opengl();
+	void handle_opengl();
 	int is_realtime();
 	void load_defaults();
 	void save_defaults();

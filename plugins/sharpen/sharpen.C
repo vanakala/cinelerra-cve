@@ -109,7 +109,7 @@ int SharpenMain::is_realtime() { return 1; }
 
 
 
-int SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	int i, j, k;
 	output = output_ptr;
@@ -152,7 +152,6 @@ int SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		output_ptr->copy_from(input_ptr);
 	}
-	return 0;
 }
 
 void SharpenMain::update_gui()

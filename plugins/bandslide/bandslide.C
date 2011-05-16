@@ -358,7 +358,7 @@ int BandSlideMain::load_configuration()
 
 
 
-int BandSlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
+void BandSlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	load_configuration();
 
@@ -391,6 +391,4 @@ int BandSlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		BANDSLIDE(uint16_t, 4)
 		break;
 	}
-
-	return 0;
 }

@@ -661,7 +661,7 @@ void ShapeWipeMain::reset_pattern_image()
 	} \
 }
 
-int ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
+void ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	unsigned char *pattern_row;
 	int col_offset;
@@ -690,7 +690,7 @@ int ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	if (!pattern_image)
 	{
 		errormsg("Shape Wipe: cannot load shape %s", filename);
-		return 0;
+		return;
 	}
 
 	if (direction)
@@ -951,5 +951,4 @@ int ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			break;
 		}
 	}
-	return 0;
 }

@@ -340,7 +340,7 @@ int SlideMain::load_configuration()
 }
 
 
-int SlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
+void SlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	load_configuration();
 
@@ -372,6 +372,4 @@ int SlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		SLIDE(uint16_t, 4)
 		break;
 	}
-
-	return 0;
 }

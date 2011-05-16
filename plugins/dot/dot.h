@@ -95,7 +95,7 @@ public:
 	PLUGIN_CLASS_MEMBERS_NC(DotConfig, DotThread);
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 
 	void make_pattern();

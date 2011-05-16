@@ -515,7 +515,8 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 		{
 // Aggregate
 			if(next_effect_is("Histogram")) return 0;
-			return run_opengl();
+			run_opengl();
+			return 0;
 		}
 
 		for(int i = 0; i < total_engines; i++)
@@ -645,7 +646,7 @@ void ColorBalanceMain::get_aggregation(int *aggregate_interpolate,
 	}
 }
 
-int ColorBalanceMain::handle_opengl()
+void ColorBalanceMain::handle_opengl()
 {
 #ifdef HAVE_GL
 

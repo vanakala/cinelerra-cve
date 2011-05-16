@@ -109,7 +109,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(DenoiseVideoConfig, DenoiseVideoThread);
 
-	int process_realtime(VFrame *input, VFrame *output);
+	void process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
 	void load_defaults();
 	void save_defaults();

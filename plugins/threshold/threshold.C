@@ -165,7 +165,11 @@ int ThresholdMain::process_buffer(VFrame *frame,
 		get_framerate(),
 		use_opengl);
 
-	if(use_opengl) return run_opengl();
+	if(use_opengl)
+	{
+		run_opengl();
+		return 0;
+	}
 
 	send_render_gui(frame);
 
@@ -278,7 +282,7 @@ void ThresholdMain::calculate_histogram(VFrame *frame)
 	engine->process_packages(frame);
 }
 
-int ThresholdMain::handle_opengl()
+void ThresholdMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	static const char *rgb_shader = 

@@ -141,7 +141,7 @@ public:
 // Constructs odd or even rows from the average of the surrounding rows.
 	void average_rows(int offset, VFrame *frame);
 
-	int handle_opengl();
+	void handle_opengl();
 
 // Last frame requested
 	framenum last_frame;
@@ -617,7 +617,7 @@ void FrameField::update_gui()
 	}
 }
 
-int FrameField::handle_opengl()
+void FrameField::handle_opengl()
 {
 #ifdef HAVE_GL
 	static const char *field_frag = 

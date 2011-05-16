@@ -145,15 +145,9 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(WhirlConfig, WhirlThread);
 
-	int process_realtime(VFrame *input, VFrame *output);
+	void process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-//	const char* plugin_title();
-//	VFrame* new_picon();
-//	int show_gui();
-//	void raise_window();
 	void update_gui();
-//	int set_string();
-//	int load_configuration();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -162,9 +156,6 @@ public:
 	WhirlEngine *engine;
 	VFrame *temp_frame;
 	VFrame *input, *output;
-//	WhirlConfig config;
-//	BC_Hash *defaults;
-//	WhirlThread *thread;
 	int need_reconfigure;
 };
 
@@ -424,7 +415,7 @@ void WhirlEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-int WhirlEffect::process_realtime(VFrame *input, VFrame *output)
+void WhirlEffect::process_realtime(VFrame *input, VFrame *output)
 {
 	need_reconfigure |= load_configuration();
 	this->input = input;
@@ -449,7 +440,7 @@ int WhirlEffect::process_realtime(VFrame *input, VFrame *output)
 		}
 
 		if(!engine) engine = new WhirlEngine(this, PluginClient::smp + 1);
-		
+
 		engine->process_packages();
 	}
 }

@@ -88,7 +88,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(_1080to540Config, _1080to540Thread)
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input, VFrame *output);
+	void process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
 	int hide_gui();
 	void update_gui();

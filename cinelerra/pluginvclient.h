@@ -39,18 +39,19 @@ class PluginVClient : public PluginClient
 public:
 	PluginVClient(PluginServer *server);
 	virtual ~PluginVClient();
-
+/* Pole
 	int get_render_ptrs();
 	int init_realtime_parameters();
 	int delete_nonrealtime_parameters();
+	*/
 	int is_video();
 
 // Multichannel buffer process for backwards compatibility
-	virtual int process_realtime(VFrame **input, 
-		VFrame **output);
+	virtual void process_realtime(VFrame **input, 
+		VFrame **output) {};
 // Single channel buffer process for backwards compatibility and transitions
-	virtual int process_realtime(VFrame *input, 
-		VFrame *output);
+	virtual void process_realtime(VFrame *input, 
+		VFrame *output) {};
 
 // Process buffer using pull method.  By default this loads the input into *frame
 //     and calls process_realtime with input and output pointing to frame.
@@ -107,11 +108,11 @@ public:
 
 
 // User calls this to request an opengl routine to be run synchronously.
-	int run_opengl();
+	void run_opengl();
 
 // Called by Playback3D to run opengl commands synchronously.
 // Overridden by the user with the commands to run synchronously.
-	virtual int handle_opengl();
+	virtual void handle_opengl() {};
 
 // Used by the opengl handlers to get the 
 // arguments to process_buffer.

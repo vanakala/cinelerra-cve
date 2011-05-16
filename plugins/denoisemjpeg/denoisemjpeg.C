@@ -402,7 +402,7 @@ DenoiseMJPEG::~DenoiseMJPEG()
 	if(accumulation) delete [] accumulation;
 }
 
-int DenoiseMJPEG::process_realtime(VFrame *input, VFrame *output)
+void DenoiseMJPEG::process_realtime(VFrame *input, VFrame *output)
 {
 	load_configuration();
 

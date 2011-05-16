@@ -65,7 +65,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
 	void save_defaults();
-	int handle_opengl();
+	void handle_opengl();
 
 	BrightnessEngine *engine;
 	int redo_buffers;

@@ -108,7 +108,7 @@ public:
 	void load_defaults();
 	void save_defaults();
 	void render_gui(void *data);
-	int handle_opengl();
+	void handle_opengl();
 
 	GammaEngine *engine;
 	VFrame *frame;

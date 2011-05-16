@@ -101,7 +101,7 @@ public:
 	MotionBlurMain(PluginServer *server);
 	~MotionBlurMain();
 
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	void load_defaults();
 	void save_defaults();
@@ -315,7 +315,7 @@ void MotionBlurMain::delete_tables()
 	table_entries = 0;
 }
 
-int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	float xa,ya,za,xb,yb,zb,xd,yd,zd;
 	if (get_source_position() == 0)
@@ -431,7 +431,6 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		cmodel_components(input_ptr->get_color_model()) * 
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
-	return 0;
 }
 
 

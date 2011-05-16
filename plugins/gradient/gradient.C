@@ -584,7 +584,11 @@ int GradientMain::process_buffer(VFrame *frame,
 			start_position, 
 			frame_rate,
 			get_use_opengl());
-	if(get_use_opengl()) return run_opengl();
+	if(get_use_opengl())
+	{
+		run_opengl();
+		return 0;
+	}
 
 	int gradient_cmodel = input->get_color_model();
 	if(need_alpha && cmodel_components(gradient_cmodel) == 3)
@@ -784,7 +788,7 @@ void GradientMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-int GradientMain::handle_opengl()
+void GradientMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	const char *head_frag =
@@ -971,7 +975,6 @@ int GradientMain::handle_opengl()
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
-	
 #endif
 }
 

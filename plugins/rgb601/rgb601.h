@@ -60,7 +60,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
 	void save_defaults();
-	int handle_opengl();
+	void handle_opengl();
 
 	void create_table(VFrame *input_ptr);
 	void process(int *table, VFrame *input_ptr, VFrame *output_ptr);

@@ -135,10 +135,7 @@ void BurnMain::make_palette(int color_model)
 	}
 }
 
-
-
-
-int BurnMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void BurnMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	this->input_ptr = input_ptr;
 	this->output_ptr = output_ptr;
@@ -165,7 +162,6 @@ int BurnMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	burn_server->process_packages();
 
 	total++;
-	return 0;
 }
 
 

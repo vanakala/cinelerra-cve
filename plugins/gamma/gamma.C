@@ -404,7 +404,8 @@ int GammaMain::process_buffer(VFrame *frame,
 		if(next_effect_is("Color Balance"))
 			return 0;
 
-		return run_opengl();
+		run_opengl();
+		return 0;
 	}
 	else
 	if(config.automatic)
@@ -549,10 +550,9 @@ void GammaMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-int GammaMain::handle_opengl()
+void GammaMain::handle_opengl()
 {
 #ifdef HAVE_GL
-//printf("GammaMain::handle_opengl 1\n");
 
 	get_output()->to_texture();
 	get_output()->enable_opengl();

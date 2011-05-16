@@ -345,7 +345,7 @@ int RGB601Main::process_buffer(VFrame *frame,
 	return 0;
 }
 
-int RGB601Main::handle_opengl()
+void RGB601Main::handle_opengl()
 {
 #ifdef HAVE_GL
 	static const char *yuv_fwd_frag = 

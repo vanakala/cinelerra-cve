@@ -122,7 +122,7 @@ public:
 	DownSampleMain(PluginServer *server);
 	~DownSampleMain();
 
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	void load_defaults();
 	void save_defaults();
@@ -387,7 +387,7 @@ RAISE_WINDOW_MACRO(DownSampleMain)
 LOAD_CONFIGURATION_MACRO(DownSampleMain, DownSampleConfig)
 
 
-int DownSampleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void DownSampleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	this->input = input_ptr;
 	this->output = output_ptr;
@@ -404,8 +404,6 @@ int DownSampleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		get_project_smp() + 1,
 		get_project_smp() + 1);
 	engine->process_packages();
-
-	return 0;
 }
 
 

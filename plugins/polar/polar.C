@@ -132,23 +132,14 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(PolarConfig, PolarThread);
 
-	int process_realtime(VFrame *input, VFrame *output);
+	void process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-//	const char* plugin_title();
-//	VFrame* new_picon();
-//	int load_configuration();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-//	int show_gui();
-//	int set_string();
-//	void raise_window();
 	void update_gui();
 
-//	PolarConfig config;
-//	BC_Hash *defaults;
-//	PolarThread *thread;
 	PolarEngine *engine;
 	VFrame *temp_frame;
 	VFrame *input, *output;
@@ -380,7 +371,7 @@ void PolarEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-int PolarEffect::process_realtime(VFrame *input, VFrame *output)
+void PolarEffect::process_realtime(VFrame *input, VFrame *output)
 {
 	need_reconfigure |= load_configuration();
 
@@ -408,7 +399,6 @@ int PolarEffect::process_realtime(VFrame *input, VFrame *output)
 
 		engine->process_packages();
 	}
-	return 0;
 }
 
 

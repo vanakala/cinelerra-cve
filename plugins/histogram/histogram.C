@@ -574,7 +574,11 @@ int HistogramMain::process_buffer(VFrame *frame,
 		use_opengl);
 
 // Apply histogram in hardware
-	if(use_opengl) return run_opengl();
+	if(use_opengl)
+	{
+		run_opengl();
+		return 0;
+	}
 
 	if(!engine) engine = new HistogramEngine(this,
 		get_project_smp() + 1,
@@ -669,7 +673,7 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 	}
 }
 
-int HistogramMain::handle_opengl()
+void HistogramMain::handle_opengl()
 {
 #ifdef HAVE_GL
 // Functions to get pixel from either previous effect or texture

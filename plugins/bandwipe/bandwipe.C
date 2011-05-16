@@ -275,7 +275,7 @@ int BandWipeMain::load_configuration()
 
 
 
-int BandWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
+void BandWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	load_configuration();
 
@@ -308,6 +308,4 @@ int BandWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			BANDWIPE(uint16_t, 4)
 			break;
 	}
-
-	return 0;
 }

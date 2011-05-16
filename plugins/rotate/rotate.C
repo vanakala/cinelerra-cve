@@ -184,23 +184,14 @@ public:
 		framenum start_position,
 		double frame_rate);
 	int is_realtime();
-//	const char* plugin_title();
-//	VFrame* new_picon();
-//	int show_gui();
-//	void raise_window();
 	void update_gui();
-//	int set_string();
-//	int load_configuration();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int handle_opengl();
+	void handle_opengl();
 
-//	RotateConfig config;
 	AffineEngine *engine;
-//	RotateThread *thread;
-//	BC_Hash *defaults;
 	int need_reconfigure;
 };
 
@@ -643,7 +634,8 @@ int RotateEffect::process_buffer(VFrame *frame,
 			start_position, 
 			frame_rate,
 			get_use_opengl());
-		return run_opengl();
+		run_opengl();
+		return 0;
 	}
 
 	VFrame *temp_frame = PluginVClient::new_temp(get_input()->get_w(),
@@ -731,9 +723,7 @@ int RotateEffect::process_buffer(VFrame *frame,
 	return 0;
 }
 
-
-
-int RotateEffect::handle_opengl()
+void RotateEffect::handle_opengl()
 {
 #ifdef HAVE_GL
 	engine->set_opengl(1);

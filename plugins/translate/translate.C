@@ -204,7 +204,7 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 }
 
 
-int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	VFrame *input, *output;
 

@@ -804,7 +804,10 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 		get_project_smp() + 1);
 
 	if(use_opengl)
-		return run_opengl();
+	{
+		run_opengl();
+		return 0;
+	}
 
 	this->input = frame;
 	this->output = frame;
@@ -972,7 +975,7 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 }
 
 
-int PerspectiveMain::handle_opengl()
+void PerspectiveMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	engine->set_opengl(1);
@@ -990,6 +993,5 @@ int PerspectiveMain::handle_opengl()
 		config.y4,
 		config.forward);
 	engine->set_opengl(0);
-	return 0;
 #endif
 }

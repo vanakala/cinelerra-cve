@@ -191,7 +191,11 @@ int ScaleMain::process_buffer(VFrame *frame,
 	if(config.w == 1 && config.h == 1)
 		return 0;
 
-	if(get_use_opengl()) return run_opengl();
+	if(get_use_opengl())
+	{
+		run_opengl();
+		return 0;
+	}
 
 	VFrame *temp_frame = new_temp(frame->get_w(), 
 			frame->get_h(),
@@ -283,7 +287,7 @@ void ScaleMain::calculate_transfer(VFrame *frame,
 	}
 }
 
-int ScaleMain::handle_opengl()
+void ScaleMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	float in_x1, in_x2, in_y1, in_y2, out_x1, out_x2, out_y1, out_y2;

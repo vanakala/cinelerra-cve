@@ -1367,7 +1367,7 @@ void Playback3D::run_plugin_sync(Playback3DCommand *command)
 		window->lock_window("Playback3D::run_plugin_sync");
 		window->enable_opengl();
 
-		command->result = ((PluginVClient*)command->plugin_client)->handle_opengl();
+		((PluginVClient*)command->plugin_client)->handle_opengl();
 
 		window->unlock_window();
 	}

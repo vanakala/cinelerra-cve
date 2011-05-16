@@ -65,7 +65,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(SharpenConfig, SharpenThread);
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	void update_gui();
 	void save_data(KeyFrame *keyframe);

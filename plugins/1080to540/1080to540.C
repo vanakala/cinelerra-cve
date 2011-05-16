@@ -241,7 +241,7 @@ for(int i = 0; i < OUT_ROWS; i++) \
 
 }
 
-int _1080to540Main::process_realtime(VFrame *input, VFrame *output)
+void _1080to540Main::process_realtime(VFrame *input, VFrame *output)
 {
 	load_configuration();
 	if(!temp)
@@ -255,10 +255,8 @@ int _1080to540Main::process_realtime(VFrame *input, VFrame *output)
 
 	reduce_field(temp, input, config.first_field == 0 ? 0 : 1, 0);
 	reduce_field(temp, input, config.first_field == 0 ? 1 : 0, 1);
-	
-	output->copy_from(temp);
 
-	return 0;
+	output->copy_from(temp);
 }
 
 

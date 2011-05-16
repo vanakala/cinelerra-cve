@@ -180,7 +180,7 @@ void DelayVideo::reconfigure()
 	need_reconfigure = 0;
 }
 
-int DelayVideo::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void DelayVideo::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	this->input = input_ptr;
 	this->output = output_ptr;
@@ -199,7 +199,6 @@ int DelayVideo::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 
 	buffer[allocation - 1] = temp;
-	return 0;
 }
 
 int DelayVideo::is_realtime()

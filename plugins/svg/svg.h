@@ -61,7 +61,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(SvgConfig, SvgThread);
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	int is_synthesis();
 	void update_gui();

@@ -134,7 +134,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
-	int handle_opengl();
+	void handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(LinearBlurConfig, LinearBlurThread)
 
@@ -464,7 +464,11 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 		need_reconfigure = 0;
 	}
 
-	if(get_use_opengl()) return run_opengl();
+	if(get_use_opengl())
+	{
+		run_opengl();
+		return 0;
+	}
 
 	if(!engine) engine = new LinearBlurEngine(this,
 		get_project_smp() + 1,
@@ -604,7 +608,7 @@ static void draw_box(float x1, float y1, float x2, float y2)
 }
 #endif
 
-int LinearBlurMain::handle_opengl()
+void LinearBlurMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	get_output()->to_texture();

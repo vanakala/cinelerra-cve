@@ -222,7 +222,7 @@ void HoloMain::set_background()
 }
 
 
-int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	this->input_ptr = input_ptr;
 	this->output_ptr = output_ptr;
@@ -257,8 +257,6 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	total++;
 	if(total >= config.recycle * project_frame_rate)
 		total = 0;
-
-	return 0;
 }
 
 SHOW_GUI_MACRO(HoloMain, HoloThread);

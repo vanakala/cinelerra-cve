@@ -125,7 +125,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(OilConfig, OilThread);
 
-	int process_realtime(VFrame *input, VFrame *output);
+	void process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
 	void load_defaults();
 	void save_defaults();
@@ -345,7 +345,7 @@ void OilEffect::read_data(KeyFrame *keyframe)
 }
 
 
-int OilEffect::process_realtime(VFrame *input, VFrame *output)
+void OilEffect::process_realtime(VFrame *input, VFrame *output)
 {
 	need_reconfigure |= load_configuration();
 
@@ -375,7 +375,6 @@ int OilEffect::process_realtime(VFrame *input, VFrame *output)
 		}
 		engine->process_packages();
 	}
-	return 0;
 }
 
 

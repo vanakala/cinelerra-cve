@@ -127,7 +127,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
-	int handle_opengl();
+	void handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(RadialBlurConfig, RadialBlurThread)
 
@@ -365,7 +365,10 @@ int RadialBlurMain::process_buffer(VFrame *frame,
 		get_framerate(),
 		get_use_opengl());
 
-	if(get_use_opengl()) return run_opengl();
+	if(get_use_opengl()){
+		run_opengl();
+		return 0;
+	}
 
 	if(!engine) engine = new RadialBlurEngine(this,
 		get_project_smp() + 1,
@@ -491,7 +494,7 @@ void RadialBlurMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-int RadialBlurMain::handle_opengl()
+void RadialBlurMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	get_output()->to_texture();

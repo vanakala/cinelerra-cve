@@ -273,7 +273,11 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 				first_frame_position,
 				frame_rate,
 				get_use_opengl());
-		if(get_use_opengl()) return run_opengl();
+		if(get_use_opengl())
+		{
+			run_opengl();
+			return 0;
+		}
 		frame->copy_from(first_frame);
 	}
 	else
@@ -311,13 +315,17 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 				frame_rate,
 				get_use_opengl());
 		}
-		if(get_use_opengl()) return run_opengl();
+		if(get_use_opengl())
+		{
+			run_opengl();
+			return 0;
+		}
 		frame->copy_from(first_frame);
 	}
 	return 0;
 }
 
-int FreezeFrameMain::handle_opengl()
+void FreezeFrameMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	get_output()->enable_opengl();
@@ -327,5 +335,4 @@ int FreezeFrameMain::handle_opengl()
 	first_frame->draw_texture();
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
-	return 0;
 }

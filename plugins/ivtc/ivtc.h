@@ -59,7 +59,7 @@ public:
 	~IVTCMain();
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);

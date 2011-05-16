@@ -97,7 +97,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(ShiftInterlaceConfig, ShiftInterlaceThread);
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
@@ -421,7 +421,7 @@ void ShiftInterlaceMain::shift_row(VFrame *input_frame,
 	}
 }
 
-int ShiftInterlaceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void ShiftInterlaceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	load_configuration();
 
@@ -433,6 +433,4 @@ int ShiftInterlaceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		else
 			shift_row(input_ptr, output_ptr, config.odd_offset, i);
 	}
-
-	return 0;
 }

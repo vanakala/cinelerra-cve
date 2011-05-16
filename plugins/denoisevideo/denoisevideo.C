@@ -206,7 +206,7 @@ DenoiseVideo::~DenoiseVideo()
 	if(accumulation) delete [] accumulation;
 }
 
-int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
+void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 {
 	load_configuration();
 

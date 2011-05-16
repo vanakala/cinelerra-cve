@@ -34,7 +34,7 @@ public:
 	~FlashMain();
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int uses_gui();
 	int is_transition();
 	int is_video();

@@ -176,7 +176,7 @@ void DotMain::reconfigure()
 
 
 
-int DotMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void DotMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	this->input_ptr = input_ptr;
 	this->output_ptr = output_ptr;
@@ -184,8 +184,6 @@ int DotMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(need_reconfigure) reconfigure();
 
 	dot_server->process_packages();
-
-	return 0;
 }
 
 

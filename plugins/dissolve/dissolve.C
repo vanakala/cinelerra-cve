@@ -53,7 +53,7 @@ int DissolveMain::uses_gui() { return 0; }
 NEW_PICON_MACRO(DissolveMain)
 
 
-int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
+void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	fade = (float)PluginClient::get_source_position() / 
 			PluginClient::get_total_len();
@@ -62,7 +62,7 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	if(get_use_opengl())
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 // Use software
@@ -140,11 +140,9 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		fade,
 		TRANSFER_NORMAL,
 		NEAREST_NEIGHBOR);
-
-	return 0;
 }
 
-int DissolveMain::handle_opengl()
+void DissolveMain::handle_opengl()
 {
 #ifdef HAVE_GL
 
@@ -171,10 +169,7 @@ int DissolveMain::handle_opengl()
 	glColor4f(1, 1, 1, fade);
 	get_input()->draw_texture();
 
-
 	glDisable(GL_BLEND);
 	get_output()->set_opengl_state(VFrame::SCREEN);
-
-
 #endif
 }

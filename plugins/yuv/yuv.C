@@ -81,7 +81,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(YUVConfig, YUVThread);
 
-	int process_realtime(VFrame *input, VFrame *output);
+	void process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
 	void load_defaults();
 	void save_defaults();
@@ -348,7 +348,7 @@ static YUV yuv_static;
 	} \
 }
 
-int YUVEffect::process_realtime(VFrame *input, VFrame *output)
+void YUVEffect::process_realtime(VFrame *input, VFrame *output)
 {
 	load_configuration();
 
@@ -411,5 +411,4 @@ int YUVEffect::process_realtime(VFrame *input, VFrame *output)
 			break;
 		}
 	}
-	return 0;
 }

@@ -875,8 +875,11 @@ int ChromaKeyHSV::process_buffer(VFrame *frame,
 		start_position, 
 		frame_rate,
 		get_use_opengl());
-	if(get_use_opengl()) return run_opengl();
 
+	if(get_use_opengl()){
+		run_opengl();
+		return 0;
+	}
 
 	if(!engine) engine = new ChromaKeyServer(this);
 	engine->process_packages();
@@ -1034,7 +1037,7 @@ void ChromaKeyHSV::update_gui()
 
 
 
-int ChromaKeyHSV::handle_opengl()
+void ChromaKeyHSV::handle_opengl()
 {
 #ifdef HAVE_GL
 // For macro

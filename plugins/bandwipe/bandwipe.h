@@ -67,7 +67,7 @@ public:
 	~BandWipeMain();
 
 	PLUGIN_CLASS_MEMBERS(int, BandWipeThread);
-	int process_realtime(VFrame *incoming, VFrame *outgoing);
+	void process_realtime(VFrame *incoming, VFrame *outgoing);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);

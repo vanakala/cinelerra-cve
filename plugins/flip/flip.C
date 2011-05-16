@@ -160,9 +160,8 @@ int FlipMain::process_buffer(VFrame *frame,
 	if(get_use_opengl()) 
 	{
 		if(config.flip_vertical || config.flip_horizontal)
-			return run_opengl();
-		else
-			return 0;
+			run_opengl();
+		return 0;
 	}
 
 	switch(colormodel)
@@ -294,7 +293,7 @@ void FlipMain::save_defaults()
 	defaults->save();
 }
 
-int FlipMain::handle_opengl()
+void FlipMain::handle_opengl()
 {
 #ifdef HAVE_GL
 	get_output()->to_texture();

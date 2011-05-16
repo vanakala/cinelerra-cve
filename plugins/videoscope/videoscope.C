@@ -270,7 +270,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(VideoScopeConfig, VideoScopeThread);
 
-	int process_realtime(VFrame *input, VFrame *output);
+	void process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
 	void load_defaults();
 	void save_defaults();
@@ -835,13 +835,11 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-int VideoScopeEffect::process_realtime(VFrame *input, VFrame *output)
+void VideoScopeEffect::process_realtime(VFrame *input, VFrame *output)
 {
-
 	send_render_gui(input);
 	if(input->get_rows()[0] != output->get_rows()[0])
 		output->copy_from(input);
-	return 1;
 }
 
 void VideoScopeEffect::render_gui(void *input)

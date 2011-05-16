@@ -97,7 +97,7 @@ public:
 	void load_defaults();
 	void save_defaults();
 	int is_synthesis();
-	int handle_opengl();
+	void handle_opengl();
 
 
 // Frame to replicate

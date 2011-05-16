@@ -177,7 +177,7 @@ void IVTCMain::render_stop()
 
 
 // Pattern A B BC CD D
-int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	load_configuration();
 
@@ -398,7 +398,6 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		temp_frame[1] = temp_frame[0];
 		temp_frame[0] = temp;
 	}
-	return 0;
 }
 
 

@@ -378,8 +378,6 @@ double Synth::function_triangle(double x)
 
 int Synth::process_realtime(int size, double *input_ptr, double *output_ptr)
 {
-
-
 	need_reconfigure |= load_configuration();
 	if(need_reconfigure) reconfigure();
 
@@ -397,7 +395,6 @@ int Synth::process_realtime(int size, double *input_ptr, double *output_ptr)
 
 		fragment_len = overlay_synth(i, fragment_len, input_ptr, output_ptr);
 	}
-
 	return 0;
 }
 

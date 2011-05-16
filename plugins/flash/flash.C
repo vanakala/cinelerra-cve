@@ -104,7 +104,7 @@ NEW_PICON_MACRO(FlashMain)
 	} \
 }
 
-int FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
+void FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	int half = PluginClient::get_total_len() / 2;
 	int position = half - labs(PluginClient::get_source_position() - half);
@@ -146,6 +146,4 @@ int FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		FLASH(uint16_t, int, 4, 0xffff, 0x8000);
 		break;
 	}
-
-	return 0;
 }

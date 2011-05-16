@@ -156,7 +156,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
-	int handle_opengl();
+	void handle_opengl();
 
 
 
@@ -431,7 +431,10 @@ int DiffKey::process_buffer(VFrame **frame,
 	bottom_frame = frame[1];
 
 	if(get_use_opengl())
-		return run_opengl();
+	{
+		run_opengl();
+		return 0;
+	}
 
 	if(!engine)
 	{
@@ -449,7 +452,7 @@ int DiffKey::process_buffer(VFrame **frame,
 	float threshold_pad = threshold + pad; \
 
 
-int DiffKey::handle_opengl()
+void DiffKey::handle_opengl()
 {
 #ifdef HAVE_GL
 	static const char *diffkey_head = 
@@ -551,9 +554,7 @@ int DiffKey::handle_opengl()
 // Fastest way to discard output
 	bottom_frame->set_opengl_state(VFrame::TEXTURE);
 	glDisable(GL_BLEND);
-
 #endif
-	return 0;
 }
 
 

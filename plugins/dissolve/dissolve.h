@@ -37,8 +37,8 @@ public:
 	PLUGIN_CLASS_MEMBERS_TRANSITION;
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int handle_opengl();
+	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	void handle_opengl();
 	int uses_gui();
 	int is_transition();
 	int is_video();

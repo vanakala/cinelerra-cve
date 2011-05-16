@@ -121,7 +121,7 @@ RAISE_WINDOW_MACRO(BlurMain)
 LOAD_CONFIGURATION_MACRO(BlurMain, BlurConfig)
 
 
-int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	int i, j, k, l;
 	unsigned char **input_rows, **output_rows;
@@ -193,8 +193,6 @@ int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			engine[i]->wait_process_frame();
 		}
 	}
-
-	return 0;
 }
 
 

@@ -126,7 +126,7 @@ public:
 		float &out_x2, 
 		float &out_y1, 
 		float &out_y2);
-	int handle_opengl();
+	void handle_opengl();
 	int is_realtime();
 	void update_gui();
 	void save_data(KeyFrame *keyframe);

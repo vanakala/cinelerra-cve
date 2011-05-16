@@ -547,7 +547,10 @@ int ChromaKey::process_buffer(VFrame *frame,
 	}
 	else
 	{
-		if(get_use_opengl()) return run_opengl();
+		if(get_use_opengl()){
+			run_opengl();
+			return 1;
+		}
 
 		if(!engine) engine = new ChromaKeyServer(this);
 		engine->process_packages();
@@ -651,7 +654,7 @@ void ChromaKey::update_gui()
 	}
 }
 
-int ChromaKey::handle_opengl()
+void ChromaKey::handle_opengl()
 {
 #ifdef HAVE_GL
 	OUTER_VARIABLES(this)

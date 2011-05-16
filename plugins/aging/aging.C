@@ -77,7 +77,7 @@ SET_STRING_MACRO(AgingMain)
 
 RAISE_WINDOW_MACRO(AgingMain)
 
-int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+void AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	load_configuration();
 	this->input_ptr = input_ptr;
@@ -87,8 +87,6 @@ int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		PluginClient::smp + 1, 
 		PluginClient::smp + 1);
 	aging_server->process_packages();
-
-	return 0;
 }
 
 
