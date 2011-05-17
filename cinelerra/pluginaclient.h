@@ -22,8 +22,6 @@
 #ifndef PLUGINACLIENT_H
 #define PLUGINACLIENT_H
 
-
-
 #include "maxbuffers.h"
 #include "pluginclient.h"
 
@@ -33,8 +31,7 @@ public:
 	PluginAClient(PluginServer *server);
 	virtual ~PluginAClient();
 
-	int get_render_ptrs();
-	int init_realtime_parameters();
+	void init_realtime_parameters();
 
 	int is_audio();
 // These should return 1 if error or 0 if success.
@@ -60,7 +57,6 @@ public:
 		double *buffer,
 		samplenum start_position,
 		int sample_rate);
-
 
 	virtual int process_loop(double *buffer, int &write_length) { return 1; };
 	virtual int process_loop(double **buffers, int &write_length) { return 1; };
@@ -122,7 +118,5 @@ public:
 // requested rates.
 	int sample_rate;
 };
-
-
 
 #endif

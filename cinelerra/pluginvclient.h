@@ -41,7 +41,9 @@ public:
 	virtual ~PluginVClient();
 /* Pole
 	int get_render_ptrs();
-	int init_realtime_parameters();
+	*/
+	void init_realtime_parameters();
+/* Pole
 	int delete_nonrealtime_parameters();
 	*/
 	int is_video();

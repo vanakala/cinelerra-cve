@@ -27,7 +27,6 @@
 
 #include <string.h>
 
-
 PluginAClient::PluginAClient(PluginServer *server)
  : PluginClient(server)
 {
@@ -55,31 +54,9 @@ int PluginAClient::is_audio()
 	return 1;
 }
 
-
-int PluginAClient::get_render_ptrs()
-{
-	int i, j, double_buffer, fragment_position;
-
-	for(i = 0; i < total_in_buffers; i++)
-	{
-		double_buffer = double_buffer_in_render.values[i];
-		fragment_position = offset_in_render.values[i];
-		input_ptr_render[i] = &input_ptr_master.values[i][double_buffer][fragment_position];
-	}
-
-	for(i = 0; i < total_out_buffers; i++)
-	{
-		double_buffer = double_buffer_out_render.values[i];
-		fragment_position = offset_out_render.values[i];
-		output_ptr_render[i] = &output_ptr_master.values[i][double_buffer][fragment_position];
-	}
-	return 0;
-}
-
-int PluginAClient::init_realtime_parameters()
+void PluginAClient::init_realtime_parameters()
 {
 	project_sample_rate = server->edl->session->sample_rate;
-	return 0;
 }
 
 int PluginAClient::process_realtime(int size, 

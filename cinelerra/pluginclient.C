@@ -59,8 +59,6 @@ void PluginClient::reset()
 	direction = PLAY_FORWARD;
 }
 
-
-
 // For realtime plugins initialize buffers
 void PluginClient::plugin_init_realtime(int realtime_priority, 
 	int total_in_buffers,
@@ -137,16 +135,6 @@ double PluginClient::get_framerate()
 void PluginClient::set_interactive()
 {
 	interactive = 1;
-}
-
-int PluginClient::get_in_buffers(int recommended_size)
-{
-	return recommended_size;
-}
-
-int PluginClient::get_out_buffers(int recommended_size)
-{
-	return recommended_size;
 }
 
 int PluginClient::get_gui_status()

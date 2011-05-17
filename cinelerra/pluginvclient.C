@@ -91,78 +91,15 @@ VFrame* PluginVClient::get_temp()
 {
 	return temp;
 }
-/* Pole
-// Run before every realtime buffer is to be rendered.
-int PluginVClient::get_render_ptrs()
-{
-	int i, j, double_buffer, fragment_position;
 
-	for(i = 0; i < total_in_buffers; i++)
-	{
-		double_buffer = double_buffer_in_render.values[i];
-		fragment_position = offset_in_render.values[i];
-		input_ptr_render[i] = &input_ptr_master.values[i][double_buffer][fragment_position];
-	}
-
-	for(i = 0; i < total_out_buffers; i++)
-	{
-		double_buffer = double_buffer_out_render.values[i];
-		fragment_position = offset_out_render.values[i];
-		output_ptr_render[i] = &output_ptr_master.values[i][double_buffer][fragment_position];
-	}
-	return 0;
-}
-	*/
-/* Pole
-// Run after the non realtime plugin is run.
-int PluginVClient::delete_nonrealtime_parameters()
-{
-	int i, j;
-
-	for(i = 0; i < total_in_buffers; i++)
-	{
-		for(j = 0; j < in_buffer_size; j++)
-		{
-			delete video_in[i][j];
-		}
-	}
-
-	for(i = 0; i < total_out_buffers; i++)
-	{
-		for(j = 0; j < out_buffer_size; j++)
-		{
-			delete video_out[i][j];
-		}
-	}
-	video_in = 0;
-	video_out = 0;
-
-	return 0;
-}
-	*/
-/* Pole
-int PluginVClient::init_realtime_parameters()
+void PluginVClient::init_realtime_parameters()
 {
 	project_frame_rate = server->edl->session->frame_rate;
 	project_color_model = server->edl->session->color_model;
 	aspect_w = server->edl->session->aspect_w;
 	aspect_h = server->edl->session->aspect_h;
-	return 0;
-}
-	*/
-/* Pole
-int PluginVClient::process_realtime(VFrame **input, 
-	VFrame **output)
-{
-	return 0; 
 }
 
-int PluginVClient::process_realtime(VFrame *input, 
-	VFrame *output) 
-{
-	return 0; 
-}
-	*/
 int PluginVClient::process_buffer(VFrame **frame,
 	framenum start_position,
 	double frame_rate)

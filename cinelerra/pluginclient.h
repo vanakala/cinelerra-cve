@@ -252,13 +252,9 @@ public:
 // Give the framerate of the output for a non realtime plugin.
 // For realtime plugins give the requested framerate.
 	virtual double get_framerate();
-	virtual int delete_nonrealtime_parameters() { return 0; };
 
 // get information from user before non realtime processing
 	virtual int get_parameters() { return 0; };
-
-	virtual int get_in_buffers(int recommended_size);  // return desired size for input buffers
-	virtual int get_out_buffers(int recommended_size);     // return desired size for output buffers
 
 	virtual void start_loop() {};
 	virtual int process_loop() { return 0; };
@@ -289,7 +285,7 @@ public:
 	virtual int plugin_process_loop(VFrame **buffers, int &write_length) { return 1; };
 	virtual int plugin_process_loop(double **buffers, int &write_length) { return 1; };
 // get parameters depending on video or audio
-	virtual int init_realtime_parameters() { return 0; };
+	virtual void init_realtime_parameters() {};
 // release objects which are required after playback stops
 	virtual void render_stop() {};
 	int get_gui_status();
@@ -408,32 +404,15 @@ public:
 
 // Realtime operations.
 	void reset();
-	virtual int plugin_command_derived(int plugin_command) {}; // Extension of plugin_run for derived plugins
-	int plugin_get_range();
 	void plugin_init_realtime(int realtime_priority, 
 		int total_in_buffers,
 		int buffer_size);
-
-// create pointers to buffers of the plugin's type before realtime rendering
-	virtual int delete_buffer_ptrs() { return 0; };
 
 // communication convenience routines for the base class
 	int save_data_client();
 	int load_data_client();
 	void set_string_client(const char *string);  // set the string identifying the plugin
 	int send_cancelled();        // non realtime plugin sends when cancelled
-
-// ================================= Buffers ===============================
-// When arming buffers need to know the offsets in all the buffers and which
-// double buffers for each channel before rendering.
-	ArrayList<int> offset_in_render;
-	ArrayList<int> offset_out_render;
-	ArrayList<int> double_buffer_in_render;
-	ArrayList<int> double_buffer_out_render;
-
-// ================================= Automation ===========================
-
-	ArrayList<PluginClientAuto> automation;
 
 // ================================== Messages ===========================
 	char gui_string[BCTEXTLEN];          // string identifying module and plugin
