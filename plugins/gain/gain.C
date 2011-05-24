@@ -54,12 +54,12 @@ void GainConfig::copy_from(GainConfig &that)
 
 void GainConfig::interpolate(GainConfig &prev, 
 	GainConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (current_pts - prev_pts) / (next_pts - prev_pts);
+	double prev_scale = (next_pts - current_pts) / (next_pts - prev_pts);
 	level = prev.level * prev_scale + next.level * next_scale;
 }
 
@@ -77,29 +77,32 @@ Gain::~Gain()
 
 const char* Gain::plugin_title() { return N_("Gain"); }
 int Gain::is_realtime() { return 1; }
-
+int Gain::has_pts_api() { return 1; }
 
 SHOW_GUI_MACRO(Gain, GainThread)
 SET_STRING_MACRO(Gain)
 RAISE_WINDOW_MACRO(Gain)
 NEW_PICON_MACRO(Gain)
-LOAD_CONFIGURATION_MACRO(Gain, GainConfig)
+LOAD_PTS_CONFIGURATION_MACRO(Gain, GainConfig)
 
-int Gain::process_realtime(int size, double *input_ptr, double *output_ptr)
+void Gain::process_frame_realtime(AFrame *input, AFrame *output)
 {
+	int size = input->length;
+	double *ipp = input->buffer;
+	double *opp = output->buffer;
+
 	load_configuration();
 
 	double gain = db.fromdb(config.level);
 
+	if(input != output)
+		output->copy_of(input);
+
 	for(int i = 0; i < size; i++)
 	{
-		output_ptr[i] = input_ptr[i] * gain;
+		*opp++ = *ipp++ * gain;
 	}
-
-	return 0;
 }
-
-
 
 void Gain::load_defaults()
 {

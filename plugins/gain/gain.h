@@ -36,9 +36,9 @@ public:
 	void copy_from(GainConfig &that);
 	void interpolate(GainConfig &prev, 
 		GainConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	double level;
 };
@@ -49,7 +49,8 @@ public:
 	Gain(PluginServer *server);
 	~Gain();
 
-	int process_realtime(int size, double *input_ptr, double *output_ptr);
+	void process_frame_realtime(AFrame *input, AFrame *output);
+	int has_pts_api();
 
 	PLUGIN_CLASS_MEMBERS(GainConfig, GainThread)
 	void save_data(KeyFrame *keyframe);

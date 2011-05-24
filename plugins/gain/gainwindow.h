@@ -42,10 +42,8 @@ class GainWindow : public BC_Window
 public:
 	GainWindow(Gain *gain, int x, int y);
 	~GainWindow();
-	
-	int create_objects();
-	void close_event();
-	
+
+	void create_objects();
 	Gain *gain;
 	GainLevel *level;
 };
@@ -57,8 +55,5 @@ public:
 	int handle_event();
 	Gain *gain;
 };
-
-
-
 
 #endif

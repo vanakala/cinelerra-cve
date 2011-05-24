@@ -50,7 +50,7 @@ GainWindow::~GainWindow()
 {
 }
 
-int GainWindow::create_objects()
+void GainWindow::create_objects()
 {
 	int x = 10, y = 10;
 	VFrame *ico = gain->new_picon();
@@ -62,10 +62,7 @@ int GainWindow::create_objects()
 	show_window();
 	flush();
 	delete ico;
-	return 0;
 }
-
-WINDOW_CLOSE_EVENT(GainWindow)
 
 GainLevel::GainLevel(Gain *gain, int x, int y)
  : BC_FSlider(x, 
