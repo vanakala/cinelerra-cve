@@ -112,6 +112,14 @@ void AFrame::copy(AFrame *that)
 	duration = that->duration;
 }
 
+void AFrame::copy_of(AFrame *that)
+{
+	copy_pts(that);
+	check_buffer(that->length);
+	length = that->length;
+	duration = that->duration;
+}
+
 void AFrame::dump(int dumpdata)
 {
 	double avg, min, max;

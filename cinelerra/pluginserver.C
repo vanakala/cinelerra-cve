@@ -493,7 +493,10 @@ void PluginServer::process_buffer(AFrame **buffer,
 		aframe->samplerate = aclient->project_sample_rate;
 
 	aclient->source_position = round(aframe->pts * aframe->samplerate);
+	aclient->source_pts = aframe->pts;
 	aclient->sample_rate = aframe->samplerate;
+	aclient->total_len_pts = total_len;
+
 	if(plugin)
 	{
 		aclient->source_start = round(plugin->project_pts *
@@ -502,6 +505,12 @@ void PluginServer::process_buffer(AFrame **buffer,
 	}
 
 	aclient->direction = PLAY_FORWARD;
+	if(aclient->has_pts_api())
+	{
+		aclient->process_frame(buffer[0]);
+		return;
+	}
+
 	if(multichannel){
 		double *samples[total_in_buffers];
 		for(int i = 0; i < total_in_buffers; i++)
@@ -715,6 +724,7 @@ void PluginServer::read_samples(double *buffer,
 	((AModule*)modules->values[aframe->channel])->render(aframe);
 }
 
+
 int PluginServer::read_frame(VFrame *buffer, 
 	int channel, 
 	framenum start_position,
@@ -779,7 +789,6 @@ int PluginServer::read_samples(double *buffer,
 	aframe->samplerate = sample_rate;
 
 	if(!multichannel) aframe->channel = 0;
-
 	if(nodes->total > aframe->channel)
 		return ((VirtualANode*)nodes->values[aframe->channel])->read_data(aframe);
 	else
@@ -793,6 +802,27 @@ int PluginServer::read_samples(double *buffer,
 	return -1;
 }
 
+void PluginServer::get_aframe_rt(AFrame *aframe)
+{
+	if(!multichannel)
+		aframe->channel = 0;
+	if(nodes->total > aframe->channel)
+	{
+		((VirtualANode*)nodes->values[aframe->channel])->read_data(aframe);
+		return;
+	}
+	if(modules->total > aframe->channel)
+	{
+		((AModule*)modules->values[aframe->channel])->render(aframe);
+		return;
+	}
+	aframe->clear_buffer();
+	if(aframe->buffer && aframe->source_length)
+	{
+		aframe->length = aframe->source_length;
+		aframe->duration = round((ptstime)aframe->length / aframe->samplerate);
+	}
+}
 
 // Called by client
 int PluginServer::get_gui_status()
@@ -1021,6 +1051,13 @@ KeyFrame* PluginServer::get_prev_keyframe(posnum position)
 	return result;
 }
 
+KeyFrame* PluginServer::prev_keyframe_pts(ptstime postime)
+{
+	if(plugin)
+		return plugin->get_prev_keyframe(postime);
+	return keyframe;
+}
+
 KeyFrame* PluginServer::get_next_keyframe(posnum position)
 {
 	KeyFrame *result = 0;
@@ -1029,6 +1066,13 @@ KeyFrame* PluginServer::get_next_keyframe(posnum position)
 	else
 		result = keyframe;
 	return result;
+}
+
+KeyFrame* PluginServer::next_keyframe_pts(ptstime postime)
+{
+	if(plugin)
+		return plugin->get_next_keyframe(postime);
+	return keyframe;
 }
 
 KeyFrame* PluginServer::get_keyframe()

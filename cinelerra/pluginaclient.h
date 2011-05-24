@@ -22,6 +22,7 @@
 #ifndef PLUGINACLIENT_H
 #define PLUGINACLIENT_H
 
+#include "aframe.h"
 #include "maxbuffers.h"
 #include "pluginclient.h"
 
@@ -43,6 +44,9 @@ public:
 	virtual int process_realtime(int size, 
 		double *input_ptr, 
 		double *output_ptr);
+// AFrame API
+	virtual void process_frame_realtime(AFrame *input, AFrame *output) {};
+	virtual void process_frame_realtime(AFrame **input, AFrame **output) {};
 
 // Process buffer using pull method.  By default this loads the input into the
 // buffer and calls process_realtime with input and output pointing to buffer.
@@ -57,6 +61,8 @@ public:
 		double *buffer,
 		samplenum start_position,
 		int sample_rate);
+// pts api
+	virtual void process_frame(AFrame *aframe);
 
 	virtual int process_loop(double *buffer, int &write_length) { return 1; };
 	virtual int process_loop(double **buffers, int &write_length) { return 1; };
@@ -91,6 +97,7 @@ public:
 		int sample_rate,
 		samplenum start_position,
 		int len);
+	void get_aframe_rt(AFrame *frame);
 
 // Get the sample rate of the EDL
 	int get_project_samplerate();

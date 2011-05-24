@@ -102,6 +102,11 @@ int PluginAClient::process_buffer(int size,
 	return 0;
 }
 
+void PluginAClient::process_frame(AFrame *aframe)
+{
+	get_aframe_rt(aframe);
+	process_frame_realtime(aframe, aframe);
+}
 
 void PluginAClient::plugin_start_loop(posnum start,
 	posnum end,
@@ -186,6 +191,10 @@ int PluginAClient::read_samples(double *buffer,
 		len);
 }
 
+void PluginAClient::get_aframe_rt(AFrame *frame)
+{
+	server->get_aframe_rt(frame);
+}
 
 void PluginAClient::send_render_gui(void *data, int size)
 {

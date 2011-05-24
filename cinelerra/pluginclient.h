@@ -221,6 +221,37 @@ int plugin_class::load_configuration() \
 		return 0; \
 }
 
+#define LOAD_PTS_CONFIGURATION_MACRO(plugin_class, config_class) \
+int plugin_class::load_configuration() \
+{ \
+	KeyFrame *prev_keyframe, *next_keyframe; \
+ \
+	prev_keyframe = prev_keyframe_pts(source_pts); \
+	next_keyframe = next_keyframe_pts(source_pts); \
+ \
+	ptstime next_pts = next_keyframe->pos_time; \
+	ptstime prev_pts = prev_keyframe->pos_time; \
+ \
+	config_class old_config, prev_config, next_config; \
+	old_config.copy_from(config); \
+	read_data(prev_keyframe); \
+	if(PTSEQU(next_pts, prev_pts)) \
+		return 0; \
+	prev_config.copy_from(config); \
+	read_data(next_keyframe); \
+	next_config.copy_from(config); \
+ \
+	config.interpolate(prev_config,  \
+		next_config,  \
+		prev_pts, \
+		next_pts, \
+		source_pts); \
+ \
+	if(!config.equivalent(old_config)) \
+		return 1; \
+	else \
+		return 0; \
+}
 
 class PluginClient
 {
@@ -238,6 +269,7 @@ public:
 	virtual int is_multichannel() { return 0; };
 	virtual int is_synthesis() { return 0; };
 	virtual int is_transition() { return 0; };
+	virtual int has_pts_api() { return 0; };
 // return the title of the plugin
 	virtual const char* plugin_title();
 	virtual VFrame* new_picon() { return 0; };
@@ -305,6 +337,8 @@ public:
 // is_local - if 1, the position is converted to the EDL rate.
 	KeyFrame* get_prev_keyframe(posnum position, int is_local = 1);
 	KeyFrame* get_next_keyframe(posnum position, int is_local = 1);
+	KeyFrame* prev_keyframe_pts(ptstime postime);
+	KeyFrame* next_keyframe_pts(ptstime postime);
 // get current camera and projector position
 	void get_camera(float *x, float *y, float *z, framenum position);
 	void get_projector(float *x, float *y, float *z, framenum position);
@@ -441,12 +475,15 @@ public:
 // Position relative to start of EDL in requested rate.  Calculated for every process
 // command.  Used for keyframes.
 	posnum source_position;
+	ptstime source_pts;
 // For realtime plugins gets the lowest sample of the plugin in the requested
 // rate.  For others it's always 0.
 	posnum source_start;
 // Length of source.  For effects it's the plugin length.  For transitions
 // it's the transition length.  Relative to the requested rate.
 	posnum total_len;
+	ptstime total_len_pts;
+
 // Total number of processors available - 1
 	int smp;
 	PluginServer *server;

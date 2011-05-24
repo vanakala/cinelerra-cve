@@ -95,6 +95,8 @@ public:
 // Get keyframes for configuration.  Position is always relative to EDL rate.
 	KeyFrame* get_prev_keyframe(posnum position);
 	KeyFrame* get_next_keyframe(posnum position);
+	KeyFrame* prev_keyframe_pts(ptstime postime);
+	KeyFrame* next_keyframe_pts(ptstime postime);
 // get camera and projector positions
 	void get_camera(float *x, float *y, float *z,
 			framenum position);
@@ -216,7 +218,6 @@ public:
 		samplenum start_position,
 		int total_samples);
 
-
 // Called by client to read data in realtime effect.
 // Returns -1 if error or 0 if success.
 	int read_frame(VFrame *buffer, 
@@ -230,6 +231,7 @@ public:
 		int sample_rate,
 		samplenum start_position, 
 		int len);
+	void get_aframe_rt(AFrame *aframe);
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
 	int get_parameters(ptstime start, ptstime end, int channels);

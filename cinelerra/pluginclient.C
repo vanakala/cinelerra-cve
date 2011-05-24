@@ -54,6 +54,7 @@ void PluginClient::reset()
 	total_in_buffers = 0;
 	total_out_buffers = 0;
 	source_position = 0;
+	source_pts = 0;
 	source_start = 0;
 	total_len = 0;
 	direction = PLAY_FORWARD;
@@ -293,6 +294,16 @@ KeyFrame* PluginClient::get_next_keyframe(posnum position, int is_local)
 {
 	if(is_local) position = local_to_edl(position);
 	return server->get_next_keyframe(position);
+}
+
+KeyFrame* PluginClient::prev_keyframe_pts(ptstime pts)
+{
+	return server->prev_keyframe_pts(pts);
+}
+
+KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
+{
+	return server->next_keyframe_pts(pts);
 }
 
 void PluginClient::get_camera(float *x, float *y, float *z, framenum position)

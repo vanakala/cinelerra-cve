@@ -45,6 +45,8 @@ public:
 	void copy_pts(AFrame *that);
 // Copy buffer
 	void copy(AFrame *that);
+// Copy parameters and length only
+	void copy_of(AFrame *that);
 
 	void dump(int dumpdata = 0);
 
