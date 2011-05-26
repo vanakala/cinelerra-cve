@@ -261,6 +261,9 @@ public:
 // reset node table after virtual console reconfiguration
 	void reset_nodes();
 
+// Plugin configuration directory
+	const char *plugin_conf_dir();
+
 	samplenum get_written_samples();   // after samples are written, get the number written
 	framenum get_written_frames();   // after frames are written, get the number written
 

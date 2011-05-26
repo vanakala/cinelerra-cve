@@ -58,6 +58,7 @@ EDLSession::EDLSession(EDL *edl)
 	strcpy(current_folder, "");
 	strcpy(default_atransition, "");
 	strcpy(default_vtransition, "");
+	strcpy(plugin_configuration_directory, BCASTDIR);
 	default_transition_length = 1.0;
 	folderlist_format = ASSETS_TEXT;
 	frame_rate = 25; // just has to be something by default

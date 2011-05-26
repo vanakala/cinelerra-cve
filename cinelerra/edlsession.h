@@ -213,6 +213,8 @@ public:
 // Global ID counter
 	static int current_id;
 	PlaybackConfig* playback_config;
+// Directory of plugin configurations
+	char plugin_configuration_directory[BCTEXTLEN];
 
 };
 

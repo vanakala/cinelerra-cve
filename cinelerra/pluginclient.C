@@ -275,6 +275,17 @@ const char* PluginClient::get_defaultdir()
 	return BCASTDIR;
 }
 
+char* PluginClient::plugin_configuration_path(char *buffer, const char *confname)
+{
+	char *p;
+
+	strcpy(buffer, server->plugin_conf_dir());
+	p = buffer + strlen(buffer);
+	*p++ = '/';
+	strcpy(p, confname);
+	return buffer;
+}
+
 void PluginClient::send_configure_change()
 {
 	KeyFrame* keyframe = server->get_keyframe();

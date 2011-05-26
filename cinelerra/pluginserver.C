@@ -1167,6 +1167,13 @@ void PluginServer::pop_aframe(AFrame *af)
 	errorbox("AFrame lost from pluginserver");
 }
 
+const char *PluginServer::plugin_conf_dir()
+{
+	if(edl)
+		return edl->session->plugin_configuration_directory;
+	return BCASTDIR;
+}
+
 void PluginServer::dump()
 {
 	printf("    PluginServer %s %s\n", path, title);

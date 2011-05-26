@@ -108,8 +108,7 @@ void Gain::load_defaults()
 {
 	char directory[BCTEXTLEN];
 
-// set the default directory
-	sprintf(directory, "%sgain.rc", get_defaultdir());
+	plugin_configuration_path(directory, "gain.rc");
 
 // load the defaults
 

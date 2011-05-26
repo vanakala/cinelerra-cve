@@ -436,6 +436,9 @@ public:
 	const char* get_defaultdir();     // Directory defaults should be stored in
 	void set_interactive();
 
+// Make plugin configuration path
+	char *plugin_configuration_path(char *buffer, const char *confname);
+
 // Realtime operations.
 	void reset();
 	void plugin_init_realtime(int realtime_priority, 
