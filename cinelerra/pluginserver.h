@@ -122,7 +122,6 @@ public:
 	void sync_parameters();
 // set for realtime processor usage
 	int set_realtime_sched();
-	int get_gui_status();
 // Raise the GUI
 	void raise_window();
 // cause the plugin to show the GUI

@@ -42,7 +42,6 @@
 #include "pluginaclient.h"
 #include "pluginaclientlad.h"
 #include "pluginclient.h"
-#include "plugincommands.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"
 #include "preferences.h"
@@ -822,15 +821,6 @@ void PluginServer::get_aframe_rt(AFrame *aframe)
 		aframe->length = aframe->source_length;
 		aframe->duration = round((ptstime)aframe->length / aframe->samplerate);
 	}
-}
-
-// Called by client
-int PluginServer::get_gui_status()
-{
-	if(plugin)
-		return plugin->show ? GUI_ON : GUI_OFF;
-	else
-		return GUI_OFF;
 }
 
 void PluginServer::raise_window()

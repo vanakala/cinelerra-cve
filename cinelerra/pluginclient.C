@@ -138,11 +138,6 @@ void PluginClient::set_interactive()
 	interactive = 1;
 }
 
-int PluginClient::get_gui_status()
-{
-	return server->get_gui_status();
-}
-
 // close event from client side
 void PluginClient::client_side_close()
 {

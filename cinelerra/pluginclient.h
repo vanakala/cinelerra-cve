@@ -34,7 +34,7 @@ class PluginClient;
 #include "keyframe.h"
 #include "mainprogress.inc"
 #include "maxbuffers.h"
-#include "plugincommands.h"
+//#include "plugincommands.h"
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "theme.inc"
@@ -320,7 +320,6 @@ public:
 	virtual void init_realtime_parameters() {};
 // release objects which are required after playback stops
 	virtual void render_stop() {};
-	int get_gui_status();
 	char* get_gui_string();
 
 // Used by themes
