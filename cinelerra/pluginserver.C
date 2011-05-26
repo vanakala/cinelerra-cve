@@ -835,9 +835,12 @@ void PluginServer::show_gui()
 	client->smp = preferences->processors - 1;
 	if(plugin)
 	{
+		client->total_len_pts = plugin->length();
 		client->total_len = plugin->track->to_units(plugin->length());
+		client->source_start_pts = plugin->project_pts;
 		client->source_start = plugin->track->to_units(plugin->project_pts);
 	}
+	client->source_pts = mwindow->edl->local_session->get_selectionstart(1);
 	if(video)
 	{
 		client->source_position = Units::to_int64(
@@ -860,7 +863,10 @@ void PluginServer::update_gui()
 	if(!plugin_open || !plugin) return;
 
 	client->total_len = plugin->track->to_units(plugin->length());
+	client->total_len_pts = plugin->length();
 	client->source_start = plugin->track->to_units(plugin->project_pts);
+	client->source_start_pts = plugin->project_pts;
+	client->source_pts = mwindow->edl->local_session->get_selectionstart(1);
 	if(video)
 	{
 		client->source_position = Units::to_int64(

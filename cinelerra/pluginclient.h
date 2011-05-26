@@ -481,6 +481,7 @@ public:
 // For realtime plugins gets the lowest sample of the plugin in the requested
 // rate.  For others it's always 0.
 	posnum source_start;
+	ptstime source_start_pts;
 // Length of source.  For effects it's the plugin length.  For transitions
 // it's the transition length.  Relative to the requested rate.
 	posnum total_len;

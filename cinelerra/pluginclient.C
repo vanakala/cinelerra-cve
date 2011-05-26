@@ -56,7 +56,9 @@ void PluginClient::reset()
 	source_position = 0;
 	source_pts = 0;
 	source_start = 0;
+	source_start_pts = 0;
 	total_len = 0;
+	total_len_pts = 0;
 	direction = PLAY_FORWARD;
 }
 
