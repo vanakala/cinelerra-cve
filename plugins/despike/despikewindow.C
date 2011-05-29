@@ -21,17 +21,11 @@
 
 #include "bcdisplayinfo.h"
 #include "despikewindow.h"
+#include "language.h"
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
 PLUGIN_THREAD_OBJECT(Despike, DespikeThread, DespikeWindow)
-
 
 DespikeWindow::DespikeWindow(Despike *despike, int x, int y)
  : BC_Window(despike->gui_string, 
@@ -52,7 +46,7 @@ DespikeWindow::~DespikeWindow()
 {
 }
 
-int DespikeWindow::create_objects()
+void DespikeWindow::create_objects()
 {
 	int x = 10, y = 10;
 	VFrame *ico = despike->new_picon();
@@ -68,14 +62,7 @@ int DespikeWindow::create_objects()
 	show_window();
 	flush();
 	delete ico;
-	return 0;
 }
-
-void DespikeWindow::close_event()
-{
-	set_done(1);
-}
-
 
 DespikeLevel::DespikeLevel(Despike *despike, int x, int y)
  : BC_FSlider(x, 

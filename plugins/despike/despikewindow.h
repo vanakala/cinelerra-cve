@@ -41,8 +41,7 @@ public:
 	DespikeWindow(Despike *despike, int x, int y);
 	~DespikeWindow();
 
-	int create_objects();
-	void close_event();
+	void create_objects();
 
 	Despike *despike;
 	DespikeLevel *level;

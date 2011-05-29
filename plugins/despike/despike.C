@@ -24,6 +24,7 @@
 #include "bchash.h"
 #include "errorbox.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "despike.h"
 #include "despikewindow.h"
@@ -32,15 +33,7 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
 REGISTER_PLUGIN(Despike)
-
-
 
 Despike::Despike(PluginServer *server)
  : PluginAClient(server)
@@ -56,48 +49,55 @@ Despike::~Despike()
 
 const char* Despike::plugin_title() { return N_("Despike"); }
 int Despike::is_realtime() { return 1; }
+int Despike::has_pts_api() { return 1; }
 
 NEW_PICON_MACRO(Despike)
-
 
 SHOW_GUI_MACRO(Despike, DespikeThread)
 SET_STRING_MACRO(Despike)
 RAISE_WINDOW_MACRO(Despike)
 
-LOAD_CONFIGURATION_MACRO(Despike, DespikeConfig)
+LOAD_PTS_CONFIGURATION_MACRO(Despike, DespikeConfig)
 
 
-int Despike::process_realtime(int size, double *input_ptr, double *output_ptr)
+void Despike::process_frame_realtime(AFrame *input, AFrame *output)
 {
+	int size = input->length;
+	double *ipp = input->buffer;
+	double *opp;
+
 	load_configuration();
 
 	double threshold = db.fromdb(config.level);
 	double change = db.fromdb(config.slope);
 
+	if(input != output)
+		output->copy_of(input);
+
+	opp = output->buffer;
+
 	for(int i = 0; i < size; i++)
 	{
-		if(fabs(input_ptr[i]) > threshold || 
-			fabs(input_ptr[i]) - fabs(last_sample) > change) 
+		if(fabs(*ipp) > threshold || 
+			fabs(*ipp) - fabs(last_sample) > change) 
 		{
-			output_ptr[i] = last_sample;
+			*opp++ = last_sample;
+			ipp++;
 		}
 		else
 		{
-			output_ptr[i] = input_ptr[i];
-			last_sample = input_ptr[i];
+			*opp++ = *ipp;
+			last_sample = *ipp++;
 		}
 	}
-
-	return 0;
 }
-
 
 void Despike::load_defaults()
 {
-	char directory[1024];
+	char directory[BCTEXTLEN];
 
 // set the default directory
-	sprintf(directory, "%sdespike.rc", get_defaultdir());
+	plugin_configuration_path(directory, "despike.rc");
 
 // load the defaults
 
@@ -165,7 +165,6 @@ void Despike::update_gui()
 	}
 }
 
-
 DespikeConfig::DespikeConfig()
 {
 	level = 0;
@@ -185,13 +184,13 @@ void DespikeConfig::copy_from(DespikeConfig &that)
 }
 
 void DespikeConfig::interpolate(DespikeConfig &prev, 
-		DespikeConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame)
+	DespikeConfig &next, 
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (current_pts - prev_pts) / (next_pts - prev_pts);
+	double prev_scale = (next_pts - current_pts) / (next_pts - prev_pts);
 
 	this->level = prev.level * prev_scale + next.level * next_scale;
 	this->slope = prev.slope * prev_scale + next.slope * next_scale;

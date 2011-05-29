@@ -37,9 +37,9 @@ public:
 	void copy_from(DespikeConfig &that);
 	void interpolate(DespikeConfig &prev, 
 		DespikeConfig &next, 
-		posnum prev_frame,
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	double level;
 	double slope;
@@ -57,8 +57,9 @@ public:
 
 	DB db;
 
+	int has_pts_api();
 	int is_realtime();
-	int process_realtime(int size, double *input_ptr, double *output_ptr);
+	void process_frame_realtime(AFrame *input, AFrame *output);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
