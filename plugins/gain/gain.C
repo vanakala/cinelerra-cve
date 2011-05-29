@@ -89,7 +89,7 @@ void Gain::process_frame_realtime(AFrame *input, AFrame *output)
 {
 	int size = input->length;
 	double *ipp = input->buffer;
-	double *opp = output->buffer;
+	double *opp;
 
 	load_configuration();
 
@@ -97,6 +97,8 @@ void Gain::process_frame_realtime(AFrame *input, AFrame *output)
 
 	if(input != output)
 		output->copy_of(input);
+
+	opp = output->buffer;
 
 	for(int i = 0; i < size; i++)
 	{
