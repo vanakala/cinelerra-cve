@@ -88,6 +88,14 @@ int PluginAClient::process_buffer(int size,
 	return 0;
 }
 
+void PluginAClient::process_frame(AFrame **aframe)
+{
+	for(int i = 0; i < PluginClient::total_in_buffers; i++)
+		get_aframe_rt(aframe[i]);
+
+	process_frame_realtime(aframe, aframe);
+}
+
 int PluginAClient::process_buffer(int size, 
 	double *buffer,
 	samplenum start_position,

@@ -63,6 +63,7 @@ public:
 		int sample_rate);
 // pts api
 	virtual void process_frame(AFrame *aframe);
+	virtual void process_frame(AFrame **aframe);
 
 	virtual int process_loop(double *buffer, int &write_length) { return 1; };
 	virtual int process_loop(double **buffers, int &write_length) { return 1; };

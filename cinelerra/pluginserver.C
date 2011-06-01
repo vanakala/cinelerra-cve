@@ -506,7 +506,17 @@ void PluginServer::process_buffer(AFrame **buffer,
 	aclient->direction = PLAY_FORWARD;
 	if(aclient->has_pts_api())
 	{
-		aclient->process_frame(buffer[0]);
+		if(multichannel)
+		{
+			for(int i = 1; i < total_in_buffers; i++)
+			{
+				buffer[i]->pts = aclient->source_pts;
+				buffer[i]->source_length = fragment_size;
+			}
+			aclient->process_frame(buffer);
+		}
+		else
+			aclient->process_frame(buffer[0]);
 		return;
 	}
 
