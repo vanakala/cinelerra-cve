@@ -29,7 +29,7 @@
 #include "reverb.h"
 #include "reverbwindow.h"
 
-#include "vframe.h"
+//#include "vframe.h"
 
 #include <math.h>
 #include <string.h>
@@ -37,12 +37,10 @@
 #include <unistd.h>
 
 
-
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new Reverb(server);
 }
-
 
 
 Reverb::Reverb(PluginServer *server)
@@ -100,17 +98,17 @@ const char* Reverb::plugin_title() { return N_("Heroine College Concert Hall"); 
 int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 int Reverb::is_synthesis() { return 1; }
+int Reverb::has_pts_api() { return 1; }
 
-int Reverb::process_realtime(int size,
-	double **input_ptr, 
-	double **output_ptr)
+void Reverb::process_frame_realtime(AFrame **input, AFrame **output)
 {
 	int new_dsp_length, i, j;
-	main_in = input_ptr;
-	main_out = output_ptr;
+	main_in = input;
+	main_out = output;
+	int size = input[0]->length;
 	redo_buffers |= load_configuration();
 
-	if(!config.ref_total) return 0;
+	if(!config.ref_total) return;
 
 	if(!initialized)
 	{
@@ -218,7 +216,6 @@ int Reverb::process_realtime(int size,
 				lowpass_in2[i][j] = 0;
 			}
 		}
-		
 		redo_buffers = 0;
 	}
 
@@ -237,7 +234,10 @@ int Reverb::process_realtime(int size,
 
 	for(i = 0; i < total_in_buffers; i++)
 	{
-		double *current_out = main_out[i];
+		if(main_out[i] != main_in[i])
+			main_out[i]->copy_of(main_in[i]);
+
+		double *current_out = main_out[i]->buffer;
 		double *current_in = dsp_in[i];
 
 		for(j = 0; j < size; j++) current_out[j] = current_in[j];
@@ -248,7 +248,6 @@ int Reverb::process_realtime(int size,
 
 		for(; k < dsp_in_length; k++) current_in[k] = 0;
 	}
-	return 0;
 }
 
 NEW_PICON_MACRO(Reverb)
@@ -264,7 +263,7 @@ void Reverb::load_defaults()
 	char directory[1024];
 
 // set the default directory
-	sprintf(directory, "%sreverb.rc", get_defaultdir());
+	plugin_configuration_path(directory, "reverb.rc");
 
 // load the defaults
 
@@ -299,7 +298,7 @@ void Reverb::save_defaults()
 	defaults->save();
 }
 
-LOAD_CONFIGURATION_MACRO(Reverb, ReverbConfig)
+LOAD_PTS_CONFIGURATION_MACRO(Reverb, ReverbConfig)
 
 
 void Reverb::save_data(KeyFrame *keyframe)
@@ -494,7 +493,7 @@ void ReverbEngine::run()
 			for(j = 0; j < plugin->config.ref_total + 1; j++)
 			{
 				if(plugin->ref_channels[i][j] == output_buffer)
-					process_overlay(plugin->main_in[i], 
+					process_overlay(plugin->main_in[i]->buffer,
 						&(plugin->dsp_in[plugin->ref_channels[i][j]][plugin->ref_offsets[i][j]]),
 						plugin->lowpass_in1[i][j],
 						plugin->lowpass_in2[i][j],
@@ -540,9 +539,9 @@ void ReverbConfig::copy_from(ReverbConfig &that)
 
 void ReverbConfig::interpolate(ReverbConfig &prev, 
 	ReverbConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	level_init = prev.level_init;
 	delay_init = prev.delay_init;
@@ -566,5 +565,3 @@ void ReverbConfig::dump()
 	lowpass1, 
 	lowpass2);
 }
-
-

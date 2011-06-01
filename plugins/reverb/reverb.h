@@ -37,9 +37,9 @@ public:
 	void copy_from(ReverbConfig &that);
 	void interpolate(ReverbConfig &prev, 
 		ReverbConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	void dump();
 
 	double level_init;
@@ -62,14 +62,11 @@ public:
 	void update_gui();
 	int load_from_file(const char *data);
 	int save_to_file(const char *data);
-//	int load_configuration();
-
-// data for reverb
-//	ReverbConfig config;
 
 	char config_directory[1024];
 
-	double **main_in, **main_out;
+	AFrame **main_in;
+	AFrame **main_out;
 	double **dsp_in;
 	int **ref_channels, **ref_offsets, **ref_lowpass;
 	double **ref_levels;
@@ -78,12 +75,13 @@ public:
 // skirts for lowpass filter
 	double **lowpass_in1, **lowpass_in2;
 	DB db;
-// required for all realtime/multichannel plugins
 
-	int process_realtime(int size, double **input_ptr, double **output_ptr);
+// required for all realtime/multichannel plugins
+	void process_frame_realtime(AFrame **input_ptr, AFrame **output_ptr);
 	int is_realtime();
 	int is_synthesis();
 	int is_multichannel();
+	int has_pts_api();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
