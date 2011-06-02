@@ -267,11 +267,6 @@ int PluginClient::get_project_smp()
 	return smp;
 }
 
-const char* PluginClient::get_defaultdir()
-{
-	return BCASTDIR;
-}
-
 char* PluginClient::plugin_configuration_path(char *buffer, const char *confname)
 {
 	char *p;

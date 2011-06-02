@@ -432,7 +432,6 @@ public:
 	int get_aspect_ratio(float &aspect_w, float &aspect_h);
 
 	virtual int plugin_get_parameters();
-	const char* get_defaultdir();     // Directory defaults should be stored in
 	void set_interactive();
 
 // Make plugin configuration path
