@@ -24,15 +24,11 @@
 #include "bchash.h"
 #include "delayaudio.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 #include <algorithm>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 PluginClient* new_plugin(PluginServer *server)
@@ -40,38 +36,21 @@ PluginClient* new_plugin(PluginServer *server)
 	return new DelayAudio(server);
 }
 
-
 DelayAudio::DelayAudio(PluginServer *server)
- : PluginAClient(server),
-	thread(0),
-	defaults(0)
+ : PluginAClient(server)
 {
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 DelayAudio::~DelayAudio()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-
-
-VFrame* DelayAudio::new_picon()
-{
-	return new VFrame(picon_png);
-}
 
 const char* DelayAudio::plugin_title() { return N_("Delay audio"); }
 int DelayAudio::is_realtime() { return 1; }
-
+int DelayAudio::has_pts_api() { return 1; }
 
 int DelayAudio::load_configuration()
 {
@@ -86,7 +65,7 @@ void DelayAudio::load_defaults()
 {
 	char directory[BCTEXTLEN];
 
-	sprintf(directory, "%sdelayaudio.rc", BCASTDIR);
+	plugin_configuration_path(directory, "delayaudio.rc");
 	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.length = defaults->get("LENGTH", (double)1);
@@ -118,7 +97,6 @@ void DelayAudio::read_data(KeyFrame *keyframe)
 	}
 }
 
-
 void DelayAudio::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -133,10 +111,12 @@ void DelayAudio::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int DelayAudio::process_realtime(int size, double *input_ptr, double *output_ptr)
+void DelayAudio::process_frame_realtime(AFrame *input, AFrame *output)
 {
+	int size = input->length;
+
 	load_configuration();
-	int64_t num_delayed = int64_t(config.length * PluginAClient::project_sample_rate + 0.5);
+	samplenum num_delayed = config.length * PluginAClient::project_sample_rate + 0.5;
 
 	// Examples:
 	//     buffer  size   num_delayed
@@ -146,19 +126,22 @@ int DelayAudio::process_realtime(int size, double *input_ptr, double *output_ptr
 	// D:    1       5        2        short delay, beginning
 	// E:   10       5        2        short delay after long delay
 
-	int64_t num_silence = num_delayed - buffer.size();
+	samplenum num_silence = num_delayed - buffer.size();
 	if (size < num_silence)
 		num_silence = size;
 
 	// Ex num_silence ==  A: 0, B: 0, C: 5, D: 1, E: -8
 
-	buffer.insert(buffer.end(), input_ptr, input_ptr + size);
+	buffer.insert(buffer.end(), input->buffer, input->buffer + size);
 
 	// Ex buffer.size() ==  A: 7, B: 15, C: 6, D: 6, E: 15
 
+	if(input != output)
+		output->copy_of(input);
+
 	if (num_silence > 0)
 	{
-		output_ptr = std::fill_n(output_ptr, num_silence, 0.0);
+		std::fill_n(output->buffer, num_silence, 0.0);
 		size -= num_silence;
 	}
 	// Ex size ==  A: 5, B: 5, C: 0, D: 4, E: 5
@@ -171,24 +154,15 @@ int DelayAudio::process_realtime(int size, double *input_ptr, double *output_ptr
 
 		// Ex from points to idx A: 0, B: 0, C: n/a, D: 0, E: 8
 
-		std::copy(from, from + size, output_ptr);
+		std::copy(from, from + size, output->buffer);
 		buffer.erase(buffer.begin(), from + size);
 	}
-
-	return 0;
 }
 
 SHOW_GUI_MACRO(DelayAudio, DelayAudioThread);
 SET_STRING_MACRO(DelayAudio);
-
-void DelayAudio::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
+NEW_PICON_MACRO(DelayAudio);
+RAISE_WINDOW_MACRO(DelayAudio);
 
 void DelayAudio::update_gui()
 {
@@ -201,37 +175,7 @@ void DelayAudio::update_gui()
 	}
 }
 
-
-DelayAudioThread::DelayAudioThread(DelayAudio *plugin)
- : Thread()
-{
-	this->plugin = plugin;
-	set_synchronous(0);
-	completion.lock();
-}
-
-DelayAudioThread::~DelayAudioThread()
-{
-	delete window;
-}
-
-
-void DelayAudioThread::run()
-{
-	BC_DisplayInfo info;
-
-	window = new DelayAudioWindow(plugin,
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
-
-	window->create_objects();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) plugin->client_side_close();
-}
-
-
+PLUGIN_THREAD_OBJECT(DelayAudio, DelayAudioThread, DelayAudioWindow);
 
 DelayAudioWindow::DelayAudioWindow(DelayAudio *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -252,7 +196,7 @@ DelayAudioWindow::~DelayAudioWindow()
 {
 }
 
-int DelayAudioWindow::create_objects()
+void DelayAudioWindow::create_objects()
 {
 	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(10, 10, _("Delay seconds:")));
@@ -260,22 +204,16 @@ int DelayAudioWindow::create_objects()
 	update_gui();
 	show_window();
 	flush();
-	return 0;
 }
 
-void DelayAudioWindow::close_event()
-{
-	set_done(1);
-}
 
 void DelayAudioWindow::update_gui()
 {
 	char string[BCTEXTLEN];
+
 	sprintf(string, "%.04f", plugin->config.length);
 	length->update(string);
 }
-
-
 
 
 DelayAudioTextBox::DelayAudioTextBox(DelayAudio *plugin, int x, int y)
@@ -296,18 +234,7 @@ int DelayAudioTextBox::handle_event()
 	return 1;
 }
 
-
 DelayAudioConfig::DelayAudioConfig()
 {
 	length = 1;
-}
-
-int DelayAudioConfig::equivalent(DelayAudioConfig &that)
-{
-	return(EQUIV(this->length, that.length));
-}
-
-void DelayAudioConfig::copy_from(DelayAudioConfig &that)
-{
-	this->length = that.length;
 }

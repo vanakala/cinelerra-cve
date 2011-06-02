@@ -39,25 +39,10 @@ class DelayAudioConfig
 public:
 	DelayAudioConfig();
 
-	int equivalent(DelayAudioConfig &that);
-	void copy_from(DelayAudioConfig &that);
 	double length;
 };
 
-
-class DelayAudioThread : public Thread
-{
-public:
-	DelayAudioThread(DelayAudio *plugin);
-	~DelayAudioThread();
-
-	void run();
-
-	Mutex completion;
-	DelayAudioWindow *window;
-	DelayAudio *plugin;
-};
-
+PLUGIN_THREAD_HEADER(DelayAudio, DelayAudioThread, DelayAudioWindow)
 
 class DelayAudioWindow : public BC_Window
 {
@@ -65,8 +50,7 @@ public:
 	DelayAudioWindow(DelayAudio *plugin, int x, int y);
 	~DelayAudioWindow();
 
-	int create_objects();
-	void close_event();
+	void create_objects();
 	void update_gui();
 
 	DelayAudio *plugin;
@@ -95,11 +79,12 @@ public:
 	PLUGIN_CLASS_MEMBERS(DelayAudioConfig, DelayAudioThread);
 
 	int is_realtime();
+	int has_pts_api();
 	void load_defaults();
 	void save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(int size, double *input_ptr, double *output_ptr);
+	void process_frame_realtime(AFrame *input, AFrame *output);
 
 	void update_gui();
 
