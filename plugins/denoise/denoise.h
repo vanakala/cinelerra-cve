@@ -22,8 +22,6 @@
 #ifndef DENOISE_H
 #define DENOISE_H
 
-
-
 #include "bchash.inc"
 #include "guicast.h"
 #include "mutex.h"
@@ -47,7 +45,7 @@ public:
 	DenoiseWindow(DenoiseEffect *plugin, int x, int y);
 	void create_objects();
 	void update();
-	void close_event();
+
 	DenoiseLevel *scale;
 	DenoiseEffect *plugin;
 };
@@ -62,9 +60,9 @@ public:
 	int equivalent(DenoiseConfig &that);
 	void interpolate(DenoiseConfig &prev, 
 		DenoiseConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_frame,
+		ptstime next_frame,
+		ptstime current_frame);
 	double level;
 };
 
@@ -106,9 +104,10 @@ public:
 	~DenoiseEffect();
 
 	int is_realtime();
+	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(int size, double *input_ptr, double *output_ptr);
+	void process_frame_realtime(AFrame *input, AFrame *output);
 
 	void load_defaults();
 	void save_defaults();
@@ -118,7 +117,7 @@ public:
 
 	void process_window();
 	double dot_product(double *data, double *filter, char filtlen);
-	int convolve_dec_2(double *input_sequence, 
+	void convolve_dec_2(double *input_sequence, 
 		int length,
 		double *filter, 
 		int filtlen, 
@@ -128,17 +127,17 @@ public:
 		WaveletFilters *decomp_filter, 
 		double *out_low, 
 		double *out_high);
-	int wavelet_decomposition(double *in_data, 
+	void wavelet_decomposition(double *in_data, 
 		int in_length,
 		double **out_data);
-	int tree_copy(double **output, 
+	void tree_copy(double **output, 
 		double **input, 
 		int length, 
 		int levels);
-	int threshold(int window_size, double gammas, int levels);
+	void threshold(int window_size, double gammas, int levels);
 	double dot_product_even(double *data, double *filter, int filtlen);
 	double dot_product_odd(double *data, double *filter, int filtlen);
-	int convolve_int_2(double *input_sequence, 
+	void convolve_int_2(double *input_sequence, 
 		int length,
 		double *filter, 
 		int filtlen, 
@@ -149,10 +148,9 @@ public:
 		int in_length,
 		WaveletFilters *recon_filter, 
 		double *output);
-	int wavelet_reconstruction(double **in_data, 
+	void wavelet_reconstruction(double **in_data, 
 		int in_length,
 		double *out_data);
-
 
 	PLUGIN_CLASS_MEMBERS(DenoiseConfig, DenoiseThread)
 
@@ -192,6 +190,5 @@ public:
 	int first_window;
 	int initialized;
 };
-
 
 #endif

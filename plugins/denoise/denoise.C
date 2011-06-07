@@ -24,6 +24,7 @@
 #include "bchash.h"
 #include "filexml.h"
 #include "denoise.h"
+#include "language.h"
 #include "picon_png.h"
 #include "units.h"
 #include "vframe.h"
@@ -31,19 +32,10 @@
 #include <math.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
 #define WINDOW_BORDER (window_size / 2)
 #define SGN(x) (x<0 ? -1: 1)
 
-
 REGISTER_PLUGIN(DenoiseEffect)
-
-
 
 DenoiseEffect::DenoiseEffect(PluginServer *server)
  : PluginAClient(server)
@@ -59,13 +51,9 @@ DenoiseEffect::~DenoiseEffect()
 }
 
 NEW_PICON_MACRO(DenoiseEffect)
-
-LOAD_CONFIGURATION_MACRO(DenoiseEffect, DenoiseConfig)
-
+LOAD_PTS_CONFIGURATION_MACRO(DenoiseEffect, DenoiseConfig)
 SHOW_GUI_MACRO(DenoiseEffect, DenoiseThread)
-
 RAISE_WINDOW_MACRO(DenoiseEffect)
-
 SET_STRING_MACRO(DenoiseEffect)
 
 void DenoiseEffect::delete_dsp()
@@ -96,7 +84,6 @@ void DenoiseEffect::delete_dsp()
 	dsp_out = 0;
 	dsp_iteration = 0;
 }
-
 
 void DenoiseEffect::reset()
 {
@@ -132,8 +119,7 @@ void DenoiseEffect::reset()
 
 const char* DenoiseEffect::plugin_title() { return N_("Denoise"); }
 int DenoiseEffect::is_realtime() { return 1; }
-
-
+int DenoiseEffect::has_pts_api() { return 1; }
 
 void DenoiseEffect::read_data(KeyFrame *keyframe)
 {
@@ -198,8 +184,6 @@ void DenoiseEffect::update_gui()
 	}
 }
 
-
-
 double DenoiseEffect::dot_product(double *data, double *filter, char filtlen)
 {
 	static int i;
@@ -210,7 +194,7 @@ double DenoiseEffect::dot_product(double *data, double *filter, char filtlen)
 	return sum;
 }
 
-int DenoiseEffect::convolve_dec_2(double *input_sequence, 
+void DenoiseEffect::convolve_dec_2(double *input_sequence, 
 	int length,
 	double *filter, 
 	int filtlen, 
@@ -233,12 +217,11 @@ int DenoiseEffect::convolve_dec_2(double *input_sequence,
 			offset = i - lengthm4;
 			shortlen = filtlen - offset;
 			*output_sequence++ = dot_product(input_sequence + lengthp4,
-								filter + offset, shortlen);
+							filter + offset, shortlen);
 		}
 		else
 			*output_sequence++ = dot_product(input_sequence + i, filter, filtlen);
 	}
-	return 0;
 }
 
 int DenoiseEffect::decompose_branches(double *in_data, 
@@ -254,7 +237,7 @@ int DenoiseEffect::decompose_branches(double *in_data,
 	return (length / 2);
 }
 
-int DenoiseEffect::wavelet_decomposition(double *in_data, 
+void DenoiseEffect::wavelet_decomposition(double *in_data, 
 	int in_length, 
 	double **out_data)
 {
@@ -268,10 +251,9 @@ int DenoiseEffect::wavelet_decomposition(double *in_data,
 
 		in_data = out_data[2 * i];
 	}
-	return 0;
 }
 
-int DenoiseEffect::tree_copy(double **output, 
+void DenoiseEffect::tree_copy(double **output, 
 	double **input, 
 	int length, 
 	int levels)
@@ -300,10 +282,9 @@ int DenoiseEffect::tree_copy(double **output,
 		output[l][j] = input[l][j];
 		output[m][j] = input[m][j];
 	}
-	return 0;
 }
 
-int DenoiseEffect::threshold(int window_size, double gammas, int levels)
+void DenoiseEffect::threshold(int window_size, double gammas, int levels)
 {
 	int i, j;
 	double threshold, cv, cvb, abs_coeff_r;
@@ -339,7 +320,6 @@ int DenoiseEffect::threshold(int window_size, double gammas, int levels)
 	}
 }
 
-
 double DenoiseEffect::dot_product_even(double *data, double *filter, int filtlen)
 {
 	static int i;
@@ -349,7 +329,6 @@ double DenoiseEffect::dot_product_even(double *data, double *filter, int filtlen
 	for(i = 0; i < filtlen; i += 2) sum += *data-- * filter[i];
 	return sum;
 }
-
 
 double DenoiseEffect::dot_product_odd(double *data, double *filter, int filtlen)
 {
@@ -361,7 +340,7 @@ double DenoiseEffect::dot_product_odd(double *data, double *filter, int filtlen)
 	return sum;
 }
 
-int DenoiseEffect::convolve_int_2(double *input_sequence, 
+void DenoiseEffect::convolve_int_2(double *input_sequence, 
 	int length,
 	double *filter, 
 	int filtlen, 
@@ -397,9 +376,7 @@ int DenoiseEffect::convolve_int_2(double *input_sequence,
 
 		*output_sequence++ = dot_product_odd(input_sequence + i, filter, filtlen);
 	}
-	return 0;
 }
-
 
 int DenoiseEffect::reconstruct_branches(double *in_low, 
 	double *in_high, 
@@ -410,13 +387,13 @@ int DenoiseEffect::reconstruct_branches(double *in_low,
 // take input data and filters and form two branches of half the
 // original length. length of branches is returned
 	convolve_int_2(in_low, in_length, recon_filter->h, 
-					recon_filter->length, 0, output);
+			recon_filter->length, 0, output);
 	convolve_int_2(in_high, in_length, recon_filter->g, 
-					recon_filter->length, 1, output);
+			recon_filter->length, 1, output);
 	return in_length * 2;
 }
 
-int DenoiseEffect::wavelet_reconstruction(double **in_data, 
+void DenoiseEffect::wavelet_reconstruction(double **in_data, 
 	int in_length, 
 	double *out_data)
 {
@@ -442,8 +419,6 @@ int DenoiseEffect::wavelet_reconstruction(double **in_data,
 		in_length, 
 		recon_filter, 
 		out_data);
-
-	return 0;
 }
 
 void DenoiseEffect::process_window()
@@ -467,9 +442,10 @@ void DenoiseEffect::process_window()
 	}
 }
 
-
-int DenoiseEffect::process_realtime(int size, double *input_ptr, double *output_ptr)
+void DenoiseEffect::process_frame_realtime(AFrame *input, AFrame *output)
 {
+	int size = input->length;
+
 	load_configuration();
 
 	if(!initialized)
@@ -490,7 +466,7 @@ int DenoiseEffect::process_realtime(int size, double *input_ptr, double *output_
 		out_scale = output_level / 65535 * sqrt(window_size);
 		initialized = 1;
 	}
-	
+
 // Append input buffer
 	if(input_size + size > input_allocation)
 	{
@@ -504,10 +480,9 @@ int DenoiseEffect::process_realtime(int size, double *input_ptr, double *output_
 		input_allocation = input_size + size;
 	}
 	memcpy(input_buffer + input_size, 
-		input_ptr, 
+		input->buffer,
 		size * sizeof(double));
 	input_size += size;
-
 
 // Have enough to do some windows
 	while(input_size >= window_size)
@@ -517,13 +492,12 @@ int DenoiseEffect::process_realtime(int size, double *input_ptr, double *output_
 		{
 			dsp_in[i] = input_buffer[i] * in_scale;
 		}
-		bzero(dsp_out, sizeof(double) * window_size);
+		memset(dsp_out, 0, sizeof(double) * window_size);
 
 // First window produces garbage
 		if(!first_window)
 			process_window();
 		first_window = 0;
-
 
 // Crossfade into the output buffer
 		int new_allocation = output_size + window_size;
@@ -572,20 +546,21 @@ int DenoiseEffect::process_realtime(int size, double *input_ptr, double *output_
 		input_size -= window_size - WINDOW_BORDER;
 	}
 
+	if(input != output)
+		output->copy_of(input);
+
 // Have enough to send to output
 	if(output_size - WINDOW_BORDER >= size)
 	{
-		memcpy(output_ptr, output_buffer, sizeof(double) * size);
+		memcpy(output->buffer, output_buffer, sizeof(double) * size);
 		for(int i = size, j = 0; i < output_size; i++, j++)
 			output_buffer[j] = output_buffer[i];
 		output_size -= size;
 	}
 	else
 	{
-		memset(output_ptr, 0, sizeof(double) * size);
+		memset(output->buffer, 0, sizeof(double) * size);
 	}
-
-	return 0;
 }
 
 
@@ -717,17 +692,16 @@ int DenoiseConfig::equivalent(DenoiseConfig &that)
 
 void DenoiseConfig::interpolate(DenoiseConfig &prev, 
 	DenoiseConfig &next, 
-	samplenum prev_frame, 
-	samplenum next_frame, 
-	samplenum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (current_pts - prev_pts) / (next_pts - prev_pts);
+	double prev_scale = (next_pts - current_pts) / (next_pts - prev_pts);
 	this->level = prev.level * prev_scale + next.level * next_scale;
 }
 
 PLUGIN_THREAD_OBJECT(DenoiseEffect, DenoiseThread, DenoiseWindow)
-
 
 DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -754,11 +728,6 @@ void DenoiseWindow::create_objects()
 	add_subwindow(scale = new DenoiseLevel(plugin, x, y));
 	show_window();
 	flush();
-}
-
-void DenoiseWindow::close_event()
-{
-	set_done(1);
 }
 
 void DenoiseWindow::update()
