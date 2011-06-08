@@ -24,6 +24,7 @@
 #include "bchash.h"
 #include "guicast.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
 #include "revmodel.hpp"
@@ -32,11 +33,6 @@
 
 #include <math.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 class FreeverbEffect;
 
@@ -49,9 +45,9 @@ public:
 	void copy_from(FreeverbConfig &that);
 	void interpolate(FreeverbConfig &prev, 
 		FreeverbConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	float gain;
 	float roomsize;
@@ -120,13 +116,11 @@ public:
 };
 
 
-
 class FreeverbWindow : public BC_Window
 {
 public:
 	FreeverbWindow(FreeverbEffect *plugin, int x, int y);
 	void create_objects();
-	void close_event();
 
 	FreeverbEffect *plugin;
 
@@ -141,8 +135,6 @@ public:
 
 PLUGIN_THREAD_HEADER(FreeverbEffect, FreeverbThread, FreeverbWindow)
 
-
-
 class FreeverbEffect : public PluginAClient
 {
 public:
@@ -153,9 +145,10 @@ public:
 
 	int is_realtime();
 	int is_multichannel();
+	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(int size, double **input_ptr, double **output_ptr);
+	void process_frame_realtime(AFrame **input, AFrame **output);
 
 	void load_defaults();
 	void save_defaults();
@@ -317,11 +310,6 @@ void FreeverbWindow::create_objects()
 	flush();
 }
 
-void FreeverbWindow::close_event()
-{
-	set_done(1);
-}
-
 
 FreeverbConfig::FreeverbConfig()
 {
@@ -358,12 +346,12 @@ void FreeverbConfig::copy_from(FreeverbConfig &that)
 
 void FreeverbConfig::interpolate(FreeverbConfig &prev, 
 	FreeverbConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (current_pts - prev_pts) / (next_pts - prev_pts);
+	double prev_scale = (next_pts - current_pts) / (next_pts - prev_pts);
 
 	gain = prev.gain * prev_scale + next.gain * next_scale;
 	wet = prev.wet * prev_scale + next.wet * next_scale;
@@ -404,7 +392,7 @@ FreeverbEffect::~FreeverbEffect()
 
 NEW_PICON_MACRO(FreeverbEffect)
 
-LOAD_CONFIGURATION_MACRO(FreeverbEffect, FreeverbConfig)
+LOAD_PTS_CONFIGURATION_MACRO(FreeverbEffect, FreeverbConfig)
 
 SHOW_GUI_MACRO(FreeverbEffect, FreeverbThread)
 
@@ -412,11 +400,10 @@ RAISE_WINDOW_MACRO(FreeverbEffect)
 
 SET_STRING_MACRO(FreeverbEffect)
 
-
 const char* FreeverbEffect::plugin_title() { return N_("Freeverb"); }
 int FreeverbEffect::is_realtime() { return 1; }
 int FreeverbEffect::is_multichannel() { return 1; }
-
+int FreeverbEffect::has_pts_api() { return 1; }
 
 
 void FreeverbEffect::read_data(KeyFrame *keyframe)
@@ -468,8 +455,9 @@ void FreeverbEffect::save_data(KeyFrame *keyframe)
 
 void FreeverbEffect::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%sfreeverb.rc", BCASTDIR);
+	char directory[BCTEXTLEN];
+
+	plugin_configuration_path(directory, "freeverb.rc");
 	defaults = new BC_Hash(directory);
 	defaults->load();
 
@@ -484,8 +472,6 @@ void FreeverbEffect::load_defaults()
 
 void FreeverbEffect::save_defaults()
 {
-	char string[BCTEXTLEN];
-
 	defaults->update("GAIN", config.gain);
 	defaults->update("ROOMSIZE", config.roomsize);
 	defaults->update("DAMP", config.damp);
@@ -495,7 +481,6 @@ void FreeverbEffect::save_defaults()
 	defaults->update("MODE", config.mode);
 	defaults->save();
 }
-
 
 void FreeverbEffect::update_gui()
 {
@@ -514,8 +499,10 @@ void FreeverbEffect::update_gui()
 	}
 }
 
-int FreeverbEffect::process_realtime(int size, double **input_ptr, double **output_ptr)
+void FreeverbEffect::process_frame_realtime(AFrame **input, AFrame **output)
 {
+	int size = input[0]->length;
+
 	load_configuration();
 	if(!engine) engine = new revmodel;
 
@@ -558,7 +545,7 @@ int FreeverbEffect::process_realtime(int size, double **input_ptr, double **outp
 	for(int i = 0; i < 2 && i < total_in_buffers; i++)
 	{
 		float *out = temp[i];
-		double *in = input_ptr[i];
+		double *in = input[i]->buffer;
 		for(int j = 0; j < size; j++)
 		{
 			out[j] = in[j];
@@ -586,13 +573,14 @@ int FreeverbEffect::process_realtime(int size, double **input_ptr, double **outp
 
 	for(int i = 0; i < 2 && i < total_in_buffers; i++)
 	{
-		double *out = output_ptr[i];
+		if(input[i] != output[i])
+			output[i]->copy_of(input[i]);
+
+		double *out = output[i]->buffer;
 		float *in = temp_out[i];
 		for(int j = 0; j < size; j++)
 		{
 			out[j] = gain_f * in[j];
 		}
 	}
-
-	return 0;
 }
