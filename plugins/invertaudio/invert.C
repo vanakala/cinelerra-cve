@@ -19,45 +19,44 @@
  * 
  */
 
+#include "language.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
 #include "vframe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 class InvertAudioEffect : public PluginAClient
 {
 public:
 	InvertAudioEffect(PluginServer *server)
-	 : PluginAClient(server)
-	{
-	};
-	~InvertAudioEffect()
-	{
-	};
+	 : PluginAClient(server) {};
+	~InvertAudioEffect(){};
 
-	VFrame* new_picon()
-	{
-		return new VFrame(picon_png);
-	};
-	const char* plugin_title()
-	{
-		return  N_("Invert Audio");
-	};
-	int is_realtime()
-	{
-		return 1;
-	};
-	int process_realtime(int size, double *input_ptr, double *output_ptr)
-	{
-		for(int i = 0; i < size; i++)
-			output_ptr[i] = -input_ptr[i];
-		return 0;
-	};
+	PLUGIN_CLASS_MEMBERS_TRANSITION
+
+	int is_realtime(){ return 1; };
+	int has_pts_api(){ return 1; };
+
+	void process_frame_realtime(AFrame *input_ptr, AFrame *output);
 };
 
 
 REGISTER_PLUGIN(InvertAudioEffect)
+
+NEW_PICON_MACRO(InvertAudioEffect)
+
+const char* InvertAudioEffect::plugin_title()
+{
+	return  N_("Invert Audio");
+};
+
+void InvertAudioEffect::process_frame_realtime(AFrame *input, AFrame *output)
+{
+	int size = input->length;
+
+	if(input != output)
+		output->copy_of(input);
+
+	for(int i = 0; i < size; i++)
+		output->buffer[i] = -input->buffer[i];
+};
