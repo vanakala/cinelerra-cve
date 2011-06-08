@@ -24,6 +24,7 @@
 #include "bchash.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "language.h"
 #include "leveleffect.h"
 #include "picon_png.h"
 #include "units.h"
@@ -34,13 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 REGISTER_PLUGIN(SoundLevelEffect)
-
 
 SoundLevelConfig::SoundLevelConfig()
 {
@@ -59,9 +54,9 @@ int SoundLevelConfig::equivalent(SoundLevelConfig &that)
 
 void SoundLevelConfig::interpolate(SoundLevelConfig &prev, 
 	SoundLevelConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	duration = prev.duration;
 }
@@ -115,10 +110,7 @@ void SoundLevelWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(SoundLevelWindow)
-
 PLUGIN_THREAD_OBJECT(SoundLevelEffect, SoundLevelThread, SoundLevelWindow)
-
 
 SoundLevelEffect::SoundLevelEffect(PluginServer *server)
  : PluginAClient(server)
@@ -134,7 +126,7 @@ SoundLevelEffect::~SoundLevelEffect()
 
 NEW_PICON_MACRO(SoundLevelEffect)
 
-LOAD_CONFIGURATION_MACRO(SoundLevelEffect, SoundLevelConfig)
+LOAD_PTS_CONFIGURATION_MACRO(SoundLevelEffect, SoundLevelConfig)
 
 SHOW_GUI_MACRO(SoundLevelEffect, SoundLevelThread)
 
@@ -152,7 +144,7 @@ void SoundLevelEffect::reset()
 
 const char* SoundLevelEffect::plugin_title() { return N_("SoundLevel"); }
 int SoundLevelEffect::is_realtime() { return 1; }
-
+int SoundLevelEffect::has_pts_api() { return 1; }
 
 void SoundLevelEffect::read_data(KeyFrame *keyframe)
 {
@@ -191,7 +183,10 @@ void SoundLevelEffect::save_data(KeyFrame *keyframe)
 
 void SoundLevelEffect::load_defaults()
 {
-	defaults = new BC_Hash(BCASTDIR "soundlevel.rc");
+	char directory[BCTEXTLEN];
+
+	plugin_configuration_path(directory, "soundlevel.rc");
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.duration = defaults->get("DURATION", config.duration);
@@ -214,14 +209,16 @@ void SoundLevelEffect::update_gui()
 	}
 }
 
-int SoundLevelEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+void SoundLevelEffect::process_frame_realtime(AFrame *input, AFrame *output)
 {
+	int size = input->length;
+
 	load_configuration();
 
 	accum_size += size;
 	for(int i = 0; i < size; i++)
 	{
-		double value = fabs(input_ptr[i]);
+		double value = fabs(input->buffer[i]);
 		if(value > max_accum) max_accum = value;
 		rms_accum += value * value;
 	}
@@ -237,7 +234,6 @@ int SoundLevelEffect::process_realtime(int64_t size, double *input_ptr, double *
 		max_accum = 0;
 		accum_size = 0;
 	}
-	return 0;
 }
 
 void SoundLevelEffect::render_gui(void *data, int size)
