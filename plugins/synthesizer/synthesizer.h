@@ -61,11 +61,10 @@ public:
 	SynthWindow(Synth *synth, int x, int y);
 	~SynthWindow();
 
-	int create_objects();
-	void close_event();
+	void create_objects();
 	void resize_event(int w, int h);
 	void update_gui();
-	int waveform_to_text(char *text, int waveform);
+	void waveform_to_text(char *text, int waveform);
 	void update_scrollbar();
 	void update_oscillators();
 
@@ -92,7 +91,7 @@ public:
 	SynthOscGUI(SynthWindow *window, int number);
 	~SynthOscGUI();
 
-	int create_objects(int view_y);
+	void create_objects(int view_y);
 
 	SynthOscGUILevel *level;
 	SynthOscGUIPhase *phase;
@@ -200,7 +199,7 @@ public:
 	SynthWaveForm(Synth *synth, int x, int y, char *text);
 	~SynthWaveForm();
 
-	int create_objects();
+	void create_objects();
 	Synth *synth;
 };
 
@@ -257,7 +256,7 @@ public:
 		int h);
 	~SynthCanvas();
 
-	int update();
+	void update();
 	Synth *synth;
 	SynthWindow *window;
 };
@@ -423,19 +422,7 @@ private:
 	float get_next_prime(float number);
 };
 
-
-class SynthThread : public Thread
-{
-public:
-	SynthThread(Synth *synth);
-	~SynthThread();
-
-	void run();
-
-	Mutex completion;
-	Synth *synth;
-	SynthWindow *window;
-};
+PLUGIN_THREAD_HEADER(Synth, SynthThread, SynthWindow)
 
 class SynthOscillatorConfig
 {
@@ -450,15 +437,12 @@ public:
 	void save_defaults(BC_Hash *defaults);
 	void read_data(FileXML *file);
 	void save_data(FileXML *file);
-	int is_realtime();
 
 	float level;
 	float phase;
 	float freq_factor;
 	int number;
 };
-
-
 
 class SynthConfig
 {
@@ -470,9 +454,9 @@ public:
 	void copy_from(SynthConfig &that);
 	void interpolate(SynthConfig &prev, 
 		SynthConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_ptstime);
 	void reset();
 
 	float wetness;
@@ -492,11 +476,12 @@ public:
 
 	int is_realtime();
 	int is_synthesis();
+	int has_pts_api();
 	void load_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void save_defaults();
-	int process_realtime(int size, double *input_ptr, double *output_ptr);
+	void process_frame_realtime(AFrame *input, AFrame *output);
 
 	void add_oscillator();
 	void delete_oscillator();
@@ -529,12 +514,5 @@ public:
 	samplenum waveform_sample;     // current sample in waveform of loop
 	float period;            // number of samples in a period for this frequency
 };
-
-
-
-
-
-
-
 
 #endif

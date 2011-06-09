@@ -23,76 +23,49 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "synthesizer.h"
 #include "vframe.h"
 
 #include <string.h>
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
-
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new Synth(server);
-}
-
+REGISTER_PLUGIN(Synth)
 
 Synth::Synth(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
-
 
 Synth::~Synth()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(dsp_buffer) delete [] dsp_buffer;
 }
 
-VFrame* Synth::new_picon()
-{
-	return new VFrame(picon_png);
-}
-
+NEW_PICON_MACRO(Synth)
 
 const char* Synth::plugin_title() { return N_("Synthesizer"); }
 int Synth::is_realtime() { return 1; }
 int Synth::is_synthesis() { return 1; }
-
+int Synth::has_pts_api() { return 1; }
 
 void Synth::reset()
 {
-	thread = 0;
 	need_reconfigure = 1;
 	dsp_buffer = 0;
 }
 
-
-LOAD_CONFIGURATION_MACRO(Synth, SynthConfig)
-
+LOAD_PTS_CONFIGURATION_MACRO(Synth, SynthConfig)
 
 void Synth::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
+	char directory[BCTEXTLEN];
 
-	sprintf(directory, "%ssynthesizer.rc", BCASTDIR);
+	plugin_configuration_path(directory, "synthesizer.rc");
 	defaults = new BC_Hash(directory);
 	defaults->load();
 	w = defaults->get("WIDTH", 380);
@@ -118,7 +91,6 @@ void Synth::read_data(KeyFrame *keyframe)
 // cause htal file to read directly from text
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-//printf("Synth::read_data %s\n", keyframe->data);
 	int result = 0, current_osc = 0, total_oscillators = 0;
 	while(!result)
 	{
@@ -196,7 +168,6 @@ SHOW_GUI_MACRO(Synth, SynthThread);
 SET_STRING_MACRO(Synth);
 RAISE_WINDOW_MACRO(Synth);
 
-
 void Synth::update_gui()
 {
 	if(thread)
@@ -207,7 +178,6 @@ void Synth::update_gui()
 		thread->window->unlock_window();
 	}
 }
-
 
 void Synth::add_oscillator()
 {
@@ -223,7 +193,6 @@ void Synth::delete_oscillator()
 		config.oscillator_config.remove_object();
 	}
 }
-
 
 double Synth::get_total_power()
 {
@@ -376,16 +345,24 @@ double Synth::function_triangle(double x)
 	return (x < .5) ? 1 - x * 4 : -3 + x * 4;
 }
 
-int Synth::process_realtime(int size, double *input_ptr, double *output_ptr)
+void Synth::process_frame_realtime(AFrame *input, AFrame *output)
 {
+	int size = input->length;
+	double wetness;
+
 	need_reconfigure |= load_configuration();
 	if(need_reconfigure) reconfigure();
 
-	double wetness = DB::fromdb(config.wetness);
-	if(EQUIV(config.wetness, INFINITYGAIN)) wetness = 0;
+	if(config.wetness < (INFINITYGAIN + EPSILON)) 
+		wetness = 0;
+	else
+		wetness = DB::fromdb(config.wetness);
+
+	if(input != output)
+		output->copy_of(input);
 
 	for(int j = 0; j < size; j++)
-		output_ptr[j] = input_ptr[j] * wetness;
+		output->buffer[j] = input->buffer[j] * wetness;
 
 	int fragment_len;
 	for(int i = 0; i < size; i += fragment_len)
@@ -393,9 +370,8 @@ int Synth::process_realtime(int size, double *input_ptr, double *output_ptr)
 		fragment_len = size;
 		if(i + fragment_len > size) fragment_len = size - i;
 
-		fragment_len = overlay_synth(i, fragment_len, input_ptr, output_ptr);
+		fragment_len = overlay_synth(i, fragment_len, input->buffer, output->buffer);
 	}
-	return 0;
 }
 
 int Synth::overlay_synth(samplenum start, int length, double *input, double *output)
@@ -451,34 +427,7 @@ void Synth::reconfigure()
 	waveform_sample = 0;
 }
 
-
-
-SynthThread::SynthThread(Synth *synth)
- : Thread()
-{
-	this->synth = synth;
-	set_synchronous(0);
-	completion.lock();
-}
-
-SynthThread::~SynthThread()
-{
-	delete window;
-}
-
-void SynthThread::run()
-{
-	BC_DisplayInfo info;
-	window = new SynthWindow(synth, 
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
-	window->create_objects();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) synth->client_side_close();
-}
-
+PLUGIN_THREAD_OBJECT(Synth, SynthThread, SynthWindow)
 
 SynthWindow::SynthWindow(Synth *synth, int x, int y)
  : BC_Window(synth->gui_string, 
@@ -499,7 +448,7 @@ SynthWindow::~SynthWindow()
 {
 }
 
-int SynthWindow::create_objects()
+void SynthWindow::create_objects()
 {
 	BC_MenuBar *menu;
 	set_icon(new VFrame(picon_png));
@@ -584,12 +533,6 @@ int SynthWindow::create_objects()
 
 	show_window();
 	flush();
-	return 0;
-}
-
-void SynthWindow::close_event()
-{
-	set_done(1);
 }
 
 void SynthWindow::resize_event(int w, int h)
@@ -672,8 +615,7 @@ void SynthWindow::update_oscillators()
 		oscillators.remove_object();
 }
 
-
-int SynthWindow::waveform_to_text(char *text, int waveform)
+void SynthWindow::waveform_to_text(char *text, int waveform)
 {
 	switch(waveform)
 	{
@@ -699,9 +641,7 @@ int SynthWindow::waveform_to_text(char *text, int waveform)
 		sprintf(text, _("Noise"));
 		break;
 	}
-	return 0;
 }
-
 
 SynthOscGUI::SynthOscGUI(SynthWindow *window, int number)
 {
@@ -717,7 +657,7 @@ SynthOscGUI::~SynthOscGUI()
 	delete freq;
 }
 
-int SynthOscGUI::create_objects(int y)
+void SynthOscGUI::create_objects(int y)
 {
 	char text[BCTEXTLEN];
 	sprintf(text, "%d:", number + 1);
@@ -726,11 +666,7 @@ int SynthOscGUI::create_objects(int y)
 	window->subwindow->add_subwindow(level = new SynthOscGUILevel(window->synth, this, y));
 	window->subwindow->add_subwindow(phase = new SynthOscGUIPhase(window->synth, this, y));
 	window->subwindow->add_subwindow(freq = new SynthOscGUIFreq(window->synth, this, y));
-	return 1;
 }
-
-
-
 
 SynthOscGUILevel::SynthOscGUILevel(Synth *synth, SynthOscGUI *gui, int y)
  : BC_FPot(50, 
@@ -755,7 +691,6 @@ int SynthOscGUILevel::handle_event()
 	synth->send_configure_change();
 	return 1;
 }
-
 
 
 SynthOscGUIPhase::SynthOscGUIPhase(Synth *synth, SynthOscGUI *gui, int y)
@@ -913,7 +848,7 @@ SynthWaveForm::~SynthWaveForm()
 {
 }
 
-int SynthWaveForm::create_objects()
+void SynthWaveForm::create_objects()
 {
 	add_item(new SynthWaveFormItem(synth, _("Sine"), SINE));
 	add_item(new SynthWaveFormItem(synth, _("Sawtooth"), SAWTOOTH));
@@ -921,7 +856,6 @@ int SynthWaveForm::create_objects()
 	add_item(new SynthWaveFormItem(synth, _("Triangle"), TRIANGLE));
 	add_item(new SynthWaveFormItem(synth, _("Pulse"), PULSE));
 	add_item(new SynthWaveFormItem(synth, _("Noise"), NOISE));
-	return 0;
 }
 
 SynthWaveFormItem::SynthWaveFormItem(Synth *synth, char *text, int value)
@@ -962,7 +896,6 @@ int SynthWetness::handle_event()
 }
 
 
-
 SynthFreqPot::SynthFreqPot(Synth *synth, SynthWindow *window, int x, int y)
  : BC_QPot(x, y, synth->config.base_freq)
 {
@@ -998,7 +931,7 @@ SynthBaseFreq::~SynthBaseFreq()
 int SynthBaseFreq::handle_event()
 {
 	int new_value = atol(get_text());
-	
+
 	if(new_value > 0 && new_value < 30000)
 	{
 		synth->config.base_freq = new_value;
@@ -1029,7 +962,7 @@ SynthCanvas::~SynthCanvas()
 {
 }
 
-int SynthCanvas::update()
+void SynthCanvas::update()
 {
 	int y1, y2, y = 0;
 
@@ -1042,7 +975,7 @@ int SynthCanvas::update()
 
 	double normalize_constant = (double)1 / synth->get_total_power();
 	y1 = (int)(synth->get_point((float)0, normalize_constant) * get_h() / 2);
-	
+
 	for(int i = 1; i < get_w(); i++)
 	{
 		y2 = (int)(synth->get_point((float)i / get_w(), normalize_constant) * get_h() / 2);
@@ -1050,7 +983,6 @@ int SynthCanvas::update()
 		y1 = y2;
 	}
 	flash();
-	return 0;
 }
 
 
@@ -1130,6 +1062,7 @@ int SynthLevelNormalize::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthLevelSlope::SynthLevelSlope(Synth *synth)
@@ -1160,6 +1093,7 @@ SynthLevelRandom::SynthLevelRandom(Synth *synth)
 { 
 	this->synth = synth; 
 }
+
 SynthLevelRandom::~SynthLevelRandom()
 {
 }
@@ -1221,6 +1155,7 @@ int SynthLevelSine::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 // ============================ phase calculations
@@ -1245,6 +1180,7 @@ int SynthPhaseInvert::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthPhaseZero::SynthPhaseZero(Synth *synth)
@@ -1313,6 +1249,7 @@ int SynthPhaseRandom::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 
@@ -1338,6 +1275,7 @@ int SynthFreqRandom::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthFreqEnum::SynthFreqEnum(Synth *synth)
@@ -1359,6 +1297,7 @@ int SynthFreqEnum::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthFreqEven::SynthFreqEven(Synth *synth)
@@ -1383,6 +1322,7 @@ int SynthFreqEven::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthFreqOdd::SynthFreqOdd(Synth *synth)
@@ -1404,6 +1344,7 @@ int SynthFreqOdd::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthFreqFibonacci::SynthFreqFibonacci(Synth *synth)
@@ -1429,6 +1370,7 @@ int SynthFreqFibonacci::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 SynthFreqPrime::SynthFreqPrime(Synth *synth)
@@ -1452,6 +1394,7 @@ int SynthFreqPrime::handle_event()
 
 	synth->thread->window->update_gui();
 	synth->send_configure_change();
+	return 1;
 }
 
 float SynthFreqPrime::get_next_prime(float number)
@@ -1617,12 +1560,12 @@ void SynthConfig::copy_from(SynthConfig& that)
 
 void SynthConfig::interpolate(SynthConfig &prev, 
 	SynthConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (double)(current_pts - prev_pts) / (next_pts - prev_pts);
+	double prev_scale = (double)(next_pts - current_pts) / (next_pts - prev_pts);
 
 	copy_from(prev);
 	wetness = (int)(prev.wetness * prev_scale + next.wetness * next_scale);
