@@ -47,6 +47,8 @@ public:
 	void copy(AFrame *that);
 // Copy parameters and length only
 	void copy_of(AFrame *that);
+// Mark frame filled to length
+	void set_filled(int length);
 
 	void dump(int dumpdata = 0);
 

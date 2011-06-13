@@ -120,6 +120,13 @@ void AFrame::copy_of(AFrame *that)
 	duration = that->duration;
 }
 
+void AFrame::set_filled(int length)
+{
+	check_buffer(length);
+	this->length = length;
+	duration = round((double)length / samplerate);
+}
+
 void AFrame::dump(int dumpdata)
 {
 	double avg, min, max;
@@ -130,7 +137,9 @@ void AFrame::dump(int dumpdata)
 	printf("    buffer %p buffer_length %d shared %d\n", buffer, buffer_length, shared);
 	if(dumpdata && length > 0)
 	{
-		avg = min = max = 0;
+		avg = 0;
+		min = +100;
+		max = -100;
 		for(int i = 0; i < length; i++)
 		{
 			avg += fabs(buffer[i]);
