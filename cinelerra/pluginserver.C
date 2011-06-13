@@ -500,6 +500,7 @@ void PluginServer::process_buffer(AFrame **buffer,
 	{
 		aclient->source_start = round(plugin->project_pts *
 			aclient->project_sample_rate);
+		aclient->source_start_pts = plugin->project_pts;
 		aclient->total_len = round(total_len * aframe->samplerate);
 	}
 

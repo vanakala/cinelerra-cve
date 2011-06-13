@@ -38,22 +38,20 @@ public:
 	InterpolateAudioEffect(PluginServer *server);
 	~InterpolateAudioEffect();
 
-	VFrame* new_picon();
-	const char* plugin_title();
+	PLUGIN_CLASS_MEMBERS_TRANSITION
 
-	int process_buffer(int size,
-		double *buffer,
-		samplenum start_position,
-		int sample_rate);
+	void process_frame(AFrame *buffer);
 	int is_realtime();
+	int has_pts_api();
+	int uses_gui();
 
 #define FRAGMENT_SIZE 4096
-	double *start_fragment;
-	double *end_fragment;
+	AFrame *start_frame;
+	AFrame *end_frame;
 	double start_sample;
 	double end_sample;
-	samplenum range_start;
-	samplenum range_end;
+	ptstime range_start;
+	ptstime range_end;
 };
 
 
@@ -62,14 +60,14 @@ REGISTER_PLUGIN(InterpolateAudioEffect)
 InterpolateAudioEffect::InterpolateAudioEffect(PluginServer *server)
  : PluginAClient(server)
 {
-	start_fragment = 0;
-	end_fragment = 0;
+	start_frame = 0;
+	end_frame = 0;
 }
 
 InterpolateAudioEffect::~InterpolateAudioEffect()
 {
-	if(start_fragment) delete [] start_fragment;
-	if(end_fragment) delete [] end_fragment;
+	if(start_frame) delete start_frame;
+	if(end_frame) delete end_frame;
 }
 
 
@@ -84,91 +82,58 @@ int InterpolateAudioEffect::is_realtime()
 	return 1;
 }
 
+int InterpolateAudioEffect::uses_gui()
+{
+	return 0;
+}
+
+int InterpolateAudioEffect::has_pts_api()
+{
+	return 1;
+}
 
 #include "picon_png.h"
 NEW_PICON_MACRO(InterpolateAudioEffect)
 
-
-
-int InterpolateAudioEffect::process_buffer(int size,
-	double *buffer,
-	samplenum start_position,
-	int sample_rate)
+void InterpolateAudioEffect::process_frame(AFrame *aframe)
 {
 	double slope;
 	double intercept;
 
-	if(!start_fragment) start_fragment = new double[FRAGMENT_SIZE];
-	if(!end_fragment) end_fragment = new double[FRAGMENT_SIZE];
+	if(!start_frame) start_frame = new AFrame(FRAGMENT_SIZE);
+	if(!end_frame) end_frame = new AFrame(FRAGMENT_SIZE);
 
-	if(get_direction() == PLAY_FORWARD)
-	{
 // On first sample of range.  Get boundary samples of effect.
-		if(get_source_position() == get_source_start())
-		{
+	if(PTSEQU(aframe->pts, source_start_pts))
+	{
 // Need to read before desired sample to diffuse transients after audio
 // seeks.
-			range_start = get_source_start();
-			range_end = get_source_start() + get_total_len();
-			read_samples(start_fragment,
-				0,
-				sample_rate,
-				range_start - FRAGMENT_SIZE,
-				FRAGMENT_SIZE);
-			start_sample = start_fragment[FRAGMENT_SIZE - 1];
-			read_samples(end_fragment,
-				0,
-				sample_rate,
-				range_end - FRAGMENT_SIZE,
-				FRAGMENT_SIZE);
-			end_sample = end_fragment[FRAGMENT_SIZE - 1];
-		}
+		range_start = source_start_pts;
+		range_end = source_start_pts + total_len_pts;
+		start_frame->copy_pts(aframe);
+		start_frame->pts -= (ptstime)FRAGMENT_SIZE / start_frame->samplerate;
+		start_frame->source_length = FRAGMENT_SIZE;
+		get_aframe_rt(start_frame);
+		start_sample = start_frame->buffer[FRAGMENT_SIZE - 1];
 
-
-		for(int i = 0; i < size; i++)
-		{
-			double end_fraction = (double)(i + start_position - range_start) / 
-				(range_end - range_start);
-			double start_fraction = 1.0 - end_fraction;
-			double out_sample = start_sample * start_fraction + 
-				end_sample * end_fraction;
-			buffer[i] = out_sample;
-		}
+		end_frame->copy_pts(aframe);
+		end_frame->pts = range_end - (ptstime)FRAGMENT_SIZE / end_frame->samplerate;
+		end_frame->source_length = FRAGMENT_SIZE;
+		get_aframe_rt(end_frame);
+		end_sample = end_frame->buffer[FRAGMENT_SIZE - 1];
 	}
-	else
+
+	aframe->set_filled(aframe->source_length);
+
+	for(int i = 0; i < aframe->length; i++)
 	{
-// On first sample of range.  Get boundary samples of effect.
-		if(get_source_position() == get_source_start() + get_total_len())
-		{
-// Need to read before desired sample to diffuse transients after audio
-// seeks.
-			range_start = get_source_start() + get_total_len();
-			range_end = get_source_start();
-			read_samples(start_fragment,
-				0,
-				sample_rate,
-				range_start,
-				FRAGMENT_SIZE);
-			start_sample = start_fragment[0];
-			read_samples(end_fragment,
-				0,
-				sample_rate,
-				range_end,
-				FRAGMENT_SIZE);
-			end_sample = end_fragment[0];
-		}
-
-		for(int i = 0; i < size; i++)
-		{
-			double start_fraction = (double)(start_position - i - range_end) / 
-				(range_start - range_end);
-			double end_fraction = 1.0 - start_fraction;
-			double out_sample = start_sample * start_fraction + 
-				end_sample * end_fraction;
-			buffer[i] = out_sample;
-		}
+		double end_fraction = (((double)i / aframe->samplerate) + aframe->pts - range_start) / 
+			(range_end - range_start);
+		double start_fraction = 1.0 - end_fraction;
+		double out_sample = start_sample * start_fraction + 
+			end_sample * end_fraction;
+		aframe->buffer[i] = out_sample;
 	}
-	return 0;
 }
 
 
