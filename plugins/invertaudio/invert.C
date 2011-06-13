@@ -36,6 +36,7 @@ public:
 
 	int is_realtime(){ return 1; };
 	int has_pts_api(){ return 1; };
+	int uses_gui(){ return 0; };
 
 	void process_frame_realtime(AFrame *input_ptr, AFrame *output);
 };
