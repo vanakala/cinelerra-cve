@@ -27,6 +27,7 @@
 #include "bchash.inc"
 #include "guicast.h"
 #include "mutex.h"
+#include "maxchannels.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
 
@@ -131,7 +132,6 @@ public:
 	void update();
 	void update_textboxes();
 	void update_canvas();
-	void close_event();
 	void draw_scales();
 
 	CompressorCanvas *canvas;
@@ -164,9 +164,9 @@ public:
 	int equivalent(CompressorConfig &that);
 	void interpolate(CompressorConfig &prev, 
 		CompressorConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts, 
+		ptstime current_pts);
 
 	int total_points();
 	void remove_point(int number);
@@ -204,12 +204,10 @@ public:
 
 	int is_multichannel();
 	int is_realtime();
+	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int size, 
-		double **buffer,
-		samplenum start_position,
-		int sample_rate);
+	void process_frame(AFrame **aframes);
 	double calculate_gain(double input);
 
 // Calculate linear output from linear input
@@ -223,8 +221,10 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(CompressorConfig, CompressorThread)
 
+// Frames for readahead
+	AFrame buffer_headers[MAXCHANNELS];
 // The raw input data for each channel with readahead
-	double **input_buffer;
+	double *input_buffer[MAXCHANNELS];
 // Number of samples in the input buffer 
 	int input_size;
 // Number of samples allocated in the input buffer

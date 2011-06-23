@@ -34,9 +34,7 @@
 #include <math.h>
 #include <string.h>
 
-
 REGISTER_PLUGIN(CompressorEffect)
-
 
 // More potential compressor algorithms:
 // Use single reaction time parameter.  Negative reaction time uses 
@@ -58,8 +56,6 @@ REGISTER_PLUGIN(CompressorEffect)
 // Gain stage.
 // For every sample, calculate gain from smoothed input value.
 
-
-
 CompressorEffect::CompressorEffect(PluginServer *server)
  : PluginAClient(server)
 {
@@ -76,22 +72,25 @@ CompressorEffect::~CompressorEffect()
 
 void CompressorEffect::delete_dsp()
 {
-	if(input_buffer)
+	for(int i = 0; i < PluginClient::total_in_buffers; i++)
 	{
-		for(int i = 0; i < PluginClient::total_in_buffers; i++)
+		if(input_buffer[i])
 			delete [] input_buffer[i];
-		delete [] input_buffer;
+		input_buffer[i] = 0;
+		buffer_headers[i].reset_buffer();
 	}
 
-	input_buffer = 0;
 	input_size = 0;
 	input_allocated = 0;
 }
 
-
 void CompressorEffect::reset()
 {
-	input_buffer = 0;
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		input_buffer[i] = 0;
+		buffer_headers[i].reset_buffer();
+	}
 	input_size = 0;
 	input_allocated = 0;
 	input_start = 0;
@@ -106,7 +105,7 @@ void CompressorEffect::reset()
 const char* CompressorEffect::plugin_title() { return N_("Compressor"); }
 int CompressorEffect::is_realtime() { return 1; }
 int CompressorEffect::is_multichannel() { return 1; }
-
+int CompressorEffect::has_pts_api() { return 1; }
 
 void CompressorEffect::read_data(KeyFrame *keyframe)
 {
@@ -135,7 +134,6 @@ void CompressorEffect::read_data(KeyFrame *keyframe)
 				double x = input.tag.get_property("X", (double)0);
 				double y = input.tag.get_property("Y", (double)0);
 				compressor_point_t point = { x, y };
-
 				config.levels.append(point);
 			}
 		}
@@ -158,7 +156,6 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.append_newline();
 
-
 	for(int i = 0; i < config.levels.total; i++)
 	{
 		output.tag.set_title("LEVEL");
@@ -174,8 +171,9 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 
 void CompressorEffect::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%scompression.rc", BCASTDIR);
+	char directory[BCTEXTLEN];
+
+	plugin_configuration_path(directory, "compression.rc");
 	defaults = new BC_Hash(directory);
 	defaults->load();
 
@@ -190,10 +188,10 @@ void CompressorEffect::load_defaults()
 	for(int i = 0; i < total_levels; i++)
 	{
 		config.levels.append();
-		sprintf(string, "X_%d", i);
-		config.levels.values[i].x = defaults->get(string, (double)0);
-		sprintf(string, "Y_%d", i);
-		config.levels.values[i].y = defaults->get(string, (double)0);
+		sprintf(directory, "X_%d", i);
+		config.levels.values[i].x = defaults->get(directory, (double)0);
+		sprintf(directory, "Y_%d", i);
+		config.levels.values[i].y = defaults->get(directory, (double)0);
 	}
 }
 
@@ -220,7 +218,6 @@ void CompressorEffect::save_defaults()
 	defaults->save();
 }
 
-
 void CompressorEffect::update_gui()
 {
 	if(thread)
@@ -234,19 +231,17 @@ void CompressorEffect::update_gui()
 	}
 }
 
-
 NEW_PICON_MACRO(CompressorEffect)
 SHOW_GUI_MACRO(CompressorEffect, CompressorThread)
 RAISE_WINDOW_MACRO(CompressorEffect)
 SET_STRING_MACRO(CompressorEffect)
-LOAD_CONFIGURATION_MACRO(CompressorEffect, CompressorConfig)
+LOAD_PTS_CONFIGURATION_MACRO(CompressorEffect, CompressorConfig)
 
-
-int CompressorEffect::process_buffer(int size,
-		double **buffer,
-		samplenum start_position,
-		int sample_rate)
+void CompressorEffect::process_frame(AFrame **aframes)
 {
+	AFrame *aframe = aframes[0];
+	int size = aframe->source_length;
+
 	load_configuration();
 
 // Calculate linear transfer from db 
@@ -266,28 +261,24 @@ int CompressorEffect::process_buffer(int size,
 	int decay_samples = (int)(config.decay_len * sample_rate + 0.5);
 	int trigger = CLIP(config.trigger, 0, PluginAClient::total_in_buffers - 1);
 
+// FIXIT: Clamping must be done in gui
 	CLAMP(reaction_samples, -1000000, 1000000);
 	CLAMP(decay_samples, reaction_samples, 1000000);
 	CLAMP(decay_samples, 1, 1000000);
-	if(labs(reaction_samples) < 1) reaction_samples = 1;
-	if(labs(decay_samples) < 1) decay_samples = 1;
+	if(abs(reaction_samples) < 1) reaction_samples = 1;
+	if(abs(decay_samples) < 1) decay_samples = 1;
 
 	int total_buffers = get_total_buffers();
 	if(reaction_samples > 0)
 	{
 		if(target_current_sample < 0) target_current_sample = reaction_samples;
 		for(int i = 0; i < total_buffers; i++)
-		{
-			read_samples(buffer[i],
-				i,
-				sample_rate,
-				start_position,
-				size);
-		}
+			get_aframe_rt(aframes[i]);
 
 		double current_slope = (next_target - previous_target) / 
 			reaction_samples;
-		double *trigger_buffer = buffer[trigger];
+		AFrame *trigger_frame = aframes[trigger];
+
 		for(int i = 0; i < size; i++)
 		{
 // Get slope required to reach current sample from smoothed sample over reaction
@@ -300,7 +291,7 @@ int CompressorEffect::process_buffer(int size,
 					double max = 0;
 					for(int j = 0; j < total_buffers; j++)
 					{
-						sample = fabs(buffer[j][i]);
+						sample = fabs(aframes[j]->buffer[i]);
 						if(sample > max) max = sample;
 					}
 					sample = max;
@@ -308,7 +299,7 @@ int CompressorEffect::process_buffer(int size,
 				}
 
 			case CompressorConfig::TRIGGER:
-				sample = fabs(trigger_buffer[i]);
+				sample = fabs(trigger_frame->buffer[i]);
 				break;
 
 			case CompressorConfig::SUM:
@@ -316,7 +307,7 @@ int CompressorEffect::process_buffer(int size,
 					double max = 0;
 					for(int j = 0; j < total_buffers; j++)
 					{
-						sample = fabs(buffer[j][i]);
+						sample = fabs(aframes[j]->buffer[i]);
 						max += sample;
 					}
 					sample = max;
@@ -367,14 +358,14 @@ int CompressorEffect::process_buffer(int size,
 			if(config.smoothing_only)
 			{
 				for(int j = 0; j < total_buffers; j++)
-					buffer[j][i] = current_value;
+					aframes[j]->buffer[i] = current_value;
 			}
 			else
 			{
 				double gain = calculate_gain(current_value);
 				for(int j = 0; j < total_buffers; j++)
 				{
-					buffer[j][i] *= gain;
+					aframes[j]->buffer[i] *= gain;
 				}
 			}
 		}
@@ -382,7 +373,8 @@ int CompressorEffect::process_buffer(int size,
 	else
 	{
 		if(target_current_sample < 0) target_current_sample = target_samples;
-		samplenum preview_samples = -reaction_samples;
+		int preview_samples = -reaction_samples;
+		samplenum start_position = aframe->to_samples(aframe->pts);
 
 // Start of new buffer is outside the current buffer.  Start buffer over.
 		if(start_position < input_start ||
@@ -413,22 +405,21 @@ int CompressorEffect::process_buffer(int size,
 // Expand buffer to handle preview size
 		if(size + preview_samples > input_allocated)
 		{
-			double **new_input_buffer = new double*[total_buffers];
 			for(int i = 0; i < total_buffers; i++)
 			{
-				new_input_buffer[i] = new double[size + preview_samples];
-				if(input_buffer)
+				double *new_buffer = new double[size + preview_samples];
+				if(input_buffer[i])
 				{
-					memcpy(new_input_buffer[i], 
+					memcpy(new_buffer,
 						input_buffer[i], 
 						input_size * sizeof(double));
 					delete [] input_buffer[i];
 				}
+				input_buffer[i] = new_buffer;
+				buffer_headers[i].channel = i;
+				buffer_headers[i].samplerate = sample_rate;
 			}
-			if(input_buffer) delete [] input_buffer;
-
 			input_allocated = size + preview_samples;
-			input_buffer = new_input_buffer;
 		}
 
 // Append data to input buffer to construct readahead area.
@@ -440,19 +431,20 @@ int CompressorEffect::process_buffer(int size,
 				fragment_size = size + preview_samples - input_size;
 			for(int i = 0; i < total_buffers; i++)
 			{
-				read_samples(input_buffer[i] + input_size,
-					i,
-					sample_rate,
-					input_start + input_size,
-					fragment_size);
+				buffer_headers[i].set_buffer(input_buffer[i] + input_size, fragment_size);
+				buffer_headers[i].set_fill_request(input_start + input_size, fragment_size);
+				get_aframe_rt(&buffer_headers[i]);
 			}
 			input_size += fragment_size;
 		}
 
-
 		double current_slope = (next_target - previous_target) /
 			target_samples;
 		double *trigger_buffer = input_buffer[trigger];
+
+		for(int k = 0; k < total_buffers; k++)
+			aframes[k]->set_filled(size);
+
 		for(int i = 0; i < size; i++)
 		{
 // Get slope from current sample to every sample in preview_samples.
@@ -461,7 +453,7 @@ int CompressorEffect::process_buffer(int size,
 // For optimization, calculate the first slope we really need.
 // Assume every slope up to the end of preview_samples has been calculated and
 // found <= to current slope.
-            int first_slope = preview_samples - 1;
+			int first_slope = preview_samples - 1;
 // Need new slope immediately
 			if(target_current_sample >= target_samples)
 				first_slope = 1;
@@ -545,20 +537,18 @@ int CompressorEffect::process_buffer(int size,
 			if(config.smoothing_only)
 			{
 				for(int j = 0; j < total_buffers; j++)
-					buffer[j][i] = current_value;
+					aframes[j]->buffer[i] = current_value;
 			}
 			else
 			{
 				double gain = calculate_gain(current_value);
 				for(int j = 0; j < total_buffers; j++)
 				{
-					buffer[j][i] = input_buffer[j][i] * gain;
+					aframes[j]->buffer[i] = input_buffer[j][i] * gain;
 				}
 			}
 		}
 	}
-
-	return 0;
 }
 
 double CompressorEffect::calculate_output(double x)
@@ -596,7 +586,6 @@ double CompressorEffect::calculate_output(double x)
 	else
 		return x;
 }
-
 
 double CompressorEffect::calculate_gain(double input)
 {
@@ -665,9 +654,9 @@ int CompressorConfig::equivalent(CompressorConfig &that)
 
 void CompressorConfig::interpolate(CompressorConfig &prev, 
 	CompressorConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	copy_from(prev);
 }
@@ -880,8 +869,6 @@ void CompressorWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(CompressorWindow)
-
 void CompressorWindow::draw_scales()
 {
 	set_font(SMALLFONT);
@@ -939,7 +926,6 @@ void CompressorWindow::draw_scales()
 			}
 		}
 	}
-
 	flash();
 }
 
@@ -1024,16 +1010,9 @@ void CompressorWindow::update_canvas()
 		
 		canvas->draw_box(x - POINT_W / 2, y - POINT_W / 2, POINT_W, POINT_W);
 	}
-	
 	canvas->flash();
 	canvas->flush();
 }
-
-
-
-
-
-
 
 
 CompressorCanvas::CompressorCanvas(CompressorEffect *plugin, int x, int y, int w, int h) 
@@ -1100,7 +1079,6 @@ int CompressorCanvas::button_release_event()
 		current_operation = NONE;
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -1295,11 +1273,13 @@ const char* CompressorInput::value_to_text(int value)
 {
 	switch(value)
 	{
-		case CompressorConfig::TRIGGER: return "Trigger";
-		case CompressorConfig::MAX: return "Maximum";
-		case CompressorConfig::SUM: return "Total";
+	case CompressorConfig::TRIGGER:
+		return "Trigger";
+	case CompressorConfig::MAX:
+		return "Maximum";
+	case CompressorConfig::SUM:
+		return "Total";
 	}
-
 	return "Trigger";
 }
 
