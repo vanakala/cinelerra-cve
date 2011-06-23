@@ -49,6 +49,26 @@ public:
 	void copy_of(AFrame *that);
 // Mark frame filled to length
 	void set_filled(int length);
+// Increase buffer size (keeps data in buffer)
+	void extend_buffer(int length);
+
+// Samples/duration conversions
+	samplenum to_samples(ptstime duration);
+	ptstime to_duration(samplenum samples);
+
+// Calculates source_duration
+	ptstime get_source_duration();
+
+// Calculates fill position in samples
+	samplenum fill_position(int srcpos = 0);
+
+// Calculates fill length, avoids buffer overflow
+	int fill_length();
+
+// Clears buffer, sets fill request
+	void set_fill_request(ptstime pts, ptstime duration);
+	void set_fill_request(ptstime pts, int length);
+	void set_fill_request(samplenum pos, int length);
 
 	void dump(int dumpdata = 0);
 

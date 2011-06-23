@@ -124,7 +124,83 @@ void AFrame::set_filled(int length)
 {
 	check_buffer(length);
 	this->length = length;
-	duration = round((double)length / samplerate);
+	duration = (ptstime)length / samplerate;
+}
+
+void AFrame::extend_buffer(int length)
+{
+	if(!shared && buffer_length < length)
+	{
+		if(buffer_length)
+		{
+			double *oldbuf = buffer;
+			buffer = new double[length];
+			if(this->length)
+				memcpy(buffer, oldbuf, this->length * sizeof(double));
+			delete [] oldbuf;
+		}
+		buffer_length = length;
+	}
+}
+
+samplenum AFrame::to_samples(ptstime duration)
+{
+	return round(duration * samplerate);
+}
+
+ptstime AFrame::to_duration(samplenum samples)
+{
+	return (ptstime)samples / samplerate;
+}
+
+ptstime AFrame::get_source_duration()
+{
+	if(source_duration)
+		return source_duration;
+	return (ptstime)source_length / samplerate;
+}
+
+samplenum AFrame::fill_position(int srcpos)
+{
+	if(srcpos || source_pts)
+		return round(source_pts * samplerate);
+	return (samplenum)(round(pts * samplerate)) + length;
+}
+
+int AFrame::fill_length()
+{
+	int len = 0;
+
+	if(source_duration <= 0)
+	{
+		if(source_length > 0)
+			len = source_length;
+	} else
+		len = round(source_duration * samplerate);
+	if(len + length > buffer_length)
+		len = buffer_length - len;
+	return len;
+}
+
+void AFrame::set_fill_request(ptstime pts, ptstime duration)
+{
+	reset_buffer();
+	this->pts = pts;
+	source_duration = duration;
+}
+
+void AFrame::set_fill_request(ptstime pts, int length)
+{
+	reset_buffer();
+	this->pts = pts;
+	source_length = length;
+}
+
+void AFrame::set_fill_request(samplenum position, int length)
+{
+	reset_buffer();
+	this->pts = to_duration(position);
+	source_length = length;
 }
 
 void AFrame::dump(int dumpdata)
