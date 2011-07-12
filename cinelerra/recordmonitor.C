@@ -633,23 +633,33 @@ void RecordMonitorCanvas::reset_translation()
 
 int RecordMonitorCanvas::keypress_event()
 {
-	int result = 0;
-	switch(get_canvas() && get_canvas()->get_keypress())
+	BC_WindowBase* canvas;
+
+	if(canvas = get_canvas())
 	{
-	case LEFT:
-		record->set_translation(--record->video_x, record->video_y);
-		break;
-	case RIGHT:
-		record->set_translation(++record->video_x, record->video_y);
-		break;
-	case UP:
-		record->set_translation(record->video_x, --record->video_y);
-		break;
-	case DOWN:
-		record->set_translation(record->video_x, ++record->video_y);
-		break;
+		int result = 1;
+
+		switch(canvas->get_keypress())
+		{
+		case LEFT:
+			record->set_translation(--record->video_x, record->video_y);
+			break;
+		case RIGHT:
+			record->set_translation(++record->video_x, record->video_y);
+			break;
+		case UP:
+			record->set_translation(record->video_x, --record->video_y);
+			break;
+		case DOWN:
+			record->set_translation(record->video_x, ++record->video_y);
+			break;
+		default:
+			result = 0;
+			break;
+		}
+		return result;
 	}
-	return result;
+	return 0;
 }
 
 
