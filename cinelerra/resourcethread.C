@@ -362,13 +362,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	}
 
 // Draw the picon
-	mwindow->gui->lock_window("ResourceThread::do_video");
-
-	if(interrupted)
-	{
-		mwindow->gui->unlock_window();
-		return;
-	}
 
 // Test for pixmap existence first
 	if(item->operation_count == operation_count)
@@ -391,7 +384,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);
 		}
 	}
-	mwindow->gui->unlock_window();
 }
 
 
