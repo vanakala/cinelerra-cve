@@ -697,7 +697,6 @@ void BC_WindowBase::draw_top_tiles(BC_WindowBase *parent_window, int x, int y, i
 			&origin_x, 
 			&origin_y, 
 			&tempwin);
-	top_level->unlock_window();
 	draw_tiles(parent_window->bg_pixmap, 
 		origin_x,
 		origin_y,
@@ -705,6 +704,7 @@ void BC_WindowBase::draw_top_tiles(BC_WindowBase *parent_window, int x, int y, i
 		y,
 		w,
 		h);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_top_background(BC_WindowBase *parent_window, 
@@ -726,7 +726,6 @@ void BC_WindowBase::draw_top_background(BC_WindowBase *parent_window,
 			&top_x, 
 			&top_y, 
 			&tempwin);
-	top_level->unlock_window();
 
 	XCopyArea(top_level->display, 
 		parent_window->pixmap->opaque_pixmap, 
@@ -738,6 +737,7 @@ void BC_WindowBase::draw_top_background(BC_WindowBase *parent_window,
 		h, 
 		x, 
 		y);
+	top_level->unlock_window();
 }
 
 void BC_WindowBase::draw_background(int x, int y, int w, int h)
