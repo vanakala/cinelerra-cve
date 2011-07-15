@@ -89,7 +89,7 @@ static int decode(quicktime_t *file,
 // Initialize decoder
 	if(!codec->decoder_initialized)
 	{
-		uint32_t samplerate = trak->mdia.minf.stbl.stsd.table[0].sample_rate;
+		long unsigned int samplerate = trak->mdia.minf.stbl.stsd.table[0].sample_rate;
 // FAAD needs unsigned char here
 		unsigned char channels = track_map->channels;
 		quicktime_init_vbr(vbr, channels);
