@@ -79,6 +79,7 @@ BC_WindowBase::~BC_WindowBase()
 		restore_vm();
 	}
 #endif
+	lock_window("BC_WindowBase::~BC_WindowBase");
 	is_deleting = 1;
 
 	top_level->ignore_win[top_level->last_ignore_win++] = win;
@@ -129,6 +130,7 @@ BC_WindowBase::~BC_WindowBase()
 	if(icon_pixmap) delete icon_pixmap;
 	if(icon_window) delete icon_window;
 	if(temp_bitmap) delete temp_bitmap;
+	unlock_window();
 
 	if(window_type == MAIN_WINDOW) 
 	{
@@ -650,6 +652,7 @@ void BC_WindowBase::dispatch_event()
 	else
 // Handle compressed events
 	{
+		lock_window("BC_WindowBase::dispatch_event - compressed");
 		if(resize_events)
 			dispatch_resize_event(last_resize_w, last_resize_h);
 		else
@@ -658,6 +661,7 @@ void BC_WindowBase::dispatch_event()
 		else
 		if(translation_events)
 			dispatch_translation_event();
+		unlock_window();
 
 		return;
 	}
@@ -760,6 +764,7 @@ void BC_WindowBase::dispatch_event()
 		break;
 
 	case MotionNotify:
+		lock_window("BC_WindowBase::dispatch_event MotionNotify");
 		get_key_masks(&event);
 // Dispatch previous motion event if this is a subsequent motion from a different window
 		if(motion_events && last_motion_win != event.xany.window)
@@ -770,10 +775,11 @@ void BC_WindowBase::dispatch_event()
 		last_motion_x = event.xmotion.x;
 		last_motion_y = event.xmotion.y;
 		last_motion_win = event.xany.window;
+		unlock_window();
 		break;
 
 	case ConfigureNotify:
-		lock_window("BC_WindowBase::dispatch_event Cfgnt");
+		lock_window("BC_WindowBase::dispatch_event ConfigureNotify");
 		get_key_masks(&event);
 		XTranslateCoordinates(top_level->display,
 			top_level->win,
