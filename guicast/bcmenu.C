@@ -221,8 +221,8 @@ void BC_Menu::activate_menu()
 			&new_x, 
 			&new_y, 
 			&tempwin);
-		top_level->unlock_window();
 		menu_popup->activate_menu(new_x, new_y, w, h, 0, 1);
+		top_level->unlock_window();
 	}
 	else
 		menu_popup->activate_menu(x, y, w, h, 1, 1);

@@ -139,9 +139,9 @@ void BC_MenuItem::activate_submenu()
 			&new_x, 
 			&new_y, 
 			&tempwin);
-		top_level->unlock_window();
 		submenu->activate_menu(new_x + 5, new_y, menu_popup->w - 10, h, 0, 0);
 		highlighted = 1;
+		top_level->unlock_window();
 	}
 }
 
@@ -200,7 +200,6 @@ int BC_MenuItem::dispatch_button_release(int &redraw)
 			&cursor_x, 
 			&cursor_y, 
 			&tempwin);
-		top_level->unlock_window();
 		if(cursor_x >= 0 && cursor_x < menu_popup->get_w() &&
 			cursor_y >= y && cursor_y < y + h)
 		{
@@ -214,8 +213,10 @@ int BC_MenuItem::dispatch_button_release(int &redraw)
 				menu_popup->popup_menu->set_text(text);
 				menu_popup->popup_menu->handle_event();
 			}
+			top_level->unlock_window();
 			return 1;
 		}
+		top_level->unlock_window();
 	}
 	return 0;
 }
