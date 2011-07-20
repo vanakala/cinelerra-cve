@@ -22,15 +22,12 @@
 #ifndef PITCH_H
 #define PITCH_H
 
-
-
 #include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
-
 
 class PitchEffect;
 
@@ -48,7 +45,6 @@ public:
 	PitchWindow(PitchEffect *plugin, int x, int y);
 	void create_objects();
 	void update();
-	void close_event();
 	PitchScale *scale;
 	PitchEffect *plugin;
 };
@@ -65,9 +61,9 @@ public:
 	void copy_from(PitchConfig &that);
 	void interpolate(PitchConfig &prev, 
 		PitchConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	double scale;
 };
@@ -75,12 +71,10 @@ public:
 class PitchFFT : public CrossfadeFFT
 {
 public:
-	PitchFFT(PitchEffect *plugin);
+	PitchFFT(PitchEffect *plugin, int window_size);
 	~PitchFFT();
-	int signal_process_oversample(int reset);
-	int read_samples(samplenum output_sample,
-		int samples, 
-		double *buffer);
+	void signal_process_oversample(int reset);
+	void get_frame(AFrame *aframe);
 
 	PitchEffect *plugin;
 
@@ -101,17 +95,14 @@ public:
 	PLUGIN_CLASS_MEMBERS(PitchConfig, PitchThread);
 
 	int is_realtime();
+	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 
-	int process_buffer(int size, 
-		double *buffer,
-		samplenum start_position,
-		int sample_rate);
+	void process_frame(AFrame *aframe);
 
 	void load_defaults();
 	void save_defaults();
-	void reset();
 	void update_gui();
 
 	PitchFFT *fft;

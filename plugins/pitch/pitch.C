@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -32,13 +31,9 @@
 #include <math.h>
 #include <string.h>
 
-
-
 #define WINDOW_SIZE 8192
 #define OVERSAMPLE 8
 
-
-//#define WINDOW_SIZE 131072
 
 REGISTER_PLUGIN(PitchEffect);
 
@@ -47,7 +42,7 @@ PitchEffect::PitchEffect(PluginServer *server)
  : PluginAClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
-	reset();
+	fft = 0;
 }
 
 PitchEffect::~PitchEffect()
@@ -59,8 +54,7 @@ PitchEffect::~PitchEffect()
 
 const char* PitchEffect::plugin_title() { return N_("Pitch shift"); }
 int PitchEffect::is_realtime() { return 1; }
-
-
+int PitchEffect::has_pts_api() { return 1; }
 
 void PitchEffect::read_data(KeyFrame *keyframe)
 {
@@ -99,38 +93,22 @@ void PitchEffect::save_data(KeyFrame *keyframe)
 
 void PitchEffect::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%spitch.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("pitch.rc");
 
 	config.scale = defaults->get("SCALE", config.scale);
 }
 
 void PitchEffect::save_defaults()
 {
-	char string[BCTEXTLEN];
-
 	defaults->update("SCALE", config.scale);
 	defaults->save();
 }
 
-
 LOAD_CONFIGURATION_MACRO(PitchEffect, PitchConfig)
-
 SHOW_GUI_MACRO(PitchEffect, PitchThread)
-
 RAISE_WINDOW_MACRO(PitchEffect)
-
 SET_STRING_MACRO(PitchEffect)
-
 NEW_PICON_MACRO(PitchEffect)
-
-
-void PitchEffect::reset()
-{
-	fft = 0;
-}
 
 void PitchEffect::update_gui()
 {
@@ -143,34 +121,22 @@ void PitchEffect::update_gui()
 	}
 }
 
-
-
-int PitchEffect::process_buffer(int size, 
-		double *buffer,
-		samplenum start_position,
-		int sample_rate)
+void PitchEffect::process_frame(AFrame *aframe)
 {
 	load_configuration();
 
 	if(!fft)
 	{
-		fft = new PitchFFT(this);
-		fft->initialize(WINDOW_SIZE);
+		fft = new PitchFFT(this, WINDOW_SIZE);
 		fft->set_oversample(OVERSAMPLE);
 	}
 
-	fft->process_buffer_oversample(start_position,
-		size, 
-		buffer,
-		get_direction());
-
-	return 0;
+	fft->process_frame_oversample(aframe);
 }
 
 
-
-PitchFFT::PitchFFT(PitchEffect *plugin)
- : CrossfadeFFT()
+PitchFFT::PitchFFT(PitchEffect *plugin, int window_size)
+ : CrossfadeFFT(window_size)
 {
 	this->plugin = plugin;
 	last_phase = new double[WINDOW_SIZE];
@@ -192,8 +158,7 @@ PitchFFT::~PitchFFT()
 	delete [] anal_freq;
 }
 
-
-int PitchFFT::signal_process_oversample(int reset)
+void PitchFFT::signal_process_oversample(int reset)
 {
 	double scale = plugin->config.scale;
 
@@ -224,7 +189,6 @@ int PitchFFT::signal_process_oversample(int reset)
 // Substract the expected advancement of phase
 		temp -= (double)i * expected_phase_diff;
 
-
 // wrap temp into -/+ PI ...  good trick!
 		int qpd = (int)(temp/M_PI);
 		if (qpd >= 0) 
@@ -233,7 +197,7 @@ int PitchFFT::signal_process_oversample(int reset)
 			qpd -= qpd&1;
 		temp -= M_PI*(double)qpd;
 
-// Deviation from bin frequency	
+// Deviation from bin frequency
 		temp = oversample * temp / (2.0 * M_PI);
 
 		temp = (double)(temp + i) * freq_per_bin;
@@ -278,20 +242,11 @@ int PitchFFT::signal_process_oversample(int reset)
 		fftw_data[i][0] = 0;
 		fftw_data[i][1] = 0;
 	}
-	
-
-	return 0;
 }
 
-int PitchFFT::read_samples(samplenum output_sample, 
-	int samples, 
-	double *buffer)
+void PitchFFT::get_frame(AFrame *aframe)
 {
-	return plugin->read_samples(buffer,
-		0,
-		plugin->get_samplerate(),
-		output_sample,
-		samples);
+	plugin->get_aframe_rt(aframe);
 }
 
 
@@ -312,12 +267,12 @@ void PitchConfig::copy_from(PitchConfig &that)
 
 void PitchConfig::interpolate(PitchConfig &prev, 
 	PitchConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (double)(current_pts - prev_pts) / (next_pts - prev_pts);
+	double prev_scale = (double)(next_pts - current_pts) / (next_pts - prev_pts);
 	scale = prev.scale * prev_scale + next.scale * next_scale;
 }
 
@@ -350,8 +305,6 @@ void PitchWindow::create_objects()
 	show_window();
 	flush();
 }
-
-WINDOW_CLOSE_EVENT(PitchWindow)
 
 void PitchWindow::update()
 {
