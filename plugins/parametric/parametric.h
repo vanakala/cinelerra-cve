@@ -50,8 +50,6 @@ class ParametricFFT;
 class ParametricEQ;
 
 
-
-
 class ParametricBand
 {
 public:
@@ -71,7 +69,7 @@ public:
 		HIGHPASS,
 		BANDPASS
 	};
-	
+
 	int freq;
 	float quality;
 	float magnitude;
@@ -88,9 +86,9 @@ public:
 	void copy_from(ParametricConfig &that);
 	void interpolate(ParametricConfig &prev, 
 		ParametricConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts, 
+		ptstime current_pts);
 
 	ParametricBand band[BANDS];
 	float wetness;
@@ -136,8 +134,6 @@ public:
 };
 
 
-
-
 class ParametricMode : public BC_PopupMenu
 {
 public:
@@ -145,15 +141,12 @@ public:
 
 	void create_objects();
 	int handle_event();
-	static int text_to_mode(char *text);
+	static int text_to_mode(const char *text);
 	static const char* mode_to_text(int mode);
 
 	int band;
 	ParametricEQ *plugin;
 };
-
-
-
 
 
 class ParametricBandGUI
@@ -180,7 +173,6 @@ public:
 };
 
 
-
 class ParametricWetness : public BC_FPot
 {
 public:
@@ -197,7 +189,6 @@ public:
 	~ParametricWindow();
 
 	void create_objects();
-	void close_event();
 	void update_gui();
 	void update_canvas();
 
@@ -207,16 +198,15 @@ public:
 	ParametricWetness *wetness;
 };
 
+
 class ParametricFFT : public CrossfadeFFT
 {
 public:
-	ParametricFFT(ParametricEQ *plugin);
+	ParametricFFT(ParametricEQ *plugin, int window_size);
 	~ParametricFFT();
 
-	int signal_process();
-	int read_samples(int64_t output_sample, 
-		int samples, 
-		double *buffer);
+	void signal_process();
+	void get_frame(AFrame *aframe);
 
 	ParametricEQ *plugin;
 };
@@ -229,20 +219,17 @@ public:
 	~ParametricEQ();
 
 	int is_realtime();
+	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int size,
-		double *buffer, 
-		samplenum start_position,
-		int sample_rate);
+	void process_frame(AFrame *aframe);
 
 	void load_defaults();
 	void save_defaults();
-	void reset();
 	void reconfigure();
 	void update_gui();
 
-	double calculate_envelope();
+	void calculate_envelope();
 	double gauss(double sigma, double a, double x);
 
 	double envelope[WINDOW_SIZE / 2];

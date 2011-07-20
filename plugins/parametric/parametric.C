@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
@@ -103,12 +102,12 @@ void ParametricConfig::copy_from(ParametricConfig &that)
 
 void ParametricConfig::interpolate(ParametricConfig &prev, 
 		ParametricConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame)
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (double)(current_pts - prev_pts) / (next_pts - prev_pts);
+	double prev_scale = (double)(next_pts - current_pts) / (next_pts - prev_pts);
 	wetness = prev.wetness;
 	for(int i = 0; i < BANDS; i++)
 	{
@@ -172,7 +171,6 @@ ParametricMode::ParametricMode(ParametricEQ *plugin, int x, int y, int band)
 		150, 
 		mode_to_text(plugin->config.band[band].mode))
 {
-//printf("ParametricMode::ParametricMode %d %d\n", band, plugin->config.band[band].mode);
 	this->plugin = plugin;
 	this->band = band;
 }
@@ -185,7 +183,6 @@ void ParametricMode::create_objects()
 	add_item(new BC_MenuItem(mode_to_text(ParametricBand::NONE)));
 }
 
-
 int ParametricMode::handle_event()
 {
 	plugin->config.band[band].mode = text_to_mode(get_text());
@@ -194,7 +191,7 @@ int ParametricMode::handle_event()
 	return 1;
 }
 
-int ParametricMode::text_to_mode(char *text)
+int ParametricMode::text_to_mode(const char *text)
 {
 	if(!strcmp(mode_to_text(ParametricBand::LOWPASS), text)) return ParametricBand::LOWPASS;
 	if(!strcmp(mode_to_text(ParametricBand::HIGHPASS), text)) return ParametricBand::HIGHPASS;
@@ -202,8 +199,6 @@ int ParametricMode::text_to_mode(char *text)
 	if(!strcmp(mode_to_text(ParametricBand::NONE), text)) return ParametricBand::NONE;
 	return ParametricBand::BANDPASS;
 }
-
-
 
 const char* ParametricMode::mode_to_text(int mode)
 {
@@ -224,7 +219,6 @@ const char* ParametricMode::mode_to_text(int mode)
 	return "";
 }
 
-
 ParametricBandGUI::ParametricBandGUI(ParametricEQ *plugin, ParametricWindow *window, int x, int y, int band)
 {
 	this->plugin = plugin;
@@ -244,7 +238,6 @@ ParametricBandGUI::~ParametricBandGUI()
 #define X3 110
 #define X4 160
 
-
 void ParametricBandGUI::create_objects()
 {
 	window->add_subwindow(freq = new ParametricFreq(plugin, X1, y, band));
@@ -260,7 +253,6 @@ void ParametricBandGUI::update_gui()
 	quality->update(plugin->config.band[band].quality);
 	magnitude->update(plugin->config.band[band].magnitude);
 }
-
 
 
 ParametricWetness::ParametricWetness(ParametricEQ *plugin, int x, int y)
@@ -411,11 +403,6 @@ void ParametricWindow::create_objects()
 	show_window();
 }
 
-void ParametricWindow::close_event()
-{
-	set_done(1);
-}
-
 void ParametricWindow::update_gui()
 {
 	for(int i = 0; i < BANDS; i++)
@@ -423,7 +410,6 @@ void ParametricWindow::update_gui()
 	wetness->update(plugin->config.wetness);
 	update_canvas();
 }
-
 
 void ParametricWindow::update_canvas()
 {
@@ -476,8 +462,8 @@ void ParametricWindow::update_canvas()
 PLUGIN_THREAD_OBJECT(ParametricEQ, ParametricThread, ParametricWindow)
 
 
-ParametricFFT::ParametricFFT(ParametricEQ *plugin)
- : CrossfadeFFT()
+ParametricFFT::ParametricFFT(ParametricEQ *plugin, int window_size)
+ : CrossfadeFFT(window_size)
 {
 	this->plugin = plugin;
 }
@@ -486,8 +472,7 @@ ParametricFFT::~ParametricFFT()
 {
 }
 
-
-int ParametricFFT::signal_process()
+void ParametricFFT::signal_process()
 {
 	for(int i = 0; i < window_size / 2; i++)
 	{
@@ -498,18 +483,11 @@ int ParametricFFT::signal_process()
 	}
 
 	symmetry(window_size, freq_real, freq_imag);
-	return 0;
 }
 
-int ParametricFFT::read_samples(int64_t output_sample, 
-	int samples, 
-	double *buffer)
+void ParametricFFT::get_frame(AFrame *aframe)
 {
-	return plugin->read_samples(buffer,
-		0,
-		plugin->get_samplerate(),
-		output_sample,
-		samples);
+	plugin->get_aframe_rt(aframe);
 }
 
 
@@ -529,18 +507,14 @@ ParametricEQ::~ParametricEQ()
 }
 
 NEW_PICON_MACRO(ParametricEQ)
-
 SHOW_GUI_MACRO(ParametricEQ, ParametricThread)
-
 RAISE_WINDOW_MACRO(ParametricEQ)
-
 SET_STRING_MACRO(ParametricEQ)
-
-LOAD_CONFIGURATION_MACRO(ParametricEQ, ParametricConfig)
-
+LOAD_PTS_CONFIGURATION_MACRO(ParametricEQ, ParametricConfig)
 
 const char* ParametricEQ::plugin_title() { return N_("EQ Parametric"); }
 int ParametricEQ::is_realtime() { return 1; }
+int ParametricEQ::has_pts_api() { return 1; }
 
 void ParametricEQ::read_data(KeyFrame *keyframe)
 {
@@ -603,13 +577,9 @@ void ParametricEQ::save_data(KeyFrame *keyframe)
 void ParametricEQ::reconfigure()
 {
 	if(!fft)
-	{
-		fft = new ParametricFFT(this);
-		fft->initialize(WINDOW_SIZE);
-	}
+		fft = new ParametricFFT(this, WINDOW_SIZE);
 
 // Reset envelope
-
 	calculate_envelope();
 
 	for(int i = 0; i < WINDOW_SIZE / 2; i++)
@@ -620,7 +590,7 @@ void ParametricEQ::reconfigure()
 	need_reconfigure = 0;
 }
 
-double ParametricEQ::calculate_envelope()
+void ParametricEQ::calculate_envelope()
 {
 	double wetness = DB::fromdb(config.wetness);
 	int niquist = PluginAClient::project_sample_rate / 2;
@@ -686,7 +656,6 @@ double ParametricEQ::calculate_envelope()
 			}
 		}
 	}
-	return 0;
 }
 
 double ParametricEQ::gauss(double sigma, double a, double x)
@@ -699,26 +668,19 @@ double ParametricEQ::gauss(double sigma, double a, double x)
 			(2 * sigma * sigma));
 }
 
-
-int ParametricEQ::process_buffer(int size,
-	double *buffer, 
-	samplenum start_position,
-	int sample_rate)
+void ParametricEQ::process_frame(AFrame *aframe)
 {
 	need_reconfigure |= load_configuration();
 	if(need_reconfigure) reconfigure();
 
-	fft->process_buffer(start_position, size, buffer, get_direction());
-	return 0;
+	fft->process_frame(aframe);
 }
-
 
 void ParametricEQ::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%sparametriceq.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	char string[BCTEXTLEN];
+
+	defaults = load_defaults_file("parametriceq.rc");
 
 	config.wetness = defaults->get("WETNESS", config.wetness);
 	for(int i = 0; i < BANDS; i++)
@@ -753,14 +715,6 @@ void ParametricEQ::save_defaults()
 	}
 
 	defaults->save();
-}
-
-
-void ParametricEQ::reset()
-{
-	need_reconfigure = 1;
-	thread = 0;
-	fft = 0;
 }
 
 void ParametricEQ::update_gui()
