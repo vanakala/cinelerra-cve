@@ -19,16 +19,12 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "language.h"
-#include "mainprogress.h"
 #include "picon_png.h"
 #include "resample.h"
 #include "timestretch.h"
-#include "timestretchengine.h"
-#include "transportque.inc"
 #include "vframe.h"
 #include "filexml.h"
 
@@ -39,13 +35,11 @@
 #define INPUT_SIZE 65536
 #define OVERSAMPLE 8
 
-
 REGISTER_PLUGIN(TimeStretch)
 
 
-
-PitchEngine::PitchEngine(TimeStretch *plugin)
- : CrossfadeFFT()
+PitchEngine::PitchEngine(TimeStretch *plugin, int window_size)
+ : CrossfadeFFT(window_size)
 {
 	this->plugin = plugin;
 	last_phase = new double[WINDOW_SIZE];
@@ -58,14 +52,14 @@ PitchEngine::PitchEngine(TimeStretch *plugin)
 	input_buffer = 0;
 	input_size = 0;
 	input_allocated = 0;
-	current_output_sample = -100000000000LL;
+	current_output_pts = -1;
 	temp = 0;
 }
 
 PitchEngine::~PitchEngine()
 {
 	if(input_buffer) delete [] input_buffer;
-	if(temp) delete [] temp;
+	if(temp) delete temp;
 	delete [] last_phase;
 	delete [] new_freq;
 	delete [] new_magn;
@@ -74,36 +68,36 @@ PitchEngine::~PitchEngine()
 	delete [] anal_freq;
 }
 
-int PitchEngine::read_samples(samplenum output_sample, 
-	int samples, 
-	double *buffer)
+void PitchEngine::get_frame(AFrame *aframe)
 {
 // FIXME, make sure this is set at the beginning, always
-// FIXME: we need to do backward play also
-	if (current_output_sample != output_sample)
+	int samples = aframe->source_length;
+
+	if (!PTSEQU(current_output_pts,  aframe->pts))
 	{
 		input_size = 0;
-		double input_point = plugin->get_source_start() + (output_sample - plugin->get_source_start()) / plugin->config.scale;
-		current_input_sample = plugin->local_to_edl((int64_t)input_point);
-		current_output_sample = output_sample;
+		ptstime input_pts = plugin->source_start_pts + 
+			(aframe->pts - plugin->source_start_pts) / plugin->config.scale;
+		current_input_sample = aframe->to_samples(input_pts);
+		current_output_pts = aframe->pts;
 	}
 
 	while(input_size < samples)
 	{
 		double scale = plugin->config.scale;
-		if(!temp) temp = new double[INPUT_SIZE];
+		if(!temp)
+		{
+			temp = new AFrame(INPUT_SIZE);
+			temp->samplerate = aframe->samplerate;
+		}
+		temp->set_fill_request(current_input_sample, INPUT_SIZE);
+		plugin->get_aframe_rt(temp);
+		current_input_sample += aframe->length;
 
-		plugin->read_samples(temp, 
-			0, 
-			plugin->get_samplerate(),
-			current_input_sample, 
-			INPUT_SIZE);
-		current_input_sample +=INPUT_SIZE;
-
-		plugin->resample->resample_chunk(temp,
+		plugin->resample->resample_chunk(temp->buffer,
 			INPUT_SIZE,
-			1000000,
-			(int)(1000000 * scale),
+			temp->samplerate,
+			round(temp->samplerate * scale),
 			0);
 
 		int fragment_size = plugin->resample->get_output_size(0);
@@ -121,22 +115,21 @@ int PitchEngine::read_samples(samplenum output_sample,
 			input_allocated = new_allocated;
 		}
 
-
 		plugin->resample->read_output(input_buffer + input_size,
 			0,
 			fragment_size);
 		input_size += fragment_size;
 	}
-	memcpy(buffer, input_buffer, samples * sizeof(int64_t));
+	memcpy(aframe->buffer, input_buffer, aframe->source_length * sizeof(double));
 	memcpy(input_buffer, 
-		input_buffer + samples, 
-		sizeof(int64_t) * (input_size - samples));
+		input_buffer + aframe->source_length,
+		sizeof(double) * (input_size - samples));
+	aframe->set_filled(aframe->source_length);
 	input_size -= samples;
-	current_output_sample += samples;
-	return 0;
+	current_output_pts = aframe->pts + aframe->duration;
 }
 
-int PitchEngine::signal_process_oversample(int reset)
+void PitchEngine::signal_process_oversample(int reset)
 {
 	double scale = plugin->config.scale;
 
@@ -176,7 +169,7 @@ int PitchEngine::signal_process_oversample(int reset)
 			qpd -= qpd&1;
 		temp -= M_PI*(double)qpd;
 
-// Deviation from bin frequency	
+// Deviation from bin frequency
 		temp = oversample * temp / (2.0 * M_PI);
 
 		temp = (double)(temp + i) * freq_per_bin;
@@ -230,11 +223,7 @@ int PitchEngine::signal_process_oversample(int reset)
 		fftw_data[i][0] = 0;
 		fftw_data[i][1] = 0;
 	}
-
-	return 0;
 }
-
-
 
 
 TimeStretch::TimeStretch(PluginServer *server)
@@ -245,7 +234,6 @@ TimeStretch::TimeStretch(PluginServer *server)
 	temp = 0;
 	pitch = 0;
 	resample = 0;
-	stretch = 0;
 	input = 0;
 	input_allocated = 0;
 }
@@ -258,12 +246,12 @@ TimeStretch::~TimeStretch()
 	if(input) delete [] input;
 	if(pitch) delete pitch;
 	if(resample) delete resample;
-	if(stretch) delete stretch;
 }
 
 
 const char* TimeStretch::plugin_title() { return N_("Time stretch"); }
 int TimeStretch::is_realtime() { return 1; }
+int TimeStretch::has_pts_api() { return 1; }
 
 void TimeStretch::read_data(KeyFrame *keyframe)
 {
@@ -300,16 +288,10 @@ void TimeStretch::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-
-
 void TimeStretch::load_defaults()
 {
-	char directory[BCTEXTLEN];
-
-// set the default directory
-	sprintf(directory, "%stimestretch.rc", BCASTDIR);
 // load the defaults
-	defaults = new BC_Hash(directory);
+	defaults = load_defaults_file("timestretch.rc");
 	defaults->load();
 
 	config.scale = defaults->get("SCALE", (double)1);
@@ -339,26 +321,21 @@ void TimeStretchConfig::copy_from(TimeStretchConfig &that)
 
 void TimeStretchConfig::interpolate(TimeStretchConfig &prev, 
 	TimeStretchConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (double)(current_pts - prev_pts) / (next_pts - prev_pts);
+	double prev_scale = (double)(next_pts - current_pts) / (next_pts - prev_pts);
 	scale = prev.scale * prev_scale + next.scale * next_scale;
 }
 
 
-LOAD_CONFIGURATION_MACRO(TimeStretch, TimeStretchConfig)
-
+LOAD_PTS_CONFIGURATION_MACRO(TimeStretch, TimeStretchConfig)
 SHOW_GUI_MACRO(TimeStretch, TimeStretchThread)
-
 RAISE_WINDOW_MACRO(TimeStretch)
-
 SET_STRING_MACRO(TimeStretch)
-
 NEW_PICON_MACRO(TimeStretch)
-
 
 void TimeStretch::update_gui()
 {
@@ -371,46 +348,21 @@ void TimeStretch::update_gui()
 	}
 }
 
-
-int TimeStretch::get_parameters()
-{
-	BC_DisplayInfo info;
-	TimeStretchWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
-	window.create_objects();
-	int result = window.run_window();
-
-	return result;
-}
-
-
-int TimeStretch::process_buffer(int size, 
-		double *buffer,
-		samplenum start_position,
-		int sample_rate)
+void TimeStretch::process_frame(AFrame *aframe)
 {
 	load_configuration();
 
-	int result = 0;
-
 	if(!pitch)
 	{
-		pitch = new PitchEngine(this);
-		pitch->initialize(WINDOW_SIZE);
+		pitch = new PitchEngine(this, WINDOW_SIZE);
 		pitch->set_oversample(OVERSAMPLE);
 		resample = new Resample(0, 1);
 	}
 
-	pitch->process_buffer_oversample(start_position,
-		size, 
-		buffer,
-		get_direction());
-
-	return result;
+	pitch->process_frame_oversample(aframe);
 }
 
-
 PLUGIN_THREAD_OBJECT(TimeStretch, TimeStretchThread, TimeStretchWindow) 
-
 
 TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -438,8 +390,6 @@ void TimeStretchWindow::create_objects()
 	show_window();
 	flush();
 }
-
-WINDOW_CLOSE_EVENT(TimeStretchWindow)
 
 void TimeStretchWindow::update()
 {

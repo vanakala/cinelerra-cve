@@ -28,16 +28,11 @@
 #include "mainprogress.inc"
 #include "pluginaclient.h"
 #include "resample.inc"
-#include "timestretchengine.inc"
 #include "vframe.inc"
-
-
-
 
 class TimeStretch;
 class TimeStretchWindow;
 class TimeStretchConfig;
-
 
 
 class TimeStretchScale : public BC_FPot
@@ -54,7 +49,6 @@ public:
 	TimeStretchWindow(TimeStretch *plugin, int x, int y);
 	void create_objects();
 	void update();
-	void close_event();
 	TimeStretchScale *scale;
 	TimeStretch *plugin;
 };
@@ -71,9 +65,9 @@ public:
 	void copy_from(TimeStretchConfig &that);
 	void interpolate(TimeStretchConfig &prev, 
 		TimeStretchConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	double scale;
 };
@@ -82,21 +76,18 @@ public:
 class PitchEngine : public CrossfadeFFT
 {
 public:
-	PitchEngine(TimeStretch *plugin);
+	PitchEngine(TimeStretch *plugin, int window_size);
 	~PitchEngine();
-
-	int read_samples(samplenum output_sample, 
-		int samples, 
-		double *buffer);
-	int signal_process_oversample(int reset);
+	void get_frame(AFrame *frame);
+	void signal_process_oversample(int reset);
 
 	TimeStretch *plugin;
-	double *temp;
+	AFrame *temp;
 	double *input_buffer;
 	int input_size;
 	int input_allocated;
 	samplenum current_input_sample;
-	samplenum current_output_sample;
+	ptstime current_output_pts;
 
 	double *last_phase;
 	double *new_freq;
@@ -104,8 +95,6 @@ public:
 	double *sum_phase;
 	double *anal_freq;
 	double *anal_magn;
-
-
 };
 
 class TimeStretch : public PluginAClient
@@ -117,13 +106,10 @@ public:
 	PLUGIN_CLASS_MEMBERS(TimeStretchConfig, TimeStretchThread);
 
 	int is_realtime();
-	int get_parameters();
+	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int size, 
-		double *buffer,
-		posnum start_position,
-		int sample_rate);
+	void process_frame(AFrame *aframe);
 
 	void load_defaults();
 	void save_defaults();
@@ -136,8 +122,6 @@ public:
 	int temp_allocated;
 	double *input;
 	int input_allocated;
-
-	TimeStretchEngine *stretch;
 };
 
 #endif
