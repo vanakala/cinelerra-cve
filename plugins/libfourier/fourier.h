@@ -24,6 +24,7 @@
 
 
 #include "datatype.h"
+#include "aframe.h"
 #include <stdint.h>
 #include <fftw3.h>
 
@@ -51,9 +52,6 @@ public:
 	void symmetry(int size, double *freq_real, double *freq_imag);
 	unsigned int samples_to_bits(unsigned int samples);
 	unsigned int reverse_bits(unsigned int index, unsigned int bits);
-/* Pole
-	virtual void update_progress(int current_position);
-	*/
 
 	fftw_plan_desc *my_fftw_plan;
 	void ready_fftw(unsigned int samples);
@@ -70,48 +68,27 @@ public:
 class CrossfadeFFT : public FFT
 {
 public:
-	CrossfadeFFT();
+	CrossfadeFFT(int winsize = 4096);
 	virtual ~CrossfadeFFT();
 
-	void reset();
 	void initialize(int window_size);
 	long get_delay();     // Number of samples fifo is delayed
-	void reconfigure();
-	void fix_window_size();
-	void delete_fft();
-	// functioy to be called to initialize oversampling
+
+	// function to be called to initialize oversampling
 	void set_oversample(int oversample); // 2, 4,8 are good values
 
-
 // Read enough samples from input to generate the requested number of samples.
-// output_sample - tells it if we've seeked and the output overflow is invalid.
-// return - 0 on success 1 on failure
-// output_sample - start of samples if forward.  End of samples if reverse.
-//               It's always contiguous.
-// output_ptr - if nonzero, output is put here
-// direction - PLAY_FORWARD or PLAY_REVERSE
-	void process_buffer(samplenum output_sample,
-		int size,
-		double *output_ptr,
-		int direction);
-
-	int process_buffer_oversample(samplenum output_sample,
-		int size,
-		double *output_ptr,
-		int direction);
+	void process_frame(AFrame *aframe);
+	void process_frame_oversample(AFrame *aframe);
 
 // Called by process_buffer to read samples from input.
-// Returns 1 on error or 0 on success.
-	virtual int read_samples(samplenum output_sample, 
-		int samples, 
-		double *buffer);
-
+	virtual void get_frame(AFrame *aframe) {};
 // Process a window in the frequency domain, called by process_buffer()
-	virtual int signal_process();
+	virtual void signal_process() {};
 
 // Process a window in the frequency domain, called by process_buffer_oversample()
 // Reset parameter should cause to reset all accumulated data
-	virtual int signal_process_oversample(int reset);
+	virtual void signal_process_oversample(int reset) {};
 
 // Size of a window.  Automatically fixed to a power of 2
 	int window_size;
@@ -132,6 +109,7 @@ private:
 	double *temp_real;
 	double *temp_imag;
 
+	AFrame input_frame;
 // samples in input_buffer
 	int input_size;
 // window_size
@@ -147,7 +125,6 @@ private:
 // Don't crossfade the first window
 	int first_window;
 
-
 // Number of samples that are already processed and waiting in output_buffer
 	int samples_ready; 
 // Hanning window precalculated
@@ -157,7 +134,6 @@ private:
 protected:
 // Oversample factor
 	int oversample;
-
 };
 
 #endif

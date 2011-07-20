@@ -23,9 +23,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "aframe.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "fourier.h"
-#include "transportque.inc"
 
 #define HALF_WINDOW (window_size / 2)
 
@@ -136,11 +137,7 @@ void FFT::do_fft(unsigned int samples,  // must be a power of 2
 		}
 	}
 }
-/* Pole
-void FFT::update_progress(int current_position)
-{
-}
-	*/
+
 unsigned int FFT::samples_to_bits(unsigned int samples)
 {
 	unsigned int i;
@@ -206,7 +203,7 @@ void FFT::ready_fftw(unsigned int samples)
 		my_fftw_plan->next = fftw_plans;
 		fftw_plans = my_fftw_plan;
 	}
-	
+
 	FFT::plans_lock.unlock();
 }
 
@@ -221,19 +218,8 @@ void FFT::do_fftw_inplace(unsigned int samples,
 }
 
 
-CrossfadeFFT::CrossfadeFFT() 
+CrossfadeFFT::CrossfadeFFT(int winsize) 
  : FFT()
-{
-	reset();
-	window_size = 4096;
-}
-
-CrossfadeFFT::~CrossfadeFFT()
-{
-	delete_fft();
-}
-
-void CrossfadeFFT::reset()
 {
 	input_buffer = 0;
 	output_buffer = 0;
@@ -254,9 +240,14 @@ void CrossfadeFFT::reset()
 	pre_window = 0;
 	post_window = 0;
 	fftw_data = 0;
+
+// window size must be a power of 2
+	window_size = 16;
+	while(window_size < winsize) window_size *= 2;
+	window_size = MIN(131072, window_size);
 }
 
-void CrossfadeFFT::delete_fft()
+CrossfadeFFT::~CrossfadeFFT()
 {
 	if(input_buffer) delete [] input_buffer;
 	if(output_buffer) delete [] output_buffer;
@@ -267,54 +258,19 @@ void CrossfadeFFT::delete_fft()
 	if(pre_window) delete [] pre_window;
 	if(post_window) delete [] post_window;
 	if(fftw_data) fftw_free(fftw_data);
-	reset();
 }
 
-void CrossfadeFFT::fix_window_size()
+void CrossfadeFFT::process_frame(AFrame *aframe)
 {
-// fix the window size
-// window size must be a power of 2
-	int new_size = 16;
-	while(new_size < window_size) new_size *= 2;
-	window_size = MIN(131072, window_size);
-	window_size = new_size;
-}
+	int size = aframe->source_length;
 
-void CrossfadeFFT::initialize(int window_size)
-{
-	this->window_size = window_size;
-	first_window = 1;
-	reconfigure();
-}
-
-long CrossfadeFFT::get_delay()
-{
-	return window_size + HALF_WINDOW;
-}
-
-void CrossfadeFFT::reconfigure()
-{
-	delete_fft();
-	fix_window_size();
-}
-
-
-
-void CrossfadeFFT::process_buffer(samplenum output_sample, 
-	int size,
-	double *output_ptr,
-	int direction)
-{
-	int result = 0;
-	int step = (direction == PLAY_FORWARD) ? 1 : -1;
-
-	if(output_sample != this->output_sample || first_window)
+	if(!PTSEQU(aframe->pts, aframe->to_duration(output_sample)) || first_window)
 	{
 		output_size = 0;
 		input_size = 0;
 		first_window = 1;
-		this->output_sample = output_sample;
-		this->input_sample = output_sample;
+		input_sample = output_sample = aframe->to_samples(aframe->pts);
+		input_frame.samplerate = aframe->samplerate;
 	}
 
 // Fill output buffer half a window at a time until size samples are available
@@ -328,32 +284,32 @@ void CrossfadeFFT::process_buffer(samplenum output_sample,
 
 // Fill enough input to make a window starting at output_sample
 		if(first_window)
-			result = read_samples(this->input_sample,
-				window_size,
-				input_buffer);
+		{
+			input_frame.set_buffer(input_buffer, window_size);
+			input_frame.set_fill_request(input_sample, window_size);
+		}
 		else
-			result = read_samples(this->input_sample + step * HALF_WINDOW,
-				HALF_WINDOW,
-				input_buffer + HALF_WINDOW);
+		{
+			input_frame.set_buffer(input_buffer + HALF_WINDOW, HALF_WINDOW);
+			input_frame.set_fill_request(input_sample + HALF_WINDOW, HALF_WINDOW);
+		}
+		get_frame(&input_frame);
 
 		input_size = window_size;
 
-		if(!result)
-			do_fft(window_size,   // must be a power of 2
-				0,                // 0 = forward FFT, 1 = inverse
-				input_buffer,     // array of input's real samples
-				0,                // array of input's imag samples
-				freq_real,        // array of output's reals
-				freq_imag);
-		if(!result)
-			result = signal_process();
-		if(!result)
-			do_fft(window_size,  // must be a power of 2
-				1,               // 0 = forward FFT, 1 = inverse
-				freq_real,       // array of input's real samples
-				freq_imag,       // array of input's imag samples
-				temp_real,       // array of output's reals
-				temp_imag);      // array of output's imaginaries
+		do_fft(window_size,   // must be a power of 2
+			0,                // 0 = forward FFT, 1 = inverse
+			input_buffer,     // array of input's real samples
+			0,                // array of input's imag samples
+			freq_real,        // array of output's reals
+			freq_imag);
+		signal_process();
+		do_fft(window_size,  // must be a power of 2
+			1,               // 0 = forward FFT, 1 = inverse
+			freq_real,       // array of input's real samples
+			freq_imag,       // array of input's imag samples
+			temp_real,       // array of output's reals
+			temp_imag);      // array of output's imaginaries
 
 // Allocate output buffer
 		int new_allocation = output_size + window_size;
@@ -370,7 +326,6 @@ void CrossfadeFFT::process_buffer(samplenum output_sample,
 			output_buffer = new_output;
 			output_allocation = new_allocation;
 		}
-
 // Overlay processed buffer
 		if(first_window)
 		{
@@ -397,25 +352,22 @@ void CrossfadeFFT::process_buffer(samplenum output_sample,
 		output_size += HALF_WINDOW;
 
 // Shift input buffer
-		for(int i = window_size - HALF_WINDOW, j = 0;
-			i < input_size;
-			i++, j++)
-		{
-			input_buffer[j] = input_buffer[i];
-		}
+		memmove(input_buffer,
+			&input_buffer[window_size - HALF_WINDOW],
+			(input_size - (window_size - HALF_WINDOW)) * sizeof(double));
 		input_size = HALF_WINDOW;
-		this->input_sample += step * HALF_WINDOW;
+		input_sample += HALF_WINDOW;
 	}
 
 // Transfer output buffer
-	if(output_ptr)
+	if(aframe->buffer)
 	{
-		memcpy(output_ptr, output_buffer, sizeof(double) * size);
+		aframe->set_filled(size);
+		memcpy(aframe->buffer, output_buffer, sizeof(double) * size);
 	}
-	for(int i = 0, j = size; j < output_size + HALF_WINDOW; i++, j++)
-		output_buffer[i] = output_buffer[j];
-	this->output_sample += step * size;
-	this->output_size -= size;
+	memmove(output_buffer, output_buffer + size, (output_size + HALF_WINDOW - size) * sizeof(double));
+	output_sample += size;
+	output_size -= size;
 }
 
 void CrossfadeFFT::set_oversample(int oversample) 
@@ -439,44 +391,30 @@ void CrossfadeFFT::set_oversample(int oversample)
 	ready_fftw(window_size);
 }
 
-void smbFft(double *fftBuffer, long fftFrameSize, long sign);
-
-
-
-
-int CrossfadeFFT::process_buffer_oversample(samplenum output_sample,
-	int size,
-	double *output_ptr,
-	int direction)
+void CrossfadeFFT::process_frame_oversample(AFrame *aframe)
 {
 	if(oversample <= 0)
 	{
-		printf("set_oversample() has to be called to use process_buffer_oversample\n");
-		return 1;
+		// set_oversample() has to be called to use process_buffer_oversample
+		return;
 	}
-	int result = 0;
-	int step = (direction == PLAY_FORWARD) ? 1 : -1;
 
 	int overlap_size = window_size / oversample;
 	int total_size;
 	int start_skip;
+	int size = aframe->source_length;
 
-	if(!output_ptr)
-	{
-		printf("ERROR, no output pointer!\n");
-		return 1;
-	}
-	if(output_sample != this->output_sample || first_window)
+	if(!PTSEQU(aframe->pts, aframe->to_duration(output_sample)) || first_window)
 	{
 		input_size = 0;
 		first_window = 1;
-		this->output_sample = output_sample;
+		output_sample = aframe->to_samples(aframe->pts);
+		input_frame.samplerate = aframe->samplerate;
 		samples_ready = 0;
 		start_skip = window_size - overlap_size;
 		total_size = size + start_skip;
 // signal_process() will always be able to know which window it has by looking at input_sample
-		this->input_sample = output_sample - step * start_skip;
-		if (step == -1) this->input_sample += overlap_size;
+		input_sample = output_sample - start_skip;
 	} 
 	else
 	{
@@ -507,55 +445,42 @@ int CrossfadeFFT::process_buffer_oversample(samplenum output_sample,
 		if(!fftw_data) fftw_data = (fftw_complex *)fftw_malloc(window_size * sizeof(fftw_complex));
 
 // Fill enough input to make a window starting at output_sample
-		int64_t read_start;
+		samplenum read_start;
 		int write_pos;
 		int read_len;
 
 		if(first_window)
 		{
-			if (step == 1)
-				read_start = this->input_sample;
-			else
-				read_start = this->input_sample - window_size;
+			read_start = this->input_sample;
 			write_pos = 0;
 			read_len = window_size;
 		}
 		else
 		{
-			if (step == 1)
-			{
-				read_start = this->input_sample + window_size - overlap_size;
-				write_pos = window_size - overlap_size;
-			}
-			else
-			{
-				read_start = this->input_sample - window_size;
-				write_pos = 0;
-			}
+			read_start = this->input_sample + window_size - overlap_size;
+			write_pos = window_size - overlap_size;
 			read_len = overlap_size;
 		}
 
-		if (read_start + read_len * step< 0)
+		if (read_start + read_len < 0)
 		{
-// completely outside the track	
+// completely outside the track
 			memset (input_buffer + write_pos, 0, read_len * sizeof(double));
-			result = 1;
 		}
 		else
 		if (read_start < 0)
 		{
 // special case for reading before the track - in general it would be sensible that this behaviour is done by read_samples()
 			memset (input_buffer + write_pos, 0, - read_start * sizeof(double));
-			result = read_samples(0,
-				read_start + read_len,
-				input_buffer - read_start + write_pos);
+			input_frame.set_buffer(input_buffer - read_start + write_pos, read_start + read_len);
+			input_frame.set_fill_request((samplenum)0, read_start + read_len);
 		}
 		else
 		{
-			result = read_samples(read_start,
-				read_len,
-				input_buffer + write_pos);
+			input_frame.set_buffer(input_buffer + write_pos, read_len);
+			input_frame.set_fill_request(read_start, read_len);
 		}
+		get_frame(&input_frame);
 
 // apply Hanning window to input samples
 		for (int i = 0; i< window_size; i++) 
@@ -564,80 +489,31 @@ int CrossfadeFFT::process_buffer_oversample(samplenum output_sample,
 			fftw_data[i][1] = 0;
 		}
 
-		if(!result) 
-			do_fftw_inplace(window_size, 0, fftw_data);
-		if(!result)
-			result = signal_process_oversample(first_window);
-		if(!result) 
-			do_fftw_inplace(window_size, 1, fftw_data);
+		do_fftw_inplace(window_size, 0, fftw_data);
+		signal_process_oversample(first_window);
+		do_fftw_inplace(window_size, 1, fftw_data);
 
 // Overlay over existing output - overlap processing
-		if (step == 1)
-		{
-			for (int i = 0; i < window_size - overlap_size; i++)
-				output_buffer[i + samples_ready] += fftw_data[i][0] * post_window[i]; 
-			for (int i = window_size - overlap_size; i < window_size; i++)
-				output_buffer[i + samples_ready] = fftw_data[i][0] * post_window[i];
-		}
-		else
-		{
-			int offset = output_allocation - samples_ready - window_size;
-			for (int i = 0; i < overlap_size; i++)
-				output_buffer[i + offset] = fftw_data[i][0] * post_window[i]; 
-			for (int i = overlap_size; i < window_size; i++)
-				output_buffer[i + offset] += fftw_data[i][0] * post_window[i];
-		}
+		for (int i = 0; i < window_size - overlap_size; i++)
+			output_buffer[i + samples_ready] += fftw_data[i][0] * post_window[i]; 
+		for (int i = window_size - overlap_size; i < window_size; i++)
+			output_buffer[i + samples_ready] = fftw_data[i][0] * post_window[i];
 
 // Shift input buffer
-		if (step == 1) 
-			memmove(input_buffer, input_buffer + overlap_size, (window_size - overlap_size) * sizeof(double));
-		else
-			memmove(input_buffer + overlap_size, input_buffer, (window_size - overlap_size) * sizeof(double));
+		memmove(input_buffer, input_buffer + overlap_size, (window_size - overlap_size) * sizeof(double));
 
-		this->input_sample += step * overlap_size;
+		input_sample += overlap_size;
 
 		samples_ready += overlap_size;
 		first_window = 0;
 	}
 
-	if (step == 1)
-	{
-		memcpy(output_ptr, output_buffer + start_skip , size * sizeof(double));
-		samples_ready -= total_size;
+	memcpy(aframe->buffer, output_buffer + start_skip , aframe->source_length * sizeof(double));
+	aframe->set_filled(aframe->source_length);
+	samples_ready -= total_size;
 
-		memmove(output_buffer, 
-			output_buffer + total_size, 
-			(samples_ready + window_size - overlap_size) * sizeof(double));
-		this->output_sample += size;
-	}
-	else
-	{
-		memcpy(output_ptr, output_buffer + output_allocation - total_size , size * sizeof(double));
-		samples_ready -= total_size;
-
-		memmove(output_buffer + output_allocation - (samples_ready + window_size - overlap_size),
-			output_buffer + output_allocation - (samples_ready + window_size - overlap_size) - total_size, 
-			(samples_ready + window_size - overlap_size) * sizeof(double));
-		this->output_sample -= size;
-	}
-
-	return 0;
-}
-
-
-int CrossfadeFFT::read_samples(samplenum output_sample,
-		int samples, 
-		double *buffer)
-{
-	return 1;
-}
-
-int CrossfadeFFT::signal_process()
-{
-	return 0;
-}
-
-int CrossfadeFFT::signal_process_oversample(int reset)
-{
-	return 0;
+	memmove(output_buffer, 
+		output_buffer + total_size, 
+		(samples_ready + window_size - overlap_size) * sizeof(double));
+	this->output_sample += size;
 }
