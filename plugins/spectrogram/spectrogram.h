@@ -22,20 +22,12 @@
 #ifndef SPECTROGRAM_H
 #define SPECTROGRAM_H
 
-
-
-
-
-
 #include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
-
-
-
 
 class Spectrogram;
 class SpectrogramFFT;
@@ -57,7 +49,6 @@ public:
 	~SpectrogramWindow();
 
 	void create_objects();
-	void close_event();
 	void update_gui();
 
 	SpectrogramLevel *level;
@@ -66,20 +57,16 @@ public:
 	BC_SubWindow *canvas;
 };
 
-
-
 PLUGIN_THREAD_HEADER(Spectrogram, SpectrogramThread, SpectrogramWindow)
 
 class SpectrogramFFT : public CrossfadeFFT
 {
 public:
-	SpectrogramFFT(Spectrogram *plugin);
+	SpectrogramFFT(Spectrogram *plugin, int window_size);
 	~SpectrogramFFT();
-	
-	int signal_process();
-	int read_samples(int64_t output_sample, 
-		int samples, 
-		double *buffer);
+
+	void signal_process();
+	void get_frame(AFrame *aframe);
 
 	Spectrogram *plugin;
 };
@@ -102,10 +89,8 @@ public:
 	PLUGIN_CLASS_MEMBERS(SpectrogramConfig, SpectrogramThread);
 
 	int is_realtime();
-	int process_buffer(int size, 
-		double *buffer,
-		samplenum start_position,
-		int sample_rate);
+	int has_pts_api();
+	void process_frame(AFrame *aframe);
 	void load_defaults();
 	void save_defaults();
 	void read_data(KeyFrame *keyframe);
@@ -122,6 +107,5 @@ public:
 	float *data;
 	int total_windows;
 };
-
 
 #endif

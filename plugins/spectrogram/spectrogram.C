@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -29,10 +28,7 @@
 #include "units.h"
 #include "vframe.h"
 
-
 #include <string.h>
-
-
 
 REGISTER_PLUGIN(Spectrogram)
 
@@ -110,8 +106,6 @@ void SpectrogramWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(SpectrogramWindow)
-
 
 void SpectrogramWindow::update_gui()
 {
@@ -121,8 +115,8 @@ void SpectrogramWindow::update_gui()
 PLUGIN_THREAD_OBJECT(Spectrogram, SpectrogramThread, SpectrogramWindow)
 
 
-SpectrogramFFT::SpectrogramFFT(Spectrogram *plugin)
- : CrossfadeFFT()
+SpectrogramFFT::SpectrogramFFT(Spectrogram *plugin, int window_size)
+ : CrossfadeFFT(window_size)
 {
 	this->plugin = plugin;
 }
@@ -131,8 +125,7 @@ SpectrogramFFT::~SpectrogramFFT()
 {
 }
 
-
-int SpectrogramFFT::signal_process()
+void SpectrogramFFT::signal_process()
 {
 	double level = DB::fromdb(plugin->config.level);
 	for(int i = 0; i < HALF_WINDOW; i++)
@@ -143,25 +136,21 @@ int SpectrogramFFT::signal_process()
 	}
 
 	plugin->total_windows++;
-	return 0;
 }
 
-int SpectrogramFFT::read_samples(int64_t output_sample, 
-	int samples, 
-	double *buffer)
+void SpectrogramFFT::get_frame(AFrame *aframe)
 {
-	return plugin->read_samples(buffer,
-		0,
-		plugin->get_samplerate(),
-		output_sample,
-		samples);
+	plugin->get_aframe_rt(aframe);
 }
 
 
 Spectrogram::Spectrogram(PluginServer *server)
  : PluginAClient(server)
 {
-	reset();
+	thread = 0;
+	fft = 0;
+	done = 0;
+	data = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -173,54 +162,34 @@ Spectrogram::~Spectrogram()
 	if(data) delete [] data;
 }
 
-
-void Spectrogram::reset()
-{
-	thread = 0;
-	fft = 0;
-	done = 0;
-	data = 0;
-}
-
-
 const char* Spectrogram::plugin_title() { return N_("Spectrogram"); }
 int Spectrogram::is_realtime() { return 1; }
+int Spectrogram::has_pts_api() { return 1; }
 
-int Spectrogram::process_buffer(int size, 
-		double *buffer,
-		samplenum start_position,
-		int sample_rate)
+void Spectrogram::process_frame(AFrame *aframe)
 {
 	load_configuration();
 	if(!fft)
 	{
-		fft = new SpectrogramFFT(this);
-		fft->initialize(WINDOW_SIZE);
+		fft = new SpectrogramFFT(this, WINDOW_SIZE);
 	}
 	if(!data)
 	{
 		data = new float[HALF_WINDOW];
 	}
 
-	bzero(data, sizeof(float) * HALF_WINDOW);
+	memset(data, 0, sizeof(float) * HALF_WINDOW);
 	total_windows = 0;
-	fft->process_buffer(start_position,
-		size, 
-		buffer,
-		get_direction());
+	fft->process_frame(aframe);
+
 	for(int i = 0; i < HALF_WINDOW; i++)
 		data[i] /= total_windows;
 	send_render_gui(data, HALF_WINDOW);
-
-	return 0;
 }
 
 SET_STRING_MACRO(Spectrogram)
-
 NEW_PICON_MACRO(Spectrogram)
-
 SHOW_GUI_MACRO(Spectrogram, SpectrogramThread)
-
 RAISE_WINDOW_MACRO(Spectrogram)
 
 void Spectrogram::update_gui()
@@ -282,7 +251,7 @@ void Spectrogram::render_gui(void *data, int size)
 		double scale = (double)0xffffff;
 		for(int i = 0; i < h; i++)
 		{
-			int64_t color;
+			int color;
 			color = (int)(scale * temp[i]);
 
 			if(color < 0) color = 0;
@@ -344,11 +313,8 @@ void Spectrogram::save_data(KeyFrame *keyframe)
 
 void Spectrogram::load_defaults()
 {
-	char directory[BCTEXTLEN];
+	defaults = load_defaults_file("spectrogram.rc");
 
-	sprintf(directory, "%sspectrogram.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
 	config.level = defaults->get("LEVEL", config.level);
 }
 
@@ -357,7 +323,3 @@ void Spectrogram::save_defaults()
 	defaults->update("LEVEL", config.level);
 	defaults->save();
 }
-
-
-
-
