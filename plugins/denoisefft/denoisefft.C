@@ -19,18 +19,14 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
-#include "filesystem.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
-#include "mutex.h"
 #include "fourier.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
-#include "transportque.inc"
 #include "units.h"
 #include "vframe.h"
 
@@ -77,8 +73,8 @@ class DenoiseFFTWindow : public BC_Window
 {
 public:
 	DenoiseFFTWindow(DenoiseFFTEffect *plugin, int x, int y);
+	~DenoiseFFTWindow();
 	void create_objects();
-	void close_event();
 	DenoiseFFTLevel *level;
 	DenoiseFFTSamples *samples;
 	DenoiseFFTEffect *plugin;
@@ -91,22 +87,18 @@ PLUGIN_THREAD_HEADER(DenoiseFFTEffect, DenoiseFFTThread, DenoiseFFTWindow)
 class DenoiseFFTRemove : public CrossfadeFFT
 {
 public:
-	DenoiseFFTRemove(DenoiseFFTEffect *plugin);
-	int signal_process();
-	int read_samples(samplenum output_sample, 
-		int samples, 
-		double *buffer);
+	DenoiseFFTRemove(DenoiseFFTEffect *plugin, int window_size);
+	void signal_process();
+	void get_frame(AFrame *aframe);
 	DenoiseFFTEffect *plugin;
 };
 
 class DenoiseFFTCollect : public CrossfadeFFT
 {
 public:
-	DenoiseFFTCollect(DenoiseFFTEffect *plugin);
-	int signal_process();
-	int read_samples(int64_t output_sample, 
-		int samples, 
-		double *buffer);
+	DenoiseFFTCollect(DenoiseFFTEffect *plugin, int window_size);
+	void signal_process();
+	void get_frame(AFrame *aframe);
 	DenoiseFFTEffect *plugin;
 };
 
@@ -117,17 +109,14 @@ public:
 	~DenoiseFFTEffect();
 
 	int is_realtime();
+	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int size, 
-		double *buffer,
-		samplenum start_position,
-		int sample_rate);
+	void process_frame(AFrame *aframe);
 	void collect_noise();
 
 	void load_defaults();
 	void save_defaults();
-	void reset();
 	void update_gui();
 
 	void process_window();
@@ -136,8 +125,9 @@ public:
 
 // Need to sample noise now.
 	int need_collection;
+	AFrame noise_frame;
 // Start of sample of noise to collect
-	samplenum collection_sample;
+	ptstime collection_pts;
 	double *reference;
 	DenoiseFFTRemove *remove_engine;
 	DenoiseFFTCollect *collect_engine;
@@ -200,6 +190,10 @@ DenoiseFFTWindow::DenoiseFFTWindow(DenoiseFFTEffect *plugin, int x, int y)
 	this->plugin = plugin;
 }
 
+DenoiseFFTWindow::~DenoiseFFTWindow()
+{
+}
+
 void DenoiseFFTWindow::create_objects()
 {
 	int x = 10, y = 10;
@@ -226,7 +220,6 @@ void DenoiseFFTWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(DenoiseFFTWindow)
 
 PLUGIN_THREAD_OBJECT(DenoiseFFTEffect, DenoiseFFTThread, DenoiseFFTWindow)
 
@@ -234,7 +227,11 @@ PLUGIN_THREAD_OBJECT(DenoiseFFTEffect, DenoiseFFTThread, DenoiseFFTWindow)
 DenoiseFFTEffect::DenoiseFFTEffect(PluginServer *server)
  : PluginAClient(server)
 {
-	reset();
+	reference = 0;
+	remove_engine = 0;
+	collect_engine = 0;
+	need_collection = 1;
+	collection_pts = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -247,25 +244,13 @@ DenoiseFFTEffect::~DenoiseFFTEffect()
 }
 
 NEW_PICON_MACRO(DenoiseFFTEffect)
-
 SHOW_GUI_MACRO(DenoiseFFTEffect, DenoiseFFTThread)
-
 RAISE_WINDOW_MACRO(DenoiseFFTEffect)
-
 SET_STRING_MACRO(DenoiseFFTEffect)
-
-
-void DenoiseFFTEffect::reset()
-{
-	reference = 0;
-	remove_engine = 0;
-	collect_engine = 0;
-	need_collection = 1;
-	collection_sample = 0;
-}
 
 int DenoiseFFTEffect::is_realtime() { return 1; }
 const char* DenoiseFFTEffect::plugin_title() { return N_("DenoiseFFT"); }
+int DenoiseFFTEffect::has_pts_api() { return 1; }
 
 void DenoiseFFTEffect::read_data(KeyFrame *keyframe)
 {
@@ -306,8 +291,8 @@ void DenoiseFFTEffect::save_data(KeyFrame *keyframe)
 
 void DenoiseFFTEffect::load_defaults()
 {
-	defaults = new BC_Hash(BCASTDIR "denoisefft.rc");
-	defaults->load();
+
+	defaults = load_defaults_file("denoisefft.rc");
 
 	config.level = defaults->get("LEVEL", config.level);
 	config.samples = defaults->get("SAMPLES", config.samples);
@@ -315,8 +300,6 @@ void DenoiseFFTEffect::load_defaults()
 
 void DenoiseFFTEffect::save_defaults()
 {
-	char string[BCTEXTLEN];
-
 	defaults->update("LEVEL", config.level);
 	defaults->update("SAMPLES", config.samples);
 	defaults->save();
@@ -327,7 +310,7 @@ void DenoiseFFTEffect::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
+		thread->window->lock_window("DenoiseFFTEffect::update_gui");
 		thread->window->level->update(config.level);
 		char string[BCTEXTLEN];
 		sprintf(string, "%d", config.samples);
@@ -338,76 +321,56 @@ void DenoiseFFTEffect::update_gui()
 
 int DenoiseFFTEffect::load_configuration()
 {
-	KeyFrame *prev_keyframe = get_prev_keyframe(get_source_position());
-	samplenum prev_position = edl_to_local(prev_keyframe->get_position());
-	read_data(prev_keyframe);
-	if(prev_position == 0) prev_position = get_source_start();
+	KeyFrame *prev_keyframe = prev_keyframe_pts(get_source_position());
+	ptstime prev_pts = prev_keyframe->pos_time;
 
-	if(prev_position != collection_sample)
+	read_data(prev_keyframe);
+	if(prev_pts <= 0) prev_pts = source_start_pts;
+
+	if(!PTSEQU(prev_pts, collection_pts))
 	{
-		collection_sample = prev_position;
+		collection_pts = prev_pts;
 		need_collection = 1;
 	}
 	return 0;
 }
 
-int DenoiseFFTEffect::process_buffer(int size, 
-		double *buffer,
-		samplenum start_position,
-		int sample_rate)
+void DenoiseFFTEffect::process_frame(AFrame *aframe)
 {
 	load_configuration();
-
 // Do noise collection
 	if(need_collection)
 	{
 		need_collection = 0;
+		noise_frame.samplerate = aframe->samplerate;
 		collect_noise();
 	}
 
 // Remove noise
 	if(!remove_engine)
-	{
-		remove_engine = new DenoiseFFTRemove(this);
-		remove_engine->initialize(WINDOW_SIZE);
-	}
-	remove_engine->process_buffer(start_position, 
-		size,
-		buffer, 
-		get_direction());
+		remove_engine = new DenoiseFFTRemove(this, WINDOW_SIZE);
 
-	return 0;
+	remove_engine->process_frame(aframe);
 }
-
 
 void DenoiseFFTEffect::collect_noise()
 {
 	if(!reference) reference = new double[WINDOW_SIZE / 2];
 	if(!collect_engine)
 	{
-		collect_engine = new DenoiseFFTCollect(this);
-		collect_engine->initialize(WINDOW_SIZE);
+		collect_engine = new DenoiseFFTCollect(this, WINDOW_SIZE);
 	}
-	bzero(reference, sizeof(double) * WINDOW_SIZE / 2);
+	memset(reference, 0, sizeof(double) * WINDOW_SIZE / 2);
 
-	samplenum collection_start = collection_sample;
-	int step = 1;
+	samplenum collection_start = noise_frame.to_samples(collection_pts);
 	int total_windows = 0;
-
-	if(get_direction() == PLAY_REVERSE)
-	{
-		collection_start += config.samples;
-		step = -1;
-	}
 
 	for(int i = 0; i < config.samples; i += WINDOW_SIZE)
 	{
-		collect_engine->process_buffer(collection_start,
-			WINDOW_SIZE,
-			0,
-			get_direction());
-
-		collection_start += step * WINDOW_SIZE;
+// AFrame without buffer
+		noise_frame.set_fill_request(collection_start, WINDOW_SIZE);
+		collect_engine->process_frame(&noise_frame);
+		collection_start += WINDOW_SIZE;
 		total_windows++;
 	}
 
@@ -417,12 +380,13 @@ void DenoiseFFTEffect::collect_noise()
 	}
 }
 
-DenoiseFFTRemove::DenoiseFFTRemove(DenoiseFFTEffect *plugin)
+DenoiseFFTRemove::DenoiseFFTRemove(DenoiseFFTEffect *plugin, int window_size)
+ : CrossfadeFFT(window_size)
 {
 	this->plugin = plugin;
 }
 
-int DenoiseFFTRemove::signal_process()
+void DenoiseFFTRemove::signal_process()
 {
 	double level = DB::fromdb(plugin->config.level);
 	for(int i = 0; i < window_size / 2; i++)
@@ -435,44 +399,30 @@ int DenoiseFFTRemove::signal_process()
 		freq_imag[i] = result * sin(angle);
 	}
 	symmetry(window_size, freq_real, freq_imag);
-	return 0;
 }
 
-int DenoiseFFTRemove::read_samples(int64_t output_sample, 
-	int samples, 
-	double *buffer)
+void DenoiseFFTRemove::get_frame(AFrame *aframe)
 {
-	return plugin->read_samples(buffer,
-		0,
-		plugin->get_samplerate(),
-		output_sample,
-		samples);
+	plugin->get_aframe_rt(aframe);
 }
 
 
-DenoiseFFTCollect::DenoiseFFTCollect(DenoiseFFTEffect *plugin)
+DenoiseFFTCollect::DenoiseFFTCollect(DenoiseFFTEffect *plugin, int window_size)
+ : CrossfadeFFT(window_size)
 {
 	this->plugin = plugin;
 }
 
-int DenoiseFFTCollect::signal_process()
+void DenoiseFFTCollect::signal_process()
 {
 	for(int i = 0; i < window_size / 2; i++)
 	{
 		double result = sqrt(freq_real[i] * freq_real[i] + freq_imag[i] * freq_imag[i]);
 		plugin->reference[i] += result;
 	}
-	return 0;
 }
 
-int DenoiseFFTCollect::read_samples(int64_t output_sample, 
-	int samples, 
-	double *buffer)
+void DenoiseFFTCollect::get_frame(AFrame *aframe)
 {
-	return plugin->read_samples(buffer,
-		0,
-		plugin->get_samplerate(),
-		output_sample,
-		samples);
+	plugin->get_aframe_rt(aframe);
 }
-
