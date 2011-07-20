@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -267,6 +268,9 @@ int PluginClient::get_project_smp()
 	return smp;
 }
 
+/*
+ * Obsoleted: use load_defaults_file
+ */
 char* PluginClient::plugin_configuration_path(char *buffer, const char *confname)
 {
 	char *p;
@@ -276,6 +280,21 @@ char* PluginClient::plugin_configuration_path(char *buffer, const char *confname
 	*p++ = '/';
 	strcpy(p, confname);
 	return buffer;
+}
+
+BC_Hash* PluginClient::load_defaults_file(const char *filename)
+{
+	char directory[BCTEXTLEN];
+	char *p;
+	BC_Hash *defaults;
+
+	strcpy(directory, server->plugin_conf_dir());
+	p = directory + strlen(directory);
+	*p++ = '/';
+	strcpy(p, filename);
+	defaults = new BC_Hash(directory);
+	defaults->load();
+	return defaults;
 }
 
 void PluginClient::send_configure_change()

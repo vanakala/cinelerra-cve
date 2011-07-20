@@ -28,6 +28,7 @@ class PluginClient;
 
 #include "arraylist.h"
 #include "autos.h"
+#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "condition.h"
 #include "edlsession.inc"
@@ -436,6 +437,8 @@ public:
 
 // Make plugin configuration path
 	char *plugin_configuration_path(char *buffer, const char *confname);
+// Load plugin defaults from file
+	BC_Hash* load_defaults_file(const char *filename);
 
 // Realtime operations.
 	void reset();
