@@ -70,6 +70,13 @@ public:
 	void set_fill_request(ptstime pts, int length);
 	void set_fill_request(samplenum pos, int length);
 
+// Return true if parameter difference is less-equal of the duration
+//  of a sample
+	int ptsequ(ptstime t1, ptstime t2);
+
+// Rount pts to nearest sample
+	ptstime round_to_sample(ptstime pts);
+
 	void dump(int dumpdata = 0);
 
 // Buffer start in source

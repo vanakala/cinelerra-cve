@@ -178,7 +178,7 @@ int AFrame::fill_length()
 	} else
 		len = round(source_duration * samplerate);
 	if(len + length > buffer_length)
-		len = buffer_length - len;
+		len = buffer_length - length;
 	return len;
 }
 
@@ -201,6 +201,18 @@ void AFrame::set_fill_request(samplenum position, int length)
 	reset_buffer();
 	this->pts = to_duration(position);
 	source_length = length;
+}
+
+int AFrame::ptsequ(ptstime t1, ptstime t2)
+{
+	if(fabs(t1 - t2) <= ((double) 1 / samplerate))
+		return 1;
+	return 0;
+}
+
+ptstime AFrame::round_to_sample(ptstime t)
+{
+	return to_duration(to_samples(t));
 }
 
 void AFrame::dump(int dumpdata)
