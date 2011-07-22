@@ -19,14 +19,12 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
 #include <string.h>
-
 
 class OverlayAudioWindow;
 class OverlayAudio;
@@ -39,9 +37,9 @@ public:
 	void copy_from(OverlayAudioConfig &that);
 	void interpolate(OverlayAudioConfig &prev, 
 		OverlayAudioConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	static const char* output_to_text(int output_layer);
 	int output_track;
 	enum
@@ -67,7 +65,6 @@ public:
 	OverlayAudioWindow(OverlayAudio *plugin, int x, int y);
 
 	int create_objects();
-	void close_event();
 
 	OverlayAudio *plugin;
 	OutputTrack *output;
@@ -83,16 +80,13 @@ public:
 
 	int is_multichannel();
 	int is_realtime();
+	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_buffer(int size,
-		double **buffer,
-		posnum start_position,
-		int sample_rate);
+	void process_frame(AFrame **aframes);
 	void load_defaults();
 	void save_defaults();
 	void update_gui();
-
 
 	PLUGIN_CLASS_MEMBERS(OverlayAudioConfig, OverlayAudioThread)
 };
@@ -115,9 +109,9 @@ void OverlayAudioConfig::copy_from(OverlayAudioConfig &that)
 
 void OverlayAudioConfig::interpolate(OverlayAudioConfig &prev, 
 	OverlayAudioConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	output_track = prev.output_track;
 }
@@ -163,8 +157,6 @@ int OverlayAudioWindow::create_objects()
 	show_window();
 	return 0;
 }
-
-WINDOW_CLOSE_EVENT(OverlayAudioWindow)
 
 
 OutputTrack::OutputTrack(OverlayAudio *plugin, int x , int y)
@@ -224,8 +216,7 @@ OverlayAudio::~OverlayAudio()
 const char* OverlayAudio::plugin_title() { return N_("Overlay"); }
 int OverlayAudio::is_realtime() { return 1; }
 int OverlayAudio::is_multichannel() { return 1; }
-
-
+int OverlayAudio::has_pts_api() { return 1; }
 
 void OverlayAudio::read_data(KeyFrame *keyframe)
 {
@@ -263,9 +254,7 @@ void OverlayAudio::save_data(KeyFrame *keyframe)
 
 void OverlayAudio::load_defaults()
 {
-	char directory[BCTEXTLEN];
-	sprintf(directory, "%soverlayaudio.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
+	defaults = load_defaults_file("overlayaudio.rc");
 	defaults->load();
 
 	config.output_track = defaults->get("OUTPUT", config.output_track);
@@ -276,7 +265,6 @@ void OverlayAudio::save_defaults()
 	defaults->update("OUTPUT", config.output_track);
 	defaults->save();
 }
-
 
 void OverlayAudio::update_gui()
 {
@@ -296,46 +284,34 @@ NEW_PICON_MACRO(OverlayAudio)
 SHOW_GUI_MACRO(OverlayAudio, OverlayAudioThread)
 RAISE_WINDOW_MACRO(OverlayAudio)
 SET_STRING_MACRO(OverlayAudio)
-LOAD_CONFIGURATION_MACRO(OverlayAudio, OverlayAudioConfig)
+LOAD_PTS_CONFIGURATION_MACRO(OverlayAudio, OverlayAudioConfig)
 
-
-int OverlayAudio::process_buffer(int size, 
-	double **buffer,
-	samplenum start_position,
-	int sample_rate)
+void OverlayAudio::process_frame(AFrame **aframes)
 {
 	load_configuration();
-
 
 	int output_track = 0;
 	if(config.output_track == OverlayAudioConfig::BOTTOM)
 		output_track = get_total_buffers() - 1;
 
 // Direct copy the output track
-	read_samples(buffer[output_track],
-		output_track,
-		sample_rate,
-		start_position,
-		size);
+	int size = aframes[output_track]->fill_length();
+	get_aframe_rt(aframes[output_track]);
 
 // Add remaining tracks
-	double *output_buffer = buffer[output_track];
+	double *output_buffer = aframes[output_track]->buffer;
+
 	for(int i = 0; i < get_total_buffers(); i++)
 	{
 		if(i != output_track)
 		{
-			double *input_buffer = buffer[i];
-			read_samples(buffer[i],
-				i,
-				sample_rate,
-				start_position,
-				size);
+			double *input_buffer = aframes[i]->buffer;
+
+			get_aframe_rt(aframes[i]);
 			for(int j = 0; j < size; j++)
 			{
 				output_buffer[j] += input_buffer[j];
 			}
 		}
 	}
-
-	return 0;
 }
