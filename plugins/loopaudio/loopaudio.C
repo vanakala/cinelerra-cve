@@ -19,14 +19,12 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
-#include "transportque.h"
 #include "picon_png.h"
 
 #include <string.h>
@@ -37,14 +35,14 @@ class LoopAudioConfig
 {
 public:
 	LoopAudioConfig();
-	samplenum samples;
+	ptstime duration;
 };
 
 
-class LoopAudioSamples : public BC_TextBox
+class LoopAudioDuration : public BC_TextBox
 {
 public:
-	LoopAudioSamples(LoopAudio *plugin,
+	LoopAudioDuration(LoopAudio *plugin,
 		int x,
 		int y);
 	int handle_event();
@@ -57,9 +55,9 @@ public:
 	LoopAudioWindow(LoopAudio *plugin, int x, int y);
 	~LoopAudioWindow();
 	void create_objects();
-	void close_event();
+
 	LoopAudio *plugin;
-	LoopAudioSamples *samples;
+	LoopAudioDuration *duration;
 };
 
 PLUGIN_THREAD_HEADER(LoopAudio, LoopAudioThread, LoopAudioWindow)
@@ -79,20 +77,18 @@ public:
 	void update_gui();
 	int is_realtime();
 	int is_synthesis();
-	int process_buffer(int size, 
-		double *buffer,
-		samplenum start_position,
-		int sample_rate);
+	int has_pts_api();
+	void process_frame(AFrame *aframe);
+
+	AFrame loop_frame;
 };
 
 
 REGISTER_PLUGIN(LoopAudio);
 
-
-
 LoopAudioConfig::LoopAudioConfig()
 {
-	samples = 48000;
+	duration = 1;
 }
 
 
@@ -120,38 +116,37 @@ void LoopAudioWindow::create_objects()
 	int x = 10, y = 10;
 
 	set_icon(new VFrame(picon_png));
-	add_subwindow(new BC_Title(x, y, _("Samples to loop:")));
+	add_subwindow(new BC_Title(x, y, _("Duration to loop:")));
 	y += 20;
-	add_subwindow(samples = new LoopAudioSamples(plugin, 
+	add_subwindow(duration = new LoopAudioDuration(plugin, 
 		x, 
 		y));
 	show_window();
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(LoopAudioWindow)
-
-
 PLUGIN_THREAD_OBJECT(LoopAudio, LoopAudioThread, LoopAudioWindow)
 
 
-LoopAudioSamples::LoopAudioSamples(LoopAudio *plugin, 
+LoopAudioDuration::LoopAudioDuration(LoopAudio *plugin, 
 	int x, 
 	int y)
  : BC_TextBox(x, 
 	y, 
 	100,
 	1,
-	plugin->config.samples)
+	(float)plugin->config.duration,
+	1,
+	MEDIUMFONT,
+	2)
 {
 	this->plugin = plugin;
-	set_precision(2);
 }
 
-int LoopAudioSamples::handle_event()
+int LoopAudioDuration::handle_event()
 {
-	plugin->config.samples = atol(get_text());
-	plugin->config.samples = MAX(1, plugin->config.samples);
+	plugin->config.duration = atof(get_text());
+	plugin->config.duration = MAX(0.01, plugin->config.duration);
 	plugin->send_configure_change();
 	return 1;
 }
@@ -171,132 +166,88 @@ LoopAudio::~LoopAudio()
 const char* LoopAudio::plugin_title() { return N_("Loop audio"); }
 int LoopAudio::is_realtime() { return 1; } 
 int LoopAudio::is_synthesis() { return 1; }
-
+int LoopAudio::has_pts_api() { return 1; }
 
 NEW_PICON_MACRO(LoopAudio)
-
 SHOW_GUI_MACRO(LoopAudio, LoopAudioThread)
-
 RAISE_WINDOW_MACRO(LoopAudio)
-
 SET_STRING_MACRO(LoopAudio);
 
-
-int LoopAudio::process_buffer(int size, 
-	double *buffer,
-	posnum start_position,
-	int sample_rate)
+void LoopAudio::process_frame(AFrame *aframe)
 {
-	samplenum current_position = start_position;
-	int step = (get_direction() == PLAY_FORWARD) ? 1 : -1;
+	ptstime current_pts;
 	int fragment_size;
-	samplenum current_loop_end;
 
-	current_position = start_position;
-
-	for(int i = 0; i < size; i += fragment_size)
+	while((fragment_size = aframe->fill_length()) > 0)
 	{
-// Truncate to end of buffer
-		fragment_size = MIN(size - i, size);
-
-		samplenum current_loop_position;
+		current_pts = aframe->pts + aframe->duration;
 
 // Truncate to next keyframe
-		if(get_direction() == PLAY_FORWARD)
+		KeyFrame *next_keyframe = next_keyframe_pts(current_pts);
+		ptstime next_pts = next_keyframe->pos_time;
+		if(next_pts > current_pts)
 		{
-			KeyFrame *next_keyframe = get_next_keyframe(current_position);
-			samplenum next_position = edl_to_local(next_keyframe->get_position());
-			if(next_position > current_position)
-				fragment_size = MIN(fragment_size, next_position - current_position);
+			samplenum new_size = aframe->to_samples(next_pts - current_pts);
+			fragment_size = MIN(fragment_size, new_size);
+		}
 
 // Get start of current loop
-			KeyFrame *prev_keyframe = get_prev_keyframe(current_position);
-			samplenum prev_position = edl_to_local(prev_keyframe->get_position());
-			if(prev_position == 0)
-				prev_position = get_source_start();
-			read_data(prev_keyframe);
+		KeyFrame *prev_keyframe = prev_keyframe_pts(current_pts);
+		ptstime prev_pts = prev_keyframe->pos_time;
+		if(prev_pts == 0)
+			prev_pts = source_start_pts;
+		read_data(prev_keyframe);
 
 // Get start of fragment in current loop
-			current_loop_position = prev_position +
-				((current_position - prev_position) % 
-					config.samples);
-			while(current_loop_position < prev_position) current_loop_position += config.samples;
-			while(current_loop_position >= prev_position + config.samples) current_loop_position -= config.samples;
+		double p, q;
+		q  = modf((current_pts - prev_pts) / config.duration, &p); // - n.m perioodi
+
+// Check almost full period
+		if(aframe->ptsequ(q, 1.0))
+			q = 0;
+
+		ptstime loop_pts = prev_pts + q * config.duration;
 
 // Truncate fragment to end of loop
-			current_loop_end = current_position - 
-				current_loop_position +
-				prev_position + 
-				config.samples;
-			fragment_size = MIN(current_loop_end - current_position,
-				fragment_size);
-		}
-		else
-		{
-			KeyFrame *next_keyframe = get_prev_keyframe(current_position);
-			samplenum next_position = edl_to_local(next_keyframe->get_position());
-			if(next_position < current_position)
-				fragment_size = MIN(fragment_size, current_position - next_position);
-
-			KeyFrame *prev_keyframe = get_next_keyframe(current_position);
-			samplenum prev_position = edl_to_local(prev_keyframe->get_position());
-			if(prev_position == 0)
-				prev_position = get_source_start() + get_total_len();
-			read_data(prev_keyframe);
-
-			current_loop_position = prev_position - 
-				((prev_position - current_position) %
-					config.samples);
-			while(current_loop_position <= prev_position - config.samples) current_loop_position += config.samples;
-			while(current_loop_position > prev_position) current_loop_position -= config.samples;
-
-// Truncate fragment to end of loop
-			current_loop_end = current_position + 
-				prev_position -
-				current_loop_position -
-				config.samples;
-			fragment_size = MIN(current_position - current_loop_end,
-				fragment_size);
-		}
-
-		read_samples(buffer + i,
-			0,
-			sample_rate,
-			current_loop_position,
-			fragment_size);
-
-		current_position += step * fragment_size;
+		int left_samples = aframe->to_samples((1 - q) * config.duration);
+		if(left_samples > 0)
+			fragment_size = MIN(left_samples, fragment_size);
+		loop_frame.set_buffer(&aframe->buffer[aframe->length], fragment_size);
+		loop_frame.set_fill_request(loop_pts, fragment_size);
+		get_aframe_rt(&loop_frame);
+		aframe->set_filled(aframe->length + loop_frame.length);
 	}
-
-	return 0;
 }
 
 
 int LoopAudio::load_configuration()
 {
 	KeyFrame *prev_keyframe;
-	samplenum old_samples = config.samples;
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	ptstime old_pts = config.duration;
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
-	return old_samples != config.samples;
+	return !PTSEQU(old_pts, config.duration);
 }
 
 void LoopAudio::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sloopaudio.rc", BCASTDIR);
-
+	samplenum samples = 0;
 // load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.samples = defaults->get("SAMPLES", config.samples);
+	defaults = load_defaults_file("loopaudio.rc");
+	samples = defaults->get("SAMPLES", samples);
+	if(samples > 0)
+	{
+		int rate = get_project_samplerate();
+// Check if we have reasonable samplerate
+		if(rate > 1)
+			config.duration = (ptstime)samples / get_project_samplerate();
+	}
+	config.duration = defaults->get("DURATION", config.duration);
 }
 
 void LoopAudio::save_defaults()
 {
-	defaults->update("SAMPLES", config.samples);
+	defaults->update("DURATION", config.duration);
 	defaults->save();
 }
 
@@ -307,7 +258,7 @@ void LoopAudio::save_data(KeyFrame *keyframe)
 // cause data to be stored directly in text
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("LOOPAUDIO");
-	output.tag.set_property("SAMPLES", config.samples);
+	output.tag.set_property("DURATION", config.duration);
 	output.append_tag();
 	output.tag.set_title("/LOOPAUDIO");
 	output.append_tag();
@@ -317,16 +268,18 @@ void LoopAudio::save_data(KeyFrame *keyframe)
 void LoopAudio::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
+	samplenum samples = 0;
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
-	int result = 0;
 
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("LOOPAUDIO"))
 		{
-			config.samples = input.tag.get_property("SAMPLES", config.samples);
+			samples = input.tag.get_property("SAMPLES", samples);
+			if(samples > 0)
+				config.duration = (ptstime)samples / get_project_samplerate();
+			config.duration = input.tag.get_property("DURATION", config.duration);
 		}
 	}
 }
@@ -336,8 +289,8 @@ void LoopAudio::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
-		thread->window->samples->update(config.samples);
+		thread->window->lock_window("LoopAudio::update_gui");
+		thread->window->duration->update((float)config.duration);
 		thread->window->unlock_window();
 	}
 }
