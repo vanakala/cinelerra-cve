@@ -47,7 +47,6 @@ public:
 		TOP,
 		BOTTOM
 	};
-	
 };
 
 class OutputTrack : public BC_PopupMenu
@@ -255,7 +254,6 @@ void OverlayAudio::save_data(KeyFrame *keyframe)
 void OverlayAudio::load_defaults()
 {
 	defaults = load_defaults_file("overlayaudio.rc");
-	defaults->load();
 
 	config.output_track = defaults->get("OUTPUT", config.output_track);
 }
