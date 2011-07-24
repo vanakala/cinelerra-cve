@@ -19,13 +19,11 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
-#include "transportque.h"
 #include "picon_png.h"
 
 #include <string.h>
@@ -56,7 +54,6 @@ public:
 	ReverseAudioWindow(ReverseAudio *plugin, int x, int y);
 	~ReverseAudioWindow();
 	void create_objects();
-	void close_event();
 	ReverseAudio *plugin;
 	ReverseAudioEnabled *enabled;
 };
@@ -77,13 +74,12 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 	int is_realtime();
-	int process_buffer(int size,
-		double *buffer,
-		samplenum start_position,
-		int sample_rate);
+	int has_pts_api();
+	void process_frame(AFrame *);
 
-	int64_t input_position;
+	ptstime input_pts;
 	int fragment_size;
+	AFrame input_frame;
 };
 
 
@@ -94,7 +90,6 @@ ReverseAudioConfig::ReverseAudioConfig()
 {
 	enabled = 1;
 }
-
 
 
 ReverseAudioWindow::ReverseAudioWindow(ReverseAudio *plugin, int x, int y)
@@ -127,12 +122,7 @@ void ReverseAudioWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(ReverseAudioWindow)
-
-
 PLUGIN_THREAD_OBJECT(ReverseAudio, ReverseAudioThread, ReverseAudioWindow)
-
-
 
 ReverseAudioEnabled::ReverseAudioEnabled(ReverseAudio *plugin, 
 	int x, 
@@ -167,33 +157,34 @@ ReverseAudio::~ReverseAudio()
 
 const char* ReverseAudio::plugin_title() { return N_("Reverse audio"); }
 int ReverseAudio::is_realtime() { return 1; }
+int ReverseAudio::has_pts_api() { return 1; }
 
 NEW_PICON_MACRO(ReverseAudio)
-
 SHOW_GUI_MACRO(ReverseAudio, ReverseAudioThread)
-
 RAISE_WINDOW_MACRO(ReverseAudio)
-
 SET_STRING_MACRO(ReverseAudio);
 
-
-int ReverseAudio::process_buffer(int size,
-	double *buffer,
-	samplenum start_position,
-	int sample_rate)
+void ReverseAudio::process_frame(AFrame *aframe)
 {
-	for(int i = 0; i < size; i += fragment_size)
+	input_frame.samplerate = aframe->samplerate;
+
+	while((fragment_size = aframe->fill_length()) > 0)
 	{
-		fragment_size = size - i;
 		load_configuration();
+		input_frame.set_buffer(&aframe->buffer[aframe->length], fragment_size);
+
+		if(config.enabled)
+			input_frame.set_fill_request(input_pts, fragment_size);
+		else
+			input_frame.set_fill_request(aframe->pts + aframe->duration, fragment_size);
+		get_aframe_rt(&input_frame);
+
+		aframe->set_filled(aframe->length + input_frame.length);
+
 		if(config.enabled)
 		{
-			read_samples(buffer + i,
-				0,
-				sample_rate,
-				input_position,
-				fragment_size);
-			for(int start = i, end = i + fragment_size - 1;
+			double *buffer = input_frame.buffer;
+			for(int start = 0, end = fragment_size - 1;
 				end > start; 
 				start++, end--)
 			{
@@ -202,90 +193,66 @@ int ReverseAudio::process_buffer(int size,
 				buffer[end] = temp;
 			}
 		}
-		else
-			read_samples(buffer + i,
-				0,
-				sample_rate,
-				start_position,
-				fragment_size);
-		if(get_direction() == PLAY_FORWARD)
-			start_position += fragment_size;
-		else
-			start_position -= fragment_size;
 	}
-
-	return 0;
 }
-
 
 int ReverseAudio::load_configuration()
 {
 	KeyFrame *prev_keyframe, *next_keyframe;
-	next_keyframe = get_next_keyframe(get_source_position());
-	prev_keyframe = get_prev_keyframe(get_source_position());
-	read_data(next_keyframe);
+
+	next_keyframe = next_keyframe_pts(source_pts);
+	prev_keyframe = prev_keyframe_pts(source_pts);
+
 // Previous keyframe stays in config object.
 	read_data(prev_keyframe);
 
-	samplenum prev_position = edl_to_local(prev_keyframe->get_position());
-	samplenum next_position = edl_to_local(next_keyframe->get_position());
+	ptstime prev_pts = prev_keyframe->pos_time;
+	ptstime next_pts = next_keyframe->pos_time;
 
 // Defeat default keyframe
-	if(prev_position == 0 && next_position == 0) 
+	if(prev_pts == 0 && next_pts == 0)
 	{
-		next_position = prev_position = get_source_start();
+		next_pts = prev_pts = source_start_pts;
 	}
 
 // Get range to flip in requested rate
-	samplenum range_start = prev_position;
-	samplenum range_end = next_position;
+	ptstime range_start = prev_pts;
+	ptstime range_end = next_pts;
 
 // Between keyframe and edge of range or no keyframes
-	if(range_start == range_end)
+	if(PTSEQU(range_start, range_end))
 	{
 // Between first keyframe and start of effect
-		if(get_source_position() >= get_source_start() &&
-			get_source_position() < range_start)
+		if(source_pts >= source_start_pts &&
+			source_pts < range_start)
 		{
-			range_start = get_source_start();
+			range_start = source_start_pts;
 		}
 		else
 // Between last keyframe and end of effect
-		if(get_source_position() >= range_start &&
-			get_source_position() < get_source_start() + get_total_len())
+		if(source_pts >= range_start &&
+			source_pts < source_start_pts + total_len_pts)
 		{
-			range_end = get_source_start() + get_total_len();
+			range_end = source_start_pts + total_len_pts;
 		}
 	}
 
-// Convert start position to new direction
-	if(get_direction() == PLAY_FORWARD)
+// Plugin is active
+	if(input_frame.samplerate > 0)
 	{
-// Truncate next buffer to keyframe
-		if(range_end - get_source_position() < fragment_size)
-			fragment_size = range_end - get_source_position();
-		input_position = get_source_position() - range_start;
-		input_position = range_end - input_position - fragment_size;
-	}
-	else
-	{
-		if(get_source_position() - range_start < fragment_size)
-			fragment_size = get_source_position() - range_start;
-		input_position = range_end - get_source_position();
-		input_position = range_start + input_position + fragment_size;
+		samplenum range_size = input_frame.to_samples(range_end - source_pts);
+		if(range_size < fragment_size)
+			fragment_size = range_size;
+		input_pts = range_end - (source_pts - range_start)
+			- input_frame.to_duration(fragment_size);
 	}
 	return 0;
 }
 
 void ReverseAudio::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sreverseaudio.rc", BCASTDIR);
-
 // load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("reverseaudio.rc");
 
 	config.enabled = defaults->get("ENABLED", config.enabled);
 }
