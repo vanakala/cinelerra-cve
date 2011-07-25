@@ -42,23 +42,21 @@ CrossfadeMain::~CrossfadeMain()
 const char* CrossfadeMain::plugin_title() { return N_("Crossfade"); }
 int CrossfadeMain::is_transition() { return 1; }
 int CrossfadeMain::uses_gui() { return 0; }
+int CrossfadeMain::has_pts_api() { return 1; }
 
 NEW_PICON_MACRO(CrossfadeMain)
 
-
-int CrossfadeMain::process_realtime(int64_t size, 
-	double *outgoing, 
-	double *incoming)
+void CrossfadeMain::process_frame_realtime(AFrame *out, AFrame *in)
 {
-	double intercept = (double)PluginClient::get_source_position() / 
-		PluginClient::get_total_len();
-	double slope = (double)1 / PluginClient::get_total_len();
+	double intercept = source_pts / total_len_pts;
+	double slope = (double)1 / round(total_len_pts * out->samplerate);
+	double *incoming = in->buffer;
+	double *outgoing = out->buffer;
+	int size = in->length;
 
 	for(int i = 0; i < size; i++)
 	{
 		incoming[i] = outgoing[i] * ((double)1 - (slope * i + intercept)) + 
 			incoming[i] * (slope * i + intercept);
 	}
-
-	return 0;
 }

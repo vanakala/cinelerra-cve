@@ -37,8 +37,9 @@ public:
 	PLUGIN_CLASS_MEMBERS_TRANSITION;
 
 // required for all transition plugins
-	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
+	void process_frame_realtime(AFrame *input, AFrame *output);
 	int uses_gui();
+	int has_pts_api();
 	int is_transition();
 };
 
