@@ -297,7 +297,10 @@ PluginAClientWindow::PluginAClientWindow(PluginAClientLAD *plugin,
 	0, 
 	1)
 {
+	VFrame *ico = plugin->new_picon();
 	this->plugin = plugin;
+	set_icon(ico);
+	delete ico;
 }
 
 PluginAClientWindow::~PluginAClientWindow()
