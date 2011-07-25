@@ -402,16 +402,12 @@ void PluginServer::process_transition(AFrame *input,
 {
 	if(!plugin_open) return;
 
-	int offset = round((output->pts - input->pts) * output->samplerate);
-	if(offset < 0)
-		offset = 0;
 	PluginAClient *aclient = (PluginAClient*)client;
-	aclient->source_position = round(current_postime * output->samplerate);
-	aclient->total_len = round(total_len * output->samplerate);
+	aclient->source_pts = current_postime;
+	aclient->total_len_pts = total_len;
 	aclient->source_start = 0;
-	aclient->process_realtime(input->length,
-		input->buffer,
-		output->buffer + offset);
+	if(aclient->has_pts_api())
+		aclient->process_frame_realtime(input, output);
 }
 
 
