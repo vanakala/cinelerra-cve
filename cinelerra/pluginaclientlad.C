@@ -88,9 +88,9 @@ void PluginAClientConfig::copy_from(PluginAClientConfig &that)
 
 void PluginAClientConfig::interpolate(PluginAClientConfig &prev, 
 	PluginAClientConfig &next, 
-	posnum prev_frame,
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	copy_from(prev);
 }
@@ -137,11 +137,6 @@ void PluginAClientConfig::initialize(PluginServer *server)
 			else
 			if(LADSPA_IS_HINT_INTEGER(hint_desc))
 				port_type[current_port] = PORT_INTEGER;
-
-
-
-
-
 
 // Get default of port using crazy hinting system
 			if(LADSPA_IS_HINT_DEFAULT_0(hint_desc))
@@ -424,12 +419,6 @@ int PluginAClientWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, string));
 }
 
-void PluginAClientWindow::close_event()
-{
-	set_done(1);
-}
-
-
 PLUGIN_THREAD_OBJECT(PluginAClientLAD, PluginAClientThread, PluginAClientWindow)
 
 
@@ -461,6 +450,11 @@ int PluginAClientLAD::is_multichannel()
 {
 	if(get_inchannels() > 1 || get_outchannels() > 1) return 1;
 	return 0;
+}
+
+int PluginAClientLAD::has_pts_api()
+{
+	return 1;
 }
 
 int PluginAClientLAD::get_inchannels()
@@ -540,19 +534,15 @@ char* PluginAClientLAD::lad_to_upper(char *string, const char *input)
 
 void PluginAClientLAD::load_defaults()
 {
-	char directory[BCTEXTLEN];
 	char string[BCTEXTLEN];
-
 
 	strcpy(string, plugin_title());
 	for(int i = 0; i < strlen(string); i++)
 		if(string[i] == ' ') string[i] = '_';
-// set the default directory
-	sprintf(directory, "%s%s.rc", BCASTDIR, string);
 
 // load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file(string);
+
 	config.initialize(server);
 
 	int current_port = 0;
@@ -571,7 +561,6 @@ void PluginAClientLAD::load_defaults()
 		}
 	}
 }
-
 
 void PluginAClientLAD::save_defaults()
 {
@@ -592,8 +581,6 @@ void PluginAClientLAD::save_defaults()
 	}
 	defaults->save();
 }
-
-
 
 void PluginAClientLAD::save_data(KeyFrame *keyframe)
 {
@@ -778,19 +765,19 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 	}
 }
 
-int PluginAClientLAD::process_realtime(int size,
-	double *input_ptr, 
-	double *output_ptr)
+void PluginAClientLAD::process_frame_realtime(AFrame *input, AFrame *output)
 {
+	int size = input->length;
 	int in_channels = get_inchannels();
 	int out_channels = get_outchannels();
+
 	init_plugin(in_channels, out_channels, size);
 
 	for(int i = 0; i < in_channels; i++)
 	{
 		LADSPA_Data *in_buffer = in_buffers[i];
 		for(int j = 0; j < size; j++)
-			in_buffer[j] = input_ptr[j];
+			in_buffer[j] = input->buffer[j];
 	}
 	for(int i = 0; i < out_channels; i++)
 		memset(out_buffers[i], 0, sizeof(float) * size);
@@ -798,17 +785,20 @@ int PluginAClientLAD::process_realtime(int size,
 	server->lad_descriptor->run(lad_instance, size);
 
 	LADSPA_Data *out_buffer = out_buffers[0];
+
+	if(input != output)
+		output->copy_of(input);
+
 	for(int i = 0; i < size; i++)
 	{
-		output_ptr[i] = out_buffer[i];
+		output->buffer[i] = out_buffer[i];
 	}
-	return size;
 }
 
-int PluginAClientLAD::process_realtime(int size,
-	double **input_ptr, 
-	double **output_ptr)
+void PluginAClientLAD::process_frame_realtime(AFrame **input_frames,
+	AFrame **output_frames)
 {
+	int size = input_frames[0]->length;
 	int in_channels = get_inchannels();
 	int out_channels = get_outchannels();
 
@@ -819,14 +809,14 @@ int PluginAClientLAD::process_realtime(int size,
 		float *in_buffer = in_buffers[i];
 		double *in_ptr;
 		if(i < PluginClient::total_in_buffers)
-			in_ptr = input_ptr[i];
+			in_ptr = input_frames[i]->buffer;
 		else
-			in_ptr = input_ptr[0];
+			in_ptr = input_frames[0]->buffer;
 		for(int j = 0; j < size; j++)
 			in_buffer[j] = in_ptr[j];
 	}
 	for(int i = 0; i < out_channels; i++)
-		bzero(out_buffers[i], sizeof(float) * size);
+		memset(out_buffers[i], 0, sizeof(float) * size);
 
 	server->lad_descriptor->run(lad_instance, size);
 
@@ -835,10 +825,13 @@ int PluginAClientLAD::process_realtime(int size,
 		if(i < total_outbuffers)
 		{
 			LADSPA_Data *out_buffer = out_buffers[i];
-			double *out_ptr = output_ptr[i];
+			double *out_ptr = output_frames[i]->buffer;
+
+			if(output_frames[i] != input_frames[i])
+				output_frames[i]->copy_of(input_frames[i]);
+
 			for(int j = 0; j < size; j++)
 				out_ptr[j] = out_buffer[j];
 		}
 	}
-	return size;
 }

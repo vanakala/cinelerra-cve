@@ -39,9 +39,9 @@ public:
 	void copy_from(PluginAClientConfig &that);
 	void interpolate(PluginAClientConfig &prev, 
 		PluginAClientConfig &next, 
-		posnum prev_frame,
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	void reset();
 	void delete_objects();
 // Create the port tables based on the LAD descriptor
@@ -126,7 +126,6 @@ public:
 	~PluginAClientWindow();
 
 	int create_objects();
-	void close_event();
 
 	ArrayList<PluginACLientToggle*> toggles;
 	ArrayList<PluginACLientILinear*> ipots;
@@ -144,17 +143,15 @@ public:
 	PluginAClientLAD(PluginServer *server);
 	~PluginAClientLAD();
 
-	int process_realtime(int size,
-		double *input_ptr, 
-		double *output_ptr);
-	int process_realtime(int size,
-		double **input_ptr, 
-		double **output_ptr);
+	void process_frame_realtime(AFrame *input, AFrame *output);
+	void process_frame_realtime(AFrame **input_frames, AFrame **output_frames);
+
 // Update output pointers as well
 	void update_gui();
 	int is_realtime();
 	int is_multichannel();
 	int is_synthesis();
+	int has_pts_api();
 	int uses_gui();
 	void load_defaults();
 	void save_defaults();
@@ -162,7 +159,6 @@ public:
 	void read_data(KeyFrame *keyframe);
 
 	PLUGIN_CLASS_MEMBERS(PluginAClientConfig, PluginAClientThread)
-
 
 	static char* lad_to_string(char *string, const char *input);
 	static char* lad_to_upper(char *string, const char *input);
