@@ -25,6 +25,7 @@
 #include "bchash.inc"
 #include "guicast.h"
 #include "mainprogress.inc"
+#include "maxchannels.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
 
@@ -48,9 +49,10 @@ public:
 	const char* plugin_title();
 	int is_realtime();
 	int is_multichannel();
+	int has_pts_api();
 	int get_parameters();
 	void start_loop();
-	int process_loop(double **buffer, int &write_length);
+	int process_loop(AFrame **buffer, int &write_length);
 	void stop_loop();
 
 	void load_defaults();
@@ -61,9 +63,8 @@ public:
 
 // Current state of process_loop
 	int writing;
-	samplenum current_position;
-	double *peak, *scale;
+	ptstime current_pts;
+	double peak[MAXCHANNELS], scale[MAXCHANNELS];
 };
-
 
 #endif

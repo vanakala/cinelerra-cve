@@ -21,6 +21,7 @@
 
 #include "bcdisplayinfo.h"
 #include "bchash.h"
+#include "language.h"
 #include "mainprogress.h"
 #include "normalize.h"
 #include "normalizewindow.h"
@@ -31,10 +32,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 REGISTER_PLUGIN(NormalizeMain)
 
@@ -54,6 +51,7 @@ NormalizeMain::~NormalizeMain()
 const char* NormalizeMain::plugin_title() { return N_("Normalize"); }
 int NormalizeMain::is_realtime() { return 0; }
 int NormalizeMain::is_multichannel() { return 1; }
+int NormalizeMain::has_pts_api() { return 1; }
 
 
 VFrame* NormalizeMain::new_picon()
@@ -64,16 +62,7 @@ VFrame* NormalizeMain::new_picon()
 
 void NormalizeMain::load_defaults()
 {
-	char directory[BCTEXTLEN];
-
-// set the default directory
-	sprintf(directory, "%snormalize.rc", BCASTDIR);
-
-// load the defaults
-
-	defaults = new BC_Hash(directory);
-
-	defaults->load();
+	defaults = load_defaults_file("normalize.rc");
 
 	db_over = defaults->get("DBOVER", 0);
 	separate_tracks = defaults->get("SEPERATE_TRACKS", 1);
@@ -99,78 +88,102 @@ void NormalizeMain::start_loop()
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "%s...", plugin_title());
-	progress = start_progress(string, (PluginClient::end - PluginClient::start) * 2);
+
+	progress = start_progress(string, (end_pts - start_pts) * 2000);
 
 	writing = 0;
-	current_position = PluginClient::start;
-	peak = new double[PluginClient::total_in_buffers];
-	scale = new double[PluginClient::total_in_buffers];
-	bzero(peak, sizeof(double) * PluginClient::total_in_buffers);
+	current_pts = start_pts;
+
+	memset(peak, 0, sizeof(double) * MAXCHANNELS);
 }
 
 
-int NormalizeMain::process_loop(double **buffer, int &write_length)
+int NormalizeMain::process_loop(AFrame **aframes, int &write_length)
 {
 	int result = 0;
 	int fragment_len;
+	int duration_valid = 0;
 
 	if(writing)
 	{
-		fragment_len = PluginClient::in_buffer_size;
-		if(current_position + fragment_len > PluginClient::end) fragment_len = PluginClient::end - current_position;
-
-		for(int i = 0; i < PluginClient::total_in_buffers; i++)
+		fragment_len = aframes[0]->buffer_length;
+// Assume we always have samplerate here - we are reusing the same buffers
+//  used below in analyzing part
+		if(aframes[0]->samplerate)
 		{
-			read_samples(buffer[i], i, current_position, fragment_len);
-			for(int j = 0; j < fragment_len; j++)
-				buffer[i][j] *= scale[i];
+			if(current_pts + aframes[0]->to_duration(fragment_len) > end_pts)
+				fragment_len = aframes[0]->to_samples(end_pts - current_pts);
+		}
+		for(int i = 0; i < total_in_buffers; i++)
+		{
+			aframes[i]->set_fill_request(current_pts, fragment_len);
+			get_aframe_rt(aframes[i]);
+
+			for(int j = 0; j < aframes[0]->length; j++)
+				aframes[i]->buffer[j] *= scale[i];
 		}
 
-		current_position += fragment_len;
-		write_length = fragment_len;
-		result = progress->update(PluginClient::end - 
-			PluginClient::start + 
-			current_position - 
-			PluginClient::start);
-		if(current_position >= PluginClient::end) result = 1;
+		write_length = aframes[0]->length;
+		current_pts = aframes[0]->pts + aframes[0]->duration;
+		result = progress->update((end_pts - 2 * start_pts + current_pts) * 1000);
+
+		if(end_pts - current_pts < EPSILON)
+			result = 1;
 	}
 	else
 	{
 // Get peak
-		for(int i = PluginClient::start; 
-			i < PluginClient::end && !result; 
-			i += fragment_len)
+		for(current_pts = start_pts; end_pts - current_pts > EPSILON;)
 		{
-			fragment_len = PluginClient::in_buffer_size;
-			if(i + fragment_len > PluginClient::end) fragment_len = PluginClient::end - i;
-
-			for(int j = 0; j < PluginClient::total_in_buffers; j++)
+			fragment_len = aframes[0]->buffer_length;
+// Samplerate is not set at first
+// We need samplerate of the asset here
+			if(aframes[0]->samplerate)
 			{
-				read_samples(buffer[j], j, i, fragment_len);
-
-				for(int k = 0; k < fragment_len; k++)
+				if(current_pts + aframes[0]->to_duration(fragment_len) > end_pts)
+					fragment_len = aframes[0]->to_samples(end_pts - current_pts);
+				duration_valid = 1;
+			}
+			for(int j = 0; j < total_in_buffers; j++)
+			{
+				aframes[j]->set_fill_request(current_pts, fragment_len);
+				get_aframe_rt(aframes[j]);
+				if(!duration_valid)
 				{
-					if(peak[j] < fabs(buffer[j][k])) peak[j] = fabs(buffer[j][k]);
+					if(current_pts + aframes[j]->to_duration(fragment_len) > end_pts)
+					{
+					// truncate length afterwards - we have now samplerate
+						fragment_len = aframes[j]->to_samples(end_pts - current_pts);
+						aframes[j]->set_filled(fragment_len);
+					}
+					duration_valid = 1;
+				}
+				for(int k = 0; k < aframes[j]->length; k++)
+				{
+					if(peak[j] < fabs(aframes[j]->buffer[k])) 
+						peak[j] = fabs(aframes[j]->buffer[k]);
 				}
 			}
-			result = progress->update(i - PluginClient::start);
+			current_pts = aframes[0]->pts + aframes[0]->duration;
+			if(progress->update((current_pts - start_pts) * 1000))
+				break;
 		}
 
 // Normalize all tracks
 		double max = 0;
-		for(int i = 0; i < PluginClient::total_in_buffers; i++)
+		for(int i = 0; i < total_in_buffers; i++)
 		{
 			if(peak[i] > max) max = peak[i];
 		}
 		if(!separate_tracks)
 		{
-			for(int i = 0; i < PluginClient::total_in_buffers; i++)
+			for(int i = 0; i < total_in_buffers; i++)
 			{
 				peak[i] = max;
 			}
 		}
 
-		for(int i = 0; i < PluginClient::total_in_buffers; i++)
+		for(int i = 0; i < total_in_buffers; i++)
 		{
 			scale[i] = DB::fromdb(db_over) / peak[i];
 		}
@@ -178,17 +191,16 @@ int NormalizeMain::process_loop(double **buffer, int &write_length)
 		char string[BCTEXTLEN];
 		sprintf(string, "%s %.0f%%...", plugin_title(), (DB::fromdb(db_over) / max) * 100);
 		progress->update_title(string);
+
 // Start writing on next iteration
+		current_pts = start_pts;
 		writing = 1;
 	}
-
 	return result;
 }
 
 void NormalizeMain::stop_loop()
 {
 	progress->stop_progress();
-	delete [] peak;
-	delete [] scale;
 	delete progress;
 }
