@@ -603,18 +603,21 @@ int PluginServer::get_parameters(ptstime start, ptstime end, int channels)
 		rate = edl->session->sample_rate;
 
 	client->start = round(start * rate);
+	client->start_pts = start;
 	client->end = round(end * rate);
+	client->end_pts = end;
 	client->source_start = client->start;
+	client->source_start_pts = start;
 	client->total_len = client->end - client->start;
+	client->total_len_pts = end - start;
 	client->total_in_buffers = channels;
 	return client->plugin_get_parameters();
 }
 
-int PluginServer::set_interactive()
+void PluginServer::set_interactive()
 {
-	if(!plugin_open) return 0;
-	client->set_interactive();
-	return 0;
+	if(plugin_open)
+		client->set_interactive();
 }
 
 void PluginServer::append_module(Module *module)
@@ -632,19 +635,10 @@ void PluginServer::reset_nodes()
 	nodes->remove_all();
 }
 
-int PluginServer::set_error()
+void PluginServer::set_error()
 {
 	error_flag = 1;
-	return 0;
 }
-
-int PluginServer::set_realtime_sched()
-{
-	struct sched_param params;
-	params.sched_priority = 1;
-	return 0;
-}
-
 
 int PluginServer::process_loop(VFrame **buffers, int &write_length)
 {
@@ -658,19 +652,26 @@ int PluginServer::process_loop(AFrame **buffers, int &write_length)
 	int result;
 
 	if(!plugin_open) return 1;
-	for(int i = 0; i < total_in_buffers; i++)
+
+	if(client->has_pts_api())
 	{
-		samples[i] = buffers[i]->buffer;
-		put_aframe(buffers[i]);
+		result = client->plugin_process_loop(buffers, write_length);
 	}
-	result = client->plugin_process_loop(samples, write_length);
-	for(int i = 0; i < total_in_buffers; i++)
+	else
 	{
-		pop_aframe(buffers[i]);
+		for(int i = 0; i < total_in_buffers; i++)
+		{
+			samples[i] = buffers[i]->buffer;
+			put_aframe(buffers[i]);
+		}
+		result = client->plugin_process_loop(samples, write_length);
+		for(int i = 0; i < total_in_buffers; i++)
+		{
+			pop_aframe(buffers[i]);
+		}
 	}
 	return result;
 }
-
 
 void PluginServer::start_loop(ptstime start,
 	ptstime end,
@@ -686,9 +687,11 @@ void PluginServer::start_loop(ptstime start,
 	else
 		rate = edl->session->sample_rate;
 	total_in_buffers = total_buffers;
-	client->plugin_start_loop(round(start * rate), round(end * rate),
-		buffer_size, total_buffers);
-	return;
+	if(client->has_pts_api())
+		client->plugin_start_loop(start, end, total_buffers);
+	else
+		client->plugin_start_loop(round(start * rate), round(end * rate),
+			buffer_size, total_buffers);
 }
 
 void PluginServer::stop_loop()

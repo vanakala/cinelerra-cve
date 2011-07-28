@@ -94,6 +94,18 @@ void PluginClient::plugin_start_loop(posnum start,
 	start_loop();
 }
 
+void PluginClient::plugin_start_loop(ptstime start,
+	ptstime end,
+	int total_buffers)
+{
+	this->source_start_pts = start;
+	this->total_len_pts = end - start;
+	this->start_pts = start;
+	this->end_pts = end;
+	this->total_in_buffers = this->total_out_buffers = total_buffers;
+	start_loop();
+}
+
 int PluginClient::plugin_process_loop()
 {
 	return process_loop();

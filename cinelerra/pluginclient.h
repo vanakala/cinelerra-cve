@@ -26,6 +26,7 @@
 
 class PluginClient;
 
+#include "aframe.inc"
 #include "arraylist.h"
 #include "autos.h"
 #include "bcdisplayinfo.h"
@@ -35,7 +36,6 @@ class PluginClient;
 #include "keyframe.h"
 #include "mainprogress.inc"
 #include "maxbuffers.h"
-//#include "plugincommands.h"
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "theme.inc"
@@ -316,6 +316,7 @@ public:
 	virtual void plugin_render_gui(void *data) {};
 	virtual void plugin_render_gui(void *data, int size) {};
 	virtual int plugin_process_loop(VFrame **buffers, int &write_length) { return 1; };
+	virtual int plugin_process_loop(AFrame **buffers, int &write_length) { return 1; };
 	virtual int plugin_process_loop(double **buffers, int &write_length) { return 1; };
 // get parameters depending on video or audio
 	virtual void init_realtime_parameters() {};
@@ -421,6 +422,9 @@ public:
 		posnum end,
 		int buffer_size, 
 		int total_buffers);
+	virtual void plugin_start_loop(ptstime start,
+		ptstime end,
+		int total_buffers);
 	void plugin_stop_loop();
 	int plugin_process_loop();
 	MainProgressBar* start_progress(char *string, int64_t length);
@@ -458,6 +462,7 @@ public:
 	int show_initially;             // set to show a realtime plugin initially
 // range in project for processing
 	posnum start, end;
+	ptstime start_pts, end_pts;
 	int interactive;                // for the progress bar plugin
 	int success;
 	int total_out_buffers;          // total send buffers allocated by the server

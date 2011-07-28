@@ -163,6 +163,16 @@ int PluginAClient::plugin_process_loop(double **buffers, int &write_length)
 		return process_loop(buffers[0], write_length);
 }
 
+int PluginAClient::plugin_process_loop(AFrame **aframes, int &write_length)
+{
+	write_length = 0;
+
+	if(is_multichannel())
+		return process_loop(aframes, write_length);
+	else
+		return process_loop(aframes[0], write_length);
+}
+
 int PluginAClient::read_samples(double *buffer, 
 	int channel, 
 	samplenum start_position, 

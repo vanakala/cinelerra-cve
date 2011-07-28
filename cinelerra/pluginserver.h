@@ -120,8 +120,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 // Update EDL and playback engines to reflect changes
 	void sync_parameters();
-// set for realtime processor usage
-	int set_realtime_sched();
+
 // Raise the GUI
 	void raise_window();
 // cause the plugin to show the GUI
@@ -249,8 +248,8 @@ public:
 	void set_keyframe(KeyFrame *keyframe);
 // Set pointer to menueffect window
 	void set_prompt(MenuEffectPrompt *prompt);
-	int set_interactive();             // make this the master plugin for progress bars
-	int set_error();         // flag to send plugin an error on next request
+	void set_interactive();   // make this the master plugin for progress bars
+	void set_error();         // flag to send plugin an error on next request
 	MainProgressBar* start_progress(char *string, int64_t length);
 
 // add track to the list of affected tracks for a non realtime plugin

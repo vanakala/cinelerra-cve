@@ -69,6 +69,11 @@ public:
 	virtual int process_loop(double **buffers, int &write_length) { return 1; };
 	int plugin_process_loop(double **buffers, int &write_length);
 
+// pts api
+	virtual int process_loop(AFrame *aframe, int &write_length) { return 1; };
+	virtual int process_loop(AFrame **aframes, int &write_length) { return 1; };
+	int plugin_process_loop(AFrame **buffers, int &write_length);
+
 	void plugin_start_loop(posnum start,
 		posnum end,
 		int buffer_size, 
