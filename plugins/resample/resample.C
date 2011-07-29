@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "mainprogress.h"
 #include "picon_png.h"
@@ -27,14 +26,7 @@
 #include "resample.h"
 #include "vframe.h"
 
-
-
-
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new ResampleEffect(server);
-}
-
+REGISTER_PLUGIN(ResampleEffect)
 
 
 ResampleFraction::ResampleFraction(ResampleEffect *plugin, int x, int y)
@@ -48,8 +40,6 @@ int ResampleFraction::handle_event()
 	plugin->scale = atof(get_text());
 	return 1;
 }
-
-
 
 
 ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
@@ -82,31 +72,26 @@ void ResampleWindow::create_objects()
 }
 
 
-
 ResampleEffect::ResampleEffect(PluginServer *server)
  : PluginAClient(server)
 {
-	reset();
+	resample = 0;
+	input_frame = 0;
 	load_defaults();
 }
 
 ResampleEffect::~ResampleEffect()
 {
+	if(input_frame)
+		delete input_frame;
 	save_defaults();
 	delete defaults;
 }
 
 const char* ResampleEffect::plugin_title() { return N_("Resample"); }
+int ResampleEffect::has_pts_api() { return 1; }
 
-VFrame* ResampleEffect::new_picon()
-{
-	return new VFrame(picon_png);
-}
-
-void ResampleEffect::reset()
-{
-	resample = 0;
-}
+NEW_PICON_MACRO(ResampleEffect)
 
 int ResampleEffect::get_parameters()
 {
@@ -118,15 +103,10 @@ int ResampleEffect::get_parameters()
 	return result;
 }
 
-
 void ResampleEffect::load_defaults()
 {
-	char directory[BCTEXTLEN];
-
-// set the default directory
-	sprintf(directory, "%sresample.rc", BCASTDIR);
 // load the defaults
-	defaults = new BC_Hash(directory);
+	defaults = load_defaults_file("resample.rc");
 	defaults->load();
 
 	scale = defaults->get("SCALE", (double)1);
@@ -138,61 +118,60 @@ void ResampleEffect::save_defaults()
 	defaults->save();
 }
 
-
-
 void ResampleEffect::start_loop()
 {
-	if(PluginClient::interactive)
+	if(interactive)
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
 		progress = start_progress(string, 
-			(int64_t)((double)(PluginClient::end - PluginClient::start) / scale));
+			(int64_t)((double)(end_pts - start_pts) * 1000));
 	}
 
-	current_position = PluginClient::start;
+	current_pts = start_pts;
+	output_pts = start_pts;
 	total_written = 0;
+	predicted_total = 0;
 
 	resample = new Resample(0, 1);
 }
 
 void ResampleEffect::stop_loop()
 {
-	if(PluginClient::interactive)
+	if(interactive)
 	{
 		progress->stop_progress();
 		delete progress;
 	}
 }
 
-int ResampleEffect::process_loop(double *buffer, int &write_length)
+int ResampleEffect::process_loop(AFrame *aframe, int &write_length)
 {
 	int result = 0;
+	int output_size;
 
 // Length to read based on desired output size
-	int size = (int)((double)PluginAClient::in_buffer_size * scale);
-	samplenum predicted_total = (samplenum)((double)(PluginClient::end - PluginClient::start) / scale + 0.5);
+	int size = (int)(aframe->buffer_length * scale);
 
-	double *input = new double[size];
+	if(!input_frame)
+		input_frame = new AFrame(size);
 
-	read_samples(input, 0, current_position, size);
-	current_position += size;
+	input_frame->set_fill_request(current_pts, size);
+	get_aframe_rt(input_frame);
 
-	resample->resample_chunk(input, 
+	if(!predicted_total)
+		predicted_total = input_frame->to_samples((end_pts - start_pts) / scale);
+	current_pts = input_frame->pts + input_frame->duration;
+
+	resample->resample_chunk(input_frame->buffer,
 		size, 
-		1000000, 
-		(int)(1000000.0 / scale), 
+		input_frame->samplerate,
+		(int)(input_frame->samplerate / scale),
 		0);
 
-
-	if(resample->get_output_size(0))
+	if(output_size = resample->get_output_size(0))
 	{
-		int output_size = resample->get_output_size(0);
-
-		if(output_size)
-		{
-			total_written += output_size;
-		}
+		total_written += output_size;
 
 // Trim output to predicted length of stretched selection.
 		if(total_written > predicted_total)
@@ -200,14 +179,18 @@ int ResampleEffect::process_loop(double *buffer, int &write_length)
 			output_size -= total_written - predicted_total;
 			result = 1;
 		}
+		aframe->samplerate = input_frame->samplerate;
+		aframe->set_filled(output_size);
+		aframe->set_pts(output_pts);
 
-		resample->read_output(buffer, 0, output_size);
+		resample->read_output(aframe->buffer, 0, output_size);
 
 		write_length = output_size;
+		output_pts = aframe->pts + aframe->duration;
 	}
 
-	if(PluginClient::interactive) result = progress->update(total_written);
+	if(interactive)
+		result = progress->update((current_pts - start_pts) * 1000);
 
-	delete [] input;
 	return result;
 }

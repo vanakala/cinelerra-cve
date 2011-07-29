@@ -32,7 +32,6 @@
 
 class ResampleEffect;
 
-
 class ResampleFraction : public BC_TextBox
 {
 public:
@@ -40,8 +39,6 @@ public:
 	int handle_event();
 	ResampleEffect *plugin;
 };
-
-
 
 class ResampleWindow : public BC_Window
 {
@@ -51,8 +48,6 @@ public:
 	ResampleEffect *plugin;
 };
 
-
-
 class ResampleEffect : public PluginAClient
 {
 public:
@@ -61,20 +56,22 @@ public:
 
 	PLUGIN_CLASS_MEMBERS_NRT;
 
+	int has_pts_api();
 	int get_parameters();
 	void start_loop();
-	int process_loop(double *buffer, int &write_length);
+	int process_loop(AFrame *buffer, int &write_length);
 	void stop_loop();
 	void load_defaults();
 	void save_defaults();
-	void reset();
 
 	Resample *resample;
 	double scale;
 	MainProgressBar *progress;
+	AFrame *input_frame;
 	samplenum total_written;
-	samplenum current_position;
+	samplenum predicted_total;
+	ptstime current_pts;
+	ptstime output_pts;
 };
-
 
 #endif
