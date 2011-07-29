@@ -104,7 +104,7 @@ void PitchEffect::save_defaults()
 	defaults->save();
 }
 
-LOAD_CONFIGURATION_MACRO(PitchEffect, PitchConfig)
+LOAD_PTS_CONFIGURATION_MACRO(PitchEffect, PitchConfig)
 SHOW_GUI_MACRO(PitchEffect, PitchThread)
 RAISE_WINDOW_MACRO(PitchEffect)
 SET_STRING_MACRO(PitchEffect)
