@@ -74,8 +74,11 @@ public:
 //  of a sample
 	int ptsequ(ptstime t1, ptstime t2);
 
-// Rount pts to nearest sample
+// Round pts to nearest sample
 	ptstime round_to_sample(ptstime pts);
+
+// Set frame pts rounded to sample
+	ptstime set_pts(ptstime t);
 
 	void dump(int dumpdata = 0);
 

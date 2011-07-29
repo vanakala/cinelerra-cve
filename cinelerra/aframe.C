@@ -215,6 +215,12 @@ ptstime AFrame::round_to_sample(ptstime t)
 	return to_duration(to_samples(t));
 }
 
+ptstime AFrame::set_pts(ptstime t)
+{
+	pts = round_to_sample(t);
+	return pts;
+}
+
 void AFrame::dump(int dumpdata)
 {
 	double avg, min, max;
