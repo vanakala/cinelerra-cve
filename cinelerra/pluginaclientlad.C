@@ -508,7 +508,7 @@ VFrame* PluginAClientLAD::new_picon()
 SHOW_GUI_MACRO(PluginAClientLAD, PluginAClientThread)
 RAISE_WINDOW_MACRO(PluginAClientLAD)
 SET_STRING_MACRO(PluginAClientLAD)
-LOAD_CONFIGURATION_MACRO(PluginAClientLAD, PluginAClientConfig)
+LOAD_PTS_CONFIGURATION_MACRO(PluginAClientLAD, PluginAClientConfig)
 
 void PluginAClientLAD::update_gui()
 {
