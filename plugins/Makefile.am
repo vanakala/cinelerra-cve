@@ -16,7 +16,6 @@ SUBDIRS= \
 	blur \
 	brightness \
 	burn \
-	cdripper \
 	chromakey \
 	chromakeyhsv \
 	colorbalance \
