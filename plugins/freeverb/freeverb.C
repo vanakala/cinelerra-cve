@@ -455,11 +455,7 @@ void FreeverbEffect::save_data(KeyFrame *keyframe)
 
 void FreeverbEffect::load_defaults()
 {
-	char directory[BCTEXTLEN];
-
-	plugin_configuration_path(directory, "freeverb.rc");
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("freeverb.rc");
 
 	config.gain = defaults->get("GAIN", config.gain);
 	config.roomsize = defaults->get("ROOMSIZE", config.roomsize);

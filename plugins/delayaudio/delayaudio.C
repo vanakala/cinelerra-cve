@@ -63,11 +63,7 @@ int DelayAudio::load_configuration()
 
 void DelayAudio::load_defaults()
 {
-	char directory[BCTEXTLEN];
-
-	plugin_configuration_path(directory, "delayaudio.rc");
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("delayaudio.rc");
 	config.length = defaults->get("LENGTH", (double)1);
 }
 

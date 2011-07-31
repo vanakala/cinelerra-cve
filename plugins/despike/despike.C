@@ -94,16 +94,7 @@ void Despike::process_frame_realtime(AFrame *input, AFrame *output)
 
 void Despike::load_defaults()
 {
-	char directory[BCTEXTLEN];
-
-// set the default directory
-	plugin_configuration_path(directory, "despike.rc");
-
-// load the defaults
-
-	defaults = new BC_Hash(directory);
-
-	defaults->load();
+	defaults = load_defaults_file("despike.rc");
 
 	config.level = defaults->get("LEVEL", (double)0);
 	config.slope = defaults->get("SLOPE", (double)0);

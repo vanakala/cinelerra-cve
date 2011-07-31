@@ -173,9 +173,7 @@ void CompressorEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 
-	plugin_configuration_path(directory, "compression.rc");
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("compression.rc");
 
 	config.trigger = defaults->get("TRIGGER", config.trigger);
 	config.reaction_len = defaults->get("REACTION_LEN", config.reaction_len);

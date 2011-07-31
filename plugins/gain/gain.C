@@ -108,16 +108,7 @@ void Gain::process_frame_realtime(AFrame *input, AFrame *output)
 
 void Gain::load_defaults()
 {
-	char directory[BCTEXTLEN];
-
-	plugin_configuration_path(directory, "gain.rc");
-
-// load the defaults
-
-	defaults = new BC_Hash(directory);
-
-	defaults->load();
-
+	defaults = load_defaults_file("gain.rc");
 	config.level = defaults->get("LEVEL", config.level);
 }
 

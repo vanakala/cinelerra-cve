@@ -260,17 +260,7 @@ RAISE_WINDOW_MACRO(Reverb)
 
 void Reverb::load_defaults()
 {
-	char directory[1024];
-
-// set the default directory
-	plugin_configuration_path(directory, "reverb.rc");
-
-// load the defaults
-
-	defaults = new BC_Hash(directory);
-
-	defaults->load();
-
+	defaults = load_defaults_file("reverb.rc");
 	config.level_init = defaults->get("LEVEL_INIT", (double)0);
 	config.delay_init = defaults->get("DELAY_INIT", 100);
 	config.ref_level1 = defaults->get("REF_LEVEL1", (double)-6);

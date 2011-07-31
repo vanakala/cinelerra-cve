@@ -183,12 +183,7 @@ void SoundLevelEffect::save_data(KeyFrame *keyframe)
 
 void SoundLevelEffect::load_defaults()
 {
-	char directory[BCTEXTLEN];
-
-	plugin_configuration_path(directory, "soundlevel.rc");
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
+	defaults = load_defaults_file("soundlevel.rc");
 	config.duration = defaults->get("DURATION", config.duration);
 }
 

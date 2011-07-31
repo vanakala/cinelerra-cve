@@ -63,11 +63,7 @@ LOAD_PTS_CONFIGURATION_MACRO(Synth, SynthConfig)
 
 void Synth::load_defaults()
 {
-	char directory[BCTEXTLEN];
-
-	plugin_configuration_path(directory, "synthesizer.rc");
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("synthesizer.rc");
 	w = defaults->get("WIDTH", 380);
 	h = defaults->get("HEIGHT", 400);
 
