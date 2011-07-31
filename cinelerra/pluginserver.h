@@ -211,11 +211,6 @@ public:
 		int channel, 
 		framenum start_position);
 
-	void read_samples(double *buffer,
-		int channel,
-		samplenum start_position,
-		int total_samples);
-
 // Called by client to read data in realtime effect.
 // Returns -1 if error or 0 if success.
 	int read_frame(VFrame *buffer, 
@@ -224,11 +219,7 @@ public:
 		double frame_rate,
 // Set to 1 if the reader can use OpenGL objects.
 		int use_opengl = 0);
-	int read_samples(double *buffer,
-		int channel,
-		int sample_rate,
-		samplenum start_position, 
-		int len);
+
 	void get_aframe_rt(AFrame *aframe);
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
@@ -265,7 +256,6 @@ public:
 	samplenum get_written_samples();   // after samples are written, get the number written
 	framenum get_written_frames();   // after frames are written, get the number written
 
-
 // buffers
 	int out_buffer_size;   // size of a send buffer to the plugin
 	int in_buffer_size;    // size of a recieve buffer from the plugin
@@ -280,10 +270,6 @@ public:
 	FloatAutos *autos;
 	int reverse;
 
-// size of each buffer
-	ArrayList<int> realtime_in_size;
-	ArrayList<int> realtime_out_size;
-
 // When arming buffers need to know the offsets in all the buffers and which
 // double buffers for each channel before rendering.
 	ArrayList<posnum> offset_in_render;
@@ -295,7 +281,6 @@ public:
 	int shared_buffers;
 // Send new buffer information for next render
 	int new_buffers;
-
 
 	int plugin_open;                 // Whether or not the plugin is open.
 // Specifies what type of plugin.
@@ -346,14 +331,6 @@ public:
 private:
 	int reset_parameters();
 	int cleanup_plugin();
-// Temporary hack until fixing API for plugins
-	int put_aframe(AFrame *af);
-	AFrame *find_aframe(double *buffer);
-	void pop_aframe(AFrame *af);
-	void mark_as_filled(AFrame *aframe);
-
-// AFrames currenty in process
-	AFrame *aframes_used[AFRAMES_IN_PLUGIN];
 
 // Base class created by client
 	PluginClient *client;
@@ -372,6 +349,5 @@ private:
 // Driver for opengl calls.
 	VideoDevice *vdevice;
 };
-
 
 #endif

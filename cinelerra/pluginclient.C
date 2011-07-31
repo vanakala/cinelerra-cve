@@ -138,11 +138,6 @@ Theme* PluginClient::get_theme()
 	return server->get_theme();
 }
 
-int PluginClient::get_samplerate() 
-{
-	return get_project_samplerate();
-}
-
 double PluginClient::get_framerate()
 {
 	return get_project_framerate();
@@ -270,28 +265,9 @@ int PluginClient::get_total_buffers()
 	return total_in_buffers;
 }
 
-int PluginClient::get_buffer_size()
-{
-	return in_buffer_size;
-}
-
 int PluginClient::get_project_smp()
 {
 	return smp;
-}
-
-/*
- * Obsoleted: use load_defaults_file
- */
-char* PluginClient::plugin_configuration_path(char *buffer, const char *confname)
-{
-	char *p;
-
-	strcpy(buffer, server->plugin_conf_dir());
-	p = buffer + strlen(buffer);
-	*p++ = '/';
-	strcpy(p, confname);
-	return buffer;
 }
 
 BC_Hash* PluginClient::load_defaults_file(const char *filename)

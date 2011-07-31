@@ -30,18 +30,15 @@
 PluginAClient::PluginAClient(PluginServer *server)
  : PluginClient(server)
 {
-	sample_rate = 0;
 	if(server &&
 		server->edl &&
 		server->edl->session) 
 	{
 		project_sample_rate = server->edl->session->sample_rate;
-		sample_rate = project_sample_rate;
 	}
 	else
 	{
 		project_sample_rate = 1;
-		sample_rate = 1;
 	}
 }
 
@@ -59,35 +56,6 @@ void PluginAClient::init_realtime_parameters()
 	project_sample_rate = server->edl->session->sample_rate;
 }
 
-int PluginAClient::process_realtime(int size, 
-	double **input_ptr, 
-	double **output_ptr)
-{
-	return 0;
-}
-
-int PluginAClient::process_realtime(int size, 
-	double *input_ptr, 
-	double *output_ptr)
-{
-	return 0;
-}
-
-int PluginAClient::process_buffer(int size, 
-	double **buffer,
-	samplenum start_position,
-	int sample_rate)
-{
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		read_samples(buffer[i], 
-			i, 
-			sample_rate, 
-			source_position, 
-			size);
-	process_realtime(size, buffer, buffer);
-	return 0;
-}
-
 void PluginAClient::process_frame(AFrame **aframe)
 {
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
@@ -96,71 +64,10 @@ void PluginAClient::process_frame(AFrame **aframe)
 	process_frame_realtime(aframe, aframe);
 }
 
-int PluginAClient::process_buffer(int size, 
-	double *buffer,
-	samplenum start_position,
-	int sample_rate)
-{
-	read_samples(buffer, 
-		0, 
-		sample_rate, 
-		source_position, 
-		size);
-	process_realtime(size, buffer, buffer);
-	return 0;
-}
-
 void PluginAClient::process_frame(AFrame *aframe)
 {
 	get_aframe_rt(aframe);
 	process_frame_realtime(aframe, aframe);
-}
-
-void PluginAClient::plugin_start_loop(posnum start,
-	posnum end,
-	int buffer_size, 
-	int total_buffers)
-{
-	sample_rate = get_project_samplerate();
-	PluginClient::plugin_start_loop(start, 
-		end, 
-		buffer_size, 
-		total_buffers);
-}
-
-int PluginAClient::plugin_get_parameters()
-{
-	sample_rate = get_project_samplerate();
-	return PluginClient::plugin_get_parameters();
-}
-
-
-posnum PluginAClient::local_to_edl(posnum position)
-{
-	if(position < 0) return position;
-	return (posnum)(position *
-		get_project_samplerate() /
-		sample_rate);
-	return 0;
-}
-
-posnum PluginAClient::edl_to_local(posnum position)
-{
-	if(position < 0) return position;
-	return (posnum)(position *
-		sample_rate /
-		get_project_samplerate());
-}
-
-
-int PluginAClient::plugin_process_loop(double **buffers, int &write_length)
-{
-	write_length = 0;
-
-	if(is_multichannel())
-		return process_loop(buffers, write_length);
-	else
-		return process_loop(buffers[0], write_length);
 }
 
 int PluginAClient::plugin_process_loop(AFrame **aframes, int &write_length)
@@ -171,42 +78,6 @@ int PluginAClient::plugin_process_loop(AFrame **aframes, int &write_length)
 		return process_loop(aframes, write_length);
 	else
 		return process_loop(aframes[0], write_length);
-}
-
-int PluginAClient::read_samples(double *buffer, 
-	int channel, 
-	samplenum start_position, 
-	int total_samples)
-{
-	server->read_samples(buffer, 
-		channel, 
-		start_position, 
-		total_samples);
-	return 0;
-}
-
-int PluginAClient::read_samples(double *buffer, 
-	samplenum start_position, 
-	int total_samples)
-{
-	server->read_samples(buffer, 
-		0, 
-		start_position, 
-		total_samples);
-	return 0;
-}
-
-int PluginAClient::read_samples(double *buffer,
-		int channel,
-		int sample_rate,
-		samplenum start_position,
-		int len)
-{
-	return server->read_samples(buffer,
-		channel,
-		sample_rate,
-		start_position,
-		len);
 }
 
 void PluginAClient::get_aframe_rt(AFrame *frame)
@@ -228,14 +99,3 @@ int PluginAClient::get_project_samplerate()
 {
 	return project_sample_rate;
 }
-
-int PluginAClient::get_samplerate()
-{
-	return sample_rate;
-}
-
-
-
-
-
-

@@ -278,10 +278,6 @@ public:
 // Get theme being used by Cinelerra currently.  Used by all plugins.
 	Theme* get_theme();
 
-// Non realtime signal processors define these.
-// Give the samplerate of the output for a non realtime plugin.
-// For realtime plugins give the requested samplerate.
-	virtual int get_samplerate();
 // Give the framerate of the output for a non realtime plugin.
 // For realtime plugins give the requested framerate.
 	virtual double get_framerate();
@@ -317,7 +313,7 @@ public:
 	virtual void plugin_render_gui(void *data, int size) {};
 	virtual int plugin_process_loop(VFrame **buffers, int &write_length) { return 1; };
 	virtual int plugin_process_loop(AFrame **buffers, int &write_length) { return 1; };
-	virtual int plugin_process_loop(double **buffers, int &write_length) { return 1; };
+
 // get parameters depending on video or audio
 	virtual void init_realtime_parameters() {};
 // release objects which are required after playback stops
@@ -391,9 +387,6 @@ public:
 // Get total tracks to process
 	int get_total_buffers();
 
-// Get size of buffer to fill in non-realtime plugin
-	int get_buffer_size();
-
 // Get interpolation used by EDL from overlayframe.inc
 	int get_interpolation_type();
 
@@ -439,8 +432,6 @@ public:
 	virtual int plugin_get_parameters();
 	void set_interactive();
 
-// Make plugin configuration path
-	char *plugin_configuration_path(char *buffer, const char *confname);
 // Load plugin defaults from file
 	BC_Hash* load_defaults_file(const char *filename);
 

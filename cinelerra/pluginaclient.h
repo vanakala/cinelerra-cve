@@ -35,101 +35,32 @@ public:
 	void init_realtime_parameters();
 
 	int is_audio();
-// These should return 1 if error or 0 if success.
+
 // Multichannel buffer process for backwards compatibility
-	virtual int process_realtime(int size, 
-		double **input_ptr, 
-		double **output_ptr);
-// Single channel buffer process for backwards compatibility and transitions
-	virtual int process_realtime(int size, 
-		double *input_ptr, 
-		double *output_ptr);
-// AFrame API
 	virtual void process_frame_realtime(AFrame *input, AFrame *output) {};
 	virtual void process_frame_realtime(AFrame **input, AFrame **output) {};
 
 // Process buffer using pull method.  By default this loads the input into the
-// buffer and calls process_realtime with input and output pointing to buffer.
-// start_position - requested position relative to sample_rate. Relative
-//     to start of EDL.  End of buffer if reverse.
-// sample_rate - scale of start_position.
-	virtual int process_buffer(int size,
-		double **buffer,
-		samplenum start_position,
-		int sample_rate);
-	virtual int process_buffer(int size,
-		double *buffer,
-		samplenum start_position,
-		int sample_rate);
-// pts api
+// frame and calls process_frame with input and output pointing to frame.
 	virtual void process_frame(AFrame *aframe);
 	virtual void process_frame(AFrame **aframe);
 
-	virtual int process_loop(double *buffer, int &write_length) { return 1; };
-	virtual int process_loop(double **buffers, int &write_length) { return 1; };
-	int plugin_process_loop(double **buffers, int &write_length);
-
-// pts api
 	virtual int process_loop(AFrame *aframe, int &write_length) { return 1; };
 	virtual int process_loop(AFrame **aframes, int &write_length) { return 1; };
 	int plugin_process_loop(AFrame **buffers, int &write_length);
 
-	void plugin_start_loop(posnum start,
-		posnum end,
-		int buffer_size, 
-		int total_buffers);
-
-	int plugin_get_parameters();
-
-// Called by non-realtime client to read audio for processing.
-// buffer - output wave
-// channel - channel of the plugin input for multichannel plugin
-// start_position - start of samples in forward.  End of samples in reverse.
-//     Relative to start of EDL.  Scaled to sample_rate.
-// len - number of samples to read
-	int read_samples(double *buffer, 
-		int channel, 
-		samplenum start_position, 
-		int len);
-	int read_samples(double *buffer, 
-		samplenum start_position, 
-		int len);
-
-// Called by realtime plugin to read audio from previous entity
-// sample_rate - scale of start_position.  Provided so the client can get data
-//     at a higher fidelity than provided by the EDL.
-	int read_samples(double *buffer,
-		int channel,
-		int sample_rate,
-		samplenum start_position,
-		int len);
+// Called by plugin to read audio from previous entity
 	void get_aframe_rt(AFrame *frame);
 
 // Get the sample rate of the EDL
 	int get_project_samplerate();
-// Get the requested sample rate
-	int get_samplerate();
-
-	posnum local_to_edl(posnum position);
-	posnum edl_to_local(posnum position);
 
 	void send_render_gui(void *data, int size);
 	void plugin_render_gui(void *data, int size);
 	virtual void render_gui(void *data, int size) {};
 
-// point to the start of the buffers
-	ArrayList<float**> input_ptr_master;
-	ArrayList<float**> output_ptr_master;
-// point to the regions for a single render
-	float **input_ptr_render;
-	float **output_ptr_render;
-// sample rate of EDL.  Used for normalizing keyframes
+// sample rate of EDL.
 	int project_sample_rate;
-// Local parameters set by non realtime plugin about the file to be generated.
-// Retrieved by server to set output file format.
-// In realtime plugins, these are set before every process_buffer as the
-// requested rates.
-	int sample_rate;
 };
 
 #endif
