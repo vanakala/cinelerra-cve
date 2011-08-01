@@ -120,8 +120,10 @@ void BC_Bitmap::match_params(int w, int h, int color_model, int use_shm)
 		this->color_model != color_model ||
 		this->use_shm != use_shm)
 	{
+		top_level->lock_window("BC_Bitmap::match_params");
 		delete_data();
 		initialize(parent_window, w, h, color_model, use_shm);
+		top_level->unlock_window();
 	}
 }
 
