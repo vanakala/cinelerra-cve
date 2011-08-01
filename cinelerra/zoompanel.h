@@ -70,6 +70,7 @@ public:
 	virtual int handle_event() { return 1; };
 	int get_w();
 	void calculate_menu();
+	static double adjust_zoom(double zoom, double min, double max);
 	void update_menu();
 	int create_objects();
 	double get_value();

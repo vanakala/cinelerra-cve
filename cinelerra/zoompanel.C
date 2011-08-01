@@ -122,6 +122,25 @@ void ZoomPanel::calculate_menu()
 	}
 }
 
+double ZoomPanel::adjust_zoom(double zoom, double min, double max)
+{
+	double zy, zx;
+
+	if(zoom <= min)
+		return min;
+	if(zoom >= max)
+		return max;
+	for(zy = min; zy <= max; zy *= 2)
+		if(zoom < zy)
+			break;
+	zx = zy / 2;
+	if(zx < min)
+		return zy;
+	if(zoom - zx < zy - zoom)
+		return zx;
+	return zy;
+}
+
 void ZoomPanel::update_menu()
 {
 	while(zoom_text->total_items())

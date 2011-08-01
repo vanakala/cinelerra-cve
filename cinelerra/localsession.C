@@ -27,6 +27,7 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "localsession.h"
+#include "zoompanel.h"
 
 
 static const char *xml_autogrouptypes_titlesmax[] = 
@@ -201,6 +202,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		if(zoom_sample)
 			zoom_time = (ptstime)zoom_sample / edl->session->sample_rate;
 		zoom_time = file->tag.get_property("ZOOM_TIME", zoom_time);
+		zoom_time = ZoomPanel::adjust_zoom(zoom_time, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
 		zoom_y = file->tag.get_property("ZOOMY", zoom_y);
 		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
 		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
