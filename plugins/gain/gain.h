@@ -46,6 +46,7 @@ public:
 		ptstime current_pts);
 
 	double level;
+	double levelslope;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 

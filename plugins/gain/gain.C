@@ -38,6 +38,7 @@ REGISTER_PLUGIN
 GainConfig::GainConfig()
 {
 	level = 0.0;
+	levelslope = 0.0;
 }
 
 int GainConfig::equivalent(GainConfig &that)
@@ -58,6 +59,7 @@ void GainConfig::interpolate(GainConfig &prev,
 {
 	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	level = prev.level * prev_scale + next.level * next_scale;
+	levelslope = (next.level - prev.level) / (next_pts - prev_pts);
 }
 
 
@@ -79,10 +81,26 @@ void Gain::process_frame_realtime(AFrame *input, AFrame *output)
 	int size = input->length;
 	double *ipp = input->buffer;
 	double *opp;
+	double slope, gain;
+	int begin_slope, end_slope;
 
 	load_configuration();
 
-	double gain = db.fromdb(config.level);
+	if(fabs(config.levelslope) > EPSILON)
+	{
+		slope = config.levelslope / input->samplerate;
+		begin_slope = 0;
+		end_slope = size;
+		if(config.slope_start > input->pts)
+			begin_slope = input->to_samples(config.slope_start - input->pts);
+		if(config.slope_end < input->pts + input->duration)
+			end_slope = input->to_samples(config.slope_end - input->pts);
+	}
+	else
+	{
+		gain = db.fromdb(config.level);
+		slope = 0;
+	}
 
 	if(input != output)
 		output->copy_of(input);
@@ -91,6 +109,15 @@ void Gain::process_frame_realtime(AFrame *input, AFrame *output)
 
 	for(int i = 0; i < size; i++)
 	{
+		if(slope)
+		{
+			if(i < begin_slope)
+				gain = db.fromdb(config.level);
+			else if(i > end_slope)
+				gain = db.fromdb(config.level + slope * end_slope);
+			else
+				gain = db.fromdb(config.level + slope * i);
+		}
 		*opp++ = *ipp++ * gain;
 	}
 }
@@ -99,6 +126,7 @@ void Gain::load_defaults()
 {
 	defaults = load_defaults_file("gain.rc");
 	config.level = defaults->get("LEVEL", config.level);
+	config.levelslope = 0;
 }
 
 void Gain::save_defaults()
@@ -139,4 +167,5 @@ void Gain::read_data(KeyFrame *keyframe)
 			config.level = input.tag.get_property("LEVEL", config.level);
 		}
 	}
+	config.levelslope = 0;
 }
