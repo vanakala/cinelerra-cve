@@ -500,6 +500,36 @@ PluginServer* MWindow::scan_plugindb(const char *title,
 	return 0;
 }
 
+void MWindow::dump_plugindb(int data_type)
+{
+	int typ;
+
+	for(int i = 0; i < plugindb->total; i++)
+	{
+		PluginServer *server = plugindb->values[i];
+		if(data_type > 0)
+		{
+			if(data_type == TRACK_AUDIO && !server->audio)
+				continue;
+			if(data_type == TRACK_VIDEO && !server->video)
+				continue;
+		}
+		if(server->audio)
+			typ = 'A';
+		else if(server->video)
+			typ = 'V';
+		else if(server->theme)
+			typ = 'T';
+		else
+			typ = '-';
+		printf("    %c%c%c%c%c%c%c%d %s\n",
+			server->realtime ? 'R' : '-', typ, server->fileio ? 'F' : '-', 
+			server->uses_gui ? 'G' : '-', server->multichannel ? 'M' : '-', 
+			server->synthesis ? 'S' : '-', server->transition ? 'T' : '-', 
+			server->apiversion, server->title);
+	}
+}
+
 void MWindow::init_preferences()
 {
 	preferences = new Preferences;
@@ -1947,21 +1977,6 @@ void MWindow::remove_assets_from_disk()
 
 	remove_assets_from_project(1);
 }
-
-void MWindow::dump_plugins()
-{
-	for(int i = 0; i < plugindb->total; i++)
-	{
-		printf("audio=%d video=%d realtime=%d transition=%d theme=%d %s\n",
-			plugindb->values[i]->audio,
-			plugindb->values[i]->video,
-			plugindb->values[i]->realtime,
-			plugindb->values[i]->transition,
-			plugindb->values[i]->theme,
-			plugindb->values[i]->title);
-	}
-}
-
 
 int MWindow::save_defaults()
 {

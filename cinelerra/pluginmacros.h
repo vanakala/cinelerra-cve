@@ -63,7 +63,7 @@ class PLUGIN_GUI_CLASS;
 #define PLUGIN_CLASS_MEMBERS \
 	VFrame* new_picon(); \
 	const char* plugin_title() { return PLUGIN_TITLE; }; \
-	int has_pts_api() { return 1; }; \
+	int has_pts_api() { return 2; }; \
 	int uses_gui() { return 0; }; \
 	int is_transition() { return 1; };
 #elif !defined(PLUGIN_IS_REALTIME)

@@ -169,8 +169,7 @@ public:
 // Find the plugin whose title matches title and return it
 	PluginServer* scan_plugindb(const char *title,
 		int data_type);
-	void dump_plugins();
-
+	void dump_plugindb(int data_type = -1);
 
 	int load_filenames(ArrayList<char*> *filenames, 
 		int load_mode = LOAD_REPLACE,

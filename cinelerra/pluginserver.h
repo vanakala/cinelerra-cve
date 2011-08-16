@@ -284,7 +284,7 @@ public:
 
 	int plugin_open;                 // Whether or not the plugin is open.
 // Specifies what type of plugin.
-	int realtime, multichannel, fileio;  
+	int realtime, multichannel, fileio;
 // Plugin generates media
 	int synthesis;
 // What data types the plugin can handle.  One of these is set.
@@ -293,6 +293,8 @@ public:
 	int uses_gui;
 // Plugin is a transition
 	int transition;
+// Plugin api version
+	int apiversion;
 // name of plugin in english.
 // Compared against the title value in the plugin for resolving symbols.
 	char *title;

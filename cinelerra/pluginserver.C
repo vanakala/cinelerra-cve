@@ -102,6 +102,7 @@ PluginServer::PluginServer(PluginServer &that)
 	multichannel = that.multichannel;
 	preferences = that.preferences;
 	synthesis = that.synthesis;
+	apiversion = that.apiversion;
 	audio = that.audio;
 	video = that.video;
 	theme = that.theme;
@@ -145,6 +146,7 @@ int PluginServer::reset_parameters()
 	uses_gui = 0;
 	realtime = multichannel = fileio = 0;
 	synthesis = 0;
+	apiversion = 0;
 	start_auto = end_auto = 0;
 	picon = 0;
 	transition = 0;
@@ -305,6 +307,7 @@ int PluginServer::open_plugin(int master,
 	uses_gui = client->uses_gui();
 	multichannel = client->is_multichannel();
 	synthesis = client->is_synthesis();
+	apiversion = client->has_pts_api();
 	transition = client->is_transition();
 	set_title(client->plugin_title());
 

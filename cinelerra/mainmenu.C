@@ -484,7 +484,7 @@ DumpPlugins::DumpPlugins(MWindow *mwindow)
 
 int DumpPlugins::handle_event()
 {
-	mwindow->dump_plugins();
+	mwindow->dump_plugindb();
 	return 1;
 }
 
