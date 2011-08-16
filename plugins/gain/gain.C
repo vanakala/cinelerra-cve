@@ -20,9 +20,7 @@
  */
 
 #include "clip.h"
-#include "confirmsave.h"
 #include "bchash.h"
-#include "errorbox.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
@@ -34,7 +32,7 @@
 #include <string.h>
 
 
-REGISTER_PLUGIN(Gain)
+REGISTER_PLUGIN
 
 
 GainConfig::GainConfig()
@@ -58,8 +56,7 @@ void GainConfig::interpolate(GainConfig &prev,
 	ptstime next_pts,
 	ptstime current_pts)
 {
-	double next_scale = (current_pts - prev_pts) / (next_pts - prev_pts);
-	double prev_scale = (next_pts - current_pts) / (next_pts - prev_pts);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	level = prev.level * prev_scale + next.level * next_scale;
 }
 
@@ -75,15 +72,7 @@ Gain::~Gain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* Gain::plugin_title() { return N_("Gain"); }
-int Gain::is_realtime() { return 1; }
-int Gain::has_pts_api() { return 1; }
-
-SHOW_GUI_MACRO(Gain, GainThread)
-SET_STRING_MACRO(Gain)
-RAISE_WINDOW_MACRO(Gain)
-NEW_PICON_MACRO(Gain)
-LOAD_PTS_CONFIGURATION_MACRO(Gain, GainConfig)
+PLUGIN_CLASS_METHODS
 
 void Gain::process_frame_realtime(AFrame *input, AFrame *output)
 {
@@ -149,16 +138,5 @@ void Gain::read_data(KeyFrame *keyframe)
 		{
 			config.level = input.tag.get_property("LEVEL", config.level);
 		}
-	}
-}
-
-void Gain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->level->update(config.level);
-		thread->window->unlock_window();
 	}
 }

@@ -19,20 +19,18 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bchash.h"
-#include "filesystem.h"
 #include "gainwindow.h"
 #include "language.h"
 
 #include <string.h>
 
 
-PLUGIN_THREAD_OBJECT(Gain, GainThread, GainWindow)
+PLUGIN_THREAD_METHODS
 
 
-GainWindow::GainWindow(Gain *gain, int x, int y)
- : BC_Window(gain->gui_string, 
+GainWindow::GainWindow(Gain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string,
 	x,
 	y, 
 	230, 
@@ -43,28 +41,23 @@ GainWindow::GainWindow(Gain *gain, int x, int y)
 	0,
 	1)
 {
-	this->gain = gain;
+	x = y = 10;
+	add_tool(new BC_Title(5, y, _("Level:")));
+	y += 20;
+	add_tool(level = new GainLevel(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 GainWindow::~GainWindow()
 {
 }
 
-void GainWindow::create_objects()
+void GainWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = gain->new_picon();
-
-	set_icon(ico);
-	add_tool(new BC_Title(5, y, _("Level:")));
-	y += 20;
-	add_tool(level = new GainLevel(gain, x, y));
-	show_window();
-	flush();
-	delete ico;
+	level->update(plugin->config.level);
 }
 
-GainLevel::GainLevel(Gain *gain, int x, int y)
+GainLevel::GainLevel(Gain *plugin, int x, int y)
  : BC_FSlider(x, 
 	y,
 	0,
@@ -72,14 +65,14 @@ GainLevel::GainLevel(Gain *gain, int x, int y)
 	200,
 	INFINITYGAIN, 
 	40,
-	gain->config.level)
+	plugin->config.level)
 {
-	this->gain = gain;
+	this->plugin = plugin;
 }
 
 int GainLevel::handle_event()
 {
-	gain->config.level = get_value();
-	gain->send_configure_change();
+	plugin->config.level = get_value();
+	plugin->send_configure_change();
 	return 1;
 }

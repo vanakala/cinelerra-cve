@@ -22,9 +22,14 @@
 #ifndef GAIN_H
 #define GAIN_H
 
-class Gain;
-class GainEngine;
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_TITLE "Gain"
+#define PLUGIN_CLASS Gain
+#define PLUGIN_CONFIG_CLASS GainConfig
+#define PLUGIN_THREAD_CLASS GainThread
+#define PLUGIN_GUI_CLASS GainWindow
 
+#include "pluginmacros.h"
 #include "gainwindow.h"
 #include "pluginaclient.h"
 
@@ -41,6 +46,7 @@ public:
 		ptstime current_pts);
 
 	double level;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class Gain : public PluginAClient
@@ -50,15 +56,12 @@ public:
 	~Gain();
 
 	void process_frame_realtime(AFrame *input, AFrame *output);
-	int has_pts_api();
 
-	PLUGIN_CLASS_MEMBERS(GainConfig, GainThread)
+	PLUGIN_CLASS_MEMBERS
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
 	void save_defaults();
-	void update_gui();
-	int is_realtime();
 
 	DB db;
 };
