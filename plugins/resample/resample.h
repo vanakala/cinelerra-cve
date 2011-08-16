@@ -22,15 +22,18 @@
 #ifndef RESAMPLEEFFECT_H
 #define RESAMPLEEFFECT_H
 
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_TITLE N_("Resample")
+#define PLUGIN_CLASS ResampleEffect
+#define PLUGIN_GUI_CLASS ResampleWindow
 
+#include "pluginmacros.h"
 #include "bchash.inc"
 #include "guicast.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"
 #include "resample.inc"
 #include "vframe.inc"
-
-class ResampleEffect;
 
 class ResampleFraction : public BC_TextBox
 {
@@ -44,8 +47,8 @@ class ResampleWindow : public BC_Window
 {
 public:
 	ResampleWindow(ResampleEffect *plugin, int x, int y);
-	void create_objects();
-	ResampleEffect *plugin;
+
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class ResampleEffect : public PluginAClient
@@ -54,10 +57,8 @@ public:
 	ResampleEffect(PluginServer *server);
 	~ResampleEffect();
 
-	PLUGIN_CLASS_MEMBERS_NRT;
+	PLUGIN_CLASS_MEMBERS;
 
-	int has_pts_api();
-	int get_parameters();
 	void start_loop();
 	int process_loop(AFrame *buffer, int &write_length);
 	void stop_loop();

@@ -26,7 +26,7 @@
 #include "resample.h"
 #include "vframe.h"
 
-REGISTER_PLUGIN(ResampleEffect)
+REGISTER_PLUGIN
 
 
 ResampleFraction::ResampleFraction(ResampleEffect *plugin, int x, int y)
@@ -54,21 +54,11 @@ ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
 				0,
 				1)
 {
-	this->plugin = plugin;
-}
-
-void ResampleWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
+	x = y = 10;
 	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
 	y += 20;
 	add_subwindow(new ResampleFraction(plugin, x, y));
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 
@@ -77,37 +67,22 @@ ResampleEffect::ResampleEffect(PluginServer *server)
 {
 	resample = 0;
 	input_frame = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ResampleEffect::~ResampleEffect()
 {
 	if(input_frame)
 		delete input_frame;
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* ResampleEffect::plugin_title() { return N_("Resample"); }
-int ResampleEffect::has_pts_api() { return 1; }
-
-NEW_PICON_MACRO(ResampleEffect)
-
-int ResampleEffect::get_parameters()
-{
-	BC_DisplayInfo info;
-	ResampleWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
-	window.create_objects();
-	int result = window.run_window();
-
-	return result;
-}
+PLUGIN_CLASS_METHODS
 
 void ResampleEffect::load_defaults()
 {
 // load the defaults
 	defaults = load_defaults_file("resample.rc");
-	defaults->load();
 
 	scale = defaults->get("SCALE", (double)1);
 }
