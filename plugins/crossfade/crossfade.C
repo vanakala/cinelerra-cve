@@ -20,31 +20,26 @@
  */
 
 #include "crossfade.h"
-#include "edl.inc"
 #include "language.h"
-#include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
 
 
-REGISTER_PLUGIN(CrossfadeMain)
+REGISTER_PLUGIN
 
 
 CrossfadeMain::CrossfadeMain(PluginServer *server)
  : PluginAClient(server)
 {
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 CrossfadeMain::~CrossfadeMain()
 {
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* CrossfadeMain::plugin_title() { return N_("Crossfade"); }
-int CrossfadeMain::is_transition() { return 1; }
-int CrossfadeMain::uses_gui() { return 0; }
-int CrossfadeMain::has_pts_api() { return 1; }
-
-NEW_PICON_MACRO(CrossfadeMain)
+PLUGIN_CLASS_METHODS
 
 void CrossfadeMain::process_frame_realtime(AFrame *out, AFrame *in)
 {
@@ -52,7 +47,7 @@ void CrossfadeMain::process_frame_realtime(AFrame *out, AFrame *in)
 	double slope = (double)1 / round(total_len_pts * out->samplerate);
 	double *incoming = in->buffer;
 	double *outgoing = out->buffer;
-	int size = in->length;
+	int size = out->length;
 
 	for(int i = 0; i < size; i++)
 	{

@@ -22,8 +22,12 @@
 #ifndef CROSSFADE_H
 #define CROSSFADE_H
 
-class CrossfadeMain;
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_TRANSITION
+#define PLUGIN_TITLE "Crossfade"
+#define PLUGIN_CLASS CrossfadeMain
 
+#include "pluginmacros.h"
 #include "overlayframe.inc"
 #include "pluginaclient.h"
 #include "vframe.inc"
@@ -34,13 +38,10 @@ public:
 	CrossfadeMain(PluginServer *server);
 	~CrossfadeMain();
 
-	PLUGIN_CLASS_MEMBERS_TRANSITION;
+	PLUGIN_CLASS_MEMBERS;
 
 // required for all transition plugins
 	void process_frame_realtime(AFrame *input, AFrame *output);
-	int uses_gui();
-	int has_pts_api();
-	int is_transition();
 };
 
 #endif
