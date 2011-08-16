@@ -54,7 +54,7 @@ public:
 	float slope;
 };
 
-
+#ifndef PLUGINMACROS_H
 // Convenience functions
 
 #define REGISTER_PLUGIN(class_title) \
@@ -253,7 +253,7 @@ int plugin_class::load_configuration() \
 	else \
 		return 0; \
 }
-
+#endif
 class PluginClient
 {
 public:

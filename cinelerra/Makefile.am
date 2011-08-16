@@ -499,6 +499,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 pluginautos.h \
 		 pluginclient.h \
 		 plugindialog.h \
+		 pluginmacros.h \
 		 plugin.h \
 		 pluginpopup.h \
 		 pluginserver.h \
