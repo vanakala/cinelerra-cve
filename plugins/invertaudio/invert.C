@@ -19,6 +19,14 @@
  * 
  */
 
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CLASS InvertAudioEffect
+
+// Original name was "Invert Audio"
+#define PLUGIN_TITLE N_("Invert")
+
+#include "pluginmacros.h"
 #include "language.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
@@ -28,28 +36,30 @@
 class InvertAudioEffect : public PluginAClient
 {
 public:
-	InvertAudioEffect(PluginServer *server)
-	 : PluginAClient(server) {};
-	~InvertAudioEffect(){};
+	InvertAudioEffect(PluginServer *server);
+	~InvertAudioEffect();
 
-	PLUGIN_CLASS_MEMBERS_TRANSITION
-
-	int is_realtime(){ return 1; };
-	int has_pts_api(){ return 1; };
-	int uses_gui(){ return 0; };
+	PLUGIN_CLASS_MEMBERS
 
 	void process_frame_realtime(AFrame *input_ptr, AFrame *output);
 };
 
 
-REGISTER_PLUGIN(InvertAudioEffect)
+REGISTER_PLUGIN
 
-NEW_PICON_MACRO(InvertAudioEffect)
-
-const char* InvertAudioEffect::plugin_title()
+InvertAudioEffect::InvertAudioEffect(PluginServer *server)
+ : PluginAClient(server)
 {
-	return  N_("Invert Audio");
+	PLUGIN_CONSTRUCTOR_MACRO
 };
+
+InvertAudioEffect::~InvertAudioEffect()
+{
+	PLUGIN_DESTRUCTOR_MACRO
+};
+
+PLUGIN_CLASS_METHODS
+
 
 void InvertAudioEffect::process_frame_realtime(AFrame *input, AFrame *output)
 {

@@ -72,7 +72,15 @@ class PLUGIN_GUI_CLASS;
 	const char* plugin_title()  { return PLUGIN_TITLE; }; \
 	BC_Hash *defaults; \
 	int get_parameters(); \
-	int has_pts_api() { return 1; };
+	int has_pts_api() { return 2; };
+#else
+#ifndef PLUGIN_CONFIG_CLASS
+#define PLUGIN_CLASS_MEMBERS \
+	VFrame* new_picon(); \
+	const char* plugin_title() { return PLUGIN_TITLE; }; \
+	int uses_gui() { return 0; }; \
+	int is_realtime() { return 1; }; \
+	int has_pts_api() { return 2; };
 #else
 #define PLUGIN_CLASS_MEMBERS \
 	int load_configuration(); \
@@ -86,8 +94,9 @@ class PLUGIN_GUI_CLASS;
 	PLUGIN_CONFIG_CLASS config; \
 	PLUGIN_THREAD_CLASS *thread; \
 	int is_realtime() { return 1; }; \
-	int has_pts_api() { return 1; };
-#endif
+	int has_pts_api() { return 2; };
+#endif // config_class
+#endif // transition
 
 #ifdef PLUGIN_CONFIG_CLASS
 #ifdef PLUGIN_IS_AUDIO
@@ -121,6 +130,7 @@ PluginClient* new_plugin(PluginServer *server) \
 }
 
 #ifdef PLUGIN_IS_REALTIME
+#ifdef PLUGIN_CONFIG_CLASS
 #define PLUGIN_CONSTRUCTOR_MACRO \
 	thread = 0; \
 	defaults = 0; \
@@ -136,6 +146,10 @@ PluginClient* new_plugin(PluginServer *server) \
 		save_defaults(); \
 		delete defaults; \
 	}
+#else
+#define PLUGIN_CONSTRUCTOR_MACRO
+#define PLUGIN_DESTRUCTOR_MACRO
+#endif // config class
 #elif defined(PLUGIN_IS_TRANSITION)
 #define PLUGIN_CONSTRUCTOR_MACRO
 #define PLUGIN_DESTRUCTOR_MACRO
@@ -237,6 +251,7 @@ int PLUGIN_CLASS::get_parameters() \
 }
 
 #ifdef PLUGIN_IS_REALTIME
+#ifdef PLUGIN_CONFIG_CLASS
 #define PLUGIN_CLASS_METHODS \
 	PLUGIN_CLASS_NEW_PICON \
 	PLUGIN_CLASS_LOAD_CONFIGURATION \
@@ -244,6 +259,10 @@ int PLUGIN_CLASS::get_parameters() \
 	PLUGIN_CLASS_SET_STRING \
 	PLUGIN_CLASS_RAISE_WINDOW \
 	PLUGIN_CLASS_UPDATE_GUI
+#else
+#define PLUGIN_CLASS_METHODS \
+	PLUGIN_CLASS_NEW_PICON
+#endif // plugin config
 #elif defined(PLUGIN_IS_TRANSITION)
 #define PLUGIN_CLASS_METHODS \
 	PLUGIN_CLASS_NEW_PICON
