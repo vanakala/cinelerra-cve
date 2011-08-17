@@ -87,7 +87,8 @@ public:
 	void dump();
 // Release any objects which are required after playback stops.
 	void render_stop();
-
+// Compatibility - translate plugin names
+	static const char *translate_pluginname(int type, const char *oname);
 // queries
 	void set_title(const char *string);
 // Generate title for display

@@ -219,6 +219,29 @@ void PluginServer::generate_display_title(char *string)
 		strcpy(string, title);
 }
 
+static struct oldpluginnames
+{
+	int datatype;
+	char oldname[64];
+	char newname[64];
+} oldpluginnames[] = {
+	{ TRACK_AUDIO, "Invert Audio", "Invert" },
+	{ 0, "", "" }
+};
+
+const char *PluginServer::translate_pluginname(int type, const char *oname)
+{
+	struct oldpluginnames *pnp;
+
+	for(int i = 0; oldpluginnames[i].oldname[0]; i++)
+	{
+		if(type == oldpluginnames[i].datatype && 
+				strcmp(oldpluginnames[i].oldname, oname) == 0)
+			return oldpluginnames[i].newname;
+	}
+	return 0;
+}
+
 // Open plugin for signal processing
 int PluginServer::open_plugin(int master, 
 	Preferences *preferences,

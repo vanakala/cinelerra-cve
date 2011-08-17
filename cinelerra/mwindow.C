@@ -1191,11 +1191,15 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
 		{
 			PluginSet *plugin_set = track->plugin_set.values[k];
 			for(Plugin *plugin = (Plugin*)plugin_set->first; 
-			plugin; 
-			plugin = (Plugin*)plugin->next)
+				plugin;
+				plugin = (Plugin*)plugin->next)
 			{
 				if(plugin->plugin_type == PLUGIN_STANDALONE)
 				{
+					// Replace old plugin name with new for compatipility with previous version
+					const char *nnp = PluginServer::translate_pluginname(track->data_type, plugin->title);
+					if(nnp)
+						strcpy(plugin->title, nnp);
 					// ok we need to find it in plugindb
 					int plugin_found = 0;
 					for(int j = 0; j < plugindb->total; j++)
@@ -1215,9 +1219,9 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
 				}
 			}
 		}
-		for(Edit *edit = (Edit*)track->edits->first; 
-		edit; 
-		edit = (Edit*)edit->next)
+		for(Edit *edit = (Edit*)track->edits->first;
+			edit;
+			edit = (Edit*)edit->next)
 		{
 			if (edit->transition)
 			{
