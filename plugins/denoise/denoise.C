@@ -19,12 +19,10 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "denoise.h"
-#include "language.h"
 #include "picon_png.h"
 #include "units.h"
 #include "vframe.h"
@@ -35,57 +33,10 @@
 #define WINDOW_BORDER (window_size / 2)
 #define SGN(x) (x<0 ? -1: 1)
 
-REGISTER_PLUGIN(DenoiseEffect)
+REGISTER_PLUGIN
 
 DenoiseEffect::DenoiseEffect(PluginServer *server)
  : PluginAClient(server)
-{
-	reset();
-	PLUGIN_CONSTRUCTOR_MACRO
-}
-
-DenoiseEffect::~DenoiseEffect()
-{
-	PLUGIN_DESTRUCTOR_MACRO
-	delete_dsp();
-}
-
-NEW_PICON_MACRO(DenoiseEffect)
-LOAD_PTS_CONFIGURATION_MACRO(DenoiseEffect, DenoiseConfig)
-SHOW_GUI_MACRO(DenoiseEffect, DenoiseThread)
-RAISE_WINDOW_MACRO(DenoiseEffect)
-SET_STRING_MACRO(DenoiseEffect)
-
-void DenoiseEffect::delete_dsp()
-{
-	if(ex_coeff_d) delete ex_coeff_d;
-	if(ex_coeff_r) delete ex_coeff_r;
-	if(ex_coeff_rn) delete ex_coeff_rn;
-	if(wave_coeff_d) delete wave_coeff_d;
-	if(wave_coeff_r) delete wave_coeff_r;
-	if(decomp_filter) delete decomp_filter;
-	if(recon_filter) delete recon_filter;
-	if(input_buffer) delete [] input_buffer;
-	if(output_buffer) delete [] output_buffer;
-	if(dsp_in) delete [] dsp_in;
-	if(dsp_out) delete [] dsp_out;
-	if(dsp_iteration) delete [] dsp_iteration;
-
-	ex_coeff_d = 0;
-	ex_coeff_r = 0;
-	ex_coeff_rn = 0;
-	wave_coeff_d = 0;
-	wave_coeff_r = 0;
-	decomp_filter = 0;
-	recon_filter = 0;
-	input_buffer = 0;
-	output_buffer = 0;
-	dsp_in = 0;
-	dsp_out = 0;
-	dsp_iteration = 0;
-}
-
-void DenoiseEffect::reset()
 {
 	first_window = 1;
 	thread = 0;
@@ -115,11 +66,28 @@ void DenoiseEffect::reset()
 	output_level = 1.0;
 	levels = 1;
 	iterations = 1;
+
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
-const char* DenoiseEffect::plugin_title() { return N_("Denoise"); }
-int DenoiseEffect::is_realtime() { return 1; }
-int DenoiseEffect::has_pts_api() { return 1; }
+DenoiseEffect::~DenoiseEffect()
+{
+	PLUGIN_DESTRUCTOR_MACRO
+	if(ex_coeff_d) delete ex_coeff_d;
+	if(ex_coeff_r) delete ex_coeff_r;
+	if(ex_coeff_rn) delete ex_coeff_rn;
+	if(wave_coeff_d) delete wave_coeff_d;
+	if(wave_coeff_r) delete wave_coeff_r;
+	if(decomp_filter) delete decomp_filter;
+	if(recon_filter) delete recon_filter;
+	if(input_buffer) delete [] input_buffer;
+	if(output_buffer) delete [] output_buffer;
+	if(dsp_in) delete [] dsp_in;
+	if(dsp_out) delete [] dsp_out;
+	if(dsp_iteration) delete [] dsp_iteration;
+}
+
+PLUGIN_CLASS_METHODS
 
 void DenoiseEffect::read_data(KeyFrame *keyframe)
 {
@@ -158,30 +126,15 @@ void DenoiseEffect::save_data(KeyFrame *keyframe)
 
 void DenoiseEffect::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%sdenoise.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("denoise.rc");
 
 	config.level = defaults->get("LEVEL", config.level);
 }
 
 void DenoiseEffect::save_defaults()
 {
-	char string[BCTEXTLEN];
-
 	defaults->update("LEVEL", config.level);
 	defaults->save();
-}
-
-void DenoiseEffect::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		thread->window->update();
-		thread->window->unlock_window();
-	}
 }
 
 double DenoiseEffect::dot_product(double *data, double *filter, char filtlen)
@@ -301,7 +254,7 @@ void DenoiseEffect::threshold(int window_size, double gammas, int levels)
 			coeff_r = &(ex_coeff_r->values[(2 * i) + 1][j]);
 			coeff_l = &(ex_coeff_rn->values[(2 * i) + 1][j]);
 
-	 		cv = SGN(*coeff_r);
+			cv = SGN(*coeff_r);
 			abs_coeff_r = fabs(*coeff_r);
 			cvb = abs_coeff_r - threshold;
 			cv *= cvb;
@@ -696,12 +649,12 @@ void DenoiseConfig::interpolate(DenoiseConfig &prev,
 	ptstime next_pts,
 	ptstime current_pts)
 {
-	double next_scale = (current_pts - prev_pts) / (next_pts - prev_pts);
-	double prev_scale = (next_pts - current_pts) / (next_pts - prev_pts);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
+
 	this->level = prev.level * prev_scale + next.level * next_scale;
 }
 
-PLUGIN_THREAD_OBJECT(DenoiseEffect, DenoiseThread, DenoiseWindow)
+PLUGIN_THREAD_METHODS
 
 DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -715,19 +668,12 @@ DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-void DenoiseWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Level:")));
 	x += 70;
 	add_subwindow(scale = new DenoiseLevel(plugin, x, y));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 void DenoiseWindow::update()

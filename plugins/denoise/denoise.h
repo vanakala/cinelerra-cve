@@ -22,13 +22,20 @@
 #ifndef DENOISE_H
 #define DENOISE_H
 
+#define PLUGIN_TITLE N_("Denoise")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_CLASS DenoiseEffect
+#define PLUGIN_CONFIG_CLASS DenoiseConfig
+#define PLUGIN_THREAD_CLASS DenoiseThread
+#define PLUGIN_GUI_CLASS DenoiseWindow
+
+#include "pluginmacros.h"
 #include "bchash.inc"
 #include "guicast.h"
-#include "mutex.h"
+#include "language.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
 
-class DenoiseEffect;
 typedef enum { DECOMP, RECON } wavetype;
 
 class DenoiseLevel : public BC_FPot
@@ -36,6 +43,7 @@ class DenoiseLevel : public BC_FPot
 public:
 	DenoiseLevel(DenoiseEffect *plugin, int x, int y);
 	int handle_event();
+
 	DenoiseEffect *plugin;
 };
 
@@ -43,14 +51,13 @@ class DenoiseWindow : public BC_Window
 {
 public:
 	DenoiseWindow(DenoiseEffect *plugin, int x, int y);
-	void create_objects();
 	void update();
 
 	DenoiseLevel *scale;
 	DenoiseEffect *plugin;
 };
 
-PLUGIN_THREAD_HEADER(DenoiseEffect, DenoiseThread, DenoiseWindow)
+PLUGIN_THREAD_HEADER
 
 class DenoiseConfig
 {
@@ -64,6 +71,7 @@ public:
 		ptstime next_frame,
 		ptstime current_frame);
 	double level;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class Tree
@@ -103,17 +111,12 @@ public:
 	DenoiseEffect(PluginServer *server);
 	~DenoiseEffect();
 
-	int is_realtime();
-	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_frame_realtime(AFrame *input, AFrame *output);
 
 	void load_defaults();
 	void save_defaults();
-	void reset();
-	void update_gui();
-	void delete_dsp();
 
 	void process_window();
 	double dot_product(double *data, double *filter, char filtlen);
@@ -152,7 +155,7 @@ public:
 		int in_length,
 		double *out_data);
 
-	PLUGIN_CLASS_MEMBERS(DenoiseConfig, DenoiseThread)
+	PLUGIN_CLASS_MEMBERS
 
 // buffer for storing fragments until a complete window size is armed
 	double *input_buffer;
