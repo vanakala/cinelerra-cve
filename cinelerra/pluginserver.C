@@ -226,6 +226,7 @@ static struct oldpluginnames
 	char newname[64];
 } oldpluginnames[] = {
 	{ TRACK_AUDIO, "Invert Audio", "Invert" },
+	{ TRACK_AUDIO, "Delay audio", "Delay" },
 	{ 0, "", "" }
 };
 

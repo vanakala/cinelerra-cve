@@ -26,6 +26,7 @@
  * PLUGIN_IS_VIDEO
  * PLUGIN_IS_TRANSITION
  * PLUGIN_IS_REALTIME
+ * PLUGIN_CUSTOM_LOAD_CONFIGURATION
  * PLUGIN_CLASS class_name
  * PLUGIN_TITLE plugin_title
  * PLUGIN_GUI_CLASS class_name
@@ -172,6 +173,7 @@ VFrame* PLUGIN_CLASS::new_picon() \
 	return new VFrame(picon_png); \
 } \
 
+#ifndef PLUGIN_CUSTOM_LOAD_CONFIGURATION
 #define PLUGIN_CLASS_LOAD_CONFIGURATION \
 int PLUGIN_CLASS::load_configuration() \
 { \
@@ -202,7 +204,10 @@ int PLUGIN_CLASS::load_configuration() \
 		return 1; \
 	else \
 		return 0; \
-} \
+}
+#else
+#define PLUGIN_CLASS_LOAD_CONFIGURATION
+#endif
 
 #define PLUGIN_CLASS_SHOW_GUI \
 void PLUGIN_CLASS::show_gui() \

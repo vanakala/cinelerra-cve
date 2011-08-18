@@ -22,27 +22,37 @@
 #ifndef DELAYAUDIO_H
 #define DELAYAUDIO_H
 
+// Old title was "Delay audio"
+#define PLUGIN_TITLE N_("Delay")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_CLASS DelayAudio
+#define PLUGIN_CONFIG_CLASS DelayAudioConfig
+#define PLUGIN_THREAD_CLASS DelayAudioThread
+#define PLUGIN_GUI_CLASS DelayAudioWindow
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#include "pluginmacros.h"
 #include "bchash.inc"
+#include "language.h"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
 #include <vector>
 
-class DelayAudio;
-class DelayAudioWindow;
 class DelayAudioTextBox;
-
 
 class DelayAudioConfig
 {
 public:
 	DelayAudioConfig();
 
-	double length;
+	PLUGIN_CONFIG_CLASS_MEMBERS
+
+	ptstime length;
 };
 
-PLUGIN_THREAD_HEADER(DelayAudio, DelayAudioThread, DelayAudioWindow)
+PLUGIN_THREAD_HEADER
 
 class DelayAudioWindow : public BC_Window
 {
@@ -50,11 +60,10 @@ public:
 	DelayAudioWindow(DelayAudio *plugin, int x, int y);
 	~DelayAudioWindow();
 
-	void create_objects();
-	void update_gui();
+	void update();
 
-	DelayAudio *plugin;
 	DelayAudioTextBox *length;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
@@ -76,17 +85,13 @@ public:
 	DelayAudio(PluginServer *server);
 	~DelayAudio();
 
-	PLUGIN_CLASS_MEMBERS(DelayAudioConfig, DelayAudioThread);
+	PLUGIN_CLASS_MEMBERS;
 
-	int is_realtime();
-	int has_pts_api();
 	void load_defaults();
 	void save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_frame_realtime(AFrame *input, AFrame *output);
-
-	void update_gui();
 
 	std::vector<double> buffer;
 };

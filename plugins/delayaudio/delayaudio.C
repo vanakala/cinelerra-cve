@@ -19,22 +19,17 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "delayaudio.h"
 #include "filexml.h"
-#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 #include <algorithm>
 #include <string.h>
 
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new DelayAudio(server);
-}
+REGISTER_PLUGIN
 
 DelayAudio::DelayAudio(PluginServer *server)
  : PluginAClient(server)
@@ -46,11 +41,6 @@ DelayAudio::~DelayAudio()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 }
-
-
-const char* DelayAudio::plugin_title() { return N_("Delay audio"); }
-int DelayAudio::is_realtime() { return 1; }
-int DelayAudio::has_pts_api() { return 1; }
 
 int DelayAudio::load_configuration()
 {
@@ -112,7 +102,7 @@ void DelayAudio::process_frame_realtime(AFrame *input, AFrame *output)
 	int size = input->length;
 
 	load_configuration();
-	samplenum num_delayed = config.length * PluginAClient::project_sample_rate + 0.5;
+	samplenum num_delayed = input->to_samples(config.length);
 
 	// Examples:
 	//     buffer  size   num_delayed
@@ -155,23 +145,9 @@ void DelayAudio::process_frame_realtime(AFrame *input, AFrame *output)
 	}
 }
 
-SHOW_GUI_MACRO(DelayAudio, DelayAudioThread);
-SET_STRING_MACRO(DelayAudio);
-NEW_PICON_MACRO(DelayAudio);
-RAISE_WINDOW_MACRO(DelayAudio);
+PLUGIN_CLASS_METHODS
 
-void DelayAudio::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->update_gui();
-		thread->window->unlock_window();
-	}
-}
-
-PLUGIN_THREAD_OBJECT(DelayAudio, DelayAudioThread, DelayAudioWindow);
+PLUGIN_THREAD_METHODS;
 
 DelayAudioWindow::DelayAudioWindow(DelayAudio *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -185,25 +161,18 @@ DelayAudioWindow::DelayAudioWindow(DelayAudio *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
+	add_subwindow(new BC_Title(10, 10, _("Delay seconds:")));
+	add_subwindow(length = new DelayAudioTextBox(plugin, 10, 40));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
+	update();
 }
 
 DelayAudioWindow::~DelayAudioWindow()
 {
 }
 
-void DelayAudioWindow::create_objects()
-{
-	set_icon(new VFrame(picon_png));
-	add_subwindow(new BC_Title(10, 10, _("Delay seconds:")));
-	add_subwindow(length = new DelayAudioTextBox(plugin, 10, 40));
-	update_gui();
-	show_window();
-	flush();
-}
 
-
-void DelayAudioWindow::update_gui()
+void DelayAudioWindow::update()
 {
 	char string[BCTEXTLEN];
 
