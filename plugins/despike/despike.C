@@ -20,11 +20,8 @@
  */
 
 #include "clip.h"
-#include "confirmsave.h"
 #include "bchash.h"
-#include "errorbox.h"
 #include "filexml.h"
-#include "language.h"
 #include "picon_png.h"
 #include "despike.h"
 #include "despikewindow.h"
@@ -33,13 +30,13 @@
 
 #include <string.h>
 
-REGISTER_PLUGIN(Despike)
+REGISTER_PLUGIN
 
 Despike::Despike(PluginServer *server)
  : PluginAClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	last_sample = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 Despike::~Despike()
@@ -47,18 +44,7 @@ Despike::~Despike()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* Despike::plugin_title() { return N_("Despike"); }
-int Despike::is_realtime() { return 1; }
-int Despike::has_pts_api() { return 1; }
-
-NEW_PICON_MACRO(Despike)
-
-SHOW_GUI_MACRO(Despike, DespikeThread)
-SET_STRING_MACRO(Despike)
-RAISE_WINDOW_MACRO(Despike)
-
-LOAD_PTS_CONFIGURATION_MACRO(Despike, DespikeConfig)
-
+PLUGIN_CLASS_METHODS
 
 void Despike::process_frame_realtime(AFrame *input, AFrame *output)
 {
@@ -107,7 +93,6 @@ void Despike::save_defaults()
 	defaults->save();
 }
 
-
 void Despike::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -144,17 +129,6 @@ void Despike::read_data(KeyFrame *keyframe)
 	}
 }
 
-void Despike::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->level->update(config.level);
-		thread->window->slope->update(config.slope);
-		thread->window->unlock_window();
-	}
-}
 
 DespikeConfig::DespikeConfig()
 {
@@ -180,8 +154,7 @@ void DespikeConfig::interpolate(DespikeConfig &prev,
 	ptstime next_pts,
 	ptstime current_pts)
 {
-	double next_scale = (current_pts - prev_pts) / (next_pts - prev_pts);
-	double prev_scale = (next_pts - current_pts) / (next_pts - prev_pts);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->level = prev.level * prev_scale + next.level * next_scale;
 	this->slope = prev.slope * prev_scale + next.slope * next_scale;

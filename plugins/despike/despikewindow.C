@@ -25,10 +25,10 @@
 
 #include <string.h>
 
-PLUGIN_THREAD_OBJECT(Despike, DespikeThread, DespikeWindow)
+PLUGIN_THREAD_METHODS
 
-DespikeWindow::DespikeWindow(Despike *despike, int x, int y)
- : BC_Window(despike->gui_string, 
+DespikeWindow::DespikeWindow(Despike *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y, 
 	230, 
@@ -38,30 +38,26 @@ DespikeWindow::DespikeWindow(Despike *despike, int x, int y)
 	0, 
 	0,
 	1)
-{ 
-	this->despike = despike; 
+{
+	x = y = 10;
+	add_tool(new BC_Title(5, y, _("Maximum level:")));
+	y += 20;
+	add_tool(level = new DespikeLevel(plugin, x, y));
+	y += 30;
+	add_tool(new BC_Title(5, y, _("Maximum rate of change:")));
+	y += 20;
+	add_tool(slope = new DespikeSlope(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 DespikeWindow::~DespikeWindow()
 {
 }
 
-void DespikeWindow::create_objects()
+void DespikeWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = despike->new_picon();
-
-	set_icon(ico);
-	add_tool(new BC_Title(5, y, _("Maximum level:")));
-	y += 20;
-	add_tool(level = new DespikeLevel(despike, x, y));
-	y += 30;
-	add_tool(new BC_Title(5, y, _("Maximum rate of change:")));
-	y += 20;
-	add_tool(slope = new DespikeSlope(despike, x, y));
-	show_window();
-	flush();
-	delete ico;
+	level->update(plugin->config.level);
+	slope->update(plugin->config.slope);
 }
 
 DespikeLevel::DespikeLevel(Despike *despike, int x, int y)

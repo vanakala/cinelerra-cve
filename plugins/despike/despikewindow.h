@@ -22,15 +22,12 @@
 #ifndef DESPIKEWINDOW_H
 #define DESPIKEWINDOW_H
 
-class DespikeThread;
-class DespikeWindow;
-
 #include "despike.h"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginclient.h"
 
-PLUGIN_THREAD_HEADER(Despike, DespikeThread, DespikeWindow)
+PLUGIN_THREAD_HEADER
 
 class DespikeLevel;
 class DespikeSlope;
@@ -41,11 +38,11 @@ public:
 	DespikeWindow(Despike *despike, int x, int y);
 	~DespikeWindow();
 
-	void create_objects();
+	void update();
 
-	Despike *despike;
 	DespikeLevel *level;
 	DespikeSlope *slope;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class DespikeLevel : public BC_FSlider

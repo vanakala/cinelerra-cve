@@ -22,10 +22,17 @@
 #ifndef DESPIKE_H
 #define DESPIKE_H
 
-class Despike;
+#define PLUGIN_TITLE N_("Despike")
+#define PLUGIN_CLASS Despike
+#define PLUGIN_CONFIG_CLASS DespikeConfig
+#define PLUGIN_THREAD_CLASS DespikeThread
+#define PLUGIN_GUI_CLASS DespikeWindow
+
 class DespikeEngine;
 
+#include "pluginmacros.h"
 #include "despikewindow.h"
+#include "language.h"
 #include "pluginaclient.h"
 
 class DespikeConfig
@@ -43,6 +50,7 @@ public:
 
 	double level;
 	double slope;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class Despike : public PluginAClient
@@ -51,14 +59,10 @@ public:
 	Despike(PluginServer *server);
 	~Despike();
 
-	PLUGIN_CLASS_MEMBERS(DespikeConfig, DespikeThread);
-
-	void update_gui();
+	PLUGIN_CLASS_MEMBERS
 
 	DB db;
 
-	int has_pts_api();
-	int is_realtime();
 	void process_frame_realtime(AFrame *input, AFrame *output);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
