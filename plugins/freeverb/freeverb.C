@@ -19,7 +19,15 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_TITLE N_("Freeverb")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_CLASS FreeverbEffect
+#define PLUGIN_CONFIG_CLASS FreeverbConfig
+#define PLUGIN_THREAD_CLASS FreeverbThread
+#define PLUGIN_GUI_CLASS FreeverbWindow
+
+#include "pluginmacros.h"
 #include "clip.h"
 #include "bchash.h"
 #include "guicast.h"
@@ -29,12 +37,9 @@
 #include "pluginaclient.h"
 #include "revmodel.hpp"
 #include "units.h"
-#include "vframe.h"
 
 #include <math.h>
 #include <string.h>
-
-class FreeverbEffect;
 
 class FreeverbConfig
 {
@@ -56,6 +61,7 @@ public:
 	float dry;
 	float width;
 	float mode;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -120,9 +126,8 @@ class FreeverbWindow : public BC_Window
 {
 public:
 	FreeverbWindow(FreeverbEffect *plugin, int x, int y);
-	void create_objects();
 
-	FreeverbEffect *plugin;
+	void update();
 
 	FreeverbGain *gain;
 	FreeverbRoomsize *roomsize;
@@ -131,9 +136,10 @@ public:
 	FreeverbDry *dry;
 	FreeverbWidth *width;
 	FreeverbMode *mode;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(FreeverbEffect, FreeverbThread, FreeverbWindow)
+PLUGIN_THREAD_HEADER
 
 class FreeverbEffect : public PluginAClient
 {
@@ -141,18 +147,14 @@ public:
 	FreeverbEffect(PluginServer *server);
 	~FreeverbEffect();
 
-	PLUGIN_CLASS_MEMBERS(FreeverbConfig, FreeverbThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int is_realtime();
-	int is_multichannel();
-	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_frame_realtime(AFrame **input, AFrame **output);
 
 	void load_defaults();
 	void save_defaults();
-	void update_gui();
 
 	revmodel *engine;
 	float **temp;
@@ -160,7 +162,8 @@ public:
 	int temp_allocated;
 };
 
-REGISTER_PLUGIN(FreeverbEffect)
+
+REGISTER_PLUGIN
 
 
 FreeverbGain::FreeverbGain(FreeverbEffect *plugin, int x, int y)
@@ -273,14 +276,8 @@ FreeverbWindow::FreeverbWindow(FreeverbEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-void FreeverbWindow::create_objects()
-{
 	int x1 = 10, x2 = 100, x3 = 135, y1 = 10, y2 = 20, margin = 30;
 
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x1, y2, _("Gain:")));
 	add_subwindow(gain = new FreeverbGain(plugin, x3, y1));
 	y1 += margin;
@@ -306,10 +303,19 @@ void FreeverbWindow::create_objects()
 	y1 += margin;
 	y2 += margin;
 	add_subwindow(mode = new FreeverbMode(plugin, x1, y2));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO;
 }
 
+void FreeverbWindow::update()
+{
+	gain->update(plugin->config.gain);
+	roomsize->update(plugin->config.roomsize);
+	damp->update(plugin->config.damp);
+	wet->update(plugin->config.wet);
+	dry->update(plugin->config.dry);
+	width->update(plugin->config.width);
+	mode->update((int)plugin->config.mode);
+}
 
 FreeverbConfig::FreeverbConfig()
 {
@@ -350,8 +356,7 @@ void FreeverbConfig::interpolate(FreeverbConfig &prev,
 	ptstime next_pts,
 	ptstime current_pts)
 {
-	double next_scale = (current_pts - prev_pts) / (next_pts - prev_pts);
-	double prev_scale = (next_pts - current_pts) / (next_pts - prev_pts);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	gain = prev.gain * prev_scale + next.gain * next_scale;
 	wet = prev.wet * prev_scale + next.wet * next_scale;
@@ -362,7 +367,7 @@ void FreeverbConfig::interpolate(FreeverbConfig &prev,
 	mode = prev.mode;
 }
 
-PLUGIN_THREAD_OBJECT(FreeverbEffect, FreeverbThread, FreeverbWindow)
+PLUGIN_THREAD_METHODS
 
 FreeverbEffect::FreeverbEffect(PluginServer *server)
  : PluginAClient(server)
@@ -390,21 +395,7 @@ FreeverbEffect::~FreeverbEffect()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-NEW_PICON_MACRO(FreeverbEffect)
-
-LOAD_PTS_CONFIGURATION_MACRO(FreeverbEffect, FreeverbConfig)
-
-SHOW_GUI_MACRO(FreeverbEffect, FreeverbThread)
-
-RAISE_WINDOW_MACRO(FreeverbEffect)
-
-SET_STRING_MACRO(FreeverbEffect)
-
-const char* FreeverbEffect::plugin_title() { return N_("Freeverb"); }
-int FreeverbEffect::is_realtime() { return 1; }
-int FreeverbEffect::is_multichannel() { return 1; }
-int FreeverbEffect::has_pts_api() { return 1; }
-
+PLUGIN_CLASS_METHODS
 
 void FreeverbEffect::read_data(KeyFrame *keyframe)
 {
@@ -476,23 +467,6 @@ void FreeverbEffect::save_defaults()
 	defaults->update("WIDTH", config.width);
 	defaults->update("MODE", config.mode);
 	defaults->save();
-}
-
-void FreeverbEffect::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->gain->update(config.gain);
-		thread->window->roomsize->update(config.roomsize);
-		thread->window->damp->update(config.damp);
-		thread->window->wet->update(config.wet);
-		thread->window->dry->update(config.dry);
-		thread->window->width->update(config.width);
-		thread->window->mode->update((int)config.mode);
-		thread->window->unlock_window();
-	}
 }
 
 void FreeverbEffect::process_frame_realtime(AFrame **input, AFrame **output)

@@ -26,6 +26,7 @@
  * PLUGIN_IS_VIDEO
  * PLUGIN_IS_TRANSITION
  * PLUGIN_IS_REALTIME
+ * PLUGIN_IS_MULTICHANNEL
  * PLUGIN_CUSTOM_LOAD_CONFIGURATION
  * PLUGIN_CLASS class_name
  * PLUGIN_TITLE plugin_title
@@ -58,6 +59,13 @@ class PLUGIN_THREAD_CLASS;
 
 #ifdef PLUGIN_GUI_CLASS
 class PLUGIN_GUI_CLASS;
+#endif
+
+#ifdef PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_CLASS_MULTICHANNEL_MEMBER \
+	int is_multichannel() { return 1; };
+#else
+#define PLUGIN_CLASS_MULTICHANNEL_MEMBER
 #endif
 
 #if defined(PLUGIN_IS_TRANSITION)
@@ -95,7 +103,8 @@ class PLUGIN_GUI_CLASS;
 	PLUGIN_CONFIG_CLASS config; \
 	PLUGIN_THREAD_CLASS *thread; \
 	int is_realtime() { return 1; }; \
-	int has_pts_api() { return 2; };
+	int has_pts_api() { return 2; }; \
+	PLUGIN_CLASS_MULTICHANNEL_MEMBER
 #endif // config_class
 #endif // transition
 
