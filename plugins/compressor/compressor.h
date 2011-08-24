@@ -22,16 +22,22 @@
 #ifndef COMPRESSOR_H
 #define COMPRESSOR_H
 
+#define PLUGIN_TITLE N_("Compressor")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_CLASS CompressorEffect
+#define PLUGIN_CONFIG_CLASS CompressorConfig
+#define PLUGIN_THREAD_CLASS CompressorThread
+#define PLUGIN_GUI_CLASS CompressorWindow
 
-
+#include "pluginmacros.h"
 #include "bchash.inc"
 #include "guicast.h"
-#include "mutex.h"
+#include "language.h"
 #include "maxchannels.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
-
-class CompressorEffect;
 
 
 class CompressorCanvas : public BC_SubWindow
@@ -128,7 +134,7 @@ class CompressorWindow : public BC_Window
 {
 public:
 	CompressorWindow(CompressorEffect *plugin, int x, int y);
-	void create_objects();
+
 	void update();
 	void update_textboxes();
 	void update_canvas();
@@ -143,10 +149,10 @@ public:
 	CompressorDecay *decay;
 	CompressorSmooth *smooth;
 	CompressorInput *input;
-	CompressorEffect *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(CompressorEffect, CompressorThread, CompressorWindow)
+PLUGIN_THREAD_HEADER
 
 
 typedef struct
@@ -194,6 +200,7 @@ public:
 	double max_x, max_y;
 	int smoothing_only;
 	ArrayList<compressor_point_t> levels;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class CompressorEffect : public PluginAClient
@@ -202,9 +209,6 @@ public:
 	CompressorEffect(PluginServer *server);
 	~CompressorEffect();
 
-	int is_multichannel();
-	int is_realtime();
-	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_frame(AFrame **aframes);
@@ -215,11 +219,9 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-	void reset();
-	void update_gui();
 	void delete_dsp();
 
-	PLUGIN_CLASS_MEMBERS(CompressorConfig, CompressorThread)
+	PLUGIN_CLASS_MEMBERS
 
 // Frames for readahead
 	AFrame buffer_headers[MAXCHANNELS];

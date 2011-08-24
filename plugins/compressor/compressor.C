@@ -19,22 +19,19 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "compressor.h"
 #include "cursors.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "language.h"
 #include "picon_png.h"
 #include "units.h"
-#include "vframe.h"
 
 #include <math.h>
 #include <string.h>
 
-REGISTER_PLUGIN(CompressorEffect)
+REGISTER_PLUGIN
 
 // More potential compressor algorithms:
 // Use single reaction time parameter.  Negative reaction time uses 
@@ -59,33 +56,6 @@ REGISTER_PLUGIN(CompressorEffect)
 CompressorEffect::CompressorEffect(PluginServer *server)
  : PluginAClient(server)
 {
-	reset();
-	PLUGIN_CONSTRUCTOR_MACRO
-}
-
-CompressorEffect::~CompressorEffect()
-{
-	PLUGIN_DESTRUCTOR_MACRO
-	delete_dsp();
-	levels.remove_all();
-}
-
-void CompressorEffect::delete_dsp()
-{
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-	{
-		if(input_buffer[i])
-			delete [] input_buffer[i];
-		input_buffer[i] = 0;
-		buffer_headers[i].reset_buffer();
-	}
-
-	input_size = 0;
-	input_allocated = 0;
-}
-
-void CompressorEffect::reset()
-{
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		input_buffer[i] = 0;
@@ -100,12 +70,21 @@ void CompressorEffect::reset()
 	target_samples = 1;
 	target_current_sample = -1;
 	current_value = 1.0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
-const char* CompressorEffect::plugin_title() { return N_("Compressor"); }
-int CompressorEffect::is_realtime() { return 1; }
-int CompressorEffect::is_multichannel() { return 1; }
-int CompressorEffect::has_pts_api() { return 1; }
+CompressorEffect::~CompressorEffect()
+{
+	for(int i = 0; i < PluginClient::total_in_buffers; i++)
+	{
+		if(input_buffer[i])
+			delete [] input_buffer[i];
+	}
+	levels.remove_all();
+	PLUGIN_DESTRUCTOR_MACRO
+}
+
+PLUGIN_CLASS_METHODS
 
 void CompressorEffect::read_data(KeyFrame *keyframe)
 {
@@ -215,25 +194,6 @@ void CompressorEffect::save_defaults()
 
 	defaults->save();
 }
-
-void CompressorEffect::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("CompressorEffect::update_gui");
-			thread->window->update();
-			thread->window->unlock_window();
-		}
-	}
-}
-
-NEW_PICON_MACRO(CompressorEffect)
-SHOW_GUI_MACRO(CompressorEffect, CompressorThread)
-RAISE_WINDOW_MACRO(CompressorEffect)
-SET_STRING_MACRO(CompressorEffect)
-LOAD_PTS_CONFIGURATION_MACRO(CompressorEffect, CompressorConfig)
 
 void CompressorEffect::process_frame(AFrame **aframes)
 {
@@ -799,7 +759,7 @@ void CompressorConfig::optimize()
 }
 
 
-PLUGIN_THREAD_OBJECT(CompressorEffect, CompressorThread, CompressorWindow)
+PLUGIN_THREAD_METHODS
 
 
 CompressorWindow::CompressorWindow(CompressorEffect *plugin, int x, int y)
@@ -814,15 +774,10 @@ CompressorWindow::CompressorWindow(CompressorEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-void CompressorWindow::create_objects()
-{
-	int x = 35, y = 10;
 	int control_margin = 130;
+	x = 35;
+	y = 10;
 
-	set_icon(new VFrame(picon_png));
 	add_subwindow(canvas = new CompressorCanvas(plugin, 
 		x, 
 		y, 
@@ -860,11 +815,9 @@ void CompressorWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, _("x")));
 	x += 20;
 	add_subwindow(y_text = new CompressorY(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	draw_scales();
-
 	update_canvas();
-	show_window();
-	flush();
 }
 
 void CompressorWindow::draw_scales()
