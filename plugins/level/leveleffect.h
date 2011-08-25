@@ -22,11 +22,18 @@
 #ifndef SOUNDLEVEL_H
 #define SOUNDLEVEL_H
 
+#define PLUGIN_TITLE N_("SoundLevel")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CLASS SoundLevelEffect
+#define PLUGIN_CONFIG_CLASS SoundLevelConfig
+#define PLUGIN_THREAD_CLASS SoundLevelThread
+#define PLUGIN_GUI_CLASS SoundLevelWindow
+
+#include "pluginmacros.h"
+#include "language.h"
 #include "guicast.h"
 #include "pluginaclient.h"
-
-class SoundLevelEffect;
-class SoundLevelWindow;
 
 class SoundLevelConfig
 {
@@ -40,6 +47,7 @@ public:
 		ptstime next_pts,
 		ptstime current_pts);
 	float duration;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class SoundLevelDuration : public BC_FSlider
@@ -54,15 +62,15 @@ class SoundLevelWindow : public BC_Window
 {
 public:
 	SoundLevelWindow(SoundLevelEffect *plugin, int x, int y);
-	void create_objects();
+	void update();
 
 	BC_Title *soundlevel_max;
 	BC_Title *soundlevel_rms;
 	SoundLevelDuration *duration;
-	SoundLevelEffect *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(SoundLevelEffect, SoundLevelThread, SoundLevelWindow)
+PLUGIN_THREAD_HEADER
 
 class SoundLevelEffect : public PluginAClient
 {
@@ -70,19 +78,15 @@ public:
 	SoundLevelEffect(PluginServer *server);
 	~SoundLevelEffect();
 
-	int is_realtime();
-	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_frame_realtime(AFrame *input, AFrame *output);
 
 	void load_defaults();
 	void save_defaults();
-	void reset();
-	void update_gui();
 	void render_gui(void *data, int size);
 
-	PLUGIN_CLASS_MEMBERS(SoundLevelConfig, SoundLevelThread)
+	PLUGIN_CLASS_MEMBERS
 
 	double rms_accum;
 	double max_accum;

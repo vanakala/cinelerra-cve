@@ -19,23 +19,20 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
-#include "filesystem.h"
 #include "filexml.h"
 #include "language.h"
 #include "leveleffect.h"
 #include "picon_png.h"
 #include "units.h"
-#include "vframe.h"
 
 #include <errno.h>
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
 
-REGISTER_PLUGIN(SoundLevelEffect)
+REGISTER_PLUGIN
 
 SoundLevelConfig::SoundLevelConfig()
 {
@@ -89,14 +86,8 @@ SoundLevelWindow::SoundLevelWindow(SoundLevelEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-void SoundLevelWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Duration (seconds):")));
 	add_subwindow(duration = new SoundLevelDuration(plugin, x + 150, y));
 	y += 35;
@@ -105,18 +96,23 @@ void SoundLevelWindow::create_objects()
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("RMS soundlevel (dB):")));
 	add_subwindow(soundlevel_rms = new BC_Title(x + 150, y, "0.0"));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-PLUGIN_THREAD_OBJECT(SoundLevelEffect, SoundLevelThread, SoundLevelWindow)
+void SoundLevelWindow::update()
+{
+	duration->update(plugin->config.duration);
+}
+
+PLUGIN_THREAD_METHODS
 
 SoundLevelEffect::SoundLevelEffect(PluginServer *server)
  : PluginAClient(server)
 {
+	rms_accum = 0;
+	max_accum = 0;
+	accum_size = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
-	reset();
 }
 
 SoundLevelEffect::~SoundLevelEffect()
@@ -124,27 +120,8 @@ SoundLevelEffect::~SoundLevelEffect()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-NEW_PICON_MACRO(SoundLevelEffect)
+PLUGIN_CLASS_METHODS
 
-LOAD_PTS_CONFIGURATION_MACRO(SoundLevelEffect, SoundLevelConfig)
-
-SHOW_GUI_MACRO(SoundLevelEffect, SoundLevelThread)
-
-RAISE_WINDOW_MACRO(SoundLevelEffect)
-
-SET_STRING_MACRO(SoundLevelEffect)
-
-
-void SoundLevelEffect::reset()
-{
-	rms_accum = 0;
-	max_accum = 0;
-	accum_size = 0;
-}
-
-const char* SoundLevelEffect::plugin_title() { return N_("SoundLevel"); }
-int SoundLevelEffect::is_realtime() { return 1; }
-int SoundLevelEffect::has_pts_api() { return 1; }
 
 void SoundLevelEffect::read_data(KeyFrame *keyframe)
 {
@@ -191,17 +168,6 @@ void SoundLevelEffect::save_defaults()
 {
 	defaults->update("DURATION", config.duration);
 	defaults->save();
-}
-
-void SoundLevelEffect::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->duration->update(config.duration);
-		thread->window->unlock_window();
-	}
 }
 
 void SoundLevelEffect::process_frame_realtime(AFrame *input, AFrame *output)
