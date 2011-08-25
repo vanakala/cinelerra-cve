@@ -19,6 +19,16 @@
  * 
  */
 
+#define PLUGIN_TITLE N_("DenoiseFFT")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+#define PLUGIN_CLASS DenoiseFFTEffect
+#define PLUGIN_CONFIG_CLASS DenoiseFFTConfig
+#define PLUGIN_THREAD_CLASS DenoiseFFTThread
+#define PLUGIN_GUI_CLASS DenoiseFFTWindow
+
+#include "pluginmacros.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -40,10 +50,6 @@
 // of the previous keyframe.  It always covers the higher numbered samples
 // after the keyframe.
 
-class DenoiseFFTEffect;
-class DenoiseFFTWindow;
-
-
 class DenoiseFFTConfig
 {
 public:
@@ -51,6 +57,7 @@ public:
 
 	int samples;
 	double level;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class DenoiseFFTLevel : public BC_FPot
@@ -74,14 +81,16 @@ class DenoiseFFTWindow : public BC_Window
 public:
 	DenoiseFFTWindow(DenoiseFFTEffect *plugin, int x, int y);
 	~DenoiseFFTWindow();
-	void create_objects();
+
+	void update();
+
 	DenoiseFFTLevel *level;
 	DenoiseFFTSamples *samples;
-	DenoiseFFTEffect *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(DenoiseFFTEffect, DenoiseFFTThread, DenoiseFFTWindow)
+PLUGIN_THREAD_HEADER
 
 
 class DenoiseFFTRemove : public CrossfadeFFT
@@ -108,8 +117,6 @@ public:
 	DenoiseFFTEffect(PluginServer *server);
 	~DenoiseFFTEffect();
 
-	int is_realtime();
-	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_frame(AFrame *aframe);
@@ -117,11 +124,10 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-	void update_gui();
 
 	void process_window();
 
-	PLUGIN_CLASS_MEMBERS(DenoiseFFTConfig, DenoiseFFTThread)
+	PLUGIN_CLASS_MEMBERS
 
 // Need to sample noise now.
 	int need_collection;
@@ -134,7 +140,7 @@ public:
 };
 
 
-REGISTER_PLUGIN(DenoiseFFTEffect)
+REGISTER_PLUGIN
 
 
 DenoiseFFTConfig::DenoiseFFTConfig()
@@ -187,18 +193,8 @@ DenoiseFFTWindow::DenoiseFFTWindow(DenoiseFFTEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-DenoiseFFTWindow::~DenoiseFFTWindow()
-{
-}
-
-void DenoiseFFTWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Denoise power:")));
 	add_subwindow(level = new DenoiseFFTLevel(plugin, x + 130, y));
 	y += level->get_h() + 10;
@@ -216,13 +212,23 @@ void DenoiseFFTWindow::create_objects()
 		samples->add_item(new BC_MenuItem(string));
 		i *= 2;
 	}
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
+DenoiseFFTWindow::~DenoiseFFTWindow()
+{
+}
 
-PLUGIN_THREAD_OBJECT(DenoiseFFTEffect, DenoiseFFTThread, DenoiseFFTWindow)
+void DenoiseFFTWindow::update()
+{
+	char string[BCTEXTLEN];
 
+	level->update(plugin->config.level);
+	sprintf(string, "%d", plugin->config.samples);
+	samples->set_text(string);
+}
+
+PLUGIN_THREAD_METHODS
 
 DenoiseFFTEffect::DenoiseFFTEffect(PluginServer *server)
  : PluginAClient(server)
@@ -243,14 +249,7 @@ DenoiseFFTEffect::~DenoiseFFTEffect()
 	if(collect_engine) delete collect_engine;
 }
 
-NEW_PICON_MACRO(DenoiseFFTEffect)
-SHOW_GUI_MACRO(DenoiseFFTEffect, DenoiseFFTThread)
-RAISE_WINDOW_MACRO(DenoiseFFTEffect)
-SET_STRING_MACRO(DenoiseFFTEffect)
-
-int DenoiseFFTEffect::is_realtime() { return 1; }
-const char* DenoiseFFTEffect::plugin_title() { return N_("DenoiseFFT"); }
-int DenoiseFFTEffect::has_pts_api() { return 1; }
+PLUGIN_CLASS_METHODS
 
 void DenoiseFFTEffect::read_data(KeyFrame *keyframe)
 {
@@ -291,7 +290,6 @@ void DenoiseFFTEffect::save_data(KeyFrame *keyframe)
 
 void DenoiseFFTEffect::load_defaults()
 {
-
 	defaults = load_defaults_file("denoisefft.rc");
 
 	config.level = defaults->get("LEVEL", config.level);
@@ -303,20 +301,6 @@ void DenoiseFFTEffect::save_defaults()
 	defaults->update("LEVEL", config.level);
 	defaults->update("SAMPLES", config.samples);
 	defaults->save();
-}
-
-void DenoiseFFTEffect::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window("DenoiseFFTEffect::update_gui");
-		thread->window->level->update(config.level);
-		char string[BCTEXTLEN];
-		sprintf(string, "%d", config.samples);
-		thread->window->samples->set_text(string);
-		thread->window->unlock_window();
-	}
 }
 
 int DenoiseFFTEffect::load_configuration()
