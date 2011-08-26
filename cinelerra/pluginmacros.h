@@ -27,6 +27,7 @@
  * PLUGIN_IS_TRANSITION
  * PLUGIN_IS_REALTIME
  * PLUGIN_IS_MULTICHANNEL
+ * PLUGIN_IS_SYNTHESIS
  * PLUGIN_CUSTOM_LOAD_CONFIGURATION
  * PLUGIN_CLASS class_name
  * PLUGIN_TITLE plugin_title
@@ -68,6 +69,13 @@ class PLUGIN_GUI_CLASS;
 #define PLUGIN_CLASS_MULTICHANNEL_MEMBER
 #endif
 
+#ifdef PLUGIN_IS_SYNTHESIS
+#define PLUGIN_CLASS_SYNTHESIS_MEMBER \
+	int is_synthesis() { return 1; };
+#else
+#define PLUGIN_CLASS_SYNTHESIS_MEMBER
+#endif
+
 #if defined(PLUGIN_IS_TRANSITION)
 #define PLUGIN_CLASS_MEMBERS \
 	VFrame* new_picon(); \
@@ -105,6 +113,7 @@ class PLUGIN_GUI_CLASS;
 	PLUGIN_THREAD_CLASS *thread; \
 	int is_realtime() { return 1; }; \
 	int has_pts_api() { return 2; }; \
+	PLUGIN_CLASS_SYNTHESIS_MEMBER \
 	PLUGIN_CLASS_MULTICHANNEL_MEMBER
 #endif // config_class
 #endif // transition

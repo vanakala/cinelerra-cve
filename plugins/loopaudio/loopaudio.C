@@ -7,7 +7,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -19,6 +19,18 @@
  * 
  */
 
+// Old name was 'Loop audio'
+#define PLUGIN_TITLE N_("Loop")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+#define PLUGIN_CLASS LoopAudio
+#define PLUGIN_CONFIG_CLASS LoopAudioConfig
+#define PLUGIN_THREAD_CLASS LoopAudioThread
+#define PLUGIN_GUI_CLASS LoopAudioWindow
+
+#include "pluginmacros.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -29,13 +41,13 @@
 
 #include <string.h>
 
-class LoopAudio;
-
 class LoopAudioConfig
 {
 public:
 	LoopAudioConfig();
+
 	ptstime duration;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -46,6 +58,7 @@ public:
 		int x,
 		int y);
 	int handle_event();
+
 	LoopAudio *plugin;
 };
 
@@ -54,13 +67,13 @@ class LoopAudioWindow : public BC_Window
 public:
 	LoopAudioWindow(LoopAudio *plugin, int x, int y);
 	~LoopAudioWindow();
-	void create_objects();
+	void update();
 
-	LoopAudio *plugin;
 	LoopAudioDuration *duration;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(LoopAudio, LoopAudioThread, LoopAudioWindow)
+PLUGIN_THREAD_HEADER
 
 class LoopAudio : public PluginAClient
 {
@@ -68,23 +81,19 @@ public:
 	LoopAudio(PluginServer *server);
 	~LoopAudio();
 
-	PLUGIN_CLASS_MEMBERS(LoopAudioConfig, LoopAudioThread)
+	PLUGIN_CLASS_MEMBERS
 
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int is_realtime();
-	int is_synthesis();
-	int has_pts_api();
 	void process_frame(AFrame *aframe);
 
 	AFrame loop_frame;
 };
 
 
-REGISTER_PLUGIN(LoopAudio);
+REGISTER_PLUGIN
 
 LoopAudioConfig::LoopAudioConfig()
 {
@@ -104,28 +113,26 @@ LoopAudioWindow::LoopAudioWindow(LoopAudio *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
+	x = y = 10;
+
+	add_subwindow(new BC_Title(x, y, _("Duration to loop:")));
+	y += 20;
+	add_subwindow(duration = new LoopAudioDuration(plugin, 
+		x, 
+		y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 LoopAudioWindow::~LoopAudioWindow()
 {
 }
 
-void LoopAudioWindow::create_objects()
+void LoopAudioWindow::update()
 {
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
-	add_subwindow(new BC_Title(x, y, _("Duration to loop:")));
-	y += 20;
-	add_subwindow(duration = new LoopAudioDuration(plugin, 
-		x, 
-		y));
-	show_window();
-	flush();
+	duration->update((float)plugin->config.duration);
 }
 
-PLUGIN_THREAD_OBJECT(LoopAudio, LoopAudioThread, LoopAudioWindow)
+PLUGIN_THREAD_METHODS
 
 
 LoopAudioDuration::LoopAudioDuration(LoopAudio *plugin, 
@@ -163,15 +170,7 @@ LoopAudio::~LoopAudio()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* LoopAudio::plugin_title() { return N_("Loop audio"); }
-int LoopAudio::is_realtime() { return 1; } 
-int LoopAudio::is_synthesis() { return 1; }
-int LoopAudio::has_pts_api() { return 1; }
-
-NEW_PICON_MACRO(LoopAudio)
-SHOW_GUI_MACRO(LoopAudio, LoopAudioThread)
-RAISE_WINDOW_MACRO(LoopAudio)
-SET_STRING_MACRO(LoopAudio);
+PLUGIN_CLASS_METHODS
 
 void LoopAudio::process_frame(AFrame *aframe)
 {
@@ -218,7 +217,6 @@ void LoopAudio::process_frame(AFrame *aframe)
 		aframe->set_filled(aframe->length + loop_frame.length);
 	}
 }
-
 
 int LoopAudio::load_configuration()
 {
@@ -281,16 +279,5 @@ void LoopAudio::read_data(KeyFrame *keyframe)
 				config.duration = (ptstime)samples / get_project_samplerate();
 			config.duration = input.tag.get_property("DURATION", config.duration);
 		}
-	}
-}
-
-void LoopAudio::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window("LoopAudio::update_gui");
-		thread->window->duration->update((float)config.duration);
-		thread->window->unlock_window();
 	}
 }

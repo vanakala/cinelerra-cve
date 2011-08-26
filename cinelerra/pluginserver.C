@@ -227,6 +227,7 @@ static struct oldpluginnames
 } oldpluginnames[] = {
 	{ TRACK_AUDIO, "Invert Audio", "Invert" },
 	{ TRACK_AUDIO, "Delay audio", "Delay" },
+	{ TRACK_AUDIO, "Loop audio", "Loop" },
 	{ 0, "", "" }
 };
 
