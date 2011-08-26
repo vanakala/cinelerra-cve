@@ -22,38 +22,38 @@
 #ifndef SRATEWINDOW_H
 #define SRATEWINDOW_H
 
+#include "normalize.h"
 #include "guicast.h"
 
 class NormalizeWindow : public BC_Window
 {
 public:
-	NormalizeWindow(int x, int y);
+	NormalizeWindow(NormalizeMain *plugin, int x, int y);
 	~NormalizeWindow();
 
-	void create_objects(VFrame *icon_img, float *db_over, int *seperate_tracks);
-
-	float *db_over;
-	int *separate_tracks;
+	NormalizeMain *plugin;
 };
 
 class NormalizeWindowOverload : public BC_TextBox
 {
 public:
-	NormalizeWindowOverload(int x, int y, float *db_over);
+	NormalizeWindowOverload(NormalizeMain *plugin, int x, int y);
 	~NormalizeWindowOverload();
 
 	int handle_event();
-	float *db_over;
+
+	NormalizeMain *plugin;
 };
 
 class NormalizeWindowSeparate : public BC_CheckBox
 {
 public:
-	NormalizeWindowSeparate(int x, int y, int *separate_tracks);
+	NormalizeWindowSeparate(NormalizeMain *plugin, int x, int y);
 	~NormalizeWindowSeparate();
 
 	int handle_event();
-	int *separate_tracks;
+
+	NormalizeMain *plugin;
 };
 
 #endif

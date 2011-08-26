@@ -24,7 +24,7 @@
 #include "normalizewindow.h"
 
 
-NormalizeWindow::NormalizeWindow(int x, int y)
+NormalizeWindow::NormalizeWindow(NormalizeMain *plugin, int x, int y)
  : BC_Window(PROGRAM_NAME ": Normalize", 
 	x - 160,
 	y - 75,
@@ -35,36 +35,25 @@ NormalizeWindow::NormalizeWindow(int x, int y)
 	0,
 	0,
 	1)
-{ 
+{
+	x = y = 10;
+	add_subwindow(new BC_Title(x, y, _("Enter the DB to overload by:")));
+	y += 20;
+	add_subwindow(new NormalizeWindowOverload(plugin, x, y));
+	y += 30;
+	add_subwindow(new NormalizeWindowSeparate(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 NormalizeWindow::~NormalizeWindow()
 {
 }
 
-void NormalizeWindow::create_objects(VFrame *icon_img, float *db_over, int *separate_tracks)
+
+NormalizeWindowOverload::NormalizeWindowOverload(NormalizeMain *plugin, int x, int y)
+ : BC_TextBox(x, y, 200, 1, plugin->db_over)
 {
-	int x = 10, y = 10;
-
-	set_icon(icon_img);
-	this->db_over = db_over;
-	this->separate_tracks = separate_tracks;
-	add_subwindow(new BC_Title(x, y, _("Enter the DB to overload by:")));
-	y += 20;
-	add_subwindow(new NormalizeWindowOverload(x, y, this->db_over));
-	y += 30;
-	add_subwindow(new NormalizeWindowSeparate(x, y, this->separate_tracks));
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
-	show_window();
-	flush();
-}
-
-
-NormalizeWindowOverload::NormalizeWindowOverload(int x, int y, float *db_over)
- : BC_TextBox(x, y, 200, 1, *db_over)
-{
-	this->db_over = db_over;
+	this->plugin = plugin;
 }
 
 NormalizeWindowOverload::~NormalizeWindowOverload()
@@ -73,15 +62,15 @@ NormalizeWindowOverload::~NormalizeWindowOverload()
 
 int NormalizeWindowOverload::handle_event()
 {
-	*db_over = atof(get_text());
+	plugin->db_over = atof(get_text());
 	return 1;
 }
 
 
-NormalizeWindowSeparate::NormalizeWindowSeparate(int x, int y, int *separate_tracks)
- : BC_CheckBox(x, y, *separate_tracks, _("Treat tracks independantly"))
+NormalizeWindowSeparate::NormalizeWindowSeparate(NormalizeMain *plugin, int x, int y)
+ : BC_CheckBox(x, y, plugin->separate_tracks, _("Treat tracks independantly"))
 {
-	this->separate_tracks = separate_tracks;
+	this->plugin = plugin;
 }
 
 NormalizeWindowSeparate::~NormalizeWindowSeparate()
@@ -90,6 +79,6 @@ NormalizeWindowSeparate::~NormalizeWindowSeparate()
 
 int NormalizeWindowSeparate::handle_event()
 {
-	*separate_tracks = get_value();
+	plugin->separate_tracks = get_value();
 	return 1;
 }

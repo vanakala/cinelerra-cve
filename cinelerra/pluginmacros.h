@@ -81,6 +81,7 @@ class PLUGIN_GUI_CLASS;
 	const char* plugin_title()  { return PLUGIN_TITLE; }; \
 	BC_Hash *defaults; \
 	int get_parameters(); \
+	PLUGIN_CLASS_MULTICHANNEL_MEMBER \
 	int has_pts_api() { return 2; };
 #else
 #ifndef PLUGIN_CONFIG_CLASS

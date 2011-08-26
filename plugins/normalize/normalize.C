@@ -33,32 +33,21 @@
 #include <string.h>
 
 
-REGISTER_PLUGIN(NormalizeMain)
+REGISTER_PLUGIN
 
 
 NormalizeMain::NormalizeMain(PluginServer *server)
  : PluginAClient(server)
 {
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 NormalizeMain::~NormalizeMain()
 {
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* NormalizeMain::plugin_title() { return N_("Normalize"); }
-int NormalizeMain::is_realtime() { return 0; }
-int NormalizeMain::is_multichannel() { return 1; }
-int NormalizeMain::has_pts_api() { return 1; }
-
-
-VFrame* NormalizeMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
-
+PLUGIN_CLASS_METHODS
 
 void NormalizeMain::load_defaults()
 {
@@ -73,15 +62,6 @@ void NormalizeMain::save_defaults()
 	defaults->update("DBOVER", db_over);
 	defaults->update("SEPERATE_TRACKS", separate_tracks);
 	defaults->save();
-}
-
-int NormalizeMain::get_parameters()
-{
-	BC_DisplayInfo info;
-	NormalizeWindow window(info.get_abs_cursor_x(), info.get_abs_cursor_y());
-	window.create_objects(new VFrame(picon_png), &db_over, &separate_tracks);
-	int result = window.run_window();
-	return result;
 }
 
 void NormalizeMain::start_loop()

@@ -22,6 +22,13 @@
 #ifndef NORMALIZE_H
 #define NORMALIZE_H
 
+#define PLUGIN_TITLE N_("Normalize")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_CLASS NormalizeMain
+#define PLUGIN_GUI_CLASS NormalizeWindow
+
+#include "pluginmacros.h"
 #include "bchash.inc"
 #include "guicast.h"
 #include "mainprogress.inc"
@@ -36,21 +43,15 @@ public:
 	NormalizeMain(PluginServer *server);
 	~NormalizeMain();
 
+	PLUGIN_CLASS_MEMBERS
+
 // normalizing engine
 
 // parameters needed
-
 	float db_over;
 	int separate_tracks;
 
 // required for all non realtime/multichannel plugins
-
-	VFrame* new_picon();
-	const char* plugin_title();
-	int is_realtime();
-	int is_multichannel();
-	int has_pts_api();
-	int get_parameters();
 	void start_loop();
 	int process_loop(AFrame **buffer, int &write_length);
 	void stop_loop();
@@ -58,7 +59,6 @@ public:
 	void load_defaults();
 	void save_defaults();
 
-	BC_Hash *defaults;
 	MainProgressBar *progress;
 
 // Current state of process_loop
