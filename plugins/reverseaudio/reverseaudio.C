@@ -19,6 +19,17 @@
  * 
  */
 
+// Old name was "Reverse audio"
+#define PLUGIN_TITLE N_("Reverse")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+#define PLUGIN_CLASS ReverseAudio
+#define PLUGIN_CONFIG_CLASS ReverseAudioConfig
+#define PLUGIN_THREAD_CLASS ReverseAudioThread
+#define PLUGIN_GUI_CLASS ReverseAudioWindow
+
+#include "pluginmacros.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
@@ -28,13 +39,13 @@
 
 #include <string.h>
 
-class ReverseAudio;
-
 class ReverseAudioConfig
 {
 public:
 	ReverseAudioConfig();
+
 	int enabled;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -53,12 +64,14 @@ class ReverseAudioWindow : public BC_Window
 public:
 	ReverseAudioWindow(ReverseAudio *plugin, int x, int y);
 	~ReverseAudioWindow();
-	void create_objects();
-	ReverseAudio *plugin;
+
+	void update();
+
 	ReverseAudioEnabled *enabled;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(ReverseAudio, ReverseAudioThread, ReverseAudioWindow)
+PLUGIN_THREAD_HEADER
 
 class ReverseAudio : public PluginAClient
 {
@@ -66,15 +79,12 @@ public:
 	ReverseAudio(PluginServer *server);
 	~ReverseAudio();
 
-	PLUGIN_CLASS_MEMBERS(ReverseAudioConfig, ReverseAudioThread)
+	PLUGIN_CLASS_MEMBERS
 
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int is_realtime();
-	int has_pts_api();
 	void process_frame(AFrame *);
 
 	ptstime input_pts;
@@ -83,7 +93,7 @@ public:
 };
 
 
-REGISTER_PLUGIN(ReverseAudio);
+REGISTER_PLUGIN
 
 
 ReverseAudioConfig::ReverseAudioConfig()
@@ -104,25 +114,23 @@ ReverseAudioWindow::ReverseAudioWindow(ReverseAudio *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
+	x = y = 10;
+	add_subwindow(enabled = new ReverseAudioEnabled(plugin, 
+		x, 
+		y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 ReverseAudioWindow::~ReverseAudioWindow()
 {
 }
 
-void ReverseAudioWindow::create_objects()
+void ReverseAudioWindow::update()
 {
-	int x = 10, y = 10;
-	set_icon(new VFrame(picon_png));
-	add_subwindow(enabled = new ReverseAudioEnabled(plugin, 
-		x, 
-		y));
-	show_window();
-	flush();
+	enabled->update(plugin->config.enabled);
 }
 
-PLUGIN_THREAD_OBJECT(ReverseAudio, ReverseAudioThread, ReverseAudioWindow)
+PLUGIN_THREAD_METHODS
 
 ReverseAudioEnabled::ReverseAudioEnabled(ReverseAudio *plugin, 
 	int x, 
@@ -155,14 +163,7 @@ ReverseAudio::~ReverseAudio()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* ReverseAudio::plugin_title() { return N_("Reverse audio"); }
-int ReverseAudio::is_realtime() { return 1; }
-int ReverseAudio::has_pts_api() { return 1; }
-
-NEW_PICON_MACRO(ReverseAudio)
-SHOW_GUI_MACRO(ReverseAudio, ReverseAudioThread)
-RAISE_WINDOW_MACRO(ReverseAudio)
-SET_STRING_MACRO(ReverseAudio);
+PLUGIN_CLASS_METHODS
 
 void ReverseAudio::process_frame(AFrame *aframe)
 {
@@ -246,7 +247,7 @@ int ReverseAudio::load_configuration()
 		input_pts = range_end - (source_pts - range_start)
 			- input_frame.to_duration(fragment_size);
 	}
-	return 0;
+	return 1;
 }
 
 void ReverseAudio::load_defaults()
@@ -291,16 +292,5 @@ void ReverseAudio::read_data(KeyFrame *keyframe)
 		{
 			config.enabled = input.tag.get_property("ENABLED", config.enabled);
 		}
-	}
-}
-
-void ReverseAudio::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->enabled->update(config.enabled);
-		thread->window->unlock_window();
 	}
 }

@@ -228,6 +228,7 @@ static struct oldpluginnames
 	{ TRACK_AUDIO, "Invert Audio", "Invert" },
 	{ TRACK_AUDIO, "Delay audio", "Delay" },
 	{ TRACK_AUDIO, "Loop audio", "Loop" },
+	{ TRACK_AUDIO, "Reverse audio", "Reverse" },
 	{ 0, "", "" }
 };
 
