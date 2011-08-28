@@ -22,6 +22,15 @@
 #ifndef PITCH_H
 #define PITCH_H
 
+#define PLUGIN_TITLE N_("Pitch shift")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CLASS PitchEffect
+#define PLUGIN_CONFIG_CLASS PitchConfig
+#define PLUGIN_THREAD_CLASS PitchThread
+#define PLUGIN_GUI_CLASS PitchWindow
+
+#include "pluginmacros.h"
 #include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
@@ -29,7 +38,6 @@
 #include "pluginaclient.h"
 #include "vframe.inc"
 
-class PitchEffect;
 
 class PitchScale : public BC_FPot
 {
@@ -43,13 +51,14 @@ class PitchWindow : public BC_Window
 {
 public:
 	PitchWindow(PitchEffect *plugin, int x, int y);
-	void create_objects();
+
 	void update();
 	PitchScale *scale;
-	PitchEffect *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(PitchEffect, PitchThread, PitchWindow)
+
+PLUGIN_THREAD_HEADER
 
 
 class PitchConfig
@@ -66,6 +75,7 @@ public:
 		ptstime current_pts);
 
 	double scale;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class PitchFFT : public CrossfadeFFT
@@ -92,10 +102,8 @@ public:
 	PitchEffect(PluginServer *server);
 	~PitchEffect();
 
-	PLUGIN_CLASS_MEMBERS(PitchConfig, PitchThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int is_realtime();
-	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 
@@ -103,7 +111,6 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-	void update_gui();
 
 	PitchFFT *fft;
 };

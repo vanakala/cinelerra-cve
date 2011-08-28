@@ -35,7 +35,7 @@
 #define OVERSAMPLE 8
 
 
-REGISTER_PLUGIN(PitchEffect);
+REGISTER_PLUGIN
 
 
 PitchEffect::PitchEffect(PluginServer *server)
@@ -52,9 +52,7 @@ PitchEffect::~PitchEffect()
 	if(fft) delete fft;
 }
 
-const char* PitchEffect::plugin_title() { return N_("Pitch shift"); }
-int PitchEffect::is_realtime() { return 1; }
-int PitchEffect::has_pts_api() { return 1; }
+PLUGIN_CLASS_METHODS
 
 void PitchEffect::read_data(KeyFrame *keyframe)
 {
@@ -102,23 +100,6 @@ void PitchEffect::save_defaults()
 {
 	defaults->update("SCALE", config.scale);
 	defaults->save();
-}
-
-LOAD_PTS_CONFIGURATION_MACRO(PitchEffect, PitchConfig)
-SHOW_GUI_MACRO(PitchEffect, PitchThread)
-RAISE_WINDOW_MACRO(PitchEffect)
-SET_STRING_MACRO(PitchEffect)
-NEW_PICON_MACRO(PitchEffect)
-
-void PitchEffect::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window("PitchEffect::update_gui");
-		thread->window->update();
-		thread->window->unlock_window();
-	}
 }
 
 void PitchEffect::process_frame(AFrame *aframe)
@@ -271,13 +252,12 @@ void PitchConfig::interpolate(PitchConfig &prev,
 	ptstime next_pts,
 	ptstime current_pts)
 {
-	double next_scale = (double)(current_pts - prev_pts) / (next_pts - prev_pts);
-	double prev_scale = (double)(next_pts - current_pts) / (next_pts - prev_pts);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	scale = prev.scale * prev_scale + next.scale * next_scale;
 }
 
 
-PLUGIN_THREAD_OBJECT(PitchEffect, PitchThread, PitchWindow) 
+PLUGIN_THREAD_METHODS
 
 PitchWindow::PitchWindow(PitchEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -291,19 +271,12 @@ PitchWindow::PitchWindow(PitchEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-void PitchWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Scale:")));
 	x += 70;
 	add_subwindow(scale = new PitchScale(plugin, x, y));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 void PitchWindow::update()
