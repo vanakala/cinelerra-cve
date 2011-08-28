@@ -18,7 +18,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
+#define PLUGIN_TITLE N_("Overlay")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_CLASS OverlayAudio
+#define PLUGIN_CONFIG_CLASS OverlayAudioConfig
+#define PLUGIN_THREAD_CLASS OverlayAudioThread
+#define PLUGIN_GUI_CLASS OverlayAudioWindow
 
+#include "pluginmacros.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "language.h"
@@ -26,8 +35,6 @@
 #include "pluginaclient.h"
 #include <string.h>
 
-class OverlayAudioWindow;
-class OverlayAudio;
 
 class OverlayAudioConfig
 {
@@ -47,14 +54,17 @@ public:
 		TOP,
 		BOTTOM
 	};
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class OutputTrack : public BC_PopupMenu
 {
 public:
 	OutputTrack(OverlayAudio *plugin, int x, int y);
+
 	void create_objects();
 	int handle_event();
+
 	OverlayAudio *plugin;
 };
 
@@ -63,13 +73,13 @@ class OverlayAudioWindow : public BC_Window
 public:
 	OverlayAudioWindow(OverlayAudio *plugin, int x, int y);
 
-	int create_objects();
+	void update();
 
-	OverlayAudio *plugin;
 	OutputTrack *output;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(OverlayAudio, OverlayAudioThread, OverlayAudioWindow)
+PLUGIN_THREAD_HEADER
 
 class OverlayAudio : public PluginAClient
 {
@@ -77,17 +87,13 @@ public:
 	OverlayAudio(PluginServer *server);
 	~OverlayAudio();
 
-	int is_multichannel();
-	int is_realtime();
-	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_frame(AFrame **aframes);
 	void load_defaults();
 	void save_defaults();
-	void update_gui();
 
-	PLUGIN_CLASS_MEMBERS(OverlayAudioConfig, OverlayAudioThread)
+	PLUGIN_CLASS_MEMBERS
 };
 
 
@@ -140,23 +146,21 @@ OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-int OverlayAudioWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, "Output track:"));
 	x += title->get_w() + 10;
 	add_subwindow(output = new OutputTrack(plugin, x, y));
 	output->create_objects();
-	show_window();
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
+void OverlayAudioWindow::update()
+{
+	output->set_text(
+		OverlayAudioConfig::output_to_text(plugin->config.output_track));
+}
 
 OutputTrack::OutputTrack(OverlayAudio *plugin, int x , int y)
  : BC_PopupMenu(x, 
@@ -197,9 +201,9 @@ int OutputTrack::handle_event()
 }
 
 
-PLUGIN_THREAD_OBJECT(OverlayAudio, OverlayAudioThread, OverlayAudioWindow)
+PLUGIN_THREAD_METHODS
 
-REGISTER_PLUGIN(OverlayAudio)
+REGISTER_PLUGIN
 
 OverlayAudio::OverlayAudio(PluginServer *server)
  : PluginAClient(server)
@@ -212,10 +216,7 @@ OverlayAudio::~OverlayAudio()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* OverlayAudio::plugin_title() { return N_("Overlay"); }
-int OverlayAudio::is_realtime() { return 1; }
-int OverlayAudio::is_multichannel() { return 1; }
-int OverlayAudio::has_pts_api() { return 1; }
+PLUGIN_CLASS_METHODS
 
 void OverlayAudio::read_data(KeyFrame *keyframe)
 {
@@ -263,26 +264,6 @@ void OverlayAudio::save_defaults()
 	defaults->update("OUTPUT", config.output_track);
 	defaults->save();
 }
-
-void OverlayAudio::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("OverlayAudio::update_gui");
-			thread->window->output->set_text(
-				OverlayAudioConfig::output_to_text(config.output_track));
-			thread->window->unlock_window();
-		}
-	}
-}
-
-NEW_PICON_MACRO(OverlayAudio)
-SHOW_GUI_MACRO(OverlayAudio, OverlayAudioThread)
-RAISE_WINDOW_MACRO(OverlayAudio)
-SET_STRING_MACRO(OverlayAudio)
-LOAD_PTS_CONFIGURATION_MACRO(OverlayAudio, OverlayAudioConfig)
 
 void OverlayAudio::process_frame(AFrame **aframes)
 {
