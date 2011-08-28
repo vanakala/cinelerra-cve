@@ -22,6 +22,17 @@
 #ifndef SPECTROGRAM_H
 #define SPECTROGRAM_H
 
+#define PLUGIN_TITLE N_("Spectrogram")
+
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+#define PLUGIN_CLASS Spectrogram
+#define PLUGIN_CONFIG_CLASS SpectrogramConfig
+#define PLUGIN_THREAD_CLASS SpectrogramThread
+#define PLUGIN_GUI_CLASS SpectrogramWindow
+
+#include "pluginmacros.h"
 #include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
@@ -29,7 +40,6 @@
 #include "pluginaclient.h"
 #include "vframe.inc"
 
-class Spectrogram;
 class SpectrogramFFT;
 
 
@@ -48,16 +58,15 @@ public:
 	SpectrogramWindow(Spectrogram *plugin, int x, int y);
 	~SpectrogramWindow();
 
-	void create_objects();
-	void update_gui();
+	void update();
 
 	SpectrogramLevel *level;
-	Spectrogram *plugin;
 	int done;
 	BC_SubWindow *canvas;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(Spectrogram, SpectrogramThread, SpectrogramWindow)
+PLUGIN_THREAD_HEADER
 
 class SpectrogramFFT : public CrossfadeFFT
 {
@@ -77,6 +86,7 @@ class SpectrogramConfig
 public:
 	SpectrogramConfig();
 	double level;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -86,16 +96,13 @@ public:
 	Spectrogram(PluginServer *server);
 	~Spectrogram();
 
-	PLUGIN_CLASS_MEMBERS(SpectrogramConfig, SpectrogramThread);
+	PLUGIN_CLASS_MEMBERS;
 
-	int is_realtime();
-	int has_pts_api();
 	void process_frame(AFrame *aframe);
 	void load_defaults();
 	void save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	void update_gui();
 	void render_gui(void *data, int size);
 
 	void reset();

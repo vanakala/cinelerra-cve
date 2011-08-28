@@ -30,7 +30,7 @@
 
 #include <string.h>
 
-REGISTER_PLUGIN(Spectrogram)
+REGISTER_PLUGIN
 
 #define WINDOW_SIZE 4096
 #define HALF_WINDOW 2048
@@ -67,20 +67,11 @@ SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-SpectrogramWindow::~SpectrogramWindow()
-{
-}
-
-void SpectrogramWindow::create_objects()
-{
-	int x = 60, y = 10;
 	int divisions = 5;
 	char string[BCTEXTLEN];
 
-	set_icon(new VFrame(picon_png));
+	x = 60;
+	y = 10;
 	add_subwindow(canvas = new BC_SubWindow(x, 
 		y, 
 		get_w() - x - 10, 
@@ -101,18 +92,20 @@ void SpectrogramWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y + 10, _("Level:")));
 	add_subwindow(level = new SpectrogramLevel(plugin, x + 50, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
+}
 
-	show_window();
-	flush();
+SpectrogramWindow::~SpectrogramWindow()
+{
 }
 
 
-void SpectrogramWindow::update_gui()
+void SpectrogramWindow::update()
 {
 	level->update(plugin->config.level);
 }
 
-PLUGIN_THREAD_OBJECT(Spectrogram, SpectrogramThread, SpectrogramWindow)
+PLUGIN_THREAD_METHODS
 
 
 SpectrogramFFT::SpectrogramFFT(Spectrogram *plugin, int window_size)
@@ -162,9 +155,7 @@ Spectrogram::~Spectrogram()
 	if(data) delete [] data;
 }
 
-const char* Spectrogram::plugin_title() { return N_("Spectrogram"); }
-int Spectrogram::is_realtime() { return 1; }
-int Spectrogram::has_pts_api() { return 1; }
+PLUGIN_CLASS_METHODS
 
 void Spectrogram::process_frame(AFrame *aframe)
 {
@@ -185,22 +176,6 @@ void Spectrogram::process_frame(AFrame *aframe)
 	for(int i = 0; i < HALF_WINDOW; i++)
 		data[i] /= total_windows;
 	send_render_gui(data, HALF_WINDOW);
-}
-
-SET_STRING_MACRO(Spectrogram)
-NEW_PICON_MACRO(Spectrogram)
-SHOW_GUI_MACRO(Spectrogram, SpectrogramThread)
-RAISE_WINDOW_MACRO(Spectrogram)
-
-void Spectrogram::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window("Spectrogram::update_gui");
-		thread->window->update_gui();
-		thread->window->unlock_window();
-	}
 }
 
 void Spectrogram::render_gui(void *data, int size)
