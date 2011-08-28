@@ -22,25 +22,28 @@
 #ifndef PARAMETRIC_H
 #define PARAMETRIC_H
 
+#define PLUGIN_TITLE N_("EQ Parametric")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CLASS ParametricEQ
+#define PLUGIN_CONFIG_CLASS ParametricConfig
+#define PLUGIN_THREAD_CLASS ParametricThread
+#define PLUGIN_GUI_CLASS ParametricWindow
 
+#include "pluginmacros.h"
 #include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
-#include "mutex.h"
+#include "language.h"
 #include "pluginaclient.h"
-#include "vframe.inc"
-
 
 // This parametric EQ multiplies the data by a gaussian curve in frequency domain.
 // It causes significant delay but is useful.
-
 
 #define BANDS 3
 #define WINDOW_SIZE 16384
 #define MAXMAGNITUDE 15
 
-class ParametricConfig;
-class ParametricThread;
 class ParametricFreq;
 class ParametricQuality;
 class ParametricMagnitude;
@@ -92,10 +95,11 @@ public:
 
 	ParametricBand band[BANDS];
 	float wetness;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(ParametricEQ, ParametricThread, ParametricWindow)
+PLUGIN_THREAD_HEADER
 
 
 class ParametricFreq : public BC_QPot
@@ -188,14 +192,13 @@ public:
 	ParametricWindow(ParametricEQ *plugin, int x, int y);
 	~ParametricWindow();
 
-	void create_objects();
-	void update_gui();
+	void update();
 	void update_canvas();
 
 	BC_SubWindow *canvas;
-	ParametricEQ *plugin;
 	ParametricBandGUI* bands[BANDS];
 	ParametricWetness *wetness;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
@@ -218,8 +221,6 @@ public:
 	ParametricEQ(PluginServer *server);
 	~ParametricEQ();
 
-	int is_realtime();
-	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_frame(AFrame *aframe);
@@ -227,14 +228,13 @@ public:
 	void load_defaults();
 	void save_defaults();
 	void reconfigure();
-	void update_gui();
 
 	void calculate_envelope();
 	double gauss(double sigma, double a, double x);
 
 	double envelope[WINDOW_SIZE / 2];
 	int need_reconfigure;
-	PLUGIN_CLASS_MEMBERS(ParametricConfig, ParametricThread)
+	PLUGIN_CLASS_MEMBERS
 	ParametricFFT *fft;
 };
 

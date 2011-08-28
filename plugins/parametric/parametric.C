@@ -23,17 +23,15 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "language.h"
 #include "parametric.h"
 #include "picon_png.h"
 #include "units.h"
-#include "vframe.h"
 
 #include <math.h>
 #include <string.h>
 
 
-REGISTER_PLUGIN(ParametricEQ)
+REGISTER_PLUGIN
 
 
 ParametricBand::ParametricBand()
@@ -106,8 +104,7 @@ void ParametricConfig::interpolate(ParametricConfig &prev,
 		ptstime next_pts,
 		ptstime current_pts)
 {
-	double next_scale = (double)(current_pts - prev_pts) / (next_pts - prev_pts);
-	double prev_scale = (double)(next_pts - current_pts) / (next_pts - prev_pts);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	wetness = prev.wetness;
 	for(int i = 0; i < BANDS; i++)
 	{
@@ -282,20 +279,7 @@ ParametricWindow::ParametricWindow(ParametricEQ *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-ParametricWindow::~ParametricWindow()
-{
-	for(int i = 0; i < BANDS; i++)
-		delete bands[i];
-}
-
-void ParametricWindow::create_objects()
-{
-	int y = 35;
-
-	set_icon(new VFrame(picon_png));
+	y = 35;
 
 	add_subwindow(new BC_Title(X1, 10, _("Freq")));
 	add_subwindow(new BC_Title(X2, 10, _("Qual")));
@@ -398,12 +382,17 @@ void ParametricWindow::create_objects()
 			}
 		}
 	}
-
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_canvas();
-	show_window();
 }
 
-void ParametricWindow::update_gui()
+ParametricWindow::~ParametricWindow()
+{
+	for(int i = 0; i < BANDS; i++)
+		delete bands[i];
+}
+
+void ParametricWindow::update()
 {
 	for(int i = 0; i < BANDS; i++)
 		bands[i]->update_gui();
@@ -459,7 +448,7 @@ void ParametricWindow::update_canvas()
 	canvas->flash();
 }
 
-PLUGIN_THREAD_OBJECT(ParametricEQ, ParametricThread, ParametricWindow)
+PLUGIN_THREAD_METHODS
 
 
 ParametricFFT::ParametricFFT(ParametricEQ *plugin, int window_size)
@@ -506,15 +495,7 @@ ParametricEQ::~ParametricEQ()
 	if(fft) delete fft;
 }
 
-NEW_PICON_MACRO(ParametricEQ)
-SHOW_GUI_MACRO(ParametricEQ, ParametricThread)
-RAISE_WINDOW_MACRO(ParametricEQ)
-SET_STRING_MACRO(ParametricEQ)
-LOAD_PTS_CONFIGURATION_MACRO(ParametricEQ, ParametricConfig)
-
-const char* ParametricEQ::plugin_title() { return N_("EQ Parametric"); }
-int ParametricEQ::is_realtime() { return 1; }
-int ParametricEQ::has_pts_api() { return 1; }
+PLUGIN_CLASS_METHODS
 
 void ParametricEQ::read_data(KeyFrame *keyframe)
 {
@@ -715,15 +696,4 @@ void ParametricEQ::save_defaults()
 	}
 
 	defaults->save();
-}
-
-void ParametricEQ::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window("ParametricEQ::update_gui");
-		thread->window->update_gui();
-		thread->window->unlock_window();
-	}
 }
