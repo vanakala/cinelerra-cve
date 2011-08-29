@@ -19,23 +19,22 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
 #include "synthesizer.h"
-#include "vframe.h"
 
 #include <string.h>
 
-REGISTER_PLUGIN(Synth)
+REGISTER_PLUGIN
 
 Synth::Synth(PluginServer *server)
  : PluginAClient(server)
 {
-	reset();
+	need_reconfigure = 1;
+	dsp_buffer = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -46,20 +45,7 @@ Synth::~Synth()
 	if(dsp_buffer) delete [] dsp_buffer;
 }
 
-NEW_PICON_MACRO(Synth)
-
-const char* Synth::plugin_title() { return N_("Synthesizer"); }
-int Synth::is_realtime() { return 1; }
-int Synth::is_synthesis() { return 1; }
-int Synth::has_pts_api() { return 1; }
-
-void Synth::reset()
-{
-	need_reconfigure = 1;
-	dsp_buffer = 0;
-}
-
-LOAD_PTS_CONFIGURATION_MACRO(Synth, SynthConfig)
+PLUGIN_CLASS_METHODS
 
 void Synth::load_defaults()
 {
@@ -144,8 +130,6 @@ void Synth::save_data(KeyFrame *keyframe)
 
 void Synth::save_defaults()
 {
-	char string[BCTEXTLEN];
-
 	defaults->update("WIDTH", w);
 	defaults->update("HEIGHT", h);
 	defaults->update("WETNESS", config.wetness);
@@ -158,21 +142,6 @@ void Synth::save_defaults()
 		config.oscillator_config.values[i]->save_defaults(defaults);
 	}
 	defaults->save();
-}
-
-SHOW_GUI_MACRO(Synth, SynthThread);
-SET_STRING_MACRO(Synth);
-RAISE_WINDOW_MACRO(Synth);
-
-void Synth::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->update_gui();
-		thread->window->unlock_window();
-	}
 }
 
 void Synth::add_oscillator()
@@ -204,7 +173,6 @@ double Synth::get_total_power()
 	if(result == 0) result = 1;  // prevent division by 0
 	return result;
 }
-
 
 double Synth::solve_eqn(double *output, 
 	double x1, 
@@ -423,31 +391,22 @@ void Synth::reconfigure()
 	waveform_sample = 0;
 }
 
-PLUGIN_THREAD_OBJECT(Synth, SynthThread, SynthWindow)
+PLUGIN_THREAD_METHODS
 
-SynthWindow::SynthWindow(Synth *synth, int x, int y)
- : BC_Window(synth->gui_string, 
+SynthWindow::SynthWindow(Synth *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y, 
 	440,
-	synth->h, 
+	plugin->h,
 	380, 
 	10, 
 	1, 
 	0,
 	1)
 {
-	this->synth = synth; 
-}
-
-SynthWindow::~SynthWindow()
-{
-}
-
-void SynthWindow::create_objects()
-{
 	BC_MenuBar *menu;
-	set_icon(new VFrame(picon_png));
+	int i;
 
 	add_subwindow(menu = new BC_MenuBar(0, 0, get_w()));
 
@@ -456,55 +415,54 @@ void SynthWindow::create_objects()
 	menu->add_menu(phasemenu = new BC_Menu(_("Phase")));
 	menu->add_menu(harmonicmenu = new BC_Menu(_("Harmonic")));
 
-	levelmenu->add_item(new SynthLevelInvert(synth));
-	levelmenu->add_item(new SynthLevelMax(synth));
-	levelmenu->add_item(new SynthLevelRandom(synth));
-	levelmenu->add_item(new SynthLevelSine(synth));
-	levelmenu->add_item(new SynthLevelSlope(synth));
-	levelmenu->add_item(new SynthLevelZero(synth));
+	levelmenu->add_item(new SynthLevelInvert(plugin));
+	levelmenu->add_item(new SynthLevelMax(plugin));
+	levelmenu->add_item(new SynthLevelRandom(plugin));
+	levelmenu->add_item(new SynthLevelSine(plugin));
+	levelmenu->add_item(new SynthLevelSlope(plugin));
+	levelmenu->add_item(new SynthLevelZero(plugin));
 
-	phasemenu->add_item(new SynthPhaseInvert(synth));
-	phasemenu->add_item(new SynthPhaseRandom(synth));
-	phasemenu->add_item(new SynthPhaseSine(synth));
-	phasemenu->add_item(new SynthPhaseZero(synth));
+	phasemenu->add_item(new SynthPhaseInvert(plugin));
+	phasemenu->add_item(new SynthPhaseRandom(plugin));
+	phasemenu->add_item(new SynthPhaseSine(plugin));
+	phasemenu->add_item(new SynthPhaseZero(plugin));
 
-	harmonicmenu->add_item(new SynthFreqEnum(synth));
-	harmonicmenu->add_item(new SynthFreqEven(synth));
-	harmonicmenu->add_item(new SynthFreqFibonacci(synth));
-	harmonicmenu->add_item(new SynthFreqOdd(synth));
-	harmonicmenu->add_item(new SynthFreqPrime(synth));
+	harmonicmenu->add_item(new SynthFreqEnum(plugin));
+	harmonicmenu->add_item(new SynthFreqEven(plugin));
+	harmonicmenu->add_item(new SynthFreqFibonacci(plugin));
+	harmonicmenu->add_item(new SynthFreqOdd(plugin));
+	harmonicmenu->add_item(new SynthFreqPrime(plugin));
 
-	int x = 10, y = 30, i;
+	x = 10;
+	y = 30;
 	add_subwindow(new BC_Title(x, y, _("Waveform")));
 	x += 240;
 	add_subwindow(new BC_Title(x, y, _("Wave Function")));
 	y += 20;
 	x = 10;
-	add_subwindow(canvas = new SynthCanvas(synth, this, x, y, 230, 160));
+	add_subwindow(canvas = new SynthCanvas(plugin, this, x, y, 230, 160));
 	canvas->update();
 
 	x += 240;
-	char string[BCTEXTLEN];
-	waveform_to_text(string, synth->config.wavefunction);
 
-	add_subwindow(waveform = new SynthWaveForm(synth, x, y, string));
+	add_subwindow(waveform = new SynthWaveForm(plugin, x, y, waveform_to_text(plugin->config.wavefunction)));
 	waveform->create_objects();
 	y += 30;
 
 	add_subwindow(new BC_Title(x, y, _("Base Frequency:")));
 	y += 30;
-	add_subwindow(base_freq = new SynthBaseFreq(synth, x, y));
+	add_subwindow(base_freq = new SynthBaseFreq(plugin, x, y));
 	x += 80;
-	add_subwindow(freqpot = new SynthFreqPot(synth, this, x, y - 10));
+	add_subwindow(freqpot = new SynthFreqPot(plugin, this, x, y - 10));
 	base_freq->freq_pot = freqpot;
 	freqpot->freq_text = base_freq;
 	x -= 80;
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Wetness:")));
-	add_subwindow(wetness = new SynthWetness(synth, x + 70, y - 10));
+	add_subwindow(wetness = new SynthWetness(plugin, x + 70, y - 10));
 
 	y += 40;
-	add_subwindow(new SynthClear(synth, x, y));
+	add_subwindow(new SynthClear(plugin, x, y));
 
 	x = 50;
 	y = 220;
@@ -515,20 +473,22 @@ void SynthWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Harmonic")));
 
 	y += 20; x = 10;
-	add_subwindow(subwindow = new SynthSubWindow(synth, x, y, 265, get_h() - y));
+	add_subwindow(subwindow = new SynthSubWindow(plugin, x, y, 265, get_h() - y));
 	x += 265;
-	add_subwindow(scroll = new SynthScroll(synth, this, x, y, get_h() - y));
+	add_subwindow(scroll = new SynthScroll(plugin, this, x, y, get_h() - y));
 
 	x += 20;
-	add_subwindow(new SynthAddOsc(synth, this, x, y));
+	add_subwindow(new SynthAddOsc(plugin, this, x, y));
 	y += 30;
-	add_subwindow(new SynthDelOsc(synth, this, x, y));
+	add_subwindow(new SynthDelOsc(plugin, this, x, y));
 
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_scrollbar();
 	update_oscillators();
+}
 
-	show_window();
-	flush();
+SynthWindow::~SynthWindow()
+{
 }
 
 void SynthWindow::resize_event(int w, int h)
@@ -544,18 +504,16 @@ void SynthWindow::resize_event(int w, int h)
 		h - scroll->get_y());
 	update_scrollbar();
 	update_oscillators();
-	synth->w = w;
-	synth->h = h;
+	plugin->w = w;
+	plugin->h = h;
 }
 
-void SynthWindow::update_gui()
+void SynthWindow::update()
 {
-	char string[BCTEXTLEN];
-	freqpot->update(synth->config.base_freq);
-	base_freq->update((int64_t)synth->config.base_freq);
-	wetness->update(synth->config.wetness);
-	waveform_to_text(string, synth->config.wavefunction);
-	waveform->set_text(string);
+	freqpot->update(plugin->config.base_freq);
+	base_freq->update((int64_t)plugin->config.base_freq);
+	wetness->update(plugin->config.wetness);
+	waveform->set_text(waveform_to_text(plugin->config.wavefunction));
 
 	update_scrollbar();
 	update_oscillators();
@@ -564,7 +522,7 @@ void SynthWindow::update_gui()
 
 void SynthWindow::update_scrollbar()
 {
-	scroll->update_length(synth->config.oscillator_config.total * OSCILLATORHEIGHT, 
+	scroll->update_length(plugin->config.oscillator_config.total * OSCILLATORHEIGHT, 
 		scroll->get_position(), 
 		subwindow->get_h());
 }
@@ -575,11 +533,11 @@ void SynthWindow::update_oscillators()
 
 // Add new oscillators
 	for(i = 0; 
-		i < synth->config.oscillator_config.total; 
+		i < plugin->config.oscillator_config.total; 
 		i++)
 	{
 		SynthOscGUI *gui;
-		SynthOscillatorConfig *config = synth->config.oscillator_config.values[i];
+		SynthOscillatorConfig *config = plugin->config.oscillator_config.values[i];
 
 		if(oscillators.total <= i)
 		{
@@ -611,32 +569,26 @@ void SynthWindow::update_oscillators()
 		oscillators.remove_object();
 }
 
-void SynthWindow::waveform_to_text(char *text, int waveform)
+const char* SynthWindow::waveform_to_text(int waveform)
 {
 	switch(waveform)
 	{
 	case DC:
-		strcpy(text, _("DC"));
-		break;
+		return _("DC");
 	case SINE:
-		strcpy(text, _("Sine"));
-		break;
+		return _("Sine");
 	case SAWTOOTH:
-		sprintf(text, _("Sawtooth"));
-		break;
+		return _("Sawtooth");
 	case SQUARE:
-		sprintf(text, _("Square"));
-		break;
+		return _("Square");
 	case TRIANGLE:
-		sprintf(text, _("Triangle"));
-		break;
+		return _("Triangle");
 	case PULSE:
-		sprintf(text, _("Pulse"));
-		break;
+		return _("Pulse");
 	case NOISE:
-		sprintf(text, _("Noise"));
-		break;
+		return _("Noise");
 	}
+	return "";
 }
 
 SynthOscGUI::SynthOscGUI(SynthWindow *window, int number)
@@ -659,9 +611,9 @@ void SynthOscGUI::create_objects(int y)
 	sprintf(text, "%d:", number + 1);
 	window->subwindow->add_subwindow(title = new BC_Title(10, y + 15, text));
 
-	window->subwindow->add_subwindow(level = new SynthOscGUILevel(window->synth, this, y));
-	window->subwindow->add_subwindow(phase = new SynthOscGUIPhase(window->synth, this, y));
-	window->subwindow->add_subwindow(freq = new SynthOscGUIFreq(window->synth, this, y));
+	window->subwindow->add_subwindow(level = new SynthOscGUILevel(window->plugin, this, y));
+	window->subwindow->add_subwindow(phase = new SynthOscGUIPhase(window->plugin, this, y));
+	window->subwindow->add_subwindow(freq = new SynthOscGUIFreq(window->plugin, this, y));
 }
 
 SynthOscGUILevel::SynthOscGUILevel(Synth *synth, SynthOscGUI *gui, int y)
@@ -754,7 +706,7 @@ int SynthAddOsc::handle_event()
 {
 	synth->add_oscillator();
 	synth->send_configure_change();
-	window->update_gui();
+	window->update();
 	return 1;
 }
 
@@ -774,7 +726,7 @@ int SynthDelOsc::handle_event()
 {
 	synth->delete_oscillator();
 	synth->send_configure_change();
-	window->update_gui();
+	window->update();
 	return 1;
 }
 
@@ -801,7 +753,7 @@ SynthScroll::~SynthScroll()
 
 int SynthScroll::handle_event()
 {
-	window->update_gui();
+	window->update();
 	return 1;
 }
 
@@ -834,7 +786,7 @@ int SynthClear::handle_event()
 }
 
 
-SynthWaveForm::SynthWaveForm(Synth *synth, int x, int y, char *text)
+SynthWaveForm::SynthWaveForm(Synth *synth, int x, int y, const char *text)
  : BC_PopupMenu(x, y, 120, text)
 {
 	this->synth = synth;
@@ -1000,7 +952,7 @@ int SynthLevelZero::handle_event()
 		synth->config.oscillator_config.values[i]->level = INFINITYGAIN;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 }
 
@@ -1020,7 +972,7 @@ int SynthLevelMax::handle_event()
 	{
 		synth->config.oscillator_config.values[i]->level = 0;
 	}
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 }
 
@@ -1056,7 +1008,7 @@ int SynthLevelNormalize::handle_event()
 		synth->config.oscillator_config.values[i]->level = new_value;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1080,7 +1032,7 @@ int SynthLevelSlope::handle_event()
 		synth->config.oscillator_config.values[i]->level = i * slope;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 }
 
@@ -1102,7 +1054,7 @@ int SynthLevelRandom::handle_event()
 		synth->config.oscillator_config.values[i]->level = -(rand() % -INFINITYGAIN);
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 }
 
@@ -1124,7 +1076,7 @@ int SynthLevelInvert::handle_event()
 			INFINITYGAIN - synth->config.oscillator_config.values[i]->level;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 }
 
@@ -1149,7 +1101,7 @@ int SynthLevelSine::handle_event()
 		synth->config.oscillator_config.values[i]->level = new_value;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1174,7 +1126,7 @@ int SynthPhaseInvert::handle_event()
 			1 - synth->config.oscillator_config.values[i]->phase;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1196,7 +1148,7 @@ int SynthPhaseZero::handle_event()
 		synth->config.oscillator_config.values[i]->phase = 0;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 }
 
@@ -1220,7 +1172,7 @@ int SynthPhaseSine::handle_event()
 		synth->config.oscillator_config.values[i]->phase = new_value;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 }
 
@@ -1243,7 +1195,7 @@ int SynthPhaseRandom::handle_event()
 			(float)(rand() % 360) / 360;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1269,7 +1221,7 @@ int SynthFreqRandom::handle_event()
 		synth->config.oscillator_config.values[i]->freq_factor = rand() % 100;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1291,7 +1243,7 @@ int SynthFreqEnum::handle_event()
 		synth->config.oscillator_config.values[i]->freq_factor = (float)i + 1;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1316,7 +1268,7 @@ int SynthFreqEven::handle_event()
 		synth->config.oscillator_config.values[i]->freq_factor = (float)i * 2;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1338,7 +1290,7 @@ int SynthFreqOdd::handle_event()
 		synth->config.oscillator_config.values[i]->freq_factor = (float)1 + i * 2;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1364,7 +1316,7 @@ int SynthFreqFibonacci::handle_event()
 		last_value2 = synth->config.oscillator_config.values[i]->freq_factor;
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1388,7 +1340,7 @@ int SynthFreqPrime::handle_event()
 		number = get_next_prime(number);
 	}
 
-	synth->thread->window->update_gui();
+	synth->thread->window->update();
 	synth->send_configure_change();
 	return 1;
 }
@@ -1560,8 +1512,7 @@ void SynthConfig::interpolate(SynthConfig &prev,
 	ptstime next_pts,
 	ptstime current_pts)
 {
-	double next_scale = (double)(current_pts - prev_pts) / (next_pts - prev_pts);
-	double prev_scale = (double)(next_pts - current_pts) / (next_pts - prev_pts);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	copy_from(prev);
 	wetness = (int)(prev.wetness * prev_scale + next.wetness * next_scale);

@@ -22,17 +22,24 @@
 #ifndef SYNTHESIZER_H
 #define SYNTHESIZER_H
 
+#define PLUGIN_TITLE N_("Synthesizer")
+
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_CLASS Synth
+#define PLUGIN_CONFIG_CLASS SynthConfig
+#define PLUGIN_THREAD_CLASS SynthThread
+#define PLUGIN_GUI_CLASS SynthWindow
 
 
+#include "pluginmacros.h"
 #include "filexml.inc"
 #include "guicast.h"
+#include "language.h"
 #include "mutex.h"
 #include "pluginaclient.h"
-#include "vframe.inc"
 
-
-class Synth;
-class SynthWindow;
 
 #define TOTALOSCILLATORS 1
 #define OSCILLATORHEIGHT 40
@@ -58,18 +65,15 @@ class SynthWetness;
 class SynthWindow : public BC_Window
 {
 public:
-	SynthWindow(Synth *synth, int x, int y);
+	SynthWindow(Synth *plugin, int x, int y);
 	~SynthWindow();
 
-	void create_objects();
 	void resize_event(int w, int h);
-	void update_gui();
-	void waveform_to_text(char *text, int waveform);
+	void update();
+	const char *waveform_to_text(int waveform);
 	void update_scrollbar();
 	void update_oscillators();
 
-
-	Synth *synth;
 	SynthCanvas *canvas;
 	SynthWetness *wetness;
 	SynthWaveForm *waveform;
@@ -78,6 +82,7 @@ public:
 	SynthSubWindow *subwindow;
 	SynthScroll *scroll;
 	ArrayList<SynthOscGUI*> oscillators;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
@@ -196,7 +201,7 @@ public:
 class SynthWaveForm : public BC_PopupMenu
 {
 public:
-	SynthWaveForm(Synth *synth, int x, int y, char *text);
+	SynthWaveForm(Synth *synth, int x, int y, const char *text);
 	~SynthWaveForm();
 
 	void create_objects();
@@ -422,7 +427,7 @@ private:
 	float get_next_prime(float number);
 };
 
-PLUGIN_THREAD_HEADER(Synth, SynthThread, SynthWindow)
+PLUGIN_THREAD_HEADER
 
 class SynthOscillatorConfig
 {
@@ -463,6 +468,7 @@ public:
 	int base_freq;         // base frequency for oscillators
 	int wavefunction;        // SINE, SAWTOOTH, etc
 	ArrayList<SynthOscillatorConfig*> oscillator_config;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -472,11 +478,8 @@ public:
 	Synth(PluginServer *server);
 	~Synth();
 
-	PLUGIN_CLASS_MEMBERS(SynthConfig, SynthThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int is_realtime();
-	int is_synthesis();
-	int has_pts_api();
 	void load_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
@@ -502,8 +505,6 @@ public:
 	double function_triangle(double x);
 	void reconfigure();
 	int overlay_synth(samplenum start, int length, double *input, double *output);
-	void update_gui();
-	void reset();
 
 	double *dsp_buffer;
 	int need_reconfigure;
