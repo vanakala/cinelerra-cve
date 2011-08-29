@@ -22,17 +22,23 @@
 #ifndef TIMESTRETCH_H
 #define TIMESTRETCH_H
 
+#define PLUGIN_TITLE N_("Time stretch")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CLASS TimeStretch
+#define PLUGIN_CONFIG_CLASS TimeStretchConfig
+#define PLUGIN_THREAD_CLASS TimeStretchThread
+#define PLUGIN_GUI_CLASS TimeStretchWindow
+
+#include "pluginmacros.h"
 #include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
+#include "language.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"
 #include "resample.inc"
 #include "vframe.inc"
-
-class TimeStretch;
-class TimeStretchWindow;
-class TimeStretchConfig;
 
 
 class TimeStretchScale : public BC_FPot
@@ -47,13 +53,14 @@ class TimeStretchWindow : public BC_Window
 {
 public:
 	TimeStretchWindow(TimeStretch *plugin, int x, int y);
-	void create_objects();
+
 	void update();
+
 	TimeStretchScale *scale;
-	TimeStretch *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(TimeStretch, TimeStretchThread, TimeStretchWindow)
+PLUGIN_THREAD_HEADER
 
 
 class TimeStretchConfig
@@ -70,6 +77,7 @@ public:
 		ptstime current_pts);
 
 	double scale;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -103,18 +111,14 @@ public:
 	TimeStretch(PluginServer *server);
 	~TimeStretch();
 
-	PLUGIN_CLASS_MEMBERS(TimeStretchConfig, TimeStretchThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int is_realtime();
-	int has_pts_api();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void process_frame(AFrame *aframe);
 
 	void load_defaults();
 	void save_defaults();
-
-	void update_gui();
 
 	PitchEngine *pitch;
 	Resample *resample;

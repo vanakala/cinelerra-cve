@@ -21,11 +21,9 @@
 
 #include "clip.h"
 #include "bchash.h"
-#include "language.h"
 #include "picon_png.h"
 #include "resample.h"
 #include "timestretch.h"
-#include "vframe.h"
 #include "filexml.h"
 
 #include <string.h>
@@ -35,7 +33,7 @@
 #define INPUT_SIZE 65536
 #define OVERSAMPLE 8
 
-REGISTER_PLUGIN(TimeStretch)
+REGISTER_PLUGIN
 
 
 PitchEngine::PitchEngine(TimeStretch *plugin, int window_size)
@@ -248,10 +246,7 @@ TimeStretch::~TimeStretch()
 	if(resample) delete resample;
 }
 
-
-const char* TimeStretch::plugin_title() { return N_("Time stretch"); }
-int TimeStretch::is_realtime() { return 1; }
-int TimeStretch::has_pts_api() { return 1; }
+PLUGIN_CLASS_METHODS
 
 void TimeStretch::read_data(KeyFrame *keyframe)
 {
@@ -292,7 +287,6 @@ void TimeStretch::load_defaults()
 {
 // load the defaults
 	defaults = load_defaults_file("timestretch.rc");
-	defaults->load();
 
 	config.scale = defaults->get("SCALE", (double)1);
 }
@@ -325,27 +319,8 @@ void TimeStretchConfig::interpolate(TimeStretchConfig &prev,
 	ptstime next_pts,
 	ptstime current_pts)
 {
-	double next_scale = (double)(current_pts - prev_pts) / (next_pts - prev_pts);
-	double prev_scale = (double)(next_pts - current_pts) / (next_pts - prev_pts);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	scale = prev.scale * prev_scale + next.scale * next_scale;
-}
-
-
-LOAD_PTS_CONFIGURATION_MACRO(TimeStretch, TimeStretchConfig)
-SHOW_GUI_MACRO(TimeStretch, TimeStretchThread)
-RAISE_WINDOW_MACRO(TimeStretch)
-SET_STRING_MACRO(TimeStretch)
-NEW_PICON_MACRO(TimeStretch)
-
-void TimeStretch::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window("TimeStretch::update_gui");
-		thread->window->update();
-		thread->window->unlock_window();
-	}
 }
 
 void TimeStretch::process_frame(AFrame *aframe)
@@ -362,7 +337,7 @@ void TimeStretch::process_frame(AFrame *aframe)
 	pitch->process_frame_oversample(aframe);
 }
 
-PLUGIN_THREAD_OBJECT(TimeStretch, TimeStretchThread, TimeStretchWindow) 
+PLUGIN_THREAD_METHODS
 
 TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -376,19 +351,12 @@ TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-void TimeStretchWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Scale:")));
 	x += 70;
 	add_subwindow(scale = new TimeStretchScale(plugin, x, y));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 void TimeStretchWindow::update()
