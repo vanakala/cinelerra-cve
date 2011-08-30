@@ -251,9 +251,6 @@ void Reverb::load_defaults()
 	config.ref_length = defaults->get("REF_LENGTH", 1000);
 	config.lowpass1 = defaults->get("LOWPASS1", 20000);
 	config.lowpass2 = defaults->get("LOWPASS2", 20000);
-
-	sprintf(config_directory, "~");
-	defaults->get("CONFIG_DIRECTORY", config_directory);
 }
 
 void Reverb::save_defaults()
@@ -266,7 +263,6 @@ void Reverb::save_defaults()
 	defaults->update("REF_LENGTH", config.ref_length);
 	defaults->update("LOWPASS1", config.lowpass1);
 	defaults->update("LOWPASS2", config.lowpass2);
-	defaults->update("CONFIG_DIRECTORY", config_directory);
 	defaults->save();
 }
 
@@ -317,60 +313,6 @@ void Reverb::read_data(KeyFrame *keyframe)
 			config.lowpass2 = input.tag.get_property("LOWPASS2", config.lowpass2);
 		}
 	}
-}
-
-int Reverb::load_from_file(const char *path)
-{
-	FILE *in;
-	int result = 0;
-	int length;
-	char string[1024];
-
-	if(in = fopen(path, "rb"))
-	{
-		fseek(in, 0, SEEK_END);
-		length = ftell(in);
-		fseek(in, 0, SEEK_SET);
-		if(fread(string, length, 1, in) != 1)
-		{
-			result = 1;
-			errorbox(_("Failed to read from %s"), path);
-		}
-		fclose(in);
-	}
-	else
-	{
-// failed
-		errorbox(_("Couldn't open %s. (%m)"), path);
-		result = 1;
-	}
-
-	return result;
-}
-
-int Reverb::save_to_file(const char *path)
-{
-	FILE *out;
-	int result = 0;
-	char string[1024];
-
-	if(!result)
-	{
-		if(out = fopen(path, "wb"))
-		{
-			fwrite(string, strlen(string), 1, out);
-			fclose(out);
-		}
-		else
-		{
-			result = 1;
-// failed
-			errorbox(_("Couldn't save %s."), path);
-			result = 1;
-		}
-	}
-
-	return result;
 }
 
 ReverbEngine::ReverbEngine(Reverb *plugin)

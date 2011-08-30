@@ -72,11 +72,6 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	int load_from_file(const char *data);
-	int save_to_file(const char *data);
-
-	char config_directory[1024];
-
 	AFrame **main_in;
 	AFrame **main_out;
 	double **dsp_in;
