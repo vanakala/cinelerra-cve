@@ -21,10 +21,22 @@
 
 #ifndef REVERB_H
 #define REVERB_H
+// Old name was "Heroine College Concert Hall"
+#define PLUGIN_TITLE N_("HC Concert Hall")
 
-class Reverb;
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_CLASS Reverb
+#define PLUGIN_CONFIG_CLASS ReverbConfig
+#define PLUGIN_THREAD_CLASS ReverbThread
+#define PLUGIN_GUI_CLASS ReverbWindow
+
 class ReverbEngine;
 
+#include "pluginmacros.h"
+#include "language.h"
 #include "reverbwindow.h"
 #include "pluginaclient.h"
 
@@ -49,6 +61,7 @@ public:
 	int ref_total;
 	int ref_length;
 	int lowpass1, lowpass2;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class Reverb : public PluginAClient
@@ -57,9 +70,8 @@ public:
 	Reverb(PluginServer *server);
 	~Reverb();
 
-	PLUGIN_CLASS_MEMBERS(ReverbConfig, ReverbThread);
+	PLUGIN_CLASS_MEMBERS
 
-	void update_gui();
 	int load_from_file(const char *data);
 	int save_to_file(const char *data);
 
@@ -78,10 +90,6 @@ public:
 
 // required for all realtime/multichannel plugins
 	void process_frame_realtime(AFrame **input_ptr, AFrame **output_ptr);
-	int is_realtime();
-	int is_synthesis();
-	int is_multichannel();
-	int has_pts_api();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 

@@ -28,11 +28,11 @@
 
 #include <string.h>
 
-PLUGIN_THREAD_OBJECT(Reverb, ReverbThread, ReverbWindow)
+PLUGIN_THREAD_METHODS
 
 
-ReverbWindow::ReverbWindow(Reverb *reverb, int x, int y)
- : BC_Window(reverb->gui_string, 
+ReverbWindow::ReverbWindow(Reverb *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y, 
 	250, 
@@ -43,38 +43,42 @@ ReverbWindow::ReverbWindow(Reverb *reverb, int x, int y)
 	0,
 	1)
 { 
-	this->reverb = reverb; 
+	x = 170;
+	y = 10;
+
+	add_tool(new BC_Title(5, y + 10, _("Initial signal level:")));
+	add_tool(level_init = new ReverbLevelInit(plugin, x, y)); y += 25;
+	add_tool(new BC_Title(5, y + 10, _("ms before reflections:")));
+	add_tool(delay_init = new ReverbDelayInit(plugin, x + 35, y)); y += 25;
+	add_tool(new BC_Title(5, y + 10, _("First reflection level:")));
+	add_tool(ref_level1 = new ReverbRefLevel1(plugin, x, y)); y += 25;
+	add_tool(new BC_Title(5, y + 10, _("Last reflection level:")));
+	add_tool(ref_level2 = new ReverbRefLevel2(plugin, x + 35, y)); y += 25;
+	add_tool(new BC_Title(5, y + 10, _("Number of reflections:")));
+	add_tool(ref_total = new ReverbRefTotal(plugin, x, y)); y += 25;
+	add_tool(new BC_Title(5, y + 10, _("ms of reflections:")));
+	add_tool(ref_length = new ReverbRefLength(plugin, x + 35, y)); y += 25;
+	add_tool(new BC_Title(5, y + 10, _("Start band for lowpass:")));
+	add_tool(lowpass1 = new ReverbLowPass1(plugin, x, y)); y += 25;
+	add_tool(new BC_Title(5, y + 10, _("End band for lowpass:")));
+	add_tool(lowpass2 = new ReverbLowPass2(plugin, x + 35, y)); y += 40;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 ReverbWindow::~ReverbWindow()
 {
 }
 
-void ReverbWindow::create_objects()
+void ReverbWindow::update()
 {
-	int x = 170, y = 10;
-	VFrame *ico = reverb->new_picon();
-
-	set_icon(ico);
-	add_tool(new BC_Title(5, y + 10, _("Initial signal level:")));
-	add_tool(level_init = new ReverbLevelInit(reverb, x, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, _("ms before reflections:")));
-	add_tool(delay_init = new ReverbDelayInit(reverb, x + 35, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, _("First reflection level:")));
-	add_tool(ref_level1 = new ReverbRefLevel1(reverb, x, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, _("Last reflection level:")));
-	add_tool(ref_level2 = new ReverbRefLevel2(reverb, x + 35, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, _("Number of reflections:")));
-	add_tool(ref_total = new ReverbRefTotal(reverb, x, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, _("ms of reflections:")));
-	add_tool(ref_length = new ReverbRefLength(reverb, x + 35, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, _("Start band for lowpass:")));
-	add_tool(lowpass1 = new ReverbLowPass1(reverb, x, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, _("End band for lowpass:")));
-	add_tool(lowpass2 = new ReverbLowPass2(reverb, x + 35, y)); y += 40;
-	show_window();
-	flush();
-	delete ico;
+	level_init->update(plugin->config.level_init);
+	delay_init->update(plugin->config.delay_init);
+	ref_level1->update(plugin->config.ref_level1);
+	ref_level2->update(plugin->config.ref_level2);
+	ref_total->update(plugin->config.ref_total);
+	ref_length->update(plugin->config.ref_length);
+	lowpass1->update(plugin->config.lowpass1);
+	lowpass2->update(plugin->config.lowpass2);
 }
 
 

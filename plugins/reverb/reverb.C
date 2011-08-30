@@ -20,7 +20,6 @@
  */
 
 #include "clip.h"
-#include "confirmsave.h"
 #include "bchash.h"
 #include "mainerror.h"
 #include "filexml.h"
@@ -29,18 +28,12 @@
 #include "reverb.h"
 #include "reverbwindow.h"
 
-//#include "vframe.h"
-
 #include <math.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 
-
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new Reverb(server);
-}
+REGISTER_PLUGIN
 
 
 Reverb::Reverb(PluginServer *server)
@@ -94,11 +87,7 @@ Reverb::~Reverb()
 	}
 }
 
-const char* Reverb::plugin_title() { return N_("Heroine College Concert Hall"); }
-int Reverb::is_realtime() { return 1; }
-int Reverb::is_multichannel() { return 1; }
-int Reverb::is_synthesis() { return 1; }
-int Reverb::has_pts_api() { return 1; }
+PLUGIN_CLASS_METHODS
 
 void Reverb::process_frame_realtime(AFrame **input, AFrame **output)
 {
@@ -250,13 +239,6 @@ void Reverb::process_frame_realtime(AFrame **input, AFrame **output)
 	}
 }
 
-NEW_PICON_MACRO(Reverb)
-
-SHOW_GUI_MACRO(Reverb, ReverbThread)
-
-SET_STRING_MACRO(Reverb)
-
-RAISE_WINDOW_MACRO(Reverb)
 
 void Reverb::load_defaults()
 {
@@ -287,9 +269,6 @@ void Reverb::save_defaults()
 	defaults->update("CONFIG_DIRECTORY", config_directory);
 	defaults->save();
 }
-
-LOAD_PTS_CONFIGURATION_MACRO(Reverb, ReverbConfig)
-
 
 void Reverb::save_data(KeyFrame *keyframe)
 {
@@ -339,24 +318,6 @@ void Reverb::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
-void Reverb::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		thread->window->level_init->update(config.level_init);
-		thread->window->delay_init->update(config.delay_init);
-		thread->window->ref_level1->update(config.ref_level1);
-		thread->window->ref_level2->update(config.ref_level2);
-		thread->window->ref_total->update(config.ref_total);
-		thread->window->ref_length->update(config.ref_length);
-		thread->window->lowpass1->update(config.lowpass1);
-		thread->window->lowpass2->update(config.lowpass2);
-		thread->window->unlock_window();
-	}
-}
-
 
 int Reverb::load_from_file(const char *path)
 {

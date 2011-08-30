@@ -29,12 +29,10 @@ class ReverbWindow;
 
 #include "guicast.h"
 #include "mutex.h"
-#include "pluginclient.h"
-#include "reverb.inc"
+#include "reverb.h"
 
 
-
-PLUGIN_THREAD_HEADER(Reverb, ReverbThread, ReverbWindow)
+PLUGIN_THREAD_HEADER
 
 
 class ReverbLevelInit;
@@ -53,7 +51,7 @@ public:
 	ReverbWindow(Reverb *reverb, int x, int y);
 	~ReverbWindow();
 
-	void create_objects();
+	void update();
 
 	Reverb *reverb;
 	ReverbLevelInit *level_init;
@@ -65,6 +63,7 @@ public:
 	ReverbLowPass1 *lowpass1;
 	ReverbLowPass2 *lowpass2;
 	ReverbMenu *menu;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class ReverbLevelInit : public BC_FPot
