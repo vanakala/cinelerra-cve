@@ -256,6 +256,7 @@ ReframeRTScale::ReframeRTScale(ReframeRT *plugin,
 	y, 
 	100)
 {
+	set_precision(8);
 	this->plugin = plugin;
 }
 
