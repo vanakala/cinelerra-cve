@@ -360,7 +360,8 @@ public:
 		float min,
 		float max,
 		int x, 
-		int y);
+		int y,
+		int precision);
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, int x, int y);
 	virtual ~BC_TumbleTextBoxText();
 	int handle_event();

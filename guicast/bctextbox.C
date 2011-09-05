@@ -79,8 +79,8 @@ BC_TextBox::BC_TextBox(int x,
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	skip_cursor = 0;
-	this->precision = precision;
 	reset_parameters(rows, has_border, font);
+	this->precision = precision;
 	sprintf(this->text, "%0.*f", precision, text);
 }
 
@@ -217,6 +217,7 @@ void BC_TextBox::update(int64_t value)
 void BC_TextBox::update(float value)
 {
 	char string[BCTEXTLEN];
+
 	sprintf(string, "%0.*f", precision, value);
 
 	update(string);
@@ -1803,12 +1804,16 @@ BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
 	float min,
 	float max,
 	int x, 
-	int y)
+	int y,
+	int precision)
  : BC_TextBox(x, 
 	y, 
 	popup->text_w, 
 	1, 
-	default_value)
+	default_value,
+	1,
+	MEDIUMFONT,
+	precision)
 {
 	this->popup = popup;
 }
@@ -1966,8 +1971,8 @@ void BC_TumbleTextBox::create_objects()
 			min_f, 
 			max_f, 
 			x, 
-			y));
-		textbox->set_precision(precision);
+			y,
+			precision));
 	}
 	else
 		parent_window->add_subwindow(textbox = new BC_TumbleTextBoxText(this, 
