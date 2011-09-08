@@ -23,7 +23,7 @@
 #define PREFERENCES_INC
 
 // Run-time configuration directory
-#define BCASTDIR "~/.bcast/"
+#define BCASTDIR "~/.cinelerra/"
 #define BACKUP_PATH BCASTDIR "backup.xml"
 #define DEAMON_PORT 400
 
