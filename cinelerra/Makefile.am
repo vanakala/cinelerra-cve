@@ -41,9 +41,9 @@ endif
 
 SUBDIRS = data
 
-bin_PROGRAMS = cinelerra
+bin_PROGRAMS = cinelerracve
 
-cinelerra_SOURCES = aattachmentpoint.C \
+cinelerracve_SOURCES = aattachmentpoint.C \
 		    aautomation.C \
 		    aboutprefs.C \
 		    adeviceprefs.C \
@@ -587,18 +587,18 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vwindowgui.h \
 		 vwindow.h \
 		 wavecache.h \
-                 yuvstream.h \
+		 yuvstream.h \
 		 zoombar.h \
 		 zoompanel.h \
 		$(srcdir)/*.inc
-		 
-cinelerra_LDADD = \
+
+cinelerracve_LDADD = \
 	data/libimagedata.a \
 	$(top_builddir)/mpeg2enc/libmpeg2enc.la \
 	$(top_builddir)/toolame-02l/libtoolame.la \
-	$(top_builddir)/quicktime/libquicktimehv.la \
-	$(top_builddir)/guicast/libguicast.la \
-	$(top_builddir)/libmpeg3/libmpeg3hv.la \
+	$(top_builddir)/quicktime/libquicktimecve.la \
+	$(top_builddir)/guicast/libguicastcve.la \
+	$(top_builddir)/libmpeg3/libmpeg3cve.la \
 	@FFMPEG_LIBS@ \
 	$(XIPH_LIBS) \
 	$(A52DEC_LIBS) \

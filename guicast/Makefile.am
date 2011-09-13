@@ -1,9 +1,9 @@
-lib_LTLIBRARIES = libguicast.la
+lib_LTLIBRARIES = libguicastcve.la
 noinst_PROGRAMS=bootstrap
 
-libguicast_la_LIBADD = $(OPENGL_LIBS) -lXxf86vm -lXv -lXext -lX11 $(X_EXTRA_LIBS)
-libguicast_la_LDFLAGS = $(X_LIBS) -version-info 1:0:0 
-libguicast_la_SOURCES = \
+libguicastcve_la_LIBADD = $(OPENGL_LIBS) -lXxf86vm -lXv -lXext -lX11 $(X_EXTRA_LIBS)
+libguicastcve_la_LDFLAGS = $(X_LIBS) -version-info 3:0:0 
+libguicastcve_la_SOURCES = \
 	bcbar.C \
 	bcbitmap.C \
 	bcbutton.C \

@@ -50,7 +50,7 @@ AC_CHECK_HEADER([linux/videodev2.h],
 AC_ARG_WITH(plugindir,
 						AC_HELP_STRING([--with-plugindir], [sets the directory where the plugins should be installed]),
 						[ plugindir=$withval ],
-						[ plugindir="\${exec_prefix}/lib/cinelerra" ])
+						[ plugindir="\${exec_prefix}/lib/cinelerra-cve" ])
 AC_SUBST(plugindir)
 
 AC_ARG_WITH(fontsdir,

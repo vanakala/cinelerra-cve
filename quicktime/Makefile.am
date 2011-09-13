@@ -1,7 +1,7 @@
 SUBDIRS = encore50 @FFMPEG_FOLDER@
 
 
-lib_LTLIBRARIES = libquicktimehv.la
+lib_LTLIBRARIES = libquicktimecve.la
 AM_CFLAGS = \
 	$(LARGEFILE_CFLAGS) \
 	$(CPU_CFLAGS) \
@@ -12,29 +12,29 @@ AM_CFLAGS = \
 	-DENCORE_INCLUDE=\"encore50/encore.h\" \
 	@FFMPEG_CFLAGS@
 
-libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
+libquicktimecve_la_LDFLAGS = -version-info 2:0:0 -release 1.6.3 -Wl,--no-undefined 
 
-libquicktimehv_la_LIBADD = \
+libquicktimecve_la_LIBADD = \
 	@FFMPEG_LIBS@ \
 	$(XIPH_LIBS) \
 	-lmp3lame \
 	$(FAAD_LIBS) \
 	-lfaac \
 	encore50/libencore.la \
-	$(top_builddir)/libmpeg3/libmpeg3hv.la \
+	$(top_builddir)/libmpeg3/libmpeg3cve.la \
 	$(LIBX264_LIBS) \
 	$(LIBDV_LIBS) \
 	-ljpeg -lpng \
 	-lz -lpthread -lm
 
-libquicktimehv_la_SOURCES = \
+libquicktimecve_la_SOURCES = \
 	atom.c \
 	avcc.c \
 	avi_hdrl.c \
 	avi_idx1.c \
 	avi_movi.c \
 	avi_strl.c \
-			  avi_odml.c avi_ix.c avi_indx.c avi_riff.c \
+	avi_odml.c avi_ix.c avi_indx.c avi_riff.c \
 	cmodel_default.c \
 	cmodel_float.c \
 	cmodel_yuv420p.c \
@@ -49,7 +49,7 @@ libquicktimehv_la_SOURCES = \
 	esds.c \
 	graphics.c \
 	hdlr.c \
-													ima4.c interlacemodes.c jpeg.c libdv.c libmjpeg.c matrix.c mdat.c mdhd.c mdia.c \
+	ima4.c interlacemodes.c jpeg.c libdv.c libmjpeg.c matrix.c mdat.c mdhd.c mdia.c \
 	minf.c \
 	moov.c \
 	mp4a.c \
@@ -65,11 +65,11 @@ libquicktimehv_la_SOURCES = \
 	raw.c \
 	rawaudio.c \
 	rle.c \
-													smhd.c stbl.c stco.c stsc.c stsd.c stsdtable.c stss.c stsz.c stts.c \
-													tkhd.c trak.c twos.c sowt.c udta.c ulaw.c util.c v308.c v408.c v410.c vmhd.c \
+	smhd.c stbl.c stco.c stsc.c stsd.c stsdtable.c stss.c stsz.c stts.c \
+	tkhd.c trak.c twos.c sowt.c udta.c ulaw.c util.c v308.c v408.c v410.c vmhd.c \
 	vbraudio.c \
-													vorbis.c workarounds.c yuv2.c yuv4.c yv12.c wmx2.c \
-													wma.c mpeg4.c
+	vorbis.c workarounds.c yuv2.c yuv4.c yv12.c wmx2.c \
+	wma.c mpeg4.c
 
 noinst_HEADERS = cmodel_permutation.h \
 	codecs.h \
@@ -117,7 +117,7 @@ noinst_HEADERS = cmodel_permutation.h \
 	yuv4.h \
 	yuv9.h \
 	yv12.h
-	
+
 EXTRA_DIST = docs
 
 INCLUDES = -I$(top_srcdir)/libmpeg3
