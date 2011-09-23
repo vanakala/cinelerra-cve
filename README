@@ -2,7 +2,7 @@ This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of February 26, 2011
+This file describes status of this branch as of September 23, 2011
 
 Contents.
 
@@ -22,11 +22,14 @@ Currently this branch is under development. There is no warranty
 that it is usable to create or finish any project. Parts of Cinelerra
 may work, parts not.
 
-This branch is developed and tested on Ubuntu 9.04 x86-32.
+This branch is developed and tested on Ubuntu 10.04 x86-32.
 
 Main change in this branch is display locking. This change has hopefully 
 fixed bugs 278, 383, 406, 414, 493, 519 in bugzilla. The change was 
 huge and locking issues are hard to test.
+Another huge change implementation of pts based timing. This enables
+to edit media with variable framerate and get rid of assumption
+that audio and video start simultaneously.
 
 Changes in this branch:
 - subtitle decoding in libmpeg3
@@ -62,18 +65,19 @@ Changes in this branch:
     other branches
 - removed playback direction dependancy from core rendering
 - replaced samplerate based timing with clock based timing
+- implemented new API and support macros of audio plugins
+- implemented pts in renderfarm
 
 Known problems (todo list)
-- implement pts in plugins (seems that there is buffer overflow in fourier.C)
+- implement pts in video plugins
 - implement pts in encoders, decoders
+- new API of plugins and macros need some documentation
+- add PCMs to selectable ALSA audio devices, speed up audio start
 - handling input devices is buggy (only selected devices may work)
-- to clean up messes in position handling implement position handling
-    in time units
 - trimming does not work as described in manual or as expected,
     occasionally crashes
-- occasional crashes in XWindowTranslateCoordinates
+- occasional crashes on closing windows
 - Reel name must be read from project
-- renderfarm is untested
 - filevorbis is disabled
 - cinerella crashes if video4linux2 size is different from 600x800
 - implement debugging system
