@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "formatpresets.h"
@@ -96,11 +97,11 @@ FormatPresetItem* FormatPresets::find_preset(EDL *edl)
 			edl->session->audio_channels == preset->edl->session->audio_channels &&
 			edl->session->sample_rate == preset->edl->session->sample_rate &&
 			edl->session->video_tracks == preset->edl->session->video_tracks &&
-			edl->session->frame_rate == preset->edl->session->frame_rate &&
+			EQUIV(edl->session->frame_rate, preset->edl->session->frame_rate) &&
 			edl->session->output_w == preset->edl->session->output_w &&
 			edl->session->output_h == preset->edl->session->output_h &&
-			edl->session->aspect_w == preset->edl->session->aspect_w &&
-			edl->session->aspect_h == preset->edl->session->aspect_h && 
+			EQUIV(edl->session->aspect_w, preset->edl->session->aspect_w) &&
+			EQUIV(edl->session->aspect_h, preset->edl->session->aspect_h) &&
 			edl->session->interlace_mode == preset->edl->session->interlace_mode &&
 			edl->session->color_model == preset->edl->session->color_model)
 		{
