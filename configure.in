@@ -452,6 +452,7 @@ if test "x$enable_opengl" = "xauto"; then
 else
 	if test "x$enable_opengl" = "xyes"; then
 		enable_opengl=ok
+		libGL=skip
 		OPENGL_LIBS="-lGLU -lGL"
 		AC_DEFINE(HAVE_GL)
 	fi
@@ -566,7 +567,10 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					image/Makefile)
 
 succeeded=yes
-AC_DEFUN([RPT],[if test "x$$1" = "xyes"; then status=found; else status=missing; succeeded=no; fi
+AC_DEFUN([RPT],[if test "x$$1" = "xskip"; then status="not probed"
+elif test "x$$1" = "xyes"; then status=found
+else status=missing; succeeded=no
+fi
 echo "AC_HELP_STRING($2,$status)"])
 
 echo
