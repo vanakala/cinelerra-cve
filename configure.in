@@ -346,6 +346,7 @@ if test "x$with_external_ffmpeg" = "xyes"; then
      else
 	     PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc])
      fi
+     FFMPEG_CFLAGS="$FFMPEG_CFLAGS -D__STDC_CONSTANT_MACROS"
      FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
      FFMPEG_FOLDER=ffmpeg

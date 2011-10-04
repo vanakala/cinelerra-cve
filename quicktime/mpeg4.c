@@ -720,8 +720,11 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			         codec->ffmpeg_id == CODEC_ID_H263P || 
 			         codec->ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT))
 			{
+#if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
 				avcodec_thread_init(context, file->cpus);
+#else
 				context->thread_count = file->cpus;
+#endif
 			}
 
 			if(!codec->fix_bitrate)

@@ -927,7 +927,7 @@ int FileMOV::read_frame(VFrame *frame)
 	}
 	if (result)
 	{
-		errormsg("quicktime_read_frame/quicktime_decode_video failed, result:\n");
+		errormsg("quicktime_read_frame/quicktime_decode_video failed, result: %d\n", result);
 	}
 
 	return result;

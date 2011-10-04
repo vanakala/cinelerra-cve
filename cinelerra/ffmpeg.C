@@ -370,11 +370,22 @@ int FFMPEG::decode(uint8_t *data, int data_size, VFrame *frame_out)
 	// NOTE: frame must already have data space allocated
 
 	got_picture = 0;
+#if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
 	int length = avcodec_decode_video(context,
 				picture,
 				&got_picture,
 				data,
 				data_size);
+#else
+	AVPacket pkt;
+	av_init_packet( &pkt );
+	pkt.data = data;
+	pkt.size = data_size;
+	int length = avcodec_decode_video2(context,
+				picture,
+				&got_picture,
+				&pkt);
+#endif
 
 	if (length < 0) 
 	{

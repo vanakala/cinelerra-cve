@@ -187,19 +187,23 @@ printf("decode 2 %x %llx %llx\n", chunk_size, chunk_offset, chunk_offset + chunk
 
 // Decode chunk into work buffer.
 		pthread_mutex_lock(&ffmpeg_lock);
-#if LIBAVCODEC_VERSION_INT < ((51<<16)+(57<<8)+0)
-		result = avcodec_decode_audio(codec->decoder_context, 
-			(int16_t*)(codec->work_buffer + codec->output_size * sample_size), 
-			&bytes_decoded,
-			codec->packet_buffer,
-			chunk_size);
-#else
+
 		bytes_decoded = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+#if LIBAVCODEC_VERSION_INT < ((52<<16)+(26<<8)+0)
 		result = avcodec_decode_audio2(codec->decoder_context,
 			(int16_t*)(codec->work_buffer + codec->output_size * sample_size),
 			&bytes_decoded,
 			codec->packet_buffer,
 			chunk_size);
+#else
+		AVPacket pkt;
+		av_init_packet( &pkt );
+		pkt.data = codec->packet_buffer;
+		pkt.size = chunk_size;
+		result = avcodec_decode_audio3(codec->decoder_context,
+			(int16_t*)(codec->work_buffer + codec->output_size * sample_size),
+			&bytes_decoded,
+			&pkt);
 #endif
 
 		pthread_mutex_unlock(&ffmpeg_lock);
