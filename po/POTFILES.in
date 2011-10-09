@@ -141,8 +141,8 @@ plugins/brightness/brightness.C
 plugins/brightness/brightnesswindow.C
 plugins/burn/burn.C
 plugins/burn/burnwindow.C
-plugins/cdripper/cdripper.C
-plugins/cdripper/cdripwindow.C
+# plugins/cdripper/cdripper.C
+# plugins/cdripper/cdripwindow.C
 plugins/chromakey/chromakey.C
 plugins/chromakeyhsv/chromakey.C
 plugins/colorbalance/colorbalance.C
