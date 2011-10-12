@@ -22,11 +22,24 @@
 #ifndef PLUGINACLIENTLAD_H
 #define PLUGINACLIENTLAD_H
 
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
+
+#define PLUGIN_TITLE ((const char*)server->lad_descriptor->Name)
+#define PLUGIN_CLASS PluginAClientLAD
+#define PLUGIN_CONFIG_CLASS PluginAClientConfig
+#define PLUGIN_THREAD_CLASS PluginAClientThread
+#define PLUGIN_GUI_CLASS PluginAClientWindow
+
+#include "pluginmacros.h"
+
 #include "bcdisplayinfo.h"
 #include "guicast.h"
 #include "ladspa.h"
 #include "pluginaclient.h"
 #include "pluginaclientlad.inc"
+#include "pluginserver.h"
 
 
 class PluginAClientConfig
@@ -59,6 +72,7 @@ public:
 	int *port_type;
 // Frequencies are stored in units of frequency to aid the GUI.
 	LADSPA_Data *port_data;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class PluginACLientToggle : public BC_CheckBox
@@ -125,17 +139,17 @@ public:
 		int y);
 	~PluginAClientWindow();
 
-	int create_objects();
+	void update();
 
 	ArrayList<PluginACLientToggle*> toggles;
 	ArrayList<PluginACLientILinear*> ipots;
 	ArrayList<PluginACLientFLinear*> fpots;
 	ArrayList<PluginACLientFreq*> freqs;
 
-	PluginAClientLAD *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(PluginAClientLAD, PluginAClientThread, PluginAClientWindow)
+PLUGIN_THREAD_HEADER
 
 class PluginAClientLAD : public PluginAClient
 {
@@ -146,19 +160,13 @@ public:
 	void process_frame_realtime(AFrame *input, AFrame *output);
 	void process_frame_realtime(AFrame **input_frames, AFrame **output_frames);
 
-// Update output pointers as well
-	void update_gui();
-	int is_realtime();
-	int is_multichannel();
-	int is_synthesis();
-	int has_pts_api();
-	int uses_gui();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
-	PLUGIN_CLASS_MEMBERS(PluginAClientConfig, PluginAClientThread)
+	PLUGIN_CLASS_MEMBERS
+	int is_multichannel();
 
 	static char* lad_to_string(char *string, const char *input);
 	static char* lad_to_upper(char *string, const char *input);

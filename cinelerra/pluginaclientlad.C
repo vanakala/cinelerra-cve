@@ -25,7 +25,6 @@
 #include "filexml.h"
 #include "language.h"
 #include "pluginaclientlad.h"
-#include "pluginserver.h"
 #include "vframe.h"
 
 #include <ctype.h>
@@ -297,24 +296,11 @@ PluginAClientWindow::PluginAClientWindow(PluginAClientLAD *plugin,
 	0, 
 	1)
 {
-	VFrame *ico = plugin->new_picon();
-	this->plugin = plugin;
-	set_icon(ico);
-	delete ico;
-}
-
-PluginAClientWindow::~PluginAClientWindow()
-{
-}
-
-
-int PluginAClientWindow::create_objects()
-{
 	PluginServer *server = plugin->server;
 	char string[BCTEXTLEN];
 	int current_port = 0;
-	int x = 10;
-	int y = 10;
+	x = 10;
+	y = 10;
 	int x2 = 300;
 	int x3 = 335;
 	int title_vmargin = 5;
@@ -420,44 +406,43 @@ int PluginAClientWindow::create_objects()
 	y += 20;
 	sprintf(string, _("License: %s"), server->lad_descriptor->Copyright);
 	add_subwindow(new BC_Title(x, y, string));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-PLUGIN_THREAD_OBJECT(PluginAClientLAD, PluginAClientThread, PluginAClientWindow)
+PluginAClientWindow::~PluginAClientWindow()
+{
+}
+
+void PluginAClientWindow::update()
+{
+}
+
+PLUGIN_THREAD_METHODS
 
 
 PluginAClientLAD::PluginAClientLAD(PluginServer *server)
  : PluginAClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	in_buffers = 0;
 	total_inbuffers = 0;
 	out_buffers = 0;
 	total_outbuffers = 0;
 	buffer_allocation = 0;
 	lad_instance = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 PluginAClientLAD::~PluginAClientLAD()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	delete_buffers();
 	delete_plugin();
-}
-
-int PluginAClientLAD::is_realtime()
-{
-	return 1;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
 int PluginAClientLAD::is_multichannel()
 {
 	if(get_inchannels() > 1 || get_outchannels() > 1) return 1;
 	return 0;
-}
-
-int PluginAClientLAD::has_pts_api()
-{
-	return 1;
 }
 
 int PluginAClientLAD::get_inchannels()
@@ -484,35 +469,7 @@ int PluginAClientLAD::get_outchannels()
 	return result;
 }
 
-
-const char* PluginAClientLAD::plugin_title()
-{
-	return (const char*)server->lad_descriptor->Name;
-}
-
-int PluginAClientLAD::uses_gui()
-{
-	return 1;
-}
-
-int PluginAClientLAD::is_synthesis()
-{
-	return 1;
-}
-
-VFrame* PluginAClientLAD::new_picon()
-{
-	return new VFrame(lad_picon_png);
-}
-
-SHOW_GUI_MACRO(PluginAClientLAD, PluginAClientThread)
-RAISE_WINDOW_MACRO(PluginAClientLAD)
-SET_STRING_MACRO(PluginAClientLAD)
-LOAD_PTS_CONFIGURATION_MACRO(PluginAClientLAD, PluginAClientConfig)
-
-void PluginAClientLAD::update_gui()
-{
-}
+PLUGIN_CLASS_METHODS
 
 char* PluginAClientLAD::lad_to_string(char *string, const char *input)
 {
@@ -542,6 +499,7 @@ void PluginAClientLAD::load_defaults()
 	strcpy(string, plugin_title());
 	for(int i = 0; i < strlen(string); i++)
 		if(string[i] == ' ') string[i] = '_';
+	strcat(string, ".rc");
 
 // load the defaults
 	defaults = load_defaults_file(string);
