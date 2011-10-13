@@ -362,6 +362,7 @@ void MWindow::init_plugins(Preferences *preferences,
 			preferences->global_plugin_dir);
 	}
 
+#ifdef HAVE_LADSPA
 // Parse LAD environment variable
 	char *env = getenv("LADSPA_PATH");
 	if(env)
@@ -405,6 +406,7 @@ void MWindow::init_plugins(Preferences *preferences,
 				ptr1 = ptr;
 		};
 	}
+#endif
 
 	int total = cinelerra_fs.total_files();
 	int counter = 0;

@@ -112,10 +112,11 @@ PluginServer::PluginServer(PluginServer &that)
 	keyframe = that.keyframe;
 	plugin_fd = that.plugin_fd;
 	new_plugin = that.new_plugin;
-
+#ifdef HAVE_LADSPA
 	is_lad = that.is_lad;
 	lad_descriptor = that.lad_descriptor;
 	lad_descriptor_function = that.lad_descriptor_function;
+#endif
 }
 
 PluginServer::~PluginServer()
@@ -154,10 +155,11 @@ int PluginServer::reset_parameters()
 	client = 0;
 	use_opengl = 0;
 	vdevice = 0;
-
+#ifdef HAVE_LADSPA
 	is_lad = 0;
 	lad_descriptor_function = 0;
 	lad_descriptor = 0;
+#endif
 }
 
 
@@ -270,19 +272,23 @@ int PluginServer::open_plugin(int master,
 		strcpy(string, dlerror());
 
 		if(!strstr(string, "executable"))
-			printf("PluginServer::open_plugin: %s\n", string);
+			fprintf(stderr, "open_plugin: %s\n", string);
 
 		return 0;
 	}
 
-
-	if(!new_plugin && !lad_descriptor)
+	if(!new_plugin
+#ifdef HAVE_LADSPA
+		&& !lad_descriptor
+#endif
+			)
 	{
 		new_plugin = (PluginClient* (*)(PluginServer*))dlsym(plugin_fd, "new_plugin");
 
 // Probably a LAD plugin but we're not going to instantiate it here anyway.
 		if(!new_plugin)
 		{
+#ifdef HAVE_LADSPA
 			lad_descriptor_function = (LADSPA_Descriptor_Function)dlsym(
 				plugin_fd,
 				"ladspa_descriptor");
@@ -290,7 +296,7 @@ int PluginServer::open_plugin(int master,
 			if(!lad_descriptor_function)
 			{
 // Not a recognized plugin
-				fprintf(stderr, "PluginServer::open_plugin: new_plugin undefined in %s\n", path);
+				fprintf(stderr, "Unrecognized plugin: %s\n", path);
 				dlclose(plugin_fd);
 				plugin_fd = 0;
 				return PLUGINSERVER_NOT_RECOGNIZED;
@@ -313,19 +319,26 @@ int PluginServer::open_plugin(int master,
 					return PLUGINSERVER_IS_LAD;
 				}
 			}
+#else
+// Not a recognized plugin
+			fprintf(stderr, "Unrecognized plugin %s\n", path);
+			dlclose(plugin_fd);
+			plugin_fd = 0;
+			return PLUGINSERVER_NOT_RECOGNIZED;
+#endif
 		}
 	}
 
-
+#ifdef HAVE_LADSPA
 	if(is_lad)
 	{
 		client = new PluginAClientLAD(this);
 	}
 	else
+#endif
 	{
 		client = new_plugin(this);
 	}
-
 	realtime = client->is_realtime();
 	audio = client->is_audio();
 	video = client->is_video();

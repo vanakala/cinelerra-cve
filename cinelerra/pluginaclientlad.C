@@ -27,6 +27,7 @@
 #include "pluginaclientlad.h"
 #include "vframe.h"
 
+#ifdef HAVE_LADSPA
 #include <ctype.h>
 #include <string.h>
 
@@ -796,3 +797,4 @@ void PluginAClientLAD::process_frame_realtime(AFrame **input_frames,
 		}
 	}
 }
+#endif /* HAVE_LADSPA */

@@ -32,7 +32,6 @@
 #include "floatauto.inc"
 #include "floatautos.inc"
 #include "keyframe.inc"
-#include "ladspa.h"
 #include "mainprogress.inc"
 #include "maxbuffers.h"
 #include "menueffects.inc"
@@ -50,6 +49,9 @@
 #include "videodevice.inc"
 #include "virtualnode.inc"
 
+#ifdef HAVE_LADSPA
+#include <ladspa.h>
+#endif
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -343,11 +345,12 @@ private:
 // If no path, this is going to be set to a function which 
 // instantiates the plugin.
 	PluginClient* (*new_plugin)(PluginServer*);
-
+#ifdef HAVE_LADSPA
 // LAD support
 	int is_lad;
 	LADSPA_Descriptor_Function lad_descriptor_function;
 	const LADSPA_Descriptor *lad_descriptor;
+#endif
 	int use_opengl;
 // Driver for opengl calls.
 	VideoDevice *vdevice;

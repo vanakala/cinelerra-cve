@@ -46,6 +46,13 @@ AC_CHECK_HEADER([linux/videodev2.h],
 		[#include <linux/videodev2.h>])],
 	[],[] )
 
+dnl Check for ladspa
+AH_TEMPLATE(HAVE_LADSPA, [Define to 1 if ladspa-sdk is available.])
+AC_CHECK_HEADER([ladspa.h],
+	[AC_CHECK_MEMBER(struct _LADSPA_Descriptor.Name, [AC_DEFINE(HAVE_LADSPA) enable_ladspa=ok; ladspa_h=yes], [],
+		[#include <ladspa.h>])],
+	[],[] )
+
 ############## SPECIAL DIRECTORIES
 AC_ARG_WITH(plugindir,
 						AC_HELP_STRING([--with-plugindir], [sets the directory where the plugins should be installed]),
@@ -621,6 +628,7 @@ ORPT(enable_alsa,ALSA,--disable-alsa,RPT(alsa,ALSA subsystem))
 ORPT(enable_opengl,Hardware acceleration using OpenGL 2.0,--disable-opengl,
 	RPT(libGL,OpenGL 2.0 libraries)
 )
+ORPT(enable_ladspa,Support of LADSPA plugins,--disable-ladspa,RPT(ladspa_h,LADSPA header))
 
 if test "x$mandatory" = "xno"; then
 	echo

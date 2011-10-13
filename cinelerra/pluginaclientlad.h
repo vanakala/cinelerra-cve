@@ -22,6 +22,11 @@
 #ifndef PLUGINACLIENTLAD_H
 #define PLUGINACLIENTLAD_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifdef HAVE_LADSPA
+
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_SYNTHESIS
@@ -36,10 +41,11 @@
 
 #include "bcdisplayinfo.h"
 #include "guicast.h"
-#include "ladspa.h"
 #include "pluginaclient.h"
 #include "pluginaclientlad.inc"
 #include "pluginserver.h"
+
+#include <ladspa.h>
 
 
 class PluginAClientConfig
@@ -186,4 +192,5 @@ public:
 	LADSPA_Data dummy_control_output;
 };
 
+#endif /* HAVE_LADSPA */
 #endif

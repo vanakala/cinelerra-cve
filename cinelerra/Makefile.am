@@ -441,7 +441,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 keyframes.h \
 		 labeledit.h \
 		 labels.h \
-		 ladspa.h \
 		 levelwindowgui.h \
 		 levelwindow.h \
 		 loadbalance.h \
