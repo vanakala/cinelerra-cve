@@ -265,16 +265,8 @@ int PluginServer::open_plugin(int master,
 
 	if(!new_plugin && !plugin_fd)
 	{
-// If the dlopen failed it may still be an executable tool for a specific
-// file format, in which case we just store the path.
-		set_title(path);
-		char string[BCTEXTLEN];
-		strcpy(string, dlerror());
-
-		if(!strstr(string, "executable"))
-			fprintf(stderr, "open_plugin: %s\n", string);
-
-		return 0;
+		fprintf(stderr, "open_plugin: %s\n", dlerror());
+		return PLUGINSERVER_NOT_RECOGNIZED;
 	}
 
 	if(!new_plugin
