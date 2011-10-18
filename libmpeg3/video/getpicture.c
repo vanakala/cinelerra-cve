@@ -326,6 +326,7 @@ int mpeg3video_getmpg2intrablock(mpeg3_slice_t *slice,
 	bp[0] = val << (3 - video->dc_prec);
 
 	nc = 0;
+	j = 1;
 
 /* decode AC coefficients */
 	for(i = 1; ; i++)
