@@ -120,6 +120,20 @@ int PluginVClient::process_buffer(VFrame *frame,
 	return 0;
 }
 
+void PluginVClient::process_frame(VFrame **frame)
+{
+	for(int i = 0; i < PluginClient::total_in_buffers; i++)
+		get_frame(frame[i], i);
+	if(is_multichannel())
+		process_realtime(frame, frame);
+}
+
+void PluginVClient::process_frame(VFrame *frame)
+{
+	get_frame(frame, 0);
+	process_realtime(frame, frame);
+}
+
 void PluginVClient::plugin_render_gui(void *data)
 {
 	render_gui(data);
@@ -212,6 +226,11 @@ int PluginVClient::read_frame(VFrame *buffer,
 		channel, 
 		start_position);
 	return 0;
+}
+
+void PluginVClient::get_frame(VFrame *buffer, int use_opengl)
+{
+	server->get_vframe(buffer, use_opengl);
 }
 
 int PluginVClient::read_frame(VFrame *buffer, 

@@ -19,6 +19,8 @@
  * 
  */
 
+#include "pluginaclientlad.h"
+
 #include "aframe.h"
 #include "amodule.h"
 #include "atrack.h"
@@ -40,7 +42,6 @@
 #include "playbackengine.h"
 #include "plugin.h"
 #include "pluginaclient.h"
-#include "pluginaclientlad.h"
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"
@@ -391,7 +392,6 @@ void PluginServer::init_realtime(int realtime_sched,
 		int buffer_size)
 {
 	if(!plugin_open) return;
-
 // set for realtime priority
 // initialize plugin
 // Call start_realtime
@@ -457,7 +457,10 @@ void PluginServer::process_buffer(VFrame **frame,
 		framerate = edl->session->frame_rate;
 
 	vclient->source_position = round(frame[0]->get_pts() * framerate);
+	vclient->source_pts = frame[0]->get_pts();
+	vclient->total_len_pts = total_length;
 	vclient->frame_rate = framerate;
+
 	vclient->input = new VFrame*[total_in_buffers];
 	vclient->output = new VFrame*[total_in_buffers];
 	for(int i = 0; i < total_in_buffers; i++)
@@ -468,17 +471,28 @@ void PluginServer::process_buffer(VFrame **frame,
 	if(plugin)
 	{
 		vclient->source_start = round(plugin->project_pts * framerate);
+		vclient->source_start_pts = plugin->project_pts;
 		vclient->total_len = round(total_length * framerate);
 	}
 	vclient->direction = PLAY_FORWARD;
 
-	if(multichannel)
+	if(apiversion)
 	{
-		vclient->process_buffer(frame, vclient->source_position, framerate);
+		if(multichannel)
+			vclient->process_frame(frame);
+		else
+			vclient->process_frame(frame[0]);
 	}
 	else
 	{
-		vclient->process_buffer(frame[0], vclient->source_position, framerate);
+		if(multichannel)
+		{
+			vclient->process_buffer(frame, vclient->source_position, framerate);
+		}
+		else
+		{
+			vclient->process_buffer(frame[0], vclient->source_position, framerate);
+		}
 	}
 
 	for(int i = 0; i < total_in_buffers; i++)
@@ -675,6 +689,13 @@ void PluginServer::read_frame(VFrame *buffer,
 		0);
 }
 
+void PluginServer::get_vframe(VFrame *buffer)
+{
+	((VModule*)modules->values[buffer->get_layer()])->render(buffer,
+		0,
+		0);
+}
+
 int PluginServer::read_frame(VFrame *buffer, 
 	int channel, 
 	framenum start_position,
@@ -717,6 +738,45 @@ int PluginServer::read_frame(VFrame *buffer,
 	buffer->pop_next_effect();
 
 	return result;
+}
+
+void PluginServer::get_vframe(VFrame *buffer,
+	int use_opengl)
+{
+// Data source depends on whether we're part of a virtual console or a
+// plugin array.
+//     VirtualNode
+//     Module
+// If we're a VirtualNode, read_data in the virtual plugin node handles
+//     backward propogation and produces the data.
+// If we're a Module, render in the module produces the data.
+	if(!multichannel) buffer->set_layer(0);
+
+// Push our name on the next effect stack
+	buffer->push_next_effect(title);
+
+	int channel = buffer->get_layer();
+
+	if(nodes->total > channel)
+	{
+		((VirtualVNode*)nodes->values[channel])->read_data(buffer,
+			use_opengl);
+	}
+	else
+	if(modules->total > channel)
+	{
+		((VModule*)modules->values[channel])->render(buffer,
+			0,
+			use_opengl);
+	}
+	else
+	{
+		errorbox("PluginServer::get_frame no object available for channel=%d",
+			channel);
+	}
+
+// Pop our name from the next effect stack
+	buffer->pop_next_effect();
 }
 
 void PluginServer::get_aframe_rt(AFrame *aframe)

@@ -218,6 +218,8 @@ public:
 		int channel, 
 		framenum start_position);
 
+	void get_vframe(VFrame *buffer);
+
 // Called by client to read data in realtime effect.
 // Returns -1 if error or 0 if success.
 	int read_frame(VFrame *buffer, 
@@ -226,6 +228,7 @@ public:
 		double frame_rate,
 // Set to 1 if the reader can use OpenGL objects.
 		int use_opengl = 0);
+	void get_vframe(VFrame *buffer, int use_opengl);
 
 	void get_aframe_rt(AFrame *aframe);
 

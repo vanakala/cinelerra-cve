@@ -39,13 +39,8 @@ class PluginVClient : public PluginClient
 public:
 	PluginVClient(PluginServer *server);
 	virtual ~PluginVClient();
-/* Pole
-	int get_render_ptrs();
-	*/
+
 	void init_realtime_parameters();
-/* Pole
-	int delete_nonrealtime_parameters();
-	*/
 	int is_video();
 
 // Multichannel buffer process for backwards compatibility
@@ -67,7 +62,9 @@ public:
 	virtual int process_buffer(VFrame *frame,
 		framenum start_position,
 		double frame_rate);
-
+// pts API
+	virtual void process_frame(VFrame **frame);
+	virtual void process_frame(VFrame *frame);
 
 // Called by plugin server to render the GUI with rendered data.
 	void plugin_render_gui(void *data);
@@ -94,6 +91,8 @@ public:
 		framenum start_position);
 	int read_frame(VFrame *buffer, 
 		framenum start_position);
+
+	void get_frame(VFrame *buffer, int use_opengl = 0);
 
 // Called by realtime plugin to read frame from previous entity
 // framerate - framerate start_position is relative to.  Used by preceeding plugiun
