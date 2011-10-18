@@ -49,6 +49,10 @@
 #include "videodevice.inc"
 #include "virtualnode.inc"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef HAVE_LADSPA
 #include <ladspa.h>
 #endif
