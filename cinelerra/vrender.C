@@ -269,7 +269,7 @@ void VRender::run()
 	ptstime init_pos = current_postime;
 // Number of frames before next reconfigure
 	ptstime current_input_duration;
-	ptstime len_pts;
+	ptstime len_pts = fromunits(1);
 	int direction = renderengine->command->get_direction();
 	first_frame = 1;
 

@@ -48,6 +48,7 @@ AudioInConfig::AudioInConfig()
 	alsa_in_bits = 16;
 	in_samplerate = 48000;
 	channels = 2;
+	esound_in_server[0] = 0;
 }
 
 AudioInConfig::~AudioInConfig()

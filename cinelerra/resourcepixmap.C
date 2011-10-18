@@ -79,6 +79,7 @@ void ResourcePixmap::reset()
 	zoom_track = 0;
 	zoom_y = 0;
 	visible = 1;
+	zoom_time = 0;
 }
 
 void ResourcePixmap::resize(int w, int h)
