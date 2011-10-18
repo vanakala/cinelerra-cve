@@ -23,11 +23,20 @@
 #define FLIP_H
 
 
-class FlipMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
 
+#define PLUGIN_TITLE N_("Flip")
+#define PLUGIN_CLASS FlipMain
+#define PLUGIN_CONFIG_CLASS FlipConfig
+#define PLUGIN_THREAD_CLASS FlipThread
+#define PLUGIN_GUI_CLASS FlipWindow
+
+#include "pluginmacros.h"
 #include "filexml.h"
 #include "flipwindow.h"
 #include "guicast.h"
+#include "language.h"
 #include "pluginvclient.h"
 
 class FlipConfig
@@ -38,11 +47,12 @@ public:
 	int equivalent(FlipConfig &that);
 	void interpolate(FlipConfig &prev, 
 		FlipConfig &next,
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	int flip_horizontal;
 	int flip_vertical;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class FlipMain : public PluginVClient
@@ -51,14 +61,10 @@ public:
 	FlipMain(PluginServer *server);
 	~FlipMain();
 
-	PLUGIN_CLASS_MEMBERS(FlipConfig, FlipThread);
+	PLUGIN_CLASS_MEMBERS;
 
 // required for all realtime plugins
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
-	void update_gui();
+	void process_frame(VFrame *frame);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();

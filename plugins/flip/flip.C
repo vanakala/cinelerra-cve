@@ -31,7 +31,7 @@
 #include <stdint.h>
 #include <string.h>
 
-REGISTER_PLUGIN(FlipMain)
+REGISTER_PLUGIN
 
 
 FlipConfig::FlipConfig()
@@ -54,9 +54,9 @@ int FlipConfig::equivalent(FlipConfig &that)
 
 void FlipConfig::interpolate(FlipConfig &prev, 
 	FlipConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	this->flip_horizontal = prev.flip_horizontal;
 	this->flip_vertical = prev.flip_vertical;
@@ -74,9 +74,7 @@ FlipMain::~FlipMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* FlipMain::plugin_title() { return N_("Flip"); }
-int FlipMain::is_realtime() { return 1; }
-
+PLUGIN_CLASS_METHODS
 
 #define SWAP_PIXELS(type, components, in, out) \
 { \
@@ -88,7 +86,7 @@ int FlipMain::is_realtime() { return 1; }
 	in[1] = out[1]; \
 	out[1] = temp; \
  \
- 	temp = in[2]; \
+	temp = in[2]; \
 	in[2] = out[2]; \
 	out[2] = temp; \
  \
@@ -138,9 +136,7 @@ int FlipMain::is_realtime() { return 1; }
 	} \
 }
 
-int FlipMain::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void FlipMain::process_frame(VFrame *frame)
 {
 	int i, j, k, l;
 	int w = frame->get_w();
@@ -149,19 +145,12 @@ int FlipMain::process_buffer(VFrame *frame,
 
 	load_configuration();
 
-	read_frame(frame,
-		0,
-		get_source_position(),
-		get_framerate(),
-		get_use_opengl());
-
-
+	get_frame(frame, get_use_opengl());
 
 	if(get_use_opengl()) 
 	{
 		if(config.flip_vertical || config.flip_horizontal)
 			run_opengl();
-		return 0;
 	}
 
 	switch(colormodel)
@@ -189,31 +178,8 @@ int FlipMain::process_buffer(VFrame *frame,
 		FLIP_MACRO(uint16_t, 4);
 		break;
 	}
-	return 0;
 }
 
-
-SHOW_GUI_MACRO(FlipMain, FlipThread)
-
-RAISE_WINDOW_MACRO(FlipMain)
-
-SET_STRING_MACRO(FlipMain)
-
-NEW_PICON_MACRO(FlipMain)
-
-LOAD_CONFIGURATION_MACRO(FlipMain, FlipConfig)
-
-void FlipMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->flip_vertical->update((int)config.flip_vertical);
-		thread->window->flip_horizontal->update((int)config.flip_horizontal);
-		thread->window->unlock_window();
-	}
-}
 
 void FlipMain::save_data(KeyFrame *keyframe)
 {
@@ -274,13 +240,8 @@ void FlipMain::read_data(KeyFrame *keyframe)
 
 void FlipMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sflip.rc", BCASTDIR);
-
 // load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("flip.rc");
 
 	config.flip_horizontal = defaults->get("FLIP_HORIZONTAL", config.flip_horizontal);
 	config.flip_vertical = defaults->get("FLIP_VERTICAL", config.flip_vertical);

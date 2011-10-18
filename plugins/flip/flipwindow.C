@@ -19,20 +19,13 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "flipwindow.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+PLUGIN_THREAD_METHODS
 
 
-PLUGIN_THREAD_OBJECT(FlipMain, FlipThread, FlipWindow)
-
-
-FlipWindow::FlipWindow(FlipMain *client, int x, int y)
- : BC_Window(client->get_gui_string(),
+FlipWindow::FlipWindow(FlipMain *plugin, int x, int y)
+ : BC_Window(plugin->get_gui_string(),
 	x,
 	y,
 	140,
@@ -42,40 +35,34 @@ FlipWindow::FlipWindow(FlipMain *client, int x, int y)
 	0,
 	0,
 	1)
-{ 
-	this->client = client; 
+{
+	x = 10;
+	y = 10;
+	add_tool(flip_vertical = new FlipToggle(plugin,
+		&(plugin->config.flip_vertical), 
+		_("Vertical"),
+		x, 
+		y));
+	y += 30;
+	add_tool(flip_horizontal = new FlipToggle(plugin,
+		&(plugin->config.flip_horizontal), 
+		_("Horizontal"),
+		x, 
+		y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 FlipWindow::~FlipWindow()
 {
 }
 
-int FlipWindow::create_objects()
-{
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
 
-	set_icon(ico);
-	add_tool(flip_vertical = new FlipToggle(client, 
-		&(client->config.flip_vertical), 
-		_("Vertical"),
-		x, 
-		y));
-	y += 30;
-	add_tool(flip_horizontal = new FlipToggle(client, 
-		&(client->config.flip_horizontal), 
-		_("Horizontal"),
-		x, 
-		y));
-	show_window();
-	flush();
-	delete ico;
+void FlipWindow::update()
+{
+	flip_vertical->update(plugin->config.flip_vertical);
+	flip_horizontal->update(plugin->config.flip_horizontal);
 }
 
-void FlipWindow::close_event()
-{
-	set_done(1);
-}
 
 FlipToggle::FlipToggle(FlipMain *client, int *output, char *string, int x, int y)
  : BC_CheckBox(x, y, *output, string)

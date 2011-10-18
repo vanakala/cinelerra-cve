@@ -23,30 +23,25 @@
 #define FLIPWINDOW_H
 
 
-class FlipThread;
-class FlipWindow;
-
 #include "filexml.inc"
 #include "flip.h"
-#include "mutex.h"
 #include "pluginvclient.h"
 
-PLUGIN_THREAD_HEADER(FlipMain, FlipThread, FlipWindow)
+PLUGIN_THREAD_HEADER
 
 class FlipToggle;
 
 class FlipWindow : public BC_Window
 {
 public:
-	FlipWindow(FlipMain *client, int x, int y);
+	FlipWindow(FlipMain *plugin, int x, int y);
 	~FlipWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
-	FlipMain *client;
 	FlipToggle *flip_vertical;
 	FlipToggle *flip_horizontal;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class FlipToggle : public BC_CheckBox
@@ -54,6 +49,7 @@ class FlipToggle : public BC_CheckBox
 public:
 	FlipToggle(FlipMain *client, int *output, char *string, int x, int y);
 	~FlipToggle();
+
 	int handle_event();
 
 	FlipMain *client;
