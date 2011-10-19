@@ -530,19 +530,36 @@ void BC_Resources::init_shm(BC_WindowBase *window)
 		window->lock_window("BC_Resources::init_shm");
 		XShmSegmentInfo test_shm;
 		XImage *test_image;
-		unsigned char *data;
+		char *data;
+
 		test_image = XShmCreateImage(window->display, window->vis, window->default_depth,
 			ZPixmap, (char*)NULL, &test_shm, 5, 5);
-
-		test_shm.shmid = shmget(IPC_PRIVATE, 5 * test_image->bytes_per_line, (IPC_CREAT | 0777 ));
-		data = (unsigned char *)shmat(test_shm.shmid, NULL, 0);
-		shmctl(test_shm.shmid, IPC_RMID, 0);
 		BC_Resources::error = 0;
-		XShmAttach(window->display, &test_shm);
-		XSync(window->display, False);
-		if(BC_Resources::error) use_shm = 0;
+
+		test_shm.shmid = shmget(IPC_PRIVATE, 5 * test_image->bytes_per_line, (IPC_CREAT | 0600 ));
+		if(test_shm.shmid != -1)
+		{
+			data = (char *)shmat(test_shm.shmid, NULL, 0);
+			if(data != (void *)-1)
+			{
+				shmctl(test_shm.shmid, IPC_RMID, 0);
+				test_shm.shmaddr = data;
+				test_shm.readOnly = 0;
+
+				if(XShmAttach(window->display, &test_shm))
+					XSync(window->display, False);
+				else
+					use_shm = 0;
+				shmdt(data);
+			}
+			else
+				use_shm = 0;
+		}
+		else
+			use_shm = 0;
+
 		XDestroyImage(test_image);
-		shmdt(test_shm.shmaddr);
+		if(BC_Resources::error) use_shm = 0;
 		window->unlock_window();
 	}
 }
