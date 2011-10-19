@@ -102,8 +102,12 @@ void BC_Capture::allocate_data()
 	{
 		ximage = XShmCreateImage(display, vis, default_depth, ZPixmap, (char*)NULL, &shm_info, w, h);
 
-		shm_info.shmid = shmget(IPC_PRIVATE, h * ximage->bytes_per_line, IPC_CREAT | 0777);
-		if(shm_info.shmid < 0) perror("BC_Capture::allocate_data shmget");
+		shm_info.shmid = shmget(IPC_PRIVATE, h * ximage->bytes_per_line, IPC_CREAT | 0600);
+		if(shm_info.shmid == -1)
+		{
+			perror("BC_Capture::allocate_data shmget");
+			abort();
+		}
 		data = (unsigned char *)shmat(shm_info.shmid, NULL, 0);
 		shmctl(shm_info.shmid, IPC_RMID, 0);
 		ximage->data = shm_info.shmaddr = (char*)data;  // setting ximage->data stops BadValue
