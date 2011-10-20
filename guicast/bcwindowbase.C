@@ -93,7 +93,8 @@ BC_WindowBase::~BC_WindowBase()
 		if(top_level->active_popup_menu == this) top_level->active_popup_menu = 0;
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
 // Remove pointer from parent window to this
-		parent_window->subwindows->remove(this);
+		if(parent_window->subwindows)
+			parent_window->subwindows->remove(this);
 	}
 
 
@@ -106,6 +107,7 @@ BC_WindowBase::~BC_WindowBase()
 			delete subwindows->values[0];
 		}
 		delete subwindows;
+		subwindows = 0;
 	}
 
 	if(widgetgrids)
