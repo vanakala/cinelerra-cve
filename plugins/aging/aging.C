@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 
-REGISTER_PLUGIN(AgingMain)
+REGISTER_PLUGIN
 
 
 int AgingConfig::dx[] = { 1, 1, 0, -1, -1, -1,  0, 1};
@@ -56,26 +56,21 @@ AgingConfig::AgingConfig()
 AgingMain::AgingMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	aging_server = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 AgingMain::~AgingMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(aging_server) delete aging_server;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* AgingMain::plugin_title() { return N_("AgingTV"); }
-int AgingMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-NEW_PICON_MACRO(AgingMain)
-
-SHOW_GUI_MACRO(AgingMain, AgingThread)
-
-SET_STRING_MACRO(AgingMain)
-
-RAISE_WINDOW_MACRO(AgingMain)
+int AgingMain::load_configuration()
+{
+}
 
 void AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
@@ -90,28 +85,21 @@ void AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 }
 
 
-
 AgingServer::AgingServer(AgingMain *plugin, int total_clients, int total_packages)
  : LoadServer(1, 1)
 {
 	this->plugin = plugin;
 }
 
-
 LoadClient* AgingServer::new_client() 
 {
 	return new AgingClient(this);
 }
 
-
-
-
 LoadPackage* AgingServer::new_package() 
 { 
 	return new AgingPackage; 
 }
-
-
 
 void AgingServer::init_packages()
 {
@@ -124,25 +112,11 @@ void AgingServer::init_packages()
 }
 
 
-
-
-
-
-
-
 AgingClient::AgingClient(AgingServer *server)
  : LoadClient(server)
 {
 	this->plugin = server->plugin;
 }
-
-
-
-
-
-
-
-
 
 #define COLORAGE(type, components) \
 { \
@@ -224,11 +198,6 @@ void AgingClient::coloraging(unsigned char **output_rows,
 		break;
 	}
 }
-
-
-
-
-
 
 #define SCRATCHES(type, components, chroma) \
 { \
@@ -325,8 +294,6 @@ void AgingClient::coloraging(unsigned char **output_rows,
 	} \
 }
 
-
-
 void AgingClient::scratching(unsigned char **output_rows,
 	int color_model,
 	int w,
@@ -375,7 +342,6 @@ void AgingClient::scratching(unsigned char **output_rows,
 		break;
 	}
 }
-
 
 
 #define PITS(type, components, luma, chroma) \
@@ -428,11 +394,6 @@ void AgingClient::scratching(unsigned char **output_rows,
 		} \
 	} \
 }
-
-
-
-
-
 
 void AgingClient::pits(unsigned char **output_rows,
 	int color_model,
@@ -528,9 +489,6 @@ void AgingClient::pits(unsigned char **output_rows,
 	plugin->config.dust_interval--; \
 }
 
-
-
-
 void AgingClient::dusts(unsigned char **output_rows,
 	int color_model,
 	int w,
@@ -580,8 +538,6 @@ void AgingClient::dusts(unsigned char **output_rows,
 	}
 }
 
-
-
 void AgingClient::process_package(LoadPackage *package)
 {
 	AgingPackage *local_package = (AgingPackage*)package;
@@ -613,7 +569,6 @@ void AgingClient::process_package(LoadPackage *package)
 			plugin->input_ptr->get_w(), 
 			local_package->row2 - local_package->row1);
 }
-
 
 
 AgingPackage::AgingPackage()

@@ -24,14 +24,11 @@
 
 #include "guicast.h"
 
-class AgingThread;
-class AgingWindow;
-
 #include "filexml.h"
 #include "mutex.h"
 #include "aging.h"
 
-PLUGIN_THREAD_HEADER(AgingMain, AgingThread, AgingWindow)
+PLUGIN_THREAD_HEADER
 
 class AgingWindow : public BC_Window
 {
@@ -39,10 +36,10 @@ public:
 	AgingWindow(AgingMain *client, int x, int y);
 	~AgingWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
 	AgingMain *client;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 #endif

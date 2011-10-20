@@ -22,18 +22,29 @@
 #ifndef AGING_H
 #define AGING_H
 
-class AgingMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("AgingTV")
+#define PLUGIN_CLASS AgingMain
+#define PLUGIN_CONFIG_CLASS AgingConfig
+#define PLUGIN_THREAD_CLASS AgingThread
+#define PLUGIN_GUI_CLASS AgingWindow
+
+#include "pluginmacros.h"
+
 class AgingEngine;
 
 #include "bchash.h"
+#include "language.h"
 #include "loadbalance.h"
-#include "mutex.h"
 #include "pluginvclient.h"
 #include "agingwindow.h"
+
 #include <sys/types.h>
 
 #define SCRATCH_MAX 20
-
 
 typedef struct _scratch
 {
@@ -65,6 +76,7 @@ public:
 	int scratch;
 	int pits;
 	int dust;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class AgingPackage : public LoadPackage
@@ -120,9 +132,9 @@ public:
 	AgingMain(PluginServer *server);
 	~AgingMain();
 
-	PLUGIN_CLASS_MEMBERS_NC(AgingConfig, AgingThread);
+	PLUGIN_CLASS_MEMBERS
+
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
 
 	AgingServer *aging_server;
 	AgingClient *aging_client;

@@ -23,19 +23,11 @@
 #include "agingwindow.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-PLUGIN_THREAD_OBJECT(AgingMain, AgingThread, AgingWindow)
+PLUGIN_THREAD_METHODS
 
 
-
-
-
-AgingWindow::AgingWindow(AgingMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+AgingWindow::AgingWindow(AgingMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
 	300, 
@@ -45,28 +37,21 @@ AgingWindow::AgingWindow(AgingMain *client, int x, int y)
 	0, 
 	0,
 	1)
-{ 
-	this->client = client; 
+{
+	x = 10;
+	y = 10;
+
+	add_subwindow(new BC_Title(x, y, 
+		_("Film aging from EffectTV\n"
+		"Copyright (C) 2001 FUKUCHI Kentarou")
+	));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 AgingWindow::~AgingWindow()
 {
 }
 
-int AgingWindow::create_objects()
+void AgingWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-	set_icon(ico);
-	add_subwindow(new BC_Title(x, y, 
-		_("Film aging from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou")
-	));
-
-	show_window();
-	flush();
-	delete ico;
-	return 0;
 }
-
-WINDOW_CLOSE_EVENT(AgingWindow)
