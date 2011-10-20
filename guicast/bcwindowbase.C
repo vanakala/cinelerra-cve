@@ -917,7 +917,7 @@ void BC_WindowBase::dispatch_event()
 
 void BC_WindowBase::dispatch_expose_event()
 {
-	for(int i = 0; i < subwindows->total; i++)
+	for(int i = 0; subwindows && i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_expose_event();
 	}
@@ -941,7 +941,7 @@ void BC_WindowBase::dispatch_resize_event(int w, int h)
 	}
 
 // Propagate to subwindows
-	for(int i = 0; i < subwindows->total; i++)
+	for(int i = 0; subwindows && i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_resize_event(w, h);
 	}
@@ -970,7 +970,7 @@ void BC_WindowBase::dispatch_translation_event()
 		y -= y_correction;
 	}
 
-	for(int i = 0; i < subwindows->total; i++)
+	for(int i = 0; subwindows && i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_translation_event();
 	}
@@ -1019,7 +1019,7 @@ int BC_WindowBase::dispatch_motion_event()
 		if(active_subwindow && !result) result = active_subwindow->dispatch_motion_event();
 	}
 
-	for(int i = 0; i < subwindows->total && !result; i++)
+	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_motion_event();
 	}
@@ -1037,7 +1037,7 @@ int BC_WindowBase::dispatch_keypress_event()
 			result = active_subwindow->dispatch_keypress_event();
 	}
 
-	for(int i = 0; i < subwindows->total && !result; i++)
+	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 		result = subwindows->values[i]->dispatch_keypress_event();
 
 	if(!result) result = keypress_event();
@@ -1047,7 +1047,7 @@ int BC_WindowBase::dispatch_keypress_event()
 
 void BC_WindowBase::dispatch_focus_in()
 {
-	for(int i = 0; i < subwindows->total; i++)
+	for(int i = 0; subwindows && i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_focus_in();
 	}
@@ -1057,7 +1057,7 @@ void BC_WindowBase::dispatch_focus_in()
 
 void BC_WindowBase::dispatch_focus_out()
 {
-	for(int i = 0; i < subwindows->total; i++)
+	for(int i = 0; subwindows && i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_focus_out();
 	}
@@ -1087,7 +1087,7 @@ int BC_WindowBase::dispatch_button_press()
 		if(active_subwindow && !result) result = active_subwindow->dispatch_button_press();
 	}
 
-	for(int i = 0; i < subwindows->total && !result; i++)
+	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_button_press();
 	}
@@ -1109,7 +1109,7 @@ int BC_WindowBase::dispatch_button_release()
 			result = dispatch_drag_stop();
 	}
 
-	for(int i = 0; i < subwindows->total && !result; i++)
+	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_button_release();
 	}
@@ -1127,7 +1127,7 @@ void BC_WindowBase::dispatch_repeat_event(int duration)
 {
 // all repeat event handlers get called and decide based on activity and duration
 // whether to respond
-	for(int i = 0; i < subwindows->total; i++)
+	for(int i = 0; subwindows && i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_repeat_event(duration);
 	}
@@ -1183,7 +1183,7 @@ void BC_WindowBase::dispatch_cursor_leave()
 {
 	unhide_cursor();
 
-	for(int i = 0; i < subwindows->total; i++)
+	for(int i = 0; subwindows && i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_cursor_leave();
 	}
@@ -1201,7 +1201,7 @@ int BC_WindowBase::dispatch_cursor_enter()
 	if(!result && active_popup_menu) result = active_popup_menu->dispatch_cursor_enter();
 	if(!result && active_subwindow) result = active_subwindow->dispatch_cursor_enter();
 
-	for(int i = 0; !result && i < subwindows->total; i++)
+	for(int i = 0; !result && subwindows && i < subwindows->total; i++)
 	{
 		result = subwindows->values[i]->dispatch_cursor_enter();
 	}
@@ -1223,7 +1223,7 @@ int BC_WindowBase::dispatch_drag_start()
 	if(!result && active_popup_menu) result = active_popup_menu->dispatch_drag_start();
 	if(!result && active_subwindow) result = active_subwindow->dispatch_drag_start();
 
-	for(int i = 0; i < subwindows->total && !result; i++)
+	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_drag_start();
 	}
@@ -1236,7 +1236,7 @@ int BC_WindowBase::dispatch_drag_stop()
 {
 	int result = 0;
 
-	for(int i = 0; i < subwindows->total && !result; i++)
+	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_drag_stop();
 	}
@@ -1255,7 +1255,7 @@ int BC_WindowBase::dispatch_drag_motion()
 {
 	int result = 0;
 
-	for(int i = 0; i < subwindows->total && !result; i++)
+	for(int i = 0; subwindows && i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_drag_motion();
 	}
@@ -1314,11 +1314,8 @@ void BC_WindowBase::show_tooltip(int w, int h)
 
 void BC_WindowBase::hide_tooltip()
 {
-	if(subwindows)
-	{
-		for(int i = 0; i < subwindows->total; i++)
-			subwindows->values[i]->hide_tooltip();
-	}
+	for(int i = 0; subwindows && i < subwindows->total; i++)
+		subwindows->values[i]->hide_tooltip();
 
 	if(tooltip_on)
 	{
@@ -2011,7 +2008,7 @@ void BC_WindowBase::start_hourglass_recursive()
 	if(!is_transparent)
 	{
 		set_cursor(HOURGLASS_CURSOR, 1);
-		for(int i = 0; i < subwindows->total; i++)
+		for(int i = 0; subwindows && i < subwindows->total; i++)
 		{
 			subwindows->values[i]->start_hourglass_recursive();
 		}
@@ -2034,7 +2031,7 @@ void BC_WindowBase::stop_hourglass_recursive()
 		if(!is_transparent)
 			set_cursor(current_cursor, 1);
 
-		for(int i = 0; i < subwindows->total; i++)
+		for(int i = 0; subwindows && i < subwindows->total; i++)
 		{
 			subwindows->values[i]->stop_hourglass_recursive();
 		}
@@ -2444,7 +2441,8 @@ void BC_WindowBase::hide_window(int flush)
 
 BC_MenuBar* BC_WindowBase::add_menubar(BC_MenuBar *menu_bar)
 {
-	subwindows->append((BC_SubWindow*)menu_bar);
+	if(subwindows)
+		subwindows->append((BC_SubWindow*)menu_bar);
 
 	menu_bar->parent_window = this;
 	menu_bar->top_level = this->top_level;
@@ -2454,7 +2452,8 @@ BC_MenuBar* BC_WindowBase::add_menubar(BC_MenuBar *menu_bar)
 
 BC_WindowBase* BC_WindowBase::add_subwindow(BC_WindowBase *subwindow)
 {
-	subwindows->append(subwindow);
+	if(subwindows)
+		subwindows->append(subwindow);
 
 	if(subwindow->bg_color == -1) subwindow->bg_color = this->bg_color;
 
@@ -2738,7 +2737,7 @@ void BC_WindowBase::cycle_textboxes(int amount)
 void BC_WindowBase::find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result)
 {
 // Search subwindows for textbox
-	for(int i = 0; i < subwindows->total && result < 2; i++)
+	for(int i = 0; subwindows && i < subwindows->total && result < 2; i++)
 	{
 		BC_WindowBase *test_subwindow = subwindows->values[i];
 		test_subwindow->find_next_textbox(first_textbox, next_textbox, result);
@@ -2786,10 +2785,13 @@ void BC_WindowBase::find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBas
 	}
 
 // Search subwindows for textbox
-	for(int i = subwindows->total - 1; i >= 0 && result < 2; i--)
+	if(subwindows)
 	{
-		BC_WindowBase *test_subwindow = subwindows->values[i];
-		test_subwindow->find_prev_textbox(last_textbox, prev_textbox, result);
+		for(int i = subwindows->total - 1; subwindows && i >= 0 && result < 2; i--)
+		{
+			BC_WindowBase *test_subwindow = subwindows->values[i];
+			test_subwindow->find_prev_textbox(last_textbox, prev_textbox, result);
+		}
 	}
 }
 
@@ -2900,7 +2902,7 @@ int BC_WindowBase::match_window(Window win)
 {
 	if (this->win == win) return 1;
 	int result = 0;
-	for(int i = 0; i < subwindows->total; i++)
+	for(int i = 0; subwindows && i < subwindows->total; i++)
 	{
 		result = subwindows->values[i]->match_window(win);
 		if (result) return result;
@@ -3058,7 +3060,7 @@ void BC_WindowBase::resize_window(int w, int h)
 	pixmap = new BC_Pixmap(this, w, h);
 
 // Propagate to menubar
-	for(int i = 0; i < subwindows->total; i++)
+	for(int i = 0; subwindows && i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_resize_event(w, h);
 	}
@@ -3130,7 +3132,7 @@ void BC_WindowBase::reposition_window(int x, int y, int w, int h)
 		delete pixmap;
 		pixmap = new BC_Pixmap(this, this->w, this->h);
 // Propagate to menubar
-		for(int i = 0; i < subwindows->total; i++)
+		for(int i = 0; subwindows && i < subwindows->total; i++)
 		{
 			subwindows->values[i]->dispatch_resize_event(this->w, this->h);
 		}
