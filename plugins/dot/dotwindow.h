@@ -24,30 +24,19 @@
 
 #include "guicast.h"
 
-class DotThread;
-class DotWindow;
-
-#include "filexml.h"
-#include "mutex.h"
 #include "dot.h"
 
-PLUGIN_THREAD_HEADER(DotMain, DotThread, DotWindow)
+PLUGIN_THREAD_HEADER
 
 class DotWindow : public BC_Window
 {
 public:
-	DotWindow(DotMain *client, int x, int y);
+	DotWindow(DotMain *plugin, int x, int y);
 	~DotWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
-	DotMain *client;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
-
-
-
-
-
 
 #endif

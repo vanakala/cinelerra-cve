@@ -22,15 +22,26 @@
 #ifndef DOT_H
 #define DOT_H
 
-class DotMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("DotTV")
+#define PLUGIN_CLASS DotMain
+#define PLUGIN_CONFIG_CLASS DotConfig
+#define PLUGIN_THREAD_CLASS DotThread
+#define PLUGIN_GUI_CLASS DotWindow
+
+#include "pluginmacros.h"
+
 class DotEngine;
 
 #include "bchash.h"
 #include "effecttv.h"
 #include "loadbalance.h"
-#include "mutex.h"
 #include "pluginvclient.h"
 #include "dotwindow.h"
+#include "language.h"
 
 #include <stdint.h>
 
@@ -47,6 +58,7 @@ public:
 	{
 		return 1 << dot_depth;
 	};
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class DotPackage : public LoadPackage
@@ -92,11 +104,10 @@ public:
 	DotMain(PluginServer *server);
 	~DotMain();
 
-	PLUGIN_CLASS_MEMBERS_NC(DotConfig, DotThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
 
 	void make_pattern();
 	void init_sampxy_table();

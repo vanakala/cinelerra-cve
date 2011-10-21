@@ -24,11 +24,11 @@
 #include "language.h"
 #include "pluginclient.h"
 
-PLUGIN_THREAD_OBJECT(DotMain, DotThread, DotWindow)
+PLUGIN_THREAD_METHODS
 
 
-DotWindow::DotWindow(DotMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+DotWindow::DotWindow(DotMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
 	300, 
@@ -39,28 +39,20 @@ DotWindow::DotWindow(DotMain *client, int x, int y)
 	0,
 	1)
 { 
-	this->client = client; 
+	x = 10;
+	y = 10;
+
+	add_subwindow(new BC_Title(x, y, 
+		_("DotTV from EffectTV\n"
+		"Copyright (C) 2001 FUKUCHI Kentarou")
+	));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 DotWindow::~DotWindow()
 {
 }
 
-int DotWindow::create_objects()
+void DotWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
-	add_subwindow(new BC_Title(x, y, 
-		_("DotTV from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou")
-	));
-
-	show_window();
-	flush();
-	delete ico;
-	return 0;
 }
-
-WINDOW_CLOSE_EVENT(DotWindow)

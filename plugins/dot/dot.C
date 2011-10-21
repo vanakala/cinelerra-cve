@@ -21,7 +21,6 @@
 
 #include "clip.h"
 #include "colormodels.h"
-#include "filexml.h"
 #include "picon_png.h"
 #include "dot.h"
 #include "dotwindow.h"
@@ -33,7 +32,7 @@
 #include <string.h>
 
 
-REGISTER_PLUGIN(DotMain)
+REGISTER_PLUGIN
 
 
 DotConfig::DotConfig()
@@ -41,9 +40,6 @@ DotConfig::DotConfig()
 	dot_depth = 5;
 	dot_size = 8;
 }
-
-
-
 
 
 DotMain::DotMain(PluginServer *server)
@@ -59,8 +55,6 @@ DotMain::DotMain(PluginServer *server)
 
 DotMain::~DotMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(pattern) delete [] pattern;
 	if(sampx) delete [] sampx;
 	if(sampy) delete [] sampy;
@@ -69,19 +63,14 @@ DotMain::~DotMain()
 		delete dot_server;
 		delete effecttv;
 	}
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* DotMain::plugin_title() { return N_("DotTV"); }
-int DotMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-NEW_PICON_MACRO(DotMain)
-
-SHOW_GUI_MACRO(DotMain, DotThread)
-
-SET_STRING_MACRO(DotMain)
-
-RAISE_WINDOW_MACRO(DotMain)
-
+int DotMain::load_configuration()
+{
+}
 
 void DotMain::make_pattern()
 {
@@ -147,7 +136,6 @@ void DotMain::init_sampxy_table()
 	}
 }
 
-
 void DotMain::reconfigure()
 {
 	if(!effecttv)
@@ -174,8 +162,6 @@ void DotMain::reconfigure()
 	need_reconfigure = 0;
 }
 
-
-
 void DotMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	this->input_ptr = input_ptr;
@@ -185,7 +171,6 @@ void DotMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	dot_server->process_packages();
 }
-
 
 
 DotServer::DotServer(DotMain *plugin, int total_clients, int total_packages)
