@@ -24,26 +24,20 @@
 
 #include "guicast.h"
 
-class BurnThread;
-class BurnWindow;
-
 #include "filexml.h"
 #include "mutex.h"
 #include "burn.h"
 
-
-PLUGIN_THREAD_HEADER(BurnMain, BurnThread, BurnWindow)
+PLUGIN_THREAD_HEADER
 
 class BurnWindow : public BC_Window
 {
 public:
-	BurnWindow(BurnMain *client, int x, int y);
+	BurnWindow(BurnMain *plugin, int x, int y);
 	~BurnWindow();
 
-	int create_objects();
-	void close_event();
-
-	BurnMain *client;
+	void update();
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 #endif

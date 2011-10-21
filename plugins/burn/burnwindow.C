@@ -21,16 +21,12 @@
 
 #include "bcdisplayinfo.h"
 #include "burnwindow.h"
-#include "language.h"
+
+PLUGIN_THREAD_METHODS
 
 
-
-
-PLUGIN_THREAD_OBJECT(BurnMain, BurnThread, BurnWindow)
-
-
-BurnWindow::BurnWindow(BurnMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+BurnWindow::BurnWindow(BurnMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
 	300, 
@@ -40,31 +36,22 @@ BurnWindow::BurnWindow(BurnMain *client, int x, int y)
 	0, 
 	0,
 	1)
-{ 
-	this->client = client; 
+{
+	x = 10; 
+	y = 10;
+	add_subwindow(new BC_Title(x, y, 
+		_("BurningTV from EffectTV\n"
+		"Copyright (C) 2001 FUKUCHI Kentarou")
+	));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 BurnWindow::~BurnWindow()
 {
 }
 
-int BurnWindow::create_objects()
+void BurnWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
-	add_subwindow(new BC_Title(x, y, 
-		_("BurningTV from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou")
-	));
-
-	show_window();
-	flush();
-	delete(ico);
-	return 0;
 }
-
-WINDOW_CLOSE_EVENT(BurnWindow)
 
 

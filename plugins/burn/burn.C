@@ -34,9 +34,7 @@
 #include <string.h>
 
 
-
-REGISTER_PLUGIN(BurnMain)
-
+REGISTER_PLUGIN
 
 
 BurnConfig::BurnConfig()
@@ -60,22 +58,18 @@ BurnMain::BurnMain(PluginServer *server)
 
 BurnMain::~BurnMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(buffer) delete [] buffer;
 	if(burn_server) delete burn_server;
 	if(effecttv) delete effecttv;
 	if(yuv) delete yuv;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* BurnMain::plugin_title() { return N_("BurningTV"); }
-int BurnMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-
-NEW_PICON_MACRO(BurnMain)
-SHOW_GUI_MACRO(BurnMain, BurnThread)
-SET_STRING_MACRO(BurnMain)
-RAISE_WINDOW_MACRO(BurnMain)
+int BurnMain::load_configuration()
+{
+}
 
 #define MAXCOLOR 120
 
@@ -165,7 +159,6 @@ void BurnMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 }
 
 
-
 BurnServer::BurnServer(BurnMain *plugin, int total_clients, int total_packages)
  : LoadServer(total_clients, total_packages)
 {
@@ -184,8 +177,6 @@ LoadPackage* BurnServer::new_package()
 	return new BurnPackage; 
 }
 
-
-
 void BurnServer::init_packages()
 {
 	for(int i = 0; i < get_total_packages(); i++)
@@ -202,7 +193,6 @@ BurnClient::BurnClient(BurnServer *server)
 {
 	this->plugin = server->plugin;
 }
-
 
 #define BURN(type, components, is_yuv) \
 { \
@@ -298,9 +288,6 @@ BurnClient::BurnClient(BurnServer *server)
 	} \
 }
 
-
-
-
 void BurnClient::process_package(LoadPackage *package)
 {
 	BurnPackage *local_package = (BurnPackage*)package;
@@ -315,7 +302,6 @@ void BurnClient::process_package(LoadPackage *package)
 	int a1, b1, c1;
 	int a2, b2, c2;
 	int a3, b3, c3;
-
 
 	diff = plugin->effecttv->image_bgsubtract_y(input_rows, 
 		plugin->input_ptr->get_color_model());
@@ -350,8 +336,6 @@ void BurnClient::process_package(LoadPackage *package)
 		}
 	}
 
-
-
 	switch(plugin->input_ptr->get_color_model())
 	{
 	case BC_RGB888:
@@ -364,7 +348,6 @@ void BurnClient::process_package(LoadPackage *package)
 	case BC_RGB_FLOAT:
 		BURN(float, 3, 0);
 		break;
-
 	case BC_RGBA_FLOAT:
 		BURN(float, 4, 0);
 		break;
@@ -392,7 +375,6 @@ void BurnClient::process_package(LoadPackage *package)
 	}
 
 }
-
 
 
 BurnPackage::BurnPackage()

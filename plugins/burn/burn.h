@@ -22,12 +22,22 @@
 #ifndef BURN_H
 #define BURN_H
 
-class BurnMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("BurningTV")
+#define PLUGIN_CLASS BurnMain
+#define PLUGIN_CONFIG_CLASS BurnConfig
+#define PLUGIN_THREAD_CLASS BurnThread
+#define PLUGIN_GUI_CLASS BurnWindow
+
+#include "pluginmacros.h"
 
 #include "bchash.h"
 #include "effecttv.inc"
+#include "language.h"
 #include "loadbalance.h"
-#include "mutex.h"
 #include "plugincolors.inc"
 #include "pluginvclient.h"
 #include "burnwindow.h"
@@ -40,6 +50,7 @@ public:
 	int threshold;
 	int decay;
 	double recycle;  // Seconds to a recycle
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class BurnPackage : public LoadPackage
@@ -54,7 +65,7 @@ class BurnServer : public LoadServer
 {
 public:
 	BurnServer(BurnMain *plugin, int total_clients, int total_packages);
-	
+
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	void init_packages();
@@ -78,11 +89,10 @@ public:
 	BurnMain(PluginServer *server);
 	~BurnMain();
 
-	PLUGIN_CLASS_MEMBERS_NC(BurnConfig, BurnThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
 
 	void HSItoRGB(double H, 
 		double S, 
