@@ -33,12 +33,11 @@ PLUGIN_THREAD_HEADER
 class AgingWindow : public BC_Window
 {
 public:
-	AgingWindow(AgingMain *client, int x, int y);
+	AgingWindow(AgingMain *plugin, int x, int y);
 	~AgingWindow();
 
 	void update();
 
-	AgingMain *client;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
