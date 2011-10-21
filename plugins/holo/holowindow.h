@@ -24,32 +24,21 @@
 
 #include "guicast.h"
 
-class HoloThread;
-class HoloWindow;
-
-#include "filexml.h"
 #include "holo.h"
-#include "mutex.h"
 #include "pluginclient.h"
 
 
-PLUGIN_THREAD_HEADER(HoloMain, HoloThread, HoloWindow)
+PLUGIN_THREAD_HEADER
 
 class HoloWindow : public BC_Window
 {
 public:
-	HoloWindow(HoloMain *client, int x, int y);
+	HoloWindow(HoloMain *plugin, int x, int y);
 	~HoloWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
-	HoloMain *client;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
-
-
-
-
-
 
 #endif

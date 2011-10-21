@@ -22,10 +22,8 @@
 #include "clip.h"
 #include "colormodels.h"
 #include "effecttv.h"
-#include "filexml.h"
 #include "holo.h"
 #include "holowindow.h"
-#include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
 
@@ -34,7 +32,7 @@
 #include <string.h>
 
 
-REGISTER_PLUGIN(HoloMain)
+REGISTER_PLUGIN
 
 
 HoloConfig::HoloConfig()
@@ -56,8 +54,6 @@ HoloMain::HoloMain(PluginServer *server)
 
 HoloMain::~HoloMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(effecttv)
 	{
 		delete holo_server;
@@ -67,38 +63,15 @@ HoloMain::~HoloMain()
 	if(bgimage)
 		delete bgimage;
 	delete yuv;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* HoloMain::plugin_title() { return N_("HolographicTV"); }
-int HoloMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-VFrame* HoloMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
-/* Pole
-int HoloMain::load_defaults()
-{
-	return 0;
-}
-
-int HoloMain::save_defaults()
-{
-	return 0;
-}
-void HoloMain::load_configuration()
+int HoloMain::load_configuration()
 {
 }
 
-
-void HoloMain::save_data(KeyFrame *keyframe)
-{
-}
-
-void HoloMain::read_data(KeyFrame *keyframe)
-{
-}
-	*/
 void HoloMain::reconfigure()
 {
 	do_reconfigure = 0;
@@ -259,19 +232,12 @@ void HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		total = 0;
 }
 
-SHOW_GUI_MACRO(HoloMain, HoloThread);
-
-SET_STRING_MACRO(HoloMain);
-
-RAISE_WINDOW_MACRO(HoloMain);
-
 
 HoloServer::HoloServer(HoloMain *plugin, int total_clients, int total_packages)
  : LoadServer(total_clients, total_packages)
 {
 	this->plugin = plugin;
 }
-
 
 LoadClient* HoloServer::new_client() 
 {

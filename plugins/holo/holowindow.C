@@ -24,11 +24,11 @@
 #include "holowindow.h"
 
 
+PLUGIN_THREAD_METHODS
 
-PLUGIN_THREAD_OBJECT(HoloMain, HoloThread, HoloWindow)
 
-HoloWindow::HoloWindow(HoloMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+HoloWindow::HoloWindow(HoloMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
 	300, 
@@ -38,29 +38,21 @@ HoloWindow::HoloWindow(HoloMain *client, int x, int y)
 	0, 
 	0,
 	1)
-{ 
-	this->client = client; 
+{
+	x = 10;
+	y = 10;
+
+	add_subwindow(new BC_Title(x, y, 
+		_("HolographicTV from EffectTV\n"
+		"Copyright (C) 2001 FUKUCHI Kentarou")
+	));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 HoloWindow::~HoloWindow()
 {
 }
 
-int HoloWindow::create_objects()
+void HoloWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
-	add_subwindow(new BC_Title(x, y, 
-		_("HolographicTV from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou")
-	));
-
-	show_window();
-	flush();
-	delete ico;
-	return 0;
 }
-
-WINDOW_CLOSE_EVENT(HoloWindow)

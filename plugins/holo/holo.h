@@ -22,28 +22,38 @@
 #ifndef HOLO_H
 #define HOLO_H
 
-class HoloMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("HolographicTV")
+#define PLUGIN_CLASS HoloMain
+#define PLUGIN_CONFIG_CLASS HoloConfig
+#define PLUGIN_THREAD_CLASS HoloThread
+#define PLUGIN_GUI_CLASS HoloWindow
+
+#include "pluginmacros.h"
+
 class HoloEngine;
 
 #include "bchash.h"
 #include "effecttv.h"
+#include "language.h"
 #include "holowindow.h"
 #include "loadbalance.h"
-#include "mutex.h"
 #include "plugincolors.inc"
 #include "pluginvclient.h"
 
 #include <stdint.h>
-
 
 class HoloConfig
 {
 public:
 	HoloConfig();
 
-
 	int threshold;
 	double recycle;    // Number of seconds between recycles
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class HoloPackage : public LoadPackage
@@ -82,11 +92,11 @@ public:
 	HoloMain(PluginServer *server);
 	~HoloMain();
 
-	PLUGIN_CLASS_MEMBERS_NC(HoloConfig, HoloThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
+
 	void reconfigure();
 
 	void add_frames(VFrame *output, VFrame *input);
