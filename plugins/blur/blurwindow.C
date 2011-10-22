@@ -23,17 +23,10 @@
 #include "blur.h"
 #include "blurwindow.h"
 
+PLUGIN_THREAD_METHODS
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-PLUGIN_THREAD_OBJECT(BlurMain, BlurThread, BlurWindow)
-
-
-BlurWindow::BlurWindow(BlurMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+BlurWindow::BlurWindow(BlurMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string,
 	x,
 	y,
 	150, 
@@ -43,39 +36,41 @@ BlurWindow::BlurWindow(BlurMain *client, int x, int y)
 	0, 
 	1)
 { 
-	this->client = client; 
+	x = 10; 
+	y = 10;
+
+	add_subwindow(new BC_Title(x, y, _("Blur")));
+	y += 20;
+	add_subwindow(horizontal = new BlurHorizontal(plugin, this, x, y));
+	y += 30;
+	add_subwindow(vertical = new BlurVertical(plugin, this, x, y));
+	y += 35;
+	add_subwindow(radius = new BlurRadius(plugin, x, y));
+	add_subwindow(new BC_Title(x + 50, y, _("Radius")));
+	y += 50;
+	add_subwindow(a = new BlurA(plugin, x, y));
+	y += 30;
+	add_subwindow(r = new BlurR(plugin, x, y));
+	y += 30;
+	add_subwindow(g = new BlurG(plugin, x, y));
+	y += 30;
+	add_subwindow(b = new BlurB(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 BlurWindow::~BlurWindow()
 {
 }
 
-void BlurWindow::create_objects()
+void BlurWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
-	add_subwindow(new BC_Title(x, y, _("Blur")));
-	y += 20;
-	add_subwindow(horizontal = new BlurHorizontal(client, this, x, y));
-	y += 30;
-	add_subwindow(vertical = new BlurVertical(client, this, x, y));
-	y += 35;
-	add_subwindow(radius = new BlurRadius(client, x, y));
-	add_subwindow(new BC_Title(x + 50, y, _("Radius")));
-	y += 50;
-	add_subwindow(a = new BlurA(client, x, y));
-	y += 30;
-	add_subwindow(r = new BlurR(client, x, y));
-	y += 30;
-	add_subwindow(g = new BlurG(client, x, y));
-	y += 30;
-	add_subwindow(b = new BlurB(client, x, y));
-
-	show_window();
-	flush();
-	delete ico;
+	horizontal->update(plugin->config.horizontal);
+	vertical->update(plugin->config.vertical);
+	radius->update(plugin->config.radius);
+	a->update(plugin->config.a);
+	r->update(plugin->config.r);
+	g->update(plugin->config.g);
+	b->update(plugin->config.b);
 }
 
 

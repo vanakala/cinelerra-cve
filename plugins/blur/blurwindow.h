@@ -22,17 +22,9 @@
 #ifndef BLURWINDOW_H
 #define BLURWINDOW_H
 
-
-class BlurThread;
-class BlurWindow;
-
-#include "blur.inc"
-#include "filexml.inc"
 #include "guicast.h"
+#include "blur.h"
 #include "mutex.h"
-#include "thread.h"
-
-PLUGIN_THREAD_HEADER(BlurMain, BlurThread, BlurWindow)
 
 class BlurVertical;
 class BlurHorizontal;
@@ -42,15 +34,16 @@ class BlurR;
 class BlurG;
 class BlurB;
 
+PLUGIN_THREAD_HEADER
+
 class BlurWindow : public BC_Window
 {
 public:
-	BlurWindow(BlurMain *client, int x, int y);
+	BlurWindow(BlurMain *plugin, int x, int y);
 	~BlurWindow();
 
-	void create_objects();
+	void update();
 
-	BlurMain *client;
 	BlurVertical *vertical;
 	BlurHorizontal *horizontal;
 	BlurRadius *radius;
@@ -58,6 +51,7 @@ public:
 	BlurR *r;
 	BlurG *g;
 	BlurB *b;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class BlurA : public BC_CheckBox

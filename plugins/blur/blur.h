@@ -22,16 +22,24 @@
 #ifndef BLUR_H
 #define BLUR_H
 
-class BlurMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Blur")
+#define PLUGIN_CLASS BlurMain
+#define PLUGIN_CONFIG_CLASS BlurConfig
+#define PLUGIN_THREAD_CLASS BlurThread
+#define PLUGIN_GUI_CLASS BlurWindow
+
+#include "pluginmacros.h"
+
 class BlurEngine;
 
 #define MAXRADIUS 100
 
-#include "blurwindow.inc"
-#include "bchash.inc"
+#include "language.h"
 #include "mutex.h"
 #include "pluginvclient.h"
-#include "thread.h"
 #include "vframe.inc"
 
 typedef struct
@@ -51,14 +59,15 @@ public:
 	void copy_from(BlurConfig &that);
 	void interpolate(BlurConfig &prev, 
 		BlurConfig &next, 
-		posnum prev_frame,
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int vertical;
 	int horizontal;
 	int radius;
 	int a, r ,g ,b;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class BlurMain : public PluginVClient
@@ -69,14 +78,13 @@ public:
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
+
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
-	PLUGIN_CLASS_MEMBERS(BlurConfig, BlurThread)
+	PLUGIN_CLASS_MEMBERS
 
 	int need_reconfigure;
 

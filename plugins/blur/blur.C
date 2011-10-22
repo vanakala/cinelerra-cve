@@ -26,6 +26,7 @@
 #include "keyframe.h"
 #include "language.h"
 #include "picon_png.h"
+#include "thread.h"
 #include "vframe.h"
 
 #include <math.h>
@@ -65,12 +66,11 @@ void BlurConfig::copy_from(BlurConfig &that)
 
 void BlurConfig::interpolate(BlurConfig &prev, 
 	BlurConfig &next, 
-	posnum prev_frame,
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->vertical = (int)(prev.vertical * prev_scale + next.vertical * next_scale);
 	this->horizontal = (int)(prev.horizontal * prev_scale + next.horizontal * next_scale);
@@ -81,8 +81,7 @@ void BlurConfig::interpolate(BlurConfig &prev,
 	b = prev.b;
 }
 
-REGISTER_PLUGIN(BlurMain)
-
+REGISTER_PLUGIN
 
 BlurMain::BlurMain(PluginServer *server)
  : PluginVClient(server)
@@ -96,8 +95,6 @@ BlurMain::BlurMain(PluginServer *server)
 
 BlurMain::~BlurMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(temp) delete temp;
 	if(engine)
 	{
@@ -105,21 +102,10 @@ BlurMain::~BlurMain()
 			delete engine[i];
 		delete [] engine;
 	}
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* BlurMain::plugin_title() { return N_("Blur"); }
-int BlurMain::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(BlurMain)
-
-SHOW_GUI_MACRO(BlurMain, BlurThread)
-
-SET_STRING_MACRO(BlurMain)
-
-RAISE_WINDOW_MACRO(BlurMain)
-
-LOAD_CONFIGURATION_MACRO(BlurMain, BlurConfig)
-
+PLUGIN_CLASS_METHODS
 
 void BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
@@ -195,33 +181,9 @@ void BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 }
 
-
-void BlurMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->horizontal->update(config.horizontal);
-		thread->window->vertical->update(config.vertical);
-		thread->window->radius->update(config.radius);
-		thread->window->a->update(config.a);
-		thread->window->r->update(config.r);
-		thread->window->g->update(config.g);
-		thread->window->b->update(config.b);
-		thread->window->unlock_window();
-	}
-}
-
 void BlurMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sblur.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("blur.rc");
 
 	config.vertical = defaults->get("VERTICAL", config.vertical);
 	config.horizontal = defaults->get("HORIZONTAL", config.horizontal);
@@ -271,24 +233,17 @@ void BlurMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("BLUR"))
 		{
-			if(input.tag.title_is("BLUR"))
-			{
-				config.vertical = input.tag.get_property("VERTICAL", config.vertical);
-				config.horizontal = input.tag.get_property("HORIZONTAL", config.horizontal);
-				config.radius = input.tag.get_property("RADIUS", config.radius);
-				config.r = input.tag.get_property("R", config.r);
-				config.g = input.tag.get_property("G", config.g);
-				config.b = input.tag.get_property("B", config.b);
-				config.a = input.tag.get_property("A", config.a);
-			}
+			config.vertical = input.tag.get_property("VERTICAL", config.vertical);
+			config.horizontal = input.tag.get_property("HORIZONTAL", config.horizontal);
+			config.radius = input.tag.get_property("RADIUS", config.radius);
+			config.r = input.tag.get_property("R", config.r);
+			config.g = input.tag.get_property("G", config.g);
+			config.b = input.tag.get_property("B", config.b);
+			config.a = input.tag.get_property("A", config.a);
 		}
 	}
 }
@@ -581,7 +536,6 @@ void BlurEngine::transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, in
 		dest[i].a = sum;
 	}
 }
-
 
 void BlurEngine::blur_strip3(int &size)
 {
