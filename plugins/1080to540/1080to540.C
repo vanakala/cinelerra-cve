@@ -23,19 +23,16 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "bcdisplayinfo.h"
 #include "keyframe.h"
-#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
-
 
 #include <stdint.h>
 #include <string.h>
 
 
-REGISTER_PLUGIN(_1080to540Main)
+REGISTER_PLUGIN
 
 
 _1080to540Config::_1080to540Config()
@@ -55,16 +52,16 @@ void _1080to540Config::copy_from(_1080to540Config &that)
 
 void _1080to540Config::interpolate(_1080to540Config &prev, 
 	_1080to540Config &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	copy_from(prev);
 }
 
 
-_1080to540Window::_1080to540Window(_1080to540Main *client, int x, int y)
- : BC_Window(client->gui_string, 
+_1080to540Window::_1080to540Window(_1080to540Main *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x, 
 	y, 
 	200, 
@@ -75,7 +72,13 @@ _1080to540Window::_1080to540Window(_1080to540Main *client, int x, int y)
 	0,
 	1)
 { 
-	this->client = client; 
+	x = 10;
+	y = 10;
+
+	add_tool(odd_first = new _1080to540Option(plugin, this, 1, x, y, _("Odd field first")));
+	y += 25;
+	add_tool(even_first = new _1080to540Option(plugin, this, 0, x, y, _("Even field first")));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 
@@ -83,41 +86,18 @@ _1080to540Window::~_1080to540Window()
 {
 }
 
-int _1080to540Window::create_objects()
+
+void _1080to540Window::update()
 {
-	int x = 10, y = 10;
+	int first_field = plugin->config.first_field;
 
-	set_icon(new VFrame(picon_png));
-	add_tool(odd_first = new _1080to540Option(client, this, 1, x, y, _("Odd field first")));
-	y += 25;
-	add_tool(even_first = new _1080to540Option(client, this, 0, x, y, _("Even field first")));
-
-	show_window();
-	flush();
-	return 0;
-}
-
-WINDOW_CLOSE_EVENT(_1080to540Window)
-
-int _1080to540Window::set_first_field(int first_field, int send_event)
-{
 	odd_first->update(first_field == 1);
 	even_first->update(first_field == 0);
-
-
-	if(send_event)
-	{
-		client->config.first_field = first_field;
-		client->send_configure_change();
-	}
-	return 0;
 }
 
 
-
-
-_1080to540Option::_1080to540Option(_1080to540Main *client, 
-		_1080to540Window *window, 
+_1080to540Option::_1080to540Option(_1080to540Main *client,
+		_1080to540Window *window,
 		int output, 
 		int x, 
 		int y, 
@@ -134,42 +114,30 @@ _1080to540Option::_1080to540Option(_1080to540Main *client,
 
 int _1080to540Option::handle_event()
 {
-	window->set_first_field(output, 1);
+	client->config.first_field = output;
+	window->update();
+	client->send_configure_change();
 	return 1;
 }
 
 
-
-PLUGIN_THREAD_OBJECT(_1080to540Main, _1080to540Thread, _1080to540Window)
-
-
-
-
-
+PLUGIN_THREAD_METHODS
 
 
 _1080to540Main::_1080to540Main(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	temp = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 _1080to540Main::~_1080to540Main()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(temp) delete temp;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* _1080to540Main::plugin_title() { return N_("1080 to 540"); }
-int _1080to540Main::is_realtime() { return 1; }
-
-SHOW_GUI_MACRO(_1080to540Main, _1080to540Thread)
-RAISE_WINDOW_MACRO(_1080to540Main)
-SET_STRING_MACRO(_1080to540Main)
-NEW_PICON_MACRO(_1080to540Main)
-LOAD_CONFIGURATION_MACRO(_1080to540Main, _1080to540Config)
-
+PLUGIN_CLASS_METHODS
 
 #define TEMP_W 854
 #define TEMP_H 540
@@ -238,7 +206,6 @@ for(int i = 0; i < OUT_ROWS; i++) \
 		REDUCE_MACRO(uint16_t, int64_t, 4);
 		break;
 	}
-
 }
 
 void _1080to540Main::process_realtime(VFrame *input, VFrame *output)
@@ -262,11 +229,7 @@ void _1080to540Main::process_realtime(VFrame *input, VFrame *output)
 
 void _1080to540Main::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%s1080to540.rc", BCASTDIR);
-	
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("1080to540.rc");
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
 }
 
@@ -280,6 +243,7 @@ void _1080to540Main::save_defaults()
 void _1080to540Main::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
+
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("1080TO540");
 	output.tag.set_property("FIRST_FIELD", config.first_field);
@@ -300,17 +264,6 @@ void _1080to540Main::read_data(KeyFrame *keyframe)
 		{
 			config.first_field = input.tag.get_property("FIRST_FIELD", config.first_field);
 		}
-	}
-}
-
-void _1080to540Main::update_gui()
-{
-	if(thread) 
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->set_first_field(config.first_field, 0);
-		thread->window->unlock_window();
 	}
 }
 

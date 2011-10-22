@@ -22,35 +22,44 @@
 #ifndef _1080TO540_H
 #define _1080TO540_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
 
+#define PLUGIN_TITLE N_("1080 to 540")
+#define PLUGIN_CLASS _1080to540Main 
+#define PLUGIN_CONFIG_CLASS _1080to540Config
+#define PLUGIN_THREAD_CLASS _1080to540Thread
+#define PLUGIN_GUI_CLASS _1080to540Window
+
+#include "pluginmacros.h"
+
+#include "language.h"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
 
-class _1080to540Main;
 class _1080to540Option;
 
 class _1080to540Window : public BC_Window
 {
 public:
-	_1080to540Window(_1080to540Main *client, int x, int y);
+	_1080to540Window(_1080to540Main *plugin, int x, int y);
 	~_1080to540Window();
 
-	int create_objects();
-	void close_event();
 	int set_first_field(int first_field, int send_event);
+	void update();
 
-	_1080to540Main *client;
 	_1080to540Option *odd_first;
 	_1080to540Option *even_first;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(_1080to540Main, _1080to540Thread, _1080to540Window);
+PLUGIN_THREAD_HEADER
 
 class _1080to540Option : public BC_Radial
 {
 public:
-	_1080to540Option(_1080to540Main *client, 
-		_1080to540Window *window, 
+	_1080to540Option(_1080to540Main *client,
+		_1080to540Window *window,
 		int output, 
 		int x, 
 		int y, 
@@ -71,11 +80,12 @@ public:
 	void copy_from(_1080to540Config &that);
 	void interpolate(_1080to540Config &prev, 
 		_1080to540Config &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int first_field;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class _1080to540Main : public PluginVClient
@@ -84,14 +94,11 @@ public:
 	_1080to540Main(PluginServer *server);
 	~_1080to540Main();
 
-
-	PLUGIN_CLASS_MEMBERS(_1080to540Config, _1080to540Thread)
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
-	int hide_gui();
-	void update_gui();
+
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
