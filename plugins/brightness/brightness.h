@@ -22,10 +22,21 @@
 #ifndef BRIGHTNESS_H
 #define BRIGHTNESS_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Brightness/Contrast")
+#define PLUGIN_CLASS BrightnessMain
+#define PLUGIN_CONFIG_CLASS BrightnessConfig
+#define PLUGIN_THREAD_CLASS BrightnessThread
+#define PLUGIN_GUI_CLASS BrightnessWindow
+
+#include "pluginmacros.h"
+
 class BrightnessEngine;
-class BrightnessMain;
 
 #include "brightnesswindow.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
@@ -39,13 +50,14 @@ public:
 	void copy_from(BrightnessConfig &that);
 	void interpolate(BrightnessConfig &prev, 
 		BrightnessConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	float brightness;
 	float contrast;
 	int luma;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class BrightnessMain : public PluginVClient
@@ -54,13 +66,10 @@ public:
 	BrightnessMain(PluginServer *server);
 	~BrightnessMain();
 
-	PLUGIN_CLASS_MEMBERS(BrightnessConfig, BrightnessThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
-	void update_gui();
+	void process_frame(VFrame *frame);
+
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();

@@ -30,25 +30,22 @@ class BrightnessLuma;
 
 #include "brightness.h"
 #include "guicast.h"
-#include "mutex.h"
 #include "pluginvclient.h"
-#include "thread.h"
 
-PLUGIN_THREAD_HEADER(BrightnessMain, BrightnessThread, BrightnessWindow)
+PLUGIN_THREAD_HEADER
 
 class BrightnessWindow : public BC_Window
 {
 public:
-	BrightnessWindow(BrightnessMain *client, int x, int y);
+	BrightnessWindow(BrightnessMain *plugin, int x, int y);
 	~BrightnessWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
-	BrightnessMain *client;
 	BrightnessSlider *brightness;
 	BrightnessSlider *contrast;
 	BrightnessLuma *luma;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class BrightnessSlider : public BC_FSlider

@@ -19,16 +19,13 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "brightnesswindow.h"
-#include "language.h"
+
+PLUGIN_THREAD_METHODS
 
 
-PLUGIN_THREAD_OBJECT(BrightnessMain, BrightnessThread, BrightnessWindow)
-
-
-BrightnessWindow::BrightnessWindow(BrightnessMain *client, int x, int y)
- : BC_Window(client->gui_string, x,
+BrightnessWindow::BrightnessWindow(BrightnessMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, x,
 	y,
 	330, 
 	160, 
@@ -36,49 +33,43 @@ BrightnessWindow::BrightnessWindow(BrightnessMain *client, int x, int y)
 	160, 
 	0, 
 	0)
-{ 
-	this->client = client; 
+{
+	x = 10;
+	y = 10;
+
+	add_tool(new BC_Title(x, y, _("Brightness/Contrast")));
+	y += 25;
+	add_tool(new BC_Title(x, y,_("Brightness:")));
+	add_tool(brightness = new BrightnessSlider(plugin,
+		&(plugin->config.brightness),
+		x + 80, 
+		y,
+		1));
+	y += 25;
+	add_tool(new BC_Title(x, y, _("Contrast:")));
+	add_tool(contrast = new BrightnessSlider(plugin,
+		&(plugin->config.contrast),
+		x + 80, 
+		y,
+		0));
+	y += 30;
+	add_tool(luma = new BrightnessLuma(plugin,
+		x, 
+		y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 BrightnessWindow::~BrightnessWindow()
 {
 }
 
-int BrightnessWindow::create_objects()
+void BrightnessWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
-	add_tool(new BC_Title(x, y, _("Brightness/Contrast")));
-	y += 25;
-	add_tool(new BC_Title(x, y,_("Brightness:")));
-	add_tool(brightness = new BrightnessSlider(client, 
-		&(client->config.brightness), 
-		x + 80, 
-		y,
-		1));
-	y += 25;
-	add_tool(new BC_Title(x, y, _("Contrast:")));
-	add_tool(contrast = new BrightnessSlider(client, 
-		&(client->config.contrast), 
-		x + 80, 
-		y,
-		0));
-	y += 30;
-	add_tool(luma = new BrightnessLuma(client, 
-		x, 
-		y));
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+	brightness->update(plugin->config.brightness);
+	contrast->update(plugin->config.contrast);
+	luma->update(plugin->config.luma);
 }
 
-void BrightnessWindow::close_event()
-{
-	set_done(1);
-}
 
 BrightnessSlider::BrightnessSlider(BrightnessMain *client, 
 	float *output, 

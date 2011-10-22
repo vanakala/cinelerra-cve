@@ -32,9 +32,7 @@
 
 #define SQR(a) ((a) * (a))
 
-REGISTER_PLUGIN(BrightnessMain)
-
-
+REGISTER_PLUGIN
 
 BrightnessConfig::BrightnessConfig()
 {
@@ -45,8 +43,8 @@ BrightnessConfig::BrightnessConfig()
 
 int BrightnessConfig::equivalent(BrightnessConfig &that)
 {
-	return (brightness == that.brightness && 
-		contrast == that.contrast &&
+	return (EQUIV(brightness, that.brightness) && 
+		EQUIV(contrast, that.contrast) &&
 		luma == that.luma);
 }
 
@@ -59,18 +57,16 @@ void BrightnessConfig::copy_from(BrightnessConfig &that)
 
 void BrightnessConfig::interpolate(BrightnessConfig &prev, 
 	BrightnessConfig &next, 
-	int64_t prev_frame, 
-	int64_t next_frame, 
-	int64_t current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->brightness = prev.brightness * prev_scale + next.brightness * next_scale;
 	this->contrast = prev.contrast * prev_scale + next.contrast * next_scale;
 	this->luma = (int)(prev.luma * prev_scale + next.luma * next_scale);
 }
-
 
 
 YUV BrightnessMain::yuv;
@@ -85,37 +81,24 @@ BrightnessMain::BrightnessMain(PluginServer *server)
 
 BrightnessMain::~BrightnessMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* BrightnessMain::plugin_title() { return N_("Brightness/Contrast"); }
-int BrightnessMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-NEW_PICON_MACRO(BrightnessMain)
-SHOW_GUI_MACRO(BrightnessMain, BrightnessThread)
-RAISE_WINDOW_MACRO(BrightnessMain)
-SET_STRING_MACRO(BrightnessMain)
-LOAD_CONFIGURATION_MACRO(BrightnessMain, BrightnessConfig)
 
-int BrightnessMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void BrightnessMain::process_frame(VFrame *frame)
 {
 	load_configuration();
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		get_use_opengl());
-
+	get_frame(frame, get_use_opengl());
 
 // Use hardware
 	if(get_use_opengl())
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	if(!engine) engine = new BrightnessEngine(this, PluginClient::smp + 1);
@@ -127,8 +110,6 @@ int BrightnessMain::process_buffer(VFrame *frame,
 	{
 		engine->process_packages();
 	}
-
-	return 0;
 }
 
 void BrightnessMain::handle_opengl()
@@ -250,31 +231,9 @@ void BrightnessMain::handle_opengl()
 #endif
 }
 
-
-void BrightnessMain::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("BrightnessMain::update_gui");
-			thread->window->brightness->update(config.brightness);
-			thread->window->contrast->update(config.contrast);
-			thread->window->luma->update(config.luma);
-			thread->window->unlock_window();
-		}
-	}
-}
-
 void BrightnessMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sbrightness.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("brightness.rc");
 
 	config.brightness = defaults->get("BRIGHTNESS", config.brightness);
 	config.contrast = defaults->get("CONTRAST", config.contrast);
@@ -315,18 +274,13 @@ void BrightnessMain::read_data(KeyFrame *keyframe)
 
 	int result = 0;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("BRIGHTNESS"))
 		{
-			if(input.tag.title_is("BRIGHTNESS"))
-			{
-				config.brightness = input.tag.get_property("BRIGHTNESS", config.brightness);
-				config.contrast = input.tag.get_property("CONTRAST", config.contrast);
-				config.luma = input.tag.get_property("LUMA", config.luma);
-			}
+			config.brightness = input.tag.get_property("BRIGHTNESS", config.brightness);
+			config.contrast = input.tag.get_property("CONTRAST", config.contrast);
+			config.luma = input.tag.get_property("LUMA", config.luma);
 		}
 	}
 }
@@ -533,7 +487,6 @@ void BrightnessUnit::process_package(LoadPackage *package)
 }
 
 
-
 #define DO_BRIGHTNESS_F(components) \
 { \
 	float **input_rows = (float**)input->get_rows(); \
@@ -614,7 +567,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 					input_row[j * components + 1] = g; \
 					input_row[j * components + 2] = b; \
  \
- 					if(components == 4)  \
+					if(components == 4)  \
 						output_row[j * components + 3] = input_row[j * components + 3]; \
 				} \
 			} \
@@ -634,7 +587,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 					output_row[j * components + 1] = g; \
 					output_row[j * components + 2] = b; \
  \
- 					if(components == 4)  \
+					if(components == 4)  \
 						output_row[j * components + 3] = input_row[j * components + 3]; \
 				} \
 			} \
@@ -697,7 +650,6 @@ BrightnessEngine::BrightnessEngine(BrightnessMain *plugin, int cpus)
 BrightnessEngine::~BrightnessEngine()
 {
 }
-
 
 void BrightnessEngine::init_packages()
 {
