@@ -321,7 +321,6 @@ void PLUGIN_THREAD_CLASS::run() \
 	int result = window->run_window(); \
 /* This is needed when the GUI is closed from itself */ \
 	if(result) plugin->client_side_close(); \
-	plugin->thread = 0; \
 }
 #endif // realtime
 
