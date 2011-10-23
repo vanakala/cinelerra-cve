@@ -203,12 +203,16 @@ int PLUGIN_CLASS::load_configuration() \
  \
 	ptstime next_pts = next_keyframe->pos_time; \
 	ptstime prev_pts = prev_keyframe->pos_time; \
-  \
+ \
 	PLUGIN_CONFIG_CLASS old_config, prev_config, next_config; \
 	old_config.copy_from(config); \
 	read_data(prev_keyframe); \
 	if(PTSEQU(next_pts, prev_pts)) \
+	{ \
+		if(!config.equivalent(old_config)) \
+			return 1; \
 		return 0; \
+	} \
 	prev_config.copy_from(config); \
 	read_data(next_keyframe); \
 	next_config.copy_from(config); \
