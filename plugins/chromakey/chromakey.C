@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "chromakey.h"
 #include "clip.h"
@@ -27,7 +26,6 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
-#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "playback3d.h"
@@ -39,9 +37,6 @@
 #include <string.h>
 
 
-
-
-
 ChromaKeyConfig::ChromaKeyConfig()
 {
 	red = 0.0;
@@ -51,7 +46,6 @@ ChromaKeyConfig::ChromaKeyConfig()
 	use_value = 0;
 	slope = 100;
 }
-
 
 void ChromaKeyConfig::copy_from(ChromaKeyConfig &src)
 {
@@ -75,12 +69,11 @@ int ChromaKeyConfig::equivalent(ChromaKeyConfig &src)
 
 void ChromaKeyConfig::interpolate(ChromaKeyConfig &prev, 
 	ChromaKeyConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->red = prev.red * prev_scale + next.red * next_scale;
 	this->green = prev.green * prev_scale + next.green * next_scale;
@@ -111,21 +104,12 @@ ChromaKeyWindow::ChromaKeyWindow(ChromaKey *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-	color_thread = 0;
-}
-
-ChromaKeyWindow::~ChromaKeyWindow()
-{
-	delete color_thread;
-}
-
-void ChromaKeyWindow::create_objects()
-{
-	int x = 10, y = 10, x1 = 100;
 	BC_Title *title;
+	int x1 = 100;
 
-	set_icon(new VFrame(picon_png));
+	x = 10;
+	y = 10;
+
 	add_subwindow(title = new BC_Title(x, y, _("Color:")));
 	x += title->get_w() + 10;
 	add_subwindow(color = new ChromaKeyColor(plugin, this, x, y));
@@ -149,9 +133,13 @@ void ChromaKeyWindow::create_objects()
 
 	color_thread = new ChromaKeyColorThread(plugin, this);
 
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_sample();
-	show_window();
-	flush();
+}
+
+ChromaKeyWindow::~ChromaKeyWindow()
+{
+	delete color_thread;
 }
 
 void ChromaKeyWindow::update_sample()
@@ -169,10 +157,13 @@ void ChromaKeyWindow::update_sample()
 	sample->flash();
 }
 
-
-
-WINDOW_CLOSE_EVENT(ChromaKeyWindow)
-
+void ChromaKeyWindow::update()
+{
+	threshold->update(plugin->config.threshold);
+	slope->update(plugin->config.slope);
+	use_value->update(plugin->config.use_value);
+	update_sample();
+}
 
 
 ChromaKeyColor::ChromaKeyColor(ChromaKey *plugin, 
@@ -186,6 +177,7 @@ ChromaKeyColor::ChromaKeyColor(ChromaKey *plugin,
 	this->plugin = plugin;
 	this->gui = gui;
 }
+
 int ChromaKeyColor::handle_event()
 {
 	gui->color_thread->start_window(
@@ -292,7 +284,7 @@ int ChromaKeyColorThread::handle_new_color(int output, int alpha)
 }
 
 
-PLUGIN_THREAD_OBJECT(ChromaKey, ChromaKeyThread, ChromaKeyWindow)
+PLUGIN_THREAD_METHODS
 
 
 ChromaKeyServer::ChromaKeyServer(ChromaKey *plugin)
@@ -477,7 +469,6 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	} \
 }
 
-
 	switch(plugin->input->get_color_model())
 	{
 	case BC_RGB_FLOAT:
@@ -505,76 +496,54 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 		CHROMAKEY(uint16_t, 4, 0xffff, 1);
 		break;
 	}
-
 }
 
 
-REGISTER_PLUGIN(ChromaKey)
-
-
+REGISTER_PLUGIN
 
 ChromaKey::ChromaKey(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ChromaKey::~ChromaKey()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
 
-int ChromaKey::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void ChromaKey::process_frame(VFrame *frame)
 {
 	load_configuration();
 	this->input = frame;
 	this->output = frame;
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 	if(EQUIV(config.threshold, 0))
 	{
-		return 1;
+		return;
 	}
 	else
 	{
 		if(get_use_opengl()){
 			run_opengl();
-			return 1;
+			return;
 		}
 
 		if(!engine) engine = new ChromaKeyServer(this);
 		engine->process_packages();
 	}
-
-	return 1;
 }
 
-const char* ChromaKey::plugin_title() { return N_("Chroma key"); }
-int ChromaKey::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(ChromaKey)
-
-LOAD_CONFIGURATION_MACRO(ChromaKey, ChromaKeyConfig)
+PLUGIN_CLASS_METHODS
 
 void ChromaKey::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%schromakey.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("chromakey.rc");
 
 	config.red = defaults->get("RED", config.red);
 	config.green = defaults->get("GREEN", config.green);
@@ -629,28 +598,6 @@ void ChromaKey::read_data(KeyFrame *keyframe)
 			config.slope = input.tag.get_property("SLOPE", config.slope);
 			config.use_value = input.tag.get_property("USE_VALUE", config.use_value);
 		}
-	}
-}
-
-
-SHOW_GUI_MACRO(ChromaKey, ChromaKeyThread)
-
-SET_STRING_MACRO(ChromaKey)
-
-RAISE_WINDOW_MACRO(ChromaKey)
-
-void ChromaKey::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->threshold->update(config.threshold);
-		thread->window->slope->update(config.slope);
-		thread->window->use_value->update(config.use_value);
-		thread->window->update_sample();
-
-		thread->window->unlock_window();
 	}
 }
 

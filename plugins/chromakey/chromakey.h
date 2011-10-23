@@ -22,15 +22,23 @@
 #ifndef CHROMAKEY_H
 #define CHROMAKEY_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Chroma key")
+#define PLUGIN_CLASS ChromaKey
+#define PLUGIN_CONFIG_CLASS ChromaKeyConfig
+#define PLUGIN_THREAD_CLASS ChromaKeyThread
+#define PLUGIN_GUI_CLASS ChromaKeyWindow
+
+#include "pluginmacros.h"
+
 #include "colorpicker.h"
 #include "guicast.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
 
-
-class ChromaKey;
-class ChromaKey;
-class ChromaKeyWindow;
 
 class ChromaKeyConfig
 {
@@ -41,9 +49,9 @@ public:
 	int equivalent(ChromaKeyConfig &src);
 	void interpolate(ChromaKeyConfig &prev, 
 		ChromaKeyConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	int get_color();
 
 	float red;
@@ -52,6 +60,7 @@ public:
 	float threshold;
 	float slope;
 	int use_value;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class ChromaKeyColor : public BC_GenericButton
@@ -118,8 +127,7 @@ public:
 	ChromaKeyWindow(ChromaKey *plugin, int x, int y);
 	~ChromaKeyWindow();
 
-	void create_objects();
-	void close_event();
+	void update();
 	void update_sample();
 
 	ChromaKeyColor *color;
@@ -128,11 +136,11 @@ public:
 	ChromaKeyUseColorPicker *use_colorpicker;
 	ChromaKeySlope *slope;
 	BC_SubWindow *sample;
-	ChromaKey *plugin;
 	ChromaKeyColorThread *color_thread;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(ChromaKey, ChromaKeyThread, ChromaKeyWindow)
+PLUGIN_THREAD_HEADER
 
 class ChromaKeyServer : public LoadServer
 {
@@ -166,18 +174,15 @@ public:
 	ChromaKey(PluginServer *server);
 	~ChromaKey();
 
-	PLUGIN_CLASS_MEMBERS(ChromaKeyConfig, ChromaKeyThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
+	void process_frame(VFrame *frame);
+
 	void handle_opengl();
-	int is_realtime();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
 	VFrame *input, *output;
 	ChromaKeyServer *engine;
