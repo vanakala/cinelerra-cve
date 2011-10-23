@@ -19,19 +19,13 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "colorbalancewindow.h"
-#include "language.h"
+
+PLUGIN_THREAD_METHODS
 
 
-
-
-
-PLUGIN_THREAD_OBJECT(ColorBalanceMain, ColorBalanceThread, ColorBalanceWindow)
-
-
-ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *client, int x, int y)
- : BC_Window(client->gui_string, x,
+ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, x,
 	y,
 	330, 
 	250, 
@@ -39,56 +33,48 @@ ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *client, int x, int y)
 	250, 
 	0, 
 	0)
-{ 
-	this->client = client; 
+{
+	x = 10;
+	y = 10;
+
+	add_tool(new BC_Title(x, y, _("Color Balance")));
+	y += 25;
+	add_tool(new BC_Title(x, y, _("Cyan")));
+	add_tool(cyan = new ColorBalanceSlider(plugin, &(plugin->config.cyan), x + 70, y));
+	add_tool(new BC_Title(x + 270, y, _("Red")));
+	y += 25;
+	add_tool(new BC_Title(x, y, _("Magenta")));
+	add_tool(magenta = new ColorBalanceSlider(plugin, &(plugin->config.magenta), x + 70, y));
+	add_tool(new BC_Title(x + 270, y, _("Green")));
+	y += 25;
+	add_tool(new BC_Title(x, y, _("Yellow")));
+	add_tool(yellow = new ColorBalanceSlider(plugin, &(plugin->config.yellow), x + 70, y));
+	add_tool(new BC_Title(x + 270, y, _("Blue")));
+	y += 25;
+	add_tool(preserve = new ColorBalancePreserve(plugin, x + 70, y));
+	y += preserve->get_h() + 10;
+	add_tool(lock_params = new ColorBalanceLock(plugin, x + 70, y));
+	y += lock_params->get_h() + 10;
+	add_tool(new ColorBalanceWhite(plugin, this, x, y));
+	y += lock_params->get_h() + 10;
+	add_tool(new ColorBalanceReset(plugin, this, x, y));
+
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 ColorBalanceWindow::~ColorBalanceWindow()
 {
 }
 
-int ColorBalanceWindow::create_objects()
-{
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-	set_icon(ico);
-
-	add_tool(new BC_Title(x, y, _("Color Balance")));
-	y += 25;
-	add_tool(new BC_Title(x, y, _("Cyan")));
-	add_tool(cyan = new ColorBalanceSlider(client, &(client->config.cyan), x + 70, y));
-	add_tool(new BC_Title(x + 270, y, _("Red")));
-	y += 25;
-	add_tool(new BC_Title(x, y, _("Magenta")));
-	add_tool(magenta = new ColorBalanceSlider(client, &(client->config.magenta), x + 70, y));
-	add_tool(new BC_Title(x + 270, y, _("Green")));
-	y += 25;
-	add_tool(new BC_Title(x, y, _("Yellow")));
-	add_tool(yellow = new ColorBalanceSlider(client, &(client->config.yellow), x + 70, y));
-	add_tool(new BC_Title(x + 270, y, _("Blue")));
-	y += 25;
-	add_tool(preserve = new ColorBalancePreserve(client, x + 70, y));
-	y += preserve->get_h() + 10;
-	add_tool(lock_params = new ColorBalanceLock(client, x + 70, y));
-	y += lock_params->get_h() + 10;
-	add_tool(new ColorBalanceWhite(client, this, x, y));
-	y += lock_params->get_h() + 10;
-	add_tool(new ColorBalanceReset(client, this, x, y));
-
-	show_window();
-	flush();
-	delete ico;
-	return 0;
-}
-
 void ColorBalanceWindow::update()
 {
-	cyan->update((int64_t)client->config.cyan);
-	magenta->update((int64_t)client->config.magenta);
-	yellow->update((int64_t)client->config.yellow);
+	cyan->update(plugin->config.cyan);
+	magenta->update(plugin->config.magenta);
+	yellow->update(plugin->config.yellow);
+	preserve->update(plugin->config.preserve);
+	lock_params->update(plugin->config.lock_params);
 }
 
-WINDOW_CLOSE_EVENT(ColorBalanceWindow)
 
 ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client, 
 	float *output, int x, int y)
@@ -155,6 +141,7 @@ ColorBalanceLock::ColorBalanceLock(ColorBalanceMain *client, int x, int y)
 {
 	this->client = client;
 }
+
 ColorBalanceLock::~ColorBalanceLock()
 {
 }

@@ -19,10 +19,10 @@
  * 
  */
 
+#include "clip.h"
 #include "filexml.h"
 #include "colorbalance.h"
 #include "bchash.h"
-#include "language.h"
 #include "picon_png.h"
 #include "playback3d.h"
 
@@ -37,9 +37,8 @@
 #define MAX_COLOR 1.0
 #define SQR(a) ((a) * (a))
 
-REGISTER_PLUGIN(ColorBalanceMain)
 
-
+REGISTER_PLUGIN
 
 ColorBalanceConfig::ColorBalanceConfig()
 {
@@ -52,9 +51,9 @@ ColorBalanceConfig::ColorBalanceConfig()
 
 int ColorBalanceConfig::equivalent(ColorBalanceConfig &that)
 {
-	return (cyan == that.cyan && 
-		magenta == that.magenta && 
-		yellow == that.yellow && 
+	return (EQUIV(cyan, that.cyan) &&
+		EQUIV(magenta, that.magenta) &&
+		EQUIV(yellow, that.yellow) && 
 		lock_params == that.lock_params && 
 		preserve == that.preserve);
 }
@@ -70,12 +69,11 @@ void ColorBalanceConfig::copy_from(ColorBalanceConfig &that)
 
 void ColorBalanceConfig::interpolate(ColorBalanceConfig &prev, 
 	ColorBalanceConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->cyan = prev.cyan * prev_scale + next.cyan * next_scale;
 	this->magenta = prev.magenta * prev_scale + next.magenta * next_scale;
@@ -83,7 +81,6 @@ void ColorBalanceConfig::interpolate(ColorBalanceConfig &prev,
 	this->preserve = prev.preserve;
 	this->lock_params = prev.lock_params;
 }
-
 
 
 ColorBalanceEngine::ColorBalanceEngine(ColorBalanceMain *plugin)
@@ -101,22 +98,18 @@ ColorBalanceEngine::~ColorBalanceEngine()
 	Thread::join();
 }
 
-
-int ColorBalanceEngine::start_process_frame(VFrame *output, VFrame *input, int row_start, int row_end)
+void ColorBalanceEngine::start_process_frame(VFrame *output, VFrame *input, int row_start, int row_end)
 {
 	this->output = output;
 	this->input = input;
 	this->row_start = row_start;
 	this->row_end = row_end;
 	input_lock.unlock();
-	return 0;
 }
 
-
-int ColorBalanceEngine::wait_process_frame()
+void ColorBalanceEngine::wait_process_frame()
 {
 	output_lock.lock("ColorBalanceEngine::wait_process_frame");
-	return 0;
 }
 
 void ColorBalanceEngine::run()
@@ -338,8 +331,6 @@ void ColorBalanceEngine::run()
 }
 
 
-
-
 ColorBalanceMain::ColorBalanceMain(PluginServer *server)
  : PluginVClient(server)
 {
@@ -350,8 +341,6 @@ ColorBalanceMain::ColorBalanceMain(PluginServer *server)
 
 ColorBalanceMain::~ColorBalanceMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(engine)
 	{
 		for(int i = 0; i < total_engines; i++)
@@ -360,13 +349,12 @@ ColorBalanceMain::~ColorBalanceMain()
 		}
 		delete [] engine;
 	}
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* ColorBalanceMain::plugin_title() { return N_("Color Balance"); }
-int ColorBalanceMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-
-int ColorBalanceMain::reconfigure()
+void ColorBalanceMain::reconfigure()
 {
 	int r_n, g_n, b_n;
 	float r_scale = calculate_transfer(config.cyan);
@@ -384,20 +372,18 @@ int ColorBalanceMain::reconfigure()
 
 	RECONFIGURE(r_lookup_8, g_lookup_8, b_lookup_8, 0xff);
 	RECONFIGURE(r_lookup_16, g_lookup_16, b_lookup_16, 0xffff);
-
-	return 0;
 }
 
-int64_t ColorBalanceMain::calculate_slider(float in)
+float ColorBalanceMain::calculate_slider(float in)
 {
 	if(in < 1.0)
 	{
-		return (int64_t)(in * 1000 - 1000.0);
+		return (in * 1000 - 1000.0);
 	}
 	else
 	if(in > 1.0)
 	{
-		return (int64_t)(1000 * (in - 1.0) / MAX_COLOR);
+		return (1000 * (in - 1.0) / MAX_COLOR);
 	}
 	else
 		return 0;
@@ -419,15 +405,13 @@ float ColorBalanceMain::calculate_transfer(float in)
 }
 
 
-int ColorBalanceMain::test_boundary(float &value)
+void ColorBalanceMain::test_boundary(float &value)
 {
-
 	if(value < -1000) value = -1000;
 	if(value > 1000) value = 1000;
-	return 0;
 }
 
-int ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float difference)
+void ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float difference)
 {
 	if(thread && config.lock_params)
 	{
@@ -435,36 +419,24 @@ int ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float diffe
 		{
 			config.cyan += difference;
 			test_boundary(config.cyan);
-			thread->window->cyan->update((int64_t)config.cyan);
+			thread->window->cyan->update(config.cyan);
 		}
 		if(slider != thread->window->magenta)
 		{
 			config.magenta += difference;
 			test_boundary(config.magenta);
-			thread->window->magenta->update((int64_t)config.magenta);
+			thread->window->magenta->update(config.magenta);
 		}
 		if(slider != thread->window->yellow)
 		{
 			config.yellow += difference;
 			test_boundary(config.yellow);
-			thread->window->yellow->update((int64_t)config.yellow);
+			thread->window->yellow->update(config.yellow);
 		}
 	}
-	return 0;
 }
 
-
-
-NEW_PICON_MACRO(ColorBalanceMain)
-LOAD_CONFIGURATION_MACRO(ColorBalanceMain, ColorBalanceConfig)
-SHOW_GUI_MACRO(ColorBalanceMain, ColorBalanceThread)
-RAISE_WINDOW_MACRO(ColorBalanceMain)
-SET_STRING_MACRO(ColorBalanceMain)
-
-
-int ColorBalanceMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void ColorBalanceMain::process_frame(VFrame *frame)
 {
 	need_reconfigure |= load_configuration();
 
@@ -492,12 +464,7 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 	frame->get_params()->update("COLORBALANCE_MAGENTA", calculate_transfer(config.magenta));
 	frame->get_params()->update("COLORBALANCE_YELLOW", calculate_transfer(config.yellow));
 
-
-	read_frame(frame,
-		0,
-		get_source_position(),
-		get_framerate(),
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 	int aggregate_interpolate = 0;
 	int aggregate_gamma = 0;
@@ -514,9 +481,9 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 		if(get_use_opengl())
 		{
 // Aggregate
-			if(next_effect_is("Histogram")) return 0;
+			if(next_effect_is("Histogram")) return;
 			run_opengl();
-			return 0;
+			return;
 		}
 
 		for(int i = 0; i < total_engines; i++)
@@ -532,37 +499,11 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 			engine[i]->wait_process_frame();
 		}
 	}
-
-	return 0;
 }
-
-
-void ColorBalanceMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window("ColorBalanceMain::update_gui");
-		thread->window->cyan->update((int64_t)config.cyan);
-		thread->window->magenta->update((int64_t)config.magenta);
-		thread->window->yellow->update((int64_t)config.yellow);
-		thread->window->preserve->update(config.preserve);
-		thread->window->lock_params->update(config.lock_params);
-		thread->window->unlock_window();
-	}
-}
-
-
 
 void ColorBalanceMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%scolorbalance.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("colorbalance.rc");
 
 	config.cyan = defaults->get("CYAN", config.cyan);
 	config.magenta = defaults->get("MAGENTA", config.magenta);
@@ -605,22 +546,15 @@ void ColorBalanceMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("COLORBALANCE"))
 		{
-			if(input.tag.title_is("COLORBALANCE"))
-			{
-				config.cyan = input.tag.get_property("CYAN", config.cyan);
-				config.magenta = input.tag.get_property("MAGENTA", config.magenta);
-				config.yellow = input.tag.get_property("YELLOW", config.yellow);
-				config.preserve = input.tag.get_property("PRESERVELUMINOSITY", config.preserve);
-				config.lock_params = input.tag.get_property("LOCKPARAMS", config.lock_params);
-			}
+			config.cyan = input.tag.get_property("CYAN", config.cyan);
+			config.magenta = input.tag.get_property("MAGENTA", config.magenta);
+			config.yellow = input.tag.get_property("YELLOW", config.yellow);
+			config.preserve = input.tag.get_property("PRESERVELUMINOSITY", config.preserve);
+			config.lock_params = input.tag.get_property("LOCKPARAMS", config.lock_params);
 		}
 	}
 }

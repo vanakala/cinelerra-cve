@@ -22,13 +22,23 @@
 #ifndef COLORBALANCE_H
 #define COLORBALANCE_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE  N_("Color Balance")
+#define PLUGIN_CLASS ColorBalanceMain
+#define PLUGIN_CONFIG_CLASS ColorBalanceConfig
+#define PLUGIN_THREAD_CLASS ColorBalanceThread
+#define PLUGIN_GUI_CLASS ColorBalanceWindow
+
+#include "pluginmacros.h"
+
 class ColorBalanceMain;
 
 #include "colorbalancewindow.h"
-#include "condition.h"
 #include "plugincolors.h"
-#include "guicast.h"
 #include "pluginvclient.h"
+#include "language.h"
 #include "thread.h"
 
 #define SHADOWS 0
@@ -44,9 +54,9 @@ public:
 	void copy_from(ColorBalanceConfig &that);
 	void interpolate(ColorBalanceConfig &prev, 
 		ColorBalanceConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 // -1000 - 1000
 	float cyan;
@@ -62,8 +72,8 @@ public:
 	ColorBalanceEngine(ColorBalanceMain *plugin);
 	~ColorBalanceEngine();
 
-	int start_process_frame(VFrame *output, VFrame *input, int row_start, int row_end);
-	int wait_process_frame();
+	void start_process_frame(VFrame *output, VFrame *input, int row_start, int row_end);
+	void wait_process_frame();
 	void run();
 
 	ColorBalanceMain *plugin;
@@ -81,13 +91,9 @@ public:
 	ColorBalanceMain(PluginServer *server);
 	~ColorBalanceMain();
 
-	PLUGIN_CLASS_MEMBERS(ColorBalanceConfig, ColorBalanceThread)
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
-	void update_gui();
+	void process_frame(VFrame *frame);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -97,13 +103,13 @@ public:
 	void get_aggregation(int *aggregate_interpolate,
 		int *aggregate_gamma);
 
-	int64_t calculate_slider(float in);
+	float calculate_slider(float in);
 	float calculate_transfer(float in);
 
 // parameters needed for processor
-	int reconfigure();
-	int synchronize_params(ColorBalanceSlider *slider, float difference);
-	int test_boundary(float &value);
+	void reconfigure();
+	void synchronize_params(ColorBalanceSlider *slider, float difference);
+	void test_boundary(float &value);
 
 	ColorBalanceEngine **engine;
 	int total_engines;

@@ -23,8 +23,6 @@
 #define COLORBALANCEWINDOW_H
 
 
-class ColorBalanceThread;
-class ColorBalanceWindow;
 class ColorBalanceSlider;
 class ColorBalancePreserve;
 class ColorBalanceLock;
@@ -38,19 +36,16 @@ class ColorBalanceReset;
 #include "pluginclient.h"
 
 
-PLUGIN_THREAD_HEADER(ColorBalanceMain, ColorBalanceThread, ColorBalanceWindow)
+PLUGIN_THREAD_HEADER
 
 class ColorBalanceWindow : public BC_Window
 {
 public:
-	ColorBalanceWindow(ColorBalanceMain *client, int x, int y);
+	ColorBalanceWindow(ColorBalanceMain *plugin, int x, int y);
 	~ColorBalanceWindow();
 
-	int create_objects();
-	void close_event();
 	void update();
 
-	ColorBalanceMain *client;
 	ColorBalanceSlider *cyan;
 	ColorBalanceSlider *magenta;
 	ColorBalanceSlider *yellow;
@@ -58,6 +53,7 @@ public:
 	ColorBalancePreserve *preserve;
 	ColorBalanceWhite *use_eyedrop;
 	ColorBalanceReset *reset;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class ColorBalanceSlider : public BC_ISlider
