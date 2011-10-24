@@ -22,18 +22,22 @@
 #ifndef CHROMAKEY_H
 #define CHROMAKEY_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
 
+#define PLUGIN_TITLE N_("Chroma key (HSV)")
+#define PLUGIN_CLASS ChromaKeyHSV
+#define PLUGIN_CONFIG_CLASS ChromaKeyConfig
+#define PLUGIN_THREAD_CLASS ChromaKeyThread
+#define PLUGIN_GUI_CLASS ChromaKeyWindow
 
+#include "pluginmacros.h"
 
 #include "colorpicker.h"
 #include "guicast.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
-
-
-class ChromaKeyHSV;
-class ChromaKeyHSV;
-class ChromaKeyWindow;
 
 enum {
 	CHROMAKEY_POSTPROCESS_NONE,
@@ -50,9 +54,9 @@ public:
 	int equivalent(ChromaKeyConfig &src);
 	void interpolate(ChromaKeyConfig &prev, 
 		ChromaKeyConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	int get_color();
 
 	// Output mode
@@ -74,6 +78,7 @@ public:
 	// Spill light compensation
 	float spill_threshold;
 	float spill_amount;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class ChromaKeyColor : public BC_GenericButton
@@ -206,8 +211,7 @@ public:
 	ChromaKeyWindow(ChromaKeyHSV *plugin, int x, int y);
 	~ChromaKeyWindow();
 
-	void create_objects();
-	void close_event();
+	void update();
 	void update_sample();
 
 	ChromaKeyColor *color;
@@ -224,14 +228,11 @@ public:
 	ChromaKeySpillAmount *spill_amount;
 	ChromaKeyShowMask *show_mask;
 	BC_SubWindow *sample;
-	ChromaKeyHSV *plugin;
 	ChromaKeyColorThread *color_thread;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-
-
-PLUGIN_THREAD_HEADER(ChromaKeyHSV, ChromaKeyThread, ChromaKeyWindow)
-
+PLUGIN_THREAD_HEADER
 
 class ChromaKeyServer : public LoadServer
 {
@@ -262,25 +263,21 @@ public:
 
 };
 
-
 class ChromaKeyHSV : public PluginVClient
 {
 public:
 	ChromaKeyHSV(PluginServer *server);
 	~ChromaKeyHSV();
 
-	PLUGIN_CLASS_MEMBERS(ChromaKeyConfig, ChromaKeyThread)
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
+	void process_frame(VFrame *frame);
+
 	void handle_opengl();
-	int is_realtime();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
 	VFrame *input, *output;
 	ChromaKeyServer *engine;

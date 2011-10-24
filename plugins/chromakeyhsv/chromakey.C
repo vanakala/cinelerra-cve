@@ -27,7 +27,6 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
-#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "playback3d.h"
@@ -38,7 +37,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-
 
 
 ChromaKeyConfig::ChromaKeyConfig()
@@ -102,13 +100,10 @@ int ChromaKeyConfig::equivalent(ChromaKeyConfig & src)
 
 void ChromaKeyConfig::interpolate(ChromaKeyConfig & prev,
 			ChromaKeyConfig & next,
-			posnum prev_frame,
-			posnum next_frame, posnum current_frame)
+			ptstime prev_pts,
+			ptstime next_pts, ptstime current_pts)
 {
-	double next_scale =
-		(double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale =
-		(double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->red = prev.red * prev_scale + next.red * next_scale;
 	this->green = prev.green * prev_scale + next.green * next_scale;
@@ -142,7 +137,6 @@ int ChromaKeyConfig::get_color()
 }
 
 
-
 ChromaKeyWindow::ChromaKeyWindow(ChromaKeyHSV * plugin, int x, int y)
  : BC_Window(plugin->gui_string,
 	x,
@@ -155,26 +149,14 @@ ChromaKeyWindow::ChromaKeyWindow(ChromaKeyHSV * plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-	color_thread = 0;
-}
-
-ChromaKeyWindow::~ChromaKeyWindow()
-{
-	delete color_thread;
-}
-
-void ChromaKeyWindow::create_objects()
-{
-	int y = 10, y1, x1 = 0, x2 = 10;
-	int x = 30;
+	int y1, x1 = 0, x2 = 10;
+	x = 30;
+	y = 10;
 
 	BC_Title *title;
 	BC_Bar *bar;
 	int ymargin = get_text_height(MEDIUMFONT) + 5;
 	int ymargin2 = get_text_height(MEDIUMFONT) + 10;
-
-	set_icon(new VFrame(picon_png));
 
 	add_subwindow(title = new BC_Title(x2, y, _("Color:")));
 
@@ -278,9 +260,29 @@ void ChromaKeyWindow::create_objects()
 
 	color_thread = new ChromaKeyColorThread(plugin, this);
 
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_sample();
-	show_window();
-	flush();
+}
+
+ChromaKeyWindow::~ChromaKeyWindow()
+{
+	delete color_thread;
+}
+
+void ChromaKeyWindow::update()
+{
+	min_brightness->update(plugin->config.min_brightness);
+	max_brightness->update(plugin->config.max_brightness);
+	saturation->update(plugin->config.saturation);
+	min_saturation->update(plugin->config.min_saturation);
+	tolerance->update(plugin->config.tolerance);
+	in_slope->update(plugin->config.in_slope);
+	out_slope->update(plugin->config.out_slope);
+	alpha_offset->update(plugin->config.alpha_offset);
+	spill_threshold->update(plugin->config.spill_threshold);
+	spill_amount->update(plugin->config.spill_amount);
+	show_mask->update(plugin->config.show_mask);
+	update_sample();
 }
 
 void ChromaKeyWindow::update_sample()
@@ -293,9 +295,6 @@ void ChromaKeyWindow::update_sample()
 }
 
 
-
-WINDOW_CLOSE_EVENT(ChromaKeyWindow)
-
 ChromaKeyColor::ChromaKeyColor(ChromaKeyHSV * plugin,
 				ChromaKeyWindow * gui, int x, int y)
  : BC_GenericButton(x, y, _("Color..."))
@@ -304,14 +303,11 @@ ChromaKeyColor::ChromaKeyColor(ChromaKeyHSV * plugin,
 	this->gui = gui;
 }
 
-int
-ChromaKeyColor::handle_event()
+int ChromaKeyColor::handle_event()
 {
 	gui->color_thread->start_window(plugin->config.get_color(), 0xff);
 	return 1;
 }
-
-
 
 
 ChromaKeyMinBrightness::ChromaKeyMinBrightness(ChromaKeyHSV * plugin, int x, int y)
@@ -400,7 +396,6 @@ int ChromaKeyTolerance::handle_event()
 }
 
 
-
 ChromaKeyInSlope::ChromaKeyInSlope(ChromaKeyHSV * plugin, int x, int y)
 : BC_FSlider(x,
 	y,
@@ -483,7 +478,6 @@ int ChromaKeyUseColorPicker::handle_event()
 }
 
 
-
 ChromaKeySpillThreshold::ChromaKeySpillThreshold(ChromaKeyHSV * plugin, int x, int y)
 : BC_FSlider(x,
 	y,
@@ -536,9 +530,7 @@ int ChromaKeyColorThread::handle_new_color(int output, int alpha)
 	return 1;
 }
 
-
-
-PLUGIN_THREAD_OBJECT(ChromaKeyHSV, ChromaKeyThread, ChromaKeyWindow) 
+PLUGIN_THREAD_METHODS
 
 ChromaKeyServer::ChromaKeyServer(ChromaKeyHSV * plugin)
  : LoadServer(plugin->PluginClient::smp + 1,
@@ -568,7 +560,6 @@ LoadPackage* ChromaKeyServer::new_package()
 }
 
 
-
 ChromaKeyPackage::ChromaKeyPackage()
  : LoadPackage()
 {
@@ -579,8 +570,6 @@ ChromaKeyUnit::ChromaKeyUnit(ChromaKeyHSV* plugin, ChromaKeyServer* server)
 {
   this->plugin = plugin;
 }
-
-
 
 
 #define ABS(a) ((a<0)?-(a):a)
@@ -808,12 +797,9 @@ void ChromaKeyUnit::process_chromakey(int components,
 }
 
 
-
-
 void ChromaKeyUnit::process_package(LoadPackage *package)
 {
 	ChromaKeyPackage *pkg = (ChromaKeyPackage*)package;
-
 
 	switch(plugin->input->get_color_model())
 	{
@@ -845,64 +831,44 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 }
 
 
-REGISTER_PLUGIN(ChromaKeyHSV)
+REGISTER_PLUGIN
 
 
 ChromaKeyHSV::ChromaKeyHSV(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ChromaKeyHSV::~ChromaKeyHSV()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-
-int ChromaKeyHSV::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void ChromaKeyHSV::process_frame(VFrame *frame)
 {
 	load_configuration();
 	this->input = frame;
 	this->output = frame;
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 	if(get_use_opengl()){
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	if(!engine) engine = new ChromaKeyServer(this);
 	engine->process_packages();
-
-	return 0;
 }
 
-const char* ChromaKeyHSV::plugin_title() { return N_("Chroma key (HSV)"); }
-int ChromaKeyHSV::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(ChromaKeyHSV)
-
-LOAD_CONFIGURATION_MACRO(ChromaKeyHSV, ChromaKeyConfig)
+PLUGIN_CLASS_METHODS
 
 void ChromaKeyHSV::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%schromakey-hsv.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("chromakey-hsv.rc");
 
 	config.red = defaults->get("RED", config.red);
 	config.green = defaults->get("GREEN", config.green);
@@ -1006,36 +972,6 @@ void ChromaKeyHSV::read_data(KeyFrame * keyframe)
 		}
 	}
 }
-
-
-SHOW_GUI_MACRO(ChromaKeyHSV, ChromaKeyThread)
-
-SET_STRING_MACRO(ChromaKeyHSV)
-
-RAISE_WINDOW_MACRO(ChromaKeyHSV)
-
-void ChromaKeyHSV::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->min_brightness->update(config.min_brightness);
-		thread->window->max_brightness->update(config.max_brightness);
-		thread->window->saturation->update(config.saturation);
-		thread->window->min_saturation->update(config.min_saturation);
-		thread->window->tolerance->update(config.tolerance);
-		thread->window->in_slope->update(config.in_slope);
-		thread->window->out_slope->update(config.out_slope);
-		thread->window->alpha_offset->update(config.alpha_offset);
-		thread->window->spill_threshold->update(config.spill_threshold);
-		thread->window->spill_amount->update(config.spill_amount);
-		thread->window->show_mask->update(config.show_mask);
-		thread->window->update_sample();
-	}
-}
-
-
-
 
 void ChromaKeyHSV::handle_opengl()
 {
@@ -1193,4 +1129,3 @@ void ChromaKeyHSV::handle_opengl()
 
 #endif
 }
-
