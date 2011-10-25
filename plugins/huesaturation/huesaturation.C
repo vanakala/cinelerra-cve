@@ -19,7 +19,17 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Hue saturation")
+#define PLUGIN_CLASS HueEffect
+#define PLUGIN_CONFIG_CLASS HueConfig
+#define PLUGIN_THREAD_CLASS HueThread
+#define PLUGIN_GUI_CLASS HueWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -34,9 +44,6 @@
 
 #include <stdint.h>
 #include <string.h>
-
-
-class HueEffect;
 
 #define MINHUE -180
 #define MAXHUE 180
@@ -55,10 +62,11 @@ public:
 	int equivalent(HueConfig &src);
 	void interpolate(HueConfig &prev, 
 		HueConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	float hue, saturation, value;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class HueSlider : public BC_FSlider
@@ -93,15 +101,16 @@ class HueWindow : public BC_Window
 {
 public:
 	HueWindow(HueEffect *plugin, int x, int y);
-	void create_objects();
-	void close_event();
-	HueEffect *plugin;
+
+	void update();
+
 	HueSlider *hue;
 	SaturationSlider *saturation;
 	ValueSlider *value;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(HueEffect, HueThread, HueWindow)
+PLUGIN_THREAD_HEADER
 
 class HueEngine : public LoadServer
 {
@@ -135,17 +144,13 @@ public:
 	HueEffect(PluginServer *server);
 	~HueEffect();
 
-	PLUGIN_CLASS_MEMBERS(HueConfig, HueThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void handle_opengl();
 
 	VFrame *input, *output;
@@ -174,12 +179,11 @@ int HueConfig::equivalent(HueConfig &src)
 
 void HueConfig::interpolate(HueConfig &prev, 
 	HueConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->hue = prev.hue * prev_scale + next.hue * next_scale;
 	this->saturation = prev.saturation * prev_scale + next.saturation * next_scale;
@@ -198,6 +202,7 @@ HueSlider::HueSlider(HueEffect *plugin, int x, int y, int w)
 {
 	this->plugin = plugin;
 }
+
 int HueSlider::handle_event()
 {
 	plugin->config.hue = get_value();
@@ -261,6 +266,7 @@ char* ValueSlider::get_caption()
 	return string;
 }
 
+PLUGIN_THREAD_METHODS
 
 HueWindow::HueWindow(HueEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -274,14 +280,8 @@ HueWindow::HueWindow(HueEffect *plugin, int x, int y)
 			0, 
 			1)
 {
-	this->plugin = plugin;
-}
-
-void HueWindow::create_objects()
-{
-	int x = 10, y = 10, x1 = 100;
-
-	set_icon(new VFrame(picon_png));
+	int x1 = 100;
+	x = y = 10;
 
 	add_subwindow(new BC_Title(x, y, _("Hue:")));
 	add_subwindow(hue = new HueSlider(plugin, x1, y, 200));
@@ -291,14 +291,16 @@ void HueWindow::create_objects()
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Value:")));
 	add_subwindow(value = new ValueSlider(plugin, x1, y, 200));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
+void HueWindow::update()
+{
+	hue->update(plugin->config.hue);
+	saturation->update(plugin->config.saturation);
+	value->update(plugin->config.value);
+}
 
-WINDOW_CLOSE_EVENT(HueWindow)
-
-PLUGIN_THREAD_OBJECT(HueEffect, HueThread, HueWindow)
 
 HueEngine::HueEngine(HueEffect *plugin, int cpus)
  : LoadServer(cpus, cpus)
@@ -476,7 +478,7 @@ void HueUnit::process_package(LoadPackage *package)
 }
 
 
-REGISTER_PLUGIN(HueEffect)
+REGISTER_PLUGIN
 
 
 HueEffect::HueEffect(PluginServer *server)
@@ -488,57 +490,41 @@ HueEffect::HueEffect(PluginServer *server)
 
 HueEffect::~HueEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-int HueEffect::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+PLUGIN_CLASS_METHODS
+
+void HueEffect::process_frame(VFrame *frame)
 {
 	load_configuration();
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 	this->input = frame;
 	this->output = frame;
 	if(EQUIV(config.hue, 0) && EQUIV(config.saturation, 0) && EQUIV(config.value, 0))
 	{
-		return 0;
+		return;
 	}
 	else
 	{
 		if(get_use_opengl())
 		{
 			run_opengl();
-			return 0;
+			return;
 		}
 
 		if(!engine) engine = new HueEngine(this, PluginClient::smp + 1);
 
 		engine->process_packages();
 	}
-	return 0;
 }
-
-const char* HueEffect::plugin_title() { return N_("Hue saturation"); }
-int HueEffect::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(HueEffect)
-SHOW_GUI_MACRO(HueEffect, HueThread)
-SET_STRING_MACRO(HueEffect)
-RAISE_WINDOW_MACRO(HueEffect)
-LOAD_CONFIGURATION_MACRO(HueEffect, HueConfig)
 
 void HueEffect::load_defaults()
 {
-	char directory[BCTEXTLEN];
-	sprintf(directory, "%shuesaturation.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
+	defaults = load_defaults_file("huesaturation.rc");
 	defaults->load();
 	config.hue = defaults->get("HUE", config.hue);
 	config.saturation = defaults->get("SATURATION", config.saturation);
@@ -571,6 +557,7 @@ void HueEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("HUESATURATION"))
@@ -579,19 +566,6 @@ void HueEffect::read_data(KeyFrame *keyframe)
 			config.saturation = input.tag.get_property("SATURATION", config.saturation);
 			config.value = input.tag.get_property("VALUE", config.value);
 		}
-	}
-}
-
-void HueEffect::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		load_configuration();
-		thread->window->hue->update(config.hue);
-		thread->window->saturation->update(config.saturation);
-		thread->window->value->update(config.value);
-		thread->window->unlock_window();
 	}
 }
 
