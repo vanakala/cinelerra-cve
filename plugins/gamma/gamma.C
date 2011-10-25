@@ -38,8 +38,7 @@
 
 #define SQR(a) ((a) * (a))
 
-REGISTER_PLUGIN(GammaMain)
-
+REGISTER_PLUGIN
 
 
 GammaConfig::GammaConfig()
@@ -68,19 +67,17 @@ void GammaConfig::copy_from(GammaConfig &that)
 
 void GammaConfig::interpolate(GammaConfig &prev, 
 	GammaConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->max = prev.max * prev_scale + next.max * next_scale;
 	this->gamma = prev.gamma * prev_scale + next.gamma * next_scale;
 	this->automatic = prev.automatic;
 	this->plot = prev.plot;
 }
-
 
 GammaPackage::GammaPackage()
  : LoadPackage()
@@ -92,7 +89,6 @@ GammaUnit::GammaUnit(GammaMain *plugin)
 {
 	this->plugin = plugin;
 }
-
 
 void GammaUnit::process_package(LoadPackage *package)
 {
@@ -123,7 +119,6 @@ void GammaUnit::process_package(LoadPackage *package)
 				row += components; \
 			} \
 		}
-
 
 		switch(data->get_color_model())
 		{
@@ -203,7 +198,6 @@ void GammaUnit::process_package(LoadPackage *package)
 			} \
 		}
 
-
 		switch(data->get_color_model())
 		{
 		case BC_RGB888:
@@ -292,7 +286,6 @@ void GammaUnit::process_package(LoadPackage *package)
 	}
 }
 
-
 GammaEngine::GammaEngine(GammaMain *plugin)
  : LoadServer(plugin->get_project_smp() + 1, 
 	plugin->get_project_smp() + 1)
@@ -344,7 +337,6 @@ void GammaEngine::process_packages(int operation, VFrame *data)
 }
 
 
-
 GammaMain::GammaMain(PluginServer *server)
  : PluginVClient(server)
 {
@@ -354,31 +346,13 @@ GammaMain::GammaMain(PluginServer *server)
 
 GammaMain::~GammaMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* GammaMain::plugin_title() { return N_("Gamma"); }
-int GammaMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-
-
-
-
-NEW_PICON_MACRO(GammaMain)
-LOAD_CONFIGURATION_MACRO(GammaMain, GammaConfig)
-SHOW_GUI_MACRO(GammaMain, GammaThread)
-RAISE_WINDOW_MACRO(GammaMain)
-SET_STRING_MACRO(GammaMain)
-
-
-
-
-
-int GammaMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void GammaMain::process_frame(VFrame *frame)
 {
 	this->frame = frame;
 	load_configuration();
@@ -390,22 +364,18 @@ int GammaMain::process_buffer(VFrame *frame,
 		!config.automatic && 
 		(!config.plot || !gui_open());
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		use_opengl);
+	get_frame(frame, use_opengl);
 
 	if(use_opengl)
 	{
 // Aggregate
 		if(next_effect_is("Histogram"))
-			return 0;
+			return;
 		if(next_effect_is("Color Balance"))
-			return 0;
+			return;
 
 		run_opengl();
-		return 0;
+		return;
 	}
 	else
 	if(config.automatic)
@@ -422,7 +392,6 @@ int GammaMain::process_buffer(VFrame *frame,
 
 	if(!engine) engine = new GammaEngine(this);
 	engine->process_packages(GammaEngine::APPLY, frame);
-	return 0;
 }
 
 void GammaMain::calculate_max(VFrame *frame)
@@ -440,20 +409,6 @@ void GammaMain::calculate_max(VFrame *frame)
 		{
 			config.max = (float)i / HISTOGRAM_SIZE;
 			break;
-		}
-	}
-}
-
-
-void GammaMain::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("GammaMain::update_gui");
-			thread->window->update();
-			thread->window->unlock_window();
 		}
 	}
 }
@@ -485,13 +440,7 @@ void GammaMain::render_gui(void *data)
 
 void GammaMain::load_defaults()
 {
-	char directory[1024];
-// set the default directory
-	sprintf(directory, "%sgamma.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("gamma.rc");
 
 	config.max = defaults->get("MAX", config.max);
 	config.gamma = defaults->get("GAMMA", config.gamma);
@@ -533,19 +482,14 @@ void GammaMain::read_data(KeyFrame *keyframe)
 
 	int result = 0;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("GAMMA"))
 		{
-			if(input.tag.title_is("GAMMA"))
-			{
-				config.max = input.tag.get_property("MAX", config.max);
-				config.gamma = input.tag.get_property("GAMMA", config.gamma);
-				config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
-				config.plot = input.tag.get_property("PLOT", config.plot);
-			}
+			config.max = input.tag.get_property("MAX", config.max);
+			config.gamma = input.tag.get_property("GAMMA", config.gamma);
+			config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
+			config.plot = input.tag.get_property("PLOT", config.plot);
 		}
 	}
 }

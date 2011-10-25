@@ -22,9 +22,6 @@
 #ifndef LINEARIZEWINDOW_H
 #define LINEARIZEWINDOW_H
 
-
-class GammaThread;
-class GammaWindow;
 class MaxSlider;
 class MaxText;
 class GammaSlider;
@@ -40,27 +37,25 @@ class GammaColorPicker;
 #include "pluginclient.h"
 
 
-PLUGIN_THREAD_HEADER(GammaMain, GammaThread, GammaWindow)
+PLUGIN_THREAD_HEADER
 
 class GammaWindow : public BC_Window
 {
 public:
-	GammaWindow(GammaMain *client, int x, int y);
+	GammaWindow(GammaMain *plugin, int x, int y);
 
-	int create_objects();
-	void close_event();
 	void update();
 	void update_histogram();
 
 
 	BC_SubWindow *histogram;
-	GammaMain *client;
 	MaxSlider *max_slider;
 	MaxText *max_text;
 	GammaSlider *gamma_slider;
 	GammaText *gamma_text;
 	GammaAuto *automatic;
 	GammaPlot *plot;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class MaxSlider : public BC_FSlider

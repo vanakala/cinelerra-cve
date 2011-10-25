@@ -22,15 +22,25 @@
 #ifndef LINEARIZE_H
 #define LINEARIZE_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Gamma")
+#define PLUGIN_CLASS GammaMain
+#define PLUGIN_CONFIG_CLASS GammaConfig
+#define PLUGIN_THREAD_CLASS GammaThread
+#define PLUGIN_GUI_CLASS GammaWindow
+
+#include "pluginmacros.h"
+
 class GammaEngine;
-class GammaMain;
 
 #include "gammawindow.h"
 #include "loadbalance.h"
+#include "language.h"
 #include "plugincolors.h"
 #include "guicast.h"
 #include "pluginvclient.h"
-#include "thread.h"
 
 #define HISTOGRAM_SIZE 256
 
@@ -43,15 +53,16 @@ public:
 	void copy_from(GammaConfig &that);
 	void interpolate(GammaConfig &prev, 
 		GammaConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	float max;
 	float gamma;
 	int automatic;
 // Plot histogram
 	int plot;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class GammaPackage : public LoadPackage
@@ -97,12 +108,9 @@ public:
 	~GammaMain();
 
 // required for all realtime plugins
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
+	void process_frame(VFrame *frame);
+
 	void calculate_max(VFrame *frame);
-	int is_realtime();
-	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -113,7 +121,7 @@ public:
 	GammaEngine *engine;
 	VFrame *frame;
 
-	PLUGIN_CLASS_MEMBERS(GammaConfig, GammaThread)
+	PLUGIN_CLASS_MEMBERS
 };
 
 #endif

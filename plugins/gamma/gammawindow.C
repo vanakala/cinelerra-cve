@@ -24,11 +24,11 @@
 #include "language.h"
 
 
-PLUGIN_THREAD_OBJECT(GammaMain, GammaThread, GammaWindow)
+PLUGIN_THREAD_METHODS
 
 
-GammaWindow::GammaWindow(GammaMain *client, int x, int y)
- : BC_Window(client->gui_string, x,
+GammaWindow::GammaWindow(GammaMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, x,
 	y,
 	400, 
 	400,
@@ -36,16 +36,9 @@ GammaWindow::GammaWindow(GammaMain *client, int x, int y)
 	400,
 	0, 
 	0)
-{ 
-	this->client = client; 
-}
-
-int GammaWindow::create_objects()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
+	x = y = 10;
 
-	set_icon(ico);
 	add_subwindow(histogram = new BC_SubWindow(x, 
 		y, 
 		get_w() - x * 2, 
@@ -56,31 +49,31 @@ int GammaWindow::create_objects()
 	BC_Title *title;
 	add_tool(title = new BC_Title(x, y, _("Maximum:")));
 	x += title->get_w() + 10;
-	add_tool(max_slider = new MaxSlider(client, 
+	add_tool(max_slider = new MaxSlider(plugin,
 		this, 
 		x, 
 		y, 
 		190));
 	x += max_slider->get_w() + 10;
-	add_tool(max_text = new MaxText(client,
+	add_tool(max_text = new MaxText(plugin,
 		this,
 		x,
 		y,
 		100));
 	y += max_text->get_h() + 10;
 	x = 10;
-	add_tool(automatic = new GammaAuto(client, x, y));
+	add_tool(automatic = new GammaAuto(plugin, x, y));
 
 	y += automatic->get_h() + 10;
 	add_tool(title = new BC_Title(x, y, _("Gamma:")));
 	x += title->get_w() + 10;
-	add_tool(gamma_slider = new GammaSlider(client, 
+	add_tool(gamma_slider = new GammaSlider(plugin,
 		this, 
 		x, 
 		y, 
 		190));
 	x += gamma_slider->get_w() + 10;
-	add_tool(gamma_text = new GammaText(client,
+	add_tool(gamma_text = new GammaText(plugin,
 		this,
 		x,
 		y,
@@ -88,32 +81,29 @@ int GammaWindow::create_objects()
 	y += gamma_text->get_h() + 10;
 	x = 10;
 
-	add_tool(plot = new GammaPlot(client, x, y));
+	add_tool(plot = new GammaPlot(plugin, x, y));
 	y += plot->get_h() + 10;
 
-	add_tool(new GammaColorPicker(client, this, x, y));
+	add_tool(new GammaColorPicker(plugin, this, x, y));
 
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 void GammaWindow::update()
 {
-	max_slider->update(client->config.max);
-	max_text->update(client->config.max);
-	gamma_slider->update(client->config.gamma);
-	gamma_text->update(client->config.gamma);
-	automatic->update(client->config.automatic);
-	plot->update(client->config.plot);
+	max_slider->update(plugin->config.max);
+	max_text->update(plugin->config.max);
+	gamma_slider->update(plugin->config.gamma);
+	gamma_text->update(plugin->config.gamma);
+	automatic->update(plugin->config.automatic);
+	plot->update(plugin->config.plot);
 	update_histogram();
 }
 
 void GammaWindow::update_histogram()
 {
 	histogram->clear_box(0, 0, histogram->get_w(), histogram->get_h());
-	if(client->engine)
+	if(plugin->engine)
 	{
 		int max = 0;
 		histogram->set_color(MEGREY);
@@ -125,7 +115,7 @@ void GammaWindow::update_histogram()
 			int accum = 0;
 			for(int x = x1; x < x2; x++)
 			{
-				accum += client->engine->accum[x];
+				accum += plugin->engine->accum[x];
 			}
 			if(accum > max) max = accum;
 		}
@@ -137,7 +127,7 @@ void GammaWindow::update_histogram()
 			int accum = 0;
 			for(int x = x1; x < x2; x++)
 			{
-				accum += client->engine->accum[x];
+				accum += plugin->engine->accum[x];
 			}
 
 			int h = (int)(log(accum) / log(max) * histogram->get_h());
@@ -150,9 +140,9 @@ void GammaWindow::update_histogram()
 
 	histogram->set_color(GREEN);
 	int y1 = histogram->get_h();
-	float scale = 1.0 / client->config.max;
-	float gamma = client->config.gamma - 1.0;
-	float max = client->config.max;
+	float scale = 1.0 / plugin->config.max;
+	float gamma = plugin->config.gamma - 1.0;
+	float max = plugin->config.max;
 	for(int i = 1; i < histogram->get_w(); i++)
 	{
 		float in = (float)i / histogram->get_w();
@@ -164,7 +154,6 @@ void GammaWindow::update_histogram()
 	histogram->flash();
 }
 
-WINDOW_CLOSE_EVENT(GammaWindow)
 
 MaxSlider::MaxSlider(GammaMain *client, 
 	GammaWindow *gui, 
