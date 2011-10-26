@@ -19,11 +19,21 @@
  * 
  */
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Linear Blur")
+#define PLUGIN_CLASS LinearBlurMain
+#define PLUGIN_CONFIG_CLASS LinearBlurConfig
+#define PLUGIN_THREAD_CLASS LinearBlurThread
+#define PLUGIN_GUI_CLASS LinearBlurWindow
+
+#include "pluginmacros.h"
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -35,10 +45,7 @@
 #include "vframe.h"
 
 
-
-class LinearBlurMain;
 class LinearBlurEngine;
-
 
 class LinearBlurConfig
 {
@@ -49,9 +56,9 @@ public:
 	void copy_from(LinearBlurConfig &that);
 	void interpolate(LinearBlurConfig &prev, 
 		LinearBlurConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int radius;
 	int steps;
@@ -60,8 +67,8 @@ public:
 	int g;
 	int b;
 	int a;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
 
 
 class LinearBlurSize : public BC_ISlider
@@ -97,17 +104,15 @@ public:
 	LinearBlurWindow(LinearBlurMain *plugin, int x, int y);
 	~LinearBlurWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
 	LinearBlurSize *angle, *steps, *radius;
 	LinearBlurToggle *r, *g, *b, *a;
-	LinearBlurMain *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-
-PLUGIN_THREAD_HEADER(LinearBlurMain, LinearBlurThread, LinearBlurWindow)
+PLUGIN_THREAD_HEADER
 
 
 // Output coords for a layer of blurring
@@ -125,18 +130,14 @@ public:
 	LinearBlurMain(PluginServer *server);
 	~LinearBlurMain();
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void handle_opengl();
 
-	PLUGIN_CLASS_MEMBERS(LinearBlurConfig, LinearBlurThread)
+	PLUGIN_CLASS_MEMBERS
 
 	void delete_tables();
 	VFrame *input, *output, *temp;
@@ -179,7 +180,7 @@ public:
 };
 
 
-REGISTER_PLUGIN(LinearBlurMain)
+REGISTER_PLUGIN
 
 LinearBlurConfig::LinearBlurConfig()
 {
@@ -217,12 +218,12 @@ void LinearBlurConfig::copy_from(LinearBlurConfig &that)
 
 void LinearBlurConfig::interpolate(LinearBlurConfig &prev, 
 	LinearBlurConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
+
 	this->radius = (int)(prev.radius * prev_scale + next.radius * next_scale + 0.5);
 	this->angle = (int)(prev.angle * prev_scale + next.angle * next_scale + 0.5);
 	this->steps = (int)(prev.steps * prev_scale + next.steps * next_scale + 0.5);
@@ -232,7 +233,7 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 	a = prev.a;
 }
 
-PLUGIN_THREAD_OBJECT(LinearBlurMain, LinearBlurThread, LinearBlurWindow)
+PLUGIN_THREAD_METHODS
 
 LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -245,18 +246,8 @@ LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin, int x, int y)
 	0, 
 	1)
 {
-	this->plugin = plugin; 
-}
+	x = y = 10;
 
-LinearBlurWindow::~LinearBlurWindow()
-{
-}
-
-int LinearBlurWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Length:")));
 	y += 20;
 	add_subwindow(radius = new LinearBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));
@@ -277,13 +268,23 @@ int LinearBlurWindow::create_objects()
 	y += 30;
 	add_subwindow(a = new LinearBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
 	y += 30;
-
-	show_window();
-	flush();
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(LinearBlurWindow)
+LinearBlurWindow::~LinearBlurWindow()
+{
+}
+
+void LinearBlurWindow::update()
+{
+	radius->update(plugin->config.radius);
+	angle->update(plugin->config.angle);
+	steps->update(plugin->config.steps);
+	r->update(plugin->config.r);
+	g->update(plugin->config.g);
+	b->update(plugin->config.b);
+	a->update(plugin->config.a);
+}
 
 LinearBlurToggle::LinearBlurToggle(LinearBlurMain *plugin, 
 	int x, 
@@ -314,6 +315,7 @@ LinearBlurSize::LinearBlurSize(LinearBlurMain *plugin,
 	this->plugin = plugin;
 	this->output = output;
 }
+
 int LinearBlurSize::handle_event()
 {
 	*output = get_value();
@@ -321,11 +323,11 @@ int LinearBlurSize::handle_event()
 	return 1;
 }
 
+PLUGIN_CLASS_METHODS
 
 LinearBlurMain::LinearBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
@@ -334,30 +336,17 @@ LinearBlurMain::LinearBlurMain(PluginServer *server)
 	need_reconfigure = 1;
 	temp = 0;
 	layer_table = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 LinearBlurMain::~LinearBlurMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
 	if(temp) delete temp;
+	PLUGIN_DESTRUCTOR_MACRO
 }
-
-const char* LinearBlurMain::plugin_title() { return N_("Linear Blur"); }
-int LinearBlurMain::is_realtime() { return 1; }
-
-
-NEW_PICON_MACRO(LinearBlurMain)
-
-SHOW_GUI_MACRO(LinearBlurMain, LinearBlurThread)
-
-SET_STRING_MACRO(LinearBlurMain)
-
-RAISE_WINDOW_MACRO(LinearBlurMain)
-
-LOAD_CONFIGURATION_MACRO(LinearBlurMain, LinearBlurConfig)
 
 void LinearBlurMain::delete_tables()
 {
@@ -381,17 +370,11 @@ void LinearBlurMain::delete_tables()
 	table_entries = 0;
 }
 
-int LinearBlurMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void LinearBlurMain::process_frame(VFrame *frame)
 {
 	need_reconfigure |= load_configuration();
 
-	read_frame(frame,
-		0,
-		get_source_position(),
-		get_framerate(),
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
@@ -467,7 +450,7 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 	if(get_use_opengl())
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	if(!engine) engine = new LinearBlurEngine(this,
@@ -494,37 +477,11 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 		cmodel_components(frame->get_color_model()) * 
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
-	return 0;
 }
-
-
-void LinearBlurMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->radius->update(config.radius);
-		thread->window->angle->update(config.angle);
-		thread->window->steps->update(config.steps);
-		thread->window->r->update(config.r);
-		thread->window->g->update(config.g);
-		thread->window->b->update(config.b);
-		thread->window->a->update(config.a);
-		thread->window->unlock_window();
-	}
-}
-
 
 void LinearBlurMain::load_defaults()
 {
-	char directory[1024];
-// set the default directory
-	sprintf(directory, "%slinearblur.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("linearblur.rc");
 
 	config.radius = defaults->get("RADIUS", config.radius);
 	config.angle = defaults->get("ANGLE", config.angle);
@@ -574,24 +531,17 @@ void LinearBlurMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("LINEARBLUR"))
 		{
-			if(input.tag.title_is("LINEARBLUR"))
-			{
-				config.radius = input.tag.get_property("RADIUS", config.radius);
-				config.angle = input.tag.get_property("ANGLE", config.angle);
-				config.steps = input.tag.get_property("STEPS", config.steps);
-				config.r = input.tag.get_property("R", config.r);
-				config.g = input.tag.get_property("G", config.g);
-				config.b = input.tag.get_property("B", config.b);
-				config.a = input.tag.get_property("A", config.a);
-			}
+			config.radius = input.tag.get_property("RADIUS", config.radius);
+			config.angle = input.tag.get_property("ANGLE", config.angle);
+			config.steps = input.tag.get_property("STEPS", config.steps);
+			config.r = input.tag.get_property("R", config.r);
+			config.g = input.tag.get_property("G", config.g);
+			config.b = input.tag.get_property("B", config.b);
+			config.a = input.tag.get_property("A", config.a);
 		}
 	}
 }
