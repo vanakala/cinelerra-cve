@@ -23,18 +23,17 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "gradient.h"
 #include "keyframe.h"
-#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
 
-REGISTER_PLUGIN(GradientMain)
+
+REGISTER_PLUGIN
 
 
 GradientConfig::GradientConfig()
@@ -96,13 +95,11 @@ void GradientConfig::copy_from(GradientConfig &that)
 
 void GradientConfig::interpolate(GradientConfig &prev, 
 	GradientConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
-
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->angle = (int)(prev.angle * prev_scale + next.angle * next_scale);
 	this->in_radius = (int)(prev.in_radius * prev_scale + next.in_radius * next_scale);
@@ -134,14 +131,7 @@ int GradientConfig::get_out_color()
 }
 
 
-
-
-
-
-
-
-
-PLUGIN_THREAD_OBJECT(GradientMain, GradientThread, GradientWindow)
+PLUGIN_THREAD_METHODS
 
 
 #define COLOR_W 100
@@ -158,27 +148,17 @@ GradientWindow::GradientWindow(GradientMain *plugin, int x, int y)
 	0, 
 	1)
 {
-	this->plugin = plugin;
+	BC_Title *title;
+
+	x = y = 10;
+
 	angle = 0;
 	angle_title = 0;
 	center_x = 0;
 	center_y = 0;
 	center_x_title = 0;
 	center_y_title = 0;
-}
 
-GradientWindow::~GradientWindow()
-{
-	delete in_color_thread;
-	delete out_color_thread;
-}
-
-int GradientWindow::create_objects()
-{
-	int x = 10, y = 10;
-	BC_Title *title;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Shape:")));
 	add_subwindow(shape = new GradientShape(plugin, 
 		this, 
@@ -210,13 +190,36 @@ int GradientWindow::create_objects()
 	out_color_y = y;
 	in_color_thread = new GradientInColorThread(plugin, this);
 	out_color_thread = new GradientOutColorThread(plugin, this);
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
+
 	update_in_color();
 	update_out_color();
 	update_shape();
+}
 
-	show_window();
-	flush();
-	return 0;
+GradientWindow::~GradientWindow()
+{
+	delete in_color_thread;
+	delete out_color_thread;
+}
+
+void GradientWindow::update()
+{
+	rate->set_text(GradientRate::to_text(plugin->config.rate));
+	in_radius->update(plugin->config.in_radius);
+	out_radius->update(plugin->config.out_radius);
+	shape->set_text(GradientShape::to_text(plugin->config.shape));
+	if(angle)
+		angle->update(plugin->config.angle);
+	if(center_x)
+		center_x->update(plugin->config.center_x);
+	if(center_y)
+		center_y->update(plugin->config.center_y);
+	update_in_color();
+	update_out_color();
+	update_shape();
+	in_color_thread->update_gui(plugin->config.get_in_color(), plugin->config.in_a);
+	out_color_thread->update_gui(plugin->config.get_out_color(), plugin->config.out_a);
 }
 
 void GradientWindow::update_shape()
@@ -259,11 +262,6 @@ void GradientWindow::update_shape()
 				y));
 		}
 	}
-}
-
-void GradientWindow::close_event()
-{
-	set_done(1);
 }
 
 void GradientWindow::update_in_color()
@@ -322,6 +320,7 @@ int GradientShape::handle_event()
 	plugin->send_configure_change();
 }
 
+
 GradientCenterX::GradientCenterX(GradientMain *plugin, int x, int y)
  : BC_FPot(x, y, plugin->config.center_x, 0, 100)
 {
@@ -347,6 +346,7 @@ int GradientCenterY::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
+
 
 GradientAngle::GradientAngle(GradientMain *plugin, int x, int y)
  : BC_FPot(x,
@@ -436,7 +436,7 @@ int GradientInRadius::handle_event()
 
 GradientOutRadius::GradientOutRadius(GradientMain *plugin, int x, int y)
  : BC_FSlider(x,
- 	y,
+	y,
 	0,
 	200,
 	200,
@@ -486,7 +486,6 @@ int GradientOutColorButton::handle_event()
 }
 
 
-
 GradientInColorThread::GradientInColorThread(GradientMain *plugin, 
 	GradientWindow *window)
  : ColorThread(1, _("Inner color"), new VFrame(picon_png))
@@ -506,7 +505,6 @@ int GradientInColorThread::handle_new_color(int output, int alpha)
 	plugin->send_configure_change();
 	return 1;
 }
-
 
 
 GradientOutColorThread::GradientOutColorThread(GradientMain *plugin, 
@@ -533,45 +531,24 @@ int GradientOutColorThread::handle_new_color(int output, int alpha)
 GradientMain::GradientMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	need_reconfigure = 1;
 	gradient = 0;
 	engine = 0;
 	overlayer = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 GradientMain::~GradientMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(gradient) delete gradient;
 	if(engine) delete engine;
 	if(overlayer) delete overlayer;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* GradientMain::plugin_title() { return N_("Gradient"); }
-int GradientMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-
-NEW_PICON_MACRO(GradientMain)
-
-SHOW_GUI_MACRO(GradientMain, GradientThread)
-
-SET_STRING_MACRO(GradientMain)
-
-RAISE_WINDOW_MACRO(GradientMain)
-
-LOAD_CONFIGURATION_MACRO(GradientMain, GradientConfig)
-
-int GradientMain::is_synthesis()
-{
-	return 1;
-}
-
-
-int GradientMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void GradientMain::process_frame(VFrame *frame)
 {
 	this->input = frame;
 	this->output = frame;
@@ -579,15 +556,12 @@ int GradientMain::process_buffer(VFrame *frame,
 
 	int need_alpha = config.in_a != 0xff || config.out_a != 0xff;
 	if(need_alpha)
-		read_frame(frame, 
-			0, 
-			start_position, 
-			frame_rate,
-			get_use_opengl());
+		get_frame(frame, get_use_opengl());
+
 	if(get_use_opengl())
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	int gradient_cmodel = input->get_color_model();
@@ -641,47 +615,11 @@ int GradientMain::process_buffer(VFrame *frame,
 			TRANSFER_NORMAL,
 			NEAREST_NEIGHBOR);
 	}
-	return 0;
 }
-
-
-void GradientMain::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("GradientMain::update_gui");
-			thread->window->rate->set_text(GradientRate::to_text(config.rate));
-			thread->window->in_radius->update(config.in_radius);
-			thread->window->out_radius->update(config.out_radius);
-			thread->window->shape->set_text(GradientShape::to_text(config.shape));
-			if(thread->window->angle)
-				thread->window->angle->update(config.angle);
-			if(thread->window->center_x)
-				thread->window->center_x->update(config.center_x);
-			if(thread->window->center_y)
-				thread->window->center_y->update(config.center_y);
-			thread->window->update_in_color();
-			thread->window->update_out_color();
-			thread->window->update_shape();
-			thread->window->unlock_window();
-			thread->window->in_color_thread->update_gui(config.get_in_color(), config.in_a);
-			thread->window->out_color_thread->update_gui(config.get_out_color(), config.out_a);
-		}
-	}
-}
-
 
 void GradientMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sgradient.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("gradient.rc");
 
 	config.angle = defaults->get("ANGLE", config.angle);
 	config.in_radius = defaults->get("IN_RADIUS", config.in_radius);
@@ -721,8 +659,6 @@ void GradientMain::save_defaults()
 	defaults->save();
 }
 
-
-
 void GradientMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
@@ -758,32 +694,25 @@ void GradientMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("GRADIENT"))
 		{
-			if(input.tag.title_is("GRADIENT"))
-			{
-				config.angle = input.tag.get_property("ANGLE", config.angle);
-				config.rate = input.tag.get_property("RATE", config.rate);
-				config.in_radius = input.tag.get_property("IN_RADIUS", config.in_radius);
-				config.out_radius = input.tag.get_property("OUT_RADIUS", config.out_radius);
-				config.in_r = input.tag.get_property("IN_R", config.in_r);
-				config.in_g = input.tag.get_property("IN_G", config.in_g);
-				config.in_b = input.tag.get_property("IN_B", config.in_b);
-				config.in_a = input.tag.get_property("IN_A", config.in_a);
-				config.out_r = input.tag.get_property("OUT_R", config.out_r);
-				config.out_g = input.tag.get_property("OUT_G", config.out_g);
-				config.out_b = input.tag.get_property("OUT_B", config.out_b);
-				config.out_a = input.tag.get_property("OUT_A", config.out_a);
-				config.shape = input.tag.get_property("SHAPE", config.shape);
-				config.center_x = input.tag.get_property("CENTER_X", config.center_x);
-				config.center_y = input.tag.get_property("CENTER_Y", config.center_y);
-			}
+			config.angle = input.tag.get_property("ANGLE", config.angle);
+			config.rate = input.tag.get_property("RATE", config.rate);
+			config.in_radius = input.tag.get_property("IN_RADIUS", config.in_radius);
+			config.out_radius = input.tag.get_property("OUT_RADIUS", config.out_radius);
+			config.in_r = input.tag.get_property("IN_R", config.in_r);
+			config.in_g = input.tag.get_property("IN_G", config.in_g);
+			config.in_b = input.tag.get_property("IN_B", config.in_b);
+			config.in_a = input.tag.get_property("IN_A", config.in_a);
+			config.out_r = input.tag.get_property("OUT_R", config.out_r);
+			config.out_g = input.tag.get_property("OUT_G", config.out_g);
+			config.out_b = input.tag.get_property("OUT_B", config.out_b);
+			config.out_a = input.tag.get_property("OUT_A", config.out_a);
+			config.shape = input.tag.get_property("SHAPE", config.shape);
+			config.center_x = input.tag.get_property("CENTER_X", config.center_x);
+			config.center_y = input.tag.get_property("CENTER_Y", config.center_y);
 		}
 	}
 }
@@ -841,7 +770,6 @@ void GradientMain::handle_opengl()
 		"	gl_FragColor.rgb = mix(bg_color.rgb, color.rgb, color.a);\n"
 		"	gl_FragColor.a = max(bg_color.a, color.a);\n"
 		"}\n";
-
 
 	const char *shader_stack[5] = { 0, 0, 0, 0, 0 };
 	shader_stack[0] = head_frag;
@@ -1201,7 +1129,6 @@ void GradientUnit::process_package(LoadPackage *package)
 		out_radius ^= in_radius;
 		in_radius ^= out_radius;
 	}
-
 
 	switch(gradient_cmodel)
 	{

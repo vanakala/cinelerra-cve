@@ -22,7 +22,18 @@
 #ifndef GRADIENT_H
 #define GRADIENT_H
 
-class GradientMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
+
+#define PLUGIN_TITLE N_("Gradient")
+#define PLUGIN_CLASS GradientMain
+#define PLUGIN_CONFIG_CLASS GradientConfig
+#define PLUGIN_THREAD_CLASS GradientThread
+#define PLUGIN_GUI_CLASS GradientWindow
+
+#include "pluginmacros.h"
+
 class GradientEngine;
 class GradientThread;
 class GradientWindow;
@@ -35,6 +46,7 @@ class GradientServer;
 #include "bchash.inc"
 #include "filexml.inc"
 #include "guicast.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"
 #include "plugincolors.h"
@@ -51,9 +63,9 @@ public:
 	void copy_from(GradientConfig &that);
 	void interpolate(GradientConfig &prev, 
 		GradientConfig &next, 
-		posnum prev_frame,
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 // Int to hex triplet conversion
 	int get_in_color();
 	int get_out_color();
@@ -70,7 +82,6 @@ public:
 		SQUARE
 	};
 
-
 	double center_x;
 	double center_y;
 	double angle;
@@ -78,6 +89,7 @@ public:
 	double out_radius;
 	int in_r, in_g, in_b, in_a;
 	int out_r, out_g, out_b, out_a;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -197,13 +209,11 @@ public:
 	GradientWindow(GradientMain *plugin, int x, int y);
 	~GradientWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 	void update_in_color();
 	void update_out_color();
 	void update_shape();
 
-	GradientMain *plugin;
 	BC_Title *angle_title;
 	GradientAngle *angle;
 	GradientInRadius *in_radius;
@@ -222,11 +232,11 @@ public:
 	int in_color_x, in_color_y;
 	int out_color_x, out_color_y;
 	int shape_x, shape_y;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-
-PLUGIN_THREAD_HEADER(GradientMain, GradientThread, GradientWindow)
+PLUGIN_THREAD_HEADER
 
 
 class GradientMain : public PluginVClient
@@ -235,19 +245,14 @@ public:
 	GradientMain(PluginServer *server);
 	~GradientMain();
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int is_synthesis();
 	void handle_opengl();
 
-	PLUGIN_CLASS_MEMBERS(GradientConfig, GradientThread)
+	PLUGIN_CLASS_MEMBERS
 
 	int need_reconfigure;
 
