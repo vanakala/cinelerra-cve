@@ -25,8 +25,7 @@
 #include "perspective.h"
 
 
-REGISTER_PLUGIN(PerspectiveMain)
-
+REGISTER_PLUGIN
 
 
 PerspectiveConfig::PerspectiveConfig()
@@ -80,12 +79,11 @@ void PerspectiveConfig::copy_from(PerspectiveConfig &that)
 
 void PerspectiveConfig::interpolate(PerspectiveConfig &prev, 
 	PerspectiveConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	this->x1 = prev.x1 * prev_scale + next.x1 * next_scale;
 	this->y1 = prev.y1 * prev_scale + next.y1 * next_scale;
 	this->x2 = prev.x2 * prev_scale + next.x2 * next_scale;
@@ -98,11 +96,7 @@ void PerspectiveConfig::interpolate(PerspectiveConfig &prev,
 	forward = prev.forward;
 }
 
-
-
-PLUGIN_THREAD_OBJECT(PerspectiveMain, PerspectiveThread, PerspectiveWindow)
-
-
+PLUGIN_THREAD_METHODS
 
 PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -115,18 +109,8 @@ PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
 	0, 
 	1)
 {
-	this->plugin = plugin; 
-}
+	x = y = 10;
 
-PerspectiveWindow::~PerspectiveWindow()
-{
-}
-
-int PerspectiveWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(canvas = new PerspectiveCanvas(plugin, 
 		x, 
 		y, 
@@ -192,12 +176,19 @@ int PerspectiveWindow::create_objects()
 		0,
 		_("Reverse")));
 
-	show_window();
-	flush();
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(PerspectiveWindow)
+PerspectiveWindow::~PerspectiveWindow()
+{
+}
+
+void PerspectiveWindow::update()
+{
+	update_coord();
+	update_mode();
+	update_canvas();
+}
 
 void PerspectiveWindow::update_canvas()
 {
@@ -545,57 +536,23 @@ int PerspectiveDirection::handle_event()
 PerspectiveMain::PerspectiveMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	temp = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 PerspectiveMain::~PerspectiveMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
 	if(temp) delete temp;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* PerspectiveMain::plugin_title() { return N_("Perspective"); }
-int PerspectiveMain::is_realtime() { return 1; }
-
-
-NEW_PICON_MACRO(PerspectiveMain)
-
-SHOW_GUI_MACRO(PerspectiveMain, PerspectiveThread)
-
-SET_STRING_MACRO(PerspectiveMain)
-
-RAISE_WINDOW_MACRO(PerspectiveMain)
-
-LOAD_CONFIGURATION_MACRO(PerspectiveMain, PerspectiveConfig)
-
-
-
-void PerspectiveMain::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		load_configuration();
-		thread->window->update_coord();
-		thread->window->update_mode();
-		thread->window->update_canvas();
-		thread->window->unlock_window();
-	}
-}
-
+PLUGIN_CLASS_METHODS
 
 void PerspectiveMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sperspective.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("perspective.rc");
 
 	config.x1 = defaults->get("X1", config.x1);
 	config.x2 = defaults->get("X2", config.x2);
@@ -611,7 +568,6 @@ void PerspectiveMain::load_defaults()
 	config.window_w = defaults->get("WINDOW_W", config.window_w);
 	config.window_h = defaults->get("WINDOW_H", config.window_h);
 }
-
 
 void PerspectiveMain::save_defaults()
 {
@@ -630,8 +586,6 @@ void PerspectiveMain::save_defaults()
 	defaults->update("WINDOW_H", config.window_h);
 	defaults->save();
 }
-
-
 
 void PerspectiveMain::save_data(KeyFrame *keyframe)
 {
@@ -668,28 +622,23 @@ void PerspectiveMain::read_data(KeyFrame *keyframe)
 
 	int result = 0;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("PERSPECTIVE"))
 		{
-			if(input.tag.title_is("PERSPECTIVE"))
-			{
-				config.x1 = input.tag.get_property("X1", config.x1);
-				config.x2 = input.tag.get_property("X2", config.x2);
-				config.x3 = input.tag.get_property("X3", config.x3);
-				config.x4 = input.tag.get_property("X4", config.x4);
-				config.y1 = input.tag.get_property("Y1", config.y1);
-				config.y2 = input.tag.get_property("Y2", config.y2);
-				config.y3 = input.tag.get_property("Y3", config.y3);
-				config.y4 = input.tag.get_property("Y4", config.y4);
+			config.x1 = input.tag.get_property("X1", config.x1);
+			config.x2 = input.tag.get_property("X2", config.x2);
+			config.x3 = input.tag.get_property("X3", config.x3);
+			config.x4 = input.tag.get_property("X4", config.x4);
+			config.y1 = input.tag.get_property("Y1", config.y1);
+			config.y2 = input.tag.get_property("Y2", config.y2);
+			config.y3 = input.tag.get_property("Y3", config.y3);
+			config.y4 = input.tag.get_property("Y4", config.y4);
 
-				config.mode = input.tag.get_property("MODE", config.mode);
-				config.forward = input.tag.get_property("FORWARD", config.forward);
-				config.window_w = input.tag.get_property("WINDOW_W", config.window_w);
-				config.window_h = input.tag.get_property("WINDOW_H", config.window_h);
-			}
+			config.mode = input.tag.get_property("MODE", config.mode);
+			config.forward = input.tag.get_property("FORWARD", config.forward);
+			config.window_w = input.tag.get_property("WINDOW_W", config.window_w);
+			config.window_h = input.tag.get_property("WINDOW_H", config.window_h);
 		}
 	}
 }
@@ -768,11 +717,7 @@ void PerspectiveMain::set_current_y(float value)
 	}
 }
 
-
-
-int PerspectiveMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void PerspectiveMain::process_frame(VFrame *frame)
 {
 	int need_reconfigure = load_configuration();
 
@@ -782,23 +727,15 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 		EQUIV(config.x3, 100) && EQUIV(config.y3, 100) &&
 		EQUIV(config.x4, 0)   && EQUIV(config.y4, 100))
 	{
-		read_frame(frame, 
-			0, 
-			start_position, 
-			frame_rate,
-			get_use_opengl());
-		return 1;
+		get_frame(frame, get_use_opengl());
+		return;
 	}
 
 // Opengl does some funny business with stretching.
 	int use_opengl = get_use_opengl() &&
 		(config.mode == AffineEngine::PERSPECTIVE || 
 		config.mode == AffineEngine::SHEER);
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		use_opengl);
+	read_frame(frame, use_opengl);
 
 	if(!engine) engine = new AffineEngine(get_project_smp() + 1,
 		get_project_smp() + 1);
@@ -806,7 +743,7 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 	if(use_opengl)
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	this->input = frame;
@@ -865,7 +802,6 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 		output->clear_frame();
 	}
 
-
 	engine->process(output,
 		input,
 		temp, 
@@ -879,7 +815,6 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 		config.x4,
 		config.y4,
 		config.forward);
-
 
 // Resample
 
@@ -970,8 +905,6 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 			break;
 		}
 	}
-
-	return 1;
 }
 
 
