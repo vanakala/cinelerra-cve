@@ -19,7 +19,17 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Oil painting")
+#define PLUGIN_CLASS OilEffect
+#define PLUGIN_CONFIG_CLASS OilConfig
+#define PLUGIN_THREAD_CLASS OilThread
+#define PLUGIN_GUI_CLASS OilWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -40,10 +50,6 @@
 // Ported to Cinelerra by Heroine Virtual Ltd.
 
 
-class OilEffect;
-
-
-
 class OilConfig
 {
 public:
@@ -52,11 +58,12 @@ public:
 	int equivalent(OilConfig &src);
 	void interpolate(OilConfig &prev, 
 		OilConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	float radius;
 	int use_intensity;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class OilRadius : public BC_FSlider
@@ -81,15 +88,15 @@ class OilWindow : public BC_Window
 public:
 	OilWindow(OilEffect *plugin, int x, int y);
 	~OilWindow();
-	void create_objects();
-	void close_event();
-	OilEffect *plugin;
+
+	void update();
+
 	OilRadius *radius;
 	OilIntensity *intensity;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(OilEffect, OilThread, OilWindow)
-
+PLUGIN_THREAD_HEADER
 
 class OilServer : public LoadServer
 {
@@ -123,22 +130,20 @@ public:
 	OilEffect(PluginServer *server);
 	~OilEffect();
 
-	PLUGIN_CLASS_MEMBERS(OilConfig, OilThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
+
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
 	VFrame *temp_frame;
 	VFrame *input, *output;
 	OilServer *engine;
 	int need_reconfigure;
 };
-
 
 
 OilConfig::OilConfig()
@@ -161,12 +166,11 @@ int OilConfig::equivalent(OilConfig &src)
 
 void OilConfig::interpolate(OilConfig &prev, 
 		OilConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame)
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	this->radius = prev.radius * prev_scale + next.radius * next_scale;
 	this->use_intensity = prev.use_intensity;
 }
@@ -205,6 +209,8 @@ int OilIntensity::handle_event()
 	return 1;
 }
 
+PLUGIN_THREAD_METHODS
+
 OilWindow::OilWindow(OilEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
 	x, 
@@ -217,32 +223,26 @@ OilWindow::OilWindow(OilEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
+	x = y = 10;
+
+	add_subwindow(new BC_Title(x, y, _("Radius:")));
+	add_subwindow(radius = new OilRadius(plugin, x + 70, y));
+	y += 40;
+	add_subwindow(intensity = new OilIntensity(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 OilWindow::~OilWindow()
 {
 }
 
-void OilWindow::create_objects()
+void OilWindow::update()
 {
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
-	add_subwindow(new BC_Title(x, y, _("Radius:")));
-	add_subwindow(radius = new OilRadius(plugin, x + 70, y));
-	y += 40;
-	add_subwindow(intensity = new OilIntensity(plugin, x, y));
-
-	show_window();
-	flush();
+	radius->update(plugin->config.radius);
+	intensity->update(plugin->config.use_intensity);
 }
 
-WINDOW_CLOSE_EVENT(OilWindow)
-
-PLUGIN_THREAD_OBJECT(OilEffect, OilThread, OilWindow)
-
-REGISTER_PLUGIN(OilEffect)
+REGISTER_PLUGIN
 
 OilEffect::OilEffect(PluginServer *server)
  : PluginVClient(server)
@@ -255,50 +255,16 @@ OilEffect::OilEffect(PluginServer *server)
 
 OilEffect::~OilEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-
-const char* OilEffect::plugin_title() { return N_("Oil painting"); }
-int OilEffect::is_realtime() { return 1; }
-
-
-NEW_PICON_MACRO(OilEffect)
-
-SHOW_GUI_MACRO(OilEffect, OilThread)
-
-RAISE_WINDOW_MACRO(OilEffect)
-
-SET_STRING_MACRO(OilEffect)
-
-void OilEffect::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		load_configuration();
-
-		thread->window->radius->update(config.radius);
-		thread->window->intensity->update(config.use_intensity);
-		thread->window->unlock_window();
-	}
-}
-
-
-LOAD_CONFIGURATION_MACRO(OilEffect, OilConfig)
+PLUGIN_CLASS_METHODS
 
 void OilEffect::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%soilpainting.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("oilpainting.rc");
 
 	config.radius = defaults->get("RADIUS", config.radius);
 	config.use_intensity = defaults->get("USE_INTENSITY", config.use_intensity);
@@ -343,7 +309,6 @@ void OilEffect::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
 
 void OilEffect::process_realtime(VFrame *input, VFrame *output)
 {
@@ -417,12 +382,12 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 		{ \
 			for(int x1 = 0; x1 < w; x1++) \
 			{ \
-				bzero(count, sizeof(count)); \
-				bzero(val, sizeof(val)); \
-				bzero(hist[0], sizeof(int) * (hist_size + 1)); \
-				bzero(hist[1], sizeof(int) * (hist_size + 1)); \
-				bzero(hist[2], sizeof(int) * (hist_size + 1)); \
-				if (components == 4) bzero(hist[3], sizeof(int) * (hist_size + 1)); \
+				memset(count, 0, sizeof(count)); \
+				memset(val, 0, sizeof(val)); \
+				memset(hist[0], 0, sizeof(int) * (hist_size + 1)); \
+				memset(hist[1], 0, sizeof(int) * (hist_size + 1)); \
+				memset(hist[2], 0, sizeof(int) * (hist_size + 1)); \
+				if (components == 4) memset(hist[3], 0, sizeof(int) * (hist_size + 1)); \
  \
 				int x3 = CLIP((x1 - n), 0, w - 1); \
 				int y3 = CLIP((y1 - n), 0, h - 1); \
@@ -514,8 +479,8 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 			for(int x1 = 0; x1 < w; x1++) \
 			{ \
 				count2 = 0; \
-				bzero(val, sizeof(val)); \
-				bzero(hist2, sizeof(int) * (hist_size + 1)); \
+				memset(val, 0, sizeof(val)); \
+				memset(hist2, 0, sizeof(int) * (hist_size + 1)); \
  \
 				int x3 = CLIP((x1 - n), 0, w - 1); \
 				int y3 = CLIP((y1 - n), 0, h - 1); \
@@ -551,8 +516,6 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 		delete [] hist[i]; \
 	delete [] hist2; \
 }
-
-
 
 
 void OilUnit::process_package(LoadPackage *package)
