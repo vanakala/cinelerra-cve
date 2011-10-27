@@ -19,10 +19,20 @@
  * 
  */
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Radial Blur")
+#define PLUGIN_CLASS RadialBlurMain
+#define PLUGIN_CONFIG_CLASS RadialBlurConfig
+#define PLUGIN_THREAD_CLASS RadialBlurThread
+#define PLUGIN_GUI_CLASS RadialBlurWindow
+
+#include "pluginmacros.h"
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-
 
 #include "../motion/affine.h"
 #include "bcdisplayinfo.h"
@@ -37,7 +47,6 @@
 #include "vframe.h"
 
 
-class RadialBlurMain;
 class RadialBlurEngine;
 
 
@@ -50,9 +59,9 @@ public:
 	void copy_from(RadialBlurConfig &that);
 	void interpolate(RadialBlurConfig &prev, 
 		RadialBlurConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int x;
 	int y;
@@ -62,8 +71,8 @@ public:
 	int g;
 	int b;
 	int a;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
 
 
 class RadialBlurSize : public BC_ISlider
@@ -99,17 +108,15 @@ public:
 	RadialBlurWindow(RadialBlurMain *plugin, int x, int y);
 	~RadialBlurWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
 	RadialBlurSize *x, *y, *steps, *angle;
 	RadialBlurToggle *r, *g, *b, *a;
-	RadialBlurMain *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-
-PLUGIN_THREAD_HEADER(RadialBlurMain, RadialBlurThread, RadialBlurWindow)
+PLUGIN_THREAD_HEADER
 
 
 class RadialBlurMain : public PluginVClient
@@ -118,18 +125,14 @@ public:
 	RadialBlurMain(PluginServer *server);
 	~RadialBlurMain();
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void handle_opengl();
 
-	PLUGIN_CLASS_MEMBERS(RadialBlurConfig, RadialBlurThread)
+	PLUGIN_CLASS_MEMBERS
 
 	VFrame *input, *output, *temp;
 	RadialBlurEngine *engine;
@@ -166,7 +169,7 @@ public:
 };
 
 
-REGISTER_PLUGIN(RadialBlurMain)
+REGISTER_PLUGIN
 
 RadialBlurConfig::RadialBlurConfig()
 {
@@ -207,12 +210,11 @@ void RadialBlurConfig::copy_from(RadialBlurConfig &that)
 
 void RadialBlurConfig::interpolate(RadialBlurConfig &prev, 
 	RadialBlurConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	this->x = (int)(prev.x * prev_scale + next.x * next_scale + 0.5);
 	this->y = (int)(prev.y * prev_scale + next.y * next_scale + 0.5);
 	this->steps = (int)(prev.steps * prev_scale + next.steps * next_scale + 0.5);
@@ -223,7 +225,7 @@ void RadialBlurConfig::interpolate(RadialBlurConfig &prev,
 	a = prev.a;
 }
 
-PLUGIN_THREAD_OBJECT(RadialBlurMain, RadialBlurThread, RadialBlurWindow)
+PLUGIN_THREAD_METHODS
 
 RadialBlurWindow::RadialBlurWindow(RadialBlurMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -236,18 +238,8 @@ RadialBlurWindow::RadialBlurWindow(RadialBlurMain *plugin, int x, int y)
 	0, 
 	1)
 {
-	this->plugin = plugin; 
-}
+	x = y = 10;
 
-RadialBlurWindow::~RadialBlurWindow()
-{
-}
-
-int RadialBlurWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("X:")));
 	y += 20;
 	add_subwindow(this->x = new RadialBlurSize(plugin, x, y, &plugin->config.x, 0, 100));
@@ -272,13 +264,24 @@ int RadialBlurWindow::create_objects()
 	y += 30;
 	add_subwindow(a = new RadialBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
 	y += 30;
-
-	show_window();
-	flush();
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(RadialBlurWindow)
+RadialBlurWindow::~RadialBlurWindow()
+{
+}
+
+void RadialBlurWindow::update()
+{
+	x->update(plugin->config.x);
+	y->update(plugin->config.y);
+	angle->update(plugin->config.angle);
+	steps->update(plugin->config.steps);
+	r->update(plugin->config.r);
+	g->update(plugin->config.g);
+	b->update(plugin->config.b);
+	a->update(plugin->config.a);
+}
 
 
 RadialBlurToggle::RadialBlurToggle(RadialBlurMain *plugin, 
@@ -320,54 +323,34 @@ int RadialBlurSize::handle_event()
 }
 
 
-
 RadialBlurMain::RadialBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	temp = 0;
 	rotate = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 RadialBlurMain::~RadialBlurMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
 	if(temp) delete temp;
 	delete rotate;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* RadialBlurMain::plugin_title() { return N_("Radial Blur"); }
-int RadialBlurMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-
-NEW_PICON_MACRO(RadialBlurMain)
-
-SHOW_GUI_MACRO(RadialBlurMain, RadialBlurThread)
-
-SET_STRING_MACRO(RadialBlurMain)
-
-RAISE_WINDOW_MACRO(RadialBlurMain)
-
-LOAD_CONFIGURATION_MACRO(RadialBlurMain, RadialBlurConfig)
-
-int RadialBlurMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void RadialBlurMain::process_frame(VFrame *frame)
 {
 	load_configuration();
 
-
-	read_frame(frame,
-		0,
-		get_source_position(),
-		get_framerate(),
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 	if(get_use_opengl()){
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	if(!engine) engine = new RadialBlurEngine(this,
@@ -377,7 +360,6 @@ int RadialBlurMain::process_buffer(VFrame *frame,
 	this->input = frame;
 	this->output = frame;
 
-
 	if(!temp) temp = new VFrame(0,
 		frame->get_w(),
 		frame->get_h(),
@@ -386,37 +368,11 @@ int RadialBlurMain::process_buffer(VFrame *frame,
 	this->input = temp;
 
 	engine->process_packages();
-	return 0;
 }
-
-
-void RadialBlurMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->x->update(config.x);
-		thread->window->y->update(config.y);
-		thread->window->angle->update(config.angle);
-		thread->window->steps->update(config.steps);
-		thread->window->r->update(config.r);
-		thread->window->g->update(config.g);
-		thread->window->b->update(config.b);
-		thread->window->a->update(config.a);
-		thread->window->unlock_window();
-	}
-}
-
 
 void RadialBlurMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sradialblur.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
+	defaults = load_defaults_file("radialblur.rc");
 	defaults->load();
 
 	config.x = defaults->get("X", config.x);
@@ -473,23 +429,18 @@ void RadialBlurMain::read_data(KeyFrame *keyframe)
 
 	int result = 0;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("RADIALBLUR"))
 		{
-			if(input.tag.title_is("RADIALBLUR"))
-			{
-				config.x = input.tag.get_property("X", config.x);
-				config.y = input.tag.get_property("Y", config.y);
-				config.angle = input.tag.get_property("ANGLE", config.angle);
-				config.steps = input.tag.get_property("STEPS", config.steps);
-				config.r = input.tag.get_property("R", config.r);
-				config.g = input.tag.get_property("G", config.g);
-				config.b = input.tag.get_property("B", config.b);
-				config.a = input.tag.get_property("A", config.a);
-			}
+			config.x = input.tag.get_property("X", config.x);
+			config.y = input.tag.get_property("Y", config.y);
+			config.angle = input.tag.get_property("ANGLE", config.angle);
+			config.steps = input.tag.get_property("STEPS", config.steps);
+			config.r = input.tag.get_property("R", config.r);
+			config.g = input.tag.get_property("G", config.g);
+			config.b = input.tag.get_property("B", config.b);
+			config.a = input.tag.get_property("A", config.a);
 		}
 	}
 }
@@ -520,7 +471,6 @@ void RadialBlurMain::handle_opengl()
 		get_output()->draw_texture();
 	}
 	glAccum(GL_LOAD, 1.0);
-
 
 // Blur selected channels
 	float fraction = 1.0 / config.steps;
@@ -558,7 +508,6 @@ void RadialBlurMain::handle_opengl()
 			config.a ? 1 : 0);
 	}
 
-
 	glDisable(GL_BLEND);
 	glReadBuffer(GL_BACK);
 	glDisable(GL_TEXTURE_2D);
@@ -583,7 +532,6 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 	this->plugin = plugin;
 	this->server = server;
 }
-
 
 #define BLEND_LAYER(COMPONENTS, TYPE, TEMP_TYPE, MAX, DO_YUV) \
 { \
