@@ -19,6 +19,17 @@
  * 
  */
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Polar")
+#define PLUGIN_CLASS PolarEffect
+#define PLUGIN_CONFIG_CLASS PolarConfig
+#define PLUGIN_THREAD_CLASS PolarThread
+#define PLUGIN_GUI_CLASS PolarWindow
+
+#include "pluginmacros.h"
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -31,8 +42,6 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
-
-
 #include <string.h>
 #include <stdint.h>
 
@@ -41,9 +50,7 @@
 #define WITHIN(a, b, c) ((((a) <= (b)) && ((b) <= (c))) ? 1 : 0)
 
 
-class PolarEffect;
 class PolarEngine;
-class PolarWindow;
 
 
 class PolarConfig
@@ -55,18 +62,17 @@ public:
 	int equivalent(PolarConfig &src);
 	void interpolate(PolarConfig &prev, 
 		PolarConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int polar_to_rectangular;
 	float depth;
 	float angle;
 	int backwards;
 	int invert;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
-
 
 class PolarDepth : public BC_FSlider
 {
@@ -88,16 +94,15 @@ class PolarWindow : public BC_Window
 {
 public:
 	PolarWindow(PolarEffect *plugin, int x, int y);
-	void create_objects();
-	void close_event();
-	PolarEffect *plugin;
+
+	void update();
+
 	PolarDepth *depth;
 	PolarAngle *angle;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-
-PLUGIN_THREAD_HEADER(PolarEffect, PolarThread, PolarWindow)
-
+PLUGIN_THREAD_HEADER
 
 class PolarPackage : public LoadPackage
 {
@@ -130,15 +135,14 @@ public:
 	PolarEffect(PluginServer *server);
 	~PolarEffect();
 
-	PLUGIN_CLASS_MEMBERS(PolarConfig, PolarThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
+
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
 	PolarEngine *engine;
 	VFrame *temp_frame;
@@ -147,9 +151,7 @@ public:
 };
 
 
-
-REGISTER_PLUGIN(PolarEffect)
-
+REGISTER_PLUGIN
 
 
 PolarConfig::PolarConfig()
@@ -160,7 +162,6 @@ PolarConfig::PolarConfig()
 	invert = 0;
 	polar_to_rectangular = 1;
 }
-
 
 void PolarConfig::copy_from(PolarConfig &src)
 {
@@ -178,20 +179,15 @@ int PolarConfig::equivalent(PolarConfig &src)
 
 void PolarConfig::interpolate(PolarConfig &prev, 
 		PolarConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame)
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->depth = prev.depth * prev_scale + next.depth * next_scale;
 	this->angle = prev.angle * prev_scale + next.angle * next_scale;
 }
-
-
-
-
 
 
 PolarWindow::PolarWindow(PolarEffect *plugin, int x, int y)
@@ -206,27 +202,24 @@ PolarWindow::PolarWindow(PolarEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-void PolarWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Depth:")));
 	add_subwindow(depth = new PolarDepth(plugin, x + 50, y));
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Angle:")));
 	add_subwindow(angle = new PolarAngle(plugin, x + 50, y));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(PolarWindow)
+void PolarWindow::update()
+{
+	angle->update(plugin->config.angle);
+	depth->update(plugin->config.depth);
+}
 
-PLUGIN_THREAD_OBJECT(PolarEffect, PolarThread, PolarWindow)
+
+PLUGIN_THREAD_METHODS
 
 
 PolarDepth::PolarDepth(PolarEffect *plugin, int x, int y)
@@ -282,50 +275,16 @@ PolarEffect::PolarEffect(PluginServer *server)
 
 PolarEffect::~PolarEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-
-
-const char* PolarEffect::plugin_title() { return N_("Polar"); }
-int PolarEffect::is_realtime() { return 1; }
-
-
-
-NEW_PICON_MACRO(PolarEffect)
-
-SHOW_GUI_MACRO(PolarEffect, PolarThread)
-
-RAISE_WINDOW_MACRO(PolarEffect)
-
-SET_STRING_MACRO(PolarEffect)
-
-void PolarEffect::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->angle->update(config.angle);
-		thread->window->depth->update(config.depth);
-		thread->window->unlock_window();
-	}
-}
-
-LOAD_CONFIGURATION_MACRO(PolarEffect, PolarConfig)
-
+PLUGIN_CLASS_METHODS
 
 void PolarEffect::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%spolar.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("polar.rc");
 
 	config.depth = defaults->get("DEPTH", config.depth);
 	config.angle = defaults->get("ANGLE", config.angle);
@@ -358,8 +317,6 @@ void PolarEffect::read_data(KeyFrame *keyframe)
 	FileXML input;
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
-	int result = 0;
 
 	while(!input.read_tag())
 	{
