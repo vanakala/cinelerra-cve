@@ -22,11 +22,22 @@
 #ifndef RGB601_H
 #define RGB601_H
 
-class RGB601Main;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("RGB - 601")
+#define PLUGIN_CLASS RGB601Main
+#define PLUGIN_CONFIG_CLASS RGB601Config
+#define PLUGIN_THREAD_CLASS RGB601Thread
+#define PLUGIN_GUI_CLASS RGB601Window
+
+#include "pluginmacros.h"
 
 #define TOTAL_PATTERNS 2
 
 #include "bchash.h"
+#include "language.h"
 #include "mutex.h"
 #include "pluginvclient.h"
 #include "rgb601window.h"
@@ -40,6 +51,7 @@ public:
 // 1 -> RGB -> 601 
 // 2 -> 601 -> RGB
 	int direction;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class RGB601Main : public PluginVClient
@@ -48,14 +60,10 @@ public:
 	RGB601Main(PluginServer *server);
 	~RGB601Main();
 
-	PLUGIN_CLASS_MEMBERS(RGB601Config, RGB601Thread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
-	void update_gui();
+	void process_frame(VFrame *frame);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();

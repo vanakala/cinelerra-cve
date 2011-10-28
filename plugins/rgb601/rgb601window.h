@@ -31,14 +31,14 @@ class RGB601Window;
 #include "mutex.h"
 #include "rgb601.h"
 
-PLUGIN_THREAD_HEADER(RGB601Main, RGB601Thread, RGB601Window)
+PLUGIN_THREAD_HEADER
 
 class RGB601Direction : public BC_CheckBox
 {
 public:
-	RGB601Direction(RGB601Window *window, int x, int y, int *output, int true_value, char *text);
+	RGB601Direction(RGB601Window *window, int x, int y, int *output, int true_value, const char *text);
 	~RGB601Direction();
-	
+
 	int handle_event();
 	RGB601Window *window;
 	int *output;
@@ -48,15 +48,14 @@ public:
 class RGB601Window : public BC_Window
 {
 public:
-	RGB601Window(RGB601Main *client, int x, int y);
+	RGB601Window(RGB601Main *plugin, int x, int y);
 	~RGB601Window();
-	
-	int create_objects();
-	void close_event();
+
 	void update();
 
 	RGB601Main *client;
 	BC_CheckBox *forward, *reverse;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 #endif

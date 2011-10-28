@@ -31,9 +31,7 @@
 #include <string.h>
 
 
-REGISTER_PLUGIN(RGB601Main)
-
-
+REGISTER_PLUGIN
 
 
 RGB601Config::RGB601Config()
@@ -52,39 +50,11 @@ RGB601Main::~RGB601Main()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* RGB601Main::plugin_title() { return N_("RGB - 601"); }
-int RGB601Main::is_realtime() { return 1; }
-
-
-SHOW_GUI_MACRO(RGB601Main, RGB601Thread)
-
-SET_STRING_MACRO(RGB601Main)
-
-RAISE_WINDOW_MACRO(RGB601Main)
-
-NEW_PICON_MACRO(RGB601Main)
-
-void RGB601Main::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->forward->update(config.direction == 1);
-		thread->window->reverse->update(config.direction == 2);
-		thread->window->unlock_window();
-	}
-}
+PLUGIN_CLASS_METHODS
 
 void RGB601Main::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%srgb601.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("rgb601.rc");
 
 	config.direction = defaults->get("DIRECTION", config.direction);
 }
@@ -99,12 +69,11 @@ int RGB601Main::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	prev_keyframe = prev_keyframe_pts(source_pts);
 // Must also switch between interpolation between keyframes and using first keyframe
 	read_data(prev_keyframe);
-	return 0;
+	return 1;
 }
-
 
 void RGB601Main::save_data(KeyFrame *keyframe)
 {
@@ -129,20 +98,15 @@ void RGB601Main::read_data(KeyFrame *keyframe)
 	int result = 0;
 	float new_threshold;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("RGB601"))
 		{
-			if(input.tag.title_is("RGB601"))
-			{
-				config.direction = input.tag.get_property("DIRECTION", config.direction);
-			}
+			config.direction = input.tag.get_property("DIRECTION", config.direction);
 		}
 	}
 
-	if(thread) 
+	if(thread)
 	{
 		thread->window->update();
 	}
@@ -305,33 +269,27 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 		}
 }
 
-int RGB601Main::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void RGB601Main::process_frame(VFrame *frame)
 {
 	load_configuration();
 
 // Set parameters for aggregation with previous or next effect.
 	frame->get_params()->update("RGB601_DIRECTION", config.direction);
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 // Deinterlace effects may aggregate this one,
 	if(get_use_opengl() &&
 		(prev_effect_is("Frames to fields") ||
 		next_effect_is("Frames to fields")))
 	{
-		return 0;
+		return;
 	}
 
 	if(get_use_opengl() && config.direction)
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	create_table(frame);
@@ -341,8 +299,6 @@ int RGB601Main::process_buffer(VFrame *frame,
 	else
 	if(config.direction == 2)
 		process(reverse_table, frame, frame);
-
-	return 0;
 }
 
 void RGB601Main::handle_opengl()
@@ -410,6 +366,3 @@ void RGB601Main::handle_opengl()
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
 }
-
-
-

@@ -24,12 +24,11 @@
 #include "rgb601window.h"
 
 
+PLUGIN_THREAD_METHODS
 
-PLUGIN_THREAD_OBJECT(RGB601Main, RGB601Thread, RGB601Window)
 
-
-RGB601Window::RGB601Window(RGB601Main *client, int x, int y)
- : BC_Window(client->gui_string, 
+RGB601Window::RGB601Window(RGB601Main *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
 	210, 
@@ -39,49 +38,37 @@ RGB601Window::RGB601Window(RGB601Main *client, int x, int y)
 	0, 
 	0,
 	1)
-{ 
-	this->client = client; 
-}
-
-RGB601Window::~RGB601Window()
 {
-}
+	x = y = 10;
 
-int RGB601Window::create_objects()
-{
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
 	add_tool(forward = new RGB601Direction(this, 
 		x, 
 		y, 
-		&client->config.direction, 
+		&plugin->config.direction, 
 		1, 
 		_("RGB -> 601 compression")));
 	y += 30;
 	add_tool(reverse = new RGB601Direction(this, 
 		x, 
 		y, 
-		&client->config.direction, 
+		&plugin->config.direction, 
 		2, 
 		_("601 -> RGB expansion")));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
+}
 
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+RGB601Window::~RGB601Window()
+{
 }
 
 void RGB601Window::update()
 {
-	forward->update(client->config.direction == 1);
-	reverse->update(client->config.direction == 2);
+	forward->update(plugin->config.direction == 1);
+	reverse->update(plugin->config.direction == 2);
 }
 
-WINDOW_CLOSE_EVENT(RGB601Window)
 
-RGB601Direction::RGB601Direction(RGB601Window *window, int x, int y, int *output, int true_value, char *text)
+RGB601Direction::RGB601Direction(RGB601Window *window, int x, int y, int *output, int true_value, const char *text)
  : BC_CheckBox(x, y, *output == true_value, text)
 {
 	this->output = output;
@@ -97,6 +84,6 @@ int RGB601Direction::handle_event()
 {
 	*output = get_value() ? true_value : 0;
 	window->update();
-	window->client->send_configure_change();
+	window->plugin->send_configure_change();
 	return 1;
 }
