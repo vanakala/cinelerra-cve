@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 
-REGISTER_PLUGIN(SharpenMain)
+REGISTER_PLUGIN
 
 
 SharpenConfig::SharpenConfig()
@@ -60,12 +60,12 @@ int SharpenConfig::equivalent(SharpenConfig &that)
 
 void SharpenConfig::interpolate(SharpenConfig &prev, 
 	SharpenConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
+
 	this->sharpness = prev.sharpness * prev_scale + next.sharpness * next_scale;
 	this->interlace = prev.interlace;
 	this->horizontal = prev.horizontal;
@@ -76,14 +76,12 @@ void SharpenConfig::interpolate(SharpenConfig &prev,
 SharpenMain::SharpenMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 SharpenMain::~SharpenMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(engine)
 	{
 		for(int i = 0; i < total_engines; i++)
@@ -92,22 +90,10 @@ SharpenMain::~SharpenMain()
 		}
 		delete engine;
 	}
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-SHOW_GUI_MACRO(SharpenMain, SharpenThread)
-
-SET_STRING_MACRO(SharpenMain)
-
-RAISE_WINDOW_MACRO(SharpenMain)
-
-NEW_PICON_MACRO(SharpenMain)
-
-LOAD_CONFIGURATION_MACRO(SharpenMain, SharpenConfig)
-
-const char* SharpenMain::plugin_title() { return N_("Sharpen"); }
-int SharpenMain::is_realtime() { return 1; }
-
-
+PLUGIN_CLASS_METHODS
 
 void SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
@@ -154,29 +140,9 @@ void SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 }
 
-void SharpenMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->sharpen_slider->update((int)config.sharpness);
-		thread->window->sharpen_interlace->update(config.interlace);
-		thread->window->sharpen_horizontal->update(config.horizontal);
-		thread->window->sharpen_luminance->update(config.luminance);
-		thread->window->unlock_window();
-	}
-}
-
 void SharpenMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%ssharpen.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("sharpen.rc");
 
 	config.sharpness = defaults->get("SHARPNESS", config.sharpness);
 	config.interlace = defaults->get("INTERLACE", config.interlace);
@@ -193,10 +159,7 @@ void SharpenMain::save_defaults()
 	defaults->save();
 }
 
-
-
-
-int SharpenMain::get_luts(int *pos_lut, int *neg_lut, int color_model)
+void SharpenMain::get_luts(int *pos_lut, int *neg_lut, int color_model)
 {
 	int i, inv_sharpness, vmax;
 
@@ -211,8 +174,6 @@ int SharpenMain::get_luts(int *pos_lut, int *neg_lut, int color_model)
 		pos_lut[i] = 800 * i / inv_sharpness;
 		neg_lut[i] = (4 + pos_lut[i] - (i << 3)) >> 3;
 	}
-
-	return 0;
 }
 
 void SharpenMain::save_data(KeyFrame *keyframe)
@@ -331,7 +292,7 @@ SharpenEngine::~SharpenEngine()
 	delete output_lock;
 }
 
-int SharpenEngine::start_process_frame(VFrame *output, VFrame *input, int field)
+void SharpenEngine::start_process_frame(VFrame *output, VFrame *input, int field)
 {
 	this->output = output;
 	this->input = input;
@@ -344,13 +305,11 @@ int SharpenEngine::start_process_frame(VFrame *output, VFrame *input, int field)
 	sharpness_coef = 800.0 / sharpness_coef;
 
 	input_lock->unlock();
-	return 0;
 }
 
-int SharpenEngine::wait_process_frame()
+void SharpenEngine::wait_process_frame()
 {
 	output_lock->lock("SharpenEngine::wait_process_frame");
-	return 0;
 }
 
 float SharpenEngine::calculate_pos(float value)
@@ -637,8 +596,6 @@ void SharpenEngine::filter(int components,
 	} \
 }
 
-
-
 void SharpenEngine::run()
 {
 	while(1)
@@ -649,7 +606,6 @@ void SharpenEngine::run()
 			output_lock->unlock();
 			return;
 		}
-
 
 		switch(input->get_color_model())
 		{
@@ -685,4 +641,3 @@ void SharpenEngine::run()
 		output_lock->unlock();
 	}
 }
-

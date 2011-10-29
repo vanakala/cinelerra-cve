@@ -22,16 +22,10 @@
 #include "bcdisplayinfo.h"
 #include "sharpenwindow.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+PLUGIN_THREAD_METHODS
 
-
-PLUGIN_THREAD_OBJECT(SharpenMain, SharpenThread, SharpenWindow)
-
-SharpenWindow::SharpenWindow(SharpenMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+SharpenWindow::SharpenWindow(SharpenMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
 	210, 
@@ -41,39 +35,32 @@ SharpenWindow::SharpenWindow(SharpenMain *client, int x, int y)
 	0, 
 	0,
 	1)
-{ 
-	this->client = client; 
+{
+	x = y = 10;
+	add_tool(new BC_Title(x, y, _("Sharpness")));
+	y += 20;
+	add_tool(sharpen_slider = new SharpenSlider(plugin, &(plugin->config.sharpness), x, y));
+	y += 30;
+	add_tool(sharpen_interlace = new SharpenInterlace(plugin, x, y));
+	y += 30;
+	add_tool(sharpen_horizontal = new SharpenHorizontal(plugin, x, y));
+	y += 30;
+	add_tool(sharpen_luminance = new SharpenLuminance(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 SharpenWindow::~SharpenWindow()
 {
 }
 
-int SharpenWindow::create_objects()
+void SharpenWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
-	add_tool(new BC_Title(x, y, _("Sharpness")));
-	y += 20;
-	add_tool(sharpen_slider = new SharpenSlider(client, &(client->config.sharpness), x, y));
-	y += 30;
-	add_tool(sharpen_interlace = new SharpenInterlace(client, x, y));
-	y += 30;
-	add_tool(sharpen_horizontal = new SharpenHorizontal(client, x, y));
-	y += 30;
-	add_tool(sharpen_luminance = new SharpenLuminance(client, x, y));
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+	sharpen_slider->update((int)plugin->config.sharpness);
+	sharpen_interlace->update(plugin->config.interlace);
+	sharpen_horizontal->update(plugin->config.horizontal);
+	sharpen_luminance->update(plugin->config.luminance);
 }
 
-void SharpenWindow::close_event()
-{
-	set_done(1);
-}
 
 SharpenSlider::SharpenSlider(SharpenMain *client, float *output, int x, int y)
  : BC_ISlider(x, 
@@ -91,9 +78,11 @@ SharpenSlider::SharpenSlider(SharpenMain *client, float *output, int x, int y)
 	this->client = client;
 	this->output = output;
 }
+
 SharpenSlider::~SharpenSlider()
 {
 }
+
 int SharpenSlider::handle_event()
 {
 	*output = get_value();
@@ -136,7 +125,6 @@ int SharpenHorizontal::handle_event()
 	client->send_configure_change();
 	return 1;
 }
-
 
 
 SharpenLuminance::SharpenLuminance(SharpenMain *client, int x, int y)

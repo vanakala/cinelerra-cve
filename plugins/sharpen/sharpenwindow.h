@@ -24,19 +24,13 @@
 
 #include "guicast.h"
 
-class SharpenThread;
-class SharpenWindow;
 class SharpenInterlace;
 
 #include "filexml.h"
 #include "mutex.h"
 #include "sharpen.h"
 
-
-
-
-
-PLUGIN_THREAD_HEADER(SharpenMain, SharpenThread, SharpenWindow)
+PLUGIN_THREAD_HEADER
 
 class SharpenSlider;
 class SharpenHorizontal;
@@ -45,17 +39,16 @@ class SharpenLuminance;
 class SharpenWindow : public BC_Window
 {
 public:
-	SharpenWindow(SharpenMain *client, int x, int y);
+	SharpenWindow(SharpenMain *plugin, int x, int y);
 	~SharpenWindow();
-	
-	int create_objects();
-	void close_event();
-	
-	SharpenMain *client;
+
+	void update();
+
 	SharpenSlider *sharpen_slider;
 	SharpenInterlace *sharpen_interlace;
 	SharpenHorizontal *sharpen_horizontal;
 	SharpenLuminance *sharpen_luminance;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class SharpenSlider : public BC_ISlider
@@ -98,6 +91,5 @@ public:
 
 	SharpenMain *client;
 };
-
 
 #endif

@@ -24,12 +24,22 @@
 
 // the simplest plugin possible
 // Sharpen leaves the last line too bright
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
 
-class SharpenMain;
+#define PLUGIN_TITLE N_("Sharpen")
+#define PLUGIN_CLASS SharpenMain
+#define PLUGIN_CONFIG_CLASS SharpenConfig
+#define PLUGIN_THREAD_CLASS SharpenThread
+#define PLUGIN_GUI_CLASS SharpenWindow
+
+#include "pluginmacros.h"
+
 #define MAXSHARPNESS 100
 
 #include "condition.inc"
 #include "bchash.h"
+#include "language.h"
 #include "pluginvclient.h"
 #include "sharpenwindow.h"
 
@@ -41,19 +51,20 @@ class SharpenConfig
 {
 public:
 	SharpenConfig();
-	
+
 	void copy_from(SharpenConfig &that);
 	int equivalent(SharpenConfig &that);
 	void interpolate(SharpenConfig &prev, 
 		SharpenConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int horizontal;
 	int interlace;
 	int luminance;
 	float sharpness;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class SharpenMain : public PluginVClient
@@ -62,12 +73,10 @@ public:
 	SharpenMain(PluginServer *server);
 	~SharpenMain();
 
-	PLUGIN_CLASS_MEMBERS(SharpenConfig, SharpenThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
-	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -80,7 +89,7 @@ public:
 	VFrame *output, *input;
 
 private:
-	int get_luts(int *pos_lut, int *neg_lut, int color_model);
+	void get_luts(int *pos_lut, int *neg_lut, int color_model);
 	SharpenEngine **engine;
 	int total_engines;
 };
@@ -92,8 +101,8 @@ public:
 	SharpenEngine(SharpenMain *plugin);
 	~SharpenEngine();
 
-	int start_process_frame(VFrame *output, VFrame *input, int field);
-	int wait_process_frame();
+	void start_process_frame(VFrame *output, VFrame *input, int field);
+	void wait_process_frame();
 	void run();
 
 	void filter(int components,
@@ -156,7 +165,6 @@ public:
 
 	float calculate_pos(float value);
 	float calculate_neg(float value);
-
 
 	SharpenMain *plugin;
 	int field;
