@@ -24,13 +24,11 @@
 #include "language.h"
 #include "picon_png.h"
 #include "scale.h"
-#include "scalewin.h"
 
 #include <string.h>
 
 
-REGISTER_PLUGIN(ScaleMain)
-
+REGISTER_PLUGIN
 
 
 ScaleConfig::ScaleConfig()
@@ -56,12 +54,11 @@ int ScaleConfig::equivalent(ScaleConfig &src)
 
 void ScaleConfig::interpolate(ScaleConfig &prev, 
 	ScaleConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->w = prev.w * prev_scale + next.w * next_scale;
 	this->h = prev.h * prev_scale + next.h * next_scale;
@@ -78,26 +75,16 @@ ScaleMain::ScaleMain(PluginServer *server)
 
 ScaleMain::~ScaleMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(overlayer) delete overlayer;
 	overlayer = 0;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* ScaleMain::plugin_title() { return N_("Scale"); }
-int ScaleMain::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(ScaleMain)
+PLUGIN_CLASS_METHODS
 
 void ScaleMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sscale.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("scale.rc");
 
 	config.w = defaults->get("WIDTH", config.w);
 	config.h = defaults->get("HEIGHT", config.h);
@@ -111,9 +98,6 @@ void ScaleMain::save_defaults()
 	defaults->update("CONSTRAIN", config.constrain);
 	defaults->save();
 }
-
-LOAD_CONFIGURATION_MACRO(ScaleMain, ScaleConfig)
-
 
 void ScaleMain::save_data(KeyFrame *keyframe)
 {
@@ -150,29 +134,22 @@ void ScaleMain::read_data(KeyFrame *keyframe)
 	int result = 0;
 	config.constrain = 0;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("SCALE"))
 		{
-			if(input.tag.title_is("SCALE"))
-			{
-				config.w = input.tag.get_property("WIDTH", config.w);
-				config.h = input.tag.get_property("HEIGHT", config.h);
-			}
-			else
-			if(input.tag.title_is("CONSTRAIN"))
-			{
-				config.constrain = 1;
-			}
+			config.w = input.tag.get_property("WIDTH", config.w);
+			config.h = input.tag.get_property("HEIGHT", config.h);
+		}
+		else
+		if(input.tag.title_is("CONSTRAIN"))
+		{
+			config.constrain = 1;
 		}
 	}
 }
 
-int ScaleMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void ScaleMain::process_frame(VFrame *frame)
 {
 	VFrame *input, *output;
 
@@ -181,20 +158,16 @@ int ScaleMain::process_buffer(VFrame *frame,
 
 	load_configuration();
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 // No scaling
-	if(config.w == 1 && config.h == 1)
-		return 0;
+	if(EQUIV(config.w, 1) && EQUIV(config.h,1))
+		return;
 
 	if(get_use_opengl())
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	VFrame *temp_frame = new_temp(frame->get_w(), 
@@ -207,7 +180,6 @@ int ScaleMain::process_buffer(VFrame *frame,
 	{
 		overlayer = new OverlayFrame(smp + 1);
 	}
-
 
 // Perform scaling
 	float in_x1, in_x2, in_y1, in_y2, out_x1, out_x2, out_y1, out_y2;
@@ -235,8 +207,6 @@ int ScaleMain::process_buffer(VFrame *frame,
 		1,
 		TRANSFER_REPLACE,
 		get_interpolation_type());
-
-	return 0;
 }
 
 void ScaleMain::calculate_transfer(VFrame *frame,
@@ -260,7 +230,6 @@ void ScaleMain::calculate_transfer(VFrame *frame,
 	out_x2 = (float)center_x + (float)frame->get_w() * config.w / 2;
 	out_y1 = (float)center_y - (float)frame->get_h() * config.h / 2;
 	out_y2 = (float)center_y + (float)frame->get_h() * config.h / 2;
-
 
 	if(out_x1 < 0)
 	{
@@ -316,22 +285,4 @@ void ScaleMain::handle_opengl()
 		out_y2);
 	get_output()->set_opengl_state(VFrame::SCREEN);
 #endif
-}
-
-
-SHOW_GUI_MACRO(ScaleMain, ScaleThread)
-RAISE_WINDOW_MACRO(ScaleMain)
-SET_STRING_MACRO(ScaleMain)
-
-void ScaleMain::update_gui()
-{
-	if(thread) 
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->width->update(config.w);
-		thread->window->height->update(config.h);
-		thread->window->constrain->update(config.constrain);
-		thread->window->unlock_window();
-	}
 }

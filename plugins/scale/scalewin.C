@@ -24,21 +24,10 @@
 #include "language.h"
 #include "scale.h"
 
+PLUGIN_THREAD_METHODS
 
-
-
-
-PLUGIN_THREAD_OBJECT(ScaleMain, ScaleThread, ScaleWin)
-
-
-
-
-
-
-
-
-ScaleWin::ScaleWin(ScaleMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+ScaleWin::ScaleWin(ScaleMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
 	150, 
@@ -49,39 +38,31 @@ ScaleWin::ScaleWin(ScaleMain *client, int x, int y)
 	0,
 	1)
 { 
-	this->client = client; 
+	x = y = 10;
+
+	add_tool(new BC_Title(x, y, _("X Scale:")));
+	y += 20;
+	width = new ScaleWidth(this, plugin, x, y);
+	width->create_objects();
+	y += 30;
+	add_tool(new BC_Title(x, y, _("Y Scale:")));
+	y += 20;
+	height = new ScaleHeight(this, plugin, x, y);
+	height->create_objects();
+	y += 35;
+	add_tool(constrain = new ScaleConstrain(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 ScaleWin::~ScaleWin()
 {
 }
 
-int ScaleWin::create_objects()
+void ScaleWin::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
-	add_tool(new BC_Title(x, y, _("X Scale:")));
-	y += 20;
-	width = new ScaleWidth(this, client, x, y);
-	width->create_objects();
-	y += 30;
-	add_tool(new BC_Title(x, y, _("Y Scale:")));
-	y += 20;
-	height = new ScaleHeight(this, client, x, y);
-	height->create_objects();
-	y += 35;
-	add_tool(constrain = new ScaleConstrain(client, x, y));
-	show_window();
-	flush();
-	delete ico;
-	return 0;
-}
-
-void ScaleWin::close_event()
-{
-	set_done(1);
+	width->update(plugin->config.w);
+	height->update(plugin->config.h);
+	constrain->update(plugin->config.constrain);
 }
 
 ScaleWidth::ScaleWidth(ScaleWin *win, 
@@ -89,14 +70,13 @@ ScaleWidth::ScaleWidth(ScaleWin *win,
 	int x, 
 	int y)
  : BC_TumbleTextBox(win,
- 	(float)client->config.w,
+	(float)client->config.w,
 	(float)0,
 	(float)100,
 	x, 
 	y, 
 	100)
 {
-//printf("ScaleWidth::ScaleWidth %f\n", client->config.w);
 	this->client = client;
 	this->win = win;
 	set_increment(0.1);
@@ -117,17 +97,14 @@ int ScaleWidth::handle_event()
 		win->height->update(client->config.h);
 	}
 
-//printf("ScaleWidth::handle_event 1 %f\n", client->config.w);
 	client->send_configure_change();
 	return 1;
 }
 
 
-
-
 ScaleHeight::ScaleHeight(ScaleWin *win, ScaleMain *client, int x, int y)
  : BC_TumbleTextBox(win,
- 	(float)client->config.h,
+	(float)client->config.h,
 	(float)0,
 	(float)100,
 	x, 
@@ -138,9 +115,11 @@ ScaleHeight::ScaleHeight(ScaleWin *win, ScaleMain *client, int x, int y)
 	this->win = win;
 	set_increment(0.1);
 }
+
 ScaleHeight::~ScaleHeight()
 {
 }
+
 int ScaleHeight::handle_event()
 {
 	client->config.h = atof(get_text());
@@ -157,18 +136,16 @@ int ScaleHeight::handle_event()
 }
 
 
-
-
-
-
 ScaleConstrain::ScaleConstrain(ScaleMain *client, int x, int y)
  : BC_CheckBox(x, y, client->config.constrain, _("Constrain ratio"))
 {
 	this->client = client;
 }
+
 ScaleConstrain::~ScaleConstrain()
 {
 }
+
 int ScaleConstrain::handle_event()
 {
 	client->config.constrain = get_value();

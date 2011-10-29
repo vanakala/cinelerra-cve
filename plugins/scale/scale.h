@@ -24,17 +24,25 @@
 
 // the simplest plugin possible
 
-class ScaleMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Scale")
+#define PLUGIN_CLASS ScaleMain
+#define PLUGIN_CONFIG_CLASS ScaleConfig
+#define PLUGIN_THREAD_CLASS ScaleThread
+#define PLUGIN_GUI_CLASS ScaleWin
+
+#include "pluginmacros.h"
+
 class ScaleWidth;
 class ScaleHeight;
 class ScaleConstrain;
-class ScaleThread;
-class ScaleWin;
 
 #include "bchash.h"
 #include "guicast.h"
+#include "language.h"
 #include "mutex.h"
-#include "scalewin.h"
 #include "overlayframe.h"
 #include "pluginvclient.h"
 
@@ -47,12 +55,13 @@ public:
 	int equivalent(ScaleConfig &src);
 	void interpolate(ScaleConfig &prev, 
 		ScaleConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	float w, h;
 	int constrain;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -91,19 +100,18 @@ public:
 class ScaleWin : public BC_Window
 {
 public:
-	ScaleWin(ScaleMain *client, int x, int y);
+	ScaleWin(ScaleMain *plugin, int x, int y);
 	~ScaleWin();
 
-	int create_objects();
-	void close_event();
+	void update();
 
-	ScaleMain *client;
 	ScaleWidth *width;
 	ScaleHeight *height;
 	ScaleConstrain *constrain;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(ScaleMain, ScaleThread, ScaleWin)
+PLUGIN_THREAD_HEADER
 
 class ScaleMain : public PluginVClient
 {
@@ -111,12 +119,10 @@ public:
 	ScaleMain(PluginServer *server);
 	~ScaleMain();
 
-	PLUGIN_CLASS_MEMBERS(ScaleConfig, ScaleThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
+	void process_frame(VFrame *frame);
 	void calculate_transfer(VFrame *frame,
 		float &in_x1, 
 		float &in_x2, 
@@ -127,8 +133,6 @@ public:
 		float &out_y1, 
 		float &out_y2);
 	void handle_opengl();
-	int is_realtime();
-	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -136,6 +140,4 @@ public:
 
 	OverlayFrame *overlayer;   // To scale images
 };
-
-
 #endif
