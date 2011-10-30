@@ -25,7 +25,7 @@
 #include "colorpicker.h"
 #include "guicast.h"
 #include "pluginvclient.h"
-#include "threshold.inc"
+#include "threshold.h"
 #include "thresholdwindow.inc"
 
 class ThresholdMin : public BC_TumbleTextBox
@@ -150,14 +150,12 @@ class ThresholdWindow : public BC_Window
 public:
 	ThresholdWindow(ThresholdMain *plugin, int x, int y);
 	~ThresholdWindow();
-	
-	int create_objects();
-	void close_event();
+
+	void update();
 	void update_low_color();
 	void update_mid_color();
 	void update_high_color();
 
-	ThresholdMain *plugin;
 	ThresholdMin *min;
 	ThresholdMax *max;
 	ThresholdCanvas *canvas;
@@ -172,10 +170,10 @@ public:
 	int low_color_x,  low_color_y;
 	int mid_color_x,  mid_color_y;
 	int high_color_x, high_color_y;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(ThresholdMain, ThresholdThread, ThresholdWindow)
-
+PLUGIN_THREAD_HEADER
 
 #endif
 

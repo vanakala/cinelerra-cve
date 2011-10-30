@@ -390,30 +390,8 @@ int ThresholdHighColorThread::handle_new_color(int output, int alpha)
 ThresholdWindow::ThresholdWindow(ThresholdMain *plugin, int x, int y)
 : BC_Window(plugin->gui_string, x, y, 450, 450, 450, 450, 0, 1)
 {
-	this->plugin = plugin;
-	this->min = 0;
-	this->max = 0;
-	this->canvas = 0;
-	this->plot = 0;
-	this->low_color = 0;
-	this->mid_color = 0;
-	this->high_color = 0;
-	this->low_color_thread = 0;
-	this->mid_color_thread = 0;
-	this->high_color_thread = 0;
-}
+	x = y = 10;
 
-ThresholdWindow::~ThresholdWindow()
-{
-}
-
-int ThresholdWindow::create_objects()
-{
-	int x = 10;
-	int y = 10;
-
-	VFrame *ico = plugin->new_picon();
-	set_icon(ico);
 	add_subwindow(canvas = new ThresholdCanvas(plugin,
 		this,
 		x,
@@ -469,11 +447,27 @@ int ThresholdWindow::create_objects()
 	low_color_thread  = new ThresholdLowColorThread(plugin, this);
 	mid_color_thread  = new ThresholdMidColorThread(plugin, this);
 	high_color_thread = new ThresholdHighColorThread(plugin, this);
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_low_color();
 	update_mid_color();
 	update_high_color();
-	delete ico;
-	show_window(1);
+}
+
+ThresholdWindow::~ThresholdWindow()
+{
+}
+
+void ThresholdWindow::update()
+{
+	min->update(plugin->config.min);
+	max->update(plugin->config.max);
+	plot->update(plugin->config.plot);
+	update_low_color();
+	update_mid_color();
+	update_high_color();
+	low_color_thread->update_gui(plugin->config.low_color.getRGB(), plugin->config.low_color.a);
+	mid_color_thread->update_gui(plugin->config.mid_color.getRGB(), plugin->config.mid_color.a);
+	high_color_thread->update_gui(plugin->config.high_color.getRGB(), plugin->config.high_color.a);
 }
 
 void ThresholdWindow::update_low_color()
@@ -497,6 +491,4 @@ void ThresholdWindow::update_high_color()
 	flash(high_color_x, high_color_y, COLOR_W, COLOR_H);
 }
 
-WINDOW_CLOSE_EVENT(ThresholdWindow)
-
-PLUGIN_THREAD_OBJECT(ThresholdMain, ThresholdThread, ThresholdWindow)
+PLUGIN_THREAD_METHODS

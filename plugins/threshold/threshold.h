@@ -22,8 +22,19 @@
 #ifndef THRESHOLD_H
 #define THRESHOLD_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Threshold")
+#define PLUGIN_CLASS ThresholdMain
+#define PLUGIN_CONFIG_CLASS ThresholdConfig
+#define PLUGIN_THREAD_CLASS ThresholdThread
+#define PLUGIN_GUI_CLASS ThresholdWindow
+
+#include "pluginmacros.h"
 
 #include "histogramengine.inc"
+#include "language.h"
 #include "loadbalance.h"
 #include "thresholdwindow.inc"
 #include "plugincolors.inc"
@@ -71,7 +82,6 @@ template<>
 RGBA interpolate(const RGBA & prev_color, const double & prev_scale, const RGBA &next_color, const double & next_scale);
 
 
-
 class ThresholdConfig
 {
 public:
@@ -80,10 +90,9 @@ public:
 	void copy_from(ThresholdConfig &that);
 	void interpolate(ThresholdConfig &prev,
 		ThresholdConfig &next,
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
-	void reset();
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	void boundaries();
 
 	float min;
@@ -92,8 +101,8 @@ public:
 	RGBA low_color;
 	RGBA mid_color;
 	RGBA high_color;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
 
 
 class ThresholdMain : public PluginVClient
@@ -102,20 +111,16 @@ public:
 	ThresholdMain(PluginServer *server);
 	~ThresholdMain();
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void render_gui(void *data);
 	void calculate_histogram(VFrame *frame);
 	void handle_opengl();
 
-	PLUGIN_CLASS_MEMBERS(ThresholdConfig, ThresholdThread);
+	PLUGIN_CLASS_MEMBERS
 	HistogramEngine *engine;
 	ThresholdEngine *threshold_engine;
 };

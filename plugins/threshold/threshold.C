@@ -24,6 +24,7 @@
 #include "filexml.h"
 #include "histogramengine.h"
 #include "language.h"
+#include "picon_png.h"
 #include "plugincolors.h"
 #include "threshold.h"
 #include "thresholdwindow.h"
@@ -35,10 +36,14 @@
 using std::string;
 
 
-
 ThresholdConfig::ThresholdConfig()
 {
-	reset();
+	min = 0.0;
+	max = 1.0;
+	plot = 1;
+	low_color.set (0x0,  0x0,  0x0,  0xff);
+	mid_color.set (0xff, 0xff, 0xff, 0xff);
+	high_color.set(0x0,  0x0,  0x0,  0xff);
 }
 
 int ThresholdConfig::equivalent(ThresholdConfig &that)
@@ -70,14 +75,11 @@ T interpolate(const T & prev, const double & prev_scale, const T & next, const d
 
 void ThresholdConfig::interpolate(ThresholdConfig &prev,
 	ThresholdConfig &next,
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / 
-		(next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / 
-		(next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	min = ::interpolate(prev.min, prev_scale, next.min, next_scale);
 	max = ::interpolate(prev.max, prev_scale, next.max, next_scale);
@@ -88,16 +90,6 @@ void ThresholdConfig::interpolate(ThresholdConfig &prev,
 	high_color = ::interpolate(prev.high_color, prev_scale, next.high_color, next_scale);
 }
 
-void ThresholdConfig::reset()
-{
-	min = 0.0;
-	max = 1.0;
-	plot = 1;
-	low_color.set (0x0,  0x0,  0x0,  0xff);
-	mid_color.set (0xff, 0xff, 0xff, 0xff);
-	high_color.set(0x0,  0x0,  0x0,  0xff);
-}
-
 void ThresholdConfig::boundaries()
 {
 	CLAMP(min, HISTOGRAM_MIN, max);
@@ -105,70 +97,41 @@ void ThresholdConfig::boundaries()
 }
 
 
-REGISTER_PLUGIN(ThresholdMain)
+REGISTER_PLUGIN
+
 
 ThresholdMain::ThresholdMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	threshold_engine = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ThresholdMain::~ThresholdMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	delete engine;
 	delete threshold_engine;
-}
-
-int ThresholdMain::is_realtime()
-{
-	return 1;
-}
-
-const char* ThresholdMain::plugin_title() 
-{ 
-	return N_("Threshold"); 
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
 
-#include "picon_png.h"
-NEW_PICON_MACRO(ThresholdMain)
-
-SHOW_GUI_MACRO(ThresholdMain, ThresholdThread)
-
-SET_STRING_MACRO(ThresholdMain)
-
-RAISE_WINDOW_MACRO(ThresholdMain)
-
-LOAD_CONFIGURATION_MACRO(ThresholdMain, ThresholdConfig)
+PLUGIN_CLASS_METHODS
 
 
-
-
-
-
-
-int ThresholdMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void ThresholdMain::process_frame(VFrame *frame)
 {
 	load_configuration();
 
 	int use_opengl = get_use_opengl() &&
 		(!config.plot || !gui_open());
 
-	read_frame(frame,
-		0,
-		get_source_position(),
-		get_framerate(),
-		use_opengl);
+	get_frame(frame, use_opengl);
 
 	if(use_opengl)
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	send_render_gui(frame);
@@ -176,16 +139,11 @@ int ThresholdMain::process_buffer(VFrame *frame,
 	if(!threshold_engine)
 		threshold_engine = new ThresholdEngine(this);
 	threshold_engine->process_packages(frame);
-
-	return 0;
 }
 
 void ThresholdMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%sthreshold.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("threshold.rc");
 	config.min = defaults->get("MIN", config.min);
 	config.max = defaults->get("MAX", config.max);
 	config.plot = defaults->get("PLOT", config.plot);
@@ -226,42 +184,17 @@ void ThresholdMain::read_data(KeyFrame *keyframe)
 {
 	FileXML file;
 	file.set_shared_string(keyframe->data, strlen(keyframe->data));
-	int result = 0;
-	while(!result)
+
+	while(!file.read_tag())
 	{
-		result = file.read_tag();
-		if(!result)
-		{
-			config.min = file.tag.get_property("MIN", config.min);
-			config.max = file.tag.get_property("MAX", config.max);
-			config.plot = file.tag.get_property("PLOT", config.plot);
-			config.low_color = config.low_color.get_property(file.tag, "LOW_COLOR");
-			config.mid_color = config.mid_color.get_property(file.tag, "MID_COLOR");
-			config.high_color = config.high_color.get_property(file.tag, "HIGH_COLOR");
-		}
+		config.min = file.tag.get_property("MIN", config.min);
+		config.max = file.tag.get_property("MAX", config.max);
+		config.plot = file.tag.get_property("PLOT", config.plot);
+		config.low_color = config.low_color.get_property(file.tag, "LOW_COLOR");
+		config.mid_color = config.mid_color.get_property(file.tag, "MID_COLOR");
+		config.high_color = config.high_color.get_property(file.tag, "HIGH_COLOR");
 	}
 	config.boundaries();
-}
-
-void ThresholdMain::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window("ThresholdMain::update_gui");
-		if(load_configuration())
-		{
-			thread->window->min->update(config.min);
-			thread->window->max->update(config.max);
-			thread->window->plot->update(config.plot);
-			thread->window->update_low_color();
-			thread->window->update_mid_color();
-			thread->window->update_high_color();
-			thread->window->low_color_thread->update_gui(config.low_color.getRGB(), config.low_color.a);
-			thread->window->mid_color_thread->update_gui(config.mid_color.getRGB(), config.mid_color.a);
-			thread->window->high_color_thread->update_gui(config.high_color.getRGB(), config.high_color.a);
-		}
-		thread->window->unlock_window();
-	}
 }
 
 void ThresholdMain::render_gui(void *data)
@@ -618,7 +551,6 @@ void ThresholdUnit::process_package(LoadPackage *package)
 			break;
 	}
 }
-
 
 
 ThresholdEngine::ThresholdEngine(ThresholdMain *plugin)
