@@ -32,7 +32,7 @@
 #include <string.h>
 
 
-REGISTER_PLUGIN(SwapMain)
+REGISTER_PLUGIN
 
 
 SwapConfig::SwapConfig()
@@ -42,7 +42,6 @@ SwapConfig::SwapConfig()
 	blue = BLUE_SRC;
 	alpha = ALPHA_SRC;
 }
-
 
 int SwapConfig::equivalent(SwapConfig &that)
 {
@@ -73,19 +72,9 @@ SwapWindow::SwapWindow(SwapMain *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-SwapWindow::~SwapWindow()
-{
-}
-
-void SwapWindow::create_objects()
-{
-	int x = 10, y = 10;
 	int margin = 30;
+	x = y = 10;
 
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Swap channels")));
 	y += margin;
 	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Red")));
@@ -103,13 +92,20 @@ void SwapWindow::create_objects()
 	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Alpha")));
 	add_subwindow(alpha = new SwapMenu(plugin, &(plugin->config.alpha), x, y));
 	alpha->create_objects();
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(SwapWindow)
+SwapWindow::~SwapWindow()
+{
+}
 
+void SwapWindow::update()
+{
+	red->set_text(plugin->output_to_text(plugin->config.red));
+	green->set_text(plugin->output_to_text(plugin->config.green));
+	blue->set_text(plugin->output_to_text(plugin->config.blue));
+	alpha->set_text(plugin->output_to_text(plugin->config.alpha));
+}
 
 SwapMenu::SwapMenu(SwapMain *client, int *output, int x, int y)
  : BC_PopupMenu(x, y, 150, client->output_to_text(*output))
@@ -124,7 +120,7 @@ int SwapMenu::handle_event()
 	return 1;
 }
 
-int SwapMenu::create_objects()
+void SwapMenu::create_objects()
 {
 	add_item(new SwapItem(this, client->output_to_text(RED_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(GREEN_SRC)));
@@ -132,7 +128,6 @@ int SwapMenu::create_objects()
 	add_item(new SwapItem(this, client->output_to_text(ALPHA_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(NO_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(MAX_SRC)));
-	return 0;
 }
 
 
@@ -151,49 +146,27 @@ int SwapItem::handle_event()
 }
 
 
-PLUGIN_THREAD_OBJECT(SwapMain, SwapThread, SwapWindow)
-
+PLUGIN_THREAD_METHODS
 
 
 SwapMain::SwapMain(PluginServer *server)
  : PluginVClient(server)
 {
-	reset();
+	temp = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 SwapMain::~SwapMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(temp) delete temp;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-void SwapMain::reset()
-{
-	temp = 0;
-}
-
-
-const char* SwapMain::plugin_title()  { return N_("Swap channels"); }
-int SwapMain::is_synthesis() { return 1; }
-int SwapMain::is_realtime()  { return 1; }
-
-
-SHOW_GUI_MACRO(SwapMain, SwapThread)
-NEW_PICON_MACRO(SwapMain)
-SET_STRING_MACRO(SwapMain)
-RAISE_WINDOW_MACRO(SwapMain)
+PLUGIN_CLASS_METHODS
 
 void SwapMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sswapchannels.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("swapchannels.rc");
 
 	config.red = defaults->get("RED", config.red);
 	config.green = defaults->get("GREEN", config.green);
@@ -235,47 +208,25 @@ void SwapMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("SWAPCHANNELS"))
 		{
-			if(input.tag.title_is("SWAPCHANNELS"))
-			{
-				config.red = input.tag.get_property("RED", config.red);
-				config.green = input.tag.get_property("GREEN", config.green);
-				config.blue = input.tag.get_property("BLUE", config.blue);
-				config.alpha = input.tag.get_property("ALPHA", config.alpha);
-			}
+			config.red = input.tag.get_property("RED", config.red);
+			config.green = input.tag.get_property("GREEN", config.green);
+			config.blue = input.tag.get_property("BLUE", config.blue);
+			config.alpha = input.tag.get_property("ALPHA", config.alpha);
 		}
 	}
 }
 
-void SwapMain::update_gui()
-{
-	if(thread) 
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->red->set_text(output_to_text(config.red));
-		thread->window->green->set_text(output_to_text(config.green));
-		thread->window->blue->set_text(output_to_text(config.blue));
-		thread->window->alpha->set_text(output_to_text(config.alpha));
-		thread->window->unlock_window();
-	}
-}
-
-
 int SwapMain::load_configuration()
 {
 	KeyFrame *prev_keyframe;
-	prev_keyframe = get_prev_keyframe(get_source_position());
 
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
-	return 0;
+	return 1;
 }
 
 #define MAXMINSRC(src, max) \
@@ -333,8 +284,6 @@ int SwapMain::load_configuration()
  \
 	output_ptr->copy_from(temp); \
 }
-
-
 
 void SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {

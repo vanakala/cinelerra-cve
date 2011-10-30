@@ -22,14 +22,26 @@
 #ifndef SWAPCHANNELS_H
 #define SWAPCHANNELS_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("Swap channels")
+#define PLUGIN_CLASS SwapMain
+#define PLUGIN_CONFIG_CLASS SwapConfig
+#define PLUGIN_THREAD_CLASS SwapThread
+#define PLUGIN_GUI_CLASS SwapWindow
+
+#include "pluginmacros.h"
+
 #include "bchash.inc"
 #include "guicast.h"
+#include "language.h"
 #include "mutex.h"
 #include "pluginvclient.h"
 #include "vframe.inc"
 
-
-class SwapMain;
 
 #define RED_SRC 0
 #define GREEN_SRC 1
@@ -37,7 +49,6 @@ class SwapMain;
 #define ALPHA_SRC 3
 #define NO_SRC 4
 #define MAX_SRC 5
-
 
 
 class SwapConfig
@@ -52,8 +63,8 @@ public:
 	int green;
 	int blue;
 	int alpha;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
 
 
 class SwapMenu : public BC_PopupMenu
@@ -62,7 +73,7 @@ public:
 	SwapMenu(SwapMain *client, int *output, int x, int y);
 
 	int handle_event();
-	int create_objects();
+	void create_objects();
 
 	SwapMain *client;
 	int *output;
@@ -86,18 +97,17 @@ public:
 	SwapWindow(SwapMain *plugin, int x, int y);
 	~SwapWindow();
 
-	void create_objects();
-	void close_event();
+	void update();
 
-	SwapMain *plugin;
 	SwapMenu *red;
 	SwapMenu *green;
 	SwapMenu *blue;
 	SwapMenu *alpha;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(SwapMain, SwapThread, SwapWindow)
+PLUGIN_THREAD_HEADER
 
 class SwapMain : public PluginVClient
 {
@@ -105,17 +115,14 @@ public:
 	SwapMain(PluginServer *server);
 	~SwapMain();
 
-	PLUGIN_CLASS_MEMBERS(SwapConfig, SwapThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
-	int is_synthesis();
-	void update_gui();
+
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
-	void reset();
 	void load_defaults();
 	void save_defaults();
 
