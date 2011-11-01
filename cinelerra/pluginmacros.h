@@ -119,11 +119,16 @@ class PLUGIN_GUI_CLASS;
 #endif // transition
 
 #ifdef PLUGIN_CONFIG_CLASS
+#define PLUGIN_CONFIG_CLASS_BASE_MEMBERS \
+	ptstime prev_border_pts; \
+	ptstime next_border_pts;
 #ifdef PLUGIN_IS_AUDIO
 #define PLUGIN_CONFIG_CLASS_MEMBERS \
+	PLUGIN_CONFIG_CLASS_BASE_MEMBERS \
 	ptstime slope_start, slope_end;
 #else
-#define PLUGIN_CONFIG_CLASS_MEMBERS
+#define PLUGIN_CONFIG_CLASS_MEMBERS \
+	PLUGIN_CONFIG_CLASS_BASE_MEMBERS
 #endif // is audio
 #endif // config_class
 
@@ -209,6 +214,11 @@ int PLUGIN_CLASS::load_configuration() \
 	read_data(prev_keyframe); \
 	if(PTSEQU(next_pts, prev_pts)) \
 	{ \
+		config.next_border_pts = source_start_pts + total_len_pts; \
+		if(PTSEQU(prev_pts, 0)) \
+			config.prev_border_pts = source_start_pts; \
+		else \
+			config.prev_border_pts = prev_pts; \
 		if(!config.equivalent(old_config)) \
 			return 1; \
 		return 0; \
@@ -222,6 +232,11 @@ int PLUGIN_CLASS::load_configuration() \
 		prev_pts, \
 		next_pts, \
 		source_pts); \
+	config.next_border_pts = next_pts; \
+	if(PTSEQU(prev_pts, 0)) \
+		config.prev_border_pts = source_start_pts; \
+	else \
+		config.prev_border_pts = prev_pts; \
  \
 	if(!config.equivalent(old_config)) \
 		return 1; \
