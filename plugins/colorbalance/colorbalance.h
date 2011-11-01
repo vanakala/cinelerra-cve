@@ -64,6 +64,7 @@ public:
 	float yellow;
 	int preserve;
 	int lock_params;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class ColorBalanceEngine : public Thread
