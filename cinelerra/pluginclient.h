@@ -433,6 +433,8 @@ public:
 
 // Load plugin defaults from file
 	BC_Hash* load_defaults_file(const char *filename);
+// Returns configuration directory of plugins
+	const char *plugin_conf_dir();
 
 // Realtime operations.
 	void reset();

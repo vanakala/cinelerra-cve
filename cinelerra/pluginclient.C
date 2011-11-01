@@ -285,6 +285,11 @@ BC_Hash* PluginClient::load_defaults_file(const char *filename)
 	return defaults;
 }
 
+const char *PluginClient::plugin_conf_dir()
+{
+	return server->plugin_conf_dir();
+}
+
 void PluginClient::send_configure_change()
 {
 	KeyFrame* keyframe = server->get_keyframe();
