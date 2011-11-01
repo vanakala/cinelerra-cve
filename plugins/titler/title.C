@@ -35,15 +35,12 @@
 #include FT_OUTLINE_H
 #include FT_STROKER_H
 
-#include "language.h"
 #include "mwindow.inc"
 #include "mainerror.h"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "title.h"
-#include "titlewindow.h"
 #include "transportque.inc"
-
 
 #include <errno.h>
 #include <stdint.h>
@@ -58,9 +55,11 @@
 
 #define FONT_SEARCHPATH "fonts"
 //#define FONT_SEARCHPATH "/usr/X11R6/lib/X11/fonts"
+#define DEFAULT_ENCODING "ISO8859-1"
+#define DEFAULT_TIMECODEFORMAT "h:mm:ss:ff"
 
 
-REGISTER_PLUGIN(TitleMain)
+REGISTER_PLUGIN
 
 
 TitleConfig::TitleConfig()
@@ -78,11 +77,9 @@ TitleConfig::TitleConfig()
 	x = 0.0;
 	y = 0.0;
 	dropshadow = 10;
-	sprintf(font, "fixed");
-	sprintf(text, _("hello world"));
-#define DEFAULT_ENCODING "ISO8859-1"
+	strcpy(font, "fixed");
+	strcpy(text, _("hello world"));
 	strcpy(encoding, DEFAULT_ENCODING);
-#define DEFAULT_TIMECODEFORMAT "h:mm:ss:ff"
 	strcpy(timecodeformat, DEFAULT_TIMECODEFORMAT);
 	pixels_per_second = 1.0;
 	timecode = 0;
@@ -134,9 +131,9 @@ void TitleConfig::copy_from(TitleConfig &that)
 
 void TitleConfig::interpolate(TitleConfig &prev, 
 	TitleConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	strcpy(font, prev.font);
 	strcpy(encoding, prev.encoding);
@@ -153,9 +150,6 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	fade_out = prev.fade_out;
 	pixels_per_second = prev.pixels_per_second;
 	strcpy(text, prev.text);
-
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 
 	this->x = prev.x;
 	this->y = prev.y;
@@ -216,6 +210,7 @@ void FontEntry::dump()
 		encoding);
 }
 
+
 TitleGlyph::TitleGlyph()
 {
 	char_code = 0;
@@ -223,7 +218,6 @@ TitleGlyph::TitleGlyph()
 	data = 0;
 	data_stroke = 0;
 }
-
 
 TitleGlyph::~TitleGlyph()
 {
@@ -235,6 +229,7 @@ TitleGlyph::~TitleGlyph()
 GlyphPackage::GlyphPackage() : LoadPackage()
 {
 }
+
 
 GlyphUnit::GlyphUnit(TitleMain *plugin, GlyphEngine *server)
  : LoadClient(server)
@@ -264,7 +259,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			freetype_face,
 			current_font->path))
 		{
-			printf(_("GlyphUnit::process_package FT_New_Face failed.\n"));
+			errormsg(_("GlyphUnit::process_package FT_New_Face failed"));
 			result = 1;
 		}
 		else
@@ -282,7 +277,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 		{
 // carrige return
 			if (glyph->char_code != 10)  
-				printf(_("GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"),
+				errormsg(_("GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"),
 					glyph->char_code);
 // Prevent a crash here
 			glyph->width = 8;
@@ -532,11 +527,10 @@ void TitleUnit::draw_glyph(VFrame *output, TitleGlyph *glyph, int x, int y)
 	}
 }
 
-
 void TitleUnit::process_package(LoadPackage *package)
 {
 	TitlePackage *pkg = (TitlePackage*)package;
-	
+
 	if(pkg->c != 0xa)
 	{
 		for(int i = 0; i < plugin->glyphs.total; i++)
@@ -602,8 +596,6 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 {
 	this->plugin = plugin;
 }
-
-
 
 #define TRANSLATE(type, max, components, r, g, b) \
 { \
@@ -689,7 +681,6 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 		} \
 	} \
 }
-
 
 #define TRANSLATEA(type, max, components, r, g, b) \
 { \
@@ -869,7 +860,6 @@ void TitleTranslate::init_packages()
 	output_w = plugin->output->get_w();
 	output_h = plugin->output->get_h();
 
-
 	TranslateUnit::translation_array_f(x_table, 
 		plugin->text_x1, 
 		plugin->text_x1 + plugin->text_w,
@@ -923,8 +913,6 @@ ArrayList<FontEntry*>* TitleMain::fonts = 0;
 TitleMain::TitleMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
-
 // Build font database
 	build_fonts();
 	text_mask = 0;
@@ -937,11 +925,11 @@ TitleMain::TitleMain(PluginServer *server)
 	rows_bottom = 0;
 	translate = 0;
 	need_reconfigure = 1;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 TitleMain::~TitleMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(text_mask) delete text_mask;
 	if(text_mask_stroke) delete text_mask_stroke;
 	if(char_positions) delete [] char_positions;
@@ -951,16 +939,10 @@ TitleMain::~TitleMain()
 	if(title_engine) delete title_engine;
 	if(freetype_library) FT_Done_FreeType(freetype_library);
 	if(translate) delete translate;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* TitleMain::plugin_title() { return N_("Title"); }
-int TitleMain::is_realtime() { return 1; }
-int TitleMain::is_synthesis() { return 1; }
-
-VFrame* TitleMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+PLUGIN_CLASS_METHODS
 
 
 void TitleMain::build_fonts()
@@ -980,7 +962,6 @@ void TitleMain::build_fonts()
 			search_path);
 
 		FILE *in = popen(command_line, "r");
-
 
 		char current_dir[BCTEXTLEN];
 		FT_Library freetype_library = 0;      	// Freetype library
@@ -1028,14 +1009,12 @@ void TitleMain::build_fonts()
 					entry->path = new char[strlen(current_dir) + strlen(string2) + 1];
 					sprintf(entry->path, "%s%s", current_dir, string2);
 				}
-
 // Test path existence
 				struct stat test_stat;
 				if(stat(entry->path, &test_stat))
 				{
 					result = 1;
 				}
-
 // Foundary
 				while(*in_ptr != 0 && *in_ptr != 0xa && (*in_ptr == ' ' || *in_ptr == '-'))
 					in_ptr++;
@@ -1049,8 +1028,6 @@ void TitleMain::build_fonts()
 				entry->foundary = new char[strlen(string2) + 1];
 				strcpy(entry->foundary, string2);
 				if(*in_ptr == '-') in_ptr++;
-
-
 // Family
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1061,7 +1038,6 @@ void TitleMain::build_fonts()
 				entry->family = new char[strlen(string2) + 1];
 				strcpy(entry->family, string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // Weight
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1072,7 +1048,6 @@ void TitleMain::build_fonts()
 				entry->weight = new char[strlen(string2) + 1];
 				strcpy(entry->weight, string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // Slant
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1083,7 +1058,6 @@ void TitleMain::build_fonts()
 				entry->slant = new char[strlen(string2) + 1];
 				strcpy(entry->slant, string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // SWidth
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1094,7 +1068,6 @@ void TitleMain::build_fonts()
 				entry->swidth = new char[strlen(string2) + 1];
 				strcpy(entry->swidth, string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // Adstyle
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1105,7 +1078,6 @@ void TitleMain::build_fonts()
 				entry->adstyle = new char[strlen(string2) + 1];
 				strcpy(entry->adstyle, string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // pixelsize
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1115,7 +1087,6 @@ void TitleMain::build_fonts()
 				*out_ptr = 0;
 				entry->pixelsize = atol(string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // pointsize
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1125,7 +1096,6 @@ void TitleMain::build_fonts()
 				*out_ptr = 0;
 				entry->pointsize = atol(string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // xres
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1135,7 +1105,6 @@ void TitleMain::build_fonts()
 				*out_ptr = 0;
 				entry->xres = atol(string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // yres
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1145,7 +1114,6 @@ void TitleMain::build_fonts()
 				*out_ptr = 0;
 				entry->yres = atol(string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // spacing
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1156,7 +1124,6 @@ void TitleMain::build_fonts()
 				entry->spacing = new char[strlen(string2) + 1];
 				strcpy(entry->spacing, string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // avg_width
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1166,7 +1133,6 @@ void TitleMain::build_fonts()
 				*out_ptr = 0;
 				entry->avg_width = atol(string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // registry
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa && *in_ptr != '-')
@@ -1177,7 +1143,6 @@ void TitleMain::build_fonts()
 				entry->registry = new char[strlen(string2) + 1];
 				strcpy(entry->registry, string2);
 				if(*in_ptr == '-') in_ptr++;
-
 // encoding
 				out_ptr = string2;
 				while(*in_ptr != 0 && *in_ptr != 0xa)
@@ -1187,8 +1152,6 @@ void TitleMain::build_fonts()
 				*out_ptr = 0;
 				entry->encoding = new char[strlen(string2) + 1];
 				strcpy(entry->encoding, string2);
-
-
 
 // Add to list
 				if(strlen(entry->foundary) && !result)
@@ -1224,7 +1187,6 @@ void TitleMain::build_fonts()
 
 		if(freetype_library) FT_Done_FreeType(freetype_library);
 	}
-
 }
 
 int TitleMain::load_freetype_face(FT_Library &freetype_library,
@@ -1241,7 +1203,7 @@ int TitleMain::load_freetype_face(FT_Library &freetype_library,
 		0,
 		&freetype_face))
 	{
-		fprintf(stderr, _("TitleMain::load_freetype_face %s failed.\n"), path);
+		errormsg(_("TitleMain::load_freetype_face %s failed."), path);
 		FT_Done_FreeType(freetype_library);
 		freetype_face = 0;
 		freetype_library = 0;
@@ -1276,10 +1238,8 @@ FontEntry* TitleMain::get_font_entry(char *title,
 
 			if(entry->fixed_style == style && entry->pointsize == size) 
 				result = entry;
-
 		}
 	}
-
 	return result;
 }
 
@@ -1377,7 +1337,6 @@ void TitleMain::draw_glyphs()
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
 				char_code = bswap_32(char_code);
 #endif                          /* Big endian.  */
-
 		} else {
 			char_code = c;
 		}
@@ -1504,14 +1463,12 @@ int TitleMain::draw_mask()
 {
 	int old_visible_row1 = visible_row1;
 	int old_visible_row2 = visible_row2;
-
-
 // Determine y of visible text
 	if(config.motion_strategy == BOTTOM_TO_TOP)
 	{
-		float magnitude = config.pixels_per_second * 
-			(get_source_position() - config.prev_keyframe_position) / 
-			PluginVClient::project_frame_rate;
+		float magnitude = config.pixels_per_second *
+			(source_pts - config.prev_border_pts);
+
 		if(config.loop)
 		{
 			int loop_size = text_h + input->get_h();
@@ -1522,9 +1479,9 @@ int TitleMain::draw_mask()
 	else
 	if(config.motion_strategy == TOP_TO_BOTTOM)
 	{
-		float magnitude = config.pixels_per_second * 
-			(get_source_position() - config.prev_keyframe_position) / 
-			PluginVClient::project_frame_rate;
+		float magnitude = config.pixels_per_second *
+			(source_pts - config.prev_border_pts);
+
 		if(config.loop)
 		{
 			int loop_size = text_h + input->get_h();
@@ -1554,9 +1511,9 @@ int TitleMain::draw_mask()
 // Determine x of visible text
 	if(config.motion_strategy == RIGHT_TO_LEFT)
 	{
-		float magnitude = config.pixels_per_second * 
-			(get_source_position() - config.prev_keyframe_position) / 
-			PluginVClient::project_frame_rate;
+		float magnitude = config.pixels_per_second *
+			(source_pts - config.prev_border_pts);
+
 		if(config.loop)
 		{
 			int loop_size = text_w + input->get_w();
@@ -1567,9 +1524,9 @@ int TitleMain::draw_mask()
 	else
 	if(config.motion_strategy == LEFT_TO_RIGHT)
 	{
-		float magnitude = config.pixels_per_second * 
-			(get_source_position() - config.prev_keyframe_position) / 
-			PluginVClient::project_frame_rate;
+		float magnitude = config.pixels_per_second *
+			(source_pts - config.prev_border_pts);
+
 		if(config.loop)
 		{
 			int loop_size = text_w + input->get_w();
@@ -1592,7 +1549,6 @@ int TitleMain::draw_mask()
 	{
 		text_x1 = config.x + input->get_w() - text_w;
 	}
-
 
 // Determine y extents just of visible text
 	visible_row1 = (int)(-text_y1 / get_char_height());
@@ -1676,25 +1632,21 @@ void TitleMain::overlay_mask()
 	alpha = 0x100;
 	if(!EQUIV(config.fade_in, 0))
 	{
-		int fade_len = lroundf(config.fade_in * PluginVClient::project_frame_rate);
-		int fade_position = get_source_position() - config.prev_keyframe_position;
+		ptstime fade_pts = source_pts - config.prev_border_pts;
 
-
-		if(fade_position >= 0 && fade_position < fade_len)
+		if(fade_pts >= 0 && fade_pts < config.fade_in)
 		{
-			alpha = lroundf(256.0f * fade_position / fade_len);
+			alpha = lroundf(256.0f * fade_pts / config.fade_in);
 		}
 	}
 
 	if(!EQUIV(config.fade_out, 0))
 	{
-		int fade_len = lroundf(config.fade_out * PluginVClient::project_frame_rate);
-		int fade_position = config.next_keyframe_position - get_source_position();
+		ptstime fade_pts = config.next_border_pts - source_pts;
 
-
-		if(fade_position >= 0 && fade_position < fade_len)
+		if(fade_pts >= 0 && fade_pts < config.fade_out)
 		{
-			alpha = lroundf(256.0f * fade_position / fade_len);
+			alpha = lroundf(256.0f * fade_pts / config.fade_out);
 		}
 	}
 
@@ -1780,21 +1732,16 @@ void TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	need_reconfigure |= load_configuration();
 
-
 // Always synthesize text and redraw it for timecode
 	if(config.timecode)
 	{
-		int64_t rendered_frame = get_source_position();
-		if (get_direction() == PLAY_REVERSE)
-			rendered_frame -= 1;
-
 		int tcf = Units::timeformat_totype(config.timecodeformat);
 		if (tcf < 0) {
 			tcf = TIME_HMSF;
 			strcpy(config.timecodeformat, DEFAULT_TIMECODEFORMAT);
 		}
 		Units::totext(config.text, 
-				(double)rendered_frame / PluginVClient::project_frame_rate, 
+				input->get_pts(),
 				tcf, 
 				0,
 				PluginVClient::project_frame_rate, 
@@ -1868,38 +1815,15 @@ void TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 }
 
-SHOW_GUI_MACRO(TitleMain, TitleThread);
-SET_STRING_MACRO(TitleMain);
-RAISE_WINDOW_MACRO(TitleMain);
-
-void TitleMain::update_gui()
-{
-	if(thread)
-	{
-		int reconfigure = load_configuration();
-		if(reconfigure)
-		{
-			thread->window->lock_window();
-			thread->window->update();
-			thread->window->unlock_window();
-			thread->window->color_thread->update_gui(config.color, 0);
-		}
-	}
-}
-
 void TitleMain::load_defaults()
 {
-	char directory[1024], text_path[1024];
-// set the default directory
-	sprintf(directory, "%stitle.rc", BCASTDIR);
+	char text_path[1024];
 
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("title.rc");
 
 	defaults->get("FONT", config.font);
 	defaults->get("ENCODING", config.encoding);
-	config.style = defaults->get("STYLE", (int64_t)config.style);
+	config.style = defaults->get("STYLE", config.style);
 	config.size = defaults->get("SIZE", config.size);
 	config.color = defaults->get("COLOR", config.color);
 	config.color_stroke = defaults->get("COLOR_STROKE", config.color_stroke);
@@ -1921,7 +1845,7 @@ void TitleMain::load_defaults()
 
 // Store text in separate path to isolate special characters
 	FileSystem fs;
-	sprintf(text_path, "%stitle_text.rc", BCASTDIR);
+	sprintf(text_path, "%stitle_text.rc", plugin_conf_dir());
 	fs.complete_path(text_path);
 	FILE *fd = fopen(text_path, "rb");
 	if(fd)
@@ -1930,7 +1854,7 @@ void TitleMain::load_defaults()
 		long len = ftell(fd);
 		fseek(fd, 0, SEEK_SET);
 		if(len && fread(config.text, len, 1, fd) < 1){
-			fprintf(stderr, "TitleMain::load_defaults - failed to load defaults\n");
+			errormsg("Title: failed to load default text");
 			len = 0;
 		}
 		config.text[len] = 0;
@@ -1946,7 +1870,7 @@ void TitleMain::save_defaults()
 
 	defaults->update("FONT", config.font);
 	defaults->update("ENCODING", config.encoding);
-	defaults->update("STYLE", (int64_t)config.style);
+	defaults->update("STYLE", config.style);
 	defaults->update("SIZE", config.size);
 	defaults->update("COLOR", config.color);
 	defaults->update("COLOR_STROKE", config.color_stroke);
@@ -1969,7 +1893,7 @@ void TitleMain::save_defaults()
 
 // Store text in separate path to isolate special characters
 	FileSystem fs;
-	sprintf(text_path, "%stitle_text.rc", BCASTDIR);
+	sprintf(text_path, "%stitle_text.rc", plugin_conf_dir());
 	fs.complete_path(text_path);
 	FILE *fd = fopen(text_path, "wb");
 	if(fd)
@@ -1978,46 +1902,6 @@ void TitleMain::save_defaults()
 		fclose(fd);
 	}
 }
-
-
-int TitleMain::load_configuration()
-{
-	KeyFrame *prev_keyframe, *next_keyframe;
-	prev_keyframe = get_prev_keyframe(get_source_position());
-	next_keyframe = get_next_keyframe(get_source_position());
-
-	TitleConfig old_config, prev_config, next_config;
-	old_config.copy_from(config);
-	read_data(prev_keyframe);
-	prev_config.copy_from(config);
-	read_data(next_keyframe);
-	next_config.copy_from(config);
-
-	config.prev_keyframe_position = prev_keyframe->get_position();
-	config.next_keyframe_position = next_keyframe->get_position();
-
-// if no previous keyframe exists, it should be start of the plugin, not start of the track
-	if(config.next_keyframe_position == config.prev_keyframe_position)
-		config.next_keyframe_position = get_source_start() + get_total_len();
-	if (config.prev_keyframe_position == 0) 
-		config.prev_keyframe_position = get_source_start();
-
-	config.interpolate(prev_config, 
-		next_config, 
-		(PTSEQU(next_keyframe->pos_time, prev_keyframe->pos_time)) ?
-			get_source_position() :
-			prev_keyframe->get_position(),
-		(PTSEQU(next_keyframe->pos_time, prev_keyframe->pos_time)) ?
-			get_source_position() + 1 :
-			next_keyframe->get_position(),
-		get_source_position());
-
-	if(!config.equivalent(old_config))
-		return 1;
-	else
-		return 0;
-}
-
 
 void TitleMain::save_data(KeyFrame *keyframe)
 {
@@ -2062,46 +1946,40 @@ void TitleMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
 	int new_interlace = 0;
 	int new_horizontal = 0;
 	int new_luminance = 0;
 
-	config.prev_keyframe_position = keyframe->get_position();
-	while(!result)
+	config.prev_border_pts = keyframe->pos_time;
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("TITLE"))
 		{
-			if(input.tag.title_is("TITLE"))
-			{
-				input.tag.get_property("FONT", config.font);
-				input.tag.get_property("ENCODING", config.encoding);
-				config.style = input.tag.get_property("STYLE", (int64_t)config.style);
-				config.size = input.tag.get_property("SIZE", config.size);
-				config.color = input.tag.get_property("COLOR", config.color);
-				config.color_stroke = input.tag.get_property("COLOR_STROKE", config.color_stroke);
-				config.stroke_width = input.tag.get_property("STROKE_WIDTH", config.stroke_width);
-				config.motion_strategy = input.tag.get_property("MOTION_STRATEGY", config.motion_strategy);
-				config.loop = input.tag.get_property("LOOP", config.loop);
-				config.pixels_per_second = input.tag.get_property("PIXELS_PER_SECOND", config.pixels_per_second);
-				config.hjustification = input.tag.get_property("HJUSTIFICATION", config.hjustification);
-				config.vjustification = input.tag.get_property("VJUSTIFICATION", config.vjustification);
-				config.fade_in = input.tag.get_property("FADE_IN", config.fade_in);
-				config.fade_out = input.tag.get_property("FADE_OUT", config.fade_out);
-				config.x = input.tag.get_property("TITLE_X", config.x);
-				config.y = input.tag.get_property("TITLE_Y", config.y);
-				config.dropshadow = input.tag.get_property("DROPSHADOW", config.dropshadow);
-				config.timecode = input.tag.get_property("TIMECODE", config.timecode);
-				input.tag.get_property("TIMECODEFORMAT", config.timecodeformat);
-				strcpy(config.text, input.read_text());
-			}
-			else
-			if(input.tag.title_is("/TITLE"))
-			{
-				result = 1;
-			}
+			input.tag.get_property("FONT", config.font);
+			input.tag.get_property("ENCODING", config.encoding);
+			config.style = input.tag.get_property("STYLE", (int64_t)config.style);
+			config.size = input.tag.get_property("SIZE", config.size);
+			config.color = input.tag.get_property("COLOR", config.color);
+			config.color_stroke = input.tag.get_property("COLOR_STROKE", config.color_stroke);
+			config.stroke_width = input.tag.get_property("STROKE_WIDTH", config.stroke_width);
+			config.motion_strategy = input.tag.get_property("MOTION_STRATEGY", config.motion_strategy);
+			config.loop = input.tag.get_property("LOOP", config.loop);
+			config.pixels_per_second = input.tag.get_property("PIXELS_PER_SECOND", config.pixels_per_second);
+			config.hjustification = input.tag.get_property("HJUSTIFICATION", config.hjustification);
+			config.vjustification = input.tag.get_property("VJUSTIFICATION", config.vjustification);
+			config.fade_in = input.tag.get_property("FADE_IN", config.fade_in);
+			config.fade_out = input.tag.get_property("FADE_OUT", config.fade_out);
+			config.x = input.tag.get_property("TITLE_X", config.x);
+			config.y = input.tag.get_property("TITLE_Y", config.y);
+			config.dropshadow = input.tag.get_property("DROPSHADOW", config.dropshadow);
+			config.timecode = input.tag.get_property("TIMECODE", config.timecode);
+			input.tag.get_property("TIMECODEFORMAT", config.timecodeformat);
+			strcpy(config.text, input.read_text());
+		}
+		else
+		if(input.tag.title_is("/TITLE"))
+		{
+			break;
 		}
 	}
 }

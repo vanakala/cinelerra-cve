@@ -24,48 +24,23 @@
 
 #include <string.h>
 #include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
+PLUGIN_THREAD_METHODS
 
-PLUGIN_THREAD_OBJECT(TitleMain, TitleThread, TitleWindow)
-
-TitleWindow::TitleWindow(TitleMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
-	client->window_w, 
-	client->window_h, 
+	plugin->window_w,
+	plugin->window_h,
 	100, 
 	100, 
 	1, 
 	0,
 	1)
-{ 
-	this->client = client; 
-}
-
-TitleWindow::~TitleWindow()
 {
-	sizes.remove_all_objects();
-	encodings.remove_all_objects();
-	timecodeformats.remove_all_objects();
-	delete timecodeformat;
-	delete color_thread;
-#ifdef USE_OUTLINE
-	delete color_stroke_thread;
-#endif
-	delete title_x;
-	delete title_y;
-}
+	x = y = 10;
 
-int TitleWindow::create_objects()
-{
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
 	timecodeformats.append(new BC_ListBoxItem(TIME_SECONDS__STR));
 	timecodeformats.append(new BC_ListBoxItem(TIME_HMS__STR));
 	timecodeformats.append(new BC_ListBoxItem(TIME_HMS2__STR));
@@ -121,13 +96,13 @@ int TitleWindow::create_objects()
 	paths.append(new BC_ListBoxItem(TitleMain::motion_to_text(LEFT_TO_RIGHT)));
 
 // Construct font list
-	for(int i = 0; i < client->fonts->total; i++)
+	for(int i = 0; i < plugin->fonts->total; i++)
 	{
 		int exists = 0;
 		for(int j = 0; j < fonts.total; j++)
 		{
 			if(!strcasecmp(fonts.values[j]->get_text(), 
-				client->fonts->values[i]->fixed_title)) 
+				plugin->fonts->values[i]->fixed_title)) 
 			{
 				exists = 1;
 				break;
@@ -135,7 +110,7 @@ int TitleWindow::create_objects()
 		}
 
 		if(!exists) fonts.append(new 
-			BC_ListBoxItem(client->fonts->values[i]->fixed_title));
+			BC_ListBoxItem(plugin->fonts->values[i]->fixed_title));
 	}
 
 // Sort font list
@@ -156,107 +131,107 @@ int TitleWindow::create_objects()
 	}
 
 	add_tool(font_title = new BC_Title(x, y, _("Font:")));
-	font = new TitleFont(client, this, x, y + 20);
+	font = new TitleFont(plugin, this, x, y + 20);
 	font->create_objects();
 	x += 230;
-	add_subwindow(font_tumbler = new TitleFontTumble(client, this, x, y + 20));
+	add_subwindow(font_tumbler = new TitleFontTumble(plugin, this, x, y + 20));
 	x += 30;
 	char string[BCTEXTLEN];
 	add_tool(size_title = new BC_Title(x, y, _("Size:")));
-	sprintf(string, "%d", client->config.size);
-	size = new TitleSize(client, this, x, y + 20, string);
+	sprintf(string, "%d", plugin->config.size);
+	size = new TitleSize(plugin, this, x, y + 20, string);
 	size->create_objects();
 	x += 140;
 
 	add_tool(style_title = new BC_Title(x, y, _("Style:")));
-	add_tool(italic = new TitleItalic(client, this, x, y + 20));
-	add_tool(bold = new TitleBold(client, this, x, y + 50));
+	add_tool(italic = new TitleItalic(plugin, this, x, y + 20));
+	add_tool(bold = new TitleBold(plugin, this, x, y + 50));
 #ifdef USE_OUTLINE
-	add_tool(stroke = new TitleStroke(client, this, x, y + 80));
+	add_tool(stroke = new TitleStroke(plugin, this, x, y + 80));
 #endif
 	x += 90;
 	add_tool(justify_title = new BC_Title(x, y, _("Justify:")));
-	add_tool(left = new TitleLeft(client, this, x, y + 20));
-	add_tool(center = new TitleCenter(client, this, x, y + 50));
-	add_tool(right = new TitleRight(client, this, x, y + 80));
+	add_tool(left = new TitleLeft(plugin, this, x, y + 20));
+	add_tool(center = new TitleCenter(plugin, this, x, y + 50));
+	add_tool(right = new TitleRight(plugin, this, x, y + 80));
 
 	x += 80;
-	add_tool(top = new TitleTop(client, this, x, y + 20));
-	add_tool(mid = new TitleMid(client, this, x, y + 50));
-	add_tool(bottom= new TitleBottom(client, this, x, y + 80));
+	add_tool(top = new TitleTop(plugin, this, x, y + 20));
+	add_tool(mid = new TitleMid(plugin, this, x, y + 50));
+	add_tool(bottom= new TitleBottom(plugin, this, x, y + 80));
 
 	y += 50;
 	x = 10;
 
 	add_tool(x_title = new BC_Title(x, y, _("X:")));
-	title_x = new TitleX(client, this, x, y + 20);
+	title_x = new TitleX(plugin, this, x, y + 20);
 	title_x->create_objects();
 	x += 90;
 
 	add_tool(y_title = new BC_Title(x, y, _("Y:")));
-	title_y = new TitleY(client, this, x, y + 20);
+	title_y = new TitleY(plugin, this, x, y + 20);
 	title_y->create_objects();
 	x += 90;
 
 	add_tool(motion_title = new BC_Title(x, y, _("Motion type:")));
 
-	motion = new TitleMotion(client, this, x, y + 20);
+	motion = new TitleMotion(plugin, this, x, y + 20);
 	motion->create_objects();
 	x += 150;
 
-	add_tool(loop = new TitleLoop(client, x, y + 20));
+	add_tool(loop = new TitleLoop(plugin, x, y + 20));
 	x += 100;
 
 	x = 10;
 	y += 50;
 
 	add_tool(dropshadow_title = new BC_Title(x, y, _("Drop shadow:")));
-	dropshadow = new TitleDropShadow(client, this, x, y + 20);
+	dropshadow = new TitleDropShadow(plugin, this, x, y + 20);
 	dropshadow->create_objects();
 	x += 100;
 
 	add_tool(fadein_title = new BC_Title(x, y, _("Fade in (sec):")));
-	add_tool(fade_in = new TitleFade(client, this, &client->config.fade_in, x, y + 20));
+	add_tool(fade_in = new TitleFade(plugin, this, &plugin->config.fade_in, x, y + 20));
 	x += 100;
 
 	add_tool(fadeout_title = new BC_Title(x, y, _("Fade out (sec):")));
-	add_tool(fade_out = new TitleFade(client, this, &client->config.fade_out, x, y + 20));
+	add_tool(fade_out = new TitleFade(plugin, this, &plugin->config.fade_out, x, y + 20));
 	x += 110;
 
 	add_tool(speed_title = new BC_Title(x, y, _("Speed:")));
-	speed = new TitleSpeed(client, this, x, y + 20);
+	speed = new TitleSpeed(plugin, this, x, y + 20);
 	speed->create_objects();
 	x += 110;
 
-	add_tool(color_button = new TitleColorButton(client, this, x, y + 20));
+	add_tool(color_button = new TitleColorButton(plugin, this, x, y + 20));
 	x += color_button->get_w();
 	color_x = x;
 	color_y = y + 20;
-	color_thread = new TitleColorThread(client, this);
+	color_thread = new TitleColorThread(plugin, this);
 
 	x = 10;
 	y += 50;
 	add_tool(encoding_title = new BC_Title(x, y + 3, _("Encoding:")));
-	encoding = new TitleEncoding(client, this, x, y + 20);
+	encoding = new TitleEncoding(plugin, this, x, y + 20);
 	encoding->create_objects();
 
 #ifdef USE_OUTLINE
 	x += 160;
 	add_tool(strokewidth_title = new BC_Title(x, y, _("Outline width:")));
-	stroke_width = new TitleStrokeW(client, 
+	stroke_width = new TitleStrokeW(plugin,
 		this, 
 		x, 
 		y + 20);
 	stroke_width->create_objects();
 
 	x += 210;
-	add_tool(color_stroke_button = new TitleColorStrokeButton(client, 
+	add_tool(color_stroke_button = new TitleColorStrokeButton(plugin,
 		this, 
 		x, 
 		y + 20));
 	color_stroke_x = color_x;
 	color_stroke_y = y + 20;
-	color_stroke_thread = new TitleColorStrokeThread(client, this);
+	color_stroke_thread = new TitleColorStrokeThread(plugin, this);
 #endif
 
 	x = 10;
@@ -265,37 +240,47 @@ int TitleWindow::create_objects()
 	add_tool(text_title = new BC_Title(x, y + 3, _("Text:")));
 
 	x += 100;
-	add_tool(timecode = new TitleTimecode(client, x, y));
+	add_tool(timecode = new TitleTimecode(plugin, x, y));
 
 	x += timecode->get_w() + 5;
 	BC_SubWindow *thisw;
 	add_tool(thisw = new BC_Title(x, y+4, _("Format:")));
 	x += thisw->get_w() + 5;
-	timecodeformat = new TitleTimecodeFormat(client, this, x, y);
+	timecodeformat = new TitleTimecodeFormat(plugin, this, x, y);
 	timecodeformat->create_objects();
 
 	x = 10;
 	y += 30;
-	text = new TitleText(client, 
+	text = new TitleText(plugin,
 		this, 
 		x, 
 		y, 
 		get_w() - x - 10, 
 		get_h() - y - 20 - 10);
 	text->create_objects();
-
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_color();
 
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+}
+
+TitleWindow::~TitleWindow()
+{
+	sizes.remove_all_objects();
+	encodings.remove_all_objects();
+	timecodeformats.remove_all_objects();
+	delete timecodeformat;
+	delete color_thread;
+#ifdef USE_OUTLINE
+	delete color_stroke_thread;
+#endif
+	delete title_x;
+	delete title_y;
 }
 
 void TitleWindow::resize_event(int w, int h)
 {
-	client->window_w = w;
-	client->window_h = h;
+	plugin->window_w = w;
+	plugin->window_h = h;
 
 	clear_box(0, 0, w, h);
 	font_title->reposition_window(font_title->get_x(), font_title->get_y());
@@ -340,8 +325,6 @@ void TitleWindow::resize_event(int w, int h)
 		w - text->get_x() - 10,
 		BC_TextBox::pixels_to_rows(this, MEDIUMFONT, h - text->get_y() - 10));
 
-
-
 	justify_title->reposition_window(justify_title->get_x(), justify_title->get_y());
 	left->reposition_window(left->get_x(), left->get_y());
 	center->reposition_window(center->get_x(), center->get_y());
@@ -370,8 +353,8 @@ void TitleWindow::previous_font()
 	}
 
 	font->update(fonts.values[current_font]->get_text());
-	strcpy(client->config.font, fonts.values[current_font]->get_text());
-	client->send_configure_change();
+	strcpy(plugin->config.font, fonts.values[current_font]->get_text());
+	plugin->send_configure_change();
 }
 
 void  TitleWindow::next_font()
@@ -388,23 +371,18 @@ void  TitleWindow::next_font()
 	}
 
 	font->update(fonts.values[current_font]->get_text());
-	strcpy(client->config.font, fonts.values[current_font]->get_text());
-	client->send_configure_change();
+	strcpy(plugin->config.font, fonts.values[current_font]->get_text());
+	plugin->send_configure_change();
 }
 
-
-void TitleWindow::close_event()
-{
-	set_done(1);
-}
 
 void TitleWindow::update_color()
 {
-	set_color(client->config.color);
+	set_color(plugin->config.color);
 	draw_box(color_x, color_y, 100, 30);
 	flash(color_x, color_y, 100, 30);
 #ifdef USE_OUTLINE
-	set_color(client->config.color_stroke);
+	set_color(plugin->config.color_stroke);
 	draw_box(color_stroke_x, color_stroke_y, 100, 30);
 	flash(color_stroke_x, color_stroke_y, 100, 30);
 #endif
@@ -412,40 +390,41 @@ void TitleWindow::update_color()
 
 void TitleWindow::update_justification()
 {
-	left->update(client->config.hjustification == JUSTIFY_LEFT);
-	center->update(client->config.hjustification == JUSTIFY_CENTER);
-	right->update(client->config.hjustification == JUSTIFY_RIGHT);
-	top->update(client->config.vjustification == JUSTIFY_TOP);
-	mid->update(client->config.vjustification == JUSTIFY_MID);
-	bottom->update(client->config.vjustification == JUSTIFY_BOTTOM);
+	left->update(plugin->config.hjustification == JUSTIFY_LEFT);
+	center->update(plugin->config.hjustification == JUSTIFY_CENTER);
+	right->update(plugin->config.hjustification == JUSTIFY_RIGHT);
+	top->update(plugin->config.vjustification == JUSTIFY_TOP);
+	mid->update(plugin->config.vjustification == JUSTIFY_MID);
+	bottom->update(plugin->config.vjustification == JUSTIFY_BOTTOM);
 }
 
 void TitleWindow::update()
 {
-	title_x->update((int64_t)client->config.x);
-	title_y->update((int64_t)client->config.y);
-	italic->update(client->config.style & FONT_ITALIC);
-	bold->update(client->config.style & FONT_BOLD);
+	title_x->update(plugin->config.x);
+	title_y->update(plugin->config.y);
+	italic->update(plugin->config.style & FONT_ITALIC);
+	bold->update(plugin->config.style & FONT_BOLD);
 #ifdef USE_OUTLINE
-	stroke->update(client->config.style & FONT_OUTLINE);
+	stroke->update(plugin->config.style & FONT_OUTLINE);
 #endif
-	size->update(client->config.size);
-	encoding->update(client->config.encoding);
-	timecode->update(client->config.timecode);
-	timecodeformat->update(client->config.timecodeformat);
-	motion->update(TitleMain::motion_to_text(client->config.motion_strategy));
-	loop->update(client->config.loop);
-	dropshadow->update((float)client->config.dropshadow);
-	fade_in->update((float)client->config.fade_in);
-	fade_out->update((float)client->config.fade_out);
+	size->update(plugin->config.size);
+	encoding->update(plugin->config.encoding);
+	timecode->update(plugin->config.timecode);
+	timecodeformat->update(plugin->config.timecodeformat);
+	motion->update(TitleMain::motion_to_text(plugin->config.motion_strategy));
+	loop->update(plugin->config.loop);
+	dropshadow->update((int64_t)plugin->config.dropshadow);
+	fade_in->update((float)plugin->config.fade_in);
+	fade_out->update((float)plugin->config.fade_out);
 #ifdef USE_OUTLINE
-	stroke_width->update((float)client->config.stroke_width);
+	stroke_width->update(plugin->config.stroke_width);
 #endif
-	font->update(client->config.font);
-	text->update(client->config.text);
-	speed->update(client->config.pixels_per_second);
+	font->update(plugin->config.font);
+	text->update(plugin->config.text);
+	speed->update(plugin->config.pixels_per_second);
 	update_justification();
 	update_color();
+	color_thread->update_gui(plugin->config.color, 0);
 }
 
 

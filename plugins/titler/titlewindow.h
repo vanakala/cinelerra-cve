@@ -24,8 +24,6 @@
 
 #include "guicast.h"
 
-class TitleThread;
-class TitleWindow;
 class TitleInterlace;
 
 #include "colorpicker.h"
@@ -33,10 +31,7 @@ class TitleInterlace;
 #include "mutex.h"
 #include "title.h"
 
-
-PLUGIN_THREAD_HEADER(TitleMain, TitleThread, TitleWindow)
-
-
+PLUGIN_THREAD_HEADER
 
 class TitleFontTumble;
 class TitleItalic;
@@ -69,19 +64,15 @@ class TitleTimecodeFormat;
 class TitleWindow : public BC_Window
 {
 public:
-	TitleWindow(TitleMain *client, int x, int y);
+	TitleWindow(TitleMain *plugin, int x, int y);
 	~TitleWindow();
-	
-	int create_objects();
-	void close_event();
+
 	void resize_event(int w, int h);
 	void update_color();
 	void update_justification();
 	void update();
 	void previous_font();
 	void next_font();
-
-	TitleMain *client;
 
 	BC_Title *font_title;
 	TitleFont *font;
@@ -139,6 +130,7 @@ public:
 	ArrayList<BC_ListBoxItem*> paths;
 	ArrayList<BC_ListBoxItem*> fonts;
 	ArrayList<BC_ListBoxItem*> timecodeformats;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 

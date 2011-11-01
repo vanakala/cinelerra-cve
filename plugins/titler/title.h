@@ -22,7 +22,17 @@
 #ifndef TITLE_H
 #define TITLE_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
 
+#define PLUGIN_TITLE N_("Title")
+#define PLUGIN_CLASS TitleMain
+#define PLUGIN_CONFIG_CLASS TitleConfig
+#define PLUGIN_THREAD_CLASS TitleThread
+#define PLUGIN_GUI_CLASS TitleWindow
+
+#include "pluginmacros.h"
 
 
 // Theory:
@@ -41,16 +51,12 @@
 // The text mask is overlayed with fractional translation and fading on the output.
 
 
-
-
-
-
-class TitleMain;
 class TitleEngine;
 class GlyphEngine;
 class TitleTranslate;
 
 #include "bchash.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "mutex.h"
 #include "overlayframe.h"
@@ -95,14 +101,13 @@ public:
 	void copy_from(TitleConfig &that);
 	void interpolate(TitleConfig &prev, 
 		TitleConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
-
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 // Font information
 	char font[BCTEXTLEN];
-	int64_t style;
+	int style;
 	int size;
 	int color;
 	int color_stroke;
@@ -115,14 +120,11 @@ public:
 	int hjustification;
 	int vjustification;
 // Number of seconds the fade in and fade out of the title take
-	double fade_in, fade_out;
+	ptstime fade_in, fade_out;
 // Position in frame relative to top left
 	float x, y;
 // Pixels down and right of dropshadow
 	int dropshadow;
-// Calculated during every frame for motion strategy
-	framenum prev_keyframe_position;
-	framenum next_keyframe_position;
 // Stamp timecode
 	int timecode;
 
@@ -134,6 +136,7 @@ public:
 	char timecodeformat[BCTEXTLEN];
 // Width of the stroke
 	double stroke_width;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class FontEntry
@@ -178,13 +181,8 @@ public:
 };
 
 
-
-
-
-
-
 // Draw a single character into the glyph cache
-// 
+//
 class GlyphPackage : public LoadPackage
 {
 public:
@@ -304,13 +302,10 @@ public:
 	TitleMain(PluginServer *server);
 	~TitleMain();
 
-	PLUGIN_CLASS_MEMBERS(TitleConfig, TitleThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
-	int is_synthesis();
-	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -340,7 +335,6 @@ public:
 
 	static ArrayList<FontEntry*> *fonts;
 
-//	BC_Hash *defaults;
 	ArrayList<TitleGlyph*> glyphs;
 	Mutex glyph_lock;
 
@@ -383,8 +377,6 @@ public:
 // happens during motion and motion would require floating point offsetting
 // for every frame we replicate with fractional offsetting.
 
-
-
 // Text is always row aligned to mask boundaries.
 	int text_len;
 	int text_rows;
@@ -398,6 +390,5 @@ public:
 
 	int need_reconfigure;
 };
-
 
 #endif
