@@ -27,13 +27,9 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
+REGISTER_PLUGIN
 
-REGISTER_PLUGIN(TranslateMain)
 
 TranslateConfig::TranslateConfig()
 {
@@ -73,12 +69,11 @@ void TranslateConfig::copy_from(TranslateConfig &that)
 
 void TranslateConfig::interpolate(TranslateConfig &prev, 
 	TranslateConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->in_x = prev.in_x * prev_scale + next.in_x * next_scale;
 	this->in_y = prev.in_y * prev_scale + next.in_y * next_scale;
@@ -101,18 +96,14 @@ TranslateMain::TranslateMain(PluginServer *server)
 
 TranslateMain::~TranslateMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(temp_frame) delete temp_frame;
 	temp_frame = 0;
 	if(overlayer) delete overlayer;
 	overlayer = 0;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* TranslateMain::plugin_title() { return N_("Translate"); }
-int TranslateMain::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(TranslateMain)
+PLUGIN_CLASS_METHODS
 
 void TranslateMain::load_defaults()
 {
@@ -121,8 +112,7 @@ void TranslateMain::load_defaults()
 	sprintf(directory, "%stranslate.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("translate.rc");
 
 	config.in_x = defaults->get("IN_X", config.in_x);
 	config.in_y = defaults->get("IN_Y", config.in_y);
@@ -146,8 +136,6 @@ void TranslateMain::save_defaults()
 	defaults->update("OUT_H", config.out_h);
 	defaults->save();
 }
-
-LOAD_CONFIGURATION_MACRO(TranslateMain, TranslateConfig)
 
 void TranslateMain::save_data(KeyFrame *keyframe)
 {
@@ -182,23 +170,18 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 
 	int result = 0;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("TRANSLATE"))
 		{
-			if(input.tag.title_is("TRANSLATE"))
-			{
- 				config.in_x = input.tag.get_property("IN_X", config.in_x);
-				config.in_y = input.tag.get_property("IN_Y", config.in_y);
-				config.in_w = input.tag.get_property("IN_W", config.in_w);
-				config.in_h = input.tag.get_property("IN_H", config.in_h);
-				config.out_x =	input.tag.get_property("OUT_X", config.out_x);
-				config.out_y =	input.tag.get_property("OUT_Y", config.out_y);
-				config.out_w =	input.tag.get_property("OUT_W", config.out_w);
-				config.out_h =	input.tag.get_property("OUT_H", config.out_h);
-			}
+			config.in_x = input.tag.get_property("IN_X", config.in_x);
+			config.in_y = input.tag.get_property("IN_Y", config.in_y);
+			config.in_w = input.tag.get_property("IN_W", config.in_w);
+			config.in_h = input.tag.get_property("IN_H", config.in_h);
+			config.out_x =	input.tag.get_property("OUT_X", config.out_x);
+			config.out_y =	input.tag.get_property("OUT_Y", config.out_y);
+			config.out_w =	input.tag.get_property("OUT_W", config.out_w);
+			config.out_h =	input.tag.get_property("OUT_H", config.out_h);
 		}
 	}
 }
@@ -244,30 +227,4 @@ void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			1,
 			TRANSFER_REPLACE,
 			get_interpolation_type());
-}
-
-SHOW_GUI_MACRO(TranslateMain, TranslateThread)
-
-RAISE_WINDOW_MACRO(TranslateMain)
-
-SET_STRING_MACRO(TranslateMain)
-
-void TranslateMain::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window();
-			thread->window->in_x->update(config.in_x);
-			thread->window->in_y->update(config.in_y);
-			thread->window->in_w->update(config.in_w);
-			thread->window->in_h->update(config.in_h);
-			thread->window->out_x->update(config.out_x);
-			thread->window->out_y->update(config.out_y);
-			thread->window->out_w->update(config.out_w);
-			thread->window->out_h->update(config.out_h);
-			thread->window->unlock_window();
-		}
-	}
 }

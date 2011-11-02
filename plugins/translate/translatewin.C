@@ -23,17 +23,12 @@
 #include "clip.h"
 #include "translatewin.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
+PLUGIN_THREAD_METHODS
 
 
-PLUGIN_THREAD_OBJECT(TranslateMain, TranslateThread, TranslateWin)
-
-
-TranslateWin::TranslateWin(TranslateMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+TranslateWin::TranslateWin(TranslateMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
 	300, 
@@ -44,40 +39,29 @@ TranslateWin::TranslateWin(TranslateMain *client, int x, int y)
 	0,
 	1)
 { 
-	this->client = client; 
-}
+	x = y = 10;
 
-TranslateWin::~TranslateWin()
-{
-}
-
-int TranslateWin::create_objects()
-{
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
 	add_tool(new BC_Title(x, y, _("In X:")));
 	y += 20;
-	in_x = new TranslateCoord(this, client, x, y, &client->config.in_x);
+	in_x = new TranslateCoord(this, plugin, x, y, &plugin->config.in_x);
 	in_x->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("In Y:")));
 	y += 20;
-	in_y = new TranslateCoord(this, client, x, y, &client->config.in_y);
+	in_y = new TranslateCoord(this, plugin, x, y, &plugin->config.in_y);
 	in_y->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("In W:")));
 	y += 20;
-	in_w = new TranslateCoord(this, client, x, y, &client->config.in_w);
+	in_w = new TranslateCoord(this, plugin, x, y, &plugin->config.in_w);
 	in_w->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("In H:")));
 	y += 20;
-	in_h = new TranslateCoord(this, client, x, y, &client->config.in_h);
+	in_h = new TranslateCoord(this, plugin, x, y, &plugin->config.in_h);
 	in_h->create_objects();
 	y += 30;
 
@@ -85,38 +69,47 @@ int TranslateWin::create_objects()
 	y = 10;
 	add_tool(new BC_Title(x, y, _("Out X:")));
 	y += 20;
-	out_x = new TranslateCoord(this, client, x, y, &client->config.out_x);
+	out_x = new TranslateCoord(this, plugin, x, y, &plugin->config.out_x);
 	out_x->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("Out Y:")));
 	y += 20;
-	out_y = new TranslateCoord(this, client, x, y, &client->config.out_y);
+	out_y = new TranslateCoord(this, plugin, x, y, &plugin->config.out_y);
 	out_y->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("Out W:")));
 	y += 20;
-	out_w = new TranslateCoord(this, client, x, y, &client->config.out_w);
+	out_w = new TranslateCoord(this, plugin, x, y, &plugin->config.out_w);
 	out_w->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("Out H:")));
 	y += 20;
-	out_h = new TranslateCoord(this, client, x, y, &client->config.out_h);
+	out_h = new TranslateCoord(this, plugin, x, y, &plugin->config.out_h);
 	out_h->create_objects();
 	y += 30;
 
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-void TranslateWin::close_event()
+TranslateWin::~TranslateWin()
 {
-	set_done(1);
 }
+
+void TranslateWin::update()
+{
+	in_x->update(plugin->config.in_x);
+	in_y->update(plugin->config.in_y);
+	in_w->update(plugin->config.in_w);
+	in_h->update(plugin->config.in_h);
+	out_x->update(plugin->config.out_x);
+	out_y->update(plugin->config.out_y);
+	out_w->update(plugin->config.out_w);
+	out_h->update(plugin->config.out_h);
+}
+
 
 TranslateCoord::TranslateCoord(TranslateWin *win, 
 	TranslateMain *client, 

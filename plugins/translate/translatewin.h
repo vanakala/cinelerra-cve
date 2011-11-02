@@ -24,30 +24,24 @@
 
 #include "guicast.h"
 
-class TranslateThread;
-class TranslateWin;
-
-#include "filexml.h"
-#include "mutex.h"
-#include "pluginclient.h"
 #include "translate.h"
+#include "pluginclient.h"
 
 
-PLUGIN_THREAD_HEADER(TranslateMain, TranslateThread, TranslateWin)
+PLUGIN_THREAD_HEADER
 
 class TranslateCoord;
 
 class TranslateWin : public BC_Window
 {
 public:
-	TranslateWin(TranslateMain *client, int x, int y);
+	TranslateWin(TranslateMain *plugin, int x, int y);
 	~TranslateWin();
 
-	int create_objects();
-	void close_event();
+	void update();
 
 	TranslateCoord *in_x, *in_y, *in_w, *in_h, *out_x, *out_y, *out_w, *out_h;
-	TranslateMain *client;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class TranslateCoord : public BC_TumbleTextBox

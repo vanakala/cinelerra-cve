@@ -23,11 +23,19 @@
 #define TRANSLATE_H
 
 // the simplest plugin possible
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
 
-class TranslateMain;
+#define PLUGIN_TITLE N_("Translate")
+#define PLUGIN_CLASS TranslateMain
+#define PLUGIN_CONFIG_CLASS TranslateConfig
+#define PLUGIN_THREAD_CLASS TranslateThread
+#define PLUGIN_GUI_CLASS TranslateWin
+
+#include "pluginmacros.h"
 
 #include "bchash.h"
-#include "mutex.h"
+#include "language.h"
 #include "translatewin.h"
 #include "overlayframe.h"
 #include "pluginvclient.h"
@@ -40,11 +48,12 @@ public:
 	void copy_from(TranslateConfig &that);
 	void interpolate(TranslateConfig &prev, 
 		TranslateConfig &next, 
-		posnum prev_frame,
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	float in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -54,12 +63,10 @@ public:
 	TranslateMain(PluginServer *server);
 	~TranslateMain();
 
-	PLUGIN_CLASS_MEMBERS(TranslateConfig, TranslateThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
-	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
