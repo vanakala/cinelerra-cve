@@ -19,7 +19,18 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("VideoScope")
+#define PLUGIN_CLASS  VideoScopeEffect
+#define PLUGIN_CONFIG_CLASS VideoScopeConfig
+#define PLUGIN_THREAD_CLASS VideoScopeThread
+#define PLUGIN_GUI_CLASS VideoScopeWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -53,11 +64,6 @@ const int V_INSET = 10;
 const char WIDGET_HSPACE_SAMPLE[] = "    ";
 const int WIDGET_VSPACE = 3;
 
-// Define to display outlines around waveform and vectorscope.
-// Useful for debugging window resize.
-//#define DEBUG_PLACEMENT
-
-
 // Vectorscope HSV axes and labels
 const struct Vectorscope_HSV_axes
 {
@@ -65,6 +71,7 @@ const struct Vectorscope_HSV_axes
 	char   label[4];
 	int    color; // label color
 }
+
 Vectorscope_HSV_axes[] =
 	{
 		{   0, "R",  RED      },
@@ -77,7 +84,6 @@ Vectorscope_HSV_axes[] =
 const int Vectorscope_HSV_axes_count = sizeof(Vectorscope_HSV_axes) / sizeof(struct Vectorscope_HSV_axes);
 
 
-class VideoScopeEffect;
 class VideoScopeEngine;
 
 
@@ -85,12 +91,12 @@ class VideoScopeConfig
 {
 public:
 	VideoScopeConfig();
-	void reset();
 
 	int show_709_limits;   // ITU-R BT.709: HDTV and sRGB
 	int show_601_limits;   // ITU-R BT.601: Analog video and MPEG
 	int show_IRE_limits;   // Black = 7.5%
 	int draw_lines_inverse;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class VideoScopeGraduation
@@ -202,16 +208,14 @@ public:
 	VideoScopeWindow(VideoScopeEffect *plugin, int x, int y);
 	~VideoScopeWindow();
 
+	void update();
 	void calculate_sizes(int w, int h);
 	int get_label_width();
 	int get_widget_area_height();
-	void create_objects();
-	void close_event();
 	void resize_event(int w, int h);
 	void allocate_bitmaps();
 	void draw_labels();
 
-	VideoScopeEffect *plugin;
 	VideoScopeWaveform *waveform;
 	VideoScopeVectorscope *vectorscope;
 	VideoScopeShow709Limits *show_709_limits;
@@ -223,12 +227,10 @@ public:
 
 	int vector_x, vector_y, vector_w, vector_h;
 	int wave_x, wave_y, wave_w, wave_h;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(VideoScopeEffect, VideoScopeThread, VideoScopeWindow)
-
-
-
+PLUGIN_THREAD_HEADER
 
 class VideoScopePackage : public LoadPackage
 {
@@ -236,7 +238,6 @@ public:
 	VideoScopePackage();
 	int row1, row2;
 };
-
 
 class VideoScopeUnit : public LoadClient
 {
@@ -268,10 +269,9 @@ public:
 	VideoScopeEffect(PluginServer *server);
 	~VideoScopeEffect();
 
-	PLUGIN_CLASS_MEMBERS(VideoScopeConfig, VideoScopeThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -284,21 +284,13 @@ public:
 };
 
 
-
-
 VideoScopeConfig::VideoScopeConfig()
-{
-	reset();
-}
-
-void VideoScopeConfig::reset()
 {
 	show_709_limits    = 0;
 	show_601_limits    = 0;
 	show_IRE_limits    = 0;
 	draw_lines_inverse = 0;
 }
-
 
 VideoScopeWaveform::VideoScopeWaveform(VideoScopeEffect *plugin, 
 		int x, 
@@ -310,7 +302,6 @@ VideoScopeWaveform::VideoScopeWaveform(VideoScopeEffect *plugin,
 	this->plugin = plugin;
 }
 
-
 VideoScopeVectorscope::VideoScopeVectorscope(VideoScopeEffect *plugin, 
 		int x, 
 		int y,
@@ -320,7 +311,6 @@ VideoScopeVectorscope::VideoScopeVectorscope(VideoScopeEffect *plugin,
 {
 	this->plugin = plugin;
 }
-
 
 VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin, 
 	int x, 
@@ -337,9 +327,46 @@ VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin,
 	1,
 	BLACK)
 {
-	this->plugin = plugin;
+	int w = plugin->w;
+	int h = plugin->h;
+
 	waveform_bitmap = 0;
 	vector_bitmap = 0;
+
+// Widgets
+	const int widget_hspace = get_text_width(MEDIUMFONT, (char *) WIDGET_HSPACE_SAMPLE);
+	const int widget_height = get_widget_area_height();
+	x = widget_hspace;
+	y = h - widget_height + WIDGET_VSPACE;
+	set_color(get_resources()->get_bg_color());
+	draw_box(0, h - widget_height, w, widget_height);
+	add_subwindow(show_709_limits = new VideoScopeShow709Limits(plugin, x, y));
+	x += show_709_limits->get_w() + widget_hspace;
+	add_subwindow(show_601_limits = new VideoScopeShow601Limits(plugin, x, y));
+	x += show_601_limits->get_w() + widget_hspace;
+	add_subwindow(show_IRE_limits = new VideoScopeShowIRELimits(plugin, x, y));
+	x += show_IRE_limits->get_w() + widget_hspace;
+	add_subwindow(draw_lines_inverse = new VideoScopeDrawLinesInverse(plugin, x, y));
+
+	calculate_sizes(w, h - widget_height - WIDGET_VSPACE);
+
+	add_subwindow(waveform = new VideoScopeWaveform(plugin, 
+		wave_x, 
+		wave_y, 
+		wave_w, 
+		wave_h));
+	add_subwindow(vectorscope = new VideoScopeVectorscope(plugin, 
+		vector_x, 
+		vector_y, 
+		vector_w, 
+		vector_h));
+	allocate_bitmaps();
+
+	waveform->calculate_graduations();
+	vectorscope->calculate_graduations();
+	waveform->draw_graduations();
+	vectorscope->draw_graduations();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 VideoScopeWindow::~VideoScopeWindow()
@@ -348,9 +375,13 @@ VideoScopeWindow::~VideoScopeWindow()
 	if(vector_bitmap) delete vector_bitmap;
 }
 
+void VideoScopeWindow::update()
+{
+}
+
 VideoScopeGraduation::VideoScopeGraduation()
 {
-	bzero(label, sizeof(label));
+	memset(label, 0, sizeof(label));
 }
 
 void VideoScopeWindow::calculate_sizes(int w, int h)
@@ -389,54 +420,6 @@ int VideoScopeWindow::get_widget_area_height()
 	return 2 * get_text_height(MEDIUMFONT, (char *) WIDGET_HSPACE_SAMPLE);
 }
 
-void VideoScopeWindow::create_objects()
-{
-	int w = get_w();
-	int h = get_h();
-
-	set_icon(new VFrame(picon_png));
-
-// Widgets
-	const int widget_hspace = get_text_width(MEDIUMFONT, (char *) WIDGET_HSPACE_SAMPLE);
-	const int widget_height = get_widget_area_height();
-	int x = widget_hspace;
-	int y = h - widget_height + WIDGET_VSPACE;
-	set_color(get_resources()->get_bg_color());
-	draw_box(0, h - widget_height, w, widget_height);
-	add_subwindow(show_709_limits = new VideoScopeShow709Limits(plugin, x, y));
-	x += show_709_limits->get_w() + widget_hspace;
-	add_subwindow(show_601_limits = new VideoScopeShow601Limits(plugin, x, y));
-	x += show_601_limits->get_w() + widget_hspace;
-	add_subwindow(show_IRE_limits = new VideoScopeShowIRELimits(plugin, x, y));
-	x += show_IRE_limits->get_w() + widget_hspace;
-	add_subwindow(draw_lines_inverse = new VideoScopeDrawLinesInverse(plugin, x, y));
-
-	calculate_sizes(w, h - widget_height - WIDGET_VSPACE);
-
-	add_subwindow(waveform = new VideoScopeWaveform(plugin, 
-		wave_x, 
-		wave_y, 
-		wave_w, 
-		wave_h));
-	add_subwindow(vectorscope = new VideoScopeVectorscope(plugin, 
-		vector_x, 
-		vector_y, 
-		vector_w, 
-		vector_h));
-	allocate_bitmaps();
-
-	waveform->calculate_graduations();
-	vectorscope->calculate_graduations();
-	waveform->draw_graduations();
-	vectorscope->draw_graduations();
-	draw_labels();
-
-	show_window();
-	flush();
-	
-}
-
-WINDOW_CLOSE_EVENT(VideoScopeWindow)
 
 void VideoScopeWindow::resize_event(int w, int h)
 {
@@ -735,8 +718,9 @@ int VideoScopeDrawLinesInverse::handle_event()
 	return 1;
 }
 
-PLUGIN_THREAD_OBJECT(VideoScopeEffect, VideoScopeThread, VideoScopeWindow)
-REGISTER_PLUGIN(VideoScopeEffect)
+PLUGIN_THREAD_METHODS
+
+REGISTER_PLUGIN
 
 
 VideoScopeEffect::VideoScopeEffect(PluginServer *server)
@@ -750,38 +734,20 @@ VideoScopeEffect::VideoScopeEffect(PluginServer *server)
 
 VideoScopeEffect::~VideoScopeEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(engine) delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-
-
-const char* VideoScopeEffect::plugin_title() { return N_("VideoScope"); }
-int VideoScopeEffect::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
 int VideoScopeEffect::load_configuration()
 {
-	return 0;
+	return 1;
 }
-
-NEW_PICON_MACRO(VideoScopeEffect)
-
-SHOW_GUI_MACRO(VideoScopeEffect, VideoScopeThread)
-
-RAISE_WINDOW_MACRO(VideoScopeEffect)
-
-SET_STRING_MACRO(VideoScopeEffect)
 
 void VideoScopeEffect::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%svideoscope.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("videoscope.rc");
 
 	w = defaults->get("W", w);
 	h = defaults->get("H", h);
@@ -821,17 +787,13 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML file;
 	file.set_shared_string(keyframe->data, strlen(keyframe->data));
-	int result = 0;
-	while(!result)
+
+	while(!file.read_tag())
 	{
-		result = file.read_tag();
-		if(!result)
-		{
-			config.show_709_limits = file.tag.get_property("SHOW_709_LIMITS", config.show_709_limits);
-			config.show_601_limits = file.tag.get_property("SHOW_601_LIMITS", config.show_601_limits);
-			config.show_IRE_limits = file.tag.get_property("SHOW_IRE_LIMITS", config.show_IRE_limits);
-			config.draw_lines_inverse = file.tag.get_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
-		}
+		config.show_709_limits = file.tag.get_property("SHOW_709_LIMITS", config.show_709_limits);
+		config.show_601_limits = file.tag.get_property("SHOW_601_LIMITS", config.show_601_limits);
+		config.show_IRE_limits = file.tag.get_property("SHOW_IRE_LIMITS", config.show_IRE_limits);
+		config.draw_lines_inverse = file.tag.get_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	}
 }
 
@@ -877,12 +839,10 @@ void VideoScopeEffect::render_gui(void *input)
 			0,
 			0);
 
-
 		window->waveform->draw_graduations();
 		window->vectorscope->draw_graduations();
 		window->waveform->flash();
 		window->vectorscope->flash();
-
 
 		window->unlock_window();
 	}
@@ -938,14 +898,12 @@ static void draw_point(unsigned char **rows,
 }
 
 
-
 // Brighten value and decrease contrast so low levels are visible against black.
 // Value v is either R, G, or B.
 static int brighten(int v)
 {
 	return (((256 - RGB_MIN) * v) + (256 * RGB_MIN))/256;
 }
-
 
 
 template<typename TYPE, typename TEMP_TYPE, int MAX, int COMPONENTS, bool USE_YUV>
@@ -1071,7 +1029,6 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 }
 
 
-
 void VideoScopeUnit::process_package(LoadPackage *package)
 {
 	switch(plugin->input->get_color_model())
@@ -1149,4 +1106,3 @@ LoadPackage* VideoScopeEngine::new_package()
 {
 	return new VideoScopePackage;
 }
-
