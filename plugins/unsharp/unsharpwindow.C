@@ -25,12 +25,7 @@
 #include "unsharpwindow.h"
 
 
-
-
-
-
-PLUGIN_THREAD_OBJECT(UnsharpMain, UnsharpThread, UnsharpWindow)
-
+PLUGIN_THREAD_METHODS
 
 
 UnsharpWindow::UnsharpWindow(UnsharpMain *plugin, int x, int y)
@@ -44,20 +39,9 @@ UnsharpWindow::UnsharpWindow(UnsharpMain *plugin, int x, int y)
 	0, 
 	1)
 {
-	this->plugin = plugin; 
-}
-
-UnsharpWindow::~UnsharpWindow()
-{
-}
-
-int UnsharpWindow::create_objects()
-{
-	int x = 10, y = 10;
 	BC_Title *title;
-	VFrame *ico = plugin->new_picon();
+	x = y = 10;
 
-	set_icon(ico);
 	add_subwindow(title = new BC_Title(x, y + 10, _("Radius:")));
 	add_subwindow(radius = new UnsharpRadius(plugin, 
 		x + title->get_w() + 10, 
@@ -75,12 +59,12 @@ int UnsharpWindow::create_objects()
 		x + title->get_w() + 10, 
 		y));
 
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
+UnsharpWindow::~UnsharpWindow()
+{
+}
 
 void UnsharpWindow::update()
 {
@@ -88,8 +72,6 @@ void UnsharpWindow::update()
 	amount->update(plugin->config.amount);
 	threshold->update(plugin->config.threshold);
 }
-
-WINDOW_CLOSE_EVENT(UnsharpWindow)
 
 
 UnsharpRadius::UnsharpRadius(UnsharpMain *plugin, int x, int y)

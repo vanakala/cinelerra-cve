@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -29,11 +28,10 @@
 #include "unsharpwindow.h"
 #include "picon_png.h"
 
-
 #include <errno.h>
 #include <unistd.h>
 
-REGISTER_PLUGIN(UnsharpMain)
+REGISTER_PLUGIN
 
 UnsharpConfig::UnsharpConfig()
 {
@@ -58,12 +56,11 @@ void UnsharpConfig::copy_from(UnsharpConfig &that)
 
 void UnsharpConfig::interpolate(UnsharpConfig &prev, 
 	UnsharpConfig &next, 
-	posnum prev_frame,
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	this->radius = prev.radius * prev_scale + next.radius * next_scale;
 	this->amount = prev.amount * prev_scale + next.amount * next_scale;
 	this->threshold = (int)(prev.threshold * prev_scale + next.threshold * next_scale);
@@ -73,53 +70,21 @@ void UnsharpConfig::interpolate(UnsharpConfig &prev,
 UnsharpMain::UnsharpMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 UnsharpMain::~UnsharpMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* UnsharpMain::plugin_title() { return N_("Unsharp"); }
-int UnsharpMain::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(UnsharpMain)
-
-SHOW_GUI_MACRO(UnsharpMain, UnsharpThread)
-
-SET_STRING_MACRO(UnsharpMain)
-
-RAISE_WINDOW_MACRO(UnsharpMain)
-
-LOAD_CONFIGURATION_MACRO(UnsharpMain, UnsharpConfig)
-
-
-void UnsharpMain::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("UnsharpMain::update_gui");
-			thread->window->update();
-			thread->window->unlock_window();
-		}
-	}
-}
-
+PLUGIN_CLASS_METHODS
 
 void UnsharpMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sunsharp.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("unsharp.rc");
 
 	config.radius = defaults->get("RADIUS", config.radius);
 	config.amount = defaults->get("AMOUNT", config.amount);
@@ -159,39 +124,26 @@ void UnsharpMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("UNSHARP"))
 		{
-			if(input.tag.title_is("UNSHARP"))
-			{
-				config.radius = input.tag.get_property("RADIUS", config.radius);
-				config.amount = input.tag.get_property("AMOUNT", config.amount);
-				config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
-			}
+			config.radius = input.tag.get_property("RADIUS", config.radius);
+			config.amount = input.tag.get_property("AMOUNT", config.amount);
+			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
 		}
 	}
 }
 
-int UnsharpMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void UnsharpMain::process_frame(VFrame *frame)
 {
 	int need_reconfigure = load_configuration();
 
 	if(!engine) engine = new UnsharpEngine(this, 
 		get_project_smp() + 1,
 		get_project_smp() + 1);
-	read_frame(frame,
-		0, 
-		get_source_position(),
-		get_framerate());
+	get_frame(frame);
 	engine->do_unsharp(frame);
-	return 0;
 }
 
 UnsharpPackage::UnsharpPackage()
@@ -212,7 +164,6 @@ UnsharpUnit::~UnsharpUnit()
 {
 	delete temp;
 }
-
 
 // Derived from the Gimp.
 // In the original file it says

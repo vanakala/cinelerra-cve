@@ -22,6 +22,17 @@
 #ifndef UNSHARP_H
 #define UNSHARP_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Unsharp")
+#define PLUGIN_CLASS UnsharpMain
+#define PLUGIN_CONFIG_CLASS UnsharpConfig
+#define PLUGIN_THREAD_CLASS UnsharpThread
+#define PLUGIN_GUI_CLASS UnsharpWindow
+
+#include "pluginmacros.h"
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -29,13 +40,13 @@
 #include "bchash.inc"
 #include "filexml.inc"
 #include "keyframe.inc"
+#include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
-#include "unsharp.inc"
 #include "unsharpwindow.inc"
 #include "vframe.inc"
 
-
+class UnsharpEngine;
 
 class UnsharpConfig
 {
@@ -46,15 +57,14 @@ public:
 	void copy_from(UnsharpConfig &that);
 	void interpolate(UnsharpConfig &prev, 
 		UnsharpConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	float radius;
 	float amount;
 	int threshold;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
-
 
 
 class UnsharpMain : public PluginVClient
@@ -63,17 +73,13 @@ public:
 	UnsharpMain(PluginServer *server);
 	~UnsharpMain();
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
-	PLUGIN_CLASS_MEMBERS(UnsharpConfig, UnsharpThread)
+	PLUGIN_CLASS_MEMBERS
 
 	UnsharpEngine *engine;
 };
@@ -116,9 +122,3 @@ public:
 };
 
 #endif
-
-
-
-
-
-

@@ -23,7 +23,7 @@
 #define UNSHARPWINDOW_H
 
 #include "guicast.h"
-#include "unsharp.inc"
+#include "unsharp.h"
 #include "unsharpwindow.inc"
 
 class UnsharpRadius : public BC_FPot
@@ -56,16 +56,14 @@ public:
 	UnsharpWindow(UnsharpMain *plugin, int x, int y);
 	~UnsharpWindow();
 
-	int create_objects();
-	void close_event();
 	void update();
 
 	UnsharpRadius *radius;
 	UnsharpAmount *amount;
 	UnsharpThreshold *threshold;
-	UnsharpMain *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(UnsharpMain, UnsharpThread, UnsharpWindow)
+PLUGIN_THREAD_HEADER
 
 #endif
