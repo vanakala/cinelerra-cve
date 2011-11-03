@@ -19,7 +19,17 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("YUV")
+#define PLUGIN_CLASS YUVEffect
+#define PLUGIN_CONFIG_CLASS YUVConfig
+#define PLUGIN_THREAD_CLASS YUVThread
+#define PLUGIN_GUI_CLASS YUVWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -34,9 +44,6 @@
 #include <string.h>
 
 
-class YUVEffect;
-
-
 class YUVConfig
 {
 public:
@@ -46,10 +53,11 @@ public:
 	int equivalent(YUVConfig &src);
 	void interpolate(YUVConfig &prev, 
 		YUVConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	float y, u, v;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class YUVLevel : public BC_FSlider
@@ -65,13 +73,14 @@ class YUVWindow : public BC_Window
 {
 public:
 	YUVWindow(YUVEffect *plugin, int x, int y);
-	void create_objects();
-	void close_event();
+
+	void update();
+
 	YUVLevel *y, *u, *v;
 	YUVEffect *plugin;
 };
 
-PLUGIN_THREAD_HEADER(YUVEffect, YUVThread, YUVWindow)
+PLUGIN_THREAD_HEADER
 
 class YUVEffect : public PluginVClient
 {
@@ -79,19 +88,18 @@ public:
 	YUVEffect(PluginServer *server);
 	~YUVEffect();
 
-	PLUGIN_CLASS_MEMBERS(YUVConfig, YUVThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
+
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 };
 
 
-REGISTER_PLUGIN(YUVEffect)
+REGISTER_PLUGIN
 
 YUVConfig::YUVConfig()
 {
@@ -114,12 +122,11 @@ int YUVConfig::equivalent(YUVConfig &src)
 
 void YUVConfig::interpolate(YUVConfig &prev, 
 	YUVConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	y = prev.y * prev_scale + next.y * next_scale;
 	u = prev.u * prev_scale + next.u * next_scale;
@@ -163,14 +170,9 @@ YUVWindow::YUVWindow(YUVEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	int x1 = 50;
 
-void YUVWindow::create_objects()
-{
-	int x = 10, y = 10, x1 = 50;
-
-	set_icon(new VFrame(picon_png));
+	x = y = 10;
 	add_subwindow(new BC_Title(x, y, _("Y:")));
 	add_subwindow(this->y = new YUVLevel(plugin, &plugin->config.y, x1, y));
 	y += 30;
@@ -179,17 +181,17 @@ void YUVWindow::create_objects()
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("V:")));
 	add_subwindow(v = new YUVLevel(plugin, &plugin->config.v, x1, y));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-void YUVWindow::close_event()
+void YUVWindow::update()
 {
-	set_done(1);
+	y->update(plugin->config.y);
+	u->update(plugin->config.u);
+	v->update(plugin->config.v);
 }
 
-PLUGIN_THREAD_OBJECT(YUVEffect, YUVThread, YUVWindow)
+PLUGIN_THREAD_METHODS
 
 YUVEffect::YUVEffect(PluginServer *server)
  : PluginVClient(server)
@@ -202,35 +204,13 @@ YUVEffect::~YUVEffect()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* YUVEffect::plugin_title() { return N_("YUV"); }
-int YUVEffect::is_realtime() { return 1; } 
+PLUGIN_CLASS_METHODS
 
-
-NEW_PICON_MACRO(YUVEffect)
-SHOW_GUI_MACRO(YUVEffect, YUVThread)
-RAISE_WINDOW_MACRO(YUVEffect)
-SET_STRING_MACRO(YUVEffect)
-LOAD_CONFIGURATION_MACRO(YUVEffect, YUVConfig)
-
-void YUVEffect::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		load_configuration();
-		thread->window->y->update(config.y);
-		thread->window->u->update(config.u);
-		thread->window->v->update(config.v);
-		thread->window->unlock_window();
-	}
-}
 
 void YUVEffect::load_defaults()
 {
-	char directory[BCTEXTLEN];
-	sprintf(directory, "%syuv.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("yuv.rc");
+
 	config.y = defaults->get("Y", config.y);
 	config.u = defaults->get("U", config.u);
 	config.v = defaults->get("V", config.v);
@@ -261,6 +241,7 @@ void YUVEffect::save_data(KeyFrame *keyframe)
 void YUVEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
+
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 	while(!input.read_tag())
 	{
@@ -272,7 +253,6 @@ void YUVEffect::read_data(KeyFrame *keyframe)
 		}
 	}
 }
-
 
 static YUV yuv_static;
 
