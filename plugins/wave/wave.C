@@ -19,7 +19,17 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Wave")
+#define PLUGIN_CLASS WaveEffect
+#define PLUGIN_CONFIG_CLASS WaveConfig
+#define PLUGIN_THREAD_CLASS WaveThread
+#define PLUGIN_GUI_CLASS WaveWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -35,13 +45,8 @@
 #include <stdint.h>
 #include <string.h>
 
-
 #define SMEAR 0
 #define BLACKEN 1
-
-
-class WaveEffect;
-class WaveWindow;
 
 
 class WaveConfig
@@ -52,14 +57,15 @@ public:
 	int equivalent(WaveConfig &src);
 	void interpolate(WaveConfig &prev, 
 		WaveConfig &next,
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	int mode;
 	int reflective;
 	float amplitude;
 	float phase;
 	float wavelength;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class WaveAmplitude : public BC_FSlider
@@ -86,15 +92,13 @@ public:
 	WaveEffect *plugin;
 };
 
-
 class WaveWindow : public BC_Window
 {
 public:
 	WaveWindow(WaveEffect *plugin, int x, int y);
 	~WaveWindow();
-	void create_objects();
-	void close_event();
-	void update_mode();
+
+	void update();
 	WaveEffect *plugin;
 	WaveAmplitude *amplitude;
 	WavePhase *phase;
@@ -102,7 +106,7 @@ public:
 };
 
 
-PLUGIN_THREAD_HEADER(WaveEffect, WaveThread, WaveWindow)
+PLUGIN_THREAD_HEADER
 
 
 class WaveServer : public LoadServer
@@ -137,15 +141,13 @@ public:
 	WaveEffect(PluginServer *server);
 	~WaveEffect();
 
-	PLUGIN_CLASS_MEMBERS(WaveConfig, WaveThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
 	VFrame *temp_frame;
 	VFrame *input, *output;
@@ -183,12 +185,11 @@ int WaveConfig::equivalent(WaveConfig &src)
 
 void WaveConfig::interpolate(WaveConfig &prev, 
 		WaveConfig &next,
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame)
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->amplitude = prev.amplitude * prev_scale + next.amplitude * next_scale;
 	this->phase = prev.phase * prev_scale + next.phase * next_scale;
@@ -210,13 +211,13 @@ WaveAmplitude::WaveAmplitude(WaveEffect *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int WaveAmplitude::handle_event()
 {
 	plugin->config.amplitude = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
-
 
 
 WavePhase::WavePhase(WaveEffect *plugin, int x, int y)
@@ -231,12 +232,14 @@ WavePhase::WavePhase(WaveEffect *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int WavePhase::handle_event()
 {
 	plugin->config.phase = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
+
 
 WaveLength::WaveLength(WaveEffect *plugin, int x, int y)
  : BC_FSlider(x, 
@@ -250,6 +253,7 @@ WaveLength::WaveLength(WaveEffect *plugin, int x, int y)
 {
 	this->plugin = plugin;
 }
+
 int WaveLength::handle_event()
 {
 	plugin->config.wavelength = get_value();
@@ -270,18 +274,9 @@ WaveWindow::WaveWindow(WaveEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	int x1 = 100;
+	x = y = 10;
 
-WaveWindow::~WaveWindow()
-{
-}
-
-void WaveWindow::create_objects()
-{
-	int x = 10, y = 10, x1 = 100;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Amplitude:")));
 	add_subwindow(amplitude = new WaveAmplitude(plugin, x1, y));
 	y += 30;
@@ -290,29 +285,25 @@ void WaveWindow::create_objects()
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Wavelength:")));
 	add_subwindow(wavelength = new WaveLength(plugin, x1, y));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-void WaveWindow::close_event()
-{
-	set_done(1);
-}
-
-void WaveWindow::update_mode()
+WaveWindow::~WaveWindow()
 {
 }
 
+void WaveWindow::update()
+{
+	amplitude->update(plugin->config.amplitude);
+	phase->update(plugin->config.phase);
+	wavelength->update(plugin->config.wavelength);
+}
 
-PLUGIN_THREAD_OBJECT(WaveEffect, WaveThread, WaveWindow)
+
+PLUGIN_THREAD_METHODS
 
 
-
-
-REGISTER_PLUGIN(WaveEffect)
-
-
+REGISTER_PLUGIN
 
 
 WaveEffect::WaveEffect(PluginServer *server)
@@ -325,50 +316,16 @@ WaveEffect::WaveEffect(PluginServer *server)
 
 WaveEffect::~WaveEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-
-const char* WaveEffect::plugin_title() { return N_("Wave"); }
-int WaveEffect::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(WaveEffect)
-
-SHOW_GUI_MACRO(WaveEffect, WaveThread)
-
-RAISE_WINDOW_MACRO(WaveEffect)
-
-SET_STRING_MACRO(WaveEffect)
-
-void WaveEffect::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		load_configuration();
-		thread->window->update_mode();
-		thread->window->amplitude->update(config.amplitude);
-		thread->window->phase->update(config.phase);
-		thread->window->wavelength->update(config.wavelength);
-		thread->window->unlock_window();
-	}
-}
-
-
-LOAD_CONFIGURATION_MACRO(WaveEffect, WaveConfig)
+PLUGIN_CLASS_METHODS
 
 void WaveEffect::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%swave.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("wave.rc");
 
 	config.mode = defaults->get("MODE", config.mode);
 	config.reflective = defaults->get("REFLECTIVE", config.reflective);
@@ -642,7 +599,6 @@ void WaveUnit::process_package(LoadPackage *package)
 		} \
 	} \
 }
-
 
 	switch(plugin->input->get_color_model())
 	{
