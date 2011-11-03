@@ -19,7 +19,17 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Whirl")
+#define PLUGIN_CLASS WhirlEffect
+#define PLUGIN_CONFIG_CLASS WhirlConfig
+#define PLUGIN_THREAD_CLASS WhirlThread
+#define PLUGIN_GUI_CLASS WhirlWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -30,7 +40,6 @@
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "vframe.h"
-
 
 
 #include <stdint.h>
@@ -44,26 +53,23 @@ class WhirlEngine;
 #define MAXPINCH 100
 
 
-
-
-
-
 class WhirlConfig
 {
 public:
 	WhirlConfig();
-	
+
 	void copy_from(WhirlConfig &src);
 	int equivalent(WhirlConfig &src);
 	void interpolate(WhirlConfig &prev, 
 		WhirlConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	float angle;
 	float pinch;
 	float radius;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -71,6 +77,7 @@ class WhirlAngle : public BC_FSlider
 {
 public:
 	WhirlAngle(WhirlEffect *plugin, int x, int y);
+
 	int handle_event();
 	WhirlEffect *plugin;
 };
@@ -80,6 +87,7 @@ class WhirlPinch : public BC_FSlider
 {
 public:
 	WhirlPinch(WhirlEffect *plugin, int x, int y);
+
 	int handle_event();
 	WhirlEffect *plugin;
 };
@@ -89,6 +97,7 @@ class WhirlRadius : public BC_FSlider
 {
 public:
 	WhirlRadius(WhirlEffect *plugin, int x, int y);
+
 	int handle_event();
 	WhirlEffect *plugin;
 };
@@ -97,22 +106,24 @@ class WhirlWindow : public BC_Window
 {
 public:
 	WhirlWindow(WhirlEffect *plugin, int x, int y);
-	void create_objects();
-	void close_event();
-	WhirlEffect *plugin;
+
+	void update();
+
 	WhirlRadius *radius;
 	WhirlPinch *pinch;
 	WhirlAngle *angle;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(WhirlEffect, WhirlThread, WhirlWindow)
+PLUGIN_THREAD_HEADER
 
 
 class WhirlPackage : public LoadPackage
 {
 public:
 	WhirlPackage();
+
 	int row1, row2;
 };
 
@@ -120,6 +131,7 @@ class WhirlUnit : public LoadClient
 {
 public:
 	WhirlUnit(WhirlEffect *plugin, WhirlEngine *server);
+
 	void process_package(LoadPackage *package);
 	WhirlEngine *server;
 	WhirlEffect *plugin;
@@ -130,6 +142,7 @@ class WhirlEngine : public LoadServer
 {
 public:
 	WhirlEngine(WhirlEffect *plugin, int cpus);
+
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
@@ -143,11 +156,10 @@ public:
 	WhirlEffect(PluginServer *server);
 	~WhirlEffect();
 
-	PLUGIN_CLASS_MEMBERS(WhirlConfig, WhirlThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
-	void update_gui();
+
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -159,9 +171,9 @@ public:
 	int need_reconfigure;
 };
 
-PLUGIN_THREAD_OBJECT(WhirlEffect, WhirlThread, WhirlWindow)
+PLUGIN_THREAD_METHODS
 
-REGISTER_PLUGIN(WhirlEffect)
+REGISTER_PLUGIN
 
 
 WhirlConfig::WhirlConfig()
@@ -187,12 +199,11 @@ int WhirlConfig::equivalent(WhirlConfig &src)
 
 void WhirlConfig::interpolate(WhirlConfig &prev, 
 	WhirlConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->angle = prev.angle * prev_scale + next.angle * next_scale;
 	this->pinch = prev.pinch * prev_scale + next.pinch * next_scale;
@@ -212,13 +223,7 @@ WhirlWindow::WhirlWindow(WhirlEffect *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-
-void WhirlWindow::create_objects()
-{
-	int x = 10, y = 10;
+	x = y = 10;
 
 	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Radius")));
@@ -232,20 +237,20 @@ void WhirlWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Angle")));
 	y += 20;
 	add_subwindow(angle = new WhirlAngle(plugin, x, y));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-void WhirlWindow::close_event()
+void WhirlWindow::update()
 {
-	set_done(1);
+	angle->update(plugin->config.angle);
+	pinch->update(plugin->config.pinch);
+	radius->update(plugin->config.radius);
 }
 
 
 WhirlAngle::WhirlAngle(WhirlEffect *plugin, int x, int y)
  : BC_FSlider(x, 
-	   	y, 
+		y,
 		0,
 		200,
 		200, 
@@ -317,48 +322,16 @@ WhirlEffect::WhirlEffect(PluginServer *server)
 
 WhirlEffect::~WhirlEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
 	if(temp_frame) delete temp_frame;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-
-const char* WhirlEffect::plugin_title() { return N_("Whirl"); }
-int WhirlEffect::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(WhirlEffect)
-
-SHOW_GUI_MACRO(WhirlEffect, WhirlThread)
-
-RAISE_WINDOW_MACRO(WhirlEffect)
-
-SET_STRING_MACRO(WhirlEffect)
-
-void WhirlEffect::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->angle->update(config.angle);
-		thread->window->pinch->update(config.pinch);
-		thread->window->radius->update(config.radius);
-		thread->window->unlock_window();
-	}
-}
-
-LOAD_CONFIGURATION_MACRO(WhirlEffect, WhirlConfig)
-
+PLUGIN_CLASS_METHODS
 
 void WhirlEffect::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%swhirl.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("whirl.rc");
 
 	config.angle = defaults->get("ANGLE", config.angle);
 	config.pinch = defaults->get("PINCH", config.pinch);
@@ -399,18 +372,13 @@ void WhirlEffect::read_data(KeyFrame *keyframe)
 
 	int result = 0;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("WHIRL"))
 		{
-			if(input.tag.title_is("WHIRL"))
-			{
-				config.angle = input.tag.get_property("ANGLE", config.angle);
-				config.pinch = input.tag.get_property("PINCH", config.pinch);
-				config.radius = input.tag.get_property("RADIUS", config.radius);
-			}
+			config.angle = input.tag.get_property("ANGLE", config.angle);
+			config.pinch = input.tag.get_property("PINCH", config.pinch);
+			config.radius = input.tag.get_property("RADIUS", config.radius);
 		}
 	}
 }
@@ -522,7 +490,6 @@ static int calc_undistorted_coords(double cen_x,
 }
 
 
-
 #define GET_PIXEL(components, x, y, input_rows) \
 	input_rows[CLIP(y, 0, (h - 1))] + components * CLIP(x, 0, (w - 1))
 
@@ -540,9 +507,6 @@ static float bilinear(double x, double y, double *values)
 	m1 = (double)values[2] + x * ((double)values[3] - values[2]);
 	return m0 + y * (m1 - m0);
 }
-
-
-
 
 
 #define WHIRL_MACRO(type, max, components) \
