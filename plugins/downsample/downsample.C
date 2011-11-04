@@ -19,31 +19,33 @@
  * 
  */
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Downsample")
+#define PLUGIN_CLASS DownSampleMain
+#define PLUGIN_CONFIG_CLASS DownSampleConfig
+#define PLUGIN_THREAD_CLASS DownSampleThread
+#define PLUGIN_GUI_CLASS DownSampleWindow
+
+#include "pluginmacros.h"
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
-
-class DownSampleMain;
 class DownSampleServer;
-
-
-
 
 
 class DownSampleConfig
@@ -55,9 +57,9 @@ public:
 	void copy_from(DownSampleConfig &that);
 	void interpolate(DownSampleConfig &prev, 
 		DownSampleConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int horizontal_x;
 	int vertical_y;
@@ -67,6 +69,7 @@ public:
 	int g;
 	int b;
 	int a;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -103,17 +106,15 @@ public:
 	DownSampleWindow(DownSampleMain *plugin, int x, int y);
 	~DownSampleWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
 	DownSampleToggle *r, *g, *b, *a;
 	DownSampleSize *h, *v, *h_x, *v_y;
-	DownSampleMain *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-
-PLUGIN_THREAD_HEADER(DownSampleMain, DownSampleThread, DownSampleWindow)
+PLUGIN_THREAD_HEADER
 
 
 class DownSampleMain : public PluginVClient
@@ -123,14 +124,13 @@ public:
 	~DownSampleMain();
 
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
+
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
-	PLUGIN_CLASS_MEMBERS(DownSampleConfig, DownSampleThread)
+	PLUGIN_CLASS_MEMBERS
 
 	VFrame *input, *output;
 	DownSampleServer *engine;
@@ -165,7 +165,7 @@ public:
 };
 
 
-REGISTER_PLUGIN(DownSampleMain)
+REGISTER_PLUGIN
 
 DownSampleConfig::DownSampleConfig()
 {
@@ -206,12 +206,11 @@ void DownSampleConfig::copy_from(DownSampleConfig &that)
 
 void DownSampleConfig::interpolate(DownSampleConfig &prev, 
 	DownSampleConfig &next, 
-	samplenum prev_frame, 
-	samplenum next_frame, 
-	samplenum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	this->horizontal = (int)(prev.horizontal * prev_scale + next.horizontal * next_scale);
 	this->vertical = (int)(prev.vertical * prev_scale + next.vertical * next_scale);
 	this->horizontal_x = (int)(prev.horizontal_x * prev_scale + next.horizontal_x * next_scale);
@@ -223,7 +222,7 @@ void DownSampleConfig::interpolate(DownSampleConfig &prev,
 }
 
 
-PLUGIN_THREAD_OBJECT(DownSampleMain, DownSampleThread, DownSampleWindow)
+PLUGIN_THREAD_METHODS
 
 DownSampleWindow::DownSampleWindow(DownSampleMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -236,18 +235,8 @@ DownSampleWindow::DownSampleWindow(DownSampleMain *plugin, int x, int y)
 	0, 
 	1)
 {
-	this->plugin = plugin; 
-}
+	x = y = 10;
 
-DownSampleWindow::~DownSampleWindow()
-{
-}
-
-int DownSampleWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Horizontal")));
 	y += 30;
 	add_subwindow(h = new DownSampleSize(plugin, 
@@ -309,14 +298,23 @@ int DownSampleWindow::create_objects()
 		_("Alpha")));
 	y += 30;
 
-	show_window();
-	flush();
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-void DownSampleWindow::close_event()
+DownSampleWindow::~DownSampleWindow()
 {
-	set_done(1);
+}
+
+void DownSampleWindow::update()
+{
+	h->update(plugin->config.horizontal);
+	v->update(plugin->config.vertical);
+	h_x->update(plugin->config.horizontal_x);
+	v_y->update(plugin->config.vertical_y);
+	r->update(plugin->config.r);
+	g->update(plugin->config.g);
+	b->update(plugin->config.b);
+	a->update(plugin->config.a);
 }
 
 
@@ -361,31 +359,17 @@ int DownSampleSize::handle_event()
 DownSampleMain::DownSampleMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 DownSampleMain::~DownSampleMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(engine) delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* DownSampleMain::plugin_title() { return N_("Downsample"); }
-int DownSampleMain::is_realtime() { return 1; }
-
-
-NEW_PICON_MACRO(DownSampleMain)
-
-SHOW_GUI_MACRO(DownSampleMain, DownSampleThread)
-
-SET_STRING_MACRO(DownSampleMain)
-
-RAISE_WINDOW_MACRO(DownSampleMain)
-
-LOAD_CONFIGURATION_MACRO(DownSampleMain, DownSampleConfig)
-
+PLUGIN_CLASS_METHODS
 
 void DownSampleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
@@ -406,34 +390,9 @@ void DownSampleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	engine->process_packages();
 }
 
-
-void DownSampleMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->h->update(config.horizontal);
-		thread->window->v->update(config.vertical);
-		thread->window->h_x->update(config.horizontal_x);
-		thread->window->v_y->update(config.vertical_y);
-		thread->window->r->update(config.r);
-		thread->window->g->update(config.g);
-		thread->window->b->update(config.b);
-		thread->window->a->update(config.a);
-		thread->window->unlock_window();
-	}
-}
-
 void DownSampleMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sdownsample.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("downsample.rc");
 
 	config.horizontal = defaults->get("HORIZONTAL", config.horizontal);
 	config.vertical = defaults->get("VERTICAL", config.vertical);
@@ -486,37 +445,27 @@ void DownSampleMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("DOWNSAMPLE"))
 		{
-			if(input.tag.title_is("DOWNSAMPLE"))
-			{
-				config.horizontal = input.tag.get_property("HORIZONTAL", config.horizontal);
-				config.vertical = input.tag.get_property("VERTICAL", config.vertical);
-				config.horizontal_x = input.tag.get_property("HORIZONTAL_X", config.horizontal_x);
-				config.vertical_y = input.tag.get_property("VERTICAL_Y", config.vertical_y);
-				config.r = input.tag.get_property("R", config.r);
-				config.g = input.tag.get_property("G", config.g);
-				config.b = input.tag.get_property("B", config.b);
-				config.a = input.tag.get_property("A", config.a);
-			}
+			config.horizontal = input.tag.get_property("HORIZONTAL", config.horizontal);
+			config.vertical = input.tag.get_property("VERTICAL", config.vertical);
+			config.horizontal_x = input.tag.get_property("HORIZONTAL_X", config.horizontal_x);
+			config.vertical_y = input.tag.get_property("VERTICAL_Y", config.vertical_y);
+			config.r = input.tag.get_property("R", config.r);
+			config.g = input.tag.get_property("G", config.g);
+			config.b = input.tag.get_property("B", config.b);
+			config.a = input.tag.get_property("A", config.a);
 		}
 	}
 }
-
 
 
 DownSamplePackage::DownSamplePackage()
  : LoadPackage()
 {
 }
-
-
 
 
 DownSampleUnit::DownSampleUnit(DownSampleServer *server, 
@@ -603,7 +552,6 @@ void DownSampleUnit::process_package(LoadPackage *package)
 	DownSamplePackage *pkg = (DownSamplePackage*)package;
 	int h = plugin->output->get_h();
 	int w = plugin->output->get_w();
-
 
 	switch(plugin->input->get_color_model())
 	{
