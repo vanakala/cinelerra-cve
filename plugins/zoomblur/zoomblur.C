@@ -19,11 +19,21 @@
  * 
  */
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Zoom Blur")
+#define PLUGIN_CLASS ZoomBlurMain
+#define PLUGIN_CONFIG_CLASS ZoomBlurConfig
+#define PLUGIN_THREAD_CLASS ZoomBlurThread
+#define PLUGIN_GUI_CLASS ZoomBlurWindow
+
+#include "pluginmacros.h"
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
@@ -36,9 +46,7 @@
 #include "vframe.h"
 
 
-class ZoomBlurMain;
 class ZoomBlurEngine;
-
 
 
 class ZoomBlurConfig
@@ -50,9 +58,9 @@ public:
 	void copy_from(ZoomBlurConfig &that);
 	void interpolate(ZoomBlurConfig &prev, 
 		ZoomBlurConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int x;
 	int y;
@@ -62,9 +70,8 @@ public:
 	int g;
 	int b;
 	int a;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
-
 
 class ZoomBlurSize : public BC_ISlider
 {
@@ -99,17 +106,15 @@ public:
 	ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y);
 	~ZoomBlurWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
 	ZoomBlurSize *x, *y, *radius, *steps;
 	ZoomBlurToggle *r, *g, *b, *a;
-	ZoomBlurMain *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-
-PLUGIN_THREAD_HEADER(ZoomBlurMain, ZoomBlurThread, ZoomBlurWindow)
+PLUGIN_THREAD_HEADER
 
 
 // Output coords for a layer of blurring
@@ -127,18 +132,14 @@ public:
 	ZoomBlurMain(PluginServer *server);
 	~ZoomBlurMain();
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void handle_opengl();
 
-	PLUGIN_CLASS_MEMBERS(ZoomBlurConfig, ZoomBlurThread)
+	PLUGIN_CLASS_MEMBERS
 
 	void delete_tables();
 	VFrame *input, *output, *temp;
@@ -181,7 +182,7 @@ public:
 };
 
 
-REGISTER_PLUGIN(ZoomBlurMain)
+REGISTER_PLUGIN
 
 
 ZoomBlurConfig::ZoomBlurConfig()
@@ -223,12 +224,11 @@ void ZoomBlurConfig::copy_from(ZoomBlurConfig &that)
 
 void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev, 
 	ZoomBlurConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	this->x = (int)(prev.x * prev_scale + next.x * next_scale + 0.5);
 	this->y = (int)(prev.y * prev_scale + next.y * next_scale + 0.5);
 	this->radius = (int)(prev.radius * prev_scale + next.radius * next_scale + 0.5);
@@ -239,7 +239,7 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 	a = prev.a;
 }
 
-PLUGIN_THREAD_OBJECT(ZoomBlurMain, ZoomBlurThread, ZoomBlurWindow)
+PLUGIN_THREAD_METHODS
 
 ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -252,18 +252,8 @@ ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y)
 	0, 
 	1)
 {
-	this->plugin = plugin; 
-}
+	x = y = 10;
 
-ZoomBlurWindow::~ZoomBlurWindow()
-{
-}
-
-int ZoomBlurWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("X:")));
 	y += 20;
 	add_subwindow(this->x = new ZoomBlurSize(plugin, x, y, &plugin->config.x, 0, 100));
@@ -288,17 +278,24 @@ int ZoomBlurWindow::create_objects()
 	y += 30;
 	add_subwindow(a = new ZoomBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
 	y += 30;
-
-	show_window();
-	flush();
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-void ZoomBlurWindow::close_event()
+ZoomBlurWindow::~ZoomBlurWindow()
 {
-	set_done(1);
 }
 
+void ZoomBlurWindow::update()
+{
+	x->update(plugin->config.x);
+	y->update(plugin->config.y);
+	radius->update(plugin->config.radius);
+	steps->update(plugin->config.steps);
+	r->update(plugin->config.r);
+	g->update(plugin->config.g);
+	b->update(plugin->config.b);
+	a->update(plugin->config.a);
+}
 
 ZoomBlurToggle::ZoomBlurToggle(ZoomBlurMain *plugin, 
 	int x, 
@@ -329,6 +326,7 @@ ZoomBlurSize::ZoomBlurSize(ZoomBlurMain *plugin,
 	this->plugin = plugin;
 	this->output = output;
 }
+
 int ZoomBlurSize::handle_event()
 {
 	*output = get_value();
@@ -336,12 +334,9 @@ int ZoomBlurSize::handle_event()
 	return 1;
 }
 
-
-
 ZoomBlurMain::ZoomBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
@@ -350,30 +345,19 @@ ZoomBlurMain::ZoomBlurMain(PluginServer *server)
 	accum = 0;
 	need_reconfigure = 1;
 	temp = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ZoomBlurMain::~ZoomBlurMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
 	if(temp) delete temp;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* ZoomBlurMain::plugin_title() { return N_("Zoom Blur"); }
-int ZoomBlurMain::is_realtime() { return 1; }
-
-
-NEW_PICON_MACRO(ZoomBlurMain)
-
-SHOW_GUI_MACRO(ZoomBlurMain, ZoomBlurThread)
-
-SET_STRING_MACRO(ZoomBlurMain)
-
-RAISE_WINDOW_MACRO(ZoomBlurMain)
-
-LOAD_CONFIGURATION_MACRO(ZoomBlurMain, ZoomBlurConfig)
+PLUGIN_CLASS_METHODS
 
 void ZoomBlurMain::delete_tables()
 {
@@ -398,17 +382,11 @@ void ZoomBlurMain::delete_tables()
 	table_entries = 0;
 }
 
-int ZoomBlurMain::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void ZoomBlurMain::process_frame(VFrame *frame)
 {
 	need_reconfigure |= load_configuration();
 
-	read_frame(frame,
-		0,
-		get_source_position(),
-		get_framerate(),
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
@@ -494,7 +472,7 @@ int ZoomBlurMain::process_buffer(VFrame *frame,
 	if(get_use_opengl())
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	if(!engine) engine = new ZoomBlurEngine(this,
@@ -507,7 +485,6 @@ int ZoomBlurMain::process_buffer(VFrame *frame,
 
 	this->input = frame;
 	this->output = frame;
-
 
 	if(!temp) temp = new VFrame(0,
 		frame->get_w(),
@@ -522,38 +499,11 @@ int ZoomBlurMain::process_buffer(VFrame *frame,
 		cmodel_components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
-	return 0;
 }
-
-
-void ZoomBlurMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->x->update(config.x);
-		thread->window->y->update(config.y);
-		thread->window->radius->update(config.radius);
-		thread->window->steps->update(config.steps);
-		thread->window->r->update(config.r);
-		thread->window->g->update(config.g);
-		thread->window->b->update(config.b);
-		thread->window->a->update(config.a);
-		thread->window->unlock_window();
-	}
-}
-
 
 void ZoomBlurMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%szoomblur.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("zoomblur.rc");
 
 	config.x = defaults->get("X", config.x);
 	config.y = defaults->get("Y", config.y);
@@ -564,7 +514,6 @@ void ZoomBlurMain::load_defaults()
 	config.b = defaults->get("B", config.b);
 	config.a = defaults->get("A", config.a);
 }
-
 
 void ZoomBlurMain::save_defaults()
 {
@@ -578,8 +527,6 @@ void ZoomBlurMain::save_defaults()
 	defaults->update("A", config.a);
 	defaults->save();
 }
-
-
 
 void ZoomBlurMain::save_data(KeyFrame *keyframe)
 {
@@ -609,25 +556,18 @@ void ZoomBlurMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("ZOOMBLUR"))
 		{
-			if(input.tag.title_is("ZOOMBLUR"))
-			{
-				config.x = input.tag.get_property("X", config.x);
-				config.y = input.tag.get_property("Y", config.y);
-				config.radius = input.tag.get_property("RADIUS", config.radius);
-				config.steps = input.tag.get_property("STEPS", config.steps);
-				config.r = input.tag.get_property("R", config.r);
-				config.g = input.tag.get_property("G", config.g);
-				config.b = input.tag.get_property("B", config.b);
-				config.a = input.tag.get_property("A", config.a);
-			}
+			config.x = input.tag.get_property("X", config.x);
+			config.y = input.tag.get_property("Y", config.y);
+			config.radius = input.tag.get_property("RADIUS", config.radius);
+			config.steps = input.tag.get_property("STEPS", config.steps);
+			config.r = input.tag.get_property("R", config.r);
+			config.g = input.tag.get_property("G", config.g);
+			config.b = input.tag.get_property("B", config.b);
+			config.a = input.tag.get_property("A", config.a);
 		}
 	}
 }
