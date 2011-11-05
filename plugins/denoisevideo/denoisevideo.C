@@ -32,7 +32,7 @@
 #include <stdint.h>
 #include <string.h>
 
-REGISTER_PLUGIN(DenoiseVideo)
+REGISTER_PLUGIN
 
 
 DenoiseVideoConfig::DenoiseVideoConfig()
@@ -67,12 +67,11 @@ void DenoiseVideoConfig::copy_from(DenoiseVideoConfig &that)
 
 void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev, 
 	DenoiseVideoConfig &next, 
-	samplenum prev_frame,
-	samplenum next_frame,
-	samplenum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->frames = (int)(prev.frames * prev_scale + next.frames * next_scale);
 	this->threshold = prev.threshold * prev_scale + next.threshold * next_scale;
@@ -106,7 +105,6 @@ int DenoiseVideoFrames::handle_event()
 }
 
 
-
 DenoiseVideoThreshold::DenoiseVideoThreshold(DenoiseVideo *plugin, int x, int y)
  : BC_TextBox(x, y, 100, 1, plugin->config.threshold)
 {
@@ -119,7 +117,6 @@ int DenoiseVideoThreshold::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
 
 
 DenoiseVideoToggle::DenoiseVideoToggle(DenoiseVideo *plugin, 
@@ -153,13 +150,7 @@ DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-
-void DenoiseVideoWindow::create_objects()
-{
-	int x = 10, y = 10;
+	x = y = 10;
 	set_icon(new VFrame(picon_png));
 
 	add_subwindow(new BC_Title(x, y, _("Frames to accumulate:")));
@@ -177,34 +168,33 @@ void DenoiseVideoWindow::create_objects()
 	add_subwindow(do_b = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_b, _("Blue")));
 	y += 30;
 	add_subwindow(do_a = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_a, _("Alpha")));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-void DenoiseVideoWindow::close_event()
+void DenoiseVideoWindow::update()
 {
-	set_done(1);
+	frames->update(plugin->config.frames);
+	threshold->update(plugin->config.threshold);
 }
 
 
-PLUGIN_THREAD_OBJECT(DenoiseVideo, DenoiseVideoThread, DenoiseVideoWindow)
-
+PLUGIN_THREAD_METHODS
 
 
 DenoiseVideo::DenoiseVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	accumulation = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
-
 
 DenoiseVideo::~DenoiseVideo()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(accumulation) delete [] accumulation;
+	PLUGIN_DESTRUCTOR_MACRO
 }
+
+PLUGIN_CLASS_METHODS
 
 void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 {
@@ -217,7 +207,7 @@ void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 	if(!accumulation)
 	{
 		accumulation = new float[w * h * cmodel_components(color_model)];
-		bzero(accumulation, sizeof(float) * w * h * cmodel_components(color_model));
+		memset(accumulation, 0, sizeof(float) * w * h * cmodel_components(color_model));
 	}
 
 	float *accumulation_ptr = accumulation;
@@ -236,14 +226,14 @@ void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
  \
 		for(int k = 0; k < w * components; k++) \
 		{ \
- 			if(do_it[k % components]) \
+			if(do_it[k % components]) \
 			{ \
 				float input_pixel = *input_row; \
 				(*accumulation_ptr) = \
 					transparency * (*accumulation_ptr) + \
 					opacity * input_pixel; \
  \
- 				if(fabs((*accumulation_ptr) - input_pixel) > threshold) \
+				if(fabs((*accumulation_ptr) - input_pixel) > threshold) \
 				{ \
 					(*accumulation_ptr) = input_pixel; \
 					*output_row = (type)(*accumulation_ptr); \
@@ -257,13 +247,12 @@ void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 				*output_row = *input_row; \
 			} \
  \
- 			output_row++; \
+			output_row++; \
 			input_row++; \
 			accumulation_ptr++; \
 		} \
 	} \
 }
-
 
 	switch(color_model)
 	{
@@ -297,44 +286,9 @@ void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 	}
 }
 
-
-const char* DenoiseVideo::plugin_title() { return N_("Denoise video"); }
-int DenoiseVideo::is_realtime() { return 1; }
-
-
-NEW_PICON_MACRO(DenoiseVideo)
-
-SHOW_GUI_MACRO(DenoiseVideo, DenoiseVideoThread)
-
-RAISE_WINDOW_MACRO(DenoiseVideo)
-
-SET_STRING_MACRO(DenoiseVideo);
-
-LOAD_CONFIGURATION_MACRO(DenoiseVideo, DenoiseVideoConfig)
-
-void DenoiseVideo::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->frames->update(config.frames);
-		thread->window->threshold->update(config.threshold);
-		thread->window->unlock_window();
-	}
-}
-
-
-
 void DenoiseVideo::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sdenoisevideo.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("denoisevideo.rc");
 
 	config.frames = defaults->get("FRAMES", config.frames);
 	config.threshold = defaults->get("THRESHOLD", config.threshold);

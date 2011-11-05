@@ -22,14 +22,22 @@
 #ifndef DENOISEVIDEO_H
 #define DENOISEVIDEO_H
 
-class DenoiseVideo;
-class DenoiseVideoWindow;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
 
-#include "bcdisplayinfo.h"
+// Old name was "Denoise video"
+#define PLUGIN_TITLE N_("Denoise")
+#define PLUGIN_CLASS DenoiseVideo
+#define PLUGIN_CONFIG_CLASS DenoiseVideoConfig
+#define PLUGIN_THREAD_CLASS DenoiseVideoThread
+#define PLUGIN_GUI_CLASS DenoiseVideoWindow
+
+#include "pluginmacros.h"
+
 #include "bchash.inc"
+#include "language.h"
 #include "pluginvclient.h"
 #include "vframe.inc"
-
 
 
 class DenoiseVideoConfig
@@ -41,15 +49,15 @@ public:
 	void copy_from(DenoiseVideoConfig &that);
 	void interpolate(DenoiseVideoConfig &prev, 
 		DenoiseVideoConfig &next, 
-		samplenum prev_frame, 
-		samplenum next_frame, 
-		samplenum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int frames;
 	float threshold;
 	int do_r, do_g, do_b, do_a;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
 
 
 class DenoiseVideoFrames : public BC_ISlider
@@ -68,6 +76,7 @@ public:
 	int handle_event();
 	DenoiseVideo *plugin;
 };
+
 
 class DenoiseVideoToggle : public BC_CheckBox
 {
@@ -89,17 +98,16 @@ class DenoiseVideoWindow : public BC_Window
 public:
 	DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y);
 
-	void create_objects();
-	void close_event();
+	void update();
 
-	DenoiseVideo *plugin;
 	DenoiseVideoFrames *frames;
 	DenoiseVideoThreshold *threshold;
 	DenoiseVideoToggle *do_r, *do_g, *do_b, *do_a;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(DenoiseVideo, DenoiseVideoThread, DenoiseVideoWindow)
+PLUGIN_THREAD_HEADER
 
 class DenoiseVideo : public PluginVClient
 {
@@ -107,15 +115,13 @@ public:
 	DenoiseVideo(PluginServer *server);
 	~DenoiseVideo();
 
-	PLUGIN_CLASS_MEMBERS(DenoiseVideoConfig, DenoiseVideoThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *input, VFrame *output);
-	int is_realtime();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
 	float *accumulation;
 };

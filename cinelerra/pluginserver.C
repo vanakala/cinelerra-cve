@@ -234,6 +234,7 @@ static struct oldpluginnames
 	{ TRACK_AUDIO, "Reverse audio", "Reverse" },
 	{ TRACK_AUDIO, "Heroine College Concert Hall", "HC Concert Hall" },
 	{ TRACK_VIDEO, "Invert Video", "Invert" },
+	{ TRACK_VIDEO, "Denoise video", "Denoise" },
 	{ 0, "", "" }
 };
 
