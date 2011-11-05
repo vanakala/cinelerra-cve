@@ -29,12 +29,11 @@
 #include "picon_png.h"
 #include "vframe.h"
 
-
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
 
-REGISTER_PLUGIN(DeInterlaceMain)
+REGISTER_PLUGIN
 
 
 DeInterlaceConfig::DeInterlaceConfig()
@@ -63,9 +62,9 @@ void DeInterlaceConfig::copy_from(DeInterlaceConfig &that)
 
 void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev,
 	DeInterlaceConfig &next,
-	samplenum prev_frame,
-	samplenum next_frame,
-	samplenum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	copy_from(prev);
 }
@@ -74,20 +73,17 @@ void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev,
 DeInterlaceMain::DeInterlaceMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	temp_prevframe=0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 DeInterlaceMain::~DeInterlaceMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(temp_prevframe) delete temp_prevframe;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* DeInterlaceMain::plugin_title() { return N_("Deinterlace"); }
-int DeInterlaceMain::is_realtime() { return 1; }
-
-
+PLUGIN_CLASS_METHODS
 
 #define DEINTERLACE_TOP_MACRO(type, components, dominance) \
 { \
@@ -501,18 +497,12 @@ void DeInterlaceMain::deinterlace_bobweave(VFrame *input, VFrame *prevframe, VFr
 }
 
 
-int DeInterlaceMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void DeInterlaceMain::process_frame(VFrame *frame)
 {
 	changed_rows = frame->get_h();
 	load_configuration();
 
-
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate);
+	get_frame(frame);
 
 // Temp was used for adaptive deinterlacing where it took deinterlacing
 // an entire frame to decide if the deinterlaced output should be used.
@@ -556,9 +546,7 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 		break;
 	}
 	send_render_gui(&changed_rows);
-	return 0;
 }
-
 
 void DeInterlaceMain::render_gui(void *data)
 {
@@ -573,26 +561,15 @@ void DeInterlaceMain::render_gui(void *data)
 	}
 }
 
-SHOW_GUI_MACRO(DeInterlaceMain, DeInterlaceThread)
-RAISE_WINDOW_MACRO(DeInterlaceMain)
-SET_STRING_MACRO(DeInterlaceMain)
-NEW_PICON_MACRO(DeInterlaceMain)
-LOAD_CONFIGURATION_MACRO(DeInterlaceMain, DeInterlaceConfig)
-
-
 void DeInterlaceMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%sdeinterlace.rc", BCASTDIR);
+	defaults = load_defaults_file("deinterlace.rc");
 
-	defaults = new BC_Hash(directory);
-	defaults->load();
 	config.mode = defaults->get("MODE", config.mode);
 	config.dominance = defaults->get("DOMINANCE", config.dominance);
 	config.adaptive = defaults->get("ADAPTIVE", config.adaptive);
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
 }
-
 
 void DeInterlaceMain::save_defaults()
 {
@@ -632,25 +609,5 @@ void DeInterlaceMain::read_data(KeyFrame *keyframe)
 			config.adaptive = input.tag.get_property("ADAPTIVE", config.adaptive);
 			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
 		}
-	}
-
-}
-
-void DeInterlaceMain::update_gui()
-{
-	if(thread) 
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->set_mode(config.mode, 1);
-		if (thread->window->dominance_top)
-			thread->window->dominance_top->update(config.dominance?0:BC_Toggle::TOGGLE_CHECKED);
-		if (thread->window->dominance_bottom)
-			thread->window->dominance_bottom->update(config.dominance?BC_Toggle::TOGGLE_CHECKED:0);
-		if (thread->window->adaptive)
-			thread->window->adaptive->update(config.adaptive);
-		if (thread->window->threshold)
-			thread->window->threshold->update(config.threshold);
-		thread->window->unlock_window();
 	}
 }

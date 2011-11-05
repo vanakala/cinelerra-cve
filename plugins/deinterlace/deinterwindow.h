@@ -22,16 +22,12 @@
 #ifndef DEINTERWINDOW_H
 #define DEINTERWINDOW_H
 
-
-class DeInterlaceThread;
-class DeInterlaceWindow;
-
 #include "guicast.h"
 #include "mutex.h"
 #include "deinterlace.h"
 #include "pluginclient.h"
 
-PLUGIN_THREAD_HEADER(DeInterlaceMain, DeInterlaceThread, DeInterlaceWindow);
+PLUGIN_THREAD_HEADER
 
 class DeInterlaceOption;
 class DeInterlaceMode;
@@ -43,14 +39,13 @@ class DeInterlaceThreshold;
 class DeInterlaceWindow : public BC_Window
 {
 public:
-	DeInterlaceWindow(DeInterlaceMain *client, int x, int y);
+	DeInterlaceWindow(DeInterlaceMain *plugin, int x, int y);
 	~DeInterlaceWindow();
 
-	int create_objects();
-	void close_event();
-	int set_mode(int mode, int recursive);
+	void update();
+	void set_mode(int mode, int recursive);
 	void get_status_string(char *string, int changed_rows);
-	DeInterlaceMain *client;
+
 	DeInterlaceMode *mode;
 	DeInterlaceAdaptive *adaptive;
 	DeInterlaceDominanceTop *dominance_top;
@@ -58,6 +53,7 @@ public:
 	DeInterlaceThreshold *threshold;
 	int optional_controls_x,optional_controls_y;
 	BC_Title *status;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class DeInterlaceOption : public BC_Radial

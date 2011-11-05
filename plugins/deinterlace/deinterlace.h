@@ -22,16 +22,22 @@
 #ifndef DEINTERLACE_H
 #define DEINTERLACE_H
 
-// the simplest plugin possible
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
 
-class DeInterlaceMain;
+#define PLUGIN_TITLE N_("Deinterlace")
+#define PLUGIN_CLASS DeInterlaceMain
+#define PLUGIN_CONFIG_CLASS DeInterlaceConfig
+#define PLUGIN_THREAD_CLASS DeInterlaceThread
+#define PLUGIN_GUI_CLASS DeInterlaceWindow
+
+#include "pluginmacros.h"
 
 #include "bchash.inc"
 #include "deinterwindow.h"
+#include "language.h"
 #include "pluginvclient.h"
 #include "vframe.inc"
-
-
 
 #define THRESHOLD_SCALAR 1000
 
@@ -55,15 +61,17 @@ public:
 	void copy_from(DeInterlaceConfig &that);
 	void interpolate(DeInterlaceConfig &prev, 
 		DeInterlaceConfig &next, 
-		posnum prev_frame,
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int mode;
 	int adaptive;
 	int threshold;
 	volatile int dominance; /* top or bottom field */
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
+
 
 class DeInterlaceMain : public PluginVClient
 {
@@ -71,16 +79,11 @@ public:
 	DeInterlaceMain(PluginServer *server);
 	~DeInterlaceMain();
 
-
-	PLUGIN_CLASS_MEMBERS(DeInterlaceConfig, DeInterlaceThread)
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
-	int hide_gui();
-	void update_gui();
+	void process_frame(VFrame *frame);
+
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -98,6 +101,5 @@ public:
 	VFrame *temp;
 	VFrame *temp_prevframe;
 };
-
 
 #endif
