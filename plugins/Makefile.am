@@ -27,7 +27,6 @@ SUBDIRS= \
 	delayvideo \
 	denoise \
 	denoisefft \
-	denoisemjpeg \
 	denoiseseltempavg \
 	denoisevideo \
 	despike \
