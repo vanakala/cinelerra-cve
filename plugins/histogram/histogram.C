@@ -24,7 +24,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
@@ -39,24 +38,22 @@
 #include "plugincolors.h"
 #include "vframe.h"
 #include "workarounds.h"
+#include "picon_png.h"
 
 #include "aggregated.h"
 #include "../colorbalance/aggregated.h"
 #include "../interpolate/aggregated.h"
 #include "../gamma/aggregated.h"
 
-class HistogramMain;
 class HistogramEngine;
-class HistogramWindow;
 
 
-REGISTER_PLUGIN(HistogramMain)
+REGISTER_PLUGIN
 
 
 HistogramMain::HistogramMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
@@ -71,11 +68,11 @@ HistogramMain::HistogramMain(PluginServer *server)
 	dragging_point = 0;
 	input = 0;
 	output = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 HistogramMain::~HistogramMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	for(int i = 0; i < HISTOGRAM_MODES;i++)
 	{
 		delete [] lookup[i];
@@ -85,22 +82,10 @@ HistogramMain::~HistogramMain()
 		delete [] preview_lookup[i];
 	}
 	delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* HistogramMain::plugin_title() { return N_("Histogram"); }
-int HistogramMain::is_realtime() { return 1; }
-
-
-#include "picon_png.h"
-NEW_PICON_MACRO(HistogramMain)
-
-SHOW_GUI_MACRO(HistogramMain, HistogramThread)
-
-SET_STRING_MACRO(HistogramMain)
-
-RAISE_WINDOW_MACRO(HistogramMain)
-
-LOAD_CONFIGURATION_MACRO(HistogramMain, HistogramConfig)
+PLUGIN_CLASS_METHODS
 
 void HistogramMain::render_gui(void *data)
 {
@@ -147,34 +132,11 @@ void HistogramMain::render_gui(void *data)
 	}
 }
 
-void HistogramMain::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window("HistogramMain::update_gui");
-		int reconfigure = load_configuration();
-		if(reconfigure) 
-		{
-			thread->window->update(0);
-			if(!config.automatic)
-			{
-				thread->window->update_input();
-			}
-		}
-		thread->window->unlock_window();
-	}
-}
-
-
 void HistogramMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%shistogram.rc", BCASTDIR);
+	char string[BCTEXTLEN];
 
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("histogram.rc");
 
 	for(int j = 0; j < HISTOGRAM_MODES; j++)
 	{
@@ -307,59 +269,49 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
 	int current_input_mode = 0;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("HISTOGRAM"))
 		{
-			if(input.tag.title_is("HISTOGRAM"))
+			char string[BCTEXTLEN];
+			for(int i = 0; i < HISTOGRAM_MODES; i++)
 			{
-				char string[BCTEXTLEN];
-				for(int i = 0; i < HISTOGRAM_MODES; i++)
-				{
-					sprintf(string, "OUTPUT_MIN_%d", i);
-					config.output_min[i] = input.tag.get_property(string, config.output_min[i]);
-					sprintf(string, "OUTPUT_MAX_%d", i);
-					config.output_max[i] = input.tag.get_property(string, config.output_max[i]);
-				}
-				config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
-				config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
-				config.plot = input.tag.get_property("PLOT", config.plot);
-				config.split = input.tag.get_property("SPLIT", config.split);
+				sprintf(string, "OUTPUT_MIN_%d", i);
+				config.output_min[i] = input.tag.get_property(string, config.output_min[i]);
+				sprintf(string, "OUTPUT_MAX_%d", i);
+				config.output_max[i] = input.tag.get_property(string, config.output_max[i]);
 			}
-			else
-			if(input.tag.title_is("POINTS"))
+			config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
+			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
+			config.plot = input.tag.get_property("PLOT", config.plot);
+			config.split = input.tag.get_property("SPLIT", config.split);
+		}
+		else
+		if(input.tag.title_is("POINTS"))
+		{
+			if(current_input_mode < HISTOGRAM_MODES)
 			{
-				if(current_input_mode < HISTOGRAM_MODES)
+				HistogramPoints *points = &config.points[current_input_mode];
+				while(points->last) 
+					delete points->last;
+				while(!input.read_tag())
 				{
-					HistogramPoints *points = &config.points[current_input_mode];
-					while(points->last) 
-						delete points->last;
-					while(!result)
+					if(input.tag.title_is("/POINTS"))
 					{
-						result = input.read_tag();
-						if(!result)
-						{
-							if(input.tag.title_is("/POINTS"))
-							{
-								break;
-							}
-							else
-							if(input.tag.title_is("POINT"))
-							{
-								points->insert(
-									input.tag.get_property("X", 0.0),
-									input.tag.get_property("Y", 0.0));
-							}
-						}
+						break;
+					}
+					else
+					if(input.tag.title_is("POINT"))
+					{
+						points->insert(
+							input.tag.get_property("X", 0.0),
+							input.tag.get_property("Y", 0.0));
 					}
 				}
-				current_input_mode++;
 			}
+			current_input_mode++;
 		}
 	}
 
@@ -453,7 +405,6 @@ float HistogramMain::calculate_smooth(float input, int subscript)
 	return result;
 }
 
-
 void HistogramMain::calculate_histogram(VFrame *data, int do_value)
 {
 
@@ -500,7 +451,6 @@ void HistogramMain::calculate_histogram(VFrame *data, int do_value)
 		accum[i][HISTOGRAM_SLOTS - 1] = 0;
 	}
 }
-
 
 void HistogramMain::calculate_automatic(VFrame *data)
 {
@@ -559,25 +509,18 @@ int HistogramMain::calculate_use_opengl()
 	return result;
 }
 
-
-int HistogramMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void HistogramMain::process_frame(VFrame *frame)
 {
 	int need_reconfigure = load_configuration();
 	int use_opengl = calculate_use_opengl();
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		use_opengl);
+	get_frame(frame, use_opengl);
 
 // Apply histogram in hardware
 	if(use_opengl)
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	if(!engine) engine = new HistogramEngine(this,
@@ -611,7 +554,6 @@ int HistogramMain::process_buffer(VFrame *frame,
 
 // Apply histogram
 	engine->process_packages(HistogramEngine::APPLY, input, 0);
-	return 0;
 }
 
 void HistogramMain::tabulate_curve(int subscript, int use_value)
@@ -991,8 +933,6 @@ HistogramPackage::HistogramPackage()
 }
 
 
-
-
 HistogramUnit::HistogramUnit(HistogramEngine *server, 
 	HistogramMain *plugin)
  : LoadClient(server)
@@ -1150,8 +1090,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 	else
 	if(server->operation == HistogramEngine::APPLY)
 	{
-
-
 
 #define PROCESS(type, components) \
 { \

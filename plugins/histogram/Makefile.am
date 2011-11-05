@@ -10,7 +10,6 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = \
 	aggregated.h \
-	histogram.h histogramconfig.h histogramwindow.h \
-	histogram.inc histogramconfig.inc histogramwindow.inc \
+	histogram.h histogramconfig.h histogramwindow.h histogram.inc \
 	max_picon_png.h mid_picon_png.h min_picon_png.h picon_png.h 
 EXTRA_DIST = picon.png max_picon.png mid_picon.png min_picon.png

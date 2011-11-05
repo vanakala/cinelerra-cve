@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "histogramconfig.h"
+#include "histogram.h"
 #include "units.h"
 
 #include <math.h>
@@ -180,7 +180,6 @@ void HistogramConfig::reset_points(int colors_only)
 	}
 }
 
-
 void HistogramConfig::boundaries()
 {
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
@@ -228,12 +227,11 @@ void HistogramConfig::copy_from(HistogramConfig &that)
 
 void HistogramConfig::interpolate(HistogramConfig &prev, 
 	HistogramConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = 1.0 - next_scale;
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
@@ -265,6 +263,3 @@ void HistogramConfig::dump()
 		printf("\n");
 	}
 }
-
-
-

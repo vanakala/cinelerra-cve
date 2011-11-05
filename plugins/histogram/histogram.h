@@ -22,14 +22,23 @@
 #ifndef HISTOGRAM_H
 #define HISTOGRAM_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Histogram")
+#define PLUGIN_CLASS HistogramMain
+#define PLUGIN_CONFIG_CLASS HistogramConfig
+#define PLUGIN_THREAD_CLASS HistogramThread
+#define PLUGIN_GUI_CLASS HistogramWindow
+
+#include "pluginmacros.h"
 
 #include "histogram.inc"
 #include "histogramconfig.h"
-#include "histogramwindow.inc"
+#include "language.h"
 #include "loadbalance.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
-
 
 class HistogramMain : public PluginVClient
 {
@@ -37,20 +46,16 @@ public:
 	HistogramMain(PluginServer *server);
 	~HistogramMain();
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void render_gui(void *data);
 	int calculate_use_opengl();
 	void handle_opengl();
 
-	PLUGIN_CLASS_MEMBERS(HistogramConfig, HistogramThread)
+	PLUGIN_CLASS_MEMBERS
 
 // Interpolate quantized transfer table to linear output
 	float calculate_linear(float input, int mode, int do_value);

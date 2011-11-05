@@ -23,11 +23,8 @@
 #define HISTOGRAMWINDOW_H
 
 
-
-#include "histogram.inc"
-#include "histogramwindow.inc"
+#include "histogram.h"
 #include "pluginvclient.h"
-
 
 
 class HistogramSlider : public BC_SubWindow
@@ -165,9 +162,7 @@ public:
 	HistogramWindow(HistogramMain *plugin, int x, int y);
 	~HistogramWindow();
 
-	int create_objects();
-	void close_event();
-	void update(int do_input);
+	void update();
 	void update_mode();
 	void update_canvas();
 	void draw_canvas_overlay();
@@ -191,7 +186,6 @@ public:
 	HistogramInputText *input_x;
 	HistogramInputText *input_y;
 	HistogramCanvas *canvas;
-	HistogramMain *plugin;
 	int canvas_w;
 	int canvas_h;
 	int title1_x;
@@ -201,13 +195,10 @@ public:
 	BC_Pixmap *max_picon, *mid_picon, *min_picon;
 	HistogramPlot *plot;
 	HistogramSplit *split;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-
-PLUGIN_THREAD_HEADER(HistogramMain, HistogramThread, HistogramWindow)
-
-
-
+PLUGIN_THREAD_HEADER
 
 #endif

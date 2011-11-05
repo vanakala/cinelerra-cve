@@ -22,10 +22,6 @@
 #ifndef HISTOGRAM_INC
 #define HISTOGRAM_INC
 
-
-
-
-
 // modes
 #define HISTOGRAM_MODES 4
 #define HISTOGRAM_RED 0
@@ -50,9 +46,6 @@
 
 #define BOX_SIZE 10
 
-
 class HistogramEngine;
-class HistogramMain;
-
 
 #endif

@@ -28,11 +28,16 @@
 #include "keys.h"
 #include "language.h"
 
-
 #include <unistd.h>
 
-PLUGIN_THREAD_OBJECT(HistogramMain, HistogramThread, HistogramWindow)
+#include "max_picon_png.h"
+#include "mid_picon_png.h"
+#include "min_picon_png.h"
+static VFrame max_picon_image(max_picon_png);
+static VFrame mid_picon_image(mid_picon_png);
+static VFrame min_picon_image(min_picon_png);
 
+PLUGIN_THREAD_METHODS
 
 
 HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
@@ -47,27 +52,10 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 	1,
 	1)
 {
-	this->plugin = plugin; 
-}
-
-HistogramWindow::~HistogramWindow()
-{
-}
-
-#include "max_picon_png.h"
-#include "mid_picon_png.h"
-#include "min_picon_png.h"
-static VFrame max_picon_image(max_picon_png);
-static VFrame mid_picon_image(mid_picon_png);
-static VFrame min_picon_image(min_picon_png);
-
-int HistogramWindow::create_objects()
-{
-	int x = 10, y = 10, x1 = 10;
+	int x1 = 10;
 	BC_Title *title = 0;
-	VFrame *ico = plugin->new_picon();
 
-	set_icon(ico);
+	x = y = 10;
 	max_picon = new BC_Pixmap(this, &max_picon_image);
 	mid_picon = new BC_Pixmap(this, &mid_picon_image);
 	min_picon = new BC_Pixmap(this, &min_picon_image);
@@ -131,10 +119,6 @@ int HistogramWindow::create_objects()
 		y, 
 		canvas_w, 
 		canvas_h));
-// Calculate output curve with no value function
-	plugin->tabulate_curve(plugin->mode, 0);
-	draw_canvas_overlay();
-	canvas->flash();
 
 	y += canvas->get_h() + 1;
 	add_subwindow(new BC_Title(title1_x, 
@@ -210,14 +194,17 @@ int HistogramWindow::create_objects()
 	add_subwindow(split = new HistogramSplit(plugin, 
 		x, 
 		y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
+// Calculate output curve with no value function
+	plugin->tabulate_curve(plugin->mode, 0);
+	draw_canvas_overlay();
+	canvas->flash();
 
-	show_window();
-	delete ico;
-
-	return 0;
 }
 
-WINDOW_CLOSE_EVENT(HistogramWindow)
+HistogramWindow::~HistogramWindow()
+{
+}
 
 int HistogramWindow::keypress_event()
 {
@@ -240,13 +227,15 @@ int HistogramWindow::keypress_event()
 	return result;
 }
 
-void HistogramWindow::update(int do_input)
+void HistogramWindow::update()
 {
 	automatic->update(plugin->config.automatic);
 	threshold->update(plugin->config.threshold);
 	update_mode();
 
-	if(do_input) update_input();
+	if(!plugin->config.automatic)
+		update_input();
+
 	update_output();
 }
 
@@ -580,7 +569,7 @@ HistogramReset::HistogramReset(HistogramMain *plugin,
 int HistogramReset::handle_event()
 {
 	plugin->config.reset(0);
-	plugin->thread->window->update(1);
+	plugin->thread->window->update();
 	plugin->thread->window->update_canvas();
 	plugin->send_configure_change();
 	return 1;
@@ -807,13 +796,6 @@ int HistogramMode::handle_event()
 }
 
 
-
-
-
-
-
-
-
 HistogramOutputText::HistogramOutputText(HistogramMain *plugin,
 	HistogramWindow *gui,
 	int x,
@@ -847,12 +829,6 @@ int HistogramOutputText::handle_event()
 }
 
 
-
-
-
-
-
-
 HistogramInputText::HistogramInputText(HistogramMain *plugin,
 	HistogramWindow *gui,
 	int x,
@@ -872,7 +848,6 @@ HistogramInputText::HistogramInputText(HistogramMain *plugin,
 	set_precision(DIGITS);
 	set_increment(PRECISION);
 }
-
 
 int HistogramInputText::handle_event()
 {
@@ -926,19 +901,4 @@ void HistogramInputText::update()
 	{
 		BC_TumbleTextBox::update((float)0.0);
 	}
-	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
