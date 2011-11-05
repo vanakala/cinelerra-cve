@@ -109,6 +109,10 @@ public:
 			framenum position);
 	void get_projector(float *x, float *y, float *z,
 			framenum position);
+	void get_camera(float *x, float *y, float *z,
+			ptstime postime);
+	void get_projector(float *x, float *y, float *z,
+			ptstime postime);
 // Get interpolation used by EDL
 	int get_interpolation_type();
 // Get or create keyframe for writing, depending on whether auto keyframes
