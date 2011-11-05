@@ -22,7 +22,18 @@
 #ifndef DIFFKEY_H
 #define DIFFKEY_H
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_MULTICHANNEL
+
+#define PLUGIN_TITLE N_("Difference key")
+#define PLUGIN_CLASS DiffKey
+#define PLUGIN_CONFIG_CLASS DiffKeyConfig
+#define PLUGIN_THREAD_CLASS DiffKeyThread
+#define PLUGIN_GUI_CLASS DiffKeyGUI
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -33,15 +44,7 @@
 #include "pluginvclient.h"
 #include "picon_png.h"
 
-
 #include <string.h>
-
-
-
-class DiffKeyGUI;
-class DiffKey;
-
-
 
 class DiffKeyConfig
 {
@@ -51,13 +54,14 @@ public:
 	int equivalent(DiffKeyConfig &src);
 	void interpolate(DiffKeyConfig &prev, 
 		DiffKeyConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	float threshold;
 	float slope;
 	int do_value;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -86,27 +90,22 @@ public:
 };
 
 
-
 class DiffKeyGUI : public BC_Window
 {
 public:
 	DiffKeyGUI(DiffKey *plugin, int x, int y);
 	~DiffKeyGUI();
 
-
-	void create_objects();
-	void close_event();
-
+	void update();
 
 	DiffKeyThreshold *threshold;
 	DiffKeySlope *slope;
 	DiffKeyDoValue *do_value;
-	DiffKey *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(DiffKey, DiffKeyThread, DiffKeyGUI)
-
+PLUGIN_THREAD_HEADER
 
 
 class DiffKeyEngine : public LoadServer
@@ -139,28 +138,20 @@ public:
 };
 
 
-
 class DiffKey : public PluginVClient
 {
 public:
 	DiffKey(PluginServer *server);
 	~DiffKey();
 
-	int process_buffer(VFrame **frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
-	int is_multichannel();
+	void process_frame(VFrame **frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void handle_opengl();
 
-
-
-	PLUGIN_CLASS_MEMBERS(DiffKeyConfig, DiffKeyThread)
+	PLUGIN_CLASS_MEMBERS
 
 	DiffKeyEngine *engine;
 	VFrame *top_frame;
@@ -168,13 +159,7 @@ public:
 };
 
 
-
-
-
-
-
-
-REGISTER_PLUGIN(DiffKey)
+REGISTER_PLUGIN
 
 
 DiffKeyConfig::DiffKeyConfig()
@@ -200,13 +185,12 @@ int DiffKeyConfig::equivalent(DiffKeyConfig &src)
 }
 
 void DiffKeyConfig::interpolate(DiffKeyConfig &prev, 
-	DiffKeyConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	DiffKeyConfig &next,
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
 	this->threshold = prev.threshold * prev_scale + next.threshold * next_scale;
 	this->slope = prev.slope * prev_scale + next.slope * next_scale;
@@ -242,7 +226,6 @@ int DiffKeySlope::handle_event()
 }
 
 
-
 DiffKeyDoValue::DiffKeyDoValue(DiffKey *plugin, int x, int y)
  : BC_CheckBox(x, y, plugin->config.do_value, _("Use Value"))
 {
@@ -257,7 +240,6 @@ int DiffKeyDoValue::handle_event()
 }
 
 
-
 DiffKeyGUI::DiffKeyGUI(DiffKey *plugin, int x, int y)
  : BC_Window(plugin->gui_string,
 	x,
@@ -270,20 +252,11 @@ DiffKeyGUI::DiffKeyGUI(DiffKey *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-DiffKeyGUI::~DiffKeyGUI()
-{
-}
-
-
-void DiffKeyGUI::create_objects()
-{
-	int x = 10, y = 10, x2;
 	BC_Title *title;
+	int x2;
 
-	set_icon(new VFrame(picon_png));
+	x = y = 10;
+
 	add_subwindow(title = new BC_Title(x, y, _("Threshold:")));
 	x += title->get_w() + 10;
 	add_subwindow(threshold = new DiffKeyThreshold(plugin, x, y));
@@ -295,39 +268,37 @@ void DiffKeyGUI::create_objects()
 	x = 10;
 	y += slope->get_h() + 10;
 	add_subwindow(do_value = new DiffKeyDoValue(plugin, x, y));
-
-	show_window();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(DiffKeyGUI)
+DiffKeyGUI::~DiffKeyGUI()
+{
+}
 
+void DiffKeyGUI::update()
+{
+	threshold->update(plugin->config.threshold);
+	slope->update(plugin->config.slope);
+	do_value->update(plugin->config.do_value);
+}
 
-PLUGIN_THREAD_OBJECT(DiffKey, DiffKeyThread, DiffKeyGUI)
-
+PLUGIN_THREAD_METHODS
 
 
 DiffKey::DiffKey(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 DiffKey::~DiffKey()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-SHOW_GUI_MACRO(DiffKey, DiffKeyThread)
-RAISE_WINDOW_MACRO(DiffKey)
-SET_STRING_MACRO(DiffKey)
-NEW_PICON_MACRO(DiffKey)
-LOAD_CONFIGURATION_MACRO(DiffKey, DiffKeyConfig)
-
-const char* DiffKey::plugin_title() { return N_("Difference key"); }
-int DiffKey::is_realtime() { return 1; }
-int DiffKey::is_multichannel() { return 1; }
+PLUGIN_CLASS_METHODS
 
 void DiffKey::load_defaults()
 {
@@ -336,8 +307,7 @@ void DiffKey::load_defaults()
 	sprintf(directory, "%sdiffkey.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("diffkey.rc");
 
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
 	config.slope = defaults->get("SLOPE", config.slope);
@@ -383,49 +353,20 @@ void DiffKey::read_data(KeyFrame *keyframe)
 	}
 }
 
-void DiffKey::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("DiffKey::update_gui");
-			thread->window->threshold->update(config.threshold);
-			thread->window->slope->update(config.slope);
-			thread->window->do_value->update(config.do_value);
-			thread->window->unlock_window();
-		}
-	}
-}
-
-int DiffKey::process_buffer(VFrame **frame,
-	framenum start_position,
-	double frame_rate)
+void DiffKey::process_frame(VFrame **frame)
 {
 	load_configuration();
 
 // Don't process if only 1 layer.
 	if(get_total_buffers() < 2) 
 	{
-		read_frame(frame[0], 
-			0, 
-			start_position, 
-			frame_rate,
-			get_use_opengl());
-		return 0;
+		get_frame(frame[0], get_use_opengl());
+		return;
 	}
 
 // Read frames from 2 layers
-	read_frame(frame[0], 
-		0, 
-		start_position, 
-		frame_rate,
-		get_use_opengl());
-	read_frame(frame[1], 
-		1, 
-		start_position, 
-		frame_rate,
-		get_use_opengl());
+	get_frame(frame[0], get_use_opengl());
+	get_frame(frame[1],get_use_opengl());
 
 	top_frame = frame[0];
 	bottom_frame = frame[1];
@@ -433,7 +374,7 @@ int DiffKey::process_buffer(VFrame **frame,
 	if(get_use_opengl())
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	if(!engine)
@@ -442,8 +383,6 @@ int DiffKey::process_buffer(VFrame **frame,
 	}
 
 	engine->process_packages();
-
-	return 0;
 }
 
 #define DIFFKEY_VARS(plugin) \
@@ -524,8 +463,6 @@ void DiffKey::handle_opengl()
 				0);
 	}
 
-
-
 	DIFFKEY_VARS(this)
 
 	bottom_frame->bind_texture(1);
@@ -556,8 +493,6 @@ void DiffKey::handle_opengl()
 	glDisable(GL_BLEND);
 #endif
 }
-
-
 
 
 DiffKeyEngine::DiffKeyEngine(DiffKey *plugin) 
