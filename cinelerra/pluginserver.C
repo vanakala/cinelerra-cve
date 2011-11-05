@@ -469,6 +469,7 @@ void PluginServer::process_buffer(VFrame **frame,
 	{
 		vclient->input[i] = frame[i];
 		vclient->output[i] = frame[i];
+		frame[i]->set_layer(i);
 	}
 	if(plugin)
 	{
