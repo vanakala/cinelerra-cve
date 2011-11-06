@@ -19,7 +19,19 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("Reroute")
+#define PLUGIN_CLASS Reroute
+#define PLUGIN_CONFIG_CLASS RerouteConfig
+#define PLUGIN_THREAD_CLASS RerouteThread
+#define PLUGIN_GUI_CLASS RerouteWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -33,10 +45,6 @@
 
 #include <string.h>
 #include <stdint.h>
-
-
-class Reroute;
-class RerouteWindow;
 
 
 class RerouteConfig
@@ -60,6 +68,7 @@ public:
 		TOP,
 		BOTTOM
 	};
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -92,17 +101,15 @@ public:
 	RerouteWindow(Reroute *plugin, int x, int y);
 	~RerouteWindow();
 
-	void create_objects();
-	void close_event();
+	void update();
 
-	Reroute *plugin;
 	RerouteOperation *operation;
 	RerouteOutput *output;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(Reroute, RerouteThread, RerouteWindow)
-
+PLUGIN_THREAD_HEADER
 
 
 class Reroute : public PluginVClient
@@ -111,17 +118,13 @@ public:
 	Reroute(PluginServer *server);
 	~Reroute();
 
+	PLUGIN_CLASS_MEMBERS
 
-	PLUGIN_CLASS_MEMBERS(RerouteConfig, RerouteThread);
-
-	int process_buffer(VFrame **frame, int64_t start_position, double frame_rate);
-	int is_realtime();
-	int is_multichannel();
+	void process_frame(VFrame **frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
 	int output_track;
 	int input_track;
@@ -174,19 +177,9 @@ RerouteWindow::RerouteWindow(Reroute *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-RerouteWindow::~RerouteWindow()
-{
-}
-
-void RerouteWindow::create_objects()
-{
-	int x = 10, y = 10;
 	BC_Title *title;
+	x = y = 10;
 
-	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Target track:")));
 	int col2 = title->get_w() + 5;
 	add_subwindow(output = new RerouteOutput(plugin, 
@@ -200,13 +193,18 @@ void RerouteWindow::create_objects()
 		x + col2, 
 		y));
 	operation->create_objects();
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(RerouteWindow)
+RerouteWindow::~RerouteWindow()
+{
+}
 
+void RerouteWindow::update()
+{
+	operation->set_text(RerouteConfig::operation_to_text(plugin->config.operation));
+	output->set_text(RerouteConfig::output_to_text(plugin->config.output_track));
+}
 
 RerouteOperation::RerouteOperation(Reroute *plugin,
 	int x, 
@@ -298,12 +296,11 @@ int RerouteOutput::handle_event()
 }
 
 
+PLUGIN_THREAD_METHODS
+
 /***** Register Plugin ***********************************/
 
-PLUGIN_THREAD_OBJECT(Reroute, RerouteThread, RerouteWindow)
-
-REGISTER_PLUGIN(Reroute)
-
+REGISTER_PLUGIN
 
 
 Reroute::Reroute(PluginServer *server)
@@ -312,13 +309,12 @@ Reroute::Reroute(PluginServer *server)
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
-
 Reroute::~Reroute()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-
+PLUGIN_CLASS_METHODS
 
 /*
  *  Main operation
@@ -361,15 +357,12 @@ void px_type<TYPE,COMPONENTS>::transfer(VFrame *source, VFrame *target, bool do_
 	}
 }
 
-
-
-int Reroute::process_buffer(VFrame **frame,
-	posnum start_position,
-	double frame_rate)
+void Reroute::process_frame(VFrame **frame)
 {
 	load_configuration();
 
 	bool do_components, do_alpha;
+
 	switch(config.operation)
 	{
 	case RerouteConfig::REPLACE:
@@ -401,29 +394,22 @@ int Reroute::process_buffer(VFrame **frame,
 	VFrame *target = frame[output_track];
 
 	// input track always passed through unaltered
-	read_frame(source, 
-		input_track, 
-		start_position,
-		frame_rate,
-		false );  // no OpenGL support
+	get_frame(source);  // no OpenGL support
 
 // no real operation necessary
 //  unless applied to multiple tracks
 	if(get_total_buffers() <= 1)
-		return 0;
+		return;
 
 	if(config.operation == RerouteConfig::REPLACE)
 	{
 		target->copy_from(source);
-		return 0;
+		return;
 	}
 
 // prepare data for output track
 // (to be overidden partially)
-	read_frame(target, 
-		output_track, 
-		start_position,
-		frame_rate);
+	get_frame(target);
 
 	switch(source->get_color_model())
 	{
@@ -450,38 +436,19 @@ int Reroute::process_buffer(VFrame **frame,
 		px_type<uint16_t,4>::transfer(source,target, do_components,do_alpha);
 		break;
 	}
-
-	return 0;
 }
-
-
-const char* Reroute::plugin_title() { return N_("Reroute"); }
-int Reroute::is_realtime() { return 1; }
-int Reroute::is_multichannel() { return 1; }
-
-
-NEW_PICON_MACRO(Reroute) 
-SHOW_GUI_MACRO(Reroute, RerouteThread)
-RAISE_WINDOW_MACRO(Reroute)
-SET_STRING_MACRO(Reroute);
 
 int Reroute::load_configuration()
 {
 	KeyFrame *prev_keyframe;
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
-	return 0;
+	return 1;
 }
 
 void Reroute::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sreroute.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("reroute.rc");
 
 	config.operation = defaults->get("OPERATION", config.operation);
 	config.output_track = defaults->get("OUTPUT_TRACK", config.output_track);
@@ -522,16 +489,5 @@ void Reroute::read_data(KeyFrame *keyframe)
 			config.operation = input.tag.get_property("OPERATION", config.operation);
 			config.output_track = input.tag.get_property("OUTPUT_TRACK", config.output_track);
 		}
-	}
-}
-
-void Reroute::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window("Reroute::update_gui");
-		thread->window->operation->set_text(RerouteConfig::operation_to_text(config.operation));
-		thread->window->output->set_text(RerouteConfig::output_to_text(config.output_track));
-		thread->window->unlock_window();
 	}
 }
