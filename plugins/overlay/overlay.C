@@ -19,7 +19,20 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_MULTICHANNEL
+#define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("Overlay")
+#define PLUGIN_CLASS Overlay
+#define PLUGIN_CONFIG_CLASS OverlayConfig
+#define PLUGIN_THREAD_CLASS OverlayThread
+#define PLUGIN_GUI_CLASS OverlayWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -33,10 +46,6 @@
 
 #include <string.h>
 #include <stdint.h>
-
-
-class Overlay;
-class OverlayWindow;
 
 
 class OverlayConfig
@@ -63,6 +72,7 @@ public:
 		TOP,
 		BOTTOM
 	};
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -106,18 +116,16 @@ public:
 	OverlayWindow(Overlay *plugin, int x, int y);
 	~OverlayWindow();
 
-	void create_objects();
-	void close_event();
+	void update();
 
-	Overlay *plugin;
 	OverlayMode *mode;
 	OverlayDirection *direction;
 	OverlayOutput *output;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(Overlay, OverlayThread, OverlayWindow)
-
+PLUGIN_THREAD_HEADER
 
 
 class Overlay : public PluginVClient
@@ -126,19 +134,13 @@ public:
 	Overlay(PluginServer *server);
 	~Overlay();
 
-	PLUGIN_CLASS_MEMBERS(OverlayConfig, OverlayThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame **frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
-	int is_multichannel();
-	int is_synthesis();
+	void process_frame(VFrame **frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void handle_opengl();
 
 	OverlayFrame *overlayer;
@@ -149,7 +151,6 @@ public:
 	int input_layer1;
 	int input_layer2;
 };
-
 
 
 OverlayConfig::OverlayConfig()
@@ -164,28 +165,28 @@ const char* OverlayConfig::mode_to_text(int mode)
 	switch(mode)
 	{
 	case TRANSFER_NORMAL:
-		return "Normal";
+		return _("Normal");
 
 	case TRANSFER_REPLACE:
-		return "Replace";
+		return _("Replace");
 
 	case TRANSFER_ADDITION:
-		return "Addition";
+		return _("Addition");
 
 	case TRANSFER_SUBTRACT:
-		return "Subtract";
+		return _("Subtract");
 
 	case TRANSFER_MULTIPLY:
-		return "Multiply";
+		return _("Multiply");
 
 	case TRANSFER_DIVIDE:
-		return "Divide";
+		return _("Divide");
 
 	case TRANSFER_MAX:
-		return "Max";
+		return _("Max");
 
 	default:
-		return "Normal";
+		return _("Normal");
 	}
 }
 
@@ -214,7 +215,6 @@ const char* OverlayConfig::output_to_text(int output_layer)
 }
 
 
-
 OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
 	x,
@@ -227,19 +227,10 @@ OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-OverlayWindow::~OverlayWindow()
-{
-}
-
-void OverlayWindow::create_objects()
-{
-	int x = 10, y = 10;
 	BC_Title *title;
 
-	set_icon(new VFrame(picon_png));
+	x = y = 10;
+
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new OverlayMode(plugin, 
 		x + title->get_w() + 5, 
@@ -259,15 +250,19 @@ void OverlayWindow::create_objects()
 		x + title->get_w() + 5, 
 		y));
 	output->create_objects();
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(OverlayWindow)
+OverlayWindow::~OverlayWindow()
+{
+}
 
-
-
+void OverlayWindow::update()
+{
+	mode->set_text(OverlayConfig::mode_to_text(plugin->config.mode));
+	direction->set_text(OverlayConfig::direction_to_text(plugin->config.direction));
+	output->set_text(OverlayConfig::output_to_text(plugin->config.output_layer));
+}
 
 
 OverlayMode::OverlayMode(Overlay *plugin,
@@ -388,34 +383,34 @@ int OverlayOutput::handle_event()
 }
 
 
+PLUGIN_THREAD_METHODS
 
-PLUGIN_THREAD_OBJECT(Overlay, OverlayThread, OverlayWindow)
-
-REGISTER_PLUGIN(Overlay)
+REGISTER_PLUGIN
 
 
 Overlay::Overlay(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	overlayer = 0;
 	temp = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 
 Overlay::~Overlay()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(overlayer) delete overlayer;
 	if(temp) delete temp;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
+PLUGIN_CLASS_METHODS
 
-
-int Overlay::process_buffer(VFrame **frame,
-	framenum start_position,
-	double frame_rate)
+void Overlay::process_frame(VFrame **frame)
 {
+	int step;
+	VFrame *output;
+
 	load_configuration();
 
 	if(!temp) temp = new VFrame(0,
@@ -426,9 +421,6 @@ int Overlay::process_buffer(VFrame **frame,
 
 	if(!overlayer)
 		overlayer = new OverlayFrame(get_project_smp() + 1);
-
-	int step;
-	VFrame *output;
 
 	if(config.direction == OverlayConfig::BOTTOM_FIRST)
 	{
@@ -452,28 +444,22 @@ int Overlay::process_buffer(VFrame **frame,
 		output_layer = get_total_buffers() - 1;
 	}
 
-
 // Direct copy the first layer
 	output = frame[output_layer];
-	read_frame(output, 
-		input_layer1, 
-		start_position,
-		frame_rate,
-		get_use_opengl());
+	output->set_layer(input_layer1);
+	get_frame(output, get_use_opengl());
 
-	if(get_total_buffers() == 1) return 0;
+	if(get_total_buffers() == 1) return;
 
+	temp->copy_pts(output);
 	current_layer = input_layer1;
 	if(get_use_opengl()) 
 		run_opengl();
 
 	for(int i = input_layer1 + step; i != input_layer2; i += step)
 	{
-		read_frame(temp, 
-			i, 
-			start_position,
-			frame_rate,
-			get_use_opengl());
+		temp->set_layer(i);
+		get_frame(temp, get_use_opengl());
 
 		if(get_use_opengl()) 
 		{
@@ -496,8 +482,6 @@ int Overlay::process_buffer(VFrame **frame,
 				config.mode,
 				NEAREST_NEIGHBOR);
 	}
-
-	return 0;
 }
 
 void Overlay::handle_opengl()
@@ -554,7 +538,6 @@ void Overlay::handle_opengl()
 	const char *shader_stack[] = { 0, 0, 0 };
 	int current_shader = 0;
 
-
 // Direct copy layer
 	if(config.mode == TRANSFER_REPLACE)
 	{
@@ -603,7 +586,6 @@ void Overlay::handle_opengl()
 		dst->init_screen();
 		src->bind_texture(0);
 		dst->bind_texture(1);
-
 
 		shader_stack[current_shader++] = get_pixels_frag;
 
@@ -661,38 +643,17 @@ void Overlay::handle_opengl()
 #endif
 }
 
-
-const char* Overlay::plugin_title() { return N_("Overlay"); }
-int Overlay::is_realtime() { return 1; }
-int Overlay::is_multichannel() { return 1; }
-int Overlay::is_synthesis() { return 1; }
-
-
-NEW_PICON_MACRO(Overlay) 
-
-SHOW_GUI_MACRO(Overlay, OverlayThread)
-
-RAISE_WINDOW_MACRO(Overlay)
-
-SET_STRING_MACRO(Overlay);
-
 int Overlay::load_configuration()
 {
 	KeyFrame *prev_keyframe;
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
-	return 0;
+	return 1;
 }
 
 void Overlay::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%soverlay.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("overlay.rc");
 
 	config.mode = defaults->get("MODE", config.mode);
 	config.direction = defaults->get("DIRECTION", config.direction);
@@ -729,8 +690,6 @@ void Overlay::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("OVERLAY"))
@@ -739,17 +698,5 @@ void Overlay::read_data(KeyFrame *keyframe)
 			config.direction = input.tag.get_property("DIRECTION", config.direction);
 			config.output_layer = input.tag.get_property("OUTPUT_LAYER", config.output_layer);
 		}
-	}
-}
-
-void Overlay::update_gui()
-{
-	if(thread)
-	{
-		thread->window->lock_window("Overlay::update_gui");
-		thread->window->mode->set_text(OverlayConfig::mode_to_text(config.mode));
-		thread->window->direction->set_text(OverlayConfig::direction_to_text(config.direction));
-		thread->window->output->set_text(OverlayConfig::output_to_text(config.output_layer));
-		thread->window->unlock_window();
 	}
 }
