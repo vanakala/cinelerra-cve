@@ -567,7 +567,6 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/level/Makefile plugins/linearblur/Makefile \
 					plugins/perspective/Makefile plugins/radialblur/Makefile plugins/zoomblur/Makefile \
 					plugins/timefront/Makefile \
-					plugins/svg/Makefile \
 					plugins/diffkey/Makefile \
 					plugins/fonts/Makefile \
 					image/Makefile)

@@ -83,7 +83,6 @@ SUBDIRS= \
 	shiftinterlace \
 	slide \
 	spectrogram \
-	svg \
 	swapchannels \
 	synthesizer \
 	threshold \
