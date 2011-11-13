@@ -22,10 +22,22 @@
 #ifndef SELTEMPAVG_H
 #define SELTEMPAVG_H
 
-class SelTempAvgMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+// Old name: "Selective Temporal Averaging"
+#define PLUGIN_TITLE N_("STA")
+#define PLUGIN_CLASS SelTempAvgMain
+#define PLUGIN_CONFIG_CLASS SelTempAvgConfig
+#define PLUGIN_THREAD_CLASS SelTempAvgThread
+#define PLUGIN_GUI_CLASS SelTempAvgWindow
+
+#include "pluginmacros.h"
 
 #include "bchash.inc"
 #include "pluginvclient.h"
+#include "language.h"
 #include "seltempavgwindow.h"
 #include "vframe.inc"
 
@@ -35,8 +47,8 @@ public:
 	SelTempAvgConfig();
 	void copy_from(SelTempAvgConfig *src);
 	int equivalent(SelTempAvgConfig *src);
-
-	int frames;
+// oli frames
+	ptstime duration;
 
 	float avg_threshold_RY, avg_threshold_GU, avg_threshold_BV;
 	float std_threshold_RY, std_threshold_GU, std_threshold_BV;
@@ -58,13 +70,12 @@ public:
 		OFFSETMODE_RESTARTMARKERSYS
 	};
 
-
 	int paranoid;
 	int nosubtract;
 	int offset_restartmarker_keyframe;
-	int offset_fixed_value;
+	ptstime offset_fixed_pts;
 	float gain;
-
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -74,42 +85,37 @@ public:
 	SelTempAvgMain(PluginServer *server);
 	~SelTempAvgMain();
 
-	PLUGIN_CLASS_MEMBERS(SelTempAvgConfig, SelTempAvgThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	int process_buffer(VFrame *frame, framenum start_position, double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	int nextkeyframeisoffsetrestart(KeyFrame *keyframe);
-	void update_gui();
 	void clear_accum(int w, int h, int color_model);
 	void subtract_accum(VFrame *frame);
 	void add_accum(VFrame *frame);
 	void transfer_accum(VFrame *frame);
 
-	framenum restartoffset;
+	ptstime restartoffset;
 	int onakeyframe;
 
-	char string[64];
-
 	VFrame **history;
+	VFrame *temp_frame;
 
 // Frame of history in requested framerate
-	framenum *history_frame;
+	int max_num_frames;
 	int *history_valid;
 	unsigned char *accumulation;
 	unsigned char *accumulation_sq;
 	unsigned char *accumulation_grey;
 
-	int history_size;
-// Starting frame of history in requested framerate
-	framenum history_start;
+	int frames_accum;
 // When subtraction is disabled, this detects no change for paranoid mode.
-	framenum prev_frame;
+	ptstime prev_frame_pts;
+	int max_denominator;
 };
-
 
 #endif

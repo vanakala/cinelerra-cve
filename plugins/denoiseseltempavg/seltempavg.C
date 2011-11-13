@@ -32,19 +32,19 @@
 #include <stdint.h>
 #include <string.h>
 
-REGISTER_PLUGIN(SelTempAvgMain)
+REGISTER_PLUGIN
 
 
 //////////////////////////////////////////////////////////////////////
 SelTempAvgConfig::SelTempAvgConfig()
 {
-	frames = 1;
+	duration = 0.04;
 	method = SelTempAvgConfig::METHOD_SELTEMPAVG;
 	offsetmode = SelTempAvgConfig::OFFSETMODE_RESTARTMARKERSYS;
 	paranoid = 0;
 	nosubtract = 0;
 	offset_restartmarker_keyframe = 0;
-	offset_fixed_value = -15;
+	offset_fixed_pts = -0.5;
 	gain = 1.00;
 
 	avg_threshold_RY = 0; avg_threshold_GU = 0; avg_threshold_BV = 0;
@@ -54,13 +54,13 @@ SelTempAvgConfig::SelTempAvgConfig()
 
 void SelTempAvgConfig::copy_from(SelTempAvgConfig *src)
 {
-	this->frames = src->frames;
+	this->duration = src->duration;
 	this->method = src->method;
 	this->offsetmode = src->offsetmode;
 	this->paranoid = src->paranoid;
 	this->nosubtract = src->nosubtract;
 	this->offset_restartmarker_keyframe = src->offset_restartmarker_keyframe;
-	this->offset_fixed_value = src->offset_fixed_value;
+	this->offset_fixed_pts = src->offset_fixed_pts;
 	this->gain = src->gain;
 	this->avg_threshold_RY = src->avg_threshold_RY; this->avg_threshold_GU = src->avg_threshold_GU; 
 	this->avg_threshold_BV = src->avg_threshold_BV; this->std_threshold_RY = src->std_threshold_RY; 
@@ -71,17 +71,17 @@ void SelTempAvgConfig::copy_from(SelTempAvgConfig *src)
 
 int SelTempAvgConfig::equivalent(SelTempAvgConfig *src)
 {
-  return frames == src->frames &&
-	  method == src->method &&
-          offsetmode == src->offsetmode &&
-	  paranoid == src->paranoid &&
-	  offset_restartmarker_keyframe == src->offset_restartmarker_keyframe &&
-	  offset_fixed_value == src->offset_fixed_value &&
-	  gain == src->gain &&
-	  this->avg_threshold_RY == src->avg_threshold_RY && this->avg_threshold_GU == src->avg_threshold_GU &&
-	  this->avg_threshold_BV == src->avg_threshold_BV && this->std_threshold_RY == src->std_threshold_RY &&
-	  this->std_threshold_GU == src->std_threshold_GU && this->std_threshold_BV == src->std_threshold_BV &&
-	  this->mask_RY == src->mask_RY && this->mask_GU == src->mask_GU && this->mask_BV == src->mask_BV;
+	return PTSEQU(duration, src->duration) &&
+		method == src->method &&
+		offsetmode == src->offsetmode &&
+		paranoid == src->paranoid &&
+		offset_restartmarker_keyframe == src->offset_restartmarker_keyframe &&
+		EQUIV(offset_fixed_pts, src->offset_fixed_pts) &&
+		EQUIV(gain, src->gain) &&
+		EQUIV(avg_threshold_RY, src->avg_threshold_RY) && EQUIV(avg_threshold_GU, src->avg_threshold_GU) &&
+		EQUIV(avg_threshold_BV, src->avg_threshold_BV) && EQUIV(std_threshold_RY, src->std_threshold_RY) &&
+		EQUIV(std_threshold_GU, src->std_threshold_GU) && EQUIV(std_threshold_BV, src->std_threshold_BV) &&
+		this->mask_RY == src->mask_RY && this->mask_GU == src->mask_GU && this->mask_BV == src->mask_BV;
 }
 
 
@@ -89,20 +89,19 @@ int SelTempAvgConfig::equivalent(SelTempAvgConfig *src)
 SelTempAvgMain::SelTempAvgMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	accumulation = 0;
 	history = 0;
-	history_size = 0;
-	history_start = -0x7fffffff;
-	history_frame = 0;
 	history_valid = 0;
-	prev_frame = -1;
+	prev_frame_pts = -1;
+	temp_frame = 0;
+	frames_accum = 0;
+	max_num_frames = 0;
+	max_denominator = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 SelTempAvgMain::~SelTempAvgMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(accumulation) 
 	{
 		delete [] accumulation;
@@ -110,33 +109,27 @@ SelTempAvgMain::~SelTempAvgMain()
 	}
 	if(history)
 	{
-		for(int i = 0; i < config.frames; i++)
-			delete history[i];
+		for(int i = 0; i < max_num_frames; i++)
+			if(history[i])
+				delete history[i];
 		delete [] history;
 	}
-	if(history_frame) delete [] history_frame;
 	if(history_valid) delete [] history_valid;
+	if(temp_frame)
+		delete temp_frame;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* SelTempAvgMain::plugin_title() { return N_("Selective Temporal Averaging"); }
-int SelTempAvgMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-
-NEW_PICON_MACRO(SelTempAvgMain)
-
-SHOW_GUI_MACRO(SelTempAvgMain, SelTempAvgThread)
-
-SET_STRING_MACRO(SelTempAvgMain)
-
-RAISE_WINDOW_MACRO(SelTempAvgMain);
-
-int SelTempAvgMain::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void SelTempAvgMain::process_frame(VFrame *frame)
 {
 	int h = frame->get_h();
 	int w = frame->get_w();
 	int color_model = frame->get_color_model();
+	ptstime history_start, history_end, cpts;
+	int got_frame = 0;
+
 	load_configuration();
 
 // Allocate accumulation
@@ -149,102 +142,80 @@ int SelTempAvgMain::process_buffer(VFrame *frame,
 			3 * sizeof(float)];
 		clear_accum(w, h, color_model);
 	}
-
 	if(!config.nosubtract)
 	{
 // Reallocate history
 		if(history)
 		{
-			if(config.frames != history_size)
+			int new_num_frames = round(2 * config.duration * get_project_framerate());
+			if(max_num_frames != new_num_frames)
 			{
 				VFrame **history2;
-				framenum *history_frame2;
 				int *history_valid2;
-				history2 = new VFrame*[config.frames];
-				history_frame2 = new framenum[config.frames];
-				history_valid2 = new int[config.frames];
+
+				history2 = new VFrame*[new_num_frames];
+				history_valid2 = new int[new_num_frames];
+				memset(history2, 0, new_num_frames * sizeof(VFrame*));
+				memset(history_valid2, 0, new_num_frames * sizeof(int));
 
 // Copy existing frames over
 				int i, j;
-				for(i = 0, j = 0; i < config.frames && j < history_size; i++, j++)
+				j = 0;
+				for(i = 0; i < max_num_frames; i++)
 				{
-					history2[i] = history[j];
-					history_frame2[i] = history_frame[i];
-					history_valid2[i] = history_valid[i];
+					if(history_valid[i])
+					{
+						history2[j] = history[i];
+						history_valid2[j] = 1;
+						if(++j >= new_num_frames)
+							break;
+					} else if(history[i])
+						delete history[i];
 				}
 
 // Delete extra previous frames and subtract from accumulation
-				for( ; j < history_size; j++)
+				for(; i < max_num_frames; i++)
 				{
-					subtract_accum(history[j]);
-					delete history[j];
+					if(history_valid[i])
+						subtract_accum(history[i]);
+					if(history[i])
+						delete history[i];
 				}
 				delete [] history;
-				delete [] history_frame;
 				delete [] history_valid;
 
-
-// Create new frames
-				for( ; i < config.frames; i++)
-				{
-					history2[i] = new VFrame(0, w, h, color_model);
-					history_frame2[i] = -0x7fffffff;
-					history_valid2[i] = 0;
-				}
-
 				history = history2;
-				history_frame = history_frame2;
 				history_valid = history_valid2;
 
-				history_size = config.frames;
+				max_num_frames = new_num_frames;
 			}
 		}
 		else
 // Allocate history
 		{
-			history = new VFrame*[config.frames];
-			for(int i = 0; i < config.frames; i++)
-				history[i] = new VFrame(0, w, h, color_model);
-			history_size = config.frames;
-			history_frame = new framenum[config.frames];
-			memset(history_frame, 0, sizeof(framenum) * config.frames);
-			history_valid = new int[config.frames];
-			bzero(history_valid, sizeof(int) * config.frames);
+			max_num_frames = round(2 * config.duration * get_project_framerate());
+			history = new VFrame*[max_num_frames];
+			memset(history, 0, max_num_frames * sizeof(VFrame*));
+
+			history_valid = new int[max_num_frames];
+			memset(history_valid, 0, sizeof(int) * max_num_frames);
 		}
 
-
-// Create new history frames based on current frame
-		framenum *new_history_frames = new framenum[history_size];
-
-		framenum theoffset = config.offset_fixed_value;
+		ptstime theoffset = config.offset_fixed_pts;
 		if (config.offsetmode == SelTempAvgConfig::OFFSETMODE_RESTARTMARKERSYS)
 			theoffset = restartoffset;
-
-		for(int i = 0; i < history_size; i++)
-		{
-			new_history_frames[history_size - i - 1] = start_position + theoffset + i;
-		}
-
-// Subtract old history frames which are not in the new vector
+		history_start = source_pts + restartoffset;
+		if(history_start < EPSILON)
+			history_start = 0;
+		history_end = history_start + config.duration;
+// Remove frames not in history any more
 		int no_change = 1;
-		for(int i = 0; i < history_size; i++)
+		for(int i = 0; i < max_num_frames; i++)
 		{
-// Old frame is valid
 			if(history_valid[i])
 			{
-				int got_it = 0;
-				for(int j = 0; j < history_size; j++)
-				{
-// Old frame is equal to a new frame
-					if(history_frame[i] == new_history_frames[j]) 
-					{
-						got_it = 1;
-						break;
-					}
-				}
-
-// Didn't find old frame in new frames
-				if(!got_it)
+				cpts = history[i]->get_pts();
+				if(cpts < history_start || cpts > history_end)
 				{
 					subtract_accum(history[i]);
 					history_valid[i] = 0;
@@ -255,87 +226,113 @@ int SelTempAvgMain::process_buffer(VFrame *frame,
 // If all frames are still valid, assume tweek occurred upstream and reload.
 		if(config.paranoid && no_change)
 		{
-			for(int i = 0; i < history_size; i++)
-			{
+			for(int i = 0; i < max_num_frames; i++)
 				history_valid[i] = 0;
-			}
 			clear_accum(w, h, color_model);
 		}
-
 // Add new history frames which are not in the old vector
-		for(int i = 0; i < history_size; i++)
-		{
-// Find new frame in old vector
-			int got_it = 0;
-			for(int j = 0; j < history_size; j++)
-			{
-				if(history_valid[j] && history_frame[j] == new_history_frames[i])
-				{
-					got_it = 1;
-					break;
-				}
-			}
+		cpts = history_start;
+		int got_it = 0;
 
-// Didn't find new frame in old vector
-			if(!got_it)
+		for(int i = 0; i < max_num_frames; i++)
+		{
+			for(int j = 0; j < max_num_frames; j++)
 			{
-// Get first unused entry
-				for(int j = 0; j < history_size; j++)
+				if(history_valid[j])
 				{
-					if(!history_valid[j])
+					if(history[j]->pts_in_frame(cpts))
 					{
-// Load new frame into it
-						history_frame[j] = new_history_frames[i];
-						history_valid[j] = 1;
-						read_frame(history[j],
-							0,
-							history_frame[j],
-							frame_rate);
-						add_accum(history[j]);
+						got_it = 1;
+						cpts = history[j]->next_pts();
 						break;
 					}
 				}
 			}
+			if(!got_it)
+			{
+				for(int j = 0; j < max_num_frames; j++)
+				{
+					if(!history_valid[j])
+					{
+						if(!history[j])
+							history[j] = new VFrame(0, w, h, color_model);
+						history[j]->set_pts(cpts);
+						get_frame(history[j]);
+						add_accum(history[j]);
+						history_valid[j] = 1;
+						cpts = history[j]->next_pts();
+						break;
+					}
+				}
+			}
+			got_it = 0;
+			if(cpts >= history_end)
+				break;
 		}
-		delete [] new_history_frames;
 	}
 	else
 // No subtraction
 	{
 // Force reload if not repositioned or just started
-		if(config.paranoid && prev_frame == start_position ||
-			prev_frame < 0)
+		if(config.paranoid && PTSEQU(prev_frame_pts, source_pts) ||
+			prev_frame_pts < 0)
 		{
-			prev_frame = start_position - config.frames + 1;
-			prev_frame = MAX(0, prev_frame);
+			prev_frame_pts = source_pts - config.duration;
+			prev_frame_pts = MAX(0, prev_frame_pts);
 			clear_accum(w, h, color_model);
-		}
+			max_denominator = round(config.duration * get_project_framerate());
+		} else
+			prev_frame_pts = source_pts;
+		if(!temp_frame)
+			temp_frame = new VFrame(0, w, h, color_model);
 
-		for(int64_t i = prev_frame; i <= start_position; i++)
+		for(cpts = prev_frame_pts;;cpts = temp_frame->next_pts())
 		{
-			read_frame(frame,
-				0,
-				i,
-				frame_rate);
-			add_accum(frame);
+			if(frames_accum >= max_denominator)
+				frames_accum = max_denominator - 1;
+			if((source_pts - cpts) < EPSILON)
+			{
+				get_frame(frame);
+				got_frame = 1;
+				add_accum(frame);
+				break;
+			}
+			else
+			{
+				temp_frame->set_pts(cpts);
+				get_frame(temp_frame);
+				add_accum(temp_frame);
+			}
 		}
 
-		prev_frame = start_position;
+		prev_frame_pts = source_pts;
 	}
-
-	// Read current frame into buffer (needed for the std-deviation tool)
-	read_frame(frame,
-			0,
-			start_position,
-			frame_rate);
-
-// Transfer accumulation to output with division if average is desired.
-	transfer_accum(frame);
-
-	return 0;
+	if(!got_frame && config.method == SelTempAvgConfig::METHOD_SELTEMPAVG)
+	{
+		if(frames_accum)
+		{
+			cpts = frame->get_pts();
+			for(int i = 0; i < max_num_frames; i++)
+			{
+				if(history_valid[i] && history[i]->pts_in_frame(cpts))
+				{
+					frame->copy_from(history[i]);
+					got_frame = 1;
+					break;
+				}
+			}
+		}
+		if(!got_frame)
+		{
+			get_frame(frame);
+			got_frame = 1;
+		}
+	}
+	if(frames_accum && config.method != SelTempAvgConfig::METHOD_NONE)
+		transfer_accum(frame);
+	else if(!got_frame)
+		get_frame(frame);
 }
-
-
 
 // Reset accumulation
 #define CLEAR_ACCUM(type, components, chroma) \
@@ -357,14 +354,15 @@ int SelTempAvgMain::process_buffer(VFrame *frame,
 	} \
 	else \
 	{ \
-		bzero(row, w * h * sizeof(type) * components); \
-		bzero(row_sq, w * h * 3 * sizeof(float)); \
+		memset(row, 0, w * h * sizeof(type) * components); \
+		memset(row_sq, 0, w * h * 3 * sizeof(float)); \
 	} \
 }
 
 
 void SelTempAvgMain::clear_accum(int w, int h, int color_model)
 {
+	frames_accum = 0;
 	switch(color_model)
 	{
 	case BC_RGB888:
@@ -421,11 +419,11 @@ void SelTempAvgMain::clear_accum(int w, int h, int color_model)
 				frame_row++; \
 \
 				*accum_row -= c1; \
-                                accum_row++; \
+				accum_row++; \
 				*accum_row -= c2; \
-                                accum_row++; \
+				accum_row++; \
 				*accum_row -= c3; \
-                                accum_row++; \
+				accum_row++; \
 				if(components == 4) { *accum_row -= ((float)*frame_row++)/max; accum_row++; } \
 \
 				*accum_row_sq++ -= c1*c1; \
@@ -443,6 +441,11 @@ void SelTempAvgMain::subtract_accum(VFrame *frame)
 	if(config.nosubtract) return;
 	int w = frame->get_w();
 	int h = frame->get_h();
+	if(--frames_accum < 0)
+	{
+		clear_accum(w, h, frame->get_color_model());
+		return;
+	}
 
 	switch(frame->get_color_model())
 	{
@@ -472,7 +475,6 @@ void SelTempAvgMain::subtract_accum(VFrame *frame)
 		break;
 	}
 }
-
 
 // The behavior has to be very specific to the color model because we rely on
 // the value of full black to determine what pixel to show.
@@ -513,11 +515,11 @@ void SelTempAvgMain::subtract_accum(VFrame *frame)
 	} \
 }
 
-
 void SelTempAvgMain::add_accum(VFrame *frame)
 {
 	int w = frame->get_w();
 	int h = frame->get_h();
+	frames_accum++;
 
 	switch(frame->get_color_model())
 	{
@@ -566,7 +568,7 @@ void SelTempAvgMain::add_accum(VFrame *frame)
 { \
 	if(config.method == SelTempAvgConfig::METHOD_SELTEMPAVG) \
 	{ \
-		float denominator = config.frames; \
+		float denominator = frames_accum; \
 		float c1_now, c2_now, c3_now, c4_now; \
 		float c1_mean, c2_mean, c3_mean, c4_mean; \
 		float c1_stddev, c2_stddev, c3_stddev; \
@@ -619,7 +621,7 @@ void SelTempAvgMain::add_accum(VFrame *frame)
 	else \
 	if(config.method == SelTempAvgConfig::METHOD_AVERAGE) \
 	{ \
-		float denominator = config.frames; \
+		float denominator = frames_accum; \
 		for(int i = 0; i < h; i++) \
 		{ \
 			float *accum_row = (float*)accumulation + i * w * components; \
@@ -639,7 +641,7 @@ void SelTempAvgMain::add_accum(VFrame *frame)
 	{ \
 		float c1_mean, c2_mean, c3_mean, c4_mean; \
 		float c1_stddev, c2_stddev, c3_stddev; \
-		float denominator = config.frames; \
+		float denominator = frames_accum; \
 		for(int i = 0; i < h; i++) \
 		{ \
 			float *accum_row = (float*)accumulation + i * w * components; \
@@ -668,7 +670,6 @@ void SelTempAvgMain::add_accum(VFrame *frame)
 		} \
 	} \
 }
-
 
 void SelTempAvgMain::transfer_accum(VFrame *frame)
 {
@@ -704,24 +705,25 @@ void SelTempAvgMain::transfer_accum(VFrame *frame)
 	}
 }
 
-
 void SelTempAvgMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sdenoiseseltempavg.rc", BCASTDIR);
+	framenum frames;
+	defaults = load_defaults_file("denoiseseltempavg.rc");
 
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.frames = defaults->get("FRAMES", config.frames);
+	// backward compatibility
+	frames = defaults->get("FRAMES", 0);
+	if(frames)
+		config.duration = frames / get_project_framerate();
+	config.duration = defaults->get("DURATION", config.duration);
 	config.method = defaults->get("METHOD", config.method);
 	config.offsetmode = defaults->get("OFFSETMODE", config.offsetmode);
 	config.paranoid = defaults->get("PARANOID", config.paranoid);
 	config.nosubtract = defaults->get("NOSUBTRACT", config.nosubtract);
 	config.offset_restartmarker_keyframe = defaults->get("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe);
-	config.offset_fixed_value = defaults->get("OFFSETMODE_FIXED_VALUE", config.offset_fixed_value);
+	frames = defaults->get("OFFSETMODE_FIXED_VALUE", 0);
+	if(frames)
+		config.offset_fixed_pts = frames / get_project_framerate();
+	config.offset_fixed_pts = defaults->get("OFFSETMODE_FIXED_PTS", config.offset_fixed_pts);
 	config.gain = defaults->get("GAIN", config.gain);
 
 	config.avg_threshold_RY = defaults->get("AVG_THRESHOLD_RY", config.avg_threshold_GU); 
@@ -737,13 +739,16 @@ void SelTempAvgMain::load_defaults()
 
 void SelTempAvgMain::save_defaults()
 {
-	defaults->update("FRAMES", config.frames);
+// We can't remove it
+	defaults->update("FRAMES", 0);
+	defaults->update("DURATION", config.duration);
 	defaults->update("METHOD", config.method);
 	defaults->update("OFFSETMODE", config.offsetmode);
 	defaults->update("PARANOID", config.paranoid);
 	defaults->update("NOSUBTRACT", config.nosubtract);
 	defaults->update("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe);
-	defaults->update("OFFSETMODE_FIXED_VALUE", config.offset_fixed_value);
+	defaults->update("OFFSETMODE_FIXED_VALUE", 0);
+	defaults->update("OFFSETMODE_FIXED_PTS", config.offset_fixed_pts);
 	defaults->update("GAIN", config.gain);
 
 	defaults->update("AVG_THRESHOLD_RY", config.avg_threshold_RY); 
@@ -762,62 +767,48 @@ void SelTempAvgMain::save_defaults()
 
 int SelTempAvgMain::load_configuration()
 {
+// See tuleb ringi teha
 	KeyFrame *prev_keyframe;
 	KeyFrame *temp_keyframe;
 
 	SelTempAvgConfig old_config;
 	old_config.copy_from(&config);
 
-	framenum curpos = get_source_position();
-	prev_keyframe = get_prev_keyframe(curpos);
+	prev_keyframe = get_prev_keyframe(source_pts);
 	read_data(prev_keyframe);
 
-	if (curpos == prev_keyframe->get_position())
-		onakeyframe = 1; 
-	else 
+	if(PTSEQU(source_pts, prev_keyframe->pos_time))
+	{
+		onakeyframe = 1;
+		if(config.offset_restartmarker_keyframe)
+		{
+			restartoffset = 0;
+			return !old_config.equivalent(&config);
+		}
+	}
+	else
 		onakeyframe = 0;
 
-	framenum next_restart_keyframe     = curpos + config.frames;
-	framenum prev_restart_keyframe     = curpos - config.frames;
+	ptstime next_restart_pts = source_pts + config.duration;
+	ptstime prev_restart_pts = source_pts - config.duration;
 
-	for (int i = curpos; i < curpos + config.frames; i++) 
-	{
-		temp_keyframe = get_next_keyframe(i);
-		if ( 
-			(temp_keyframe->get_position() < curpos + config.frames/2) && 
-			(temp_keyframe->get_position() > curpos) &&
-			nextkeyframeisoffsetrestart(temp_keyframe) 
-			) 
-		{
-			next_restart_keyframe = temp_keyframe->get_position();
-			i = curpos + config.frames;
-		} else if (temp_keyframe->get_position() > i)
-			i = temp_keyframe->get_position();
-	}
+	temp_keyframe = get_next_keyframe(source_pts);
+	if(temp_keyframe->pos_time > source_pts 
+			&& temp_keyframe->pos_time < source_pts + config.duration / 2
+			&& nextkeyframeisoffsetrestart(temp_keyframe))
+		next_restart_pts = temp_keyframe->pos_time;
 
-	for (int i = curpos; i > curpos - config.frames; i--) 
-	{
-		temp_keyframe = get_prev_keyframe(i);
-		if ( 
-			(temp_keyframe->get_position() > curpos - config.frames/2) && 
-			(temp_keyframe->get_position() < curpos) && 
-			nextkeyframeisoffsetrestart(temp_keyframe) 
-			) 
-		{
-			prev_restart_keyframe = temp_keyframe->get_position();
-			i = curpos - config.frames;
-		} else if (temp_keyframe->get_position() < i)
-			i = temp_keyframe->get_position();
-	}
+	if(prev_keyframe->pos_time < source_pts
+			&& prev_keyframe->pos_time > source_pts - config.duration / 2
+			&& nextkeyframeisoffsetrestart(temp_keyframe))
+		prev_restart_pts = prev_keyframe->pos_time;
 
-	restartoffset = -config.frames/2;
+	restartoffset = -config.duration / 2;
 
-	if (onakeyframe && config.offset_restartmarker_keyframe)
-		restartoffset = 0;
-	else if ((curpos - prev_restart_keyframe) < config.frames/2) 
-		restartoffset = prev_restart_keyframe - curpos;
-	else if ((next_restart_keyframe - curpos) < config.frames/2) {
-		restartoffset = (next_restart_keyframe - curpos) - config.frames;
+	if ((source_pts - prev_restart_pts) < config.duration / 2)
+		restartoffset = prev_restart_pts - source_pts;
+	else if ((next_restart_pts - source_pts) < config.duration / 2) {
+		restartoffset = (next_restart_pts - source_pts) - config.duration;
 		// Probably should put another if in here, (when two "restart" keyframes are close together
 	}
 
@@ -831,15 +822,14 @@ void SelTempAvgMain::save_data(KeyFrame *keyframe)
 // cause data to be stored directly in text
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("SELECTIVE_TEMPORAL_AVERAGE");
-	output.tag.set_property("FRAMES", config.frames);
+	output.tag.set_property("DURATION", config.duration);
 	output.tag.set_property("METHOD", config.method);
 	output.tag.set_property("OFFSETMODE", config.offsetmode);
 	output.tag.set_property("PARANOID", config.paranoid);
 	output.tag.set_property("NOSUBTRACT", config.nosubtract);
 	output.tag.set_property("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe);
-	output.tag.set_property("OFFSETMODE_FIXED_VALUE", config.offset_fixed_value);
+	output.tag.set_property("OFFSETMODE_FIXED_PTS", config.offset_fixed_pts);
 	output.tag.set_property("GAIN", config.gain);
-
 
 	output.tag.set_property("AVG_THRESHOLD_RY", config.avg_threshold_RY); 
 	output.tag.set_property("AVG_THRESHOLD_GU", config.avg_threshold_GU); 
@@ -861,22 +851,27 @@ void SelTempAvgMain::save_data(KeyFrame *keyframe)
 void SelTempAvgMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
+	framenum frames;
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
-	int result = 0;
 
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("SELECTIVE_TEMPORAL_AVERAGE"))
 		{
-			config.frames = input.tag.get_property("FRAMES", config.frames);
+			frames = input.tag.get_property("FRAMES", 0);
+			if(frames)
+				config.duration = frames / get_project_framerate();
+			config.duration = input.tag.get_property("DURATION", config.duration);
 			config.method = input.tag.get_property("METHOD", config.method);
 			config.offsetmode = input.tag.get_property("OFFSETMODE", config.offsetmode);
 			config.paranoid = input.tag.get_property("PARANOID", config.paranoid);
 			config.nosubtract = input.tag.get_property("NOSUBTRACT", config.nosubtract);
 			config.offset_restartmarker_keyframe = input.tag.get_property("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe);
-			config.offset_fixed_value = input.tag.get_property("OFFSETMODE_FIXED_VALUE", config.offset_fixed_value);
+			frames = input.tag.get_property("OFFSETMODE_FIXED_VALUE", 0);
+			if(frames)
+				config.offset_fixed_pts = frames / get_project_framerate();
+			config.offset_fixed_pts = input.tag.get_property("OFFSETMODE_FIXED_PTS", config.offset_fixed_pts);
 			config.gain = input.tag.get_property("gain", config.gain);
 
 			config.avg_threshold_RY = input.tag.get_property("AVG_THRESHOLD_RY", config.avg_threshold_RY); 
@@ -889,12 +884,9 @@ void SelTempAvgMain::read_data(KeyFrame *keyframe)
 			config.mask_RY = input.tag.get_property("MASK_RY", config.mask_RY); 
 			config.mask_GU = input.tag.get_property("MASK_GU", config.mask_GU); 
 			config.mask_BV = input.tag.get_property("MASK_BV", config.mask_BV);
-
 		}
 	}
 }
-
-
 
 int SelTempAvgMain::nextkeyframeisoffsetrestart(KeyFrame *keyframe)
 {
@@ -902,57 +894,12 @@ int SelTempAvgMain::nextkeyframeisoffsetrestart(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("SELECTIVE_TEMPORAL_AVERAGE"))
 		{
-			return(input.tag.get_property("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe));
+			return(input.tag.get_property("OFFSETMODE_RESTARTMODE_KEYFRAME", 0));
 		}
 	}
 	return (0);
-}
-
-
-
-void SelTempAvgMain::update_gui()
-{
-	if(thread) 
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("SelTempAvgMain::update_gui");
-			thread->window->total_frames->update(config.frames);
-
-			thread->window->method_none->update(         config.method == SelTempAvgConfig::METHOD_NONE);
-			thread->window->method_seltempavg->update(   config.method == SelTempAvgConfig::METHOD_SELTEMPAVG);
-			thread->window->method_average->update(      config.method == SelTempAvgConfig::METHOD_AVERAGE);
-			thread->window->method_stddev->update(       config.method == SelTempAvgConfig::METHOD_STDDEV);
-
-			thread->window->offset_fixed->update(        config.offsetmode == SelTempAvgConfig::OFFSETMODE_FIXED);
-			thread->window->offset_restartmarker->update(config.offsetmode == SelTempAvgConfig::OFFSETMODE_RESTARTMARKERSYS);
-
-
-			thread->window->paranoid->update(config.paranoid);
-			thread->window->no_subtract->update(config.nosubtract);
-
-			thread->window->offset_fixed_value->update((int64_t)config.offset_fixed_value);
-			thread->window->gain->update(config.gain);
-
-			thread->window->avg_threshold_RY->update((float)config.avg_threshold_RY);
-			thread->window->avg_threshold_GU->update((float)config.avg_threshold_GU);
-			thread->window->avg_threshold_BV->update((float)config.avg_threshold_BV);
-			thread->window->std_threshold_RY->update((float)config.std_threshold_RY);
-			thread->window->std_threshold_GU->update((float)config.std_threshold_GU);
-			thread->window->std_threshold_BV->update((float)config.std_threshold_BV);
-
-			thread->window->mask_RY->update(config.mask_RY);
-			thread->window->mask_GU->update(config.mask_GU);
-			thread->window->mask_BV->update(config.mask_BV);
-			thread->window->unlock_window();
-		}
-		thread->window->offset_restartmarker_pos->update((int64_t)restartoffset);
-		thread->window->offset_restartmarker_keyframe->update((config.offset_restartmarker_keyframe) && (onakeyframe));
-	}
 }

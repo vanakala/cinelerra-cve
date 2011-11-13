@@ -22,10 +22,6 @@
 #ifndef TIMEAVGWINDOW_H
 #define TIMEAVGWINDOW_H
 
-
-class SelTempAvgThread;
-class SelTempAvgWindow;
-
 class SelTempAvgParanoid;
 class SelTempAvgNoSubtract;
 class SelTempAvgStartKeyframe;
@@ -45,11 +41,7 @@ class SelTempAvgGainValue;
 #include "mutex.h"
 #include "seltempavg.h"
 
-PLUGIN_THREAD_HEADER(SelTempAvgMain, SelTempAvgThread, SelTempAvgWindow)
-
-
-
-
+PLUGIN_THREAD_HEADER
 
 enum {
   AVG_RY,
@@ -70,13 +62,11 @@ enum {
 class SelTempAvgWindow : public BC_Window
 {
 public:
-	SelTempAvgWindow(SelTempAvgMain *client, int x, int y);
+	SelTempAvgWindow(SelTempAvgMain *plugin, int x, int y);
 	~SelTempAvgWindow();
-	
-	int create_objects();
-	void close_event();
-	
-	SelTempAvgMain *client;
+
+	void update();
+
 	SelTempAvgSlider *total_frames;
 
 	SelTempAvgThreshSlider *avg_threshold_RY, *avg_threshold_GU, *avg_threshold_BV;
@@ -93,7 +83,9 @@ public:
 
 	SelTempAvgOffsetValue *offset_fixed_value;
 	SelTempAvgGainValue *gain;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
+
 
 class SelTempAvgThreshSlider : public BC_TextBox
 {
@@ -126,7 +118,7 @@ public:
 };
 
 
-class SelTempAvgSlider : public BC_ISlider
+class SelTempAvgSlider : public BC_FSlider
 {
 public:
 	SelTempAvgSlider(SelTempAvgMain *client, int x, int y);
@@ -191,6 +183,5 @@ public:
 	int handle_event();
 	SelTempAvgMain *client;
 };
-
 
 #endif
