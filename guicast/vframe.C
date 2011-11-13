@@ -887,6 +887,16 @@ ptstime VFrame::get_duration(void)
 	return duration;
 }
 
+ptstime VFrame::next_pts()
+{
+	return pts + duration;
+}
+
+int VFrame::pts_in_frame(ptstime pts)
+{
+	return this->pts <= pts && (this->pts + duration) > pts;
+}
+
 void VFrame::push_prev_effect(const char *name)
 {
 	char *ptr;
