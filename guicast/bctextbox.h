@@ -71,6 +71,7 @@ public:
 	void set_selection(int char1, int char2, int ibeam);
 	void update(const char *text);
 	void update(int64_t value);
+	void update(int value);
 	void update(float value);
 	void disable();
 	void enable();

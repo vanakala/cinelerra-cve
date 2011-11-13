@@ -214,6 +214,14 @@ void BC_TextBox::update(int64_t value)
 	update(string);
 }
 
+void BC_TextBox::update(int value)
+{
+	char string[BCTEXTLEN];
+	sprintf(string, "%d", value);
+
+	update(string);
+}
+
 void BC_TextBox::update(float value)
 {
 	char string[BCTEXTLEN];
