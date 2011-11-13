@@ -1,4 +1,3 @@
-CINELERRA_VERSION=2.1CV-einar
 BUILDDATE=$(shell date)
 
 if BUILDINFO_RECOMPILE
@@ -17,7 +16,7 @@ aboutprefs.o: versioninfo.h
 versioninfo.h:
 endif
 	echo >versioninfo.h
-	echo '#define CINELERRA_VERSION "$(CINELERRA_VERSION)"' >> versioninfo.h
+	echo '#define CINELERRA_VERSION "$(VERSION)"' >> versioninfo.h
 	echo >> versioninfo.h
 	echo '#define BUILDDATE "$(BUILDDATE)"' >> versioninfo.h
 
