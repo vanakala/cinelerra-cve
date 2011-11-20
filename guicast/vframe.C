@@ -892,9 +892,25 @@ ptstime VFrame::next_pts()
 	return pts + duration;
 }
 
-int VFrame::pts_in_frame(ptstime pts)
+int VFrame::pts_in_frame(ptstime pts, ptstime accuracy)
 {
-	return this->pts <= pts && (this->pts + duration) > pts;
+	ptstime te = this->pts + this->duration;
+	ptstime qe = pts + accuracy;
+	ptstime limit = 0.5 * accuracy;
+
+	if(qe < this->pts || pts > te)
+		return 0;
+
+	if((this->pts <= pts && qe < te) || pts <= this->pts && qe > te)
+		return 1;
+
+	if(pts < this->pts && qe < te && (this->pts - pts) < limit)
+		return 1;
+
+	if(pts > this->pts && qe > te && (te - pts) > limit)
+		return 1;
+
+	return 0;
 }
 
 void VFrame::push_prev_effect(const char *name)
