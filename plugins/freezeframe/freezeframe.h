@@ -22,18 +22,22 @@
 #ifndef FREEZEFRAME_H
 #define FREEZEFRAME_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
+#define PLUGIN_TITLE N_("Freeze Frame")
+#define PLUGIN_CLASS FreezeFrameMain
+#define PLUGIN_CONFIG_CLASS FreezeFrameConfig
+#define PLUGIN_THREAD_CLASS FreezeFrameThread
+#define PLUGIN_GUI_CLASS FreezeFrameWindow
 
+#include "pluginmacros.h"
 
 #include "filexml.inc"
-#include "mutex.h"
+#include "language.h"
 #include "pluginvclient.h"
-
-
-
-class FreezeFrameWindow;
-class FreezeFrameMain;
-class FreezeFrameThread;
 
 class FreezeFrameConfig
 {
@@ -43,11 +47,12 @@ public:
 	int equivalent(FreezeFrameConfig &that);
 	void interpolate(FreezeFrameConfig &prev, 
 		FreezeFrameConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	int enabled;
 	int line_double;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class FreezeFrameToggle : public BC_CheckBox
@@ -67,17 +72,16 @@ public:
 class FreezeFrameWindow : public BC_Window
 {
 public:
-	FreezeFrameWindow(FreezeFrameMain *client, int x, int y);
+	FreezeFrameWindow(FreezeFrameMain *plugin, int x, int y);
 	~FreezeFrameWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
-	FreezeFrameMain *client;
 	FreezeFrameToggle *enabled;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(FreezeFrameMain, FreezeFrameThread, FreezeFrameWindow)
+PLUGIN_THREAD_HEADER
 
 class FreezeFrameMain : public PluginVClient
 {
@@ -85,26 +89,19 @@ public:
 	FreezeFrameMain(PluginServer *server);
 	~FreezeFrameMain();
 
-	PLUGIN_CLASS_MEMBERS(FreezeFrameConfig, FreezeFrameThread)
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
-	void update_gui();
+	void process_frame(VFrame *frame);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
 	void save_defaults();
-	int is_synthesis();
 	void handle_opengl();
-
 
 // Frame to replicate
 	VFrame *first_frame;
 // Position of frame to replicate
-	framenum first_frame_position;
+	ptstime first_frame_pts;
 };
-
 
 #endif

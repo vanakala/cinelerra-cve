@@ -19,19 +19,16 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "freezeframe.h"
 #include "language.h"
 #include "picon_png.h"
 
-
-
 #include <string.h>
 
 
-REGISTER_PLUGIN(FreezeFrameMain)
+REGISTER_PLUGIN
 
 
 FreezeFrameConfig::FreezeFrameConfig()
@@ -54,18 +51,17 @@ int FreezeFrameConfig::equivalent(FreezeFrameConfig &that)
 
 void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev, 
 	FreezeFrameConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	this->enabled = prev.enabled;
 	this->line_double = prev.line_double;
 }
 
 
-
-FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *client, int x, int y)
- : BC_Window(client->get_gui_string(),
+FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *plugin, int x, int y)
+ : BC_Window(plugin->get_gui_string(),
 	x,
 	y,
 	200,
@@ -76,32 +72,24 @@ FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *client, int x, int y)
 	0,
 	1)
 {
-	this->client = client; 
+	add_tool(enabled = new FreezeFrameToggle(plugin,
+		&plugin->config.enabled,
+		10,
+		10,
+		_("Enabled")));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 FreezeFrameWindow::~FreezeFrameWindow()
 {
 }
 
-int FreezeFrameWindow::create_objects()
+void FreezeFrameWindow::update()
 {
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
-	add_tool(enabled = new FreezeFrameToggle(client, 
-		&client->config.enabled,
-		x, 
-		y,
-		_("Enabled")));
-	show_window();
-	flush();
-	return 0;
+	enabled->update(plugin->config.enabled);
 }
 
-WINDOW_CLOSE_EVENT(FreezeFrameWindow)
-
-
-PLUGIN_THREAD_OBJECT(FreezeFrameMain, FreezeFrameThread, FreezeFrameWindow)
+PLUGIN_THREAD_METHODS
 
 
 FreezeFrameToggle::FreezeFrameToggle(FreezeFrameMain *client, 
@@ -130,50 +118,29 @@ int FreezeFrameToggle::handle_event()
 FreezeFrameMain::FreezeFrameMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	first_frame = 0;
-	first_frame_position = -1;
+	first_frame_pts = -1;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 FreezeFrameMain::~FreezeFrameMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(first_frame) delete first_frame;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* FreezeFrameMain::plugin_title() { return N_("Freeze Frame"); }
-int FreezeFrameMain::is_synthesis() { return 1; }
-int FreezeFrameMain::is_realtime() { return 1; }
-
-
-SHOW_GUI_MACRO(FreezeFrameMain, FreezeFrameThread)
-
-RAISE_WINDOW_MACRO(FreezeFrameMain)
-
-SET_STRING_MACRO(FreezeFrameMain)
-
-NEW_PICON_MACRO(FreezeFrameMain)
+PLUGIN_CLASS_METHODS
 
 int FreezeFrameMain::load_configuration()
 {
-	KeyFrame *prev_keyframe = get_prev_keyframe(get_source_position());
-	posnum prev_position = edl_to_local(prev_keyframe->get_position());
-	if(prev_position < get_source_start()) prev_position = get_source_start();
+	KeyFrame *prev_keyframe = prev_keyframe_pts(source_pts);
+	ptstime prev_pts = prev_keyframe->pos_time;
+
+	if(prev_pts < source_start_pts) prev_pts = source_start_pts;
 	read_data(prev_keyframe);
 // Invalidate stored frame
-	if(config.enabled) first_frame_position = (framenum)prev_position;
-	return 0;
-}
-
-void FreezeFrameMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->enabled->update(config.enabled);
-		thread->window->unlock_window();
-	}
+	if(config.enabled) first_frame_pts = (framenum)prev_pts;
+	return 1;
 }
 
 void FreezeFrameMain::save_data(KeyFrame *keyframe)
@@ -210,37 +177,25 @@ void FreezeFrameMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
 	config.enabled = 0;
 	config.line_double = 0;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("ENABLED"))
 		{
-			if(input.tag.title_is("ENABLED"))
-			{
-				config.enabled = 1;
-			}
-			if(input.tag.title_is("LINE_DOUBLE"))
-			{
-				config.line_double = 1;
-			}
+			config.enabled = 1;
+		}
+		if(input.tag.title_is("LINE_DOUBLE"))
+		{
+			config.line_double = 1;
 		}
 	}
 }
 
 void FreezeFrameMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sfreezeframe.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("freezeframe.rc");
 
 	config.enabled = defaults->get("ENABLED", config.enabled);
 	config.line_double = defaults->get("LINE_DOUBLE", config.line_double);
@@ -253,11 +208,9 @@ void FreezeFrameMain::save_defaults()
 	defaults->save();
 }
 
-int FreezeFrameMain::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void FreezeFrameMain::process_frame(VFrame *frame)
 {
-	framenum previous_first_frame = first_frame_position;
+	ptstime previous_pts = first_frame_pts;
 	load_configuration();
 
 // Just entered frozen range
@@ -268,27 +221,21 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 				frame->get_w(), 
 				frame->get_h(),
 				frame->get_color_model());
-		read_frame(first_frame, 
-				0, 
-				first_frame_position,
-				frame_rate,
-				get_use_opengl());
+			first_frame->set_pts(first_frame_pts);
+			get_frame(first_frame, get_use_opengl());
+
 		if(get_use_opengl())
 		{
 			run_opengl();
-			return 0;
+			return;
 		}
-		frame->copy_from(first_frame);
+		frame->copy_from(first_frame, 0);
 	}
 	else
 // Still not frozen
 	if(!first_frame && !config.enabled)
 	{
-		read_frame(frame, 
-			0, 
-			start_position,
-			frame_rate,
-			get_use_opengl());
+		get_frame(frame, get_use_opengl());
 	}
 	else
 // Just left frozen range
@@ -296,33 +243,25 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 	{
 		delete first_frame;
 		first_frame = 0;
-		read_frame(frame, 
-			0, 
-			start_position,
-			frame_rate,
-			get_use_opengl());
+		read_frame(frame, get_use_opengl());
 	}
 	else
 // Still frozen
 	if(first_frame && config.enabled)
 	{
 // Had a keyframe in frozen range.  Load new first frame
-		if(previous_first_frame != first_frame_position)
+		if(!PTSEQU(previous_pts, first_frame_pts))
 		{
-			read_frame(first_frame, 
-				0, 
-				first_frame_position,
-				frame_rate,
-				get_use_opengl());
+			first_frame->set_pts(first_frame_pts);
+			read_frame(first_frame, get_use_opengl());
 		}
 		if(get_use_opengl())
 		{
 			run_opengl();
-			return 0;
+			return;
 		}
-		frame->copy_from(first_frame);
+		frame->copy_from(first_frame, 0);
 	}
-	return 0;
 }
 
 void FreezeFrameMain::handle_opengl()
