@@ -652,12 +652,13 @@ void VFrame::flip_vert(void)
 
 
 
-void VFrame::copy_from(VFrame *frame)
+void VFrame::copy_from(VFrame *frame, int do_copy_pts)
 {
 	int w = MIN(this->w, frame->get_w());
 	int h = MIN(this->h, frame->get_h());
 
-	copy_pts(frame);
+	if(do_copy_pts)
+		copy_pts(frame);
 
 	switch(frame->color_model)
 	{

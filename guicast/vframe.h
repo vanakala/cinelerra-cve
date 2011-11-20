@@ -102,7 +102,7 @@ public:
 	long get_shm_offset(void);
 
 // direct copy with no alpha
-	void copy_from(VFrame *frame);
+	void copy_from(VFrame *frame, int do_copy_pts = 1);
 // Required for YUV
 	void clear_frame(void);
 	void allocate_compressed_data(long bytes);
