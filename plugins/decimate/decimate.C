@@ -19,7 +19,18 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("Decimate")
+#define PLUGIN_CLASS Decimate
+#define PLUGIN_CONFIG_CLASS DecimateConfig
+#define PLUGIN_THREAD_CLASS DecimateThread
+#define PLUGIN_GUI_CLASS DecimateWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -33,13 +44,9 @@
 #include <string.h>
 #include <stdint.h>
 
-
 #define TOP_FIELD_FIRST 0
 #define BOTTOM_FIELD_FIRST 1
 #define TOTAL_FRAMES 10
-
-class Decimate;
-class DecimateWindow;
 
 
 class DecimateConfig
@@ -54,9 +61,8 @@ public:
 // destroyed in conversion from PAL to NTSC.
 	int averaged_frames;
 	int least_difference;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
-
 
 
 class DecimateRate : public BC_TextBox
@@ -89,19 +95,17 @@ public:
 	DecimateWindow(Decimate *plugin, int x, int y);
 	~DecimateWindow();
 
-	void create_objects();
-	void close_event();
+	void update();
 
 	ArrayList<BC_ListBoxItem*> frame_rates;
-	Decimate *plugin;
 	DecimateRate *rate;
 	DecimateRateMenu *rate_menu;
 	BC_Title *last_dropped;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(Decimate, DecimateThread, DecimateWindow)
-
+PLUGIN_THREAD_HEADER
 
 
 class Decimate : public PluginVClient
@@ -110,23 +114,18 @@ public:
 	Decimate(PluginServer *server);
 	~Decimate();
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 
-	PLUGIN_CLASS_MEMBERS(DecimateConfig, DecimateThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void render_gui(void *data);
 
 	int64_t calculate_difference(VFrame *frame1, VFrame *frame2);
-	void fill_lookahead(double frame_rate,
-		framenum start_position);
+	void fill_lookahead(ptstime start_pts);
 	void decimate_frame();
 	void init_fdct();
 	void fdct(uint16_t *block);
@@ -145,11 +144,11 @@ public:
 // Number of frames in the lookahead buffer
 	int lookahead_size;
 // Next position beyond end of lookahead buffer relative to input rate
-	framenum lookahead_end;
+	ptstime lookahead_end_pts;
 // Framerate of lookahead buffer
 	double lookahead_rate;
 // Last requested position
-	framenum last_position;
+	ptstime last_pts;
 };
 
 
@@ -185,19 +184,8 @@ DecimateWindow::DecimateWindow(Decimate *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-DecimateWindow::~DecimateWindow()
-{
-	frame_rates.remove_all_objects();
-}
-
-void DecimateWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	frame_rates.append(new BC_ListBoxItem("1"));
 	frame_rates.append(new BC_ListBoxItem("5"));
 	frame_rates.append(new BC_ListBoxItem("10"));
@@ -226,12 +214,18 @@ void DecimateWindow::create_objects()
 	y += 30;
 	add_subwindow(title = new BC_Title(x, y, _("Last frame dropped: ")));
 	add_subwindow(last_dropped = new BC_Title(x + title->get_w() + 5, y, ""));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(DecimateWindow)
+DecimateWindow::~DecimateWindow()
+{
+	frame_rates.remove_all_objects();
+}
+
+void DecimateWindow::update()
+{
+	rate->update((float)plugin->config.input_rate);
+}
 
 
 DecimateRate::DecimateRate(Decimate *plugin, 
@@ -286,27 +280,25 @@ int DecimateRateMenu::handle_event()
 }
 
 
-PLUGIN_THREAD_OBJECT(Decimate, DecimateThread, DecimateWindow)
-REGISTER_PLUGIN(Decimate)
+PLUGIN_THREAD_METHODS
+REGISTER_PLUGIN
 
 
 Decimate::Decimate(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
-	bzero(frames, sizeof(VFrame*) * TOTAL_FRAMES);
+	memset(frames, 0, sizeof(VFrame*) * TOTAL_FRAMES);
 	for(int i = 0; i < TOTAL_FRAMES; i++)
 		differences[i] = -1;
 	lookahead_size = 0;
-	lookahead_end = -1;
-	last_position = -1;
+	lookahead_end_pts = -1;
+	last_pts = -1;
 	fdct_ready = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
-
 
 Decimate::~Decimate()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(frames[0])
 	{
 		for(int i = 0; i < TOTAL_FRAMES; i++)
@@ -314,7 +306,10 @@ Decimate::~Decimate()
 			delete frames[i];
 		}
 	}
+	PLUGIN_DESTRUCTOR_MACRO
 }
+
+PLUGIN_CLASS_METHODS
 
 #define DIFFERENCE_MACRO(type, temp_type, components) \
 { \
@@ -339,6 +334,7 @@ int64_t Decimate::calculate_difference(VFrame *frame1, VFrame *frame2)
 	int w = frame1->get_w();
 	int h = frame1->get_h();
 	int64_t result = 0;
+
 	switch(frame1->get_color_model())
 	{
 	case BC_RGB888:
@@ -458,10 +454,9 @@ int64_t Decimate::calculate_fdct(VFrame *frame)
 
 	uint16_t temp[64];
 	uint64_t result[64];
-	bzero(result, sizeof(int64_t) * 64);
+	memset(result, 0, sizeof(int64_t) * 64);
 	int w = frame->get_w();
 	int h = frame->get_h();
-
 
 	for(int i = 0; i < h - 8; i += 8)
 	{
@@ -515,21 +510,26 @@ void Decimate::decimate_frame()
 	if(result < 0) result = 0;
 
 	VFrame *temp = frames[result];
+	for(int i = 0; i < result; i++)
+	{
+		frames[i]->copy_pts(frames[i + 1]);
+	}
 	for(int i = result; i < lookahead_size - 1; i++)
 	{
 		frames[i] = frames[i + 1];
 		differences[i] = differences[i + 1];
 	}
 
-
 	frames[lookahead_size - 1] = temp;
 	lookahead_size--;
 	send_render_gui(&result);
 }
 
-void Decimate::fill_lookahead(double frame_rate,
-	framenum start_position)
+void Decimate::fill_lookahead(ptstime start_pts)
 {
+	VFrame *frp;
+	ptstime coef;
+
 // Lookahead rate changed
 	if(!EQUIV(config.input_rate, lookahead_rate))
 	{
@@ -537,57 +537,55 @@ void Decimate::fill_lookahead(double frame_rate,
 	}
 
 	lookahead_rate = config.input_rate;
+	coef = lookahead_rate / project_frame_rate;
 
 // Start position is not contiguous with last request
-	if(last_position + 1 != start_position)
+	if(!PTSEQU(last_pts, start_pts))
 	{
 		lookahead_size = 0;
 	}
 
-	last_position = start_position;
+	last_pts = start_pts + 1.0 / project_frame_rate;
 
-// Normalize requested position to input rate
+// Calculate start of replacement
 	if(!lookahead_size)
 	{
-		lookahead_end = (framenum)((double)start_position * 
-			config.input_rate / 
-			frame_rate);
+		lookahead_end_pts = (start_pts - source_start_pts) * 
+			coef + source_start_pts;
 	}
 
 	while(lookahead_size < TOTAL_FRAMES)
 	{
 // Import frame into next lookahead slot
-		read_frame(frames[lookahead_size], 
-			0, 
-			lookahead_end, 
-			config.input_rate);
+		frp = frames[lookahead_size];
+		frp->set_pts(lookahead_end_pts);
+		get_frame(frp);
+
+		lookahead_end_pts = frp->next_pts();
+
+// Calculete dst pts and duration
+		frp->set_pts((frp->get_pts() - source_start_pts) / coef + source_start_pts);
+		frp->set_duration(frp->get_duration() / coef);
+
 // Fill difference buffer
 		if(lookahead_size > 0)
+		{
 			differences[lookahead_size] = 
 				calculate_difference(frames[lookahead_size - 1], 
 					frames[lookahead_size]);
-
-// Increase counters relative to input rate
+		}
 		lookahead_size++;
-		lookahead_end++;
 
-// Decimate one if last frame in buffer and lookahead_end is behind predicted
-// end.
-		framenum decimated_end = (framenum)((double)(start_position + TOTAL_FRAMES) *
-			config.input_rate / 
-			frame_rate);
 		if(lookahead_size >= TOTAL_FRAMES &&
-			lookahead_end < decimated_end)
+				frames[0]->get_pts() < start_pts &&
+				!frames[0]->pts_in_frame(start_pts))
 		{
 			decimate_frame();
 		}
 	}
 }
 
-
-int Decimate::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void Decimate::process_frame(VFrame *frame)
 {
 	load_configuration();
 
@@ -604,10 +602,14 @@ int Decimate::process_buffer(VFrame *frame,
 	}
 
 // Fill lookahead buffer at input rate with decimation
-	fill_lookahead(frame_rate, start_position);
+	fill_lookahead(frame->get_pts());
 
 // Pull first frame off lookahead
 	frame->copy_from(frames[0]);
+
+	frame->set_duration(1 / project_frame_rate);
+	frame->set_pts(source_pts);
+
 	VFrame *temp = frames[0];
 	for(int i = 0; i < TOTAL_FRAMES - 1; i++)
 	{
@@ -616,41 +618,21 @@ int Decimate::process_buffer(VFrame *frame,
 	}
 	frames[TOTAL_FRAMES - 1] = temp;
 	lookahead_size--;
-	return 0;
 }
-
-
-
-const char* Decimate::plugin_title() { return N_("Decimate"); }
-int Decimate::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(Decimate) 
-
-SHOW_GUI_MACRO(Decimate, DecimateThread)
-
-RAISE_WINDOW_MACRO(Decimate)
-
-SET_STRING_MACRO(Decimate);
 
 int Decimate::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	DecimateConfig old_config;
 	old_config.copy_from(&config);
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
 	return !old_config.equivalent(&config);
 }
 
 void Decimate::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sdecimate.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("myplugin.rc");
 
 	config.input_rate = defaults->get("INPUT_RATE", config.input_rate);
 	config.input_rate = Units::fix_framerate(config.input_rate);
@@ -682,25 +664,12 @@ void Decimate::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("DECIMATE"))
 		{
 			config.input_rate = input.tag.get_property("INPUT_RATE", config.input_rate);
 			config.input_rate = Units::fix_framerate(config.input_rate);
-		}
-	}
-}
-
-void Decimate::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->rate->update((float)config.input_rate);
 		}
 	}
 }
