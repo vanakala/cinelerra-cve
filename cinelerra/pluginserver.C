@@ -236,6 +236,7 @@ static struct oldpluginnames
 	{ TRACK_VIDEO, "Invert Video", "Invert" },
 	{ TRACK_VIDEO, "Denoise video", "Denoise" },
 	{ TRACK_VIDEO, "Selective Temporal Averaging", "STA" },
+	{ TRACK_VIDEO, "Delay Video", "Delay" },
 	{ 0, "", "" }
 };
 

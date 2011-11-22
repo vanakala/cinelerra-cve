@@ -22,15 +22,23 @@
 #ifndef DELAYVIDEO_H
 #define DELAYVIDEO_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
 
+// Old name was "Delay Video"
+#define PLUGIN_TITLE N_("Delay")
+#define PLUGIN_CLASS DelayVideo
+#define PLUGIN_CONFIG_CLASS DelayVideoConfig
+#define PLUGIN_THREAD_CLASS DelayVideoThread
+#define PLUGIN_GUI_CLASS DelayVideoWindow
+
+#include "pluginmacros.h"
 
 #include "bchash.inc"
 #include "guicast.h"
-#include "mutex.h"
+#include "language.h"
 #include "pluginvclient.h"
 #include "vframe.inc"
-
-class DelayVideo;
 
 
 class DelayVideoConfig
@@ -42,12 +50,13 @@ public:
 	void copy_from(DelayVideoConfig &that);
 	void interpolate(DelayVideoConfig &prev, 
 		DelayVideoConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	// kjb - match defined update() type of float instead of double.
 	float length;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -68,16 +77,14 @@ public:
 	DelayVideoWindow(DelayVideo *plugin, int x, int y);
 	~DelayVideoWindow();
 
-	void create_objects();
-	void close_event();
-	void update_gui();
+	void update();
 
-	DelayVideo *plugin;
 	DelayVideoSlider *slider;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(DelayVideo, DelayVideoThread, DelayVideoWindow)
+PLUGIN_THREAD_HEADER
 
 
 class DelayVideo : public PluginVClient
@@ -86,10 +93,10 @@ public:
 	DelayVideo(PluginServer *server);
 	~DelayVideo();
 
-	PLUGIN_CLASS_MEMBERS(DelayVideoConfig, DelayVideoThread)
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
+
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void reset();
@@ -97,7 +104,6 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-	void update_gui();
 
 	int need_reconfigure;
 	int allocation;

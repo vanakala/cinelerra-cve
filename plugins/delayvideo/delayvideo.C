@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "delayvideo.h"
@@ -28,11 +27,10 @@
 #include "picon_png.h"
 #include "vframe.h"
 
-
 #include <string.h>
 
 
-REGISTER_PLUGIN(DelayVideo)
+REGISTER_PLUGIN
 
 
 DelayVideoConfig::DelayVideoConfig()
@@ -52,9 +50,9 @@ void DelayVideoConfig::copy_from(DelayVideoConfig &that)
 
 void DelayVideoConfig::interpolate(DelayVideoConfig &prev, 
 		DelayVideoConfig &next, 
-		posnum prev_frame, 
-		posnum next_frame, 
-		posnum current_frame)
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts)
 {
 	this->length = prev.length;
 }
@@ -72,34 +70,21 @@ DelayVideoWindow::DelayVideoWindow(DelayVideo *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
+	x = y = 10;
+
+	add_subwindow(new BC_Title(x, y, _("Delay seconds:")));
+	y += 20;
+	add_subwindow(slider = new DelayVideoSlider(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 DelayVideoWindow::~DelayVideoWindow()
 {
 }
 
-
-void DelayVideoWindow::create_objects()
+void DelayVideoWindow::update()
 {
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
-	add_subwindow(new BC_Title(x, y, _("Delay seconds:")));
-	y += 20;
-	add_subwindow(slider = new DelayVideoSlider(plugin, x, y));
-
-	show_window();
-	flush();
-}
-
-WINDOW_CLOSE_EVENT(DelayVideoWindow)
-
-void DelayVideoWindow::update_gui()
-{
-	char string[BCTEXTLEN];
-	sprintf(string, "%.04f", plugin->config.length);
-	slider->update(string);
+	slider->update(plugin->config.length);
 }
 
 
@@ -117,59 +102,63 @@ int DelayVideoSlider::handle_event()
 }
 
 
-PLUGIN_THREAD_OBJECT(DelayVideo, DelayVideoThread, DelayVideoWindow)
+PLUGIN_THREAD_METHODS
 
 
 DelayVideo::DelayVideo(PluginServer *server)
  : PluginVClient(server)
-{
-	reset();
-	load_defaults();
-}
-
-DelayVideo::~DelayVideo()
-{
-	PLUGIN_DESTRUCTOR_MACRO
-
-	if(buffer)
-	{
-		for(int i = 0; i < allocation; i++)
-			delete buffer[i];
-		delete [] buffer;
-	}
-}
-
-void DelayVideo::reset()
 {
 	thread = 0;
 	defaults = 0;
 	need_reconfigure = 1;
 	buffer = 0;
 	allocation = 0;
+	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
+
+DelayVideo::~DelayVideo()
+{
+	if(buffer)
+	{
+		for(int i = 0; i < allocation; i++)
+			if(buffer[i])
+				delete buffer[i];
+		delete [] buffer;
+	}
+	PLUGIN_DESTRUCTOR_MACRO
+}
+
+PLUGIN_CLASS_METHODS
 
 void DelayVideo::reconfigure()
 {
-	int new_allocation = 1 + (int)(config.length * PluginVClient::project_frame_rate);
+	int new_allocation = 1 + (int)(config.length * project_frame_rate);
 	VFrame **new_buffer = new VFrame*[new_allocation];
 	int reuse = MIN(new_allocation, allocation);
+
+	memset(new_buffer, 0, sizeof(new_buffer));
 
 	for(int i = 0; i < reuse; i++)
 	{
 		new_buffer[i] = buffer[i];
 	}
-
+	ptstime cpts = input->get_pts();
 	for(int i = reuse; i < new_allocation; i++)
 	{
 		new_buffer[i] = new VFrame(0, 
 			input->get_w(),
 			input->get_h(),
-			PluginVClient::project_color_model);
+			project_color_model);
+		new_buffer[i]->set_pts(cpts);
+		new_buffer[i]->set_duration(1 / project_frame_rate);
+		cpts = new_buffer[i]->next_pts();
 	}
 
 	for(int i = reuse; i < allocation; i++)
 	{
-		delete buffer[i];
+		if(buffer[i])
+			delete buffer[i];
 	}
 
 	if(buffer) delete [] buffer;
@@ -190,30 +179,15 @@ void DelayVideo::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(need_reconfigure) reconfigure();
 
 	buffer[allocation - 1]->copy_from(input_ptr);
-	output_ptr->copy_from(buffer[0]);
+	output_ptr->copy_from(buffer[0], 0);
 
 	VFrame *temp = buffer[0];
 	for(int i = 0; i < allocation - 1; i++)
 	{
 		buffer[i] = buffer[i + 1];
 	}
-
 	buffer[allocation - 1] = temp;
 }
-
-int DelayVideo::is_realtime()
-{
-	return 1;
-}
-
-const char* DelayVideo::plugin_title() { return N_("Delay Video"); }
-
-SET_STRING_MACRO(DelayVideo)
-NEW_PICON_MACRO(DelayVideo)
-LOAD_CONFIGURATION_MACRO(DelayVideo, DelayVideoConfig)
-SHOW_GUI_MACRO(DelayVideo, DelayVideoThread)
-RAISE_WINDOW_MACRO(DelayVideo)
-
 
 void DelayVideo::save_data(KeyFrame *keyframe)
 {
@@ -234,38 +208,18 @@ void DelayVideo::read_data(KeyFrame *keyframe)
 	FileXML input;
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("DELAYVIDEO"))
 		{
-			if(input.tag.title_is("DELAYVIDEO"))
-			{
-				config.length = input.tag.get_property("LENGTH", (double)config.length);
-			}
+			config.length = input.tag.get_property("LENGTH", (double)config.length);
 		}
-	}
-}
-
-void DelayVideo::update_gui()
-{
-	if(thread) 
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->slider->update(config.length);
-		thread->window->unlock_window();
 	}
 }
 
 void DelayVideo::load_defaults()
 {
-	char directory[BCTEXTLEN];
-	sprintf(directory, "%sdelayvideo.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("delayvideo.rc");
 	config.length = defaults->get("LENGTH", (double)1);
 }
 
