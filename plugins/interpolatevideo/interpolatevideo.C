@@ -19,7 +19,18 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("Interpolate")
+#define PLUGIN_CLASS InterpolateVideo
+#define PLUGIN_CONFIG_CLASS InterpolateVideoConfig
+#define PLUGIN_THREAD_CLASS InterpolateVideoThread
+#define PLUGIN_GUI_CLASS InterpolateVideoWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -29,14 +40,10 @@
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "theme.h"
-#include "transportque.inc"
 #include "vframe.h"
 
 #include <string.h>
 #include <stdint.h>
-
-class InterpolateVideo;
-class InterpolateVideoWindow;
 
 
 class InterpolateVideoConfig
@@ -51,6 +58,7 @@ public:
 	double input_rate;
 // If 1, use the keyframes as beginning and end frames and ignore input rate
 	int use_keyframes;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -96,21 +104,19 @@ public:
 	InterpolateVideoWindow(InterpolateVideo *plugin, int x, int y);
 	~InterpolateVideoWindow();
 
-	void create_objects();
-	void close_event();
+	void update();
 	void update_enabled();
 
 	ArrayList<BC_ListBoxItem*> frame_rates;
-	InterpolateVideo *plugin;
 
 	InterpolateVideoRate *rate;
 	InterpolateVideoRateMenu *rate_menu;
 	InterpolateVideoKeyframes *keyframes;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(InterpolateVideo, InterpolateVideoThread, InterpolateVideoWindow)
-
+PLUGIN_THREAD_HEADER
 
 
 class InterpolateVideo : public PluginVClient
@@ -119,34 +125,22 @@ public:
 	InterpolateVideo(PluginServer *server);
 	~InterpolateVideo();
 
-	PLUGIN_CLASS_MEMBERS(InterpolateVideoConfig, InterpolateVideoThread)
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
-	void fill_border(double frame_rate, framenum start_position);
+	void fill_border(double frame_rate, ptstime start_pts);
 
 // beginning and end frames
 	VFrame *frames[2];
-// Last requested positions
-	framenum frame_number[2];
-// Last output position
-	framenum last_position;
-	double last_rate;
 
 // Current requested positions
-	framenum range_start;
-	framenum range_end;
-
-// Input rate determined by keyframe mode
-	double active_input_rate;
+	ptstime range_start_pts;
+	ptstime range_end_pts;
 };
 
 
@@ -181,19 +175,9 @@ InterpolateVideoWindow::InterpolateVideoWindow(InterpolateVideo *plugin, int x, 
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-InterpolateVideoWindow::~InterpolateVideoWindow()
-{
-}
-
-void InterpolateVideoWindow::create_objects()
-{
-	int x = 10, y = 10;
 	BC_Title *title;
+	x = y = 10;
 
-	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Input frames per second:")));
 	y += 30;
 	add_subwindow(rate = new InterpolateVideoRate(plugin, 
@@ -209,10 +193,19 @@ void InterpolateVideoWindow::create_objects()
 		this,
 		x, 
 		y));
-
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_enabled();
-	show_window();
-	flush();
+}
+
+InterpolateVideoWindow::~InterpolateVideoWindow()
+{
+}
+
+void InterpolateVideoWindow::update()
+{
+	rate->update((float)plugin->config.input_rate);
+	keyframes->update(plugin->config.use_keyframes);
+	update_enabled();
 }
 
 void InterpolateVideoWindow::update_enabled()
@@ -226,8 +219,6 @@ void InterpolateVideoWindow::update_enabled()
 		rate->enable();
 	}
 }
-
-WINDOW_CLOSE_EVENT(InterpolateVideoWindow)
 
 
 InterpolateVideoRate::InterpolateVideoRate(InterpolateVideo *plugin, 
@@ -250,8 +241,6 @@ int InterpolateVideoRate::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
-
 
 
 InterpolateVideoRateMenu::InterpolateVideoRateMenu(InterpolateVideo *plugin, 
@@ -306,58 +295,41 @@ int InterpolateVideoKeyframes::handle_event()
 }
 
 
-PLUGIN_THREAD_OBJECT(InterpolateVideo, InterpolateVideoThread, InterpolateVideoWindow)
-REGISTER_PLUGIN(InterpolateVideo)
+PLUGIN_THREAD_METHODS
+REGISTER_PLUGIN
 
 
 InterpolateVideo::InterpolateVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
-	bzero(frames, sizeof(VFrame*) * 2);
 	for(int i = 0; i < 2; i++)
-		frame_number[i] = -1;
-	last_position = -1;
-	last_rate = -1;
+		frames[i] = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 
 InterpolateVideo::~InterpolateVideo()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	if(frames[0]) delete frames[0];
 	if(frames[1]) delete frames[1];
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
+PLUGIN_CLASS_METHODS
 
-void InterpolateVideo::fill_border(double frame_rate, framenum start_position)
+void InterpolateVideo::fill_border(double frame_rate, ptstime start_pts)
 {
-// A border frame changed or the start position is identical to the last 
-// start position.
-	if(range_start != frame_number[0] || 
-		last_position != start_position ||
-		!EQUIV(last_rate, frame_rate))
+	if(!frames[0]->pts_in_frame(range_start_pts))
 	{
-		read_frame(frames[0], 
-			0, 
-			range_start + (get_direction() == PLAY_REVERSE ? 1 : 0), 
-			active_input_rate);
+		frames[0]->set_pts(range_start_pts);
+		get_frame(frames[0]);
 	}
 
-	if(range_end != frame_number[1] || 
-		last_position != start_position ||
-		!EQUIV(last_rate, frame_rate))
+	if(!frames[1]->pts_in_frame(range_end_pts))
 	{
-		read_frame(frames[1], 
-			0, 
-			range_end + (get_direction() == PLAY_REVERSE ? 1 : 0), 
-			active_input_rate);
+		frames[1]->set_pts(range_end_pts);
+		get_frame(frames[1]);
 	}
-
-	last_position = start_position;
-	last_rate = frame_rate;
-	frame_number[0] = range_start;
-	frame_number[1] = range_end;
 }
 
 
@@ -379,14 +351,8 @@ void InterpolateVideo::fill_border(double frame_rate, framenum start_position)
 }
 
 
-
-
-
-int InterpolateVideo::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void InterpolateVideo::process_frame(VFrame *frame)
 {
-	if(get_direction() == PLAY_REVERSE) start_position--;
 	load_configuration();
 
 	if(!frames[0])
@@ -401,30 +367,19 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 		}
 	}
 
-	if(range_start == range_end)
+	if(PTSEQU(range_start_pts, range_end_pts))
 	{
-		read_frame(frame, 
-			0, 
-			range_start, 
-			active_input_rate);
-		return 0;
+		get_frame(frame);
+		return;
 	}
 	else
 	{
 
 // Fill border frames
-		fill_border(frame_rate, start_position);
-
+		fill_border(frame_rate, frame->get_pts());
 // Fraction of lowest frame in output
-		framenum requested_range_start = (framenum)((double)range_start * 
-			frame_rate / 
-			active_input_rate);
-		framenum requested_range_end = (framenum)((double)range_end * 
-			frame_rate / 
-			active_input_rate);
-		float highest_fraction = (float)(start_position - requested_range_start) /
-			(requested_range_end - requested_range_start);
-
+		float highest_fraction = (frame->get_pts() - frames[0]->get_pts()) /
+			(frames[1]->get_pts() - frames[0]->get_pts());
 // Fraction of highest frame in output
 		float lowest_fraction = 1.0 - highest_fraction;
 		CLAMP(highest_fraction, 0, 1);
@@ -459,70 +414,53 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 			break;
 		}
 	}
-	return 0;
 }
-
-
-
-int InterpolateVideo::is_realtime()
-{
-	return 1;
-}
-
-const char* InterpolateVideo::plugin_title()
-{
-	return N_("Interpolate");
-}
-
-NEW_PICON_MACRO(InterpolateVideo) 
-SHOW_GUI_MACRO(InterpolateVideo, InterpolateVideoThread)
-RAISE_WINDOW_MACRO(InterpolateVideo)
-SET_STRING_MACRO(InterpolateVideo)
 
 int InterpolateVideo::load_configuration()
 {
 	KeyFrame *prev_keyframe, *next_keyframe;
 	InterpolateVideoConfig old_config;
+	double active_input_rate;
+
 	old_config.copy_from(&config);
 
-	next_keyframe = get_next_keyframe(get_source_position());
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	next_keyframe = next_keyframe_pts(source_pts);
+	prev_keyframe = prev_keyframe_pts(source_pts);
 
 // Previous keyframe stays in config object.
 	read_data(prev_keyframe);
 
-
-	framenum prev_position = edl_to_local(prev_keyframe->get_position());
-	framenum next_position = edl_to_local(next_keyframe->get_position());
-	if(prev_position == 0 && next_position == 0)
+	ptstime prev_pts = prev_keyframe->pos_time;
+	ptstime next_pts = next_keyframe->pos_time;
+	if(prev_pts < EPSILON && next_pts < EPSILON)
 	{
-		next_position = prev_position = get_source_start();
+		next_pts = prev_pts = source_start_pts;
 	}
 
 // Get range to average in requested rate
-	range_start = prev_position;
-	range_end = next_position;
+	range_start_pts = prev_pts;
+	range_end_pts = next_pts;
 
 // Use keyframes to determine range
 	if(config.use_keyframes)
 	{
-		active_input_rate = get_framerate();
+		active_input_rate = get_project_framerate();
 // Between keyframe and edge of range or no keyframes
-		if(range_start == range_end)
+		if(PTSEQU(range_start_pts, range_end_pts))
 		{
 // Between first keyframe and start of effect
-			if(get_source_position() >= get_source_start() &&
-				get_source_position() < range_start)
+			if(source_pts >= source_start_pts &&
+				source_pts < range_start_pts)
 			{
-				range_start = get_source_start();
+				range_start_pts = source_start_pts;
 			}
 			else
 // Between last keyframe and end of effect
-			if(get_source_position() >= range_start &&
-				get_source_position() < get_source_start() + get_total_len())
+			if(source_pts >= range_start_pts &&
+				source_pts < source_start_pts + total_len_pts)
 			{
 // Last frame should be inclusive of current effect
-				range_end = get_source_start() + get_total_len() - 1;
+				range_end_pts = source_start_pts + total_len_pts - 1 / active_input_rate;
 			}
 		}
 	}
@@ -531,25 +469,16 @@ int InterpolateVideo::load_configuration()
 	{
 		active_input_rate = config.input_rate;
 // Convert to input frame rate
-		range_start = (framenum)(get_source_position() / 
-			get_framerate() *
-			active_input_rate);
-		range_end = (framenum)(get_source_position() / 
-			get_framerate() *
-			active_input_rate) + 1;
+		range_start_pts = floor((source_pts - source_start_pts) * active_input_rate)
+				/ active_input_rate + source_start_pts;
+		range_end_pts = source_pts + 1.0 / active_input_rate;
 	}
 	return !config.equivalent(&old_config);
 }
 
 void InterpolateVideo::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sinterpolatevideo.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("interpolatevideo.rc");
 
 	config.input_rate = defaults->get("INPUT_RATE", config.input_rate);
 	config.input_rate = Units::fix_framerate(config.input_rate);
@@ -584,8 +513,6 @@ void InterpolateVideo::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("INTERPOLATEVIDEO"))
@@ -593,21 +520,6 @@ void InterpolateVideo::read_data(KeyFrame *keyframe)
 			config.input_rate = input.tag.get_property("INPUT_RATE", config.input_rate);
 			config.input_rate = Units::fix_framerate(config.input_rate);
 			config.use_keyframes = input.tag.get_property("USE_KEYFRAMES", config.use_keyframes);
-		}
-	}
-}
-
-void InterpolateVideo::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("InterpolateVideo::update_gui");
-			thread->window->rate->update((float)config.input_rate);
-			thread->window->keyframes->update(config.use_keyframes);
-			thread->window->update_enabled();
-			thread->window->unlock_window();
 		}
 	}
 }
