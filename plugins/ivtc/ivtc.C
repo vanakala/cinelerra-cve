@@ -24,21 +24,12 @@
 #include "filexml.h"
 #include "ivtc.h"
 #include "ivtcwindow.h"
-#include "language.h"
+#include "picon_png.h"
 
 #include <stdio.h>
 #include <string.h>
 
-
-static const char *pattern_text[] = 
-{
-	N_("A  B  BC  CD  D"),
-	N_("AB  BC  CD  DE  EF"),
-	N_("Automatic")
-};
-
-
-REGISTER_PLUGIN(IVTCMain)
+REGISTER_PLUGIN
 
 IVTCConfig::IVTCConfig()
 {
@@ -72,19 +63,11 @@ IVTCMain::~IVTCMain()
 	}
 }
 
-const char* IVTCMain::plugin_title() { return N_("Inverse Telecine"); }
-int IVTCMain::is_realtime() { return 1; }
-
+PLUGIN_CLASS_METHODS
 
 void IVTCMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sivtc.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("ivtc.rc");
 
 	config.frame_offset = defaults->get("FRAME_OFFSET", config.frame_offset);
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
@@ -103,14 +86,6 @@ void IVTCMain::save_defaults()
 	defaults->save();
 }
 
-#include "picon_png.h"
-NEW_PICON_MACRO(IVTCMain)
-SHOW_GUI_MACRO(IVTCMain, IVTCThread)
-SET_STRING_MACRO(IVTCMain)
-RAISE_WINDOW_MACRO(IVTCMain)
-
-
-
 int IVTCMain::load_configuration()
 {
 	KeyFrame *prev_keyframe;
@@ -119,7 +94,7 @@ int IVTCMain::load_configuration()
 // Must also switch between interpolation between keyframes and using first keyframe
 	read_data(prev_keyframe);
 
-	return 0;
+	return 1;
 }
 
 void IVTCMain::save_data(KeyFrame *keyframe)
@@ -146,35 +121,25 @@ void IVTCMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
 	float new_threshold;
 
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("IVTC"))
 		{
-			if(input.tag.title_is("IVTC"))
-			{
-				config.frame_offset = input.tag.get_property("FRAME_OFFSET", config.frame_offset);
-				config.first_field = input.tag.get_property("FIRST_FIELD", config.first_field);
-				config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
-				new_threshold = input.tag.get_property("AUTO_THRESHOLD", config.auto_threshold);
-				config.pattern = input.tag.get_property("PATTERN", config.pattern);
-			}
+			config.frame_offset = input.tag.get_property("FRAME_OFFSET", config.frame_offset);
+			config.first_field = input.tag.get_property("FIRST_FIELD", config.first_field);
+			config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
+			new_threshold = input.tag.get_property("AUTO_THRESHOLD", config.auto_threshold);
+			config.pattern = input.tag.get_property("PATTERN", config.pattern);
 		}
 	}
 }
-
-
 
 void IVTCMain::render_stop()
 {
 	previous_min = 0x4000000000000000LL;
 }
-
-
 
 // Pattern A B BC CD D
 void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
@@ -400,39 +365,8 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 }
 
-
-
-void IVTCMain::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		if(config.pattern == IVTCConfig::AUTOMATIC)
-		{
-			thread->window->frame_offset->disable();
-			thread->window->first_field->disable();
-		}
-		else
-		{
-			thread->window->frame_offset->enable();
-			thread->window->first_field->enable();
-		}
-		thread->window->frame_offset->update((int64_t)config.frame_offset);
-		thread->window->first_field->update(config.first_field);
-		for(int i = 0; i < TOTAL_PATTERNS; i++)
-		{
-			thread->window->pattern[i]->update(config.pattern == i);
-		}
-		thread->window->unlock_window();
-	}
-}
-
-
-
 // labs returns different values on x86_64 causing our accumulators to explode
 #define ABS local_abs
-
 
 #ifdef __x86_64__
 
@@ -458,18 +392,13 @@ static float local_abs(float value)
 	return fabsf(value);
 }
 
-
 #endif
-
-
 
 
 IVTCPackage::IVTCPackage()
  : LoadPackage()
 {
 }
-
-
 
 
 IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)

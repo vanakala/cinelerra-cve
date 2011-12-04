@@ -22,17 +22,27 @@
 #ifndef IVTC_H
 #define IVTC_H
 
-class IVTCMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("Inverse Telecine")
+#define PLUGIN_CLASS IVTCMain
+#define PLUGIN_CONFIG_CLASS IVTCConfig
+#define PLUGIN_THREAD_CLASS IVTCThread
+#define PLUGIN_GUI_CLASS IVTCWindow
+
+#include "pluginmacros.h"
+
 class IVTCEngine;
 
 #include "bchash.h"
+#include "language.h"
 #include "loadbalance.h"
-#include "mutex.h"
 #include "pluginvclient.h"
 #include "ivtcwindow.h"
 #include <sys/types.h>
 
-class IVTCEngine;
 
 class IVTCConfig
 {
@@ -50,6 +60,7 @@ public:
 		SHIFTFIELD,
 		AUTOMATIC
 	};
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class IVTCMain : public PluginVClient
@@ -58,13 +69,12 @@ public:
 	IVTCMain(PluginServer *server);
 	~IVTCMain();
 
+	PLUGIN_CLASS_MEMBERS
+
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	PLUGIN_CLASS_MEMBERS(IVTCConfig, IVTCThread)
-	void update_gui();
 	void render_stop();
 
 	void load_defaults();
@@ -80,7 +90,6 @@ public:
 		int field);
 
 	void deinterlace_avg(VFrame *output, VFrame *input, int dominance);
-
 
 	VFrame *temp_frame[2];
 	VFrame *input, *output;

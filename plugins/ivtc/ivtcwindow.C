@@ -26,24 +26,17 @@
 
 static const char *pattern_text[] =
 {
-	"A  B  BC  CD  D",
-	"AB  BC  CD  DE  EF",
-	"Automatic",
 	N_("A  B  BC  CD  D"),
 	N_("AB  BC  CD  DE  EF"),
 	N_("Automatic")
 };
 
 
-PLUGIN_THREAD_OBJECT(IVTCMain, IVTCThread, IVTCWindow)
+PLUGIN_THREAD_METHODS
 
 
-
-
-
-
-IVTCWindow::IVTCWindow(IVTCMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+IVTCWindow::IVTCWindow(IVTCMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string,
 	x,
 	y,
 	210, 
@@ -53,31 +46,20 @@ IVTCWindow::IVTCWindow(IVTCMain *client, int x, int y)
 	0, 
 	0,
 	1)
-{ 
-	this->client = client; 
-}
-
-IVTCWindow::~IVTCWindow()
 {
-}
+	x = y = 10;
 
-int IVTCWindow::create_objects()
-{
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
 	add_tool(new BC_Title(x, y, _("Pattern offset:")));
 	y += 20;
-	add_tool(frame_offset = new IVTCOffset(client, x, y));
+	add_tool(frame_offset = new IVTCOffset(plugin, x, y));
 	y += 30;
-	add_tool(first_field = new IVTCFieldOrder(client, x, y));
+	add_tool(first_field = new IVTCFieldOrder(plugin, x, y));
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Pattern:")));
 	y += 20;
 	for(int i = 0; i < TOTAL_PATTERNS; i++)
 	{
-		add_subwindow(pattern[i] = new IVTCPattern(client, 
+		add_subwindow(pattern[i] = new IVTCPattern(plugin,
 			this, 
 			i, 
 			_(pattern_text[i]), 
@@ -86,18 +68,39 @@ int IVTCWindow::create_objects()
 		y += 20;
 	}
 	
-	if(client->config.pattern == IVTCConfig::AUTOMATIC)
+	if(plugin->config.pattern == IVTCConfig::AUTOMATIC)
 	{
 		frame_offset->disable();
 		first_field->disable();
 	}
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(IVTCWindow)
+IVTCWindow::~IVTCWindow()
+{
+}
+
+void IVTCWindow::update()
+{
+	if(plugin->config.pattern == IVTCConfig::AUTOMATIC)
+	{
+		frame_offset->disable();
+		first_field->disable();
+	}
+	else
+	{
+		frame_offset->enable();
+		first_field->enable();
+	}
+	frame_offset->update((int64_t)plugin->config.frame_offset);
+	first_field->update(plugin->config.first_field);
+
+	for(int i = 0; i < TOTAL_PATTERNS; i++)
+	{
+		pattern[i]->update(plugin->config.pattern == i);
+	}
+}
+
 
 IVTCOffset::IVTCOffset(IVTCMain *client, int x, int y)
  : BC_TextBox(x, 

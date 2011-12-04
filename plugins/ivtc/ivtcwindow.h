@@ -24,17 +24,13 @@
 
 #include "guicast.h"
 
-class IVTCThread;
-class IVTCWindow;
-
 #include "filexml.h"
 #include "mutex.h"
 #include "ivtc.h"
 
 #define TOTAL_PATTERNS 3
 
-PLUGIN_THREAD_HEADER(IVTCMain, IVTCThread, IVTCWindow)
-
+PLUGIN_THREAD_HEADER
 
 class IVTCOffset;
 class IVTCFieldOrder;
@@ -45,17 +41,16 @@ class IVTCPattern;
 class IVTCWindow : public BC_Window
 {
 public:
-	IVTCWindow(IVTCMain *client, int x, int y);
+	IVTCWindow(IVTCMain *plugin, int x, int y);
 	~IVTCWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
-	IVTCMain *client;
 	IVTCOffset *frame_offset;
 	IVTCFieldOrder *first_field;
 	IVTCAutoThreshold *threshold;
 	IVTCPattern *pattern[TOTAL_PATTERNS];
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 class IVTCOffset : public BC_TextBox
