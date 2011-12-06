@@ -19,14 +19,27 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+// Old name was "Loop video"
+#define PLUGIN_TITLE N_("Loop")
+#define PLUGIN_CLASS LoopVideo
+#define PLUGIN_CONFIG_CLASS LoopVideoConfig
+#define PLUGIN_THREAD_CLASS LoopVideoThread
+#define PLUGIN_GUI_CLASS LoopVideoWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
-#include "transportque.h"
+#include "picon_png.h"
 
 #include <string.h>
 
@@ -36,9 +49,10 @@ class LoopVideoConfig
 {
 public:
 	LoopVideoConfig();
-	framenum frames;
-};
 
+	ptstime duration;
+	PLUGIN_CONFIG_CLASS_MEMBERS
+};
 
 class LoopVideoFrames : public BC_TextBox
 {
@@ -55,13 +69,14 @@ class LoopVideoWindow : public BC_Window
 public:
 	LoopVideoWindow(LoopVideo *plugin, int x, int y);
 	~LoopVideoWindow();
-	void create_objects();
-	void close_event();
-	LoopVideo *plugin;
+
+	void update();
+
 	LoopVideoFrames *frames;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(LoopVideo, LoopVideoThread, LoopVideoWindow)
+PLUGIN_THREAD_HEADER
 
 class LoopVideo : public PluginVClient
 {
@@ -69,29 +84,23 @@ public:
 	LoopVideo(PluginServer *server);
 	~LoopVideo();
 
-	PLUGIN_CLASS_MEMBERS(LoopVideoConfig, LoopVideoThread)
+	PLUGIN_CLASS_MEMBERS
 
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int is_realtime();
-	int is_synthesis();
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
+
+	void process_frame(VFrame *frame);
 };
 
-#include "picon_png.h"
 
-REGISTER_PLUGIN(LoopVideo);
+REGISTER_PLUGIN
 
 LoopVideoConfig::LoopVideoConfig()
 {
-	frames = 30;
+	duration = 1.0;
 }
-
 
 LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -105,31 +114,27 @@ LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
+	x = y = 10;
+
+	add_subwindow(new BC_Title(x, y, _("Loop duration:")));
+	y += 20;
+	add_subwindow(frames = new LoopVideoFrames(plugin, 
+		x, 
+		y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 LoopVideoWindow::~LoopVideoWindow()
 {
 }
 
-void LoopVideoWindow::create_objects()
+void LoopVideoWindow::update()
 {
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
-	add_subwindow(new BC_Title(x, y, _("Frames to loop:")));
-	y += 20;
-	add_subwindow(frames = new LoopVideoFrames(plugin, 
-		x, 
-		y));
-	show_window();
-	flush();
+	frames->update((float)plugin->config.duration);
 }
 
-WINDOW_CLOSE_EVENT(LoopVideoWindow)
 
-
-PLUGIN_THREAD_OBJECT(LoopVideo, LoopVideoThread, LoopVideoWindow)
+PLUGIN_THREAD_METHODS
 
 LoopVideoFrames::LoopVideoFrames(LoopVideo *plugin, 
 	int x, 
@@ -138,15 +143,16 @@ LoopVideoFrames::LoopVideoFrames(LoopVideo *plugin,
 	y, 
 	100,
 	1,
-	plugin->config.frames)
+	(float)plugin->config.duration)
 {
 	this->plugin = plugin;
 }
 
 int LoopVideoFrames::handle_event()
 {
-	plugin->config.frames = atol(get_text());
-	plugin->config.frames = MAX(1, plugin->config.frames);
+	plugin->config.duration = atof(get_text());
+	if(plugin->config.duration < EPSILON)
+		plugin->config.duration = 1 / plugin->project_frame_rate;
 	plugin->send_configure_change();
 	return 1;
 }
@@ -164,92 +170,55 @@ LoopVideo::~LoopVideo()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* LoopVideo::plugin_title() { return N_("Loop video"); }
-int LoopVideo::is_realtime() { return 1; }
-int LoopVideo::is_synthesis() { return 1; }
+PLUGIN_CLASS_METHODS
 
-NEW_PICON_MACRO(LoopVideo)
-
-SHOW_GUI_MACRO(LoopVideo, LoopVideoThread)
-
-RAISE_WINDOW_MACRO(LoopVideo)
-
-SET_STRING_MACRO(LoopVideo);
-
-
-int LoopVideo::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void LoopVideo::process_frame(VFrame *frame)
 {
-	framenum current_loop_position;
-
+	ptstime current_loop_pts;
+	ptstime start_pts = frame->get_pts();
 // Truncate to next keyframe
-	if(get_direction() == PLAY_FORWARD)
-	{
 // Get start of current loop
-		KeyFrame *prev_keyframe = get_prev_keyframe(start_position);
-		framenum prev_position = edl_to_local(prev_keyframe->get_position());
-		if(prev_position == 0)
-			prev_position = get_source_start();
-		read_data(prev_keyframe);
+	KeyFrame *prev_keyframe = prev_keyframe_pts(start_pts);
+	ptstime prev_pts = prev_keyframe->pos_time;
+	if(prev_pts < EPSILON)
+		prev_pts = source_start_pts;
+	read_data(prev_keyframe);
 
 // Get start of fragment in current loop
-		current_loop_position = prev_position +
-			((start_position - prev_position) % 
-				config.frames);
-		while(current_loop_position < prev_position) current_loop_position += config.frames;
-		while(current_loop_position >= prev_position + config.frames) current_loop_position -= config.frames;
-	}
-	else
-	{
-		KeyFrame *prev_keyframe = get_next_keyframe(start_position);
-		framenum prev_position = edl_to_local(prev_keyframe->get_position());
-		if(prev_position == 0)
-			prev_position = get_source_start() + get_total_len();
-		read_data(prev_keyframe);
+	current_loop_pts = prev_pts +
+		fmod(start_pts - prev_pts, config.duration);
 
-		current_loop_position = prev_position - 
-			((prev_position - start_position) %
-				  config.frames);
-		while(current_loop_position <= prev_position - config.frames) current_loop_position += config.frames;
-		while(current_loop_position > prev_position) current_loop_position -= config.frames;
-	}
-
-	read_frame(frame,
-		0,
-		current_loop_position,
-		frame_rate);
-
-	return 0;
+	frame->set_pts(current_loop_pts);
+	get_frame(frame);
+	frame->set_pts(start_pts);
 }
-
 
 int LoopVideo::load_configuration()
 {
 	KeyFrame *prev_keyframe;
-	framenum old_frames = config.frames;
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	ptstime old_duration = config.duration;
+
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
-	config.frames = MAX(config.frames, 1);
-	return old_frames != config.frames;
+	if(config.duration < EPSILON)
+		config.duration = 1 / project_frame_rate;
+	return PTSEQU(old_duration, config.duration);
 }
 
 void LoopVideo::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sloopaudio.rc", BCASTDIR);
+	framenum frames;
+	defaults = load_defaults_file("loopvideo.rc");
 
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.frames = defaults->get("FRAMES", config.frames);
+	frames = defaults->get("FRAMES", 0);
+	if(frames > 0)
+		config.duration = frames / project_frame_rate;
+	config.duration = defaults->get("DURATION", config.duration);
 }
 
 void LoopVideo::save_defaults()
 {
-	defaults->update("FRAMES", config.frames);
+	defaults->update("DURATION", config.duration);
 	defaults->save();
 }
 
@@ -260,7 +229,7 @@ void LoopVideo::save_data(KeyFrame *keyframe)
 // cause data to be stored directly in text
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("LOOPVIDEO");
-	output.tag.set_property("FRAMES", config.frames);
+	output.tag.set_property("DURATION", config.duration);
 	output.append_tag();
 	output.tag.set_title("/LOOPVIDEO");
 	output.append_tag();
@@ -270,27 +239,18 @@ void LoopVideo::save_data(KeyFrame *keyframe)
 void LoopVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
+	framenum frames;
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
-	int result = 0;
 
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("LOOPVIDEO"))
 		{
-			config.frames = input.tag.get_property("FRAMES", config.frames);
+			frames = input.tag.get_property("FRAMES", 0);
+			if(frames > 0)
+				config.duration = frames / project_frame_rate;
+			config.duration = input.tag.get_property("DURATION", config.duration);
 		}
-	}
-}
-
-void LoopVideo::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->frames->update((int64_t)config.frames);
-		thread->window->unlock_window();
 	}
 }
