@@ -238,6 +238,7 @@ static struct oldpluginnames
 	{ TRACK_VIDEO, "Selective Temporal Averaging", "STA" },
 	{ TRACK_VIDEO, "Delay Video", "Delay" },
 	{ TRACK_VIDEO, "Loop video", "Loop" },
+	{ TRACK_VIDEO, "Reverse video", "Reverse" },
 	{ 0, "", "" }
 };
 

@@ -19,24 +19,34 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+// Old name was "Reverse video"
+#define PLUGIN_TITLE N_("Reverse")
+#define PLUGIN_CLASS ReverseVideo
+#define PLUGIN_CONFIG_CLASS ReverseVideoConfig
+#define PLUGIN_THREAD_CLASS ReverseVideoThread
+#define PLUGIN_GUI_CLASS ReverseVideoWindow
+
+#include "pluginmacros.h"
+
 #include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
-#include "transportque.h"
 
 #include <string.h>
 #include "picon_png.h"
-
-class ReverseVideo;
 
 class ReverseVideoConfig
 {
 public:
 	ReverseVideoConfig();
 	int enabled;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -50,18 +60,20 @@ public:
 	ReverseVideo *plugin;
 };
 
+
 class ReverseVideoWindow : public BC_Window
 {
 public:
 	ReverseVideoWindow(ReverseVideo *plugin, int x, int y);
 	~ReverseVideoWindow();
-	void create_objects();
-	void close_event();
-	ReverseVideo *plugin;
+
+	void update();
+
 	ReverseVideoEnabled *enabled;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(ReverseVideo, ReverseVideoThread, ReverseVideoWindow)
+PLUGIN_THREAD_HEADER
 
 class ReverseVideo : public PluginVClient
 {
@@ -69,28 +81,27 @@ public:
 	ReverseVideo(PluginServer *server);
 	~ReverseVideo();
 
-	PLUGIN_CLASS_MEMBERS(ReverseVideoConfig, ReverseVideoThread)
+	PLUGIN_CLASS_MEMBERS
 
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int is_realtime();
-	int process_buffer(VFrame *frame,
-			framenum start_position,
-			double frame_rate);
 
-	framenum input_position;
+	void process_frame(VFrame *frame);
+
+	ptstime input_pts;
 };
 
 
-REGISTER_PLUGIN(ReverseVideo);
+REGISTER_PLUGIN
 
 ReverseVideoConfig::ReverseVideoConfig()
 {
 	enabled = 1;
 }
+
+PLUGIN_THREAD_METHODS
 
 ReverseVideoWindow::ReverseVideoWindow(ReverseVideo *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -104,29 +115,22 @@ ReverseVideoWindow::ReverseVideoWindow(ReverseVideo *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
+	x = y = 10;
+
+	add_subwindow(enabled = new ReverseVideoEnabled(plugin, 
+		x, 
+		y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 ReverseVideoWindow::~ReverseVideoWindow()
 {
 }
 
-void ReverseVideoWindow::create_objects()
+void ReverseVideoWindow::update()
 {
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
-	add_subwindow(enabled = new ReverseVideoEnabled(plugin, 
-		x, 
-		y));
-	show_window();
-	flush();
+	enabled->update(plugin->config.enabled);
 }
-
-WINDOW_CLOSE_EVENT(ReverseVideoWindow)
-
-
-PLUGIN_THREAD_OBJECT(ReverseVideo, ReverseVideoThread, ReverseVideoWindow)
 
 
 ReverseVideoEnabled::ReverseVideoEnabled(ReverseVideo *plugin, 
@@ -154,81 +158,63 @@ ReverseVideo::ReverseVideo(PluginServer *server)
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
-
 ReverseVideo::~ReverseVideo()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* ReverseVideo::plugin_title() { return N_("Reverse video"); }
-int ReverseVideo::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-NEW_PICON_MACRO(ReverseVideo)
-
-SHOW_GUI_MACRO(ReverseVideo, ReverseVideoThread)
-
-RAISE_WINDOW_MACRO(ReverseVideo)
-
-SET_STRING_MACRO(ReverseVideo);
-
-
-int ReverseVideo::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void ReverseVideo::process_frame(VFrame *frame)
 {
 	load_configuration();
 
 	if(config.enabled)
-		read_frame(frame,
-			0,
-			input_position,
-			frame_rate);
+	{
+		ptstime cpts = frame->get_pts();
+		frame->set_pts(input_pts);
+		get_frame(frame);
+		frame->set_pts(cpts);
+	}
 	else
-		read_frame(frame,
-			0,
-			start_position,
-			frame_rate);
-	return 0;
+		get_frame(frame);
 }
-
-
-
 
 int ReverseVideo::load_configuration()
 {
 	KeyFrame *prev_keyframe, *next_keyframe;
-	next_keyframe = get_next_keyframe(get_source_position());
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	next_keyframe = next_keyframe_pts(source_pts);
+	prev_keyframe = prev_keyframe_pts(source_pts);
+
 // Previous keyframe stays in config object.
 	read_data(prev_keyframe);
 
-	framenum prev_position = edl_to_local(prev_keyframe->get_position());
-	framenum next_position = edl_to_local(next_keyframe->get_position());
+	ptstime prev_pts = prev_keyframe->pos_time;
+	ptstime next_pts = next_keyframe->pos_time;
 
-	if(prev_position == 0 && next_position == 0) 
+	if(prev_pts < EPSILON && next_pts < EPSILON)
 	{
-		next_position = prev_position = get_source_start();
+		next_pts = prev_pts = source_start_pts;
 	}
 
-// Get range to flip in requested rate
-	framenum range_start = prev_position;
-	framenum range_end = next_position;
+	ptstime range_start_pts = prev_pts;
+	ptstime range_end_pts = next_pts;
 
 // Between keyframe and edge of range or no keyframes
-	if(range_start == range_end)
+	if(PTSEQU(range_start_pts, range_end_pts))
 	{
 // Between first keyframe and start of effect
-		if(get_source_position() >= get_source_start() &&
-			get_source_position() < range_start)
+		if(source_pts >= source_start_pts &&
+			source_pts < range_start_pts)
 		{
-			range_start = get_source_start();
+			range_start_pts = source_start_pts;
 		}
 		else
 // Between last keyframe and end of effect
-		if(get_source_position() >= range_start &&
-			get_source_position() < get_source_start() + get_total_len())
+		if(source_pts >= range_start_pts &&
+			source_pts < source_start_pts + total_len_pts)
 		{
-			range_end = get_source_start() + get_total_len();
+			range_end_pts = source_start_pts + total_len_pts;
 		}
 		else
 		{
@@ -237,30 +223,14 @@ int ReverseVideo::load_configuration()
 		}
 	}
 
-// Convert start position to new direction
-	if(get_direction() == PLAY_FORWARD)
-	{
-		input_position = get_source_position() - range_start;
-		input_position = range_end - input_position - 1;
-	}
-	else
-	{
-		input_position = range_end - get_source_position();
-		input_position = range_start + input_position + 1;
-	}
-
-	return 0;
+	input_pts = source_pts - range_start_pts;
+	input_pts = range_end_pts - input_pts - 1 / project_frame_rate;
+	return 1;
 }
 
 void ReverseVideo::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sreversevideo.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("reversevideo.rc");
 
 	config.enabled = defaults->get("ENABLED", config.enabled);
 }
@@ -291,24 +261,11 @@ void ReverseVideo::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("REVERSEVIDEO"))
 		{
 			config.enabled = input.tag.get_property("ENABLED", config.enabled);
 		}
-	}
-}
-
-void ReverseVideo::update_gui()
-{
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->enabled->update(config.enabled);
-		thread->window->unlock_window();
 	}
 }
