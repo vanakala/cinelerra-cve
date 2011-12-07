@@ -19,7 +19,17 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("ShiftInterlace")
+#define PLUGIN_CLASS ShiftInterlaceMain
+#define PLUGIN_CONFIG_CLASS ShiftInterlaceConfig
+#define PLUGIN_THREAD_CLASS ShiftInterlaceThread
+#define PLUGIN_GUI_CLASS ShiftInterlaceWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -34,9 +44,6 @@
 #include <string.h>
 
 
-class ShiftInterlaceWindow;
-class ShiftInterlaceMain;
-
 class ShiftInterlaceConfig
 {
 public:
@@ -46,12 +53,13 @@ public:
 	void copy_from(ShiftInterlaceConfig &that);
 	void interpolate(ShiftInterlaceConfig &prev, 
 		ShiftInterlaceConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 
 	int odd_offset;
 	int even_offset;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -76,16 +84,15 @@ class ShiftInterlaceWindow : public BC_Window
 public:
 	ShiftInterlaceWindow(ShiftInterlaceMain *plugin, int x, int y);
 
-	void create_objects();
-	void close_event();
+	void update();
 
 	ShiftInterlaceOdd *odd_offset;
 	ShiftInterlaceEven *even_offset;
-	ShiftInterlaceMain *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(ShiftInterlaceMain, ShiftInterlaceThread, ShiftInterlaceWindow)
+PLUGIN_THREAD_HEADER
 
 
 class ShiftInterlaceMain : public PluginVClient
@@ -94,12 +101,10 @@ public:
 	ShiftInterlaceMain(PluginServer *server);
 	~ShiftInterlaceMain();
 
-	PLUGIN_CLASS_MEMBERS(ShiftInterlaceConfig, ShiftInterlaceThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *input_ptr, VFrame *output_ptr);
-	int is_realtime();
-	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
@@ -112,10 +117,7 @@ public:
 };
 
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new ShiftInterlaceMain(server);
-}
+REGISTER_PLUGIN
 
 
 ShiftInterlaceConfig::ShiftInterlaceConfig()
@@ -138,15 +140,14 @@ void ShiftInterlaceConfig::copy_from(ShiftInterlaceConfig &that)
 
 void ShiftInterlaceConfig::interpolate(ShiftInterlaceConfig &prev, 
 		ShiftInterlaceConfig &next, 
-		posnum prev_frame,
-		posnum next_frame, 
-		posnum current_frame)
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
-	this->odd_offset = (int)(prev.odd_offset * prev_scale + next.odd_offset * next_scale);
-	this->even_offset = (int)(prev.even_offset * prev_scale + next.even_offset * next_scale);
+	this->odd_offset = round(prev.odd_offset * prev_scale + next.odd_offset * next_scale);
+	this->even_offset = round(prev.even_offset * prev_scale + next.even_offset * next_scale);
 }
 
 
@@ -164,26 +165,23 @@ ShiftInterlaceWindow::ShiftInterlaceWindow(ShiftInterlaceMain *plugin,
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-void ShiftInterlaceWindow::create_objects()
-{
-	int x = 10, y = 10;
 	int margin = 30;
+	x = y = 10;
 
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Odd offset:")));
 	add_subwindow(odd_offset = new ShiftInterlaceOdd(plugin, x + 90, y));
 	y += margin;
 	add_subwindow(new BC_Title(x, y, _("Even offset:")));
 	add_subwindow(even_offset = new ShiftInterlaceEven(plugin, x + 90, y));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(ShiftInterlaceWindow)
+void ShiftInterlaceWindow::update()
+{
+	odd_offset->update(plugin->config.odd_offset);
+	even_offset->update(plugin->config.even_offset);
+}
+
 
 ShiftInterlaceOdd::ShiftInterlaceOdd(ShiftInterlaceMain *plugin, int x, int y)
  : BC_ISlider(x,
@@ -204,6 +202,7 @@ int ShiftInterlaceOdd::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
+
 
 ShiftInterlaceEven::ShiftInterlaceEven(ShiftInterlaceMain *plugin, int x, int y)
  : BC_ISlider(x,
@@ -226,7 +225,7 @@ int ShiftInterlaceEven::handle_event()
 }
 
 
-PLUGIN_THREAD_OBJECT(ShiftInterlaceMain, ShiftInterlaceThread, ShiftInterlaceWindow)
+PLUGIN_THREAD_METHODS
 
 ShiftInterlaceMain::ShiftInterlaceMain(PluginServer *server)
  : PluginVClient(server)
@@ -239,31 +238,11 @@ ShiftInterlaceMain::~ShiftInterlaceMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-
-const char* ShiftInterlaceMain::plugin_title()  { return N_("ShiftInterlace"); }
-int ShiftInterlaceMain::is_realtime() { return 1; }
-
-
-SHOW_GUI_MACRO(ShiftInterlaceMain, ShiftInterlaceThread)
-
-NEW_PICON_MACRO(ShiftInterlaceMain)
-
-SET_STRING_MACRO(ShiftInterlaceMain)
-
-LOAD_CONFIGURATION_MACRO(ShiftInterlaceMain, ShiftInterlaceConfig)
-
-RAISE_WINDOW_MACRO(ShiftInterlaceMain)
-
+PLUGIN_CLASS_METHODS
 
 void ShiftInterlaceMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sshiftinterlace.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("shiftinterlace.rc");
 
 	config.odd_offset = defaults->get("ODD_OFFSET", config.odd_offset);
 	config.even_offset = defaults->get("EVEN_OFFSET", config.even_offset);
@@ -299,35 +278,15 @@ void ShiftInterlaceMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("SHIFTINTERLACE"))
 		{
-			if(input.tag.title_is("SHIFTINTERLACE"))
-			{
-				config.odd_offset = input.tag.get_property("ODD_OFFSET", config.odd_offset);
-				config.even_offset = input.tag.get_property("EVEN_OFFSET", config.even_offset);
-			}
+			config.odd_offset = input.tag.get_property("ODD_OFFSET", config.odd_offset);
+			config.even_offset = input.tag.get_property("EVEN_OFFSET", config.even_offset);
 		}
 	}
 }
-
-void ShiftInterlaceMain::update_gui()
-{
-	if(thread) 
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->odd_offset->update(config.odd_offset);
-		thread->window->even_offset->update(config.even_offset);
-		thread->window->unlock_window();
-	}
-}
-
 
 #define SHIFT_ROW_MACRO(components, type, chroma_offset) \
 { \
@@ -378,7 +337,6 @@ void ShiftInterlaceMain::update_gui()
 		} \
 	} \
 }
-
 
 void ShiftInterlaceMain::shift_row(VFrame *input_frame, 
 	VFrame *output_frame,
