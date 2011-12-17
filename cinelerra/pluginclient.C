@@ -28,6 +28,7 @@
 #include "mainerror.h"
 #include "mainundo.h"
 #include "mwindow.h"
+#include "plugin.h"
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
@@ -297,6 +298,19 @@ void PluginClient::send_configure_change()
 	if(server->mwindow)
 		server->mwindow->undo->update_undo("tweek", LOAD_AUTOMATION, this);
 	server->sync_parameters();
+}
+
+void PluginClient::abort_plugin(const char *fmt, ...)
+{
+	va_list ap;
+	char buffer[128];
+
+	va_start(ap, fmt);
+	strcpy(buffer, _("Aborting "));
+	strcat(buffer, plugin_title());
+	MainError::va_MessageBox(buffer, fmt, ap);
+	va_end(ap);
+	server->plugin->on = 0;
 }
 
 KeyFrame* PluginClient::get_prev_keyframe(posnum position, int is_local)

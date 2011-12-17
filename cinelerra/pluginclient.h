@@ -437,6 +437,9 @@ public:
 	BC_Hash* load_defaults_file(const char *filename);
 // Returns configuration directory of plugins
 	const char *plugin_conf_dir();
+// Abort plugin with a message
+	void abort_plugin(const char *fmt, ...)
+		__attribute__ ((__format__(__printf__, 2, 3)));
 
 // Realtime operations.
 	void reset();
