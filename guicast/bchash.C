@@ -249,6 +249,24 @@ int BC_Hash::update(const char *name, const char *value)
 	return 1;
 }
 
+void BC_Hash::delete_key(const char *key)
+{
+	for(int i = 0; i < total; i++)
+	{
+		if(!strcmp(names[i], key))
+		{
+			delete [] values[i];
+			delete [] names[i];
+			total--;
+			for(; i < total; i++)
+			{
+				names[i] = names[i + 1];
+				values[i] = values[i + 1];
+			}
+			return;
+		}
+	}
+}
 
 void BC_Hash::copy_from(BC_Hash *src)
 {
