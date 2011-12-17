@@ -192,7 +192,7 @@ char* BC_Hash::get(const char *name, char *default_value)
 		if(!strcmp(names[i], name))
 		{
 			strcpy(default_value, values[i]);
-			return values[i];
+			return default_value;
 		}
 	}
 	return default_value;  // failed
