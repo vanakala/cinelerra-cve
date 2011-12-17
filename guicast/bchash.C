@@ -44,7 +44,7 @@ BC_Hash::BC_Hash(const char *filename)
 	values = 0;
 
 	FileSystem directory;
-	
+
 	directory.parse_tildas(this->filename);
 	total = 0;
 }
@@ -83,11 +83,10 @@ void BC_Hash::reallocate_table(int new_total)
 	}
 }
 
-int BC_Hash::load()
+void BC_Hash::load()
 {
 	StringFile stringfile(filename);
 	load_stringfile(&stringfile);
-	return 0;
 }
 
 void BC_Hash::load_stringfile(StringFile *file)
@@ -114,34 +113,29 @@ void BC_Hash::save_stringfile(StringFile *file)
 	}
 }
 
-int BC_Hash::save()
+void BC_Hash::save()
 {
 	StringFile stringfile;
 	save_stringfile(&stringfile);
 	stringfile.write_to_file(filename);
-	return 0;
 }
 
-int BC_Hash::load_string(char *string)
+void BC_Hash::load_string(char *string)
 {
 	StringFile stringfile;
 	stringfile.read_from_string(string);
 	load_stringfile(&stringfile);
-	return 0;
 }
 
-int BC_Hash::save_string(char* &string)
+void BC_Hash::save_string(char* &string)
 {
 	StringFile stringfile;
 	save_stringfile(&stringfile);
 	string = new char[stringfile.get_length() + 1];
 	memcpy(string, stringfile.string, stringfile.get_length() + 1);
-	return 0;
 }
 
-
-
-int32_t BC_Hash::get(const char *name, int32_t default_)
+int32_t BC_Hash::get(const char *name, int32_t default_value)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -150,12 +144,12 @@ int32_t BC_Hash::get(const char *name, int32_t default_)
 			return (int32_t)atol(values[i]);
 		}
 	}
-	return default_;  // failed
+	return default_value;  // failed
 }
 
-int64_t BC_Hash::get(const char *name, int64_t default_)
+int64_t BC_Hash::get(const char *name, int64_t default_value)
 {
-	int64_t result = default_;
+	int64_t result = default_value;
 	for(int i = 0; i < total; i++)
 	{
 		if(!strcmp(names[i], name))
@@ -167,7 +161,7 @@ int64_t BC_Hash::get(const char *name, int64_t default_)
 	return result;
 }
 
-double BC_Hash::get(const char *name, double default_)
+double BC_Hash::get(const char *name, double default_value)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -176,10 +170,10 @@ double BC_Hash::get(const char *name, double default_)
 			return atof(values[i]);
 		}
 	}
-	return default_;  // failed
+	return default_value;  // failed
 }
 
-float BC_Hash::get(const char *name, float default_)
+float BC_Hash::get(const char *name, float default_value)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -188,20 +182,20 @@ float BC_Hash::get(const char *name, float default_)
 			return atof(values[i]);
 		}
 	}
-	return default_;  // failed
+	return default_value;  // failed
 }
 
-char* BC_Hash::get(const char *name, char *default_)
+char* BC_Hash::get(const char *name, char *default_value)
 {
 	for(int i = 0; i < total; i++)
 	{
 		if(!strcmp(names[i], name))
 		{
-			strcpy(default_, values[i]);
+			strcpy(default_value, values[i]);
 			return values[i];
 		}
 	}
-	return default_;  // failed
+	return default_value;  // failed
 }
 
 int BC_Hash::update(const char *name, double value) // update a value if it exists
@@ -258,34 +252,10 @@ int BC_Hash::update(const char *name, const char *value)
 
 void BC_Hash::copy_from(BC_Hash *src)
 {
-// Can't delete because this is used by file decoders after plugins
-// request data.
-// 	for(int i = 0; i < total; i++)
-// 	{
-// 		delete [] names[i];
-// 		delete [] values[i];
-// 	}
-// 	delete [] names;
-// 	delete [] values;
-// 
-// 	allocated = 0;
-// 	names = 0;
-// 	values = 0;
-// 	total = 0;
-
-SET_TRACE
 	reallocate_table(src->total);
-//	total = src->total;
-SET_TRACE
+
 	for(int i = 0; i < src->total; i++)
-	{
 		update(src->names[i], src->values[i]);
-// 		names[i] = new char[strlen(src->names[i]) + 1];
-// 		values[i] = new char[strlen(src->values[i]) + 1];
-// 		strcpy(names[i], src->names[i]);
-// 		strcpy(values[i], src->values[i]);
-	}
-SET_TRACE
 }
 
 int BC_Hash::equivalent(BC_Hash *src)
@@ -302,5 +272,5 @@ void BC_Hash::dump()
 {
 	printf("BC_Hash::dump\n");
 	for(int i = 0; i < total; i++)
-		printf("	key=%s value=%s\n", names[i], values[i]);
+		printf("       key=%s value=%s\n", names[i], values[i]);
 }

@@ -22,15 +22,11 @@
 #ifndef BCHASH_H
 #define BCHASH_H
 
-
-
 // Hash table with persistent storage in stringfiles.
-
 
 #include "bcwindowbase.inc"
 #include "stringfile.inc"
 #include "units.h"
-
 
 class BC_Hash
 {
@@ -39,10 +35,10 @@ public:
 	BC_Hash(const char *filename);
 	virtual ~BC_Hash();
 
-	int load();        // load from disk file
-	int save();        // save to disk file
-	int load_string(char *string);        // load from string
-	int save_string(char* &string);       // save to new string
+	void load();        // load from disk file
+	void save();        // save to disk file
+	void load_string(char *string);        // load from string
+	void save_string(char* &string);       // save to new string
 	void save_stringfile(StringFile *file);
 	void load_stringfile(StringFile *file);
 	int update(const char *name, Freq value); // update a value if it exists
@@ -52,11 +48,11 @@ public:
 	int update(const char *name, int64_t value); // update a value if it exists
 	int update(const char *name, const char *value); // create it if it doesn't
 
-	double get(const char *name, double default_);   // retrieve a value if it exists
-	float get(const char *name, float default_);   // retrieve a value if it exists
-	int32_t get(const char *name, int32_t default_);   // retrieve a value if it exists
-	int64_t get(const char *name, int64_t default_);   // retrieve a value if it exists
-	char* get(const char *name, char *default_); // return 1 if it doesn't
+	double get(const char *name, double default_value);   // retrieve a value if it exists
+	float get(const char *name, float default_value);   // retrieve a value if it exists
+	int32_t get(const char *name, int32_t default_value);   // retrieve a value if it exists
+	int64_t get(const char *name, int64_t default_value);   // retrieve a value if it exists
+	char* get(const char *name, char *default_value);
 
 // Update values with values from another table.
 // Adds values that don't exist and updates existing values.
@@ -65,7 +61,6 @@ public:
 	int equivalent(BC_Hash *src);
 
 	void dump();
-
 
 private:
 // Reallocate table so at least total entries exist
