@@ -23,7 +23,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -36,7 +35,7 @@
 #include "vframe.h"
 
 
-REGISTER_PLUGIN(TimeFrontMain)
+REGISTER_PLUGIN
 
 
 TimeFrontConfig::TimeFrontConfig()
@@ -44,7 +43,7 @@ TimeFrontConfig::TimeFrontConfig()
 	angle = 0;
 	in_radius = 0;
 	out_radius = 100;
-	frame_range = 16;
+	time_range = 0.5;
 	track_usage = TimeFrontConfig::OTHERTRACK_INTENSITY;
 	shape = TimeFrontConfig::LINEAR;
 	rate = TimeFrontConfig::LINEAR;
@@ -59,7 +58,7 @@ int TimeFrontConfig::equivalent(TimeFrontConfig &that)
 	return (EQUIV(angle, that.angle) &&
 		EQUIV(in_radius, that.in_radius) &&
 		EQUIV(out_radius, that.out_radius) &&
-		frame_range == that.frame_range &&
+		PTSEQU(time_range, that.time_range) &&
 		track_usage == that.track_usage &&
 		shape == that.shape &&
 		rate == that.rate &&
@@ -74,7 +73,7 @@ void TimeFrontConfig::copy_from(TimeFrontConfig &that)
 	angle = that.angle;
 	in_radius = that.in_radius;
 	out_radius = that.out_radius;
-	frame_range = that.frame_range;
+	time_range = that.time_range;
 	track_usage = that.track_usage;
 	shape = that.shape;
 	rate = that.rate;
@@ -86,17 +85,16 @@ void TimeFrontConfig::copy_from(TimeFrontConfig &that)
 
 void TimeFrontConfig::interpolate(TimeFrontConfig &prev, 
 	TimeFrontConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
 
-	this->angle = (int)(prev.angle * prev_scale + next.angle * next_scale);
-	this->in_radius = (int)(prev.in_radius * prev_scale + next.in_radius * next_scale);
-	this->out_radius = (int)(prev.out_radius * prev_scale + next.out_radius * next_scale);
-	frame_range = (int)(prev.frame_range * prev_scale + next.frame_range * next_scale);
+	this->angle = round(prev.angle * prev_scale + next.angle * next_scale);
+	this->in_radius = round(prev.in_radius * prev_scale + next.in_radius * next_scale);
+	this->out_radius = round(prev.out_radius * prev_scale + next.out_radius * next_scale);
+	time_range = prev.time_range * prev_scale + next.time_range * next_scale;
 	track_usage = prev.track_usage;
 	shape = prev.shape;
 	rate = prev.rate;
@@ -106,7 +104,7 @@ void TimeFrontConfig::interpolate(TimeFrontConfig &prev,
 	show_grayscale = prev.show_grayscale;
 }
 
-PLUGIN_THREAD_OBJECT(TimeFrontMain, TimeFrontThread, TimeFrontWindow)
+PLUGIN_THREAD_METHODS
 
 
 TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin, int x, int y)
@@ -120,7 +118,9 @@ TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin, int x, int y)
 	0, 
 	1)
 {
-	this->plugin = plugin;
+	BC_Title *title;
+	x = y = 10;
+
 	angle = 0;
 	angle_title = 0;
 	center_x = 0;
@@ -135,19 +135,7 @@ TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin, int x, int y)
 	out_radius = 0;
 	track_usage_title = 0;
 	track_usage = 0;
-	
-}
 
-TimeFrontWindow::~TimeFrontWindow()
-{
-}
-
-int TimeFrontWindow::create_objects()
-{
-	int x = 10, y = 10;
-	BC_Title *title;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(title = new BC_Title(x, y, _("Type:")));
 	add_subwindow(shape = new TimeFrontShape(plugin, 
 		this, 
@@ -163,15 +151,40 @@ int TimeFrontWindow::create_objects()
 	frame_range_x = x + frame_range->get_w() + 10;
 	frame_range_y = y;
 	y += 35;
-	update_shape();
 
 	add_subwindow(invert = new TimeFrontInvert(plugin, x, y));
 	add_subwindow(show_grayscale = new TimeFrontShowGrayscale(plugin, x+ 100, y));
 
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
+	update_shape();
+}
 
-	show_window();
-	flush();
-	return 0;
+TimeFrontWindow::~TimeFrontWindow()
+{
+}
+
+void TimeFrontWindow::update()
+{
+	frame_range->update(plugin->config.time_range);
+	shape->set_text(TimeFrontShape::to_text(plugin->config.shape));
+	show_grayscale->update(plugin->config.show_grayscale);
+	invert->update(plugin->config.invert);
+	shape->set_text(TimeFrontShape::to_text(plugin->config.shape));
+	if (rate)
+		rate->set_text(TimeFrontRate::to_text(plugin->config.rate));
+	if (in_radius)
+		in_radius->update(plugin->config.in_radius);
+	if (out_radius)
+		out_radius->update(plugin->config.out_radius);
+	if (track_usage)
+		track_usage->set_text(TimeFrontTrackUsage::to_text(plugin->config.track_usage));
+	if(angle)
+		angle->update(plugin->config.angle);
+	if(center_x)
+		center_x->update(plugin->config.center_x);
+	if(center_y)
+		center_y->update(plugin->config.center_y);
+	update_shape();
 }
 
 void TimeFrontWindow::update_shape()
@@ -323,16 +336,9 @@ void TimeFrontWindow::update_shape()
 		out_radius = 0;
 		track_usage_title = 0;
 		track_usage = 0;
-
 	}
 
 }
-
-void TimeFrontWindow::close_event()
-{
-	set_done(1);
-}
-
 
 
 TimeFrontShape::TimeFrontShape(TimeFrontMain *plugin, 
@@ -384,6 +390,7 @@ int TimeFrontShape::handle_event()
 	plugin->config.shape = from_text(get_text());
 	gui->update_shape();
 	plugin->send_configure_change();
+	return 1;
 }
 
 
@@ -431,6 +438,7 @@ int TimeFrontTrackUsage::handle_event()
 	plugin->config.track_usage = from_text(get_text());
 	gui->update_shape();
 	plugin->send_configure_change();
+	return 1;
 }
 
 
@@ -526,7 +534,6 @@ int TimeFrontRate::handle_event()
 }
 
 
-
 TimeFrontInRadius::TimeFrontInRadius(TimeFrontMain *plugin, int x, int y)
  : BC_FSlider(x,
 	y,
@@ -568,22 +575,23 @@ int TimeFrontOutRadius::handle_event()
 	return 1;
 }
 
+
 TimeFrontFrameRange::TimeFrontFrameRange(TimeFrontMain *plugin, int x, int y)
- : BC_ISlider(x,
+ : BC_FSlider(x,
 	y,
 	0,
 	200,
 	200,
-	(int)1,
-	(int)255,
-	(int)plugin->config.frame_range)
+	(float)0,
+	(float)MAX_TIME_RANGE,
+	(float)plugin->config.time_range)
 {
 	this->plugin = plugin;
 }
 
 int TimeFrontFrameRange::handle_event()
 {
-	plugin->config.frame_range = get_value();
+	plugin->config.time_range = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -609,7 +617,7 @@ TimeFrontShowGrayscale::TimeFrontShowGrayscale(TimeFrontMain *client, int x, int
  : BC_CheckBox(x, 
 	y,
 	client->config.show_grayscale, 
-	_("Show grayscale (for tuning"))
+	_("Show grayscale (for tuning)"))
 {
 	this->plugin = client;
 }
@@ -625,46 +633,33 @@ int TimeFrontShowGrayscale::handle_event()
 TimeFrontMain::TimeFrontMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	need_reconfigure = 1;
 	gradient = 0;
 	engine = 0;
 	overlayer = 0;
+	memset(framelist, 0, MAX_FRAMELIST * sizeof(VFrame*));
+	framelist_allocated = 0;
+	framelist_last = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 TimeFrontMain::~TimeFrontMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(gradient) delete gradient;
 	if(engine) delete engine;
 	if(overlayer) delete overlayer;
+	for(int i = 0; i < framelist_allocated; i++)
+		delete framelist[i];
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* TimeFrontMain::plugin_title() { return N_("TimeFront"); }
-int TimeFrontMain::is_realtime() { return 1; }
-int TimeFrontMain::is_multichannel() { return 1; }
-
-
-NEW_PICON_MACRO(TimeFrontMain)
-
-SHOW_GUI_MACRO(TimeFrontMain, TimeFrontThread)
-
-SET_STRING_MACRO(TimeFrontMain)
-
-RAISE_WINDOW_MACRO(TimeFrontMain)
-
-LOAD_CONFIGURATION_MACRO(TimeFrontMain, TimeFrontConfig)
-
-int TimeFrontMain::is_synthesis()
-{
-	return 1;
-}
+PLUGIN_CLASS_METHODS
 
 #define GRADIENTFROMAVG(type, inttype, components, maxval) \
 	for(int i = 0; i < tfframe->get_h(); i++) \
 	{ \
 		type *in_row = (type *)tfframe->get_rows()[i]; \
+		int frames = config.time_range * project_frame_rate; \
 		unsigned char *grad_row = gradient->get_rows()[i]; \
 		for(int j = 0; j < tfframe->get_w(); j++) \
 		{ \
@@ -672,9 +667,9 @@ int TimeFrontMain::is_synthesis()
 						in_row[j * components + 1] + \
 						in_row[j * components + 2]; \
 			if (components == 3) \
-				grad_row[j] = (unsigned char) (CLIP((float)config.frame_range * tmp / maxval / 3, 0.0F, config.frame_range)); \
+				grad_row[j] = (unsigned char) (CLIP(frames * tmp / maxval / 3, 0.0F, frames)); \
 			else if(components == 4) \
-				grad_row[j] = (unsigned char) (CLIP((float)config.frame_range * tmp * in_row[j * components + 3] / maxval / maxval / 3, 0.0F, config.frame_range)); \
+				grad_row[j] = (unsigned char) (CLIP(frames * tmp * in_row[j * components + 3] / maxval / maxval / 3, 0.0F, frames)); \
 		} \
 	}
 
@@ -682,13 +677,14 @@ int TimeFrontMain::is_synthesis()
 	for(int i = 0; i < tfframe->get_h(); i++) \
 	{ \
 		type *in_row = (type *)tfframe->get_rows()[i]; \
+		int frames = config.time_range * project_frame_rate; \
 		unsigned char *grad_row = gradient->get_rows()[i]; \
 		for(int j = 0; j < tfframe->get_w(); j++) \
 		{ \
 			if (components == 3) \
-				grad_row[j] = (unsigned char) (CLIP((float)config.frame_range * in_row[j * components + channel] / max, 0.0F, config.frame_range)); \
+				grad_row[j] = (unsigned char) (CLIP(frames * in_row[j * components + channel] / max, 0.0F, frames)); \
 			else if(components == 4) \
-				grad_row[j] = (unsigned char) (CLIP((float)config.frame_range * in_row[j * components + channel] * in_row[j * components + 3]/ max /max, 0.0F, config.frame_range)); \
+				grad_row[j] = (unsigned char) (CLIP(frames * in_row[j * components + channel] * in_row[j * components + 3]/ max /max, 0.0F, frames)); \
 		} \
 	}
 
@@ -706,12 +702,13 @@ int TimeFrontMain::is_synthesis()
 	for(int i = 0; i < height; i++) \
 	{ \
 		type *out_row = (type *)outframes[0]->get_rows()[i]; \
+		int frames = config.time_range * project_frame_rate; \
 		unsigned char *grad_row = gradient->get_rows()[i]; \
 		for (int j = 0; j < width; j++) \
 		{ \
-			out_row[0] = (inttype)max * (invertion grad_row[0]) / config.frame_range; \
-			out_row[1] = (inttype)max * (invertion grad_row[0]) / config.frame_range; \
-			out_row[2] = (inttype)max * (invertion grad_row[0]) / config.frame_range; \
+			out_row[0] = (inttype)max * (invertion grad_row[0]) / frames; \
+			out_row[1] = (inttype)max * (invertion grad_row[0]) / frames; \
+			out_row[2] = (inttype)max * (invertion grad_row[0]) / frames; \
 			if (components == 4) \
 				out_row[3] = max; \
 			out_row += components; \
@@ -723,10 +720,11 @@ int TimeFrontMain::is_synthesis()
 	for(int i = 0; i < height; i++) \
 	{ \
 		type *out_row = (type *)outframes[0]->get_rows()[i]; \
+		int frames = config.time_range * project_frame_rate; \
 		unsigned char *grad_row = gradient->get_rows()[i]; \
 		for (int j = 0; j < width; j++) \
 		{ \
-			out_row[0] = (inttype)max * (invertion grad_row[0]) / config.frame_range; \
+			out_row[0] = (inttype)max * (invertion grad_row[0]) / frames; \
 			out_row[1] = max/2; \
 			out_row[2] = max/2; \
 			if (components == 4) \
@@ -756,32 +754,37 @@ int TimeFrontMain::is_synthesis()
 	}
 
 
-int TimeFrontMain::process_buffer(VFrame **frame,
-		framenum start_position,
-		double frame_rate)
+void TimeFrontMain::process_frame(VFrame **frame)
 {
 	VFrame **outframes = frame;
-	VFrame *(framelist[1024]);
-	framelist[0] = new VFrame (0, outframes[0]->get_w(), outframes[0]->get_h(), outframes[0]->get_color_model());
-	read_frame(framelist[0],
-		0,
-		start_position,
-		frame_rate);
+
+	need_reconfigure |= load_configuration();
+	if(config.time_range < (1 / project_frame_rate) + EPSILON)
+	{
+		for(int i = 0; i < total_in_buffers; i++)
+			get_frame(frame[i]);
+		return;
+	}
+	if(!framelist[0])
+	{
+		framelist[0] = new VFrame (0, outframes[0]->get_w(), outframes[0]->get_h(), outframes[0]->get_color_model());
+		framelist_allocated = 1;
+	}
+	framelist[0]->copy_pts(outframes[0]);
+	get_frame(framelist[0]);
 	this->input = framelist[0];
 	this->output = outframes[0];
-	need_reconfigure |= load_configuration();
 	if (config.shape == TimeFrontConfig::OTHERTRACK)
 	{
-		if (get_total_buffers() != 2) 
+		if (total_in_buffers != 2)
 		{
-// FIXME, maybe this should go to some other notification area?
-			errorbox("TimeFront plugin - If you are using another track for timefront, you have to have it under shared effects");
-			return 0;
+			abort_plugin("If you are using another track for timefront, you have to have it under shared effects");
+			return;
 		}
 		if (outframes[0]->get_w() != outframes[1]->get_w() || outframes[0]->get_h() != outframes[1]->get_h())
 		{
-			errorbox("Sizes of master track and timefront track do not match");
-			return 0;
+			abort_plugin("Sizes of master track and timefront track do not match");
+			return;
 		}
 	}
 
@@ -789,7 +792,6 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 	if(need_reconfigure)
 	{
 		need_reconfigure = 0;
-
 		if(!gradient) gradient = new VFrame(0, 
 			outframes[0]->get_w(),
 			outframes[0]->get_h(),
@@ -824,21 +826,18 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			break;
 
 		default:
-			errorbox("TimeFront plugin error: ALPHA used, but project color model does not have alpha\n");
-			return 1;
+			abort_plugin("ALPHA used, but project color model does not have alpha");
+			return;
 		}
-	} else
-	if (config.shape == TimeFrontConfig::OTHERTRACK)
+	}
+	else if (config.shape == TimeFrontConfig::OTHERTRACK)
 	{
 		if(!gradient) gradient = new VFrame(0, 
 			outframes[0]->get_w(),
 			outframes[0]->get_h(),
 			BC_A8);
 		VFrame *tfframe = outframes[1];
-		read_frame(tfframe,
-			1,
-			start_position,
-			frame_rate);
+		get_frame(tfframe);
 		if (config.track_usage == TimeFrontConfig::OTHERTRACK_INTENSITY)
 		{
 			switch (tfframe->get_color_model())
@@ -866,8 +865,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			default:
 				break;
 			}
-		} else
-		if (config.track_usage == TimeFrontConfig::OTHERTRACK_ALPHA)
+		}
+		else if (config.track_usage == TimeFrontConfig::OTHERTRACK_ALPHA)
 		{
 			switch (tfframe->get_color_model())
 			{
@@ -881,29 +880,47 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 				break;
 
 			default:
-				errorbox("TimeFront plugin error: ALPHA track used, but project color model does not have alpha\n");
-				return 1;
+				abort_plugin("ALPHA track used, but project color model does not have alpha");
+				return;
 			}
-		} else
+		}
+		else
 		{
-			errorbox("TimeFront plugin error: unsupported track_usage parameter\n");
-			return 1;
+			abort_plugin("Unsupported track_usage parameter");
+			return;
 		}
 	}
 
 	if (!config.show_grayscale)
 	{
-		for (int i = 1; i <= config.frame_range; i++) 
+		framelist_last = 2;
+// Get frames in forward direction - it is faster
+		for(ptstime cpts = source_pts - config.time_range;;)
 		{
-			framelist[i] = new VFrame (0, outframes[0]->get_w(), outframes[0]->get_h(), outframes[0]->get_color_model());
-
-			read_frame(framelist[i],
-				0,
-				start_position - i,
-				frame_rate);
+			if(!framelist[1])
+			{
+				framelist[1] = new VFrame (0, outframes[0]->get_w(),
+					outframes[0]->get_h(), outframes[0]->get_color_model());
+				framelist_allocated++;
+			}
+			framelist[1]->set_pts(cpts);
+			get_frame(framelist[1]);
+			cpts = framelist[1]->next_pts();
+			if(cpts < source_pts)
+			{
+				if(framelist_allocated < MAX_FRAMELIST)
+				{
+					VFrame *temp = framelist[framelist_last];
+					for(int i = framelist_last; i > 1; i--)
+						framelist[i] = framelist[i - 1];
+					framelist_last++;
+					framelist[1] = temp;
+				}
+			}
+			else
+				break;
 		}
 	}
-
 	int width = outframes[0]->get_w();
 	int height = outframes[0]->get_h();
 	if (config.show_grayscale)
@@ -933,34 +950,36 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			default:
 				break;
 			}
-		} else
+		}
+		else
 		{
+			int pframes = config.time_range * project_frame_rate;
 			switch (outframes[0]->get_color_model())
 			{
 			case BC_RGB888:
-				GRADIENTTOPICTURE(unsigned char, unsigned short, 3, 255, config.frame_range -);
+				GRADIENTTOPICTURE(unsigned char, unsigned short, 3, 255, pframes -);
 				break;
 			case BC_RGBA8888:
-				GRADIENTTOPICTURE(unsigned char, unsigned short, 4, 255, config.frame_range -);
+				GRADIENTTOPICTURE(unsigned char, unsigned short, 4, 255, pframes -);
 				break;
 			case BC_YUV888:
-				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 3, 255, config.frame_range -);
+				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 3, 255, pframes -);
 				break;
 			case BC_YUVA8888:
-				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 4, 255, config.frame_range -);
+				GRADIENTTOYUVPICTURE(unsigned char, unsigned short, 4, 255, pframes -);
 				break;
 			case BC_RGB_FLOAT:
-				GRADIENTTOPICTURE(float, float, 3, 1.0f, config.frame_range -);
+				GRADIENTTOPICTURE(float, float, 3, 1.0f, pframes -);
 				break;
 			case BC_RGBA_FLOAT:
-				GRADIENTTOPICTURE(float, float, 4, 1.0f, config.frame_range -);
+				GRADIENTTOPICTURE(float, float, 4, 1.0f, pframes -);
 				break;
 			default:
 				break;
 			}
 		}
-	} else 
-	if (!config.invert)
+	}
+	else if (!config.invert)
 	{
 		switch (outframes[0]->get_color_model())
 		{
@@ -982,35 +1001,35 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 		case BC_RGBA_FLOAT:
 			COMPOSITEIMAGE(float, 4, );
 			break;
-
 		default:
 			break;
 		}
-	} else
+	}
+	else
 	{
+		int pframes = framelist_last - 1;
 		switch (outframes[0]->get_color_model())
 		{
 		case BC_RGB888:
-			COMPOSITEIMAGE(unsigned char, 3, config.frame_range -);
+			COMPOSITEIMAGE(unsigned char, 3, pframes -);
 			break;
 		case BC_RGBA8888:
-			COMPOSITEIMAGE(unsigned char, 4, config.frame_range -);
+			COMPOSITEIMAGE(unsigned char, 4, pframes -);
 			break;
 		case BC_YUV888:
-			COMPOSITEIMAGE(unsigned char, 3, config.frame_range -);
+			COMPOSITEIMAGE(unsigned char, 3, pframes -);
 			break;
 		case BC_YUVA8888:
-			COMPOSITEIMAGE(unsigned char, 4, config.frame_range -);
+			COMPOSITEIMAGE(unsigned char, 4, pframes -);
 			break;
 		case BC_RGB_FLOAT:
-			COMPOSITEIMAGE(float, 3, config.frame_range -);
+			COMPOSITEIMAGE(float, 3, pframes -);
 			break;
 		case BC_RGBA_FLOAT:
-			COMPOSITEIMAGE(float, 4, config.frame_range -);
+			COMPOSITEIMAGE(float, 4, pframes -);
 			break;
-
-			default:
-				break;
+		default:
+			break;
 		}
 	}
 	if (config.shape == TimeFrontConfig::ALPHA)
@@ -1025,70 +1044,23 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 		case BC_RGBA_FLOAT:
 			SETALPHA(float, 1.0f);
 			break;
-
 		default:
 			break;
 		}
 	}
-
-	delete framelist[0];
-	if (!config.show_grayscale)
-	{
-		for (int i = 1; i <= config.frame_range; i++) 
-			delete framelist[i];
-	}
-	return 0;
 }
-
-
-void TimeFrontMain::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("TimeFrontMain::update_gui");
-			thread->window->frame_range->update(config.frame_range);
-			thread->window->shape->set_text(TimeFrontShape::to_text(config.shape));
-			thread->window->show_grayscale->update(config.show_grayscale);
-			thread->window->invert->update(config.invert);
-			thread->window->shape->set_text(TimeFrontShape::to_text(config.shape));
-			if (thread->window->rate)
-				thread->window->rate->set_text(TimeFrontRate::to_text(config.rate));
-			if (thread->window->in_radius)
-				thread->window->in_radius->update(config.in_radius);
-			if (thread->window->out_radius)
-				thread->window->out_radius->update(config.out_radius);
-			if (thread->window->track_usage)
-				thread->window->track_usage->set_text(TimeFrontTrackUsage::to_text(config.track_usage));
-			if(thread->window->angle)
-				thread->window->angle->update(config.angle);
-			if(thread->window->center_x)
-				thread->window->center_x->update(config.center_x);
-			if(thread->window->center_y)
-				thread->window->center_y->update(config.center_y);
-			
-			thread->window->update_shape();
-			thread->window->unlock_window();
-		}
-	}
-}
-
 
 void TimeFrontMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%stimefront.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	int frame_range;
+	defaults = load_defaults_file("timefront.rc");
 
 	config.angle = defaults->get("ANGLE", config.angle);
 	config.in_radius = defaults->get("IN_RADIUS", config.in_radius);
 	config.out_radius = defaults->get("OUT_RADIUS", config.out_radius);
-	config.frame_range = defaults->get("FRAME_RANGE", config.frame_range);
+	if((frame_range = defaults->get("FRAME_RANGE", 0)) > 0)
+		config.time_range = frame_range / project_frame_rate;
+	config.time_range = defaults->get("TIME_RANGE", config.time_range);
 	config.shape = defaults->get("SHAPE", config.shape);
 	config.shape = defaults->get("TRACK_USAGE", config.track_usage);
 	config.rate = defaults->get("RATE", config.rate);
@@ -1098,13 +1070,12 @@ void TimeFrontMain::load_defaults()
 	config.show_grayscale = defaults->get("SHOW_GRAYSCALE", config.show_grayscale);
 }
 
-
 void TimeFrontMain::save_defaults()
 {
 	defaults->update("ANGLE", config.angle);
 	defaults->update("IN_RADIUS", config.in_radius);
 	defaults->update("OUT_RADIUS", config.out_radius);
-	defaults->update("FRAME_RANGE", config.frame_range);
+	defaults->update("TIME_RANGE", config.time_range);
 	defaults->update("RATE", config.rate);
 	defaults->update("SHAPE", config.shape);
 	defaults->update("TRACK_USAGE", config.track_usage);
@@ -1112,10 +1083,9 @@ void TimeFrontMain::save_defaults()
 	defaults->update("CENTER_Y", config.center_y);
 	defaults->update("INVERT", config.invert);
 	defaults->update("SHOW_GRAYSCALE", config.show_grayscale);
+	defaults->delete_key("FRAME_RANGE");
 	defaults->save();
 }
-
-
 
 void TimeFrontMain::save_data(KeyFrame *keyframe)
 {
@@ -1128,7 +1098,7 @@ void TimeFrontMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("ANGLE", config.angle);
 	output.tag.set_property("IN_RADIUS", config.in_radius);
 	output.tag.set_property("OUT_RADIUS", config.out_radius);
-	output.tag.set_property("FRAME_RANGE", config.frame_range);
+	output.tag.set_property("TIME_RANGE", config.time_range);
 	output.tag.set_property("SHAPE", config.shape);
 	output.tag.set_property("TRACK_USAGE", config.track_usage);
 	output.tag.set_property("RATE", config.rate);
@@ -1145,31 +1115,27 @@ void TimeFrontMain::save_data(KeyFrame *keyframe)
 void TimeFrontMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
+	int frame_range;
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("TIMEFRONT"))
 		{
-			if(input.tag.title_is("TIMEFRONT"))
-			{
-				config.angle = input.tag.get_property("ANGLE", config.angle);
-				config.rate = input.tag.get_property("RATE", config.rate);
-				config.in_radius = input.tag.get_property("IN_RADIUS", config.in_radius);
-				config.out_radius = input.tag.get_property("OUT_RADIUS", config.out_radius);
-				config.frame_range = input.tag.get_property("FRAME_RANGE", config.frame_range);
-				config.shape = input.tag.get_property("SHAPE", config.shape);
-				config.track_usage = input.tag.get_property("TRACK_USAGE", config.track_usage);
-				config.center_x = input.tag.get_property("CENTER_X", config.center_x);
-				config.center_y = input.tag.get_property("CENTER_Y", config.center_y);
-				config.invert = input.tag.get_property("INVERT", config.invert);
-				config.show_grayscale = input.tag.get_property("SHOW_GRAYSCALE", config.show_grayscale);
-			}
+			config.angle = input.tag.get_property("ANGLE", config.angle);
+			config.rate = input.tag.get_property("RATE", config.rate);
+			config.in_radius = input.tag.get_property("IN_RADIUS", config.in_radius);
+			config.out_radius = input.tag.get_property("OUT_RADIUS", config.out_radius);
+			if((frame_range = input.tag.get_property("FRAME_RANGE", 0)) > 0)
+				config.time_range = frame_range / project_frame_rate;
+			config.time_range = input.tag.get_property("TIME_RANGE", config.time_range);
+			config.shape = input.tag.get_property("SHAPE", config.shape);
+			config.track_usage = input.tag.get_property("TRACK_USAGE", config.track_usage);
+			config.center_x = input.tag.get_property("CENTER_X", config.center_x);
+			config.center_y = input.tag.get_property("CENTER_Y", config.center_y);
+			config.invert = input.tag.get_property("INVERT", config.invert);
+			config.show_grayscale = input.tag.get_property("SHOW_GRAYSCALE", config.show_grayscale);
 		}
 	}
 }
@@ -1300,8 +1266,7 @@ void TimeFrontUnit::process_package(LoadPackage *package)
 		out_radius ^= in_radius;
 		in_radius ^= out_radius;
 	}
-
-	int in4 = plugin->config.frame_range;
+	int in4 = plugin->config.time_range * plugin->project_frame_rate;
 	int out4 = 0;
 	CREATE_GRADIENT
 

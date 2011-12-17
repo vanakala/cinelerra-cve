@@ -22,22 +22,35 @@
 #ifndef TIMEFRONT_H
 #define TIMEFRONT_H
 
-class TimeFrontMain;
-class TimeFrontEngine;
-class TimeFrontThread;
-class TimeFrontWindow;
-class TimeFrontServer;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
+#define PLUGIN_IS_MULTICHANNEL
 
+#define PLUGIN_TITLE N_("TimeFront")
+#define PLUGIN_CLASS TimeFrontMain
+#define PLUGIN_CONFIG_CLASS TimeFrontConfig
+#define PLUGIN_THREAD_CLASS TimeFrontThread
+#define PLUGIN_GUI_CLASS TimeFrontWindow
+
+#include "pluginmacros.h"
+
+class TimeFrontEngine;
+class TimeFrontServer;
 
 #include "bchash.inc"
 #include "filexml.inc"
 #include "guicast.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"
 #include "plugincolors.h"
 #include "pluginvclient.h"
 #include "thread.h"
 #include "vframe.inc"
+
+#define MAX_TIME_RANGE 10
+#define MAX_FRAMELIST (100 * MAX_TIME_RANGE)
 
 class TimeFrontConfig
 {
@@ -48,9 +61,9 @@ public:
 	void copy_from(TimeFrontConfig &that);
 	void interpolate(TimeFrontConfig &prev, 
 		TimeFrontConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 // Int to hex triplet conversion
 	int get_in_color();
 	int get_out_color();
@@ -74,7 +87,7 @@ public:
 	double angle;
 	double in_radius;
 	double out_radius;
-	int frame_range;
+	ptstime time_range;
 	int track_usage;
 	enum 
 	{
@@ -83,6 +96,7 @@ public:
 	};
 	int invert;
 	int show_grayscale;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -171,7 +185,7 @@ public:
 	TimeFrontMain *plugin;
 };
 
-class TimeFrontFrameRange : public BC_ISlider
+class TimeFrontFrameRange : public BC_FSlider
 {
 public:
 	TimeFrontFrameRange(TimeFrontMain *plugin, int x, int y);
@@ -203,11 +217,9 @@ public:
 	TimeFrontWindow(TimeFrontMain *plugin, int x, int y);
 	~TimeFrontWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 	void update_shape();
 
-	TimeFrontMain *plugin;
 	BC_Title *angle_title;
 	BC_Title *rate_title, *in_radius_title, *out_radius_title, *track_usage_title;
 	TimeFrontAngle *angle;
@@ -226,11 +238,12 @@ public:
 	TimeFrontInvert *invert;
 	int frame_range_x, frame_range_y;
 	int shape_x, shape_y;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
 
-PLUGIN_THREAD_HEADER(TimeFrontMain, TimeFrontThread, TimeFrontWindow)
+PLUGIN_THREAD_HEADER
 
 
 class TimeFrontMain : public PluginVClient
@@ -239,20 +252,14 @@ public:
 	TimeFrontMain(PluginServer *server);
 	~TimeFrontMain();
 
-	int process_buffer(VFrame **frame,
-		framenum start_position,
-		double frame_rate);
+	void process_frame(VFrame **frame);
 
-	int is_realtime();
-	int is_multichannel();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int is_synthesis();
 
-	PLUGIN_CLASS_MEMBERS(TimeFrontConfig, TimeFrontThread)
+	PLUGIN_CLASS_MEMBERS
 
 	int need_reconfigure;
 
@@ -260,6 +267,9 @@ public:
 	VFrame *gradient;
 	VFrame *input, *output;
 	TimeFrontServer *engine;
+	int framelist_allocated;
+	int framelist_last;
+	VFrame *framelist[MAX_FRAMELIST];
 };
 
 class TimeFrontPackage : public LoadPackage
