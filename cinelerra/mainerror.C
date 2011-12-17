@@ -349,6 +349,14 @@ int MainError::ConfirmBox(const char *fmt, ...)
 	return show_boxmsg(_("Confirmation"), bufr, 1);
 }
 
+int MainError::va_MessageBox(const char *hdr, const char *fmt, va_list ap)
+{
+	char bufr[BCTEXTLEN];
+
+	vsnprintf(bufr, BCTEXTLEN, fmt, ap);
+	return show_boxmsg(hdr, bufr);
+}
+
 MainErrorBox::MainErrorBox(MWindow *mwindow, int x, int y, int w, int h)
 : BC_Window(PROGRAM_NAME, x, y, w, h, w, h, 0)
 {

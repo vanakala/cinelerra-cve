@@ -84,6 +84,8 @@ public:
 // Ask confirmation
 	static int ConfirmBox(const char *fmt, ...)
 		__attribute__ ((__format__(__printf__, 1, 2)));
+// Show a message box
+	static int va_MessageBox(const char *hdr, const char *fmt, va_list ap);
 private:
 	void show_error_local(const char *string);
 	static int show_boxmsg(const char *title, const char *message, int confirm = 0);
