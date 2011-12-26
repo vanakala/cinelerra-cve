@@ -123,7 +123,7 @@ int FileList::open_file(int rd, int wr)
 					asset->layers = 1;
 					if(!asset->frame_rate)
 						asset->frame_rate = 1;
-					asset->video_length = -1;
+					asset->video_length = 1;
 				}
 			}
 		}
@@ -313,7 +313,7 @@ int FileList::read_frame(VFrame *frame)
 		{
 			if(temp) delete temp;
 			temp = 0;
-			strcpy(string, asset->path);
+
 			if(fp = fopen(asset->path, "rb"))
 			{
 				struct stat ostat;
@@ -336,6 +336,7 @@ int FileList::read_frame(VFrame *frame)
 						asset->width,
 						asset->height,
 						frame->get_color_model());
+					temp->copy_pts(frame);
 					read_frame(temp, data);
 					break;
 				}
