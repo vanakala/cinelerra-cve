@@ -53,7 +53,7 @@ public:
 	void add_return_value(int amount);
 
 	int read_list_header();
-	virtual int read_frame_header(char *path) { return 1; };
+	virtual int read_frame_header(const char *path) { return 1; };
 	int read_frame(VFrame *frame);
 
 // subclass returns whether the asset format is a list or single file
