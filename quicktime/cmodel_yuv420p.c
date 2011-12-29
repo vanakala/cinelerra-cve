@@ -251,9 +251,9 @@ static inline void transfer_YUV_PLANAR_to_RGB_FLOAT(float* *output,
 	v = *input_v;
 	YUV_TO_FLOAT(y, u, v, r, g, b)
 
-	*(*output)++ = r;
-	*(*output)++ = g;
-	*(*output)++ = b;
+	(*output)[0] = r;
+	(*output)[1] = g;
+	(*output)[2] = b;
 }
 
 
@@ -270,10 +270,10 @@ static inline void transfer_YUV_PLANAR_to_RGBA_FLOAT(float* *output,
 	v = *input_v;
 	YUV_TO_FLOAT(y, u, v, r, g, b)
 
-	*(*output)++ = r;
-	*(*output)++ = g;
-	*(*output)++ = b;
-	*(*output)++ = 1.0;
+	(*output)[0] = r;
+	(*output)[1] = g;
+	(*output)[2] = b;
+	(*output)[3] = 1.0;
 }
 
 
@@ -584,6 +584,7 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 						input_y + (y_in_offset), \
 						input_u + (u_in_offset), \
 						input_v + (v_in_offset)); \
+						*output += 3 * sizeof(float); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_RGBA_FLOAT:      \
@@ -592,6 +593,7 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 						input_y + (y_in_offset), \
 						input_u + (u_in_offset), \
 						input_v + (v_in_offset)); \
+						*output += 4 * sizeof(float); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_YUV888: \
@@ -798,6 +800,7 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 						input_y + (y_in_offset), \
 						input_u + (u_in_offset), \
 						input_v + (v_in_offset)); \
+						*output += 3 * sizeof(float); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_RGBA_FLOAT:      \
@@ -806,6 +809,7 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 						input_y + (y_in_offset), \
 						input_u + (u_in_offset), \
 						input_v + (v_in_offset)); \
+						*output += 4 * sizeof(float); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_YUV888: \
@@ -940,6 +944,7 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 						input_y + (y_in_offset), \
 						input_u + (u_in_offset), \
 						input_v + (v_in_offset)); \
+						*output += 3 * sizeof(float); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_RGBA_FLOAT:      \
@@ -948,6 +953,7 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 						input_y + (y_in_offset), \
 						input_u + (u_in_offset), \
 						input_v + (v_in_offset)); \
+						*output += 4 * sizeof(float); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_YUV888: \
@@ -1155,6 +1161,7 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 						input_y + (y_in_offset), \
 						input_u + (u_in_offset), \
 						input_v + (v_in_offset)); \
+						*output += 3 * sizeof(float); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_RGBA_FLOAT:      \
@@ -1163,6 +1170,7 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 						input_y + (y_in_offset), \
 						input_u + (u_in_offset), \
 						input_v + (v_in_offset)); \
+						*output += 4 * sizeof(float); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_YUV888: \
