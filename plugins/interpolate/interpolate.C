@@ -19,29 +19,20 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "colormodels.h"
 #include "filexml.h"
 #include "aggregated.h"
-#include "language.h"
 #include "picon_png.h"
 #include "interpolate.h"
 
 #include <stdio.h>
 #include <string.h>
 
+REGISTER_PLUGIN
 
-REGISTER_PLUGIN(InterpolatePixelsMain)
-
-
-
-PLUGIN_THREAD_OBJECT(InterpolatePixelsMain, 
-	InterpolatePixelsThread, 
-	InterpolatePixelsWindow)
-
-
+PLUGIN_THREAD_METHODS
 
 InterpolatePixelsOffset::InterpolatePixelsOffset(InterpolatePixelsWindow *window, 
 	int x, 
@@ -67,14 +58,13 @@ InterpolatePixelsOffset::~InterpolatePixelsOffset()
 int InterpolatePixelsOffset::handle_event()
 {
 	*output = get_value();
-	window->client->send_configure_change();
+	window->plugin->send_configure_change();
 	return 1;
 }
 
 
-
-InterpolatePixelsWindow::InterpolatePixelsWindow(InterpolatePixelsMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+InterpolatePixelsWindow::InterpolatePixelsWindow(InterpolatePixelsMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y,
 	200, 
@@ -85,39 +75,34 @@ InterpolatePixelsWindow::InterpolatePixelsWindow(InterpolatePixelsMain *client, 
 	0,
 	1)
 { 
-	this->client = client; 
+	BC_Title *title;
+
+	x = y = 10;
+
+	add_tool(title = new BC_Title(x, y, _("X Offset:")));
+	add_tool(x_offset = new InterpolatePixelsOffset(this, 
+		x + title->get_w() + 5,
+		y, 
+		&plugin->config.x));
+	y += MAX(x_offset->get_h(), title->get_h()) + 5;
+	add_tool(title = new BC_Title(x, y, _("Y Offset:")));
+	add_tool(y_offset = new InterpolatePixelsOffset(this, 
+		x + title->get_w() + 5,
+		y, 
+		&plugin->config.y));
+	y += MAX(y_offset->get_h(), title->get_h()) + 5;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 InterpolatePixelsWindow::~InterpolatePixelsWindow()
 {
 }
 
-int InterpolatePixelsWindow::create_objects()
+void InterpolatePixelsWindow::update()
 {
-	int x = 10, y = 10;
-	BC_Title *title;
-
-	set_icon(new VFrame(picon_png));
-	add_tool(title = new BC_Title(x, y, _("X Offset:")));
-	add_tool(x_offset = new InterpolatePixelsOffset(this, 
-		x + title->get_w() + 5,
-		y, 
-		&client->config.x));
-	y += MAX(x_offset->get_h(), title->get_h()) + 5;
-	add_tool(title = new BC_Title(x, y, _("Y Offset:")));
-	add_tool(y_offset = new InterpolatePixelsOffset(this, 
-		x + title->get_w() + 5,
-		y, 
-		&client->config.y));
-	y += MAX(y_offset->get_h(), title->get_h()) + 5;
-
-	show_window();
-	return 0;
+	x_offset->update(plugin->config.x);
+	y_offset->update(plugin->config.y);
 }
-
-
-WINDOW_CLOSE_EVENT(InterpolatePixelsWindow)
-
 
 
 InterpolatePixelsConfig::InterpolatePixelsConfig()
@@ -139,62 +124,33 @@ void InterpolatePixelsConfig::copy_from(InterpolatePixelsConfig &that)
 
 void InterpolatePixelsConfig::interpolate(InterpolatePixelsConfig &prev,
 	InterpolatePixelsConfig &next,
-	posnum prev_position,
-	posnum next_position,
-	posnum current_position)
+	ptstime prev_position,
+	ptstime next_position,
+	ptstime current_position)
 {
 	this->x = prev.x;
 	this->y = prev.y;
 }
 
 
-
 InterpolatePixelsMain::InterpolatePixelsMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 InterpolatePixelsMain::~InterpolatePixelsMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	delete engine;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* InterpolatePixelsMain::plugin_title() { return N_("Interpolate Pixels"); }
-int InterpolatePixelsMain::is_realtime() { return 1; }
-
-
-SHOW_GUI_MACRO(InterpolatePixelsMain, InterpolatePixelsThread)
-SET_STRING_MACRO(InterpolatePixelsMain)
-RAISE_WINDOW_MACRO(InterpolatePixelsMain)
-NEW_PICON_MACRO(InterpolatePixelsMain)
-
-void InterpolatePixelsMain::update_gui()
-{
-	if(thread)
-	{
-		int changed = load_configuration();
-		if(changed)
-		{
-			thread->window->lock_window("InterpolatePixelsMain::update_gui");
-			thread->window->x_offset->update(config.x);
-			thread->window->y_offset->update(config.y);
-			thread->window->unlock_window();
-		}
-	}
-}
+PLUGIN_CLASS_METHODS
 
 void InterpolatePixelsMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sinterpolatepixels.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("interpolatepixels.rc");
 	config.x = defaults->get("X", config.x);
 	config.y = defaults->get("Y", config.y);
 }
@@ -205,9 +161,6 @@ void InterpolatePixelsMain::save_defaults()
 	defaults->update("Y", config.y);
 	defaults->save();
 }
-
-LOAD_CONFIGURATION_MACRO(InterpolatePixelsMain, InterpolatePixelsConfig)
-
 
 void InterpolatePixelsMain::save_data(KeyFrame *keyframe)
 {
@@ -230,29 +183,17 @@ void InterpolatePixelsMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-	float new_threshold;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("INTERPOLATEPIXELS"))
 		{
-			if(input.tag.title_is("INTERPOLATEPIXELS"))
-			{
-				config.x = input.tag.get_property("X", config.x);
-				config.y = input.tag.get_property("Y", config.y);
-			}
+			config.x = input.tag.get_property("X", config.x);
+			config.y = input.tag.get_property("Y", config.y);
 		}
 	}
 }
 
-
-
-int InterpolatePixelsMain::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void InterpolatePixelsMain::process_frame(VFrame *frame)
 {
 	load_configuration();
 
@@ -260,11 +201,7 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 	frame->get_params()->update("INTERPOLATEPIXELS_X", config.x);
 	frame->get_params()->update("INTERPOLATEPIXELS_Y", config.y);
 
-	read_frame(frame, 
-		0, 
-		start_position, 
-		frame_rate,
-		get_use_opengl());
+	get_frame(frame, get_use_opengl());
 
 	if(get_use_opengl())
 	{
@@ -272,17 +209,17 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 		if(next_effect_is("Gamma") ||
 			next_effect_is("Histogram") ||
 			next_effect_is("Color Balance"))
-			return 0;
+			return;
 
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	if(get_output()->get_color_model() != BC_RGB_FLOAT &&
 		get_output()->get_color_model() != BC_RGBA_FLOAT)
 	{
-		printf("InterpolatePixelsMain::process_buffer: only supports float colormodels\n");
-		return 1;
+		abort_plugin("Only float colormodels are supported");
+		return;
 	}
 
 	new_temp(frame->get_w(), frame->get_h(), frame->get_color_model());
@@ -290,8 +227,6 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 	if(!engine)
 		engine = new InterpolatePixelsEngine(this);
 	engine->process_packages();
-
-	return 0;
 }
 
 // The pattern is
@@ -468,9 +403,10 @@ InterpolatePixelsEngine::InterpolatePixelsEngine(InterpolatePixelsMain *plugin)
 void InterpolatePixelsEngine::init_packages()
 {
 	char string[BCTEXTLEN];
+
 	string[0] = 0;
 	plugin->get_output()->get_params()->get("DCRAW_MATRIX", string);
-	sscanf(string, 
+	if(sscanf(string, 
 		"%f %f %f %f %f %f %f %f %f", 
 		&color_matrix[0],
 		&color_matrix[1],
@@ -480,7 +416,12 @@ void InterpolatePixelsEngine::init_packages()
 		&color_matrix[5],
 		&color_matrix[6],
 		&color_matrix[7],
-		&color_matrix[8]);
+		&color_matrix[8]) != 9)
+	{
+		for(int i = 0; i < 9; i++)
+			color_matrix[i] = 0;
+		color_matrix[0] = color_matrix[4] = color_matrix[8] = 1.0;
+	}
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		InterpolatePixelsPackage *package = (InterpolatePixelsPackage*)get_package(i);

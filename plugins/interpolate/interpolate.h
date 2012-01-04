@@ -22,13 +22,24 @@
 #ifndef INTERPOLATEPIXELS_H
 #define INTERPOLATEPIXELS_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+
+#define PLUGIN_TITLE N_("Interpolate Pixels");
+#define PLUGIN_CLASS InterpolatePixelsMain
+#define PLUGIN_CONFIG_CLASS InterpolatePixelsConfig
+#define PLUGIN_THREAD_CLASS InterpolatePixelsThread
+#define PLUGIN_GUI_CLASS InterpolatePixelsWindow
+
+#include "pluginmacros.h"
+
 class InterpolatePixelsMain;
 
 #define TOTAL_PATTERNS 2
 
 #include "bchash.h"
+#include "language.h"
 #include "loadbalance.h"
-#include "mutex.h"
 #include "pluginvclient.h"
 #include <sys/types.h>
 
@@ -36,18 +47,18 @@ class InterpolatePixelsConfig
 {
 public:
 	InterpolatePixelsConfig();
+
 	int equivalent(InterpolatePixelsConfig &that);
 	void copy_from(InterpolatePixelsConfig &that);
 	void interpolate(InterpolatePixelsConfig &prev,
 	InterpolatePixelsConfig &next,
-		posnum prev_position,
-		posnum next_position,
-		posnum current_position);
+		ptstime prev_position,
+		ptstime next_position,
+		ptstime current_position);
 	int x, y;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
-class InterpolatePixelsThread;
-class InterpolatePixelsWindow;
 class InterpolatePixelsEngine;
 
 class InterpolatePixelsOffset : public BC_ISlider
@@ -67,20 +78,17 @@ public:
 class InterpolatePixelsWindow : public BC_Window
 {
 public:
-	InterpolatePixelsWindow(InterpolatePixelsMain *client, int x, int y);
+	InterpolatePixelsWindow(InterpolatePixelsMain *plugin, int x, int y);
 	~InterpolatePixelsWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 
-	InterpolatePixelsMain *client;
 	InterpolatePixelsOffset *x_offset;
 	InterpolatePixelsOffset *y_offset;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(InterpolatePixelsMain, 
-	InterpolatePixelsThread, 
-	InterpolatePixelsWindow);
+PLUGIN_THREAD_HEADER
 
 class InterpolatePixelsMain : public PluginVClient
 {
@@ -88,14 +96,10 @@ public:
 	InterpolatePixelsMain(PluginServer *server);
 	~InterpolatePixelsMain();
 
-	PLUGIN_CLASS_MEMBERS(InterpolatePixelsConfig, InterpolatePixelsThread);
+	PLUGIN_CLASS_MEMBERS
 
-// required for all realtime plugins
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
-	void update_gui();
+	void process_frame(VFrame *frame);
+
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void load_defaults();
