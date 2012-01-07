@@ -19,33 +19,31 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("Fields to frames")
+#define PLUGIN_CLASS FieldFrame
+#define PLUGIN_CONFIG_CLASS FieldFrameConfig
+#define PLUGIN_THREAD_CLASS FieldFrameThread
+#define PLUGIN_GUI_CLASS FieldFrameWindow
+
+#include "pluginmacros.h"
+
 #include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
-#include "transportque.h"
 #include "language.h"
-#include "mainprogress.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
-#include "transportque.inc"
 #include "vframe.h"
 
 #include <string.h>
 
-
 #define TOP_FIELD_FIRST 0
 #define BOTTOM_FIELD_FIRST 1
-
-class FieldFrame;
-class FieldFrameWindow;
-
-
-
-
-
-
 
 class FieldFrameConfig
 {
@@ -53,16 +51,14 @@ public:
 	FieldFrameConfig();
 	int equivalent(FieldFrameConfig &src);
 	int field_dominance;
-	int first_frame;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
-
-
 
 class FieldFrameTop : public BC_Radial
 {
 public:
 	FieldFrameTop(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
+
 	int handle_event();
 	FieldFrame *plugin;
 	FieldFrameWindow *gui;
@@ -73,6 +69,7 @@ class FieldFrameBottom : public BC_Radial
 {
 public:
 	FieldFrameBottom(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
+
 	int handle_event();
 	FieldFrame *plugin;
 	FieldFrameWindow *gui;
@@ -83,15 +80,16 @@ class FieldFrameWindow : public BC_Window
 {
 public:
 	FieldFrameWindow(FieldFrame *plugin, int x, int y);
-	void create_objects();
-	void close_event();
-	FieldFrame *plugin;
+
+	void update();
+
 	FieldFrameTop *top;
 	FieldFrameBottom *bottom;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(FieldFrame, FieldFrameThread, FieldFrameWindow)
+PLUGIN_THREAD_HEADER
 
 
 class FieldFrame : public PluginVClient
@@ -100,52 +98,32 @@ public:
 	FieldFrame(PluginServer *server);
 	~FieldFrame();
 
-	PLUGIN_CLASS_MEMBERS(FieldFrameConfig, FieldFrameThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
+
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void apply_field(VFrame *output, VFrame *input, int field);
-
 
 	VFrame *input;
 };
 
 
-
-
-
-
-
-
-REGISTER_PLUGIN(FieldFrame)
-
-
+REGISTER_PLUGIN
 
 
 FieldFrameConfig::FieldFrameConfig()
 {
 	field_dominance = TOP_FIELD_FIRST;
-	first_frame = 0;
 }
 
 int FieldFrameConfig::equivalent(FieldFrameConfig &src)
 {
-	return src.field_dominance == field_dominance &&
-		src.first_frame == first_frame;
+	return src.field_dominance == field_dominance;
 }
-
-
-
-
-
-
 
 
 FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin, int x, int y)
@@ -160,23 +138,18 @@ FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-void FieldFrameWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
+	x = y = 10;
 	add_subwindow(top = new FieldFrameTop(plugin, this, x, y));
 	y += 30;
 	add_subwindow(bottom = new FieldFrameBottom(plugin, this, x, y));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(FieldFrameWindow)
+void FieldFrameWindow::update()
+{
+	top->update(plugin->config.field_dominance == TOP_FIELD_FIRST);
+	bottom->update(plugin->config.field_dominance == BOTTOM_FIELD_FIRST);
+}
 
 
 FieldFrameTop::FieldFrameTop(FieldFrame *plugin, 
@@ -200,6 +173,7 @@ int FieldFrameTop::handle_event()
 	return 1;
 }
 
+
 FieldFrameBottom::FieldFrameBottom(FieldFrame *plugin, 
 	FieldFrameWindow *gui, 
 	int x, 
@@ -222,35 +196,23 @@ int FieldFrameBottom::handle_event()
 }
 
 
-PLUGIN_THREAD_OBJECT(FieldFrame, FieldFrameThread, FieldFrameWindow)
+PLUGIN_THREAD_METHODS
 
 
 FieldFrame::FieldFrame(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	input = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
-
 
 FieldFrame::~FieldFrame()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(input) delete input;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* FieldFrame::plugin_title() { return N_("Fields to frames"); }
-int FieldFrame::is_realtime() { return 1; }
-
-
-NEW_PICON_MACRO(FieldFrame)
-
-SHOW_GUI_MACRO(FieldFrame, FieldFrameThread)
-
-RAISE_WINDOW_MACRO(FieldFrame)
-
-SET_STRING_MACRO(FieldFrame);
+PLUGIN_CLASS_METHODS
 
 int FieldFrame::load_configuration()
 {
@@ -263,25 +225,16 @@ int FieldFrame::load_configuration()
 	return !old_config.equivalent(config);
 }
 
-
 void FieldFrame::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sfieldframe.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("fieldframe.rc");
 
 	config.field_dominance = defaults->get("DOMINANCE", config.field_dominance);
-	config.first_frame = defaults->get("FIRST_FRAME", config.first_frame);
 }
 
 void FieldFrame::save_defaults()
 {
 	defaults->update("DOMINANCE", config.field_dominance);
-	defaults->update("FIRST_FRAME", config.first_frame);
 	defaults->save();
 }
 
@@ -293,7 +246,6 @@ void FieldFrame::save_data(KeyFrame *keyframe)
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("FIELD_FRAME");
 	output.tag.set_property("DOMINANCE", config.field_dominance);
-	output.tag.set_property("FIRST_FRAME", config.first_frame);
 	output.append_tag();
 	output.tag.set_title("/FIELD_FRAME");
 	output.append_tag();
@@ -306,37 +258,17 @@ void FieldFrame::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("FIELD_FRAME"))
 		{
 			config.field_dominance = input.tag.get_property("DOMINANCE", config.field_dominance);
-			config.first_frame = input.tag.get_property("FIRST_FRAME", config.first_frame);
 		}
 	}
 }
 
-
-void FieldFrame::update_gui()
+void FieldFrame::process_frame(VFrame *frame)
 {
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->top->update(config.field_dominance == TOP_FIELD_FIRST);
-			thread->window->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
-		}
-	}
-}
-
-
-int FieldFrame::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
-{
-	int result = 0;
 	load_configuration();
 
 	if(input && !input->equivalent(frame, 0))
@@ -353,33 +285,21 @@ int FieldFrame::process_buffer(VFrame *frame,
 			frame->get_color_model());
 	}
 
-// Get input frames
-	int64_t field1_position = start_position * 2;
-	int64_t field2_position = start_position * 2 + 1;
+	input->copy_pts(frame);
+	get_frame(input);
+	frame->copy_pts(input);
 
-	if (get_direction() == PLAY_REVERSE)
-	{
-		field1_position -= 1;
-		field2_position -= 1;
-	}
-
-	read_frame(input, 
-		0, 
-		field1_position,
-		frame_rate * 2);
 	apply_field(frame, 
 		input, 
 		config.field_dominance == TOP_FIELD_FIRST ? 0 : 1);
-	read_frame(input, 
-		0, 
-		field2_position,
-		frame_rate * 2);
+	input->set_pts(input->next_pts() + EPSILON);
+	get_frame(input);
+
 	apply_field(frame, 
 		input, 
 		config.field_dominance == TOP_FIELD_FIRST ? 1 : 0);
-	return result;
+	frame->set_duration(input->next_pts() - frame->get_pts());
 }
-
 
 void FieldFrame::apply_field(VFrame *output, VFrame *input, int field)
 {
