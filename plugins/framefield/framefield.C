@@ -18,8 +18,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_TITLE N_("Frames to fields")
+#define PLUGIN_CLASS FrameField
+#define PLUGIN_CONFIG_CLASS FrameFieldConfig
+#define PLUGIN_THREAD_CLASS FrameFieldThread
+#define PLUGIN_GUI_CLASS FrameFieldWindow
+
+#include "pluginmacros.h"
+
 #include "bcsignals.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -28,32 +38,27 @@
 #include "language.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
-#include "transportque.inc"
 #include "vframe.h"
 
 #include <string.h>
 #include <stdint.h>
 
-
 #define TOP_FIELD_FIRST 0
 #define BOTTOM_FIELD_FIRST 1
-
-class FrameField;
-class FrameFieldWindow;
-
-
 
 // 601 to RGB expansion is provided as a convenience for OpenGL users since
 // frame bobbing is normally done during playback together with 601 to RGB expansion.
 // It's not optimized for software.
 
-
 class FrameFieldConfig
 {
 public:
 	FrameFieldConfig();
+
 	int equivalent(FrameFieldConfig &src);
+
 	int field_dominance;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -108,16 +113,16 @@ class FrameFieldWindow : public BC_Window
 {
 public:
 	FrameFieldWindow(FrameField *plugin, int x, int y);
-	void create_objects();
-	void close_event();
-	FrameField *plugin;
+
+	void update();
+
 	FrameFieldTop *top;
 	FrameFieldBottom *bottom;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(FrameField, FrameFieldThread, FrameFieldWindow)
-
+PLUGIN_THREAD_HEADER
 
 
 class FrameField : public PluginVClient
@@ -126,31 +131,26 @@ public:
 	FrameField(PluginServer *server);
 	~FrameField();
 
-	PLUGIN_CLASS_MEMBERS(FrameFieldConfig, FrameFieldThread);
+	PLUGIN_CLASS_MEMBERS
 
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
+
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 
 // Constructs odd or even rows from the average of the surrounding rows.
 	void average_rows(int offset, VFrame *frame);
 
 	void handle_opengl();
 
-// Last frame requested
-	framenum last_frame;
 // Field needed
-	framenum field_number;
-// Frame needed
-	framenum current_frame_number;
+	int field_number;
+
 // Frame stored
-	framenum src_frame_number;
+	ptstime current_frame_pts;
+	ptstime current_frame_duration;
 	VFrame *src_frame;
 
 // Temporary storage of input frame for OpenGL
@@ -163,7 +163,7 @@ public:
 	int rgb601_direction;
 };
 
-REGISTER_PLUGIN(FrameField)
+REGISTER_PLUGIN
 
 FrameFieldConfig::FrameFieldConfig()
 {
@@ -187,24 +187,18 @@ FrameFieldWindow::FrameFieldWindow(FrameField *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
-
-void FrameFieldWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
+	x = y = 10;
 	add_subwindow(top = new FrameFieldTop(plugin, this, x, y));
 	y += top->get_h() + 5;
 	add_subwindow(bottom = new FrameFieldBottom(plugin, this, x, y));
-	y += bottom->get_h() + 5;
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(FrameFieldWindow)
-
+void FrameFieldWindow::update()
+{
+	top->update(plugin->config.field_dominance == TOP_FIELD_FIRST);
+	bottom->update(plugin->config.field_dominance == BOTTOM_FIELD_FIRST);
+}
 
 
 FrameFieldTop::FrameFieldTop(FrameField *plugin, 
@@ -229,9 +223,6 @@ int FrameFieldTop::handle_event()
 }
 
 
-
-
-
 FrameFieldBottom::FrameFieldBottom(FrameField *plugin, 
 	FrameFieldWindow *gui, 
 	int x, 
@@ -253,63 +244,40 @@ int FrameFieldBottom::handle_event()
 	return 1;
 }
 
-PLUGIN_THREAD_OBJECT(FrameField, FrameFieldThread, FrameFieldWindow)
-
+PLUGIN_THREAD_METHODS
 
 FrameField::FrameField(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	field_number = 0;
-	src_frame = 0;
-	src_frame_number = -1;
-	last_frame = -1;
+	current_frame_pts = -1;
+	current_frame_duration = 0;
 	src_texture = 0;
 	aggregate_rgb601 = 0;
 	rgb601_direction = 0;
+	src_frame = 0;
+	src_texture = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
-
 
 FrameField::~FrameField()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(src_frame) delete src_frame;
 	if(src_texture) delete src_texture;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
+PLUGIN_CLASS_METHODS
 
-// 0 - current frame field 0, prev frame field 1
-// 1 - current frame field 0, current frame field 1, copy current to prev
-// 2 - current frame field 0, prev frame field 1
-
-int FrameField::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
+void FrameField::process_frame(VFrame *frame)
 {
+	VFrame *ptr = frame;
+
 	load_configuration();
 
 	new_frame = 0;
 
-// Calculate current field based on absolute position so the algorithm isn't
-// relative to where playback started.
-	field_number = get_source_position() % 2;
-
-	if (get_direction() == PLAY_REVERSE)
-	{
-		start_position++;
-		field_number = (field_number + 1) % 2;
-	}
-
-
-	current_frame_number = start_position / 2;
-
-	VFrame *ptr = frame;
-	if(get_use_opengl())
-	{
-// Read new frames directly into output frame for hardware
-	}
-	else
+	if(!get_use_opengl())
 	{
 // Read into temporary for software
 		if(src_frame &&
@@ -321,34 +289,38 @@ int FrameField::process_buffer(VFrame *frame,
 
 		if(!src_frame)
 		{
-			src_frame = new VFrame(0, 
-				frame->get_w(), 
-				frame->get_h(), 
+			src_frame = new VFrame(0,
+				frame->get_w(),
+				frame->get_h(),
 				frame->get_color_model());
 		}
+		src_frame->copy_pts(frame);
 		ptr = src_frame;
 	}
 
-
 // Import source frame at half frame rate
-	if(current_frame_number != src_frame_number ||
-// If same frame was requested, assume it was a configuration change and reprocess.
-		start_position == last_frame)
+	if(!(current_frame_pts <= source_pts && 
+		source_pts < current_frame_pts + current_frame_duration - EPSILON))
 	{
-		read_frame(ptr, 
-			0, 
-			current_frame_number, 
-			frame_rate / 2,
-			get_use_opengl());
-		src_frame_number = current_frame_number;
+// Get frame
+		get_frame(ptr, get_use_opengl());
+		current_frame_pts = ptr->get_pts();
+		current_frame_duration = ptr->get_duration();
 		new_frame = 1;
 	}
 
+	field_number = (source_pts < current_frame_pts + current_frame_duration / 2.2) ? 0 : 1;
+
+	if(field_number)
+		frame->set_pts(current_frame_pts + current_frame_duration / 2);
+	else
+		frame->set_pts(current_frame_pts);
+	frame->set_duration(current_frame_duration / 2);
 
 	if(get_use_opengl())
 	{
 		run_opengl();
-		return 0;
+		return;
 	}
 
 	int row_size = VFrame::calculate_bytes_per_pixel(frame->get_color_model()) * 
@@ -357,7 +329,6 @@ int FrameField::process_buffer(VFrame *frame,
 
 	unsigned char **src_rows = src_frame->get_rows();
 	unsigned char **output_rows = frame->get_rows();
-
 
 // Even field
 	if(field_number == 0)
@@ -419,11 +390,7 @@ int FrameField::process_buffer(VFrame *frame,
 			average_rows(0, frame);
 		}
 	}
-
-	last_frame = start_position;
-	return 0;
 }
-
 
 // Averaging 2 pixels
 #define AVERAGE(type, temp_type, components, offset) \
@@ -529,25 +496,12 @@ void FrameField::average_rows(int offset, VFrame *frame)
 	}
 }
 
-
-
-const char* FrameField::plugin_title() { return N_("Frames to fields"); }
-int FrameField::is_realtime() { return 1; }
-
-NEW_PICON_MACRO(FrameField) 
-
-SHOW_GUI_MACRO(FrameField, FrameFieldThread)
-
-RAISE_WINDOW_MACRO(FrameField)
-
-SET_STRING_MACRO(FrameField);
-
 int FrameField::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	FrameFieldConfig old_config = config;
 
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
 
 	return !old_config.equivalent(config);
@@ -555,13 +509,7 @@ int FrameField::load_configuration()
 
 void FrameField::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sframefield.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("framefield.rc");
 
 	config.field_dominance = defaults->get("DOMINANCE", config.field_dominance);
 }
@@ -592,27 +540,11 @@ void FrameField::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("FRAME_FIELD"))
 		{
 			config.field_dominance = input.tag.get_property("DOMINANCE", config.field_dominance);
-		}
-	}
-}
-
-void FrameField::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window();
-			thread->window->top->update(config.field_dominance == TOP_FIELD_FIRST);
-			thread->window->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
-			thread->window->unlock_window();
 		}
 	}
 }
