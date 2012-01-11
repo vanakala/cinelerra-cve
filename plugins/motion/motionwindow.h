@@ -20,7 +20,7 @@
  */
 
 #include "guicast.h"
-#include "motion.inc"
+#include "motion.h"
 
 class MasterLayer : public BC_PopupMenu
 {
@@ -249,7 +249,6 @@ public:
 	MotionMain *plugin;
 };
 
-
 class MotionDrawVectors : public BC_CheckBox
 {
 public:
@@ -299,15 +298,13 @@ public:
 };
 
 
-
 class MotionWindow : public BC_Window
 {
 public:
 	MotionWindow(MotionMain *plugin, int x, int y);
 	~MotionWindow();
 
-	int create_objects();
-	void close_event();
+	void update();
 	void update_mode();
 	char* get_radius_title();
 
@@ -339,14 +336,7 @@ public:
 	Mode2 *mode2;
 	Mode3 *mode3;
 
-	MotionMain *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-
-
-PLUGIN_THREAD_HEADER(MotionMain, MotionThread, MotionWindow)
-
-
-
-
-
+PLUGIN_THREAD_HEADER

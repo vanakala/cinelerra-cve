@@ -19,13 +19,12 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "language.h"
 #include "motion.h"
 #include "motionwindow.h"
 
-PLUGIN_THREAD_OBJECT(MotionMain, MotionThread, MotionWindow)
+PLUGIN_THREAD_METHODS
 
 MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
@@ -38,21 +37,12 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
 	0, 
 	1)
 {
-	this->plugin = plugin; 
-}
-
-MotionWindow::~MotionWindow()
-{
-}
-
-int MotionWindow::create_objects()
-{
-	int x1 = 10, x = 10, y = 10;
+	int x1 = 10; 
 	int x2 = 310;
 	BC_Title *title;
-	VFrame *ico = plugin->new_picon();
 
-	set_icon(ico);
+	x = 10, y = 10;
+
 	add_subwindow(global = new MotionGlobal(plugin,
 		this,
 		x1,
@@ -178,15 +168,15 @@ int MotionWindow::create_objects()
 		y));
 	add_subwindow(title = new BC_Title(x + track_single->get_w() + 20, 
 		y, 
-		_("Frame number:")));
+		_("Abs position (s):")));
 	add_subwindow(track_frame_number = new TrackFrameNumber(plugin, 
 		this,
 		x + track_single->get_w() + title->get_w() + 20, 
 		y));
 	add_subwindow(addtrackedframeoffset = new AddTrackedFrameOffset(plugin,
 		this,
-		x + track_single->get_w() + title->get_w() + 20 + track_frame_number->get_w(),
-		y));
+		x + track_single->get_w() + title->get_w() + 10,
+		y + track_frame_number->get_h() + 10));
 
 	y += 20;
 	add_subwindow(track_previous = new TrackPreviousFrame(plugin, 
@@ -224,11 +214,49 @@ int MotionWindow::create_objects()
 		x + title->get_w() + 10, 
 		y));
 	mode2->create_objects();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
+}
 
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+MotionWindow::~MotionWindow()
+{
+}
+
+void MotionWindow::update()
+{
+	char string[BCTEXTLEN];
+
+	sprintf(string, "%d", plugin->config.global_positions);
+	global_search_positions->set_text(string);
+
+	sprintf(string, "%d", plugin->config.rotate_positions);
+	rotation_search_positions->set_text(string);
+
+	global_block_w->update(plugin->config.global_block_w);
+	global_block_h->update(plugin->config.global_block_h);
+	rotation_block_w->update(plugin->config.rotation_block_w);
+	rotation_block_h->update(plugin->config.rotation_block_h);
+	block_x->update(plugin->config.block_x);
+	block_y->update(plugin->config.block_y);
+	block_x_text->update((float)plugin->config.block_x);
+	block_y_text->update((float)plugin->config.block_y);
+	magnitude->update(plugin->config.magnitude);
+	return_speed->update(plugin->config.return_speed);
+	track_single->update(plugin->config.mode3 == MotionConfig::TRACK_SINGLE);
+	track_frame_number->update((float)plugin->config.track_pts);
+	track_previous->update(plugin->config.mode3 == MotionConfig::TRACK_PREVIOUS);
+	previous_same->update(plugin->config.mode3 == MotionConfig::PREVIOUS_SAME_BLOCK);
+	if(plugin->config.mode3 != MotionConfig::TRACK_SINGLE)
+		track_frame_number->disable();
+	else
+		track_frame_number->enable();
+
+	mode1->set_text(Mode1::to_text(plugin->config.mode1));
+	mode2->set_text(Mode2::to_text(plugin->config.mode2));
+	mode3->set_text(Mode3::to_text(plugin->config.horizontal_only, 
+		plugin->config.vertical_only));
+	master_layer->set_text(MasterLayer::to_text(plugin->config.bottom_is_master));
+
+	update_mode();
 }
 
 void MotionWindow::update_mode()
@@ -249,9 +277,6 @@ void MotionWindow::update_mode()
 }
 
 
-WINDOW_CLOSE_EVENT(MotionWindow)
-
-
 GlobalRange::GlobalRange(MotionMain *plugin, 
 	int x, 
 	int y,
@@ -265,7 +290,6 @@ GlobalRange::GlobalRange(MotionMain *plugin,
 	this->plugin = plugin;
 	this->value = value;
 }
-
 
 int GlobalRange::handle_event()
 {
@@ -287,13 +311,13 @@ RotationRange::RotationRange(MotionMain *plugin,
 	this->plugin = plugin;
 }
 
-
 int RotationRange::handle_event()
 {
 	plugin->config.rotation_range = (int)get_value();
 	plugin->send_configure_change();
 	return 1;
 }
+
 
 BlockSize::BlockSize(MotionMain *plugin, 
 	int x, 
@@ -308,7 +332,6 @@ BlockSize::BlockSize(MotionMain *plugin,
 	this->plugin = plugin;
 	this->value = value;
 }
-
 
 int BlockSize::handle_event()
 {
@@ -330,6 +353,7 @@ GlobalSearchPositions::GlobalSearchPositions(MotionMain *plugin,
 {
 	this->plugin = plugin;
 }
+
 void GlobalSearchPositions::create_objects()
 {
 	add_item(new BC_MenuItem("64"));
@@ -429,7 +453,6 @@ int MotionReturnSpeed::handle_event()
 }
 
 
-
 AddTrackedFrameOffset::AddTrackedFrameOffset(MotionMain *plugin, 
 	MotionWindow *gui,
 	int x, 
@@ -471,6 +494,7 @@ int MotionGlobal::handle_event()
 	return 1;
 }
 
+
 MotionRotate::MotionRotate(MotionMain *plugin, 
 	MotionWindow *gui,
 	int x, 
@@ -490,6 +514,7 @@ int MotionRotate::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
+
 
 MotionBlockX::MotionBlockX(MotionMain *plugin, 
 	MotionWindow *gui,
@@ -632,7 +657,7 @@ TrackFrameNumber::TrackFrameNumber(MotionMain *plugin,
 	MotionWindow *gui,
 	int x, 
 	int y)
- : BC_TextBox(x, y, 100, 1, plugin->config.track_frame)
+ : BC_TextBox(x, y, 100, 1, (float)plugin->config.track_pts)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -641,7 +666,7 @@ TrackFrameNumber::TrackFrameNumber(MotionMain *plugin,
 
 int TrackFrameNumber::handle_event()
 {
-	plugin->config.track_frame = atol(get_text());
+	plugin->config.track_pts = atof(get_text());
 	plugin->send_configure_change();
 	return 1;
 }
@@ -844,18 +869,17 @@ const char* Mode2::to_text(int mode)
 {
 	switch(mode)
 	{
-		case MotionConfig::NO_CALCULATE:
-			return _("Don't Calculate");
-			break;
-		case MotionConfig::RECALCULATE:
-			return _("Recalculate");
-			break;
-		case MotionConfig::SAVE:
-			return _("Save coords to /tmp");
-			break;
-		case MotionConfig::LOAD:
-			return _("Load coords from /tmp");
-			break;
+	case MotionConfig::NO_CALCULATE:
+		return _("Don't Calculate");
+
+	case MotionConfig::RECALCULATE:
+		return _("Recalculate");
+
+	case MotionConfig::SAVE:
+		return _("Save coords to /tmp");
+
+	case MotionConfig::LOAD:
+		return _("Load coords from /tmp");
 	}
 }
 

@@ -20,7 +20,6 @@
  */
 
 #include "affine.h"
-#include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -38,7 +37,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-REGISTER_PLUGIN(MotionMain)
+REGISTER_PLUGIN
 
 static void sort(int *array, int total)
 {
@@ -58,7 +57,6 @@ static void sort(int *array, int total)
 		}
 	}
 }
-
 
 
 MotionConfig::MotionConfig()
@@ -84,7 +82,7 @@ MotionConfig::MotionConfig()
 	mode2 = NO_CALCULATE;
 	draw_vectors = 1;
 	mode3 = MotionConfig::TRACK_SINGLE;
-	track_frame = 0;
+	track_pts = 0;
 	bottom_is_master = 1;
 	horizontal_only = 0;
 	vertical_only = 0;
@@ -124,7 +122,7 @@ int MotionConfig::equivalent(MotionConfig &that)
 		magnitude == that.magnitude &&
 		return_speed == that.return_speed &&
 		mode3 == that.mode3 &&
-		track_frame == that.track_frame &&
+		PTSEQU(track_pts, that.track_pts) &&
 		bottom_is_master == that.bottom_is_master &&
 		horizontal_only == that.horizontal_only &&
 		vertical_only == that.vertical_only;
@@ -153,7 +151,7 @@ void MotionConfig::copy_from(MotionConfig &that)
 	magnitude = that.magnitude;
 	return_speed = that.return_speed;
 	mode3 = that.mode3;
-	track_frame = that.track_frame;
+	track_pts = that.track_pts;
 	bottom_is_master = that.bottom_is_master;
 	horizontal_only = that.horizontal_only;
 	vertical_only = that.vertical_only;
@@ -161,12 +159,12 @@ void MotionConfig::copy_from(MotionConfig &that)
 
 void MotionConfig::interpolate(MotionConfig &prev, 
 	MotionConfig &next, 
-	posnum prev_frame, 
-	posnum next_frame, 
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
-	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	PLUGIN_CONFIG_INTERPOLATE_MACRO
+
 	this->block_x = prev.block_x;
 	this->block_y = prev.block_y;
 	global_range_w = prev.global_range_w;
@@ -188,7 +186,7 @@ void MotionConfig::interpolate(MotionConfig &prev,
 	magnitude = prev.magnitude;
 	return_speed = prev.return_speed;
 	mode3 = prev.mode3;
-	track_frame = prev.track_frame;
+	track_pts = prev.track_pts;
 	bottom_is_master = prev.bottom_is_master;
 	horizontal_only = prev.horizontal_only;
 	vertical_only = prev.vertical_only;
@@ -198,7 +196,6 @@ void MotionConfig::interpolate(MotionConfig &prev,
 MotionMain::MotionMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	rotate_engine = 0;
 	motion_rotate = 0;
@@ -209,8 +206,6 @@ MotionMain::MotionMain(PluginServer *server)
 	search_area = 0;
 	search_size = 0;
 	temp_frame = 0;
-	previous_frame_number = -1;
-
 	prev_global_ref = 0;
 	current_global_ref = 0;
 	global_target_src = 0;
@@ -220,11 +215,11 @@ MotionMain::MotionMain(PluginServer *server)
 	current_rotate_ref = 0;
 	rotate_target_src = 0;
 	rotate_target_dst = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 MotionMain::~MotionMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	delete engine;
 	delete overlayer;
 	delete [] search_area;
@@ -242,83 +237,14 @@ MotionMain::~MotionMain()
 	delete current_rotate_ref;
 	delete rotate_target_src;
 	delete rotate_target_dst;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* MotionMain::plugin_title() { return N_("Motion"); }
-int MotionMain::is_realtime() { return 1; }
-int MotionMain::is_multichannel() { return 1; }
-
-NEW_PICON_MACRO(MotionMain)
-
-SHOW_GUI_MACRO(MotionMain, MotionThread)
-
-SET_STRING_MACRO(MotionMain)
-
-RAISE_WINDOW_MACRO(MotionMain)
-
-LOAD_CONFIGURATION_MACRO(MotionMain, MotionConfig)
-
-void MotionMain::update_gui()
-{
-	if(thread)
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("MotionMain::update_gui");
-
-			char string[BCTEXTLEN];
-			sprintf(string, "%d", config.global_positions);
-			thread->window->global_search_positions->set_text(string);
-			sprintf(string, "%d", config.rotate_positions);
-			thread->window->rotation_search_positions->set_text(string);
-
-			thread->window->global_block_w->update(config.global_block_w);
-			thread->window->global_block_h->update(config.global_block_h);
-			thread->window->rotation_block_w->update(config.rotation_block_w);
-			thread->window->rotation_block_h->update(config.rotation_block_h);
-			thread->window->block_x->update(config.block_x);
-			thread->window->block_y->update(config.block_y);
-			thread->window->block_x_text->update((float)config.block_x);
-			thread->window->block_y_text->update((float)config.block_y);
-			thread->window->magnitude->update(config.magnitude);
-			thread->window->return_speed->update(config.return_speed);
-
-
-			thread->window->track_single->update(config.mode3 == MotionConfig::TRACK_SINGLE);
-			thread->window->track_frame_number->update((int64_t)config.track_frame);
-			thread->window->track_previous->update(config.mode3 == MotionConfig::TRACK_PREVIOUS);
-			thread->window->previous_same->update(config.mode3 == MotionConfig::PREVIOUS_SAME_BLOCK);
-			if(config.mode3 != MotionConfig::TRACK_SINGLE)
-				thread->window->track_frame_number->disable();
-			else
-				thread->window->track_frame_number->enable();
-
-			thread->window->mode1->set_text(
-				Mode1::to_text(config.mode1));
-			thread->window->mode2->set_text(
-				Mode2::to_text(config.mode2));
-			thread->window->mode3->set_text(
-				Mode3::to_text(config.horizontal_only, config.vertical_only));
-			thread->window->master_layer->set_text(
-				MasterLayer::to_text(config.bottom_is_master));
-
-
-			thread->window->update_mode();
-			thread->window->unlock_window();
-		}
-	}
-}
-
+PLUGIN_CLASS_METHODS
 
 void MotionMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%smotion.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("motion.rc");
 
 	config.block_count = defaults->get("BLOCK_COUNT", config.block_count);
 	config.global_positions = defaults->get("GLOBAL_POSITIONS", config.global_positions);
@@ -340,13 +266,15 @@ void MotionMain::load_defaults()
 	config.mode2 = defaults->get("MODE2", config.mode2);
 	config.draw_vectors = defaults->get("DRAW_VECTORS", config.draw_vectors);
 	config.mode3 = defaults->get("MODE3", config.mode3);
-	config.track_frame = defaults->get("TRACK_FRAME", config.track_frame);
+	framenum track_frame = defaults->get("TRACK_FRAME", -1);
+	if(track_frame >= 0)
+		config.track_pts = track_frame / get_project_framerate();
+	config.track_pts = defaults->get("TRACK_PTS", config.track_pts);
 	config.bottom_is_master = defaults->get("BOTTOM_IS_MASTER", config.bottom_is_master);
 	config.horizontal_only = defaults->get("HORIZONTAL_ONLY", config.horizontal_only);
 	config.vertical_only = defaults->get("VERTICAL_ONLY", config.vertical_only);
 	config.boundaries();
 }
-
 
 void MotionMain::save_defaults()
 {
@@ -370,14 +298,13 @@ void MotionMain::save_defaults()
 	defaults->update("MODE2", config.mode2);
 	defaults->update("DRAW_VECTORS", config.draw_vectors);
 	defaults->update("MODE3", config.mode3);
-	defaults->update("TRACK_FRAME", config.track_frame);
+	defaults->delete_key("TRACK_FRAME");
+	defaults->update("TRACK_PTS", config.track_pts);
 	defaults->update("BOTTOM_IS_MASTER", config.bottom_is_master);
 	defaults->update("HORIZONTAL_ONLY", config.horizontal_only);
 	defaults->update("VERTICAL_ONLY", config.vertical_only);
 	defaults->save();
 }
-
-
 
 void MotionMain::save_data(KeyFrame *keyframe)
 {
@@ -408,7 +335,7 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MODE2", config.mode2);
 	output.tag.set_property("DRAW_VECTORS", config.draw_vectors);
 	output.tag.set_property("MODE3", config.mode3);
-	output.tag.set_property("TRACK_FRAME", config.track_frame);
+	output.tag.set_property("TRACK_PTS", config.track_pts);
 	output.tag.set_property("BOTTOM_IS_MASTER", config.bottom_is_master);
 	output.tag.set_property("HORIZONTAL_ONLY", config.horizontal_only);
 	output.tag.set_property("VERTICAL_ONLY", config.vertical_only);
@@ -424,47 +351,42 @@ void MotionMain::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
-	while(!result)
+	while(!input.read_tag())
 	{
-		result = input.read_tag();
-
-		if(!result)
+		if(input.tag.title_is("MOTION"))
 		{
-			if(input.tag.title_is("MOTION"))
-			{
-				config.block_count = input.tag.get_property("BLOCK_COUNT", config.block_count);
-				config.global_positions = input.tag.get_property("GLOBAL_POSITIONS", config.global_positions);
-				config.rotate_positions = input.tag.get_property("ROTATE_POSITIONS", config.rotate_positions);
-				config.global_block_w = input.tag.get_property("GLOBAL_BLOCK_W", config.global_block_w);
-				config.global_block_h = input.tag.get_property("GLOBAL_BLOCK_H", config.global_block_h);
-				config.rotation_block_w = input.tag.get_property("ROTATION_BLOCK_W", config.rotation_block_w);
-				config.rotation_block_h = input.tag.get_property("ROTATION_BLOCK_H", config.rotation_block_h);
-				config.block_x = input.tag.get_property("BLOCK_X", config.block_x);
-				config.block_y = input.tag.get_property("BLOCK_Y", config.block_y);
-				config.global_range_w = input.tag.get_property("GLOBAL_RANGE_W", config.global_range_w);
-				config.global_range_h = input.tag.get_property("GLOBAL_RANGE_H", config.global_range_h);
-				config.rotation_range = input.tag.get_property("ROTATION_RANGE", config.rotation_range);
-				config.magnitude = input.tag.get_property("MAGNITUDE", config.magnitude);
-				config.return_speed = input.tag.get_property("RETURN_SPEED", config.return_speed);
-				config.mode1 = input.tag.get_property("MODE1", config.mode1);
-				config.global = input.tag.get_property("GLOBAL", config.global);
-				config.rotate = input.tag.get_property("ROTATE", config.rotate);
-				config.addtrackedframeoffset = input.tag.get_property("ADDTRACKEDFRAMEOFFSET", config.addtrackedframeoffset);
-				config.mode2 = input.tag.get_property("MODE2", config.mode2);
-				config.draw_vectors = input.tag.get_property("DRAW_VECTORS", config.draw_vectors);
-				config.mode3 = input.tag.get_property("MODE3", config.mode3);
-				config.track_frame = input.tag.get_property("TRACK_FRAME", config.track_frame);
-				config.bottom_is_master = input.tag.get_property("BOTTOM_IS_MASTER", config.bottom_is_master);
-				config.horizontal_only = input.tag.get_property("HORIZONTAL_ONLY", config.horizontal_only);
-				config.vertical_only = input.tag.get_property("VERTICAL_ONLY", config.vertical_only);
-			}
+			config.block_count = input.tag.get_property("BLOCK_COUNT", config.block_count);
+			config.global_positions = input.tag.get_property("GLOBAL_POSITIONS", config.global_positions);
+			config.rotate_positions = input.tag.get_property("ROTATE_POSITIONS", config.rotate_positions);
+			config.global_block_w = input.tag.get_property("GLOBAL_BLOCK_W", config.global_block_w);
+			config.global_block_h = input.tag.get_property("GLOBAL_BLOCK_H", config.global_block_h);
+			config.rotation_block_w = input.tag.get_property("ROTATION_BLOCK_W", config.rotation_block_w);
+			config.rotation_block_h = input.tag.get_property("ROTATION_BLOCK_H", config.rotation_block_h);
+			config.block_x = input.tag.get_property("BLOCK_X", config.block_x);
+			config.block_y = input.tag.get_property("BLOCK_Y", config.block_y);
+			config.global_range_w = input.tag.get_property("GLOBAL_RANGE_W", config.global_range_w);
+			config.global_range_h = input.tag.get_property("GLOBAL_RANGE_H", config.global_range_h);
+			config.rotation_range = input.tag.get_property("ROTATION_RANGE", config.rotation_range);
+			config.magnitude = input.tag.get_property("MAGNITUDE", config.magnitude);
+			config.return_speed = input.tag.get_property("RETURN_SPEED", config.return_speed);
+			config.mode1 = input.tag.get_property("MODE1", config.mode1);
+			config.global = input.tag.get_property("GLOBAL", config.global);
+			config.rotate = input.tag.get_property("ROTATE", config.rotate);
+			config.addtrackedframeoffset = input.tag.get_property("ADDTRACKEDFRAMEOFFSET", config.addtrackedframeoffset);
+			config.mode2 = input.tag.get_property("MODE2", config.mode2);
+			config.draw_vectors = input.tag.get_property("DRAW_VECTORS", config.draw_vectors);
+			config.mode3 = input.tag.get_property("MODE3", config.mode3);
+			framenum track_frame = input.tag.get_property("TRACK_FRAME", -1);
+			if(track_frame > 0)
+				config.track_pts = track_frame / get_project_framerate();
+			config.track_pts = input.tag.get_property("TRACK_PTS", config.track_pts);
+			config.bottom_is_master = input.tag.get_property("BOTTOM_IS_MASTER", config.bottom_is_master);
+			config.horizontal_only = input.tag.get_property("HORIZONTAL_ONLY", config.horizontal_only);
+			config.vertical_only = input.tag.get_property("VERTICAL_ONLY", config.vertical_only);
 		}
 	}
 	config.boundaries();
 }
-
 
 void MotionMain::allocate_temp(int w, int h, int color_model)
 {
@@ -513,12 +435,12 @@ void MotionMain::process_global()
 				current_global_ref->get_w() / 100;
 		int block_h = (int64_t)config.global_block_h * 
 				current_global_ref->get_h() / 100;
-		int block_x_orig = (int64_t)(config.block_x * 
+		int block_x_orig = (int64_t)config.block_x * 
 			current_global_ref->get_w() / 
-			100);
-		int block_y_orig = (int64_t)(config.block_y *
+			100;
+		int block_y_orig = (int64_t)config.block_y *
 			current_global_ref->get_h() / 
-			100);
+			100;
 
 		int max_block_x = (int64_t)(current_global_ref->get_w() - block_x_orig) *
 			OVERSAMPLE * 
@@ -546,7 +468,6 @@ void MotionMain::process_global()
 // Transfer current reference frame to previous reference frame and update
 // counter.  Must wait for rotate to compare.
 		prev_global_ref->copy_from(current_global_ref);
-		previous_frame_number = get_source_position();
 	}
 
 // Decide what to do with target based on requested operation
@@ -598,10 +519,9 @@ void MotionMain::process_global()
 			1,
 			TRANSFER_REPLACE,
 			interpolation);
+		global_target_dst->copy_pts(global_target_src);
 	}
 }
-
-
 
 void MotionMain::process_rotation()
 {
@@ -652,13 +572,13 @@ void MotionMain::process_rotation()
 			100 +
 			(float)total_dy / 
 			OVERSAMPLE);
+		prev_rotate_ref->copy_pts(prev_global_ref);
 // Use the global target output as the rotation target input
 		rotate_target_src->copy_from(global_target_dst);
 // Transfer current reference frame to previous reference frame for global.
 		if(config.mode3 != MotionConfig::TRACK_SINGLE)
 		{
 			prev_global_ref->copy_from(current_global_ref);
-			previous_frame_number = get_source_position();
 		}
 	}
 	else
@@ -695,7 +615,6 @@ void MotionMain::process_rotation()
 // Transfer current reference frame to previous reference frame and update
 // counter.
 			prev_rotate_ref->copy_from(current_rotate_ref);
-			previous_frame_number = get_source_position();
 		}
 	}
 	else
@@ -761,15 +680,18 @@ void MotionMain::process_rotation()
 }
 
 
-int MotionMain::process_buffer(VFrame **frame,
-	framenum start_position,
-	double frame_rate)
+void MotionMain::process_frame(VFrame **frame)
 {
 	int need_reconfigure = load_configuration();
 	int color_model = frame[0]->get_color_model();
 	w = frame[0]->get_w();
 	h = frame[0]->get_h();
 
+// Get all frames
+	for(int i = 0; i < total_in_buffers; i++)
+	{
+		get_frame(frame[i]);
+	}
 // Calculate the source and destination pointers for each of the operations.
 // Get the layer to track motion in.
 	reference_layer = config.bottom_is_master ?
@@ -780,64 +702,43 @@ int MotionMain::process_buffer(VFrame **frame,
 		0 :
 		PluginClient::total_in_buffers - 1;
 
-	output_frame = frame[target_layer];
+	ptstime actual_previous_pts;
 
-// Get the position of previous reference frame.
-	framenum actual_previous_number;
 // Skip if match frame not available
 	int skip_current = 0;
 
 	if(config.mode3 == MotionConfig::TRACK_SINGLE)
 	{
-		actual_previous_number = config.track_frame;
-		if(get_direction() == PLAY_REVERSE)
-			actual_previous_number++;
-		if(actual_previous_number == start_position)
+		actual_previous_pts = config.track_pts;
+		if(frame[0]->pts_in_frame(actual_previous_pts))
 			skip_current = 1;
 	}
 	else
 	{
-		actual_previous_number = start_position;
-		if(get_direction() == PLAY_FORWARD)
-		{
-			actual_previous_number--;
-			if(actual_previous_number < get_source_start())
-				skip_current = 1;
-			else
-			{
-				KeyFrame *keyframe = get_prev_keyframe(start_position, 1);
-				if(keyframe->pos_time > 0 &&
-					actual_previous_number < keyframe->get_position())
-					skip_current = 1;
-			}
-		}
+		actual_previous_pts = source_pts - frame[0]->get_duration();
+
+		if(actual_previous_pts < source_start_pts)
+			skip_current = 1;
 		else
 		{
-			actual_previous_number++;
-			if(actual_previous_number >= get_source_start() + get_total_len())
+			KeyFrame *keyframe = prev_keyframe_pts(source_pts);
+			if(keyframe->pos_time > 0 &&
+				actual_previous_pts < keyframe->pos_time)
 				skip_current = 1;
-			else
-			{
-				KeyFrame *keyframe = get_next_keyframe(start_position, 1);
-				if(keyframe->pos_time > 0 &&
-					actual_previous_number >= keyframe->get_position())
-					skip_current = 1;
-			}
 		}
 // Only count motion since last keyframe
 	}
 
 	if(!config.global && !config.rotate) skip_current = 1;
 
-	int need_reload = !skip_current && 
-		(previous_frame_number != actual_previous_number ||
-		need_reconfigure);
+	int need_reload = !skip_current &&
+		(!prev_global_ref || !prev_global_ref->pts_in_frame(actual_previous_pts) ||
+			need_reconfigure);
 	if(need_reload)
 	{
 		total_dx = 0;
 		total_dy = 0;
 		total_angle = 0;
-		previous_frame_number = actual_previous_number;
 	}
 
 	if(skip_current)
@@ -872,34 +773,24 @@ int MotionMain::process_buffer(VFrame **frame,
 // Load the global frames
 		if(need_reload)
 		{
-			read_frame(prev_global_ref, 
-				reference_layer, 
-				previous_frame_number, 
-				frame_rate);
+			prev_global_ref->set_layer(reference_layer);
+			prev_global_ref->set_pts(actual_previous_pts);
+			get_frame(prev_global_ref);
 		}
-
-		read_frame(current_global_ref, 
-			reference_layer, 
-			start_position, 
-			frame_rate);
-		read_frame(global_target_src,
-			target_layer,
-			start_position,
-			frame_rate);
+		current_global_ref->copy_from(frame[reference_layer]);
+		global_target_src->copy_from(frame[target_layer]);
 
 // Global followed by rotate
 		if(config.rotate)
 		{
 // Must translate the previous global reference by the current global
 // accumulation vector to match the current global reference.
-// The center of the search area is always the user value + the accumulation
-// vector.
+// The center of the search area is always the user value + the accumulation vector.
 			if(!prev_rotate_ref)
 				prev_rotate_ref = new VFrame(0, w, h, color_model);
 // The current global reference is the current rotation reference.
 			if(!current_rotate_ref)
 				current_rotate_ref = new VFrame(0, w, h, color_model);
-			current_rotate_ref->copy_from(current_global_ref);
 
 // The global target destination is copied to the rotation target source
 // then written to the rotation output with rotation.
@@ -910,6 +801,8 @@ int MotionMain::process_buffer(VFrame **frame,
 				rotate_target_src = new VFrame(0, w, h, color_model);
 			if(!rotate_target_dst)
 				rotate_target_dst = new VFrame(0, w,h , color_model);
+			rotate_target_src->copy_pts(frame[target_layer]);
+			rotate_target_dst->copy_pts(frame[target_layer]);
 		}
 	}
 	else
@@ -930,23 +823,16 @@ int MotionMain::process_buffer(VFrame **frame,
 		if(!rotate_target_dst)
 			rotate_target_dst = new VFrame(0, w,h , color_model);
 
-
 // Load the rotate frames
 		if(need_reload)
 		{
-			read_frame(prev_rotate_ref, 
-				reference_layer, 
-				previous_frame_number, 
-				frame_rate);
+			prev_rotate_ref->set_layer(reference_layer);
+			prev_rotate_ref->set_pts(actual_previous_pts);
+			get_frame(prev_rotate_ref);
 		}
-		read_frame(current_rotate_ref, 
-			reference_layer, 
-			start_position, 
-			frame_rate);
-		read_frame(rotate_target_src,
-			target_layer,
-			start_position,
-			frame_rate);
+		current_rotate_ref->copy_from(frame[reference_layer]);
+		rotate_target_src->copy_from(frame[target_layer]);
+		rotate_target_dst->copy_pts(frame[target_layer]);
 	}
 
 	if(!skip_current)
@@ -969,23 +855,12 @@ int MotionMain::process_buffer(VFrame **frame,
 			frame[target_layer]->copy_from(global_target_dst);
 		}
 	}
-	else
-// Read the target destination directly
-	{
-		read_frame(frame[target_layer],
-			target_layer,
-			start_position,
-			frame_rate);
-	}
 
 	if(config.draw_vectors)
 	{
 		draw_vectors(frame[target_layer]);
 	}
-
-	return 0;
 }
-
 
 void MotionMain::clamp_scan(int w, 
 	int h, 
@@ -1182,7 +1057,6 @@ void MotionMain::draw_vectors(VFrame *frame)
 		draw_line(frame, block_x2, block_y2, block_x1, block_y2);
 		draw_line(frame, block_x1, block_y2, block_x1, block_y1);
 
-
 // Search area
 		draw_line(frame, search_x1, search_y1, search_x2, search_y1);
 		draw_line(frame, search_x2, search_y1, search_x2, search_y2);
@@ -1235,8 +1109,6 @@ void MotionMain::draw_vectors(VFrame *frame)
 	}
 }
 
-
-
 void MotionMain::draw_pixel(VFrame *frame, int x, int y)
 {
 	if(!(x >= 0 && y >= 0 && x < frame->get_w() && y < frame->get_h())) return;
@@ -1258,7 +1130,6 @@ void MotionMain::draw_pixel(VFrame *frame, int x, int y)
 	if(components == 4) \
 		rows[y][x * components + 3] = max; \
 }
-
 
 	switch(frame->get_color_model())
 	{
@@ -1294,7 +1165,6 @@ void MotionMain::draw_pixel(VFrame *frame, int x, int y)
 		break;
 	}
 }
-
 
 void MotionMain::draw_line(VFrame *frame, int x1, int y1, int x2, int y2)
 {
@@ -1382,7 +1252,6 @@ void MotionMain::draw_arrow(VFrame *frame, int x1, int y1, int x2, int y2)
 	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(frame, x2, y2, x4, y4);
 }
 
-
 #define ABS_DIFF(type, temp_type, multiplier, components) \
 { \
 	temp_type result_temp = 0; \
@@ -1450,8 +1319,6 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 	}
 	return result;
 }
-
-
 
 #define ABS_DIFF_SUB(type, temp_type, multiplier, components) \
 { \
@@ -1551,6 +1418,7 @@ MotionScanPackage::MotionScanPackage()
 	valid = 1;
 }
 
+
 MotionScanUnit::MotionScanUnit(MotionScan *server, 
 	MotionMain *plugin)
  : LoadClient(server)
@@ -1565,7 +1433,6 @@ MotionScanUnit::~MotionScanUnit()
 	delete cache_lock;
 }
 
-
 void MotionScanUnit::process_package(LoadPackage *package)
 {
 	MotionScanPackage *pkg = (MotionScanPackage*)package;
@@ -1574,7 +1441,6 @@ void MotionScanUnit::process_package(LoadPackage *package)
 	int color_model = server->current_frame->get_color_model();
 	int pixel_size = cmodel_calculate_pixelsize(color_model);
 	int row_bytes = server->current_frame->get_bytes_per_line();
-
 
 // Single pixel
 	if(!server->subpixel)
@@ -1652,10 +1518,10 @@ void MotionScanUnit::process_package(LoadPackage *package)
 	}
 }
 
-
 int64_t MotionScanUnit::get_cache(int x, int y)
 {
 	int64_t result = -1;
+
 	cache_lock->lock("MotionScanUnit::get_cache");
 	for(int i = 0; i < cache.total; i++)
 	{
@@ -1692,7 +1558,6 @@ MotionScan::~MotionScan()
 	delete cache_lock;
 }
 
-
 void MotionScan::init_packages()
 {
 // Set package coords
@@ -1726,7 +1591,6 @@ LoadPackage* MotionScan::new_package()
 {
 	return new MotionScanPackage;
 }
-
 
 void MotionScan::scan_frame(VFrame *previous_frame,
 	VFrame *current_frame)
@@ -1778,7 +1642,8 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	{
 // Load result from disk
 		char string[BCTEXTLEN];
-		sprintf(string, "%s%06d", MOTION_FILE, (int)plugin->get_source_position());
+		sprintf(string, "%s%08d", MOTION_FILE, 
+			(int)round(plugin->source_pts));
 		FILE *input = fopen(string, "r");
 		if(input)
 		{
@@ -1974,7 +1839,8 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 		{
 			int tf_dx_result, tf_dy_result;
 			char string[BCTEXTLEN];
-			sprintf(string, "%s%06d", MOTION_FILE, (int)plugin->config.track_frame);
+			sprintf(string, "%s%08d", MOTION_FILE,
+				(int)round(plugin->config.track_pts * 100));
 			FILE *input = fopen(string, "r");
 			if(input)
 			{
@@ -1992,9 +1858,9 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, 
-			"%s%06d", 
+			"%s%08d", 
 			MOTION_FILE, 
-			(int)plugin->get_source_position());
+			(int)round(plugin->source_pts * 100));
 		FILE *output = fopen(string, "w");
 		if(output)
 		{
@@ -2011,10 +1877,10 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	}
 }
 
-
 int64_t MotionScan::get_cache(int x, int y)
 {
 	int64_t result = -1;
+
 	cache_lock->lock("MotionScan::get_cache");
 	for(int i = 0; i < cache.total; i++)
 	{
@@ -2036,7 +1902,6 @@ void MotionScan::put_cache(int x, int y, int64_t difference)
 	cache.append(ptr);
 	cache_lock->unlock();
 }
-
 
 MotionScanCache::MotionScanCache(int x, int y, int64_t difference)
 {
@@ -2197,7 +2062,6 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	block_y1 = this->block_y - block_h / 2;
 	block_y2 = this->block_y + block_h / 2;
 
-
 // Calculate the maximum area available to scan after rotation.
 // Must be calculated from the starting range because of cache.
 // Get coords of rectangle after rotation.
@@ -2325,6 +2189,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 int64_t RotateScan::get_cache(float angle)
 {
 	int64_t result = -1;
+
 	cache_lock->lock("RotateScan::get_cache");
 	for(int i = 0; i < cache.total; i++)
 	{

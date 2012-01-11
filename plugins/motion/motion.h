@@ -22,6 +22,18 @@
 #ifndef MOTION_H
 #define MOTION_H
 
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_MULTICHANNEL
+
+#define PLUGIN_TITLE N_("Motion")
+#define PLUGIN_CLASS MotionMain
+#define PLUGIN_CONFIG_CLASS MotionConfig
+#define PLUGIN_THREAD_CLASS MotionThread
+#define PLUGIN_GUI_CLASS MotionWindow
+
+#include "pluginmacros.h"
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -37,14 +49,10 @@
 #include "rotateframe.inc"
 #include "vframe.inc"
 
-class MotionMain;
-class MotionWindow;
 class MotionScan;
 class RotateScan;
 
-
 #define OVERSAMPLE 4
-
 
 // Limits of global range in percent
 #define MIN_RADIUS 1
@@ -77,9 +85,9 @@ public:
 	void copy_from(MotionConfig &that);
 	void interpolate(MotionConfig &prev, 
 		MotionConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	void boundaries();
 
 	int block_count;
@@ -130,13 +138,13 @@ public:
 		TRACK_PREVIOUS,
 		PREVIOUS_SAME_BLOCK
 	};
-// Number of single frame to track relative to timeline start
-	framenum track_frame;
+
+// Pts of single frame to track relative to timeline start
+	ptstime track_pts;
 // Master layer
 	int bottom_is_master;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
-
-
 
 
 class MotionMain : public PluginVClient
@@ -145,24 +153,19 @@ public:
 	MotionMain(PluginServer *server);
 	~MotionMain();
 
-	int process_buffer(VFrame **frame,
-		framenum start_position,
-		double frame_rate);
+	void process_frame(VFrame **frame);
 	void process_global();
 	void process_rotation();
 	void draw_vectors(VFrame *frame);
-	int is_multichannel();
-	int is_realtime();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 // Calculate frame to copy from and frame to move
 	void calculate_pointers(VFrame **frame, VFrame **src, VFrame **dst);
 	void allocate_temp(int w, int h, int color_model);
 
-	PLUGIN_CLASS_MEMBERS(MotionConfig, MotionThread)
+	PLUGIN_CLASS_MEMBERS
 
 	int64_t abs_diff(unsigned char *prev_ptr,
 		unsigned char *current_ptr,
@@ -194,8 +197,6 @@ public:
 	static void draw_line(VFrame *frame, int x1, int y1, int x2, int y2);
 	void draw_arrow(VFrame *frame, int x1, int y1, int x2, int y2);
 
-// Number of the previous reference frame on the timeline.
-	int64_t previous_frame_number;
 // The frame compared with the previous frame to get the motion.
 // It is moved to compensate for motion and copied to the previous_frame.
 	VFrame *temp_frame;
@@ -217,12 +218,9 @@ public:
 	int current_dy;
 	float current_angle;
 
-
-
 // Oversampled current frame for motion estimation
 	int32_t *search_area;
 	int search_size;
-
 
 // The layer to track motion in.
 	int reference_layer;
@@ -257,29 +255,6 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class MotionScanPackage : public LoadPackage
 {
 public:
@@ -301,6 +276,7 @@ public:
 	int64_t difference2;
 };
 
+
 class MotionScanCache
 {
 public:
@@ -308,6 +284,7 @@ public:
 	int x, y;
 	int64_t difference;
 };
+
 
 class MotionScanUnit : public LoadClient
 {
@@ -325,6 +302,7 @@ public:
 	ArrayList<MotionScanCache*> cache;
 	Mutex *cache_lock;
 };
+
 
 class MotionScan : public LoadServer
 {
@@ -372,21 +350,9 @@ private:
 	int total_steps;
 	int subpixel;
 
-
 	ArrayList<MotionScanCache*> cache;
 	Mutex *cache_lock;
 };
-
-
-
-
-
-
-
-
-
-
-
 
 
 class RotateScanPackage : public LoadPackage
@@ -397,6 +363,7 @@ public:
 	int64_t difference;
 };
 
+
 class RotateScanCache
 {
 public:
@@ -404,6 +371,7 @@ public:
 	float angle;
 	int64_t difference;
 };
+
 
 class RotateScanUnit : public LoadClient
 {
@@ -418,6 +386,7 @@ public:
 	AffineEngine *rotater;
 	VFrame *temp;
 };
+
 
 class RotateScan : public LoadServer
 {
@@ -443,7 +412,6 @@ public:
 		int block_y);
 	int64_t get_cache(float angle);
 	void put_cache(float angle, int64_t difference);
-
 
 // Angle result
 	float result;
@@ -477,13 +445,4 @@ private:
 	Mutex *cache_lock;
 };
 
-
-
-
 #endif
-
-
-
-
-
-
