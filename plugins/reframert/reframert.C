@@ -19,36 +19,46 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_IS_SYNTHESIS
+
+#define PLUGIN_TITLE N_("ReframeRT")
+#define PLUGIN_CLASS ReframeRT
+#define PLUGIN_CONFIG_CLASS ReframeRTConfig
+#define PLUGIN_THREAD_CLASS ReframeRTThread
+#define PLUGIN_GUI_CLASS ReframeRTWindow
+
+#include "pluginmacros.h"
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
-#include "transportque.h"
 
 #include <string.h>
 #include "picon_png.h"
 
-class ReframeRT;
-class ReframeRTWindow;
 
 class ReframeRTConfig
 {
 public:
 	ReframeRTConfig();
+
 	void boundaries();
 	int equivalent(ReframeRTConfig &src);
 	void copy_from(ReframeRTConfig &src);
 	void interpolate(ReframeRTConfig &prev, 
 		ReframeRTConfig &next, 
-		posnum prev_frame,
-		posnum next_frame,
-		posnum current_frame);
+		ptstime prev_pts,
+		ptstime next_pts,
+		ptstime current_pts);
 	double scale;
 	int stretch;
 	int interp;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -63,6 +73,7 @@ public:
 	ReframeRT *plugin;
 };
 
+
 class ReframeRTStretch : public BC_Radial
 {
 public:
@@ -74,6 +85,7 @@ public:
 	ReframeRT *plugin;
 	ReframeRTWindow *gui;
 };
+
 
 class ReframeRTDownsample : public BC_Radial
 {
@@ -87,6 +99,7 @@ public:
 	ReframeRTWindow *gui;
 };
 
+
 class ReframeRTInterpolate : public BC_CheckBox
 {
 public:
@@ -99,21 +112,23 @@ public:
 	ReframeRTWindow *gui;
 };
 
+
 class ReframeRTWindow : public BC_Window
 {
 public:
 	ReframeRTWindow(ReframeRT *plugin, int x, int y);
 	~ReframeRTWindow();
-	void create_objects();
-	void close_event();
-	ReframeRT *plugin;
+
+	void update();
+
 	ReframeRTScale *scale;
 	ReframeRTStretch *stretch;
 	ReframeRTDownsample *downsample;
 	ReframeRTInterpolate *interpolate;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(ReframeRT, ReframeRTThread, ReframeRTWindow)
+PLUGIN_THREAD_HEADER
 
 class ReframeRT : public PluginVClient
 {
@@ -121,22 +136,19 @@ public:
 	ReframeRT(PluginServer *server);
 	~ReframeRT();
 
-	PLUGIN_CLASS_MEMBERS(ReframeRTConfig, ReframeRTThread)
+	PLUGIN_CLASS_MEMBERS
 
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
-	int is_realtime();
-	int is_synthesis();
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
+	void process_frame(VFrame *frame);
+
+	KeyFrame *fake_keyframe;
 };
 
 
-REGISTER_PLUGIN(ReframeRT);
+REGISTER_PLUGIN
 
 
 ReframeRTConfig::ReframeRTConfig()
@@ -162,18 +174,18 @@ void ReframeRTConfig::copy_from(ReframeRTConfig &src)
 
 void ReframeRTConfig::interpolate(ReframeRTConfig &prev, 
 	ReframeRTConfig &next, 
-	posnum prev_frame,
-	posnum next_frame,
-	posnum current_frame)
+	ptstime prev_pts,
+	ptstime next_pts,
+	ptstime current_pts)
 {
 	this->interp = prev.interp;
 	this->stretch = prev.stretch;
 
-	if (this->interp && prev_frame != next_frame)
+	if (this->interp && !PTSEQU(prev_pts, next_pts))
 	{
 // for interpolation, this is (for now) a simple linear slope to the next keyframe.
-		double slope = (next.scale - prev.scale) / (next_frame - prev_frame);
-		this->scale = (slope * (current_frame - prev_frame)) + prev.scale;
+		double slope = (next.scale - prev.scale) / (next_pts - prev_pts);
+		this->scale = (slope * (current_pts - prev_pts)) + prev.scale;
 	}
 	else
 	{
@@ -199,18 +211,8 @@ ReframeRTWindow::ReframeRTWindow(ReframeRT *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-ReframeRTWindow::~ReframeRTWindow()
-{
-}
-
-void ReframeRTWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Scale by amount:")));
 	y += 20;
 	scale = new ReframeRTScale(plugin, 
@@ -234,14 +236,23 @@ void ReframeRTWindow::create_objects()
 		this,
 		x, 
 		y));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-WINDOW_CLOSE_EVENT(ReframeRTWindow)
+ReframeRTWindow::~ReframeRTWindow()
+{
+}
+
+void ReframeRTWindow::update()
+{
+	scale->update((float)plugin->config.scale);
+	stretch->update(plugin->config.stretch);
+	downsample->update(!plugin->config.stretch);
+	interpolate->update(plugin->config.interp);
+}
 
 
-PLUGIN_THREAD_OBJECT(ReframeRT, ReframeRTThread, ReframeRTWindow)
+PLUGIN_THREAD_METHODS
 
 
 ReframeRTScale::ReframeRTScale(ReframeRT *plugin, 
@@ -267,6 +278,7 @@ int ReframeRTScale::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
+
 
 ReframeRTStretch::ReframeRTStretch(ReframeRT *plugin,
 	ReframeRTWindow *gui,
@@ -305,6 +317,7 @@ int ReframeRTDownsample::handle_event()
 	return 1;
 }
 
+
 ReframeRTInterpolate::ReframeRTInterpolate(ReframeRT *plugin,
 	ReframeRTWindow *gui,
 	int x,
@@ -327,105 +340,80 @@ int ReframeRTInterpolate::handle_event()
 ReframeRT::ReframeRT(PluginServer *server)
  : PluginVClient(server)
 {
+	fake_keyframe = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 
 ReframeRT::~ReframeRT()
 {
+	if(fake_keyframe)
+		delete fake_keyframe;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* ReframeRT::plugin_title() { return N_("ReframeRT"); }
-int ReframeRT::is_realtime() { return 1; }
-int ReframeRT::is_synthesis() { return 1; }
+PLUGIN_CLASS_METHODS
 
-NEW_PICON_MACRO(ReframeRT)
-
-SHOW_GUI_MACRO(ReframeRT, ReframeRTThread)
-
-RAISE_WINDOW_MACRO(ReframeRT)
-
-SET_STRING_MACRO(ReframeRT)
-
-LOAD_CONFIGURATION_MACRO(ReframeRT, ReframeRTConfig)
-
-int ReframeRT::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void ReframeRT::process_frame(VFrame *frame)
 {
-	framenum input_frame = get_source_start();
+	ptstime input_pts = source_start_pts;
 	ReframeRTConfig prev_config, next_config;
-	KeyFrame *tmp_keyframe, *next_keyframe = get_prev_keyframe(get_source_start());
-	framenum tmp_position, next_position;
-	framenum segment_len;
-	double input_rate = frame_rate;
+	KeyFrame *tmp_keyframe, *next_keyframe = prev_keyframe_pts(source_start_pts);
+	ptstime duration;
+	ptstime tmp_pts, next_pts;
 	int is_current_keyframe;
-	Autos *autos = next_keyframe->autos;
 // FIXPOS
 // if there are no keyframes, the default keyframe is used, and its position is always 0;
 // if there are keyframes, the first keyframe can be after the effect start (and it controls settings before it)
 // so let's calculate using a fake keyframe with the same settings but position == effect start
-	KeyFrame *fake_keyframe = new KeyFrame();
+	if(!fake_keyframe)
+		fake_keyframe = new KeyFrame();
 	fake_keyframe->copy_from(next_keyframe);
-	fake_keyframe->pos_time = autos->pos2pts(local_to_edl(get_source_start()));
+	fake_keyframe->pos_time = source_start_pts;
 	next_keyframe = fake_keyframe;
 
 	// calculate input_frame accounting for all previous keyframes
 	do
 	{
 		tmp_keyframe = next_keyframe;
-		next_keyframe = get_next_keyframe(autos->pts2pos(tmp_keyframe->pos_time)+1, 0);
+		next_keyframe = next_keyframe_pts(tmp_keyframe->pos_time + EPSILON);
 
-		tmp_position = edl_to_local(autos->pts2pos(tmp_keyframe->pos_time));
-		next_position = edl_to_local(autos->pts2pos(next_keyframe->pos_time));
+		tmp_pts = tmp_keyframe->pos_time;
+		next_pts = next_keyframe->pos_time;
 
 		is_current_keyframe =
-			next_position > start_position // the next keyframe is after the current position
+			next_pts > source_pts // the next keyframe is after the current position
 			|| PTSEQU(next_keyframe->pos_time, tmp_keyframe->pos_time) // there are no more keyframes
 			|| !next_keyframe->pos_time; // there are no keyframes at all
 
 		if (is_current_keyframe)
-			segment_len = start_position - tmp_position;
+			duration = source_pts - tmp_pts;
 		else
-			segment_len = next_position - tmp_position;
+			duration = next_pts - tmp_pts;
 
 		read_data(next_keyframe);
 		next_config.copy_from(config);
 		read_data(tmp_keyframe);
 		prev_config.copy_from(config);
-		config.interpolate(prev_config, next_config, tmp_position, next_position, tmp_position + segment_len);
+		config.interpolate(prev_config, next_config, tmp_pts, next_pts, tmp_pts + duration);
 
 // the area under the curve is the number of frames to advance
 // as long as interpolate() uses a linear slope we can use geometry to determine this
 // if interpolate() changes to use a curve then this needs use (possibly) the definite integral
-		input_frame += (int64_t)(segment_len * ((prev_config.scale + config.scale) / 2));
+		input_pts += (duration * ((prev_config.scale + config.scale) / 2));
 	} while (!is_current_keyframe);
 
-	// Change rate
+	frame->set_pts(input_pts);
+	get_frame(frame);
+	frame->set_pts(source_pts);
+
 	if (!config.stretch)
-		input_rate *= config.scale;
-
-	read_frame(frame,
-		0,
-		input_frame,
-		input_rate);
-
-	delete fake_keyframe;
-
-	return 0;
+		frame->set_duration(frame->get_duration() / config.scale);
 }
-
 
 void ReframeRT::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sreframert.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("reframert.rc");
 
 	config.scale = defaults->get("SCALE", config.scale);
 	config.stretch = defaults->get("STRETCH", config.stretch);
@@ -462,8 +450,6 @@ void ReframeRT::read_data(KeyFrame *keyframe)
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-	int result = 0;
-
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("REFRAMERT"))
@@ -471,24 +457,6 @@ void ReframeRT::read_data(KeyFrame *keyframe)
 			config.scale = input.tag.get_property("SCALE", config.scale);
 			config.stretch = input.tag.get_property("STRETCH", config.stretch);
 			config.interp = input.tag.get_property("INTERPOLATE", config.interp);
-		}
-	}
-}
-
-void ReframeRT::update_gui()
-{
-	if(thread)
-	{
-		int changed = load_configuration();
-
-		if(changed)
-		{
-			thread->window->lock_window("ReframeRT::update_gui");
-			thread->window->scale->update((float)config.scale);
-			thread->window->stretch->update(config.stretch);
-			thread->window->downsample->update(!config.stretch);
-			thread->window->interpolate->update(config.interp);
-			thread->window->unlock_window();
 		}
 	}
 }
