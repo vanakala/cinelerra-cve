@@ -29,17 +29,14 @@
 #include "timeavgwindow.h"
 #include "vframe.h"
 
-
 #include <stdint.h>
 #include <string.h>
 
-
-REGISTER_PLUGIN(TimeAvgMain)
-
+REGISTER_PLUGIN
 
 TimeAvgConfig::TimeAvgConfig()
 {
-	frames = 1;
+	duration = 0.04;
 	mode = TimeAvgConfig::AVERAGE;
 	paranoid = 0;
 	nosubtract = 0;
@@ -47,7 +44,7 @@ TimeAvgConfig::TimeAvgConfig()
 
 void TimeAvgConfig::copy_from(TimeAvgConfig *src)
 {
-	this->frames = src->frames;
+	this->duration = src->duration;
 	this->mode = src->mode;
 	this->paranoid = src->paranoid;
 	this->nosubtract = src->nosubtract;
@@ -55,63 +52,52 @@ void TimeAvgConfig::copy_from(TimeAvgConfig *src)
 
 int TimeAvgConfig::equivalent(TimeAvgConfig *src)
 {
-	return frames == src->frames &&
+	return PTSEQU(duration, src->duration) &&
 		mode == src->mode &&
 		paranoid == src->paranoid &&
 		nosubtract == src->nosubtract;
 }
 
 
-
 TimeAvgMain::TimeAvgMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	accumulation = 0;
 	history = 0;
-	history_size = 0;
-	history_start = -0x7fffffff;
-	history_frame = 0;
 	history_valid = 0;
-	prev_frame = -1;
+	prev_frame_pts = -1;
+	temp_frame = 0;
+	max_num_frames = 0;
+	frames_accum = 0;
+	max_denominator = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 TimeAvgMain::~TimeAvgMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(accumulation) delete [] accumulation;
 	if(history)
 	{
-		for(int i = 0; i < config.frames; i++)
-			delete history[i];
+		for(int i = 0; i < max_num_frames; i++)
+			if(history[i])
+				delete history[i];
 		delete [] history;
 	}
-	if(history_frame) delete [] history_frame;
 	if(history_valid) delete [] history_valid;
+	if(temp_frame)
+		delete temp_frame;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* TimeAvgMain::plugin_title() { return N_("Time Average"); }
-int TimeAvgMain::is_realtime() { return 1; }
+PLUGIN_CLASS_METHODS
 
-
-NEW_PICON_MACRO(TimeAvgMain)
-
-SHOW_GUI_MACRO(TimeAvgMain, TimeAvgThread)
-
-SET_STRING_MACRO(TimeAvgMain)
-
-RAISE_WINDOW_MACRO(TimeAvgMain);
-
-
-
-int TimeAvgMain::process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate)
+void TimeAvgMain::process_frame(VFrame *frame)
 {
 	int h = frame->get_h();
 	int w = frame->get_w();
 	int color_model = frame->get_color_model();
+	ptstime history_start, history_end, cpts;
+	int got_frame = 0;
 
 	load_configuration();
 
@@ -130,116 +116,107 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 // Reallocate history
 		if(history)
 		{
-			if(config.frames != history_size)
+			int new_num_frames = round(config.duration * get_project_framerate() * 2);
+			if(max_num_frames != new_num_frames)
 			{
 				VFrame **history2;
-				framenum *history_frame2;
 				int *history_valid2;
-				history2 = new VFrame*[config.frames];
-				history_frame2 = new framenum[config.frames];
-				history_valid2 = new int[config.frames];
+
+				history2 = new VFrame*[new_num_frames];
+				history_valid2 = new int[new_num_frames];
+				memset(history2, 0, new_num_frames * sizeof(VFrame*));
+				memset(history_valid2, 0, new_num_frames * sizeof(int));
 
 // Copy existing frames over
 				int i, j;
-				for(i = 0, j = 0; i < config.frames && j < history_size; i++, j++)
+				j = 0;
+				for(i = 0, j = 0; i < max_num_frames; i++)
 				{
-					history2[i] = history[j];
-					history_frame2[i] = history_frame[i];
-					history_valid2[i] = history_valid[i];
+					if(history_valid[i])
+					{
+						history2[j] = history[i];
+						history_valid2[j] = 1;
+						if(++j >= new_num_frames)
+							break;
+					} else if(history[i])
+						delete history[i];
 				}
 
 // Delete extra previous frames and subtract from accumulation
-				for( ; j < history_size; j++)
+				for(; i < max_num_frames; i++)
 				{
-					subtract_accum(history[j]);
-					delete history[j];
+					if(history_valid[i])
+						subtract_accum(history[i]);
+					if(history[i])
+						delete history[j];
 				}
 				delete [] history;
-				delete [] history_frame;
 				delete [] history_valid;
 
-// Create new frames
-				for( ; i < config.frames; i++)
-				{
-					history2[i] = new VFrame(0, w, h, color_model);
-					history_frame2[i] = -0x7fffffff;
-					history_valid2[i] = 0;
-				}
-
 				history = history2;
-				history_frame = history_frame2;
 				history_valid = history_valid2;
 
-				history_size = config.frames;
+				max_num_frames = new_num_frames;
 			}
 		}
 		else
 // Allocate history
 		{
-			history = new VFrame*[config.frames];
-			for(int i = 0; i < config.frames; i++)
-				history[i] = new VFrame(0, w, h, color_model);
-			history_size = config.frames;
-			history_frame = new framenum[config.frames];
-			memset(history_frame, 0, sizeof(framenum) * config.frames);
-			history_valid = new int[config.frames];
-			bzero(history_valid, sizeof(int) * config.frames);
-		}
+			max_num_frames = round(2 * config.duration * get_project_framerate());
+			history = new VFrame*[max_num_frames];
+			memset(history, 0, max_num_frames * sizeof(VFrame*));
 
-// Create new history frames based on current frame
-		framenum *new_history_frames = new framenum[history_size];
-		for(int i = 0; i < history_size; i++)
-		{
-			new_history_frames[history_size - i - 1] = start_position - i;
+			history_valid = new int[max_num_frames];
+			memset(history_valid, 0, sizeof(int) * max_num_frames);
 		}
+		history_start = source_pts - config.duration;
+		history_end = source_pts;
+		if(history_start < source_start_pts)
+			history_start = source_start_pts;
 
 // Subtract old history frames which are not in the new vector
 		int no_change = 1;
-		for(int i = 0; i < history_size; i++)
+		for(int i = 0; i < max_num_frames; i++)
 		{
 // Old frame is valid
 			if(history_valid[i])
 			{
-				int got_it = 0;
-				for(int j = 0; j < history_size; j++)
-				{
-// Old frame is equal to a new frame
-					if(history_frame[i] == new_history_frames[j]) 
-					{
-						got_it = 1;
-						break;
-					}
-				}
-
-// Didn't find old frame in new frames
-				if(!got_it)
+				cpts = history[i]->get_pts();
+				if(cpts < history_start || cpts > history_end)
 				{
 					subtract_accum(history[i]);
 					history_valid[i] = 0;
 					no_change = 0;
+// Correct history_start to frame boundary
+					if(cpts < history_start && history[i]->next_pts() > history_start)
+						history_start = history[i]->next_pts();
 				}
 			}
 		}
+
 // If all frames are still valid, assume tweek occurred upstream and reload.
 		if(config.paranoid && no_change)
 		{
-			for(int i = 0; i < history_size; i++)
-			{
+			for(int i = 0; i < max_num_frames; i++)
 				history_valid[i] = 0;
-			}
+
 			clear_accum(w, h, color_model);
 		}
 
 // Add new history frames which are not in the old vector
-		for(int i = 0; i < history_size; i++)
+		cpts = history_start;
+		int got_it = 0;
+
+		for(int i = 0; i < max_num_frames; i++)
 		{
 // Find new frame in old vector
 			int got_it = 0;
-			for(int j = 0; j < history_size; j++)
+			for(int j = 0; j < max_num_frames; j++)
 			{
-				if(history_valid[j] && history_frame[j] == new_history_frames[i])
+				if(history_valid[j] && history[j]->pts_in_frame(cpts))
 				{
 					got_it = 1;
+					cpts = history[j]->next_pts();
 					break;
 				}
 			}
@@ -248,54 +225,87 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			if(!got_it)
 			{
 // Get first unused entry
-				for(int j = 0; j < history_size; j++)
+				for(int j = 0; j < max_num_frames; j++)
 				{
 					if(!history_valid[j])
 					{
 // Load new frame into it
-						history_frame[j] = new_history_frames[i];
+						if(!history[j])
+							history[j] = new VFrame(0, w, h, color_model);
+						history[j]->set_pts(cpts);
 						history_valid[j] = 1;
-						read_frame(history[j],
-							0,
-							history_frame[j],
-							frame_rate);
+						get_frame(history[j]);
 						add_accum(history[j]);
 						break;
 					}
 				}
 			}
+			got_it = 0;
+			if(cpts >= history_end)
+				break;
 		}
-		delete [] new_history_frames;
 	}
 	else
 // No subtraction
 	{
 // Force reload if not repositioned or just started
-		if(config.paranoid && prev_frame == start_position ||
-			prev_frame < 0)
+		if(config.paranoid && PTSEQU(prev_frame_pts, source_pts) ||
+			prev_frame_pts < 0)
 		{
-			prev_frame = start_position - config.frames + 1;
-			prev_frame = MAX(0, prev_frame);
+			prev_frame_pts = source_pts - config.duration;
+			prev_frame_pts = MAX(0, prev_frame_pts);
 			clear_accum(w, h, color_model);
-		}
+			max_denominator = round(config.duration * get_project_framerate());
+		} else
+			prev_frame_pts = source_pts;
 
-		for(framenum i = prev_frame; i <= start_position; i++)
+		if(!temp_frame)
+			temp_frame = temp_frame = new VFrame(0, w, h, color_model);
+		for(cpts = prev_frame_pts;;cpts = temp_frame->next_pts())
 		{
-			read_frame(frame,
-				0,
-				i,
-				frame_rate);
-			add_accum(frame);
+			if(frames_accum >= max_denominator)
+				frames_accum = max_denominator - 1;
+			if((source_pts - cpts) < EPSILON)
+			{
+				get_frame(frame);
+				got_frame = 1;
+				add_accum(frame);
+				break;
+			}
+			else
+			{
+				temp_frame->set_pts(cpts);
+				get_frame(temp_frame);
+				add_accum(temp_frame);
+			}
 		}
-		prev_frame = start_position;
+		prev_frame_pts = frame->get_pts();
 	}
 
+	if(!got_frame)
+	{
+		if(frames_accum)
+		{
+			cpts = frame->get_pts();
+			for(int i = 0; i < max_num_frames; i++)
+			{
+				if(history_valid[i] && history[i]->pts_in_frame(cpts))
+				{
+					frame->copy_from(history[i]);
+					got_frame = 1;
+					break;
+				}
+			}
+		}
+		if(!got_frame)
+		{
+			get_frame(frame);
+			got_frame = 1;
+		}
+	}
 // Transfer accumulation to output with division if average is desired.
 	transfer_accum(frame);
-
-	return 0;
 }
-
 
 // Reset accumulation
 #define CLEAR_ACCUM(type, components, chroma) \
@@ -313,13 +323,13 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 	} \
 	else \
 	{ \
-		bzero(row, w * h * sizeof(type) * components); \
+		memset(row, 0, w * h * sizeof(type) * components); \
 	} \
 }
 
-
 void TimeAvgMain::clear_accum(int w, int h, int color_model)
 {
+	frames_accum = 0;
 	switch(color_model)
 	{
 	case BC_RGB888:
@@ -348,7 +358,6 @@ void TimeAvgMain::clear_accum(int w, int h, int color_model)
 		break;
 	}
 }
-
 
 #define SUBTRACT_ACCUM(type, \
 	accum_type, \
@@ -407,13 +416,18 @@ void TimeAvgMain::clear_accum(int w, int h, int color_model)
 	} \
 }
 
-
 void TimeAvgMain::subtract_accum(VFrame *frame)
 {
 // Just accumulate
 	if(config.nosubtract) return;
 	int w = frame->get_w();
 	int h = frame->get_h();
+
+	if(--frames_accum < 0)
+	{
+		clear_accum(w, h, frame->get_color_model());
+		return;
+	}
 
 	switch(frame->get_color_model())
 	{
@@ -443,7 +457,6 @@ void TimeAvgMain::subtract_accum(VFrame *frame)
 		break;
 	}
 }
-
 
 // The behavior has to be very specific to the color model because we rely on
 // the value of full black to determine what pixel to show.
@@ -549,6 +562,7 @@ void TimeAvgMain::add_accum(VFrame *frame)
 {
 	int w = frame->get_w();
 	int h = frame->get_h();
+	frames_accum++;
 
 	switch(frame->get_color_model())
 	{
@@ -583,7 +597,7 @@ void TimeAvgMain::add_accum(VFrame *frame)
 { \
 	if(config.mode == TimeAvgConfig::AVERAGE) \
 	{ \
-		accum_type denominator = config.frames; \
+		accum_type denominator = frames_accum; \
 		for(int i = 0; i < h; i++) \
 		{ \
 			accum_type *accum_row = (accum_type*)accumulation + \
@@ -688,18 +702,16 @@ void TimeAvgMain::transfer_accum(VFrame *frame)
 	}
 }
 
-
 void TimeAvgMain::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%stimeavg.rc", BCASTDIR);
+	framenum frames;
 
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("timeavg.rc");
 
-	config.frames = defaults->get("FRAMES", config.frames);
+	frames = defaults->get("FRAMES", 0);
+	if(frames)
+		config.duration = frames / get_project_framerate();
+	config.duration = defaults->get("DURATION", config.duration);
 	config.mode = defaults->get("MODE", config.mode);
 	config.paranoid = defaults->get("PARANOID", config.paranoid);
 	config.nosubtract = defaults->get("NOSUBTRACT", config.nosubtract);
@@ -707,7 +719,8 @@ void TimeAvgMain::load_defaults()
 
 void TimeAvgMain::save_defaults()
 {
-	defaults->update("FRAMES", config.frames);
+	defaults->delete_key("FRAMES");
+	defaults->update("DURATION", config.duration);
 	defaults->update("MODE", config.mode);
 	defaults->update("PARANOID", config.paranoid);
 	defaults->update("NOSUBTRACT", config.nosubtract);
@@ -732,7 +745,7 @@ void TimeAvgMain::save_data(KeyFrame *keyframe)
 // cause data to be stored directly in text
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("TIME_AVERAGE");
-	output.tag.set_property("FRAMES", config.frames);
+	output.tag.set_property("DURATION", config.duration);
 	output.tag.set_property("MODE", config.mode);
 	output.tag.set_property("PARANOID", config.paranoid);
 	output.tag.set_property("NOSUBTRACT", config.nosubtract);
@@ -745,38 +758,20 @@ void TimeAvgMain::save_data(KeyFrame *keyframe)
 void TimeAvgMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
+	int frames;
 
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
-	int result = 0;
 
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("TIME_AVERAGE"))
 		{
-			config.frames = input.tag.get_property("FRAMES", config.frames);
+			if((frames = input.tag.get_property("FRAMES", 0)) > 0)
+				config.duration = frames / get_project_framerate();
+			config.duration = input.tag.get_property("DURATION", config.duration);
 			config.mode = input.tag.get_property("MODE", config.mode);
 			config.paranoid = input.tag.get_property("PARANOID", config.paranoid);
 			config.nosubtract = input.tag.get_property("NOSUBTRACT", config.nosubtract);
-		}
-	}
-}
-
-
-void TimeAvgMain::update_gui()
-{
-	if(thread) 
-	{
-		if(load_configuration())
-		{
-			thread->window->lock_window("TimeAvgMain::update_gui");
-			thread->window->total_frames->update(config.frames);
-			thread->window->accum->update(config.mode == TimeAvgConfig::ACCUMULATE);
-			thread->window->avg->update(config.mode == TimeAvgConfig::AVERAGE);
-			thread->window->inclusive_or->update(config.mode == TimeAvgConfig::OR);
-			thread->window->paranoid->update(config.paranoid);
-			thread->window->no_subtract->update(config.nosubtract);
-			thread->window->unlock_window();
 		}
 	}
 }

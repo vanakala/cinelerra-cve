@@ -23,14 +23,12 @@
 #include "language.h"
 #include "timeavgwindow.h"
 
-PLUGIN_THREAD_OBJECT(TimeAvgMain, TimeAvgThread, TimeAvgWindow)
+PLUGIN_THREAD_METHODS
 
+#define MAX_DURATION 4.0
 
-#define MAX_FRAMES 1024
-
-
-TimeAvgWindow::TimeAvgWindow(TimeAvgMain *client, int x, int y)
- : BC_Window(client->gui_string, 
+TimeAvgWindow::TimeAvgWindow(TimeAvgMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
 	x,
 	y, 
 	210, 
@@ -41,85 +39,76 @@ TimeAvgWindow::TimeAvgWindow(TimeAvgMain *client, int x, int y)
 	0,
 	1)
 { 
-	this->client = client; 
+	x = y = 10;
+
+	add_tool(new BC_Title(x, y, _("Duration to average")));
+	y += 20;
+	add_tool(total_frames = new TimeAvgSlider(plugin, x, y));
+	y += 30;
+	add_tool(accum = new TimeAvgAccum(plugin, this, x, y));
+	y += 30;
+	add_tool(avg = new TimeAvgAvg(plugin, this, x, y));
+	y += 30;
+	add_tool(inclusive_or = new TimeAvgOr(plugin, this, x, y));
+	y += 30;
+	add_tool(paranoid = new TimeAvgParanoid(plugin, x, y));
+	y += 30;
+	add_tool(no_subtract = new TimeAvgNoSubtract(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 TimeAvgWindow::~TimeAvgWindow()
 {
 }
 
-int TimeAvgWindow::create_objects()
+void TimeAvgWindow::update()
 {
-	int x = 10, y = 10;
-	VFrame *ico = client->new_picon();
-
-	set_icon(ico);
-	add_tool(new BC_Title(x, y, _("Frames to average")));
-	y += 20;
-	add_tool(total_frames = new TimeAvgSlider(client, x, y));
-	y += 30;
-	add_tool(accum = new TimeAvgAccum(client, this, x, y));
-	y += 30;
-	add_tool(avg = new TimeAvgAvg(client, this, x, y));
-	y += 30;
-	add_tool(inclusive_or = new TimeAvgOr(client, this, x, y));
-	y += 30;
-	add_tool(paranoid = new TimeAvgParanoid(client, x, y));
-	y += 30;
-	add_tool(no_subtract = new TimeAvgNoSubtract(client, x, y));
-	show_window();
-	flush();
-	delete ico;
-	return 0;
+	total_frames->update(plugin->config.duration);
+	accum->update(plugin->config.mode == TimeAvgConfig::ACCUMULATE);
+	avg->update(plugin->config.mode == TimeAvgConfig::AVERAGE);
+	inclusive_or->update(plugin->config.mode == TimeAvgConfig::OR);
+	paranoid->update(plugin->config.paranoid);
+	no_subtract->update(plugin->config.nosubtract);
 }
 
-WINDOW_CLOSE_EVENT(TimeAvgWindow)
 
 TimeAvgSlider::TimeAvgSlider(TimeAvgMain *client, int x, int y)
- : BC_ISlider(x, 
- 	y, 
+ : BC_FSlider(x, 
+	y, 
 	0,
 	190, 
 	200, 
-	1, 
-	MAX_FRAMES, 
-	client->config.frames)
+	1.0 / MAX_DURATION,
+	MAX_DURATION,
+	client->config.duration)
 {
 	this->client = client;
 }
+
 TimeAvgSlider::~TimeAvgSlider()
 {
 }
+
 int TimeAvgSlider::handle_event()
 {
 	int result = get_value();
-	if(result < 1) result = 1;
-	client->config.frames = result;
+	if(result < 1) result = 1.0 / MAX_DURATION;
+	client->config.duration = result;
 	client->send_configure_change();
 	return 1;
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 TimeAvgAccum::TimeAvgAccum(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y)
  : BC_Radial(x, 
- 	y, 
+	y, 
 	client->config.mode == TimeAvgConfig::ACCUMULATE,
 	_("Accumulate"))
 {
 	this->client = client;
 	this->gui = gui;
 }
+
 int TimeAvgAccum::handle_event()
 {
 	int result = get_value();
@@ -130,19 +119,16 @@ int TimeAvgAccum::handle_event()
 	return 1;
 }
 
-
-
-
-
 TimeAvgAvg::TimeAvgAvg(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y)
  : BC_Radial(x, 
- 	y, 
+	y,
 	client->config.mode == TimeAvgConfig::AVERAGE,
 	_("Average"))
 {
 	this->client = client;
 	this->gui = gui;
 }
+
 int TimeAvgAvg::handle_event()
 {
 	int result = get_value();
@@ -154,16 +140,16 @@ int TimeAvgAvg::handle_event()
 }
 
 
-
 TimeAvgOr::TimeAvgOr(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y)
  : BC_Radial(x, 
- 	y, 
+	y,
 	client->config.mode == TimeAvgConfig::OR,
 	_("Inclusive Or"))
 {
 	this->client = client;
 	this->gui = gui;
 }
+
 int TimeAvgOr::handle_event()
 {
 	int result = get_value();
@@ -175,15 +161,15 @@ int TimeAvgOr::handle_event()
 }
 
 
-
 TimeAvgParanoid::TimeAvgParanoid(TimeAvgMain *client, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	client->config.paranoid,
 	_("Reprocess frame again"))
 {
 	this->client = client;
 }
+
 int TimeAvgParanoid::handle_event()
 {
 	int result = get_value();
@@ -193,17 +179,15 @@ int TimeAvgParanoid::handle_event()
 }
 
 
-
-
-
 TimeAvgNoSubtract::TimeAvgNoSubtract(TimeAvgMain *client, int x, int y)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	client->config.nosubtract,
 	_("Disable subtraction"))
 {
 	this->client = client;
 }
+
 int TimeAvgNoSubtract::handle_event()
 {
 	int result = get_value();
@@ -211,11 +195,3 @@ int TimeAvgNoSubtract::handle_event()
 	client->send_configure_change();
 	return 1;
 }
-
-
-
-
-
-
-
-

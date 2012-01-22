@@ -22,7 +22,17 @@
 #ifndef TIMEAVG_H
 #define TIMEAVG_H
 
-class TimeAvgMain;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_REALTIME
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
+
+#define PLUGIN_TITLE N_("Time Average")
+#define PLUGIN_CLASS TimeAvgMain
+#define PLUGIN_CONFIG_CLASS TimeAvgConfig
+#define PLUGIN_THREAD_CLASS TimeAvgThread
+#define PLUGIN_GUI_CLASS TimeAvgWindow
+
+#include "pluginmacros.h"
 
 #include "bchash.inc"
 #include "pluginvclient.h"
@@ -36,7 +46,7 @@ public:
 	void copy_from(TimeAvgConfig *src);
 	int equivalent(TimeAvgConfig *src);
 
-	int frames;
+	ptstime duration;
 	int mode;
 	enum
 	{
@@ -46,6 +56,7 @@ public:
 	};
 	int paranoid;
 	int nosubtract;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 
@@ -55,34 +66,30 @@ public:
 	TimeAvgMain(PluginServer *server);
 	~TimeAvgMain();
 
-	PLUGIN_CLASS_MEMBERS(TimeAvgConfig, TimeAvgThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
-	int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-	int is_realtime();
+	void process_frame(VFrame *frame);
+
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void update_gui();
 	void clear_accum(int w, int h, int color_model);
 	void subtract_accum(VFrame *frame);
 	void add_accum(VFrame *frame);
 	void transfer_accum(VFrame *frame);
 
 	VFrame **history;
-// Frame of history in requested samplerate
-	framenum *history_frame;
+	VFrame *temp_frame;
+	int max_num_frames;
 	int *history_valid;
 	unsigned char *accumulation;
 
-	int history_size;
-// Starting frame of history in requested framerate
-	framenum history_start;
+	int frames_accum;
 // When subtraction is disabled, this detects no change for paranoid mode.
-	framenum prev_frame;
+	ptstime prev_frame_pts;
+	int max_denominator;
 };
 
 #endif

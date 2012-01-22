@@ -22,42 +22,37 @@
 #ifndef TIMEAVGWINDOW_H
 #define TIMEAVGWINDOW_H
 
-
-class TimeAvgThread;
-class TimeAvgWindow;
 class TimeAvgAccum;
 class TimeAvgAvg;
 class TimeAvgOr;
 class TimeAvgParanoid;
 class TimeAvgNoSubtract;
+class TimeAvgSlider;
 
 #include "guicast.h"
 #include "mutex.h"
 #include "timeavg.h"
 
-PLUGIN_THREAD_HEADER(TimeAvgMain, TimeAvgThread, TimeAvgWindow)
-
-class TimeAvgSlider;
+PLUGIN_THREAD_HEADER
 
 class TimeAvgWindow : public BC_Window
 {
 public:
-	TimeAvgWindow(TimeAvgMain *client, int x, int y);
+	TimeAvgWindow(TimeAvgMain *plugin, int x, int y);
 	~TimeAvgWindow();
-	
-	int create_objects();
-	void close_event();
-	
-	TimeAvgMain *client;
+
+	void update();
+
 	TimeAvgSlider *total_frames;
 	TimeAvgAccum *accum;
 	TimeAvgAvg *avg;
 	TimeAvgOr *inclusive_or;
 	TimeAvgParanoid *paranoid;
 	TimeAvgNoSubtract *no_subtract;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-class TimeAvgSlider : public BC_ISlider
+class TimeAvgSlider : public BC_FSlider
 {
 public:
 	TimeAvgSlider(TimeAvgMain *client, int x, int y);
