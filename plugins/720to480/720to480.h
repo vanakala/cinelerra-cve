@@ -22,7 +22,16 @@
 #ifndef _720TO480_H
 #define _720TO480_H
 
+#define PLUGIN_IS_VIDEO
 
+#define PLUGIN_TITLE N_("720 to 480")
+#define PLUGIN_CLASS _720to480Main
+#define PLUGIN_CONFIG_CLASS _720to480Config
+#define PLUGIN_GUI_CLASS _720to480Window
+
+#include "pluginmacros.h"
+
+#include "language.h"
 #include "pluginvclient.h"
 
 class _720to480Main;
@@ -31,15 +40,14 @@ class _720to480Order;
 class _720to480Window : public BC_Window
 {
 public:
-	_720to480Window(_720to480Main *client, int x, int y);
+	_720to480Window(_720to480Main *plugin, int x, int y);
 	~_720to480Window();
 
-	int create_objects();
-	void close_event();
-	int set_first_field(int first_field);
-	_720to480Main *client;
+	void set_first_field(int first_field);
+
 	_720to480Order *odd_first;
 	_720to480Order *even_first;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
@@ -65,6 +73,7 @@ public:
 	_720to480Config();
 
 	int first_field;
+	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
 class _720to480Main : public PluginVClient
@@ -72,15 +81,11 @@ class _720to480Main : public PluginVClient
 public:
 	_720to480Main(PluginServer *server);
 	~_720to480Main();
+	PLUGIN_CLASS_MEMBERS
 
-// required for all non realtime plugins
-	const char* plugin_title();
-	int get_parameters();
 	void start_loop();
 	void stop_loop();
-	int is_realtime();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
+
 	void load_defaults();
 	void save_defaults();
 	double get_framerate();
@@ -88,13 +93,11 @@ public:
 
 	void reduce_field(VFrame *output, VFrame *input, int dest_row);
 
-
-	BC_Hash *defaults;
 	MainProgressBar *progress;
 
 	_720to480Config config;
 	VFrame *temp;
-	int input_position;
+	ptstime input_pts;
 };
 
 #endif

@@ -28,13 +28,13 @@
 #include "language.h"
 #include "mainprogress.h"
 #include "vframe.h"
-
+#include "picon_png.h"
 
 #include <stdint.h>
 #include <string.h>
 
 
-REGISTER_PLUGIN(_720to480Main)
+REGISTER_PLUGIN
 
 
 #define FORWARD 0
@@ -46,11 +46,8 @@ _720to480Config::_720to480Config()
 }
 
 
-
-
-
-_720to480Window::_720to480Window(_720to480Main *client, int x, int y)
- : BC_Window(client->gui_string, 
+_720to480Window::_720to480Window(_720to480Main *plugin, int x, int y)
+ : BC_Window(PROGRAM_NAME ": 720 to 480",
 	x,
 	y, 
 	230, 
@@ -61,39 +58,24 @@ _720to480Window::_720to480Window(_720to480Main *client, int x, int y)
 	0,
 	1)
 { 
-	this->client = client; 
-}
+	x = y = 10;
 
+	add_tool(odd_first = new _720to480Order(plugin, this, 1, x, y, _("Odd field first")));
+	y += 25;
+	add_tool(even_first = new _720to480Order(plugin, this, 0, x, y, _("Even field first")));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
+}
 
 _720to480Window::~_720to480Window()
 {
 }
 
-int _720to480Window::create_objects()
-{
-	int x = 10, y = 10;
-
-	add_tool(odd_first = new _720to480Order(client, this, 1, x, y, _("Odd field first")));
-	y += 25;
-	add_tool(even_first = new _720to480Order(client, this, 0, x, y, _("Even field first")));
-
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
-
-	show_window();
-	flush();
-	return 0;
-}
-
-WINDOW_CLOSE_EVENT(_720to480Window)
-
-int _720to480Window::set_first_field(int first_field)
+void _720to480Window::set_first_field(int first_field)
 {
 	odd_first->update(first_field == 1);
 	even_first->update(first_field == 0);
 
-	client->config.first_field = first_field;
-	return 0;
+	plugin->config.first_field = first_field;
 }
 
 
@@ -120,45 +102,31 @@ int _720to480Order::handle_event()
 }
 
 
-
-
 _720to480Main::_720to480Main(PluginServer *server)
  : PluginVClient(server)
 {
 	temp = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 _720to480Main::~_720to480Main()
 {
-	save_defaults();
-	delete defaults;
-
 	if(temp) delete temp;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* _720to480Main::plugin_title() { return N_("720 to 480"); }
-int _720to480Main::is_realtime() { return 0; }
+PLUGIN_CLASS_METHODS
 
 double _720to480Main::get_framerate()
 {
 	return project_frame_rate / 2;
 }
 
-
-
-
-
 void _720to480Main::load_defaults()
 {
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%s720to480.rc", BCASTDIR);
-
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("720to480.rc");
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
 }
-
 
 void _720to480Main::save_defaults()
 {
@@ -166,16 +134,6 @@ void _720to480Main::save_defaults()
 	defaults->save();
 }
 
-int _720to480Main::get_parameters()
-{
-	BC_DisplayInfo info;
-	_720to480Window window(this, 
-		info.get_abs_cursor_x(), 
-		info.get_abs_cursor_y());
-	window.create_objects();
-	int result = window.run_window();
-	return result;
-}
 
 void _720to480Main::start_loop()
 {
@@ -184,10 +142,9 @@ void _720to480Main::start_loop()
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
 		progress = start_progress(string, 
-			PluginClient::end - PluginClient::start);
+			(PluginClient::end_pts - PluginClient::start_pts) * 100);
 	}
-
-	input_position = PluginClient::start;
+	input_pts = PluginClient::start_pts;
 }
 
 
@@ -200,10 +157,8 @@ void _720to480Main::stop_loop()
 	}
 }
 
-
 #define DST_W 854
 #define DST_H 240
-
 
 void _720to480Main::reduce_field(VFrame *output, VFrame *input, int dest_row)
 {
@@ -278,45 +233,20 @@ int _720to480Main::process_loop(VFrame *output)
 			output->get_color_model());
 
 // Step 1: Reduce vertically and put in desired fields of output
-	read_frame(temp, input_position);
+	temp->set_pts(input_pts);
+	get_frame(temp);
 	reduce_field(output, temp, config.first_field == 0 ? 0 : 1);
-	input_position++;
+	input_pts = temp->next_pts();
 
-	read_frame(temp, input_position);
+	temp->set_pts(input_pts);
+	get_frame(temp);
 	reduce_field(output, temp, config.first_field == 0 ? 1 : 0);
-	input_position++;
+	input_pts = temp->next_pts();
 
 	if(PluginClient::interactive) 
-		result = progress->update(input_position - PluginClient::start);
+		result = progress->update((input_pts - PluginClient::start_pts) * 100);
 
-	if(input_position >= PluginClient::end) result = 1;
+	if(input_pts >= PluginClient::end_pts) result = 1;
 
 	return result;
-}
-
-
-void _720to480Main::save_data(KeyFrame *keyframe)
-{
-	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
-	output.tag.set_title("720TO480");
-	output.tag.set_property("FIRST_FIELD", config.first_field);
-	output.append_tag();
-	output.tag.set_title("/720TO480");
-	output.append_tag();
-	output.terminate_string();
-}
-
-void _720to480Main::read_data(KeyFrame *keyframe)
-{
-	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
-	while(!input.read_tag())
-	{
-		if(input.tag.title_is("720TO480"))
-		{
-			config.first_field = input.tag.get_property("FIRST_FIELD", config.first_field);
-		}
-	}
 }
