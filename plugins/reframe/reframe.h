@@ -22,12 +22,17 @@
 #ifndef REFRAME_H
 #define REFRAME_H
 
+#define PLUGIN_IS_VIDEO
+
+#define PLUGIN_TITLE N_("Reframe")
+#define PLUGIN_CLASS ReFrame
+#define PLUGIN_GUI_CLASS ReFrameWindow
+
+#include "pluginmacros.h"
 
 #include "guicast.h"
+#include "language.h"
 #include "pluginvclient.h"
-
-
-class ReFrame;
 
 
 class ReFrameOutput : public BC_TextBox
@@ -39,17 +44,13 @@ public:
 };
 
 
-
 class ReFrameWindow : public BC_Window
 {
 public:
 	ReFrameWindow(ReFrame *plugin, int x, int y);
 	~ReFrameWindow();
 
-	void create_objects();
-	void close_event();
-
-	ReFrame *plugin;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
@@ -59,21 +60,18 @@ public:
 	ReFrame(PluginServer *server);
 	~ReFrame();
 
-	const char* plugin_title();
-	VFrame* new_picon();
-	int get_parameters();
+	PLUGIN_CLASS_MEMBERS
+
 	void load_defaults();
 	void save_defaults();
 	void start_loop();
 	void stop_loop();
 	int process_loop(VFrame *buffer);
 
-
 	double scale;
 
-	BC_Hash *defaults;
 	MainProgressBar *progress;
-	framenum current_position;
+	ptstime current_pts;
 };
 
 #endif

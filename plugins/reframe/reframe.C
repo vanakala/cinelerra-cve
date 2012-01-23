@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "language.h"
 #include "mainprogress.h"
@@ -27,39 +26,26 @@
 #include "reframe.h"
 
 
-REGISTER_PLUGIN(ReFrame)
+REGISTER_PLUGIN
 
 
 ReFrame::ReFrame(PluginServer *server)
  : PluginVClient(server)
 {
-	load_defaults();
-	current_position = 0;
+	current_pts = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ReFrame::~ReFrame()
 {
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* ReFrame::plugin_title() { return N_("Reframe"); }
-
-NEW_PICON_MACRO(ReFrame) 
-
+PLUGIN_CLASS_METHODS
 
 void ReFrame::load_defaults()
 {
-	char directory[1024];
-
-// set the default directory
-	sprintf(directory, "%sreframe.rc", BCASTDIR);
-
-// load the defaults
-
-	defaults = new BC_Hash(directory);
-
-	defaults->load();
+	defaults = load_defaults_file("reframe.rc");
 
 	scale = defaults->get("SCALE", (double)1);
 }
@@ -70,17 +56,6 @@ void ReFrame::save_defaults()
 	defaults->save();
 }
 
-int ReFrame::get_parameters()
-{
-	BC_DisplayInfo info;
-	ReFrameWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
-	window.create_objects();
-	int result = window.run_window();
-
-	return result;
-}
-
-
 void ReFrame::start_loop()
 {
 	if(PluginClient::interactive)
@@ -88,10 +63,9 @@ void ReFrame::start_loop()
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
 		progress = start_progress(string, 
-			(PluginClient::end - PluginClient::start));
+			(PluginClient::end_pts - PluginClient::start_pts) * 100);
 	}
-
-	current_position = 0;
+	current_pts = 0;
 }
 
 void ReFrame::stop_loop()
@@ -103,26 +77,21 @@ void ReFrame::stop_loop()
 	}
 }
 
-
 int ReFrame::process_loop(VFrame *buffer)
 {
 	int result = 0;
 
-	framenum input_offset = Units::to_int64((double)current_position * 
-		scale + 
-		PluginClient::start);
+	ptstime input_pts = current_pts * scale + PluginClient::start_pts;
 
-	read_frame(buffer, input_offset);
-
-	current_position++;
-	input_offset = Units::to_int64((double)current_position * 
-		scale + 
-		PluginClient::start);
+	buffer->set_pts(input_pts);
+	get_frame(buffer);
+	buffer->set_pts(current_pts);
+	current_pts = buffer->next_pts();
 
 	if(PluginClient::interactive) 
-		result = progress->update(input_offset - PluginClient::start);
+		result = progress->update((input_pts - PluginClient::start_pts) * 100);
 
-	if(input_offset >= PluginClient::end) result = 1;
+	if(input_pts >= PluginClient::end_pts) result = 1;
 
 	return result;
 }
@@ -141,7 +110,6 @@ int ReFrameOutput::handle_event()
 }
 
 
-
 ReFrameWindow::ReFrameWindow(ReFrame *plugin, int x, int y)
  : BC_Window(plugin->plugin_title(), 
 	x,
@@ -154,27 +122,14 @@ ReFrameWindow::ReFrameWindow(ReFrame *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
+	x = y = 10;
+
+	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
+	y += 20;
+	add_subwindow(new ReFrameOutput(plugin, x, y));
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
 ReFrameWindow::~ReFrameWindow()
 {
 }
-
-
-void ReFrameWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
-	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
-	y += 20;
-	add_subwindow(new ReFrameOutput(plugin, x, y));
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
-
-	show_window();
-	flush();
-}
-
-WINDOW_CLOSE_EVENT(ReFrameWindow)
