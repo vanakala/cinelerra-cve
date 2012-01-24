@@ -54,7 +54,6 @@ SUBDIRS= \
 	ivtc \
 	level \
 	linearblur \
-	livevideo \
 	loopaudio \
 	loopvideo \
 	motion \
