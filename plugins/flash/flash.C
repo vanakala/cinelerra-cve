@@ -21,35 +21,26 @@
 
 #include "flash.h"
 #include "edl.inc"
-#include "overlayframe.h"
-#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 #include <stdint.h>
 
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new FlashMain(server);
-}
+REGISTER_PLUGIN
 
 
 FlashMain::FlashMain(PluginServer *server)
  : PluginVClient(server)
 {
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 FlashMain::~FlashMain()
 {
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* FlashMain::plugin_title() { return N_("Flash"); }
-int FlashMain::is_video() { return 1; }
-int FlashMain::is_transition() { return 1; }
-int FlashMain::uses_gui() { return 0; }
-
-NEW_PICON_MACRO(FlashMain)
-
+PLUGIN_CLASS_METHODS
 
 #define FLASH(type, temp_type, components, max, chroma_offset) \
 { \
@@ -106,12 +97,15 @@ NEW_PICON_MACRO(FlashMain)
 
 void FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
-	int half = PluginClient::get_total_len() / 2;
-	int position = half - labs(PluginClient::get_source_position() - half);
-	float fraction = (float)position / half;
-	int is_before = PluginClient::get_source_position() < half;
+	ptstime half = total_len_pts / 2;
+	ptstime pts = half - fabs(source_pts - half);
+	float fraction = pts / half;
+	int is_before = source_pts < half;
 	int w = incoming->get_w();
 	int h = incoming->get_h();
+
+	if(incoming != outgoing)
+		outgoing->copy_pts(incoming);
 
 	switch(incoming->get_color_model())
 	{
