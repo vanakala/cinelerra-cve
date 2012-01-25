@@ -417,6 +417,8 @@ void PluginServer::process_transition(VFrame *input,
 	if(!plugin_open) return;
 	PluginVClient *vclient = (PluginVClient*)client;
 
+	vclient->source_pts = current_postime;
+	vclient->total_len_pts = total_len;
 	vclient->source_position = plugin->track->to_units(current_postime);
 	vclient->source_start = 0;
 	vclient->total_len = plugin->track->to_units(total_len);
