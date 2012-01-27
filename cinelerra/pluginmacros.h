@@ -1,6 +1,6 @@
 /*
  * pluginmacros.h
- * Copyright (C) 2011 Einar Rünkaru <einarry at smail dot ee>
+ * Copyright (C) 2011-2012 Einar Rünkaru <einarry at smail dot ee>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,83 +40,80 @@ class PLUGIN_CLASS;
 
 #ifdef PLUGIN_CONFIG_CLASS
 class PLUGIN_CONFIG_CLASS;
-#endif
-
-#ifdef PLUGIN_THREAD_CLASS
-class PLUGIN_THREAD_CLASS;
-#endif
-
-#if defined(PLUGIN_IS_TRANSITION) && (defined(PLUGIN_THREAD_CLASS) || defined(PLUGIN_GUI_CLASS))
-#error "Plugin must not have thread or gui defined"
-#endif
-
-#if defined(PLUGIN_THREAD_CLASS) && !defined(PLUGIN_GUI_CLASS)
-#error "Thread has defined but no window!"
-#endif
-
-#if !defined(PLUGIN_IS_REALTIME) && defined(PLUGIN_THREAD_CLASS)
-#define PLUGIN_IS_REALTIME
-#endif
+#define PLUGIN_CLASS_HAS_CONFIG_MEMBER \
+	int load_configuration(); \
+	PLUGIN_CONFIG_CLASS config;
+#else
+#define PLUGIN_CLASS_HAS_CONFIG_MEMBER
+#endif  // config
 
 #ifdef PLUGIN_GUI_CLASS
-class PLUGIN_GUI_CLASS;
+#ifdef PLUGIN_THREAD_CLASS
+class PLUGIN_THREAD_CLASS;
+#ifndef PLUGIN_IS_TRANSITION
+#define PLUGIN_CLASS_UPDATE_GUI_MEMBER \
+	void update_gui();
+#else
+#define PLUGIN_CLASS_UPDATE_GUI_MEMBER
 #endif
+#define PLUGIN_CLASS_HAS_THREAD_MEMBERS \
+	void show_gui(); \
+	void set_string(); \
+	void raise_window(); \
+	PLUGIN_CLASS_UPDATE_GUI_MEMBER \
+	PLUGIN_THREAD_CLASS *thread;
+#else
+#define PLUGIN_CLASS_HAS_THREAD_MEMBERS \
+	int get_parameters();
+#endif // plugin thread
+class PLUGIN_GUI_CLASS;
+#define PLUGIN_CLASS_USES_GUI_MEMBER
+#else
+#define PLUGIN_CLASS_USES_GUI_MEMBER \
+	int uses_gui() { return 0; };
+#define PLUGIN_CLASS_HAS_THREAD_MEMBERS
+#endif // plugin gui
+
+#ifdef PLUGIN_IS_TRANSITION
+#define PLUGIN_CLASS_TRANSITION_MEMBER \
+	int is_transition() { return 1; };
+#undef PLUGIN_IS_REALTIME
+#else
+#define PLUGIN_CLASS_TRANSITION_MEMBER
+#endif // plugin transition
+
+#ifdef PLUGIN_IS_REALTIME
+#define PLUGIN_CLASS_REALTIME_MEMBER \
+	int is_realtime() { return 1; };
+#else
+#define PLUGIN_CLASS_REALTIME_MEMBER
+#endif // realtime
 
 #ifdef PLUGIN_IS_MULTICHANNEL
 #define PLUGIN_CLASS_MULTICHANNEL_MEMBER \
 	int is_multichannel() { return 1; };
 #else
 #define PLUGIN_CLASS_MULTICHANNEL_MEMBER
-#endif
+#endif // multichannel
 
 #ifdef PLUGIN_IS_SYNTHESIS
 #define PLUGIN_CLASS_SYNTHESIS_MEMBER \
 	int is_synthesis() { return 1; };
 #else
 #define PLUGIN_CLASS_SYNTHESIS_MEMBER
-#endif
+#endif // synthesis
 
-#if defined(PLUGIN_IS_TRANSITION)
 #define PLUGIN_CLASS_MEMBERS \
 	VFrame* new_picon(); \
 	const char* plugin_title() { return PLUGIN_TITLE; }; \
 	int has_pts_api() { return 2; }; \
-	int uses_gui() { return 0; }; \
-	int is_transition() { return 1; };
-#elif !defined(PLUGIN_IS_REALTIME)
-#define PLUGIN_CLASS_MEMBERS \
-	VFrame* new_picon(); \
-	const char* plugin_title()  { return PLUGIN_TITLE; }; \
-	BC_Hash *defaults; \
-	int get_parameters(); \
-	PLUGIN_CLASS_MULTICHANNEL_MEMBER \
-	int has_pts_api() { return 2; };
-#else
-#ifndef PLUGIN_CONFIG_CLASS
-#define PLUGIN_CLASS_MEMBERS \
-	VFrame* new_picon(); \
-	const char* plugin_title() { return PLUGIN_TITLE; }; \
-	int uses_gui() { return 0; }; \
-	int is_realtime() { return 1; }; \
-	int has_pts_api() { return 2; };
-#else
-#define PLUGIN_CLASS_MEMBERS \
-	int load_configuration(); \
-	VFrame* new_picon(); \
-	const char* plugin_title() { return PLUGIN_TITLE; }; \
-	void show_gui(); \
-	void set_string(); \
-	void raise_window(); \
-	void update_gui(); \
-	BC_Hash *defaults; \
-	PLUGIN_CONFIG_CLASS config; \
-	PLUGIN_THREAD_CLASS *thread; \
-	int is_realtime() { return 1; }; \
-	int has_pts_api() { return 2; }; \
-	PLUGIN_CLASS_SYNTHESIS_MEMBER \
-	PLUGIN_CLASS_MULTICHANNEL_MEMBER
-#endif // config_class
-#endif // transition
+	PLUGIN_CLASS_HAS_CONFIG_MEMBER \
+	PLUGIN_CLASS_TRANSITION_MEMBER \
+	PLUGIN_CLASS_REALTIME_MEMBER \
+	PLUGIN_CLASS_HAS_THREAD_MEMBERS \
+	PLUGIN_CLASS_USES_GUI_MEMBER \
+	unsigned char *picon_data; \
+	BC_Hash *defaults;
 
 #ifdef PLUGIN_CONFIG_CLASS
 #define PLUGIN_CONFIG_CLASS_BASE_MEMBERS \
@@ -137,6 +134,7 @@ class PLUGIN_GUI_CLASS;
 	PLUGIN_CLASS *plugin;
 #endif
 
+#ifdef PLUGIN_THREAD_CLASS
 #define PLUGIN_THREAD_HEADER \
 class PLUGIN_THREAD_CLASS : public Thread \
 { \
@@ -147,6 +145,9 @@ public: \
 	PLUGIN_GUI_CLASS *window; \
 	PLUGIN_CLASS *plugin; \
 };
+#else
+#define PLUGIN_THREAD_HEADER
+#endif // plugin thread
 
 #define REGISTER_PLUGIN \
 PluginClient* new_plugin(PluginServer *server) \
@@ -154,11 +155,11 @@ PluginClient* new_plugin(PluginServer *server) \
 	return new PLUGIN_CLASS(server); \
 }
 
-#ifdef PLUGIN_IS_REALTIME
-#ifdef PLUGIN_CONFIG_CLASS
+#ifdef PLUGIN_THREAD_CLASS
 #define PLUGIN_CONSTRUCTOR_MACRO \
 	thread = 0; \
 	defaults = 0; \
+	picon_data = picon_png; \
 	load_defaults();
 
 #define PLUGIN_DESTRUCTOR_MACRO \
@@ -172,15 +173,9 @@ PluginClient* new_plugin(PluginServer *server) \
 		delete defaults; \
 	}
 #else
-#define PLUGIN_CONSTRUCTOR_MACRO
-#define PLUGIN_DESTRUCTOR_MACRO
-#endif // config class
-#elif defined(PLUGIN_IS_TRANSITION)
-#define PLUGIN_CONSTRUCTOR_MACRO
-#define PLUGIN_DESTRUCTOR_MACRO
-#else // is transition
 #define PLUGIN_CONSTRUCTOR_MACRO \
 	defaults = 0; \
+	picon_data = picon_png; \
 	load_defaults();
 
 #define PLUGIN_DESTRUCTOR_MACRO \
@@ -188,8 +183,7 @@ PluginClient* new_plugin(PluginServer *server) \
 		save_defaults(); \
 		delete defaults; \
 	}
-#endif // is realtime
-
+#endif // gui
 
 #define PLUGIN_CLASS_NEW_PICON \
 VFrame* PLUGIN_CLASS::new_picon() \
@@ -197,7 +191,7 @@ VFrame* PLUGIN_CLASS::new_picon() \
 	return new VFrame(picon_png); \
 } \
 
-#ifndef PLUGIN_CUSTOM_LOAD_CONFIGURATION
+#if !defined(PLUGIN_CUSTOM_LOAD_CONFIGURATION) && defined(PLUGIN_CONFIG_CLASS)
 #define PLUGIN_CLASS_LOAD_CONFIGURATION \
 int PLUGIN_CLASS::load_configuration() \
 { \
@@ -247,6 +241,7 @@ int PLUGIN_CLASS::load_configuration() \
 #define PLUGIN_CLASS_LOAD_CONFIGURATION
 #endif
 
+#ifdef PLUGIN_GUI_CLASS
 #define PLUGIN_CLASS_SHOW_GUI \
 void PLUGIN_CLASS::show_gui() \
 { \
@@ -274,6 +269,7 @@ void PLUGIN_CLASS::raise_window() \
 	} \
 }
 
+#ifndef PLUGIN_IS_TRANSITION
 #define PLUGIN_CLASS_UPDATE_GUI \
 void PLUGIN_CLASS::update_gui() \
 { \
@@ -284,6 +280,9 @@ void PLUGIN_CLASS::update_gui() \
 		thread->window->unlock_window(); \
 	} \
 }
+#else
+#define PLUGIN_CLASS_UPDATE_GUI
+#endif
 
 #define PLUGIN_CLASS_GET_PARAMETERS \
 int PLUGIN_CLASS::get_parameters() \
@@ -292,9 +291,12 @@ int PLUGIN_CLASS::get_parameters() \
 	PLUGIN_GUI_CLASS window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y()); \
 	return window.run_window(); \
 }
+#else
+#define PLUGIN_CLASS_GET_PARAMETERS
+#endif // plugin gui
 
-#ifdef PLUGIN_IS_REALTIME
-#ifdef PLUGIN_CONFIG_CLASS
+#if defined(PLUGIN_IS_REALTIME) || defined(PLUGIN_IS_TRANSITION)
+#ifdef PLUGIN_THREAD_CLASS
 #define PLUGIN_CLASS_METHODS \
 	PLUGIN_CLASS_NEW_PICON \
 	PLUGIN_CLASS_LOAD_CONFIGURATION \
@@ -305,17 +307,14 @@ int PLUGIN_CLASS::get_parameters() \
 #else
 #define PLUGIN_CLASS_METHODS \
 	PLUGIN_CLASS_NEW_PICON
-#endif // plugin config
-#elif defined(PLUGIN_IS_TRANSITION)
-#define PLUGIN_CLASS_METHODS \
-	PLUGIN_CLASS_NEW_PICON
+#endif // plugin gui
 #else
 #define PLUGIN_CLASS_METHODS \
 	PLUGIN_CLASS_GET_PARAMETERS \
 	PLUGIN_CLASS_NEW_PICON
-#endif
+#endif // realtime or transition
 
-#ifdef PLUGIN_IS_REALTIME
+#ifdef PLUGIN_THREAD_CLASS
 #define PLUGIN_THREAD_METHODS \
 PLUGIN_THREAD_CLASS::PLUGIN_THREAD_CLASS(PLUGIN_CLASS *plugin) \
  : Thread(0, 0, 1) \
@@ -341,7 +340,9 @@ void PLUGIN_THREAD_CLASS::run() \
 /* This is needed when the GUI is closed from itself */ \
 	if(result) plugin->client_side_close(); \
 }
-#endif // realtime
+#else
+#define PLUGIN_THREAD_METHODS
+#endif // thread_class
 
 #ifdef PLUGIN_IS_AUDIO
 #define PLUGIN_CONFIG_INTERPOLATE_MACRO \
@@ -356,25 +357,21 @@ void PLUGIN_THREAD_CLASS::run() \
 #endif // is audio
 
 #ifdef PLUGIN_GUI_CLASS
-#ifdef PLUGIN_IS_REALTIME
+#if defined(PLUGIN_IS_REALTIME) || defined(PLUGIN_IS_TRANSITION)
 #define PLUGIN_GUI_CONSTRUCTOR_MACRO \
 	this->plugin = plugin; \
-	VFrame *ico = plugin->new_picon(); \
-	set_icon(ico); \
-	delete ico; \
+	set_icon(new VFrame(plugin->picon_data)); \
 	show_window(); \
 	flush();
 #else
 #define PLUGIN_GUI_CONSTRUCTOR_MACRO \
 	this->plugin = plugin; \
-	VFrame *ico = plugin->new_picon(); \
-	set_icon(ico); \
-	delete ico; \
+	set_icon(new VFrame(plugin->picon_data)); \
 	add_subwindow(new BC_OKButton(this)); \
 	add_subwindow(new BC_CancelButton(this)); \
 	show_window(); \
 	flush();
-#endif // is realtime
+#endif // is realtime or transition
 #endif // plugin gui
 
 #endif // pluginmacros
