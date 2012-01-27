@@ -104,9 +104,6 @@ void FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int w = incoming->get_w();
 	int h = incoming->get_h();
 
-	if(incoming != outgoing)
-		outgoing->copy_pts(incoming);
-
 	switch(incoming->get_color_model())
 	{
 	case BC_RGB888:
