@@ -122,6 +122,11 @@ double _720to480Main::get_framerate()
 	return project_frame_rate / 2;
 }
 
+int _720to480Main::load_configuration()
+{
+	return 0;
+}
+
 void _720to480Main::load_defaults()
 {
 	defaults = load_defaults_file("720to480.rc");

@@ -23,6 +23,7 @@
 #define _720TO480_H
 
 #define PLUGIN_IS_VIDEO
+#define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #define PLUGIN_TITLE N_("720 to 480")
 #define PLUGIN_CLASS _720to480Main
@@ -95,7 +96,6 @@ public:
 
 	MainProgressBar *progress;
 
-	_720to480Config config;
 	VFrame *temp;
 	ptstime input_pts;
 };
