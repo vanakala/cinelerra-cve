@@ -20,30 +20,17 @@
  */
 
 #include "bandslide.h"
-#include "bcdisplayinfo.h"
 #include "bchash.h"
-#include "edl.inc"
 #include "filexml.h"
-#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
-
 
 #include <stdint.h>
 #include <string.h>
 #include <libintl.h>
 
-
-
-
-
-
-REGISTER_PLUGIN(BandSlideMain)
-
-
-
-
+REGISTER_PLUGIN
 
 BandSlideCount::BandSlideCount(BandSlideMain *plugin, 
 	BandSlideWindow *window,
@@ -125,19 +112,8 @@ BandSlideWindow::BandSlideWindow(BandSlideMain *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-void BandSlideWindow::close_event()
-{
-	set_done(1);
-}
-
-void BandSlideWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Bands:")));
 	x += 50;
 	count = new BandSlideCount(plugin, 
@@ -159,17 +135,10 @@ void BandSlideWindow::create_objects()
 		this,
 		x,
 		y));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-
-
-
-PLUGIN_THREAD_OBJECT(BandSlideMain, BandSlideThread, BandSlideWindow)
-
-
+PLUGIN_THREAD_METHODS
 
 BandSlideMain::BandSlideMain(PluginServer *server)
  : PluginVClient(server)
@@ -184,30 +153,11 @@ BandSlideMain::~BandSlideMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* BandSlideMain::plugin_title() { return N_("BandSlide"); }
-int BandSlideMain::is_video() { return 1; }
-int BandSlideMain::is_transition() { return 1; }
-int BandSlideMain::uses_gui() { return 1; }
-
-SHOW_GUI_MACRO(BandSlideMain, BandSlideThread);
-SET_STRING_MACRO(BandSlideMain)
-RAISE_WINDOW_MACRO(BandSlideMain)
-
-
-VFrame* BandSlideMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+PLUGIN_CLASS_METHODS
 
 void BandSlideMain::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sbandslide.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("bandslide.rc");
 
 	bands = defaults->get("BANDS", bands);
 	direction = defaults->get("DIRECTION", direction);
@@ -251,10 +201,9 @@ void BandSlideMain::read_data(KeyFrame *keyframe)
 
 int BandSlideMain::load_configuration()
 {
-	read_data(get_prev_keyframe(get_source_position()));
+	read_data(prev_keyframe_pts(source_pts));
 	return 0;
 }
-
 
 
 #define BANDSLIDE(type, components) \
@@ -355,8 +304,6 @@ int BandSlideMain::load_configuration()
 		} \
 	} \
 }
-
-
 
 void BandSlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
