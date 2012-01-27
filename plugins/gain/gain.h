@@ -23,6 +23,8 @@
 #define GAIN_H
 
 #define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+
 #define PLUGIN_TITLE "Gain"
 #define PLUGIN_CLASS Gain
 #define PLUGIN_CONFIG_CLASS GainConfig

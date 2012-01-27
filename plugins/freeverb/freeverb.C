@@ -21,7 +21,9 @@
 
 #define PLUGIN_TITLE N_("Freeverb")
 #define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
 #define PLUGIN_IS_MULTICHANNEL
+
 #define PLUGIN_CLASS FreeverbEffect
 #define PLUGIN_CONFIG_CLASS FreeverbConfig
 #define PLUGIN_THREAD_CLASS FreeverbThread

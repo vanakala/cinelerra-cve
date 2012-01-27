@@ -24,6 +24,7 @@
 
 #define PLUGIN_TITLE N_("Denoise")
 #define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
 #define PLUGIN_CLASS DenoiseEffect
 #define PLUGIN_CONFIG_CLASS DenoiseConfig
 #define PLUGIN_THREAD_CLASS DenoiseThread

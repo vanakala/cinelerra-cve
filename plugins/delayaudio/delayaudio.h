@@ -24,7 +24,10 @@
 
 // Old title was "Delay audio"
 #define PLUGIN_TITLE N_("Delay")
+
 #define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+
 #define PLUGIN_CLASS DelayAudio
 #define PLUGIN_CONFIG_CLASS DelayAudioConfig
 #define PLUGIN_THREAD_CLASS DelayAudioThread

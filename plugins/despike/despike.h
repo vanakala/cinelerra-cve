@@ -23,6 +23,9 @@
 #define DESPIKE_H
 
 #define PLUGIN_TITLE N_("Despike")
+#define PLUGIN_IS_AUDIO
+#define PLUGIN_IS_REALTIME
+
 #define PLUGIN_CLASS Despike
 #define PLUGIN_CONFIG_CLASS DespikeConfig
 #define PLUGIN_THREAD_CLASS DespikeThread
