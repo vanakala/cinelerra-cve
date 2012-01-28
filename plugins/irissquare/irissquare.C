@@ -19,23 +19,17 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "edl.inc"
 #include "filexml.h"
-#include "language.h"
-#include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
 #include "irissquare.h"
 
-
 #include <stdint.h>
 #include <string.h>
 
-
-REGISTER_PLUGIN(IrisSquareMain)
-
+REGISTER_PLUGIN
 
 IrisSquareIn::IrisSquareIn(IrisSquareMain *plugin, 
 	IrisSquareWindow *window,
@@ -94,19 +88,8 @@ IrisSquareWindow::IrisSquareWindow(IrisSquareMain *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-void IrisSquareWindow::close_event()
-{
-	set_done(1);
-}
-
-void IrisSquareWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(in = new IrisSquareIn(plugin, 
@@ -118,13 +101,10 @@ void IrisSquareWindow::create_objects()
 		this,
 		x,
 		y));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-
-PLUGIN_THREAD_OBJECT(IrisSquareMain, IrisSquareThread, IrisSquareWindow)
-
+PLUGIN_THREAD_METHODS
 
 IrisSquareMain::IrisSquareMain(PluginServer *server)
  : PluginVClient(server)
@@ -138,29 +118,11 @@ IrisSquareMain::~IrisSquareMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* IrisSquareMain::plugin_title() { return N_("IrisSquare"); }
-int IrisSquareMain::is_video() { return 1; }
-int IrisSquareMain::is_transition() { return 1; }
-int IrisSquareMain::uses_gui() { return 1; }
-
-SHOW_GUI_MACRO(IrisSquareMain, IrisSquareThread);
-SET_STRING_MACRO(IrisSquareMain)
-RAISE_WINDOW_MACRO(IrisSquareMain)
-
-
-VFrame* IrisSquareMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+PLUGIN_CLASS_METHODS
 
 void IrisSquareMain::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sirissquare.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
+	defaults = load_defaults_file("irissquare.rc");
 	defaults->load();
 
 	direction = defaults->get("DIRECTION", direction);
@@ -201,7 +163,7 @@ void IrisSquareMain::read_data(KeyFrame *keyframe)
 
 int IrisSquareMain::load_configuration()
 {
-	read_data(get_prev_keyframe(get_source_position()));
+	read_data(prev_keyframe_pts(source_pts));
 	return 0;
 }
 
@@ -210,18 +172,11 @@ int IrisSquareMain::load_configuration()
 { \
 	if(direction == 0) \
 	{ \
-		int x1 = w / 2 - w / 2 *  \
-			PluginClient::get_source_position() /  \
-			PluginClient::get_total_len(); \
-		int x2 = w / 2 + w / 2 *  \
-			PluginClient::get_source_position() /  \
-			PluginClient::get_total_len(); \
-		int y1 = h / 2 - h / 2 *  \
-			PluginClient::get_source_position() /  \
-			PluginClient::get_total_len(); \
-		int y2 = h / 2 + h / 2 *  \
-			PluginClient::get_source_position() /  \
-			PluginClient::get_total_len(); \
+		int x1 = w / 2 - dw; \
+		int x2 = w / 2 + dw; \
+		int y1 = h / 2 - dh; \
+		int y2 = h / 2 + dh; \
+ \
 		for(int j = y1; j < y2; j++) \
 		{ \
 			type *in_row = (type*)incoming->get_rows()[j]; \
@@ -238,18 +193,11 @@ int IrisSquareMain::load_configuration()
 	} \
 	else \
 	{ \
-		int x1 = w / 2 *  \
-			PluginClient::get_source_position() /  \
-			PluginClient::get_total_len(); \
-		int x2 = w - w / 2 *  \
-			PluginClient::get_source_position() /  \
-			PluginClient::get_total_len(); \
-		int y1 = h / 2 *  \
-			PluginClient::get_source_position() /  \
-			PluginClient::get_total_len(); \
-		int y2 = h - h / 2 *  \
-			PluginClient::get_source_position() /  \
-			PluginClient::get_total_len(); \
+		int x1 = dw; \
+		int x2 = w - dw; \
+		int y1 = dh; \
+		int y2 = h -dh; \
+ \
 		for(int j = 0; j < y1; j++) \
 		{ \
 			type *in_row = (type*)incoming->get_rows()[j]; \
@@ -306,7 +254,8 @@ void IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	int w = incoming->get_w();
 	int h = incoming->get_h();
-
+	int dw = round(w / 2 * source_pts / total_len_pts);
+	int dh = round(h / 2 * source_pts / total_len_pts);
 
 	switch(incoming->get_color_model())
 	{

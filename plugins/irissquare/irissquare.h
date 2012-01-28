@@ -22,16 +22,20 @@
 #ifndef IRISSQUARE_H
 #define IRISSQUARE_H
 
-class IrisSquareMain;
-class IrisSquareWindow;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_TRANSITION
 
+#define PLUGIN_TITLE N_("IrisSquare")
+#define PLUGIN_CLASS IrisSquareMain
+#define PLUGIN_THREAD_CLASS IrisSquareThread
+#define PLUGIN_GUI_CLASS IrisSquareWindow
 
+#include "pluginmacros.h"
+
+#include "language.h"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
 #include "vframe.inc"
-
-
-
 
 class IrisSquareIn : public BC_Radial
 {
@@ -57,23 +61,17 @@ public:
 	IrisSquareWindow *window;
 };
 
-
-
-
 class IrisSquareWindow : public BC_Window
 {
 public:
 	IrisSquareWindow(IrisSquareMain *plugin, int x, int y);
-	void create_objects();
-	void close_event();
-	IrisSquareMain *plugin;
+
+	PLUGIN_GUI_CLASS_MEMBERS
 	IrisSquareIn *in;
 	IrisSquareOut *out;
 };
 
-
-PLUGIN_THREAD_HEADER(IrisSquareMain, IrisSquareThread, IrisSquareWindow)
-
+PLUGIN_THREAD_HEADER
 
 class IrisSquareMain : public PluginVClient
 {
@@ -81,7 +79,7 @@ public:
 	IrisSquareMain(PluginServer *server);
 	~IrisSquareMain();
 
-	PLUGIN_CLASS_MEMBERS(int, IrisSquareThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *incoming, VFrame *outgoing);
@@ -89,9 +87,7 @@ public:
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int uses_gui();
-	int is_transition();
-	int is_video();
+	int load_configuration();
 
 	int direction;
 };
