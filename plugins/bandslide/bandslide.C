@@ -210,9 +210,7 @@ int BandSlideMain::load_configuration()
 { \
 	if(direction == 0) \
 	{ \
-		int x = w * \
-			PluginClient::get_source_position() / \
-			PluginClient::get_total_len(); \
+		int x = round(w * source_pts / total_len_pts); \
 		for(int i = 0; i < bands; i++) \
 		{ \
 			for(int j = 0; j < band_h; j++) \
@@ -250,9 +248,7 @@ int BandSlideMain::load_configuration()
 	} \
 	else \
 	{ \
-		int x = w - w * \
-			PluginClient::get_source_position() / \
-			PluginClient::get_total_len(); \
+		int x = w - (int)(round(w * source_pts / total_len_pts)); \
 		for(int i = 0; i < bands; i++) \
 		{ \
 			for(int j = 0; j < band_h; j++) \
