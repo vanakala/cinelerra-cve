@@ -21,42 +21,32 @@
 
 #include "dissolve.h"
 #include "edl.inc"
-#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
 
 #include <string.h>
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new DissolveMain(server);
-}
-
+REGISTER_PLUGIN
 
 DissolveMain::DissolveMain(PluginServer *server)
  : PluginVClient(server)
 {
 	overlayer = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 DissolveMain::~DissolveMain()
 {
 	delete overlayer;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* DissolveMain::plugin_title() { return N_("Dissolve"); }
-int DissolveMain::is_video() { return 1; }
-int DissolveMain::is_transition() { return 1; }
-int DissolveMain::uses_gui() { return 0; }
-
-NEW_PICON_MACRO(DissolveMain)
-
+PLUGIN_CLASS_METHODS
 
 void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
-	fade = (float)PluginClient::get_source_position() / 
-			PluginClient::get_total_len();
+	fade = source_pts / total_len_pts;
 
 // Use hardware
 	if(get_use_opengl())
