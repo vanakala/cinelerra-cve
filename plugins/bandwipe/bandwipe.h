@@ -22,15 +22,20 @@
 #ifndef BANDWIPE_H
 #define BANDWIPE_H
 
-class BandWipeMain;
-class BandWipeWindow;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_TRANSITION
 
+#define PLUGIN_TITLE N_("BandWipe")
+#define PLUGIN_CLASS BandWipeMain
+#define PLUGIN_THREAD_CLASS BandWipeThread
+#define PLUGIN_GUI_CLASS BandWipeWindow
 
+#include "pluginmacros.h"
+
+#include "language.h"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
 #include "vframe.inc"
-
-
 
 
 class BandWipeCount : public BC_TumbleTextBox
@@ -50,14 +55,13 @@ class BandWipeWindow : public BC_Window
 {
 public:
 	BandWipeWindow(BandWipeMain *plugin, int x, int y);
-	void create_objects();
-	void close_event();
-	BandWipeMain *plugin;
+
 	BandWipeCount *count;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(BandWipeMain, BandWipeThread, BandWipeWindow)
+PLUGIN_THREAD_HEADER
 
 
 class BandWipeMain : public PluginVClient
@@ -66,15 +70,14 @@ public:
 	BandWipeMain(PluginServer *server);
 	~BandWipeMain();
 
-	PLUGIN_CLASS_MEMBERS(int, BandWipeThread);
+	PLUGIN_CLASS_MEMBERS
 	void process_realtime(VFrame *incoming, VFrame *outgoing);
+
+	int load_configuration();
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int uses_gui();
-	int is_transition();
-	int is_video();
 
 	int bands;
 	int direction;

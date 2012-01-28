@@ -20,20 +20,16 @@
  */
 
 #include "bandwipe.h"
-#include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "edl.inc"
 #include "filexml.h"
-#include "language.h"
-#include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
-
 
 #include <stdint.h>
 #include <string.h>
 
-REGISTER_PLUGIN(BandWipeMain)
+REGISTER_PLUGIN
 
 
 BandWipeCount::BandWipeCount(BandWipeMain *plugin, 
@@ -71,20 +67,8 @@ BandWipeWindow::BandWipeWindow(BandWipeMain *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-
-void BandWipeWindow::close_event()
-{
-	set_done(1);
-}
-
-void BandWipeWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Bands:")));
 	x += 50;
 	count = new BandWipeCount(plugin, 
@@ -92,13 +76,10 @@ void BandWipeWindow::create_objects()
 		x,
 		y);
 	count->create_objects();
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-
-PLUGIN_THREAD_OBJECT(BandWipeMain, BandWipeThread, BandWipeWindow)
+PLUGIN_THREAD_METHODS
 
 
 BandWipeMain::BandWipeMain(PluginServer *server)
@@ -114,30 +95,11 @@ BandWipeMain::~BandWipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* BandWipeMain::plugin_title() { return N_("BandWipe"); }
-int BandWipeMain::is_video() { return 1; }
-int BandWipeMain::is_transition() { return 1; }
-int BandWipeMain::uses_gui() { return 1; }
-
-SHOW_GUI_MACRO(BandWipeMain, BandWipeThread);
-SET_STRING_MACRO(BandWipeMain)
-RAISE_WINDOW_MACRO(BandWipeMain)
-
-
-VFrame* BandWipeMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+PLUGIN_CLASS_METHODS
 
 void BandWipeMain::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sbandwipe.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("bandwipe.rc");
 
 	bands = defaults->get("BANDS", bands);
 	direction = defaults->get("DIRECTION", direction);
@@ -185,15 +147,11 @@ int BandWipeMain::load_configuration()
 	return 0;
 }
 
-
-
 #define BANDWIPE(type, components) \
 { \
 	if(direction == 0) \
 	{ \
-		int x = w * \
-			PluginClient::get_source_position() / \
-			PluginClient::get_total_len(); \
+		int x = round(w * source_pts / total_len_pts); \
  \
 		for(int i = 0; i < bands; i++) \
 		{ \
@@ -232,9 +190,7 @@ int BandWipeMain::load_configuration()
 	} \
 	else \
 	{ \
-		int x = w - w * \
-			PluginClient::get_source_position() / \
-			PluginClient::get_total_len(); \
+		int x = w - (int)(round(w * source_pts / total_len_pts)); \
  \
 		for(int i = 0; i < bands; i++) \
 		{ \
