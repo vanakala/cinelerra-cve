@@ -22,9 +22,17 @@
 #ifndef SHAPEWIPE_H
 #define SHAPEWIPE_H
 
-class ShapeWipeMain;
-class ShapeWipeWindow;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_TRANSITION
 
+#define PLUGIN_TITLE N_("Shape Wipe")
+#define PLUGIN_CLASS ShapeWipeMain
+#define PLUGIN_THREAD_CLASS ShapeWipeThread
+#define PLUGIN_GUI_CLASS ShapeWipeWindow
+
+#include "pluginmacros.h"
+
+#include "language.h"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
 #include "vframe.inc"
@@ -119,16 +127,15 @@ class ShapeWipeWindow : public BC_Window
 {
 public:
 	ShapeWipeWindow(ShapeWipeMain *plugin, int x, int y);
-	void create_objects();
-	void close_event();
 	void reset_pattern_image();
-	ShapeWipeMain *plugin;
+
 	ShapeWipeW2B *left;
 	ShapeWipeB2W *right;
 	ShapeWipeFilename *filename_widget;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-PLUGIN_THREAD_HEADER(ShapeWipeMain, ShapeWipeThread, ShapeWipeWindow)
+PLUGIN_THREAD_HEADER
 
 class ShapeWipeMain : public PluginVClient
 {
@@ -136,7 +143,7 @@ public:
 	ShapeWipeMain(PluginServer *server);
 	~ShapeWipeMain();
 
-	PLUGIN_CLASS_MEMBERS(int, ShapeWipeThread);
+	PLUGIN_CLASS_MEMBERS
 
 // required for all realtime plugins
 	void process_realtime(VFrame *incoming, VFrame *outgoing);
@@ -144,11 +151,9 @@ public:
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int uses_gui();
-	int is_transition();
-	int is_video();
 	int read_pattern_image(int new_frame_width, int new_frame_height);
 	void reset_pattern_image();
+	int load_configuration();
 
 	int direction;
 	char filename[BCTEXTLEN];

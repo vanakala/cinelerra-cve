@@ -35,7 +35,7 @@
 #include <stdint.h>
 #include <string.h>
 
-REGISTER_PLUGIN(ShapeWipeMain)
+REGISTER_PLUGIN
 
 ShapeWipeW2B::ShapeWipeW2B(ShapeWipeMain *plugin, 
 	ShapeWipeWindow *window,
@@ -193,19 +193,8 @@ ShapeWipeWindow::ShapeWipeWindow(ShapeWipeMain *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-void ShapeWipeWindow::close_event()
-{
-	set_done(1);
-}
-
-void ShapeWipeWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(left = new ShapeWipeW2B(plugin, 
@@ -246,11 +235,11 @@ void ShapeWipeWindow::create_objects()
 		this,
 		x,
 		y));
-	show_window();
-	flush();
+	this->plugin = plugin;
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-PLUGIN_THREAD_OBJECT(ShapeWipeMain, ShapeWipeThread, ShapeWipeWindow)
+PLUGIN_THREAD_METHODS
 
 ShapeWipeMain::ShapeWipeMain(PluginServer *server)
  : PluginVClient(server)
@@ -273,30 +262,11 @@ ShapeWipeMain::~ShapeWipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* ShapeWipeMain::plugin_title() { return N_("Shape Wipe"); }
-int ShapeWipeMain::is_video() { return 1; }
-int ShapeWipeMain::is_transition() { return 1; }
-int ShapeWipeMain::uses_gui() { return 1; }
-
-SHOW_GUI_MACRO(ShapeWipeMain, ShapeWipeThread);
-SET_STRING_MACRO(ShapeWipeMain)
-RAISE_WINDOW_MACRO(ShapeWipeMain)
-
-
-VFrame* ShapeWipeMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+PLUGIN_CLASS_METHODS
 
 void ShapeWipeMain::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sshapewipe.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("shapewipe.rc");
 
 	direction = defaults->get("DIRECTION", direction);
 	antialias = defaults->get("ANTIALIAS", antialias);
@@ -348,7 +318,7 @@ void ShapeWipeMain::read_data(KeyFrame *keyframe)
 
 int ShapeWipeMain::load_configuration()
 {
-	read_data(get_prev_keyframe(get_source_position()));
+	read_data(prev_keyframe_pts(source_pts));
 	return 0;
 }
 
@@ -689,23 +659,19 @@ void ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	if (!pattern_image)
 	{
-		errormsg("Shape Wipe: cannot load shape %s", filename);
+		abort_plugin("Cannot load shape %s", filename);
 		return;
 	}
 
 	if (direction)
 	{
-		threshold = (unsigned char)(
-				(float)PluginClient::get_source_position() /
-				(float)PluginClient::get_total_len() * 
-				(float)(max_value - min_value))
+		threshold = (unsigned char)round(source_pts / total_len_pts * (max_value - min_value))
 			+ min_value;
 	}
 	else
 	{
-		threshold = (unsigned char)((max_value - min_value) - ( 
-				(float)PluginClient::get_source_position() /
-				(float)PluginClient::get_total_len() * 
+		threshold = (unsigned char)((max_value - min_value) -
+				round(source_pts / total_len_pts *
 				(float)(max_value - min_value)))
 			+ min_value;
 	}
