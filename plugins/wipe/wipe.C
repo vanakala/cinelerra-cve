@@ -19,23 +19,16 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bchash.h"
-#include "edl.inc"
 #include "filexml.h"
-#include "language.h"
-#include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
 #include "wipe.h"
 
-
 #include <stdint.h>
 #include <string.h>
 
-
-REGISTER_PLUGIN(WipeMain)
-
+REGISTER_PLUGIN
 
 WipeLeft::WipeLeft(WipeMain *plugin, 
 	WipeWindow *window,
@@ -93,20 +86,8 @@ WipeWindow::WipeWindow(WipeMain *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-
-void WipeWindow::close_event()
-{
-	set_done(1);
-}
-
-void WipeWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(left = new WipeLeft(plugin, 
@@ -118,19 +99,10 @@ void WipeWindow::create_objects()
 		this,
 		x,
 		y));
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-
-
-
-PLUGIN_THREAD_OBJECT(WipeMain, WipeThread, WipeWindow)
-
-
-
-
-
+PLUGIN_THREAD_METHODS
 
 WipeMain::WipeMain(PluginServer *server)
  : PluginVClient(server)
@@ -144,30 +116,11 @@ WipeMain::~WipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* WipeMain::plugin_title() { return N_("Wipe"); }
-int WipeMain::is_video() { return 1; }
-int WipeMain::is_transition() { return 1; }
-int WipeMain::uses_gui() { return 1; }
-
-SHOW_GUI_MACRO(WipeMain, WipeThread);
-SET_STRING_MACRO(WipeMain)
-RAISE_WINDOW_MACRO(WipeMain)
-
-
-VFrame* WipeMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+PLUGIN_CLASS_METHODS
 
 void WipeMain::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%swipe.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = load_defaults_file("wipe.rc");
 
 	direction = defaults->get("DIRECTION", direction);
 }
@@ -207,14 +160,9 @@ void WipeMain::read_data(KeyFrame *keyframe)
 
 int WipeMain::load_configuration()
 {
-	read_data(get_prev_keyframe(get_source_position()));
+	read_data(prev_keyframe_pts(source_pts));
 	return 0;
 }
-
-
-
-
-
 
 #define WIPE(type, components) \
 { \
@@ -224,9 +172,7 @@ int WipeMain::load_configuration()
 		{ \
 			type *in_row = (type*)incoming->get_rows()[j]; \
 			type *out_row = (type*)outgoing->get_rows()[j]; \
-			int x = incoming->get_w() *  \
-				PluginClient::get_source_position() /  \
-				PluginClient::get_total_len(); \
+			int x = round(w * source_pts /  total_len_pts); \
  \
 			for(int k = 0; k < x; k++) \
 			{ \
@@ -243,9 +189,7 @@ int WipeMain::load_configuration()
 		{ \
 			type *in_row = (type*)incoming->get_rows()[j]; \
 			type *out_row = (type*)outgoing->get_rows()[j]; \
-			int x = incoming->get_w() - incoming->get_w() *  \
-				PluginClient::get_source_position() /  \
-				PluginClient::get_total_len(); \
+			int x = w - (int)round(w * source_pts /  total_len_pts); \
  \
 			for(int k = x; k < w; k++) \
 			{ \
@@ -258,17 +202,12 @@ int WipeMain::load_configuration()
 	} \
 }
 
-
-
-
-
 void WipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	load_configuration();
 
 	int w = incoming->get_w();
 	int h = incoming->get_h();
-
 
 	switch(incoming->get_color_model())
 	{

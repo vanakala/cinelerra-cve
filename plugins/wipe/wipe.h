@@ -22,16 +22,19 @@
 #ifndef WIPE_H
 #define WIPE_H
 
-class WipeMain;
-class WipeWindow;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_TRANSITION
 
+#define PLUGIN_TITLE N_("Wipe")
+#define PLUGIN_CLASS WipeMain
+#define PLUGIN_THREAD_CLASS WipeThread
+#define PLUGIN_GUI_CLASS WipeWindow
 
-#include "overlayframe.inc"
+#include "pluginmacros.h"
+
+#include "language.h"
 #include "pluginvclient.h"
 #include "vframe.inc"
-
-
-
 
 class WipeLeft : public BC_Radial
 {
@@ -58,22 +61,17 @@ public:
 };
 
 
-
-
 class WipeWindow : public BC_Window
 {
 public:
 	WipeWindow(WipeMain *plugin, int x, int y);
-	void create_objects();
-	void close_event();
-	WipeMain *plugin;
+
 	WipeLeft *left;
 	WipeRight *right;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
-
-PLUGIN_THREAD_HEADER(WipeMain, WipeThread, WipeWindow)
-
+PLUGIN_THREAD_HEADER
 
 class WipeMain : public PluginVClient
 {
@@ -81,16 +79,14 @@ public:
 	WipeMain(PluginServer *server);
 	~WipeMain();
 
-	PLUGIN_CLASS_MEMBERS(int, WipeThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *incoming, VFrame *outgoing);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int uses_gui();
-	int is_transition();
-	int is_video();
+	int load_configuration();
 
 	int direction;
 };
