@@ -19,11 +19,8 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bchash.h"
-#include "edl.inc"
 #include "filexml.h"
-#include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
 #include "slide.h"
@@ -32,13 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-REGISTER_PLUGIN(SlideMain)
-
+REGISTER_PLUGIN
 
 SlideLeft::SlideLeft(SlideMain *plugin, 
 	SlideWindow *window,
@@ -141,20 +132,8 @@ SlideWindow::SlideWindow(SlideMain *plugin, int x, int y)
 	0,
 	1)
 {
-	this->plugin = plugin;
-}
+	x = y = 10;
 
-
-void SlideWindow::close_event()
-{
-	set_done(1);
-}
-
-void SlideWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(left = new SlideLeft(plugin, 
@@ -180,16 +159,10 @@ void SlideWindow::create_objects()
 		this,
 		x,
 		y));
-
-	show_window();
-	flush();
+	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
-
-
-
-PLUGIN_THREAD_OBJECT(SlideMain, SlideThread, SlideWindow)
-
+PLUGIN_THREAD_METHODS
 
 
 SlideMain::SlideMain(PluginServer *server)
@@ -205,30 +178,11 @@ SlideMain::~SlideMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-const char* SlideMain::plugin_title() { return N_("Slide"); }
-int SlideMain::is_video() { return 1; }
-int SlideMain::is_transition() { return 1; }
-int SlideMain::uses_gui() { return 1; }
-
-SHOW_GUI_MACRO(SlideMain, SlideThread);
-SET_STRING_MACRO(SlideMain)
-RAISE_WINDOW_MACRO(SlideMain)
-
-
-VFrame* SlideMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+PLUGIN_CLASS_METHODS
 
 void SlideMain::load_defaults()
 {
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sslide.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
+	defaults = defaults = load_defaults_file("slide.rc");
 
 	motion_direction = defaults->get("MOTION_DIRECTION", motion_direction);
 	direction = defaults->get("DIRECTION", direction);
@@ -272,7 +226,7 @@ void SlideMain::read_data(KeyFrame *keyframe)
 
 int SlideMain::load_configuration()
 {
-	read_data(get_prev_keyframe(get_source_position()));
+	read_data(prev_keyframe_pts(source_pts));
 	return 0;
 }
 
@@ -283,18 +237,14 @@ int SlideMain::load_configuration()
 		int in_add, out_add, cpy_len; \
 		if(motion_direction == 0) \
 		{ \
-			int x = w *  \
-				PluginClient::get_source_position() /  \
-				PluginClient::get_total_len(); \
+			int x = round(w * source_pts / total_len_pts); \
 			out_add = 0; \
 			in_add = (w - x) * components * sizeof(type); \
 			cpy_len = x * components * sizeof(type); \
 		} \
 		else \
 		{ \
-			int x = w - w *  \
-				PluginClient::get_source_position() /  \
-				PluginClient::get_total_len(); \
+			int x = w - (int)(round(w * source_pts / total_len_pts)); \
 			out_add = x * components * sizeof(type); \
 			in_add = 0; \
 			cpy_len = (w - x) * components * sizeof(type); \
@@ -311,7 +261,7 @@ int SlideMain::load_configuration()
 	{ \
 		if(motion_direction == 0) \
 		{ \
-			int x = w - w *  \
+			int x = w - (int)(round(w * source_pts / total_len_pts)); \
 				PluginClient::get_source_position() /  \
 				PluginClient::get_total_len(); \
 			for(int j = 0; j < h; j++) \
@@ -324,14 +274,12 @@ int SlideMain::load_configuration()
 		} \
 		else \
 		{ \
-			int x = w *  \
-				PluginClient::get_source_position() /  \
-				PluginClient::get_total_len(); \
+			int x = round(w * source_pts / total_len_pts); \
 			for(int j = 0; j < h; j++) \
 			{ \
 				char *in_row = (char*)incoming->get_rows()[j]; \
 				char *out_row = (char*)outgoing->get_rows()[j]; \
-	 \
+ \
 				memmove(out_row + (x * components *sizeof(type)), out_row + 0, (w - x) * components * sizeof(type)); \
 				memcpy (out_row + 0, in_row + 0, (x) * components * sizeof(type)); \
 			} \

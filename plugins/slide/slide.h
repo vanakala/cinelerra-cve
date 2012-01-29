@@ -22,15 +22,19 @@
 #ifndef SLIDE_H
 #define SLIDE_H
 
-class SlideMain;
-class SlideWindow;
+#define PLUGIN_IS_VIDEO
+#define PLUGIN_IS_TRANSITION
 
+#define PLUGIN_TITLE N_("Slide")
+#define PLUGIN_CLASS SlideMain
+#define PLUGIN_THREAD_CLASS SlideThread
+#define PLUGIN_GUI_CLASS SlideWindow
 
-#include "overlayframe.inc"
+#include "pluginmacros.h"
+
+#include "language.h"
 #include "pluginvclient.h"
 #include "vframe.inc"
-
-
 
 
 class SlideLeft : public BC_Radial
@@ -82,24 +86,20 @@ public:
 };
 
 
-
-
-
 class SlideWindow : public BC_Window
 {
 public:
 	SlideWindow(SlideMain *plugin, int x, int y);
-	void create_objects();
-	void close_event();
-	SlideMain *plugin;
+
 	SlideLeft *left;
 	SlideRight *right;
 	SlideIn *in;
 	SlideOut *out;
+	PLUGIN_GUI_CLASS_MEMBERS
 };
 
 
-PLUGIN_THREAD_HEADER(SlideMain, SlideThread, SlideWindow)
+PLUGIN_THREAD_HEADER
 
 
 class SlideMain : public PluginVClient
@@ -108,16 +108,14 @@ public:
 	SlideMain(PluginServer *server);
 	~SlideMain();
 
-	PLUGIN_CLASS_MEMBERS(int, SlideThread);
+	PLUGIN_CLASS_MEMBERS
 
 	void process_realtime(VFrame *incoming, VFrame *outgoing);
 	void load_defaults();
 	void save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int uses_gui();
-	int is_transition();
-	int is_video();
+	int load_configuration();
 
 	int motion_direction;
 	int direction;
