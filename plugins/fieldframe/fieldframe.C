@@ -219,7 +219,7 @@ int FieldFrame::load_configuration()
 	KeyFrame *prev_keyframe;
 	FieldFrameConfig old_config = config;
 
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
 
 	return !old_config.equivalent(config);

@@ -733,7 +733,7 @@ int TimeAvgMain::load_configuration()
 	TimeAvgConfig old_config;
 	old_config.copy_from(&config);
 
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
 	return !old_config.equivalent(&config);
 }

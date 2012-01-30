@@ -774,7 +774,7 @@ int SelTempAvgMain::load_configuration()
 	SelTempAvgConfig old_config;
 	old_config.copy_from(&config);
 
-	prev_keyframe = get_prev_keyframe(source_pts);
+	prev_keyframe = prev_keyframe_pts(source_pts);
 	read_data(prev_keyframe);
 
 	if(PTSEQU(source_pts, prev_keyframe->pos_time))
@@ -792,7 +792,7 @@ int SelTempAvgMain::load_configuration()
 	ptstime next_restart_pts = source_pts + config.duration;
 	ptstime prev_restart_pts = source_pts - config.duration;
 
-	temp_keyframe = get_next_keyframe(source_pts);
+	temp_keyframe = next_keyframe_pts(source_pts);
 	if(temp_keyframe->pos_time > source_pts 
 			&& temp_keyframe->pos_time < source_pts + config.duration / 2
 			&& nextkeyframeisoffsetrestart(temp_keyframe))

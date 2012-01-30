@@ -305,7 +305,7 @@ void DenoiseFFTEffect::save_defaults()
 
 int DenoiseFFTEffect::load_configuration()
 {
-	KeyFrame *prev_keyframe = prev_keyframe_pts(get_source_position());
+	KeyFrame *prev_keyframe = prev_keyframe_pts(source_pts);
 	ptstime prev_pts = prev_keyframe->pos_time;
 
 	read_data(prev_keyframe);
