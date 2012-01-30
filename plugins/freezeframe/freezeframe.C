@@ -243,7 +243,7 @@ void FreezeFrameMain::process_frame(VFrame *frame)
 	{
 		delete first_frame;
 		first_frame = 0;
-		read_frame(frame, get_use_opengl());
+		get_frame(frame, get_use_opengl());
 	}
 	else
 // Still frozen
@@ -253,7 +253,7 @@ void FreezeFrameMain::process_frame(VFrame *frame)
 		if(!PTSEQU(previous_pts, first_frame_pts))
 		{
 			first_frame->set_pts(first_frame_pts);
-			read_frame(first_frame, get_use_opengl());
+			get_frame(first_frame, get_use_opengl());
 		}
 		if(get_use_opengl())
 		{

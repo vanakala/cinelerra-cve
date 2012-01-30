@@ -735,7 +735,7 @@ void PerspectiveMain::process_frame(VFrame *frame)
 	int use_opengl = get_use_opengl() &&
 		(config.mode == AffineEngine::PERSPECTIVE || 
 		config.mode == AffineEngine::SHEER);
-	read_frame(frame, use_opengl);
+	get_frame(frame, use_opengl);
 
 	if(!engine) engine = new AffineEngine(get_project_smp() + 1,
 		get_project_smp() + 1);
