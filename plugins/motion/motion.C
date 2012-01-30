@@ -2028,7 +2028,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	case MotionConfig::LOAD:
 		{
 			char string[BCTEXTLEN];
-			sprintf(string, "%s%06d", ROTATION_FILE, (int)plugin->get_source_position());
+			sprintf(string, "%s%06d", ROTATION_FILE, (int)round(current_frame->get_pts() * 100));
 			FILE *input = fopen(string, "r");
 			if(input)
 			{
@@ -2170,7 +2170,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 		sprintf(string, 
 			"%s%06d", 
 			ROTATION_FILE, 
-			(int)plugin->get_source_position());
+			(int)round(current_frame->get_pts() * 100));
 		FILE *output = fopen(string, "w");
 		if(output)
 		{
