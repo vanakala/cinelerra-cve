@@ -262,8 +262,6 @@ int SlideMain::load_configuration()
 		if(motion_direction == 0) \
 		{ \
 			int x = w - (int)(round(w * source_pts / total_len_pts)); \
-				PluginClient::get_source_position() /  \
-				PluginClient::get_total_len(); \
 			for(int j = 0; j < h; j++) \
 			{ \
 				char *in_row = (char*)incoming->get_rows()[j]; \
