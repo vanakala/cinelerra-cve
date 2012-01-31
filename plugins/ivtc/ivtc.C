@@ -90,7 +90,7 @@ int IVTCMain::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 
-	prev_keyframe = get_prev_keyframe(get_source_position());
+	prev_keyframe = prev_keyframe_pts(source_pts);
 // Must also switch between interpolation between keyframes and using first keyframe
 	read_data(prev_keyframe);
 
@@ -154,7 +154,7 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 
 // Determine position in pattern
-	int pattern_position = (PluginClient::source_position +	config.frame_offset) % 5;
+	int pattern_position = ((int)round(source_pts * project_frame_rate) + config.frame_offset) % 5;
 
 	if(!temp_frame[0]) temp_frame[0] = new VFrame(0,
 		input_ptr->get_w(),
