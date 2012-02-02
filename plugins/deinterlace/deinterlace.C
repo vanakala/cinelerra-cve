@@ -531,17 +531,29 @@ void DeInterlaceMain::process_frame(VFrame *frame)
 		deinterlace_swap(frame, frame, config.dominance);
 		break;
 	case DEINTERLACE_BOBWEAVE:
-		if (get_source_position()==0)
-			read_frame(temp_prevframe,0, get_source_position(), get_framerate());
+		if (frame->get_pts() < EPSILON)
+		{
+			temp_prevframe->set_pts(0);
+			get_frame(temp_prevframe);
+		}
 		else
-			read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
+		{
+			temp_prevframe->set_pts(frame->get_pts() - frame->get_duration() - EPSILON);
+			get_frame(temp_prevframe);
+		}
 		deinterlace_bobweave(frame, temp_prevframe, frame, config.dominance);
 		break;
 	case DEINTERLACE_TEMPORALSWAP:
-		if (get_source_position()==0)
-			read_frame(temp_prevframe,0, get_source_position(), get_framerate());
+		if (frame->get_pts() < EPSILON)
+		{
+			temp_prevframe->set_pts(0);
+			get_frame(temp_prevframe);
+		}
 		else
-			read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
+		{
+			temp_prevframe->set_pts(frame->get_pts() - frame->get_duration() - EPSILON);
+			get_frame(temp_prevframe);
+		}
 		deinterlace_temporalswap(frame, temp_prevframe, frame, config.dominance);
 		break;
 	}
