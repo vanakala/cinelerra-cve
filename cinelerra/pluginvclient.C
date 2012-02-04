@@ -100,26 +100,6 @@ void PluginVClient::init_realtime_parameters()
 	aspect_h = server->edl->session->aspect_h;
 }
 
-int PluginVClient::process_buffer(VFrame **frame,
-	framenum start_position,
-	double frame_rate)
-{
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		read_frame(frame[i], i, start_position, frame_rate);
-	if(is_multichannel())
-		process_realtime(frame, frame);
-	return 0;
-}
-
-int PluginVClient::process_buffer(VFrame *frame,
-	framenum start_position,
-	double frame_rate)
-{
-	read_frame(frame, 0, start_position, frame_rate);
-	process_realtime(frame, frame);
-	return 0;
-}
-
 void PluginVClient::process_frame(VFrame **frame)
 {
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
@@ -144,39 +124,10 @@ void PluginVClient::send_render_gui(void *data)
 	server->send_render_gui(data);
 }
 
-void PluginVClient::plugin_start_loop(posnum start, 
-	posnum end,
-	int buffer_size, 
-	int total_buffers)
-{
-	frame_rate = get_project_framerate();
-	PluginClient::plugin_start_loop(start, 
-		end, 
-		buffer_size, 
-		total_buffers);
-}
-
 int PluginVClient::plugin_get_parameters()
 {
 	frame_rate = get_project_framerate();
 	return PluginClient::plugin_get_parameters();
-}
-
-posnum PluginVClient::local_to_edl(posnum position)
-{
-	if(position < 0) return position;
-	return (posnum)Units::round(position * 
-		get_project_framerate() /
-		frame_rate);
-	return 0;
-}
-
-posnum PluginVClient::edl_to_local(posnum position)
-{
-	if(position < 0) return position;
-	return (posnum)Units::round(position * 
-		frame_rate /
-		get_project_framerate());
 }
 
 int PluginVClient::plugin_process_loop(VFrame **buffers, int &write_length)
@@ -191,7 +142,6 @@ int PluginVClient::plugin_process_loop(VFrame **buffers, int &write_length)
 	write_length = 1;
 	return result;
 }
-
 
 void PluginVClient::run_opengl()
 {
@@ -218,41 +168,9 @@ int PluginVClient::prev_effect_is(const char *title)
 	return !strcmp(title, output[0]->get_prev_effect());
 }
 
-int PluginVClient::read_frame(VFrame *buffer, 
-	int channel, 
-	framenum start_position)
-{
-	server->read_frame(buffer, 
-		channel, 
-		start_position);
-	return 0;
-}
-
 void PluginVClient::get_frame(VFrame *buffer, int use_opengl)
 {
 	server->get_vframe(buffer, use_opengl);
-}
-
-int PluginVClient::read_frame(VFrame *buffer, 
-	framenum start_position)
-{
-	server->read_frame(buffer, 
-		0, 
-		start_position);
-	return 0;
-}
-
-int PluginVClient::read_frame(VFrame *buffer, 
-		int channel, 
-		framenum start_position,
-		double frame_rate,
-		int use_opengl)
-{
-	return server->read_frame(buffer,
-		channel,
-		start_position,
-		frame_rate,
-		use_opengl);
 }
 
 double PluginVClient::get_project_framerate()

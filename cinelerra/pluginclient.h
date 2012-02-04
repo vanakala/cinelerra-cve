@@ -31,6 +31,7 @@ class PluginClient;
 #include "autos.h"
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
+#include "bchash.h"
 #include "condition.h"
 #include "edlsession.inc"
 #include "keyframe.h"
@@ -64,7 +65,6 @@ public:
 	virtual int is_realtime() { return 0; };
 	virtual int is_audio() { return 0; };
 	virtual int is_video() { return 0; };
-	virtual int is_fileio() { return 0; };
 	virtual int is_theme() { return 0; };
 	virtual int uses_gui() { return 1; };
 	virtual int is_multichannel() { return 0; };
@@ -125,15 +125,7 @@ public:
 	char* get_path();
 
 // Return keyframe objects.  The position in the resulting object 
-// is relative to the EDL rate.  This is the only way to avoid copying the
-// data for every frame.
-// If the result is the default keyframe, the keyframe's position is 0.
-// position - relative to EDL rate or local rate to allow simple 
-//     passing of get_source_position.
-//     If -1 the tracking position in the edl is used.
-// is_local - if 1, the position is converted to the EDL rate.
-	KeyFrame* get_prev_keyframe(posnum position, int is_local = 1);
-	KeyFrame* get_next_keyframe(posnum position, int is_local = 1);
+// is relative to the EDL.
 	KeyFrame* prev_keyframe_pts(ptstime postime);
 	KeyFrame* next_keyframe_pts(ptstime postime);
 // get current camera and projector position
@@ -151,36 +143,8 @@ public:
 // they can run.
 	int gui_open();
 
-// Length of source.  For effects it's the plugin length.  For transitions
-// it's the transition length.  Relative to the requested rate.
-// The only way to get smooth interpolation is to make all position queries
-// relative to the requested rate.
-	posnum get_total_len();
-
-// For realtime plugins gets the lowest sample of the plugin in the requested
-// rate.  For others it's the start of the EDL selection in the EDL rate.
-	posnum get_source_start();
-
-// Convert the position relative to the requested rate to the position 
-// relative to the EDL rate.  If the argument is < 0, it is not changed.
-// Used for interpreting keyframes.
-	virtual posnum local_to_edl(posnum position);
-
-// Convert the EDL position to the local position.
-	virtual posnum edl_to_local(posnum position);
-
-// For transitions the source_position is the playback position relative
-// to the start of the transition.
-// For realtime effects, the start of the most recent process_buffer in forward
-// and the end of the range to process in reverse.  Relative to start of EDL in
-// the requested rate.
-	posnum get_source_position();
-
 // Get the EDL Session.  May return 0 if the server has no edl.
 	EDLSession* get_edlsession();
-
-// Get the direction of the most recent process_buffer
-	int get_direction();
 
 // Plugin must call this before performing OpenGL operations.
 // Returns 1 if the user supports opengl buffers.
@@ -213,18 +177,13 @@ public:
 	virtual int load_configuration() { return 0; }
 
 // Non realtime operations for signal processors.
-	virtual void plugin_start_loop(posnum start,
-		posnum end,
-		int buffer_size, 
-		int total_buffers);
 	virtual void plugin_start_loop(ptstime start,
 		ptstime end,
 		int total_buffers);
 	void plugin_stop_loop();
 	int plugin_process_loop();
 	MainProgressBar* start_progress(char *string, int64_t length);
-// get samplerate of EDL
-	int get_project_samplerate();
+
 // get framerate of EDL
 	double get_project_framerate();
 // Total number of processors - 1
@@ -245,8 +204,7 @@ public:
 // Realtime operations.
 	void reset();
 	void plugin_init_realtime(int realtime_priority, 
-		int total_in_buffers,
-		int buffer_size);
+		int total_in_buffers);
 
 // communication convenience routines for the base class
 	int save_data_client();
@@ -259,37 +217,26 @@ public:
 
 	int show_initially;             // set to show a realtime plugin initially
 // range in project for processing
-	posnum start, end;
 	ptstime start_pts, end_pts;
 	int interactive;                // for the progress bar plugin
 	int success;
 	int total_out_buffers;          // total send buffers allocated by the server
 	int total_in_buffers;           // total recieve buffers allocated by the server
-	int wr, rd;                     // File permissions for fileio plugins.
 
 // These give the largest fragment the plugin is expected to handle.
 // size of a send buffer to the server
-	int out_buffer_size;
-// size of a recieve buffer from the server
-	int in_buffer_size;
-
-// Direction of most recent process_buffer
-	int direction;
 
 // Operating system scheduling
 	int realtime_priority;
 
-// Position relative to start of EDL in requested rate.  Calculated for every process
+// Position relative to start of EDL.  Calculated for every process
 // command.  Used for keyframes.
-	posnum source_position;
 	ptstime source_pts;
-// For realtime plugins gets the lowest sample of the plugin in the requested
-// rate.  For others it's always 0.
-	posnum source_start;
+// For realtime plugins gets the lowest pts (start of plugin)
 	ptstime source_start_pts;
+
 // Length of source.  For effects it's the plugin length.  For transitions
-// it's the transition length.  Relative to the requested rate.
-	posnum total_len;
+// it's the transition length.
 	ptstime total_len_pts;
 
 // Total number of processors available - 1

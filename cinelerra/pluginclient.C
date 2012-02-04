@@ -50,24 +50,18 @@ void PluginClient::reset()
 {
 	interactive = 0;
 	show_initially = 0;
-	wr = rd = 0;
 	realtime_priority = 0;
 	gui_string[0] = 0;
 	total_in_buffers = 0;
 	total_out_buffers = 0;
-	source_position = 0;
 	source_pts = 0;
-	source_start = 0;
 	source_start_pts = 0;
-	total_len = 0;
 	total_len_pts = 0;
-	direction = PLAY_FORWARD;
 }
 
 // For realtime plugins initialize buffers
 void PluginClient::plugin_init_realtime(int realtime_priority, 
-	int total_in_buffers,
-	int buffer_size)
+	int total_in_buffers)
 {
 // get parameters depending on video or audio
 	init_realtime_parameters();
@@ -77,22 +71,6 @@ void PluginClient::plugin_init_realtime(int realtime_priority,
 	this->realtime_priority = realtime_priority;
 
 	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
-
-	this->out_buffer_size = this->in_buffer_size = buffer_size;
-}
-
-void PluginClient::plugin_start_loop(posnum start,
-	posnum end,
-	int buffer_size, 
-	int total_buffers)
-{
-	this->source_start = start;
-	this->total_len = end - start;
-	this->start = start;
-	this->end = end;
-	this->in_buffer_size = this->out_buffer_size = buffer_size;
-	this->total_in_buffers = this->total_out_buffers = total_buffers;
-	start_loop();
 }
 
 void PluginClient::plugin_start_loop(ptstime start,
@@ -154,11 +132,6 @@ void PluginClient::client_side_close()
 {
 // Last command executed
 	server->client_side_close();
-}
-
-int PluginClient::get_project_samplerate()
-{
-	return server->get_project_samplerate();
 }
 
 double PluginClient::get_project_framerate()
@@ -226,36 +199,6 @@ float PluginClient::get_blue()
 		return 0;
 }
 
-posnum PluginClient::get_source_position()
-{
-	return source_position;
-}
-
-posnum PluginClient::get_source_start()
-{
-	return source_start;
-}
-
-posnum PluginClient::get_total_len()
-{
-	return total_len;
-}
-
-int PluginClient::get_direction()
-{
-	return direction;
-}
-
-posnum PluginClient::local_to_edl(posnum position)
-{
-	return position;
-}
-
-posnum PluginClient::edl_to_local(posnum position)
-{
-	return position;
-}
-
 int PluginClient::get_use_opengl()
 {
 	return server->get_use_opengl();
@@ -311,18 +254,6 @@ void PluginClient::abort_plugin(const char *fmt, ...)
 	MainError::va_MessageBox(buffer, fmt, ap);
 	va_end(ap);
 	server->plugin->on = 0;
-}
-
-KeyFrame* PluginClient::get_prev_keyframe(posnum position, int is_local)
-{
-	if(is_local) position = local_to_edl(position);
-	return server->get_prev_keyframe(position);
-}
-
-KeyFrame* PluginClient::get_next_keyframe(posnum position, int is_local)
-{
-	if(is_local) position = local_to_edl(position);
-	return server->get_next_keyframe(position);
 }
 
 KeyFrame* PluginClient::prev_keyframe_pts(ptstime pts)

@@ -107,7 +107,6 @@ PluginServer::PluginServer(PluginServer &that)
 	audio = that.audio;
 	video = that.video;
 	theme = that.theme;
-	fileio = that.fileio;
 	uses_gui = that.uses_gui;
 	mwindow = that.mwindow;
 	keyframe = that.keyframe;
@@ -146,7 +145,7 @@ int PluginServer::reset_parameters()
 	path = 0;
 	audio = video = theme = 0;
 	uses_gui = 0;
-	realtime = multichannel = fileio = 0;
+	realtime = multichannel = 0;
 	synthesis = 0;
 	apiversion = 0;
 	start_auto = end_auto = 0;
@@ -167,13 +166,9 @@ int PluginServer::reset_parameters()
 // Done every time the plugin is opened or closed
 int PluginServer::cleanup_plugin()
 {
-	in_buffer_size = out_buffer_size = 0;
-	total_in_buffers = total_out_buffers = 0;
-	error_flag = 0;
+	total_in_buffers = 0;
 	written_samples = 0;
-	shared_buffers = 0;
-	new_buffers = 0;
-	written_samples = written_frames = 0;
+	written_frames = 0;
 	gui_on = 0;
 	plugin = 0;
 	plugin_open = 0;
@@ -342,7 +337,6 @@ int PluginServer::open_plugin(int master,
 	audio = client->is_audio();
 	video = client->is_video();
 	theme = client->is_theme();
-	fileio = client->is_fileio();
 	uses_gui = client->uses_gui();
 	multichannel = client->is_multichannel();
 	synthesis = client->is_synthesis();
@@ -401,12 +395,10 @@ void PluginServer::init_realtime(int realtime_sched,
 // set for realtime priority
 // initialize plugin
 // Call start_realtime
-	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
+	this->total_in_buffers = total_in_buffers;
 	client->plugin_init_realtime(realtime_sched, 
-		total_in_buffers, 
-		buffer_size);
+		total_in_buffers);
 }
-
 
 // Replaced by pull method but still needed for transitions
 void PluginServer::process_transition(VFrame *input,
@@ -419,10 +411,6 @@ void PluginServer::process_transition(VFrame *input,
 
 	vclient->source_pts = current_postime;
 	vclient->total_len_pts = total_len;
-	vclient->source_position = plugin->track->to_units(current_postime);
-	vclient->source_start = 0;
-	vclient->total_len = plugin->track->to_units(total_len);
-
 	vclient->input = new VFrame*[1];
 	vclient->output = new VFrame*[1];
 
@@ -446,7 +434,6 @@ void PluginServer::process_transition(AFrame *input,
 	PluginAClient *aclient = (PluginAClient*)client;
 	aclient->source_pts = current_postime;
 	aclient->total_len_pts = total_len;
-	aclient->source_start = 0;
 	if(aclient->has_pts_api())
 		aclient->process_frame_realtime(input, output);
 }
@@ -464,7 +451,6 @@ void PluginServer::process_buffer(VFrame **frame,
 	else
 		framerate = edl->session->frame_rate;
 
-	vclient->source_position = round(frame[0]->get_pts() * framerate);
 	vclient->source_pts = frame[0]->get_pts();
 	vclient->total_len_pts = total_length;
 	vclient->frame_rate = framerate;
@@ -479,12 +465,8 @@ void PluginServer::process_buffer(VFrame **frame,
 	}
 	if(plugin)
 	{
-		vclient->source_start = round(plugin->project_pts * framerate);
 		vclient->source_start_pts = plugin->project_pts;
-		vclient->total_len = round(total_length * framerate);
 	}
-	vclient->direction = PLAY_FORWARD;
-
 	if(apiversion)
 	{
 		if(multichannel)
@@ -494,14 +476,7 @@ void PluginServer::process_buffer(VFrame **frame,
 	}
 	else
 	{
-		if(multichannel)
-		{
-			vclient->process_buffer(frame, vclient->source_position, framerate);
-		}
-		else
-		{
-			vclient->process_buffer(frame[0], vclient->source_position, framerate);
-		}
+		client->abort_plugin(_("Plugins with old API are not supported"));
 	}
 
 	for(int i = 0; i < total_in_buffers; i++)
@@ -524,19 +499,14 @@ void PluginServer::process_buffer(AFrame **buffer,
 	if(aframe->samplerate <= 0)
 		aframe->samplerate = aclient->project_sample_rate;
 
-	aclient->source_position = round(aframe->pts * aframe->samplerate);
 	aclient->source_pts = aframe->pts;
 	aclient->total_len_pts = total_len;
 
 	if(plugin)
 	{
-		aclient->source_start = round(plugin->project_pts *
-			aclient->project_sample_rate);
 		aclient->source_start_pts = plugin->project_pts;
-		aclient->total_len = round(total_len * aframe->samplerate);
 	}
 
-	aclient->direction = PLAY_FORWARD;
 	if(aclient->has_pts_api())
 	{
 		if(multichannel)
@@ -605,14 +575,9 @@ int PluginServer::get_parameters(ptstime start, ptstime end, int channels)
 		rate = edl->session->frame_rate;
 	else
 		rate = edl->session->sample_rate;
-
-	client->start = round(start * rate);
 	client->start_pts = start;
-	client->end = round(end * rate);
 	client->end_pts = end;
-	client->source_start = client->start;
 	client->source_start_pts = start;
-	client->total_len = client->end - client->start;
 	client->total_len_pts = end - start;
 	client->total_in_buffers = channels;
 	return client->plugin_get_parameters();
@@ -637,11 +602,6 @@ void PluginServer::append_node(VirtualNode *node)
 void PluginServer::reset_nodes()
 {
 	nodes->remove_all();
-}
-
-void PluginServer::set_error()
-{
-	error_flag = 1;
 }
 
 int PluginServer::process_loop(VFrame **buffers, int &write_length)
@@ -677,8 +637,7 @@ void PluginServer::start_loop(ptstime start,
 	if(client->has_pts_api())
 		client->plugin_start_loop(start, end, total_buffers);
 	else
-		client->plugin_start_loop(round(start * rate), round(end * rate),
-			buffer_size, total_buffers);
+		client->abort_plugin(_("Plugins with old API are not supported"));
 }
 
 void PluginServer::stop_loop()
@@ -687,66 +646,11 @@ void PluginServer::stop_loop()
 		client->plugin_stop_loop();
 }
 
-void PluginServer::read_frame(VFrame *buffer, 
-	int channel, 
-	framenum start_position)
-{
-	buffer->set_pts((ptstime)start_position / mwindow->edl->session->frame_rate);
-	buffer->set_layer(channel);
-	((VModule*)modules->values[channel])->render(buffer,
-		0,
-		0);
-}
-
 void PluginServer::get_vframe(VFrame *buffer)
 {
 	((VModule*)modules->values[buffer->get_layer()])->render(buffer,
 		0,
 		0);
-}
-
-int PluginServer::read_frame(VFrame *buffer, 
-	int channel, 
-	framenum start_position,
-	double frame_rate,
-	int use_opengl)
-{
-// Data source depends on whether we're part of a virtual console or a
-// plugin array.
-//     VirtualNode
-//     Module
-// If we're a VirtualNode, read_data in the virtual plugin node handles
-//     backward propogation and produces the data.
-// If we're a Module, render in the module produces the data.
-	int result = -1;
-	if(!multichannel) channel = 0;
-
-// Push our name on the next effect stack
-	buffer->push_next_effect(title);
-	buffer->set_pts((ptstime)start_position/frame_rate);
-	buffer->set_layer(channel);
-	if(nodes->total > channel)
-	{
-		result = ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
-			use_opengl);
-	}
-	else
-	if(modules->total > channel)
-	{
-		result = ((VModule*)modules->values[channel])->render(buffer,
-			0,
-			use_opengl);
-	}
-	else
-	{
-		errorbox("PluginServer::read_frame no object available for channel=%d",
-			channel);
-	}
-
-// Pop our name from the next effect stack
-	buffer->pop_next_effect();
-
-	return result;
 }
 
 void PluginServer::get_vframe(VFrame *buffer,
@@ -823,24 +727,9 @@ void PluginServer::show_gui()
 	if(plugin)
 	{
 		client->total_len_pts = plugin->length();
-		client->total_len = plugin->track->to_units(plugin->length());
 		client->source_start_pts = plugin->project_pts;
-		client->source_start = plugin->track->to_units(plugin->project_pts);
 	}
 	client->source_pts = mwindow->edl->local_session->get_selectionstart(1);
-	if(video)
-	{
-		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->get_selectionstart(1) * 
-				mwindow->edl->session->frame_rate);
-	}
-	else
-	if(audio)
-	{
-		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->get_selectionstart(1) * 
-				mwindow->edl->session->sample_rate);
-	}
 	client->update_display_title();
 	client->show_gui();
 }
@@ -849,24 +738,9 @@ void PluginServer::update_gui()
 {
 	if(!plugin_open || !plugin) return;
 
-	client->total_len = plugin->track->to_units(plugin->length());
 	client->total_len_pts = plugin->length();
-	client->source_start = plugin->track->to_units(plugin->project_pts);
 	client->source_start_pts = plugin->project_pts;
 	client->source_pts = mwindow->edl->local_session->get_selectionstart(1);
-	if(video)
-	{
-		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->get_selectionstart(1) * 
-				mwindow->edl->session->frame_rate);
-	}
-	else
-	if(audio)
-	{
-		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->get_selectionstart(1) * 
-				mwindow->edl->session->sample_rate);
-	}
 	client->update_gui();
 }
 
@@ -876,13 +750,10 @@ void PluginServer::update_title()
 	client->update_display_title();
 }
 
-
-int PluginServer::set_string(const char *string)
+void PluginServer::set_string(const char *string)
 {
-	if(!plugin_open) return 0;
-
-	client->set_string_client(string);
-	return 0;
+	if(plugin_open)
+		client->set_string_client(string);
 }
 
 int PluginServer::gui_open()
@@ -901,7 +772,6 @@ int PluginServer::get_use_opengl()
 {
 	return use_opengl;
 }
-
 
 void PluginServer::run_opengl(PluginClient *plugin_client)
 {
@@ -963,33 +833,6 @@ double PluginServer::get_project_framerate()
 	}
 }
 
-void PluginServer::detach_buffers(void)
-{
-	ring_buffers_out.remove_all();
-	offset_out_render.remove_all();
-	double_buffer_out_render.remove_all();
-	ring_buffers_in.remove_all();
-	offset_in_render.remove_all();
-	double_buffer_in_render.remove_all();
-	out_buffer_size = 0;
-	shared_buffers = 0;
-	total_out_buffers = 0;
-	in_buffer_size = 0;
-	total_in_buffers = 0;
-}
-
-void PluginServer::arm_buffer(int buffer_number, 
-		posnum offset_in, 
-		posnum offset_out,
-		int double_buffer_in,
-		int double_buffer_out)
-{
-	offset_in_render.values[buffer_number] = offset_in;
-	offset_out_render.values[buffer_number] = offset_out;
-	double_buffer_in_render.values[buffer_number] = double_buffer_in;
-	double_buffer_out_render.values[buffer_number] = double_buffer_out;
-}
-
 void PluginServer::set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse)
 {
 	this->autos = autos;
@@ -1004,31 +847,11 @@ void PluginServer::save_data(KeyFrame *keyframe)
 	client->save_data(keyframe);
 }
 
-KeyFrame* PluginServer::get_prev_keyframe(posnum position)
-{
-	KeyFrame *result = 0;
-	if(plugin)
-		result = plugin->get_prev_keyframe(plugin->track->from_units(position));
-	else
-		result = keyframe;
-	return result;
-}
-
 KeyFrame* PluginServer::prev_keyframe_pts(ptstime postime)
 {
 	if(plugin)
 		return plugin->get_prev_keyframe(postime);
 	return keyframe;
-}
-
-KeyFrame* PluginServer::get_next_keyframe(posnum position)
-{
-	KeyFrame *result = 0;
-	if(plugin)
-		result = plugin->get_next_keyframe(plugin->track->from_units(position));
-	else
-		result = keyframe;
-	return result;
 }
 
 KeyFrame* PluginServer::next_keyframe_pts(ptstime postime)

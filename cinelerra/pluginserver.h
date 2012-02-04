@@ -99,9 +99,8 @@ public:
 	void set_title(const char *string);
 // Generate title for display
 	void generate_display_title(char *string);
-// Get keyframes for configuration.  Position is always relative to EDL rate.
-	KeyFrame* get_prev_keyframe(posnum position);
-	KeyFrame* get_next_keyframe(posnum position);
+
+// Get keyframes for configuration.
 	KeyFrame* prev_keyframe_pts(ptstime postime);
 	KeyFrame* next_keyframe_pts(ptstime postime);
 // get camera and projector positions
@@ -156,7 +155,7 @@ public:
 	void run_opengl(PluginClient *plugin_client);
 
 // set the string that appears on the plugin title
-	int set_string(const char *string);
+	void set_string(const char *string);
 // give the buffers and sizes and prepare processing realtime data
 	void init_realtime(int realtime_sched,
 		int total_in_buffers,
@@ -194,20 +193,6 @@ public:
 // Send the boundary autos of the next fragment
 	void set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse);
 
-
-
-// set the fragment position of a buffer before rendering
-	void arm_buffer(int buffer_number,
-		posnum in_fragment_position,
-		posnum out_fragment_position,
-		int double_buffer_in,
-		int double_buffer_out);
-// Detach all the shared buffers.
-	void detach_buffers(void);
-
-	int send_buffer_info();
-
-
 // ============================ for non realtime plugins
 // start processing data in plugin
 	void start_loop(ptstime start, ptstime end, int buffer_size, int total_buffers);
@@ -216,22 +201,9 @@ public:
 	int process_loop(AFrame **buffers, int &write_length);
 	void stop_loop();
 
-
-// Called by client to read data in non-realtime effect
-	void read_frame(VFrame *buffer, 
-		int channel, 
-		framenum start_position);
-
+// Called by client to read data
 	void get_vframe(VFrame *buffer);
 
-// Called by client to read data in realtime effect.
-// Returns -1 if error or 0 if success.
-	int read_frame(VFrame *buffer, 
-		int channel, 
-		framenum start_position, 
-		double frame_rate,
-// Set to 1 if the reader can use OpenGL objects.
-		int use_opengl = 0);
 	void get_vframe(VFrame *buffer, int use_opengl);
 
 	void get_aframe_rt(AFrame *aframe);
@@ -254,7 +226,6 @@ public:
 // Set pointer to menueffect window
 	void set_prompt(MenuEffectPrompt *prompt);
 	void set_interactive();   // make this the master plugin for progress bars
-	void set_error();         // flag to send plugin an error on next request
 	MainProgressBar* start_progress(char *string, int64_t length);
 
 // add track to the list of affected tracks for a non realtime plugin
@@ -269,32 +240,12 @@ public:
 
 	samplenum get_written_samples();   // after samples are written, get the number written
 	framenum get_written_frames();   // after frames are written, get the number written
-
-// buffers
-	int out_buffer_size;   // size of a send buffer to the plugin
-	int in_buffer_size;    // size of a recieve buffer from the plugin
 	int total_in_buffers;
-	int total_out_buffers;
 
-// number of double buffers for each channel
-	ArrayList<int> ring_buffers_in;
-	ArrayList<int> ring_buffers_out;
 // Parameters for automation.  Setting autos to 0 disables automation.
 	FloatAuto **start_auto, **end_auto;
 	FloatAutos *autos;
 	int reverse;
-
-// When arming buffers need to know the offsets in all the buffers and which
-// double buffers for each channel before rendering.
-	ArrayList<posnum> offset_in_render;
-	ArrayList<posnum> offset_out_render;
-	ArrayList<int> double_buffer_in_render;
-	ArrayList<int> double_buffer_out_render;
-
-// don't delete buffers if they belong to a virtual module
-	int shared_buffers;
-// Send new buffer information for next render
-	int new_buffers;
 
 	int plugin_open;                 // Whether or not the plugin is open.
 // Specifies what type of plugin.
@@ -318,7 +269,7 @@ public:
 	char *data_text;      // pointer to the data that was requested by a save_data command
 	char *args[4];
 	int total_args;
-	int error_flag;      // send plugin an error code on next request
+
 // Pointers to tracks affected by this plugin during a non realtime operation.
 // Allows read functions to read data.
 	ArrayList<Module*> *modules;

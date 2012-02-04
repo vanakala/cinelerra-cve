@@ -32,8 +32,6 @@
 #define PLUGIN_MAX_W 2000
 #define PLUGIN_MAX_H 1000
 
-
-
 class PluginVClient : public PluginClient
 {
 public:
@@ -52,17 +50,6 @@ public:
 
 // Process buffer using pull method.  By default this loads the input into *frame
 //     and calls process_realtime with input and output pointing to frame.
-// start_position - requested position relative to frame rate. Relative
-//     to start of EDL.  End of buffer if reverse.
-// sample_rate - scale of start_position.
-// These should return 1 if error or 0 if success.
-	virtual int process_buffer(VFrame **frame,
-		framenum start_position,
-		double frame_rate);
-	virtual int process_buffer(VFrame *frame,
-		framenum start_position,
-		double frame_rate);
-// pts API
 	virtual void process_frame(VFrame **frame);
 	virtual void process_frame(VFrame *frame);
 
@@ -74,39 +61,9 @@ public:
 	virtual int process_loop(VFrame **buffers) { return 1; };
 	virtual int process_loop(VFrame *buffer) { return 1; };
 	int plugin_process_loop(VFrame **buffers, int &write_length);
-
-	void plugin_start_loop(posnum start, 
-		posnum end, 
-		int buffer_size, 
-		int total_buffers);
 	int plugin_get_parameters();
 
-// Called by non-realtime client to read frame for processing.
-// buffer - output frame
-// channel - channel of the plugin input for a multichannel plugin
-// start_position - start of frame in forward.  end of frame in reverse.  
-//     Relative to start of EDL.
-	int read_frame(VFrame *buffer, 
-		int channel, 
-		framenum start_position);
-	int read_frame(VFrame *buffer, 
-		framenum start_position);
-
 	void get_frame(VFrame *buffer, int use_opengl = 0);
-
-// Called by realtime plugin to read frame from previous entity
-// framerate - framerate start_position is relative to.  Used by preceeding plugiun
-//     to calculate output frame number.  Provided so the client can get data
-//     at a higher fidelity than provided by the EDL.
-// start_position - start of frame in forward.  end of frame in reverse.  
-//     Relative to start of EDL.
-// frame_rate - frame rate position is scaled to
-	int read_frame(VFrame *buffer, 
-		int channel, 
-		framenum start_position,
-		double frame_rate,
-		int use_opengl = 0);
-
 
 // User calls this to request an opengl routine to be run synchronously.
 	void run_opengl();
@@ -140,9 +97,6 @@ public:
 // Frame rate requested
 	double get_framerate();
 
-	posnum local_to_edl(posnum position);
-	posnum edl_to_local(posnum position);
-
 // ======================== Non realtime buffer pointers =======================
 // Channels of arrays of frames that the client uses.
 	VFrame ***video_in, ***video_out;
@@ -160,7 +114,6 @@ public:
 	VFrame **input;
 	VFrame **output;
 
-
 // Frame rate of EDL
 	double project_frame_rate;
 // Local parameters set by non realtime plugin about the file to be generated.
@@ -169,12 +122,7 @@ public:
 // requested rates.
 	double frame_rate;
 	int project_color_model;
-// Whether user wants floating point calculations.
-	int use_float;
-// Whether user wants alpha calculations.
-	int use_alpha;
-// Whether user wants pixel interpolation.
-	int use_interpolation;
+
 // Aspect ratio
 	float aspect_w;
 	float aspect_h;
@@ -182,7 +130,5 @@ public:
 // Tempo
 	VFrame *temp;
 };
-
-
 
 #endif
