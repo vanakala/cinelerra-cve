@@ -202,8 +202,6 @@ public:
 	void stop_loop();
 
 // Called by client to read data
-	void get_vframe(VFrame *buffer);
-
 	void get_vframe(VFrame *buffer, int use_opengl);
 
 	void get_aframe_rt(AFrame *aframe);

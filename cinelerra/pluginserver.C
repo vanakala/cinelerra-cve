@@ -646,13 +646,6 @@ void PluginServer::stop_loop()
 		client->plugin_stop_loop();
 }
 
-void PluginServer::get_vframe(VFrame *buffer)
-{
-	((VModule*)modules->values[buffer->get_layer()])->render(buffer,
-		0,
-		0);
-}
-
 void PluginServer::get_vframe(VFrame *buffer,
 	int use_opengl)
 {
