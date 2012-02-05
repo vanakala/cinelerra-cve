@@ -31,7 +31,6 @@
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "floatautos.h"
 #include "localsession.h"
 #include "mainerror.h"
 #include "mainprogress.h"
@@ -137,7 +136,6 @@ int PluginServer::reset_parameters()
 	prompt = 0;
 	cleanup_plugin();
 	plugin_fd = 0;
-	autos = 0;
 	plugin = 0;
 	edl = 0;
 	preferences = 0;
@@ -148,7 +146,6 @@ int PluginServer::reset_parameters()
 	realtime = multichannel = 0;
 	synthesis = 0;
 	apiversion = 0;
-	start_auto = end_auto = 0;
 	picon = 0;
 	transition = 0;
 	new_plugin = 0;
@@ -824,14 +821,6 @@ double PluginServer::get_project_framerate()
 		errorbox("PluginServer::get_project_framerate mwindow and edl are NULL.");
 		return 1;
 	}
-}
-
-void PluginServer::set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse)
-{
-	this->autos = autos;
-	this->start_auto = start_auto;
-	this->end_auto = end_auto;
-	this->reverse = reverse;
 }
 
 void PluginServer::save_data(KeyFrame *keyframe)

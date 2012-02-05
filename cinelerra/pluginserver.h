@@ -29,8 +29,6 @@
 #include "attachmentpoint.inc"
 #include "datatype.h"
 #include "edl.inc"
-#include "floatauto.inc"
-#include "floatautos.inc"
 #include "keyframe.inc"
 #include "mainprogress.inc"
 #include "maxbuffers.h"
@@ -190,9 +188,6 @@ public:
 	void render_gui(void *data);
 	void render_gui(void *data, int size);
 
-// Send the boundary autos of the next fragment
-	void set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse);
-
 // ============================ for non realtime plugins
 // start processing data in plugin
 	void start_loop(ptstime start, ptstime end, int buffer_size, int total_buffers);
@@ -239,13 +234,8 @@ public:
 	samplenum get_written_samples();   // after samples are written, get the number written
 	framenum get_written_frames();   // after frames are written, get the number written
 	int total_in_buffers;
-
-// Parameters for automation.  Setting autos to 0 disables automation.
-	FloatAuto **start_auto, **end_auto;
-	FloatAutos *autos;
-	int reverse;
-
 	int plugin_open;                 // Whether or not the plugin is open.
+
 // Specifies what type of plugin.
 	int realtime, multichannel, fileio;
 // Plugin generates media
