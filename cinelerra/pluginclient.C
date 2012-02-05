@@ -50,7 +50,6 @@ void PluginClient::reset()
 {
 	interactive = 0;
 	show_initially = 0;
-	realtime_priority = 0;
 	gui_string[0] = 0;
 	total_in_buffers = 0;
 	total_out_buffers = 0;
@@ -60,15 +59,12 @@ void PluginClient::reset()
 }
 
 // For realtime plugins initialize buffers
-void PluginClient::plugin_init_realtime(int realtime_priority, 
-	int total_in_buffers)
+void PluginClient::plugin_init_realtime(int total_in_buffers)
 {
 // get parameters depending on video or audio
 	init_realtime_parameters();
 
 	smp = server->preferences->processors - 1;
-
-	this->realtime_priority = realtime_priority;
 
 	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
 }

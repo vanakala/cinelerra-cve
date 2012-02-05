@@ -203,8 +203,7 @@ public:
 
 // Realtime operations.
 	void reset();
-	void plugin_init_realtime(int realtime_priority, 
-		int total_in_buffers);
+	void plugin_init_realtime(int total_in_buffers);
 
 // communication convenience routines for the base class
 	int save_data_client();
@@ -222,12 +221,6 @@ public:
 	int success;
 	int total_out_buffers;          // total send buffers allocated by the server
 	int total_in_buffers;           // total recieve buffers allocated by the server
-
-// These give the largest fragment the plugin is expected to handle.
-// size of a send buffer to the server
-
-// Operating system scheduling
-	int realtime_priority;
 
 // Position relative to start of EDL.  Calculated for every process
 // command.  Used for keyframes.

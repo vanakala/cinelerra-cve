@@ -271,11 +271,7 @@ void Module::update_transition(ptstime current_position)
 				get_edl(), 
 				transition,
 				-1);
-			transition_server->init_realtime(
-				get_edl()->session->real_time_playback &&
-				renderengine->command->realtime,
-				1,
-				get_buffer_size());
+			transition_server->init_realtime(1);
 		}
 		else
 		if(plugin_array)
@@ -287,10 +283,7 @@ void Module::update_transition(ptstime current_position)
 				get_edl(), 
 				transition,
 				-1);
-			transition_server->init_realtime(
-				0,
-				1,
-				get_buffer_size());
+			transition_server->init_realtime(1);
 		}
 	}
 }

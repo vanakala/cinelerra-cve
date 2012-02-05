@@ -142,7 +142,7 @@ void PluginArray::start_plugins(MWindow *mwindow,
 					0,
 					-1);
 				plugin->get_parameters(start, end, 1);
-				plugin->init_realtime(0, 1, get_bufsize());
+				plugin->init_realtime(1);
 			}
 		}
 		else
@@ -160,7 +160,7 @@ void PluginArray::start_plugins(MWindow *mwindow,
 				0,
 				-1);
 			plugin->get_parameters(start, end, total_tracks());
-			plugin->init_realtime(0, total_tracks(), get_bufsize());
+			plugin->init_realtime(total_tracks());
 		}
 	}
 }

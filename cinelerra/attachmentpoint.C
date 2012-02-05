@@ -101,10 +101,7 @@ void AttachmentPoint::render_init()
 						plugin,
 						-1);
 					plugin_servers.values[i]->init_realtime(
-						renderengine->edl->session->real_time_playback &&
-							renderengine->command->realtime,
-						plugin_server->multichannel ? new_virtual_plugins.total : 1,
-						get_buffer_size());
+						plugin_server->multichannel ? new_virtual_plugins.total : 1);
 				}
 			}
 		}

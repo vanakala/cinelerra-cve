@@ -384,17 +384,14 @@ void PluginServer::render_stop()
 }
 
 
-void PluginServer::init_realtime(int realtime_sched,
-		int total_in_buffers, 
-		int buffer_size)
+void PluginServer::init_realtime(int total_in_buffers)
 {
 	if(!plugin_open) return;
 // set for realtime priority
 // initialize plugin
 // Call start_realtime
 	this->total_in_buffers = total_in_buffers;
-	client->plugin_init_realtime(realtime_sched, 
-		total_in_buffers);
+	client->plugin_init_realtime(total_in_buffers);
 }
 
 // Replaced by pull method but still needed for transitions

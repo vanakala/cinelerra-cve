@@ -154,10 +154,9 @@ public:
 
 // set the string that appears on the plugin title
 	void set_string(const char *string);
-// give the buffers and sizes and prepare processing realtime data
-	void init_realtime(int realtime_sched,
-		int total_in_buffers,
-		int buffer_size);
+// give the buffers and prepare processing realtime data
+	void init_realtime(int total_in_buffers);
+
 // process the data in the buffers
 // input - the current edit's data
 // output - the previous edit's data and the destination of the transition output
