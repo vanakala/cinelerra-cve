@@ -219,8 +219,7 @@ public:
 	ptstime start_pts, end_pts;
 	int interactive;                // for the progress bar plugin
 	int success;
-	int total_out_buffers;          // total send buffers allocated by the server
-	int total_in_buffers;           // total recieve buffers allocated by the server
+	int total_in_buffers;           // total buffers allocated by the server
 
 // Position relative to start of EDL.  Calculated for every process
 // command.  Used for keyframes.

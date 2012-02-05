@@ -782,7 +782,7 @@ void PluginAClientLAD::process_frame_realtime(AFrame **input_frames,
 
 	server->lad_descriptor->run(lad_instance, size);
 
-	for(int i = 0; i < PluginClient::total_out_buffers; i++)
+	for(int i = 0; i < PluginClient::total_in_buffers; i++)
 	{
 		if(i < total_outbuffers)
 		{

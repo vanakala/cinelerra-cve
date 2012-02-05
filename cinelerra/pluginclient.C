@@ -52,7 +52,6 @@ void PluginClient::reset()
 	show_initially = 0;
 	gui_string[0] = 0;
 	total_in_buffers = 0;
-	total_out_buffers = 0;
 	source_pts = 0;
 	source_start_pts = 0;
 	total_len_pts = 0;
@@ -66,7 +65,7 @@ void PluginClient::plugin_init_realtime(int total_in_buffers)
 
 	smp = server->preferences->processors - 1;
 
-	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
+	this->total_in_buffers = total_in_buffers;
 }
 
 void PluginClient::plugin_start_loop(ptstime start,
@@ -77,7 +76,7 @@ void PluginClient::plugin_start_loop(ptstime start,
 	this->total_len_pts = end - start;
 	this->start_pts = start;
 	this->end_pts = end;
-	this->total_in_buffers = this->total_out_buffers = total_buffers;
+	this->total_in_buffers = total_buffers;
 	start_loop();
 }
 
