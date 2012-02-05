@@ -261,19 +261,9 @@ KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
 	return server->next_keyframe_pts(pts);
 }
 
-void PluginClient::get_camera(float *x, float *y, float *z, framenum position)
-{
-	server->get_camera(x, y, z, position);
-}
-
 void PluginClient::get_camera(float *x, float *y, float *z, ptstime postime)
 {
 	server->get_camera(x, y, z, postime);
-}
-
-void PluginClient::get_projector(float *x, float *y, float *z, framenum position)
-{
-	server->get_projector(x, y, z, position);
 }
 
 void PluginClient::get_projector(float *x, float *y, float *z, ptstime postime)

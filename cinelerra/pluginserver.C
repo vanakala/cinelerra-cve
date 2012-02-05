@@ -848,23 +848,9 @@ KeyFrame* PluginServer::get_keyframe()
 		return keyframe;
 }
 
-void PluginServer::get_camera(float *x, float *y, float *z,
-	framenum position)
-{
-	plugin->track->automation->get_camera(x, y, z, 
-		plugin->track->automation->pos2pts(position));
-}
-
 void PluginServer::get_camera(float *x, float *y, float *z, ptstime postime)
 {
 	plugin->track->automation->get_camera(x, y, z, postime);
-}
-
-void PluginServer::get_projector(float *x, float *y, float *z,
-	framenum position)
-{
-	plugin->track->automation->get_projector(x, y, z, 
-		plugin->track->automation->pos2pts(position));
 }
 
 void PluginServer::get_projector(float *x, float *y, float *z, ptstime postime)

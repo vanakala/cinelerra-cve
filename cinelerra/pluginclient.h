@@ -129,8 +129,8 @@ public:
 	KeyFrame* prev_keyframe_pts(ptstime postime);
 	KeyFrame* next_keyframe_pts(ptstime postime);
 // get current camera and projector position
-	void get_camera(float *x, float *y, float *z, framenum position);
-	void get_projector(float *x, float *y, float *z, framenum position);
+	void get_camera(float *x, float *y, float *z, framenum position) __attribute__ ((deprecated));
+	void get_projector(float *x, float *y, float *z, framenum position) __attribute__ ((deprecated));
 	void get_camera(float *x, float *y, float *z, ptstime postime);
 	void get_projector(float *x, float *y, float *z, ptstime postime);
 // When this plugin is adjusted, propogate parameters back to EDL and virtual
