@@ -202,7 +202,6 @@ public:
 		__attribute__ ((__format__(__printf__, 2, 3)));
 
 // Realtime operations.
-	void reset();
 	void plugin_init_realtime(int total_in_buffers);
 
 // communication convenience routines for the base class

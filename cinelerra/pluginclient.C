@@ -38,16 +38,6 @@
 
 PluginClient::PluginClient(PluginServer *server)
 {
-	reset();
-	this->server = server;
-}
-
-PluginClient::~PluginClient()
-{
-}
-
-void PluginClient::reset()
-{
 	interactive = 0;
 	show_initially = 0;
 	gui_string[0] = 0;
@@ -55,6 +45,11 @@ void PluginClient::reset()
 	source_pts = 0;
 	source_start_pts = 0;
 	total_len_pts = 0;
+	this->server = server;
+}
+
+PluginClient::~PluginClient()
+{
 }
 
 // For realtime plugins initialize buffers
