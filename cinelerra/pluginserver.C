@@ -350,17 +350,15 @@ int PluginServer::open_plugin(int master,
 	return PLUGINSERVER_OK;
 }
 
-int PluginServer::close_plugin()
+void PluginServer::close_plugin()
 {
-	if(!plugin_open) return 0;
+	if(!plugin_open) return;
 
-	int plugin_status, result;
 	if(client) delete client;
 
 	plugin_open = 0;
 
 	cleanup_plugin();
-	return 0;
 }
 
 void PluginServer::client_side_close()
@@ -387,7 +385,6 @@ void PluginServer::render_stop()
 void PluginServer::init_realtime(int total_in_buffers)
 {
 	if(!plugin_open) return;
-// set for realtime priority
 // initialize plugin
 // Call start_realtime
 	this->total_in_buffers = total_in_buffers;
