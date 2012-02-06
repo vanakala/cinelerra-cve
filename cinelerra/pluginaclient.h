@@ -50,7 +50,7 @@ public:
 	int plugin_process_loop(AFrame **buffers, int &write_length);
 
 // Called by plugin to read audio from previous entity
-	void get_aframe_rt(AFrame *frame);
+	void get_aframe(AFrame *frame);
 
 // Get the sample rate of the EDL
 	int get_project_samplerate();

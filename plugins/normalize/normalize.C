@@ -97,7 +97,7 @@ int NormalizeMain::process_loop(AFrame **aframes, int &write_length)
 		for(int i = 0; i < total_in_buffers; i++)
 		{
 			aframes[i]->set_fill_request(current_pts, fragment_len);
-			get_aframe_rt(aframes[i]);
+			get_aframe(aframes[i]);
 
 			for(int j = 0; j < aframes[0]->length; j++)
 				aframes[i]->buffer[j] *= scale[i];
@@ -127,7 +127,7 @@ int NormalizeMain::process_loop(AFrame **aframes, int &write_length)
 			for(int j = 0; j < total_in_buffers; j++)
 			{
 				aframes[j]->set_fill_request(current_pts, fragment_len);
-				get_aframe_rt(aframes[j]);
+				get_aframe(aframes[j]);
 				if(!duration_valid)
 				{
 					if(current_pts + aframes[j]->to_duration(fragment_len) > end_pts)

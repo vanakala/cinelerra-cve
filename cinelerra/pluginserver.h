@@ -193,8 +193,7 @@ public:
 
 // Called by client to read data
 	void get_vframe(VFrame *buffer, int use_opengl);
-
-	void get_aframe_rt(AFrame *aframe);
+	void get_aframe(AFrame *aframe);
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
 	int get_parameters(ptstime start, ptstime end, int channels);

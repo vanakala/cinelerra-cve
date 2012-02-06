@@ -213,7 +213,7 @@ void LoopAudio::process_frame(AFrame *aframe)
 			fragment_size = MIN(left_samples, fragment_size);
 		loop_frame.set_buffer(&aframe->buffer[aframe->length], fragment_size);
 		loop_frame.set_fill_request(loop_pts, fragment_size);
-		get_aframe_rt(&loop_frame);
+		get_aframe(&loop_frame);
 		aframe->set_filled(aframe->length + loop_frame.length);
 	}
 }

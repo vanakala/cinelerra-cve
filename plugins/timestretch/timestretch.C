@@ -89,7 +89,7 @@ void PitchEngine::get_frame(AFrame *aframe)
 			temp->samplerate = aframe->samplerate;
 		}
 		temp->set_fill_request(current_input_sample, INPUT_SIZE);
-		plugin->get_aframe_rt(temp);
+		plugin->get_aframe(temp);
 		current_input_sample += aframe->length;
 
 		plugin->resample->resample_chunk(temp->buffer,

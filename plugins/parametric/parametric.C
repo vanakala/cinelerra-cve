@@ -476,7 +476,7 @@ void ParametricFFT::signal_process()
 
 void ParametricFFT::get_frame(AFrame *aframe)
 {
-	plugin->get_aframe_rt(aframe);
+	plugin->get_aframe(aframe);
 }
 
 

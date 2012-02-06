@@ -676,7 +676,7 @@ void PluginServer::get_vframe(VFrame *buffer,
 	buffer->pop_next_effect();
 }
 
-void PluginServer::get_aframe_rt(AFrame *aframe)
+void PluginServer::get_aframe(AFrame *aframe)
 {
 	if(!multichannel)
 		aframe->channel = 0;

@@ -227,7 +227,7 @@ void PitchFFT::signal_process_oversample(int reset)
 
 void PitchFFT::get_frame(AFrame *aframe)
 {
-	plugin->get_aframe_rt(aframe);
+	plugin->get_aframe(aframe);
 }
 
 

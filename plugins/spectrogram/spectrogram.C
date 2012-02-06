@@ -133,7 +133,7 @@ void SpectrogramFFT::signal_process()
 
 void SpectrogramFFT::get_frame(AFrame *aframe)
 {
-	plugin->get_aframe_rt(aframe);
+	plugin->get_aframe(aframe);
 }
 
 

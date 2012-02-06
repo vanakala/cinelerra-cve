@@ -275,7 +275,7 @@ void OverlayAudio::process_frame(AFrame **aframes)
 
 // Direct copy the output track
 	int size = aframes[output_track]->fill_length();
-	get_aframe_rt(aframes[output_track]);
+	get_aframe(aframes[output_track]);
 
 // Add remaining tracks
 	double *output_buffer = aframes[output_track]->buffer;
@@ -286,7 +286,7 @@ void OverlayAudio::process_frame(AFrame **aframes)
 		{
 			double *input_buffer = aframes[i]->buffer;
 
-			get_aframe_rt(aframes[i]);
+			get_aframe(aframes[i]);
 			for(int j = 0; j < size; j++)
 			{
 				output_buffer[j] += input_buffer[j];
