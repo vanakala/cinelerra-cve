@@ -21,6 +21,7 @@
 
 #include "edl.h"
 #include "edlsession.h"
+#include "maxchannels.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"
 #include "vframe.h"
@@ -45,6 +46,8 @@ PluginVClient::PluginVClient(PluginServer *server)
 		project_frame_rate = 1.0;
 		frame_rate = project_frame_rate;
 	}
+	memset(input, 0, sizeof(VFrame *) * MAXCHANNELS);
+	memset(output, 0, sizeof(VFrame *) * MAXCHANNELS);
 }
 
 PluginVClient::~PluginVClient()

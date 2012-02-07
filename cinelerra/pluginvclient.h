@@ -24,6 +24,7 @@
 
 
 #include "maxbuffers.h"
+#include "maxchannels.h"
 #include "pluginclient.h"
 #include "vframe.inc"
 
@@ -111,8 +112,8 @@ public:
 
 // ======================== Realtime buffer pointers ===========================
 // These are provided by the plugin server for the opengl handler.
-	VFrame **input;
-	VFrame **output;
+	VFrame *input[MAXCHANNELS];
+	VFrame *output[MAXCHANNELS];
 
 // Frame rate of EDL
 	double project_frame_rate;

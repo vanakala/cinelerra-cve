@@ -402,16 +402,12 @@ void PluginServer::process_transition(VFrame *input,
 
 	vclient->source_pts = current_postime;
 	vclient->total_len_pts = total_len;
-	vclient->input = new VFrame*[1];
-	vclient->output = new VFrame*[1];
 
 	vclient->input[0] = input;
 	vclient->output[0] = output;
 
 	vclient->process_realtime(input, output);
 	vclient->age_temp();
-	delete [] vclient->input;
-	delete [] vclient->output;
 	use_opengl = 0;
 }
 
@@ -446,8 +442,6 @@ void PluginServer::process_buffer(VFrame **frame,
 	vclient->total_len_pts = total_length;
 	vclient->frame_rate = framerate;
 
-	vclient->input = new VFrame*[total_in_buffers];
-	vclient->output = new VFrame*[total_in_buffers];
 	for(int i = 0; i < total_in_buffers; i++)
 	{
 		vclient->input[i] = frame[i];
@@ -472,9 +466,6 @@ void PluginServer::process_buffer(VFrame **frame,
 
 	for(int i = 0; i < total_in_buffers; i++)
 		frame[i]->push_prev_effect(title);
-
-	delete [] vclient->input;
-	delete [] vclient->output;
 
 	vclient->age_temp();
 	use_opengl = 0;
