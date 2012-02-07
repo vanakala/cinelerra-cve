@@ -31,8 +31,6 @@
 PluginVClient::PluginVClient(PluginServer *server)
  : PluginClient(server)
 {
-	video_in = 0;
-	video_out = 0;
 	temp = 0;
 	if(server &&
 		server->edl &&

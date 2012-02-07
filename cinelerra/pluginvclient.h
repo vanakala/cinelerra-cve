@@ -98,18 +98,6 @@ public:
 // Frame rate requested
 	double get_framerate();
 
-// ======================== Non realtime buffer pointers =======================
-// Channels of arrays of frames that the client uses.
-	VFrame ***video_in, ***video_out;
-
-// point to the start of the buffers
-	ArrayList<VFrame***> input_ptr_master;
-	ArrayList<VFrame***> output_ptr_master;
-// Pointers to the regions for a single render.
-// Arrays are channels of arrays of frames.
-	VFrame ***input_ptr_render;
-	VFrame ***output_ptr_render;
-
 // ======================== Realtime buffer pointers ===========================
 // These are provided by the plugin server for the opengl handler.
 	VFrame *input[MAXCHANNELS];
