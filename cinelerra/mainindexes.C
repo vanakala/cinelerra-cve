@@ -206,7 +206,7 @@ void MainIndexes::run()
 					if(!progress)
 					{
 						if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 1");
-						progress = mwindow->mainprogress->start_progress(_("Building Indexes..."), 1);
+						progress = mwindow->mainprogress->start_progress(_("Building Indexes..."), (int64_t)1);
 						if(mwindow->gui) mwindow->gui->unlock_window();
 					}
 

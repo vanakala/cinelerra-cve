@@ -29,6 +29,8 @@
 
 #include <string.h>
 
+#define MAINPROGRESS_COEF 1e6
+
 MainProgressBar::MainProgressBar(MWindow *mwindow, MainProgress *mainprogress)
 {
 	progress_box = 0;
@@ -173,6 +175,11 @@ int MainProgressBar::update(int64_t value)
 	return is_cancelled();
 }
 
+int MainProgressBar::update(ptstime value)
+{
+	update((int64_t)(value * MAINPROGRESS_COEF));
+}
+
 void MainProgressBar::get_time(char *text)
 {
 	double current_time = (double)eta_timer->get_scaled_difference(1);
@@ -200,7 +207,7 @@ MainProgress::~MainProgress()
 {
 }
 
-MainProgressBar* MainProgress::start_progress(char *text, 
+MainProgressBar* MainProgress::start_progress(const char *text,
 	int64_t total_length,
 	int use_window)
 {
@@ -231,6 +238,14 @@ MainProgressBar* MainProgress::start_progress(char *text,
 	strcpy(result->default_title, text);
 	result->start();
 	return result;
+}
+
+MainProgressBar* MainProgress::start_progress(const char *text,
+	ptstime total_length_pts,
+	int use_window)
+{
+	int64_t total_length = (int64_t)(total_length_pts * MAINPROGRESS_COEF);
+	return start_progress(text, total_length, use_window);
 }
 
 
