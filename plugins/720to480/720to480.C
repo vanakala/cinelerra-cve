@@ -147,7 +147,7 @@ void _720to480Main::start_loop()
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
 		progress = start_progress(string, 
-			(PluginClient::end_pts - PluginClient::start_pts) * 100);
+			PluginClient::end_pts - PluginClient::start_pts);
 	}
 	input_pts = PluginClient::start_pts;
 }
@@ -249,7 +249,7 @@ int _720to480Main::process_loop(VFrame *output)
 	input_pts = temp->next_pts();
 
 	if(PluginClient::interactive) 
-		result = progress->update((input_pts - PluginClient::start_pts) * 100);
+		result = progress->update(input_pts - PluginClient::start_pts);
 
 	if(input_pts >= PluginClient::end_pts) result = 1;
 

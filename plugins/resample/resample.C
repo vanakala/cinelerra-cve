@@ -99,8 +99,7 @@ void ResampleEffect::start_loop()
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, 
-			(int64_t)((double)(end_pts - start_pts) * 1000));
+		progress = start_progress(string, end_pts - start_pts);
 	}
 
 	current_pts = start_pts;
@@ -165,7 +164,7 @@ int ResampleEffect::process_loop(AFrame *aframe, int &write_length)
 	}
 
 	if(interactive)
-		result = progress->update((current_pts - start_pts) * 1000);
+		result = progress->update(current_pts - start_pts);
 
 	return result;
 }

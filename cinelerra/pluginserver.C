@@ -524,7 +524,7 @@ void PluginServer::render_gui(void *data, int size)
 	if(client) client->plugin_render_gui(data, size);
 }
 
-MainProgressBar* PluginServer::start_progress(char *string, int64_t length)
+MainProgressBar* PluginServer::start_progress(char *string, ptstime length)
 {
 	mwindow->gui->lock_window("PluginServer::start_progress");
 	MainProgressBar *result = mwindow->mainprogress->start_progress(string, length);

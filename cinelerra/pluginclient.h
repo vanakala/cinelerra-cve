@@ -182,7 +182,7 @@ public:
 		int total_buffers);
 	void plugin_stop_loop();
 	int plugin_process_loop();
-	MainProgressBar* start_progress(char *string, int64_t length);
+	MainProgressBar* start_progress(char *string, ptstime length);
 
 // get framerate of EDL
 	double get_project_framerate();

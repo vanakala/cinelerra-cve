@@ -213,7 +213,7 @@ public:
 // Set pointer to menueffect window
 	void set_prompt(MenuEffectPrompt *prompt);
 	void set_interactive();   // make this the master plugin for progress bars
-	MainProgressBar* start_progress(char *string, int64_t length);
+	MainProgressBar* start_progress(char *string, ptstime length);
 
 // add track to the list of affected tracks for a non realtime plugin
 	void append_module(Module *module);

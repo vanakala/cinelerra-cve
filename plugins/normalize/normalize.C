@@ -69,7 +69,7 @@ void NormalizeMain::start_loop()
 	char string[BCTEXTLEN];
 	sprintf(string, "%s...", plugin_title());
 
-	progress = start_progress(string, (end_pts - start_pts) * 2000);
+	progress = start_progress(string, end_pts - start_pts);
 
 	writing = 0;
 	current_pts = start_pts;
@@ -105,7 +105,7 @@ int NormalizeMain::process_loop(AFrame **aframes, int &write_length)
 
 		write_length = aframes[0]->length;
 		current_pts = aframes[0]->pts + aframes[0]->duration;
-		result = progress->update((end_pts - 2 * start_pts + current_pts) * 1000);
+		result = progress->update(end_pts - 2 * start_pts + current_pts);
 
 		if(end_pts - current_pts < EPSILON)
 			result = 1;
@@ -145,7 +145,7 @@ int NormalizeMain::process_loop(AFrame **aframes, int &write_length)
 				}
 			}
 			current_pts = aframes[0]->pts + aframes[0]->duration;
-			if(progress->update((current_pts - start_pts) * 1000))
+			if(progress->update(current_pts - start_pts))
 				break;
 		}
 

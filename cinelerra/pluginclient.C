@@ -85,7 +85,7 @@ void PluginClient::plugin_stop_loop()
 	stop_loop();
 }
 
-MainProgressBar* PluginClient::start_progress(char *string, int64_t length)
+MainProgressBar* PluginClient::start_progress(char *string, ptstime length)
 {
 	return server->start_progress(string, length);
 }
