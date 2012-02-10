@@ -532,6 +532,7 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/motion/Makefile \
 					plugins/motionblur/Makefile \
 					plugins/normalize/Makefile \
+					plugins/nullvidtrans/Makefile \
 					plugins/oilpainting/Makefile \
 					plugins/overlay/Makefile \
 	plugins/overlayaudio/Makefile \
