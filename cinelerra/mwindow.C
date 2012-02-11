@@ -524,8 +524,8 @@ void MWindow::dump_plugindb(int data_type)
 			typ = 'T';
 		else
 			typ = '-';
-		printf("    %c%c%c%c%c%c%c%d %s\n",
-			server->realtime ? 'R' : '-', typ, server->fileio ? 'F' : '-', 
+		printf("    %c%c%c%c%c%c%d %s\n",
+			server->realtime ? 'R' : '-', typ,
 			server->uses_gui ? 'G' : '-', server->multichannel ? 'M' : '-', 
 			server->synthesis ? 'S' : '-', server->transition ? 'T' : '-', 
 			server->apiversion, server->title);

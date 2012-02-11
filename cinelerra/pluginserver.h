@@ -231,7 +231,7 @@ public:
 	int plugin_open;                 // Whether or not the plugin is open.
 
 // Specifies what type of plugin.
-	int realtime, multichannel, fileio;
+	int realtime, multichannel;
 // Plugin generates media
 	int synthesis;
 // What data types the plugin can handle.  One of these is set.
