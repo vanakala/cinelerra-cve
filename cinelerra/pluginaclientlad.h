@@ -163,8 +163,8 @@ public:
 	PluginAClientLAD(PluginServer *server);
 	~PluginAClientLAD();
 
-	void process_frame_realtime(AFrame *input, AFrame *output);
-	void process_frame_realtime(AFrame **input_frames, AFrame **output_frames);
+	void process_realtime(AFrame *input, AFrame *output);
+	void process_realtime(AFrame **input_frames, AFrame **output_frames);
 
 	void load_defaults();
 	void save_defaults();

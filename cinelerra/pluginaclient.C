@@ -61,13 +61,13 @@ void PluginAClient::process_frame(AFrame **aframe)
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
 		get_aframe(aframe[i]);
 
-	process_frame_realtime(aframe, aframe);
+	process_realtime(aframe, aframe);
 }
 
 void PluginAClient::process_frame(AFrame *aframe)
 {
 	get_aframe(aframe);
-	process_frame_realtime(aframe, aframe);
+	process_realtime(aframe, aframe);
 }
 
 int PluginAClient::plugin_process_loop(AFrame **aframes, int &write_length)

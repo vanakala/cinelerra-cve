@@ -37,8 +37,8 @@ public:
 	int is_audio();
 
 // Multichannel buffer process for backwards compatibility
-	virtual void process_frame_realtime(AFrame *input, AFrame *output) {};
-	virtual void process_frame_realtime(AFrame **input, AFrame **output) {};
+	virtual void process_realtime(AFrame *input, AFrame *output) {};
+	virtual void process_realtime(AFrame **input, AFrame **output) {};
 
 // Process buffer using pull method.  By default this loads the input into the
 // frame and calls process_frame with input and output pointing to frame.

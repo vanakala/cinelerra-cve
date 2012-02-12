@@ -89,7 +89,7 @@ Reverb::~Reverb()
 
 PLUGIN_CLASS_METHODS
 
-void Reverb::process_frame_realtime(AFrame **input, AFrame **output)
+void Reverb::process_realtime(AFrame **input, AFrame **output)
 {
 	int new_dsp_length, i, j;
 	main_in = input;

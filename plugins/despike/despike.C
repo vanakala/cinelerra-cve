@@ -46,7 +46,7 @@ Despike::~Despike()
 
 PLUGIN_CLASS_METHODS
 
-void Despike::process_frame_realtime(AFrame *input, AFrame *output)
+void Despike::process_realtime(AFrame *input, AFrame *output)
 {
 	int size = input->length;
 	double *ipp = input->buffer;

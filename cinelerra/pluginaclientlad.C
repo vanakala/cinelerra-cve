@@ -727,7 +727,7 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 	}
 }
 
-void PluginAClientLAD::process_frame_realtime(AFrame *input, AFrame *output)
+void PluginAClientLAD::process_realtime(AFrame *input, AFrame *output)
 {
 	int size = input->length;
 	int in_channels = get_inchannels();
@@ -757,7 +757,7 @@ void PluginAClientLAD::process_frame_realtime(AFrame *input, AFrame *output)
 	}
 }
 
-void PluginAClientLAD::process_frame_realtime(AFrame **input_frames,
+void PluginAClientLAD::process_realtime(AFrame **input_frames,
 	AFrame **output_frames)
 {
 	int size = input_frames[0]->length;

@@ -309,7 +309,7 @@ double Synth::function_triangle(double x)
 	return (x < .5) ? 1 - x * 4 : -3 + x * 4;
 }
 
-void Synth::process_frame_realtime(AFrame *input, AFrame *output)
+void Synth::process_realtime(AFrame *input, AFrame *output)
 {
 	int size = input->length;
 	double wetness;

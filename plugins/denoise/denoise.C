@@ -395,7 +395,7 @@ void DenoiseEffect::process_window()
 	}
 }
 
-void DenoiseEffect::process_frame_realtime(AFrame *input, AFrame *output)
+void DenoiseEffect::process_realtime(AFrame *input, AFrame *output)
 {
 	int size = input->length;
 

@@ -153,7 +153,7 @@ public:
 
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	void process_frame_realtime(AFrame **input, AFrame **output);
+	void process_realtime(AFrame **input, AFrame **output);
 
 	void load_defaults();
 	void save_defaults();
@@ -471,7 +471,7 @@ void FreeverbEffect::save_defaults()
 	defaults->save();
 }
 
-void FreeverbEffect::process_frame_realtime(AFrame **input, AFrame **output)
+void FreeverbEffect::process_realtime(AFrame **input, AFrame **output)
 {
 	int size = input[0]->length;
 

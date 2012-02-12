@@ -41,7 +41,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS
 
-	void process_frame_realtime(AFrame *input_ptr, AFrame *output);
+	void process_realtime(AFrame *input_ptr, AFrame *output);
 };
 
 
@@ -61,7 +61,7 @@ InvertAudioEffect::~InvertAudioEffect()
 PLUGIN_CLASS_METHODS
 
 
-void InvertAudioEffect::process_frame_realtime(AFrame *input, AFrame *output)
+void InvertAudioEffect::process_realtime(AFrame *input, AFrame *output)
 {
 	int size = input->length;
 

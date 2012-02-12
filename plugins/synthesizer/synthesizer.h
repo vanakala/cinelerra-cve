@@ -484,7 +484,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void save_defaults();
-	void process_frame_realtime(AFrame *input, AFrame *output);
+	void process_realtime(AFrame *input, AFrame *output);
 
 	void add_oscillator();
 	void delete_oscillator();

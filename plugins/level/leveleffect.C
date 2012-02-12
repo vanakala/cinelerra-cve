@@ -170,7 +170,7 @@ void SoundLevelEffect::save_defaults()
 	defaults->save();
 }
 
-void SoundLevelEffect::process_frame_realtime(AFrame *input, AFrame *output)
+void SoundLevelEffect::process_realtime(AFrame *input, AFrame *output)
 {
 	int size = input->length;
 

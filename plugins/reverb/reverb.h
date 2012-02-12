@@ -84,7 +84,7 @@ public:
 	DB db;
 
 // required for all realtime/multichannel plugins
-	void process_frame_realtime(AFrame **input_ptr, AFrame **output_ptr);
+	void process_realtime(AFrame **input_ptr, AFrame **output_ptr);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 

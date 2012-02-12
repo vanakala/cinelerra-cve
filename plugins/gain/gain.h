@@ -58,7 +58,7 @@ public:
 	Gain(PluginServer *server);
 	~Gain();
 
-	void process_frame_realtime(AFrame *input, AFrame *output);
+	void process_realtime(AFrame *input, AFrame *output);
 
 	PLUGIN_CLASS_MEMBERS
 	void save_data(KeyFrame *keyframe);

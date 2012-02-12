@@ -97,7 +97,7 @@ void DelayAudio::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-void DelayAudio::process_frame_realtime(AFrame *input, AFrame *output)
+void DelayAudio::process_realtime(AFrame *input, AFrame *output)
 {
 	int size = input->length;
 

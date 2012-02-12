@@ -66,7 +66,7 @@ public:
 
 	DB db;
 
-	void process_frame_realtime(AFrame *input, AFrame *output);
+	void process_realtime(AFrame *input, AFrame *output);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 

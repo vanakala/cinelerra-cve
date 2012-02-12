@@ -76,7 +76,7 @@ Gain::~Gain()
 
 PLUGIN_CLASS_METHODS
 
-void Gain::process_frame_realtime(AFrame *input, AFrame *output)
+void Gain::process_realtime(AFrame *input, AFrame *output)
 {
 	int size = input->length;
 	double *ipp = input->buffer;

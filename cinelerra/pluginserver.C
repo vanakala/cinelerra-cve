@@ -422,7 +422,7 @@ void PluginServer::process_transition(AFrame *input,
 	aclient->source_pts = current_postime;
 	aclient->total_len_pts = total_len;
 	if(aclient->has_pts_api())
-		aclient->process_frame_realtime(input, output);
+		aclient->process_realtime(input, output);
 }
 
 

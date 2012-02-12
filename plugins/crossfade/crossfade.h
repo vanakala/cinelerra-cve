@@ -41,7 +41,7 @@ public:
 	PLUGIN_CLASS_MEMBERS;
 
 // required for all transition plugins
-	void process_frame_realtime(AFrame *input, AFrame *output);
+	void process_realtime(AFrame *input, AFrame *output);
 };
 
 #endif
