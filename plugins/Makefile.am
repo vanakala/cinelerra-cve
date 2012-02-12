@@ -60,6 +60,7 @@ SUBDIRS= \
 	motionblur \
 	normalize \
 	nullaudtrans \
+	nullrtvideo \
 	nullvidtrans \
 	oilpainting \
 	overlay \
