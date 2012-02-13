@@ -231,7 +231,7 @@ void CompressorEffect::process_frame(AFrame **aframes)
 	{
 		if(target_current_sample < 0) target_current_sample = reaction_samples;
 		for(int i = 0; i < total_buffers; i++)
-			get_aframe(aframes[i]);
+			get_frame(aframes[i]);
 
 		double current_slope = (next_target - previous_target) / 
 			reaction_samples;
@@ -391,7 +391,7 @@ void CompressorEffect::process_frame(AFrame **aframes)
 			{
 				buffer_headers[i].set_buffer(input_buffer[i] + input_size, fragment_size);
 				buffer_headers[i].set_fill_request(input_start + input_size, fragment_size);
-				get_aframe(&buffer_headers[i]);
+				get_frame(&buffer_headers[i]);
 			}
 			input_size += fragment_size;
 		}

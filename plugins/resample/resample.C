@@ -131,7 +131,7 @@ int ResampleEffect::process_loop(AFrame *aframe, int &write_length)
 		input_frame = new AFrame(size);
 
 	input_frame->set_fill_request(current_pts, size);
-	get_aframe(input_frame);
+	get_frame(input_frame);
 
 	if(!predicted_total)
 		predicted_total = input_frame->to_samples((end_pts - start_pts) / scale);

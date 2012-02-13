@@ -59,14 +59,14 @@ void PluginAClient::init_realtime_parameters()
 void PluginAClient::process_frame(AFrame **aframe)
 {
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		get_aframe(aframe[i]);
+		get_frame(aframe[i]);
 
 	process_realtime(aframe, aframe);
 }
 
 void PluginAClient::process_frame(AFrame *aframe)
 {
-	get_aframe(aframe);
+	get_frame(aframe);
 	process_realtime(aframe, aframe);
 }
 
@@ -80,7 +80,7 @@ int PluginAClient::plugin_process_loop(AFrame **aframes, int &write_length)
 		return process_loop(aframes[0], write_length);
 }
 
-void PluginAClient::get_aframe(AFrame *frame)
+void PluginAClient::get_frame(AFrame *frame)
 {
 	server->get_aframe(frame);
 }

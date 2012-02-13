@@ -178,7 +178,7 @@ void ReverseAudio::process_frame(AFrame *aframe)
 			input_frame.set_fill_request(input_pts, fragment_size);
 		else
 			input_frame.set_fill_request(aframe->pts + aframe->duration, fragment_size);
-		get_aframe(&input_frame);
+		get_frame(&input_frame);
 
 		aframe->set_filled(aframe->length + input_frame.length);
 

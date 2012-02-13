@@ -387,7 +387,7 @@ void DenoiseFFTRemove::signal_process()
 
 void DenoiseFFTRemove::get_frame(AFrame *aframe)
 {
-	plugin->get_aframe(aframe);
+	plugin->get_frame(aframe);
 }
 
 
@@ -408,5 +408,5 @@ void DenoiseFFTCollect::signal_process()
 
 void DenoiseFFTCollect::get_frame(AFrame *aframe)
 {
-	plugin->get_aframe(aframe);
+	plugin->get_frame(aframe);
 }
