@@ -43,12 +43,12 @@ public:
 	~MenuAEffectThread();
 
 	int get_recordable_tracks(Asset *asset);
-	int get_derived_attributes(Asset *asset, BC_Hash *defaults);
-	int save_derived_attributes(Asset *asset, BC_Hash *defaults);
+	void get_derived_attributes(Asset *asset, BC_Hash *defaults);
+	void save_derived_attributes(Asset *asset, BC_Hash *defaults);
 	PluginArray* create_plugin_array();
 	ptstime one_unit();
 	posnum to_units(ptstime position, int round);
-	int fix_menu(const char *title);
+	void fix_menu(const char *title);
 };
 
 
@@ -57,8 +57,5 @@ class MenuAEffectItem : public MenuEffectItem
 public:
 	MenuAEffectItem(MenuAEffects *menueffect, const char *string);
 };
-
-
-
 
 #endif

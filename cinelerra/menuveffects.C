@@ -63,7 +63,7 @@ int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 	return asset->layers;
 }
 
-int MenuVEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
+void MenuVEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 
 	asset->load_defaults(defaults, 
@@ -78,11 +78,9 @@ int MenuVEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 	if(!File::supports_video(asset->format)) asset->format = FILE_MOV;
 	asset->audio_data = 0;
 	asset->video_data = 1;
-
-	return 0;
 }
 
-int MenuVEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
+void MenuVEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->save_defaults(defaults,
 		"VEFFECT_",
@@ -91,9 +89,6 @@ int MenuVEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 		1,
 		0,
 		0);
-
-
-	return 0;
 }
 
 PluginArray* MenuVEffectThread::create_plugin_array()
@@ -114,7 +109,7 @@ posnum MenuVEffectThread::to_units(ptstime position, int round)
 		return (posnum)(position * mwindow->edl->session->frame_rate);
 }
 
-int MenuVEffectThread::fix_menu(const char *title)
+void MenuVEffectThread::fix_menu(const char *title)
 {
 	mwindow->gui->mainmenu->add_veffect(title); 
 }

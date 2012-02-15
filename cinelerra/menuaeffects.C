@@ -63,7 +63,7 @@ int MenuAEffectThread::get_recordable_tracks(Asset *asset)
 }
 
 
-int MenuAEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
+void MenuAEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->load_defaults(defaults, 
 		"AEFFECT_",
@@ -77,11 +77,9 @@ int MenuAEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 	if(!File::supports_audio(asset->format)) asset->format = FILE_WAV;
 	asset->audio_data = 1;
 	asset->video_data = 0;
-
-	return 0;
 }
 
-int MenuAEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
+void MenuAEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->save_defaults(defaults, 
 		"AEFFECT_",
@@ -90,8 +88,6 @@ int MenuAEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 		1,
 		0,
 		1);
-
-	return 0;
 }
 
 
@@ -113,7 +109,7 @@ posnum MenuAEffectThread::to_units(ptstime position, int round)
 		return (int64_t)(position * mwindow->edl->session->sample_rate);
 }
 
-int MenuAEffectThread::fix_menu(const char *title)
+void MenuAEffectThread::fix_menu(const char *title)
 {
 	mwindow->gui->mainmenu->add_aeffect(title); 
 }
