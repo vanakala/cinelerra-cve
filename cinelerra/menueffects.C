@@ -206,7 +206,9 @@ void MenuEffectThread::run()
 	{
 		for(int i = 0; i < plugindb->total && !plugin_server; i++)
 		{
-			if(!strcmp(plugindb->values[i]->title, title))
+			if(!strcmp(plugindb->values[i]->title, title) &&
+				((default_asset->audio_data && plugindb->values[i]->audio) ||
+				(default_asset->video_data && plugindb->values[i]->video)))
 			{
 				plugin_server = plugindb->values[i];
 				plugin_number = i;
