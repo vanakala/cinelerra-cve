@@ -42,7 +42,7 @@
 /*
  * Define the name and api related class names of the plugin
  */
-#define PLUGIN_TITLE N_("Null")
+#define PLUGIN_TITLE N_("NullRT")
 #define PLUGIN_CLASS NRTAudio
 #define PLUGIN_CONFIG_CLASS NRTAudioConfig
 #define PLUGIN_THREAD_CLASS NRTAudioThread

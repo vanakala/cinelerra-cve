@@ -42,7 +42,7 @@
 /*
  * Define the name and api related class names of the plugin
  */
-#define PLUGIN_TITLE N_("Null")
+#define PLUGIN_TITLE N_("NullRT")
 #define PLUGIN_CLASS NRTVideo
 #define PLUGIN_CONFIG_CLASS NRTVideoConfig
 #define PLUGIN_THREAD_CLASS NRTVideoThread
