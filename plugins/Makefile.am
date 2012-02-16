@@ -59,6 +59,7 @@ SUBDIRS= \
 	motion \
 	motionblur \
 	normalize \
+	nullaudio \
 	nullaudtrans \
 	nullrtaudio \
 	nullrtvideo \
