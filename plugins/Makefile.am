@@ -62,6 +62,7 @@ SUBDIRS= \
 	nullaudtrans \
 	nullrtaudio \
 	nullrtvideo \
+	nullvideo \
 	nullvidtrans \
 	oilpainting \
 	overlay \
