@@ -341,6 +341,16 @@ int PluginServer::open_plugin(int master,
 	transition = client->is_transition();
 	set_title(client->plugin_title());
 
+// Check API version
+	if((audio || video) && !apiversion)
+	{
+		delete client;
+		dlclose(plugin_fd);
+		plugin_fd = 0;
+		fprintf(stderr, "Old version plugin: %s\n", path);
+		return PLUGINSERVER_NOT_RECOGNIZED;
+	}
+
 	if(master)
 	{
 		picon = client->new_picon();
