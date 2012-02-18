@@ -29,7 +29,6 @@
 #include "localsession.h"
 #include "zoompanel.h"
 
-
 static const char *xml_autogrouptypes_titlesmax[] = 
 {
 	"AUTOGROUPTYPE_AUDIO_FADE_MAX",
@@ -49,7 +48,6 @@ static const char *xml_autogrouptypes_titlesmin[] =
 	"AUTOGROUPTYPE_Y_MIN",
 	"AUTOGROUPTYPE_INT255_MIN"
 };
-
 
 LocalSession::LocalSession(EDL *edl)
 {
@@ -181,7 +179,6 @@ void LocalSession::synchronize_params(LocalSession *that)
 	blue = that->blue;
 }
 
-
 void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 {
 	if(load_flags & LOAD_SESSION)
@@ -192,10 +189,10 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		file->tag.get_property("CLIP_NOTES", clip_notes);
 		file->tag.get_property("FOLDER", folder);
 		loop_playback = file->tag.get_property("LOOP_PLAYBACK", 0);
-		loop_start = file->tag.get_property("LOOP_START", (double)0);
-		loop_end = file->tag.get_property("LOOP_END", (double)0);
-		selectionstart = file->tag.get_property("SELECTION_START", (double)0);
-		selectionend = file->tag.get_property("SELECTION_END", (double)0);
+		loop_start = file->tag.get_property("LOOP_START", (ptstime)0);
+		loop_end = file->tag.get_property("LOOP_END", (ptstime)0);
+		selectionstart = file->tag.get_property("SELECTION_START", (ptstime)0);
+		selectionend = file->tag.get_property("SELECTION_END", (ptstime)0);
 		track_start = file->tag.get_property("TRACK_START", track_start);
 		view_start = file->tag.get_property("VIEW_START", view_start);
 		int64_t zoom_sample = file->tag.get_property("ZOOM_SAMPLE", (int64_t)0);
@@ -219,21 +216,18 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		}
 	}
 
-
 // on operations like cut, paste, slice, clear... we should also undo the cursor position as users
 // expect - this is additionally important in keyboard-only editing in viewer window
 	if(load_flags & LOAD_SESSION || load_flags & LOAD_TIMEBAR)
 	{
-		selectionstart = file->tag.get_property("SELECTION_START", (double)0);
-		selectionend = file->tag.get_property("SELECTION_END", (double)0);
+		selectionstart = file->tag.get_property("SELECTION_START", (ptstime)0);
+		selectionend = file->tag.get_property("SELECTION_END", (ptstime)0);
 	}
-
-
 
 	if(load_flags & LOAD_TIMEBAR)
 	{
-		in_point = file->tag.get_property("IN_POINT", (double)-1);
-		out_point = file->tag.get_property("OUT_POINT", (double)-1);
+		in_point = file->tag.get_property("IN_POINT", (ptstime)-1);
+		out_point = file->tag.get_property("OUT_POINT", (ptstime)-1);
 	}
 }
 
@@ -242,11 +236,11 @@ void LocalSession::boundaries()
 	zoom_time = CLIP(zoom_time, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
 }
 
-int LocalSession::load_defaults(BC_Hash *defaults)
+void LocalSession::load_defaults(BC_Hash *defaults)
 {
 	loop_playback = defaults->get("LOOP_PLAYBACK", 0);
-	loop_start = defaults->get("LOOP_START", (double)0);
-	loop_end = defaults->get("LOOP_END", (double)0);
+	loop_start = defaults->get("LOOP_START", (ptstime)0);
+	loop_end = defaults->get("LOOP_END", (ptstime)0);
 	selectionstart = defaults->get("SELECTIONSTART", selectionstart);
 	selectionend = defaults->get("SELECTIONEND", selectionend);
 // For backwards compatibility
@@ -268,11 +262,9 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 			automation_maxs[i] = defaults->get(xml_autogrouptypes_titlesmax[i], automation_maxs[i]);
 		}
 	}
-
-	return 0;
 }
 
-int LocalSession::save_defaults(BC_Hash *defaults)
+void LocalSession::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("LOOP_PLAYBACK", loop_playback);
 	defaults->update("LOOP_START", loop_start);
@@ -282,6 +274,7 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("TRACK_START", track_start);
 	defaults->update("VIEW_START", view_start);
 	defaults->update("ZOOM_TIME", zoom_time);
+	defaults->delete_key("ZOOM_SAMPLE");
 	defaults->update("ZOOMY", zoom_y);
 	defaults->update("ZOOM_TRACK", zoom_track);
 	defaults->update("RED", red);
@@ -294,26 +287,24 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 			defaults->update(xml_autogrouptypes_titlesmax[i], automation_maxs[i]);
 		}
 	}
-
-	return 0;
 }
 
-void LocalSession::set_selectionstart(double value)
+void LocalSession::set_selectionstart(ptstime value)
 {
 	this->selectionstart = value;
 }
 
-void LocalSession::set_selectionend(double value)
+void LocalSession::set_selectionend(ptstime value)
 {
 	this->selectionend = value;
 }
 
-void LocalSession::set_inpoint(double value)
+void LocalSession::set_inpoint(ptstime value)
 {
 	in_point = value;
 }
 
-void LocalSession::set_outpoint(double value)
+void LocalSession::set_outpoint(ptstime value)
 {
 	out_point = value;
 }
@@ -328,9 +319,7 @@ void LocalSession::unset_outpoint()
 	out_point = -1;
 }
 
-
-
-double LocalSession::get_selectionstart(int highlight_only)
+ptstime LocalSession::get_selectionstart(int highlight_only)
 {
 	if(highlight_only || !EQUIV(selectionstart, selectionend))
 		return selectionstart;
@@ -344,7 +333,7 @@ double LocalSession::get_selectionstart(int highlight_only)
 		return selectionstart;
 }
 
-double LocalSession::get_selectionend(int highlight_only)
+ptstime LocalSession::get_selectionend(int highlight_only)
 {
 	if(highlight_only || !EQUIV(selectionstart, selectionend))
 		return selectionend;
@@ -358,12 +347,12 @@ double LocalSession::get_selectionend(int highlight_only)
 		return selectionend;
 }
 
-double LocalSession::get_inpoint()
+ptstime LocalSession::get_inpoint()
 {
 	return in_point;
 }
 
-double LocalSession::get_outpoint()
+ptstime LocalSession::get_outpoint()
 {
 	return out_point;
 }
