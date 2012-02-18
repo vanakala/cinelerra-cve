@@ -75,11 +75,6 @@ void PluginClient::plugin_start_loop(ptstime start,
 	start_loop();
 }
 
-int PluginClient::plugin_process_loop()
-{
-	return process_loop();
-}
-
 void PluginClient::plugin_stop_loop()
 {
 	stop_loop();

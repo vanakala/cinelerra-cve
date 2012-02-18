@@ -86,7 +86,6 @@ public:
 	virtual int get_parameters() { return 0; };
 
 	virtual void start_loop() {};
-	virtual int process_loop() { return 0; };
 	virtual void stop_loop() {};
 
 // Realtime commands for signal processors.
@@ -181,7 +180,7 @@ public:
 		ptstime end,
 		int total_buffers);
 	void plugin_stop_loop();
-	int plugin_process_loop();
+
 	MainProgressBar* start_progress(char *string, ptstime length);
 
 // get framerate of EDL
