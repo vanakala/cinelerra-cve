@@ -53,7 +53,7 @@ public:
 
 // required for all non realtime/multichannel plugins
 	void start_loop();
-	int process_loop(AFrame **buffer, int &write_length);
+	int process_loop(AFrame **buffer);
 	void stop_loop();
 
 	void load_defaults();

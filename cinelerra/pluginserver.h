@@ -187,8 +187,8 @@ public:
 // start processing data in plugin
 	void start_loop(ptstime start, ptstime end, int buffer_size, int total_buffers);
 // Do one iteration of a nonrealtime plugin and return if finished
-	int process_loop(VFrame **buffers, int &write_length);
-	int process_loop(AFrame **buffers, int &write_length);
+	int process_loop(VFrame **buffers);
+	int process_loop(AFrame **buffers);
 	void stop_loop();
 
 // Called by client to read data

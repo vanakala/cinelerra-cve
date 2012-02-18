@@ -88,7 +88,7 @@ public:
 	void stop_loop();
 
 // Processing is here
-	int process_loop(AFrame *frame, int &write_length);
+	int process_loop(AFrame *frame);
 
 // Loading and saving of defaults - optional: needed if plugin has parameters
 	void load_defaults();

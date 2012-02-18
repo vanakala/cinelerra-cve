@@ -78,7 +78,7 @@ void NormalizeMain::start_loop()
 }
 
 
-int NormalizeMain::process_loop(AFrame **aframes, int &write_length)
+int NormalizeMain::process_loop(AFrame **aframes)
 {
 	int result = 0;
 	int fragment_len;
@@ -103,7 +103,6 @@ int NormalizeMain::process_loop(AFrame **aframes, int &write_length)
 				aframes[i]->buffer[j] *= scale[i];
 		}
 
-		write_length = aframes[0]->length;
 		current_pts = aframes[0]->pts + aframes[0]->duration;
 		result = progress->update(end_pts - 2 * start_pts + current_pts);
 

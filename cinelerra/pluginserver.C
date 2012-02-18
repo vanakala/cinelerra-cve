@@ -586,19 +586,19 @@ void PluginServer::reset_nodes()
 	nodes->remove_all();
 }
 
-int PluginServer::process_loop(VFrame **buffers, int &write_length)
+int PluginServer::process_loop(VFrame **buffers)
 {
 	if(!plugin_open) return 1;
-	return client->plugin_process_loop(buffers, write_length);
+	return client->plugin_process_loop(buffers);
 }
 
-int PluginServer::process_loop(AFrame **buffers, int &write_length)
+int PluginServer::process_loop(AFrame **buffers)
 {
 
 	if(!plugin_open) return 1;
 
 	if(client->has_pts_api())
-		return client->plugin_process_loop(buffers, write_length);
+		return client->plugin_process_loop(buffers);
 	return 1;
 }
 

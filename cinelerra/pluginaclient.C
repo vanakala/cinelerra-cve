@@ -70,14 +70,12 @@ void PluginAClient::process_frame(AFrame *aframe)
 	process_realtime(aframe, aframe);
 }
 
-int PluginAClient::plugin_process_loop(AFrame **aframes, int &write_length)
+int PluginAClient::plugin_process_loop(AFrame **aframes)
 {
-	write_length = 0;
-
 	if(is_multichannel())
-		return process_loop(aframes, write_length);
+		return process_loop(aframes);
 	else
-		return process_loop(aframes[0], write_length);
+		return process_loop(aframes[0]);
 }
 
 void PluginAClient::get_frame(AFrame *frame)

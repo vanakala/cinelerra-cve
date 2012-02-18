@@ -111,8 +111,8 @@ public:
 // Called by plugin server to update GUI with rendered data.
 	virtual void plugin_render_gui(void *data) {};
 	virtual void plugin_render_gui(void *data, int size) {};
-	virtual int plugin_process_loop(VFrame **buffers, int &write_length) { return 1; };
-	virtual int plugin_process_loop(AFrame **buffers, int &write_length) { return 1; };
+	virtual int plugin_process_loop(VFrame **buffers) { return 1; };
+	virtual int plugin_process_loop(AFrame **buffers) { return 1; };
 
 // get parameters depending on video or audio
 	virtual void init_realtime_parameters() {};

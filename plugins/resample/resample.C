@@ -119,7 +119,7 @@ void ResampleEffect::stop_loop()
 	}
 }
 
-int ResampleEffect::process_loop(AFrame *aframe, int &write_length)
+int ResampleEffect::process_loop(AFrame *aframe)
 {
 	int result = 0;
 	int output_size;
@@ -159,7 +159,6 @@ int ResampleEffect::process_loop(AFrame *aframe, int &write_length)
 
 		resample->read_output(aframe->buffer, 0, output_size);
 
-		write_length = output_size;
 		output_pts = aframe->pts + aframe->duration;
 	}
 

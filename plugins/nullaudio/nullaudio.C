@@ -138,7 +138,7 @@ void NullAudio::stop_loop()
  * prototype: int process_loop(AFrame **frame)
  *    - number of channels is total_in_buffers
  */
-int NullAudio::process_loop(AFrame *frame, int &write_length)
+int NullAudio::process_loop(AFrame *frame)
 {
 	int fragment_len = frame->buffer_length;
 
@@ -152,7 +152,6 @@ int NullAudio::process_loop(AFrame *frame, int &write_length)
 	get_frame(frame);
 
 	current_pts = frame->pts + frame->duration;
-	write_length = frame->length;
 
 	if(onoff)
 		memset(frame->buffer, 0, frame->length * sizeof(double));

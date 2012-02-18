@@ -61,7 +61,7 @@ public:
 	void send_render_gui(void *data);
 	virtual int process_loop(VFrame **buffers) { return 1; };
 	virtual int process_loop(VFrame *buffer) { return 1; };
-	int plugin_process_loop(VFrame **buffers, int &write_length);
+	int plugin_process_loop(VFrame **buffers);
 	int plugin_get_parameters();
 
 	void get_frame(VFrame *buffer, int use_opengl = 0);

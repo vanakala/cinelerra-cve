@@ -45,9 +45,9 @@ public:
 	virtual void process_frame(AFrame *aframe);
 	virtual void process_frame(AFrame **aframe);
 
-	virtual int process_loop(AFrame *aframe, int &write_length) { return 1; };
-	virtual int process_loop(AFrame **aframes, int &write_length) { return 1; };
-	int plugin_process_loop(AFrame **buffers, int &write_length);
+	virtual int process_loop(AFrame *aframe) { return 1; };
+	virtual int process_loop(AFrame **aframes) { return 1; };
+	int plugin_process_loop(AFrame **buffers);
 
 // Called by plugin to read audio from previous entity
 	void get_frame(AFrame *frame);

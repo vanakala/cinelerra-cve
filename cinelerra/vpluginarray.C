@@ -109,7 +109,8 @@ int VPluginArray::process_loop(int module, int &write_length)
 		temp_buffer[i] = realtime_buffers[i][0];
 	}
 
-	int result = values[module]->process_loop(realtime_buffers[module], write_length);
+	int result = values[module]->process_loop(realtime_buffers[module]);
+	write_length = 1;
 	delete [] temp_buffer;
 	return result;
 }

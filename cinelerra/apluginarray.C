@@ -88,8 +88,9 @@ void APluginArray::process_realtime(int module, ptstime pts, ptstime len)
 int APluginArray::process_loop(int module, int &write_length)
 {
 	if(!realtime_buffers) realtime_buffers = file->get_audio_buffer();
-	return values[module]->process_loop(&realtime_buffers[module],
-		write_length);
+	int result = values[module]->process_loop(&realtime_buffers[module]);
+	write_length = realtime_buffers[module]->length;
+	return result;
 }
 
 

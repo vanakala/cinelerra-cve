@@ -131,7 +131,7 @@ int PluginVClient::plugin_get_parameters()
 	return PluginClient::plugin_get_parameters();
 }
 
-int PluginVClient::plugin_process_loop(VFrame **buffers, int &write_length)
+int PluginVClient::plugin_process_loop(VFrame **buffers)
 {
 	int result = 0;
 
@@ -140,7 +140,6 @@ int PluginVClient::plugin_process_loop(VFrame **buffers, int &write_length)
 	else
 		result = process_loop(buffers[0]);
 
-	write_length = 1;
 	return result;
 }
 
