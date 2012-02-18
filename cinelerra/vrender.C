@@ -103,7 +103,6 @@ int VRender::process_buffer(VFrame *video_out)
 	this->video_out = video_out;
 
 	current_postime = video_out->get_pts();
-	current_position = tounits(current_postime, 1);
 
 // test for automation configuration and shorten the fragment len if necessary
 	reconfigure = vconsole->test_reconfigure(render_len,

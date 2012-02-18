@@ -63,7 +63,7 @@ void VirtualVConsole::get_playable_tracks()
 {
 	if(!playable_tracks)
 		playable_tracks = new PlayableTracks(renderengine, 
-			(ptstime)commonrender->current_position / renderengine->edl->session->frame_rate,
+			commonrender->current_postime,
 			TRACK_VIDEO,
 			1);
 }

@@ -103,7 +103,7 @@ void Module::create_new_attachments()
 			for(int i = 0; i < new_total_attachments; i++)
 			{
 				Plugin *plugin = 
-					track->get_current_plugin(track->from_units(commonrender->current_position),
+					track->get_current_plugin(commonrender->current_postime,
 						i, 
 						1);
 

@@ -62,8 +62,6 @@ public:
 	RenderEngine *renderengine;
 // Virtual console
 	VirtualConsole *vconsole;
-// Native units position in project used for all functions
-	posnum current_position;
 // Pts units position in project used for all functions
 	ptstime current_postime;
 

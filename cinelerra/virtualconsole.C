@@ -126,7 +126,7 @@ void VirtualConsole::build_virtual_console(int persistent_plugins)
 
 // Expand the trees
 			entry_nodes[i]->expand(persistent_plugins, 
-				commonrender->fromunits(commonrender->current_position));
+				commonrender->current_postime);
 		}
 		commonrender->restart_plugins = 1;
 	}

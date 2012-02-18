@@ -184,7 +184,6 @@ int ARender::process_buffer(AFrame **buffer_out)
 	ptstime fragment_duration = (ptstime)fragment_len / samplerate;
 	ptstime fragment_end = current_postime + fragment_duration;
 
-	current_position = round(current_postime * buffer_out[0]->samplerate);
 	last_playback = 0;
 
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -203,7 +202,6 @@ int ARender::process_buffer(AFrame **buffer_out)
 		result = process_buffer(fragment_len, current_postime);
 
 		current_postime += fragment_duration;
-		current_position = round(current_postime * buffer_out[0]->samplerate);
 	}
 
 // Don't delete audio_out on completion

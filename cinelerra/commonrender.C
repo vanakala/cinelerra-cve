@@ -79,7 +79,6 @@ void CommonRender::arm_command()
 	ptstime temp_length = fromunits(1);
 
 	current_postime = renderengine->command->playbackstart;
-	current_position = tounits(renderengine->command->playbackstart, 1);
 
 	init_output_buffers();
 
@@ -273,7 +272,6 @@ CommonRender::CommonRender(MWindow *mwindow, RenderEngine *renderengine)
 {
 	this->mwindow = mwindow;
 	this->renderengine = renderengine;
-	current_position = 0;
 	current_postime = 0;
 	interrupt = 0;
 	done = 0;
@@ -321,7 +319,6 @@ int CommonRender::advance_position(ptstime current_pts, ptstime current_render_d
 			}
 		}
 	}
-	current_position = tounits(current_postime, 1);
 	return result;
 }
 
