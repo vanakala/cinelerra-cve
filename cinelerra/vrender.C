@@ -286,6 +286,7 @@ void VRender::run()
 
 		if(reconfigure) restart_playback();
 		process_buffer(current_postime);
+		ptstime tracking = current_postime;
 		current_postime = video_out->get_pts();
 		if(last_playback || renderengine->video->interrupt 
 				|| renderengine->command->single_frame())
@@ -361,6 +362,16 @@ void VRender::run()
 			first_frame = 0;
 		}
 
+// Update tracking.
+		if(renderengine->command->realtime &&
+				renderengine->playback_engine)
+		{
+			// Truncate tracing to frame boundary
+			tracking = round(tracking * renderengine->edl->session->frame_rate) /
+				renderengine->edl->session->frame_rate;
+			renderengine->playback_engine->update_tracking(tracking);
+		}
+
 // advance position in project
 		if(!last_playback)
 		{
@@ -368,15 +379,9 @@ void VRender::run()
 			first_frame = advance_position(video_out->get_pts(), current_input_duration);
 		}
 
-// Update tracking.
 		if(renderengine->command->realtime &&
 			!renderengine->video->interrupt)
 		{
-			if(renderengine->playback_engine &&
-				renderengine->command->command != CURRENT_FRAME)
-			{
-				renderengine->playback_engine->update_tracking(current_postime);
-			}
 // Calculate the framerate counter
 			framerate_counter++;
 			if(framerate_counter >= renderengine->edl->session->frame_rate)

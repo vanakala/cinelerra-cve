@@ -503,7 +503,6 @@ void RenderEngine::run()
 	{
 		if(command->single_frame())
 		{
-			playback_engine->tracking_position = command->playbackstart;
 			if(command->command != CURRENT_FRAME)
 				playback_engine->stop_tracking();
 		}
