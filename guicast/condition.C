@@ -87,6 +87,26 @@ void Condition::unlock()
 	pthread_mutex_unlock(&mutex);
 }
 
+void Condition::wait_another(const char *location)
+{
+	pthread_mutex_lock(&mutex);
+	if(value)
+		value = 0;
+	else
+	{
+		value = 1;
+		pthread_cond_signal(&cond);
+	}
+#ifndef NO_GUICAST
+	SET_CLOCK(this, title, location);
+#endif
+	while(value <= 0) pthread_cond_wait(&cond, &mutex);
+#ifndef NO_GUICAST
+	UNSET_LOCK2
+#endif
+	pthread_mutex_unlock(&mutex);
+}
+
 int Condition::timed_lock(int microseconds, const char *location)
 {
 	struct timeval now;

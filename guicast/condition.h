@@ -30,13 +30,15 @@ public:
 	Condition(int init_value = 0, const char *title = 0, int is_binary = 0);
 	~Condition();
 
-
 // Reset to init_value whether locked or not.
 	void reset();
 // Block if value <= 0, then decrease value
 	void lock(const char *location = 0);
 // Increase value
 	void unlock();
+// Block if value > 0, else release lock
+// Usage: wait slower thread
+	void wait_another(const char *location = 0);
 // Block for requested duration if value <= 0.
 // value is decreased whether or not the condition is unlocked in time
 // Returns 1 if timeout or 0 if success.
