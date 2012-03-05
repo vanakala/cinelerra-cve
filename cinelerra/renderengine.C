@@ -85,8 +85,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	start_lock = new Condition(1, "RenderEngine::start_lock");
 	output_lock = new Condition(1, "RenderEngine::output_lock");
 	interrupt_lock = new Mutex("RenderEngine::interrupt_lock");
-	first_frame_lock = new Condition(1, "RenderEngine::first_frame_lock", 1);
-	first_audio_lock = new Condition(1, "RenderEngine::first_audio_lock", 1);
+	render_start_lock = new Condition(1, "RenderEngine::render_start", 1);
 	do_audio = 0;
 	do_video = 0;
 	done = 0;
@@ -104,8 +103,7 @@ RenderEngine::~RenderEngine()
 	delete start_lock;
 	delete output_lock;
 	delete interrupt_lock;
-	delete first_frame_lock;
-	delete first_audio_lock;
+	delete render_start_lock;
 	delete config;
 }
 
@@ -152,19 +150,6 @@ int RenderEngine::arm_command(TransportCommand *command)
 	if(do_audio)
 	{
 		fragment_len = aconfig->get_fragment_size(command->get_edl()->session->sample_rate);
-	}
-
-// Set locks to enable audio and video start simultaneously
-	if(do_video && do_audio)
-	{
-		first_frame_lock->lock("RenderEngine::arm_command");
-		first_audio_lock->lock("RenderEngine::arm_command");
-	}
-	else
-// Only audio or video no locks needed
-	{
-		first_frame_lock->unlock();
-		first_audio_lock->unlock();
 	}
 
 	open_output();
@@ -536,4 +521,10 @@ int RenderEngine::start_video()
 // start video for realtime
 	if(video) video->start_playback();
 	vrender->start_playback();
+}
+
+void RenderEngine::wait_another(const char *location)
+{
+	if(do_audio && do_video)
+		render_start_lock->wait_another(location);
 }

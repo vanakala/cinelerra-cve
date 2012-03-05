@@ -90,6 +90,8 @@ public:
 	void reset_sync_postime(void);
 // Update preferences window
 	void update_framerate(float framerate);
+// Wait for other thread
+	void wait_another(const char *location);
 
 // Copy of command
 	TransportCommand *command;
@@ -104,15 +106,13 @@ public:
 // Canvas if being used for CWindow
 	Canvas *output;
 
-
 // Lock out new commands until completion
 	Condition *input_lock;
 // Lock out interrupts until started
 	Condition *start_lock;
 	Condition *output_lock;
-// Lock out audio and synchronization timers until first frame is done
-	Condition *first_frame_lock;
-	Condition *first_audio_lock;
+// Audio-video syncronization lock
+	Condition *render_start_lock;
 // Lock out interrupts before and after renderengine is active
 	Mutex *interrupt_lock;
 

@@ -310,14 +310,14 @@ void ARender::run()
 			current_input_duration = fromunits(current_input_length);
 			revert = 0;
 		}
-		advance_position(audio_out[0]->pts, current_input_duration);
-
+		first_buffer = advance_position(audio_out[0]->pts, current_input_duration);
 		if(vconsole->interrupt) interrupt = 1;
 	}
 
 	if(!interrupt) send_last_buffer();
 	if(renderengine->command->realtime) wait_device_completion();
 	vconsole->stop_rendering(0);
+	renderengine->render_start_lock->unlock();
 	stop_plugins();
 }
 
