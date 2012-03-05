@@ -9,7 +9,7 @@ foreach (@ARGV) {
 		$command = "gcc " . join(' ', @ARGV);
 		last;
 	} elsif (/\.s$/) {
-		if ($command =~ s/(\w*)\.lo/\.libs\/\1\.o/)
+		if ($command =~ s/(\w*)\.lo/\.libs\/$1\.o/)
 		{
 			$f = $1;
 		}
