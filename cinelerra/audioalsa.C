@@ -33,6 +33,7 @@
 #ifdef HAVE_ALSA
 
 #define DEFAULT_DEVICE "default"
+#define NULL_DEVICE "null"
 
 AudioALSA::AudioALSA(AudioDevice *device)
  : AudioLowLevel(device)
@@ -50,6 +51,70 @@ AudioALSA::~AudioALSA()
 }
 
 void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
+{
+	AudioALSA::list_pcm_devices(devices, pcm_title, mode);
+}
+
+void AudioALSA::list_pcm_devices(ArrayList<char*> *devices, int pcm_title, int mode)
+{
+	snd_pcm_stream_t stream;
+	snd_pcm_t *handle;
+	char *s, *name, *io;
+	const char *filter;
+	void **hints, **n;
+	snd_pcm_hw_params_t *hwparams;
+
+	s = new char[strlen(DEFAULT_DEVICE) + 1];
+	strcpy(s, DEFAULT_DEVICE);
+	devices->append(s);
+	devices->set_array_delete();
+
+	if(snd_device_name_hint(-1, "pcm", &hints) < 0)
+		return;
+
+	switch(mode)
+	{
+	case MODERECORD:
+		filter = "Input";
+		stream = SND_PCM_STREAM_CAPTURE;
+		break;
+	case MODEPLAY:
+	default:
+		filter = "Output";
+		stream = SND_PCM_STREAM_PLAYBACK;
+		break;
+	}
+	snd_pcm_hw_params_alloca(&hwparams);
+	name = 0;
+	io = 0;
+	for(n = hints; *n; n++)
+	{
+		name = snd_device_name_get_hint(*n, "NAME");
+		// Skip null device
+		if(strcmp(name, NULL_DEVICE) == 0)
+			continue;
+		io = snd_device_name_get_hint(*n, "IOID");
+		if(io != NULL && strcmp(io, filter) != 0)
+			break;
+		// Check if device is usable
+		if(snd_pcm_open(&handle, name, stream, 0) == 0)
+		{
+			if(snd_pcm_hw_params_any(handle, hwparams) == 0)
+			{
+				s = new char[strlen(name) + 1];
+				strcpy(s, name);
+				devices->append(s);
+			}
+			snd_pcm_close(handle);
+		}
+	}
+	if(name)
+		free(name);
+	if(io)
+		free(io);
+}
+
+void AudioALSA::list_hw_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 {
 	snd_ctl_t *handle;
 	int card, err, dev, idx;
@@ -137,33 +202,6 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 	}
 }
 
-void AudioALSA::translate_name(char *output, char *input)
-{
-	ArrayList<char*> titles;
-	ArrayList<char*> pcm_titles;
-	int mode;
-
-	if(device->r) mode = MODERECORD;
-	else
-	if(device->w) mode = MODEPLAY;
-
-	list_devices(&titles, 0, mode);
-	list_devices(&pcm_titles, 1, mode);
-
-	sprintf(output, "default");
-	for(int i = 0; i < titles.total; i++)
-	{
-		if(!strcasecmp(titles.values[i], input))
-		{
-			strcpy(output, pcm_titles.values[i]);
-			break;
-		}
-	}
-
-	titles.remove_all_objects();
-	pcm_titles.remove_all_objects();
-}
-
 snd_pcm_format_t AudioALSA::translate_format(int format)
 {
 	switch(format)
@@ -191,6 +229,8 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 {
 	snd_pcm_hw_params_t *params;
 	snd_pcm_sw_params_t *swparams;
+	unsigned int ratemin;
+	int dir;
 
 	snd_pcm_hw_params_alloca(&params);
 	snd_pcm_sw_params_alloca(&swparams);
@@ -201,11 +241,20 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		return 1;
 	}
 
+	dir = 0;
+	snd_pcm_hw_params_get_rate_min(params, &ratemin, &dir);
+
 	if(snd_pcm_hw_params_set_access(dsp, 
 		params,
 		SND_PCM_ACCESS_RW_INTERLEAVED))
 	{
 		errormsg("ALSA: failed to set up interleaved device access.");
+		return 1;
+	}
+
+	if(snd_pcm_hw_params_set_rate(dsp, params, samplerate, 0))
+	{
+		errormsg("ALSA: Configured ALSA device does not support %u Hz playback.", samplerate);
 		return 1;
 	}
 
@@ -225,58 +274,39 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		return 1;
 	}
 
-	if(snd_pcm_hw_params_set_rate_near(dsp, 
-		params, 
-		(unsigned int*)&samplerate, 
-		(int*)0))
-	{
-		errormsg("ALSA: Configured ALSA device does not support %u Hz playback.", samplerate);
-		return 1;
-	}
+	int bufmin, bufmax, buffer_size;
 
-// Buffers written must be equal to period_time
-	int buffer_time;
-	int period_time;
-	if(device->r)
-	{
-		buffer_time = 10000000;
-		period_time = (int)((int64_t)samples * 1000000 / samplerate);
-	}
+	snd_pcm_hw_params_get_buffer_size_min(params, (snd_pcm_uframes_t *)&bufmin);
+	snd_pcm_hw_params_get_buffer_size_max(params, (snd_pcm_uframes_t *)&bufmax);
+
+	if(ratemin < 8000)
+	// Assume pulse
+		buffer_size = samples / 4;
 	else
-	{
-		buffer_time = (int)((int64_t)samples * 1000000 * 4 / samplerate);
-		period_time = buffer_time / 2;
-		sleep_delay = period_time / 8;
-	}
-	snd_pcm_hw_params_set_buffer_time_near(dsp, 
-		params,
-		(unsigned int*)&buffer_time, 
-		(int*)0);
-	snd_pcm_hw_params_set_period_time_near(dsp, 
-		params,
-		(unsigned int*)&period_time, 
-		(int*)0);
+		buffer_size = samples;
+	if(buffer_size < bufmin)
+		buffer_size = bufmin;
+	else if(buffer_size > bufmax)
+		buffer_size = bufmax;
+
+	snd_pcm_hw_params_set_buffer_size_near (dsp, params, 
+		(snd_pcm_uframes_t *)&buffer_size);
+
+	dir = 0;
+	snd_pcm_hw_params_set_period_size(dsp, params,
+				(snd_pcm_uframes_t)buffer_size / 4, dir);
+
 	if(snd_pcm_hw_params(dsp, params) < 0)
 	{
 		errormsg("Failed to set ALSA hw_params");
 		return 1;
 	}
-	snd_pcm_sw_params_current(dsp, swparams);
-
-	snd_pcm_sw_params_set_avail_min(dsp, swparams, samples);
-	if(snd_pcm_sw_params(dsp, swparams) < 0)
-	{
-		errorbox("Failed to set ALSA sw_params");
-		/* we can continue staggering along even if this fails */
-	}
-
 	device->device_buffer = samples * bits / 8 * channels;
 	return 0;
 }
 
 int AudioALSA::open_input()
 {
-	char pcm_name[BCTEXTLEN];
 	snd_pcm_stream_t stream = SND_PCM_STREAM_CAPTURE;
 	int open_mode = 0;
 	int err;
@@ -284,12 +314,10 @@ int AudioALSA::open_input()
 	device->in_channels = device->get_ichannels();
 	device->in_bits = device->in_config->alsa_in_bits;
 
-	translate_name(pcm_name, device->in_config->alsa_in_device);
-
-	if(err = snd_pcm_open(&dsp_in, pcm_name, stream, open_mode))
+	if(err = snd_pcm_open(&dsp_in, device->in_config->alsa_in_device, stream, open_mode))
 	{
 		dsp_in = 0;
-		errorbox("Failed to open ALSA input: %s\n", snd_strerror(err));
+		errorbox("Failed to open ALSA input: %s", snd_strerror(err));
 		return 1;
 	}
 
@@ -309,7 +337,6 @@ int AudioALSA::open_input()
 
 int AudioALSA::open_output()
 {
-	char pcm_name[BCTEXTLEN];
 	snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
 	int open_mode = 0;
 	int err;
@@ -317,12 +344,10 @@ int AudioALSA::open_output()
 	device->out_channels = device->get_ochannels();
 	device->out_bits = device->out_config->alsa_out_bits;
 
-	translate_name(pcm_name, device->out_config->alsa_out_device);
-
-	if((err = snd_pcm_open(&dsp_out, pcm_name, stream, open_mode)) < 0)
+	if((err = snd_pcm_open(&dsp_out, device->out_config->alsa_out_device, stream, open_mode)) < 0)
 	{
 		dsp_out = 0;
-		errorbox("Failed to open ALSA output %s: %s", pcm_name, snd_strerror(err));
+		errorbox("Failed to open ALSA output %s: %s", device->out_config->alsa_out_device, snd_strerror(err));
 		return 1;
 	}
 
@@ -332,7 +357,7 @@ int AudioALSA::open_output()
 		device->out_samplerate,
 		device->out_samples))
 	{
-		errormsg("ALSA: open_output: set_params failed.  Aborting playback.");
+		errormsg("Aborting audio playback.");
 		close_output();
 		return 1;
 	}
@@ -423,25 +448,24 @@ int AudioALSA::write_buffer(char *buffer, int size)
 {
 // Don't give up and drop the buffer on the first error.
 	int attempts = 0;
-	snd_pcm_sframes_t samples = size / (device->out_bits / 8) / device->get_ochannels();
+	int samplesize = (device->out_bits / 8) * device->get_ochannels();
+	snd_pcm_sframes_t samples = size / samplesize;
 	snd_pcm_sframes_t written, avail;
 	int rc;
+	char *write_pos = buffer;
 
 	if(!get_output()) return 0;
-// Wait until enough buffer frees
-// We want to avoid snd_pcm_writei blocking
-	snd_pcm_wait(get_output(), -1);
-	while((avail = snd_pcm_avail(get_output())) < samples)
-	{
-		usleep(sleep_delay);
-	}
 
-	timing_lock->lock("AudioALSA::write_buffer");
-	while(attempts < 2 && !interrupted)
+	while(samples > 0 && attempts < 2 && !interrupted)
 	{
-		if((written = snd_pcm_writei(get_output(), 
-			buffer, 
-			samples)) < 0)
+		snd_pcm_wait(get_output(), -1);
+
+		timing_lock->lock("AudioALSA::write_buffer");
+		avail = snd_pcm_avail(get_output());
+		if(avail > samples)
+			avail = samples;
+
+		if((written = snd_pcm_writei(get_output(), write_pos, avail)) < 0)
 		{
 			if(written == -EPIPE)
 			{
@@ -462,16 +486,15 @@ int AudioALSA::write_buffer(char *buffer, int size)
 		}
 		else
 		{
+			write_pos += written * samplesize;
+			samples -= written;
 			samples_written += written;
-			break;
 		}
+		timing_lock->unlock();
 	}
-	timing_lock->unlock();
 
 	if(attempts >= 2)
 		return -1;
-// Give time to video decoding
-	usleep(sleep_delay);
 	return 0;
 }
 
@@ -514,4 +537,36 @@ snd_pcm_t* AudioALSA::get_input()
 	return 0;
 }
 
+void AudioALSA::dump_params(snd_pcm_t* dsp)
+{
+	snd_pcm_hw_params_t *hwparams;
+	unsigned int val, val1;
+	snd_pcm_format_t fmt;
+	int dir;
+	snd_pcm_uframes_t frames, frames1;
+
+	snd_pcm_hw_params_alloca(&hwparams);
+
+	printf("PCM handle '%s' status dump\n", snd_pcm_name(dsp));
+	printf("    state = %s\n", snd_pcm_state_name(snd_pcm_state(dsp)));
+	if(snd_pcm_hw_params_current(dsp, hwparams))
+	{
+		printf("    Failed to get parameters\n");
+		return;
+	}
+	snd_pcm_hw_params_get_access(hwparams, (snd_pcm_access_t *) &val);
+	printf("    access type = %s\n", snd_pcm_access_name((snd_pcm_access_t)val));
+	snd_pcm_hw_params_get_format(hwparams, (snd_pcm_format_t *)&val);
+	printf("    format = '%s' (%s)\n",
+	snd_pcm_format_name((snd_pcm_format_t)val), 
+		snd_pcm_format_description((snd_pcm_format_t)val));
+	snd_pcm_hw_params_get_channels(hwparams, &val);
+	dir = 0;
+	snd_pcm_hw_params_get_rate(hwparams, &val1, &dir);
+	printf("    samplerate = %d bps channels = %d\n", val1, val);
+	snd_pcm_hw_params_get_buffer_size(hwparams, &frames1);
+	dir = 0;
+	snd_pcm_hw_params_get_period_size(hwparams, &frames, &dir);
+	printf("    buffer = %ld,  period = %ld frames\n", frames1, frames);
+}
 #endif

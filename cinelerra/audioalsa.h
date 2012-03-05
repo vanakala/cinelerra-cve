@@ -36,6 +36,8 @@ public:
 	~AudioALSA();
 
 	static void list_devices(ArrayList<char*> *devices, int pcm_title = 0, int mode = MODEPLAY);
+	static void list_hw_devices(ArrayList<char*> *devices, int pcm_title = 0, int mode = MODEPLAY);
+	static void list_pcm_devices(ArrayList<char*> *devices, int pcm_title = 0, int mode = MODEPLAY);
 	int open_input();
 	int open_output();
 	int open_duplex();
@@ -46,10 +48,10 @@ public:
 	posnum device_position();
 	void flush_device();
 	void interrupt_playback();
+	void dump_params(snd_pcm_t* dsp);
 
 private:
 	void close_output();
-	void translate_name(char *output, char *input);
 	snd_pcm_format_t translate_format(int format);
 	int set_params(snd_pcm_t *dsp, 
 		int channels, 
