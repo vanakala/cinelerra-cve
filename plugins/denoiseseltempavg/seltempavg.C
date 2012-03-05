@@ -739,15 +739,14 @@ void SelTempAvgMain::load_defaults()
 
 void SelTempAvgMain::save_defaults()
 {
-// We can't remove it
-	defaults->update("FRAMES", 0);
+	defaults->delete_key("FRAMES");
 	defaults->update("DURATION", config.duration);
 	defaults->update("METHOD", config.method);
 	defaults->update("OFFSETMODE", config.offsetmode);
 	defaults->update("PARANOID", config.paranoid);
 	defaults->update("NOSUBTRACT", config.nosubtract);
 	defaults->update("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe);
-	defaults->update("OFFSETMODE_FIXED_VALUE", 0);
+	defaults->delete_key("OFFSETMODE_FIXED_VALUE");
 	defaults->update("OFFSETMODE_FIXED_PTS", config.offset_fixed_pts);
 	defaults->update("GAIN", config.gain);
 
