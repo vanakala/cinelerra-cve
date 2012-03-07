@@ -104,7 +104,7 @@ static unsigned char mpeg3_601_to_rgb[256];
 	*data++ = CLIP(b_l); \
 	*data++ = CLIP(g_l); \
 	*data++ = CLIP(r_l); \
-	*data++ = 0;
+	*data++ = 255;
 
 #define STORE_PIXEL_RGB565 \
 	*(*(unsigned short**)(&data))++ = \
@@ -122,13 +122,13 @@ static unsigned char mpeg3_601_to_rgb[256];
 	*data++ = CLIP(r_l); \
 	*data++ = CLIP(g_l); \
 	*data++ = CLIP(b_l); \
-	*data++ = 0;
+	*data++ = 255;
 
 #define STORE_PIXEL_RGBA16161616 \
 	*data_s++ = CLIP(r_l); \
 	*data_s++ = CLIP(g_l); \
 	*data_s++ = CLIP(b_l); \
-	*data_s++ = 0;
+	*data_s++ = 0xffff;
 
 
 
