@@ -1012,6 +1012,56 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 	return result;
 }
 
+int FileMPEG::from_mpeg_colormodel(int cmodel)
+{
+	switch(cmodel)
+	{
+	case MPEG3_RGB565:
+		return BC_RGB565;
+	case MPEG3_BGR888:
+		return BC_BGR888;
+	case MPEG3_BGRA8888:
+		return BC_BGR8888;
+	case MPEG3_RGB888:
+		return BC_RGB888;
+	case MPEG3_RGBA8888:
+		return BC_RGBA8888;
+	case MPEG3_RGBA16161616:
+		return BC_RGBA16161616;
+	case MPEG3_YUV420P:
+		return BC_YUV420P;
+	case MPEG3_YUV422P:
+		return BC_YUV422P;
+	default:
+		return 0;
+	}
+}
+
+int FileMPEG::to_mpeg_colormodel(int cmodel)
+{
+	switch(cmodel)
+	{
+	case BC_RGB565:
+		return MPEG3_RGB565;
+	case BC_BGR888:
+		return MPEG3_BGR888;
+	case BC_BGR8888:
+		return MPEG3_BGRA8888;
+	case BC_RGB888:
+		return MPEG3_RGB888;
+	case BC_RGBA8888:
+		return MPEG3_RGBA8888;
+	case BC_RGBA16161616:
+		return MPEG3_RGBA16161616;
+	case BC_YUV420P:
+		return MPEG3_YUV420P;
+	case BC_YUV422P:
+		return MPEG3_YUV422P;
+	default:
+		return 0;
+	}
+}
+
 int FileMPEG::read_frame(VFrame *frame)
 {
 	if(!fd) return 1;
@@ -1026,12 +1076,12 @@ int FileMPEG::read_frame(VFrame *frame)
 
 	switch(frame->get_color_model())
 	{
-	case MPEG3_RGB565:
-	case MPEG3_BGR888:
-	case MPEG3_BGRA8888:
-	case MPEG3_RGB888:
-	case MPEG3_RGBA8888:
-	case MPEG3_RGBA16161616:
+	case BC_RGB565:
+	case BC_BGR888:
+	case BC_BGR8888:
+	case BC_RGB888:
+	case BC_RGBA8888:
+	case BC_RGBA16161616:
 
 		mpeg3_read_frame(fd, 
 			frame->get_rows(), /* Array of pointers to the start of each output row */
@@ -1041,7 +1091,7 @@ int FileMPEG::read_frame(VFrame *frame)
 			asset->height,
 			asset->width,                   /* Dimensions of output_rows */
 			asset->height,
-			frame->get_color_model(),             /* One of the color model #defines */
+			to_mpeg_colormodel(frame->get_color_model()),
 			file->current_layer);
 			break;
 

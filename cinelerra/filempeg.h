@@ -89,6 +89,8 @@ public:
 	int read_samples(double *buffer, int len);
 	int read_samples_float(float *buffer, int len);
 	int prefer_samples_float();
+	int from_mpeg_colormodel(int cmodel);
+	int to_mpeg_colormodel(int cmodel);
 
 	int64_t get_memory_usage();
 
