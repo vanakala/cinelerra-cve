@@ -26,6 +26,12 @@ LTCXX_FLAGS="--tag=CXX"
 AC_SUBST(LTC_FLAGS)
 AC_SUBST(LTCXX_FLAGS)
 
+dnl Check for nasm
+AC_CHECK_PROG(HAVE_NASM, nasm, yes)
+if test x$HAVE_NASM != "xyes"; then
+    AC_MSG_ERROR(nasm is missing. Please install it.)
+fi
+
 # hack for using nasm for .S files
 CCAS="\$(top_srcdir)/admin/nasm"
 AC_SUBST(CCAS)
