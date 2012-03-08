@@ -26,7 +26,6 @@ LTCXX_FLAGS="--tag=CXX"
 AC_SUBST(LTC_FLAGS)
 AC_SUBST(LTCXX_FLAGS)
 
-
 # hack for using nasm for .S files
 CCAS="\$(top_srcdir)/admin/nasm"
 AC_SUBST(CCAS)
@@ -55,28 +54,28 @@ AC_CHECK_HEADER([ladspa.h],
 
 ############## SPECIAL DIRECTORIES
 AC_ARG_WITH(plugindir,
-						AC_HELP_STRING([--with-plugindir], [sets the directory where the plugins should be installed]),
-						[ plugindir=$withval ],
-						[ plugindir="\${exec_prefix}/lib/cinelerra-cve" ])
+	AC_HELP_STRING([--with-plugindir], [sets the directory where the plugins should be installed]),
+	[ plugindir=$withval ],
+	[ plugindir="\${exec_prefix}/lib/cinelerra-cve" ])
 AC_SUBST(plugindir)
 
 AC_ARG_WITH(fontsdir,
-						AC_HELP_STRING([--with-fontsdir], [sets the directory where the fonts should be installed]),
-						[ fontsdir=$withval ],
-						[ fontsdir="\${plugindir}/fonts" ])
+	AC_HELP_STRING([--with-fontsdir], [sets the directory where the fonts should be installed]),
+	[ fontsdir=$withval ],
+	[ fontsdir="\${plugindir}/fonts" ])
 AC_SUBST(fontsdir)
 ############## END OF SPECIAL DIRECTORIES
 
 ############## XLIB
 AC_PATH_XTRA
 if test "$no_x" = yes; then
-  if test "x$have_x" = "xdisabled"; then
-    AC_MSG_WARN([Do not use --without-x or --with-x=no.])
-  else
-    AC_MSG_WARN([X Windows development tools were not found.])
-    AC_MSG_WARN([Please install xlib-dev or xorg-x11-devel.])
-  fi
-  AC_MSG_ERROR([Cinelerra requires X Windows.])
+	if test "x$have_x" = "xdisabled"; then
+		AC_MSG_WARN([Do not use --without-x or --with-x=no.])
+	else
+		AC_MSG_WARN([X Windows development tools were not found.])
+		AC_MSG_WARN([Please install xlib-dev or xorg-x11-devel.])
+	fi
+	AC_MSG_ERROR([Cinelerra requires X Windows.])
 fi
 AH_TEMPLATE(HAVE_LIBXXF86VM, [Define to 1 if libXxf86vm is available.])
 AC_DEFINE(HAVE_LIBXXF86VM)
@@ -84,12 +83,12 @@ AC_DEFINE(HAVE_LIBXXF86VM)
 
 ############## SOUND
 # the sound options are propagated by SOUND_CFLAGS and SOUND_LDFLAGS
-AC_ARG_ENABLE(oss, 
-							AC_HELP_STRING([--disable-oss], [disable support for oss (default=enabled)]))
-AC_ARG_ENABLE(alsa, 
+AC_ARG_ENABLE(oss,
+	AC_HELP_STRING([--disable-oss], [disable support for oss (default=enabled)]))
+AC_ARG_ENABLE(alsa,
 	AC_HELP_STRING([--disable-alsa],[disable support for ALSA (default=autodetect)]),
 	[enable_alsa=$enableval],[enable_alsa=yes])
-AC_ARG_ENABLE(esd, 
+AC_ARG_ENABLE(esd,
 	AC_HELP_STRING([--disable-esd], [disable support for ESD (default=autodetect)]),
 	[enable_esd=$enableval],[enable_esd=yes])
 
@@ -140,12 +139,12 @@ AC_TRY_LINK(
 [y4m_write_frame_header(1,NULL,NULL)],
 [
 AC_DEFINE(
-	   [MJPEGTOOLS_Y4M_WRITE_FRAME_HEADER__3ARGS], 
-           [1], 
-           [using y4m_write_frame_header with 3 arguments]
-          )
-mjpeg_version_info="3 arguments (new versions)"
-],[mjpeg_version_info="assuming 2 arguments (older versions)"])
+	[MJPEGTOOLS_Y4M_WRITE_FRAME_HEADER__3ARGS],
+	[1],
+	[using y4m_write_frame_header with 3 arguments]
+	)
+mjpeg_version_info="3 arguments (new versions)"],
+	[mjpeg_version_info="assuming 2 arguments (older versions)"])
 AC_MSG_RESULT($mjpeg_version_info)
 CFLAGS="$save_CFLAGS"
 LIBS="$save_LIBS"
@@ -172,8 +171,7 @@ AC_CHECK_LIB(tiff,TIFFOpen,[libtiff=yes])
 
 AC_ARG_ENABLE(freetype2,
 	AC_HELP_STRING([--enable-freetype2],[enables freetype2 usage (default is use pkg-config detection)]),
-	[ 
-	  [freetype2=yes] ],
+	[ [freetype2=yes] ],
 	[ PKG_CHECK_MODULES(FREETYPE,freetype2,[freetype2=yes],:) ])
 ############## END OF MISC LIBRARIES
 
@@ -185,8 +183,8 @@ AC_CHECK_LIB(a52,a52_init,[liba52=yes])
 AC_CHECK_HEADER(a52dec/a52.h,[liba52h=yes])
 
 if test "x$liba52$liba52h" = "xyesyes"; then
-    A52DEC_CFLAGS=
-    A52DEC_LIBS=-la52
+	A52DEC_CFLAGS=
+	A52DEC_LIBS=-la52
 fi
 AC_SUBST(A52DEC_CFLAGS)
 AC_SUBST(A52DEC_LDFLAGS)
@@ -211,8 +209,8 @@ AC_CHECK_LIB(faad, faacDecInit,[libfaad=yes],
 	AC_CHECK_LIB(faad, NeAACDecInit,[libfaad=yes]))
 AC_CHECK_HEADER(faad.h,[libfaadh=yes])
 if test "x$libfaad$libfaadh" = xyesyes; then
-    FAAD_CFLAGS=
-    FAAD_LIBS="-lfaad"
+	FAAD_CFLAGS=
+	FAAD_LIBS="-lfaad"
 fi
 AC_SUBST(FAAD_CFLAGS)
 AC_SUBST(FAAD_LIBS)
@@ -220,11 +218,11 @@ AC_SUBST(FAAD_LIBS)
 
 ############# BUILDINFO display, (for displaying version / date)
 AC_ARG_WITH(buildinfo,
-          AC_HELP_STRING(
-	  	  [--with-buildinfo],
-		  [includes revision information in the 'About' box; allowed values: svn, git; add /recompile to force rebuild on each make invocation, or cust/"Custom string" for packagers]),
-	[ buildinfo=$withval],
-	[ buildinfo="none" ])
+		AC_HELP_STRING(
+		[--with-buildinfo],
+		[includes revision information in the 'About' box; allowed values: svn, git; add /recompile to force rebuild on each make invocation, or cust/"Custom string" for packagers]),
+		[ buildinfo=$withval],
+		[ buildinfo="none" ])
 AC_SUBST(buildinfo)
 
 BUILDINFO_repository=$(echo $buildinfo | sed 's=/recompile==')
@@ -247,10 +245,10 @@ if test "x$enable_css" = "xyes"; then
 	CSS_CFLAGS="-DHAVE_CSS"
 fi
 AC_SUBST(CSS_CFLAGS)
-AC_ARG_ENABLE(css, 
-							AC_HELP_STRING([--disable-css], [disable support for css in libmpeg3 (default=enabled)]),,
-							[ enable_css=$enableval ],
-							[ enable_css=yes ])
+AC_ARG_ENABLE(css,
+		AC_HELP_STRING([--disable-css], [disable support for css in libmpeg3 (default=enabled)]),,
+		[ enable_css=$enableval ],
+		[ enable_css=yes ])
 ############## END OF CSS SUPPORT IN LIBMPEG3
 
 
@@ -330,38 +328,38 @@ AC_SUBST(CPU_CFLAGS)
 AC_ARG_WITH([external-ffmpeg], AC_HELP_STRING([--with-external-ffmpeg], [use external ffmpeg library]))
 
 if test "x$with_external_ffmpeg" = "xyes"; then
-     PKG_CHECK_MODULES([FFMPEG_TEMP], [libavcodec libpostproc])
-     FFMPEG_FOLDER=""
-     FFMPEG_EXTERNALTEXT="External ffmpeg"
-		   
-     dnl --------------------------------------------------------------
-     dnl check if libavcodec contains img_convert
-     dnl if not, that means that libswscale is compiled in
-     
-     AC_MSG_CHECKING(for ffmpeg swscale support)
-     saved_LIBS="$LIBS"
-     LIBS="$saved_LIBS $FFMPEG_TEMP_LIBS"
-     AC_TRY_LINK([#include <libavcodec/avcodec.h>],
-		 [img_convert(0, 0, 0,0,0,0)],
-		 enable_ffmpeg_swscale=no,enable_ffmpeg_swscale=yes)
-     LIBS="$saved_LIBS"
-     AC_MSG_RESULT($enable_ffmpeg_swscale)
-     if test x"$enable_ffmpeg_swscale" = xyes; then
-	     dnl AC_DEFINE(HAVE_SWSCALER)
-	     PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc libswscale])
-	     FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I/usr/include/libavcodec -I/usr/include/libswscale -DHAVE_SWSCALER"
-     else
-	     PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc])
-     fi
-     FFMPEG_CFLAGS="$FFMPEG_CFLAGS -D__STDC_CONSTANT_MACROS"
-     FFMPEG_EXTERNALTEXT="External ffmpeg"
+	PKG_CHECK_MODULES([FFMPEG_TEMP], [libavcodec libpostproc])
+	FFMPEG_FOLDER=""
+	FFMPEG_EXTERNALTEXT="External ffmpeg"
+
+	dnl --------------------------------------------------------------
+	dnl check if libavcodec contains img_convert
+	dnl if not, that means that libswscale is compiled in
+
+	AC_MSG_CHECKING(for ffmpeg swscale support)
+	saved_LIBS="$LIBS"
+	LIBS="$saved_LIBS $FFMPEG_TEMP_LIBS"
+	AC_TRY_LINK([#include <libavcodec/avcodec.h>],
+		[img_convert(0, 0, 0,0,0,0)],
+		enable_ffmpeg_swscale=no,enable_ffmpeg_swscale=yes)
+	LIBS="$saved_LIBS"
+	AC_MSG_RESULT($enable_ffmpeg_swscale)
+	if test x"$enable_ffmpeg_swscale" = xyes; then
+		dnl AC_DEFINE(HAVE_SWSCALER)
+		PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc libswscale])
+		FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I/usr/include/libavcodec -I/usr/include/libswscale -DHAVE_SWSCALER"
+	else
+		PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc])
+	fi
+	FFMPEG_CFLAGS="$FFMPEG_CFLAGS -D__STDC_CONSTANT_MACROS"
+	FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
-     FFMPEG_FOLDER=ffmpeg
-     FFMPEG_CFLAGS="-I\$(top_srcdir)/quicktime/ffmpeg -DHAVE_SWSCALER"
-     FFMPEG_LIBS="-L\$(top_builddir)/quicktime/ffmpeg/libavcodec -lavcodec-cinelerra \
+	FFMPEG_FOLDER=ffmpeg
+	FFMPEG_CFLAGS="-I\$(top_srcdir)/quicktime/ffmpeg -DHAVE_SWSCALER"
+	FFMPEG_LIBS="-L\$(top_builddir)/quicktime/ffmpeg/libavcodec -lavcodec-cinelerra \
 		-L\$(top_builddir)/quicktime/ffmpeg/libavutil -lavutil-cinelerra \
 		-L\$(top_builddir)/quicktime/ffmpeg/libswscale -lswscale-cinelerra"
-     FFMPEG_EXTERNALTEXT="Internal ffmpeg"
+	FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi
 
 AC_SUBST(FFMPEG_FOLDER)
@@ -388,22 +386,21 @@ else
 		ff_conf_args="$ff_conf_args --disable-altivec"
 	fi
 
-
 	srcdir_c=$(readlink -f $srcdir) &&
 	mkdir -p quicktime/ffmpeg/ &&
 	(
-	cd quicktime/ffmpeg/
-	# if --libdir was not set, then it expands to '$exec_prefix/lib'
-	# if --exec-prefix was not set, then it expands to NONE
-	# this makes sure $libdir is expanded to a useful value
-	if test "x$exec_prefix" = xNONE; then
-		exec_prefix=$acl_final_prefix
-	fi
-	cmd="quicktime/ffmpeg/configure \$ff_conf_args \
-		--prefix=\"\$acl_final_prefix\" \
-		--libdir=\"$libdir\" --shlibdir=\"$libdir\""
-	eval echo $cmd
-	eval \$srcdir_c/$cmd
+		cd quicktime/ffmpeg/
+		# if --libdir was not set, then it expands to '$exec_prefix/lib'
+		# if --exec-prefix was not set, then it expands to NONE
+		# this makes sure $libdir is expanded to a useful value
+		if test "x$exec_prefix" = xNONE; then
+			exec_prefix=$acl_final_prefix
+		fi
+		cmd="quicktime/ffmpeg/configure \$ff_conf_args \
+			--prefix=\"\$acl_final_prefix\" \
+			--libdir=\"$libdir\" --shlibdir=\"$libdir\""
+		eval echo $cmd
+		eval \$srcdir_c/$cmd
 	)
 fi
 echo --------------------------------------------------
@@ -476,105 +473,138 @@ fi
 AC_CHECK_TOOL(OBJDUMP, objdump)
 dnl extract target and architecture if objdump was found
 if test "x$OBJDUMP" = "x"; then :; else
-  AC_MSG_CHECKING(for object target)
-  octarget=`$OBJDUMP --info | sed -ne '2p'` # extract first target
-  AC_MSG_RESULT($octarget)
-  AC_MSG_CHECKING(for object architecture)
-  ocarch=`$OBJDUMP --info | sed -ne '4p'` # extract corresponding arch
-  AC_MSG_RESULT($ocarch)
+	AC_MSG_CHECKING(for object target)
+	octarget=`$OBJDUMP --info | sed -ne '2p'` # extract first target
+	AC_MSG_RESULT($octarget)
+	AC_MSG_CHECKING(for object architecture)
+	ocarch=`$OBJDUMP --info | sed -ne '4p'` # extract corresponding arch
+	AC_MSG_RESULT($ocarch)
 fi
 AC_SUBST(OBJCOPYTARGET, $octarget)
 AC_SUBST(OBJCOPYARCH, $ocarch)
 
 ############## END of .png TO .o CONVERSION
 
-
-AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
-	m4/Makefile \
-					libmpeg3/Makefile libmpeg3/video/Makefile libmpeg3/audio/Makefile \
-					quicktime/Makefile \
-					quicktime/encore50/Makefile \
-					mpeg2enc/Makefile toolame-02l/Makefile \
-					guicast/Makefile cinelerra/Makefile \
-	cinelerra/data/Makefile \
-	mplexlo/Makefile \
-					plugins/colors/Makefile \
-					plugins/libfourier/Makefile \
-					plugins/libeffecttv/Makefile \
-					plugins/Makefile
-					plugins/1080to540/Makefile \
-					plugins/histogram/Makefile \
-					plugins/720to480/Makefile \
-					plugins/bandslide/Makefile \
-					plugins/bandwipe/Makefile 
-					plugins/blur/Makefile 
-					plugins/brightness/Makefile \
-					plugins/burn/Makefile plugins/parametric/Makefile plugins/aging/Makefile \
-					plugins/chromakey/Makefile \
-					plugins/chromakeyhsv/Makefile \
-					plugins/colorbalance/Makefile \
-					plugins/compressor/Makefile \
-					plugins/crossfade/Makefile \
-					plugins/decimate/Makefile \
-					plugins/deinterlace/Makefile plugins/delayaudio/Makefile plugins/delayvideo/Makefile \
-					plugins/denoise/Makefile plugins/denoisefft/Makefile plugins/denoisevideo/Makefile \
-					plugins/despike/Makefile plugins/dissolve/Makefile plugins/dot/Makefile \
-					plugins/fieldframe/Makefile plugins/flip/Makefile plugins/framefield/Makefile \
-					plugins/freeverb/Makefile plugins/freezeframe/Makefile plugins/gain/Makefile \
-	plugins/gamma/Makefile \
-					plugins/holo/Makefile plugins/huesaturation/Makefile \
-					plugins/interpolate/Makefile \
-					plugins/interpolatevideo/Makefile \
-					plugins/invertaudio/Makefile plugins/invertvideo/Makefile plugins/irissquare/Makefile \
-					plugins/ivtc/Makefile \
-					plugins/loopaudio/Makefile \
-					plugins/loopvideo/Makefile \
-					plugins/motion/Makefile \
-					plugins/motionblur/Makefile \
-					plugins/normalize/Makefile \
-					plugins/nullaudio/Makefile \
-					plugins/nullaudtrans/Makefile \
-					plugins/nullrtaudio/Makefile \
-					plugins/nullvideo/Makefile \
-					plugins/nullrtvideo/Makefile \
-					plugins/nullvidtrans/Makefile \
-					plugins/oilpainting/Makefile \
-					plugins/overlay/Makefile \
-	plugins/overlayaudio/Makefile \
-					plugins/pitch/Makefile \
-					plugins/polar/Makefile \
-					plugins/reroute/Makefile
-					plugins/reframert/Makefile
-					plugins/reframe/Makefile plugins/resample/Makefile plugins/reverb/Makefile \
-					plugins/reverseaudio/Makefile plugins/reversevideo/Makefile plugins/rgb601/Makefile \
-					plugins/rotate/Makefile \
-					plugins/scale/Makefile \
-					plugins/denoiseseltempavg/Makefile \
-					plugins/shapewipe/Makefile \
-					plugins/sharpen/Makefile \
-					plugins/shiftinterlace/Makefile plugins/slide/Makefile plugins/spectrogram/Makefile \
-	plugins/suv/Makefile \
-	plugins/suv/data/Makefile \
-	plugins/bluedottheme/Makefile \
-	plugins/bluedottheme/data/Makefile \
-	plugins/defaulttheme/Makefile \
-	plugins/defaulttheme/data/Makefile \
-					plugins/swapchannels/Makefile \
-					plugins/synthesizer/Makefile \
-					plugins/threshold/Makefile \
-					plugins/timeavg/Makefile \
-					plugins/timestretch/Makefile plugins/titler/Makefile plugins/translate/Makefile \
-					plugins/unsharp/Makefile \
-					plugins/videoscope/Makefile plugins/wave/Makefile plugins/whirl/Makefile \
-					plugins/wipe/Makefile \
-					plugins/yuv/Makefile \
-					plugins/downsample/Makefile plugins/flash/Makefile plugins/gradient/Makefile \
-					plugins/level/Makefile plugins/linearblur/Makefile \
-					plugins/perspective/Makefile plugins/radialblur/Makefile plugins/zoomblur/Makefile \
-					plugins/timefront/Makefile \
-					plugins/diffkey/Makefile \
-					plugins/fonts/Makefile \
-					image/Makefile)
+AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
+	m4/Makefile
+	libmpeg3/Makefile
+	libmpeg3/video/Makefile
+	libmpeg3/audio/Makefile
+	quicktime/Makefile
+	quicktime/encore50/Makefile
+	mpeg2enc/Makefile
+	toolame-02l/Makefile
+	guicast/Makefile
+	cinelerra/Makefile
+	cinelerra/data/Makefile
+	mplexlo/Makefile
+	plugins/colors/Makefile
+	plugins/libfourier/Makefile
+	plugins/libeffecttv/Makefile
+	plugins/Makefile
+	plugins/1080to540/Makefile
+	plugins/histogram/Makefile
+	plugins/720to480/Makefile
+	plugins/bandslide/Makefile
+	plugins/bandwipe/Makefile
+	plugins/blur/Makefile
+	plugins/brightness/Makefile
+	plugins/burn/Makefile
+	plugins/parametric/Makefile
+	plugins/aging/Makefile
+	plugins/chromakey/Makefile
+	plugins/chromakeyhsv/Makefile
+	plugins/colorbalance/Makefile
+	plugins/compressor/Makefile
+	plugins/crossfade/Makefile
+	plugins/decimate/Makefile
+	plugins/deinterlace/Makefile
+	plugins/delayaudio/Makefile 
+	plugins/delayvideo/Makefile
+	plugins/denoise/Makefile
+	plugins/denoisefft/Makefile
+	plugins/denoisevideo/Makefile
+	plugins/despike/Makefile
+	plugins/dissolve/Makefile
+	plugins/dot/Makefile
+	plugins/fieldframe/Makefile
+	plugins/flip/Makefile
+	plugins/framefield/Makefile
+	plugins/freeverb/Makefile
+	plugins/freezeframe/Makefile
+	plugins/gain/Makefile
+	plugins/gamma/Makefile
+	plugins/holo/Makefile
+	plugins/huesaturation/Makefile
+	plugins/interpolate/Makefile
+	plugins/interpolatevideo/Makefile
+	plugins/invertaudio/Makefile
+	plugins/invertvideo/Makefile
+	plugins/irissquare/Makefile
+	plugins/ivtc/Makefile
+	plugins/loopaudio/Makefile
+	plugins/loopvideo/Makefile
+	plugins/motion/Makefile
+	plugins/motionblur/Makefile
+	plugins/normalize/Makefile
+	plugins/nullaudio/Makefile
+	plugins/nullaudtrans/Makefile
+	plugins/nullrtaudio/Makefile
+	plugins/nullvideo/Makefile
+	plugins/nullrtvideo/Makefile
+	plugins/nullvidtrans/Makefile
+	plugins/oilpainting/Makefile
+	plugins/overlay/Makefile
+	plugins/overlayaudio/Makefile
+	plugins/pitch/Makefile
+	plugins/polar/Makefile
+	plugins/reroute/Makefile
+	plugins/reframert/Makefile
+	plugins/reframe/Makefile
+	plugins/resample/Makefile
+	plugins/reverb/Makefile
+	plugins/reverseaudio/Makefile
+	plugins/reversevideo/Makefile
+	plugins/rgb601/Makefile
+	plugins/rotate/Makefile
+	plugins/scale/Makefile
+	plugins/denoiseseltempavg/Makefile
+	plugins/shapewipe/Makefile
+	plugins/sharpen/Makefile
+	plugins/shiftinterlace/Makefile
+	plugins/slide/Makefile
+	plugins/spectrogram/Makefile
+	plugins/suv/Makefile
+	plugins/suv/data/Makefile
+	plugins/bluedottheme/Makefile
+	plugins/bluedottheme/data/Makefile
+	plugins/defaulttheme/Makefile
+	plugins/defaulttheme/data/Makefile
+	plugins/swapchannels/Makefile
+	plugins/synthesizer/Makefile
+	plugins/threshold/Makefile
+	plugins/timeavg/Makefile
+	plugins/timestretch/Makefile
+	plugins/titler/Makefile
+	plugins/translate/Makefile
+	plugins/unsharp/Makefile
+	plugins/videoscope/Makefile
+	plugins/wave/Makefile
+	plugins/whirl/Makefile
+	plugins/wipe/Makefile
+	plugins/yuv/Makefile
+	plugins/downsample/Makefile
+	plugins/flash/Makefile
+	plugins/gradient/Makefile
+	plugins/level/Makefile
+	plugins/linearblur/Makefile
+	plugins/perspective/Makefile
+	plugins/radialblur/Makefile
+	plugins/zoomblur/Makefile
+	plugins/timefront/Makefile
+	plugins/diffkey/Makefile
+	plugins/fonts/Makefile
+	image/Makefile)
 
 succeeded=yes
 AC_DEFUN([RPT],[if test "x$$1" = "xskip"; then status="not probed"
