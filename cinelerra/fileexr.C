@@ -263,7 +263,7 @@ int64_t FileEXR::get_memory_usage()
 }
 
 
-int FileEXR::read_frame_header(char *path)
+int FileEXR::read_frame_header(const char *path)
 {
 	int result = 0;
 

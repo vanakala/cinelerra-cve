@@ -45,7 +45,7 @@ public:
 	int read_frame(VFrame *frame, VFrame *data);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	int can_copy_from(Edit *edit, framenum position);
-	int read_frame_header(char *path);
+	int read_frame_header(const char *path);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
 	void *decompressor;

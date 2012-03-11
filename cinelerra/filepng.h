@@ -47,7 +47,7 @@ public:
 	int can_copy_from(Edit *edit, framenum position);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
-	int read_frame_header(char *path);
+	int read_frame_header(const char *path);
 
 	int native_cmodel;
 // For decoding only

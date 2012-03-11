@@ -41,7 +41,7 @@ public:
 		int video_options);
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
-	int read_frame_header(char *path);
+	int read_frame_header(const char *path);
 	int read_frame(VFrame *frame, VFrame *data);
 	int64_t get_memory_usage();
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);

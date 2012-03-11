@@ -189,7 +189,7 @@ int64_t FileTGA::get_memory_usage()
 
 #define FOOTERSIZE 26
 #define HEADERSIZE 18
-int FileTGA::read_frame_header(char *path)
+int FileTGA::read_frame_header(const char *path)
 {
 	int result = 0;
 

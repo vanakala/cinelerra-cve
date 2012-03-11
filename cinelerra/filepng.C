@@ -131,7 +131,7 @@ int FilePNG::get_best_colormodel(Asset *asset, int driver)
 		return BC_RGB888;
 }
 
-int FilePNG::read_frame_header(char *path)
+int FilePNG::read_frame_header(const char *path)
 {
 	int result = 0;
 	int color_type;

@@ -37,7 +37,7 @@ public:
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options);
-	int read_frame_header(char *path);
+	int read_frame_header(const char *path);
 	static const char* compression_to_str(const char *compression);
 	static const char* str_to_compression(const char *string);
 

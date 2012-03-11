@@ -171,7 +171,7 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 
 
-int FileJPEG::read_frame_header(char *path)
+int FileJPEG::read_frame_header(const char *path)
 {
 	int result = 0;
 	FILE *stream;
