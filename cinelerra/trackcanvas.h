@@ -26,6 +26,7 @@
 #include "auto.inc"
 #include "autos.inc"
 #include "bctimer.inc"
+#include "mutex.inc"
 #include "edit.inc"
 #include "edithandles.inc"
 #include "floatauto.inc"
@@ -357,6 +358,8 @@ private:
 	int which_handle;	// 1 left or 2 right handle
 	double selection_midpoint1, selection_midpoint2;        // division between current ends
 	int region_selected;	// 1 if region selected
+
+	Mutex *pixmaps_lock;
 };
 
 #endif

@@ -49,6 +49,7 @@
 #include "maskautos.h"
 #include "mbuttons.h"
 #include "mtimebar.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"
@@ -98,6 +99,7 @@ TrackCanvas::TrackCanvas(MWindow *mwindow, MWindowGUI *gui)
 	temp_picon = 0;
 	resource_timer = new Timer;
 	hourglass_enabled = 0;
+	pixmaps_lock = new Mutex("TrackCanvas::pixm_lock");
 	resource_thread = new ResourceThread(mwindow);
 }
 
@@ -105,6 +107,7 @@ TrackCanvas::~TrackCanvas()
 {
 	for(int i = 0; i < resource_pixmaps.total; i++)
 		delete resource_pixmaps.values[i];
+	delete pixmaps_lock;
 	delete edit_handles;
 	delete keyframe_pixmap;
 	delete camerakeyframe_pixmap;
@@ -755,6 +758,12 @@ void TrackCanvas::draw_resources(int mode,
 {
 	if(!mwindow->edl->session->show_assets) return;
 
+// Drawing is already in progress, do nothing
+	if(pixmaps_lock->is_locked())
+		return;
+
+	pixmaps_lock->lock("TrackCanvas::draw_resources");
+
 	if(mode != 3 && !indexes_only)
 		resource_thread->stop_draw(!indexes_only);
 
@@ -767,7 +776,6 @@ void TrackCanvas::draw_resources(int mode,
 
 	if(mode == 2)
 		resource_pixmaps.remove_all_objects();
-
 
 // Search every edit
 	for(Track *current = mwindow->edl->tracks->first;
@@ -856,6 +864,7 @@ void TrackCanvas::draw_resources(int mode,
 				delete resource_pixmaps.values[i];
 				resource_pixmaps.remove(resource_pixmaps.values[i]);
 			}
+	pixmaps_lock->unlock();
 
 	if(hourglass_enabled) 
 	{
