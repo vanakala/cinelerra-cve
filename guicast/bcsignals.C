@@ -387,6 +387,7 @@ static int xerrorhdlr(Display *display, XErrorEvent *event)
 		event->request_code,
 		event->minor_code,
 		string);
+	fprintf(stderr, "Display %p XID %#08lx\n", event->display, event->resourceid);
 	signal_entry(0, NULL, NULL);
 }
 
