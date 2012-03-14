@@ -487,10 +487,10 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 			dest_w, 
 			dest_h);
 	}
-	top_level->unlock_window();
 	current_ringbuffer++;
 	if(current_ringbuffer >= ring_buffers)
 		current_ringbuffer = 0;
+	top_level->unlock_window();
 }
 
 

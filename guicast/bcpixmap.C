@@ -121,6 +121,7 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window, int w, int h)
 
 BC_Pixmap::~BC_Pixmap()
 {
+	top_level->lock_window("BC_Pixmap::~BC_Pixmap");
 	if(use_opaque())
 	{
 #ifdef HAVE_XFT
@@ -149,6 +150,7 @@ BC_Pixmap::~BC_Pixmap()
 			gl_pixmap_context);
 	}
 #endif
+	top_level->unlock_window();
 }
 
 
@@ -174,6 +176,7 @@ void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 	this->mode = mode;
 	top_level = parent_window->top_level;
 
+	top_level->lock_window("BC_Pixmap::initialize");
 	if(use_opaque())
 	{
 		opaque_pixmap = XCreatePixmap(top_level->display, 
@@ -228,10 +231,12 @@ void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 		}
 #endif
 	}
+	top_level->unlock_window();
 }
 
 void BC_Pixmap::resize(int w, int h)
 {
+	top_level->lock_window("BC_Pixmap::resize");
 	Pixmap new_pixmap = XCreatePixmap(top_level->display, 
 			top_level->win, 
 			w, 
@@ -271,6 +276,7 @@ void BC_Pixmap::resize(int w, int h)
 	if(BC_WindowBase::get_resources()->use_xft)
 		opaque_xft_draw = new_xft_draw;
 #endif
+	top_level->unlock_window();
 }
 
 
@@ -308,6 +314,7 @@ void BC_Pixmap::write_drawable(Drawable &pixmap,
 		src_y = 0;
 	}
 
+	top_level->lock_window("BC_Pixmap::write_drawable");
 	if(use_alpha())
 	{
 		XSetClipOrigin(top_level->display, alpha_gc, dest_x - src_x, dest_y - src_y);
@@ -336,6 +343,7 @@ void BC_Pixmap::write_drawable(Drawable &pixmap,
 			dest_x, 
 			dest_y);
 	}
+	top_level->unlock_window();
 }
 
 void BC_Pixmap::draw_vframe(VFrame *frame, 
