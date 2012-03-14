@@ -31,11 +31,11 @@ public:
 	Mutex(const char *title = 0, int recursive = 0);
 	~Mutex();
 
-	int lock(const char *location = 0);
-	int unlock();
+	void lock(const char *location = 0);
+	void unlock();
 // Calls pthread_mutex_trylock, whose effect depends on library version.
 	int trylock();
-	int reset();
+	void reset();
 // Returns 1 if count is > 0
 	int is_locked();
 

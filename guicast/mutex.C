@@ -45,8 +45,8 @@ Mutex::~Mutex()
 	UNSET_ALL_LOCKS(this);
 #endif
 }
-	
-int Mutex::lock(const char *location)
+
+void Mutex::lock(const char *location)
 {
 // Test recursive owner and give up if we already own it
 	if(recursive)
@@ -56,18 +56,15 @@ int Mutex::lock(const char *location)
 		{
 			count++;
 			pthread_mutex_unlock(&recursive_lock);
-			return 0;
+			return;
 		}
 		pthread_mutex_unlock(&recursive_lock);
 	}
-
 
 #ifndef NO_GUICAST
 	SET_MLOCK(this, title, location);
 #endif
 	if(pthread_mutex_lock(&mutex)) perror("Mutex::lock");
-
-
 
 // Update recursive status for the first lock
 	if(recursive)
@@ -83,14 +80,12 @@ int Mutex::lock(const char *location)
 		count = 1;
 	}
 
-
 #ifndef NO_GUICAST
 	SET_LOCK2
 #endif
-	return 0;
 }
 
-int Mutex::unlock()
+void Mutex::unlock()
 {
 // Remove from recursive status
 	if(recursive)
@@ -101,7 +96,7 @@ int Mutex::unlock()
 		if(count > 0) 
 		{
 			pthread_mutex_unlock(&recursive_lock);
-			return 0;
+			return;
 		}
 // Not owned anymore
 		thread_id = 0;
@@ -111,13 +106,11 @@ int Mutex::unlock()
 	else
 		count = 0;
 
-
 #ifndef NO_GUICAST
 	UNSET_LOCK(this);
 #endif
 
 	if(pthread_mutex_unlock(&mutex)) perror("Mutex::unlock");
-	return 0;
 }
 
 int Mutex::trylock()
@@ -130,7 +123,7 @@ int Mutex::is_locked()
 	return count;
 }
 
-int Mutex::reset()
+void Mutex::reset()
 {
 	pthread_mutex_destroy(&mutex);
 	pthread_mutexattr_t attr;
@@ -142,5 +135,4 @@ int Mutex::reset()
 #ifndef NO_GUICAST
 	UNSET_ALL_LOCKS(this)
 #endif
-	return 0;
 }
