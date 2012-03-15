@@ -142,8 +142,6 @@ public:
 	Mutex *item_lock;
 	ArrayList<ResourceThreadItem*> items;
 	int interrupted;
-	VFrame *temp_picon;
-	VFrame *temp_picon2;
 
 // Current audio buffer for spanning multiple pixels
 	double *audio_buffer;

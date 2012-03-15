@@ -116,8 +116,6 @@ ResourceThread::ResourceThread(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	interrupted = 1;
-	temp_picon = 0;
-	temp_picon2 = 0;
 	draw_lock = new Condition(0, "ResourceThread::draw_lock", 0);
 	item_lock = new Mutex("ResourceThread::item_lock");
 	audio_buffer = 0;
@@ -132,8 +130,6 @@ ResourceThread::~ResourceThread()
 {
 	delete draw_lock;
 	delete item_lock;
-	delete temp_picon;
-	delete temp_picon2;
 	delete [] audio_buffer;
 	delete timer;
 }
@@ -262,41 +258,6 @@ void ResourceThread::run()
 
 void ResourceThread::do_video(VResourceThreadItem *item)
 {
-	if(temp_picon &&
-		(temp_picon->get_w() != item->asset->width ||
-		temp_picon->get_h() != item->asset->height))
-	{
-		delete temp_picon;
-		temp_picon = 0;
-	}
-
-	if(!temp_picon)
-	{
-		temp_picon = new VFrame(0, 
-			item->asset->width, 
-			item->asset->height, 
-			BC_RGB888);
-	}
-
-// Get temporary to copy cached frame to
-	if(temp_picon2 &&
-		(temp_picon2->get_w() != item->picon_w ||
-		temp_picon2->get_h() != item->picon_h))
-	{
-		delete temp_picon2;
-		temp_picon2 = 0;
-	}
-
-	if(!temp_picon2)
-	{
-		temp_picon2 = new VFrame(0, 
-			item->picon_w, 
-			item->picon_h, 
-			BC_RGB888);
-	}
-
-// Search frame cache again.
-
 	VFrame *picon_frame = 0;
 
 	if((picon_frame = mwindow->frame_cache->get_frame_ptr(item->postime,
@@ -306,7 +267,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		item->picon_h,
 		item->asset->id)) != 0)
 	{
-		temp_picon2->copy_from(picon_frame);
 // Unlock the get_frame_ptr command
 		mwindow->frame_cache->unlock();
 	}
@@ -318,34 +278,11 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		{
 			return;
 		}
-		temp_picon->set_layer(item->layer);
-		temp_picon->set_source_pts(item->postime);
 
-		source->get_frame(temp_picon);
 		picon_frame = new VFrame(0, item->picon_w, item->picon_h, BC_RGB888);
-		picon_frame->copy_pts(temp_picon);
-		cmodel_transfer(picon_frame->get_rows(),
-			temp_picon->get_rows(),
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0, 
-			temp_picon->get_w(),
-			temp_picon->get_h(),
-			0,
-			0,
-			picon_frame->get_w(), 
-			picon_frame->get_h(),
-			BC_RGB888,
-			BC_RGB888,
-			0,
-			temp_picon->get_bytes_per_line(),
-			picon_frame->get_bytes_per_line());
-		temp_picon2->copy_from(picon_frame);
+		picon_frame->set_layer(item->layer);
+		picon_frame->set_source_pts(item->postime);
+		source->get_frame(picon_frame);
 		picon_frame->set_source_pts(item->postime);
 		picon_frame->set_duration(item->duration);
 		mwindow->frame_cache->put_frame(picon_frame, 
@@ -374,7 +311,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		}
 		if(exists)
 		{
-			item->pixmap->draw_vframe(temp_picon2, 
+			item->pixmap->draw_vframe(picon_frame,
 				item->picon_x, 
 				item->picon_y, 
 				item->picon_w, 
@@ -394,7 +331,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 	WaveCacheItem *wave_item;
 	double high;
 	double low;
-	
+
 	if((wave_item = mwindow->wave_cache->get_wave(item->asset->id,
 		item->channel,
 		item->start,
