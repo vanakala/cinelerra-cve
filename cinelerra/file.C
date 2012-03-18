@@ -1093,9 +1093,25 @@ int File::read_frame(VFrame *frame, int is_thread)
 			file->read_frame(frame);
 		}
 // Set frame pts (will be later moved to file type dependant classes)
-		frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
-		frame->set_duration((ptstime)1/ asset->frame_rate);
-		frame->set_frame_number(current_frame);
+		switch(asset->format)
+		{
+		case FILE_JPEG:
+		case FILE_JPEG_LIST:
+		case FILE_PNG:
+		case FILE_PNG_LIST:
+		case FILE_TIFF:
+		case FILE_TIFF_LIST:
+		case FILE_EXR:
+		case FILE_EXR_LIST:
+		case FILE_TGA:
+		case FILE_TGA_LIST:
+// Types that set already frame pts
+			break;
+		default:
+			frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
+			frame->set_duration((ptstime)1/ asset->frame_rate);
+			frame->set_frame_number(current_frame);
+		}
 
 		if(use_cache)
 			frame_cache->put_frame(frame, 1);

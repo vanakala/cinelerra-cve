@@ -46,4 +46,7 @@ typedef double ptstime;
 #define TRACK_VTRANSITION 2
 #define TRACK_ATRANSITION 3
 
+// Error of calculating frame pts
+#define FRAME_OVERLAP (0.001)
+
 #endif

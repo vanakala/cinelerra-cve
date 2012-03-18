@@ -30,6 +30,7 @@
 #include "render.h"
 #include "vframe.h"
 #include "mainerror.h"
+#include "quicktime.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -66,7 +67,6 @@ int FileList::reset_parameters_derived()
 {
 	data = 0;
 	writer = 0;
-	temp = 0;
 	first_number = 0;
 }
 
@@ -135,6 +135,26 @@ int FileList::open_file(int rd, int wr)
 				number_digits,
 				6);
 		}
+		switch(frame_type)
+		{
+		case FILE_JPEG:
+			strcpy(asset->vcodec, QUICKTIME_JPEG);
+			break;
+		case FILE_PNG:
+			strcpy(asset->vcodec, QUICKTIME_PNG);
+			break;
+		case FILE_TIFF:
+			strcpy(asset->vcodec, "tiff");
+			break;
+		case FILE_EXR:
+			strcpy(asset->vcodec, "exr");
+			break;
+		case FILE_TGA:
+			break;
+		default:
+			asset->vcodec[0] = 0;
+			break;
+		}
 	}
 
 	file->current_frame = 0;
@@ -154,7 +174,6 @@ int FileList::close_file()
 	}
 	if(data) delete data;
 	if(writer) delete writer;
-	if(temp) delete temp;
 	reset_parameters();
 
 	FileBase::close_file();
@@ -241,7 +260,7 @@ int FileList::read_list_header()
 				strcpy(new_entry, string);
 			}
 		}
-
+		asset->file_length = ftell(stream);
 		fclose(stream);
 		asset->video_length = path_list.total;
 	}
@@ -254,24 +273,26 @@ int FileList::read_list_header()
 int FileList::read_frame(VFrame *frame)
 {
 	int result = 0;
+	framenum current_frame;
 	FILE *fp;
 	char string[BCTEXTLEN];
 
-	if(file->current_frame < 0 || 
-		(asset->use_header && file->current_frame >= path_list.total &&
+	current_frame = (frame->get_source_pts() + FRAME_OVERLAP) * asset->frame_rate;
+	if(current_frame < 0 || 
+		(asset->use_header && current_frame >= path_list.total &&
 			asset->format == list_type))
-		return 1;
+		goto noframe;
 
 	if(asset->format == list_type)
 	{
 		char *path;
 		if(asset->use_header)
 		{
-			path = path_list.values[file->current_frame];
+			path = path_list.values[current_frame];
 		}
 		else
 		{
-			path = calculate_path(file->current_frame, string);
+			path = calculate_path(current_frame, string);
 		}
 
 		strcpy(string, path);
@@ -301,93 +322,55 @@ int FileList::read_frame(VFrame *frame)
 				result = read_frame(frame, data);
 				break;
 			}
-
-
 			fclose(fp);
 		}
 	}
 	else
 	{
-// Allocate and decompress once into temporary
-		if(!temp || temp->get_color_model() != frame->get_color_model())
+		current_frame = 0;
+		if(fp = fopen(asset->path, "rb"))
 		{
-			if(temp) delete temp;
-			temp = 0;
+			struct stat ostat;
+			stat(asset->path, &ostat);
 
-			if(fp = fopen(asset->path, "rb"))
+			switch(frame->get_color_model())
 			{
-				struct stat ostat;
-				stat(asset->path, &ostat);
-
-				switch(frame->get_color_model())
-				{
-				case BC_COMPRESSED:
-					frame->allocate_compressed_data(ostat.st_size);
-					frame->set_compressed_size(ostat.st_size);
-					if(fread(frame->get_data(), ostat.st_size, 1, fp) < 1)
-						goto emptyfile;
-					break;
-				default:
-					data->allocate_compressed_data(ostat.st_size);
-					data->set_compressed_size(ostat.st_size);
-					if(fread(data->get_data(), ostat.st_size, 1, fp) < 1)
-						goto emptyfile;
-					temp = new VFrame(0,
-						asset->width,
-						asset->height,
-						frame->get_color_model());
-					temp->copy_pts(frame);
-					read_frame(temp, data);
-					break;
-				}
-
-				fclose(fp);
+			case BC_COMPRESSED:
+				frame->allocate_compressed_data(ostat.st_size);
+				frame->set_compressed_size(ostat.st_size);
+				if(fread(frame->get_data(), ostat.st_size, 1, fp) < 1)
+					goto emptyfile;
+				break;
+			default:
+				data->allocate_compressed_data(ostat.st_size);
+				data->set_compressed_size(ostat.st_size);
+				if(fread(data->get_data(), ostat.st_size, 1, fp) < 1)
+					goto emptyfile;
+				read_frame(frame, data);
+				break;
 			}
-			else
-			{
-				errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
-				result = 1;
-			}
-		}
 
-		if(!temp) return result;
-
-		if(frame->get_color_model() == temp->get_color_model())
-		{
-			frame->copy_from(temp);
+			fclose(fp);
 		}
 		else
 		{
-// Never happens
-			cmodel_transfer(frame->get_rows(), /* Leave NULL if non existent */
-				temp->get_rows(),
-				frame->get_y(), /* Leave NULL if non existent */
-				frame->get_u(),
-				frame->get_v(),
-				temp->get_y(), /* Leave NULL if non existent */
-				temp->get_u(),
-				temp->get_v(),
-				0,        /* Dimensions to capture from input frame */
-				0, 
-				asset->width, 
-				asset->height,
-				0,       /* Dimensions to project on output frame */
-				0, 
-				asset->width, 
-				asset->height,
-				temp->get_color_model(), 
-				frame->get_color_model(),
-				0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
-				temp->get_w(),       /* For planar use the luma rowspan */
-				frame->get_w());
+			errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+			goto noframe;
 		}
 	}
+	frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
+	frame->set_duration((ptstime)1/ asset->frame_rate);
+	frame->set_frame_number(current_frame);
 
 	return result;
 
 emptyfile:
 	fclose(fp);
 	errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+noframe:
+	frame->clear_frame();
+	frame->set_duration(1 / asset->frame_rate);
+	frame->set_frame_number(-1);
 	return 1;
 }
 
@@ -514,7 +497,6 @@ int64_t FileList::get_memory_usage()
 {
 	int64_t result = 0;
 	if(data) result += data->get_compressed_allocated();
-	if(temp) result += temp->get_data_size();
 	return result;
 }
 

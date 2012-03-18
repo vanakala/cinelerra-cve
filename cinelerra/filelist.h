@@ -74,8 +74,6 @@ public:
 
 // Temp storage for compressed data
 	VFrame *data;
-// Storage for single frame
-	VFrame *temp;
 
 private:
 	int read_raw(VFrame *frame, 

@@ -36,12 +36,10 @@ FileTIFF::FileTIFF(Asset *asset, File *file)
  : FileList(asset, file, "TIFFLIST", ".tif", FILE_TIFF, FILE_TIFF_LIST)
 {
 	asset->video_data = 1;
-	temp = 0;
 }
 
 FileTIFF::~FileTIFF()
 {
-	if(temp) delete temp;
 }
 
 
