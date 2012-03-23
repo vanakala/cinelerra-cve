@@ -74,7 +74,6 @@ private:
 };
 
 
-
 EXRIStream::EXRIStream(char *data, int size)
  : Imf::IStream("mypath")
 {
@@ -119,13 +118,13 @@ void EXRIStream::clear()
 }
 
 
-
 EXROStream::EXROStream(VFrame *data)
  : Imf::OStream("mypath")
 {
 	this->data = data;
 	position = 0;
 }
+
 EXROStream::~EXROStream()
 {
 }
@@ -151,7 +150,6 @@ void EXROStream::seekp(Imf::Int64 pos)
 }
 
 
-
 FileEXR::FileEXR(Asset *asset, File *file)
  : FileList(asset, file, "EXRLIST", ".exr", FILE_EXR, FILE_EXR_LIST)
 {
@@ -173,12 +171,18 @@ const char* FileEXR::compression_to_str(int compression)
 {
 	switch(compression)
 	{
-	case FileEXR::NONE: return "None"; break;
-	case FileEXR::PIZ: return "PIZ"; break;
-	case FileEXR::ZIP: return "ZIP"; break;
-	case FileEXR::ZIPS: return "ZIPS"; break;
-	case FileEXR::RLE: return "RLE"; break;
-	case FileEXR::PXR24: return "PXR24"; break;
+	case FileEXR::NONE:
+		return "None";
+	case FileEXR::PIZ:
+		return "PIZ";
+	case FileEXR::ZIP:
+		return "ZIP";
+	case FileEXR::ZIPS:
+		return "ZIPS";
+	case FileEXR::RLE:
+		return "RLE";
+	case FileEXR::PXR24:
+		return "PXR24"; 
 	}
 	return "None";
 }
@@ -187,12 +191,18 @@ int FileEXR::compression_to_exr(int compression)
 {
 	switch(compression)
 	{
-	case FileEXR::NONE: return (int)Imf::NO_COMPRESSION; break;
-	case FileEXR::PIZ: return (int)Imf::PIZ_COMPRESSION; break;
-	case FileEXR::ZIP: return (int)Imf::ZIP_COMPRESSION; break;
-	case FileEXR::ZIPS: return (int)Imf::ZIPS_COMPRESSION; break;
-	case FileEXR::RLE: return (int)Imf::RLE_COMPRESSION; break;
-	case FileEXR::PXR24: return (int)Imf::PXR24_COMPRESSION; break;
+	case FileEXR::NONE:
+		return (int)Imf::NO_COMPRESSION;
+	case FileEXR::PIZ:
+		return (int)Imf::PIZ_COMPRESSION;
+	case FileEXR::ZIP:
+		return (int)Imf::ZIP_COMPRESSION;
+	case FileEXR::ZIPS:
+		return (int)Imf::ZIPS_COMPRESSION;
+	case FileEXR::RLE:
+		return (int)Imf::RLE_COMPRESSION;
+	case FileEXR::PXR24:
+		return (int)Imf::PXR24_COMPRESSION;
 	}
 	return Imf::NO_COMPRESSION;
 }
@@ -261,7 +271,6 @@ int64_t FileEXR::get_memory_usage()
 	if(temp_y) result += (int64_t)asset->width * asset->height * 3 / 2;
 	return result;
 }
-
 
 int FileEXR::read_frame_header(const char *path)
 {
@@ -412,7 +421,6 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 	return 0;
 }
 
-
 int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
 	EXRUnit *exr_unit = (EXRUnit*)unit;
@@ -500,7 +508,6 @@ FrameWriterUnit* FileEXR::new_writer_unit(FrameWriter *writer)
 }
 
 
-
 EXRUnit::EXRUnit(FileEXR *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
 {
@@ -529,7 +536,7 @@ EXRConfigVideo::~EXRConfigVideo()
 {
 }
 
-int EXRConfigVideo::create_objects()
+void EXRConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(new EXRUseAlpha(this, x, y));
@@ -540,7 +547,6 @@ int EXRConfigVideo::create_objects()
 	add_subwindow(menu = new EXRCompression(this, x, y, 100));
 	menu->create_objects();
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void EXRConfigVideo::close_event()

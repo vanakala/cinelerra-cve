@@ -128,7 +128,7 @@ int FileMPEG::check_sig(Asset *asset)
 }
 
 
-int FileMPEG::reset_parameters_derived()
+void FileMPEG::reset_parameters_derived()
 {
 	wrote_header = 0;
 	mjpeg_out = 0;
@@ -154,7 +154,6 @@ int FileMPEG::reset_parameters_derived()
 	lame_fd = 0;
 	lame_started = 0;
 }
-
 
 // Just create the Quicktime objects since this routine is also called
 // for reopening.
@@ -586,7 +585,6 @@ int FileMPEG::create_index()
 	return 0;
 }
 
-
 void FileMPEG::append_vcommand_line(const char *string)
 {
 	if(string[0])
@@ -605,8 +603,7 @@ void FileMPEG::append_acommand_line(const char *string)
 	}
 }
 
-
-int FileMPEG::close_file()
+void FileMPEG::close_file()
 {
 	mjpeg_eof = 1;
 	next_frame_lock->unlock();
@@ -656,7 +653,6 @@ int FileMPEG::close_file()
 	reset_parameters();
 
 	FileBase::close_file();
-	return 0;
 }
 
 int FileMPEG::get_best_colormodel(Asset *asset, int driver)
@@ -689,7 +685,7 @@ int FileMPEG::colormodel_supported(int colormodel)
 	return colormodel;
 }
 
-int FileMPEG::get_index(char *index_path)
+int FileMPEG::get_index(const char *index_path)
 {
 	if(!fd) return 1;
 
@@ -741,25 +737,11 @@ int FileMPEG::get_index(char *index_path)
 	return 1;
 }
 
-
-int FileMPEG::can_copy_from(Edit *edit, framenum position)
+void FileMPEG::set_video_position(framenum x)
 {
-	return 0;
-}
-
-int FileMPEG::set_audio_position(samplenum sample)
-{
-	return 0;
-}
-
-int FileMPEG::set_video_position(framenum x)
-{
-	if(!fd) return 1;
+	if(!fd) return;
 	if(x >= 0 && x < asset->video_length)
 		mpeg3_set_frame(fd, x, file->current_layer);
-	else
-		return 1;
-	return 0;
 }
 
 int64_t FileMPEG::get_memory_usage()
@@ -771,7 +753,6 @@ int64_t FileMPEG::get_memory_usage()
 	}
 	return 0;
 }
-
 
 int FileMPEG::write_samples(double **buffer, int len)
 {
@@ -1200,7 +1181,6 @@ int FileMPEG::read_samples_float(float *buffer, int len)
 	return 0;
 }
 
-
 const char* FileMPEG::strtocompression(const char *string)
 {
 	return "";
@@ -1337,7 +1317,7 @@ MPEGConfigAudio::~MPEGConfigAudio()
 {
 }
 
-int MPEGConfigAudio::create_objects()
+void MPEGConfigAudio::create_objects()
 {
 	int x = 10, y = 10;
 	int x1 = 150;
@@ -1346,7 +1326,7 @@ int MPEGConfigAudio::create_objects()
 	if(asset->format == FILE_MPEG)
 	{
 		add_subwindow(new BC_Title(x, y, _("No options for MPEG transport stream.")));
-		return 0;
+		return;
 	}
 
 	add_tool(new BC_Title(x, y, _("Layer:")));
@@ -1361,7 +1341,6 @@ int MPEGConfigAudio::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 	flush();
-	return 0;
 }
 
 void MPEGConfigAudio::close_event()
@@ -1511,7 +1490,7 @@ MPEGConfigVideo::~MPEGConfigVideo()
 {
 }
 
-int MPEGConfigVideo::create_objects()
+void MPEGConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 	int x1 = x + 150;
@@ -1520,7 +1499,7 @@ int MPEGConfigVideo::create_objects()
 	if(asset->format == FILE_MPEG)
 	{
 		add_subwindow(new BC_Title(x, y, _("No options for MPEG transport stream.")));
-		return 0;
+		return;
 	}
 
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
@@ -1533,7 +1512,6 @@ int MPEGConfigVideo::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 	flush();
-	return 0;
 }
 
 void MPEGConfigVideo::close_event()
@@ -1637,7 +1615,6 @@ void MPEGConfigVideo::update_cmodel_objs()
 	add_subwindow(denoise = new BC_CheckBox(x, y, &asset->vmpeg_denoise, _("Denoise")));
 	y += 30;
 	add_subwindow(seq_codes = new BC_CheckBox(x, y, &asset->vmpeg_seq_codes, _("Sequence start codes in every GOP")));
-
 }
 
 

@@ -45,7 +45,6 @@ int dcraw_main (int argc, const char **argv);
 FileCR2::FileCR2(Asset *asset, File *file)
  : FileBase(asset, file)
 {
-	reset();
 	if(asset->format == FILE_UNKNOWN)
 		asset->format = FILE_CR2;
 }
@@ -53,11 +52,6 @@ FileCR2::FileCR2(Asset *asset, File *file)
 FileCR2::~FileCR2()
 {
 	close_file();
-}
-
-
-void FileCR2::reset()
-{
 }
 
 int FileCR2::check_sig(Asset *asset)
@@ -100,12 +94,6 @@ int FileCR2::open_file(int rd, int wr)
 	return result;
 }
 
-
-int FileCR2::close_file()
-{
-	return 0;
-}
-
 void FileCR2::format_to_asset()
 {
 	asset->video_data = 1;
@@ -115,7 +103,6 @@ void FileCR2::format_to_asset()
 	asset->video_length = -1;
 }
 
-
 int FileCR2::read_frame(VFrame *frame)
 {
 	cr2_mutex.lock("FileCR2::read_frame");
@@ -124,19 +111,6 @@ int FileCR2::read_frame(VFrame *frame)
 	else
 		dcraw_alpha = 0;
 
-// Want to disable interpolation if an interpolation plugin is on, but
-// this is impractical because of the amount of caching.  The interpolation
-// could not respond to a change in the plugin settings and it could not
-// reload the frame after the plugin was added.  Also, since an 8 bit
-// PBuffer would be required, it could never have enough resolution.
-//	int interpolate = 0;
-// 	if(!strcmp(frame->get_next_effect(), "Interpolate Pixels"))
-// 		interpolate = 0;
-
-
-// printf("FileCR2::read_frame %d\n", interpolate);
-// frame->dump_stacks();
-// output to stdout
 	int argc = 0;
 	const char *argv[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	argv[argc++] = "dcraw";
@@ -177,7 +151,6 @@ int FileCR2::read_frame(VFrame *frame)
 		dcraw_matrix[7],
 		dcraw_matrix[8]);
 
-
 	frame->get_params()->update("DCRAW_MATRIX", string);
 
 	cr2_mutex.unlock();
@@ -191,11 +164,3 @@ int FileCR2::colormodel_supported(int colormodel)
 		return colormodel;
 	return BC_RGB_FLOAT;
 }
-
-
-
-
-
-
-
-

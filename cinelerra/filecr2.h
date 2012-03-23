@@ -43,12 +43,10 @@ public:
 	FileCR2(Asset *asset, File *file);
 	~FileCR2();
 
-	void reset();
 	static int check_sig(Asset *asset);
 
 // Open file and set asset properties but don't decode.
 	int open_file(int rd, int wr);
-	int close_file();
 // Open file and decode.
 	int read_frame(VFrame *frame);
 // Get best colormodel for decoding.

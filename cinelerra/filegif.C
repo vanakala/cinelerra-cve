@@ -39,7 +39,7 @@ FileGIF::~FileGIF()
 	close_file();
 }
 
-int FileGIF::reset_parameters_derived()
+void FileGIF::reset_parameters_derived()
 {
 	data = 0;
 }
@@ -76,7 +76,7 @@ int64_t FileGIF::get_memory_usage()
 		return 256;
 }
 
-int FileGIF::close_file_derived()
+void FileGIF::close_file_derived()
 {
 	if(data) delete data;
 	reset_parameters();
@@ -91,7 +91,7 @@ int FileGIF::read_header()
 		errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 		return 1;
 	}
-	
+
 	GIFGetField(stream, GIFTAG_IMAGEWIDTH, &(asset->width));
 	GIFGetField(stream, GIFTAG_IMAGELENGTH, &(asset->height));
 	asset->interlacemode = BC_ILACE_MODE_NOTINTERLACED;

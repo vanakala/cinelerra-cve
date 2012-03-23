@@ -81,8 +81,6 @@ int FileJPEG::check_sig(Asset *asset)
 	return 0;
 }
 
-
-
 void FileJPEG::get_parameters(BC_WindowBase *parent_window, 
 	Asset *asset, 
 	BC_WindowBase* &format_window,
@@ -99,8 +97,7 @@ void FileJPEG::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-
-int FileJPEG::can_copy_from(Edit *edit, framenum position)
+int FileJPEG::can_copy_from(Edit *edit)
 {
 	if(edit->asset->format == FILE_MOV)
 	{
@@ -118,7 +115,6 @@ int FileJPEG::colormodel_supported(int colormodel)
 {
 	return colormodel;
 }
-
 
 int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 {
@@ -139,7 +135,6 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 	}
 	return BC_YUV420P;
 }
-
 
 int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
@@ -168,8 +163,6 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 	return result;
 }
-
-
 
 int FileJPEG::read_frame_header(const char *path)
 {
@@ -202,8 +195,6 @@ int FileJPEG::read_frame_header(const char *path)
 	return result;
 }
 
-
-
 int FileJPEG::read_frame(VFrame *output, VFrame *input)
 {
 	if(!decompressor) decompressor = mjpeg_new(asset->width, 
@@ -229,7 +220,6 @@ FrameWriterUnit* FileJPEG::new_writer_unit(FrameWriter *writer)
 }
 
 
-
 JPEGUnit::JPEGUnit(FileJPEG *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
 {
@@ -240,7 +230,6 @@ JPEGUnit::~JPEGUnit()
 {
 	if(compressor) mjpeg_delete((mjpeg_t*)compressor);
 }
-
 
 
 JPEGConfigVideo::JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
@@ -258,7 +247,7 @@ JPEGConfigVideo::~JPEGConfigVideo()
 {
 }
 
-int JPEGConfigVideo::create_objects()
+void JPEGConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -276,7 +265,6 @@ int JPEGConfigVideo::create_objects()
 		&asset->jpeg_quality));
 
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void JPEGConfigVideo::close_event()

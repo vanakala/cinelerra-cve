@@ -42,7 +42,6 @@ FileTIFF::~FileTIFF()
 {
 }
 
-
 void FileTIFF::get_parameters(BC_WindowBase *parent_window, 
 	Asset *asset, 
 	BC_WindowBase* &format_window,
@@ -58,7 +57,6 @@ void FileTIFF::get_parameters(BC_WindowBase *parent_window,
 		delete window;
 	}
 }
-
 
 int FileTIFF::check_sig(Asset *asset)
 {
@@ -101,11 +99,21 @@ const char* FileTIFF::compression_to_str(int value)
 {
 	switch(value)
 	{
-	case FileTIFF::NONE: return "None"; break;
-	case FileTIFF::LZW: return "LZW"; break;
-	case FileTIFF::PACK_BITS: return "Pack Bits"; break;
-	case FileTIFF::DEFLATE: return "Deflate"; break;
-	case FileTIFF::JPEG: return "JPEG"; break;
+	case FileTIFF::NONE:
+		return "None";
+
+	case FileTIFF::LZW:
+		return "LZW";
+
+	case FileTIFF::PACK_BITS:
+		return "Pack Bits";
+
+	case FileTIFF::DEFLATE:
+		return "Deflate";
+
+	case FileTIFF::JPEG:
+		return "JPEG";
+
 	default:
 		return "None";
 	}
@@ -115,20 +123,34 @@ const char* FileTIFF::cmodel_to_str(int value)
 {
 	switch(value)
 	{
-	case FileTIFF::GREYSCALE: return "Greyscale"; break;
-	case FileTIFF::RGB_888: return "RGB-8 Bit"; break;
-	case FileTIFF::RGB_161616: return "RGB-16 Bit"; break;
-	case FileTIFF::RGBA_8888: return "RGBA-8 Bit"; break;
-	case FileTIFF::RGBA_16161616: return "RGBA-16 Bit"; break;
-	case FileTIFF::RGB_FLOAT: return "RGB-FLOAT"; break;
-	case FileTIFF::RGBA_FLOAT: return "RGBA-FLOAT"; break;
+	case FileTIFF::GREYSCALE:
+		return "Greyscale";
+
+	case FileTIFF::RGB_888:
+		return "RGB-8 Bit";
+
+	case FileTIFF::RGB_161616:
+		return "RGB-16 Bit";
+
+	case FileTIFF::RGBA_8888:
+		return "RGBA-8 Bit";
+
+	case FileTIFF::RGBA_16161616:
+		return "RGBA-16 Bit";
+
+	case FileTIFF::RGB_FLOAT:
+		return "RGB-FLOAT";
+
+	case FileTIFF::RGBA_FLOAT:
+		return "RGBA-FLOAT";
+
 	default:
 		return "RGB-8 Bit"; 
 	}
 }
 
 
-int FileTIFF::can_copy_from(Edit *edit, framenum position)
+int FileTIFF::can_copy_from(Edit *edit)
 {
 	if(edit->asset->format == FILE_TIFF_LIST ||
 		edit->asset->format == FILE_TIFF)
@@ -136,8 +158,6 @@ int FileTIFF::can_copy_from(Edit *edit, framenum position)
 
 	return 0;
 }
-
-
 
 int FileTIFF::read_frame_header(const char *path)
 {
@@ -194,14 +214,22 @@ int FileTIFF::colormodel_supported(int colormodel)
 {
 	switch(asset->tiff_cmodel)
 	{
-	case FileTIFF::RGB_888: return BC_RGB888;
-	case FileTIFF::RGB_161616: return BC_RGB_FLOAT;
-	case FileTIFF::GREYSCALE: return BC_RGB888;
-	case FileTIFF::RGBA_8888: return BC_RGBA8888;
-	case FileTIFF::RGBA_16161616: return BC_RGBA_FLOAT;
-	case FileTIFF::RGB_FLOAT: return BC_RGB_FLOAT;
-	case FileTIFF::RGBA_FLOAT: return BC_RGBA_FLOAT;
-	default: return BC_RGB888;
+	case FileTIFF::RGB_888:
+		return BC_RGB888;
+	case FileTIFF::RGB_161616:
+		return BC_RGB_FLOAT;
+	case FileTIFF::GREYSCALE:
+		return BC_RGB888;
+	case FileTIFF::RGBA_8888:
+		return BC_RGBA8888;
+	case FileTIFF::RGBA_16161616:
+		return BC_RGBA_FLOAT;
+	case FileTIFF::RGB_FLOAT:
+		return BC_RGB_FLOAT;
+	case FileTIFF::RGBA_FLOAT:
+		return BC_RGBA_FLOAT;
+	default:
+		return BC_RGB888;
 	}
 }
 
@@ -209,17 +237,24 @@ int FileTIFF::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(asset->tiff_cmodel)
 	{
-	case FileTIFF::GREYSCALE: return BC_RGB888;
-	case FileTIFF::RGB_888: return BC_RGB888;
-	case FileTIFF::RGB_161616: return BC_RGB_FLOAT;
-	case FileTIFF::RGBA_8888: return BC_RGBA8888;
-	case FileTIFF::RGBA_16161616: return BC_RGBA_FLOAT;
-	case FileTIFF::RGB_FLOAT: return BC_RGB_FLOAT;
-	case FileTIFF::RGBA_FLOAT: return BC_RGBA_FLOAT;
-	default: return BC_RGB888;
+	case FileTIFF::GREYSCALE:
+		return BC_RGB888;
+	case FileTIFF::RGB_888:
+		return BC_RGB888;
+	case FileTIFF::RGB_161616:
+		return BC_RGB_FLOAT;
+	case FileTIFF::RGBA_8888:
+		return BC_RGBA8888;
+	case FileTIFF::RGBA_16161616:
+		return BC_RGBA_FLOAT;
+	case FileTIFF::RGB_FLOAT:
+		return BC_RGB_FLOAT;
+	case FileTIFF::RGBA_FLOAT:
+		return BC_RGBA_FLOAT;
+	default:
+		return BC_RGB888;
 	}
 }
-
 
 static tsize_t tiff_read(thandle_t ptr, tdata_t buf, tsize_t size)
 {
@@ -238,7 +273,6 @@ static tsize_t tiff_write(thandle_t ptr, tdata_t buf, tsize_t size)
 	{
 		tiff_unit->data->allocate_compressed_data((tiff_unit->offset + size) * 2);
 	}
-
 
 	if(tiff_unit->data->get_compressed_size() < tiff_unit->offset + size)
 		tiff_unit->data->set_compressed_size(tiff_unit->offset + size);
@@ -537,7 +571,6 @@ FrameWriterUnit* FileTIFF::new_writer_unit(FrameWriter *writer)
 }
 
 
-
 FileTIFFUnit::FileTIFFUnit(FileTIFF *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
 {
@@ -566,7 +599,7 @@ TIFFConfigVideo::~TIFFConfigVideo()
 {
 }
 
-int TIFFConfigVideo::create_objects()
+void TIFFConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -581,14 +614,12 @@ int TIFFConfigVideo::create_objects()
 	menu2->create_objects();
 
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void TIFFConfigVideo::close_event()
 {
 	set_done(0);
 }
-
 
 
 TIFFColorspace::TIFFColorspace(TIFFConfigVideo *gui, int x, int y, int w)

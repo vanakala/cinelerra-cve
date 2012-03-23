@@ -33,8 +33,6 @@
 
 extern "C"
 {
-
-
 // Mpeg2enc prototypes
 void mpeg2enc_init_buffers();
 int mpeg2enc(int argc, char *argv[]);
@@ -43,14 +41,10 @@ void mpeg2enc_set_h(int height);
 void mpeg2enc_set_rate(double rate);
 void mpeg2enc_set_input_buffers(int eof, char *y, char *u, char *v);
 
-
-
 // Toolame prototypes
 void toolame_init_buffers();
 int toolame(int argc, char **argv);
 int toolame_send_buffer(char *data, int bytes);
-
-
 }
 
 class FileMPEGVideo;
@@ -74,13 +68,11 @@ public:
 	static int check_sig(Asset *asset);
 
 	int open_file(int rd, int wr);
-	int close_file();
+	void close_file();
 	int create_index();
 
-
-	int get_index(char *index_path);
-	int set_video_position(framenum x);
-	int set_audio_position(samplenum x);
+	int get_index(const char *index_path);
+	void set_video_position(framenum x);
 	int write_samples(double **buffer, 
 			int len);
 	int write_frames(VFrame ***frames, int len);
@@ -97,14 +89,11 @@ public:
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
-// This file can copy frames directly from the asset
-	int can_copy_from(Edit *edit, framenum position); 
 	static const char *strtocompression(const char *string);
 	static const char *compressiontostr(const char *string);
 
-
 private:
-	int reset_parameters_derived();
+	void reset_parameters_derived();
 // File descriptor for decoder
 	mpeg3_t *fd;
 
@@ -191,7 +180,7 @@ public:
 	MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset);
 	~MPEGConfigAudio();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 	BC_WindowBase *parent_window;
@@ -209,7 +198,7 @@ public:
 	int handle_event();
 	static int string_to_layer(char *string);
 	static char* layer_to_string(int derivative);
-	
+
 	MPEGConfigAudio *gui;
 };
 
@@ -224,15 +213,11 @@ public:
 	int handle_event();
 	static int string_to_bitrate(char *string);
 	static char* bitrate_to_string(char *string, int bitrate);
-	
+
 	MPEGConfigAudio *gui;
 };
 
-
-
 class MPEGConfigVideo;
-
-
 
 class MPEGPreset : public BC_PopupMenu
 {
@@ -253,7 +238,7 @@ public:
 	int handle_event();
 	static int string_to_cmodel(char *string);
 	static char* cmodel_to_string(int cmodel);
-	
+
 	MPEGConfigVideo *gui;
 };
 
@@ -266,7 +251,7 @@ public:
 	int handle_event();
 	static int string_to_derivative(char *string);
 	static char* derivative_to_string(int derivative);
-	
+
 	MPEGConfigVideo *gui;
 };
 
@@ -327,8 +312,6 @@ public:
 };
 
 
-
-
 class MPEGConfigVideo : public BC_Window
 {
 public:
@@ -336,7 +319,7 @@ public:
 		Asset *asset);
 	~MPEGConfigVideo();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 	void delete_cmodel_objs();
 	void reset_cmodel();
@@ -361,6 +344,5 @@ public:
 	ArrayList<BC_Title*> titles;
 	ArrayList<BC_SubWindow*> tools;
 };
-
 
 #endif

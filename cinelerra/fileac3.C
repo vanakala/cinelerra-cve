@@ -27,8 +27,6 @@
 #include "mwindow.inc"
 #include "mainerror.h"
 
-
-
 #include <string.h>
 
 FileAC3::FileAC3(Asset *asset, File *file)
@@ -42,7 +40,7 @@ FileAC3::~FileAC3()
 	close_file();
 }
 
-int FileAC3::reset_parameters_derived()
+void FileAC3::reset_parameters_derived()
 {
 	codec = 0;
 	codec_context = 0;
@@ -82,10 +80,9 @@ int FileAC3::open_file(int rd, int wr)
 	this->wr = wr;
 	this->rd = rd;
 
-
 	if(wr)
 	{
-  		avcodec_init();
+		avcodec_init();
 		avcodec_register_all();
 		codec = avcodec_find_encoder(CODEC_ID_AC3);
 		if(!codec)
@@ -134,13 +131,13 @@ int FileAC3::open_file(int rd, int wr)
 #endif
 		if(avcodec_open(codec_context, codec))
 		{
-			errorbox("Failed to open AC3 codec.\n");
+			errorbox("Failed to open AC3 codec.");
 			return 1;
 		}
 
 		if(!(fd = fopen(asset->path, "w")))
 		{
-			errormsg("Error while opening \"%s\" for writing. \n%m\n", asset->path);
+			errormsg("Error while opening \"%s\" for writing. \n%m", asset->path);
 			return 1;
 		}
 	}
@@ -148,18 +145,14 @@ int FileAC3::open_file(int rd, int wr)
 	{
 		if(!(fd = fopen(asset->path, "r")))
 		{
-			errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+			errormsg("Error while opening \"%s\" for reading. \n%m", asset->path);
 			return 1;
 		}
 	}
-
-
-
-
 	return 0;
 }
 
-int FileAC3::close_file()
+void FileAC3::close_file()
 {
 	if(codec_context)
 	{
@@ -186,21 +179,6 @@ int FileAC3::close_file()
 	reset_parameters();
 	FileBase::close_file();
 }
-
-// Channel conversion matrices because ffmpeg encodes a
-// different channel order than liba52 decodes.
-// Each row is an output channel.
-// Each column is an input channel.
-// static int channels5[] = 
-// {
-// 	{ }
-// };
-// 
-// static int channels6[] = 
-// {
-// 	{ }
-// };
-
 
 int FileAC3::write_samples(double **buffer, int len)
 {
@@ -265,23 +243,18 @@ int FileAC3::write_samples(double **buffer, int len)
 	int bytes_written = fwrite(temp_compressed, 1, output_size, fd);
 	if(bytes_written < output_size)
 	{
-		errorbox("Failed to write AC3 samples.\n");
+		errorbox("Failed to write AC3 samples.");
 		return 1;
 	}
 	return 0;
 }
 
 
-
-
-
-
-
 AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 	Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
- 	parent_window->get_abs_cursor_x(1),
- 	parent_window->get_abs_cursor_y(1),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	500,
 	BC_OKButton::calculate_h() + 100,
 	500,
@@ -317,15 +290,11 @@ void AC3ConfigAudio::close_event()
 }
 
 
-
-
-
-
 AC3ConfigAudioBitrate::AC3ConfigAudioBitrate(AC3ConfigAudio *gui, 
 	int x, 
 	int y)
  : BC_PopupMenu(x,
- 	y,
+	y,
 	150,
 	AC3ConfigAudioBitrate::bitrate_to_string(gui->string, gui->asset->ac3_bitrate))
 {
@@ -366,6 +335,3 @@ int AC3ConfigAudioBitrate::handle_event()
 	gui->asset->ac3_bitrate = atol(get_text());
 	return 1;
 }
-
-
-

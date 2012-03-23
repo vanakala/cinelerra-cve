@@ -100,7 +100,7 @@ int FileVorbis::check_sig(Asset *asset)
 	}
 }
 
-int FileVorbis::reset_parameters_derived()
+void FileVorbis::reset_parameters_derived()
 {
 	fd = 0;
 	bzero(&vf, sizeof(vf));
@@ -229,7 +229,7 @@ while(vorbis_analysis_blockout(&vd, &vb) == 1) \
 }
 
 
-int FileVorbis::close_file()
+void FileVorbis::close_file()
 {
 	if(fd)
 	{
@@ -269,7 +269,6 @@ int FileVorbis::close_file()
 
 	reset_parameters();
 	FileBase::close_file();
-	return 0;
 }
 
 

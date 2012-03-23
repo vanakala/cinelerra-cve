@@ -63,10 +63,18 @@ void FileSndFile::asset_to_format()
 {
 	switch(asset->format)
 	{
-	case FILE_PCM:  fd_config.format = SF_FORMAT_RAW;  break;
-	case FILE_WAV:  fd_config.format = SF_FORMAT_WAV;  break;
-	case FILE_AU:   fd_config.format = SF_FORMAT_AU;   break;
-	case FILE_AIFF: fd_config.format = SF_FORMAT_AIFF; break;
+	case FILE_PCM:
+		fd_config.format = SF_FORMAT_RAW;
+		break;
+	case FILE_WAV:
+		fd_config.format = SF_FORMAT_WAV;
+		break;
+	case FILE_AU:
+		fd_config.format = SF_FORMAT_AU;
+		break;
+	case FILE_AIFF:
+		fd_config.format = SF_FORMAT_AIFF;
+		break;
 	}
 
 // Not all of these are allowed in all sound formats.
@@ -145,12 +153,24 @@ void FileSndFile::format_to_asset()
 			asset->byte_order = 1;
 			asset->header = 44;
 			break;
-		case SF_FORMAT_AIFF: asset->format = FILE_AIFF; break;
-		case SF_FORMAT_AU:   asset->format = FILE_AU;   break;
-		case SF_FORMAT_RAW:  asset->format = FILE_PCM;  break;
-		case SF_FORMAT_PAF:  asset->format = FILE_SND;  break;
-		case SF_FORMAT_SVX:  asset->format = FILE_SND;  break;
-		case SF_FORMAT_NIST: asset->format = FILE_SND;  break;
+		case SF_FORMAT_AIFF:
+			asset->format = FILE_AIFF;
+			break;
+		case SF_FORMAT_AU:
+			asset->format = FILE_AU;
+			break;
+		case SF_FORMAT_RAW:
+			asset->format = FILE_PCM;
+			break;
+		case SF_FORMAT_PAF:
+			asset->format = FILE_SND;
+			break;
+		case SF_FORMAT_SVX:
+			asset->format = FILE_SND;
+			break;
+		case SF_FORMAT_NIST:
+			asset->format = FILE_SND;
+			break;
 		}
 
 		switch(fd_config.format & SF_FORMAT_SUBMASK)
@@ -227,7 +247,6 @@ int FileSndFile::open_file(int rd, int wr)
 // Doesn't calculate the length
 			if(fd) format_to_asset();
 		}
-SET_TRACE
 	}
 	else
 	if(wr)
@@ -245,24 +264,19 @@ SET_TRACE
 	return result;
 }
 
-int FileSndFile::close_file()
+void FileSndFile::close_file()
 {
 	if(fd) sf_close(fd);
 	fd = 0;
 	FileBase::close_file();
 	fd_config.format = 0;
-	return 0;
 }
 
-int FileSndFile::set_audio_position(samplenum sample)
+void FileSndFile::set_audio_position(samplenum sample)
 {
-// Commented out /* && psf->dataoffset */ in sndfile.c: 761
 	if(sf_seek(fd, sample, SEEK_SET) < 0)
-	{
-		errormsg("sf_seek() to sample %lld failed, reason: %s\n", sample, sf_strerror(fd));
-		return 1;
-	}
-	return 0;
+		errormsg("sf_seek() to sample %lld failed, reason: %s",
+			sample, sf_strerror(fd));
 }
 
 int FileSndFile::read_samples(double *buffer, int len)
@@ -373,7 +387,7 @@ SndFileConfig::~SndFileConfig()
 	if(bits_popup) delete bits_popup;
 }
 
-int SndFileConfig::create_objects()
+void SndFileConfig::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -407,7 +421,6 @@ int SndFileConfig::create_objects()
 		add_subwindow(lohi = new SndFileLOHI(this, x + 170, y));
 	}
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void SndFileConfig::close_event()

@@ -48,7 +48,7 @@ FileBase::~FileBase()
 	if(float_buffer) delete [] float_buffer;
 }
 
-int FileBase::close_file()
+void FileBase::close_file()
 {
 	if(audio_buffer_in) delete [] audio_buffer_in;
 	if(audio_buffer_out) delete [] audio_buffer_out;
@@ -61,10 +61,9 @@ int FileBase::close_file()
 	reset_parameters();
 }
 
-int FileBase::set_dither()
+void FileBase::set_dither()
 {
 	dither = 1;
-	return 0;
 }
 
 int FileBase::reset_parameters()
@@ -81,59 +80,10 @@ int FileBase::reset_parameters()
 	prev_bytes = 0;
 	prev_track = -1;
 	prev_layer = -1;
-	ulawtofloat_table = 0;
-	floattoulaw_table = 0;
 	rd = wr = 0;
-
-	delete_ulaw_tables();
 	reset_parameters_derived();
 }
 
-int FileBase::get_mode(char *mode, int rd, int wr)
-{
-	if(rd && !wr) sprintf(mode, "rb");
-	else
-	if(!rd && wr) sprintf(mode, "wb");
-	else
-	if(rd && wr)
-	{
-		int exists = 0;
-		FILE *stream;
-
-		if(stream = fopen(asset->path, "rb")) 
-		{
-			exists = 1; 
-			fclose(stream); 
-		}
-
-		if(exists) sprintf(mode, "rb+");
-		else
-		sprintf(mode, "wb+");
-	}
-}
-
-
-
-
-
-
-
-
-
-
-// ======================================= audio codecs
-
-int FileBase::get_video_buffer(unsigned char **buffer, int depth)
-{
-// get a raw video buffer for writing or compression by a library
-	if(!*buffer)
-	{
-// Video compression is entirely done in the library.
-		int bytes = asset->width * asset->height * depth;
-		*buffer = new unsigned char[bytes];
-	}
-	return 0;
-}
 
 int FileBase::match4(const char *in, const char *out)
 {
@@ -144,13 +94,4 @@ int FileBase::match4(const char *in, const char *out)
 		return 1;
 	else
 		return 0;
-}
-
-int FileBase::search_render_strategies(ArrayList<int>* render_strategies, int render_strategy)
-{
-	int i;
-	for(i = 0; i < render_strategies->total; i++)
-		if(render_strategies->values[i] == render_strategy) return 1;
-
-	return 0;
 }

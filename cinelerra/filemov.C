@@ -69,9 +69,6 @@
 #define VORBIS_NAME "OGG Vorbis"
 
 
-
-
-
 FileMOV::FileMOV(Asset *asset, File *file)
  : FileBase(asset, file)
 {
@@ -133,7 +130,6 @@ void FileMOV::fix_codecs(Asset *asset)
 	}
 }
 
-
 int FileMOV::check_codec_params(Asset *asset)
 {
 	if(!strcasecmp(asset->vcodec, QUICKTIME_DV) ||
@@ -155,8 +151,7 @@ int FileMOV::check_sig(Asset *asset)
 	return quicktime_check_sig(asset->path);
 }
 
-
-int FileMOV::reset_parameters_derived()
+void FileMOV::reset_parameters_derived()
 {
 	fd = 0;
 	prev_track = 0;
@@ -181,7 +176,7 @@ int FileMOV::open_file(int rd, int wr)
 
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
 	{
-		errormsg("Error while opening file \"%s\". \n%m\n", asset->path);
+		errormsg("Error while opening file \"%s\". \n%m", asset->path);
 		return 1;
 	}
 
@@ -204,7 +199,7 @@ int FileMOV::open_file(int rd, int wr)
 	return 0;
 }
 
-int FileMOV::close_file()
+void FileMOV::close_file()
 {
 	if(fd)
 	{
@@ -234,7 +229,6 @@ int FileMOV::close_file()
 
 	reset_parameters();
 	FileBase::close_file();
-	return 0;
 }
 
 void FileMOV::set_frame_start(int64_t offset)
@@ -295,15 +289,12 @@ void FileMOV::asset_to_format()
 			depth = 24;
 		}
 
-
 		quicktime_vtracks = quicktime_set_video(fd, 
 					asset->layers, 
 					asset->width, 
 					asset->height,
 					asset->frame_rate,
 					string);
-
-
 
 		for(int i = 0; i < asset->layers; i++)
 			quicktime_set_depth(fd, depth, i);
@@ -340,7 +331,6 @@ void FileMOV::asset_to_format()
 		quicktime_set_avi(fd, 1);
 	}
 }
-
 
 void FileMOV::format_to_asset()
 {
@@ -491,7 +481,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 	return BC_RGB888;
 }
 
-int FileMOV::can_copy_from(Edit *edit, framenum position)
+int FileMOV::can_copy_from(Edit *edit)
 {
 	if(!fd) return 0;
 
@@ -531,7 +521,6 @@ int FileMOV::can_copy_from(Edit *edit, framenum position)
 	return 0;
 }
 
-
 samplenum FileMOV::get_audio_length()
 {
 	if(!fd) return 0;
@@ -540,29 +529,23 @@ samplenum FileMOV::get_audio_length()
 	return result;
 }
 
-int FileMOV::set_audio_position(samplenum x)
+void FileMOV::set_audio_position(samplenum x)
 {
-	if(!fd) return 1;
+	if(!fd) return;
 // quicktime sets positions for each track seperately so store position in audio_position
 	if(x >= 0 && x < asset->audio_length)
-		return quicktime_set_audio_position(fd, x, 0);
-	else
-		return 1;
+		quicktime_set_audio_position(fd, x, 0);
 }
 
-int FileMOV::set_video_position(framenum x)
+void FileMOV::set_video_position(framenum x)
 {
-	if(!fd) return 1;
+	if(!fd) return;
+
 	if(x >= 0 && x < asset->video_length)
-	{
-		int result = quicktime_set_video_position(fd, x, file->current_layer);
-		return result;
-	}else
-		return 1;
+		quicktime_set_video_position(fd, x, file->current_layer);
 }
 
-
-void FileMOV::new_audio_temp(int64_t len)
+void FileMOV::new_audio_temp(int len)
 {
 	if(temp_allocated && temp_allocated < len)
 	{
@@ -580,8 +563,6 @@ void FileMOV::new_audio_temp(int64_t len)
 			temp_float[i] = new float[len];
 	}
 }
-
-
 
 int FileMOV::write_samples(double **buffer, int len)
 {
@@ -881,8 +862,6 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 	return result;
 }
 
-
-
 int FileMOV::read_frame(VFrame *frame)
 {
 	if(!fd) return 1;
@@ -927,46 +906,11 @@ int FileMOV::read_frame(VFrame *frame)
 	}
 	if (result)
 	{
-		errormsg("quicktime_read_frame/quicktime_decode_video failed, result: %d\n", result);
+		errormsg("quicktime_read_frame/quicktime_decode_video failed, result: %d", result);
 	}
 
 	return result;
 }
-
-
-
-int FileMOV::compressed_frame_size()
-{
-	if(!fd) return 0;
-	return quicktime_frame_size(fd, file->current_frame, file->current_layer);
-}
-
-int FileMOV::read_compressed_frame(VFrame *buffer)
-{
-	int result;
-	if(!fd) return 0;
-
-	result = quicktime_read_frame(fd, buffer->get_data(), file->current_layer);
-	buffer->set_compressed_size(result);
-	buffer->set_keyframe((quicktime_get_keyframe_before(fd, 
-		file->current_frame, 
-		file->current_layer) == file->current_frame));
-	result = !result;
-	return result;
-}
-
-int FileMOV::write_compressed_frame(VFrame *buffer)
-{
-	int result = 0;
-	if(!fd) return 0;
-
-	result = quicktime_write_frame(fd, 
-		buffer->get_data(), 
-		buffer->get_compressed_size(), 
-		file->current_layer);
-	return result;
-}
-
 
 int FileMOV::read_raw(VFrame *frame, 
 		float in_x1, float in_y1, float in_x2, float in_y2,
@@ -1027,7 +971,6 @@ int FileMOV::read_samples(double *buffer, int len)
 
 	return 0;
 }
-
 
 const char* FileMOV::strtocompression(const char *string)
 {
@@ -1099,9 +1042,6 @@ const char* FileMOV::compressiontostr(const char *string)
 
 	return _("Unknown");
 }
-
-
-
 
 
 ThreadStruct::ThreadStruct()
@@ -1238,8 +1178,6 @@ void FileMOVThread::run()
 	}
 }
 
-
-
 MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
 	parent_window->get_abs_cursor_x(1),
@@ -1260,7 +1198,6 @@ MOVConfigAudio::~MOVConfigAudio()
 	compression_items.remove_all_objects();
 }
 
-
 void MOVConfigAudio::reset()
 {
 	bits_popup = 0;
@@ -1275,7 +1212,7 @@ void MOVConfigAudio::reset()
 	mp4a_quantqual = 0;
 }
 
-int MOVConfigAudio::create_objects()
+void MOVConfigAudio::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -1305,7 +1242,6 @@ int MOVConfigAudio::create_objects()
 	update_parameters();
 
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void MOVConfigAudio::update_parameters()
@@ -1473,7 +1409,6 @@ int MOVConfigAudioNum::handle_event()
 }
 
 
-
 MOVConfigAudioPopup::MOVConfigAudioPopup(MOVConfigAudio *popup, int x, int y)
  : BC_PopupTextBox(popup, 
 		&popup->compression_items,
@@ -1492,8 +1427,6 @@ int MOVConfigAudioPopup::handle_event()
 	popup->update_parameters();
 	return 1;
 }
-
-
 
 
 MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window, 
@@ -1519,7 +1452,7 @@ MOVConfigVideo::~MOVConfigVideo()
 	compression_items.remove_all_objects();
 }
 
-int MOVConfigVideo::create_objects()
+void MOVConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -1581,7 +1514,6 @@ int MOVConfigVideo::create_objects()
 	update_parameters();
 
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void MOVConfigVideo::close_event()
@@ -1656,10 +1588,8 @@ void MOVConfigVideo::update_parameters()
 
 	reset();
 
-
 	const char *vcodec = asset->vcodec;
 	if(locked_compressor) vcodec = locked_compressor;
-
 
 // H264 parameters
 	if(!strcmp(vcodec, QUICKTIME_H264) ||
@@ -1731,7 +1661,6 @@ void MOVConfigVideo::update_parameters()
 				0));
 		ms_fix_bitrate->opposite = ms_fix_quant;
 		ms_fix_quant->opposite = ms_fix_bitrate;
-
 
 		y += 30;
 		add_subwindow(ms_interlaced = new MOVConfigVideoCheckBox(_("Interlaced"), 

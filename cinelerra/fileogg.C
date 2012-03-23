@@ -125,7 +125,7 @@ void FileOGG::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-int FileOGG::reset_parameters_derived()
+void FileOGG::reset_parameters_derived()
 {
 	tf = 0;
 	temp_frame = 0;
@@ -180,7 +180,6 @@ static int take_page_out_autoadvance(FILE *in, sync_window_t *sw, ogg_page *og)
 	return 1;
 }
 
-
 // we never need to autoadvance when syncing, since our read chunks are larger than 
 // maximum page size
 static int sync_and_take_page_out(sync_window_t *sw, ogg_page *page)
@@ -233,7 +232,6 @@ int FileOGG::open_file(int rd, int wr)
 		tf->vpage = NULL;
 		tf->v_pkg=0;
 		tf->a_pkg=0;
-
 
 		/* yayness.  Set up Ogg output stream */
 		srand (time (NULL));
@@ -360,7 +358,7 @@ int FileOGG::open_file(int rd, int wr)
 			ogg_stream_packetin (&tf->to, &tf->op);
 			if (ogg_stream_pageout (&tf->to, &tf->og) != 1)
 			{
-				errorbox("Internal Ogg library error.\n");
+				errorbox("Internal Ogg library error.");
 				return 1;
 			}
 			fwrite (tf->og.header, 1, tf->og.header_len, stream);
@@ -387,7 +385,7 @@ int FileOGG::open_file(int rd, int wr)
 			vorbis_comment_clear(&tf->vc);
 			if (ogg_stream_pageout (&tf->vo, &tf->og) != 1)
 			{
-				errorbox("Internal Ogg library error.\n");
+				errorbox("Internal Ogg library error.");
 				return 1;
 			}
 			fwrite (tf->og.header, 1, tf->og.header_len, stream);
@@ -407,7 +405,7 @@ int FileOGG::open_file(int rd, int wr)
 			if (result < 0)
 			{
 				/* can't get here */
-				errorbox("Internal Ogg library error.\n");
+				errorbox("Internal Ogg library error.");
 				return 1;
 			}
 			if (result == 0)
@@ -421,7 +419,7 @@ int FileOGG::open_file(int rd, int wr)
 			if (result < 0)
 			{
 				/* can't get here */
-				errormsg("Internal Ogg library error.\n");
+				errormsg("Internal Ogg library error.");
 				return 1;
 			}
 			if (result == 0)
@@ -436,7 +434,7 @@ int FileOGG::open_file(int rd, int wr)
 
 		if((stream = fopen(asset->path, "rb")) == 0)
 		{
-			errormsg("Error while opening %s for reading. %m\n", asset->path);
+			errormsg("Error while opening %s for reading. %m", asset->path);
 			return 1;
 		}
 
@@ -993,7 +991,7 @@ int FileOGG::ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *o
 {
 	if (frame >= asset->video_length + start_frame)
 	{
-		errorbox("Illegal seek beyond end of frames in OGG file\n");
+		errorbox("Illegal seek beyond end of frames in OGG file");
 		return 0;
 	}
 	off_t educated_guess = filedata_begin + (file_length - filedata_begin) * (frame - start_frame) / asset->video_length - READ_SIZE/2;
@@ -1042,7 +1040,7 @@ int FileOGG::ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *o
 		{
 			do {
 				ogg_get_prev_page(sw, serialno, og); 
-			} while (ogg_page_packets(og) == 0 && ogg_page_continued(og));		
+			} while (ogg_page_packets(og) == 0 && ogg_page_continued(og));
 		}
 		pageend_frame = theora_granule_frame(&tf->td, ogg_page_granulepos(og));
 	} else
@@ -1055,7 +1053,7 @@ int FileOGG::ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *o
 		{
 			do {
 				ogg_get_prev_page(sw, serialno, og); 
-			} while (ogg_page_packets(og) == 0 && ogg_page_continued(og));		
+			} while (ogg_page_packets(og) == 0 && ogg_page_continued(og));
 			missm++;
 			first_frame_on_page = theora_granule_frame(&tf->td, ogg_page_granulepos(og)) - ogg_page_packets(og) + 2;
 			if (!ogg_page_continued(og))
@@ -1169,7 +1167,7 @@ int FileOGG::check_sig(Asset *asset)
 	return 0;
 }
 
-int FileOGG::close_file()
+void FileOGG::close_file()
 {
 	if (wr)
 	{
@@ -1198,8 +1196,9 @@ int FileOGG::close_file()
 
 		if (stream) fclose(stream);
 		stream = 0;
-	} else if (rd) 
-	{	
+	} 
+	else if (rd)
+	{
 		if (asset->audio_data)
 		{
 			vorbis_block_clear (&tf->vb);
@@ -1222,18 +1221,16 @@ int FileOGG::close_file()
 	}
 }
 
-int FileOGG::close_file_derived()
+void FileOGG::close_file_derived()
 {
 	if (stream) fclose(stream);
 	stream = 0;
 }
 
-int FileOGG::set_video_position(framenum x)
+void FileOGG::set_video_position(framenum x)
 {
 	next_frame_position = x + start_frame;
-	return 1;
 }
-
 
 int FileOGG::colormodel_supported(int colormodel)
 {
@@ -1247,7 +1244,6 @@ int FileOGG::get_best_colormodel(Asset *asset, int driver)
 {
 	return BC_YUV420P;
 }
-
 
 int FileOGG::read_frame(VFrame *frame)
 {
@@ -1289,7 +1285,7 @@ int FileOGG::read_frame(VFrame *frame)
 		{
 			if (!ogg_get_next_page(tf->videosync, tf->to.serialno, &og))
 			{
-				errorbox("Cannot find next page while OGG seeking\n");
+				errorbox("Cannot find next page while OGG seeking");
 				return 1;
 			}
 			ogg_stream_pagein(&tf->to, &og);
@@ -1297,7 +1293,7 @@ int FileOGG::read_frame(VFrame *frame)
 		ogg_stream_packetout(&tf->to, &op);
 		if (expect_keyframe && !theora_packet_iskeyframe(&op))
 		{
-				errorbox("Expecting a theora keyframe, but didn't get it\n");
+			errorbox("Expecting a theora keyframe, but didn't get it");
 		}
 		expect_keyframe = 0;
 
@@ -1312,7 +1308,7 @@ int FileOGG::read_frame(VFrame *frame)
 		int ret = theora_decode_YUVout (&tf->td, &yuv);
 		if (ret)
 		{
-			errorbox("theora_decode_YUVout() failed with code %i\n", ret);
+			errorbox("theora_decode_YUVout() failed with code %i", ret);
 		}
 
 // Dirty magic 
@@ -1341,7 +1337,7 @@ int FileOGG::read_frame(VFrame *frame)
 			0,
 			0,
 			yuv.y_width,  // temp_frame can be larger than frame if width not dividable by 16
-			yuv.y_height,	
+			yuv.y_height,
 			BC_YUV420P,
 			frame->get_color_model(),
 			0,
@@ -1354,8 +1350,6 @@ int FileOGG::read_frame(VFrame *frame)
 	return 0;
 }
 
-
-
 int FileOGG::ogg_decode_more_samples(sync_window_t *sw, long serialno)
 {
 	ogg_page og;
@@ -1367,7 +1361,7 @@ int FileOGG::ogg_decode_more_samples(sync_window_t *sw, long serialno)
 		{
 			if (!ogg_get_next_page(sw, serialno, &og))
 			{
-				errorbox("Cannot find next page while trying to decode more OGG samples\n");
+				errorbox("Cannot find next page while trying to decode more OGG samples");
 				return 0;
 			}
 			ogg_stream_pagein(&tf->vo, &og);
@@ -1375,17 +1369,16 @@ int FileOGG::ogg_decode_more_samples(sync_window_t *sw, long serialno)
 		ogg_stream_packetout(&tf->vo, &op);
 		if(!vorbis_synthesis(&tf->vb, &op))
 		{
-			done = 1;	
+			done = 1;
 			vorbis_synthesis_blockin(&tf->vd, &tf->vb);
 		}
 	}
 	return 1;
 }
 
-int FileOGG::set_audio_position(samplenum x)
+void FileOGG::set_audio_position(samplenum x)
 {
 	next_sample_position = x + start_sample;
-	return 0;
 }
 
 int FileOGG::move_history(int from, int to, int len)
@@ -1430,8 +1423,7 @@ int FileOGG::read_samples(double *buffer, int len)
 		hole_absstart = next_sample_position + hole_start;
 		move_history(next_sample_position - history_start,
 				0,
-				hole_start); //	
-		
+				hole_start);
 	} else
 	if (next_sample_position < history_start && history_start < next_sample_position + len)
 	{
@@ -1457,7 +1449,7 @@ int FileOGG::read_samples(double *buffer, int len)
 	{
 		if (hole_start < 0 || hole_len <= 0 || hole_absstart < 0)
 		{
-			errormsg("Error at finding out which range to read from file\n");
+			errormsg("Error at finding out which range to read from file");
 			return 1;
 		}
 
@@ -1465,7 +1457,8 @@ int FileOGG::read_samples(double *buffer, int len)
 		{
 			hole_len = asset->audio_length + start_sample - hole_absstart;
 			history_size = asset->audio_length + start_sample - history_start;
-		} else
+		}
+		else
 		{
 			history_size = HISTORY_MAX;
 		}
@@ -1476,7 +1469,7 @@ int FileOGG::read_samples(double *buffer, int len)
 			ogg_sample_position = hole_absstart;
 			if (!ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, ogg_sample_position))
 			{
-				errormsg("Error while seeking to OGG sample\n");
+				errormsg("Error while seeking to OGG sample");
 				return 1;
 			}
 		}
@@ -1520,7 +1513,8 @@ int FileOGG::read_samples(double *buffer, int len)
 	// now we can be sure our history is correct, just copy it out
 	if (next_sample_position < history_start || next_sample_position + len > history_start + history_size)
 	{
-		errorbox("History not aligned properly \n\tnext_sample_position: %lli, length: %d\n\thistory_start: %lld, length: %lld\n", next_sample_position, len, history_start, history_size);
+		errorbox("History not aligned properly\n\tnext_sample_position: %lli, length: %d\n\thistory_start: %lld, length: %lld",
+				next_sample_position, len, history_start, history_size);
 		return 1;
 	}
 	float *input = pcm_history[file->current_channel] + next_sample_position - history_start;
@@ -1531,7 +1525,6 @@ int FileOGG::read_samples(double *buffer, int len)
 	return 0;
 }
 
-
 int FileOGG::write_audio_page()
 {
 	int ret;
@@ -1539,7 +1532,7 @@ int FileOGG::write_audio_page()
 	ret = fwrite(tf->apage, 1, tf->apage_len, stream);
 	if(ret < tf->apage_len) 
 	{
-		errorbox("Error writing OGG audio page\n");
+		errorbox("Error writing OGG audio page");
 	}
 	tf->apage_valid = 0;
 	tf->a_pkg -= ogg_page_packets((ogg_page *)&tf->apage);
@@ -1553,7 +1546,7 @@ int FileOGG::write_video_page()
 	ret = fwrite(tf->vpage, 1, tf->vpage_len, stream);
 	if(ret < tf->vpage_len) 
 	{
-		errorbox("error writing OGG video page\n");
+		errorbox("error writing OGG video page");
 	}
 	tf->vpage_valid = 0;
 	tf->v_pkg -= ogg_page_packets((ogg_page *)&tf->vpage);
@@ -1727,7 +1720,7 @@ int FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
 			int ret = theora_encode_YUVin (&tf->td, &yuv);
 			if (ret)
 			{
-				errormsg("Theora_encode_YUVin() failed with code %i\nyuv_buffer: y_width: %i, y_height: %i, y_stride: %i, uv_width: %i, uv_height: %i, uv_stride: %i\n", 
+				errormsg("Theora_encode_YUVin() failed with code %i\nyuv_buffer: y_width: %i, y_height: %i, y_stride: %i, uv_width: %i, uv_height: %i, uv_stride: %i",
 					ret,
 					yuv.y_width,
 					yuv.y_height,
@@ -1781,7 +1774,7 @@ int FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
 				0,
 				0,
 				frame->get_w(),  // temp_frame can be larger than frame if width not dividable by 16
-				frame->get_h(),	
+				frame->get_h(),
 				frame->get_color_model(),
 				BC_YUV420P,
 				0,
@@ -1792,11 +1785,11 @@ int FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
 	return 0;
 }
 
-
 int FileOGG::write_frames(VFrame ***frames, int len)
 {
 	return write_frames_theora(frames, len, 0);
 }
+
 
 OGGConfigAudio::OGGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
@@ -1813,7 +1806,7 @@ OGGConfigAudio::~OGGConfigAudio()
 {
 }
 
-int OGGConfigAudio::create_objects()
+void OGGConfigAudio::create_objects()
 {
 	int x = 10, y = 10;
 	int x1 = 150;
@@ -1840,7 +1833,6 @@ int OGGConfigAudio::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 	flush();
-	return 0;
 }
 
 void OGGConfigAudio::close_event()
@@ -1848,11 +1840,13 @@ void OGGConfigAudio::close_event()
 	set_done(0);
 }
 
+
 OGGVorbisFixedBitrate::OGGVorbisFixedBitrate(int x, int y, OGGConfigAudio *gui)
  : BC_Radial(x, y, !gui->asset->vorbis_vbr, _("Average bitrate"))
 {
 	this->gui = gui;
 }
+
 int OGGVorbisFixedBitrate::handle_event()
 {
 	gui->asset->vorbis_vbr = 0;
@@ -1860,11 +1854,13 @@ int OGGVorbisFixedBitrate::handle_event()
 	return 1;
 }
 
+
 OGGVorbisVariableBitrate::OGGVorbisVariableBitrate(int x, int y, OGGConfigAudio *gui)
  : BC_Radial(x, y, gui->asset->vorbis_vbr, _("Variable bitrate"))
 {
 	this->gui = gui;
 }
+
 int OGGVorbisVariableBitrate::handle_event()
 {
 	gui->asset->vorbis_vbr = 1;
@@ -1881,6 +1877,7 @@ OGGVorbisMinBitrate::OGGVorbisMinBitrate(int x,
 {
 	this->gui = gui;
 }
+
 int OGGVorbisMinBitrate::handle_event()
 {
 	gui->asset->vorbis_min_bitrate = atol(get_text());
@@ -1930,7 +1927,7 @@ OGGConfigVideo::~OGGConfigVideo()
 {
 }
 
-int OGGConfigVideo::create_objects()
+void OGGConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 	int x1 = x + 150;
@@ -1976,7 +1973,6 @@ int OGGConfigVideo::create_objects()
 	y += 30;
 
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 
@@ -2013,6 +2009,7 @@ int OGGTheoraFixedBitrate::handle_event()
 	return 1;
 };
 
+
 OGGTheoraFixedQuality::OGGTheoraFixedQuality(int x, int y, OGGConfigVideo *gui)
  : BC_Radial(x, y, !gui->asset->theora_fix_bitrate, _("Fixed quality"))
 {
@@ -2027,9 +2024,10 @@ int OGGTheoraFixedQuality::handle_event()
 	return 1;
 };
 
+
 OGGTheoraKeyframeFrequency::OGGTheoraKeyframeFrequency(int x, int y, OGGConfigVideo *gui)
  : BC_TumbleTextBox(gui, 
- 	(int64_t)gui->asset->theora_keyframe_frequency, 
+	(int64_t)gui->asset->theora_keyframe_frequency, 
 	(int64_t)1,
 	(int64_t)500,
 	x, 
@@ -2100,7 +2098,6 @@ PackagingEngineOGG::~PackagingEngineOGG()
 	if (default_asset)
 		delete default_asset;
 }
-
 
 int PackagingEngineOGG::create_packages_single_farm(
 		EDL *edl,

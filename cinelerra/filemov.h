@@ -70,19 +70,15 @@ public:
 	static int check_sig(Asset *asset);
 
 	int open_file(int rd, int wr);
-	int close_file();
+	void close_file();
 	void asset_to_format();
 	void format_to_asset();
 	framenum get_video_length();
 	samplenum get_audio_length();
-	int set_video_position(framenum x);
-	int set_audio_position(samplenum x);
-	int write_samples(double **buffer, 
-			int len);
+	void set_video_position(framenum x);
+	void set_audio_position(samplenum x);
+	int write_samples(double **buffer, int len);
 	int write_frames(VFrame ***frames, int len);
-	int compressed_frame_size();
-	int read_compressed_frame(VFrame *buffer);
-	int write_compressed_frame(VFrame *buffer);
 
 	int read_frame(VFrame *frame);
 	int read_samples(double *buffer, int len);
@@ -91,7 +87,7 @@ public:
 	static int get_best_colormodel(Asset *asset, int driver);
 	int64_t get_memory_usage();
 	int colormodel_supported(int colormodel);
-	int can_copy_from(Edit *edit, framenum position); // This file can copy frames directly from the asset
+	int can_copy_from(Edit *edit); // This file can copy frames directly from the asset
 	static const char *strtocompression(const char *string);
 	static const char *compressiontostr(const char *string);
 
@@ -104,7 +100,7 @@ public:
 	void set_frame_start(int64_t offset);
 
 private:
-	void new_audio_temp(int64_t len);
+	void new_audio_temp(int len);
 // read raw audio data
 	int read_raw(char *buffer, int64_t samples, int track);  
 // overlay raw frame from the current layer and position
@@ -112,7 +108,7 @@ private:
 		float in_x1, float in_y1, float in_x2, float in_y2,
 		float out_x1, float out_y1, float out_x2, float out_y2, 
 		int use_float, int interpolate);
-	int reset_parameters_derived();
+	void reset_parameters_derived();
 	int quicktime_atracks;
 	int quicktime_vtracks;
 // current positions for when the file descriptor doesn't have the right position
@@ -170,7 +166,7 @@ public:
 	MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset);
 	~MOVConfigAudio();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 	void update_parameters();
 	void reset();
@@ -252,7 +248,7 @@ public:
 		const char *locked_compressor);
 	~MOVConfigVideo();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 	void reset();
 
@@ -264,7 +260,7 @@ public:
 	Asset *asset;
 	int param_x, param_y;
 	const char *locked_compressor;
-	
+
 	BC_ISlider *jpeg_quality;
 	BC_Title *jpeg_quality_title;
 

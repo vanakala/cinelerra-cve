@@ -63,7 +63,7 @@ FileList::~FileList()
 	delete table_lock;
 }
 
-int FileList::reset_parameters_derived()
+void FileList::reset_parameters_derived()
 {
 	data = 0;
 	writer = 0;
@@ -164,8 +164,7 @@ int FileList::open_file(int rd, int wr)
 	return result;
 }
 
-
-int FileList::close_file()
+void FileList::close_file()
 {
 	if(asset->format == list_type && path_list.total)
 	{
@@ -177,10 +176,9 @@ int FileList::close_file()
 	reset_parameters();
 
 	FileBase::close_file();
-	return 0;
 }
 
-int FileList::write_list_header()
+void FileList::write_list_header()
 {
 	FILE *stream = fopen(asset->path, "w");
 // Use sprintf instead of fprintf for VFS.
@@ -208,7 +206,6 @@ int FileList::write_list_header()
 		fprintf(stream, "%s\n", path_list.values[i]);
 
 	fclose(stream);
-	return 0;
 }
 
 int FileList::read_list_header()
@@ -410,7 +407,6 @@ int FileList::write_frames(VFrame ***frames, int len)
 	return return_value;
 }
 
-
 void FileList::add_return_value(int amount)
 {
 	table_lock->lock("FileList::add_return_value");
@@ -511,8 +507,6 @@ FrameWriterUnit* FileList::get_unit(int number)
 	if(writer) return (FrameWriterUnit*)writer->get_client(number);
 }
 
-
-
 FrameWriterPackage::FrameWriterPackage()
 {
 }
@@ -520,7 +514,6 @@ FrameWriterPackage::FrameWriterPackage()
 FrameWriterPackage::~FrameWriterPackage()
 {
 }
-
 
 
 FrameWriterUnit::FrameWriterUnit(FrameWriter *server)
@@ -558,13 +551,11 @@ void FrameWriterUnit::process_package(LoadPackage *package)
 }
 
 
-
 FrameWriter::FrameWriter(FileList *file, int cpus)
  : LoadServer(cpus, 0)
 {
 	this->file = file;
 }
-
 
 FrameWriter::~FrameWriter()
 {

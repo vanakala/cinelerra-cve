@@ -46,7 +46,7 @@ public:
 
 // basic commands for every file interpreter
 	int open_file(int rd, int wr);
-	int close_file();
+	void close_file();
 
 	char* calculate_path(int number, char *string);
 	char* create_path(int number_override);
@@ -60,8 +60,7 @@ public:
 	virtual int read_frame(VFrame *frame, VFrame *data) { return 0; };
 	virtual int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit) { return 0; };
 
-
-	int write_list_header();
+	void write_list_header();
 	int write_frames(VFrame ***frames, int len);
 	VFrame* read_frame(int use_alpha, int use_float);
 	virtual int64_t get_memory_usage();
@@ -80,7 +79,7 @@ private:
 		float in_x1, float in_y1, float in_x2, float in_y2,
 		float out_x1, float out_y1, float out_x2, float out_y2, 
 		int alpha, int use_alpha, int use_float, int interpolate);
-	int reset_parameters_derived();
+	void reset_parameters_derived();
 	ArrayList<char*> path_list;     // List of files
 	const char *list_prefix;
 	const char *file_extension;
@@ -95,8 +94,6 @@ private:
 };
 
 
-
-
 class FrameWriterPackage : public LoadPackage
 {
 public:
@@ -106,8 +103,6 @@ public:
 	VFrame *input;
 	char *path;
 };
-
-
 
 
 class FrameWriterUnit : public LoadClient
@@ -121,9 +116,6 @@ public:
 	FrameWriter *server;
 	VFrame *output;
 };
-
-
-
 
 
 class FrameWriter : public LoadServer
@@ -141,6 +133,5 @@ public:
 	VFrame ***frames;
 	int len;
 };
-
 
 #endif

@@ -114,7 +114,7 @@ public:
 		int include_index, 
 		const char *output_path);
 // Write the index data and asset info.  Used by IndexThread.
-	int write_index(char *path, int data_bytes);
+	void write_index(const char *path, int data_bytes);
 
 
 // Necessary for renderfarm to get encoding parameters

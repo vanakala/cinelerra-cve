@@ -44,11 +44,11 @@ public:
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options);
-	int reset_parameters_derived();
+	void reset_parameters_derived();
 
 	static int check_sig(Asset *asset);
 	int open_file(int rd, int wr);
-	int close_file();
+	void close_file();
 	int write_samples(double **buffer, 
 			int len);
 

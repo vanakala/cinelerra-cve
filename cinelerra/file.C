@@ -108,14 +108,13 @@ void File::reset_parameters()
 	interpolate_raw = 1;
 }
 
-int File::raise_window()
+void File::raise_window()
 {
 	if(getting_options && format_window)
 	{
 		format_window->raise_window();
 		format_window->flush();
 	}
-	return 0;
 }
 
 void File::close_window()
@@ -129,7 +128,7 @@ void File::close_window()
 	}
 }
 
-int File::get_options(FormatTools *format,  
+void File::get_options(FormatTools *format,
 	int audio_options,
 	int video_options)
 {
@@ -271,7 +270,6 @@ int File::get_options(FormatTools *format,
 	getting_options = 0;
 	format_window = 0;
 	format_completion->unlock();
-	return 0;
 }
 
 void File::set_asset(Asset *asset)
@@ -279,16 +277,14 @@ void File::set_asset(Asset *asset)
 	this->asset->copy_from(asset, 1);
 }
 
-int File::set_processors(int cpus)   // Set the number of cpus for certain codecs
+void File::set_processors(int cpus)   // Set the number of cpus for certain codecs
 {
 	this->cpus = cpus;
-	return 0;
 }
 
-int File::set_preload(int64_t size)
+void File::set_preload(int64_t size)
 {
 	this->playback_preload = size;
-	return 0;
 }
 
 void File::set_subtitle(int value)
@@ -317,15 +313,6 @@ int File::purge_cache()
 }
 
 
-
-
-
-
-
-
-
-
-
 int File::open_file(Preferences *preferences, 
 	Asset *asset, 
 	int rd, 
@@ -342,216 +329,215 @@ int File::open_file(Preferences *preferences,
 // get the format now
 // If you add another format to case 0, you also need to add another case for the
 // file format #define.
-		case FILE_UNKNOWN:
-			FILE *stream;
-			if(!(stream = fopen(this->asset->path, "rb")))
-			{
-				return FILE_NOT_FOUND;
-			}
+	case FILE_UNKNOWN:
+		FILE *stream;
+		if(!(stream = fopen(this->asset->path, "rb")))
+		{
+			return FILE_NOT_FOUND;
+		}
 
-			char test[16];
-			if(fread(test, 16, 1, stream) < 1)
-			{
-				fclose(stream);
-				return FILE_NOT_FOUND;
-			}
-			if(FileDV::check_sig(this->asset))
-			{
+		char test[16];
+		if(fread(test, 16, 1, stream) < 1)
+		{
+			fclose(stream);
+			return FILE_NOT_FOUND;
+		}
+		if(FileDV::check_sig(this->asset))
+		{
 // libdv
-				fclose(stream);
-				file = new FileDV(this->asset, this);
-			}
-			else if(FileSndFile::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileDV(this->asset, this);
+		}
+		else if(FileSndFile::check_sig(this->asset))
+		{
 // libsndfile
-				fclose(stream);
-				file = new FileSndFile(this->asset, this);
-			}
-			else
-			if(FilePNG::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileSndFile(this->asset, this);
+		}
+		else
+		if(FilePNG::check_sig(this->asset))
+		{
 // PNG file
-				fclose(stream);
-				file = new FilePNG(this->asset, this);
-			}
-			else
-			if(FileJPEG::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FilePNG(this->asset, this);
+		}
+		else
+		if(FileJPEG::check_sig(this->asset))
+		{
 // JPEG file
-				fclose(stream);
-				file = new FileJPEG(this->asset, this);
-			}
-			else
-			if(FileEXR::check_sig(this->asset, test))
-			{
+			fclose(stream);
+			file = new FileJPEG(this->asset, this);
+		}
+		else
+		if(FileEXR::check_sig(this->asset, test))
+		{
 // EXR file
-				fclose(stream);
-				file = new FileEXR(this->asset, this);
-			}
-			else
-			if(FileYUV::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileEXR(this->asset, this);
+		}
+		else
+		if(FileYUV::check_sig(this->asset))
+		{
 // YUV file
-				fclose(stream);
-				file = new FileYUV(this->asset, this);
-			}
-			else
-			if(FileCR2::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileYUV(this->asset, this);
+		}
+		else
+		if(FileCR2::check_sig(this->asset))
+		{
 // JPEG file
-				fclose(stream);
-				file = new FileCR2(this->asset, this);
-			}
-			else
-			if(FileTGA::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileCR2(this->asset, this);
+		}
+		else
+		if(FileTGA::check_sig(this->asset))
+		{
 // TGA file
-				fclose(stream);
-				file = new FileTGA(this->asset, this);
-			}
-			else
-			if(FileTIFF::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileTGA(this->asset, this);
+		}
+		else
+		if(FileTIFF::check_sig(this->asset))
+		{
 // TIFF file
-				fclose(stream);
-				file = new FileTIFF(this->asset, this);
-			}
-			else
-			if(FileOGG::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileTIFF(this->asset, this);
+		}
+		else
+		if(FileOGG::check_sig(this->asset))
+		{
 // OGG file
-				fclose(stream);
-				file = new FileOGG(this->asset, this);
-			}
-			else
-			if(FileVorbis::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileOGG(this->asset, this);
+		}
+		else
+		if(FileVorbis::check_sig(this->asset))
+		{
 // VorbisFile file
-				fclose(stream);
-				file = new FileVorbis(this->asset, this);
-			}
-			else
-			if(FileOGG::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileVorbis(this->asset, this);
+		}
+		else
+		if(FileOGG::check_sig(this->asset))
+		{
 // OGG file.  Doesn't always work with pure audio files.
-				fclose(stream);
-				file = new FileOGG(this->asset, this);
-			}
-			else
-			if(FileMPEG::check_sig(this->asset))
-			{
+			fclose(stream);
+			file = new FileOGG(this->asset, this);
+		}
+		else
+		if(FileMPEG::check_sig(this->asset))
+		{
 // MPEG file
-				fclose(stream);
-				file = new FileMPEG(this->asset, this);
-			}
-			else
-			if(test[0] == '<' && test[1] == 'E' && test[2] == 'D' && test[3] == 'L' && test[4] == '>' ||
-				test[0] == '<' && test[1] == 'H' && test[2] == 'T' && test[3] == 'A' && test[4] == 'L' && test[5] == '>' ||
-				test[0] == '<' && test[1] == '?' && test[2] == 'x' && test[3] == 'm' && test[4] == 'l')
-			{
+			fclose(stream);
+			file = new FileMPEG(this->asset, this);
+		}
+		else
+		if(test[0] == '<' && test[1] == 'E' && test[2] == 'D' && test[3] == 'L' && test[4] == '>' ||
+			test[0] == '<' && test[1] == 'H' && test[2] == 'T' && test[3] == 'A' && test[4] == 'L' && test[5] == '>' ||
+			test[0] == '<' && test[1] == '?' && test[2] == 'x' && test[3] == 'm' && test[4] == 'l')
+		{
 // XML file
-				fclose(stream);
-				return FILE_IS_XML;
-			}    // can't load project file
-			else
-			if(FileMOV::check_sig(this->asset))
-			{
+			fclose(stream);
+			return FILE_IS_XML;
+		}    // can't load project file
+		else
+		if(FileMOV::check_sig(this->asset))
+		{
 // MOV file
 // should be last because quicktime lacks a magic number
-				fclose(stream);
-				file = new FileMOV(this->asset, this);
-			}
-			else
-			{
+			fclose(stream);
+			file = new FileMOV(this->asset, this);
+		}
+		else
+		{
 // PCM file
-				fclose(stream);
-				return FILE_UNRECOGNIZED_CODEC;
-			}   // need more info
-			break;
+			fclose(stream);
+			return FILE_UNRECOGNIZED_CODEC;
+		}   // need more info
+		break;
 
 // format already determined
-		case FILE_AC3:
-			file = new FileAC3(this->asset, this);
-			break;
+	case FILE_AC3:
+		file = new FileAC3(this->asset, this);
+		break;
 
-		case FILE_PCM:
-		case FILE_WAV:
-		case FILE_AU:
-		case FILE_AIFF:
-		case FILE_SND:
-			file = new FileSndFile(this->asset, this);
-			break;
+	case FILE_PCM:
+	case FILE_WAV:
+	case FILE_AU:
+	case FILE_AIFF:
+	case FILE_SND:
+		file = new FileSndFile(this->asset, this);
+		break;
 
-		case FILE_PNG:
-		case FILE_PNG_LIST:
-			file = new FilePNG(this->asset, this);
-			break;
+	case FILE_PNG:
+	case FILE_PNG_LIST:
+		file = new FilePNG(this->asset, this);
+		break;
 
-		case FILE_JPEG:
-		case FILE_JPEG_LIST:
-			file = new FileJPEG(this->asset, this);
-			break;
+	case FILE_JPEG:
+	case FILE_JPEG_LIST:
+		file = new FileJPEG(this->asset, this);
+		break;
 
-		case FILE_EXR:
-		case FILE_EXR_LIST:
-			file = new FileEXR(this->asset, this);
-			break;
+	case FILE_EXR:
+	case FILE_EXR_LIST:
+		file = new FileEXR(this->asset, this);
+		break;
 
-		case FILE_YUV:
-			file = new FileYUV(this->asset, this);
-			break;
+	case FILE_YUV:
+		file = new FileYUV(this->asset, this);
+		break;
 
-		case FILE_CR2:
-			file = new FileCR2(this->asset, this);
-			break;
+	case FILE_CR2:
+		file = new FileCR2(this->asset, this);
+		break;
 
-		case FILE_TGA_LIST:
-		case FILE_TGA:
-			file = new FileTGA(this->asset, this);
-			break;
+	case FILE_TGA_LIST:
+	case FILE_TGA:
+		file = new FileTGA(this->asset, this);
+		break;
 
-		case FILE_TIFF:
-		case FILE_TIFF_LIST:
-			file = new FileTIFF(this->asset, this);
-			break;
+	case FILE_TIFF:
+	case FILE_TIFF_LIST:
+		file = new FileTIFF(this->asset, this);
+		break;
 
-		case FILE_MOV:
-			file = new FileMOV(this->asset, this);
-			break;
+	case FILE_MOV:
+		file = new FileMOV(this->asset, this);
+		break;
 
-		case FILE_MPEG:
-		case FILE_AMPEG:
-		case FILE_VMPEG:
-			file = new FileMPEG(this->asset, this);
-			break;
+	case FILE_MPEG:
+	case FILE_AMPEG:
+	case FILE_VMPEG:
+		file = new FileMPEG(this->asset, this);
+		break;
 
-		case FILE_OGG:
-			file = new FileOGG(this->asset, this);
-			break;
+	case FILE_OGG:
+		file = new FileOGG(this->asset, this);
+		break;
 
-		case FILE_VORBIS:
-			file = new FileVorbis(this->asset, this);
-			break;
+	case FILE_VORBIS:
+		file = new FileVorbis(this->asset, this);
+		break;
 
-		case FILE_AVI:
-			file = new FileMOV(this->asset, this);
-			break;
+	case FILE_AVI:
+		file = new FileMOV(this->asset, this);
+		break;
 
-		case FILE_AVI_LAVTOOLS:
-		case FILE_AVI_ARNE2:
-		case FILE_AVI_ARNE1:
-		case FILE_AVI_AVIFILE:
-			file = new FileAVI(this->asset, this);
-			break;
+	case FILE_AVI_LAVTOOLS:
+	case FILE_AVI_ARNE2:
+	case FILE_AVI_ARNE1:
+	case FILE_AVI_AVIFILE:
+		file = new FileAVI(this->asset, this);
+		break;
 
-		case FILE_RAWDV:
-			file = new FileDV(this->asset, this);
-			break;
+	case FILE_RAWDV:
+		file = new FileDV(this->asset, this);
+		break;
 
 // try plugins
-		default:
-			return 1;
-			break;
+	default:
+		return 1;
 	}
 
 // Reopen file with correct parser and get header.
@@ -561,13 +547,11 @@ int File::open_file(Preferences *preferences,
 		file = 0;
 	}
 
-
 // Set extra writing parameters to mandatory settings.
 	if(file && wr)
 	{
 		if(this->asset->dither) file->set_dither();
 	}
-
 
 // Synchronize header parameters
 	if(file)
@@ -581,7 +565,7 @@ int File::open_file(Preferences *preferences,
 		return FILE_NOT_FOUND;
 }
 
-int File::close_file(int ignore_thread)
+void File::close_file(int ignore_thread)
 {
 	if(!ignore_thread)
 	{
@@ -606,12 +590,10 @@ int File::close_file(int ignore_thread)
 	if(resample_float) delete resample_float;
 
 	reset_parameters();
-	return 0;
 }
 
 
-
-int File::get_index(char *index_path)
+int File::get_index(const char *index_path)
 {
 	if(file)
 	{
@@ -619,8 +601,6 @@ int File::get_index(char *index_path)
 	}
 	return 1;
 }
-
-
 
 void File::start_audio_thread(int buffer_size, int ring_buffers)
 {
@@ -683,18 +663,13 @@ FileThread* File::get_video_thread()
 	return video_thread;
 }
 
-int File::set_channel(int channel) 
+void File::set_channel(int channel) 
 {
 	if(file && channel < asset->channels)
-	{
 		current_channel = channel;
-		return 0;
-	}
-	else
-		return 1;
 }
 
-int File::set_layer(int layer, int is_thread) 
+void File::set_layer(int layer, int is_thread) 
 {
 	if(file && layer < asset->layers)
 	{
@@ -706,10 +681,7 @@ int File::set_layer(int layer, int is_thread)
 		{
 			current_layer = layer;
 		}
-		return 0; 
 	}
-	else
-		return 1;
 }
 
 samplenum File::get_audio_length(int base_samplerate) 
@@ -761,17 +733,15 @@ samplenum File::get_audio_position(void)
 // The base samplerate must be nonzero if the base samplerate in the calling
 // function is expected to change as this forces the resampler to reset.
 
-int File::set_audio_position(samplenum position)
+void File::set_audio_position(samplenum position)
 {
-	if(!file) return 1;
-
-	return file->set_audio_position(current_sample = position);
+	if(file)
+		file->set_audio_position(current_sample = position);
 }
 
-int File::set_video_position(framenum position, float base_framerate, int is_thread) 
+void File::set_video_position(framenum position, float base_framerate, int is_thread) 
 {
-	int result = 0;
-	if(!file) return 0;
+	if(!file) return;
 
 // Convert to file's rate
 	if(base_framerate > 0)
@@ -779,7 +749,6 @@ int File::set_video_position(framenum position, float base_framerate, int is_thr
 			base_framerate * 
 			asset->frame_rate + 
 			0.5);
-
 
 	if(video_thread && !is_thread)
 	{
@@ -792,11 +761,9 @@ int File::set_video_position(framenum position, float base_framerate, int is_thr
 		if(file)
 		{
 			current_frame = position;
-			result = file->set_video_position(current_frame);
+			file->set_video_position(current_frame);
 		}
 	}
-
-	return result;
 }
 
 // No resampling here.
@@ -842,18 +809,6 @@ int File::write_frames(VFrame ***frames, int len)
 
 	return result;
 }
-
-int File::write_compressed_frame(VFrame *buffer)
-{
-	int result = 0;
-	write_lock->lock("File::write_compressed_frame");
-	result = file->write_compressed_frame(buffer);
-	current_frame++;
-	asset->video_length++;
-	write_lock->unlock();
-	return result;
-}
-
 
 int File::write_audio_buffer(int len)
 {
@@ -973,23 +928,6 @@ int File::read_samples(double *buffer, int len, int base_samplerate, float *buff
 
 	}
 	return result;
-}
-
-int File::read_compressed_frame(VFrame *buffer)
-{
-	int result = 1;
-	if(file)
-		result = file->read_compressed_frame(buffer);
-	current_frame++;
-	return result;
-}
-
-int File::compressed_frame_size()
-{
-	if(file)
-		return file->compressed_frame_size();
-	else 
-		return 0;
 }
 
 int File::get_frame(VFrame *frame, int is_thread)
@@ -1123,13 +1061,13 @@ int File::read_frame(VFrame *frame, int is_thread)
 		return 1;
 }
 
-int File::can_copy_from(Edit *edit, framenum position, int output_w, int output_h)
+int File::can_copy_from(Edit *edit, int output_w, int output_h)
 {
 	if(file)
 	{
 		return edit->asset->width == output_w &&
 			edit->asset->height == output_h &&
-			file->can_copy_from(edit, position);
+			file->can_copy_from(edit);
 	}
 	else
 		return 0;
@@ -1216,101 +1154,99 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 {
 	switch(format)
 	{
-		case FILE_AC3:
-			return _(AC3_NAME);
-			break;
-		case FILE_WAV:
-			return _(WAV_NAME);
-			break;
-		case FILE_PCM:
-			return _(PCM_NAME);
-			break;
-		case FILE_AU:
-			return _(AU_NAME);
-			break;
-		case FILE_AIFF:
-			return _(AIFF_NAME);
-			break;
-		case FILE_SND:
-			return _(SND_NAME);
-			break;
-		case FILE_PNG:
-			return _(PNG_NAME);
-			break;
-		case FILE_PNG_LIST:
-			return _(PNG_LIST_NAME);
-			break;
-		case FILE_JPEG:
-			return _(JPEG_NAME);
-			break;
-		case FILE_JPEG_LIST:
-			return _(JPEG_LIST_NAME);
-			break;
-		case FILE_CR2:
-			return _(CR2_NAME);
-			break;
-		case FILE_EXR:
-			return _(EXR_NAME);
-			break;
-		case FILE_EXR_LIST:
-			return _(EXR_LIST_NAME);
-			break;
-		case FILE_YUV:
-			return _(YUV_NAME);
-			break;
-		case FILE_MPEG:
-			return _(MPEG_NAME);
-			break;
-		case FILE_AMPEG:
-			return _(AMPEG_NAME);
-			break;
-		case FILE_VMPEG:
-			return _(VMPEG_NAME);
-			break;
-		case FILE_TGA:
-			return _(TGA_NAME);
-			break;
-		case FILE_TGA_LIST:
-			return _(TGA_LIST_NAME);
-			break;
-		case FILE_TIFF:
-			return _(TIFF_NAME);
-			break;
-		case FILE_TIFF_LIST:
-			return _(TIFF_LIST_NAME);
-			break;
-		case FILE_MOV:
-			return _(MOV_NAME);
-			break;
-		case FILE_AVI_LAVTOOLS:
-			return _(AVI_LAVTOOLS_NAME);
-			break;
-		case FILE_AVI:
-			return _(AVI_NAME);
-			break;
-		case FILE_AVI_ARNE2:
-			return _(AVI_ARNE2_NAME);
-			break;
-		case FILE_AVI_ARNE1:
-			return _(AVI_ARNE1_NAME);
-			break;
-		case FILE_AVI_AVIFILE:
-			return _(AVI_AVIFILE_NAME);
-			break;
-		case FILE_OGG:
-			return _(OGG_NAME);
-			break;
-		case FILE_VORBIS:
-			return _(VORBIS_NAME);
-			break;
-		case FILE_RAWDV:
-			return _(RAWDV_NAME);
-			break;
-		default:
-			return _("Unknown");
-			break;
+	case FILE_AC3:
+		return _(AC3_NAME);
+
+	case FILE_WAV:
+		return _(WAV_NAME);
+
+	case FILE_PCM:
+		return _(PCM_NAME);
+
+	case FILE_AU:
+		return _(AU_NAME);
+
+	case FILE_AIFF:
+		return _(AIFF_NAME);
+
+	case FILE_SND:
+		return _(SND_NAME);
+
+	case FILE_PNG:
+		return _(PNG_NAME);
+
+	case FILE_PNG_LIST:
+		return _(PNG_LIST_NAME);
+
+	case FILE_JPEG:
+		return _(JPEG_NAME);
+
+	case FILE_JPEG_LIST:
+		return _(JPEG_LIST_NAME);
+
+	case FILE_CR2:
+		return _(CR2_NAME);
+
+	case FILE_EXR:
+		return _(EXR_NAME);
+
+	case FILE_EXR_LIST:
+		return _(EXR_LIST_NAME);
+
+	case FILE_YUV:
+		return _(YUV_NAME);
+
+	case FILE_MPEG:
+		return _(MPEG_NAME);
+
+	case FILE_AMPEG:
+		return _(AMPEG_NAME);
+
+	case FILE_VMPEG:
+		return _(VMPEG_NAME);
+
+	case FILE_TGA:
+		return _(TGA_NAME);
+
+	case FILE_TGA_LIST:
+		return _(TGA_LIST_NAME);
+
+	case FILE_TIFF:
+		return _(TIFF_NAME);
+
+	case FILE_TIFF_LIST:
+		return _(TIFF_LIST_NAME);
+
+	case FILE_MOV:
+		return _(MOV_NAME);
+
+	case FILE_AVI_LAVTOOLS:
+		return _(AVI_LAVTOOLS_NAME);
+
+	case FILE_AVI:
+		return _(AVI_NAME);
+
+	case FILE_AVI_ARNE2:
+		return _(AVI_ARNE2_NAME);
+
+	case FILE_AVI_ARNE1:
+		return _(AVI_ARNE1_NAME);
+
+	case FILE_AVI_AVIFILE:
+		return _(AVI_AVIFILE_NAME);
+
+	case FILE_OGG:
+		return _(OGG_NAME);
+
+	case FILE_VORBIS:
+		return _(VORBIS_NAME);
+
+	case FILE_RAWDV:
+		return _(RAWDV_NAME);
+
+	default:
+		return _("Unknown");
 	}
-	return "Unknown";
 }
 
 int File::strtobits(char *bits)
@@ -1330,73 +1266,32 @@ const char* File::bitstostr(int bits)
 {
 	switch(bits)
 	{
-		case BITSLINEAR8:
-			return (NAME_8BIT);
-			break;
-		case BITSLINEAR16:
-			return (NAME_16BIT);
-			break;
-		case BITSLINEAR24:
-			return (NAME_24BIT);
-			break;
-		case BITSLINEAR32:
-			return (NAME_32BIT);
-			break;
-		case BITSULAW:
-			return (NAME_ULAW);
-			break;
-		case BITS_ADPCM:
-			return (NAME_ADPCM);
-			break;
-		case BITSFLOAT:
-			return (NAME_FLOAT);
-			break;
-		case BITSIMA4:
-			return (NAME_IMA4);
-			break;
+	case BITSLINEAR8:
+		return (NAME_8BIT);
+
+	case BITSLINEAR16:
+		return (NAME_16BIT);
+
+	case BITSLINEAR24:
+		return (NAME_24BIT);
+
+	case BITSLINEAR32:
+		return (NAME_32BIT);
+
+	case BITSULAW:
+		return (NAME_ULAW);
+
+	case BITS_ADPCM:
+		return (NAME_ADPCM);
+
+	case BITSFLOAT:
+		return (NAME_FLOAT);
+
+	case BITSIMA4:
+		return (NAME_IMA4);
 	}
 	return "Unknown";
 }
-
-
-
-int File::str_to_byteorder(char *string)
-{
-	if(!strcasecmp(string, _("Lo Hi"))) return 1;
-	return 0;
-}
-
-char* File::byteorder_to_str(int byte_order)
-{
-	if(byte_order) return _("Lo Hi");
-	return _("Hi Lo");
-}
-
-int File::bytes_per_sample(int bits)
-{
-	switch(bits)
-	{
-	case BITSLINEAR8:
-		return 1;
-
-	case BITSLINEAR16:
-		return 2;
-
-	case BITSLINEAR24:
-		return 3;
-
-	case BITSLINEAR32:
-		return 4;
-
-	case BITSULAW:
-		return 1;
-
-	case BITSIMA4:
-		return 1;
-	}
-	return 1;
-}
-
 
 int File::get_best_colormodel(int driver)
 {
@@ -1451,7 +1346,6 @@ int File::colormodel_supported(int colormodel)
 	return BC_RGB888;
 }
 
-
 int64_t File::get_memory_usage() 
 {
 	int64_t result = 0;
@@ -1472,9 +1366,8 @@ FrameCache* File::get_frame_cache()
 int File::supports_video(ArrayList<PluginServer*> *plugindb, char *format)
 {
 	int i, format_i = strtoformat(plugindb, format);
-	
+
 	return supports_video(format_i);
-	return 0;
 }
 
 int File::supports_audio(ArrayList<PluginServer*> *plugindb, char *format)
@@ -1482,41 +1375,37 @@ int File::supports_audio(ArrayList<PluginServer*> *plugindb, char *format)
 	int i, format_i = strtoformat(plugindb, format);
 
 	return supports_audio(format_i);
-	return 0;
 }
-
 
 int File::supports_video(int format)
 {
 	switch(format)
 	{
-		case FILE_OGG:
-		case FILE_MOV:
-		case FILE_JPEG:
-		case FILE_JPEG_LIST:
-		case FILE_CR2:
-		case FILE_EXR:
-		case FILE_EXR_LIST:
-		case FILE_YUV:
-		case FILE_PNG:
-		case FILE_PNG_LIST:
-		case FILE_TGA:
-		case FILE_TGA_LIST:
-		case FILE_TIFF:
-		case FILE_TIFF_LIST:
-		case FILE_VMPEG:
-		case FILE_AVI_LAVTOOLS:
-		case FILE_AVI_ARNE2:
-		case FILE_AVI:
-		case FILE_AVI_ARNE1:
-		case FILE_AVI_AVIFILE:
-		case FILE_RAWDV:
+	case FILE_OGG:
+	case FILE_MOV:
+	case FILE_JPEG:
+	case FILE_JPEG_LIST:
+	case FILE_CR2:
+	case FILE_EXR:
+	case FILE_EXR_LIST:
+	case FILE_YUV:
+	case FILE_PNG:
+	case FILE_PNG_LIST:
+	case FILE_TGA:
+	case FILE_TGA_LIST:
+	case FILE_TIFF:
+	case FILE_TIFF_LIST:
+	case FILE_VMPEG:
+	case FILE_AVI_LAVTOOLS:
+	case FILE_AVI_ARNE2:
+	case FILE_AVI:
+	case FILE_AVI_ARNE1:
+	case FILE_AVI_AVIFILE:
+	case FILE_RAWDV:
 			return 1;
-			break;
 
-		default:
-			return 0;
-			break;
+	default:
+		return 0;
 	}
 }
 
@@ -1524,27 +1413,26 @@ int File::supports_audio(int format)
 {
 	switch(format)
 	{
-		case FILE_AC3:
-		case FILE_PCM:
-		case FILE_WAV:
-		case FILE_MOV:
-		case FILE_OGG:
-		case FILE_VORBIS:
-		case FILE_AMPEG:
-		case FILE_AU:
-		case FILE_AIFF:
-		case FILE_SND:
-		case FILE_AVI:
-		case FILE_AVI_LAVTOOLS:
-		case FILE_AVI_ARNE2:
-		case FILE_AVI_ARNE1:
-		case FILE_AVI_AVIFILE:
-		case FILE_RAWDV:
-			return 1;
+	case FILE_AC3:
+	case FILE_PCM:
+	case FILE_WAV:
+	case FILE_MOV:
+	case FILE_OGG:
+	case FILE_VORBIS:
+	case FILE_AMPEG:
+	case FILE_AU:
+	case FILE_AIFF:
+	case FILE_SND:
+	case FILE_AVI:
+	case FILE_AVI_LAVTOOLS:
+	case FILE_AVI_ARNE2:
+	case FILE_AVI_ARNE1:
+	case FILE_AVI_AVIFILE:
+	case FILE_RAWDV:
+		return 1;
 
-		default:
-			return 0;
-			break;
+	default:
+		return 0;
 	}
 }
 
@@ -1552,29 +1440,49 @@ const char* File::get_tag(int format)
 {
 	switch(format)
 	{
-		case FILE_AC3:          return "ac3";
-		case FILE_AIFF:         return "aif";
-		case FILE_AMPEG:        return "mp3";
-		case FILE_AU:           return "au";
-		case FILE_AVI:          return "avi";
-		case FILE_RAWDV:        return "dv";
-		case FILE_EXR:          return "exr";
-		case FILE_EXR_LIST:     return "exr";
-		case FILE_JPEG:         return "jpg";
-		case FILE_JPEG_LIST:    return "jpg";
-		case FILE_MOV:          return "mov";
-		case FILE_OGG:          return "ogg";
-		case FILE_PCM:          return "pcm";
-		case FILE_PNG:          return "png";
-		case FILE_PNG_LIST:     return "png";
-		case FILE_TGA:          return "tga";
-		case FILE_TGA_LIST:     return "tga";
-		case FILE_TIFF:         return "tif";
-		case FILE_TIFF_LIST:    return "tif";
-		case FILE_VMPEG:        return "m2v";
-		case FILE_VORBIS:       return "ogg";
-		case FILE_WAV:          return "wav";
-		case FILE_YUV:          return "m2v";
+	case FILE_AC3:
+		return "ac3";
+	case FILE_AIFF:
+		return "aif";
+	case FILE_AMPEG:
+		return "mp3";
+	case FILE_AU:
+		return "au";
+	case FILE_AVI:
+		return "avi";
+	case FILE_RAWDV:
+		return "dv";
+	case FILE_EXR:
+	case FILE_EXR_LIST:
+		return "exr";
+	case FILE_JPEG:
+	case FILE_JPEG_LIST:
+		return "jpg";
+	case FILE_MOV:
+		return "mov";
+	case FILE_OGG:
+		return "ogg";
+	case FILE_PCM:
+		return "pcm";
+	case FILE_PNG:
+		return "png";
+	case FILE_PNG_LIST:
+		return "png";
+	case FILE_TGA:
+		return "tga";
+	case FILE_TGA_LIST:
+		return "tga";
+	case FILE_TIFF:
+	case FILE_TIFF_LIST:
+		return "tif";
+	case FILE_VMPEG:
+		return "m2v";
+	case FILE_VORBIS:
+		return "ogg";
+	case FILE_WAV:
+		return "wav";
+	case FILE_YUV:
+		return "m2v";
 	}
 	return 0;
 }

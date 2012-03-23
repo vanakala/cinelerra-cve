@@ -36,7 +36,7 @@ public:
 
 // basic commands for every file interpreter
 	int open_file(int rd, int wr);
-	int close_file_derived();
+	void close_file_derived();
 	framenum get_video_length();
 	int64_t get_memory_usage();
 
@@ -45,7 +45,7 @@ public:
 
 private:
 	int read_raw();
-	int reset_parameters_derived();
+	void reset_parameters_derived();
 
 // specific to GIF
 	int import_row(VPixel *output, unsigned char *row_pointer);
@@ -54,6 +54,5 @@ private:
 // frame to return through read_frame
 	VFrame *data;
 };
-
 
 #endif

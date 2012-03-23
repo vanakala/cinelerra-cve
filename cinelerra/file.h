@@ -55,18 +55,18 @@ public:
 
 // Get attributes for various file formats.
 // The dither parameter is carried over from recording, where dither is done at the device.
-	int get_options(FormatTools *format, 
+	void get_options(FormatTools *format, 
 		int audio_options,
 		int video_options);
 
-	int raise_window();
+	void raise_window();
 // Close parameter window
 	void close_window();
 
 // ===================================== start here
-	int set_processors(int cpus);   // Set the number of cpus for certain codecs.
+	void set_processors(int cpus);   // Set the number of cpus for certain codecs.
 // Set the number of bytes to preload during reads for Quicktime.
-	int set_preload(int64_t size);
+	void set_preload(int64_t size);
 // Set the subtitle for libmpeg3.  -1 disables subtitles.
 	void set_subtitle(int value);
 // Set whether to interpolate raw images
@@ -93,7 +93,7 @@ public:
 		float base_framerate);
 
 // Get index from the file if one exists.  Returns 0 on success.
-	int get_index(char *index_path);
+	int get_index(const char *index_path);
 
 // start a thread for writing to avoid blocking during record
 	void start_audio_thread(int buffer_size, int ring_buffers);
@@ -118,7 +118,7 @@ public:
 
 // write any headers and close file
 // ignore_thread is used by SigHandler to break out of the threads.
-	int close_file(int ignore_thread = 0);
+	void close_file(int ignore_thread = 0);
 
 // get length of file normalized to base samplerate
 	samplenum get_audio_length(int base_samplerate = -1);
@@ -156,13 +156,10 @@ public:
 	int write_audio_buffer(int len);
 	int write_video_buffer(int len);
 
-
-
-
 // set channel for buffer accesses
-	int set_channel(int channel);
+	void set_channel(int channel);
 // set position in samples
-	int set_audio_position(samplenum position);
+	void set_audio_position(samplenum position);
 
 // Read audio into aframe
 // aframe->source_duration secs starting from aframe->source_pts
@@ -178,10 +175,10 @@ public:
 
 // set layer for video read
 // is_thread is used by FileThread::run to prevent recursive lockup.
-	int set_layer(int layer, int is_thread = 0);
+	void set_layer(int layer, int is_thread = 0);
 // set position in frames
 // is_thread is used by FileThread::run to prevent recursive lockup.
-	int set_video_position(framenum position, float base_framerate = -1, int is_thread = 0);
+	void set_video_position(framenum position, float base_framerate = -1, int is_thread = 0);
 
 // pts API - frame must have source_pts, and layer set
 	int get_frame(VFrame *frame, int is_thread = 0);
@@ -194,11 +191,8 @@ public:
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback
-	int can_copy_from(Edit *edit, framenum position, int output_w, int output_h); // This file can copy frames directly from the asset
+	int can_copy_from(Edit *edit, int output_w, int output_h); // This file can copy frames directly from the asset
 	int get_render_strategy(ArrayList<int>* render_strategies);
-	int compressed_frame_size();
-	int read_compressed_frame(VFrame *buffer);
-	int write_compressed_frame(VFrame *buffer);
 
 // These are separated into two routines so a file doesn't have to be
 // allocated.
@@ -230,9 +224,6 @@ public:
 	static const char* formattostr(ArrayList<PluginServer*> *plugindb, int format);
 	static int strtobits(char *bits);
 	static const char* bitstostr(int bits);
-	static int str_to_byteorder(char *string);
-	static char* byteorder_to_str(int byte_order);
-	int bytes_per_sample(int bits); // Convert the bit descriptor into a byte count.
 
 	Asset *asset;    // Copy of asset since File outlives EDL
 	FileBase *file; // virtual class for file type

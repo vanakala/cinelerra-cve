@@ -44,8 +44,8 @@ public:
 
 	static int check_sig(Asset *asset);
 	int open_file(int rd, int wr);
-	int close_file();
-	int set_audio_position(samplenum sample);
+	void close_file();
+	void set_audio_position(samplenum sample);
 	int read_samples(double *buffer, int len);
 	int write_samples(double **buffer, int len);
 	void format_to_asset();
@@ -74,6 +74,7 @@ public:
 	SndFileConfig *gui;
 };
 
+
 class SndFileLOHI : public BC_Radial
 {
 public:
@@ -89,7 +90,7 @@ public:
 	SndFileConfig(BC_WindowBase *parent_window, Asset *asset);
 	~SndFileConfig();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 	BC_WindowBase *parent_window;

@@ -40,7 +40,7 @@
 #include <string.h>
 
 FileYUV::FileYUV(Asset *asset, File *file)
-	: FileBase(asset, file)
+ : FileBase(asset, file)
 {
 	if (asset->format == FILE_UNKNOWN) asset->format = FILE_YUV;
 	asset->byte_order = 0; // FUTURE: is this always correct?
@@ -75,24 +75,25 @@ int FileYUV::open_file(int should_read, int should_write)
 			errormsg("Illegal frame size '%d x %d'\n", asset->width, asset->height);
 			return 1;
 		}
-		
+
 		asset->layers = 1;
 		asset->video_data = 1;
 		asset->audio_data = 0;
-		
+
 		asset->frame_rate = stream->get_frame_rate();
 		asset->aspect_ratio = stream->get_aspect_ratio();
 		asset->interlace_mode = stream->get_interlace();
-		
+
 		return 0;
 	}
 
-	if (should_write) {
-		if (asset->use_pipe) {
+	if (should_write)
+	{
+		if (asset->use_pipe)
 			result = stream->open_write(asset->path, asset->pipe);
-		} else {
+		else
 			result = stream->open_write(asset->path, NULL);
-		}
+
 		if (result) return result;
 
 		// not sure if we're supposed to send interlace info with each set of frames, (wouldn't know howto!)??
@@ -103,16 +104,14 @@ int FileYUV::open_file(int should_read, int should_write)
 		stream->set_aspect_ratio(asset->aspect_ratio);
 
 		result = stream->write_header();
-		if (result) return result;
-		
-		return 0;
+		return result;
 	}
 
 	// no action given
 	return 1;
 }
 
-int FileYUV::close_file()
+void FileYUV::close_file()
 {
 	if (pipe_latency && ffmpeg && stream) {
 		// deal with last frame still in the pipe
@@ -130,13 +129,12 @@ int FileYUV::close_file()
 	stream->close_fd();
 	if (ffmpeg) delete ffmpeg;
 	ffmpeg = 0;
-	return 0;
 }
 
 // NOTE: set_video_position() called every time a frame is read
-int FileYUV::set_video_position(framenum frame_number)
+void FileYUV::set_video_position(framenum frame_number)
 {
-	return stream->seek_frame(frame_number);
+	stream->seek_frame(frame_number);
 }
 
 int FileYUV::read_frame(VFrame *frame)
@@ -174,7 +172,7 @@ int FileYUV::read_frame(VFrame *frame)
 	{
 		FFMPEG::convert_cmodel(input, frame);
 	}
-	
+
 	return 0;
 }
 
@@ -223,7 +221,6 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 					ffmpeg = 0;
 					return 1;
 				}
-
 
 				uint8_t *yuv[3];
 				yuv[0] = temp->get_y();
@@ -298,8 +295,7 @@ int FileYUV::check_sig(Asset *asset)
 }
 
 // NOTE: this is called on the write stream, not the read stream!
-//       as such, I have no idea what one is supposed to do with position.
-int FileYUV::can_copy_from(Edit *edit, framenum position)
+int FileYUV::can_copy_from(Edit *edit)
 {
 	// NOTE: width and height already checked in file.C
 
@@ -330,20 +326,13 @@ int FileYUV::colormodel_supported(int color_model)
 	// NOTE: file.C does not convert from YUV, so we have to do it.
 }
 
-
-/*  
+/*
     Other member functions used in other file* modules:
 
-    write_compressed_frame(): used for record, so probably not needed
-    read_compressed_frame(): perhaps never used?
-    get_video_position: used by record only
     reset_parameters(): not sure when used or needed
     reset_parameters_derived(): not sure when used or needed
     *_audio_*: yuv4mpeg doesn't handle audio
-    
 */
-
-
 
 void FileYUV::ensure_temp(int width, int height) 
 {
@@ -389,7 +378,7 @@ YUVConfigVideo::~YUVConfigVideo()
 	delete ffmpeg;
 }
 
-int YUVConfigVideo::create_objects()
+void YUVConfigVideo::create_objects()
 {
 	BC_Title *bt;
 	int init_x = 10;
@@ -446,7 +435,6 @@ int YUVConfigVideo::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	return 0;
 }
 
 void YUVConfigVideo::close_event()
@@ -456,7 +444,7 @@ void YUVConfigVideo::close_event()
 
 
 PipeCheckBox::PipeCheckBox(int x, int y, int value)
-	: BC_CheckBox(x, y, value)
+ : BC_CheckBox(x, y, value)
 {
 	this->textbox = 0;
 }
@@ -472,7 +460,7 @@ int PipeCheckBox::handle_event()
 
 
 PipePreset::PipePreset(int x, int y, const char *title, BC_TextBox *textbox, BC_CheckBox *checkbox)
-	: BC_PopupMenu(x, y, 150, title)
+ : BC_PopupMenu(x, y, 150, title)
 {
 	this->pipe_textbox = textbox;
 	this->pipe_checkbox =checkbox;

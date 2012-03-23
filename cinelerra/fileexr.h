@@ -74,12 +74,10 @@ class EXRUnit : public FrameWriterUnit
 public:
 	EXRUnit(FileEXR *file, FrameWriter *writer);
 	~EXRUnit();
-	
+
 	FileEXR *file;
 	VFrame *temp_frame;
 };
-
-
 
 class EXRConfigVideo : public BC_Window
 {
@@ -87,7 +85,7 @@ public:
 	EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset);
 	~EXRConfigVideo();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 	BC_WindowBase *parent_window;

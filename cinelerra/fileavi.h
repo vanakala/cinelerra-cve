@@ -32,10 +32,6 @@
 #include <vector>
 #endif
 
-//class IAviWriteFile;
-//class IAviReadFile;
-//class IAviReadStream;
-
 #define MAX_STREAMS 256
 
 class FileAVI : public FileBase
@@ -54,15 +50,10 @@ public:
 
 	int get_best_colormodel(int driver, int colormodel);
 	int open_file(int rd, int wr);
-	int close_file();
+	void close_file();
 	void reset();
-	int set_audio_position(samplenum x);
-	int set_video_position(framenum x);
-	int write_samples(double **buffer, int len);
-	int write_frames(VFrame ***frames, int len);
-	int write_compressed_frame(VFrame *buffer);
-	int read_compressed_frame(VFrame *buffer);
-	int compressed_frame_size();
+	void set_audio_position(samplenum x);
+	void set_video_position(framenum x);
 	int read_samples(double *buffer, int len);
 	int read_frame(VFrame *frame);
 	static char* vcodec_to_fourcc(char *input, char *output);
@@ -72,7 +63,6 @@ public:
 	static int cmodel_bc_to_avi(int input);
 
 	static void initialize_avifile();
-
 
 private:
 	static int check_sig_arne2(Asset *asset, int &score);
@@ -100,16 +90,9 @@ private:
 	IAviWriteStream *astream_out[MAX_STREAMS];
 	IAviVideoWriteStream *vstream_out[MAX_STREAMS];
 	int out_color_model;
-    BitmapInfo *out_bitmap_info;
+	BitmapInfo *out_bitmap_info;
 	static int avifile_initialized;
-
 #endif
-
-
-
-	
-
-
 
 	unsigned char *temp_audio;
 	int64_t temp_allocated;
@@ -130,6 +113,7 @@ public:
 	AVIConfigAudio *gui;
 };
 
+
 class AVIConfigAudio : public BC_Window
 {
 public:
@@ -138,9 +122,9 @@ public:
 
 	static int calculate_w(int format);
 	static int calculate_h(int format);
-	int create_objects();
+	void create_objects();
 	void close_event();
-	int generate_codeclist();
+	void generate_codeclist();
 	void update_codecs();
 
 	AVIACodecList *list;
@@ -192,9 +176,9 @@ public:
 
 	static int calculate_w(int format);
 	static int calculate_h(int format);
-	int create_objects();
+	void create_objects();
 	void close_event();
-	int generate_codeclist();
+	void generate_codeclist();
 	void generate_attributelist();
 	void update_attribute(int recursive);
 // Get text associated with current attribute
@@ -213,7 +197,5 @@ public:
 	const char *locked_compressor;
 	char string[BCTEXTLEN];
 };
-
-
 
 #endif

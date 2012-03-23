@@ -663,7 +663,6 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 	if(result)
 	{
 		if(!file->can_copy_from(playable_edit, 
-			current_pts + playable_track->nudge,
 			edl->session->output_w, 
 			edl->session->output_h))
 			result = 0;

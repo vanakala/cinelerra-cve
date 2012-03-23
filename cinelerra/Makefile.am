@@ -117,9 +117,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    ffmpeg.C \
 		    fileac3.C \
 		    fileavi.C \
-		    filebaseaudio.C \
 		    filebase.C \
-		    filebaseulaw.C \
 		    file.C \
 		    filecr2.C \
 		    filedv.C \

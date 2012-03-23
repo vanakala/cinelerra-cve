@@ -625,13 +625,13 @@ int Asset::read_index(FileXML *file)
 	return 0;
 }
 
-int Asset::write_index(char *path, int data_bytes)
+void Asset::write_index(const char *path, int data_bytes)
 {
 	FILE *file;
 	if(!(file = fopen(path, "wb")))
 	{
 // failed to create it
-		errorbox(_("Couldn't create index file '%s'\n"), path);
+		errorbox(_("Couldn't create index file '%s'"), path);
 	}
 	else
 	{

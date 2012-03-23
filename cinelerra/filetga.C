@@ -54,8 +54,6 @@ FileTGA::~FileTGA()
 
 int FileTGA::check_sig(Asset *asset)
 {
-
-
 // Test file extension
 	int result = 0;
 	int l;
@@ -137,14 +135,13 @@ const char* FileTGA::str_to_compression(const char *string)
 	return TGA_RGB;
 }
 
-int FileTGA::can_copy_from(Edit *edit, framenum position)
+int FileTGA::can_copy_from(Edit *edit)
 {
 	if(edit->asset->format == FILE_TGA_LIST ||
 		edit->asset->format == FILE_TGA)
 		return 1;
 	return 0;
 }
-
 
 int  FileTGA::colormodel_supported(int colormodel)
 {
@@ -583,12 +580,12 @@ void FileTGA::read_line(unsigned char *row,
 			bcopy(data + file_offset, row, bytes * width);
 		file_offset += bytes * width;
 	}
-	
+
 	if(fliphoriz)
 	{
 		flip_line(row, bytes, width);
 	}
-	
+
 	if(image_type == TGA_TYPE_COLOR)
 	{
 		if(bpp == 16)
@@ -599,10 +596,6 @@ void FileTGA::read_line(unsigned char *row,
 		{
 			bgr2rgb(row, row, width, bytes, alphabits);
 		}
-	}
-	else
-	{
-		;
 	}
 }
 
@@ -805,7 +798,7 @@ void FileTGA::bgr2rgb(unsigned char *dest,
 
 			src += bytes;
 		}
-    }
+	}
 }
 
 void FileTGA::upsample(unsigned char *dest,
@@ -830,7 +823,7 @@ void FileTGA::upsample(unsigned char *dest,
 
 		dest -= 3;
 		src -= bytes;
-    }
+	}
 }
 
 
@@ -868,7 +861,7 @@ TGAConfigVideo::~TGAConfigVideo()
 	compression_items.remove_all_objects();
 }
 
-int TGAConfigVideo::create_objects()
+void TGAConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -880,7 +873,6 @@ int TGAConfigVideo::create_objects()
 		&compression_items);
 	textbox->create_objects();
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void TGAConfigVideo::close_event()
@@ -898,7 +890,7 @@ TGACompression::TGACompression(TGAConfigVideo *gui,
 	compression_items,
 	FileTGA::compression_to_str(gui->asset->vcodec),
 	x, 
- 	y, 
+	y, 
 	200,
 	200)
 {

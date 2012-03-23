@@ -43,8 +43,6 @@ FilePNG::~FilePNG()
 {
 }
 
-
-
 int FilePNG::check_sig(Asset *asset)
 {
 	int l;
@@ -70,8 +68,6 @@ int FilePNG::check_sig(Asset *asset)
 	return 0;
 }
 
-
-
 void FilePNG::get_parameters(BC_WindowBase *parent_window, 
 	Asset *asset, 
 	BC_WindowBase* &format_window,
@@ -88,8 +84,7 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-
-int FilePNG::can_copy_from(Edit *edit, framenum position)
+int FilePNG::can_copy_from(Edit *edit)
 {
 	if(edit->asset->format == FILE_MOV)
 	{
@@ -102,7 +97,6 @@ int FilePNG::can_copy_from(Edit *edit, framenum position)
 
 	return 0;
 }
-
 
 int FilePNG::colormodel_supported(int colormodel)
 {
@@ -121,7 +115,6 @@ int FilePNG::colormodel_supported(int colormodel)
 		return native_cmodel;
 	}
 }
-
 
 int FilePNG::get_best_colormodel(Asset *asset, int driver)
 {
@@ -142,7 +135,7 @@ int FilePNG::read_frame_header(const char *path)
 
 	if(!(stream = fopen(path, "rb")))
 	{
-		errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+		errormsg("Error while opening \"%s\" for reading. \n%m", asset->path);
 		return 1;
 	}
 
@@ -152,7 +145,6 @@ int FilePNG::read_frame_header(const char *path)
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	info_ptr = png_create_info_struct(png_ptr);
 	png_init_io(png_ptr, stream);
-
 
 	png_read_info(png_ptr, info_ptr);
 
@@ -188,15 +180,11 @@ int FilePNG::read_frame_header(const char *path)
 		native_cmodel = BC_RGB888;
 	}
 
-
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 	fclose(stream);
 
 	return result;
 }
-
-
-
 
 static void read_function(png_structp png_ptr,
 	png_bytep data, 
@@ -222,8 +210,6 @@ static void flush_function(png_structp png_ptr)
 {
 	;
 }
-
-
 
 int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
@@ -291,7 +277,6 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	else
 		output_frame = frame;
 
-
 	png_write_image(png_ptr, output_frame->get_rows());
 	png_write_end(png_ptr, info_ptr);
 	png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -330,7 +315,7 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	if (((native_cmodel == BC_RGBA16161616)||(native_cmodel == BC_RGB161616))
 		&& ((colormodel == BC_RGBA8888)||(colormodel == BC_RGB888)))
 	{
-	    png_set_strip_16(png_ptr);
+		png_set_strip_16(png_ptr);
 	}
 
 /* If we're dropping the alpha channel, use the background color of the image
@@ -390,7 +375,6 @@ FrameWriterUnit* FilePNG::new_writer_unit(FrameWriter *writer)
 }
 
 
-
 PNGUnit::PNGUnit(FilePNG *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
 {
@@ -419,12 +403,11 @@ PNGConfigVideo::~PNGConfigVideo()
 {
 }
 
-int PNGConfigVideo::create_objects()
+void PNGConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(new PNGUseAlpha(this, x, y));
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void PNGConfigVideo::close_event()

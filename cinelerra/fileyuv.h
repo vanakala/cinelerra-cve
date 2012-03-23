@@ -50,9 +50,9 @@ public:
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame);
 	int write_frames(VFrame ***frame, int len);
-	int can_copy_from(Edit *edit, framenum position);
-	int close_file();
-	int set_video_position(framenum x);
+	int can_copy_from(Edit *edit);
+	void close_file();
+	void set_video_position(framenum x);
 
 	// below here are local routines not required by interface
 	void ensure_temp(int width, int height);
@@ -73,7 +73,7 @@ public:
 		FormatTools *format);
 	~YUVConfigVideo();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 	BC_WindowBase *parent_window;

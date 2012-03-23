@@ -46,7 +46,7 @@ public:
 	static void read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
 	static void write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
 
-	int can_copy_from(Edit *edit, framenum position);
+	int can_copy_from(Edit *edit);
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);
@@ -108,7 +108,7 @@ class TGAConfigVideo : public BC_Window
 public:
 	TGAConfigVideo(BC_WindowBase *gui, Asset *asset);
 	~TGAConfigVideo();
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 	ArrayList<BC_ListBoxItem*> compression_items;

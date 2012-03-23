@@ -237,24 +237,14 @@ void FileThread::run()
 					file_lock->lock("FileThread::run 2");
 					if(do_audio)
 					{
-							result = file->write_samples(audio_buffer[local_buffer], 
+						result = file->write_samples(audio_buffer[local_buffer],
 							output_size[local_buffer]);
 					}
 					else
 					if(do_video)
 					{
-						result = 0;
-						if(compressed)
-						{
-							for(j = 0; j < file->asset->layers && !result; j++)
-								for(i = 0; i < output_size[local_buffer] && !result; i++)
-									result = file->write_compressed_frame(video_buffer[local_buffer][j][i]);
-						}
-						else
-						{
-							result = file->write_frames(video_buffer[local_buffer], 
-								output_size[local_buffer]);
-						}
+						result = file->write_frames(video_buffer[local_buffer],
+							output_size[local_buffer]);
 					}
 
 					file_lock->unlock();
@@ -446,7 +436,7 @@ int FileThread::stop_reading()
 	return 0;
 }
 
-int FileThread::set_video_position(framenum position)
+void FileThread::set_video_position(framenum position)
 {
 // If the new position can't be added to the buffer without restarting,
 // disable reading.
@@ -476,7 +466,6 @@ int FileThread::set_video_position(framenum position)
 	}
 
 	this->read_position = position;
-	return 0;
 }
 
 int FileThread::set_layer(int layer)

@@ -44,7 +44,7 @@ public:
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
-	int can_copy_from(Edit *edit, framenum position);
+	int can_copy_from(Edit *edit);
 	int read_frame_header(const char *path);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
@@ -68,7 +68,7 @@ public:
 	JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset);
 	~JPEGConfigVideo();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 	BC_WindowBase *parent_window;

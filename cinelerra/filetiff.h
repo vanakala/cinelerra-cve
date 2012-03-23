@@ -46,7 +46,7 @@ public:
 	static int check_sig(Asset *asset);
 	static const char* compression_to_str(int value);
 	static const char* cmodel_to_str(int value);
-	int can_copy_from(Edit *edit, framenum position);
+	int can_copy_from(Edit *edit);
 	int colormodel_supported(int colormodel);
 	int get_best_colormodel(Asset *asset, int driver);
 	int read_frame_header(const char *path);
@@ -98,8 +98,7 @@ public:
 	TIFFConfigVideo(BC_WindowBase *parent_window, Asset *asset);
 	~TIFFConfigVideo();
 
-
-	int create_objects();
+	void create_objects();
 	void close_event();
 	static char* alpha_to_codec(int use_alpha);
 	static int codec_to_alpha(char *codec);
@@ -116,6 +115,7 @@ public:
 	int handle_event();
 	TIFFConfigVideo *gui;
 };
+
 
 class TIFFColorspaceItem : public BC_MenuItem
 {
@@ -135,6 +135,7 @@ public:
 	int handle_event();
 	TIFFConfigVideo *gui;
 };
+
 
 class TIFFCompressionItem : public BC_MenuItem
 {

@@ -44,35 +44,30 @@ public:
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options);
-	
-	int reset_parameters_derived();
+
+	void reset_parameters_derived();
 	int open_file(int rd, int wr);
 
 	static int check_sig(Asset *asset);
-	int close_file_derived();
+	void close_file_derived();
 
-	int set_video_position(framenum x);
-	int set_audio_position(samplenum x);
+	void set_video_position(framenum x);
+	void set_audio_position(samplenum x);
 
 	int audio_samples_copy(double **buffer, int len);
-	
+
 	int write_samples(double **buffer, int len);
 	int write_frames(VFrame ***frames, int len);
-	
-	int read_compressed_frame(VFrame *buffer);
-	int write_compressed_frame(VFrame *buffers);
-	
-	int compressed_frame_size();
-	
+
 	int read_samples(double *buffer, int len);
 	int read_frame(VFrame *frame);
-	
+
 	int colormodel_supported(int colormodel);
-	
-	int can_copy_from(Edit *edit, framenum position);
-	
+
+	int can_copy_from(Edit *edit);
+
 	static int get_best_colormodel(Asset *asset, int driver);
-	
+
 	framenum get_audio_frame(samplenum pos);
 	framenum get_audio_offset(samplenum pos);
 
@@ -82,14 +77,14 @@ private:
 	Mutex *stream_lock;
 	Mutex *decoder_lock;
 	Mutex *video_position_lock;
-	
+
 	dv_decoder_t *decoder;
 	dv_encoder_t *encoder;
 	dv_encoder_t *audio_encoder;
-		
+
 	samplenum audio_position;
 	framenum video_position;
-	
+
 	unsigned char *video_buffer;
 	unsigned char *audio_buffer;
 
@@ -98,9 +93,9 @@ private:
 	int audio_sample_buffer_end;
 	int audio_sample_buffer_len;
 	int audio_sample_buffer_maxsize;
-	
+
 	int audio_frames_written;
-	
+
 	int output_size;
 	int isPAL;
 };
@@ -112,14 +107,13 @@ public:
 	DVConfigAudio(BC_WindowBase *parent_window, Asset *asset);
 	~DVConfigAudio();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 private:
 	Asset *asset;
 	BC_WindowBase *parent_window;
 };
-
 
 
 class DVConfigVideo: public BC_Window
@@ -128,13 +122,12 @@ public:
 	DVConfigVideo(BC_WindowBase *parent_window, Asset *asset);
 	~DVConfigVideo();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 private:
 	Asset *asset;
 	BC_WindowBase *parent_window;
 };
-
 
 #endif

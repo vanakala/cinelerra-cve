@@ -106,15 +106,15 @@ public:
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options);
-	
-	int reset_parameters_derived();
+
+	void reset_parameters_derived();
 	int open_file(int rd, int wr);
 	static int check_sig(Asset *asset);
-	int close_file();
-	int close_file_derived();
+	void close_file();
+	void close_file_derived();
 
-	int set_video_position(framenum x);
-	int set_audio_position(samplenum x);
+	void set_video_position(framenum x);
+	void set_audio_position(samplenum x);
 	int colormodel_supported(int colormodel);
 	int get_best_colormodel(Asset *asset, int driver);
 	int write_samples(double **buffer, int len);
@@ -237,7 +237,7 @@ public:
 	OGGConfigAudio(BC_WindowBase *parent_window, Asset *asset);
 	~OGGConfigAudio();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 	Asset *asset;
@@ -298,14 +298,13 @@ public:
 };
 
 
-
 class OGGConfigVideo: public BC_Window
 {
 public:
 	OGGConfigVideo(BC_WindowBase *parent_window, Asset *asset);
 	~OGGConfigVideo();
 
-	int create_objects();
+	void create_objects();
 	void close_event();
 
 	OGGTheoraFixedBitrate *fixed_bitrate;
@@ -351,8 +350,6 @@ private:
 	ptstime video_pts;
 	ptstime video_start_pts;
 	ptstime video_end_pts;
-
 };
-
 
 #endif

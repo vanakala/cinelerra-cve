@@ -37,8 +37,6 @@
 #include "cmodel_permutation.h"
 #include "mainerror.h"
 
-
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -85,14 +83,14 @@ FileDV::~FileDV()
 	if(decoder) dv_decoder_free(decoder);
 	if(encoder) dv_encoder_free(encoder);
 	if(audio_encoder) dv_encoder_free(audio_encoder);
-	
+
 	delete stream_lock;
 	delete decoder_lock;
 	delete video_position_lock;
-	
+
 	delete[] video_buffer;
 	delete[] audio_buffer;
-	
+
 	if(audio_sample_buffer)
 	{
 		for(int i = 0; i < asset->channels; i++)
@@ -124,10 +122,9 @@ void FileDV::get_parameters(BC_WindowBase *parent_window,
 		window->run_window();
 		delete window;
 	}
-
 }
 
-int FileDV::reset_parameters_derived()
+void FileDV::reset_parameters_derived()
 {
 	if(decoder) dv_decoder_free(decoder);
 	if(encoder) dv_encoder_free(encoder);
@@ -165,7 +162,6 @@ int FileDV::reset_parameters_derived()
 // output_size gets set in open_file, once we know if the frames are PAL or NTSC
 // output and input are allocated at the same point.
 	output_size = 0;
-	return 0;
 }
 
 int FileDV::open_file(int rd, int wr)
@@ -331,24 +327,20 @@ int FileDV::check_sig(Asset *asset)
 	return 0;
 }
 
-int FileDV::close_file_derived()
+void FileDV::close_file_derived()
 {
 	if(stream) fclose(stream);
 	stream = 0;
-
-	return 0;
 }
 
-int FileDV::set_video_position(framenum x)
+void FileDV::set_video_position(framenum x)
 {
 	video_position = x;
-	return 0;
 }
 
-int FileDV::set_audio_position(samplenum x)
+void FileDV::set_audio_position(samplenum x)
 {
 	audio_position = x;
-	return 0;
 }
 
 int FileDV::audio_samples_copy(double **buffer, int len)
@@ -628,42 +620,6 @@ int FileDV::write_frames(VFrame ***frames, int len)
 	return 0;
 }
 
-int FileDV::read_compressed_frame(VFrame *buffer)
-{
-	int64_t result;
-	if(stream == 0) return 0;
-
-	if (fseeko(stream, (off_t) video_position * output_size, SEEK_SET))
-	{
-		errormsg("Unable to seek DV file to %lli\n", (off_t)(video_position * output_size));
-	}
-	result = fread(buffer->get_data(), output_size, 1, stream);
-	video_position++;
-
-	buffer->set_compressed_size(result);
-
-	return result != 0;
-}
-
-int FileDV::write_compressed_frame(VFrame *buffer)
-{
-	int result = 0;
-	if(stream == 0) return 0;
-
-	if (fseeko(stream, (off_t) video_position * output_size, SEEK_SET))
-	{
-		errormsg("Unable to seek DV file to %lli\n", (off_t)(video_position * output_size));
-	}
-	result = fwrite(buffer->get_data(), buffer->get_compressed_size(), 1, stream);
-	video_position++;
-	return result != 0;
-}
-
-int FileDV::compressed_frame_size()
-{
-	return output_size;
-}
-
 int FileDV::read_samples(double *buffer, int len)
 {
 	int count = 0;
@@ -766,65 +722,64 @@ int FileDV::read_frame(VFrame *frame)
 
 	switch(frame->get_color_model())
 	{
-		case BC_COMPRESSED:
-			frame->allocate_compressed_data(output_size);
-			frame->set_compressed_size(output_size);
-			memcpy(frame->get_data(), video_buffer, output_size);
-			break;
+	case BC_COMPRESSED:
+		frame->allocate_compressed_data(output_size);
+		frame->set_compressed_size(output_size);
+		memcpy(frame->get_data(), video_buffer, output_size);
+		break;
 
-		case BC_RGB888:
-			pitches[0] = 720 * 3;
-			decoder_lock->lock("FileDV::read_frame 10");
-			dv_decode_full_frame(decoder, video_buffer, e_dv_color_rgb,
-				row_pointers, pitches);
-			decoder_lock->unlock();
-			break;
+	case BC_RGB888:
+		pitches[0] = 720 * 3;
+		decoder_lock->lock("FileDV::read_frame 10");
+		dv_decode_full_frame(decoder, video_buffer, e_dv_color_rgb,
+			row_pointers, pitches);
+		decoder_lock->unlock();
+		break;
 
-		case BC_YUV422:
-			decoder_lock->lock("FileDV::read_frame 20");
-			dv_decode_full_frame(decoder, video_buffer, e_dv_color_yuv,
-				row_pointers, pitches);
-			decoder_lock->unlock();
-			break;
+	case BC_YUV422:
+		decoder_lock->lock("FileDV::read_frame 20");
+		dv_decode_full_frame(decoder, video_buffer, e_dv_color_yuv,
+			row_pointers, pitches);
+		decoder_lock->unlock();
+		break;
 
-		default:
-			unsigned char *data = new unsigned char[asset->height * asset->width * 2];
-			unsigned char **temp_pointers = new unsigned char*[asset->height];
+	default:
+		unsigned char *data = new unsigned char[asset->height * asset->width * 2];
+		unsigned char **temp_pointers = new unsigned char*[asset->height];
+		for(int i = 0; i < asset->height; i++)
+			temp_pointers[i] = data + asset->width * 2 * i;
 
-			for(int i = 0; i < asset->height; i++)
-				temp_pointers[i] = data + asset->width * 2 * i;
+		decoder_lock->lock("FileDV::read_frame 30");
+		dv_decode_full_frame(decoder, video_buffer, e_dv_color_yuv,
+			temp_pointers, pitches);
+		decoder_lock->unlock();
 
-			decoder_lock->lock("FileDV::read_frame 30");
-			dv_decode_full_frame(decoder, video_buffer, e_dv_color_yuv,
-				temp_pointers, pitches);
-			decoder_lock->unlock();
+		cmodel_transfer(row_pointers,
+			temp_pointers,
+			row_pointers[0],
+			row_pointers[1],
+			row_pointers[2],
+			temp_pointers[0],
+			temp_pointers[1],
+			temp_pointers[2],
+			0,
+			0,
+			asset->width,
+			asset->height,
+			0,
+			0,
+			asset->width,
+			asset->height,
+			BC_YUV422,
+			frame->get_color_model(),
+			0,
+			asset->width,
+			asset->width);
 
-			cmodel_transfer(row_pointers,
-				temp_pointers,
-				row_pointers[0],
-				row_pointers[1],
-				row_pointers[2],
-				temp_pointers[0],
-				temp_pointers[1],
-				temp_pointers[2],
-				0,
-				0,
-				asset->width,
-				asset->height,
-				0,
-				0,
-				asset->width,
-				asset->height,
-				BC_YUV422,
-				frame->get_color_model(),
-				0,
-				asset->width,
-				asset->width);
+		delete[] temp_pointers;
+		delete[] data;
 
-			delete[] temp_pointers;
-			delete[] data;
-
-			break;
+		break;
 	}
 
 	return 0;
@@ -835,7 +790,7 @@ int FileDV::colormodel_supported(int colormodel)
 	return colormodel;
 }
 
-int FileDV::can_copy_from(Edit *edit, framenum position)
+int FileDV::can_copy_from(Edit *edit)
 {
 	if(edit->asset->format == FILE_RAWDV ||
 			(edit->asset->format == FILE_MOV &&
@@ -895,11 +850,10 @@ DVConfigAudio::~DVConfigAudio()
 {
 }
 
-int DVConfigAudio::create_objects()
+void DVConfigAudio::create_objects()
 {
 	add_tool(new BC_Title(10, 10, _("There are no audio options for this format")));
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void DVConfigAudio::close_event()
@@ -923,11 +877,10 @@ DVConfigVideo::~DVConfigVideo()
 {
 }
 
-int DVConfigVideo::create_objects()
+void DVConfigVideo::create_objects()
 {
 	add_tool(new BC_Title(10, 10, _("There are no video options for this format")));
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 void DVConfigVideo::close_event()
