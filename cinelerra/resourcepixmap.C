@@ -148,7 +148,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	if(!PTSEQU(edit->source_pts, this->source_pts) ||
 		(data_type == TRACK_AUDIO) ||
 		(data_type == TRACK_VIDEO) ||
-		mwindow->edl->local_session->zoom_time != zoom_time || 
+		!PTSEQU(mwindow->edl->local_session->zoom_time, zoom_time) || 
 		mwindow->edl->local_session->zoom_track != zoom_track ||
 		this->pixmap_h != pixmap_h ||
 		(data_type == TRACK_AUDIO && 
@@ -159,8 +159,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 // Shouldn't draw at all if zoomed in below index zoom.
 		refresh_x = 0;
 		refresh_w = pixmap_w;
-		if(mwindow->edl->local_session->zoom_time != zoom_time)
-			mwindow->frame_cache->remove_all();
 	}
 	else
 	{

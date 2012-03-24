@@ -321,6 +321,8 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);
 		}
 	}
+	if(mwindow->frame_cache->total() > 32)
+		mwindow->frame_cache->delete_oldest();
 }
 
 
