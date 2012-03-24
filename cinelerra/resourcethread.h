@@ -106,8 +106,6 @@ public:
 	ResourceThread(MWindow *mwindow);
 	~ResourceThread();
 
-	void create_objects();
-
 // reset - delete all picons.  Used for index building.
 	void stop_draw(int reset);
 	void start_draw();

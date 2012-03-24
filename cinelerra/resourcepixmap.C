@@ -56,7 +56,14 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 	int h)
  : BC_Pixmap(canvas, w, h)
 {
-	reset();
+	edit_x = 0;
+	pixmap_x = 0;
+	pixmap_w = 0;
+	pixmap_h = 0;
+	zoom_track = 0;
+	zoom_y = 0;
+	visible = 1;
+	zoom_time = 0;
 
 	this->mwindow = mwindow;
 	this->canvas = canvas;
@@ -69,19 +76,6 @@ ResourcePixmap::~ResourcePixmap()
 {
 }
 
-
-void ResourcePixmap::reset()
-{
-	edit_x = 0;
-	pixmap_x = 0;
-	pixmap_w = 0;
-	pixmap_h = 0;
-	zoom_track = 0;
-	zoom_y = 0;
-	visible = 1;
-	zoom_time = 0;
-}
-
 void ResourcePixmap::resize(int w, int h)
 {
 	int new_w = (w > get_w()) ? w : get_w();
@@ -89,7 +83,6 @@ void ResourcePixmap::resize(int w, int h)
 
 	BC_Pixmap::resize(new_w, new_h);
 }
-
 
 void ResourcePixmap::draw_data(Edit *edit,
 	int edit_x,
@@ -142,7 +135,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 		if(!need_redraw)
 			return;
 	}
-
 
 // Redraw everything
 	if(!PTSEQU(edit->source_pts, this->source_pts) ||
@@ -205,7 +197,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 					refresh_w, 
 					y);
 			}
- 		}
+		}
 		else
 // Start translated right and pixmap came off of right side
 		if(pixmap_w < this->pixmap_w && edit_x < this->edit_x && 
@@ -433,7 +425,6 @@ void ResourcePixmap::draw_title(Edit *edit,
 	}
 }
 
-
 // Need to draw one more x
 void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 {
@@ -468,7 +459,6 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 		}
 	}
 }
-
 
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 {
@@ -602,8 +592,6 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	mwindow->audio_cache->check_in(edit->asset);
 }
 
-
-
 void ResourcePixmap::draw_wave(int x, double high, double low)
 {
 	int top_pixel = 0;
@@ -624,7 +612,6 @@ void ResourcePixmap::draw_wave(int x, double high, double low)
 		y2,
 		this);
 }
-
 
 void ResourcePixmap::draw_video_resource(Edit *edit, 
 	int edit_x,
@@ -698,7 +685,6 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		canvas->test_timer();
 	}
 }
-
 
 void ResourcePixmap::dump()
 {

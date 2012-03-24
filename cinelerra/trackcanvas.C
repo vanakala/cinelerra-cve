@@ -130,7 +130,6 @@ int TrackCanvas::create_objects()
 	pankeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->pankeyframe_data, PIXMAP_ALPHA);
 	projectorkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->projectorkeyframe_data, PIXMAP_ALPHA);
 	maskkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->maskkeyframe_data, PIXMAP_ALPHA);
-	resource_thread->create_objects();
 	draw();
 	update_cursor();
 	flash();

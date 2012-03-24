@@ -65,7 +65,6 @@ public:
 // Called by ResourceThread to update pixmap
 	void draw_wave(int x, double high, double low);
 	void draw_title(Edit *edit, int edit_x, int edit_w, int pixmap_x, int pixmap_w);
-	void reset();
 // Change to hourglass if timer expired
 	void test_timer();
 

@@ -59,11 +59,6 @@ ResourceThreadItem::~ResourceThreadItem()
 }
 
 
-
-
-
-
-
 VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap, 
 	int picon_x, 
 	int picon_y, 
@@ -90,7 +85,6 @@ VResourceThreadItem::~VResourceThreadItem()
 }
 
 
-
 AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap, 
 	Asset *asset,
 	int x,
@@ -111,7 +105,6 @@ AResourceThreadItem::~AResourceThreadItem()
 }
 
 
-
 ResourceThread::ResourceThread(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
@@ -124,6 +117,7 @@ ResourceThread::ResourceThread(MWindow *mwindow)
 	prev_h = 0;
 	prev_l = 0;
 	operation_count = 0;
+	Thread::start();
 }
 
 ResourceThread::~ResourceThread()
@@ -132,11 +126,6 @@ ResourceThread::~ResourceThread()
 	delete item_lock;
 	delete [] audio_buffer;
 	delete timer;
-}
-
-void ResourceThread::create_objects()
-{
-	Thread::start();
 }
 
 void ResourceThread::add_picon(ResourcePixmap *pixmap, 
@@ -182,7 +171,6 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 		operation_count));
 	item_lock->unlock();
 }
-
 
 void ResourceThread::stop_draw(int reset)
 {
@@ -239,7 +227,6 @@ void ResourceThread::run()
 
 			if(!total_items) break;
 
-
 			if(item->data_type == TRACK_VIDEO)
 			{
 				do_video((VResourceThreadItem*)item);
@@ -254,7 +241,6 @@ void ResourceThread::run()
 		}
 	}
 }
-
 
 void ResourceThread::do_video(VResourceThreadItem *item)
 {
@@ -274,10 +260,8 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	{
 		File *source = mwindow->video_cache->check_out(item->asset,
 			mwindow->edl);
-		if(!source) 
-		{
+		if(!source)
 			return;
-		}
 
 		picon_frame = new VFrame(0, item->picon_w, item->picon_h, BC_RGB888);
 		picon_frame->set_layer(item->layer);
@@ -291,12 +275,9 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		mwindow->video_cache->check_in(item->asset);
 	}
 
-
 // Allow escape here
-	if(interrupted) 
-	{
+	if(interrupted)
 		return;
-	}
 
 // Draw the picon
 
@@ -324,7 +305,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	if(mwindow->frame_cache->total() > 32)
 		mwindow->frame_cache->delete_oldest();
 }
-
 
 #define BUFFERSIZE 65536
 void ResourceThread::do_audio(AResourceThreadItem *item)
@@ -354,17 +334,13 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 		{
 			double value;
 // Get value from previous buffer
-			if(audio_buffer && 
+			if(!(audio_buffer && 
 				item->channel == audio_channel &&
 				item->asset->id == audio_asset_id &&
 				sample >= audio_start &&
-				sample < audio_start + audio_samples)
+				sample < audio_start + audio_samples))
 			{
-				;
-			}
-			else
 // Load new buffer
-			{
 				File *source = mwindow->audio_cache->check_out(item->asset,
 					mwindow->edl);
 				if(!source)
@@ -384,7 +360,6 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 				audio_asset_id = item->asset->id;
 				mwindow->audio_cache->check_in(item->asset);
 			}
-
 
 			value = audio_buffer[sample - audio_start];
 			if(first_sample)
@@ -453,5 +428,4 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 	}
 
 	mwindow->gui->unlock_window();
-
 }
