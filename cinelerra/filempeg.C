@@ -739,9 +739,6 @@ int FileMPEG::get_index(const char *index_path)
 
 void FileMPEG::set_video_position(framenum x)
 {
-	if(!fd) return;
-	if(x >= 0 && x < asset->video_length)
-		mpeg3_set_frame(fd, x, file->current_layer);
 }
 
 int64_t FileMPEG::get_memory_usage()
@@ -1046,8 +1043,14 @@ int FileMPEG::to_mpeg_colormodel(int cmodel)
 int FileMPEG::read_frame(VFrame *frame)
 {
 	if(!fd) return 1;
+
 	int result = 0;
 	int src_cmodel;
+	framenum current_frame = (frame->get_source_pts() + FRAME_OVERLAP) * asset->frame_rate;
+	int layer = frame->get_layer();
+
+	if(current_frame >= 0 && current_frame < asset->video_length)
+		mpeg3_set_frame(fd, current_frame, layer);
 
 	if(mpeg3_colormodel(fd, 0) == MPEG3_YUV420P)
 		src_cmodel = BC_YUV420P;
@@ -1073,7 +1076,7 @@ int FileMPEG::read_frame(VFrame *frame)
 			asset->width,                   /* Dimensions of output_rows */
 			asset->height,
 			to_mpeg_colormodel(frame->get_color_model()),
-			file->current_layer);
+			layer);
 			break;
 
 // Use Temp
@@ -1089,7 +1092,7 @@ int FileMPEG::read_frame(VFrame *frame)
 				0,
 				asset->width,
 				asset->height,
-				file->current_layer);
+				layer);
 		}
 		else
 // Process through temp frame
@@ -1099,7 +1102,7 @@ int FileMPEG::read_frame(VFrame *frame)
 				&y,
 				&u,
 				&v,
-				file->current_layer);
+				layer);
 
 			if(y && u && v)
 			{
@@ -1128,8 +1131,17 @@ int FileMPEG::read_frame(VFrame *frame)
 		}
 		break;
 	}
+	frame->set_pts((ptstime)current_frame / asset->frame_rate);
+	frame->set_duration(1./asset->frame_rate);
+	frame->set_frame_number(current_frame);
+	return 0;
 
-	return result;
+noframe:
+	frame->clear_frame();
+	frame->set_pts((ptstime)current_frame / asset->frame_rate);
+	frame->set_duration(1./asset->frame_rate);
+	frame->set_frame_number(current_frame);
+	return 1;
 }
 
 int FileMPEG::read_samples(double *buffer, int len)

@@ -1043,6 +1043,9 @@ int File::read_frame(VFrame *frame, int is_thread)
 		case FILE_EXR_LIST:
 		case FILE_TGA:
 		case FILE_TGA_LIST:
+		case FILE_MPEG:
+		case FILE_AMPEG:
+		case FILE_VMPEG:
 // Types that set already frame pts
 			break;
 		default:
