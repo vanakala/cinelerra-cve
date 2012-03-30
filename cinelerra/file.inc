@@ -30,39 +30,39 @@
 #define FILE_UNRECOGNIZED_CODEC 2
 #define FILE_IS_XML 3
 
-#define FILE_UNKNOWN    		0
-#define FILE_AIFF       		10
-#define FILE_AMPEG      	  	16    // For encoding only
-#define FILE_AC3                25    // AC3 encoding
-#define FILE_AU         		9
-#define FILE_AVI_ARNE1          20    // DV type 1
-#define FILE_AVI                24    // Heroine Virtual
-#define FILE_AVI_ARNE2          19    // DV type 2
-#define FILE_AVI_AVIFILE        21
-#define FILE_AVI_LAVTOOLS       12    // MJPEG type 1
-#define FILE_GIF  	    		7
-#define FILE_JPEG 	    		5
-#define FILE_JPEG_LIST  		8
-#define FILE_MOV  	    		3
+#define FILE_UNKNOWN       0
+#define FILE_AIFF          10
+#define FILE_AMPEG         16    // For encoding only
+#define FILE_AC3           25    // AC3 encoding
+#define FILE_AU            9
+#define FILE_AVI_ARNE1     20    // DV type 1
+#define FILE_AVI           24    // Heroine Virtual
+#define FILE_AVI_ARNE2     19    // DV type 2
+#define FILE_AVI_AVIFILE   21
+#define FILE_AVI_LAVTOOLS  12    // MJPEG type 1
+#define FILE_GIF           7
+#define FILE_JPEG          5
+#define FILE_JPEG_LIST     8
+#define FILE_MOV           3
 // Libmpeg3 decoding and transport stream capture only
-#define FILE_MPEG       	  	15    
-#define FILE_PCM  	    		1
-#define FILE_PLUGIN     	  	0x8000
-#define FILE_PNG  	    		4
-#define FILE_PNG_LIST   		23
-#define FILE_SND        		11
-#define FILE_TGA        	  	14
-#define FILE_TGA_LIST   	  	13
-#define FILE_TIFF 	    		6
-#define FILE_TIFF_LIST  		22
-#define FILE_VMPEG      	  	17    // For encoding only
-#define FILE_OGG		        30
-#define FILE_WAV  	    		2
-#define FILE_EXR                26
-#define FILE_EXR_LIST           27
-#define FILE_CR2                28
-#define FILE_YUV		29	// mjpegtools YUV4MPEG (aka YUV4MPEG2)
-#define FILE_RAWDV		32
+#define FILE_MPEG          15
+#define FILE_PCM           1
+#define FILE_PLUGIN        0x8000
+#define FILE_PNG           4
+#define FILE_PNG_LIST      23
+#define FILE_SND           11
+#define FILE_TGA           14
+#define FILE_TGA_LIST      13
+#define FILE_TIFF          6
+#define FILE_TIFF_LIST     22
+#define FILE_VMPEG         17    // For encoding only
+#define FILE_OGG           30
+#define FILE_WAV           2
+#define FILE_EXR           26
+#define FILE_EXR_LIST      27
+#define FILE_CR2           28
+#define FILE_YUV           29    // mjpegtools YUV4MPEG (aka YUV4MPEG2)
+#define FILE_RAWDV         32
 
 // For formats supported by plugins, the format number is the plugin number in the 
 // plugin list ORed with 0x8000.
@@ -99,38 +99,6 @@
 	format == FILE_OGG     ? "OGG" :		\
 	format == FILE_YUV     ? "YUV" :		\
 	"UNKNOWN")
-
-#if 0
-N_("AC3")
-N_("Apple/SGI AIFF")
-N_("MPEG Audio")    // For encoding only
-N_("Sun/NeXT AU")
-N_("Microsoft AVI")
-N_("Microsoft WAV")
-N_("AVI Arne Type 1")
-N_("AVI DV Type 2")
-N_("AVI Avifile")
-N_("AVI Lavtools")
-N_("Raw DV")
-N_("JPEG Sequence")
-N_("JPEG")
-N_("Quicktime for Linux")
-N_("MPEG")          // For decoding only
-N_("Raw PCM")
-N_("PNG Sequence")
-N_("PNG")
-N_("Unknown sound")
-N_("TGA Sequence")
-N_("TGA")
-N_("TIFF")
-N_("TIFF Sequence")
-N_("MPEG Video")    // For encoding only
-N_("OGG Theora/Vorbis")
-N_("OGG Vorbis")    // For decoding only
-N_("EXR")
-N_("EXR Sequence")
-N_("OGG Theora/Vorbis")
-#endif
 
 #define AC3_NAME "AC3"
 #define AIFF_NAME "Apple/SGI AIFF"
@@ -172,20 +140,6 @@ N_("OGG Theora/Vorbis")
 #define BITSULAW       254
 #define BITSIMA4       255
 
-#if 0
-N_("8 Bit Linear")
-N_("16 Bit Linear")
-N_("24 Bit Linear")
-N_("32 Bit Linear")
-N_("u Law")
-N_("IMA 4")
-N_("ADPCM")
-N_("Float")
-
-// Video formats not part of Quicktime
-N_("RGB ALPHA")
-N_("PNG ALPHA")
-#endif
 
 #define NAME_8BIT "8 Bit Linear"
 #define NAME_16BIT "16 Bit Linear"
