@@ -45,7 +45,6 @@
 #include "filetga.h"
 #include "filethread.h"
 #include "filetiff.h"
-#include "filevorbis.h"
 #include "fileyuv.h"
 #include "formattools.h"
 #include "framecache.h"
@@ -406,20 +405,6 @@ int File::open_file(Preferences *preferences,
 		else
 		if(FileOGG::check_sig(this->asset))
 		{
-// OGG file
-			fclose(stream);
-			file = new FileOGG(this->asset, this);
-		}
-		else
-		if(FileVorbis::check_sig(this->asset))
-		{
-// VorbisFile file
-			fclose(stream);
-			file = new FileVorbis(this->asset, this);
-		}
-		else
-		if(FileOGG::check_sig(this->asset))
-		{
 // OGG file.  Doesn't always work with pure audio files.
 			fclose(stream);
 			file = new FileOGG(this->asset, this);
@@ -514,10 +499,6 @@ int File::open_file(Preferences *preferences,
 
 	case FILE_OGG:
 		file = new FileOGG(this->asset, this);
-		break;
-
-	case FILE_VORBIS:
-		file = new FileVorbis(this->asset, this);
 		break;
 
 	case FILE_AVI:
@@ -1142,8 +1123,6 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	else
 	if(!strcasecmp(format, _(OGG_NAME))) return FILE_OGG;
 	else
-	if(!strcasecmp(format, _(VORBIS_NAME))) return FILE_VORBIS;
-	else
 	if(!strcasecmp(format, _(RAWDV_NAME))) return FILE_RAWDV;
 	return 0;
 }
@@ -1240,9 +1219,6 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 
 	case FILE_OGG:
 		return _(OGG_NAME);
-
-	case FILE_VORBIS:
-		return _(VORBIS_NAME);
 
 	case FILE_RAWDV:
 		return _(RAWDV_NAME);
@@ -1421,7 +1397,6 @@ int File::supports_audio(int format)
 	case FILE_WAV:
 	case FILE_MOV:
 	case FILE_OGG:
-	case FILE_VORBIS:
 	case FILE_AMPEG:
 	case FILE_AU:
 	case FILE_AIFF:
@@ -1480,8 +1455,6 @@ const char* File::get_tag(int format)
 		return "tif";
 	case FILE_VMPEG:
 		return "m2v";
-	case FILE_VORBIS:
-		return "ogg";
 	case FILE_WAV:
 		return "wav";
 	case FILE_YUV:

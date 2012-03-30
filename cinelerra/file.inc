@@ -62,7 +62,6 @@
 #define FILE_EXR_LIST           27
 #define FILE_CR2                28
 #define FILE_YUV		29	// mjpegtools YUV4MPEG (aka YUV4MPEG2)
-#define FILE_VORBIS             31
 #define FILE_RAWDV		32
 
 // For formats supported by plugins, the format number is the plugin number in the 
@@ -93,7 +92,6 @@
 	format == FILE_TIFF    ? "TIFF" :		\
 	format == FILE_TIFF_LIST ? "TIFF_LIST" :	\
 	format == FILE_VMPEG   ? "VMPEG" :		\
-	format == FILE_VORBIS  ? "VORBIS" :		\
 	format == FILE_WAV     ? "WAV" :		\
 	format == FILE_EXR     ? "EXR" :		\
 	format == FILE_EXR_LIST ? "EXR_LIST" :		\
@@ -150,8 +148,6 @@ N_("OGG Theora/Vorbis")
 #define JPEG_NAME "JPEG"
 #define MOV_NAME "Quicktime for Linux"
 #define MPEG_NAME "MPEG"           // For decoding only
-#define OGG_NAME "OGG Theora/Vorbis"
-#define VORBIS_NAME "OGG Vorbis"
 #define PCM_NAME "Raw PCM"
 #define PNG_LIST_NAME "PNG Sequence"
 #define PNG_NAME "PNG"

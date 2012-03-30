@@ -71,7 +71,6 @@ int FormatPopup::create_objects()
 		format_items.append(new BC_ListBoxItem(_(RAWDV_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AMPEG_NAME)));
 		format_items.append(new BC_ListBoxItem(_(VMPEG_NAME)));
-		format_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
 		format_items.append(new BC_ListBoxItem(_(OGG_NAME)));
 		format_items.append(new BC_ListBoxItem(_(PCM_NAME)));
 		format_items.append(new BC_ListBoxItem(_(PNG_NAME)));
