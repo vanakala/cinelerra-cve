@@ -135,26 +135,26 @@ private:
 
 	off_t filedata_begin;
 
-	int ogg_get_last_page(sync_window_t *sw, long serialno, ogg_page *og);
-	int ogg_get_prev_page(sync_window_t *sw, long serialno, ogg_page *og);
-	int ogg_get_first_page(sync_window_t *sw, long serialno, ogg_page *og);
-	int ogg_get_next_page(sync_window_t *sw, long serialno, ogg_page *og);
-	int ogg_sync_and_get_next_page(sync_window_t *sw, long serialno, ogg_page *og);
+	int get_last_page(sync_window_t *sw, long serialno, ogg_page *og);
+	int get_prev_page(sync_window_t *sw, long serialno, ogg_page *og);
+	int get_first_page(sync_window_t *sw, long serialno, ogg_page *og);
+	int get_next_page(sync_window_t *sw, long serialno, ogg_page *og);
+	int sync_and_get_next_page(sync_window_t *sw, long serialno, ogg_page *og);
 
-	int ogg_get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *og, samplenum sample);
-	int ogg_seek_to_sample(sync_window_t *sw, long serialno, samplenum sample);
-	int ogg_decode_more_samples(sync_window_t *sw, long serialno);
+	int get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *og, samplenum sample);
+	int seek_to_sample(sync_window_t *sw, long serialno, samplenum sample);
+	int decode_more_samples(sync_window_t *sw, long serialno);
 
-	int ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, framenum frame);
-	int ogg_seek_to_keyframe(sync_window_t *sw, long serialno, framenum frame, framenum *keyframe_number);
-	void ogg_seek_to_databegin(sync_window_t *sw, long serialno);
+	int get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, framenum frame);
+	int seek_to_keyframe(sync_window_t *sw, long serialno, framenum frame, framenum *keyframe_number);
+	void seek_to_databegin(sync_window_t *sw, long serialno);
 
-	samplenum start_sample; // first and last sample inside this file
-	samplenum last_sample;
-	framenum start_frame; // first and last frame inside this file
-	framenum last_frame;
+	ogg_int64_t start_sample; // first and last sample inside this file
+	ogg_int64_t last_sample;
+	ogg_int64_t start_frame; // first and last frame inside this file
+	ogg_int64_t last_frame;
 
-	samplenum ogg_sample_position;  // what will be the next sample taken from vorbis decoder
+	samplenum sample_position;  // what will be the next sample taken from vorbis decoder
 	samplenum next_sample_position; // what is the next sample read_samples must deliver
 
 	void move_history(int from, int to, int len);
@@ -164,8 +164,8 @@ private:
 #ifndef HISTORY_MAX
 #define HISTORY_MAX 0x100000
 #endif
-	int64_t history_start;
-	int64_t history_size;
+	ogg_int64_t history_start;
+	int history_size;
 
 	int theora_cmodel;
 	framenum ogg_frame_position;    // LAST decoded frame position
