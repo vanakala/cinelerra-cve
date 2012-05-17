@@ -632,7 +632,7 @@ int Decimate::load_configuration()
 
 void Decimate::load_defaults()
 {
-	defaults = load_defaults_file("myplugin.rc");
+	defaults = load_defaults_file("decimate.rc");
 
 	config.input_rate = defaults->get("INPUT_RATE", config.input_rate);
 	config.input_rate = Units::fix_framerate(config.input_rate);
