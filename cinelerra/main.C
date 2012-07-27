@@ -46,6 +46,7 @@
 #define PACKAGE "cinelerra"
 #define LOCALEDIR "/usr/share/locale"
 
+MWindow *mwindow;
 
 enum
 {
@@ -292,24 +293,24 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 				printf("Failed to init X threads\n");
 				exit(1);
 			}
-			MWindow mwindow;
-			mwindow.create_objects(1, 
+			mwindow = new MWindow;
+			mwindow->create_objects(1, 
 				!filenames.total,
 				config_path);
 
 // load the initial files on seperate tracks
 			if(filenames.total)
 			{
-				mwindow.gui->lock_window("main");
-				mwindow.load_filenames(&filenames, LOAD_REPLACE);
+				mwindow->gui->lock_window("main");
+				mwindow->load_filenames(&filenames, LOAD_REPLACE);
 				if(filenames.total == 1)
-					mwindow.gui->mainmenu->add_load(filenames.values[0]);
-				mwindow.gui->unlock_window();
+					mwindow->gui->mainmenu->add_load(filenames.values[0]);
+				mwindow->gui->unlock_window();
 			}
 
 // run the program
-			mwindow.start();
-			mwindow.save_defaults();
+			mwindow->start();
+			mwindow->save_defaults();
 DISABLE_BUFFER
 			break;
 		}
