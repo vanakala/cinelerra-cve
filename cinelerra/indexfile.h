@@ -48,9 +48,9 @@ public:
 	int interrupt_index();
 	static void delete_index(Preferences *preferences, Asset *asset);
 	static int get_index_filename(char *source_filename, 
-		char *index_directory, 
+		const char *index_directory,
 		char *index_filename, 
-		char *input_filename);
+		const char *input_filename);
 	void update_edl_asset();
 	int redraw_edits(int force);
 	int draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w);

@@ -207,9 +207,9 @@ int64_t IndexFile::get_required_scale(File *source)
 }
 
 int IndexFile::get_index_filename(char *source_filename, 
-	char *index_directory, 
+	const char *index_directory,
 	char *index_filename, 
-	char *input_filename)
+	const char *input_filename)
 {
 // Replace slashes and dots
 	int i, j;
