@@ -28,6 +28,7 @@
 #include "colormodels.h"
 #include "datatype.h"
 #include "edit.inc"
+#include "filetoc.inc"
 #include "guicast.h"
 #include "file.inc"
 #include "filelist.inc"
@@ -82,6 +83,16 @@ public:
 	virtual int read_samples_float(float *buffer, int len) { return 0; };
 
 	virtual int read_frame(VFrame *frame) { return 1; };
+
+// Callbacks for FileTOC
+	// returns number of streams and array of stream descriptions
+	virtual int get_streamcount() { return 0; };
+
+	// returns data for the track
+	virtual stream_params *get_track_data(int track) { return 0; };
+
+	// tocfile is generated - filebase can do cleanup
+	virtual void toc_is_made(int canceled) {};
 
 // Return either the argument or another colormodel which read_frame should
 // use.

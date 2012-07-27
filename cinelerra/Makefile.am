@@ -133,6 +133,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    filetga.C \
 		    filethread.C \
 		    filetiff.C \
+		    filetoc.C \
 		    filexml.C \
 		    fileyuv.C \
 		    floatauto.C \
@@ -413,6 +414,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 filetga.h \
 		 filethread.h \
 		 filetiff.h \
+		 filetoc.h \
 		 filexml.h \
 		 fileyuv.h \
 		 floatauto.h \
