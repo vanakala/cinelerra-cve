@@ -94,19 +94,48 @@ int MainProgressBar::is_cancelled()
 	return 0;
 }
 
-void MainProgressBar::update_title(const char *string, int default_)
+void MainProgressBar::update_current_title(const char *fmt, ...)
 {
-	if(default_) strcpy(default_title, string);
+	char bufr[BCTEXTLEN];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(bufr, BCTEXTLEN, fmt, ap);
+	va_end(ap);
 
 	if(progress_box)
 	{
-		progress_box->update_title(string, 1);
+		progress_box->update_title(bufr, 1);
 	}
 	else
 	if(progress_bar)
 	{
 		mwindow->gui->lock_window("MainProgressBar::update_title");
-		mwindow->gui->show_message(string);
+		mwindow->gui->show_message(bufr);
+		mwindow->gui->unlock_window();
+	}
+}
+
+void MainProgressBar::update_title(const char *fmt, ...)
+{
+	char bufr[BCTEXTLEN];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(bufr, BCTEXTLEN, fmt, ap);
+	va_end(ap);
+
+	strcpy(default_title, bufr);
+
+	if(progress_box)
+	{
+		progress_box->update_title(bufr, 1);
+	}
+	else
+	if(progress_bar)
+	{
+		mwindow->gui->lock_window("MainProgressBar::update_title");
+		mwindow->gui->show_message(bufr);
 		mwindow->gui->unlock_window();
 	}
 }
@@ -152,10 +181,9 @@ int MainProgressBar::update(int64_t value)
 			eta,
 			TIME_HMS2);
 
-		sprintf(string, _("%s ETA: %s"), 
+		update_current_title(_("%s ETA: %s"), 
 			default_title, 
 			time_string);
-		update_title(string, 0);
 
 		last_eta = (int64_t)current_eta;
 	}
@@ -219,7 +247,7 @@ MainProgressBar* MainProgress::start_progress(const char *text,
 		mwindow_progress = new MainProgressBar(mwindow, this);
 		mwindow_progress->progress_bar = gui->statusbar->main_progress;
 		mwindow_progress->progress_bar->update_length(total_length);
-		mwindow_progress->update_title(text);
+		mwindow_progress->update_title("%s", text);
 		result = mwindow_progress;
 		cancelled = 0;
 	}

@@ -43,7 +43,11 @@ public:
 
 	void stop_progress();
 	int is_cancelled();
-	void update_title(const char *string, int default_ = 1);
+
+	void update_title(const char *fmt, ...)
+		__attribute__ ((__format__(__printf__, 2, 3)));
+	void update_current_title(const char *fmt, ...)
+		__attribute__ ((__format__(__printf__, 2, 3)));
 	void update_length(int64_t length);
 	int update(int64_t value);
 	int update(ptstime value);

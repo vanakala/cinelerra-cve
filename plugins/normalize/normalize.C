@@ -167,9 +167,7 @@ int NormalizeMain::process_loop(AFrame **aframes)
 			scale[i] = DB::fromdb(db_over) / peak[i];
 		}
 
-		char string[BCTEXTLEN];
-		sprintf(string, "%s %.0f%%...", plugin_title(), (DB::fromdb(db_over) / max) * 100);
-		progress->update_title(string);
+		progress->update_title("%s %.0f%%...", plugin_title(), (DB::fromdb(db_over) / max) * 100);
 
 // Start writing on next iteration
 		current_pts = start_pts;
