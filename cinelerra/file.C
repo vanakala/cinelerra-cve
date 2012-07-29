@@ -347,13 +347,7 @@ int File::open_file(Preferences *preferences,
 			fclose(stream);
 			file = new FileDV(this->asset, this);
 		}
-		else if(FileSndFile::check_sig(this->asset))
-		{
-// libsndfile
-			fclose(stream);
-			file = new FileSndFile(this->asset, this);
-		}
-		else
+		else 
 		if(FilePNG::check_sig(this->asset))
 		{
 // PNG file
@@ -405,7 +399,7 @@ int File::open_file(Preferences *preferences,
 		else
 		if(FileOGG::check_sig(this->asset))
 		{
-// OGG file.  Doesn't always work with pure audio files.
+// OGG file
 			fclose(stream);
 			file = new FileOGG(this->asset, this);
 		}
@@ -415,6 +409,13 @@ int File::open_file(Preferences *preferences,
 // MPEG file
 			fclose(stream);
 			file = new FileMPEG(this->asset, this);
+		}
+		else
+		if(FileSndFile::check_sig(this->asset))
+		{
+// libsndfile
+			fclose(stream);
+			file = new FileSndFile(this->asset, this);
 		}
 		else
 		if(test[0] == '<' && test[1] == 'E' && test[2] == 'D' && test[3] == 'L' && test[4] == '>' ||
