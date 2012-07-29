@@ -156,7 +156,6 @@ private:
 	int fill_pcm_samples(int len);
 
 	FILE *stream;
-	off_t file_length;
 	FileTOC *tocfile;
 
 	ogg_sync_state sync_state;

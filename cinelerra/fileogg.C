@@ -438,15 +438,14 @@ int FileOGG::open_file(int rd, int wr)
 			errormsg("Error while opening %s for reading. %m", asset->path);
 			return 1;
 		}
-
 		// get file length
 		struct stat file_stat;
 		stat(asset->path, &file_stat);
-		file_length = file_stat.st_size;
+		asset->file_length = file_stat.st_size;
 
 // Check existence of toc
 		tocfile = new FileTOC(this, file->preferences->index_directory, asset->path,
-			file_length, file_stat.st_mtime);
+			asset->file_length, file_stat.st_mtime);
 		ogg_sync_init(&sync_state);
 		// make sure we init the position structures to zero
 		read_buffer_at(0);
@@ -553,6 +552,13 @@ int FileOGG::open_file(int rd, int wr)
 					asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 
 				asset->video_data = 1;
+				asset->layers = 1;
+				double pixaspect = 1;
+				if(cur_stream->ti->aspect_denominator)
+					pixaspect = (double)cur_stream->ti->aspect_numerator / cur_stream->ti->aspect_denominator;
+				asset->aspect_ratio = 
+					(double)cur_stream->ti->frame_width / cur_stream->ti->frame_height
+					* pixaspect;
 				strncpy(asset->vcodec, "theo", 4);
 			}
 			if(cur_stream->vi)
@@ -655,6 +661,7 @@ void FileOGG::close_file()
 	else if(rd)
 	{
 		media_stream_t *cur_stream;
+
 		for(cur_stream = streams; cur_stream < &streams[free_stream]; cur_stream++)
 		{
 			if(cur_stream->ti)
@@ -687,7 +694,6 @@ void FileOGG::close_file()
 			cur_stream->dec_init = 0;
 		}
 		if(tocfile) delete tocfile;
-		ogg_packet_clear(&pkt);
 		ogg_sync_destroy(&sync_state);
 		if(stream) fclose(stream);
 		stream = 0;
