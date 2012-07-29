@@ -24,17 +24,15 @@
 
 #include "config.h"
 #include "filebase.h"
+#include "maxchannels.h"
+#include "maxbuffers.h"
 #include "file.inc"
 
 #include <theora/theora.h>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisenc.h>
 
-
-#include <libdv/dv.h>
-
-/* This code was aspired by ffmpeg2theora */
-/* Special thanks for help on this code goes out to j@v2v.cc */
+#define OGG_INDEX_INTERVAL 2
 
 typedef struct 
 {
@@ -44,6 +42,27 @@ typedef struct
 	off_t file_pagepos_found; // position of last page that was returned (in seeking operations)
 	int wlen;
 } sync_window_t;
+
+typedef struct {
+	ogg_stream_state state;
+	vorbis_info *vi;
+	vorbis_comment *vc;
+	theora_info *ti;
+	theora_comment *tc;
+	theora_state ts;
+	vorbis_dsp_state vs;
+	yuv_buffer frame;
+	vorbis_block block;
+	int headers;
+	int eos;
+	int dec_init;
+	int toc_streamno;
+	int max_pcm_samples; // Number of channels allocated
+	float *pcm_samples[MAXCHANNELS];
+	samplenum pcm_start;
+	int pcm_max;
+	int pcm_size;
+} media_stream_t;
 
 typedef struct
 {
@@ -104,13 +123,10 @@ public:
 		int audio_options,
 		int video_options);
 
-	void reset_parameters_derived();
 	int open_file(int rd, int wr);
 	static int check_sig(Asset *asset);
 	void close_file();
-	void close_file_derived();
 
-	void set_video_position(framenum x);
 	void set_audio_position(samplenum x);
 	int colormodel_supported(int colormodel);
 	int get_best_colormodel(Asset *asset, int driver);
@@ -119,35 +135,52 @@ public:
 	int read_samples(double *buffer, int len);
 	int read_frame(VFrame *frame);
 
+// Callbacks for TOC generation
+	int get_streamcount();
+	stream_params *get_track_data(int trx);
+
 private:
+	int read_buffer();
+	int read_buffer_at(off_t filepos);
+	int next_oggpage(ogg_page *op);
+	int next_oggstreampage(ogg_page *op);
+	int sync_page(ogg_page *page);
 	void write_samples_vorbis(double **buffer, int len, int e_o_s);
 	void write_frames_theora(VFrame ***frames, int len, int e_o_s);
 	void flush_ogg(int e_o_s);
 	int write_audio_page();
 	int write_video_page();
 
+	void move_pcmsamples_position();
+	int copy_to_pcmsamples(float **smpls, int start, int smplen);
+	int fill_pcm_samples(int len);
+
 	FILE *stream;
 	off_t file_length;
+	FileTOC *tocfile;
+
+	ogg_sync_state sync_state;
+	vorbis_info vrb_info;
+	vorbis_comment vrb_comment;
+	theora_info the_info;
+	theora_comment the_comment;
+	int free_stream;
+	ogg_page page;
+	ogg_packet pkt;
+	int open_streams;
+	int configured_streams;
+	off_t file_bufpos;
+	off_t file_pagepos;
+	off_t file_pagestart;
+	media_stream_t *cur_stream;
+	media_stream_t streams[MAXCHANNELS];
+	stream_params track_data;
 
 	theoraframes_info_t *tf;
 	VFrame *temp_frame;
 	Mutex *flush_lock;
 
 	off_t filedata_begin;
-
-	int get_last_page(sync_window_t *sw, long serialno, ogg_page *og);
-	int get_prev_page(sync_window_t *sw, long serialno, ogg_page *og);
-	int get_first_page(sync_window_t *sw, long serialno, ogg_page *og);
-	int get_next_page(sync_window_t *sw, long serialno, ogg_page *og);
-	int sync_and_get_next_page(sync_window_t *sw, long serialno, ogg_page *og);
-
-	int get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *og, samplenum sample);
-	int seek_to_sample(sync_window_t *sw, long serialno, samplenum sample);
-	int decode_more_samples(sync_window_t *sw, long serialno);
-
-	int get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, framenum frame);
-	int seek_to_keyframe(sync_window_t *sw, long serialno, framenum frame, framenum *keyframe_number);
-	void seek_to_databegin(sync_window_t *sw, long serialno);
 
 	ogg_int64_t start_sample; // first and last sample inside this file
 	ogg_int64_t last_sample;
@@ -157,19 +190,8 @@ private:
 	samplenum sample_position;  // what will be the next sample taken from vorbis decoder
 	samplenum next_sample_position; // what is the next sample read_samples must deliver
 
-	void move_history(int from, int to, int len);
-
-	float **pcm_history;
-
-#ifndef HISTORY_MAX
-#define HISTORY_MAX 0x100000
-#endif
-	ogg_int64_t history_start;
-	int history_size;
-
 	int theora_cmodel;
-	framenum ogg_frame_position;    // LAST decoded frame position
-	framenum next_frame_position;   // what is the next sample read_frames must deliver
+	framenum frame_position;    // LAST decoded frame position
 	char theora_keyframe_granule_shift;
 	int final_write;
 };

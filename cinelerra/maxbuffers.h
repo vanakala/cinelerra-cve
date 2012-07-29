@@ -25,4 +25,7 @@
 // number of buffers for double buffering
 
 #define MAX_BUFFERS 2
+
+// Maximum audio buffer size
+#define MAX_AUDIO_BUFFER_SIZE 262144
 #endif
