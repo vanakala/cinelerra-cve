@@ -374,8 +374,8 @@ stream_item *FileTOC::get_item(int stream, posnum ix)
 			toc_streams[stream].max_items = 0;
 			return 0;
 		}
-dump(1);
 	}
+
 	for(j = 1; j < toc_streams[stream].max_items; j++)
 	{
 		if(toc_streams[stream].items[j].index > ix)
