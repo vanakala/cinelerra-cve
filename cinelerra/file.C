@@ -341,6 +341,11 @@ int File::open_file(Preferences *preferences,
 			fclose(stream);
 			return FILE_NOT_FOUND;
 		}
+		if(strncmp(test, "TOC ", 4) == 0)
+		{
+			errormsg(_("Can't open TOC files directly"));
+			return FILE_NOT_FOUND;
+                }
 		if(FileDV::check_sig(this->asset))
 		{
 // libdv
