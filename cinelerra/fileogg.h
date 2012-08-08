@@ -53,6 +53,9 @@ typedef struct {
 	vorbis_dsp_state vs;
 	yuv_buffer frame;
 	vorbis_block block;
+	ogg_page page;
+	ptstime page_pts;
+	int page_valid;
 	int headers;
 	int eos;
 	int dec_init;
@@ -64,51 +67,6 @@ typedef struct {
 	int pcm_size;
 } media_stream_t;
 
-typedef struct
-{
-	ogg_page audiopage;
-	ogg_page videopage;
-
-	double audiotime;
-	double videotime;
-	ogg_int64_t audio_bytesout;
-	ogg_int64_t video_bytesout;
-
-	ogg_page og;    /* one Ogg bitstream page.  Vorbis packets are inside */
-	ogg_packet op;  /* one raw packet of data for decode */
-
-	theora_info ti;
-	theora_comment tc;
-	theora_state td;
-
-	vorbis_info vi;       /* struct that stores all the static vorbis bitstream settings */
-	vorbis_comment vc;    /* struct that stores all the user comments */
-	vorbis_dsp_state vd; /* central working state for the packet<->PCM encoder/decoder */
-	vorbis_block vb;     /* local working space for packet<->PCM encode/decode */
-
-	/* used for muxing */
-	ogg_stream_state to;    /* take physical pages, weld into a logical stream of packets */
-	ogg_stream_state vo;    /* take physical pages, weld into a logical stream of packets */
-
-	int apage_valid;
-	int vpage_valid;
-	unsigned char *apage;
-	unsigned char *vpage;
-	int vpage_len;
-	int apage_len;
-	int vpage_buffer_length;
-	int apage_buffer_length;
-
-
-// stuff needed for reading only
-	sync_window_t *audiosync;
-	sync_window_t *videosync;
-
-// to do some manual page flusing
-	int v_pkg;
-	int a_pkg;
-
-} theoraframes_info_t;
 
 class FileOGG : public FileBase
 {
@@ -127,7 +85,6 @@ public:
 	static int check_sig(Asset *asset);
 	void close_file();
 
-	void set_audio_position(samplenum x);
 	int colormodel_supported(int colormodel);
 	int get_best_colormodel(Asset *asset, int driver);
 	int write_samples(double **buffer, int len);
@@ -145,11 +102,11 @@ private:
 	int next_oggpage(ogg_page *op);
 	int next_oggstreampage(ogg_page *op);
 	int sync_page(ogg_page *page);
-	void write_samples_vorbis(double **buffer, int len, int e_o_s);
-	void write_frames_theora(VFrame ***frames, int len, int e_o_s);
+	int write_page(ogg_page *page);
+	int write_file();
 	void flush_ogg(int e_o_s);
-	int write_audio_page();
-	int write_video_page();
+	void set_audio_stream();
+	void set_video_stream(VFrame *frame);
 
 	void move_pcmsamples_position();
 	int copy_to_pcmsamples(float **smpls, int start, int smplen);
@@ -157,6 +114,7 @@ private:
 
 	FILE *stream;
 	FileTOC *tocfile;
+	int page_write_error;
 
 	ogg_sync_state sync_state;
 	vorbis_info vrb_info;
@@ -174,25 +132,16 @@ private:
 	media_stream_t *cur_stream;
 	media_stream_t streams[MAXCHANNELS];
 	stream_params track_data;
-
-	theoraframes_info_t *tf;
 	VFrame *temp_frame;
 	Mutex *flush_lock;
 
 	off_t filedata_begin;
-
-	ogg_int64_t start_sample; // first and last sample inside this file
-	ogg_int64_t last_sample;
-	ogg_int64_t start_frame; // first and last frame inside this file
-	ogg_int64_t last_frame;
 
 	samplenum sample_position;  // what will be the next sample taken from vorbis decoder
 	samplenum next_sample_position; // what is the next sample read_samples must deliver
 
 	int theora_cmodel;
 	framenum frame_position;    // LAST decoded frame position
-	char theora_keyframe_granule_shift;
-	int final_write;
 };
 
 class OGGConfigAudio;
@@ -328,44 +277,6 @@ public:
 	Asset *asset;
 private:
 	BC_WindowBase *parent_window;
-};
-
-class PackagingEngineOGG : public PackagingEngine
-{
-public:
-	PackagingEngineOGG();
-	~PackagingEngineOGG();
-	int create_packages_single_farm(
-		EDL *edl,
-		Preferences *preferences,
-		Asset *default_asset, 
-		ptstime total_start,
-		ptstime total_end);
-	RenderPackage* get_package_single_farm(double frames_per_second, 
-		int client_number,
-		int use_local_rate);
-	ptstime get_progress_max();
-	void get_package_paths(ArrayList<char*> *path_list);
-	int packages_are_done();
-
-private:
-	EDL *edl;
-
-	RenderPackage **packages;
-	int total_packages;
-	double video_package_len;    // Target length of a single package
-
-	Asset *default_asset;
-	Preferences *preferences;
-	int current_package;
-	ptstime total_start;
-	ptstime total_end;
-	ptstime audio_pts;
-	ptstime audio_start_pts;
-	ptstime audio_end_pts;
-	ptstime video_pts;
-	ptstime video_start_pts;
-	ptstime video_end_pts;
 };
 
 #endif

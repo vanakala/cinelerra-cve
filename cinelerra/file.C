@@ -1471,17 +1471,5 @@ const char* File::get_tag(int format)
 
 PackagingEngine *File::new_packaging_engine(Asset *asset)
 {
-	PackagingEngine *result;
-
-	switch (asset->format)
-	{
-		case FILE_OGG:
-			result = (PackagingEngine*)new PackagingEngineOGG();
-			break;
-		default:
-			result = (PackagingEngine*) new PackagingEngineDefault();
-			break;
-	}
-
-	return result;
+	return (PackagingEngine*) new PackagingEngineDefault();
 }

@@ -57,47 +57,23 @@ FileOGG::FileOGG(Asset *asset, File *file)
 {
 	if(asset->format == FILE_UNKNOWN)
 		asset->format = FILE_OGG;
+
 	asset->byte_order = 0;
 	reset_parameters();
-	final_write = 1;
 	free_stream = 0;
 	open_streams = 0;
 	configured_streams = 0;
-	tf = 0;
 	temp_frame = 0;
 	stream = 0;
 	flush_lock = 0;
 	tocfile = 0;
+	page_write_error = 0;
 	memset(&track_data, 0, sizeof(track_data));
 }
 
 FileOGG::~FileOGG()
 {
-	if(tf)
-	{
-		if(tf->videosync) 
-		{
-			ogg_sync_clear(&tf->videosync->sync);
-			delete tf->videosync;
-			theora_info_clear(&tf->ti);
-			theora_comment_clear(&tf->tc);
-		}
-		if(tf->audiosync) 
-		{
-			ogg_sync_clear(&tf->audiosync->sync);
-			delete tf->audiosync;
-			vorbis_info_clear(&tf->vi);
-			vorbis_comment_clear(&tf->vc);
-		}
-		if(tf->vpage)
-			free(tf->vpage);
-		if(tf->apage)
-			free(tf->apage);
-		delete tf;
-	}
-	if(temp_frame) delete temp_frame;
 	if(stream) close_file();
-	if(flush_lock) delete flush_lock;
 }
 
 void FileOGG::get_parameters(BC_WindowBase *parent_window,
@@ -192,26 +168,36 @@ int FileOGG::sync_page(ogg_page *page)
 	return ret;
 }
 
+void FileOGG::set_audio_stream()
+{
+	for(cur_stream = streams; cur_stream < &streams[free_stream]; cur_stream++)
+		if(cur_stream->vi)
+			return;
+	cur_stream = 0;
+	errormsg("No current OGG audio stream");
+}
+
+void FileOGG::set_video_stream(VFrame *frame)
+{
+	for(cur_stream = streams; cur_stream < &streams[free_stream]; cur_stream++)
+		if(cur_stream->ti)
+			return;
+	cur_stream = 0;
+	errormsg("No current OGG video stream");
+}
+
 int FileOGG::open_file(int rd, int wr)
 {
 	int ret = 0;
 
 	this->rd = rd;
 	this->wr = wr;
-	if(!tf)
-	{
-		tf = new theoraframes_info_t;
-		memset(tf, 0, sizeof(*tf));
-	}
 	free_stream = 0;
 
 	memset(streams, 0, sizeof(streams));
 
 	if(wr)
 	{
-		// FIXIT: Temporarily disabled
-		errorbox("FileOGG: encoding is not ready");
-		return 1;
 
 		if((stream = fopen(asset->path, "w+b")) == 0)
 		{
@@ -219,215 +205,194 @@ int FileOGG::open_file(int rd, int wr)
 			return 1;
 		}
 
-		tf->audio_bytesout = 0;
-		tf->video_bytesout = 0;
-		tf->videotime = 0;
-		tf->audiotime = 0;
-
-		tf->vpage_valid = 0;
-		tf->apage_valid = 0;
-		tf->apage_buffer_length = 0;
-		tf->vpage_buffer_length = 0;
-		tf->apage = NULL;
-		tf->vpage = NULL;
-		tf->v_pkg=0;
-		tf->a_pkg=0;
-
-		/* yayness.  Set up Ogg output stream */
+		// yayness.  Set up Ogg output stream
 		srand (time (NULL));
 
 		if(asset->video_data)
 		{
-			ogg_stream_init (&tf->to, rand ());    /* oops, add one ot the above */
+			cur_stream = &streams[free_stream++];
+			ogg_stream_init(&cur_stream->state, rand());
+			cur_stream->ti = new theora_info;
+			theora_info_init(cur_stream->ti);
 
-			theora_info_init (&tf->ti);
+			cur_stream->ti->frame_width = asset->width; 
+			cur_stream->ti->frame_height = asset->height;
 
-			tf->ti.frame_width = asset->width; 
-			tf->ti.frame_height = asset->height;
-
-			tf->ti.width = ((asset->width + 15) >>4)<<4; // round up to the nearest multiple of 16 
-			tf->ti.height = ((asset->height + 15) >>4)<<4; // round up to the nearest multiple of 16
-			if(tf->ti.width != tf->ti.frame_width || tf->ti.height != tf->ti.frame_height)
-			{
-				errormsg("WARNING: Encoding theora when width or height are not dividable by 16 is suboptimal");
-			}
-
-			tf->ti.offset_x = 0;
-			tf->ti.offset_y = tf->ti.height - tf->ti.frame_height;
-			tf->ti.fps_numerator = (unsigned int)(asset->frame_rate * 1000000);
-			tf->ti.fps_denominator = 1000000;
+			// round width & height up to the nearest multiple of 16
+			cur_stream->ti->width = (asset->width + 15) & ~0xf;
+			cur_stream->ti->height = (asset->height + 15) & ~0xf;
+			// center the frame
+			cur_stream->ti->offset_x = (cur_stream->ti->width - cur_stream->ti->frame_width) / 2;
+			cur_stream->ti->offset_y = (cur_stream->ti->height - cur_stream->ti->frame_height) / 2;
+			cur_stream->ti->fps_numerator = (unsigned int)(asset->frame_rate * 1000000);
+			cur_stream->ti->fps_denominator = 1000000;
 
 			if(asset->aspect_ratio > 0)
 			{
 				// Cinelerra uses frame aspect ratio, theora uses pixel aspect ratio
 				float pixel_aspect = asset->aspect_ratio / asset->width * asset->height;
-				tf->ti.aspect_numerator = (unsigned int)(pixel_aspect * 1000000);
-				tf->ti.aspect_denominator = 1000000;
+				cur_stream->ti->aspect_numerator = (unsigned int)(pixel_aspect * 1000000);
+				cur_stream->ti->aspect_denominator = 1000000;
 			}
 			else
 			{
-				tf->ti.aspect_numerator = 1000000;
-				tf->ti.aspect_denominator = 1000000;
+				cur_stream->ti->aspect_numerator = 1000000;
+				cur_stream->ti->aspect_denominator = 1000000;
 			}
 			if(EQUIV(asset->frame_rate, 25) || EQUIV(asset->frame_rate, 50))
-				tf->ti.colorspace = OC_CS_ITU_REC_470BG;
-			else if((asset->frame_rate > 29 && asset->frame_rate < 31) || (asset->frame_rate > 59 && asset->frame_rate < 61) )
-				tf->ti.colorspace = OC_CS_ITU_REC_470M;
+				cur_stream->ti->colorspace = OC_CS_ITU_REC_470BG;
+			else if((asset->frame_rate > 29 && asset->frame_rate < 31) || (asset->frame_rate > 59 && asset->frame_rate < 61))
+				cur_stream->ti->colorspace = OC_CS_ITU_REC_470M;
 			else
-				tf->ti.colorspace = OC_CS_UNSPECIFIED;
+				cur_stream->ti->colorspace = OC_CS_UNSPECIFIED;
 
 			if(asset->theora_fix_bitrate)
 			{
-				tf->ti.target_bitrate = asset->theora_bitrate; 
-				tf->ti.quality = 0;
+				cur_stream->ti->target_bitrate = asset->theora_bitrate; 
+				cur_stream->ti->quality = 0;
 			}
 			else
 			{
-				tf->ti.target_bitrate = 0;
-				tf->ti.quality = asset->theora_quality;     // video quality 0-63
+				cur_stream->ti->target_bitrate = 0;
+				cur_stream->ti->quality = asset->theora_quality;     // video quality 0-63
 			}
-			tf->ti.dropframes_p = 0;
-			tf->ti.quick_p = 1;
-			tf->ti.keyframe_auto_p = 1;
-			tf->ti.keyframe_frequency = asset->theora_keyframe_frequency;
-			tf->ti.keyframe_frequency_force = asset->theora_keyframe_force_frequency;
-			tf->ti.keyframe_data_target_bitrate = (unsigned int) (tf->ti.target_bitrate * 1.5) ;
-			tf->ti.keyframe_auto_threshold = 80;
-			tf->ti.keyframe_mindistance = 8;
-			tf->ti.noise_sensitivity = 1;
-			tf->ti.sharpness = 2;
+			cur_stream->ti->dropframes_p = 0;
+			cur_stream->ti->quick_p = 1;
+			cur_stream->ti->keyframe_auto_p = 1;
+			cur_stream->ti->keyframe_frequency = asset->theora_keyframe_frequency;
+			cur_stream->ti->keyframe_frequency_force = asset->theora_keyframe_force_frequency;
+			cur_stream->ti->keyframe_data_target_bitrate = (unsigned int) (cur_stream->ti->target_bitrate * 1.5);
+			cur_stream->ti->keyframe_auto_threshold = 80;
+			cur_stream->ti->keyframe_mindistance = 8;
+			cur_stream->ti->noise_sensitivity = 1;
+			cur_stream->ti->sharpness = asset->theora_sharpness; // 0, 1, 2
 
-			if(theora_encode_init (&tf->td, &tf->ti))
+			if(theora_encode_init(&cur_stream->ts, cur_stream->ti))
 			{
-				errormsg("(FileOGG:file_open) initialization of theora codec failed");
+				errormsg("Initialization of theora codec failed");
+				return 1;
 			}
 		}
-		/* init theora done */
+		// init theora done
 
-		/* initialize Vorbis too, if we have audio. */
+		// initialize Vorbis too, if we have audio.
 		if(asset->audio_data)
 		{
-			ogg_stream_init (&tf->vo, rand ());
-			vorbis_info_init (&tf->vi);
-			/* Encoding using a VBR quality mode.  */
+			cur_stream = &streams[free_stream++];
+
+			ogg_stream_init(&cur_stream->state, rand());
+			cur_stream->vi = new vorbis_info;
+			vorbis_info_init(cur_stream->vi);
 			int ret;
 			if(!asset->vorbis_vbr) 
 			{
-				ret = vorbis_encode_init(&tf->vi, 
-							asset->channels, 
-							asset->sample_rate, 
-							asset->vorbis_max_bitrate, 
+				// Encoding using a VBR quality mode.
+				ret = vorbis_encode_init(cur_stream->vi,
+							asset->channels,
+							asset->sample_rate,
+							asset->vorbis_max_bitrate,
 							asset->vorbis_bitrate,
-							asset->vorbis_min_bitrate); 
+							asset->vorbis_min_bitrate);
 			}
 			else
 			{
-				// Set true VBR as demonstrated by http://svn.xiph.org/trunk/vorbis/doc/vorbisenc/examples.html
-				ret = vorbis_encode_setup_managed(&tf->vi,
-					asset->channels, 
-					asset->sample_rate, 
-					-1, 
-					asset->vorbis_bitrate, 
+				// Set true VBR as demonstrated by http://svn.xiph.org/trunk/vorbis/examples/encoding_example.c
+				ret = vorbis_encode_setup_managed(cur_stream->vi,
+					asset->channels,
+					asset->sample_rate,
+					-1,
+					asset->vorbis_bitrate,
 					-1);
-				ret |= vorbis_encode_ctl(&tf->vi, OV_ECTL_RATEMANAGE_AVG, NULL);
-				ret |= vorbis_encode_setup_init(&tf->vi);
+				ret |= vorbis_encode_ctl(cur_stream->vi, OV_ECTL_RATEMANAGE_AVG, NULL);
+				ret |= vorbis_encode_setup_init(cur_stream->vi);
 			}
 
 			if(ret)
 			{
 				errormsg("The Vorbis encoder could not set up a mode according to"
-							"the requested quality or bitrate.");
-
-				fclose (stream);
-				stream = 0;
+						" the requested quality or bitrate.");
 				return 1;
 			}
-
-			vorbis_comment_init(&tf->vc); // comment is cleared lateron 
-			vorbis_comment_add_tag(&tf->vc, (char*)"ENCODER", (char*)PACKAGE_STRING);
-			/* set up the analysis state and auxiliary encoding storage */
-			vorbis_analysis_init(&tf->vd, &tf->vi);
-			vorbis_block_init(&tf->vd, &tf->vb);
+			// set up the analysis state and auxiliary encoding storage
+			vorbis_analysis_init(&cur_stream->vs, cur_stream->vi);
+			vorbis_block_init(&cur_stream->vs, &cur_stream->block);
 		}
-		/* audio init done */
+		// audio init done
 
-		/* write the bitstream header packets with proper page interleave */
-
-		/* first packet will get its own page automatically */
-		if(asset->video_data)
+		// write the bitstream header packets with proper page interleave
+		// first packet will get its own page automatically
+		for(cur_stream = streams; cur_stream < &streams[free_stream]; cur_stream++)
 		{
-			theora_encode_header (&tf->td, &tf->op);
-			ogg_stream_packetin (&tf->to, &tf->op);
-			if(ogg_stream_pageout (&tf->to, &tf->og) != 1)
+			if(cur_stream->ti)
 			{
-				errorbox("Internal Ogg library error.");
-				return 1;
-			}
-			fwrite (tf->og.header, 1, tf->og.header_len, stream);
-			fwrite (tf->og.body, 1, tf->og.body_len, stream);
+				theora_encode_header(&cur_stream->ts, &pkt);
+				ogg_stream_packetin(&cur_stream->state, &pkt);
+				if(ogg_stream_pageout(&cur_stream->state, &page) != 1)
+				{
+					errormsg("Failed to encode OGG Theora header");
+					return 1;
+				}
+				if(write_page(&page))
+				{
+					errormsg("Failed to write Ogg Theora first header");
+					return 1;
+				}
 
-			/* create the remaining theora headers */
-			theora_comment_init (&tf->tc);
-			theora_comment_add_tag (&tf->tc, (char*)"ENCODER", (char*)PACKAGE_STRING);
-			theora_encode_comment (&tf->tc, &tf->op);
-			ogg_stream_packetin (&tf->to, &tf->op);
-			theora_comment_clear(&tf->tc);
-			theora_encode_tables (&tf->td, &tf->op);
-			ogg_stream_packetin (&tf->to, &tf->op);
+				// create the remaining theora headers
+				theora_comment_init(&the_comment);
+				theora_comment_add_tag(&the_comment, (char*)"ENCODER", (char*)PACKAGE_STRING);
+				theora_encode_comment(&the_comment, &pkt);
+				ogg_stream_packetin (&cur_stream->state, &pkt);
+				theora_comment_clear(&the_comment);
+				theora_encode_tables (&cur_stream->ts, &pkt);
+				ogg_stream_packetin(&cur_stream->state, &pkt);
+			}
+			if(cur_stream->vi)
+			{
+				ogg_packet header_comm;
+				ogg_packet header_code;
+
+				vorbis_comment_init(&vrb_comment);
+				vorbis_comment_add_tag(&vrb_comment, (char*)"ENCODER", (char*)PACKAGE_STRING);
+				vorbis_analysis_headerout (&cur_stream->vs,
+					&vrb_comment, &pkt, &header_comm, &header_code);
+				vorbis_comment_clear(&vrb_comment);
+				ogg_stream_packetin(&cur_stream->state, &pkt);
+				if(ogg_stream_pageout(&cur_stream->state, &page) != 1)
+				{
+					errormsg("Failed to encode Ogg Vorbis first header");
+					return 1;
+				}
+				if(write_page(&page))
+				{
+					errormsg("Failed to write Ogg Vorbis first header");
+					return 1;
+				}
+
+				// remaining vorbis header packets
+				ogg_stream_packetin(&cur_stream->state, &header_comm);
+				ogg_stream_packetin(&cur_stream->state, &header_code);
+			}
 		}
-		if(asset->audio_data)
+		page_write_error = 0;
+		// Flush the rest of our headers. This ensures
+		// the actual data in each stream will start
+		// on a new page, as per spec.
+		for(cur_stream = streams; cur_stream < &streams[free_stream]; cur_stream++)
 		{
-			ogg_packet header;
-			ogg_packet header_comm;
-			ogg_packet header_code;
-
-			vorbis_analysis_headerout (&tf->vd, &tf->vc, &header,
-				&header_comm, &header_code);
-			ogg_stream_packetin (&tf->vo, &header);    /* automatically placed in its own page */
-			vorbis_comment_clear(&tf->vc);
-			if(ogg_stream_pageout (&tf->vo, &tf->og) != 1)
+			if(cur_stream->ti || cur_stream->vi)
 			{
-				errorbox("Internal Ogg library error.");
-				return 1;
+				int ret;
+				while(ret = ogg_stream_flush(&cur_stream->state, &page))
+				{
+					if(write_page(&page))
+					{
+						errormsg("Failed to write OGG headers");
+						return 1;
+					}
+				}
+				cur_stream->page_valid = 0;
 			}
-			fwrite (tf->og.header, 1, tf->og.header_len, stream);
-			fwrite (tf->og.body, 1, tf->og.body_len, stream);
-
-			/* remaining vorbis header packets */
-			ogg_stream_packetin (&tf->vo, &header_comm);
-			ogg_stream_packetin (&tf->vo, &header_code);
-		}
-
-		/* Flush the rest of our headers. This ensures
-		 * the actual data in each stream will start
-		 * on a new page, as per spec. */
-		while(asset->video_data)
-		{
-			int result = ogg_stream_flush (&tf->to, &tf->og);
-			if(result < 0)
-			{
-				/* can't get here */
-				errorbox("Internal Ogg library error.");
-				return 1;
-			}
-			if(result == 0)
-				break;
-			fwrite (tf->og.header, 1, tf->og.header_len, stream);
-			fwrite (tf->og.body, 1, tf->og.body_len, stream);
-		}
-		while(asset->audio_data)
-		{
-			int result = ogg_stream_flush (&tf->vo, &tf->og);
-			if(result < 0)
-			{
-				/* can't get here */
-				errormsg("Internal Ogg library error.");
-				return 1;
-			}
-			if(result == 0)
-				break;
-			fwrite (tf->og.header, 1, tf->og.header_len, stream);
-			fwrite (tf->og.body, 1, tf->og.body_len, stream);
 		}
 		flush_lock = new Mutex("OGGFile::Flush lock");
 	}
@@ -443,10 +408,11 @@ int FileOGG::open_file(int rd, int wr)
 		stat(asset->path, &file_stat);
 		asset->file_length = file_stat.st_size;
 
-// Check existence of toc
+		// Check existence of toc
 		tocfile = new FileTOC(this, file->preferences->index_directory, asset->path,
 			asset->file_length, file_stat.st_mtime);
 		ogg_sync_init(&sync_state);
+
 		// make sure we init the position structures to zero
 		read_buffer_at(0);
 
@@ -584,9 +550,9 @@ int FileOGG::open_file(int rd, int wr)
 		}
 	}
 
-	if(!ret)
+	if(!ret && rd)
 	{
-		// Anything is in OGG container
+		// Everything is in OGG container
 		if(!(ret = tocfile->init_tocfile(TOCFILE_TYPE_MUX0)))
 		{
 			for(cur_stream = streams; cur_stream < & streams[free_stream]; cur_stream++)
@@ -630,82 +596,69 @@ int FileOGG::check_sig(Asset *asset)
 
 void FileOGG::close_file()
 {
+	if(!stream)
+		return;
+
 	if(wr)
 	{
-		if(final_write)
-		{
-			if(asset->audio_data)
-				write_samples_vorbis(0, 0, 1); // set eos
-			if(asset->video_data)
-				write_frames_theora(0, 1, 1); // set eos
-		}
 		flush_ogg(1); // flush all
 
-		if(asset->audio_data)
-		{
-			vorbis_block_clear (&tf->vb);
-			vorbis_dsp_clear (&tf->vd);
-			vorbis_info_clear (&tf->vi);
-			ogg_stream_clear (&tf->vo);
-		}
-		if(asset->video_data)
-		{
-			theora_info_clear (&tf->ti);
-			ogg_stream_clear (&tf->to);
-			theora_clear (&tf->td);
-		}
+		if(flush_lock) delete flush_lock;
+		flush_lock = 0;
 
-		if(stream) fclose(stream);
-		stream = 0;
-	} 
-	else if(rd)
+		if(temp_frame)
+		{
+			delete temp_frame;
+			temp_frame = 0;
+		}
+	}
+	for(cur_stream = streams; cur_stream < &streams[free_stream]; cur_stream++)
 	{
-		media_stream_t *cur_stream;
-
-		for(cur_stream = streams; cur_stream < &streams[free_stream]; cur_stream++)
+		if(cur_stream->ti)
 		{
-			if(cur_stream->ti)
-			{
-				theora_info_clear(cur_stream->ti);
-				theora_comment_clear(cur_stream->tc);
-				theora_clear(&cur_stream->ts);
-				delete cur_stream->ti;
+			theora_info_clear(cur_stream->ti);
+			theora_comment_clear(cur_stream->tc);
+			theora_clear(&cur_stream->ts);
+			delete cur_stream->ti;
+			if(rd)
 				delete cur_stream->tc;
-				cur_stream->ti = 0;
-			}
-			else if(cur_stream->vi)
-			{
-				vorbis_block_clear(&cur_stream->block);
-				vorbis_dsp_clear(&cur_stream->vs);
-				vorbis_comment_clear(cur_stream->vc);
-				vorbis_info_clear(cur_stream->vi);
-				if(cur_stream->max_pcm_samples)
-				{
-					for(int i = 0; i < cur_stream->max_pcm_samples; i++)
-						delete cur_stream->pcm_samples[i];
-					cur_stream->max_pcm_samples = 0;
-				}
-				delete cur_stream->vi;
-				delete cur_stream->vc;
-				cur_stream->vi = 0;
-			}
-			ogg_stream_clear(&cur_stream->state);
-			cur_stream->headers = 0;
-			cur_stream->dec_init = 0;
+			cur_stream->ti = 0;
 		}
+		else if(cur_stream->vi)
+		{
+			vorbis_block_clear(&cur_stream->block);
+			vorbis_dsp_clear(&cur_stream->vs);
+			vorbis_comment_clear(cur_stream->vc);
+			vorbis_info_clear(cur_stream->vi);
+			if(cur_stream->max_pcm_samples)
+			{
+				for(int i = 0; i < cur_stream->max_pcm_samples; i++)
+					delete cur_stream->pcm_samples[i];
+				cur_stream->max_pcm_samples = 0;
+			}
+			delete cur_stream->vi;
+			if(rd)
+				delete cur_stream->vc;
+			cur_stream->vi = 0;
+		}
+		ogg_stream_clear(&cur_stream->state);
+		cur_stream->headers = 0;
+		cur_stream->dec_init = 0;
+	}
+	if(rd)
+	{
 		if(tocfile) delete tocfile;
 		ogg_sync_destroy(&sync_state);
-		if(stream) fclose(stream);
-		stream = 0;
 	}
+	if(stream) page_write_error |= fclose(stream);
+	if(wr && page_write_error)
+		errormsg("Failed to write OGG file to disk");
+	stream = 0;
 }
 
 int FileOGG::colormodel_supported(int colormodel)
 {
-	if(colormodel == BC_YUV420P)
-		return BC_YUV420P;
-	else
-		return colormodel;
+	return colormodel;
 }
 
 int FileOGG::get_best_colormodel(Asset *asset, int driver)
@@ -800,11 +753,6 @@ int FileOGG::read_frame(VFrame *frame)
 	frame->set_duration(1. / asset->frame_rate);
 	frame->set_frame_number(next_frame_position);
 	return 0;
-}
-
-void FileOGG::set_audio_position(samplenum x)
-{
-	next_sample_position = x + start_sample;
 }
 
 void FileOGG::move_pcmsamples_position()
@@ -955,6 +903,7 @@ int FileOGG::read_samples(double *buffer, int len)
 	}
 
 	filled = 0;
+
 	while(filled < len)
 	{
 		if(fill_pcm_samples(len))
@@ -971,267 +920,201 @@ int FileOGG::read_samples(double *buffer, int len)
 	return 0;
 }
 
-int FileOGG::write_audio_page()
+int FileOGG::write_page(ogg_page *op)
 {
-	int ret;
-
-	ret = fwrite(tf->apage, 1, tf->apage_len, stream);
-	if(ret < tf->apage_len) 
+	if(fwrite(op->header, 1, op->header_len, stream) != op->header_len ||
+			fwrite(op->body, 1, op->body_len, stream) != op->body_len)
 	{
-		errorbox("Error writing OGG audio page");
+		page_write_error = 1;
+		return 1;
 	}
-	tf->apage_valid = 0;
-	tf->a_pkg -= ogg_page_packets((ogg_page *)&tf->apage);
-	return ret;
+	return 0;
 }
 
-int FileOGG::write_video_page()
+int FileOGG::write_file()
 {
-	int ret;
+	ptstime time_min = 1000000;
+	media_stream_t *min_stream, *strm;
 
-	ret = fwrite(tf->vpage, 1, tf->vpage_len, stream);
-	if(ret < tf->vpage_len) 
+	min_stream = 0;
+
+	for(strm = streams; strm < &streams[free_stream]; strm++)
 	{
-		errorbox("error writing OGG video page");
+		if(strm->page_valid && strm->page_pts < time_min)
+		{
+			time_min = strm->page_pts;
+			min_stream = strm;
+		}
 	}
-	tf->vpage_valid = 0;
-	tf->v_pkg -= ogg_page_packets((ogg_page *)&tf->vpage);
-	return ret;
+	if(min_stream)
+	{
+		write_page(&min_stream->page);
+		min_stream->page_valid = 0;
+		return 0;
+	}
+	return 1;
 }
 
-void FileOGG::flush_ogg(int e_o_s)
+void FileOGG::flush_ogg(int eos)
 {
-	int len;
-	ogg_page og;
+	media_stream_t *cur_stream;
 
-	flush_lock->lock();
-	/* flush out the ogg pages  */
-	while(1)
+	flush_lock->lock("FileOGG::flush_ogg");
+
+	for(cur_stream = streams; cur_stream < &streams[free_stream]; cur_stream++)
 	{
-	/* Get pages for both streams, if not already present, and if available.*/
-		if(asset->video_data && !tf->vpage_valid)
+		if(cur_stream->ti)
 		{
-			// this way seeking is much better,
-			// not sure if 23 packets  is a good value. it works though
-			int v_next=0;
-			if(tf->v_pkg > 22 && ogg_stream_flush(&tf->to, &og) > 0)
-				v_next=1;
-			else if(ogg_stream_pageout(&tf->to, &og) > 0)
-				v_next=1;
+			while(theora_encode_packetout(&cur_stream->ts, eos, &pkt))
+				ogg_stream_packetin(&cur_stream->state, &pkt);
+		}
+		if(cur_stream->vi)
+		{
+			if(eos)
+				vorbis_analysis_wrote(&cur_stream->vs, 0);
 
-			if(v_next)
+			while(vorbis_analysis_blockout(&cur_stream->vs, &cur_stream->block) == 1)
 			{
-				len = og.header_len + og.body_len;
-				if(tf->vpage_buffer_length < len)
-				{
-					tf->vpage = (unsigned char *)realloc(tf->vpage, len);
-					tf->vpage_buffer_length = len;
-				}
-				tf->vpage_len = len;
-				memcpy(tf->vpage, og.header, og.header_len);
-				memcpy(tf->vpage+og.header_len , og.body, og.body_len);
+				vorbis_analysis(&cur_stream->block, NULL);
+				vorbis_bitrate_addblock(&cur_stream->block);
 
-				tf->vpage_valid = 1;
-				tf->videotime = theora_granule_time(&tf->td, ogg_page_granulepos(&og));
+				while(vorbis_bitrate_flushpacket(&cur_stream->vs, &pkt) == 1)
+					ogg_stream_packetin(&cur_stream->state, &pkt);
 			}
 		}
-		if(asset->audio_data && !tf->apage_valid)
-		{
-			// this way seeking is much better,
-			// not sure if 23 packets  is a good value. it works though
-			int a_next=0;
-			if(tf->a_pkg > 22 && ogg_stream_flush(&tf->vo, &og) > 0)
-				a_next=1;
-			else if(ogg_stream_pageout(&tf->vo, &og) > 0)
-				a_next=1;
-
-			if(a_next)
-			{
-				len = og.header_len + og.body_len;
-				if(tf->apage_buffer_length < len)
-				{
-					tf->apage = (unsigned char *)realloc(tf->apage, len);
-					tf->apage_buffer_length = len;
-				}
-				tf->apage_len = len;
-				memcpy(tf->apage, og.header, og.header_len);
-				memcpy(tf->apage+og.header_len , og.body, og.body_len);
-
-				tf->apage_valid = 1;
-				tf->audiotime= vorbis_granule_time (&tf->vd,
-					ogg_page_granulepos(&og));
-			}
-		}
-
-		if(!asset->audio_data && tf->vpage_valid)
-			write_video_page();
-		else if(!asset->video_data && tf->apage_valid)
-			write_audio_page();
-
-		/* We're using both. We can output only:
-		 *  a) If we have valid pages for both
-		 *  b) At EOS, for the remaining stream.
-		 */
-		else if(tf->vpage_valid && tf->apage_valid)
-		{
-			/* Make sure they're in the right order. */
-			if(tf->videotime <= tf->audiotime)
-				write_video_page();
-			else
-				write_audio_page();
-		}
-		else if(e_o_s && tf->vpage_valid)
-			write_video_page();
-		else if(e_o_s && tf->apage_valid)
-			write_audio_page();
-		else
-			break; /* Nothing more writable at the moment */
 	}
+
+	do
+	{
+		for(cur_stream = streams; cur_stream < &streams[free_stream]; cur_stream++)
+		{
+			if(cur_stream->ti || cur_stream->vi)
+			{
+				if(!cur_stream->page_valid &&
+					ogg_stream_flush(&cur_stream->state, &cur_stream->page))
+				{
+					if(cur_stream->ti)
+						cur_stream->page_pts = theora_granule_time(&cur_stream->ts, ogg_page_granulepos(&cur_stream->page));
+					else
+						cur_stream->page_pts = vorbis_granule_time(&cur_stream->vs, ogg_page_granulepos(&cur_stream->page));
+					cur_stream->page_valid = 1;
+				}
+			}
+		}
+	}
+	while(write_file() == 0);
 	flush_lock->unlock();
-}
 
-void FileOGG::write_samples_vorbis(double **buffer, int len, int e_o_s)
-{
-	int i,j, count = 0;
-	float **vorbis_buffer;
-	static int samples = 0;
-
-	samples += len;
-	if(e_o_s)
-		vorbis_analysis_wrote(&tf->vd, 0);
-	else
-	{
-		vorbis_buffer = vorbis_analysis_buffer (&tf->vd, len);
-		/* double to float conversion */
-		for(i = 0; i<asset->channels; i++)
-		{
-			for(j = 0; j < len; j++)
-				vorbis_buffer[i][j] = buffer[i][j];
-		}
-		vorbis_analysis_wrote(&tf->vd, len);
-	}
-	while(vorbis_analysis_blockout(&tf->vd, &tf->vb) == 1)
-	{
-		/* analysis, assume we want to use bitrate management */
-		vorbis_analysis(&tf->vb, NULL);
-		vorbis_bitrate_addblock(&tf->vb);
-
-		/* weld packets into the bitstream */
-		while(vorbis_bitrate_flushpacket(&tf->vd, &tf->op))
-		{
-			flush_lock->lock();
-			ogg_stream_packetin(&tf->vo, &tf->op);
-			tf->a_pkg++;
-			flush_lock->unlock();
-		}
-	}
-	flush_ogg(0);
+	if(page_write_error)
+		errormsg("Failed to write rendered OGG");
 }
 
 int FileOGG::write_samples(double **buffer, int len)
 {
+	int i, j;
+	float **vrb_buf;
+
 	if(len > 0)
-		write_samples_vorbis(buffer, len, 0);
-	return 0;
-}
-
-void FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
-{
-	// due to clumsy theora's design we need to delay writing out by one frame
-	// always stay one frame behind, so we can correctly encode e_o_s
-
-	int i, j, result = 0;
-
-	if(!stream) return;
-
-	for(j = 0; j < len && !result; j++)
 	{
-		if(temp_frame) // encode previous frame if available
+		set_audio_stream();
+		flush_lock->lock("FileOGG::write_samples");
+		vrb_buf = vorbis_analysis_buffer(&cur_stream->vs, len);
+
+		for(i = 0; i < asset->channels; i++)
 		{
-			yuv_buffer yuv;
-			yuv.y_width = tf->ti.width;
-			yuv.y_height = tf->ti.height;
-			yuv.y_stride = temp_frame->get_bytes_per_line();
-
-			yuv.uv_width = tf->ti.width / 2;
-			yuv.uv_height = tf->ti.height / 2;
-			yuv.uv_stride = temp_frame->get_bytes_per_line() /2;
-
-			yuv.y = temp_frame->get_y();
-			yuv.u = temp_frame->get_u();
-			yuv.v = temp_frame->get_v();
-			int ret = theora_encode_YUVin (&tf->td, &yuv);
-			if(ret)
-			{
-				errormsg("Theora_encode_YUVin() failed with code %i yuv_buffer: y_width: %i, y_height: %i, y_stride: %i, uv_width: %i, uv_height: %i, uv_stride: %i",
-					ret,
-					yuv.y_width,
-					yuv.y_height,
-					yuv.y_stride,
-					yuv.uv_width,
-					yuv.uv_height,
-					yuv.uv_stride);
-			}
-
-			while(theora_encode_packetout (&tf->td, e_o_s, &tf->op)) {
-				flush_lock->lock();
-				ogg_stream_packetin (&tf->to, &tf->op);
-				tf->v_pkg++;
-				flush_lock->unlock();
-			}
-			flush_ogg(0);  // eos flush is done later at close_file
+			for(j = 0; j < len; j++)
+				vrb_buf[i][j] = buffer[i][j];
 		}
-// If we have e_o_s, don't encode any new frames
-		if(e_o_s)
-			break;
+		vorbis_analysis_wrote(&cur_stream->vs, len);
+		flush_lock->unlock();
 
-		if(!temp_frame)
-		{
-			temp_frame = new VFrame (0, 
-						tf->ti.width, 
-						tf->ti.height,
-						BC_YUV420P);
-		} 
-		VFrame *frame = frames[0][j];
-		int in_color_model = frame->get_color_model();
-		if(in_color_model == BC_YUV422P &&
-			temp_frame->get_w() == frame->get_w() &&
-			temp_frame->get_h() == frame->get_h() &&
-			temp_frame->get_bytes_per_line() == frame->get_bytes_per_line())
-		{
-			temp_frame->copy_from(frame);
-		}
-		else
-		{
-			cmodel_transfer(temp_frame->get_rows(),
-				frame->get_rows(),
-				temp_frame->get_y(),
-				temp_frame->get_u(),
-				temp_frame->get_v(),
-				frame->get_y(),
-				frame->get_u(),
-				frame->get_v(),
-				0,
-				0,
-				frame->get_w(),
-				frame->get_h(),
-				0,
-				0,
-				frame->get_w(),  // temp_frame can be larger than frame if width not dividable by 16
-				frame->get_h(),
-				frame->get_color_model(),
-				BC_YUV420P,
-				0,
-				frame->get_w(),
-				temp_frame->get_w());
-		}
+		flush_ogg(0);
 	}
+
+	return page_write_error;
 }
 
 int FileOGG::write_frames(VFrame ***frames, int len)
 {
-	write_frames_theora(frames, len, 0);
-	return 0;
+	yuv_buffer yuv;
+	int j, ret;
+	int w, h, b;
+
+	flush_ogg(0);
+
+	for(j = 0; j < len; j++)
+	{
+		VFrame *frame = frames[0][j];
+
+		set_video_stream(frame);
+
+		if(!temp_frame)
+		{
+			temp_frame = new VFrame (0,
+				cur_stream->ti->width,
+				cur_stream->ti->height,
+				BC_YUV420P);
+		}
+// Always convert: internally YUV420P is never used
+		cmodel_transfer(temp_frame->get_rows(),
+			frame->get_rows(),
+			temp_frame->get_y(),
+			temp_frame->get_u(),
+			temp_frame->get_v(),
+			frame->get_y(),
+			frame->get_u(),
+			frame->get_v(),
+			0,
+			0,
+			frame->get_w(),
+			frame->get_h(),
+			cur_stream->ti->offset_x,
+			cur_stream->ti->offset_y,
+			temp_frame->get_w(),
+			temp_frame->get_h(),
+			frame->get_color_model(),
+			BC_YUV420P,
+			0,
+			frame->get_w(),
+			temp_frame->get_w());
+
+		h = temp_frame->get_h();
+		w = temp_frame->get_w();
+		b = temp_frame->get_bytes_per_line();
+
+		yuv.y = temp_frame->get_y();
+		yuv.u = temp_frame->get_u();
+		yuv.v = temp_frame->get_v();
+
+		yuv.y_width = w;
+		yuv.y_height = h;
+		yuv.y_stride = b;
+
+		yuv.uv_width = w / 2;
+		yuv.uv_height = h / 2;
+		yuv.uv_stride = b /2;
+
+		flush_lock->lock("FileOGG::write_frames");
+		int rv = theora_encode_YUVin(&cur_stream->ts, &yuv);
+		flush_lock->unlock();
+
+		if(rv)
+		{
+			errormsg("Theora_encode_YUVin() failed with code %i yuv_buffer: y_width: %i, y_height: %i, y_stride: %i, uv_width: %i, uv_height: %i, uv_stride: %i",
+				ret,
+				yuv.y_width,
+				yuv.y_height,
+				yuv.y_stride,
+				yuv.uv_width,
+				yuv.uv_height,
+				yuv.uv_stride);
+			return 1;
+		}
+		if(j < len - 1)
+			flush_ogg(0);
+	}
+
+	return page_write_error;
 }
 
 
@@ -1522,332 +1405,6 @@ int OGGTheoraSharpness::handle_event()
 {
 	gui->asset->theora_sharpness = atol(get_text());
 	return 1;
-}
-
-
-PackagingEngineOGG::PackagingEngineOGG()
-{
-	packages = 0;
-	default_asset = 0;
-}
-
-PackagingEngineOGG::~PackagingEngineOGG()
-{
-	if(packages)
-	{
-		for(int i = 0; i < total_packages; i++)
-			delete packages[i];
-		delete [] packages;
-	}
-	if(default_asset)
-		delete default_asset;
-}
-
-int PackagingEngineOGG::create_packages_single_farm(
-		EDL *edl,
-		Preferences *preferences,
-		Asset *default_asset, 
-		ptstime total_start,
-		ptstime total_end)
-{
-	this->total_start = total_start;
-	this->total_end = total_end;
-	this->edl = edl;
-
-	this->preferences = preferences;
-
-// We make A COPY of the asset, because we set audio_data = 0 on local asset which is the same copy as default_asset... 
-// Should be taken care of somewhere else actually
-	this->default_asset = new Asset(*default_asset);
-
-	audio_start_pts = total_start;
-	video_start_pts = total_start;
-	audio_pts = audio_start_pts;
-	video_pts = video_start_pts;
-	audio_end_pts = total_end;
-	video_end_pts = total_end;
-	current_package = 0;
-
-	double total_len = total_end - total_start;
-
-	total_packages = 0;
-	if(default_asset->audio_data)
-		total_packages++;
-	if(default_asset->video_data)
-		total_packages += preferences->renderfarm_job_count;
-
-	packages = new RenderPackage*[total_packages];
-
-	int local_current_package = 0;
-	if(default_asset->audio_data)
-	{
-		packages[local_current_package] = new RenderPackage;
-		sprintf(packages[current_package]->path, "%s.audio", default_asset->path);
-		local_current_package++;
-	}
-
-	if(default_asset->video_data)
-	{
-		video_package_len = (total_len) / preferences->renderfarm_job_count;
-		int current_number;    // The number being injected into the filename.
-		int number_start;      // Character in the filename path at which the number begins
-		int total_digits;      // Total number of digits including padding the user specified.
-
-		Render::get_starting_number(default_asset->path, 
-			current_number,
-			number_start, 
-			total_digits,
-			3);
-
-		for(int i = 0; i < preferences->renderfarm_job_count; i++)
-		{
-			RenderPackage *package = packages[local_current_package] = new RenderPackage;
-			Render::create_filename(package->path, 
-				default_asset->path, 
-				current_number,
-				total_digits,
-				number_start);
-			current_number++;
-			local_current_package++;
-		}
-	}
-}
-
-RenderPackage* PackagingEngineOGG::get_package_single_farm(double frames_per_second, 
-		int client_number,
-		int use_local_rate)
-{
-	if(current_package == total_packages)
-		return 0;
-
-	RenderPackage *result = 0;
-	if(current_package == 0 && default_asset->audio_data)
-	{
-		result = packages[0];
-		result->audio_start_pts = audio_start_pts;
-		result->video_start_pts = video_start_pts;
-		result->audio_end_pts = audio_end_pts;
-		result->video_end_pts = video_end_pts;
-		result->audio_do = 1;
-		result->video_do = 0;
-	}
-	else if(default_asset->video_data)
-	{
-		// Do not do any scaling according to node speed, so we know we can get evenly distributed 'forced' keyframes
-		result = packages[current_package];
-		result->audio_do = 0;
-		result->video_do = 1;
-
-		result->audio_start_pts = audio_pts;
-		result->video_start_pts = video_pts;
-		result->audio_end_pts = result->audio_start_pts + video_package_len;
-		result->video_end_pts = result->video_start_pts + video_package_len;
-
-// Last package... take it all!
-		if(current_package == total_packages - 1)
-		{
-			result->audio_end_pts = audio_end_pts;
-			result->video_end_pts = video_end_pts;
-		}
-
-		audio_pts = result->audio_end_pts;
-		video_pts = result->video_end_pts;
-	}
-
-	current_package++;
-	return result;
-}
-
-void PackagingEngineOGG::get_package_paths(ArrayList<char*> *path_list)
-{
-	for(int i = 0; i < total_packages; i++)
-		path_list->append(strdup(packages[i]->path));
-
-// We will mux to the the final file at the end!
-	path_list->append(strdup(default_asset->path));
-	path_list->set_free();
-}
-
-ptstime PackagingEngineOGG::get_progress_max()
-{
-	return (total_end - total_start) * 2 +
-		preferences->render_preroll * total_packages +
-		(preferences->render_preroll >= total_start ?
-		(total_start - preferences->render_preroll) * 2 : 0);
-}
-
-int PackagingEngineOGG::packages_are_done()
-{
-// Mux audio and video into one file
-	Asset *video_asset, *audio_asset;
-	File *audio_file_gen, *video_file_gen;
-	FileOGG *video_file, *audio_file;
-	ogg_stream_state audio_in_stream, video_in_stream;
-
-	int local_current_package = 0;
-	if(default_asset->audio_data)
-	{
-		audio_asset = new Asset(packages[local_current_package]->path);
-		local_current_package++;
-		audio_file_gen = new File();
-		audio_file_gen->open_file(preferences, 
-			audio_asset, 
-			1, //rd 
-			0, //wr
-			0, //base sample rate
-			0); // base_frame rate
-		audio_file = (FileOGG*) audio_file_gen->file;
-		ogg_stream_init(&audio_in_stream, audio_file->tf->vo.serialno);
-/* FIXIT
-		audio_file->seek_to_databegin(audio_file->tf->audiosync, audio_file->tf->vo.serialno);
-	*/
-	}
-
-	if(default_asset->video_data)
-	{
-		video_asset = new Asset(packages[local_current_package]->path);
-		local_current_package++;
-		video_file_gen = new File();
-		video_file_gen->open_file(preferences, 
-			video_asset, 
-			1, //rd 
-			0, //wr
-			0, //base sample rate
-			0); // base_frame rate
-		video_file = (FileOGG*) video_file_gen->file;
-		ogg_stream_init(&video_in_stream, video_file->tf->to.serialno);
-/* FIXIT
-		video_file->seek_to_databegin(video_file->tf->videosync, video_file->tf->to.serialno);
-	*/
-	}
-// Output file
-	File *output_file_gen = new File();
-	output_file_gen->open_file(preferences,
-		default_asset,
-		0,
-		1,
-		default_asset->sample_rate, 
-		default_asset->frame_rate);
-	FileOGG *output_file = (FileOGG*)output_file_gen->file;
-
-	ogg_page og;    /* one Ogg bitstream page.  Vorbis packets are inside */
-	ogg_packet op;  /* one raw packet of data for decode */
-
-	int audio_ready = default_asset->audio_data;
-	int video_ready = default_asset->video_data;
-	ogg_int64_t video_packetno = 1;
-	ogg_int64_t audio_packetno = 1;
-	ogg_int64_t frame_offset = 0;
-	ogg_int64_t current_frame = 0;
-/* FIXIT
-	while((default_asset->audio_data && audio_ready) || (default_asset->video_data && video_ready))
-	{
-		if(video_ready)
-		{
-			while(ogg_stream_packetpeek(&video_in_stream, NULL) != 1) // get as many pages as needed for one package
-			{
-				if(!video_file->get_next_page(video_file->tf->videosync, video_file->tf->to.serialno, &video_file->tf->videopage))
-				{
-					// We are at the end of our file, see if it is more and open more if there is
-					if(local_current_package < total_packages)
-					{
-						frame_offset = current_frame +1;
-						ogg_stream_clear(&video_in_stream);
-						video_file_gen->close_file();
-						delete video_file_gen;
-						Garbage::delete_object(video_asset);
-						video_asset = new Asset(packages[local_current_package]->path);
-						local_current_package++;
-
-						video_file_gen = new File();
-						video_file_gen->open_file(preferences, 
-							video_asset, 
-							1, //rd 
-							0, //wr
-							0, //base sample rate
-							0); // base_frame rate
-						video_file = (FileOGG*)video_file_gen->file;
-						ogg_stream_init(&video_in_stream, video_file->tf->to.serialno);
-						video_file->seek_to_databegin(video_file->tf->videosync, video_file->tf->to.serialno);
-					} else
-						video_ready = 0;
-					break;
-				}
-				ogg_stream_pagein(&video_in_stream, &video_file->tf->videopage);
-			}
-			while(ogg_stream_packetpeek(&video_in_stream, NULL) == 1) // get all packets out of the page
-			{
-				ogg_stream_packetout(&video_in_stream, &op);
-				if(local_current_package != total_packages) // keep it from closing the stream
-					op.e_o_s = 0;
-				if(video_packetno != 1)                     // if this is not the first video package do not start with b_o_s
-					op.b_o_s = 0;
-				else
-					op.b_o_s = 1;
-				op.packetno = video_packetno;
-				video_packetno ++;
-				ogg_int64_t granulepos = op.granulepos;
-				if(granulepos != -1)
-				{
-				// Fix granulepos!
-					ogg_int64_t rel_iframe = granulepos >> video_file->theora_keyframe_granule_shift;
-					ogg_int64_t rel_pframe = granulepos - (rel_iframe << video_file->theora_keyframe_granule_shift);
-					ogg_int64_t rel_current_frame = rel_iframe + rel_pframe;
-					current_frame = frame_offset + rel_current_frame;
-					ogg_int64_t abs_iframe = current_frame - rel_pframe;
-
-					op.granulepos = (abs_iframe << video_file->theora_keyframe_granule_shift) + rel_pframe;
-				}
-				ogg_stream_packetin(&output_file->tf->to, &op);
-				output_file->tf->v_pkg++; 
-			}
-		}
-		if(audio_ready)
-		{
-			while(ogg_stream_packetpeek(&audio_in_stream, NULL) != 1) // get as many pages as needed for one package
-			{
-				if(!audio_file->get_next_page(audio_file->tf->audiosync, audio_file->tf->vo.serialno, &audio_file->tf->audiopage))
-				{
-					audio_ready = 0;
-					break;
-				}
-				ogg_stream_pagein(&audio_in_stream, &audio_file->tf->audiopage);
-			}
-			while(ogg_stream_packetpeek(&audio_in_stream, NULL) == 1) // get all packets out of the page
-			{
-				ogg_stream_packetout(&audio_in_stream, &op);
-				ogg_stream_packetin (&output_file->tf->vo, &op);
-				audio_packetno++;
-				output_file->tf->a_pkg++; 
-			}
-		}
-		output_file->flush_ogg(0);
-	}
-	*/
-// Just prevent thet write_samples and write_frames are called
-	output_file->final_write = 0;
-
-	if(default_asset->audio_data)
-	{
-		ogg_stream_clear(&audio_in_stream);
-		audio_file_gen->close_file();
-		delete audio_file_gen;
-		Garbage::delete_object(audio_asset);
-	}
-	if(default_asset->video_data)
-	{
-		ogg_stream_clear(&video_in_stream);
-		video_file_gen->close_file();
-		delete video_file_gen;
-		Garbage::delete_object(video_asset);
-	}
-	output_file_gen->close_file();
-	delete output_file_gen;
-
-// Now delete the temp files
-	for(int i = 0; i < total_packages; i++)
-		unlink(packages[i]->path);
-	return 0;
 }
 
 // Callbacks for TOC generation
