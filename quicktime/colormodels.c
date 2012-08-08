@@ -481,6 +481,8 @@ void cmodel_to_text(char *string, int cmodel)
 		case BC_YUVA16161616: strcpy(string, "YUVA-16 Bit"); break;
 		case BC_RGB_FLOAT:    strcpy(string, "RGB-FLOAT");   break;
 		case BC_RGBA_FLOAT:   strcpy(string, "RGBA-FLOAT");  break;
+		case BC_YUV420P:      strcpy(string, "YUV420P");     break;
+		case BC_YUV422P:      strcpy(string, "YUV422P");     break;
 		default: strcpy(string, "RGB-8 Bit"); break;
 	}
 }
