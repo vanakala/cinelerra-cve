@@ -129,6 +129,7 @@ guicast/bctheme.C
 # guicast/test.C
 plugins/1080to540/1080to540.C
 plugins/720to480/720to480.C
+plugins/C41/c41.C
 plugins/aging/aging.C
 plugins/aging/agingwindow.C
 plugins/bandslide/bandslide.C
