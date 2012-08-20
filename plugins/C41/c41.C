@@ -31,6 +31,7 @@
 
 #include "clip.h"
 #include "bchash.h"
+#include "colormodels.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -51,11 +52,8 @@
 #endif
 
 // Shave the image in order to avoid black borders
-// Tolerance default: 5%, i.e. 0.05
-#define TOLERANCE 0.05
-#define SKIP_ROW if(i < (TOLERANCE * frame_h) || i > ((1 - TOLERANCE) * frame_h)) continue
-#define SKIP_COL if(j < (TOLERANCE * frame_w) || j > ((1-TOLERANCE) * frame_w)) continue
-
+// The min max pixel value difference must be at least 0.05
+#define C41_SHAVE_TOLERANCE 0.05
 
 #include <stdint.h>
 #include <string.h>
@@ -173,7 +171,15 @@ public:
 	VFrame* tmp_frame;
 	VFrame* blurry_frame;
 	struct magic values;
-	int64_t time_sum;
+
+	float *pv_min;
+	float *pv_max;
+	int pv_alloc;
+	int shave_min_row;
+	int shave_max_row;
+	int shave_min_col;
+	int shave_max_col;
+
 	PLUGIN_CLASS_MEMBERS
 };
 
@@ -398,6 +404,8 @@ C41Effect::C41Effect(PluginServer *server)
 {
 	tmp_frame = 0;
 	blurry_frame = 0;
+	pv_min = pv_max = 0;
+	pv_alloc = 0;
 	memset(&values, 0, sizeof(values));
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -408,6 +416,11 @@ C41Effect::~C41Effect()
 		delete tmp_frame;
 	if(blurry_frame)
 		delete blurry_frame;
+	if(pv_alloc)
+	{
+		delete pv_min;
+		delete pv_max;
+	}
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -554,7 +567,8 @@ void C41Effect::process_frame(VFrame *frame)
 		break;
 	}
 
-	if(config.compute_magic){
+	if(config.compute_magic)
+	{
 		// Box blur!
 		if(!tmp_frame)
 			tmp_frame = new VFrame(*frame);
@@ -564,8 +578,9 @@ void C41Effect::process_frame(VFrame *frame)
 		float** rows = (float**)frame->get_rows();
 		float** tmp_rows = (float**)tmp_frame->get_rows();
 		float** blurry_rows = (float**)blurry_frame->get_rows();
+
 		for(int i = 0; i < frame_h; i++)
-			for(int j = 0; j < (3*frame_w); j++)
+			for(int j = 0; j < (3 * frame_w); j++)
 				blurry_rows[i][j] = rows[i][j];
 
 		int boxw = 5, boxh = 5;
@@ -592,17 +607,90 @@ void C41Effect::process_frame(VFrame *frame)
 				}
 			}
 		}
+		// Shave image: cut off border areas where min max difference
+		// is less than C41_SHAVE_TOLERANCE
+
+		// Minimum pxel value is 0
+		float pix_max = cmodel_calculate_max(frame->get_color_model());
+
+		shave_min_row = shave_min_col = 0;
+		shave_max_col = frame_w;
+		shave_max_row = frame_h;
+
+		if(!pv_alloc)
+		{
+			pv_alloc = MAX(frame_h, frame_w);
+			pv_min = new float[pv_alloc];
+			pv_max = new float[pv_alloc];
+		}
+
+		for(x = 0; x < pv_alloc; x++)
+		{
+			pv_min[x] = pix_max;
+			pv_max[x] = 0.;
+		}
+
+		for(y = 0; y < frame_h; y++)
+		{
+			float *row = (float*)blurry_frame->get_rows()[y];
+			float pv;
+			for(x = 0; x < frame_w; x++, row += 3)
+			{
+				pv = (row[0] + row[1] + row[2]);
+
+				if(pv_min[y] > pv)
+					pv_min[y] = pv;
+				if(pv_max[y] < pv)
+					pv_max[y] = pv;
+			}
+		}
+		for(shave_min_row = 0; shave_min_row < frame_h; shave_min_row++)
+			if(pv_max[shave_min_row] - pv_min[shave_min_row] > C41_SHAVE_TOLERANCE)
+				break;
+		for(shave_max_row = frame_h - 1; shave_max_row > shave_min_row; shave_max_row--)
+			if(pv_max[shave_max_row] - pv_min[shave_max_row] > C41_SHAVE_TOLERANCE)
+				break;
+		shave_max_row++;
+
+		for(x = 0; x < pv_alloc; x++)
+		{
+			pv_min[x] = pix_max;
+			pv_max[x] = 0.;
+		}
+
+		for(y = shave_min_row; y < shave_max_row; y++)
+		{
+			float pv;
+			float *row = (float*)blurry_frame->get_rows()[y];
+
+			for(x = 0; x < frame_w; x++, row += 3)
+			{
+				pv = (row[0] + row[1] + row[2]) / 3;
+
+				if(pv_min[x] > pv)
+					pv_min[x] = pv;
+				if(pv_max[x] < pv)
+					pv_max[x] = pv;
+			}
+		}
+		for(shave_min_col = 0; shave_min_col < frame_w; shave_min_col++)
+			if(pv_max[shave_min_col] - pv_min[shave_min_col] > C41_SHAVE_TOLERANCE)
+				break;
+		for(shave_max_col = frame_w - 1; shave_max_col > shave_min_col; shave_max_col--)
+			if(pv_max[shave_max_col] - pv_min[shave_max_col] > C41_SHAVE_TOLERANCE)
+				break;
+		shave_max_col++;
 
 		// Compute magic negfix values
 		float minima_r = 50., minima_g = 50., minima_b = 50.;
 		float maxima_r = 0., maxima_g = 0., maxima_b = 0.;
 
-		for(int i = 0; i < frame_h; i++)
+		for(int i = shave_min_row; i < shave_max_row; i++)
 		{
-			SKIP_ROW;
 			float *row = (float*)blurry_frame->get_rows()[i];
-			for(int j = 0; j < frame_w; j++, row += 3) {
-				SKIP_COL;
+			row += 3 * shave_min_col;
+			for(int j = shave_min_col; j < shave_max_col; j++, row += 3)
+			{
 
 				if(row[0] < minima_r) minima_r = row[0];
 				if(row[0] > maxima_r) maxima_r = row[0];
@@ -614,6 +702,7 @@ void C41Effect::process_frame(VFrame *frame)
 				if(row[2] > maxima_b) maxima_b = row[2];
 			}
 		}
+
 		values.min_r = minima_r;
 		values.min_g = minima_g;
 		values.min_b = minima_b;
