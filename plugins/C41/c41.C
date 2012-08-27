@@ -66,6 +66,8 @@ struct magic
 	float light;
 	float gamma_g;
 	float gamma_b;
+	float coef1;
+	float coef2;
 };
 
 class C41Config
@@ -83,12 +85,15 @@ public:
 
 	int active;
 	int compute_magic;
+	int postproc;
 	float fix_min_r;
 	float fix_min_g;
 	float fix_min_b;
 	float fix_light;
 	float fix_gamma_g;
 	float fix_gamma_b;
+	float fix_coef1;
+	float fix_coef2;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -133,18 +138,27 @@ public:
 
 	C41Enable *active;
 	C41Enable *compute_magic;
+	C41Enable *postproc;
 	BC_Title *min_r;
 	BC_Title *min_g;
 	BC_Title *min_b;
 	BC_Title *light;
 	BC_Title *gamma_g;
 	BC_Title *gamma_b;
+	BC_Title *coef1;
+	BC_Title *coef2;
+	BC_Title *shave_row_min;
+	BC_Title *shave_row_max;
+	BC_Title *shave_col_min;
+	BC_Title *shave_col_max;
 	C41TextBox *fix_min_r;
 	C41TextBox *fix_min_g;
 	C41TextBox *fix_min_b;
 	C41TextBox *fix_light;
 	C41TextBox *fix_gamma_g;
 	C41TextBox *fix_gamma_b;
+	C41TextBox *fix_coef1;
+	C41TextBox *fix_coef2;
 	C41Button *lock;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
@@ -163,6 +177,8 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void render_gui(void* data);
+	float fix_exepts(float ival);
+	float normalize_pixel(float ival);
 #if defined(C41_FAST_POW)
 	float myLog2(float i);
 	float myPow2(float i);
@@ -192,14 +208,17 @@ C41Config::C41Config()
 {
 	active = 0;
 	compute_magic = 0;
+	postproc = 0;
 
-	fix_min_r = fix_min_g = fix_min_b = fix_light = fix_gamma_g = fix_gamma_b = 0.;
+	fix_min_r = fix_min_g = fix_min_b = fix_light = 0.;
+	fix_gamma_g = fix_gamma_b = fix_coef1 = fix_coef2 = 0.;
 }
 
 void C41Config::copy_from(C41Config &src)
 {
 	active = src.active;
 	compute_magic = src.compute_magic;
+	postproc = src.postproc;
 
 	fix_min_r = src.fix_min_r;
 	fix_min_g = src.fix_min_g;
@@ -207,18 +226,23 @@ void C41Config::copy_from(C41Config &src)
 	fix_light = src.fix_light;
 	fix_gamma_g = src.fix_gamma_g;
 	fix_gamma_b = src.fix_gamma_b;
+	fix_coef1 = src.fix_coef1;
+	fix_coef2 = src.fix_coef2;
 }
 
 int C41Config::equivalent(C41Config &src)
 {
 	return (active == src.active &&
 		compute_magic == src.compute_magic &&
+		postproc == src.postproc &&
 		EQUIV(fix_min_r, src.fix_min_r) &&
 		EQUIV(fix_min_g, src.fix_min_g) &&
 		EQUIV(fix_min_b, src.fix_min_b) &&
 		EQUIV(fix_light, src.fix_light) &&
 		EQUIV(fix_gamma_g, src.fix_gamma_g) &&
-		EQUIV(fix_gamma_b, src.fix_gamma_b));
+		EQUIV(fix_gamma_b, src.fix_gamma_b) &&
+		EQUIV(fix_coef1, src.fix_coef1) &&
+		EQUIV(fix_coef2, src.fix_coef2));
 }
 
 void C41Config::interpolate(C41Config &prev,
@@ -230,6 +254,7 @@ void C41Config::interpolate(C41Config &prev,
 	PLUGIN_CONFIG_INTERPOLATE_MACRO
 	active = prev.active;
 	compute_magic = prev.compute_magic;
+	postproc = prev.postproc;
 
 	fix_min_r = prev.fix_min_r * prev_scale + next.fix_min_r * next_scale;
 	fix_min_g = prev.fix_min_g * prev_scale + next.fix_min_g * next_scale;
@@ -237,6 +262,8 @@ void C41Config::interpolate(C41Config &prev,
 	fix_light = prev.fix_light * prev_scale + next.fix_light * next_scale;
 	fix_gamma_g = prev.fix_gamma_g * prev_scale + next.fix_gamma_g * next_scale;
 	fix_gamma_b = prev.fix_gamma_b * prev_scale + next.fix_gamma_b * next_scale;
+	fix_coef1 = prev.fix_coef1 * prev_scale + next.fix_coef1 * next_scale;
+	fix_coef2 = prev.fix_coef2 * prev_scale + next.fix_coef2 * next_scale;
 }
 
 // C41Enable
@@ -286,6 +313,8 @@ int C41Button::handle_event()
 	plugin->config.fix_light = plugin->values.light;
 	plugin->config.fix_gamma_g = plugin->values.gamma_g;
 	plugin->config.fix_gamma_b = plugin->values.gamma_b;
+	plugin->config.fix_coef1 = plugin->values.coef1;
+	plugin->config.fix_coef2 = plugin->values.coef2;
 
 	window->update();
 
@@ -297,7 +326,7 @@ PLUGIN_THREAD_METHODS
 
 // C41Window
 C41Window::C41Window(C41Effect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, x, y, 250, 620, 250, 620, 1, 0, 1)
+ : BC_Window(plugin->gui_string, x, y, 500, 450, 500, 450, 1, 0, 1)
 {
 	x = y = 10;
 
@@ -337,11 +366,23 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	add_subwindow(gamma_b = new BC_Title(x + 80, y, "0.0000"));
 	y += 30;
 
-	y += 30;
-	add_subwindow(lock = new C41Button(plugin, this, x, y));
+	add_subwindow(new BC_Title(x, y, _("Coef 1:")));
+	add_subwindow(coef1 = new BC_Title(x + 80, y, "0.0000"));
 	y += 30;
 
-	y += 20;
+	add_subwindow(new BC_Title(x, y, _("Coef 2:")));
+	add_subwindow(coef2 = new BC_Title(x + 80, y, "0.0000"));
+	y += 30;
+
+	y += 30;
+	add_subwindow(lock = new C41Button(plugin, this, x, y));
+
+	y = 50;
+	x = 250;
+
+	add_subwindow(postproc = new C41Enable(plugin, &plugin->config.postproc, x, y, _("Postprocess")));
+	y += 60;
+
 	add_subwindow(new BC_Title(x, y, _("negfix values to apply:")));
 	y += 30;
 
@@ -368,6 +409,14 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	add_subwindow(new BC_Title(x, y, _("Gamma B:")));
 	add_subwindow(fix_gamma_b = new C41TextBox(plugin, &plugin->config.fix_gamma_b, x + 80, y));
 	y += 30;
+
+	add_subwindow(new BC_Title(x, y, _("Coef 1:")));
+	add_subwindow(fix_coef1 = new C41TextBox(plugin, &plugin->config.fix_coef1, x + 80, y));
+	y += 30;
+
+	add_subwindow(new BC_Title(x, y, _("Coef 2:")));
+	add_subwindow(fix_coef2 = new C41TextBox(plugin, &plugin->config.fix_coef2, x + 80, y));
+
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_magic();
 }
@@ -377,6 +426,7 @@ void C41Window::update()
 	// Updating the GUI itself
 	active->update(plugin->config.active);
 	compute_magic->update(plugin->config.compute_magic);
+	postproc->update(plugin->config.postproc);
 
 	fix_min_r->update(plugin->config.fix_min_r);
 	fix_min_g->update(plugin->config.fix_min_g);
@@ -384,6 +434,8 @@ void C41Window::update()
 	fix_light->update(plugin->config.fix_light);
 	fix_gamma_g->update(plugin->config.fix_gamma_g);
 	fix_gamma_b->update(plugin->config.fix_gamma_b);
+	fix_coef1->update(plugin->config.fix_coef1);
+	fix_coef2->update(plugin->config.fix_coef2);
 	update_magic();
 }
 
@@ -395,6 +447,8 @@ void C41Window::update_magic()
 	light->update(plugin->values.light);
 	gamma_g->update(plugin->values.gamma_g);
 	gamma_b->update(plugin->values.gamma_b);
+	coef1->update(plugin->values.coef1);
+	coef2->update(plugin->values.coef2);
 }
 
 
@@ -441,24 +495,30 @@ void C41Effect::load_defaults()
 	defaults = load_defaults_file("C41.rc");
 	config.active = defaults->get("ACTIVE", config.active);
 	config.compute_magic = defaults->get("COMPUTE_MAGIC", config.compute_magic);
+	config.postproc = defaults->get("POSTPROC", config.postproc);
 	config.fix_min_r = defaults->get("FIX_MIN_R", config.fix_min_r);
 	config.fix_min_g = defaults->get("FIX_MIN_G", config.fix_min_g);
 	config.fix_min_b = defaults->get("FIX_MIN_B", config.fix_min_b);
 	config.fix_light = defaults->get("FIX_LIGHT", config.fix_light);
 	config.fix_gamma_g = defaults->get("FIX_GAMMA_G", config.fix_gamma_g);
 	config.fix_gamma_b = defaults->get("FIX_GAMMA_B", config.fix_gamma_b);
+	config.fix_coef1 = defaults->get("FIX_COEF1", config.fix_coef1);
+	config.fix_coef2 = defaults->get("FIX_COEF2", config.fix_coef2);
 }
 
 void C41Effect::save_defaults()
 {
 	defaults->update("ACTIVE", config.active);
 	defaults->update("COMPUTE_MAGIC", config.compute_magic);
+	defaults->update("POSTPROC", config.postproc);
 	defaults->update("FIX_MIN_R", config.fix_min_r);
 	defaults->update("FIX_MIN_G", config.fix_min_g);
 	defaults->update("FIX_MIN_B", config.fix_min_b);
 	defaults->update("FIX_LIGHT", config.fix_light);
 	defaults->update("FIX_GAMMA_G", config.fix_gamma_g);
 	defaults->update("FIX_GAMMA_B", config.fix_gamma_b);
+	defaults->update("FIX_COEF1", config.fix_coef1);
+	defaults->update("FIX_COEF2", config.fix_coef2);
 	defaults->save();
 }
 
@@ -470,6 +530,7 @@ void C41Effect::save_data(KeyFrame *keyframe)
 	output.tag.set_title("C41");
 	output.tag.set_property("ACTIVE", config.active);
 	output.tag.set_property("COMPUTE_MAGIC", config.compute_magic);
+	output.tag.set_property("POSTPROC", config.postproc);
 
 	output.tag.set_property("FIX_MIN_R", config.fix_min_r);
 	output.tag.set_property("FIX_MIN_G", config.fix_min_g);
@@ -477,6 +538,8 @@ void C41Effect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("FIX_LIGHT", config.fix_light);
 	output.tag.set_property("FIX_GAMMA_G", config.fix_gamma_g);
 	output.tag.set_property("FIX_GAMMA_B", config.fix_gamma_b);
+	output.tag.set_property("FIX_COEF1", config.fix_coef1);
+	output.tag.set_property("FIX_COEF2", config.fix_coef2);
 
 	output.append_tag();
 	output.tag.set_title("/C41");
@@ -495,12 +558,15 @@ void C41Effect::read_data(KeyFrame *keyframe)
 		{
 			config.active = input.tag.get_property("ACTIVE", config.active);
 			config.compute_magic = input.tag.get_property("COMPUTE_MAGIC", config.compute_magic);
+			config.postproc = input.tag.get_property("POSTPROC", config.postproc);
 			config.fix_min_r = input.tag.get_property("FIX_MIN_R", config.fix_min_r);
 			config.fix_min_g = input.tag.get_property("FIX_MIN_G", config.fix_min_g);
 			config.fix_min_b = input.tag.get_property("FIX_MIN_B", config.fix_min_b);
 			config.fix_light = input.tag.get_property("FIX_LIGHT", config.fix_light);
 			config.fix_gamma_g = input.tag.get_property("FIX_GAMMA_G", config.fix_gamma_g);
 			config.fix_gamma_b = input.tag.get_property("FIX_GAMMA_B", config.fix_gamma_b);
+			config.fix_coef1 = input.tag.get_property("FIX_COEF1", config.fix_coef2);
+			config.fix_coef2 = input.tag.get_property("FIX_COEF2", config.fix_coef2);
 		}
 	}
 }
@@ -581,10 +647,10 @@ void C41Effect::process_frame(VFrame *frame)
 
 		for(int i = 0; i < frame_h; i++)
 			for(int j = 0; j < (3 * frame_w); j++)
-				blurry_rows[i][j] = rows[i][j];
+				blurry_rows[i][j] = fix_exepts(rows[i][j]);
 
 		int boxw = 5, boxh = 5;
-		// 3 passes of Box blur should be good
+		// 10 passes of Box blur should be good
 		int pass, x, y, y_up, y_down, x_right, x_left;
 		float component;
 		for(pass = 0; pass < 10; pass++)
@@ -706,7 +772,7 @@ void C41Effect::process_frame(VFrame *frame)
 		values.min_r = minima_r;
 		values.min_g = minima_g;
 		values.min_b = minima_b;
-		values.light = (minima_r / maxima_r) * 0.95;
+		values.light = (minima_r / maxima_r);
 		values.gamma_g = logf(maxima_r / minima_r) / logf(maxima_g / minima_g);
 		values.gamma_b = logf(maxima_r / minima_r) / logf(maxima_b / minima_b);
 
@@ -722,10 +788,76 @@ void C41Effect::process_frame(VFrame *frame)
 			float *row = (float*)frame->get_rows()[i];
 			for(int j = 0; j < frame_w; j++, row += 3)
 			{
-				row[0] = (config.fix_min_r / row[0]) - config.fix_light;
-				row[1] = C41_POW_FUNC((config.fix_min_g / row[1]), config.fix_gamma_g) - config.fix_light;
-				row[2] = C41_POW_FUNC((config.fix_min_b / row[2]), config.fix_gamma_b) - config.fix_light;
+				row[0] = normalize_pixel((config.fix_min_r / row[0]) - config.fix_light);
+				row[1] = normalize_pixel(C41_POW_FUNC((config.fix_min_g / row[1]), config.fix_gamma_g) - config.fix_light);
+				row[2] = normalize_pixel(C41_POW_FUNC((config.fix_min_b / row[2]), config.fix_gamma_b) - config.fix_light);
 			}
 		}
+		if(config.compute_magic)
+		{
+			float minima_r = 50., minima_g = 50., minima_b = 50.;
+			float maxima_r = 0., maxima_g = 0., maxima_b = 0.;
+
+			for(int i = shave_min_row; i < shave_max_row; i++)
+			{
+				float *row = (float*)blurry_frame->get_rows()[i];
+				row += 3 * shave_min_col;
+				for(int j = shave_min_col; j < shave_max_col; j++, row += 3)
+				{
+					if(row[0] < minima_r) minima_r = row[0];
+					if(row[0] > maxima_r) maxima_r = row[0];
+
+					if(row[1] < minima_g) minima_g = row[1];
+					if(row[1] > maxima_g) maxima_g = row[1];
+
+					if(row[2] < minima_b) minima_b = row[2];
+					if(row[2] > maxima_b) maxima_b = row[2];
+				}
+			}
+
+			// Calculete postprocessing coeficents
+			values.coef2 = minima_r;
+			if(minima_g < values.coef2)
+				values.coef2 = minima_g;
+			if(minima_b < values.coef2)
+				values.coef2 = minima_b;
+			values.coef1 = maxima_r;
+			if(maxima_g > values.coef1)
+				values.coef1 = maxima_g;
+			if(maxima_b > values.coef1)
+				values.coef1 = maxima_b;
+			values.coef1 = 0.773 / (values.coef1 - values.coef2);
+			values.coef2 = 0.065 - values.coef2 * values.coef1;
+			send_render_gui(&values);
+		}
 	}
+}
+
+float C41Effect::normalize_pixel(float ival)
+{
+	float val = fix_exepts(ival);
+
+	if(config.postproc)
+		val = config.fix_coef1 * val + config.fix_coef2;
+
+	CLAMP(val, 0., 1.);
+	return val;
+}
+
+float C41Effect::fix_exepts(float ival)
+{
+	switch(fpclassify(ival))
+	{
+	case FP_NAN:
+	case FP_SUBNORMAL:
+		ival = 0;
+		break;
+	case FP_INFINITE:
+		if(ival < 0)
+			ival = 0.;
+		else
+			ival = 1.;
+		break;
+	}
+	return ival;
 }
