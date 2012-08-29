@@ -608,6 +608,8 @@ float C41Effect::myPow(float a, float b)
 
 void C41Effect::process_frame(VFrame *frame)
 {
+	int pixlen;
+
 	load_configuration();
 
 	get_frame(frame);
@@ -617,42 +619,45 @@ void C41Effect::process_frame(VFrame *frame)
 
 	switch(frame->get_color_model())
 	{
-	case BC_RGB888:
-	case BC_YUV888:
-	case BC_RGBA_FLOAT:
-	case BC_RGBA8888:
-	case BC_YUVA8888:
-	case BC_RGB161616:
-	case BC_YUV161616:
-	case BC_RGBA16161616:
-	case BC_YUVA16161616:
-		abort_plugin(_("Only RGB Float color model is supported"));
-		return; // Unsupported
-
 	case BC_RGB_FLOAT:
+		pixlen = 3;
 		break;
+	case BC_RGBA_FLOAT:
+		pixlen = 4;
+		break;
+	default:
+		abort_plugin(_("Only RGB(A) Float color models are supported"));
+		return; // Unsupported
 	}
 
 	if(config.compute_magic)
 	{
 		// Box blur!
+		int i, j, k;
+
+		// Convert frame to RGB for magic computing
 		if(!tmp_frame)
-			tmp_frame = new VFrame(*frame);
+			tmp_frame = new VFrame(0, frame_w, frame_h, BC_RGB_FLOAT);
 		if(!blurry_frame)
-			blurry_frame = new VFrame(*frame);
+			blurry_frame = new VFrame(0, frame_w, frame_h, BC_RGB_FLOAT);
 
 		float** rows = (float**)frame->get_rows();
 		float** tmp_rows = (float**)tmp_frame->get_rows();
 		float** blurry_rows = (float**)blurry_frame->get_rows();
 
-		for(int i = 0; i < frame_h; i++)
-			for(int j = 0; j < (3 * frame_w); j++)
-				blurry_rows[i][j] = fix_exepts(rows[i][j]);
+		for(i = 0; i < frame_h; i++)
+			for(j = k = 0; j < (pixlen * frame_w); j++)
+			{
+				if(pixlen == 4 && (j & 3) == 3)
+					continue;
+				blurry_rows[i][k++] = fix_exepts(rows[i][j]);
+			}
 
-		int boxw = 5, boxh = 5;
 		// 10 passes of Box blur should be good
+		int boxw = 5, boxh = 5;
 		int pass, x, y, y_up, y_down, x_right, x_left;
 		float component;
+
 		for(pass = 0; pass < 10; pass++)
 		{
 			for(y = 0; y < frame_h; y++)
@@ -662,17 +667,19 @@ void C41Effect::process_frame(VFrame *frame)
 			{
 				y_up = (y - boxh < 0)? 0 : y - boxh;
 				y_down = (y + boxh >= frame_h)? frame_h - 1 : y + boxh;
-				for(x = 0; x < (3 * frame_w); x++) {
-					x_left = (x -(3 * boxw) < 0)? 0 : x - (3 * boxw);
+				for(x = 0; x < (3 * frame_w); x++)
+				{
+					x_left = (x - (3 * boxw) < 0)? 0 : x - (3 * boxw);
 					x_right = (x + (3 * boxw) >= (3 * frame_w)) ? (3 * frame_w) - 1 : x + (3 * boxw);
-					component=(tmp_rows[y_down][x_right]
+					component = (tmp_rows[y_down][x_right]
 							+ tmp_rows[y_up][x_left]
 							+ tmp_rows[y_up][x_right]
 							+ tmp_rows[y_down][x_right]) / 4;
-					blurry_rows[y][x]= component;
+					blurry_rows[y][x] = component;
 				}
 			}
 		}
+
 		// Shave image: cut off border areas where min max difference
 		// is less than C41_SHAVE_TOLERANCE
 
@@ -786,7 +793,7 @@ void C41Effect::process_frame(VFrame *frame)
 		for(int i = 0; i < frame_h; i++)
 		{
 			float *row = (float*)frame->get_rows()[i];
-			for(int j = 0; j < frame_w; j++, row += 3)
+			for(int j = 0; j < frame_w; j++, row += pixlen)
 			{
 				row[0] = normalize_pixel((config.fix_min_r / row[0]) - config.fix_light);
 				row[1] = normalize_pixel(C41_POW_FUNC((config.fix_min_g / row[1]), config.fix_gamma_g) - config.fix_light);
@@ -815,7 +822,7 @@ void C41Effect::process_frame(VFrame *frame)
 				}
 			}
 
-			// Calculete postprocessing coeficents
+			// Calculate postprocessing coeficents
 			values.coef2 = minima_r;
 			if(minima_g < values.coef2)
 				values.coef2 = minima_g;
@@ -826,7 +833,9 @@ void C41Effect::process_frame(VFrame *frame)
 				values.coef1 = maxima_g;
 			if(maxima_b > values.coef1)
 				values.coef1 = maxima_b;
-			values.coef1 = 0.773 / (values.coef1 - values.coef2);
+			// Try not to overflow RGB601
+			// (235 - 16) / 256 * 0.9
+			values.coef1 = 0.770 / (values.coef1 - values.coef2);
 			values.coef2 = 0.065 - values.coef2 * values.coef1;
 			send_render_gui(&values);
 		}
