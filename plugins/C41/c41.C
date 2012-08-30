@@ -86,6 +86,7 @@ public:
 	int active;
 	int compute_magic;
 	int postproc;
+	int show_box;
 	float fix_min_r;
 	float fix_min_g;
 	float fix_min_b;
@@ -139,6 +140,7 @@ public:
 	C41Enable *active;
 	C41Enable *compute_magic;
 	C41Enable *postproc;
+	C41Enable *show_box;
 	BC_Title *min_r;
 	BC_Title *min_g;
 	BC_Title *min_b;
@@ -147,10 +149,6 @@ public:
 	BC_Title *gamma_b;
 	BC_Title *coef1;
 	BC_Title *coef2;
-	BC_Title *shave_row_min;
-	BC_Title *shave_row_max;
-	BC_Title *shave_col_min;
-	BC_Title *shave_col_max;
 	C41TextBox *fix_min_r;
 	C41TextBox *fix_min_g;
 	C41TextBox *fix_min_b;
@@ -209,6 +207,7 @@ C41Config::C41Config()
 	active = 0;
 	compute_magic = 0;
 	postproc = 0;
+	show_box = 0;
 
 	fix_min_r = fix_min_g = fix_min_b = fix_light = 0.;
 	fix_gamma_g = fix_gamma_b = fix_coef1 = fix_coef2 = 0.;
@@ -219,6 +218,7 @@ void C41Config::copy_from(C41Config &src)
 	active = src.active;
 	compute_magic = src.compute_magic;
 	postproc = src.postproc;
+	show_box = src.show_box;
 
 	fix_min_r = src.fix_min_r;
 	fix_min_g = src.fix_min_g;
@@ -235,6 +235,7 @@ int C41Config::equivalent(C41Config &src)
 	return (active == src.active &&
 		compute_magic == src.compute_magic &&
 		postproc == src.postproc &&
+		show_box == src.show_box &&
 		EQUIV(fix_min_r, src.fix_min_r) &&
 		EQUIV(fix_min_g, src.fix_min_g) &&
 		EQUIV(fix_min_b, src.fix_min_b) &&
@@ -255,6 +256,7 @@ void C41Config::interpolate(C41Config &prev,
 	active = prev.active;
 	compute_magic = prev.compute_magic;
 	postproc = prev.postproc;
+	show_box = prev.show_box;
 
 	fix_min_r = prev.fix_min_r * prev_scale + next.fix_min_r * next_scale;
 	fix_min_g = prev.fix_min_g * prev_scale + next.fix_min_g * next_scale;
@@ -377,8 +379,10 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	y += 30;
 	add_subwindow(lock = new C41Button(plugin, this, x, y));
 
-	y = 50;
+	y = 10;
 	x = 250;
+	add_subwindow(show_box = new C41Enable(plugin, &plugin->config.show_box, x, y, _("Show active area")));
+	y += 40;
 
 	add_subwindow(postproc = new C41Enable(plugin, &plugin->config.postproc, x, y, _("Postprocess")));
 	y += 60;
@@ -427,6 +431,7 @@ void C41Window::update()
 	active->update(plugin->config.active);
 	compute_magic->update(plugin->config.compute_magic);
 	postproc->update(plugin->config.postproc);
+	show_box->update(plugin->config.show_box);
 
 	fix_min_r->update(plugin->config.fix_min_r);
 	fix_min_g->update(plugin->config.fix_min_g);
@@ -496,6 +501,7 @@ void C41Effect::load_defaults()
 	config.active = defaults->get("ACTIVE", config.active);
 	config.compute_magic = defaults->get("COMPUTE_MAGIC", config.compute_magic);
 	config.postproc = defaults->get("POSTPROC", config.postproc);
+	config.show_box = defaults->get("SHOW_BOX", config.show_box);
 	config.fix_min_r = defaults->get("FIX_MIN_R", config.fix_min_r);
 	config.fix_min_g = defaults->get("FIX_MIN_G", config.fix_min_g);
 	config.fix_min_b = defaults->get("FIX_MIN_B", config.fix_min_b);
@@ -511,6 +517,7 @@ void C41Effect::save_defaults()
 	defaults->update("ACTIVE", config.active);
 	defaults->update("COMPUTE_MAGIC", config.compute_magic);
 	defaults->update("POSTPROC", config.postproc);
+	defaults->update("SHOW_BOX", config.show_box);
 	defaults->update("FIX_MIN_R", config.fix_min_r);
 	defaults->update("FIX_MIN_G", config.fix_min_g);
 	defaults->update("FIX_MIN_B", config.fix_min_b);
@@ -531,6 +538,7 @@ void C41Effect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("ACTIVE", config.active);
 	output.tag.set_property("COMPUTE_MAGIC", config.compute_magic);
 	output.tag.set_property("POSTPROC", config.postproc);
+	output.tag.set_property("SHOW_BOX", config.show_box);
 
 	output.tag.set_property("FIX_MIN_R", config.fix_min_r);
 	output.tag.set_property("FIX_MIN_G", config.fix_min_g);
@@ -559,6 +567,7 @@ void C41Effect::read_data(KeyFrame *keyframe)
 			config.active = input.tag.get_property("ACTIVE", config.active);
 			config.compute_magic = input.tag.get_property("COMPUTE_MAGIC", config.compute_magic);
 			config.postproc = input.tag.get_property("POSTPROC", config.postproc);
+			config.show_box = input.tag.get_property("SHOW_BOX", config.show_box);
 			config.fix_min_r = input.tag.get_property("FIX_MIN_R", config.fix_min_r);
 			config.fix_min_g = input.tag.get_property("FIX_MIN_G", config.fix_min_g);
 			config.fix_min_b = input.tag.get_property("FIX_MIN_B", config.fix_min_b);
@@ -616,6 +625,10 @@ void C41Effect::process_frame(VFrame *frame)
 
 	int frame_w = frame->get_w();
 	int frame_h = frame->get_h();
+
+	// Minimum pxel value is 0
+	float pix_max = cmodel_calculate_max(frame->get_color_model());
+
 
 	switch(frame->get_color_model())
 	{
@@ -683,9 +696,6 @@ void C41Effect::process_frame(VFrame *frame)
 		// Shave image: cut off border areas where min max difference
 		// is less than C41_SHAVE_TOLERANCE
 
-		// Minimum pxel value is 0
-		float pix_max = cmodel_calculate_max(frame->get_color_model());
-
 		shave_min_row = shave_min_col = 0;
 		shave_max_col = frame_w;
 		shave_max_row = frame_h;
@@ -709,7 +719,7 @@ void C41Effect::process_frame(VFrame *frame)
 			float pv;
 			for(x = 0; x < frame_w; x++, row += 3)
 			{
-				pv = (row[0] + row[1] + row[2]);
+				pv = (row[0] + row[1] + row[2]) / 3;
 
 				if(pv_min[y] > pv)
 					pv_min[y] = pv;
@@ -838,6 +848,45 @@ void C41Effect::process_frame(VFrame *frame)
 			values.coef1 = 0.770 / (values.coef1 - values.coef2);
 			values.coef2 = 0.065 - values.coef2 * values.coef1;
 			send_render_gui(&values);
+
+			if(config.show_box)
+			{
+				if(shave_min_row < shave_max_row - 1)
+				{
+					float *row1 = (float *)frame->get_rows()[shave_min_row];
+					float *row2 = (float *)frame->get_rows()[shave_max_row - 1];
+
+					for(int i = 0; i < frame_w; i++)
+					{
+						for(int j = 0; j < 3; j++)
+						{
+							row1[j] = pix_max - row1[j];
+							row2[j] = pix_max - row2[j];
+						}
+						row1 += pixlen;
+						row2 += pixlen;
+					}
+				}
+
+				if(shave_min_col < shave_max_col - 1)
+				{
+					int pix1 = pixlen * shave_min_col;
+					int pix2 = pixlen * shave_max_col;
+
+					for(int i = 0; i < frame_h; i++)
+					{
+						float *row = (float *)frame->get_rows()[i];
+						float *row2 = row + pix2;
+						float *row1 = row + pix1;
+
+						for(int j = 0; j < 3; j++)
+						{
+							row1[j] = pix_max - row1[j];
+							row2[j] = pix_max - row2[j];
+						}
+					}
+				}
+			}
 		}
 	}
 }
