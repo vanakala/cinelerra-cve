@@ -44,6 +44,25 @@ BC_Title::BC_Title(int x,
 	strcpy(this->text, text);
 }
 
+BC_Title::BC_Title(int x,
+		int y,
+		int value,
+		int font,
+		int color,
+		int centered,
+		int fixed_w)
+ : BC_SubWindow(x, y, -1, -1, -1)
+{
+	this->font = font;
+	if(color < 0)
+		this->color = get_resources()->default_text_color;
+	else
+		this->color = color;
+	this->centered = centered;
+	this->fixed_w = fixed_w;
+	sprintf(text, "%6d", value);
+}
+
 BC_Title::~BC_Title()
 {
 }
@@ -96,6 +115,13 @@ void BC_Title::update(float value)
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "%.04f", value);
+	update(string);
+}
+
+void BC_Title::update(int value)
+{
+	char string[BCTEXTLEN];
+	sprintf(string, "%6d", value);
 	update(string);
 }
 

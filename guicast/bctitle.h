@@ -36,6 +36,14 @@ public:
 		int color = -1, 
 		int centered = 0,
 		int fixed_w = 0);
+
+	BC_Title(int x,
+		int y,
+		int value,
+		int font = MEDIUMFONT,
+		int color = -1,
+		int centered = 0,
+		int fixed_w = 0);
 	virtual ~BC_Title();
 
 	void initialize();
@@ -46,6 +54,7 @@ public:
 	void set_color(int color);
 	void update(const char *text);
 	void update(float value);
+	void update(int value);
 	char* get_text();
 
 private:
