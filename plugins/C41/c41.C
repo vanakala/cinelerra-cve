@@ -1005,7 +1005,7 @@ void C41Effect::process_frame(VFrame *frame)
 
 			for(int i = shave_min_row; i < shave_max_row; i++)
 			{
-				float *row = (float*)blurry_frame->get_rows()[i];
+				float *row = (float*)frame->get_rows()[i];
 				row += 3 * shave_min_col;
 				for(int j = shave_min_col; j < shave_max_col; j++, row += 3)
 				{
