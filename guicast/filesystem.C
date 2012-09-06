@@ -446,13 +446,7 @@ int FileSystem::update(const char *new_dir)
 				if(include_this && want_directory && !new_file->is_dir) include_this = 0;
 			}
 			else
-			{
-				printf("FileSystem::update %s: %s\n",
-					full_path,
-					strerror(errno));
 				include_this = 0;
-				result = 1;
-			}
 
 // add to list
 			if(include_this)
