@@ -94,10 +94,10 @@ static inline void transfer_RGB_FLOAT_to_ARGB8888(unsigned char *(*output),
 static inline void transfer_RGB_FLOAT_to_RGBA_FLOAT(float *(*output), 
 	float *input)
 {
-	*(*output)++ = input[0];
-	*(*output)++ = input[1];
-	*(*output)++ = input[2];
-	*(*output)++ = 1.0;
+	(*output)[0] = input[0];
+	(*output)[1] = input[1];
+	(*output)[2] = input[2];
+	(*output)[3] = 1.0;
 }
 
 static inline void transfer_RGB_FLOAT_to_BGR8888(unsigned char *(*output), 
@@ -636,6 +636,7 @@ static inline void transfer_RGBA_FLOAT_to_YUV444P(unsigned char *output_y,
 				case BC_RGBA_FLOAT: \
 					TRANSFER_FRAME_HEAD \
 					transfer_RGB_FLOAT_to_RGBA_FLOAT((float**)(output), (float*)(input));    \
+					*output += 4 * sizeof(float); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_YUV888: \
