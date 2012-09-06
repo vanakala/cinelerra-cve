@@ -68,6 +68,12 @@ struct magic
 	float gamma_b;
 	float coef1;
 	float coef2;
+	int shave_min_row;
+	int shave_max_row;
+	int shave_min_col;
+	int shave_max_col;
+	int frame_max_col;
+	int frame_max_row;
 };
 
 class C41Config
@@ -95,6 +101,12 @@ public:
 	float fix_gamma_b;
 	float fix_coef1;
 	float fix_coef2;
+	int min_col;
+	int max_col;
+	int min_row;
+	int max_row;
+	int frame_max_row;
+	int frame_max_col;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -129,6 +141,17 @@ public:
 	float *boxValue;
 };
 
+class C41Slider : public BC_ISlider
+{
+public:
+	C41Slider(C41Effect *plugin, int *output, int x, int y);
+
+	int handle_event();
+
+	C41Effect *plugin;
+	int *output;
+};
+
 class C41Window : public BC_Window
 {
 public:
@@ -149,6 +172,10 @@ public:
 	BC_Title *gamma_b;
 	BC_Title *coef1;
 	BC_Title *coef2;
+	BC_Title *box_col_min;
+	BC_Title *box_col_max;
+	BC_Title *box_row_min;
+	BC_Title *box_row_max;
 	C41TextBox *fix_min_r;
 	C41TextBox *fix_min_g;
 	C41TextBox *fix_min_b;
@@ -158,6 +185,14 @@ public:
 	C41TextBox *fix_coef1;
 	C41TextBox *fix_coef2;
 	C41Button *lock;
+	C41Slider *min_row;
+	C41Slider *max_row;
+	C41Slider *min_col;
+	C41Slider *max_col;
+
+	int slider_max_col;
+	int slider_max_row;
+
 	PLUGIN_GUI_CLASS_MEMBERS
 };
 
@@ -189,10 +224,15 @@ public:
 	float *pv_min;
 	float *pv_max;
 	int pv_alloc;
+
 	int shave_min_row;
 	int shave_max_row;
 	int shave_min_col;
 	int shave_max_col;
+	int min_col;
+	int max_col;
+	int min_row;
+	int max_row;
 
 	PLUGIN_CLASS_MEMBERS
 };
@@ -211,6 +251,7 @@ C41Config::C41Config()
 
 	fix_min_r = fix_min_g = fix_min_b = fix_light = 0.;
 	fix_gamma_g = fix_gamma_b = fix_coef1 = fix_coef2 = 0.;
+	min_col = max_col = min_row = max_row = 0;
 }
 
 void C41Config::copy_from(C41Config &src)
@@ -228,6 +269,12 @@ void C41Config::copy_from(C41Config &src)
 	fix_gamma_b = src.fix_gamma_b;
 	fix_coef1 = src.fix_coef1;
 	fix_coef2 = src.fix_coef2;
+	min_row = src.min_row;
+	max_row = src.max_row;
+	min_col = src.min_col;
+	max_col = src.max_col;
+	frame_max_col = frame_max_col;
+	frame_max_row = frame_max_row;
 }
 
 int C41Config::equivalent(C41Config &src)
@@ -243,7 +290,11 @@ int C41Config::equivalent(C41Config &src)
 		EQUIV(fix_gamma_g, src.fix_gamma_g) &&
 		EQUIV(fix_gamma_b, src.fix_gamma_b) &&
 		EQUIV(fix_coef1, src.fix_coef1) &&
-		EQUIV(fix_coef2, src.fix_coef2));
+		EQUIV(fix_coef2, src.fix_coef2) &&
+		min_row == src.min_row &&
+		max_row == src.max_row &&
+		min_col == src.min_col &&
+		max_col == src.max_col);
 }
 
 void C41Config::interpolate(C41Config &prev,
@@ -266,6 +317,12 @@ void C41Config::interpolate(C41Config &prev,
 	fix_gamma_b = prev.fix_gamma_b * prev_scale + next.fix_gamma_b * next_scale;
 	fix_coef1 = prev.fix_coef1 * prev_scale + next.fix_coef1 * next_scale;
 	fix_coef2 = prev.fix_coef2 * prev_scale + next.fix_coef2 * next_scale;
+	min_row = round(prev.min_row * prev_scale + next.min_row * next_scale);
+	min_col = round(prev.min_col * prev_scale + next.min_col * next_scale);
+	max_row = round(prev.max_row * prev_scale + next.max_row * next_scale);
+	max_col = round(prev.max_col * prev_scale + next.max_col * next_scale);
+	frame_max_row = prev.frame_max_row;
+	frame_max_col = prev.frame_max_col;
 }
 
 // C41Enable
@@ -317,9 +374,37 @@ int C41Button::handle_event()
 	plugin->config.fix_gamma_b = plugin->values.gamma_b;
 	plugin->config.fix_coef1 = plugin->values.coef1;
 	plugin->config.fix_coef2 = plugin->values.coef2;
+	plugin->config.min_row = plugin->values.shave_min_row;
+	plugin->config.max_row = plugin->values.shave_max_row;
+	plugin->config.min_col = plugin->values.shave_min_col;
+	plugin->config.max_col = plugin->values.shave_max_col;
+	plugin->config.frame_max_row = plugin->values.frame_max_row;
+	plugin->config.frame_max_col = plugin->values.frame_max_col;
 
 	window->update();
 
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+C41Slider::C41Slider(C41Effect *plugin, int *output, int x, int y)
+ : BC_ISlider(x,
+	y,
+	0,
+	200,
+	200,
+	0,
+	1000,
+	*output)
+{
+	this->plugin = plugin;
+	this->output = output;
+}
+
+int C41Slider::handle_event()
+{
+	*output = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -328,7 +413,7 @@ PLUGIN_THREAD_METHODS
 
 // C41Window
 C41Window::C41Window(C41Effect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, x, y, 500, 450, 500, 450, 1, 0, 1)
+ : BC_Window(plugin->gui_string, x, y, 500, 510, 500, 510, 1, 0, 1)
 {
 	x = y = 10;
 
@@ -376,6 +461,17 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	add_subwindow(coef2 = new BC_Title(x + 80, y, "0.0000"));
 	y += 30;
 
+#define BOX_COL 120
+	add_subwindow(new BC_Title(x, y, _("Box col:")));
+	add_subwindow(box_col_min = new BC_Title(x + 80, y, 0));
+	add_subwindow(box_col_max = new BC_Title(x + BOX_COL, y, 0));
+	y += 30;
+
+	add_subwindow(new BC_Title(x, y, _("Box row:")));
+	add_subwindow(box_row_min = new BC_Title(x + 80, y, 0));
+	add_subwindow(box_row_max = new BC_Title(x + BOX_COL, y, 0));
+	y += 30;
+
 	y += 30;
 	add_subwindow(lock = new C41Button(plugin, this, x, y));
 
@@ -420,6 +516,22 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 
 	add_subwindow(new BC_Title(x, y, _("Coef 2:")));
 	add_subwindow(fix_coef2 = new C41TextBox(plugin, &plugin->config.fix_coef2, x + 80, y));
+	y += 30;
+
+	x += 40;
+	add_subwindow(new BC_Title(x - 40, y, _("Col:")));
+	add_subwindow(min_col = new C41Slider(plugin, &plugin->config.min_col, x, y));
+	y += 25;
+
+	add_subwindow(max_col = new C41Slider(plugin, &plugin->config.max_col, x, y));
+	y += 25;
+
+	add_subwindow(new BC_Title(x - 40, y, _("Row:")));
+	add_subwindow(min_row = new C41Slider(plugin, &plugin->config.min_row, x, y));
+	y += 25;
+
+	add_subwindow(max_row = new C41Slider(plugin, &plugin->config.max_row, x, y));
+	y += 25;
 
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_magic();
@@ -441,6 +553,30 @@ void C41Window::update()
 	fix_gamma_b->update(plugin->config.fix_gamma_b);
 	fix_coef1->update(plugin->config.fix_coef1);
 	fix_coef2->update(plugin->config.fix_coef2);
+	if(plugin->config.frame_max_col > 0 && plugin->config.frame_max_row > 0)
+	{
+		if(plugin->config.frame_max_col != slider_max_col ||
+			plugin->config.frame_max_row != slider_max_row)
+		{
+			min_row->update(200, plugin->config.min_row,
+				0, plugin->config.frame_max_row);
+			max_row->update(200, plugin->config.max_row,
+				0, plugin->config.frame_max_row);
+			min_col->update(200, plugin->config.min_col,
+				0, plugin->config.frame_max_col);
+			max_col->update(200, plugin->config.max_col,
+				0, plugin->config.frame_max_col);
+			slider_max_row = plugin->config.frame_max_row;
+			slider_max_col = plugin->config.frame_max_col;
+		}
+	}
+	else
+	{
+		min_row->update(plugin->config.min_row);
+		max_row->update(plugin->config.max_row);
+		min_col->update(plugin->config.min_col);
+		max_col->update(plugin->config.max_col);
+	}
 	update_magic();
 }
 
@@ -454,6 +590,10 @@ void C41Window::update_magic()
 	gamma_b->update(plugin->values.gamma_b);
 	coef1->update(plugin->values.coef1);
 	coef2->update(plugin->values.coef2);
+	box_col_min->update(plugin->values.shave_min_col);
+	box_col_max->update(plugin->values.shave_max_col);
+	box_row_min->update(plugin->values.shave_min_row);
+	box_row_max->update(plugin->values.shave_max_row);
 }
 
 
@@ -510,6 +650,12 @@ void C41Effect::load_defaults()
 	config.fix_gamma_b = defaults->get("FIX_GAMMA_B", config.fix_gamma_b);
 	config.fix_coef1 = defaults->get("FIX_COEF1", config.fix_coef1);
 	config.fix_coef2 = defaults->get("FIX_COEF2", config.fix_coef2);
+	config.min_row = defaults->get("MIN_ROW", config.min_row);
+	config.max_row = defaults->get("MAX_ROW", config.max_row);
+	config.min_col = defaults->get("MIN_COL", config.min_col);
+	config.max_col = defaults->get("MAX_COL", config.max_col);
+	config.frame_max_col = defaults->get("FRAME_COL", config.frame_max_col);
+	config.frame_max_row = defaults->get("FRAME_ROW", config.frame_max_row);
 }
 
 void C41Effect::save_defaults()
@@ -526,6 +672,12 @@ void C41Effect::save_defaults()
 	defaults->update("FIX_GAMMA_B", config.fix_gamma_b);
 	defaults->update("FIX_COEF1", config.fix_coef1);
 	defaults->update("FIX_COEF2", config.fix_coef2);
+	defaults->update("MIN_ROW", config.min_row);
+	defaults->update("MAX_ROW", config.max_row);
+	defaults->update("MIN_COL", config.min_col);
+	defaults->update("MAX_COL", config.max_col);
+	defaults->update("FRAME_COL", config.frame_max_col);
+	defaults->update("FRAME_ROW", config.frame_max_row);
 	defaults->save();
 }
 
@@ -548,7 +700,12 @@ void C41Effect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("FIX_GAMMA_B", config.fix_gamma_b);
 	output.tag.set_property("FIX_COEF1", config.fix_coef1);
 	output.tag.set_property("FIX_COEF2", config.fix_coef2);
-
+	output.tag.set_property("MIN_ROW", config.min_row);
+	output.tag.set_property("MAX_ROW", config.max_row);
+	output.tag.set_property("MIN_COL", config.min_col);
+	output.tag.set_property("MAX_COL", config.max_col);
+	output.tag.set_property("FRAME_COL", config.frame_max_col);
+	output.tag.set_property("FRAME_ROW", config.frame_max_row);
 	output.append_tag();
 	output.tag.set_title("/C41");
 	output.append_tag();
@@ -576,6 +733,12 @@ void C41Effect::read_data(KeyFrame *keyframe)
 			config.fix_gamma_b = input.tag.get_property("FIX_GAMMA_B", config.fix_gamma_b);
 			config.fix_coef1 = input.tag.get_property("FIX_COEF1", config.fix_coef2);
 			config.fix_coef2 = input.tag.get_property("FIX_COEF2", config.fix_coef2);
+			config.min_row = input.tag.get_property("MIN_ROW", config.min_row);
+			config.max_row = input.tag.get_property("MAX_ROW", config.max_row);
+			config.min_col = input.tag.get_property("MIN_COL", config.min_col);
+			config.max_col = input.tag.get_property("MAX_COL", config.max_col);
+			config.frame_max_col = input.tag.get_property("FRAME_COL", config.frame_max_col);
+			config.frame_max_row = input.tag.get_property("FRAME_ROW", config.frame_max_row);
 		}
 	}
 }
@@ -628,7 +791,6 @@ void C41Effect::process_frame(VFrame *frame)
 
 	// Minimum pxel value is 0
 	float pix_max = cmodel_calculate_max(frame->get_color_model());
-
 
 	switch(frame->get_color_model())
 	{
@@ -768,11 +930,31 @@ void C41Effect::process_frame(VFrame *frame)
 		float minima_r = 50., minima_g = 50., minima_b = 50.;
 		float maxima_r = 0., maxima_g = 0., maxima_b = 0.;
 
-		for(int i = shave_min_row; i < shave_max_row; i++)
+		// Check if config_parameters are usable
+		if(config.frame_max_row == frame_h && config.frame_max_col == frame_w
+			&& config.min_col < config.max_col
+			&& config.min_row < config.max_row
+			&& config.max_col <= config.frame_max_col
+			&& config.max_row <= config.frame_max_row)
+		{
+			min_col = config.min_col;
+			max_col = config.max_col;
+			min_row = config.min_row;
+			max_row = config.max_row;
+		}
+		else
+		{
+			min_col = shave_min_col;
+			max_col = shave_max_col;
+			min_row = shave_min_row;
+			max_row = shave_max_row;
+		}
+
+		for(int i = min_row; i < max_row; i++)
 		{
 			float *row = (float*)blurry_frame->get_rows()[i];
-			row += 3 * shave_min_col;
-			for(int j = shave_min_col; j < shave_max_col; j++, row += 3)
+			row += 3 * min_col;
+			for(int j = min_col; j < max_col; j++, row += 3)
 			{
 
 				if(row[0] < minima_r) minima_r = row[0];
@@ -792,6 +974,12 @@ void C41Effect::process_frame(VFrame *frame)
 		values.light = (minima_r / maxima_r);
 		values.gamma_g = logf(maxima_r / minima_r) / logf(maxima_g / minima_g);
 		values.gamma_b = logf(maxima_r / minima_r) / logf(maxima_b / minima_b);
+		values.shave_min_col = shave_min_col;
+		values.shave_max_col = shave_max_col;
+		values.shave_min_row = shave_min_row;
+		values.shave_max_row = shave_max_row;
+		values.frame_max_row = frame_h;
+		values.frame_max_col = frame_w;
 
 		// Update GUI
 		send_render_gui(&values);
@@ -851,10 +1039,10 @@ void C41Effect::process_frame(VFrame *frame)
 
 			if(config.show_box)
 			{
-				if(shave_min_row < shave_max_row - 1)
+				if(min_row < max_row - 1)
 				{
-					float *row1 = (float *)frame->get_rows()[shave_min_row];
-					float *row2 = (float *)frame->get_rows()[shave_max_row - 1];
+					float *row1 = (float *)frame->get_rows()[min_row];
+					float *row2 = (float *)frame->get_rows()[max_row - 1];
 
 					for(int i = 0; i < frame_w; i++)
 					{
@@ -868,10 +1056,10 @@ void C41Effect::process_frame(VFrame *frame)
 					}
 				}
 
-				if(shave_min_col < shave_max_col - 1)
+				if(min_col < max_col - 1)
 				{
-					int pix1 = pixlen * shave_min_col;
-					int pix2 = pixlen * shave_max_col;
+					int pix1 = pixlen * min_col;
+					int pix2 = pixlen * (max_col - 1);
 
 					for(int i = 0; i < frame_h; i++)
 					{
