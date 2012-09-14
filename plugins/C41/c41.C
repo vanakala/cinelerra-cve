@@ -42,8 +42,9 @@
 
 // C41_FAST_POW increases processing speed more than 10 times
 // Depending on gcc version, used optimizations and cpu C41_FAST_POW may not work
+// With gcc versiion >= 4.4 it seems safe to enable C41_FAST_POW
 // Test some samples after you have enabled it
-// #define C41_FAST_POW
+#define C41_FAST_POW
 
 #if defined(C41_FAST_POW)
 #define C41_POW_FUNC myPow
@@ -213,8 +214,8 @@ public:
 	float fix_exepts(float ival);
 	float normalize_pixel(float ival);
 #if defined(C41_FAST_POW)
-	float myLog2(float i);
-	float myPow2(float i);
+	float myLog2(float i) __attribute__ ((optimize(0)));
+	float myPow2(float i) __attribute__ ((optimize(0)));
 	float myPow(float a, float b);
 #endif
 	VFrame* tmp_frame;
