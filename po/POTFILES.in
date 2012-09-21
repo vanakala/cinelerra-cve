@@ -44,7 +44,7 @@ cinelerra/filepng.C
 cinelerra/filesndfile.C
 cinelerra/filetga.C
 cinelerra/filetiff.C
-cinelerra/filevorbis.C
+# cinelerra/filevorbis.C
 cinelerra/fileyuv.C
 # cinelerra/flipbook.C
 cinelerra/formatcheck.C
@@ -191,7 +191,7 @@ plugins/interpolatevideo/interpolatevideo.C
 # plugins/interpolateall/interpolateall.C
 plugins/invertaudio/invert.C
 plugins/invertvideo/invert.C
-plugins/invertvideo/invertwindow.C
+# plugins/invertvideo/invertwindow.C
 plugins/irissquare/irissquare.C
 plugins/ivtc/ivtc.C
 plugins/ivtc/ivtc.h
@@ -236,8 +236,8 @@ plugins/sharpen/sharpenwindow.C
 plugins/shiftinterlace/shiftinterlace.C
 plugins/slide/slide.C
 plugins/spectrogram/spectrogram.C
-plugins/svg/svg.C
-plugins/svg/svgwin.C
+# plugins/svg/svg.C
+# plugins/svg/svgwin.C
 plugins/swapchannels/swapchannels.C
 plugins/synthesizer/synthesizer.C
 plugins/threshold/threshold.C
@@ -260,5 +260,5 @@ plugins/wipe/wipe.C
 plugins/yuv/yuv.C
 # plugins/yuv/yuvwindow.C
 plugins/zoomblur/zoomblur.C
-plugins/livevideo/livevideo.C
+# plugins/livevideo/livevideo.C
 plugins/motionblur/motionblur.C
