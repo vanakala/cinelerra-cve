@@ -20,7 +20,7 @@
  */
 
 #include "bccapture.h"
-#include "bcresources.h"
+#include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "colormodels.h"
 #include "language.h"
@@ -114,10 +114,10 @@ void BC_Capture::allocate_data()
 		shm_info.readOnly = 0;
 
 // Crashes here if remote server.
-		BC_Resources::error = 0;
+		BC_Signals::set_catch_errors();
 		XShmAttach(display, &shm_info);
 		XSync(display, False);
-		if(BC_Resources::error)
+		if(BC_Signals::reset_catch())
 		{
 			XDestroyImage(ximage);
 			shmdt(shm_info.shmaddr);
