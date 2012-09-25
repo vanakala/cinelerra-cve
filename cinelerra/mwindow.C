@@ -1283,15 +1283,12 @@ void MWindow::create_objects(int want_gui,
 	char *config_path)
 {
 	edl = 0;
+	init_signals();
 
 	init_3d();
 	remove_thread = new RemoveThread;
 	remove_thread->create_objects();
 	show_splash();
-
-// For some reason, init_signals must come after show_splash or the signals won't
-// get trapped.
-	init_signals();
 
 	init_error();
 
