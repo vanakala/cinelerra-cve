@@ -20,7 +20,6 @@
  */
 
 #include "bcpbuffer.h"
-#include "bcresources.h"
 #include "bcsignals.h"
 #include "bcsynchronous.h"
 #include "bcwindowbase.h"
@@ -129,7 +128,7 @@ void BC_PBuffer::new_pbuffer(int w, int h)
 
 		static int current_config = 0;
 
-		BC_Resources::error = 0;
+		BC_Signals::set_catch_errors();
 		pbuffer = glXCreatePbuffer(current_window->get_display(), 
 			config_result[current_config], 
 			pbuffer_attributes);
@@ -137,7 +136,7 @@ void BC_PBuffer::new_pbuffer(int w, int h)
 			config_result[current_config]);
 
 // Got it
-		if(!BC_Resources::error && pbuffer && visinfo)
+		if(!BC_Signals::reset_catch() && pbuffer && visinfo)
 		{
 			window_id = current_window->get_id();
 			gl_context = glXCreateContext(current_window->get_display(),
