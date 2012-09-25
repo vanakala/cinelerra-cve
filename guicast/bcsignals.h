@@ -39,6 +39,8 @@
 //#endif
 #define TRACE_MEMORY
 
+	static int X_errors;
+	static int catch_X_errors;
 
 
 class BC_Signals
@@ -165,6 +167,9 @@ public:
 	static void dump_traces();
 	static void dump_locks();
 	static void dump_buffers();
+
+	static int set_catch_errors();
+	static int reset_catch();
 
 	static BC_Signals *global_signals;
 };

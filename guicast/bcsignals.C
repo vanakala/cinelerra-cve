@@ -380,7 +380,13 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
  */
 static int xerrorhdlr(Display *display, XErrorEvent *event)
 {
-	char string[1024]; 
+	char string[1024];
+
+	if(catch_X_errors)
+	{
+		X_errors++;
+		return 0;
+	}
 
 	XGetErrorText(event->display, event->error_code, string, 1024); 
 	fprintf(stderr, "X error opcode=%d,%d: '%s'\n",
@@ -404,6 +410,25 @@ static int xioerrhdlr(Display *display)
 
 BC_Signals::BC_Signals()
 {
+}
+
+int BC_Signals::set_catch_errors()
+{
+	int oerr;
+
+	oerr = X_errors;
+	X_errors = 0;
+	catch_X_errors = 1;
+	return oerr;
+}
+
+int BC_Signals::reset_catch()
+{
+	int oerr;
+
+	oerr = X_errors;
+	catch_X_errors = 0;
+	return oerr;
 }
 
 void BC_Signals::dump_traces()
