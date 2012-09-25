@@ -38,8 +38,6 @@
 #include <X11/extensions/XShm.h>
 #include <unistd.h>
 
-int BC_Resources::error = 0;
-
 VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
 
@@ -524,7 +522,8 @@ void BC_Resources::init_shm(BC_WindowBase *window)
 {
 	use_shm = 1;
 
-	if(!XShmQueryExtension(window->display)) use_shm = 0;
+	if(!XShmQueryExtension(window->display))
+		use_shm = 0;
 	else
 	{
 		window->lock_window("BC_Resources::init_shm");
@@ -534,7 +533,8 @@ void BC_Resources::init_shm(BC_WindowBase *window)
 
 		test_image = XShmCreateImage(window->display, window->vis, window->default_depth,
 			ZPixmap, (char*)NULL, &test_shm, 5, 5);
-		BC_Resources::error = 0;
+
+		BC_Signals::set_catch_errors();
 
 		test_shm.shmid = shmget(IPC_PRIVATE, 5 * test_image->bytes_per_line, (IPC_CREAT | 0600 ));
 		if(test_shm.shmid != -1)
@@ -559,7 +559,7 @@ void BC_Resources::init_shm(BC_WindowBase *window)
 			use_shm = 0;
 
 		XDestroyImage(test_image);
-		if(BC_Resources::error) use_shm = 0;
+		if(BC_Signals::reset_catch()) use_shm = 0;
 		window->unlock_window();
 	}
 }

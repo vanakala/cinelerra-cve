@@ -311,7 +311,7 @@ public:
 
 // Available display extensions
 	int use_shm;
-	static int error;
+
 // If the program uses recursive_resizing
 	int recursive_resizing;
 // Work around X server bugs
