@@ -85,9 +85,6 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
 	{ "wav", ICON_SOUND }
 };
 
-BC_Signals* BC_Resources::signal_handler = 0;
-
-
 BC_Resources::BC_Resources()
 {
 	synchronous = 0;
@@ -621,15 +618,4 @@ int BC_Resources::get_id()
 	int result = id++;
 	id_lock->unlock();
 	return result;
-}
-
-
-void BC_Resources::set_signals(BC_Signals *signal_handler)
-{
-	BC_Resources::signal_handler = signal_handler;
-}
-
-BC_Signals* BC_Resources::get_signals()
-{
-	return BC_Resources::signal_handler;
 }

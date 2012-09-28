@@ -65,9 +65,6 @@ public:
 	BC_Synchronous* get_synchronous();
 // Called by user after synchronous thread is created.
 	void set_synchronous(BC_Synchronous *synchronous);
-// Set signal handler
-	static void set_signals(BC_Signals *signal_handler);
-	static BC_Signals* get_signals();
 
 // These values should be changed before the first window is created.
 // colors
@@ -330,8 +327,6 @@ private:
 
 	Mutex *id_lock;
 
-// Pointer to signal handler class to run after ipc
-	static BC_Signals *signal_handler;
 	BC_Synchronous *synchronous;
 
 	int id;
