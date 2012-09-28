@@ -79,12 +79,9 @@ BC_WindowBase::~BC_WindowBase()
 		restore_vm();
 	}
 #endif
-	lock_window("BC_WindowBase::~BC_WindowBase");
-	is_deleting = 1;
 
-	top_level->ignore_win[top_level->last_ignore_win++] = win;
-	if(top_level->last_ignore_win >= MAX_WIN_IGNORE)
-		top_level->last_ignore_win = 0;
+	get_resources()->create_window_lock->lock("BC_WindowBase::~BC_WindowBase");
+	is_deleting = 1;
 
 	hide_tooltip();
 	if(window_type != MAIN_WINDOW)
@@ -132,7 +129,7 @@ BC_WindowBase::~BC_WindowBase()
 	if(icon_pixmap) delete icon_pixmap;
 	if(icon_window) delete icon_window;
 	if(temp_bitmap) delete temp_bitmap;
-	unlock_window();
+	get_resources()->create_window_lock->unlock();
 
 	if(window_type == MAIN_WINDOW) 
 	{
@@ -242,8 +239,6 @@ void BC_WindowBase::initialize()
 #ifdef HAVE_GL
 	gl_win_context = 0;
 #endif
-	last_ignore_win = 0; 
-	memset(ignore_win, 0, MAX_WIN_IGNORE * sizeof(Window));
 }
 
 #define DEFAULT_EVENT_MASKS EnterWindowMask | \
@@ -518,15 +513,6 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		if(!hidden) show_window();
 
 	}
-	else
-	{
-// Clear ignore_win
-		for(int i = 0; i < MAX_WIN_IGNORE; i++)
-		{
-			if(top_level->ignore_win[i] == win)
-				top_level->ignore_win[i] = 0;
-		}
-	}
 
 	draw_background(0, 0, this->w, this->h);
 	flash();
@@ -616,24 +602,6 @@ void BC_WindowBase::get_key_masks(XEvent *event)
 	alt_mask = (event->xkey.state & Mod1Mask) ? 1 : 0;
 }
 
-int BC_WindowBase::window_ignored(Window ewin)
-{
-	int i;
-	Window *wp;
-
-	if(ewin == 0)
-		return 0;
-
-	wp = top_level->ignore_win;
-
-	for(i = 0; i < MAX_WIN_IGNORE; i++)
-	{
-		if(wp[i] && (wp[i] == ewin))
-			return 1;
-	}
-	return 0;
-}
-
 void BC_WindowBase::dispatch_event()
 {
 	XEvent event;
@@ -654,7 +622,7 @@ void BC_WindowBase::dispatch_event()
 	else
 // Handle compressed events
 	{
-		lock_window("BC_WindowBase::dispatch_event - compressed");
+		get_resources()->create_window_lock->lock("BC_WindowBase::dispatch_event - compressed");
 		if(resize_events)
 			dispatch_resize_event(last_resize_w, last_resize_h);
 		else
@@ -663,14 +631,10 @@ void BC_WindowBase::dispatch_event()
 		else
 		if(translation_events)
 			dispatch_translation_event();
-		unlock_window();
+		get_resources()->create_window_lock->unlock();
 
 		return;
 	}
-
-// Ignore events from destroyed window
-	if(window_ignored(event.xany.window))
-		return;
 
 	switch(event.type)
 	{
@@ -766,7 +730,7 @@ void BC_WindowBase::dispatch_event()
 		break;
 
 	case MotionNotify:
-		lock_window("BC_WindowBase::dispatch_event MotionNotify");
+		get_resources()->create_window_lock->lock("BC_WindowBase::dispatch_event MotionNotify");
 		get_key_masks(&event);
 // Dispatch previous motion event if this is a subsequent motion from a different window
 		if(motion_events && last_motion_win != event.xany.window)
@@ -777,7 +741,7 @@ void BC_WindowBase::dispatch_event()
 		last_motion_x = event.xmotion.x;
 		last_motion_y = event.xmotion.y;
 		last_motion_win = event.xany.window;
-		unlock_window();
+		get_resources()->create_window_lock->unlock();
 		break;
 
 	case ConfigureNotify:
@@ -983,10 +947,6 @@ int BC_WindowBase::dispatch_motion_event()
 	int result = 0;
 	unhide_cursor();
 
-	if(window_ignored(top_level->last_motion_win)){
-		motion_events = 0;
-		return 0;
-	}
 	if(top_level == this)
 	{
 		event_win = last_motion_win;

@@ -566,9 +566,6 @@ private:
 	XFontSet get_curr_fontset(void);
 	void set_fontset(int font);
 	void dispatch_event();
-// Check if window event must be ignored
-	int window_ignored(Window ewin);
-
 	void get_key_masks(XEvent *event);
 
 	int trigger_tooltip();
@@ -785,11 +782,6 @@ private:
 	Timer *cursor_timer;
 // unique ID of window.
 	int id;
-
-#define MAX_WIN_IGNORE 12
-// Ignore events from these windows
-	Window ignore_win[MAX_WIN_IGNORE];
-	int last_ignore_win;
 
 protected:
 	Atom create_xatom(const char *atom_name);
