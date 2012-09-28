@@ -388,6 +388,10 @@ static int xerrorhdlr(Display *display, XErrorEvent *event)
 		return 0;
 	}
 
+// Ignore BadWindow events
+	if(event->error_code == BadWindow)
+		return 0;
+
 	XGetErrorText(event->display, event->error_code, string, 1024); 
 	fprintf(stderr, "X error opcode=%d,%d: '%s'\n",
 		event->request_code,
