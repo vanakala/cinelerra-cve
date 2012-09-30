@@ -2,7 +2,7 @@ This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of September 23, 2011
+This file describes status of this branch as of September 30, 2012
 
 Contents.
 
@@ -65,21 +65,26 @@ Changes in this branch:
     other branches
 - removed playback direction dependancy from core rendering
 - replaced samplerate based timing with clock based timing
-- implemented new API and support macros of audio plugins
+- implemented new API and support macros of all plugins, removed old API
 - implemented pts in renderfarm
+- created all kind of Null plugins as templates for new plugins
+- full rewrite of FileOGG
+- removed broken plugins including plugins importing from devices
+- all configured ALSA PCM devices are selectable
+- some improvements and fixes of the build system
+- new plugin C41
 
 Known problems (todo list)
-- implement pts in video plugins
+- FileOGG: improve audio/video interleaving
 - implement pts in encoders, decoders
+- cleanup playback, gui
 - new API of plugins and macros need some documentation
 - add PCMs to selectable ALSA audio devices, speed up audio start
 - handling input devices is buggy (only selected devices may work)
 - trimming does not work as described in manual or as expected,
     occasionally crashes
-- occasional crashes on closing windows
-- Reel name must be read from project
-- filevorbis is disabled
-- cinerella crashes if video4linux2 size is different from 600x800
+- reel name must be read from project
+- crashes if video4linux2 size is different from 600x800
 - implement debugging system
 - test on 64bit system
 
