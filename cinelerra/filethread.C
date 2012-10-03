@@ -45,24 +45,8 @@ FileThreadFrame::~FileThreadFrame()
 }
 
 
-
 FileThread::FileThread(File *file, int do_audio, int do_video)
  : Thread(1, 0, 0)
-{
-	reset();
-	create_objects(file,
-		do_audio,
-		do_video);
-}
-
-FileThread::~FileThread()
-{
-	delete_objects();
-
-
-}
-
-void FileThread::reset()
 {
 	audio_buffer = 0;
 	video_buffer = 0;
@@ -72,24 +56,13 @@ void FileThread::reset()
 	last_buffer = 0;
 	is_writing = 0;
 	is_reading = 0;
-	file_lock = 0;
 
-	read_wait_lock = 0;
-	user_wait_lock = 0;
-	frame_lock = 0;
 	total_frames = 0;
 	done = 0;
 	disable_read = 1;
 	start_position = -1;
 	read_position = 0;
-	memset(read_frames, 0, sizeof(FileThreadFrame*) * MAX_READ_FRAMES);
-}
 
-
-void FileThread::create_objects(File *file, 
-		int do_audio, 
-		int do_video)
-{
 	this->file = file;
 	this->do_audio = do_audio;
 	this->do_video = do_video;
@@ -97,12 +70,12 @@ void FileThread::create_objects(File *file,
 	read_wait_lock = new Condition(0, "FileThread::read_wait_lock");
 	user_wait_lock = new Condition(0, "FileThread::user_wait_lock");
 	frame_lock = new Mutex("FileThread::frame_lock");
+
 	for(int i = 0; i < MAX_READ_FRAMES; i++)
 		read_frames[i] = new FileThreadFrame;
 }
 
-
-void FileThread::delete_objects()
+FileThread::~FileThread()
 {
 	if(output_lock)
 	{
@@ -125,17 +98,13 @@ void FileThread::delete_objects()
 	if(last_buffer)
 		delete [] last_buffer;
 
-
 	delete [] output_size;
 
 	delete file_lock;
 
-
 	delete read_wait_lock;
 	delete user_wait_lock;
 	delete frame_lock;
-
-	reset();
 }
 
 void FileThread::run()
@@ -144,7 +113,6 @@ void FileThread::run()
 
 	if(is_reading)
 	{
-		
 		while(!done && !disable_read)
 		{
 			frame_lock->lock("FileThread::run 1");
@@ -184,7 +152,6 @@ void FileThread::run()
 				file->set_layer(local_layer, 1);
 		 		int supported_colormodel = 
 					file->get_best_colormodel(PLAYBACK_ASYNCHRONOUS);
-
 
 // Allocate frame
 				if(local_frame->frame &&
@@ -265,8 +232,6 @@ void FileThread::run()
 	}
 }
 
-
-
 void FileThread::stop_writing()
 {
 	if(is_writing)
@@ -345,7 +310,6 @@ void FileThread::start_writing(int buffer_size,
 	last_buffer = new int[ring_buffers];
 	output_size = new int[ring_buffers];
 
-
 	output_lock = new Condition*[ring_buffers];
 	input_lock = new Condition*[ring_buffers];
 	for(int i = 0; i < ring_buffers; i++)
@@ -414,7 +378,7 @@ void FileThread::start_writing(int buffer_size,
 	Thread::start();
 }
 
-int FileThread::start_reading()
+void FileThread::start_reading()
 {
 	if(!is_reading)
 	{
@@ -422,10 +386,9 @@ int FileThread::start_reading()
 		disable_read = 1;
 		done = 0;
 	}
-	return 0;
 }
 
-int FileThread::stop_reading()
+void FileThread::stop_reading()
 {
 	if(is_reading && Thread::running())
 	{
@@ -433,7 +396,6 @@ int FileThread::stop_reading()
 		read_wait_lock->unlock();
 		Thread::join();
 	}
-	return 0;
 }
 
 void FileThread::set_video_position(framenum position)
@@ -468,7 +430,7 @@ void FileThread::set_video_position(framenum position)
 	this->read_position = position;
 }
 
-int FileThread::set_layer(int layer)
+void FileThread::set_layer(int layer)
 {
 	if(layer != this->layer)
 	{
@@ -478,7 +440,6 @@ int FileThread::set_layer(int layer)
 		total_frames = 0;
 	}
 	this->layer = layer;
-	return 0;
 }
 
 int FileThread::read_frame(VFrame *frame)
@@ -583,7 +544,6 @@ int64_t FileThread::get_memory_usage()
 	frame_lock->unlock();
 	return result;
 }
-
 
 AFrame** FileThread::get_audio_buffer()
 {

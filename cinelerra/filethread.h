@@ -35,7 +35,6 @@
 // blocking the write commands.
 // Used for recording.
 
-
 // Container for read frames
 class FileThreadFrame
 {
@@ -55,13 +54,6 @@ public:
 	FileThread(File *file, int do_audio, int do_video);
 	~FileThread();
 
-	void create_objects(File *file, 
-		int do_audio, 
-		int do_video);
-	void delete_objects();
-	void reset();
-
-
 // ============================== writing section ==============================
 // Allocate the buffers and start loop for writing.
 // compressed - if 1 write_compressed_frames is called in the file
@@ -72,19 +64,16 @@ public:
 			int compressed);
 	void stop_writing();
 
-
-
-
 // ================================ reading section ============================
 // Allocate buffers and start loop for reading
-	int start_reading();
-	int stop_reading();
+	void start_reading();
+	void stop_reading();
 
 	int read_frame(VFrame *frame);
 // Set native framerate.
 // Called by File::set_video_position.
 	void set_video_position(framenum position);
-	int set_layer(int layer);
+	void set_layer(int layer);
 	int read_buffer();
 	int64_t get_memory_usage();
 
