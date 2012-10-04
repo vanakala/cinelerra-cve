@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "assets.h"
+#include "aframe.h"
 #include "byteorder.h"
 #include "colormodels.h"
 #include "file.h"
@@ -94,4 +95,22 @@ int FileBase::match4(const char *in, const char *out)
 		return 1;
 	else
 		return 0;
+}
+
+int FileBase::write_aframes(AFrame **aframes)
+{
+	double *samples[MAX_CHANNELS];
+	int len = 0;
+
+	for(int i = 0; i < asset->channels; i++)
+	{
+		if(aframes[i])
+		{
+			samples[i] = aframes[i]->buffer;
+			len = aframes[i]->length;
+		}
+		else
+			samples[i] = 0;
+	}
+	return(write_samples(samples, len));
 }

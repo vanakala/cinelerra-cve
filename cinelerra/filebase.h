@@ -74,6 +74,7 @@ public:
 // Only used in read mode.
 	virtual int64_t get_memory_usage() { return 0; };
 
+	virtual int write_aframes(AFrame **buffer);
 	virtual int write_samples(double **buffer, int len) { return 0; };
 	virtual int write_frames(VFrame ***frames, int len) { return 0; };
 // Doubles are used to allow resampling
