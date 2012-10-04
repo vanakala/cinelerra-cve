@@ -277,10 +277,8 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 
 // get amount to read at a time in floats
 		int buffersize = 65536;
-		char string[BCTEXTLEN];
-		sprintf(string, _("Creating %s."), index_filename);
 
-		progress->update_title(string);
+		progress->update_title(_("Creating %s."), index_filename);
 		progress->update_length(length_source);
 		redraw_timer->update();
 
