@@ -132,11 +132,10 @@ public:
 
 
 
-// write samples for the current channel
-// written to disk and file pointer updated after last channel is written
+// write audio frames
+// written to disk and file pointer updated after
 // return 1 if failed
-// subsequent writes must be <= than first write's size because of buffers
-	int write_samples(AFrame **buffer, int len);
+	int write_aframes(AFrame **buffer);
 
 // Only called by filethread to write an array of an array of channels of frames.
 	int write_frames(VFrame ***frames, int len);
@@ -171,14 +170,6 @@ public:
 // advances file pointer
 // return 1 if failed
 	int read_samples(double *buffer, int len, int base_samplerate, float *buffer_float = 0);
-
-
-// set layer for video read
-// is_thread is used by FileThread::run to prevent recursive lockup.
-	void set_layer(int layer, int is_thread = 0);
-// set position in frames
-// is_thread is used by FileThread::run to prevent recursive lockup.
-	void set_video_position(framenum position, float base_framerate = -1, int is_thread = 0);
 
 // pts API - frame must have source_pts, and layer set
 	int get_frame(VFrame *frame, int is_thread = 0);

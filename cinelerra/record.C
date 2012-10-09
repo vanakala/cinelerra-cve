@@ -656,8 +656,10 @@ void Record::rewind_file()
 	{
 		if(default_asset->audio_data) 
 			file->set_audio_position(0);
+/* FIXIT
 		if(default_asset->video_data)
 			file->set_video_position(0, default_asset->frame_rate);
+	*/
 	}
 
 	get_current_batch()->current_sample = 0;

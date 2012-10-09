@@ -390,7 +390,9 @@ void RecordVideo::rewind_file()
 {
 	write_buffer(1);
 	record->file->stop_video_thread();
+/* FIXIT
 	record->file->set_video_position(0, record->default_asset->frame_rate);
+	*/
 	record->file->start_video_thread(buffer_size,
 		record->vdevice->get_best_colormodel(record->default_asset),
 		2,

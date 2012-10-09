@@ -654,21 +654,6 @@ void File::set_channel(int channel)
 		current_channel = channel;
 }
 
-void File::set_layer(int layer, int is_thread) 
-{
-	if(file && layer < asset->layers)
-	{
-		if(!is_thread && video_thread)
-		{
-			video_thread->set_layer(layer);
-		}
-		else
-		{
-			current_layer = layer;
-		}
-	}
-}
-
 samplenum File::get_audio_length(int base_samplerate) 
 { 
 	samplenum result = asset->audio_length;
@@ -724,55 +709,28 @@ void File::set_audio_position(samplenum position)
 		file->set_audio_position(current_sample = position);
 }
 
-void File::set_video_position(framenum position, float base_framerate, int is_thread) 
-{
-	if(!file) return;
-
-// Convert to file's rate
-	if(base_framerate > 0)
-		position = (framenum)((double)position / 
-			base_framerate * 
-			asset->frame_rate + 
-			0.5);
-
-	if(video_thread && !is_thread)
-	{
-// Call thread.  Thread calls this again to set the file state.
-		video_thread->set_video_position(position);
-	}
-	else
-	if(current_frame != position)
-	{
-		if(file)
-		{
-			current_frame = position;
-			file->set_video_position(current_frame);
-		}
-	}
-}
-
 // No resampling here.
-int File::write_samples(AFrame **buffer, int len)
+int File::write_aframes(AFrame **frames)
 {
-	double *samples[MAX_CHANNELS];
-	int result = 1;
+	int result;
 
 	if(file)
 	{
-		write_lock->lock("File::write_samples");
+		write_lock->lock("File::write_aframes");
 		for(int i = 0; i < asset->channels; i++)
 		{
-			if(buffer[i])
-				samples[i] = buffer[i]->buffer;
-			else
-				samples[i] = 0;
+			if(frames[i])
+			{
+				current_sample += frames[i]->length;
+				asset->audio_length += frames[i]->length;
+				break;
+			}
 		}
-		result = file->write_samples(samples, len);
-		current_sample += len;
-		asset->audio_length += len;
+		result = file->write_aframes(frames);
 		write_lock->unlock();
+		return result;
 	}
-	return result;
+	return 1;
 }
 
 // Can't put any cmodel abstraction here because the filebase couldn't be
@@ -927,13 +885,7 @@ int File::get_next_frame(VFrame *frame)
 
 int File::get_this_frame(framenum pos, VFrame *frame, int is_thread)
 {
-	if(video_thread && !is_thread)
-	{
-		video_thread->set_video_position(pos);
-		video_thread->set_layer(frame->get_layer());
-	}
-	else
-	if(file)
+	if(!(video_thread && !is_thread) && file)
 	{
 		if(current_frame != pos)
 		{
