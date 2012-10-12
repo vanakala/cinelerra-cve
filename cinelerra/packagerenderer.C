@@ -177,7 +177,7 @@ void PackageRenderer::create_output()
 
 void PackageRenderer::create_engine()
 {
-	audio_read_length = command->get_edl()->session->sample_rate;
+	audio_read_length = command->get_edl()->session->sample_rate / 4;
 
 	aconfig->set_fragment_size(audio_read_length);
 
