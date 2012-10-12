@@ -87,7 +87,7 @@ public:
 
 	int colormodel_supported(int colormodel);
 	int get_best_colormodel(Asset *asset, int driver);
-	int write_samples(double **buffer, int len);
+	int write_aframes(AFrame **buffer);
 	int write_frames(VFrame ***frames, int len);
 	int read_samples(double *buffer, int len);
 	int read_frame(VFrame *frame);

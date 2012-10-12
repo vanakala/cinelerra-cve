@@ -20,9 +20,11 @@
  */
 
 #include "asset.h"
+#include "aframe.h"
 #include "bcsignals.h"
 #include "byteorder.h"
 #include "clip.h"
+#include "condition.h"
 #include "edit.h"
 #include "file.h"
 #include "fileogg.h"
@@ -1009,10 +1011,12 @@ void FileOGG::flush_ogg(int eos)
 		errormsg("Failed to write rendered OGG");
 }
 
-int FileOGG::write_samples(double **buffer, int len)
+int FileOGG::write_aframes(AFrame **frames)
 {
-	int i, j;
+	int i, j, len;
 	float **vrb_buf;
+
+	len = frames[0]->length;
 
 	if(len > 0)
 	{
@@ -1022,8 +1026,11 @@ int FileOGG::write_samples(double **buffer, int len)
 
 		for(i = 0; i < asset->channels; i++)
 		{
+			double *buffer = frames[i]->buffer;
+			len = frames[i]->length;
+
 			for(j = 0; j < len; j++)
-				vrb_buf[i][j] = buffer[i][j];
+				vrb_buf[i][j] = buffer[j];
 		}
 		vorbis_analysis_wrote(&cur_stream->vs, len);
 		flush_lock->unlock();
