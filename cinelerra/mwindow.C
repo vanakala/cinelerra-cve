@@ -133,16 +133,12 @@ MWindow::~MWindow()
 
 	delete mainindexes;
 
-SET_TRACE
 	clean_indexes();
-SET_TRACE
 
 	save_defaults();
-SET_TRACE
 // Give up and go to a movie
 	exit(0);
 
-SET_TRACE
 	delete mainprogress;
 	delete audio_cache;             // delete the cache after the assets
 	delete video_cache;             // delete the cache after the assets
@@ -181,7 +177,6 @@ void MWindow::create_defaults_path(char *string)
 // load the defaults
 	strcat(string, CONFIG_FILE);
 }
-
 
 const char *MWindow::default_std()
 {
@@ -414,17 +409,11 @@ void MWindow::init_plugins(Preferences *preferences,
 		total += lad_fs.values[i]->total_files();
 	if(splash_window) splash_window->progress->update_length(total);
 
-
-// Cinelerra
-#ifndef DO_STATIC
 	init_plugin_path(preferences,
 		plugindb,
 		&cinelerra_fs,
 		splash_window,
 		&counter);
-#else
-// Call automatically generated routine to get plugins
-#endif
 
 // LAD
 	for(int i = 0; i < lad_fs.total; i++)
@@ -603,7 +592,7 @@ void MWindow::clean_indexes()
 			char *ptr = strrchr(string2, '.');
 			if(ptr)
 			{
-				sprintf(ptr, ".toc");
+				strcpy(ptr, ".toc");
 				remove(string2);
 			}
 		}
@@ -849,9 +838,7 @@ void MWindow::set_brender_start()
 	gui->canvas->flash();
 }
 
-
-
-int MWindow::load_filenames(ArrayList<char*> *filenames, 
+void MWindow::load_filenames(ArrayList<char*> *filenames, 
 	int load_mode,
 	int update_filename,
 	const char *reel_name,
@@ -878,8 +865,6 @@ SET_TRACE
 		0);
 	cwindow->playback_engine->interrupt_playback(0);
 	vwindow->playback_engine->interrupt_playback(0);
-
-
 
 // Define new_edls and new_assets to load
 	int result = 0;
@@ -931,7 +916,6 @@ SET_TRACE
 						new_asset->width,
 						new_asset->height);
 				}
-
 
 				if(load_mode != LOAD_RESOURCESONLY)
 				{
@@ -1098,7 +1082,6 @@ SET_TRACE
 			}
 		}
 
-SET_TRACE
 		if(result)
 		{
 			delete new_edl;
@@ -1111,10 +1094,7 @@ SET_TRACE
 		new_files.append(new_file);
 	}
 
-
-
 	gui->statusbar->default_message();
-
 
 // Paste them.
 // Don't back up here.
@@ -1138,7 +1118,6 @@ SET_TRACE
 			edl->session->edit_actions(),
 			0); // overwrite
 	}
-
 
 // Add new assets to EDL and schedule assets for index building.
 // Used for loading resources only.
@@ -1164,14 +1143,11 @@ SET_TRACE
 			mainindexes->add_next_asset(got_it ? new_file : 0, 
 				new_asset);
 			edl->assets->update(new_asset);
-
 		}
-
 
 // Start examining next batch of index files
 		mainindexes->start_build();
 	}
-
 
 	update_project(load_mode);
 
@@ -1184,12 +1160,7 @@ SET_TRACE
 
 	undo->update_undo(_("load"), LOAD_ALL, 0);
 	gui->stop_hourglass();
-
-	return 0;
 }
-
-
-
 
 void MWindow::test_plugins(EDL *new_edl, const char *path)
 {
@@ -1283,8 +1254,6 @@ void MWindow::init_shm()
 	}
 }
 
-
-
 void MWindow::create_objects(int want_gui, 
 	int want_new,
 	char *config_path)
@@ -1348,7 +1317,6 @@ void MWindow::create_objects(int want_gui,
 	init_shm();
 }
 
-
 void MWindow::show_splash()
 {
 #include "data/heroine_logo12_png.h"
@@ -1366,7 +1334,6 @@ void MWindow::hide_splash()
 		delete splash_window;
 	splash_window = 0;
 }
-
 
 void MWindow::start()
 {
@@ -1474,7 +1441,7 @@ void MWindow::set_auto_keyframes(int value)
 	cwindow->gui->unlock_window();
 }
 
-int MWindow::set_editing_mode(int new_editing_mode)
+void MWindow::set_editing_mode(int new_editing_mode)
 {
 	gui->lock_window("MWindow::set_editing_mode");
 	edl->session->editing_mode = new_editing_mode;
@@ -1486,7 +1453,6 @@ int MWindow::set_editing_mode(int new_editing_mode)
 	cwindow->gui->edit_panel->update();
 	cwindow->gui->edit_panel->editing_mode = edl->session->editing_mode;
 	cwindow->gui->unlock_window();
-	return 0;
 }
 
 void MWindow::toggle_editing_mode()
@@ -1497,7 +1463,6 @@ void MWindow::toggle_editing_mode()
 	else
 		set_editing_mode(EDITING_ARROW);
 }
-
 
 void MWindow::set_labels_follow_edits(int value)
 {
@@ -1511,7 +1476,6 @@ void MWindow::set_labels_follow_edits(int value)
 
 void MWindow::sync_parameters(int change_type)
 {
-
 // Sync engines which are playing back
 	if(cwindow->playback_engine->is_playing_back)
 	{
@@ -1584,7 +1548,7 @@ void MWindow::age_caches()
 			video_cache->get_memory_usage(1) +
 			frame_cache->get_memory_usage() +
 			wave_cache->get_memory_usage();
-	}while(!result && 
+	} while(!result && 
 		prev_memory_usage != memory_usage && 
 		memory_usage > preferences->cache_size);
 }
@@ -1709,7 +1673,6 @@ void MWindow::render_plugin_gui(void *data, int size, Plugin *plugin)
 	plugin_gui_lock->unlock();
 }
 
-
 void MWindow::update_plugin_states()
 {
 	plugin_gui_lock->lock("MWindow::update_plugin_states");
@@ -1740,7 +1703,6 @@ void MWindow::update_plugin_states()
 			}
 		}
 
-
 // Doesn't exist anymore
 		if(!result)
 		{
@@ -1751,7 +1713,6 @@ void MWindow::update_plugin_states()
 	plugin_gui_lock->unlock();
 }
 
-
 void MWindow::update_plugin_titles()
 {
 	for(int i = 0; i < plugin_guis->total; i++)
@@ -1760,7 +1721,7 @@ void MWindow::update_plugin_titles()
 	}
 }
 
-int MWindow::asset_to_edl(EDL *new_edl, 
+void MWindow::asset_to_edl(EDL *new_edl, 
 	Asset *new_asset, 
 	RecordLabels *labels)
 {
@@ -1773,7 +1734,6 @@ int MWindow::asset_to_edl(EDL *new_edl,
 	}
 	else
 		new_edl->session->video_tracks = 0;
-
 
 	if(new_asset->audio_data)
 		new_edl->session->audio_tracks = new_asset->channels;
@@ -1796,8 +1756,6 @@ int MWindow::asset_to_edl(EDL *new_edl,
 	fs.extract_name(string, new_asset->path);
 
 	strcpy(new_edl->local_session->clip_title, string);
-
-	return 0;
 }
 
 // Reset everything after a load.
@@ -1806,13 +1764,11 @@ void MWindow::update_project(int load_mode)
 	restart_brender();
 	edl->tracks->update_y_pixels(theme);
 
-
 	gui->update(1, 1, 1, 1, 1, 1, 1);
 
 	cwindow->gui->lock_window("Mwindow::update_project 1");
 	cwindow->update(0, 0, 1, 1, 1);
 	cwindow->gui->unlock_window();
-
 
 	if(load_mode == LOAD_REPLACE ||
 		load_mode == LOAD_REPLACE_CONCATENATE)
@@ -1834,7 +1790,6 @@ void MWindow::update_project(int load_mode)
 	gui->flush();
 }
 
-
 void MWindow::rebuild_indices()
 {
 	char source_filename[BCTEXTLEN], index_filename[BCTEXTLEN];
@@ -1853,7 +1808,6 @@ void MWindow::rebuild_indices()
 	}
 	mainindexes->start_build();
 }
-
 
 void MWindow::save_backup()
 {
@@ -1874,11 +1828,12 @@ void MWindow::save_backup()
 		gui->show_message(_("Couldn't open %s for writing."), path);
 }
 
-
-int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
+void MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 {
 	int denominator;
-	if(!width || !height) return 1;
+
+	if(!width || !height) return;
+
 	float fraction = (float)width / height;
 
 	for(denominator = 1; 
@@ -1889,7 +1844,6 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 	w = denominator * width / height;
 	h = denominator;
-	return 0;
 }
 
 void MWindow::reset_caches()
@@ -1923,8 +1877,6 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
 		vwindow->playback_engine->video_cache->delete_entry(asset);
 }
-
-
 
 void MWindow::remove_assets_from_project(int push_undo)
 {
@@ -1988,7 +1940,7 @@ void MWindow::remove_assets_from_disk()
 	remove_assets_from_project(1);
 }
 
-int MWindow::save_defaults()
+void MWindow::save_defaults()
 {
 	gui->save_defaults(defaults);
 	edl->save_defaults(defaults);
@@ -1996,7 +1948,6 @@ int MWindow::save_defaults()
 	preferences->save_defaults(defaults);
 
 	defaults->save();
-	return 0;
 }
 
 int MWindow::run_script(FileXML *script)
@@ -2030,26 +1981,36 @@ int MWindow::run_script(FileXML *script)
 
 // ================================= synchronization
 
-
-int MWindow::interrupt_indexes()
+void MWindow::interrupt_indexes()
 {
 	mainindexes->interrupt_build();
-	return 0; 
 }
-
-
 
 void MWindow::next_time_format()
 {
 	switch(edl->session->time_format)
 	{
-		case TIME_HMS: edl->session->time_format = TIME_HMSF; break;
-		case TIME_HMSF: edl->session->time_format = TIME_SAMPLES; break;
-		case TIME_SAMPLES: edl->session->time_format = TIME_SAMPLES_HEX; break;
-		case TIME_SAMPLES_HEX: edl->session->time_format = TIME_FRAMES; break;
-		case TIME_FRAMES: edl->session->time_format = TIME_FEET_FRAMES; break;
-		case TIME_FEET_FRAMES: edl->session->time_format = TIME_SECONDS; break;
-		case TIME_SECONDS: edl->session->time_format = TIME_HMS; break;
+	case TIME_HMS:
+		edl->session->time_format = TIME_HMSF;
+		break;
+	case TIME_HMSF:
+		edl->session->time_format = TIME_SAMPLES;
+		break;
+	case TIME_SAMPLES:
+		edl->session->time_format = TIME_SAMPLES_HEX;
+		break;
+	case TIME_SAMPLES_HEX: 
+		edl->session->time_format = TIME_FRAMES;
+		break;
+	case TIME_FRAMES:
+		edl->session->time_format = TIME_FEET_FRAMES;
+		break;
+	case TIME_FEET_FRAMES:
+		edl->session->time_format = TIME_SECONDS;
+		break;
+	case TIME_SECONDS:
+		edl->session->time_format = TIME_HMS;
+		break;
 	}
 
 	time_format_common();
@@ -2059,13 +2020,27 @@ void MWindow::prev_time_format()
 {
 	switch(edl->session->time_format)
 	{
-		case TIME_HMS: edl->session->time_format = TIME_SECONDS; break;
-		case TIME_SECONDS: edl->session->time_format = TIME_FEET_FRAMES; break;
-		case TIME_FEET_FRAMES: edl->session->time_format = TIME_FRAMES; break;
-		case TIME_FRAMES: edl->session->time_format = TIME_SAMPLES_HEX; break;
-		case TIME_SAMPLES_HEX: edl->session->time_format = TIME_SAMPLES; break;
-		case TIME_SAMPLES: edl->session->time_format = TIME_HMSF; break;
-		case TIME_HMSF: edl->session->time_format = TIME_HMS; break;
+	case TIME_HMS:
+		edl->session->time_format = TIME_SECONDS;
+		break;
+	case TIME_SECONDS:
+		edl->session->time_format = TIME_FEET_FRAMES;
+		break;
+	case TIME_FEET_FRAMES:
+		edl->session->time_format = TIME_FRAMES;
+		break;
+	case TIME_FRAMES:
+		edl->session->time_format = TIME_SAMPLES_HEX;
+		break;
+	case TIME_SAMPLES_HEX:
+		edl->session->time_format = TIME_SAMPLES;
+		break;
+	case TIME_SAMPLES:
+		edl->session->time_format = TIME_HMSF;
+		break;
+	case TIME_HMSF:
+		edl->session->time_format = TIME_HMS;
+		break;
 	}
 
 	time_format_common();
@@ -2082,7 +2057,7 @@ void MWindow::time_format_common()
 }
 
 
-int MWindow::set_filename(const char *filename)
+void MWindow::set_filename(const char *filename)
 {
 	strcpy(session->filename, filename);
 	if(gui)
@@ -2100,12 +2075,9 @@ int MWindow::set_filename(const char *filename)
 			gui->set_title(string2);
 		}
 	}
-	return 0; 
 }
 
-
-
-int MWindow::set_loop_boundaries()
+void MWindow::set_loop_boundaries()
 {
 	double start = edl->local_session->get_selectionstart();
 	double end = edl->local_session->get_selectionend();
@@ -2130,12 +2102,9 @@ int MWindow::set_loop_boundaries()
 		edl->local_session->loop_start = start;
 		edl->local_session->loop_end = end;
 	}
-	return 0; 
 }
 
-
-
-int MWindow::reset_meters()
+void MWindow::reset_meters()
 {
 	cwindow->gui->lock_window("MWindow::reset_meters 1");
 	cwindow->gui->meters->reset_meters();
@@ -2152,6 +2121,4 @@ int MWindow::reset_meters()
 	gui->lock_window("MWindow::reset_meters 4");
 	gui->patchbay->reset_meters();
 	gui->unlock_window();
-	return 0; 
 }
-

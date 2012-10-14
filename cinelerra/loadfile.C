@@ -140,7 +140,7 @@ void LoadFileThread::run()
 	}
 
 	mwindow->interrupt_indexes();
-	result = mwindow->load_filenames(&path_list, load_mode, 0);
+	mwindow->load_filenames(&path_list, load_mode, 0);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	path_list.remove_all_objects();
 

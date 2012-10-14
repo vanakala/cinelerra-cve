@@ -108,8 +108,8 @@ public:
 	int delete_project(int flash = 1);
 
 	int load_defaults();
-	int save_defaults();
-	int set_filename(const char *filename);
+	void save_defaults();
+	void set_filename(const char *filename);
 // Total vertical pixels in timeline
 	int get_tracks_height();
 // Total horizontal pixels in timeline
@@ -122,7 +122,7 @@ public:
 	void show_gwindow();
 	void tile_windows();
 	void set_titles(int value);
-	int asset_to_edl(EDL *new_edl, Asset *new_asset, RecordLabels *labels = 0);
+	void asset_to_edl(EDL *new_edl, Asset *new_asset, RecordLabels *labels = 0);
 
 // Entry point to insert assets and insert edls.  Called by TrackCanvas 
 // and AssetPopup when assets are dragged in from AWindow.
@@ -130,7 +130,7 @@ public:
 // pastes either assets or clips depending on which is full.
 // Returns 1 if the vectors were full
 	int paste_assets(double position, Track *dest_track, int overwrite);
-	
+
 // Insert the assets at a point in the EDL.  Called by menueffects,
 // render, and CWindow drop but recording calls paste_edls directly for
 // labels.
@@ -141,7 +141,7 @@ public:
 		RecordLabels *labels,
 		int actions,
 		int overwrite);
-	int paste_edls(ArrayList<EDL*> *new_edls, 
+	void paste_edls(ArrayList<EDL*> *new_edls, 
 		int load_mode, 
 		Track *first_track,
 		double current_position,
@@ -171,7 +171,7 @@ public:
 		int data_type);
 	void dump_plugindb(int data_type = -1);
 
-	int load_filenames(ArrayList<char*> *filenames, 
+	void load_filenames(ArrayList<char*> *filenames, 
 		int load_mode = LOAD_REPLACE,
 // Cause the project filename on the top of the window to be updated.
 // Not wanted for loading backups.
@@ -183,8 +183,7 @@ public:
 // Print out plugins which are referenced in the EDL but not loaded.
 	void test_plugins(EDL *new_edl, const char *path);
 
-	int interrupt_indexes();  // Stop index building
-
+	void interrupt_indexes();  // Stop index building
 
 	int redraw_time_dependancies();     // after reconfiguring the time format, sample rate, frame rate
 
@@ -255,10 +254,10 @@ public:
 		AUDIO_1_TO_1
 	};
 	void add_audio_track_entry(int above, Track *dst);
-	int add_audio_track(int above, Track *dst);
+	void add_audio_track(int above, Track *dst);
 	void add_clip_to_edl(EDL *edl);
 	void add_video_track_entry(Track *dst = 0);
-	int add_video_track(int above, Track *dst);
+	void add_video_track(int above, Track *dst);
 
 	void asset_to_size();
 
@@ -269,14 +268,14 @@ public:
 // Called by paste, record, menueffects, render, and CWindow drop.
 	void clear(int clear_handle);
 	void clear_labels();
-	int clear_labels(double start, double end);
+	void clear_labels(double start, double end);
 	void concatenate_tracks();
 	void copy();
-	int copy(double start, double end);
+	void copy(double start, double end);
 	void cut();
 
 // Calculate aspect ratio from pixel counts
-	static int create_aspect_ratio(float &w, float &h, int width, int height);
+	static void create_aspect_ratio(float &w, float &h, int width, int height);
 // Calculate defaults path
 	static void create_defaults_path(char *string);
 
@@ -364,7 +363,7 @@ public:
 	void set_labels_follow_edits(int value);
 
 // Update the editing mode
-	int set_editing_mode(int new_editing_mode);
+	void set_editing_mode(int new_editing_mode);
 	void toggle_editing_mode();
 	void set_inpoint(int is_mwindow);
 	void set_outpoint(int is_mwindow);
@@ -375,37 +374,33 @@ public:
 // operation.  Doesn't redraw anything.
 	void sync_parameters(int change_type = CHANGE_PARAMS);
 	void to_clip();
-	int toggle_label(int is_mwindow);
+	void toggle_label(int is_mwindow);
 	void undo_entry(BC_WindowBase *calling_window_gui);
 	void redo_entry(BC_WindowBase *calling_window_gui);
 
-
-	int cut_automation();
-	int copy_automation();
-	int paste_automation();
+	void cut_automation();
+	void copy_automation();
+	void paste_automation();
 	void clear_automation();
 	void straighten_automation();
-	int cut_default_keyframe();
-	int copy_default_keyframe();
+	void cut_default_keyframe();
+	void copy_default_keyframe();
 // Use paste_automation to paste the default keyframe in other position.
 // Use paste_default_keyframe to replace the default keyframe with whatever is
 // in the clipboard.
-	int paste_default_keyframe();
-	int clear_default_keyframe();
+	void paste_default_keyframe();
+	void clear_default_keyframe();
 
 	void modify_edithandles(void);
 	void modify_pluginhandles(void);
 	void finish_modify_handles();
 
-
 // Send new EDL to caches
 	void age_caches();
 	int optimize_assets();            // delete unused assets from the cache and assets
 
-
 	void select_point(double position);
-	int set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
-
+	void set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
 
 	Playback3D *playback_3d;
 	RemoveThread *remove_thread;
@@ -437,7 +432,7 @@ public:
 	ArrayList<InterlacemodeItem*>          interlace_asset_modes;
 	ArrayList<InterlacefixmethodItem*>     interlace_asset_fixmethods;
 
-	int reset_meters();
+	void reset_meters();
 
 // Channel DB for playback only.  Record channel DB's are in record.C
 	ChannelDB *channeldb_v4l2jpeg;
