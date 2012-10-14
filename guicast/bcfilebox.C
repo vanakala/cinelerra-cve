@@ -456,7 +456,7 @@ BC_FileBox::~BC_FileBox()
 	recent_dirs.remove_all_objects();
 }
 
-int BC_FileBox::create_objects()
+void BC_FileBox::create_objects()
 {
 	int x = 10, y = 10;
 	BC_Resources *resources = BC_WindowBase::get_resources();
@@ -541,7 +541,6 @@ int BC_FileBox::create_objects()
 	newfolder_thread = new BC_NewFolderThread(this);
 
 	show_window();
-	return 0;
 }
 
 int BC_FileBox::get_listbox_w()

@@ -72,7 +72,7 @@ public:
 		char *init_directory);
 	~LoadFileWindow();
 
-	int create_objects();
+	void create_objects();
 	void resize_event(int w, int h);
 
 	LoadFileThread *thread;

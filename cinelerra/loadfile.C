@@ -36,8 +36,6 @@
 #include "mwindowgui.h"
 #include "theme.h"
 
-
-
 #include <string.h>
 
 Load::Load(MWindow *mwindow, MainMenu *mainmenu)
@@ -66,10 +64,6 @@ int Load::handle_event()
 	}
 	return 1;
 }
-
-
-
-
 
 
 LoadFileThread::LoadFileThread(MWindow *mwindow, Load *load)
@@ -144,7 +138,6 @@ void LoadFileThread::run()
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	path_list.remove_all_objects();
 
-
 	mwindow->save_backup();
 
 	mwindow->restart_brender();
@@ -153,22 +146,14 @@ void LoadFileThread::run()
 		mwindow->session->changes_made = 0;
 	else
 		mwindow->session->changes_made = 1;
-
-	return;
 }
-
-
-
-
-
-
 
 
 LoadFileWindow::LoadFileWindow(MWindow *mwindow, 
 	LoadFileThread *thread,
 	char *init_directory)
  : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
- 		mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
+		mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
 		init_directory, 
 		PROGRAM_NAME ": Load",
 		_("Select files to load:"), 
@@ -186,7 +171,7 @@ LoadFileWindow::~LoadFileWindow()
 	delete loadmode;
 }
 
-int LoadFileWindow::create_objects()
+void LoadFileWindow::create_objects()
 {
 	BC_FileBox::create_objects();
 
@@ -195,8 +180,6 @@ int LoadFileWindow::create_objects()
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
 	loadmode->create_objects();
-
-	return 0;
 }
 
 void LoadFileWindow::resize_event(int w, int h)
@@ -209,11 +192,6 @@ void LoadFileWindow::resize_event(int w, int h)
 
 	BC_FileBox::resize_event(w, h);
 }
-
-
-
-
-
 
 
 NewTimeline::NewTimeline(int x, int y, LoadFileWindow *window)
@@ -308,11 +286,6 @@ int ResourcesOnly::handle_event()
 }
 
 
-
-
-
-
-
 LocateFileWindow::LocateFileWindow(MWindow *mwindow, 
 	const char *init_directory, 
 	const char *old_filename)
@@ -329,12 +302,6 @@ LocateFileWindow::~LocateFileWindow()
 {
 }
 
-
-
-
-
-
-
 LoadPrevious::LoadPrevious(MWindow *mwindow)
  : BC_MenuItem(""), Thread()
 { 
@@ -349,13 +316,11 @@ int LoadPrevious::handle_event()
 	char *out_path;
 	int load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
 
-
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
 	mwindow->load_filenames(&path_list, LOAD_REPLACE);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	path_list.remove_all_objects();
-
 
 	mwindow->defaults->update("LOAD_MODE", load_mode);
 	mwindow->undo->update_undo(_("load previous"), LOAD_ALL);
@@ -363,7 +328,6 @@ int LoadPrevious::handle_event()
 	mwindow->session->changes_made = 0;
 	return 1;
 }
-
 
 void LoadPrevious::run()
 {
@@ -373,12 +337,6 @@ int LoadPrevious::set_path(const char *path)
 {
 	strcpy(this->path, path);
 }
-
-
-
-
-
-
 
 
 LoadBackup::LoadBackup(MWindow *mwindow)
