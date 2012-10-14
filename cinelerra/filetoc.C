@@ -308,9 +308,9 @@ toc_canceled:
 	return 1;
 
 toc_eof:
-	fclose(tocfile);
 	if(num_streams != streams)
 		goto toc_err;
+	fclose(tocfile);
 	return 0;
 }
 
