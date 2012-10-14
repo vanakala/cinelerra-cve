@@ -19,17 +19,11 @@
  * 
  */
 
+#include "language.h"
 #include "mainprogress.h"
 #include "mwindow.h"
 #include "statusbar.h"
 #include "theme.h"
-#include "vframe.h"
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 StatusBar::StatusBar(MWindow *mwindow, MWindowGUI *gui)
@@ -46,9 +40,7 @@ StatusBar::~StatusBar()
 {
 }
 
-
-
-int StatusBar::create_objects()
+void StatusBar::create_objects()
 {
 	int x = 10, y = 5;
 
@@ -71,8 +63,6 @@ int StatusBar::create_objects()
 			mwindow->theme->mstatus_cancel_y));
 	default_message();
 	flash();
-
-	return 0;
 }
 
 void StatusBar::resize_event()

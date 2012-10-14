@@ -36,7 +36,7 @@ public:
 
 	void set_message(char *text);
 	void default_message();
-	int create_objects();
+	void create_objects();
 	void resize_event();
 
 	MWindow *mwindow;
