@@ -1062,6 +1062,7 @@ SET_TRACE
 				FileXML xml_file;
 				xml_file.read_from_file(filenames->values[i]);
 // Load EDL for pasting
+				result = 0;
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
 				test_plugins(new_edl, filenames->values[i]);
 
@@ -1083,10 +1084,16 @@ SET_TRACE
 				{
 					new_files.append(new_file);
 					new_file = new File;
-					new_file->open_file(preferences, current, 1, 0, 0, 0);
+					if(new_file->open_file(preferences, current, 1, 0, 0, 0) != FILE_OK)
+					{
+						result++;
+						break;
+					}
 				}
-				new_edls.append(new_edl);
-				result = 0;
+				if(!result)
+					new_edls.append(new_edl);
+				else if(update_filename)
+					set_filename("");
 				break;
 			}
 		}
@@ -1106,7 +1113,7 @@ SET_TRACE
 
 
 
-	if(!result) gui->statusbar->default_message();
+	gui->statusbar->default_message();
 
 
 // Paste them.
