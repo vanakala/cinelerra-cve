@@ -362,7 +362,6 @@ int VideoDevice::close_all()
 		capturing = 0;
 		if(input_base)
 		{
-			input_base->close_all();
 			delete input_base;
 			input_base = 0;
 		}

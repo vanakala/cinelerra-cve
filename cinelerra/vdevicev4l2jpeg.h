@@ -36,17 +36,13 @@
 #include "vdevicev4l2jpeg.inc"
 #include "vdevicev4l2.inc"
 
-
-
 class VDeviceV4L2JPEG : public VDeviceBase
 {
 public:
 	VDeviceV4L2JPEG(VideoDevice *device);
 	~VDeviceV4L2JPEG();
 
-	int initialize();
 	int open_input();
-	int close_all();
 	int get_best_colormodel(Asset *asset);
 	int read_buffer(VFrame *frame);
 

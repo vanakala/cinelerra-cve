@@ -50,35 +50,21 @@
 #include <unistd.h>
 
 
-
 VDeviceV4L2JPEG::VDeviceV4L2JPEG(VideoDevice *device)
  : VDeviceBase(device)
-{
-	initialize();
-}
-
-VDeviceV4L2JPEG::~VDeviceV4L2JPEG()
-{
-	close_all();
-}
-
-int VDeviceV4L2JPEG::initialize()
 {
 	thread = 0;
 }
 
+VDeviceV4L2JPEG::~VDeviceV4L2JPEG()
+{
+	if(thread) delete thread;
+}
 
 int VDeviceV4L2JPEG::open_input()
 {
 	return VDeviceV4L2::get_sources(device,
 		device->in_config->v4l2jpeg_in_device);
-}
-
-int VDeviceV4L2JPEG::close_all()
-{
-	if(thread) delete thread;
-	thread = 0;
-	return 0;
 }
 
 int VDeviceV4L2JPEG::get_best_colormodel(Asset *asset)
@@ -149,7 +135,6 @@ int VDeviceV4L2JPEG::read_buffer(VFrame *frame)
 		}
 		result = 1;
 	}
-
 
 	return result;
 }

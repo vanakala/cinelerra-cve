@@ -38,7 +38,6 @@
 // resets.
 #define BUFFER_TIMEOUT 10000000
 
-
 // Isolate the application from the grabbing operation.
 // Used by VDeviceV4L2 and VDeviceV4L2JPEG
 // Color_model determines whether it uses compressed mode or not.
@@ -96,16 +95,13 @@ public:
 };
 
 
-
 class VDeviceV4L2 : public VDeviceBase
 {
 public:
 	VDeviceV4L2(VideoDevice *device);
 	~VDeviceV4L2();
 
-	int close_all();
 	int open_input();
-	int initialize();
 	int get_best_colormodel(Asset *asset);
 	int read_buffer(VFrame *frame);
 	int has_signal();

@@ -33,19 +33,15 @@
 VDeviceDVB::VDeviceDVB(VideoDevice *device)
  : VDeviceBase(device)
 {
-	initialize();
+	input_thread = 0;
 }
 
 VDeviceDVB::~VDeviceDVB()
 {
-	close_all();
-}
-
-
-int VDeviceDVB::initialize()
-{
-	input_thread = 0;
-	return 0;
+	if(input_thread)
+	{
+		DeviceDVBInput::put_input_thread(device->mwindow);
+	}
 }
 
 int VDeviceDVB::open_input()
@@ -62,16 +58,6 @@ sleep(100);
 		return 0;
 }
 
-int VDeviceDVB::close_all()
-{
-	if(input_thread)
-	{
-		DeviceDVBInput::put_input_thread(device->mwindow);
-	}
-	input_thread = 0;
-	return 0;
-}
-
 int VDeviceDVB::read_buffer(VFrame *frame)
 {
 	return 0;
@@ -82,7 +68,3 @@ void VDeviceDVB::fix_asset(Asset *asset)
 	asset->format = FILE_MPEG;
 // This file writer should ignore codec fields.
 }
-
-
-
-

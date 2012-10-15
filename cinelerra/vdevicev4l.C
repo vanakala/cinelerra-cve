@@ -52,22 +52,25 @@
 VDeviceV4L::VDeviceV4L(VideoDevice *device)
  : VDeviceBase(device)
 {
-	initialize();
-}
-
-VDeviceV4L::~VDeviceV4L()
-{
-}
-
-int VDeviceV4L::initialize()
-{
 	capture_buffer = 0;
 	capture_frame_number = 0;
 	read_frame_number = 0;
 	shared_memory = 0;
 	initialization_complete = 0;
-	return 0;
 }
+
+VDeviceV4L::~VDeviceV4L()
+{
+	if(capture_buffer)
+	{
+		if(shared_memory)
+			munmap(capture_buffer, capture_params.size);
+		else
+			delete capture_buffer;
+	}
+	if(input_fd != -1) close(input_fd);
+}
+
 
 int VDeviceV4L::open_input()
 {
@@ -92,32 +95,6 @@ int VDeviceV4L::open_input()
 	{
 		v4l1_get_inputs();
 		close(input_fd);
-	}
-	return 0;
-}
-
-int VDeviceV4L::close_all()
-{
-	close_v4l();
-	return 0;
-}
-
-int VDeviceV4L::close_v4l()
-{
-	unmap_v4l_shmem();
-	if(input_fd != -1) close(input_fd);
-	return 0;
-}
-
-int VDeviceV4L::unmap_v4l_shmem()
-{
-	if(capture_buffer)
-	{
-		if(shared_memory)
-			munmap(capture_buffer, capture_params.size);
-		else
-			delete capture_buffer;
-		capture_buffer = 0;
 	}
 	return 0;
 }
@@ -188,13 +165,6 @@ void VDeviceV4L::v4l1_start_capture()
 	for(int i = 0; i < MIN(capture_params.frames, device->in_config->capture_length); i++)
 		capture_frame(i);
 }
-
-
-
-
-
-
-
 
 int VDeviceV4L::v4l1_get_inputs()
 {
@@ -268,7 +238,6 @@ int VDeviceV4L::get_best_colormodel(Asset *asset)
 // Get best colormodel for hardware acceleration
 
 	result = File::get_best_colormodel(asset, device->in_config->driver);
-
 
 // Need to get color model before opening device but don't call this
 // unless you want to open the device either.
@@ -397,7 +366,6 @@ int VDeviceV4L::v4l1_set_picture(PictureConfig *picture)
 		perror("VDeviceV4L::v4l1_set_picture VIDIOCGPICT");
 	return 0;
 }
-
 
 int VDeviceV4L::capture_frame(int capture_frame_number)
 {

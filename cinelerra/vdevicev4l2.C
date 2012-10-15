@@ -671,34 +671,16 @@ void VDeviceV4L2Thread::put_buffer()
 }
 
 
-
-
 VDeviceV4L2::VDeviceV4L2(VideoDevice *device)
  : VDeviceBase(device)
 {
-	initialize();
+	thread = 0;
 }
 
 VDeviceV4L2::~VDeviceV4L2()
 {
-	close_all();
-}
-
-int VDeviceV4L2::close_all()
-{
 	if(thread) delete thread;
-	thread = 0;
-	return 0;
 }
-
-
-int VDeviceV4L2::initialize()
-{
-	thread = 0;
-	return 0;
-}
-
-
 
 int VDeviceV4L2::open_input()
 {
@@ -861,7 +843,6 @@ int VDeviceV4L2::read_buffer(VFrame *frame)
 		}
 		result = 1;
 	}
-
 
 	return result;
 }

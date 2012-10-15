@@ -43,9 +43,7 @@ public:
 	~VDeviceX11();
 
 	int open_input();
-	int close_all();
 	int read_buffer(VFrame *frame);
-	int reset_parameters();
 // User always gets the colormodel requested
 	void new_output_buffer(VFrame **output, int colormodel);
 
@@ -123,6 +121,7 @@ public:
 	void copy_frame(VFrame *dst, VFrame *src);
 
 private:
+
 // Closest colormodel the hardware can do for playback.
 // Only used by VDeviceX11::new_output_buffer.  The value from File::get_best_colormodel
 // is passed to this to create the VFrame to which the output is rendered.

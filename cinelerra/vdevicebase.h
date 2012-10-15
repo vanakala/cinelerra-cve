@@ -37,7 +37,6 @@ public:
 	virtual ~VDeviceBase();
 
 	virtual int open_input() { return 1; };
-	virtual int close_all() { return 1; };
 	virtual int has_signal() { return 0; };
 	virtual int read_buffer(VFrame *frame) { return 1; };
 	virtual int write_buffer(VFrame *output, EDL *edl) { return 1; };

@@ -37,9 +37,7 @@ public:
 	VDeviceV4L(VideoDevice *device);
 	~VDeviceV4L();
 
-	int initialize();
 	int open_input();
-	int close_all();
 	int read_buffer(VFrame *frame);
 	int get_best_colormodel(Asset *asset);
 	int set_channel(Channel *channel);
@@ -60,8 +58,6 @@ private:
 	int read_v4l_frame(VFrame *frame);
 	int frame_to_vframe(VFrame *frame, unsigned char *input);
 	int next_frame(int previous_frame);
-	int close_v4l();
-	int unmap_v4l_shmem();
 	int v4l_init();
 
 	int input_fd, output_fd;

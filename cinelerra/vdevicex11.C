@@ -42,17 +42,6 @@
 VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
  : VDeviceBase(device)
 {
-	reset_parameters();
-	this->output = output;
-}
-
-VDeviceX11::~VDeviceX11()
-{
-	close_all();
-}
-
-int VDeviceX11::reset_parameters()
-{
 	output_frame = 0;
 	window_id = 0;
 	bitmap = 0;
@@ -70,57 +59,10 @@ int VDeviceX11::reset_parameters()
 	capture_bitmap = 0;
 	color_model_selected = 0;
 	is_cleared = 0;
-	return 0;
+	this->output = output;
 }
 
-int VDeviceX11::open_input()
-{
-	capture_bitmap = new BC_Capture(device->in_config->w, 
-		device->in_config->h,
-		device->in_config->screencapture_display);
-
-	return 0;
-}
-
-int VDeviceX11::open_output()
-{
-	if(output)
-	{
-		output->lock_canvas("VDeviceX11::open_output");
-		output->get_canvas()->lock_window("VDeviceX11::open_output");
-		if(!device->single_frame)
-			output->start_video();
-		else
-			output->start_single();
-		output->get_canvas()->unlock_window();
-
-// Enable opengl in the first routine that needs it, to reduce the complexity.
-
-		output->unlock_canvas();
-	}
-	return 0;
-}
-
-
-int VDeviceX11::output_visible()
-{
-	if(!output) return 0;
-
-	output->lock_canvas("VDeviceX11::output_visible");
-	if(output->get_canvas()->get_hidden()) 
-	{
-		output->unlock_canvas();
-		return 0; 
-	}
-	else 
-	{
-		output->unlock_canvas();
-		return 1;
-	}
-}
-
-
-int VDeviceX11::close_all()
+VDeviceX11::~VDeviceX11()
 {
 	if(output)
 	{
@@ -188,9 +130,6 @@ int VDeviceX11::close_all()
 		output->draw_refresh();
 	}
 
-
-
-
 	if(bitmap)
 	{
 		delete bitmap;
@@ -209,8 +148,51 @@ int VDeviceX11::close_all()
 		output->get_canvas()->unlock_window();
 		output->unlock_canvas();
 	}
-	reset_parameters();
+}
+
+int VDeviceX11::open_input()
+{
+	capture_bitmap = new BC_Capture(device->in_config->w, 
+		device->in_config->h,
+		device->in_config->screencapture_display);
+
 	return 0;
+}
+
+int VDeviceX11::open_output()
+{
+	if(output)
+	{
+		output->lock_canvas("VDeviceX11::open_output");
+		output->get_canvas()->lock_window("VDeviceX11::open_output");
+		if(!device->single_frame)
+			output->start_video();
+		else
+			output->start_single();
+		output->get_canvas()->unlock_window();
+
+// Enable opengl in the first routine that needs it, to reduce the complexity.
+
+		output->unlock_canvas();
+	}
+	return 0;
+}
+
+int VDeviceX11::output_visible()
+{
+	if(!output) return 0;
+
+	output->lock_canvas("VDeviceX11::output_visible");
+	if(output->get_canvas()->get_hidden()) 
+	{
+		output->unlock_canvas();
+		return 0; 
+	}
+	else 
+	{
+		output->unlock_canvas();
+		return 1;
+	}
 }
 
 int VDeviceX11::read_buffer(VFrame *frame)
@@ -219,12 +201,10 @@ int VDeviceX11::read_buffer(VFrame *frame)
 	return 0;
 }
 
-
 int VDeviceX11::get_best_colormodel(Asset *asset)
 {
 	return BC_RGB888;
 }
-
 
 int VDeviceX11::get_best_colormodel(int colormodel)
 {
@@ -277,7 +257,6 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 
 	return result;
 }
-
 
 void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 {
@@ -335,7 +314,6 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 // Update the ring buffer
 			if(bitmap_type == BITMAP_PRIMARY)
 			{
-
 				output_frame->set_memory((unsigned char*)bitmap->get_data() /* + bitmap->get_shm_offset() */,
 							bitmap->get_y_offset(),
 							bitmap->get_u_offset(),
@@ -472,13 +450,11 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 		}
 	}
 
-
 	*result = output_frame;
 
 	output->get_canvas()->unlock_window();
 	output->unlock_canvas();
 }
-
 
 int VDeviceX11::start_playback()
 {
@@ -520,11 +496,9 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 		(bitmap_type == BITMAP_TEMP && !bitmap->hardware_scaling()) ? bitmap->get_w() : -1,
 		(bitmap_type == BITMAP_TEMP && !bitmap->hardware_scaling()) ? bitmap->get_h() : -1);
 
-
 // Convert colormodel
 	if(bitmap_type == BITMAP_TEMP)
 	{
-
 		if(bitmap->hardware_scaling())
 		{
 			cmodel_transfer(bitmap->get_row_pointers(), 
@@ -631,7 +605,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	return 0;
 }
 
-
 void VDeviceX11::clear_output()
 {
 	is_cleared = 1;
@@ -640,7 +613,6 @@ void VDeviceX11::clear_output()
 		output->get_canvas()->get_video_on() ? 0 : output_frame);
 
 }
-
 
 void VDeviceX11::clear_input(VFrame *frame)
 {
@@ -670,7 +642,6 @@ void VDeviceX11::do_camera(VFrame *output,
 		out_x2, 
 		out_y2);
 }
-
 
 void VDeviceX11::do_fade(VFrame *output_temp, float fade)
 {
@@ -727,7 +698,6 @@ void VDeviceX11::overlay(VFrame *output_frame,
 	output->get_canvas()->unlock_window();
 	output->unlock_canvas();
 
-
 // If single frame playback, use full sized PBuffer as output.
 	if(device->single_frame)
 	{
@@ -741,7 +711,7 @@ void VDeviceX11::overlay(VFrame *output_frame,
 			out_y1,
 			out_x2,
 			out_y2,
-			alpha,  	  // 0 - 1
+			alpha,           // 0 - 1
 			mode,
 			interpolation_type,
 			output_frame);
@@ -806,7 +776,7 @@ void VDeviceX11::overlay(VFrame *output_frame,
 				canvas_y1,
 				canvas_x2,
 				canvas_y2,
-				alpha,  	  // 0 - 1
+				alpha,          // 0 - 1
 				mode,
 				interpolation_type);
 		}
