@@ -50,7 +50,6 @@ BC_DisplayInfo::~BC_DisplayInfo()
 	XCloseDisplay(display);
 }
 
-
 void BC_DisplayInfo::parse_geometry(char *geom, int *x, int *y, int *width, int *height)
 {
 	XParseGeometry(geom, x, y, (unsigned int*)width, (unsigned int*)height);
@@ -67,7 +66,6 @@ void BC_DisplayInfo::test_window(int &x_out,
 	XSetWindowAttributes attr;
 	XSizeHints size_hints;
 
-//printf("BC_DisplayInfo::test_window 1\n");
 	x_out = 0;
 	y_out = 0;
 	x_out2 = 0;
@@ -179,7 +177,6 @@ void BC_DisplayInfo::init_borders()
 	}
 }
 
-
 int BC_DisplayInfo::get_top_border()
 {
 	init_borders();
@@ -207,25 +204,24 @@ int BC_DisplayInfo::get_bottom_border()
 void BC_DisplayInfo::init_window(const char *display_name, int show_error)
 {
 	if(display_name && display_name[0] == 0) display_name = NULL;
-	
+
 	if((display = XOpenDisplay(display_name)) == NULL)
 	{
 		if(show_error)
 		{
-  			printf("BC_DisplayInfo::init_window: cannot connect to X server.\n");
-  			if(getenv("DISPLAY") == NULL)
-    			printf("'DISPLAY' environment variable not set.\n");
+			printf("BC_DisplayInfo::init_window: cannot connect to X server.\n");
+			if(getenv("DISPLAY") == NULL)
+				printf("'DISPLAY' environment variable not set.\n");
 			exit(1);
 		}
 		return;
- 	}
-	
+	}
+
 	screen = DefaultScreen(display);
 	rootwin = RootWindow(display, screen);
 	vis = DefaultVisual(display, screen);
 	default_depth = DefaultDepth(display, screen);
 }
-
 
 int BC_DisplayInfo::get_root_w()
 {
@@ -245,15 +241,15 @@ int BC_DisplayInfo::get_abs_cursor_x()
 	unsigned int temp_mask;
 	Window temp_win;
 
-	XQueryPointer(display, 
-	   rootwin, 
-	   &temp_win, 
-	   &temp_win,
-       &abs_x, 
-	   &abs_y, 
-	   &win_x, 
-	   &win_y, 
-	   &temp_mask);
+	XQueryPointer(display,
+		rootwin,
+		&temp_win,
+		&temp_win,
+		&abs_x,
+		&abs_y,
+		&win_x,
+		&win_y,
+		&temp_mask);
 	return abs_x;
 }
 
@@ -263,14 +259,14 @@ int BC_DisplayInfo::get_abs_cursor_y()
 	unsigned int temp_mask;
 	Window temp_win;
 
-	XQueryPointer(display, 
-	   rootwin, 
-	   &temp_win, 
-	   &temp_win,
-       &abs_x, 
-	   &abs_y, 
-	   &win_x, 
-	   &win_y, 
-	   &temp_mask);
+	XQueryPointer(display,
+		rootwin,
+		&temp_win,
+		&temp_win,
+		&abs_x,
+		&abs_y,
+		&win_x,
+		&win_y,
+		&temp_mask);
 	return abs_y;
 }

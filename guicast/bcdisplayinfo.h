@@ -31,7 +31,7 @@ class BC_DisplayInfo
 public:
 	BC_DisplayInfo(const char *display_name = "", int show_error = 1);
 	~BC_DisplayInfo();
-	
+
 	friend class BC_WindowBase;
 
 	int get_root_w();
@@ -45,7 +45,6 @@ public:
 	int get_right_border();
 	int get_bottom_border();
 	void test_window(int &x_out, int &y_out, int &x_out2, int &y_out2, int x_in, int y_in);
-
 
 private:
 	void init_borders();
@@ -63,5 +62,4 @@ private:
 	int default_depth;
 	char *display_name;
 };
-
 #endif
