@@ -116,6 +116,7 @@ int cmodel_has_alpha(int colormodel);
 // Tell when to use plane arguments or row pointer arguments to functions
 int cmodel_is_planar(int color_model);
 void cmodel_to_text(char *string, int cmodel);
+const char *cmodel_name(int cmodel);
 int cmodel_from_text(char *text);
 
 
