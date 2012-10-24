@@ -22,6 +22,8 @@
 #ifndef VDEVICEX11_H
 #define VDEVICEX11_H
 
+#define MAX_XV_CMODELS 16
+
 #include "canvas.inc"
 #include "edl.inc"
 #include "guicast.h"
@@ -156,6 +158,10 @@ private:
 	BC_Capture *capture_bitmap;
 // Set when OpenGL rendering has cleared the frame buffer before write_buffer
 	int is_cleared;
+// XV accelerated colormodels
+	int accel_cmodel;
+	int num_xv_cmodels;
+	int xv_cmodels[MAX_XV_CMODELS];
 };
 
 #endif

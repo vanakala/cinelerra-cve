@@ -59,6 +59,8 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
 	capture_bitmap = 0;
 	color_model_selected = 0;
 	is_cleared = 0;
+	num_xv_cmodels = -1;
+	accel_cmodel = -1;
 	this->output = output;
 }
 
@@ -209,6 +211,7 @@ int VDeviceX11::get_best_colormodel(Asset *asset)
 int VDeviceX11::get_best_colormodel(int colormodel)
 {
 	int result = -1;
+	int c1, c2;
 
 	if(device->out_config->driver == PLAYBACK_X11_GL)
 	{
@@ -226,13 +229,40 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 
 	if(!device->single_frame)
 	{
-		switch(colormodel)
+		if(device->out_config->driver == PLAYBACK_X11_XV)
 		{
-		case BC_YUV420P:
-		case BC_YUV422P:
-		case BC_YUV422:
-			result = colormodel;
-			break;
+			if(accel_cmodel >= 0)
+				return accel_cmodel;
+
+			if(num_xv_cmodels < 0)
+				num_xv_cmodels = output->get_canvas()->accel_cmodels(xv_cmodels, MAX_XV_CMODELS);
+
+// Select the best of hw supported cmodels
+// If we haven't exact cmodel, assume yuv is best to be converted
+// to yuv, rgb to rgb
+			c1 = c2 = -1;
+			for(int i = 0; i < num_xv_cmodels; i++)
+			{
+				if(colormodel == xv_cmodels[i])
+				{
+					c1 = xv_cmodels[i];
+					break;
+				}
+				if(c2 < 0)
+				{
+					if(cmodel_is_yuv(colormodel))
+					{
+						if(cmodel_is_yuv(xv_cmodels[i]))
+							c2 = xv_cmodels[i];
+					}
+					else
+					{
+						if(!cmodel_is_yuv(xv_cmodels[i]))
+							c2 = xv_cmodels[i];
+					}
+				}
+			}
+			accel_cmodel = result = c1 > 0 ? c1 : c2;
 		}
 	}
 
@@ -248,13 +278,10 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 			break;
 
 		default:
-			output->lock_canvas("VDeviceX11::get_best_colormodel");
 			result = output->get_canvas()->get_color_model();
-			output->unlock_canvas();
 			break;
 		}
 	}
-
 	return result;
 }
 
@@ -325,33 +352,10 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 		if(!bitmap)
 		{
 // Try hardware accelerated
-			switch(best_colormodel)
+			if(device->out_config->driver == PLAYBACK_X11_XV &&
+				output->get_canvas()->accel_available(best_colormodel, device->out_w, device->out_h))
 			{
-			case BC_YUV420P:
-				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->get_canvas()->accel_available(best_colormodel, 0) &&
-					!output->use_scrollbars)
-				{
-					bitmap = new BC_Bitmap(output->get_canvas(), 
-						device->out_w,
-						device->out_h,
-						best_colormodel,
-						1);
-					output_frame = new VFrame((unsigned char*)bitmap->get_data() + bitmap->get_shm_offset(), 
-						bitmap->get_y_offset(),
-						bitmap->get_u_offset(),
-						bitmap->get_v_offset(),
-						device->out_w,
-						device->out_h,
-						best_colormodel);
-					bitmap_type = BITMAP_PRIMARY;
-				}
-				break;
-
-			case BC_YUV422P:
-				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->get_canvas()->accel_available(best_colormodel, 0) &&
-					!output->use_scrollbars)
+				if(!output->use_scrollbars)
 				{
 					bitmap = new BC_Bitmap(output->get_canvas(), 
 						device->out_w,
@@ -368,54 +372,18 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 					bitmap_type = BITMAP_PRIMARY;
 				}
 				else
-				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->get_canvas()->accel_available(BC_YUV422, 0))
 				{
-					bitmap = new BC_Bitmap(output->get_canvas(), 
-						device->out_w,
-						device->out_h,
-						BC_YUV422,
-						1);
-					bitmap_type = BITMAP_TEMP;
-				}
-				break;
-
-			case BC_YUV422:
-				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->get_canvas()->accel_available(best_colormodel, 0) &&
-					!output->use_scrollbars)
-				{
-					bitmap = new BC_Bitmap(output->get_canvas(), 
+					bitmap = new BC_Bitmap(output->get_canvas(),
 						device->out_w,
 						device->out_h,
 						best_colormodel,
 						1);
-					output_frame = new VFrame((unsigned char*)bitmap->get_data() + bitmap->get_shm_offset(), 
-						bitmap->get_y_offset(),
-						bitmap->get_u_offset(),
-						bitmap->get_v_offset(),
-						device->out_w,
-						device->out_h,
-						best_colormodel);
-					bitmap_type = BITMAP_PRIMARY;
-				}
-				else
-				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->get_canvas()->accel_available(BC_YUV422P, 0))
-				{
-					bitmap = new BC_Bitmap(output->get_canvas(), 
-						device->out_w,
-						device->out_h,
-						BC_YUV422P,
-						1);
 					bitmap_type = BITMAP_TEMP;
 				}
-				break;
 			}
-
-// Try default colormodel
-			if(!bitmap)
+			else
 			{
+// Try default colormodel
 				best_colormodel = output->get_canvas()->get_color_model();
 				bitmap = new BC_Bitmap(output->get_canvas(), 
 					output->get_canvas()->get_w(),
@@ -449,7 +417,6 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 			output_frame->set_shm_offset(0);
 		}
 	}
-
 	*result = output_frame;
 
 	output->get_canvas()->unlock_window();
@@ -503,9 +470,9 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 		{
 			cmodel_transfer(bitmap->get_row_pointers(), 
 				output_channels->get_rows(),
-				0,
-				0,
-				0,
+				bitmap->get_y_plane(),
+				bitmap->get_u_plane(),
+				bitmap->get_v_plane(),
 				output_channels->get_y(),
 				output_channels->get_u(),
 				output_channels->get_v(),

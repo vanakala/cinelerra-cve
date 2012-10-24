@@ -2262,128 +2262,80 @@ BC_Bitmap* BC_WindowBase::new_bitmap(int w, int h, int color_model)
 	return new BC_Bitmap(top_level, w, h, color_model);
 }
 
-int BC_WindowBase::accel_available(int color_model, int lock_it)
+int BC_WindowBase::accel_available(int color_model, int w, int h)
 {
+	int i, j, k;
+	struct xv_adapterinfo *adpt;
+
 	if(window_type != MAIN_WINDOW) 
-		return top_level->accel_available(color_model, lock_it);
+		return top_level->accel_available(color_model, w, h);
 
-	int result = 0;
-
-	if(lock_it) lock_window("BC_WindowBase::accel_available");
-	switch(color_model)
-	{
-	case BC_YUV420P:
-		result = grab_port_id(this, color_model);
-		if(result >= 0)
-		{
-			xvideo_port_id = result;
-			result = 1;
-		}
-		else
-			result = 0;
-		break;
-
-	case BC_YUV422P:
-		result = 0;
-		break;
-
-	case BC_YUV422:
-		result = grab_port_id(this, color_model);
-		if(result >= 0)
-		{
-			xvideo_port_id = result;
-			result = 1;
-		}
-		else
-			result = 0;
-		break;
-
-	default:
-		result = 0;
-		break;
-	}
-
-	if(lock_it) unlock_window();
-	return result;
-}
-
-
-int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
-{
-	int numFormats, i, j, k;
-	unsigned int ver, rev, numAdapt, reqBase, eventBase, errorBase;
-	int port_id = -1;
-	XvAdaptorInfo *info;
-	XvImageFormatValues *formats;
-	int x_color_model;
-
-	if(!get_resources()->use_xvideo) return -1;
-
-// Translate from color_model to X color model
-	x_color_model = cmodel_bc_to_x(color_model);
+	if(!get_resources()->use_xvideo) return 0;
 
 // Only local server is fast enough.
-	if(!resources.use_shm) return -1;
+	if(!resources.use_shm) return 0;
 
-// XV extension is available
-	if(Success != XvQueryExtension(window->display, 
-			&ver,
-			&rev,
-			&reqBase, 
-			&eventBase, 
-			&errorBase))
+	for(i = 0; i < BC_DisplayInfo::num_adapters; i++)
 	{
-		return -1;
-	}
+		adpt = &BC_DisplayInfo::xv_adapters[i];
 
-// XV adaptors are available
-	XvQueryAdaptors(window->display, 
-		DefaultRootWindow(window->display), 
-		&numAdapt, 
-		&info);
+		if(adpt->width < w || adpt->height < h)
+			continue;
 
-	if(!numAdapt)
-	{
-		return -1;
-	}
-
-// Get adaptor with desired color model
-	for(i = 0; i < numAdapt && xvideo_port_id == -1; i++)
-	{
-/* adaptor supports XvImages */
-		if(info[i].type & XvImageMask) 
+		for(j = 0; j < adpt->num_cmodels; j++)
 		{
-			formats = XvListImageFormats(window->display, 
-							info[i].base_id, 
-							&numFormats);
-			for(j = 0; j < numFormats && xvideo_port_id < 0; j++) 
+			if(adpt->cmodels[j] == color_model)
 			{
-/* this adaptor supports the desired format */
-				if(formats[j].id == x_color_model)
+				for(k = 0; k < adpt->num_ports; k++)
 				{
-/* Try to grab a port */
-					for(k = 0; k < info[i].num_ports; k++)
-					{
-/* Got a port */
-						if(Success == XvGrabPort(top_level->display, 
-							info[i].base_id + k, 
+					if(Success == XvGrabPort(top_level->display,
+							adpt->base_port + k,
 							CurrentTime))
-						{
-							xvideo_port_id = info[i].base_id + k;
-							break;
-						}
+					{
+						xvideo_port_id = adpt->base_port + k;
+						return 1;
 					}
 				}
 			}
-			if(formats) XFree(formats);
 		}
 	}
-
-	XvFreeAdaptorInfo(info);
-
-	return xvideo_port_id;
+	return 0;
 }
 
+int BC_WindowBase::accel_cmodels(int *cmodels, int len)
+{
+	int i, j, k, num, cm;
+	struct xv_adapterinfo *adpt;
+
+	if(window_type != MAIN_WINDOW) 
+		return top_level->accel_cmodels(cmodels, len);
+
+	if(!get_resources()->use_xvideo) return 0;
+
+// Only local server is fast enough.
+	if(!resources.use_shm) return 0;
+
+	num = 0;
+	for(i = 0; i < BC_DisplayInfo::num_adapters; i++)
+	{
+		adpt = &BC_DisplayInfo::xv_adapters[i];
+
+		for(j = 0; j < adpt->num_cmodels; j++)
+		{
+			cm = adpt->cmodels[j];
+			for(k = 0; k < num; k++)
+				if(cmodels[k] == cm)
+					break;
+			if(k >= num)
+			{
+				cmodels[num++] = cm;
+				if(num >= len)
+					return num;
+			}
+		}
+	}
+	return num;
+}
 
 void BC_WindowBase::show_window(int flush) 
 {

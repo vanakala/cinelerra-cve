@@ -148,13 +148,8 @@ void BC_Bitmap::allocate_data()
 // Shared memory available
 	if(use_shm)
 	{
-		switch(color_model)
+		if(top_level->xvideo_port_id >= 0)
 		{
-// Planar YUV.  Must use BC_WindowBase::accel_available before calling this.
-		case BC_YUV420P:
-		case BC_YUV422P:
-// Packed YUV
-		case BC_YUV422:
 			ring_buffers = BITMAP_RING;
 			xv_portid = top_level->xvideo_port_id;
 // Create the X Image
@@ -209,10 +204,9 @@ void BC_Bitmap::allocate_data()
 				bits_per_pixel = 0;
 				want_row_pointers = 0;
 			}
-			break;
-
-		default:
-// RGB
+		}
+		else
+		{
 			ring_buffers = BITMAP_RING;
 // Create first X Image
 			ximage[0] = XShmCreateImage(top_level->display,
@@ -255,7 +249,6 @@ void BC_Bitmap::allocate_data()
 						h);
 				ximage[i]->data = (char*)data[i];
 			}
-			break;
 		}
 
 		if(!XShmAttach(top_level->display, &shm_info))
@@ -324,11 +317,8 @@ void BC_Bitmap::delete_data()
 	{
 		if(use_shm)
 		{
-			switch(color_model)
+			if(xv_image[0])
 			{
-			case BC_YUV420P:
-			case BC_YUV422P:
-			case BC_YUV422:
 				if(last_pixmap_used) XvStopVideo(top_level->display, xv_portid, last_pixmap);
 				for(int i = 0; i < ring_buffers; i++)
 				{
@@ -336,12 +326,13 @@ void BC_Bitmap::delete_data()
 				}
 				XShmDetach(top_level->display, &shm_info);
 				XvUngrabPort(top_level->display, xv_portid, CurrentTime);
+				top_level->xvideo_port_id = -1;
 
 				shmdt(shm_info.shmaddr);
 				shmctl(shm_info.shmid, IPC_RMID, 0);
-				break;
-
-			default:
+			}
+			else
+			{
 				for(int i = 0; i < ring_buffers; i++)
 				{
 					XDestroyImage(ximage[i]);
@@ -351,7 +342,6 @@ void BC_Bitmap::delete_data()
 
 				shmdt(shm_info.shmaddr);
 				shmctl(shm_info.shmid, IPC_RMID, 0);
-				break;
 			}
 		}
 		else
@@ -670,9 +660,7 @@ void BC_Bitmap::rewind_ringbuffer()
 
 int BC_Bitmap::hardware_scaling()
 {
-	return (get_color_model() == BC_YUV420P || 
-		get_color_model() == BC_YUV422P || 
-		get_color_model() == BC_YUV422);
+	return(xv_image[0] != 0);
 }
 
 int BC_Bitmap::get_w()

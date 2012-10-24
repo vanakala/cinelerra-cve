@@ -171,7 +171,10 @@ public:
 	virtual void expose_event() {};
 
 // Check if a hardware accelerated colormodel is available and reserve it
-	int accel_available(int color_model, int lock_it); 
+	int accel_available(int color_model, int w, int h);
+// Fills array with supported hardware accelerated colormodels
+// Returns number of color_models
+	int accel_cmodels(int *cmodels, int len);
 // Get color model adjusted for byte order and pixel size
 	int get_color_model();
 // return the colormap pixel of the color for all bit depths
@@ -591,9 +594,6 @@ private:
 	int dispatch_drag_motion();
 	int dispatch_drag_stop();
 	void dispatch_expose_event();
-
-// Get the port ID for a color model or return -1 for failure
-	int grab_port_id(BC_WindowBase *window, int color_model);
 
 	void find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result);
 	void find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
