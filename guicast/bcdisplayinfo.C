@@ -25,13 +25,22 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvlib.h>
+
+#include <stdint.h>
 #include <unistd.h>
+#include <string.h>
+
+#include "bcsignals.h"
+#include "colormodels.h"
 
 #define TEST_X 100
 #define TEST_Y 100
 #define TEST_SIZE 128
 #define TEST_SIZE2 164
 #define TEST_SIZE3 196
+
 int BC_DisplayInfo::top_border = -1;
 int BC_DisplayInfo::left_border = -1;
 int BC_DisplayInfo::bottom_border = -1;
@@ -39,6 +48,21 @@ int BC_DisplayInfo::right_border = -1;
 int BC_DisplayInfo::auto_reposition_x = -1;
 int BC_DisplayInfo::auto_reposition_y = -1;
 
+struct xv_adapterinfo *BC_DisplayInfo::xv_adapters = 0;
+int BC_DisplayInfo::num_adapters = -1;
+
+static struct fourcc_formats
+{
+	uint32_t fourcc;
+	int cmodel;
+}
+xv_formats[] =
+{
+	{ FOURCC_YV12, BC_YUV420P },
+	{ FOURCC_YUV2, BC_YUV422 }
+};
+
+#define XV_NUM_SUPPORTED_CMODELS (sizeof(xv_formats) / sizeof(struct fourcc_formats))
 
 BC_DisplayInfo::BC_DisplayInfo(const char *display_name, int show_error)
 {
@@ -269,4 +293,175 @@ int BC_DisplayInfo::get_abs_cursor_y()
 		&win_y,
 		&temp_mask);
 	return abs_y;
+}
+
+int BC_DisplayInfo::test_xvext()
+{
+	int port, ret;
+	XvAdaptorInfo *ai;
+	unsigned int adpt;
+	XvAttribute *at;
+	int attrs, fmts;
+	unsigned int encs;
+	struct xv_adapterinfo *curadapt, *ca, *cb;
+	XSetWindowAttributes attr;
+	XvImageFormatValues *fo;
+	XSizeHints size_hints;
+	XvEncodingInfo *ei;
+	int n;
+
+	if(BC_DisplayInfo::num_adapters >= 0)
+		return BC_DisplayInfo::num_adapters > 0;
+	BC_DisplayInfo::num_adapters = 0;
+
+	if((ret = XvQueryExtension(display, &xv_version, &xv_release, &xv_req_base,
+			&xv_event_base, &xv_error_base)) != Success)
+	{
+		if(ret == XvBadAlloc)
+			printf("BC_DisplayInfo::test_xvext: XvBadAlloc error\n");
+		return 0;
+	}
+
+	if(XvQueryAdaptors(display, DefaultRootWindow(display), &adpt, &ai) != Success)
+		return 0;
+
+	BC_DisplayInfo::xv_adapters = new xv_adapterinfo[adpt];
+	BC_DisplayInfo::num_adapters = adpt;
+	memset(BC_DisplayInfo::xv_adapters, 0, sizeof(struct xv_adapterinfo) * adpt);
+
+	n = 0;
+	for(int i = 0; i < adpt; i++)
+	{
+		if((ai[i].type & XvImageMask) == 0)
+			continue;
+
+		curadapt = &BC_DisplayInfo::xv_adapters[n++];
+		curadapt->adapter_name = strdup(ai[i].name);
+		curadapt->type = ai[i].type;
+		curadapt->base_port = ai[i].base_id;
+		curadapt->num_ports = ai[i].num_ports;
+		curadapt->attributes[XV_ATTRIBUTE_BRIGHTNESS].name = "XV_BRIGHTNESS";
+		curadapt->attributes[XV_ATTRIBUTE_CONTRAST].name = "XV_CONTRAST";
+		curadapt->attributes[XV_ATTRIBUTE_AUTOPAINT_COLORKEY].name = "XV_AUTOPAINT_COLORKEY";
+		curadapt->attributes[XV_ATTRIBUTE_COLORKEY].name = "XV_COLORKEY";
+	}
+	XvFreeAdaptorInfo(ai);
+
+	if(BC_DisplayInfo::xv_adapters[0].adapter_name == 0)
+		return 0;
+
+	for(curadapt = BC_DisplayInfo::xv_adapters; curadapt < &BC_DisplayInfo::xv_adapters[adpt]; curadapt++)
+	{
+		if(!curadapt->adapter_name)
+			break;
+
+		port = curadapt->base_port;
+
+		if(XvQueryEncodings(display, port, &encs, &ei) == Success)
+		{
+			curadapt->width = ei[0].width;
+			curadapt->height = ei[0].height;
+			XvFreeEncodingInfo(ei);
+		}
+		else
+		{
+			curadapt->type = 0;
+			continue;
+		}
+
+		if(fo = XvListImageFormats(display, port, &fmts))
+		{
+			for(int i = 0; i < fmts; i++)
+			{
+				for(int k = 0; k < XV_NUM_SUPPORTED_CMODELS; k++)
+					if(fo[i].id == xv_formats[k].fourcc)
+					{
+						curadapt->cmodels[curadapt->num_cmodels++] = xv_formats[k].cmodel;
+						break;
+					}
+				if(curadapt->num_cmodels >= XV_MAX_CMODELS)
+					break;
+			}
+			XFree(fo);
+		}
+		if(curadapt->num_cmodels == 0)
+		{
+			curadapt->type = 0;
+			continue;
+		}
+
+		if(at = XvQueryPortAttributes(display, port, &attrs))
+		{
+			for(int i = 0; i < attrs; i++)
+			{
+				for(int j = 0; j < NUM_XV_ATTRIBUTES; j++)
+				{
+					if(strcmp(at[i].name, curadapt->attributes[j].name) == 0)
+					{
+						curadapt->attributes[j].flags = at[i].flags;
+						curadapt->attributes[j].min = at[i].min_value;
+						curadapt->attributes[j].max = at[i].max_value;
+						curadapt->attributes[j].xatom =
+							XInternAtom(display, curadapt->attributes[j].name, False);
+						if(curadapt->attributes[j].xatom != None
+							&& (curadapt->attributes[j].flags & XvGettable))
+						XvGetPortAttribute(display, port,
+							curadapt->attributes[j].xatom, &curadapt->attributes[j].value);
+					}
+				}
+			}
+			XFree(at);
+		}
+	}
+	n = 0;
+	for(curadapt = BC_DisplayInfo::xv_adapters; curadapt < &BC_DisplayInfo::xv_adapters[adpt]; curadapt++)
+	{
+		if(!curadapt->adapter_name)
+			break;
+
+		if(curadapt->type)
+		{
+			n++;
+			continue;
+		}
+		free(curadapt->adapter_name);
+		cb = curadapt;
+		for(ca = curadapt + 1; ca < &BC_DisplayInfo::xv_adapters[adpt]; ca++)
+			*cb++ = *ca;
+		curadapt--;
+	}
+	if(n == 0)
+		return 0;
+	return 1;
+}
+
+void BC_DisplayInfo::dump_xvext()
+{
+	struct xv_adapterinfo *adp;
+
+	if(BC_DisplayInfo::num_adapters < 0)
+	{
+		printf("BC_DisplayInfo::Xvext dump: data is uninitalized\n");
+		return;
+	}
+	printf("BC_DisplayInfo::Xvext dump: number of adapters %d\n", BC_DisplayInfo::num_adapters);
+
+	for(int i = 0; i < BC_DisplayInfo::num_adapters; i++)
+	{
+		adp = BC_DisplayInfo::xv_adapters;
+		printf("Adapter #%d: '%s'\n", i, adp->adapter_name);
+		printf("    %d ports starting with %d, size %dx%d\n",
+			adp->num_ports, adp->base_port, adp->width, adp->height);
+		printf("    Supports %d colormodels:", adp->num_cmodels);
+		for(int j = 0; j < adp->num_cmodels; j++)
+			printf(" %s", cmodel_name(adp->cmodels[j]));
+		printf("\n    Attributes:");
+		for(int j = 0; j < NUM_XV_ATTRIBUTES; j++)
+			if(adp->attributes[j].flags)
+				printf(" %s(%c%c:%d)", adp->attributes[j].name,
+					adp->attributes[j].flags & XvGettable ? 'r' : '-',
+					adp->attributes[j].flags & XvSettable ? 'w' : '-',
+					adp->attributes[j].value);
+		putchar('\n');
+	}
 }

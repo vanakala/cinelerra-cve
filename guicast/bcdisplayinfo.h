@@ -26,6 +26,41 @@
 #include <stdlib.h>
 #include <X11/Xlib.h>
 
+// XV info
+
+#define XV_MAX_CMODELS 10
+
+// Attributes we care about
+#define NUM_XV_ATTRIBUTES 4
+#define XV_ATTRIBUTE_BRIGHTNESS 0
+#define XV_ATTRIBUTE_CONTRAST   1
+#define XV_ATTRIBUTE_AUTOPAINT_COLORKEY 2
+#define XV_ATTRIBUTE_COLORKEY  3
+
+struct xv_attribute
+{
+	const char *name;
+	int flags;
+	int min;
+	int max;
+	int value;
+	Atom xatom;
+};
+
+struct xv_adapterinfo
+{
+	char *adapter_name;
+	int type;
+	int base_port;
+	int num_ports;
+	int num_cmodels;
+	int width;
+	int height;
+	struct xv_attribute attributes[NUM_XV_ATTRIBUTES];
+	int cmodels[XV_MAX_CMODELS];
+};
+
+
 class BC_DisplayInfo
 {
 public:
@@ -45,6 +80,17 @@ public:
 	int get_right_border();
 	int get_bottom_border();
 	void test_window(int &x_out, int &y_out, int &x_out2, int &y_out2, int x_in, int y_in);
+	int test_xvext();
+	void dump_xvext();
+
+// XV info
+	static struct xv_adapterinfo *xv_adapters;
+	static int num_adapters;
+	unsigned int xv_version;
+	unsigned int xv_release;
+	unsigned int xv_req_base;
+	unsigned int xv_event_base;
+	unsigned int xv_error_base;
 
 private:
 	void init_borders();

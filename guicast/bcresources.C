@@ -99,8 +99,7 @@ BC_Resources::BC_Resources()
 #ifdef HAVE_XFT
 	XftInitFtLibrary();
 #endif
-
-	use_xvideo = 1;
+	use_xvideo = display_info->test_xvext();
 
 #include "images/bar_png.h"
 	static VFrame* default_bar = new VFrame(bar_png);
