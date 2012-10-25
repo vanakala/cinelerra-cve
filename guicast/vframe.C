@@ -1117,14 +1117,11 @@ void VFrame::calc_minmaxfl(float *buf, int len, int pixlen,
 
 void VFrame::dump(int minmax)
 {
-	char strbuf[128];
-
 	printf("VFrame %p dump\n", this);
-	cmodel_to_text(strbuf, color_model);
 	printf("    pts %.3f, duration %.3f src_pts %.3f frame %d layer %d\n", 
 		pts, duration, source_pts, frame_number, layer);
 	printf("    Size %dx%d, cmodel %s offsets %ld %ld %ld\n", w, h, 
-		strbuf, y_offset, u_offset, v_offset);
+		cmodel_name(color_model), y_offset, u_offset, v_offset);
 	printf("    data:%p rows: %p y:%p, u:%p, v:%p\n", data, rows,
 		y, u, v);
 	printf("    compressed size %ld, compressed_allocated %ld\n",
