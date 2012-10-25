@@ -2293,6 +2293,12 @@ int BC_WindowBase::accel_available(int color_model, int w, int h)
 							CurrentTime))
 					{
 						xvideo_port_id = adpt->base_port + k;
+// Set XV_AUTOPAINT_COLORKEY if it is supported
+						if(adpt->attributes[XV_ATTRIBUTE_AUTOPAINT_COLORKEY].flags & XvSettable)
+						{
+							XvSetPortAttribute(top_level->display, xvideo_port_id, 
+								adpt->attributes[XV_ATTRIBUTE_AUTOPAINT_COLORKEY].xatom, 1);
+						}
 						return 1;
 					}
 				}
