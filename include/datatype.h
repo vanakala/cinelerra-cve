@@ -22,8 +22,14 @@
 #ifndef DATATYPE_H
 #define DATATYPE_H
 
+#include <stdint.h>
 #include <sys/types.h>
 #include <math.h>
+
+// Bits for supported media types
+#define SUPPORTS_AUDIO 1
+#define SUPPORTS_VIDEO 2
+
 // integer media positions
 // number of frame
 typedef int framenum;
