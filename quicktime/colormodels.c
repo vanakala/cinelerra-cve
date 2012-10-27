@@ -453,20 +453,6 @@ void cmodel_transfer(unsigned char **output_rows,
 	free(row_table);
 }
 
-int cmodel_bc_to_x(int color_model)
-{
-	switch(color_model)
-	{
-		case BC_YUV420P:
-			return FOURCC_YV12;
-			break;
-		case BC_YUV422:
-			return FOURCC_YUV2;
-			break;
-	}
-	return -1;
-}
-
 void cmodel_to_text(char *string, int cmodel)
 {
 	strcpy(string, cmodel_name(cmodel));

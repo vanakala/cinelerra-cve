@@ -435,6 +435,13 @@ int BC_DisplayInfo::test_xvext()
 	return 1;
 }
 
+uint32_t BC_DisplayInfo::cmodel_to_fourcc(int cmodel)
+{
+	for(int i = 0; i < XV_NUM_SUPPORTED_CMODELS; i++)
+		if(xv_formats[i].cmodel == cmodel)
+			return xv_formats[i].fourcc;
+}
+
 void BC_DisplayInfo::dump_xvext()
 {
 	struct xv_adapterinfo *adp;

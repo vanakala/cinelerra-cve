@@ -155,7 +155,7 @@ void BC_Bitmap::allocate_data()
 // Create the X Image
 			xv_image[0] = XvShmCreateImage(top_level->display, 
 						xv_portid, 
-						cmodel_bc_to_x(color_model),
+						BC_DisplayInfo::cmodel_to_fourcc(color_model),
 						0,
 						w,
 						h,
@@ -184,7 +184,7 @@ void BC_Bitmap::allocate_data()
 				data[i] = data[0] + xv_image[0]->data_size * i;
 				xv_image[i] = XvShmCreateImage(top_level->display, 
 							xv_portid, 
-							cmodel_bc_to_x(color_model),
+							BC_DisplayInfo::cmodel_to_fourcc(color_model),
 							(char*)data[i], 
 							w,
 							h,

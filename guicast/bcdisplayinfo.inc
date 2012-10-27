@@ -22,6 +22,9 @@
 #ifndef BCDISPLAYINFO_INC
 #define BCDISPLAYINFO_INC
 
+#define FOURCC_YV12 0x32315659
+#define FOURCC_YUV2 0x32595559
+
 class BC_DisplayInfo;
 
 #endif

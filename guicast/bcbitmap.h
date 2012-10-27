@@ -29,6 +29,7 @@
 #include <X11/extensions/Xvlib.h>
 
 #include "bcwindowbase.inc"
+#include "bcdisplayinfo.h"
 #include "colors.h"
 #include "vframe.inc"
 

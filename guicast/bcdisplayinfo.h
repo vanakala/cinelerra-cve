@@ -23,8 +23,11 @@
 #define BCDISPLAYINFO_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
+
+#include "bcdisplayinfo.inc"
 
 // XV info
 
@@ -81,6 +84,7 @@ public:
 	int get_bottom_border();
 	void test_window(int &x_out, int &y_out, int &x_out2, int &y_out2, int x_in, int y_in);
 	int test_xvext();
+	static uint32_t cmodel_to_fourcc(int cmodel);
 	void dump_xvext();
 
 // XV info

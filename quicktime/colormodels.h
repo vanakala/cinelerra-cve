@@ -54,13 +54,6 @@
 #define BC_YUV411P      18
 #define BC_YUV9P        28     // Disasterous cmodel from Sorenson
 
-// Colormodels purely used by Quicktime are done in Quicktime.
-
-// For communication with the X Server
-#define FOURCC_YV12 0x32315659  /* YV12   YUV420P */
-#define FOURCC_YUV2 0x32595559  /* YUV2   YUV422 */
-#define FOURCC_I420 0x30323449  /* I420   Intel Indeo 4 */
-
 #undef CLAMP
 #define CLAMP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
 
@@ -145,7 +138,6 @@ void cmodel_transfer(unsigned char **output_rows, /* Leave NULL if non existent 
 
 void cmodel_init_yuv(cmodel_yuv_t *yuv_table);
 void cmodel_delete_yuv(cmodel_yuv_t *yuv_table);
-int cmodel_bc_to_x(int color_model);
 
 #ifdef __cplusplus
 }
