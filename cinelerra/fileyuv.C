@@ -22,9 +22,9 @@
 #include "fileyuv.h"
 #include "asset.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "edit.h"
 #include "file.h"
-#include "guicast.h"
 #include "guicast.h"
 #include "interlacemodes.h"
 #include "quicktime.h"
@@ -45,9 +45,8 @@ FileYUV::FileYUV(Asset *asset, File *file)
 	if (asset->format == FILE_UNKNOWN) asset->format = FILE_YUV;
 	asset->byte_order = 0; // FUTURE: is this always correct?
 	temp = 0;
-	ffmpeg = 0;
 	stream = new YUVStream();
-	pipe_latency = 0;
+	current_frame = -1;
 }
 
 FileYUV::~FileYUV()
@@ -67,7 +66,6 @@ int FileYUV::open_file(int should_read, int should_write)
 
 		// NOTE: no easy way to defer setting video_length
 		asset->video_length = stream->frame_count;
-		
 		asset->width = stream->get_width();
 		asset->height = stream->get_height();
 		if (asset->width * asset->height <= 0) 
@@ -83,7 +81,7 @@ int FileYUV::open_file(int should_read, int should_write)
 		asset->frame_rate = stream->get_frame_rate();
 		asset->aspect_ratio = stream->get_aspect_ratio();
 		asset->interlace_mode = stream->get_interlace();
-
+		asset->file_length = stream->get_file_length();
 		return 0;
 	}
 
@@ -113,67 +111,29 @@ int FileYUV::open_file(int should_read, int should_write)
 
 void FileYUV::close_file()
 {
-	if (pipe_latency && ffmpeg && stream) {
-		// deal with last frame still in the pipe
-		ensure_temp(incoming_asset->width, incoming_asset->height); 
-		if (ffmpeg->decode(NULL, 0, temp) == 0) 
-		{
-			uint8_t *yuv[3];
-			yuv[0] = temp->get_y();
-			yuv[1] = temp->get_u();
-			yuv[2] = temp->get_v();
-			stream->write_frame(yuv);
-		}
-		pipe_latency = 0;
-	}
 	stream->close_fd();
-	if (ffmpeg) delete ffmpeg;
-	ffmpeg = 0;
-}
-
-// NOTE: set_video_position() called every time a frame is read
-void FileYUV::set_video_position(framenum frame_number)
-{
-	stream->seek_frame(frame_number);
 }
 
 int FileYUV::read_frame(VFrame *frame)
 {
 	int result;
-	VFrame *input = frame;
-
-	// short cut for direct copy routines
-	if (frame->get_color_model() == BC_COMPRESSED) {
-		int frame_size = (int) // w*h + w*h/4 + w*h/4
-			(stream->get_height() *	stream->get_width() * 1.5); 
-		frame->allocate_compressed_data(frame_size);
-		frame->set_compressed_size(frame_size);
-		return stream->read_frame_raw(frame->get_data(), frame_size);
-	}
-
-	// process through a temp frame if necessary
-	if (! cmodel_is_planar(frame->get_color_model()) ||
-		(frame->get_w() != stream->get_width()) ||
-		(frame->get_h() != stream->get_height())) 
-	{
-		ensure_temp(stream->get_width(), stream->get_height());
-		input = temp;
-	}
-
 	uint8_t *yuv[3];
-	yuv[0] = input->get_y();
-	yuv[1] = input->get_u();
-	yuv[2] = input->get_v();
+	framenum pos = (frame->get_source_pts() + FRAME_OVERLAP) * asset->frame_rate;
+
+	if(pos != current_frame)
+		stream->seek_frame(pos);
+	current_frame = pos;
+	yuv[0] = frame->get_y();
+	yuv[1] = frame->get_u();
+	yuv[2] = frame->get_v();
 	result = stream->read_frame(yuv);
-	if (result) return result;
 
-	// transfer from the temp frame to the real one
-	if (input != frame) 
-	{
-		FFMPEG::convert_cmodel(input, frame);
-	}
+	frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
+	frame->set_duration((ptstime)1 / asset->frame_rate);
+	frame->set_frame_number(current_frame);
+	current_frame++;
 
-	return 0;
+	return result;
 }
 
 int FileYUV::write_frames(VFrame ***layers, int len)
@@ -187,48 +147,6 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 	for (int n = 0; n < len; n++) 
 	{
 		frame = frames[n];
-
-		// short cut for direct copy routines
-		if (frame->get_color_model() == BC_COMPRESSED) 
-		{
-			long frame_size = frame->get_compressed_size();
-			if (incoming_asset->format == FILE_YUV) 
-				return stream->write_frame_raw(frame->get_data(), frame_size);
-
-			// decode and write an encoded frame
-			if (FFMPEG::codec_id(incoming_asset->vcodec) != CODEC_ID_NONE) 
-			{
-				if (!ffmpeg) 
-				{
-					ffmpeg = new FFMPEG(incoming_asset);
-					ffmpeg->init(incoming_asset->vcodec);
-				}
-
-				ensure_temp(incoming_asset->width, incoming_asset->height); 
-				int result = ffmpeg->decode(frame->get_data(), frame_size, temp);
-
-				// some formats are decoded one frame later
-				if (result == FFMPEG_LATENCY) 
-				{
-					// remember to write the last frame
-					pipe_latency++;
-					return 0;
-				}
-
-				if (result) 
-				{
-					delete ffmpeg;
-					ffmpeg = 0;
-					return 1;
-				}
-
-				uint8_t *yuv[3];
-				yuv[0] = temp->get_y();
-				yuv[1] = temp->get_u();
-				yuv[2] = temp->get_v();
-				return stream->write_frame(yuv);
-			}
-		}
 
 		// process through a temp frame only if necessary
 		if (! cmodel_is_planar(frame->get_color_model()) ||
@@ -294,24 +212,6 @@ int FileYUV::check_sig(Asset *asset)
 	return 0;
 }
 
-// NOTE: this is called on the write stream, not the read stream!
-int FileYUV::can_copy_from(Edit *edit)
-{
-	// NOTE: width and height already checked in file.C
-
-	// FUTURE: is the incoming asset already available somewhere?
-	incoming_asset = edit->asset;
-
-	if (edit->asset->format == FILE_YUV) return 1;
-
-	// if FFMPEG can decode it, we'll accept it
-	if (FFMPEG::codec_id(edit->asset->vcodec) != CODEC_ID_NONE) return 1;
-
-	incoming_asset = 0;
-
-	return 0;
-}
-
 int FileYUV::get_best_colormodel(Asset *asset, int driver) 
 {
 	// FUTURE: is there a reason to try to accept anything else?
@@ -321,18 +221,8 @@ int FileYUV::get_best_colormodel(Asset *asset, int driver)
 
 int FileYUV::colormodel_supported(int color_model) 
 {
-	// we convert internally to any color model proposed
-	return color_model;
-	// NOTE: file.C does not convert from YUV, so we have to do it.
+	return BC_YUV420P;
 }
-
-/*
-    Other member functions used in other file* modules:
-
-    reset_parameters(): not sure when used or needed
-    reset_parameters_derived(): not sure when used or needed
-    *_audio_*: yuv4mpeg doesn't handle audio
-*/
 
 void FileYUV::ensure_temp(int width, int height) 
 {

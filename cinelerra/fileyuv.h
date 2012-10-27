@@ -50,19 +50,16 @@ public:
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame);
 	int write_frames(VFrame ***frame, int len);
-	int can_copy_from(Edit *edit);
 	void close_file();
-	void set_video_position(framenum x);
 
 	// below here are local routines not required by interface
 	void ensure_temp(int width, int height);
 
 private:
+	framenum current_frame;
 	VFrame *temp;
 	YUVStream *stream;
 	Asset *incoming_asset;
-	FFMPEG *ffmpeg;
-	int pipe_latency;
 };
 
 
