@@ -68,6 +68,8 @@ public:
 	double get_aspect_ratio();
 	void set_aspect_ratio(double aspect_ratio);
 
+	off_t get_file_length();
+
 	framenum frame_count;
 
 	int stream_fd;  // used for files
@@ -79,4 +81,5 @@ private:
 
 	off_t frame_offset;
 	off_t frame_bytes;
+	off_t file_bytes;
 };

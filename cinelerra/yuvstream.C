@@ -39,6 +39,7 @@ YUVStream::YUVStream()
 	frame_count = 0;
 	frame_offset = 0;
 	frame_bytes = 0;
+	file_bytes = 0;
 }
 
 YUVStream::~YUVStream()
@@ -206,7 +207,8 @@ int YUVStream::make_index()
 	frame_offset = lseek(stream_fd, 0, SEEK_CUR);
 	if (read_frame(yuv) == 0) {
 		frame_bytes = lseek(stream_fd, 0, SEEK_CUR) - frame_offset;
-		frame_count = (lseek(stream_fd, 0, SEEK_END)- frame_offset) / frame_bytes;
+		file_bytes = lseek(stream_fd, 0, SEEK_END);
+		frame_count = (file_bytes - frame_offset) / frame_bytes;
 		ret = 0;
 	}
 
@@ -332,4 +334,9 @@ void YUVStream::set_aspect_ratio(double aspect_ratio)
 	y4m_ratio_t sar = y4m_guess_sar(get_width(), get_height(),
 					ratio);
 	y4m_si_set_sampleaspect(&stream_info, sar);
+}
+
+off_t YUVStream::get_file_length()
+{
+	return file_bytes;
 }
