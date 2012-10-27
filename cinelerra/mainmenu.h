@@ -91,8 +91,9 @@ public:
 	BC_RecentList *recent_load;
 	LoadPrevious *load[TOTAL_LOADS];
 
-
+/* FIXIT - disabled
 	RecordMenuItem *record;
+	*/
 	RenderItem *render;
 	New *new_project;
 	MenuAEffectItem *aeffect[TOTAL_EFFECTS];
