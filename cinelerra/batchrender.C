@@ -630,19 +630,15 @@ void BatchRenderGUI::create_objects()
 	y += 20;
 	format_tools = new BatchFormat(mwindow,
 					this, 
-					thread->get_current_asset());
-	format_tools->create_objects(x, 
+					thread->get_current_asset(),
+					x,
 					y,
-					1,
-					1,
-					1,
-					1,
-					0,
-					1,
+					SUPPORTS_AUDIO|SUPPORTS_VIDEO,
+					SUPPORTS_AUDIO|SUPPORTS_VIDEO,
+					SUPPORTS_VIDEO,
 					0,
 					0,
-					&thread->get_current_job()->strategy, 
-					0);
+					&thread->get_current_job()->strategy);
 
 	x2 = x;
 	y2 = y + 10;
@@ -868,8 +864,17 @@ void BatchRenderGUI::change_job()
 
 BatchFormat::BatchFormat(MWindow *mwindow,
 			BatchRenderGUI *gui,
-			Asset *asset)
- : FormatTools(mwindow, gui, asset)
+			Asset *asset,
+			int &init_x,
+			int &init_y,
+			int support,
+			int checkbox,
+			int details,
+			const char *locked_compressor,
+			int recording,
+			int *strategy)
+ : FormatTools(mwindow, gui, asset, init_x, init_y, support, checkbox, details,
+	locked_compressor, recording, strategy)
 {
 	this->gui = gui;
 	this->mwindow = mwindow;

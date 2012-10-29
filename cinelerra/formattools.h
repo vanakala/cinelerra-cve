@@ -47,22 +47,19 @@ class FormatTools
 public:
 	FormatTools(MWindow *mwindow,
 			BC_WindowBase *window, 
-			Asset *asset);
+			Asset *asset,
+			int &init_x,
+			int &init_y,
+			int support,
+			int checkbox,
+			int details,
+			const char *locked_compressor,
+			int recording,
+			int *strategy,
+			int brender = 0,
+			int horizontal_layout = 0);
 	virtual ~FormatTools();
 
-	int create_objects(int &init_x, 
-			int &init_y,
-			int do_audio,    // Include tools for audio
-			int do_video,   // Include tools for video
-			int prompt_audio,  // Include checkbox for audio
-			int prompt_video,  // Include checkbox for video
-			int prompt_audio_channels,
-			int prompt_video_compression,
-			const char *locked_compressor,  // Select compressors to be offered
-			int recording, // Change captions for recording
-			int *strategy,  // If nonzero, prompt for insertion strategy
-			int brender, // Supply file formats for background rendering
-			int horizontal_layout = 0); // audio & video are placed on one line
 // In recording preferences, aspects of the format are locked 
 // depending on the driver used.
 	void update_driver(int driver);
@@ -79,8 +76,8 @@ public:
 // Handle change in path text.  Used in BatchRender.
 	virtual int handle_event();
 
-	int set_audio_options();
-	int set_video_options();
+	void set_audio_options();
+	void set_video_options();
 	int get_w();
 
 	BC_WindowBase *window;
@@ -115,10 +112,8 @@ public:
 	int use_brender;
 	int do_audio;
 	int do_video;
-	int prompt_audio;
-	int prompt_audio_channels;
-	int prompt_video;
-	int prompt_video_compression;
+	int checkbox;
+	int details;
 	int *strategy;
 	int w;
 // Determines what the configuration buttons do.

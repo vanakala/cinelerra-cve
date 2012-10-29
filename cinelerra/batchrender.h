@@ -257,7 +257,15 @@ class BatchFormat : public FormatTools
 public:
 	BatchFormat(MWindow *mwindow,
 			BatchRenderGUI *gui,
-			Asset *asset);
+			Asset *asset,
+			int &init_x,
+			int &init_y,
+			int support,
+			int checkbox,
+			int details,
+			const char *locked_compressor,
+			int recording,
+			int *strategy);
 	~BatchFormat();
 
 	int handle_event();

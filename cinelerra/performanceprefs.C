@@ -111,19 +111,15 @@ int PerformancePrefs::create_objects()
 	x += xmargin4;
 	add_subwindow(new BC_Title(x, y, _("Output for background rendering:")));
 	y += 20;
-	brender_tools = 
-		new FormatTools(mwindow,
-			this, 
-			pwindow->thread->preferences->brender_asset);
-	brender_tools->create_objects(x, 
-		y, 
-		0,  // Include tools for audio
-		1,  // Include tools for video
-		0,  // Include checkbox for audio
-		0,  // Include checkbox for video
+	brender_tools = new FormatTools(mwindow,
+		this, 
+		pwindow->thread->preferences->brender_asset,
+		x,
+		y,
+		SUPPORTS_VIDEO,     // Include tools for video
 		0,
-		1,
-		0,  // Select compressors to be offered
+		SUPPORTS_VIDEO,
+		0,
 		0,  // Prompt for recording options
 		0,  // If nonzero, prompt for insertion strategy
 		1); // Supply file formats for background rendering

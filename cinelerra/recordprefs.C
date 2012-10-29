@@ -20,6 +20,7 @@
  */
 
 #include "adeviceprefs.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -65,18 +66,14 @@ int RecordPrefs::create_objects()
 		resources->text_default));
 	y += title->get_h() + 5;
 
-	recording_format = 
-		new FormatTools(mwindow,
-			this, 
-			pwindow->thread->edl->session->recording_format);
-	recording_format->create_objects(x, 
-		y, 
-		1,  // Include tools for audio
-		1,  // Include tools for video
-		1,  // Include checkbox for audio
-		1,  // Include checkbox for video
-		0,
-		1,
+	recording_format = new FormatTools(mwindow,
+		this,
+		pwindow->thread->edl->session->recording_format,
+		x,
+		y,
+		SUPPORTS_AUDIO | SUPPORTS_VIDEO,
+		SUPPORTS_AUDIO | SUPPORTS_VIDEO,
+		SUPPORTS_VIDEO,
 		0,  // Select compressors to be offered
 		1,  // Prompt for recording options
 		0,  // If nonzero, prompt for insertion strategy

@@ -968,20 +968,17 @@ void RenderWindow::create_objects()
 	y += 25;
 
 	format_tools = new FormatTools(mwindow,
-					this, 
-					asset);
-	format_tools->create_objects(x, 
-		y, 
-		1, 
-		1, 
-		1, 
-		1, 
-		0,
-		1,
+		this,
+		asset,
+		x,
+		y,
+		SUPPORTS_AUDIO | SUPPORTS_VIDEO,
+		SUPPORTS_AUDIO | SUPPORTS_VIDEO,
+		SUPPORTS_VIDEO,
 		0,
 		0,
-		&render->strategy,
-		0);
+		&render->strategy);
+
 	add_subwindow(new BC_Title(x, 
 		y, _("Render range:")));
 

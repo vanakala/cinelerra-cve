@@ -562,19 +562,15 @@ int MenuEffectWindow::create_objects()
 	y = mwindow->theme->menueffect_tools_y;
 	format_tools = new FormatTools(mwindow,
 					this, 
-					asset);
-	format_tools->create_objects(x, 
+					asset,
+					x,
 					y, 
-					asset->audio_data, 
-					asset->video_data, 
-					0, 
-					0, 
+					asset->audio_data ? SUPPORTS_AUDIO : 0 | asset->video_data ? SUPPORTS_VIDEO : 0,
 					0,
-					1,
+					SUPPORTS_VIDEO,
 					0,
 					0,
-					&menueffects->strategy,
-					0);
+					&menueffects->strategy);
 
 	loadmode = new LoadMode(mwindow, 
 		this, 
