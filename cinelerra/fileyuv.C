@@ -212,6 +212,13 @@ int FileYUV::check_sig(Asset *asset)
 	return 0;
 }
 
+int FileYUV::supports(int format)
+{
+	if(format == FILE_YUV)
+		return SUPPORTS_VIDEO;
+	return 0;
+}
+
 int FileYUV::get_best_colormodel(Asset *asset, int driver) 
 {
 	// FUTURE: is there a reason to try to accept anything else?

@@ -51,6 +51,7 @@ public:
 	int read_frame(VFrame *frame);
 	int write_frames(VFrame ***frame, int len);
 	void close_file();
+	static int supports(int format);
 
 	// below here are local routines not required by interface
 	void ensure_temp(int width, int height);
