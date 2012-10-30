@@ -210,6 +210,7 @@ public:
 	static int supports_video(int format);   // returns 1 if the format supports video or audio
 	static int supports_audio(int format);
 	static int strtoformat(char *format);
+	static int supports(int format);
 	static const char* formattostr(int format);
 	static int strtoformat(ArrayList<PluginServer*> *plugindb, char *format);
 	static const char* formattostr(ArrayList<PluginServer*> *plugindb, int format);

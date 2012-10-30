@@ -1085,6 +1085,42 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	return 0;
 }
 
+int File::supports(int format)
+{
+	switch(format)
+	{
+	case FILE_JPEG:
+	case FILE_JPEG_LIST:
+	case FILE_PNG:
+	case FILE_PNG_LIST:
+	case FILE_TIFF:
+	case FILE_TIFF_LIST:
+	case FILE_EXR:
+	case FILE_EXR_LIST:
+	case FILE_TGA:
+	case FILE_TGA_LIST:
+		return SUPPORTS_VIDEO;
+
+	case FILE_AIFF:
+	case FILE_AC3:
+	case FILE_WAV:
+	case FILE_PCM:
+		return SUPPORTS_AUDIO;
+
+	case FILE_MPEG:
+	case FILE_AMPEG:
+	case FILE_VMPEG:
+		return FileMPEG::supports(format);
+
+	case FILE_OGG:
+		return FileOGG::supports(format);
+
+	case FILE_YUV:
+		return FileYUV::supports(format);
+	}
+	return (SUPPORTS_AUDIO | SUPPORTS_VIDEO);
+}
+
 const char* File::formattostr(int format)
 {
 	return formattostr(0, format);
