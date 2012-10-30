@@ -596,6 +596,13 @@ int FileOGG::check_sig(Asset *asset)
 	return 0;
 }
 
+int FileOGG::supports(int format)
+{
+	if(format == FILE_OGG)
+		return SUPPORTS_AUDIO | SUPPORTS_VIDEO;
+	return 0;
+}
+
 void FileOGG::close_file()
 {
 	if(!stream)
