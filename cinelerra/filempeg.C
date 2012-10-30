@@ -127,6 +127,21 @@ int FileMPEG::check_sig(Asset *asset)
 	return mpeg3_check_sig(asset->path);
 }
 
+int FileMPEG::supports(int format)
+{
+	switch(format)
+	{
+	case FILE_AMPEG:
+		return SUPPORTS_AUDIO;
+
+	case FILE_VMPEG:
+		return SUPPORTS_VIDEO;
+
+	case FILE_MPEG:
+		return SUPPORTS_AUDIO | SUPPORTS_VIDEO;
+	}
+	return 0;
+}
 
 void FileMPEG::reset_parameters_derived()
 {

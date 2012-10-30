@@ -66,6 +66,7 @@ public:
 		int video_options);
 
 	static int check_sig(Asset *asset);
+	static int supports(int format);
 
 	int open_file(int rd, int wr);
 	void close_file();
