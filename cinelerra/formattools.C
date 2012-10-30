@@ -63,6 +63,8 @@ FormatTools::FormatTools(MWindow *mwindow,
 	aparams_thread = 0;
 	vparams_thread = 0;
 	channels_tumbler = 0;
+	audio_switch = 0;
+	video_switch = 0;
 	path_textbox = 0;
 	path_button = 0;
 	path_recent = 0;
@@ -139,7 +141,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 		y, 
 		this));
 	format_button->create_objects();
-
 	x = init_x;
 	y += format_button->get_h() + 10;
 	if(do_audio)
@@ -186,6 +187,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 		y += 10;
 		vparams_thread = new FormatVThread(this);
 	}
+	enable_supported();
 	x = init_x;
 	if(strategy)
 	{
@@ -205,9 +207,70 @@ FormatTools::~FormatTools()
 
 	if(aparams_button) delete aparams_button;
 	if(vparams_button) delete vparams_button;
+	if(audio_switch) delete audio_switch;
+	if(video_switch) delete video_switch;
 	if(aparams_thread) delete aparams_thread;
 	if(vparams_thread) delete vparams_thread;
 	if(channels_tumbler) delete channels_tumbler;
+}
+
+void FormatTools::enable_supported()
+{
+	int filesup =  File::supports(asset->format);
+tracemsg("supports %d", filesup);
+
+	if(aparams_button)
+	{
+		if((filesup & SUPPORTS_AUDIO) == 0)
+		{
+			aparams_button->disable();
+			if(audio_switch)
+			{
+				audio_switch->set_value(0);
+				audio_switch->disable();
+				asset->audio_data = 0;
+			}
+		}
+		else
+		{
+			aparams_button->enable();
+			if(audio_switch)
+			{
+				audio_switch->enable();
+				if((filesup & ~SUPPORTS_AUDIO) == 0)
+				{
+					asset->audio_data = 1;
+					audio_switch->set_value(1);
+				}
+			}
+		}
+	}
+	if(vparams_button)
+	{
+		if((filesup & SUPPORTS_VIDEO) == 0)
+		{
+			vparams_button->disable();
+			if(video_switch)
+			{
+				video_switch->set_value(0);
+				video_switch->disable();
+				asset->video_data = 0;
+			}
+		}
+		else
+		{
+			vparams_button->enable();
+			if(video_switch)
+			{
+				video_switch->enable();
+				if((filesup & ~SUPPORTS_VIDEO) == 0)
+				{
+					asset->video_data = 1;
+					video_switch->set_value(1);
+				}
+			}
+		}
+	}
 }
 
 void FormatTools::update_driver(int driver)
@@ -569,6 +632,7 @@ int FormatFormat::handle_event()
 			if (format->path_recent)
 				format->path_recent->load_items
 					(FILE_FORMAT_PREFIX(format->asset->format));
+			format->enable_supported();
 		}
 	}
 	return 1;

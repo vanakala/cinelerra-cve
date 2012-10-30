@@ -60,6 +60,9 @@ public:
 			int horizontal_layout = 0);
 	virtual ~FormatTools();
 
+// enable/disable supported streams
+	void enable_supported();
+
 // In recording preferences, aspects of the format are locked 
 // depending on the driver used.
 	void update_driver(int driver);
