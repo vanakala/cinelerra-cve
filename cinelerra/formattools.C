@@ -217,7 +217,6 @@ FormatTools::~FormatTools()
 void FormatTools::enable_supported()
 {
 	int filesup =  File::supports(asset->format);
-tracemsg("supports %d", filesup);
 
 	if(aparams_button)
 	{
