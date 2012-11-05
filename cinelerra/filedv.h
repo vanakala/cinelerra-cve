@@ -24,6 +24,7 @@
 
 #include "../config.h"
 #include "filebase.h"
+#include "aframe.inc"
 #include "file.inc"
 
 #ifdef DV_USE_FFMPEG
@@ -45,18 +46,12 @@ public:
 		int audio_options,
 		int video_options);
 
-	void reset_parameters_derived();
 	int open_file(int rd, int wr);
 
 	static int check_sig(Asset *asset);
-	void close_file_derived();
+	void close_file();
 
-	void set_video_position(framenum x);
-	void set_audio_position(samplenum x);
-
-	int audio_samples_copy(double **buffer, int len);
-
-	int write_samples(double **buffer, int len);
+	int write_aframes(AFrame **buffer);
 	int write_frames(VFrame ***frames, int len);
 
 	int read_samples(double *buffer, int len);
@@ -64,14 +59,13 @@ public:
 
 	int colormodel_supported(int colormodel);
 
-	int can_copy_from(Edit *edit);
-
 	static int get_best_colormodel(Asset *asset, int driver);
 
-	framenum get_audio_frame(samplenum pos);
-	framenum get_audio_offset(samplenum pos);
-
 private:
+	int audio_samples_copy(AFrame **buffer);
+	framenum get_audio_frame(samplenum pos);
+	int get_audio_offset(samplenum pos);
+
 	FILE *stream;
 
 	Mutex *stream_lock;
@@ -89,6 +83,7 @@ private:
 	unsigned char *audio_buffer;
 
 	int16_t **audio_sample_buffer;
+	int audio_channels;
 	int audio_sample_buffer_start;
 	int audio_sample_buffer_end;
 	int audio_sample_buffer_len;
@@ -98,35 +93,15 @@ private:
 
 	int output_size;
 	int isPAL;
+	VFrame *temp_frame;
 };
 
-
-class DVConfigAudio: public BC_Window
+class DVConfig: public BC_Window
 {
 public:
-	DVConfigAudio(BC_WindowBase *parent_window, Asset *asset);
-	~DVConfigAudio();
-
-	void create_objects();
-	void close_event();
+	DVConfig(BC_WindowBase *parent_window, int type);
 
 private:
-	Asset *asset;
-	BC_WindowBase *parent_window;
-};
-
-
-class DVConfigVideo: public BC_Window
-{
-public:
-	DVConfigVideo(BC_WindowBase *parent_window, Asset *asset);
-	~DVConfigVideo();
-
-	void create_objects();
-	void close_event();
-
-private:
-	Asset *asset;
 	BC_WindowBase *parent_window;
 };
 
