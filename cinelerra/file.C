@@ -1118,6 +1118,9 @@ int File::supports(int format)
 
 	case FILE_YUV:
 		return FileYUV::supports(format);
+
+	case FILE_RAWDV:
+		return FileDV::supports(format);
 	}
 	return (SUPPORTS_AUDIO | SUPPORTS_VIDEO);
 }

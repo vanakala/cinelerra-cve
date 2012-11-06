@@ -49,6 +49,7 @@ public:
 	int open_file(int rd, int wr);
 
 	static int check_sig(Asset *asset);
+	static int supports(int format);
 	void close_file();
 
 	int write_aframes(AFrame **buffer);

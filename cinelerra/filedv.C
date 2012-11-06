@@ -323,6 +323,13 @@ int FileDV::check_sig(Asset *asset)
 	return 0;
 }
 
+int FileDV::supports(int format)
+{
+	if(format == FILE_RAWDV)
+		return SUPPORTS_AUDIO | SUPPORTS_VIDEO;
+	return 0;
+}
+
 int FileDV::audio_samples_copy(AFrame **frames)
 {
 	int len = frames[0]->length;
