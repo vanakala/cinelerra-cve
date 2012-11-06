@@ -689,7 +689,6 @@ int FileDV::read_frame(VFrame *frame)
 		return 1;
 	}
 	stream_lock->unlock();
-	video_position++;
 
 	switch(frame->get_color_model())
 	{
@@ -708,6 +707,11 @@ int FileDV::read_frame(VFrame *frame)
 		decoder_lock->unlock();
 		break;
 	}
+
+	frame->set_pts((ptstime)video_position / asset->frame_rate);
+	frame->set_duration(1. / asset->frame_rate);
+	frame->set_frame_number(video_position);
+	video_position++;
 
 	return 0;
 }

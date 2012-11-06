@@ -985,6 +985,7 @@ int File::read_frame(VFrame *frame, int is_thread)
 		case FILE_VMPEG:
 		case FILE_YUV:
 		case FILE_OGG:
+		case FILE_RAWDV:
 // Types that set already frame pts
 			break;
 		default:
