@@ -68,6 +68,7 @@ public:
 		int video_options,
 		const char *locked_compressor);
 	static int check_sig(Asset *asset);
+	static int supports(int format);
 
 	int open_file(int rd, int wr);
 	void close_file();
@@ -75,9 +76,7 @@ public:
 	void format_to_asset();
 	framenum get_video_length();
 	samplenum get_audio_length();
-	void set_video_position(framenum x);
-	void set_audio_position(samplenum x);
-	int write_samples(double **buffer, int len);
+	int write_aframes(AFrame **frames);
 	int write_frames(VFrame ***frames, int len);
 
 	int read_frame(VFrame *frame);
@@ -87,7 +86,6 @@ public:
 	static int get_best_colormodel(Asset *asset, int driver);
 	int64_t get_memory_usage();
 	int colormodel_supported(int colormodel);
-	int can_copy_from(Edit *edit); // This file can copy frames directly from the asset
 	static const char *strtocompression(const char *string);
 	static const char *compressiontostr(const char *string);
 
@@ -101,17 +99,12 @@ public:
 
 private:
 	void new_audio_temp(int len);
-// read raw audio data
-	int read_raw(char *buffer, int64_t samples, int track);  
-// overlay raw frame from the current layer and position
-	int read_raw(VFrame *frame, 
-		float in_x1, float in_y1, float in_x2, float in_y2,
-		float out_x1, float out_y1, float out_x2, float out_y2, 
-		int use_float, int interpolate);
-	void reset_parameters_derived();
 	int quicktime_atracks;
 	int quicktime_vtracks;
-// current positions for when the file descriptor doesn't have the right position
+
+	framenum current_frame[MAX_CHANNELS];
+	samplenum current_sample;
+
 	quicktime_t *fd;
 	int depth;        // Depth in bits per pixel
 	int64_t samples_correction;  // Correction after 32bit overflow
@@ -130,6 +123,8 @@ private:
 // Temp buffers for converting from double to float
 	float **temp_float;
 	int temp_allocated;
+
+	float *channel_ptr[MAX_CHANNELS];
 };
 
 

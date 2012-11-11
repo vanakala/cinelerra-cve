@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "asset.h"
 #include "bcsignals.h"
 #include "bitspopup.h"
@@ -72,7 +73,15 @@
 FileMOV::FileMOV(Asset *asset, File *file)
  : FileBase(asset, file)
 {
-	reset_parameters();
+	fd = 0;
+	prev_track = 0;
+	quicktime_atracks = 0;
+	quicktime_vtracks = 0;
+	depth = 24;
+	threads = 0;
+	samples_correction = 0;
+	temp_float = 0;
+	temp_allocated = 0;
 	if(asset->format == FILE_UNKNOWN)
 		asset->format = FILE_MOV;
 	asset->byte_order = 0;
@@ -139,7 +148,7 @@ int FileMOV::check_codec_params(Asset *asset)
 		if (!(asset->height == 576 && asset->width == 720) &&
 			!(asset->height == 480 && asset->width == 720))
 		{
-			errormsg("DV in Quicktime container does not support following resolution: %ix%i\nAllowed resolutions are 720x576 (PAL) and 720x480 (NTSC)\n", asset->width, asset->height);
+			errormsg("DV in Quicktime container does not support following resolution: %ix%i\nAllowed resolutions are 720x576 (PAL) and 720x480 (NTSC)", asset->width, asset->height);
 			return 1;
 		}
 	}
@@ -151,19 +160,12 @@ int FileMOV::check_sig(Asset *asset)
 	return quicktime_check_sig(asset->path);
 }
 
-void FileMOV::reset_parameters_derived()
+int FileMOV::supports(int format)
 {
-	fd = 0;
-	prev_track = 0;
-	quicktime_atracks = 0;
-	quicktime_vtracks = 0;
-	depth = 24;
-	threads = 0;
-	samples_correction = 0;
-	temp_float = 0;
-	temp_allocated = 0;
+	if(format == FILE_MOV)
+		return SUPPORTS_AUDIO | SUPPORTS_VIDEO;
+	return 0;
 }
-
 
 // Just create the Quicktime objects since this routine is also called
 // for reopening.
@@ -179,12 +181,16 @@ int FileMOV::open_file(int rd, int wr)
 		errormsg("Error while opening file \"%s\". \n%m", asset->path);
 		return 1;
 	}
+	for(int i = 0; i < MAX_CHANNELS; i++)
+		current_frame[i] = -1;
+
+	current_sample = -1;
 
 	quicktime_set_cpus(fd, file->cpus);
 
 	if(rd) format_to_asset();
 
-	if(wr) 
+	if(wr)
 	{
 		asset_to_format();
 		if (check_codec_params(asset))
@@ -205,6 +211,7 @@ void FileMOV::close_file()
 	{
 		if(wr) quicktime_set_framerate(fd, asset->frame_rate);
 		quicktime_close(fd);
+		fd = 0;
 	}
 
 	if(threads)
@@ -225,10 +232,8 @@ void FileMOV::close_file()
 		for(int i = 0; i < asset->channels; i++)
 			delete [] temp_float[i];
 		delete [] temp_float;
+		temp_float = 0;
 	}
-
-	reset_parameters();
-	FileBase::close_file();
 }
 
 void FileMOV::set_frame_start(int64_t offset)
@@ -323,7 +328,6 @@ void FileMOV::asset_to_format()
 		quicktime_set_parameter(fd, "h264_bitrate", &asset->h264_bitrate);
 		quicktime_set_parameter(fd, "h264_quantizer", &asset->h264_quantizer);
 		quicktime_set_parameter(fd, "h264_fix_bitrate", &asset->h264_fix_bitrate);
-
 	}
 
 	if(wr && asset->format == FILE_AVI)
@@ -378,10 +382,9 @@ void FileMOV::format_to_asset()
 			char tc[12];
 			dv_decoder_t *tmp_decoder = dv_decoder_new(0,0,0);
 			VFrame *frame = new VFrame(0, 0, 0, BC_COMPRESSED);
-			
+
 			read_frame(frame);
-			set_video_position(0);
-			
+
 			if(dv_parse_header(tmp_decoder, frame->get_data()) > -1)
 			{
 				dv_parse_packs(tmp_decoder, frame->get_data());
@@ -415,6 +418,23 @@ int64_t FileMOV::get_memory_usage()
 
 int FileMOV::colormodel_supported(int colormodel)
 {
+	if(match4(asset->vcodec, QUICKTIME_YUV420)) return BC_YUV420P;
+	if(match4(asset->vcodec, QUICKTIME_YUV422)) return BC_YUV422;
+	if(match4(asset->vcodec, QUICKTIME_2VUY)) return BC_YUV422;
+	if(match4(asset->vcodec, QUICKTIME_JPEG)) return BC_YUV420P;
+	if(match4(asset->vcodec, QUICKTIME_MJPA)) return BC_YUV422P;
+	if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
+	if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
+	if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
+	if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
+	if(match4(asset->vcodec, QUICKTIME_DVCP)) return BC_YUV422;
+	if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
+	if(match4(asset->vcodec, QUICKTIME_MP4V)) return BC_YUV420P;
+	if(match4(asset->vcodec, QUICKTIME_H263)) return BC_YUV420P;
+	if(match4(asset->vcodec, QUICKTIME_H264)) return BC_YUV420P;
+	if(match4(asset->vcodec, QUICKTIME_HV64)) return BC_YUV420P;
+	if(match4(asset->vcodec, QUICKTIME_DIV3) ||
+			match4(asset->vcodec, QUICKTIME_SVQ3)) return BC_YUV420P;
 	return colormodel;
 }
 
@@ -481,68 +501,12 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 	return BC_RGB888;
 }
 
-int FileMOV::can_copy_from(Edit *edit)
-{
-	if(!fd) return 0;
-
-	if(edit->asset->format == FILE_JPEG_LIST && 
-		match4(this->asset->vcodec, QUICKTIME_JPEG))
-		return 1;
-	else
-	if((edit->asset->format == FILE_MOV || 
-		edit->asset->format == FILE_AVI))
-	{
-		if(match4(edit->asset->vcodec, this->asset->vcodec))
-			return 1;
-// there are combinations where the same codec has multiple fourcc codes
-// check for DV...
-		int is_edit_dv = 0;
-		int is_this_dv = 0;
-		if (match4(edit->asset->vcodec, QUICKTIME_DV) || 
-			match4(edit->asset->vcodec, QUICKTIME_DVSD) || 
-			match4(edit->asset->vcodec, QUICKTIME_DVCP))
-			is_edit_dv = 1;
-		if (match4(this->asset->vcodec, QUICKTIME_DV) || 
-			match4(this->asset->vcodec, QUICKTIME_DVSD) || 
-			match4(this->asset->vcodec, QUICKTIME_DVCP))
-			is_this_dv = 1;
-		if (is_this_dv && is_edit_dv)
-			return 1;
-	}
-	else
-	if(edit->asset->format == FILE_RAWDV)
-	{
-		if(match4(this->asset->vcodec, QUICKTIME_DV) || 
-			match4(this->asset->vcodec, QUICKTIME_DVSD) || 
-			match4(this->asset->vcodec, QUICKTIME_DVCP))
-			return 1;
-	}
-
-	return 0;
-}
-
 samplenum FileMOV::get_audio_length()
 {
 	if(!fd) return 0;
 	samplenum result = quicktime_audio_length(fd, 0) + samples_correction;
 
 	return result;
-}
-
-void FileMOV::set_audio_position(samplenum x)
-{
-	if(!fd) return;
-// quicktime sets positions for each track seperately so store position in audio_position
-	if(x >= 0 && x < asset->audio_length)
-		quicktime_set_audio_position(fd, x, 0);
-}
-
-void FileMOV::set_video_position(framenum x)
-{
-	if(!fd) return;
-
-	if(x >= 0 && x < asset->video_length)
-		quicktime_set_video_position(fd, x, file->current_layer);
 }
 
 void FileMOV::new_audio_temp(int len)
@@ -564,16 +528,17 @@ void FileMOV::new_audio_temp(int len)
 	}
 }
 
-int FileMOV::write_samples(double **buffer, int len)
+int FileMOV::write_aframes(AFrame **frames)
 {
-	int i, j;
-	int64_t bytes;
-	int result = 0, track_channels = 0;
+	int i, j, len;
+	int result = 0;
 	int chunk_size;
 
 	if(!fd) return 0;
 
-	if(quicktime_supported_audio(fd, 0))
+	len = frames[0]->length;
+
+	if(len >0 && quicktime_supported_audio(fd, 0))
 	{
 // Use Quicktime's compressor. (Always used)
 // Allocate temp buffer
@@ -582,16 +547,15 @@ int FileMOV::write_samples(double **buffer, int len)
 // Copy to float buffer
 		for(i = 0; i < asset->channels; i++)
 		{
+			double *buffer = frames[i]->buffer;
+			len = frames[i]->length;
+
 			for(j = 0; j < len; j++)
-			{
-				temp_float[i][j] = buffer[i][j];
-			}
+				temp_float[i][j] = buffer[j];
 		}
 
 // Because of the way Quicktime's compressors work we want to limit the chunk
 // size to speed up decompression.
-		float **channel_ptr;
-		channel_ptr = new float*[asset->channels];
 
 		for(j = 0; j < len && !result; )
 		{
@@ -599,15 +563,12 @@ int FileMOV::write_samples(double **buffer, int len)
 			if(j + chunk_size > len) chunk_size = len - j;
 
 			for(i = 0; i < asset->channels; i++)
-			{
 				channel_ptr[i] = &temp_float[i][j];
-			}
 
 			result = quicktime_encode_audio(fd, 0, channel_ptr, chunk_size);
 			j += asset->sample_rate;
 		}
 
-		delete [] channel_ptr;
 	}
 	return result;
 }
@@ -866,19 +827,20 @@ int FileMOV::read_frame(VFrame *frame)
 {
 	if(!fd) return 1;
 	int result = 0;
+	int layer = frame->get_layer();
 
+	framenum frame_position = (frame->get_source_pts() + FRAME_OVERLAP) * asset->frame_rate;
+
+	if(current_frame[layer] != frame_position)
+	{
+		if(frame_position >= 0 && frame_position < asset->video_length)
+		{
+			quicktime_set_video_position(fd, frame_position, layer);
+			current_frame[layer] = frame_position;
+		}
+	}
 	switch(frame->get_color_model())
 	{
-	case BC_COMPRESSED:
-		frame->allocate_compressed_data(quicktime_frame_size(fd, file->current_frame, file->current_layer));
-		frame->set_compressed_size(quicktime_frame_size(fd, file->current_frame, file->current_layer));
-		frame->set_keyframe((quicktime_get_keyframe_before(fd,
-			file->current_frame,
-			file->current_layer) == file->current_frame));
-		result = !quicktime_read_frame(fd,
-			frame->get_data(),
-			file->current_layer);
-		break;
 
 // Progressive
 	case BC_YUV420P:
@@ -892,7 +854,7 @@ int FileMOV::read_frame(VFrame *frame)
 		quicktime_set_cmodel(fd, frame->get_color_model());
 		result = quicktime_decode_video(fd, 
 			row_pointers,
-			file->current_layer);
+			layer);
 	}
 		break;
 
@@ -901,49 +863,15 @@ int FileMOV::read_frame(VFrame *frame)
 		quicktime_set_cmodel(fd, frame->get_color_model());
 		result = quicktime_decode_video(fd,
 			frame->get_rows(),
-			file->current_layer);
+			layer);
 		break;
 	}
-	if (result)
-	{
-		errormsg("quicktime_read_frame/quicktime_decode_video failed, result: %d", result);
-	}
 
-	return result;
-}
+	frame->set_pts((ptstime)current_frame[layer] / asset->frame_rate);
+	frame->set_duration(1. / asset->frame_rate);
+	frame->set_frame_number(current_frame[layer]);
+	current_frame[layer]++;
 
-int FileMOV::read_raw(VFrame *frame, 
-		float in_x1, float in_y1, float in_x2, float in_y2,
-		float out_x1, float out_y1, float out_x2, float out_y2, 
-		int use_float, int interpolate)
-{
-	int result = 0;
-	if(!fd) return 0;
-
-	quicktime_set_video_position(fd, file->current_frame, file->current_layer);
-// Develop importing strategy
-	switch(frame->get_color_model())
-	{
-	case BC_RGB888:
-		result = quicktime_decode_video(fd, frame->get_rows(), file->current_layer);
-		break;
-	case BC_RGBA8888:
-		break;
-	case BC_RGB161616:
-		break;
-	case BC_RGBA16161616:
-		break;
-	case BC_YUV888:
-		break;
-	case BC_YUVA8888:
-		break;
-	case BC_YUV161616:
-		break;
-	case BC_YUVA16161616:
-		break;
-	case BC_YUV420P:
-		break;
-	}
 	return result;
 }
 
@@ -957,18 +885,25 @@ int FileMOV::read_samples(double *buffer, int len)
 	if(quicktime_track_channels(fd, 0) > file->current_channel &&
 		quicktime_supported_audio(fd, 0))
 	{
+		if(current_sample != file->current_sample &&
+				file->current_sample >= 0 && file->current_sample < asset->audio_length)
+		{
+			quicktime_set_audio_position(fd, file->current_sample, 0);
+			current_sample = file->current_sample;
+		}
+
 		new_audio_temp(len);
 		if(quicktime_decode_audio(fd, 0, temp_float[0], len, file->current_channel))
 		{
-			errorbox("quicktime_decode_audio failed\n");
+			errorbox("quicktime_decode_audio failed");
 			return 1;
 		}
 		else
 		{
 			for(int i = 0; i < len; i++) buffer[i] = temp_float[0][i];
 		}
+		current_sample += len;
 	}
-
 	return 0;
 }
 

@@ -986,6 +986,7 @@ int File::read_frame(VFrame *frame, int is_thread)
 		case FILE_YUV:
 		case FILE_OGG:
 		case FILE_RAWDV:
+		case FILE_MOV:
 // Types that set already frame pts
 			break;
 		default:
@@ -1121,6 +1122,9 @@ int File::supports(int format)
 
 	case FILE_RAWDV:
 		return FileDV::supports(format);
+
+	case FILE_MOV:
+		return FileMOV::supports(format);
 	}
 	return (SUPPORTS_AUDIO | SUPPORTS_VIDEO);
 }
