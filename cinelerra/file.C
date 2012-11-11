@@ -28,7 +28,6 @@
 #include "edit.h"
 #include "file.h"
 #include "fileac3.h"
-#include "fileavi.h"
 #include "filedv.h"
 #include "filebase.h"
 #include "filecr2.h"
@@ -180,17 +179,6 @@ void File::get_options(FormatTools *format,
 			break;
 		case FILE_AVI:
 			FileMOV::get_parameters(parent_window, 
-				asset, 
-				format_window, 
-				audio_options, 
-				video_options,
-				format->locked_compressor);
-			break;
-		case FILE_AVI_LAVTOOLS:
-		case FILE_AVI_ARNE2:
-		case FILE_AVI_ARNE1:
-		case FILE_AVI_AVIFILE:
-			FileAVI::get_parameters(parent_window, 
 				asset, 
 				format_window, 
 				audio_options, 
@@ -507,13 +495,6 @@ int File::open_file(Preferences *preferences,
 
 	case FILE_AVI:
 		file = new FileMOV(this->asset, this);
-		break;
-
-	case FILE_AVI_LAVTOOLS:
-	case FILE_AVI_ARNE2:
-	case FILE_AVI_ARNE1:
-	case FILE_AVI_AVIFILE:
-		file = new FileAVI(this->asset, this);
 		break;
 
 	case FILE_RAWDV:
@@ -1073,14 +1054,6 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	else
 	if(!strcasecmp(format, _(AVI_NAME))) return FILE_AVI;
 	else
-	if(!strcasecmp(format, _(AVI_LAVTOOLS_NAME))) return FILE_AVI_LAVTOOLS;
-	else
-	if(!strcasecmp(format, _(AVI_ARNE2_NAME))) return FILE_AVI_ARNE2;
-	else
-	if(!strcasecmp(format, _(AVI_ARNE1_NAME))) return FILE_AVI_ARNE1;
-	else
-	if(!strcasecmp(format, _(AVI_AVIFILE_NAME))) return FILE_AVI_AVIFILE;
-	else
 	if(!strcasecmp(format, _(OGG_NAME))) return FILE_OGG;
 	else
 	if(!strcasecmp(format, _(RAWDV_NAME))) return FILE_RAWDV;
@@ -1123,6 +1096,7 @@ int File::supports(int format)
 	case FILE_RAWDV:
 		return FileDV::supports(format);
 
+	case FILE_AVI:
 	case FILE_MOV:
 		return FileMOV::supports(format);
 	}
@@ -1204,20 +1178,8 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 	case FILE_MOV:
 		return _(MOV_NAME);
 
-	case FILE_AVI_LAVTOOLS:
-		return _(AVI_LAVTOOLS_NAME);
-
 	case FILE_AVI:
 		return _(AVI_NAME);
-
-	case FILE_AVI_ARNE2:
-		return _(AVI_ARNE2_NAME);
-
-	case FILE_AVI_ARNE1:
-		return _(AVI_ARNE1_NAME);
-
-	case FILE_AVI_AVIFILE:
-		return _(AVI_AVIFILE_NAME);
 
 	case FILE_OGG:
 		return _(OGG_NAME);
@@ -1377,11 +1339,7 @@ int File::supports_video(int format)
 	case FILE_TIFF:
 	case FILE_TIFF_LIST:
 	case FILE_VMPEG:
-	case FILE_AVI_LAVTOOLS:
-	case FILE_AVI_ARNE2:
 	case FILE_AVI:
-	case FILE_AVI_ARNE1:
-	case FILE_AVI_AVIFILE:
 	case FILE_RAWDV:
 			return 1;
 
@@ -1404,10 +1362,6 @@ int File::supports_audio(int format)
 	case FILE_AIFF:
 	case FILE_SND:
 	case FILE_AVI:
-	case FILE_AVI_LAVTOOLS:
-	case FILE_AVI_ARNE2:
-	case FILE_AVI_ARNE1:
-	case FILE_AVI_AVIFILE:
 	case FILE_RAWDV:
 		return 1;
 

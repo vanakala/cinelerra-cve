@@ -35,11 +35,7 @@
 #define FILE_AMPEG         16    // For encoding only
 #define FILE_AC3           25    // AC3 encoding
 #define FILE_AU            9
-#define FILE_AVI_ARNE1     20    // DV type 1
 #define FILE_AVI           24    // Heroine Virtual
-#define FILE_AVI_ARNE2     19    // DV type 2
-#define FILE_AVI_AVIFILE   21
-#define FILE_AVI_LAVTOOLS  12    // MJPEG type 1
 #define FILE_GIF           7
 #define FILE_JPEG          5
 #define FILE_JPEG_LIST     8
@@ -72,11 +68,7 @@
 	format == FILE_AMPEG   ? "MPEG" :		\
 	format == FILE_AC3     ? "AC3" :		\
 	format == FILE_AU      ? "AU" :			\
-	format == FILE_AVI_ARNE1 ? "AVI_ARNE1" :	\
 	format == FILE_AVI     ? "AVI" :		\
-	format == FILE_AVI_ARNE2 ? "AVI_ARNE2" :	\
-	format == FILE_AVI_AVIFILE ? "AVIFILE" :	\
-	format == FILE_AVI_LAVTOOLS ? "AVI_LAVTOOLS" :	\
 	format == FILE_GIF     ? "GIF" :		\
 	format == FILE_JPEG    ? "JPEG" :		\
 	format == FILE_JPEG_LIST ? "JPEG_LIST" :	\
@@ -106,10 +98,6 @@
 #define AU_NAME "Sun/NeXT AU"
 #define AVI_NAME "Microsoft AVI"
 #define WAV_NAME "Microsoft WAV"
-#define AVI_ARNE1_NAME "AVI Arne Type 1"
-#define AVI_ARNE2_NAME "AVI DV Type 2"
-#define AVI_AVIFILE_NAME "AVI Avifile"
-#define AVI_LAVTOOLS_NAME "AVI Lavtools"
 #define RAWDV_NAME "Raw DV"
 #define OGG_NAME "OGG Theora/Vorbis"
 #define JPEG_LIST_NAME "JPEG Sequence"

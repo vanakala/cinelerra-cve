@@ -116,7 +116,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    fadeengine.C \
 		    ffmpeg.C \
 		    fileac3.C \
-		    fileavi.C \
 		    filebase.C \
 		    file.C \
 		    filecr2.C \
@@ -397,7 +396,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 feather.h \
 		 ffmpeg.h \
 		 fileac3.h \
-		 fileavi.h \
 		 filebase.h \
 		 fileformat.h \
 		 file.h \

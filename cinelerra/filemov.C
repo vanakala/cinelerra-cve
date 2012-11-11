@@ -162,7 +162,7 @@ int FileMOV::check_sig(Asset *asset)
 
 int FileMOV::supports(int format)
 {
-	if(format == FILE_MOV)
+	if(format == FILE_MOV || format == FILE_AVI)
 		return SUPPORTS_AUDIO | SUPPORTS_VIDEO;
 	return 0;
 }

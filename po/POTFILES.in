@@ -34,7 +34,7 @@ cinelerra/exportedl.C
 # cinelerra/featheredits.C
 cinelerra/file.C
 cinelerra/file.inc
-cinelerra/fileavi.C
+#cinelerra/fileavi.C
 cinelerra/fileformat.C
 cinelerra/filejpeg.C
 # cinelerra/filejpeglist.C
