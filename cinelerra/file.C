@@ -1077,10 +1077,12 @@ int File::supports(int format)
 		return SUPPORTS_VIDEO;
 
 	case FILE_AIFF:
-	case FILE_AC3:
 	case FILE_WAV:
 	case FILE_PCM:
 		return SUPPORTS_AUDIO;
+
+	case FILE_AC3:
+		return FileAC3::supports(format);
 
 	case FILE_MPEG:
 	case FILE_AMPEG:

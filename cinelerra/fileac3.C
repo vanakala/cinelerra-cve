@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "asset.h"
 #include "bcsignals.h"
 #include "clip.h"
@@ -32,16 +33,6 @@
 FileAC3::FileAC3(Asset *asset, File *file)
  : FileBase(asset, file)
 {
-	reset_parameters();
-}
-
-FileAC3::~FileAC3()
-{
-	close_file();
-}
-
-void FileAC3::reset_parameters_derived()
-{
 	codec = 0;
 	codec_context = 0;
 	fd = 0;
@@ -50,6 +41,11 @@ void FileAC3::reset_parameters_derived()
 	temp_raw_allocated = 0;
 	temp_compressed = 0;
 	compressed_allocated = 0;
+}
+
+FileAC3::~FileAC3()
+{
+	close_file();
 }
 
 void FileAC3::get_parameters(BC_WindowBase *parent_window, 
@@ -63,15 +59,15 @@ void FileAC3::get_parameters(BC_WindowBase *parent_window,
 
 		AC3ConfigAudio *window = new AC3ConfigAudio(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
 }
 
-int FileAC3::check_sig()
+int FileAC3::supports(int format)
 {
-// Libmpeg3 does this in FileMPEG.
+	if(format == FILE_AC3)
+		return SUPPORTS_AUDIO;
 	return 0;
 }
 
@@ -87,7 +83,7 @@ int FileAC3::open_file(int rd, int wr)
 		codec = avcodec_find_encoder(CODEC_ID_AC3);
 		if(!codec)
 		{
-			errorbox("AC3 Codec not found.\n");
+			errorbox("AC3 Codec not found.");
 			return 1;
 		}
 		codec_context = avcodec_alloc_context();
@@ -143,11 +139,9 @@ int FileAC3::open_file(int rd, int wr)
 	}
 	else
 	{
-		if(!(fd = fopen(asset->path, "r")))
-		{
-			errormsg("Error while opening \"%s\" for reading. \n%m", asset->path);
-			return 1;
-		}
+		// Should not reach here
+		errorbox("FielAC3 does not support decoding");
+		return 1;
 	}
 	return 0;
 }
@@ -176,13 +170,13 @@ void FileAC3::close_file()
 		delete [] temp_compressed;
 		temp_compressed = 0;
 	}
-	reset_parameters();
-	FileBase::close_file();
 }
 
-int FileAC3::write_samples(double **buffer, int len)
+int FileAC3::write_aframes(AFrame **frames)
 {
 // Convert buffer to encoder format
+	int len = frames[0]->length;
+
 	if(temp_raw_size + len > temp_raw_allocated)
 	{
 		int new_allocated = temp_raw_size + len;
@@ -212,7 +206,7 @@ int FileAC3::write_samples(double **buffer, int len)
 	{
 		for(int j = 0; j < asset->channels; j++)
 		{
-			int sample = (int)(buffer[j][i] * 32767);
+			int sample = (int)(frames[j]->buffer[i] * 32767);
 			CLAMP(sample, -32768, 32767);
 			*out_ptr++ = sample;
 		}
@@ -263,32 +257,20 @@ AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 	0,
 	1)
 {
-	this->parent_window = parent_window;
-	this->asset = asset;
-}
-
-void AC3ConfigAudio::create_objects()
-{
+	AC3ConfigAudioBitrate *bitrate;
 	int x = 10, y = 10;
 	int x1 = 150;
+
+	this->parent_window = parent_window;
+	this->asset = asset;
 	add_tool(new BC_Title(x, y, "Bitrate (kbps):"));
-	AC3ConfigAudioBitrate *bitrate;
-	add_tool(bitrate = 
-		new AC3ConfigAudioBitrate(this,
+	add_tool(bitrate = new AC3ConfigAudioBitrate(this,
 			x1, 
 			y));
 	bitrate->create_objects();
-
 	add_subwindow(new BC_OKButton(this));
 	show_window();
-	flush();
 }
-
-void AC3ConfigAudio::close_event()
-{
-	set_done(0);
-}
-
 
 AC3ConfigAudioBitrate::AC3ConfigAudioBitrate(AC3ConfigAudio *gui, 
 	int x, 
