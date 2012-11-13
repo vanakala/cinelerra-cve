@@ -73,9 +73,7 @@ public:
 	int create_index();
 
 	int get_index(const char *index_path);
-	void set_video_position(framenum x);
-	int write_samples(double **buffer, 
-			int len);
+	int write_aframes(AFrame **buffer);
 	int write_frames(VFrame ***frames, int len);
 
 	int read_frame(VFrame *frame);
@@ -94,7 +92,6 @@ public:
 	static const char *compressiontostr(const char *string);
 
 private:
-	void reset_parameters_derived();
 // File descriptor for decoder
 	mpeg3_t *fd;
 

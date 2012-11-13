@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "asset.h"
 #include "bcprogressbox.h"
 #include "bcsignals.h"
@@ -78,7 +79,29 @@ static double aspect_ratio_codes[] =
 FileMPEG::FileMPEG(Asset *asset, File *file)
  : FileBase(asset, file)
 {
-	reset_parameters();
+	wrote_header = 0;
+	mjpeg_out = 0;
+	mjpeg_eof = 0;
+	mjpeg_error = 0;
+
+	dvb_out = 0;
+
+	fd = 0;
+	video_out = 0;
+	audio_out = 0;
+	prev_track = 0;
+	temp_frame = 0;
+	toolame_temp = 0;
+	toolame_allocation = 0;
+	toolame_result = 0;
+	lame_temp[0] = 0;
+	lame_temp[1] = 0;
+	lame_allocation = 0;
+	lame_global = 0;
+	lame_output = 0;
+	lame_output_allocation = 0;
+	lame_fd = 0;
+	lame_started = 0;
 // May also be VMPEG or AMPEG if write status.
 	if(asset->format == FILE_UNKNOWN) asset->format = FILE_MPEG;
 	asset->byte_order = 0;
@@ -141,33 +164,6 @@ int FileMPEG::supports(int format)
 		return SUPPORTS_AUDIO | SUPPORTS_VIDEO;
 	}
 	return 0;
-}
-
-void FileMPEG::reset_parameters_derived()
-{
-	wrote_header = 0;
-	mjpeg_out = 0;
-	mjpeg_eof = 0;
-	mjpeg_error = 0;
-
-	dvb_out = 0;
-
-	fd = 0;
-	video_out = 0;
-	audio_out = 0;
-	prev_track = 0;
-	temp_frame = 0;
-	toolame_temp = 0;
-	toolame_allocation = 0;
-	toolame_result = 0;
-	lame_temp[0] = 0;
-	lame_temp[1] = 0;
-	lame_allocation = 0;
-	lame_global = 0;
-	lame_output = 0;
-	lame_output_allocation = 0;
-	lame_fd = 0;
-	lame_started = 0;
 }
 
 // Just create the Quicktime objects since this routine is also called
@@ -626,6 +622,7 @@ void FileMPEG::close_file()
 	if(fd)
 	{
 		mpeg3_close(fd);
+		fd = 0;
 	}
 
 	if(video_out)
@@ -650,24 +647,43 @@ void FileMPEG::close_file()
 	}
 
 	if(lame_global)
+	{
 		lame_close(lame_global);
+		lame_global = 0;
+	}
 
-	if(temp_frame) delete temp_frame;
-	if(toolame_temp) delete [] toolame_temp;
+	if(temp_frame)
+	{
+		delete temp_frame;
+		temp_frame = 0;
+	}
+	if(toolame_temp)
+	{
+		delete [] toolame_temp;
+		toolame_temp = 0;
+	}
 
 	if(lame_temp[0]) delete [] lame_temp[0];
 	if(lame_temp[1]) delete [] lame_temp[1];
-	if(lame_output) delete [] lame_output;
-	if(lame_fd) fclose(lame_fd);
+	lame_temp[0] = 0;
+	lame_temp[1] = 0;
 
-	if(mjpeg_out) fclose(mjpeg_out);
+	if(lame_output) delete [] lame_output;
+	lame_output = 0;
+	if(lame_fd) fclose(lame_fd);
+	lame_fd = 0;
+
+	if(mjpeg_out)
+	{
+		fclose(mjpeg_out);
+		mjpeg_out = 0;
+	}
 
 	if(dvb_out)
+	{
 		fclose(dvb_out);
-
-	reset_parameters();
-
-	FileBase::close_file();
+		dvb_out = 0;
+	}
 }
 
 int FileMPEG::get_best_colormodel(Asset *asset, int driver)
@@ -752,10 +768,6 @@ int FileMPEG::get_index(const char *index_path)
 	return 1;
 }
 
-void FileMPEG::set_video_position(framenum x)
-{
-}
-
 int64_t FileMPEG::get_memory_usage()
 {
 	if(rd && fd)
@@ -766,9 +778,10 @@ int64_t FileMPEG::get_memory_usage()
 	return 0;
 }
 
-int FileMPEG::write_samples(double **buffer, int len)
+int FileMPEG::write_aframes(AFrame **frames)
 {
 	int result = 0;
+	int len = frames[0]->length;
 
 	if(asset->ampeg_derivative == 2)
 	{
@@ -785,7 +798,7 @@ int FileMPEG::write_samples(double **buffer, int len)
 		for(int i = 0; i < channels; i++)
 		{
 			int16_t *output = ((int16_t*)toolame_temp) + i;
-			double *input = buffer[i];
+			double *input = frames[i]->buffer;
 			for(int j = 0; j < len; j++)
 			{
 				int sample = (int)(*input * 0x7fff);
@@ -822,7 +835,7 @@ int FileMPEG::write_samples(double **buffer, int len)
 		for(int i = 0; i < channels; i++)
 		{
 			float *output = lame_temp[i];
-			double *input = buffer[i];
+			double *input = frames[i]->buffer;
 			for(int j = 0; j < len; j++)
 			{
 				*output++ = *input++ * (float)32768;
