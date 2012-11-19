@@ -186,7 +186,7 @@ plugins/holo/holo.C
 plugins/holo/holowindow.C
 plugins/huesaturation/huesaturation.C
 # plugins/huesaturation/huewindow.C
-plugins/interpolate/interpolate.C
+# plugins/interpolate/interpolate.C
 plugins/interpolatevideo/interpolatevideo.C
 # plugins/interpolateall/interpolateall.C
 plugins/invertaudio/invert.C

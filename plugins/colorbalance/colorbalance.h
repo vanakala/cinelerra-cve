@@ -101,8 +101,7 @@ public:
 	void save_defaults();
 	void handle_opengl();
 
-	void get_aggregation(int *aggregate_interpolate,
-		int *aggregate_gamma);
+	void get_aggregation(int *aggregate_gamma);
 
 	float calculate_slider(float in);
 	float calculate_transfer(float in);

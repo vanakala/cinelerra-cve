@@ -26,7 +26,6 @@
 #include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
-#include "../interpolate/aggregated.h"
 #include "playback3d.h"
 #include "workarounds.h"
 
@@ -504,15 +503,7 @@ void GammaMain::handle_opengl()
 	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
 
-// Aggregate with interpolate
-	int aggregate = 0;
-	if(prev_effect_is("Interpolate Pixels"))
-	{
-		aggregate = 1;
-		INTERPOLATE_COMPILE(shader_stack, current_shader)
-	}
-
-	GAMMA_COMPILE(shader_stack, current_shader, aggregate);
+	GAMMA_COMPILE(shader_stack, current_shader, 0);
 
 	unsigned int shader = VFrame::make_shader(0,
 				shader_stack[0],
@@ -529,11 +520,6 @@ void GammaMain::handle_opengl()
 	{
 		glUseProgram(shader);
 		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-
-		if(aggregate)
-		{
-			INTERPOLATE_UNIFORMS(shader)
-		}
 		GAMMA_UNIFORMS(shader)
 	}
 
