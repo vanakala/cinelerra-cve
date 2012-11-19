@@ -56,7 +56,6 @@
 #define FILE_WAV           2
 #define FILE_EXR           26
 #define FILE_EXR_LIST      27
-#define FILE_CR2           28
 #define FILE_YUV           29    // mjpegtools YUV4MPEG (aka YUV4MPEG2)
 #define FILE_RAWDV         32
 
@@ -114,7 +113,6 @@
 #define TIFF_LIST_NAME "TIFF Sequence"
 #define VMPEG_NAME "MPEG Video"    // For encoding only
 #define EXR_NAME "EXR"
-#define CR2_NAME "Raw Camera"
 #define EXR_LIST_NAME "EXR Sequence"
 #define YUV_NAME "YUV4MPEG Stream"
 

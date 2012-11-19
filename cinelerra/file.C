@@ -30,7 +30,6 @@
 #include "fileac3.h"
 #include "filedv.h"
 #include "filebase.h"
-#include "filecr2.h"
 #include "fileexr.h"
 #include "filexml.h"
 #include "filejpeg.h"
@@ -367,13 +366,6 @@ int File::open_file(Preferences *preferences,
 			file = new FileYUV(this->asset, this);
 		}
 		else
-		if(FileCR2::check_sig(this->asset))
-		{
-// JPEG file
-			fclose(stream);
-			file = new FileCR2(this->asset, this);
-		}
-		else
 		if(FileTGA::check_sig(this->asset))
 		{
 // TGA file
@@ -463,10 +455,6 @@ int File::open_file(Preferences *preferences,
 
 	case FILE_YUV:
 		file = new FileYUV(this->asset, this);
-		break;
-
-	case FILE_CR2:
-		file = new FileCR2(this->asset, this);
 		break;
 
 	case FILE_TGA_LIST:
@@ -594,9 +582,7 @@ void File::start_video_thread(int buffer_size,
 
 void File::start_video_decode_thread()
 {
-// Currently, CR2 is the only one which won't work asynchronously, so
-// we're not using a virtual function yet.
-	if(!video_thread && asset->format != FILE_CR2)
+	if(!video_thread)
 	{
 		video_thread = new FileThread(this, 0, 1);
 		video_thread->start_reading();
@@ -1038,8 +1024,6 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	else
 	if(!strcasecmp(format, _(YUV_NAME))) return FILE_YUV;
 	else
-	if(!strcasecmp(format, _(CR2_NAME))) return FILE_CR2;
-	else
 	if(!strcasecmp(format, _(MPEG_NAME))) return FILE_MPEG;
 	else
 	if(!strcasecmp(format, _(AMPEG_NAME))) return FILE_AMPEG;
@@ -1143,9 +1127,6 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 
 	case FILE_JPEG_LIST:
 		return _(JPEG_LIST_NAME);
-
-	case FILE_CR2:
-		return _(CR2_NAME);
 
 	case FILE_EXR:
 		return _(EXR_NAME);
@@ -1330,7 +1311,6 @@ int File::supports_video(int format)
 	case FILE_MOV:
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
-	case FILE_CR2:
 	case FILE_EXR:
 	case FILE_EXR_LIST:
 	case FILE_YUV:
