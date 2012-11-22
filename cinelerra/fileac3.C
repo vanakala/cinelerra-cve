@@ -73,9 +73,6 @@ int FileAC3::supports(int format)
 
 int FileAC3::open_file(int rd, int wr)
 {
-	this->wr = wr;
-	this->rd = rd;
-
 	if(wr)
 	{
 		avcodec_init();
