@@ -48,7 +48,10 @@ FileList::FileList(Asset *asset,
 	int list_type)
  : FileBase(asset, file)
 {
-	reset_parameters();
+	data = 0;
+	writer = 0;
+	writing = 0;
+	first_number = 0;
 	asset->video_data = 1;
 	this->list_prefix = list_prefix;
 	this->file_extension = file_extension;
@@ -62,18 +65,9 @@ FileList::~FileList()
 	close_file();
 	delete table_lock;
 }
-
-void FileList::reset_parameters_derived()
-{
-	data = 0;
-	writer = 0;
-	first_number = 0;
-}
-
 int FileList::open_file(int rd, int wr)
 {
-	this->rd = rd;
-	this->wr = wr;
+	writing = wr;
 	int result = 0;
 
 // skip header for write
@@ -168,14 +162,11 @@ void FileList::close_file()
 {
 	if(asset->format == list_type && path_list.total)
 	{
-		if(wr && asset->use_header) write_list_header();
+		if(writing && asset->use_header) write_list_header();
 		path_list.remove_all_objects();
 	}
 	if(data) delete data;
 	if(writer) delete writer;
-	reset_parameters();
-
-	FileBase::close_file();
 }
 
 void FileList::write_list_header()

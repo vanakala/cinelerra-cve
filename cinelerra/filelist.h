@@ -79,7 +79,6 @@ private:
 		float in_x1, float in_y1, float in_x2, float in_y2,
 		float out_x1, float out_y1, float out_x2, float out_y2, 
 		int alpha, int use_alpha, int use_float, int interpolate);
-	void reset_parameters_derived();
 	ArrayList<char*> path_list;     // List of files
 	const char *list_prefix;
 	const char *file_extension;
@@ -91,6 +90,7 @@ private:
 	int first_number;
 	int number_start;
 	int number_digits;
+	int writing;
 };
 
 
