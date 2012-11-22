@@ -74,7 +74,6 @@ FileMOV::FileMOV(Asset *asset, File *file)
  : FileBase(asset, file)
 {
 	fd = 0;
-	prev_track = 0;
 	quicktime_atracks = 0;
 	quicktime_vtracks = 0;
 	depth = 24;
@@ -86,6 +85,8 @@ FileMOV::FileMOV(Asset *asset, File *file)
 		asset->format = FILE_MOV;
 	asset->byte_order = 0;
 	suffix_number = 0;
+	reading = 0;
+	writing = 0;
 	threadframe_lock = new Mutex("FileMOV::threadframe_lock");
 }
 
@@ -171,8 +172,8 @@ int FileMOV::supports(int format)
 // for reopening.
 int FileMOV::open_file(int rd, int wr)
 {
-	this->rd = rd;
-	this->wr = wr;
+	reading = rd;
+	writing = wr;
 
 	if(suffix_number == 0) strcpy(prefix_path, asset->path);
 
@@ -209,7 +210,7 @@ void FileMOV::close_file()
 {
 	if(fd)
 	{
-		if(wr) quicktime_set_framerate(fd, asset->frame_rate);
+		if(writing) quicktime_set_framerate(fd, asset->frame_rate);
 		quicktime_close(fd);
 		fd = 0;
 	}
@@ -330,7 +331,7 @@ void FileMOV::asset_to_format()
 		quicktime_set_parameter(fd, "h264_fix_bitrate", &asset->h264_fix_bitrate);
 	}
 
-	if(wr && asset->format == FILE_AVI)
+	if(writing && asset->format == FILE_AVI)
 	{
 		quicktime_set_avi(fd, 1);
 	}
@@ -408,7 +409,7 @@ void FileMOV::format_to_asset()
 
 int64_t FileMOV::get_memory_usage()
 {
-	if(rd && fd)
+	if(reading && fd)
 	{
 		int64_t result = quicktime_memory_usage(fd);
 		return result;

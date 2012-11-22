@@ -125,6 +125,8 @@ private:
 	int temp_allocated;
 
 	float *channel_ptr[MAX_CHANNELS];
+	int reading;
+	int writing;
 };
 
 
