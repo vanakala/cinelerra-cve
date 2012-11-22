@@ -89,7 +89,6 @@ FileMPEG::FileMPEG(Asset *asset, File *file)
 	fd = 0;
 	video_out = 0;
 	audio_out = 0;
-	prev_track = 0;
 	temp_frame = 0;
 	toolame_temp = 0;
 	toolame_allocation = 0;
@@ -171,8 +170,6 @@ int FileMPEG::supports(int format)
 int FileMPEG::open_file(int rd, int wr)
 {
 	int result = 0;
-	this->rd = rd;
-	this->wr = wr;
 
 	if(rd)
 	{
@@ -770,7 +767,7 @@ int FileMPEG::get_index(const char *index_path)
 
 int64_t FileMPEG::get_memory_usage()
 {
-	if(rd && fd)
+	if(fd)
 	{
 		int64_t result = mpeg3_memory_usage(fd);
 		return result;
