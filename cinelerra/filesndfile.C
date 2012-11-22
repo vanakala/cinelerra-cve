@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "asset.h"
 #include "assets.h"
 #include "bcsignals.h"
@@ -37,6 +38,9 @@ FileSndFile::FileSndFile(Asset *asset, File *file)
 	temp_allocated = 0;
 	fd_config.format = 0;
 	fd = 0;
+	bufpos = -1;
+	buf_fill = 0;
+	buf_end = 0;
 }
 
 FileSndFile::~FileSndFile()
@@ -229,8 +233,6 @@ void FileSndFile::format_to_asset()
 int FileSndFile::open_file(int rd, int wr)
 {
 	int result = 0;
-	this->rd = rd;
-	this->wr = wr;
 
 	if(rd)
 	{
@@ -268,28 +270,15 @@ void FileSndFile::close_file()
 {
 	if(fd) sf_close(fd);
 	fd = 0;
-	FileBase::close_file();
 	fd_config.format = 0;
-}
-
-void FileSndFile::set_audio_position(samplenum sample)
-{
-	if(sf_seek(fd, sample, SEEK_SET) < 0)
-		errormsg("sf_seek() to sample %lld failed, reason: %s",
-			sample, sf_strerror(fd));
 }
 
 int FileSndFile::read_samples(double *buffer, int len)
 {
 	int result = 0;
+	sf_count_t rqpos = file->current_sample;
 
 // Get temp buffer for interleaved channels
-	if(len <= 0 || len > 1000000)
-		errormsg("Illegal length=%d", len);
-
-	if(!buffer)
-		errormsg("Missing buffer=%p", buffer);
-
 	if(temp_allocated && temp_allocated < len)
 	{
 		delete [] temp_double;
@@ -301,17 +290,27 @@ int FileSndFile::read_samples(double *buffer, int len)
 	{
 		temp_allocated = len;
 		temp_double = new double[len * asset->channels];
+		bufpos = -1;
 	}
+	if(rqpos != bufpos || len != buf_fill)
+	{
+		if(rqpos != buf_end)
+		{
+			if(sf_seek(fd, rqpos, SEEK_SET) < 0)
+				errormsg("sf_seek() to sample %lld failed, reason: %s",
+					rqpos, sf_strerror(fd));
+			bufpos = rqpos;
+			buf_fill = 0;
+		}
+		else
+			bufpos = buf_end;
 
-	result = !sf_read_double(fd, temp_double, len * asset->channels);
-
-	if(result)
-		errormsg("fd=%p temp_double=%p len=%d asset=%p asset->channels=%d\n",
-			fd, temp_double, len, asset, asset->channels);
-
+		buf_fill = sf_readf_double(fd, temp_double, len);
+		buf_end = bufpos + buf_fill;
+	}
 // Extract single channel
 	for(int i = 0, j = file->current_channel; 
-		i < len;
+		i < buf_fill;
 		i++, j += asset->channels)
 	{
 		buffer[i] = temp_double[j];
@@ -320,9 +319,10 @@ int FileSndFile::read_samples(double *buffer, int len)
 	return result;
 }
 
-int FileSndFile::write_samples(double **buffer, int len)
+int FileSndFile::write_aframes(AFrame **frames)
 {
 	int result = 0;
+	int len = frames[0]->length;
 
 // Get temp buffer for interleaved channels
 	if(temp_allocated && temp_allocated < len)
@@ -343,7 +343,7 @@ int FileSndFile::write_samples(double **buffer, int len)
 	{
 		for(int j = 0; j < len; j++)
 		{
-			double sample = buffer[i][j];
+			double sample = frames[i]->buffer[j];
 // Libsndfile does not limit values
 			if(asset->bits != BITSFLOAT) CLAMP(sample, -1.0, (32767.0 / 32768.0));
 			temp_double[j * asset->channels + i] = sample;
@@ -421,11 +421,6 @@ void SndFileConfig::create_objects()
 		add_subwindow(lohi = new SndFileLOHI(this, x + 170, y));
 	}
 	add_subwindow(new BC_OKButton(this));
-}
-
-void SndFileConfig::close_event()
-{
-	set_done(0);
 }
 
 

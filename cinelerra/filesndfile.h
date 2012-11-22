@@ -22,11 +22,12 @@
 #ifndef FILESNDFILE_H
 #define FILESNDFILE_H
 
+#include "aframe.inc"
 #include "bitspopup.inc"
 #include "filebase.h"
-#include "filesndfile.h"
-#include "sndfile.h"
+#include "filesndfile.inc"
 
+#include <sndfile.h>
 #include <stdio.h>
 
 // The following libsndfile files have to be modified to support VFS.
@@ -45,9 +46,8 @@ public:
 	static int check_sig(Asset *asset);
 	int open_file(int rd, int wr);
 	void close_file();
-	void set_audio_position(samplenum sample);
 	int read_samples(double *buffer, int len);
-	int write_samples(double **buffer, int len);
+	int write_aframes(AFrame **buffer);
 	void format_to_asset();
 	void asset_to_format();
 
@@ -62,6 +62,9 @@ public:
 // Temp for interleaved channels
 	double *temp_double;
 	int temp_allocated;
+	sf_count_t bufpos;
+	sf_count_t buf_fill;
+	sf_count_t buf_end;
 };
 
 class SndFileConfig;
@@ -91,7 +94,6 @@ public:
 	~SndFileConfig();
 
 	void create_objects();
-	void close_event();
 
 	BC_WindowBase *parent_window;
 	BitsPopup *bits_popup;
