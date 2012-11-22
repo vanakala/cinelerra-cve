@@ -116,6 +116,8 @@ private:
 	FILE *stream;
 	FileTOC *tocfile;
 	int page_write_error;
+	int reading;
+	int writing;
 
 	ogg_sync_state sync_state;
 	vorbis_info vrb_info;

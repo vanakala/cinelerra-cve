@@ -61,7 +61,6 @@ FileOGG::FileOGG(Asset *asset, File *file)
 		asset->format = FILE_OGG;
 
 	asset->byte_order = 0;
-	reset_parameters();
 	free_stream = 0;
 	open_streams = 0;
 	configured_streams = 0;
@@ -70,6 +69,8 @@ FileOGG::FileOGG(Asset *asset, File *file)
 	flush_lock = 0;
 	tocfile = 0;
 	page_write_error = 0;
+	reading = 0;
+	writing = 0;
 	memset(&track_data, 0, sizeof(track_data));
 }
 
@@ -192,9 +193,9 @@ int FileOGG::open_file(int rd, int wr)
 {
 	int ret = 0;
 
-	this->rd = rd;
-	this->wr = wr;
 	free_stream = 0;
+	reading = rd;
+	writing = wr;
 
 	memset(streams, 0, sizeof(streams));
 
@@ -608,7 +609,7 @@ void FileOGG::close_file()
 	if(!stream)
 		return;
 
-	if(wr)
+	if(writing)
 	{
 		flush_ogg(1); // flush all
 
@@ -629,7 +630,7 @@ void FileOGG::close_file()
 			theora_comment_clear(cur_stream->tc);
 			theora_clear(&cur_stream->ts);
 			delete cur_stream->ti;
-			if(rd)
+			if(reading)
 				delete cur_stream->tc;
 			cur_stream->ti = 0;
 		}
@@ -646,7 +647,7 @@ void FileOGG::close_file()
 				cur_stream->max_pcm_samples = 0;
 			}
 			delete cur_stream->vi;
-			if(rd)
+			if(reading)
 				delete cur_stream->vc;
 			cur_stream->vi = 0;
 		}
@@ -654,13 +655,13 @@ void FileOGG::close_file()
 		cur_stream->headers = 0;
 		cur_stream->dec_init = 0;
 	}
-	if(rd)
+	if(reading)
 	{
 		if(tocfile) delete tocfile;
 		ogg_sync_destroy(&sync_state);
 	}
 	if(stream) page_write_error |= fclose(stream);
-	if(wr && page_write_error)
+	if(writing && page_write_error)
 		errormsg("Failed to write OGG file to disk");
 	stream = 0;
 }
