@@ -86,6 +86,7 @@ File::~File()
 void File::reset_parameters()
 {
 	file = 0;
+	writing = 0;
 	audio_thread = 0;
 	video_thread = 0;
 	getting_options = 0;
@@ -505,6 +506,7 @@ int File::open_file(Preferences *preferences,
 	if(file && wr)
 	{
 		if(this->asset->dither) file->set_dither();
+		writing = 1;
 	}
 
 // Synchronize header parameters
@@ -531,7 +533,7 @@ void File::close_file(int ignore_thread)
 	{
 // The file's asset is a copy of the argument passed to open_file so the
 // user must copy lengths from the file's asset.
-		if(asset && file->wr)
+		if(asset && writing)
 		{
 			asset->audio_length = current_sample;
 			asset->video_length = current_frame;
@@ -667,13 +669,9 @@ samplenum File::get_audio_position(void)
 	return current_sample;
 }
 
-// The base samplerate must be nonzero if the base samplerate in the calling
-// function is expected to change as this forces the resampler to reset.
-
 void File::set_audio_position(samplenum position)
 {
-	if(file)
-		file->set_audio_position(current_sample = position);
+	current_sample = position;
 }
 
 // No resampling here.
@@ -854,11 +852,7 @@ int File::get_this_frame(framenum pos, VFrame *frame, int is_thread)
 {
 	if(!(video_thread && !is_thread) && file)
 	{
-		if(current_frame != pos)
-		{
-			current_frame = pos;
-			file->set_video_position(pos);
-		}
+		current_frame = pos;
 		current_layer = frame->get_layer();
 	}
 	return read_frame(frame, is_thread);

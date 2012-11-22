@@ -259,6 +259,7 @@ private:
 	BC_WindowBase *format_window;
 	Mutex *format_completion;
 	FrameCache *frame_cache;
+	int writing;
 // Copy read frames to the cache
 	int use_cache;
 };
