@@ -34,57 +34,17 @@ FileBase::FileBase(Asset *asset, File *file)
 {
 	this->file = file;
 	this->asset = asset;
-	internal_byte_order = get_byte_order();
-	reset_parameters();
+	dither = 0;
 }
 
 FileBase::~FileBase()
 {
-	if(audio_buffer_in) delete [] audio_buffer_in;
-	if(audio_buffer_out) delete [] audio_buffer_out;
-	if(video_buffer_in) delete [] video_buffer_in;
-	if(video_buffer_out) delete [] video_buffer_out;
-	if(row_pointers_in) delete [] row_pointers_in;
-	if(row_pointers_out) delete [] row_pointers_out;
-	if(float_buffer) delete [] float_buffer;
-}
-
-void FileBase::close_file()
-{
-	if(audio_buffer_in) delete [] audio_buffer_in;
-	if(audio_buffer_out) delete [] audio_buffer_out;
-	if(video_buffer_in) delete [] video_buffer_in;
-	if(video_buffer_out) delete [] video_buffer_out;
-	if(row_pointers_in) delete [] row_pointers_in;
-	if(row_pointers_out) delete [] row_pointers_out;
-	if(float_buffer) delete [] float_buffer;
-	close_file_derived();
-	reset_parameters();
 }
 
 void FileBase::set_dither()
 {
 	dither = 1;
 }
-
-int FileBase::reset_parameters()
-{
-	dither = 0;
-	audio_buffer_in = 0;
-	video_buffer_in = 0;
-	audio_buffer_out = 0;
-	video_buffer_out = 0;
-	float_buffer = 0;
-	row_pointers_in = 0;
-	row_pointers_out = 0;
-	prev_len = 0;
-	prev_bytes = 0;
-	prev_track = -1;
-	prev_layer = -1;
-	rd = wr = 0;
-	reset_parameters_derived();
-}
-
 
 int FileBase::match4(const char *in, const char *out)
 {

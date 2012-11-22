@@ -49,8 +49,6 @@ public:
 	friend class FileList;
 	friend class FrameWriter;
 
-	int reset_parameters();
-
 	virtual void get_parameters(BC_WindowBase *parent_window, 
 			Asset *asset, 
 			BC_WindowBase **format_window,
@@ -59,16 +57,10 @@ public:
 			int lock_compressor) {};
 
 	virtual int get_index(const char *index_path) { return 1; };
-	virtual void reset_parameters_derived() {};
-	virtual int read_header() {};     // WAV files for getting header
-	virtual int open_file(int rd, int wr) {};
-	virtual void close_file();
-	virtual void close_file_derived() {};
+	virtual int open_file(int rd, int wr) { return 1; };
+	virtual void close_file() {};
+
 	void set_dither();
-// Called only by recordengine
-	virtual void seek_end() {};
-	virtual void set_video_position(framenum x) {};
-	virtual void set_audio_position(samplenum x) {};
 
 // Subclass should call this to add the base class allocation.
 // Only used in read mode.
@@ -103,20 +95,8 @@ public:
 
 protected:
 	static int match4(const char *in, const char *out);   // match 4 bytes for a quicktime type
-
-	char *audio_buffer_in, *audio_buffer_out;    // for raw audio reads and writes
-	float *float_buffer;          // for floating point feathering
-	unsigned char *video_buffer_in, *video_buffer_out;
-	unsigned char **row_pointers_in, **row_pointers_out;
-
-	int prev_bytes; // determines if new raw buffer is needed and used for getting memory usage
-	int prev_len;
-	int prev_track;
-	int prev_layer;
-	Asset *asset;
-	int wr, rd;
 	int dither;
-	int internal_byte_order;
+	Asset *asset;
 	File *file;
 };
 #endif
