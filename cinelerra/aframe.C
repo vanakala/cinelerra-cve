@@ -185,21 +185,21 @@ int AFrame::fill_length()
 void AFrame::set_fill_request(ptstime pts, ptstime duration)
 {
 	reset_buffer();
-	this->pts = pts;
+	this->source_pts = this->pts = pts;
 	source_duration = duration;
 }
 
 void AFrame::set_fill_request(ptstime pts, int length)
 {
 	reset_buffer();
-	this->pts = pts;
+	this->source_pts = this->pts = pts;
 	source_length = length;
 }
 
 void AFrame::set_fill_request(samplenum position, int length)
 {
 	reset_buffer();
-	this->pts = to_duration(position);
+	this->source_pts = this->pts = to_duration(position);
 	source_length = length;
 }
 
