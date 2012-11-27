@@ -73,9 +73,9 @@ IndexFile::~IndexFile()
 
 int IndexFile::open_index(Asset *asset)
 {
+	int result = 0;
 // use buffer if being built
 	this->asset = asset;
-	int result = 0;
 
 	if(asset->index_status == INDEX_BUILDING)
 	{
@@ -189,13 +189,13 @@ int IndexFile::open_source(File *source)
 	}
 }
 
-int64_t IndexFile::get_required_scale(File *source)
+int IndexFile::get_required_scale(File *source)
 {
-	int64_t result = 1;
+	int result;
 // total length of input file
 	samplenum length_source = source->get_audio_length(0);
 
-	int64_t peak_count = mwindow->preferences->index_size / (2 * sizeof(float) * asset->channels);
+	samplenum peak_count = mwindow->preferences->index_size / (2 * sizeof(float) * asset->channels);
 	for(result = 1; 
 		length_source / result > peak_count; 
 		result *= 2);
@@ -206,7 +206,7 @@ int64_t IndexFile::get_required_scale(File *source)
 	return result;
 }
 
-int IndexFile::get_index_filename(char *source_filename, 
+void IndexFile::get_index_filename(char *source_filename, 
 	const char *index_directory,
 	char *index_filename, 
 	const char *input_filename)
@@ -229,13 +229,11 @@ int IndexFile::get_index_filename(char *source_filename,
 	FileSystem fs;
 	fs.join_names(index_filename, index_directory, source_filename);
 	strcat(index_filename, ".idx");
-	return 0;
 }
 
-int IndexFile::interrupt_index()
+void IndexFile::interrupt_index()
 {
 	interrupt_flag = 1;
-	return 0;
 }
 
 // Read data into buffers
@@ -246,7 +244,6 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	this->mwindow = mwindow;
 	this->asset = asset;
 	interrupt_flag = 0;
-
 // open the source file
 	File source;
 	if(open_source(&source)) return 1;
@@ -273,7 +270,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 // from CDROM source.
 
 // total length of input file
-		int64_t length_source = source.get_audio_length(0);
+		samplenum length_source = source.get_audio_length(0);
 
 // get amount to read at a time in floats
 		int buffersize = 65536;
@@ -300,11 +297,10 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 // pass through file once
 		while(position < length_source && !result)
 		{
-			if(length_source - position < fragment_size && fragment_size == buffersize) fragment_size = length_source - position;
+			if(length_source - position < fragment_size && fragment_size == buffersize)
+				fragment_size = length_source - position;
 
 			index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 1");
-			index_thread->input_len[current_buffer] = fragment_size;
-
 			int cancelled = progress->update(position);
 			if(cancelled || 
 				index_thread->interrupt_flag || 
@@ -315,13 +311,10 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 
 			for(int channel = 0; !result && channel < asset->channels; channel++)
 			{
-				source.set_audio_position(position);
-				source.set_channel(channel);
-
+				index_thread->frames_in[current_buffer][channel]->set_fill_request(position, fragment_size);
 // Read from source file
-				if(source.read_samples(index_thread->buffer_in[current_buffer][channel], 
-					fragment_size,
-					0)) result = 1;
+				if(source.get_samples(index_thread->frames_in[current_buffer][channel]))
+					result = 1;
 			}
 
 // Release buffer to thread
@@ -357,7 +350,6 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	return 0;
 }
 
-
 int IndexFile::create_index(MWindow *mwindow, 
 		Asset *asset, 
 		MainProgressBar *progress)
@@ -365,7 +357,7 @@ int IndexFile::create_index(MWindow *mwindow,
 	return create_index(asset, progress);
 }
 
-int IndexFile::redraw_edits(int force)
+void IndexFile::redraw_edits(int force)
 {
 	int64_t difference = redraw_timer->get_scaled_difference(1000);
 
@@ -380,7 +372,6 @@ int IndexFile::redraw_edits(int force)
 		asset->old_index_end = asset->index_end;
 		mwindow->gui->unlock_window();
 	}
-	return 0;
 }
 
 
@@ -549,6 +540,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	}
 
 	if(!buffer_shared) delete [] buffer;
+
 	return 0;
 }
 

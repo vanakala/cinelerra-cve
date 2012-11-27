@@ -22,6 +22,7 @@
 #ifndef INDEXTHREAD_H
 #define INDEXTHREAD_H
 
+#include "aframe.h"
 #include "asset.inc"
 #include "condition.inc"
 #include "indexfile.inc"
@@ -45,8 +46,8 @@ public:
 
 	friend class IndexFile;
 
-	int start_build();
-	int stop_build();
+	void start_build();
+	void stop_build();
 	void run();
 
 	IndexFile *index_file;
@@ -54,17 +55,14 @@ public:
 	Asset *asset;
 	char *index_filename;
 	int buffer_size;
-	int64_t length_source;
+	samplenum length_source;
 	int current_buffer;
 
 private:
 	int interrupt_flag;
-	double **buffer_in[TOTAL_BUFFERS];
+	AFrame *frames_in[TOTAL_BUFFERS][MAX_CHANNELS];
 	Condition *input_lock[TOTAL_BUFFERS], *output_lock[TOTAL_BUFFERS];
 	int last_buffer[TOTAL_BUFFERS];
-	int64_t input_len[TOTAL_BUFFERS];
 };
-
-
 
 #endif

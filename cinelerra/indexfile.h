@@ -45,14 +45,14 @@ public:
 	int open_index(MWindow *mwindow, Asset *asset);
 	int create_index(Asset *asset, MainProgressBar *progress);
 	int create_index(MWindow *mwindow, Asset *asset, MainProgressBar *progress);
-	int interrupt_index();
+	void interrupt_index();
 	static void delete_index(Preferences *preferences, Asset *asset);
-	static int get_index_filename(char *source_filename, 
+	static void get_index_filename(char *source_filename, 
 		const char *index_directory,
 		char *index_filename, 
 		const char *input_filename);
 	void update_edl_asset();
-	int redraw_edits(int force);
+	void redraw_edits(int force);
 	int draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w);
 	int close_index();
 	int remove_index();
@@ -69,9 +69,9 @@ private:
 
 	int open_file();
 	int open_source(File *source);
-	int64_t get_required_scale(File *source);
+	int get_required_scale(File *source);
 	FILE *file;
-	int64_t file_length;   // Length of index file in bytes
+	off_t file_length;   // Length of index file in bytes
 	int interrupt_flag;    // Flag set when index building is interrupted
 };
 
