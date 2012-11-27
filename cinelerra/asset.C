@@ -66,8 +66,6 @@ Asset::Asset(const int plugin_type, const char *plugin_title)
 
 Asset::~Asset()
 {
-	delete [] index_offsets;
-	delete [] index_sizes;
 // Don't delete index buffer since it is shared with the index thread.
 }
 
@@ -196,8 +194,8 @@ int Asset::reset_index()
 {
 	index_status = INDEX_NOTTESTED;
 	index_start = old_index_end = index_end = 0;
-	index_offsets = 0;
-	index_sizes = 0;
+	memset(index_offsets, 0, sizeof(index_offsets));
+	memset(index_sizes, 0, sizeof(index_sizes));
 	index_zoom = 0;
 	index_bytes = 0;
 	index_buffer = 0;
@@ -344,17 +342,17 @@ void Asset::copy_format(Asset *asset, int do_index)
 	tcformat = asset->tcformat;
 }
 
-int64_t Asset::get_index_offset(int channel)
+off_t Asset::get_index_offset(int channel)
 {
-	if(channel < channels && index_offsets)
+	if(channel < channels)
 		return index_offsets[channel];
 	else
 		return 0;
 }
 
-int64_t Asset::get_index_size(int channel)
+samplenum Asset::get_index_size(int channel)
 {
-	if(channel < channels && index_sizes)
+	if(channel < channels)
 		return index_sizes[channel];
 	else
 		return 0;
@@ -578,11 +576,7 @@ int Asset::read_video(FileXML *file)
 
 int Asset::read_index(FileXML *file)
 {
-	delete [] index_offsets;
-	index_offsets = new int64_t[channels];
-	delete [] index_sizes;
-	index_sizes = new int64_t[channels];
-	for(int i = 0; i < channels; i++) 
+	for(int i = 0; i < MAX_CHANNELS; i++) 
 	{
 		index_offsets[i] = 0;
 		index_sizes[i] = 0;
@@ -821,21 +815,18 @@ int Asset::write_index(FileXML *file)
 	file->append_tag();
 	file->append_newline();
 
-	if(index_offsets)
+	for(int i = 0; i < channels; i++)
 	{
-		for(int i = 0; i < channels; i++)
-		{
-			file->tag.set_title("OFFSET");
-			file->tag.set_property("FLOAT", index_offsets[i]);
-			file->append_tag();
-			file->tag.set_title("/OFFSET");
-			file->append_tag();
-			file->tag.set_title("SIZE");
-			file->tag.set_property("FLOAT", index_sizes[i]);
-			file->append_tag();
-			file->tag.set_title("/SIZE");
-			file->append_tag();
-		}
+		file->tag.set_title("OFFSET");
+		file->tag.set_property("FLOAT", index_offsets[i]);
+		file->append_tag();
+		file->tag.set_title("/OFFSET");
+		file->append_tag();
+		file->tag.set_title("SIZE");
+		file->tag.set_property("FLOAT", index_sizes[i]);
+		file->append_tag();
+		file->tag.set_title("/SIZE");
+		file->append_tag();
 	}
 
 	file->append_newline();
@@ -1142,23 +1133,11 @@ void Asset::update_index(Asset *asset)
 	index_end = asset->index_end;
 	old_index_end = asset->old_index_end;	 // values for index build
 
-	delete [] index_offsets;
-	delete [] index_sizes;
-	index_offsets = 0;
-	index_sizes = 0;
-
-	if(asset->index_offsets)
+	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
-		index_offsets = new int64_t[asset->channels];
-		index_sizes = new int64_t[asset->channels];
-
-		int i;
-		for(i = 0; i < asset->channels; i++)
-		{
 // offsets of channels in index file in floats
-			index_offsets[i] = asset->index_offsets[i];  
-			index_sizes[i] = asset->index_sizes[i];
-		}
+		index_offsets[i] = asset->index_offsets[i];
+		index_sizes[i] = asset->index_sizes[i];
 	}
 	index_buffer = asset->index_buffer;    // pointer
 }

@@ -30,6 +30,7 @@
 #include "filexml.inc"
 #include "garbage.h"
 #include "linklist.h"
+#include "maxchannels.h"
 #include "pluginserver.inc"
 
 
@@ -66,8 +67,8 @@ public:
 	void copy_location(Asset *asset);
 	void copy_format(Asset *asset, int do_index = 1);
 	void copy_index(Asset *asset);
-	int64_t get_index_offset(int channel);
-	int64_t get_index_size(int channel);
+	off_t get_index_offset(int channel);
+	samplenum get_index_size(int channel);
 
 // Load and save parameters for a render dialog
 // Used by render, record, menueffects, preferences
@@ -296,16 +297,16 @@ public:
 
 // index info
 	int index_status;     // Macro from assets.inc
-	int64_t index_zoom;      // zoom factor of index data
-	int64_t index_start;     // byte start of index data in the index file
+	int index_zoom;      // zoom factor of index data
+	off_t index_start;     // byte start of index data in the index file
 // Total bytes in source file when the index was buillt
-	int64_t index_bytes;
-	int64_t index_end, old_index_end;    // values for index build
+	off_t index_bytes;
+	off_t index_end, old_index_end;    // values for index build
 // offsets of channels in index buffer in floats
-	int64_t *index_offsets;
+	off_t index_offsets[MAX_CHANNELS];
 // Sizes of channels in index buffer in floats.  This allows
 // variable channel size.
-	int64_t *index_sizes;
+	samplenum index_sizes[MAX_CHANNELS];
 // [ index channel      ][ index channel      ]
 // [high][low][high][low][high][low][high][low]
 	float *index_buffer;

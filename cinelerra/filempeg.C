@@ -736,8 +736,7 @@ int FileMPEG::get_index(const char *index_path)
 // Current asset channel
 		int current_channel = 0;
 		asset->index_zoom = mpeg3_index_zoom(fd);
-		asset->index_offsets = new int64_t[asset->channels];
-		asset->index_sizes = new int64_t[asset->channels];
+
 		for(int i = 0; i < mpeg3_index_tracks(fd); i++)
 		{
 			for(int j = 0; j < mpeg3_index_channels(fd, i); j++)
