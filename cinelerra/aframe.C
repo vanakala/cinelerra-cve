@@ -24,35 +24,73 @@
 #include "aframe.h"
 #include "bcsignals.h"
 
-AFrame::AFrame(int buflen)
+AFrame::AFrame(int buflen, int float_data)
 {
 	reset_buffer();
 	channel = 0;
 	samplerate = 0;
 	shared = 0;
 	buffer = 0;
+	float_buffer = 0;
 	buffer_length = 0;
+	this->float_data = float_data;
 	if(buflen > 0)
 	{
-		buffer = new double[buflen];
+		if(float_data)
+			float_buffer = new float[buflen];
+		else
+			buffer = new double[buflen];
 		buffer_length = buflen;
 	}
 }
 
 AFrame::~AFrame()
 {
-	if(!shared && buffer)
-		delete [] buffer;
+	if(!shared)
+	{
+		if(buffer)
+			delete [] buffer;
+		if(float_buffer)
+			delete [] float_buffer;
+	}
 }
 
 void AFrame::set_buffer(double *newbuffer, int length)
 {
 	if(newbuffer && length)
 	{
-		if(!shared && buffer)
-			delete [] buffer;
+		if(!shared)
+		{
+			if(buffer)
+				delete [] buffer;
+			buffer = 0;
+			if(float_buffer)
+				delete [] float_buffer;
+			float_buffer = 0;
+		}
+		float_data = 0;
 		shared = 1;
 		buffer = newbuffer;
+		buffer_length = length;
+	}
+}
+
+void AFrame::set_buffer(float *newbuffer, int length)
+{
+	if(newbuffer && length)
+	{
+		if(!shared)
+		{
+			if(buffer)
+				delete [] buffer;
+			buffer = 0;
+			if(float_buffer)
+				delete [] float_buffer;
+			float_buffer = 0;
+		}
+		float_data = 1;
+		shared = 1;
+		float_buffer = newbuffer;
 		buffer_length = length;
 	}
 }
@@ -63,7 +101,14 @@ void AFrame::check_buffer(int length)
 	{
 		if(buffer)
 			delete [] buffer;
-		buffer = new double[length];
+		buffer = 0;
+		if(float_buffer)
+			delete [] float_buffer;
+		float_buffer = 0;
+		if(float_data)
+			float_buffer = new float[length];
+		else
+			buffer = new double[length];
 		buffer_length = length;
 		this->length = 0;
 	}
@@ -73,6 +118,8 @@ void AFrame::clear_buffer(void)
 {
 	if(buffer)
 		memset(&buffer[length], 0, (buffer_length - length) * sizeof(double));
+	if(float_buffer)
+		memset(&float_buffer[length], 0, (buffer_length - length) * sizeof(float));
 }
 
 void AFrame::reset_buffer(void)
@@ -106,8 +153,12 @@ void AFrame::copy_pts(AFrame *that)
 void AFrame::copy(AFrame *that)
 {
 	copy_pts(that);
+	float_data = that->float_data;
 	check_buffer(that->length);
-	memcpy(buffer, that->buffer, sizeof(double) * that->length);
+	if(float_data)
+		memcpy(float_buffer, that->float_buffer, sizeof(float) * that->length);
+	else
+		memcpy(buffer, that->buffer, sizeof(double) * that->length);
 	length = that->length;
 	duration = that->duration;
 }
@@ -115,6 +166,7 @@ void AFrame::copy(AFrame *that)
 void AFrame::copy_of(AFrame *that)
 {
 	copy_pts(that);
+	float_data = that->float_data;
 	check_buffer(that->length);
 	length = that->length;
 	duration = that->duration;
@@ -133,11 +185,20 @@ void AFrame::extend_buffer(int length)
 	{
 		if(buffer_length)
 		{
-			double *oldbuf = buffer;
-			buffer = new double[length];
-			if(this->length)
-				memcpy(buffer, oldbuf, this->length * sizeof(double));
-			delete [] oldbuf;
+			if(float_data)
+			{
+				float *oldbuf = float_buffer;
+				float_buffer = new float[length];
+				if(this->length)
+					memcpy(float_buffer, oldbuf, this->length * sizeof(float));
+				delete [] oldbuf;
+			} else {
+				double *oldbuf = buffer;
+				buffer = new double[length];
+				if(this->length)
+					memcpy(buffer, oldbuf, this->length * sizeof(double));
+				delete [] oldbuf;
+			}
 		}
 		buffer_length = length;
 	}
@@ -228,19 +289,34 @@ void AFrame::dump(int dumpdata)
 	printf("AFrame::dump: %p\n", this);
 	printf("    pts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] chnl %d rate %d sample %lld\n",
 		pts, duration, length, source_pts, source_duration, source_length, channel, samplerate, position);
-	printf("    buffer %p buffer_length %d shared %d\n", buffer, buffer_length, shared);
+	printf("    buffer %p float_buffer %p buffer_length %d shared %d float_data %d\n",
+		buffer, float_buffer, buffer_length, shared, float_data);
 	if(dumpdata && length > 0)
 	{
 		avg = 0;
 		min = +100;
 		max = -100;
-		for(int i = 0; i < length; i++)
+		if(buffer)
 		{
-			avg += fabs(buffer[i]);
-			if(buffer[i] < min)
-				min = buffer[i];
-			if(buffer[i] > max)
-				max = buffer[i];
+			for(int i = 0; i < length; i++)
+			{
+				avg += fabs(buffer[i]);
+				if(buffer[i] < min)
+					min = buffer[i];
+				if(buffer[i] > max)
+					max = buffer[i];
+			}
+		}
+		if(float_buffer)
+		{
+			for(int i = 0; i < length; i++)
+			{
+				avg += fabs(float_buffer[i]);
+				if(float_buffer[i] < min)
+					min = float_buffer[i];
+				if(float_buffer[i] > max)
+					max = float_buffer[i];
+			}
 		}
 		printf("    buffer vals avg %.4f min %.3f max %.3f\n", 
 			avg/length, min, max);

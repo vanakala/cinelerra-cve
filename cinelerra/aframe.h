@@ -27,11 +27,12 @@
 class AFrame
 {
 public:
-	AFrame(int buffer_length = 0);
+	AFrame(int buffer_length = 0, int float_data = 0);
 	~AFrame();
 
 // Set shared buffer (AFrame does not delete it)
 	void set_buffer(double *buffer, int length);
+	void set_buffer(float *buffer, int length);
 
 // Clears unused part of buffer
 	void clear_buffer(void);
@@ -99,12 +100,14 @@ public:
 
 	int samplerate;
 	double *buffer;
+	float *float_buffer;
 
 // Length of allocated buffer
 	int buffer_length;
 
 private:
 	int shared;
+	int float_data;
 };
 
 
