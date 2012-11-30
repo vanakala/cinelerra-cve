@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "file.h"
@@ -36,24 +37,18 @@ Resample::Resample(File *file, int channels)
 {
 	this->file = file;
 	this->channels = channels;
-	old = new double*[channels];
 	for(int i = 0; i < channels; i++)
 	{
 		old[i] = new double[BLACKSIZE];
 	}
-	itime = new double[channels];
-	resample_init = new int[channels];
 	memset(resample_init, 0, sizeof(int) * channels);
 	last_ratio = 0;
 	output_temp = 0;
-	output_size = new int[channels];
 	memset(output_size, 0, sizeof(int) * channels);
 	output_allocation = 0;
 	input_size = RESAMPLE_CHUNKSIZE;
-	input_chunk_end = new samplenum[channels];
 	memset(input_chunk_end, 0, sizeof(samplenum) * channels);
-	input = new double[input_size];
-	last_out_end = new samplenum[channels];
+	inframe = new AFrame(input_size);
 	memset(last_out_end, 0, sizeof(samplenum) * channels);
 }
 
@@ -72,13 +67,7 @@ Resample::~Resample()
 		}
 		delete [] output_temp;
 	}
-
-	delete [] input_chunk_end;
-	delete [] input;
-	delete [] old;
-	delete [] itime;
-	delete [] output_size;
-	delete [] last_out_end;
+	delete inframe;
 }
 
 void Resample::reset(int channel)
@@ -121,7 +110,6 @@ S.D. Stearns and R.A. David, Prentice-Hall, 1992
 		return (sin((wcn * (x - dly))) / (M_PI * (x - dly)) * bkwn);
 }
 
-
 int Resample::get_output_size(int channel)
 {
 	return output_size[channel];
@@ -135,8 +123,6 @@ void Resample::read_output(double *output, int channel, int size)
 		output_temp[channel][i - size] = output_temp[channel][i];
 	output_size[channel] -= size;
 }
-
-
 
 void Resample::resample_chunk(double *input,
 	int in_len,
@@ -208,7 +194,7 @@ void Resample::resample_chunk(double *input,
 
 			xvalue += y * blackfilt[joff][i];
 		}
-		
+
 		if(output_allocation <= output_size[channel])
 		{
 			double **new_output = new double*[channels];
@@ -281,14 +267,18 @@ int Resample::resample(double *output,
 		{
 			if(reseek)
 			{
-				file->set_audio_position(round((double)out_position / out_rate * in_rate));
+				inframe->set_fill_request((double)out_position / out_rate, input_size);
 				reseek = 0;
 			}
 			else
-				file->set_audio_position(input_chunk_end[file->current_channel]);
-			file->read_samples(input, input_size, 0);
-			input_chunk_end[file->current_channel] = file->current_sample;
-			resample_chunk(input,
+				inframe->set_fill_request(input_chunk_end[channel], input_size);
+
+			inframe->channel = channel;
+			file->get_samples(inframe);
+
+			input_chunk_end[channel] = inframe->position + inframe->length;
+
+			resample_chunk(inframe->buffer,
 				input_size,
 				in_rate,
 				out_rate,
@@ -307,24 +297,18 @@ Resample_float::Resample_float(File *file, int channels)
 	this->file = file;
 	this->channels = channels;
 
-	old = new float*[channels];
 	for(int i = 0; i < channels; i++)
 	{
 		old[i] = new float[BLACKSIZE];
 	}
-	itime = new float[channels];
-	resample_init = new int[channels];
 	memset(resample_init, 0, sizeof(int) * channels);
 	last_ratio = 0;
 	output_temp = 0;
-	output_size = new int[channels];
 	memset(output_size, 0, sizeof(int) * channels);
 	output_allocation = 0;
 	input_size = RESAMPLE_CHUNKSIZE;
-	input_chunk_end = new samplenum[channels];
 	memset(input_chunk_end, 0, sizeof(samplenum) * channels);
-	input = new float[input_size];
-	last_out_end = new samplenum[channels];
+	inframe  = new AFrame(input_size, 1);
 	memset(last_out_end, 0, sizeof(samplenum) * channels);
 }
 
@@ -343,13 +327,7 @@ Resample_float::~Resample_float()
 		}
 		delete [] output_temp;
 	}
-
-	delete [] input_chunk_end;
-	delete [] input;
-	delete [] old;
-	delete [] itime;
-	delete [] output_size;
-	delete [] last_out_end;
+	delete inframe;
 }
 
 void Resample_float::reset(int channel)
@@ -392,7 +370,6 @@ S.D. Stearns and R.A. David, Prentice-Hall, 1992
 	return (sin((wcn * (x - dly))) / (M_PI * (x - dly)) * bkwn);
 }
 
-
 int Resample_float::get_output_size(int channel)
 {
 	return output_size[channel];
@@ -406,8 +383,6 @@ void Resample_float::read_output(double *output, int channel, int size)
 		output_temp[channel][i - size] = output_temp[channel][i];
 	output_size[channel] -= size;
 }
-
-
 
 void Resample_float::resample_chunk(float *input,
 	int in_len,
@@ -551,14 +526,18 @@ int Resample_float::resample(double *output,
 		{
 			if(reseek)
 			{
-				file->set_audio_position(round((double)out_position / out_rate * in_rate));
+				inframe->set_fill_request((double)out_position / out_rate, input_size);
 				reseek = 0;
 			}
 			else
-				file->set_audio_position(input_chunk_end[file->current_channel]);
-			file->read_samples(0, input_size, 0, input);
-			input_chunk_end[file->current_channel] = file->current_sample;
-			resample_chunk(input,
+				inframe->set_fill_request(input_chunk_end[channel], input_size);
+
+			inframe->channel = channel;
+			file->get_samples(inframe);
+
+			input_chunk_end[channel] = inframe->position + inframe->length;
+
+			resample_chunk(inframe->float_buffer,
 				input_size,
 				in_rate,
 				out_rate,

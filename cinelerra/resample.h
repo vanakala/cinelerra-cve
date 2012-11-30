@@ -25,8 +25,10 @@
 #define BPC 160
 #define BLACKSIZE 25
 
+#include "aframe.inc"
 #include "datatype.h"
 #include "file.inc"
+#include "maxchannels.h"
 
 class Resample
 {
@@ -54,36 +56,34 @@ public:
 		int out_rate,
 		int channel,
 		samplenum out_position);      // Starting sample in output samplerate
+
 // History buffer for resampling.
-	double **old;
-	double *itime;
-
-
+	double *old[MAX_CHANNELS];
+	double itime[MAX_CHANNELS];
 
 // Unaligned resampled output
 	double **output_temp;
 
-
 // Total samples in unaligned output
 // Tied to each channel independantly
-	int *output_size;
+	int output_size[MAX_CHANNELS];
 
 // Allocation of unaligned output
 	int output_allocation;
 // input chunk
-	double *input;
+	AFrame *inframe;
 // Sample end of input chunks in the input domain.
-	samplenum *input_chunk_end;
+	samplenum input_chunk_end[MAX_CHANNELS];
 	int input_size;
 	int channels;
-	int *resample_init;
+	int resample_init[MAX_CHANNELS];
 // Last sample ratio configured to
 	double last_ratio;
 	double blackfilt[2 * BPC + 1][BLACKSIZE];
 	File *file;
 // Determine whether to reset after a seek
 // Sample end of last buffer read for each channel
-	samplenum *last_out_end;
+	samplenum last_out_end[MAX_CHANNELS];
 };
 
 class Resample_float
@@ -114,32 +114,32 @@ public:
 		samplenum out_position);      // Starting sample in output samplerate
 
 // History buffer for resampling.
-	float **old;
-	float *itime;
+	float *old[MAX_CHANNELS];
+	float itime[MAX_CHANNELS];
 
 // Unaligned resampled output
 	double **output_temp;
 
 // Total samples in unaligned output
 // Tied to each channel independantly
-	int *output_size;
+	int output_size[MAX_CHANNELS];
 
 // Allocation of unaligned output
 	int output_allocation;
 // input chunk
-	float *input;
+	AFrame *inframe;
 // Sample end of input chunks in the input domain.
-	samplenum *input_chunk_end;
+	samplenum input_chunk_end[MAX_CHANNELS];
 	int input_size;
 	int channels;
-	int *resample_init;
+	int resample_init[MAX_CHANNELS];
 // Last sample ratio configured to
 	float last_ratio;
 	float blackfilt[2 * BPC + 1][BLACKSIZE];
 	File *file;
 // Determine whether to reset after a seek
 // Sample end of last buffer read for each channel
-	samplenum *last_out_end;
+	samplenum last_out_end[MAX_CHANNELS];
 };
 
 #endif
