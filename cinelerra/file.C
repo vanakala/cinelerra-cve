@@ -774,7 +774,7 @@ int File::get_samples(AFrame *aframe)
 		return 0;
 	current_sample = aframe->position;
 	current_channel = aframe->channel;
-	result = read_samples(aframe->buffer + aframe->length, aframe->source_length, aframe->samplerate);
+	result = read_samples(aframe->buffer + aframe->length, aframe->source_length, aframe->samplerate, aframe->float_buffer + aframe->length);
 	aframe->length += aframe->source_length;
 	aframe->duration = (ptstime)aframe->length / aframe->samplerate;
 	return result;
