@@ -589,6 +589,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 			for(j = 0; j < len && !result; j++)
 			{
 				VFrame *frame = frames[i][j];
+				int current_frame = round(frame->get_pts() * asset->frame_rate);
 // Special handling for DIVX
 // Determine keyframe status.
 // Write VOL header in the first frame if none exists
@@ -599,9 +600,9 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 					if(quicktime_mpeg4_is_key(frame->get_data(), 
 						frame->get_compressed_size(),
 						asset->vcodec))
-						quicktime_insert_keyframe(fd, file->current_frame + j, i);
+						quicktime_insert_keyframe(fd, current_frame + j, i);
 // Write header
-					if(!(file->current_frame + j) && 
+					if(!(current_frame + j) && 
 						!quicktime_mpeg4_has_vol(frame->get_data()))
 					{
 						VFrame *temp_frame = new VFrame;
@@ -640,8 +641,8 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 					!strcmp(asset->vcodec, QUICKTIME_HV64) ||
 					!strcmp(asset->vcodec, QUICKTIME_MP4V))
 				{
-					if(frame->get_keyframe() || file->current_frame + j == 0)
-						quicktime_insert_keyframe(fd, file->current_frame + j, i);
+					if(frame->get_keyframe() || current_frame + j == 0)
+						quicktime_insert_keyframe(fd, current_frame + j, i);
 
 // Write frame
 						result = quicktime_write_frame(fd,
@@ -655,7 +656,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 					if(quicktime_mpeg4_is_key(frame->get_data(), 
 						frame->get_compressed_size(),
 						asset->vcodec))
-						quicktime_insert_keyframe(fd, file->current_frame + j, i);
+						quicktime_insert_keyframe(fd, current_frame + j, i);
 					result = quicktime_write_frame(fd,
 						frame->get_data(),
 						frame->get_compressed_size(),
