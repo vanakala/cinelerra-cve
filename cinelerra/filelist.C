@@ -151,7 +151,6 @@ int FileList::open_file(int rd, int wr)
 		}
 	}
 
-	file->current_frame = 0;
 // Compressed data storage
 	data = new VFrame;
 
@@ -165,8 +164,10 @@ void FileList::close_file()
 		if(writing && asset->use_header) write_list_header();
 		path_list.remove_all_objects();
 	}
-	if(data) delete data;
-	if(writer) delete writer;
+	delete data;
+	data = 0;
+	delete writer;
+	writer = 0;
 }
 
 void FileList::write_list_header()
@@ -442,22 +443,16 @@ char* FileList::create_path(int number_override)
 
 	char *path;
 	char output[BCTEXTLEN];
-	if(file->current_frame >= path_list.total || !asset->use_header)
+
+	if(number_override >= path_list.total || !asset->use_header)
 	{
 		int number;
-		if(number_override < 0)
-			number = file->current_frame++;
-		else
-		{
-			number = number_override;
-			file->current_frame++;
-		}
+		number = number_override;
 
 		if(!asset->use_header)
 		{
 			number += first_number;
 		}
-
 		calculate_path(number, output);
 
 		path = new char[strlen(output) + 1];
@@ -467,7 +462,7 @@ char* FileList::create_path(int number_override)
 	else
 	{
 // Overwrite an old path
-		path = path_list.values[file->current_frame];
+		path = path_list.values[number_override];
 	}
 
 	table_lock->unlock();
@@ -559,6 +554,7 @@ void FrameWriter::init_packages()
 		i++)
 	{
 		FrameWriterPackage *package = (FrameWriterPackage*)get_package(i);
+
 		package->input = frames[layer][number];
 		package->path = file->create_path(package->input->get_number());
 		number++;
