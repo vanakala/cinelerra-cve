@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "asset.h"
 #include "bcsignals.h"
 #include "bctimer.h"
@@ -111,7 +112,7 @@ ResourceThread::ResourceThread(MWindow *mwindow)
 	interrupted = 1;
 	draw_lock = new Condition(0, "ResourceThread::draw_lock", 0);
 	item_lock = new Mutex("ResourceThread::item_lock");
-	audio_buffer = 0;
+	aframe = 0;
 	timer = new Timer;
 	prev_x = -1;
 	prev_h = 0;
@@ -124,7 +125,7 @@ ResourceThread::~ResourceThread()
 {
 	delete draw_lock;
 	delete item_lock;
-	delete [] audio_buffer;
+	delete aframe;
 	delete timer;
 }
 
@@ -326,42 +327,45 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 	else
 	{
 		int first_sample = 1;
-		int64_t start = item->start;
-		int64_t end = item->end;
+		samplenum start = item->start;
+		samplenum end = item->end;
 		if(start == end) end = start + 1;
-		
-		for(int64_t sample = start; sample < end; sample++)
+
+		for(samplenum sample = start; sample < end; sample++)
 		{
 			double value;
 // Get value from previous buffer
-			if(!(audio_buffer && 
-				item->channel == audio_channel &&
+			if(!(aframe &&
+				item->channel == aframe->channel &&
 				item->asset->id == audio_asset_id &&
-				sample >= audio_start &&
-				sample < audio_start + audio_samples))
+				sample >= aframe->position &&
+				sample < aframe->position + aframe->length))
 			{
 // Load new buffer
 				File *source = mwindow->audio_cache->check_out(item->asset,
 					mwindow->edl);
 				if(!source)
 					return;
-					
-				source->set_channel(item->channel);
-				source->set_audio_position(sample);
-				int64_t total_samples = source->get_audio_length(-1);
-				if(!audio_buffer) audio_buffer = new double[BUFFERSIZE];
+
 				int fragment = BUFFERSIZE;
+				samplenum total_samples = source->get_audio_length(-1);
+
+				if(!aframe)
+					aframe = new AFrame(BUFFERSIZE);
+
+				aframe->samplerate = item->asset->sample_rate;
+				aframe->channel = item->channel;
+
 				if(fragment + sample > total_samples)
 					fragment = total_samples - sample;
-				source->read_samples(audio_buffer, fragment, item->asset->sample_rate);
-				audio_channel = item->channel;
-				audio_start = sample;
-				audio_samples = fragment;
+				aframe->set_fill_request(sample, fragment);
+
+				source->get_samples(aframe);
 				audio_asset_id = item->asset->id;
 				mwindow->audio_cache->check_in(item->asset);
 			}
 
-			value = audio_buffer[sample - audio_start];
+			value = aframe->buffer[sample - aframe->position];
 			if(first_sample)
 			{
 				high = low = value;

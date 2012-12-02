@@ -142,11 +142,9 @@ public:
 	int interrupted;
 
 // Current audio buffer for spanning multiple pixels
-	double *audio_buffer;
-	int audio_channel;
-	samplenum audio_start;
-	int audio_samples;
+	AFrame *aframe;
 	int audio_asset_id;
+
 // Timer for waveform refreshes
 	Timer *timer;
 // Waveform state
