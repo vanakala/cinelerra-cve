@@ -83,6 +83,7 @@ public:
 	int data_type;
 // Timer to cause an hourglass to appear
 	Timer *timer;
+	AFrame *aframe;
 };
 
 #endif

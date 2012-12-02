@@ -20,6 +20,7 @@
  */
 
 #include "aedit.h"
+#include "aframe.h"
 #include "asset.h"
 #include "asset.inc"
 #include "bcsignals.h"
@@ -64,7 +65,7 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 	zoom_y = 0;
 	visible = 1;
 	zoom_time = 0;
-
+	aframe = 0;
 	this->mwindow = mwindow;
 	this->canvas = canvas;
 	source_pts = edit->source_pts;
@@ -74,6 +75,7 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 
 ResourcePixmap::~ResourcePixmap()
 {
+	delete aframe;
 }
 
 void ResourcePixmap::resize(int w, int h)
@@ -484,31 +486,40 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	if(round(mwindow->edl->local_session->zoom_time *
 		mwindow->edl->session->sample_rate) == 1)
 	{
+		ptstime src_pts = (pixmap_x - edit_x + x)
+				* mwindow->edl->local_session->zoom_time
+				+ edit->source_pts;
+		// 1.6 should be enough to compensate rounding above
+		ptstime len_pts = w * mwindow->edl->local_session->zoom_time * 1.6;
+		int total_source_samples = round(len_pts * edit->asset->sample_rate);
+
 		samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
 			round(mwindow->edl->local_session->zoom_time *
 			mwindow->edl->session->sample_rate) + 
 			edit->track->to_units(edit->source_pts)) *
 			asset_over_session);
 		double oldsample, newsample;
-		int total_source_samples = (int)((double)(source_len + 1) * 
-			asset_over_session);
-		double *buffer = new double[total_source_samples];
 
-		source->set_audio_position(source_start);
-		source->set_channel(edit->channel);
+		if(!aframe)
+			aframe = new AFrame(total_source_samples);
+		else
+			aframe->check_buffer(total_source_samples);
+
+		aframe->samplerate = edit->asset->sample_rate;
+		aframe->channel = edit->channel;
+		aframe->set_fill_request(source_start, total_source_samples);
+
 		canvas->set_color(mwindow->theme->audio_color);
 
-		if(!source->read_samples(buffer, 
-			total_source_samples, 
-			edit->asset->sample_rate))
+		if(!source->get_samples(aframe))
 		{
-			oldsample = newsample = *buffer;
+			oldsample = newsample = *aframe->buffer;
 			for(int x1 = x, x2 = x + w, i = 0; 
 				x1 < x2; 
 				x1++, i++)
 			{
 				oldsample = newsample;
-				newsample = buffer[(int)(i * asset_over_session)];
+				newsample = aframe->buffer[(int)(i * asset_over_session)];
 				canvas->draw_line(x1 - 1, 
 					(int)(center_pixel - oldsample * mwindow->edl->local_session->zoom_y / 2),
 					x1,
@@ -517,7 +528,6 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			}
 		}
 
-		delete [] buffer;
 		canvas->test_timer();
 	}
 	else
@@ -534,12 +544,12 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		while(x < w)
 		{
 // Starting sample of pixel relative to asset rate.
-			samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
+			samplenum source_start = (((pixmap_x - edit_x + x) * 
 				round(mwindow->edl->local_session->zoom_time *
 				mwindow->edl->session->sample_rate) +
 				edit->track->to_units(edit->source_pts)) *
 				asset_over_session);
-			samplenum source_end = (int64_t)(((pixmap_x - edit_x + x + 1) * 
+			samplenum source_end = (((pixmap_x - edit_x + x + 1) * 
 				round(mwindow->edl->local_session->zoom_time *
 				mwindow->edl->session->sample_rate) +
 				edit->track->to_units(edit->source_pts)) *
