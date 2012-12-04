@@ -175,7 +175,9 @@ void RecordVideo::run()
 // Thread out the I/O
 	if(!record_thread->monitor)
 	{
+/* Pole
 		record_start = record->file->get_video_position(record->default_asset->frame_rate);
+	*/
 		frame_ptr = record->file->get_video_buffer();
 	}
 	else

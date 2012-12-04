@@ -93,9 +93,7 @@ void File::reset_parameters()
 	format_window = 0;
 	temp_frame = 0;
 	current_sample = 0;
-	current_frame = 0;
 	current_channel = 0;
-	current_layer = 0;
 	resample = 0;
 	resample_float = 0;
 	use_cache = 0;
@@ -536,7 +534,6 @@ void File::close_file(int ignore_thread)
 		if(asset && writing)
 		{
 			asset->audio_length = current_sample;
-			asset->video_length = current_frame;
 		}
 		file->close_file();
 		delete file;
@@ -617,14 +614,8 @@ FileThread* File::get_video_thread()
 	return video_thread;
 }
 
-void File::set_channel(int channel) 
-{
-	if(file && channel < asset->channels)
-		current_channel = channel;
-}
-
 samplenum File::get_audio_length(int base_samplerate) 
-{ 
+{
 	samplenum result = asset->audio_length;
 	if(result > 0)
 	{
@@ -654,24 +645,6 @@ framenum File::get_video_length(float base_framerate)
 ptstime File::get_video_ptslen(void)
 {
 	return (ptstime)asset->video_length / asset->frame_rate;
-}
-
-framenum File::get_video_position(float base_framerate) 
-{
-	if(base_framerate > 0)
-		return (framenum)((double)current_frame / asset->frame_rate * base_framerate + 0.5);
-	else
-		return current_frame;
-}
-
-samplenum File::get_audio_position(void)
-{
-	return current_sample;
-}
-
-void File::set_audio_position(samplenum position)
-{
-	current_sample = position;
 }
 
 // No resampling here.
@@ -704,14 +677,13 @@ int File::write_frames(VFrame ***frames, int len)
 {
 // Store the counters in temps so the filebase can choose to overwrite them.
 	int result;
-	int current_frame_temp = current_frame;
+
 	int video_length_temp = asset->video_length;
 
 	write_lock->lock("File::write_frames");
 
 	result = file->write_frames(frames, len);
 
-	current_frame = current_frame_temp + len;
 	asset->video_length = video_length_temp + len;
 	write_lock->unlock();
 
@@ -840,26 +812,6 @@ int File::read_samples(double *buffer, int len, int base_samplerate, float *buff
 
 int File::get_frame(VFrame *frame, int is_thread)
 {
-	return get_this_frame(round((frame->get_source_pts() + EPSILON) * asset->frame_rate), frame, is_thread);
-}
-
-int File::get_next_frame(VFrame *frame)
-{
-	return get_this_frame(frame->get_frame_number() + 1, frame);
-}
-
-int File::get_this_frame(framenum pos, VFrame *frame, int is_thread)
-{
-	if(!(video_thread && !is_thread) && file)
-	{
-		current_frame = pos;
-		current_layer = frame->get_layer();
-	}
-	return read_frame(frame, is_thread);
-}
-
-int File::read_frame(VFrame *frame, int is_thread)
-{
 	if(video_thread && !is_thread) return video_thread->read_frame(frame);
 
 	if(file)
@@ -928,38 +880,10 @@ int File::read_frame(VFrame *frame, int is_thread)
 // Can't advance position here because it needs to be added to cache
 			file->read_frame(frame);
 		}
-// Set frame pts (will be later moved to file type dependant classes)
-		switch(asset->format)
-		{
-		case FILE_JPEG:
-		case FILE_JPEG_LIST:
-		case FILE_PNG:
-		case FILE_PNG_LIST:
-		case FILE_TIFF:
-		case FILE_TIFF_LIST:
-		case FILE_EXR:
-		case FILE_EXR_LIST:
-		case FILE_TGA:
-		case FILE_TGA_LIST:
-		case FILE_MPEG:
-		case FILE_AMPEG:
-		case FILE_VMPEG:
-		case FILE_YUV:
-		case FILE_OGG:
-		case FILE_RAWDV:
-		case FILE_MOV:
-// Types that set already frame pts
-			break;
-		default:
-			frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
-			frame->set_duration((ptstime)1/ asset->frame_rate);
-			frame->set_frame_number(current_frame);
-		}
 
 		if(use_cache)
 			frame_cache->put_frame(frame, 1);
 
-		if(advance_position) current_frame++;
 		return 0;
 	}
 	else

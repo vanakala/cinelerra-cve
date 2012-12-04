@@ -126,12 +126,6 @@ public:
 // get length of file in seconds
 	ptstime get_video_ptslen(void);
 
-// get current position
-	samplenum get_audio_position(void);
-	framenum get_video_position(float base_framerate = -1);
-
-
-
 // write audio frames
 // written to disk and file pointer updated after
 // return 1 if failed
@@ -155,30 +149,13 @@ public:
 	int write_audio_buffer(int len);
 	int write_video_buffer(int len);
 
-// set channel for buffer accesses
-	void set_channel(int channel);
-// set position in samples
-	void set_audio_position(samplenum position);
-
 // Read audio into aframe
 // aframe->source_duration secs starting from aframe->source_pts
 	int get_samples(AFrame *aframe);
 
-// Read samples for one channel into a shared memory segment.
-// The offset is the offset in floats from the beginning of the buffer and the len
-// is the length in floats from the offset.
-// advances file pointer
-// return 1 if failed
-	int read_samples(double *buffer, int len, int base_samplerate, float *buffer_float = 0);
 
 // pts API - frame must have source_pts, and layer set
 	int get_frame(VFrame *frame, int is_thread = 0);
-	int get_next_frame(VFrame *frame);
-
-// Read frame of video into the argument
-// is_thread is used by FileThread::run to prevent recursive lockup.
-	int read_frame(VFrame *frame, int is_thread = 0);
-
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback
@@ -243,9 +220,7 @@ public:
 // Can't normalize to base samplerate because this would 
 // require fractional positioning to know if the file's position changed.
 	samplenum current_sample;
-	framenum current_frame;
 	int current_channel;
-	int current_layer;
 
 	Preferences *preferences;
 
@@ -254,6 +229,12 @@ public:
 private:
 	void reset_parameters();
 	int get_this_frame(framenum pos, VFrame *frame, int is_thread = 0);
+// Read samples for one channel into a shared memory segment.
+// The offset is the offset in floats from the beginning of the buffer and the len
+// is the length in floats from the offset.
+// advances file pointer
+// return 1 if failed
+	int read_samples(double *buffer, int len, int base_samplerate, float *buffer_float = 0);
 
 	int getting_options;
 	BC_WindowBase *format_window;

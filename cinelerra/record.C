@@ -654,9 +654,9 @@ void Record::rewind_file()
 {
 	if(file)
 	{
+/* FIXIT
 		if(default_asset->audio_data) 
 			file->set_audio_position(0);
-/* FIXIT
 		if(default_asset->video_data)
 			file->set_video_position(0, default_asset->frame_rate);
 	*/
@@ -765,8 +765,10 @@ samplenum Record::current_audio_position()
 {
 	if(file)
 	{
+/* FIXIT
 		return (samplenum)(file->get_audio_position() +
 			get_current_batch()->file_offset + 0.5);
+	*/
 	}
 	return 0;
 }
@@ -775,11 +777,13 @@ framenum Record::current_video_position()
 {
 	if(file)
 	{
+/* FIXIT
 		return file->get_video_position(default_asset->frame_rate) + 
 			(framenum)((double)get_current_batch()->file_offset / 
 				default_asset->sample_rate * 
 				default_asset->frame_rate + 
 				0.5);
+	*/
 	}
 	return 0;
 }
