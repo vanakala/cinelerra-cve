@@ -273,10 +273,11 @@ void FileSndFile::close_file()
 	fd_config.format = 0;
 }
 
-int FileSndFile::read_samples(double *buffer, int len)
+int FileSndFile::read_aframe(AFrame *aframe)
 {
 	int result = 0;
-	sf_count_t rqpos = file->current_sample;
+	sf_count_t rqpos = aframe->position;
+	int len = aframe->source_length;
 
 // Get temp buffer for interleaved channels
 	if(temp_allocated && temp_allocated < len)
@@ -309,13 +310,15 @@ int FileSndFile::read_samples(double *buffer, int len)
 		buf_end = bufpos + buf_fill;
 	}
 // Extract single channel
-	for(int i = 0, j = file->current_channel; 
+	double *buffer = &aframe->buffer[aframe->length];
+
+	for(int i = 0, j = aframe->channel;
 		i < buf_fill;
 		i++, j += asset->channels)
 	{
 		buffer[i] = temp_double[j];
 	}
-
+	aframe->set_filled_length();
 	return result;
 }
 

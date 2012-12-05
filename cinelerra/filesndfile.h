@@ -46,7 +46,7 @@ public:
 	static int check_sig(Asset *asset);
 	int open_file(int rd, int wr);
 	void close_file();
-	int read_samples(double *buffer, int len);
+	int read_aframe(AFrame *aframe);
 	int write_aframes(AFrame **buffer);
 	void format_to_asset();
 	void asset_to_format();
