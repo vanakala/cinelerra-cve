@@ -1168,29 +1168,45 @@ noframe:
 	return 1;
 }
 
-int FileMPEG::read_samples(double *buffer, int len)
+int FileMPEG::read_aframe(AFrame *aframe)
 {
-	if(!fd || len < 0) return 0;
+	int len;
+	float *buf;
 
-	if(temp_float_allocated < len)
+	if(!fd) return 0;
+	len = aframe->source_length;
+
+	if(aframe->float_buffer)
+		buf = &aframe->float_buffer[aframe->length];
+	else
 	{
-		if(temp_float)
-			delete [] temp_float;
-		temp_float = new float[len];
-		temp_float_allocated = len;
+		if(temp_float_allocated < len)
+		{
+			if(temp_float)
+				delete [] temp_float;
+			temp_float = new float[len];
+			temp_float_allocated = len;
+		}
+		buf = temp_float;
 	}
 
 	mpeg3_set_sample(fd, 
-		file->current_sample,
+		aframe->position,
 		asset->current_astream);
+
 	mpeg3_read_audio(fd, 
-		temp_float,      /* Pointer to pre-allocated buffer of floats */
+		buf,      /* Pointer to pre-allocated buffer of floats */
 		0,      /* Pointer to pre-allocated buffer of int16's */
 		file->current_channel,          /* Channel to decode */
 		len,         /* Number of samples to decode */
 		asset->current_astream);    /* Stream containing the channel */
-
-	for(int i = 0; i < len; i++) buffer[i] = temp_float[i];
+	if(aframe->buffer)
+	{
+		double *buffer = &aframe->buffer[aframe->length];
+		for(int i = 0; i < len; i++)
+			buffer[i] = temp_float[i];
+	}
+	aframe->set_filled_length();
 
 	return 0;
 }
@@ -1198,23 +1214,6 @@ int FileMPEG::read_samples(double *buffer, int len)
 int FileMPEG::prefer_samples_float()
 {
 	return 1;
-}
-
-int FileMPEG::read_samples_float(float *buffer, int len)
-{
-	if(!fd || len < 0) return 0;
-
-	mpeg3_set_sample(fd,
-		file->current_sample,
-		asset->current_astream);
-	mpeg3_read_audio(fd,
-		buffer,         /* Pointer to pre-allocated buffer of floats */
-		0,              /* Pointer to pre-allocated buffer of int16's */
-		file->current_channel,          /* Channel to decode */
-		len,            /* Number of samples to decode */
-		asset->current_astream);          /* Stream containing the channel */
-
-	return 0;
 }
 
 const char* FileMPEG::strtocompression(const char *string)

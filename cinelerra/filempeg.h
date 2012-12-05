@@ -77,8 +77,7 @@ public:
 	int write_frames(VFrame ***frames, int len);
 
 	int read_frame(VFrame *frame);
-	int read_samples(double *buffer, int len);
-	int read_samples_float(float *buffer, int len);
+	int read_aframe(AFrame *aframe);
 	int prefer_samples_float();
 	int from_mpeg_colormodel(int cmodel);
 	int to_mpeg_colormodel(int cmodel);
