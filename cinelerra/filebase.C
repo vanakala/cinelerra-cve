@@ -19,6 +19,7 @@
  * 
  */
 
+#include "aframe.h"
 #include "asset.h"
 #include "assets.h"
 #include "aframe.h"
@@ -73,4 +74,12 @@ int FileBase::write_aframes(AFrame **aframes)
 			samples[i] = 0;
 	}
 	return(write_samples(samples, len));
+}
+
+int FileBase::read_aframe(AFrame *aframe)
+{
+	int result = read_samples(aframe->buffer + aframe->length, aframe->source_length);
+
+	aframe->set_filled_length();
+	return result;
 }

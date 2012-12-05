@@ -71,6 +71,7 @@ public:
 	virtual int write_frames(VFrame ***frames, int len) { return 0; };
 // Doubles are used to allow resampling
 	virtual int read_samples(double *buffer, int len) { return 0; };
+	virtual int read_aframe(AFrame *aframe);
 
 	virtual int prefer_samples_float() { return 0;};
 	virtual int read_samples_float(float *buffer, int len) { return 0; };
