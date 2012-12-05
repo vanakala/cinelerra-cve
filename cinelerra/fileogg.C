@@ -888,12 +888,14 @@ int FileOGG::fill_pcm_samples(int len)
 	return 0;
 }
 
-int FileOGG::read_samples(double *buffer, int len)
+int FileOGG::read_aframe(AFrame *aframe)
 {
 	float **vorbis_buffer;
 	int filled;
+	double *buffer;
 
-	next_sample_position = file->current_sample;
+	next_sample_position = aframe->position;
+	int len = aframe->source_length;
 
 	if(len <= 0)
 		return 0;
@@ -913,6 +915,7 @@ int FileOGG::read_samples(double *buffer, int len)
 	}
 
 	filled = 0;
+	buffer = &aframe->buffer[aframe->length];
 
 	while(filled < len)
 	{
@@ -927,6 +930,7 @@ int FileOGG::read_samples(double *buffer, int len)
 		filled += chunk;
 		next_sample_position += chunk;
 	}
+	aframe->set_filled_length();
 	return 0;
 }
 
