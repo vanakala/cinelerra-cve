@@ -66,6 +66,9 @@ public:
 // Calculates fill length, avoids buffer overflow
 	int fill_length();
 
+// Sets filled length of buffer
+	void set_filled_length();
+
 // Clears buffer, sets fill request
 	void set_fill_request(ptstime pts, ptstime duration);
 	void set_fill_request(ptstime pts, int length);

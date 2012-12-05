@@ -243,6 +243,12 @@ int AFrame::fill_length()
 	return len;
 }
 
+void AFrame::set_filled_length()
+{
+	length += source_length;
+	duration = (ptstime)length / samplerate;
+}
+
 void AFrame::set_fill_request(ptstime pts, ptstime duration)
 {
 	reset_buffer();
