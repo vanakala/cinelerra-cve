@@ -726,6 +726,10 @@ VFrame*** File::get_video_buffer()
 int File::get_samples(AFrame *aframe)
 {
 	int result;
+	int samples;
+
+	if(!file)
+		return 0;
 
 	if(aframe->samplerate == 0)
 		aframe->samplerate = asset->sample_rate;
@@ -746,9 +750,45 @@ int File::get_samples(AFrame *aframe)
 		return 0;
 	current_sample = aframe->position;
 	current_channel = aframe->channel;
-	result = read_samples(aframe->buffer + aframe->length, aframe->source_length, aframe->samplerate, aframe->float_buffer + aframe->length);
-	aframe->length += aframe->source_length;
-	aframe->duration = (ptstime)aframe->length / aframe->samplerate;
+	// Resample
+	if(aframe->samplerate != asset->sample_rate)
+	{
+		if(!file->prefer_samples_float())
+		{
+			if(!resample)
+				resample = new Resample(this, asset->channels);
+
+			samples = resample->resample(aframe->buffer,
+					aframe->source_length,
+					asset->sample_rate,
+					aframe->samplerate,
+					aframe->channel,
+					aframe->position);
+		}
+		else
+		{
+			if(!resample_float)
+				resample_float = new Resample_float(this, asset->channels);
+
+			samples = resample_float->resample(aframe->buffer,
+					aframe->source_length,
+					asset->sample_rate,
+					aframe->samplerate,
+					current_channel,
+					current_sample);
+		}
+		aframe->source_length = samples;
+		aframe->set_filled_length();
+	}
+	else
+// Load directly
+	{
+// Never try to read more samples than exist in the file
+		if(aframe->position + aframe->source_length > asset->audio_length) 
+			aframe->source_length = asset->audio_length - aframe->position;
+
+		result = file->read_aframe(aframe);
+	}
 	return result;
 }
 
