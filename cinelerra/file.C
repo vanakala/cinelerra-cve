@@ -92,8 +92,6 @@ void File::reset_parameters()
 	getting_options = 0;
 	format_window = 0;
 	temp_frame = 0;
-	current_sample = 0;
-	current_channel = 0;
 	resample = 0;
 	resample_float = 0;
 	use_cache = 0;
@@ -529,12 +527,6 @@ void File::close_file(int ignore_thread)
 
 	if(file) 
 	{
-// The file's asset is a copy of the argument passed to open_file so the
-// user must copy lengths from the file's asset.
-		if(asset && writing)
-		{
-			asset->audio_length = current_sample;
-		}
 		file->close_file();
 		delete file;
 	}
@@ -659,7 +651,6 @@ int File::write_aframes(AFrame **frames)
 		{
 			if(frames[i])
 			{
-				current_sample += frames[i]->length;
 				asset->audio_length += frames[i]->length;
 				break;
 			}
@@ -748,8 +739,7 @@ int File::get_samples(AFrame *aframe)
 		aframe->source_length = aframe->buffer_length - aframe->length;
 	if(aframe->source_length <= 0)
 		return 0;
-	current_sample = aframe->position;
-	current_channel = aframe->channel;
+
 	// Resample
 	if(aframe->samplerate != asset->sample_rate)
 	{
@@ -774,8 +764,8 @@ int File::get_samples(AFrame *aframe)
 					aframe->source_length,
 					asset->sample_rate,
 					aframe->samplerate,
-					current_channel,
-					current_sample);
+					aframe->channel,
+					aframe->position);
 		}
 		aframe->source_length = samples;
 		aframe->set_filled_length();
@@ -788,64 +778,6 @@ int File::get_samples(AFrame *aframe)
 			aframe->source_length = asset->audio_length - aframe->position;
 
 		result = file->read_aframe(aframe);
-	}
-	return result;
-}
-
-int File::read_samples(double *buffer, int len, int base_samplerate, float *buffer_float)
-{
-	int result = 0;
-	if(len < 0) return 0;
-
-// Load with resampling
-	if(file)
-	{
-// Resample recursively calls this with the asset sample rate
-		if(base_samplerate == 0) base_samplerate = asset->sample_rate;
-
-		if(base_samplerate != asset->sample_rate)
-		{
-			if (!file->prefer_samples_float())
-			{
-				if(!resample)
-				{
-					resample = new Resample(this, asset->channels);
-				}
-				current_sample += resample->resample(buffer, 
-					len, 
-					asset->sample_rate, 
-					base_samplerate,
-					current_channel,
-					current_sample);
-			}
-			else
-			{
-				if(!resample_float)
-				{
-					resample_float = new Resample_float(this, asset->channels);
-				}
-				current_sample += resample_float->resample(buffer, 
-					len, 
-					asset->sample_rate, 
-					base_samplerate,
-					current_channel,
-					current_sample);
-			}
-		}
-		else
-// Load directly
-		{
-// Never try to read more samples than exist in the file
-			if (current_sample + len > asset->audio_length) 
-				len = asset->audio_length - current_sample;
-
-			if (buffer_float && file->prefer_samples_float())
-				result = file->read_samples_float(buffer_float, len);
-			else
-				result = file->read_samples(buffer, len);
-			current_sample += len;
-		}
-
 	}
 	return result;
 }

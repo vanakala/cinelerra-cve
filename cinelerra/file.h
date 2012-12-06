@@ -215,13 +215,6 @@ public:
 	int interpolate_raw;
 	int white_balance_raw;
 
-// Position information is migrated here to allow samplerate conversion.
-// Current position in file's samplerate.
-// Can't normalize to base samplerate because this would 
-// require fractional positioning to know if the file's position changed.
-	samplenum current_sample;
-	int current_channel;
-
 	Preferences *preferences;
 
 	static PackagingEngine *new_packaging_engine(Asset *asset);
@@ -229,13 +222,6 @@ public:
 private:
 	void reset_parameters();
 	int get_this_frame(framenum pos, VFrame *frame, int is_thread = 0);
-// Read samples for one channel into a shared memory segment.
-// The offset is the offset in floats from the beginning of the buffer and the len
-// is the length in floats from the offset.
-// advances file pointer
-// return 1 if failed
-	int read_samples(double *buffer, int len, int base_samplerate, float *buffer_float = 0);
-
 	int getting_options;
 	BC_WindowBase *format_window;
 	Mutex *format_completion;

@@ -1197,7 +1197,7 @@ int FileMPEG::read_aframe(AFrame *aframe)
 	mpeg3_read_audio(fd, 
 		buf,      /* Pointer to pre-allocated buffer of floats */
 		0,      /* Pointer to pre-allocated buffer of int16's */
-		file->current_channel,          /* Channel to decode */
+		aframe->channel,          /* Channel to decode */
 		len,         /* Number of samples to decode */
 		asset->current_astream);    /* Stream containing the channel */
 	if(aframe->buffer)

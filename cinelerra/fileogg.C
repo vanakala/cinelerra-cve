@@ -922,7 +922,7 @@ int FileOGG::read_aframe(AFrame *aframe)
 		if(fill_pcm_samples(len))
 			return 0;
 
-		float *input = &cur_stream->pcm_samples[file->current_channel][filled];
+		float *input = &cur_stream->pcm_samples[aframe->channel][filled];
 		int chunk = MIN(cur_stream->pcm_size, len - filled);
 		for (int i = 0; i < chunk; i++)
 			buffer[i] = input[i];
