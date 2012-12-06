@@ -80,7 +80,7 @@ public:
 	int write_frames(VFrame ***frames, int len);
 
 	int read_frame(VFrame *frame);
-	int read_samples(double *buffer, int len);
+	int read_aframe(AFrame *aframe);
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);

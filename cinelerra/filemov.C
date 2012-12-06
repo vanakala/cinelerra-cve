@@ -878,33 +878,37 @@ int FileMOV::read_frame(VFrame *frame)
 }
 
 // Overlay samples
-int FileMOV::read_samples(double *buffer, int len)
+int FileMOV::read_aframe(AFrame *aframe)
 {
 	int qt_track, qt_channel;
+	int len = 0;
 
 	if(!fd) return 0;
 
-	if(quicktime_track_channels(fd, 0) > file->current_channel &&
+	if(quicktime_track_channels(fd, 0) > aframe->channel &&
 		quicktime_supported_audio(fd, 0))
 	{
-		if(current_sample != file->current_sample &&
-				file->current_sample >= 0 && file->current_sample < asset->audio_length)
+		if(current_sample != aframe->position &&
+				aframe->position >= 0 && aframe->position < asset->audio_length)
 		{
-			quicktime_set_audio_position(fd, file->current_sample, 0);
-			current_sample = file->current_sample;
+			quicktime_set_audio_position(fd, aframe->position, 0);
+			current_sample = aframe->position;
 		}
 
-		new_audio_temp(len);
-		if(quicktime_decode_audio(fd, 0, temp_float[0], len, file->current_channel))
+		new_audio_temp(aframe->buffer_length);
+		if(quicktime_decode_audio(fd, 0, temp_float[0], aframe->source_length, aframe->channel))
 		{
 			errorbox("quicktime_decode_audio failed");
 			return 1;
 		}
-		else
-		{
-			for(int i = 0; i < len; i++) buffer[i] = temp_float[0][i];
-		}
+		double *buffer = &aframe->buffer[aframe->length];
+		int len = aframe->source_length;
+
+		for(int i = 0; i < len; i++)
+			buffer[i] = temp_float[0][i];
+
 		current_sample += len;
+		aframe->set_filled_length();
 	}
 	return 0;
 }
