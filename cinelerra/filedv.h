@@ -55,7 +55,7 @@ public:
 	int write_aframes(AFrame **buffer);
 	int write_frames(VFrame ***frames, int len);
 
-	int read_samples(double *buffer, int len);
+	int read_aframe(AFrame *aframe);
 	int read_frame(VFrame *frame);
 
 	int colormodel_supported(int colormodel);

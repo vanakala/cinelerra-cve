@@ -603,11 +603,11 @@ int FileDV::write_frames(VFrame ***frames, int len)
 	return result;
 }
 
-int FileDV::read_samples(double *buffer, int len)
+int FileDV::read_aframe(AFrame *aframe)
 {
 	int count = 0;
 	int result = 0;
-	int frame_count = get_audio_frame(audio_position = file->current_sample);
+	int frame_count = get_audio_frame(audio_position = aframe->position);
 	int offset = get_audio_offset(audio_position);
 
 	if(stream == 0)
@@ -627,9 +627,12 @@ int FileDV::read_samples(double *buffer, int len)
 			audio_sample_buffer[i] = new int16_t[DV_AUDIO_MAX_SAMPLES];
 	}
 
+	int len = aframe->source_length;
+	double *buffer = &aframe->buffer[aframe->length];
+
 	while(count < len)
 	{
-		stream_lock->lock();
+		stream_lock->lock("FileDV::read_aframe");
 
 		if(fseeko(stream, (off_t) frame_count * output_size, SEEK_SET) != 0)
 		{
@@ -649,12 +652,14 @@ int FileDV::read_samples(double *buffer, int len)
 
 		frame_count++;
 
-		decoder_lock->lock("FileDV::read_samples");
+		decoder_lock->lock("FileDV::read_aframe");
 
 		if(dv_decode_full_audio(decoder, audio_buffer, audio_sample_buffer) < 0)
 		{
 			errormsg("Error decoding DV audio frame %d", frame_count - 1);
 			result = 1;
+			decoder_lock->unlock();
+			break;
 		}
 
 		int end = dv_get_num_samples(decoder);
@@ -664,13 +669,13 @@ int FileDV::read_samples(double *buffer, int len)
 			end = len - count + offset;
 
 		for(int i = offset; i < end; i++)
-			buffer[count++] = audio_sample_buffer[file->current_channel][i] / 32767.0;
+			buffer[count++] = audio_sample_buffer[aframe->channel][i] / 32767.0;
 
 		offset = 0;
 	}
 
-	audio_position += len;
-
+	if(!result)
+		aframe->set_filled_length();
 	return result;
 }
 
