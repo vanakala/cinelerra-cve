@@ -524,7 +524,7 @@ FormatAThread::~FormatAThread()
 
 void FormatAThread::run()
 {
-	file->get_options(format, 1, 0);
+	file->get_options(format, SUPPORTS_AUDIO);
 }
 
 
@@ -542,7 +542,7 @@ FormatVThread::~FormatVThread()
 
 void FormatVThread::run()
 {
-	file->get_options(format, 0, 1);
+	file->get_options(format, SUPPORTS_VIDEO);
 }
 
 

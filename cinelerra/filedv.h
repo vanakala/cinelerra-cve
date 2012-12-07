@@ -43,8 +43,7 @@ public:
 	static void get_parameters(BC_WindowBase *parent_window,
 		Asset *asset,
 		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		int options);
 
 	int open_file(int rd, int wr);
 
@@ -95,15 +94,6 @@ private:
 	int output_size;
 	int isPAL;
 	VFrame *temp_frame;
-};
-
-class DVConfig: public BC_Window
-{
-public:
-	DVConfig(BC_WindowBase *parent_window, int type);
-
-private:
-	BC_WindowBase *parent_window;
 };
 
 #endif

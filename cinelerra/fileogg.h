@@ -78,8 +78,7 @@ public:
 	static void get_parameters(BC_WindowBase *parent_window,
 		Asset *asset,
 		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		int options);
 
 	int open_file(int rd, int wr);
 	static int check_sig(Asset *asset);

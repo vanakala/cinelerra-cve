@@ -96,4 +96,14 @@ protected:
 	Asset *asset;
 	File *file;
 };
+
+class FBConfig: public BC_Window
+{
+public:
+	FBConfig(BC_WindowBase *parent_window, int type);
+
+private:
+	BC_WindowBase *parent_window;
+};
+
 #endif

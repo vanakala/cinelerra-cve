@@ -71,10 +71,9 @@ int FilePNG::check_sig(Asset *asset)
 void FilePNG::get_parameters(BC_WindowBase *parent_window, 
 	Asset *asset, 
 	BC_WindowBase* &format_window,
-	int audio_options,
-	int video_options)
+	int options)
 {
-	if(video_options)
+	if(options & SUPPORTS_VIDEO)
 	{
 		PNGConfigVideo *window = new PNGConfigVideo(parent_window, asset);
 		format_window = window;

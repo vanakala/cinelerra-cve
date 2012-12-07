@@ -120,9 +120,7 @@ void File::close_window()
 	}
 }
 
-void File::get_options(FormatTools *format,
-	int audio_options,
-	int video_options)
+void File::get_options(FormatTools *format, int options)
 {
 	BC_WindowBase *parent_window = format->window;
 	ArrayList<PluginServer*> *plugindb = format->plugindb;
@@ -136,15 +134,13 @@ void File::get_options(FormatTools *format,
 			FileAC3::get_parameters(parent_window,
 				asset,
 				format_window,
-				audio_options,
-				video_options);
+				options);
 			break;
 		case FILE_RAWDV:
 			FileDV::get_parameters(parent_window,
 				asset,
 				format_window,
-				audio_options,
-				video_options);
+				options);
 			break;
 		case FILE_PCM:
 		case FILE_WAV:
@@ -152,17 +148,15 @@ void File::get_options(FormatTools *format,
 		case FILE_AIFF:
 		case FILE_SND:
 			FileSndFile::get_parameters(parent_window, 
-				asset, 
-				format_window, 
-				audio_options, 
-				video_options);
+				asset,
+				format_window,
+				options);
 			break;
 		case FILE_MOV:
 			FileMOV::get_parameters(parent_window, 
-				asset, 
-				format_window, 
-				audio_options, 
-				video_options,
+				asset,
+				format_window,
+				options,
 				format->locked_compressor);
 			break;
 		case FILE_AMPEG:
@@ -170,15 +164,13 @@ void File::get_options(FormatTools *format,
 			FileMPEG::get_parameters(parent_window, 
 				asset, 
 				format_window, 
-				audio_options, 
-				video_options);
+				options);
 			break;
 		case FILE_AVI:
 			FileMOV::get_parameters(parent_window, 
 				asset, 
 				format_window, 
-				audio_options, 
-				video_options,
+				options,
 				format->locked_compressor);
 			break;
 		case FILE_JPEG:
@@ -186,22 +178,20 @@ void File::get_options(FormatTools *format,
 			FileJPEG::get_parameters(parent_window, 
 				asset, 
 				format_window, 
-				audio_options, 
-				video_options);
+				options);
 			break;
 		case FILE_EXR:
 		case FILE_EXR_LIST:
 			FileEXR::get_parameters(parent_window, 
 				asset, 
 				format_window, 
-				audio_options, 
-				video_options);
+				options);
 			break;
 		case FILE_YUV:
 			FileYUV::get_parameters(parent_window,
 				asset,
 				format_window,
-				video_options,
+				options,
 				format);
 			break;
 		case FILE_PNG:
@@ -209,31 +199,27 @@ void File::get_options(FormatTools *format,
 			FilePNG::get_parameters(parent_window, 
 				asset, 
 				format_window, 
-				audio_options, 
-				video_options);
+				options);
 			break;
 		case FILE_TGA:
 		case FILE_TGA_LIST:
 			FileTGA::get_parameters(parent_window, 
 				asset, 
 				format_window, 
-				audio_options, 
-				video_options);
+				options);
 			break;
 		case FILE_TIFF:
 		case FILE_TIFF_LIST:
 			FileTIFF::get_parameters(parent_window, 
 				asset, 
 				format_window, 
-				audio_options, 
-				video_options);
+				options);
 			break;
 		case FILE_OGG:
 			FileOGG::get_parameters(parent_window,
 				asset,
 				format_window,
-				audio_options,
-				video_options);
+				options);
 			break;
 		default:
 			break;
@@ -241,10 +227,10 @@ void File::get_options(FormatTools *format,
 
 	if(!format_window)
 	{
-		if(audio_options)
+		if(options & SUPPORTS_AUDIO)
 			errorbox(_("This format doesn't support audio."));
 		else
-		if(video_options)
+		if(options & SUPPORTS_VIDEO)
 			errorbox(_("This format doesn't support video."));
 	}
 

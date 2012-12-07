@@ -173,10 +173,10 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 void FileYUV::get_parameters(BC_WindowBase *parent_window, 
 				Asset *asset, 
 				BC_WindowBase* &format_window,
-				int video_options,
+				int options,
 				FormatTools *format)
 {
-	if (!video_options) return;
+	if (!(options & SUPPORTS_VIDEO)) return;
 
 	YUVConfigVideo *config = new YUVConfigVideo(parent_window, asset, format);
 	format_window = config;

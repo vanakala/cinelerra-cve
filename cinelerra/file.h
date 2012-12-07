@@ -54,10 +54,7 @@ public:
 	~File();
 
 // Get attributes for various file formats.
-// The dither parameter is carried over from recording, where dither is done at the device.
-	void get_options(FormatTools *format, 
-		int audio_options,
-		int video_options);
+	void get_options(FormatTools *format, int options);
 
 	void raise_window();
 // Close parameter window

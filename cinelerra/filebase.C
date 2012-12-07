@@ -27,9 +27,13 @@
 #include "colormodels.h"
 #include "file.h"
 #include "filebase.h"
+#include "mwindow.h"
 #include "overlayframe.h"
+#include "theme.h"
 
 #include <stdlib.h>
+
+extern MWindow *mwindow;
 
 FileBase::FileBase(Asset *asset, File *file)
 {
@@ -56,4 +60,20 @@ int FileBase::match4(const char *in, const char *out)
 		return 1;
 	else
 		return 0;
+}
+
+FBConfig::FBConfig(BC_WindowBase *parent_window, int type)
+ : BC_Window(PROGRAM_NAME ": Compression options",
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
+	350,
+	100)
+{
+	this->parent_window = parent_window;
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	if(type & SUPPORTS_AUDIO)
+		add_tool(new BC_Title(10, 10, _("There are no audio options for this format")));
+	else
+		add_tool(new BC_Title(10, 10, _("There are no video options for this format")));
+	add_subwindow(new BC_OKButton(this));
 }

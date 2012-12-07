@@ -54,8 +54,7 @@ public:
 	static void get_parameters(BC_WindowBase *parent_window, 
 		Asset *asset, 
 		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options);
+		int options);
 
 	SNDFILE *fd;
 	SF_INFO fd_config;

@@ -32,9 +32,7 @@
 #include "interlacemodes.h"
 #include "language.h"
 #include "mutex.h"
-#include "mwindow.h"
 #include "quicktime.h"
-#include "theme.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "cmodel_permutation.h"
@@ -48,8 +46,6 @@
 #include <errno.h>
 
 #include <iostream>
-
-extern MWindow *mwindow;
 
 FileDV::FileDV(Asset *asset, File *file)
  : FileBase(asset, file)
@@ -94,18 +90,11 @@ FileDV::~FileDV()
 void FileDV::get_parameters(BC_WindowBase *parent_window,
 	Asset *asset,
 	BC_WindowBase* &format_window,
-	int audio_options,
-	int video_options)
+	int options)
 {
-	int type = 0;
-
-	if(audio_options)
-		type |= SUPPORTS_AUDIO;
-	if(video_options)
-		type |= SUPPORTS_VIDEO;
-	if(type)
+	if(options)
 	{
-		DVConfig *window = new DVConfig(parent_window, type);
+		FBConfig *window = new FBConfig(parent_window, options);
 		format_window = window;
 		window->run_window();
 		delete window;
@@ -770,20 +759,3 @@ int FileDV::get_audio_offset(samplenum pos)
 	// Samples needed from last frame
 	return pos - frame * asset->sample_rate / asset->frame_rate;
 }
-
-DVConfig::DVConfig(BC_WindowBase *parent_window, int type)
- : BC_Window(PROGRAM_NAME ": Compression options",
-	parent_window->get_abs_cursor_x(1),
-	parent_window->get_abs_cursor_y(1),
-	350,
-	250)
-{
-	this->parent_window = parent_window;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
-	if(type & SUPPORTS_AUDIO)
-		add_tool(new BC_Title(10, 10, _("There are no audio options for this format")));
-	else
-		add_tool(new BC_Title(10, 10, _("There are no video options for this format")));
-	add_subwindow(new BC_OKButton(this));
-}
-

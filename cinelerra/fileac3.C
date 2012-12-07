@@ -51,10 +51,9 @@ FileAC3::~FileAC3()
 void FileAC3::get_parameters(BC_WindowBase *parent_window, 
 		Asset *asset, 
 		BC_WindowBase* &format_window,
-		int audio_options,
-		int video_options)
+		int options)
 {
-	if(audio_options)
+	if(options & SUPPORTS_AUDIO)
 	{
 
 		AC3ConfigAudio *window = new AC3ConfigAudio(parent_window, asset);

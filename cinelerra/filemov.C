@@ -99,12 +99,11 @@ FileMOV::~FileMOV()
 void FileMOV::get_parameters(BC_WindowBase *parent_window, 
 	Asset *asset, 
 	BC_WindowBase* &format_window,
-	int audio_options,
-	int video_options,
+	int options,
 	const char *locked_compressor)
 {
 	fix_codecs(asset);
-	if(audio_options)
+	if(options & SUPPORTS_AUDIO)
 	{
 		MOVConfigAudio *window = new MOVConfigAudio(parent_window, asset);
 		format_window = window;
@@ -113,7 +112,7 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 		delete window;
 	}
 	else
-	if(video_options)
+	if(options & SUPPORTS_VIDEO)
 	{
 		MOVConfigVideo *window = new MOVConfigVideo(parent_window, 
 			asset, 
