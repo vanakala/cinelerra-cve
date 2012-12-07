@@ -784,27 +784,21 @@ int File::get_samples(AFrame *aframe)
 
 int File::get_frame(VFrame *frame, int is_thread)
 {
-	if(video_thread && !is_thread) return video_thread->read_frame(frame);
+	if(video_thread && !is_thread)
+		return video_thread->read_frame(frame);
 
 	if(file)
 	{
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
-		int advance_position = 1;
 // Test cache
-		if(use_cache &&
-			frame_cache->get_frame(frame))
-		{
-// Can't advance position if cache used.
-			advance_position = 0;
-		}
-		else
+		if(use_cache &&frame_cache->get_frame(frame))
+			return 0;
 // Need temp
 		if(frame->get_color_model() != BC_COMPRESSED &&
 			(supported_colormodel != frame->get_color_model() ||
 			frame->get_w() != asset->width ||
 			frame->get_h() != asset->height))
 		{
-// Can't advance position here because it needs to be added to cache
 			if(temp_frame)
 			{
 				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel))
@@ -848,14 +842,10 @@ int File::get_frame(VFrame *frame, int is_thread)
 			frame->copy_pts(temp_frame);
 		}
 		else
-		{
-// Can't advance position here because it needs to be added to cache
 			file->read_frame(frame);
-		}
 
 		if(use_cache)
 			frame_cache->put_frame(frame, 1);
-
 		return 0;
 	}
 	else
