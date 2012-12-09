@@ -35,6 +35,7 @@
 #include "pluginserver.h"
 #include "preferences.h"
 #include "renderfarmclient.h"
+#include "theme.inc"
 #include "versioninfo.h"
 
 #include <locale.h>
@@ -47,6 +48,7 @@
 #define LOCALEDIR "/usr/share/locale"
 
 MWindow *mwindow;
+Theme *theme_global;
 
 enum
 {

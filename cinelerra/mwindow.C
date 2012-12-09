@@ -110,6 +110,7 @@
 #include <fcntl.h>
 #include <string.h>
 
+extern Theme *theme_global;
 
 MWindow::MWindow()
  : Thread(1, 0, 0)
@@ -652,6 +653,7 @@ void MWindow::init_theme()
 	init_menus();
 
 	theme->check_used();
+	theme_global = theme;
 }
 
 void MWindow::init_3d()
