@@ -1237,10 +1237,8 @@ const char* File::get_tag(int format)
 	case FILE_RAWDV:
 		return "dv";
 	case FILE_EXR:
-	case FILE_EXR_LIST:
 		return "exr";
 	case FILE_JPEG:
-	case FILE_JPEG_LIST:
 		return "jpg";
 	case FILE_MOV:
 		return "mov";
@@ -1250,14 +1248,9 @@ const char* File::get_tag(int format)
 		return "pcm";
 	case FILE_PNG:
 		return "png";
-	case FILE_PNG_LIST:
-		return "png";
 	case FILE_TGA:
 		return "tga";
-	case FILE_TGA_LIST:
-		return "tga";
 	case FILE_TIFF:
-	case FILE_TIFF_LIST:
 		return "tif";
 	case FILE_VMPEG:
 		return "m2v";
@@ -1265,6 +1258,12 @@ const char* File::get_tag(int format)
 		return "wav";
 	case FILE_YUV:
 		return "m2v";
+	case FILE_EXR_LIST:
+	case FILE_JPEG_LIST:
+	case FILE_TGA_LIST:
+	case FILE_TIFF_LIST:
+	case FILE_PNG_LIST:
+		return "list";
 	}
 	return 0;
 }
