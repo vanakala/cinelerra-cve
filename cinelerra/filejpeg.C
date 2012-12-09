@@ -32,9 +32,13 @@
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
+#include "theme.h"
+
 extern "C" {
 #include <jpeglib.h>
 }
+
+extern Theme *theme_global;
 
 FileJPEG::FileJPEG(Asset *asset, File *file)
  : FileList(asset, file, "JPEGLIST", ".jpg", FILE_JPEG, FILE_JPEG_LIST)
@@ -238,7 +242,7 @@ JPEGConfigVideo::JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	400,
 	100)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 }
 

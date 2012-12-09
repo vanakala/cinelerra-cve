@@ -26,13 +26,15 @@
 #include "filepng.h"
 #include "interlacemodes.h"
 #include "language.h"
-#include "mwindow.inc"
 #include "quicktime.h"
+#include "theme.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
 
 #include <png.h>
+
+extern Theme *theme_global;
 
 FilePNG::FilePNG(Asset *asset, File *file)
  : FileList(asset, file, "PNGLIST", ".png", FILE_PNG, FILE_PNG_LIST)
@@ -394,7 +396,7 @@ PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	200,
 	100)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 }
 

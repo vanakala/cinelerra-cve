@@ -24,12 +24,14 @@
 #include "edit.h"
 #include "filetga.h"
 #include "language.h"
-#include "mwindow.inc"
+#include "theme.h"
 #include "vframe.h"
 #include "mainerror.h"
 
 #include <string.h>
 #include <unistd.h>
+
+extern Theme *theme_global;
 
 /* Known image types. */
 #define TGA_TYPE_MAPPED      1
@@ -846,7 +848,7 @@ TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset)
 	400,
 	100)
 {
-	this->gui = gui;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 
 	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGB_RLE)));

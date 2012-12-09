@@ -94,7 +94,6 @@ public:
 
 	void create_objects();
 
-	BC_WindowBase *parent_window;
 	BitsPopup *bits_popup;
 	SndFileHILO *hilo;
 	SndFileLOHI *lohi;

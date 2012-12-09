@@ -73,7 +73,6 @@ public:
 	void create_objects();
 	void close_event();
 
-	BC_WindowBase *parent_window;
 	Asset *asset;
 };
 

@@ -31,10 +31,10 @@
 #include "guicast.h"
 #include "language.h"
 #include "mutex.h"
-#include "mwindow.inc"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
+#include "theme.h"
 
 #include <unistd.h>
 #include <libdv/dv.h>
@@ -69,6 +69,7 @@
 #define MP4A_NAME "MPEG-4 Audio"
 #define VORBIS_NAME "OGG Vorbis"
 
+extern Theme *theme_global;
 
 FileMOV::FileMOV(Asset *asset, File *file)
  : FileBase(asset, file)
@@ -1125,7 +1126,7 @@ MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 	350,
 	250)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 	compression_popup = 0;
 	reset();
@@ -1378,7 +1379,7 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 	420,
 	420)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 	this->locked_compressor = locked_compressor;
 	compression_popup = 0;

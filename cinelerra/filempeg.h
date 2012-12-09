@@ -179,7 +179,6 @@ public:
 	void create_objects();
 	void close_event();
 
-	BC_WindowBase *parent_window;
 	MPEGABitrate *bitrate;
 	char string[BCTEXTLEN];
 	Asset *asset;
@@ -321,7 +320,6 @@ public:
 	void reset_cmodel();
 	void update_cmodel_objs();
 
-	BC_WindowBase *parent_window;
 	Asset *asset;
 	MPEGPreset *preset;
 	MPEGColorModel *cmodel;

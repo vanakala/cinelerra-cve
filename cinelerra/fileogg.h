@@ -210,8 +210,8 @@ public:
 	Asset *asset;
 	OGGVorbisFixedBitrate *fixed_bitrate;
 	OGGVorbisVariableBitrate *variable_bitrate;
+
 private:
-	BC_WindowBase *parent_window;
 	char string[BCTEXTLEN];
 };
 
@@ -277,8 +277,6 @@ public:
 	OGGTheoraFixedBitrate *fixed_bitrate;
 	OGGTheoraFixedQuality *fixed_quality;
 	Asset *asset;
-private:
-	BC_WindowBase *parent_window;
 };
 
 #endif

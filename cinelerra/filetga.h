@@ -111,7 +111,6 @@ public:
 	void close_event();
 
 	ArrayList<BC_ListBoxItem*> compression_items;
-	BC_WindowBase *gui;
 	Asset *asset;
 };
 

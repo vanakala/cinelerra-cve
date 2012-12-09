@@ -101,7 +101,7 @@ public:
 	void close_event();
 	static char* alpha_to_codec(int use_alpha);
 	static int codec_to_alpha(char *codec);
-	BC_WindowBase *parent_window;
+
 	Asset *asset;
 };
 

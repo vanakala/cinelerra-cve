@@ -37,9 +37,10 @@
 #include <ImfRgbaFile.h>
 #include <ImfRgbaYca.h>
 #include <ImfVersion.h>
-#include "mwindow.inc"
+#include "theme.h"
 #include "vframe.h"
 
+extern Theme *theme_global;
 
 class EXRIStream : public Imf::IStream
 {
@@ -527,7 +528,7 @@ EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	300,
 	BC_OKButton::calculate_h() + 100)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 }
 

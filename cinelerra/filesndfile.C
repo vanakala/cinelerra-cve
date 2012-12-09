@@ -21,15 +21,16 @@
 
 #include "aframe.h"
 #include "asset.h"
-#include "assets.h"
 #include "bcsignals.h"
 #include "bitspopup.h"
 #include "clip.h"
 #include "file.h"
 #include "filesndfile.h"
 #include "language.h"
-#include "mwindow.inc"
 #include "mainerror.h"
+#include "theme.h"
+
+extern Theme *theme_global;
 
 FileSndFile::FileSndFile(Asset *asset, File *file)
  : FileBase(asset, file)
@@ -380,8 +381,8 @@ SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
 	250,
 	250)
 {
-	this->parent_window = parent_window;
 	this->asset = asset;
+	set_icon(theme_global->get_image("mwindow_icon"));
 }
 
 SndFileConfig::~SndFileConfig()
@@ -444,6 +445,7 @@ SndFileLOHI::SndFileLOHI(SndFileConfig *gui, int x, int y)
 {
 	this->gui = gui;
 }
+
 int SndFileLOHI::handle_event()
 {
 	gui->asset->byte_order = 1;

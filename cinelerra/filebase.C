@@ -19,21 +19,15 @@
  * 
  */
 
-#include "aframe.h"
-#include "asset.h"
+#include "asset.inc"
 #include "assets.h"
-#include "aframe.h"
-#include "byteorder.h"
-#include "colormodels.h"
 #include "file.h"
 #include "filebase.h"
-#include "mwindow.h"
-#include "overlayframe.h"
 #include "theme.h"
 
 #include <stdlib.h>
 
-extern MWindow *mwindow;
+extern Theme *theme_global;
 
 FileBase::FileBase(Asset *asset, File *file)
 {
@@ -69,8 +63,7 @@ FBConfig::FBConfig(BC_WindowBase *parent_window, int type)
 	350,
 	100)
 {
-	this->parent_window = parent_window;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	set_icon(theme_global->get_image("mwindow_icon"));
 	if(type & SUPPORTS_AUDIO)
 		add_tool(new BC_Title(10, 10, _("There are no audio options for this format")));
 	else

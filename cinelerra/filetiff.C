@@ -25,8 +25,11 @@
 #include "filetiff.h"
 #include "interlacemodes.h"
 #include "language.h"
+#include "theme.h"
 #include "vframe.h"
 #include "mainerror.h"
+
+extern Theme *theme_global;
 
 #include <stdint.h>
 #include <string.h>
@@ -590,7 +593,7 @@ TIFFConfigVideo::TIFFConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	400,
 	200)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 }
 

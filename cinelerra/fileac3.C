@@ -25,10 +25,12 @@
 #include "clip.h"
 #include "fileac3.h"
 #include "language.h"
-#include "mwindow.inc"
 #include "mainerror.h"
+#include "theme.h"
 
 #include <string.h>
+
+extern Theme *theme_global;
 
 FileAC3::FileAC3(Asset *asset, File *file)
  : FileBase(asset, file)
@@ -256,8 +258,7 @@ AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 	AC3ConfigAudioBitrate *bitrate;
 	int x = 10, y = 10;
 	int x1 = 150;
-
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 	add_tool(new BC_Title(x, y, "Bitrate (kbps):"));
 	add_tool(bitrate = new AC3ConfigAudioBitrate(this,

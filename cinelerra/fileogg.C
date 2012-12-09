@@ -32,13 +32,13 @@
 #include "guicast.h"
 #include "language.h"
 #include "mutex.h"
-#include "mwindow.inc"
 #include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "cmodel_permutation.h"
 #include "interlacemodes.h"
 #include "mainerror.h"
+#include "theme.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -50,6 +50,8 @@
 // Needed for packaging engine
 #include "preferences.h"
 #include "render.h"
+
+extern Theme *theme_global;
 
 #define READ_SIZE 66000
 
@@ -1143,7 +1145,7 @@ OGGConfigAudio::OGGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 	350,
 	250)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 }
 
@@ -1250,6 +1252,7 @@ OGGVorbisAvgBitrate::OGGVorbisAvgBitrate(int x, int y, OGGConfigAudio *gui, char
 {
 	this->gui = gui;
 }
+
 int OGGVorbisAvgBitrate::handle_event()
 {
 	gui->asset->vorbis_bitrate = atol(get_text());
@@ -1264,7 +1267,7 @@ OGGConfigVideo::OGGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	450,
 	220)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 }
 

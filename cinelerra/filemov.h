@@ -169,7 +169,6 @@ public:
 
 	MOVConfigAudioPopup *compression_popup;
 	ArrayList<BC_ListBoxItem*> compression_items;
-	BC_WindowBase *parent_window;
 	BitsPopup *bits_popup;
 	BC_Title *bits_title;
 	BC_CheckBox *dither;
@@ -252,7 +251,6 @@ public:
 
 	ArrayList<BC_ListBoxItem*> compression_items;
 	MOVConfigVideoPopup *compression_popup;
-	BC_WindowBase *parent_window;
 	Asset *asset;
 	int param_x, param_y;
 	const char *locked_compressor;

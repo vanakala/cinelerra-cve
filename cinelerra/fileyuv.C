@@ -31,6 +31,7 @@
 #include "theme.h"
 #include "mainerror.h"
 #include "mwindow.h"
+#include "theme.h"
 #include "vframe.h"
 
 #include <ctype.h>
@@ -38,6 +39,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+
+extern Theme *theme_global;
 
 FileYUV::FileYUV(Asset *asset, File *file)
  : FileBase(asset, file)
@@ -257,11 +260,10 @@ YUVConfigVideo::YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset, Forma
 		500,
 		240)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 	this->format = format;
 	this->defaults = format->mwindow->defaults;
-	set_icon(format->mwindow->theme->get_image("mwindow_icon"));
 }
 
 YUVConfigVideo::~YUVConfigVideo()

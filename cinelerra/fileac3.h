@@ -65,7 +65,6 @@ public:
 		Asset *asset);
 
 	Asset *asset;
-	BC_WindowBase *parent_window;
 	char string[BCTEXTLEN];
 };
 

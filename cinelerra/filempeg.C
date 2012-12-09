@@ -36,15 +36,17 @@
 #include "interlacemodes.h"
 #include "language.h"
 #include "mainerror.h"
-#include "mwindow.inc"
 #include "preferences.h"
 #include "pipe.h"
+#include "theme.h"
 #include "vframe.h"
 #include "videodevice.inc"
 
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
+extern Theme *theme_global;
 
 #define MPEG_YUV420 0
 #define MPEG_YUV422 1
@@ -1343,7 +1345,7 @@ MPEGConfigAudio::MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 	0,
 	1)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 }
 
@@ -1515,7 +1517,7 @@ MPEGConfigVideo::MPEGConfigVideo(BC_WindowBase *parent_window,
 	0,
 	1)
 {
-	this->parent_window = parent_window;
+	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 	reset_cmodel();
 }
