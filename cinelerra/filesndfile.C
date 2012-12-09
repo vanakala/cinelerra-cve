@@ -366,11 +366,19 @@ void FileSndFile::get_parameters(BC_WindowBase *parent_window,
 {
 	if(options & SUPPORTS_AUDIO)
 	{
-		SndFileConfig *window = new SndFileConfig(parent_window, asset);
-		format_window = window;
-		window->create_objects();
-		window->run_window();
-		delete window;
+		if(asset->format == FILE_AU)
+		{
+			FBConfig *window = new FBConfig(parent_window, options);
+			format_window = window;
+		}
+		else
+		{
+			SndFileConfig *window = new SndFileConfig(parent_window, asset);
+			format_window = window;
+			window->create_objects();
+		}
+		format_window->run_window();
+		delete format_window;
 	}
 }
 
