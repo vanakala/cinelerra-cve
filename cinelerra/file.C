@@ -929,6 +929,8 @@ int File::supports(int format)
 	case FILE_AIFF:
 	case FILE_WAV:
 	case FILE_PCM:
+	case FILE_AU:
+	case FILE_SND:
 		return SUPPORTS_AUDIO;
 
 	case FILE_AC3:
