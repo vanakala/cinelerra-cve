@@ -136,10 +136,6 @@ public:
 	int highlighted_track;
 // Enumeration for how to scale from edl.inc.
 	int interpolation_type;
-// Whether to interpolate CR2 images
-	int interpolate_raw;
-// Whether to white balance CR2 images
-	int white_balance_raw;
 // labels follow edits during editing
 	int labels_follow_edits;
 	int mpeg4_deblock;

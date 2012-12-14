@@ -31,7 +31,6 @@ class PlaybackDisableNoEdits;
 class PlaybackHead;
 class PlaybackHeadCount;
 class PlaybackHost;
-class PlaybackInterpolateRaw;
 class PlaybackModuleFragment;
 class PlaybackNearest;
 class PlaybackOutBits;
@@ -42,7 +41,6 @@ class PlaybackReadLength;
 class PlaybackRealTime;
 class PlaybackSoftwareTimer;
 class PlaybackViewFollows;
-class PlaybackWhiteBalanceRaw;
 class TimecodeOffset;
 class VideoAsynchronous;
 
@@ -75,8 +73,6 @@ public:
 	PlaybackBicubicBicubic *cubic_cubic;
 	PlaybackBicubicBilinear *cubic_linear;
 	PlaybackBilinearBilinear *linear_linear;
-	PlaybackInterpolateRaw *interpolate_raw;
-	PlaybackWhiteBalanceRaw *white_balance_raw;
 	VideoAsynchronous *asynchronous;
 
 	BC_Title *vdevice_title;
@@ -218,29 +214,6 @@ public:
 	PlaybackPrefs *playback;
 };
 
-class PlaybackInterpolateRaw : public BC_CheckBox
-{
-public:
-	PlaybackInterpolateRaw(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PlaybackPrefs *playback);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-};
-
-class PlaybackWhiteBalanceRaw : public BC_CheckBox
-{
-public:
-	PlaybackWhiteBalanceRaw(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PlaybackPrefs *playback);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-};
 
 class TimecodeOffset : public BC_TextBox
 {
