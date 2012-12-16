@@ -139,9 +139,15 @@ int PlaybackPrefs::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
 	y += 20;
-	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 
+	add_subwindow(lanczos_lanczos = new PlaybackLanczosLanczos(pwindow,
+		this,
+		pwindow->thread->edl->session->interpolation_type == LANCZOS_LANCZOS,
+		10, 
+		y));
+	y += 20;
+	add_subwindow(cubic_cubic = new PlaybackBicubicBicubic(pwindow,
 		this, 
-		pwindow->thread->edl->session->interpolation_type == NEAREST_NEIGHBOR, 
+		pwindow->thread->edl->session->interpolation_type == CUBIC_CUBIC,
 		10, 
 		y));
 	y += 20;
@@ -154,6 +160,12 @@ int PlaybackPrefs::create_objects()
 	add_subwindow(linear_linear = new PlaybackBilinearBilinear(pwindow, 
 		this, 
 		pwindow->thread->edl->session->interpolation_type == LINEAR_LINEAR, 
+		10, 
+		y));
+	y += 20;
+	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 
+		this, 
+		pwindow->thread->edl->session->interpolation_type == NEAREST_NEIGHBOR, 
 		10, 
 		y));
 
@@ -171,7 +183,6 @@ int PlaybackPrefs::create_objects()
 		y, 
 		pwindow, 
 		this));
-	y += subtitle_toggle->get_h();
 
 	x2 = x;
 	x += 370;
@@ -207,6 +218,8 @@ void PlaybackPrefs::update(int interpolation)
 {
 	pwindow->thread->edl->session->interpolation_type = interpolation;
 	nearest_neighbor->update(interpolation == NEAREST_NEIGHBOR);
+	lanczos_lanczos->update(interpolation == LANCZOS_LANCZOS);
+	cubic_cubic->update(interpolation == CUBIC_CUBIC);
 	cubic_linear->update(interpolation == CUBIC_LINEAR);
 	linear_linear->update(interpolation == LINEAR_LINEAR);
 }
@@ -328,6 +341,18 @@ int PlaybackNearest::handle_event()
 	return 1;
 }
 
+PlaybackLanczosLanczos::PlaybackLanczosLanczos(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
+ : BC_Radial(x, y, value, _("Lanczos enlarge and reduce"))
+{
+	this->pwindow = pwindow;
+	this->prefs = prefs;
+}
+
+int PlaybackLanczosLanczos::handle_event()
+{
+	prefs->update(LANCZOS_LANCZOS);
+	return 1;
+}
 
 PlaybackBicubicBicubic::PlaybackBicubicBicubic(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
  : BC_Radial(x, y, value, _("Bicubic enlarge and reduce"))

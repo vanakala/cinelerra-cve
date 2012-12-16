@@ -30,7 +30,7 @@
 #define TRANSFER_ADDITION     1
 #define TRANSFER_SUBTRACT     2
 #define TRANSFER_MULTIPLY     3
-#define TRANSFER_DIVIDE 	  4
+#define TRANSFER_DIVIDE       4
 #define TRANSFER_REPLACE      5
 #define TRANSFER_MAX          6
 
@@ -41,6 +41,7 @@
 #define CUBIC_CUBIC      1        // Bicubic enlargement and reduction
 #define CUBIC_LINEAR     2        // Bicubic enlargement and linear reduction
 #define LINEAR_LINEAR    3        // Not explicitely called but used for user
+#define LANCZOS_LANCZOS  4        // Just because we can
 
 class OverlayFrame;
 
