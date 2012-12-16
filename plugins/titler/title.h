@@ -59,7 +59,6 @@ class TitleTranslate;
 #include "language.h"
 #include "loadbalance.h"
 #include "mutex.h"
-#include "overlayframe.h"
 #include "pluginvclient.h"
 #include "titlewindow.h"
 
@@ -254,11 +253,29 @@ public:
 	int y1, y2;
 };
 
+typedef struct
+{
+	int in_x1;
+	float in_fraction1;
+	int in_x2;       // Might be same as in_x1 for boundary
+	float in_fraction2;
+	float output_fraction;
+} transfer_table_f;
+
 
 class TitleTranslateUnit : public LoadClient
 {
 public:
 	TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server);
+	static void translation_array_f(transfer_table_f* &table,
+		float out_x1,
+		float out_x2,
+		float in_x1,
+		float in_x2,
+		int in_total,
+		int out_total,
+		int &out_x1_int,
+		int &out_x2_int);
 	void process_package(LoadPackage *package);
 	TitleMain *plugin;
 };
