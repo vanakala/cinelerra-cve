@@ -273,7 +273,8 @@ int OverlayFrame::overlay(VFrame *output,
 	}
 	else
 	{
-		int xtype=1, ytype=1;
+		int xtype = BILINEAR;
+		int ytype = BILINEAR;
 
 		switch(interpolation_type)
 		{
