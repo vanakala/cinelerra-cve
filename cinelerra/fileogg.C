@@ -893,7 +893,8 @@ int FileOGG::read_aframe(AFrame *aframe)
 {
 	float **vorbis_buffer;
 	int filled;
-	double *buffer;
+	double *buffer = 0;
+	float *float_buffer = 0;
 
 	next_sample_position = aframe->position;
 	int len = aframe->source_length;
@@ -916,7 +917,10 @@ int FileOGG::read_aframe(AFrame *aframe)
 	}
 
 	filled = 0;
-	buffer = &aframe->buffer[aframe->length];
+	if(aframe->buffer)
+		buffer = &aframe->buffer[aframe->length];
+	else
+		float_buffer = &aframe->float_buffer[aframe->length];
 
 	while(filled < len)
 	{
@@ -925,14 +929,28 @@ int FileOGG::read_aframe(AFrame *aframe)
 
 		float *input = &cur_stream->pcm_samples[aframe->channel][filled];
 		int chunk = MIN(cur_stream->pcm_size, len - filled);
-		for (int i = 0; i < chunk; i++)
-			buffer[i] = input[i];
+
+		if(buffer)
+		{
+			for (int i = 0; i < chunk; i++)
+				buffer[i] = input[i];
+		}
+		else
+		{
+			for (int i = 0; i < chunk; i++)
+				float_buffer[i] = input[i];
+		}
 
 		filled += chunk;
 		next_sample_position += chunk;
 	}
 	aframe->set_filled_length();
 	return 0;
+}
+
+int FileOGG::prefer_samples_float()
+{
+	return 1;
 }
 
 int FileOGG::write_page(ogg_page *op)

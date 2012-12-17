@@ -90,6 +90,7 @@ public:
 	int write_aframes(AFrame **buffer);
 	int write_frames(VFrame ***frames, int len);
 	int read_aframe(AFrame *aframe);
+	int prefer_samples_float();
 	int read_frame(VFrame *frame);
 
 // Callbacks for TOC generation
