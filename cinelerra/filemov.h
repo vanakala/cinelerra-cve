@@ -80,6 +80,7 @@ public:
 
 	int read_frame(VFrame *frame);
 	int read_aframe(AFrame *aframe);
+	int prefer_samples_float();
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);
@@ -102,8 +103,6 @@ private:
 	int quicktime_vtracks;
 
 	framenum current_frame[MAX_CHANNELS];
-	samplenum current_sample;
-
 	quicktime_t *fd;
 	int depth;        // Depth in bits per pixel
 	int64_t samples_correction;  // Correction after 32bit overflow

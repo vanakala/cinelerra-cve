@@ -185,8 +185,6 @@ int FileMOV::open_file(int rd, int wr)
 	for(int i = 0; i < MAX_CHANNELS; i++)
 		current_frame[i] = -1;
 
-	current_sample = -1;
-
 	quicktime_set_cpus(fd, file->cpus);
 
 	if(rd) format_to_asset();
@@ -881,19 +879,14 @@ int FileMOV::read_frame(VFrame *frame)
 int FileMOV::read_aframe(AFrame *aframe)
 {
 	int qt_track, qt_channel;
-	int len = 0;
 
 	if(!fd) return 0;
 
 	if(quicktime_track_channels(fd, 0) > aframe->channel &&
 		quicktime_supported_audio(fd, 0))
 	{
-		if(current_sample != aframe->position &&
-				aframe->position >= 0 && aframe->position < asset->audio_length)
-		{
+		if(aframe->position >= 0 && aframe->position < asset->audio_length)
 			quicktime_set_audio_position(fd, aframe->position, 0);
-			current_sample = aframe->position;
-		}
 
 		new_audio_temp(aframe->buffer_length);
 		if(quicktime_decode_audio(fd, 0, temp_float[0], aframe->source_length, aframe->channel))
@@ -901,16 +894,26 @@ int FileMOV::read_aframe(AFrame *aframe)
 			errorbox("quicktime_decode_audio failed");
 			return 1;
 		}
-		double *buffer = &aframe->buffer[aframe->length];
 		int len = aframe->source_length;
 
-		for(int i = 0; i < len; i++)
-			buffer[i] = temp_float[0][i];
+		if(aframe->buffer)
+		{
+			double *buffer = &aframe->buffer[aframe->length];
 
-		current_sample += len;
+			for(int i = 0; i < len; i++)
+				buffer[i] = temp_float[0][i];
+		}
+		else
+			memcpy(&aframe->float_buffer[aframe->length], temp_float[0], len * sizeof(float));
+
 		aframe->set_filled_length();
 	}
 	return 0;
+}
+
+int FileMOV::prefer_samples_float()
+{
+	return 1;
 }
 
 const char* FileMOV::strtocompression(const char *string)
