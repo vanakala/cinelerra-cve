@@ -87,8 +87,6 @@ public:
 // Return either the argument or another colormodel which read_frame should
 // use.
 	virtual int colormodel_supported(int colormodel) { return BC_RGB888; };
-// This file can copy compressed frames directly from the asset
-	virtual int can_copy_from(Edit *edit) { return 0; };
 
 protected:
 	static int match4(const char *in, const char *out);   // match 4 bytes for a quicktime type

@@ -151,16 +151,6 @@ const char* FileTIFF::cmodel_to_str(int value)
 	}
 }
 
-
-int FileTIFF::can_copy_from(Edit *edit)
-{
-	if(edit->asset->format == FILE_TIFF_LIST ||
-		edit->asset->format == FILE_TIFF)
-		return 1;
-
-	return 0;
-}
-
 int FileTIFF::read_frame_header(const char *path)
 {
 	TIFF *stream;

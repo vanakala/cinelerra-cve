@@ -136,14 +136,6 @@ const char* FileTGA::str_to_compression(const char *string)
 	return TGA_RGB;
 }
 
-int FileTGA::can_copy_from(Edit *edit)
-{
-	if(edit->asset->format == FILE_TGA_LIST ||
-		edit->asset->format == FILE_TGA)
-		return 1;
-	return 0;
-}
-
 int  FileTGA::colormodel_supported(int colormodel)
 {
 	return colormodel;

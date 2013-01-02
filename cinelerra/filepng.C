@@ -85,20 +85,6 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-int FilePNG::can_copy_from(Edit *edit)
-{
-	if(edit->asset->format == FILE_MOV)
-	{
-		if(match4(edit->asset->vcodec, QUICKTIME_PNG)) return 1;
-	}
-	else
-	if(edit->asset->format == FILE_PNG || 
-			edit->asset->format == FILE_PNG_LIST)
-		return 1;
-
-	return 0;
-}
-
 int FilePNG::colormodel_supported(int colormodel)
 {
 	if (((colormodel == BC_RGBA8888) && (native_cmodel == BC_RGBA16161616))

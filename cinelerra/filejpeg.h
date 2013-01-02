@@ -43,7 +43,6 @@ public:
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
-	int can_copy_from(Edit *edit);
 	int read_frame_header(const char *path);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
