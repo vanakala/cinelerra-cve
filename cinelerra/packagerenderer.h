@@ -85,16 +85,6 @@ public:
 // Aborts and returns 1 if an error is encountered.
 	int render_package(RenderPackage *package);
 
-	int direct_copy_possible(EDL *edl,
-		ptstime current_postime,
-		Track* playable_track,  // The one track which is playable
-		Edit* &playable_edit, // The edit which is playing
-		File *file);   // Output file
-	int direct_frame_copy(EDL *edl, 
-		ptstime &video_position, 
-		File *file,
-		int &result);
-
 // Invoke behavior for master node
 	virtual int get_master() { return 0; };
 // Get result status from server
@@ -142,7 +132,6 @@ public:
 	RenderEngine *render_engine;
 	RenderPackage *package;
 	TransportCommand *command;
-	int direct_frame_copying;
 	VideoDevice *video_device;
 	VFrame *video_output_ptr;
 	ptstime video_preroll;

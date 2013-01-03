@@ -58,10 +58,6 @@ public:
 		float &out_x, float &out_y, float &out_w, float &out_h);
 
 	int vertical_span(Theme *theme);
-
-// Give whether compressed data can be copied directly from the track to the output file
-	int direct_copy_possible(ptstime start, int use_nudge);
-
 	void translate(float offset_x, float offset_y, int do_camera);
 
 };

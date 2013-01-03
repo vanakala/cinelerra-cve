@@ -70,7 +70,6 @@ public:
 		int default_only,
 		int autos_only);
 	virtual void dump();
-	virtual int direct_copy_possible(ptstime start) { return 1; };
 
 // For paste automation only
 	int paste(ptstime start,

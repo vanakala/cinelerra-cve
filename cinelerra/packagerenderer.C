@@ -229,7 +229,6 @@ void PackageRenderer::create_engine()
 // it is passed to the file handler which usually processes frames simultaneously.
 		video_write_length = preferences->processors;
 		video_write_position = 0;
-		direct_frame_copying = 0;
 		file->start_video_thread(video_write_length,
 			command->get_edl()->session->color_model,
 			preferences->processors > 1 ? 2 : 1,
@@ -327,83 +326,64 @@ void PackageRenderer::do_video()
 
 		while(video_pts < video_end && !result)
 		{
-// Try to copy the compressed frame directly from the input to output files
-			if(direct_frame_copy(command->get_edl(), 
-				video_pts,
-				file, 
-				result))
-			{
-// Direct frame copy failed.
-// Switch back to background compression
-				if(direct_frame_copying)
-				{
-					file->start_video_thread(video_write_length, 
-						command->get_edl()->session->color_model,
-						preferences->processors > 1 ? 2 : 1,
-						0);
-					direct_frame_copying = 0;
-				}
-
 // Try to use the rendering engine to write the frame.
 // Get a buffer for background writing.
 
-				if(video_write_position == 0)
-					video_output = file->get_video_buffer();
+			if(video_write_position == 0)
+				video_output = file->get_video_buffer();
 
 // Construct layered output buffer
-				video_output_ptr = video_output[0][video_write_position];
-				video_output_ptr->set_pts(video_pts);
+			video_output_ptr = video_output[0][video_write_position];
+			video_output_ptr->set_pts(video_pts);
 
-				if(!result)
-					result = render_engine->vrender->process_buffer(video_output_ptr);
-				if((duration = video_output_ptr->get_duration()) < EPSILON)
-					duration = 1.0 / asset->frame_rate;
-				if(!result && 
-					mwindow && 
-					video_device->output_visible())
-				{
+			if(!result)
+				result = render_engine->vrender->process_buffer(video_output_ptr);
+			if((duration = video_output_ptr->get_duration()) < EPSILON)
+				duration = 1.0 / asset->frame_rate;
+			if(!result &&
+				mwindow &&
+				video_device->output_visible())
+			{
 // Vector for video device
-					VFrame *preview_output;
+				VFrame *preview_output;
 
-					video_device->new_output_buffer(&preview_output,
-						command->get_edl()->session->color_model);
+				video_device->new_output_buffer(&preview_output,
+					command->get_edl()->session->color_model);
 
-					preview_output->copy_from(video_output_ptr);
-					video_device->write_buffer(preview_output, 
-						command->get_edl());
-				}
+				preview_output->copy_from(video_output_ptr);
+				video_device->write_buffer(preview_output, 
+					command->get_edl());
+			}
 
 // Don't write to file
-				if(video_preroll > 0 && !result)
-				{
-					video_preroll -= duration;
+			if(video_preroll > 0 && !result)
+			{
+				video_preroll -= duration;
 // Keep the write position at 0 until ready to write real frames
-					result = file->write_video_buffer(0);
-					video_write_position = 0;
-				}
-				else
-				if(!result)
-				{
+				result = file->write_video_buffer(0);
+				video_write_position = 0;
+			}
+			else
+			if(!result)
+			{
 // Set background rendering parameters
 // Allow us to skip sections of the output file by setting the frame number.
 // Used by background render and render farm.
-					if(video_write_position == 0)
-						brender_base = video_pts;
-					video_output_ptr->set_number(round(video_pts * asset->frame_rate));
-					video_write_position++;
+				if(video_write_position == 0)
+					brender_base = video_pts;
+				video_output_ptr->set_number(round(video_pts * asset->frame_rate));
+				video_write_position++;
 
-					if(video_write_position >= video_write_length)
-					{
-						result = file->write_video_buffer(video_write_position);
+				if(video_write_position >= video_write_length)
+				{
+					result = file->write_video_buffer(video_write_position);
 // Update the brender map after writing the files.
-						if(package->use_brender)
-							set_video_map(brender_base, video_pts + duration);
+					if(package->use_brender)
+						set_video_map(brender_base, video_pts + duration);
 
-						video_write_position = 0;
-					}
+					video_write_position = 0;
 				}
 			}
-
 			package->count++;
 			video_pts = video_output_ptr->get_pts() + duration;
 			if(!result && get_result()) result = 1;
@@ -558,118 +538,5 @@ int PackageRenderer::render_package(RenderPackage *package)
 
 	close_output();
 	set_result(result);
-	return result;
-}
-
-
-// Try to copy the compressed frame directly from the input to output files
-// Return 1 on failure and 0 on success
-int PackageRenderer::direct_frame_copy(EDL *edl, 
-	ptstime &video_pts,
-	File *file,
-	int &error)
-{
-	Track *playable_track;
-	Edit *playable_edit;
-
-	if(direct_copy_possible(edl, 
-		video_pts,
-		playable_track, 
-		playable_edit, 
-		file))
-	{
-// Switch to direct copying
-		if(!direct_frame_copying)
-		{
-			if(video_write_position)
-			{
-				error |= file->write_video_buffer(video_write_position);
-				video_write_position = 0;
-			}
-			file->stop_video_thread();
-			direct_frame_copying = 1;
-		}
-		if(!package->use_brender)
-		{
-			error |= ((VEdit*)playable_edit)->read_frame(compressed_output, 
-				video_pts,
-				video_cache,
-				1,
-				0,
-				0);
-		}
-
-		if(!error && video_preroll > 0)
-		{
-			video_preroll -= compressed_output->get_duration();
-		}
-		else
-		if(!error)
-		{
-			if(!package->use_brender)
-			{
-				VFrame ***temp_output = new VFrame**[1];
-				temp_output[0] = new VFrame*[1];
-				temp_output[0][0] = compressed_output;
-				error = file->write_frames(temp_output, 1);
-				delete [] temp_output[0];
-				delete temp_output;
-			}
-		}
-		return 0;
-	}
-	return 1;
-}
-
-int PackageRenderer::direct_copy_possible(EDL *edl,
-	ptstime current_pts,
-	Track* playable_track,  // The one track which is playable
-	Edit* &playable_edit, // The edit which is playing
-	File *file)   // Output file
-{
-	int result = 1;
-	int total_playable_tracks = 0;
-	Track* current_track;
-	Auto* current_auto;
-	int temp;
-
-// Number of playable tracks must equal 1
-	for(current_track = edl->tracks->first;
-		current_track && result; 
-		current_track = current_track->next)
-	{
-		if(current_track->data_type == TRACK_VIDEO)
-		{
-			if(playable_tracks->is_playable(current_track, current_pts, 1))
-			{
-				playable_track = current_track;
-				total_playable_tracks++;
-			}
-		}
-	}
-
-	if(total_playable_tracks != 1) result = 0;
-
-// Edit must have a source file
-	if(result)
-	{
-		playable_edit = playable_track->edits->get_playable_edit(current_pts, 1);
-		if(!playable_edit)
-			result = 0;
-	}
-
-// Source file must be able to copy to destination file.
-// Source file must be same size as project output.
-	if(result)
-	{
-		if(!file->can_copy_from(playable_edit, 
-			edl->session->output_w, 
-			edl->session->output_h))
-			result = 0;
-	}
-
-// Test conditions mutual between vrender.C and this.
-	if(result && !playable_track->direct_copy_possible(current_pts, 1))
-		result = 0;
 	return result;
 }

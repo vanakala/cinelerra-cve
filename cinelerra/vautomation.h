@@ -43,8 +43,6 @@ public:
 		float *y, 
 		float *z, 
 		ptstime position);
-
-	int direct_copy_possible(ptstime start);
 };
 
 

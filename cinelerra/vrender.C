@@ -191,39 +191,7 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 	if((use_brender = renderengine->brender_available(position)) != 0) 
 		return 0;
 
-// Total number of playable tracks is 1
-	if(vconsole->total_exit_nodes != 1) return 1;
-
-	playable_track = vconsole->playable_tracks->values[0];
-// Test mutual conditions between render.C and this.
-	if(!playable_track->direct_copy_possible(position, 
-		1))
-		return 1;
-
-	playable_edit = playable_track->edits->editof(position, 1);
-
-// No edit at current location
-	if(!playable_edit) return 1;
-
-// Edit is silence
-	if(!playable_edit->asset) return 1;
-
-// Asset and output device must have the same dimensions
-	if(playable_edit->asset->width != renderengine->edl->session->output_w ||
-		playable_edit->asset->height != renderengine->edl->session->output_h)
-		return 1;
-
-// Asset and output device must have same resulting de-interlacing method
-	if (ilaceautofixmethod2(renderengine->edl->session->interlace_mode, 
-				playable_edit->asset->interlace_autofixoption,
-				playable_edit->asset->interlace_mode,
-				playable_edit->asset->interlace_fixmethod) 
-			!= BC_ILACE_FIXMETHOD_NONE)
-		return 1;
-
-// If we get here the frame is going to be directly copied.  Whether it is
-// decompressed in hardware depends on the colormodel.
-	return 0;
+	return 1;
 }
 
 

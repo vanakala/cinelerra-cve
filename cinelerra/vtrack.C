@@ -143,27 +143,6 @@ void VTrack::save_header(FileXML *file)
 	file->tag.set_property("TYPE", "VIDEO");
 }
 
-int VTrack::direct_copy_possible(ptstime start, int use_nudge)
-{
-	int i;
-	if(use_nudge) start += nudge;
-
-// Track size must equal output size
-	if(track_w != edl->session->output_w || track_h != edl->session->output_h)
-		return 0;
-// No automation must be present in the track
-	if(!automation->direct_copy_possible(start))
-		return 0;
-// No plugin must be present
-	if(plugin_used(start))
-		return 0;
-// No transition
-	if(get_current_transition(start))
-		return 0;
-
-	return 1;
-}
-
 void VTrack::calculate_input_transfer(Asset *asset, 
 	ptstime position,
 	float &in_x, 
