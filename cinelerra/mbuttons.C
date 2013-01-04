@@ -41,12 +41,12 @@
 
 MButtons::MButtons(MWindow *mwindow, MWindowGUI *gui)
  : BC_SubWindow(mwindow->theme->mbuttons_x, 
- 	mwindow->theme->mbuttons_y, 
+	mwindow->theme->mbuttons_y,
 	mwindow->theme->mbuttons_w, 
 	mwindow->theme->mbuttons_h)
 {
 	this->gui = gui;
-	this->mwindow = mwindow; 
+	this->mwindow = mwindow;
 }
 
 MButtons::~MButtons()
@@ -55,10 +55,9 @@ MButtons::~MButtons()
 	delete edit_panel;
 }
 
-int MButtons::create_objects()
+void MButtons::create_objects()
 {
 	int x = 3, y = 0;
-	BC_SubWindow *button;
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	transport = new MainTransport(mwindow, this, x, y);
@@ -70,16 +69,15 @@ int MButtons::create_objects()
 	edit_panel = new MainEditing(mwindow, this, x, y);
 
 	edit_panel->create_objects();
-	
+
 	x += edit_panel->get_w();
 	flash();
-	return 0;
 }
 
-int MButtons::resize_event()
+void MButtons::resize_event()
 {
 	reposition_window(mwindow->theme->mbuttons_x, 
- 		mwindow->theme->mbuttons_y, 
+		mwindow->theme->mbuttons_y, 
 		mwindow->theme->mbuttons_w, 
 		mwindow->theme->mbuttons_h);
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
@@ -88,34 +86,13 @@ int MButtons::resize_event()
 
 int MButtons::keypress_event()
 {
-	int result = 0;
-
-	if(!result)
-	{
-		result = transport->keypress_event();
-	}
-
-	return result;
+	return transport->keypress_event();
 }
 
 void MButtons::update()
 {
 	edit_panel->update();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 MainTransport::MainTransport(MWindow *mwindow, MButtons *mbuttons, int x, int y)
@@ -129,12 +106,12 @@ void MainTransport::goto_start()
 	mwindow->goto_start();
 }
 
-
 void MainTransport::goto_end()
 {
 	handle_transport(GOTO_END, 1);
 	mwindow->goto_end();
 }
+
 
 MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
  : EditPanel(mwindow, 
@@ -162,10 +139,3 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
 }
-
-
-
-
-
-
-

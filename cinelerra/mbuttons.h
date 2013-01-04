@@ -37,6 +37,7 @@ class Cut;
 class Copy;
 class Paste;
 
+#include "bcsignals.h"
 #include "editpanel.h"
 #include "guicast.h"
 #include "mbuttons.inc"
@@ -46,16 +47,14 @@ class Paste;
 #include "record.inc"
 
 
-
-
 class MButtons : public BC_SubWindow
 {
 public:
 	MButtons(MWindow *mwindow, MWindowGUI *gui);
 	~MButtons();
 
-	int create_objects();
-	int resize_event();
+	void create_objects();
+	void resize_event();
 	int keypress_event();
 	void update();
 
@@ -63,8 +62,6 @@ public:
 	MWindow *mwindow;
 	PlayTransport *transport;
 	MainEditing *edit_panel;
-
-
 };
 
 class MainTransport : public PlayTransport
@@ -80,7 +77,6 @@ class MainEditing : public EditPanel
 public:
 	MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y);
 
-	
 	MWindow *mwindow;
 	MButtons *mbuttons;
 };
