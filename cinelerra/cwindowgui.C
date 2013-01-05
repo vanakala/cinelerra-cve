@@ -175,9 +175,7 @@ int CWindowGUI::create_objects()
 	transport->create_objects();
 	transport->set_slider(slider);
 
-	edit_panel = new CWindowEditing(mwindow, cwindow);
-	edit_panel->set_meters(meters);
-	edit_panel->create_objects();
+	edit_panel = new CWindowEditing(mwindow, cwindow, meters);
 
 	zoom_panel = new CWindowZoom(mwindow, 
 		this, 
@@ -579,28 +577,14 @@ int CWindowGUI::drag_stop()
 }
 
 
-CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
+CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow, MeterPanel *meter_panel)
  : EditPanel(mwindow, 
 		cwindow->gui, 
 		mwindow->theme->cedit_x, 
 		mwindow->theme->cedit_y,
-		mwindow->edl->session->editing_mode, 
-		0,
-		1,
-		0, 
-		0,
-		1,
-		1,
-		1,
-		1,
-		1,
-		0,
-		0, // locklabels
-		1,
-		1,
-		1,
-		0,
-		1)
+		EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE | EDTP_UNDO
+			| EDTP_LABELS | EDTP_TOCLIP | EDTP_CUT,
+		meter_panel)
 {
 	this->mwindow = mwindow;
 	this->cwindow = cwindow;

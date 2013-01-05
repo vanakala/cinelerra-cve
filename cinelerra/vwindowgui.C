@@ -162,9 +162,7 @@ int VWindowGUI::create_objects()
 	meters->create_objects();
 
 // Requires meters to build
-	edit_panel = new VWindowEditing(mwindow, vwindow);
-	edit_panel->set_meters(meters);
-	edit_panel->create_objects();
+	edit_panel = new VWindowEditing(mwindow, vwindow, meters);
 
 	add_subwindow(slider = new VWindowSlider(mwindow, 
 			vwindow,
@@ -416,28 +414,13 @@ int VWindowMeters::change_status_event()
 
 
 
-VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow)
+VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow, MeterPanel *meter_panel)
  : EditPanel(mwindow, 
 		vwindow->gui, 
 		mwindow->theme->vedit_x, 
 		mwindow->theme->vedit_y,
-		EDITING_ARROW, 
-		0,
-		0,
-		1, 
-		1,
-		0,
-		0,
-		1, 
-		0,
-		0,
-		0,
-		0, // locklabels
-		1,
-		1,
-		1,
-		0,
-		0)
+		EDTP_SPLICE | EDTP_OVERWRITE | EDTP_COPY | EDTP_LABELS | EDTP_TOCLIP,
+		meter_panel)
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;

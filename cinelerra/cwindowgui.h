@@ -144,7 +144,7 @@ public:
 class CWindowEditing : public EditPanel
 {
 public:
-	CWindowEditing(MWindow *mwindow, CWindow *cwindow);
+	CWindowEditing(MWindow *mwindow, CWindow *cwindow, MeterPanel *meter_panel);
 
 	void set_inpoint();
 	void set_outpoint();

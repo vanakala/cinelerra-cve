@@ -122,9 +122,9 @@ public:
 class VWindowEditing : public EditPanel
 {
 public:
-	VWindowEditing(MWindow *mwindow, VWindow *vwindow);
+	VWindowEditing(MWindow *mwindow, VWindow *vwindow, MeterPanel *meter_panel);
 	~VWindowEditing();
-	
+
 	void copy_selection();
 	void splice_selection();
 	void overwrite_selection();

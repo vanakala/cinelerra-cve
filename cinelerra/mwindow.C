@@ -1447,13 +1447,11 @@ void MWindow::set_editing_mode(int new_editing_mode)
 {
 	gui->lock_window("MWindow::set_editing_mode");
 	edl->session->editing_mode = new_editing_mode;
-	gui->mbuttons->edit_panel->editing_mode = edl->session->editing_mode;
 	gui->mbuttons->edit_panel->update();
 	gui->canvas->update_cursor();
 	gui->unlock_window();
 	cwindow->gui->lock_window("MWindow::set_editing_mode");
 	cwindow->gui->edit_panel->update();
-	cwindow->gui->edit_panel->editing_mode = edl->session->editing_mode;
 	cwindow->gui->unlock_window();
 }
 

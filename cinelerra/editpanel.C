@@ -47,69 +47,195 @@
 #include "manualgoto.h"
 
 
-
 EditPanel::EditPanel(MWindow *mwindow, 
 	BC_WindowBase *subwindow,
 	int x, 
 	int y, 
-	int editing_mode, 
-	int use_editing_mode,
-	int use_keyframe, 
-	int use_splice,   // Extra buttons
-	int use_overwrite,
-	int use_lift,
-	int use_extract,
-	int use_copy, 
-	int use_paste, 
-	int use_undo,
-	int use_fit,
-	int use_locklabels,
-	int use_labels,
-	int use_toclip,
-	int use_meters,
-	int is_mwindow,
-	int use_cut)
+	int use_flags,
+	MeterPanel *meter_panel)
 {
-	this->editing_mode = editing_mode;
-	this->use_editing_mode = use_editing_mode;
-	this->use_keyframe = use_keyframe;
-	this->use_splice = use_splice;
-	this->use_overwrite = use_overwrite;
-	this->use_lift = 0;
-	this->use_extract = 0;
-	this->use_copy = use_copy;
-	this->use_paste = use_paste;
-	this->use_undo = use_undo;
 	this->mwindow = mwindow;
 	this->subwindow = subwindow;
-	this->use_fit = use_fit;
-	this->use_labels = use_labels;
-	this->use_locklabels = use_locklabels;
-	this->use_toclip = use_toclip;
-	this->use_meters = use_meters;
-	this->is_mwindow = is_mwindow;
-	this->use_cut = use_cut;
+	this->use_flags = use_flags;
 
 	this->x = x;
 	this->y = y;
-	this->meter_panel = 0;
 	arrow = 0;
 	ibeam = 0;
 	keyframe = 0;
 	fit = 0;
 	fit_autos = 0;
 	locklabels = 0;
+	copy = 0;
+	splice = 0;
+	overwrite = 0;
+	cut = 0;
+	copy = 0;
+	paste = 0;
+	labelbutton = 0;
+	prevlabel = 0;
+	nextlabel = 0;
+	undo = 0;
+	redo = 0;
+	meters = 0;
+
+	x1 = x, y1 = y;
+
+	if(use_flags & EDTP_EDITING_MODE)
+	{
+		subwindow->add_subwindow(arrow = new ArrowButton(mwindow, this, x1, y1));
+		x1 += arrow->get_w();
+		subwindow->add_subwindow(ibeam = new IBeamButton(mwindow, this, x1, y1));
+		x1 += ibeam->get_w();
+		x1 += mwindow->theme->toggle_margin;
+	}
+
+	if(use_flags & EDTP_KEYFRAME)
+	{
+		subwindow->add_subwindow(keyframe = new KeyFrameButton(mwindow, x1, y1));
+		x1 += keyframe->get_w();
+	}
+
+	if(use_flags & EDTP_LOCKLABELS)
+	{
+		subwindow->add_subwindow(locklabels = new LockLabelsButton(mwindow, 
+			x1, 
+			y1));
+		x1 += locklabels->get_w();
+	}
+
+	if(use_flags & (EDTP_KEYFRAME | EDTP_LOCKLABELS))
+		x1 += mwindow->theme->toggle_margin;
+
+// Mandatory
+	subwindow->add_subwindow(inpoint = new EditInPoint(mwindow, this, x1, y1));
+	x1 += inpoint->get_w();
+	subwindow->add_subwindow(outpoint = new EditOutPoint(mwindow, this, x1, y1));
+	x1 += outpoint->get_w();
+
+	if(use_flags & EDTP_SPLICE)
+	{
+		subwindow->add_subwindow(splice = new EditSplice(mwindow, this, x1, y1));
+		x1 += splice->get_w();
+	}
+
+	if(use_flags & EDTP_OVERWRITE)
+	{
+		subwindow->add_subwindow(overwrite = new EditOverwrite(mwindow, this, x1, y1));
+		x1 += overwrite->get_w();
+	}
+
+	if(use_flags & EDTP_TOCLIP)
+	{
+		subwindow->add_subwindow(clip = new EditToClip(mwindow, this, x1, y1));
+		x1 += clip->get_w();
+	}
+
+	if(use_flags & EDTP_CUT)
+	{
+		subwindow->add_subwindow(cut = new EditCut(mwindow, this, x1, y1));
+		x1 += cut->get_w();
+	}
+
+	if(use_flags & EDTP_COPY)
+	{
+		subwindow->add_subwindow(copy = new EditCopy(mwindow, this, x1, y1));
+		x1 += copy->get_w();
+	}
+
+	if(use_flags & EDTP_PASTE)
+	{
+		subwindow->add_subwindow(paste = new EditPaste(mwindow, this, x1, y1));
+		x1 += paste->get_w();
+	}
+
+	if(meter_panel)
+	{
+		subwindow->add_subwindow(meters = new MeterShow(mwindow, meter_panel, x1, y1));
+		x1 += meters->get_w();
+	}
+
+	if(use_flags & EDTP_LABELS)
+	{
+		subwindow->add_subwindow(labelbutton = new EditLabelbutton(mwindow, 
+			this, 
+			x1, 
+			y1));
+		x1 += labelbutton->get_w();
+		subwindow->add_subwindow(prevlabel = new EditPrevLabel(mwindow, 
+			this, 
+			x1, 
+			y1,
+			use_flags & EDTP_MWINDOW));
+		x1 += prevlabel->get_w();
+		subwindow->add_subwindow(nextlabel = new EditNextLabel(mwindow, 
+			this, 
+			x1, 
+			y1,
+			use_flags & EDTP_MWINDOW));
+		x1 += nextlabel->get_w();
+	}
+
+	if(use_flags & EDTP_FIT)
+	{
+		subwindow->add_subwindow(fit = new EditFit(mwindow, this, x1, y1));
+		x1 += fit->get_w();
+		subwindow->add_subwindow(fit_autos = new EditFitAutos(mwindow, this, x1, y1));
+		x1 += fit_autos->get_w();
+	}
+
+	if(use_flags & EDTP_UNDO)
+	{
+		subwindow->add_subwindow(undo = new EditUndo(mwindow, this, x1, y1));
+		x1 += undo->get_w();
+		subwindow->add_subwindow(redo = new EditRedo(mwindow, this, x1, y1));
+		x1 += redo->get_w();
+	}
+
+	subwindow->add_subwindow(mangoto = new EditManualGoto(mwindow, this, x1, y1));
+	x1 += mangoto->get_w();
 }
 
 EditPanel::~EditPanel()
 {
-}
+	if(use_flags & EDTP_EDITING_MODE)
+	{
+		if(arrow) delete arrow;
+		if(ibeam) delete ibeam;
+	}
 
-void EditPanel::set_meters(MeterPanel *meter_panel)
-{
-	this->meter_panel = meter_panel;
-}
+	delete keyframe;
 
+	delete locklabels;
+
+	delete inpoint;
+	delete outpoint;
+	delete copy;
+	delete splice;
+	delete overwrite;
+	delete cut;
+	delete copy;
+	delete paste;
+
+	if(use_flags & EDTP_LABELS)
+	{
+		delete labelbutton;
+		delete prevlabel;
+		delete nextlabel;
+	}
+
+	if(use_flags & EDTP_FIT)
+	{
+		delete fit;
+		delete fit_autos;
+	}
+	if(use_flags & EDTP_UNDO)
+	{
+		delete undo;
+		delete redo;
+	}
+	delete meters;
+}
 
 void EditPanel::update()
 {
@@ -121,183 +247,9 @@ void EditPanel::update()
 	subwindow->flush();
 }
 
-void EditPanel::delete_buttons()
-{
-	if(use_editing_mode)
-	{
-		if(arrow) delete arrow;
-		if(ibeam) delete ibeam;
-	}
-
-	if(use_keyframe)
-		delete keyframe;
-
-	if(use_locklabels)
-		delete locklabels;
-
-	if(inpoint) delete inpoint;
-	if(outpoint) delete outpoint;
-	if(use_copy) delete copy;
-	if(use_splice) delete splice;
-	if(use_overwrite) delete overwrite;
-	if(use_lift) delete lift;
-	if(use_extract) delete extract;
-	if(cut) delete cut;
-	if(copy) delete copy;
-	if(use_paste) delete paste;
-
-	if(use_labels)
-	{
-		delete labelbutton;
-		delete prevlabel;
-		delete nextlabel;
-	}
-
-	if(use_fit) 
-	{
-		delete fit;
-		delete fit_autos;
-	}
-	if(use_undo)
-	{
-		delete undo;
-		delete redo;
-	}
-}
-
-void EditPanel::create_buttons()
-{
-	x1 = x, y1 = y;
-
-
-SET_TRACE
-	if(use_editing_mode)
-	{
-		subwindow->add_subwindow(arrow = new ArrowButton(mwindow, this, x1, y1));
-		x1 += arrow->get_w();
-		subwindow->add_subwindow(ibeam = new IBeamButton(mwindow, this, x1, y1));
-		x1 += ibeam->get_w();
-		x1 += mwindow->theme->toggle_margin;
-	}
-
-	if(use_keyframe)
-	{
-		subwindow->add_subwindow(keyframe = new KeyFrameButton(mwindow, x1, y1));
-		x1 += keyframe->get_w();
-	}
-
-	if(use_locklabels)
-	{
-		subwindow->add_subwindow(locklabels = new LockLabelsButton(mwindow, 
-			x1, 
-			y1));
-		x1 += locklabels->get_w();
-	}
-	if(use_keyframe || use_locklabels)
-		x1 += mwindow->theme->toggle_margin;
-
-// Mandatory
-	subwindow->add_subwindow(inpoint = new EditInPoint(mwindow, this, x1, y1));
-	x1 += inpoint->get_w();
-	subwindow->add_subwindow(outpoint = new EditOutPoint(mwindow, this, x1, y1));
-	x1 += outpoint->get_w();
-	if(use_splice)
-	{
-		subwindow->add_subwindow(splice = new EditSplice(mwindow, this, x1, y1));
-		x1 += splice->get_w();
-	}
-	if(use_overwrite)
-	{
-		subwindow->add_subwindow(overwrite = new EditOverwrite(mwindow, this, x1, y1));
-		x1 += overwrite->get_w();
-	}
-	if(use_lift)
-	{
-		subwindow->add_subwindow(lift = new EditLift(mwindow, this, x1, y1));
-		x1 += lift->get_w();
-	}
-	if(use_extract)
-	{
-		subwindow->add_subwindow(extract = new EditExtract(mwindow, this, x1, y1));
-		x1 += extract->get_w();
-	}
-	if(use_toclip)
-	{
-		subwindow->add_subwindow(clip = new EditToClip(mwindow, this, x1, y1));
-		x1 += clip->get_w();
-	}
-	
-	if(use_cut)
-	{
-		subwindow->add_subwindow(cut = new EditCut(mwindow, this, x1, y1));
-		x1 += cut->get_w();
-	}
-	if(use_copy)
-	{
-		subwindow->add_subwindow(copy = new EditCopy(mwindow, this, x1, y1));
-		x1 += copy->get_w();
-	}
-	if(use_paste)
-	{
-		subwindow->add_subwindow(paste = new EditPaste(mwindow, this, x1, y1));
-		x1 += paste->get_w();
-	}
-	
-	if(use_meters)
-	{
-		if(!meter_panel)
-		{
-			printf("EditPanel::create_objects: meter_panel == 0\n");
-		}
-		subwindow->add_subwindow(meters = new MeterShow(mwindow, meter_panel, x1, y1));
-		x1 += meters->get_w();
-	}
-
-	if(use_labels)
-	{
-		subwindow->add_subwindow(labelbutton = new EditLabelbutton(mwindow, 
-			this, 
-			x1, 
-			y1));
-		x1 += labelbutton->get_w();
-		subwindow->add_subwindow(prevlabel = new EditPrevLabel(mwindow, 
-			this, 
-			x1, 
-			y1,
-			is_mwindow));
-		x1 += prevlabel->get_w();
-		subwindow->add_subwindow(nextlabel = new EditNextLabel(mwindow, 
-			this, 
-			x1, 
-			y1,
-			is_mwindow));
-		x1 += nextlabel->get_w();
-	}
-
-	if(use_fit)
-	{
-		subwindow->add_subwindow(fit = new EditFit(mwindow, this, x1, y1));
-		x1 += fit->get_w();
-		subwindow->add_subwindow(fit_autos = new EditFitAutos(mwindow, this, x1, y1));
-		x1 += fit_autos->get_w();
-	}
-
-	if(use_undo)
-	{
-		subwindow->add_subwindow(undo = new EditUndo(mwindow, this, x1, y1));
-		x1 += undo->get_w();
-		subwindow->add_subwindow(redo = new EditRedo(mwindow, this, x1, y1));
-		x1 += redo->get_w();
-	}
-	subwindow->add_subwindow(mangoto = new EditManualGoto(mwindow, this, x1, y1));
-	x1 += mangoto->get_w();
-}
-
-
-
 void EditPanel::toggle_label()
 {
-	mwindow->toggle_label(is_mwindow);
+	mwindow->toggle_label(use_flags & EDTP_MWINDOW);
 }
 
 void EditPanel::prev_label()
@@ -318,16 +270,13 @@ void EditPanel::next_label()
 	mwindow->next_label(shift_down);
 }
 
-
-
-
 void EditPanel::reposition_buttons(int x, int y)
 {
 	this->x = x; 
 	this->y = y;
 	x1 = x, y1 = y;
 
-	if(use_editing_mode)
+	if(use_flags & EDTP_EDITING_MODE)
 	{
 		arrow->reposition_window(x1, y1);
 		x1 += arrow->get_w();
@@ -336,73 +285,69 @@ void EditPanel::reposition_buttons(int x, int y)
 		x1 += mwindow->theme->toggle_margin;
 	}
 
-	if(use_keyframe)
+	if(use_flags & EDTP_KEYFRAME)
 	{
 		keyframe->reposition_window(x1, y1);
 		x1 += keyframe->get_w();
 	}
 
-	if(use_locklabels)
+	if(use_flags & EDTP_LOCKLABELS)
 	{
 		locklabels->reposition_window(x1,y1);
 		x1 += locklabels->get_w();
 	}
 
-	if(use_keyframe || use_locklabels)
+	if(use_flags & (EDTP_KEYFRAME | EDTP_LOCKLABELS))
 		x1 += mwindow->theme->toggle_margin;
 
 	inpoint->reposition_window(x1, y1);
 	x1 += inpoint->get_w();
 	outpoint->reposition_window(x1, y1);
 	x1 += outpoint->get_w();
-	if(use_splice)
+
+	if(use_flags & EDTP_SPLICE)
 	{
 		splice->reposition_window(x1, y1);
 		x1 += splice->get_w();
 	}
-	if(use_overwrite)
+
+	if(use_flags & EDTP_OVERWRITE)
 	{
 		overwrite->reposition_window(x1, y1);
 		x1 += overwrite->get_w();
 	}
-	if(use_lift)
-	{
-		lift->reposition_window(x1, y1);
-		x1 += lift->get_w();
-	}
-	if(use_extract)
-	{
-		extract->reposition_window(x1, y1);
-		x1 += extract->get_w();
-	}
-	if(use_toclip)
+
+	if(use_flags & EDTP_TOCLIP)
 	{
 		clip->reposition_window(x1, y1);
 		x1 += clip->get_w();
 	}
-	if(use_cut)
+
+	if(use_flags & EDTP_CUT)
 	{
 		cut->reposition_window(x1, y1);
 		x1 += cut->get_w();
 	}
-	if(use_copy)
+
+	if(use_flags & EDTP_COPY)
 	{
 		copy->reposition_window(x1, y1);
 		x1 += copy->get_w();
 	}
-	if(use_paste)
+
+	if(use_flags & EDTP_PASTE)
 	{
 		paste->reposition_window(x1, y1);
 		x1 += paste->get_w();
 	}
 
-	if(use_meters)
+	if(meters)
 	{
 		meters->reposition_window(x1, y1);
 		x1 += meters->get_w();
 	}
 
-	if(use_labels)
+	if(use_flags & EDTP_LABELS)
 	{
 		labelbutton->reposition_window(x1, y1);
 		x1 += labelbutton->get_w();
@@ -412,7 +357,7 @@ void EditPanel::reposition_buttons(int x, int y)
 		x1 += nextlabel->get_w();
 	}
 
-	if(use_fit)
+	if(use_flags & EDTP_FIT)
 	{
 		fit->reposition_window(x1, y1);
 		x1 += fit->get_w();
@@ -420,24 +365,16 @@ void EditPanel::reposition_buttons(int x, int y)
 		x1 += fit_autos->get_w();
 	}
 
-	if(use_undo)
+	if(use_flags & EDTP_UNDO)
 	{
 		undo->reposition_window(x1, y1);
 		x1 += undo->get_w();
 		redo->reposition_window(x1, y1);
 		x1 += redo->get_w();
 	}
-	
+
 	mangoto->reposition_window(x1, y1);
 	x1 += mangoto->get_w();
-}
-
-
-
-int EditPanel::create_objects()
-{
-	create_buttons();
-	return 0;
 }
 
 int EditPanel::get_w()
@@ -445,18 +382,9 @@ int EditPanel::get_w()
 	return x1 - x;
 }
 
-
 void EditPanel::copy_selection()
 {
 	mwindow->copy();
-}
-
-void EditPanel::splice_selection()
-{
-}
-
-void EditPanel::overwrite_selection()
-{
 }
 
 void EditPanel::set_inpoint()
@@ -493,10 +421,6 @@ EditInPoint::EditInPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
 	set_tooltip(_("In point ( [ )"));
 }
 
-EditInPoint::~EditInPoint()
-{
-}
-
 int EditInPoint::handle_event()
 {
 	panel->set_inpoint();
@@ -513,16 +437,13 @@ int EditInPoint::keypress_event()
 	return 0;
 }
 
+
 EditOutPoint::EditOutPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("outbutton"))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Out point ( ] )"));
-}
-
-EditOutPoint::~EditOutPoint()
-{
 }
 
 int EditOutPoint::handle_event()
@@ -555,10 +476,6 @@ EditNextLabel::EditNextLabel(MWindow *mwindow,
 	set_tooltip(_("Next label ( ctrl -> )"));
 }
 
-EditNextLabel::~EditNextLabel()
-{
-}
-
 int EditNextLabel::keypress_event()
 {
 	if(get_keypress() == RIGHT && ctrl_down())
@@ -584,10 +501,6 @@ EditPrevLabel::EditPrevLabel(MWindow *mwindow,
 	set_tooltip(_("Previous label ( ctrl <- )"));
 }
 
-EditPrevLabel::~EditPrevLabel()
-{
-}
-
 int EditPrevLabel::keypress_event()
 {
 	if(get_keypress() == LEFT && ctrl_down())
@@ -601,22 +514,6 @@ int EditPrevLabel::handle_event()
 	return 1;
 }
 
-EditLift::EditLift(MWindow *mwindow, EditPanel *panel, int x, int y)
- : BC_Button(x, y, mwindow->theme->lift_data)
-{
-	this->mwindow = mwindow;
-	this->panel = panel;
-	set_tooltip(_("Lift"));
-}
-
-EditLift::~EditLift()
-{
-}
-
-int EditLift::handle_event()
-{
-	return 1;
-}
 
 EditOverwrite::EditOverwrite(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->overwrite_data)
@@ -624,10 +521,6 @@ EditOverwrite::EditOverwrite(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Overwrite ( b )"));
-}
-
-EditOverwrite::~EditOverwrite()
-{
 }
 
 int EditOverwrite::handle_event()
@@ -646,22 +539,6 @@ int EditOverwrite::keypress_event()
 	return 0;
 }
 
-EditExtract::EditExtract(MWindow *mwindow, EditPanel *panel, int x, int y)
- : BC_Button(x, y, mwindow->theme->extract_data)
-{
-	this->mwindow = mwindow;
-	this->panel = panel;
-	set_tooltip(_("Extract"));
-}
-
-EditExtract::~EditExtract()
-{
-}
-
-int EditExtract::handle_event()
-{
-	return 1;
-}
 
 EditToClip::EditToClip(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("toclip"))
@@ -669,10 +546,6 @@ EditToClip::EditToClip(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("To clip ( i )"));
-}
-
-EditToClip::~EditToClip()
-{
 }
 
 int EditToClip::handle_event()
@@ -690,6 +563,7 @@ int EditToClip::keypress_event()
 	}
 	return 0;
 }
+
 
 EditManualGoto::EditManualGoto(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("goto"))
@@ -730,10 +604,6 @@ EditSplice::EditSplice(MWindow *mwindow, EditPanel *panel, int x, int y)
 	set_tooltip(_("Splice ( v )"));
 }
 
-EditSplice::~EditSplice()
-{
-}
-
 int EditSplice::handle_event()
 {
 	panel->splice_selection();
@@ -750,16 +620,13 @@ int EditSplice::keypress_event()
 	return 0;
 }
 
+
 EditCut::EditCut(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("cut"))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Cut ( x )"));
-}
-
-EditCut::~EditCut()
-{
 }
 
 int EditCut::keypress_event()
@@ -771,11 +638,10 @@ int EditCut::keypress_event()
 
 int EditCut::handle_event()
 {
-	if(!panel->is_mwindow) mwindow->gui->lock_window("EditCut::handle_event");
 	mwindow->cut();
-	if(!panel->is_mwindow) mwindow->gui->unlock_window();
 	return 1;
 }
+
 
 EditCopy::EditCopy(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("copy"))
@@ -783,10 +649,6 @@ EditCopy::EditCopy(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Copy ( c )"));
-}
-
-EditCopy::~EditCopy()
-{
 }
 
 int EditCopy::keypress_event()
@@ -810,10 +672,6 @@ EditPaste::EditPaste(MWindow *mwindow, EditPanel *panel, int x, int y)
 	set_tooltip(_("Paste ( v )"));
 }
 
-EditPaste::~EditPaste()
-{
-}
-
 int EditPaste::keypress_event()
 {
 	if(get_keypress() == 'v')
@@ -823,9 +681,7 @@ int EditPaste::keypress_event()
 
 int EditPaste::handle_event()
 {
-	if(!panel->is_mwindow) mwindow->gui->lock_window("EditPaste::handle_event");
 	mwindow->paste();
-	if(!panel->is_mwindow) mwindow->gui->unlock_window();
 	return 1;
 }
 
@@ -835,10 +691,6 @@ EditUndo::EditUndo(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Undo ( z )"));
-}
-
-EditUndo::~EditUndo()
-{
 }
 
 int EditUndo::keypress_event()
@@ -854,16 +706,13 @@ int EditUndo::handle_event()
 	return 1;
 }
 
+
 EditRedo::EditRedo(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("redo"))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Redo ( shift Z )"));
-}
-
-EditRedo::~EditRedo()
-{
 }
 
 int EditRedo::keypress_event()
@@ -888,10 +737,6 @@ EditLabelbutton::EditLabelbutton(MWindow *mwindow, EditPanel *panel, int x, int 
 	set_tooltip(_("Toggle label at current position ( l )"));
 }
 
-EditLabelbutton::~EditLabelbutton()
-{
-}
-
 int EditLabelbutton::keypress_event()
 {
 	if(get_keypress() == 'l')
@@ -912,10 +757,6 @@ EditFit::EditFit(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Fit selection to display ( f )"));
-}
-
-EditFit::~EditFit()
-{
 }
 
 int EditFit::keypress_event()
@@ -941,10 +782,6 @@ EditFitAutos::EditFitAutos(MWindow *mwindow, EditPanel *panel, int x, int y)
 	this->mwindow = mwindow;
 	this->panel = panel;
 	set_tooltip(_("Fit all autos to display ( Alt + f )"));
-}
-
-EditFitAutos::~EditFitAutos()
-{
 }
 
 int EditFitAutos::keypress_event()
@@ -1017,6 +854,7 @@ int IBeamButton::handle_event()
 // Nothing after this
 	return 1;
 }
+
 
 KeyFrameButton::KeyFrameButton(MWindow *mwindow, int x, int y)
  : BC_Toggle(x, 

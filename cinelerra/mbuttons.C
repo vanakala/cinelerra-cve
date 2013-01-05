@@ -67,9 +67,6 @@ void MButtons::create_objects()
 	x += mwindow->theme->mtransport_margin;
 
 	edit_panel = new MainEditing(mwindow, this, x, y);
-
-	edit_panel->create_objects();
-
 	x += edit_panel->get_w();
 	flash();
 }
@@ -118,23 +115,10 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 		mbuttons, 
 		x, 
 		y,
-		mwindow->edl->session->editing_mode,
-		1,
-		1,
-		0, 
-		0, 
-		1, 
-		1,
-		1,
-		1,
-		1,
-		1,
-		1, // locklabels
-		1,
-		1,
-		0,
-		1,
-		1)
+		EDTP_EDITING_MODE | EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE
+			| EDTP_UNDO | EDTP_FIT | EDTP_LOCKLABELS | EDTP_LABELS 
+			| EDTP_TOCLIP | EDTP_MWINDOW | EDTP_CUT,
+		0)
 {
 	this->mwindow = mwindow;
 	this->mbuttons = mbuttons;
