@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "edl.h"
 #include "keys.h"
 #include "language.h"
@@ -33,7 +34,6 @@
 #include "localsession.h"
 
 
-
 PlayTransport::PlayTransport(MWindow *mwindow, 
 	BC_WindowBase *subwindow, 
 	int x, 
@@ -43,43 +43,8 @@ PlayTransport::PlayTransport(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->x = x;
 	this->y = y;
-	this->slider = 0;
 	this->engine = 0;
-}
 
-
-PlayTransport::~PlayTransport()
-{
-	delete forward_play;
-	delete frame_forward_play;
-	delete reverse_play;
-	delete frame_reverse_play;
-	delete fast_reverse;
-	delete fast_play;
-	delete rewind_button;
-	delete stop_button;
-	delete end_button;
-}
-
-void PlayTransport::set_engine(PlaybackEngine *engine)
-{
-	this->engine = engine;
-}
-
-void PlayTransport::set_slider(BC_Slider *slider)
-{
-	this->slider = slider;
-}
-
-int PlayTransport::get_transport_width(MWindow *mwindow)
-{
-	return mwindow->theme->get_image_set("stop")[0]->get_w() * 7 +
-		mwindow->theme->get_image_set("rewind")[0]->get_w() * 2;
-}
-
-int PlayTransport::create_objects()
-{
-	int x = this->x, y = this->y;
 	subwindow->add_subwindow(rewind_button = new RewindButton(mwindow, this, x, y));
 	x += rewind_button->get_w();
 	subwindow->add_subwindow(fast_reverse = new FastReverseButton(mwindow, this, x, y)); 
@@ -101,8 +66,31 @@ int PlayTransport::create_objects()
 
 	reverse = 0;
 	speed = 0;
+}
 
-	return 0;
+
+PlayTransport::~PlayTransport()
+{
+	delete forward_play;
+	delete frame_forward_play;
+	delete reverse_play;
+	delete frame_reverse_play;
+	delete fast_reverse;
+	delete fast_play;
+	delete rewind_button;
+	delete stop_button;
+	delete end_button;
+}
+
+void PlayTransport::set_engine(PlaybackEngine *engine)
+{
+	this->engine = engine;
+}
+
+int PlayTransport::get_transport_width(MWindow *mwindow)
+{
+	return mwindow->theme->get_image_set("stop")[0]->get_w() * 7 +
+		mwindow->theme->get_image_set("rewind")[0]->get_w() * 2;
 }
 
 void PlayTransport::reposition_buttons(int x, int y)
@@ -132,54 +120,6 @@ void PlayTransport::reposition_buttons(int x, int y)
 int PlayTransport::get_w()
 {
 	return end_button->get_x() + end_button->get_w() - rewind_button->get_x();
-}
-
-int PlayTransport::flip_vertical(int vertical, int &x, int &y)
-{
-	if(vertical)
-	{
-		rewind_button->reposition_window(x, y); 
-		y += rewind_button->get_h();
-		fast_reverse->reposition_window(x, y); 
-		y += fast_reverse->get_h();
-		reverse_play->reposition_window(x, y); 
-		y += reverse_play->get_h();
-		frame_reverse_play->reposition_window(x, y); 
-		y += frame_reverse_play->get_h();
-		stop_button->reposition_window(x, y); 
-		y += stop_button->get_h();
-		frame_forward_play->reposition_window(x, y); 
-		y += frame_forward_play->get_h();
-		forward_play->reposition_window(x, y); 
-		y += forward_play->get_h();
-		fast_play->reposition_window(x, y); 
-		y += fast_play->get_h();
-		end_button->reposition_window(x, y); 
-		y += end_button->get_h();
-	}
-	else
-	{
-		rewind_button->reposition_window(x, y - 2); 
-		x += rewind_button->get_w();
-		fast_reverse->reposition_window(x, y - 2); 
-		x += fast_reverse->get_w();
-		reverse_play->reposition_window(x, y - 2); 
-		x += reverse_play->get_w();
-		frame_reverse_play->reposition_window(x, y - 2); 
-		x += frame_reverse_play->get_w();
-		stop_button->reposition_window(x, y - 2); 
-		x += stop_button->get_w();
-		frame_forward_play->reposition_window(x, y - 2); 
-		x += frame_forward_play->get_w();
-		forward_play->reposition_window(x, y - 2); 
-		x += forward_play->get_w();
-		fast_play->reposition_window(x, y - 2); 
-		x += fast_play->get_w();
-		end_button->reposition_window(x, y - 2); 
-		x += end_button->get_w();
-	}
-
-	return 0;
 }
 
 int PlayTransport::keypress_event()
@@ -254,7 +194,6 @@ int PlayTransport::keypress_event()
 
 	return 1;
 }
-
 
 void PlayTransport::goto_start()
 {
@@ -354,28 +293,10 @@ EDL* PlayTransport::get_edl()
 	return mwindow->edl;
 }
 
-int PlayTransport::pause_transport()
-{
-	if(active_button) active_button->set_mode(PLAY_MODE);
-	return 0;
-}
 
-
-int PlayTransport::reset_transport()
-{
-	fast_reverse->set_mode(PLAY_MODE);
-	reverse_play->set_mode(PLAY_MODE);
-	forward_play->set_mode(PLAY_MODE);
-	frame_reverse_play->set_mode(PLAY_MODE);
-	frame_forward_play->set_mode(PLAY_MODE);
-	fast_play->set_mode(PLAY_MODE);
-	return 0;
-}
-
-PTransportButton::PTransportButton(MWindow *mwindow, PlayTransport *transport, int x, int y, VFrame **data)
+PTransportButton::PTransportButton(PlayTransport *transport, int x, int y, VFrame **data)
  : BC_Button(x, y, data)
 {
-	this->mwindow = mwindow;
 	this->transport = transport;
 	mode = PLAY_MODE;
 }
@@ -384,15 +305,14 @@ PTransportButton::~PTransportButton()
 {
 }
 
-int PTransportButton::set_mode(int mode)
+void PTransportButton::set_mode(int mode)
 {
 	this->mode = mode;
-	return 0;
 }
 
 
 RewindButton::RewindButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("rewind"))
+ : PTransportButton(transport, x, y, mwindow->theme->get_image_set("rewind"))
 {
 	set_tooltip(_("Rewind ( Home )"));
 }
@@ -404,7 +324,7 @@ int RewindButton::handle_event()
 }
 
 FastReverseButton::FastReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("fastrev")) 
+ : PTransportButton(transport, x, y, mwindow->theme->get_image_set("fastrev")) 
 {
 	set_tooltip(_("Fast reverse ( + )"));
 }
@@ -418,7 +338,7 @@ int FastReverseButton::handle_event()
 // Reverse playback normal speed
 
 ReverseButton::ReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("reverse")) 
+ : PTransportButton(transport, x, y, mwindow->theme->get_image_set("reverse")) 
 {
 	set_tooltip(_("Normal reverse ( 6 )"));
 }
@@ -432,7 +352,7 @@ int ReverseButton::handle_event()
 // Reverse playback one frame
 
 FrameReverseButton::FrameReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("framerev"))
+ : PTransportButton(transport, x, y, mwindow->theme->get_image_set("framerev"))
 {
 	set_tooltip(_("Frame reverse ( 4 )"));
 }
@@ -446,7 +366,7 @@ int FrameReverseButton::handle_event()
 // forward playback normal speed
 
 PlayButton::PlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("play")) 
+ : PTransportButton(transport, x, y, mwindow->theme->get_image_set("play")) 
 {
 	set_tooltip(_("Normal forward ( 3 )"));
 }
@@ -457,12 +377,10 @@ int PlayButton::handle_event()
 	return 1;
 }
 
-
-
 // forward playback one frame
 
 FramePlayButton::FramePlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("framefwd")) 
+ : PTransportButton(transport, x, y, mwindow->theme->get_image_set("framefwd")) 
 {
 	set_tooltip(_("Frame forward ( 1 )"));
 }
@@ -474,9 +392,8 @@ int FramePlayButton::handle_event()
 }
 
 
-
 FastPlayButton::FastPlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("fastfwd")) 
+ : PTransportButton(transport, x, y, mwindow->theme->get_image_set("fastfwd")) 
 {
 	set_tooltip(_("Fast forward ( Enter )"));
 }
@@ -488,7 +405,7 @@ int FastPlayButton::handle_event()
 }
 
 EndButton::EndButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("end")) 
+ : PTransportButton(transport, x, y, mwindow->theme->get_image_set("end")) 
 {
 	set_tooltip(_("Jump to end ( End )"));
 }
@@ -500,7 +417,7 @@ int EndButton::handle_event()
 }
 
 StopButton::StopButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
- : PTransportButton(mwindow, transport, x, y, mwindow->theme->get_image_set("stop")) 
+ : PTransportButton(transport, x, y, mwindow->theme->get_image_set("stop")) 
 {
 	set_tooltip(_("Stop ( 0 )"));
 }

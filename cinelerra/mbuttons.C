@@ -61,7 +61,6 @@ void MButtons::create_objects()
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	transport = new MainTransport(mwindow, this, x, y);
-	transport->create_objects();
 	transport->set_engine(mwindow->cwindow->playback_engine);
 	x += transport->get_w();
 	x += mwindow->theme->mtransport_margin;

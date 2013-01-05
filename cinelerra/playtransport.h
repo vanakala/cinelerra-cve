@@ -38,18 +38,18 @@ public:
 	PlayTransport(MWindow *mwindow, BC_WindowBase *subwindow, int x, int y);
 	~PlayTransport();
 
-	int create_objects();
 	void reposition_buttons(int x, int y);
 
 	virtual void goto_start();
 	virtual void goto_end();
-// Set a slider to control if there is one
-	void set_slider(BC_Slider *slider);
+
 // Set the playback engine to control
 	void set_engine(PlaybackEngine *engine);
+
 	static int get_transport_width(MWindow *mwindow);
-	int flip_vertical(int vertical, int &x, int &y);
+
 	int keypress_event();
+
 // Abstract TransportQue::send_command.
 // wait_tracking - causes stop to wail until the final tracking position 
 // is updated before returning
@@ -59,9 +59,8 @@ public:
 		int wait_tracking = 0, 
 		int use_inout = 0);
 
-	int pause_transport();
-	int reset_transport();
 	int get_w();
+
 // Get the EDL to play back with default to mwindow->edl
 	virtual EDL* get_edl();
 
@@ -81,7 +80,6 @@ public:
 	EndButton *end_button;
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;
-	BC_Slider *slider;
 	PlaybackEngine *engine;
 	int status;
 	int x, y;
@@ -92,12 +90,12 @@ public:
 class PTransportButton : public BC_Button
 {
 public:
-	PTransportButton(MWindow *mwindow, PlayTransport *transport, int x, int y, VFrame **data);
+	PTransportButton(PlayTransport *transport, int x, int y, VFrame **data);
 	virtual ~PTransportButton();
-	virtual int set_mode(int mode);
+
+	virtual void set_mode(int mode);
 
 	int mode;
-	MWindow *mwindow;
 	PlayTransport *transport;
 };
 
@@ -105,6 +103,7 @@ class RewindButton : public PTransportButton
 {
 public:
 	RewindButton(MWindow *mwindow, PlayTransport *transport, int x, int y);
+
 	int handle_event();
 };
 
@@ -112,6 +111,7 @@ class FastReverseButton : public PTransportButton
 {
 public:
 	FastReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y);
+
 	int handle_event();
 };
 
@@ -119,6 +119,7 @@ class ReverseButton : public PTransportButton
 {
 public:
 	ReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y);
+
 	int handle_event();
 };
 
@@ -126,6 +127,7 @@ class FrameReverseButton : public PTransportButton
 {
 public:
 	FrameReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y);
+
 	int handle_event();
 };
 
@@ -133,6 +135,7 @@ class PlayButton : public PTransportButton
 {
 public:
 	PlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y);
+
 	int handle_event();
 };
 
@@ -140,6 +143,7 @@ class FramePlayButton : public PTransportButton
 {
 public:
 	FramePlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y);
+
 	int handle_event();
 };
 
@@ -147,15 +151,15 @@ class FastPlayButton : public PTransportButton
 {
 public:
 	FastPlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y);
+
 	int handle_event();
 };
-
-
 
 class EndButton : public PTransportButton
 {
 public:
 	EndButton(MWindow *mwindow, PlayTransport *transport, int x, int y);
+
 	int handle_event();
 };
 
@@ -163,6 +167,7 @@ class StopButton : public PTransportButton
 {
 public:
 	StopButton(MWindow *mwindow, PlayTransport *transport, int x, int y);
+
 	int handle_event();
 };
 

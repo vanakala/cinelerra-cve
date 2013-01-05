@@ -175,8 +175,6 @@ int VWindowGUI::create_objects()
 		this, 
 		mwindow->theme->vtransport_x, 
 		mwindow->theme->vtransport_y);
-	transport->create_objects();
-	transport->set_slider(slider);
 
 	add_subwindow(clock = new MainClock(mwindow,
 		mwindow->theme->vtime_x, 

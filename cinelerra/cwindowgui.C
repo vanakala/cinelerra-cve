@@ -172,8 +172,6 @@ int CWindowGUI::create_objects()
 		this, 
 		mwindow->theme->ctransport_x, 
 		mwindow->theme->ctransport_y);
-	transport->create_objects();
-	transport->set_slider(slider);
 
 	edit_panel = new CWindowEditing(mwindow, cwindow, meters);
 
