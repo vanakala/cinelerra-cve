@@ -185,8 +185,8 @@ void PackageRenderer::create_engine()
 		preferences,
 		command,
 		0,
-		plugindb,
-		0);
+		plugindb);
+
 	render_engine->set_acache(audio_cache);
 	render_engine->set_vcache(video_cache);
 	render_engine->arm_command(command);

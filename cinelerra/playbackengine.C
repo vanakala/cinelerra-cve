@@ -105,8 +105,7 @@ void PlaybackEngine::create_render_engine()
 		preferences, 
 		command, 
 		output,
-		mwindow->plugindb,
-		0);
+		mwindow->plugindb);
 }
 
 void PlaybackEngine::delete_render_engine()

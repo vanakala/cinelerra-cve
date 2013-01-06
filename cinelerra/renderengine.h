@@ -29,8 +29,6 @@ class RenderEngine;
 #include "audiodevice.inc"
 #include "cache.inc"
 #include "canvas.inc"
-#include "channel.inc"
-#include "channeldb.inc"
 #include "condition.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
@@ -49,8 +47,7 @@ public:
 		Preferences *preferences, 
 		TransportCommand *command, 
 		Canvas *output,
-		ArrayList<PluginServer*> *plugindb,
-		ChannelDB *channeldb);
+		ArrayList<PluginServer*> *plugindb);
 	~RenderEngine();
 
 	void get_duty();
@@ -62,8 +59,6 @@ public:
 	int get_output_w();
 	int get_output_h();
 	int brender_available(ptstime position);
-// Get current channel for the BUZ output
-	Channel* get_current_channel();
 	double get_tracking_position();
 // Find the plugin whose title matches title and return it
 	PluginServer* scan_plugindb(char *title,
@@ -130,8 +125,6 @@ public:
 	int interrupted;
 
 	ArrayList<PluginServer*> *plugindb;
-// Channels for the BUZ output
-	ChannelDB *channeldb;
 
 // Samples in audio buffer to process
 	int fragment_len;

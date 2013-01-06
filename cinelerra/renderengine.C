@@ -24,7 +24,6 @@
 #include "asset.h"
 #include "audiodevice.h"
 #include "bcsignals.h"
-#include "channeldb.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -47,14 +46,12 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	Preferences *preferences, 
 	TransportCommand *command,
 	Canvas *output,
-	ArrayList<PluginServer*> *plugindb,
-	ChannelDB *channeldb)
+	ArrayList<PluginServer*> *plugindb)
  : Thread(1, 0, 0)
 {
 	this->playback_engine = playback_engine;
 	this->output = output;
 	this->plugindb = plugindb;
-	this->channeldb = channeldb;
 	audio = 0;
 	video = 0;
 	config = new PlaybackConfig;
@@ -209,11 +206,6 @@ int RenderEngine::brender_available(ptstime position)
 		return 0;
 }
 
-Channel* RenderEngine::get_current_channel()
-{
-	return 0;
-}
-
 CICache* RenderEngine::get_acache()
 {
 	if(playback_engine)
@@ -298,8 +290,6 @@ void RenderEngine::open_output()
 				get_output_h(),
 				output,
 				command->single_frame());
-			Channel *channel = get_current_channel();
-			if(channel) video->set_channel(channel);
 			video->set_quality(80);
 			video->set_cpus(preferences->processors);
 		}

@@ -26,7 +26,6 @@
 #include "audiodevice.inc"
 #include "cache.inc"
 #include "canvas.inc"
-#include "channeldb.inc"
 #include "condition.inc"
 #include "datatype.h"
 #include "bchash.inc"
