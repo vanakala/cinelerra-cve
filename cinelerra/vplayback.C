@@ -36,11 +36,6 @@ VPlayback::VPlayback(MWindow *mwindow, VWindow *vwindow, Canvas *output)
 	this->vwindow = vwindow;
 }
 
-int VPlayback::create_render_engine()
-{
-	return PlaybackEngine::create_render_engine();
-}
-
 void VPlayback::init_cursor()
 {
 	vwindow->playback_cursor->start_playback(tracking_position);

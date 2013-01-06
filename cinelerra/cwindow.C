@@ -73,7 +73,6 @@ int CWindow::create_objects()
 	playback_engine = new CPlayback(mwindow, this, gui->canvas);
 
 // Start command loop
-	playback_engine->create_objects();
 	gui->transport->set_engine(playback_engine);
 	playback_cursor = new CTracking(mwindow, this);
 	playback_cursor->create_objects();

@@ -47,8 +47,7 @@ public:
 	PlaybackEngine(MWindow *mwindow, Canvas *output);
 	virtual ~PlaybackEngine();
 
-	int create_objects();
-	virtual int create_render_engine();
+	void create_render_engine();
 	void delete_render_engine();
 	void arm_render_engine();
 	void start_render_engine();
@@ -77,8 +76,6 @@ public:
 	virtual void update_transport(int command, int paused) {};
 // The render engines call this to update tracking variables in the playback engine.
 	void update_tracking(ptstime position);
-// Get the output channel table for the current device or 0 if none exists.
-	ChannelDB* get_channeldb();
 
 	void run();
 

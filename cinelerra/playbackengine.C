@@ -58,6 +58,18 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
 	render_engine = 0;
 	debug = 0;
+
+	preferences = new Preferences;
+	command = new TransportCommand;
+	que = new TransportQue;
+// Set the first change to maximum
+	que->command.change_type = CHANGE_ALL;
+
+	preferences->copy_from(mwindow->preferences);
+
+	done = 0;
+	Thread::start();
+	start_lock->lock("PlaybackEngine::create_objects");
 }
 
 PlaybackEngine::~PlaybackEngine()
@@ -81,35 +93,7 @@ PlaybackEngine::~PlaybackEngine()
 	delete start_lock;
 }
 
-int PlaybackEngine::create_objects()
-{
-	int result = 0;
-	preferences = new Preferences;
-	command = new TransportCommand;
-	que = new TransportQue;
-// Set the first change to maximum
-	que->command.change_type = CHANGE_ALL;
-
-	preferences->copy_from(mwindow->preferences);
-
-	done = 0;
-	Thread::start();
-	start_lock->lock("PlaybackEngine::create_objects");
-	return result;
-}
-
-ChannelDB* PlaybackEngine::get_channeldb()
-{
-	PlaybackConfig *config = command->get_edl()->session->playback_config;
-	switch(config->vconfig->driver)
-	{
-		case VIDEO4LINUX2JPEG:
-			return mwindow->channeldb_v4l2jpeg;
-	}
-	return 0;
-}
-
-int PlaybackEngine::create_render_engine()
+void PlaybackEngine::create_render_engine()
 {
 // Fix playback configurations
 	int current_vchannel = 0;
@@ -117,14 +101,12 @@ int PlaybackEngine::create_render_engine()
 
 	delete_render_engine();
 
-
 	render_engine = new RenderEngine(this,
 		preferences, 
 		command, 
 		output,
 		mwindow->plugindb,
-		get_channeldb());  
-	return 0;
+		0);
 }
 
 void PlaybackEngine::delete_render_engine()
@@ -164,7 +146,6 @@ void PlaybackEngine::create_cache()
 		video_cache = new CICache(preferences, mwindow->plugindb);
 }
 
-
 void PlaybackEngine::perform_change()
 {
 	switch(command->change_type)
@@ -189,7 +170,6 @@ void PlaybackEngine::sync_parameters(EDL *edl)
 	if(render_engine) render_engine->edl->synchronize_params(edl);
 }
 
-
 void PlaybackEngine::interrupt_playback(int wait_tracking)
 {
 	if(render_engine)
@@ -206,19 +186,16 @@ void PlaybackEngine::interrupt_playback(int wait_tracking)
 	}
 }
 
-
 // Return 1 if levels exist
 int PlaybackEngine::get_output_levels(double *levels, samplenum position)
 {
-	int result = 0;
 	if(render_engine && render_engine->do_audio)
 	{
-		result = 1;
 		render_engine->get_output_levels(levels, position);
+		return 1;
 	}
-	return result;
+	return 0;
 }
-
 
 int PlaybackEngine::get_module_levels(double **module_levels, samplenum position)
 {
@@ -230,7 +207,6 @@ int PlaybackEngine::get_module_levels(double **module_levels, samplenum position
 	}
 	return 0;
 }
-
 
 void PlaybackEngine::init_tracking()
 {
@@ -261,7 +237,6 @@ ptstime PlaybackEngine::get_tracking_position()
 	return tracking_position;
 }
 
-
 void PlaybackEngine::run()
 {
 	start_lock->unlock();
@@ -272,7 +247,6 @@ void PlaybackEngine::run()
 		que->output_lock->lock("PlaybackEngine::run");
 
 		wait_render_engine();
-
 
 // Read the new command
 		que->input_lock->lock("PlaybackEngine::run");
@@ -286,7 +260,6 @@ void PlaybackEngine::run()
 		{
 // Parameter change only
 			case COMMAND_NONE:
-//				command->command = last_command;
 				perform_change();
 				break;
 
@@ -331,9 +304,5 @@ void PlaybackEngine::run()
 				start_render_engine();
 				break;
 		}
-
-
-//printf("PlaybackEngine::run 100\n");
 	}while(!done);
 }
-

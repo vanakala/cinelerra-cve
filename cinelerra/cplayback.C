@@ -39,11 +39,6 @@ CPlayback::CPlayback(MWindow *mwindow, CWindow *cwindow, Canvas *output)
 	this->cwindow = cwindow;
 }
 
-int CPlayback::create_render_engine()
-{
-	return PlaybackEngine::create_render_engine();
-}
-
 void CPlayback::init_cursor()
 {
 	mwindow->gui->lock_window("CPlayback::init_cursor");

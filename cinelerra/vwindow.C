@@ -83,7 +83,6 @@ int VWindow::create_objects()
 	playback_engine = new VPlayback(mwindow, this, gui->canvas);
 
 // Start command loop
-	playback_engine->create_objects();
 	gui->transport->set_engine(playback_engine);
 	playback_cursor = new VTracking(mwindow, this);
 	playback_cursor->create_objects();
