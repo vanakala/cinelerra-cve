@@ -36,6 +36,7 @@
 #include "filexml.h"
 #include "floatautos.h"
 #include "language.h"
+#include "levelhist.h"
 #include "module.h"
 #include "mainerror.h"
 #include "plugin.h"
@@ -58,19 +59,14 @@ AModule::AModule(RenderEngine *renderengine,
  : Module(renderengine, commonrender, plugin_array, track)
 {
 	data_type = TRACK_AUDIO;
+	module_levels = 0;
 	transition_temp = 0;
-	level_history = 0;
-	current_level = 0;
 }
 
 AModule::~AModule()
 {
 	if(transition_temp) delete transition_temp;
-	if(level_history)
-	{
-		delete [] level_history;
-		delete [] level_samples;
-	}
+	if(module_levels) delete module_levels;
 }
 
 AttachmentPoint* AModule::new_attachment(Plugin *plugin)
@@ -85,15 +81,9 @@ void AModule::create_objects()
 // Not needed in pluginarray
 	if(commonrender)
 	{
-		level_history = new double[((ARender*)commonrender)->total_peaks];
-		level_samples = new samplenum[((ARender*)commonrender)->total_peaks];
-		current_level = 0;
-
-		for(int i = 0; i < ((ARender*)commonrender)->total_peaks; i++)
-		{
-			level_history[i] = 0;
-			level_samples[i] = -1;
-		}
+		module_levels = new LevelHistory();
+		module_levels->reset(get_buffer_size(),
+			get_edl()->session->sample_rate, 1);
 	}
 }
 

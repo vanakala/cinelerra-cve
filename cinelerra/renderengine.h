@@ -68,8 +68,8 @@ public:
 	void set_acache(CICache *cache);
 	void set_vcache(CICache *cache);
 // Get levels for tracking
-	void get_output_levels(double *levels, samplenum position);
-	double *get_module_levels(int *num_modules, samplenum position);
+	int get_output_levels(double *levels, ptstime pts);
+	int get_module_levels(double *levels, ptstime pts);
 
 	void run();
 // Sends the command sequence, compensating for network latency

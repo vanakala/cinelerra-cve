@@ -37,6 +37,7 @@ class AModuleReset;
 #include "edl.inc"
 #include "filexml.inc"
 #include "floatautos.inc"
+#include "levelhist.inc"
 #include "maxchannels.h"
 #include "module.h"
 #include "sharedlocation.inc"
@@ -65,10 +66,7 @@ public:
 	FloatAutos* get_pan_automation(int channel);  // get pan automation
 	FloatAutos* get_fade_automation();       // get the fade automation for this module
 
-
-	double *level_history;
-	samplenum *level_samples;
-	int current_level;
+	LevelHistory *module_levels;
 
 // Temporary buffer for rendering transitions
 	AFrame *transition_temp;

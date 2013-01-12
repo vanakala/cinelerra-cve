@@ -158,5 +158,5 @@ void CTracking::update_tracker(ptstime position)
 // Plugin GUI's hold lock on mwindow->gui here during user interface handlers.
 	mwindow->update_plugin_guis();
 
-	update_meters((samplenum)(position * mwindow->edl->session->sample_rate));
+	update_meters(position);
 }

@@ -27,6 +27,7 @@
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "levelhist.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "playbackengine.h"
@@ -428,34 +429,24 @@ void RenderEngine::close_output()
 	}
 }
 
-void RenderEngine::get_output_levels(double *levels, samplenum position)
+int RenderEngine::get_output_levels(double *levels, ptstime pts)
 {
 	if(do_audio)
 	{
-		int history_entry = arender->get_history_number(arender->level_samples, 
-			position);
-		for(int i = 0; i < MAXCHANNELS; i++)
-		{
-			if(arender->audio_out[i])
-				levels[i] = arender->level_history[i][history_entry];
-		}
+		return arender->output_levels->get_levels(levels, pts);
 	}
+	return 0;
 }
 
-double* RenderEngine::get_module_levels(int *num_modules, samplenum position)
+int RenderEngine::get_module_levels(double *levels, ptstime pts)
 {
+	int i;
+
 	if(do_audio)
 	{
-		double *mlv = arender->module_levels;
-
-		for(int i = 0; i < arender->total_modules; i++)
-		{
-			int history_entry = arender->get_history_number(((AModule*)arender->modules[i])->level_samples, position);
-
-			mlv[i] = ((AModule*)arender->modules[i])->level_history[history_entry];
-		}
-		*num_modules = arender->total_modules;
-		return mlv;
+		for(i = 0; i < arender->total_modules; i++)
+			((AModule*)arender->modules[i])->module_levels->get_levels(&levels[i], pts);
+		return i;
 	}
 	return 0;
 }

@@ -185,25 +185,18 @@ void PlaybackEngine::interrupt_playback(int wait_tracking)
 	}
 }
 
-// Return 1 if levels exist
-int PlaybackEngine::get_output_levels(double *levels, samplenum position)
+// Return number of existing channels
+int PlaybackEngine::get_output_levels(double *levels, ptstime pts)
 {
 	if(render_engine && render_engine->do_audio)
-	{
-		render_engine->get_output_levels(levels, position);
-		return 1;
-	}
+		return render_engine->get_output_levels(levels, pts);
 	return 0;
 }
 
-int PlaybackEngine::get_module_levels(double **module_levels, samplenum position)
+int PlaybackEngine::get_module_levels(double *levels, ptstime pts)
 {
 	if(render_engine && render_engine->do_audio)
-	{
-		int n;
-		*module_levels = render_engine->get_module_levels(&n, position);
-		return n;
-	}
+		return render_engine->get_module_levels(levels, pts);
 	return 0;
 }
 

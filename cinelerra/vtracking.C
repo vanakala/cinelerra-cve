@@ -71,16 +71,14 @@ void VTracking::update_tracker(ptstime position)
 
 	vwindow->gui->unlock_window();
 
-	update_meters((samplenum)(position * mwindow->edl->session->sample_rate));
+	update_meters(position);
 }
 
-void VTracking::update_meters(samplenum position)
+void VTracking::update_meters(ptstime pts)
 {
 	double output_levels[MAXCHANNELS];
 
-	int do_audio = get_playback_engine()->get_output_levels(output_levels, 
-		position);
-	if(do_audio)
+	if(get_playback_engine()->get_output_levels(output_levels, pts))
 	{
 		vwindow->gui->lock_window("VTracking::update_meters");
 		vwindow->gui->meters->update(output_levels);

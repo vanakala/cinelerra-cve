@@ -50,7 +50,7 @@ public:
 // Update position displayed
 	virtual void update_tracker(ptstime position) {};
 // Update meters
-	virtual void update_meters(samplenum position);
+	virtual void update_meters(ptstime pts);
 	virtual void stop_meters();
 	virtual void set_delays(float over_delay, float peak_delay);
 

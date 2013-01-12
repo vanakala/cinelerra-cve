@@ -33,6 +33,7 @@
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "levelhist.h"
 #include "levelwindow.h"
 #include "mainsession.h"
 #include "playabletracks.h"
@@ -48,15 +49,10 @@
 ARender::ARender(RenderEngine *renderengine)
  : CommonRender(renderengine)
 {
-// Clear output buffers
 	for(int i = 0; i < MAXCHANNELS; i++)
-	{
 		audio_out[i] = 0;
-		level_history[i] = 0;
-	}
-	level_samples = 0;
-	total_peaks = 0;
 
+	output_levels = new LevelHistory();
 	data_type = TRACK_AUDIO;
 }
 
@@ -65,18 +61,16 @@ ARender::~ARender()
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		if(audio_out[i]) delete audio_out[i];
-		if(level_history[i]) delete [] level_history[i];
 	}
-	if(level_samples) delete [] level_samples;
 }
 
 void ARender::arm_command()
 {
-// Need the meter history now so AModule can allocate its own history
-	calculate_history_size();
 	CommonRender::arm_command();
 	asynchronous = 1;
-	init_meters();
+
+	output_levels->reset(renderengine->fragment_len,
+		renderengine->edl->session->sample_rate, get_total_tracks());
 }
 
 
@@ -88,51 +82,6 @@ int ARender::get_total_tracks()
 Module* ARender::new_module(Track *track)
 {
 	return new AModule(renderengine, this, 0, track);
-}
-
-int ARender::calculate_history_size()
-{
-	if(total_peaks > 0)
-		return total_peaks;
-	else
-	{
-		meter_render_fragment = renderengine->fragment_len;
-// This number and the timer in tracking.C determine the rate
-		while(meter_render_fragment > 
-			renderengine->edl->session->sample_rate / TRACKING_RATE_DEFAULT) 
-			meter_render_fragment /= 2;
-		total_peaks = 16 * 
-			renderengine->fragment_len / 
-			meter_render_fragment;
-		return total_peaks;
-	}
-}
-
-void ARender::init_meters()
-{
-// not providing enough peaks results in peaks that are ahead of the sound
-	if(level_samples) delete [] level_samples;
-	calculate_history_size();
-	level_samples = new samplenum[total_peaks];
-
-	for(int i = 0; i < MAXCHANNELS;i++)
-	{
-		current_level[i] = 0;
-		if(audio_out[i] && !level_history[i]) 
-			level_history[i] = new double[total_peaks];
-	}
-
-	for(int i = 0; i < total_peaks; i++)
-	{
-		level_samples[i] = -1;
-	}
-	
-	for(int j = 0; j < MAXCHANNELS; j++)
-	{
-		if(audio_out[j]) 
-			for(int i = 0; i < total_peaks; i++)
-				level_history[j][i] = 0;
-	}
 }
 
 void ARender::init_output_buffers()
@@ -217,22 +166,6 @@ int ARender::process_buffer(int input_len, ptstime input_postime)
 		input_postime,
 		last_playback);
 
-	return result;
-}
-
-int ARender::get_history_number(samplenum *table, samplenum position)
-{
-// Get the entry closest to position
-	int result = 0;
-	samplenum min_difference = 0x7fffffff;
-	for(int i = 0; i < total_peaks; i++)
-	{
-		if(llabs(table[i] - position) < min_difference)
-		{
-			min_difference = llabs(table[i] - position);
-			result = i;
-		}
-	}
 	return result;
 }
 
@@ -326,11 +259,4 @@ void ARender::run()
 int ARender::get_datatype()
 {
 	return TRACK_AUDIO;
-}
-
-int ARender::get_next_peak(int current_peak)
-{
-	current_peak++;
-	if(current_peak >= total_peaks) current_peak = 0;
-	return current_peak;
 }

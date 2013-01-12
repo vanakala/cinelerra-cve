@@ -34,6 +34,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
+#include "levelhist.h"
 #include "levelwindow.h"
 #include "playabletracks.h"
 #include "plugin.h"
@@ -144,48 +145,8 @@ int VirtualAConsole::process_buffer(int len,
 	}
 
 // get peaks and limit volume in the fragment
-	for(int i = 0; i < MAX_CHANNELS; i++)
-	{
-		AFrame *current_aframe = arender->audio_out[i];
-
-		if(current_aframe)
-		{
-			samplenum start_position = arender->tounits(start_postime, 1);
-
-			for(int j = 0; j < len; )
-			{
-				int meter_render_end;
-// Get length to test for meter and limit
-				if(renderengine->command->realtime)
-					meter_render_end = j + arender->meter_render_fragment;
-				else
-					meter_render_end = len;
-
-				if(meter_render_end > len) 
-					meter_render_end =  len;
-
-				double peak = 0;
-
-				for( ; j < meter_render_end; j++)
-				{
-// Level history comes before clipping to get over status
-					double sample = fabs(current_aframe->buffer[j]);
-
-					if(sample > peak)
-						peak = sample;
-				}
-
-				if(renderengine->command->realtime)
-				{
-					arender->level_history[i][arender->current_level[i]] = peak;
-					arender->level_samples[arender->current_level[i]] = 
-						start_position + j;
-					arender->current_level[i] = arender->get_next_peak(arender->current_level[i]);
-				}
-			}
-		}
-	}
-
+	if(renderengine->command->realtime)
+		arender->output_levels->fill(arender->audio_out);
 
 // Pack channels, fix speed and send to device.
 	if(renderengine->command->realtime && !interrupt)

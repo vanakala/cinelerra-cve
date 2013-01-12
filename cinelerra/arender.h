@@ -25,6 +25,7 @@
 #include "atrack.inc"
 #include "aframe.inc"
 #include "commonrender.h"
+#include "levelhist.inc"
 #include "maxchannels.h"
 
 class ARender : public CommonRender
@@ -43,26 +44,10 @@ public:
 	ptstime fromunits(posnum position);
 
 	void run();
-// Calculate number of samples in each meter fragment and how many
-// meter fragments to buffer.
-	int calculate_history_size();
-// Get subscript of history entry corresponding to sample
-	int get_history_number(samplenum *table, samplenum position);
 
 // output buffers for audio device
 	AFrame *audio_out[MAXCHANNELS];
-// information for meters
-	int get_next_peak(int current_peak);
-// samples to use for one meter update.  Must be multiple of fragment_len
-	int meter_render_fragment;
-// Level history of output buffers
-	double *level_history[MAXCHANNELS];
-// sample position of each level
-	samplenum *level_samples;
-// total entries in level_history
-	int total_peaks;
-// Next level to store value in
-	int current_level[MAXCHANNELS];
+
 // Make VirtualAConsole block before the first buffer until video is ready
 	int first_buffer;
 
@@ -80,8 +65,6 @@ public:
 	void send_last_buffer();
 	int wait_device_completion();
 
-private:
-// initialize buffer_out
-	void init_meters();
+	LevelHistory *output_levels;
 };
 #endif

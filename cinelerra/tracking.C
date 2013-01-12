@@ -121,16 +121,14 @@ ptstime Tracking::get_tracking_position()
 	return get_playback_engine()->get_tracking_position();
 }
 
-void Tracking::update_meters(samplenum position)
+void Tracking::update_meters(ptstime pts)
 {
 	double output_levels[MAXCHANNELS];
-	int do_audio = get_playback_engine()->get_output_levels(output_levels, position);
+	double module_levels[MAXCHANNELS];
 
-	if(do_audio)
+	if(get_playback_engine()->get_output_levels(output_levels, pts))
 	{
-		double *module_levels;
-
-		int n = get_playback_engine()->get_module_levels(&module_levels, position);
+		int n = get_playback_engine()->get_module_levels(module_levels, pts);
 
 		mwindow->cwindow->gui->lock_window("Tracking::update_meters 1");
 		mwindow->cwindow->gui->meters->update(output_levels);
@@ -143,6 +141,7 @@ void Tracking::update_meters(samplenum position)
 		mwindow->gui->lock_window("Tracking::update_meters 3");
 		mwindow->gui->patchbay->update_meters(module_levels, n);
 		mwindow->gui->unlock_window();
+
 	}
 }
 

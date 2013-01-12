@@ -32,6 +32,7 @@
 #include "edlsession.h"
 #include "clip.h"
 #include "floatautos.h"
+#include "levelhist.h"
 #include "mwindow.h"
 #include "module.h"
 #include "panauto.h"
@@ -177,51 +178,8 @@ void VirtualANode::render_as_module(AFrame **audio_out,
 	render_fade(output_temp,
 			track->automation->autos[AUTOMATION_FADE]);
 
-// Get the peak but don't limit
-// Calculate position relative to project for meters
-
-	samplenum start_position_project = round(output_temp->pts * output_temp->samplerate);
-	int len = output_temp->length;
-
 	if(real_module && renderengine->command->realtime)
-	{
-		ARender *arender = ((VirtualAConsole*)vconsole)->arender;
-// Starting sample of meter block
-		samplenum meter_render_start;
-// Ending sample of meter block
-		samplenum meter_render_end;
-// Number of samples in each meter fragment normalized to requested rate
-		int meter_render_fragment = arender->meter_render_fragment;
-
-
-// Scan fragment in meter sized fragments
-		for(int i = 0; i < len; )
-		{
-			int current_level = ((AModule*)real_module)->current_level;
-			double peak = 0;
-			meter_render_start = i;
-			meter_render_end = i + meter_render_fragment;
-			if(meter_render_end > len) 
-				meter_render_end = len;
-// Number of samples into the fragment this meter sized fragment is,
-// normalized to project sample rate.
-			samplenum meter_render_start_project = meter_render_start;
-
-// Scan meter sized fragment
-			for( ; i < meter_render_end; i++)
-			{
-				double sample = fabs(output_temp->buffer[i]);
-				if(sample > peak) peak = sample;
-			}
-
-			((AModule*)real_module)->level_history[current_level] = 
-				peak;
-			((AModule*)real_module)->level_samples[current_level] = 
-				start_position_project + meter_render_start_project;
-			((AModule*)real_module)->current_level = 
-				arender->get_next_peak(current_level);
-		}
-	}
+		((AModule*)real_module)->module_levels->fill(&output_temp);
 
 	for(int j = 0; j < MAX_CHANNELS; j++)
 	{
