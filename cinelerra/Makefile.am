@@ -153,6 +153,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    keyframes.C \
 		    labeledit.C \
 		    labels.C \
+		    levelhist.C \
 		    levelwindow.C \
 		    levelwindowgui.C \
 		    loadbalance.C \
@@ -433,6 +434,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 keyframes.h \
 		 labeledit.h \
 		 labels.h \
+		 levelhist.h \
 		 levelwindowgui.h \
 		 levelwindow.h \
 		 loadbalance.h \
