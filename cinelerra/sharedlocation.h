@@ -46,6 +46,4 @@ public:
 	int module, plugin;
 };
 
-
-
 #endif

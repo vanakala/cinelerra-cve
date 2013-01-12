@@ -21,21 +21,15 @@
 
 #include "edl.h"
 #include "filexml.h"
+#include "language.h"
 #include "plugin.h"
 #include "sharedlocation.h"
 #include "track.h"
 #include "tracks.h"
-#include "transportque.h"
 
 // plugin locations
 
-
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 SharedLocation::SharedLocation()
@@ -78,14 +72,10 @@ int SharedLocation::get_type()
 		return PLUGIN_SHAREDPLUGIN;
 }
 
-
 int SharedLocation::operator==(const SharedLocation &that)
 {
-	if(
-		module == that.module &&
-		plugin == that.plugin
-	) return 1;
-	else
+	if(module == that.module && plugin == that.plugin)
+		return 1;
 	return 0;
 }
 
@@ -115,18 +105,18 @@ void SharedLocation::calculate_title(char *string,
 				use_nudge);
 		}
 
-		char track_title[BCTEXTLEN];
-		char plugin_title[BCTEXTLEN];
+		const char *track_title;
+		const char *plugin_title;
 
 		if(track)
-			strcpy(track_title, track->title);
+			track_title = track->title;
 		else
-			strcpy(track_title, _("None"));
+			track_title = _("None");
 
 		if(plugin)
-			strcpy(plugin_title, _(plugin->title));
+			plugin_title = plugin->title;
 		else
-			strcpy(plugin_title, _("None"));
+			plugin_title = _("None");
 
 		sprintf(string, "%s: %s", track_title, plugin_title);
 	}
@@ -142,6 +132,3 @@ void SharedLocation::calculate_title(char *string,
 			strcpy(string, _("None"));
 	}
 }
-
-
-
