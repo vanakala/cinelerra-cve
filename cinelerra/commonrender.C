@@ -108,6 +108,7 @@ void CommonRender::create_modules()
 	{
 		total_modules = get_total_tracks();
 		modules = new Module*[total_modules];
+		memset(modules, 0, sizeof(Module*) * total_modules);
 
 		for(module = 0; module < total_modules && current; current = NEXT)
 		{
@@ -124,7 +125,8 @@ void CommonRender::create_modules()
 	{
 		for(module = 0; module < total_modules; module++)
 		{
-			modules[module]->create_objects();
+			if(modules[module])
+				modules[module]->create_objects();
 		}
 	}
 }
