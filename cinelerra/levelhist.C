@@ -149,7 +149,7 @@ void LevelHistory::fill(AFrame **frames)
 			level_history[c][current_peak] = peak;
 		}
 		start = end;
-		if(++current_peak > total_peaks)
+		if(++current_peak >= total_peaks)
 			current_peak = 0;
 	}
 }
