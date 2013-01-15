@@ -36,15 +36,13 @@ public:
 		int w, 
 		int h);
 
-	int resize_event();
+	void resize_event();
 	EDL* get_edl();
 	void draw_time();
 	void update_preview();
-	void select_label(double position);
-
+	void select_label(ptstime position);
 
 	VWindowGUI *gui;
 };
-
 
 #endif

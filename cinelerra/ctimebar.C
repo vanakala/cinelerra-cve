@@ -49,20 +49,13 @@ CTimeBar::CTimeBar(MWindow *mwindow,
 	this->gui = gui;
 }
 
-int CTimeBar::resize_event()
+void CTimeBar::resize_event()
 {
 	reposition_window(mwindow->theme->ctimebar_x,
 		mwindow->theme->ctimebar_y,
 		mwindow->theme->ctimebar_w,
 		mwindow->theme->ctimebar_h);
 	update();
-	return 1;
-}
-
-
-EDL* CTimeBar::get_edl()
-{
-	return mwindow->edl;
 }
 
 void CTimeBar::draw_time()
@@ -71,14 +64,12 @@ void CTimeBar::draw_time()
 	draw_range();
 }
 
-
 void CTimeBar::update_preview()
 {
 	gui->slider->set_position();
 }
 
-
-void CTimeBar::select_label(double position)
+void CTimeBar::select_label(ptstime position)
 {
 	EDL *edl = mwindow->edl;
 
@@ -91,7 +82,6 @@ void CTimeBar::select_label(double position)
 		if(position > edl->local_session->get_selectionend(1) / 2 + 
 			edl->local_session->get_selectionstart(1) / 2)
 		{
-		
 			edl->local_session->set_selectionend(position);
 		}
 		else
@@ -121,8 +111,3 @@ void CTimeBar::select_label(double position)
 	mwindow->gui->unlock_window();
 	mwindow->update_plugin_guis();
 }
-
-
-
-
-

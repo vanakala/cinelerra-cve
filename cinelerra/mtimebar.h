@@ -36,18 +36,16 @@ public:
 		int y,
 		int w,
 		int h);
-	
+
 	void draw_time();
 	void draw_range();
 	void stop_playback();
-	int resize_event();
+	void resize_event();
 	int test_preview(int buttonpress);
-	int64_t position_to_pixel(double position);
+	int position_to_pixel(ptstime position);
 	void select_label(double position);
 
 	MWindowGUI *gui;
 };
-
-
 
 #endif

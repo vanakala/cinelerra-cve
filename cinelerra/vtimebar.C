@@ -45,14 +45,13 @@ VTimeBar::VTimeBar(MWindow *mwindow,
 	this->gui = gui;
 }
 
-int VTimeBar::resize_event()
+void VTimeBar::resize_event()
 {
 	reposition_window(mwindow->theme->vtimebar_x,
 		mwindow->theme->vtimebar_y,
 		mwindow->theme->vtimebar_w,
 		mwindow->theme->vtimebar_h);
 	update();
-	return 1;
 }
 
 EDL* VTimeBar::get_edl()
@@ -70,8 +69,7 @@ void VTimeBar::update_preview()
 	gui->slider->set_position();
 }
 
-
-void VTimeBar::select_label(double position)
+void VTimeBar::select_label(ptstime position)
 {
 	EDL *edl = get_edl();
 
@@ -100,10 +98,7 @@ void VTimeBar::select_label(double position)
 			edl->local_session->set_selectionend(position);
 		}
 
-// Que the CWindow
-		mwindow->vwindow->update_position(CHANGE_NONE, 
-			0, 
-			1);
+		mwindow->vwindow->update_position(CHANGE_NONE, 0, 1);
 	}
 }
 

@@ -22,14 +22,8 @@
 #ifndef CTIMEBAR_H
 #define CTIMEBAR_H
 
-
-
-
 #include "cwindowgui.inc"
 #include "timebar.h"
-
-
-
 
 
 class CTimeBar : public TimeBar
@@ -42,14 +36,12 @@ public:
 		int w, 
 		int h);
 
-	int resize_event();
-	EDL* get_edl();
+	void resize_event();
 	void draw_time();
 	void update_preview();
-	void select_label(double position);
+	void select_label(ptstime position);
 
 	CWindowGUI *gui;
 };
-
 
 #endif

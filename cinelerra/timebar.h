@@ -51,33 +51,23 @@ class LabelGUI : public BC_Toggle
 public:
 	LabelGUI(MWindow *mwindow, 
 		TimeBar *timebar, 
-		int64_t pixel, 
+		int pixel,
 		int y, 
-		double position,
+		ptstime position,
 		VFrame **data = 0);
-	virtual ~LabelGUI();
 
 	static int translate_pixel(MWindow *mwindow, int pixel);
 	virtual int handle_event();
 	static int get_y(MWindow *mwindow, TimeBar *timebar);
 	void reposition();
+	int button_press_event();
 
 	Label *label;
-	int button_press_event();
 	MWindow *mwindow;
 	VWindowGUI *gui;
 	TimeBar *timebar;
-	int64_t pixel;
-	double position;
-};
-
-class TestPointGUI : public LabelGUI
-{
-public:
-	TestPointGUI(MWindow *mwindow, 
-		TimeBar *timebar, 
-		int64_t pixel, 
-		double position);
+	int pixel;
+	ptstime position;
 };
 
 class InPointGUI : public LabelGUI
@@ -85,9 +75,9 @@ class InPointGUI : public LabelGUI
 public:
 	InPointGUI(MWindow *mwindow, 
 		TimeBar *timebar, 
-		int64_t pixel, 
-		double position);
-	virtual ~InPointGUI();
+		int pixel,
+		ptstime position);
+
 	static int get_y(MWindow *mwindow, TimeBar *timebar);
 };
 
@@ -96,9 +86,9 @@ class OutPointGUI : public LabelGUI
 public:
 	OutPointGUI(MWindow *mwindow, 
 		TimeBar *timebar, 
-		int64_t pixel, 
-		double position);
-	virtual ~OutPointGUI();
+		int pixel, 
+		ptstime position);
+
 	static int get_y(MWindow *mwindow, TimeBar *timebar);
 };
 
@@ -124,16 +114,15 @@ public:
 
 // Synchronize label, in/out display with master EDL
 	void update(int do_range = 1, int do_others = 1);
-	virtual void draw_time();
+	virtual void draw_time() {};
 // Called by update and draw_time.
 	virtual void draw_range();
-	virtual void select_label(double position);
+	virtual void select_label(ptstime position) {};
 	virtual EDL* get_edl();
 	virtual int test_preview(int buttonpress);
 	virtual void update_preview() {};
-	virtual int64_t position_to_pixel(double position);
+	virtual int position_to_pixel(ptstime position);
 	int move_preview(int &redraw);
-
 
 	void update_labels();
 	void update_points();
@@ -144,12 +133,12 @@ public:
 
 // ================================= file operations
 	int load(FileXML *xml, int undo_type);
-	int draw();                  // draw everything over
+	int draw() { return 0; };                  // draw everything over
 	int refresh_labels();
 
 // ========================================= editing
 
-	int select_region(double position);
+	void select_region(ptstime position);
 	void get_edl_length();
 
 	MWindow *mwindow;
@@ -158,20 +147,19 @@ public:
 // Operation started by a buttonpress
 	int current_operation;
 
-
 private:
-	int get_preview_pixels(int &x1, int &x2);
+	void get_preview_pixels(int &x1, int &x2);
 	int draw_bevel();
 	ArrayList<LabelGUI*> labels;
 	InPointGUI *in_point;
 	OutPointGUI *out_point;
 
 // Records for dragging operations
-	double start_position;
-	double starting_start_position;
-	double starting_end_position;
-	double time_per_pixel;
-	double edl_length;
+	ptstime start_position;
+	ptstime starting_start_position;
+	ptstime starting_end_position;
+	ptstime time_per_pixel;
+	ptstime edl_length;
 	int start_cursor_x;
 };
 

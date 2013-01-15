@@ -55,7 +55,7 @@
 
 LabelGUI::LabelGUI(MWindow *mwindow, 
 	TimeBar *timebar, 
-	int64_t pixel, 
+	int pixel, 
 	int y, 
 	double position,
 	VFrame **data)
@@ -72,10 +72,6 @@ LabelGUI::LabelGUI(MWindow *mwindow,
 	this->label = 0;
 }
 
-LabelGUI::~LabelGUI()
-{
-}
-
 int LabelGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 {
 	return timebar->get_h() - 
@@ -84,8 +80,7 @@ int LabelGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 
 int LabelGUI::translate_pixel(MWindow *mwindow, int pixel)
 {
-	int result = pixel - mwindow->theme->label_toggle[0]->get_w() / 2;
-	return result;
+	return (pixel - mwindow->theme->label_toggle[0]->get_w() / 2);
 }
 
 void LabelGUI::reposition()
@@ -95,13 +90,16 @@ void LabelGUI::reposition()
 
 int LabelGUI::button_press_event()
 {
-	if (this->is_event_win() && get_buttonpress() == 3) {
-		if (label)
+	if(this->is_event_win() && get_buttonpress() == 3)
+	{
+		if(label)
 			timebar->label_edit->edit_label(label);
-	} else {
+	}
+	else
+	{
 		BC_Toggle::button_press_event();
 	}
-	if (label)
+	if(label)
 		set_tooltip(this->label->textstr);
 }
 
@@ -112,16 +110,10 @@ int LabelGUI::handle_event()
 }
 
 
-
-
-
-
-
-
 InPointGUI::InPointGUI(MWindow *mwindow, 
 	TimeBar *timebar, 
-	int64_t pixel, 
-	double position)
+	int pixel,
+	ptstime position)
  : LabelGUI(mwindow, 
 	timebar,
 	pixel, 
@@ -131,33 +123,22 @@ InPointGUI::InPointGUI(MWindow *mwindow,
 {
 }
 
-InPointGUI::~InPointGUI()
-{
-}
-
 int InPointGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 {
-	int result;
-	result = timebar->get_h() - 
-		mwindow->theme->in_point[0]->get_h();
-	return result;
+	return (timebar->get_h() - mwindow->theme->in_point[0]->get_h());
 }
 
 
 OutPointGUI::OutPointGUI(MWindow *mwindow, 
 	TimeBar *timebar, 
-	int64_t pixel, 
-	double position)
+	int pixel, 
+	ptstime position)
  : LabelGUI(mwindow, 
 	timebar,
 	pixel, 
 	get_y(mwindow, timebar), 
 	position, 
 	mwindow->theme->out_point)
-{
-}
-
-OutPointGUI::~OutPointGUI()
 {
 }
 
@@ -195,16 +176,13 @@ int TimeBar::create_objects()
 	out_point = 0;
 	current_operation = TIMEBAR_NONE;
 	update();
-	return 0;
 }
 
-
-int64_t TimeBar::position_to_pixel(double position)
+int TimeBar::position_to_pixel(ptstime position)
 {
 	get_edl_length();
-	return (int64_t)(position / time_per_pixel);
+	return round(position / time_per_pixel);
 }
-
 
 void TimeBar::update_labels()
 {
@@ -217,7 +195,7 @@ void TimeBar::update_labels()
 			current;
 			current = NEXT)
 		{
-			int64_t pixel = position_to_pixel(current->position);
+			int pixel = position_to_pixel(current->position);
 			if(pixel >= 0 && pixel < get_w())
 			{
 // Create new label
@@ -313,10 +291,9 @@ void TimeBar::update_highlights()
 void TimeBar::update_points()
 {
 	EDL *edl = get_edl();
-	int64_t pixel;
+	int pixel;
 
 	if(edl) pixel = position_to_pixel(edl->local_session->get_inpoint());
-
 
 	if(in_point)
 	{
@@ -403,17 +380,10 @@ void TimeBar::update(int do_range, int do_others)
 	flash();
 }
 
-
-void TimeBar::draw_time()
-{
-}
-
 EDL* TimeBar::get_edl()
 {
 	return mwindow->edl;
 }
-
-
 
 void TimeBar::draw_range()
 {
@@ -433,9 +403,9 @@ void TimeBar::draw_range()
 		EDL *edl;
 		if(edl = get_edl())
 		{
-			int64_t pixel = position_to_pixel(
+			int pixel = position_to_pixel(
 				edl->local_session->get_selectionstart(1));
-// Draw insertion point position if this timebar beint64_ts to a window which 
+// Draw insertion point position if this timebar to a window which 
 // has something other than the master EDL.
 			set_color(RED);
 			draw_line(pixel, 0, pixel, get_h());
@@ -443,17 +413,6 @@ void TimeBar::draw_range()
 	}
 	else
 		draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-}
-
-void TimeBar::select_label(double position)
-{
-}
-
-
-
-int TimeBar::draw()
-{
-	return 0;
 }
 
 void TimeBar::get_edl_length()
@@ -475,7 +434,7 @@ void TimeBar::get_edl_length()
 	}
 }
 
-int TimeBar::get_preview_pixels(int &x1, int &x2)
+void TimeBar::get_preview_pixels(int &x1, int &x2)
 {
 	x1 = 0;
 	x2 = 0;
@@ -501,10 +460,7 @@ int TimeBar::get_preview_pixels(int &x1, int &x2)
 			x2 = get_w();
 		}
 	}
-
-	return 0;
 }
-
 
 int TimeBar::test_preview(int buttonpress)
 {
@@ -719,8 +675,6 @@ void TimeBar::repeat_event(int duration)
 			x_movement = 1;
 		}
 
-
-
 		if(x_movement)
 		{
 			update_cursor();
@@ -732,46 +686,42 @@ void TimeBar::repeat_event(int duration)
 
 int TimeBar::cursor_motion_event()
 {
+	int relative_cursor_x;
 	int result = 0;
 	int redraw = 0;
 
 	switch(current_operation)
 	{
-		case TIMEBAR_DRAG:
+	case TIMEBAR_DRAG:
+		update_cursor();
+		relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
+		if(relative_cursor_x >= mwindow->gui->canvas->get_w() || 
+			relative_cursor_x < 0)
 		{
-			update_cursor();
-			int relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
-			if(relative_cursor_x >= mwindow->gui->canvas->get_w() || 
-				relative_cursor_x < 0)
-			{
-				mwindow->gui->canvas->start_dragscroll();
-			}
-			else
-			if(relative_cursor_x < mwindow->gui->canvas->get_w() && 
-				relative_cursor_x >= 0)
-			{
-				mwindow->gui->canvas->stop_dragscroll();
-			}
-			result = 1;
-			break;
+			mwindow->gui->canvas->start_dragscroll();
 		}
+		else
+		if(relative_cursor_x < mwindow->gui->canvas->get_w() && 
+			relative_cursor_x >= 0)
+		{
+			mwindow->gui->canvas->stop_dragscroll();
+		}
+		result = 1;
+		break;
 
+	case TIMEBAR_DRAG_LEFT:
+	case TIMEBAR_DRAG_RIGHT:
+	case TIMEBAR_DRAG_CENTER:
+		result = move_preview(redraw);
+		break;
 
-		case TIMEBAR_DRAG_LEFT:
-		case TIMEBAR_DRAG_RIGHT:
-		case TIMEBAR_DRAG_CENTER:
-			result = move_preview(redraw);
-			break;
-
-		default:
-			result = test_preview(0);
-			break;
+	default:
+		result = test_preview(0);
+		break;
 	}
 
 	if(redraw)
-	{
 		update();
-	}
 
 	return result;
 }
@@ -814,8 +764,7 @@ void TimeBar::update_cursor()
 	update_highlights();
 }
 
-
-int TimeBar::select_region(double position)
+void TimeBar::select_region(ptstime position)
 {
 	Label *start = 0, *end = 0, *current;
 	for(current = mwindow->edl->labels->first; current; current = NEXT)
@@ -865,5 +814,4 @@ int TimeBar::select_region(double position)
 	mwindow->gui->zoombar->update();
 	mwindow->undo->update_undo(_("select"), LOAD_SESSION, 0, 0);
 	update_highlights();
-	return 0;
 }

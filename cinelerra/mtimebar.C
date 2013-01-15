@@ -40,7 +40,6 @@
 #include "zoombar.h"
 
 
-
 MTimeBar::MTimeBar(MWindow *mwindow, 
 	MWindowGUI *gui,
 	int x, 
@@ -52,14 +51,12 @@ MTimeBar::MTimeBar(MWindow *mwindow,
 	this->gui = gui;
 }
 
-
-int64_t MTimeBar::position_to_pixel(double position)
+int MTimeBar::position_to_pixel(ptstime position)
 {
-	return (int64_t)(position /
+	return (position /
 		mwindow->edl->local_session->zoom_time -
 		mwindow->edl->local_session->view_start);
 }
-
 
 void MTimeBar::stop_playback()
 {
@@ -70,9 +67,9 @@ void MTimeBar::stop_playback()
 #define TICK_SPACING 5
 #define LINE_MARGIN 3
 #define TICK_MARGIN 16
+
 void MTimeBar::draw_time()
 {
-
 	char string[BCTEXTLEN];
 	int sample_rate = mwindow->edl->session->sample_rate;
 	double frame_rate = mwindow->edl->session->frame_rate;
@@ -80,10 +77,7 @@ void MTimeBar::draw_time()
 	double text_interval = 3600.0;
 // Seconds between tick marks
 	double tick_interval = 3600.0;
-	int64_t timescale2 = 0;
-	float timescale3 = 0;
 	int pixel = 0;
-
 
 // Calculate tick mark spacing, number spacing, and starting point based
 // on zoom, time format, project settings.
@@ -130,7 +124,7 @@ void MTimeBar::draw_time()
 		mwindow->edl->local_session->zoom_time;
 
 // Get first text mark on or before window start
-	int64_t starting_mark = 0;
+	int starting_mark = 0;
 
 	int progression = 1;
 
@@ -332,12 +326,11 @@ void MTimeBar::draw_time()
 	}
 
 // Get first text mark on or before window start
-	starting_mark = (int64_t)((double)mwindow->edl->local_session->view_start * 
+	starting_mark = ((double)mwindow->edl->local_session->view_start * 
 		time_per_pixel / text_interval);
 
 	double start_position = (double)starting_mark * text_interval;
-	int64_t iteration = 0;
-
+	int iteration = 0;
 
 	while(start_position + text_interval * iteration < view_end)
 	{
@@ -352,7 +345,7 @@ void MTimeBar::draw_time()
 			sample_rate, 
 			mwindow->edl->session->frame_rate,
 			mwindow->edl->session->frames_per_foot);
-	 	set_color(get_resources()->default_text_color);
+		set_color(get_resources()->default_text_color);
 		set_font(MEDIUMFONT);
 
 		draw_text(pixel + TEXT_MARGIN, get_text_ascent(MEDIUMFONT), string);
@@ -403,7 +396,7 @@ void MTimeBar::draw_range()
 		draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 }
 
-void MTimeBar::select_label(double position)
+void MTimeBar::select_label(ptstime position)
 {
 	EDL *edl = mwindow->edl;
 
@@ -442,19 +435,16 @@ void MTimeBar::select_label(double position)
 	mwindow->gui->canvas->flash();
 }
 
-
-int MTimeBar::resize_event()
+void MTimeBar::resize_event()
 {
 	reposition_window(mwindow->theme->mtimebar_x,
 		mwindow->theme->mtimebar_y,
 		mwindow->theme->mtimebar_w,
 		mwindow->theme->mtimebar_h);
 	update();
-	return 1;
 }
 
 int MTimeBar::test_preview(int buttonpress)
 {
-	int result = 0;
-	return result;
+	return 0;
 }
