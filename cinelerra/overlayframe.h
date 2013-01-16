@@ -119,7 +119,7 @@ public:
 	int out_x2;
 	int out_y1;
 	int out_y2;
-	int alpha;
+	float alpha;
 	int mode;
 };
 
@@ -145,7 +145,7 @@ public:
 	int out_x2i;
 	float out_y1;
 	float out_y2;
-	int alpha;
+	float alpha;
 	int mode;
 
 	int *in_lookup_x;
@@ -175,7 +175,7 @@ public:
 	float out1;
 	float out2;
 
-	int alpha;
+	float alpha;
 	int mode;
 
 	int *lookup_sx0;
