@@ -299,6 +299,12 @@ void LocalSession::set_selectionend(ptstime value)
 	this->selectionend = value;
 }
 
+void LocalSession::set_selection(ptstime start, ptstime end)
+{
+	selectionstart = start;
+	selectionend = end;
+}
+
 void LocalSession::set_inpoint(ptstime value)
 {
 	in_point = value;
@@ -317,6 +323,14 @@ void LocalSession::unset_inpoint()
 void LocalSession::unset_outpoint()
 {
 	out_point = -1;
+}
+
+void LocalSession::get_selections(ptstime *values)
+{
+	values[0] = selectionstart;
+	values[1] = selectionend;
+	values[2] = in_point;
+	values[3] = out_point;
 }
 
 ptstime LocalSession::get_selectionstart(int highlight_only)

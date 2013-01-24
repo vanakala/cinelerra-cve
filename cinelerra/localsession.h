@@ -48,6 +48,10 @@ public:
 	ptstime get_outpoint();
 	int inpoint_valid();
 	int outpoint_valid();
+// Returns values[4] - selection values
+	void get_selections(ptstime *values);
+// Set selection start/end at once
+	void set_selection(ptstime start, ptstime end);
 	void set_selectionstart(ptstime value);
 	void set_selectionend(ptstime value);
 	void set_inpoint(ptstime value);
