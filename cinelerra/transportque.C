@@ -51,7 +51,6 @@ void TransportCommand::reset()
 	end_position = 0;
 	infinite = 0;
 	realtime = 0;
-	resume = 0;
 // Don't reset the change type for commands which don't perform the change
 	if(command != STOP) change_type = 0;
 	command = COMMAND_NONE;
@@ -84,7 +83,6 @@ void TransportCommand::copy_from(TransportCommand *command)
 	this->end_position = command->end_position;
 	this->playbackstart = command->playbackstart;
 	this->realtime = command->realtime;
-	this->resume = command->resume;
 }
 
 TransportCommand& TransportCommand::operator=(TransportCommand &command)
@@ -111,18 +109,15 @@ int TransportCommand::get_direction()
 	case SLOW_FWD:
 	case CURRENT_FRAME:
 		return PLAY_FORWARD;
-		break;
 
 	case SINGLE_FRAME_REWIND:
 	case NORMAL_REWIND:
 	case FAST_REWIND:
 	case SLOW_REWIND:
 		return PLAY_REVERSE;
-		break;
 
 	default:
 		return PLAY_FORWARD;
-		break;
 	}
 }
 
@@ -133,7 +128,6 @@ float TransportCommand::get_speed()
 	case SLOW_FWD:
 	case SLOW_REWIND:
 		return 0.5;
-		break;
 
 	case NORMAL_FWD:
 	case NORMAL_REWIND:
@@ -141,13 +135,12 @@ float TransportCommand::get_speed()
 	case SINGLE_FRAME_REWIND:
 	case CURRENT_FRAME:
 		return 1;
-		break;
 
 	case FAST_FWD:
 	case FAST_REWIND:
 		return 2;
-		break;
 	}
+	return 0.0;
 }
 
 // Assume starting without pause
@@ -252,7 +245,8 @@ void TransportCommand::playback_range_project()
 // Debug
 const char* TransportCommand::commandstr(int cmd)
 {
-	static const char* cmdmemo[] = {
+	static const char* cmdmemo[] =
+	{
 		"None", 		// 0
 		"Frame Forward", 	// 1
 		"Normal Forward", 	// 2
@@ -315,11 +309,10 @@ TransportQue::~TransportQue()
 	delete output_lock;
 }
 
-int TransportQue::send_command(int command, 
+void TransportQue::send_command(int command, 
 		int change_type, 
 		EDL *new_edl, 
 		int realtime,
-		int resume,
 		int use_inout)
 {
 	input_lock->lock("TransportQue::send_command 1");
@@ -327,7 +320,6 @@ int TransportQue::send_command(int command,
 // Mutually exclusive operation
 	this->command.change_type |= change_type;
 	this->command.realtime = realtime;
-	this->command.resume = resume;
 
 	if(new_edl)
 	{
@@ -353,12 +345,4 @@ int TransportQue::send_command(int command,
 	input_lock->unlock();
 
 	output_lock->unlock();
-	return 0;
-}
-
-void TransportQue::update_change_type(int change_type)
-{
-	input_lock->lock("TransportQue::update_change_type");
-	this->command.change_type |= change_type;
-	input_lock->unlock();
 }

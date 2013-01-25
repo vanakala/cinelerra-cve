@@ -245,14 +245,11 @@ void PlayTransport::handle_transport(int command,
 			engine->que->send_command(STOP,
 				CHANGE_NONE, 
 				0,
-				0,
-				0,
 				0);
 			engine->interrupt_playback(wait_tracking);
 			engine->que->send_command(command,
 				CHANGE_NONE, 
 				get_edl(),
-				1,
 				1,
 				use_inout);
 		}
@@ -263,7 +260,6 @@ void PlayTransport::handle_transport(int command,
 				CHANGE_NONE, 
 				get_edl(),
 				1,
-				0,
 				use_inout);
 		}
 		break;
@@ -280,8 +276,6 @@ void PlayTransport::handle_transport(int command,
 	{
 		engine->que->send_command(STOP,
 			CHANGE_NONE, 
-			0,
-			0,
 			0,
 			0);
 		engine->interrupt_playback(wait_tracking);

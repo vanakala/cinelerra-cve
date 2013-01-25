@@ -68,9 +68,6 @@ public:
 	ptstime playbackstart;
 // Send output to device
 	int realtime;
-// Use persistant starting point
-	int resume;
-
 private:
 // Copied to render engines
 	EDL *edl;
@@ -82,15 +79,12 @@ public:
 	TransportQue();
 	~TransportQue();
 
-	int send_command(int command, 
+	void send_command(int command, 
 // The change type is ORed to accumulate changes.
 		int change_type, 
 		EDL *new_edl,
 		int realtime,
-// Persistent starting point
-		int resume = 0,
 		int use_inout = 0);
-	void update_change_type(int change_type);
 
 	TransportCommand command;
 	Condition *input_lock, *output_lock;
