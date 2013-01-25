@@ -71,8 +71,6 @@ public:
 	virtual void stop_tracking();
 // The playback cursor calls this to calculate the current tracking position
 	virtual ptstime get_tracking_position();
-// Reset the transport after completion
-	virtual void update_transport(int command, int paused) {};
 // The render engines call this to update tracking variables in the playback engine.
 	void update_tracking(ptstime position);
 
@@ -99,22 +97,13 @@ public:
 	TransportQue *que;
 // Currently executing command
 	TransportCommand *command;
-// Last command which affected transport
-	int last_command;
-	int done;
-	int do_cwindow;
 // Render engine
 	RenderEngine *render_engine;
 
 // Used by label commands to get current position
 	int is_playing_back;
-
-// General purpose debugging register
-	int debug;
+private:
+	int done;
 };
-
-
-
-
 
 #endif

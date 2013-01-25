@@ -52,13 +52,10 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	tracking_active = 0;
 	audio_cache = 0;
 	video_cache = 0;
-	last_command = STOP;
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
 	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
 	render_engine = 0;
-	debug = 0;
-
 	preferences = new Preferences;
 	command = new TransportCommand;
 	que = new TransportQue;
@@ -149,16 +146,16 @@ void PlaybackEngine::perform_change()
 {
 	switch(command->change_type)
 	{
-		case CHANGE_ALL:
-			create_cache();
-		case CHANGE_EDL:
-			create_render_engine();
-		case CHANGE_PARAMS:
-			if(command->change_type != CHANGE_EDL &&
+	case CHANGE_ALL:
+		create_cache();
+	case CHANGE_EDL:
+		create_render_engine();
+	case CHANGE_PARAMS:
+		if(command->change_type != CHANGE_EDL &&
 				command->change_type != CHANGE_ALL)
-				render_engine->edl->synchronize_params(command->get_edl());
-		case CHANGE_NONE:
-			break;
+			render_engine->edl->synchronize_params(command->get_edl());
+	case CHANGE_NONE:
+		break;
 	}
 }
 
@@ -251,50 +248,48 @@ void PlaybackEngine::run()
 		switch(command->command)
 		{
 // Parameter change only
-			case COMMAND_NONE:
-				perform_change();
-				break;
+		case COMMAND_NONE:
+			perform_change();
+			break;
 
-			case PAUSE:
-				init_cursor();
-				pause_lock->lock("PlaybackEngine::run");
-				stop_cursor();
-				break;
+		case PAUSE:
+			init_cursor();
+			pause_lock->lock("PlaybackEngine::run");
+			stop_cursor();
+			break;
 
-			case STOP:
+		case STOP:
 // No changing
-				break;
+			break;
 
-			case CURRENT_FRAME:
-				last_command = command->command;
-				perform_change();
-				arm_render_engine();
+		case CURRENT_FRAME:
+			perform_change();
+			arm_render_engine();
 // Dispatch the command
-				start_render_engine();
-				break;
+			start_render_engine();
+			break;
 
-			default:
-				last_command = command->command;
-				is_playing_back = 1;
+		default:
+			is_playing_back = 1;
 
-				double frame_len = 1.0 / command->get_edl()->session->frame_rate;
-				if(command->command == SINGLE_FRAME_FWD)
-					command->playbackstart = get_tracking_position() + frame_len;
-				if(command->command == SINGLE_FRAME_REWIND)
-					command->playbackstart = get_tracking_position() - frame_len;
-				if(command->playbackstart < 0.0)
-					command->playbackstart = 0.0;
+			double frame_len = 1.0 / command->get_edl()->session->frame_rate;
+			if(command->command == SINGLE_FRAME_FWD)
+				command->playbackstart = get_tracking_position() + frame_len;
+			if(command->command == SINGLE_FRAME_REWIND)
+				command->playbackstart = get_tracking_position() - frame_len;
+			if(command->playbackstart < 0.0)
+				command->playbackstart = 0.0;
 
-				perform_change();
-				arm_render_engine();
+			perform_change();
+			arm_render_engine();
 
 // Start tracking after arming so the tracking position doesn't change.
 // The tracking for a single frame command occurs during PAUSE
-				init_tracking();
+			init_tracking();
 
 // Dispatch the command
-				start_render_engine();
-				break;
+			start_render_engine();
+			break;
 		}
-	}while(!done);
+	} while(!done);
 }
