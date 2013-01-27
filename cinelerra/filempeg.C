@@ -1229,7 +1229,7 @@ const char* FileMPEG::compressiontostr(const char *string)
 
 
 FileMPEGVideo::FileMPEGVideo(FileMPEG *file)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->file = file;
 
@@ -1316,7 +1316,7 @@ void FileMPEGVideo::run()
 
 
 FileMPEGAudio::FileMPEGAudio(FileMPEG *file)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->file = file;
 	toolame_init_buffers();

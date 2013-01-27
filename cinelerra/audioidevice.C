@@ -326,7 +326,5 @@ void AudioDevice::start_recording()
 		input_buffer[i] = new char[INPUT_BUFFER_BYTES];
 	}
 	record_timer->update();
-
-	Thread::set_realtime(get_irealtime());
 	Thread::start();
 }

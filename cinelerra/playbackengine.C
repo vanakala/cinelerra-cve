@@ -43,7 +43,7 @@
 
 
 PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->mwindow = mwindow;
 	this->output = output;

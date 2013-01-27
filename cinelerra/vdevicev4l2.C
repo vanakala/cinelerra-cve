@@ -55,7 +55,7 @@
 
 
 VDeviceV4L2Put::VDeviceV4L2Put(VDeviceV4L2Thread *thread)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->thread = thread;
 	done = 0;
@@ -136,7 +136,7 @@ void VDeviceV4L2Put::put_buffer(int number)
 
 
 VDeviceV4L2Thread::VDeviceV4L2Thread(VideoDevice *device, int color_model)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->device = device;
 	this->color_model = color_model;

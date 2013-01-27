@@ -46,7 +46,7 @@
 
 
 RecordMonitor::RecordMonitor(MWindow *mwindow, Record *record)
- : Thread(1)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -682,7 +682,7 @@ int RecordMonitorFullsize::handle_event()
 RecordMonitorThread::RecordMonitorThread(MWindow *mwindow, 
 	Record *record, 
 	RecordMonitor *record_monitor)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->mwindow = mwindow;
 	this->record_monitor = record_monitor;

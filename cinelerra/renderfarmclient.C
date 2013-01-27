@@ -211,7 +211,7 @@ void RenderFarmClient::kill_client()
 // after every frame for the error status.
 // Detaches when finished.
 RenderFarmClientThread::RenderFarmClientThread(RenderFarmClient *client)
- : Thread(0, 0, 1)
+ : Thread(THREAD_AUTODELETE)
 {
 	this->client = client;
 	frames_per_second = 0;
@@ -646,7 +646,7 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 }
 
 RenderFarmKeepalive::RenderFarmKeepalive(RenderFarmClientThread *client_thread)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->client_thread = client_thread;
 	done = 0;

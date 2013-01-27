@@ -75,7 +75,7 @@ char* BC_NewFolder::get_text()
 
 
 BC_NewFolderThread::BC_NewFolderThread(BC_FileBox *filebox)
- : Thread(0, 0, 0)
+ : Thread()
 {
 	this->filebox = filebox;
 	window = 0;

@@ -259,7 +259,7 @@ void BRenderCommand::copy_edl(EDL *edl)
 
 
 BRenderThread::BRenderThread(MWindow *mwindow, BRender *brender)
- : Thread(1)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->mwindow = mwindow;
 	this->brender = brender;

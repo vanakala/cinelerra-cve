@@ -113,7 +113,7 @@
 extern Theme *theme_global;
 
 MWindow::MWindow()
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	plugin_gui_lock = new Mutex("MWindow::plugin_gui_lock");
 	brender_lock = new Mutex("MWindow::brender_lock");

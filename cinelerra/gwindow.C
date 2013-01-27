@@ -25,7 +25,7 @@
 #include "mwindowgui.h"
 
 GWindow::GWindow(MWindow *mwindow)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->mwindow = mwindow;
 }

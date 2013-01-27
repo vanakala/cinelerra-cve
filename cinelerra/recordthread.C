@@ -44,7 +44,7 @@
 
 
 RecordThread::RecordThread(MWindow *mwindow, Record *record)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->mwindow = mwindow;
 	this->record = record;

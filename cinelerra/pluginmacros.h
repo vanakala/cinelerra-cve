@@ -318,7 +318,7 @@ int PLUGIN_CLASS::get_parameters() \
 #ifdef PLUGIN_THREAD_CLASS
 #define PLUGIN_THREAD_METHODS \
 PLUGIN_THREAD_CLASS::PLUGIN_THREAD_CLASS(PLUGIN_CLASS *plugin) \
- : Thread(0, 0, 1) \
+ : Thread(THREAD_AUTODELETE) \
 { \
 	this->plugin = plugin; \
 } \

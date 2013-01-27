@@ -28,7 +28,7 @@
 
 
 BC_DialogThread::BC_DialogThread()
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	gui = 0;
 	startup_lock = new Condition(1, "BC_DialogThread::startup_lock");

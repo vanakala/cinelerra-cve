@@ -50,7 +50,7 @@
 
 
 Tracking::Tracking(MWindow *mwindow)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->gui = mwindow->gui;
 	this->mwindow = mwindow; 

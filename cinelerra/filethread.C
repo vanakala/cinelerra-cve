@@ -34,7 +34,7 @@
 
 
 FileThread::FileThread(File *file, int do_audio, int do_video)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	audio_buffer = 0;
 	video_buffer = 0;

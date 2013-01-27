@@ -250,7 +250,7 @@ int ExportEDLItem::handle_event()
 
 
 ExportEDL::ExportEDL(MWindow *mwindow)
- : Thread(0, 0, 0)
+ : Thread()
 {
 	this->mwindow = mwindow;
 }

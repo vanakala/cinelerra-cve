@@ -322,7 +322,7 @@ int DVBTune::read_data(unsigned char *data, int size)
 #define BUFFER_SIZE 0x100000
 #define MAX_BUFFER_SIZE 0x10000000
 DVBTuneThread::DVBTuneThread(DVBTune *server)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->server = server;
 	temp = new unsigned char[BUFFER_SIZE];
@@ -386,7 +386,7 @@ void DVBTuneThread::run()
 
 
 DVBTuneStatus::DVBTuneStatus(DVBTune *server)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->server = server;
 }

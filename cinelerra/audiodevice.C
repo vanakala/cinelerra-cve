@@ -49,7 +49,7 @@ AudioLowLevel::~AudioLowLevel()
 
 
 AudioDevice::AudioDevice(MWindow *mwindow)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	initialize();
 	this->mwindow = mwindow;

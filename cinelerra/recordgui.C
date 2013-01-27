@@ -1052,7 +1052,7 @@ int RecordGUILabel::keypress_event()
 
 
 EndRecordThread::EndRecordThread(Record *record, RecordGUI *record_gui)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->record = record;
 	this->gui = record_gui;
@@ -1095,7 +1095,7 @@ void EndRecordThread::run()
 
 
 RecordStartoverThread::RecordStartoverThread(Record *record, RecordGUI *record_gui)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->record = record;
 	this->gui = record_gui;
@@ -1269,7 +1269,7 @@ int RecordGUIMode::handle_event()
 
 
 RecordStatusThread::RecordStatusThread(MWindow *mwindow, RecordGUI *gui)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

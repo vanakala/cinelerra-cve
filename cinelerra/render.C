@@ -92,12 +92,11 @@ int RenderItem::handle_event()
 
 
 RenderProgress::RenderProgress(MWindow *mwindow, Render *render)
- : Thread()
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->mwindow = mwindow;
 	this->render = render;
 	last_value = 0;
-	Thread::set_synchronous(1);
 }
 
 RenderProgress::~RenderProgress()
@@ -203,7 +202,7 @@ int MainPackageRenderer::progress_cancelled()
 
 
 Render::Render(MWindow *mwindow)
- : Thread(0, 0, 0)
+ : Thread()
 {
 	this->mwindow = mwindow;
 	if(mwindow) plugindb = mwindow->plugindb;

@@ -249,8 +249,6 @@ void AudioDevice::start_playback()
 // zero timers
 	playback_timer->update();
 	last_position = 0;
-
-	Thread::set_realtime(get_orealtime());
 	Thread::start();                  // synchronize threads by starting playback here and blocking
 }
 

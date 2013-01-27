@@ -51,7 +51,7 @@
 RecordVideo::RecordVideo(MWindow *mwindow,
 	Record *record, 
 	RecordThread *record_thread)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	reset_parameters();
 	this->mwindow = mwindow;

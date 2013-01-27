@@ -45,7 +45,7 @@
 // Synchronie multiple devices by using threads
 
 OSSThread::OSSThread(AudioOSS *device)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	rd = 0;
 	wr = 0;

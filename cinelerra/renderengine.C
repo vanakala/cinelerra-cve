@@ -48,7 +48,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	TransportCommand *command,
 	Canvas *output,
 	ArrayList<PluginServer*> *plugindb)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->playback_engine = playback_engine;
 	this->output = output;

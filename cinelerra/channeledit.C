@@ -733,7 +733,7 @@ BC_Window* ConfirmScanThread::new_gui()
 
 
 ScanThread::ScanThread(ChannelEditThread *edit)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->edit = edit;
 	interrupt = 0;

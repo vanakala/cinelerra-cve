@@ -105,7 +105,7 @@ void BC_SynchronousCommand::copy_from(BC_SynchronousCommand *command)
 
 
 BC_Synchronous::BC_Synchronous()
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	next_command = new Condition(0, "BC_Synchronous::next_command", 0);
 	command_lock = new Mutex("BC_Synchronous::command_lock");

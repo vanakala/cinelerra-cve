@@ -30,11 +30,10 @@
 #include "thread.h"
 
 
-Thread::Thread(int synchronous, int realtime, int autodelete)
+Thread::Thread(int options)
 {
-	this->synchronous = synchronous;
-	this->realtime = realtime;
-	this->autodelete = autodelete;
+	this->synchronous = options & THREAD_SYNCHRONOUS;
+	this->autodelete = options & THREAD_AUTODELETE;
 	tid = (pthread_t)-1;
 	tid_valid = 0;
 	thread_running = 0;
@@ -54,18 +53,6 @@ void* Thread::entrypoint(void *parameters)
 // Disable cancellation by default.
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
 	thread->cancel_enabled = 0;
-
-// Set realtime here seince it doesn't work in start
-	if(thread->realtime && getuid() == 0)
-	{
-		struct sched_param param = 
-		{
-			sched_priority : 1
-		};
-		if(pthread_setschedparam(thread->tid, SCHED_RR, &param) < 0)
-			perror("Thread::entrypoint pthread_attr_setschedpolicy");
-	}
-
 	thread->run();
 
 	thread->thread_running = 0;
@@ -83,46 +70,30 @@ void Thread::start()
 
 	thread_running = 1;
 
-// Inherit realtime from current thread the easy way.
-	if(!realtime) realtime = calculate_realtime();
+	if(!synchronous)
+		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-
-	if(!synchronous) pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
-	if(realtime && getuid() == 0)
-	{
-		if(pthread_attr_setschedpolicy(&attr, SCHED_RR) < 0)
-			perror("Thread::start pthread_attr_setschedpolicy");
-		param.sched_priority = 50;
-		if(pthread_attr_setschedparam(&attr, &param) < 0)
-			perror("Thread::start pthread_attr_setschedparam");
-	}
-	else
-	{
-		if(pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED) < 0)
-			perror("Thread::start pthread_attr_setinheritsched");
-	}
+	if(pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED) < 0)
+		perror("Thread::start pthread_attr_setinheritsched");
 
 	pthread_create(&tid, &attr, Thread::entrypoint, this);
 	tid_valid = 1;
 }
 
-int Thread::end(pthread_t tid)           // need to join after this if synchronous
+void Thread::end(pthread_t tid)           // need to join after this if synchronous
 {
 	if(tid_valid)
 	{
 		pthread_cancel(tid);
 	}
-	return 0;
 }
 
-int Thread::end()           // need to join after this if synchronous
+void Thread::end()           // need to join after this if synchronous
 {
 	cancel();
-	return 0;
 }
 
-int Thread::cancel()
+void Thread::cancel()
 {
 	if(tid_valid) pthread_cancel(tid);
 	if(!synchronous)
@@ -130,15 +101,13 @@ int Thread::cancel()
 		tid = (pthread_t)-1;
 		tid_valid = 0;
 	}
-	return 0;
 }
 
-int Thread::join()   // join this thread
+void Thread::join()   // join this thread
 {
-	int result = 0;
 	if(tid_valid)
 	{
-		result = pthread_join(tid, 0);
+		pthread_join(tid, 0);
 	}
 
 	tid = (pthread_t)-1;
@@ -146,21 +115,18 @@ int Thread::join()   // join this thread
 
 // Don't execute anything after this.
 	if(autodelete && synchronous) delete this;
-	return 0;
 }
 
-int Thread::enable_cancel()
+void Thread::enable_cancel()
 {
 	cancel_enabled = 1;
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-	return 0;
 }
 
-int Thread::disable_cancel()
+void Thread::disable_cancel()
 {
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 	cancel_enabled = 0;
-	return 0;
 }
 
 int Thread::get_cancel_enabled()
@@ -168,28 +134,25 @@ int Thread::get_cancel_enabled()
 	return cancel_enabled;
 }
 
-int Thread::exit_thread()
+void Thread::exit_thread()
 {
- 	pthread_exit(0);
 	if(!synchronous)
 	{
 		tid = (pthread_t)-1;
 		tid_valid = 0;
 	}
-	return 0;
+	pthread_exit(0);
+// Does not return
 }
 
-
-int Thread::suspend_thread()
+void Thread::suspend_thread()
 {
 	if(tid_valid) pthread_kill(tid, SIGSTOP);
-	return 0;
 }
 
-int Thread::continue_thread()
+void Thread::continue_thread()
 {
 	if(tid_valid) pthread_kill(tid, SIGCONT);
-	return 0;
 }
 
 int Thread::running()
@@ -197,22 +160,14 @@ int Thread::running()
 	return thread_running;
 }
 
-int Thread::set_synchronous(int value)
+void Thread::set_synchronous(int value)
 {
 	this->synchronous = value;
-	return 0;
 }
 
-int Thread::set_realtime(int value)
-{
-	this->realtime = value;
-	return 0;
-}
-
-int Thread::set_autodelete(int value)
+void Thread::set_autodelete(int value)
 {
 	this->autodelete = value;
-	return 0;
 }
 
 int Thread::get_autodelete()
@@ -225,20 +180,12 @@ int Thread::get_synchronous()
 	return synchronous;
 }
 
-int Thread::calculate_realtime()
-{
-//printf("Thread::calculate_realtime %d %d\n", getpid(), sched_getscheduler(0));
-	return (sched_getscheduler(0) == SCHED_RR ||
-		sched_getscheduler(0) == SCHED_FIFO);
-}
-
-int Thread::get_realtime()
-{
-	return realtime;
-}
-
 pthread_t Thread::get_tid()
 {
 	return tid;
 }
 
+void Thread::yield()
+{
+	pthread_yield();
+}

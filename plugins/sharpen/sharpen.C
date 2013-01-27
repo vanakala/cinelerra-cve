@@ -264,7 +264,7 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 }
 
 SharpenEngine::SharpenEngine(SharpenMain *plugin)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->plugin = plugin;
 	input_lock = new Condition(0,"SharpenEngine::input_lock");

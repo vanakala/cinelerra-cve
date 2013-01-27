@@ -596,7 +596,7 @@ void RenderFarmServerThread::get_result()
 
 RenderFarmWatchdog::RenderFarmWatchdog(RenderFarmServerThread *server,
 	RenderFarmClientThread *client)
- : Thread(1, 0, 0)
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->server = server;
 	this->client = client;
