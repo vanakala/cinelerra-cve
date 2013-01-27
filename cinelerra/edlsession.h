@@ -151,9 +151,6 @@ public:
 	int playback_preload;
 	int decode_subtitles;
 	int playback_software_position;
-// Play audio in realtime priority
-	int real_time_playback;
-	int real_time_record;
 // Use software to calculate record position
 	int record_software_position;
 // Sync the drives during recording

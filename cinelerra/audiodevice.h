@@ -83,13 +83,11 @@ public:
 		VideoInConfig *vconfig,
 		int rate, 
 		int samples,
-		int channels,
-		int realtime);
+		int channels);
 	int open_output(AudioOutConfig *config, 
 		int rate, 
 		int samples, 
-		int channels,
-		int realtime);
+		int channels);
 	int close_all();
 	void reset_output();
 	int restart();
@@ -165,15 +163,11 @@ private:
 	int get_ichannels();
 	int get_orate();
 	int get_irate();
-	int get_orealtime();
-	int get_irealtime();
 
 // Override configured parameters depending on the driver
 	int in_samplerate, in_bits, in_channels, in_samples;
-	int in_realtime;
 	int out_samplerate, out_bits, out_channels, out_samples;
 	int duplex_samplerate, duplex_bits, duplex_channels, duplex_samples;
-	int out_realtime, duplex_realtime;
 
 // Access mode
 	int r, w, d;

@@ -105,8 +105,7 @@ int PlaybackPrefs::create_objects()
 	add_subwindow(new PlaybackViewFollows(pwindow, pwindow->thread->edl->session->view_follows_playback, y));
 	y += 30;
 	add_subwindow(new PlaybackSoftwareTimer(pwindow, pwindow->thread->edl->session->playback_software_position, y));
-	y += 30;
-	add_subwindow(new PlaybackRealTime(pwindow, pwindow->thread->edl->session->real_time_playback, y));
+
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Audio Driver:")));
 	audio_device = new ADevicePrefs(x + 100, 
@@ -310,22 +309,6 @@ int PlaybackSoftwareTimer::handle_event()
 	pwindow->thread->edl->session->playback_software_position = get_value(); 
 	return 1;
 }
-
-
-
-
-PlaybackRealTime::PlaybackRealTime(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, _("Audio playback in real time priority (root only)"))
-{ 
-	this->pwindow = pwindow; 
-}
-
-int PlaybackRealTime::handle_event() 
-{ 
-	pwindow->thread->edl->session->real_time_playback = get_value(); 
-	return 1;
-}
-
 
 
 PlaybackNearest::PlaybackNearest(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)

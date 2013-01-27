@@ -26,7 +26,6 @@ class RecordMinDB;
 class RecordVUDB;
 class RecordVUInt;
 class RecordWriteLength;
-class RecordRealTime;
 class RecordChannels;
 
 #include "adeviceprefs.inc"
@@ -55,15 +54,6 @@ class RecordWriteLength : public BC_TextBox
 {
 public:
 	RecordWriteLength(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y, char *text);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-
-class RecordRealTime : public BC_CheckBox
-{
-public:
-	RecordRealTime(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y, int value);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

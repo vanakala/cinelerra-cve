@@ -117,9 +117,6 @@ int AudioDevice::initialize()
 	vdevice = 0;
 	sharing = 0;
 	total_samples_read = 0;
-	out_realtime = 0;
-	duplex_realtime = 0;
-	in_realtime = 0;
 	read_waiting = 0; 
 	return 0;
 }
@@ -166,8 +163,7 @@ int AudioDevice::open_input(AudioInConfig *config,
 	VideoInConfig *vconfig, 
 	int rate, 
 	int samples,
-	int channels,
-	int realtime)
+	int channels)
 {
 	r = 1;
 	duplex_init = 0;
@@ -175,7 +171,6 @@ int AudioDevice::open_input(AudioInConfig *config,
 	this->vconfig->copy_from(vconfig);
 	in_samplerate = rate;
 	in_samples = samples;
-	in_realtime = realtime;
 	in_channels = channels;
 	create_lowlevel(lowlevel_in, config->driver);
 	lowlevel_in->open_input();
@@ -186,8 +181,7 @@ int AudioDevice::open_input(AudioInConfig *config,
 int AudioDevice::open_output(AudioOutConfig *config, 
 	int rate, 
 	int samples, 
-	int channels,
-	int realtime)
+	int channels)
 {
 	w = 1;
 	duplex_init = 0;
@@ -195,7 +189,6 @@ int AudioDevice::open_output(AudioOutConfig *config,
 	out_samplerate = rate;
 	out_samples = samples;
 	out_channels = channels;
-	out_realtime = realtime;
 	create_lowlevel(lowlevel_out, config->driver);
 	return lowlevel_out ? lowlevel_out->open_output() : 0;
 }
@@ -314,23 +307,6 @@ int AudioDevice::get_irate()
 	else
 	if(d) return duplex_samplerate;
 }
-
-int AudioDevice::get_orealtime()
-{
-	if(w) return out_realtime;
-	else 
-	if(d) return duplex_realtime;
-	return 0;
-}
-
-int AudioDevice::get_irealtime()
-{
-	if(r) return in_realtime;
-	else 
-	if(d) return duplex_realtime;
-	return 0;
-}
-
 
 int AudioDevice::get_orate()
 {

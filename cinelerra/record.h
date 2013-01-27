@@ -244,7 +244,6 @@ public:
 	float get_framerate();
 	int get_everyframe();
 	int get_time_format();
-	int get_realtime();
 	float get_frame_rate();
 	char* get_in_path();
 	char* get_video_inpath();
@@ -266,8 +265,6 @@ public:
 
 	int get_playback_buffer();
 	int enable_duplex();
-
-	int realtime;
 	int to_tracks;
 	int loop_duration;
 	posnum dc_offset[MAXCHANNELS];

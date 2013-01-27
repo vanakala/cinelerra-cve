@@ -922,8 +922,7 @@ int Record::open_input_devices(int duplex, int context)
 			adevice->open_output(mwindow->edl->session->aconfig_duplex,
 					default_asset->sample_rate,
 					mwindow->edl->session->playback_buffer,
-					mwindow->edl->session->audio_channels,
-					mwindow->edl->session->real_time_playback);
+					mwindow->edl->session->audio_channels);
 		}
 
 		if(!audio_opened)
@@ -932,8 +931,7 @@ int Record::open_input_devices(int duplex, int context)
 				mwindow->edl->session->vconfig_in, 
 				default_asset->sample_rate, 
 				get_in_length(),
-				default_asset->channels,
-				mwindow->edl->session->real_time_record);
+				default_asset->channels);
 			adevice->start_recording();
 		}
 	}
@@ -1195,7 +1193,6 @@ int Record::get_out_length() { return mwindow->edl->session->playback_buffer; }
 int Record::get_software_positioning() { return mwindow->edl->session->record_software_position; }
 int Record::get_out_buffersize() { return mwindow->edl->session->playback_buffer; }
 int Record::get_in_buffersize() { return mwindow->edl->session->record_write_length; }
-int Record::get_realtime() { return realtime; }
 int Record::get_meter_speed() { return mwindow->edl->session->record_speed; }
 
 int Record::enable_duplex() { return mwindow->edl->session->enable_duplex; }

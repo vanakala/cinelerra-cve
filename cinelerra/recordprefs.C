@@ -124,20 +124,7 @@ int RecordPrefs::create_objects()
 	RecordChannels *channels = new RecordChannels(pwindow, this, x2, y + 60);
 	channels->create_objects();
 
-	y += 60;
-	x += 380;
-
-
-	add_subwindow(new RecordRealTime(mwindow, 
-		pwindow, 
-		x, 
-		y, 
-		pwindow->thread->edl->session->real_time_record));
-	y += 40;
-	x = 5;
-
-
-
+	y += 100;
 
 // Video hardware
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
@@ -240,27 +227,6 @@ int RecordWriteLength::handle_event()
 	pwindow->thread->edl->session->record_write_length = atol(get_text());
 	return 1; 
 }
-
-
-
-RecordRealTime::RecordRealTime(MWindow *mwindow, 
-	PreferencesWindow *pwindow, 
-	int x, 
-	int y, 
-	int value)
- : BC_CheckBox(x, 
-	y, 
-	value, 
-	_("Record in realtime priority (root only)"))
-{ 
-	this->pwindow = pwindow; 
-}
-
-int RecordRealTime::handle_event()
-{
-	pwindow->thread->edl->session->real_time_record = get_value();
-}
-
 
 RecordSampleRate::RecordSampleRate(PreferencesWindow *pwindow, int x, int y)
  : BC_TextBox(x, y, 70, 1, pwindow->thread->edl->session->aconfig_in->in_samplerate)

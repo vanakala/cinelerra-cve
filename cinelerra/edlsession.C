@@ -108,7 +108,6 @@ int EDLSession::need_rerender(EDLSession *ptr)
 		(interpolation_type != ptr->interpolation_type) ||
 		(video_every_frame != ptr->video_every_frame) ||
 		(video_asynchronous != ptr->video_asynchronous) ||
-		(real_time_playback != ptr->real_time_playback) ||
 		(playback_software_position != ptr->playback_software_position) ||
 		(test_playback_edits != ptr->test_playback_edits) ||
 		(playback_buffer != ptr->playback_buffer) ||
@@ -217,8 +216,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	delete playback_config;
 	playback_config = new PlaybackConfig;
 	playback_config->load_defaults(defaults);
-	real_time_playback = defaults->get("PLAYBACK_REALTIME", 0);
-	real_time_record = defaults->get("REALTIME_RECORD", 0);
 	record_software_position = defaults->get("RECORD_SOFTWARE_POSITION", 1);
 	record_sync_drives = defaults->get("RECORD_SYNC_DRIVES", 0);
 	record_write_length = defaults->get("RECORD_WRITE_LENGTH", 131072);
@@ -340,8 +337,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("PLAYBACK_PRELOAD", playback_preload);
 	defaults->update("PLAYBACK_SOFTWARE_POSITION", playback_software_position);
 	playback_config->save_defaults(defaults);
-	defaults->update("PLAYBACK_REALTIME", real_time_playback);
-	defaults->update("REALTIME_RECORD", real_time_record);
 	defaults->update("RECORD_SOFTWARE_POSITION", record_software_position);
 	defaults->update("RECORD_SYNC_DRIVES", record_sync_drives);
 	defaults->update("RECORD_WRITE_LENGTH", record_write_length); // Heroine kernel 2.2 scheduling sucks.
@@ -726,8 +721,6 @@ int EDLSession::copy(EDLSession *session)
 	playback_cursor_visible = session->playback_cursor_visible;
 	playback_preload = session->playback_preload;
 	playback_software_position = session->playback_software_position;
-	real_time_playback = session->real_time_playback;
-	real_time_record = session->real_time_record;
 	record_software_position = session->record_software_position;
 	record_sync_drives = session->record_sync_drives;
 	record_write_length = session->record_write_length;

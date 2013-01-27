@@ -253,8 +253,7 @@ void RenderEngine::open_output()
 			if (audio->open_output(config->aconfig, 
 				edl->session->sample_rate, 
 				fragment_len,
-				edl->session->audio_channels,
-				edl->session->real_time_playback))
+				edl->session->audio_channels))
 			{
 				do_audio = 0;
 				delete audio;
