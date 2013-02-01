@@ -97,16 +97,8 @@ void New::create_new_edl()
 
 int New::create_new_project()
 {
-	mwindow->cwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
-	mwindow->vwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
-	mwindow->cwindow->playback_engine->interrupt_playback(0);
-	mwindow->vwindow->playback_engine->interrupt_playback(0);
+	mwindow->cwindow->playback_engine->send_command(STOP);
+	mwindow->vwindow->playback_engine->send_command(STOP);
 
 	mwindow->gui->lock_window("New::create_new_project");
 	mwindow->reset_caches();

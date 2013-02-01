@@ -857,16 +857,8 @@ SET_TRACE
 
 // Need to stop playback since tracking depends on the EDL not getting
 // deleted.
-	cwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
-	vwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
-	cwindow->playback_engine->interrupt_playback(0);
-	vwindow->playback_engine->interrupt_playback(0);
+	cwindow->playback_engine->send_command(STOP);
+	vwindow->playback_engine->send_command(STOP);
 
 // Define new_edls and new_assets to load
 	int result = 0;
@@ -1479,7 +1471,7 @@ void MWindow::sync_parameters(int change_type)
 // Sync engines which are playing back
 	if(cwindow->playback_engine->is_playing_back)
 	{
-		if(change_type == CHANGE_PARAMS)
+		if(change_type & CHANGE_PARAMS)
 		{
 // TODO: block keyframes until synchronization is done
 			cwindow->playback_engine->sync_parameters(edl);
@@ -1488,29 +1480,18 @@ void MWindow::sync_parameters(int change_type)
 // Stop and restart
 		{
 			int command = cwindow->playback_engine->command->command;
-			cwindow->playback_engine->que->send_command(STOP,
-				CHANGE_NONE, 
-				0,
-				0);
+			cwindow->playback_engine->send_command(STOP);
+
 // Waiting for tracking to finish would make the restart position more
 // accurate but it can't lock the window to stop tracking for some reason.
 // Not waiting for tracking gives a faster response but restart position is
 // only as accurate as the last tracking update.
-			cwindow->playback_engine->interrupt_playback(0);
-			cwindow->playback_engine->que->send_command(command,
-					change_type, 
-					edl,
-					1,
-					0);
+
+			cwindow->playback_engine->send_command(command, edl, change_type);
 		}
 	}
 	else
-	{
-		cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-							change_type,
-							edl,
-							1);
-	}
+		cwindow->playback_engine->send_command(CURRENT_FRAME, edl, change_type);
 }
 
 void MWindow::age_caches()
@@ -1780,10 +1761,7 @@ void MWindow::update_project(int load_mode)
 	cwindow->gui->slider->set_position();
 	cwindow->gui->timebar->update(1, 1);
 	cwindow->gui->unlock_window();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-		CHANGE_ALL,
-		edl,
-		1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
 
 	awindow->gui->async_update_assets();
 

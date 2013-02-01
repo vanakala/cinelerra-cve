@@ -215,10 +215,7 @@ void CWindow::update(int position,
 		gui->slider->set_position();
 		gui->unlock_window();
 
-		playback_engine->que->send_command(CURRENT_FRAME, 
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
+		playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
 	}
 
 

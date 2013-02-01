@@ -249,10 +249,8 @@ int PreferencesThread::apply_settings()
 	{
 // This doesn't stop and restart, only reloads the assets before
 // the next play command.
-		mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-			CHANGE_ALL,
-			mwindow->edl,
-			1);
+		mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, 
+				mwindow->edl, CHANGE_ALL);
 		mwindow->vwindow->change_source();
 	}
 

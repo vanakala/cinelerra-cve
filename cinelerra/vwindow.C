@@ -274,10 +274,7 @@ void VWindow::update_position(int change_type,
 		}
 
 		gui->timebar->update();
-		playback_engine->que->send_command(CURRENT_FRAME, 
-			change_type,
-			edl,
-			1);
+		playback_engine->send_command(CURRENT_FRAME, edl, change_type);
 
 		gui->clock->update(edl->local_session->get_selectionstart(1) +
 			asset->tcstart / 

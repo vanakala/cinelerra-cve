@@ -561,10 +561,7 @@ void CWindowCameraGUI::update_preview()
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
+	mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
 	mwindow->cwindow->gui->lock_window("CWindowCameraGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();
@@ -978,10 +975,8 @@ void CWindowProjectorGUI::update_preview()
 {
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
+	mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
+
 	mwindow->cwindow->gui->lock_window("CWindowProjectorGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();
@@ -1701,10 +1696,8 @@ void CWindowMaskGUI::update_preview()
 {
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
+	mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
+
 	mwindow->cwindow->gui->lock_window("CWindowMaskGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();

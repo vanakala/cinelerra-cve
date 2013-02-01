@@ -55,13 +55,13 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
 	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
+	playback_lock = new Condition(0, "PlaybackEngine::playback_lock");
+	cmds_lock = new Mutex("PlaybackEngine::cmds_lock");
 	render_engine = 0;
 	preferences = new Preferences;
 	command = new TransportCommand;
-	que = new TransportQue;
-// Set the first change to maximum
-	que->command.change_type = CHANGE_ALL;
-
+	used_cmds = 0;
+	memset(cmds, 0, sizeof(cmds));
 	preferences->copy_from(mwindow->preferences);
 
 	done = 0;
@@ -72,22 +72,22 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 PlaybackEngine::~PlaybackEngine()
 {
 	done = 1;
-	que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
-	interrupt_playback();
+	send_command(STOP);
 
 	Thread::join();
 	delete preferences;
 	delete command;
-	delete que;
+	for(int i = 0; i < MAX_COMMAND_QUEUE; i++)
+		if(cmds[i])
+			delete cmds[i];
 	delete_render_engine();
 	delete audio_cache;
 	delete video_cache;
 	delete tracking_done;
 	delete pause_lock;
 	delete start_lock;
+	delete cmds_lock;
+	delete playback_lock;
 }
 
 void PlaybackEngine::create_render_engine()
@@ -144,19 +144,12 @@ void PlaybackEngine::create_cache()
 
 void PlaybackEngine::perform_change()
 {
-	switch(command->change_type)
-	{
-	case CHANGE_ALL:
+	if(command->change_type == CHANGE_ALL)
 		create_cache();
-	case CHANGE_EDL:
+	if(command->change_type & CHANGE_EDL)
 		create_render_engine();
-	case CHANGE_PARAMS:
-		if(command->change_type != CHANGE_EDL &&
-				command->change_type != CHANGE_ALL)
+	if((command->change_type & (CHANGE_PARAMS | CHANGE_EDL)) == CHANGE_PARAMS)
 			render_engine->edl->synchronize_params(command->get_edl());
-	case CHANGE_NONE:
-		break;
-	}
 }
 
 void PlaybackEngine::sync_parameters(EDL *edl)
@@ -205,6 +198,7 @@ void PlaybackEngine::init_tracking()
 		tracking_active = 0;
 
 	tracking_position = command->playbackstart;
+
 	tracking_done->lock("PlaybackEngine::init_tracking");
 	init_cursor();
 }
@@ -228,22 +222,33 @@ ptstime PlaybackEngine::get_tracking_position()
 
 void PlaybackEngine::run()
 {
+	TransportCommand *tmp_cmd;
+
 	start_lock->unlock();
 
 	do
 	{
-// Wait for current command to finish
-		que->output_lock->lock("PlaybackEngine::run");
+		playback_lock->lock("PlaybackEngine::run");
+// Read the new command
+		cmds_lock->lock("PlaybackEngine::run");
 
+		if(used_cmds < 1)
+		{
+			cmds_lock->unlock();
+			continue;
+		}
+		tmp_cmd = command;
+		command = cmds[0];
+		for(int i = 1; i < used_cmds; i++)
+			cmds[i - 1] = cmds[i];
+		tmp_cmd->reset();
+		cmds[--used_cmds] = tmp_cmd;
+		cmds_lock->unlock();
+
+// Wait for current command to finish
 		wait_render_engine();
 
-// Read the new command
-		que->input_lock->lock("PlaybackEngine::run");
 		if(done) return;
-
-		command->copy_from(&que->command);
-		que->command.reset();
-		que->input_lock->unlock();
 
 		switch(command->command)
 		{
@@ -271,8 +276,8 @@ void PlaybackEngine::run()
 
 		default:
 			is_playing_back = 1;
+			double frame_len = 1.0 / mwindow->edl->session->frame_rate;
 
-			double frame_len = 1.0 / command->get_edl()->session->frame_rate;
 			if(command->command == SINGLE_FRAME_FWD)
 				command->playbackstart = get_tracking_position() + frame_len;
 			if(command->command == SINGLE_FRAME_REWIND)
@@ -292,4 +297,52 @@ void PlaybackEngine::run()
 			break;
 		}
 	} while(!done);
+}
+
+void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
+{
+	TransportCommand *new_cmd;
+
+	cmds_lock->lock("PlaybackEngine:send_command");
+
+	if(cmd == STOP)
+	{
+		// STOP resets the que
+		if(!cmds[0])
+			cmds[0] = new_cmd = new TransportCommand;
+		else
+			new_cmd = cmds[0];
+		used_cmds = 1;
+		interrupt_playback();
+	}
+	else
+	{
+		if(!(new_cmd = cmds[used_cmds]))
+		{
+			if(++used_cmds >= MAX_COMMAND_QUEUE)
+			{
+				used_cmds = MAX_COMMAND_QUEUE - 1;
+				new_cmd = cmds[used_cmds - 1];
+			}
+			else
+				cmds[used_cmds - 1] = new_cmd = new TransportCommand;
+		} else
+			used_cmds++;
+	}
+
+	new_cmd->command = cmd;
+	new_cmd->realtime = cmd != STOP;
+	new_cmd->change_type = options & CHANGE_ALL;
+
+	if(new_edl)
+	{
+		if(options & CHANGE_EDL)
+			new_cmd->get_edl()->copy_all(new_edl);
+		else if(options & CHANGE_PARAMS)
+			new_cmd->get_edl()->synchronize_params(new_edl);
+		new_cmd->set_playback_range(new_edl, options & CMDOPT_USEINOUT);
+	}
+
+	cmds_lock->unlock();
+	playback_lock->unlock();
 }

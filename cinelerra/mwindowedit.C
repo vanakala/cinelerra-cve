@@ -89,10 +89,7 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	gui->cursor->draw(1);
 	gui->canvas->flash();
 	gui->canvas->activate();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-		CHANGE_EDL,
-		edl,
-		1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
 void MWindow::add_video_track_entry(Track *dst)
@@ -107,10 +104,7 @@ void MWindow::add_video_track_entry(Track *dst)
 	gui->cursor->draw(1);
 	gui->canvas->flash();
 	gui->canvas->activate();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-							CHANGE_EDL,
-							edl,
-							1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 	save_backup();
 }
 
@@ -179,10 +173,7 @@ void MWindow::clear_entry()
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-						CHANGE_EDL,
-						edl,
-						1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
 void MWindow::clear(int clear_handle)
@@ -268,10 +259,7 @@ void MWindow::concatenate_tracks()
 
 	restart_brender();
 	gui->update(1, 1, 0, 0, 1, 0, 0);
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-		CHANGE_EDL,
-		edl,
-		1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
 void MWindow::copy()
@@ -370,10 +358,7 @@ void MWindow::crop_video()
 	undo->update_undo(_("crop"), LOAD_ALL);
 
 	restart_brender();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME,
-		CHANGE_ALL,
-		edl,
-		1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
 	save_backup();
 }
 
@@ -394,10 +379,7 @@ void MWindow::cut()
 	restart_brender();
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-							CHANGE_EDL,
-							edl,
-							1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
 void MWindow::cut_automation()
@@ -460,10 +442,7 @@ void MWindow::delete_tracks()
 	restart_brender();
 	update_plugin_states();
 	gui->update(1, 1, 1, 0, 1, 0, 0);
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-					CHANGE_EDL,
-					edl,
-					1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
 void MWindow::delete_track(Track *track)
@@ -474,10 +453,7 @@ void MWindow::delete_track(Track *track)
 	restart_brender();
 	update_plugin_states();
 	gui->update(1, 1, 1, 0, 1, 0, 0);
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-					CHANGE_EDL,
-					edl,
-					1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 	save_backup();
 }
 
@@ -720,10 +696,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 	undo->update_undo(_("move edit"), LOAD_ALL);
 
 	restart_brender();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-		CHANGE_EDL,
-		edl,
-		1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 
 	update_plugin_guis();
 	gui->update(1,
@@ -750,10 +723,7 @@ void MWindow::move_effect(Plugin *plugin,
 	undo->update_undo(_("move effect"), LOAD_ALL);
 
 	restart_brender();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-		CHANGE_EDL,
-		edl,
-		1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 
 	update_plugin_guis();
 	gui->update(1,
@@ -862,10 +832,7 @@ void MWindow::mute_selection()
 		restart_brender();
 		update_plugin_guis();
 		gui->update(1, 2, 1, 1, 1, 1, 0);
-		cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-								CHANGE_EDL,
-								edl,
-								1);
+		cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 	}
 }
 
@@ -1396,10 +1363,7 @@ void MWindow::paste_silence()
 	restart_brender();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
 	cwindow->update(1, 0, 0, 0, 1);
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-							CHANGE_EDL,
-							edl,
-							1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
 void MWindow::paste_transition()
@@ -1470,16 +1434,8 @@ void MWindow::paste_video_transition()
 
 void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 {
-	cwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
-	vwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
-	cwindow->playback_engine->interrupt_playback(0);
-	vwindow->playback_engine->interrupt_playback(0);
+	cwindow->playback_engine->send_command(STOP);
+	vwindow->playback_engine->send_command(STOP);
 
 	cwindow->gui->lock_window("MWindow::redo_entry");
 	vwindow->gui->lock_window("MWindow::redo_entry 2");
@@ -1498,10 +1454,7 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 	gui->unlock_window();
 	vwindow->gui->unlock_window();
 
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-						CHANGE_ALL,
-						edl,
-						1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
 }
 
 void MWindow::resize_track(Track *track, int w, int h)
@@ -1837,24 +1790,13 @@ void MWindow::trim_selection()
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
 	restart_brender();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-							CHANGE_EDL,
-							edl,
-							1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
 void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 {
-	cwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
-	vwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
-	cwindow->playback_engine->interrupt_playback(0);
-	vwindow->playback_engine->interrupt_playback(0);
+	cwindow->playback_engine->send_command(STOP);
+	vwindow->playback_engine->send_command(STOP);
 
 	cwindow->gui->lock_window("MWindow::undo_entry 1");
 	vwindow->gui->lock_window("MWindow::undo_entry 4");
@@ -1874,10 +1816,7 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 	vwindow->gui->unlock_window();
 
 	awindow->gui->async_update_assets();
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-					CHANGE_ALL,
-					edl,
-					1);
+	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
 }
 
 void MWindow::new_folder(const char *new_folder)

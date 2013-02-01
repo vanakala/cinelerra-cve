@@ -216,6 +216,11 @@ void PlayTransport::handle_transport(int command,
 	int do_stop = 0;
 	int prev_command = engine->command->command;
 	int prev_single_frame = engine->command->single_frame();
+	int options;
+
+	options = wait_tracking ? CMDOPT_WAITTRACKING : 0;
+	if(use_inout)
+		options |= CMDOPT_USEINOUT;
 
 // Dispatch command
 	switch(command)
@@ -242,25 +247,13 @@ void PlayTransport::handle_transport(int command,
 			prev_command != SINGLE_FRAME_FWD &&
 			prev_command != SINGLE_FRAME_REWIND)
 		{
-			engine->que->send_command(STOP,
-				CHANGE_NONE, 
-				0,
-				0);
-			engine->interrupt_playback(wait_tracking);
-			engine->que->send_command(command,
-				CHANGE_NONE, 
-				get_edl(),
-				1,
-				use_inout);
+			engine->send_command(STOP);
+			engine->send_command(command, get_edl(), options);
 		}
 		else
 // Start from scratch
 		{
-			engine->que->send_command(command,
-				CHANGE_NONE, 
-				get_edl(),
-				1,
-				use_inout);
+			engine->send_command(command, get_edl(), options);
 		}
 		break;
 
@@ -273,13 +266,7 @@ void PlayTransport::handle_transport(int command,
 	}
 
 	if(do_stop)
-	{
-		engine->que->send_command(STOP,
-			CHANGE_NONE, 
-			0,
-			0);
-		engine->interrupt_playback(wait_tracking);
-	}
+		engine->send_command(STOP);
 }
 
 EDL* PlayTransport::get_edl()

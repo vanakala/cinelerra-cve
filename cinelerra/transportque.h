@@ -73,21 +73,4 @@ private:
 	EDL *edl;
 };
 
-class TransportQue
-{
-public:
-	TransportQue();
-	~TransportQue();
-
-	void send_command(int command, 
-// The change type is ORed to accumulate changes.
-		int change_type, 
-		EDL *new_edl,
-		int realtime,
-		int use_inout = 0);
-
-	TransportCommand command;
-	Condition *input_lock, *output_lock;
-};
-
 #endif

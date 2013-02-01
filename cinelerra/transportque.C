@@ -273,76 +273,23 @@ const char* TransportCommand::commandstr(int cmd)
 void TransportCommand::dump_command()
 {
 	const char *tps;
+	char b[64];
+
 	printf("=== Command dump: '%s' (realtime=%d)\n", commandstr(), realtime);
-	printf("    playback %f; positions start=%f, end=%f\n", playbackstart, start_position, end_position);
-	switch(change_type)
+	printf("    playback %.3f; positions start=%.3f, end=%.3f\n", playbackstart, start_position, end_position);
+	if(change_type == CHANGE_ALL)
+		tps = " All";
+	else if(change_type == CHANGE_NONE)
+		tps = " None";
+	else
 	{
-	case CHANGE_ALL:
-		tps = "All";
-		break;
-	case CHANGE_EDL:
-		tps = "EDL";
-		break;
-	case CHANGE_PARAMS:
-		tps = "Param";
-		break;
-	case CHANGE_NONE:
-		tps = "None";
-		break;
-	default:
-		tps = "Unknown";
-		break;
+		b[0] = 0;
+		if(change_type & CHANGE_EDL)
+			strcat(b, " EDL");
+		if(change_type & CHANGE_PARAMS)
+			strcat(b, " PAR");
+		tps = b;
 	}
-	printf("    change_type %s, edl: %p\n", tps, edl);
+	printf("    change_type:%s, edl: %p\n", tps, edl);
 }
 
-
-TransportQue::TransportQue()
-{
-	input_lock = new Condition(1, "TransportQue::input_lock");
-	output_lock = new Condition(0, "TransportQue::output_lock", 1);
-}
-
-TransportQue::~TransportQue()
-{
-	delete input_lock;
-	delete output_lock;
-}
-
-void TransportQue::send_command(int command, 
-		int change_type, 
-		EDL *new_edl, 
-		int realtime,
-		int use_inout)
-{
-	input_lock->lock("TransportQue::send_command 1");
-	this->command.command = command;
-// Mutually exclusive operation
-	this->command.change_type |= change_type;
-	this->command.realtime = realtime;
-
-	if(new_edl)
-	{
-// Just change the EDL if the change requires it because renderengine
-// structures won't point to the new EDL otherwise and because copying the
-// EDL for every cursor movement is slow.
-		if(change_type == CHANGE_EDL ||
-			change_type == CHANGE_ALL)
-		{
-// Copy EDL
-			this->command.get_edl()->copy_all(new_edl);
-		}
-		else
-		if(change_type == CHANGE_PARAMS)
-		{
-			this->command.get_edl()->synchronize_params(new_edl);
-		}
-
-// Set playback range
-		this->command.set_playback_range(new_edl, use_inout);
-	}
-
-	input_lock->unlock();
-
-	output_lock->unlock();
-}

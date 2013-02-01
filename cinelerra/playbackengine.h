@@ -40,6 +40,8 @@
 #include "bctimer.h"
 #include "transportque.inc"
 
+#define MAX_COMMAND_QUEUE 8
+
 class PlaybackEngine : public Thread
 {
 public:
@@ -65,7 +67,7 @@ public:
 // For pausing only the cursor is run
 	virtual void init_cursor() {};
 	virtual void stop_cursor() {};
-	virtual int brender_available(framenum position) { return 0; };
+	virtual int brender_available(ptstime position) { return 0; };
 // For normal playback tracking and the cursor are started
 	virtual void init_tracking();
 	virtual void stop_tracking();
@@ -73,6 +75,7 @@ public:
 	virtual ptstime get_tracking_position();
 // The render engines call this to update tracking variables in the playback engine.
 	void update_tracking(ptstime position);
+	void send_command(int command, EDL *new_edl = 0, int options = 0);
 
 	void run();
 
@@ -93,8 +96,6 @@ public:
 	Canvas *output;
 // Copy of main preferences
 	Preferences *preferences;
-// Next command
-	TransportQue *que;
 // Currently executing command
 	TransportCommand *command;
 // Render engine
@@ -104,6 +105,10 @@ public:
 	int is_playing_back;
 private:
 	int done;
+	Mutex *cmds_lock;
+	Condition *playback_lock;
+	int used_cmds;
+	TransportCommand *cmds[MAX_COMMAND_QUEUE];
 };
 
 #endif
