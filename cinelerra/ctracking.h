@@ -31,7 +31,6 @@ class CTracking : public Tracking
 {
 public:
 	CTracking(MWindow *mwindow, CWindow *cwindow);
-	~CTracking();
 
 	PlaybackEngine* get_playback_engine();
 	void update_tracker(ptstime position);
@@ -41,7 +40,10 @@ public:
 // Move sliders and insertion point to track playback
 	void start_playback(ptstime new_position);
 	void stop_playback();
+
+private:
 	CWindow *cwindow;
+	ptstime selections[4];
 };
 
 #endif

@@ -43,10 +43,6 @@ CTracking::CTracking(MWindow *mwindow, CWindow *cwindow)
 	this->cwindow = cwindow;
 }
 
-CTracking::~CTracking()
-{
-}
-
 PlaybackEngine* CTracking::get_playback_engine()
 {
 	return cwindow->playback_engine;
@@ -55,15 +51,28 @@ PlaybackEngine* CTracking::get_playback_engine()
 void CTracking::start_playback(ptstime new_position)
 {
 	mwindow->gui->cursor->playing_back = 1;
+	mwindow->edl->local_session->get_selections(selections);
 
 	Tracking::start_playback(new_position);
 }
 
 void CTracking::stop_playback()
 {
+	ptstime epos;
+
 	mwindow->gui->cursor->playing_back = 0;
 
 	Tracking::stop_playback();
+
+	epos = mwindow->edl->local_session->get_selectionstart();
+	if(!PTSEQU(selections[0], selections[1]) &&
+			(PTSEQU(epos, selections[1]) || PTSEQU(epos, selections[0])))
+	{
+		// restore highligt while reached end of highligt
+		mwindow->edl->local_session->set_selection(selections[0], selections[1]);
+		mwindow->gui->cursor->update();
+	}
+
 }
 
 #define SCROLL_THRESHOLD 0
@@ -136,8 +145,7 @@ void CTracking::update_tracker(ptstime position)
 // Update mwindow cursor
 	mwindow->gui->lock_window("CTracking::update_tracker 2");
 
-	mwindow->edl->local_session->set_selectionstart(position);
-	mwindow->edl->local_session->set_selectionend(position);
+	mwindow->edl->local_session->set_selection(position, position);
 
 	updated_scroll = update_scroll(position);
 
@@ -148,7 +156,6 @@ void CTracking::update_tracker(ptstime position)
 	{
 		mwindow->gui->cursor->update();
 		mwindow->gui->zoombar->update_clocks();   // we just need to update clocks, not everything
-
 
 		mwindow->gui->canvas->flash();
 		mwindow->gui->flush();
