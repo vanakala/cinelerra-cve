@@ -203,6 +203,8 @@ void PlaybackEngine::stop_tracking()
 	tracking_active = 0;
 	stop_cursor();
 	tracking_done->unlock();
+	if(!command->single_frame())
+		command->command = STOP;
 }
 
 void PlaybackEngine::update_tracking(ptstime position)
