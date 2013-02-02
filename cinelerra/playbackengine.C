@@ -53,7 +53,6 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	audio_cache = 0;
 	video_cache = 0;
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
-	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
 	playback_lock = new Condition(0, "PlaybackEngine::playback_lock");
 	cmds_lock = new Mutex("PlaybackEngine::cmds_lock");
@@ -84,7 +83,6 @@ PlaybackEngine::~PlaybackEngine()
 	delete audio_cache;
 	delete video_cache;
 	delete tracking_done;
-	delete pause_lock;
 	delete start_lock;
 	delete cmds_lock;
 	delete playback_lock;
@@ -163,9 +161,6 @@ void PlaybackEngine::interrupt_playback(int wait_tracking)
 {
 	if(render_engine)
 		render_engine->interrupt_playback();
-
-// Stop pausing
-	pause_lock->unlock();
 
 // Wait for tracking to finish if it is running
 	if(wait_tracking)
@@ -257,12 +252,6 @@ void PlaybackEngine::run()
 			perform_change();
 			break;
 
-		case PAUSE:
-			init_cursor();
-			pause_lock->lock("PlaybackEngine::run");
-			stop_cursor();
-			break;
-
 		case STOP:
 // No changing
 			break;
@@ -289,7 +278,6 @@ void PlaybackEngine::run()
 			arm_render_engine();
 
 // Start tracking after arming so the tracking position doesn't change.
-// The tracking for a single frame command occurs during PAUSE
 			init_tracking();
 
 // Dispatch the command

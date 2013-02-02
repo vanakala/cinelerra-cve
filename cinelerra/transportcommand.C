@@ -143,7 +143,6 @@ float TransportCommand::get_speed()
 	return 0.0;
 }
 
-// Assume starting without pause
 void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 {
 	if(!edl) edl = this->edl;
@@ -255,7 +254,7 @@ const char* TransportCommand::commandstr(int cmd)
 		"Normal Rewind", 	// 5
 		"Fast Rewind", 		// 6
 		"Stop", 		// 7
-		"Pause", 		// 8
+		"Unused", 		// 8
 		"Slow Forward", 	// 9
 		"Slow Rewind", 		// 10
 		"Rewind", 		// 11

@@ -87,8 +87,6 @@ public:
 	ptstime tracking_position;
 // Block returns until tracking loop is finished
 	Condition *tracking_done;
-// Pause the main loop for the PAUSE command
-	Condition *pause_lock;
 // Wait until thread has started
 	Condition *start_lock;
 

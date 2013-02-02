@@ -38,7 +38,6 @@
 #define SINGLE_FRAME_REWIND  4
 #define NORMAL_REWIND        5
 #define FAST_REWIND          6
-#define PAUSE                8
 #define SLOW_FWD             9
 #define SLOW_REWIND          10
 #define REWIND               11
