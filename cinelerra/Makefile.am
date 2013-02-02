@@ -262,7 +262,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    tracksedit.C \
 		    transition.C \
 		    transitionpopup.C \
-		    transportque.C \
+		    transportcommand.C \
 		    tunerserver.C \
 		    undostackitem.C \
 		    vattachmentpoint.C \
@@ -545,7 +545,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 tracks.h \
 		 transition.h \
 		 transitionpopup.h \
-		 transportque.h \
+		 transportcommand.h \
 		 tunerserver.h \
 		 undostackitem.h \
 		 vattachmentpoint.h \

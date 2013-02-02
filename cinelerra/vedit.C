@@ -30,7 +30,6 @@
 #include "mainsession.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-#include "transportque.h"
 #include "units.h"
 #include "vedit.h"
 #include "vedits.h"

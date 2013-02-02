@@ -92,7 +92,7 @@
 #include "trackscroll.h"
 #include "tracks.h"
 #include "transition.h"
-#include "transportque.h"
+#include "transportcommand.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "vplayback.h"

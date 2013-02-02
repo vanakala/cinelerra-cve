@@ -31,7 +31,6 @@
 #include "maskautos.h"
 #include "overlayframe.inc"
 #include "track.h"
-#include "transportque.inc"
 #include "vautomation.h"
 
 

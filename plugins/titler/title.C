@@ -28,7 +28,6 @@
 #include "colormodels.h"
 #include "filexml.h"
 #include "filesystem.h"
-#include "transportque.inc"
 #include "ft2build.h"
 #include FT_GLYPH_H
 #include FT_BBOX_H
@@ -40,7 +39,6 @@
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "title.h"
-#include "transportque.inc"
 
 #include <errno.h>
 #include <stdint.h>

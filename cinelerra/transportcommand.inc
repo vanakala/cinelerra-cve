@@ -19,8 +19,8 @@
  * 
  */
 
-#ifndef TRANSPORTQUE_INC
-#define TRANSPORTQUE_INC
+#ifndef TRANSPORTCOMMAND_INC
+#define TRANSPORTCOMMAND_INC
 
 // Directions
 #define PLAY_FORWARD 0

@@ -67,7 +67,6 @@
 #include "resourcepixmap.h"
 #include "mainsession.h"
 #include "transitionpopup.h"
-#include "transportque.h"
 #include "zoombar.h"
 #include "theme.h"
 #include "intautos.h"

@@ -55,7 +55,7 @@
 #include "theme.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-#include "transportque.h"
+#include "transportcommand.h"
 #include "vtrack.h"
 
 

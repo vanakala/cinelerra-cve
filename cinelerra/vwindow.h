@@ -27,7 +27,6 @@
 #include "edl.inc"
 #include "mwindow.inc"
 #include "thread.h"
-#include "transportque.inc"
 #include "vplayback.inc"
 #include "vtracking.inc"
 #include "vwindowgui.inc"

@@ -29,7 +29,6 @@
 #include "floatautos.h"
 #include "track.h"
 #include "localsession.h"
-#include "transportque.inc"
 
 FloatAutos::FloatAutos(EDL *edl,
 				Track *track, 

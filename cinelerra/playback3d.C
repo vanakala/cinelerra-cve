@@ -34,7 +34,6 @@
 #include "playback3d.h"
 #include "pluginclient.h"
 #include "pluginvclient.h"
-#include "transportque.inc"
 #include "vframe.h"
 
 #if defined(HAVE_CONFIG_H)

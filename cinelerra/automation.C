@@ -30,8 +30,6 @@
 #include "filexml.h"
 #include "intautos.h"
 #include "track.h"
-#include "transportque.inc"
-
 
 int Automation::autogrouptypes_fixedrange[] =
 {

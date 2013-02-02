@@ -40,7 +40,6 @@
 #include "theme.h"
 #include "new.h"
 #include "preferences.h"
-#include "transportque.h"
 #include "interlacemodes.h"
 #include "edl.h"
 #include "edlsession.h"

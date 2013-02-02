@@ -22,7 +22,6 @@
 #include "automation.inc"
 #include "panauto.h"
 #include "panautos.h"
-#include "transportque.inc"
 
 PanAutos::PanAutos(EDL *edl, Track *track)
  : Autos(edl, track)

@@ -29,7 +29,6 @@
 #include "mwindowgui.h"
 #include "playtransport.h"
 #include "trackcanvas.h"
-#include "transportque.h"
 
 // Playback engine for composite window
 

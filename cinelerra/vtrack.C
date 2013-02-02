@@ -38,7 +38,6 @@
 #include "theme.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-#include "transportque.inc"
 #include "units.h"
 #include "vautomation.h"
 #include "vedit.h"

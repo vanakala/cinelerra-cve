@@ -44,7 +44,6 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transition.h"
-#include "transportque.inc"
 #include "vedit.h"
 #include "vframe.h"
 #include <string.h>

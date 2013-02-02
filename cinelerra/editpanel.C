@@ -42,7 +42,6 @@
 #include "theme.h"
 #include "timebar.h"
 #include "trackcanvas.h"
-#include "transportque.h"
 #include "zoombar.h"
 #include "manualgoto.h"
 

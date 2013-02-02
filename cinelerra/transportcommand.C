@@ -26,7 +26,7 @@
 #include "edlsession.h"
 #include "localsession.h"
 #include "tracks.h"
-#include "transportque.h"
+#include "transportcommand.h"
 
 TransportCommand::TransportCommand()
 {

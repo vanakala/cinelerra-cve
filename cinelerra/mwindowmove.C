@@ -42,7 +42,6 @@
 #include "samplescroll.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-#include "transportque.h"
 #include "zoombar.h"
 
 

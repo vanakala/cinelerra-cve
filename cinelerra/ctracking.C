@@ -34,7 +34,7 @@
 #include "mwindowgui.h"
 #include "patchbay.h"
 #include "trackcanvas.h"
-#include "transportque.h"
+#include "transportcommand.h"
 #include "zoombar.h"
 
 CTracking::CTracking(MWindow *mwindow, CWindow *cwindow)

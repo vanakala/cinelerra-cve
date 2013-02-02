@@ -19,14 +19,14 @@
  * 
  */
 
-#ifndef TRANSPORTQUE_H
-#define TRANSPORTQUE_H
+#ifndef TRANSPORTCOMMAND_H
+#define TRANSPORTCOMMAND_H
 
 #include "canvas.inc"
 #include "condition.inc"
 #include "edl.inc"
 #include "preferences.inc"
-#include "transportque.inc"
+#include "transportcommand.inc"
 
 class TransportCommand
 {

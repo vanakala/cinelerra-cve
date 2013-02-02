@@ -32,8 +32,6 @@
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
-#include "transportque.inc"
-
 #include <string.h>
 
 PluginClient::PluginClient(PluginServer *server)

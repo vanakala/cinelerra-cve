@@ -34,7 +34,7 @@
 #include "mwindowgui.h"
 #include "playbackengine.h"
 #include "tracks.h"
-#include "transportque.h"
+#include "transportcommand.inc"
 #include "vplayback.h"
 #include "vtimebar.h"
 #include "vtracking.h"

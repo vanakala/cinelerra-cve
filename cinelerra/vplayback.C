@@ -22,7 +22,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "playtransport.h"
-#include "transportque.h"
 #include "vplayback.h"
 #include "vtracking.h"
 #include "vwindow.h"

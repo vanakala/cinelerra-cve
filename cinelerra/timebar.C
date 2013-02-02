@@ -45,7 +45,6 @@
 #include "timebar.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-#include "transportque.h"
 #include "units.h"
 #include "vframe.h"
 #include "vwindow.h"

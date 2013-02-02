@@ -28,7 +28,6 @@
 #include "plugin.h"
 #include "pluginserver.h"
 #include "renderengine.h"
-#include "transportque.h"
 
 AAttachmentPoint::AAttachmentPoint(RenderEngine *renderengine, Plugin *plugin)
 : AttachmentPoint(renderengine, plugin, TRACK_AUDIO)

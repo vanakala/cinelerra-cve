@@ -50,7 +50,6 @@
 #include "recordprefs.h"
 #include "theme.h"
 #include "trackcanvas.h"
-#include "transportque.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 

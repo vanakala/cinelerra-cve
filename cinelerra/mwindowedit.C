@@ -64,7 +64,6 @@
 #include "trackscroll.h"
 #include "tracks.h"
 #include "transition.h"
-#include "transportque.h"
 #include "units.h"
 #include "undostackitem.h"
 #include "vplayback.h"

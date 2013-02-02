@@ -41,7 +41,6 @@
 #include "patchbay.h"
 #include "preferences.h"
 #include "theme.h"
-#include "transportque.h"
 #include "vplayback.h"
 #include "vwindow.h"
 

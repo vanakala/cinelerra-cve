@@ -48,7 +48,6 @@
 #include "sema.h"
 #include "mainsession.h"
 #include "trackcanvas.h"
-#include "transportque.h"
 #include "vdevicex11.h"
 #include "vframe.h"
 #include "videodevice.h"

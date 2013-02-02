@@ -58,7 +58,6 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transition.h"
-#include "transportque.h"
 #include "viewmenu.h"
 #include "zoombar.h"
 #include "exportedl.h"

@@ -44,7 +44,7 @@
 #include "theme.h"
 #include "track.h"
 #include "trackcanvas.h"
-#include "transportque.h"
+#include "transportcommand.h"
 
 
 CWindowTool::CWindowTool(MWindow *mwindow, CWindowGUI *gui)

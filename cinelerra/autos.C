@@ -28,7 +28,6 @@
 #include "localsession.h"
 #include "filexml.h"
 #include "track.h"
-#include "transportque.inc"
 
 #include <string.h>
 

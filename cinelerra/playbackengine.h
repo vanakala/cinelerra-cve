@@ -38,7 +38,7 @@
 #include "renderengine.inc"
 #include "thread.h"
 #include "bctimer.h"
-#include "transportque.inc"
+#include "transportcommand.inc"
 
 #define MAX_COMMAND_QUEUE 8
 

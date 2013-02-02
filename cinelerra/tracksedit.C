@@ -42,8 +42,8 @@
 #include "tracks.h"
 #include "trackscroll.h"
 #include "transition.h"
-#include "transportque.h"
 #include "vtrack.h"
+
 #include <string.h>
 
 void Tracks::clear(ptstime start, ptstime end, int clear_plugins)
