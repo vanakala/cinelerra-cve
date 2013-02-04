@@ -49,7 +49,6 @@ void TransportCommand::reset()
 	playbackstart = 0;
 	start_position = 0;
 	end_position = 0;
-	infinite = 0;
 	edl_empty = 1;
 	realtime = 0;
 // Don't reset the change type for commands which don't perform the change

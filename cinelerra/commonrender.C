@@ -211,46 +211,43 @@ void CommonRender::get_boundaries(ptstime &current_render_duration, ptstime min_
 	ptstime end_position = renderengine->command->end_position;
 	int direction = renderengine->command->get_direction();
 
-	if(!renderengine->command->infinite)
+// test absolute boundaries if no loop
+	if(!renderengine->edl->local_session->loop_playback)
 	{
-// test absolute boundaries if no loop and not infinite
-		if(!renderengine->edl->local_session->loop_playback)
+		if(direction == PLAY_FORWARD)
 		{
-			if(direction == PLAY_FORWARD)
+			if(current_postime + current_render_duration >= end_position)
 			{
-				if(current_postime + current_render_duration >= end_position)
-				{
-					last_playback = 1;
-					current_render_duration = end_position - current_postime;
-				}
-			}
-// reverse playback
-			else
-			{
-				if(current_postime - current_render_duration <= start_position)
-				{
-					last_playback = 1;
-					current_render_duration = current_postime - start_position;
-				}
+				last_playback = 1;
+				current_render_duration = end_position - current_postime;
 			}
 		}
+// reverse playback
 		else
-// test against loop boundaries
 		{
-			ptstime loop_pts;
-			if(renderengine->command->get_direction() == PLAY_FORWARD)
+			if(current_postime - current_render_duration <= start_position)
 			{
-				loop_pts = renderengine->edl->local_session->loop_end;
+				last_playback = 1;
+				current_render_duration = current_postime - start_position;
+			}
+		}
+	}
+	else
+// test against loop boundaries
+	{
+		ptstime loop_pts;
+		if(renderengine->command->get_direction() == PLAY_FORWARD)
+		{
+			loop_pts = renderengine->edl->local_session->loop_end;
 
-				if(current_postime + current_render_duration > loop_pts)
-					current_render_duration = loop_pts - current_postime;
-			}
-			else
-			{
-				loop_pts = renderengine->edl->local_session->loop_start;
-				if(current_postime - current_render_duration < loop_pts)
-					current_render_duration = current_postime - loop_pts;
-			}
+			if(current_postime + current_render_duration > loop_pts)
+				current_render_duration = loop_pts - current_postime;
+		}
+		else
+		{
+			loop_pts = renderengine->edl->local_session->loop_start;
+			if(current_postime - current_render_duration < loop_pts)
+				current_render_duration = current_postime - loop_pts;
 		}
 	}
 
@@ -294,8 +291,7 @@ int CommonRender::advance_position(ptstime current_pts, ptstime current_render_d
 		current_postime = current_pts + current_render_duration;
 
 // test loop again
-	if(renderengine->edl->local_session->loop_playback && 
-		!renderengine->command->infinite)
+	if(renderengine->edl->local_session->loop_playback)
 	{
 		ptstime loop_end = renderengine->edl->local_session->loop_end;
 		ptstime loop_start = renderengine->edl->local_session->loop_start;

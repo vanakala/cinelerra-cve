@@ -61,7 +61,6 @@ public:
 	ptstime start_position;
 // highest numbered second in playback range
 	ptstime end_position;
-	int infinite;
 // Position used when starting playback
 	ptstime playbackstart;
 // Send output to device
