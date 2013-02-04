@@ -41,7 +41,7 @@ public:
 	void copy_from(TransportCommand *command);
 	TransportCommand& operator=(TransportCommand &command);
 // Get the range to play back from the EDL
-	void set_playback_range(EDL *edl = 0, int use_inout = 0);
+	void set_playback_range(int use_inout = 0);
 
 // Adjust playback range with in/out points for rendering
 	void playback_range_adjust_inout();
@@ -52,8 +52,6 @@ public:
 
 	int single_frame();
 	EDL* get_edl();
-	void delete_edl();
-	void new_edl();
 	const char* commandstr(int cmd = -1);
 	void dump_command();
 
@@ -68,6 +66,8 @@ public:
 	ptstime playbackstart;
 // Send output to device
 	int realtime;
+// Flag - no real info in edl
+	int edl_empty;
 private:
 // Copied to render engines
 	EDL *edl;

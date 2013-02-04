@@ -128,7 +128,7 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	command->command = NORMAL_FWD;
 	command->get_edl()->copy_all(edl);
 	command->change_type = CHANGE_ALL;
-	command->set_playback_range(edl);
+	command->set_playback_range();
 
 	default_asset->frame_rate = command->get_edl()->session->frame_rate;
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;

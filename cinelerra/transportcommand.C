@@ -50,6 +50,7 @@ void TransportCommand::reset()
 	start_position = 0;
 	end_position = 0;
 	infinite = 0;
+	edl_empty = 1;
 	realtime = 0;
 // Don't reset the change type for commands which don't perform the change
 	if(command != STOP) change_type = 0;
@@ -61,24 +62,12 @@ EDL* TransportCommand::get_edl()
 	return edl;
 }
 
-void TransportCommand::delete_edl()
-{
-	delete edl;
-	edl = 0;
-}
-
-void TransportCommand::new_edl()
-{
-	edl = new EDL;
-	edl->create_objects();
-}
-
-
 void TransportCommand::copy_from(TransportCommand *command)
 {
 	this->command = command->command;
 	this->change_type = command->change_type;
 	this->edl->copy_all(command->edl);
+	this->edl_empty = command->edl_empty;
 	this->start_position = command->start_position;
 	this->end_position = command->end_position;
 	this->playbackstart = command->playbackstart;
@@ -143,10 +132,8 @@ float TransportCommand::get_speed()
 	return 0.0;
 }
 
-void TransportCommand::set_playback_range(EDL *edl, int use_inout)
+void TransportCommand::set_playback_range(int use_inout)
 {
-	if(!edl) edl = this->edl;
-
 	switch(command)
 	{
 	case SLOW_FWD:

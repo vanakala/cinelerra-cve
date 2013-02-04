@@ -267,7 +267,7 @@ void PlaybackEngine::run()
 
 		default:
 			is_playing_back = 1;
-			double frame_len = 1.0 / mwindow->edl->session->frame_rate;
+			double frame_len = 1.0 / command->get_edl()->session->frame_rate;
 
 			if(command->command == SINGLE_FRAME_FWD)
 				command->playbackstart = get_tracking_position() + frame_len;
@@ -326,11 +326,14 @@ void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
 
 	if(new_edl)
 	{
-		if(options & CHANGE_EDL)
+		if((options & CHANGE_EDL) || new_cmd->edl_empty)
+		{
 			new_cmd->get_edl()->copy_all(new_edl);
+			new_cmd->edl_empty = 0;
+		}
 		else if(options & CHANGE_PARAMS)
 			new_cmd->get_edl()->synchronize_params(new_edl);
-		new_cmd->set_playback_range(new_edl, options & CMDOPT_USEINOUT);
+		new_cmd->set_playback_range(options & CMDOPT_USEINOUT);
 	}
 
 	cmds_lock->unlock();
