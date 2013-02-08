@@ -659,7 +659,7 @@ void FileOGG::close_file()
 	if(reading)
 	{
 		if(tocfile) delete tocfile;
-		ogg_sync_destroy(&sync_state);
+		ogg_sync_clear(&sync_state);
 	}
 	if(stream) page_write_error |= fclose(stream);
 	if(writing && page_write_error)
