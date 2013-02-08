@@ -49,8 +49,8 @@ public:
 	MWindow *mwindow;
 	MWindowGUI *gui;
 	int visible;
-	double selectionstart, selectionend;
-	samplenum pixel2, pixel1;
+	ptstime selectionstart, selectionend;
+	int pixel2, pixel1;
 	int active;
 	int playing_back;
 };

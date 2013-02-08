@@ -199,10 +199,10 @@ public:
 	void zoom_amp(int64_t zoom_amp);
 	void zoom_track(int64_t zoom_track);
 	int fit_sample();
-	void move_left(int64_t distance = 0);
-	void move_right(int64_t distance = 0);
-	void move_up(int64_t distance = 0);
-	void move_down(int64_t distance = 0);
+	void move_left(int distance = 0);
+	void move_right(int distance = 0);
+	void move_up(int distance = 0);
+	void move_down(int distance = 0);
 
 // seek to labels
 // shift_down must be passed by the caller because different windows call
@@ -213,7 +213,7 @@ public:
 	void next_edit_handle(int shift_down);
 	void prev_edit_handle(int shift_down);
 	void trackmovement(int track_start);
-	void samplemovement(int64_t view_start);     // view_start is pixels
+	void samplemovement(ptstime view_start);     // view_start is seconds
 	void select_all(void);
 	void goto_start(void);
 	void goto_end(void);

@@ -130,7 +130,7 @@ void MWindowGUI::get_scrollbars()
 	{
 		if(samplescroll) delete samplescroll;
 		samplescroll = 0;
-		mwindow->edl->local_session->view_start = 0;
+		mwindow->edl->local_session->view_start_pts = 0;
 	}
 
 	if(need_yscroll)

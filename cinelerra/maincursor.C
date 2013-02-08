@@ -94,20 +94,18 @@ void MainCursor::repeat_event(int duration)
 
 void MainCursor::draw(int do_plugintoggles)
 {
-	double view_start;
+	ptstime view_start;
 
 	if(!visible)
 	{
 		selectionstart = mwindow->edl->local_session->get_selectionstart(1);
 		selectionend = mwindow->edl->local_session->get_selectionend(1);
-		view_start = mwindow->edl->local_session->view_start;
+		view_start = mwindow->edl->local_session->view_start_pts;
 
-		pixel1 = Units::to_int64((selectionstart /
-			mwindow->edl->local_session->zoom_time -
-			view_start));
-		pixel2 = Units::to_int64((selectionend /
-			mwindow->edl->local_session->zoom_time -
-			view_start));
+		pixel1 = round((selectionstart - view_start) /
+			mwindow->edl->local_session->zoom_time);
+		pixel2 = round((selectionend - view_start) /
+			mwindow->edl->local_session->zoom_time);
 		if(pixel1 < -10) pixel1 = -10;
 		if(pixel2 > gui->canvas->get_w() + 10) pixel2 = gui->canvas->get_w() + 10;
 		if(pixel2 < pixel1) pixel2 = pixel1;
@@ -124,8 +122,8 @@ void MainCursor::draw(int do_plugintoggles)
 // Draw the cursor in a new location
 void MainCursor::update()
 {
-	samplenum old_pixel1 = pixel1;
-	samplenum old_pixel2 = pixel2;
+	int old_pixel1 = pixel1;
+	int old_pixel2 = pixel2;
 
 	if(visible)
 	{
@@ -140,7 +138,6 @@ void MainCursor::update()
 			gui->canvas->get_h());
 	flash();
 }
-
 
 void MainCursor::flash()
 {

@@ -66,9 +66,10 @@ void SampleScroll::resize_event(void)
 void SampleScroll::set_position(void)
 {
 	if(!gui->canvas) return;
-	int64_t length = Units::round(mwindow->edl->tracks->total_length() /
+	int64_t length = round(mwindow->edl->tracks->total_length() /
 		mwindow->edl->local_session->zoom_time);
-	int64_t position = mwindow->edl->local_session->view_start;
+	int64_t position = round(mwindow->edl->local_session->view_start_pts /
+		mwindow->edl->local_session->zoom_time);
 	int handle_size = mwindow->theme->mcanvas_w - 
 		BC_ScrollBar::get_span(SCROLL_VERT);
 
@@ -81,7 +82,8 @@ void SampleScroll::set_position(void)
 
 int SampleScroll::handle_event()
 {
-	mwindow->edl->local_session->view_start = get_value();
+	mwindow->edl->local_session->view_start_pts = get_value() * 
+		mwindow->edl->local_session->zoom_time;
 
 	mwindow->gui->canvas->draw();
 	mwindow->gui->cursor->draw(1);

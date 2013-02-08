@@ -631,10 +631,9 @@ int TimeBar::button_press_event()
 // Select region between two labels
 			if(get_double_click())
 			{
-				double position = (double)get_cursor_x() * 
+				ptstime position = (ptstime)get_cursor_x() *
 					mwindow->edl->local_session->zoom_time +
-					(double)mwindow->edl->local_session->view_start *
-					mwindow->edl->local_session->zoom_time;
+					mwindow->edl->local_session->view_start_pts;
 // Test labels
 				select_region(position);
 				return 1;
@@ -677,8 +676,8 @@ void TimeBar::repeat_event(int duration)
 		if(x_movement)
 		{
 			update_cursor();
-			mwindow->samplemovement(mwindow->edl->local_session->view_start + 
-				distance);
+			mwindow->samplemovement(mwindow->edl->local_session->view_start_pts + 
+				distance * mwindow->edl->local_session->zoom_time);
 		}
 	}
 }
@@ -753,8 +752,7 @@ void TimeBar::update_cursor()
 {
 	ptstime position = (double)get_cursor_x() * 
 		mwindow->edl->local_session->zoom_time +
-		(double)mwindow->edl->local_session->view_start * 
-		mwindow->edl->local_session->zoom_time;
+		mwindow->edl->local_session->view_start_pts;
 	position = mwindow->edl->align_to_frame(position, 0);
 	position = MAX(0, position);
 	current_operation = TIMEBAR_DRAG;

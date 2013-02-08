@@ -87,19 +87,18 @@ int CTracking::update_scroll(ptstime position)
 		ptstime seconds_per_pixel = mwindow->edl->local_session->zoom_time;
 		ptstime half_canvas = seconds_per_pixel * 
 			mwindow->gui->canvas->get_w() / 2;
-		ptstime midpoint = mwindow->edl->local_session->view_start * 
-			seconds_per_pixel +
+		ptstime midpoint = mwindow->edl->local_session->view_start_pts +
 			half_canvas;
 
 		if(get_playback_engine()->command->get_direction() == PLAY_FORWARD)
 		{
-			double left_boundary = midpoint + SCROLL_THRESHOLD * half_canvas;
-			double right_boundary = midpoint + half_canvas;
+			ptstime left_boundary = midpoint + SCROLL_THRESHOLD * half_canvas;
+			ptstime right_boundary = midpoint + half_canvas;
 
 			if(position > left_boundary &&
 				position < right_boundary)
 			{
-				int pixels = Units::to_int64((position - midpoint) /
+				int pixels = round((position - midpoint) /
 					mwindow->edl->local_session->zoom_time);
 				if(pixels) 
 				{
@@ -115,9 +114,9 @@ int CTracking::update_scroll(ptstime position)
 
 			if(position < right_boundary &&
 				position > left_boundary && 
-				mwindow->edl->local_session->view_start > 0)
+				mwindow->edl->local_session->view_start_pts > 0)
 			{
-				int pixels = Units::to_int64((midpoint - position) /
+				int pixels = round((midpoint - position) /
 						mwindow->edl->local_session->zoom_time);
 				if(pixels) 
 				{
@@ -145,7 +144,7 @@ void CTracking::update_tracker(ptstime position)
 // Update mwindow cursor
 	mwindow->gui->lock_window("CTracking::update_tracker 2");
 
-	mwindow->edl->local_session->set_selection(position, position);
+	mwindow->edl->local_session->set_selection(position);
 
 	updated_scroll = update_scroll(position);
 

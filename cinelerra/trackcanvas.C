@@ -576,8 +576,8 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	*is_insertion = 0;
 // get the canvas/track position
 	int cursor_x = get_relative_cursor_x();
-	ptstime pos = (double)(cursor_x + mwindow->edl->local_session->view_start) *
-			mwindow->edl->local_session->zoom_time;
+	ptstime pos = round(cursor_x * mwindow->edl->local_session->zoom_time) +
+			mwindow->edl->local_session->view_start_pts;
 
 	Track *track = mwindow->session->track_highlighted;
 
@@ -938,14 +938,12 @@ void TrackCanvas::edit_dimensions(Track *track, ptstime start, ptstime end,
 {
 	h = resource_h();
 
-	x = Units::round(start /
-			mwindow->edl->local_session->zoom_time -
-			mwindow->edl->local_session->view_start);
+	x = round((start - mwindow->edl->local_session->view_start_pts) /
+			mwindow->edl->local_session->zoom_time);
 
 // Method for calculating w so when edits are together we never get off by one error due to rounding
-	w = Units::round(end /
-			mwindow->edl->local_session->zoom_time -
-			mwindow->edl->local_session->view_start) - x;
+	w = (int)(round((end - mwindow->edl->local_session->view_start_pts) /
+			mwindow->edl->local_session->zoom_time)) - x;
 
 	y = track->y_pixel;
 
@@ -1157,9 +1155,9 @@ void TrackCanvas::draw_paste_destination()
 				if(w >= 0)
 				{
 // Get the x coordinate
-					x = Units::to_int64(position /
-						mwindow->edl->local_session->zoom_time) -
-						mwindow->edl->local_session->view_start;
+					x = round((position - mwindow->edl->local_session->view_start_pts) /
+						mwindow->edl->local_session->zoom_time);
+
 					int y = dest->y_pixel;
 					int h = dest->vertical_span(mwindow->theme);
 
@@ -1176,10 +1174,9 @@ void TrackCanvas::draw_paste_destination()
 void TrackCanvas::plugin_dimensions(Plugin *plugin, 
 	int &x, int &y, int &w, int &h)
 {
-	x = Units::round(plugin->project_pts /
-		mwindow->edl->local_session->zoom_time - 
-		mwindow->edl->local_session->view_start);
-	w = Units::round(plugin->length() /
+	x = round((plugin->project_pts - mwindow->edl->local_session->view_start_pts) /
+		mwindow->edl->local_session->zoom_time);
+	w = round(plugin->length() /
 		mwindow->edl->local_session->zoom_time);
 	y = plugin->track->y_pixel + 
 			mwindow->edl->local_session->zoom_track +
@@ -1391,11 +1388,9 @@ void TrackCanvas::draw_highlighting()
 					track_h);
 
 				x += w;
-				w = Units::round(
-						mwindow->session->track_highlighted->get_length() /
-						mwindow->edl->local_session->zoom_time - 
-						mwindow->edl->local_session->view_start) -
-						x;
+				w = (int)(round((mwindow->session->track_highlighted->get_length() -
+					mwindow->edl->local_session->view_start_pts) /
+					mwindow->edl->local_session->zoom_time)) - x;
 				if(w <= 0) w = track_w;
 			}
 			else
@@ -1410,11 +1405,10 @@ void TrackCanvas::draw_highlighting()
 				if(mwindow->edl->local_session->get_selectionend() > 
 					mwindow->edl->local_session->get_selectionstart())
 				{
-					x = Units::to_int64(mwindow->edl->local_session->get_selectionstart() /
-						mwindow->edl->local_session->zoom_time -
-						mwindow->edl->local_session->view_start);
-					w = Units::to_int64((mwindow->edl->local_session->get_selectionend() - 
-						mwindow->edl->local_session->get_selectionstart()) *
+					x = round((mwindow->edl->local_session->get_selectionstart() - mwindow->edl->local_session->view_start_pts) /
+						mwindow->edl->local_session->zoom_time);
+					w = round((mwindow->edl->local_session->get_selectionend() -
+						mwindow->edl->local_session->get_selectionstart()) /
 						mwindow->edl->local_session->zoom_time);
 				}
 // Put it in a new plugin set determined by an edit boundary
@@ -1675,9 +1669,9 @@ void TrackCanvas::draw_drag_handle()
 	if(mwindow->session->current_operation == DRAG_EDITHANDLE2 ||
 		mwindow->session->current_operation == DRAG_PLUGINHANDLE2)
 	{
-		int pixel1 = Units::round(mwindow->session->drag_position /
-			mwindow->edl->local_session->zoom_time - 
-			mwindow->edl->local_session->view_start);
+		int pixel1 = round((mwindow->session->drag_position -
+			mwindow->edl->local_session->view_start_pts) /
+			mwindow->edl->local_session->zoom_time);
 		set_color(GREEN);
 		set_inverse();
 		draw_line(pixel1, 0, pixel1, get_h());
@@ -1759,9 +1753,9 @@ void TrackCanvas::draw_loop_points()
 {
 	if(mwindow->edl->local_session->loop_playback)
 	{
-		int x = Units::round(mwindow->edl->local_session->loop_start /
-			mwindow->edl->local_session->zoom_time - 
-			mwindow->edl->local_session->view_start);
+		int x = round((mwindow->edl->local_session->loop_start -
+			mwindow->edl->local_session->view_start_pts) /
+			mwindow->edl->local_session->zoom_time);
 
 		if(MWindowGUI::visible(x, x + 1, 0, get_w()))
 		{
@@ -1769,9 +1763,9 @@ void TrackCanvas::draw_loop_points()
 			draw_line(x, 0, x, get_h());
 		}
 
-		x = Units::round(mwindow->edl->local_session->loop_end /
-			mwindow->edl->local_session->zoom_time - 
-			mwindow->edl->local_session->view_start);
+		x = Units::round((mwindow->edl->local_session->loop_end -
+			mwindow->edl->local_session->view_start_pts) /
+			mwindow->edl->local_session->zoom_time);
 
 		if(MWindowGUI::visible(x, x + 1, 0, get_w()))
 		{
@@ -1785,9 +1779,9 @@ void TrackCanvas::draw_brender_start()
 {
 	if(mwindow->preferences->use_brender)
 	{
-		int x = Units::round(mwindow->edl->session->brender_start /
-			mwindow->edl->local_session->zoom_time - 
-			mwindow->edl->local_session->view_start);
+		int x = round((mwindow->edl->session->brender_start -
+			mwindow->edl->local_session->view_start_pts) /
+			mwindow->edl->local_session->zoom_time);
 
 		if(MWindowGUI::visible(x, x + 1, 0, get_w()))
 		{
@@ -2484,9 +2478,8 @@ int TrackCanvas::test_toggleline(Autos *autos,
 			if(buttonpress)
 			{
 				Auto *current;
-				ptstime position = (double)(cursor_x +
-						mwindow->edl->local_session->view_start) *
-					mwindow->edl->local_session->zoom_time;
+				ptstime position = cursor_x * mwindow->edl->local_session->zoom_time +
+						mwindow->edl->local_session->view_start_pts;
 				int new_value = (int)((IntAutos*)autos)->get_automation_constant(position, position);
 
 				current = mwindow->session->drag_auto = autos->insert_auto(position);
@@ -2508,11 +2501,9 @@ void TrackCanvas::calculate_viewport(Track *track,
 	double &xzoom,
 	int &center_pixel)
 {
-	view_start = (double)mwindow->edl->local_session->view_start * 
-		mwindow->edl->local_session->zoom_time;
-	view_end = (double)(mwindow->edl->local_session->view_start + 
-		get_w()) * 
-		mwindow->edl->local_session->zoom_time;
+	view_start = mwindow->edl->local_session->view_start_pts;
+	view_end = mwindow->edl->local_session->view_start_pts + 
+		get_w() * mwindow->edl->local_session->zoom_time;
 	yscale = mwindow->edl->local_session->zoom_track;
 	xzoom = get_w() / (view_end - view_start);
 	center_pixel = (int)(track->y_pixel + yscale / 2) + 
@@ -3255,9 +3246,8 @@ void TrackCanvas::update_drag_handle()
 {
 	double new_position;
 
-	new_position = 
-		(double)(get_cursor_x() + mwindow->edl->local_session->view_start) *
-		mwindow->edl->local_session->zoom_time;
+	new_position = get_cursor_x() * mwindow->edl->local_session->zoom_time +
+		+ mwindow->edl->local_session->view_start_pts;
 	new_position = 
 		mwindow->edl->align_to_frame(new_position, 0);
 
@@ -3677,8 +3667,8 @@ int TrackCanvas::cursor_motion_event()
 	{
 		cursor_x = get_cursor_x();
 		cursor_y = get_cursor_y();
-		position = (double)(cursor_x + mwindow->edl->local_session->view_start) * 
-			mwindow->edl->local_session->zoom_time;
+		position = cursor_x * mwindow->edl->local_session->zoom_time +
+			mwindow->edl->local_session->view_start_pts;
 
 		position = mwindow->edl->align_to_frame(position, 0);
 		position = MAX(position, 0);
@@ -3715,8 +3705,8 @@ int TrackCanvas::cursor_motion_event()
 		{
 // Update clocks
 			cursor_x = get_cursor_x();
-			position = (double)(cursor_x + mwindow->edl->local_session->view_start) *
-				(double)mwindow->edl->local_session->zoom_time;
+			position = cursor_x * mwindow->edl->local_session->zoom_time +
+				mwindow->edl->local_session->view_start_pts;
 			position = mwindow->edl->align_to_frame(position, 0);
 			update_clock = 1;
 
@@ -3889,10 +3879,9 @@ void TrackCanvas::repeat_event(int duration)
 
 	if(sample_movement)
 	{
-		position = (double)(get_cursor_x() + 
-			mwindow->edl->local_session->view_start + 
-			x_distance) * 
-			mwindow->edl->local_session->zoom_time;
+		position = (double)(get_cursor_x() + x_distance) *
+			mwindow->edl->local_session->zoom_time +
+			mwindow->edl->local_session->view_start_pts; 
 		position = mwindow->edl->align_to_frame(position, 0);
 		position = MAX(position, 0);
 
@@ -3918,13 +3907,13 @@ void TrackCanvas::repeat_event(int duration)
 			break;
 		}
 
-		mwindow->samplemovement(mwindow->edl->local_session->view_start + 
-			x_distance);
+		mwindow->samplemovement(mwindow->edl->local_session->view_start_pts + 
+			x_distance * mwindow->edl->local_session->zoom_time);
 	}
 
 	if(track_movement)
 	{
-		mwindow->trackmovement(mwindow->edl->local_session->track_start + 
+		mwindow->trackmovement(mwindow->edl->local_session->track_start +
 			y_distance);
 	}
 }
@@ -4305,9 +4294,9 @@ int TrackCanvas::do_edits(int cursor_x,
 						mwindow->session->drag_origin_x = cursor_x;
 						mwindow->session->drag_origin_y = cursor_y;
 // Where the drag started, so we know relative position inside the edit later
-						mwindow->session->drag_position = (double)(cursor_x + 
-							mwindow->edl->local_session->view_start) * 
-							mwindow->edl->local_session->zoom_time;
+						mwindow->session->drag_position = cursor_x *
+							mwindow->edl->local_session->zoom_time +
+							mwindow->edl->local_session->view_start_pts;
 
 						drag_popup = new BC_DragWindow(gui, 
 							mwindow->theme->get_image("clip_icon"), 
@@ -4527,10 +4516,9 @@ int TrackCanvas::button_press_event()
 
 	if(is_event_win() && cursor_inside())
 	{
-		double position = (double)cursor_x *
+		ptstime position = (double)cursor_x *
 			mwindow->edl->local_session->zoom_time +
-			(double)mwindow->edl->local_session->view_start *
-			mwindow->edl->local_session->zoom_time;
+			mwindow->edl->local_session->view_start_pts;
 		if(!active)
 		{
 			activate();

@@ -76,20 +76,21 @@ void MWindow::zoom_time(ptstime zoom)
 
 	gui->get_scrollbars();
 
-	if(!gui->samplescroll) edl->local_session->view_start = 0;
-	samplemovement(edl->local_session->view_start);
+	if(!gui->samplescroll)
+		edl->local_session->view_start_pts = 0;
+
+	samplemovement(edl->local_session->view_start_pts);
 }
 
 void MWindow::find_cursor(void)
 {
-	edl->local_session->view_start = 
-		Units::round((edl->local_session->get_selectionend(1) + 
-		edl->local_session->get_selectionstart(1)) / 2 /
-		edl->local_session->zoom_time -
-		(double)gui->canvas->get_w() / 2);
+	edl->local_session->view_start_pts =
+		(edl->local_session->get_selectionend(1) +
+		edl->local_session->get_selectionstart(1)) / 2 -
+		((ptstime)gui->canvas->get_w() / 2 * edl->local_session->zoom_time);
 
-	if(edl->local_session->view_start < 0)
-		edl->local_session->view_start = 0;
+	if(edl->local_session->view_start_pts < 0)
+		edl->local_session->view_start_pts = 0;
 }
 
 void MWindow::fit_selection(void)
@@ -318,7 +319,7 @@ void MWindow::trackmovement(int track_start)
 	gui->flush();
 }
 
-void MWindow::move_up(int64_t distance)
+void MWindow::move_up(int distance)
 {
 	if(!gui->trackscroll) return;
 	if(distance == 0) distance = edl->local_session->zoom_track;
@@ -326,7 +327,7 @@ void MWindow::move_up(int64_t distance)
 	trackmovement(edl->local_session->track_start);
 }
 
-void MWindow::move_down(int64_t distance)
+void MWindow::move_down(int distance)
 {
 	if(!gui->trackscroll) return;
 	if(distance == 0) distance = edl->local_session->zoom_track;
@@ -336,20 +337,18 @@ void MWindow::move_down(int64_t distance)
 
 void MWindow::goto_end(void)
 {
-	int64_t old_view_start = edl->local_session->view_start;
+	ptstime old_view_start_pts = edl->local_session->view_start_pts;
 
 	if(edl->tracks->total_length() > (ptstime)gui->canvas->get_w() *
 		edl->local_session->zoom_time)
 	{
-		edl->local_session->view_start = 
-			Units::round(edl->tracks->total_length() /
-				edl->local_session->zoom_time -
-				gui->canvas->get_w() / 
-				2);
+		edl->local_session->view_start_pts =
+			edl->tracks->total_length() -
+			(gui->canvas->get_w() * edl->local_session->zoom_time) / 2;
 	}
 	else
 	{
-		edl->local_session->view_start = 0;
+		edl->local_session->view_start_pts = 0;
 	}
 
 	if(gui->shift_down())
@@ -358,12 +357,11 @@ void MWindow::goto_end(void)
 	}
 	else
 	{
-		edl->local_session->set_selectionstart(edl->tracks->total_length());
-		edl->local_session->set_selectionend(edl->tracks->total_length());
+		edl->local_session->set_selection(edl->tracks->total_length());
 	}
 
-	if(edl->local_session->view_start != old_view_start) 
-		samplemovement(edl->local_session->view_start);
+	if(!EQUIV(edl->local_session->view_start_pts, old_view_start_pts))
+		samplemovement(edl->local_session->view_start_pts);
 
 	update_plugin_guis();
 	gui->patchbay->update();
@@ -375,21 +373,21 @@ void MWindow::goto_end(void)
 
 void MWindow::goto_start(void)
 {
-	int64_t old_view_start = edl->local_session->view_start;
+	ptstime old_view_start_pts = edl->local_session->view_start_pts;
 
-	edl->local_session->view_start = 0;
+	edl->local_session->view_start_pts = 0;
+
 	if(gui->shift_down())
 	{
 		edl->local_session->set_selectionstart(0);
 	}
 	else
 	{
-		edl->local_session->set_selectionstart(0);
-		edl->local_session->set_selectionend(0);
+		edl->local_session->set_selection(0);
 	}
 
-	if(edl->local_session->view_start != old_view_start)
-		samplemovement(edl->local_session->view_start);
+	if(!EQUIV(edl->local_session->view_start_pts, old_view_start_pts))
+		samplemovement(edl->local_session->view_start_pts);
 
 	update_plugin_guis();
 	gui->patchbay->update();
@@ -399,36 +397,40 @@ void MWindow::goto_start(void)
 	cwindow->update(1, 0, 0, 0, 1);
 }
 
-void MWindow::samplemovement(int64_t view_start)
+void MWindow::samplemovement(ptstime view_start)
 {
-	edl->local_session->view_start = view_start;
-	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
+	edl->local_session->view_start_pts = view_start;
+
+	if(edl->local_session->view_start_pts < 0)
+		edl->local_session->view_start_pts = 0;
+
 	gui->canvas->draw();
 	gui->cursor->show();
 	gui->canvas->flash();
 	gui->timebar->update();
 	gui->zoombar->update();
 
-	if(gui->samplescroll) gui->samplescroll->set_position();
+	if(gui->samplescroll)
+		gui->samplescroll->set_position();
 }
 
-void MWindow::move_left(int64_t distance)
+void MWindow::move_left(int distance)
 {
-	if(!distance) 
-		distance = gui->canvas->get_w() / 
-			10;
-	edl->local_session->view_start -= distance;
-	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
-	samplemovement(edl->local_session->view_start);
+	if(EQUIV(distance, 0))
+		distance = gui->canvas->get_w() / 10;
+
+	edl->local_session->view_start_pts -= distance * edl->local_session->zoom_time;
+	if(edl->local_session->view_start_pts < 0)
+		edl->local_session->view_start_pts = 0;
+	samplemovement(edl->local_session->view_start_pts);
 }
 
-void MWindow::move_right(int64_t distance)
+void MWindow::move_right(int distance)
 {
-	if(!distance) 
-		distance = gui->canvas->get_w() / 
-			10;
-	edl->local_session->view_start += distance;
-	samplemovement(edl->local_session->view_start);
+	if(EQUIV(distance, 0))
+		distance = gui->canvas->get_w() / 10;
+	edl->local_session->view_start_pts += distance * edl->local_session->zoom_time;
+	samplemovement(edl->local_session->view_start_pts);
 }
 
 void MWindow::select_all(void)
@@ -456,15 +458,13 @@ void MWindow::next_label(int shift_down)
 		update_plugin_guis();
 		gui->patchbay->update();
 		if(edl->local_session->get_selectionend(1) >= 
-			(double)edl->local_session->view_start *
-			edl->local_session->zoom_time +
+			edl->local_session->view_start_pts +
 			gui->canvas->time_visible() ||
-			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start *
-			edl->local_session->zoom_time)
+			edl->local_session->get_selectionend(1) <
+			(double)edl->local_session->view_start_pts)
 		{
-			samplemovement((int64_t)(edl->local_session->get_selectionend(1) /
-				edl->local_session->zoom_time - 
-				gui->canvas->get_w() / 
+			samplemovement(edl->local_session->get_selectionend(1) -
+				(gui->canvas->get_w() * edl->local_session->zoom_time /
 				2));
 		}
 		else
@@ -487,7 +487,7 @@ void MWindow::next_label(int shift_down)
 void MWindow::prev_label(int shift_down)
 {
 	Label *current = edl->labels->prev_label(
-			edl->local_session->get_selectionstart(1));;
+			edl->local_session->get_selectionstart(1));
 
 	if(current)
 	{
@@ -498,17 +498,14 @@ void MWindow::prev_label(int shift_down)
 		update_plugin_guis();
 		gui->patchbay->update();
 // Scroll the display
-		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
-			edl->local_session->zoom_time +
-			gui->canvas->time_visible() 
-		||
-			edl->local_session->get_selectionstart(1) < edl->local_session->view_start *
-			edl->local_session->zoom_time)
+		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start_pts +
+			gui->canvas->time_visible()
+			||
+			edl->local_session->get_selectionstart(1) < edl->local_session->view_start_pts)
 		{
-			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) /
-				edl->local_session->zoom_time -
-				gui->canvas->get_w() / 
-				2));
+			samplemovement(edl->local_session->get_selectionstart(1) -
+				gui->canvas->get_w() * edl->local_session->zoom_time /
+				2);
 		}
 		else
 // Don't scroll the display
@@ -556,16 +553,13 @@ void MWindow::next_edit_handle(int shift_down)
 		update_plugin_guis();
 		gui->patchbay->update();
 		if(edl->local_session->get_selectionend(1) >= 
-			(double)edl->local_session->view_start *
-			edl->local_session->zoom_time +
+			edl->local_session->view_start_pts +
 			gui->canvas->time_visible() ||
-			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start *
-			edl->local_session->zoom_time)
+			edl->local_session->get_selectionend(1) < edl->local_session->view_start_pts)
 		{
-			samplemovement((int64_t)(edl->local_session->get_selectionend(1) /
-				edl->local_session->zoom_time -
-				gui->canvas->get_w() / 
-				2));
+			samplemovement(edl->local_session->get_selectionend(1) -
+				gui->canvas->get_w() * edl->local_session->zoom_time /
+				2);
 		}
 		else
 		{
@@ -613,16 +607,13 @@ void MWindow::prev_edit_handle(int shift_down)
 		update_plugin_guis();
 		gui->patchbay->update();
 // Scroll the display
-		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
-			edl->local_session->zoom_time +
+		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start_pts +
 			gui->canvas->time_visible() 
 		||
-			edl->local_session->get_selectionstart(1) < edl->local_session->view_start *
-			edl->local_session->zoom_time)
+			edl->local_session->get_selectionstart(1) < edl->local_session->view_start_pts)
 		{
-			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) /
-				edl->local_session->zoom_time - 
-				gui->canvas->get_w() / 
+			samplemovement((edl->local_session->get_selectionstart(1) -
+				gui->canvas->get_w() * edl->local_session->zoom_time /
 				2));
 		}
 		else

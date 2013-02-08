@@ -66,7 +66,7 @@ LocalSession::LocalSession(EDL *edl)
 	zoom_time = 0;
 	zoom_y = 0;
 	zoom_track = 0;
-	view_start = 0;
+	view_start_pts = 0;
 	track_start = 0;
 
 	automation_mins[AUTOGROUPTYPE_AUDIO_FADE] = -40;
@@ -108,8 +108,8 @@ void LocalSession::copy_from(LocalSession *that)
 	selectionend = that->selectionend;
 	selectionstart = that->selectionstart;
 	track_start = that->track_start;
-	view_start = that->view_start;
 	zoom_time = that->zoom_time;
+	view_start_pts = that->view_start_pts;
 	zoom_y = that->zoom_y;
 	zoom_track = that->zoom_track;
 	preview_start = that->preview_start;
@@ -138,7 +138,7 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("CLIP_NOTES", clip_notes);
 	file->tag.set_property("FOLDER", folder);
 	file->tag.set_property("TRACK_START", track_start);
-	file->tag.set_property("VIEW_START", view_start);
+	file->tag.set_property("VIEW_START_PTS", view_start_pts);
 	file->tag.set_property("ZOOM_TIME", zoom_time);
 	file->tag.set_property("ZOOMY", zoom_y);
 	file->tag.set_property("ZOOM_TRACK", zoom_track);
@@ -194,12 +194,15 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		selectionstart = file->tag.get_property("SELECTION_START", (ptstime)0);
 		selectionend = file->tag.get_property("SELECTION_END", (ptstime)0);
 		track_start = file->tag.get_property("TRACK_START", track_start);
-		view_start = file->tag.get_property("VIEW_START", view_start);
 		int64_t zoom_sample = file->tag.get_property("ZOOM_SAMPLE", (int64_t)0);
 		if(zoom_sample)
 			zoom_time = (ptstime)zoom_sample / edl->session->sample_rate;
 		zoom_time = file->tag.get_property("ZOOM_TIME", zoom_time);
 		zoom_time = ZoomPanel::adjust_zoom(zoom_time, MIN_ZOOM_TIME, MAX_ZOOM_TIME);
+		int64_t view_start = file->tag.get_property("VIEW_START", (int64_t)0);
+		if(view_start)
+			view_start_pts = (ptstime)view_start * zoom_time;
+		view_start_pts = file->tag.get_property("VIEW_START_PTS", view_start_pts);
 		zoom_y = file->tag.get_property("ZOOMY", zoom_y);
 		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
 		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
@@ -272,7 +275,8 @@ void LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("SELECTIONSTART", selectionstart);
 	defaults->update("SELECTIONEND", selectionend);
 	defaults->update("TRACK_START", track_start);
-	defaults->update("VIEW_START", view_start);
+	defaults->delete_key("VIEW_START");
+	defaults->update("VIEW_START_PTS", view_start_pts);
 	defaults->update("ZOOM_TIME", zoom_time);
 	defaults->delete_key("ZOOM_SAMPLE");
 	defaults->update("ZOOMY", zoom_y);
@@ -303,6 +307,12 @@ void LocalSession::set_selection(ptstime start, ptstime end)
 {
 	selectionstart = start;
 	selectionend = end;
+}
+
+void LocalSession::set_selection(ptstime pos)
+{
+	selectionstart = pos;
+	selectionend = pos;
 }
 
 void LocalSession::set_inpoint(ptstime value)

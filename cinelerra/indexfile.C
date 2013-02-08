@@ -388,9 +388,8 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	if(edit->channel > asset->channels) return 1;
 
 // calculate a virtual x where the edit_x should be in floating point
-	double virtual_edit_x = edit->project_pts /
-			mwindow->edl->local_session->zoom_time -
-			mwindow->edl->local_session->view_start;
+	double virtual_edit_x = round((edit->project_pts - mwindow->edl->local_session->view_start_pts) /
+			mwindow->edl->local_session->zoom_time);
 // samples in segment to draw relative to asset
 	double asset_over_session = (double)edit->asset->sample_rate / 
 		mwindow->edl->session->sample_rate;

@@ -929,7 +929,7 @@ SET_TRACE
 				{
 					set_filename("");
 // Reset timeline position
-					new_edl->local_session->view_start = 0;
+					new_edl->local_session->view_start_pts = 0;
 					new_edl->local_session->track_start = 0;
 				}
 

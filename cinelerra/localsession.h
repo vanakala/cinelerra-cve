@@ -52,6 +52,7 @@ public:
 	void get_selections(ptstime *values);
 // Set selection start/end at once
 	void set_selection(ptstime start, ptstime end);
+	void set_selection(ptstime pos);
 	void set_selectionstart(ptstime value);
 	void set_selectionend(ptstime value);
 	void set_inpoint(ptstime value);
@@ -86,9 +87,8 @@ public:
 	ptstime loop_end;
 // Vertical start of track view
 	int64_t track_start;
-// Horizontal start of view in pixels.  This has to be pixels since either
-// samples or seconds would require drawing in fractional pixels.
-	int64_t view_start;
+// Horizontal start of view in seconds
+	ptstime view_start_pts;
 // Zooming of the timeline. Length of media per pixel
 	ptstime zoom_time;
 // Amplitude zoom
