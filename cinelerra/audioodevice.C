@@ -206,31 +206,6 @@ void AudioDevice::arm_buffer(int buffer_num,
 	play_lock[buffer_num]->unlock();
 }
 
-void AudioDevice::reset_output()
-{
-	for(int i = 0; i < TOTAL_BUFFERS; i++)
-	{
-		delete [] output_buffer[i];
-		output_buffer[i] = 0;
-		buffer_size[i] = 0;
-		arm_lock[i]->reset();
-		play_lock[i]->reset(); 
-		last_buffer[i] = 0;
-	}
-
-	is_playing_back = 0;
-	is_flushing = 0;
-	software_position_info = 0;
-	position_correction = 0;
-	last_buffer_size = 0;
-	total_samples = 0;
-	play_dither == 0;
-	arm_buffer_num = 0;
-	last_position = 0;
-	interrupt = 0;
-}
-
-
 void AudioDevice::set_play_dither(int status)
 {
 	play_dither = status;
@@ -285,21 +260,17 @@ void AudioDevice::wait_for_completion()
 	Thread::join();
 }
 
-
-
 ptstime AudioDevice::current_postime(float speed)
 {
-// try to get OSS position
 	samplenum hardware_result = 0, software_result = 0, frame;
 
 	if(w)
 	{
 		frame = get_obits() / 8;
-
 // get hardware position
 		if(!software_position_info)
 		{
-			hardware_result = get_lowlevel_out()->device_position();
+			last_position = hardware_result = get_lowlevel_out()->device_position();
 		}
 
 // get software position
@@ -369,7 +340,6 @@ void AudioDevice::run_output()
 			total_samples += last_buffer_size;
 			playback_timer->update();
 			timer_lock->unlock();
-
 
 // write converted buffer synchronously
 			thread_result = get_lowlevel_out()->write_buffer(

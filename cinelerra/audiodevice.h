@@ -79,7 +79,7 @@ public:
 	friend class AudioOSS;
 	friend class AudioESound;
 
-	int open_input(AudioInConfig *config, 
+	void open_input(AudioInConfig *config,
 		VideoInConfig *vconfig,
 		int rate, 
 		int samples,
@@ -88,12 +88,9 @@ public:
 		int rate, 
 		int samples, 
 		int channels);
-	int close_all();
-	void reset_output();
-	int restart();
-
+	void close_all();
 // Specify a video device to pass data to if the same device handles video
-	int set_vdevice(VideoDevice *vdevice);
+	void set_vdevice(VideoDevice *vdevice);
 
 // ================================ recording
 
@@ -135,8 +132,6 @@ public:
 // start the thread processing buffers
 	void start_playback();
 
-
-
 // interrupt the playback thread
 	void interrupt_playback();
 	void set_play_dither(int status);
@@ -153,9 +148,8 @@ public:
 	AudioLowLevel* get_lowlevel_in();
 
 private:
-	int initialize();
 // Create a lowlevel driver out of the driver ID
-	int create_lowlevel(AudioLowLevel* &lowlevel, int driver);
+	void create_lowlevel(AudioLowLevel* &lowlevel, int driver);
 	void arm_buffer(int buffer, double **output, int samples);
 	int get_obits();
 	int get_ochannels();
@@ -208,7 +202,6 @@ private:
 	int total_samples;
 // samples in buffer
 	int last_buffer_size;
-	int position_correction;
 	int device_buffer;
 // prevent the counter from going backwards
 	int last_position;

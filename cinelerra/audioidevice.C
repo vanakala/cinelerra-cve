@@ -36,7 +36,6 @@
 		if(sample > max[i]) max[i] = sample;\
 		else if(-sample > max[i]) max[i] = -sample;
 
-
 #define GET_8BIT_SAMPLE_MACRO1 \
 sample = input_buffer[k];      \
 k += input_channels;           \
@@ -47,8 +46,6 @@ else                           \
 if(over_count < 3) over_count = 0;
 
 #define GET_8BIT_SAMPLE_MACRO2  sample /= 0x7f;
-
-
 
 #define GET_16BIT_SAMPLE_MACRO1                            \
 sample = input_buffer_16[k];                               \
@@ -61,8 +58,6 @@ if(over_count < 3) over_count = 0;                         \
 
 #define GET_16BIT_SAMPLE_MACRO2                            \
 sample /= 0x7fff;
-
-
 
 #define GET_24BIT_SAMPLE_MACRO1 \
 sample = (unsigned char)input_buffer[k] | \
@@ -77,8 +72,6 @@ if(over_count < 3) over_count = 0;
 
 #define GET_24BIT_SAMPLE_MACRO2       \
 sample /= 0x7fffff;
-
-
 
 #define GET_32BIT_SAMPLE_MACRO1 \
 sample = (unsigned char)input_buffer[k] | \
@@ -134,7 +127,6 @@ int AudioDevice::read_buffer(double **input,
 		break;
 	}
 
-
 	for(i = 0; i < get_ichannels(); i++)
 	{
 		min_sample[i] = -denominator; 
@@ -142,8 +134,6 @@ int AudioDevice::read_buffer(double **input,
 		max[i] = 0; 
 		over_count = 0;
 	}
-
-
 
 	int got_it = 0;
 	int fragment_size = samples * frame;
@@ -171,7 +161,6 @@ int AudioDevice::read_buffer(double **input,
 
 			input_buffer_size = &this->buffer_size[thread_buffer_num];
 
-
 // Data in current buffer.  Advance thread buffer.
 			if(*input_buffer_size >= fragment_size)
 			{
@@ -190,7 +179,6 @@ int AudioDevice::read_buffer(double **input,
 
 		}
 
-
 // Transfer data
 		if(input_buffer_size && *input_buffer_size)
 		{
@@ -198,7 +186,6 @@ int AudioDevice::read_buffer(double **input,
 			if(subfragment_size > *input_buffer_size)
 				subfragment_size = *input_buffer_size;
 			int subfragment_samples = subfragment_size / frame;
-
 
 			for(i = 0; i < get_ichannels(); i++)
 			{
@@ -253,9 +240,6 @@ int AudioDevice::read_buffer(double **input,
 				else 
 					over[i] = 0;
 			}
-
-
-
 
 			input_offset += subfragment_size / frame;
 
