@@ -72,8 +72,7 @@ public:
 	int interrupt;
 // flag for last buffer to be played back
 	int last_playback;
-// if this media type is being rendered asynchronously by threads
-	int asynchronous;
+
 // Module for every track to dispatch plugins in whether the track is
 // playable or not.
 // Maintain module structures here instead of reusing the EDL so 
@@ -88,10 +87,6 @@ public:
 
 	CommonRender(MWindow *mwindow, RenderEngine *renderengine);
 
-// clean up rendering
-	int virtual stop_rendering() {};
-	int wait_for_completion();
-	virtual int wait_device_completion() {};
 	virtual int get_datatype() {};
 // test region against loop boundaries
 	void get_boundaries(ptstime &current_render_duration, ptstime min_duration);

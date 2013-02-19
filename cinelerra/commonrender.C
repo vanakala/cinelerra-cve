@@ -68,7 +68,6 @@ void CommonRender::reset_parameters()
 	done = 0;
 	interrupt = 0;
 	last_playback = 0;
-	asynchronous = 0;
 	restart_plugins = 0;
 }
 
@@ -216,7 +215,7 @@ void CommonRender::get_boundaries(ptstime &current_render_duration, ptstime min_
 	{
 		if(direction == PLAY_FORWARD)
 		{
-			if(current_postime + current_render_duration >= end_position)
+			if(current_postime + current_render_duration >= end_position - 0.005)
 			{
 				last_playback = 1;
 				current_render_duration = end_position - current_postime;
@@ -225,7 +224,7 @@ void CommonRender::get_boundaries(ptstime &current_render_duration, ptstime min_
 // reverse playback
 		else
 		{
-			if(current_postime - current_render_duration <= start_position)
+			if(current_postime - current_render_duration <= start_position + 0.005)
 			{
 				last_playback = 1;
 				current_render_duration = current_postime - start_position;
@@ -271,14 +270,7 @@ CommonRender::CommonRender(MWindow *mwindow, RenderEngine *renderengine)
 	done = 0;
 	last_playback = 0;
 	vconsole = 0;
-	asynchronous = 1;
 }
-
-int CommonRender::wait_for_completion()
-{
-	join();
-}
-
 
 int CommonRender::advance_position(ptstime current_pts, ptstime current_render_duration)
 {
