@@ -43,7 +43,7 @@ void CPlayback::init_cursor()
 	mwindow->gui->lock_window("CPlayback::init_cursor");
 	mwindow->gui->canvas->deactivate();
 	mwindow->gui->unlock_window();
-	cwindow->playback_cursor->start_playback(tracking_position);
+	cwindow->playback_cursor->start_playback(get_tracking_position());
 }
 
 void CPlayback::stop_cursor()

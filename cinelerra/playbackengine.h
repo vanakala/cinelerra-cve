@@ -70,11 +70,10 @@ public:
 	virtual int brender_available(ptstime position) { return 0; };
 // For normal playback tracking and the cursor are started
 	virtual void init_tracking();
-	virtual void stop_tracking();
+	virtual void stop_tracking(ptstime position = -1);
 // The playback cursor calls this to calculate the current tracking position
 	virtual ptstime get_tracking_position();
-// The render engines call this to update tracking variables in the playback engine.
-	void update_tracking(ptstime position);
+
 	void send_command(int command, EDL *new_edl = 0, int options = 0);
 
 	void run();
@@ -83,8 +82,6 @@ public:
 	CICache *audio_cache, *video_cache;
 // Maintain playback cursor on GUI
 	int tracking_active;
-// Tracking variables updated by render engines
-	ptstime tracking_position;
 // Block returns until tracking loop is finished
 	Condition *tracking_done;
 // Wait until thread has started
@@ -102,6 +99,10 @@ public:
 // Used by label commands to get current position
 	int is_playing_back;
 private:
+// Tracking variables updated from rendering position
+	ptstime tracking_position;
+	ptstime tracking_start;
+	ptstime video_pts;
 	int done;
 	Mutex *cmds_lock;
 	Condition *playback_lock;

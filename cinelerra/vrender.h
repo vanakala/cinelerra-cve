@@ -82,7 +82,6 @@ public:
 // Engine for camera and projector automation
 	OverlayFrame *overlayer;
 
-
 // Flag first frame to unlock audio
 	int first_frame;
 
@@ -92,10 +91,9 @@ private:
 // for getting actual framerate
 	int framerate_counter;
 	Timer framerate_timer;
-	int render_strategy;
+
+// Last frame displayed
+	ptstime flashed_pts;
 };
-
-
-
 
 #endif

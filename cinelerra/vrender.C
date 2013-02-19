@@ -90,6 +90,8 @@ Module* VRender::new_module(Track *track)
 
 int VRender::flash_output()
 {
+	flashed_pts = video_out->get_pts();
+
 	return renderengine->video->write_buffer(video_out, renderengine->edl);
 }
 
@@ -243,6 +245,7 @@ void VRender::run()
 	framerate_counter = 0;
 	framerate_timer.update();
 	start_lock->unlock();
+	flashed_pts = -1;
 
 	while(!done)
 	{
@@ -254,8 +257,8 @@ void VRender::run()
 
 		if(reconfigure) restart_playback();
 		process_buffer(current_postime);
-		ptstime tracking = current_postime;
 		current_postime = video_out->get_pts();
+
 		if(last_playback || renderengine->video->interrupt 
 				|| renderengine->command->single_frame())
 		{
@@ -325,17 +328,6 @@ void VRender::run()
 			}
 			first_frame = 0;
 		}
-
-// Update tracking.
-		if(renderengine->command->realtime &&
-				renderengine->playback_engine)
-		{
-			// Truncate tracing to frame boundary
-			tracking = round(tracking * renderengine->edl->session->frame_rate) /
-				renderengine->edl->session->frame_rate;
-			renderengine->playback_engine->update_tracking(tracking);
-		}
-
 // advance position in project
 		if(!last_playback)
 		{
@@ -357,7 +349,7 @@ void VRender::run()
 			}
 		}
 	}
-
+	renderengine->stop_tracking(flashed_pts, TRACK_VIDEO);
 	renderengine->render_start_lock->unlock();
 	stop_plugins();
 }
@@ -369,10 +361,8 @@ void VRender::run()
 VRender::VRender(MWindow *mwindow, RenderEngine *renderengine)
  : CommonRender(mwindow, renderengine)
 {
-	asynchronous = 0;     // render 1 frame at a time
 	framerate_counter = 0;
 	video_out = 0;
-	render_strategy = -1;
 }
 
 int VRender::get_datatype()

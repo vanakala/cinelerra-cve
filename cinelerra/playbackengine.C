@@ -192,28 +192,36 @@ void PlaybackEngine::init_tracking()
 	else
 		tracking_active = 0;
 
-	tracking_position = command->playbackstart;
+	video_pts = -1;
+	tracking_position = tracking_start = command->playbackstart;
 
 	tracking_done->lock("PlaybackEngine::init_tracking");
 	init_cursor();
 }
 
-void PlaybackEngine::stop_tracking()
+void PlaybackEngine::stop_tracking(ptstime position)
 {
 	tracking_active = 0;
+	if(position >= 0)
+		tracking_position = position;
 	stop_cursor();
 	tracking_done->unlock();
 	if(!command->single_frame())
 		command->command = STOP;
 }
 
-void PlaybackEngine::update_tracking(ptstime position)
-{
-	tracking_position = position;
-}
-
 ptstime PlaybackEngine::get_tracking_position()
 {
+	if(render_engine && tracking_active)
+	{
+		ptstime tpts = render_engine->sync_postime() *
+			render_engine->command->get_speed();
+		if(render_engine->command->get_direction() == PLAY_FORWARD)
+			tpts += tracking_start;
+		else
+			tpts = tracking_start - tpts;
+		tracking_position = tpts;
+	}
 	return tracking_position;
 }
 

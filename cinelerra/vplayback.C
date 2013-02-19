@@ -37,7 +37,7 @@ VPlayback::VPlayback(MWindow *mwindow, VWindow *vwindow, Canvas *output)
 
 void VPlayback::init_cursor()
 {
-	vwindow->playback_cursor->start_playback(tracking_position);
+	vwindow->playback_cursor->start_playback(get_tracking_position());
 }
 
 void VPlayback::stop_cursor()

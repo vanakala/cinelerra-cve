@@ -67,7 +67,6 @@ ARender::~ARender()
 void ARender::arm_command()
 {
 	CommonRender::arm_command();
-	asynchronous = 1;
 
 	output_levels->reset(renderengine->fragment_len,
 		renderengine->edl->session->sample_rate, get_total_tracks());
@@ -174,11 +173,10 @@ void ARender::send_last_buffer()
 	renderengine->audio->set_last_buffer();
 }
 
-int ARender::wait_device_completion()
+void ARender::wait_device_completion()
 {
 // audio device should be entirely cleaned up by vconsole
 	renderengine->audio->wait_for_completion();
-	return 0;
 }
 
 void ARender::run()
@@ -217,24 +215,6 @@ void ARender::run()
 			if(reconfigure) restart_playback();
 		}
 
-// Update tracking if no video is playing.
-		if(renderengine->command->realtime && 
-			renderengine->playback_engine &&
-			!renderengine->do_video)
-		{
-			ptstime position = (double)renderengine->audio->current_postime() *
-				renderengine->command->get_speed();
-
-			if(renderengine->command->get_direction() == PLAY_FORWARD) 
-				position += renderengine->command->playbackstart;
-			else
-				position = renderengine->command->playbackstart - position;
-
-// This number is not compensated for looping.  It's compensated in 
-// PlaybackEngine::get_tracking_position when interpolation also happens.
-			renderengine->playback_engine->update_tracking(position);
-		}
-
 		process_buffer(current_input_length, current_postime);
 
 		if(revert)
@@ -246,15 +226,29 @@ void ARender::run()
 		first_buffer = advance_position(audio_out[0]->pts, current_input_duration);
 		if(vconsole->interrupt) interrupt = 1;
 	}
-
-	if(!interrupt) send_last_buffer();
+	ptstime last_pts;
+	if(!interrupt)
+	{
+		send_last_buffer();
+		last_pts = current_postime;
+	}
 	if(renderengine->command->realtime) wait_device_completion();
-	vconsole->stop_rendering(0);
+
+	if(interrupt)
+	{
+		last_pts = renderengine->audio->current_postime() *
+			renderengine->command->get_speed();
+		if(renderengine->command->get_direction() == PLAY_FORWARD) 
+			last_pts += renderengine->command->playbackstart;
+		else
+			last_pts = renderengine->command->playbackstart - last_pts;
+	}
+
+	renderengine->stop_tracking(last_pts, TRACK_AUDIO);
+
 	renderengine->render_start_lock->unlock();
 	stop_plugins();
 }
-
-
 
 int ARender::get_datatype()
 {

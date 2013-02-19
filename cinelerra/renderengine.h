@@ -56,10 +56,11 @@ public:
 	void start_render_threads();
 	void wait_render_threads();
 	void interrupt_playback();
+	void stop_tracking(ptstime position, int type);
 	int get_output_w();
 	int get_output_h();
 	int brender_available(ptstime position);
-	double get_tracking_position();
+
 // Find the plugin whose title matches title and return it
 	PluginServer* scan_plugindb(char *title,
 		int data_type);

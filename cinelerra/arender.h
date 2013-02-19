@@ -63,7 +63,7 @@ public:
 	int process_buffer(int input_len, ptstime input_postime);
 
 	void send_last_buffer();
-	int wait_device_completion();
+	void wait_device_completion();
 
 	LevelHistory *output_levels;
 };

@@ -82,7 +82,6 @@ void Tracking::start_playback(ptstime new_position)
 		tracking_rate /= 2;
 	set_delays(mwindow->edl->session->meter_over_delay,
 		mwindow->edl->session->meter_peak_delay);
-
 	if(state != PLAYING)
 	{
 		last_position = new_position;
@@ -101,10 +100,8 @@ void Tracking::stop_playback()
 		Thread::join();
 
 // Final position is updated continuously during playback
-// Get final position
-		ptstime position = get_tracking_position();
 // Update cursor
-		update_tracker(position);
+		update_tracker(get_tracking_position());
 
 		stop_meters();
 		state = DONE;
@@ -174,7 +171,6 @@ void Tracking::run()
 {
 	startup_lock->unlock();
 
-	ptstime position;
 	int delay = 1000 / tracking_rate;
 
 	while(state != DONE)
@@ -185,21 +181,9 @@ void Tracking::run()
 
 		if(state != DONE)
 		{
-
 // can be stopped during wait
 			if(get_playback_engine()->tracking_active)
-			{
-// Get position of cursor
-				position = get_tracking_position();
-
-// Update cursor
-				update_tracker(position);
-			}
+				update_tracker(get_tracking_position());
 		}
 	}
 }
-
-
-
-
-

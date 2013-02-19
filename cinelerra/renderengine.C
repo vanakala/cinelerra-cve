@@ -96,6 +96,7 @@ RenderEngine::~RenderEngine()
 	delete preferences;
 	if(arender) delete arender;
 	if(vrender) delete vrender;
+	if(audio) delete audio;
 	delete edl;
 	delete input_lock;
 	delete start_lock;
@@ -233,15 +234,6 @@ void RenderEngine::set_vcache(CICache *cache)
 	this->video_cache = cache;
 }
 
-
-ptstime RenderEngine::get_tracking_position()
-{
-	if(playback_engine) 
-		return playback_engine->get_tracking_position();
-	else
-		return 0;
-}
-
 void RenderEngine::open_output()
 {
 	if(command->realtime)
@@ -249,7 +241,8 @@ void RenderEngine::open_output()
 // Allocate devices
 		if(do_audio)
 		{
-			audio = new AudioDevice;
+			if(!audio)
+				audio = new AudioDevice;
 			if (audio->open_output(config->aconfig, 
 				edl->session->sample_rate, 
 				fragment_len,
@@ -387,7 +380,6 @@ void RenderEngine::wait_render_threads()
 	{
 		arender->Thread::join();
 	}
-
 	if(do_video)
 	{
 		vrender->Thread::join();
@@ -406,19 +398,22 @@ void RenderEngine::interrupt_playback()
 	{
 		video->interrupt_playback();
 	}
-	if(playback_engine)
-		playback_engine->stop_tracking();
 	interrupt_lock->unlock();
+}
+
+void RenderEngine::stop_tracking(ptstime position, int type)
+{
+	if(do_video && type == TRACK_AUDIO)
+		return;
+
+	if(playback_engine)
+		playback_engine->stop_tracking(position);
 }
 
 void RenderEngine::close_output()
 {
 	if(audio)
-	{
 		audio->close_all();
-		delete audio;
-		audio = 0;
-	}
 
 	if(video)
 	{
@@ -450,7 +445,6 @@ int RenderEngine::get_module_levels(double *levels, ptstime pts)
 	return 0;
 }
 
-
 void RenderEngine::run()
 {
 	start_render_threads();
@@ -463,34 +457,8 @@ void RenderEngine::run()
 
 	close_output();
 
-// Fix the tracking position
 	if(playback_engine)
-	{
-		if(command->single_frame())
-		{
-			if(command->command != CURRENT_FRAME)
-				playback_engine->stop_tracking();
-		}
-		else
-		{
-// Make sure transport doesn't issue a pause command next
-			if(!interrupted)
-			{
-				if(do_audio)
-					playback_engine->tracking_position = 
-						arender->current_postime;
-				else
-				if(do_video)
-				{
-					playback_engine->tracking_position = 
-						vrender->current_postime;
-				}
-				playback_engine->stop_tracking();
-			}
-
-		}
 		playback_engine->is_playing_back = 0;
-	}
 
 	input_lock->unlock();
 	interrupt_lock->unlock();
