@@ -270,7 +270,9 @@ ptstime AudioDevice::current_postime(float speed)
 // get hardware position
 		if(!software_position_info)
 		{
-			last_position = hardware_result = get_lowlevel_out()->device_position();
+			hardware_result = get_lowlevel_out()->device_position();
+			if(hardware_result > 0)
+				last_position = hardware_result;
 		}
 
 // get software position
@@ -300,8 +302,9 @@ ptstime AudioDevice::current_postime(float speed)
 		return (ptstime)(total_samples_read + 
 			record_timer->get_scaled_difference(r)) / r;
 	}
-
-	return 0;
+	if(last_position > 0)
+		return (ptstime)last_position / get_orate() - (out_config->audio_offset/ speed);
+	return -1;
 }
 
 void AudioDevice::run_output()
