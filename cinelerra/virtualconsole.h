@@ -52,7 +52,6 @@ public:
 	void reset_attachments();
 	void dump();
 
-
 // Build the nodes
 	void build_virtual_console(int persistent_plugins);
 
@@ -71,10 +70,8 @@ public:
 	int test_reconfigure(ptstime &length,
 		int &last_playback);
 
-
 	RenderEngine *renderengine;
 	CommonRender *commonrender;
-
 
 // Total exit nodes.  Corresponds to the total playable tracks.
 // Was total_tracks
@@ -89,12 +86,6 @@ public:
 // up the tree.  Every virtual module is an exit node.
 	ArrayList<VirtualNode*> exit_nodes;
 
-
-// Order to process nodes
-// Replaced by pull system
-//	ArrayList<VirtualNode*> render_list;
-
-
 	int data_type;
 // Store result of total_ring_buffers for destructor
 // Pull method can't use ring buffers for input.
@@ -105,32 +96,9 @@ public:
 // Trace the rendering path of the tree
 	int debug_tree;
 
-
-
-
-
-
-
-
-
-
-
-
-	virtual int init_rendering(int duplicate) {};
-// Replaced by pull system
-//	int sort_virtual_console();
-	int delete_virtual_console();
-
-// Signal effects to deallocate any resources which must be deallocated
-// after playback.
-	virtual int stop_rendering(int duplicate) {};
-
-	virtual int send_last_output_buffer() {};
-
-
 	PlayableTracks *playable_tracks;
+private:
+	void delete_virtual_console();
 };
-
-
 
 #endif
