@@ -204,7 +204,7 @@ private:
 	int last_buffer_size;
 	int device_buffer;
 // prevent the counter from going backwards
-	int last_position;
+	samplenum last_position;
 	Timer *playback_timer;
 	Timer *record_timer;
 // Current operation

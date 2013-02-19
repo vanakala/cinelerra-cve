@@ -75,9 +75,9 @@ AudioDevice::AudioDevice(MWindow *mwindow)
 	total_samples_read = 0;
 	read_waiting = 0;
 	this->mwindow = mwindow;
-	this->out_config = new AudioOutConfig(0);
-	this->in_config = new AudioInConfig;
-	this->vconfig = new VideoInConfig;
+	out_config = 0;
+	in_config = new AudioInConfig;
+	vconfig = new VideoInConfig;
 	startup_lock = new Condition(0, "AudioDevice::startup_lock");
 	duplex_lock = new Condition(0, "AudioDevice::duplex_lock");
 	timer_lock = new Mutex("AudioDevice::timer_lock");
@@ -94,7 +94,23 @@ AudioDevice::AudioDevice(MWindow *mwindow)
 
 AudioDevice::~AudioDevice()
 {
-	delete out_config;
+	if(lowlevel_in)
+	{
+		delete lowlevel_in;
+		lowlevel_in = 0;
+	}
+
+	if(lowlevel_out)
+	{
+		delete lowlevel_out;
+		lowlevel_out = 0;
+	}
+
+	if(lowlevel_duplex)
+	{
+		delete lowlevel_duplex;
+		lowlevel_duplex = 0;
+	}
 	delete in_config;
 	delete vconfig;
 	delete startup_lock;
@@ -104,6 +120,11 @@ AudioDevice::~AudioDevice()
 	{
 		delete play_lock[i];
 		delete arm_lock[i];
+		delete [] input_buffer[i];
+		input_buffer[i] = 0;
+		delete [] output_buffer[i];
+		output_buffer[i] = 0;
+		buffer_size[i] = 0;
 	}
 	delete playback_timer;
 	delete record_timer;
@@ -173,7 +194,7 @@ int AudioDevice::open_output(AudioOutConfig *config,
 	int ret = 0;
 	w = 1;
 	duplex_init = 0;
-	*this->out_config = *config;
+	out_config = config;
 	out_samplerate = rate;
 	out_samples = samples;
 	out_channels = channels;
@@ -205,11 +226,6 @@ void AudioDevice::close_all()
 
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
-		delete [] input_buffer[i];
-		input_buffer[i] = 0;
-		delete [] output_buffer[i];
-		output_buffer[i] = 0;
-		buffer_size[i] = 0;
 		arm_lock[i]->reset();
 		play_lock[i]->reset();
 		last_buffer[i] = 0;
@@ -222,7 +238,6 @@ void AudioDevice::close_all()
 	software_position_info = 0;
 	last_buffer_size = 0;
 	total_samples = 0;
-	play_dither == 0;
 	arm_buffer_num = 0;
 	last_position = 0;
 	interrupt = 0;
@@ -230,24 +245,6 @@ void AudioDevice::close_all()
 	duplex_init = 0;
 	vdevice = 0;
 	sharing = 0;
-
-	if(lowlevel_in)
-	{
-		delete lowlevel_in;
-		lowlevel_in = 0;
-	}
-
-	if(lowlevel_out)
-	{
-		delete lowlevel_out;
-		lowlevel_out = 0;
-	}
-
-	if(lowlevel_duplex)
-	{
-		delete lowlevel_duplex;
-		lowlevel_duplex = 0;
-	}
 }
 
 void AudioDevice::set_vdevice(VideoDevice *vdevice)
