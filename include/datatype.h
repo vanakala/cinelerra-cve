@@ -55,4 +55,7 @@ typedef double ptstime;
 // Error of calculating frame pts
 #define FRAME_OVERLAP (0.001)
 
+// Allowed frame overlap during playback
+#define FRAME_ACCURACY (0.005)
+
 #endif

@@ -215,7 +215,7 @@ void CommonRender::get_boundaries(ptstime &current_render_duration, ptstime min_
 	{
 		if(direction == PLAY_FORWARD)
 		{
-			if(current_postime + current_render_duration >= end_position - 0.005)
+			if(current_postime + current_render_duration >= end_position - FRAME_ACCURACY)
 			{
 				last_playback = 1;
 				current_render_duration = end_position - current_postime;
@@ -224,7 +224,7 @@ void CommonRender::get_boundaries(ptstime &current_render_duration, ptstime min_
 // reverse playback
 		else
 		{
-			if(current_postime - current_render_duration <= start_position + 0.005)
+			if(current_postime - current_render_duration <= start_position + FRAME_ACCURACY)
 			{
 				last_playback = 1;
 				current_render_duration = current_postime - start_position;

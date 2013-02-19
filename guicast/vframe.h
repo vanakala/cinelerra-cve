@@ -122,7 +122,7 @@ public:
 	void set_pts(ptstime pts);
 	ptstime get_pts(void);
 	ptstime next_pts();
-	int pts_in_frame(ptstime pts, ptstime accuracy = 0.005);
+	int pts_in_frame(ptstime pts, ptstime accuracy = FRAME_ACCURACY);
 	void set_layer(int layer);
 	int get_layer(void);
 	void clear_pts(void);
