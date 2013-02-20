@@ -766,7 +766,7 @@ int File::get_frame(VFrame *frame, int is_thread)
 	{
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
 // Test cache
-		if(use_cache &&frame_cache->get_frame(frame))
+		if(use_cache && frame_cache->get_frame(frame))
 			return 0;
 // Need temp
 		if(frame->get_color_model() != BC_COMPRESSED &&

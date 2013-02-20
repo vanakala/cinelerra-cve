@@ -867,7 +867,7 @@ int FileMOV::read_frame(VFrame *frame)
 		break;
 	}
 
-	frame->set_pts((ptstime)current_frame[layer] / asset->frame_rate);
+	frame->set_source_pts((ptstime)current_frame[layer] / asset->frame_rate);
 	frame->set_duration(1. / asset->frame_rate);
 	frame->set_frame_number(current_frame[layer]);
 	current_frame[layer]++;

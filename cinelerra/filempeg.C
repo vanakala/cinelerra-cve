@@ -1156,14 +1156,14 @@ int FileMPEG::read_frame(VFrame *frame)
 		}
 		break;
 	}
-	frame->set_pts((ptstime)current_frame / asset->frame_rate);
-	frame->set_duration(1./asset->frame_rate);
+	frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
+	frame->set_duration(1. / asset->frame_rate);
 	frame->set_frame_number(current_frame);
 	return 0;
 
 noframe:
 	frame->clear_frame();
-	frame->set_pts((ptstime)current_frame / asset->frame_rate);
+	frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
 	frame->set_duration(1./asset->frame_rate);
 	frame->set_frame_number(current_frame);
 	return 1;

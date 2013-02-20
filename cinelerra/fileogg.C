@@ -760,7 +760,7 @@ int FileOGG::read_frame(VFrame *frame)
 		frame->get_w());
 
 	next_frame_position = frame_position - 1;
-	frame->set_pts((ptstime)next_frame_position / asset->frame_rate);
+	frame->set_source_pts((ptstime)next_frame_position / asset->frame_rate);
 	frame->set_duration(1. / asset->frame_rate);
 	frame->set_frame_number(next_frame_position);
 	return 0;

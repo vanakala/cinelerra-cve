@@ -709,7 +709,7 @@ int FileDV::read_frame(VFrame *frame)
 		break;
 	}
 
-	frame->set_pts((ptstime)video_position / asset->frame_rate);
+	frame->set_source_pts((ptstime)video_position / asset->frame_rate);
 	frame->set_duration(1. / asset->frame_rate);
 	frame->set_frame_number(video_position);
 	video_position++;
