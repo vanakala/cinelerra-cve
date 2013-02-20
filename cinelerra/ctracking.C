@@ -72,6 +72,7 @@ void CTracking::stop_playback()
 		mwindow->edl->local_session->set_selection(selections[0], selections[1]);
 		mwindow->gui->cursor->update();
 	}
+	selections[0] = selections[1] = 0;
 
 }
 
