@@ -40,15 +40,14 @@ CPlayback::CPlayback(MWindow *mwindow, CWindow *cwindow, Canvas *output)
 
 void CPlayback::init_cursor()
 {
-	mwindow->gui->lock_window("CPlayback::init_cursor");
 	mwindow->gui->canvas->deactivate();
-	mwindow->gui->unlock_window();
 	cwindow->playback_cursor->start_playback(get_tracking_position());
 }
 
 void CPlayback::stop_cursor()
 {
 	cwindow->playback_cursor->stop_playback();
+	mwindow->gui->canvas->activate();
 }
 
 
