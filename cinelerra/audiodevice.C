@@ -61,7 +61,6 @@ AudioDevice::AudioDevice(MWindow *mwindow)
 
 	duplex_init = 0;
 	rec_dither = play_dither = 0;
-	software_position_info = 0;
 	arm_buffer_num = 0;
 	is_playing_back = 0;
 	is_recording = 0;
@@ -83,7 +82,6 @@ AudioDevice::AudioDevice(MWindow *mwindow)
 	timer_lock = new Mutex("AudioDevice::timer_lock");
 	buffer_lock = new Mutex("AudioDevice::buffer_lock");
 	polling_lock = new Condition(0, "AudioDevice::polling_lock");
-	playback_timer = new Timer;
 	record_timer = new Timer;
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
@@ -126,7 +124,6 @@ AudioDevice::~AudioDevice()
 		output_buffer[i] = 0;
 		buffer_size[i] = 0;
 	}
-	delete playback_timer;
 	delete record_timer;
 	delete buffer_lock;
 	delete polling_lock;
@@ -235,7 +232,6 @@ void AudioDevice::close_all()
 
 	is_playing_back = 0;
 	is_flushing = 0;
-	software_position_info = 0;
 	last_buffer_size = 0;
 	total_samples = 0;
 	arm_buffer_num = 0;

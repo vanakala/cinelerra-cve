@@ -135,8 +135,7 @@ public:
 // interrupt the playback thread
 	void interrupt_playback();
 	void set_play_dither(int status);
-// set software positioning on or off
-	void set_software_positioning(int status = 1);
+
 // total audio time played
 //  + audio offset from configuration if playback
 	ptstime current_postime(float speed = 1.0);
@@ -205,14 +204,13 @@ private:
 	int device_buffer;
 // prevent the counter from going backwards
 	samplenum last_position;
-	Timer *playback_timer;
+
 	Timer *record_timer;
 // Current operation
 	int is_playing_back;
 	int is_flushing;
 	int is_recording;
 	int global_timer_started;
-	int software_position_info;
 	int interrupt;
 	int driver;
 

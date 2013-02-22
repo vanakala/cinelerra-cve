@@ -82,12 +82,10 @@ public:
 	void close_output();
 // return position to synchronize video against
 	ptstime sync_postime(void);
-// Called by VRender to reset the timers once the first frame is done.
-	void reset_sync_postime(void);
 // Update preferences window
 	void update_framerate(float framerate);
 // Wait for other thread
-	void wait_another(const char *location);
+	void wait_another(const char *location, int type);
 
 // Copy of command
 	TransportCommand *command;
@@ -119,8 +117,6 @@ public:
 	VRender *vrender;
 	int do_audio;
 	int do_video;
-// Timer for synchronization without audio
-	Timer timer;
 	float actual_frame_rate;
 // If the termination came from interrupt or end of selection
 	int interrupted;
@@ -143,8 +139,13 @@ public:
 // start video since vrender is the master
 	int start_video();
 
-	ptstime sync_basetime;
 	MWindow *mwindow;
+private:
+	void reset_sync_postime(void);
+// Timer for synchronization without audio
+	Timer timer;
+	ptstime sync_basetime;
+	int audio_playing;
 };
 
 #endif

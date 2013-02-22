@@ -63,6 +63,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	interrupted = 0;
 	actual_frame_rate = 0;
 	sync_basetime = 0;
+	audio_playing = 0;
 	this->preferences = new Preferences;
 	this->command = new TransportCommand;
 	this->preferences->copy_from(preferences);
@@ -271,7 +272,6 @@ void RenderEngine::open_output()
 // Retool playback configuration
 		if(do_audio)
 		{
-			audio->set_software_positioning(edl->session->playback_software_position);
 			audio->start_playback();
 		}
 
@@ -293,23 +293,19 @@ void RenderEngine::reset_sync_postime(void)
 {
 	timer.update();
 	if(do_audio)
+	{
 		sync_basetime = audio->current_postime(command->get_speed());
+		if(!edl->session->playback_software_position)
+			audio_playing = 1;
+	}
 }
 
 ptstime RenderEngine::sync_postime(void)
 {
-// Use audio device
-// No danger of race conditions because the output devices are closed after all
-// threads join.
-	if(do_audio)
-	{
+	if(audio_playing)
 		return audio->current_postime(command->get_speed()) - sync_basetime;
-	}
 
-	if(do_video)
-	{
-		return (ptstime)timer.get_difference() / 1000;
-	}
+	return (ptstime)timer.get_difference() / 1000;
 }
 
 PluginServer* RenderEngine::scan_plugindb(char *title, 
@@ -354,7 +350,6 @@ void RenderEngine::arm_render_threads()
 
 void RenderEngine::start_render_threads()
 {
-// Synchronization timer.  Gets reset once again after the first video frame.
 	timer.update();
 
 	if(do_audio)
@@ -403,8 +398,12 @@ void RenderEngine::interrupt_playback()
 
 void RenderEngine::stop_tracking(ptstime position, int type)
 {
-	if(do_video && type == TRACK_AUDIO)
-		return;
+	if(type == TRACK_AUDIO)
+	{
+		audio_playing = 0;
+		if(do_video)
+			return;
+	}
 
 	if(playback_engine)
 		playback_engine->stop_tracking(position);
@@ -471,8 +470,13 @@ int RenderEngine::start_video()
 	vrender->start_playback();
 }
 
-void RenderEngine::wait_another(const char *location)
+void RenderEngine::wait_another(const char *location, int type)
 {
 	if(do_audio && do_video)
+	{
 		render_start_lock->wait_another(location);
+		if(type == TRACK_VIDEO)
+			reset_sync_postime();
+	} else
+		reset_sync_postime();
 }

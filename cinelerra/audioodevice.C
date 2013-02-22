@@ -211,18 +211,11 @@ void AudioDevice::set_play_dither(int status)
 	play_dither = status;
 }
 
-void AudioDevice::set_software_positioning(int status)
-{
-	software_position_info = status;
-}
-
 void AudioDevice::start_playback()
 {
 // arm buffer before doing this
 	is_playing_back = 1;
 	interrupt = 0;
-// zero timers
-	playback_timer->update();
 	last_position = 0;
 	Thread::start();                  // synchronize threads by starting playback here and blocking
 }
@@ -262,38 +255,17 @@ void AudioDevice::wait_for_completion()
 
 ptstime AudioDevice::current_postime(float speed)
 {
-	samplenum hardware_result = 0, software_result = 0, frame;
-
+	samplenum hardware_result = 0, frame;
 	if(w)
 	{
 		frame = get_obits() / 8;
-// get hardware position
-		if(!software_position_info)
+		hardware_result = get_lowlevel_out()->device_position();
+
+		if(hardware_result > 0)
 		{
-			hardware_result = get_lowlevel_out()->device_position();
-			if(hardware_result > 0)
-				last_position = hardware_result;
+			last_position = hardware_result;
+			return (ptstime)hardware_result / get_orate() - (out_config->audio_offset / speed);
 		}
-
-// get software position
-		if(hardware_result < 0 || software_position_info)
-		{
-			timer_lock->lock("AudioDevice::current_position");
-			software_result = total_samples - last_buffer_size - 
-				device_buffer / frame / get_ochannels();
-			software_result += playback_timer->get_scaled_difference(get_orate());
-			timer_lock->unlock();
-
-			if(software_result < last_position) 
-				software_result = last_position;
-			else
-				last_position = software_result;
-		}
-
-		if(hardware_result < 0 || software_position_info) 
-			return (ptstime)software_result / get_orate() - (out_config->audio_offset / speed);
-		else
-			return (ptstime)hardware_result / get_orate() - (out_config->audio_offset/ speed);
 	}
 	else
 	if(r)
@@ -312,8 +284,6 @@ void AudioDevice::run_output()
 	thread_buffer_num = 0;
 
 	startup_lock->unlock();
-	playback_timer->update();
-
 
 	while(is_playing_back && !interrupt && !last_buffer[thread_buffer_num])
 	{
@@ -341,7 +311,6 @@ void AudioDevice::run_output()
 			timer_lock->lock("AudioDevice::run 3");
 			last_buffer_size = buffer_size[thread_buffer_num] / (get_obits() / 8) / get_ochannels();
 			total_samples += last_buffer_size;
-			playback_timer->update();
 			timer_lock->unlock();
 
 // write converted buffer synchronously

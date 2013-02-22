@@ -913,8 +913,9 @@ int Record::open_input_devices(int duplex, int context)
 // Configure audio
 	if(adevice)
 	{
+/* FIXIT - method removed
 		adevice->set_software_positioning(mwindow->edl->session->record_software_position);
-
+	*/
 // Initialize full duplex
 // Duplex is only needed if the timeline and the recording have audio
 		if(duplex && mwindow->edl->tracks->playable_audio_tracks())

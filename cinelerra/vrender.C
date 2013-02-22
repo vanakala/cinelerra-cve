@@ -272,8 +272,7 @@ void VRender::run()
 			if(first_frame)
 			{
 				flash_output();
-				renderengine->wait_another("VRender::run");
-				renderengine->reset_sync_postime();
+				renderengine->wait_another("VRender::run", TRACK_VIDEO);
 				init_pos = current_postime;
 			}
 // Determine the delay until the frame needs to be shown.

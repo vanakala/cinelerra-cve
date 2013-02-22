@@ -276,7 +276,7 @@ int VirtualAConsole::process_buffer(int len,
 
 		if(arender->first_buffer)
 		{
-			renderengine->wait_another("VirtualAConsole::process_buffer");
+			renderengine->wait_another("VirtualAConsole::process_buffer", TRACK_AUDIO);
 			arender->first_buffer = 0;
 		}
 		if(renderengine->audio->get_interrupted()) interrupt = 1;
