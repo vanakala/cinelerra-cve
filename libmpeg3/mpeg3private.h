@@ -477,10 +477,7 @@ typedef struct
 	int emphasis;
 	int bitrate;
 /* Static variable in synthesizer */
-	int bo;                      
-/* Ignore first frame after a seek */
-	int first_frame;
-
+	int bo;
 	float synth_stereo_buffs[2][2][0x110];
 	float synth_mono_buff[64];
 	float mp3_block[2][2][SBLIMIT * SSLIMIT];
