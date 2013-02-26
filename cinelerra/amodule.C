@@ -115,6 +115,7 @@ int AModule::render(AFrame *aframe)
 	aframe->samplerate = get_edl()->session->sample_rate;
 	ptstime duration = (ptstime)aframe->source_length / aframe->samplerate;
 	ptstime end_projpts = start_projpts + duration;
+	ptstime sample_error = 0.8 / aframe->samplerate;
 
 // Get first edit containing the range
 	for(playable_edit = (AEdit*)track->edits->first; 
@@ -127,7 +128,7 @@ int AModule::render(AFrame *aframe)
 	}
 
 // Fill output one fragment at a time
-	while(start_projpts < end_projpts)
+	while(start_projpts < end_projpts - sample_error)
 	{
 		ptstime fragment_duration = duration;
 
