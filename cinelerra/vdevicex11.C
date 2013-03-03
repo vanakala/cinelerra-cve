@@ -66,12 +66,6 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
 
 VDeviceX11::~VDeviceX11()
 {
-	if(output)
-	{
-		output->lock_canvas("VDeviceX11::close_all 1");
-		output->get_canvas()->lock_window("VDeviceX11::close_all 1");
-	}
-
 	if(output && output_frame)
 	{
 // Copy our output frame buffer to the canvas's permanent frame buffer.
@@ -105,20 +99,14 @@ VDeviceX11::~VDeviceX11()
 
 		if(use_opengl)
 		{
-			output->get_canvas()->unlock_window();
-			output->unlock_canvas();
-
 			output->mwindow->playback_3d->copy_from(output, 
 				output->refresh_frame,
 				output_frame,
 				0);
-			output->lock_canvas("VDeviceX11::close_all 2");
-			output->get_canvas()->lock_window("VDeviceX11::close_all 2");
 		}
 		else
 			output->refresh_frame->copy_from(output_frame);
 
-// Update the status bug
 		if(!device->single_frame)
 		{
 			output->stop_video();
@@ -145,11 +133,6 @@ VDeviceX11::~VDeviceX11()
 	}
 
 	if(capture_bitmap) delete capture_bitmap;
-	if(output)
-	{
-		output->get_canvas()->unlock_window();
-		output->unlock_canvas();
-	}
 }
 
 int VDeviceX11::open_input()
@@ -165,17 +148,10 @@ int VDeviceX11::open_output()
 {
 	if(output)
 	{
-		output->lock_canvas("VDeviceX11::open_output");
-		output->get_canvas()->lock_window("VDeviceX11::open_output");
 		if(!device->single_frame)
 			output->start_video();
 		else
 			output->start_single();
-		output->get_canvas()->unlock_window();
-
-// Enable opengl in the first routine that needs it, to reduce the complexity.
-
-		output->unlock_canvas();
 	}
 	return 0;
 }
@@ -184,17 +160,7 @@ int VDeviceX11::output_visible()
 {
 	if(!output) return 0;
 
-	output->lock_canvas("VDeviceX11::output_visible");
-	if(output->get_canvas()->get_hidden()) 
-	{
-		output->unlock_canvas();
-		return 0; 
-	}
-	else 
-	{
-		output->unlock_canvas();
-		return 1;
-	}
+	return !output->get_canvas()->get_hidden();
 }
 
 int VDeviceX11::read_buffer(VFrame *frame)
@@ -287,9 +253,6 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 
 void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 {
-	output->lock_canvas("VDeviceX11::new_output_buffer");
-	output->get_canvas()->lock_window("VDeviceX11::new_output_buffer 1");
-
 // Get the best colormodel the display can handle.
 	int best_colormodel = get_best_colormodel(colormodel);
 
@@ -418,26 +381,6 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 		}
 	}
 	*result = output_frame;
-
-	output->get_canvas()->unlock_window();
-	output->unlock_canvas();
-}
-
-int VDeviceX11::start_playback()
-{
-// Record window is initialized when its monitor starts.
-	if(!device->single_frame)
-		output->start_video();
-	return 0;
-}
-
-int VDeviceX11::stop_playback()
-{
-	if(!device->single_frame)
-		output->stop_video();
-// Record window goes back to monitoring
-// get the last frame played and store it in the video_out
-	return 0;
 }
 
 int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
@@ -646,9 +589,6 @@ void VDeviceX11::overlay(VFrame *output_frame,
 	int interpolation_type = edl->session->interpolation_type;
 
 // Convert node coords to canvas coords in here
-	output->lock_canvas("VDeviceX11::overlay");
-	output->get_canvas()->lock_window("VDeviceX11::overlay");
-
 // This is the transfer from output frame to canvas
 	output->get_transfers(edl, 
 		output_x1, 
@@ -661,10 +601,6 @@ void VDeviceX11::overlay(VFrame *output_frame,
 		canvas_y2,
 		-1,
 		-1);
-
-	output->get_canvas()->unlock_window();
-	output->unlock_canvas();
-
 // If single frame playback, use full sized PBuffer as output.
 	if(device->single_frame)
 	{

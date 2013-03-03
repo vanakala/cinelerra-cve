@@ -50,9 +50,8 @@ public:
 	void new_output_buffer(VFrame **output, int colormodel);
 
 	int open_output();
-	int start_playback();
-	int stop_playback();
 	int output_visible();
+
 // After loading the bitmap with a picture, write it
 	int write_buffer(VFrame *result, EDL *edl);
 // Get best colormodel for recording
