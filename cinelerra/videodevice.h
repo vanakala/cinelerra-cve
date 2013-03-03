@@ -82,10 +82,10 @@ public:
 	VideoDevice(MWindow *mwindow = 0);
 	~VideoDevice();
 
-	int close_all();
+	void close_all();
 
 // ===================================== Recording
-	int open_input(VideoInConfig *config, 
+	void open_input(VideoInConfig *config,
 		int input_x, 
 		int input_y, 
 		float input_z,
@@ -119,28 +119,27 @@ public:
 	int get_best_colormodel(Asset *asset);
 
 // Specify the audio device opened concurrently with this video device
-	int set_adevice(AudioDevice *adevice);
+	void set_adevice(AudioDevice *adevice);
 // Return 1 if capturing locked up
-	int get_failed();  
+	int get_failed();
 // Interrupt a crashed DV device
 	int interrupt_crash();
 // Schedule capture size to be changed.
-	int set_translation(int input_x, int input_y);
+	void set_translation(int input_x, int input_y);
 // Change the channel
-	int set_channel(Channel *channel);
+	void set_channel(Channel *channel);
 // Set the quality of the JPEG compressor
 	void set_quality(int quality);
 // Change field order
-	int set_field_order(int odd_field_first);
+	void set_field_order(int odd_field_first);
 // Set frames to clear after translation change.
-	int set_latency_counter(int value);
+	void set_latency_counter(int value);
 // Values from -100 to 100
-	int set_picture(PictureConfig *picture);
+	void set_picture(PictureConfig *picture);
 	int capture_frame(int frame_number);  // Start the frame_number capturing
 	int read_buffer(VFrame *frame);  // Read the next frame off the device
 	int has_signal();
 	int frame_to_vframe(VFrame *frame, unsigned char *input); // Translate the captured frame to a VFrame
-	int initialize();
 	ArrayList<Channel*>* get_inputs();
 // Create new input source if it doesn't match device_name.  
 // Otherwise return it.
@@ -151,45 +150,36 @@ public:
 	int set_cloexec_flag(int desc, int value);
 
 // ================================== Playback
-	int open_output(VideoOutConfig *config, 
-		float rate,
+	int open_output(VideoOutConfig *config,
 		int out_w,
 		int out_h,
 		Canvas *output,
 		int single_frame);
 	void set_cpus(int cpus);
-// Slippery is only used for hardware compression drivers
-	int start_playback();
-	int interrupt_playback();
+	void interrupt_playback();
 // Get output buffer for playback using colormodel.
 // colormodel argument should be as close to best_colormodel as possible
 	void new_output_buffer(VFrame **output, int colormodel);
 	int wait_for_startup();
 	int wait_for_completion();
 	int output_visible();     // Whether the output is visible or not.
-	int stop_playback();
+	void stop_playback();
 	void goose_input();
 
 // absolute frame of last frame in buffer.
 // The EDL parameter is passed to Canvas and can be 0.
 	int write_buffer(VFrame *output, EDL *edl);
 
-
 // Flag when output is interrupted
 	int interrupt;
 // Compression format in use by the output device
 	int output_format;
-	int is_playing_back;
+
 // Audio device to share data with
 	AudioDevice *adevice;
-// Reading data from the audio device.  This is set by the video device.
-	int sharing;
-// Synchronize the close devices
-	int done_sharing;
-	Mutex *sharing_lock;
 
-// frame rates
-	float orate, irate;
+// frame rate
+	float irate;
 // timer for displaying frames in the current buffer
 	Timer buffer_timer;
 // timer for getting frame rate
@@ -197,7 +187,8 @@ public:
 // size of output frame being fed to device during playback
 	int out_w, out_h;
 // modes
-	int r, w;
+	int reading;
+	int writing;
 // time from start of previous frame to start of next frame in ms
 	int frame_delay;
 // CPU count for MJPEG compression
@@ -219,8 +210,6 @@ public:
 // When the frame is resized, need to clear all the buffer frames.
 	int latency_counter;
 	int capturing;
-	int swap_bytes;
-
 
 // All the input sources on the device
 	ArrayList<Channel*> input_sources;
@@ -229,7 +218,6 @@ public:
 	int quality;
 // Single frame mode for playback
 	int single_frame;
-
 // Copy of the most recent channel set by set_channel
 	Channel *channel;
 // Flag for subdevice to change channels when it has a chance
@@ -241,9 +229,8 @@ public:
 	PictureConfig *picture;
 	Mutex *picture_lock;
 
-
 // Change the capture size when ready
-	int update_translation();
+	void update_translation();
 
 	VDeviceBase *input_base;
 	VDeviceBase *output_base;

@@ -99,8 +99,7 @@ SET_TRACE
 			PLAYBACK_X11_XV) config.driver = PLAYBACK_X11_XV;
 		config.x11_use_fields = 0;
 
-		device->open_output(&config, 
-						record->default_asset->frame_rate, 
+		device->open_output(&config,
 						record->default_asset->width, 
 						record->default_asset->height,
 						window->canvas,

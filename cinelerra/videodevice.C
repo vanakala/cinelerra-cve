@@ -117,43 +117,22 @@ VideoDevice::VideoDevice(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	in_config = new VideoInConfig;
-	out_config = new VideoOutConfig;
+	out_config = 0;
 	channel = new Channel;
 	picture = new PictureConfig(mwindow ? mwindow->defaults : 0);
-	sharing_lock = new Mutex("VideoDevice::sharing_lock");
 	channel_lock = new Mutex("VideoDevice::channel_lock");
 	picture_lock = new Mutex("VideoDevice::picture_lock");
-	initialize();
-}
-
-VideoDevice::~VideoDevice()
-{
-	input_sources.remove_all_objects();
-	delete in_config;
-	delete out_config;
-	delete channel;
-	delete picture;
-	delete sharing_lock;
-	delete channel_lock;
-	delete picture_lock;
-}
-
-int VideoDevice::initialize()
-{
-	sharing = 0;
-	done_sharing = 0;
-	sharing_lock->reset();
-	orate = irate = 0;
+	irate = 0;
 	out_w = out_h = 0;
-	r = w = 0;
-	is_playing_back = is_recording = 0;
+	reading = 0;
+	writing = 0;
+	is_recording = 0;
 	input_x = 0;
 	input_y = 0;
 	input_z = 1;
 	frame_resized = 0;
 	capturing = 0;
 	keepalive = 0;
-	swap_bytes = 0;
 	input_base = 0;
 	output_base = 0;
 	output_format = 0;
@@ -166,7 +145,18 @@ int VideoDevice::initialize()
 	picture_changed = 0;
 }
 
-int VideoDevice::open_input(VideoInConfig *config, 
+VideoDevice::~VideoDevice()
+{
+	close_all();
+	input_sources.remove_all_objects();
+	delete in_config;
+	delete channel;
+	delete picture;
+	delete channel_lock;
+	delete picture_lock;
+}
+
+void VideoDevice::open_input(VideoInConfig *config, 
 	int input_x, 
 	int input_y, 
 	float input_z,
@@ -176,7 +166,7 @@ int VideoDevice::open_input(VideoInConfig *config,
 
 	*this->in_config = *config;
 
-	r = 1;
+	reading = 1;
 	this->input_z = -1;   // Force initialization.
 	this->frame_rate = frame_rate;
 
@@ -215,7 +205,6 @@ int VideoDevice::open_input(VideoInConfig *config,
 	}
 
 	if(!result) capturing = 1;
-	return 0;
 }
 
 VDeviceBase* VideoDevice::new_device_base()
@@ -274,7 +263,6 @@ void VideoDevice::save_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in
 	channeldb->save(get_channeldb_path(vconfig_in));
 }
 
-
 VDeviceBase* VideoDevice::get_output_base()
 {
 	return output_base;
@@ -290,7 +278,6 @@ int VideoDevice::is_compressed(int use_file, int use_fixed)
 {
 	return is_compressed(in_config->driver, use_file, use_fixed);
 }
-
 
 void VideoDevice::fix_asset(Asset *asset, int driver)
 {
@@ -312,7 +299,6 @@ void VideoDevice::fix_asset(Asset *asset, int driver)
 	delete input_base;
 	input_base = 0;
 }
-
 
 const char* VideoDevice::drivertostr(int driver)
 {
@@ -344,20 +330,19 @@ int VideoDevice::get_best_colormodel(Asset *asset)
 		return BC_RGB888;
 }
 
-int VideoDevice::close_all()
+void VideoDevice::close_all()
 {
-	int i;
-
-	if(w)
+	if(writing)
 	{
 		if(output_base)
 		{
 			delete output_base;
 			output_base = 0;
 		}
+		writing = 0;
 	}
 
-	if(r && capturing)
+	if(reading && capturing)
 	{
 		capturing = 0;
 		if(input_base)
@@ -371,23 +356,16 @@ int VideoDevice::close_all()
 			keepalive->stop();
 			delete keepalive;
 		}
+		reading = 0;
 	}
 
-
 	input_sources.remove_all_objects();
-
-	initialize();
-
-	return 0;
 }
 
-
-int VideoDevice::set_adevice(AudioDevice *adevice)
+void VideoDevice::set_adevice(AudioDevice *adevice)
 {
 	this->adevice = adevice;
-	return 0;
 }
-
 
 ArrayList<Channel*>* VideoDevice::get_inputs()
 {
@@ -421,20 +399,18 @@ int VideoDevice::interrupt_crash()
 	return 0;
 }
 
-int VideoDevice::set_translation(int input_x, int input_y)
+void VideoDevice::set_translation(int input_x, int input_y)
 {
 	this->input_x = input_x;
 	this->input_y = input_y;
-	return 0;
 }
 
-int VideoDevice::set_field_order(int odd_field_first)
+void VideoDevice::set_field_order(int odd_field_first)
 {
 	this->odd_field_first = odd_field_first;
-	return 0;
 }
 
-int VideoDevice::set_channel(Channel *channel)
+void VideoDevice::set_channel(Channel *channel)
 {
 	if(channel)
 	{
@@ -443,8 +419,8 @@ int VideoDevice::set_channel(Channel *channel)
 		channel_changed = 1;
 		channel_lock->unlock();
 
-		if(input_base) return input_base->set_channel(channel);
-		if(output_base) return output_base->set_channel(channel);
+		if(input_base) input_base->set_channel(channel);
+		if(output_base) output_base->set_channel(channel);
 	}
 }
 
@@ -458,7 +434,7 @@ void VideoDevice::set_cpus(int cpus)
 	this->cpus = cpus;
 }
 
-int VideoDevice::set_picture(PictureConfig *picture)
+void VideoDevice::set_picture(PictureConfig *picture)
 {
 	if(picture)
 	{
@@ -467,11 +443,11 @@ int VideoDevice::set_picture(PictureConfig *picture)
 		picture_changed = 1;
 		picture_lock->unlock();
 
-		if(input_base) return input_base->set_picture(picture);
+		if(input_base) input_base->set_picture(picture);
 	}
 }
 
-int VideoDevice::update_translation()
+void VideoDevice::update_translation()
 {
 	float frame_in_capture_x1f, frame_in_capture_x2f, frame_in_capture_y1f, frame_in_capture_y2f;
 	float capture_in_frame_x1f, capture_in_frame_x2f, capture_in_frame_y1f, capture_in_frame_y2f;
@@ -541,13 +517,11 @@ int VideoDevice::update_translation()
 			frame_resized = 0;
 		}
 	}
-	return 0;
 }
 
-int VideoDevice::set_latency_counter(int value)
+void VideoDevice::set_latency_counter(int value)
 {
 	latency_counter = value;
-	return 0;
 }
 
 int VideoDevice::has_signal()
@@ -555,7 +529,6 @@ int VideoDevice::has_signal()
 	if(input_base) return input_base->has_signal();
 	return 0;
 }
-
 
 int VideoDevice::read_buffer(VFrame *frame)
 {
@@ -582,21 +555,20 @@ int VideoDevice::read_buffer(VFrame *frame)
 // ================================= OUTPUT ==========================================
 
 
-int VideoDevice::open_output(VideoOutConfig *config, 
-			float rate,
+int VideoDevice::open_output(VideoOutConfig *config,
 			int out_w,
 			int out_h,
 			Canvas *output,
 			int single_frame)
 {
-	w = 1;
-	*this->out_config = *config;
+	writing = 1;
+	out_config = config;
 	this->out_w = out_w;
 	this->out_h = out_h;
-	this->orate = rate;
 	this->single_frame = single_frame;
+	interrupt = 0;
 
-	switch(out_config->driver)
+	switch(config->driver)
 	{
 	case PLAYBACK_X11:
 	case PLAYBACK_X11_XV:
@@ -617,26 +589,6 @@ int VideoDevice::open_output(VideoOutConfig *config,
 		return 1;
 }
 
-
-
-int VideoDevice::start_playback()
-{
-// arm buffer before doing this
-	is_playing_back = 1;
-	interrupt = 0;
-
-	if(output_base) return output_base->start_playback();
-	return 1;
-}
-
-int VideoDevice::stop_playback()
-{
-	if(output_base) output_base->stop_playback();
-	is_playing_back = 0;
-	interrupt = 0;
-	return 0;
-}
-
 void VideoDevice::goose_input()
 {
 	if(input_base) input_base->goose_input();
@@ -648,11 +600,9 @@ void VideoDevice::new_output_buffer(VFrame **output, int colormodel)
 	output_base->new_output_buffer(output, colormodel);
 }
 
-
-int VideoDevice::interrupt_playback()
+void VideoDevice::interrupt_playback()
 {
 	interrupt = 1;
-	return 0;
 }
 
 int VideoDevice::write_buffer(VFrame *output, EDL *edl)
@@ -664,13 +614,14 @@ int VideoDevice::write_buffer(VFrame *output, EDL *edl)
 int VideoDevice::output_visible()
 {
 	if(output_base) return output_base->output_visible();
+	return 0;
 }
 
 BC_Bitmap* VideoDevice::get_bitmap()
 {
 	if(output_base) return output_base->get_bitmap();
+	return 0;
 }
-
 
 int VideoDevice::set_cloexec_flag(int desc, int value)
 {

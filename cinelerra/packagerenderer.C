@@ -237,13 +237,11 @@ void PackageRenderer::create_engine()
 		if(mwindow)
 		{
 			video_device = new VideoDevice;
-			video_device->open_output(vconfig, 
-				command->get_edl()->session->frame_rate, 
+			video_device->open_output(vconfig,
 				command->get_edl()->session->output_w, 
 				command->get_edl()->session->output_h, 
 				mwindow->cwindow->gui->canvas,
 				0);
-			video_device->start_playback();
 		}
 	}
 
@@ -423,7 +421,6 @@ void PackageRenderer::stop_output()
 		if(!error) file->stop_video_thread();
 		if(mwindow)
 		{
-			video_device->stop_playback();
 			video_device->close_all();
 			delete video_device;
 		}

@@ -98,6 +98,7 @@ RenderEngine::~RenderEngine()
 	if(arender) delete arender;
 	if(vrender) delete vrender;
 	if(audio) delete audio;
+	if(video) delete video;
 	delete edl;
 	delete input_lock;
 	delete start_lock;
@@ -255,12 +256,8 @@ void RenderEngine::open_output()
 			}
 		}
 
-		if(do_video)
-		{
+		if(do_video && !video)
 			video = new VideoDevice;
-		}
-
-// Initialize sharing
 
 // Start playback
 		if(do_audio && do_video)
@@ -277,8 +274,7 @@ void RenderEngine::open_output()
 
 		if(do_video)
 		{
-			video->open_output(config->vconfig, 
-				edl->session->frame_rate,
+			video->open_output(config->vconfig,
 				get_output_w(),
 				get_output_h(),
 				output,
@@ -415,11 +411,7 @@ void RenderEngine::close_output()
 		audio->close_all();
 
 	if(video)
-	{
 		video->close_all();
-		delete video;
-		video = 0;
-	}
 }
 
 int RenderEngine::get_output_levels(double *levels, ptstime pts)
@@ -461,13 +453,6 @@ void RenderEngine::run()
 
 	input_lock->unlock();
 	interrupt_lock->unlock();
-}
-
-int RenderEngine::start_video()
-{
-// start video for realtime
-	if(video) video->start_playback();
-	vrender->start_playback();
 }
 
 void RenderEngine::wait_another(const char *location, int type)

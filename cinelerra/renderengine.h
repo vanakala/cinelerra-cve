@@ -135,11 +135,8 @@ public:
 		AudioDevice *audio = 0, 
 		VideoDevice *video = 0,
 		PlaybackEngine *playbackengine = 0);
-
-// start video since vrender is the master
-	int start_video();
-
 	MWindow *mwindow;
+
 private:
 	void reset_sync_postime(void);
 // Timer for synchronization without audio
