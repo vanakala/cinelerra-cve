@@ -765,36 +765,36 @@ void VWindowCanvas::close_source()
 void VWindowCanvas::draw_refresh()
 {
 	EDL *edl = gui->vwindow->get_edl();
-
-	if(!get_canvas()->get_video_on()) get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
-	if(!get_canvas()->get_video_on() && refresh_frame && edl)
-	{
-
-		float in_x1, in_y1, in_x2, in_y2;
-		float out_x1, out_y1, out_x2, out_y2;
-		get_transfers(edl, 
-			in_x1, 
-			in_y1, 
-			in_x2, 
-			in_y2, 
-			out_x1, 
-			out_y1, 
-			out_x2, 
-			out_y2);
-		get_canvas()->draw_vframe(refresh_frame,
-				(int)out_x1, 
-				(int)out_y1, 
-				(int)(out_x2 - out_x1), 
-				(int)(out_y2 - out_y1),
-				(int)in_x1, 
-				(int)in_y1, 
-				(int)(in_x2 - in_x1), 
-				(int)(in_y2 - in_y1),
-				0);
-	}
-
 	if(!get_canvas()->get_video_on())
 	{
+		lock_canvas("VWindowCanvas::draw_refresh");
+		get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
+		if(refresh_frame && edl)
+		{
+
+			float in_x1, in_y1, in_x2, in_y2;
+			float out_x1, out_y1, out_x2, out_y2;
+			get_transfers(edl,
+				in_x1,
+				in_y1,
+				in_x2,
+				in_y2,
+				out_x1,
+				out_y1,
+				out_x2,
+				out_y2);
+			get_canvas()->draw_vframe(refresh_frame,
+				(int)out_x1,
+				(int)out_y1,
+				(int)(out_x2 - out_x1),
+				(int)(out_y2 - out_y1),
+				(int)in_x1,
+				(int)in_y1,
+				(int)(in_x2 - in_x1),
+				(int)(in_y2 - in_y1),
+				0);
+		}
+		unlock_canvas();
 		draw_overlays();
 		get_canvas()->flash();
 	}
