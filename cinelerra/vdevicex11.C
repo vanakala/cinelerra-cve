@@ -71,7 +71,7 @@ VDeviceX11::~VDeviceX11()
 // Copy our output frame buffer to the canvas's permanent frame buffer.
 // They must be different buffers because the output frame is being written
 // while the user is redrawing the canvas frame buffer over and over.
-
+		output->lock_canvas("VDeviceX11::~VDeviceX11");
 		int use_opengl = device->out_config->driver == PLAYBACK_X11_GL &&
 			output_frame->get_opengl_state() == VFrame::SCREEN;
 		int best_color_model = output_frame->get_color_model();
@@ -118,6 +118,7 @@ VDeviceX11::~VDeviceX11()
 
 // Draw the first refresh with new frame.
 		output->draw_refresh();
+		output->unlock_canvas();
 	}
 
 	if(bitmap)
@@ -387,7 +388,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 {
 // The reason for not drawing single frame is that it is _always_ drawn 
 // when drawing draw_refresh in cwindowgui and vwindowgui
-	if (device->single_frame) 
+	if (device->single_frame)
 		return 0;
 
 	int i = 0;

@@ -829,7 +829,7 @@ void CWindowCanvas::draw_refresh()
 {
 	if(get_canvas() && !get_canvas()->get_video_on())
 	{
-
+		lock_canvas("CWindowCanvas::draw_refresh");
 		if(refresh_frame)
 		{
 			float in_x1, in_y1, in_x2, in_y2;
@@ -868,7 +868,7 @@ void CWindowCanvas::draw_refresh()
 						0);
 			}
 		}
-
+		unlock_canvas();
 		draw_overlays();
 		get_canvas()->flash();
 	}
