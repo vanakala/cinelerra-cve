@@ -1221,33 +1221,6 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
 }
 
 
-void MWindow::init_shm()
-{
-	FILE *fd = fopen("/proc/sys/kernel/shmmax", "r");
-	if(!fd)
-	{
-		errormsg("MWindow::init_shm: couldn't open /proc/sys/kernel/shmmax for reading.\n");
-		return;
-	}
-
-	int64_t result = 0;
-	if(fscanf(fd, "%lld", &result) != 1)
-	{
-		errormsg("MWindow::init_shm: couldn't read /proc/sys/kernel/shmmax.\n");
-		fclose(fd);
-		return;
-	}
-	fclose(fd);
-	fd = 0;
-	if(result < 0x7fffffff)
-	{
-		errormsg("WARNING: /proc/sys/kernel/shmmax is 0x%llx, which is too low.\n"
-			"Before running Cinelerra do the following as root:\n"
-			"echo \"0x7fffffff\" > /proc/sys/kernel/shmmax\n",
-			result);
-	}
-}
-
 void MWindow::create_objects(int want_gui, 
 	int want_new,
 	char *config_path)
@@ -1308,7 +1281,6 @@ void MWindow::create_objects(int want_gui,
 		init_tipwindow();
 
 	hide_splash();
-	init_shm();
 }
 
 void MWindow::show_splash()

@@ -484,10 +484,6 @@ public:
 // Must be locked before accessing dvb_input or Garbage functions in it.
 	Mutex *dvb_input_lock;
 
-
-// Initialize shared memory
-	void init_shm();
-
 // Initialize channel DB's for playback
 	void init_channeldb();
 	void init_render();
