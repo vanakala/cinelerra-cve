@@ -532,7 +532,8 @@ private:
 				const char *display_name,
 				int window_type,
 				BC_Pixmap *bg_pixmap,
-				int group_it);
+				int group_it,
+				int splash = 0);
 
 	static Display* init_display(const char *display_name);
 // Get display from top level

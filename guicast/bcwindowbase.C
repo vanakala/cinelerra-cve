@@ -264,7 +264,8 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 				const char *display_name,
 				int window_type,
 				BC_Pixmap *bg_pixmap,
-				int group_it)
+				int group_it,
+				int splash)
 {
 	XSetWindowAttributes attr;
 	unsigned long mask;
@@ -356,6 +357,12 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		attr.background_pixel = get_color(this->bg_color);
 		attr.colormap = cmap;
 		attr.cursor = get_cursor_struct(ARROW_CURSOR);
+
+		if(splash)
+		{
+			mask |= CWOverrideRedirect;
+			attr.override_redirect = True;
+		}
 
 		win = XCreateWindow(display, 
 			rootwin, 
