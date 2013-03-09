@@ -25,18 +25,14 @@
 #include "maskautos.h"
 
 
-
 MaskAutos::MaskAutos(EDL *edl, 
 	Track *track)
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_MASK;
+	default_auto = new_auto();
+	default_auto->is_default = 1;
 }
-
-MaskAutos::~MaskAutos()
-{
-}
-
 
 void MaskAutos::get_points(ArrayList<MaskPoint*> *points, 
 	int submask, ptstime position)
@@ -58,22 +54,18 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 
 // Nothing before position found
 	if(!begin)
-	{
 		begin = end = (MaskAuto*)first;
-	}
 
 // Nothing after position found
 	if(!begin)
-	{
 		begin = end = (MaskAuto*)default_auto;
-	}
-
 
 	SubMask *mask1 = begin->get_submask(submask);
 	SubMask *mask2 = end->get_submask(submask);
 
 	points->remove_all_objects();
 	int total_points = MIN(mask1->points.total, mask2->points.total);
+
 	for(int i = 0; i < total_points; i++)
 	{
 		MaskPoint *point = new MaskPoint;
@@ -95,9 +87,7 @@ void MaskAutos::avg_points(MaskPoint *output,
 		ptstime position2)
 {
 	if(position2 == position1)
-	{
 		*output = *input1;
-	}
 	else
 	{
 		float fraction2 = (output_position - position1) / (position2 - position1);
@@ -110,7 +100,6 @@ void MaskAutos::avg_points(MaskPoint *output,
 		output->control_y2 = input1->control_y2 * fraction1 + input2->control_y2 * fraction2;
 	}
 }
-
 
 Auto* MaskAutos::new_auto()
 {
@@ -162,7 +151,6 @@ int MaskAutos::total_submasks(ptstime position)
 	return ((MaskAuto*)default_auto)->masks.total;
 }
 
-
 void MaskAutos::translate_masks(float translate_x, float translate_y)
 {
 	((MaskAuto *)default_auto)->translate_submasks(translate_x, translate_y);
@@ -182,4 +170,3 @@ void MaskAutos::translate_masks(float translate_x, float translate_y)
 		}
 	}
 }
-

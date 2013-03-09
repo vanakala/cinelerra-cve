@@ -31,7 +31,6 @@ class PanAutos : public Autos
 {
 public:
 	PanAutos(EDL *edl, Track *track);
-	~PanAutos();
 
 	Auto* new_auto();
 	void get_handle(int &handle_x,

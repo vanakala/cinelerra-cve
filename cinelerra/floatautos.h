@@ -35,7 +35,6 @@ public:
 		Track *track,
 // Value for default auto
 		float default_value);
-	~FloatAutos();
 
 // Return 1 if the automation is constant.
 // constant - set to the value if it is constant

@@ -29,7 +29,6 @@
 #include "keyframe.inc"
 #include "module.inc"
 #include "plugin.inc"
-#include "pluginautos.inc"
 #include "sharedlocation.inc"
 #include "track.inc"
 
@@ -86,8 +85,6 @@ public:
 		SharedLocation *shared_location,
 		KeyFrame *default_keyframe,
 		int do_optimize);
-
-	PluginAutos *automation;
 	int record;
 };
 

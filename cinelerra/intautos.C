@@ -29,12 +29,9 @@ IntAutos::IntAutos(EDL *edl, Track *track, int default_value)
 {
 	this->default_value = default_value;
 	type = AUTOMATION_TYPE_INT;
+	default_auto = new_auto();
+	default_auto->is_default = 1;
 }
-
-IntAutos::~IntAutos()
-{
-}
-
 
 Auto* IntAutos::new_auto()
 {
@@ -93,7 +90,6 @@ double IntAutos::get_automation_constant(ptstime start, ptstime end)
 
 	return ((IntAuto*)current_auto)->value;
 }
-
 
 void IntAutos::get_extents(float *min, 
 	float *max,

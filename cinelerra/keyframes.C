@@ -26,17 +26,14 @@
 KeyFrames::KeyFrames(EDL *edl, Track *track)
  : Autos(edl, track)
 {
-}
-
-KeyFrames::~KeyFrames()
-{
+	default_auto = new_auto();
+	default_auto->is_default = 1;
 }
 
 Auto* KeyFrames::new_auto()
 {
 	return new KeyFrame(edl, this);
 }
-
 
 void KeyFrames::dump()
 {
@@ -50,4 +47,3 @@ void KeyFrames::dump()
 		current->dump();
 	}
 }
-

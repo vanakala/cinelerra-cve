@@ -31,21 +31,20 @@
 #include "localsession.h"
 
 FloatAutos::FloatAutos(EDL *edl,
-				Track *track, 
-				float default_value)
+	Track *track,
+	float default_value)
  : Autos(edl, track)
 {
 	this->default_value = default_value;
 	type = AUTOMATION_TYPE_FLOAT;
-}
-
-FloatAutos::~FloatAutos()
-{
+	default_auto = new_auto();
+	default_auto->is_default = 1;
 }
 
 void FloatAutos::straighten(ptstime start, ptstime end)
 {
 	FloatAuto *current = (FloatAuto*)first;
+
 	while(current)
 	{
 		FloatAuto *previous_auto = (FloatAuto*)PREVIOUS;
@@ -165,14 +164,10 @@ int FloatAutos::automation_is_constant(ptstime start,
 
 // Keyframe has neighbor
 			if(current->previous)
-			{
 				test_previous_current = 1;
-			}
 
 			if(current->next)
-			{
 				test_current_next = 1;
-			}
 		}
 
 		if(test_current_next)
@@ -181,11 +176,9 @@ int FloatAutos::automation_is_constant(ptstime start,
 
 // Change occurs between keyframes
 			if(!EQUIV(float_current->value, float_next->value) ||
-				!EQUIV(float_current->control_out_value, 0) ||
-				!EQUIV(float_next->control_in_value, 0))
-			{
+					!EQUIV(float_current->control_out_value, 0) ||
+					!EQUIV(float_next->control_in_value, 0))
 				return 0;
-			}
 		}
 
 		if(test_previous_current)
@@ -194,11 +187,9 @@ int FloatAutos::automation_is_constant(ptstime start,
 
 // Change occurs between keyframes
 			if(!EQUIV(float_current->value, float_previous->value) ||
-				!EQUIV(float_current->control_in_value, 0) ||
-				!EQUIV(float_previous->control_out_value, 0))
-			{
+					!EQUIV(float_current->control_in_value, 0) ||
+					!EQUIV(float_previous->control_out_value, 0))
 				return 0;
-			}
 		}
 	}
 
@@ -225,7 +216,6 @@ double FloatAutos::get_automation_constant(ptstime start, ptstime end)
 	return ((FloatAuto*)current_auto)->value;
 }
 
-
 float FloatAutos::get_value(ptstime position, 
 	FloatAuto* &previous,
 	FloatAuto* &next)
@@ -242,24 +232,16 @@ float FloatAutos::get_value(ptstime position,
 
 // Constant
 	if(!next && !previous)
-	{
 		return ((FloatAuto*)default_auto)->value;
-	}
 	else
 	if(!previous)
-	{
 		return next->value;
-	}
 	else
 	if(!next)
-	{
 		return previous->value;
-	}
 	else
 	if(next == previous)
-	{
 		return previous->value;
-	}
 	else
 	{
 		if(EQUIV(previous->value, next->value) &&
@@ -267,7 +249,6 @@ float FloatAutos::get_value(ptstime position,
 				EQUIV(next->control_in_value, 0))
 			return previous->value;
 	}
-
 
 // Interpolate
 	y0 = previous->value;
@@ -296,25 +277,12 @@ float FloatAutos::get_value(ptstime position,
 	return result;
 }
 
-
 void FloatAutos::get_extents(float *min, 
 	float *max,
 	int *coords_undefined,
 	ptstime start,
 	ptstime end)
 {
-	if(!edl)
-	{
-		errorbox("FloatAutos::get_extents edl == NULL\n");
-		return;
-	}
-
-	if(!track)
-	{
-		errorbox("FloatAutos::get_extents track == NULL\n");
-		return;
-	}
-
 // Use default auto
 	if(!first)
 	{
@@ -339,7 +307,7 @@ void FloatAutos::get_extents(float *min,
 				*min = *max = current->value;
 				*coords_undefined = 0;
 			}
-			
+
 			*min = MIN(current->value, *min);
 			*min = MIN(current->value + current->control_in_value, *min);
 			*min = MIN(current->value + current->control_out_value, *min);

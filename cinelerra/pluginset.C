@@ -26,7 +26,6 @@
 #include "keyframe.h"
 #include "keyframes.h"
 #include "plugin.h"
-#include "pluginautos.h"
 #include "pluginset.h"
 #include "track.h"
 

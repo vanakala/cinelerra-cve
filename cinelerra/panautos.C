@@ -27,12 +27,9 @@ PanAutos::PanAutos(EDL *edl, Track *track)
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_PAN;
+	default_auto = new_auto();
+	default_auto->is_default = 1;
 }
-
-PanAutos::~PanAutos()
-{
-}
-
 
 Auto* PanAutos::new_auto()
 {

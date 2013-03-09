@@ -32,10 +32,8 @@ class MaskAutos : public Autos
 {
 public:
 	MaskAutos(EDL *edl, Track *track);
-	~MaskAutos();
 
 	Auto* new_auto();
-
 
 	void dump();
 

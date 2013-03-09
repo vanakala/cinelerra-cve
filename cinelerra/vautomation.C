@@ -51,34 +51,14 @@ int VAutomation::create_objects()
 	Automation::create_objects();
 
 	autos[AUTOMATION_FADE] = new FloatAutos(edl, track, 100);
-	autos[AUTOMATION_FADE]->create_objects();
-
 	autos[AUTOMATION_MODE] = new IntAutos(edl, track, TRANSFER_NORMAL);
-	autos[AUTOMATION_MODE]->create_objects();
-
 	autos[AUTOMATION_MASK] = new MaskAutos(edl, track);
-	autos[AUTOMATION_MASK]->create_objects();
-
 	autos[AUTOMATION_CAMERA_X] = new FloatAutos(edl, track, 0.0);
-	autos[AUTOMATION_CAMERA_X]->create_objects();
-
 	autos[AUTOMATION_CAMERA_Y] = new FloatAutos(edl, track, 0.0);
-	autos[AUTOMATION_CAMERA_Y]->create_objects();
-
 	autos[AUTOMATION_PROJECTOR_X] = new FloatAutos(edl, track, 0.0);
-	autos[AUTOMATION_PROJECTOR_X]->create_objects();
-
 	autos[AUTOMATION_PROJECTOR_Y] = new FloatAutos(edl, track, 0.0);
-	autos[AUTOMATION_PROJECTOR_Y]->create_objects();
-
 	autos[AUTOMATION_CAMERA_Z] = new FloatAutos(edl, track, 1.0);
-	autos[AUTOMATION_CAMERA_Z]->create_objects();
-
 	autos[AUTOMATION_PROJECTOR_Z] = new FloatAutos(edl, track, 1.0);
-	autos[AUTOMATION_PROJECTOR_Z]->create_objects();
-
-// 	autos[AUTOMATION_NUDGE] = new FloatAutos(edl, track, 0.0);
-// 	autos[AUTOMATION_NUDGE]->create_objects();
 
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 		if (autos[i]) 

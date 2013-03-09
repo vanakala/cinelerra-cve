@@ -40,21 +40,13 @@ Autos::Autos(EDL *edl, Track *track)
 	type = -1;
 	autoidx = -1;
 	autogrouptype = -1;
+	default_auto = 0;
 }
-
-
 
 Autos::~Autos()
 {
 	while(last) delete last;
 	delete default_auto;
-}
-
-void Autos::create_objects()
-{
-// Default
-	default_auto = new_auto();
-	default_auto->is_default = 1;
 }
 
 int Autos::get_type()
@@ -65,12 +57,6 @@ int Autos::get_type()
 Auto* Autos::append_auto()
 {
 	return append(new_auto());
-}
-
-
-Auto* Autos::new_auto()
-{
-	return new Auto(edl, this);
 }
 
 void Autos::equivalent_output(Autos *autos, ptstime startproject, ptstime *result)
@@ -156,7 +142,6 @@ void Autos::copy_from(Autos *autos)
 		this_current = next_current;
 	}
 }
-
 
 // We don't replace it in pasting but
 // when inserting the first EDL of a load operation we need to replace
@@ -247,14 +232,14 @@ Auto* Autos::get_auto_at_position(ptstime position)
 	return 0;
 }
 
-
 Auto* Autos::get_auto_for_editing(ptstime position)
 {
+	Auto *result = 0;
+
 	if(position < 0)
 	{
 		position = edl->local_session->get_selectionstart(1);
 	}
-	Auto *result = 0;
 	position = edl->align_to_frame(position, 0);
 	if(edl->session->auto_keyframes)
 	{
@@ -266,7 +251,6 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 
 	return result;
 }
-
 
 Auto* Autos::get_next_auto(ptstime position, Auto* &current, int use_default)
 {
@@ -299,10 +283,7 @@ Auto* Autos::insert_auto(ptstime position)
 // Test for existence
 	for(current = first; 
 		current && !edl->equivalent(current->pos_time, position); 
-		current = NEXT)
-	{
-		;
-	}
+		current = NEXT);
 
 // Insert new
 	if(!current)
@@ -310,10 +291,7 @@ Auto* Autos::insert_auto(ptstime position)
 // Get first one on or before as a template
 		for(current = last; 
 			current && current->pos_time > position; 
-			current = PREVIOUS)
-		{
-			;
-		}
+			current = PREVIOUS);
 
 		if(current)
 		{
@@ -346,10 +324,7 @@ Auto* Autos::insert_auto_for_editing(ptstime position)
 // Test for existence
 	for(current = first; 
 		current && !edl->equivalent(current->pos_time, position); 
-		current = NEXT)
-	{
-		;
-	}
+		current = NEXT);
 
 // Insert new
 	if(!current)
@@ -357,10 +332,7 @@ Auto* Autos::insert_auto_for_editing(ptstime position)
 // Get first one on or before as a template
 		for(current = last; 
 			current && current->pos_time > position; 
-			current = PREVIOUS)
-		{
-			;
-		}
+			current = PREVIOUS);
 
 		if(current)
 		{
@@ -387,26 +359,24 @@ Auto* Autos::insert_auto_for_editing(ptstime position)
 	return result;
 }
 
-int Autos::clear_all()
+void Autos::clear_all()
 {
 	Auto *current_, *current;
-	
+
 	for(current = first; current; current = current_)
 	{
 		current_ = NEXT;
 		remove(current);
 	}
 	append_auto();
-	return 0;
 }
 
-int Autos::insert(ptstime start, ptstime end)
+void Autos::insert(ptstime start, ptstime end)
 {
 	ptstime length;
 	Auto *current = first;
 
-	for( ; current && current->pos_time < start; current = NEXT)
-		;
+	for( ; current && current->pos_time < start; current = NEXT);
 
 	length = end - start;
 
@@ -414,7 +384,6 @@ int Autos::insert(ptstime start, ptstime end)
 	{
 		current->pos_time += length;
 	}
-	return 0;
 }
 
 void Autos::paste(ptstime start, 
@@ -472,17 +441,14 @@ void Autos::paste(ptstime start,
 			}
 		}
 	}while(!result);
-
 }
 
-
-int Autos::paste_silence(ptstime start, ptstime end)
+void Autos::paste_silence(ptstime start, ptstime end)
 {
 	insert(start, end);
-	return 0;
 }
 
-int Autos::copy(ptstime start,
+void Autos::copy(ptstime start,
 	ptstime end,
 	FileXML *file, 
 	int default_only,
@@ -515,8 +481,6 @@ int Autos::copy(ptstime start,
 // and default status to 0.
 		default_auto->copy(0, 0, file, default_only);
 	}
-
-	return 0;
 }
 
 // Remove 3 consecutive autos with the same value
@@ -559,7 +523,6 @@ void Autos::optimize()
 	}
 }
 
-
 void Autos::remove_nonsequential(Auto *keyframe)
 {
 	if((keyframe->next && keyframe->next->pos_time <= keyframe->pos_time) ||
@@ -569,7 +532,6 @@ void Autos::remove_nonsequential(Auto *keyframe)
 	}
 }
 
-
 void Autos::clear(ptstime start,
 	ptstime end,
 	int shift_autos)
@@ -577,7 +539,6 @@ void Autos::clear(ptstime start,
 	ptstime length;
 	Auto *next, *current;
 	length = end - start;
-
 
 	current = autoof(start);
 
@@ -601,7 +562,7 @@ void Autos::clear(ptstime start,
 	}
 }
 
-int Autos::load(FileXML *file)
+void Autos::load(FileXML *file)
 {
 	while(last)
 		remove(last);    // remove any existing autos
@@ -640,9 +601,7 @@ int Autos::load(FileXML *file)
 			}
 		}
 	}while(!result);
-	return 0;
 }
-
 
 Auto* Autos::autoof(ptstime position)
 {
@@ -650,10 +609,8 @@ Auto* Autos::autoof(ptstime position)
 
 	for(current = first; 
 		current && current->pos_time < position; 
-		current = NEXT)
-	{ 
-		;
-	}
+		current = NEXT);
+
 	return current;     // return 0 on failure
 }
 
@@ -662,8 +619,7 @@ Auto* Autos::nearest_before(ptstime position)
 	Auto *current;
 
 	for(current = last; 
-		current && current->pos_time >= position; current = PREVIOUS)
-	{ ; }
+		current && current->pos_time >= position; current = PREVIOUS);
 
 	return current;     // return 0 on failure
 }
@@ -673,13 +629,12 @@ Auto* Autos::nearest_after(ptstime position)
 	Auto *current;
 
 	for(current = first;
-		 current && current->pos_time <= position; current = NEXT)
-	{ ; }
+		current && current->pos_time <= position; current = NEXT);
 
 	return current;     // return 0 on failure
 }
 
-int Autos::get_neighbors(ptstime start, ptstime end,
+void Autos::get_neighbors(ptstime start, ptstime end,
 		Auto **before, Auto **after)
 {
 	if(*before == 0) *before = first;
@@ -694,7 +649,6 @@ int Autos::get_neighbors(ptstime start, ptstime end,
 	while(*before && (*before)->pos_time > start) *before = (*before)->previous;
 
 	while(*after && (*after)->pos_time < end) *after = (*after)->next;
-	return 0;
 }
 
 ptstime Autos::get_length()

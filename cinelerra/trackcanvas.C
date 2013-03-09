@@ -3504,7 +3504,6 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 	if(!PTSEQU(postime, current->pos_time))
 	{
 		Track *track = current->autos->track;
-		PluginAutos *pluginautos = (PluginAutos *)current->autos;
 		PluginSet *pluginset;
 		Plugin *plugin;
 // figure out the correct pluginset & correct plugin 

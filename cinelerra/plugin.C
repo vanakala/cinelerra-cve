@@ -52,7 +52,6 @@ Plugin::Plugin(EDL *edl,
 	show = 0;
 	on = 1;
 	keyframes = new KeyFrames(edl, track);
-	keyframes->create_objects();
 }
 
 
@@ -68,7 +67,6 @@ Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
 	show = 0;
 	on = 1;
 	keyframes = new KeyFrames(edl, track);
-	keyframes->create_objects();
 }
 
 Plugin::~Plugin()

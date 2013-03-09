@@ -28,6 +28,7 @@
 #include "edl.inc"
 #include "datatype.h"
 #include "guicast.h"
+#include "bcsignals.h"
 #include "filexml.inc"
 #include "track.inc"
 
@@ -36,12 +37,11 @@ class Autos : public List<Auto>
 public:
 	Autos(EDL *edl, 
 		Track *track);
+	~Autos();
 
-	virtual ~Autos();
-	virtual void create_objects();
 	void equivalent_output(Autos *autos, ptstime startproject, ptstime *result);
 	void copy_from(Autos *autos);
-	virtual Auto* new_auto();
+	virtual Auto* new_auto() { return 0; };
 // Get existing auto on or before position.
 // If use_default is true, return default_auto if none exists 
 // on or before position.
@@ -67,7 +67,7 @@ public:
 		ptstime start,
 		ptstime length,
 		int replace_default);
-	virtual int load(FileXML *xml);
+	virtual void load(FileXML *xml);
 	void paste(ptstime start,
 		ptstime length,
 		double scale, 
@@ -100,10 +100,10 @@ public:
 
 	virtual void dump() {};
 
-	int clear_all();
-	int insert(ptstime start, ptstime end);
-	int paste_silence(ptstime start, ptstime end);
-	int copy(ptstime start,
+	void clear_all();
+	void insert(ptstime start, ptstime end);
+	void paste_silence(ptstime start, ptstime end);
+	void copy(ptstime start,
 		ptstime end, 
 		FileXML *xml, 
 		int default_only,
@@ -121,7 +121,7 @@ public:
 	Auto* append_auto();
 
 // rendering utilities
-	int get_neighbors(ptstime start, ptstime end,
+	void get_neighbors(ptstime start, ptstime end,
 			Auto **before, Auto **after);
 // 1 if automation doesn't change
 	virtual int automation_is_constant(ptstime start, ptstime end) { return 0; };
@@ -131,7 +131,6 @@ public:
                                           // 0 if after all autos
 	Auto* nearest_before(ptstime position);    // return nearest auto before or 0
 	Auto* nearest_after(ptstime position);     // return nearest auto after or 0
-
 };
 
 #endif

@@ -36,7 +36,6 @@ class KeyFrames : public Autos
 {
 public:
 	KeyFrames(EDL *edl, Track *track);
-	~KeyFrames();
 
 	Auto* new_auto();
 	void dump();

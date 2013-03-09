@@ -30,7 +30,6 @@ class IntAutos : public Autos
 {
 public:
 	IntAutos(EDL *edl, Track *track, int default_value);
-	~IntAutos();
 
 	Auto* new_auto();
 	int automation_is_constant(ptstime start, ptstime end);
