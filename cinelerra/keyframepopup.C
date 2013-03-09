@@ -19,7 +19,7 @@
  * 
  */
 
-#include "cwindow.h"
+#include "bcsignals.h"
 #include "edl.h"
 #include "keyframe.h"
 #include "keyframepopup.h"
@@ -28,18 +28,8 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "localsession.h"
-#include "cwindowgui.h" 
-#include "cpanel.h"
-#include "patchbay.h"
-#include "patchgui.h" 
-#include "apatchgui.h"
-#include "vpatchgui.h"
 #include "track.h"
-#include "maincursor.h"
 #include "bcwindowbase.h"
-#include "filexml.h"
-#include "edlsession.h"
-#include "autoconf.h"
 
 KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
  : BC_PopupMenu(0, 
@@ -54,26 +44,21 @@ KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
 	key_copy = 0;
 }
 
-KeyframePopup::~KeyframePopup()
-{
-}
-
 void KeyframePopup::create_objects()
 {
 	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
 }
 
-int KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
+void KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
 {
 	this->keyframe_plugin = plugin;
 	this->keyframe_auto = keyframe;
 	this->keyframe_autos = 0;
 	this->keyframe_automation = 0;
-	return 0;
 }
 
-int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyframe)
+void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyframe)
 {
 	this->keyframe_plugin = 0;
 	this->keyframe_automation = automation;
@@ -81,19 +66,17 @@ int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyfr
 	this->keyframe_auto = auto_keyframe;
 
 	/* FIXPOS snap to cursor */
-	double current_position = mwindow->edl->local_session->get_selectionstart(1);
-	double new_position = keyframe_auto->pos_time;
-	mwindow->edl->local_session->set_selectionstart(new_position);
-	mwindow->edl->local_session->set_selectionend(new_position);
-	if (current_position != new_position)
+	ptstime current_position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime new_position = keyframe_auto->pos_time;
+
+	mwindow->edl->local_session->set_selection(new_position);
+
+	if(!PTSEQU(current_position, new_position))
 	{
-		mwindow->edl->local_session->set_selectionstart(new_position);
-		mwindow->edl->local_session->set_selectionend(new_position);
 		mwindow->gui->lock_window("KeyframePopup::update");
 		mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);
 		mwindow->gui->unlock_window();
 	}
-	return 0;
 }
 
 KeyframePopupDelete::KeyframePopupDelete(MWindow *mwindow, KeyframePopup *popup)
@@ -101,10 +84,6 @@ KeyframePopupDelete::KeyframePopupDelete(MWindow *mwindow, KeyframePopup *popup)
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-
-KeyframePopupDelete::~KeyframePopupDelete()
-{
 }
 
 int KeyframePopupDelete::handle_event()
@@ -134,10 +113,6 @@ KeyframePopupCopy::KeyframePopupCopy(MWindow *mwindow, KeyframePopup *popup)
 	this->popup = popup;
 }
 
-KeyframePopupCopy::~KeyframePopupCopy()
-{
-}
-
 int KeyframePopupCopy::handle_event()
 {
 //	FIXME:
@@ -147,6 +122,3 @@ int KeyframePopupCopy::handle_event()
 	mwindow->copy_automation();
 	return 1;
 }
-
-
-

@@ -26,7 +26,6 @@
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "plugin.inc"
-#include "plugindialog.inc"
 #include "keyframe.inc"
 #include "automation.h" 
 
@@ -39,11 +38,10 @@ class KeyframePopup : public BC_PopupMenu
 {
 public:
 	KeyframePopup(MWindow *mwindow, MWindowGUI *gui);
-	~KeyframePopup();
 
 	void create_objects();
-	int update(Plugin *plugin, KeyFrame *keyframe);
-	int update(Automation *automation, Autos *autos, Auto *auto_keyframe);
+	void update(Plugin *plugin, KeyFrame *keyframe);
+	void update(Automation *automation, Autos *autos, Auto *auto_keyframe);
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
@@ -62,9 +60,9 @@ class KeyframePopupDelete : public BC_MenuItem
 {
 public:
 	KeyframePopupDelete(MWindow *mwindow, KeyframePopup *popup);
-	~KeyframePopupDelete();
+
 	int handle_event();
-	
+
 	MWindow *mwindow;
 	KeyframePopup *popup;
 };
@@ -73,10 +71,11 @@ class KeyframePopupCopy : public BC_MenuItem
 {
 public:
 	KeyframePopupCopy(MWindow *mwindow, KeyframePopup *popup);
-	~KeyframePopupCopy();
+
 	int handle_event();
-	
+
 	MWindow *mwindow;
 	KeyframePopup *popup;
 };
+
 #endif
