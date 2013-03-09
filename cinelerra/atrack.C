@@ -84,7 +84,6 @@ void ATrack::create_objects()
 {
 	Track::create_objects();
 	automation = new AAutomation(edl, this);
-	automation->create_objects();
 	edits = new AEdits(edl, this);
 }
 

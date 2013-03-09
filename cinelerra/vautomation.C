@@ -37,19 +37,6 @@
 VAutomation::VAutomation(EDL *edl, Track *track)
  : Automation(edl, track)
 {
-}
-
-
-
-VAutomation::~VAutomation()
-{
-}
-
-
-int VAutomation::create_objects()
-{
-	Automation::create_objects();
-
 	autos[AUTOMATION_FADE] = new FloatAutos(edl, track, 100);
 	autos[AUTOMATION_MODE] = new IntAutos(edl, track, TRANSFER_NORMAL);
 	autos[AUTOMATION_MASK] = new MaskAutos(edl, track);
@@ -66,13 +53,11 @@ int VAutomation::create_objects()
 			autos[i]->autoidx = i;
 			autos[i]->autogrouptype = autogrouptype(i, autos[i]->track);
 		}
-
-	return 0;
 }
 
-void VAutomation::get_projector(float *x, 
-	float *y, 
-	float *z, 
+void VAutomation::get_projector(float *x,
+	float *y,
+	float *z,
 	ptstime position)
 {
 	FloatAuto *before, *after;
@@ -93,10 +78,9 @@ void VAutomation::get_projector(float *x,
 		after);
 }
 
-
-void VAutomation::get_camera(float *x, 
-	float *y, 
-	float *z, 
+void VAutomation::get_camera(float *x,
+	float *y,
+	float *z,
 	ptstime position)
 {
 	FloatAuto *before, *after;
@@ -116,4 +100,3 @@ void VAutomation::get_camera(float *x,
 		before,
 		after);
 }
-

@@ -42,12 +42,15 @@ int Automation::autogrouptypes_fixedrange[] =
 };
 
 
-
 Automation::Automation(EDL *edl, Track *track)
 {
 	this->edl = edl;
 	this->track = track;
 	memset(autos, 0, sizeof(Autos*) * AUTOMATION_TOTAL);
+
+	autos[AUTOMATION_MUTE] = new IntAutos(edl, track, 0);
+	autos[AUTOMATION_MUTE]->autoidx = AUTOMATION_MUTE; 
+	autos[AUTOMATION_MUTE]->autogrouptype = AUTOGROUPTYPE_INT255;
 }
 
 Automation::~Automation()
@@ -86,14 +89,6 @@ int Automation::autogrouptype(int autoidx, Track *track)
 		break;
 	}
 	return (autogrouptype);
-}
-
-int Automation::create_objects()
-{
-	autos[AUTOMATION_MUTE] = new IntAutos(edl, track, 0);
-	autos[AUTOMATION_MUTE]->autoidx = AUTOMATION_MUTE; 
-	autos[AUTOMATION_MUTE]->autogrouptype = AUTOGROUPTYPE_INT255;
-	return 0;
 }
 
 Automation& Automation::operator=(Automation& automation)

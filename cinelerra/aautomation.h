@@ -30,9 +30,6 @@ class AAutomation : public Automation
 {
 public:
 	AAutomation(EDL *edl, Track *track);
-	~AAutomation();
-	int create_objects();
 };
-
 
 #endif

@@ -30,9 +30,7 @@ class VAutomation : public Automation
 {
 public:
 	VAutomation(EDL *edl, Track *track);
-	~VAutomation();
 
-	int create_objects();
 	void get_projector(float *x, 
 		float *y, 
 		float *z, 
@@ -44,6 +42,5 @@ public:
 		float *z, 
 		ptstime position);
 };
-
 
 #endif
