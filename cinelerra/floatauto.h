@@ -35,7 +35,6 @@ class FloatAuto : public Auto
 public:
 	FloatAuto() {};
 	FloatAuto(EDL *edl, FloatAutos *autos);
-	~FloatAuto();
 
 	int operator==(Auto &that);
 	int operator==(FloatAuto &that);
@@ -56,11 +55,6 @@ public:
 // X control positions relative to value position for drawing.
 	ptstime control_in_pts;
 	ptstime control_out_pts;
-
-private:
-	int value_to_str(char *string, float value);
 };
-
-
 
 #endif

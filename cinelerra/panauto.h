@@ -32,7 +32,6 @@ class PanAuto : public Auto
 {
 public:
 	PanAuto(EDL *edl, PanAutos *autos);
-	~PanAuto();
 
 	int operator==(Auto &that);
 	void load(FileXML *file);

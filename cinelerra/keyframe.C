@@ -25,8 +25,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
-
 KeyFrame::KeyFrame()
  : Auto()
 {
@@ -37,9 +35,6 @@ KeyFrame::KeyFrame(EDL *edl, KeyFrames *autos)
  : Auto(edl, (Autos*)autos)
 {
 	data[0] = 0;
-}
-KeyFrame::~KeyFrame()
-{
 }
 
 void KeyFrame::load(FileXML *file)
@@ -66,7 +61,6 @@ void KeyFrame::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
 	file->append_newline();
 }
 
-
 void KeyFrame::copy_from(Auto *that)
 {
 	copy_from((KeyFrame*)that);
@@ -79,12 +73,10 @@ void KeyFrame::copy_from(KeyFrame *that)
 	strcpy(data, keyframe->data);
 }
 
-
 int KeyFrame::identical(KeyFrame *src)
 {
 	return !strcasecmp(src->data, data);
 }
-
 
 int KeyFrame::operator==(Auto &that)
 {
@@ -95,7 +87,6 @@ int KeyFrame::operator==(KeyFrame &that)
 {
 	return identical(&that);
 }
-
 
 void KeyFrame::dump()
 {

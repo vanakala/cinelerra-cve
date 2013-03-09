@@ -31,10 +31,6 @@ IntAuto::IntAuto(EDL *edl, IntAutos *autos)
 	value = 0;
 }
 
-IntAuto::~IntAuto()
-{
-}
-
 int IntAuto::operator==(Auto &that)
 {
 	return identical((IntAuto*)&that);
@@ -68,7 +64,6 @@ void IntAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
 	file->append_tag();
 	file->append_newline();
 }
-
 
 void IntAuto::copy_from(Auto *that)
 {

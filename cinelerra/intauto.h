@@ -32,7 +32,6 @@ class IntAuto : public Auto
 {
 public:
 	IntAuto(EDL *edl, IntAutos *autos);
-	~IntAuto();
 
 	void copy_from(Auto *that);
 	void copy_from(IntAuto *that);

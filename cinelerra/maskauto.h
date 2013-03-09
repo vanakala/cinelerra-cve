@@ -71,7 +71,7 @@ public:
 	void load(FileXML *file);
 	void copy(ptstime start, ptstime end, FileXML *file, int default_auto);
 	void copy_from(Auto *src);
-	int interpolate_from(Auto *a1, Auto *a2, ptstime position); 
+	void interpolate_from(Auto *a1, Auto *a2, ptstime position); 
 	void copy_from(MaskAuto *src);
 
 	void dump();
@@ -79,7 +79,6 @@ public:
 	SubMask* get_submask(int number);
 // Translates all submasks
 	void translate_submasks(float translate_x, float translate_y);
-
 
 	ArrayList<SubMask*> masks;
 // These are constant for the entire track
@@ -89,8 +88,5 @@ public:
 	int value;
 	int apply_before_plugins;
 };
-
-
-
 
 #endif

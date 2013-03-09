@@ -36,21 +36,15 @@ FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
 	control_out_pts = 0;
 }
 
-FloatAuto::~FloatAuto()
-{
-}
-
 int FloatAuto::operator==(Auto &that)
 {
 	return identical((FloatAuto*)&that);
 }
 
-
 int FloatAuto::operator==(FloatAuto &that)
 {
 	return identical((FloatAuto*)&that);
 }
-
 
 int FloatAuto::identical(FloatAuto *src)
 {
@@ -90,7 +84,6 @@ float FloatAuto::outvalue_to_percentage()
 		automation_range;
 }
 
-
 void FloatAuto::copy_from(Auto *that)
 {
 	copy_from((FloatAuto*)that);
@@ -104,38 +97,6 @@ void FloatAuto::copy_from(FloatAuto *that)
 	this->control_out_value = that->control_out_value;
 	this->control_in_pts = that->control_in_pts;
 	this->control_out_pts = that->control_out_pts;
-}
-
-int FloatAuto::value_to_str(char *string, float value)
-{
-	int j = 0, i = 0;
-	if(value > 0) 
-		sprintf(string, "+%.2f", value);
-	else
-		sprintf(string, "%.2f", value);
-
-// fix number
-	if(value == 0)
-	{
-		j = 0;
-		string[1] = 0;
-	}
-	else
-	if(value < 1 && value > -1) 
-	{
-		j = 1;
-		string[j] = string[0];
-	}
-	else 
-	{
-		j = 0;
-		string[3] = 0;
-	}
-	
-	while(string[j] != 0) string[i++] = string[j++];
-	string[i] = 0;
-
-	return 0;
 }
 
 void FloatAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)

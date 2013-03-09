@@ -60,15 +60,7 @@ void Auto::copy_from(Auto *that)
 	this->pos_time = that->pos_time;
 }
 
-int Auto::interpolate_from(Auto *a1, Auto *a2, ptstime position)
+void Auto::interpolate_from(Auto *a1, Auto *a2, ptstime position)
 {
 	copy_from(a1);
-	return 0;
-}
-
-posnum Auto::get_position(void)
-{
-	if(autos && autos->track)
-		return autos->track->to_units(pos_time, 0);
-	return 0;
 }

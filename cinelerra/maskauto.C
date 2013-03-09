@@ -28,8 +28,6 @@
 #include <string.h>
 
 
-
-
 MaskPoint::MaskPoint()
 {
 	x = 0;
@@ -78,7 +76,6 @@ int SubMask::operator==(SubMask& ptr)
 		if(!(*points.values[i] == *ptr.points.values[i]))
 			return 0;
 	}
-	
 	return 1;
 }
 
@@ -102,7 +99,7 @@ void SubMask::load(FileXML *file)
 	while(!result)
 	{
 		result = file->read_tag();
-		
+
 		if(!result)
 		{
 			if(file->tag.title_is("/MASK"))
@@ -122,11 +119,11 @@ void SubMask::load(FileXML *file)
 				point->x = atof(ptr);
 				ptr = strchr(ptr, ',');
 
-				if(ptr) 
+				if(ptr)
 				{
 					point->y = atof(ptr + 1);
 					ptr = strchr(ptr + 1, ',');
-				
+
 					if(ptr)
 					{
 						point->control_x1 = atof(ptr + 1);
@@ -226,13 +223,10 @@ int MaskAuto::operator==(Auto &that)
 	return identical((MaskAuto*)&that);
 }
 
-
-
 int MaskAuto::operator==(MaskAuto &that)
 {
 	return identical((MaskAuto*)&that);
 }
-
 
 int MaskAuto::identical(MaskAuto *src)
 {
@@ -270,8 +264,7 @@ void MaskAuto::copy_from(MaskAuto *src)
 	}
 }
 
-
-int MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position) 
+void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position) 
 {
 	MaskAuto  *mask_auto1 = (MaskAuto *)a1;
 	MaskAuto  *mask_auto2 = (MaskAuto *)a2;
@@ -279,7 +272,7 @@ int MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position)
 	if (!mask_auto2 || mask_auto2->masks.total == 0) // if mask_auto == null, copy from first
 	{
 		copy_from(mask_auto1);
-		return 0;
+		return;
 	}
 	this->mode = mask_auto1->mode;
 	this->feather = mask_auto1->feather;
@@ -311,10 +304,7 @@ int MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position)
 			new_submask->points.append(point);
 		}
 	}
-
-
 }
-
 
 SubMask* MaskAuto::get_submask(int number)
 {
@@ -328,6 +318,7 @@ void MaskAuto::load(FileXML *file)
 	feather = file->tag.get_property("FEATHER", feather);
 	value = file->tag.get_property("VALUE", value);
 	apply_before_plugins = file->tag.get_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
+
 	for(int i = 0; i < masks.total; i++)
 	{
 		delete masks.values[i];

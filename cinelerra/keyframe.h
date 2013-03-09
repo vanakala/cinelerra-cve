@@ -35,7 +35,6 @@ class KeyFrame : public Auto
 public:
 	KeyFrame();
 	KeyFrame(EDL *edl, KeyFrames *autos);
-	virtual ~KeyFrame();
 
 	void load(FileXML *file);
 	void copy(ptstime start, ptstime end, FileXML *file, int default_only);

@@ -37,26 +37,20 @@ class Auto : public ListItem<Auto>
 public:
 	Auto();
 	Auto(EDL *edl, Autos *autos);
-	virtual ~Auto() {};
 
 	virtual Auto& operator=(Auto &that);
 	virtual int operator==(Auto &that) { return 0; };
 	virtual void copy_from(Auto *that);
 	/* for interpolation creation */
 	/* if not possible, copy from a1 and return 0 */
-	virtual int interpolate_from(Auto *a1, Auto *a2, ptstime postime); 
+	virtual void interpolate_from(Auto *a1, Auto *a2, ptstime postime); 
 	virtual void copy(ptstime start, ptstime end,
 		FileXML *file, int default_only) {};
 
 	virtual void load(FileXML *file) {};
-
-	virtual void get_caption(char *string) {};
-
 	virtual float value_to_percentage() { return 0; };
 	virtual float invalue_to_percentage() { return 0; };
 	virtual float outvalue_to_percentage() { return 0; };
-	posnum get_position(void);
-
 
 	int skip;       // if added by selection event for moves
 	EDL *edl;
@@ -65,11 +59,6 @@ public:
 	ptstime pos_time;
 // Units native to the track
 	int is_default;
-
-private:
-	virtual int value_to_str(char *string, float value) {};
 };
-
-
 
 #endif
