@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "cplayback.h"
 #include "ctracking.h"
 #include "cwindow.h"
@@ -47,7 +48,9 @@ void CPlayback::init_cursor()
 void CPlayback::stop_cursor()
 {
 	cwindow->playback_cursor->stop_playback();
-	mwindow->gui->canvas->activate();
+
+	if(is_playing_back)
+		mwindow->gui->canvas->activate();
 }
 
 
