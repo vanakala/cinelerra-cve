@@ -55,7 +55,6 @@ public:
 	int skip;       // if added by selection event for moves
 	EDL *edl;
 	Autos *autos;
-	int WIDTH, HEIGHT;
 	ptstime pos_time;
 // Units native to the track
 	int is_default;
