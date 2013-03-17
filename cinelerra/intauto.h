@@ -43,6 +43,7 @@ public:
 	void copy(ptstime start, ptstime end, FileXML *file, int default_only);
 	float value_to_percentage();
 	int percentage_to_value(float percentage);
+	void dump(int indent = 0);
 
 	int value;
 };

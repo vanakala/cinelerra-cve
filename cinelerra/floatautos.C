@@ -37,8 +37,6 @@ FloatAutos::FloatAutos(EDL *edl,
 {
 	this->default_value = default_value;
 	type = AUTOMATION_TYPE_FLOAT;
-	default_auto = new_auto();
-	default_auto->is_default = 1;
 }
 
 void FloatAutos::straighten(ptstime start, ptstime end)
@@ -109,7 +107,7 @@ int FloatAutos::automation_is_constant(ptstime start,
 // No keyframes on track
 	if(total_autos == 0)
 	{
-		constant = ((FloatAuto*)default_auto)->value;
+		constant = default_value;
 		return 1;
 	}
 	else
@@ -201,7 +199,7 @@ double FloatAutos::get_automation_constant(ptstime start, ptstime end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
 
-// quickly get autos just outside range	
+// quickly get autos just outside range
 	get_neighbors(start, end, &before, &after);
 
 // no auto before range so use first
@@ -211,7 +209,8 @@ double FloatAutos::get_automation_constant(ptstime start, ptstime end)
 		current_auto = first;
 
 // no autos at all so use default value
-	if(!current_auto) current_auto = default_auto;
+	if(!current_auto) 
+		return default_value;
 
 	return ((FloatAuto*)current_auto)->value;
 }
@@ -227,12 +226,12 @@ float FloatAutos::get_value(ptstime position,
 	float y0, y1, y2, y3;
 	float t;
 
-	previous = (FloatAuto*)get_prev_auto(position, (Auto* &)previous, 0);
-	next = (FloatAuto*)get_next_auto(position, (Auto* &)next, 0);
+	previous = (FloatAuto*)get_prev_auto(position, (Auto* &)previous);
+	next = (FloatAuto*)get_next_auto(position, (Auto* &)next);
 
 // Constant
 	if(!next && !previous)
-		return ((FloatAuto*)default_auto)->value;
+		return default_value;
 	else
 	if(!previous)
 		return next->value;
@@ -286,15 +285,14 @@ void FloatAutos::get_extents(float *min,
 // Use default auto
 	if(!first)
 	{
-		FloatAuto *current = (FloatAuto*)default_auto;
 		if(*coords_undefined)
 		{
-			*min = *max = current->value;
+			*min = *max = default_value;
 			*coords_undefined = 0;
 		}
 
-		*min = MIN(current->value, *min);
-		*max = MAX(current->value, *max);
+		*min = MIN(default_value, *min);
+		*max = MAX(default_value, *max);
 	}
 
 // Test all handles
@@ -343,20 +341,11 @@ void FloatAutos::get_extents(float *min,
 	}
 }
 
-void FloatAutos::dump()
+void FloatAutos::dump(int ident)
 {
-	printf("        FloatAutos::dump %p\n", this);
-	printf("        Default: pos_time=%.3lf value=%.3f\n", 
-		default_auto->pos_time, ((FloatAuto*)default_auto)->value);
-	for(Auto* current = first; current; current = NEXT)
-	{
-		printf("        pos_time %.3lf value=%.3f \n",
-			current->pos_time, ((FloatAuto*)current)->value);
-		printf("        invalue=%.3f outvalue=%.3f\n",
-			((FloatAuto*)current)->control_in_value,
-			((FloatAuto*)current)->control_out_value);
-		printf("        inpts=%.3lf outpts=%.3lf\n",
-			((FloatAuto*)current)->control_in_pts,
-			((FloatAuto*)current)->control_out_pts);
-	}
+	printf("%*sFloatAutos %p dump(%d): base %.3f default %.3f\n", ident, " ", this,
+		total(), base_pts, default_value);
+	ident += 2;
+	for(FloatAuto* current = (FloatAuto*)first; current; current = (FloatAuto*)NEXT)
+		current->dump(ident);
 }

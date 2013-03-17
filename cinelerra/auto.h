@@ -23,6 +23,7 @@
 #define AUTO_H
 
 #include "auto.inc"
+#include "bcsignals.h"
 #include "datatype.h"
 #include "edl.inc"
 #include "guicast.h"
@@ -43,14 +44,14 @@ public:
 	virtual void copy_from(Auto *that);
 	/* for interpolation creation */
 	/* if not possible, copy from a1 and return 0 */
-	virtual void interpolate_from(Auto *a1, Auto *a2, ptstime postime); 
-	virtual void copy(ptstime start, ptstime end,
-		FileXML *file, int default_only) {};
+	virtual void interpolate_from(Auto *a1, Auto *a2, ptstime postime);
+	virtual void copy(ptstime start, ptstime end, FileXML *file) {};
 
 	virtual void load(FileXML *file) {};
 	virtual float value_to_percentage() { return 0; };
 	virtual float invalue_to_percentage() { return 0; };
 	virtual float outvalue_to_percentage() { return 0; };
+	virtual void dump(int indent = 0) {};
 
 	int skip;       // if added by selection event for moves
 	EDL *edl;

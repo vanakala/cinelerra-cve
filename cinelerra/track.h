@@ -208,15 +208,12 @@ public:
 		double selectionend);
 	int copy_automation(ptstime selectionstart,
 		ptstime selectionend,
-		FileXML *file,
-		int default_only,
-		int autos_only);
+		FileXML *file);
 	int paste_automation(ptstime selectionstart, 
 		ptstime total_length, 
 		double frame_rate,
 		int sample_rate,
-		FileXML *file,
-		int default_only);
+		FileXML *file);
 	void clear_handle(ptstime start,
 		ptstime end,
 		int actions,

@@ -88,8 +88,8 @@ int KeyFrame::operator==(KeyFrame &that)
 	return identical(&that);
 }
 
-void KeyFrame::dump()
+void KeyFrame::dump(int indent)
 {
-	printf("     postime %.3lf\n", pos_time);
-	printf("     data: %s\n", data);
+	printf("%*sKeyFrame %p pos_time %.3lf\n", indent, " ", this, pos_time);
+	printf("%*sdata: %s\n", indent + 2, " ", data);
 }

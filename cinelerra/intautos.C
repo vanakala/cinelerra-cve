@@ -29,8 +29,6 @@ IntAutos::IntAutos(EDL *edl, Track *track, int default_value)
 {
 	this->default_value = default_value;
 	type = AUTOMATION_TYPE_INT;
-	default_auto = new_auto();
-	default_auto->is_default = 1;
 }
 
 Auto* IntAutos::new_auto()
@@ -86,9 +84,19 @@ double IntAutos::get_automation_constant(ptstime start, ptstime end)
 		current_auto = first;
 
 // no autos at all so use default value
-	if(!current_auto) current_auto = default_auto;
+	if(!current_auto) return default_value;
 
 	return ((IntAuto*)current_auto)->value;
+}
+
+int IntAutos::get_value(ptstime position)
+{
+	Auto *a = 0;
+	IntAuto *current = (IntAuto *)get_prev_auto(position, a);
+
+	if(current)
+		return current->value;
+	return default_value;
 }
 
 void IntAutos::get_extents(float *min, 
@@ -99,15 +107,14 @@ void IntAutos::get_extents(float *min,
 {
 	if(!first)
 	{
-		IntAuto *current = (IntAuto*)default_auto;
 		if(*coords_undefined)
 		{
-			*min = *max = current->value;
+			*min = *max = default_value;
 			*coords_undefined = 0;
 		}
 
-		*min = MIN(current->value, *min);
-		*max = MAX(current->value, *max);
+		*min = MIN(default_value, *min);
+		*max = MAX(default_value, *max);
 	}
 
 	for(IntAuto *current = (IntAuto*)first; current; current = (IntAuto*)NEXT)
@@ -128,14 +135,11 @@ void IntAutos::get_extents(float *min,
 	}
 }
 
-void IntAutos::dump()
+void IntAutos::dump(int indent)
 {
-	printf("      Default %p: postime %.3lf value: %d\n", 
-		default_auto, default_auto->pos_time,
-		((IntAuto*)default_auto)->value);
+	printf("%*sIntautos %p dump(%d): base %.3f default %d\n", indent, "", this, 
+		total(), base_pts, default_value);
+	indent += 2;
 	for(Auto* current = first; current; current = NEXT)
-	{
-		printf("        %p postime %.3lf value: %d\n", 
-			current, current->pos_time, ((IntAuto*)current)->value);
-	}
+		current->dump(indent);
 }

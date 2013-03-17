@@ -40,13 +40,12 @@ Autos::Autos(EDL *edl, Track *track)
 	type = -1;
 	autoidx = -1;
 	autogrouptype = -1;
-	default_auto = 0;
+	base_pts = 0;
 }
 
 Autos::~Autos()
 {
 	while(last) delete last;
-	delete default_auto;
 }
 
 int Autos::get_type()
@@ -61,53 +60,43 @@ Auto* Autos::append_auto()
 
 void Autos::equivalent_output(Autos *autos, ptstime startproject, ptstime *result)
 {
-// Default keyframe differs
-	if(!total() && !(*default_auto == *autos->default_auto))
+	for(Auto *current = first, *that_current = autos->first;
+		current || that_current;
+		current = NEXT,
+		that_current = that_current->next)
 	{
-		if(*result < 0 || *result > startproject) 
-			*result = startproject;
-	}
-	else
-// Search for difference
-	{
-		for(Auto *current = first, *that_current = autos->first; 
-			current || that_current; 
-			current = NEXT,
-			that_current = that_current->next)
-		{
 // Total differs
-			if(current && !that_current)
-			{
-				ptstime position1 = (autos->last ? autos->last->pos_time : startproject);
-				ptstime position2 = current->pos_time;
-				if(*result < 0 || *result > MIN(position1, position2))
-					*result = MIN(position1, position2);
-				break;
-			}
-			else
-			if(!current && that_current)
-			{
-				ptstime position1 = (last ? last->pos_time : startproject);
-				ptstime position2 = that_current->pos_time;
-				if(*result < 0 || *result > MIN(position1, position2))
-					*result = MIN(position1, position2);
-				break;
-			}
-			else
+		if(current && !that_current)
+		{
+			ptstime position1 = (autos->last ? autos->last->pos_time : startproject);
+			ptstime position2 = current->pos_time;
+			if(*result < 0 || *result > MIN(position1, position2))
+				*result = MIN(position1, position2);
+			break;
+		}
+		else
+		if(!current && that_current)
+		{
+			ptstime position1 = (last ? last->pos_time : startproject);
+			ptstime position2 = that_current->pos_time;
+			if(*result < 0 || *result > MIN(position1, position2))
+				*result = MIN(position1, position2);
+			break;
+		}
+		else
 // Keyframes differ
-			if(!(*current == *that_current) || 
-				!PTSEQU(current->pos_time, that_current->pos_time))
-			{
-				ptstime position1 = (current->previous ?
-					current->previous->pos_time :
-					startproject);
-				ptstime position2 = (that_current->previous ?
-					that_current->previous->pos_time : 
-					startproject);
-				if(*result < 0 || *result > MIN(position1, position2))
-					*result = MIN(position1, position2);
-				break;
-			}
+		if(!(*current == *that_current) ||
+			!PTSEQU(current->pos_time, that_current->pos_time))
+		{
+			ptstime position1 = (current->previous ?
+				current->previous->pos_time :
+				startproject);
+			ptstime position2 = (that_current->previous ?
+				that_current->previous->pos_time :
+				startproject);
+			if(*result < 0 || *result > MIN(position1, position2))
+				*result = MIN(position1, position2);
+			break;
 		}
 	}
 }
@@ -115,16 +104,6 @@ void Autos::equivalent_output(Autos *autos, ptstime startproject, ptstime *resul
 void Autos::copy_from(Autos *autos)
 {
 	Auto *current = autos->first, *this_current = first;
-
-	default_auto->copy_from(autos->default_auto);
-
-// Detect common memory leak bug
-	if(autos->first && !autos->last)
-	{
-		errorbox("Autos::copy_from inconsistent pointers");
-		exit(1);
-	}
-
 	for(current = autos->first; current; current = NEXT)
 	{
 		if(!this_current)
@@ -146,15 +125,12 @@ void Autos::copy_from(Autos *autos)
 // We don't replace it in pasting but
 // when inserting the first EDL of a load operation we need to replace
 // the default keyframe.
-void Autos::insert_track(Autos *automation, 
+void Autos::insert_track(Autos *automation,
 	ptstime start,
-	ptstime length,
-	int replace_default)
+	ptstime length)
 {
 // Insert silence
 	insert(start, start + length);
-
-	if(replace_default) default_auto->copy_from(automation->default_auto);
 	for(Auto *current = automation->first; current; current = NEXT)
 	{
 		Auto *new_auto = insert_auto(start + current->pos_time);
@@ -164,9 +140,8 @@ void Autos::insert_track(Autos *automation,
 	}
 }
 
-Auto* Autos::get_prev_auto(ptstime position, 
-	Auto* &current, 
-	int use_default)
+Auto* Autos::get_prev_auto(ptstime position,
+	Auto* &current)
 {
 // Get on or before position
 // Try existing result
@@ -184,9 +159,8 @@ Auto* Autos::get_prev_auto(ptstime position,
 			current && current->pos_time > position; 
 			current = PREVIOUS) ;
 	}
-	if(!current && use_default) 
-		current = (first ? first : default_auto);
-
+	if(!current)
+		current = first;
 	return current;
 }
 
@@ -196,8 +170,6 @@ Auto* Autos::get_prev_auto(Auto* &current)
 
 	position = edl->align_to_frame(position, 0);
 	return get_prev_auto(position, current);
-
-	return current;
 }
 
 int Autos::auto_exists_for_editing(ptstime position)
@@ -207,7 +179,7 @@ int Autos::auto_exists_for_editing(ptstime position)
 	if(edl->session->auto_keyframes)
 	{
 		position = edl->align_to_frame(position, 0);
-		if (get_auto_at_position(position))
+		if(get_auto_at_position(position))
 			result = 1;
 	}
 	else
@@ -220,8 +192,8 @@ int Autos::auto_exists_for_editing(ptstime position)
 
 Auto* Autos::get_auto_at_position(ptstime position)
 {
-	for(Auto *current = first; 
-		current; 
+	for(Auto *current = first;
+		current;
 		current = NEXT)
 	{
 		if(edl->equivalent(current->pos_time, position))
@@ -252,13 +224,13 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 	return result;
 }
 
-Auto* Autos::get_next_auto(ptstime position, Auto* &current, int use_default)
+Auto* Autos::get_next_auto(ptstime position, Auto* &current)
 {
 	if(current)
 	{
-		while(current && current->pos_time > position) 
+		while(current && current->pos_time > position)
 			current = PREVIOUS;
-		while(current && current->pos_time < position) 
+		while(current && current->pos_time < position)
 			current = NEXT;
 	}
 
@@ -266,13 +238,10 @@ Auto* Autos::get_next_auto(ptstime position, Auto* &current, int use_default)
 	{
 		for(current = first;
 			current && current->pos_time <= position;
-			current = NEXT)
-			;
+			current = NEXT);
 	}
-
-	if(!current && use_default) 
-		current = (last ? last : default_auto);
-
+	if(!current)
+		current = last;
 	return current;
 }
 
@@ -281,16 +250,16 @@ Auto* Autos::insert_auto(ptstime position)
 	Auto *current, *result;
 
 // Test for existence
-	for(current = first; 
-		current && !edl->equivalent(current->pos_time, position); 
+	for(current = first;
+		current && !edl->equivalent(current->pos_time, position);
 		current = NEXT);
 
 // Insert new
 	if(!current)
 	{
 // Get first one on or before as a template
-		for(current = last; 
-			current && current->pos_time > position; 
+		for(current = last;
+			current && current->pos_time > position;
 			current = PREVIOUS);
 
 		if(current)
@@ -301,7 +270,6 @@ Auto* Autos::insert_auto(ptstime position)
 		else
 		{
 			current = first;
-			if(!current) current = default_auto;
 
 			insert_before(first, result = new_auto());
 			if(current) result->copy_from(current);
@@ -310,9 +278,7 @@ Auto* Autos::insert_auto(ptstime position)
 		result->pos_time = position;
 	}
 	else
-	{
 		result = current;
-	}
 
 	return result;
 }
@@ -330,8 +296,8 @@ Auto* Autos::insert_auto_for_editing(ptstime position)
 	if(!current)
 	{
 // Get first one on or before as a template
-		for(current = last; 
-			current && current->pos_time > position; 
+		for(current = last;
+			current && current->pos_time > position;
 			current = PREVIOUS);
 
 		if(current)
@@ -343,8 +309,6 @@ Auto* Autos::insert_auto_for_editing(ptstime position)
 		else
 		{
 			current = first;
-			if(!current) current = default_auto;
-
 			insert_before(first, result = new_auto());
 			if(current) result->copy_from(current);
 		}
@@ -352,9 +316,7 @@ Auto* Autos::insert_auto_for_editing(ptstime position)
 		result->pos_time = position;
 	}
 	else
-	{
 		result = current;
-	}
 
 	return result;
 }
@@ -386,11 +348,10 @@ void Autos::insert(ptstime start, ptstime end)
 	}
 }
 
-void Autos::paste(ptstime start, 
-	ptstime length, 
-	double scale, 
-	FileXML *file, 
-	int default_only)
+void Autos::paste(ptstime start,
+	ptstime length,
+	double scale,
+	FileXML *file)
 {
 	int total = 0;
 	int result = 0;
@@ -409,29 +370,12 @@ void Autos::paste(ptstime start,
 			if(!strcmp(file->tag.get_title(), "AUTO"))
 			{
 				Auto *current = 0;
-
-// Paste first active auto into default
-				if(default_only)
-				{
-					if(total == 1)
-					{
-						current = default_auto;
-					}
-				}
-				else
-// Paste default auto into default
-				if(total == 0)
-					current = default_auto;
-				else
-				{
-					posnum curpos = file->tag.get_property("POSITON", 0);
-					ptstime pospts = pos2pts(curpos);
-					pospts = file->tag.get_property("POSTIME", pospts) *
-							scale + 
-							start;
+				posnum curpos = file->tag.get_property("POSITON", 0);
+				ptstime pospts = pos2pts(curpos);
+				pospts = file->tag.get_property("POSTIME", pospts) *
+						scale + start;
 // Paste active auto into track
-					current = insert_auto(pospts);
-				}
+				current = insert_auto(pospts);
 
 				if(current)
 				{
@@ -450,36 +394,15 @@ void Autos::paste_silence(ptstime start, ptstime end)
 
 void Autos::copy(ptstime start,
 	ptstime end,
-	FileXML *file, 
-	int default_only,
-	int autos_only)
+	FileXML *file)
 {
-// First auto is always loaded into default even if it is discarded in a paste
-// operation
-	if(!autos_only)
+	for(Auto* current = autoof(start); 
+		current && current->pos_time <= end;
+		current = NEXT)
 	{
-		default_auto->copy(0, 0, file, default_only);
-	}
-
-	if(!default_only)
-	{
-		for(Auto* current = autoof(start); 
-			current && current->pos_time <= end;
-			current = NEXT)
-		{
 // Want to copy single keyframes by putting the cursor on them
-			if(current->pos_time >= start && current->pos_time <= end)
-			{
-				current->copy(start, end, file, default_only);
-			}
-		}
-	}
-// Copy default auto again to make it the active auto on the clipboard
-	else
-	{
-// Need to force position to 0 for the case of plugins
-// and default status to 0.
-		default_auto->copy(0, 0, file, default_only);
+		if(current->pos_time >= start && current->pos_time <= end)
+			current->copy(start, end, file);
 	}
 }
 
@@ -489,8 +412,6 @@ void Autos::optimize()
 {
 	int done = 0;
 
-// Default auto should always be at 0
-	default_auto->pos_time = 0;
 	while(!done)
 	{
 		int consecutive = 0;
@@ -583,21 +504,12 @@ void Autos::load(FileXML *file)
 			else
 			if(!strcmp(file->tag.get_title(), "AUTO"))
 			{
-				if(first_auto)
-				{
-					default_auto->load(file);
-					default_auto->pos_time = 0;
-					first_auto = 0;
-				}
-				else
-				{
-					current = append(new_auto());
+				current = append(new_auto());
 // Convert from old position
-					posnum position = file->tag.get_property("POSITION", (posnum)0);
-					current->pos_time = pos2pts(position);
-					current->pos_time = file->tag.get_property("POSTIME", current->pos_time);
-					current->load(file);
-				}
+				posnum position = file->tag.get_property("POSITION", (posnum)0);
+				current->pos_time = pos2pts(position);
+				current->pos_time = file->tag.get_property("POSTIME", current->pos_time);
+				current->load(file);
 			}
 		}
 	}while(!result);

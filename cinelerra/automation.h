@@ -65,17 +65,13 @@ public:
 // For copy automation, copy, and save
 	int copy(ptstime start,
 		ptstime end,
-		FileXML *xml, 
-		int default_only,
-		int autos_only);
-	virtual void dump();
+		FileXML *xml);
 
 // For paste automation only
 	int paste(ptstime start,
 		ptstime length,
 		double scale,
-		FileXML *file, 
-		int default_only,
+		FileXML *file,
 		AutoConf *autoconf);
 
 // Get projector coordinates if this is video automation
@@ -101,8 +97,8 @@ public:
 	void paste_silence(ptstime start, ptstime end);
 	void insert_track(Automation *automation, 
 		ptstime start,
-		ptstime length,
-		int replace_default);
+		ptstime length);
+
 	ptstime get_length();
 	virtual void get_extents(float *min, 
 		float *max,
@@ -113,6 +109,7 @@ public:
 
 	ptstime pos2pts(posnum position);
 	posnum pts2pos(ptstime position);
+	virtual void dump();
 
 	Autos *autos[AUTOMATION_TOTAL];
 

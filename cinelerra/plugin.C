@@ -137,12 +137,9 @@ void Plugin::copy_keyframes(Plugin *plugin)
 
 void Plugin::copy_keyframes(ptstime start,
 	ptstime end,
-	FileXML *file, 
-	int default_only,
-	int autos_only)
+	FileXML *file)
 {
-	keyframes->copy(start, end,
-		file, default_only, autos_only);
+	keyframes->copy(start, end, file);
 }
 
 void Plugin::synchronize_params(Edit *edit)
@@ -259,8 +256,8 @@ int Plugin::identical(Plugin *that)
 
 // Test remaining fields
 	return (this->on == that->on &&
-		((KeyFrame*)keyframes->default_auto)->identical(
-			((KeyFrame*)that->keyframes->default_auto)));
+		((KeyFrame*)keyframes->first)->identical(
+			((KeyFrame*)that->keyframes->first)));
 }
 
 int Plugin::identical_location(Plugin *that)
@@ -310,13 +307,6 @@ KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
 	{
 		current = (KeyFrame*)keyframes->first;
 	}
-	else
-// No keyframes
-	if(!current)
-	{
-		current = (KeyFrame*)keyframes->default_auto;
-	}
-
 	return current;
 }
 
@@ -344,13 +334,6 @@ KeyFrame* Plugin::get_next_keyframe(ptstime postime)
 	{
 		current =  (KeyFrame*)keyframes->last;
 	}
-	else
-// No keyframes
-	if(!current)
-	{
-		current = (KeyFrame*)keyframes->default_auto;
-	}
-
 	return current;
 }
 
@@ -367,8 +350,7 @@ KeyFrame* Plugin::get_keyframe()
 	}
 	else
 // Return new keyframe
-	if(result == (KeyFrame*)keyframes->default_auto || 
-		!PTSEQU(result->pos_time, edl->local_session->get_selectionstart(1)))
+	if(!PTSEQU(result->pos_time, edl->local_session->get_selectionstart(1)))
 	{
 		return (KeyFrame*)keyframes->insert_auto(edl->local_session->get_selectionstart(1));
 	}
@@ -443,7 +425,7 @@ void Plugin::copy(ptstime start, ptstime end, FileXML *file)
 		file->append_newline();
 
 // Keyframes
-		keyframes->copy(start, end, file, 0, 0);
+		keyframes->copy(start, end, file);
 
 		file->tag.set_title("/PLUGIN");
 		file->append_tag();
@@ -497,7 +479,7 @@ void Plugin::load(FileXML *file)
 // Default keyframe
 				if(first_keyframe)
 				{
-					keyframes->default_auto->load(file);
+					keyframes->first->load(file);
 					first_keyframe = 0;
 				}
 				else

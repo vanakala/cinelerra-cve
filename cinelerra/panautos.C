@@ -23,17 +23,24 @@
 #include "panauto.h"
 #include "panautos.h"
 
+#include <string.h>
+
 PanAutos::PanAutos(EDL *edl, Track *track)
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_PAN;
-	default_auto = new_auto();
-	default_auto->is_default = 1;
+	memset(default_values, 0, MAXCHANNELS * sizeof(float));
+	default_handle_x = 0;
+	default_handle_y = 0;
 }
 
 Auto* PanAutos::new_auto()
 {
-	return new PanAuto(edl, this);
+	PanAuto* r = new PanAuto(edl, this);
+	memcpy(r->values, default_values, MAXCHANNELS * sizeof(float));
+	r->handle_x = default_handle_x;
+	r->handle_y = default_handle_y;
+	return r;
 }
 
 void PanAutos::get_handle(int &handle_x,
@@ -63,14 +70,10 @@ void PanAutos::get_handle(int &handle_x,
 	handle_y = (int)(previous->handle_y + (next->handle_y - previous->handle_y) * fraction);
 }
 
-void PanAutos::dump()
+void PanAutos::dump(int indent)
 {
-	printf("      PanAutos::dump %p\n", this);
-		printf("       Default: postime %.3lf\n", default_auto->pos_time);
-		((PanAuto*)default_auto)->dump();
+	printf("%*sPanAutos %p dump:\n", indent, " ", this);
+	indent += 2;
 	for(Auto* current = first; current; current = NEXT)
-	{
-		printf("        postime %.3lf\n", current->pos_time);
-		((PanAuto*)current)->dump();
-	}
+		((PanAuto*)current)->dump(indent);
 }

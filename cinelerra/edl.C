@@ -608,7 +608,7 @@ void EDL::rechannel()
 		if(current->data_type == TRACK_AUDIO)
 		{
 			PanAutos *autos = (PanAutos*)current->automation->autos[AUTOMATION_PAN];
-			((PanAuto*)autos->default_auto)->rechannel();
+
 			for(PanAuto *keyframe = (PanAuto*)autos->first;
 				keyframe;
 				keyframe = (PanAuto*)keyframe->next)

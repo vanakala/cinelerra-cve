@@ -93,9 +93,7 @@ public:
 // For copying to clipboard
 	void copy_keyframes(ptstime start,
 		ptstime end,
-		FileXML *file, 
-		int default_only,
-		int autos_only);
+		FileXML *file);
 // For editing automation.
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.

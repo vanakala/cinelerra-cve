@@ -285,7 +285,7 @@ void VirtualVNode::render_mask(VFrame *output_temp)
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
 
 	Auto *current = 0;
-	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
+	MaskAuto *default_auto = (MaskAuto*)keyframe_set->first;
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(output_temp->get_pts(),
 		current);
 

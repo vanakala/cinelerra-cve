@@ -294,10 +294,17 @@ void VirtualNode::get_mute_fragment(ptstime input_position,
 {
 	IntAuto *prev_keyframe = 0;
 	IntAuto *next_keyframe = 0;
+
 	prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position, 
 		(Auto* &)prev_keyframe);
 	next_keyframe = (IntAuto*)autos->get_next_auto(input_position, 
 		(Auto* &)next_keyframe);
+
+	if(!prev_keyframe && !next_keyframe)
+	{
+		mute_constant = ((IntAutos*)autos)->get_value(input_position);
+		return;
+	}
 
 // Two distinct keyframes within range
 	if(next_keyframe->pos_time > prev_keyframe->pos_time)

@@ -149,9 +149,7 @@ void Tracks::copy_automation(ptstime selectionstart,
 		{
 			current_track->copy_automation(selectionstart, 
 				selectionend, 
-				file,
-				default_only,
-				autos_only);
+				file);
 		}
 	}
 
@@ -250,9 +248,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					temp_autoconf.set_all(1);
 					source_track->automation->copy(source_edit->project_pts,
 						source_edit->end_pts(),
-						&temp, 
-						0,
-						0);
+						&temp);
 					temp.terminate_string();
 					temp.rewind();
 // Insert new keyframes
@@ -272,8 +268,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 						dest_track->automation->paste(postime_a,
 							source_length,
 							1.0, 
-							&temp, 
-							0,
+							&temp,
 							&temp_autoconf);
 
 // Insert new edit (shift creates new edit)
@@ -624,8 +619,7 @@ void Tracks::paste_automation(ptstime selectionstart,
 								length,
 								frame_rate,
 								sample_rate,
-								file,
-								default_only);
+								file);
 						}
 					}
 					else
@@ -648,8 +642,7 @@ void Tracks::paste_automation(ptstime selectionstart,
 								length,
 								frame_rate,
 								sample_rate,
-								file,
-								default_only);
+								file);
 						}
 					}
 				}

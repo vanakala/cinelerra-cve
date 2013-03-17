@@ -37,11 +37,12 @@ public:
 	void load(FileXML *file);
 	void copy(ptstime start, ptstime end, FileXML *file, int default_auto);
 	void copy_from(Auto *that);
-	void dump();
+	void dump(int indent = 0);
 	void rechannel();
 
 	float values[MAXCHANNELS];
-	int handle_x, handle_y;
+	int handle_x;
+	int handle_y;
 };
 
 #endif

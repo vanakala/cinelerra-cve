@@ -54,7 +54,7 @@ class AFadePatch : public BC_FSlider
 {
 public:
 	AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w);
-	static FloatAuto* get_keyframe(MWindow *mwindow, APatchGUI *patch);
+	static float get_keyframe_value(MWindow *mwindow, APatchGUI *patch);
 	int handle_event();
 	float update_edl();
 	MWindow *mwindow;

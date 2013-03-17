@@ -149,7 +149,6 @@ int Automation::paste(ptstime start,
 	ptstime length,
 	double scale,
 	FileXML *file, 
-	int default_only,
 	AutoConf *autoconf)
 {
 	if(!autoconf) autoconf = edl->session->auto_conf;
@@ -158,7 +157,7 @@ int Automation::paste(ptstime start,
 	{
 		if(file->tag.title_is(xml_titles[i]) && autos[i] && autoconf->autos[i])
 		{
-			autos[i]->paste(start, length, scale, file, default_only);
+			autos[i]->paste(start, length, scale, file);
 			return 1;
 		}
 	}
@@ -167,9 +166,7 @@ int Automation::paste(ptstime start,
 
 int Automation::copy(ptstime start,
 	ptstime end,
-	FileXML *file, 
-	int default_only,
-	int autos_only)
+	FileXML *file)
 {
 // Copy regardless of what's visible.
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
@@ -181,9 +178,7 @@ int Automation::copy(ptstime start,
 			file->append_newline();
 			autos[i]->copy(start, 
 					end,
-					file,
-					default_only,
-					autos_only);
+					file);
 			char string[BCTEXTLEN];
 			sprintf(string, "/%s", xml_titles[i]);
 			file->tag.set_title(string);
@@ -261,8 +256,7 @@ void Automation::paste_silence(ptstime start, ptstime end)
 // the default keyframe.
 void Automation::insert_track(Automation *automation, 
 	ptstime start,
-	ptstime length,
-	int replace_default)
+	ptstime length)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -270,8 +264,7 @@ void Automation::insert_track(Automation *automation,
 		{
 			autos[i]->insert_track(automation->autos[i], 
 				start,
-				length,
-				replace_default);
+				length);
 		}
 	}
 }
@@ -319,8 +312,8 @@ void Automation::dump()
 	{
 		if(autos[i])
 		{
-			printf("    %s %p\n", xml_titles[i], autos[i]);
-			autos[i]->dump();
+			printf("    %s:\n", xml_titles[i]);
+			autos[i]->dump(6);
 		}
 	}
 

@@ -255,18 +255,18 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 		if(current->data_type == TRACK_AUDIO) current_pan++;
 		if(current_pan >= edl->session->audio_channels) current_pan = 0;
 	}
+	PanAutos* pan_autos = 
+		(PanAutos*)new_track->automation->autos[AUTOMATION_PAN];
 
-	PanAuto* pan_auto = 
-		(PanAuto*)new_track->automation->autos[AUTOMATION_PAN]->default_auto;
-	pan_auto->values[current_pan] = 1.0;
+	pan_autos->default_values[current_pan] = 1.0;
 
-	BC_Pan::calculate_stick_position(edl->session->audio_channels, 
-		edl->session->achannel_positions, 
-		pan_auto->values, 
-		MAX_PAN, 
+	BC_Pan::calculate_stick_position(edl->session->audio_channels,
+		edl->session->achannel_positions,
+		pan_autos->default_values,
+		MAX_PAN,
 		PAN_RADIUS,
-		pan_auto->handle_x,
-		pan_auto->handle_y);
+		pan_autos->default_handle_x,
+		pan_autos->default_handle_y);
 	return new_track;
 }
 

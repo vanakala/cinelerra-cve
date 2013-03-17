@@ -84,7 +84,7 @@ Transition::~Transition()
 
 KeyFrame* Transition::get_keyframe()
 {
-	return (KeyFrame*)keyframes->default_auto;
+	return (KeyFrame*)keyframes->first;
 }
 
 Transition& Transition::operator=(Transition &that)
@@ -151,7 +151,7 @@ void Transition::save_xml(FileXML *file)
 		file->tag.set_title("/ON");
 		file->append_tag();
 	}
-	keyframes->copy(0, 0, file, 1, 0);
+	keyframes->copy(0, 0, file);
 	file->tag.set_title("/TRANSITION");
 	file->append_tag();
 	file->append_newline();
@@ -185,7 +185,7 @@ void Transition::load_xml(FileXML *file)
 			else
 			if(file->tag.title_is("KEYFRAME"))
 			{
-				keyframes->default_auto->load(file);;
+				keyframes->first->load(file);;
 			}
 		}
 	}while(!result);

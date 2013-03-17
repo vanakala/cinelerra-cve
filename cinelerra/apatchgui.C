@@ -226,7 +226,7 @@ AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
 	w,
 	mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
 	mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE],
-	get_keyframe(mwindow, patch)->value)
+	get_keyframe_value(mwindow, patch))
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -276,16 +276,15 @@ int AFadePatch::handle_event()
 	return 1;
 }
 
-FloatAuto* AFadePatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
+float AFadePatch::get_keyframe_value(MWindow *mwindow, APatchGUI *patch)
 {
-	Auto *current = 0;
+	FloatAuto *prev = 0;
+	FloatAuto *next = 0;
 	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 
 	FloatAutos *ptr = (FloatAutos*)patch->atrack->automation->autos[AUTOMATION_FADE];
-	return (FloatAuto*)ptr->get_prev_auto(
-		unit_position,
-		current);
+	return ptr->get_value(unit_position, prev, next);
 }
 
 

@@ -42,7 +42,7 @@ public:
 	void copy_from(KeyFrame *that);
 	int operator==(Auto &that);
 	int operator==(KeyFrame &that);
-	void dump();
+	void dump(int indent = 0);
 	int identical(KeyFrame *src);
 
 	char data[MESSAGESIZE];

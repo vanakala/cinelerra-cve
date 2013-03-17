@@ -675,7 +675,7 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 					last_ignore = 0;
 					if (!edit->asset || (!moved_edit || moved_edit == edit)) 
 					{
-// tühi edit, puudub moved edit või pole see käesolev
+// empty edit, missing moved edit or not current
 						if (moved_edit && moved_edit == edit)
 							last_ignore = 1;
 							span_asset = 0;
@@ -2648,7 +2648,7 @@ int TrackCanvas::do_float_autos(Track *track,
 	}
 	else
 	{
-		current = autos->first ? autos->first : autos->default_auto;
+		current = autos->first; 
 		if(current)
 		{
 			calculate_auto_position(&ax, 
@@ -2715,39 +2715,36 @@ int TrackCanvas::do_float_autos(Track *track,
 // Draw handle
 		if(current && !result)
 		{
-			if(current != autos->default_auto)
+			if(!draw)
 			{
-				if(!draw)
-				{
-					if(track->record)
-						result = test_floatauto(current, 
-							(int)ax2, 
-							(int)ay2, 
-							(int)in_x2,
-							(int)in_y2,
-							(int)out_x2,
-							(int)out_y2,
-							(int)center_pixel, 
-							(int)yscale, 
-							cursor_x, 
-							cursor_y, 
-							buttonpress);
-					if (result) 
-						auto_instance = current;
-				}
-				else
-				if(draw_auto)
-					draw_floatauto(current, 
-						(int)ax2, 
-						(int)ay2, 
+				if(track->record)
+					result = test_floatauto(current,
+						(int)ax2,
+						(int)ay2,
 						(int)in_x2,
 						(int)in_y2,
 						(int)out_x2,
 						(int)out_y2,
-						(int)center_pixel, 
+						(int)center_pixel,
 						(int)yscale,
-						color);
+						cursor_x,
+						cursor_y,
+						buttonpress);
+				if (result)
+					auto_instance = current;
 			}
+			else
+			if(draw_auto)
+				draw_floatauto(current,
+					(int)ax2,
+					(int)ay2,
+					(int)in_x2,
+					(int)in_y2,
+					(int)out_x2,
+					(int)out_y2,
+					(int)center_pixel,
+					(int)yscale,
+					color);
 		}
 
 // Draw joining line
@@ -2883,7 +2880,7 @@ int TrackCanvas::do_toggle_autos(Track *track,
 	}
 	else
 	{
-		current = autos->first ? autos->first : autos->default_auto;
+		current = autos->first;
 		if(current)
 		{
 			ax = 0;
@@ -2913,33 +2910,29 @@ int TrackCanvas::do_toggle_autos(Track *track,
 
 		if(current && !result) 
 		{
-			if(current != autos->default_auto)
+			if(!draw)
 			{
-				if(!draw)
+				if(track->record)
 				{
-					if(track->record)
-					{
-						result = test_auto(current, 
-							(int)ax2, 
-							(int)ay2, 
-							(int)center_pixel, 
-							(int)yscale, 
-							cursor_x, 
-							cursor_y, 
-							buttonpress);
-						if (result)
-							auto_instance = current;
-					}
-				}
-				else
-					draw_auto(current, 
-						(int)ax2, 
-						(int)ay2, 
-						(int)center_pixel, 
+					result = test_auto(current,
+						(int)ax2,
+						(int)ay2,
+						(int)center_pixel,
 						(int)yscale,
-						color);
+						cursor_x,
+						cursor_y,
+						buttonpress);
+					if (result)
+						auto_instance = current;
+				}
 			}
-
+			else
+				draw_auto(current,
+					(int)ax2,
+					(int)ay2,
+					(int)center_pixel,
+					(int)yscale,
+					color);
 			current = NEXT;
 		}
 

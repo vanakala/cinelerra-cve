@@ -26,8 +26,6 @@
 KeyFrames::KeyFrames(EDL *edl, Track *track)
  : Autos(edl, track)
 {
-	default_auto = new_auto();
-	default_auto->is_default = 1;
 }
 
 Auto* KeyFrames::new_auto()
@@ -35,15 +33,9 @@ Auto* KeyFrames::new_auto()
 	return new KeyFrame(edl, this);
 }
 
-void KeyFrames::dump()
+void KeyFrames::dump(int indent)
 {
-	printf("    DEFAULT_KEYFRAME\n");
-	((KeyFrame*)default_auto)->dump();
-	printf("    KEYFRAMES total=%d\n", total());
-	for(KeyFrame *current = (KeyFrame*)first;
-		current;
-		current = (KeyFrame*)NEXT)
-	{
-		current->dump();
-	}
+	printf("%*sKeyFrames %p dump: total=%d\n", indent, " ", this, total());
+	for(KeyFrame *current = (KeyFrame*)first; current; current = (KeyFrame*)NEXT)
+		current->dump(indent + 2);
 }

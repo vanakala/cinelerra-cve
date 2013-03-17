@@ -30,8 +30,6 @@ MaskAutos::MaskAutos(EDL *edl,
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_MASK;
-	default_auto = new_auto();
-	default_auto->is_default = 1;
 }
 
 void MaskAutos::get_points(ArrayList<MaskPoint*> *points, 
@@ -55,10 +53,6 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 // Nothing before position found
 	if(!begin)
 		begin = end = (MaskAuto*)first;
-
-// Nothing after position found
-	if(!begin)
-		begin = end = (MaskAuto*)default_auto;
 
 	SubMask *mask1 = begin->get_submask(submask);
 	SubMask *mask2 = end->get_submask(submask);
@@ -106,19 +100,13 @@ Auto* MaskAutos::new_auto()
 	return new MaskAuto(edl, this);
 }
 
-void MaskAutos::dump()
+void MaskAutos::dump(int indent)
 {
-	printf("        MaskAutos::dump %p\n", this);
-	printf("        Default: postime %.3lf submasks %d\n", 
-		default_auto->pos_time,
-		((MaskAuto*)default_auto)->masks.total);
-	((MaskAuto*)default_auto)->dump();
+	printf("%*sMaskAutos %p dump(%d): base %.3f\n", indent, " ", 
+		this, total(), base_pts);
+	indent += 2;
 	for(Auto* current = first; current; current = NEXT)
-	{
-		printf("         postime %.3lf masks %d\n", 
-			current->pos_time, ((MaskAuto*)current)->masks.total);
-		((MaskAuto*)current)->dump();
-	}
+		((MaskAuto*)current)->dump(indent);
 }
 
 int MaskAutos::mask_exists(ptstime position)
@@ -148,12 +136,11 @@ int MaskAutos::total_submasks(ptstime position)
 		}
 	}
 
-	return ((MaskAuto*)default_auto)->masks.total;
+	return 0;
 }
 
 void MaskAutos::translate_masks(float translate_x, float translate_y)
 {
-	((MaskAuto *)default_auto)->translate_submasks(translate_x, translate_y);
 	for(MaskAuto* current = (MaskAuto*)first; 
 		current; 
 		current = (MaskAuto*)NEXT)

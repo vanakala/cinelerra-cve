@@ -39,7 +39,9 @@ public:
 		int *coords_undefined,
 		ptstime start,
 		ptstime end);
-	void dump();
+	int get_value(ptstime position);
+	void dump(int indent = 0);
+
 	int default_value;
 };
 

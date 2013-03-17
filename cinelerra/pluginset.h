@@ -53,13 +53,10 @@ public:
 	void copy(ptstime start, ptstime end, FileXML *file);
 	void copy_keyframes(ptstime start,
 		ptstime end,
-		FileXML *file, 
-		int default_only,
-		int autos_only);
+		FileXML *file);
 	static void paste_keyframes(ptstime start,
 		ptstime length,
-		FileXML *file, 
-		int default_only,
+		FileXML *file,
 		Track *track);
 
 // Return the nearest boundary of any kind in the plugin edits

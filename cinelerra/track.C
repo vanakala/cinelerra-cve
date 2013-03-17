@@ -365,7 +365,6 @@ void Track::insert_track(Track *track,
 	int replace_default,
 	int edit_plugins)
 {
-
 // Decide whether to copy settings based on load_mode
 	if(replace_default) copy_settings(track);
 
@@ -376,9 +375,7 @@ void Track::insert_track(Track *track,
 
 	automation->insert_track(track->automation, 
 		position,
-		track->get_length(),
-		replace_default);
-
+		track->get_length());
 	optimize();
 
 }
@@ -727,9 +724,7 @@ int Track::number_of()
 // used for copying automation alone
 int Track::copy_automation(ptstime selectionstart, 
 	ptstime selectionend,
-	FileXML *file,
-	int default_only,
-	int autos_only)
+	FileXML *file)
 {
 	file->tag.set_title("TRACK");
 // Video or audio
@@ -737,7 +732,7 @@ int Track::copy_automation(ptstime selectionstart,
 	file->append_tag();
 	file->append_newline();
 
-	automation->copy(selectionstart, selectionend, file, default_only, autos_only);
+	automation->copy(selectionstart, selectionend, file);
 
 	if(edl->session->auto_conf->plugins)
 	{
@@ -748,9 +743,7 @@ int Track::copy_automation(ptstime selectionstart,
 		{
 			plugin_set.values[i]->copy_keyframes(selectionstart,
 				selectionend,
-				file, 
-				default_only,
-				autos_only);
+				file);
 		}
 		file->tag.set_title("/PLUGINSETS");
 		file->append_tag();
@@ -771,8 +764,7 @@ int Track::paste_automation(ptstime selectionstart,
 	ptstime total_length, 
 	double frame_rate,
 	int sample_rate,
-	FileXML *file,
-	int default_only)
+	FileXML *file)
 {
 // Only used for pasting automation alone.
 	int result;
@@ -799,7 +791,6 @@ int Track::paste_automation(ptstime selectionstart,
 					total_length,
 					scale,
 					file,
-					default_only,
 					0))
 			{
 				;
@@ -810,7 +801,6 @@ int Track::paste_automation(ptstime selectionstart,
 				PluginSet::paste_keyframes(selectionstart, 
 					total_length, 
 					file,
-					default_only,
 					this);
 			}
 		}
@@ -872,7 +862,7 @@ void Track::copy(ptstime start,
 
 	AutoConf auto_conf;
 	auto_conf.set_all(1);
-	automation->copy(start, end, file, 0, 0);
+	automation->copy(start, end, file);
 
 	for(int i = 0; i < plugin_set.total; i++)
 	{

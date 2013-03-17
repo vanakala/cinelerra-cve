@@ -57,7 +57,7 @@ public:
 	VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w);
 	int handle_event();
 	float update_edl();
-	static FloatAuto* get_keyframe(MWindow *mwindow, VPatchGUI *patch);
+	static float get_keyframe_value(MWindow *mwindow, VPatchGUI *patch);
 	MWindow *mwindow;
 	VPatchGUI *patch;
 };
@@ -70,7 +70,7 @@ public:
 	int handle_event();
 	int create_objects();         // add initial items
 	static const char* mode_to_text(int mode);
-	static IntAuto* get_keyframe(MWindow *mwindow, VPatchGUI *patch);
+	static int get_keyframe_value(MWindow *mwindow, VPatchGUI *patch);
 	void update(int mode);
 
 	MWindow *mwindow;

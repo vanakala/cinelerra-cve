@@ -1274,17 +1274,13 @@ int CWindowCanvas::do_mask(int &redraw,
 			if(labs(shortest_point1 - shortest_point2) > 1)
 			{
 // Need to apply the new point to every keyframe
-				for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
-					current; )
+				for(MaskAuto *current = (MaskAuto*)mask_autos->first;
+					current; current = (MaskAuto*)NEXT)
 				{
 					SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
 					MaskPoint *new_point = new MaskPoint;
 					submask->points.append(new_point);
 					*new_point = *point;
-					if(current == (MaskAuto*)mask_autos->default_auto)
-						current = (MaskAuto*)mask_autos->first;
-					else
-						current = (MaskAuto*)NEXT;
 				}
 
 				gui->affected_point = mask->points.total - 1;
@@ -1294,8 +1290,8 @@ int CWindowCanvas::do_mask(int &redraw,
 // Insert between 2 points, shifting back point 2
 			if(shortest_point1 >= 0 && shortest_point2 >= 0)
 			{
-				for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
-					current; )
+				for(MaskAuto *current = (MaskAuto*)mask_autos->first;
+					current; current = (MaskAuto*)NEXT)
 				{
 					SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
 // In case the keyframe point count isn't synchronized with the rest of the keyframes,
@@ -1312,11 +1308,6 @@ int CWindowCanvas::do_mask(int &redraw,
 
 						*new_point = *point;
 					}
-
-					if(current == (MaskAuto*)mask_autos->default_auto)
-						current = (MaskAuto*)mask_autos->first;
-					else
-						current = (MaskAuto*)NEXT;
 				}
 
 
@@ -1327,32 +1318,24 @@ int CWindowCanvas::do_mask(int &redraw,
 // Create the first point.
 			if(!result)
 			{
-				for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
-					current; )
+				for(MaskAuto *current = (MaskAuto*)mask_autos->first;
+					current; current = (MaskAuto*)NEXT)
 				{
 					SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
 					MaskPoint *new_point = new MaskPoint;
 					submask->points.append(new_point);
 					*new_point = *point;
-					if(current == (MaskAuto*)mask_autos->default_auto)
-						current = (MaskAuto*)mask_autos->first;
-					else
-						current = (MaskAuto*)NEXT;
 				}
 
 				if(mask->points.total < 2)
 				{
-					for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
-						current; )
+					for(MaskAuto *current = (MaskAuto*)mask_autos->first;
+						current; current = (MaskAuto*)NEXT)
 					{
 						SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
 						MaskPoint *new_point = new MaskPoint;
 						submask->points.append(new_point);
 						*new_point = *point;
-						if(current == (MaskAuto*)mask_autos->default_auto)
-							current = (MaskAuto*)mask_autos->first;
-						else
-							current = (MaskAuto*)NEXT;
 					}
 				}
 				gui->affected_point = mask->points.total - 1;

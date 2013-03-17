@@ -47,9 +47,9 @@ public:
 // on or before position.
 // Return 0 if none exists and use_default is false.
 // If &current is nonzero it is used as a starting point for searching.
-	Auto* get_prev_auto(ptstime position, Auto* &current, int use_default = 1);
+	Auto* get_prev_auto(ptstime position, Auto* &current);
 	Auto* get_prev_auto(Auto* &current);
-	Auto* get_next_auto(ptstime position, Auto* &current, int use_default = 1);
+	Auto* get_next_auto(ptstime position, Auto* &current);
 // Determine if a keyframe exists before creating it.
 	int auto_exists_for_editing(ptstime position);
 // Returns auto at exact position, null if non-existent. ignores autokeyframming and align on frames
@@ -65,14 +65,12 @@ public:
 	Auto* insert_auto_for_editing(ptstime position);
 	void insert_track(Autos *automation, 
 		ptstime start,
-		ptstime length,
-		int replace_default);
+		ptstime length);
 	virtual void load(FileXML *xml);
 	void paste(ptstime start,
 		ptstime length,
-		double scale, 
-		FileXML *file, 
-		int default_only);
+		double scale,
+		FileXML *file);
 	void remove_nonsequential(Auto *keyframe);
 	void optimize();
 
@@ -87,27 +85,17 @@ public:
 
 	EDL *edl;
 	Track *track;
-// Default settings if no autos.
-// Having a persistent keyframe created problems when files were loaded and
-// we wanted to keep only 1 auto.
-// Default auto has position 0 except in effects, where multiple default autos
-// exist.
-	Auto *default_auto;
 
 	int autoidx;
 	int autogrouptype;
 	int type;
 
-	virtual void dump() {};
-
 	void clear_all();
 	void insert(ptstime start, ptstime end);
 	void paste_silence(ptstime start, ptstime end);
 	void copy(ptstime start,
-		ptstime end, 
-		FileXML *xml, 
-		int default_only,
-		int autos_only);
+		ptstime end,
+		FileXML *xml);
 // Stores the background rendering position in result
 	void clear(ptstime start,
 		ptstime end,
@@ -131,6 +119,10 @@ public:
                                           // 0 if after all autos
 	Auto* nearest_before(ptstime position);    // return nearest auto before or 0
 	Auto* nearest_after(ptstime position);     // return nearest auto after or 0
+
+	virtual void dump(int indent = 0) {};
+
+	ptstime base_pts;
 };
 
 #endif

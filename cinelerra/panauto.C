@@ -95,10 +95,11 @@ void PanAuto::copy_from(Auto *that)
 	this->handle_y = pan_auto->handle_y;
 }
 
-void PanAuto::dump()
+void PanAuto::dump(int indent)
 {
-	printf("        handle_x %d\n", handle_x);
-	printf("        handle_y %d\n", handle_y);
+	printf("%*sPanAuto %p %.3f handle_x: %d handle_y: %d\n", 
+		indent, " ", this, pos_time, handle_x, handle_y);
+	indent += 2;
 	for(int i = 0; i < edl->session->audio_channels; i++)
-		printf("           value %d %f\n", i, values[i]);
+		printf("%*svalue %d %f\n", indent, " ", i, values[i]);
 }

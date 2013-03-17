@@ -38,7 +38,11 @@ public:
 		ptstime position,
 		PanAuto* &previous,
 		PanAuto* &next);
-	void dump();
+	void dump(int indent = 0);
+
+	float default_values[MAXCHANNELS];
+	int default_handle_x;
+	int default_handle_y;
 };
 
 #endif

@@ -99,13 +99,10 @@ void FloatAuto::copy_from(FloatAuto *that)
 	this->control_out_pts = that->control_out_pts;
 }
 
-void FloatAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
+void FloatAuto::copy(ptstime start, ptstime end, FileXML *file)
 {
 	file->tag.set_title("AUTO");
-	if(default_auto)
-		file->tag.set_property("POSTIME", 0);
-	else
-		file->tag.set_property("POSTIME", pos_time - start);
+	file->tag.set_property("POSTIME", pos_time - start);
 	file->tag.set_property("VALUE", value);
 	file->tag.set_property("CONTROL_IN_VALUE", control_in_value);
 	file->tag.set_property("CONTROL_OUT_VALUE", control_out_value);
@@ -133,4 +130,15 @@ void FloatAuto::load(FileXML *file)
 		control_out_pts = autos->pos2pts(control_position);
 	control_in_pts = file->tag.get_property("CONTROL_IN_PTS", control_in_pts);
 	control_out_pts = file->tag.get_property("CONTROL_OUT_PTS", control_out_pts);
+}
+
+void FloatAuto::dump(int ident)
+{
+	printf("%*sFloatAuto %p dump:\n", ident, "", this);
+	ident += 2;
+	printf("%*spos_time %.3lf value %.3f\n", ident, "", pos_time, value);
+	printf("%*sinvalue=%.3f outvalue=%.3f\n", ident, "",
+		control_in_value, control_out_value);
+	printf("%*sin_pts %.3f out_pts %.3f\n", ident, "",
+		control_in_pts, control_out_pts);
 }

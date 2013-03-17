@@ -63,10 +63,6 @@ SubMask::SubMask(MaskAuto *keyframe)
 	this->keyframe = keyframe;
 }
 
-SubMask::~SubMask()
-{
-}
-
 int SubMask::operator==(SubMask& ptr)
 {
 	if(points.total != ptr.points.total) return 0;
@@ -182,11 +178,14 @@ void SubMask::copy(FileXML *file)
 	}
 }
 
-void SubMask::dump()
+void SubMask::dump(int indent)
 {
+	printf("%*sSubmask %p:\n", indent, " ", this);
+	indent += 2;
 	for(int i = 0; i < points.total; i++)
 	{
-		printf("         point=%d x=%.2f y=%.2f in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
+		printf("%*spoint=%d x=%.2f y=%.2f in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
+			indent, " ",
 			i,
 			points.values[i]->x, 
 			points.values[i]->y, 
@@ -370,14 +369,14 @@ void MaskAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
 	file->append_newline();
 }
 
-void MaskAuto::dump()
+void MaskAuto::dump(int indent)
 {
-	printf("         mode=%d value=%d\n", mode, value);
+	printf("%*sSubmask %p: mode: %d value: %d feather %.3f before %d\n", indent, " ", 
+		this, mode, value, feather, apply_before_plugins);
+	printf("%*spos_time %.3f masks %d\n", indent + 2, " ", pos_time, masks.total);
+	indent += 4;
 	for(int i = 0; i < masks.total; i++)
-	{
-		printf("         submask %d\n", i);
-		masks.values[i]->dump();
-	}
+		masks.values[i]->dump(indent);
 }
 
 void MaskAuto::translate_submasks(float translate_x, float translate_y)

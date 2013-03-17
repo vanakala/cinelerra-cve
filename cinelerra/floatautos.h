@@ -55,10 +55,11 @@ public:
 		ptstime end);
 	void straighten(ptstime start, ptstime end);
 
-	void dump();
 	Auto* add_auto(ptstime position, float value);
 	Auto* append_auto();
 	Auto* new_auto();
+	void dump(int ident = 0);
+
 	float default_value;
 };
 

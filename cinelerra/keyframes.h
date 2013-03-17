@@ -38,7 +38,7 @@ public:
 	KeyFrames(EDL *edl, Track *track);
 
 	Auto* new_auto();
-	void dump();
+	void dump(int indent = 0);
 };
 
 #endif

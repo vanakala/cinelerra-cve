@@ -47,13 +47,12 @@ class SubMask
 {
 public:
 	SubMask(MaskAuto *keyframe);
-	~SubMask();
 
 	int operator==(SubMask& ptr);
 	void copy_from(SubMask& ptr);
 	void load(FileXML *file);
 	void copy(FileXML *file);
-	void dump();
+	void dump(int indent = 0);
 
 	ArrayList<MaskPoint*> points;
 	MaskAuto *keyframe;
@@ -74,7 +73,7 @@ public:
 	void interpolate_from(Auto *a1, Auto *a2, ptstime position); 
 	void copy_from(MaskAuto *src);
 
-	void dump();
+	void dump(int indent = 0);
 // Retrieve submask with clamping
 	SubMask* get_submask(int number);
 // Translates all submasks

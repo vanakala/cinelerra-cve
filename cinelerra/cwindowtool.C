@@ -1331,7 +1331,7 @@ int CWindowMaskMode::handle_event()
 
 	if(track)
 	{
-		((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->default_auto)->mode = 
+		((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->first)->mode = 
 			text_to_mode(get_text());
 	}
 
@@ -1360,8 +1360,8 @@ int CWindowMaskDelete::handle_event()
 	if(track)
 	{
 		MaskAutos *mask_autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
-		for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
-			current; )
+		for(MaskAuto *current = (MaskAuto*)mask_autos->first;
+			current; current = (MaskAuto*)NEXT)
 		{
 			SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
 
@@ -1377,11 +1377,6 @@ int CWindowMaskDelete::handle_event()
 				submask->points.remove_object(
 					submask->points.values[submask->points.total - 1]);
 			}
-
-			if(current == (MaskAuto*)mask_autos->default_auto)
-				current = (MaskAuto*)mask_autos->first;
-			else
-				current = (MaskAuto*)NEXT;
 		}
 		gui->update();
 		gui->update_preview();
@@ -1667,7 +1662,7 @@ void CWindowMaskGUI::update()
 	if(track)
 	{
 		mode->set_text(
-			CWindowMaskMode::mode_to_text(((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->default_auto)->mode));
+			CWindowMaskMode::mode_to_text(((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->first)->mode));
 	}
 }
 

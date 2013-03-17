@@ -35,7 +35,7 @@ public:
 
 	Auto* new_auto();
 
-	void dump();
+	void dump(int indent = 0);
 
 	static void avg_points(MaskPoint *output, 
 		MaskPoint *input1, 
@@ -50,8 +50,5 @@ public:
 // Translates all mask points
 	void translate_masks(float translate_x, float translate_y);
 };
-
-
-
 
 #endif

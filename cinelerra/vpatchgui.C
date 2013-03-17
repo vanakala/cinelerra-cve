@@ -138,7 +138,7 @@ int VPatchGUI::update(int x, int y)
 		}
 		else
 		{
-			mode->update(mode->get_keyframe(mwindow, this)->value);
+			mode->update(mode->get_keyframe_value(mwindow, this));
 			nudge->update();
 		}
 	}
@@ -183,7 +183,7 @@ VFadePatch::VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w)
 		w, 
 		mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
 		mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE], 
-		(int64_t)get_keyframe(mwindow, patch)->value)
+		(int64_t)get_keyframe_value(mwindow, patch))
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -233,16 +233,17 @@ int VFadePatch::handle_event()
 	return 1;
 }
 
-FloatAuto* VFadePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
+float VFadePatch::get_keyframe_value(MWindow *mwindow, VPatchGUI *patch)
 {
 	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 
-	Auto *current = 0;
+	FloatAuto *prev = 0;
+	FloatAuto *next = 0;
 
-	return (FloatAuto*)patch->vtrack->automation->autos[AUTOMATION_FADE]->get_prev_auto(
+	return ((FloatAutos*)patch->vtrack->automation->autos[AUTOMATION_FADE])->get_value(
 		unit_position,
-		current);
+		prev, next);
 }
 
 
@@ -257,7 +258,7 @@ VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-	this->mode = get_keyframe(mwindow, patch)->value;
+	this->mode = get_keyframe_value(mwindow, patch);
 	set_icon(patch->patchbay->mode_to_icon(this->mode));
 	set_tooltip("Overlay mode");
 }
@@ -288,15 +289,14 @@ int VModePatch::handle_event()
 	return 1;
 }
 
-IntAuto* VModePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
+int VModePatch::get_keyframe_value(MWindow *mwindow, VPatchGUI *patch)
 {
 	Auto *current = 0;
 	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 
-	return (IntAuto*)patch->vtrack->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-		(posnum)unit_position, 
-		current);
+	return ((IntAutos*)patch->vtrack->automation->autos[AUTOMATION_MODE])->get_value(
+		unit_position);
 }
 
 

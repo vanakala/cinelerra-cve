@@ -890,7 +890,7 @@ void MaskEngine::do_mask(VFrame *output,
 {
 	Auto *current = 0;
 	ptstime start_pts = output->get_pts();
-	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
+	MaskAuto *first_auto = (MaskAuto*)keyframe_set->first;
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_pts,
 		current);
 
@@ -907,13 +907,13 @@ void MaskEngine::do_mask(VFrame *output,
 
 // Ignore certain masks
 	if(total_points < 2 || 
-		(keyframe->value == 0 && default_auto->mode == MASK_SUBTRACT_ALPHA))
+		(keyframe->value == 0 && first_auto->mode == MASK_SUBTRACT_ALPHA))
 	{
 		return;
 	}
 
 // Fake certain masks
-	if(keyframe->value == 0 && default_auto->mode == MASK_MULTIPLY_ALPHA)
+	if(keyframe->value == 0 && first_auto->mode == MASK_MULTIPLY_ALPHA)
 	{
 		output->clear_frame();
 		return;
@@ -1020,7 +1020,7 @@ void MaskEngine::do_mask(VFrame *output,
 	}
 
 	this->output = output;
-	this->mode = default_auto->mode;
+	this->mode = first_auto->mode;
 	this->feather = keyframe->feather;
 	this->value = keyframe->value;
 
