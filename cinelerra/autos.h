@@ -112,7 +112,6 @@ public:
 			Auto **before, Auto **after);
 // 1 if automation doesn't change
 	virtual int automation_is_constant(ptstime start, ptstime end) { return 0; };
-	virtual double get_automation_constant(ptstime start, ptstime end) { return 0; };
 
 	Auto* autoof(ptstime position);   // return nearest auto equal to or after position
                                           // 0 if after all autos

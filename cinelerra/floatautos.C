@@ -195,26 +195,6 @@ int FloatAutos::automation_is_constant(ptstime start,
 	return 1;
 }
 
-double FloatAutos::get_automation_constant(ptstime start, ptstime end)
-{
-	Auto *current_auto, *before = 0, *after = 0;
-
-// quickly get autos just outside range
-	get_neighbors(start, end, &before, &after);
-
-// no auto before range so use first
-	if(before)
-		current_auto = before;
-	else
-		current_auto = first;
-
-// no autos at all so use default value
-	if(!current_auto) 
-		return default_value;
-
-	return ((FloatAuto*)current_auto)->value;
-}
-
 float FloatAutos::get_value(ptstime position, 
 	FloatAuto* &previous,
 	FloatAuto* &next)

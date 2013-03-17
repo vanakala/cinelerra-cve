@@ -41,7 +41,7 @@ public:
 	int automation_is_constant(ptstime start,
 		ptstime length,
 		double &constant);
-	double get_automation_constant(ptstime start, ptstime end);
+
 // Get value at a specific point.  This needs previous and next stores
 // because it is used for every pixel in the drawing function.
 	float get_value(ptstime position,

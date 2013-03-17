@@ -70,7 +70,7 @@ int IntAutos::automation_is_constant(ptstime start, ptstime end)
 	return result;
 }
 
-double IntAutos::get_automation_constant(ptstime start, ptstime end)
+int IntAutos::get_automation_constant(ptstime start, ptstime end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
 

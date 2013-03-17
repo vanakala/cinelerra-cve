@@ -33,7 +33,7 @@ public:
 
 	Auto* new_auto();
 	int automation_is_constant(ptstime start, ptstime end);
-	double get_automation_constant(ptstime start, ptstime end);
+	int get_automation_constant(ptstime start, ptstime end);
 	void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,
