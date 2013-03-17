@@ -563,14 +563,6 @@ void Autos::get_neighbors(ptstime start, ptstime end,
 	while(*after && (*after)->pos_time < end) *after = (*after)->next;
 }
 
-ptstime Autos::get_length()
-{
-	if(last)
-		return last->pos_time + pos2pts(1);
-	else
-		return 0;
-}
-
 // Coversions between position and ptstime
 ptstime Autos::pos2pts(posnum position)
 {

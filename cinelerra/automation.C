@@ -269,24 +269,6 @@ void Automation::insert_track(Automation *automation,
 	}
 }
 
-
-ptstime Automation::get_length()
-{
-	ptstime length = 0;
-	ptstime total_length = 0;
-
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		if(autos[i])
-		{
-			length = autos[i]->get_length();
-			if(length > total_length) total_length = length;
-		}
-	}
-
-	return total_length;
-}
-
 void Automation::get_extents(float *min, 
 	float *max,
 	int *coords_undefined,

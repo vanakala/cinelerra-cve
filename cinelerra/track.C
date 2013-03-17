@@ -238,10 +238,6 @@ ptstime Track::get_length()
 		length = plugin_set.values[i]->last->project_pts;
 		if(length > total_length) total_length = length;
 	}
-// Test keyframes
-	length = automation->get_length();
-	if(length > total_length) total_length = length;
-
 	return total_length;
 }
 

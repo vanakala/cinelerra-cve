@@ -76,7 +76,6 @@ public:
 
 // Returns a type enumeration
 	int get_type();
-	ptstime get_length();
 	virtual void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,

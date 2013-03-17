@@ -98,8 +98,6 @@ public:
 	void insert_track(Automation *automation, 
 		ptstime start,
 		ptstime length);
-
-	ptstime get_length();
 	virtual void get_extents(float *min, 
 		float *max,
 		int *coords_undefined,
