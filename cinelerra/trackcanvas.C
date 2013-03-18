@@ -1894,7 +1894,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 				case AUTOMATION_PAN:
 				case AUTOMATION_MASK:
 					result = do_autos(track, 
-						automation->autos[i],
+						autos,
 						cursor_x, 
 						cursor_y, 
 						draw, 
@@ -2613,7 +2613,9 @@ int TrackCanvas::do_float_autos(Track *track,
 	int draw_auto;
 	double slope;
 	int skip = 0;
-
+	Auto *current = 0;
+	Auto *previous = 0;
+	int empty = autos->first == autos->last;
 	auto_instance = 0;
 
 	calculate_viewport(track, 
@@ -2624,12 +2626,9 @@ int TrackCanvas::do_float_autos(Track *track,
 		center_pixel);
 
 // Get first auto before start
-	Auto *current = 0;
-	Auto *previous = 0;
 	for(current = autos->last; 
 		current && current->pos_time >= view_start;
-		current = PREVIOUS)
-		;
+		current = PREVIOUS);
 
 	if(current)
 	{
@@ -2674,7 +2673,7 @@ int TrackCanvas::do_float_autos(Track *track,
 	do
 	{
 		skip = 0;
-		draw_auto = 1;
+		draw_auto = !empty;
 
 		if(current)
 		{
@@ -2705,7 +2704,7 @@ int TrackCanvas::do_float_autos(Track *track,
 			ax2 = get_w();
 			ay2 = ay + slope * (get_w() - ax);
 		}
-		
+
 		if(ax < 0)
 		{
 			ay = ay + slope * (0 - ax);
@@ -2853,6 +2852,7 @@ int TrackCanvas::do_toggle_autos(Track *track,
 	int center_pixel;
 	double xzoom;
 	double ax, ay, ax2, ay2;
+	int empty = autos->first == autos->last;
 
 	auto_instance = 0;
 
@@ -2927,6 +2927,7 @@ int TrackCanvas::do_toggle_autos(Track *track,
 				}
 			}
 			else
+			if(!empty)
 				draw_auto(current,
 					(int)ax2,
 					(int)ay2,
@@ -3014,6 +3015,10 @@ int TrackCanvas::do_autos(Track *track,
 	double yscale;
 	int center_pixel;
 	double xzoom;
+	Auto *current;
+
+	if(autos->first == autos->last)
+		return 0;
 
 	calculate_viewport(track, 
 		view_start,
@@ -3022,7 +3027,6 @@ int TrackCanvas::do_autos(Track *track,
 		xzoom,
 		center_pixel);
 
-	Auto *current;
 	auto_instance = 0;
 
 	for(current = autos->first; current && !result; current = NEXT)
@@ -3070,7 +3074,9 @@ int TrackCanvas::do_autos(Track *track,
 				}
 			}
 			else
+			{
 				draw_pixmap(pixmap, x, y);
+			}
 		}
 	}
 	return result;
