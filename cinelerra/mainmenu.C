@@ -135,10 +135,6 @@ int MainMenu::create_objects()
 	keyframemenu->add_item(new PasteKeyframes(mwindow));
 	keyframemenu->add_item(new ClearKeyframes(mwindow));
 	keyframemenu->add_item(new StraightenKeyframes(mwindow));
-	keyframemenu->add_item(new BC_MenuItem("-"));
-	keyframemenu->add_item(new CopyDefaultKeyframe(mwindow));
-	keyframemenu->add_item(new PasteDefaultKeyframe(mwindow));
-
 
 	add_menu(audiomenu = new BC_Menu(_("Audio")));
 	audiomenu->add_item(new AddAudioTrack(mwindow));
@@ -591,64 +587,6 @@ int StraightenKeyframes::handle_event()
 	return 1;
 }
 
-
-
-
-
-
-
-
-CutDefaultKeyframe::CutDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Cut default keyframe"), "Alt-X", 'X')
-{ 
-	set_alt(); 
-	this->mwindow = mwindow; 
-}
-
-int CutDefaultKeyframe::handle_event()
-{
-	mwindow->cut_default_keyframe(); 
-	return 1;
-}
-
-CopyDefaultKeyframe::CopyDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Copy default keyframe"), "Alt-c", 'c')
-{ 
-	set_alt(); 
-	this->mwindow = mwindow; 
-}
-
-int CopyDefaultKeyframe::handle_event()
-{
-	mwindow->copy_default_keyframe();
-	return 1;
-}
-
-PasteDefaultKeyframe::PasteDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Paste default keyframe"), "Alt-v", 'v')
-{
-	set_alt(); 
-	this->mwindow = mwindow; 
-}
-
-int PasteDefaultKeyframe::handle_event()
-{
-	mwindow->paste_default_keyframe(); 
-	return 1;
-}
-
-ClearDefaultKeyframe::ClearDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Clear default keyframe"), "Alt-Del", DELETE)
-{
-	set_alt(); 
-	this->mwindow = mwindow; 
-}
-
-int ClearDefaultKeyframe::handle_event()
-{
-	mwindow->clear_default_keyframe();
-	return 1;
-}
 
 Cut::Cut(MWindow *mwindow)
  : BC_MenuItem(_("Cut"), "x", 'x') 

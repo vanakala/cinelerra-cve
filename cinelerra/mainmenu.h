@@ -239,38 +239,6 @@ public:
 	MWindow *mwindow;
 };
 
-class CutDefaultKeyframe : public BC_MenuItem
-{
-public:
-	CutDefaultKeyframe(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class CopyDefaultKeyframe : public BC_MenuItem
-{
-public:
-	CopyDefaultKeyframe(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class PasteDefaultKeyframe : public BC_MenuItem
-{
-public:
-	PasteDefaultKeyframe(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class ClearDefaultKeyframe : public BC_MenuItem
-{
-public:
-	ClearDefaultKeyframe(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
 class PasteSilence : public BC_MenuItem
 {
 public:

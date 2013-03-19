@@ -220,20 +220,6 @@ void MWindow::clear_automation()
 	cwindow->update(1, 0, 0);
 }
 
-void MWindow::clear_default_keyframe()
-{
-	edl->tracks->clear_default_keyframe();
-	save_backup();
-	undo->update_undo(_("clear default keyframe"), LOAD_AUTOMATION);
-
-	restart_brender();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
-	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
-	cwindow->update(1, 0, 0);
-}
-
 void MWindow::clear_labels()
 {
 	clear_labels(edl->local_session->get_selectionstart(), 
@@ -299,15 +285,6 @@ void MWindow::copy_automation()
 		0); 
 	gui->get_clipboard()->to_clipboard(file.string, 
 		strlen(file.string), 
-		SECONDARY_SELECTION);
-}
-
-void MWindow::copy_default_keyframe()
-{
-	FileXML file;
-	edl->tracks->copy_default_keyframe(&file);
-	gui->get_clipboard()->to_clipboard(file.string,
-		strlen(file.string),
 		SECONDARY_SELECTION);
 }
 
@@ -397,21 +374,6 @@ void MWindow::cut_automation()
 	sync_parameters(CHANGE_PARAMS);
 	gui->patchbay->update();
 	cwindow->update(1, 0, 0);
-}
-
-void MWindow::cut_default_keyframe()
-{
-	copy_default_keyframe();
-	edl->tracks->clear_default_keyframe();
-	undo->update_undo(_("cut default keyframe"), LOAD_AUTOMATION);
-
-	restart_brender();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
-	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
-	cwindow->update(1, 0, 0);
-	save_backup();
 }
 
 void MWindow::delete_inpoint()
@@ -1048,33 +1010,6 @@ void MWindow::paste_automation()
 		sync_parameters(CHANGE_PARAMS);
 		gui->patchbay->update();
 		cwindow->update(1, 0, 0);
-	}
-}
-
-void MWindow::paste_default_keyframe()
-{
-	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
-
-	if(len)
-	{
-		char *string = new char[len + 1];
-		gui->get_clipboard()->from_clipboard(string, 
-			len, 
-			SECONDARY_SELECTION);
-		FileXML file;
-		file.read_from_string(string);
-		edl->tracks->paste_default_keyframe(&file); 
-		undo->update_undo(_("paste default keyframe"), LOAD_AUTOMATION);
-
-		restart_brender();
-		update_plugin_guis();
-		gui->canvas->draw_overlays();
-		gui->canvas->flash();
-		sync_parameters(CHANGE_PARAMS);
-		gui->patchbay->update();
-		cwindow->update(1, 0, 0);
-		delete [] string;
-		save_backup();
 	}
 }
 

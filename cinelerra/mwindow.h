@@ -383,13 +383,6 @@ public:
 	void paste_automation();
 	void clear_automation();
 	void straighten_automation();
-	void cut_default_keyframe();
-	void copy_default_keyframe();
-// Use paste_automation to paste the default keyframe in other position.
-// Use paste_default_keyframe to replace the default keyframe with whatever is
-// in the clipboard.
-	void paste_default_keyframe();
-	void clear_default_keyframe();
 
 	void modify_edithandles(void);
 	void modify_pluginhandles(void);
