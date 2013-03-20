@@ -51,9 +51,10 @@ public:
 	Autos *keyframe_autos;
 	Automation *keyframe_automation;
 	Auto *keyframe_auto;
-
+private:
 	KeyframePopupDelete *key_delete;
 	KeyframePopupCopy *key_copy;
+	int delete_active;
 };
 
 class KeyframePopupDelete : public BC_MenuItem

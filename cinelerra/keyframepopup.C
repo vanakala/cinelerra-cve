@@ -19,6 +19,7 @@
  * 
  */
 
+#include "autos.h"
 #include "bcsignals.h"
 #include "edl.h"
 #include "keyframe.h"
@@ -41,6 +42,7 @@ KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
 	this->mwindow = mwindow;
 	this->gui = gui;
 	key_delete = 0;
+	delete_active = 0;
 	key_copy = 0;
 }
 
@@ -48,6 +50,7 @@ void KeyframePopup::create_objects()
 {
 	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
+	delete_active = 1;
 }
 
 void KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
@@ -68,6 +71,22 @@ void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyf
 	/* FIXPOS snap to cursor */
 	ptstime current_position = mwindow->edl->local_session->get_selectionstart(1);
 	ptstime new_position = keyframe_auto->pos_time;
+	if(autos->first == auto_keyframe)
+	{
+		if(delete_active)
+		{
+			remove_item(key_delete);
+			delete_active = 0;
+		}
+	}
+	else
+	{
+		if(!delete_active)
+		{
+			add_item(key_delete);
+			delete_active = 1;
+		}
+	}
 
 	mwindow->edl->local_session->set_selection(new_position);
 
