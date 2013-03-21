@@ -1908,8 +1908,6 @@ int TrackCanvas::do_keyframes(int cursor_x,
 					{
 					case AUTOMATION_TYPE_FLOAT:
 						{
-							Automation *dummy = new Automation(0,track);
-							int autogrouptype = dummy->autogrouptype(i,track);
 							result = do_float_autos(track, 
 								autos,
 								cursor_x,
@@ -1917,9 +1915,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 								draw,
 								buttonpress,
 								auto_colors[i],
-								auto_keyframe,
-								autogrouptype);
-							delete dummy;
+								auto_keyframe);
 						}
 						break;
 
@@ -2269,11 +2265,11 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	int y1,
 	int x2,
 	int y2,
-	int color,
-	int autogrouptype)
+	int color)
 {
 // Solve bezier equation for either every pixel or a certain large number of
 // points.
+	int autogrouptype = autos->autogrouptype;
 
 // Not using slope intercept
 	x1 = MAX(0, x1);
@@ -2397,10 +2393,10 @@ int TrackCanvas::test_floatline(int center_pixel,
 	int x2,
 	int cursor_x,
 	int cursor_y,
-	int buttonpress,
-	int autogrouptype)
+	int buttonpress)
 {
 	int result = 0;
+	int autogrouptype = autos->autogrouptype;
 
 	double automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
 	double automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
@@ -2598,8 +2594,7 @@ int TrackCanvas::do_float_autos(Track *track,
 		int draw, 
 		int buttonpress,
 		int color,
-		Auto* &auto_instance,
-		int autogrouptype)
+		Auto* &auto_instance)
 {
 	int result = 0;
 
@@ -2642,7 +2637,7 @@ int TrackCanvas::do_float_autos(Track *track,
 			view_start,
 			xzoom,
 			yscale,
-			autogrouptype);
+			autos->autogrouptype);
 		current = NEXT;
 	}
 	else
@@ -2660,7 +2655,7 @@ int TrackCanvas::do_float_autos(Track *track,
 				view_start,
 				xzoom,
 				yscale,
-				autogrouptype);
+				autos->autogrouptype);
 			ax = 0;
 		}
 		else
@@ -2687,7 +2682,7 @@ int TrackCanvas::do_float_autos(Track *track,
 				view_start,
 				xzoom,
 				yscale,
-				autogrouptype);
+				autos->autogrouptype);
 		}
 		else
 		{
@@ -2763,8 +2758,7 @@ int TrackCanvas::do_float_autos(Track *track,
 						(int)ax2 - HANDLE_W / 2,
 						cursor_x, 
 						cursor_y, 
-						buttonpress,
-						autogrouptype);
+						buttonpress);
 				}
 			}
 		}
@@ -2780,8 +2774,7 @@ int TrackCanvas::do_float_autos(Track *track,
 				(int)ay, 
 				(int)ax2, 
 				(int)ay2,
-				color,
-				autogrouptype);
+				color);
 
 		if(current)
 		{
@@ -2812,8 +2805,7 @@ int TrackCanvas::do_float_autos(Track *track,
 					(int)ax2,
 					cursor_x, 
 					cursor_y, 
-					buttonpress,
-					autogrouptype);
+					buttonpress);
 			}
 		}
 		else
@@ -2828,8 +2820,7 @@ int TrackCanvas::do_float_autos(Track *track,
 				(int)ay, 
 				(int)ax2, 
 				(int)ay2,
-				color,
-				autogrouptype);
+				color);
 	}
 
 	return result;

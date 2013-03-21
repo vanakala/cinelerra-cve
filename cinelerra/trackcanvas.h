@@ -122,8 +122,7 @@ public:
 		int ay,
 		int ax2,
 		int ay2,
-		int color,
-		int autogrouptype);
+		int color);
 	int test_floatline(int center_pixel, 
 		FloatAutos *autos,
 		double view_start,
@@ -133,8 +132,7 @@ public:
 		int x2,
 		int cursor_x, 
 		int cursor_y, 
-		int buttonpress,
-		int autogrouptype);
+		int buttonpress);
 	void draw_toggleline(int center_pixel, 
 		int ax,
 		int ay,
@@ -165,8 +163,7 @@ public:
 		int draw, 
 		int buttonpress,
 		int color,
-		Auto * &auto_instance,
-		int autogrouptype);
+		Auto * &auto_instance);
 	int do_toggle_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
