@@ -2,7 +2,7 @@ This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of September 30, 2012
+This file describes status of this branch as of March 23, 2013
 
 Contents.
 
@@ -30,6 +30,10 @@ huge and locking issues are hard to test.
 Another huge change implementation of pts based timing. This enables
 to edit media with variable framerate and get rid of assumption
 that audio and video start simultaneously.
+
+The branch is backward compatible - it can load projects created with 
+official branch of Cinelerra, the result may be somehow different.
+The projects saved by this branch can not be loaded to offical Cinelerra.
 
 Changes in this branch:
 - subtitle decoding in libmpeg3
@@ -73,6 +77,11 @@ Changes in this branch:
 - all configured ALSA PCM devices are selectable
 - some improvements and fixes of the build system
 - new plugin C41
+- removed confusing "default keyframe", most of its functions moved to the
+    first keyframe (increased incompatibility with other branches)
+- removed the check of the value in /proc/sys/kernel/shmmax,
+    modern distributions should have a reasonable default there
+- new overlay engine and resampler by Monty Montgomery
 
 Known problems (todo list)
 - FileOGG: improve audio/video interleaving
