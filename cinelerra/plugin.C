@@ -436,7 +436,6 @@ void Plugin::copy(ptstime start, ptstime end, FileXML *file)
 void Plugin::load(FileXML *file)
 {
 	int result = 0;
-	int first_keyframe = 1;
 	in = 0;
 	out = 0;
 // Currently show is ignored when loading
@@ -476,24 +475,14 @@ void Plugin::load(FileXML *file)
 			else
 			if(file->tag.title_is("KEYFRAME"))
 			{
-// Default keyframe
-				if(first_keyframe)
-				{
-					keyframes->first->load(file);
-					first_keyframe = 0;
-				}
-				else
-// Override default keyframe
-				{
-					KeyFrame *keyframe = (KeyFrame*)keyframes->append(new KeyFrame(edl, keyframes));
+				KeyFrame *keyframe = (KeyFrame*)keyframes->append(new KeyFrame(edl, keyframes));
 // Convert from old position
-					posnum position = file->tag.get_property("POSITION", (posnum)0);
-					ptstime postime = 0;
-					if(position)
-						postime = keyframe->autos->pos2pts(position);
-					keyframe->pos_time = file->tag.get_property("POSTIME", postime);
-					keyframe->load(file);
-				}
+				posnum position = file->tag.get_property("POSITION", (posnum)0);
+				ptstime postime = 0;
+				if(position)
+					postime = keyframe->autos->pos2pts(position);
+				keyframe->pos_time = file->tag.get_property("POSTIME", postime);
+				keyframe->load(file);
 			}
 		}
 	}while(!result);

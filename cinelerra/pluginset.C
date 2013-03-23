@@ -128,7 +128,8 @@ Plugin* PluginSet::insert_plugin(const char *title,
 
 	plugin->plugin_type = plugin_type;
 
-	if(default_keyframe) 
+	plugin->keyframes->append_auto();
+	if(default_keyframe)
 		*plugin->keyframes->first = *default_keyframe;
 	plugin->keyframes->first->pos_time = position;
 
@@ -460,7 +461,6 @@ void PluginSet::optimize(void)
 		current_edit; 
 		current_edit = (Plugin*)current_edit->next)
 	{
-		current_edit->keyframes->first->pos_time = 0;
 		for(KeyFrame *current_keyframe = (KeyFrame*)current_edit->keyframes->last;
 			current_keyframe; )
 		{
