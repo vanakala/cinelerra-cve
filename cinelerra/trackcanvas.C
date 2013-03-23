@@ -3234,7 +3234,7 @@ void TrackCanvas::deactivate()
 
 void TrackCanvas::update_drag_handle()
 {
-	double new_position;
+	ptstime new_position;
 
 	new_position = get_cursor_x() * mwindow->edl->local_session->zoom_time +
 		+ mwindow->edl->local_session->view_start_pts;
@@ -3340,7 +3340,12 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			value = percentage_to_value(percentage, 0, 0, autogrouptype);
 		}
 
-		if(value != old_value || !PTSEQU(postime, current->pos_time))
+		if(current == current->autos->first)
+			postime = current->pos_time;
+		if(postime > current->autos->track->get_length())
+			postime = current->autos->track->get_length();
+
+		if(!EQUIV(value, old_value) || !PTSEQU(postime, current->pos_time))
 		{
 			result = 1;
 			float change = value - old_value;
