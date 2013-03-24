@@ -307,19 +307,18 @@ ptstime Edit::end_pts(void)
 	return project_pts;
 }
 
-void Edit::dump(void)
+void Edit::dump(int indent)
 {
-	printf("     EDIT %p\n", this);
-	printf("      asset %p\n", asset);
-	printf("      channel %d\n", channel);
-	if(transition) 
+	printf("%*sEdit %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*sasset %p\n", indent, "", asset);
+	printf("%*schannel %d\n", indent, "", channel);
+	if(transition)
 	{
-		printf("      TRANSITION %p\n", transition);
-		transition->dump();
+		transition->dump(indent + 2);
 	}
-	printf("      source_pts %.3f project_pts %.3f length %.3f\n",
+	printf("%*ssource_pts %.3f project_pts %.3f length %.3f\n", indent, "",
 		source_pts, project_pts, length());
-	fflush(stdout);
 }
 
 ptstime Edit::load_properties(FileXML *file, ptstime project_pts)

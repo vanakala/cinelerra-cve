@@ -196,7 +196,8 @@ ptstime Transition::length(void)
 	return length_time;
 }
 
-void Transition::dump()
+void Transition::dump(int indent)
 {
-	printf("       title: %s length: %.3f\n", title, length_time);
+	printf("%*sTransition %p dump\n", indent, "", this);
+	printf("%*s  title: %s length: %.3f\n", indent, "", title, length_time);
 }

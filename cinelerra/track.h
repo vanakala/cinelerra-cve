@@ -184,7 +184,7 @@ public:
 	int load_edits(FileXML *file);
 
 	virtual int change_channels(int oldchannels, int newchannels) { return 0; };
-	virtual int dump();
+	void dump(int indent = 0);
 
 // ===================================== editing
 	void copy(ptstime start,

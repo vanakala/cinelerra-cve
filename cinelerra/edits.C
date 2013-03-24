@@ -741,11 +741,11 @@ void Edits::shift_effects_recursive(ptstime position, ptstime length)
 	track->shift_effects(position, length);
 }
 
-void Edits::dump(void)
+void Edits::dump(int indent)
 {
 	Edit *edit;
 
-	printf("Edits %p:\n", this);
+	printf("%*sEdits %p dump(%d):\n", indent, "", this, total());
 	for(edit = first; edit; edit = edit->next)
-		edit->dump();
+		edit->dump(indent + 2);
 }

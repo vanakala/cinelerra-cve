@@ -61,7 +61,7 @@ public:
 	~Asset();
 
 	int init_values();
-	void dump(void);
+	void dump(int indent);
 
 	void copy_from(Asset *asset, int do_index);
 	void copy_location(Asset *asset);

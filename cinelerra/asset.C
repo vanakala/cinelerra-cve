@@ -1161,17 +1161,19 @@ int Asset::set_timecode(char *tc, int format, int end)
 	return 0;
 }
 
-void Asset::dump(void)
+void Asset::dump(int indent)
 {
 	int i;
 
-	printf("  Asset %p dump\n", this);
-	printf("   this=%p %s\n", this, path);
-	printf("   index_status %d\n", index_status);
-	printf("   file format %s, length %lld\n", File::formattostr(format), file_length);
-	printf("   audio_data %d channels %d samplerate %d bits %d byte_order %d\n",
-		audio_data, channels, sample_rate, bits, byte_order);
-	printf("      no of streams: %d, current %d", astreams, current_astream);
+	printf("%*sAsset %p dump:\n", indent, "", this);
+	indent++;
+	printf("%*spath: %s\n", indent, "", path);
+	printf("%*sindex_status %d\n", indent, "", index_status);
+	printf("%*sfile format %s, length %lld\n", indent, "",
+		File::formattostr(format), file_length);
+	printf("%*saudio_data %d channels %d samplerate %d bits %d byte_order %d\n",
+		indent, "", audio_data, channels, sample_rate, bits, byte_order);
+	printf("%*s  no of streams: %d, current %d", indent, "", astreams, current_astream);
 	if(astreams)
 	{
 		fputs(", channels", stdout);
@@ -1179,18 +1181,19 @@ void Asset::dump(void)
 			printf(" %d", astream_channels[i]);
 	}
 	putchar('\n');
-	printf("      signed %d header %d dither %d acodec %s length %lld\n",
+	printf("%*s  signed %d header %d dither %d acodec %s length %lld\n", indent, "",
 		signed_, header, dither, acodec, audio_length);
 
 	char string[BCTEXTLEN];
 	ilacemode_to_xmltext(string, interlace_mode);
-	printf("   video_data %d layers %d framerate %f width %d height %d\n",
-		video_data, layers, frame_rate, width, height);
-	printf("      vcodec %c%c%c%c aspect_ratio %f interlace_mode %s\n",
-		vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
-	printf("      length %d subtitles %d (active %d)\n", video_length, subtitles, active_subtitle);
-	printf("   reel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
-		reel_name, reel_number, tcstart, tcend, tcformat);
+	printf("%*svideo_data %d layers %d framerate %.2f width %d height %d\n",
+		indent, "", video_data, layers, frame_rate, width, height);
+	printf("%*s  vcodec %c%c%c%c aspect_ratio %.2f interlace_mode %s\n",
+		indent, "", vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
+	printf("%*s  length %d subtitles %d (active %d)\n", indent, "",
+		video_length, subtitles, active_subtitle);
+	printf("%*sreel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
+		indent, "", reel_name, reel_number, tcstart, tcend, tcformat);
 }
 
 

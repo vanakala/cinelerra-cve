@@ -118,7 +118,7 @@ public:
 
 
 	int change_channels(int oldchannels, int newchannels);
-	int dump();
+	void dump(int indent = 0);
 
 
 

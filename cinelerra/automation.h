@@ -107,7 +107,7 @@ public:
 
 	ptstime pos2pts(posnum position);
 	posnum pts2pos(ptstime position);
-	virtual void dump();
+	void dump(int indent);
 
 	Autos *autos[AUTOMATION_TOTAL];
 

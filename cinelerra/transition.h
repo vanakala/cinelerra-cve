@@ -78,7 +78,7 @@ public:
 	int identical(Transition *that);
 	ptstime length(void);
 
-	void dump();
+	void dump(int indent = 0);
 
 	ptstime length_time;
 

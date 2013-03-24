@@ -71,7 +71,7 @@ public:
 	int get_number();
 	void save(FileXML *file);
 	void load(FileXML *file, uint32_t load_flags);
-	void dump();
+	void dump(int indent = 0);
 	void optimize(void);
 
 // Insert a new plugin

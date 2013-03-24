@@ -102,7 +102,7 @@ public:
 	void load(FileXML *file);
 // Shift in time
 	void shift(ptstime difference);
-	void dump(void);
+	void dump(int indent = 0);
 // Called by PluginClient sequence to get rendering parameters
 	KeyFrame* get_prev_keyframe(ptstime postime);
 	KeyFrame* get_next_keyframe(ptstime postime);

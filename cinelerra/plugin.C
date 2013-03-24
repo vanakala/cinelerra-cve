@@ -530,10 +530,12 @@ void Plugin::shift(ptstime difference)
 	shift_keyframes(difference);
 }
 
-void Plugin::dump(void)
+void Plugin::dump(int indent)
 {
 	const char *s;
-	switch(plugin_type){
+
+	switch(plugin_type)
+	{
 	case 0:
 		s = "None";
 		break;
@@ -551,15 +553,17 @@ void Plugin::dump(void)
 		break;
 	}
 
-	printf("    PLUGIN: type=\"%s\" title=\"%s\" on=%d track=%d plugin=%d\n", 
+	printf("%*sPlugin %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*stype=%s title=\"%s\" on=%d track=%d plugin=%d\n", indent, "",
 		s,
 		title, 
 		on, 
-		shared_location.module, 
+		shared_location.module,
 		shared_location.plugin);
-	printf("    project_pts %.3f length %.3f\n", 
+	printf("%*sproject_pts %.3f length %.3f\n", indent, "",
 		project_pts, length());
 
-	keyframes->dump();
+	keyframes->dump(indent);
 }
 

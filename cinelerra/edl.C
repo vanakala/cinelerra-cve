@@ -876,14 +876,17 @@ float EDL::get_aspect_ratio()
 	return session->aspect_w / session->aspect_h;
 }
 
-int EDL::dump()
+void EDL::dump(int indent)
 {
 	if(parent_edl)
-		printf("CLIP\n");
+		printf("%*sCLIP %p dump: (parent %p)\n", indent, "", this, parent_edl);
 	else
-		printf("EDL\n");
-	printf("clip_title: %s parent_edl: %p\n", local_session->clip_title, parent_edl);
-	printf("selectionstart %.3f selectionend %.3f loop_start %.3f loop_end %.3f\n", 
+		printf("%*sEDL %p dump:\n", indent, "", this);
+	indent += 1;
+	printf("%*stitle: %s\n", indent, "",
+		local_session->clip_title);
+	printf("%*sselectionstart %.3f selectionend %.3f loop_start %.3f loop_end %.3f\n", 
+		indent, "",
 		local_session->get_selectionstart(1), 
 		local_session->get_selectionend(1),
 		local_session->loop_start,
@@ -891,49 +894,38 @@ int EDL::dump()
 
 	if(!parent_edl)
 	{
-		printf("audio_channels: %d "
-			"audio_tracks: %d \n"
-			"sample_rate: %d\n",
+		printf("%*saudio_channels: %d audio_tracks: %d sample_rate: %d\n",
+			indent, "",
 			session->audio_channels,
 			session->audio_tracks,
 			session->sample_rate);
-		printf("video_channels: %d "
-			"video_tracks: %d "
-			"frame_rate: %.2f "
-			"frames_per_foot: %.2f\n"
-			"output_w: %d "
-			"output_h: %d "
-			"aspect_w: %.3f "
-			"aspect_h %.3f "
-			"color_model %d\n",
+		printf("%*svideo_channels: %d video_tracks: %d frame_rate: %.2f frames_per_foot: %.2f\n",
+			indent, "",
 			session->video_channels,
 			session->video_tracks,
 			session->frame_rate,
-			session->frames_per_foot,
+			session->frames_per_foot);
+		printf("%*soutput_w: %d output_h: %d aspect_w: %.3f aspect_h %.3f color_model %s\n",
+			indent, "",
 			session->output_w,
 			session->output_h,
 			session->aspect_w,
 			session->aspect_h,
-			session->color_model);
+			cmodel_name(session->color_model));
 
-		printf(" EDLS\n");
-		printf("  total: %d\n", clips.total);
+		printf("%*sEDLS (total %d)\n", indent, "", clips.total);
 
 		for(int i = 0; i < clips.total; i++)
 		{
 			printf("\n\n");
-			clips.values[i]->dump();
+			clips.values[i]->dump(indent + 2);
 			printf("\n\n");
 		}
 
-		printf(" ASSETS\n");
-		assets->dump();
+		assets->dump(indent + 1);
 	}
-	printf(" LABELS\n");
-	labels->dump();
-	printf(" TRACKS\n");
-	tracks->dump();
-	return 0;
+	labels->dump(indent + 1);
+	tracks->dump(indent + 1);
 }
 
 EDL* EDL::add_clip(EDL *edl)

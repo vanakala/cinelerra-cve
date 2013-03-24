@@ -227,13 +227,14 @@ int Assets::update_old_filename(const char *old_filename, const char *new_filena
 }
 
 
-int Assets::dump()
+void Assets::dump(int indent)
 {
+	printf("%*sAssets %p dump(%d)\n", indent, "", this, total());
+	indent += 1;
 	for(Asset *current = first; current; current = NEXT)
 	{
-		current->dump();
+		current->dump(indent);
 	}
-	return 0;
 }
 
 

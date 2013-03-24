@@ -64,7 +64,7 @@ public:
 	EDL *edl;
 
 	int delete_all();
-	int dump();
+	void dump(int indent = 0);
 
 // return the asset containing this path or create a new asset containing this path
 	Asset* update(const char *path);

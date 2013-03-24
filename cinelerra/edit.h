@@ -126,9 +126,7 @@ public:
 
 	virtual int copy_properties_derived(FileXML *xml, ptstime len_in_selection) { return 0; };
 	virtual ptstime get_source_end(ptstime default_value);
-	void dump(void);
-	virtual void dump_derived() {};
-
+	void dump(int indent = 0);
 };
 
 #endif

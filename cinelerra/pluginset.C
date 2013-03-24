@@ -536,9 +536,10 @@ void PluginSet::optimize(void)
 }
 
 
-void PluginSet::dump()
+void PluginSet::dump(int indent)
 {
-	printf("   PLUGIN_SET:\n");
+	printf("%*sPlugin Set %p dump:\n", indent, "", this);
+	indent += 2;
 	for(Plugin *current = (Plugin*)first; current; current =  (Plugin*)NEXT)
-		current->dump();
+		current->dump(indent);
 }

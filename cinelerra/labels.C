@@ -48,11 +48,14 @@ Labels::~Labels()
 	delete_all();
 }
 
-void Labels::dump()
+void Labels::dump(int indent)
 {
+	printf("%*sLabels %p dump(%d):\n", indent, "", this, total());
+	indent += 2;
 	for(Label *current = first; current; current = NEXT)
 	{
-		printf("  label: %.3f '%s'\n", current->position, current->textstr);
+		printf("%*slabel: %.3f '%s'\n", indent, "",
+			current->position, current->textstr);
 	}
 }
 

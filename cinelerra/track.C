@@ -684,21 +684,18 @@ void Track::synchronize_params(Track *track)
 }
 
 
-int Track::dump()
+void Track::dump(int indent)
 {
-	printf("   Data type %d\n", data_type);
-	printf("   Title %s\n", title);
-	printf("   Edits:\n");
-	for(Edit* current = edits->first; current; current = NEXT)
-	{
-		current->dump();
-	}
-	automation->dump();
-	printf("   Plugin Sets: %d\n", plugin_set.total);
+	printf("%*sTrack %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*sData type %d\n", indent, "", data_type);
+	printf("%*sTitle %s\n", indent, "", title);
+	edits->dump(indent);
+	automation->dump(indent);
+	printf("%*sPlugin Sets: %d\n", indent, "", plugin_set.total);
 
 	for(int i = 0; i < plugin_set.total; i++)
-		plugin_set.values[i]->dump();
-	return 0;
+		plugin_set.values[i]->dump(indent + 2);
 }
 
 

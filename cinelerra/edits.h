@@ -102,7 +102,7 @@ public:
 // Return an edit if position is over an edit and the edit has a source file
 	Edit* get_playable_edit(ptstime postime, int use_nudge);
 	ptstime length();         // end position of last edit
-	virtual void dump(void);
+	virtual void dump(int indent = 0);
 
 // ==================================== editing
 

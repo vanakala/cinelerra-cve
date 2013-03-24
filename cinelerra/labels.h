@@ -56,7 +56,7 @@ public:
 	Labels(EDL *edl, const char *xml_tag);
 	virtual ~Labels();
 
-	void dump();
+	void dump(int indent = 0);
 
 	Labels& operator=(Labels &that);
 	void copy_from(Labels *labels);

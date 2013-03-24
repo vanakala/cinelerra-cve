@@ -516,15 +516,14 @@ void Tracks::update_y_pixels(Theme *theme)
 	}
 }
 
-int Tracks::dump()
+void Tracks::dump(int indent)
 {
+	printf("%*sTracks %p dump(%d):\n", indent, "", this, total());
+	indent += 2;
 	for(Track* current = first; current; current = NEXT)
 	{
-		printf("  Track: %p\n", current);
-		current->dump();
-		printf("\n");
+		current->dump(indent);
 	}
-	return 0;
 }
 
 void Tracks::select_all(int type, int value)

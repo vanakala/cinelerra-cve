@@ -136,7 +136,7 @@ public:
 	void optimize();
 
 // Debug
-	int dump();
+	void dump(int indent = 0);
 	static int next_id();
 
 // Create a new folder if it doesn't exist already
