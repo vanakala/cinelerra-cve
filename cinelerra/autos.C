@@ -104,6 +104,9 @@ void Autos::equivalent_output(Autos *autos, ptstime startproject, ptstime *resul
 void Autos::copy_from(Autos *autos)
 {
 	Auto *current = autos->first, *this_current = first;
+
+	base_pts = autos->base_pts;
+
 	for(current = autos->first; current; current = NEXT)
 	{
 		if(!this_current)
@@ -122,9 +125,6 @@ void Autos::copy_from(Autos *autos)
 	}
 }
 
-// We don't replace it in pasting but
-// when inserting the first EDL of a load operation we need to replace
-// the default keyframe.
 void Autos::insert_track(Autos *automation,
 	ptstime start,
 	ptstime length)

@@ -35,7 +35,7 @@ Auto* KeyFrames::new_auto()
 
 void KeyFrames::dump(int indent)
 {
-	printf("%*sKeyFrames %p dump: total=%d\n", indent, " ", this, total());
+	printf("%*sKeyFrames %p dump(%d): base %.3f\n", indent, " ", this, total(), base_pts);
 	for(KeyFrame *current = (KeyFrame*)first; current; current = (KeyFrame*)NEXT)
 		current->dump(indent + 2);
 }

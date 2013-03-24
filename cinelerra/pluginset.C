@@ -127,11 +127,13 @@ Plugin* PluginSet::insert_plugin(const char *title,
 	if(shared_location) plugin->shared_location = *shared_location;
 
 	plugin->plugin_type = plugin_type;
+	plugin->keyframes->base_pts = position;
 
-	plugin->keyframes->append_auto();
 	if(default_keyframe)
+	{
+		plugin->keyframes->append_auto();
 		*plugin->keyframes->first = *default_keyframe;
-	plugin->keyframes->first->pos_time = position;
+	}
 
 // May delete the plugin we just added so not desirable while loading.
 	if(do_optimize) optimize();
