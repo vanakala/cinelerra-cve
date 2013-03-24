@@ -72,7 +72,6 @@ public:
 		double scale,
 		FileXML *file);
 	void remove_nonsequential(Auto *keyframe);
-	void optimize();
 
 // Returns a type enumeration
 	int get_type();

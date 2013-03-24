@@ -406,44 +406,6 @@ void Autos::copy(ptstime start,
 	}
 }
 
-// Remove 3 consecutive autos with the same value
-// Remove autos which are out of order
-void Autos::optimize()
-{
-	int done = 0;
-
-	while(!done)
-	{
-		int consecutive = 0;
-		done = 1;
-
-		for(Auto *current = first; current; current = NEXT)
-		{
-// Get 3rd consecutive auto of equal value
-			if(current != first)
-			{
-				if(*current == *PREVIOUS)
-				{
-					consecutive++;
-					if(consecutive >= 3)
-					{
-						delete PREVIOUS;
-						break;
-					}
-				}
-				else
-					consecutive = 0;
-
-				if(done && current->pos_time <= PREVIOUS->pos_time)
-				{
-					delete current;
-					break;
-				}
-			}
-		}
-	}
-}
-
 void Autos::remove_nonsequential(Auto *keyframe)
 {
 	if((keyframe->next && keyframe->next->pos_time <= keyframe->pos_time) ||
