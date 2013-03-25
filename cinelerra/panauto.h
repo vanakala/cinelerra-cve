@@ -35,7 +35,7 @@ public:
 
 	int operator==(Auto &that);
 	void load(FileXML *file);
-	void copy(ptstime start, ptstime end, FileXML *file, int default_auto);
+	void copy(ptstime start, ptstime end, FileXML *file);
 	void copy_from(Auto *that);
 	void dump(int indent = 0);
 	void rechannel();

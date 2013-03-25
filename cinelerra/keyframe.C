@@ -42,16 +42,10 @@ void KeyFrame::load(FileXML *file)
 	file->read_text_until("/KEYFRAME", data, MESSAGESIZE);
 }
 
-void KeyFrame::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
+void KeyFrame::copy(ptstime start, ptstime end, FileXML *file)
 {
 	file->tag.set_title("KEYFRAME");
-	if(default_auto)
-		file->tag.set_property("POSTIME", 0);
-	else
-		file->tag.set_property("POSTIME", pos_time - start);
-// default_auto converts a default auto to a normal auto
-	if(is_default && !default_auto)
-		file->tag.set_property("DEFAULT", 1);
+	file->tag.set_property("POSTIME", pos_time - start);
 	file->append_tag();
 
 	file->append_text(data);

@@ -343,7 +343,7 @@ void MaskAuto::load(FileXML *file)
 	}
 }
 
-void MaskAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
+void MaskAuto::copy(ptstime start, ptstime end, FileXML *file)
 {
 	file->tag.set_title("AUTO");
 	file->tag.set_property("MODE", mode);
@@ -351,10 +351,7 @@ void MaskAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
 	file->tag.set_property("FEATHER", feather);
 	file->tag.set_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 
-	if(default_auto)
-		file->tag.set_property("POSTIME", 0);
-	else
-		file->tag.set_property("POSTIME", pos_time - start);
+	file->tag.set_property("POSTIME", pos_time - start);
 	file->append_tag();
 	file->append_newline();
 

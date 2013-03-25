@@ -65,13 +65,10 @@ void PanAuto::load(FileXML *file)
 	}
 }
 
-void PanAuto::copy(ptstime start, ptstime end, FileXML *file, int default_auto)
+void PanAuto::copy(ptstime start, ptstime end, FileXML *file)
 {
 	file->tag.set_title("AUTO");
-	if(default_auto)
-		file->tag.set_property("POSTIME", 0);
-	else
-		file->tag.set_property("POSTIME", pos_time - start);
+	file->tag.set_property("POSTIME", pos_time - start);
 	file->tag.set_property("HANDLE_X", handle_x);
 	file->tag.set_property("HANDLE_Y", handle_y);
 	for(int i = 0; i < edl->session->audio_channels; i++)

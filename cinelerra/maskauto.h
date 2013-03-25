@@ -68,7 +68,7 @@ public:
 	int operator==(MaskAuto &that);
 	int identical(MaskAuto *src);
 	void load(FileXML *file);
-	void copy(ptstime start, ptstime end, FileXML *file, int default_auto);
+	void copy(ptstime start, ptstime end, FileXML *file);
 	void copy_from(Auto *src);
 	void interpolate_from(Auto *a1, Auto *a2, ptstime position); 
 	void copy_from(MaskAuto *src);
