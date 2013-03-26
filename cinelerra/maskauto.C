@@ -180,7 +180,7 @@ void SubMask::copy(FileXML *file)
 
 void SubMask::dump(int indent)
 {
-	printf("%*sSubmask %p:\n", indent, " ", this);
+	printf("%*sSubmask %p dump(%d):\n", indent, " ", this, points.total);
 	indent += 2;
 	for(int i = 0; i < points.total; i++)
 	{
@@ -368,7 +368,7 @@ void MaskAuto::copy(ptstime start, ptstime end, FileXML *file)
 
 void MaskAuto::dump(int indent)
 {
-	printf("%*sSubmask %p: mode: %d value: %d feather %.3f before %d\n", indent, " ", 
+	printf("%*sMaskauto %p: mode: %d value: %d feather %.3f before %d\n", indent, " ", 
 		this, mode, value, feather, apply_before_plugins);
 	printf("%*spos_time %.3f masks %d\n", indent + 2, " ", pos_time, masks.total);
 	indent += 4;

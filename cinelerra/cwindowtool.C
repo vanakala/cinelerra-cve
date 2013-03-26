@@ -1644,6 +1644,9 @@ void CWindowMaskGUI::update()
 		point,
 		0);
 
+	if(!keyframe)
+		return;
+
 	if(point)
 	{
 		x->update(point->x);

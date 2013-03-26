@@ -50,14 +50,14 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points,
 		}
 	}
 
+	points->remove_all_objects();
 // Nothing before position found
 	if(!begin)
-		begin = end = (MaskAuto*)first;
+		return;
 
 	SubMask *mask1 = begin->get_submask(submask);
 	SubMask *mask2 = end->get_submask(submask);
 
-	points->remove_all_objects();
 	int total_points = MIN(mask1->points.total, mask2->points.total);
 
 	for(int i = 0; i < total_points; i++)
