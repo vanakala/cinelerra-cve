@@ -3429,6 +3429,11 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 	UPDATE_DRAG_HEAD(1);
 	int value = (int)percentage_to_value(percentage, 1, 0, AUTOGROUPTYPE_INT255);
 
+	if(current == current->autos->first)
+		postime = current->pos_time;
+	if(postime > current->autos->track->get_length())
+		postime = current->autos->track->get_length();
+
 	if(value != current->value || postime != current->pos_time)
 	{
 		result = 1;
