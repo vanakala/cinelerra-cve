@@ -277,13 +277,6 @@ int VModule::import_frame(VFrame *output,
 				{
 					output->clear_frame();
 
-// TRANSFER_REPLACE is the fastest transfer mode but it has the disadvantage
-// of producing green borders in floating point translation of YUV
-					int mode = TRANSFER_REPLACE;
-					if(get_edl()->session->interpolation_type != NEAREST_NEIGHBOR &&
-						cmodel_is_yuv(output->get_color_model()))
-						mode = TRANSFER_NORMAL;
-
 					overlayer->overlay(output,
 						(*input), 
 						in_x1,
@@ -295,7 +288,7 @@ int VModule::import_frame(VFrame *output,
 						out_x1 + out_w1,
 						out_y1 + out_h1,
 						1,
-						mode,
+						TRANSFER_REPLACE,
 						get_edl()->session->interpolation_type);
 				}
 				result = 1;
