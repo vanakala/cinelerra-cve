@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "bcsignals.h"
 #include "clip.h"
 #include "edl.inc"
 #include "mutex.h"
@@ -229,6 +230,23 @@ int OverlayFrame::overlay(VFrame *output,
 		isnan(out_x2) ||
 		isnan(out_y1) ||
 		isnan(out_y2)) return 1;
+
+	if(in_x1 < 0)
+		in_x1 = 0;
+	if(in_y1 < 0)
+		in_y1 = 0;
+	if(in_x2 > input->get_w())
+		in_y2 = input->get_w();
+	if(in_y2 > input->get_h())
+		in_y2 = input->get_h();
+	if(out_x1 < 0)
+		out_x1 = 0;
+	if(out_y1 < 0)
+		out_y1 = 0;
+	if(out_x2 > output->get_w())
+		out_x2 = output->get_w();
+	if(out_y2 > output->get_h())
+		out_y2 = output->get_h();
 
 	float xscale = (out_x2 - out_x1) / (in_x2 - in_x1);
 	float yscale = (out_y2 - out_y1) / (in_y2 - in_y1);
@@ -950,6 +968,7 @@ void DirectUnit::process_package(LoadPackage *package)
 			break;
 		}
 }
+
 DirectEngine::DirectEngine(int cpus)
  : LoadServer(cpus, cpus)
 {
