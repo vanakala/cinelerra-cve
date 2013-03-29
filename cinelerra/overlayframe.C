@@ -552,7 +552,6 @@ int OverlayFrame::overlay(VFrame *output,
 			r = (r * pixel_opacity + (temp_type)output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + (temp_type)output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + (temp_type)output3 * pixel_transparency) / max / max; \
-			a = input4 > output4 ? input4 : output4; \
 			break; \
 		case TRANSFER_MULTIPLY: \
 			r = ((temp_type)input1 * output1) / max; \
@@ -569,7 +568,6 @@ int OverlayFrame::overlay(VFrame *output,
 			r = (r * pixel_opacity + (temp_type)output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + (temp_type)output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + (temp_type)output3 * pixel_transparency) / max / max; \
-			a = input4 > output4 ? input4 : output4; \
 			break; \
 		case TRANSFER_SUBTRACT: \
 			r = (temp_type)output1 - input1; \
@@ -585,7 +583,6 @@ int OverlayFrame::overlay(VFrame *output,
 			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
-			a = input4 > output4 ? input4 : output4; \
 			break; \
 		case TRANSFER_ADDITION: \
 			r = (temp_type)input1 + output1; \
@@ -598,7 +595,6 @@ int OverlayFrame::overlay(VFrame *output,
 			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
-			a = input4 > output4 ? input4 : output4; \
 			break; \
 		case TRANSFER_MAX: \
 		{ \
