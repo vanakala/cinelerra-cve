@@ -22,36 +22,12 @@
 #ifndef TRANSITION_H
 #define TRANSITION_H
 
-class PasteTransition;
-
 #include "datatype.h"
 #include "edit.inc"
 #include "filexml.inc"
 #include "mwindow.inc"
 #include "plugin.h"
 #include "sharedlocation.h"
-
-class TransitionMenuItem : public BC_MenuItem
-{
-public:
-	TransitionMenuItem(MWindow *mwindow, int audio, int video);
-	~TransitionMenuItem();
-	int handle_event();
-	int audio;
-	int video;
-};
-
-class PasteTransition : public Thread
-{
-public:
-	PasteTransition(MWindow *mwindow, int audio, int video);
-	~PasteTransition();
-
-	void run();
-
-	MWindow *mwindow;
-	int audio, video;
-};
 
 
 class Transition : public Plugin
@@ -65,10 +41,8 @@ public:
 	void load_xml(FileXML *file);
 
 	Transition(Transition *that, Edit *edit);
-	~Transition();
 
 	KeyFrame* get_keyframe();
-	int reset_parameters();
 	Transition& operator=(Transition &that);
 	Plugin& operator=(Plugin &that);
 	Edit& operator=(Edit &that);

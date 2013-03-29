@@ -36,50 +36,12 @@
 #include "transitionpopup.h"
 #include <string.h>
 
-
-TransitionMenuItem::TransitionMenuItem(MWindow *mwindow, int audio, int video)
- : BC_MenuItem("Paste Transition")
-{
-	this->audio = audio;
-	this->video = video;
-}
-
-TransitionMenuItem::~TransitionMenuItem()
-{
-}
-
-int TransitionMenuItem::handle_event()
-{
-}
-
-
-PasteTransition::PasteTransition(MWindow *mwindow, int audio, int video)
- : Thread()
-{
-	this->mwindow = mwindow;
-	this->audio = audio;
-	this->video = video;
-}
-
-PasteTransition::~PasteTransition()
-{
-}
-
-void PasteTransition::run()
-{
-}
-
-
-
 Transition::Transition(EDL *edl, Edit *edit, const char *title, ptstime length)
  : Plugin(edl, (PluginSet*)edit->edits, title)
 {
 	this->edit = edit;
 	this->length_time = length;
-}
-
-Transition::~Transition()
-{
+	keyframes->append_auto();
 }
 
 KeyFrame* Transition::get_keyframe()
@@ -120,7 +82,6 @@ int Transition::operator==(Edit &that)
 	return identical((Transition*)&that);
 }
 
-
 void Transition::copy_from(Transition *that)
 {
 	Plugin::copy_from(that);
@@ -129,12 +90,6 @@ void Transition::copy_from(Transition *that)
 int Transition::identical(Transition *that)
 {
 	return PTSEQU(this->length_time, that->length_time) && Plugin::identical(that);
-}
-
-
-int Transition::reset_parameters()
-{
-	return 0;
 }
 
 void Transition::save_xml(FileXML *file)
@@ -185,7 +140,7 @@ void Transition::load_xml(FileXML *file)
 			else
 			if(file->tag.title_is("KEYFRAME"))
 			{
-				keyframes->first->load(file);;
+				keyframes->first->load(file);
 			}
 		}
 	}while(!result);
@@ -200,4 +155,5 @@ void Transition::dump(int indent)
 {
 	printf("%*sTransition %p dump\n", indent, "", this);
 	printf("%*s  title: %s length: %.3f\n", indent, "", title, length_time);
+	keyframes->dump(indent + 2);
 }
