@@ -69,6 +69,7 @@ public:
 	void synchronize_params(LocalSession *that);
 
 	void boundaries();
+	void dump(int indent = 0);
 
 	EDL *edl;
 

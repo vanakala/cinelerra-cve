@@ -882,16 +882,8 @@ void EDL::dump(int indent)
 		printf("%*sCLIP %p dump: (parent %p)\n", indent, "", this, parent_edl);
 	else
 		printf("%*sEDL %p dump:\n", indent, "", this);
-	indent += 1;
-	printf("%*stitle: %s\n", indent, "",
-		local_session->clip_title);
-	printf("%*sselectionstart %.3f selectionend %.3f loop_start %.3f loop_end %.3f\n", 
-		indent, "",
-		local_session->get_selectionstart(1), 
-		local_session->get_selectionend(1),
-		local_session->loop_start,
-		local_session->loop_end);
-
+	local_session->dump(indent + 2);
+	indent += 2;
 	if(!parent_edl)
 	{
 		printf("%*saudio_channels: %d audio_tracks: %d sample_rate: %d\n",

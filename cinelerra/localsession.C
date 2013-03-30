@@ -391,3 +391,28 @@ int LocalSession::outpoint_valid()
 	return out_point >= 0;
 }
 
+void LocalSession::dump(int indent)
+{
+	printf("%*sLocalsession %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*sselections %.3f..%.3f, points in %.3f out %.3f\n", indent, "",
+		selectionstart, selectionend, in_point, out_point);
+	printf("%*strack start %lld view start %.3f preview %.3f..%.3f\n", indent, "",
+		track_start, view_start_pts, preview_start, preview_end);
+	printf("%*sloop_playback %d %.3f..%.3f clipboard_length %.3f\n", indent, "",
+		loop_playback, loop_start, loop_end, clipboard_length);
+	printf("%*szoom_time %.3f zoom_y %lld zoom_track %lld showautotype %d\n",  indent, "",
+		zoom_time, zoom_y, zoom_track, zoombar_showautotype);
+	printf("%*seye dropper red %.3f green %.3f blue %.3f\n", indent, "",
+		red, green, blue);
+	printf("%*sfolder '%s'\n",  indent, "", folder);
+	printf("%*sclip title '%s'\n",  indent, "", clip_title);
+	printf("%*sclip notes '%s'\n",  indent, "", clip_notes);
+	printf("%*sAutomation mins:",  indent, "");
+	for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+		printf(" %.3f", automation_mins[i]);
+	printf("\n%*sAutomation maxs:",  indent, "");
+	for(int i = 0; i < AUTOGROUPTYPE_COUNT; i++)
+		printf(" %.3f", automation_maxs[i]);
+	putchar('\n');
+}
