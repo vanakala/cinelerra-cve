@@ -891,6 +891,10 @@ void MaskEngine::do_mask(VFrame *output,
 	Auto *current = 0;
 	ptstime start_pts = output->get_pts();
 	MaskAuto *first_auto = (MaskAuto*)keyframe_set->first;
+
+	if(!first_auto)
+		return;
+
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_pts,
 		current);
 

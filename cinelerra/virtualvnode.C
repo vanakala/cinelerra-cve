@@ -286,6 +286,10 @@ void VirtualVNode::render_mask(VFrame *output_temp)
 
 	Auto *current = 0;
 	MaskAuto *default_auto = (MaskAuto*)keyframe_set->first;
+
+	if(!default_auto)
+		return;
+
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(output_temp->get_pts(),
 		current);
 
