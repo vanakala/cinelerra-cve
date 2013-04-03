@@ -425,13 +425,25 @@ void Autos::clear(ptstime start,
 
 	current = autoof(start);
 
-// If a range is selected don't delete the ending keyframe but do delete
-// the beginning keyframe because shifting end handle forward shouldn't
-// delete the first keyframe of the next edit.
+	if(shift_autos)
+	{
+		if(base_pts > length)
+			base_pts -= length;
+		else
+			base_pts = 0;
+	}
+	else
+		base_pts = end;
 
-	while(current && 
-		((end != start && current->pos_time < end) ||
-		(end == start && current->pos_time <= end)))
+	if(!current)
+		return;
+// Keep the first
+	first->pos_time = base_pts;
+
+	if(current == first)
+		current = first->next;
+
+	while(current && current->pos_time < end)
 	{
 		next = NEXT;
 		remove(current);
