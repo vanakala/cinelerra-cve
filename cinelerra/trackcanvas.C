@@ -3458,11 +3458,14 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 	KeyFrame *current = (KeyFrame*)mwindow->session->drag_auto;
 
 	UPDATE_DRAG_HEAD(1)
+	if(current == current->autos->first)
+		postime = current->pos_time;
+
 	if(!PTSEQU(postime, current->pos_time))
 	{
 		Track *track = current->autos->track;
 		PluginSet *pluginset;
-		Plugin *plugin;
+		Plugin *plugin = 0;
 // figure out the correct pluginset & correct plugin 
 		int found = 0;
 		for(int i = 0; i < track->plugin_set.total; i++)
@@ -3487,6 +3490,20 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 				break;
 		}
 
+		if(plugin)
+		{
+			if(postime >= plugin->project_pts + plugin->length())
+				postime = plugin->project_pts + plugin->length();
+		}
+		else
+		{
+			if(postime >= track->get_length())
+				postime = track->get_length();
+		}
+
+		if(PTSEQU(postime, current->pos_time))
+			return 0;
+
 		mwindow->session->plugin_highlighted = plugin;
 		mwindow->session->track_highlighted = track;
 		result = 1;
@@ -3506,10 +3523,7 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 			mwindow->edl->local_session->get_selectionend(1)) / 
 			2;
 		if(!shift_down())
-		{
-			mwindow->edl->local_session->set_selectionstart(position_f);
-			mwindow->edl->local_session->set_selectionend(position_f);
-		}
+			mwindow->edl->local_session->set_selection(position_f);
 		else
 		if(position_f < center_f)
 		{
