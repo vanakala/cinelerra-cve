@@ -3453,49 +3453,6 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 	return result;
 }
 
-// Autos which can't change value through dragging.
-
-int TrackCanvas::update_drag_auto(int cursor_x, int cursor_y)
-{
-	Auto *current = (Auto*)mwindow->session->drag_auto;
-
-	UPDATE_DRAG_HEAD(1)
-	if(!PTSEQU(postime, current->pos_time))
-	{
-		result = 1;
-		current->pos_time = postime;
-
-		char string[BCTEXTLEN];
-		Units::totext(string, 
-			current->pos_time,
-			mwindow->edl->session->time_format,
-			mwindow->edl->session->sample_rate,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
-		gui->show_message(string);
-
-		ptstime position_f = current->pos_time;
-		double center_f = (mwindow->edl->local_session->get_selectionstart(1) +
-			mwindow->edl->local_session->get_selectionend(1)) / 
-			2;
-		if(!shift_down())
-		{
-			mwindow->edl->local_session->set_selectionstart(position_f);
-			mwindow->edl->local_session->set_selectionend(position_f);
-		}
-		else
-		if(position_f < center_f)
-		{
-			mwindow->edl->local_session->set_selectionstart(position_f);
-		}
-		else
-			mwindow->edl->local_session->set_selectionend(position_f);
-	}
-
-
-	return result;
-}
-
 int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 {
 	KeyFrame *current = (KeyFrame*)mwindow->session->drag_auto;

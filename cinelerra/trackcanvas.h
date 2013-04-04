@@ -302,7 +302,6 @@ public:
 	void update_drag_handle();
 	int update_drag_floatauto(int cursor_x, int cursor_y);
 	int update_drag_toggleauto(int cursor_x, int cursor_y);
-	int update_drag_auto(int cursor_x, int cursor_y);
 	int update_drag_pluginauto(int cursor_x, int cursor_y);
 
 	int resource_h();
