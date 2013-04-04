@@ -491,6 +491,7 @@ void Edits::clear(ptstime start, ptstime end)
 		end = this->length();
 	}
 
+	ptstime len = end - start;
 	if(edit1 != edit2)
 	{
 // in different edits
@@ -508,15 +509,13 @@ void Edits::clear(ptstime start, ptstime end)
 	else
 	{
 		if(start > edit1->source_pts)
-		{
 			current_edit = split_edit(start);
-			current_edit->source_pts += end - start;
-			current_edit = current_edit->next;
-		} else
-			current_edit = edit1->next;
+		else
+			current_edit = edit1;
+		current_edit->source_pts += len;
+		current_edit = current_edit->next;
 	}
 
-	ptstime len = end - start;
 	for(; current_edit; current_edit = current_edit->next)
 	{
 		if(current_edit->project_pts < len)
