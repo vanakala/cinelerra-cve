@@ -503,26 +503,26 @@ void Edits::clear(ptstime start, ptstime end)
 			remove(current_edit);
 			current_edit = next;
 		}
-// shift
-		for(current_edit = edit2; current_edit; current_edit = current_edit->next)
-		{
-			current_edit->project_pts -= end - start;
-		}
+		current_edit = edit2;
 	}
 	else
 	{
-// in same edit. paste_edit depends on this
-// create a new edit
-		current_edit = split_edit(start);
-
-		current_edit->source_pts += end - start;
-// shift
-		for(current_edit = current_edit->next; 
-			current_edit; 
-			current_edit = current_edit->next)
+		if(start > edit1->source_pts)
 		{
-			current_edit->project_pts -= end - start;
-		}
+			current_edit = split_edit(start);
+			current_edit->source_pts += end - start;
+			current_edit = current_edit->next;
+		} else
+			current_edit = edit1->next;
+	}
+
+	ptstime len = end - start;
+	for(; current_edit; current_edit = current_edit->next)
+	{
+		if(current_edit->project_pts < len)
+			current_edit->project_pts = 0;
+		else
+			current_edit->project_pts -= len;
 	}
 	optimize();
 }
