@@ -338,6 +338,9 @@ void Autos::insert(ptstime start, ptstime end)
 	ptstime length;
 	Auto *current = first;
 
+	if(current)
+		current = current->next;
+
 	for( ; current && current->pos_time < start; current = NEXT);
 
 	length = end - start;
