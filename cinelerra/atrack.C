@@ -52,10 +52,8 @@ ATrack::ATrack(EDL *edl, Tracks *tracks)
 {
 	data_type = TRACK_AUDIO;
 	one_unit = (ptstime)1.0 / edl->session->sample_rate;
-}
-
-ATrack::~ATrack()
-{
+	automation = new AAutomation(edl, this);
+	edits = new AEdits(edl, this);
 }
 
 // Used by PlaybackEngine
@@ -66,25 +64,16 @@ void ATrack::synchronize_params(Track *track)
 	ATrack *atrack = (ATrack*)track;
 }
 
-int ATrack::copy_settings(Track *track)
+void ATrack::copy_settings(Track *track)
 {
 	Track::copy_settings(track);
 
 	ATrack *atrack = (ATrack*)track;
-	return 0;
 }
-
 
 void ATrack::save_header(FileXML *file)
 {
 	file->tag.set_property("TYPE", "AUDIO");
-}
-
-void ATrack::create_objects()
-{
-	Track::create_objects();
-	automation = new AAutomation(edl, this);
-	edits = new AEdits(edl, this);
 }
 
 int ATrack::vertical_span(Theme *theme)
@@ -101,12 +90,6 @@ int ATrack::vertical_span(Theme *theme)
 PluginSet* ATrack::new_plugins()
 {
 	return new APluginSet(edl, this);
-}
-
-int ATrack::load_defaults(BC_Hash *defaults)
-{
-	Track::load_defaults(defaults);
-	return 0;
 }
 
 void ATrack::set_default_title()

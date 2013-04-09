@@ -33,21 +33,15 @@
 #include "track.h"
 
 
-
-
 class ATrack : public Track
 {
 public:
 	ATrack(EDL *edl, Tracks *tracks);
-	~ATrack();
-
-	void create_objects();
-	int load_defaults(BC_Hash *defaults);
 	void set_default_title();
 	PluginSet* new_plugins();
 	int vertical_span(Theme *theme);
 	void save_header(FileXML *file);
-	int copy_settings(Track *track);
+	void copy_settings(Track *track);
 	void synchronize_params(Track *track);
 	posnum to_units(ptstime position, int round = 0);
 	ptstime from_units(posnum position);

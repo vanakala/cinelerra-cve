@@ -53,15 +53,6 @@ VTrack::VTrack(EDL *edl, Tracks *tracks)
 	data_type = TRACK_VIDEO;
 	draw = 1;
 	one_unit = (ptstime)1.0 / edl->session->frame_rate;
-}
-
-VTrack::~VTrack()
-{
-}
-
-void VTrack::create_objects()
-{
-	Track::create_objects();
 	automation = new VAutomation(edl, this);
 	edits = new VEdits(edl, this);
 }
@@ -75,12 +66,11 @@ void VTrack::synchronize_params(Track *track)
 }
 
 // Used by EDL::operator=
-int VTrack::copy_settings(Track *track)
+void VTrack::copy_settings(Track *track)
 {
 	Track::copy_settings(track);
 
 	VTrack *vtrack = (VTrack*)track;
-	return 0;
 }
 
 int VTrack::vertical_span(Theme *theme)
@@ -94,16 +84,9 @@ int VTrack::vertical_span(Theme *theme)
 	return MAX(track_h, patch_h);
 }
 
-
 PluginSet* VTrack::new_plugins()
 {
 	return new VPluginSet(edl, this);
-}
-
-int VTrack::load_defaults(BC_Hash *defaults)
-{
-	Track::load_defaults(defaults);
-	return 0;
 }
 
 void VTrack::set_default_title()
@@ -131,9 +114,9 @@ posnum VTrack::to_units(ptstime position, int round)
 	}
 }
 
-double VTrack::from_units(posnum position)
+ptstime VTrack::from_units(posnum position)
 {
-	return (double)position / edl->session->frame_rate;
+	return (ptstime)position / edl->session->frame_rate;
 }
 
 void VTrack::save_header(FileXML *file)

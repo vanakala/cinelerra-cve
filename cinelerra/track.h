@@ -57,15 +57,9 @@ public:
 	Track(EDL *edl, Tracks *tracks);
 	Track();
 	virtual ~Track();
-
-	void create_objects();
 	int get_id();
-	virtual int load_defaults(BC_Hash *defaults);
-	int load(FileXML *file, int track_offset, uint32_t load_flags);
+	void load(FileXML *file, int track_offset, uint32_t load_flags);
 	virtual void save_header(FileXML *file) {};
-	virtual void save_derived(FileXML *file) {};
-	virtual void load_header(FileXML *file, uint32_t load_flags) {};
-	virtual void load_derived(FileXML *file, uint32_t load_flags) {};
 	void equivalent_output(Track *track, ptstime *result);
 
 	virtual void copy_from(Track *track);
@@ -115,8 +109,6 @@ public:
 // For drawing
 	virtual ptstime from_units(posnum position);
 
-
-
 // Positions are identical for handle modifications
 	int identical(ptstime sample1, ptstime sample2);
 
@@ -145,7 +137,7 @@ public:
 // Used by PlayableTracks::is_playable
 	int plugin_used(ptstime position);
 
-	virtual int copy_settings(Track *track);
+	virtual void copy_settings(Track *track);
 	void shift_keyframes(ptstime position, ptstime length);
 	void shift_effects(ptstime position, ptstime length);
 	void change_plugins(SharedLocation &old_location, 
@@ -206,10 +198,10 @@ public:
 		int default_only);
 	void straighten_automation(double selectionstart, 
 		double selectionend);
-	int copy_automation(ptstime selectionstart,
+	void copy_automation(ptstime selectionstart,
 		ptstime selectionend,
 		FileXML *file);
-	int paste_automation(ptstime selectionstart, 
+	void paste_automation(ptstime selectionstart, 
 		ptstime total_length, 
 		double frame_rate,
 		int sample_rate,
@@ -218,9 +210,7 @@ public:
 		ptstime end,
 		int actions,
 		ptstime &distance);
-	int paste_silence(ptstime start, ptstime end, int edit_plugins);
-	virtual int select_translation(int cursor_x, int cursor_y) { return 0; };  // select video coordinates for frame
-	virtual int update_translation(int cursor_x, int cursor_y, int shift_down) { return 0; };  // move video coordinates
+	void paste_silence(ptstime start, ptstime end, int edit_plugins);
 
 // Return 1 if the left handle was selected 2 if the right handle was selected 3 if the track isn't recordable
 	void modify_edithandles(ptstime oldposition,

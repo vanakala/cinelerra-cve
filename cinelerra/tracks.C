@@ -242,9 +242,6 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 	{
 		change_modules(number_of(track) - 1, number_of(track), 0);
 	}
-
-
-	new_track->create_objects();
 	new_track->set_default_title();
 
 	int current_pan = 0;
@@ -293,8 +290,6 @@ Track* Tracks::add_video_track(int above, Track *dst_track)
 	{
 		change_modules(number_of(track) - 1, number_of(track), 0);
 	}
-
-	new_track->create_objects();
 	new_track->set_default_title();
 	return new_track;
 }

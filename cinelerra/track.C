@@ -74,12 +74,7 @@ Track::~Track()
 	plugin_set.remove_all_objects();
 }
 
-void Track::create_objects()
-{
-}
-
-
-int Track::copy_settings(Track *track)
+void Track::copy_settings(Track *track)
 {
 	this->expand_view = track->expand_view;
 	this->draw = track->draw;
@@ -90,18 +85,11 @@ int Track::copy_settings(Track *track)
 	this->track_w = track->track_w;
 	this->track_h = track->track_h;
 	strcpy(this->title, track->title);
-	return 0;
 }
 
 int Track::get_id()
 {
 	return id;
-}
-
-
-int Track::load_defaults(BC_Hash *defaults)
-{
-	return 0;
 }
 
 void Track::equivalent_output(Track *track, ptstime *result)
@@ -241,8 +229,6 @@ ptstime Track::get_length()
 	return total_length;
 }
 
-
-
 void Track::get_source_dimensions(ptstime position, int &w, int &h)
 {
 	for(Edit *current = edits->first; current; current = NEXT)
@@ -258,13 +244,11 @@ void Track::get_source_dimensions(ptstime position, int &w, int &h)
 	}
 }
 
-
-int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
+void Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 {
 	int result = 0;
 	int current_channel = 0;
 	int current_plugin = 0;
-
 
 	record = file->tag.get_property("RECORD", record);
 	play = file->tag.get_property("PLAY", play);
@@ -274,8 +258,6 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 	expand_view = file->tag.get_property("EXPAND", expand_view);
 	track_w = file->tag.get_property("TRACK_W", track_w);
 	track_h = file->tag.get_property("TRACK_H", track_h);
-
-	load_header(file, load_flags);
 
 	do{
 		result = file->read_tag();
@@ -322,12 +304,8 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 					}
 				}
 			}
-			else
-				load_derived(file, load_flags);
 		}
 	}while(!result);
-
-	return 0;
 }
 
 void Track::insert_asset(Asset *asset, 
@@ -715,7 +693,7 @@ int Track::number_of()
 // ================================================= editing
 
 // used for copying automation alone
-int Track::copy_automation(ptstime selectionstart, 
+void Track::copy_automation(ptstime selectionstart, 
 	ptstime selectionend,
 	FileXML *file)
 {
@@ -749,11 +727,9 @@ int Track::copy_automation(ptstime selectionstart,
 	file->append_newline();
 	file->append_newline();
 	file->append_newline();
-
-	return 0;
 }
 
-int Track::paste_automation(ptstime selectionstart,
+void Track::paste_automation(ptstime selectionstart,
 	ptstime total_length, 
 	double frame_rate,
 	int sample_rate,
@@ -798,8 +774,6 @@ int Track::paste_automation(ptstime selectionstart,
 			}
 		}
 	}
-
-	return 0;
 }
 
 void Track::clear_automation(ptstime selectionstart,
@@ -842,7 +816,6 @@ void Track::copy(ptstime start,
 	save_header(file);
 	file->append_tag();
 	file->append_newline();
-	save_derived(file);
 
 	file->tag.set_title("TITLE");
 	file->append_tag();
@@ -895,10 +868,6 @@ void Track::copy_assets(ptstime start,
 		current = NEXT;
 	}
 }
-
-
-
-
 
 void Track::clear(ptstime start,
 	ptstime end,
@@ -961,15 +930,13 @@ void Track::modify_pluginhandles(ptstime oldposition,
 	}
 }
 
-
-int Track::paste_silence(ptstime start, ptstime end, int edit_plugins)
+void Track::paste_silence(ptstime start, ptstime end, int edit_plugins)
 {
 	edits->paste_silence(start, end);
 	shift_keyframes(start, end - start);
 	if(edit_plugins) shift_effects(start, end - start);
 
 	edits->optimize();
-	return 0;
 }
 
 void Track::change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap)
@@ -1012,7 +979,6 @@ void Track::change_modules(int old_location, int new_location, int do_swap)
 		}
 	}
 }
-
 
 int Track::playable_edit(ptstime position)
 {
@@ -1062,8 +1028,7 @@ ptstime Track::edit_change_duration(ptstime input_position,
 // Get first edit on or before position
 	for(current = edits->last; 
 		current && current->project_pts > input_position;
-		current = PREVIOUS)
-		;
+		current = PREVIOUS);
 
 	if(current)
 	{
@@ -1113,12 +1078,10 @@ ptstime Track::edit_change_duration(ptstime input_position,
 		return input_length;
 }
 
-
 int Track::is_playable(ptstime position)
 {
 	return 1;
 }
-
 
 int Track::plugin_used(ptstime position)
 {
