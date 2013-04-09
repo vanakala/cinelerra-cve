@@ -339,31 +339,21 @@ void PluginSet::paste_keyframes(ptstime start,
 
 void PluginSet::shift_effects(ptstime start, ptstime length)
 {
+	if(PTSEQU(length, 0))
+		return;
+
 	for(Plugin *current = (Plugin*)first;
 		current;
 		current = (Plugin*)NEXT)
 	{
-// Shift beginning of this effect
-		if(current->project_pts >= start)
+		if(current != first && current->project_pts >= start)
 		{
 			current->project_pts += length;
+			current->keyframes->base_pts = current->project_pts;
+			if(current->keyframes->first && current->keyframes->first->pos_time >= start)
+				current->keyframes->first->pos_time += length;
 		}
-		else
-// Extend end of this effect.
-// In loading new files, the effect should extend to fill the entire track.
-// In muting, the effect must extend to fill the gap if another effect follows.
-// The user should use Settings->edit effects to disable this.
-		if(current->end_pts() >= start)
-		{
-			current->next->project_pts += length;
-		}
-
 // Shift keyframes in this effect.
-// If the default keyframe lands on the starting point, it must be shifted
-// since the effect start is shifted.
-		if(current->keyframes->first->pos_time >= start)
-			current->keyframes->first->pos_time += length;
-
 		current->keyframes->paste_silence(start, start + length);
 	}
 }
