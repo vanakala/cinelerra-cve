@@ -436,6 +436,9 @@ void Edit::shift_start_out(int edit_mode,
 		}
 	}
 
+	if(fabs(cut_length) < EPSILON)
+		return;
+
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
 		source_pts -= cut_length;
@@ -565,6 +568,9 @@ void Edit::shift_end_out(int edit_mode,
 // check end of edit against end of source file
 	if(endsource > 0 && source_pts + length() + cut_length > endsource)
 		cut_length = endsource - source_pts - length();
+
+	if(fabs(cut_length) < EPSILON)
+		return;
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
