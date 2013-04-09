@@ -483,7 +483,7 @@ void Edits::clear(ptstime start, ptstime end)
 	Edit* current_edit;
 
 	if(PTSEQU(end, start)) return;        // nothing selected
-	if(!edit1 && !edit2) return;       // nothing selected
+	if(!edit1) return;       // nothing selected
 
 	if(!edit2)
 	{                // edit2 beyond end of track
