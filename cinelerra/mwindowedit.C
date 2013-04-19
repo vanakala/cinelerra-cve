@@ -602,23 +602,14 @@ void MWindow::finish_modify_handles()
 	int edit_mode = edl->session->edit_handle_mode[session->drag_button];
 
 	if((session->drag_handle == 1 && edit_mode != MOVE_NO_EDITS) ||
-		(session->drag_handle == 0 && edit_mode == MOVE_ONE_EDIT))
-	{
-		edl->local_session->set_selectionstart(session->drag_position);
-		edl->local_session->set_selectionend(session->drag_position);
-	}
+			(session->drag_handle == 0 && edit_mode == MOVE_ONE_EDIT))
+		edl->local_session->set_selection(session->drag_position);
 	else
 	if(edit_mode != MOVE_NO_EDITS)
-	{
-		edl->local_session->set_selectionstart(session->drag_start);
-		edl->local_session->set_selectionend(session->drag_start);
-	}
+		edl->local_session->set_selection(session->drag_start);
 
 	if(edl->local_session->get_selectionstart(1) < 0)
-	{
-		edl->local_session->set_selectionstart(0);
-		edl->local_session->set_selectionend(0);
-	}
+		edl->local_session->set_selection(0);
 
 	save_backup();
 	undo->update_undo(_("drag handle"), LOAD_EDITS | LOAD_TIMEBAR);
@@ -834,8 +825,7 @@ void MWindow::overwrite(EDL *source)
 		&file,
 		EDIT_NONE);
 
-	edl->local_session->set_selectionstart(dst_start + overwrite_len);
-	edl->local_session->set_selectionend(dst_start + overwrite_len);
+	edl->local_session->set_selection(dst_start + overwrite_len);
 
 	save_backup();
 	undo->update_undo(_("overwrite"), LOAD_EDITS);
@@ -1567,12 +1557,7 @@ void MWindow::splice(EDL *source)
 		edl->session->edit_actions());
 
 // Position at end of clip
-	edl->local_session->set_selectionstart(start + 
-		source_end - 
-		source_start);
-	edl->local_session->set_selectionend(start + 
-		source_end - 
-		source_start);
+	edl->local_session->set_selection(start + source_end - source_start);
 
 	save_backup();
 	undo->update_undo(_("splice"), LOAD_EDITS | LOAD_TIMEBAR);
@@ -1621,8 +1606,7 @@ void MWindow::to_clip()
 
 	sprintf(new_edl->local_session->clip_notes, _("%s\nCreated from main window"), string);
 
-	new_edl->local_session->set_selectionstart(0);
-	new_edl->local_session->set_selectionend(0);
+	new_edl->local_session->set_selection(0);
 
 	awindow->clip_edit->create_clip(new_edl);
 	save_backup();
@@ -1759,8 +1743,7 @@ void MWindow::new_folder(const char *new_folder)
 
 void MWindow::select_point(double position)
 {
-	edl->local_session->set_selectionstart(position);
-	edl->local_session->set_selectionend(position);
+	edl->local_session->set_selection(position);
 
 // Que the CWindow
 	cwindow->update(1, 0, 0, 0, 1);
