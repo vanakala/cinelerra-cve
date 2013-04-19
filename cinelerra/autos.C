@@ -540,7 +540,17 @@ void Autos::get_neighbors(ptstime start, ptstime end,
 	while(*after && (*after)->pos_time < end) *after = (*after)->next;
 }
 
-// Coversions between position and ptstime
+void Autos::shift_all(ptstime difference)
+{
+	Auto *current;
+
+	base_pts += difference;
+
+	for(current = first; current; current = current->next)
+		current->pos_time += difference;
+}
+
+// Conversions between position and ptstime
 ptstime Autos::pos2pts(posnum position)
 {
 	if(track)

@@ -102,6 +102,7 @@ public:
 
 	int save(FileXML *xml);
 	int release_auto();
+	void shift_all(ptstime difference);
 	ptstime pos2pts(posnum position);
 	posnum pts2pos(ptstime position);
 	Auto* append_auto();
