@@ -585,6 +585,7 @@ void Edit::shift_end_out(int edit_mode,
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
 		{
 			current_edit->project_pts += cut_length;
+			current_edit->shift_keyframes(cut_length);
 		}
 	}
 	else
