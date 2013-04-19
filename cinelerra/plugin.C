@@ -155,14 +155,8 @@ void Plugin::synchronize_params(Edit *edit)
 
 void Plugin::shift_keyframes(ptstime postime)
 {
-	for(KeyFrame *keyframe = (KeyFrame*)keyframes->first;
-		keyframe; 
-		keyframe = (KeyFrame*)keyframe->next)
-	{
-		keyframe->pos_time += postime;
-	}
+	keyframes->shift_all(postime);
 }
-
 
 void Plugin::equivalent_output(Edit *edit, ptstime *result)
 {
