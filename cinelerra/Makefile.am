@@ -598,6 +598,7 @@ cinelerracve_LDADD = \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
 	$(LIBDV_LIBS) \
+	$(OPENGL_LIBS) \
 	-luuid \
 	$(MJPEG_LIBS)
 
