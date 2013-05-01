@@ -82,7 +82,7 @@ public:
 	int get_left_border();
 	int get_right_border();
 	int get_bottom_border();
-	void test_window(int &x_out, int &y_out, int &x_out2, int &y_out2, int x_in, int y_in);
+	void test_window(int &x_out, int &y_out, int &x_out2, int &y_out2);
 	int test_xvext();
 	static uint32_t cmodel_to_fourcc(int cmodel);
 	void dump_xvext();

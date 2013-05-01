@@ -37,9 +37,6 @@
 
 #define TEST_X 100
 #define TEST_Y 100
-#define TEST_SIZE 128
-#define TEST_SIZE2 164
-#define TEST_SIZE3 196
 
 int BC_DisplayInfo::top_border = -1;
 int BC_DisplayInfo::left_border = -1;
@@ -47,6 +44,18 @@ int BC_DisplayInfo::bottom_border = -1;
 int BC_DisplayInfo::right_border = -1;
 int BC_DisplayInfo::auto_reposition_x = -1;
 int BC_DisplayInfo::auto_reposition_y = -1;
+
+static struct testdata
+{
+    int w;
+    int h;
+} test_sizes[] = {
+    { 128, 128 },
+    { 164, 164 },
+    { 196, 196 }
+};
+
+#define TESTDATASIZE (sizeof(test_sizes) / sizeof(struct testdata))
 
 struct xv_adapterinfo *BC_DisplayInfo::xv_adapters = 0;
 int BC_DisplayInfo::num_adapters = -1;
@@ -79,14 +88,15 @@ void BC_DisplayInfo::parse_geometry(char *geom, int *x, int *y, int *width, int 
 	XParseGeometry(geom, x, y, (unsigned int*)width, (unsigned int*)height);
 }
 
+/*
+ * Try to figure out how many pixels window maneger shifts window
+ */
 void BC_DisplayInfo::test_window(int &x_out, 
 	int &y_out, 
 	int &x_out2, 
-	int &y_out2, 
-	int x_in, 
-	int y_in)
+	int &y_out2)
 {
-	unsigned long mask = CWEventMask | CWWinGravity;
+	unsigned long mask = CWEventMask;
 	XSetWindowAttributes attr;
 	XSizeHints size_hints;
 
@@ -95,107 +105,96 @@ void BC_DisplayInfo::test_window(int &x_out,
 	x_out2 = 0;
 	y_out2 = 0;
 	attr.event_mask = StructureNotifyMask;
-	attr.win_gravity = SouthEastGravity;
+
 	Window win = XCreateWindow(display, 
 			rootwin, 
-			x_in, 
-			y_in, 
-			TEST_SIZE, 
-			TEST_SIZE, 
+			TEST_X,
+			TEST_Y,
+			test_sizes[0].w,
+			test_sizes[0].h,
 			0, 
 			default_depth, 
 			InputOutput, 
 			vis, 
 			mask, 
 			&attr);
-	XGetNormalHints(display, win, &size_hints);
-	size_hints.flags = PPosition | PSize;
-	size_hints.x = x_in;
-	size_hints.y = y_in;
-	size_hints.width = TEST_SIZE;
-	size_hints.height = TEST_SIZE;
-	XSetStandardProperties(display, 
-		win, 
-		"x", 
-		"x", 
-		None, 
-		0, 
-		0, 
-		&size_hints);
+
+	memset(&size_hints, 0, sizeof(size_hints));
+	size_hints.flags = PPosition | PSize | PMinSize | PMaxSize;
+	size_hints.x = TEST_X;
+	size_hints.y = TEST_Y;
+	size_hints.width = test_sizes[1].w;
+	size_hints.height = test_sizes[1].h;
+	size_hints.min_width = test_sizes[0].w;
+	size_hints.min_height = test_sizes[0].h;
+	size_hints.max_width = test_sizes[TESTDATASIZE - 1].w;
+	size_hints.max_height = test_sizes[TESTDATASIZE - 1].h;
+	XSetNormalHints(display, win, &size_hints);
 
 	XMapWindow(display, win); 
 	XFlush(display);
 	XSync(display, 0);
+
 	XMoveResizeWindow(display, 
 		win, 
-		x_in, 
-		y_in,
-		TEST_SIZE2,
-		TEST_SIZE2);
+		TEST_X,
+		TEST_Y,
+		test_sizes[1].w,
+		test_sizes[1].h);
 	XFlush(display);
 	XSync(display, 0);
 
-	XResizeWindow(display, 
-		win, 
-		TEST_SIZE3,
-		TEST_SIZE3);
-	XFlush(display);
-	XSync(display, 0);
+	for(int i = 2; i < TESTDATASIZE; i++)
+	{
+		XResizeWindow(display,
+			win,
+			test_sizes[i].w,
+			test_sizes[i].h);
+		XFlush(display);
+		XSync(display, 0);
+	}
 
-	XEvent event;
-	int last_w = TEST_SIZE;
-	int last_h = TEST_SIZE;
 	int state = 0;
+	XEvent event;
+	struct testdata shfts[TESTDATASIZE];
+	memset(shfts, 0, sizeof(shfts));
 
 	do
 	{
 		XNextEvent(display, &event);
 		if(event.type == ConfigureNotify && event.xany.window == win)
 		{
-// Get creation repositioning
-			if(last_w != event.xconfigure.width || last_h != event.xconfigure.height)
-			{
+			if(test_sizes[state + 1].w == event.xconfigure.width && test_sizes[state + 1].h == event.xconfigure.height)
 				state++;
-				last_w = event.xconfigure.width;
-				last_h = event.xconfigure.height;
-			}
-
-			if(state == 1)
-			{
-				x_out = MAX(event.xconfigure.x + event.xconfigure.border_width - x_in, x_out);
-				y_out = MAX(event.xconfigure.y + event.xconfigure.border_width - y_in, y_out);
-			}
-			else
-			if(state == 2)
-// Get moveresize repositioning
-			{
-				x_out2 = MAX(event.xconfigure.x + event.xconfigure.border_width - x_in, x_out2);
-				y_out2 = MAX(event.xconfigure.y + event.xconfigure.border_width - y_in, y_out2);
-			}
+			shfts[state].w = event.xconfigure.x + event.xconfigure.border_width;
+			shfts[state].h = event.xconfigure.y + event.xconfigure.border_width;
 		}
-	}while(state != 2);
+	}while(state < TESTDATASIZE - 1);
 
 	XDestroyWindow(display, win);
 	XFlush(display);
 	XSync(display, 0);
+// Create shift
+	x_out = shfts[0].w - TEST_X;
+	y_out = shfts[0].h - TEST_Y;
+// Reposition shift
+	x_out2 = shfts[1].w - shfts[0].w;
+	y_out2 = shfts[1].h - shfts[0].h;
 
-	x_out = MAX(0, x_out);
-	y_out = MAX(0, y_out);
-	x_out = MIN(x_out, 60);
-	y_out = MIN(y_out, 60);
+	CLAMP(x_out, 0, 60);
+	CLAMP(y_out, 0, 60);
+	CLAMP(x_out2, 0, 60);
+	CLAMP(y_out2, 0, 60);
 }
 
 void BC_DisplayInfo::init_borders()
 {
 	if(top_border < 0)
 	{
-
 		test_window(left_border, 
 			top_border, 
 			auto_reposition_x, 
-			auto_reposition_y, 
-			TEST_X, 
-			TEST_Y);
+			auto_reposition_y);
 		right_border = left_border;
 		bottom_border = left_border;
 	}
