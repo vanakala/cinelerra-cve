@@ -200,7 +200,6 @@ public:
 // the context is current.
 // No locking is performed.
 	void enable_opengl();
-	void disable_opengl();
 	void flip_opengl();
 
 // Calls the BC_Synchronous version of the function with the window_id.

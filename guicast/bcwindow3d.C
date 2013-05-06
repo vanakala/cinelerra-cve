@@ -42,9 +42,9 @@ void BC_WindowBase::enable_opengl()
 	{
 		viproto.screen = top_level->screen;
 		visinfo = XGetVisualInfo(top_level->display,
-    		VisualScreenMask,
-    		&viproto,
-    		&nvi);
+		VisualScreenMask,
+		&viproto,
+		&nvi);
 
 		gl_win_context = glXCreateContext(top_level->display,
 			visinfo,
@@ -52,31 +52,11 @@ void BC_WindowBase::enable_opengl()
 			1);
 	}
 
-
-//	if(video_is_on())
-//	{
 // Make the front buffer's context current.  Pixmaps don't work.
-		get_synchronous()->current_window = this;
-		glXMakeCurrent(top_level->display,
-			win,
-			gl_win_context);
-// 	}
-// 	else
-// 	{
-// 		get_synchronous()->current_window = this;
-// 		pixmap->enable_opengl();
-// 	}
-
-#endif
-}
-
-void BC_WindowBase::disable_opengl()
-{
-#ifdef HAVE_GL
-// 	unsigned long valuemask = CWEventMask;
-// 	XSetWindowAttributes attributes;
-// 	attributes.event_mask = DEFAULT_EVENT_MASKS;
-// 	XChangeWindowAttributes(top_level->display, win, valuemask, &attributes);
+	get_synchronous()->current_window = this;
+	glXMakeCurrent(top_level->display,
+		win,
+		gl_win_context);
 #endif
 }
 
@@ -100,10 +80,10 @@ void BC_WindowBase::put_shader(unsigned int handle, char *source)
 
 int BC_WindowBase::get_opengl_version()
 {
-	int maj, min;
 #ifdef HAVE_GL
+	int maj, min;
 	if(glXQueryVersion(get_display(), &maj, &min))
 		return 100 * maj + min;
 #endif
-		return 0;
+	return 0;
 }
