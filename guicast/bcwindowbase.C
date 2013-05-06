@@ -3297,3 +3297,8 @@ int BC_WindowBase::get_id()
 {
 	return id;
 }
+
+void BC_WindowBase::set_protowatch()
+{
+	BC_Signals::watchXproto(get_display());
+}

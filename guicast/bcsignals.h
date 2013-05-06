@@ -26,6 +26,7 @@
 #include "bcsignals.inc"
 #include <pthread.h>
 #include <signal.h>
+#include <X11/Xlib.h>
 
 #define TRON(x) BC_Signals::new_function(x);
 #define TROFF(x) BC_Signals::delete_function(x);
@@ -50,6 +51,7 @@ public:
 	void initialize();
 	void initialize2();
 	void initXErrors();
+	static void watchXproto(Display *dpy);
 
 	virtual void signal_handler(int signum);
 

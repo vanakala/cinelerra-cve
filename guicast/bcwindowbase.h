@@ -505,6 +505,7 @@ public:
 	void set_icon(VFrame *data);
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
+	void set_protowatch();
 
 #ifdef HAVE_LIBXXF86VM
 // Mode switch methods.

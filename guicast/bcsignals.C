@@ -28,6 +28,7 @@
 #include <ucontext.h>
 #include <execinfo.h>
 #include <X11/Xlib.h>
+#include <X11/Xlibint.h>
 #include <errno.h>
 #include <stdarg.h>
 
@@ -412,6 +413,17 @@ static int xioerrhdlr(Display *display)
 	signal_entry(0, NULL, NULL);
 }
 
+/*
+ * X protocol watcher
+ */
+static int xprotowatch(Display *display)
+{
+	fprintf(stderr, "[#%08lx] xprotowatch: %p req %ld/%ld\n", 
+		pthread_self(), display,
+		display->request, display->last_request_read);
+	return 0;
+}
+
 BC_Signals::BC_Signals()
 {
 }
@@ -526,6 +538,10 @@ void BC_Signals::initXErrors()
 	XSetIOErrorHandler(xioerrhdlr);
 }
 
+void BC_Signals::watchXproto(Display *dpy)
+{
+	XSetAfterFunction(dpy, xprotowatch);
+}
 
 void BC_Signals::signal_handler(int signum)
 {
