@@ -50,6 +50,7 @@
 #endif
 #include <string.h>
 #include <unistd.h>
+#include <poll.h>
 
 #include <X11/extensions/Xvlib.h>
 #include <X11/extensions/shape.h>
@@ -625,7 +626,21 @@ void BC_WindowBase::dispatch_event()
 // wait for next event only if there are no compressed events.
 	if(XPending(display) ||
 			(!motion_events && !resize_events && !translation_events))
+	{
+		lock_window("BC_WindowBase::dispatch_event");
+		while(!XPending(display))
+		{
+			unlock_window();
+			struct pollfd fds;
+			fds.fd = ConnectionNumber(display);
+			fds.events = POLLIN | POLLPRI;
+			fds.revents = 0;
+			int rv = poll(&fds, 1, -1);
+			lock_window("BC_WindowBase::dispatch_event");
+		}
 		XNextEvent(display, &event);
+		unlock_window();
+	}
 	else
 // Handle compressed events
 	{
