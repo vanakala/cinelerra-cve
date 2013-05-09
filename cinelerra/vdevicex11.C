@@ -59,6 +59,7 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
 	capture_bitmap = 0;
 	color_model_selected = 0;
 	is_cleared = 0;
+	gl_failed = 0;
 	num_xv_cmodels = -1;
 	accel_cmodel = -1;
 	this->output = output;
@@ -73,6 +74,7 @@ VDeviceX11::~VDeviceX11()
 // while the user is redrawing the canvas frame buffer over and over.
 		output->lock_canvas("VDeviceX11::~VDeviceX11");
 		int use_opengl = device->out_config->driver == PLAYBACK_X11_GL &&
+			!gl_failed &&
 			output_frame->get_opengl_state() == VFrame::SCREEN;
 		int best_color_model = output_frame->get_color_model();
 
@@ -516,13 +518,14 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	return 0;
 }
 
-void VDeviceX11::clear_output()
+int VDeviceX11::clear_output()
 {
 	is_cleared = 1;
 
-	output->mwindow->playback_3d->clear_output(output,
+	gl_failed = output->mwindow->playback_3d->clear_output(output,
 		output->get_canvas()->get_video_on() ? 0 : output_frame);
 
+	return gl_failed;
 }
 
 void VDeviceX11::clear_input(VFrame *frame)
@@ -530,7 +533,7 @@ void VDeviceX11::clear_input(VFrame *frame)
 	this->output->mwindow->playback_3d->clear_input(this->output, frame);
 }
 
-void VDeviceX11::do_camera(VFrame *output,
+int VDeviceX11::do_camera(VFrame *output,
 	VFrame *input,
 	float in_x1, 
 	float in_y1, 
@@ -541,7 +544,7 @@ void VDeviceX11::do_camera(VFrame *output,
 	float out_x2, 
 	float out_y2)
 {
-	this->output->mwindow->playback_3d->do_camera(this->output, 
+	gl_failed = this->output->mwindow->playback_3d->do_camera(this->output,
 		output,
 		input,
 		in_x1, 
@@ -552,6 +555,7 @@ void VDeviceX11::do_camera(VFrame *output,
 		out_y1, 
 		out_x2, 
 		out_y2);
+	return gl_failed;
 }
 
 void VDeviceX11::do_fade(VFrame *output_temp, float fade)

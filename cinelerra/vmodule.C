@@ -30,6 +30,7 @@
 #include "file.h"
 #include "filexml.h"
 #include "floatautos.h"
+#include "mainerror.h"
 #include "mwindow.h"
 #include "overlayframe.h"
 #include "pluginarray.h"
@@ -262,7 +263,7 @@ int VModule::import_frame(VFrame *output,
 
 				if(use_opengl)
 				{
-					x11_device->do_camera(output,
+					if(x11_device->do_camera(output,
 						(*input), 
 						in_x1,
 						in_y1,
@@ -271,7 +272,12 @@ int VModule::import_frame(VFrame *output,
 						out_x1,
 						out_y1,
 						out_x1 + out_w1,
-						out_y1 + out_h1);
+						out_y1 + out_h1))
+					{
+						use_opengl = 0;
+						renderengine->interrupt_playback();
+						errorbox(_("Unable to initialize OpenGL"));
+					}
 				}
 				else
 				{

@@ -44,12 +44,11 @@ public:
 	~BC_PBuffer();
 
 	friend class VFrame;
-
-	void reset();
 // Must be called after BC_WindowBase::enable_opengl to make the PBuffer
 // the current drawing surface.  Call BC_WindowBase::enable_opengl
 // after this to switch back to the window.
-	void enable_opengl();
+// Returns nonzero if fails
+	int enable_opengl();
 #ifdef HAVE_GL
 	GLXPbuffer get_pbuffer();
 #endif

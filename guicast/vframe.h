@@ -252,7 +252,8 @@ public:
 
 
 // Binds the opengl context to this frame's PBuffer
-	void enable_opengl(void);
+// Returns nz if initialzation has failed
+	int enable_opengl(void);
 
 // Clears the pbuffer with the right values depending on YUV
 	void clear_pbuffer(void);

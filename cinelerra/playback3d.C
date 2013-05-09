@@ -562,22 +562,25 @@ void Playback3D::draw_output(Playback3DCommand *command)
 void Playback3D::init_frame(Playback3DCommand *command)
 {
 #ifdef HAVE_GL
-	canvas_w = command->canvas->get_canvas()->get_w();
-	canvas_h = command->canvas->get_canvas()->get_h();
+	if(!command->result)
+	{
+		canvas_w = command->canvas->get_canvas()->get_w();
+		canvas_h = command->canvas->get_canvas()->get_h();
 
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
 #endif
 }
 
 
-void Playback3D::clear_output(Canvas *canvas, VFrame *output)
+int Playback3D::clear_output(Canvas *canvas, VFrame *output)
 {
 	Playback3DCommand command;
 	command.command = Playback3DCommand::CLEAR_OUTPUT;
 	command.canvas = canvas;
 	command.frame = output;
-	send_command(&command);
+	return send_command(&command);
 }
 
 void Playback3D::clear_output_sync(Playback3DCommand *command)
@@ -592,7 +595,7 @@ void Playback3D::clear_output_sync(Playback3DCommand *command)
 // Using pbuffer for refresh frame.
 		if(command->frame)
 		{
-			command->frame->enable_opengl();
+			command->result = command->frame->enable_opengl();
 		}
 
 		init_frame(command);
@@ -626,7 +629,7 @@ void Playback3D::clear_input_sync(Playback3DCommand *command)
 	command->canvas->unlock_canvas();
 }
 
-void Playback3D::do_camera(Canvas *canvas,
+int Playback3D::do_camera(Canvas *canvas,
 	VFrame *output,
 	VFrame *input,
 	float in_x1, 
@@ -651,7 +654,7 @@ void Playback3D::do_camera(Canvas *canvas,
 	command.out_y1 = out_y1;
 	command.out_x2 = out_x2;
 	command.out_y2 = out_y2;
-	send_command(&command);
+	return send_command(&command);
 }
 
 void Playback3D::do_camera_sync(Playback3DCommand *command)
@@ -663,25 +666,27 @@ void Playback3D::do_camera_sync(Playback3DCommand *command)
 		command->canvas->get_canvas()->enable_opengl();
 
 		command->input->to_texture();
-		command->frame->enable_opengl();
-		command->frame->init_screen();
-		command->frame->clear_pbuffer();
+		if(!(command->result = command->frame->enable_opengl()))
+		{
+			command->frame->init_screen();
+			command->frame->clear_pbuffer();
 
-		command->input->bind_texture(0);
+			command->input->bind_texture(0);
 // Must call draw_texture in input frame to get the texture coordinates right.
 
-		command->input->draw_texture(
-			command->in_x1, 
-			command->in_y2, 
-			command->in_x2, 
-			command->in_y1, 
-			command->out_x1,
-			(float)command->frame->get_h() - command->out_y1,
-			command->out_x2,
-			(float)command->frame->get_h() - command->out_y2);
+			command->input->draw_texture(
+				command->in_x1,
+				command->in_y2,
+				command->in_x2,
+				command->in_y1,
+				command->out_x1,
+				(float)command->frame->get_h() - command->out_y1,
+				command->out_x2,
+				(float)command->frame->get_h() - command->out_y2);
 
 
-		command->frame->set_opengl_state(VFrame::SCREEN);
+			command->frame->set_opengl_state(VFrame::SCREEN);
+		}
 		command->canvas->get_canvas()->unlock_window();
 	}
 	command->canvas->unlock_canvas();

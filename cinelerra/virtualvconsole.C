@@ -24,6 +24,7 @@
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "mainerror.h"
 #include "mwindow.h"
 #include "playabletracks.h"
 #include "preferences.h"
@@ -96,8 +97,12 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 	if(use_opengl)
 	{
 // clear hardware framebuffer
-
-		((VDeviceX11*)get_vdriver())->clear_output();
+		if(((VDeviceX11*)get_vdriver())->clear_output())
+		{
+			renderengine->interrupt_playback();
+			use_opengl = 0;
+			errorbox(_("Unable to initialize OpenGL"));
+		}
 
 // que OpenGL driver that everything is overlaid in the framebuffer
 		vrender->video_out->set_opengl_state(VFrame::SCREEN);

@@ -28,7 +28,7 @@
 
 // OpenGL functions in BC_WindowBase
 
-void BC_WindowBase::enable_opengl()
+int BC_WindowBase::enable_opengl()
 {
 #ifdef HAVE_GL
 	XVisualInfo viproto;
@@ -42,22 +42,30 @@ void BC_WindowBase::enable_opengl()
 	{
 		viproto.screen = top_level->screen;
 		visinfo = XGetVisualInfo(top_level->display,
-		VisualScreenMask,
-		&viproto,
-		&nvi);
-
-		gl_win_context = glXCreateContext(top_level->display,
-			visinfo,
-			0,
-			1);
+			VisualScreenMask,
+			&viproto,
+			&nvi);
+		if(visinfo)
+		{
+			gl_win_context = glXCreateContext(top_level->display,
+				visinfo,
+				0,
+				1);
+			XFree(visinfo);
+		}
+		if(!gl_win_context)
+			return 1;
 	}
 
 // Make the front buffer's context current.  Pixmaps don't work.
 	get_synchronous()->current_window = this;
-	glXMakeCurrent(top_level->display,
-		win,
-		gl_win_context);
+	if(glXMakeCurrent(top_level->display, win, gl_win_context))
+		return 0;
+
+	glXDestroyContext(top_level->display, gl_win_context);
+	gl_win_context = 0;
 #endif
+	return 1;
 }
 
 void BC_WindowBase::flip_opengl()

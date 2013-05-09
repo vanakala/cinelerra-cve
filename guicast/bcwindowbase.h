@@ -199,7 +199,7 @@ public:
 // Must be called at the beginning of any opengl routine to make sure
 // the context is current.
 // No locking is performed.
-	void enable_opengl();
+	int enable_opengl();
 	void flip_opengl();
 
 // Calls the BC_Synchronous version of the function with the window_id.

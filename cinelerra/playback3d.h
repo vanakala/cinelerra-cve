@@ -245,7 +245,7 @@ public:
 
 // Clear framebuffer before composing virtual console
 // output - passed when rendering refresh frame.  If 0, the canvas is cleared.
-	void clear_output(Canvas *canvas, VFrame *output);
+	int clear_output(Canvas *canvas, VFrame *output);
 
 	void do_fade(Canvas *canvas, VFrame *frame, float fade);
 
@@ -278,7 +278,7 @@ public:
 	int run_plugin(Canvas *canvas, PluginClient *client);
 
 	void clear_input(Canvas *canvas, VFrame *frame);
-	void do_camera(Canvas *canvas,
+	int do_camera(Canvas *canvas,
 		VFrame *output,
 		VFrame *input,
 		float in_x1, 

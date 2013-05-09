@@ -61,10 +61,10 @@ public:
 //=========================== compositing stages ===============================
 // For compositing with OpenGL, must clear the frame buffer
 // before overlaying tracks.
-	void clear_output();
+	int clear_output();
 
 // Called by VModule::import_frame
-	void do_camera(VFrame *output,
+	int do_camera(VFrame *output,
 		VFrame *input,
 		float in_x1, 
 		float in_y1, 
@@ -157,6 +157,8 @@ private:
 	BC_Capture *capture_bitmap;
 // Set when OpenGL rendering has cleared the frame buffer before write_buffer
 	int is_cleared;
+// Set when OpenGL initialization failed
+	int gl_failed;
 // XV accelerated colormodels
 	int accel_cmodel;
 	int num_xv_cmodels;

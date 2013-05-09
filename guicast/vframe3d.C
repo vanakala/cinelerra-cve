@@ -203,13 +203,10 @@ void VFrame::to_ram(void)
 
 void VFrame::create_pbuffer(void)
 {
-SET_TRACE
 	if(pbuffer && 
 		pbuffer->window_id != BC_WindowBase::get_synchronous()->current_window->get_id())
 	{
-SET_TRACE
 		delete pbuffer;
-SET_TRACE
 		pbuffer = 0;
 	}
 
@@ -219,21 +216,26 @@ SET_TRACE
 		return;
 	}
 
-SET_TRACE
 	if(!pbuffer)
 	{
 		pbuffer = new BC_PBuffer(get_w(), get_h());
 	}
-SET_TRACE
 }
 
-void VFrame::enable_opengl(void)
+int VFrame::enable_opengl(void)
 {
 	create_pbuffer();
 	if(pbuffer)
 	{
-		pbuffer->enable_opengl();
+		if(pbuffer->enable_opengl())
+		{
+			delete pbuffer;
+			pbuffer = 0;
+			return 1;
+		}
+		return 0;
 	}
+	return 1;
 }
 
 BC_PBuffer* VFrame::get_pbuffer(void)

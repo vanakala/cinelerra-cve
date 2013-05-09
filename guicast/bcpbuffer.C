@@ -27,7 +27,8 @@
 
 BC_PBuffer::BC_PBuffer(int w, int h)
 {
-	reset();
+	pbuffer = 0;
+	window_id = -1;
 	this->w = w;
 	this->h = h;
 
@@ -38,14 +39,6 @@ BC_PBuffer::~BC_PBuffer()
 {
 #ifdef HAVE_GL
 	BC_WindowBase::get_synchronous()->release_pbuffer(window_id, pbuffer);
-#endif
-}
-
-void BC_PBuffer::reset()
-{
-#ifdef HAVE_GL
-	pbuffer = 0;
-	window_id = -1;
 #endif
 }
 
@@ -152,19 +145,21 @@ void BC_PBuffer::new_pbuffer(int w, int h)
 		if(config_result) XFree(config_result);
 		if(visinfo) XFree(visinfo);
 	}
-
-	if(!pbuffer) printf("BC_PBuffer::new_pbuffer: failed\n");
 #endif
 }
 
-void BC_PBuffer::enable_opengl()
+int BC_PBuffer::enable_opengl()
 {
 #ifdef HAVE_GL
-	BC_WindowBase *current_window = BC_WindowBase::get_synchronous()->current_window;
-	int result = glXMakeCurrent(current_window->get_display(),
-		pbuffer,
-		gl_context);
-	BC_WindowBase::get_synchronous()->is_pbuffer = 1;
+	if(pbuffer)
+	{
+		BC_WindowBase *current_window = BC_WindowBase::get_synchronous()->current_window;
+		if(!glXMakeCurrent(current_window->get_display(), pbuffer, gl_context))
+			return 1;
+		BC_WindowBase::get_synchronous()->is_pbuffer = 1;
+		return 0;
+	}
 #endif
+	return 1;
 }
 
