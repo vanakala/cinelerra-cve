@@ -99,7 +99,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    cwindow.C \
 		    cwindowgui.C \
 		    cwindowtool.C \
-		    dcoffset.C \
 		    deleteallindexes.C \
 		    devicedvbinput.C \
 		    drivesync.C \
@@ -375,7 +374,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cwindowgui.h \
 		 cwindow.h \
 		 cwindowtool.h \
-		 dcoffset.h \
 		 defaultformats.h \
 		 deleteallindexes.h \
 		 devicedvbinput.h \

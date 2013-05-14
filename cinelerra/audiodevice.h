@@ -36,7 +36,6 @@
 #include "bctimer.inc"
 #include "condition.inc"
 #include "datatype.h"
-#include "dcoffset.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
 #include "mwindow.inc"

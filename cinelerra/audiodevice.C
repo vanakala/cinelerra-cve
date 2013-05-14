@@ -27,7 +27,6 @@
 #include "bctimer.h"
 #include "bcsignals.h"
 #include "condition.h"
-#include "dcoffset.h"
 #include "mutex.h"
 #include "playbackconfig.h"
 #include "preferences.h"

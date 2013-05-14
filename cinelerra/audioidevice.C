@@ -24,7 +24,6 @@
 #include "bcsignals.h"
 #include "bctimer.h"
 #include "condition.h"
-#include "dcoffset.h"
 #include "mainerror.h"
 #include "mutex.h"
 
