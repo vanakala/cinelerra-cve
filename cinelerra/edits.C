@@ -36,7 +36,6 @@
 #include "localsession.h"
 #include "mainerror.h"
 #include "plugin.h"
-#include "strategies.inc"
 #include "track.h"
 #include "transition.h"
 

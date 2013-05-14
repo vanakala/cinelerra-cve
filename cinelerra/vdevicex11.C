@@ -31,7 +31,6 @@
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
-#include "strategies.inc"
 #include "vdevicex11.h"
 #include "vframe.h"
 #include "videodevice.h"

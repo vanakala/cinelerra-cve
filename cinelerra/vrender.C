@@ -39,7 +39,6 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "renderengine.h"
-#include "strategies.inc"
 #include "tracks.h"
 #include "transportcommand.h"
 #include "units.h"

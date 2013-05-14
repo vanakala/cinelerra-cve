@@ -33,7 +33,6 @@
 #include "file.inc"
 #include "filelist.inc"
 #include "overlayframe.inc"
-#include "strategies.inc"
 #include "vframe.inc"
 
 #include <sys/types.h>
