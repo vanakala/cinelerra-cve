@@ -104,7 +104,7 @@ void Labels::insert_labels(Labels *labels, ptstime start, ptstime length, int pa
 	}
 }
 
-int Labels::toggle_label(ptstime start, ptstime end)
+void Labels::toggle_label(ptstime start, ptstime end)
 {
 	Label *current;
 
@@ -153,17 +153,15 @@ int Labels::toggle_label(ptstime start, ptstime end)
 			current = append(new Label(edl, this, end, ""));
 		}
 	}
-	return 0;
 }
 
-int Labels::delete_all()
+void Labels::delete_all()
 {
 	while(last)
 		remove(last);
-	return 0;
 }
 
-int Labels::copy(ptstime start, ptstime end, FileXML *xml)
+void Labels::copy(ptstime start, ptstime end, FileXML *xml)
 {
 	char string[BCTEXTLEN];
 	xml->tag.set_title(xml_tag);
@@ -191,7 +189,6 @@ int Labels::copy(ptstime start, ptstime end, FileXML *xml)
 	xml->append_tag();
 	xml->append_newline();
 	xml->append_newline();
-	return 0;
 }
 
 void Labels::copy_from(Labels *labels)
@@ -212,7 +209,7 @@ Labels& Labels::operator=(Labels &that)
 }
 
 
-int Labels::save(FileXML *xml)
+void Labels::save(FileXML *xml)
 // Note: Normally the saving of Labels is done by Labels::copy()
 {
 	xml->tag.set_title("LABELS");
@@ -231,16 +228,14 @@ int Labels::save(FileXML *xml)
 		xml->append_tag();
 		xml->append_newline();
 	}
-	
 	xml->append_newline();
 	xml->tag.set_title("/LABELS");
 	xml->append_tag();
 	xml->append_newline();
 	xml->append_newline();
-	return 0;
 }
 
-int Labels::load(FileXML *xml, uint32_t load_flags)
+void Labels::load(FileXML *xml, uint32_t load_flags)
 {
 	int result = 0;
 	char string1[BCTEXTLEN], string2[BCTEXTLEN];
@@ -286,12 +281,9 @@ int Labels::load(FileXML *xml, uint32_t load_flags)
 			}
 		}
 	}while(!result);
-	return 0;
 }
 
-
-
-int Labels::clear(ptstime start, ptstime end, int follow)
+void Labels::clear(ptstime start, ptstime end, int follow)
 {
 	Label *current;
 	Label *next;
@@ -316,10 +308,7 @@ int Labels::clear(ptstime start, ptstime end, int follow)
 		}
 		optimize();
 	}
-
-	return 0;
 }
-
 
 Label* Labels::prev_label(ptstime position)
 {
@@ -371,25 +360,24 @@ Label* Labels::next_label(ptstime position)
 	return current;
 }
 
-int Labels::insert(ptstime start, ptstime length)
-{      // shift every label including the first one back
+void Labels::insert(ptstime start, ptstime length)
+{
+// shift every label including the first one back
 	Label *current;
 
 	for(current = label_of(start); current; current = NEXT)
 	{
 		current->position += length;
 	}
-	return 0;
 }
 
-int Labels::paste_silence(ptstime start, ptstime end)
+void Labels::paste_silence(ptstime start, ptstime end)
 {
 	insert(start, end - start);
 	optimize();
-	return 0;
 }
 
-int Labels::modify_handles(ptstime oldposition,
+void Labels::modify_handles(ptstime oldposition,
 	ptstime newposition,
 	int currentend, 
 	int handle_mode,
@@ -421,10 +409,9 @@ int Labels::modify_handles(ptstime oldposition,
 			}
 		}
 	}
-	return 0;
 }
 
-int Labels::optimize()
+void Labels::optimize()
 {
 	int result = 1;
 	Label *current;
@@ -432,7 +419,7 @@ int Labels::optimize()
 	while(result)
 	{
 		result = 0;
-		
+
 		for(current = first; current && NEXT && !result;)
 		{
 			Label *next = NEXT;
@@ -444,7 +431,6 @@ int Labels::optimize()
 			current = next;
 		}
 	}
-	return 0;
 }
 
 Label* Labels::label_of(ptstime position)
@@ -459,11 +445,6 @@ Label* Labels::label_of(ptstime position)
 }
 
 
-Label::Label()
- : ListItem<Label>()
-{
-}
-
 Label::Label(EDL *edl, Labels *labels, double position, const char *textstr = 0)
  : ListItem<Label>()
 {
@@ -474,9 +455,4 @@ Label::Label(EDL *edl, Labels *labels, double position, const char *textstr = 0)
 		strcpy(this->textstr, textstr);
 	else
 		this->textstr[0] = 0;
-}
-
-
-Label::~Label()
-{
 }
