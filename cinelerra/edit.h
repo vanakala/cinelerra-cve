@@ -70,8 +70,8 @@ public:
 		int actions,
 		Edits *trim_edits);
 	void shift_start_out(int edit_mode, 
-		ptstime newpostime,
-		ptstime oldpostime,
+		ptstime &newpostime,
+		ptstime &oldpostime,
 		int actions,
 		Edits *trim_edits);
 	void shift_end_in(int edit_mode, 
@@ -80,8 +80,8 @@ public:
 		int actions,
 		Edits *trim_edits);
 	void shift_end_out(int edit_mode, 
-		ptstime newpostime,
-		ptstime oldpostime,
+		ptstime &newpostime,
+		ptstime &oldpostime,
 		int actions,
 		Edits *trim_edits);
 

@@ -896,8 +896,8 @@ void Track::clear_handle(ptstime start,
 	edits->clear_handle(start, end, actions, distance);
 }
 
-void Track::modify_edithandles(ptstime oldposition,
-	ptstime newposition,
+void Track::modify_edithandles(ptstime &oldposition,
+	ptstime &newposition,
 	int currentend,
 	int handle_mode,
 	int actions)

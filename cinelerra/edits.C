@@ -593,8 +593,8 @@ void Edits::clear_handle(double start,
 	}
 }
 
-int Edits::modify_handles(ptstime oldposition,
-	ptstime newposition,
+int Edits::modify_handles(ptstime &oldposition,
+	ptstime &newposition,
 	int currentend,
 	int edit_mode, 
 	int actions,

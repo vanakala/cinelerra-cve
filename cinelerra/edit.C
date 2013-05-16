@@ -419,8 +419,8 @@ void Edit::shift_start_in(int edit_mode,
 }
 
 void Edit::shift_start_out(int edit_mode, 
-	ptstime newpostime,
-	ptstime oldpostime,
+	ptstime &newpostime,
+	ptstime &oldpostime,
 	int actions,
 	Edits *trim_edits)
 {
@@ -433,6 +433,7 @@ void Edit::shift_start_out(int edit_mode,
 		if(end_source > 0 && source_pts < cut_length)
 		{
 			cut_length = source_pts;
+			newpostime = oldpostime - cut_length;
 		}
 	}
 
@@ -490,6 +491,9 @@ void Edit::shift_end_in(int edit_mode,
 	Edits *trim_edits)
 {
 	ptstime cut_length = oldpostime - newpostime;
+
+	if(fabs(cut_length) < EPSILON)
+		return;
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
@@ -557,8 +561,8 @@ void Edit::shift_end_in(int edit_mode,
 }
 
 void Edit::shift_end_out(int edit_mode, 
-	ptstime newpostime,
-	ptstime oldpostime,
+	ptstime &newpostime,
+	ptstime &oldpostime,
 	int actions,
 	Edits *trim_edits)
 {
@@ -567,7 +571,10 @@ void Edit::shift_end_out(int edit_mode,
 
 // check end of edit against end of source file
 	if(endsource > 0 && source_pts + length() + cut_length > endsource)
+	{
 		cut_length = endsource - source_pts - length();
+		newpostime = oldpostime + cut_length;
+	}
 
 	if(fabs(cut_length) < EPSILON)
 		return;

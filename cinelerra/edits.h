@@ -106,8 +106,8 @@ public:
 
 // ==================================== editing
 
-	int modify_handles(ptstime oldposition,
-		ptstime newposition,
+	int modify_handles(ptstime &oldposition,
+		ptstime &newposition,
 		int currentend,
 		int edit_mode,
 		int actions,
