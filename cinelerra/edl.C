@@ -1062,41 +1062,28 @@ void EDL::get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_loc
 }
 
 // Convert position to frames if cursor alignment is enabled
-ptstime EDL::align_to_frame(ptstime position, int round)
+ptstime EDL::align_to_frame(ptstime position, int roundit)
 {
+	ptstime temp;
+// Seconds -> Frames/samples
 	if(session->cursor_on_frames)
-	{
-// Seconds -> Frames
-		ptstime temp = (double)position * session->frame_rate;
+		temp = position * session->frame_rate;
+	else
+		temp = position * session->sample_rate;
 
-// Assert some things
-		if(session->sample_rate == 0)
-			printf("EDL::align_to_frame: sample_rate == 0\n");
+	if(roundit)
+		temp = round(temp);
+	else
+		temp = nearbyint(temp);
 
-		if(session->frame_rate == 0)
-			printf("EDL::align_to_frame: frame_rate == 0\n");
-
-// Round frames
-// Always round down negative numbers
-// but round up only if requested
-		if(round) 
-		{
-			temp = Units::round(temp);
-		}
-		else
-		{
-			temp = Units::to_int64(temp);
-		}
-
-// Frames -> Seconds
+// Frames/samples -> Seconds
+	if(session->cursor_on_frames)
 		temp /= session->frame_rate;
+	else
+		temp /= session->sample_rate;
 
-		return temp;
-	}
-
-	return position;
+	return temp;
 }
-
 
 void EDL::new_folder(const char *folder)
 {
