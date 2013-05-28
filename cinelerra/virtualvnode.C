@@ -243,6 +243,7 @@ void VirtualVNode::render_as_module(VFrame *video_out,
 // Frame is playable
 		render_projector(output_temp, video_out);
 	}
+	video_out->copy_pts(output_temp);
 
 	output_temp->push_prev_effect("VirtualVNode::render_as_module");
 }
@@ -417,7 +418,6 @@ void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 					renderengine->edl->session->interpolation_type);
 			}
 		}
-		output->copy_pts(input);
 	}
 }
 
