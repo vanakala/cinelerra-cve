@@ -686,7 +686,7 @@ void EDL::set_inpoint(ptstime position)
 	}
 	else
 	{
-		local_session->set_inpoint(align_to_frame(position, 0));
+		local_session->set_inpoint(align_to_frame(position));
 		if(local_session->get_outpoint() <= local_session->get_inpoint()) 
 			local_session->unset_outpoint();
 	}
@@ -701,7 +701,7 @@ void EDL::set_outpoint(ptstime position)
 	}
 	else
 	{
-		local_session->set_outpoint(align_to_frame(position, 0));
+		local_session->set_outpoint(align_to_frame(position));
 		if(local_session->get_inpoint() >= local_session->get_outpoint()) 
 			local_session->unset_inpoint();
 	}
