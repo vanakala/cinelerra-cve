@@ -215,7 +215,7 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 	position = edl->align_to_frame(position, 0);
 	if(edl->session->auto_keyframes)
 	{
-		result = insert_auto_for_editing(position);
+		result = insert_auto(position, 1);
 	}
 	else
 		result = get_prev_auto(position,
@@ -245,10 +245,21 @@ Auto* Autos::get_next_auto(ptstime position, Auto* &current)
 	return current;
 }
 
-Auto* Autos::insert_auto(ptstime position)
+Auto* Autos::insert_auto(ptstime position, int interpolate)
 {
 	Auto *current, *result;
 
+	position = edl->align_to_frame(position);
+
+	if(position < base_pts)
+		return 0;
+
+	if(!first)
+	{
+		current = append_auto();
+		current->pos_time = position;
+		return current;
+	}
 // Test for existence
 	for(current = first;
 		current && !edl->equivalent(current->pos_time, position);
@@ -265,60 +276,27 @@ Auto* Autos::insert_auto(ptstime position)
 		if(current)
 		{
 			insert_after(current, result = new_auto());
-			result->copy_from(current);
+			if(interpolate)
+			{
+				Auto *next = NEXT;
+
+				result->interpolate_from(current, next, position);
+			}
+			else
+				result->copy_from(current);
+			current = result;
+			current->pos_time = position;
 		}
 		else
-		{
 			current = first;
-
-			insert_before(first, result = new_auto());
-			if(current) result->copy_from(current);
-		}
-
-		result->pos_time = position;
 	}
-	else
-		result = current;
 
-	return result;
+	return current;
 }
 
 Auto* Autos::insert_auto_for_editing(ptstime position)
 {
-	Auto *current, *result;
-
-// Test for existence
-	for(current = first; 
-		current && !edl->equivalent(current->pos_time, position); 
-		current = NEXT);
-
-// Insert new
-	if(!current)
-	{
-// Get first one on or before as a template
-		for(current = last;
-			current && current->pos_time > position;
-			current = PREVIOUS);
-
-		if(current)
-		{
-			Auto *next = NEXT;
-			insert_after(current, result = new_auto());
-			result->interpolate_from(current, next, position);
-		}
-		else
-		{
-			current = first;
-			insert_before(first, result = new_auto());
-			if(current) result->copy_from(current);
-		}
-
-		result->pos_time = position;
-	}
-	else
-		result = current;
-
-	return result;
+	return insert_auto(position, 1);
 }
 
 void Autos::clear_all()
