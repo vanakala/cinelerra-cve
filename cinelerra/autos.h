@@ -72,6 +72,9 @@ public:
 		double scale,
 		FileXML *file);
 	void remove_nonsequential(Auto *keyframe);
+	ptstime unit_round(ptstime pts, int delta = 0);
+// Calculate min & max position for drag
+	virtual void drag_limits(Auto *current, ptstime *prev, ptstime *next);
 
 // Returns a type enumeration
 	int get_type();

@@ -25,7 +25,7 @@
 #include "autos.h"
 #include "filexml.inc"
 #include "keyframe.inc"
-
+#include "plugin.inc"
 
 // Keyframes inherit from Autos to reuse the editing commands but
 // keyframes don't belong to tracks.  Instead they belong to plugins
@@ -35,10 +35,14 @@
 class KeyFrames : public Autos
 {
 public:
-	KeyFrames(EDL *edl, Track *track);
+	KeyFrames(EDL *edl, Track *track, Plugin *plugin);
 
 	Auto* new_auto();
+	void drag_limits(Auto *current, ptstime *prev, ptstime *next);
 	void dump(int indent = 0);
+
+private:
+	Plugin *plugin;
 };
 
 #endif

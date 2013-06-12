@@ -22,15 +22,30 @@
 #include "filexml.h"
 #include "keyframe.h"
 #include "keyframes.h"
+#include "plugin.h"
 
-KeyFrames::KeyFrames(EDL *edl, Track *track)
+KeyFrames::KeyFrames(EDL *edl, Track *track, Plugin *plugin)
  : Autos(edl, track)
 {
+	this->plugin = plugin;
 }
 
 Auto* KeyFrames::new_auto()
 {
 	return new KeyFrame(edl, this);
+}
+
+void KeyFrames::drag_limits(Auto *current, ptstime *prev, ptstime *next)
+{
+	if(current->previous)
+		*prev = unit_round(current->previous->pos_time, 1);
+	else
+		*prev = base_pts;
+
+	if(current->next)
+		*next = unit_round(current->next->pos_time, 1);
+	else
+		*next = plugin->end_pts();
 }
 
 void KeyFrames::dump(int indent)

@@ -542,3 +542,32 @@ posnum Autos::pts2pos(ptstime position)
 		return track->to_units(position, 0);
 	return 0;
 }
+
+ptstime Autos::unit_round(ptstime pts, int delta)
+{
+	if(track->data_type == TRACK_VIDEO)
+		pts *= edl->session->frame_rate;
+	else
+		pts *= edl->session->sample_rate;
+
+	pts = round(pts + delta);
+
+	if(track->data_type == TRACK_VIDEO)
+		pts /= edl->session->frame_rate;
+	else
+		pts /= edl->session->sample_rate;
+	return pts;
+}
+
+void Autos::drag_limits(Auto *current, ptstime *prev, ptstime *next)
+{
+	if(current->previous)
+		*prev = unit_round(current->previous->pos_time, 1);
+	else
+		*prev = base_pts;
+
+	if(current->next)
+		*next = unit_round(current->next->pos_time, -1);
+	else
+		*next = track->get_length() + base_pts;
+}
