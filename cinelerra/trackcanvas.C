@@ -2336,7 +2336,6 @@ void TrackCanvas::synchronize_autos(float change,
 				} 
 				else
 				{ 
-// keyframe exists, just change it
 					keyframe->value += change;
 				}
 
@@ -2477,7 +2476,6 @@ int TrackCanvas::test_toggleline(Autos *autos,
 				ptstime position = cursor_x * mwindow->edl->local_session->zoom_time +
 						mwindow->edl->local_session->view_start_pts;
 				int new_value = (int)((IntAutos*)autos)->get_automation_constant(position, position);
-
 				current = mwindow->session->drag_auto = autos->insert_auto(position);
 				((IntAuto*)current)->value = new_value;
 				mwindow->session->drag_start_percentage = current->value_to_percentage();
@@ -3259,6 +3257,7 @@ void TrackCanvas::update_drag_handle()
 	double yscale; \
 	int center_pixel; \
 	double xzoom; \
+	ptstime min_pts, max_pts; \
  \
 	calculate_viewport(current->autos->track,  \
 		view_start, \
@@ -3270,19 +3269,17 @@ void TrackCanvas::update_drag_handle()
 	float percentage = (float)(mwindow->session->drag_origin_y - cursor_y) / \
 		yscale +  \
 		mwindow->session->drag_start_percentage; \
-	if(do_clamp) CLAMP(percentage, 0, 1); \
  \
 	ptstime postime = ((cursor_x - mwindow->session->drag_origin_x) / xzoom + \
 		mwindow->session->drag_start_postime); \
  \
-	if((do_clamp) && postime < 0) postime = 0.0;
-
-
-
-
-
-
-
+	if(do_clamp) \
+	{ \
+		CLAMP(percentage, 0, 1); \
+		current->autos->drag_limits(current, &min_pts, &max_pts); \
+		postime = current->autos->unit_round(postime); \
+		CLAMP(postime, min_pts, max_pts); \
+	}
 
 
 int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
@@ -3339,11 +3336,6 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			int autogrouptype = current->autos->autogrouptype;
 			value = percentage_to_value(percentage, 0, 0, autogrouptype);
 		}
-
-		if(current == current->autos->first)
-			postime = current->pos_time;
-		if(postime > current->autos->track->get_length())
-			postime = current->autos->track->get_length();
 
 		if(!EQUIV(value, old_value) || !PTSEQU(postime, current->pos_time))
 		{
@@ -3429,12 +3421,7 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 	UPDATE_DRAG_HEAD(1);
 	int value = (int)percentage_to_value(percentage, 1, 0, AUTOGROUPTYPE_INT255);
 
-	if(current == current->autos->first)
-		postime = current->pos_time;
-	if(postime > current->autos->track->get_length())
-		postime = current->autos->track->get_length();
-
-	if(value != current->value || postime != current->pos_time)
+	if(value != current->value || !PTSEQU(postime, current->pos_time))
 	{
 		result = 1;
 		current->value = value;
@@ -3458,8 +3445,6 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 	KeyFrame *current = (KeyFrame*)mwindow->session->drag_auto;
 
 	UPDATE_DRAG_HEAD(1)
-	if(current == current->autos->first)
-		postime = current->pos_time;
 
 	if(!PTSEQU(postime, current->pos_time))
 	{
@@ -3488,17 +3473,6 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 			}
 			if (found) 
 				break;
-		}
-
-		if(plugin)
-		{
-			if(postime >= plugin->project_pts + plugin->length())
-				postime = plugin->project_pts + plugin->length();
-		}
-		else
-		{
-			if(postime >= track->get_length())
-				postime = track->get_length();
 		}
 
 		if(PTSEQU(postime, current->pos_time))
