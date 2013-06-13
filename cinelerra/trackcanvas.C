@@ -3276,9 +3276,14 @@ void TrackCanvas::update_drag_handle()
 	if(do_clamp) \
 	{ \
 		CLAMP(percentage, 0, 1); \
-		current->autos->drag_limits(current, &min_pts, &max_pts); \
-		postime = current->autos->unit_round(postime); \
-		CLAMP(postime, min_pts, max_pts); \
+		if(current == current->autos->first) \
+			postime = current->pos_time; \
+		else \
+		{ \
+			current->autos->drag_limits(current, &min_pts, &max_pts); \
+			postime = current->autos->unit_round(postime); \
+			CLAMP(postime, min_pts, max_pts); \
+		} \
 	}
 
 
