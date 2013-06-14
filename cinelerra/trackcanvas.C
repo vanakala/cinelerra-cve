@@ -2371,15 +2371,7 @@ void TrackCanvas::synchronize_autos(float change,
 	else
 // remove the gangs
 	if (fill_gangs == -1)
-	{
-		for (int i = 0; i < mwindow->session->drag_auto_gang->total; i++)
-		{
-			FloatAuto *keyframe = (FloatAuto *)mwindow->session->drag_auto_gang->values[i];
-			keyframe->autos->remove_nonsequential(
-					keyframe);
-		} 
 		mwindow->session->drag_auto_gang->remove_all();
-	}
 }
 
 
@@ -3918,13 +3910,8 @@ int TrackCanvas::button_release_event()
 	case DRAG_PLUGINKEY:
 		mwindow->session->current_operation = NO_OPERATION;
 		mwindow->session->drag_handle = 0;
-// Remove any out-of-order keyframe
 		if(mwindow->session->drag_auto)
-		{
-			mwindow->session->drag_auto->autos->remove_nonsequential(
-				mwindow->session->drag_auto);
 			update_overlay = 1;
-		}
 		mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 		result = 1;
 		break;

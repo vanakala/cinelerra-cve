@@ -71,7 +71,8 @@ public:
 		ptstime length,
 		double scale,
 		FileXML *file);
-	void remove_nonsequential(Auto *keyframe);
+
+// Round pts to track units, add delta units to position
 	ptstime unit_round(ptstime pts, int delta = 0);
 // Calculate min & max position for drag
 	virtual void drag_limits(Auto *current, ptstime *prev, ptstime *next);

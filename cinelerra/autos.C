@@ -387,15 +387,6 @@ void Autos::copy(ptstime start,
 	}
 }
 
-void Autos::remove_nonsequential(Auto *keyframe)
-{
-	if((keyframe->next && keyframe->next->pos_time <= keyframe->pos_time) ||
-		(keyframe->previous && keyframe->previous->pos_time >= keyframe->pos_time))
-	{
-		delete keyframe;
-	}
-}
-
 void Autos::clear(ptstime start,
 	ptstime end,
 	int shift_autos)
