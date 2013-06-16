@@ -1097,8 +1097,8 @@ SET_TRACE
 // For pasting, clear the active region
 		if(load_mode == LOAD_PASTE)
 		{
-			double start = edl->local_session->get_selectionstart();
-			double end = edl->local_session->get_selectionend();
+			ptstime start = edl->local_session->get_selectionstart();
+			ptstime end = edl->local_session->get_selectionend();
 			if(!EQUIV(start, end))
 				edl->clear(start, 
 					end,
@@ -2029,10 +2029,10 @@ void MWindow::set_filename(const char *filename)
 
 void MWindow::set_loop_boundaries()
 {
-	double start = edl->local_session->get_selectionstart();
-	double end = edl->local_session->get_selectionend();
+	ptstime start = edl->local_session->get_selectionstart();
+	ptstime end = edl->local_session->get_selectionend();
 
-	if(start != end) 
+	if(!PTSEQU(start, end))
 	{
 		;
 	}
@@ -2047,7 +2047,7 @@ void MWindow::set_loop_boundaries()
 		start = end = 0;
 	}
 
-	if(edl->local_session->loop_playback && start != end)
+	if(edl->local_session->loop_playback && !PTSEQU(start, end))
 	{
 		edl->local_session->loop_start = start;
 		edl->local_session->loop_end = end;

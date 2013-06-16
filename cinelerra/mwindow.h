@@ -129,13 +129,13 @@ public:
 // Takes the drag vectors from MainSession and
 // pastes either assets or clips depending on which is full.
 // Returns 1 if the vectors were full
-	int paste_assets(double position, Track *dest_track, int overwrite);
+	int paste_assets(ptstime position, Track *dest_track, int overwrite);
 
 // Insert the assets at a point in the EDL.  Called by menueffects,
 // render, and CWindow drop but recording calls paste_edls directly for
 // labels.
 	void load_assets(ArrayList<Asset*> *new_assets, 
-		double position, 
+		ptstime position,
 		int load_mode,
 		Track *first_track,
 		RecordLabels *labels,
@@ -144,7 +144,7 @@ public:
 	void paste_edls(ArrayList<EDL*> *new_edls, 
 		int load_mode, 
 		Track *first_track,
-		double current_position,
+		ptstime current_position,
 		int actions,
 		int overwrite);
 // Reset everything for a load
@@ -268,10 +268,10 @@ public:
 // Called by paste, record, menueffects, render, and CWindow drop.
 	void clear(int clear_handle);
 	void clear_labels();
-	void clear_labels(double start, double end);
+	void clear_labels(ptstime start, ptstime end);
 	void concatenate_tracks();
 	void copy();
-	void copy(double start, double end);
+	void copy(ptstime start, ptstime end);
 	void cut();
 
 // Calculate aspect ratio from pixel counts
@@ -287,15 +287,15 @@ public:
 	void delete_tracks();
 	void detach_transition(Transition *transition);
 	float get_aspect_ratio();
-	void insert(double position, 
+	void insert(ptstime position, 
 		FileXML *file,
 		int actions,
 		EDL *parent_edl = 0);
 
 // TrackCanvas calls this to insert multiple effects from the drag_pluginservers
 // into pluginset_highlighted.
-	void insert_effects_canvas(double start,
-		double length);
+	void insert_effects_canvas(ptstime start,
+		ptstime length);
 
 // CWindow calls this to insert multiple effects from 
 // the drag_pluginservers array.
@@ -307,8 +307,8 @@ public:
 		SharedLocation *shared_location, 
 		Track *track,
 		PluginSet *plugin_set,
-		double start,
-		double length,
+		ptstime start,
+		ptstime length,
 		int plugin_type);
 
 	void match_output_size(Track *track);
@@ -334,8 +334,8 @@ public:
 // For clipboard commands
 	void paste();
 // For splice and overwrite
-	void paste(double start, 
-		double end, 
+	void paste(ptstime start,
+		ptstime end,
 		FileXML *file,
 		int actions);
 	int paste_output(int64_t startproject, 
@@ -392,7 +392,7 @@ public:
 	void age_caches();
 	int optimize_assets();            // delete unused assets from the cache and assets
 
-	void select_point(double position);
+	void select_point(ptstime position);
 	void set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
 
 	Playback3D *playback_3d;

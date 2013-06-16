@@ -177,8 +177,8 @@ void MWindow::clear_entry()
 
 void MWindow::clear(int clear_handle)
 {
-	double start = edl->local_session->get_selectionstart();
-	double end = edl->local_session->get_selectionend();
+	ptstime start = edl->local_session->get_selectionstart();
+	ptstime end = edl->local_session->get_selectionend();
 	if(clear_handle || !EQUIV(start, end))
 	{
 		edl->clear(start, 
@@ -231,7 +231,7 @@ void MWindow::clear_labels()
 	save_backup();
 }
 
-void MWindow::clear_labels(double start, double end)
+void MWindow::clear_labels(ptstime start, ptstime end)
 {
 	edl->labels->clear(start, end, 0);
 }
@@ -253,7 +253,7 @@ void MWindow::copy()
 		edl->local_session->get_selectionend());
 }
 
-void MWindow::copy(double start, double end)
+void MWindow::copy(ptstime start, ptstime end)
 {
 	if(PTSEQU(start, end))
 		return;
@@ -340,8 +340,8 @@ void MWindow::crop_video()
 
 void MWindow::cut()
 {
-	double start = edl->local_session->get_selectionstart();
-	double end = edl->local_session->get_selectionend();
+	ptstime start = edl->local_session->get_selectionstart();
+	ptstime end = edl->local_session->get_selectionend();
 
 	copy(start, end);
 	edl->clear(start, 
@@ -439,7 +439,7 @@ void MWindow::detach_transition(Transition *transition)
 
 
 // Insert data from clipboard
-void MWindow::insert(double position, 
+void MWindow::insert(ptstime position,
 	FileXML *file,
 	int actions,
 	EDL *parent_edl)
@@ -469,8 +469,8 @@ void MWindow::insert(double position,
 	new_edls.remove_all();
 }
 
-void MWindow::insert_effects_canvas(double start,
-	double length)
+void MWindow::insert_effects_canvas(ptstime start,
+	ptstime length)
 {
 	Track *dest_track = session->track_highlighted;
 	if(!dest_track) return;
@@ -499,8 +499,8 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 {
 	if(!dest_track) return;
 
-	double start = 0;
-	double length = dest_track->get_length();
+	ptstime start = 0;
+	ptstime length = dest_track->get_length();
 
 	if(edl->local_session->get_selectionend() > 
 		edl->local_session->get_selectionstart())
@@ -540,8 +540,8 @@ void MWindow::insert_effect(const char *title,
 	SharedLocation *shared_location, 
 	Track *track,
 	PluginSet *plugin_set,
-	double start,
-	double length,
+	ptstime start,
+	ptstime length,
 	int plugin_type)
 {
 	KeyFrame *default_keyframe = 0;
@@ -765,8 +765,8 @@ void MWindow::move_tracks_up()
 
 void MWindow::mute_selection()
 {
-	double start = edl->local_session->get_selectionstart();
-	double end = edl->local_session->get_selectionend();
+	ptstime start = edl->local_session->get_selectionstart();
+	ptstime end = edl->local_session->get_selectionend();
 	if(start != end)
 	{
 		edl->clear(start, 
@@ -789,10 +789,10 @@ void MWindow::overwrite(EDL *source)
 {
 	FileXML file;
 
-	double src_start = source->local_session->get_selectionstart();
-	double overwrite_len = source->local_session->get_selectionend() - src_start;
-	double dst_start = edl->local_session->get_selectionstart();
-	double dst_len = edl->local_session->get_selectionend() - dst_start;
+	ptstime src_start = source->local_session->get_selectionstart();
+	ptstime overwrite_len = source->local_session->get_selectionend() - src_start;
+	ptstime dst_start = edl->local_session->get_selectionstart();
+	ptstime dst_len = edl->local_session->get_selectionend() - dst_start;
 
 	if (!EQUIV(dst_len, 0) && (dst_len < overwrite_len))
 	{
@@ -837,8 +837,8 @@ void MWindow::overwrite(EDL *source)
 }
 
 // For splice and overwrite
-void MWindow::paste(double start, 
-	double end, 
+void MWindow::paste(ptstime start,
+	ptstime end,
 	FileXML *file,
 	int actions)
 {
@@ -854,9 +854,9 @@ void MWindow::paste(double start,
 // For editing use insertion point position
 void MWindow::paste()
 {
-	double start = edl->local_session->get_selectionstart();
-	double end = edl->local_session->get_selectionend();
-	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	ptstime start = edl->local_session->get_selectionstart();
+	ptstime end = edl->local_session->get_selectionend();
+	int len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
 
 	if(len)
 	{
@@ -887,7 +887,7 @@ void MWindow::paste()
 	}
 }
 
-int MWindow::paste_assets(double position, Track *dest_track, int overwrite)
+int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 {
 	int result = 0;
 
@@ -930,7 +930,7 @@ int MWindow::paste_assets(double position, Track *dest_track, int overwrite)
 }
 
 void MWindow::load_assets(ArrayList<Asset*> *new_assets, 
-	double position, 
+	ptstime position,
 	int load_mode,
 	Track *first_track,
 	RecordLabels *labels,
@@ -970,7 +970,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 
 void MWindow::paste_automation()
 {
-	posnum len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	int len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
 
 	if(len)
 	{
@@ -1004,7 +1004,7 @@ void MWindow::paste_automation()
 void MWindow::paste_edls(ArrayList<EDL*> *new_edls, 
 	int load_mode, 
 	Track *first_track,
-	double current_position,
+	ptstime current_position,
 	int actions,
 	int overwrite)
 {
@@ -1013,8 +1013,8 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 	if(!new_edls->total) return;
 
-	double original_length = edl->tracks->total_playable_length();
-	double original_preview_end = edl->local_session->preview_end;
+	ptstime original_length = edl->tracks->total_playable_length();
+	ptstime original_preview_end = edl->local_session->preview_end;
 
 // Delete current project
 	if(load_mode == LOAD_REPLACE ||
@@ -1096,14 +1096,14 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	}
 
 	int destination_track = 0;
-	double *paste_position = new double[destination_tracks.total];
+	ptstime *paste_position = new ptstime[destination_tracks.total];
 
 // Iterate through the edls
 	for(int i = 0; i < new_edls->total; i++)
 	{
 		EDL *new_edl = new_edls->values[i];
 
-		double edl_length = new_edl->local_session->clipboard_length ?
+		ptstime edl_length = new_edl->local_session->clipboard_length ?
 			new_edl->local_session->clipboard_length :
 			new_edl->tracks->total_length();
 
@@ -1253,8 +1253,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
 		}
 	}
-
-	if(paste_position) delete [] paste_position;
+	delete [] paste_position;
 
 // Fix preview range
 	if(EQUIV(original_length, original_preview_end))
@@ -1270,8 +1269,8 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 void MWindow::paste_silence()
 {
-	double start = edl->local_session->get_selectionstart();
-	double end = edl->local_session->get_selectionend();
+	ptstime start = edl->local_session->get_selectionstart();
+	ptstime end = edl->local_session->get_selectionend();
 	edl->paste_silence(start, 
 		end, 
 		edl->session->labels_follow_edits, 
@@ -1397,17 +1396,16 @@ void MWindow::resize_track(Track *track, int w, int h)
 class InPointUndoItem : public UndoStackItem
 {
 public:
-	InPointUndoItem(double old_position, double new_position, EDL *edl);
+	InPointUndoItem(ptstime old_position, ptstime new_position, EDL *edl);
 	void undo();
 	int get_size();
 private:
-	double old_position;
-	double new_position;
+	ptstime old_position;
+	ptstime new_position;
 	EDL *edl;
 };
 
-InPointUndoItem::InPointUndoItem(
-      double old_position, double new_position, EDL *edl)
+InPointUndoItem::InPointUndoItem(ptstime old_position, ptstime new_position, EDL *edl)
 {
 	set_description(_("in point"));
 	this->old_position = old_position;
@@ -1419,7 +1417,7 @@ void InPointUndoItem::undo()
 {
 	edl->set_inpoint(old_position);
 // prepare to undo the undo
-	double tmp = new_position;
+	ptstime tmp = new_position;
 	new_position = old_position;
 	old_position = tmp;
 }
@@ -1466,17 +1464,17 @@ void MWindow::set_inpoint(int is_mwindow)
 class OutPointUndoItem : public UndoStackItem
 {
 public:
-	OutPointUndoItem(double old_position, double new_position, EDL *edl);
+	OutPointUndoItem(ptstime old_position, ptstime new_position, EDL *edl);
 	void undo();
 	int get_size();
 private:
-	double old_position;
-	double new_position;
+	ptstime old_position;
+	ptstime new_position;
 	EDL *edl;
 };
 
-OutPointUndoItem::OutPointUndoItem(double old_position, 
-	double new_position, EDL *edl)
+OutPointUndoItem::OutPointUndoItem(ptstime old_position, 
+	ptstime new_position, EDL *edl)
 {
 	set_description(_("out point"));
 	this->old_position = old_position;
@@ -1488,7 +1486,7 @@ void OutPointUndoItem::undo()
 {
 	edl->set_outpoint(old_position);
 // prepare to undo the undo
-	double tmp = new_position;
+	ptstime tmp = new_position;
 	new_position = old_position;
 	old_position = tmp;
 }
@@ -1546,10 +1544,10 @@ void MWindow::splice(EDL *source)
 		"",
 		1);
 
-	double start = edl->local_session->get_selectionstart();
-	double end = edl->local_session->get_selectionend();
-	double source_start = source->local_session->get_selectionstart();
-	double source_end = source->local_session->get_selectionend();
+	ptstime start = edl->local_session->get_selectionstart();
+	ptstime end = edl->local_session->get_selectionend();
+	ptstime source_start = source->local_session->get_selectionstart();
+	ptstime source_end = source->local_session->get_selectionend();
 
 	paste(start, 
 		start, 
@@ -1570,7 +1568,7 @@ void MWindow::splice(EDL *source)
 void MWindow::to_clip()
 {
 	FileXML file;
-	double start, end;
+	ptstime start, end;
 
 	start = edl->local_session->get_selectionstart();
 	end = edl->local_session->get_selectionend();
@@ -1616,17 +1614,17 @@ void MWindow::to_clip()
 class LabelUndoItem : public UndoStackItem
 {
 public:
-	LabelUndoItem(double position1, double position2, EDL *edl);
+	LabelUndoItem(ptstime position1, ptstime position2, EDL *edl);
 	void undo();
 	int get_size();
 private:
-	double position1;
-	double position2;
+	ptstime position1;
+	ptstime position2;
 	EDL *edl;
 };
 
-LabelUndoItem::LabelUndoItem(double position1, 
-	double position2, EDL *edl)
+LabelUndoItem::LabelUndoItem(ptstime position1,
+	ptstime position2, EDL *edl)
 {
 	set_description(_("label"));
 	this->position1 = position1;
@@ -1648,7 +1646,7 @@ int LabelUndoItem::get_size()
 void MWindow::toggle_label(int is_mwindow)
 {
 	LabelUndoItem *undo_item;
-	double position1, position2;
+	ptstime position1, position2;
 
 	if(cwindow->playback_engine->is_playing_back)
 	{
@@ -1741,7 +1739,7 @@ void MWindow::new_folder(const char *new_folder)
 	awindow->gui->async_update_assets();
 }
 
-void MWindow::select_point(double position)
+void MWindow::select_point(ptstime position)
 {
 	edl->local_session->set_selection(position);
 

@@ -120,7 +120,7 @@ void MWindow::fit_selection(void)
 void MWindow::fit_autos(int doall)
 {
 	float min = 0, max = 0;
-	double start, end;
+	ptstime start, end;
 
 // Test all autos
 	if(EQUIV(edl->local_session->get_selectionstart(1),
@@ -461,7 +461,7 @@ void MWindow::next_label(int shift_down)
 			edl->local_session->view_start_pts +
 			gui->canvas->time_visible() ||
 			edl->local_session->get_selectionend(1) <
-			(double)edl->local_session->view_start_pts)
+			edl->local_session->view_start_pts)
 		{
 			samplemovement(edl->local_session->get_selectionend(1) -
 				(gui->canvas->get_w() * edl->local_session->zoom_time /
