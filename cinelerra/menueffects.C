@@ -135,7 +135,7 @@ void MenuEffectThread::run()
 // get default attributes for output file
 // used after completion
 	get_derived_attributes(default_asset, defaults);
-	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOAD_PASTE);
+	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOADMODE_PASTE);
 	strategy = defaults->get("RENDER_EFFECT_STRATEGY", SINGLE_PASS);
 
 // get plugin information
@@ -450,11 +450,11 @@ void MenuEffectThread::run()
 	packets.remove_all_objects();
 
 // paste output to tracks
-	if(!result && load_mode != LOAD_NOTHING)
+	if(!result && load_mode != LOADMODE_NOTHING)
 	{
 		mwindow->gui->lock_window("MenuEffectThread::run");
 
-		if(load_mode == LOAD_PASTE)
+		if(load_mode == LOADMODE_PASTE)
 			mwindow->clear(0);
 		mwindow->load_assets(&assets,
 			-1,

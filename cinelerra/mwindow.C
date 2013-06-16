@@ -911,7 +911,7 @@ SET_TRACE
 						new_asset->height);
 				}
 
-				if(load_mode != LOAD_RESOURCESONLY)
+				if(load_mode != LOADMODE_RESOURCESONLY)
 				{
 					asset_to_edl(new_edl, new_asset);
 					new_edls.append(new_edl);
@@ -924,8 +924,8 @@ SET_TRACE
 				}
 
 // Set filename to nothing for assets since save EDL would overwrite them.
-				if(load_mode == LOAD_REPLACE || 
-					load_mode == LOAD_REPLACE_CONCATENATE)
+				if(load_mode == LOADMODE_REPLACE || 
+					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
 					set_filename("");
 // Reset timeline position
@@ -1016,7 +1016,7 @@ SET_TRACE
 					new_file = new File;
 					result = new_file->open_file(preferences, new_asset, 1, 0, 0, 0);
 
-					if(load_mode != LOAD_RESOURCESONLY)
+					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
 						asset_to_edl(new_edl, new_asset);
 						new_edls.append(new_edl);
@@ -1048,8 +1048,8 @@ SET_TRACE
 				strcpy(new_asset->reel_name, "");
 				reel_number = -1;
 
-				if(load_mode == LOAD_REPLACE || 
-					load_mode == LOAD_REPLACE_CONCATENATE)
+				if(load_mode == LOADMODE_REPLACE || 
+					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
 					strcpy(session->filename, filenames->values[i]);
 					strcpy(new_edl->local_session->clip_title, filenames->values[i]);
@@ -1095,7 +1095,7 @@ SET_TRACE
 	if(new_edls.total)
 	{
 // For pasting, clear the active region
-		if(load_mode == LOAD_PASTE)
+		if(load_mode == LOADMODE_PASTE)
 		{
 			ptstime start = edl->local_session->get_selectionstart();
 			ptstime end = edl->local_session->get_selectionend();
@@ -1723,8 +1723,8 @@ void MWindow::update_project(int load_mode)
 	cwindow->update(0, 0, 1, 1, 1);
 	cwindow->gui->unlock_window();
 
-	if(load_mode == LOAD_REPLACE ||
-		load_mode == LOAD_REPLACE_CONCATENATE)
+	if(load_mode == LOADMODE_REPLACE ||
+		load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
 		vwindow->change_source();
 	}

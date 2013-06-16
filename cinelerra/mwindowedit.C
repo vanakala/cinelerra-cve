@@ -461,7 +461,7 @@ void MWindow::insert(ptstime position,
 	edl.load_xml(plugindb, file, load_flags);
 
 	paste_edls(&new_edls, 
-		LOAD_PASTE, 
+		LOADMODE_PASTE, 
 		0, 
 		position,
 		actions,
@@ -895,7 +895,7 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 	{
 		load_assets(session->drag_assets, 
 			position, 
-			LOAD_PASTE,
+			LOADMODE_PASTE,
 			dest_track, 
 			0,
 			edl->session->edit_actions(),
@@ -906,7 +906,7 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 	if(session->drag_clips->total)
 	{
 		paste_edls(session->drag_clips, 
-			LOAD_PASTE, 
+			LOADMODE_PASTE, 
 			dest_track,
 			position, 
 			edl->session->edit_actions(),
@@ -1017,8 +1017,8 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	ptstime original_preview_end = edl->local_session->preview_end;
 
 // Delete current project
-	if(load_mode == LOAD_REPLACE ||
-		load_mode == LOAD_REPLACE_CONCATENATE)
+	if(load_mode == LOADMODE_REPLACE ||
+		load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
 		reset_caches();
 		edl->save_defaults(defaults);
@@ -1040,9 +1040,9 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	}
 
 // Create new tracks in master EDL
-	if(load_mode == LOAD_REPLACE || 
-		load_mode == LOAD_REPLACE_CONCATENATE ||
-		load_mode == LOAD_NEW_TRACKS)
+	if(load_mode == LOADMODE_REPLACE || 
+		load_mode == LOADMODE_REPLACE_CONCATENATE ||
+		load_mode == LOADMODE_NEW_TRACKS)
 	{
 
 		need_new_tracks = 1;
@@ -1069,18 +1069,18 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 			}
 
 // Base track count on first EDL only for concatenation
-			if(load_mode == LOAD_REPLACE_CONCATENATE) break;
+			if(load_mode == LOADMODE_REPLACE_CONCATENATE) break;
 		}
 	}
 	else
 // Recycle existing tracks of master EDL
-	if(load_mode == LOAD_CONCATENATE || load_mode == LOAD_PASTE)
+	if(load_mode == LOADMODE_CONCATENATE || load_mode == LOADMODE_PASTE)
 	{
 
 // The point of this is to shift forward labels after the selection so they can
 // then be shifted back to their original locations without recursively
 // shifting back every paste.
-		if(load_mode == LOAD_PASTE && edl->session->labels_follow_edits)
+		if(load_mode == LOADMODE_PASTE && edl->session->labels_follow_edits)
 			edl->labels->clear(edl->local_session->get_selectionstart(),
 						edl->local_session->get_selectionend(),
 						1);
@@ -1121,13 +1121,13 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 // Get starting point of insertion.  Need this to paste labels.
 		switch(load_mode)
 		{
-		case LOAD_REPLACE:
-		case LOAD_NEW_TRACKS:
+		case LOADMODE_REPLACE:
+		case LOADMODE_NEW_TRACKS:
 			current_position = 0;
 			break;
 
-		case LOAD_CONCATENATE:
-		case LOAD_REPLACE_CONCATENATE:
+		case LOADMODE_CONCATENATE:
+		case LOADMODE_REPLACE_CONCATENATE:
 			destination_track = 0;
 			if(destination_tracks.total)
 				current_position = destination_tracks.values[0]->get_length();
@@ -1135,7 +1135,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 				current_position = 0;
 			break;
 
-		case LOAD_PASTE:
+		case LOADMODE_PASTE:
 			destination_track = 0;
 			if(i == 0)
 			{
@@ -1148,16 +1148,16 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 			}
 			break;
 
-		case LOAD_RESOURCESONLY:
+		case LOADMODE_RESOURCESONLY:
 			edl->add_clip(new_edl);
 			break;
 		}
 
 // Insert edl
-		if(load_mode != LOAD_RESOURCESONLY)
+		if(load_mode != LOADMODE_RESOURCESONLY)
 		{
 // Insert labels
-			if(load_mode == LOAD_PASTE)
+			if(load_mode == LOADMODE_PASTE)
 				edl->labels->insert_labels(new_edl->labels, 
 					destination_tracks.total ? paste_position[0] : 0.0,
 					edl_length,
@@ -1198,12 +1198,12 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 // Insert new track at current position
 					switch(load_mode)
 					{
-					case LOAD_REPLACE_CONCATENATE:
-					case LOAD_CONCATENATE:
+					case LOADMODE_REPLACE_CONCATENATE:
+					case LOADMODE_CONCATENATE:
 						current_position = track->get_length();
 						break;
 
-					case LOAD_PASTE:
+					case LOADMODE_PASTE:
 						current_position = paste_position[destination_track];
 						paste_position[destination_track] += new_track->get_length();
 						break;
@@ -1228,7 +1228,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 			}
 		}
 
-		if(load_mode == LOAD_PASTE)
+		if(load_mode == LOADMODE_PASTE)
 			current_position += edl_length;
 	}
 

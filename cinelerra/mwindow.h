@@ -172,7 +172,7 @@ public:
 	void dump_plugindb(int data_type = -1);
 
 	void load_filenames(ArrayList<char*> *filenames, 
-		int load_mode = LOAD_REPLACE,
+		int load_mode = LOADMODE_REPLACE,
 // Cause the project filename on the top of the window to be updated.
 // Not wanted for loading backups.
 		int update_filename = 1,

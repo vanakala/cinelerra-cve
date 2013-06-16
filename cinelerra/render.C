@@ -735,14 +735,14 @@ int Render::render(int test_overwrite,
 
 // Paste all packages into timeline if desired
 	if(!result && 
-		load_mode != LOAD_NOTHING && 
+		load_mode != LOADMODE_NOTHING && 
 		mwindow &&
 		mode != Render::BATCH)
 	{
 		mwindow->gui->lock_window("Render::render 3");
 
 		ArrayList<Asset*> *assets = packages->get_asset_list();
-		if(load_mode == LOAD_PASTE)
+		if(load_mode == LOADMODE_PASTE)
 			mwindow->clear(0);
 		mwindow->load_assets(assets, 
 			-1, 
@@ -870,7 +870,7 @@ void Render::get_starting_number(char *path,
 void Render::load_defaults(Asset *asset)
 {
 	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
-	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOAD_NEW_TRACKS);
+	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
 	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
 
 	asset->load_defaults(mwindow->defaults, 

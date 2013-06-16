@@ -88,14 +88,14 @@ void LoadFileThread::run()
 
 	strcpy(default_path, "~");
 	mwindow->defaults->get("DEFAULT_LOADPATH", default_path);
-	load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
+	load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
 
 	{
 		LoadFileWindow window(mwindow, this, default_path);
 		window.create_objects();
 		result = window.run_window();
 
-		if ((!result) && (load_mode == LOAD_REPLACE)) {
+		if ((!result) && (load_mode == LOADMODE_REPLACE)) {
 			mwindow->set_filename(window.get_path(0));
 		}
 
@@ -142,7 +142,7 @@ void LoadFileThread::run()
 
 	mwindow->restart_brender();
 
-	if(load_mode == LOAD_REPLACE || load_mode == LOAD_REPLACE_CONCATENATE)
+	if(load_mode == LOADMODE_REPLACE || load_mode == LOADMODE_REPLACE_CONCATENATE)
 		mwindow->session->changes_made = 0;
 	else
 		mwindow->session->changes_made = 1;
@@ -197,7 +197,7 @@ void LoadFileWindow::resize_event(int w, int h)
 NewTimeline::NewTimeline(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
 	y, 
-	window->thread->load_mode == LOAD_REPLACE,
+	window->thread->load_mode == LOADMODE_REPLACE,
 	_("Replace current project."))
 {
 	this->window = window;
@@ -215,7 +215,7 @@ int NewTimeline::handle_event()
 NewConcatenate::NewConcatenate(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
 	y,
-	window->thread->load_mode == LOAD_REPLACE_CONCATENATE,
+	window->thread->load_mode == LOADMODE_REPLACE_CONCATENATE,
 	_("Replace current project and concatenate tracks."))
 {
 	this->window = window;
@@ -233,7 +233,7 @@ int NewConcatenate::handle_event()
 AppendNewTracks::AppendNewTracks(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
 	y, 
-	window->thread->load_mode == LOAD_NEW_TRACKS,
+	window->thread->load_mode == LOADMODE_NEW_TRACKS,
 	_("Append in new tracks."))
 {
 	this->window = window;
@@ -251,7 +251,7 @@ int AppendNewTracks::handle_event()
 EndofTracks::EndofTracks(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
 	y,
-	window->thread->load_mode == LOAD_CONCATENATE,
+	window->thread->load_mode == LOADMODE_CONCATENATE,
 	_("Concatenate to existing tracks."))
 {
 	this->window = window;
@@ -269,7 +269,7 @@ int EndofTracks::handle_event()
 ResourcesOnly::ResourcesOnly(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
 	y,
-	window->thread->load_mode == LOAD_RESOURCESONLY,
+	window->thread->load_mode == LOADMODE_RESOURCESONLY,
 	_("Create new resources only."))
 {
 	this->window = window;
@@ -314,11 +314,11 @@ int LoadPrevious::handle_event()
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 	char *out_path;
-	int load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
+	int load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
 
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
-	mwindow->load_filenames(&path_list, LOAD_REPLACE);
+	mwindow->load_filenames(&path_list, LOADMODE_REPLACE);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	path_list.remove_all_objects();
 
@@ -358,7 +358,7 @@ int LoadBackup::handle_event()
 	path_list.append(out_path = new char[strlen(string) + 1]);
 	strcpy(out_path, string);
 
-	mwindow->load_filenames(&path_list, LOAD_REPLACE, 0);
+	mwindow->load_filenames(&path_list, LOADMODE_REPLACE, 0);
 	mwindow->edl->local_session->clip_title[0] = 0;
 // This is unique to backups since the path of the backup is different than the
 // path of the project.

@@ -51,13 +51,13 @@ LoadMode::LoadMode(MWindow *mwindow,
 	this->y = y;
 	this->output = output;
 	this->use_nothing = use_nothing;
-	if(use_nothing) load_modes.append(new LoadModeItem(_("Insert nothing"), LOAD_NOTHING));
-	load_modes.append(new LoadModeItem(_("Replace current project"), LOAD_REPLACE));
-	load_modes.append(new LoadModeItem(_("Replace current project and concatenate tracks"), LOAD_REPLACE_CONCATENATE));
-	load_modes.append(new LoadModeItem(_("Append in new tracks"), LOAD_NEW_TRACKS));
-	load_modes.append(new LoadModeItem(_("Concatenate to existing tracks"), LOAD_CONCATENATE));
-	load_modes.append(new LoadModeItem(_("Paste at insertion point"), LOAD_PASTE));
-	load_modes.append(new LoadModeItem(_("Create new resources only"), LOAD_RESOURCESONLY));
+	if(use_nothing) load_modes.append(new LoadModeItem(_("Insert nothing"), LOADMODE_NOTHING));
+	load_modes.append(new LoadModeItem(_("Replace current project"), LOADMODE_REPLACE));
+	load_modes.append(new LoadModeItem(_("Replace current project and concatenate tracks"), LOADMODE_REPLACE_CONCATENATE));
+	load_modes.append(new LoadModeItem(_("Append in new tracks"), LOADMODE_NEW_TRACKS));
+	load_modes.append(new LoadModeItem(_("Concatenate to existing tracks"), LOADMODE_CONCATENATE));
+	load_modes.append(new LoadModeItem(_("Paste at insertion point"), LOADMODE_PASTE));
+	load_modes.append(new LoadModeItem(_("Create new resources only"), LOADMODE_RESOURCESONLY));
 }
 
 LoadMode::~LoadMode()

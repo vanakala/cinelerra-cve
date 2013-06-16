@@ -523,7 +523,7 @@ int CWindowGUI::drag_stop()
 			mwindow->clear(0);
 			mwindow->load_assets(mwindow->session->drag_assets, 
 				mwindow->edl->local_session->get_selectionstart(), 
-				LOAD_PASTE,
+				LOADMODE_PASTE,
 				mwindow->session->track_highlighted,
 				0,
 				mwindow->edl->session->edit_actions(),
@@ -534,7 +534,7 @@ int CWindowGUI::drag_stop()
 		{
 			mwindow->clear(0);
 			mwindow->paste_edls(mwindow->session->drag_clips, 
-				LOAD_PASTE, 
+				LOADMODE_PASTE, 
 				mwindow->session->track_highlighted,
 				mwindow->edl->local_session->get_selectionstart(),
 				mwindow->edl->session->edit_actions(),

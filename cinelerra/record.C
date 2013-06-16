@@ -192,7 +192,7 @@ int Record::load_defaults()
 	}
 
 
-	load_mode = defaults->get("RECORD_LOADMODE", LOAD_PASTE);
+	load_mode = defaults->get("RECORD_LOADMODE", LOADMODE_PASTE);
 
 	monitor_audio = defaults->get("RECORD_MONITOR_AUDIO", 1);
 	monitor_video = defaults->get("RECORD_MONITOR_VIDEO", 1);
@@ -424,7 +424,7 @@ void Record::run()
 
 
 // Paste into EDL
-	if(!result && load_mode != LOAD_NOTHING)
+	if(!result && load_mode != LOADMODE_NOTHING)
 	{
 		mwindow->gui->lock_window("Record::run");
 		ArrayList<EDL*> new_edls;
@@ -456,7 +456,7 @@ void Record::run()
 		{
 
 // For pasting, clear the active region
-			if(load_mode == LOAD_PASTE)
+			if(load_mode == LOADMODE_PASTE)
 			{
 				mwindow->clear(0);
 			}
