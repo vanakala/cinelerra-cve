@@ -233,8 +233,7 @@ void VWindow::goto_start()
 {
 	if(get_edl())
 	{
-		get_edl()->local_session->set_selectionstart(0);
-		get_edl()->local_session->set_selectionend(0);
+		get_edl()->local_session->set_selection(0);
 		update_position(CHANGE_NONE, 
 			0, 
 			1);
@@ -245,9 +244,8 @@ void VWindow::goto_end()
 {
 	if(get_edl())
 	{
-		double position = get_edl()->tracks->total_length();
-		get_edl()->local_session->set_selectionstart(position);
-		get_edl()->local_session->set_selectionend(position);
+		ptstime position = get_edl()->tracks->total_length();
+		get_edl()->local_session->set_selection(position);
 		update_position(CHANGE_NONE, 
 			0, 
 			1);
@@ -263,10 +261,7 @@ void VWindow::update_position(int change_type,
 	{
 		Asset *asset = edl->assets->first;
 		if(use_slider) 
-		{
-			edl->local_session->set_selectionstart(gui->slider->get_value());
-			edl->local_session->set_selectionend(gui->slider->get_value());
-		}
+			edl->local_session->set_selection(gui->slider->get_value());
 
 		if(update_slider)
 		{
@@ -327,8 +322,8 @@ void VWindow::copy()
 	EDL *edl = get_edl();
 	if(edl)
 	{
-		double start = edl->local_session->get_selectionstart();
-		double end = edl->local_session->get_selectionend();
+		ptstime start = edl->local_session->get_selectionstart();
+		ptstime end = edl->local_session->get_selectionend();
 		FileXML file;
 		edl->copy(start,
 			end,
