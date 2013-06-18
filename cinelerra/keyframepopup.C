@@ -23,12 +23,14 @@
 #include "bcsignals.h"
 #include "edl.h"
 #include "keyframe.h"
+#include "keyframes.h"
 #include "keyframepopup.h"
 #include "language.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "localsession.h"
+#include "plugin.h"
 #include "track.h"
 #include "bcwindowbase.h"
 
@@ -59,6 +61,23 @@ void KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
 	this->keyframe_auto = keyframe;
 	this->keyframe_autos = 0;
 	this->keyframe_automation = 0;
+
+	if(plugin->keyframes->first == keyframe)
+	{
+		if(delete_active)
+		{
+			remove_item(key_delete);
+			delete_active = 0;
+		}
+	}
+	else
+	{
+		if(!delete_active)
+		{
+			add_item(key_delete);
+			delete_active = 1;
+		}
+	}
 }
 
 void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyframe)
