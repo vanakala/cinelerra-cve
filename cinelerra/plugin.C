@@ -543,16 +543,16 @@ void Plugin::dump(int indent)
 
 	switch(plugin_type)
 	{
-	case 0:
+	case PLUGIN_NONE:
 		s = "None";
 		break;
-	case 1:
+	case PLUGIN_STANDALONE:
 		s = "Standalone";
 		break;
-	case 2:
+	case PLUGIN_SHAREDPLUGIN:
 		s = "SharedPlugin";
 		break;
-	case 3:
+	case PLUGIN_SHAREDMODULE:
 		s = "SharedModule";
 		break;
 	default:
