@@ -467,7 +467,7 @@ void Plugin::load(FileXML *file)
 				on = 1;
 			}
 			else
-			if(file->tag.title_is("KEYFRAME"))
+			if(file->tag.title_is("KEYFRAME") && plugin_type != PLUGIN_NONE)
 			{
 				ptstime postime;
 
