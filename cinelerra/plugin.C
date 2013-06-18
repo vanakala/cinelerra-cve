@@ -469,17 +469,25 @@ void Plugin::load(FileXML *file)
 			else
 			if(file->tag.title_is("KEYFRAME"))
 			{
-				KeyFrame *keyframe = (KeyFrame*)keyframes->append(new KeyFrame(edl, keyframes));
+				ptstime postime;
+
 				if(file->tag.get_property("DEFAULT", 0))
-					keyframe->pos_time = keyframes->base_pts;
+					postime = keyframes->base_pts;
 				else
 				{
 // Convert from old position
 					posnum position = file->tag.get_property("POSITION", (posnum)0);
-					ptstime postime = 0;
+					postime = 0;
 					if(position)
-						postime = keyframe->autos->pos2pts(position);
-					keyframe->pos_time = file->tag.get_property("POSTIME", postime);
+						postime = keyframes->pos2pts(position);
+					postime = file->tag.get_property("POSTIME", postime);
+				}
+				KeyFrame *keyframe;
+
+				if(!(keyframe = (KeyFrame *)keyframes->get_auto_at_position(postime)))
+				{
+					keyframe = (KeyFrame*)keyframes->append(new KeyFrame(edl, keyframes));
+					keyframe->pos_time = postime;
 				}
 				keyframe->load(file);
 			}
