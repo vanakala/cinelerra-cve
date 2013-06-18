@@ -3101,6 +3101,8 @@ int TrackCanvas::do_plugin_autos(Track *track,
 			plugin && !result; 
 			plugin = (Plugin*)plugin->next)
 		{
+			if(plugin->keyframes->first == plugin->keyframes->last)
+				continue;
 			for(KeyFrame *keyframe = (KeyFrame*)plugin->keyframes->first; 
 				keyframe && !result; 
 				keyframe = (KeyFrame*)keyframe->next)
