@@ -40,7 +40,6 @@ class Edits : public List<Edit>
 {
 public:
 	Edits(EDL *edl, Track *track, Edit *default_edit);
-	virtual ~Edits();
 
 	void equivalent_output(Edits *edits, ptstime *result);
 	virtual void copy_from(Edits *edits);
@@ -59,8 +58,8 @@ public:
 	virtual Edit* create_edit() { return 0; };
 // Insert a 0 length edit at the position
 	Edit* insert_new_edit(ptstime postime);
-	int save(FileXML *xml, const char *output_path);
-	int copy(ptstime start, ptstime end, FileXML *xml, const char *output_path);
+	void save(FileXML *xml, const char *output_path);
+	void copy(ptstime start, ptstime end, FileXML *xml, const char *output_path);
 // Clear region of edits
 	virtual void clear(ptstime start, ptstime end);
 // Clear edits and plugins for a handle modification
@@ -82,10 +81,6 @@ public:
 	EDL *edl;
 	Track *track;
 
-
-// ============================= initialization commands ====================
-	Edits() { printf("default edits constructor called\n"); };
-
 // ================================== file operations
 
 	void load(FileXML *xml, int track_offset);
@@ -94,7 +89,6 @@ public:
 	virtual Edit* append_new_edit() { return 0; };
 	virtual Edit* insert_edit_after(Edit *previous_edit) { return 0; };
 	virtual int load_edit_properties(FileXML *xml) {};
-
 
 // ==================================== accounting
 
@@ -106,7 +100,7 @@ public:
 
 // ==================================== editing
 
-	int modify_handles(ptstime &oldposition,
+	void modify_handles(ptstime &oldposition,
 		ptstime &newposition,
 		int currentend,
 		int edit_mode,
@@ -116,7 +110,5 @@ public:
 
 	ptstime loaded_length;
 };
-
-
 
 #endif

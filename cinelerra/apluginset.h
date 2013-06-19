@@ -29,8 +29,7 @@ class APluginSet : public PluginSet
 {
 public:
 	APluginSet(EDL *edl, Track *track);
-	~APluginSet();
-	
+
 	Plugin* create_plugin();
 };
 

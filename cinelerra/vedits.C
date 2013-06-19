@@ -47,7 +47,6 @@ Edit* VEdits::insert_edit_after(Edit* previous_edit)
 	return (Edit*)current;
 }
 
-
 Edit* VEdits::append_new_edit()
 {
 	VEdit *current;

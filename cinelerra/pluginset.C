@@ -42,7 +42,6 @@ PluginSet::~PluginSet()
 	while(last) delete last;
 }
 
-
 PluginSet& PluginSet::operator=(PluginSet& plugins)
 {
 	copy_from(&plugins);
@@ -153,7 +152,6 @@ Edit* PluginSet::insert_edit_after(Edit *previous_edit)
 	return (Edit*)current;
 }
 
-
 int PluginSet::get_number()
 {
 	return track->plugin_set.number_of(this);
@@ -205,7 +203,6 @@ void PluginSet::copy_keyframes(ptstime start,
 	file->append_tag();
 	file->append_newline();
 }
-
 
 void PluginSet::paste_keyframes(ptstime start,
 	ptstime length,
@@ -414,7 +411,6 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 				SharedLocation shared_location;
 				shared_location.load(file);
 
-
 				if(load_flags & LOAD_EDITS)
 				{
 					plugin = insert_plugin(title, 
@@ -441,8 +437,6 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 	}while(!result);
 	optimize();
 }
-
-
 
 void PluginSet::optimize(void)
 {
@@ -527,7 +521,6 @@ void PluginSet::optimize(void)
 		insert_after(last, empty_edit);
 	}
 }
-
 
 void PluginSet::dump(int indent)
 {

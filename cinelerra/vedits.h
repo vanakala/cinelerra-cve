@@ -28,19 +28,13 @@
 #include "mwindow.inc"
 #include "vtrack.inc"
 
-
-
 class VEdits : public Edits
 {
 public:
 	VEdits(EDL *edl, Track *track);
 
-
 // Editing
 	Edit* create_edit();
-
-	~VEdits() {};
-
 
 // ========================================= editing
 
@@ -49,6 +43,5 @@ public:
 
 	VTrack *vtrack;
 };
-
 
 #endif

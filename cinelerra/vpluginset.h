@@ -29,8 +29,7 @@ class VPluginSet : public PluginSet
 {
 public:
 	VPluginSet(EDL *edl, Track *track);
-	~VPluginSet();
-	
+
 	Plugin* create_plugin();
 };
 

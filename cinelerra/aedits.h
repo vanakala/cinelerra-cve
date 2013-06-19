@@ -33,12 +33,8 @@ class AEdits : public Edits
 public:
 	AEdits(EDL *edl, Track *track);
 
-
 // Editing
 	Edit* create_edit();
-
-	~AEdits() {};
-
 
 // ======================================= editing
 

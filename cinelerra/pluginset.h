@@ -85,5 +85,4 @@ public:
 	int record;
 };
 
-
 #endif

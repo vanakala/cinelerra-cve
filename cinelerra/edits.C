@@ -54,11 +54,6 @@ Edits::Edits(EDL *edl, Track *track, Edit *default_edit)
 	loaded_length = 0;
 }
 
-Edits::~Edits()
-{
-}
-
-
 void Edits::equivalent_output(Edits *edits, ptstime *result)
 {
 // For the case of plugin sets, a new plugin set may be created with
@@ -185,13 +180,11 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 	}
 }
 
-
 // Can't paste silence in here because it's used by paste_silence.
 Edit* Edits::insert_new_edit(ptstime postime)
 {
 	return split_edit(postime);
 }
-
 
 Edit* Edits::split_edit(ptstime postime)
 {
@@ -230,12 +223,10 @@ Edit* Edits::split_edit(ptstime postime)
 	return edit->length() >= track->one_unit ? new_edit : edit;
 }
 
-int Edits::save(FileXML *xml, const char *output_path)
+void Edits::save(FileXML *xml, const char *output_path)
 {
 	copy(0, length(), xml, output_path);
-	return 0;
 }
-
 
 void Edits::optimize(void)
 {
@@ -310,7 +301,6 @@ void Edits::optimize(void)
 		insert_after(last, empty_edit);
 	}
 }
-
 
 // ===================================== file operations
 
@@ -457,7 +447,7 @@ Edit* Edits::get_playable_edit(ptstime postime, int use_nudge)
 
 // ================================================ editing
 
-int Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_path)
+void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_path)
 {
 	Edit *current_edit;
 	file->tag.set_title("EDITS");
@@ -473,7 +463,6 @@ int Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_pa
 	file->append_tag();
 	file->append_newline();
 }
-
 
 void Edits::clear(ptstime start, ptstime end)
 {
@@ -538,9 +527,8 @@ void Edits::clear_recursive(ptstime start,
 		trim_edits);
 }
 
-
-void Edits::clear_handle(double start, 
-	double end, 
+void Edits::clear_handle(ptstime start,
+	ptstime end, 
 	int actions,
 	ptstime &distance)
 {
@@ -593,7 +581,7 @@ void Edits::clear_handle(double start,
 	}
 }
 
-int Edits::modify_handles(ptstime &oldposition,
+void Edits::modify_handles(ptstime &oldposition,
 	ptstime &newposition,
 	int currentend,
 	int edit_mode, 
@@ -673,9 +661,7 @@ int Edits::modify_handles(ptstime &oldposition,
 	}
 
 	optimize();
-	return 0;
 }
-
 
 // Paste silence should not return anything - since pasting silence to an empty track should produce no edits
 // If we need rutine to create new edit by pushing others forward, write new rutine and call it properly
@@ -699,7 +685,6 @@ void Edits::paste_silence(ptstime start, ptstime end)
 	{
 		current->project_pts += end - start;
 	}
-	return;
 }
 
 // Used by other editing commands so don't optimize
@@ -727,7 +712,6 @@ Edit* Edits::shift(ptstime position, ptstime difference)
 	}
 	return new_edit;
 }
-
 
 void Edits::shift_keyframes_recursive(ptstime position, ptstime length)
 {

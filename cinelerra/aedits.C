@@ -32,25 +32,19 @@ AEdits::AEdits(EDL *edl, Track *track)
 {
 }
 
-
-
 Edit* AEdits::create_edit()
 {
 	return new AEdit(edl, this);
 }
 
-
 Edit* AEdits::insert_edit_after(Edit* previous_edit)
 {
 	AEdit *current = new AEdit(edl, this);
-	
+
 	insert_after(previous_edit, current);
 
 	return (Edit*)current;
 }
-
-
-
 
 Edit* AEdits::append_new_edit()
 {
