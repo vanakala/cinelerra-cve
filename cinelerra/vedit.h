@@ -22,19 +22,15 @@
 #ifndef VEDIT_H
 #define VEDIT_H
 
-#include "guicast.h"
 #include "cache.inc"
 #include "edit.h"
 #include "vedits.inc"
 #include "vframe.inc"
 
-// UNITS ARE SECONDS
-
 class VEdit : public Edit
 {
 public:
 	VEdit(EDL *edl, Edits *edits);
-	~VEdit();
 
 	int read_frame(VFrame *video_out, 
 			ptstime input_postime,
@@ -49,8 +45,5 @@ public:
 private:
 	VEdits *vedits;
 };
-
-
-
 
 #endif

@@ -40,10 +40,8 @@ class Edit : public ListItem<Edit>
 public:
 	Edit(EDL *edl, Edits *edits);
 	Edit(EDL *edl, Track *track);
-	Edit(void);
 	virtual ~Edit();
 
-	void reset(void);
 	virtual ptstime length(void);
 	ptstime end_pts(void);
 	virtual void copy_from(Edit *edit);

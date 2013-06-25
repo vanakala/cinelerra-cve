@@ -20,28 +20,15 @@
  */
 
 #include "asset.h"
-#include "edits.h"
+#include "edits.inc"
 #include "aedit.h"
-#include "cache.h"
-#include "edl.h"
-#include "edlsession.h"
-#include "file.h"
+#include "edl.inc"
 #include "filexml.h"
-#include "indexfile.h"
-#include "mwindow.h"
-#include "mainsession.h"
-#include "trackcanvas.h"
-#include "tracks.h"
-
 
 AEdit::AEdit(EDL *edl, Edits *edits)
  : Edit(edl, edits)
 {
 }
-
-
-
-AEdit::~AEdit() { }
 
 void AEdit::load_properties_derived(FileXML *xml)
 {
@@ -55,4 +42,3 @@ ptstime AEdit::get_source_end(ptstime default_value)
 
 	return ((ptstime)asset->audio_length / asset->sample_rate);
 }
-

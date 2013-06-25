@@ -22,29 +22,19 @@
 #ifndef AEDIT_H
 #define AEDIT_H
 
-
-#include "guicast.h"
 #include "edit.h"
 #include "filexml.inc"
 #include "aedits.inc"
-
-// UNITS ARE SAMPLES
 
 class AEdit : public Edit
 {
 public:
 	AEdit(EDL *edl, Edits *edits);
-	~AEdit();
 
 	void load_properties_derived(FileXML *xml);
-
-
-// ========================================= editing
-
 	ptstime get_source_end(ptstime default_value);
 
 private:
-
 	AEdits *aedits;
 };
 

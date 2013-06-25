@@ -37,15 +37,15 @@
 #include "transition.h"
 #include <string.h>
 
-
-Edit::Edit(void)
-{
-	reset();
-}
-
 Edit::Edit(EDL *edl, Track *track)
 {
-	reset();
+	edits = 0;
+	source_pts = 0;
+	project_pts = 0;
+	asset = 0;
+	transition = 0;
+	channel = 0;
+	user_title[0] = 0;
 	this->edl = edl;
 	this->track = track;
 	if(track) this->edits = track->edits;
@@ -54,7 +54,13 @@ Edit::Edit(EDL *edl, Track *track)
 
 Edit::Edit(EDL *edl, Edits *edits)
 {
-	reset();
+	track = 0;
+	source_pts = 0;
+	project_pts = 0;
+	asset = 0;
+	transition = 0;
+	channel = 0;
+	user_title[0] = 0;
 	this->edl = edl;
 	this->edits = edits;
 	if(edits) this->track = edits->track;
@@ -64,19 +70,6 @@ Edit::Edit(EDL *edl, Edits *edits)
 Edit::~Edit()
 {
 	if(transition) delete transition;
-}
-
-void Edit::reset(void)
-{
-	edl = 0;
-	track = 0;
-	edits = 0;
-	source_pts = 0;
-	project_pts = 0;
-	asset = 0;
-	transition = 0;
-	channel = 0;
-	user_title[0] = 0;
 }
 
 int Edit::copy(ptstime start, ptstime end, FileXML *file, const char *output_path)

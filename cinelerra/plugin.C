@@ -27,9 +27,7 @@
 #include "keyframe.h"
 #include "keyframes.h"
 #include "localsession.h"
-#include "mwindow.h"
 #include "plugin.h"
-#include "pluginpopup.h"
 #include "pluginset.h"
 #include "pluginserver.h"
 #include "renderengine.h"
@@ -53,7 +51,6 @@ Plugin::Plugin(EDL *edl,
 	on = 1;
 	keyframes = new KeyFrames(edl, track, this);
 }
-
 
 Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
  : Edit(edl, plugin_set)
@@ -186,8 +183,6 @@ void Plugin::equivalent_output(Edit *edit, ptstime *result)
 		project_pts, result);
 }
 
-
-
 int Plugin::is_synthesis(RenderEngine *renderengine, 
 		ptstime postime)
 {
@@ -225,8 +220,6 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 	}
 	return 0;
 }
-
-
 
 int Plugin::identical(Plugin *that)
 {
@@ -274,8 +267,6 @@ void Plugin::change_plugin(const char *title,
 	this->shared_location = *shared_location;
 	this->plugin_type = plugin_type;
 }
-
-
 
 KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
 {
@@ -326,7 +317,7 @@ KeyFrame* Plugin::get_next_keyframe(ptstime postime)
 // Nothing after current position
 	if(!current && keyframes->last)
 	{
-		current =  (KeyFrame*)keyframes->last;
+		current = (KeyFrame*)keyframes->last;
 	}
 	return current;
 }
@@ -513,7 +504,6 @@ Track* Plugin::get_shared_track()
 	return edl->tracks->get_item_number(shared_location.module);
 }
 
-
 void Plugin::calculate_title(char *string, int use_nudge)
 {
 	if(plugin_type == PLUGIN_STANDALONE || plugin_type == PLUGIN_NONE)
@@ -573,4 +563,3 @@ void Plugin::dump(int indent)
 
 	keyframes->dump(indent);
 }
-

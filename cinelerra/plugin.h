@@ -40,7 +40,6 @@
 class PluginOnToggle;
 
 
-
 // Plugin is inherited by Transition, Plugins
 class Plugin : public Edit
 {
@@ -73,7 +72,6 @@ public:
 	virtual int operator==(Edit& that);
 
 	virtual void copy_from(Edit *edit);
-
 
 // Called by == operators, Edit::equivalent output
 // to test title and keyframe of transition.
@@ -142,10 +140,5 @@ public:
 // location of plugin if shared
 	SharedLocation shared_location;
 };
-
-
-
-
-
 
 #endif

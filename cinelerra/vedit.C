@@ -22,15 +22,8 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "cache.h"
-#include "edl.h"
-#include "edlsession.h"
+#include "edl.inc"
 #include "file.h"
-#include "mwindow.h"
-#include "preferences.h"
-#include "mainsession.h"
-#include "trackcanvas.h"
-#include "tracks.h"
-#include "units.h"
 #include "vedit.h"
 #include "vedits.h"
 #include "vframe.h"
@@ -41,21 +34,12 @@ VEdit::VEdit(EDL *edl, Edits *edits)
 {
 }
 
-
-VEdit::~VEdit() { }
-
 void VEdit::load_properties_derived(FileXML *xml)
 {
 	channel = xml->tag.get_property("CHANNEL", (int64_t)0);
 }
 
-
-
-
-
 // ================================================== editing
-
-
 int VEdit::read_frame(VFrame *video_out, 
 	ptstime input_postime,
 	CICache *cache,
@@ -63,9 +47,8 @@ int VEdit::read_frame(VFrame *video_out,
 	int use_cache,
 	int use_asynchronous)
 {
-	File *file = cache->check_out(asset,
-		edl);
-	int result = 0;
+	File *file = cache->check_out(asset, edl);
+
 	if(use_nudge) input_postime += track->nudge;
 
 	if(file)
@@ -78,14 +61,13 @@ int VEdit::read_frame(VFrame *video_out,
 		video_out->set_layer(channel);
 		video_out->set_source_pts(input_postime - project_pts + source_pts);
 		if(use_cache) file->set_cache_frames(use_cache);
-		result = file->get_frame(video_out);
+		int result = file->get_frame(video_out);
 		if(use_cache) file->set_cache_frames(0);
 		video_out->set_pts(video_out->get_source_pts() - source_pts + project_pts);
 		cache->check_in(asset);
+		return result;
 	}
-	else
-		result = 1;
-	return result;
+	return 1;
 }
 
 ptstime VEdit::get_source_end(ptstime default_value)

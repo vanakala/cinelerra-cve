@@ -34,13 +34,10 @@ class Transition : public Plugin
 {
 public:
 	Transition(EDL *edl, Edit *edit, const char *title, ptstime length);
-
-	Edit *edit;
+	Transition(Transition *that, Edit *edit);
 
 	void save_xml(FileXML *file);
 	void load_xml(FileXML *file);
-
-	Transition(Transition *that, Edit *edit);
 
 	KeyFrame* get_keyframe();
 	Transition& operator=(Transition &that);
@@ -54,6 +51,7 @@ public:
 
 	void dump(int indent = 0);
 
+	Edit *edit;
 	ptstime length_time;
 
 private:
