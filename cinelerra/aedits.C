@@ -28,7 +28,7 @@
 
 
 AEdits::AEdits(EDL *edl, Track *track)
- : Edits(edl, track, create_edit())
+ : Edits(edl, track)
 {
 }
 

@@ -214,17 +214,21 @@ ptstime Track::get_length()
 {
 	ptstime total_length = 0;
 	ptstime length = 0;
+	Edit *plugin;
 
 // Test edits
-	length = edits->last->project_pts;
-
-	if(length > total_length) total_length = length;
+	if(edits->last)
+		total_length = edits->last->project_pts;
 
 // Test plugins
 	for(int i = 0; i < plugin_set.total; i++)
 	{
-		length = plugin_set.values[i]->last->project_pts;
-		if(length > total_length) total_length = length;
+		if(plugin = plugin_set.values[i]->last)
+		{
+			length = plugin->project_pts;
+			if(length > total_length)
+				total_length = length;
+		}
 	}
 	return total_length;
 }

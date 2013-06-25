@@ -39,7 +39,7 @@
 class Edits : public List<Edit>
 {
 public:
-	Edits(EDL *edl, Track *track, Edit *default_edit);
+	Edits(EDL *edl, Track *track);
 
 	void equivalent_output(Edits *edits, ptstime *result);
 	virtual void copy_from(Edits *edits);

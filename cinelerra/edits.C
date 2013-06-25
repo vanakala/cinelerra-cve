@@ -41,16 +41,11 @@
 
 #include <string.h>
 
-Edits::Edits(EDL *edl, Track *track, Edit *default_edit)
+Edits::Edits(EDL *edl, Track *track)
  : List<Edit>()
 {
 	this->edl = edl;
 	this->track = track;
-
-	default_edit->edl = edl;
-	default_edit->track = track;
-	default_edit->project_pts = 0;
-	insert_after(0, default_edit);
 	loaded_length = 0;
 }
 
@@ -137,7 +132,7 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 	ptstime total_time = 0;
 
 	for(Edit *source_edit = source_edits->first;
-		source_edit && source_edit->next;
+		source_edit;
 		source_edit = source_edit->next)
 	{
 // Update Assets
@@ -190,17 +185,26 @@ Edit* Edits::split_edit(ptstime postime)
 {
 // Get edit containing position
 	Edit *edit = editof(postime, 0);
-	Edit *new_edit = create_edit();
-// postime on editi sees
-	if(!edit){
-// No edit found, make one before last (we always have last)
-		new_edit = create_edit();
-		insert_before(last, new_edit);
+
+	if(!edit)
+	{
+		Edit *new_edit = create_edit();
+
+		if(last && last->project_pts > postime)
+		{
+			insert_before(last, new_edit);
+			if(new_edit->next->project_pts < postime)
+				new_edit->next->project_pts = postime + track->one_unit;
+		}
+		else
+			append(new_edit);
+
 		new_edit->project_pts = postime;
-		if(new_edit->next->project_pts < postime)
-			new_edit->next->project_pts = postime;
 		return new_edit;
 	}
+
+// Split existing edit
+	Edit *new_edit = create_edit();
 
 	insert_after(edit, new_edit);
 	new_edit->copy_from(edit);

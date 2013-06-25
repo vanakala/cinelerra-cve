@@ -32,7 +32,7 @@
 #include <string.h>
 
 PluginSet::PluginSet(EDL *edl, Track *track)
- : Edits(edl, track, create_edit())
+ : Edits(edl, track)
 {
 	record = 1;
 }
