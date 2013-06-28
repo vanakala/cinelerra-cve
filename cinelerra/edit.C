@@ -306,12 +306,10 @@ void Edit::dump(int indent)
 	indent += 2;
 	printf("%*sasset %p\n", indent, "", asset);
 	printf("%*schannel %d\n", indent, "", channel);
-	if(transition)
-	{
-		transition->dump(indent + 2);
-	}
 	printf("%*ssource_pts %.3f project_pts %.3f length %.3f\n", indent, "",
 		source_pts, project_pts, length());
+	if(transition)
+		transition->dump(indent + 2);
 }
 
 ptstime Edit::load_properties(FileXML *file, ptstime project_pts)
