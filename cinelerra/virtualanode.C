@@ -36,6 +36,7 @@
 #include "mwindow.h"
 #include "module.h"
 #include "panauto.h"
+#include "panautos.h"
 #include "plugin.h"
 #include "renderengine.h"
 #include "track.h"
@@ -341,6 +342,12 @@ void VirtualANode::get_pan_automation(double &slope,
 {
 	intercept = 0;
 	slope = 0;
+
+	if(!autos->first)
+	{
+		intercept = ((PanAutos *)autos)->default_values[channel];
+		return;
+	}
 
 	PanAuto *prev_keyframe = 0;
 	PanAuto *next_keyframe = 0;
