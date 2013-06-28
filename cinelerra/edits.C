@@ -118,10 +118,15 @@ void Edits::insert_asset(Asset *asset,
 	if(asset->video_data)
 		new_edit->channel = track_number % asset->layers;
 
-	for(Edit *current = new_edit->next; current; current = NEXT)
+	if(new_edit->next)
 	{
-		current->project_pts += len_time;
+		for(Edit *current = new_edit->next; current; current = NEXT)
+		{
+			current->project_pts += len_time;
+		}
 	}
+	else
+		insert_new_edit(postime + len_time);
 }
 
 void Edits::insert_edits(Edits *source_edits, ptstime postime)
@@ -236,6 +241,9 @@ void Edits::optimize(void)
 {
 	int result = 1;
 	Edit *current;
+
+	if(!first)
+		return;
 
 // End of trace
 // Insert edit starting at 0 if missing
