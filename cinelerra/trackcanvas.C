@@ -510,7 +510,7 @@ int TrackCanvas::drag_stop()
 			}
 			Track *track = mwindow->session->track_highlighted;
 
-			mwindow->paste_assets(mwindow->session->track_highlighted->to_units(position), track, !insertion);
+			mwindow->paste_assets(position, track, !insertion);
 			result = 1;    // need to be one no matter what, since we have track highlited so we have to cleanup....
 		}
 		break;
@@ -1061,18 +1061,21 @@ void TrackCanvas::draw_paste_destination()
 				if(mwindow->session->edit_highlighted)
 					position = mwindow->session->edit_highlighted->project_pts;
 				else
+				{
 // Use end of highlighted track, disregarding effects
-					position = mwindow->session->track_highlighted->edits->last->project_pts;
-
+					if(mwindow->session->track_highlighted->edits->last)
+						position = mwindow->session->track_highlighted->edits->last->project_pts;
+					else
+						position = 0;
+				}
 
 				if(dest->data_type == TRACK_AUDIO)
 				{
 					if( (asset && current_atrack < asset->channels)
 						|| (clip  && current_atrack < clip->tracks->total_audio_tracks()) )
 					{
-						w = Units::to_int64(paste_audio_length *
-							mwindow->edl->local_session->zoom_time *
-							mwindow->edl->session->sample_rate);
+						w = round(paste_audio_length /
+							mwindow->edl->local_session->zoom_time);
 
 						position = desta_position;
 						if (position < 0) 
@@ -1095,7 +1098,7 @@ void TrackCanvas::draw_paste_destination()
 						if(current_aedit < mwindow->session->drag_edits->total)
 						{
 							edit = mwindow->session->drag_edits->values[current_aedit];
-							w = Units::to_int64(edit->length() / mwindow->edl->local_session->zoom_time);
+							w = round(edit->length() / mwindow->edl->local_session->zoom_time);
 							position = get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length());
 							if (position < 0) 
 								w = -1;
@@ -1114,7 +1117,7 @@ void TrackCanvas::draw_paste_destination()
 						|| (clip && current_vtrack < clip->tracks->total_video_tracks()) )
 					{
 						// Images have length -1
-						w = Units::to_int64((double)paste_video_length /
+						w = round(paste_video_length /
 							mwindow->edl->local_session->zoom_time);
 
 						position = destv_position;
@@ -1138,7 +1141,7 @@ void TrackCanvas::draw_paste_destination()
 						if(current_vedit < mwindow->session->drag_edits->total)
 						{
 							edit = mwindow->session->drag_edits->values[current_vedit];
-							w = Units::to_int64(edit->length() /
+							w = round(edit->length() /
 								mwindow->edl->local_session->zoom_time);
 							position = get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length());
 							if (position < 0) 
