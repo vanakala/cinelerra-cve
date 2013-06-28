@@ -49,6 +49,14 @@ void PanAutos::get_handle(int &handle_x,
 		PanAuto* &previous,
 		PanAuto* &next)
 {
+	if(!first)
+	{
+		previous = 0;
+		next = 0;
+		handle_x = default_handle_x;
+		handle_y = default_handle_y;
+		return;
+	}
 	previous = (PanAuto*)get_prev_auto(position, (Auto* &)previous);
 	next = (PanAuto*)get_next_auto(position, (Auto* &)next);
 
@@ -72,7 +80,11 @@ void PanAutos::get_handle(int &handle_x,
 
 void PanAutos::dump(int indent)
 {
-	printf("%*sPanAutos %p dump:\n", indent, " ", this);
+	printf("%*sPanAutos %p dump(%d): base %.3f handles: %d, %d\n", indent, " ", this, 
+		total(), base_pts, default_handle_x, default_handle_y);
+	printf("%*s default values:", indent, " ");
+	for(int i = 0; i < MAXCHANNELS; i++)
+		printf(" %.1f", default_values[i]);
 	indent += 2;
 	for(Auto* current = first; current; current = NEXT)
 		((PanAuto*)current)->dump(indent);
