@@ -26,7 +26,7 @@ cinelerra/cpanel.C
 # cinelerra/cropvideo.C
 cinelerra/cwindowgui.C
 cinelerra/cwindowtool.C
-cinelerra/dcoffset.C
+# cinelerra/dcoffset.C
 cinelerra/deleteallindexes.C
 cinelerra/editpanel.C
 cinelerra/editpopup.C
