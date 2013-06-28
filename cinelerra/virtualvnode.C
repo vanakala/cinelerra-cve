@@ -371,7 +371,11 @@ void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 					input->get_pts(), 
 					(Auto* &)mode_keyframe);
 
-			int mode = mode_keyframe->value;
+			int mode;
+			if(mode_keyframe)
+				mode_keyframe->value;
+			else
+				mode = TRANSFER_NORMAL;
 
 // Fade is performed in render_fade so as to allow this module
 // to be chained in another module, thus only 4 component colormodels
