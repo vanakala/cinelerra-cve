@@ -161,12 +161,12 @@ ptstime Edit::get_source_end(ptstime default_value)
 	return default_value;
 }
 
-void Edit::insert_transition(const char *title)
+void Edit::insert_transition(const char *title, KeyFrame *default_keyframe)
 {
 	transition = new Transition(edl, 
 		this, 
 		title, 
-		edl->session->default_transition_length);
+		edl->session->default_transition_length, default_keyframe);
 }
 
 void Edit::detach_transition(void)
@@ -196,7 +196,7 @@ void Edit::copy_from(Edit *edit)
 		if(!transition) transition = new Transition(edl, 
 			this, 
 			edit->transition->title,
-			edit->transition->length());
+			edit->transition->length(), 0);
 		*this->transition = *edit->transition;
 	}
 	this->channel = edit->channel;

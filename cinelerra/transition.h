@@ -33,12 +33,12 @@
 class Transition : public Plugin
 {
 public:
-	Transition(EDL *edl, Edit *edit, const char *title, ptstime length);
+	Transition(EDL *edl, Edit *edit, const char *title,
+		ptstime length, KeyFrame *default_keyframe);
 	Transition(Transition *that, Edit *edit);
 
 	void save_xml(FileXML *file);
 	void load_xml(FileXML *file);
-
 	KeyFrame* get_keyframe();
 	Transition& operator=(Transition &that);
 	Plugin& operator=(Plugin &that);

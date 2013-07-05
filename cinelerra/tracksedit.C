@@ -658,7 +658,7 @@ void Tracks::paste_default_keyframe(FileXML *file)
 
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 {
-	dest_edit->insert_transition(server->title);
+	dest_edit->insert_transition(server->title, &server->default_keyframe);
 }
 
 void Tracks::paste_video_transition(PluginServer *server, int first_track)

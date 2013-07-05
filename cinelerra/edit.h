@@ -28,6 +28,7 @@
 #include "guicast.h"
 #include "edits.inc"
 #include "filexml.inc"
+#include "keyframe.inc"
 #include "mwindow.inc"
 #include "plugin.inc"
 #include "track.inc"
@@ -83,7 +84,7 @@ public:
 		int actions,
 		Edits *trim_edits);
 
-	void insert_transition(const char  *title);
+	void insert_transition(const char *title, KeyFrame *default_keyframe);
 	void detach_transition(void);
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence(void);

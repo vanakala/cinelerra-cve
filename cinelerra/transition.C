@@ -22,6 +22,7 @@
 #include "edit.h"
 #include "edits.h"
 #include "filexml.h"
+#include "keyframe.h"
 #include "keyframes.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -36,12 +37,15 @@
 #include "transitionpopup.h"
 #include <string.h>
 
-Transition::Transition(EDL *edl, Edit *edit, const char *title, ptstime length)
+Transition::Transition(EDL *edl, Edit *edit, const char *title, 
+	ptstime length, KeyFrame *default_keyframe)
  : Plugin(edl, (PluginSet*)edit->edits, title)
 {
 	this->edit = edit;
 	this->length_time = length;
-	keyframes->append_auto();
+	KeyFrame *new_auto = (KeyFrame *)keyframes->insert_auto(0);
+	if(default_keyframe)
+		new_auto->copy_from(default_keyframe);
 }
 
 KeyFrame* Transition::get_keyframe()
@@ -155,5 +159,6 @@ void Transition::dump(int indent)
 {
 	printf("%*sTransition %p dump\n", indent, "", this);
 	printf("%*s  title: '%s' length: %.3f\n", indent, "", title, length_time);
-	keyframes->dump(indent + 2);
+	if(keyframes)
+		keyframes->dump(indent + 2);
 }
