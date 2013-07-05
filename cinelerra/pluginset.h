@@ -63,7 +63,6 @@ public:
 	ptstime plugin_change_duration(ptstime input_position,
 		ptstime input_length);
 	void shift_effects(ptstime start, ptstime length);
-	Edit* insert_edit_after(Edit *previous_edit);
 	Edit* create_edit();
 // For testing output equivalency when a new pluginset is added.
 	Plugin* get_first_plugin();
@@ -72,7 +71,6 @@ public:
 	void save(FileXML *file);
 	void load(FileXML *file, uint32_t load_flags);
 	void dump(int indent = 0);
-	void optimize(void);
 
 // Insert a new plugin
 	Plugin* insert_plugin(const char *title, 
@@ -80,8 +78,7 @@ public:
 		ptstime length,
 		int plugin_type,
 		SharedLocation *shared_location,
-		KeyFrame *default_keyframe,
-		int do_optimize);
+		KeyFrame *default_keyframe);
 	int record;
 };
 

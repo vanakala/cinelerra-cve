@@ -107,26 +107,15 @@ void Edits::insert_asset(Asset *asset,
 	ptstime postime,
 	int track_number)
 {
-	Edit *new_edit = insert_new_edit(postime);
+	Edit *new_edit = insert_edit(postime, len_time);
 	new_edit->asset = asset;
 	new_edit->source_pts = 0;
-	new_edit->project_pts = postime;
 
 	if(asset->audio_data)
 		new_edit->channel = track_number % asset->channels;
 	else
 	if(asset->video_data)
 		new_edit->channel = track_number % asset->layers;
-
-	if(new_edit->next)
-	{
-		for(Edit *current = new_edit->next; current; current = NEXT)
-		{
-			current->project_pts += len_time;
-		}
-	}
-	else
-		insert_new_edit(postime + len_time);
 }
 
 void Edits::insert_edits(Edits *source_edits, ptstime postime)
@@ -143,7 +132,7 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 // Update Assets
 		Asset *dest_asset = edl->assets->update(source_edit->asset);
 // Open destination area
-		Edit *dest_edit = insert_new_edit(postime + source_edit->project_pts);
+		Edit *dest_edit = insert_edit(postime + source_edit->project_pts);
 
 		dest_edit->copy_from(source_edit);
 		dest_edit->asset = dest_asset;
@@ -180,138 +169,87 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 	}
 }
 
-// Can't paste silence in here because it's used by paste_silence.
-Edit* Edits::insert_new_edit(ptstime postime)
+// Inserts a new edit with requested length
+Edit* Edits::insert_edit(ptstime pts, ptstime length)
 {
-	return split_edit(postime);
+	Edit *new_edit = split_edit(pts);
+
+	if(length >= track->one_unit)
+	{
+		ptstime end = pts + length;
+
+		if(new_edit->next)
+		{
+			if(new_edit->next->project_pts < end)
+			{
+				ptstime shift = end - new_edit->next->project_pts;
+				for(Edit *e = new_edit->next; e; e = e->next)
+					e->project_pts += shift;
+			}
+			else
+				split_edit(pts + length);
+		}
+		else
+		{
+			Edit *le = create_edit();
+			append(le);
+			le->project_pts = end;
+		}
+	}
+	return new_edit;
 }
 
 Edit* Edits::split_edit(ptstime postime)
 {
+	Edit *edit;
+	if(!first)
+	{
+		// List is empty create edit at 0, next edit at postime
+		append(edit = create_edit());
+		if(postime > EPSILON)
+		{
+			append(edit = create_edit());
+			edit->project_pts = postime;
+		}
+		return edit;
+	}
 // Get edit containing position
-	Edit *edit = editof(postime, 0);
+	edit = editof(postime, 0);
 
 	if(!edit)
 	{
-		Edit *new_edit = create_edit();
-
-		if(last && last->project_pts > postime)
-		{
-			insert_before(last, new_edit);
-			if(new_edit->next->project_pts < postime)
-				new_edit->next->project_pts = postime + track->one_unit;
-		}
-		else
-			append(new_edit);
-
-		new_edit->project_pts = postime;
-		return new_edit;
+		// List ends before postime - create a new
+		edit = create_edit();
+		append(edit);
+		edit->project_pts = postime;
+		return edit;
 	}
+
+	if(PTSEQU(edit->project_pts, postime))
+		return edit;
 
 // Split existing edit
 	Edit *new_edit = create_edit();
+	Transition *trans = edit->transition;
+	edit->transition = 0;
 
 	insert_after(edit, new_edit);
 	new_edit->copy_from(edit);
 	new_edit->project_pts = postime;
-	ptstime oldlen = edit->length();
-	ptstime newlen = new_edit->length();
-	new_edit->source_pts += oldlen;
+	new_edit->source_pts += edit->length();
 
-// Decide what to do with the transition
-	if(edit->length() < track->one_unit && edit->transition)
+	if(trans)
 	{
-		delete new_edit->transition;
-		new_edit->transition = 0;
+		if(edit->length() < trans->length_time)
+			trans->length_time = edit->length();
+		edit->transition = trans;
 	}
-
-	if(edit->transition && edit->transition->length_time > oldlen)
-		edit->transition->length_time = oldlen;
-	if(new_edit->transition && new_edit->transition->length_time > newlen)
-		new_edit->transition->length_time = newlen;
-	return edit->length() >= track->one_unit ? new_edit : edit;
+	return new_edit;
 }
 
 void Edits::save(FileXML *xml, const char *output_path)
 {
 	copy(0, length(), xml, output_path);
-}
-
-void Edits::optimize(void)
-{
-	int result = 1;
-	Edit *current;
-
-	if(!first)
-		return;
-
-// End of trace
-// Insert edit starting at 0 if missing
-	if(first->project_pts)
-	{
-		Edit *new_edit = create_edit();
-		insert_before(first, new_edit);
-	}
-	result = 1;
-	while(result)
-	{
-		result = 0;
-
-// delete 0 length edits
-		for(current = first; 
-			current != last && !result; )
-		{
-			if(PTSEQU(current->length(), 0))
-			{
-				Edit* next = current->next;
-				// Be smart with transitions!
-				if (next && current->transition && !next->transition)
-				{
-					next->transition = current->transition;
-					next->transition->edit = next;
-					current->transition = 0;
-				}
-				delete current;
-				result = 1;
-				current = next;
-			}
-			else
-			{
-				current = current->next;
-			}
-		}
-
-// merge same files or transitions
-		for(current = first; 
-			current && current->next && !result; )
-		{
-// assets identical
-			Edit *next_edit = current->next;
-			if(current->asset == next_edit->asset && 
-				(!current->asset ||
-				(PTSEQU(current->source_pts + current->length(), next_edit->source_pts) &&
-				current->channel == next_edit->channel)))
-			{
-// source positions are consecutive
-				remove(next_edit);
-				result = 1;
-			}
-
-			current = (Plugin*)current->next;
-		}
-
-// delete last edit of 0 length or silence
-	}
-	if (!last || !last->silence())
-	{
-// No last empty edit available... create one
-		Edit *empty_edit = create_edit();
-		if (!last) 
-			empty_edit->project_pts = 0;
-		else
-			empty_edit->project_pts = last->project_pts;
-		insert_after(last, empty_edit);
-	}
 }
 
 // ===================================== file operations
@@ -342,14 +280,13 @@ void Edits::load(FileXML *file, int track_offset)
 		loaded_length = last->end_pts();
 	else 
 		loaded_length = 0;
-	optimize();
 }
 
 void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 {
 	Edit* current;
 
-	current = append_new_edit();
+	current = append(create_edit());
 	project_time += current->load_properties(file, project_time);
 	int result = 0;
 
@@ -389,7 +326,7 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 				current->transition = new Transition(edl,
 					current, 
 					"",
-					edl->session->default_transition_length);
+					edl->session->default_transition_length, 0);
 				current->transition->load_xml(file);
 			}
 			else
@@ -427,7 +364,9 @@ Edit* Edits::editof(ptstime postime, int use_nudge)
 
 	for(current = first; current; current = NEXT)
 	{
-		if(current->project_pts <= postime && current->end_pts() > postime)
+		if(PTSEQU(current->project_pts, postime) ||
+				(current->project_pts <= postime &&
+				current->end_pts() > postime))
 			return current;
 	}
 
@@ -523,7 +462,6 @@ void Edits::clear(ptstime start, ptstime end)
 		else
 			current_edit->project_pts -= len;
 	}
-	optimize();
 }
 
 // Used by edit handle and plugin handle movement but plugin handle movement
@@ -585,7 +523,6 @@ void Edits::clear_handle(ptstime start,
 					}
 
 					distance = length;
-					optimize();
 					break;
 				}
 			}
@@ -671,14 +608,11 @@ void Edits::modify_handles(ptstime &oldposition,
 			if(!result) current_edit = current_edit->next;
 		}
 	}
-
-	optimize();
 }
 
 // Paste silence should not return anything - since pasting silence to an empty track should produce no edits
 // If we need rutine to create new edit by pushing others forward, write new rutine and call it properly
 // This are two distinctive functions
-// This rutine leaves edits in optimized state!
 void Edits::paste_silence(ptstime start, ptstime end)
 {
 	// paste silence does not do anything if 
@@ -687,29 +621,22 @@ void Edits::paste_silence(ptstime start, ptstime end)
 	// in both cases editof returns NULL
 
 	Edit *new_edit = editof(start, 0);
-	if (!new_edit) return;
+	if(!new_edit) return;
 
-	if (new_edit->asset)
+	if(new_edit->asset)
 	{ // we are in fact creating a new edit
-		new_edit = insert_new_edit(start);
+		new_edit = insert_edit(start, end - start);
+		new_edit->asset = 0;
+		new_edit->source_pts = 0;
+		if(new_edit->next)
+			new_edit->next->source_pts -= end - start;
 	}
-	for(Edit *current = new_edit->next; current; current = NEXT)
+	if(new_edit->next)
 	{
-		current->project_pts += end - start;
+		new_edit = new_edit->next;
+		for(Edit *current = new_edit->next; current; current = NEXT)
+			current->project_pts += end - start;
 	}
-}
-
-// Used by other editing commands so don't optimize
-// This is separate from paste_silence, since it has to wrok also on empty tracks/beyond end of track
-Edit *Edits::create_and_insert_edit(ptstime start, ptstime end)
-{
-	Edit *new_edit = insert_new_edit(start);
-	ptstime len = end - start;
-	for(Edit *current = new_edit->next; current; current = NEXT)
-	{
-		current->project_pts += len;
-	}
-	return new_edit;
 }
 
 Edit* Edits::shift(ptstime position, ptstime difference)

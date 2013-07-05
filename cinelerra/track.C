@@ -413,8 +413,7 @@ Plugin* Track::insert_effect(const char *title,
 					source_plugin->length(),
 					plugin_type, 
 					shared_location,
-					default_keyframe,
-					1);
+					default_keyframe);
 			}
 			else
 // From a drag operation
@@ -424,8 +423,7 @@ Plugin* Track::insert_effect(const char *title,
 					length,
 					plugin_type,
 					shared_location,
-					default_keyframe,
-					1);
+					default_keyframe);
 			}
 		}
 	}
@@ -452,8 +450,7 @@ Plugin* Track::insert_effect(const char *title,
 			length,
 			plugin_type, 
 			shared_location,
-			default_keyframe,
-			1);
+			default_keyframe);
 	}
 
 	expand_view = 1;
@@ -590,11 +587,9 @@ void Track::detach_shared_effects(int module)
 
 void Track::optimize()
 {
-	edits->optimize();
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		PluginSet *plugin_set = this->plugin_set.values[i];
-		plugin_set->optimize();
 
 // new definition of empty track...
 		if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
@@ -939,8 +934,6 @@ void Track::paste_silence(ptstime start, ptstime end, int edit_plugins)
 	edits->paste_silence(start, end);
 	shift_keyframes(start, end - start);
 	if(edit_plugins) shift_effects(start, end - start);
-
-	edits->optimize();
 }
 
 void Track::change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap)

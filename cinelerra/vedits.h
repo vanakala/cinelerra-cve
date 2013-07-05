@@ -33,15 +33,7 @@ class VEdits : public Edits
 public:
 	VEdits(EDL *edl, Track *track);
 
-// Editing
 	Edit* create_edit();
-
-// ========================================= editing
-
-	Edit* append_new_edit();
-	Edit* insert_edit_after(Edit* previous_edit);
-
-	VTrack *vtrack;
 };
 
 #endif

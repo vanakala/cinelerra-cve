@@ -115,11 +115,9 @@ Plugin* PluginSet::insert_plugin(const char *title,
 	ptstime length,
 	int plugin_type,
 	SharedLocation *shared_location,
-	KeyFrame *default_keyframe,
-	int do_optimize)
+	KeyFrame *default_keyframe)
 {
-	Plugin *plugin = (Plugin*)create_and_insert_edit(position, 
-		position + length);
+	Plugin *plugin = (Plugin*)insert_edit(position, length);
 
 	if(title) strcpy(plugin->title, title);
 
@@ -134,22 +132,12 @@ Plugin* PluginSet::insert_plugin(const char *title,
 		*((KeyFrame *)plugin->keyframes->first) = *default_keyframe;
 		plugin->keyframes->first->pos_time = position;
 	}
-
-// May delete the plugin we just added so not desirable while loading.
-	if(do_optimize) optimize();
 	return plugin;
 }
 
 Edit* PluginSet::create_edit()
 {
 	return new Plugin(edl, this, "");
-}
-
-Edit* PluginSet::insert_edit_after(Edit *previous_edit)
-{
-	Plugin *current = new Plugin(edl, this, "");
-	List<Edit>::insert_after(previous_edit, current);
-	return (Edit*)current;
 }
 
 int PluginSet::get_number()
@@ -418,7 +406,6 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 						length,
 						plugin_type,
 						&shared_location,
-						0,
 						0);
 					plugin->load(file);
 					startproject += length;
@@ -435,91 +422,6 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 			}
 		}
 	}while(!result);
-	optimize();
-}
-
-void PluginSet::optimize(void)
-{
-	int result = 1;
-	Plugin *current_edit;
-
-// Delete keyframes out of range
-	for(current_edit = (Plugin*)first;
-		current_edit; 
-		current_edit = (Plugin*)current_edit->next)
-	{
-		for(KeyFrame *current_keyframe = (KeyFrame*)current_edit->keyframes->last;
-			current_keyframe; )
-		{
-			KeyFrame *previous_keyframe = (KeyFrame*)current_keyframe->previous;
-			if(current_keyframe->pos_time > current_edit->end_pts() ||
-				current_keyframe->pos_time < current_edit->project_pts)
-			{
-				delete current_keyframe;
-			}
-			current_keyframe = previous_keyframe;
-		}
-	}
-	if(first->project_pts > 0)
-	{
-		Plugin *new_plugin = (Plugin*)create_edit();
-		insert_before(first, new_plugin);
-	}
-
-// delete 0 length plugins
-	while(result)
-	{
-		result = 0;
-
-		for(current_edit = (Plugin*)first; 
-			current_edit && current_edit->next && !result; )
-		{
-			if(current_edit->length() < track->one_unit)
-			{
-				Plugin* next = (Plugin*)current_edit->next;
-				delete current_edit;
-				result = 1;
-				current_edit = next;
-			}
-			else
-				current_edit = (Plugin*)current_edit->next;
-		}
-
-// merge identical plugins with same keyframes
-		for(current_edit = (Plugin*)first; 
-			current_edit && current_edit->next && !result; )
-		{
-			Plugin *next_edit = (Plugin*)current_edit->next;
-
-// plugins identical
-			if(next_edit->identical(current_edit))
-			{
-// Merge keyframes
-				for(KeyFrame *source = (KeyFrame*)next_edit->keyframes->first;
-					source;
-					source = (KeyFrame*)source->next)
-				{
-					KeyFrame *dest = new KeyFrame(edl, current_edit->keyframes);
-					*dest = *source;
-					current_edit->keyframes->append(dest);
-				}
-				remove(next_edit);
-				result = 1;
-			}
-
-			current_edit = (Plugin*)current_edit->next;
-		}
-	}
-	if (!last || !last->silence())
-	{
-// No last empty edit available... create one
-		Edit *empty_edit = create_edit();
-		if (!last) 
-			empty_edit->project_pts = 0;
-		else
-			empty_edit->project_pts = last->end_pts();
-		insert_after(last, empty_edit);
-	}
 }
 
 void PluginSet::dump(int indent)

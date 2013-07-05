@@ -69,6 +69,8 @@ void KeyFrame::copy_from(KeyFrame *that)
 
 int KeyFrame::identical(KeyFrame *src)
 {
+	if(!src)
+		return 0;
 	return !strcasecmp(src->data, data);
 }
 

@@ -56,8 +56,6 @@ public:
 		int actions,
 		ptstime &distance);
 	virtual Edit* create_edit() { return 0; };
-// Insert a 0 length edit at the position
-	Edit* insert_new_edit(ptstime postime);
 	void save(FileXML *xml, const char *output_path);
 	void copy(ptstime start, ptstime end, FileXML *xml, const char *output_path);
 // Clear region of edits
@@ -71,8 +69,9 @@ public:
 	virtual void shift_effects_recursive(ptstime position, ptstime length);
 // Does not return an edit - does what it says, nothing more or less
 	void paste_silence(ptstime start, ptstime end);
+
 // Returns the newly created edit
-	Edit *create_and_insert_edit(ptstime start, ptstime end);
+	Edit *insert_edit(ptstime pts, ptstime length = 0);
 
 // Shift edits on or after position by distance
 // Return the edit now on the position.
@@ -85,10 +84,6 @@ public:
 
 	void load(FileXML *xml, int track_offset);
 	void load_edit(FileXML *xml, ptstime &project_time, int track_offset);
-
-	virtual Edit* append_new_edit() { return 0; };
-	virtual Edit* insert_edit_after(Edit *previous_edit) { return 0; };
-	virtual int load_edit_properties(FileXML *xml) {};
 
 // ==================================== accounting
 
@@ -106,7 +101,6 @@ public:
 		int edit_mode,
 		int actions,
 		Edits *trim_edits);
-	virtual void optimize(void);
 
 	ptstime loaded_length;
 };

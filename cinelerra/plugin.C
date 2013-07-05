@@ -230,21 +230,23 @@ int Plugin::identical(Plugin *that)
 	switch(plugin_type)
 	{
 	case PLUGIN_STANDALONE:
-		if(strcmp(title, that->title)) return 0;
-		break;
+		if(strcmp(title, that->title))
+			return 0;
 	case PLUGIN_SHAREDPLUGIN:
 		if(shared_location.module != that->shared_location.module ||
-			shared_location.plugin != that->shared_location.plugin) return 0;
-		break;
+				shared_location.plugin != that->shared_location.plugin)
+			return 0;
 	case PLUGIN_SHAREDMODULE:
-		if(shared_location.module != that->shared_location.module) return 0;
-		break;
+		if(shared_location.module != that->shared_location.module)
+			return 0;
 	}
 
 // Test remaining fields
 	return (this->on == that->on &&
+		((!keyframes->first && !that->keyframes->first) ||
+		(keyframes->first && that->keyframes->first &&
 		((KeyFrame*)keyframes->first)->identical(
-			((KeyFrame*)that->keyframes->first)));
+			((KeyFrame*)that->keyframes->first)))));
 }
 
 int Plugin::identical_location(Plugin *that)
@@ -272,6 +274,9 @@ KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
 {
 	KeyFrame *current = 0;
 
+	if(!keyframes->first)
+		return (KeyFrame*)keyframes->insert_auto(0);
+
 // This doesn't work because edl->selectionstart doesn't change during
 // playback at the same rate as PluginClient::source_position.
 	if(postime < 0)
@@ -298,6 +303,9 @@ KeyFrame* Plugin::get_prev_keyframe(ptstime postime)
 KeyFrame* Plugin::get_next_keyframe(ptstime postime)
 {
 	KeyFrame *current;
+
+	if(!keyframes->first)
+		return (KeyFrame*)keyframes->insert_auto(0);
 
 // This doesn't work for playback because edl->selectionstart doesn't 
 // change during playback at the same rate as PluginClient::source_position.
