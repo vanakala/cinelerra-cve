@@ -29,7 +29,7 @@
 #include "attachmentpoint.inc"
 #include "datatype.h"
 #include "edl.inc"
-#include "keyframe.inc"
+#include "keyframe.h"
 #include "mainprogress.inc"
 #include "maxbuffers.h"
 #include "menueffects.inc"
@@ -263,6 +263,7 @@ public:
 // Pointer to keyframe when plugin is not available
 	KeyFrame *keyframe;
 	AttachmentPoint *attachment;
+	KeyFrame default_keyframe;
 // Storage of keyframes and GUI status
 	Plugin *plugin;
 

@@ -297,6 +297,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 
 				if(!result)
 				{
+					new_plugin->save_data(&new_plugin->default_keyframe);
 					plugindb->append(new_plugin);
 					new_plugin->close_plugin();
 					if(splash_window)
