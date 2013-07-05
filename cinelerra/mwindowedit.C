@@ -545,17 +545,11 @@ void MWindow::insert_effect(const char *title,
 	int plugin_type)
 {
 	KeyFrame *default_keyframe = 0;
-	KeyFrame kf;
-	PluginServer *server = 0;
 
-// Get default keyframe
 	if(plugin_type == PLUGIN_STANDALONE)
 	{
-		default_keyframe = &kf;
-		server = new PluginServer(*scan_plugindb(title, track->data_type));
-
-		server->open_plugin(0, preferences, edl, 0, -1);
-		server->save_data(default_keyframe);
+		PluginServer *server = scan_plugindb(title, track->data_type);
+		default_keyframe = &server->default_keyframe;
 	}
 
 // Insert plugin object
@@ -568,9 +562,6 @@ void MWindow::insert_effect(const char *title,
 		plugin_type);
 
 	track->optimize();
-
-	if(plugin_type == PLUGIN_STANDALONE)
-		delete server;
 }
 
 void MWindow::modify_edithandles(void)
