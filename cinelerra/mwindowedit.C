@@ -592,11 +592,9 @@ void MWindow::finish_modify_handles()
 {
 	int edit_mode = edl->session->edit_handle_mode[session->drag_button];
 
-	if((session->drag_handle == 1 && edit_mode != MOVE_NO_EDITS) ||
-			(session->drag_handle == 0 && edit_mode == MOVE_ONE_EDIT))
+	if(edit_mode != MOVE_NO_EDITS)
 		edl->local_session->set_selection(session->drag_position);
 	else
-	if(edit_mode != MOVE_NO_EDITS)
 		edl->local_session->set_selection(session->drag_start);
 
 	if(edl->local_session->get_selectionstart(1) < 0)
