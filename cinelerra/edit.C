@@ -433,7 +433,7 @@ void Edit::shift_start_out(int edit_mode,
 
 	if(edit_mode == MOVE_ALL_EDITS)
 	{
-		source_pts -= cut_length;
+		project_pts -= cut_length;
 
 		edits->shift_keyframes_recursive(project_pts, 
 			cut_length);
@@ -442,9 +442,7 @@ void Edit::shift_start_out(int edit_mode,
 				cut_length);
 
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
-		{
-			current_edit->project_pts += cut_length;
-		}
+			current_edit->project_pts -= cut_length;
 	}
 	else
 	if(edit_mode == MOVE_ONE_EDIT)
