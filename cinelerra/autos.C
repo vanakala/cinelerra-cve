@@ -208,6 +208,12 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 {
 	Auto *result = 0;
 
+	if(!first)
+	{
+		result = append_auto();
+		result->pos_time = base_pts;
+	}
+
 	if(position < 0)
 	{
 		position = edl->local_session->get_selectionstart(1);
