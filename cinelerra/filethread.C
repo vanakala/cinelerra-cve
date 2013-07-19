@@ -169,9 +169,9 @@ void FileThread::run()
 			VFrame *old_frame = read_frames[total_frames];
 			read_frames[local_total_frames] = old_frame;
 			read_frames[total_frames++] = local_frame;
-			end_pts = local_frame->next_pts();
-			if(start_pts > local_frame->get_pts())
-				start_pts = local_frame->get_pts();
+			end_pts = local_frame->next_source_pts();
+			if(start_pts > local_frame->get_source_pts())
+				start_pts = local_frame->get_source_pts();
 			frame_lock->unlock();
 
 // Que the user
@@ -420,7 +420,7 @@ int FileThread::read_frame(VFrame *frame)
 		frame_lock->lock("FileThread::read_frame find");
 		for(int i = 0; i < total_frames; i++)
 		{
-			if(read_frames[i] && read_frames[i]->pts_in_frame(req_pts) &&
+			if(read_frames[i] && read_frames[i]->pts_in_frame_source(req_pts) &&
 				read_frames[i]->get_layer() == req_layer)
 			{
 				local_frame = read_frames[i];
@@ -482,7 +482,7 @@ int FileThread::read_frame(VFrame *frame)
 		memcpy(read_frames, new_table, sizeof(VFrame*) * total_frames);
 		total_frames -= number;
 
-		start_pts = frame->get_pts();
+		start_pts = frame->get_source_pts();
 		frame_lock->unlock();
 		read_wait_lock->unlock();
 		return 0;
@@ -490,7 +490,7 @@ int FileThread::read_frame(VFrame *frame)
 	else
 	{
 		int rv = file->get_frame(frame, 1);
-		end_pts = frame->next_pts();
+		end_pts = frame->next_source_pts();
 		return rv;
 	}
 }
