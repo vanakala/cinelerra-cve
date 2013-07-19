@@ -121,7 +121,9 @@ public:
 	ptstime get_source_pts(void);
 	void set_pts(ptstime pts);
 	ptstime get_pts(void);
+	ptstime next_source_pts();
 	ptstime next_pts();
+	int pts_in_frame_source(ptstime pts, ptstime accuracy = FRAME_ACCURACY);
 	int pts_in_frame(ptstime pts, ptstime accuracy = FRAME_ACCURACY);
 	void set_layer(int layer);
 	int get_layer(void);
