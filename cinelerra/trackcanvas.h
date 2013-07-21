@@ -28,7 +28,6 @@
 #include "bctimer.inc"
 #include "mutex.inc"
 #include "edit.inc"
-#include "edithandles.inc"
 #include "floatauto.inc"
 #include "floatautos.inc"
 #include "guicast.h"
@@ -69,12 +68,7 @@ public:
 	void draw_overlays();
 // Convert edit coords to transition coords
 	void get_transition_coords(int &x, int &y, int &w, int &h);
-	void get_handle_coords(Edit *edit, 
-		int &x,
-		int &y,
-		int &w,
-		int &h,
-		int side);
+
 	void draw_auto(Auto *current, 
 		int x, 
 		int y, 
@@ -316,7 +310,6 @@ public:
 	BC_Pixmap *background_pixmap;
 	BC_DragWindow *drag_popup;
 	BC_Pixmap *transition_pixmap;
-	EditHandles *edit_handles;
 	BC_Pixmap *keyframe_pixmap;
 	BC_Pixmap *camerakeyframe_pixmap;
 	BC_Pixmap *modekeyframe_pixmap;

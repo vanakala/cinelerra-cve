@@ -30,7 +30,6 @@
 #include "cursors.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
-#include "edithandles.h"
 #include "editpopup.h"
 #include "edits.h"
 #include "edl.h"
@@ -107,7 +106,6 @@ TrackCanvas::~TrackCanvas()
 	for(int i = 0; i < resource_pixmaps.total; i++)
 		delete resource_pixmaps.values[i];
 	delete pixmaps_lock;
-	delete edit_handles;
 	delete keyframe_pixmap;
 	delete camerakeyframe_pixmap;
 	delete modekeyframe_pixmap;
@@ -122,7 +120,6 @@ TrackCanvas::~TrackCanvas()
 int TrackCanvas::create_objects()
 {
 	background_pixmap = new BC_Pixmap(this, get_w(), get_h());
-	edit_handles = new EditHandles(mwindow, this);
 	keyframe_pixmap = new BC_Pixmap(this, mwindow->theme->keyframe_data, PIXMAP_ALPHA);
 	camerakeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->camerakeyframe_data, PIXMAP_ALPHA);
 	modekeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->modekeyframe_data, PIXMAP_ALPHA);
@@ -1283,32 +1280,6 @@ void TrackCanvas::draw_highlight_insertion(int x, int y, int w, int h)
 	draw_rectangle(x, y, w, h);
 	draw_rectangle(x + 1, y + 1, w - 2, h - 2);
 	set_opaque();
-}
-
-void TrackCanvas::get_handle_coords(Edit *edit, 
-		int &x, int &y, int &w, int &h, int side)
-{
-	int handle_w = mwindow->theme->edithandlein_data[0]->get_w();
-	int handle_h = mwindow->theme->edithandlein_data[0]->get_h();
-
-	edit_dimensions(edit->track, edit->project_pts, edit->end_pts(), x, y, w, h);
-
-	if(mwindow->edl->session->show_titles)
-	{
-		y += mwindow->theme->get_image("title_bg_data")->get_h();
-	}
-	else
-	{
-		y = 0;
-	}
-
-	if(side == EDIT_OUT)
-	{
-		x += w - handle_w;
-	}
-
-	h = handle_h;
-	w = handle_w;
 }
 
 void TrackCanvas::get_transition_coords(int &x, int &y, int &w, int &h)

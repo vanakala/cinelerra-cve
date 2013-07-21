@@ -104,7 +104,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    drivesync.C \
 		    dvbtune.C \
 		    edit.C \
-		    edithandles.C \
 		    editpanel.C \
 		    editpopup.C \
 		    edits.C \
@@ -381,7 +380,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 dv1394.h \
 		 dvbtune.h \
 		 edit.h \
-		 edithandles.h \
 		 editpanel.h \
 		 editpopup.h \
 		 edits.h \
