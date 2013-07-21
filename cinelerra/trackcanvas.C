@@ -2178,7 +2178,7 @@ int TrackCanvas::test_floatauto(Auto *current,
 			mwindow->session->drag_start_postime = current->pos_time;
 			mwindow->session->drag_origin_x = cursor_x;
 			mwindow->session->drag_origin_y = cursor_y;
-			mwindow->session->drag_handle = 0;
+			mwindow->session->drag_handle = HANDLE_MAIN;
 		}
 		result = 1;
 	}
@@ -2200,7 +2200,7 @@ int TrackCanvas::test_floatauto(Auto *current,
 				((FloatAuto*)current)->control_in_pts;
 			mwindow->session->drag_origin_x = cursor_x;
 			mwindow->session->drag_origin_y = cursor_y;
-			mwindow->session->drag_handle = 1;
+			mwindow->session->drag_handle = HANDLE_LEFT;
 		}
 		result = 1;
 	}
@@ -2221,7 +2221,7 @@ int TrackCanvas::test_floatauto(Auto *current,
 				((FloatAuto*)current)->control_out_pts;
 			mwindow->session->drag_origin_x = cursor_x;
 			mwindow->session->drag_origin_y = cursor_y;
-			mwindow->session->drag_handle = 2;
+			mwindow->session->drag_handle = HANDLE_RIGHT;
 		}
 		result = 1;
 	}
@@ -2390,7 +2390,7 @@ int TrackCanvas::test_floatline(int center_pixel,
 			mwindow->session->drag_start_postime = current->pos_time;
 			mwindow->session->drag_origin_x = cursor_x;
 			mwindow->session->drag_origin_y = cursor_y;
-			mwindow->session->drag_handle = 0;
+			mwindow->session->drag_handle = HANDLE_MAIN;
 		}
 	}
 
@@ -3259,7 +3259,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 {
 	FloatAuto *current = (FloatAuto*)mwindow->session->drag_auto;
 
-	UPDATE_DRAG_HEAD(mwindow->session->drag_handle == 0);
+	UPDATE_DRAG_HEAD(mwindow->session->drag_handle == HANDLE_MAIN);
 
 	float value;
 	float old_value;
@@ -3267,7 +3267,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 	switch(mwindow->session->drag_handle)
 	{
 // Center
-	case 0:
+	case HANDLE_MAIN:
 // Snap to nearby values
 		old_value = current->value;
 		if(shift_down())
@@ -3330,7 +3330,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 		break;
 
 // In control
-	case 1:
+	case HANDLE_LEFT:
 		{
 			int autogrouptype = current->autos->autogrouptype;
 			value = percentage_to_value(percentage, 0, current, autogrouptype);
@@ -3357,7 +3357,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 		break;
 
 // Out control
-	case 2:
+	case HANDLE_RIGHT:
 		{
 			int autogrouptype = current->autos->autogrouptype;
 			value = percentage_to_value(percentage, 0, current, autogrouptype);
@@ -3885,7 +3885,7 @@ int TrackCanvas::button_release_event()
 	case DRAG_PROJECTOR_Z:
 	case DRAG_PLUGINKEY:
 		mwindow->session->current_operation = NO_OPERATION;
-		mwindow->session->drag_handle = 0;
+		mwindow->session->drag_handle = HANDLE_MAIN;
 		if(mwindow->session->drag_auto)
 			update_overlay = 1;
 		mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
@@ -3960,14 +3960,14 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 				if(cursor_x < edit_x + HANDLE_W)
 				{
 					edit_result = edit;
-					handle_result = 0;
+					handle_result = HANDLE_LEFT;
 					result = 1;
 				}
 				else
 				if(cursor_x >= edit_x + edit_w - HANDLE_W)
 				{
 					edit_result = edit;
-					handle_result = 1;
+					handle_result = HANDLE_RIGHT;
 					result = 1;
 				}
 				else
@@ -3982,13 +3982,13 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 	if(result)
 	{
 		ptstime position;
-		if(handle_result == 0)
+		if(handle_result == HANDLE_LEFT)
 		{
 			position = edit_result->project_pts;
 			new_cursor = LEFT_CURSOR;
 		}
 		else
-		if(handle_result == 1)
+		if(handle_result == HANDLE_RIGHT)
 		{
 			position = edit_result->end_pts();
 			new_cursor = RIGHT_CURSOR;

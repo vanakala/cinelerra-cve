@@ -43,7 +43,9 @@ class EDL;
 #define EDITING_ARROW 0
 #define EDITING_IBEAM 1
 
-
+#define HANDLE_MAIN   0
+#define HANDLE_LEFT   1
+#define HANDLE_RIGHT  2
 
 #define EDIT_HANDLE_MODES 3
 

@@ -386,7 +386,7 @@ void Labels::modify_handles(ptstime oldposition,
 	if(edit_labels &&
 		handle_mode == MOVE_ALL_EDITS)
 	{
-		if(currentend == 0)          // left handle
+		if(currentend == HANDLE_LEFT)          // left handle
 		{
 			if(newposition < oldposition)
 			{
@@ -398,7 +398,8 @@ void Labels::modify_handles(ptstime oldposition,
 			}
 		}
 		else
-		{                            // right handle
+		if(currentend == HANDLE_RIGHT)  // right handle
+		{
 			if(newposition < oldposition)
 			{
 				clear(newposition, oldposition);

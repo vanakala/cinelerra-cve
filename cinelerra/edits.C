@@ -540,7 +540,7 @@ void Edits::modify_handles(ptstime &oldposition,
 	int result = 0;
 	Edit *current_edit;
 
-	if(currentend == 0)
+	if(currentend == HANDLE_LEFT)
 	{
 // left handle
 		for(current_edit = first; current_edit && !result;)
