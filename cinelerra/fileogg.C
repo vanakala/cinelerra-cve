@@ -1133,10 +1133,10 @@ int FileOGG::write_frames(VFrame ***frames, int len)
 		yuv.uv_stride = b /2;
 
 		flush_lock->lock("FileOGG::write_frames");
-		int rv = theora_encode_YUVin(&cur_stream->ts, &yuv);
+		ret = theora_encode_YUVin(&cur_stream->ts, &yuv);
 		flush_lock->unlock();
 
-		if(rv)
+		if(ret)
 		{
 			errormsg("Theora_encode_YUVin() failed with code %i yuv_buffer: y_width: %i, y_height: %i, y_stride: %i, uv_width: %i, uv_height: %i, uv_stride: %i",
 				ret,
