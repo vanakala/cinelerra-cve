@@ -32,7 +32,7 @@
 class BC_Capture
 {
 public:
-	BC_Capture(int w, int h, char *display_path = "");
+	BC_Capture(int w, int h, char *display_path = 0);
 	virtual ~BC_Capture();
 
 	void init_window(char *display_path);
