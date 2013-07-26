@@ -60,13 +60,7 @@ public:
 	void copy(ptstime start, ptstime end, FileXML *xml, const char *output_path);
 // Clear region of edits
 	virtual void clear(ptstime start, ptstime end);
-// Clear edits and plugins for a handle modification
-	virtual void clear_recursive(ptstime start,
-		ptstime end,
-		int actions,
-		Edits *trim_edits);
-	virtual void shift_keyframes_recursive(ptstime position, ptstime length);
-	virtual void shift_effects_recursive(ptstime position, ptstime length);
+
 // Does not return an edit - does what it says, nothing more or less
 	void paste_silence(ptstime start, ptstime end);
 
@@ -97,10 +91,7 @@ public:
 
 	void modify_handles(ptstime &oldposition,
 		ptstime &newposition,
-		int currentend,
-		int edit_mode,
-		int actions,
-		Edits *trim_edits);
+		int edit_mode);
 
 	ptstime loaded_length;
 };

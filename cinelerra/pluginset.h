@@ -44,10 +44,6 @@ public:
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
 	void clear_keyframes(ptstime start, ptstime end);
-// Clear edits only for a handle modification
-	void clear_recursive(ptstime start, ptstime end);
-	void shift_keyframes_recursive(ptstime position, ptstime length) {};
-	void shift_effects_recursive(ptstime position, ptstime length) {};
 	void clear(ptstime start, ptstime end);
 	void copy_from(PluginSet *src);
 	void copy(ptstime start, ptstime end, FileXML *file);

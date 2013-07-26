@@ -159,11 +159,6 @@ void PluginSet::clear(ptstime start, ptstime end)
 	Edits::clear(start, end);
 }
 
-void PluginSet::clear_recursive(ptstime start, ptstime end)
-{
-	clear(start, end);
-}
-
 void PluginSet::clear_keyframes(ptstime start, ptstime end)
 {
 	for(Plugin *current = (Plugin*)first; current; current = (Plugin*)NEXT)

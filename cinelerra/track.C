@@ -901,12 +901,7 @@ void Track::modify_edithandles(ptstime &oldposition,
 	int handle_mode,
 	int actions)
 {
-	edits->modify_handles(oldposition,
-		newposition,
-		currentend,
-		handle_mode,
-		actions | EDIT_EDITS,
-		0);
+	edits->modify_handles(oldposition, newposition, handle_mode);
 }
 
 void Track::modify_pluginhandles(ptstime oldposition,
@@ -919,13 +914,8 @@ void Track::modify_pluginhandles(ptstime oldposition,
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
-			plugin_set.values[i]->modify_handles(oldposition, 
-				newposition, 
-				currentend, 
-				handle_mode,
-// Don't allow plugin tweeks to affect edits.
-				(edit_labels ? EDIT_LABELS : 0) | EDIT_PLUGINS,
-				trim_edits);
+			plugin_set.values[i]->modify_handles(oldposition, newposition,
+				handle_mode);
 	}
 }
 

@@ -464,19 +464,6 @@ void Edits::clear(ptstime start, ptstime end)
 	}
 }
 
-// Used by edit handle and plugin handle movement but plugin handle movement
-// can only effect other plugins.
-void Edits::clear_recursive(ptstime start,
-	ptstime end,
-	int actions,
-	Edits *trim_edits)
-{
-	track->clear(start, 
-		end, 
-		actions,
-		trim_edits);
-}
-
 void Edits::clear_handle(ptstime start,
 	ptstime end, 
 	int actions,
@@ -532,80 +519,99 @@ void Edits::clear_handle(ptstime start,
 
 void Edits::modify_handles(ptstime &oldposition,
 	ptstime &newposition,
-	int currentend,
-	int edit_mode, 
-	int actions,
-	Edits *trim_edits)
+	int edit_mode)
 {
-	int result = 0;
-	Edit *current_edit;
+	Edit *current_edit, *ed;
+	ptstime cut_length, apts;
 
-	if(currentend == HANDLE_LEFT)
+	for(current_edit = first; current_edit; current_edit = current_edit->next)
 	{
-// left handle
-		for(current_edit = first; current_edit && !result;)
+		if(edl->equivalent(current_edit->project_pts, oldposition))
 		{
-			if(edl->equivalent(current_edit->project_pts,
-				oldposition))
-			{
-// edit matches selection
-				oldposition = current_edit->project_pts;
-				result = 1;
-
-				if(newposition >= oldposition)
-				{
-// shift start of edit in
-					current_edit->shift_start_in(edit_mode, 
-						newposition,
-						oldposition,
-						actions,
-						trim_edits);
-				}
-				else
-				{
-// move start of edit out
-					current_edit->shift_start_out(edit_mode,
-						newposition,
-						oldposition,
-						actions,
-						trim_edits);
-				}
-			}
-
-			if(!result) current_edit = current_edit->next;
+			oldposition = current_edit->project_pts;
+			break;
 		}
 	}
-	else
+
+	if(current_edit)
 	{
-// right handle selected
-		for(current_edit = first; current_edit && !result;)
+		if(newposition < 0)
+			newposition = 0;
+		if(PTSEQU(oldposition, newposition))
+			return;
+		if((edit_mode == MOVE_ALL_EDITS || edit_mode == MOVE_ONE_EDIT)
+				&& fabs(oldposition) < EPSILON)
+			return;
+		if(newposition < oldposition)
 		{
-			if(edl->equivalent(current_edit->end_pts(), oldposition))
+// shift left
+			if((edit_mode == MOVE_NO_EDITS || edit_mode == MOVE_ONE_EDIT)
+					&& current_edit->asset)
 			{
-				oldposition = current_edit->end_pts();
-				result = 1;
-
-				if(newposition <= oldposition)
-				{
-// shift end of edit in
-					current_edit->shift_end_in(edit_mode, 
-						newposition,
-						oldposition,
-						actions,
-						trim_edits);
-				}
-				else
-				{
-// move end of edit out
-					current_edit->shift_end_out(edit_mode, 
-						newposition,
-						oldposition,
-						actions,
-						trim_edits);
-				}
+// Limit shift with the length of asset
+				apts = current_edit->project_pts - (current_edit->get_source_end(0)
+					- current_edit->source_pts - current_edit->length());
+				if(apts > newposition)
+					newposition = apts;
 			}
+			if(edit_mode == MOVE_ALL_EDITS || edit_mode == MOVE_ONE_EDIT)
+			{
+				cut_length = newposition - oldposition;
 
-			if(!result) current_edit = current_edit->next;
+				for(ed = current_edit->previous;
+						ed && (ed->project_pts > newposition || PTSEQU(ed->project_pts, newposition));
+						ed = ed->previous)
+					remove(ed);
+
+				current_edit->project_pts = newposition;
+			}
+			else if(edit_mode == MOVE_NO_EDITS)
+			{
+				if((cut_length = oldposition - newposition) > 0)
+					current_edit->source_pts += cut_length;
+			}
+		}
+		else
+		{
+// shift right
+			if(edit_mode == MOVE_ALL_EDITS || edit_mode == MOVE_ONE_EDIT)
+			{
+				if((ed = current_edit->previous) && ed->asset)
+				{
+					apts = ed->get_source_end(0) - ed->source_pts + ed->project_pts;
+
+					if(apts < newposition)
+						newposition = apts;
+				}
+				if(edit_mode == MOVE_ONE_EDIT && newposition > current_edit->end_pts())
+				{
+// Moved over next edit - remove current
+					newposition = current_edit->end_pts();
+					remove(current_edit);
+					return;
+				}
+				current_edit->project_pts = newposition;
+				cut_length = newposition - oldposition;
+			}
+			else if(edit_mode == MOVE_NO_EDITS)
+			{
+				if(current_edit->asset)
+				{
+					apts = current_edit->source_pts + current_edit->project_pts;
+
+					if(newposition > apts)
+						newposition = apts;
+				}
+
+				if((cut_length = newposition - oldposition) > 0)
+					current_edit->source_pts -= cut_length;
+			}
+		}
+
+		if(edit_mode == MOVE_ALL_EDITS)
+		{
+			for(ed = current_edit->next; ed; ed = ed->next)
+				ed->project_pts += cut_length;
 		}
 	}
 }
@@ -650,16 +656,6 @@ Edit* Edits::shift(ptstime position, ptstime difference)
 		current->shift(difference);
 	}
 	return new_edit;
-}
-
-void Edits::shift_keyframes_recursive(ptstime position, ptstime length)
-{
-	track->shift_keyframes(position, length);
-}
-
-void Edits::shift_effects_recursive(ptstime position, ptstime length)
-{
-	track->shift_effects(position, length);
 }
 
 void Edits::dump(int indent)

@@ -63,27 +63,6 @@ public:
 
 // Shift in time
 	virtual void shift(ptstime difference);
-	void shift_start_in(int edit_mode,
-		ptstime newpostime,
-		ptstime oldpostime,
-		int actions,
-		Edits *trim_edits);
-	void shift_start_out(int edit_mode, 
-		ptstime &newpostime,
-		ptstime &oldpostime,
-		int actions,
-		Edits *trim_edits);
-	void shift_end_in(int edit_mode, 
-		ptstime newpostime,
-		ptstime oldpostime,
-		int actions,
-		Edits *trim_edits);
-	void shift_end_out(int edit_mode, 
-		ptstime &newpostime,
-		ptstime &oldpostime,
-		int actions,
-		Edits *trim_edits);
-
 	void insert_transition(const char *title, KeyFrame *default_keyframe);
 	void detach_transition(void);
 // Determine if silence depending on existance of asset or plugin title
