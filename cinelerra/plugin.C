@@ -150,9 +150,14 @@ void Plugin::synchronize_params(Edit *edit)
 	copy_keyframes(plugin);
 }
 
-void Plugin::shift_keyframes(ptstime postime)
+void Plugin::shift_keyframes(ptstime difference)
 {
-	keyframes->shift_all(postime);
+	keyframes->shift_all(difference);
+}
+
+void Plugin::remove_keyframes_after(ptstime pts)
+{
+	keyframes->remove_after(pts);
 }
 
 void Plugin::equivalent_output(Edit *edit, ptstime *result)
@@ -469,8 +474,8 @@ void Plugin::load(FileXML *file)
 			if(file->tag.title_is("KEYFRAME") && plugin_type != PLUGIN_NONE)
 			{
 				ptstime postime;
-
-				if(file->tag.get_property("DEFAULT", 0))
+// first keyframe should always be on base_pts
+				if(file->tag.get_property("DEFAULT", 0) || !keyframes->first)
 					postime = keyframes->base_pts;
 				else
 				{

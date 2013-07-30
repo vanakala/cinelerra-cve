@@ -564,6 +564,9 @@ void Edits::modify_handles(ptstime &oldposition,
 					remove(ed);
 
 				current_edit->project_pts = newposition;
+				current_edit->shift_keyframes(cut_length);
+				if(current_edit->previous)
+					current_edit->previous->remove_keyframes_after(newposition);
 			}
 			else if(edit_mode == MOVE_NO_EDITS)
 			{
@@ -586,12 +589,17 @@ void Edits::modify_handles(ptstime &oldposition,
 				if(edit_mode == MOVE_ONE_EDIT && newposition > current_edit->end_pts())
 				{
 // Moved over next edit - remove current
-					newposition = current_edit->end_pts();
-					remove(current_edit);
-					return;
+					if(current_edit != last)
+					{
+						newposition = current_edit->end_pts();
+						remove(current_edit);
+						return;
+					}
 				}
 				current_edit->project_pts = newposition;
 				cut_length = newposition - oldposition;
+				current_edit->shift_keyframes(cut_length);
+				current_edit->remove_keyframes_after(current_edit->end_pts());
 			}
 			else if(edit_mode == MOVE_NO_EDITS)
 			{
@@ -611,7 +619,10 @@ void Edits::modify_handles(ptstime &oldposition,
 		if(edit_mode == MOVE_ALL_EDITS)
 		{
 			for(ed = current_edit->next; ed; ed = ed->next)
+			{
 				ed->project_pts += cut_length;
+				ed->shift_keyframes(cut_length);
+			}
 		}
 	}
 }

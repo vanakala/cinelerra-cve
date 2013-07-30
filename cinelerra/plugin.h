@@ -80,8 +80,10 @@ public:
 // to determine a corresponding GUI.
 	int identical_location(Plugin *that);
 	virtual void synchronize_params(Edit *edit);
-// Used by Edits::insert_edits and Plugin::shift to shift plugin keyframes
-	void shift_keyframes(ptstime postime);
+// Shift plugin keyframes
+	void shift_keyframes(ptstime difference);
+// Remove keyframes after pts
+	void remove_keyframes_after(ptstime pts);
 
 	void change_plugin(const char *title, 
 		SharedLocation *shared_location, 
