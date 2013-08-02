@@ -521,8 +521,7 @@ void Edits::modify_handles(ptstime &oldposition,
 	ptstime &newposition,
 	int edit_mode)
 {
-	Edit *current_edit, *ed;
-	ptstime cut_length, apts;
+	Edit *current_edit;
 
 	for(current_edit = first; current_edit; current_edit = current_edit->next)
 	{
@@ -532,13 +531,26 @@ void Edits::modify_handles(ptstime &oldposition,
 			break;
 		}
 	}
+	if(current_edit)
+	{
+		move_edits(current_edit, newposition, edit_mode);
+	}
+}
+
+void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
+{
+	Edit *ed;
+	ptstime cut_length, apts, oldposition;
 
 	if(current_edit)
 	{
+		oldposition = current_edit->project_pts;
+
 		if(newposition < 0)
 			newposition = 0;
 		if(PTSEQU(oldposition, newposition))
 			return;
+
 		if((edit_mode == MOVE_ALL_EDITS || edit_mode == MOVE_ONE_EDIT)
 				&& fabs(oldposition) < EPSILON)
 			return;

@@ -92,6 +92,7 @@ public:
 	void modify_handles(ptstime &oldposition,
 		ptstime &newposition,
 		int edit_mode);
+	void move_edits(Edit *current_edit, ptstime &newposition, int edit_mode);
 
 	ptstime loaded_length;
 };
