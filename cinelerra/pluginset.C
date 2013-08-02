@@ -147,16 +147,43 @@ int PluginSet::get_number()
 
 void PluginSet::clear(ptstime start, ptstime end)
 {
-// Clear keyframes
+	ptstime diff;
+
 	for(Plugin *current = (Plugin*)first;
-		current;
+		current && current != last;
 		current = (Plugin*)NEXT)
 	{
-		current->keyframes->clear(start, end, 1);
-	}
+		ptstime plpts = current->project_pts;
+		ptstime plend = current->end_pts();
 
-// Clear edits
-	Edits::clear(start, end);
+		if(plpts < start && plend > end)
+		{
+// Selection in the middle of the plugin
+			diff = end - start;
+			current->keyframes->clear(start, end, 1);
+			diff = plend - (end -start);
+			move_edits(current->next, diff, MOVE_ALL_EDITS);
+			break;
+		}
+		else if(plpts >= start && plend < end)
+		{
+// Plugin inside selection
+			Plugin *plp = (Plugin*)NEXT;
+			remove(current);
+			move_edits(plp, start, MOVE_ALL_EDITS);
+			break;
+		}
+		else if(plpts >= start && plpts < end)
+		{
+// Plugin starts in the middle of selection
+			if(current->previous)
+				((Plugin *)current->previous)->keyframes->clear(start, end, 0);
+			current->keyframes->clear(start, end, 1);
+			move_edits(current, end, MOVE_ONE_EDIT);
+			move_edits(current, start, MOVE_ALL_EDITS);
+			break;
+		}
+	}
 }
 
 void PluginSet::clear_keyframes(ptstime start, ptstime end)
