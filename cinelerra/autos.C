@@ -417,27 +417,14 @@ void Autos::clear(ptstime start,
 	ptstime end,
 	int shift_autos)
 {
-	ptstime length;
 	Auto *next, *current;
-	length = end - start;
 
 	current = autoof(start);
 
-	if(shift_autos)
-	{
-		if(base_pts > length)
-			base_pts -= length;
-		else
-			base_pts = 0;
-	}
-	else
-		base_pts = end;
-
 	if(!current)
 		return;
-// Keep the first
-	first->pos_time = base_pts;
 
+// Keep the first
 	if(current == first)
 		current = first->next;
 
@@ -448,10 +435,14 @@ void Autos::clear(ptstime start,
 		current = next;
 	}
 
-	while(current && shift_autos)
+	if(shift_autos)
 	{
-		current->pos_time -= length;
-		current = NEXT;
+		ptstime length = end - MAX(base_pts, start);
+		while(current)
+		{
+			current->pos_time -= length;
+			current = NEXT;
+		}
 	}
 }
 
