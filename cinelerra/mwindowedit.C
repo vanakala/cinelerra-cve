@@ -581,8 +581,7 @@ void MWindow::modify_pluginhandles()
 		session->drag_position, 
 		session->drag_handle, 
 		edl->session->edit_handle_mode[session->drag_button],
-		edl->session->labels_follow_edits,
-		session->trim_edits);
+		edl->session->labels_follow_edits);
 
 	finish_modify_handles();
 }
@@ -1200,9 +1199,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 					if (overwrite)
 						track->clear(current_position, 
 								current_position + new_track->get_length(), 
-								actions | EDIT_EDITS,
-								0); // trim edits
-
+								actions | EDIT_EDITS);
 
 					track->insert_track(new_track, 
 						current_position, 

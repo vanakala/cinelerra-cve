@@ -179,8 +179,7 @@ public:
 		ptstime &newposition,
 		int currentend, 
 		int handle_mode,
-		int edit_labels,
-		Edits *trim_edits);
+		int edit_labels);
 
 	ptstime total_playable_length();     // Longest track.
 // Used by equivalent_output

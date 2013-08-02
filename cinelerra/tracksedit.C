@@ -58,8 +58,7 @@ void Tracks::clear(ptstime start, ptstime end, int clear_plugins)
 		{
 			current_track->clear(start, 
 				end, 
-				EDIT_EDITS | EDIT_LABELS | (clear_plugins ? EDIT_PLUGINS : 0),
-				0); 
+				EDIT_EDITS | EDIT_LABELS | (clear_plugins ? EDIT_PLUGINS : 0));
 		}
 	}
 }
@@ -722,8 +721,7 @@ void Tracks::modify_pluginhandles(ptstime &oldposition,
 	ptstime &newposition,
 	int currentend, 
 	int handle_mode,
-	int edit_labels,
-	Edits *trim_edits)
+	int edit_labels)
 {
 	Track *current;
 
@@ -735,8 +733,7 @@ void Tracks::modify_pluginhandles(ptstime &oldposition,
 				newposition, 
 				currentend, 
 				handle_mode,
-				edit_labels,
-				trim_edits);
+				edit_labels);
 		}
 	}
 }

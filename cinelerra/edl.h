@@ -152,8 +152,7 @@ public:
 		ptstime newposition,
 		int currentend, 
 		int handle_mode,
-		int edit_labels,
-		Edits *trim_edits);
+		int edit_labels);
 
 	void trim_selection(ptstime start, 
 		ptstime end,

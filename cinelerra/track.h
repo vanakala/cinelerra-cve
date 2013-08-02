@@ -188,8 +188,7 @@ public:
 		ArrayList<Asset*> *asset_list);
 	void clear(ptstime start,
 		ptstime end,
-		int actions,
-		Edits *trim_edits);
+		int actions);
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
 	void clear_automation(double selectionstart, 
@@ -222,8 +221,7 @@ public:
 		ptstime newposition,
 		int currentend, 
 		int handle_mode,
-		int edit_labels,
-		Edits *trim_edits);
+		int edit_labels);
 
 // Absolute number of this track
 	int number_of();

@@ -74,8 +74,6 @@ public:
 // Item being dragged
 	ArrayList <PluginServer*> *drag_pluginservers;
 	Plugin *drag_plugin;
-// When trim should only affect the selected edits or plugins
-	Edits *trim_edits;
 	ArrayList<Asset*> *drag_assets;
 	ArrayList<EDL*> *drag_clips;
 	Auto *drag_auto;

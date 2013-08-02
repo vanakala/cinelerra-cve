@@ -870,8 +870,7 @@ void Track::copy_assets(ptstime start,
 
 void Track::clear(ptstime start,
 	ptstime end,
-	int actions,
-	Edits *trim_edits)
+	int actions)
 {
 	if(actions & EDIT_EDITS)
 		automation->clear(start, end, 0, 1);
@@ -879,8 +878,7 @@ void Track::clear(ptstime start,
 	if(actions & EDIT_PLUGINS)
 		for(int i = 0; i < plugin_set.total; i++)
 		{
-			if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
-				plugin_set.values[i]->clear(start, end);
+			plugin_set.values[i]->clear(start, end);
 		}
 
 	if(actions & EDIT_EDITS)
@@ -908,15 +906,11 @@ void Track::modify_pluginhandles(ptstime oldposition,
 	ptstime newposition,
 	int currentend, 
 	int handle_mode,
-	int edit_labels,
-	Edits *trim_edits)
+	int edit_labels)
 {
 	for(int i = 0; i < plugin_set.total; i++)
-	{
-		if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
-			plugin_set.values[i]->modify_handles(oldposition, newposition,
-				handle_mode);
-	}
+		plugin_set.values[i]->modify_handles(oldposition, newposition,
+			handle_mode);
 }
 
 void Track::paste_silence(ptstime start, ptstime end, int edit_plugins)

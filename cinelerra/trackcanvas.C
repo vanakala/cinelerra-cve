@@ -4059,9 +4059,6 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 					}
 				}
 			}
-
-			if(result && shift_down())
-				mwindow->session->trim_edits = plugin_set;
 		}
 	}
 
@@ -4424,7 +4421,6 @@ int TrackCanvas::button_press_event()
 
 	cursor_x = get_cursor_x();
 	cursor_y = get_cursor_y();
-	mwindow->session->trim_edits = 0;
 
 	if(is_event_win() && cursor_inside())
 	{

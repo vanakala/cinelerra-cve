@@ -55,7 +55,6 @@ MainSession::MainSession(MWindow *mwindow)
 	clip_number = 1;
 	brender_end = 0;
 	cwindow_controls = 1;
-	trim_edits = 0;
 	gwindow_x = 0;
 	gwindow_y = 0;
 	show_gwindow = 0;
