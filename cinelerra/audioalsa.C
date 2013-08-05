@@ -92,10 +92,10 @@ void AudioALSA::list_pcm_devices(ArrayList<char*> *devices, int pcm_title, int m
 		name = snd_device_name_get_hint(*n, "NAME");
 		// Skip null device
 		if(strcmp(name, NULL_DEVICE) == 0)
-			continue;
+			goto do_free;
 		io = snd_device_name_get_hint(*n, "IOID");
 		if(io != NULL && strcmp(io, filter) != 0)
-			break;
+			goto do_free;
 		// Check if device is usable
 		if(snd_pcm_open(&handle, name, stream, 0) == 0)
 		{
@@ -107,11 +107,13 @@ void AudioALSA::list_pcm_devices(ArrayList<char*> *devices, int pcm_title, int m
 			}
 			snd_pcm_close(handle);
 		}
+do_free:
+		if(name)
+			free(name);
+		if(io)
+			free(io);
 	}
-	if(name)
-		free(name);
-	if(io)
-		free(io);
+	snd_device_name_free_hint(hints);
 }
 
 void AudioALSA::list_hw_devices(ArrayList<char*> *devices, int pcm_title, int mode)
