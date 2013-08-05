@@ -48,6 +48,8 @@ Mutex::~Mutex()
 
 void Mutex::lock(const char *location)
 {
+	int rv;
+
 // Test recursive owner and give up if we already own it
 	if(recursive)
 	{
@@ -64,7 +66,8 @@ void Mutex::lock(const char *location)
 #ifndef NO_GUICAST
 	SET_MLOCK(this, title, location);
 #endif
-	if(pthread_mutex_lock(&mutex)) perror("Mutex::lock");
+	if(rv = pthread_mutex_lock(&mutex))
+		fprintf(stderr, "%s mutex lock failed with %d", title, rv);
 
 // Update recursive status for the first lock
 	if(recursive)
@@ -87,6 +90,8 @@ void Mutex::lock(const char *location)
 
 void Mutex::unlock()
 {
+	int rv;
+
 // Remove from recursive status
 	if(recursive)
 	{
@@ -110,7 +115,8 @@ void Mutex::unlock()
 	UNSET_LOCK(this);
 #endif
 
-	if(pthread_mutex_unlock(&mutex)) perror("Mutex::unlock");
+	if(rv = pthread_mutex_unlock(&mutex))
+		fprintf(stderr, "%s mutex unlock failed with %d", title, rv);
 }
 
 int Mutex::trylock()
