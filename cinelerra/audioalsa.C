@@ -101,9 +101,15 @@ void AudioALSA::list_pcm_devices(ArrayList<char*> *devices, int pcm_title, int m
 		{
 			if(snd_pcm_hw_params_any(handle, hwparams) == 0)
 			{
-				s = new char[strlen(name) + 1];
-				strcpy(s, name);
-				devices->append(s);
+				unsigned int val;
+				if(snd_pcm_hw_params_set_access(handle, hwparams, SND_PCM_ACCESS_RW_INTERLEAVED) == 0
+					&& snd_pcm_hw_params_get_channels_max(hwparams, &val) == 0
+					&& val > 0)
+				{
+					s = new char[strlen(name) + 1];
+					strcpy(s, name);
+					devices->append(s);
+				}
 			}
 			snd_pcm_close(handle);
 		}
