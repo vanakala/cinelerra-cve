@@ -46,7 +46,7 @@ LevelHistory::~LevelHistory()
 	for(int i = 0; i < MAXCHANNELS;i++)
 	{
 		if(level_history[i])
-			delete [] level_history;
+			delete [] level_history[i];
 	}
 }
 
