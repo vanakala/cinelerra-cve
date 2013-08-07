@@ -114,7 +114,6 @@ void CommonRender::create_modules()
 			if(current->data_type == data_type)
 			{
 				modules[module] = new_module(current);
-				modules[module]->create_objects();
 				module++;
 			}
 		}
@@ -125,7 +124,7 @@ void CommonRender::create_modules()
 		for(module = 0; module < total_modules; module++)
 		{
 			if(modules[module])
-				modules[module]->create_objects();
+				modules[module]->reset();
 		}
 	}
 }

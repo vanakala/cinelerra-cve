@@ -426,8 +426,3 @@ int VModule::render(VFrame *output,
 		1);      // we are calling before plugins
 	return result;
 }
-
-void VModule::create_objects()
-{
-	Module::create_objects();
-}

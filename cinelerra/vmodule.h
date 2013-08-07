@@ -42,7 +42,6 @@ public:
 		Track *track);
 	virtual ~VModule();
 
-	void create_objects();
 	AttachmentPoint* new_attachment(Plugin *plugin);
 	int get_buffer_size();
 

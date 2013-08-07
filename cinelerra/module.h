@@ -47,7 +47,7 @@ public:
 		Track *track);
 	virtual ~Module();
 
-	virtual void create_objects();
+	virtual void reset();
 	void create_new_attachments();
 // Swaps in changed plugin servers for old plugins servers during playback.
 // Allows data in unchanged plugins to continue.  Prepares pointers in

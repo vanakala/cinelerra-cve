@@ -86,7 +86,6 @@ void VPluginArray::create_modules()
 		modules[i] = new VModule(0, 0, this, tracks->values[i]);
 		modules[i]->cache = cache;
 		modules[i]->edl = edl;
-		modules[i]->create_objects();
 		modules[i]->render_init();
 	}
 }

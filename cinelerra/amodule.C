@@ -59,6 +59,12 @@ AModule::AModule(RenderEngine *renderengine,
 	data_type = TRACK_AUDIO;
 	module_levels = 0;
 	transition_temp = 0;
+	if(commonrender)
+	{
+		module_levels = new LevelHistory();
+		module_levels->reset(get_buffer_size(),
+			get_edl()->session->sample_rate, 1);
+	}
 }
 
 AModule::~AModule()
@@ -72,16 +78,13 @@ AttachmentPoint* AModule::new_attachment(Plugin *plugin)
 	return new AAttachmentPoint(renderengine, plugin);
 }
 
-void AModule::create_objects()
+void AModule::reset()
 {
-	Module::create_objects();
+	Module::reset();
 // Not needed in pluginarray
 	if(commonrender)
-	{
-		module_levels = new LevelHistory();
 		module_levels->reset(get_buffer_size(),
 			get_edl()->session->sample_rate, 1);
-	}
 }
 
 int AModule::get_buffer_size()

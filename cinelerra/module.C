@@ -51,6 +51,7 @@ Module::Module(RenderEngine *renderengine,
 	total_attachments = 0;
 	new_total_attachments = 0;
 	new_attachments = 0;
+	reset();
 }
 
 Module::~Module()
@@ -75,7 +76,7 @@ Module::~Module()
 	}
 }
 
-void Module::create_objects()
+void Module::reset()
 {
 	create_new_attachments();
 	swap_attachments();

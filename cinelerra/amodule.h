@@ -40,7 +40,7 @@ public:
 	Track *track);
 	virtual ~AModule();
 
-	void create_objects();
+	void reset();
 	CICache* get_cache();
 
 	int render(AFrame *aframe);
