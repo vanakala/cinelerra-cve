@@ -189,9 +189,7 @@ void PluginSet::clear(ptstime start, ptstime end)
 void PluginSet::clear_keyframes(ptstime start, ptstime end)
 {
 	for(Plugin *current = (Plugin*)first; current; current = (Plugin*)NEXT)
-	{
-		current->clear_keyframes(start, end);
-	}
+		current->keyframes->clear(start, end, 0);
 }
 
 void PluginSet::copy_keyframes(ptstime start,

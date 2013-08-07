@@ -94,10 +94,6 @@ public:
 	void copy_keyframes(ptstime start,
 		ptstime end,
 		FileXML *file);
-// For editing automation.
-// Returns the point to restart background rendering at.
-// -1 means nothing changed.
-	void clear_keyframes(ptstime start, ptstime end);
 	void copy(ptstime start, ptstime end, FileXML *file);
 	void load(FileXML *file);
 // Shift in time

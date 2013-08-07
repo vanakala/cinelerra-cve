@@ -102,12 +102,6 @@ int Plugin::silence()
 		return 1;
 }
 
-void Plugin::clear_keyframes(ptstime start, ptstime end)
-{
-	keyframes->clear(start, end, 0);
-}
-
-
 void Plugin::copy_from(Edit *edit)
 {
 	Plugin *plugin = (Plugin*)edit;
