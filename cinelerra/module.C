@@ -153,15 +153,13 @@ void Module::swap_attachments()
 	total_attachments = new_total_attachments;
 }
 
-int Module::render_init()
+void Module::render_init()
 {
 	for(int i = 0; i < total_attachments; i++)
 	{
 		if(attachments[i])
 			attachments[i]->render_init();
 	}
-
-	return 0;
 }
 
 void Module::render_stop()
@@ -285,7 +283,6 @@ void Module::update_transition(ptstime current_position)
 		}
 	}
 }
-
 
 void Module::dump()
 {

@@ -22,25 +22,12 @@
 #ifndef AMODULE_H
 #define AMODULE_H
 
-class AModuleGUI;
-class AModuleTitle;
-class AModulePan;
-class AModuleFade;
-class AModuleInv;
-class AModuleMute;
-class AModuleReset;
-
 #include "aframe.inc"
 #include "amodule.inc"
-#include "aplugin.inc"
 #include "datatype.h"
-#include "edl.inc"
-#include "filexml.inc"
 #include "floatautos.inc"
 #include "levelhist.inc"
-#include "maxchannels.h"
 #include "module.h"
-#include "sharedlocation.inc"
 #include "track.inc"
 #include "units.h"
 
@@ -61,7 +48,6 @@ public:
 
 	AttachmentPoint* new_attachment(Plugin *plugin);
 
-
 // synchronization with tracks
 	FloatAutos* get_pan_automation(int channel);  // get pan automation
 	FloatAutos* get_fade_automation();       // get the fade automation for this module
@@ -72,6 +58,4 @@ public:
 	AFrame *transition_temp;
 };
 
-
 #endif
-

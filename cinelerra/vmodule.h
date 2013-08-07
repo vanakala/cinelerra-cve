@@ -22,25 +22,12 @@
 #ifndef VMODULE_H
 #define VMODULE_H
 
-class VModuleGUI;
-class VModuleTitle;
-class VModuleFade;
-class VModuleMute;
-class VModuleMode;
-
-#define VMODULEHEIGHT 91
-#define VMODULEWIDTH 106
-
-
 #include "guicast.h"
 #include "datatype.h"
 #include "edl.inc"
-#include "filexml.inc"
 #include "floatautos.inc"
-#include "maxchannels.h"
 #include "module.h"
 #include "overlayframe.inc"
-#include "sharedlocation.inc"
 #include "track.inc"
 #include "vedit.inc"
 #include "vframe.inc"
@@ -49,7 +36,6 @@ class VModuleMode;
 class VModule : public Module
 {
 public:
-	VModule() {};
 	VModule(RenderEngine *renderengine, 
 		CommonRender *commonrender, 
 		PluginArray *plugin_array,

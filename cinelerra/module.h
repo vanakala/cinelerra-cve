@@ -29,7 +29,6 @@
 #include "edl.inc"
 #include "filexml.inc"
 #include "guicast.h"
-#include "maxchannels.h"
 #include "module.inc"
 #include "plugin.inc"
 #include "pluginarray.inc"
@@ -46,7 +45,6 @@ public:
 		CommonRender *commonrender, 
 		PluginArray *plugin_array,
 		Track *track);
-	Module() {};
 	virtual ~Module();
 
 	virtual void create_objects();
@@ -67,7 +65,7 @@ public:
 
 	void dump();
 // Start plugin rendering
-	int render_init();
+	void render_init();
 // Stop plugin rendering in case any resources have to be freed.
 	void render_stop();
 

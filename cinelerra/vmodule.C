@@ -78,7 +78,6 @@ VModule::~VModule()
 	delete masker;
 }
 
-
 AttachmentPoint* VModule::new_attachment(Plugin *plugin)
 {
 	return new VAttachmentPoint(renderengine, plugin);
@@ -121,7 +120,6 @@ int VModule::import_frame(VFrame *output,
 			output->set_opengl_state(VFrame::RAM);
 		}
 	}
-
 
 // Load frame into output
 	if(current_edit &&
@@ -345,7 +343,6 @@ int VModule::import_frame(VFrame *output,
 	return result;
 }
 
-
 int VModule::render(VFrame *output,
 	int use_nudge,
 	int use_opengl)
@@ -402,7 +399,6 @@ int VModule::render(VFrame *output,
 		result = import_frame((*transition_input), 
 			current_edit, 
 			use_opengl);
-
 
 // Load transition buffer
 		previous_edit = (VEdit*)current_edit->previous;

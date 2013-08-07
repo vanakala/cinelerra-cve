@@ -50,8 +50,6 @@
 
 #include <string.h>
 
-
-
 AModule::AModule(RenderEngine *renderengine, 
 	CommonRender *commonrender, 
 	PluginArray *plugin_array,
@@ -73,7 +71,6 @@ AttachmentPoint* AModule::new_attachment(Plugin *plugin)
 {
 	return new AAttachmentPoint(renderengine, plugin);
 }
-
 
 void AModule::create_objects()
 {
