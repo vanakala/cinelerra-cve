@@ -20,7 +20,6 @@
  */
 
 #include "asset.h"
-#include "autoconf.h"
 #include "automation.h"
 #include "bcsignals.h"
 #include "clip.h"
@@ -824,9 +823,6 @@ void Track::copy(ptstime start,
 	file->append_newline();
 
 	edits->copy(start, end, file, output_path);
-
-	AutoConf auto_conf;
-	auto_conf.set_all(1);
 	automation->copy(start, end, file);
 
 	for(int i = 0; i < plugin_set.total; i++)

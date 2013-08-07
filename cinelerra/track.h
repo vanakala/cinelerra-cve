@@ -24,7 +24,6 @@
 
 #include "arraylist.h"
 #include "asset.inc"
-#include "autoconf.inc"
 #include "automation.inc"
 #include "datatype.h"
 #include "bchash.inc"
