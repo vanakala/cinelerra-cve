@@ -196,48 +196,22 @@ void Automation::clear(ptstime start,
 	AutoConf *autoconf, 
 	int shift_autos)
 {
-	AutoConf *temp_autoconf = 0;
-
-	if(!autoconf)
-	{
-		temp_autoconf = new AutoConf;
-		temp_autoconf->set_all(1);
-		autoconf = temp_autoconf;
-	}
-
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(autos[i] && autoconf->autos[i])
-		{
+		if(autos[i] && (!autoconf || autoconf->autos[i]))
 			autos[i]->clear(start, end, shift_autos);
-		}
 	}
-
-	if(temp_autoconf) delete temp_autoconf;
 }
 
 void Automation::straighten(ptstime start,
 	ptstime end,
 	AutoConf *autoconf)
 {
-	AutoConf *temp_autoconf = 0;
-
-	if(!autoconf)
-	{
-		temp_autoconf = new AutoConf;
-		temp_autoconf->set_all(1);
-		autoconf = temp_autoconf;
-	}
-
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		if(autos[i] && autoconf->autos[i])
-		{
+		if(autos[i] && (!autoconf || autoconf->autos[i]))
 			autos[i]->straighten(start, end);
-		}
 	}
-
-	if(temp_autoconf) delete temp_autoconf;
 }
 
 
