@@ -152,6 +152,7 @@ int APatchGUI::update(int x, int y)
 
 	if(pan)
 	{
+		
 		if(h - y1 < mwindow->theme->pan_h)
 		{
 			delete pan;
@@ -186,10 +187,25 @@ int APatchGUI::update(int x, int y)
 	else
 	if(h - y1 >= mwindow->theme->pan_h)
 	{
+		int handle_x, handle_y;
+		PanAuto *previous, *next;
+		PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
+		ptstime position = mwindow->edl->local_session->get_selectionstart(1);
+		float *values;
+
+		ptr->get_handle(handle_x, handle_y,
+			position, previous, next);
+
+		if(previous)
+			values = previous->values;
+		else
+			values = ptr->default_values;
+
 		patchbay->add_subwindow(pan = new APanPatch(mwindow,
 			this,
 			x1 + x,
-			y1 + y));
+			y1 + y,
+			handle_x, handle_y, values));
 		x1 += pan->get_w() + 10;
 		patchbay->add_subwindow(nudge = new NudgePatch(mwindow,
 			this,
@@ -281,16 +297,17 @@ float AFadePatch::get_keyframe_value(MWindow *mwindow, APatchGUI *patch)
 }
 
 
-APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
+APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y, 
+    int handle_x, int handle_y, float *values)
  : BC_Pan(x,
 		y, 
 		PAN_RADIUS, 
 		MAX_PAN, 
 		mwindow->edl->session->audio_channels, 
 		mwindow->edl->session->achannel_positions, 
-		get_keyframe(mwindow, patch)->handle_x, 
-		get_keyframe(mwindow, patch)->handle_y,
- 		get_keyframe(mwindow, patch)->values)
+		handle_x,
+		handle_y,
+		values)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -320,18 +337,6 @@ int APanPatch::handle_event()
 		mwindow->gui->canvas->flash();
 	}
 	return 1;
-}
-
-PanAuto* APanPatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
-{
-	Auto *current = 0;
-	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-
-	PanAutos *ptr = (PanAutos*)patch->atrack->automation->autos[AUTOMATION_PAN];
-	return (PanAuto*)ptr->get_prev_auto(
-		unit_position, 
-		current);
 }
 
 
