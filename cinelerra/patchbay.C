@@ -44,10 +44,6 @@
 #include "vpatchgui.h"
 
 
-
-
-
-
 NudgePopup::NudgePopup(MWindow *mwindow, PatchBay *patchbay)
  : BC_PopupMenu(0, 
 		0, 
@@ -58,11 +54,6 @@ NudgePopup::NudgePopup(MWindow *mwindow, PatchBay *patchbay)
 	this->mwindow = mwindow;
 	this->patchbay = patchbay;
 }
-
-NudgePopup::~NudgePopup()
-{
-}
-
 
 void NudgePopup::create_objects()
 {
@@ -85,8 +76,6 @@ void NudgePopup::activate_menu(PatchGUI *gui)
 	BC_PopupMenu::activate_menu();
 }
 
-
-
 NudgePopupSeconds::NudgePopupSeconds(NudgePopup *popup)
  : BC_MenuItem("Seconds")
 {
@@ -99,9 +88,6 @@ int NudgePopupSeconds::handle_event()
 	popup->patchbay->update();
 	return 1;
 }
-
-
-
 
 
 NudgePopupNative::NudgePopupNative(NudgePopup *popup)
@@ -118,7 +104,6 @@ int NudgePopupNative::handle_event()
 }
 
 
-
 PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
  : BC_SubWindow(mwindow->theme->patchbay_x,
 	mwindow->theme->patchbay_y,
@@ -132,18 +117,12 @@ PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
 	drag_operation = Tracks::NONE;
 }
 
-PatchBay::~PatchBay() 
+void PatchBay::delete_all_patches()
 {
+	patches.remove_all_objects();
 }
 
-
-int PatchBay::delete_all_patches()
-{
-    patches.remove_all_objects();
-    return 0;
-}
-
-int PatchBay::create_objects()
+void PatchBay::create_objects()
 {
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	flash();
@@ -173,8 +152,6 @@ int PatchBay::create_objects()
 
 	add_subwindow(nudge_popup = new NudgePopup(mwindow, this));
 	nudge_popup->create_objects();
-
-	return 0;
 }
 
 BC_Pixmap* PatchBay::mode_to_icon(int mode)
@@ -199,14 +176,6 @@ void PatchBay::resize_event()
 	update();
 	flash();
 }
-
-int PatchBay::button_press_event()
-{
-	int result = 0;
-// Too much junk to support the wheel
-	return result;
-}
-
 
 Track *PatchBay::is_over_track()     // called from mwindow
 {
@@ -234,7 +203,6 @@ Track *PatchBay::is_over_track()     // called from mwindow
 		}
 	}
 	return (over_track);
-
 }
 
 int PatchBay::cursor_motion_event()
@@ -422,7 +390,7 @@ void PatchBay::set_delays(int over_delay, int peak_delay)
 
 #define PATCH_X 3
 
-int PatchBay::update()
+void PatchBay::update()
 {
 	int patch_count = 0;
 
@@ -479,8 +447,6 @@ int PatchBay::update()
 		delete patches.values[patches.total - 1];
 		patches.remove_number(patches.total - 1);
 	}
-
-	return 0;
 }
 
 void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
@@ -496,7 +462,6 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 		{
 			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
 			ptstime position = mwindow->edl->local_session->get_selectionstart(1);
-
 
 			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 

@@ -38,12 +38,10 @@ class PatchBay : public BC_SubWindow
 {
 public:
 	PatchBay(MWindow *mwindow, MWindowGUI *gui);
-	~PatchBay();
 
-	int delete_all_patches();
-	int create_objects();
+	void delete_all_patches();
+	void create_objects();
 	void resize_event();
-	int button_press_event();
 	int cursor_motion_event();
 	BC_Pixmap* mode_to_icon(int mode);
 	int icon_to_mode(BC_Pixmap *icon);
@@ -51,7 +49,7 @@ public:
 	PatchGUI* get_patch_of(Track *track);
 
 // Synchronize with Master EDL
-	int update();
+	void update();
 	void update_meters(double *module_levels, int total);
 	void stop_meters();
 	void synchronize_nudge(posnum value, Track *skip);
@@ -61,8 +59,6 @@ public:
 	void set_delays(int over_delay, int peak_delay);
 
 	ArrayList<PatchGUI*> patches;
-
-
 
 // =========================================== drawing
 
@@ -83,7 +79,6 @@ class NudgePopup : public BC_PopupMenu
 {
 public:
 	NudgePopup(MWindow *mwindow, PatchBay *patchbay);
-	~NudgePopup();
 
 	void create_objects();
 	void activate_menu(PatchGUI *gui);
