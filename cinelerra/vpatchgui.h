@@ -41,7 +41,6 @@ public:
 		int y);
 	~VPatchGUI();
 
-	int create_objects();
 	int reposition(int x, int y);
 	int update(int x, int y);
 	void synchronize_fade(float value_change);
@@ -58,6 +57,7 @@ public:
 	int handle_event();
 	float update_edl();
 	static float get_keyframe_value(MWindow *mwindow, VPatchGUI *patch);
+
 	MWindow *mwindow;
 	VPatchGUI *patch;
 };
@@ -68,7 +68,7 @@ public:
 	VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y);
 
 	int handle_event();
-	int create_objects();         // add initial items
+	void create_objects();         // add initial items
 	static const char* mode_to_text(int mode);
 	static int get_keyframe_value(MWindow *mwindow, VPatchGUI *patch);
 	void update(int mode);
@@ -84,9 +84,9 @@ public:
 	VModePatchItem(VModePatch *popup, const char *text, int mode);
 
 	int handle_event();
+
 	VModePatch *popup;
 	int mode;
 };
-
 
 #endif

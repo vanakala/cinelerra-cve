@@ -39,7 +39,6 @@ public:
 	APatchGUI(MWindow *mwindow, PatchBay *patchbay, ATrack *track, int x, int y);
 	~APatchGUI();
 
-	int create_objects();
 	int reposition(int x, int y);
 	int update(int x, int y);
 	void synchronize_fade(float value_change);

@@ -43,9 +43,6 @@
 #include <string.h>
 
 
-
-
-
 VPatchGUI::VPatchGUI(MWindow *mwindow, PatchBay *patchbay, VTrack *track, int x, int y)
  : PatchGUI(mwindow, patchbay, track, x, y)
 {
@@ -53,17 +50,13 @@ VPatchGUI::VPatchGUI(MWindow *mwindow, PatchBay *patchbay, VTrack *track, int x,
 	this->vtrack = track;
 	mode = 0;
 	fade = 0;
+	update(x, y);
 }
 
 VPatchGUI::~VPatchGUI()
 {
 	if(fade) delete fade;
 	if(mode) delete mode;
-}
-
-int VPatchGUI::create_objects()
-{
-	return update(x, y);
 }
 
 int VPatchGUI::reposition(int x, int y)
@@ -159,11 +152,9 @@ int VPatchGUI::update(int x, int y)
 	}
 
 	y1 += mwindow->theme->mode_h;
-	
+
 	return y1;
 }
-
-
 
 void VPatchGUI::synchronize_fade(float value_change)
 {
@@ -299,8 +290,7 @@ int VModePatch::get_keyframe_value(MWindow *mwindow, VPatchGUI *patch)
 		unit_position);
 }
 
-
-int VModePatch::create_objects()
+void VModePatch::create_objects()
 {
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_NORMAL), TRANSFER_NORMAL));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_ADDITION), TRANSFER_ADDITION));
@@ -309,7 +299,6 @@ int VModePatch::create_objects()
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_DIVIDE), TRANSFER_DIVIDE));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_REPLACE), TRANSFER_REPLACE));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MAX), TRANSFER_MAX));
-	return 0;
 }
 
 void VModePatch::update(int mode)
@@ -353,7 +342,6 @@ const char* VModePatch::mode_to_text(int mode)
 	}
 	return "";
 }
-
 
 VModePatchItem::VModePatchItem(VModePatch *popup, const char *text, int mode)
  : BC_MenuItem(text)

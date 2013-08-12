@@ -49,7 +49,6 @@ public:
 		int y);
 	virtual ~PatchGUI();
 
-	virtual int create_objects();
 	virtual int reposition(int x, int y);
 	void toggle_behavior(int type, 
 		int value,

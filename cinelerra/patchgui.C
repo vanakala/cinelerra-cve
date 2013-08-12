@@ -43,7 +43,6 @@
 #include "vframe.h"
 
 
-
 PatchGUI::PatchGUI(MWindow *mwindow, 
 		PatchBay *patchbay, 
 		Track *track, 
@@ -80,16 +79,10 @@ PatchGUI::~PatchGUI()
 	if(nudge) delete nudge;
 }
 
-int PatchGUI::create_objects()
-{
-	return update(x, y);
-}
-
 int PatchGUI::reposition(int x, int y)
 {
 	int x1 = 0;
 	int y1 = 0;
-
 
 	if(x != this->x || y != this->y)
 	{
@@ -300,7 +293,6 @@ void PatchGUI::toggle_behavior(int type,
 	}
 }
 
-
 char* PatchGUI::calculate_nudge_text(int *changed)
 {
 	if(changed) *changed = 0;
@@ -319,7 +311,6 @@ char* PatchGUI::calculate_nudge_text(int *changed)
 	return string_return;
 }
 
-
 ptstime PatchGUI::calculate_nudge(char *string)
 {
 	if(mwindow->edl->session->nudge_seconds)
@@ -335,7 +326,6 @@ ptstime PatchGUI::calculate_nudge(char *string)
 		return track->from_units(temp);
 	}
 }
-
 
 
 PlayPatch::PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
@@ -372,13 +362,13 @@ int PlayPatch::button_press_event()
 int PlayPatch::button_release_event()
 {
 	int result = BC_Toggle::button_release_event();
+
 	if(patch->patchbay->drag_operation != Tracks::NONE)
 	{
 		patch->patchbay->drag_operation = Tracks::NONE;
 	}
 	return result;
 }
-
 
 
 RecordPatch::RecordPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
@@ -423,8 +413,6 @@ int RecordPatch::button_release_event()
 }
 
 
-
-
 GangPatch::GangPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, y, 
 		mwindow->theme->get_image_set("gangpatch_data"),
@@ -466,7 +454,6 @@ int GangPatch::button_release_event()
 }
 
 
-
 DrawPatch::DrawPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, y, 
 		mwindow->theme->get_image_set("drawpatch_data"),
@@ -506,8 +493,6 @@ int DrawPatch::button_release_event()
 	}
 	return result;
 }
-
-
 
 
 MutePatch::MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
@@ -637,8 +622,6 @@ int TitlePatch::handle_event()
 	mwindow->undo->update_undo(_("track title"), LOAD_PATCHES);
 	return 1;
 }
-
-
 
 
 NudgePatch::NudgePatch(MWindow *mwindow, 

@@ -41,8 +41,6 @@
 #include "trackcanvas.h"
 
 
-
-
 APatchGUI::APatchGUI(MWindow *mwindow, 
 	PatchBay *patchbay, 
 	ATrack *track, 
@@ -59,17 +57,14 @@ APatchGUI::APatchGUI(MWindow *mwindow,
 	meter = 0;
 	pan = 0;
 	fade = 0;
+	update(x, y);
 }
+
 APatchGUI::~APatchGUI()
 {
 	if(fade) delete fade;
 	if(meter) delete meter;
 	if(pan) delete pan;
-}
-
-int APatchGUI::create_objects()
-{
-	return update(x, y);
 }
 
 int APatchGUI::reposition(int x, int y)
@@ -217,7 +212,6 @@ void APatchGUI::synchronize_fade(float value_change)
 }
 
 
-
 AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
  : BC_FSlider(x, 
 	y,
@@ -250,7 +244,6 @@ float AFadePatch::update_edl()
 
 	return result;
 }
-
 
 int AFadePatch::handle_event()
 {
@@ -340,8 +333,6 @@ PanAuto* APanPatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 		unit_position, 
 		current);
 }
-
-
 
 
 AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)

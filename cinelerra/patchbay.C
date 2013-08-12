@@ -419,7 +419,6 @@ void PatchBay::update()
 					patchgui = patches.values[patch_count] = new VPatchGUI(mwindow, this, (VTrack*)current, PATCH_X, y);
 					break;
 				}
-				patchgui->create_objects();
 			}
 			else
 			{
@@ -438,7 +437,6 @@ void PatchBay::update()
 				break;
 			}
 			patches.append(patchgui);
-			patchgui->create_objects();
 		}
 	}
 
