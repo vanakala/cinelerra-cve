@@ -546,7 +546,7 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 	{
 		oldposition = current_edit->project_pts;
 
-		if(newposition < 0)
+		if(edit_mode != MOVE_NO_EDITS && newposition < 0)
 			newposition = 0;
 		if(PTSEQU(oldposition, newposition))
 			return;
