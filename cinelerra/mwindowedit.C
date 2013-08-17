@@ -755,7 +755,8 @@ void MWindow::mute_selection()
 {
 	ptstime start = edl->local_session->get_selectionstart();
 	ptstime end = edl->local_session->get_selectionend();
-	if(start != end)
+
+	if(!PTSEQU(start,end))
 	{
 		edl->clear(start, 
 			end, 
