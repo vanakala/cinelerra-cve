@@ -20,6 +20,8 @@
  */
 
 #include "automation.inc"
+#include "edl.h"
+#include "edlsession.h"
 #include "panauto.h"
 #include "panautos.h"
 
@@ -82,9 +84,13 @@ void PanAutos::dump(int indent)
 {
 	printf("%*sPanAutos %p dump(%d): base %.3f handles: %d, %d\n", indent, " ", this, 
 		total(), base_pts, default_handle_x, default_handle_y);
-	printf("%*s default values:", indent, " ");
-	for(int i = 0; i < MAXCHANNELS; i++)
-		printf(" %.1f", default_values[i]);
+	printf("%*sdefault values:", indent + 4, " ");
+	if(edl)
+	{
+		for(int i = 0; i < edl->session->audio_channels; i++)
+			printf(" %.1f", default_values[i]);
+		putchar('\n');
+	}
 	indent += 2;
 	for(Auto* current = first; current; current = NEXT)
 		((PanAuto*)current)->dump(indent);
