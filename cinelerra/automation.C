@@ -264,6 +264,7 @@ void Automation::dump(int indent)
 {
 	printf("%*sAutomation %p dump:\n", indent, "", this);
 
+	indent += 2;
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
 		if(autos[i])
