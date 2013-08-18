@@ -94,9 +94,13 @@ void PanAuto::copy_from(Auto *that)
 
 void PanAuto::dump(int indent)
 {
-	printf("%*sPanAuto %p %.3f handle_x: %d handle_y: %d\n", 
-		indent, " ", this, pos_time, handle_x, handle_y);
-	indent += 2;
-	for(int i = 0; i < edl->session->audio_channels; i++)
-		printf("%*svalue %d %f\n", indent, " ", i, values[i]);
+	printf("%*sPanAuto %p: %.3f handles: %d %d\n",
+		indent, "", this, pos_time, handle_x, handle_y);
+	if(edl)
+	{
+		printf("%*svalues:", indent + 2, "");
+		for(int i = 0; i < edl->session->audio_channels; i++)
+			printf(" %.1f", values[i]);
+		putchar('\n');
+	}
 }
