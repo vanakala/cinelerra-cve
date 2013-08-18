@@ -86,6 +86,7 @@ int KeyFrame::operator==(KeyFrame &that)
 
 void KeyFrame::dump(int indent)
 {
-	printf("%*sKeyFrame %p pos_time %.3lf\n", indent, " ", this, pos_time);
-	printf("%*sdata: %s\n", indent + 2, " ", data);
+	printf("%*sKeyFrame %p: pos_time %.3f\n", indent, "", this, pos_time);
+	if(data[0])
+		printf("%*sdata: %s\n", indent + 2, "", data);
 }
