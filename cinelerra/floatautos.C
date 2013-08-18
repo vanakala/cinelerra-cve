@@ -323,7 +323,7 @@ void FloatAutos::get_extents(float *min,
 
 void FloatAutos::dump(int ident)
 {
-	printf("%*sFloatAutos %p dump(%d): base %.3f default %.3f\n", ident, " ", this,
+	printf("%*sFloatAutos %p dump(%d): base %.3f default %.3f\n", ident, "", this,
 		total(), base_pts, default_value);
 	ident += 2;
 	for(FloatAuto* current = (FloatAuto*)first; current; current = (FloatAuto*)NEXT)
