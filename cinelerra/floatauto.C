@@ -134,11 +134,9 @@ void FloatAuto::load(FileXML *file)
 
 void FloatAuto::dump(int ident)
 {
-	printf("%*sFloatAuto %p dump:\n", ident, "", this);
+	printf("%*sFloatAuto %p: pos_time %.3lf value %.3f\n",
+		ident, "", this, pos_time, value);
 	ident += 2;
-	printf("%*spos_time %.3lf value %.3f\n", ident, "", pos_time, value);
-	printf("%*sinvalue=%.3f outvalue=%.3f\n", ident, "",
-		control_in_value, control_out_value);
-	printf("%*sin_pts %.3f out_pts %.3f\n", ident, "",
-		control_in_pts, control_out_pts);
+	printf("%*scontrols in %.2f/%.3f, out %.2f/%.3f\n", ident, "",
+		control_in_value, control_in_pts, control_out_value, control_out_pts);
 }
