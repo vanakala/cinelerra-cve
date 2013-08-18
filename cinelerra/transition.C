@@ -157,8 +157,8 @@ ptstime Transition::length(void)
 
 void Transition::dump(int indent)
 {
-	printf("%*sTransition %p dump\n", indent, "", this);
-	printf("%*s  title: '%s' length: %.3f\n", indent, "", title, length_time);
+	printf("%*sTransition %p: '%s' length: %.3f\n", indent, "", this,
+		title, length_time);
 	if(keyframes)
 		keyframes->dump(indent + 2);
 }
