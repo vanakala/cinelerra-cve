@@ -249,7 +249,6 @@ void BRenderCommand::copy_from(BRenderCommand *src)
 void BRenderCommand::copy_edl(EDL *edl)
 {
 	this->edl = new EDL;
-	this->edl->create_objects();
 	this->edl->copy_all(edl);
 	this->position = 0;
 }

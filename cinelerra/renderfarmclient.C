@@ -602,7 +602,6 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	default_asset = new Asset;
 	package = new RenderPackage;
 	edl = new EDL;
-	edl->create_objects();
 
 	read_preferences(socket_fd, preferences);
 	result |= read_asset(socket_fd, default_asset);

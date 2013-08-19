@@ -94,7 +94,6 @@ void SetFormatThread::run()
 	ratio[0] = ratio[1] = 1;
 
 	new_settings = new EDL;
-	new_settings->create_objects();
 	new_settings->copy_session(mwindow->edl);
 
 // This locks mwindow, so it must be done outside window_lock

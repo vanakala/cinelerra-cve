@@ -54,36 +54,25 @@
 // Copy automation: copy just automation from master
 // Paste automation: paste functions in automation
 
-
-
-
-
-
-
-
-
-
-
 class EDL
 {
 public:
 	EDL(EDL *parent_edl = 0);
 	~EDL();
 
-	int create_objects();
 	EDL& operator=(EDL &edl);
 
 // Load configuration and track counts
-	int load_defaults(BC_Hash *defaults);
-	int save_defaults(BC_Hash *defaults);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 // Clip default settings to boundaries.
 	void boundaries();
 // Create tracks using existing configuration
-	int create_default_tracks();
-	int load_xml(ArrayList<PluginServer*> *plugindb, 
+	void create_default_tracks();
+	void load_xml(ArrayList<PluginServer*> *plugindb, 
 		FileXML *file, 
 		uint32_t load_flags);
-	int save_xml(ArrayList<PluginServer*> *plugindb,
+	void save_xml(ArrayList<PluginServer*> *plugindb,
 		FileXML *xml, 
 		const char *output_path,
 		int is_clip,
@@ -102,7 +91,7 @@ public:
 // session_only - used by preferences and format specify 
 // whether to only copy EDLSession
 	void copy_session(EDL *edl, int session_only = 0);
-	int copy_all(EDL *edl);
+	void copy_all(EDL *edl);
 	void copy_assets(EDL *edl);
 	void copy_clips(EDL *edl);
 
@@ -159,13 +148,13 @@ public:
 		int actions);
 
 // Editing functions
-	int copy_assets(ptstime start,
+	void copy_assets(ptstime start,
 		ptstime end,
 		FileXML *file, 
 		int all, 
 		ArrayList<PluginServer*> *plugindb,
 		const char *output_path);
-	int copy(ptstime start,
+	void copy(ptstime start,
 		ptstime end,
 		int all,   // Ignore recordable status of tracks for saving
 		int is_clip,
@@ -231,10 +220,8 @@ public:
 // to the backup file, not the project file.
 	char project_path[BCTEXTLEN];
 
-
 // Use parent Assets if nonzero
 	EDL *parent_edl;
-
 
 	static Mutex *id_lock;
 

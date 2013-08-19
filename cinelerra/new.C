@@ -89,7 +89,6 @@ int New::handle_event()
 void New::create_new_edl()
 {
 	new_edl = new EDL;
-	new_edl->create_objects();
 	new_edl->load_defaults(mwindow->defaults);
 }
 

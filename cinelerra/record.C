@@ -351,7 +351,6 @@ void Record::run()
 	if(!result)
 	{
 		edl = new EDL;
-		edl->create_objects();
 		edl->session->output_w = default_asset->width;
 		edl->session->output_h = default_asset->height;
 		edl->session->aspect_w = mwindow->edl->session->aspect_w;
@@ -442,7 +441,6 @@ void Record::run()
 					Asset *new_asset = batch->assets.values[j];
 					EDL *new_edl = new EDL;
 					mwindow->remove_asset_from_caches(new_asset);
-					new_edl->create_objects();
 					new_edl->copy_session(mwindow->edl);
 					mwindow->asset_to_edl(new_edl, 
 						new_asset, 

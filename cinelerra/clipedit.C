@@ -81,7 +81,6 @@ void ClipEdit::run()
 		if(!create_it)
 		{
 			clip = new EDL(mwindow->edl);
-			clip->create_objects();
 			clip->copy_all(original);
 		}
 

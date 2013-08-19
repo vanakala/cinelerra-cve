@@ -363,29 +363,28 @@ void Render::run()
 
 				FileXML *file = new FileXML;
 				EDL *edl = new EDL;
-				edl->create_objects();
 				file->read_from_file(job->edl_path);
 				if(!plugindb && mwindow)
 					plugindb = mwindow->plugindb;
-				if(!edl->load_xml(plugindb, file, LOAD_ALL))
+				edl->load_xml(plugindb, file, LOAD_ALL);
+
+				File assetfile;
+				for(Asset *ap = edl->assets->first; ap; ap = ap->next)
 				{
-					File assetfile;
-					for(Asset *ap = edl->assets->first; ap; ap = ap->next){
-						if(assetfile.open_file(preferences, ap, 1, 0, 0, 0) == FILE_OK)
-							assetfile.close_file(0);
-						else
-						{
-							errorbox("Failed to open '%s'", basename(ap->path));
-							result = 1;
-							break;
-						}
+					if(assetfile.open_file(preferences, ap, 1, 0, 0, 0) == FILE_OK)
+						assetfile.close_file(0);
+					else
+					{
+						errorbox("Failed to open '%s'", basename(ap->path));
+						result = 1;
+						break;
 					}
-					if(!result && !check_asset(edl, *job->asset))
-						render(0, job->asset, edl, job->strategy, RANGE_BACKCOMPAT);
-				} else
-					result = 1;
+				}
+				if(!result && !check_asset(edl, *job->asset))
+					render(0, job->asset, edl, job->strategy, RANGE_BACKCOMPAT);
 				delete edl;
 				delete file;
+
 				if(!result)
 				{
 					if(mwindow)

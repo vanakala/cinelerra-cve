@@ -69,7 +69,6 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	this->preferences->copy_from(preferences);
 	this->command->copy_from(command);
 	edl = new EDL;
-	edl->create_objects();
 // EDL only changed in construction.
 // The EDL contained in later commands is ignored.
 	edl->copy_all(command->get_edl());

@@ -134,7 +134,6 @@ void VWindow::change_source(Asset *asset)
 	*this->asset = *asset;
 	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
 	mwindow->edl->vwindow_edl_shared = 0;
-	mwindow->edl->vwindow_edl->create_objects();
 	mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
 
 // Update GUI

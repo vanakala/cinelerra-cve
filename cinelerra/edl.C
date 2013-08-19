@@ -49,21 +49,14 @@
 #include "vtrack.h"
 #include "versioninfo.h"
 
-
-
 Mutex* EDL::id_lock = 0;
-
 
 
 EDL::EDL(EDL *parent_edl)
 {
 	this->parent_edl = parent_edl;
-	tracks = 0;
-	labels = 0;
-	local_session = 0;
 	vwindow_edl = 0;
 	vwindow_edl_shared = 0;
-
 
 	folders.set_array_delete();
 
@@ -73,43 +66,7 @@ EDL::EDL(EDL *parent_edl)
 
 	id = next_id();
 	project_path[0] = 0;
-}
 
-
-EDL::~EDL()
-{
-
-	if(tracks)
-	{
-		delete tracks;
-	}
-	if(labels)
-	{
-		delete labels;
-	}
-
-	if(local_session)
-	{
-		delete local_session;
-	}
-
-	if(vwindow_edl && !vwindow_edl_shared)
-		delete vwindow_edl;
-
-	if(!parent_edl)
-	{
-		delete assets;
-		delete session;
-	}
-
-
-	folders.remove_all_objects();
-	clips.remove_all_objects();
-}
-
-
-int EDL::create_objects()
-{
 	tracks = new Tracks(this);
 	if(!parent_edl)
 	{
@@ -121,10 +78,34 @@ int EDL::create_objects()
 		assets = parent_edl->assets;
 		session = parent_edl->session;
 	}
-	
+
 	local_session = new LocalSession(this);
 	labels = new Labels(this, "LABELS");
-	return 0;
+}
+
+
+EDL::~EDL()
+{
+	if(tracks)
+		delete tracks;
+
+	if(labels)
+		delete labels;
+
+	if(local_session)
+		delete local_session;
+
+	if(vwindow_edl && !vwindow_edl_shared)
+		delete vwindow_edl;
+
+	if(!parent_edl)
+	{
+		delete assets;
+		delete session;
+	}
+
+	folders.remove_all_objects();
+	clips.remove_all_objects();
 }
 
 EDL& EDL::operator=(EDL &edl)
@@ -133,22 +114,20 @@ EDL& EDL::operator=(EDL &edl)
 	return *this;
 }
 
-int EDL::load_defaults(BC_Hash *defaults)
+void EDL::load_defaults(BC_Hash *defaults)
 {
 	if(!parent_edl)
 		session->load_defaults(defaults);
 
 	local_session->load_defaults(defaults);
-	return 0;
 }
 
-int EDL::save_defaults(BC_Hash *defaults)
+void EDL::save_defaults(BC_Hash *defaults)
 {
 	if(!parent_edl)
 		session->save_defaults(defaults);
 
 	local_session->save_defaults(defaults);
-	return 0;
 }
 
 void EDL::boundaries()
@@ -157,28 +136,22 @@ void EDL::boundaries()
 	local_session->boundaries();
 }
 
-int EDL::create_default_tracks()
+void EDL::create_default_tracks()
 {
-
 	for(int i = 0; i < session->video_tracks; i++)
-	{
 		tracks->add_video_track(0, 0);
-	}
+
 	for(int i = 0; i < session->audio_tracks; i++)
-	{
 		tracks->add_audio_track(0, 0);
-	}
-	return 0;
 }
 
-int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
+void EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 	FileXML *file, 
 	uint32_t load_flags)
 {
 	int result = 0;
 // Track numbering offset for replacing undo data.
 	int track_offset = 0;
-
 
 	folders.remove_all_objects();
 
@@ -299,7 +272,6 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				if(file->tag.title_is("CLIP_EDL") && !parent_edl)
 				{
 					EDL *new_edl = new EDL(this);
-					new_edl->create_objects();
 					new_edl->load_xml(plugindb, file, LOAD_ALL);
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
@@ -311,9 +283,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				if(file->tag.title_is("VWINDOW_EDL") && !parent_edl)
 				{
 					EDL *new_edl = new EDL(this);
-					new_edl->create_objects();
 					new_edl->load_xml(plugindb, file, LOAD_ALL);
-
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 					{
@@ -331,15 +301,13 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 		}while(!result);
 	}
 	boundaries();
-
-	return 0;
 }
 
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if complete names should be used.
 // Called recursively by copy for clips, thus the string can't be terminated.
 // The string is not terminated in this call.
-int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
+void EDL::save_xml(ArrayList<PluginServer*> *plugindb,
 	FileXML *file, 
 	const char *output_path,
 	int is_clip,
@@ -354,17 +322,15 @@ int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
 		plugindb, 
 		output_path,
 		0);
-	return 0;
 }
 
-int EDL::copy_all(EDL *edl)
+void EDL::copy_all(EDL *edl)
 {
 	copy_session(edl);
 	copy_assets(edl);
 	copy_clips(edl);
 	tracks->copy_from(edl->tracks);
 	labels->copy_from(edl->labels);
-	return 0;
 }
 
 void EDL::copy_clips(EDL *edl)
@@ -375,7 +341,6 @@ void EDL::copy_clips(EDL *edl)
 	if(edl->vwindow_edl)
 	{
 		vwindow_edl = new EDL(this);
-		vwindow_edl->create_objects();
 		vwindow_edl->copy_all(edl->vwindow_edl);
 	}
 	clips.remove_all_objects();
@@ -388,9 +353,7 @@ void EDL::copy_clips(EDL *edl)
 void EDL::copy_assets(EDL *edl)
 {
 	if(!parent_edl)
-	{
 		assets->copy_from(edl->assets);
-	}
 }
 
 void EDL::copy_session(EDL *edl, int session_only)
@@ -419,7 +382,7 @@ void EDL::copy_session(EDL *edl, int session_only)
 	}
 }
 
-int EDL::copy_assets(ptstime start, 
+void EDL::copy_assets(ptstime start, 
 	ptstime end, 
 	FileXML *file, 
 	int all, 
@@ -471,10 +434,9 @@ int EDL::copy_assets(ptstime start,
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
-	return 0;
 }
 
-int EDL::copy(ptstime start, 
+void EDL::copy(ptstime start, 
 	ptstime end, 
 	int all, 
 	int is_clip,
@@ -484,7 +446,6 @@ int EDL::copy(ptstime start,
 	const char *output_path,
 	int rewind_it)
 {
-
 // begin file
 	if(is_clip)
 		file->tag.set_title("CLIP_EDL");
@@ -521,60 +482,57 @@ int EDL::copy(ptstime start,
 	local_session->save_xml(file, start);
 
 // Top level stuff.
-//	if(!parent_edl)
-	{
 // Need to copy all this from child EDL if pasting is desired.
 // Session
-		session->save_xml(file);
-		session->save_video_config(file);
-		session->save_audio_config(file);
+	session->save_xml(file);
+	session->save_video_config(file);
+	session->save_audio_config(file);
 
 // Folders
-		for(int i = 0; i < folders.total; i++)
-		{
-			file->tag.set_title("FOLDER");
-			file->append_tag();
-			file->append_text(folders.values[i]);
-			file->tag.set_title("/FOLDER");
-			file->append_tag();
-			file->append_newline();
-		}
+	for(int i = 0; i < folders.total; i++)
+	{
+		file->tag.set_title("FOLDER");
+		file->append_tag();
+		file->append_text(folders.values[i]);
+		file->tag.set_title("/FOLDER");
+		file->append_tag();
+		file->append_newline();
+	}
 
 // Media
 // Don't replicate all assets for every clip.
 // The assets for the clips are probably in the mane EDL.
-		if(!is_clip)
-			copy_assets(start, 
-				end, 
-				file, 
-				all, 
-				plugindb,
-				output_path);
+	if(!is_clip)
+		copy_assets(start, 
+			end, 
+			file, 
+			all, 
+			plugindb,
+			output_path);
 
 // Clips
 // Don't want this if using clipboard
-		if(all)
+	if(all)
+	{
+		if(vwindow_edl)
 		{
-			if(vwindow_edl)
-			{
-				vwindow_edl->save_xml(plugindb, 
-					file, 
-					output_path,
-					0,
-					1);
-			}
-
-			for(int i = 0; i < clips.total; i++)
-				clips.values[i]->save_xml(plugindb, 
-					file, 
-					output_path,
-					1,
-					0);
+			vwindow_edl->save_xml(plugindb, 
+				file, 
+				output_path,
+				0,
+				1);
 		}
 
-		file->append_newline();
-		file->append_newline();
+		for(int i = 0; i < clips.total; i++)
+			clips.values[i]->save_xml(plugindb, 
+				file, 
+				output_path,
+				1,
+				0);
 	}
+
+	file->append_newline();
+	file->append_newline();
 
 	labels->copy(start, end, file);
 	tracks->copy(start, end, all, file, output_path);
@@ -590,7 +548,6 @@ int EDL::copy(ptstime start,
 	file->append_tag();
 	file->append_newline();
 
-
 // For editing operations we want to rewind it for immediate pasting.
 // For clips and saving to disk leave it alone.
 	if(rewind_it)
@@ -598,7 +555,6 @@ int EDL::copy(ptstime start,
 		file->terminate_string();
 		file->rewind();
 	}
-	return 0;
 }
 
 void EDL::rechannel()
@@ -648,10 +604,10 @@ void EDL::trim_selection(ptstime start,
 	}
 }
 
-
 int EDL::equivalent(ptstime position1, ptstime position2)
 {
 	ptstime threshold;
+
 	if(session->cursor_on_frames) 
 		threshold = (double).5 / session->frame_rate;
 	else
@@ -670,7 +626,6 @@ double EDL::equivalent_output(EDL *edl)
 	tracks->equivalent_output(edl->tracks, &result);
 	return result;
 }
-
 
 void EDL::set_project_path(const char *path)
 {
@@ -706,7 +661,6 @@ void EDL::set_outpoint(ptstime position)
 			local_session->unset_inpoint();
 	}
 }
-
 
 void EDL::clear(ptstime start,
 	ptstime end,
@@ -784,7 +738,6 @@ void EDL::paste_silence(ptstime start,
 		end, 
 		edit_plugins);
 }
-
 
 void EDL::remove_from_project(ArrayList<EDL*> *clips)
 {
@@ -922,7 +875,6 @@ EDL* EDL::add_clip(EDL *edl)
 {
 // Copy argument.  New edls are deleted from MWindow::load_filenames.
 	EDL *new_edl = new EDL(this);
-	new_edl->create_objects();
 	new_edl->copy_all(edl);
 	clips.append(new_edl);
 	return new_edl;
@@ -999,8 +951,6 @@ void EDL::insert_asset(Asset *asset,
 	}
 }
 
-
-
 void EDL::set_index_file(Asset *asset)
 {
 	assets->update_index(asset);
@@ -1008,7 +958,8 @@ void EDL::set_index_file(Asset *asset)
 
 void EDL::optimize()
 {
-	double length = tracks->total_length();
+	ptstime length = tracks->total_length();
+
 	if(local_session->preview_end > length) local_session->preview_end = length;
 	if(local_session->preview_start > length ||
 		local_session->preview_start < 0) local_session->preview_start = 0;

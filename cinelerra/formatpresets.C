@@ -193,7 +193,6 @@ FormatPresetItem::FormatPresetItem(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->gui = gui;
 	edl = new EDL;
-	edl->create_objects();
 	edl->copy_all(gui->get_edl());
 }
 

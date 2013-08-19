@@ -666,7 +666,6 @@ void MWindow::init_3d()
 void MWindow::init_edl()
 {
 	edl = new EDL;
-	edl->create_objects();
 	fill_preset_defaults(default_standard, edl->session);
 	edl->load_defaults(defaults);
 	edl->create_default_tracks();
@@ -890,8 +889,6 @@ SET_TRACE
 			remove(index_filename);
 			new_asset->index_status = INDEX_NOTTESTED;
 		}
-
-		new_edl->create_objects();
 		new_edl->copy_session(edl);
 
 		gui->show_message("Loading %s", new_asset->path);

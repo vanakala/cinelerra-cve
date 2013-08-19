@@ -33,7 +33,6 @@ TransportCommand::TransportCommand()
 // In rendering we want a master EDL so settings don't get clobbered
 // in the middle of a job.
 	edl = new EDL;
-	edl->create_objects();
 	command = 0;
 	change_type = 0;
 	reset();

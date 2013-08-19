@@ -452,7 +452,6 @@ void MWindow::insert(ptstime position,
 	uint32_t load_flags = LOAD_ALL;
 
 	new_edls.append(&edl);
-	edl.create_objects();
 
 	if(parent_edl) load_flags &= ~LOAD_SESSION;
 	if(!edl.session->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
@@ -933,7 +932,6 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 	{
 		remove_asset_from_caches(new_assets->values[i]);
 		EDL *new_edl = new EDL;
-		new_edl->create_objects();
 		new_edl->copy_session(edl);
 		new_edls.append(new_edl);
 
@@ -1015,7 +1013,6 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 		delete edl;
 		edl = new EDL;
-		edl->create_objects();
 		edl->copy_session(new_edls->values[0]);
 
 		gui->mainmenu->update_toggles(0);
@@ -1236,7 +1233,6 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		{
 			if(edl->vwindow_edl) delete edl->vwindow_edl;
 			edl->vwindow_edl = new EDL(edl);
-			edl->vwindow_edl->create_objects();
 			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
 		}
 	}
@@ -1578,7 +1574,7 @@ void MWindow::to_clip()
 		1);
 
 	EDL *new_edl = new EDL(edl);
-	new_edl->create_objects();
+
 	new_edl->load_xml(plugindb, &file, LOAD_ALL);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"), session->clip_number++);
 	char string[BCTEXTLEN];
