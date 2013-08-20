@@ -277,7 +277,14 @@ void Edits::load(FileXML *file, int track_offset)
 		}
 	}while(!result);
 	if (last)
+	{
 		loaded_length = last->end_pts();
+		if(!PTSEQU(loaded_length, project_time))
+		{
+			Edit *edit = append(create_edit());
+			edit->project_pts = loaded_length = project_time;
+		}
+	}
 	else 
 		loaded_length = 0;
 }
