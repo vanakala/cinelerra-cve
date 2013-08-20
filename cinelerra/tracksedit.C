@@ -339,8 +339,6 @@ void Tracks::move_effect(Plugin *plugin,
 	source_track->optimize();
 }
 
-
-
 int Tracks::concatenate_tracks(int edit_plugins)
 {
 	Track *output_track, *first_output_track, *input_track;
@@ -412,7 +410,6 @@ int Tracks::concatenate_tracks(int edit_plugins)
 
 		if(data_type == TRACK_AUDIO) data_type = TRACK_VIDEO;
 	}
-
 	return result;
 }
 
@@ -421,34 +418,29 @@ void Tracks::delete_all_tracks()
 	while(last) delete last;
 }
 
-
 void Tracks::change_modules(int old_location, int new_location, int do_swap)
 {
 	for(Track* current = first ; current; current = current->next)
-	{
 		current->change_modules(old_location, new_location, do_swap);
-	}
 }
 
 void Tracks::change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap)
 {
 	for(Track* current = first ; current; current = current->next)
-	{
 		current->change_plugins(old_location, new_location, do_swap);
-	}
 }
-
 
 // =========================================== EDL editing
 
-int Tracks::copy(ptstime start,
+void Tracks::copy(ptstime start,
 	ptstime end,
 	int all, 
 	FileXML *file, 
 	const char *output_path)
 {
 // nothing selected
-	if(PTSEQU(start, end) && !all) return 1;
+	if(PTSEQU(start, end) && !all)
+		return;
 
 	Track* current;
 
@@ -458,12 +450,10 @@ int Tracks::copy(ptstime start,
 	{
 		if(current->record || all)
 		{
-			current->copy(start, end, file,output_path);
+			current->copy(start, end, file, output_path);
 		}
 	}
-	return 0;
 }
-
 
 void Tracks::move_track_up(Track *track)
 {
@@ -484,8 +474,7 @@ void Tracks::move_track_down(Track *track)
 	swap(track, next_track);
 }
 
-
-int Tracks::move_tracks_up(void)
+int Tracks::move_tracks_up()
 {
 	Track *track, *next_track;
 	int result = 0;
@@ -511,7 +500,7 @@ int Tracks::move_tracks_up(void)
 	return result;
 }
 
-int Tracks::move_tracks_down(void)
+int Tracks::move_tracks_down()
 {
 	Track *track, *previous_track;
 	int result = 0;
@@ -537,8 +526,6 @@ int Tracks::move_tracks_down(void)
 	return result;
 }
 
-
-
 void Tracks::paste_audio_transition(PluginServer *server)
 {
 	for(Track *current = first; current; current = NEXT)
@@ -548,12 +535,10 @@ void Tracks::paste_audio_transition(PluginServer *server)
 		{
 			ptstime position = 
 				edl->local_session->get_selectionstart();
-			Edit *current_edit = current->edits->editof(position, 
-				0);
+			Edit *current_edit = current->edits->editof(position, 0);
+
 			if(current_edit)
-			{
 				paste_transition(server, current_edit);
-			}
 		}
 	}
 }
@@ -680,7 +665,6 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 	}
 }
 
-
 void Tracks::paste_silence(ptstime start, ptstime end, int edit_plugins)
 {
 	Track* current_track;
@@ -690,9 +674,7 @@ void Tracks::paste_silence(ptstime start, ptstime end, int edit_plugins)
 		current_track = current_track->next)
 	{
 		if(current_track->record) 
-		{ 
 			current_track->paste_silence(start, end, edit_plugins); 
-		}
 	}
 }
 

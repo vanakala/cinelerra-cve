@@ -56,16 +56,10 @@ Tracks::Tracks()
 {
 }
 
-
 Tracks::~Tracks()
 {
 	delete_all_tracks();
 }
-
-
-
-
-
 
 void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 {
@@ -104,9 +98,6 @@ void Tracks::equivalent_output(Tracks *tracks, ptstime *result)
 		}
 	}
 }
-
-
-
 
 void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, ptstime position, Track *start_track)
 {
@@ -155,7 +146,6 @@ void Tracks::get_automation_extents(float *min,
 	}
 }
 
-
 void Tracks::copy_from(Tracks *tracks)
 {
 	Track *new_track;
@@ -182,12 +172,13 @@ Tracks& Tracks::operator=(Tracks &tracks)
 	return *this;
 }
 
-int Tracks::load(FileXML *xml, int &track_offset, uint32_t load_flags)
+void Tracks::load(FileXML *xml, int &track_offset, uint32_t load_flags)
 {
 // add the appropriate type of track
 	char string[BCTEXTLEN];
 	Track *track = 0;
-	sprintf(string, "");
+
+	string[0] = 0;
 
 	xml->tag.get_property("TYPE", string);
 
@@ -210,41 +201,29 @@ int Tracks::load(FileXML *xml, int &track_offset, uint32_t load_flags)
 		track_offset++;
 	}
 
-// load it
 	if(track) track->load(xml, track_offset, load_flags);
-
-	return 0;
 }
 
 Track* Tracks::add_audio_track(int above, Track *dst_track)
 {
-	int pixel;
 	ATrack* new_track = new ATrack(edl, this);
+
 	if(!dst_track)
-	{
 		dst_track = (above ? first : last);
-	}
 
 	if(above)
-	{
 		insert_before(dst_track, (Track*)new_track);
-	}
 	else
-	{
 		insert_after(dst_track, (Track*)new_track);
-// Shift effects referenced below the destination track
-	}
 
 // Shift effects referenced below the new track
-	for(Track *track = last; 
-		track && track != new_track; 
-		track = track->previous)
-	{
+	for(Track *track = last; track && track != new_track; track = track->previous)
 		change_modules(number_of(track) - 1, number_of(track), 0);
-	}
+
 	new_track->set_default_title();
 
 	int current_pan = 0;
+
 	for(Track *current = first; 
 		current != (Track*)new_track; 
 		current = NEXT)
@@ -252,6 +231,7 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 		if(current->data_type == TRACK_AUDIO) current_pan++;
 		if(current_pan >= edl->session->audio_channels) current_pan = 0;
 	}
+
 	PanAutos* pan_autos = 
 		(PanAutos*)new_track->automation->autos[AUTOMATION_PAN];
 
@@ -269,54 +249,42 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 
 Track* Tracks::add_video_track(int above, Track *dst_track)
 {
-	int pixel;
 	VTrack* new_track = new VTrack(edl, this);
+
 	if(!dst_track)
 		dst_track = (above ? first : last);
 
 	if(above)
-	{
 		insert_before(dst_track, (Track*)new_track);
-	}
 	else
-	{
 		insert_after(dst_track, (Track*)new_track);
-	}
 
 // Shift effects referenced below the new track
-	for(Track *track = last; 
-		track && track != new_track; 
-		track = track->previous)
-	{
+	for(Track *track = last; track && track != new_track; track = track->previous)
 		change_modules(number_of(track) - 1, number_of(track), 0);
-	}
+
 	new_track->set_default_title();
 	return new_track;
 }
 
 void Tracks::delete_track(Track *track)
 {
-	if (!track)
+	if(!track)
 		return;
 
 	detach_shared_effects(number_of(track));
 
 // Shift effects referencing effects below the deleted track
-	for(Track *current = track; 
-		current;
-		current = NEXT)
-	{
+	for(Track *current = track; current; current = NEXT)
 		change_modules(number_of(current), number_of(current) - 1, 0);
-	}
+
 	if(track) delete track;
 }
 
 void Tracks::detach_shared_effects(int module)
 {
 	for(Track *current = first; current; current = NEXT)
-	{
 		current->detach_shared_effects(module);
-	}
 }
 
 int Tracks::total_of(int type)
@@ -346,21 +314,26 @@ int Tracks::total_of(int type)
 int Tracks::recordable_audio_tracks()
 {
 	int result = 0;
+
 	for(Track *current = first; current; current = NEXT)
-		if(current->data_type == TRACK_AUDIO && current->record) result++;
+	{
+		if(current->data_type == TRACK_AUDIO && current->record)
+			result++;
+	}
 	return result;
 }
 
 int Tracks::recordable_video_tracks()
 {
 	int result = 0;
+
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->data_type == TRACK_VIDEO && current->record) result++;
+		if(current->data_type == TRACK_VIDEO && current->record)
+			result++;
 	}
 	return result;
 }
-
 
 int Tracks::playable_audio_tracks()
 {
@@ -369,11 +342,8 @@ int Tracks::playable_audio_tracks()
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->data_type == TRACK_AUDIO && current->play)
-		{
 			result++;
-		}
 	}
-
 	return result;
 }
 
@@ -394,34 +364,43 @@ int Tracks::playable_video_tracks()
 int Tracks::total_audio_tracks()
 {
 	int result = 0;
+
 	for(Track *current = first; current; current = NEXT)
-		if(current->data_type == TRACK_AUDIO) result++;
+	{
+		if(current->data_type == TRACK_AUDIO)
+			result++;
+	}
 	return result;
 }
 
 int Tracks::total_video_tracks()
 {
 	int result = 0;
+
 	for(Track *current = first; current; current = NEXT)
-		if(current->data_type == TRACK_VIDEO) result++;
+	{
+		if(current->data_type == TRACK_VIDEO)
+			result++;
+	}
 	return result;
 }
 
-ptstime Tracks::total_playable_length() 
+ptstime Tracks::total_playable_length()
 {
 	ptstime total = 0;
+
 	for(Track *current = first; current; current = NEXT)
 	{
 		ptstime length = current->get_length();
 		if(length > total) total = length;
 	}
-
-	return total; 
+	return total;
 }
 
-ptstime Tracks::total_recordable_length() 
+ptstime Tracks::total_recordable_length()
 {
 	ptstime total = 0;
+
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->record)
@@ -430,31 +409,32 @@ ptstime Tracks::total_recordable_length()
 			if(length > total) total = length;
 		}
 	}
-	return total; 
+	return total;
 }
 
-ptstime Tracks::total_length() 
+ptstime Tracks::total_length()
 {
 	ptstime total = 0;
+
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->get_length() > total) total = current->get_length();
 	}
-	return total; 
+	return total;
 }
 
-ptstime Tracks::total_audio_length() 
+ptstime Tracks::total_audio_length()
 {
 	ptstime total = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->data_type == TRACK_AUDIO &&
-			current->get_length() > total) total = current->get_length();
+		if(current->data_type == TRACK_AUDIO && current->get_length() > total)
+			total = current->get_length();
 	}
-	return total; 
+	return total;
 }
 
-ptstime Tracks::total_video_length() 
+ptstime Tracks::total_video_length()
 {
 	ptstime total = 0;
 	for(Track *current = first; current; current = NEXT)
@@ -544,32 +524,30 @@ void Tracks::select_all(int type, int value)
 
 // ===================================== file operations
 
-int Tracks::change_channels(int oldchannels, int newchannels)
+void Tracks::change_channels(int oldchannels, int newchannels)
 {
 	for(Track *current = first; current; current = NEXT)
 	{
 		current->change_channels(oldchannels, newchannels);
 	}
-	return 0;
 }
 
 int Tracks::totalpixels()
 {
 	int result = 0;
+
 	for(Track* current = first; current; current = NEXT)
-	{
 		result += edl->local_session->zoom_track;
-	}
+
 	return result;
 }
 
 int Tracks::number_of(Track *track)
 {
 	int i = 0;
+
 	for(Track *current = first; current && current != track; current = NEXT)
-	{
 		i++;
-	}
 	return i;
 }
 
@@ -577,19 +555,22 @@ Track* Tracks::number(int number)
 {
 	Track *current;
 	int i = 0;
+
 	for(current = first; current && i < number; current = NEXT)
-	{
 		i++;
-	}
+
 	return current;
 }
 
 int Tracks::total_playable_vtracks()
 {
 	int result = 0;
+
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->data_type == TRACK_VIDEO && current->play) result++;
+		if(current->data_type == TRACK_VIDEO && current->play)
+			result++;
 	}
+
 	return result;
 }

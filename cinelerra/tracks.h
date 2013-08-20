@@ -22,7 +22,6 @@
 #ifndef TRACKS_H
 #define TRACKS_H
 
-
 #include "autoconf.h"
 #include "edl.inc"
 #include "file.inc"
@@ -34,7 +33,6 @@
 #include "transition.inc"
 
 
-
 class Tracks : public List<Track>
 {
 public:
@@ -43,7 +41,7 @@ public:
 	virtual ~Tracks();
 
 	Tracks& operator=(Tracks &tracks);
-	int load(FileXML *xml, int &track_offset, uint32_t load_flags);
+	void load(FileXML *xml, int &track_offset, uint32_t load_flags);
 	void move_edits(ArrayList<Edit*> *edits, 
 		Track *track,
 		ptstime position,
@@ -68,8 +66,8 @@ public:
 
 	void move_track_up(Track *track);        // move recordable tracks up
 	void move_track_down(Track *track);      // move recordable tracks down
-	int move_tracks_up(void);                // move recordable tracks up
-	int move_tracks_down(void);              // move recordable tracks down
+	int move_tracks_up();                    // move recordable tracks up
+	int move_tracks_down();                  // move recordable tracks down
 	void paste_audio_transition(PluginServer *server);
 	void paste_video_transition(PluginServer *server, int first_track = 0);
 
@@ -116,11 +114,8 @@ public:
 		EXPAND
 	};
 
-
-	int change_channels(int oldchannels, int newchannels);
+	void change_channels(int oldchannels, int newchannels);
 	void dump(int indent = 0);
-
-
 
 // Change references to shared modules in all tracks from old to new.
 // If do_swap is true values of new are replaced with old.
@@ -129,14 +124,13 @@ public:
 	int concatenate_tracks(int edit_plugins);
 // Change references to shared plugins in all tracks
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
-
 	int delete_tracks(void);     // delete all the recordable tracks
 	void delete_all_tracks();      // delete just the tracks
 
 	void copy_from(Tracks *tracks);
 
 // ================================== EDL editing
-	int copy(ptstime start,
+	void copy(ptstime start,
 		ptstime end,
 		int all, 
 		FileXML *file, 
