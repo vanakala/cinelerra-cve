@@ -120,19 +120,16 @@ void Edits::insert_asset(Asset *asset,
 
 void Edits::insert_edits(Edits *source_edits, ptstime postime)
 {
-	ptstime clipboard_time =
-		source_edits->edl->local_session->clipboard_length;
-	ptstime clipboard_end = postime + clipboard_time;
-	ptstime total_time = 0;
-
 	for(Edit *source_edit = source_edits->first;
-		source_edit;
+		source_edit && source_edit != source_edits->last;
 		source_edit = source_edit->next)
 	{
-// Update Assets
 		Asset *dest_asset = edl->assets->update(source_edit->asset);
-// Open destination area
+
 		Edit *dest_edit = insert_edit(postime + source_edit->project_pts);
+// Save position of asset
+		Asset *split_asset = dest_edit->asset;
+		ptstime split_src = dest_edit->source_pts;
 
 		dest_edit->copy_from(source_edit);
 		dest_edit->asset = dest_asset;
@@ -142,29 +139,29 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 // destination edit for plugin case
 		dest_edit->shift_keyframes(postime);
 
-		ptstime new_length = source_edit->length();
-		total_time += new_length;
-		if (source_edits->loaded_length && total_time > source_edits->loaded_length)
-		{
-			new_length -= (total_time - source_edits->loaded_length);
-		}
+		ptstime req_length = source_edit->length();
+		ptstime dst_length = dest_edit->length();
 
-// Shift following edits and keyframes in following edits by length
-// in current source edit.
-		for(Edit *future_edit = dest_edit->next;
-			future_edit;
-			future_edit = future_edit->next)
+		if(!PTSEQU(req_length, dst_length))
 		{
-			future_edit->project_pts += new_length;
-			future_edit->shift_keyframes(new_length);
-		}
+			ptstime end_pos = dest_edit->project_pts + req_length;
 
-// Fill clipboard length with silence
-		if(!source_edit->next && 
-			dest_edit->end_pts() < clipboard_end)
-		{
-			paste_silence(dest_edit->end_pts(),
-				clipboard_end);
+			if(req_length < dst_length || dest_edit == last)
+			{
+				dest_edit = split_edit(end_pos);
+				if(dest_edit != last)
+				{
+					dest_edit->asset = split_asset;
+					if(split_asset)
+						dest_edit->source_pts = split_src;
+					end_pos = dest_edit->next->project_pts + req_length;
+				}
+			}
+			if(dest_edit != last)
+			{
+				move_edits(dest_edit->next, end_pos,
+					MOVE_ALL_EDITS);
+			}
 		}
 	}
 }
