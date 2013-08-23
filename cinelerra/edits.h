@@ -49,7 +49,8 @@ public:
 	void insert_asset(Asset *asset, ptstime length_time, ptstime postime, int track_number);
 // Split edit containing position.
 // Return the second edit in the split.
-	Edit* split_edit(ptstime postime);
+// if force is set create new edit always 
+	Edit* split_edit(ptstime postime, int force = 0);
 // Create a blank edit in the native data format
 	void clear_handle(ptstime start,
 		ptstime end,

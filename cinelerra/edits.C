@@ -126,7 +126,7 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 	{
 		Asset *dest_asset = edl->assets->update(source_edit->asset);
 
-		Edit *dest_edit = insert_edit(postime + source_edit->project_pts);
+		Edit *dest_edit = split_edit(postime + source_edit->project_pts, 1);
 // Save position of asset
 		Asset *split_asset = dest_edit->asset;
 		ptstime split_src = dest_edit->source_pts;
@@ -196,9 +196,11 @@ Edit* Edits::insert_edit(ptstime pts, ptstime length)
 	return new_edit;
 }
 
-Edit* Edits::split_edit(ptstime postime)
+Edit* Edits::split_edit(ptstime postime, int force)
 {
-	Edit *edit;
+	Edit *edit, *new_edit;
+	Transition *trans;
+
 	if(!first)
 	{
 		// List is empty create edit at 0, next edit at postime
@@ -223,17 +225,30 @@ Edit* Edits::split_edit(ptstime postime)
 	}
 
 	if(PTSEQU(edit->project_pts, postime))
+	{
+		if(force)
+		{
+			// New edit before the current at the same pts
+			new_edit = create_edit();
+			trans = edit->transition;
+			edit->transition = 0;
+			insert_before(edit, new_edit);
+			new_edit->copy_from(edit);
+			edit->transition = trans;
+			return new_edit;
+		}
 		return edit;
-
+	}
 // Split existing edit
-	Edit *new_edit = create_edit();
-	Transition *trans = edit->transition;
+	new_edit = create_edit();
+	trans = edit->transition;
 	edit->transition = 0;
 
 	insert_after(edit, new_edit);
 	new_edit->copy_from(edit);
 	new_edit->project_pts = postime;
-	new_edit->source_pts += edit->length();
+	if(edit->asset)
+		new_edit->source_pts += edit->length();
 
 	if(trans)
 	{
