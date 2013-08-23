@@ -212,7 +212,6 @@ void EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				else
 				if(file->tag.title_is("CLIPBOARD"))
 				{
-					local_session->clipboard_length = file->tag.get_property("LENGTH", 0);
 				}
 				else
 				if(file->tag.title_is("VIDEO"))
@@ -470,8 +469,6 @@ void EDL::copy(ptstime start,
 	if(!all)
 	{
 		file->tag.set_title("CLIPBOARD");
-		file->tag.set_property("LENGTH", end - start);
-		file->append_tag();
 		file->tag.set_title("/CLIPBOARD");
 		file->append_tag();
 		file->append_newline();

@@ -74,9 +74,6 @@ public:
 	EDL *edl;
 
 // Variables specific to each EDL
-// Number of samples if pasted from a clipboard.
-// If 0 use longest track
-	double clipboard_length;
 // Title if clip
 	char clip_title[BCTEXTLEN];
 	char clip_notes[BCTEXTLEN];

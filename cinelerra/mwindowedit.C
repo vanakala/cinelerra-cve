@@ -1089,9 +1089,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	{
 		EDL *new_edl = new_edls->values[i];
 
-		ptstime edl_length = new_edl->local_session->clipboard_length ?
-			new_edl->local_session->clipboard_length :
-			new_edl->tracks->total_length();
+		ptstime edl_length = new_edl->tracks->total_length();
 
 // Add assets and prepare index files
 		for(Asset *new_asset = new_edl->assets->first;

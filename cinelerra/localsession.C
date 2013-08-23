@@ -58,7 +58,6 @@ LocalSession::LocalSession(EDL *edl)
 	strcpy(folder, CLIP_FOLDER);
 	sprintf(clip_title, "Program");
 	strcpy(clip_notes, "Hello world");
-	clipboard_length = 0;
 	preview_start = preview_end = 0;
 	loop_playback = 0;
 	loop_start = 0;
@@ -183,7 +182,6 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 {
 	if(load_flags & LOAD_SESSION)
 	{
-		clipboard_length = 0;
 // Overwritten by MWindow::load_filenames
 		file->tag.get_property("CLIP_TITLE", clip_title);
 		file->tag.get_property("CLIP_NOTES", clip_notes);
@@ -399,8 +397,8 @@ void LocalSession::dump(int indent)
 		selectionstart, selectionend, in_point, out_point);
 	printf("%*strack start %lld view start %.3f preview %.3f..%.3f\n", indent, "",
 		track_start, view_start_pts, preview_start, preview_end);
-	printf("%*sloop_playback %d %.3f..%.3f clipboard_length %.3f\n", indent, "",
-		loop_playback, loop_start, loop_end, clipboard_length);
+	printf("%*sloop_playback %d %.3f..%.3f\n", indent, "",
+		loop_playback, loop_start, loop_end);
 	printf("%*szoom_time %.3f zoom_y %lld zoom_track %lld showautotype %d\n",  indent, "",
 		zoom_time, zoom_y, zoom_track, zoombar_showautotype);
 	printf("%*seye dropper red %.3f green %.3f blue %.3f\n", indent, "",
