@@ -673,18 +673,13 @@ void Edits::paste_silence(ptstime start, ptstime end)
 
 	if(new_edit->asset)
 	{ // we are in fact creating a new edit
-		new_edit = insert_edit(start, end - start);
+		split_edit(start);
+		new_edit = split_edit(start, 1);
 		new_edit->asset = 0;
 		new_edit->source_pts = 0;
-		if(new_edit->next)
-			new_edit->next->source_pts -= end - start;
 	}
 	if(new_edit->next)
-	{
-		new_edit = new_edit->next;
-		for(Edit *current = new_edit->next; current; current = NEXT)
-			current->project_pts += end - start;
-	}
+		move_edits(new_edit->next, end, MOVE_ALL_EDITS);
 }
 
 Edit* Edits::shift(ptstime position, ptstime difference)
