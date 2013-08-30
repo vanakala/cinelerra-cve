@@ -242,9 +242,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				// FIXME: there should be a GUI way to tell whenever user also wants to move autos or not
 // Copy keyframes
 					FileXML temp;
-					AutoConf temp_autoconf;
-
-					temp_autoconf.set_all(1);
 					source_track->automation->copy(source_edit->project_pts,
 						source_edit->end_pts(),
 						&temp);
@@ -253,7 +250,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 // Insert new keyframes
 					source_track->automation->clear(source_edit->project_pts,
 						source_edit->end_pts(),
-						&temp_autoconf,
+						0,
 						1);
 					ptstime postime_a = postime;
 					if (dest_track == source_track)
@@ -266,9 +263,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					while(!temp.read_tag())
 						dest_track->automation->paste(postime_a,
 							source_length,
-							1.0, 
-							&temp,
-							&temp_autoconf);
+							&temp);
 
 // Insert new edit (shift creates new edit)
 					Edit *result = dest_track->edits->shift(postime, source_length);
