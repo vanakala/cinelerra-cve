@@ -474,12 +474,10 @@ void Edits::clear(ptstime start, ptstime end)
 		current_edit = current_edit->next;
 	}
 
-	for(; current_edit; current_edit = current_edit->next)
+	if(current_edit)
 	{
-		if(current_edit->project_pts < len)
-			current_edit->project_pts = 0;
-		else
-			current_edit->project_pts -= len;
+		ptstime end_pos = current_edit->project_pts - len;
+		move_edits(current_edit, end_pos, MOVE_ALL_EDITS);
 	}
 }
 
@@ -688,14 +686,11 @@ void Edits::paste_silence(ptstime start, ptstime end)
 
 Edit* Edits::shift(ptstime position, ptstime difference)
 {
-	Edit *new_edit = split_edit(position);
+	ptstime end = position + difference;
+	Edit *new_edit = split_edit(position, 1);
 
-	for(Edit *current = new_edit->next;
-		current; 
-		current = NEXT)
-	{
-		current->shift(difference);
-	}
+	if(new_edit->next)
+		move_edits(new_edit->next, end, MOVE_ALL_EDITS);
 	return new_edit;
 }
 
