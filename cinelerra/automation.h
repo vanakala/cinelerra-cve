@@ -73,6 +73,9 @@ public:
 		double scale,
 		FileXML *file,
 		AutoConf *autoconf);
+	void paste(ptstime start,
+		ptstime length,
+		FileXML *file);
 
 // Get projector coordinates if this is video automation
 	virtual void get_projector(float *x, 

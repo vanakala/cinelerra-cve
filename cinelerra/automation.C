@@ -164,6 +164,20 @@ int Automation::paste(ptstime start,
 	return 0;
 }
 
+void Automation::paste(ptstime start,
+	ptstime length,
+	FileXML *file)
+{
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(file->tag.title_is(xml_titles[i]) && autos[i])
+		{
+			autos[i]->paste(start, length, 1.0, file);
+			return;
+		}
+	}
+}
+
 int Automation::copy(ptstime start,
 	ptstime end,
 	FileXML *file)
