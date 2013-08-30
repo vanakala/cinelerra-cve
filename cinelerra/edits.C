@@ -558,7 +558,7 @@ void Edits::modify_handles(ptstime &oldposition,
 
 void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 {
-	Edit *ed;
+	Edit *ed, *ted;
 	ptstime cut_length, apts, oldposition;
 
 	if(current_edit)
@@ -570,8 +570,9 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 		if(PTSEQU(oldposition, newposition))
 			return;
 
+// Can't move the first edit
 		if((edit_mode == MOVE_ALL_EDITS || edit_mode == MOVE_ONE_EDIT)
-				&& fabs(oldposition) < EPSILON)
+				&& current_edit == first)
 			return;
 		if(newposition < oldposition)
 		{
@@ -591,8 +592,11 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 
 				for(ed = current_edit->previous;
 						ed && (ed->project_pts > newposition || PTSEQU(ed->project_pts, newposition));
-						ed = ed->previous)
+						ed = ted)
+				{
+					ted = ed->previous;
 					remove(ed);
+				}
 
 				current_edit->project_pts = newposition;
 				current_edit->shift_keyframes(cut_length);
