@@ -691,6 +691,8 @@ Edit* Edits::shift(ptstime position, ptstime difference)
 
 	if(new_edit->next)
 		move_edits(new_edit->next, end, MOVE_ALL_EDITS);
+	else
+		split_edit(end, 1);
 	return new_edit;
 }
 
