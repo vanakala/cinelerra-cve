@@ -71,6 +71,8 @@ public:
 // Shift edits on or after position by distance
 // Return the edit now on the position.
 	virtual Edit* shift(ptstime position, ptstime difference);
+// Sanitize edits
+	virtual void cleanup();
 
 	EDL *edl;
 	Track *track;

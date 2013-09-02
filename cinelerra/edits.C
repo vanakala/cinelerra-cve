@@ -479,6 +479,7 @@ void Edits::clear(ptstime start, ptstime end)
 		ptstime end_pos = current_edit->project_pts - len;
 		move_edits(current_edit, end_pos, MOVE_ALL_EDITS);
 	}
+	cleanup();
 }
 
 void Edits::clear_handle(ptstime start,
@@ -694,6 +695,29 @@ Edit* Edits::shift(ptstime position, ptstime difference)
 	else
 		split_edit(end, 1);
 	return new_edit;
+}
+
+void Edits::cleanup()
+{
+	for(Edit *current = first; current; current = current->next)
+	{
+		if(!current->asset)
+			current->source_pts = 0;
+		if(current == first)
+			current->project_pts = 0;
+		while(current->next)
+		{
+			if(!current->asset && !current->next->asset)
+				remove(current->next);
+			else if(current->asset == current->next->asset &&
+					PTSEQU(current->source_pts + current->length(), current->next->source_pts))
+				remove(current->next);
+			else
+				break;
+		}
+	}
+	if(first && fabs(first->length()) < EPSILON)
+		remove(first);
 }
 
 void Edits::dump(int indent)
