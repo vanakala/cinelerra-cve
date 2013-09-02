@@ -690,6 +690,8 @@ Edit* Edits::shift(ptstime position, ptstime difference)
 	ptstime end = position + difference;
 	Edit *new_edit = split_edit(position, 1);
 
+	if(fabs(difference) < EPSILON)
+		return new_edit;
 	if(new_edit->next)
 		move_edits(new_edit->next, end, MOVE_ALL_EDITS);
 	else
