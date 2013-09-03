@@ -200,38 +200,19 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 			Edit *source_edit = 0;
 			Track *source_track = 0;
 			ptstime source_length;
+			int current_edit = 0;
 
 // Get source track
-			if(dest_track->data_type == TRACK_AUDIO)
-			{
-				int current_aedit = 0;
+			while(current_edit < edits->total &&
+					edits->values[current_edit]->track->data_type != dest_track->data_type)
+				current_edit++;
 
-				while(current_aedit < edits->total &&
-					edits->values[current_aedit]->track->data_type != TRACK_AUDIO)
-					current_aedit++;
-
-				if(current_aedit < edits->total)
-				{
-					source_edit = edits->values[current_aedit];
-					source_track = source_edit->track;
-					source_length = source_edit->length();
-					edits->remove_number(current_aedit);
-				}
-			}
-			else
-			if(dest_track->data_type == TRACK_VIDEO)
+			if(current_edit < edits->total)
 			{
-				int current_vedit = 0;
-				while(current_vedit < edits->total &&
-					edits->values[current_vedit]->track->data_type != TRACK_VIDEO)
-					current_vedit++;
-				if(current_vedit < edits->total)
-				{
-					source_edit = edits->values[current_vedit];
-					source_track = source_edit->track;
-					source_length = source_edit->length();
-					edits->remove_number(current_vedit);
-				}
+				source_edit = edits->values[current_edit];
+				source_track = source_edit->track;
+				source_length = source_edit->length();
+				edits->remove_number(current_edit);
 			}
 
 			if(source_edit)
