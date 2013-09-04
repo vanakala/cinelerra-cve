@@ -31,7 +31,6 @@ class AEdit : public Edit
 public:
 	AEdit(EDL *edl, Edits *edits);
 
-	void load_properties_derived(FileXML *xml);
 	ptstime get_source_end(ptstime default_value);
 
 private:

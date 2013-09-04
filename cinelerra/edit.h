@@ -99,11 +99,8 @@ public:
 // ============================= initialization
 
 	ptstime load_properties(FileXML *xml, ptstime project_pts);
-	virtual void load_properties_derived(FileXML *xml) {};
 
 // ============================= editing
-
-	virtual int copy_properties_derived(FileXML *xml, ptstime len_in_selection) { return 0; };
 	virtual ptstime get_source_end(ptstime default_value);
 	void dump(int indent = 0);
 };

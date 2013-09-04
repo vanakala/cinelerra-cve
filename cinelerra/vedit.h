@@ -39,7 +39,6 @@ public:
 			int use_cache,
 			int use_asynchronous);
 
-	void load_properties_derived(FileXML *xml);
 	ptstime get_source_end(ptstime default_value);
 
 private:

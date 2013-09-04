@@ -107,9 +107,6 @@ int Edit::copy(ptstime start, ptstime end, FileXML *file, const char *output_pat
 			file->tag.set_property("CHANNEL", (int64_t)channel);
 			file->tag.set_property("LENGTH_TIME", len_in_selection);
 			if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
-
-			copy_properties_derived(file, len_in_selection);
-
 			file->append_tag();
 
 			if(asset)
@@ -326,8 +323,8 @@ ptstime Edit::load_properties(FileXML *file, ptstime project_pts)
 	length_time = file->tag.get_property("LENGTH_TIME", length_time);
 	user_title[0] = 0;
 	file->tag.get_property("USER_TITLE", user_title);
+	channel = file->tag.get_property("CHANNEL", (int32_t)0);
 	this->project_pts = project_pts;
-	load_properties_derived(file);
 	return length_time;
 }
 

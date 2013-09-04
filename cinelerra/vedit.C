@@ -34,11 +34,6 @@ VEdit::VEdit(EDL *edl, Edits *edits)
 {
 }
 
-void VEdit::load_properties_derived(FileXML *xml)
-{
-	channel = xml->tag.get_property("CHANNEL", (int64_t)0);
-}
-
 // ================================================== editing
 int VEdit::read_frame(VFrame *video_out, 
 	ptstime input_postime,

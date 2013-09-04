@@ -30,12 +30,6 @@ AEdit::AEdit(EDL *edl, Edits *edits)
 {
 }
 
-void AEdit::load_properties_derived(FileXML *xml)
-{
-	channel = xml->tag.get_property("CHANNEL", (int32_t)0);
-}
-
-
 ptstime AEdit::get_source_end(ptstime default_value)
 {
 	if(!asset) return default_value;   // Infinity
