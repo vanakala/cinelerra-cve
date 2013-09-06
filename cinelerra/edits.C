@@ -304,9 +304,16 @@ void Edits::load(FileXML *file, int track_offset)
 void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 {
 	Edit* current;
+	ptstime duration;
 
 	current = append(create_edit());
-	project_time += current->load_properties(file, project_time);
+
+	duration = current->load_properties(file, project_time);
+	if(duration < 0)
+		project_time = current->project_pts;
+	else
+		project_time += duration;
+
 	int result = 0;
 
 	do{
@@ -419,16 +426,54 @@ Edit* Edits::get_playable_edit(ptstime postime, int use_nudge)
 
 void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_path)
 {
-	Edit *current_edit;
+	Edit *current_edit, *tmp_edit = 0;
+
 	file->tag.set_title("EDITS");
 	file->append_tag();
 	file->append_newline();
 
 	for(current_edit = first; current_edit; current_edit = current_edit->next)
 	{
-		current_edit->copy(start, end, file, output_path);
+		if(current_edit->end_pts() < start - EPSILON)
+			continue;
+		if(!tmp_edit)
+			tmp_edit = create_edit();
+		if(current_edit->project_pts < start && !PTSEQU(current_edit->project_pts, start))
+		{
+			tmp_edit->copy_from(current_edit);
+			tmp_edit->project_pts = 0;
+			if(tmp_edit->asset)
+				tmp_edit->source_pts = current_edit->source_pts + start - current_edit->project_pts;
+			tmp_edit->copy(file, output_path);
+		}
+		else
+		if(current_edit->project_pts > end && !PTSEQU(current_edit->project_pts, end))
+		{
+			if(!tmp_edit)
+				tmp_edit = create_edit();
+			tmp_edit->project_pts = end - start;
+			tmp_edit->asset = 0;
+			tmp_edit->source_pts = 0;
+			tmp_edit->transition = 0;
+			tmp_edit->channel = 0;
+			tmp_edit->copy(file, output_path);
+			break;
+		}
+		else
+		{
+			if(fabs(start) > EPSILON)
+			{
+				tmp_edit->copy_from(current_edit);
+				tmp_edit->project_pts -= start;
+			}
+			else
+				current_edit->copy(file, output_path);
+		}
+		if(PTSEQU(current_edit->project_pts, end))
+			break;
 	}
 
+	delete tmp_edit;
 	file->tag.set_title("/EDITS");
 	file->append_tag();
 	file->append_newline();

@@ -60,7 +60,7 @@ public:
 // Get size of frame to draw on timeline
 	double picon_w(void);
 	int picon_h(void);
-	int copy(ptstime start, ptstime end, FileXML *xml, const char *output_path);
+	void copy(FileXML *xml, const char *output_path);
 
 // Shift in time
 	virtual void shift(ptstime difference);

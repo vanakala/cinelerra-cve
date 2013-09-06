@@ -72,84 +72,54 @@ Edit::~Edit()
 	if(transition) delete transition;
 }
 
-int Edit::copy(ptstime start, ptstime end, FileXML *file, const char *output_path)
+void Edit::copy(FileXML *file, const char *output_path)
 {
-	ptstime endpts = end_pts();
-	int result;
-
-	if((project_pts >= start && project_pts <= end) ||  // startproject in range
-		(endpts <= end && endpts >= start) ||   // endproject in range
-		(project_pts <= start && endpts >= end))    // range in project
+	if(file)    // only if not counting
 	{
-// edit is in range
-		ptstime startproj_in_selection = project_pts; // start of edit in selection in project
-		ptstime startsrc_in_selection = source_pts; // start of source in selection in source
-		ptstime len_in_selection = length();             // length of edit in selection
+		file->tag.set_title("EDIT");
+		file->tag.set_property("PTS", project_pts);
 
-		if(project_pts < start)
-		{         // start is after start of edit in project
-			ptstime len_difference = start - project_pts;
-
-			startsrc_in_selection += len_difference;
-			startproj_in_selection += len_difference;
-			len_in_selection -= len_difference;
-		}
-
-		if(endpts > end)
-		{         // end is before end of edit in project
-			len_in_selection = end - startproj_in_selection;
-		}
-
-		if(file)    // only if not counting
+		if(asset)
 		{
-			file->tag.set_title("EDIT");
-			file->tag.set_property("SOURCE_PTS", startsrc_in_selection);
-			file->tag.set_property("CHANNEL", (int64_t)channel);
-			file->tag.set_property("LENGTH_TIME", len_in_selection);
-			if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
-			file->append_tag();
-
-			if(asset)
-			{
-				char stored_path[1024];
-				char asset_directory[1024], output_directory[1024];
-				FileSystem fs;
-
-				fs.extract_dir(asset_directory, asset->path);
-
-				if(output_path)
-					fs.extract_dir(output_directory, output_path);
-				else
-					output_directory[0] = 0;
-
-				if(output_path && !strcmp(asset_directory, output_directory))
-					fs.extract_name(stored_path, asset->path);
-				else
-					strcpy(stored_path, asset->path);
-
-				file->tag.set_title("FILE");
-				file->tag.set_property("SRC", stored_path);
-				file->append_tag();
-				file->tag.set_title("/FILE");
-				file->append_tag();
-			}
-
-			if(transition)
-			{
-				transition->save_xml(file);
-			}
-
-			file->tag.set_title("/EDIT");
-			file->append_tag();
-			file->append_newline();
+			file->tag.set_property("SOURCE_PTS", source_pts);
+			file->tag.set_property("CHANNEL", channel);
 		}
-		result = 1;
+		if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
+
+		file->append_tag();
+
+		if(asset)
+		{
+			char stored_path[1024];
+			char asset_directory[1024], output_directory[1024];
+			FileSystem fs;
+
+			fs.extract_dir(asset_directory, asset->path);
+
+			if(output_path)
+				fs.extract_dir(output_directory, output_path);
+			else
+				output_directory[0] = 0;
+
+			if(output_path && !strcmp(asset_directory, output_directory))
+				fs.extract_name(stored_path, asset->path);
+			else
+				strcpy(stored_path, asset->path);
+
+			file->tag.set_title("FILE");
+			file->tag.set_property("SRC", stored_path);
+			file->append_tag();
+			file->tag.set_title("/FILE");
+			file->append_tag();
+		}
+
+		if(transition)
+			transition->save_xml(file);
+
+		file->tag.set_title("/EDIT");
+		file->append_tag();
+		file->append_newline();
 	}
-	else
-	{
-		result = 0;
-	}
-	return result;
 }
 
 
@@ -311,20 +281,27 @@ void Edit::dump(int indent)
 ptstime Edit::load_properties(FileXML *file, ptstime project_pts)
 {
 	posnum startsource, length;
-	ptstime length_time;
+	ptstime length_time = -1;
+	ptstime cur_pts;
 
 	startsource = file->tag.get_property("STARTSOURCE", (posnum)0);
 	if(startsource)
 		source_pts = track->from_units(startsource);
 	source_pts = file->tag.get_property("SOURCE_PTS", source_pts);
-	length = file->tag.get_property("LENGTH", (int64_t)0);
-	if(length)
-		length_time = track->from_units(length);
-	length_time = file->tag.get_property("LENGTH_TIME", length_time);
+	cur_pts = file->tag.get_property("PTS", -1.0);
+	if(cur_pts < -EPSILON)
+	{
+		length = file->tag.get_property("LENGTH", (int64_t)0);
+		if(length)
+			length_time = track->from_units(length);
+		length_time = file->tag.get_property("LENGTH_TIME", length_time);
+		this->project_pts = project_pts;
+	}
+	else
+		this->project_pts = cur_pts;
 	user_title[0] = 0;
 	file->tag.get_property("USER_TITLE", user_title);
 	channel = file->tag.get_property("CHANNEL", (int32_t)0);
-	this->project_pts = project_pts;
 	return length_time;
 }
 
