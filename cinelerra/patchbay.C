@@ -44,66 +44,6 @@
 #include "vpatchgui.h"
 
 
-NudgePopup::NudgePopup(MWindow *mwindow, PatchBay *patchbay)
- : BC_PopupMenu(0, 
-		0, 
-		0, 
-		"", 
-		0)
-{
-	this->mwindow = mwindow;
-	this->patchbay = patchbay;
-}
-
-void NudgePopup::create_objects()
-{
-	add_item(seconds_item = new NudgePopupSeconds(this));
-	add_item(native_item = new NudgePopupNative(this));
-}
-
-void NudgePopup::activate_menu(PatchGUI *gui)
-{
-// Set checked status
-	seconds_item->set_checked(mwindow->edl->session->nudge_seconds ? 1 : 0);
-	native_item->set_checked(mwindow->edl->session->nudge_seconds ? 0 : 1);
-
-// Set native units to track format
-	native_item->set_text(gui->track->data_type == TRACK_AUDIO ? 
-		(char*)"Samples" : 
-		(char*)"Frames");
-
-// Show it
-	BC_PopupMenu::activate_menu();
-}
-
-NudgePopupSeconds::NudgePopupSeconds(NudgePopup *popup)
- : BC_MenuItem("Seconds")
-{
-	this->popup = popup;
-}
-
-int NudgePopupSeconds::handle_event()
-{
-	popup->mwindow->edl->session->nudge_seconds = 1;
-	popup->patchbay->update();
-	return 1;
-}
-
-
-NudgePopupNative::NudgePopupNative(NudgePopup *popup)
- : BC_MenuItem("")
-{
-	this->popup = popup;
-}
-
-int NudgePopupNative::handle_event()
-{
-	popup->mwindow->edl->session->nudge_seconds = 0;
-	popup->patchbay->update();
-	return 1;
-}
-
-
 PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
  : BC_SubWindow(mwindow->theme->patchbay_x,
 	mwindow->theme->patchbay_y,
@@ -149,9 +89,6 @@ void PatchBay::create_objects()
 	mode_icons[TRANSFER_MAX] = new BC_Pixmap(this, 
 		mwindow->theme->get_image("mode_max"),
 		PIXMAP_ALPHA);
-
-	add_subwindow(nudge_popup = new NudgePopup(mwindow, this));
-	nudge_popup->create_objects();
 }
 
 BC_Pixmap* PatchBay::mode_to_icon(int mode)

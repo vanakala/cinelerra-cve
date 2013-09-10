@@ -240,7 +240,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 		sprintf(string, "TIMECODE_OFFSET_%d", i);
 		timecode_offset[i] = defaults->get(string, 0);
 	}
-	nudge_seconds = defaults->get("NUDGE_FORMAT", 1);
 	tool_window = defaults->get("TOOL_WINDOW", 0);
 	vconfig_in->load_defaults(defaults);
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -360,7 +359,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 		sprintf(string, "TIMECODE_OFFSET_%d", i);
 		defaults->update(string, timecode_offset[i]);
 	}
-	defaults->update("NUDGE_FORMAT", nudge_seconds);
+	defaults->delete_key("NUDGE_FORMAT");
 	defaults->update("TOOL_WINDOW", tool_window);
 	vconfig_in->save_defaults(defaults);
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -520,7 +519,6 @@ int EDLSession::load_xml(FileXML *file,
 			sprintf(string, "TIMECODE_OFFSET_%d", i);
 			timecode_offset[i] = file->tag.get_property(string, timecode_offset[i]);
 		}
-		nudge_seconds = file->tag.get_property("NUDGE_FORMAT", nudge_seconds);
 		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 		vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
 		file->tag.get_property("VWINDOW_FOLDER", vwindow_folder);
@@ -582,7 +580,6 @@ int EDLSession::save_xml(FileXML *file)
 		sprintf(string, "TIMECODE_OFFSET_%d", i);
 		file->tag.set_property(string, timecode_offset[i]);
 	}
-	file->tag.set_property("NUDGE_SECONDS", nudge_seconds);
 	file->tag.set_property("TOOL_WINDOW", tool_window);
 	file->tag.set_property("VWINDOW_METER", vwindow_meter);
 	file->tag.set_property("VWINDOW_FOLDER", vwindow_folder);
@@ -738,7 +735,6 @@ int EDLSession::copy(EDLSession *session)
 	{
 		timecode_offset[i] = session->timecode_offset[i];
 	}
-	nudge_seconds = session->nudge_seconds;
 	tool_window = session->tool_window;
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{

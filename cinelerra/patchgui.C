@@ -296,35 +296,20 @@ void PatchGUI::toggle_behavior(int type,
 char* PatchGUI::calculate_nudge_text(int *changed)
 {
 	if(changed) *changed = 0;
-	if(track->edl->session->nudge_seconds)
-	{
-		sprintf(string_return, "%.4f", track->nudge);
-		if(changed && nudge && atof(nudge->get_text()) - atof(string_return) != 0)
-			*changed = 1;
-	}
-	else
-	{
-		sprintf(string_return, "%lld", track->to_units(track->nudge, 0));
-		if(changed && nudge && atoi(nudge->get_text()) - atoi(string_return) != 0)
-			*changed = 1;
-	}
+
+	sprintf(string_return, "%.4f", track->nudge);
+	if(changed && nudge && atof(nudge->get_text()) - atof(string_return) != 0)
+		*changed = 1;
+
 	return string_return;
 }
 
 ptstime PatchGUI::calculate_nudge(char *string)
 {
-	if(mwindow->edl->session->nudge_seconds)
-	{
-		ptstime result;
-		sscanf(string, "%lf", &result);
-		return result;
-	}
-	else
-	{
-		posnum temp;
-		sscanf(string, "%lld", &temp);
-		return track->from_units(temp);
-	}
+	ptstime result;
+
+	sscanf(string, "%lf", &result);
+	return result;
 }
 
 
@@ -684,12 +669,6 @@ int NudgePatch::button_press_event()
 			value -= calculate_increment();
 			set_value(value);
 			update();
-			result = 1;
-		}
-		else
-		if(get_buttonpress() == 3)
-		{
-			patch->patchbay->nudge_popup->activate_menu(patch);
 			result = 1;
 		}
 	}

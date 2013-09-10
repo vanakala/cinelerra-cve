@@ -30,9 +30,6 @@
 #include "patchbay.inc"
 #include "patchgui.inc"
 
-class NudgePopupSeconds;
-class NudgePopupNative;
-class NudgePopup;
 
 class PatchBay : public BC_SubWindow
 {
@@ -70,41 +67,6 @@ public:
 
 	int button_down, new_status, drag_operation, reconfigure_trigger;
 	BC_Pixmap *mode_icons[TRANSFER_TYPES];
-
-	NudgePopup *nudge_popup;
-};
-
-
-class NudgePopup : public BC_PopupMenu
-{
-public:
-	NudgePopup(MWindow *mwindow, PatchBay *patchbay);
-
-	void create_objects();
-	void activate_menu(PatchGUI *gui);
-
-	MWindow *mwindow;
-	PatchBay *patchbay;
-	NudgePopupSeconds *seconds_item;
-	NudgePopupNative *native_item;
-};
-
-
-class NudgePopupSeconds : public BC_MenuItem
-{
-public:
-	NudgePopupSeconds(NudgePopup *popup);
-	int handle_event();
-	NudgePopup *popup;
-};
-
-
-class NudgePopupNative : public BC_MenuItem
-{
-public:
-	NudgePopupNative(NudgePopup *popup);
-	int handle_event();
-	NudgePopup *popup;
 };
 
 #endif

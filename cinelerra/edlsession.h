@@ -176,8 +176,6 @@ public:
 	int time_format;
 // Offset for timecode
 	int timecode_offset[4];
-// Format to display nudge in, either seconds or track units.
-	int nudge_seconds;
 // Show tool window in CWindow
 	int tool_window;
 // Location of video outs
