@@ -42,6 +42,8 @@
 #include "tracks.h"
 #include "vframe.h"
 
+#include <string.h>
+
 
 PatchGUI::PatchGUI(MWindow *mwindow, 
 		PatchBay *patchbay, 
@@ -298,7 +300,7 @@ char* PatchGUI::calculate_nudge_text(int *changed)
 	if(changed) *changed = 0;
 
 	sprintf(string_return, "%.4f", track->nudge);
-	if(changed && nudge && atof(nudge->get_text()) - atof(string_return) != 0)
+	if(changed && nudge && strcmp(nudge->get_text(), string_return))
 		*changed = 1;
 
 	return string_return;
