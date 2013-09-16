@@ -111,7 +111,7 @@ void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, ptstime position, 
 		{
 			for(Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
-				ptstime startproject = edit->project_pts;
+				ptstime startproject = edit->get_pts();
 				if(edl->equivalent(startproject, position))
 				{
 					drag_edits->append(edit);

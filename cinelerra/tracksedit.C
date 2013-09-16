@@ -223,20 +223,20 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				// FIXME: there should be a GUI way to tell whenever user also wants to move autos or not
 // Copy keyframes
 					FileXML temp;
-					source_track->automation->copy(source_edit->project_pts,
+					source_track->automation->copy(source_edit->get_pts(),
 						source_edit->end_pts(),
 						&temp);
 					temp.terminate_string();
 					temp.rewind();
 // Insert new keyframes
-					source_track->automation->clear(source_edit->project_pts,
+					source_track->automation->clear(source_edit->get_pts(),
 						source_edit->end_pts(),
 						0,
 						1);
 					ptstime postime_a = postime;
 					if (dest_track == source_track)
 					{
-						if (postime_a > source_edit->project_pts)
+						if (postime_a > source_edit->get_pts())
 							postime_a -= source_length;
 					}
 					dest_track->automation->paste_silence(postime_a,
@@ -249,10 +249,10 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 // Insert new edit (shift creates new edit)
 					Edit *result = dest_track->edits->shift(postime, source_length);
 					result->copy_from(source_edit);
-					result->project_pts = postime;
+					result->set_pts(postime);
 // Clear source
-					source_track->edits->clear(source_edit->project_pts,
-						source_edit->project_pts + source_length);
+					source_track->edits->clear(source_edit->get_pts(),
+						source_edit->get_pts() + source_length);
 
 				} else
 				if (behaviour == 1)
@@ -262,11 +262,11 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 						postime + source_length);
 					Edit *result = dest_track->edits->shift(postime, source_length);
 					result->copy_from(source_edit);
-					result->project_pts = postime;
+					result->set_pts(postime);
 					// we call the edits directly since we do not want to move keyframes or anything else
-					source_track->edits->clear(source_edit->project_pts,
+					source_track->edits->clear(source_edit->get_pts(),
 						source_edit->end_pts());
-					source_track->edits->paste_silence(source_edit->project_pts,
+					source_track->edits->paste_silence(source_edit->get_pts(),
 						source_edit->end_pts());
 				}
 				source_track->optimize();
@@ -287,10 +287,10 @@ void Tracks::move_effect(Plugin *plugin,
 // Insert on an existing plugin set
 	if(!dest_track && dest_plugin_set && plugin->plugin_set == dest_plugin_set)
 	{
-		ptstime opos = plugin->project_pts;
+		ptstime opos = plugin->get_pts();
 		ptstime length = plugin->length();
-		plugin->project_pts = dest_postime;
-		plugin->next->project_pts = dest_postime + length;
+		dest_postime = plugin->set_pts(dest_postime);
+		plugin->next->set_pts(dest_postime + length);
 		plugin->shift_keyframes(dest_postime - opos);
 	}
 	else
@@ -305,10 +305,10 @@ void Tracks::move_effect(Plugin *plugin,
 				plugin->plugin_type);
 
 	result->copy_from(plugin);
-	result->shift(dest_postime - plugin->project_pts);
+	result->shift(dest_postime - plugin->get_pts());
 
 // Clear new plugin from old set
-	plugin->plugin_set->clear(plugin->project_pts, 
+	plugin->plugin_set->clear(plugin->get_pts(),
 		plugin->end_pts());
 	}
 

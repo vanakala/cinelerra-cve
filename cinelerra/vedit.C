@@ -54,11 +54,11 @@ int VEdit::read_frame(VFrame *video_out,
 			file->stop_video_thread();
 
 		video_out->set_layer(channel);
-		video_out->set_source_pts(input_postime - project_pts + source_pts);
+		video_out->set_source_pts(input_postime - get_pts() + get_source_pts());
 		if(use_cache) file->set_cache_frames(use_cache);
 		int result = file->get_frame(video_out);
 		if(use_cache) file->set_cache_frames(0);
-		video_out->set_pts(video_out->get_source_pts() - source_pts + project_pts);
+		video_out->set_pts(video_out->get_source_pts() - get_source_pts() + get_pts());
 		cache->check_in(asset);
 		return result;
 	}

@@ -120,8 +120,8 @@ void Track::equivalent_output(Track *track, ptstime *result)
 		Plugin *current = plugin_set.values[i]->get_first_plugin();
 		if(current)
 		{
-			if(result2 < 0 || current->project_pts < result2)
-				result2 = current->project_pts;
+			if(result2 < 0 || current->get_pts() < result2)
+				result2 = current->get_pts();
 		}
 	}
 
@@ -131,8 +131,8 @@ void Track::equivalent_output(Track *track, ptstime *result)
 		Plugin *current = track->plugin_set.values[i]->get_first_plugin();
 		if(current)
 		{
-			if(result2 < 0 || current->project_pts < result2)
-				result2 = current->project_pts;
+			if(result2 < 0 || current->get_pts() < result2)
+				result2 = current->get_pts();
 		}
 	}
 
@@ -217,14 +217,14 @@ ptstime Track::get_length()
 
 // Test edits
 	if(edits->last)
-		total_length = edits->last->project_pts;
+		total_length = edits->last->get_pts();
 
 // Test plugins
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		if(plugin = plugin_set.values[i]->last)
 		{
-			length = plugin->project_pts;
+			length = plugin->get_pts();
 			if(length > total_length)
 				total_length = length;
 		}
@@ -236,7 +236,7 @@ void Track::get_source_dimensions(ptstime position, int &w, int &h)
 {
 	for(Edit *current = edits->first; current; current = NEXT)
 	{
-		if(current->project_pts <= position &&
+		if(current->get_pts() <= position &&
 			current->end_pts() > position &&
 			current->asset)
 		{
@@ -408,7 +408,7 @@ Plugin* Track::insert_effect(const char *title,
 			if(source_plugin)
 			{
 				plugin = plugin_set->insert_plugin(title, 
-					source_plugin->project_pts,
+					source_plugin->get_pts(),
 					source_plugin->length(),
 					plugin_type, 
 					shared_location,
@@ -613,7 +613,7 @@ Plugin* Track::get_current_plugin(ptstime postime,
 		current; 
 		current = (Plugin*)PREVIOUS)
 	{
-		if(current->project_pts <= postime && 
+		if(current->get_pts() <= postime &&
 			current->end_pts() > postime)
 		{
 			return current;
@@ -630,9 +630,9 @@ Plugin* Track::get_current_transition(ptstime position)
 
 	for(current = edits->last; current; current = PREVIOUS)
 	{
-		if(current->project_pts <= position && current->end_pts() > position)
+		if(current->get_pts() <= position && current->end_pts() > position)
 		{
-			if(current->transition && position < current->project_pts + current->transition->length())
+			if(current->transition && position < current->get_pts() + current->transition->length())
 			{
 				result = current->transition;
 				break;
@@ -847,7 +847,7 @@ void Track::copy_assets(ptstime start,
 	Edit *current = edits->editof(start, 0);
 
 // Search all edits
-	while(current && current->project_pts < end)
+	while(current && current->get_pts() < end)
 	{
 // Check for duplicate assets
 		if(current->asset)
@@ -963,7 +963,7 @@ int Track::playable_edit(ptstime position)
 
 	for(Edit *current = edits->first; current && !result; current = NEXT)
 	{
-		if(current->project_pts <= position && 
+		if(current->get_pts() <= position && 
 			current->end_pts() > position)
 		{
 			if(current->transition || current->asset) result = 1;
@@ -1004,7 +1004,7 @@ ptstime Track::edit_change_duration(ptstime input_position,
 // =================================== forward playback
 // Get first edit on or before position
 	for(current = edits->last; 
-		current && current->project_pts > input_position;
+		current && current->get_pts() > input_position;
 		current = PREVIOUS);
 
 	if(current)
@@ -1028,25 +1028,23 @@ ptstime Track::edit_change_duration(ptstime input_position,
 // Search for next edit of interest.
 			for(current = NEXT;
 				current && 
-				current->project_pts < input_position + input_length &&
+				current->get_pts() < input_position + input_length &&
 				!need_edit(current, test_transitions);
 				current = NEXT)
 				;
 
-				if(current && 
-					need_edit(current, test_transitions) &&
-					current->project_pts < input_position + input_length) 
-					edit_length = current->project_pts - input_position;
+				if(current && need_edit(current, test_transitions) &&
+						current->get_pts() < input_position + input_length)
+					edit_length = current->get_pts() - input_position;
 		}
 	}
 	else
 	{
 // Not over an edit.  Try the first edit.
 		current = edits->first;
-		if(current && 
-			((test_transitions && current->transition) ||
-			(!test_transitions && current->asset)))
-			edit_length = edits->first->project_pts - input_position;
+		if(current && ((test_transitions && current->transition) ||
+				(!test_transitions && current->asset)))
+			edit_length = edits->first->get_pts() - input_position;
 	}
 
 	if(edit_length < input_length)

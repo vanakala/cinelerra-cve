@@ -106,8 +106,8 @@ void Plugin::copy_from(Edit *edit)
 {
 	Plugin *plugin = (Plugin*)edit;
 
-	this->source_pts = edit->source_pts;
-	this->project_pts = edit->project_pts;
+	this->set_source_pts(edit->get_source_pts());
+	this->set_pts(edit->get_pts());
 
 	this->plugin_type = plugin->plugin_type;
 	this->in = plugin->in;
@@ -167,19 +167,19 @@ void Plugin::equivalent_output(Edit *edit, ptstime *result)
 	}
 
 // Start of plugin changed
-	if(!PTSEQU(project_pts, plugin->project_pts) ||
+	if(!PTSEQU(get_pts(), plugin->get_pts()) ||
 		plugin_type != plugin->plugin_type ||
 		on != plugin->on ||
 		!(shared_location == plugin->shared_location) ||
 		strcmp(title, plugin->title))
 	{
-		if(*result < 0 || project_pts < *result)
-			*result = project_pts;
+		if(*result < 0 || get_pts() < *result)
+			*result = get_pts();
 	}
 
 // Test keyframes
 	keyframes->equivalent_output(plugin->keyframes, 
-		project_pts, result);
+		get_pts(), result);
 }
 
 int Plugin::is_synthesis(RenderEngine *renderengine, 
@@ -255,7 +255,7 @@ int Plugin::identical_location(Plugin *that)
 
 	if(plugin_set->track->number_of() == that->plugin_set->track->number_of() &&
 		plugin_set->get_number() == that->plugin_set->get_number() &&
-		PTSEQU(project_pts, that->project_pts)) return 1;
+		PTSEQU(get_pts(), that->get_pts())) return 1;
 
 	return 0;
 }
@@ -359,17 +359,17 @@ void Plugin::copy(ptstime start, ptstime end, FileXML *file)
 {
 	ptstime endproject = end_pts();
 
-	if((project_pts >= start && project_pts <= end) ||  // startproject in range
+	if((get_pts() >= start && get_pts() <= end) ||  // startproject in range
 		(endproject <= end && endproject >= start) ||   // endproject in range
-		(project_pts <= start && project_pts >= end))    // range in project
+		(get_pts() <= start && get_pts() >= end))    // range in project
 	{
 // edit is in range
-		ptstime startprj_in_selection = project_pts; // start of edit in selection in project
+		ptstime startprj_in_selection = get_pts(); // start of edit in selection in project
 		ptstime len_in_selection = length();             // length of edit in selection
 
-		if(project_pts < start)
+		if(get_pts() < start)
 		{         // start is after start of edit in project
-			startprj_in_selection += start - project_pts;
+			startprj_in_selection += start - get_pts();
 		}
 
 // Plugins don't store silence
@@ -522,7 +522,7 @@ void Plugin::calculate_title(char *string, int use_nudge)
 	{
 		shared_location.calculate_title(string, 
 			edl, 
-			project_pts,
+			get_pts(),
 			plugin_type,
 			use_nudge);
 	}
@@ -566,7 +566,7 @@ void Plugin::dump(int indent)
 		shared_location.module,
 		shared_location.plugin);
 	printf("%*sproject_pts %.3f length %.3f\n", indent, "",
-		project_pts, length());
+		get_pts(), length());
 
 	keyframes->dump(indent);
 }

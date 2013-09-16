@@ -83,7 +83,7 @@ ptstime PluginSet::plugin_change_duration(ptstime input_position,
 	ptstime input_end = input_position + input_length;
 	for(current = first; current; current = NEXT)
 	{
-		ptstime start = current->project_pts;
+		ptstime start = current->get_pts();
 		ptstime end = current->end_pts();
 		if(start > input_position && start < input_end)
 		{
@@ -153,7 +153,7 @@ void PluginSet::clear(ptstime start, ptstime end)
 		current && current != last;
 		current = (Plugin*)NEXT)
 	{
-		ptstime plpts = current->project_pts;
+		ptstime plpts = current->get_pts();
 		ptstime plend = current->end_pts();
 
 		if(plpts < start && plend > end)
@@ -289,7 +289,7 @@ void PluginSet::paste_keyframes(ptstime start,
 							current;
 							current = (Plugin*)PREVIOUS)
 						{
-							if(position >= current->project_pts
+							if(position >= current->get_pts()
 								&& position <= current->end_pts()
 								&& !strncmp(((KeyFrame *)current->keyframes->first)->data, data, name_len))
 							{
@@ -297,7 +297,7 @@ void PluginSet::paste_keyframes(ptstime start,
 								first_target_plugin = current;
 								break;
 							}
-							if(position >= current->project_pts
+							if(position >= current->get_pts()
 								&& !strncmp(((KeyFrame *)current->keyframes->first)->data, data, name_len))
 							{
 								second_choice = pluginset;
@@ -327,7 +327,7 @@ void PluginSet::paste_keyframes(ptstime start,
 						current;
 						current = (Plugin*)PREVIOUS)
 					{
-						if(position >= current->project_pts)
+						if(position >= current->get_pts())
 						{
 							KeyFrame *keyframe;
 							keyframe = (KeyFrame*)current->keyframes->insert_auto(position);
@@ -351,10 +351,10 @@ void PluginSet::shift_effects(ptstime start, ptstime length)
 		current;
 		current = (Plugin*)NEXT)
 	{
-		if(current != first && current->project_pts >= start)
+		if(current != first && current->get_pts() >= start)
 		{
-			current->project_pts += length;
-			current->keyframes->base_pts = current->project_pts;
+			current->shift(length);
+			current->keyframes->base_pts = current->get_pts();
 			if(current->keyframes->first && current->keyframes->first->pos_time >= start)
 				current->keyframes->first->pos_time += length;
 		}

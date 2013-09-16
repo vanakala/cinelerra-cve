@@ -460,7 +460,7 @@ void PluginServer::process_buffer(VFrame **frame,
 	}
 	if(plugin)
 	{
-		vclient->source_start_pts = plugin->project_pts;
+		vclient->source_start_pts = plugin->get_pts();
 	}
 	if(apiversion)
 	{
@@ -496,7 +496,7 @@ void PluginServer::process_buffer(AFrame **buffer,
 
 	if(plugin)
 	{
-		aclient->source_start_pts = plugin->project_pts;
+		aclient->source_start_pts = plugin->get_pts();
 	}
 
 	if(aclient->has_pts_api())
@@ -712,7 +712,7 @@ void PluginServer::show_gui()
 	if(plugin)
 	{
 		client->total_len_pts = plugin->length();
-		client->source_start_pts = plugin->project_pts;
+		client->source_start_pts = plugin->get_pts();
 	}
 	client->source_pts = mwindow->edl->local_session->get_selectionstart(1);
 	client->update_display_title();
@@ -724,7 +724,7 @@ void PluginServer::update_gui()
 	if(!plugin_open || !plugin) return;
 
 	client->total_len_pts = plugin->length();
-	client->source_start_pts = plugin->project_pts;
+	client->source_start_pts = plugin->get_pts();
 	client->source_pts = mwindow->edl->local_session->get_selectionstart(1);
 	client->update_gui();
 }

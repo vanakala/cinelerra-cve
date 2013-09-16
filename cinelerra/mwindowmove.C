@@ -590,7 +590,7 @@ void MWindow::prev_edit_handle(int shift_down)
 		{
 			for (Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
-				ptstime edit_end = edit->project_pts;
+				ptstime edit_end = edit->get_pts();
 				if (edit_end < position && edit_end > new_position)
 					new_position = edit_end;
 			}

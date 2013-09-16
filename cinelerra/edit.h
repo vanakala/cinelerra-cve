@@ -64,22 +64,23 @@ public:
 
 // Shift in time
 	virtual void shift(ptstime difference);
+	void shift_source(ptstime difference);
 	void insert_transition(const char *title, KeyFrame *default_keyframe);
 	void detach_transition(void);
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence(void);
 
 // Media edit information
-// Units are seconds
-// Start of edit in source file in seconds
-	ptstime source_pts;
-// Start of edit in project
-	ptstime project_pts;
-
 // Channel or layer of source
 	int channel;
 // ID for resource pixmaps
 	int id;
+
+	ptstime set_pts(ptstime pts);
+	ptstime get_pts();
+	ptstime set_source_pts(ptstime pts);
+	ptstime get_source_pts();
+
 // User defined title for timeline
 	char user_title[BCTEXTLEN];
 
@@ -103,6 +104,12 @@ public:
 // ============================= editing
 	virtual ptstime get_source_end(ptstime default_value);
 	void dump(int indent = 0);
+private:
+// Start of edit in source file in seconds
+	ptstime source_pts;
+// Start of edit in project
+	ptstime project_pts;
+
 };
 
 #endif

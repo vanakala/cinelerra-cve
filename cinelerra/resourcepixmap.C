@@ -68,7 +68,7 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 	aframe = 0;
 	this->mwindow = mwindow;
 	this->canvas = canvas;
-	source_pts = edit->source_pts;
+	source_pts = edit->get_source_pts();
 	data_type = edit->track->data_type;
 	edit_id = edit->id;
 }
@@ -139,7 +139,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	}
 
 // Redraw everything
-	if(!PTSEQU(edit->source_pts, this->source_pts) ||
+	if(!PTSEQU(edit->get_source_pts(), this->source_pts) ||
 		(data_type == TRACK_AUDIO) ||
 		(data_type == TRACK_VIDEO) ||
 		!PTSEQU(mwindow->edl->local_session->zoom_time, zoom_time) || 
@@ -323,7 +323,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 // Update pixmap settings
 	this->edit_id = edit->id;
-	this->source_pts = edit->source_pts;
+	this->source_pts = edit->get_source_pts();
 	this->edit_x = edit_x;
 	this->pixmap_x = pixmap_x;
 	this->pixmap_w = pixmap_w;
@@ -488,7 +488,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	{
 		ptstime src_pts = (pixmap_x - edit_x + x)
 				* mwindow->edl->local_session->zoom_time
-				+ edit->source_pts;
+				+ edit->get_source_pts();
 		// 1.6 should be enough to compensate rounding above
 		ptstime len_pts = w * mwindow->edl->local_session->zoom_time * 1.6;
 		int total_source_samples = round(len_pts * edit->asset->sample_rate);
@@ -496,7 +496,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		samplenum source_start = (int64_t)(((pixmap_x - edit_x + x) * 
 			round(mwindow->edl->local_session->zoom_time *
 			mwindow->edl->session->sample_rate) + 
-			edit->track->to_units(edit->source_pts)) *
+			edit->track->to_units(edit->get_source_pts())) *
 			asset_over_session);
 		double oldsample, newsample;
 
@@ -547,12 +547,12 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			samplenum source_start = (((pixmap_x - edit_x + x) * 
 				round(mwindow->edl->local_session->zoom_time *
 				mwindow->edl->session->sample_rate) +
-				edit->track->to_units(edit->source_pts)) *
+				edit->track->to_units(edit->get_source_pts())) *
 				asset_over_session);
 			samplenum source_end = (((pixmap_x - edit_x + x + 1) * 
 				round(mwindow->edl->local_session->zoom_time *
 				mwindow->edl->session->sample_rate) +
-				edit->track->to_units(edit->source_pts)) *
+				edit->track->to_units(edit->get_source_pts())) *
 				asset_over_session);
 			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset->id,
 					edit->channel,
@@ -655,7 +655,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Draw only cached frames
 	while(x < refresh_x + refresh_w)
 	{
-		ptstime source_pts = edit->source_pts + picon_src;
+		ptstime source_pts = edit->get_source_pts() + picon_src;
 		VFrame *picon_frame = 0;
 		int use_cache = 0;
 		if((picon_frame = mwindow->frame_cache->get_frame_ptr(source_pts,

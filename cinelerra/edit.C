@@ -309,3 +309,28 @@ void Edit::shift(ptstime difference)
 {
 	project_pts += difference;
 }
+
+void Edit::shift_source(ptstime difference)
+{
+	source_pts += difference;
+}
+
+ptstime Edit::set_pts(ptstime pts)
+{
+	return project_pts = pts;
+}
+
+ptstime Edit::get_pts()
+{
+	return project_pts;
+}
+
+ptstime Edit::set_source_pts(ptstime pts)
+{
+	return source_pts = pts;
+}
+
+ptstime Edit::get_source_pts()
+{
+	return source_pts;
+}

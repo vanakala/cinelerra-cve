@@ -109,7 +109,7 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sou
 			reel_name[i] = ' ';
 
 		edit_sourcestart = (double)asset->tcstart / asset->frame_rate
-			+ edit->source_pts;
+			+ edit->get_source_pts();
 		edit_sourceend = (double)asset->tcstart / asset->frame_rate
 			+ edit->end_pts();
 
@@ -120,7 +120,7 @@ int ExportEDLAsset::edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sou
 		edit_sourceend = edit->length();
 	}
 
-	edit_deststart = edit->project_pts;
+	edit_deststart = edit->get_pts();
 	edit_destend = edit->end_pts();
 
 	double_to_CMX3600(edit_sourcestart, frame_rate, sourceinpoint);

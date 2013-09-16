@@ -132,8 +132,8 @@ int VModule::import_frame(VFrame *output,
 		if(source)
 		{
 			ptstime src_pts = output->get_pts() -
-				current_edit->project_pts +
-				current_edit->source_pts;
+				current_edit->get_pts() +
+				current_edit->get_source_pts();
 
 			// if we hit the end of stream, freeze at last frame
 			ptstime max_pts = source->get_video_ptslen();
@@ -310,8 +310,8 @@ int VModule::import_frame(VFrame *output,
 			}
 // Set pts
 			output->set_pts(output->get_source_pts() -
-				current_edit->source_pts +
-				current_edit->project_pts);
+				current_edit->get_source_pts() +
+				current_edit->get_pts());
 
 			get_cache()->check_in(current_edit->asset);
 		}
@@ -411,7 +411,7 @@ int VModule::render(VFrame *output,
 			transition_server->set_use_opengl(use_opengl, renderengine->video);
 		transition_server->process_transition((*transition_input), 
 			output,
-			output->get_pts() - current_edit->project_pts,
+			output->get_pts() - current_edit->get_pts(),
 			transition->length());
 	}
 	else

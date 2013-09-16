@@ -182,7 +182,7 @@ int TrackCanvas::drag_motion()
 						edit == track->edits->last) 
 						break;
 					int edit_x, edit_y, edit_w, edit_h;
-					edit_dimensions(track, edit->project_pts, edit->end_pts(),
+					edit_dimensions(track, edit->get_pts(), edit->end_pts(),
 						edit_x, edit_y, edit_w, edit_h);
 
 					if(cursor_x >= edit_x && 
@@ -373,14 +373,14 @@ int TrackCanvas::drag_stop()
 					mwindow->move_effect(mwindow->session->drag_plugin,
 						mwindow->session->plugin_highlighted->plugin_set,
 						0,
-						mwindow->session->plugin_highlighted->project_pts);
+						mwindow->session->plugin_highlighted->get_pts());
 				}
 				else
 				{
 					mwindow->move_effect(mwindow->session->drag_plugin,
 						mwindow->session->pluginset_highlighted,
 						0,
-						mwindow->session->pluginset_highlighted->last->project_pts);
+						mwindow->session->pluginset_highlighted->last->get_pts());
 				}
 				result = 1;
 			}
@@ -391,7 +391,7 @@ int TrackCanvas::drag_stop()
 				mwindow->move_effect(mwindow->session->drag_plugin,
 					0,
 					mwindow->session->track_highlighted,
-					mwindow->session->edit_highlighted->project_pts);
+					mwindow->session->edit_highlighted->get_pts());
 				result = 1;
 			}
 			else
@@ -423,14 +423,14 @@ int TrackCanvas::drag_stop()
 
 			if(mwindow->session->plugin_highlighted)
 			{
-				start = mwindow->session->plugin_highlighted->project_pts;
+				start = mwindow->session->plugin_highlighted->get_pts();
 				length = mwindow->session->plugin_highlighted->length();
 				if(length <= 0) length = track->get_length();
 			}
 			else
 			if(mwindow->session->pluginset_highlighted)
 			{
-				start = plugin_set->last->project_pts;
+				start = plugin_set->last->get_pts();
 				length = track->get_length() - start;
 				if(length <= 0) length = track->get_length();
 			}
@@ -446,7 +446,7 @@ int TrackCanvas::drag_stop()
 			else
 			if(mwindow->session->edit_highlighted)
 			{
-				start = mwindow->session->edit_highlighted->project_pts;
+				start = mwindow->session->edit_highlighted->get_pts();
 				length = mwindow->session->edit_highlighted->length();
 			}
 
@@ -581,7 +581,7 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 // cursor relative position - depending on where we started the drag inside the edit
 	ptstime cursor_position;
 	if (moved_edit)  // relative cursor position depends upon grab point
-		cursor_position = pos - (mwindow->session->drag_position - moved_edit->project_pts);
+		cursor_position = pos - (mwindow->session->drag_position - moved_edit->get_pts());
 	else             // for clips and assets acts as they were grabbed in the middle
 		cursor_position = pos - moved_edit_length / 2;
 
@@ -668,7 +668,7 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 				if (edit)
 				{
 					span_length = edit->length();
-					span_start = edit->project_pts;
+					span_start = edit->get_pts();
 					last_ignore = 0;
 					if (!edit->asset || (!moved_edit || moved_edit == edit)) 
 					{
@@ -787,7 +787,7 @@ void TrackCanvas::draw_resources(int mode,
 			}
 
 			int edit_x, edit_y, edit_w, edit_h;
-			edit_dimensions(current, edit->project_pts, edit->end_pts(),
+			edit_dimensions(current, edit->get_pts(), edit->end_pts(),
 				edit_x, edit_y, edit_w, edit_h);
 
 // Edit is visible
@@ -1056,12 +1056,12 @@ void TrackCanvas::draw_paste_destination()
 
 // Use start of highlighted edit
 				if(mwindow->session->edit_highlighted)
-					position = mwindow->session->edit_highlighted->project_pts;
+					position = mwindow->session->edit_highlighted->get_pts();
 				else
 				{
 // Use end of highlighted track, disregarding effects
 					if(mwindow->session->track_highlighted->edits->last)
-						position = mwindow->session->track_highlighted->edits->last->project_pts;
+						position = mwindow->session->track_highlighted->edits->last->get_pts();
 					else
 						position = 0;
 				}
@@ -1174,7 +1174,7 @@ void TrackCanvas::draw_paste_destination()
 void TrackCanvas::plugin_dimensions(Plugin *plugin, 
 	int &x, int &y, int &w, int &h)
 {
-	x = round((plugin->project_pts - mwindow->edl->local_session->view_start_pts) /
+	x = round((plugin->get_pts() - mwindow->edl->local_session->view_start_pts) /
 		mwindow->edl->local_session->zoom_time);
 	w = round(plugin->length() /
 		mwindow->edl->local_session->zoom_time);
@@ -1314,7 +1314,7 @@ void TrackCanvas::draw_highlighting()
 				mwindow->session->track_highlighted->data_type == TRACK_VIDEO))
 			{
 				edit_dimensions(mwindow->session->edit_highlighted->track,
-				mwindow->session->edit_highlighted->project_pts,
+					mwindow->session->edit_highlighted->get_pts(),
 					mwindow->session->edit_highlighted->end_pts(),
 					x, y, w, h);
 
@@ -1391,7 +1391,7 @@ void TrackCanvas::draw_highlighting()
 				{
 					int temp_y, temp_h;
 					edit_dimensions(mwindow->session->edit_highlighted->track,
-						mwindow->session->edit_highlighted->project_pts,
+						mwindow->session->edit_highlighted->get_pts(),
 						mwindow->session->edit_highlighted->end_pts(),
 						x,
 						temp_y,
@@ -1449,7 +1449,7 @@ void TrackCanvas::draw_highlighting()
 				{
 					int temp_y, temp_h;
 					edit_dimensions(mwindow->session->edit_highlighted->track,
-						mwindow->session->edit_highlighted->project_pts,
+						mwindow->session->edit_highlighted->get_pts(),
 						mwindow->session->edit_highlighted->end_pts(),
 						x,
 						temp_y,
@@ -1671,7 +1671,7 @@ void TrackCanvas::draw_transitions()
 			if(edit->transition)
 			{
 				int strip_w, strip_x, strip_y;
-				edit_dimensions(track, edit->project_pts, edit->end_pts(),
+				edit_dimensions(track, edit->get_pts(), edit->end_pts(),
 					x, y, w, h);
 				strip_x = x ;
 				strip_y = y;
@@ -3951,7 +3951,7 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 			edit = edit->next)
 		{
 			int edit_x, edit_y, edit_w, edit_h;
-			edit_dimensions(track, edit->project_pts, edit->end_pts(),
+			edit_dimensions(track, edit->get_pts(), edit->end_pts(),
 				edit_x, edit_y, edit_w, edit_h);
 
 			if(cursor_x >= edit_x && cursor_x <= edit_x + edit_w &&
@@ -3984,7 +3984,7 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 		ptstime position;
 		if(handle_result == HANDLE_LEFT)
 		{
-			position = edit_result->project_pts;
+			position = edit_result->get_pts();
 			new_cursor = LEFT_CURSOR;
 		}
 		else
@@ -4068,7 +4068,7 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 		ptstime position;
 		if(handle_result == 0)
 		{
-			position = plugin_result->project_pts;
+			position = plugin_result->get_pts();
 			new_cursor = LEFT_CURSOR;
 		}
 		else
@@ -4151,7 +4151,7 @@ int TrackCanvas::do_edits(int cursor_x,
 			edit = edit->next)
 		{
 			int edit_x, edit_y, edit_w, edit_h;
-			edit_dimensions(track, edit->project_pts, edit->end_pts(), 
+			edit_dimensions(track, edit->get_pts(), edit->end_pts(), 
 				edit_x, edit_y, edit_w, edit_h);
 
 // Cursor inside a track
@@ -4164,7 +4164,7 @@ int TrackCanvas::do_edits(int cursor_x,
 				{
 					if(get_double_click() && !drag_start)
 					{
-						mwindow->edl->local_session->set_selectionstart(edit->project_pts);
+						mwindow->edl->local_session->set_selectionstart(edit->get_pts());
 						mwindow->edl->local_session->set_selectionend(edit->end_pts());
 						if(mwindow->edl->session->cursor_on_frames) 
 						{
@@ -4197,7 +4197,7 @@ int TrackCanvas::do_edits(int cursor_x,
 						{
 							mwindow->edl->tracks->get_affected_edits(
 								mwindow->session->drag_edits, 
-								edit->project_pts,
+								edit->get_pts(),
 								edit->track);
 						}
 						mwindow->session->drag_origin_x = cursor_x;
@@ -4285,7 +4285,7 @@ int TrackCanvas::do_plugins(int cursor_x,
 // Select range of plugin on doubleclick over plugin
 			if (get_double_click() && !drag_start)
 			{
-				mwindow->edl->local_session->set_selectionstart(plugin->project_pts);
+				mwindow->edl->local_session->set_selectionstart(plugin->get_pts());
 				mwindow->edl->local_session->set_selectionend(plugin->end_pts());
 				if(mwindow->edl->session->cursor_on_frames) 
 				{
@@ -4376,7 +4376,7 @@ int TrackCanvas::do_transitions(int cursor_x,
 		{
 			if(edit->transition)
 			{
-				edit_dimensions(track, edit->project_pts, edit->end_pts(), 
+				edit_dimensions(track, edit->get_pts(), edit->end_pts(),
 					x, y, w, h);
 				get_transition_coords(x, y, w, h);
 

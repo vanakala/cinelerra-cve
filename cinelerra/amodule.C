@@ -123,7 +123,7 @@ int AModule::render(AFrame *aframe)
 		playable_edit = (AEdit*)playable_edit->next)
 	{
 		if(start_projpts < playable_edit->end_pts() && 
-				end_projpts > playable_edit->project_pts)
+				end_projpts > playable_edit->get_pts())
 			break;
 	}
 
@@ -141,9 +141,9 @@ int AModule::render(AFrame *aframe)
 		if(playable_edit)
 		{
 // Normalize EDL positions to requested rate
-			ptstime edit_start = playable_edit->project_pts;
+			ptstime edit_start = playable_edit->get_pts();
 			ptstime edit_end = playable_edit->end_pts();
-			ptstime edit_src = playable_edit->source_pts;
+			ptstime edit_src = playable_edit->get_source_pts();
 // Trim fragment_len
 			if(fragment_duration + start_projpts > edit_end)
 				fragment_duration = edit_end - start_projpts;
@@ -175,8 +175,8 @@ int AModule::render(AFrame *aframe)
 			if(transition && previous_edit)
 			{
 				ptstime transition_length = transition->length();
-				ptstime previous_start = previous_edit->project_pts;
-				ptstime previous_src = previous_edit->source_pts;
+				ptstime previous_start = previous_edit->get_pts();
+				ptstime previous_src = previous_edit->get_source_pts();
 
 // Read into temp buffers
 // Temp + master or temp + temp ? temp + master

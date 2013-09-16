@@ -62,7 +62,7 @@ void Edits::equivalent_output(Edits *edits, ptstime *result)
 		if(!current && that_current)
 		{
 			ptstime position1 = length();
-			ptstime position2 = that_current->project_pts;
+			ptstime position2 = that_current->get_pts();
 			if(*result < 0 || *result > MIN(position1, position2))
 				*result = MIN(position1, position2);
 			break;
@@ -71,7 +71,7 @@ void Edits::equivalent_output(Edits *edits, ptstime *result)
 		if(current && !that_current)
 		{
 			ptstime position1 = edits->length();
-			ptstime position2 = current->project_pts;
+			ptstime position2 = current->get_pts();
 			if(*result < 0 || *result > MIN(position1, position2))
 				*result = MIN(position1, position2);
 			break;
@@ -109,7 +109,7 @@ void Edits::insert_asset(Asset *asset,
 {
 	Edit *new_edit = insert_edit(postime, len_time);
 	new_edit->asset = asset;
-	new_edit->source_pts = 0;
+	new_edit->set_source_pts(0);
 
 	if(asset->audio_data)
 		new_edit->channel = track_number % asset->channels;
@@ -126,14 +126,14 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 	{
 		Asset *dest_asset = edl->assets->update(source_edit->asset);
 
-		Edit *dest_edit = split_edit(postime + source_edit->project_pts, 1);
+		Edit *dest_edit = split_edit(postime + source_edit->get_pts(), 1);
 // Save position of asset
 		Asset *split_asset = dest_edit->asset;
-		ptstime split_src = dest_edit->source_pts;
+		ptstime split_src = dest_edit->get_source_pts();
 
 		dest_edit->copy_from(source_edit);
 		dest_edit->asset = dest_asset;
-		dest_edit->project_pts = postime + source_edit->project_pts;
+		dest_edit->set_pts(postime + source_edit->get_pts());
 
 // Shift keyframes in source edit to their position in the
 // destination edit for plugin case
@@ -144,7 +144,7 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 
 		if(!PTSEQU(req_length, dst_length))
 		{
-			ptstime end_pos = dest_edit->project_pts + req_length;
+			ptstime end_pos = dest_edit->get_pts() + req_length;
 
 			if(req_length < dst_length || dest_edit == last)
 			{
@@ -153,8 +153,8 @@ void Edits::insert_edits(Edits *source_edits, ptstime postime)
 				{
 					dest_edit->asset = split_asset;
 					if(split_asset)
-						dest_edit->source_pts = split_src;
-					end_pos = dest_edit->next->project_pts + req_length;
+						dest_edit->set_source_pts(split_src);
+					end_pos = dest_edit->next->get_pts() + req_length;
 				}
 			}
 			if(dest_edit != last)
@@ -177,11 +177,11 @@ Edit* Edits::insert_edit(ptstime pts, ptstime length)
 
 		if(new_edit->next)
 		{
-			if(new_edit->next->project_pts < end)
+			if(new_edit->next->get_pts() < end)
 			{
-				ptstime shift = end - new_edit->next->project_pts;
+				ptstime shift = end - new_edit->next->get_pts();
 				for(Edit *e = new_edit->next; e; e = e->next)
-					e->project_pts += shift;
+					e->shift(shift);
 			}
 			else
 				split_edit(pts + length);
@@ -190,7 +190,7 @@ Edit* Edits::insert_edit(ptstime pts, ptstime length)
 		{
 			Edit *le = create_edit();
 			append(le);
-			le->project_pts = end;
+			le->set_pts(end);
 		}
 	}
 	return new_edit;
@@ -208,7 +208,7 @@ Edit* Edits::split_edit(ptstime postime, int force)
 		if(postime > EPSILON)
 		{
 			append(edit = create_edit());
-			edit->project_pts = postime;
+			edit->set_pts(postime);
 		}
 		return edit;
 	}
@@ -220,11 +220,11 @@ Edit* Edits::split_edit(ptstime postime, int force)
 		// List ends before postime - create a new
 		edit = create_edit();
 		append(edit);
-		edit->project_pts = postime;
+		edit->set_pts(postime);
 		return edit;
 	}
 
-	if(PTSEQU(edit->project_pts, postime))
+	if(PTSEQU(edit->get_pts(), postime))
 	{
 		if(force)
 		{
@@ -246,9 +246,9 @@ Edit* Edits::split_edit(ptstime postime, int force)
 
 	insert_after(edit, new_edit);
 	new_edit->copy_from(edit);
-	new_edit->project_pts = postime;
+	new_edit->set_pts(postime);
 	if(edit->asset)
-		new_edit->source_pts += edit->length();
+		new_edit->shift_source(edit->length());
 
 	if(trans)
 	{
@@ -294,7 +294,7 @@ void Edits::load(FileXML *file, int track_offset)
 		if(!PTSEQU(loaded_length, project_time))
 		{
 			Edit *edit = append(create_edit());
-			edit->project_pts = loaded_length = project_time;
+			loaded_length = edit->set_pts(project_time);
 		}
 	}
 	else 
@@ -310,7 +310,7 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 
 	duration = current->load_properties(file, project_time);
 	if(duration < 0)
-		project_time = current->project_pts;
+		project_time = current->get_pts();
 	else
 		project_time += duration;
 
@@ -390,8 +390,8 @@ Edit* Edits::editof(ptstime postime, int use_nudge)
 
 	for(current = first; current; current = NEXT)
 	{
-		if(PTSEQU(current->project_pts, postime) ||
-				(current->project_pts <= postime &&
+		if(PTSEQU(current->get_pts(), postime) ||
+				(current->get_pts() <= postime &&
 				current->end_pts() > postime))
 			return current;
 	}
@@ -407,7 +407,7 @@ Edit* Edits::get_playable_edit(ptstime postime, int use_nudge)
 // Get the current edit
 	for(current = first; current; current = NEXT)
 	{
-		if(current->project_pts <= postime && 
+		if(current->get_pts() <= postime && 
 				current->end_pts() > postime)
 			break;
 	}
@@ -438,22 +438,22 @@ void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_p
 			continue;
 		if(!tmp_edit)
 			tmp_edit = create_edit();
-		if(current_edit->project_pts < start && !PTSEQU(current_edit->project_pts, start))
+		if(current_edit->get_pts() < start && !PTSEQU(current_edit->get_pts(), start))
 		{
 			tmp_edit->copy_from(current_edit);
-			tmp_edit->project_pts = 0;
+			tmp_edit->set_pts(0);
 			if(tmp_edit->asset)
-				tmp_edit->source_pts = current_edit->source_pts + start - current_edit->project_pts;
+				tmp_edit->set_source_pts(current_edit->get_source_pts() + start - current_edit->get_pts());
 			tmp_edit->copy(file, output_path);
 		}
 		else
-		if(current_edit->project_pts > end && !PTSEQU(current_edit->project_pts, end))
+		if(current_edit->get_pts() > end && !PTSEQU(current_edit->get_pts(), end))
 		{
 			if(!tmp_edit)
 				tmp_edit = create_edit();
-			tmp_edit->project_pts = end - start;
+			tmp_edit->set_pts(end - start);
 			tmp_edit->asset = 0;
-			tmp_edit->source_pts = 0;
+			tmp_edit->set_source_pts(0);
 			tmp_edit->transition = 0;
 			tmp_edit->channel = 0;
 			tmp_edit->copy(file, output_path);
@@ -464,12 +464,12 @@ void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_p
 			if(fabs(start) > EPSILON)
 			{
 				tmp_edit->copy_from(current_edit);
-				tmp_edit->project_pts -= start;
+				tmp_edit->shift(-start);
 			}
 			else
 				current_edit->copy(file, output_path);
 		}
-		if(PTSEQU(current_edit->project_pts, end))
+		if(PTSEQU(current_edit->get_pts(), end))
 			break;
 	}
 
@@ -498,8 +498,8 @@ void Edits::clear(ptstime start, ptstime end)
 	if(edit1 != edit2)
 	{
 // in different edits
-		edit2->source_pts += end - edit2->project_pts;
-		edit2->project_pts += end - edit2->project_pts;
+		edit2->shift_source(end - edit2->get_pts());
+		edit2->shift(end - edit2->get_pts());
 // delete
 		for(current_edit = edit1->next; current_edit && current_edit != edit2;)
 		{
@@ -511,17 +511,17 @@ void Edits::clear(ptstime start, ptstime end)
 	}
 	else
 	{
-		if(start > edit1->source_pts)
+		if(start > edit1->get_source_pts())
 			current_edit = split_edit(start);
 		else
 			current_edit = edit1;
-		current_edit->source_pts += len;
+		current_edit->shift_source(len);
 		current_edit = current_edit->next;
 	}
 
 	if(current_edit)
 	{
-		ptstime end_pos = current_edit->project_pts - len;
+		ptstime end_pos = current_edit->get_pts() - len;
 		move_edits(current_edit, end_pos, MOVE_ALL_EDITS);
 	}
 	cleanup();
@@ -549,27 +549,27 @@ void Edits::clear_handle(ptstime start,
 			{
 
 // Got two consecutive edits in same source
-				if(edl->equivalent(current_edit->next->project_pts,
+				if(edl->equivalent(current_edit->next->get_pts(),
 					start))
 				{
 // handle selected
 					ptstime length = -current_edit->length();
-					current_edit->next->project_pts = current_edit->next->source_pts - current_edit->source_pts + 
-						current_edit->project_pts;
+					current_edit->next->set_pts(current_edit->next->get_pts() - current_edit->get_source_pts() +
+						current_edit->get_pts());
 					length += current_edit->length();
 
 // Lengthen automation
-					track->automation->paste_silence(current_edit->next->project_pts,
-						current_edit->next->project_pts + length);
+					track->automation->paste_silence(current_edit->next->get_pts(),
+						current_edit->next->get_pts() + length);
 
 // Lengthen effects
 					if(actions & EDIT_PLUGINS)
-						track->shift_effects(current_edit->next->project_pts,
+						track->shift_effects(current_edit->next->get_pts(),
 							length);
 
 					for(current_edit = current_edit->next; current_edit; current_edit = current_edit->next)
 					{
-						current_edit->project_pts += length;
+						current_edit->shift(length);
 					}
 
 					distance = length;
@@ -588,9 +588,9 @@ void Edits::modify_handles(ptstime &oldposition,
 
 	for(current_edit = first; current_edit; current_edit = current_edit->next)
 	{
-		if(edl->equivalent(current_edit->project_pts, oldposition))
+		if(edl->equivalent(current_edit->get_pts(), oldposition))
 		{
-			oldposition = current_edit->project_pts;
+			oldposition = current_edit->get_pts();
 			break;
 		}
 	}
@@ -607,7 +607,7 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 
 	if(current_edit)
 	{
-		oldposition = current_edit->project_pts;
+		oldposition = current_edit->get_pts();
 
 		if(edit_mode != MOVE_NO_EDITS && newposition < 0)
 			newposition = 0;
@@ -625,8 +625,8 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 					&& current_edit->asset)
 			{
 // Limit shift with the length of asset
-				apts = current_edit->project_pts - (current_edit->get_source_end(0)
-					- current_edit->source_pts - current_edit->length());
+				apts = current_edit->get_pts() - (current_edit->get_source_end(0)
+					- current_edit->get_source_pts() - current_edit->length());
 				if(apts > newposition)
 					newposition = apts;
 			}
@@ -635,14 +635,14 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 				cut_length = newposition - oldposition;
 
 				for(ed = current_edit->previous;
-						ed && (ed->project_pts > newposition || PTSEQU(ed->project_pts, newposition));
+						ed && (ed->get_pts() > newposition || PTSEQU(ed->get_pts(), newposition));
 						ed = ted)
 				{
 					ted = ed->previous;
 					remove(ed);
 				}
 
-				current_edit->project_pts = newposition;
+				current_edit->set_pts(newposition);
 				current_edit->shift_keyframes(cut_length);
 				if(current_edit->previous)
 					current_edit->previous->remove_keyframes_after(newposition);
@@ -650,7 +650,7 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 			else if(edit_mode == MOVE_NO_EDITS)
 			{
 				if((cut_length = oldposition - newposition) > 0)
-					current_edit->source_pts += cut_length;
+					current_edit->shift_source(cut_length);
 			}
 		}
 		else
@@ -660,7 +660,7 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 			{
 				if((ed = current_edit->previous) && ed->asset)
 				{
-					apts = ed->get_source_end(0) - ed->source_pts + ed->project_pts;
+					apts = ed->get_source_end(0) - ed->get_source_pts() + ed->get_pts();
 
 					if(apts < newposition)
 						newposition = apts;
@@ -675,7 +675,7 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 						return;
 					}
 				}
-				current_edit->project_pts = newposition;
+				current_edit->set_pts(newposition);
 				cut_length = newposition - oldposition;
 				current_edit->shift_keyframes(cut_length);
 				current_edit->remove_keyframes_after(current_edit->end_pts());
@@ -684,14 +684,14 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 			{
 				if(current_edit->asset)
 				{
-					apts = current_edit->source_pts + current_edit->project_pts;
+					apts = current_edit->get_source_pts() + current_edit->get_pts();
 
 					if(newposition > apts)
 						newposition = apts;
 				}
 
 				if((cut_length = newposition - oldposition) > 0)
-					current_edit->source_pts -= cut_length;
+					current_edit->shift_source(-cut_length);
 			}
 		}
 
@@ -699,7 +699,7 @@ void Edits::move_edits(Edit *current_edit, ptstime &newposition, int edit_mode)
 		{
 			for(ed = current_edit->next; ed; ed = ed->next)
 			{
-				ed->project_pts += cut_length;
+				ed->shift(cut_length);
 				ed->shift_keyframes(cut_length);
 			}
 		}
@@ -724,7 +724,7 @@ void Edits::paste_silence(ptstime start, ptstime end)
 		split_edit(start);
 		new_edit = split_edit(start, 1);
 		new_edit->asset = 0;
-		new_edit->source_pts = 0;
+		new_edit->set_source_pts(0);
 	}
 	if(new_edit->next)
 		move_edits(new_edit->next, end, MOVE_ALL_EDITS);
@@ -749,15 +749,15 @@ void Edits::cleanup()
 	for(Edit *current = first; current; current = current->next)
 	{
 		if(!current->asset)
-			current->source_pts = 0;
+			current->set_source_pts(0);
 		if(current == first)
-			current->project_pts = 0;
+			current->set_pts(0);
 		while(current->next)
 		{
 			if(!current->asset && !current->next->asset)
 				remove(current->next);
 			else if(current->asset == current->next->asset &&
-					PTSEQU(current->source_pts + current->length(), current->next->source_pts))
+					PTSEQU(current->get_source_pts() + current->length(), current->next->get_source_pts()))
 				remove(current->next);
 			else
 				break;
