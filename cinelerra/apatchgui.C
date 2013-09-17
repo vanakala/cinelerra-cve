@@ -108,7 +108,7 @@ int APatchGUI::update(int x, int y)
 		{
 			FloatAuto *previous = 0, *next = 0;
 			ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+			unit_position = mwindow->edl->align_to_frame(unit_position);
 			FloatAutos *ptr = (FloatAutos*)atrack->automation->autos[AUTOMATION_FADE];
 			float value = ptr->get_value(
 				unit_position,
@@ -172,7 +172,7 @@ int APatchGUI::update(int x, int y)
 				int handle_x, handle_y;
 				PanAuto *previous = 0, *next = 0;
 				ptstime position = mwindow->edl->local_session->get_selectionstart(1);
-				position = mwindow->edl->align_to_frame(position, 0);
+				position = mwindow->edl->align_to_frame(position);
 				PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
 				ptr->get_handle(handle_x,
 					handle_y,
@@ -290,7 +290,7 @@ float AFadePatch::get_keyframe_value(MWindow *mwindow, APatchGUI *patch)
 	FloatAuto *prev = 0;
 	FloatAuto *next = 0;
 	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+	unit_position = mwindow->edl->align_to_frame(unit_position);
 
 	FloatAutos *ptr = (FloatAutos*)patch->atrack->automation->autos[AUTOMATION_FADE];
 	return ptr->get_value(unit_position, prev, next);

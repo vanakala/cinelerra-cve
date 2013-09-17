@@ -753,7 +753,7 @@ void TimeBar::update_cursor()
 	ptstime position = (double)get_cursor_x() * 
 		mwindow->edl->local_session->zoom_time +
 		mwindow->edl->local_session->view_start_pts;
-	position = mwindow->edl->align_to_frame(position, 0);
+	position = mwindow->edl->align_to_frame(position);
 	position = MAX(0, position);
 	current_operation = TIMEBAR_DRAG;
 

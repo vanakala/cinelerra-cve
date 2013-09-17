@@ -3205,7 +3205,7 @@ void TrackCanvas::update_drag_handle()
 	new_position = get_cursor_x() * mwindow->edl->local_session->zoom_time +
 		+ mwindow->edl->local_session->view_start_pts;
 	new_position = 
-		mwindow->edl->align_to_frame(new_position, 0);
+		mwindow->edl->align_to_frame(new_position);
 
 	if(new_position != mwindow->session->drag_position)
 	{
@@ -3587,7 +3587,7 @@ int TrackCanvas::cursor_motion_event()
 		position = cursor_x * mwindow->edl->local_session->zoom_time +
 			mwindow->edl->local_session->view_start_pts;
 
-		position = mwindow->edl->align_to_frame(position, 0);
+		position = mwindow->edl->align_to_frame(position);
 		position = MAX(position, 0);
 
 		if(position < selection_midpoint1)
@@ -3624,7 +3624,7 @@ int TrackCanvas::cursor_motion_event()
 			cursor_x = get_cursor_x();
 			position = cursor_x * mwindow->edl->local_session->zoom_time +
 				mwindow->edl->local_session->view_start_pts;
-			position = mwindow->edl->align_to_frame(position, 0);
+			position = mwindow->edl->align_to_frame(position);
 			update_clock = 1;
 
 // Update cursor
@@ -3799,7 +3799,7 @@ void TrackCanvas::repeat_event(int duration)
 		position = (double)(get_cursor_x() + x_distance) *
 			mwindow->edl->local_session->zoom_time +
 			mwindow->edl->local_session->view_start_pts; 
-		position = mwindow->edl->align_to_frame(position, 0);
+		position = mwindow->edl->align_to_frame(position);
 		position = MAX(position, 0);
 
 		switch(mwindow->session->current_operation)
@@ -4169,9 +4169,9 @@ int TrackCanvas::do_edits(int cursor_x,
 						if(mwindow->edl->session->cursor_on_frames) 
 						{
 							mwindow->edl->local_session->set_selectionstart(
-								mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionstart(1), 0));
+								mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionstart(1)));
 							mwindow->edl->local_session->set_selectionend(
-								mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionend(1), 1));
+								mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionend(1)));
 						}
 						redraw = 1;
 						rerender = 1;
@@ -4290,9 +4290,9 @@ int TrackCanvas::do_plugins(int cursor_x,
 				if(mwindow->edl->session->cursor_on_frames) 
 				{
 					mwindow->edl->local_session->set_selectionstart(
-						mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionstart(1), 0));
+						mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionstart(1)));
 					mwindow->edl->local_session->set_selectionend(
-						mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionend(1), 1));
+						mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionend(1)));
 				}
 				rerender = 1;
 				redraw = 1;
@@ -4654,7 +4654,7 @@ SET_TRACE
 int TrackCanvas::start_selection(double position)
 {
 	int rerender = 0;
-	position = mwindow->edl->align_to_frame(position, 0);
+	position = mwindow->edl->align_to_frame(position);
 
 
 // Extend a border

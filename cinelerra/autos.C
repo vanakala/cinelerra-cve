@@ -168,7 +168,7 @@ Auto* Autos::get_prev_auto(Auto* &current)
 {
 	ptstime position = edl->local_session->get_selectionstart(1);
 
-	position = edl->align_to_frame(position, 0);
+	position = edl->align_to_frame(position);
 	return get_prev_auto(position, current);
 }
 
@@ -178,7 +178,7 @@ int Autos::auto_exists_for_editing(ptstime position)
 
 	if(edl->session->auto_keyframes)
 	{
-		position = edl->align_to_frame(position, 0);
+		position = edl->align_to_frame(position);
 		if(get_auto_at_position(position))
 			result = 1;
 	}
@@ -218,7 +218,7 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 	{
 		position = edl->local_session->get_selectionstart(1);
 	}
-	position = edl->align_to_frame(position, 0);
+	position = edl->align_to_frame(position);
 	if(edl->session->auto_keyframes)
 	{
 		result = insert_auto(position, 1);

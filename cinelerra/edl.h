@@ -81,7 +81,7 @@ public:
 	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
 
 // Convert position to frames if cursor alignment is enabled
-	ptstime align_to_frame(ptstime position, int round = 0);
+	ptstime align_to_frame(ptstime position, int round = 1);
 
 // Scale all sample values since everything is locked to audio
 	void rechannel();

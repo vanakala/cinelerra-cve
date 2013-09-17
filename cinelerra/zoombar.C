@@ -312,9 +312,9 @@ int ZoomBar::set_selection(int which_one)
 	}
 
 	mwindow->edl->local_session->set_selectionstart(
-		mwindow->edl->align_to_frame(start_position, 1));
+		mwindow->edl->align_to_frame(start_position));
 	mwindow->edl->local_session->set_selectionend(
-		mwindow->edl->align_to_frame(end_position, 1));
+		mwindow->edl->align_to_frame(end_position));
 
 
 	mwindow->gui->timebar->update_highlights();

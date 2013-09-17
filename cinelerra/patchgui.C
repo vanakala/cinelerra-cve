@@ -540,7 +540,7 @@ int MutePatch::button_release_event()
 int MutePatch::get_keyframe_value(MWindow *mwindow, PatchGUI *patch)
 {
 	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+	unit_position = mwindow->edl->align_to_frame(unit_position);
 
 	return ((IntAutos*)patch->track->automation->autos[AUTOMATION_MUTE])->get_value(
 		unit_position);

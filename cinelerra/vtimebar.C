@@ -77,7 +77,7 @@ void VTimeBar::select_label(ptstime position)
 	{
 		gui->transport->handle_transport(STOP, 1, 0);
 
-		position = mwindow->edl->align_to_frame(position, 1);
+		position = mwindow->edl->align_to_frame(position);
 
 		if(shift_down())
 		{

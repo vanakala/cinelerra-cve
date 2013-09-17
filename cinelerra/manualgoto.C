@@ -108,7 +108,7 @@ void ManualGoto::run()
 			default:
 				break;
 			}
-			new_position = mwindow->edl->align_to_frame(new_position, 1);
+			new_position = mwindow->edl->align_to_frame(new_position);
 			new_position -= mwindow->edl->session->get_frame_offset() / mwindow->edl->session->frame_rate;;
 			if (new_position < 0) 
 				new_position = 0;
@@ -144,7 +144,7 @@ void ManualGoto::run()
 				new_position = vwindow->get_edl()->tracks->total_length();
 			if (new_position < 0)
 				new_position = 0;
-			new_position = vwindow->get_edl()->align_to_frame(new_position, 1);
+			new_position = vwindow->get_edl()->align_to_frame(new_position);
 			if (current_position != new_position)
 			{
 				vwindow->get_edl()->local_session->set_selectionstart(new_position);

@@ -1640,8 +1640,8 @@ void MWindow::toggle_label(int is_mwindow)
 		position2 = edl->local_session->get_selectionend(1);
 	}
 
-	position1 = edl->align_to_frame(position1, 0);
-	position2 = edl->align_to_frame(position2, 0);
+	position1 = edl->align_to_frame(position1);
+	position2 = edl->align_to_frame(position2);
 
 	undo_item = new LabelUndoItem(position1, position2, edl);
 	undo->push_undo_item(undo_item);

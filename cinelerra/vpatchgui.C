@@ -97,7 +97,7 @@ int VPatchGUI::update(int x, int y)
 		{
 			FloatAuto *previous = 0, *next = 0;
 			ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+			unit_position = mwindow->edl->align_to_frame(unit_position);
 
 			int value = (int)((FloatAutos*)vtrack->automation->autos[AUTOMATION_FADE])->get_value(
 				unit_position,
@@ -227,7 +227,7 @@ int VFadePatch::handle_event()
 float VFadePatch::get_keyframe_value(MWindow *mwindow, VPatchGUI *patch)
 {
 	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+	unit_position = mwindow->edl->align_to_frame(unit_position);
 
 	FloatAuto *prev = 0;
 	FloatAuto *next = 0;
@@ -284,7 +284,7 @@ int VModePatch::get_keyframe_value(MWindow *mwindow, VPatchGUI *patch)
 {
 	Auto *current = 0;
 	ptstime unit_position = mwindow->edl->local_session->get_selectionstart(1);
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+	unit_position = mwindow->edl->align_to_frame(unit_position);
 
 	return ((IntAutos*)patch->vtrack->automation->autos[AUTOMATION_MODE])->get_value(
 		unit_position);
