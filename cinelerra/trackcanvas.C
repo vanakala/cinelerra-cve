@@ -4166,13 +4166,6 @@ int TrackCanvas::do_edits(int cursor_x,
 					{
 						mwindow->edl->local_session->set_selectionstart(edit->get_pts());
 						mwindow->edl->local_session->set_selectionend(edit->end_pts());
-						if(mwindow->edl->session->cursor_on_frames) 
-						{
-							mwindow->edl->local_session->set_selectionstart(
-								mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionstart(1)));
-							mwindow->edl->local_session->set_selectionend(
-								mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionend(1)));
-						}
 						redraw = 1;
 						rerender = 1;
 						result = 1;
@@ -4287,13 +4280,6 @@ int TrackCanvas::do_plugins(int cursor_x,
 			{
 				mwindow->edl->local_session->set_selectionstart(plugin->get_pts());
 				mwindow->edl->local_session->set_selectionend(plugin->end_pts());
-				if(mwindow->edl->session->cursor_on_frames) 
-				{
-					mwindow->edl->local_session->set_selectionstart(
-						mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionstart(1)));
-					mwindow->edl->local_session->set_selectionend(
-						mwindow->edl->align_to_frame(mwindow->edl->local_session->get_selectionend(1)));
-				}
 				rerender = 1;
 				redraw = 1;
 				result = 1;
