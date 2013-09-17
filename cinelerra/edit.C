@@ -307,7 +307,12 @@ ptstime Edit::load_properties(FileXML *file, ptstime project_pts)
 
 void Edit::shift(ptstime difference)
 {
-	project_pts += difference;
+	ptstime new_pts = project_pts + difference;
+
+	if(edl)
+		project_pts = edl->align_to_frame(new_pts);
+	else
+		project_pts = new_pts;
 }
 
 void Edit::shift_source(ptstime difference)
@@ -317,7 +322,11 @@ void Edit::shift_source(ptstime difference)
 
 ptstime Edit::set_pts(ptstime pts)
 {
-	return project_pts = pts;
+	if(edl)
+		project_pts = edl->align_to_frame(pts);
+	else
+		project_pts = pts;
+	return project_pts;
 }
 
 ptstime Edit::get_pts()
