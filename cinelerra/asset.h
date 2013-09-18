@@ -125,6 +125,8 @@ public:
 	int update_path(const char *new_path);
 
 	double total_length_framealigned(double fps);
+// Align pts to frame or sample
+	ptstime align_to_frame(ptstime pts, int type);
 
 // Path to file
 	char path[BCTEXTLEN];
