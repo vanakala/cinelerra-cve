@@ -317,7 +317,12 @@ void Edit::shift(ptstime difference)
 
 void Edit::shift_source(ptstime difference)
 {
-	source_pts += difference;
+	ptstime new_pts = source_pts += difference;
+
+	if(asset && track)
+		source_pts = asset->align_to_frame(new_pts, track->data_type);
+	else
+		source_pts = new_pts;
 }
 
 ptstime Edit::set_pts(ptstime pts)
@@ -336,7 +341,11 @@ ptstime Edit::get_pts()
 
 ptstime Edit::set_source_pts(ptstime pts)
 {
-	return source_pts = pts;
+	if(asset && track)
+		source_pts = asset->align_to_frame(pts, track->data_type);
+	else
+		source_pts = pts;
+	return source_pts;
 }
 
 ptstime Edit::get_source_pts()
