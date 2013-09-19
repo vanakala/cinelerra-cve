@@ -81,10 +81,6 @@ VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap,
 	this->layer = layer;
 }
 
-VResourceThreadItem::~VResourceThreadItem()
-{
-}
-
 
 AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap, 
 	Asset *asset,
@@ -99,10 +95,6 @@ AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap,
 	this->channel = channel;
 	this->start = start;
 	this->end = end;
-}
-
-AResourceThreadItem::~AResourceThreadItem()
-{
 }
 
 

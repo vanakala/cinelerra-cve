@@ -68,12 +68,13 @@ public:
 		samplenum start,
 		samplenum end,
 		int operation_count);
-	~AResourceThreadItem();
+
 	int x;
 	int channel;
 	samplenum start;
 	samplenum end;
 };
+
 
 class VResourceThreadItem : public ResourceThreadItem
 {
@@ -88,7 +89,6 @@ public:
 		int layer,
 		Asset *asset,
 		int operation_count);
-	~VResourceThreadItem();
 
 	int picon_x;
 	int picon_y;
