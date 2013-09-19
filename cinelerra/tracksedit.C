@@ -40,7 +40,6 @@
 #include "timebar.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-#include "trackscroll.h"
 #include "transition.h"
 #include "vtrack.h"
 

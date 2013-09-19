@@ -89,7 +89,6 @@
 #include "trackcanvas.h"
 #include "track.h"
 #include "tracking.h"
-#include "trackscroll.h"
 #include "tracks.h"
 #include "transition.h"
 #include "transportcommand.h"

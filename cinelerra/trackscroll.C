@@ -32,7 +32,7 @@
 #include "tracks.h"
 #include "trackscroll.h"
 
-TrackScroll::TrackScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int h)
+TrackScroll::TrackScroll(MWindow *mwindow, int x, int y, int h)
  : BC_ScrollBar(x, 
 	y,
 	SCROLL_VERT, 
@@ -42,36 +42,13 @@ TrackScroll::TrackScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int h)
 	0)
 {
 	this->mwindow = mwindow;
-	this->gui = gui;
-	old_position = 0;
 }
 
-TrackScroll::~TrackScroll()
-{
-}
-
-long TrackScroll::get_distance()
-{
-	return get_value() - old_position;
-}
-
-int TrackScroll::update()
-{
-	return 0;
-}
-
-int TrackScroll::resize_event()
+void TrackScroll::resize_event()
 {
 	reposition_window(mwindow->theme->mvscroll_x, 
 		mwindow->theme->mvscroll_y, 
 		mwindow->theme->mvscroll_h);
-	update();
-	return 0;
-}
-
-int TrackScroll::flip_vertical(int top, int bottom)
-{
-	return 0;
 }
 
 int TrackScroll::handle_event()
@@ -82,7 +59,6 @@ int TrackScroll::handle_event()
 	mwindow->gui->cursor->draw(1);
 	mwindow->gui->patchbay->update();
 	mwindow->gui->canvas->flash();
-	old_position = get_value();
 	flush();
 	return 1;
 }

@@ -137,7 +137,6 @@ void MWindowGUI::get_scrollbars()
 	{
 		if(!trackscroll)
 			add_subwindow(trackscroll = new TrackScroll(mwindow, 
-				this,
 				mwindow->theme->mvscroll_x,
 				mwindow->theme->mvscroll_y,
 				mwindow->theme->mvscroll_h));

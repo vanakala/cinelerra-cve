@@ -30,19 +30,11 @@
 class TrackScroll : public BC_ScrollBar
 {
 public:
-	TrackScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int h);
-	~TrackScroll();
+	TrackScroll(MWindow *mwindow, int x, int y, int h);
 
-	int create_objects(int top, int bottom);
-	int resize_event();
-	int flip_vertical(int top, int bottom);
-	int update();               // reflect new track view
-	long get_distance();
+	void resize_event();
 	int handle_event();
-
-	MWindowGUI *gui;
 	MWindow *mwindow;
-	long old_position;
 };
 
 #endif

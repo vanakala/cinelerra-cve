@@ -61,7 +61,6 @@
 #include "samplescroll.h"
 #include "trackcanvas.h"
 #include "track.h"
-#include "trackscroll.h"
 #include "tracks.h"
 #include "transition.h"
 #include "units.h"
