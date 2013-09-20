@@ -636,8 +636,8 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int picon_w = Units::round(edit->picon_w());
 	int picon_h = edit->picon_h();
 
-// Don't draw video if picon is bigger than edit
-	if(picon_w > edit_w) return;
+// Don't draw video if edit is tiny
+	if(edit_w < 2) return;
 
 // Current pixel relative to pixmap
 	int x = 0;
