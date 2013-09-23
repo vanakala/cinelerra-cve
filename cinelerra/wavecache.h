@@ -22,8 +22,6 @@
 #ifndef WAVECACHE_H
 #define WAVECACHE_H
 
-
-
 // Store audio waveform fragments for drawing.
 #include "cachebase.h"
 
@@ -32,7 +30,6 @@ class WaveCacheItem : public CacheItemBase
 {
 public:
 	WaveCacheItem();
-	~WaveCacheItem();
 
 	int get_size();
 
@@ -44,14 +41,10 @@ public:
 };
 
 
-
-
-
 class WaveCache : public CacheBase
 {
 public:
 	WaveCache();
-	~WaveCache();
 
 // Returns the first item on or after the start argument or 0 if none found.
 	WaveCacheItem* get_wave(int asset_id,
@@ -66,7 +59,5 @@ public:
 		double high,
 		double low);
 };
-
-
 
 #endif

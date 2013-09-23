@@ -26,11 +26,9 @@
 #include "mutex.h"
 #include "vframe.h"
 
-
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
-
 
 
 FrameCacheItem::FrameCacheItem()
@@ -48,15 +46,17 @@ FrameCacheItem::~FrameCacheItem()
 
 int FrameCacheItem::get_size()
 {
-	if(data) return data->get_data_size() + (path ? strlen(path) : 0);
+	if(data)
+	{
+		return data->get_data_size() + (path ? strlen(path) : 0);
+	}
 	return 0;
 }
 
-void FrameCacheItem::dump(void)
+void FrameCacheItem::dump(int indent)
 {
-	printf("FrameCacheItem:\n");
-	CacheItemBase::dump();
-	printf("    layer %d data %p\n", layer, data);
+	printf("FrameCacheItem %p: layer %d data %p\n", this, layer, data);
+	CacheItemBase::dump(indent);
 	if(data)
 		data->dump();
 }
@@ -66,11 +66,6 @@ FrameCache::FrameCache()
  : CacheBase()
 {
 }
-
-FrameCache::~FrameCache()
-{
-}
-
 
 // Returns 1 if frame exists in cache and copies it to the frame argument.
 int FrameCache::get_frame(VFrame *frame, 
@@ -96,7 +91,6 @@ int FrameCache::get_frame(VFrame *frame,
 	return 0;
 }
 
-
 VFrame* FrameCache::get_frame_ptr(ptstime postime,
 	int layer,
 	int color_model,
@@ -106,6 +100,7 @@ VFrame* FrameCache::get_frame_ptr(ptstime postime,
 {
 	lock->lock("FrameCache::get_frame_ptr");
 	FrameCacheItem *result = 0;
+
 	if(frame_exists(postime,
 		layer,
 		color_model,
@@ -117,7 +112,6 @@ VFrame* FrameCache::get_frame_ptr(ptstime postime,
 		result->age = get_age();
 		return result->data;
 	}
-
 
 	lock->unlock();
 	return 0;
@@ -131,6 +125,7 @@ void FrameCache::put_frame(VFrame *frame,
 {
 	lock->lock("FrameCache::put_frame");
 	FrameCacheItem *item = 0;
+
 	if(frame_exists(frame,
 		&item,
 		asset ? asset->id : -1))
@@ -156,6 +151,7 @@ void FrameCache::put_frame(VFrame *frame,
 	item->position = frame->get_frame_number();
 	item->duration = frame->get_duration();
 	item->layer = frame->get_layer();
+
 	if(asset)
 	{
 		item->asset_id = asset->id;
@@ -170,7 +166,6 @@ void FrameCache::put_frame(VFrame *frame,
 	put_item(item);
 	lock->unlock();
 }
-
 
 int FrameCache::frame_exists(VFrame *format,
 	FrameCacheItem **item_return,
@@ -203,6 +198,7 @@ int FrameCache::frame_exists(ptstime postime,
 	int asset_id)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(postime);
+
 	while(item && item->postime <= postime && item->postime + item->duration > postime)
 	{
 		if(layer == item->layer &&

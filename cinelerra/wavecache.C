@@ -30,26 +30,16 @@ WaveCacheItem::WaveCacheItem()
 {
 }
 
-WaveCacheItem::~WaveCacheItem()
-{
-}
-
 int WaveCacheItem::get_size()
 {
 	return sizeof(WaveCacheItem) + (path ? strlen(path) : 0);
 }
 
 
-
 WaveCache::WaveCache()
  : CacheBase()
 {
 }
-
-WaveCache::~WaveCache()
-{
-}
-
 
 WaveCacheItem* WaveCache::get_wave(int asset_id,
 	int channel,

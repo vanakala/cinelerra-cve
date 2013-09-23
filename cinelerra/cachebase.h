@@ -42,7 +42,7 @@ public:
 	virtual ~CacheItemBase();
 
 	virtual int get_size();
-	virtual void dump(void);
+	virtual void dump(int indent = 0);
 
 // asset_id - supplied by user if the cache is not part of a file.
 // Used for fast accesses.
@@ -59,7 +59,6 @@ public:
 	ptstime postime;
 	ptstime duration;
 };
-
 
 
 class CacheBase : public List<CacheItemBase>
@@ -94,15 +93,13 @@ public:
 	int delete_oldest();
 
 // Calculate current size of cache in bytes
-	int64_t get_memory_usage();
+	size_t get_memory_usage();
 
-	void dump(void);
+	void dump(int indent = 0);
 
 	Mutex *lock;
 // Current position of search
 	CacheItemBase *current_item;
 };
-
-
 
 #endif

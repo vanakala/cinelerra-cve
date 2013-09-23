@@ -44,7 +44,7 @@ public:
 	~FrameCacheItem();
 
 	int get_size();
-	void dump(void);
+	void dump(int indent = 0);
 
 	VFrame *data;
 	int layer;
@@ -54,7 +54,6 @@ class FrameCache : public CacheBase
 {
 public:
 	FrameCache();
-	~FrameCache();
 
 // Returns 1 if frame exists in cache and copies it to the frame argument.
 	int get_frame(VFrame *frame, 
@@ -77,7 +76,6 @@ public:
 	void put_frame(VFrame *frame, 
 		int use_copy,
 		Asset *asset = 0);
-
 
 private:
 // Return 1 if matching frame exists.

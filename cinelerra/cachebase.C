@@ -28,8 +28,6 @@
 #include <string.h>
 
 
-
-
 CacheItemBase::CacheItemBase()
  : ListItem<CacheItemBase>()
 {
@@ -49,12 +47,11 @@ int CacheItemBase::get_size()
 	return 0;
 }
 
-void CacheItemBase::dump(void)
+void CacheItemBase::dump(int indent)
 {
-	printf("    pos %lld pts %.3f duration %.3f size %d age %d\n", 
+	printf("%*spos %lld pts %.3f duration %.3f size %d age %d\n", indent, "",
 		position, postime, duration, get_size(), age);
 }
-
 
 
 CacheBase::CacheBase()
@@ -69,13 +66,10 @@ CacheBase::~CacheBase()
 	delete lock;
 }
 
-
-
 int CacheBase::get_age()
 {
 	return EDL::next_id();
 }
-
 
 // Called when done with the item returned by get_.
 // Ignore if item was 0.
@@ -94,7 +88,6 @@ void CacheBase::remove_all()
 	current_item = 0;
 	lock->unlock();
 }
-
 
 void CacheBase::remove_asset(Asset *asset)
 {
@@ -119,6 +112,7 @@ void CacheBase::remove_asset(Asset *asset)
 int CacheBase::get_oldest()
 {
 	int oldest = 0x7fffffff;
+
 	lock->lock("CacheBase::get_oldest");
 	for(CacheItemBase *current = first; current; current = NEXT)
 	{
@@ -128,8 +122,6 @@ int CacheBase::get_oldest()
 	lock->unlock();
 	return oldest;
 }
-
-
 
 int CacheBase::delete_oldest()
 {
@@ -159,16 +151,17 @@ int CacheBase::delete_oldest()
 	return 1;
 }
 
-
-int64_t CacheBase::get_memory_usage()
+size_t CacheBase::get_memory_usage()
 {
-	int64_t result = 0;
+	size_t result = 0;
+
 	lock->lock("CacheBase::get_memory_usage");
 	for(CacheItemBase *current = first; current; current = NEXT)
 	{
 		result += current->get_size();
 	}
 	lock->unlock();
+
 	return result;
 }
 
@@ -231,11 +224,11 @@ CacheItemBase* CacheBase::get_item(ptstime postime)
 	return current_item;
 }
 
-void CacheBase::dump(void)
+void CacheBase::dump(int indent)
 {
 	CacheItemBase *item;
-	printf("CacheBase::dump: count %d, size %lld\n",
+	printf("%*sCacheBase::dump: count %d, size %u\n", indent, "",
 		total(), get_memory_usage());
 	for(item = first; item; item = item->next)
-		item->dump();
+		item->dump(indent + 2);
 }
