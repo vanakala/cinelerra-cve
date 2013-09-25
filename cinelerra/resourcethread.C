@@ -199,10 +199,14 @@ void ResourceThread::start_draw()
 
 void ResourceThread::run()
 {
+	int do_update;
+
 	while(1)
 	{
 
 		draw_lock->lock("ResourceThread::run");
+
+		do_update = 0;
 
 		while(!interrupted)
 		{
@@ -223,15 +227,19 @@ void ResourceThread::run()
 			if(item->data_type == TRACK_VIDEO)
 			{
 				do_video((VResourceThreadItem*)item);
+				do_update = 1;
 			}
 			else
 			if(item->data_type == TRACK_AUDIO)
 			{
 				do_audio((AResourceThreadItem*)item);
+				do_update = 1;
 			}
 
 			delete item;
 		}
+		if(do_update)
+			mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);
 	}
 }
 
@@ -292,7 +300,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 				item->picon_h, 
 				0, 
 				0);
-			mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);
 		}
 	}
 	if(mwindow->frame_cache->total() > 32)
