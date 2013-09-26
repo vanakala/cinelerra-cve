@@ -277,6 +277,12 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		return;
 
 // Draw the picon
+	mwindow->gui->lock_window("ResourceThread::do_audio");
+	if(interrupted)
+	{
+		mwindow->gui->unlock_window();
+		return;
+	}
 
 // Test for pixmap existence first
 	if(item->operation_count == operation_count)
@@ -298,6 +304,8 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 				0);
 		}
 	}
+	mwindow->gui->unlock_window();
+
 	if(mwindow->frame_cache->total() > 32)
 		mwindow->frame_cache->delete_oldest();
 }
