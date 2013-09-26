@@ -227,7 +227,7 @@ CacheItemBase* CacheBase::get_item(ptstime postime)
 void CacheBase::dump(int indent)
 {
 	CacheItemBase *item;
-	printf("%*sCacheBase::dump: count %d, size %u\n", indent, "",
+	printf("%*sCacheBase::dump: count %d, size %zu\n", indent, "",
 		total(), get_memory_usage());
 	for(item = first; item; item = item->next)
 		item->dump(indent + 2);
