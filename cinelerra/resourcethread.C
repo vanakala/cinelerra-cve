@@ -22,7 +22,6 @@
 #include "aframe.h"
 #include "asset.h"
 #include "bcsignals.h"
-#include "bctimer.h"
 #include "cache.h"
 #include "clip.h"
 #include "condition.h"
@@ -105,7 +104,6 @@ ResourceThread::ResourceThread(MWindow *mwindow)
 	draw_lock = new Condition(0, "ResourceThread::draw_lock", 0);
 	item_lock = new Mutex("ResourceThread::item_lock");
 	aframe = 0;
-	timer = new Timer;
 	prev_x = -1;
 	prev_h = 0;
 	prev_l = 0;
@@ -118,7 +116,6 @@ ResourceThread::~ResourceThread()
 	delete draw_lock;
 	delete item_lock;
 	delete aframe;
-	delete timer;
 }
 
 void ResourceThread::add_picon(ResourcePixmap *pixmap, 
@@ -193,7 +190,6 @@ void ResourceThread::start_draw()
 			break;
 		}
 	}
-	timer->update();
 	draw_lock->unlock();
 }
 
@@ -422,11 +418,6 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 			prev_h = high;
 			prev_l = low;
 			item->pixmap->draw_wave(item->x, high, low);
-			if(timer->get_difference() > 250 || item->last)
-			{
-				mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);
-				timer->update();
-			}
 		}
 	}
 

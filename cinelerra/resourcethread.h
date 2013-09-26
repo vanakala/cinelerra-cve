@@ -32,7 +32,6 @@
 
 
 #include "arraylist.h"
-#include "bctimer.inc"
 #include "condition.inc"
 #include "datatype.h"
 #include "mwindow.inc"
@@ -145,8 +144,6 @@ public:
 	AFrame *aframe;
 	int audio_asset_id;
 
-// Timer for waveform refreshes
-	Timer *timer;
 // Waveform state
 	int prev_x;
 	double prev_h;
