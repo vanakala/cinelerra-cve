@@ -277,7 +277,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		return;
 
 // Draw the picon
-	mwindow->gui->lock_window("ResourceThread::do_audio");
+	mwindow->gui->lock_window("ResourceThread::do_video");
 	if(interrupted)
 	{
 		mwindow->gui->unlock_window();
