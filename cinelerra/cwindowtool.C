@@ -121,42 +121,26 @@ void CWindowTool::start_tool(int operation)
 	}
 	else
 	if(tool_gui) 
-	{
-		tool_gui->lock_window("CWindowTool::start_tool");
 		tool_gui->update();
-		tool_gui->unlock_window();
-	}
 }
 
 
 void CWindowTool::stop_tool()
 {
 	if(tool_gui)
-	{
-		tool_gui->lock_window("CWindowTool::stop_tool");
 		tool_gui->set_done(0);
-		tool_gui->unlock_window();
-	}
 }
 
 void CWindowTool::show_tool()
 {
 	if(tool_gui && mwindow->edl->session->tool_window)
-	{
-		tool_gui->lock_window("CWindowTool::show_tool");
 		tool_gui->show_window();
-		tool_gui->unlock_window();
-	}
 }
 
 void CWindowTool::hide_tool()
 {
 	if(tool_gui && mwindow->edl->session->tool_window)
-	{
-		tool_gui->lock_window("CWindowTool::show_tool");
 		tool_gui->hide_window();
-		tool_gui->unlock_window();
-	}
 }
 
 
@@ -181,8 +165,6 @@ void CWindowTool::update_show_window()
 {
 	if(tool_gui)
 	{
-		tool_gui->lock_window("CWindowTool::update_show_window");
-
 		if(mwindow->edl->session->tool_window) 
 		{
 			tool_gui->update();
@@ -190,9 +172,8 @@ void CWindowTool::update_show_window()
 		}
 		else
 			tool_gui->hide_window();
-		tool_gui->flush();
 
-		tool_gui->unlock_window();
+		tool_gui->flush();
 	}
 }
 
@@ -201,10 +182,8 @@ void CWindowTool::update_values()
 	tool_gui_lock->lock("CWindowTool::update_values");
 	if(tool_gui)
 	{
-		tool_gui->lock_window("CWindowTool::update_values");
 		tool_gui->update();
 		tool_gui->flush();
-		tool_gui->unlock_window();
 	}
 	tool_gui_lock->unlock();
 }
@@ -243,10 +222,8 @@ void CWindowToolGUI::close_event()
 	flush();
 	mwindow->edl->session->tool_window = 0;
 
-	thread->gui->lock_window("CWindowToolGUI::close_event");
 	thread->gui->composite_panel->set_operation(mwindow->edl->session->cwindow_operation);
 	thread->gui->flush();
-	thread->gui->unlock_window();
 }
 
 void CWindowToolGUI::translation_event()
@@ -407,9 +384,7 @@ void CWindowCropGUI::handle_event()
 	mwindow->edl->session->crop_y2 = atol(height->get_text()) + 
 		mwindow->edl->session->crop_y1;
 	update();
-	mwindow->cwindow->gui->lock_window("CWindowCropGUI::handle_event");
 	mwindow->cwindow->gui->canvas->draw_refresh();
-	mwindow->cwindow->gui->unlock_window();
 }
 
 void CWindowCropGUI::update()
@@ -561,9 +536,7 @@ void CWindowCameraGUI::update_preview()
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
 	mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
-	mwindow->cwindow->gui->lock_window("CWindowCameraGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
-	mwindow->cwindow->gui->unlock_window();
 }
 
 
@@ -612,10 +585,8 @@ void CWindowCameraGUI::handle_event()
 				if(zoom < 0) zoom = 0;
 
 				z_auto->value = zoom;
-				mwindow->gui->lock_window("CWindowCameraGUI::handle_event");
 				mwindow->gui->canvas->draw_overlays();
 				mwindow->gui->canvas->flash();
-				mwindow->gui->unlock_window();
 				update_preview();
 			}
 		}
@@ -974,11 +945,9 @@ void CWindowProjectorGUI::update_preview()
 {
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
 
-	mwindow->cwindow->gui->lock_window("CWindowProjectorGUI::update_preview");
+	mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
 	mwindow->cwindow->gui->canvas->draw_refresh();
-	mwindow->cwindow->gui->unlock_window();
 }
 
 void CWindowProjectorGUI::handle_event()
@@ -1027,10 +996,8 @@ void CWindowProjectorGUI::handle_event()
 				if(zoom < 0) zoom = 0;
 				z_auto->value = zoom;
 
-				mwindow->gui->lock_window("CWindowProjectorGUI::handle_event");
 				mwindow->gui->canvas->draw_overlays();
 				mwindow->gui->canvas->flash();
-				mwindow->gui->unlock_window();
 
 				update_preview();
 			}
@@ -1694,8 +1661,5 @@ void CWindowMaskGUI::update_preview()
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
-
-	mwindow->cwindow->gui->lock_window("CWindowMaskGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
-	mwindow->cwindow->gui->unlock_window();
 }
