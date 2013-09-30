@@ -277,13 +277,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		return;
 
 // Draw the picon
-	mwindow->gui->lock_window("ResourceThread::do_video");
-	if(interrupted)
-	{
-		mwindow->gui->unlock_window();
-		return;
-	}
-
 // Test for pixmap existence first
 	if(item->operation_count == operation_count)
 	{
@@ -304,7 +297,6 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 				0);
 		}
 	}
-	mwindow->gui->unlock_window();
 
 	if(mwindow->frame_cache->total() > 32)
 		mwindow->frame_cache->delete_oldest();
@@ -397,13 +389,6 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 		return;
 
 // Draw the column
-	mwindow->gui->lock_window("ResourceThread::do_audio");
-	if(interrupted)
-	{
-		mwindow->gui->unlock_window();
-		return;
-	}
-
 	if(item->operation_count == operation_count)
 	{
 
@@ -428,6 +413,4 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 			item->pixmap->draw_wave(item->x, high, low);
 		}
 	}
-
-	mwindow->gui->unlock_window();
 }
