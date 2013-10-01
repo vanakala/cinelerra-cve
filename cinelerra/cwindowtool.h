@@ -28,10 +28,8 @@
 #include "maskauto.inc"
 #include "mwindow.inc"
 
-
 class CWindowToolGUI;
 class CWindowCoord;
-
 
 // This common thread supports all the tool GUI's.
 class CWindowTool : public Thread
@@ -71,19 +69,18 @@ public:
 		const char *title,
 		int w, 
 		int h);
-	~CWindowToolGUI();
 
-	virtual void create_objects() {};
 // Update the keyframe from text boxes
-	virtual void handle_event() {};
+	virtual int handle_event() {};
 // Update text boxes from keyframe here
 	virtual void update() {};
 // Update EDL and preview only
 	virtual void update_preview() {};
-	int current_operation;
+
 	void close_event();
 	void translation_event();
 
+	int current_operation;
 	MWindow *mwindow;
 	CWindowTool *thread;
 	CWindowCoord *event_caller;
@@ -105,6 +102,7 @@ class CWindowCropOK : public BC_GenericButton
 {
 public:
 	CWindowCropOK(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+
 // Perform the cropping operation
 	int handle_event();
 	int keypress_event();
@@ -116,11 +114,10 @@ class CWindowCropGUI : public CWindowToolGUI
 {
 public:
 	CWindowCropGUI(MWindow *mwindow, CWindowTool *thread);
-	~CWindowCropGUI();
-	void create_objects();
+
 	void update();
 // Update the gui
-	void handle_event();
+	int handle_event();
 	CWindowCoord *x1, *y1, *width, *height;
 };
 
@@ -128,10 +125,12 @@ class CWindowMaskMode : public BC_PopupMenu
 {
 public:
 	CWindowMaskMode(MWindow *mwindow, CWindowToolGUI *gui, int x, int y, const char *text);
+
 	void create_objects();
 	int handle_event();
 	static const char* mode_to_text(int mode);
 	int text_to_mode(const char *text);
+
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
@@ -140,8 +139,10 @@ class CWindowMaskDelete : public BC_GenericButton
 {
 public:
 	CWindowMaskDelete(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
+
 	int handle_event();
 	int keypress_event();
+
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
@@ -150,8 +151,9 @@ class CWindowMaskNumber : public BC_TumbleTextBox
 {
 public:
 	CWindowMaskNumber(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-	~CWindowMaskNumber();
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
@@ -160,8 +162,9 @@ class CWindowMaskFeather : public BC_TumbleTextBox
 {
 public:
 	CWindowMaskFeather(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-	~CWindowMaskFeather();
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
 };
@@ -170,7 +173,7 @@ class CWindowMaskValue : public BC_ISlider
 {
 public:
 	CWindowMaskValue(MWindow *mwindow, CWindowToolGUI *gui, int x, int y);
-	~CWindowMaskValue();
+
 	int handle_event();
 	MWindow *mwindow;
 	CWindowToolGUI *gui;
@@ -180,11 +183,11 @@ class CWindowMaskBeforePlugins : public BC_CheckBox
 {
 public:
 	CWindowMaskBeforePlugins(CWindowToolGUI *gui, int x, int y);
+
 	int handle_event();
+
 	CWindowToolGUI *gui;
 };
-
-
 
 
 class CWindowMaskGUI : public CWindowToolGUI
@@ -192,9 +195,9 @@ class CWindowMaskGUI : public CWindowToolGUI
 public:
 	CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread);
 	~CWindowMaskGUI();
-	void create_objects();
+
 	void update();
-	void handle_event();
+	int handle_event();
 	void get_keyframe(Track* &track, 
 		MaskAuto* &keyframe, 
 		SubMask* &mask, 
@@ -212,14 +215,11 @@ public:
 };
 
 
-
 class CWindowEyedropGUI : public CWindowToolGUI
 {
 public:
 	CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread);
-	~CWindowEyedropGUI();
 
-	void create_objects();
 	void update();
 
 	BC_Title *red, *green, *blue;
@@ -227,18 +227,17 @@ public:
 };
 
 
-
 class CWindowCameraGUI : public CWindowToolGUI
 {
 public:
 	CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread);
-	~CWindowCameraGUI();
-	void create_objects();
+
 	void update();
 	void update_preview();
 
 // Update the keyframe from text boxes
-	void handle_event();
+	int handle_event();
+
 	CWindowCoord *x, *y, *z;
 };
 
@@ -246,7 +245,9 @@ class CWindowCameraLeft : public BC_Button
 {
 public:
 	CWindowCameraLeft(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
 };
@@ -255,7 +256,9 @@ class CWindowCameraCenter : public BC_Button
 {
 public:
 	CWindowCameraCenter(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
 };
@@ -273,7 +276,9 @@ class CWindowCameraTop : public BC_Button
 {
 public:
 	CWindowCameraTop(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
 };
@@ -282,7 +287,9 @@ class CWindowCameraMiddle : public BC_Button
 {
 public:
 	CWindowCameraMiddle(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
 };
@@ -291,7 +298,9 @@ class CWindowCameraBottom : public BC_Button
 {
 public:
 	CWindowCameraBottom(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowCameraGUI *gui;
 };
@@ -300,11 +309,11 @@ class CWindowProjectorGUI : public CWindowToolGUI
 {
 public:
 	CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread);
-	~CWindowProjectorGUI();
-	void create_objects();
+
 	void update();
 	void update_preview();
-	void handle_event();
+	int handle_event();
+
 	CWindowCoord *x, *y, *z;
 };
 
@@ -312,7 +321,9 @@ class CWindowProjectorLeft : public BC_Button
 {
 public:
 	CWindowProjectorLeft(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
 };
@@ -330,7 +341,9 @@ class CWindowProjectorRight : public BC_Button
 {
 public:
 	CWindowProjectorRight(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
 };
@@ -339,7 +352,9 @@ class CWindowProjectorTop : public BC_Button
 {
 public:
 	CWindowProjectorTop(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
 };
@@ -348,7 +363,9 @@ class CWindowProjectorMiddle : public BC_Button
 {
 public:
 	CWindowProjectorMiddle(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
 };
@@ -357,7 +374,9 @@ class CWindowProjectorBottom : public BC_Button
 {
 public:
 	CWindowProjectorBottom(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
 };
