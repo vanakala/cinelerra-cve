@@ -148,7 +148,6 @@ int CWindowGUI::create_objects()
 		mwindow->theme->ccomposite_y,
 		mwindow->theme->ccomposite_w,
 		mwindow->theme->ccomposite_h);
-	composite_panel->create_objects();
 
 	canvas = new CWindowCanvas(mwindow, this);
 	canvas->create_objects(mwindow->edl);
