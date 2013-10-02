@@ -160,6 +160,7 @@ void CWindowTool::run()
 
 void CWindowTool::update_show_window()
 {
+	tool_gui_lock->lock("CWindowTool::update_show_window");
 	if(tool_gui)
 	{
 		if(mwindow->edl->session->tool_window) 
@@ -172,17 +173,18 @@ void CWindowTool::update_show_window()
 
 		tool_gui->flush();
 	}
+	tool_gui_lock->unlock();
 }
 
 void CWindowTool::update_values()
 {
+	tool_gui_lock->lock("CWindowTool::update_values");
 	if(tool_gui)
 	{
-		tool_gui_lock->lock("CWindowTool::update_values");
 		tool_gui->update();
 		tool_gui->flush();
-		tool_gui_lock->unlock();
 	}
+	tool_gui_lock->unlock();
 }
 
 
