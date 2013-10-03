@@ -57,7 +57,7 @@ void FloatAutos::straighten(ptstime start, ptstime end)
 			if(previous_auto && previous_auto->pos_time >= start)
 			{
 				float previous_value = previous_auto->value;
-				current->control_in_value = (previous_value - current_value) / 6.0;
+				current->control_in_value = (previous_value - current_value) / 3.0;
 				if(!current->control_in_pts)
 					current->control_in_pts = -1.0;
 			}
@@ -66,7 +66,7 @@ void FloatAutos::straighten(ptstime start, ptstime end)
 			if(next_auto && next_auto->pos_time < end)
 			{
 				float next_value = next_auto->value;
-				current->control_out_value = (next_value - current_value) / 6.0;
+				current->control_out_value = (next_value - current_value) / 3.0;
 				if(!current->control_out_pts)
 					current->control_out_pts = 1.0;
 			}
@@ -237,8 +237,8 @@ float FloatAutos::get_value(ptstime position,
 	if(EQUIV(next->pos_time, previous->pos_time))
 		return previous->value;
 
-	y1 = previous->value + previous->control_out_value * 2;
-	y2 = next->value + next->control_in_value * 2;
+	y1 = previous->value + previous->control_out_value;
+	y2 = next->value + next->control_in_value;
 	t =  (position - previous->pos_time) / 
 		(next->pos_time - previous->pos_time);
 

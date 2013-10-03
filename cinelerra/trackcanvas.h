@@ -93,7 +93,7 @@ public:
 		int cursor_x, 
 		int cursor_y, 
 		int buttonpress);
-	int test_floatauto(Auto *current, 
+	int test_floatauto(FloatAuto *current, 
 		int x, 
 		int y, 
 		int in_x,

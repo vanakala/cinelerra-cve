@@ -34,6 +34,9 @@ FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
 	control_out_value = 0;
 	control_in_pts = 0;
 	control_out_pts = 0;
+	tangent_mode = SMOOTH;
+//  note: in most cases the tangent_mode-value
+//        is set by the method fill_from_template()
 }
 
 int FloatAuto::operator==(Auto &that)
@@ -97,6 +100,16 @@ void FloatAuto::copy_from(FloatAuto *that)
 	this->control_out_value = that->control_out_value;
 	this->control_in_pts = that->control_in_pts;
 	this->control_out_pts = that->control_out_pts;
+	this->tangent_mode = that->tangent_mode;
+// note: literate copy, no recalculations
+}
+
+void FloatAuto::change_tangent_mode(t_mode new_mode)
+{
+	if(new_mode == TFREE && !(control_in_pts && control_out_pts))
+		new_mode = FREE; // only if tangents on both sides...
+
+	tangent_mode = new_mode;
 }
 
 void FloatAuto::copy(ptstime start, ptstime end, FileXML *file)
@@ -104,10 +117,9 @@ void FloatAuto::copy(ptstime start, ptstime end, FileXML *file)
 	file->tag.set_title("AUTO");
 	file->tag.set_property("POSTIME", pos_time - start);
 	file->tag.set_property("VALUE", value);
-	file->tag.set_property("CONTROL_IN_VALUE", control_in_value);
-	file->tag.set_property("CONTROL_OUT_VALUE", control_out_value);
-	file->tag.set_property("CONTROL_IN_PTS", control_in_pts);
-	file->tag.set_property("CONTROL_OUT_PTS", control_out_pts);
+	file->tag.set_property("CONTROL_IN_VALUE", control_in_value / 2.0);  // compatibility, see below
+	file->tag.set_property("CONTROL_OUT_VALUE", control_out_value / 2.0);
+	file->tag.set_property("TANGENT_MODE", tangent_mode);
 	file->append_tag();
 	file->tag.set_title("/AUTO");
 	file->append_tag();
@@ -116,20 +128,17 @@ void FloatAuto::copy(ptstime start, ptstime end, FileXML *file)
 
 void FloatAuto::load(FileXML *file)
 {
-	posnum control_position;
-
 	value = file->tag.get_property("VALUE", value);
 	control_in_value = file->tag.get_property("CONTROL_IN_VALUE", control_in_value);
 	control_out_value = file->tag.get_property("CONTROL_OUT_VALUE", control_out_value);
-// Convert from old position
-	control_position = file->tag.get_property("CONTROL_IN_POSITION", (posnum)0);
-	if(control_position)
-		control_in_pts = autos->pos2pts(control_position);
-	control_position = file->tag.get_property("CONTROL_OUT_POSITION", (posnum)0);
-	if(control_position)
-		control_out_pts = autos->pos2pts(control_position);
-	control_in_pts = file->tag.get_property("CONTROL_IN_PTS", control_in_pts);
-	control_out_pts = file->tag.get_property("CONTROL_OUT_PTS", control_out_pts);
+	tangent_mode = (t_mode)file->tag.get_property("TANGENT_MODE", FREE);
+
+	// Compatibility to old session data format:
+	// Versions previous to the bezier auto patch (Jun 2006) aplied a factor 2
+	// to the y-coordinates of ctrl points while calculating the bezier function.
+	// To retain compatibility, we now aply this factor while loading
+	control_in_value *= 2.0;
+	control_out_value *= 2.0;
 }
 
 void FloatAuto::dump(int ident)
@@ -137,6 +146,7 @@ void FloatAuto::dump(int ident)
 	printf("%*sFloatAuto %p: pos_time %.3lf value %.3f\n",
 		ident, "", this, pos_time, value);
 	ident += 2;
-	printf("%*scontrols in %.2f/%.3f, out %.2f/%.3f\n", ident, "",
-		control_in_value, control_in_pts, control_out_value, control_out_pts);
+	printf("%*scontrols in %.2f/%.3f, out %.2f/%.3f %s\n", ident, "",
+		control_in_value, control_in_pts, control_out_value, control_out_pts,
+		tangent_mode == SMOOTH ? "smooth" : tangent_mode == LINEAR ? "linear" : "");
 }

@@ -49,6 +49,19 @@ public:
 	float invalue_to_percentage();
 	float outvalue_to_percentage();
 
+// Possible policies to handle the tagents for the
+// bézier curves connecting adjacent automation points
+	enum t_mode
+	{
+		SMOOTH,     // tangents are coupled in order to yield a smooth curve
+		LINEAR,     // tangents always pointing directly to neighbouring automation points
+		TFREE,      // tangents on both sides coupled but editable by dragging the handles
+		FREE        // tangents on both sides are independent and editable via GUI
+	};
+
+	t_mode tangent_mode;
+	void change_tangent_mode(t_mode); // recalculates tangents as well
+
 // Control values are relative to value
 	float value;
 	float control_in_value;
