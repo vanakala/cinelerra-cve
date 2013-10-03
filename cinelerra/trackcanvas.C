@@ -2012,7 +2012,7 @@ void TrackCanvas::draw_auto(Auto *current,
 	draw_box(x1, y1, x2 - x1, y2 - y1);
 }
 
-void TrackCanvas::draw_floatauto(Auto *current, 
+void TrackCanvas::draw_floatauto(FloatAuto *current, 
 	int x, 
 	int y, 
 	int in_x, 
@@ -2024,8 +2024,6 @@ void TrackCanvas::draw_floatauto(Auto *current,
 	int color)
 {
 	int x1, y1, x2, y2;
-	int in_x1, in_y1, in_x2, in_y2;
-	int out_x1, out_y1, out_x2, out_y2;
 
 // Center
 	x1 = x - HANDLE_W / 2;
@@ -2044,45 +2042,72 @@ void TrackCanvas::draw_floatauto(Auto *current,
 		draw_box(x1, y1, x2 - x1, y2 - y1);
 	}
 
-// In handle
-	in_x1 = in_x - HANDLE_W / 2;
-	in_x2 = in_x + HANDLE_W / 2;
-	in_y1 = center_pixel + in_y - HANDLE_W / 2;
-	in_y2 = center_pixel + in_y + HANDLE_W / 2;
+	if(in_x != x)
+		draw_floatauto_ctrlpoint(x, y, in_x, in_y, center_pixel, zoom_track,color);
+	if(out_x != x)
+		draw_floatauto_ctrlpoint(x, y, out_x, out_y, center_pixel, zoom_track,color);
+}
 
-	CLAMP(in_y1, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
-	CLAMP(in_y2, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
-	CLAMP(in_y, -zoom_track / 2, zoom_track / 2);
+inline int quantize(float f)
+{
+	return (int)floor(f + 0.5);
+}
 
-	if(in_y2 > in_y1)
+inline void TrackCanvas::draw_floatauto_ctrlpoint(int x,
+	int y,
+	int cp_x,
+	int cp_y,
+	int center_pixel,
+	int zoom_track,
+	int color)
+// draw the tangent and a handle for given bézier ctrl point
+{
+	bool handle_visible = (abs(cp_y) <= zoom_track / 2); // abs(cp_y+HANDLE_W/2) would be more precise...
+	float slope = (float)(cp_y - y) / (cp_x - x);
+
+	CLAMP(cp_y, -zoom_track / 2, zoom_track / 2);
+	if(slope != 0)
+		cp_x = x + quantize((cp_y - y) / slope);
+
+	y += center_pixel;
+	cp_y += center_pixel;
+
+	// drawing the tangent as a dashed line...
+	int const dash = 2 * HANDLE_W;
+	int const gap  = HANDLE_W / 2;
+	float sx = cp_x - x;
+	float ex = 0;
+
+	// q is the x displacement for a unit line of slope
+	float q = 1 / sqrt(1 + slope * slope) * (sx > 0 ? 1 : -1);
+
+	float dist = 1 / q * sx;
+
+	if(dist > dash)
+		ex = sx - q * dash;
+
+	set_color(color);
+	do {
+		float sy = slope * sx;
+		float ey = slope * ex;
+		draw_line(quantize(sx + x),
+			quantize(sy + y),
+			quantize(ex + x),
+			quantize(ey + y));
+		sx = ex - q * gap;
+		ex = sx - q * dash;
+		dist -= dash + gap;
+	} while (dist > 2 * dash);
+
+	if(handle_visible)
 	{
+		int r = HANDLE_W / 2;
+		int cp_x1 = cp_x - r;
+		int cp_y1 = cp_y - r;
 		set_color(BLACK);
-		draw_line(x + 1, center_pixel + y + 1, in_x + 1, center_pixel + in_y + 1);
-		draw_box(in_x1 + 1, in_y1 + 1, in_x2 - in_x1, in_y2 - in_y1);
+		draw_disc  (cp_x1, cp_y1, 2 * r, 2 * r);
 		set_color(color);
-		draw_line(x, center_pixel + y, in_x, center_pixel + in_y);
-		draw_box(in_x1, in_y1, in_x2 - in_x1, in_y2 - in_y1);
-	}
-
-
-// Out handle
-	out_x1 = out_x - HANDLE_W / 2;
-	out_x2 = out_x + HANDLE_W / 2;
-	out_y1 = center_pixel + out_y - HANDLE_W / 2;
-	out_y2 = center_pixel + out_y + HANDLE_W / 2;
-
-	CLAMP(out_y1, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
-	CLAMP(out_y2, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
-	CLAMP(out_y, -zoom_track / 2, zoom_track / 2);
-
-	if(out_y2 > out_y1)
-	{
-		set_color(BLACK);
-		draw_line(x + 1, center_pixel + y + 1, out_x + 1, center_pixel + out_y + 1);
-		draw_box(out_x1 + 1, out_y1 + 1, out_x2 - out_x1, out_y2 - out_y1);
-		set_color(color);
-		draw_line(x, center_pixel + y, out_x, center_pixel + out_y);
-		draw_box(out_x1, out_y1, out_x2 - out_x1, out_y2 - out_y1);
+		draw_circle(cp_x1, cp_y1, 2 * r, 2 * r);
 	}
 }
 
@@ -2269,9 +2294,9 @@ void TrackCanvas::draw_floatline(int center_pixel,
 			y < center_pixel + yscale / 2 - 1)
 		{
 			set_color(BLACK);
-			draw_line(x - 1, prev_y + 1, x, y + 1);
-			set_color(color);
 			draw_line(x - 1, prev_y, x, y);
+			set_color(color);
+			draw_line(x - 1, prev_y - 1, x, y - 1);
 		}
 		prev_y = y;
 	}
@@ -2693,7 +2718,7 @@ int TrackCanvas::do_float_autos(Track *track,
 			}
 			else
 			if(draw_auto)
-				draw_floatauto(current,
+				draw_floatauto((FloatAuto *)current,
 					(int)ax2,
 					(int)ay2,
 					(int)in_x2,
