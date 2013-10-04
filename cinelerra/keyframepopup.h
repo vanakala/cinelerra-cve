@@ -22,6 +22,7 @@
 #ifndef KEYFRAMEPOPUP_H
 #define KEYFRAMEPOPUP_H
 
+#include "floatauto.inc"
 #include "guicast.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
@@ -32,12 +33,14 @@
 
 class KeyframePopupDelete;
 class KeyframePopupCopy;
+class KeyframePopupTangentMode;
 
 
 class KeyframePopup : public BC_PopupMenu
 {
 public:
 	KeyframePopup(MWindow *mwindow, MWindowGUI *gui);
+	~KeyframePopup();
 
 	void create_objects();
 	void update(Plugin *plugin, KeyFrame *keyframe);
@@ -52,9 +55,17 @@ public:
 	Automation *keyframe_automation;
 	Auto *keyframe_auto;
 private:
+	void handle_tangent_mode(Autos *autos, Auto *auto_keyframe);
+
 	KeyframePopupDelete *key_delete;
 	KeyframePopupCopy *key_copy;
+	KeyframePopupTangentMode *tan_smooth;
+	KeyframePopupTangentMode *tan_linear;
+	KeyframePopupTangentMode *tan_free_t;
+	KeyframePopupTangentMode *tan_free;
+	BC_MenuItem *hline;
 	int delete_active;
+	bool tangent_mode_displayed;
 };
 
 class KeyframePopupDelete : public BC_MenuItem
@@ -77,6 +88,24 @@ public:
 
 	MWindow *mwindow;
 	KeyframePopup *popup;
+};
+
+class KeyframePopupTangentMode : public BC_MenuItem
+{
+public:
+	KeyframePopupTangentMode(MWindow *mwindow, KeyframePopup *popup, int tangent_mode);
+
+	friend class KeyframePopup;
+
+	int handle_event();
+
+private:
+	MWindow *mwindow;
+	KeyframePopup *popup;
+	int tangent_mode;
+	const char* get_labeltext(int);
+	void toggle_mode(FloatAuto*);
+
 };
 
 #endif
