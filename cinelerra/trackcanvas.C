@@ -2232,7 +2232,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 			mwindow->session->drag_start_percentage = 
 				current->invalue_to_percentage();
 			mwindow->session->drag_start_postime = 
-				((FloatAuto*)current)->control_in_pts;
+				((FloatAuto*)current)->get_control_in_pts();
 			mwindow->session->drag_origin_x = cursor_x;
 			mwindow->session->drag_origin_y = cursor_y;
 			mwindow->session->drag_handle = HANDLE_LEFT;
@@ -2256,7 +2256,7 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 			mwindow->session->drag_start_percentage = 
 				current->outvalue_to_percentage();
 			mwindow->session->drag_start_postime = 
-				((FloatAuto*)current)->control_out_pts;
+				((FloatAuto*)current)->get_control_out_pts();
 			mwindow->session->drag_origin_x = cursor_x;
 			mwindow->session->drag_origin_y = cursor_y;
 			mwindow->session->drag_handle = HANDLE_RIGHT;
@@ -2342,20 +2342,16 @@ void TrackCanvas::synchronize_autos(float change,
 
 				if (!keyframe)
 				{
-// create keyframe at exactly this point in time
+// create keyframe on neighbouring track at the point in time given by fauto
 					keyframe = (FloatAuto*)fade_autos->insert_auto(fauto->pos_time);
-					keyframe->value = init_value;
+					keyframe->set_value(init_value + change);
 				} 
 				else
 				{ 
-					keyframe->value += change;
+					keyframe->set_value(keyframe->get_value() + change);
+// need to (re)set the position, as the existing node could be on a "equivalent" position (within half a frame)
+					keyframe->pos_time = fauto->pos_time;
 				}
-
-				keyframe->pos_time = fauto->pos_time;
-				keyframe->control_out_pts = fauto->control_out_pts;
-				keyframe->control_in_pts = fauto->control_in_pts;
-				keyframe->control_out_value = fauto->control_out_value;
-				keyframe->control_in_value = fauto->control_in_value;
 
 				mwindow->session->drag_auto_gang->append((Auto *)keyframe);
 			}
@@ -2369,15 +2365,12 @@ void TrackCanvas::synchronize_autos(float change,
 		{
 			FloatAuto *keyframe = (FloatAuto *)mwindow->session->drag_auto_gang->values[i];
 
-			keyframe->value += change;
+			float new_value = keyframe->get_value() + change;
 			keyframe->pos_time = fauto->pos_time;
-			CLAMP(keyframe->value,
+			CLAMP(new_value,
 				mwindow->edl->local_session->automation_mins[keyframe->autos->autogrouptype],
 				mwindow->edl->local_session->automation_maxs[keyframe->autos->autogrouptype]);
-			keyframe->control_out_pts = fauto->control_out_pts;
-			keyframe->control_in_pts = fauto->control_in_pts;
-			keyframe->control_out_value = fauto->control_out_value;
-			keyframe->control_in_value = fauto->control_in_value;
+			keyframe->set_value(new_value);
 		}
 	}
 	else
@@ -2423,7 +2416,7 @@ int TrackCanvas::test_floatline(int center_pixel,
 		{
 			Auto *current;
 			current = mwindow->session->drag_auto = autos->insert_auto(timepos);
-			((FloatAuto*)current)->value = value;
+			((FloatAuto*)current)->set_value(value);
 			mwindow->session->drag_start_percentage = current->value_to_percentage();
 			mwindow->session->drag_start_postime = current->pos_time;
 			mwindow->session->drag_origin_x = cursor_x;
@@ -2533,7 +2526,7 @@ float TrackCanvas::percentage_to_value(float percentage,
 		if(reference)
 		{
 			FloatAuto *ptr = (FloatAuto*)reference;
-			result -= ptr->value;
+			result -= ptr->get_value();
 		}
 	}
 	return result;
@@ -2557,17 +2550,17 @@ void TrackCanvas::calculate_auto_position(double *x,
 	double automation_range = automation_max - automation_min;
 	FloatAuto *ptr = (FloatAuto*)current;
 	*x = (ptr->pos_time - start) * zoom;
-	*y = ((ptr->value - automation_min) /
+	*y = ((ptr->get_value() - automation_min) /
 		automation_range - 0.5) * 
 		-yscale;
 	if(in_x)
 	{
-		*in_x = (ptr->pos_time + ptr->control_in_pts - start) *
+		*in_x = (ptr->pos_time + ptr->get_control_in_pts() - start) *
 			zoom;
 	}
 	if(in_y)
 	{
-		*in_y = (((ptr->value + ptr->control_in_value) -
+		*in_y = (((ptr->get_value() + ptr->get_control_in_value()) -
 			automation_min) /
 			automation_range - 0.5) *
 			-yscale;
@@ -2575,13 +2568,13 @@ void TrackCanvas::calculate_auto_position(double *x,
 	if(out_x)
 	{
 		*out_x = (double)(ptr->pos_time + 
-			ptr->control_out_pts - 
+			ptr->get_control_out_pts() - 
 			start) *
 			zoom;
 	}
 	if(out_y)
 	{
-		*out_y = (((ptr->value + ptr->control_out_value) -
+		*out_y = (((ptr->get_value() + ptr->get_control_out_value()) -
 			automation_min) /
 			automation_range - 0.5) *
 			-yscale;
@@ -3307,7 +3300,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 // Center
 	case HANDLE_MAIN:
 // Snap to nearby values
-		old_value = current->value;
+		old_value = current->get_value();
 		if(shift_down())
 		{
 			double value1;
@@ -3319,28 +3312,28 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			{
 				int autogrouptype = current->previous->autos->autogrouptype;
 				value = percentage_to_value(percentage, 0, 0, autogrouptype);
-				value1 = ((FloatAuto*)current->previous)->value;
+				value1 = ((FloatAuto*)current->previous)->get_value();
 				distance1 = fabs(value - value1);
-				current->value = value1;
+				current->set_value(value1);
 			}
 
 			if(current->next)
 			{
 				int autogrouptype = current->next->autos->autogrouptype;
 				value = percentage_to_value(percentage, 0, 0, autogrouptype);
-				value2 = ((FloatAuto*)current->next)->value;
+				value2 = ((FloatAuto*)current->next)->get_value();
 				distance2 = fabs(value - value2);
 				if(!current->previous || distance2 < distance1)
 				{
-					current->value = value2;
+					current->set_value(value2);
 				}
 			}
 
 			if(!current->previous && !current->next)
 			{
-				current->value = ((FloatAutos*)current->autos)->default_value;
+				current->set_value(((FloatAutos*)current->autos)->default_value);
 			}
-			value = current->value;
+			value = current->get_value();
 		}
 		else
 		{
@@ -3352,7 +3345,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 		{
 			result = 1;
 			float change = value - old_value;
-			current->value = value;
+			current->set_value(value);
 			current->pos_time = postime;
 			synchronize_autos(change, current->autos->track, current, 0);
 
@@ -3363,7 +3356,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				mwindow->edl->session->sample_rate,
 				mwindow->edl->session->frame_rate,
 				mwindow->edl->session->frames_per_foot);
-			gui->show_message("%s, %.2f", string, current->value);
+			gui->show_message("%s, %.2f", string, current->get_value());
 		}
 		break;
 
@@ -3374,11 +3367,11 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			value = percentage_to_value(percentage, 0, current, autogrouptype);
 			postime = MIN(0, postime);
 
-			if(value != current->control_in_value || 
-				!PTSEQU(postime, current->control_in_pts))
+			if(value != current->get_control_in_value() ||
+				!PTSEQU(postime, current->get_control_in_pts()))
 			{
 				result = 1;
-				current->control_in_value = value;
+				current->set_control_in_value(value);
 				current->control_in_pts = postime;
 				synchronize_autos(0, current->autos->track, current, 0);
 
@@ -3389,7 +3382,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 					mwindow->edl->session->sample_rate,
 					mwindow->edl->session->frame_rate,
 					mwindow->edl->session->frames_per_foot);
-				gui->show_message("%s, %.2f", string, current->control_in_value);
+				gui->show_message("%s, %.2f", string, current->get_control_in_value());
 			}
 		}
 		break;
@@ -3400,23 +3393,23 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			int autogrouptype = current->autos->autogrouptype;
 			value = percentage_to_value(percentage, 0, current, autogrouptype);
 			postime = MAX(0, postime);
-			if(value != current->control_out_value || 
-				!PTSEQU(postime, current->control_out_pts))
+			if(value != current->get_control_out_value() ||
+				!PTSEQU(postime, current->get_control_out_pts()))
 			{
 				result = 1;
-				current->control_out_value = value;
+				current->set_control_out_value(value);
 				current->control_out_pts = postime;
 				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN];
 				Units::totext(string,
-					((FloatAuto*)current)->control_out_pts,
+					((FloatAuto*)current)->get_control_out_pts(),
 					mwindow->edl->session->time_format,
 					mwindow->edl->session->sample_rate,
 					mwindow->edl->session->frame_rate,
 					mwindow->edl->session->frames_per_foot);
 				gui->show_message("%s, %.2f", string, 
-					((FloatAuto*)current)->control_out_value);
+					((FloatAuto*)current)->get_control_out_value());
 			}
 		}
 		break;

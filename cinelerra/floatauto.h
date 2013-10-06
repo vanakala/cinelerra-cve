@@ -49,6 +49,11 @@ public:
 	float invalue_to_percentage();
 	float outvalue_to_percentage();
 
+// "the value" (=payload of this keyframe)
+	float get_value() { return this->value; }
+	void set_value(float newval);
+
+
 // Possible policies to handle the tagents for the
 // bézier curves connecting adjacent automation points
 	enum t_mode
@@ -61,14 +66,25 @@ public:
 
 	t_mode tangent_mode;
 	void change_tangent_mode(t_mode); // recalculates tangents as well
+// Control values (y coords of bézier control point), relative to value
+	float get_control_in_value() { return this->control_in_value; }
+	float get_control_out_value() { return this->control_out_value; }
+	void set_control_in_value(float newval);
+	void set_control_out_value(float newval);
 
+// get calculated x-position of control points for drawing,
+// relative to auto position, in native units of the track.
+	ptstime get_control_in_pts() { return this->control_in_pts; }
+	ptstime get_control_out_pts() { return this->control_out_pts; }
+
+// X control positions relative to value position for drawing.
+	ptstime control_in_pts;
+	ptstime control_out_pts;
+private:
 // Control values are relative to value
 	float value;
 	float control_in_value;
 	float control_out_value;
-// X control positions relative to value position for drawing.
-	ptstime control_in_pts;
-	ptstime control_out_pts;
 };
 
 #endif

@@ -51,24 +51,20 @@ void FloatAutos::straighten(ptstime start, ptstime end)
 // Is current auto in range?
 		if(current->pos_time >= start && current->pos_time < end)
 		{
-			float current_value = current->value;
+			float current_value = current->get_value();
 
 // Determine whether to set the control in point.
 			if(previous_auto && previous_auto->pos_time >= start)
 			{
-				float previous_value = previous_auto->value;
-				current->control_in_value = (previous_value - current_value) / 3.0;
-				if(!current->control_in_pts)
-					current->control_in_pts = -1.0;
+				float previous_value = previous_auto->get_value();
+				current->set_control_in_value((previous_value - current_value) / 3.0);
 			}
 
 // Determine whether to set the control out point
 			if(next_auto && next_auto->pos_time < end)
 			{
-				float next_value = next_auto->value;
-				current->control_out_value = (next_value - current_value) / 3.0;
-				if(!current->control_out_pts)
-					current->control_out_pts = 1.0;
+				float next_value = next_auto->get_value();
+				current->set_control_out_value((next_value - current_value) / 3.0);
 			}
 		}
 		current = (FloatAuto*)NEXT;
@@ -83,7 +79,7 @@ Auto* FloatAutos::add_auto(ptstime position, float value)
 	insert_before(current, result = (FloatAuto*)new_auto());
 
 	result->pos_time = position;
-	result->value = value;
+	result->set_value(value);
 
 	return result;
 }
@@ -91,7 +87,7 @@ Auto* FloatAutos::add_auto(ptstime position, float value)
 Auto* FloatAutos::new_auto()
 {
 	FloatAuto *result = new FloatAuto(edl, this);
-	result->value = default_value;
+	result->set_value(default_value);
 	return result;
 }
 
@@ -114,21 +110,21 @@ int FloatAutos::automation_is_constant(ptstime start,
 // Only one keyframe on track.
 	if(total_autos == 1)
 	{
-		constant = ((FloatAuto*)first)->value;
+		constant = ((FloatAuto*)first)->get_value();
 		return 1;
 	}
 	else
 // Last keyframe is before region
 	if(last->pos_time <= start)
 	{
-		constant = ((FloatAuto*)last)->value;
+		constant = ((FloatAuto*)last)->get_value();
 		return 1;
 	}
 	else
 // First keyframe is after region
 	if(first->pos_time > end)
 	{
-		constant = ((FloatAuto*)first)->value;
+		constant = ((FloatAuto*)first)->get_value();
 		return 1;
 	}
 
@@ -146,7 +142,7 @@ int FloatAutos::automation_is_constant(ptstime start,
 			current->pos_time >= end)
 		{
 // Get value now in case change doesn't occur
-			constant = float_current->value;
+			constant = float_current->get_value();
 			test_previous_current = 1;
 		}
 		prev_position = current->pos_time;
@@ -158,7 +154,7 @@ int FloatAutos::automation_is_constant(ptstime start,
 		{
 
 // Get value now in case change doesn't occur
-			constant = float_current->value;
+			constant = float_current->get_value();
 
 // Keyframe has neighbor
 			if(current->previous)
@@ -173,9 +169,9 @@ int FloatAutos::automation_is_constant(ptstime start,
 			FloatAuto *float_next = (FloatAuto*)current->next;
 
 // Change occurs between keyframes
-			if(!EQUIV(float_current->value, float_next->value) ||
-					!EQUIV(float_current->control_out_value, 0) ||
-					!EQUIV(float_next->control_in_value, 0))
+			if(!EQUIV(float_current->get_value(), float_next->get_value()) ||
+					!EQUIV(float_current->get_control_out_value(), 0) ||
+					!EQUIV(float_next->get_control_in_value(), 0))
 				return 0;
 		}
 
@@ -184,9 +180,9 @@ int FloatAutos::automation_is_constant(ptstime start,
 			FloatAuto *float_previous = (FloatAuto*)current->previous;
 
 // Change occurs between keyframes
-			if(!EQUIV(float_current->value, float_previous->value) ||
-					!EQUIV(float_current->control_in_value, 0) ||
-					!EQUIV(float_previous->control_out_value, 0))
+			if(!EQUIV(float_current->get_value(), float_previous->get_value()) ||
+					!EQUIV(float_current->get_control_in_value(), 0) ||
+					!EQUIV(float_previous->get_control_out_value(), 0))
 				return 0;
 		}
 	}
@@ -214,31 +210,31 @@ float FloatAutos::get_value(ptstime position,
 		return default_value;
 	else
 	if(!previous)
-		return next->value;
+		return next->get_value();
 	else
 	if(!next)
-		return previous->value;
+		return previous->get_value();
 	else
 	if(next == previous)
-		return previous->value;
+		return previous->get_value();
 	else
 	{
-		if(EQUIV(previous->value, next->value) &&
-				EQUIV(previous->control_out_value, 0) &&
-				EQUIV(next->control_in_value, 0))
-			return previous->value;
+		if(EQUIV(previous->get_value(), next->get_value()) &&
+				EQUIV(previous->get_control_out_value(), 0) &&
+				EQUIV(next->get_control_in_value(), 0))
+			return previous->get_value();
 	}
 
 // Interpolate
-	y0 = previous->value;
-	y3 = next->value;
+	y0 = previous->get_value();
+	y3 = next->get_value();
 
 // division by 0
 	if(EQUIV(next->pos_time, previous->pos_time))
-		return previous->value;
+		return previous->get_value();
 
-	y1 = previous->value + previous->control_out_value;
-	y2 = next->value + next->control_in_value;
+	y1 = previous->get_value() + previous->get_control_out_value();
+	y2 = next->get_value() + next->get_control_in_value();
 	t =  (position - previous->pos_time) / 
 		(next->pos_time - previous->pos_time);
 
@@ -282,17 +278,17 @@ void FloatAutos::get_extents(float *min,
 		{
 			if(*coords_undefined)
 			{
-				*min = *max = current->value;
+				*min = *max = current->get_value();
 				*coords_undefined = 0;
 			}
 
-			*min = MIN(current->value, *min);
-			*min = MIN(current->value + current->control_in_value, *min);
-			*min = MIN(current->value + current->control_out_value, *min);
+			*min = MIN(current->get_value(), *min);
+			*min = MIN(current->get_value() + current->get_control_in_value(), *min);
+			*min = MIN(current->get_value() + current->get_control_out_value(), *min);
 
-			*max = MAX(current->value, *max);
-			*max = MAX(current->value + current->control_in_value, *max);
-			*max = MAX(current->value + current->control_out_value, *max);
+			*max = MAX(current->get_value(), *max);
+			*max = MAX(current->get_value() + current->get_control_in_value(), *max);
+			*max = MAX(current->get_value() + current->get_control_out_value(), *max);
 		}
 	}
 

@@ -251,8 +251,8 @@ float AFadePatch::update_edl()
 
 	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
-	float result = get_value() - current->value;
-	current->value = get_value();
+	float result = get_value() - current->get_value();
+	current->set_value(get_value());
 
 	mwindow->undo->update_undo(_("fade"), 
 		LOAD_AUTOMATION, 

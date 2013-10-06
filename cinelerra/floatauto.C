@@ -112,6 +112,21 @@ void FloatAuto::change_tangent_mode(t_mode new_mode)
 	tangent_mode = new_mode;
 }
 
+void FloatAuto::set_value(float newvalue)
+{
+	this->value = newvalue;
+}
+
+void FloatAuto::set_control_in_value(float newvalue)
+{
+	control_in_value = newvalue;
+}
+
+void FloatAuto::set_control_out_value(float newvalue)
+{
+       control_out_value = newvalue;
+}
+
 void FloatAuto::copy(ptstime start, ptstime end, FileXML *file)
 {
 	file->tag.set_title("AUTO");

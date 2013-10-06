@@ -259,6 +259,11 @@ void VTrack::calculate_output_transfer(ptstime position,
 	out_h = y[3] - y[2];
 }
 
+inline void addto_value(FloatAuto *fauto, float offset)
+{
+	fauto->set_value(fauto->get_value() + offset);
+}
+
 void VTrack::translate(float offset_x, float offset_y, int do_camera)
 {
 	int subscript;
@@ -272,13 +277,13 @@ void VTrack::translate(float offset_x, float offset_y, int do_camera)
 		current; 
 		current = NEXT)
 	{
-		((FloatAuto*)current)->value += offset_x;
+		addto_value((FloatAuto*)current, offset_x);
 	}
 
 	for(Auto *current = automation->autos[subscript + 1]->first; 
 		current; 
 		current = NEXT)
 	{
-		((FloatAuto*)current)->value += offset_y;
+		addto_value((FloatAuto*)current, offset_y);
 	}
 }

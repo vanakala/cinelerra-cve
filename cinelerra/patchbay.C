@@ -400,15 +400,17 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 
 			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
-			keyframe->value += change;
+			float new_value = keyframe->get_value() + change;
 			if(data_type == TRACK_AUDIO)
-				CLAMP(keyframe->value, 
+				CLAMP(new_value,
 					mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
 					mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
 			else
-				CLAMP(keyframe->value, 
+				CLAMP(new_value,
 					mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
 					mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
+
+			keyframe->set_value(new_value);
 
 			PatchGUI *patch = get_patch_of(current);
 			if(patch) patch->update(patch->x, patch->y);
