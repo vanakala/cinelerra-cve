@@ -21,6 +21,7 @@
 
 #include "autos.h"
 #include "bcsignals.h"
+#include "cwindow.h"
 #include "edl.h"
 #include "floatauto.h"
 #include "keyframe.h"
@@ -257,6 +258,17 @@ int KeyframePopupTangentMode::handle_event()
 	{
 		((FloatAuto*)popup->keyframe_auto)->
 			change_tangent_mode((FloatAuto::t_mode)tangent_mode);
+
+		// if we switched to some "auto" mode, this may imply a
+		// real change to parameters, so this needs to be undoable...
+		mwindow->save_backup();
+		mwindow->undo->update_undo(_("change keyframe tangent mode"), LOAD_ALL);
+
+		mwindow->gui->update(0, 1, 0, 0, 0, 0, 0); // incremental redraw for canvas
+		mwindow->cwindow->update(0, 0, 1, 0, 0); // redraw tool window in compositor
+		mwindow->update_plugin_guis();
+		mwindow->restart_brender();
+		mwindow->sync_parameters(CHANGE_EDL);
 	}
 	return 1;
 }
