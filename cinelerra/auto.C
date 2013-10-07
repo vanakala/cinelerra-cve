@@ -56,7 +56,15 @@ void Auto::copy_from(Auto *that)
 	this->pos_time = that->pos_time;
 }
 
-void Auto::interpolate_from(Auto *a1, Auto *a2, ptstime position)
+void Auto::interpolate_from(Auto *a1, Auto *a2, ptstime new_position, Auto *templ)
 {
-	copy_from(a1);
+	if(!templ)
+		templ = a1;
+	if(!templ)
+		templ = previous;
+	if(!templ && autos && autos->first)
+		templ = autos->first;
+	if(templ)
+		copy_from(templ);
+	pos_time = new_position;
 }

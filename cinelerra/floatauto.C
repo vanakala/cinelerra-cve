@@ -20,10 +20,12 @@
  */
 
 #include "autos.h"
+#include "automation.inc"
 #include "clip.h"
 #include "edl.h"
 #include "filexml.h"
 #include "floatauto.h"
+#include "floatautos.h"
 #include "localsession.h"
 
 FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
@@ -34,9 +36,23 @@ FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
 	control_out_value = 0;
 	control_in_pts = 0;
 	control_out_pts = 0;
+	pos_valid = -1;    // "dirty"
 	tangent_mode = SMOOTH;
-//  note: in most cases the tangent_mode-value
-//        is set by the method fill_from_template()
+//  note: in most cases the tangent_mode-value is set
+//        by the method interpolate_from() rsp. copy_from()
+}
+
+FloatAuto::~FloatAuto()
+{
+	// as we are going away, the neighbouring float auto nodes
+	// need to re-adjust their ctrl point positions and tangents
+	if(is_floatauto_node(this))
+	{
+		if(next)
+			((FloatAuto*)next)->tangent_dirty();
+		if (previous)
+			((FloatAuto*)previous)->tangent_dirty();
+	}
 }
 
 int FloatAuto::operator==(Auto &that)
@@ -49,13 +65,19 @@ int FloatAuto::operator==(FloatAuto &that)
 	return identical((FloatAuto*)&that);
 }
 
+inline bool FloatAuto::is_floatauto_node(Auto *candidate)
+{
+	return (candidate && candidate->autos &&
+		AUTOMATION_TYPE_FLOAT == candidate->autos->get_type());
+}
+
 int FloatAuto::identical(FloatAuto *src)
 {
 	return EQUIV(value, src->value) &&
 		EQUIV(control_in_value, src->control_in_value) &&
-		EQUIV(control_out_value, src->control_out_value) &&
-		PTSEQU(control_in_pts, src->control_in_pts) &&
-		PTSEQU(control_out_pts, src->control_out_pts);
+		EQUIV(control_out_value, src->control_out_value);
+// ctrl positions ignored, as they may depend on neighbours
+// tangent_mode is ignored, no recalculations
 }
 
 float FloatAuto::value_to_percentage()
@@ -104,27 +126,145 @@ void FloatAuto::copy_from(FloatAuto *that)
 // note: literate copy, no recalculations
 }
 
+void FloatAuto::interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ)
+// bézier interpolates this->value and tangents for the given position
+// between the positions of a1 and a2. If a1 or a2 are omitted, they default
+// to this->previous and this->next. If this FloatAuto has automatic tangents,
+// this may trigger re-adjusting of this and its neighbours in this->autos.
+// Note while a1 and a2 need not be members of this->autos, automatic
+// readjustments are always done to the neighbours in this->autos.
+// If the template is given, it will be used to fill out this
+// objects fields prior to interpolating.
+{
+	if(!a1) a1 = previous;
+	if(!a2) a2 = next;
+	Auto::interpolate_from(a1, a2, pos, templ);
+
+	// set this->value using bézier interpolation if possible
+	if(is_floatauto_node(a1) && is_floatauto_node(a2) &&
+		a1->pos_time <= pos && pos <= a2->pos_time)
+	{
+		FloatAuto *left = (FloatAuto*)a1;
+		FloatAuto *right = (FloatAuto*)a2;
+		float new_value = FloatAutos::calculate_bezier(left, right, pos);
+		float new_slope = FloatAutos::calculate_bezier_derivation(left, right, pos);
+
+		this->adjust_to_new_coordinates(pos, new_value); // this may trigger smoot
+
+		this->set_control_in_value(new_slope * control_in_pts);
+		this->set_control_out_value(new_slope * control_out_pts);
+	}
+	else
+		adjust_ctrl_positions(); // implies adjust_tangents()
+}
+
 void FloatAuto::change_tangent_mode(t_mode new_mode)
 {
 	if(new_mode == TFREE && !(control_in_pts && control_out_pts))
 		new_mode = FREE; // only if tangents on both sides...
 
 	tangent_mode = new_mode;
+	adjust_tangents();
 }
 
 void FloatAuto::set_value(float newvalue)
 {
 	this->value = newvalue;
+	this->adjust_tangents();
+	if(previous)
+		((FloatAuto*)previous)->adjust_tangents();
+	if(next)
+		((FloatAuto*)next)->adjust_tangents();
 }
 
 void FloatAuto::set_control_in_value(float newvalue)
 {
-	control_in_value = newvalue;
+	switch(tangent_mode)
+	{
+	case TFREE:
+		control_out_value = control_out_pts * newvalue / control_in_pts;
+	default:
+		control_in_value = newvalue;
+	}
 }
 
 void FloatAuto::set_control_out_value(float newvalue)
 {
-       control_out_value = newvalue;
+	switch(tangent_mode)
+	{
+	case TFREE:
+		control_in_value = control_in_pts * newvalue / control_out_pts;
+	default:
+		control_out_value = newvalue;
+	}
+}
+
+void FloatAuto::adjust_tangents()
+// recalculates tangents if current mode
+// implies automatic adjustment of tangents
+{
+	if(!autos) return;
+
+// TODO: add here code to do the actual smoothing and adjusting of tangents
+}
+
+void FloatAuto::adjust_ctrl_positions(FloatAuto *prev, FloatAuto *next)
+// recalculates location of ctrl points to be
+// always 1/3 and 2/3 of the distance to the
+// next neighbours. The reason is: for this special
+// distance the bézier function yields x(t) = t, i.e.
+// we can use the y(t) as if it was a simple function y(x).
+
+// This adjustment is done only on demand and involves
+// updating neighbours and adjust_tangents() as well.
+{
+	if(!prev && !next)
+	{ // use current siblings
+		prev = (FloatAuto*)this->previous;
+		next = (FloatAuto*)this->next;
+	}
+
+	if(prev)
+	{
+		set_ctrl_positions(prev, this);
+		prev->adjust_tangents();
+	}
+	else // disable tangent on left side
+		control_in_pts = 0;
+
+	if(next)
+	{
+		set_ctrl_positions(this, next);
+		next->adjust_tangents();
+	}
+	else // disable right tangent
+		control_out_pts = 0;
+
+	this->adjust_tangents();
+	pos_valid = pos_time;
+// tangents up-to-date
+}
+
+inline void redefine_tangent(ptstime &old_pos, ptstime new_pos, float &ctrl_val)
+{
+	if(old_pos > EPSILON)
+		ctrl_val *= new_pos / old_pos;
+	old_pos = new_pos;
+}
+
+inline void FloatAuto::set_ctrl_positions(FloatAuto *prev, FloatAuto* next)
+{
+	ptstime distance = next->pos_time - prev->pos_time;
+	redefine_tangent(prev->control_out_pts, +distance / 3, prev->control_out_value);
+	redefine_tangent(next->control_in_pts, -distance / 3, next->control_in_value);
+}
+
+void FloatAuto::adjust_to_new_coordinates(ptstime position, float value)
+// define new position and value in one step, do necessary re-adjustments
+{
+	this->value = value;
+	this->pos_time = position;
+	adjust_ctrl_positions();
 }
 
 void FloatAuto::copy(ptstime start, ptstime end, FileXML *file)
@@ -149,11 +289,15 @@ void FloatAuto::load(FileXML *file)
 	tangent_mode = (t_mode)file->tag.get_property("TANGENT_MODE", FREE);
 
 	// Compatibility to old session data format:
-	// Versions previous to the bezier auto patch (Jun 2006) aplied a factor 2
+	// Versions previous to the bezier auto patch (Jun 2006) applied a factor 2
 	// to the y-coordinates of ctrl points while calculating the bezier function.
-	// To retain compatibility, we now aply this factor while loading
+	// To retain compatibility, we now apply this factor while loading
 	control_in_value *= 2.0;
 	control_out_value *= 2.0;
+
+// restore ctrl positions and adjust tangents if necessary
+	adjust_ctrl_positions();
+
 }
 
 void FloatAuto::dump(int ident)

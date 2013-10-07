@@ -78,8 +78,7 @@ Auto* FloatAutos::add_auto(ptstime position, float value)
 
 	insert_before(current, result = (FloatAuto*)new_auto());
 
-	result->pos_time = position;
-	result->set_value(value);
+	result->adjust_to_new_coordinates(position, value);
 
 	return result;
 }
@@ -195,13 +194,9 @@ float FloatAutos::get_value(ptstime position,
 	FloatAuto* &previous,
 	FloatAuto* &next)
 {
-	double slope;
-	double intercept;
-
 // Calculate bezier equation at position
-	float y0, y1, y2, y3;
-	float t;
 
+// prev and next will be used to shorten the search, if given
 	previous = (FloatAuto*)get_prev_auto(position, (Auto* &)previous);
 	next = (FloatAuto*)get_next_auto(position, (Auto* &)next);
 
@@ -225,17 +220,23 @@ float FloatAutos::get_value(ptstime position,
 			return previous->get_value();
 	}
 
-// Interpolate
-	y0 = previous->get_value();
-	y3 = next->get_value();
+// at this point: previous and next not NULL, positions differ, value not constant.
 
-// division by 0
+	return calculate_bezier(previous, next, position);
+}
+
+float FloatAutos::calculate_bezier(FloatAuto *previous, FloatAuto *next, ptstime position)
+{
 	if(EQUIV(next->pos_time, previous->pos_time))
 		return previous->get_value();
 
-	y1 = previous->get_value() + previous->get_control_out_value();
-	y2 = next->get_value() + next->get_control_in_value();
-	t =  (position - previous->pos_time) / 
+	float y0 = previous->get_value();
+	float y3 = next->get_value();
+
+// control points
+	float y1 = previous->get_value() + previous->get_control_out_value();
+	float y2 = next->get_value() + next->get_control_in_value();
+	float t =  (position - previous->pos_time) /
 		(next->pos_time - previous->pos_time);
 
 	float tpow2 = t * t;
@@ -250,6 +251,38 @@ float FloatAutos::get_value(ptstime position,
 		+     tpow3            * y3);
 
 	return result;
+}
+
+float FloatAutos::calculate_bezier_derivation(FloatAuto *previous, FloatAuto *next, ptstime position)
+// calculate the slope of the interpolating bezier function at given position.
+{
+	float scale = next->pos_time - previous->pos_time;
+	if(fabsf(scale) < EPSILON)
+		if(fabs(previous->get_control_out_pts()) > EPSILON)
+			return previous->get_control_out_value() / previous->get_control_out_pts();
+		else
+			return 0;
+
+	float y0 = previous->get_value();
+	float y3 = next->get_value();
+
+// control points
+	float y1 = previous->get_value() + previous->get_control_out_value();
+	float y2 = next->get_value() + next->get_control_in_value();
+	// normalized scale
+	float t = (position - previous->pos_time) / scale;
+
+	float tpow2 = t * t;
+	float invt = 1 - t;
+	float invtpow2 = invt * invt;
+
+	float slope = 3 * (
+		- invtpow2              * y0
+		- invt * ( 2*t - invt ) * y1
+		+ t    * ( 2*invt - t ) * y2
+		+ tpow2                 * y3);
+
+	return slope / scale;
 }
 
 void FloatAutos::get_extents(float *min, 

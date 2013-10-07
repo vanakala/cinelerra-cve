@@ -263,14 +263,18 @@ void MaskAuto::copy_from(MaskAuto *src)
 	}
 }
 
-void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position) 
+void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *templ)
 {
+	if(!a1) a1 = previous;
+	if(!a2) a2 = next;
 	MaskAuto  *mask_auto1 = (MaskAuto *)a1;
 	MaskAuto  *mask_auto2 = (MaskAuto *)a2;
 
 	if (!mask_auto2 || mask_auto2->masks.total == 0) // if mask_auto == null, copy from first
+	if (!mask_auto2 || !mask_auto1 || mask_auto2->masks.total == 0)
+	// can't interpolate, fall back to copying (using template if possible)
 	{
-		copy_from(mask_auto1);
+		Auto::interpolate_from(a1, a2, position, templ);
 		return;
 	}
 	this->mode = mask_auto1->mode;

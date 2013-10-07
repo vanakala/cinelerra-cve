@@ -42,9 +42,9 @@ public:
 	virtual Auto& operator=(Auto &that);
 	virtual int operator==(Auto &that) { return 0; };
 	virtual void copy_from(Auto *that);
-	/* for interpolation creation */
-	/* if not possible, copy from a1 and return 0 */
-	virtual void interpolate_from(Auto *a1, Auto *a2, ptstime postime);
+	/* create an interpolation using a1 and a2, (defaulting to previous and next)  */
+	/* if not possible, just fill from a1 (or from template if given) */
+	virtual void interpolate_from(Auto *a1, Auto *a2, ptstime new_postime, Auto *templ);
 	virtual void copy(ptstime start, ptstime end, FileXML *file) {};
 
 	virtual void load(FileXML *file) {};

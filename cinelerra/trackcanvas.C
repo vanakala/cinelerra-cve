@@ -2347,11 +2347,7 @@ void TrackCanvas::synchronize_autos(float change,
 					keyframe->set_value(init_value + change);
 				} 
 				else
-				{ 
-					keyframe->set_value(keyframe->get_value() + change);
-// need to (re)set the position, as the existing node could be on a "equivalent" position (within half a frame)
-					keyframe->pos_time = fauto->pos_time;
-				}
+					keyframe->adjust_to_new_coordinates(fauto->pos_time, keyframe->get_value() + change);
 
 				mwindow->session->drag_auto_gang->append((Auto *)keyframe);
 			}
@@ -2366,11 +2362,10 @@ void TrackCanvas::synchronize_autos(float change,
 			FloatAuto *keyframe = (FloatAuto *)mwindow->session->drag_auto_gang->values[i];
 
 			float new_value = keyframe->get_value() + change;
-			keyframe->pos_time = fauto->pos_time;
 			CLAMP(new_value,
 				mwindow->edl->local_session->automation_mins[keyframe->autos->autogrouptype],
 				mwindow->edl->local_session->automation_maxs[keyframe->autos->autogrouptype]);
-			keyframe->set_value(new_value);
+			keyframe->adjust_to_new_coordinates(fauto->pos_time, new_value);
 		}
 	}
 	else
@@ -3345,8 +3340,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 		{
 			result = 1;
 			float change = value - old_value;
-			current->set_value(value);
-			current->pos_time = postime;
+			current->adjust_to_new_coordinates(postime, value);
 			synchronize_autos(change, current->autos->track, current, 0);
 
 			char string[BCTEXTLEN];
@@ -3372,12 +3366,11 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			{
 				result = 1;
 				current->set_control_in_value(value);
-				current->control_in_pts = postime;
 				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN];
 				Units::totext(string, 
-					current->control_in_pts,
+					current->get_control_in_pts(),
 					mwindow->edl->session->time_format,
 					mwindow->edl->session->sample_rate,
 					mwindow->edl->session->frame_rate,
@@ -3398,7 +3391,6 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			{
 				result = 1;
 				current->set_control_out_value(value);
-				current->control_out_pts = postime;
 				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN];

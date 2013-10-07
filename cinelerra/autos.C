@@ -133,8 +133,8 @@ void Autos::insert_track(Autos *automation,
 	insert(start, start + length);
 	for(Auto *current = automation->first; current; current = NEXT)
 	{
-		Auto *new_auto = insert_auto(start + current->pos_time);
-		new_auto->copy_from(current);
+// fill new auto with values from current (template), interpolate values if possible
+		Auto *new_auto = insert_auto(start + current->pos_time, current);
 // Override copy_from
 		new_auto->pos_time = current->pos_time + start;
 	}
@@ -221,7 +221,7 @@ Auto* Autos::get_auto_for_editing(ptstime position)
 	position = edl->align_to_frame(position);
 	if(edl->session->auto_keyframes)
 	{
-		result = insert_auto(position, 1);
+		result = insert_auto(position);
 	}
 	else
 		result = get_prev_auto(position,
@@ -251,7 +251,7 @@ Auto* Autos::get_next_auto(ptstime position, Auto* &current)
 	return current;
 }
 
-Auto* Autos::insert_auto(ptstime position, int interpolate)
+Auto* Autos::insert_auto(ptstime position, Auto *templ)
 {
 	Auto *current, *result;
 
@@ -282,27 +282,16 @@ Auto* Autos::insert_auto(ptstime position, int interpolate)
 		if(current)
 		{
 			insert_after(current, result = new_auto());
-			if(interpolate)
-			{
-				Auto *next = NEXT;
-
-				result->interpolate_from(current, next, position);
-			}
-			else
-				result->copy_from(current);
 			current = result;
 			current->pos_time = position;
+// interpolate if possible, else copy from template
+			result->interpolate_from(0, 0, position, templ);
 		}
 		else
 			current = first;
 	}
 
 	return current;
-}
-
-Auto* Autos::insert_auto_for_editing(ptstime position)
-{
-	return insert_auto(position, 1);
 }
 
 void Autos::clear_all()

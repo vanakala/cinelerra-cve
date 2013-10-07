@@ -59,10 +59,8 @@ public:
 	Auto* get_auto_for_editing(ptstime position = -1);
 
 // Insert keyframe at the point if it doesn't exist
-	Auto* insert_auto(ptstime position, int interpolate = 0);
-// Insert keyframe at the point if it doesn't exist
-// Interpolate it insead of copying
-	Auto* insert_auto_for_editing(ptstime position);
+// Interpolate its value if possible
+	Auto* insert_auto(ptstime position, Auto *templ = 0);
 	void insert_track(Autos *automation, 
 		ptstime start,
 		ptstime length);

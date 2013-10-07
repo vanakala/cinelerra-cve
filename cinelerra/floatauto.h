@@ -35,12 +35,16 @@ class FloatAuto : public Auto
 public:
 	FloatAuto() {};
 	FloatAuto(EDL *edl, FloatAutos *autos);
+	~FloatAuto();
 
 	int operator==(Auto &that);
 	int operator==(FloatAuto &that);
 	int identical(FloatAuto *src);
 	void copy_from(Auto *that);
 	void copy_from(FloatAuto *that);
+
+// bezier interpolation
+	void interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ = 0);
 	void copy(ptstime start, ptstime end, FileXML *file);
 	void load(FileXML *xml);
 	void dump(int ident = 0);
@@ -52,7 +56,6 @@ public:
 // "the value" (=payload of this keyframe)
 	float get_value() { return this->value; }
 	void set_value(float newval);
-
 
 // Possible policies to handle the tagents for the
 // bézier curves connecting adjacent automation points
@@ -67,21 +70,36 @@ public:
 	t_mode tangent_mode;
 	void change_tangent_mode(t_mode); // recalculates tangents as well
 // Control values (y coords of bézier control point), relative to value
-	float get_control_in_value() { return this->control_in_value; }
-	float get_control_out_value() { return this->control_out_value; }
+	float get_control_in_value() { check_pos(); return this->control_in_value; }
+	float get_control_out_value() { check_pos(); return this->control_out_value; }
 	void set_control_in_value(float newval);
 	void set_control_out_value(float newval);
 
 // get calculated x-position of control points for drawing,
 // relative to auto position, in native units of the track.
-	ptstime get_control_in_pts() { return this->control_in_pts; }
-	ptstime get_control_out_pts() { return this->control_out_pts; }
+	ptstime get_control_in_pts() { check_pos(); return this->control_in_pts; }
+	ptstime get_control_out_pts() { check_pos(); return this->control_out_pts; }
+
+// define new position and value, re-adjust ctrl point, notify neighbours
+	void adjust_to_new_coordinates(ptstime position, float value);
+
+private:
+// recalc. ctrk in and out points, if automatic tangent mode (SMOOTH or LINEAR)
+	void adjust_tangents();
+// recalc. x location of ctrl points, notify neighbours
+	void adjust_ctrl_positions(FloatAuto *p = 0, FloatAuto *n = 0);
+	void set_ctrl_positions(FloatAuto *prev, FloatAuto *next);
+	void check_pos() { if(!PTSEQU(pos_time, pos_valid)) adjust_ctrl_positions(); }
+	void tangent_dirty() { pos_valid = -1; }
+// check is member of FloatAutos-Collection
+	static bool is_floatauto_node(Auto *candidate);
 
 // X control positions relative to value position for drawing.
 	ptstime control_in_pts;
 	ptstime control_out_pts;
-private:
+
 // Control values are relative to value
+	ptstime pos_valid;
 	float value;
 	float control_in_value;
 	float control_out_value;

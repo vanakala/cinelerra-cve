@@ -70,7 +70,7 @@ public:
 	void load(FileXML *file);
 	void copy(ptstime start, ptstime end, FileXML *file);
 	void copy_from(Auto *src);
-	void interpolate_from(Auto *a1, Auto *a2, ptstime position); 
+	void interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *templ = 0);
 	void copy_from(MaskAuto *src);
 
 	void dump(int indent = 0);
