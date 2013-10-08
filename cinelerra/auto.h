@@ -48,9 +48,7 @@ public:
 	virtual void copy(ptstime start, ptstime end, FileXML *file) {};
 
 	virtual void load(FileXML *file) {};
-	virtual float value_to_percentage() { return 0; };
-	virtual float invalue_to_percentage() { return 0; };
-	virtual float outvalue_to_percentage() { return 0; };
+
 	virtual void dump(int indent = 0) {};
 
 	int skip;       // if added by selection event for moves

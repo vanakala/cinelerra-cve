@@ -1929,6 +1929,9 @@ int TrackCanvas::do_keyframes(int cursor_x,
 							gui->keyframe_menu->activate_menu();
 							rerender = 1; // the position changes
 						}
+						if(buttonpress == 1 && ctrl_down() &&
+							AUTOMATION_TYPE_FLOAT == autos->get_type())
+								rerender = 1; // special case: tangent mode changed
 					}
 				}
 			}
@@ -2142,7 +2145,9 @@ int TrackCanvas::test_auto(Auto *current,
 		if(buttonpress && buttonpress != 3)
 		{
 			mwindow->session->drag_auto = current;
-			mwindow->session->drag_start_percentage = current->value_to_percentage();
+			mwindow->session->drag_start_percentage = (float)((IntAuto*)current)->value;;
+			// Toggle Autos don't respond to vertical zoom, they always show up
+			// with "on" == 100% == line on top
 			mwindow->session->drag_start_postime = current->pos_time;
 			mwindow->session->drag_origin_x = cursor_x;
 			mwindow->session->drag_origin_y = cursor_y;
@@ -2151,6 +2156,63 @@ int TrackCanvas::test_auto(Auto *current,
 	}
 
 	return result;
+}
+
+// some Helpers for test_floatauto(..)
+// and for dragging the tangents/ctrl points
+inline float test_tangent_line(int x0, int y0, int ctrl_x, int ctrl_y,
+	float cursor_x, float cursor_y)
+{
+	// Control point switched off?
+	if(x0 == ctrl_x)
+		return 0.0;
+
+	ctrl_x -= x0;
+	ctrl_y -= y0;
+	cursor_x -= x0;
+	cursor_y -= y0;
+
+	float q;
+	float deltaX, deltaY;
+	q = (0 == ctrl_y)?  0 :
+		cursor_y / ctrl_y;
+	deltaX = q * ctrl_x - cursor_x;
+	q = cursor_x / ctrl_x;
+	deltaY = q * ctrl_y - cursor_y;
+
+	float distance;
+	if(0 == deltaX * deltaY)
+		distance = 0.0;
+	else
+		distance = fabs(deltaX * deltaY / sqrt(deltaX * deltaX + deltaY * deltaY));
+
+	if(distance > HANDLE_W / 4)
+		return 0.0;
+	else
+		return q;
+}
+
+inline float levered_position(ptstime position, ptstime ref_pos)
+{
+	if(EPSILON > fabs(ref_pos) || isnan(ref_pos))
+		return 0.0;
+	else
+		return ref_pos / position;
+}
+
+float TrackCanvas::value_to_percentage(float auto_value, int autogrouptype)
+// transforms automation value into current display coords,
+// dependant on current automation display range for the given kind of automation
+{
+	if(!mwindow || !mwindow->edl) return 0;
+	float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
+	float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
+	float automation_range = automation_max - automation_min;
+
+	if(0 == automation_range || isnan(auto_value) || isinf(auto_value))
+		return 0;
+	else
+		return (auto_value - automation_min) / automation_range;
 }
 
 int TrackCanvas::test_floatauto(FloatAuto *current, 
@@ -2164,7 +2226,8 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 	int zoom_track, 
 	int cursor_x, 
 	int cursor_y, 
-	int buttonpress)
+	int buttonpress,
+	int autogrouptype)
 {
 	int x1, y1, x2, y2;
 	int in_x1, in_y1, in_x2, in_y2;
@@ -2195,74 +2258,109 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 	if(out_y1 < center_pixel + -zoom_track / 2) out_y1 = center_pixel + -zoom_track / 2;
 	if(out_y2 > center_pixel + zoom_track / 2) out_y2 = center_pixel + zoom_track / 2;
 
-// Test value
-	if(!ctrl_down() &&
-		cursor_x >= x1 && 
-		cursor_x < x2 && 
-		cursor_y >= y1 && 
-		cursor_y < y2)
+// buttonpress could be the start of a drag operation
+#define INIT_DRAG(POS, VAL) \
+	mwindow->session->drag_auto = current;      \
+	mwindow->session->drag_origin_x = cursor_x;  \
+	mwindow->session->drag_origin_y = cursor_y;   \
+	mwindow->session->drag_start_postime = (POS); \
+	mwindow->session->drag_start_percentage = (VAL)
+
+#define WITHIN(X1, X2, Y1, Y2) (cursor_x >= (X1) && cursor_x < (X2) && \
+	cursor_y >= (Y1) && cursor_y < (Y2))
+
+// without modifier we are manipulating the automation node
+// with ALT it's about dragging only the value of the node
+// with SHIFT the value snaps to the value of neighbouring nodes
+// CTRL indicates we are rather manipulating the tangent(s) of the node
+
+	if(!ctrl_down())
 	{
-		if(buttonpress && (buttonpress != 3))
+		if(WITHIN(x1, x2, y1, y2))
 		{
-			mwindow->session->drag_auto = current;
-			mwindow->session->drag_start_percentage = current->value_to_percentage();
-			mwindow->session->drag_start_postime = current->pos_time;
-			mwindow->session->drag_origin_x = cursor_x;
-			mwindow->session->drag_origin_y = cursor_y;
-			mwindow->session->drag_handle = HANDLE_MAIN;
+			// cursor hits node
+			result = 1;
+
+			if(buttonpress && (buttonpress != 3))
+			{
+				INIT_DRAG(current->pos_time,
+					value_to_percentage(current->get_value(), autogrouptype));
+				mwindow->session->drag_handle = HANDLE_MAIN;
+			}
 		}
-		result = 1;
 	}
-	else
+	else // ctrl_down()
+	{
+		if(WITHIN(x1, x2, y1, y2))
+		{
+			result = 1;
+			if(buttonpress && (buttonpress != 3))
+			{
+				// could be ctrl-click or ctrl-drag
+				// click would cycle through tangent modes
+				((FloatAuto*)current)->toggle_tangent_mode();
+
+				// drag will start dragging the tangent, if applicable
+				INIT_DRAG(current->pos_time,
+					value_to_percentage(current->get_value(), autogrouptype));
+				mwindow->session->drag_handle = HANDLE_MAIN;
+			}
+		}
+
+		float lever = 0.0; // we use the tangent as a draggable lever. 1.0
+
 // Test in control
-	if(ctrl_down() &&
-		cursor_x >= in_x1 && 
-		cursor_x < in_x2 && 
-		cursor_y >= in_y1 && 
-		cursor_y < in_y2 &&
-		current->pos_time > 0 &&
-		(in_x != x && (FloatAuto::FREE == current->tangent_mode ||
-			FloatAuto::TFREE == current->tangent_mode)))
+		if(in_x != x && current->pos_time > EPSILON &&
+			(FloatAuto::FREE == current->tangent_mode ||
+				FloatAuto::TFREE == current->tangent_mode))
 // act on in control handle only if
 // tangent is significant and is editable (not automatically choosen)
-	{
-		if(buttonpress && (buttonpress != 3))
 		{
-			mwindow->session->drag_auto = current;
-			mwindow->session->drag_start_percentage = 
-				current->invalue_to_percentage();
-			mwindow->session->drag_start_postime = 
-				((FloatAuto*)current)->get_control_in_pts();
-			mwindow->session->drag_origin_x = cursor_x;
-			mwindow->session->drag_origin_y = cursor_y;
-			mwindow->session->drag_handle = HANDLE_LEFT;
+			lever = test_tangent_line(x, y, in_x, in_y,
+				cursor_x, cursor_y-center_pixel);
+			if(WITHIN(in_x1, in_x2, in_y1, in_y2) ||  // either cursor at ctrl-point handle
+				lever > 0.0)                      // or cursor on tangent line
+			{
+				result = 1;
+				if(buttonpress && (buttonpress != 3))
+				{
+					if(lever == 0.0)
+						lever = 1.0; // we entered by dragging the handle...
+					mwindow->session->drag_handle = HANDLE_LEFT;
+					float new_invalue = current->get_value() + 
+						lever * current->get_control_in_value();
+					INIT_DRAG(current->pos_time + lever *
+						current->get_control_in_pts(),
+						value_to_percentage(new_invalue, autogrouptype));
+				}
+			}
 		}
-		result = 1;
-	}
-	else
+
 // Test out control
-	if(ctrl_down() &&
-		cursor_x >= out_x1 && 
-		cursor_x < out_x2 && 
-		cursor_y >= out_y1 && 
-		cursor_y < out_y2 &&
-		(out_x != x && (FloatAuto::FREE == current->tangent_mode ||
-			FloatAuto::TFREE == current->tangent_mode)))
+		if(out_x != x && (FloatAuto::FREE == current->tangent_mode ||
+			FloatAuto::TFREE == current->tangent_mode))
 // act on out control only if tangent is significant and is editable
-	{
-		if(buttonpress && (buttonpress != 3))
 		{
-			mwindow->session->drag_auto = current;
-			mwindow->session->drag_start_percentage = 
-				current->outvalue_to_percentage();
-			mwindow->session->drag_start_postime = 
-				((FloatAuto*)current)->get_control_out_pts();
-			mwindow->session->drag_origin_x = cursor_x;
-			mwindow->session->drag_origin_y = cursor_y;
-			mwindow->session->drag_handle = HANDLE_RIGHT;
+			lever = test_tangent_line(x, y, out_x, out_y,
+				cursor_x, cursor_y - center_pixel);
+			if(WITHIN(out_x1, out_x2, out_y1, out_y2) || lever > 0.0)
+			{
+				result = 1;
+				if(buttonpress && (buttonpress != 3))
+				{
+					if(lever == 0.0)
+						lever = 1.0;
+					mwindow->session->drag_handle = HANDLE_RIGHT;
+					float new_outvalue = current->get_value() + lever * current->get_control_out_value();
+					INIT_DRAG(current->pos_time + lever *
+						current->get_control_out_pts(),
+						value_to_percentage(new_outvalue,  autogrouptype));
+				}
+			}
 		}
-		result = 1;
-	}
+	} // end ctrl_down()
+#undef WITHIN
+#undef INIT_DRAG
 	return result;
 }
 
@@ -2412,7 +2510,7 @@ int TrackCanvas::test_floatline(int center_pixel,
 			Auto *current;
 			current = mwindow->session->drag_auto = autos->insert_auto(timepos);
 			((FloatAuto*)current)->set_value(value);
-			mwindow->session->drag_start_percentage = current->value_to_percentage();
+			mwindow->session->drag_start_percentage = value_to_percentage(value, autogrouptype);
 			mwindow->session->drag_start_postime = current->pos_time;
 			mwindow->session->drag_origin_x = cursor_x;
 			mwindow->session->drag_origin_y = cursor_y;
@@ -2470,7 +2568,9 @@ int TrackCanvas::test_toggleline(Autos *autos,
 				int new_value = (int)((IntAutos*)autos)->get_automation_constant(position, position);
 				current = mwindow->session->drag_auto = autos->insert_auto(position);
 				((IntAuto*)current)->value = new_value;
-				mwindow->session->drag_start_percentage = current->value_to_percentage();
+				// Toggle Autos don't respond to vertical zoom, they always show up
+				// with "on" == 100% == line on top
+				mwindow->session->drag_start_percentage = (float)new_value;
 				mwindow->session->drag_start_postime = current->pos_time;
 				mwindow->session->drag_origin_x = cursor_x;
 				mwindow->session->drag_origin_y = cursor_y;
@@ -2713,7 +2813,8 @@ int TrackCanvas::do_float_autos(Track *track,
 						(int)yscale,
 						cursor_x,
 						cursor_y,
-						buttonpress);
+						buttonpress,
+						autos->autogrouptype);
 				if (result)
 					auto_instance = current;
 			}
@@ -3294,6 +3395,23 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 	{
 // Center
 	case HANDLE_MAIN:
+		if(ctrl_down())
+		// not really editing the node, rather start editing the tangent
+		{
+			if((FloatAuto::FREE == current->tangent_mode || // tangent
+				FloatAuto::TFREE==current->tangent_mode) &&
+				(fabs(x) > HANDLE_W / 2 || fabs(y) > HANDLE_W / 2))
+			{
+				// ...and drag movement is significant
+				if(x < 0)
+					// drag to the left:
+					// start editing the invalue (left tangent)
+					mwindow->session->drag_handle = HANDLE_LEFT;
+				else
+					mwindow->session->drag_handle = HANDLE_RIGHT;
+			}
+			break;
+		}
 // Snap to nearby values
 		old_value = current->get_value();
 		if(shift_down())
@@ -3331,10 +3449,12 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			value = current->get_value();
 		}
 		else
-		{
-			int autogrouptype = current->autos->autogrouptype;
-			value = percentage_to_value(percentage, 0, 0, autogrouptype);
-		}
+			value = percentage_to_value(percentage, 
+				0, 0, current->autos->autogrouptype);
+
+		if(alt_down())
+// ALT constrains movement: fixed position, only changing the value
+			postime = mwindow->session->drag_start_postime;
 
 		if(!EQUIV(value, old_value) || !PTSEQU(postime, current->pos_time))
 		{
@@ -3359,13 +3479,17 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 		{
 			int autogrouptype = current->autos->autogrouptype;
 			value = percentage_to_value(percentage, 0, current, autogrouptype);
-			postime = MIN(0, postime);
 
-			if(value != current->get_control_in_value() ||
-				!PTSEQU(postime, current->get_control_in_pts()))
+			if(value != current->get_control_in_value())
 			{
 				result = 1;
-				current->set_control_in_value(value);
+				// note: (position,value) need not be at the location of the ctrl point,
+				// but could be somewhere in between on the tangent (or even outward or
+				// on the opposit side). We set the new control point such as
+				// to point the tangent through (position,value)
+				current->set_control_in_value(value *
+					levered_position(postime - current->pos_time,
+						current->get_control_in_pts()));
 				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN];
@@ -3386,11 +3510,12 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			int autogrouptype = current->autos->autogrouptype;
 			value = percentage_to_value(percentage, 0, current, autogrouptype);
 			postime = MAX(0, postime);
-			if(value != current->get_control_out_value() ||
-				!PTSEQU(postime, current->get_control_out_pts()))
+			if(value != current->get_control_out_value())
 			{
 				result = 1;
-				current->set_control_out_value(value);
+				current->set_control_out_value(value *
+					levered_position(postime - current->pos_time,
+						current->get_control_out_pts()));
 				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN];

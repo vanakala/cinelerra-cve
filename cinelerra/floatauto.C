@@ -80,35 +80,6 @@ int FloatAuto::identical(FloatAuto *src)
 // tangent_mode is ignored, no recalculations
 }
 
-float FloatAuto::value_to_percentage()
-{
-	if(!edl) return 0;
-	float automation_min = edl->local_session->automation_mins[autos->autogrouptype];
-	float automation_max = edl->local_session->automation_maxs[autos->autogrouptype];
-	float automation_range = automation_max - automation_min;
-	return (value - automation_min) / automation_range;
-}
-
-float FloatAuto::invalue_to_percentage()
-{
-	if(!edl) return 0;
-	float automation_min = edl->local_session->automation_mins[autos->autogrouptype];
-	float automation_max = edl->local_session->automation_maxs[autos->autogrouptype];
-	float automation_range = automation_max - automation_min;
-	return (value + control_in_value - automation_min) / 
-		automation_range;
-}
-
-float FloatAuto::outvalue_to_percentage()
-{
-	if(!edl) return 0;
-	float automation_min = edl->local_session->automation_mins[autos->autogrouptype];
-	float automation_max = edl->local_session->automation_maxs[autos->autogrouptype];
-	float automation_range = automation_max - automation_min;
-	return (value + control_out_value - automation_min) / 
-		automation_range;
-}
-
 void FloatAuto::copy_from(Auto *that)
 {
 	copy_from((FloatAuto*)that);

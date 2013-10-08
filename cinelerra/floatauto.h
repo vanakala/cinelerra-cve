@@ -49,10 +49,6 @@ public:
 	void load(FileXML *xml);
 	void dump(int ident = 0);
 
-	float value_to_percentage();
-	float invalue_to_percentage();
-	float outvalue_to_percentage();
-
 // "the value" (=payload of this keyframe)
 	float get_value() { return this->value; }
 	void set_value(float newval);

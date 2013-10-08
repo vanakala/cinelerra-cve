@@ -104,7 +104,8 @@ public:
 		int zoom_track, 
 		int cursor_x, 
 		int cursor_y, 
-		int buttonpress);
+		int buttonpress,
+		int autogrouptype);
 	void draw_floatline(int center_pixel, 
 		FloatAuto *previous,
 		FloatAuto *current,
@@ -344,6 +345,10 @@ private:
 		int center_pixel,
 		int zoom_track,
 		int color);
+
+// transforms automation value into current display coords
+// dependant on current automation display range for given kind of automation
+	float value_to_percentage(float auto_value, int autogrouptype);
 
 // ====================================== cursor selection type
 	int auto_selected;               // 1 if automation selected
