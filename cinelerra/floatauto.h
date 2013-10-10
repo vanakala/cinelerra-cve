@@ -52,6 +52,7 @@ public:
 // "the value" (=payload of this keyframe)
 	float get_value() { return this->value; }
 	void set_value(float newval);
+	void add_value(float increment);
 
 // Possible policies to handle the tagents for the
 // bézier curves connecting adjacent automation points

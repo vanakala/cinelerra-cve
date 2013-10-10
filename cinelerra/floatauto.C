@@ -183,6 +183,17 @@ void FloatAuto::set_value(float newvalue)
 		((FloatAuto*)next)->adjust_tangents();
 }
 
+void FloatAuto::add_value(float increment)
+{
+	value += increment;
+	adjust_tangents();
+
+	if(previous)
+		((FloatAuto*)previous)->adjust_tangents();
+	if(next)
+		((FloatAuto*)next)->adjust_tangents();
+}
+
 void FloatAuto::set_control_in_value(float newvalue)
 {
 	switch(tangent_mode)
