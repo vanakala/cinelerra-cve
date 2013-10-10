@@ -2,7 +2,7 @@ This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of March 23, 2013
+This file describes status of this branch as of October 10, 2013
 
 Contents.
 
@@ -19,10 +19,10 @@ This branch is a try to make Cinelerra more stabile - no hangupps
 no crashes.
 
 Currently this branch is under development. There is no warranty
-that it is usable to create or finish any project. Parts of Cinelerra
+that it is usable to create or finish any project. Parts of the program
 may work, parts not.
 
-This branch is developed and tested on Ubuntu 10.04 x86-32.
+This branch is developed and tested on Ubuntu 12.04 x86-32.
 
 Main change in this branch is display locking. This change has hopefully 
 fixed bugs 278, 383, 406, 414, 493, 519 in bugzilla. The change was 
@@ -82,13 +82,13 @@ Changes in this branch:
 - removed the check of the value in /proc/sys/kernel/shmmax,
     modern distributions should have a reasonable default there
 - new overlay engine and resampler by Monty Montgomery
+- included Hermann Vosseler's Bezier Patch 
 
 Known problems (todo list)
 - FileOGG: improve audio/video interleaving
 - implement pts in encoders, decoders
 - cleanup playback, gui
 - new API of plugins and macros need some documentation
-- add PCMs to selectable ALSA audio devices, speed up audio start
 - handling input devices is buggy (only selected devices may work)
 - trimming does not work as described in manual or as expected,
     occasionally crashes
