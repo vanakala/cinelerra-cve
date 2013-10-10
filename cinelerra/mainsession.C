@@ -47,6 +47,7 @@ MainSession::MainSession(MWindow *mwindow)
 	current_operation = NO_OPERATION;
 	drag_pluginservers = new ArrayList<PluginServer*>;
 	drag_plugin = 0;
+	drag_handle = HANDLE_MAIN;
 	drag_assets = new ArrayList<Asset*>;
 	drag_auto_gang = new ArrayList<Auto*>;
 	drag_clips = new ArrayList<EDL*>;
