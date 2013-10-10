@@ -64,6 +64,8 @@ KeyframePopup::~KeyframePopup()
 		delete tan_free;
 		delete hline;
 	}
+	if(!delete_active)
+		delete key_delete;
 } // if they are currently displayed, the menu class will delete them automatically
 
 void KeyframePopup::create_objects()
