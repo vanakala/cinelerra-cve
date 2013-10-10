@@ -70,8 +70,8 @@ KeyframePopup::~KeyframePopup()
 
 void KeyframePopup::create_objects()
 {
-	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
+	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	delete_active = 1;
 
 	hline = new BC_MenuItem("-");
@@ -113,7 +113,6 @@ void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyf
 	this->keyframe_automation = automation;
 	this->keyframe_autos = autos;
 	this->keyframe_auto = auto_keyframe;
-	handle_tangent_mode(autos, auto_keyframe);
 
 	/* FIXPOS snap to cursor */
 	ptstime current_position = mwindow->edl->local_session->get_selectionstart(1);
@@ -130,10 +129,15 @@ void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyf
 	{
 		if(!delete_active)
 		{
+			if(tangent_mode_displayed)
+				handle_tangent_mode(0, 0);
+
 			add_item(key_delete);
 			delete_active = 1;
 		}
 	}
+
+	handle_tangent_mode(autos, auto_keyframe);
 
 	mwindow->edl->local_session->set_selection(new_position);
 
