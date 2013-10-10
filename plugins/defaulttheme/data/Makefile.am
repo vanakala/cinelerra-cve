@@ -256,6 +256,8 @@ statusbar_left.png \
 statusbar_right.png \
 stop.png \
 swap_extents.png \
+tan_smooth.png \
+tan_linear.png \
 text.png \
 timebar_bg.png \
 timebar_brender.png \

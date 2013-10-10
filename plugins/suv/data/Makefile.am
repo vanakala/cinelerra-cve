@@ -503,6 +503,8 @@ PNGS = \
 	statusbar_cancel_up.png \
 	stop.png \
 	swap_extents.png \
+	tan_smooth.png \
+	tan_linear.png \
 	text.png \
 	text_highlight.png \
 	timebar_bg.png \

@@ -30,6 +30,7 @@
 
 class CWindowToolGUI;
 class CWindowCoord;
+class CWindowTangentToggle;
 
 // This common thread supports all the tool GUI's.
 class CWindowTool : public Thread
@@ -239,6 +240,11 @@ public:
 	int handle_event();
 
 	CWindowCoord *x, *y, *z;
+
+private:
+// Toggles for keyframe tangent mode (projector automation only)
+	CWindowTangentToggle *t_smooth;
+	CWindowTangentToggle *t_linear;
 };
 
 class CWindowCameraLeft : public BC_Button
@@ -315,6 +321,10 @@ public:
 	int handle_event();
 
 	CWindowCoord *x, *y, *z;
+private:
+// Toggles for keyframe tangent mode (projector automation only)
+	CWindowTangentToggle *t_smooth;
+	CWindowTangentToggle *t_linear;
 };
 
 class CWindowProjectorLeft : public BC_Button
