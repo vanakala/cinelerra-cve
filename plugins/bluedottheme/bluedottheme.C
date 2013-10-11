@@ -682,6 +682,9 @@ void BlueDotTheme::initialize()
 	new_toggle("toolwindow.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "tool");
 
 // MIHA: COPIED FROM DEFAULT THEME M3<<
+	// toggle for tangent mode (compositor/tool window)
+	new_toggle("tan_smooth.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_smooth");
+	new_toggle("tan_linear.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "tan_linear");
 
 	flush_images();
 
