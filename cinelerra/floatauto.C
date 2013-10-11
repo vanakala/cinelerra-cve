@@ -403,10 +403,29 @@ void FloatAuto::load(FileXML *file)
 
 void FloatAuto::dump(int ident)
 {
+	const char *s;
+
+	switch(tangent_mode)
+	{
+	case SMOOTH:
+		s = "smooth";
+		break;
+	case LINEAR:
+		s = "linear";
+		break;
+	case TFREE:
+		s = "tangent";
+		break;
+	case FREE:
+		s = "disjoint";
+		break;
+	default:
+		s = "tangent unknown";
+		break;
+	}
 	printf("%*sFloatAuto %p: pos_time %.3lf value %.3f\n",
 		ident, "", this, pos_time, value);
 	ident += 2;
 	printf("%*scontrols in %.2f/%.3f, out %.2f/%.3f %s\n", ident, "",
-		control_in_value, control_in_pts, control_out_value, control_out_pts,
-		tangent_mode == SMOOTH ? "smooth" : tangent_mode == LINEAR ? "linear" : "");
+		control_in_value, control_in_pts, control_out_value, control_out_pts, s);
 }
