@@ -24,13 +24,13 @@
 
 #include "condition.inc"
 #include "cwindowgui.inc"
+#include "floatauto.inc"
 #include "guicast.h"
 #include "maskauto.inc"
 #include "mwindow.inc"
 
 class CWindowToolGUI;
 class CWindowCoord;
-class CWindowTangentToggle;
 
 // This common thread supports all the tool GUI's.
 class CWindowTool : public Thread
@@ -225,6 +225,39 @@ public:
 
 	BC_Title *red, *green, *blue;
 	BC_SubWindow *sample;
+};
+
+
+// Configuration for all possible Keyframe Tangent Mode toggles
+struct _TGD
+{
+	tgnt_mode mode;
+	bool use_camera;
+	const char* icon_id;
+	const char* tooltip;
+};
+
+// Implementation Class for Keyframe Tangent Mode buttons
+//
+// This button reflects the state of the "current" keyframe
+// (the nearest keyframe on the left) for all three automation
+// lines together. Clicking on this button (re)sets the tangent
+// mode for the three "current" keyframes simultanously, but
+// never creates a new keyframe.
+//
+class CWindowTangentToggle : public BC_Toggle
+{
+public:
+	CWindowTangentToggle(_TGD mode, MWindow *mwindow, CWindowToolGUI *gui,
+		int x, int y);
+
+	void check_toggle_state(FloatAuto *x, FloatAuto *y, FloatAuto *z);
+	int handle_event();
+
+private:
+	_TGD cfg;
+	MWindow *mwindow;
+	CWindowToolGUI *gui;
 };
 
 

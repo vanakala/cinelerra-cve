@@ -75,10 +75,10 @@ void KeyframePopup::create_objects()
 	delete_active = 1;
 
 	hline = new BC_MenuItem("-");
-	tan_smooth = new KeyframePopupTangentMode(mwindow, this, FloatAuto::SMOOTH);
-	tan_linear = new KeyframePopupTangentMode(mwindow, this, FloatAuto::LINEAR);
-	tan_free_t = new KeyframePopupTangentMode(mwindow, this, FloatAuto::TFREE);
-	tan_free = new KeyframePopupTangentMode(mwindow, this, FloatAuto::FREE);
+	tan_smooth = new KeyframePopupTangentMode(mwindow, this, TGNT_SMOOTH);
+	tan_linear = new KeyframePopupTangentMode(mwindow, this, TGNT_LINEAR);
+	tan_free_t = new KeyframePopupTangentMode(mwindow, this, TGNT_TFREE);
+	tan_free = new KeyframePopupTangentMode(mwindow, this, TGNT_FREE);
 }
 
 void KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
@@ -228,25 +228,25 @@ int KeyframePopupCopy::handle_event()
 
 KeyframePopupTangentMode::KeyframePopupTangentMode(MWindow *mwindow,
 	KeyframePopup *popup,
-	int tangent_mode)
- : BC_MenuItem( get_labeltext(tangent_mode))
+	tgnt_mode tangent_mode)
+ : BC_MenuItem(get_labeltext(tangent_mode))
 {
 	this->tangent_mode = tangent_mode;
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
 
-const char* KeyframePopupTangentMode::get_labeltext(int mode)
+const char* KeyframePopupTangentMode::get_labeltext(tgnt_mode mode)
 {
 	switch(mode)
 	{
-	case FloatAuto::SMOOTH:
+	case TGNT_SMOOTH:
 		return _("Smooth curve");
-	case FloatAuto::LINEAR:
+	case TGNT_LINEAR:
 		return _("Linear segments");
-	case FloatAuto::TFREE:
+	case TGNT_TFREE:
 		return _("Tangent edit");
-	case FloatAuto::FREE:
+	case TGNT_FREE:
 		return _("Disjoint edit");
 	}
 	return "misconfigured";
@@ -263,7 +263,7 @@ int KeyframePopupTangentMode::handle_event()
 		popup->keyframe_autos->get_type() == AUTOMATION_TYPE_FLOAT)
 	{
 		((FloatAuto*)popup->keyframe_auto)->
-			change_tangent_mode((FloatAuto::t_mode)tangent_mode);
+			change_tangent_mode(tangent_mode);
 
 		// if we switched to some "auto" mode, this may imply a
 		// real change to parameters, so this needs to be undoable...

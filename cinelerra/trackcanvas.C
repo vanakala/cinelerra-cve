@@ -2047,8 +2047,8 @@ void TrackCanvas::draw_floatauto(FloatAuto *current,
 
 // show bezier control points (only) if this
 // floatauto doesn't adjust it's tangents automatically
-	if(current->tangent_mode != FloatAuto::FREE &&
-			current->tangent_mode != FloatAuto::TFREE)
+	if(current->tangent_mode != TGNT_FREE &&
+			current->tangent_mode != TGNT_TFREE)
 		return;
 
 	if(in_x != x)
@@ -2311,8 +2311,8 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 
 // Test in control
 		if(in_x != x && current->pos_time > EPSILON &&
-			(FloatAuto::FREE == current->tangent_mode ||
-				FloatAuto::TFREE == current->tangent_mode))
+			(TGNT_FREE == current->tangent_mode ||
+				TGNT_TFREE == current->tangent_mode))
 // act on in control handle only if
 // tangent is significant and is editable (not automatically choosen)
 		{
@@ -2337,8 +2337,8 @@ int TrackCanvas::test_floatauto(FloatAuto *current,
 		}
 
 // Test out control
-		if(out_x != x && (FloatAuto::FREE == current->tangent_mode ||
-			FloatAuto::TFREE == current->tangent_mode))
+		if(out_x != x && (TGNT_FREE == current->tangent_mode ||
+			TGNT_TFREE == current->tangent_mode))
 // act on out control only if tangent is significant and is editable
 		{
 			lever = test_tangent_line(x, y, out_x, out_y,
@@ -3398,8 +3398,8 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 		if(ctrl_down())
 		// not really editing the node, rather start editing the tangent
 		{
-			if((FloatAuto::FREE == current->tangent_mode || // tangent
-				FloatAuto::TFREE==current->tangent_mode) &&
+			if((TGNT_FREE == current->tangent_mode || // tangent
+				TGNT_TFREE == current->tangent_mode) &&
 				(fabs(x) > HANDLE_W / 2 || fabs(y) > HANDLE_W / 2))
 			{
 				// ...and drag movement is significant

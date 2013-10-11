@@ -420,20 +420,10 @@ void CWindowEyedropGUI::update()
 	sample->flash();
 }
 
-/* Buttons to control Keyframe-Tangent-Mode for Projector or Camera */
-
-// Configuration for all possible Keyframe Tangent Mode toggles
-struct _TGD
-{
-	FloatAuto::t_mode mode;
-	bool use_camera;
-	const char* icon_id;
-	const char* tooltip;
-};
-
+// Buttons to control Keyframe-Tangent-Mode for Projector or Camera
 const _TGD Camera_Tan_Smooth =
 {
-	FloatAuto::SMOOTH,
+	TGNT_SMOOTH,
 	true,
 	"tan_smooth",
 	_("\"smooth\" Tangent on current Camera Keyframes")
@@ -441,7 +431,7 @@ const _TGD Camera_Tan_Smooth =
 
 const _TGD Camera_Tan_Linear =
 {
-	FloatAuto::LINEAR,
+	TGNT_LINEAR,
 	true,
 	"tan_linear",
 	_("\"linear\" Tangent on current Camera Keyframes")
@@ -449,7 +439,7 @@ const _TGD Camera_Tan_Linear =
 
 const _TGD Projector_Tan_Smooth =
 {
-	FloatAuto::SMOOTH,
+	TGNT_SMOOTH,
 	false,
 	"tan_smooth",
 	_("\"smooth\" Tangent on current Projector Keyframes")
@@ -457,34 +447,11 @@ const _TGD Projector_Tan_Smooth =
 
 const _TGD Projector_Tan_Linear =
 {
-	FloatAuto::LINEAR,
+	TGNT_LINEAR,
 	false,
 	"tan_linear",
 	_("\"linear\" Tangent on current Projector Keyframes")
 };
-
-// Implementation Class for Keyframe Tangent Mode buttons
-//
-// This button reflects the state of the "current" keyframe
-// (the nearest keyframe on the left) for all three automation
-// lines together. Clicking on this button (re)sets the tangent
-// mode for the three "current" keyframes simultanously, but
-// never creates a new keyframe.
-//
-class CWindowTangentToggle : public BC_Toggle
-{
-public:
-	CWindowTangentToggle(_TGD mode, MWindow *mwindow, CWindowToolGUI *gui,
-		int x, int y);
-	void check_toggle_state(FloatAuto *x, FloatAuto *y, FloatAuto *z);
-	int handle_event();
-
-private:
-	_TGD cfg;
-	MWindow *mwindow;
-	CWindowToolGUI *gui;
-};
-
 
 CWindowTangentToggle::CWindowTangentToggle(_TGD mode, MWindow *mwindow,
 	CWindowToolGUI *gui, int x, int y)

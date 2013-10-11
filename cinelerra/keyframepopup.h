@@ -93,7 +93,7 @@ public:
 class KeyframePopupTangentMode : public BC_MenuItem
 {
 public:
-	KeyframePopupTangentMode(MWindow *mwindow, KeyframePopup *popup, int tangent_mode);
+	KeyframePopupTangentMode(MWindow *mwindow, KeyframePopup *popup, tgnt_mode tangent_mode);
 
 	friend class KeyframePopup;
 
@@ -102,8 +102,8 @@ public:
 private:
 	MWindow *mwindow;
 	KeyframePopup *popup;
-	int tangent_mode;
-	const char* get_labeltext(int);
+	tgnt_mode tangent_mode;
+	const char* get_labeltext(tgnt_mode);
 	void toggle_mode(FloatAuto*);
 
 };

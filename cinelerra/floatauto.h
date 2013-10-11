@@ -24,10 +24,9 @@
 
 // Automation point that takes floating point values
 
-class FloatAuto;
-
 #include "auto.h"
 #include "edl.inc"
+#include "floatauto.inc"
 #include "floatautos.inc"
 
 class FloatAuto : public Auto
@@ -54,18 +53,8 @@ public:
 	void set_value(float newval);
 	void add_value(float increment);
 
-// Possible policies to handle the tagents for the
-// bézier curves connecting adjacent automation points
-	enum t_mode
-	{
-		SMOOTH,     // tangents are coupled in order to yield a smooth curve
-		LINEAR,     // tangents always pointing directly to neighbouring automation points
-		TFREE,      // tangents on both sides coupled but editable by dragging the handles
-		FREE        // tangents on both sides are independent and editable via GUI
-	};
-
-	t_mode tangent_mode;
-	void change_tangent_mode(t_mode); // recalculates tangents as well
+	tgnt_mode tangent_mode;
+	void change_tangent_mode(tgnt_mode); // recalculates tangents as well
 	void toggle_tangent_mode();       // cycles through all modes (e.g. by ctrl-click)
 
 // Control values (y coords of bézier control point), relative to value

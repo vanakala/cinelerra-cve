@@ -37,7 +37,7 @@ FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
 	control_in_pts = 0;
 	control_out_pts = 0;
 	pos_valid = -1;    // "dirty"
-	tangent_mode = SMOOTH;
+	tangent_mode = TGNT_SMOOTH;
 //  note: in most cases the tangent_mode-value is set
 //        by the method interpolate_from() rsp. copy_from()
 }
@@ -105,9 +105,9 @@ inline void FloatAuto::handle_automatic_tangent_after_copy()
 // inserted by using this "interpolation" approach, thus making
 // this defaulting to auto-smooth tangents very important.
 {
-	if(tangent_mode == FREE || tangent_mode == TFREE)
+	if(tangent_mode == TGNT_FREE || tangent_mode == TGNT_TFREE)
 	{
-		this->tangent_mode = SMOOTH;
+		this->tangent_mode = TGNT_SMOOTH;
 	}
 }
 
@@ -145,10 +145,10 @@ void FloatAuto::interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ)
 		adjust_ctrl_positions(); // implies adjust_tangents()
 }
 
-void FloatAuto::change_tangent_mode(t_mode new_mode)
+void FloatAuto::change_tangent_mode(tgnt_mode new_mode)
 {
-	if(new_mode == TFREE && !(control_in_pts && control_out_pts))
-		new_mode = FREE; // only if tangents on both sides...
+	if(new_mode == TGNT_TFREE && !(control_in_pts && control_out_pts))
+		new_mode = TGNT_FREE; // only if tangents on both sides...
 
 	tangent_mode = new_mode;
 	adjust_tangents();
@@ -158,17 +158,17 @@ void FloatAuto::toggle_tangent_mode()
 {
 	switch (tangent_mode)
 	{
-	case SMOOTH:
-		change_tangent_mode(TFREE);
+	case TGNT_SMOOTH:
+		change_tangent_mode(TGNT_TFREE);
 		break;
-	case LINEAR:
-		change_tangent_mode(FREE);
+	case TGNT_LINEAR:
+		change_tangent_mode(TGNT_FREE);
 		break;
-	case TFREE:
-		change_tangent_mode(LINEAR);
+	case TGNT_TFREE:
+		change_tangent_mode(TGNT_LINEAR);
 		break;
-	case FREE:
-		change_tangent_mode(SMOOTH);
+	case TGNT_FREE:
+		change_tangent_mode(TGNT_SMOOTH);
 		break;
 	}
 }
@@ -198,7 +198,7 @@ void FloatAuto::set_control_in_value(float newvalue)
 {
 	switch(tangent_mode)
 	{
-	case TFREE:
+	case TGNT_TFREE:
 		control_out_value = control_out_pts * newvalue / control_in_pts;
 	default:
 		control_in_value = newvalue;
@@ -209,7 +209,7 @@ void FloatAuto::set_control_out_value(float newvalue)
 {
 	switch(tangent_mode)
 	{
-	case TFREE:
+	case TGNT_TFREE:
 		control_in_value = control_in_pts * newvalue / control_out_pts;
 	default:
 		control_out_value = newvalue;
@@ -235,7 +235,7 @@ void FloatAuto::adjust_tangents()
 {
 	if(!autos) return;
 
-	if(tangent_mode == SMOOTH)
+	if(tangent_mode == TGNT_SMOOTH)
 	{
 		// normally, one would use the slope of chord between the neighbours.
 		// but this could cause the curve to overshot extremal automation nodes.
@@ -267,7 +267,7 @@ void FloatAuto::adjust_tangents()
 		control_out_value = s * control_out_pts;
 	}
 	else
-	if(tangent_mode == LINEAR)
+	if(tangent_mode == TGNT_LINEAR)
 	{
 		float g, dx;
 
@@ -283,7 +283,7 @@ void FloatAuto::adjust_tangents()
 		}
 	}
 	else
-	if(tangent_mode == TFREE && control_in_pts && control_out_pts)
+	if(tangent_mode == TGNT_TFREE && control_in_pts && control_out_pts)
 	{
 		float gl = control_in_value / control_in_pts;
 		float gr = control_out_value / control_out_pts;
@@ -387,7 +387,7 @@ void FloatAuto::load(FileXML *file)
 	value = file->tag.get_property("VALUE", value);
 	control_in_value = file->tag.get_property("CONTROL_IN_VALUE", control_in_value);
 	control_out_value = file->tag.get_property("CONTROL_OUT_VALUE", control_out_value);
-	tangent_mode = (t_mode)file->tag.get_property("TANGENT_MODE", FREE);
+	tangent_mode = (tgnt_mode)file->tag.get_property("TANGENT_MODE", TGNT_FREE);
 
 	// Compatibility to old session data format:
 	// Versions previous to the bezier auto patch (Jun 2006) applied a factor 2
@@ -407,16 +407,16 @@ void FloatAuto::dump(int ident)
 
 	switch(tangent_mode)
 	{
-	case SMOOTH:
+	case TGNT_SMOOTH:
 		s = "smooth";
 		break;
-	case LINEAR:
+	case TGNT_LINEAR:
 		s = "linear";
 		break;
-	case TFREE:
+	case TGNT_TFREE:
 		s = "tangent";
 		break;
-	case FREE:
+	case TGNT_FREE:
 		s = "disjoint";
 		break;
 	default:
