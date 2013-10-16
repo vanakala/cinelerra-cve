@@ -25,6 +25,7 @@
 #include "bcpixmap.h"
 #include "bcpopup.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "clip.h"
 
@@ -91,12 +92,19 @@ void BC_MenuPopup::initialize(BC_WindowBase *top_level,
 		item_bg[1] = new BC_Pixmap(top_level, resources->menu_item_bg[1], PIXMAP_ALPHA);
 		item_bg[2] = new BC_Pixmap(top_level, resources->menu_item_bg[2], PIXMAP_ALPHA);
 	}
+	for(int i = 0; i < menu_items.total; i++)
+	{
+		BC_MenuItem *item = menu_items.values[i];
+		item->initialize(top_level, menu_bar, this);
+	}
 }
 
 void BC_MenuPopup::add_item(BC_MenuItem *item)
 {
 	menu_items.append(item);
-	item->initialize(top_level, menu_bar, this);
+	if(top_level)
+		item->initialize(top_level, menu_bar, this);
+// items unittialized here will be initalized later in initialize
 }
 
 void BC_MenuPopup::remove_item(BC_MenuItem *item)

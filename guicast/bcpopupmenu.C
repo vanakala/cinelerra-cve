@@ -49,7 +49,6 @@ BC_PopupMenu::BC_PopupMenu(int x,
  : BC_SubWindow(x, y, 0, 0, -1)
 {
 	highlighted = popup_down = 0;
-	menu_popup = 0;
 	icon = 0;
 	if(margin >= 0)
 		this->margin = margin;
@@ -65,6 +64,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 	this->data = data;
 	this->w_argument = w;
 	status = BUTTON_UP;
+	menu_popup = new BC_MenuPopup;
 }
 
 BC_PopupMenu::BC_PopupMenu(int x, 
@@ -75,7 +75,6 @@ BC_PopupMenu::BC_PopupMenu(int x,
  : BC_SubWindow(x, y, w, -1, -1)
 {
 	highlighted = popup_down = 0;
-	menu_popup = 0;
 	icon = 0;
 	this->use_title = use_title;
 	strcpy(this->text, text);
@@ -86,6 +85,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 	this->data = data;
 	this->w_argument = 0;
 	status = BUTTON_UP;
+	menu_popup = new BC_MenuPopup;
 }
 
 BC_PopupMenu::~BC_PopupMenu()
@@ -143,7 +143,6 @@ void BC_PopupMenu::initialize()
 
 	BC_SubWindow::initialize();
 
-	menu_popup = new BC_MenuPopup;
 	menu_popup->initialize(top_level, 
 		0, 
 		0, 
