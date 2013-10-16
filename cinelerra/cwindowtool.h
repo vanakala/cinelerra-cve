@@ -127,7 +127,6 @@ class CWindowMaskMode : public BC_PopupMenu
 public:
 	CWindowMaskMode(MWindow *mwindow, CWindowToolGUI *gui, int x, int y, const char *text);
 
-	void create_objects();
 	int handle_event();
 	static const char* mode_to_text(int mode);
 	int text_to_mode(const char *text);

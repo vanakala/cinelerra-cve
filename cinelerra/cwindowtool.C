@@ -1316,10 +1316,6 @@ CWindowMaskMode::CWindowMaskMode(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-}
-
-void CWindowMaskMode::create_objects()
-{
 	add_item(new BC_MenuItem(mode_to_text(MASK_MULTIPLY_ALPHA)));
 	add_item(new BC_MenuItem(mode_to_text(MASK_SUBTRACT_ALPHA)));
 }
@@ -1569,7 +1565,6 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 		x + title->get_w(), 
 		y,
 		""));
-	mode->create_objects();
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Value:")));
 	add_subwindow(value = new CWindowMaskValue(mwindow, this, x + 50, y));
