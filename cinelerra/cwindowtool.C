@@ -1361,8 +1361,10 @@ int CWindowMaskMode::handle_event()
 
 	if(track)
 	{
-		((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->first)->mode = 
-			text_to_mode(get_text());
+		MaskAuto *mauto = (MaskAuto*)track->automation->autos[AUTOMATION_MASK]->first;
+
+		if(mauto)
+			mauto->mode = text_to_mode(get_text());
 	}
 
 	gui->update_preview();
