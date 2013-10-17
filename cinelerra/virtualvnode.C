@@ -373,7 +373,7 @@ void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 
 			int mode;
 			if(mode_keyframe)
-				mode_keyframe->value;
+				mode = mode_keyframe->value;
 			else
 				mode = TRANSFER_NORMAL;
 
