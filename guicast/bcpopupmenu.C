@@ -116,7 +116,7 @@ void BC_PopupMenu::set_icon(BC_Pixmap *icon)
 	if(use_title)
 	{
 		this->icon = icon;
-		if(menu_popup) draw_title();
+		if(top_level) draw_title();
 	}
 }
 
