@@ -30,14 +30,9 @@
 #include <sys/stat.h>
 
 
-
-
-
-
-
 BC_NewFolder::BC_NewFolder(int x, int y, BC_FileBox *filebox)
  : BC_Window(filebox->get_newfolder_title(), 
- 	x, 
+	x,
 	y, 
 	320, 
 	120, 
@@ -47,16 +42,8 @@ BC_NewFolder::BC_NewFolder(int x, int y, BC_FileBox *filebox)
 	0, 
 	1)
 {
-}
-
-BC_NewFolder::~BC_NewFolder()
-{
-}
-
-
-int BC_NewFolder::create_objects()
-{
-	int x = 10, y = 10;
+	x = 10;
+	y = 10;
 	add_tool(new BC_Title(x, y, _("Enter the name of the folder:")));
 	y += 20;
 	add_subwindow(textbox = new BC_TextBox(x, y, 300, 1, _("Untitled")));
@@ -65,7 +52,6 @@ int BC_NewFolder::create_objects()
 	x = get_w() - 100;
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	return 0;
 }
 
 char* BC_NewFolder::get_text()
@@ -85,7 +71,7 @@ BC_NewFolderThread::BC_NewFolderThread(BC_FileBox *filebox)
 
 BC_NewFolderThread::~BC_NewFolderThread() 
 {
- 	interrupt();
+	interrupt();
 	delete change_lock;
 	delete completion_lock;
 }
@@ -98,9 +84,7 @@ void BC_NewFolderThread::run()
 	window = new BC_NewFolder(x, 
 		y,
 		filebox);
-	window->create_objects();
 	change_lock->unlock();
-
 
 	int result = window->run_window();
 
@@ -122,7 +106,7 @@ void BC_NewFolderThread::run()
 	completion_lock->unlock();
 }
 
-int BC_NewFolderThread::interrupt()
+void BC_NewFolderThread::interrupt()
 {
 	change_lock->lock("BC_NewFolderThread::interrupt");
 	if(window)
@@ -134,10 +118,9 @@ int BC_NewFolderThread::interrupt()
 
 	completion_lock->lock("BC_NewFolderThread::interrupt");
 	completion_lock->unlock();
-	return 0;
 }
 
-int BC_NewFolderThread::start_new_folder()
+void BC_NewFolderThread::start_new_folder()
 {
 	change_lock->lock();
 
@@ -155,9 +138,4 @@ int BC_NewFolderThread::start_new_folder()
 
 		Thread::start();
 	}
-
-
-	return 0;
 }
-
-
