@@ -153,7 +153,6 @@ int ShapeWipeBrowseButton::handle_event()
 {
 	int result;
 	ShapeWipeLoad window(filename, filename->get_text());
-	window.create_objects();
 	window.update_filter("*.png");
 	result = window.run_window();
 

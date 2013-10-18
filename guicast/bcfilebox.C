@@ -438,27 +438,9 @@ BC_FileBox::BC_FileBox(int x,
 	}
 	this->h_padding = h_padding;
 	delete_thread = new BC_DeleteThread(this);
-}
 
-BC_FileBox::~BC_FileBox()
-{
-// this has to be destroyed before tables, because it can call for an update!
-	delete newfolder_thread;
-	delete fs;
-	delete_tables();
-	for(int i = 0; i < TOTAL_ICONS; i++)
-		delete icons[i];
-	filter_list.remove_all_objects();
-	delete [] list_column;
-	delete [] column_type;
-	delete [] column_width;
-	delete delete_thread;
-	recent_dirs.remove_all_objects();
-}
-
-void BC_FileBox::create_objects()
-{
-	int x = 10, y = 10;
+	x = 10;
+	y = 10;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	int directory_title_margin = MAX(20,
 		resources->filebox_text_images[0]->get_h());
@@ -541,6 +523,22 @@ void BC_FileBox::create_objects()
 	newfolder_thread = new BC_NewFolderThread(this);
 
 	show_window();
+}
+
+BC_FileBox::~BC_FileBox()
+{
+// this has to be destroyed before tables, because it can call for an update!
+	delete newfolder_thread;
+	delete fs;
+	delete_tables();
+	for(int i = 0; i < TOTAL_ICONS; i++)
+		delete icons[i];
+	filter_list.remove_all_objects();
+	delete [] list_column;
+	delete [] column_type;
+	delete [] column_width;
+	delete delete_thread;
+	recent_dirs.remove_all_objects();
 }
 
 int BC_FileBox::get_listbox_w()

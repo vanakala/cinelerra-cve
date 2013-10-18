@@ -173,8 +173,6 @@ LoadFileWindow::~LoadFileWindow()
 
 void LoadFileWindow::create_objects()
 {
-	BC_FileBox::create_objects();
-
 	int x = get_w() / 2 - 200;
 	int y = get_cancel_button()->get_y() - 50;
 	set_icon(mwindow->theme->get_image("mwindow_icon"));

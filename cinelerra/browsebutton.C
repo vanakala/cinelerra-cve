@@ -100,7 +100,6 @@ void BrowseButton::run()
 		want_directory);
 	gui = &browsewindow;
 	startup_lock->unlock();
-	browsewindow.create_objects();
 	int result2 = browsewindow.run_window();
 
 	if(!result2)

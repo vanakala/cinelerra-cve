@@ -1005,7 +1005,6 @@ void BatchRenderSaveList::run()
 	gui = &filewindow;
 
 	startup_lock->unlock();
-	filewindow.create_objects();
 
 	int result2 = filewindow.run_window();
 
@@ -1092,7 +1091,6 @@ void BatchRenderLoadList::run()
 	gui = &filewindow;
 
 	startup_lock->unlock();
-	filewindow.create_objects();
 
 	int result2 = filewindow.run_window();
 

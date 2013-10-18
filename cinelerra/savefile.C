@@ -140,7 +140,6 @@ void SaveAs::run()
 		SaveFileWindow *window;
 
 		window = new SaveFileWindow(mwindow, directory);
-		window->create_objects();
 		result = window->run_window();
 		mwindow->defaults->update("DIRECTORY", window->get_submitted_path());
 		strcpy(filename, window->get_submitted_path());
