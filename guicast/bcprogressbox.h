@@ -33,7 +33,7 @@ class BC_ProgressBox : public Thread
 public:
 	BC_ProgressBox(int x, int y, const char *text, int64_t length);
 	virtual ~BC_ProgressBox();
-	
+
 	friend class BC_ProgressWindow;
 
 	void run();
@@ -57,10 +57,7 @@ private:
 class BC_ProgressWindow : public BC_Window
 {
 public:
-	BC_ProgressWindow(int x, int y);
-	virtual ~BC_ProgressWindow();
-
-	int create_objects(const char *text, int64_t length);
+	BC_ProgressWindow(int x, int y, const char *text, int64_t length);
 
 	const char *text;
 	BC_ProgressBar *bar;
