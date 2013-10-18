@@ -182,9 +182,8 @@ public:
 		int rows,
 		const char *default_text);
 	virtual ~BC_ScrollTextBox();
-	void create_objects();
-	virtual int handle_event();
 
+	virtual int handle_event();
 	char* get_text();
 	void update(const char *text);
 	void reposition_window(int x, int y, int w, int rows);

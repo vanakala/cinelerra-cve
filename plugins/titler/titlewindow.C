@@ -253,7 +253,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 		y, 
 		get_w() - x - 10, 
 		get_h() - y - 20 - 10);
-	text->create_objects();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_color();
 

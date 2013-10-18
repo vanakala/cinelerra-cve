@@ -1502,6 +1502,8 @@ BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window,
 	this->w = w;
 	this->rows = rows;
 	this->default_text = default_text;
+	parent_window->add_subwindow(text = new BC_ScrollTextBoxText(this));
+	parent_window->add_subwindow(yscroll = new BC_ScrollTextBoxYScroll(this));
 }
 
 BC_ScrollTextBox::~BC_ScrollTextBox()
@@ -1512,13 +1514,6 @@ BC_ScrollTextBox::~BC_ScrollTextBox()
 		text->gui = 0;
 		delete text;
 	}
-}
-
-void BC_ScrollTextBox::create_objects()
-{
-// Must be created first
-	parent_window->add_subwindow(text = new BC_ScrollTextBoxText(this));
-	parent_window->add_subwindow(yscroll = new BC_ScrollTextBoxYScroll(this));
 }
 
 int BC_ScrollTextBox::handle_event()
