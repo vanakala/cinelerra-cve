@@ -92,7 +92,6 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 		x,
 		y,
 		1);
-	input_x->create_objects();
 
 	x += input_x->get_w() + 10;
 	add_subwindow(title = new BC_Title(x, y, _("Input Y:")));
@@ -102,7 +101,6 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 		x,
 		y,
 		0);
-	input_y->create_objects();
 
 	y += 30;
 	x = x1;
@@ -142,7 +140,6 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 		x,
 		y,
 		&plugin->config.output_min[plugin->mode]);
-	output_min->create_objects();
 	x += output_min->get_w() + 10;
 	add_subwindow(new BC_Title(x, y, _("Output Max:")));
 	x += title->get_w() + 10;
@@ -151,7 +148,6 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 		x,
 		y,
 		&plugin->config.output_max[plugin->mode]);
-	output_max->create_objects();
 
 	x = x1;
 	y += 30;
@@ -182,7 +178,6 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
 		x,
 		y,
 		&plugin->config.threshold);
-	threshold->create_objects();
 
 	x = x1;
 	y += 30;

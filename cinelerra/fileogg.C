@@ -1323,19 +1323,16 @@ void OGGConfigVideo::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Keyframe frequency:")));
 	OGGTheoraKeyframeFrequency *keyframe_frequency = 
 		new OGGTheoraKeyframeFrequency(x1 + 60, y, this);
-	keyframe_frequency->create_objects();
 	y += 30;
 
 	add_subwindow(new BC_Title(x, y, _("Keyframe force frequency:")));
 	OGGTheoraKeyframeForceFrequency *keyframe_force_frequency = 
 		new OGGTheoraKeyframeForceFrequency(x1 + 60, y, this);
-	keyframe_force_frequency->create_objects();
 	y += 30;
 
 	add_subwindow(new BC_Title(x, y, _("Sharpness:")));
 	OGGTheoraSharpness *sharpness = 
 		new OGGTheoraSharpness(x1 + 60, y, this);
-	sharpness->create_objects();
 	y += 30;
 
 	add_subwindow(new BC_OKButton(this));

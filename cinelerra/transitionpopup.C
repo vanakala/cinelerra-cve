@@ -81,7 +81,6 @@ void TransitionLengthDialog::create_objects()
 {
 	add_subwindow(new BC_Title(10, 10, _("Seconds:")));
 	text = new TransitionLengthText(mwindow, this, 100, 10);
-	text->create_objects();
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 }

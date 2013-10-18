@@ -1624,14 +1624,12 @@ void MPEGConfigVideo::update_cmodel_objs()
 	add_subwindow(title = new BC_Title(x, y, _("Quantization:")));
 	titles.append(title);
 	quant = new MPEGQuant(x1, y, this);
-	quant->create_objects();
 	add_subwindow(fixed_quant = new MPEGFixedQuant(x2, y, this));
 	y += 30;
 
 	add_subwindow(title = new BC_Title(x, y, _("I frame distance:")));
 	titles.append(title);
 	iframe_distance = new MPEGIFrameDistance(x1, y, this);
-	iframe_distance->create_objects();
 	y += 30;
 
 	if(asset->vmpeg_cmodel == MPEG_YUV420)
@@ -1639,7 +1637,6 @@ void MPEGConfigVideo::update_cmodel_objs()
 		add_subwindow(title = new BC_Title(x, y, _("P frame distance:")));
 		titles.append(title);
 		pframe_distance = new MPEGPFrameDistance(x1, y, this);
-		pframe_distance->create_objects();
 		y += 30;
 
 		add_subwindow(top_field_first = new BC_CheckBox(x, y, &asset->vmpeg_field_order, _("Bottom field first")));

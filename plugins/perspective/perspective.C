@@ -126,7 +126,6 @@ PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
 		y, 
 		plugin->get_current_x(),
 		1);
-	this->x->create_objects();
 	x += 140;
 	add_subwindow(new BC_Title(x, y, _("Y:")));
 	x += 20;
@@ -136,7 +135,6 @@ PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
 		y, 
 		plugin->get_current_y(),
 		0);
-	this->y->create_objects();
 	y += 30;
 	x = 10;
 	add_subwindow(new PerspectiveReset(plugin, x, y));

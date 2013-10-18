@@ -1869,7 +1869,6 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 		int y, 
 		int text_w)
 {
-	reset();
 	this->x = x;
 	this->y = y;
 	this->min = min;
@@ -1881,6 +1880,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	precision = 4;
 	increment = 1;
 	log_floatincrement = 0;
+	reset();
 }
 
 
@@ -1892,7 +1892,6 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 		int y, 
 		int text_w)
 {
-	reset();
 	this->x = x;
 	this->y = y;
 	this->min = min;
@@ -1902,8 +1901,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->parent_window = parent_window;
 	use_float = 0;
 	precision = 4;
-	increment = 1;
-	log_floatincrement = 0;
+	reset();
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
@@ -1914,7 +1912,6 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 		int y, 
 		int text_w)
 {
-	reset();
 	this->x = x;
 	this->y = y;
 	this->min_f = min_f;
@@ -1924,8 +1921,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->parent_window = parent_window;
 	use_float = 1;
 	precision = 4;
-	increment = 1;
-	log_floatincrement = 0;
+	reset();
 }
 
 BC_TumbleTextBox::~BC_TumbleTextBox()
@@ -1949,28 +1945,8 @@ void BC_TumbleTextBox::reset()
 	tumbler = 0;
 	increment = 1.0;
 	log_floatincrement = 0;
-}
-
-void BC_TumbleTextBox::set_precision(int precision)
-{
-	this->precision = precision;
-}
-
-void BC_TumbleTextBox::set_increment(float value)
-{
-	this->increment = value;
-	if(tumbler) tumbler->set_increment(value);
-}
-
-void BC_TumbleTextBox::set_log_floatincrement(int value)
-{
-	this->log_floatincrement = value;
-	if(tumbler) tumbler->set_log_floatincrement(value);
-}
-
-void BC_TumbleTextBox::create_objects()
-{
-	int x = this->x, y = this->y;
+	int x = this->x;
+	int y = this->y;
 
 	if(use_float)
 	{
@@ -2007,6 +1983,23 @@ void BC_TumbleTextBox::create_objects()
 
 	tumbler->set_increment(increment);
 	tumbler->set_log_floatincrement(log_floatincrement);
+}
+
+void BC_TumbleTextBox::set_precision(int precision)
+{
+	this->precision = precision;
+}
+
+void BC_TumbleTextBox::set_increment(float value)
+{
+	this->increment = value;
+	if(tumbler) tumbler->set_increment(value);
+}
+
+void BC_TumbleTextBox::set_log_floatincrement(int value)
+{
+	this->log_floatincrement = value;
+	if(tumbler) tumbler->set_log_floatincrement(value);
 }
 
 char* BC_TumbleTextBox::get_text()

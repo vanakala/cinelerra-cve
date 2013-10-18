@@ -219,7 +219,6 @@ ReframeRTWindow::ReframeRTWindow(ReframeRT *plugin, int x, int y)
 		this,
 		x, 
 		y);
-	scale->create_objects();
 	scale->set_increment(0.1);
 	y += 30;
 	add_subwindow(stretch = new ReframeRTStretch(plugin, 

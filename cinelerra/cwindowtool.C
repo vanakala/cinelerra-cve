@@ -308,14 +308,12 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 	x += column1 + 5;
 	y = 10;
 	x1 = new CWindowCoord(this, x, y, mwindow->edl->session->crop_x1);
-	x1->create_objects();
 	y += pad;
 	width = new CWindowCoord(this,
 		x, 
 		y, 
 		mwindow->edl->session->crop_x2 - 
 			mwindow->edl->session->crop_x1);
-	width->create_objects();
 
 	x += x1->get_w() + 10;
 	y = 10;
@@ -330,14 +328,12 @@ CWindowCropGUI::CWindowCropGUI(MWindow *mwindow, CWindowTool *thread)
 	y = 10;
 	x += column2 + 5;
 	y1 = new CWindowCoord(this, x, y, mwindow->edl->session->crop_y1);
-	y1->create_objects();
 	y += pad;
 	height = new CWindowCoord(this,
 		x, 
 		y, 
 		mwindow->edl->session->crop_y2 - 
 			mwindow->edl->session->crop_y1);
-	height->create_objects();
 }
 
 int CWindowCropGUI::handle_event()
@@ -529,7 +525,6 @@ CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
 		x, 
 		y, 
 		(float)0);
-	this->x->create_objects();
 	y += 30;
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
@@ -538,7 +533,6 @@ CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
 		x, 
 		y, 
 		(float)0);
-	this->y->create_objects();
 	y += 30;
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Z:")));
@@ -548,7 +542,6 @@ CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
 		y, 
 		(float)1,
 		1);
-	this->z->create_objects();
 	this->z->set_boundaries((float).0001, (float)256.0);
 
 	y += 30;
@@ -950,7 +943,6 @@ CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
 		x, 
 		y, 
 		(float)0);
-	this->x->create_objects();
 	y += 30;
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
@@ -959,7 +951,6 @@ CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
 		x, 
 		y, 
 		(float)0);
-	this->y->create_objects();
 	y += 30;
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Z:")));
@@ -969,7 +960,6 @@ CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
 		y, 
 		(float)1,
 		1);
-	this->z->create_objects();
 	this->z->set_boundaries((float).0001, (float)256.0);
 
 	y += 30;
@@ -1578,14 +1568,12 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 		this, 
 		x + 110, 
 		y);
-	number->create_objects();
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Feather:")));
 	feather = new CWindowMaskFeather(mwindow,
 		this,
 		x + 110,
 		y);
-	feather->create_objects();
 	y += 30;
 	add_subwindow(title = new BC_Title(x, y, _("X:")));
 	x += title->get_w();
@@ -1593,7 +1581,6 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 		x, 
 		y, 
 		(float)0.0);
-	this->x->create_objects();
 	x += 150;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
 	x += title->get_w();
@@ -1601,7 +1588,6 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 		x, 
 		y, 
 		(float)0.0);
-	this->y->create_objects();
 
 	y += 30;
 	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 

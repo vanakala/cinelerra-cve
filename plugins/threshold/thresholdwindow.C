@@ -429,7 +429,6 @@ ThresholdWindow::ThresholdWindow(ThresholdMain *plugin, int x, int y)
 		x,
 		y,
 		100);
-	min->create_objects();
 	min->set_increment(0.1);
 
 	x = mid_color->get_x() + mid_color->get_w() / 2;
@@ -441,7 +440,6 @@ ThresholdWindow::ThresholdWindow(ThresholdMain *plugin, int x, int y)
 		x,
 		y,
 		100);
-	max->create_objects();
 	max->set_increment(0.1);
 
 	low_color_thread  = new ThresholdLowColorThread(plugin, this);

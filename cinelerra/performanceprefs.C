@@ -68,7 +68,6 @@ int PerformancePrefs::create_objects()
 		y, 
 		pwindow, 
 		this);
-	cache_size->create_objects();
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
@@ -76,7 +75,6 @@ int PerformancePrefs::create_objects()
 		this, 
 		x + 230, 
 		y);
-	preroll->create_objects();
 	y += 30;
 	add_subwindow(new PrefsForceUniprocessor(pwindow, x, y));
 
@@ -99,13 +97,11 @@ int PerformancePrefs::create_objects()
 		this, 
 		x, 
 		y + 60);
-	brender_fragment->create_objects();
 	add_subwindow(new BC_Title(x, y + 95, _("Frames to preroll background:")));
 	PrefsBRenderPreroll *bpreroll = new PrefsBRenderPreroll(pwindow, 
 		this, 
 		x + xmargin3, 
 		y + 90);
-	bpreroll->create_objects();
 
 
 	x += xmargin4;
@@ -158,7 +154,6 @@ int PerformancePrefs::create_objects()
 		this, 
 		x + xmargin3, 
 		y);
-	edit_port->create_objects();
 
 	y += 30;
 
@@ -196,7 +191,6 @@ int PerformancePrefs::create_objects()
 		this, 
 		x + xmargin3, 
 		y);
-	jobs->create_objects();
 	y += 55;
 
 	return 0;

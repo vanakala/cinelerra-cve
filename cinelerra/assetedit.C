@@ -285,7 +285,6 @@ int AssetEditWindow::create_objects()
 		if(allow_edits)
 		{
 			BC_TumbleTextBox *textbox = new AssetEditChannels(this, string, x, y);
-			textbox->create_objects();
 			y += vmargin;
 		}
 		else

@@ -44,25 +44,21 @@ TranslateWin::TranslateWin(TranslateMain *plugin, int x, int y)
 	add_tool(new BC_Title(x, y, _("In X:")));
 	y += 20;
 	in_x = new TranslateCoord(this, plugin, x, y, &plugin->config.in_x);
-	in_x->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("In Y:")));
 	y += 20;
 	in_y = new TranslateCoord(this, plugin, x, y, &plugin->config.in_y);
-	in_y->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("In W:")));
 	y += 20;
 	in_w = new TranslateCoord(this, plugin, x, y, &plugin->config.in_w);
-	in_w->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("In H:")));
 	y += 20;
 	in_h = new TranslateCoord(this, plugin, x, y, &plugin->config.in_h);
-	in_h->create_objects();
 	y += 30;
 
 	x += 150;
@@ -70,25 +66,21 @@ TranslateWin::TranslateWin(TranslateMain *plugin, int x, int y)
 	add_tool(new BC_Title(x, y, _("Out X:")));
 	y += 20;
 	out_x = new TranslateCoord(this, plugin, x, y, &plugin->config.out_x);
-	out_x->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("Out Y:")));
 	y += 20;
 	out_y = new TranslateCoord(this, plugin, x, y, &plugin->config.out_y);
-	out_y->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("Out W:")));
 	y += 20;
 	out_w = new TranslateCoord(this, plugin, x, y, &plugin->config.out_w);
-	out_w->create_objects();
 	y += 30;
 
 	add_tool(new BC_Title(x, y, _("Out H:")));
 	y += 20;
 	out_h = new TranslateCoord(this, plugin, x, y, &plugin->config.out_h);
-	out_h->create_objects();
 	y += 30;
 
 	PLUGIN_GUI_CONSTRUCTOR_MACRO

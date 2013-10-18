@@ -43,12 +43,10 @@ ScaleWin::ScaleWin(ScaleMain *plugin, int x, int y)
 	add_tool(new BC_Title(x, y, _("X Scale:")));
 	y += 20;
 	width = new ScaleWidth(this, plugin, x, y);
-	width->create_objects();
 	y += 30;
 	add_tool(new BC_Title(x, y, _("Y Scale:")));
 	y += 20;
 	height = new ScaleHeight(this, plugin, x, y);
-	height->create_objects();
 	y += 35;
 	add_tool(constrain = new ScaleConstrain(plugin, x, y));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO

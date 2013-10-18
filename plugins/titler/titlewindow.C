@@ -165,12 +165,10 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 
 	add_tool(x_title = new BC_Title(x, y, _("X:")));
 	title_x = new TitleX(plugin, this, x, y + 20);
-	title_x->create_objects();
 	x += 90;
 
 	add_tool(y_title = new BC_Title(x, y, _("Y:")));
 	title_y = new TitleY(plugin, this, x, y + 20);
-	title_y->create_objects();
 	x += 90;
 
 	add_tool(motion_title = new BC_Title(x, y, _("Motion type:")));
@@ -187,7 +185,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 
 	add_tool(dropshadow_title = new BC_Title(x, y, _("Drop shadow:")));
 	dropshadow = new TitleDropShadow(plugin, this, x, y + 20);
-	dropshadow->create_objects();
 	x += 100;
 
 	add_tool(fadein_title = new BC_Title(x, y, _("Fade in (sec):")));
@@ -200,7 +197,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 
 	add_tool(speed_title = new BC_Title(x, y, _("Speed:")));
 	speed = new TitleSpeed(plugin, this, x, y + 20);
-	speed->create_objects();
 	x += 110;
 
 	add_tool(color_button = new TitleColorButton(plugin, this, x, y + 20));

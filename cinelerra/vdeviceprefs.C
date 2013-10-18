@@ -174,11 +174,9 @@ int VDevicePrefs::create_dvb_objs()
 	x1 += device_text->get_w() + 10;
 	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:")));
 	device_port = new VDeviceTumbleBox(this, x1, y + 20,  &in_config->dvb_in_port, 1, 65536);
-	device_port->create_objects();
 	x1 += device_port->get_w() + 10;
 	dialog->add_subwindow(number_title = new BC_Title(x1, y, _("Adaptor:")));
 	device_number = new VDeviceTumbleBox(this, x1, y + 20,  &in_config->dvb_in_number, 0, 16);
-	device_number->create_objects();
 }
 
 int VDevicePrefs::create_v4l_objs()

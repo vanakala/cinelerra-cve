@@ -312,8 +312,6 @@ public:
 		int text_w);
 	virtual ~BC_TumbleTextBox();
 
-	void create_objects();
-	void reset();
 	virtual int handle_event();
 	char* get_text();
 	void update(const char *value);
@@ -335,6 +333,7 @@ public:
 	friend class BC_TumbleTextBoxTumble;
 
 private:
+	void reset();
 	int x, y, text_w;
 	int64_t default_value, min, max;
 	float default_value_f, min_f, max_f;

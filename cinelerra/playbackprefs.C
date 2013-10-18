@@ -99,7 +99,6 @@ int PlaybackPrefs::create_objects()
 		this,
 		x2,
 		y);
-	audio_offset->create_objects();
 	y += audio_offset->get_h() + 5;
 
 	add_subwindow(new PlaybackViewFollows(pwindow, pwindow->thread->edl->session->view_follows_playback, y));

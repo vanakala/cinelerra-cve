@@ -122,7 +122,6 @@ int RecordPrefs::create_objects()
 	add_subwindow(new SampleRatePulldown(mwindow, textbox, x2 + textbox->get_w(), y + 30));
 
 	RecordChannels *channels = new RecordChannels(pwindow, this, x2, y + 60);
-	channels->create_objects();
 
 	y += 100;
 

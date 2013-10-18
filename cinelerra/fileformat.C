@@ -73,7 +73,6 @@ int FileFormat::create_objects_(char *string2)
 	add_subwindow(new BC_Title(x, y, _("Channels:")));
 	sprintf(string, "%d", asset->channels);
 	channels_button = new FileFormatChannels(x2, y, this, string);
-	channels_button->create_objects();
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Sample rate:")));

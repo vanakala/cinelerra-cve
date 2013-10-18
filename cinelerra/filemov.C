@@ -1343,7 +1343,6 @@ MOVConfigAudioNum::~MOVConfigAudioNum()
 void MOVConfigAudioNum::create_objects()
 {
 	popup->add_subwindow(title = new BC_Title(x, y, title_text));
-	BC_TumbleTextBox::create_objects();
 }
 
 int MOVConfigAudioNum::handle_event()
@@ -1768,7 +1767,6 @@ MOVConfigVideoNum::~MOVConfigVideoNum()
 void MOVConfigVideoNum::create_objects()
 {
 	popup->add_subwindow(title = new BC_Title(x, y, title_text));
-	BC_TumbleTextBox::create_objects();
 }
 
 int MOVConfigVideoNum::handle_event()

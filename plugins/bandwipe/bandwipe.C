@@ -75,7 +75,6 @@ BandWipeWindow::BandWipeWindow(BandWipeMain *plugin, int x, int y)
 		this,
 		x,
 		y);
-	count->create_objects();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 

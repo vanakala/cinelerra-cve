@@ -120,7 +120,6 @@ BandSlideWindow::BandSlideWindow(BandSlideMain *plugin, int x, int y)
 		this,
 		x,
 		y);
-	count->create_objects();
 
 	y += 30;
 	x = 10;
