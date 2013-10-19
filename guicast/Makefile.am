@@ -54,7 +54,6 @@ libguicastcve_la_SOURCES = \
 	bcwindowbase.C \
 	bcwindowdraw.C \
 	condition.C \
-	errorbox.C \
 	filesystem.C \
 	mutex.C \
 	rotateframe.C \
@@ -163,8 +162,6 @@ noinst_HEADERS = \
 	colors.h \
 	condition.inc \
 	cursors.h \
-	errorbox.h \
-	errorbox.inc \
 	filesystem.h \
 	filesystem.inc \
 	fonts.h \

@@ -29,7 +29,6 @@
 #include "cache.inc"
 #include "condition.inc"
 #include "edit.inc"
-#include "errorbox.inc"
 #include "file.inc"
 #include "guicast.h"
 #include "mutex.inc"
