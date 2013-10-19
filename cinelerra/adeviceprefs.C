@@ -291,7 +291,6 @@ void ADevicePrefs::create_alsa_objs()
 		y1 + 20, 
 		output_char,
 		alsa_drivers);
-	alsa_device->create_objects();
 	int x2 = x1;
 
 	x1 += alsa_device->get_w() + 5;

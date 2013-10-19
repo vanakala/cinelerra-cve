@@ -204,11 +204,9 @@ int RecordGUI::create_objects()
 	x2 = MAX(x2, batch_duration->get_w());
 	y += pad;
 	batch_source = new RecordSource(mwindow, record, this, x, y);
-	batch_source->create_objects();
 	x2 = MAX(x2, batch_source->get_w());
 	y += pad;
 	batch_mode = new RecordMode(mwindow, record, this, x, y);
-	batch_mode->create_objects();
 	x2 = MAX(x2, batch_mode->get_w());
 	y += pad;
 	record_transport = new RecordTransport(mwindow, 

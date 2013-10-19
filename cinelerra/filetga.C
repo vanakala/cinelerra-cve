@@ -864,7 +864,6 @@ void TGAConfigVideo::create_objects()
 		y, 
 		asset, 
 		&compression_items);
-	textbox->create_objects();
 	add_subwindow(new BC_OKButton(this));
 }
 

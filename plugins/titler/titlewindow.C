@@ -132,7 +132,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 
 	add_tool(font_title = new BC_Title(x, y, _("Font:")));
 	font = new TitleFont(plugin, this, x, y + 20);
-	font->create_objects();
 	x += 230;
 	add_subwindow(font_tumbler = new TitleFontTumble(plugin, this, x, y + 20));
 	x += 30;
@@ -140,7 +139,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	add_tool(size_title = new BC_Title(x, y, _("Size:")));
 	sprintf(string, "%d", plugin->config.size);
 	size = new TitleSize(plugin, this, x, y + 20, string);
-	size->create_objects();
 	x += 140;
 
 	add_tool(style_title = new BC_Title(x, y, _("Style:")));
@@ -174,7 +172,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	add_tool(motion_title = new BC_Title(x, y, _("Motion type:")));
 
 	motion = new TitleMotion(plugin, this, x, y + 20);
-	motion->create_objects();
 	x += 150;
 
 	add_tool(loop = new TitleLoop(plugin, x, y + 20));
@@ -209,7 +206,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	y += 50;
 	add_tool(encoding_title = new BC_Title(x, y + 3, _("Encoding:")));
 	encoding = new TitleEncoding(plugin, this, x, y + 20);
-	encoding->create_objects();
 
 #ifdef USE_OUTLINE
 	x += 160;
@@ -243,7 +239,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	add_tool(thisw = new BC_Title(x, y+4, _("Format:")));
 	x += thisw->get_w() + 5;
 	timecodeformat = new TitleTimecodeFormat(plugin, this, x, y);
-	timecodeformat->create_objects();
 
 	x = 10;
 	y += 30;

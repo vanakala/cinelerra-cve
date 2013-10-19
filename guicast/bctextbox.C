@@ -1701,6 +1701,9 @@ BC_PopupTextBox::BC_PopupTextBox(BC_WindowBase *parent_window,
 	this->text_w = text_w;
 	this->parent_window = parent_window;
 	this->list_items = list_items;
+	parent_window->add_subwindow(textbox = new BC_PopupTextBoxText(this, x, y));
+	x += textbox->get_w();
+	parent_window->add_subwindow(listbox = new BC_PopupTextBoxList(this, x, y));
 }
 
 BC_PopupTextBox::~BC_PopupTextBox()
@@ -1711,14 +1714,6 @@ BC_PopupTextBox::~BC_PopupTextBox()
 		textbox->popup = 0;
 		delete textbox;
 	}
-}
-
-void BC_PopupTextBox::create_objects()
-{
-	int x = this->x, y = this->y;
-	parent_window->add_subwindow(textbox = new BC_PopupTextBoxText(this, x, y));
-	x += textbox->get_w();
-	parent_window->add_subwindow(listbox = new BC_PopupTextBoxList(this, x, y));
 }
 
 void BC_PopupTextBox::update(const char *text)

@@ -1181,7 +1181,6 @@ void MOVConfigAudio::create_objects()
 	add_tool(new BC_Title(x, y, _("Compression:")));
 	y += 25;
 	compression_popup = new MOVConfigAudioPopup(this, x, y);
-	compression_popup->create_objects();
 
 	update_parameters();
 
@@ -1439,7 +1438,6 @@ void MOVConfigVideo::create_objects()
 	if(!locked_compressor)
 	{
 		compression_popup = new MOVConfigVideoPopup(this, x, y);
-		compression_popup->create_objects();
 	}
 	else
 	{

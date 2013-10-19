@@ -238,7 +238,7 @@ public:
 		int text_w,
 		int list_h);
 	virtual ~BC_PopupTextBox();
-	void create_objects();
+
 	virtual int handle_event();
 	char* get_text();
 	int get_number();

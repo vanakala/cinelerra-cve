@@ -455,7 +455,6 @@ int ChannelPicker::create_objects()
 	channel_text = 0;
 	update_channel_list();
 	channel_text = new ChannelText(this, x, y);
-	channel_text->create_objects();
 	x += channel_text->get_w();
 	get_subwindow()->add_subwindow(channel_select = new ChannelTumbler(this, 
 		x, 
