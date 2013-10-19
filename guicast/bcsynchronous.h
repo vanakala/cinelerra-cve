@@ -163,8 +163,7 @@ public:
 // Called by another thread
 // Quits the loop
 	void quit();
-// Must be called after constructor to create inherited objects.
-	void create_objects();
+
 	void start();
 	void run();
 

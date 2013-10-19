@@ -126,10 +126,6 @@ BC_SynchronousCommand* BC_Synchronous::new_command()
 	return new BC_SynchronousCommand;
 }
 
-void BC_Synchronous::create_objects()
-{
-}
-
 void BC_Synchronous::start()
 {
 	run();
