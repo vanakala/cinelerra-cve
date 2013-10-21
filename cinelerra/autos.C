@@ -263,6 +263,8 @@ Auto* Autos::insert_auto(ptstime position, Auto *templ)
 	if(!first)
 	{
 		current = append_auto();
+		if(templ)
+			current->copy_from(templ);
 		current->pos_time = position;
 		return current;
 	}
