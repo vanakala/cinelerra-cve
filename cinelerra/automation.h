@@ -108,8 +108,6 @@ public:
 		ptstime end,
 		int autogrouptype);
 
-	ptstime pos2pts(posnum position);
-	posnum pts2pos(ptstime position);
 	void dump(int indent);
 
 	Autos *autos[AUTOMATION_TOTAL];

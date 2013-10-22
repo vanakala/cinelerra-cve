@@ -287,20 +287,4 @@ void Automation::dump(int indent)
 			autos[i]->dump(indent + 2);
 		}
 	}
-
-}
-
-// Coversions between position and ptstime
-ptstime Automation::pos2pts(posnum position)
-{
-	if(track)
-		return track->from_units(position);
-	return 0;
-}
-
-posnum Automation::pts2pos(ptstime position)
-{
-	if(track)
-		return track->to_units(position, 0);
-	return 0;
 }
