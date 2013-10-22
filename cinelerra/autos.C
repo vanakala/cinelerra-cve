@@ -348,8 +348,13 @@ void Autos::paste(ptstime start,
 			if(!strcmp(file->tag.get_title(), "AUTO"))
 			{
 				Auto *current = 0;
-				posnum curpos = file->tag.get_property("POSITON", 0);
-				ptstime pospts = pos2pts(curpos);
+				ptstime pospts = 0;
+
+				if(track)
+				{
+					posnum curpos = file->tag.get_property("POSITON", 0);
+					pospts = track->from_units(curpos);
+				}
 				pospts = file->tag.get_property("POSTIME", pospts) *
 						scale + start;
 // Paste active auto into track
@@ -377,7 +382,7 @@ void Autos::remove_after(ptstime pts)
 	if(!first)
 		return;
 
-	for(Auto* current = first->next; current;)
+		for(Auto* current = first->next; current;)
 	{
 		if(current->pos_time >= pts)
 		{
@@ -459,9 +464,12 @@ void Autos::load(FileXML *file)
 			if(!strcmp(file->tag.get_title(), "AUTO"))
 			{
 				current = append(new_auto());
+				if(track)
+				{
 // Convert from old position
-				posnum position = file->tag.get_property("POSITION", (posnum)0);
-				current->pos_time = pos2pts(position);
+					posnum position = file->tag.get_property("POSITION", (posnum)0);
+					current->pos_time = track->from_units(position);
+				}
 				current->pos_time = file->tag.get_property("POSTIME", current->pos_time);
 				current->load(file);
 			}
@@ -525,21 +533,6 @@ void Autos::shift_all(ptstime difference)
 
 	for(current = first; current; current = current->next)
 		current->pos_time += difference;
-}
-
-// Conversions between position and ptstime
-ptstime Autos::pos2pts(posnum position)
-{
-	if(track)
-		return track->from_units(position);
-	return 0;
-}
-
-posnum Autos::pts2pos(ptstime position)
-{
-	if(track)
-		return track->to_units(position, 0);
-	return 0;
 }
 
 ptstime Autos::unit_round(ptstime pts, int delta)

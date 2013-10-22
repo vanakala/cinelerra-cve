@@ -473,11 +473,14 @@ void Plugin::load(FileXML *file)
 					postime = keyframes->base_pts;
 				else
 				{
-// Convert from old position
-					posnum position = file->tag.get_property("POSITION", (posnum)0);
 					postime = 0;
-					if(position)
-						postime = keyframes->pos2pts(position);
+					if(track)
+					{
+// Convert from old position
+						posnum position = file->tag.get_property("POSITION", (posnum)0);
+						if(position)
+							postime = track->from_units(position);
+					}
 					postime = file->tag.get_property("POSTIME", postime);
 				}
 				KeyFrame *keyframe;
