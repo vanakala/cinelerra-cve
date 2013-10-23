@@ -49,6 +49,11 @@ public:
 	int total_submasks(ptstime position);
 // Translates all mask points
 	void translate_masks(float translate_x, float translate_y);
+
+	int get_mode();
+	void set_mode(int new_mode);
+
+	int default_mode;
 };
 
 #endif

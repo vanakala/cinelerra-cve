@@ -30,6 +30,7 @@ MaskAutos::MaskAutos(EDL *edl,
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_MASK;
+	default_mode = MASK_SUBTRACT_ALPHA;
 }
 
 void MaskAutos::get_points(ArrayList<MaskPoint*> *points, 
@@ -156,4 +157,18 @@ void MaskAutos::translate_masks(float translate_x, float translate_y)
 			}
 		}
 	}
+}
+
+int MaskAutos::get_mode()
+{
+	if(first)
+		return ((MaskAuto*)first)->mode;
+	else
+		default_mode;
+}
+
+void MaskAutos::set_mode(int new_mode)
+{
+	if(first)
+		((MaskAuto*)first)->mode = new_mode;
 }

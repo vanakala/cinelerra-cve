@@ -200,7 +200,7 @@ void SubMask::dump(int indent)
 MaskAuto::MaskAuto(EDL *edl, MaskAutos *autos)
  : Auto(edl, autos)
 {
-	mode = MASK_SUBTRACT_ALPHA;
+	mode = autos->default_mode;
 	feather = 0;
 	value = 100;
 	apply_before_plugins = 0;

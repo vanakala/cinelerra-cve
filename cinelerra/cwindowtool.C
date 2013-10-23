@@ -1350,12 +1350,7 @@ int CWindowMaskMode::handle_event()
 		0);
 
 	if(track)
-	{
-		MaskAuto *mauto = (MaskAuto*)track->automation->autos[AUTOMATION_MASK]->first;
-
-		if(mauto)
-			mauto->mode = text_to_mode(get_text());
-	}
+		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->set_mode(text_to_mode(get_text()));
 
 	gui->update_preview();
 	return 1;
@@ -1541,15 +1536,11 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 	280)
 {
 	int x = 10, y = 10;
-	MaskAuto *keyframe = 0;
 	BC_Title *title;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 
 	this->mwindow = mwindow;
 	this->thread = thread;
-
-	if(track)
-		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->autos[AUTOMATION_MASK], 0);
 
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new CWindowMaskMode(mwindow, 
@@ -1645,6 +1636,10 @@ void CWindowMaskGUI::update()
 		point,
 		0);
 
+	if(track)
+		mode->set_text(
+			CWindowMaskMode::mode_to_text(((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->get_mode()));
+
 	if(!keyframe)
 		return;
 
@@ -1663,11 +1658,6 @@ void CWindowMaskGUI::update()
 
 	number->update((int64_t)mwindow->edl->session->cwindow_mask);
 
-	if(track)
-	{
-		mode->set_text(
-			CWindowMaskMode::mode_to_text(((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->first)->mode));
-	}
 }
 
 int CWindowMaskGUI::handle_event()
