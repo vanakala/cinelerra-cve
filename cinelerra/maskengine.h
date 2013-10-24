@@ -49,7 +49,6 @@ class MaskPackage : public LoadPackage
 {
 public:
 	MaskPackage();
-	~MaskPackage();
 
 	int row1, row2;
 };
