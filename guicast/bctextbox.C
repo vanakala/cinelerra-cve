@@ -2007,6 +2007,11 @@ void BC_TumbleTextBox::update(int64_t value)
 	textbox->update(value);
 }
 
+void BC_TumbleTextBox::update(int value)
+{
+	textbox->update(value);
+}
+
 void BC_TumbleTextBox::update(float value)
 {
 	textbox->update(value);

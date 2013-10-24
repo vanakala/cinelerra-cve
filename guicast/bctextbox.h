@@ -315,6 +315,7 @@ public:
 	char* get_text();
 	void update(const char *value);
 	void update(int64_t value);
+	void update(int value);
 	void update(float value);
 	int get_x();
 	int get_y();
