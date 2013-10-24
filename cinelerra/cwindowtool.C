@@ -366,11 +366,11 @@ int CWindowCropGUI::handle_event()
 
 void CWindowCropGUI::update()
 {
-	x1->update((int64_t)mwindow->edl->session->crop_x1);
-	y1->update((int64_t)mwindow->edl->session->crop_y1);
-	width->update((int64_t)mwindow->edl->session->crop_x2 - 
+	x1->update(mwindow->edl->session->crop_x1);
+	y1->update(mwindow->edl->session->crop_y1);
+	width->update(mwindow->edl->session->crop_x2 - 
 		mwindow->edl->session->crop_x1);
-	height->update((int64_t)mwindow->edl->session->crop_y2 - 
+	height->update(mwindow->edl->session->crop_y2 - 
 		mwindow->edl->session->crop_y1);
 }
 
@@ -1652,11 +1652,11 @@ void CWindowMaskGUI::update()
 	if(mask)
 	{
 		feather->update((int64_t)keyframe->feather);
-		value->update((int64_t)keyframe->value);
-		apply_before_plugins->update((int64_t)keyframe->apply_before_plugins);
+		value->update(keyframe->value);
+		apply_before_plugins->update(keyframe->apply_before_plugins);
 	}
 
-	number->update((int64_t)mwindow->edl->session->cwindow_mask);
+	number->update(mwindow->edl->session->cwindow_mask);
 
 }
 
