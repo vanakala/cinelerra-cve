@@ -82,7 +82,7 @@ public:
 	ArrayList<SubMask*> masks;
 // These are constant for the entire track
 	int mode;
-	float feather;
+	int feather;
 // 0 - 100
 	int value;
 	int apply_before_plugins;

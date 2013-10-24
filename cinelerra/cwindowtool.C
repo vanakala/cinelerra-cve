@@ -1460,7 +1460,7 @@ int CWindowMaskFeather::handle_event()
 		point,
 		1);
 
-	keyframe->feather = atof(get_text());
+	keyframe->feather = atoi(get_text());
 	gui->update_preview();
 	return 1;
 }
@@ -1651,7 +1651,7 @@ void CWindowMaskGUI::update()
 
 	if(mask)
 	{
-		feather->update((int64_t)keyframe->feather);
+		feather->update(keyframe->feather);
 		value->update(keyframe->value);
 		apply_before_plugins->update(keyframe->apply_before_plugins);
 	}

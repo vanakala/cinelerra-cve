@@ -65,12 +65,12 @@ private:
 	void draw_line_clamped(int x1, int y1, int x2, int y2, int w, int h, int hoffset);
 	void do_feather(VFrame *output,
 		VFrame *input, 
-		float feather, 
+		int feather,
 		int start_out, 
 		int end_out);
 	int do_feather_2(VFrame *output,
 		VFrame *input, 
-		float feather, 
+		int feather,
 		int start_out, 
 		int end_out);
 	template<class T>
@@ -115,8 +115,8 @@ public:
 	VFrame *temp_mask;
 	ArrayList<ArrayList<MaskPoint*>*> point_sets;
 	int mode;
-	float feather;              // gui feather
-	float realfeather;          // real feather
+	int feather;              // gui feather
+	int realfeather;          // real feather
 	int recalculate;
 	int value;
 	pthread_mutex_t stage1_finished_mutex;

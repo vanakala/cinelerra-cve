@@ -169,18 +169,17 @@ void MaskUnit::blur_strip(float *val_p,
 
 int MaskUnit::do_feather_2(VFrame *output,
 	VFrame *input, 
-	float feather, 
+	int feather,
 	int start_out, 
 	int end_out)
 {
-	int fint = (int)feather;
-	DO_FEATHER_N(unsigned char, uint32_t, 0xffff, fint);
+	DO_FEATHER_N(unsigned char, uint32_t, 0xffff, feather);
 }
 
 
 void MaskUnit::do_feather(VFrame *output,
 	VFrame *input, 
-	float feather, 
+	int feather,
 	int start_out, 
 	int end_out)
 {
@@ -273,8 +272,8 @@ void MaskUnit::do_feather(VFrame *output,
 	float *dst = new float[size]; \
 	float *val_p = new float[size]; \
 	float *val_m = new float[size]; \
-	int start_in = start_out - (int)feather; \
-	int end_in = end_out + (int)feather; \
+	int start_in = start_out - feather; \
+	int end_in = end_out + feather; \
 	if(start_in < 0) start_in = 0; \
 	if(end_in > frame_h) end_in = frame_h; \
 	int strip_size = end_in - start_in; \
@@ -687,7 +686,9 @@ void MaskUnit::process_package(LoadPackage *package)
 		if (!done)
 		{
 			float feather = engine->feather;
-			engine->realfeather = 0.878441 + 0.988534*feather - 0.0490204 *feather*feather  + 0.0012359 *feather*feather*feather;
+			engine->realfeather = round(0.878441 + 0.988534 * feather -
+				0.0490204 * feather * feather +
+				0.0012359 * feather * feather * feather);
 			do_feather(engine->mask, 
 				engine->temp_mask, 
 				engine->realfeather, 
@@ -698,8 +699,8 @@ void MaskUnit::process_package(LoadPackage *package)
 	if (engine->feather <= 0) {
 		engine->realfeather = 0;
 	}
-	start_row = MAX (ptr->row1, engine->first_nonempty_rowspan - (int)ceil(engine->realfeather)); 
-	end_row = MIN (ptr->row2, engine->last_nonempty_rowspan + 1 + (int)ceil(engine->realfeather));
+	start_row = MAX(ptr->row1, engine->first_nonempty_rowspan - engine->realfeather);
+	end_row = MIN(ptr->row2, engine->last_nonempty_rowspan + 1 + engine->realfeather);
 
 // Apply mask
 /* use the info about first and last column that are coloured from rowspan!  */
@@ -984,8 +985,8 @@ void MaskEngine::do_mask(VFrame *output,
 	}
 
 	if(recalculate ||
-		!EQUIV(keyframe->feather, feather) ||
-		!EQUIV(keyframe->value, value))
+		keyframe->feather != feather ||
+		keyframe->value != value)
 	{
 		recalculate = 1;
 		if(!mask) 

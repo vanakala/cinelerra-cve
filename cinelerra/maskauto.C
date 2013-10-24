@@ -372,7 +372,7 @@ void MaskAuto::copy(ptstime start, ptstime end, FileXML *file)
 
 void MaskAuto::dump(int indent)
 {
-	printf("%*sMaskauto %p: mode: %d value: %d feather %.3f before %d\n", indent, " ", 
+	printf("%*sMaskauto %p: mode: %d value: %d feather %d before %d\n", indent, " ", 
 		this, mode, value, feather, apply_before_plugins);
 	printf("%*spos_time %.3f masks %d\n", indent + 2, " ", pos_time, masks.total);
 	indent += 4;
