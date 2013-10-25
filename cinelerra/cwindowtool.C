@@ -524,7 +524,7 @@ CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
 	this->x = new CWindowCoord(this, 
 		x, 
 		y, 
-		(float)0);
+		0);
 	y += 30;
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
@@ -532,7 +532,7 @@ CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
 	this->y = new CWindowCoord(this, 
 		x, 
 		y, 
-		(float)0);
+		0);
 	y += 30;
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Z:")));
@@ -659,9 +659,9 @@ void CWindowCameraGUI::update()
 	}
 
 	if(x_auto)
-		x->update(x_auto->get_value());
+		x->update((int)round(x_auto->get_value()));
 	if(y_auto)
-		y->update(y_auto->get_value());
+		y->update((int)round(y_auto->get_value()));
 	if(z_auto)
 		z->update(z_auto->get_value());
 
@@ -942,7 +942,7 @@ CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
 	this->x = new CWindowCoord(this, 
 		x, 
 		y, 
-		(float)0);
+		0);
 	y += 30;
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
@@ -950,7 +950,7 @@ CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
 	this->y = new CWindowCoord(this, 
 		x, 
 		y, 
-		(float)0);
+		0);
 	y += 30;
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Z:")));
@@ -1015,7 +1015,7 @@ int CWindowProjectorGUI::handle_event()
 				1);
 			if(x_auto)
 			{
-				x_auto->set_value(atof(x->get_text()));
+				x_auto->set_value(atoi(x->get_text()));
 				update();
 				update_preview();
 			}
@@ -1028,7 +1028,7 @@ int CWindowProjectorGUI::handle_event()
 				1);
 			if(y_auto)
 			{
-				y_auto->set_value(atof(y->get_text()));
+				y_auto->set_value(atoi(y->get_text()));
 				update();
 				update_preview();
 			}
@@ -1077,9 +1077,9 @@ void CWindowProjectorGUI::update()
 	}
 
 	if(x_auto)
-		x->update(x_auto->get_value());
+		x->update((int)round(x_auto->get_value()));
 	if(y_auto)
-		y->update(y_auto->get_value());
+		y->update((int)round(y_auto->get_value()));
 	if(z_auto)
 		z->update(z_auto->get_value());
 
