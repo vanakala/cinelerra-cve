@@ -59,7 +59,7 @@ public:
 	CWindowGUI(MWindow *mwindow, CWindow *cwindow);
 	~CWindowGUI();
 
-	int create_objects();
+	void create_objects();
 	void resize_event(int w, int h);
 
 // Events for the fullscreen canvas fall through to here.
@@ -68,7 +68,6 @@ public:
 	int cursor_enter_event();
 	int button_release_event();
 	int cursor_motion_event();
-
 
 	void zoom_canvas(int do_auto, double value, int update_menu);
 
@@ -158,7 +157,6 @@ class CWindowMeters : public MeterPanel
 {
 public:
 	CWindowMeters(MWindow *mwindow, CWindowGUI *gui, int x, int y, int h);
-	~CWindowMeters();
 
 	int change_status_event();
 
@@ -166,11 +164,12 @@ public:
 	CWindowGUI *gui;
 };
 
+
 class CWindowZoom : public ZoomPanel
 {
 public:
 	CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y);
-	~CWindowZoom();
+
 	int handle_event();
 	MWindow *mwindow;
 	CWindowGUI *gui;
@@ -181,7 +180,6 @@ class CWindowSlider : public BC_PercentageSlider
 {
 public:
 	CWindowSlider(MWindow *mwindow, CWindow *cwindow, int x, int y, int pixels);
-	~CWindowSlider();
 
 	int handle_event();
 	void set_position();
@@ -191,6 +189,7 @@ public:
 	MWindow *mwindow;
 	CWindow *cwindow;
 };
+
 
 class CWindowReset : public BC_Button
 {
@@ -252,7 +251,7 @@ public:
 		int &redraw_canvas, 
 		int &rerender,
 		int do_camera);
-	int test_zoom(int &redraw);
+	void test_zoom(int &redraw);
 	void reset_camera();
 	void reset_projector();
 	void reset_keyframe(int do_camera);

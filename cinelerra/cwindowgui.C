@@ -122,7 +122,7 @@ CWindowGUI::~CWindowGUI()
 	delete inactive;
 }
 
-int CWindowGUI::create_objects()
+void CWindowGUI::create_objects()
 {
 	set_icon(mwindow->theme->get_image("cwindow_icon"));
 
@@ -141,7 +141,6 @@ int CWindowGUI::create_objects()
 		mwindow->theme->cmeter_h);
 	meters->create_objects();
 
-
 	composite_panel = new CPanel(mwindow, 
 		this, 
 		mwindow->theme->ccomposite_x,
@@ -151,7 +150,6 @@ int CWindowGUI::create_objects()
 
 	canvas = new CWindowCanvas(mwindow, this);
 	canvas->create_objects(mwindow->edl);
-
 
 	add_subwindow(timebar = new CTimeBar(mwindow,
 		this,
@@ -190,8 +188,6 @@ int CWindowGUI::create_objects()
 
 	canvas->draw_refresh();
 	draw_status();
-
-	return 0;
 }
 
 void CWindowGUI::translation_event()
@@ -283,12 +279,6 @@ int CWindowGUI::cursor_motion_event()
 	return 0;
 }
 
-
-
-
-
-
-
 void CWindowGUI::draw_status()
 {
 	if(canvas->get_canvas() && 
@@ -311,7 +301,6 @@ void CWindowGUI::draw_status()
 		active->get_w(),
 		active->get_h());
 }
-
 
 void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 {
@@ -353,7 +342,6 @@ void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 	canvas->draw_refresh();
 }
 
-
 // TODO
 // Don't refresh the canvas in a load file operation which is going to
 // refresh it anyway.
@@ -378,82 +366,77 @@ void CWindowGUI::close_event()
 	cwindow->hide_window();
 }
 
-
 int CWindowGUI::keypress_event()
 {
 	int result = 0;
 
 	switch(get_keypress())
 	{
-		case 'w':
-		case 'W':
-			close_event();
-			result = 1;
-			break;
-		case '+':
-		case '=':
-			keyboard_zoomin();
-			result = 1;
-			break;
-		case '-':
-			keyboard_zoomout();
-			result = 1;
-			break;
-		case 'f':
-			if(mwindow->session->cwindow_fullscreen)
-				canvas->stop_fullscreen();
+	case 'w':
+	case 'W':
+		close_event();
+		result = 1;
+		break;
+	case '+':
+	case '=':
+		keyboard_zoomin();
+		result = 1;
+		break;
+	case '-':
+		keyboard_zoomout();
+		result = 1;
+		break;
+	case 'f':
+		if(mwindow->session->cwindow_fullscreen)
+			canvas->stop_fullscreen();
+		else
+			canvas->start_fullscreen();
+		break;
+	case ESC:
+		if(mwindow->session->cwindow_fullscreen)
+			canvas->stop_fullscreen();
+		break;
+	case LEFT:
+		if(!ctrl_down())
+		{
+			if (alt_down())
+			{
+				int shift_down = this->shift_down();
+				mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
+
+				mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+				mwindow->prev_edit_handle(shift_down);
+				mwindow->gui->unlock_window();
+			}
 			else
-				canvas->start_fullscreen();
-			break;
-		case ESC:
-			if(mwindow->session->cwindow_fullscreen)
-				canvas->stop_fullscreen();
-			break;
-		case LEFT:
-			if(!ctrl_down()) 
-			{ 
-				if (alt_down())
-				{
-					int shift_down = this->shift_down();
-					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
+				mwindow->move_left(); 
 
-					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
-					mwindow->prev_edit_handle(shift_down);
-					mwindow->gui->unlock_window();
+			result = 1;
+		}
+		break;
+	case RIGHT:
+		if(!ctrl_down())
+		{
+			if(alt_down())
+			{
+				int shift_down = this->shift_down();
+				mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
 
-				}
-				else
-				{
-					mwindow->move_left(); 
-				}
- 				result = 1; 
+				mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+				mwindow->next_edit_handle(shift_down);
+				mwindow->gui->unlock_window();
 			}
-			break;
-		case RIGHT:
-			if(!ctrl_down()) 
-			{ 
-				if (alt_down())
-				{
-					int shift_down = this->shift_down();
-					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
-
-					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
-					mwindow->next_edit_handle(shift_down);
-					mwindow->gui->unlock_window();
-
-				}
-				else
-					mwindow->move_right(); 
-				result = 1; 
-			}
-			break;
+			else
+				mwindow->move_right(); 
+			result = 1; 
+		}
+		break;
 	}
 
 	if(!result) result = transport->keypress_event();
 
 	return result;
 }
-
 
 void CWindowGUI::reset_affected()
 {
@@ -472,7 +455,6 @@ void CWindowGUI::keyboard_zoomout()
 	zoom_panel->zoom_tumbler->handle_down_event();
 }
 
-
 void CWindowGUI::drag_motion()
 {
 	if(get_hidden()) return;
@@ -490,7 +472,6 @@ void CWindowGUI::drag_motion()
 			cursor_x < canvas->x + canvas->w &&
 			cursor_y >= canvas->y &&
 			cursor_y < canvas->y + canvas->h;
-
 
 		if(old_status != mwindow->session->ccanvas_highlighted)
 			canvas->draw_refresh();
@@ -598,9 +579,6 @@ void CWindowEditing::set_outpoint()
 }
 
 
-
-
-
 CWindowMeters::CWindowMeters(MWindow *mwindow, CWindowGUI *gui, int x, int y, int h)
  : MeterPanel(mwindow, 
 		gui,
@@ -614,10 +592,6 @@ CWindowMeters::CWindowMeters(MWindow *mwindow, CWindowGUI *gui, int x, int y, in
 	this->gui = gui;
 }
 
-CWindowMeters::~CWindowMeters()
-{
-}
-
 int CWindowMeters::change_status_event()
 {
 	mwindow->edl->session->cwindow_meter = use_meters;
@@ -625,8 +599,6 @@ int CWindowMeters::change_status_event()
 	gui->resize_event(gui->get_w(), gui->get_h());
 	return 1;
 }
-
-
 
 
 CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y)
@@ -644,10 +616,6 @@ CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y)
 	this->gui = gui;
 }
 
-CWindowZoom::~CWindowZoom()
-{
-}
-
 int CWindowZoom::handle_event()
 {
 	if(!strcasecmp(AUTO_ZOOM, get_text()))
@@ -661,7 +629,6 @@ int CWindowZoom::handle_event()
 
 	return 1;
 }
-
 
 
 CWindowSlider::CWindowSlider(MWindow *mwindow, CWindow *cwindow, int x, int y, int pixels)
@@ -678,10 +645,6 @@ CWindowSlider::CWindowSlider(MWindow *mwindow, CWindow *cwindow, int x, int y, i
 	this->cwindow = cwindow;
 	set_precision(0.00001);
 	set_pagination(1.0, 10.0);
-}
-
-CWindowSlider::~CWindowSlider()
-{
 }
 
 int CWindowSlider::handle_event()
@@ -704,14 +667,11 @@ void CWindowSlider::set_position()
 		mwindow->edl->local_session->preview_end)
 		mwindow->edl->local_session->preview_start = 0;
 
-
-
 	update(mwindow->theme->cslider_w, 
 		mwindow->edl->local_session->get_selectionstart(1), 
 		mwindow->edl->local_session->preview_start, 
 		mwindow->edl->local_session->preview_end);
 }
-
 
 void CWindowSlider::increase_value()
 {
@@ -748,7 +708,6 @@ void CWindowTransport::goto_start()
 	mwindow->gui->lock_window("CWindowTransport::goto_start 1");
 	mwindow->goto_start();
 	mwindow->gui->unlock_window();
-
 }
 
 void CWindowTransport::goto_end()
@@ -759,7 +718,6 @@ void CWindowTransport::goto_end()
 	mwindow->goto_end();
 	mwindow->gui->unlock_window();
 }
-
 
 
 CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
@@ -793,7 +751,6 @@ void CWindowCanvas::set_fullscreen(int value)
 	mwindow->session->cwindow_fullscreen = value;
 }
 
-
 void CWindowCanvas::update_zoom(int x, int y, float zoom)
 {
 	use_scrollbars = mwindow->edl->session->cwindow_scrollbars;
@@ -817,7 +774,6 @@ int CWindowCanvas::get_yscroll()
 {
 	return mwindow->edl->session->cwindow_yscroll;
 }
-
 
 float CWindowCanvas::get_zoom()
 {
@@ -919,7 +875,6 @@ int CWindowCanvas::do_mask(int &redraw,
 		&projector_z,
 		position);
 
-
 // Get position of cursor relative to mask
 	float mask_cursor_x = get_cursor_x();
 	float mask_cursor_y = get_cursor_y();
@@ -1007,7 +962,6 @@ int CWindowCanvas::do_mask(int &redraw,
 				x = (x - half_track_w) * projector_z + projector_x;
 				y = (y - half_track_h) * projector_z + projector_y;
 
-
 // Test new point addition
 				if(button_press)
 				{
@@ -1021,7 +975,6 @@ int CWindowCanvas::do_mask(int &redraw,
 						shortest_point1 = i;
 						shortest_point2 = (i >= points.total - 1) ? 0 : (i + 1);
 					}
-
 
 					float point_distance1 = 
 						sqrt(SQR(point1->x - mask_cursor_x) + SQR(point1->y - mask_cursor_y));
@@ -1045,7 +998,6 @@ int CWindowCanvas::do_mask(int &redraw,
 
 				output_to_canvas(mwindow->edl, 0, x, y);
 
-
 #define TEST_BOX(cursor_x, cursor_y, target_x, target_y) \
 	(cursor_x >= target_x - CONTROL_W / 2 && \
 	cursor_x < target_x + CONTROL_W / 2 && \
@@ -1059,7 +1011,6 @@ int CWindowCanvas::do_mask(int &redraw,
 					float canvas_y = (y0 - half_track_h) * projector_z + projector_y;
 					int cursor_x = get_cursor_x();
 					int cursor_y = get_cursor_y();
-
 // Test first point
 					if(gui->shift_down())
 					{
@@ -1130,8 +1081,6 @@ int CWindowCanvas::do_mask(int &redraw,
 					}
 				}
 
-
-
 				if(j > 0)
 				{
 // Draw joining line
@@ -1174,8 +1123,6 @@ int CWindowCanvas::do_mask(int &redraw,
 				}
 				else
 				{
-
-
 // Draw first anchor
 					if(i == 0 && draw)
 					{
@@ -1213,7 +1160,6 @@ int CWindowCanvas::do_mask(int &redraw,
 		}
 	}
 
-
 	if(button_press && !result)
 	{
 		gui->affected_track = gui->cwindow->calculate_affected_track();
@@ -1226,7 +1172,6 @@ int CWindowCanvas::do_mask(int &redraw,
 
 		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
 		SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
-
 
 // Translate entire keyframe
 		if(gui->alt_down() && mask->points.total)
@@ -1260,7 +1205,6 @@ int CWindowCanvas::do_mask(int &redraw,
 			point->control_y1 = 0;
 			point->control_x2 = 0;
 			point->control_y2 = 0;
-
 
 			if(shortest_point2 < shortest_point1)
 			{
@@ -1308,7 +1252,6 @@ int CWindowCanvas::do_mask(int &redraw,
 						*new_point = *point;
 					}
 				}
-
 
 				gui->affected_point = shortest_point2;
 				result = 1;
@@ -1381,35 +1324,33 @@ int CWindowCanvas::do_mask(int &redraw,
 			float last_control_x2 = point->control_x2;
 			float last_control_y2 = point->control_y2;
 
-
 			switch(gui->current_operation)
 			{
-				case CWINDOW_MASK:
-					point->x = cursor_x - gui->x_origin + gui->center_x;
-					point->y = cursor_y - gui->y_origin + gui->center_y;
-					break;
+			case CWINDOW_MASK:
+				point->x = cursor_x - gui->x_origin + gui->center_x;
+				point->y = cursor_y - gui->y_origin + gui->center_y;
+				break;
 
-				case CWINDOW_MASK_CONTROL_IN:
-					point->control_x1 = cursor_x - gui->x_origin + gui->control_in_x;
-					point->control_y1 = cursor_y - gui->y_origin + gui->control_in_y;
-					break;
+			case CWINDOW_MASK_CONTROL_IN:
+				point->control_x1 = cursor_x - gui->x_origin + gui->control_in_x;
+				point->control_y1 = cursor_y - gui->y_origin + gui->control_in_y;
+				break;
 
-				case CWINDOW_MASK_CONTROL_OUT:
-					point->control_x2 = cursor_x - gui->x_origin + gui->control_out_x;
-					point->control_y2 = cursor_y - gui->y_origin + gui->control_out_y;
-					break;
+			case CWINDOW_MASK_CONTROL_OUT:
+				point->control_x2 = cursor_x - gui->x_origin + gui->control_out_x;
+				point->control_y2 = cursor_y - gui->y_origin + gui->control_out_y;
+				break;
 
-				case CWINDOW_MASK_TRANSLATE:
-					for(int i = 0; i < mask->points.total; i++)
-					{
-						mask->points.values[i]->x += cursor_x - gui->x_origin;
-						mask->points.values[i]->y += cursor_y - gui->y_origin;
-					}
-					gui->x_origin = cursor_x;
-					gui->y_origin = cursor_y;
-					break;
+			case CWINDOW_MASK_TRANSLATE:
+				for(int i = 0; i < mask->points.total; i++)
+				{
+					mask->points.values[i]->x += cursor_x - gui->x_origin;
+					mask->points.values[i]->y += cursor_y - gui->y_origin;
+				}
+				gui->x_origin = cursor_x;
+				gui->y_origin = cursor_y;
+				break;
 			}
-
 
 			if( !EQUIV(last_x, point->x) ||
 				!EQUIV(last_y, point->y) ||
@@ -1429,13 +1370,11 @@ int CWindowCanvas::do_mask(int &redraw,
 	return result;
 }
 
-
 int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 {
 	int result = 0;
 	float cursor_x = get_cursor_x();
 	float cursor_y = get_cursor_y();
-
 
 	if(button_press)
 	{
@@ -1483,30 +1422,30 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 
 			switch(refresh_frame->get_color_model())
 			{
-				case BC_YUV888:
-					GET_COLOR(unsigned char, 3, 0xff, 1);
-					break;
-				case BC_YUVA8888:
-					GET_COLOR(unsigned char, 4, 0xff, 1);
-					break;
-				case BC_YUV161616:
-					GET_COLOR(uint16_t, 3, 0xffff, 1);
-					break;
-				case BC_YUVA16161616:
-					GET_COLOR(uint16_t, 4, 0xffff, 1);
-					break;
-				case BC_RGB888:
-					GET_COLOR(unsigned char, 3, 0xff, 0);
-					break;
-				case BC_RGBA8888:
-					GET_COLOR(unsigned char, 4, 0xff, 0);
-					break;
-				case BC_RGB_FLOAT:
-					GET_COLOR(float, 3, 1.0, 0);
-					break;
-				case BC_RGBA_FLOAT:
-					GET_COLOR(float, 4, 1.0, 0);
-					break;
+			case BC_YUV888:
+				GET_COLOR(unsigned char, 3, 0xff, 1);
+				break;
+			case BC_YUVA8888:
+				GET_COLOR(unsigned char, 4, 0xff, 1);
+				break;
+			case BC_YUV161616:
+				GET_COLOR(uint16_t, 3, 0xffff, 1);
+				break;
+			case BC_YUVA16161616:
+				GET_COLOR(uint16_t, 4, 0xffff, 1);
+				break;
+			case BC_RGB888:
+				GET_COLOR(unsigned char, 3, 0xff, 0);
+				break;
+			case BC_RGBA8888:
+				GET_COLOR(unsigned char, 4, 0xff, 0);
+				break;
+			case BC_RGB_FLOAT:
+				GET_COLOR(float, 3, 1.0, 0);
+				break;
+			case BC_RGBA_FLOAT:
+				GET_COLOR(float, 4, 1.0, 0);
+				break;
 			}
 		}
 		else
@@ -1567,21 +1506,21 @@ void CWindowCanvas::draw_overlays()
 	int temp1 = 0, temp2 = 0;
 	switch(mwindow->edl->session->cwindow_operation)
 	{
-		case CWINDOW_CAMERA:
-			draw_bezier(1);
-			break;
+	case CWINDOW_CAMERA:
+		draw_bezier(1);
+		break;
 
-		case CWINDOW_PROJECTOR:
-			draw_bezier(0);
-			break;
+	case CWINDOW_PROJECTOR:
+		draw_bezier(0);
+		break;
 
-		case CWINDOW_CROP:
-			draw_crop();
-			break;
+	case CWINDOW_CROP:
+		draw_crop();
+		break;
 
-		case CWINDOW_MASK:
-			do_mask(temp1, temp2, 0, 0, 1);
-			break;
+	case CWINDOW_MASK:
+		do_mask(temp1, temp2, 0, 0, 1);
+		break;
 	}
 }
 
@@ -1679,7 +1618,6 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 // Use screen normalized coordinates for hot spot tests.
 	output_to_canvas(mwindow->edl, 0, canvas_x1, canvas_y1);
 	output_to_canvas(mwindow->edl, 0, canvas_x2, canvas_y2);
-
 
 	if(gui->current_operation == CWINDOW_CROP)
 	{
@@ -1843,17 +1781,20 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 				switch (gui->crop_handle) 
 				{
 				case 0:
-					gui->crop_handle = 1; break;
+					gui->crop_handle = 1;
+					break;
 				case 1:
-					gui->crop_handle = 0; break;
+					gui->crop_handle = 0;
+					break;
 				case 2:
-					gui->crop_handle = 3; break;
+					gui->crop_handle = 3;
+					break;
 				case 3:
-					gui->crop_handle = 2; break;
+					gui->crop_handle = 2;
+					break;
 				default:
 					break;
 				}
-
 			}
 			if (y1 > y2) 
 			{
@@ -1863,13 +1804,17 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 				switch (gui->crop_handle) 
 				{
 				case 0:
-					gui->crop_handle = 2; break;
+					gui->crop_handle = 2;
+					break;
 				case 1:
-					gui->crop_handle = 3; break;
+					gui->crop_handle = 3;
+					break;
 				case 2:
-					gui->crop_handle = 0; break;
+					gui->crop_handle = 0;
+					break;
 				case 3:
-					gui->crop_handle = 1; break;
+					gui->crop_handle = 1;
+					break;
 				default:
 					break;
 				}
@@ -1889,18 +1834,18 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 	{
 		switch(handle_selected)
 		{
-			case 0:
-				set_cursor(UPLEFT_RESIZE);
-				break;
-			case 1:
-				set_cursor(UPRIGHT_RESIZE);
-				break;
-			case 2:
-				set_cursor(DOWNLEFT_RESIZE);
-				break;
-			case 3:
-				set_cursor(DOWNRIGHT_RESIZE);
-				break;
+		case 0:
+			set_cursor(UPLEFT_RESIZE);
+			break;
+		case 1:
+			set_cursor(UPRIGHT_RESIZE);
+			break;
+		case 2:
+			set_cursor(DOWNLEFT_RESIZE);
+			break;
+		case 3:
+			set_cursor(DOWNRIGHT_RESIZE);
+			break;
 		}
 		result = 1;
 	}
@@ -1919,7 +1864,6 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 	}
 	return result;
 }
-
 
 void CWindowCanvas::draw_crop()
 {
@@ -1946,8 +1890,6 @@ void CWindowCanvas::draw_crop()
 	draw_crophandle((int)x2 - CROPHANDLE_W, (int)y2 - CROPHANDLE_H);
 	get_canvas()->set_opaque();
 }
-
-
 
 void CWindowCanvas::draw_bezier(int do_camera)
 {
@@ -1993,7 +1935,6 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	get_canvas()->set_color(BLACK);
 	DRAW_PROJECTION(1);
 
-//	canvas->set_inverse();
 	if(do_camera)
 		get_canvas()->set_color(GREEN);
 	else
@@ -2001,8 +1942,6 @@ void CWindowCanvas::draw_bezier(int do_camera)
 
 	DRAW_PROJECTION(0);
 }
-
-
 
 int CWindowCanvas::test_bezier(int button_press, 
 	int &redraw, 
@@ -2016,7 +1955,6 @@ int CWindowCanvas::test_bezier(int button_press,
 // Create keyframe during first cursor motion.
 	if(!button_press)
 	{
-
 		float cursor_x = get_cursor_x();
 		float cursor_y = get_cursor_y();
 		canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
@@ -2061,7 +1999,6 @@ int CWindowCanvas::test_bezier(int button_press,
 					affected_y_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Y];
 					affected_z_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Z];
 				}
-
 
 				if(gui->translating_zoom)
 				{
@@ -2164,9 +2101,8 @@ int CWindowCanvas::test_bezier(int button_press,
 	return result;
 }
 
-int CWindowCanvas::test_zoom(int &redraw)
+void CWindowCanvas::test_zoom(int &redraw)
 {
-	int result = 0;
 	float zoom = get_zoom();
 	float x;
 	float y;
@@ -2211,7 +2147,6 @@ int CWindowCanvas::test_zoom(int &redraw)
 	x = x - w / zoom / 2;
 	y = y - h / zoom / 2;
 
-
 	int x_i = (int)x;
 	int y_i = (int)y;
 
@@ -2224,13 +2159,9 @@ int CWindowCanvas::test_zoom(int &redraw)
 			mwindow->theme->ccanvas_w,
 			mwindow->theme->ccanvas_h);
 	redraw = 1;
-	result = 1;
 
 	gui->zoom_panel->update(zoom);
-	
-	return result;
 }
-
 
 void CWindowCanvas::calculate_origin()
 {
@@ -2238,7 +2169,6 @@ void CWindowCanvas::calculate_origin()
 	gui->y_origin = get_cursor_y();
 	canvas_to_output(mwindow->edl, 0, gui->x_origin, gui->y_origin);
 }
-
 
 int CWindowCanvas::cursor_leave_event()
 {
@@ -2251,25 +2181,25 @@ int CWindowCanvas::cursor_enter_event()
 	int redraw = 0;
 	switch(mwindow->edl->session->cwindow_operation)
 	{
-		case CWINDOW_CAMERA:
-		case CWINDOW_PROJECTOR:
-			set_cursor(MOVE_CURSOR);
-			break;
-		case CWINDOW_ZOOM:
-			set_cursor(MOVE_CURSOR);
-			break;
-		case CWINDOW_CROP:
-			test_crop(0, redraw);
-			break;
-		case CWINDOW_PROTECT:
-			set_cursor(ARROW_CURSOR);
-			break;
-		case CWINDOW_MASK:
-			set_cursor(CROSS_CURSOR);
-			break;
-		case CWINDOW_EYEDROP:
-			set_cursor(CROSS_CURSOR);
-			break;
+	case CWINDOW_CAMERA:
+	case CWINDOW_PROJECTOR:
+		set_cursor(MOVE_CURSOR);
+		break;
+	case CWINDOW_ZOOM:
+		set_cursor(MOVE_CURSOR);
+		break;
+	case CWINDOW_CROP:
+		test_crop(0, redraw);
+		break;
+	case CWINDOW_PROTECT:
+		set_cursor(ARROW_CURSOR);
+		break;
+	case CWINDOW_MASK:
+		set_cursor(CROSS_CURSOR);
+		break;
+	case CWINDOW_EYEDROP:
+		set_cursor(CROSS_CURSOR);
+		break;
 	}
 	return 1;
 }
@@ -2331,8 +2261,6 @@ int CWindowCanvas::cursor_motion_event()
 		break;
 	}
 
-
-
 	if(!result)
 	{
 		switch(mwindow->edl->session->cwindow_operation)
@@ -2347,7 +2275,6 @@ int CWindowCanvas::cursor_motion_event()
 // If the window is never unlocked before calling send_command the
 // display shouldn't get stuck on the old video frame although it will
 // flicker between the old video frame and the new video frame.
-
 	if(redraw)
 	{
 		draw_refresh();
@@ -2410,7 +2337,8 @@ int CWindowCanvas::button_press_event()
 			break;
 
 		case CWINDOW_ZOOM:
-			result = test_zoom(redraw);
+			test_zoom(redraw);
+			result = 1;
 			break;
 
 		case CWINDOW_CROP:
@@ -2469,7 +2397,6 @@ int CWindowCanvas::button_release_event()
 	case CWINDOW_MASK_TRANSLATE:
 		mwindow->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
 		break;
-
 	}
 
 	gui->current_operation = CWINDOW_NONE;
@@ -2479,6 +2406,7 @@ int CWindowCanvas::button_release_event()
 void CWindowCanvas::zoom_resize_window(float percentage)
 {
 	int canvas_w, canvas_h;
+
 	calculate_sizes(mwindow->edl->get_aspect_ratio(), 
 		mwindow->edl->session->output_w, 
 		mwindow->edl->session->output_h, 
