@@ -36,7 +36,8 @@ public:
 	int operator==(MaskPoint& ptr);
 	MaskPoint& operator=(MaskPoint& ptr);
 
-	float x, y;
+	int x;
+	int y;
 // Incoming acceleration
 	float control_x1, control_y1;
 // Outgoing acceleration
@@ -77,7 +78,7 @@ public:
 // Retrieve submask with clamping
 	SubMask* get_submask(int number);
 // Translates all submasks
-	void translate_submasks(float translate_x, float translate_y);
+	void translate_submasks(int translate_x, int translate_y);
 
 	ArrayList<SubMask*> masks;
 // These are constant for the entire track

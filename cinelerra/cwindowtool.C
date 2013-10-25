@@ -1571,14 +1571,14 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 	this->x = new CWindowCoord(this, 
 		x, 
 		y, 
-		(float)0.0);
+		0);
 	x += 150;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
 	x += title->get_w();
 	this->y = new CWindowCoord(this, 
 		x, 
 		y, 
-		(float)0.0);
+		0);
 
 	y += 30;
 	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 
@@ -1674,8 +1674,8 @@ int CWindowMaskGUI::handle_event()
 
 	if(point)
 	{
-		point->x = atof(x->get_text());
-		point->y = atof(y->get_text());
+		point->x = atoi(x->get_text());
+		point->y = atoi(y->get_text());
 	}
 
 	update_preview();

@@ -50,8 +50,8 @@ MaskPoint& MaskPoint::operator=(MaskPoint& ptr)
 
 int MaskPoint::operator==(MaskPoint& ptr)
 {
-	return EQUIV(x, ptr.x) &&
-		EQUIV(y, ptr.y) &&
+	return x == ptr.x &&
+		y == ptr.y &&
 		EQUIV(control_x1, ptr.control_x1) &&
 		EQUIV(control_y1, ptr.control_y1) &&
 		EQUIV(control_x2, ptr.control_x2) &&
@@ -112,12 +112,12 @@ void SubMask::load(FileXML *file)
 				MaskPoint *point = new MaskPoint;
 				char *ptr = string;
 
-				point->x = atof(ptr);
+				point->x = atoi(ptr);
 				ptr = strchr(ptr, ',');
 
 				if(ptr)
 				{
-					point->y = atof(ptr + 1);
+					point->y = atoi(ptr + 1);
 					ptr = strchr(ptr + 1, ',');
 
 					if(ptr)
@@ -159,7 +159,7 @@ void SubMask::copy(FileXML *file)
 			file->tag.set_title("POINT");
 			file->append_tag();
 			char string[BCTEXTLEN];
-			sprintf(string, "%.7g, %.7g, %.7g, %.7g, %.7g, %.7g",
+			sprintf(string, "%d, %d, %.7g, %.7g, %.7g, %.7g",
 				points.values[i]->x, 
 				points.values[i]->y, 
 				points.values[i]->control_x1, 
@@ -184,7 +184,7 @@ void SubMask::dump(int indent)
 	indent += 2;
 	for(int i = 0; i < points.total; i++)
 	{
-		printf("%*spoint=%d x=%.2f y=%.2f in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
+		printf("%*spoint=%d x=%d y=%d in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
 			indent, " ",
 			i,
 			points.values[i]->x, 
@@ -380,7 +380,7 @@ void MaskAuto::dump(int indent)
 		masks.values[i]->dump(indent);
 }
 
-void MaskAuto::translate_submasks(float translate_x, float translate_y)
+void MaskAuto::translate_submasks(int translate_x, int translate_y)
 {
 	for(int i = 0; i < masks.total; i++)
 	{
