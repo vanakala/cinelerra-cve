@@ -934,31 +934,38 @@ int CWindowCanvas::do_mask(int &redraw,
 
 			for(int j = 0; j <= segments && !result; j++)
 			{
-				x0 = point1->x;
-				y0 = point1->y;
-				x1 = point1->x + point1->control_x2;
-				y1 = point1->y + point1->control_y2;
-				x2 = point2->x + point2->control_x1;
-				y2 = point2->y + point2->control_y1;
-				x3 = point2->x;
-				y3 = point2->y;
+				if(segments)
+				{
+					x0 = point1->x;
+					y0 = point1->y;
+					x1 = point1->x + point1->control_x2;
+					y1 = point1->y + point1->control_y2;
+					x2 = point2->x + point2->control_x1;
+					y2 = point2->y + point2->control_y1;
+					x3 = point2->x;
+					y3 = point2->y;
 
-				float t = (float)j / segments;
-				float tpow2 = t * t;
-				float tpow3 = t * t * t;
-				float invt = 1 - t;
-				float invtpow2 = invt * invt;
-				float invtpow3 = invt * invt * invt;
+					float t = (float)j / segments;
+					float tpow2 = t * t;
+					float tpow3 = t * t * t;
+					float invt = 1 - t;
+					float invtpow2 = invt * invt;
+					float invtpow3 = invt * invt * invt;
 
-				x = (        invtpow3 * x0
-					+ 3 * t     * invtpow2 * x1
-					+ 3 * tpow2 * invt     * x2 
-					+     tpow3            * x3);
-				y = (        invtpow3 * y0 
-					+ 3 * t     * invtpow2 * y1
-					+ 3 * tpow2 * invt     * y2 
-					+     tpow3            * y3);
-
+					x = (        invtpow3 * x0
+						+ 3 * t     * invtpow2 * x1
+						+ 3 * tpow2 * invt     * x2 
+						+     tpow3            * x3);
+					y = (        invtpow3 * y0 
+						+ 3 * t     * invtpow2 * y1
+						+ 3 * tpow2 * invt     * y2 
+						+     tpow3            * y3);
+				}
+				else
+				{
+					x = x1 = x2 = point1->x;
+					y = y1 = y2 = point1->y;
+				}
 				x = (x - half_track_w) * projector_z + projector_x;
 				y = (y - half_track_h) * projector_z + projector_y;
 
@@ -1214,7 +1221,7 @@ int CWindowCanvas::do_mask(int &redraw,
 			}
 
 // Append to end of list
-			if(labs(shortest_point1 - shortest_point2) > 1)
+			if(abs(shortest_point1 - shortest_point2) > 1 || mask->points.total == 1)
 			{
 // Need to apply the new point to every keyframe
 				for(MaskAuto *current = (MaskAuto*)mask_autos->first;
@@ -1267,18 +1274,6 @@ int CWindowCanvas::do_mask(int &redraw,
 					MaskPoint *new_point = new MaskPoint;
 					submask->points.append(new_point);
 					*new_point = *point;
-				}
-
-				if(mask->points.total < 2)
-				{
-					for(MaskAuto *current = (MaskAuto*)mask_autos->first;
-						current; current = (MaskAuto*)NEXT)
-					{
-						SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
-						MaskPoint *new_point = new MaskPoint;
-						submask->points.append(new_point);
-						*new_point = *point;
-					}
 				}
 				gui->affected_point = mask->points.total - 1;
 			}
