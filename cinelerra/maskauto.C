@@ -184,9 +184,9 @@ void SubMask::dump(int indent)
 	indent += 2;
 	for(int i = 0; i < points.total; i++)
 	{
-		printf("%*spoint=%d x=%d y=%d in_x=%.2f in_y=%.2f out_x=%.2f out_y=%.2f\n",
+		printf("%*spoint%d %p (%d %d) in:(%.2f,%.2f) out:(%.2f,%.2f)\n",
 			indent, " ",
-			i,
+			i, points.values[i],
 			points.values[i]->x, 
 			points.values[i]->y, 
 			points.values[i]->control_x1, 
