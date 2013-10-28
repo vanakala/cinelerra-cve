@@ -159,7 +159,6 @@ int VWindowGUI::create_objects()
 		mwindow->theme->vmeter_x,
 		mwindow->theme->vmeter_y,
 		mwindow->theme->vmeter_h);
-	meters->create_objects();
 
 // Requires meters to build
 	edit_panel = new VWindowEditing(mwindow, vwindow, meters);

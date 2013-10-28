@@ -28,6 +28,7 @@
 class MeterReset;
 class MeterMeter;
 
+
 class MeterPanel
 {
 public:
@@ -41,8 +42,7 @@ public:
 		int use_recording = 0);
 	~MeterPanel();
 
-	int create_objects();
-	int set_meters(int meter_count, int use_meters);
+	void set_meters(int meter_count, int use_meters);
 	static int get_meters_width(int meter_count, int use_meters);
 	void reposition_window(int x, int y, int h);
 	int get_reset_x();
@@ -71,18 +71,21 @@ class MeterReset : public BC_Button
 {
 public:
 	MeterReset(MWindow *mwindow, MeterPanel *panel, int x, int y);
-	~MeterReset();
+
 	int handle_event();
+
 	MWindow *mwindow;
 	MeterPanel *panel;
 };
+
 
 class MeterShow : public BC_Toggle
 {
 public:
 	MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y);
-	~MeterShow();
+
 	int handle_event();
+
 	MWindow *mwindow;
 	MeterPanel *panel;
 };
@@ -91,7 +94,6 @@ class MeterMeter : public BC_Meter
 {
 public:
 	MeterMeter(MWindow *mwindow, MeterPanel *panel, int x, int y, int h, int titles);
-	~MeterMeter();
 
 	int button_press_event();
 

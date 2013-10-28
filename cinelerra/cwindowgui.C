@@ -139,7 +139,6 @@ void CWindowGUI::create_objects()
 		mwindow->theme->cmeter_x,
 		mwindow->theme->cmeter_y,
 		mwindow->theme->cmeter_h);
-	meters->create_objects();
 
 	composite_panel = new CPanel(mwindow, 
 		this, 

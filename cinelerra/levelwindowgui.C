@@ -63,7 +63,6 @@ int LevelWindowGUI::create_objects()
 		get_h() - 10,
 		mwindow->edl->session->audio_channels,
 		1);
-	panel->create_objects();
 	return 0;
 }
 

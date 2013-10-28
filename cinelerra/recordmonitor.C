@@ -297,7 +297,6 @@ int RecordMonitorGUI::create_objects()
 			record->default_asset->channels,
 			1,
 			1);
-		meters->create_objects();
 	}
 	return 0;
 }

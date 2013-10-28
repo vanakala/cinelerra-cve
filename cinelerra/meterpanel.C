@@ -30,7 +30,6 @@
 #include "vframe.h"
 
 
-
 MeterPanel::MeterPanel(MWindow *mwindow, 
 	BC_WindowBase *subwindow, 
 	int x, 
@@ -48,8 +47,8 @@ MeterPanel::MeterPanel(MWindow *mwindow,
 	this->meter_count = meter_count;
 	this->use_meters = use_meters;
 	this->use_recording = use_recording;
+	set_meters(meter_count, use_meters);
 }
-
 
 MeterPanel::~MeterPanel()
 {
@@ -123,14 +122,7 @@ void MeterPanel::stop_meters()
 	}
 }
 
-
-int MeterPanel::create_objects()
-{
-	set_meters(meter_count, use_meters);
-	return 0;
-}
-
-int MeterPanel::set_meters(int meter_count, int use_meters)
+void MeterPanel::set_meters(int meter_count, int use_meters)
 {
 	if(meter_count != meters.total || use_meters != this->use_meters)
 	{
@@ -159,8 +151,6 @@ int MeterPanel::set_meters(int meter_count, int use_meters)
 			}
 		}
 	}
-
-	return 0;
 }
 
 void MeterPanel::reset_meters()
@@ -169,13 +159,11 @@ void MeterPanel::reset_meters()
 		meters.values[i]->reset_over();
 }
 
-
 void MeterPanel::set_delays(int over_delay, int peak_delay)
 {
 	for(int i = 0; i < meters.total; i++)
 		meters.values[i]->set_delays(over_delay, peak_delay);
 }
-
 
 void MeterPanel::change_format(int min, int max)
 {
@@ -189,17 +177,11 @@ void MeterPanel::change_format(int min, int max)
 }
 
 
-
-
 MeterReset::MeterReset(MWindow *mwindow, MeterPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->over_button)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-}
-
-MeterReset::~MeterReset()
-{
 }
 
 int MeterReset::handle_event()
@@ -208,9 +190,6 @@ int MeterReset::handle_event()
 		panel->meters.values[i]->reset_over();
 	return 1;
 }
-
-
-
 
 
 MeterMeter::MeterMeter(MWindow *mwindow, 
@@ -231,11 +210,6 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	this->panel = panel;
 }
 
-MeterMeter::~MeterMeter()
-{
-}
-
-
 int MeterMeter::button_press_event()
 {
 	if(is_event_win() && BC_WindowBase::cursor_inside())
@@ -249,9 +223,6 @@ int MeterMeter::button_press_event()
 }
 
 
-
-
-
 MeterShow::MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y)
  : BC_Toggle(x, 
 		y,
@@ -262,12 +233,6 @@ MeterShow::MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y)
 	this->panel = panel;
 	set_tooltip(_("Show meters"));
 }
-
-
-MeterShow::~MeterShow()
-{
-}
-
 
 int MeterShow::handle_event()
 {
