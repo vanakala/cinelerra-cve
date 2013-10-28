@@ -89,17 +89,21 @@ void LabelGUI::reposition()
 
 int LabelGUI::button_press_event()
 {
+	int result = 0;
+
 	if(this->is_event_win() && get_buttonpress() == 3)
 	{
 		if(label)
 			timebar->label_edit->edit_label(label);
+		result = 1;
 	}
 	else
 	{
-		BC_Toggle::button_press_event();
+		result = BC_Toggle::button_press_event();
 	}
 	if(label)
 		set_tooltip(this->label->textstr);
+	return result;
 }
 
 int LabelGUI::handle_event()
@@ -158,6 +162,9 @@ TimeBar::TimeBar(MWindow *mwindow,
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
+	in_point = 0;
+	out_point = 0;
+	current_operation = TIMEBAR_NONE;
 	label_edit = new LabelEdit(mwindow, mwindow->awindow, 0);
 }
 
@@ -165,16 +172,8 @@ TimeBar::~TimeBar()
 {
 	if(in_point) delete in_point;
 	if(out_point) delete out_point;
-	if(label_edit) delete label_edit;
+	delete label_edit;
 	labels.remove_all_objects();
-}
-
-int TimeBar::create_objects()
-{
-	in_point = 0;
-	out_point = 0;
-	current_operation = TIMEBAR_NONE;
-	update();
 }
 
 int TimeBar::position_to_pixel(ptstime position)

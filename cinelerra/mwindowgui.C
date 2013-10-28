@@ -176,7 +176,7 @@ SET_TRACE
 		mwindow->theme->mtimebar_y,
 		mwindow->theme->mtimebar_w,
 		mwindow->theme->mtimebar_h));
-	timebar->create_objects();
+	timebar->update();
 
 	add_subwindow(patchbay = new PatchBay(mwindow, this));
 	patchbay->create_objects();

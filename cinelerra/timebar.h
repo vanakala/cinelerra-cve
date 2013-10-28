@@ -103,7 +103,6 @@ public:
 		int h);
 	virtual ~TimeBar();
 
-	int create_objects();
 	int update_defaults();
 	int button_press_event();
 	int button_release_event();

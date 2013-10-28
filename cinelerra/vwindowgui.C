@@ -189,7 +189,7 @@ int VWindowGUI::create_objects()
 		mwindow->theme->vtimebar_y,
 		mwindow->theme->vtimebar_w, 
 		mwindow->theme->vtimebar_h));
-	timebar->create_objects();
+	timebar->update();
 
 	deactivate();
 	slider->activate();

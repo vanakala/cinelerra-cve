@@ -156,7 +156,7 @@ void CWindowGUI::create_objects()
 		mwindow->theme->ctimebar_y,
 		mwindow->theme->ctimebar_w, 
 		mwindow->theme->ctimebar_h));
-	timebar->create_objects();
+	timebar->update();
 
 	add_subwindow(slider = new CWindowSlider(mwindow, 
 		cwindow, 
