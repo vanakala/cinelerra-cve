@@ -59,7 +59,6 @@ public:
 	CWindowGUI(MWindow *mwindow, CWindow *cwindow);
 	~CWindowGUI();
 
-	void create_objects();
 	void resize_event(int w, int h);
 
 // Events for the fullscreen canvas fall through to here.
@@ -143,13 +142,12 @@ public:
 class CWindowEditing : public EditPanel
 {
 public:
-	CWindowEditing(MWindow *mwindow, CWindow *cwindow, MeterPanel *meter_panel);
+	CWindowEditing(MWindow *mwindow, CWindowGUI *gui, MeterPanel *meter_panel);
 
 	void set_inpoint();
 	void set_outpoint();
 
 	MWindow *mwindow;
-	CWindow *cwindow;
 };
 
 

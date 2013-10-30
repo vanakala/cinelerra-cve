@@ -68,7 +68,6 @@ int CWindow::create_objects()
 	destination = mwindow->defaults->get("CWINDOW_DESTINATION", 0);
 
 	gui = new CWindowGUI(mwindow, this);
-	gui->create_objects();
 
 	playback_engine = new CPlayback(mwindow, this, gui->canvas);
 

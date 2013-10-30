@@ -102,28 +102,11 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	x_origin = 0;
 	y_origin = 0;
 	current_operation = CWINDOW_NONE;
-	tool_panel = 0;
 	translating_zoom = 0;
 	active = 0;
 	inactive = 0;
 	crop_translate = 0;
-}
 
-CWindowGUI::~CWindowGUI()
-{
-	if(tool_panel) delete tool_panel;
-	delete meters;
-	delete composite_panel;
-	delete canvas;
-	delete transport;
-	delete edit_panel;
-	delete zoom_panel;
-	delete active;
-	delete inactive;
-}
-
-void CWindowGUI::create_objects()
-{
 	set_icon(mwindow->theme->get_image("cwindow_icon"));
 
 	active = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_active"));
@@ -169,7 +152,7 @@ void CWindowGUI::create_objects()
 		mwindow->theme->ctransport_x, 
 		mwindow->theme->ctransport_y);
 
-	edit_panel = new CWindowEditing(mwindow, cwindow, meters);
+	edit_panel = new CWindowEditing(mwindow, this, meters);
 
 	zoom_panel = new CWindowZoom(mwindow, 
 		this, 
@@ -186,6 +169,19 @@ void CWindowGUI::create_objects()
 
 	canvas->draw_refresh();
 	draw_status();
+}
+
+CWindowGUI::~CWindowGUI()
+{
+	delete tool_panel;
+	delete meters;
+	delete composite_panel;
+	delete canvas;
+	delete transport;
+	delete edit_panel;
+	delete zoom_panel;
+	delete active;
+	delete inactive;
 }
 
 void CWindowGUI::translation_event()
@@ -553,9 +549,9 @@ int CWindowGUI::drag_stop()
 }
 
 
-CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow, MeterPanel *meter_panel)
+CWindowEditing::CWindowEditing(MWindow *mwindow, CWindowGUI *gui, MeterPanel *meter_panel)
  : EditPanel(mwindow, 
-		cwindow->gui, 
+		gui,
 		mwindow->theme->cedit_x, 
 		mwindow->theme->cedit_y,
 		EDTP_KEYFRAME | EDTP_COPY | EDTP_PASTE | EDTP_UNDO
@@ -563,7 +559,6 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow, MeterPanel *m
 		meter_panel)
 {
 	this->mwindow = mwindow;
-	this->cwindow = cwindow;
 }
 
 void CWindowEditing::set_inpoint()
