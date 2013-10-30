@@ -67,23 +67,14 @@ int ZoomBar::create_objects()
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	sample_zoom = new SampleZoomPanel(mwindow, this, x, y);
-	sample_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
-	sample_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
-	sample_zoom->create_objects();
 	sample_zoom->zoom_text->set_tooltip(_("Duration visible in the timeline"));
 	sample_zoom->zoom_tumbler->set_tooltip(_("Duration visible in the timeline"));
 	x += sample_zoom->get_w();
 	amp_zoom = new AmpZoomPanel(mwindow, this, x, y);
-	amp_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
-	amp_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
-	amp_zoom->create_objects();
 	amp_zoom->zoom_text->set_tooltip(_("Audio waveform scale"));
 	amp_zoom->zoom_tumbler->set_tooltip(_("Audio waveform scale"));
 	x += amp_zoom->get_w();
 	track_zoom = new TrackZoomPanel(mwindow, this, x, y);
-	track_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
-	track_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
-	track_zoom->create_objects();
 	track_zoom->zoom_text->set_tooltip(_("Height of tracks in the timeline"));
 	track_zoom->zoom_tumbler->set_tooltip(_("Height of tracks in the timeline"));
 	x += track_zoom->get_w() + 10;
@@ -141,9 +132,6 @@ void ZoomBar::resize_event()
 	int x = 3, y = 1;
 	if (sample_zoom) delete sample_zoom;
 	sample_zoom = new SampleZoomPanel(mwindow, this, x, y);
-	sample_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
-	sample_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
-	sample_zoom->create_objects();
 	flash();
 }
 
@@ -340,7 +328,10 @@ SampleZoomPanel::SampleZoomPanel(MWindow *mwindow,
 	110, 
 	MIN_ZOOM_TIME, 
 	MAX_ZOOM_TIME, 
-	ZOOM_TIME)
+	ZOOM_TIME,
+	0,
+	mwindow->theme->get_image_set("zoombar_menu", 0),
+	mwindow->theme->get_image_set("zoombar_tumbler", 0))
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -362,7 +353,10 @@ AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 	80,
 	MIN_AMP_ZOOM, 
 	MAX_AMP_ZOOM, 
-	ZOOM_LONG)
+	ZOOM_LONG,
+	0,
+	mwindow->theme->get_image_set("zoombar_menu", 0),
+	mwindow->theme->get_image_set("zoombar_tumbler", 0))
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
@@ -383,7 +377,10 @@ TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 	70,
 	MIN_TRACK_ZOOM, 
 	MAX_TRACK_ZOOM, 
-	ZOOM_LONG)
+	ZOOM_LONG,
+	0,
+	mwindow->theme->get_image_set("zoombar_menu", 0),
+	mwindow->theme->get_image_set("zoombar_tumbler", 0))
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;

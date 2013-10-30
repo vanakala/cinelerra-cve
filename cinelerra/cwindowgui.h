@@ -168,7 +168,8 @@ public:
 class CWindowZoom : public ZoomPanel
 {
 public:
-	CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y);
+	CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y,
+		const char *first_item_text);
 
 	int handle_event();
 	MWindow *mwindow;

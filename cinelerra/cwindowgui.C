@@ -174,10 +174,9 @@ void CWindowGUI::create_objects()
 	zoom_panel = new CWindowZoom(mwindow, 
 		this, 
 		mwindow->theme->czoom_x, 
-		mwindow->theme->czoom_y);
-	zoom_panel->create_objects();
-	zoom_panel->zoom_text->add_item(new BC_MenuItem(AUTO_ZOOM));
-	if(!mwindow->edl->session->cwindow_scrollbars) zoom_panel->set_text(AUTO_ZOOM);
+		mwindow->theme->czoom_y,
+		AUTO_ZOOM);
+	if(!mwindow->edl->session->cwindow_scrollbars) zoom_panel->update(AUTO_ZOOM);
 
 // Must create after meter panel
 	tool_panel = new CWindowTool(mwindow, this);
@@ -600,7 +599,8 @@ int CWindowMeters::change_status_event()
 }
 
 
-CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y)
+CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y, 
+	const char *first_item_text)
  : ZoomPanel(mwindow, 
 	gui, 
 	(double)mwindow->edl->session->cwindow_zoom, 
@@ -609,7 +609,8 @@ CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y)
 	80, 
 	my_zoom_table, 
 	total_zooms, 
-	ZOOM_PERCENTAGE)
+	ZOOM_PERCENTAGE,
+	first_item_text)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

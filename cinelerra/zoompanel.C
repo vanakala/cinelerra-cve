@@ -53,7 +53,10 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	int w, 
 	double min,
 	double max,
-	int zoom_type)
+	int zoom_type,
+	const char *first_item_text,
+	VFrame **menu_images,
+	VFrame **tumbler_images)
 {
 	this->mwindow = mwindow;
 	this->subwindow = subwindow;
@@ -64,10 +67,11 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	this->min = min;
 	this->max = max;
 	this->zoom_type = zoom_type;
-	this->menu_images = 0;
-	this->tumbler_images = 0;
+	this->menu_images = menu_images;
+	this->tumbler_images = tumbler_images;
 	this->user_table = 0;
 	this->user_size = 0;
+	initialize(first_item_text);
 }
 
 ZoomPanel::ZoomPanel(MWindow *mwindow, 
@@ -78,7 +82,10 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	int w, 
 	double *user_table,
 	int user_size,
-	int zoom_type)
+	int zoom_type,
+	const char *first_item_text,
+	VFrame **menu_images,
+	VFrame **tumbler_images)
 {
 	this->mwindow = mwindow;
 	this->subwindow = subwindow;
@@ -89,10 +96,11 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	this->min = min;
 	this->max = max;
 	this->zoom_type = zoom_type;
-	this->menu_images = 0;
-	this->tumbler_images = 0;
+	this->menu_images = menu_images;
+	this->tumbler_images = tumbler_images;
 	this->user_table = user_table;
 	this->user_size = user_size;
+	initialize(first_item_text);
 }
 
 ZoomPanel::~ZoomPanel()
@@ -100,6 +108,22 @@ ZoomPanel::~ZoomPanel()
 	delete zoom_text;
 	delete zoom_tumbler;
 	zoom_table.remove_all_objects();
+}
+
+void ZoomPanel::initialize(const char *first_item_text)
+{
+	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow, 
+		this, 
+		x, 
+		y));
+	x += zoom_text->get_w();
+	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(mwindow, 
+		this, 
+		x, 
+		y));
+	if(first_item_text)
+		zoom_text->add_item(new BC_MenuItem(first_item_text));
+	calculate_menu();
 }
 
 void ZoomPanel::calculate_menu()
@@ -152,31 +176,6 @@ void ZoomPanel::update_menu()
 	calculate_menu();
 }
 
-void ZoomPanel::set_menu_images(VFrame **data)
-{
-	this->menu_images = data;
-}
-
-void ZoomPanel::set_tumbler_images(VFrame **data)
-{
-	this->tumbler_images = data;
-}
-
-int ZoomPanel::create_objects()
-{
-	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow, 
-		this, 
-		x, 
-		y));
-	x += zoom_text->get_w();
-	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(mwindow, 
-		this, 
-		x, 
-		y));
-	calculate_menu();
-	return 0;
-}
-
 void ZoomPanel::reposition_window(int x, int y)
 {
 	zoom_text->reposition_window(x, y);
@@ -198,11 +197,6 @@ double ZoomPanel::get_value()
 char* ZoomPanel::get_text()
 {
 	return zoom_text->get_text();
-}
-
-void ZoomPanel::set_text(const char *text)
-{
-	zoom_text->set_text(text);
 }
 
 void ZoomPanel::update(double value)

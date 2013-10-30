@@ -37,6 +37,7 @@ class ZoomTextBox;
 #include "guicast.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "vframe.inc"
 #include "zoompanel.h"
 
 class ZoomBar : public BC_SubWindow

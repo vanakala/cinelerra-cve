@@ -25,6 +25,7 @@
 
 #include "guicast.h"
 #include "mwindow.inc"
+#include "vframe.inc"
 
 class ZoomPopup;
 class ZoomTumbler;
@@ -55,7 +56,10 @@ public:
 		int w, 
 		double min = 1,
 		double max = 131072,
-		int zoom_type = ZOOM_PERCENTAGE);
+		int zoom_type = ZOOM_PERCENTAGE,
+		const char *first_item_text = 0,
+		VFrame **menu_images = 0,
+		VFrame **tumbler_images = 0);
 	ZoomPanel(MWindow *mwindow, 
 		BC_WindowBase *subwindow, 
 		double value, 
@@ -64,26 +68,24 @@ public:
 		int w, 
 		double *user_table,
 		int user_size,
-		int zoom_type = ZOOM_PERCENTAGE);
-	~ZoomPanel();
+		int zoom_type = ZOOM_PERCENTAGE,
+		const char *first_item_text = 0,
+		VFrame **menu_images = 0,
+		VFrame **tumbler_images = 0);
+	virtual ~ZoomPanel();
 
 	virtual int handle_event() { return 1; };
 	int get_w();
 	void calculate_menu();
 	static double adjust_zoom(double zoom, double min, double max);
 	void update_menu();
-	int create_objects();
 	double get_value();
 	char* get_text();
-	void set_text(const char *text);
 	char* value_to_text(double value, int use_table = 1);
 	double text_to_zoom(const char *text);
 	void update(double value);
 	void update(const char *value);
 	void reposition_window(int x, int y);
-// Set images to be used
-	void set_menu_images(VFrame **data);
-	void set_tumbler_images(VFrame **data);
 
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;
@@ -102,6 +104,9 @@ public:
 	ArrayList<ZoomHash*> zoom_table;
 	VFrame **menu_images;
 	VFrame **tumbler_images;
+
+private:
+	void initialize(const char *first_item_text);
 };
 
 class ZoomPopup : public BC_PopupMenu
