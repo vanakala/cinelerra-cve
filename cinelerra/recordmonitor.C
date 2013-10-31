@@ -248,7 +248,6 @@ int RecordMonitorGUI::create_objects()
 			mwindow->theme->rmonitor_canvas_y, 
 			mwindow->theme->rmonitor_canvas_w, 
 			mwindow->theme->rmonitor_canvas_h);
-		canvas->create_objects(0);
 
 		if(driver == VIDEO4LINUX ||
 			driver == VIDEO4LINUX2 ||
@@ -531,6 +530,7 @@ RecordMonitorCanvas::RecordMonitorCanvas(MWindow *mwindow,
 	h, 
 	record->default_asset->width,
 	record->default_asset->height,
+	0,
 	0,
 	0,
 	1)

@@ -131,7 +131,6 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 		mwindow->theme->ccomposite_h);
 
 	canvas = new CWindowCanvas(mwindow, this);
-	canvas->create_objects(mwindow->edl);
 
 	add_subwindow(timebar = new CTimeBar(mwindow,
 		this,
@@ -725,6 +724,7 @@ CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
 	0,
 	0,
 	mwindow->edl->session->cwindow_scrollbars,
+	mwindow->edl,
 	1)
 {
 	this->mwindow = mwindow;

@@ -49,12 +49,12 @@ public:
 		int output_w,
 		int output_h,
 		int use_scrollbars,
+		EDL *edl,
 		int use_cwindow = 0,
 		int use_rwindow = 0,
 		int use_vwindow = 0); // Use menu different options for different windows
 	virtual ~Canvas();
 
-	void reset();
 // Get dimensions given a zoom
 	void calculate_sizes(float aspect_ratio, 
 		int output_w, 
@@ -68,7 +68,6 @@ public:
 	void unlock_canvas();
 	int is_locked();
 
-	int create_objects(EDL *edl);
 	void set_cursor(int cursor);
 // Start video playback
 	void start_video();

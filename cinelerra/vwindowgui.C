@@ -181,7 +181,6 @@ int VWindowGUI::create_objects()
 		mwindow->theme->vtime_w));
 
 	canvas = new VWindowCanvas(mwindow, this);
-	canvas->create_objects(mwindow->edl);
 
 	add_subwindow(timebar = new VTimeBar(mwindow, 
 		this,
@@ -725,6 +724,7 @@ VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
 	0,
 	0,
 	0,
+	mwindow->edl,
 	0,
 	0,
 	1)

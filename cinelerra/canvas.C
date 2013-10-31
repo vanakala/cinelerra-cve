@@ -42,43 +42,10 @@ Canvas::Canvas(MWindow *mwindow,
 	int output_w,
 	int output_h,
 	int use_scrollbars,
+	EDL *edl,
 	int use_cwindow,
 	int use_rwindow,
 	int use_vwindow)
-{
-	reset();
-
-	if(x < 10) x = 10;
-	if(y < 10) y = 10;
-	this->mwindow = mwindow;
-	this->subwindow = subwindow;
-	this->x = x;
-	this->y = y;
-	this->w = w;
-	this->h = h;
-	this->output_w = output_w;
-	this->output_h = output_h;
-	this->use_scrollbars = use_scrollbars;
-	this->use_cwindow = use_cwindow;
-	this->use_rwindow = use_rwindow;
-	this->use_vwindow = use_vwindow;
-	this->root_w = subwindow->get_root_w(0, 0);
-	this->root_h = subwindow->get_root_h(0);
-	canvas_lock = new Mutex("Canvas::canvas_lock", 1);
-}
-
-Canvas::~Canvas()
-{
-	if(refresh_frame) delete refresh_frame;
-	delete canvas_menu;
- 	if(yscroll) delete yscroll;
- 	if(xscroll) delete xscroll;
-	delete canvas_subwindow;
-	delete canvas_fullscreen;
-	delete canvas_lock;
-}
-
-void Canvas::reset()
 {
 	use_scrollbars = 0;
 	output_w = 0;
@@ -90,6 +57,45 @@ void Canvas::reset()
 	canvas_fullscreen = 0;
 	is_processing = 0;
 	cursor_inside = 0;
+
+	if(x < 10) x = 10;
+	if(y < 10) y = 10;
+	this->mwindow = mwindow;
+	this->subwindow = subwindow;
+	view_x = this->x = x;
+	view_y = this->y = y;
+	view_w = this->w = w;
+	view_h = this->h = h;
+	this->output_w = output_w;
+	this->output_h = output_h;
+	this->use_scrollbars = use_scrollbars;
+	this->use_cwindow = use_cwindow;
+	this->use_rwindow = use_rwindow;
+	this->use_vwindow = use_vwindow;
+	this->root_w = subwindow->get_root_w(0, 0);
+	this->root_h = subwindow->get_root_h(0);
+	canvas_lock = new Mutex("Canvas::canvas_lock", 1);
+
+	get_scrollbars(edl, view_x, view_y, view_w, view_h);
+
+	create_canvas();
+
+	subwindow->add_subwindow(canvas_menu = new CanvasPopup(this));
+	canvas_menu->create_objects();
+
+	subwindow->add_subwindow(fullscreen_menu = new CanvasFullScreenPopup(this));
+	fullscreen_menu->create_objects();
+}
+
+Canvas::~Canvas()
+{
+	if(refresh_frame) delete refresh_frame;
+	delete canvas_menu;
+	if(yscroll) delete yscroll;
+	if(xscroll) delete xscroll;
+	delete canvas_subwindow;
+	delete canvas_fullscreen;
+	delete canvas_lock;
 }
 
 void Canvas::lock_canvas(const char *location)
@@ -575,26 +581,6 @@ int Canvas::get_cursor_y()
 int Canvas::get_buttonpress()
 {
 	return get_canvas()->get_buttonpress();
-}
-
-
-int Canvas::create_objects(EDL *edl)
-{
-	view_x = x;
-	view_y = y;
-	view_w = w;
-	view_h = h;
-	get_scrollbars(edl, view_x, view_y, view_w, view_h);
-
-	create_canvas();
-
-	subwindow->add_subwindow(canvas_menu = new CanvasPopup(this));
-	canvas_menu->create_objects();
-
-	subwindow->add_subwindow(fullscreen_menu = new CanvasFullScreenPopup(this));
-	fullscreen_menu->create_objects();
-
-	return 0;
 }
 
 int Canvas::button_press_event()
