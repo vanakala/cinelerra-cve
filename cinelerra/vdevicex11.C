@@ -320,7 +320,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 			if(device->out_config->driver == PLAYBACK_X11_XV &&
 				output->get_canvas()->accel_available(best_colormodel, device->out_w, device->out_h))
 			{
-				if(!output->use_scrollbars)
+				if(!output->use_scrollbars && colormodel == best_colormodel)
 				{
 					bitmap = new BC_Bitmap(output->get_canvas(), 
 						device->out_w,
