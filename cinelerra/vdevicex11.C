@@ -320,13 +320,13 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 			if(device->out_config->driver == PLAYBACK_X11_XV &&
 				output->get_canvas()->accel_available(best_colormodel, device->out_w, device->out_h))
 			{
+				bitmap = new BC_Bitmap(output->get_canvas(), 
+					device->out_w,
+					device->out_h,
+					best_colormodel,
+					1);
 				if(!output->use_scrollbars && colormodel == best_colormodel)
 				{
-					bitmap = new BC_Bitmap(output->get_canvas(), 
-						device->out_w,
-						device->out_h,
-						best_colormodel,
-						1);
 					output_frame = new VFrame((unsigned char*)bitmap->get_data(),
 						bitmap->get_y_offset(),
 						bitmap->get_u_offset(),
@@ -337,14 +337,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 					bitmap_type = BITMAP_PRIMARY;
 				}
 				else
-				{
-					bitmap = new BC_Bitmap(output->get_canvas(),
-						device->out_w,
-						device->out_h,
-						best_colormodel,
-						1);
 					bitmap_type = BITMAP_TEMP;
-				}
 			}
 			else
 			{
