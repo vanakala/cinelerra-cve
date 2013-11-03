@@ -323,6 +323,15 @@ public:
 	void dump_stacks(void);
 	void dump_params(void);
 
+	static void calc_minmax8(unsigned char *buf, int len,
+		unsigned int &avg, int &min, int &max);
+	static void calc_minmax8n(unsigned char *buf, int len, int pixlen,
+		int *avg, int *min, int *max);
+	static void calc_minmax16(uint16_t *buf, int len, int pixlen,
+		uint64_t *avg, uint64_t *min, uint64_t *max);
+	static void calc_minmaxfl(float *buf, int len, int pixlen,
+		float *avg, float *min, float *max);
+
 private:
 
 // Create a PBuffer matching this frame's dimensions and to be 
@@ -347,14 +356,6 @@ private:
 		int h, 
 		int color_model, 
 		long bytes_per_line);
-	void calc_minmax8(unsigned char *buf, int len,
-		unsigned int &avg, int &min, int &max);
-	void calc_minmax8n(unsigned char *buf, int len, int pixlen,
-		int *avg, int *min, int *max);
-	void calc_minmax16(uint16_t *buf, int len, int pixlen,
-		uint64_t *avg, uint64_t *min, uint64_t *max);
-	void calc_minmaxfl(float *buf, int len, int pixlen,
-		float *avg, float *min, float *max);
 
 // Frame position in source
 	ptstime source_pts;

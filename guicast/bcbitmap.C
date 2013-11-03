@@ -93,12 +93,17 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	this->color_model = color_model;
 	this->use_shm = use_shm ? parent_window->get_resources()->use_shm : 0;
 	this->bg_color = parent_window->bg_color;
-	ximage[0] = 0;
-	xv_image[0] = 0;
-	data[0] = 0;
+	for(int i = 0; i < BITMAP_RING; i++)
+	{
+		ximage[i] = 0;
+		xv_image[i] = 0;
+		data[i] = 0;
+		row_data[i] = 0;
+	}
 	last_pixmap_used = 0;
 	last_pixmap = 0;
 	current_ringbuffer = 0;
+	xv_portid = 0;
 // Set ring buffers based on total memory used.
 // The program icon must use multiple buffers but larger bitmaps may not fit
 // in memory.
@@ -106,7 +111,7 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	int buffer_size = w * h * pixelsize;
 
 	if(buffer_size < 0x40000)
-		ring_buffers = 4;
+		ring_buffers = BITMAP_RING;
 	else
 		ring_buffers = 1;
 
@@ -719,4 +724,91 @@ void BC_Bitmap::transparency_bitswap()
 int BC_Bitmap::get_color_model()
 {
 	return color_model; 
+}
+
+void BC_Bitmap::dump(int minmax)
+{
+	printf("BC_Bitmap %p dump\n", this);
+	printf("    %d x %d %s pixb %d line %ld\n", w, h, cmodel_name(color_model),
+		bits_per_pixel, bytes_per_line);
+	printf("    bg %06x buffers %d/%d shm %d port %d top %p\n",
+		bg_color, current_ringbuffer, ring_buffers, use_shm, xv_portid, top_level);
+	for(int i = 0; i < ring_buffers; i++)
+		printf("      %d: data %p xv_image %p ximage %p row_data %p\n",
+		i, data[i], xv_image[i], ximage[i], row_data[i][0]);
+	if(minmax)
+	{
+		int min, max;
+		unsigned int avg;
+		int anum = 0;
+		int lnum = 0;
+		int fnum = 0;
+		int amin[4], amax[4], aavg[4];
+		uint64_t lmin[4], lmax[4], lavg[4];
+		float fmin[4], fmax[4], favg[4];
+
+		switch(color_model)
+		{
+		case BC_YUV420P:
+			VFrame::calc_minmax8(get_y_plane(), w * h, avg, min, max);
+			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			VFrame::calc_minmax8(get_u_plane(), w * h / 4, avg, min, max);
+			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			VFrame::calc_minmax8(get_v_plane(), w * h / 4,avg, min, max);
+			printf("    v: avg %d min %d max %d\n", avg, min, max);
+			break;
+		case BC_YUV422P:
+			VFrame::calc_minmax8(get_y_plane(), w * h, avg, min, max);
+			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			VFrame::calc_minmax8(get_u_plane(), w * h / 2, avg, min, max);
+			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			VFrame::calc_minmax8(get_v_plane(), w * h / 2, avg, min, max);
+			printf("    v: avg %d min %d max %d\n", avg, min, max);
+		case BC_RGB888:
+		case BC_YUV888:
+		case BC_VYU888:
+		case BC_BGR888:
+			VFrame::calc_minmax8n(get_data(), w * h, 3, aavg, amin, amax);
+			anum = 3;
+			break;
+		case BC_ARGB8888:
+		case BC_ABGR8888:
+		case BC_RGBA8888:
+		case BC_BGR8888:
+		case BC_YUVA8888:
+		case BC_UYVA8888:
+			VFrame::calc_minmax8n(get_data(), w * h, 4, aavg, amin, amax);
+			anum = 4;
+			break;
+		case BC_YUV161616:
+		case BC_RGB161616:
+			VFrame::calc_minmax16((uint16_t *)get_data(), w * h, 3, lavg, lmin, lmax);
+			lnum = 3;
+			break;
+		case BC_YUVA16161616:
+		case BC_RGBA16161616:
+			VFrame::calc_minmax16((uint16_t *)get_data(), w * h, 4, lavg, lmin, lmax);
+			lnum = 4;
+			break;
+		case BC_RGB_FLOAT:
+			VFrame::calc_minmaxfl((float *)get_data(), w * h, 3, favg, fmin, fmax);
+			fnum = 3;
+			break;
+		case BC_RGBA_FLOAT:
+			VFrame::calc_minmaxfl((float *)get_data(), w * h, 4, favg, fmin, fmax);
+			fnum = 4;
+			break;
+		default:
+			VFrame::calc_minmax8(get_data(), h * bytes_per_line,
+				avg, min, max);
+			printf("    avg %d min %d max %d\n", avg, min, max);
+			break;
+		}
+		for(int i = 0; i < anum; i++)
+			printf("    l:%d avg %d min %d max %d\n", i, aavg[i], amin[i], amax[i]);
+		for(int i = 0; i < lnum; i++)
+			printf("    l:%d avg %lld min %lld max %lld\n", i, lavg[i], lmin[i], lmax[i]);
+		for(int i = 0; i < fnum; i++)
+			printf("    l:%d avg %.3f min %.3f max %.3f\n", i, favg[i], fmin[i], fmax[i]);
+	}
 }

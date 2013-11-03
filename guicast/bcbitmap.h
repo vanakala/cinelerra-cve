@@ -118,6 +118,8 @@ public:
 	void set_bg_color(int color);
 	void invert();
 
+	void dump(int minmax = 0);
+
 private:
 	void initialize(BC_WindowBase *parent_window, int w, int h, int color_model, int use_shm);
 	void allocate_data();

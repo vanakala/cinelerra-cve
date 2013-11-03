@@ -1039,7 +1039,7 @@ void VFrame::calc_minmax8(unsigned char *buf, int len,
 		avg += buf[i];
 		if(min > buf[i])
 			min = buf[i];
-		if(max < data[i])
+		if(max < buf[i])
 			max = buf[i];
 	}
 	avg /= len;
