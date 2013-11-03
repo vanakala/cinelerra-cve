@@ -1137,8 +1137,8 @@ void VFrame::dump(int minmax)
 		pts, duration, source_pts, frame_number, layer);
 	printf("    Size %dx%d, cmodel %s offsets %ld %ld %ld\n", w, h, 
 		cmodel_name(color_model), y_offset, u_offset, v_offset);
-	printf("    data:%p rows: %p y:%p, u:%p, v:%p\n", data, rows,
-		y, u, v);
+	printf("    data:%p rows: %p y:%p, u:%p, v:%p%s\n", data, rows,
+		y, u, v, shared ? " shared" : "");
 	printf("    compressed size %ld, compressed_allocated %ld\n",
 		compressed_size, compressed_allocated);
 	if(minmax)
