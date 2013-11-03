@@ -575,17 +575,6 @@ void BC_Bitmap::read_frame(VFrame *frame,
 	}
 }
 
-long BC_Bitmap::get_shm_offset()
-{
-	if(xv_image[0])
-		return xv_image[0]->data_size * current_ringbuffer;
-	else
-	if(ximage[0])
-		return h * ximage[0]->bytes_per_line * current_ringbuffer;
-	else
-		return 0;
-}
-
 long BC_Bitmap::get_y_offset()
 {
 	if(xv_image[0])

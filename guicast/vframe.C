@@ -125,16 +125,6 @@ int VFrame::equivalent(VFrame *src, int test_stacks)
 		(!test_stacks || equal_stacks(src)));
 }
 
-void VFrame::set_shm_offset(long offset)
-{
-	shm_offset = offset;
-}
-
-long VFrame::get_shm_offset(void)
-{
-	return shm_offset;
-}
-
 int VFrame::get_shared(void)
 {
 	return shared;
@@ -152,7 +142,6 @@ void VFrame::reset_parameters(int do_opengl)
 {
 	field2_offset = -1;
 	shared = 0;
-	shm_offset = 0;
 	bytes_per_line = 0;
 	data = 0;
 	rows = 0;

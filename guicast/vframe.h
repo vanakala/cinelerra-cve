@@ -98,9 +98,6 @@ public:
 // Test if frame already matches parameters
 	int params_match(int w, int h, int color_model);
 
-	void set_shm_offset(long offset);
-	long get_shm_offset(void);
-
 // direct copy with no alpha
 	void copy_from(VFrame *frame, int do_copy_pts = 1);
 // Required for YUV
@@ -373,8 +370,7 @@ private:
 // Convenience storage
 	int field2_offset;
 // Data is pointing to someone else's buffer.
-	int shared; 
-	long shm_offset;
+	int shared;
 // If not set by user, is calculated from color_model
 	long bytes_per_line;
 	int bytes_per_pixel;

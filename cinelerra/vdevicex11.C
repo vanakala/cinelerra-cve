@@ -306,7 +306,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 // Update the ring buffer
 			if(bitmap_type == BITMAP_PRIMARY)
 			{
-				output_frame->set_memory((unsigned char*)bitmap->get_data() /* + bitmap->get_shm_offset() */,
+				output_frame->set_memory((unsigned char*)bitmap->get_data(),
 							bitmap->get_y_offset(),
 							bitmap->get_u_offset(),
 							bitmap->get_v_offset());
@@ -327,7 +327,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 						device->out_h,
 						best_colormodel,
 						1);
-					output_frame = new VFrame((unsigned char*)bitmap->get_data() + bitmap->get_shm_offset(), 
+					output_frame = new VFrame((unsigned char*)bitmap->get_data(),
 						bitmap->get_y_offset(),
 						bitmap->get_u_offset(),
 						bitmap->get_v_offset(),
@@ -368,18 +368,6 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 				bitmap_type = BITMAP_TEMP;
 			}
 			color_model_selected = 1;
-		}
-
-// Fill arguments
-		if(bitmap_type == BITMAP_PRIMARY)
-		{
-// Only useful if the primary is RGB888 which XFree86 never uses.
-			output_frame->set_shm_offset(bitmap->get_shm_offset());
-		}
-		else
-		if(bitmap_type == BITMAP_TEMP)
-		{
-			output_frame->set_shm_offset(0);
 		}
 	}
 	*result = output_frame;

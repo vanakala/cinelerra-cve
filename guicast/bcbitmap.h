@@ -108,9 +108,6 @@ public:
 	unsigned char** get_row_pointers();
 	int get_bytes_per_line();
 
-// Offset of current ringbuffer in shared memory
-	long get_shm_offset();
-
 // Returns just the plane offset
 	long get_y_offset();
 	long get_u_offset();
