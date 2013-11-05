@@ -297,21 +297,33 @@ void CWindowGUI::draw_status()
 
 void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 {
+	float x, y;
+	float w, h;
+	int old_auto = mwindow->edl->session->cwindow_scrollbars;
+	float new_zoom = value;
+	float old_zoom = mwindow->edl->session->cwindow_zoom;
+
 	if(do_auto)
+	{
 		mwindow->edl->session->cwindow_scrollbars = 0;
+		new_zoom = old_zoom;
+		x = canvas->get_xscroll();
+		y = canvas->get_yscroll();
+	}
 	else
+	{
 		mwindow->edl->session->cwindow_scrollbars = 1;
 
-	float old_zoom = mwindow->edl->session->cwindow_zoom;
-	float new_zoom = value;
-	float x = canvas->w / 2;
-	float y = canvas->h / 2;
-	canvas->canvas_to_output(mwindow->edl, 
-				0, 
-				x, 
-				y);
-	x -= canvas->w_visible / 2 * old_zoom / new_zoom;
-	y -= canvas->h_visible / 2 * old_zoom / new_zoom;
+		mwindow->edl->calculate_conformed_dimensions(0, w, h);
+
+		x = y = 0;
+		if(canvas->h_visible < (int)round(h * new_zoom))
+			x = canvas->get_xscroll() * new_zoom / old_zoom;
+
+		if(canvas->w_visible < (int)round(w * new_zoom))
+			y = canvas->get_yscroll() * new_zoom / old_zoom;
+	}
+
 	if(update_menu)
 	{
 		if(do_auto)
@@ -323,10 +335,7 @@ void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 			zoom_panel->update(value);
 		}
 	}
-
-	canvas->update_zoom((int)x, 
-		(int)y, 
-		new_zoom);
+	canvas->update_zoom(x, y, new_zoom);
 	canvas->reposition_window(mwindow->edl, 
 		mwindow->theme->ccanvas_x,
 		mwindow->theme->ccanvas_y,
