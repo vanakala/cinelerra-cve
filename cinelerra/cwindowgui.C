@@ -314,7 +314,7 @@ void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 	{
 		mwindow->edl->session->cwindow_scrollbars = 1;
 
-		mwindow->edl->calculate_conformed_dimensions(0, w, h);
+		mwindow->edl->calculate_conformed_dimensions(w, h);
 
 		x = y = 0;
 		if(canvas->h_visible < (int)round(h * new_zoom))
@@ -882,7 +882,7 @@ int CWindowCanvas::do_mask(int &redraw,
 // Get position of cursor relative to mask
 	float mask_cursor_x = get_cursor_x();
 	float mask_cursor_y = get_cursor_y();
-	canvas_to_output(mwindow->edl, 0, mask_cursor_x, mask_cursor_y);
+	canvas_to_output(mwindow->edl, mask_cursor_x, mask_cursor_y);
 
 	projector_x += mwindow->edl->session->output_w / 2;
 	projector_y += mwindow->edl->session->output_h / 2;
@@ -1007,7 +1007,7 @@ int CWindowCanvas::do_mask(int &redraw,
 					}
 				}
 
-				output_to_canvas(mwindow->edl, 0, x, y);
+				output_to_canvas(mwindow->edl, x, y);
 
 #define TEST_BOX(cursor_x, cursor_y, target_x, target_y) \
 	(cursor_x >= target_x - CONTROL_W / 2 && \
@@ -1027,7 +1027,7 @@ int CWindowCanvas::do_mask(int &redraw,
 					{
 						float control_x = (x1 - half_track_w) * projector_z + projector_x;
 						float control_y = (y1 - half_track_h) * projector_z + projector_y;
-						output_to_canvas(mwindow->edl, 0, control_x, control_y);
+						output_to_canvas(mwindow->edl, control_x, control_y);
 
 						float distance = 
 							sqrt(SQR(control_x - cursor_x) + SQR(control_y - cursor_y));
@@ -1041,7 +1041,7 @@ int CWindowCanvas::do_mask(int &redraw,
 					}
 					else
 					{
-						output_to_canvas(mwindow->edl, 0, canvas_x, canvas_y);
+						output_to_canvas(mwindow->edl, canvas_x, canvas_y);
 						if(!gui->ctrl_down())
 						{
 							if(TEST_BOX(cursor_x, cursor_y, canvas_x, canvas_y))
@@ -1062,7 +1062,7 @@ int CWindowCanvas::do_mask(int &redraw,
 					{
 						float control_x = (x2 - half_track_w) * projector_z + projector_x;
 						float control_y = (y2 - half_track_h) * projector_z + projector_y;
-						output_to_canvas(mwindow->edl, 0, control_x, control_y);
+						output_to_canvas(mwindow->edl, control_x, control_y);
 
 						float distance = 
 							sqrt(SQR(control_x - cursor_x) + SQR(control_y - cursor_y));
@@ -1077,7 +1077,7 @@ int CWindowCanvas::do_mask(int &redraw,
 					else
 					if(i < points.total - 1)
 					{
-						output_to_canvas(mwindow->edl, 0, canvas_x, canvas_y);
+						output_to_canvas(mwindow->edl, canvas_x, canvas_y);
 						if(!gui->ctrl_down())
 						{
 							if(TEST_BOX(cursor_x, cursor_y, canvas_x, canvas_y))
@@ -1123,7 +1123,7 @@ int CWindowCanvas::do_mask(int &redraw,
 // Draw second control point.  Discard x2 and y2 after this.
 							x2 = (x2 - half_track_w) * projector_z + projector_x;
 							y2 = (y2 - half_track_h) * projector_z + projector_y;
-							output_to_canvas(mwindow->edl, 0, x2, y2);
+							output_to_canvas(mwindow->edl, x2, y2);
 							get_canvas()->draw_line((int)x, (int)y, (int)x2, (int)y2);
 							get_canvas()->draw_rectangle((int)x2 - CONTROL_W / 2,
 								(int)y2 - CONTROL_H / 2,
@@ -1148,7 +1148,7 @@ int CWindowCanvas::do_mask(int &redraw,
 					{
 						x1 = (x1 - half_track_w) * projector_z + projector_x;
 						y1 = (y1 - half_track_h) * projector_z + projector_y;
-						output_to_canvas(mwindow->edl, 0, x1, y1);
+						output_to_canvas(mwindow->edl, x1, y1);
 						get_canvas()->draw_line((int)x, (int)y, (int)x1, (int)y1);
 						get_canvas()->draw_rectangle((int)x1 - CONTROL_W / 2,
 							(int)y1 - CONTROL_H / 2,
@@ -1382,7 +1382,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 
 	if(gui->current_operation == CWINDOW_EYEDROP)
 	{
-		canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
+		canvas_to_output(mwindow->edl, cursor_x, cursor_y);
 
 // Get color out of frame.
 // Doesn't work during playback because that bypasses the refresh frame.
@@ -1479,8 +1479,8 @@ void CWindowCanvas::draw_overlays()
 		x2 = mwindow->edl->session->output_w;
 		y1 = 0;
 		y2 = mwindow->edl->session->output_h;
-		output_to_canvas(mwindow->edl, 0, x1, y1);
-		output_to_canvas(mwindow->edl, 0, x2, y2);
+		output_to_canvas(mwindow->edl, x1, y1);
+		output_to_canvas(mwindow->edl, x2, y2);
 
 		get_canvas()->set_inverse();
 		get_canvas()->set_color(WHITE);
@@ -1537,10 +1537,10 @@ void CWindowCanvas::draw_safe_regions()
 	title_y1 = mwindow->edl->session->output_h / 2 - mwindow->edl->session->output_h / 2 * 0.8;
 	title_y2 = mwindow->edl->session->output_h / 2 + mwindow->edl->session->output_h / 2 * 0.8;
 
-	output_to_canvas(mwindow->edl, 0, action_x1, action_y1);
-	output_to_canvas(mwindow->edl, 0, action_x2, action_y2);
-	output_to_canvas(mwindow->edl, 0, title_x1, title_y1);
-	output_to_canvas(mwindow->edl, 0, title_x2, title_y2);
+	output_to_canvas(mwindow->edl, action_x1, action_y1);
+	output_to_canvas(mwindow->edl, action_x2, action_y2);
+	output_to_canvas(mwindow->edl, title_x1, title_y1);
+	output_to_canvas(mwindow->edl, title_x2, title_y2);
 
 	get_canvas()->set_inverse();
 	get_canvas()->set_color(WHITE);
@@ -1613,10 +1613,10 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 	float canvas_cursor_x = cursor_x;
 	float canvas_cursor_y = cursor_y;
 
-	canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
+	canvas_to_output(mwindow->edl, cursor_x, cursor_y);
 // Use screen normalized coordinates for hot spot tests.
-	output_to_canvas(mwindow->edl, 0, canvas_x1, canvas_y1);
-	output_to_canvas(mwindow->edl, 0, canvas_x2, canvas_y2);
+	output_to_canvas(mwindow->edl, canvas_x1, canvas_y1);
+	output_to_canvas(mwindow->edl, canvas_x2, canvas_y2);
 
 	if(gui->current_operation == CWINDOW_CROP)
 	{
@@ -1874,8 +1874,8 @@ void CWindowCanvas::draw_crop()
 	float x2 = mwindow->edl->session->crop_x2;
 	float y2 = mwindow->edl->session->crop_y2;
 
-	output_to_canvas(mwindow->edl, 0, x1, y1);
-	output_to_canvas(mwindow->edl, 0, x2, y2);
+	output_to_canvas(mwindow->edl, x1, y1);
+	output_to_canvas(mwindow->edl, x2, y2);
 
 	if(x2 - x1 && y2 - y1)
 		get_canvas()->draw_rectangle((int)x1, 
@@ -1913,8 +1913,8 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	float track_x2 = track_x1 + track->track_w * center_z;
 	float track_y2 = track_y1 + track->track_h * center_z;
 
-	output_to_canvas(mwindow->edl, 0, track_x1, track_y1);
-	output_to_canvas(mwindow->edl, 0, track_x2, track_y2);
+	output_to_canvas(mwindow->edl, track_x1, track_y1);
+	output_to_canvas(mwindow->edl, track_x2, track_y2);
 
 #define DRAW_PROJECTION(offset) \
 	get_canvas()->draw_rectangle((int)track_x1 + offset, \
@@ -1956,7 +1956,7 @@ int CWindowCanvas::test_bezier(int button_press,
 	{
 		float cursor_x = get_cursor_x();
 		float cursor_y = get_cursor_y();
-		canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
+		canvas_to_output(mwindow->edl, cursor_x, cursor_y);
 
 		if(gui->current_operation == CWINDOW_CAMERA ||
 			gui->current_operation == CWINDOW_PROJECTOR)
@@ -2118,7 +2118,6 @@ void CWindowCanvas::test_zoom(int &redraw)
 		x = get_cursor_x();
 		y = get_cursor_y();
 		canvas_to_output(mwindow->edl, 
-				0, 
 				x, 
 				y);
 
@@ -2166,7 +2165,7 @@ void CWindowCanvas::calculate_origin()
 {
 	gui->x_origin = get_cursor_x();
 	gui->y_origin = get_cursor_y();
-	canvas_to_output(mwindow->edl, 0, gui->x_origin, gui->y_origin);
+	canvas_to_output(mwindow->edl, gui->x_origin, gui->y_origin);
 }
 
 int CWindowCanvas::cursor_leave_event()
@@ -2216,7 +2215,7 @@ int CWindowCanvas::cursor_motion_event()
 			float cursor_y = get_cursor_y();
 			float zoom_x, zoom_y, conformed_w, conformed_h;
 
-			get_zooms(mwindow->edl, 0, zoom_x, zoom_y, conformed_w, conformed_h);
+			get_zooms(mwindow->edl, zoom_x, zoom_y, conformed_w, conformed_h);
 			cursor_x = (float)cursor_x / zoom_x + gui->x_offset;
 			cursor_y = (float)cursor_y / zoom_y + gui->y_offset;
 
@@ -2312,9 +2311,9 @@ int CWindowCanvas::button_press_event()
 	calculate_origin();
 
 	float zoom_x, zoom_y, conformed_w, conformed_h;
-	get_zooms(mwindow->edl, 0, zoom_x, zoom_y, conformed_w, conformed_h);
-	gui->x_offset = get_x_offset(mwindow->edl, 0, zoom_x, conformed_w, conformed_h);
-	gui->y_offset = get_y_offset(mwindow->edl, 0, zoom_y, conformed_w, conformed_h);
+	get_zooms(mwindow->edl, zoom_x, zoom_y, conformed_w, conformed_h);
+	gui->x_offset = get_x_offset(mwindow->edl, zoom_x, conformed_w, conformed_h);
+	gui->y_offset = get_y_offset(mwindow->edl, zoom_y, conformed_w, conformed_h);
 
 // Scroll view
 	if(get_buttonpress() == 2)

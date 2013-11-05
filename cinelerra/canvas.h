@@ -145,17 +145,14 @@ public:
 // Get top left offset of canvas relative to output.
 // Normally negative.  Can be positive if output is smaller than canvas.
 	float get_x_offset(EDL *edl, 
-		int single_channel, 
 		float zoom_x, 
 		float conformed_w,
 		float conformed_h);
 	float get_y_offset(EDL *edl, 
-		int single_channel, 
 		float zoom_y, 
 		float conformed_w,
 		float conformed_h);
 	void get_zooms(EDL *edl, 
-		int single_channel, 
 		float &zoom_x, 
 		float &zoom_y,
 		float &conformed_w,
@@ -164,9 +161,9 @@ public:
 	
 // Convert coord from output to canvas position, including
 // x and y scroll offsets
-	void output_to_canvas(EDL *edl, int single_channel, float &x, float &y);
+	void output_to_canvas(EDL *edl, float &x, float &y);
 // Convert coord from canvas to output position
-	void canvas_to_output(EDL *edl, int single_channel, float &x, float &y);
+	void canvas_to_output(EDL *edl, float &x, float &y);
 
 // Get dimensions of frame being sent to canvas
 	virtual int get_output_w(EDL *edl);

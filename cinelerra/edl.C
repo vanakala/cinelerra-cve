@@ -802,7 +802,7 @@ int EDL::get_tracks_height(Theme *theme)
 }
 
 // Get the total output size scaled to aspect ratio
-void EDL::calculate_conformed_dimensions(int single_channel, float &w, float &h)
+void EDL::calculate_conformed_dimensions(float &w, float &h)
 {
 	w = session->output_w;
 	h = session->output_h;
