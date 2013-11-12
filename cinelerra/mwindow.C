@@ -79,6 +79,7 @@
 #include "recordlabel.h"
 #include "removethread.h"
 #include "render.h"
+#include "ruler.h"
 #include "samplescroll.h"
 #include "sighandler.h"
 #include "splashgui.h"
@@ -697,6 +698,11 @@ void MWindow::init_cache()
 	wave_cache = new WaveCache;
 }
 
+void MWindow::init_ruler()
+{
+	ruler = new Ruler(this);
+}
+
 void MWindow::init_channeldb()
 {
 	channeldb_v4l2jpeg->load("channeldb_v4l2jpeg");
@@ -1244,6 +1250,7 @@ void MWindow::create_objects(int want_gui,
 	init_compositor();
 	init_levelwindow();
 	init_viewer();
+	init_ruler();
 	init_cache();
 	init_indexes();
 	init_channeldb();
@@ -1264,6 +1271,7 @@ void MWindow::create_objects(int want_gui,
 	if(session->show_awindow) awindow->gui->show_window();
 	if(session->show_lwindow) lwindow->gui->show_window();
 	if(session->show_gwindow) gwindow->gui->show_window();
+	if(session->show_ruler) ruler->gui->show_window();
 
 	gui->mainmenu->load_defaults(defaults);
 	gui->mainmenu->update_toggles(0);
@@ -1304,6 +1312,7 @@ ENABLE_BUFFER
 	awindow->start();
 	cwindow->start();
 	lwindow->start();
+	ruler->start();
 	gwindow->start();
 	Thread::start();
 	playback_3d->start();
@@ -1371,6 +1380,15 @@ void MWindow::tile_windows()
 {
 	session->default_window_positions();
 	gui->default_positions();
+}
+
+void MWindow::show_ruler()
+{
+	session->show_ruler = 1;
+	ruler->gui->show_window();
+	ruler->gui->raise_window();
+	ruler->gui->flush();
+	gui->mainmenu->show_ruler->set_checked(1);
 }
 
 void MWindow::toggle_loop_playback()

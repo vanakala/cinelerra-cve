@@ -130,10 +130,13 @@ public:
 	int rmonitor_x, rmonitor_y, rmonitor_w, rmonitor_h;
 // record status
 	int rwindow_x, rwindow_y, rwindow_w, rwindow_h;
+// ruler
+	int ruler_x, ruler_y, ruler_length, ruler_orientation;
 // error window
 	int ewindow_w, ewindow_h;
 	int afolders_w;
 	int show_vwindow, show_awindow, show_cwindow, show_gwindow, show_lwindow;
+	int show_ruler;
 	int plugindialog_w, plugindialog_h;
 	int menueffect_w, menueffect_h;
 

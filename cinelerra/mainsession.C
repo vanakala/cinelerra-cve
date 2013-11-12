@@ -30,6 +30,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "auto.h"
+#include "ruler.inc"
 
 MainSession::MainSession(MWindow *mwindow)
 {
@@ -92,6 +93,8 @@ void MainSession::boundaries()
 	rwindow_y = MAX(0, rwindow_y);
 	rmonitor_x = MAX(0, rmonitor_x);
 	rmonitor_y = MAX(0, rmonitor_y);
+	ruler_x = MAX(0, ruler_x);
+	ruler_y = MAX(0, ruler_y);
 	cwindow_controls = CLIP(cwindow_controls, 0, 1);
 }
 
@@ -168,6 +171,11 @@ void MainSession::default_window_positions()
 	batchrender_h = 340;
 	batchrender_x = root_w / 2 - batchrender_w / 2;
 	batchrender_y = root_h / 2 - batchrender_h / 2;
+
+	ruler_x = root_w / 4;
+	ruler_y = root_h / 4;
+	ruler_length = RULER_LENGTH;
+	ruler_orientation = RULER_HORIZ;
 }
 
 int MainSession::load_defaults(BC_Hash *defaults)
@@ -227,11 +235,17 @@ int MainSession::load_defaults(BC_Hash *defaults)
 	batchrender_w = defaults->get("BATCHRENDER_W", batchrender_w);
 	batchrender_h = defaults->get("BATCHRENDER_H", batchrender_h);
 
+	ruler_x = defaults->get("RULER_X", ruler_x);
+	ruler_y = defaults->get("RULER_Y", ruler_y);
+	ruler_length = defaults->get("RULER_LENGTH", ruler_length);
+	ruler_orientation = defaults->get("RULER_ORIENTATION", ruler_orientation);
+
 	show_vwindow = defaults->get("SHOW_VWINDOW", 1);
 	show_awindow = defaults->get("SHOW_AWINDOW", 1);
 	show_cwindow = defaults->get("SHOW_CWINDOW", 1);
 	show_lwindow = defaults->get("SHOW_LWINDOW", 0);
 	show_gwindow = defaults->get("SHOW_GWINDOW", 0);
+	show_ruler = defaults->get("SHOW_RULER", 0);
 
 	cwindow_controls = defaults->get("CWINDOW_CONTROLS", cwindow_controls);
 
@@ -301,11 +315,17 @@ int MainSession::save_defaults(BC_Hash *defaults)
 	defaults->update("BATCHRENDER_W", batchrender_w);
 	defaults->update("BATCHRENDER_H", batchrender_h);
 
+	defaults->update("RULER_X", ruler_x);
+	defaults->update("RULER_Y", ruler_y);
+	defaults->update("RULER_LENGTH", ruler_length);
+	defaults->update("RULER_ORIENTATION", ruler_orientation);
+
 	defaults->update("SHOW_VWINDOW", show_vwindow);
 	defaults->update("SHOW_AWINDOW", show_awindow);
 	defaults->update("SHOW_CWINDOW", show_cwindow);
 	defaults->update("SHOW_LWINDOW", show_lwindow);
 	defaults->update("SHOW_GWINDOW", show_gwindow);
+	defaults->update("SHOW_RULER", show_ruler);
 
 	defaults->update("CWINDOW_CONTROLS", cwindow_controls);
 

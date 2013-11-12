@@ -240,6 +240,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    resizetrackthread.C \
 		    resourcepixmap.C \
 		    resourcethread.C \
+		    ruler.C \
 		    samplescroll.C \
 		    savefile.C \
 		    setformat.C \
@@ -521,6 +522,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 resizetrackthread.h \
 		 resourcepixmap.h \
 		 resourcethread.h \
+		 ruler.h \
 		 samplescroll.h \
 		 savefile.h \
 		 setformat.h \

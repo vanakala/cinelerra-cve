@@ -192,6 +192,7 @@ int MainMenu::create_objects()
 	windowmenu->add_item(show_cwindow = new ShowCWindow(mwindow));
 	windowmenu->add_item(show_gwindow = new ShowGWindow(mwindow));
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
+	windowmenu->add_item(show_ruler = new ShowRuler(mwindow));
 	windowmenu->add_item(new TileWindows(mwindow));
 
 	return 0;
@@ -1100,4 +1101,15 @@ int TileWindows::handle_event()
 	return 1;
 }
 
+ShowRuler::ShowRuler(MWindow *mwindow)
+ : BC_MenuItem(_("Show Ruler"))
+{
+	this->mwindow = mwindow;
+	set_checked(mwindow->session->show_ruler);
+}
 
+int ShowRuler::handle_event()
+{
+	mwindow->show_ruler();
+	return 1;
+}

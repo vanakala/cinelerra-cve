@@ -68,6 +68,7 @@
 #include "recordlabel.inc"
 #include "removethread.inc"
 #include "render.inc"
+#include "ruler.inc"
 #include "sharedlocation.inc"
 #include "sighandler.inc"
 #include "splashgui.inc"
@@ -120,6 +121,7 @@ public:
 	void show_lwindow();
 	void show_cwindow();
 	void show_gwindow();
+	void show_ruler();
 	void tile_windows();
 	void set_titles(int value);
 	void asset_to_edl(EDL *new_edl, Asset *new_asset, RecordLabels *labels = 0);
@@ -466,6 +468,8 @@ public:
 	TipWindow *twindow;
 // Levels
 	LevelWindow *lwindow;
+// Ruler
+	Ruler *ruler;
 // Lock during creation and destruction of GUI
 	Mutex *plugin_gui_lock;
 // Lock during creation and destruction of brender so playback doesn't use it.
@@ -518,6 +522,7 @@ public:
 	void init_compositor();
 	void init_levelwindow();
 	void init_viewer();
+	void init_ruler();
 	void init_cache();
 	void init_menus();
 	void init_indexes();

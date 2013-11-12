@@ -34,6 +34,7 @@ class ShowAWindow;
 class ShowGWindow;
 class ShowCWindow;
 class ShowLWindow;
+class ShowRuler;
 class Undo;
 
 #include "arraylist.h"
@@ -129,6 +130,7 @@ public:
 	ShowCWindow *show_cwindow;
 	ShowGWindow *show_gwindow;
 	ShowLWindow *show_lwindow;
+	ShowRuler *show_ruler;
 };
 
 // ========================================= edit
@@ -502,6 +504,14 @@ class TileWindows : public BC_MenuItem
 {
 public:
 	TileWindows(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class ShowRuler : public BC_MenuItem
+{
+public:
+	ShowRuler(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };
