@@ -856,11 +856,7 @@ void EDL::dump(int indent)
 		printf("%*sEDLS (total %d)\n", indent, "", clips.total);
 
 		for(int i = 0; i < clips.total; i++)
-		{
-			printf("\n\n");
 			clips.values[i]->dump(indent + 2);
-			printf("\n\n");
-		}
 
 		assets->dump(indent + 1);
 	}
