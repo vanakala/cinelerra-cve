@@ -21,6 +21,7 @@
 
 #include "automation.h"
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -368,7 +369,7 @@ void MWindow::goto_end(void)
 	gui->cursor->update();
 	gui->canvas->activate();
 	gui->zoombar->update();
-	cwindow->update(1, 0, 0, 0, 1);
+	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 }
 
 void MWindow::goto_start(void)
@@ -394,7 +395,7 @@ void MWindow::goto_start(void)
 	gui->cursor->update();
 	gui->canvas->activate();
 	gui->zoombar->update();
-	cwindow->update(1, 0, 0, 0, 1);
+	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 }
 
 void MWindow::samplemovement(ptstime view_start)
@@ -439,7 +440,7 @@ void MWindow::select_all(void)
 	edl->local_session->set_selectionend(edl->tracks->total_length());
 	gui->update(0, 1, 1, 1, 0, 1, 0);
 	gui->canvas->activate();
-	cwindow->update(1, 0, 0);
+	cwindow->update(WUPD_POSITION);
 }
 
 void MWindow::next_label(int shift_down)
@@ -476,7 +477,7 @@ void MWindow::next_label(int shift_down)
 			gui->canvas->flash();
 			gui->flush();
 		}
-		cwindow->update(1, 0, 0, 0, 1);
+		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
 	else
 	{
@@ -517,7 +518,7 @@ void MWindow::prev_label(int shift_down)
 			gui->canvas->flash();
 			gui->flush();
 		}
-		cwindow->update(1, 0, 0, 0, 1);
+		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
 	else
 	{
@@ -570,7 +571,7 @@ void MWindow::next_edit_handle(int shift_down)
 			gui->canvas->flash();
 			gui->flush();
 		}
-		cwindow->update(1, 0, 0, 0, 1);
+		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
 	else
 	{
@@ -626,7 +627,7 @@ void MWindow::prev_edit_handle(int shift_down)
 			gui->canvas->flash();
 			gui->flush();
 		}
-		cwindow->update(1, 0, 0, 0, 1);
+		cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	}
 	else
 	{

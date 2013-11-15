@@ -21,6 +21,7 @@
 
 #include "autos.h"
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "cplayback.h"
 #include "ctimebar.h"
 #include "ctracking.h"
@@ -184,13 +185,9 @@ void CWindow::run()
 	gui->run_window();
 }
 
-void CWindow::update(int position, 
-	int overlays, 
-	int tool_window, 
-	int operation,
-	int timebar)
+void CWindow::update(int options)
 {
-	if(position)
+	if(options & WUPD_POSITION)
 	{
 		gui->lock_window("CWindow::update 1");
 		gui->slider->set_position();
@@ -200,25 +197,25 @@ void CWindow::update(int position,
 	}
 
 // Create tool window
-	if(operation)
+	if(options & WUPD_OPERATION)
 	{
 		gui->set_operation(mwindow->edl->session->cwindow_operation);
 	}
 
 // Updated by video device.
-	if(overlays && !position)
+	if(options & (WUPD_OVERLAYS | WUPD_POSITION) == WUPD_OVERLAYS)
 	{
 		gui->canvas->draw_refresh();
 	}
 
 // Update tool parameters
 // Never updated by someone else
-	if(tool_window || position)
+	if(options & (WUPD_TOOLWIN | WUPD_POSITION))
 	{
 		gui->update_tool();
 	}
 
-	if(timebar)
+	if(options & WUPD_TIMEBAR)
 	{
 		gui->timebar->update(1, 1);
 	}

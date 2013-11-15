@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "cwindow.h"
 #include "edl.h"
@@ -419,7 +420,7 @@ void MTimeBar::select_label(ptstime position)
 	}
 
 // Que the CWindow
-	mwindow->cwindow->update(1, 0, 0, 0, 1);
+	mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	mwindow->gui->cursor->hide(0);
 	mwindow->gui->cursor->draw(1);
 	mwindow->gui->canvas->activate();

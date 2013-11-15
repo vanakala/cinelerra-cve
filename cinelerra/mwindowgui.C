@@ -22,6 +22,7 @@
 #include "awindowgui.h"
 #include "awindow.h"
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
 #include "bchash.h"
@@ -604,7 +605,7 @@ int MWindowGUI::keypress_event()
 				1,
 				0,
 				1);
-			mwindow->cwindow->update(0, 1, 1);
+			mwindow->cwindow->update(WUPD_OVERLAYS | WUPD_TOOLWIN);
 
 			result = 1;
 			break;

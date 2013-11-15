@@ -24,6 +24,7 @@
 #include "awindowgui.h"
 #include "awindow.h"
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "cache.h"
 #include "clip.h"
 #include "clipedit.h"
@@ -170,7 +171,7 @@ void MWindow::clear_entry()
 	restart_brender();
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
-	cwindow->update(1, 0, 0, 0, 1);
+	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
@@ -200,7 +201,7 @@ void MWindow::straighten_automation()
 	gui->canvas->flash();
 	sync_parameters(CHANGE_PARAMS);
 	gui->patchbay->update();
-	cwindow->update(1, 0, 0);
+	cwindow->update(WUPD_POSITION);
 }
 
 void MWindow::clear_automation()
@@ -216,7 +217,7 @@ void MWindow::clear_automation()
 	gui->canvas->flash();
 	sync_parameters(CHANGE_PARAMS);
 	gui->patchbay->update();
-	cwindow->update(1, 0, 0);
+	cwindow->update(WUPD_POSITION);
 }
 
 void MWindow::clear_labels()
@@ -226,7 +227,7 @@ void MWindow::clear_labels()
 	undo->update_undo(_("clear labels"), LOAD_TIMEBAR);
 
 	gui->timebar->update();
-	cwindow->update(0, 0, 0, 0, 1);
+	cwindow->update(WUPD_TIMEBAR);
 	save_backup();
 }
 
@@ -372,7 +373,7 @@ void MWindow::cut_automation()
 	gui->canvas->flash();
 	sync_parameters(CHANGE_PARAMS);
 	gui->patchbay->update();
-	cwindow->update(1, 0, 0);
+	cwindow->update(WUPD_POSITION);
 }
 
 void MWindow::delete_inpoint()
@@ -603,7 +604,7 @@ void MWindow::finish_modify_handles()
 	sync_parameters(CHANGE_EDL);
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
-	cwindow->update(1, 0, 0, 0, 1);
+	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 }
 
 void MWindow::match_output_size(Track *track)
@@ -982,7 +983,7 @@ void MWindow::paste_automation()
 		gui->canvas->flash();
 		sync_parameters(CHANGE_PARAMS);
 		gui->patchbay->update();
-		cwindow->update(1, 0, 0);
+		cwindow->update(WUPD_POSITION);
 	}
 }
 
@@ -1262,7 +1263,7 @@ void MWindow::paste_silence()
 	update_plugin_guis();
 	restart_brender();
 	gui->update(1, 2, 1, 1, 1, 1, 0);
-	cwindow->update(1, 0, 0, 0, 1);
+	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
@@ -1348,7 +1349,8 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 	update_plugin_guis();
 	restart_brender();
 	gui->update(1, 2, 1, 1, 1, 1, 1);
-	cwindow->update(1, 1, 1, 1, 1);
+	cwindow->update(WUPD_POSITION | WUPD_OVERLAYS | WUPD_TOOLWIN |
+		WUPD_OPERATION | WUPD_TIMEBAR);
 
 	cwindow->gui->unlock_window();
 	gui->unlock_window();
@@ -1702,7 +1704,8 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 	update_plugin_states();
 	update_plugin_guis();
 	gui->update(1, 2, 1, 1, 1, 1, 1);
-	cwindow->update(1, 1, 1, 1, 1);
+	cwindow->update(WUPD_POSITION | WUPD_OVERLAYS | WUPD_TOOLWIN |
+		WUPD_OPERATION | WUPD_TIMEBAR);
 
 	cwindow->gui->unlock_window();
 	gui->unlock_window();
@@ -1724,7 +1727,7 @@ void MWindow::select_point(ptstime position)
 	edl->local_session->set_selection(position);
 
 // Que the CWindow
-	cwindow->update(1, 0, 0, 0, 1);
+	cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 	update_plugin_guis();
 	gui->patchbay->update();
 	gui->cursor->hide(0);

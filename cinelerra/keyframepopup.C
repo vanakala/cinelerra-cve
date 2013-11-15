@@ -21,6 +21,7 @@
 
 #include "autos.h"
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "cwindow.h"
 #include "edl.h"
 #include "floatauto.h"
@@ -271,7 +272,7 @@ int KeyframePopupTangentMode::handle_event()
 		mwindow->undo->update_undo(_("change keyframe tangent mode"), LOAD_ALL);
 
 		mwindow->gui->update(0, 1, 0, 0, 0, 0, 0); // incremental redraw for canvas
-		mwindow->cwindow->update(0, 0, 1, 0, 0); // redraw tool window in compositor
+		mwindow->cwindow->update(WUPD_TOOLWIN);
 		mwindow->update_plugin_guis();
 		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_EDL);

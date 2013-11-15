@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cursors.h"
@@ -802,7 +803,7 @@ void TimeBar::select_region(ptstime position)
 	}
 
 // Que the CWindow
-	mwindow->cwindow->update(1, 0, 0);
+	mwindow->cwindow->update(WUPD_POSITION);
 	mwindow->gui->cursor->hide(0);
 	mwindow->gui->cursor->draw(1);
 	mwindow->gui->canvas->flash();

@@ -30,6 +30,7 @@
 #include "cache.h"
 #include "channel.h"
 #include "channeldb.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "colormodels.h"
 #include "cplayback.h"
@@ -1733,7 +1734,7 @@ void MWindow::update_project(int load_mode)
 	gui->update(1, 1, 1, 1, 1, 1, 1);
 
 	cwindow->gui->lock_window("Mwindow::update_project 1");
-	cwindow->update(0, 0, 1, 1, 1);
+	cwindow->update(WUPD_TOOLWIN | WUPD_OPERATION | WUPD_TIMEBAR);
 	cwindow->gui->unlock_window();
 
 	if(load_mode == LOADMODE_REPLACE ||

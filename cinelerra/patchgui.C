@@ -21,6 +21,7 @@
 
 #include "automation.h"
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "edl.h"
@@ -276,7 +277,7 @@ void PatchGUI::toggle_behavior(int type,
 
 // Update affected tracks in cwindow
 	case Tracks::RECORD:
-		mwindow->cwindow->update(0, 1, 1);
+		mwindow->cwindow->update(WUPD_OVERLAYS | WUPD_TOOLWIN);
 		mwindow->undo->update_undo(_("record patch"), LOAD_PATCHES);
 		break;
 

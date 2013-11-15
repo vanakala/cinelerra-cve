@@ -39,11 +39,7 @@ public:
 	~CWindow();
 
 // Position is inclusive of the other 2
-	void update(int position, 
-		int overlays, 
-		int tool_window, 
-		int operation = 0,
-		int timebar = 0);
+	void update(int options);
 	void run();
 	Track* calculate_affected_track();
 // Get keyframe for editing in the CWindow.

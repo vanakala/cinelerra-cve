@@ -21,6 +21,7 @@
 
 #include "awindow.h"
 #include "awindowgui.h"
+#include "cinelerra.h"
 #include "manualgoto.h"
 #include "edl.h"
 #include "fonts.h"
@@ -120,7 +121,7 @@ void ManualGoto::run()
 				mwindow->find_cursor();
 				mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);
 				mwindow->gui->unlock_window();
-				mwindow->cwindow->update(1, 0, 0, 0, 0);
+				mwindow->cwindow->update(WUPD_POSITION);
 			}
 		} else
 		if ((masterwindow == (BC_WindowBase *)mwindow->vwindow->gui) &&

@@ -24,6 +24,7 @@
 #include "automation.h"
 #include "bcsignals.h"
 #include "bctimer.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "colors.h"
 #include "cplayback.h"
@@ -3743,7 +3744,7 @@ int TrackCanvas::cursor_motion_event()
 			mwindow->edl->local_session->set_selectionend(selection_midpoint1);
 			mwindow->edl->local_session->set_selectionstart(position);
 // Que the CWindow
-			mwindow->cwindow->update(1, 0, 0, 0, 1);
+			mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 // Update the faders
 			mwindow->update_plugin_guis();
 			gui->patchbay->update();
@@ -3846,7 +3847,7 @@ int TrackCanvas::cursor_motion_event()
 		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->update_plugin_guis();
-		mwindow->cwindow->update(1, 0, 0, 0, 1);
+		mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 // Update faders
 		gui->patchbay->update();
 	}
@@ -3958,7 +3959,7 @@ void TrackCanvas::repeat_event(int duration)
 				mwindow->edl->local_session->set_selectionend(selection_midpoint1);
 				mwindow->edl->local_session->set_selectionstart(position);
 // Que the CWindow
-				mwindow->cwindow->update(1, 0, 0);
+				mwindow->cwindow->update(WUPD_POSITION);
 // Update the faders
 				mwindow->update_plugin_guis();
 				gui->patchbay->update();
@@ -4753,7 +4754,7 @@ int TrackCanvas::button_press_event()
 
 		if(rerender)
 		{
-			mwindow->cwindow->update(1, 0, 0, 0, 1);
+			mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
 
 // Update faders
 			mwindow->update_plugin_guis();
