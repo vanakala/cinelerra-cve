@@ -674,7 +674,6 @@ void MWindow::init_edl()
 void MWindow::init_compositor()
 {
 	cwindow = new CWindow(this);
-	cwindow->create_objects();
 }
 
 void MWindow::init_levelwindow()

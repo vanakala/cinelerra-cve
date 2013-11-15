@@ -44,27 +44,14 @@
 #include "transportcommand.h"
 #include "mwindow.h"
 
-
-
 #include <unistd.h>
-
 
 
 CWindow::CWindow(MWindow *mwindow)
  : Thread()
 {
 	this->mwindow = mwindow;
-}
 
-
-CWindow::~CWindow()
-{
-	delete playback_engine;
-	delete playback_cursor;
-}
-
-int CWindow::create_objects()
-{
 	destination = mwindow->defaults->get("CWINDOW_DESTINATION", 0);
 
 	gui = new CWindowGUI(mwindow, this);
@@ -75,9 +62,13 @@ int CWindow::create_objects()
 	gui->transport->set_engine(playback_engine);
 	playback_cursor = new CTracking(mwindow, this);
 	playback_cursor->create_objects();
-	return 0;
 }
 
+CWindow::~CWindow()
+{
+	delete playback_engine;
+	delete playback_cursor;
+}
 
 void CWindow::show_window()
 {
@@ -102,7 +93,6 @@ void CWindow::hide_window()
 	mwindow->gui->unlock_window();
 	mwindow->save_defaults();
 }
-
 
 Track* CWindow::calculate_affected_track()
 {
@@ -155,8 +145,6 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 	return affected_auto;
 }
 
-
-
 void CWindow::calculate_affected_autos(FloatAuto **x_auto,
 	FloatAuto **y_auto,
 	FloatAuto **z_auto,
@@ -192,10 +180,6 @@ void CWindow::calculate_affected_autos(FloatAuto **x_auto,
 	}
 }
 
-
-
-
-
 void CWindow::run()
 {
 	gui->run_window();
@@ -207,7 +191,6 @@ void CWindow::update(int position,
 	int operation,
 	int timebar)
 {
-
 	if(position)
 	{
 		gui->lock_window("CWindow::update 1");
@@ -217,14 +200,11 @@ void CWindow::update(int position,
 		playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
 	}
 
-
-
 // Create tool window
 	if(operation)
 	{
 		gui->set_operation(mwindow->edl->session->cwindow_operation);
 	}
-
 
 // Updated by video device.
 	if(overlays && !position)
@@ -257,7 +237,4 @@ void CWindow::update(int position,
 			mwindow->theme->ccanvas_y,
 			mwindow->theme->ccanvas_w,
 			mwindow->theme->ccanvas_h);
-
 }
-
-

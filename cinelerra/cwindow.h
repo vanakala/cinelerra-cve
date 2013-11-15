@@ -38,7 +38,6 @@ public:
 	CWindow(MWindow *mwindow);
 	~CWindow();
 
-	int create_objects();
 // Position is inclusive of the other 2
 	void update(int position, 
 		int overlays, 
