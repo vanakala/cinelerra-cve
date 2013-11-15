@@ -40,7 +40,6 @@ public:
 	Tracking(MWindow *mwindow);
 	virtual ~Tracking();
 
-	void create_objects() {};
 	virtual void start_playback(ptstime new_position);
 	virtual void stop_playback();
 

@@ -85,8 +85,6 @@ int VWindow::create_objects()
 // Start command loop
 	gui->transport->set_engine(playback_engine);
 	playback_cursor = new VTracking(mwindow, this);
-	playback_cursor->create_objects();
-
 	clip_edit = new ClipEdit(mwindow, 0, this);
 	return 0;
 }

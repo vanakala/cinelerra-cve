@@ -61,7 +61,6 @@ CWindow::CWindow(MWindow *mwindow)
 // Start command loop
 	gui->transport->set_engine(playback_engine);
 	playback_cursor = new CTracking(mwindow, this);
-	playback_cursor->create_objects();
 }
 
 CWindow::~CWindow()
