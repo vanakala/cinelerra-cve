@@ -59,16 +59,17 @@ public:
 	void focus_in_event();
 	void focus_out_event();
 
-// canvas - 1 for incremental drawing of resources
-//          2 for delete and redraw of resources
-//          3 to ignore picon thread
-	void update(int scrollbars,
-		int canvas, 
-		int timebar,
-		int zoombar,
-		int patchbay, 
-		int clock,
-		int buttonbar);
+// options (bits):
+//          WUPD_SCROLLBARS - update scrollbars
+//          WUPD_CANVINCR   - incremental drawing of resources
+//          WUPD_CANVREDRAW - delete and redraw of resources
+//          WUPD_CANVPICIGN -  ignore picon thread
+//          WUPD_TIMEBAR    - update timebar
+//          WUPD_ZOOMBAR    - update zoombar
+//          WUPD_PATCHBAY   - update patchbay
+//          WUPD_CLOCK      - update clock
+//          WUPD_BUTTONBAR  - update buttonbar
+	void update(int options);
 
 	void update_title(char *path);
 	void translation_event();

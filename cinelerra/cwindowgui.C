@@ -22,6 +22,7 @@
 #include "automation.h"
 #include "autos.h"
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "canvas.h"
 #include "clip.h"
 #include "cpanel.h"
@@ -528,7 +529,8 @@ int CWindowGUI::drag_stop()
 		{
 			mwindow->save_backup();
 			mwindow->restart_brender();
-			mwindow->gui->update(1, 1, 1, 1, 0, 1, 0);
+			mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+				WUPD_ZOOMBAR | WUPD_CLOCK);
 			mwindow->undo->update_undo(_("insert assets"), LOAD_ALL);
 			mwindow->sync_parameters(LOAD_ALL);
 		}

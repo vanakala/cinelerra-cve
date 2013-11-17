@@ -20,6 +20,7 @@
  */
 
 #include "autoconf.h"
+#include "cinelerra.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "gwindow.h"
@@ -43,13 +44,7 @@ int ShowAssets::handle_event()
 {
 	set_checked(get_checked() ^ 1);
 	mwindow->edl->session->show_assets = get_checked();
-	mwindow->gui->update(1,
-		1,
-		0,
-		0,
-		1, 
-		0,
-		0);
+	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	mwindow->gwindow->gui->update_toggles(1);
 	return 1;
 }
@@ -66,13 +61,7 @@ int ShowTitles::handle_event()
 {
 	set_checked(get_checked() ^ 1);
 	mwindow->edl->session->show_titles = get_checked();
-	mwindow->gui->update(1,
-		1,
-		0,
-		0,
-		1, 
-		0,
-		0);
+	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
 	mwindow->gwindow->gui->update_toggles(1);
 	return 1;
 }

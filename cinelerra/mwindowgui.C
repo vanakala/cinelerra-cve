@@ -268,34 +268,28 @@ void MWindowGUI::resize_event(int w, int h)
 }
 
 
-void MWindowGUI::update(int scrollbars,
-	int canvas,
-	int timebar,
-	int zoombar,
-	int patchbay, 
-	int clock,
-	int buttonbar)
+void MWindowGUI::update(int options)
 {
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
-	if(scrollbars) this->get_scrollbars();
-	if(timebar) this->timebar->update();
-	if(zoombar) this->zoombar->update();
-	if(patchbay) this->patchbay->update();
-	if(clock) this->mainclock->update(
+	if(options & WUPD_SCROLLBARS) this->get_scrollbars();
+	if(options & WUPD_TIMEBAR) this->timebar->update();
+	if(options & WUPD_ZOOMBAR) this->zoombar->update();
+	if(options & WUPD_PATCHBAY) this->patchbay->update();
+	if(options & WUPD_CLOCK) this->mainclock->update(
 		mwindow->edl->local_session->get_selectionstart(1));
-	if(canvas)
+	if(options & WUPD_CANVAS)
 	{
-		this->canvas->draw(canvas);
+		this->canvas->draw(options & WUPD_CANVAS);
 		this->cursor->show();
 		this->canvas->flash();
 // Activate causes the menubar to deactivate.  Don't want this for
 // picon thread.
-		if(canvas != 3) this->canvas->activate();
+		if(!(options & WUPD_CANVPICIGN)) this->canvas->activate();
 	}
-	if(buttonbar) mbuttons->update();
+	if(options & WUPD_BUTTONBAR) mbuttons->update();
 
 // Can't age if the cache called this to draw missing picons
-	if(canvas != 2 && canvas != 3)
+	if((options & (WUPD_CANVREDRAW | WUPD_CANVPICIGN)) == 0)
 		mwindow->age_caches();
 }
 
@@ -598,13 +592,7 @@ int MWindowGUI::keypress_event()
 
 			}
 
-			update (0,
-				1,
-				0,
-				0,
-				1,
-				0,
-				1);
+			update (WUPD_CANVINCR | WUPD_PATCHBAY | WUPD_BUTTONBAR);
 			mwindow->cwindow->update(WUPD_OVERLAYS | WUPD_TOOLWIN);
 
 			result = 1;

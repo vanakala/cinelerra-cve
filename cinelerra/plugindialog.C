@@ -19,6 +19,7 @@
  * 
  */
 
+#include "cinelerra.h"
 #include "condition.h"
 #include "edl.h"
 #include "language.h"
@@ -177,13 +178,8 @@ void PluginDialogThread::run()
 			mwindow->restart_brender();
 			mwindow->update_plugin_states();
 			mwindow->sync_parameters(CHANGE_EDL);
-			mwindow->gui->update(1,
-				1,
-				0,
-				0,
-				1, 
-				0,
-				0);
+			mwindow->gui->update(WUPD_SCROLLBARS |
+				WUPD_CANVINCR | WUPD_PATCHBAY);
 
 			mwindow->gui->unlock_window();
 		}

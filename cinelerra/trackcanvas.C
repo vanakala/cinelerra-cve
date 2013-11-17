@@ -742,14 +742,13 @@ void TrackCanvas::draw_indexes(Asset *asset)
 			mwindow->edl->session->sample_rate)
 		return;
 
-	draw_resources(0, 1, asset);
+	draw_resources(WUPD_INDEXES, asset);
 	draw_overlays();
 	flash();
 	flush();
 }
 
 void TrackCanvas::draw_resources(int mode, 
-	int indexes_only, 
 	Asset *index_asset)
 {
 	if(!mwindow->edl->session->show_assets) return;
@@ -760,17 +759,17 @@ void TrackCanvas::draw_resources(int mode,
 
 	pixmaps_lock->lock("TrackCanvas::draw_resources");
 
-	if(mode != 3 && !indexes_only)
-		resource_thread->stop_draw(!indexes_only);
+	if((mode & (WUPD_CANVPICIGN | WUPD_INDEXES)) == 0)
+		resource_thread->stop_draw(!(mode & WUPD_INDEXES));
 
 	resource_timer->update();
 
 // Age resource pixmaps for deletion
-	if(!indexes_only)
+	if(!(mode & WUPD_INDEXES))
 		for(int i = 0; i < resource_pixmaps.total; i++)
 			resource_pixmaps.values[i]->visible--;
 
-	if(mode == 2)
+	if(mode & WUPD_CANVREDRAW)
 		resource_pixmaps.remove_all_objects();
 
 // Search every edit
@@ -781,7 +780,7 @@ void TrackCanvas::draw_resources(int mode,
 		for(Edit *edit = current->edits->first; edit; edit = edit->next)
 		{
 			if(!edit->asset) continue;
-			if(indexes_only)
+			if(mode & WUPD_INDEXES)
 			{
 				if(edit->track->data_type != TRACK_AUDIO) continue;
 				if(!edit->asset->test_path(index_asset->path)) continue;
@@ -835,7 +834,7 @@ void TrackCanvas::draw_resources(int mode,
 						pixmap_w, 
 						pixmap_h, 
 						mode,
-						indexes_only);
+						mode & WUPD_INDEXES);
 // Resize it if it's smaller
 					if(pixmap_w < pixmap->pixmap_w ||
 						pixmap_h < pixmap->pixmap_h)
@@ -853,7 +852,7 @@ void TrackCanvas::draw_resources(int mode,
 	}
 
 // Delete unused pixmaps
-	if(!indexes_only)
+	if(!(mode & WUPD_INDEXES))
 		for(int i = resource_pixmaps.total - 1; i >= 0; i--)
 			if(resource_pixmaps.values[i]->visible < -5)
 			{
@@ -868,7 +867,7 @@ void TrackCanvas::draw_resources(int mode,
 		hourglass_enabled = 0;
 	}
 
-	if(mode != 3 && !indexes_only)
+	if((mode & (WUPD_CANVPICIGN | WUPD_INDEXES)) == 0)
 		resource_thread->start_draw();
 }
 

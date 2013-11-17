@@ -26,6 +26,7 @@
 #include "bcprogressbox.h"
 #include "bitspopup.h"
 #include "cache.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -105,13 +106,7 @@ void AssetEdit::run()
 // happening when new_asset was created but not be happening anymore.
 				asset->copy_from(new_asset, 0);
 
-				mwindow->gui->update(0,
-					2,
-					0,
-					0,
-					0, 
-					0,
-					0);
+				mwindow->gui->update(WUPD_CANVREDRAW);
 
 // Start index rebuilding
 				if(newidx)

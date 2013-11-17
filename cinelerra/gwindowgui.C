@@ -21,6 +21,7 @@
 
 #include "autoconf.h"
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -233,13 +234,8 @@ int GWindowToggle::handle_event()
 		{
 			case NONAUTOTOGGLES_ASSETS:
 			case NONAUTOTOGGLES_TITLES:
-				mwindow->gui->update(1,
-					1,
-					0,
-					0,
-					1, 
-					0,
-					0);
+				mwindow->gui->update(WUPD_SCROLLBARS |
+					WUPD_CANVINCR | WUPD_PATCHBAY);
 				break;
 
 			case NONAUTOTOGGLES_TRANSITIONS:

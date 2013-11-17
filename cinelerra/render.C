@@ -27,6 +27,7 @@
 #include "bcprogressbox.h"
 #include "bcsignals.h"
 #include "cache.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "condition.h"
 #include "confirmsave.h"
@@ -755,13 +756,8 @@ int Render::render(int test_overwrite,
 		mwindow->save_backup();
 		mwindow->undo->update_undo(_("render"), LOAD_ALL);
 		mwindow->update_plugin_guis();
-		mwindow->gui->update(1, 
-			2,
-			1,
-			1,
-			1,
-			1,
-			0);
+		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
+		WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 		mwindow->sync_parameters(CHANGE_ALL);
 		mwindow->gui->unlock_window();
 	}

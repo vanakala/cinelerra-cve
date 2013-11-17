@@ -287,7 +287,7 @@ void PatchGUI::toggle_behavior(int type,
 
 	case Tracks::DRAW:
 		mwindow->undo->update_undo(_("draw patch"), LOAD_PATCHES);
-		mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
+		mwindow->gui->update(WUPD_CANVINCR);
 		break;
 
 	case Tracks::EXPAND:

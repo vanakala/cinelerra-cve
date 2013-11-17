@@ -1558,7 +1558,7 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 {
 	plugin->show = 0;
 	gui->lock_window("MWindow::hide_plugin");
-	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->update(WUPD_CANVINCR);
 	gui->unlock_window();
 
 	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
@@ -1731,7 +1731,8 @@ void MWindow::update_project(int load_mode)
 	restart_brender();
 	edl->tracks->update_y_pixels(theme);
 
-	gui->update(1, 1, 1, 1, 1, 1, 1);
+	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);
 
 	cwindow->gui->lock_window("Mwindow::update_project 1");
 	cwindow->update(WUPD_TOOLWIN | WUPD_OPERATION | WUPD_TIMEBAR);
@@ -1878,13 +1879,8 @@ void MWindow::remove_assets_from_project(int push_undo)
 	restart_brender();
 
 	gui->lock_window("MWindow::remove_assets_from_project 3");
-	gui->update(1,
-		1,
-		1,
-		1,
-		0, 
-		1,
-		0);
+	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+		WUPD_ZOOMBAR | WUPD_CLOCK);
 	gui->unlock_window();
 
 	awindow->gui->async_update_assets();

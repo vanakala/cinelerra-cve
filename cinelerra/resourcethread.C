@@ -23,6 +23,7 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "cache.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "condition.h"
 #include "datatype.h"
@@ -235,7 +236,7 @@ void ResourceThread::run()
 			delete item;
 		}
 		if(do_update)
-			mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);
+			mwindow->gui->update(WUPD_CANVPICIGN);
 	}
 }
 

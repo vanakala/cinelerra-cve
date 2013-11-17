@@ -22,9 +22,9 @@
 #ifndef CINELERRA_H
 #define CINELERRA_H
 
-// Window update bits
+// Cwindow, MWindow and Trackcanvas update bits
 #define WUPD_SCROLLBARS    0x0001
-#define WUPD_CANVAS        0x0002
+#define WUPD_INDEXES       0x0002
 #define WUPD_POSITION      0x0004
 #define WUPD_OVERLAYS      0x0008
 #define WUPD_TOOLWIN       0x0010
@@ -34,5 +34,9 @@
 #define WUPD_PATCHBAY      0x0100
 #define WUPD_CLOCK         0x0200
 #define WUPD_BUTTONBAR     0x0400
+#define WUPD_CANVINCR      0x0800
+#define WUPD_CANVREDRAW    0x1000
+#define WUPD_CANVPICIGN    0x2000
+#define WUPD_CANVAS        (WUPD_CANVINCR | WUPD_CANVREDRAW | WUPD_CANVPICIGN)
 
 #endif

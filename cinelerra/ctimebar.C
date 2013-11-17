@@ -101,13 +101,7 @@ void CTimeBar::select_label(ptstime position)
 	mwindow->gui->lock_window("CTimeBar::select_label");
 	mwindow->gui->cursor->hide(0);
 	mwindow->gui->cursor->draw(1);
-	mwindow->gui->update(0,
-		1,      // 1 for incremental drawing.  2 for full refresh
-		1,
-		0,
-		1, 
-		1,
-		0);
+	mwindow->gui->update(WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	mwindow->gui->unlock_window();
 	mwindow->update_plugin_guis();
 }

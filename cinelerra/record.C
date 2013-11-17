@@ -26,6 +26,7 @@
 #include "channel.h"
 #include "channeldb.h"
 #include "channelpicker.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
@@ -472,13 +473,9 @@ void Record::run()
 			mwindow->undo->update_undo(_("record"), LOAD_ALL);
 			mwindow->restart_brender();
 			mwindow->update_plugin_guis();
-			mwindow->gui->update(1, 
-				2,
-				1,
-				1,
-				1,
-				1,
-				0);
+			mwindow->gui->update(WUPD_SCROLLBARS |
+				WUPD_CANVREDRAW | WUPD_TIMEBAR |
+				WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 			mwindow->sync_parameters(CHANGE_ALL);
 		}
 		mwindow->gui->unlock_window();

@@ -19,6 +19,7 @@
  * 
  */
 
+#include "cinelerra.h"
 #include "language.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -102,13 +103,7 @@ int PluginPopupDetach::handle_event()
 	popup->plugin->track->detach_effect(popup->plugin);
 	mwindow->save_backup();
 	mwindow->undo->update_undo(_("detach effect"), LOAD_ALL);
-	mwindow->gui->update(0,
-		1,
-		0,
-		0,
-		0, 
-		0,
-		0);
+	mwindow->gui->update(WUPD_CANVINCR);
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
 	return 1;
@@ -147,7 +142,7 @@ PluginPopupOn::~PluginPopupOn()
 int PluginPopupOn::handle_event()
 {
 	popup->plugin->on = !get_checked();
-	mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
+	mwindow->gui->update(WUPD_CANVINCR);
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
 	return 1;

@@ -20,6 +20,7 @@
  */
 
 #include "clip.h"
+#include "cinelerra.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -119,13 +120,7 @@ int TransitionLengthText::handle_event()
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->edl->session->default_transition_length = result;
 		mwindow->gui->lock_window("TransitionLengthText::handle_event");
-		mwindow->gui->update(0,
-			1,
-			0,
-			0,
-			0, 
-			0,
-			0);
+		mwindow->gui->update(WUPD_CANVINCR);
 		mwindow->gui->unlock_window();
 	}
 	

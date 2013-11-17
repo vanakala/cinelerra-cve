@@ -438,7 +438,7 @@ void MWindow::select_all(void)
 {
 	edl->local_session->set_selectionstart(0);
 	edl->local_session->set_selectionend(edl->tracks->total_length());
-	gui->update(0, 1, 1, 1, 0, 1, 0);
+	gui->update(WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_CLOCK);
 	gui->canvas->activate();
 	cwindow->update(WUPD_POSITION);
 }

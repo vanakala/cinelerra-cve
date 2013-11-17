@@ -54,11 +54,17 @@ public:
 	int drag_start_event();
 	void drag_motion_event();
 	void drag_stop_event();
-// mode - 1 causes incremental drawing of pixmaps.  Used for navigation and index refresh.
-//        2 causes all resource pixmaps to be redrawn from scratch.  Used by editing.
-//        3 causes resource pixmaps to ignore picon thread.  Used by Piconthread.
+// mode bits - WUPD_CANVINCR causes incremental drawing of pixmaps.
+//                  Used for navigation and index refresh.
+//             WUPD_CANVREDRAW causes all resource pixmaps to be redrawn from scratch.
+//                  Used by editing.
+//             WUPD_CANVPICIGN causes resource pixmaps to ignore picon thread.
+//                  Used by Piconthread.
+//             WUPD_INDEXES - causes redraw only certain audio resources with indexes
 	void draw_resources(int mode = 0,
+/* Pole
 		int indexes_only = 0,     // Redraw only certain audio resources with indexes
+	*/
 		Asset *index_asset = 0);
 	void draw_highlight_rectangle(int x, int y, int w, int h);
 	void draw_highlight_insertion(int x, int y, int w, int h);
@@ -222,8 +228,8 @@ public:
 	void refresh_plugintoggles();
 
 // Draw everything to synchronize with the view.
-// mode - if 2 causes all resource pixmaps to be redrawn from scratch
-//        if 3 causes resource pixmaps to ignore picon thread
+// modebits - WUPD_CANVREDRAW causes all resource pixmaps to be redrawn from scratch
+//          - WUPD_CANVPICIGN causes resource pixmaps to ignore picon thread
 	void draw(int mode = 0, int hide_cursor = 1);
 
 // Draw resources during index building

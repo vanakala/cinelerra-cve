@@ -20,6 +20,7 @@
  */
 
 #include "clip.h"
+#include "cinelerra.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "datatype.h"
@@ -141,13 +142,8 @@ void SetFormatThread::apply_changes()
 // Update GUIs
 	mwindow->restart_brender();
 	mwindow->gui->lock_window("SetFormatThread::apply_changes");
-	mwindow->gui->update(1,
-		1,
-		1,
-		1,
-		1, 
-		1,
-		0);
+	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
+		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 	mwindow->gui->unlock_window();
 
 	mwindow->cwindow->gui->lock_window("SetFormatThread::apply_changes");

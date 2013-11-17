@@ -119,7 +119,9 @@ void ManualGoto::run()
 				mwindow->edl->local_session->set_selectionend(new_position);
 				mwindow->gui->lock_window("ManualGoto::run 1");
 				mwindow->find_cursor();
-				mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);
+				mwindow->gui->update(WUPD_SCROLLBARS |
+				WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR |
+				WUPD_PATCHBAY | WUPD_CLOCK);
 				mwindow->gui->unlock_window();
 				mwindow->cwindow->update(WUPD_POSITION);
 			}

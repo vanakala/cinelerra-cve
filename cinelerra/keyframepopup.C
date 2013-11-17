@@ -145,7 +145,8 @@ void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyf
 	if(!PTSEQU(current_position, new_position))
 	{
 		mwindow->gui->lock_window("KeyframePopup::update");
-		mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);
+		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR |
+			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 		mwindow->gui->unlock_window();
 	}
 }
@@ -195,13 +196,7 @@ int KeyframePopupDelete::handle_event()
 	mwindow->save_backup();
 	mwindow->undo->update_undo(_("delete keyframe"), LOAD_ALL);
 
-	mwindow->gui->update(0,
-		1,      // 1 for incremental drawing.  2 for full refresh
-		0,
-		0,
-		0,
-		0,
-		0);
+	mwindow->gui->update(WUPD_CANVINCR);
 	mwindow->update_plugin_guis();
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
@@ -271,7 +266,7 @@ int KeyframePopupTangentMode::handle_event()
 		mwindow->save_backup();
 		mwindow->undo->update_undo(_("change keyframe tangent mode"), LOAD_ALL);
 
-		mwindow->gui->update(0, 1, 0, 0, 0, 0, 0); // incremental redraw for canvas
+		mwindow->gui->update(WUPD_CANVINCR);
 		mwindow->cwindow->update(WUPD_TOOLWIN);
 		mwindow->update_plugin_guis();
 		mwindow->restart_brender();

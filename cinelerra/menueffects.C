@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "cinelerra.h"
 #include "clip.h"
 #include "confirmsave.h"
 #include "datatype.h"
@@ -469,13 +470,8 @@ void MenuEffectThread::run()
 
 		mwindow->restart_brender();
 		mwindow->update_plugin_guis();
-		mwindow->gui->update(1, 
-			2,
-			1,
-			1,
-			1,
-			1,
-			0);
+		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
+			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 		mwindow->sync_parameters(CHANGE_ALL);
 		mwindow->gui->unlock_window();
 	}
