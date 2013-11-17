@@ -60,10 +60,10 @@ class RecordStartoverThread;
 class EndRecordThread;
 
 #include "browsebutton.inc"
+#include "cinelerra.h"
 #include "condition.inc"
 #include "guicast.h"
 #include "loadmode.inc"
-#include "maxchannels.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "question.inc"

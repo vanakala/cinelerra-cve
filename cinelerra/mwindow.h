@@ -52,7 +52,6 @@
 #include "mainprogress.inc"
 #include "mainsession.inc"
 #include "mainundo.inc"
-#include "maxchannels.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"

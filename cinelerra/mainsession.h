@@ -32,7 +32,6 @@
 #include "edl.inc"
 #include "guicast.h"
 #include "mainsession.inc"
-#include "maxchannels.h"
 #include "mwindow.inc"
 #include "plugin.inc"
 #include "pluginset.inc"

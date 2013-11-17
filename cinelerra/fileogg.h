@@ -23,9 +23,8 @@
 #define FILEOGG_H
 
 #include "config.h"
+#include "cinelerra.h"
 #include "filebase.h"
-#include "maxchannels.h"
-#include "maxbuffers.h"
 #include "file.inc"
 
 #include <theora/theora.h>

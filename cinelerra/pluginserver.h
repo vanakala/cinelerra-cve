@@ -31,7 +31,6 @@
 #include "edl.inc"
 #include "keyframe.h"
 #include "mainprogress.inc"
-#include "maxbuffers.h"
 #include "menueffects.inc"
 #include "module.inc"
 #include "mwindow.inc"

@@ -24,9 +24,9 @@
 
 #include "atrack.inc"
 #include "aframe.inc"
+#include "cinelerra.h"
 #include "commonrender.h"
 #include "levelhist.inc"
-#include "maxchannels.h"
 
 class ARender : public CommonRender
 {

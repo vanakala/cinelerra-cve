@@ -28,7 +28,6 @@
 #include "filexml.inc"
 #include "floatautos.inc"
 #include "linklist.h"
-#include "maxchannels.h"
 #include "panautos.inc"
 #include "track.h"
 

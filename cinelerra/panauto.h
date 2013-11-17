@@ -23,9 +23,9 @@
 #define PANAUTO_H
 
 #include "auto.h"
+#include "cinelerra.h"
 #include "edl.inc"
 #include "filexml.inc"
-#include "maxchannels.h"
 #include "panautos.inc"
 
 class PanAuto : public Auto

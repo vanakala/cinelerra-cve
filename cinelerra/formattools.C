@@ -25,7 +25,6 @@
 #include "file.h"
 #include "formattools.h"
 #include "language.h"
-#include "maxchannels.h"
 #include "mwindow.h"
 #include "preferences.h"
 #include "quicktime.h"

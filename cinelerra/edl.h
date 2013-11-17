@@ -32,7 +32,6 @@
 #include "filexml.inc"
 #include "labels.inc"
 #include "localsession.inc"
-#include "maxchannels.h"
 #include "mutex.inc"
 #include "playbackconfig.h"
 #include "pluginserver.h"

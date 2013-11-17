@@ -28,7 +28,6 @@
 #include "floatauto.inc"
 #include "floatautos.inc"
 #include "mwindow.inc"
-#include "maxbuffers.h"
 #include "plugin.inc"
 #include "pluginserver.inc"
 #include "track.inc"

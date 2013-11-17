@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "aframe.h"
 #include "bcsignals.h"
+#include "cinelerra.h"
 #include "byteorder.h"
 #include "clip.h"
 #include "condition.h"

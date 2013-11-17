@@ -36,7 +36,6 @@ class PluginClient;
 #include "edlsession.inc"
 #include "keyframe.h"
 #include "mainprogress.inc"
-#include "maxbuffers.h"
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "theme.inc"

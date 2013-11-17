@@ -21,7 +21,7 @@
 
 #include "edl.h"
 #include "edlsession.h"
-#include "maxchannels.h"
+#include "cinelerra.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"
 #include "vframe.h"

@@ -33,9 +33,9 @@
 
 #include "pluginmacros.h"
 #include "bchash.inc"
+#include "cinelerra.h"
 #include "guicast.h"
 #include "language.h"
-#include "maxchannels.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
 

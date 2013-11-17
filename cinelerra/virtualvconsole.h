@@ -23,7 +23,6 @@
 #define VRENDERTHREAD_H
 
 #include "guicast.h"
-#include "maxbuffers.h"
 #include "vframe.inc"
 #include "videodevice.inc"
 #include "virtualconsole.h"

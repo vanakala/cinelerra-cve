@@ -25,9 +25,9 @@
 #include "autoconf.inc"
 #include "bcwindowbase.inc"
 #include "bchash.inc"
+#include "cinelerra.h"
 #include "edl.inc"
 #include "filexml.inc"
-#include "maxchannels.h"
 #include "playbackconfig.inc"
 #include "recordconfig.inc"
 

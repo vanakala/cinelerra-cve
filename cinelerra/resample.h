@@ -26,9 +26,9 @@
 #define BLACKSIZE 25
 
 #include "aframe.inc"
+#include "cinelerra.h"
 #include "datatype.h"
 #include "file.inc"
-#include "maxchannels.h"
 
 class Resample
 {

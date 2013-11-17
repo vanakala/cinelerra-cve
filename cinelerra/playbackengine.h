@@ -31,7 +31,6 @@
 #include "bchash.inc"
 #include "edl.inc"
 #include "mwindow.inc"
-#include "maxchannels.h"
 #include "mutex.inc"
 #include "tracking.inc"
 #include "preferences.inc"

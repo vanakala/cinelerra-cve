@@ -43,7 +43,6 @@ class Undo;
 #include "loadfile.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
-#include "maxchannels.h"
 #include "menuaeffects.inc"
 #include "menuveffects.inc"
 #include "module.inc"

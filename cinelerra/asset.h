@@ -26,11 +26,11 @@
 #include "arraylist.h"
 #include "bcwindowbase.inc"
 #include "bchash.inc"
+#include "cinelerra.h"
 #include "datatype.h"
 #include "filexml.inc"
 #include "garbage.h"
 #include "linklist.h"
-#include "maxchannels.h"
 #include "pluginserver.inc"
 
 

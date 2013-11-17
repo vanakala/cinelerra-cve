@@ -30,7 +30,6 @@
 #include "datatype.h"
 #include "edl.inc"
 #include "file.inc"
-#include "maxchannels.h"
 #include "mwindow.inc"
 #include "playabletracks.inc"
 #include "playbackconfig.inc"

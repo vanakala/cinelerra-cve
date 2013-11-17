@@ -24,9 +24,9 @@
 #define LEVELHIST_H
 
 #include "aframe.inc"
+#include "cinelerra.h"
 #include "datatype.h"
 #include "levelhist.inc"
-#include "maxchannels.h"
 
 class LevelHistory
 {

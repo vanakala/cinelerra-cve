@@ -450,8 +450,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 maskauto.h \
 		 maskautos.h \
 		 maskengine.h \
-		 maxbuffers.h \
-		 maxchannels.h \
 		 mbuttons.h \
 		 menuaeffects.h \
 		 menueffects.h \

@@ -29,7 +29,6 @@
 #include "datatype.h"
 #include "edl.inc"
 #include "filexml.inc"
-#include "maxchannels.h"
 #include "module.inc"
 #include "track.inc"
 

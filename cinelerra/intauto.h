@@ -25,7 +25,6 @@
 #include "auto.h"
 #include "edl.inc"
 #include "filexml.inc"
-#include "maxchannels.h"
 #include "intautos.inc"
 
 class IntAuto : public Auto

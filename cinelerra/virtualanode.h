@@ -25,7 +25,6 @@
 
 #include "arender.inc"
 #include "filethread.inc"  // RING_BUFFERS
-#include "maxchannels.h"
 #include "plugin.inc"
 #include "units.h"
 #include "virtualnode.h"

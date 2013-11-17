@@ -37,7 +37,6 @@
 #include "guicast.h"
 #include "loadmode.inc"
 #include "mainprogress.inc"
-#include "maxchannels.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "packagedispatcher.inc"

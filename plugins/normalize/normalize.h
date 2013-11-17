@@ -30,9 +30,9 @@
 
 #include "pluginmacros.h"
 #include "bchash.inc"
+#include "cinelerra.h"
 #include "guicast.h"
 #include "mainprogress.inc"
-#include "maxchannels.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
 

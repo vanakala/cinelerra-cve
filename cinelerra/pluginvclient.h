@@ -23,8 +23,7 @@
 #define PLUGINVCLIENT_H
 
 
-#include "maxbuffers.h"
-#include "maxchannels.h"
+#include "cinelerra.h"
 #include "pluginclient.h"
 #include "vframe.inc"
 

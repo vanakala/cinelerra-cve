@@ -24,8 +24,8 @@
 #define FILETOC_H
 
 #include "bcwindowbase.inc"
+#include "cinelerra.h"
 #include "datatype.h"
-#include "maxchannels.h"
 #include "mainprogress.inc"
 #include <stdio.h>
 #include <stdint.h>

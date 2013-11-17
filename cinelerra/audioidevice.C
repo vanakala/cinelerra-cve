@@ -23,6 +23,7 @@
 #include "bcprogressbox.h"
 #include "bcsignals.h"
 #include "bctimer.h"
+#include "cinelerra.h"
 #include "condition.h"
 #include "mainerror.h"
 #include "mutex.h"

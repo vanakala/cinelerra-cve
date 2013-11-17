@@ -23,7 +23,6 @@
 #define PLUGINACLIENT_H
 
 #include "aframe.h"
-#include "maxbuffers.h"
 #include "pluginclient.h"
 
 class PluginAClient : public PluginClient
