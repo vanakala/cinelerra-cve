@@ -112,7 +112,7 @@ public:
 	LabelEdit *label_edit;
 
 // Synchronize label, in/out display with master EDL
-	void update(int do_range = 1, int do_others = 1);
+	void update();
 	virtual void draw_time() {};
 // Called by update and draw_time.
 	virtual void draw_range();

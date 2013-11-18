@@ -370,10 +370,9 @@ void TimeBar::update_points()
 	}
 }
 
-void TimeBar::update(int do_range, int do_others)
+void TimeBar::update()
 {
 	draw_time();
-// Need to redo these when range is drawn to get the background updated.
 	update_labels();
 	update_points();
 	flash();

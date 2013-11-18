@@ -1746,7 +1746,7 @@ void MWindow::update_project(int load_mode)
 
 	cwindow->gui->lock_window("Mwindow::update_project 2");
 	cwindow->gui->slider->set_position();
-	cwindow->gui->timebar->update(1, 1);
+	cwindow->gui->timebar->update();
 	cwindow->gui->unlock_window();
 	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
 

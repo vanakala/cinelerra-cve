@@ -217,7 +217,7 @@ void CWindow::update(int options)
 
 	if(options & WUPD_TIMEBAR)
 	{
-		gui->timebar->update(1, 1);
+		gui->timebar->update();
 	}
 
 	if(!mwindow->edl->session->cwindow_scrollbars)
