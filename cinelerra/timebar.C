@@ -57,7 +57,7 @@ LabelGUI::LabelGUI(MWindow *mwindow,
 	TimeBar *timebar, 
 	int pixel, 
 	int y, 
-	double position,
+	ptstime position,
 	VFrame **data)
  : BC_Toggle(translate_pixel(mwindow, pixel), 
 		y,
@@ -231,13 +231,11 @@ void TimeBar::update_labels()
 					labels.values[output]->label = current;
 				}
 
-				if(edl->local_session->get_selectionstart(1) <= current->position &&
-					edl->local_session->get_selectionend(1) >= current->position)
+				if(PTSEQU(edl->local_session->get_selectionstart(1), current->position))
 					labels.values[output]->update(1);
 				else
 				if(labels.values[output]->get_value())
 					labels.values[output]->update(0);
-
 				output++;
 			}
 		}
