@@ -55,8 +55,6 @@ public:
 
 // Replace with update
 	void redraw_time_dependancies();
-
-	void focus_in_event();
 	void focus_out_event();
 
 // options (bits):

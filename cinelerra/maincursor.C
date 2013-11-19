@@ -38,18 +38,6 @@ MainCursor::MainCursor(MWindow *mwindow, MWindowGUI *gui)
 	playing_back = 0;
 }
 
-MainCursor::~MainCursor()
-{
-}
-
-void MainCursor::create_objects()
-{
-}
-
-void MainCursor::focus_in_event()
-{
-}
-
 void MainCursor::focus_out_event()
 {
 	show();
@@ -106,8 +94,10 @@ void MainCursor::draw(int do_plugintoggles)
 			mwindow->edl->local_session->zoom_time);
 		pixel2 = round((selectionend - view_start) /
 			mwindow->edl->local_session->zoom_time);
-		if(pixel1 < -10) pixel1 = -10;
-		if(pixel2 > gui->canvas->get_w() + 10) pixel2 = gui->canvas->get_w() + 10;
+		if(pixel1 < -10)
+			pixel1 = -10;
+		if(pixel2 > gui->canvas->get_w() + 10)
+			pixel2 = gui->canvas->get_w() + 10;
 		if(pixel2 < pixel1) pixel2 = pixel1;
 	}
 

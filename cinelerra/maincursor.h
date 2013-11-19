@@ -31,9 +31,7 @@ class MainCursor
 {
 public:
 	MainCursor(MWindow *mwindow, MWindowGUI *gui);
-	~MainCursor();
 
-	void create_objects();
 	void repeat_event(int duration);
 	void draw(int flash);
 	void hide(int do_plugintoggles = 1);
@@ -43,7 +41,6 @@ public:
 	void show(int do_plugintoggles = 1);
 	void restore(int do_plugintoggles);
 	void update();
-	void focus_in_event();
 	void focus_out_event();
 
 	MWindow *mwindow;

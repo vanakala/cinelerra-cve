@@ -203,7 +203,6 @@ SET_TRACE
 	mainclock->update(0);
 
 	cursor = new MainCursor(mwindow, this);
-	cursor->create_objects();
 
 	add_subwindow(edit_menu = new EditPopup(mwindow, this));
 	edit_menu->create_objects();
@@ -237,11 +236,6 @@ void MWindowGUI::redraw_time_dependancies()
 	zoombar->redraw_time_dependancies();
 	timebar->update();
 	mainclock->update(mwindow->edl->local_session->get_selectionstart(1));
-}
-
-void MWindowGUI::focus_in_event()
-{
-	cursor->focus_in_event();
 }
 
 void MWindowGUI::focus_out_event()
