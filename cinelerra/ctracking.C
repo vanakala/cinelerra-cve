@@ -30,6 +30,7 @@
 #include "localsession.h"
 #include "mainclock.h"
 #include "maincursor.h"
+#include "mtimebar.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"
@@ -133,7 +134,7 @@ int CTracking::update_scroll(ptstime position)
 
 void CTracking::update_tracker(ptstime position)
 {
-	int updated_scroll = 0;
+	int updated_scroll;
 
 	mwindow->edl->local_session->set_selection(position);
 // Update cwindow slider
@@ -156,7 +157,8 @@ void CTracking::update_tracker(ptstime position)
 	{
 		mwindow->gui->cursor->update();
 		mwindow->gui->zoombar->update_clocks();   // we just need to update clocks, not everything
-
+		if(get_playback_engine()->command->single_frame())
+			mwindow->gui->timebar->update_highlights();
 		mwindow->gui->canvas->flash();
 		mwindow->gui->flush();
 	}
