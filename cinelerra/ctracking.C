@@ -134,6 +134,8 @@ int CTracking::update_scroll(ptstime position)
 void CTracking::update_tracker(ptstime position)
 {
 	int updated_scroll = 0;
+
+	mwindow->edl->local_session->set_selection(position);
 // Update cwindow slider
 	cwindow->gui->lock_window("CTracking::update_tracker 1");
 	cwindow->gui->slider->update(position);
@@ -144,8 +146,6 @@ void CTracking::update_tracker(ptstime position)
 
 // Update mwindow cursor
 	mwindow->gui->lock_window("CTracking::update_tracker 2");
-
-	mwindow->edl->local_session->set_selection(position);
 
 	updated_scroll = update_scroll(position);
 
