@@ -166,9 +166,6 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	tool_panel->Thread::start();
 
 	set_operation(mwindow->edl->session->cwindow_operation);
-
-	canvas->draw_refresh();
-	draw_status();
 }
 
 CWindowGUI::~CWindowGUI()
