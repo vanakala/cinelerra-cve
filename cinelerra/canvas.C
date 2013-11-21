@@ -47,9 +47,6 @@ Canvas::Canvas(MWindow *mwindow,
 	int use_rwindow,
 	int use_vwindow)
 {
-	use_scrollbars = 0;
-	output_w = 0;
-	output_h = 0;
 	xscroll = 0;
 	yscroll = 0;
 	refresh_frame = 0;
