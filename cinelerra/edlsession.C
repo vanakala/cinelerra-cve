@@ -81,6 +81,7 @@ EDLSession::EDLSession(EDL *edl)
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	record_speed = 24;
 	decode_subtitles = 0;
+	cwindow_operation = CWINDOW_NONE;
 }
 
 EDLSession::~EDLSession()
@@ -183,7 +184,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	cwindow_dest = defaults->get("CWINDOW_DEST", 0);
 	cwindow_mask = defaults->get("CWINDOW_MASK", 0);
 	cwindow_meter = defaults->get("CWINDOW_METER", 1);
-	cwindow_operation = defaults->get("CWINDOW_OPERATION", 0);
 	cwindow_scrollbars = defaults->get("CWINDOW_SCROLLBARS", 0);
 	cwindow_xscroll = defaults->get("CWINDOW_XSCROLL", 0);
 	cwindow_yscroll = defaults->get("CWINDOW_YSCROLL", 0);
@@ -306,7 +306,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("CWINDOW_DEST", cwindow_dest);
 	defaults->update("CWINDOW_MASK", cwindow_mask);
 	defaults->update("CWINDOW_METER", cwindow_meter);
-	defaults->update("CWINDOW_OPERATION", cwindow_operation);
+	defaults->delete_key("CWINDOW_OPERATION");
 	defaults->update("CWINDOW_SCROLLBARS", cwindow_scrollbars);
 	defaults->update("CWINDOW_XSCROLL", cwindow_xscroll);
 	defaults->update("CWINDOW_YSCROLL", cwindow_yscroll);
