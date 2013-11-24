@@ -83,8 +83,7 @@ public:
 // Hardware version of MaskEngine
 	void do_mask(VFrame *output_temp, 
 		MaskAutos *keyframe_set, 
-		MaskAuto *keyframe,
-		MaskAuto *default_auto);
+		MaskAuto *keyframe);
 
 // The idea is to composite directly in the frame buffer if OpenGL.
 // OpenGL can do all the blending using the frame buffer.

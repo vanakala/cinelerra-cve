@@ -260,7 +260,6 @@ void Playback3DCommand::copy_from(BC_SynchronousCommand *command)
 	this->start_position_project = ptr->start_position_project;
 	this->keyframe_set = ptr->keyframe_set;
 	this->keyframe = ptr->keyframe;
-	this->default_auto = ptr->default_auto;
 	this->plugin_client = ptr->plugin_client;
 	this->want_texture = ptr->want_texture;
 
@@ -930,8 +929,7 @@ void Playback3D::do_mask(Canvas *canvas,
 	VFrame *output, 
 	framenum start_position_project,
 	MaskAutos *keyframe_set, 
-	MaskAuto *keyframe,
-	MaskAuto *default_auto)
+	MaskAuto *keyframe)
 {
 	Playback3DCommand command;
 	command.command = Playback3DCommand::DO_MASK;
@@ -940,7 +938,6 @@ void Playback3D::do_mask(Canvas *canvas,
 	command.start_position_project = start_position_project;
 	command.keyframe_set = keyframe_set;
 	command.keyframe = keyframe;
-	command.default_auto = default_auto;
 
 	send_command(&command);
 }
@@ -1011,7 +1008,7 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 
 // Clear screen
 		glDisable(GL_TEXTURE_2D);
-		if(command->default_auto->mode == MASK_MULTIPLY_ALPHA)
+		if(command->keyframe_set->get_mode() == MASK_MULTIPLY_ALPHA)
 		{
 			glClearColor(0.0, 0.0, 0.0, 0.0);
 			glColor4f((float)command->keyframe->value / 100, 

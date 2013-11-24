@@ -52,8 +52,8 @@ public:
 
 	int get_mode();
 	void set_mode(int new_mode);
-
-	int default_mode;
+private:
+	int mode;
 };
 
 #endif

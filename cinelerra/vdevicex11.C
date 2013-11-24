@@ -545,15 +545,13 @@ void VDeviceX11::do_fade(VFrame *output_temp, float fade)
 
 void VDeviceX11::do_mask(VFrame *output_temp, 
 		MaskAutos *keyframe_set, 
-		MaskAuto *keyframe,
-		MaskAuto *default_auto)
+		MaskAuto *keyframe)
 {
 	this->output->mwindow->playback_3d->do_mask(output,
 		output_temp,
 		output_temp->get_pts() / output_temp->get_duration(),
 		keyframe_set,
-		keyframe,
-		default_auto);
+		keyframe);
 }
 
 void VDeviceX11::overlay(VFrame *output_frame,

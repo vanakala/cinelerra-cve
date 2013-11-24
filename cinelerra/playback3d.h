@@ -209,7 +209,6 @@ public:
 	framenum start_position_project;
 	MaskAutos *keyframe_set;
 	MaskAuto *keyframe;
-	MaskAuto *default_auto;
 	PluginClient *plugin_client;
 };
 
@@ -253,8 +252,7 @@ public:
 		VFrame *output, 
 		framenum start_position_project,
 		MaskAutos *keyframe_set, 
-		MaskAuto *keyframe,
-		MaskAuto *default_auto);
+		MaskAuto *keyframe);
 
 
 // Overlay a virtual node on the framebuffer

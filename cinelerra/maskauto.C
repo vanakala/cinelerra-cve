@@ -200,7 +200,6 @@ void SubMask::dump(int indent)
 MaskAuto::MaskAuto(EDL *edl, MaskAutos *autos)
  : Auto(edl, autos)
 {
-	mode = autos->default_mode;
 	feather = 0;
 	value = 100;
 	apply_before_plugins = 0;
@@ -230,7 +229,6 @@ int MaskAuto::operator==(MaskAuto &that)
 int MaskAuto::identical(MaskAuto *src)
 {
 	if(value != src->value ||
-		mode != src->mode ||
 		feather != src->feather ||
 		masks.total != src->masks.total ||
 		apply_before_plugins != src->apply_before_plugins) return 0;
@@ -250,7 +248,6 @@ void MaskAuto::copy_from(MaskAuto *src)
 {
 	Auto::copy_from(src);
 
-	mode = src->mode;
 	feather = src->feather;
 	value = src->value;
 	apply_before_plugins = src->apply_before_plugins;
@@ -277,7 +274,6 @@ void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *temp
 		Auto::interpolate_from(a1, a2, position, templ);
 		return;
 	}
-	this->mode = mask_auto1->mode;
 	double frac1 = (position - mask_auto1->pos_time) / 
 		(mask_auto2->pos_time - mask_auto1->pos_time);
 	double frac2 = 1.0 - frac1;
@@ -339,7 +335,8 @@ SubMask* MaskAuto::get_submask(int number)
 
 void MaskAuto::load(FileXML *file)
 {
-	mode = file->tag.get_property("MODE", mode);
+	if(autos && autos->first == this)
+		((MaskAutos *)autos)->set_mode(file->tag.get_property("MODE", ((MaskAutos *)autos)->get_mode()));
 	feather = file->tag.get_property("FEATHER", feather);
 	value = file->tag.get_property("VALUE", value);
 	apply_before_plugins = file->tag.get_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
@@ -372,7 +369,8 @@ void MaskAuto::load(FileXML *file)
 void MaskAuto::copy(ptstime start, ptstime end, FileXML *file)
 {
 	file->tag.set_title("AUTO");
-	file->tag.set_property("MODE", mode);
+	if(autos && autos->first == this)
+		file->tag.set_property("MODE", ((MaskAutos*)autos)->get_mode());
 	file->tag.set_property("VALUE", value);
 	file->tag.set_property("FEATHER", feather);
 	file->tag.set_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
@@ -394,8 +392,8 @@ void MaskAuto::copy(ptstime start, ptstime end, FileXML *file)
 
 void MaskAuto::dump(int indent)
 {
-	printf("%*sMaskauto %p: mode: %d value: %d feather %d before %d\n", indent, " ", 
-		this, mode, value, feather, apply_before_plugins);
+	printf("%*sMaskauto %p: value: %d feather %d before %d\n", indent, " ", 
+		this, value, feather, apply_before_plugins);
 	printf("%*spos_time %.3f masks %d\n", indent + 2, " ", pos_time, masks.total);
 	indent += 4;
 	for(int i = 0; i < masks.total; i++)

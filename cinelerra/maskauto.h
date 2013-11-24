@@ -82,8 +82,7 @@ public:
 	void translate_submasks(int translate_x, int translate_y);
 
 	ArrayList<SubMask*> masks;
-// These are constant for the entire track
-	int mode;
+
 	int feather;
 // 0 - 100
 	int value;

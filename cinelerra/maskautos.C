@@ -30,7 +30,7 @@ MaskAutos::MaskAutos(EDL *edl,
  : Autos(edl, track)
 {
 	type = AUTOMATION_TYPE_MASK;
-	default_mode = MASK_SUBTRACT_ALPHA;
+	mode = MASK_SUBTRACT_ALPHA;
 }
 
 void MaskAutos::get_points(ArrayList<MaskPoint*> *points, 
@@ -103,8 +103,8 @@ Auto* MaskAutos::new_auto()
 
 void MaskAutos::dump(int indent)
 {
-	printf("%*sMaskAutos %p dump(%d): base %.3f\n", indent, " ", 
-		this, total(), base_pts);
+	printf("%*sMaskAutos %p dump(%d): base %.3f mode %d\n", indent, " ", 
+		this, total(), base_pts, mode);
 	indent += 2;
 	for(Auto* current = first; current; current = NEXT)
 		((MaskAuto*)current)->dump(indent);
@@ -161,14 +161,10 @@ void MaskAutos::translate_masks(float translate_x, float translate_y)
 
 int MaskAutos::get_mode()
 {
-	if(first)
-		return ((MaskAuto*)first)->mode;
-	else
-		default_mode;
+	return mode;
 }
 
 void MaskAutos::set_mode(int new_mode)
 {
-	if(first)
-		((MaskAuto*)first)->mode = new_mode;
+	mode = new_mode;
 }
