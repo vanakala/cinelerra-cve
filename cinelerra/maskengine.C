@@ -846,6 +846,8 @@ void MaskEngine::do_mask(VFrame *output,
 	Auto *current = 0;
 	ptstime start_pts = output->get_pts();
 	MaskAuto *first_auto = (MaskAuto*)keyframe_set->first;
+	int new_value;
+	int new_feather;
 
 	if(!first_auto)
 		return;
@@ -864,15 +866,17 @@ void MaskEngine::do_mask(VFrame *output,
 		if(submask_points > 1) total_points += submask_points;
 	}
 
+	keyframe->interpolate_values(start_pts, &new_value, &new_feather);
+
 // Ignore certain masks
 	if(total_points < 2 || 
-		(keyframe->value == 0 && first_auto->mode == MASK_SUBTRACT_ALPHA))
+		(new_value == 0 && first_auto->mode == MASK_SUBTRACT_ALPHA))
 	{
 		return;
 	}
 
 // Fake certain masks
-	if(keyframe->value == 0 && first_auto->mode == MASK_MULTIPLY_ALPHA)
+	if(new_value == 0 && first_auto->mode == MASK_MULTIPLY_ALPHA)
 	{
 		output->clear_frame();
 		return;
@@ -939,8 +943,8 @@ void MaskEngine::do_mask(VFrame *output,
 	}
 
 	if(recalculate ||
-		keyframe->feather != feather ||
-		keyframe->value != value)
+		new_feather != feather ||
+		new_value != value)
 	{
 		recalculate = 1;
 		if(!mask) 
@@ -954,7 +958,7 @@ void MaskEngine::do_mask(VFrame *output,
 					output->get_h(),
 					new_color_model);
 		}
-		if(keyframe->feather > 0)
+		if(new_feather > 0)
 			temp_mask->clear_frame();
 		else
 			mask->clear_frame();
@@ -977,11 +981,10 @@ void MaskEngine::do_mask(VFrame *output,
 			point_sets.append(new_points);
 		}
 	}
-
 	this->output = output;
 	this->mode = first_auto->mode;
-	this->feather = keyframe->feather;
-	this->value = keyframe->value;
+	this->feather = new_feather;
+	this->value = new_value;
 
 // Run units
 	process_packages();

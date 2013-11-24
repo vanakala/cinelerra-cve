@@ -72,6 +72,7 @@ public:
 	void copy(ptstime start, ptstime end, FileXML *file);
 	void copy_from(Auto *src);
 	void interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *templ = 0);
+	void interpolate_values(ptstime pts, int *new_value, int *new_feather);
 	void copy_from(MaskAuto *src);
 
 	void dump(int indent = 0);

@@ -278,8 +278,11 @@ void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *temp
 		return;
 	}
 	this->mode = mask_auto1->mode;
-	this->feather = mask_auto1->feather;
-	this->value = mask_auto1->value;
+	double frac1 = (position - mask_auto1->pos_time) / 
+		(mask_auto2->pos_time - mask_auto1->pos_time);
+	double frac2 = 1.0 - frac1;
+	this->feather = round(mask_auto1->feather * frac1 + mask_auto2->feather * frac2);
+	this->value = round(mask_auto1->value * frac1  + mask_auto2->value * frac2);
 	this->apply_before_plugins = mask_auto1->apply_before_plugins;
 	this->pos_time = position;
 	masks.remove_all_objects();
@@ -306,6 +309,25 @@ void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *temp
 				mask_auto2->pos_time);
 			new_submask->points.append(point);
 		}
+	}
+}
+
+void MaskAuto::interpolate_values(ptstime pts, int *new_value, int *new_feather)
+{
+	if(next)
+	{
+		MaskAuto *next_mask = (MaskAuto *)next;
+
+		double frac1 = (pts - pos_time) /
+			(next->pos_time - pos_time);
+		double frac2 = 1.0 - frac1;
+		*new_feather = round(feather * frac2 + next_mask->feather * frac1);
+		*new_value = round(value * frac2  + next_mask->value * frac1);
+	}
+	else
+	{
+		*new_feather = feather;
+		*new_value = value;
 	}
 }
 
