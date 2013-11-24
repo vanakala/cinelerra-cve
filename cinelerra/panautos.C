@@ -80,6 +80,15 @@ void PanAutos::get_handle(int &handle_x,
 	handle_y = (int)(previous->handle_y + (next->handle_y - previous->handle_y) * fraction);
 }
 
+void PanAutos::copy_values(Autos *autos)
+{
+	PanAutos *pas = (PanAutos*)autos;
+
+	default_handle_x = pas->default_handle_x;
+	default_handle_y = pas->default_handle_y;
+	memcpy(default_values, pas->default_values, sizeof(default_values));
+}
+
 void PanAutos::dump(int indent)
 {
 	printf("%*sPanAutos %p dump(%d): base %.3f handles: %d, %d\n", indent, " ", this, 

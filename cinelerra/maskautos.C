@@ -101,6 +101,11 @@ Auto* MaskAutos::new_auto()
 	return new MaskAuto(edl, this);
 }
 
+void MaskAutos::copy_values(Autos *autos)
+{
+	mode = ((MaskAutos*)autos)->mode;
+}
+
 void MaskAutos::dump(int indent)
 {
 	printf("%*sMaskAutos %p dump(%d): base %.3f mode %d\n", indent, " ", 

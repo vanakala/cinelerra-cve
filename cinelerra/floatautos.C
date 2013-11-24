@@ -350,6 +350,11 @@ void FloatAutos::get_extents(float *min,
 	}
 }
 
+void FloatAutos::copy_values(Autos *autos)
+{
+	default_value = ((FloatAutos*)autos)->default_value;
+}
+
 void FloatAutos::dump(int ident)
 {
 	printf("%*sFloatAutos %p dump(%d): base %.3f default %.3f\n", ident, "", this,

@@ -40,6 +40,7 @@ public:
 		ptstime start,
 		ptstime end);
 	int get_value(ptstime position);
+	void copy_values(Autos *autos);
 	void dump(int indent = 0);
 
 	int default_value;

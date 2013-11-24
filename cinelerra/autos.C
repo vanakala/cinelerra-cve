@@ -106,6 +106,7 @@ void Autos::copy_from(Autos *autos)
 	Auto *current = autos->first, *this_current = first;
 
 	base_pts = autos->base_pts;
+	copy_values(autos);
 
 	for(current = autos->first; current; current = NEXT)
 	{

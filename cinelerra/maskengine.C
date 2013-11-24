@@ -854,7 +854,6 @@ void MaskEngine::do_mask(VFrame *output,
 
 	if(!keyframe)
 		return;
-
 	if (keyframe->apply_before_plugins != before_plugins)
 		return;
 

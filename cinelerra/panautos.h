@@ -38,6 +38,7 @@ public:
 		ptstime position,
 		PanAuto* &previous,
 		PanAuto* &next);
+	void copy_values(Autos *autos);
 	void dump(int indent = 0);
 
 	float default_values[MAXCHANNELS];

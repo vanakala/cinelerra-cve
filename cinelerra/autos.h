@@ -41,6 +41,7 @@ public:
 
 	void equivalent_output(Autos *autos, ptstime startproject, ptstime *result);
 	void copy_from(Autos *autos);
+	virtual void copy_values(Autos *autos) {};
 	virtual Auto* new_auto() { return 0; };
 // Get existing auto on or before position.
 // If use_default is true, return default_auto if none exists 

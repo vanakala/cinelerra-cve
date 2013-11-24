@@ -135,6 +135,11 @@ void IntAutos::get_extents(float *min,
 	}
 }
 
+void IntAutos::copy_values(Autos *autos)
+{
+	default_value = ((IntAutos*)autos)->default_value;
+}
+
 void IntAutos::dump(int indent)
 {
 	printf("%*sIntautos %p dump(%d): base %.3f default %d\n", indent, "", this, 
