@@ -1651,8 +1651,11 @@ void CWindowMaskGUI::update()
 
 	if(mask)
 	{
-		feather->update(keyframe->feather);
-		value->update(keyframe->value);
+		int fth, val;
+		keyframe->interpolate_values(mwindow->edl->local_session->get_selectionstart(1),
+			&val, &fth);
+		feather->update(fth);
+		value->update(val);
 		apply_before_plugins->update(keyframe->apply_before_plugins);
 	}
 
