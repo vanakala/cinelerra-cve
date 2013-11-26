@@ -74,7 +74,7 @@ void CTracking::stop_playback()
 		mwindow->gui->cursor->update();
 	}
 	selections[0] = selections[1] = 0;
-
+	cwindow->gui->update_tool();
 }
 
 #define SCROLL_THRESHOLD 0
