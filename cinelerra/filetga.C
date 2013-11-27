@@ -834,7 +834,7 @@ TGAUnit::~TGAUnit()
 
 
 TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Video Compression",
+ : BC_Window("Video Compression - " PROGRAM_NAME,
 	gui->get_abs_cursor_x(1),
 	gui->get_abs_cursor_y(1),
 	400,

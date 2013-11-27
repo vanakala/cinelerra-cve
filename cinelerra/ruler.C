@@ -51,7 +51,7 @@ void Ruler::run()
 }
 
 RulerGUI::RulerGUI(MWindow *mwindow, Ruler *thread)
- : BC_Window("Ruler :" PROGRAM_NAME,
+ : BC_Window("Ruler - " PROGRAM_NAME,
 	mwindow->session->ruler_x,
 	mwindow->session->ruler_y,
 	10,

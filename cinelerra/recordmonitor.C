@@ -183,7 +183,7 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 	Record *record, 
 	RecordMonitor *thread,
 	int min_w)
- : BC_Window(PROGRAM_NAME ": Video in", 
+ : BC_Window("Video in - " PROGRAM_NAME,
 			mwindow->session->rmonitor_x,
 			mwindow->session->rmonitor_y,
 			mwindow->session->rmonitor_w, 

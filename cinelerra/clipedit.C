@@ -152,7 +152,7 @@ void ClipEdit::run()
 
 
 ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread)
- : BC_Window(PROGRAM_NAME ": Clip Info", 
+ : BC_Window("Clip Info - " PROGRAM_NAME,
 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
 	mwindow->gui->get_abs_cursor_y(1) - 350 / 2,
 	400, 

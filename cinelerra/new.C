@@ -202,7 +202,7 @@ int NewThread::update_aspect()
 
 
 NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
- : BC_Window(_(PROGRAM_NAME ": New Project"), 
+ : BC_Window(_("New Project - " PROGRAM_NAME),
 		x,
 		y,
 		WIDTH, 

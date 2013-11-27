@@ -56,7 +56,7 @@
 
 
 RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
- : BC_Window(PROGRAM_NAME ": Recording", 
+ : BC_Window("Recording - " PROGRAM_NAME,
 	mwindow->session->rwindow_x, 
 	mwindow->session->rwindow_y, 
 	mwindow->session->rwindow_w, 

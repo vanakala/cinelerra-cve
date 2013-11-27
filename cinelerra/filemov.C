@@ -1123,7 +1123,7 @@ void FileMOVThread::run()
 }
 
 MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Audio Compression",
+ : BC_Window("Audio Compression - " PROGRAM_NAME,
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	350,
@@ -1374,7 +1374,7 @@ int MOVConfigAudioPopup::handle_event()
 MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window, 
 	Asset *asset, 
 	const char *locked_compressor)
- : BC_Window(PROGRAM_NAME ": Video Compression",
+ : BC_Window("Video Compression - " PROGRAM_NAME,
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	420,

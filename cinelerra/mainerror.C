@@ -40,7 +40,7 @@ MainError* MainError::main_error = 0;
 
 
 MainErrorGUI::MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y)
- : BC_Window(PROGRAM_NAME ": Errors",
+ : BC_Window("Errors - " PROGRAM_NAME,
 	x,
 	y,
 	mwindow->session->ewindow_w,
@@ -271,12 +271,13 @@ int MainError::show_boxmsg(const char *title, const char *message, int confirm)
 		BC_DisplayInfo display_info;
 		int x = display_info.get_abs_cursor_x();
 		int y = display_info.get_abs_cursor_y();
-		strcpy(bufr, PROGRAM_NAME);
+		bufr[0] = 0;
 		if(title)
 		{
-			strcat(bufr, ": ");
-			strcat(bufr, title);
+			strcpy(bufr, title);
+			strcat(bufr, " - ");
 		}
+		strcat(bufr, PROGRAM_NAME);
 		MainErrorBox ebox(main_error->mwindow, x, y);
 		ebox.create_objects(bufr, message, confirm);
 		res = ebox.run_window();

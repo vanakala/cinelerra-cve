@@ -32,7 +32,7 @@
 #define HEIGHT 160
 
 QuestionWindow::QuestionWindow(MWindow *mwindow)
- : BC_Window(PROGRAM_NAME ": Question", 
+ : BC_Window("Question - " PROGRAM_NAME, 
 	mwindow->gui->get_abs_cursor_x(1) - WIDTH / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - HEIGHT / 2, 
 	WIDTH, 

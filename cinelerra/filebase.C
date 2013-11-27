@@ -57,7 +57,7 @@ int FileBase::match4(const char *in, const char *out)
 }
 
 FBConfig::FBConfig(BC_WindowBase *parent_window, int type)
- : BC_Window(PROGRAM_NAME ": Compression options",
+ : BC_Window("Compression options - " PROGRAM_NAME,
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	350,

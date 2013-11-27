@@ -98,7 +98,7 @@ int EditAttachEffect::handle_event()
 {
 	dialog_thread->start_window(popup->track,
 		0, 
-		PROGRAM_NAME ": Attach Effect");
+		"Attach Effect - " PROGRAM_NAME);
 	return 1;
 }
 
@@ -219,7 +219,7 @@ int EditPopupAddTrack::handle_event()
 
 
 EditPopupTitleWindow::EditPopupTitleWindow (MWindow *mwindow, EditPopup *popup)
- : BC_Window (PROGRAM_NAME ": Set edit title",
+ : BC_Window ("Set edit title - " PROGRAM_NAME,
 	mwindow->gui->get_abs_cursor_x(0) - 400 / 2,
 	mwindow->gui->get_abs_cursor_y(0) - 500 / 2,
 	300,

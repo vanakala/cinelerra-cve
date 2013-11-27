@@ -917,7 +917,7 @@ void Render::save_defaults(Asset *asset)
 #define HEIGHT 455
 
 RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Render", 
+ : BC_Window("Render - " PROGRAM_NAME, 
 	mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
 	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
 	WIDTH, 

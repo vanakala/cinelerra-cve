@@ -301,7 +301,7 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	PreferencesThread *thread,
 	int x,
 	int y)
- : BC_Window(PROGRAM_NAME ": Preferences", 
+ : BC_Window("Preferences - " PROGRAM_NAME , 
 	x,
 	y,
 	WIDTH, 

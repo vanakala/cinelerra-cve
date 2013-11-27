@@ -1158,7 +1158,7 @@ int FileOGG::write_frames(VFrame ***frames, int len)
 
 
 OGGConfigAudio::OGGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Audio Compression",
+ : BC_Window("Audio Compression - " PROGRAM_NAME,
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	350,
@@ -1280,7 +1280,7 @@ int OGGVorbisAvgBitrate::handle_event()
 
 
 OGGConfigVideo::OGGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Video Compression",
+ : BC_Window("Video Compression - " PROGRAM_NAME,
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	450,

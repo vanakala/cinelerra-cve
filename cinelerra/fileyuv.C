@@ -254,7 +254,7 @@ void FileYUV::ensure_temp(int width, int height)
 
 
 YUVConfigVideo::YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset, FormatTools *format)
-	: BC_Window(PROGRAM_NAME ": YUV4MPEG Stream",
+	: BC_Window("YUV4MPEG Stream - " PROGRAM_NAME,
 		parent_window->get_abs_cursor_x(1),
 		parent_window->get_abs_cursor_y(1),
 		500,

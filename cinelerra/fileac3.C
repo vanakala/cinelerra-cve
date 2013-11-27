@@ -244,7 +244,7 @@ int FileAC3::write_aframes(AFrame **frames)
 
 AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 	Asset *asset)
- : BC_Window(PROGRAM_NAME ": Audio Compression",
+ : BC_Window("Audio Compression - " PROGRAM_NAME,
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	500,

@@ -155,7 +155,7 @@ LoadFileWindow::LoadFileWindow(MWindow *mwindow,
  : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
 		init_directory, 
-		PROGRAM_NAME ": Load",
+		"Load - " PROGRAM_NAME,
 		_("Select files to load:"), 
 		0,
 		0,
@@ -290,7 +290,7 @@ LocateFileWindow::LocateFileWindow(MWindow *mwindow,
  : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1), 
 		init_directory, 
-		PROGRAM_NAME ": Locate file", 
+		"Locate file - " PROGRAM_NAME,
 		old_filename)
 { 
 	this->mwindow = mwindow; 

@@ -176,7 +176,7 @@ const char* ChannelEditThread::value_to_input(int value)
 
 ChannelEditWindow::ChannelEditWindow(ChannelEditThread *thread, 
 	ChannelPicker *channel_picker)
- : BC_Window(PROGRAM_NAME ": Channels", 
+ : BC_Window("Channels - " PROGRAM_NAME,
 	channel_picker->parent_window->get_abs_cursor_x(1) - 330, 
 	channel_picker->parent_window->get_abs_cursor_y(1), 
 	350, 
@@ -634,7 +634,7 @@ int ChannelEditPicture::handle_event()
 
 
 ConfirmScan::ConfirmScan(ChannelEditWindow *gui, int x, int y)
- : BC_Window(PROGRAM_NAME ": Scan confirm",
+ : BC_Window("Scan confirm - " PROGRAM_NAME,
 	x,
 	y,
 	350,
@@ -967,7 +967,7 @@ SET_TRACE
 ChannelEditEditWindow::ChannelEditEditWindow(ChannelEditEditThread *thread, 
 	ChannelEditWindow *window,
 	ChannelPicker *channel_picker)
- : BC_Window(PROGRAM_NAME ": Edit Channel", 
+ : BC_Window("Edit Channel - " PROGRAM_NAME,
 	channel_picker->parent_window->get_abs_cursor_x(1), 
 	channel_picker->parent_window->get_abs_cursor_y(1), 
 	390, 
@@ -1396,7 +1396,7 @@ int ChannelEditPictureThread::close_threads()
 
 ChannelEditPictureWindow::ChannelEditPictureWindow(ChannelEditPictureThread *thread, 
 	ChannelPicker *channel_picker)
- : BC_Window(PROGRAM_NAME ": Picture", 
+ : BC_Window("Picture - " PROGRAM_NAME,
 	channel_picker->parent_window->get_abs_cursor_x(1) - 200, 
 	channel_picker->parent_window->get_abs_cursor_y(1) - 220, 
 	250, 
