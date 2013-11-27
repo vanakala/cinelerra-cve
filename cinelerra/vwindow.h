@@ -37,8 +37,6 @@ public:
 	VWindow(MWindow *mwindow);
 	~VWindow();
 
-	void load_defaults();
-	int create_objects();
 	void run();
 // Change source to asset, creating a new EDL
 	void change_source(Asset *asset);
@@ -70,7 +68,6 @@ public:
 	void goto_start();
 	void goto_end();
 
-
 	VTracking *playback_cursor;
 
 // Number of source in GUI list
@@ -84,6 +81,5 @@ public:
 // Pointer to asset for accounting
 	Asset *asset;
 };
-
 
 #endif

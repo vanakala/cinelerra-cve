@@ -686,8 +686,6 @@ void MWindow::init_levelwindow()
 void MWindow::init_viewer()
 {
 	vwindow = new VWindow(this);
-	vwindow->load_defaults();
-	vwindow->create_objects();
 }
 
 void MWindow::init_cache()

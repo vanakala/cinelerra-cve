@@ -46,8 +46,17 @@ VWindow::VWindow(MWindow *mwindow) : Thread()
 {
 	this->mwindow = mwindow;
 	asset = 0;
-}
 
+	gui = new VWindowGUI(mwindow, this);
+	gui->create_objects();
+
+	playback_engine = new VPlayback(mwindow, this, gui->canvas);
+
+// Start command loop
+	gui->transport->set_engine(playback_engine);
+	playback_cursor = new VTracking(mwindow, this);
+	clip_edit = new ClipEdit(mwindow, 0, this);
+}
 
 VWindow::~VWindow()
 {
@@ -68,25 +77,6 @@ void VWindow::delete_edl()
 
 	if(asset) Garbage::delete_object(asset);
 	asset = 0;
-}
-
-
-void VWindow::load_defaults()
-{
-}
-
-int VWindow::create_objects()
-{
-	gui = new VWindowGUI(mwindow, this);
-	gui->create_objects();
-
-	playback_engine = new VPlayback(mwindow, this, gui->canvas);
-
-// Start command loop
-	gui->transport->set_engine(playback_engine);
-	playback_cursor = new VTracking(mwindow, this);
-	clip_edit = new ClipEdit(mwindow, 0, this);
-	return 0;
 }
 
 void VWindow::run()
@@ -183,7 +173,6 @@ void VWindow::change_source(EDL *edl)
 		gui->change_source(edl, _("Viewer"));
 }
 
-
 void VWindow::remove_source()
 {
 	delete_edl();
@@ -216,15 +205,12 @@ void VWindow::change_source(char *folder, int item)
 // Search extra clip folders
 	{
 	}
-	
+
 	if(!result)
 	{
 		remove_source();
 	}
 }
-
-
-
 
 void VWindow::goto_start()
 {
