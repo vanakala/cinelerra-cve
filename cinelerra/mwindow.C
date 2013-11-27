@@ -2029,10 +2029,9 @@ void MWindow::set_filename(const char *filename)
 		else
 		{
 			FileSystem dir;
-			char string[BCTEXTLEN], string2[BCTEXTLEN];
+			char string[BCTEXTLEN];
 			dir.extract_name(string, filename);
-			sprintf(string2, PROGRAM_NAME ": %s", string);
-			gui->set_title(string2);
+			gui->set_title(string);
 		}
 	}
 }

@@ -32,7 +32,7 @@
 #include "theme.h"
 
 LevelWindowGUI::LevelWindowGUI(MWindow *mwindow, LevelWindow *thread)
- : BC_Window(PROGRAM_NAME ": Levels", 
+ : BC_Window("Levels - " PROGRAM_NAME,
 	mwindow->session->lwindow_x, 
 	mwindow->session->lwindow_y, 
 	mwindow->session->lwindow_w, 

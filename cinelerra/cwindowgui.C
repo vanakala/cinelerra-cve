@@ -77,7 +77,7 @@ static int total_zooms = sizeof(my_zoom_table) / sizeof(double);
 
 
 CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
- : BC_Window(PROGRAM_NAME ": Compositor",
+ : BC_Window("Compositor - " PROGRAM_NAME ,
 	mwindow->session->cwindow_x,
 	mwindow->session->cwindow_y,
 	mwindow->session->cwindow_w,

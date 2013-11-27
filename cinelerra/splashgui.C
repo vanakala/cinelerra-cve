@@ -30,7 +30,7 @@
 
 
 SplashGUI::SplashGUI(VFrame *bg, int x, int y)
- : BC_Window(PROGRAM_NAME ": Loading",
+ : BC_Window("Loading - " PROGRAM_NAME,
 		x,
 		y,
 		bg->get_w(),

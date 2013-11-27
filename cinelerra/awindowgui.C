@@ -314,7 +314,7 @@ void AssetPicon::create_objects()
 
 
 AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
- : BC_Window(PROGRAM_NAME ": Resources",
+ : BC_Window("Resources - " PROGRAM_NAME,
 	mwindow->session->awindow_x, 
 	mwindow->session->awindow_y, 
 	mwindow->session->awindow_w, 

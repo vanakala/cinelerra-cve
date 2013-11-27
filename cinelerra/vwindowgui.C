@@ -57,7 +57,7 @@
 
 
 VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
- : BC_Window(PROGRAM_NAME ": Viewer",
+ : BC_Window("Viewer - " PROGRAM_NAME,
 	mwindow->session->vwindow_x,
 	mwindow->session->vwindow_y,
 	mwindow->session->vwindow_w,
@@ -84,9 +84,9 @@ void VWindowGUI::change_source(EDL *edl, char *title)
 	update_sources(title);
 	char string[BCTEXTLEN];
 	if(title[0]) 
-		sprintf(string, PROGRAM_NAME ": %s", title);
+		sprintf(string,"%s - " PROGRAM_NAME, title);
 	else
-		sprintf(string, PROGRAM_NAME);
+		strcpy(string, "Viewer - " PROGRAM_NAME);
 	strcpy(loaded_title, title);
 	slider->set_position();
 	timebar->update();

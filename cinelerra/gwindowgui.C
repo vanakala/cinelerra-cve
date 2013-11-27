@@ -40,7 +40,7 @@
 GWindowGUI::GWindowGUI(MWindow *mwindow,
 	int w,
 	int h)
- : BC_Window(PROGRAM_NAME N_(": Overlays"),
+ : BC_Window("Overlays - " PROGRAM_NAME,
 	mwindow->session->gwindow_x,
 	mwindow->session->gwindow_y,
 	w,
