@@ -54,8 +54,6 @@
 #include "vwindow.h"
 
 
-
-
 VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
  : BC_Window("Viewer - " PROGRAM_NAME,
 	mwindow->session->vwindow_x,
@@ -70,7 +68,52 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;
-	strcpy(loaded_title, "");
+	loaded_title[0] = 0;
+
+	set_icon(mwindow->theme->get_image("vwindow_icon"));
+
+	mwindow->theme->get_vwindow_sizes(this);
+	mwindow->theme->draw_vwindow_bg(this);
+	flash();
+
+	meters = new VWindowMeters(mwindow, 
+		this,
+		mwindow->theme->vmeter_x,
+		mwindow->theme->vmeter_y,
+		mwindow->theme->vmeter_h);
+
+// Requires meters to build
+	edit_panel = new VWindowEditing(mwindow, vwindow, meters, this);
+
+	add_subwindow(slider = new VWindowSlider(mwindow, 
+			vwindow,
+			this,
+			mwindow->theme->vslider_x,
+			mwindow->theme->vslider_y,
+			mwindow->theme->vslider_w));
+
+	transport = new VWindowTransport(mwindow, 
+		this, 
+		mwindow->theme->vtransport_x, 
+		mwindow->theme->vtransport_y);
+
+	add_subwindow(clock = new MainClock(mwindow,
+		mwindow->theme->vtime_x, 
+		mwindow->theme->vtime_y,
+		mwindow->theme->vtime_w));
+
+	canvas = new VWindowCanvas(mwindow, this);
+
+	add_subwindow(timebar = new VTimeBar(mwindow, 
+		this,
+		mwindow->theme->vtimebar_x,
+		mwindow->theme->vtimebar_y,
+		mwindow->theme->vtimebar_w, 
+		mwindow->theme->vtimebar_h));
+	timebar->update();
+
+	deactivate();
+	slider->activate();
 }
 
 VWindowGUI::~VWindowGUI()
@@ -93,13 +136,10 @@ void VWindowGUI::change_source(EDL *edl, char *title)
 	set_title(string);
 }
 
-
 // Get source list from master EDL
 void VWindowGUI::update_sources(char *title)
 {
-
 	sources.remove_all_objects();
-
 
 	for(int i = 0;
 		i < mwindow->edl->clips.total;
@@ -146,55 +186,6 @@ void VWindowGUI::update_sources(char *title)
 	}
 }
 
-int VWindowGUI::create_objects()
-{
-	set_icon(mwindow->theme->get_image("vwindow_icon"));
-
-	mwindow->theme->get_vwindow_sizes(this);
-	mwindow->theme->draw_vwindow_bg(this);
-	flash();
-
-	meters = new VWindowMeters(mwindow, 
-		this,
-		mwindow->theme->vmeter_x,
-		mwindow->theme->vmeter_y,
-		mwindow->theme->vmeter_h);
-
-// Requires meters to build
-	edit_panel = new VWindowEditing(mwindow, vwindow, meters);
-
-	add_subwindow(slider = new VWindowSlider(mwindow, 
-			vwindow,
-			this,
-			mwindow->theme->vslider_x,
-			mwindow->theme->vslider_y,
-			mwindow->theme->vslider_w));
-
-	transport = new VWindowTransport(mwindow, 
-		this, 
-		mwindow->theme->vtransport_x, 
-		mwindow->theme->vtransport_y);
-
-	add_subwindow(clock = new MainClock(mwindow,
-		mwindow->theme->vtime_x, 
-		mwindow->theme->vtime_y,
-		mwindow->theme->vtime_w));
-
-	canvas = new VWindowCanvas(mwindow, this);
-
-	add_subwindow(timebar = new VTimeBar(mwindow, 
-		this,
-		mwindow->theme->vtimebar_x,
-		mwindow->theme->vtimebar_y,
-		mwindow->theme->vtimebar_w, 
-		mwindow->theme->vtimebar_h));
-	timebar->update();
-
-	deactivate();
-	slider->activate();
-	return 0;
-}
-
 void VWindowGUI::resize_event(int w, int h)
 {
 	mwindow->session->vwindow_x = get_x();
@@ -209,8 +200,8 @@ void VWindowGUI::resize_event(int w, int h)
 	edit_panel->reposition_buttons(mwindow->theme->vedit_x, 
 		mwindow->theme->vedit_y);
 	slider->reposition_window(mwindow->theme->vslider_x, 
-        mwindow->theme->vslider_y, 
-        mwindow->theme->vslider_w);
+		mwindow->theme->vslider_y,
+		mwindow->theme->vslider_w);
 // Recalibrate pointer motion range
 	slider->set_position();
 	timebar->resize_event();
@@ -230,10 +221,6 @@ void VWindowGUI::resize_event(int w, int h)
 
 	BC_WindowBase::resize_event(w, h);
 }
-
-
-
-
 
 void VWindowGUI::translation_event()
 {
@@ -256,29 +243,30 @@ void VWindowGUI::close_event()
 int VWindowGUI::keypress_event()
 {
 	int result = 0;
+
 	switch(get_keypress())
 	{
-		case 'w':
-		case 'W':
-			close_event();
-			result = 1;
-			break;
-		case 'z':
-			mwindow->undo_entry(this);
-			break;
-		case 'Z':
-			mwindow->redo_entry(this);
-			break;
-		case 'f':
-			if(mwindow->session->vwindow_fullscreen)
-				canvas->stop_fullscreen();
-			else
-				canvas->start_fullscreen();
-			break;
-		case ESC:
-			if(mwindow->session->vwindow_fullscreen)
-				canvas->stop_fullscreen();
-			break;
+	case 'w':
+	case 'W':
+		close_event();
+		result = 1;
+		break;
+	case 'z':
+		mwindow->undo_entry(this);
+		break;
+	case 'Z':
+		mwindow->redo_entry(this);
+		break;
+	case 'f':
+		if(mwindow->session->vwindow_fullscreen)
+			canvas->stop_fullscreen();
+		else
+			canvas->start_fullscreen();
+		break;
+	case ESC:
+		if(mwindow->session->vwindow_fullscreen)
+			canvas->stop_fullscreen();
+		break;
 	}
 	if(!result) result = transport->keypress_event();
 
@@ -322,7 +310,6 @@ int VWindowGUI::cursor_motion_event()
 	return 0;
 }
 
-
 void VWindowGUI::drag_motion()
 {
 	if(get_hidden()) return;
@@ -332,7 +319,7 @@ void VWindowGUI::drag_motion()
 
 	int cursor_x = get_relative_cursor_x();
 	int cursor_y = get_relative_cursor_y();
-	
+
 	mwindow->session->vcanvas_highlighted = (get_cursor_over_window() &&
 		cursor_x >= canvas->x &&
 		cursor_x < canvas->x + canvas->w &&
@@ -354,12 +341,10 @@ int VWindowGUI::drag_stop()
 		canvas->draw_refresh();
 
 		Asset *asset = mwindow->session->drag_assets->total ?
-			mwindow->session->drag_assets->values[0] :
-			0;
+			mwindow->session->drag_assets->values[0] : 0;
 		EDL *edl = mwindow->session->drag_clips->total ?
-			mwindow->session->drag_clips->values[0] :
-			0;
-		
+			mwindow->session->drag_clips->values[0] : 0;
+
 		if(asset)
 			vwindow->change_source(asset);
 		else
@@ -370,9 +355,6 @@ int VWindowGUI::drag_stop()
 
 	return 0;
 }
-
-
-
 
 
 VWindowMeters::VWindowMeters(MWindow *mwindow, 
@@ -392,10 +374,6 @@ VWindowMeters::VWindowMeters(MWindow *mwindow,
 	this->gui = gui;
 }
 
-VWindowMeters::~VWindowMeters()
-{
-}
-
 int VWindowMeters::change_status_event()
 {
 	mwindow->edl->session->vwindow_meter = use_meters;
@@ -405,14 +383,10 @@ int VWindowMeters::change_status_event()
 }
 
 
-
-
-
-
-
-VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow, MeterPanel *meter_panel)
+VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow, 
+	MeterPanel *meter_panel, VWindowGUI *gui)
  : EditPanel(mwindow, 
-		vwindow->gui, 
+		gui,
 		mwindow->theme->vedit_x, 
 		mwindow->theme->vedit_y,
 		EDTP_SPLICE | EDTP_OVERWRITE | EDTP_COPY | EDTP_LABELS | EDTP_TOCLIP,
@@ -420,10 +394,6 @@ VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow, MeterPanel *m
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;
-}
-
-VWindowEditing::~VWindowEditing()
-{
 }
 
 void VWindowEditing::copy_selection()
@@ -474,14 +444,12 @@ void VWindowEditing::prev_label()
 
 		if(!current)
 		{
-			edl->local_session->set_selectionstart(0);
-			edl->local_session->set_selectionend(0);
+			edl->local_session->set_selection(0);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
 		}
 		else
 		{
-			edl->local_session->set_selectionstart(current->position);
-			edl->local_session->set_selectionend(current->position);
+			edl->local_session->set_selection(current->position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
 		}
 	}
@@ -498,17 +466,15 @@ void VWindowEditing::next_label()
 		{
 			vwindow->playback_engine->interrupt_playback(1);
 
-			double position = edl->tracks->total_length();
-			edl->local_session->set_selectionstart(position);
-			edl->local_session->set_selectionend(position);
+			ptstime position = edl->tracks->total_length();
+			edl->local_session->set_selection(position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
 		}
 		else
 		{
 			vwindow->playback_engine->interrupt_playback(1);
 
-			edl->local_session->set_selectionstart(current->position);
-			edl->local_session->set_selectionend(current->position);
+			edl->local_session->set_selection(current->position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
 		}
 	}
@@ -540,16 +506,14 @@ void VWindowEditing::to_clip()
 	{
 		FileXML file;
 		EDL *edl = vwindow->get_edl();
-		double start = edl->local_session->get_selectionstart();
-		double end = edl->local_session->get_selectionend();
+		ptstime start = edl->local_session->get_selectionstart();
+		ptstime end = edl->local_session->get_selectionend();
 
-		if(EQUIV(start, end))
+		if(PTSEQU(start, end))
 		{
 			end = edl->tracks->total_length();
 			start = 0;
 		}
-
-
 
 		edl->copy(start, 
 			end, 
@@ -560,7 +524,6 @@ void VWindowEditing::to_clip()
 			mwindow->plugindb,
 			"",
 			1);
-
 
 		EDL *new_edl = new EDL(mwindow->edl);
 		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
@@ -575,18 +538,10 @@ void VWindowEditing::to_clip()
 
 		sprintf(new_edl->local_session->clip_notes, _("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
 
-		new_edl->local_session->set_selectionstart(0);
-		new_edl->local_session->set_selectionend(0);
-
-		new_edl->local_session->set_selectionstart(0.0);
-		new_edl->local_session->set_selectionend(0.0);
+		new_edl->local_session->set_selection(0);
 		vwindow->clip_edit->create_clip(new_edl);
 	}
 }
-
-
-
-
 
 
 VWindowSlider::VWindowSlider(MWindow *mwindow, 
@@ -611,10 +566,6 @@ VWindowSlider::VWindowSlider(MWindow *mwindow,
 	set_pagination(1.0, 10.0);
 }
 
-VWindowSlider::~VWindowSlider()
-{
-}
-
 int VWindowSlider::handle_event()
 {
 	vwindow->playback_engine->interrupt_playback(1);
@@ -628,7 +579,7 @@ void VWindowSlider::set_position()
 	EDL *edl = vwindow->get_edl();
 	if(edl)
 	{
-		double new_length = edl->tracks->total_playable_length();
+		ptstime new_length = edl->tracks->total_playable_length();
 		if(EQUIV(edl->local_session->preview_end, 0))
 			edl->local_session->preview_end = new_length;
 		if(edl->local_session->preview_end > new_length)
@@ -644,41 +595,6 @@ void VWindowSlider::set_position()
 	else
 		update(0, 0, 0, 0);
 }
-
-
-
-
-
-
-
-
-
-VWindowSource::VWindowSource(MWindow *mwindow, VWindowGUI *vwindow, int x, int y)
- : BC_PopupTextBox(vwindow, 
- 	&vwindow->sources, 
-	"",
-	x, 
-	y, 
-	200, 
-	200)
-{
-	this->mwindow = mwindow;
-	this->vwindow = vwindow;
-}
-
-VWindowSource::~VWindowSource()
-{
-}
-
-int VWindowSource::handle_event()
-{
-	return 1;
-}
-
-
-
-
-
 
 
 VWindowTransport::VWindowTransport(MWindow *mwindow, 
@@ -710,8 +626,6 @@ void VWindowTransport::goto_end()
 	handle_transport(GOTO_END, 1);
 	gui->vwindow->goto_end();
 }
-
-
 
 
 VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
@@ -759,7 +673,6 @@ void VWindowCanvas::close_source()
 	draw_refresh();
 }
 
-
 void VWindowCanvas::draw_refresh()
 {
 	EDL *edl = gui->vwindow->get_edl();
@@ -769,7 +682,6 @@ void VWindowCanvas::draw_refresh()
 		get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
 		if(refresh_frame && edl)
 		{
-
 			float in_x1, in_y1, in_x2, in_y2;
 			float out_x1, out_y1, out_x2, out_y2;
 			get_transfers(edl,

@@ -45,13 +45,13 @@ class VWindowEditing;
 class VWindowCanvas;
 class VWindowMeters;
 
+
 class VWindowGUI : public BC_Window
 {
 public:
 	VWindowGUI(MWindow *mwindow, VWindow *vwindow);
 	~VWindowGUI();
 
-	int create_objects();
 	void resize_event(int w, int h);
 	void translation_event();
 	void close_event();
@@ -94,10 +94,9 @@ class VWindowMeters : public MeterPanel
 {
 public:
 	VWindowMeters(MWindow *mwindow, VWindowGUI *gui, int x, int y, int h);
-	~VWindowMeters();
-	
+
 	int change_status_event();
-	
+
 	MWindow *mwindow;
 	VWindowGUI *gui;
 };
@@ -119,11 +118,12 @@ public:
 	VWindowGUI *gui;
 };
 
+
 class VWindowEditing : public EditPanel
 {
 public:
-	VWindowEditing(MWindow *mwindow, VWindow *vwindow, MeterPanel *meter_panel);
-	~VWindowEditing();
+	VWindowEditing(MWindow *mwindow, VWindow *vwindow,
+		MeterPanel *meter_panel, VWindowGUI *gui);
 
 	void copy_selection();
 	void splice_selection();
@@ -141,17 +141,6 @@ public:
 	VWindow *vwindow;
 };
 
-class VWindowZoom : public ZoomPanel
-{
-public:
-	VWindowZoom(MWindow *mwindow, VWindowGUI *gui, int x, int y);
-	~VWindowZoom();
-	int handle_event();
-	MWindow *mwindow;
-	VWindowGUI *gui;
-};
-
-
 class VWindowSlider : public BC_PercentageSlider
 {
 public:
@@ -161,7 +150,6 @@ public:
 		int x, 
 		int y, 
 		int pixels);
-	~VWindowSlider();
 
 	int handle_event();
 	void set_position();
@@ -169,16 +157,6 @@ public:
 	VWindowGUI *gui;
 	MWindow *mwindow;
 	VWindow *vwindow;
-};
-
-class VWindowSource : public BC_PopupTextBox
-{
-public:
-	VWindowSource(MWindow *mwindow, VWindowGUI *vwindow, int x, int y);
-	~VWindowSource();
-	int handle_event();
-	VWindowGUI *vwindow;
-	MWindow *mwindow;
 };
 
 class VWindowTransport : public PlayTransport

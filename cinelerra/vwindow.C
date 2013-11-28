@@ -48,7 +48,6 @@ VWindow::VWindow(MWindow *mwindow) : Thread()
 	asset = 0;
 
 	gui = new VWindowGUI(mwindow, this);
-	gui->create_objects();
 
 	playback_engine = new VPlayback(mwindow, this, gui->canvas);
 
