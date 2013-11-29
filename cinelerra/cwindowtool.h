@@ -212,6 +212,9 @@ public:
 	CWindowMaskNumber *number;
 	CWindowMaskValue *value;
 	CWindowMaskBeforePlugins *apply_before_plugins;
+
+private:
+	MaskAuto *localauto;
 };
 
 

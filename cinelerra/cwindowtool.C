@@ -1541,6 +1541,7 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 
 	this->mwindow = mwindow;
 	this->thread = thread;
+	localauto = new MaskAuto(0, 0);
 
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new CWindowMaskMode(mwindow, 
@@ -1592,6 +1593,7 @@ CWindowMaskGUI::~CWindowMaskGUI()
 {
 	delete number;
 	delete feather;
+	delete localauto;
 }
 
 void CWindowMaskGUI::get_keyframe(Track* &track, 
@@ -1606,6 +1608,12 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->autos[AUTOMATION_MASK], create_it);
 	else
 		keyframe = 0;
+
+	if(keyframe)
+	{
+		localauto->interpolate_from(keyframe, keyframe->next, mwindow->edl->local_session->get_selectionstart(1), 0);
+		keyframe = localauto;
+	}
 
 	if(keyframe)
 		mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
@@ -1651,11 +1659,8 @@ void CWindowMaskGUI::update()
 
 	if(mask)
 	{
-		int fth, val;
-		keyframe->interpolate_values(mwindow->edl->local_session->get_selectionstart(1),
-			&val, &fth);
-		feather->update(fth);
-		value->update(val);
+		feather->update(keyframe->feather);
+		value->update(keyframe->value);
 		apply_before_plugins->update(keyframe->apply_before_plugins);
 	}
 
