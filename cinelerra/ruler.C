@@ -119,8 +119,8 @@ void RulerGUI::draw_ruler()
 		}
 		// draw bg
 		clear_box(0, 0, mwindow->session->ruler_length, r_width);
-		set_color(YELLOW);
-		draw_rectangle(0, 0, mwindow->session->ruler_length - 1, r_width - 1);
+		set_color(BC_WindowBase::get_resources()->default_text_color);
+		draw_rectangle(0, 0, mwindow->session->ruler_length, r_width);
 		for(int i = 5; i <  mwindow->session->ruler_length; i += 5)
 		{
 			h = ticklength(i);
@@ -148,8 +148,8 @@ void RulerGUI::draw_ruler()
 		}
 		// draw bg
 		clear_box(0, 0, r_width, mwindow->session->ruler_length);
-		set_color(YELLOW);
-		draw_rectangle(0, 0, r_width - 1, mwindow->session->ruler_length - 1);
+		set_color(BC_WindowBase::get_resources()->default_text_color);
+		draw_rectangle(0, 0, r_width, mwindow->session->ruler_length);
 		for(int i = 5; i < mwindow->session->ruler_length; i += 5)
 		{
 			w = ticklength(i);
