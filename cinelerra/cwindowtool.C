@@ -1602,14 +1602,15 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 	MaskPoint* &point,
 	int create_it)
 {
-	keyframe = 0;
+	ptstime pos = mwindow->edl->local_session->get_selectionstart(1);
+
 	track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->autos[AUTOMATION_MASK], create_it);
 	else
 		keyframe = 0;
 
-	if(keyframe)
+	if(keyframe && !PTSEQU(pos, keyframe->pos_time))
 	{
 		localauto->interpolate_from(keyframe, keyframe->next, mwindow->edl->local_session->get_selectionstart(1), 0);
 		keyframe = localauto;
