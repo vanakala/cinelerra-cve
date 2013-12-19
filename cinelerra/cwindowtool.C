@@ -1679,7 +1679,7 @@ int CWindowMaskGUI::handle_event()
 		keyframe, 
 		mask,
 		point,
-		0);
+		1);
 
 	if(point)
 	{
