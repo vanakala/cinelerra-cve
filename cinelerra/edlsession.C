@@ -81,6 +81,7 @@ EDLSession::EDLSession(EDL *edl)
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	record_speed = 24;
 	decode_subtitles = 0;
+	tool_window = 0;
 	cwindow_operation = CWINDOW_NONE;
 }
 
@@ -240,7 +241,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 		sprintf(string, "TIMECODE_OFFSET_%d", i);
 		timecode_offset[i] = defaults->get(string, 0);
 	}
-	tool_window = defaults->get("TOOL_WINDOW", 0);
 	vconfig_in->load_defaults(defaults);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -360,7 +360,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 		defaults->update(string, timecode_offset[i]);
 	}
 	defaults->delete_key("NUDGE_FORMAT");
-	defaults->update("TOOL_WINDOW", tool_window);
+	defaults->delete_key("TOOL_WINDOW");
 	vconfig_in->save_defaults(defaults);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
