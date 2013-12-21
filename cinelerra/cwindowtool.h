@@ -364,6 +364,7 @@ class CWindowProjectorGUI : public CWindowToolGUI
 {
 public:
 	CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread);
+	~CWindowProjectorGUI();
 
 	void update();
 	void update_preview();

@@ -925,24 +925,12 @@ CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
 	170)
 {
 	int x = 10, y = 10, x1;
-	Track *track = mwindow->cwindow->calculate_affected_track();
-	FloatAuto *x_auto = 0;
-	FloatAuto *y_auto = 0;
-	FloatAuto *z_auto = 0;
 	BC_Title *title;
 	BC_Button *button;
 
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			&y_auto,
-			&z_auto,
-			track,
-			0,
-			0,
-			0,
-			0);
-	}
+	local_x = new FloatAuto(0, 0);
+	local_y = new FloatAuto(0, 0);
+	local_z = new FloatAuto(0, 0);
 
 	add_subwindow(title = new BC_Title(x, y, _("X:")));
 	x += title->get_w();
@@ -995,6 +983,13 @@ CWindowProjectorGUI::CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread)
 	this->update();
 }
 
+CWindowProjectorGUI::~CWindowProjectorGUI()
+{
+	delete local_x;
+	delete local_y;
+	delete local_z;
+}
+
 void CWindowProjectorGUI::update_preview()
 {
 	mwindow->restart_brender();
@@ -1008,80 +1003,44 @@ void CWindowProjectorGUI::update_preview()
 
 int CWindowProjectorGUI::handle_event()
 {
-	FloatAuto *x_auto = 0;
-	FloatAuto *y_auto = 0;
-	FloatAuto *z_auto = 0;
-	Track *track = mwindow->cwindow->calculate_affected_track();
+	FloatAuto *x_auto;
+	FloatAuto *y_auto;
+	FloatAuto *z_auto;
 
-	if(track)
+	int create_x = event_caller == x;
+	int create_y = event_caller == y;
+	int create_z = event_caller == z;
+
+	get_keyframes(x_auto, y_auto, z_auto, 0,
+		create_x, create_y, create_z);
+
+	if(create_x && x_auto)
+		x_auto->set_value(atof(x->get_text()));
+	else if(create_y && y_auto)
+		y_auto->set_value(atof(y->get_text()));
+	else if(create_z && z_auto)
 	{
-		if(event_caller == x)
-		{
-			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_PROJECTOR_X],
-				1);
-			if(x_auto)
-			{
-				x_auto->set_value(atoi(x->get_text()));
-				update();
-				update_preview();
-			}
-		}
-		else
-		if(event_caller == y)
-		{
-			y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_PROJECTOR_Y],
-				1);
-			if(y_auto)
-			{
-				y_auto->set_value(atoi(y->get_text()));
-				update();
-				update_preview();
-			}
-		}
-		else
-		if(event_caller == z)
-		{
-			z_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_PROJECTOR_Z],
-				1);
-			if(z_auto)
-			{
-				float zoom = atof(z->get_text());
-				if(zoom > 10000) zoom = 10000; 
-				else 
-				if(zoom < 0) zoom = 0;
-				z_auto->set_value(zoom);
+		float zoom = atof(z->get_text());
 
-				mwindow->gui->canvas->draw_overlays();
-				mwindow->gui->canvas->flash();
-				update();
-				update_preview();
-			}
-		}
+		if(zoom > 10000)
+			zoom = 10000;
+		else if(zoom < 0)
+			zoom = 0;
+
+		z_auto->set_value(zoom);
 	}
+	update();
+	update_preview();
 	return 1;
 }
 
 void CWindowProjectorGUI::update()
 {
-	FloatAuto *x_auto = 0;
-	FloatAuto *y_auto = 0;
-	FloatAuto *z_auto = 0;
-	Track *track = mwindow->cwindow->calculate_affected_track();
+	FloatAuto *x_auto;
+	FloatAuto *y_auto;
+	FloatAuto *z_auto;
 
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			&y_auto,
-			&z_auto,
-			track,
-			0,
-			0,
-			0,
-			0);
-	}
+	get_keyframes(x_auto, y_auto, z_auto, 0, 0, 0, 0);
 
 	if(x_auto)
 		x->update((int)round(x_auto->get_value()));
