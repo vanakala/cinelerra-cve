@@ -26,12 +26,16 @@
 #include "clipedit.h"
 #include "labeledit.h"
 
+
 AWindow::AWindow(MWindow *mwindow) : Thread()
 {
-	this->mwindow = mwindow;
-	current_folder[0] = 0;
+	gui = new AWindowGUI(mwindow, this);
+	gui->create_objects();
+	gui->async_update_assets();
+	asset_edit = new AssetEdit(mwindow);
+	clip_edit = new ClipEdit(mwindow, this, 0);
+	label_edit = new LabelEdit(mwindow, this, 0);
 }
-
 
 AWindow::~AWindow()
 {
@@ -40,18 +44,6 @@ AWindow::~AWindow()
 	delete label_edit;
 	delete gui;
 }
-
-int AWindow::create_objects()
-{
-	gui = new AWindowGUI(mwindow, this);
-	gui->create_objects();
-	gui->async_update_assets();
-	asset_edit = new AssetEdit(mwindow);
-	clip_edit = new ClipEdit(mwindow, this, 0);
-	label_edit = new LabelEdit(mwindow, this, 0);
-	return 0;
-}
-
 
 void AWindow::run()
 {

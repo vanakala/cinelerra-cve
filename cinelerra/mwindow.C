@@ -607,7 +607,6 @@ void MWindow::clean_indexes()
 void MWindow::init_awindow()
 {
 	awindow = new AWindow(this);
-	awindow->create_objects();
 }
 
 void MWindow::init_gwindow()

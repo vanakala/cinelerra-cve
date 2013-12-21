@@ -37,12 +37,8 @@ public:
 	~AWindow();
 
 	void run();
-	int create_objects();
-
-	char current_folder[BCTEXTLEN];
 
 	AWindowGUI *gui;
-	MWindow *mwindow;
 	AssetEdit *asset_edit;
 	ClipEdit *clip_edit;
 	LabelEdit *label_edit;
