@@ -25,29 +25,21 @@
 #include "mwindow.h"
 
 LevelWindow::LevelWindow(MWindow *mwindow)
- : Thread()
+ : Thread(THREAD_SYNCHRONOUS)
 {
-	this->mwindow = mwindow;
-	Thread::set_synchronous(1);
+	gui = new LevelWindowGUI(mwindow, this);
+	gui->create_objects();
 }
 
 LevelWindow::~LevelWindow()
 {
-	if(gui) 
+	if(gui)
 	{
 		gui->set_done(0);
 		join();
+		delete gui;
 	}
-	if(gui) delete gui;
 }
-
-int LevelWindow::create_objects()
-{
-	gui = new LevelWindowGUI(mwindow, this);
-	gui->create_objects();
-	return 0;
-}
-
 
 void LevelWindow::run()
 {

@@ -680,7 +680,6 @@ void MWindow::init_compositor()
 void MWindow::init_levelwindow()
 {
 	lwindow = new LevelWindow(this);
-	lwindow->create_objects();
 }
 
 void MWindow::init_viewer()
