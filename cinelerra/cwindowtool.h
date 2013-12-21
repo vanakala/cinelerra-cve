@@ -85,6 +85,19 @@ public:
 	MWindow *mwindow;
 	CWindowTool *thread;
 	CWindowCoord *event_caller;
+
+protected:
+	void get_keyframes(FloatAuto* &x_auto,
+		FloatAuto* &y_auto,
+		FloatAuto* &z_auto,
+		int camera,
+		int create_x,
+		int create_y,
+		int create_z);
+
+	FloatAuto *local_x;
+	FloatAuto *local_y;
+	FloatAuto *local_z;
 };
 
 class CWindowCoord : public BC_TumbleTextBox
@@ -267,6 +280,7 @@ class CWindowCameraGUI : public CWindowToolGUI
 {
 public:
 	CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread);
+	~CWindowCameraGUI();
 
 	void update();
 	void update_preview();

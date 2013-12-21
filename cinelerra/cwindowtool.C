@@ -226,6 +226,52 @@ void CWindowToolGUI::translation_event()
 	mwindow->session->ctool_y = get_y();
 }
 
+void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto,
+	FloatAuto* &y_auto,
+	FloatAuto* &z_auto,
+	int camera,
+	int create_x,
+	int create_y,
+	int create_z)
+{
+	Track *track = mwindow->cwindow->calculate_affected_track();
+	ptstime pos = mwindow->edl->local_session->get_selectionstart(1);
+
+	x_auto = 0;
+	y_auto = 0;
+	z_auto = 0;
+
+	if(track)
+	{
+		mwindow->cwindow->calculate_affected_autos(&x_auto,
+			&y_auto,
+			&z_auto,
+			track,
+			camera,
+			create_x,
+			create_y,
+			create_z);
+	}
+
+	if(x_auto && !PTSEQU(pos, x_auto->pos_time))
+	{
+		local_x->interpolate_from(x_auto, x_auto->next, pos, 0);
+		x_auto = local_x;
+	}
+
+	if(y_auto && !PTSEQU(pos, y_auto->pos_time))
+	{
+		local_y->interpolate_from(y_auto, y_auto->next, pos, 0);
+		y_auto = local_y;
+	}
+
+	if(z_auto && !PTSEQU(pos, z_auto->pos_time))
+	{
+		local_z->interpolate_from(z_auto, z_auto->next, pos, 0);
+		z_auto = local_z;
+	}
+}
+
 
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int log_increment = 0)
  : BC_TumbleTextBox(gui, 
@@ -500,24 +546,12 @@ CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
 	170)
 {
 	int x = 10, y = 10, x1;
-	Track *track = mwindow->cwindow->calculate_affected_track();
-	FloatAuto *x_auto = 0;
-	FloatAuto *y_auto = 0;
-	FloatAuto *z_auto = 0;
 	BC_Title *title;
 	BC_Button *button;
 
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			&y_auto,
-			&z_auto,
-			track,
-			1,
-			0,
-			0,
-			0);
-	}
+	local_x = new FloatAuto(0, 0);
+	local_y = new FloatAuto(0, 0);
+	local_z = new FloatAuto(0, 0);
 
 	add_subwindow(title = new BC_Title(x, y, _("X:")));
 	x += title->get_w();
@@ -570,6 +604,13 @@ CWindowCameraGUI::CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread)
 	this->update();
 }
 
+CWindowCameraGUI::~CWindowCameraGUI()
+{
+	delete local_x;
+	delete local_y;
+	delete local_z;
+}
+
 void CWindowCameraGUI::update_preview()
 {
 	mwindow->restart_brender();
@@ -584,58 +625,35 @@ void CWindowCameraGUI::update_preview()
 
 int CWindowCameraGUI::handle_event()
 {
-	FloatAuto *x_auto = 0;
-	FloatAuto *y_auto = 0;
-	FloatAuto *z_auto = 0;
-	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-	{
-		if(event_caller == x)
-		{
-			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_CAMERA_X],
-				1);
-			if(x_auto)
-			{
-				x_auto->set_value(atof(x->get_text()));
-				update();
-				update_preview();
-			}
-		}
-		else
-		if(event_caller == y)
-		{
-			y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_CAMERA_Y],
-				1);
-			if(y_auto)
-			{
-				y_auto->set_value(atof(y->get_text()));
-				update();
-				update_preview();
-			}
-		}
-		else
-		if(event_caller == z)
-		{
-			z_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->autos[AUTOMATION_CAMERA_Z],
-				1);
-			if(z_auto)
-			{
-				float zoom = atof(z->get_text());
-				if(zoom > 10) zoom = 10; 
-				else
-				if(zoom < 0) zoom = 0;
+	FloatAuto *x_auto;
+	FloatAuto *y_auto;
+	FloatAuto *z_auto;
 
-				z_auto->set_value(zoom);
-				mwindow->gui->canvas->draw_overlays();
-				mwindow->gui->canvas->flash();
-				update();
-				update_preview();
-			}
-		}
+	int create_x = event_caller == x;
+	int create_y = event_caller == y;
+	int create_z = event_caller == z;
+
+	get_keyframes(x_auto, y_auto, z_auto, 1,
+		create_x, create_y, create_z);
+
+	if(create_x && x_auto)
+		x_auto->set_value(atof(x->get_text()));
+	else if(create_y && y_auto)
+		y_auto->set_value(atof(y->get_text()));
+	else if(create_z && z_auto)
+	{
+		float zoom = atof(z->get_text());
+
+		if(zoom > 10)
+			zoom = 10;
+		else
+		if(zoom < 0)
+			zoom = 0;
+
+		z_auto->set_value(zoom);
 	}
+	update();
+	update_preview();
 	return 1;
 }
 
@@ -644,19 +662,8 @@ void CWindowCameraGUI::update()
 	FloatAuto *x_auto = 0;
 	FloatAuto *y_auto = 0;
 	FloatAuto *z_auto = 0;
-	Track *track = mwindow->cwindow->calculate_affected_track();
 
-	if(track)
-	{
-		mwindow->cwindow->calculate_affected_autos(&x_auto,
-			&y_auto,
-			&z_auto,
-			track,
-			1,
-			0,
-			0,
-			0);
-	}
+	get_keyframes(x_auto, y_auto, z_auto, 1, 0, 0, 0);
 
 	if(x_auto)
 		x->update((int)round(x_auto->get_value()));
