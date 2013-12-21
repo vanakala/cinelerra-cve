@@ -27,8 +27,7 @@
 LevelWindow::LevelWindow(MWindow *mwindow)
  : Thread(THREAD_SYNCHRONOUS)
 {
-	gui = new LevelWindowGUI(mwindow, this);
-	gui->create_objects();
+	gui = new LevelWindowGUI(mwindow);
 }
 
 LevelWindow::~LevelWindow()

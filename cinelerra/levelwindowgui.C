@@ -31,7 +31,7 @@
 #include "preferences.h"
 #include "theme.h"
 
-LevelWindowGUI::LevelWindowGUI(MWindow *mwindow, LevelWindow *thread)
+LevelWindowGUI::LevelWindowGUI(MWindow *mwindow)
  : BC_Window("Levels - " PROGRAM_NAME,
 	mwindow->session->lwindow_x, 
 	mwindow->session->lwindow_y, 
@@ -43,29 +43,22 @@ LevelWindowGUI::LevelWindowGUI(MWindow *mwindow, LevelWindow *thread)
 	0, 
 	1)
 {
-	this->thread = thread;
 	this->mwindow = mwindow;
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	mwindow->theme->draw_lwindow_bg(this);
+	panel = new MeterPanel(mwindow,
+		this,
+		5,
+		5,
+		get_h() - 10,
+		mwindow->edl->session->audio_channels,
+		1);
 }
 
 LevelWindowGUI::~LevelWindowGUI()
 {
 	delete panel;
 }
-
-int LevelWindowGUI::create_objects()
-{
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
-	mwindow->theme->draw_lwindow_bg(this);
-	panel = new MeterPanel(mwindow, 
-		this, 
-		5, 
-		5,
-		get_h() - 10,
-		mwindow->edl->session->audio_channels,
-		1);
-	return 0;
-}
-
 
 void LevelWindowGUI::resize_event(int w, int h)
 {
@@ -93,9 +86,7 @@ void LevelWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_lwindow = 0;
-	mwindow->gui->lock_window("LevelWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_lwindow->set_checked(0);
-	mwindow->gui->unlock_window();
 	mwindow->save_defaults();
 }
 
@@ -108,10 +99,3 @@ int LevelWindowGUI::keypress_event()
 	}
 	return 0;
 }
-
-
-int LevelWindowGUI::reset_over()
-{
-	return 0;
-}
-

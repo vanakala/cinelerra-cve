@@ -32,21 +32,16 @@ class LevelWindowReset;
 class LevelWindowGUI : public BC_Window
 {
 public:
-	LevelWindowGUI(MWindow *mwindow, LevelWindow *thread);
+	LevelWindowGUI(MWindow *mwindow);
 	~LevelWindowGUI();
 
-	int create_objects();
 	void resize_event(int w, int h);
 	void translation_event();
 	void close_event();
-	int reset_over();
 	int keypress_event();
 
 	MWindow *mwindow;
-
 	MeterPanel *panel;
-	LevelWindow *thread;
 };
-
 
 #endif
