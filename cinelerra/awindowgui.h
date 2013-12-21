@@ -55,7 +55,6 @@ public:
 	virtual ~AssetPicon();
 
 	void create_objects();
-	void reset();
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
@@ -72,10 +71,11 @@ public:
 
 	int in_use;
 
-
 	int persistent;
 	PluginServer *plugin;
 	Label *label;
+private:
+	void reset();
 };
 
 
@@ -94,9 +94,7 @@ public:
 	void sort_assets();
 	void reposition_objects();
 	int current_folder_number();
-// Call back for MWindow entry point
-	int drag_motion();
-	int drag_stop();
+
 // Collect items into the drag vectors of MainSession
 	void collect_assets();
 	void create_persistent_folder(ArrayList<BC_ListBoxItem*> *output, 
@@ -162,22 +160,18 @@ public:
 // Function to overload to recieve customly defined atoms
 	virtual void recieve_custom_xatoms(XClientMessageEvent *event);
 
-
-
 private:
 	void update_folder_list();
 	void update_asset_list();
 	void filter_displayed_assets();
 	Atom UpdateAssetsXAtom;
 	void update_assets();
-
 };
 
 class AWindowAssets : public BC_ListBox
 {
 public:
 	AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h);
-	~AWindowAssets();
 
 	int handle_event();
 	void selection_changed();
@@ -196,7 +190,6 @@ class AWindowDivider : public BC_SubWindow
 {
 public:
 	AWindowDivider(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h);
-	~AWindowDivider();
 
 	int button_press_event();
 	int cursor_motion_event();
@@ -210,7 +203,6 @@ class AWindowFolders : public BC_ListBox
 {
 public:
 	AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, int w, int h);
-	~AWindowFolders();
 
 	void selection_changed();
 	int button_press_event();
@@ -223,7 +215,6 @@ class LabelPopup : public BC_PopupMenu
 {
 public:
 	LabelPopup(MWindow *mwindow, AWindowGUI *gui);
-	~LabelPopup();
 
 	void create_objects();
 // Set mainsession with the current selections
@@ -239,7 +230,6 @@ class LabelPopupEdit : public BC_MenuItem
 {
 public:
 	LabelPopupEdit(MWindow *mwindow, LabelPopup *popup);
-	~LabelPopupEdit();
 
 	int handle_event();
 
