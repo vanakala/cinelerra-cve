@@ -40,7 +40,6 @@
 #include "vwindowgui.h"
 
 
-
 AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
@@ -50,10 +49,6 @@ AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-}
-
-AssetPopup::~AssetPopup()
-{
 }
 
 void AssetPopup::create_objects()
@@ -95,14 +90,11 @@ void AssetPopup::match_size()
 	mwindow->gui->unlock_window();
 }
 
-int AssetPopup::update()
+void AssetPopup::update()
 {
 	format->update();
 	gui->collect_assets();
-	return 0;
 }
-
-
 
 
 AssetPopupInfo::AssetPopupInfo(MWindow *mwindow, AssetPopup *popup)
@@ -110,10 +102,6 @@ AssetPopupInfo::AssetPopupInfo(MWindow *mwindow, AssetPopup *popup)
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-
-AssetPopupInfo::~AssetPopupInfo()
-{
 }
 
 int AssetPopupInfo::handle_event()
@@ -142,17 +130,11 @@ int AssetPopupInfo::handle_event()
 }
 
 
-
-
 AssetPopupBuildIndex::AssetPopupBuildIndex(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("Rebuild index"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-
-AssetPopupBuildIndex::~AssetPopupBuildIndex()
-{
 }
 
 int AssetPopupBuildIndex::handle_event()
@@ -162,20 +144,11 @@ int AssetPopupBuildIndex::handle_event()
 }
 
 
-
-
-
-
-
 AssetPopupSort::AssetPopupSort(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("Sort items"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-
-AssetPopupSort::~AssetPopupSort()
-{
 }
 
 int AssetPopupSort::handle_event()
@@ -185,20 +158,11 @@ int AssetPopupSort::handle_event()
 }
 
 
-
-
-
-
-
 AssetPopupView::AssetPopupView(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("View"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-
-AssetPopupView::~AssetPopupView()
-{
 }
 
 int AssetPopupView::handle_event()
@@ -218,11 +182,6 @@ int AssetPopupView::handle_event()
 }
 
 
-
-
-
-
-
 AssetPopupPaste::AssetPopupPaste(MWindow *mwindow, AssetPopup *popup)
  : BC_MenuItem(_("Paste"))
 {
@@ -230,17 +189,11 @@ AssetPopupPaste::AssetPopupPaste(MWindow *mwindow, AssetPopup *popup)
 	this->popup = popup;
 }
 
-AssetPopupPaste::~AssetPopupPaste()
-{
-}
-
 int AssetPopupPaste::handle_event()
 {
 	popup->paste_assets();
 	return 1;
 }
-
-
 
 
 AssetMatchSize::AssetMatchSize(MWindow *mwindow, AssetPopup *popup)
@@ -264,19 +217,11 @@ AssetPopupProjectRemove::AssetPopupProjectRemove(MWindow *mwindow, AssetPopup *p
 	this->popup = popup;
 }
 
-
-
-AssetPopupProjectRemove::~AssetPopupProjectRemove()
-{
-}
-
 int AssetPopupProjectRemove::handle_event()
 {
 	mwindow->remove_assets_from_project(1);
 	return 1;
 }
-
-
 
 
 AssetPopupDiskRemove::AssetPopupDiskRemove(MWindow *mwindow, AssetPopup *popup)
@@ -285,12 +230,6 @@ AssetPopupDiskRemove::AssetPopupDiskRemove(MWindow *mwindow, AssetPopup *popup)
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
-
-
-AssetPopupDiskRemove::~AssetPopupDiskRemove()
-{
-}
-
 
 int AssetPopupDiskRemove::handle_event()
 {
