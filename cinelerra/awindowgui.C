@@ -407,7 +407,6 @@ SET_TRACE
 	newfolder_thread = new NewFolderThread(mwindow, this);
 
 	add_subwindow(asset_menu = new AssetPopup(mwindow, this));
-	asset_menu->create_objects();
 
 	add_subwindow(label_menu = new LabelPopup(mwindow, this));
 

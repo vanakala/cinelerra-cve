@@ -40,7 +40,6 @@ class AssetPopup : public BC_PopupMenu
 public:
 	AssetPopup(MWindow *mwindow, AWindowGUI *gui);
 
-	void create_objects();
 // Set mainsession with the current selections
 	void update();
 	void paste_assets();

@@ -49,10 +49,6 @@ AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-}
-
-void AssetPopup::create_objects()
-{
 	add_item(format = new AssetListFormat(mwindow));
 	add_item(info = new AssetPopupInfo(mwindow, this));
 	add_item(new AssetPopupSort(mwindow, this));
