@@ -30,7 +30,6 @@
 AWindow::AWindow(MWindow *mwindow) : Thread()
 {
 	gui = new AWindowGUI(mwindow, this);
-	gui->create_objects();
 	gui->async_update_assets();
 	asset_edit = new AssetEdit(mwindow);
 	clip_edit = new ClipEdit(mwindow, this, 0);

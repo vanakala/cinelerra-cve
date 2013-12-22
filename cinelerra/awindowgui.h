@@ -84,7 +84,6 @@ public:
 	AWindowGUI(MWindow *mwindow, AWindow *awindow);
 	~AWindowGUI();
 
-	int create_objects();
 	void resize_event(int w, int h);
 	void translation_event();
 	void close_event();
@@ -96,12 +95,7 @@ public:
 
 // Collect items into the drag vectors of MainSession
 	void collect_assets();
-	void create_persistent_folder(ArrayList<BC_ListBoxItem*> *output, 
-		int do_audio, 
-		int do_video, 
-		int is_realtime, 
-		int is_transition);
-	void create_label_folder();
+
 	void copy_picons(ArrayList<BC_ListBoxItem*> *dst, 
 		ArrayList<BC_ListBoxItem*> *src, 
 		char *folder);
@@ -154,8 +148,6 @@ public:
 
 	int allow_iconlisting;
 
-// Create custom atoms to be used for async messages between windows
-	void create_custom_xatoms();
 // Function to overload to recieve customly defined atoms
 	virtual void recieve_custom_xatoms(XClientMessageEvent *event);
 
@@ -165,6 +157,14 @@ private:
 	void filter_displayed_assets();
 	Atom UpdateAssetsXAtom;
 	void update_assets();
+	void create_persistent_folder(ArrayList<BC_ListBoxItem*> *output, 
+		int do_audio, 
+		int do_video, 
+		int is_realtime, 
+		int is_transition);
+	void create_label_folder();
+// Create custom atoms to be used for async messages between windows
+	void create_custom_xatoms();
 };
 
 class AWindowAssets : public BC_ListBox

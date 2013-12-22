@@ -314,38 +314,13 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	1,
 	1)
 {
+	int x, y;
+	AssetPicon *picon;
+
 	this->mwindow = mwindow;
 	this->awindow = awindow;
 	temp_picon = 0;
 	allow_iconlisting = 1;
-}
-
-AWindowGUI::~AWindowGUI()
-{
-	assets.remove_all_objects();
-	folders.remove_all_objects();
-	aeffects.remove_all_objects();
-	veffects.remove_all_objects();
-	atransitions.remove_all_objects();
-	vtransitions.remove_all_objects();
-	labellist.remove_all_objects();
-	displayed_assets[1].remove_all_objects();
-	delete file_icon;
-	delete audio_icon;
-	delete folder_icon;
-	delete clip_icon;
-	delete newfolder_thread;
-	delete asset_menu;
-	delete label_menu;
-	delete assetlist_menu;
-	delete folderlist_menu;
-	if(temp_picon) delete temp_picon;
-}
-
-int AWindowGUI::create_objects()
-{
-	int x, y;
-	AssetPicon *picon;
 
 SET_TRACE
 	asset_titles[0] = _("Title");
@@ -445,8 +420,28 @@ SET_TRACE
 	folderlist_menu->create_objects();
 
 	create_custom_xatoms();
+}
 
-	return 0;
+AWindowGUI::~AWindowGUI()
+{
+	assets.remove_all_objects();
+	folders.remove_all_objects();
+	aeffects.remove_all_objects();
+	veffects.remove_all_objects();
+	atransitions.remove_all_objects();
+	vtransitions.remove_all_objects();
+	labellist.remove_all_objects();
+	displayed_assets[1].remove_all_objects();
+	delete file_icon;
+	delete audio_icon;
+	delete folder_icon;
+	delete clip_icon;
+	delete newfolder_thread;
+	delete asset_menu;
+	delete label_menu;
+	delete assetlist_menu;
+	delete folderlist_menu;
+	if(temp_picon) delete temp_picon;
 }
 
 void AWindowGUI::resize_event(int w, int h)
