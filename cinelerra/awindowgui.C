@@ -62,7 +62,8 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->gui = gui;
 	this->asset = asset;
-	this->id = asset->id;
+	id = asset->id;
+	init_object();
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
@@ -74,7 +75,8 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->gui = gui;
 	this->edl = edl;
-	this->id = edl->id;
+	id = edl->id;
+	init_object();
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
@@ -85,6 +87,7 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 	reset();
 	this->mwindow = mwindow;
 	this->gui = gui;
+	init_object();
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
@@ -96,9 +99,7 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->gui = gui;
 	this->plugin = plugin;
-	asset = 0;
-	icon = 0;
-	id = 0;
+	init_object();
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
@@ -110,9 +111,7 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->gui = gui;
 	this->label = label;
-	asset = 0;
-	icon = 0;
-	id = 0;
+	init_object();
 }
 
 AssetPicon::~AssetPicon()
@@ -144,7 +143,7 @@ void AssetPicon::reset()
 	persistent = 0;
 }
 
-void AssetPicon::create_objects()
+void AssetPicon::init_object()
 {
 	FileSystem fs;
 	char name[BCTEXTLEN];
@@ -583,7 +582,6 @@ void AWindowGUI::update_folder_list()
 		if(!exists)
 		{
 			AssetPicon *picon = new AssetPicon(mwindow, this, folder);
-			picon->create_objects();
 			folders.append(picon);
 		}
 	}
@@ -626,7 +624,6 @@ void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
 		if(!exists)
 		{
 			AssetPicon *picon = new AssetPicon(mwindow, this, server);
-			picon->create_objects();
 			output->append(picon);
 		}
 	}
@@ -637,7 +634,6 @@ void AWindowGUI::create_label_folder()
 	Label *current;
 	for(current = mwindow->edl->labels->first; current; current = NEXT) {
 		AssetPicon *picon = new AssetPicon(mwindow, this, current);
-		picon->create_objects();
 		labellist.append(picon);
 	}
 }
@@ -676,7 +672,6 @@ void AWindowGUI::update_asset_list()
 			AssetPicon *picon = new AssetPicon(mwindow, 
 				this, 
 				mwindow->edl->clips.values[i]);
-			picon->create_objects();
 			assets.append(picon);
 		}
 	}
@@ -706,7 +701,6 @@ void AWindowGUI::update_asset_list()
 		if(!exists)
 		{
 			AssetPicon *picon = new AssetPicon(mwindow, this, current);
-			picon->create_objects();
 			assets.append(picon);
 		}
 	}

@@ -54,8 +54,6 @@ public:
 	AssetPicon(MWindow *mwindow, AWindowGUI *gui, const char *folder);
 	virtual ~AssetPicon();
 
-	void create_objects();
-
 	MWindow *mwindow;
 	AWindowGUI *gui;
 	BC_Pixmap *icon;
@@ -76,6 +74,7 @@ public:
 	Label *label;
 private:
 	void reset();
+	void init_object();
 };
 
 
