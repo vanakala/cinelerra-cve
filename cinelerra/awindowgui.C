@@ -412,10 +412,7 @@ SET_TRACE
 
 	add_subwindow(assetlist_menu = new AssetListMenu(mwindow, this));
 
-	assetlist_menu->create_objects();
-
 	add_subwindow(folderlist_menu = new FolderListMenu(mwindow, this));
-	folderlist_menu->create_objects();
 
 	create_custom_xatoms();
 }

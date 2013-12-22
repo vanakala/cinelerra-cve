@@ -28,9 +28,6 @@
 #include "mwindow.h"
 
 
-
-
-
 AssetListMenu::AssetListMenu(MWindow *mwindow, AWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
@@ -40,14 +37,6 @@ AssetListMenu::AssetListMenu(MWindow *mwindow, AWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-}
-
-AssetListMenu::~AssetListMenu()
-{
-}
-
-void AssetListMenu::create_objects()
-{
 	add_item(format = new AssetListFormat(mwindow));
 	add_item(new AssetListSort(mwindow));
 	update_titles();
@@ -59,12 +48,6 @@ void AssetListMenu::update_titles()
 }
 
 
-
-
-
-
-
-
 AssetListFormat::AssetListFormat(MWindow *mwindow)
  : BC_MenuItem("")
 {
@@ -74,24 +57,23 @@ AssetListFormat::AssetListFormat(MWindow *mwindow)
 void AssetListFormat::update()
 {
 	set_text(mwindow->edl->session->assetlist_format == ASSETS_TEXT ?
-		(char*)_("Display icons") : (char*)_("Display text"));
+		_("Display icons") : _("Display text"));
 }
 
 int AssetListFormat::handle_event()
 {
 	switch(mwindow->edl->session->assetlist_format)
 	{
-		case ASSETS_TEXT:
-			mwindow->edl->session->assetlist_format = ASSETS_ICONS;
-			break;
-		case ASSETS_ICONS:
-			mwindow->edl->session->assetlist_format = ASSETS_TEXT;
-			break;
+	case ASSETS_TEXT:
+		mwindow->edl->session->assetlist_format = ASSETS_ICONS;
+		break;
+	case ASSETS_ICONS:
+		mwindow->edl->session->assetlist_format = ASSETS_TEXT;
+		break;
 	}
 
-	if (!mwindow->awindow->gui->allow_iconlisting) {
+	if (!mwindow->awindow->gui->allow_iconlisting)
 		mwindow->edl->session->assetlist_format = ASSETS_TEXT;
-	}
 
 	mwindow->awindow->gui->asset_list->update_format(
 		mwindow->edl->session->assetlist_format, 
@@ -99,8 +81,6 @@ int AssetListFormat::handle_event()
 
 	return 1;
 }
-
-
 
 
 AssetListSort::AssetListSort(MWindow *mwindow)
@@ -116,8 +96,6 @@ int AssetListSort::handle_event()
 }
 
 
-
-
 FolderListMenu::FolderListMenu(MWindow *mwindow, AWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
@@ -127,30 +105,15 @@ FolderListMenu::FolderListMenu(MWindow *mwindow, AWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-}
-
-FolderListMenu::~FolderListMenu()
-{
-}
-
-void FolderListMenu::create_objects()
-{
 	add_item(format = new FolderListFormat(mwindow, this));
 	update_titles();
 }
 
-
-
 void FolderListMenu::update_titles()
 {
 	format->set_text(mwindow->edl->session->folderlist_format == ASSETS_TEXT ?
-		(char*)_("Display icons") : (char*)_("Display text"));
+		_("Display icons") : _("Display text"));
 }
-
-
-
-
-
 
 
 FolderListFormat::FolderListFormat(MWindow *mwindow, FolderListMenu *menu)
@@ -159,16 +122,17 @@ FolderListFormat::FolderListFormat(MWindow *mwindow, FolderListMenu *menu)
 	this->mwindow = mwindow;
 	this->menu = menu;
 }
+
 int FolderListFormat::handle_event()
 {
 	switch(mwindow->edl->session->folderlist_format)
 	{
-		case ASSETS_TEXT:
-			mwindow->edl->session->folderlist_format = ASSETS_ICONS;
-			break;
-		case ASSETS_ICONS:
-			mwindow->edl->session->folderlist_format = ASSETS_TEXT;
-			break;
+	case ASSETS_TEXT:
+		mwindow->edl->session->folderlist_format = ASSETS_ICONS;
+		break;
+	case ASSETS_ICONS:
+		mwindow->edl->session->folderlist_format = ASSETS_TEXT;
+		break;
 	}
 
 	mwindow->awindow->gui->folder_list->update_format(mwindow->edl->session->folderlist_format, 1);
