@@ -410,7 +410,6 @@ SET_TRACE
 	asset_menu->create_objects();
 
 	add_subwindow(label_menu = new LabelPopup(mwindow, this));
-	label_menu->create_objects();
 
 	add_subwindow(assetlist_menu = new AssetListMenu(mwindow, this));
 
@@ -1262,10 +1261,6 @@ LabelPopup::LabelPopup(MWindow *mwindow, AWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-}
-
-void LabelPopup::create_objects()
-{
 	add_item(editlabel = new LabelPopupEdit(mwindow, this));
 }
 

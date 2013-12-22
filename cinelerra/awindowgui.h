@@ -215,7 +215,6 @@ class LabelPopup : public BC_PopupMenu
 public:
 	LabelPopup(MWindow *mwindow, AWindowGUI *gui);
 
-	void create_objects();
 // Set mainsession with the current selections
 	int update();
 
