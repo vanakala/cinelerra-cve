@@ -967,8 +967,7 @@ AWindowFolders::AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, 
 		0,                    // Pixel of top of window.
 		0,                        // If this listbox is a popup window
 		LISTBOX_SINGLE,  // Select one item or multiple items
-		ICON_TOP,        // Position of icon relative to text of each item
-		1)               // Allow drags
+		ICON_TOP)        // Position of icon relative to text of each item
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
