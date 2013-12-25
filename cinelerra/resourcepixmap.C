@@ -101,7 +101,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	int refresh_w = 0;
 
 // Ignore if called by resourcethread.
-	if(mode == 3) return;
+	if(mode & WUPD_CANVPICIGN) return;
 
 	int y = 0;
 	if(mwindow->edl->session->show_titles)
@@ -147,7 +147,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 		this->pixmap_h != pixmap_h ||
 		(data_type == TRACK_AUDIO && 
 			mwindow->edl->local_session->zoom_y != zoom_y) ||
-		(mode == 2) ||
+		(mode & WUPD_CANVREDRAW) ||
 		need_redraw)
 	{
 // Shouldn't draw at all if zoomed in below index zoom.
@@ -677,7 +677,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		else
 		{
 // Set picon thread to display from file
-			if(mode != 3)
+			if(!(mode & WUPD_CANVPICIGN))
 			{
 				canvas->resource_thread->add_picon(this, 
 					x, 
