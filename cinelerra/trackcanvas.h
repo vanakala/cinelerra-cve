@@ -62,9 +62,6 @@ public:
 //                  Used by Piconthread.
 //             WUPD_INDEXES - causes redraw only certain audio resources with indexes
 	void draw_resources(int mode = 0,
-/* Pole
-		int indexes_only = 0,     // Redraw only certain audio resources with indexes
-	*/
 		Asset *index_asset = 0);
 	void draw_highlight_rectangle(int x, int y, int w, int h);
 	void draw_highlight_insertion(int x, int y, int w, int h);
@@ -343,6 +340,8 @@ public:
 
 	void draw_paste_destination();
 
+	Mutex *pixmaps_lock;
+
 private:
 	void draw_floatauto_ctrlpoint(int x,
 		int y,
@@ -367,7 +366,6 @@ private:
 	double selection_midpoint1, selection_midpoint2;        // division between current ends
 	int region_selected;	// 1 if region selected
 
-	Mutex *pixmaps_lock;
 };
 
 #endif

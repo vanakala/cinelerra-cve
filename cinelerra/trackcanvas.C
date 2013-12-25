@@ -753,10 +753,6 @@ void TrackCanvas::draw_resources(int mode,
 {
 	if(!mwindow->edl->session->show_assets) return;
 
-// Drawing is already in progress, do nothing
-	if(pixmaps_lock->is_locked())
-		return;
-
 	pixmaps_lock->lock("TrackCanvas::draw_resources");
 
 	if((mode & (WUPD_CANVPICIGN | WUPD_INDEXES)) == 0)
@@ -825,7 +821,7 @@ void TrackCanvas::draw_resources(int mode,
 						pixmap_h);
 // Resize it if it's bigger
 					if(pixmap_w > pixmap->pixmap_w ||
-						pixmap_h > pixmap->pixmap_h)
+							pixmap_h > pixmap->pixmap_h)
 						pixmap->resize(pixmap_w, pixmap_h);
 					pixmap->draw_data(edit,
 						edit_x, 

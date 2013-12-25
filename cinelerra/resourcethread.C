@@ -243,6 +243,7 @@ void ResourceThread::run()
 void ResourceThread::do_video(VResourceThreadItem *item)
 {
 	VFrame *picon_frame = 0;
+	int cache_locked = 0;
 
 	if((picon_frame = mwindow->frame_cache->get_frame_ptr(item->postime,
 		item->layer,
@@ -251,8 +252,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		item->picon_h,
 		item->asset->id)) != 0)
 	{
-// Unlock the get_frame_ptr command
-		mwindow->frame_cache->unlock();
+		cache_locked = 1;
 	}
 	else
 	{
@@ -275,13 +275,19 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 
 // Allow escape here
 	if(interrupted)
+	{
+		if(cache_locked)
+			mwindow->frame_cache->unlock();
 		return;
+	}
 
 // Draw the picon
 // Test for pixmap existence first
 	if(item->operation_count == operation_count)
 	{
 		int exists = 0;
+
+		mwindow->gui->canvas->pixmaps_lock->lock("ResourceThread::do_video");
 		for(int i = 0; i < mwindow->gui->canvas->resource_pixmaps.total; i++)
 		{
 			if(mwindow->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
@@ -297,7 +303,11 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 				0, 
 				0);
 		}
+		mwindow->gui->canvas->pixmaps_lock->unlock();
 	}
+
+	if(cache_locked)
+		mwindow->frame_cache->unlock();
 
 	if(mwindow->frame_cache->total() > 32)
 		mwindow->frame_cache->delete_oldest();
