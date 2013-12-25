@@ -543,7 +543,6 @@ void AWindowGUI::async_update_assets()
 	send_custom_xatom(&event);
 }
 
-
 void AWindowGUI::update_folder_list()
 {
 	for(int i = 0; i < folders.total; i++)
@@ -635,7 +634,6 @@ void AWindowGUI::update_asset_list()
 		AssetPicon *picon = (AssetPicon*)assets.values[i];
 		picon->in_use--;
 	}
-
 
 // Synchronize EDL clips
 	for(int i = 0; i < mwindow->edl->clips.total; i++)
@@ -899,18 +897,19 @@ Asset* AWindowGUI::selected_asset()
 {
 	AssetPicon *picon = (AssetPicon*)asset_list->get_selection(0, 0);
 	if(picon) return picon->asset;
+	return 0;
 }
 
 PluginServer* AWindowGUI::selected_plugin()
 {
 	AssetPicon *picon = (AssetPicon*)asset_list->get_selection(0, 0);
 	if(picon) return picon->plugin;
+	return 0;
 }
 
 AssetPicon* AWindowGUI::selected_folder()
 {
-	AssetPicon *picon = (AssetPicon*)folder_list->get_selection(0, 0);
-    return picon;
+	return (AssetPicon*)folder_list->get_selection(0, 0);
 }
 
 
