@@ -34,7 +34,6 @@
 #include "vwindowgui.h"
 
 
-
 LabelEdit::LabelEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)
  : Thread()
 {
@@ -42,10 +41,6 @@ LabelEdit::LabelEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)
 	this->awindow = awindow;
 	this->vwindow = vwindow;
 	this->label = 0;
-}
-
-LabelEdit::~LabelEdit()
-{
 }
 
 void LabelEdit::edit_label(Label *label)
@@ -65,17 +60,13 @@ void LabelEdit::run()
 		Label *label = label;
 
 		LabelEditWindow *window = new LabelEditWindow(mwindow, this);
-		window->create_objects();
 		int result = window->run_window();
 		delete window;
-		if (awindow) awindow->gui->async_update_assets();
+
+		if(awindow)
+			awindow->gui->async_update_assets();
 	}
 }
-
-
-
-
-
 
 
 LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
@@ -90,25 +81,14 @@ LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
 	0,
 	1)
 {
-	this->mwindow = mwindow;
-	this->thread = thread;
-}
-
-LabelEditWindow::~LabelEditWindow()
-{
-}
-
-
-void LabelEditWindow::create_objects()
-{
-	this->label = thread->label;
-
 	int x = 10, y = 10;
 	int x1 = x;
 	BC_TextBox *textbox;
 	BC_TextBox *titlebox;
 	BC_Title *title;
 
+	this->mwindow = mwindow;
+	this->label = thread->label;
 	set_icon(mwindow->theme->get_image("awindow_icon"));
 	add_subwindow(title = new BC_Title(x1, y, _("Label Text:")));
 	y += title->get_h() + 5;
@@ -118,16 +98,11 @@ void LabelEditWindow::create_objects()
 		get_w() - x1 * 2, 
 		BC_TextBox::pixels_to_rows(this, MEDIUMFONT, get_h() - 10 - 40 - y)));
 
-
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	textbox->activate();
 }
-
-
-
-
 
 
 LabelEditComments::LabelEditComments(LabelEditWindow *window, int x, int y, int w, int rows)
