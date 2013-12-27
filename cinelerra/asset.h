@@ -137,7 +137,7 @@ public:
 	int use_pipe;
 
 // Folder in resource manager
-	char folder[BCTEXTLEN];
+	int awindow_folder;
 
 // Format of file.  An enumeration from file.inc.
 	int format;

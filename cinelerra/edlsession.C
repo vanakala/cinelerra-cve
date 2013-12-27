@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "autoconf.h"
+#include "awindowgui.h"
 #include "colormodels.h"
 #include "bchash.h"
 #include "bcsignals.h"
@@ -52,7 +53,7 @@ EDLSession::EDLSession(EDL *edl)
 
 	playback_config = new PlaybackConfig;
 	auto_conf = new AutoConf;
-	strcpy(current_folder, "");
+	awindow_folder = AW_MEDIA_FOLDER;
 	strcpy(default_atransition, "");
 	strcpy(default_vtransition, "");
 	strcpy(plugin_configuration_directory, BCASTDIR);
@@ -178,8 +179,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	crop_x2 = defaults->get("CROP_X2", 320);
 	crop_y1 = defaults->get("CROP_Y1", 0);
 	crop_y2 = defaults->get("CROP_Y2", 240);
-	sprintf(current_folder, MEDIA_FOLDER);
-	defaults->get("CURRENT_FOLDER", current_folder);
+	awindow_folder = defaults->get("AWINDOW_FOLDER", awindow_folder);
 	cursor_on_frames = defaults->get("CURSOR_ON_FRAMES", 1);
 	cwindow_dest = defaults->get("CWINDOW_DEST", 0);
 	cwindow_mask = defaults->get("CWINDOW_MASK", 0);
@@ -297,7 +297,8 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("CROP_X2", crop_x2);
 	defaults->update("CROP_Y1", crop_y1);
 	defaults->update("CROP_Y2", crop_y2);
-	defaults->update("CURRENT_FOLDER", current_folder);
+	defaults->delete_key("CURRENT_FOLDER");
+	defaults->update("AWINDOW_FOLDER", awindow_folder);
 	defaults->update("CURSOR_ON_FRAMES", cursor_on_frames);
 	defaults->update("CWINDOW_DEST", cwindow_dest);
 	defaults->update("CWINDOW_MASK", cwindow_mask);
@@ -410,6 +411,7 @@ void EDLSession::boundaries()
 	Workarounds::clamp(crop_y1, 0, output_h);
 	Workarounds::clamp(crop_y2, 0, output_h);
 	if(brender_start < 0) brender_start = 0.0;
+	Workarounds::clamp(awindow_folder, 0, AWINDOW_FOLDERS - 1);
 
 // Correct framerates
 	frame_rate = Units::fix_framerate(frame_rate);
@@ -486,7 +488,11 @@ int EDLSession::load_xml(FileXML *file,
 		crop_y1 = file->tag.get_property("CROP_Y1", crop_y1);
 		crop_x2 = file->tag.get_property("CROP_X2", crop_x2);
 		crop_y2 = file->tag.get_property("CROP_Y2", crop_y2);
-		file->tag.get_property("CURRENT_FOLDER", current_folder);
+		string[0] = 0;
+		file->tag.get_property("CURRENT_FOLDER", string);
+		if(string[0])
+			awindow_folder = AWindowGUI::folder_number(string);
+		file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
 		cursor_on_frames = file->tag.get_property("CURSOR_ON_FRAMES", cursor_on_frames);
 		cwindow_dest = file->tag.get_property("CWINDOW_DEST", cwindow_dest);
 		cwindow_mask = file->tag.get_property("CWINDOW_MASK", cwindow_mask);
@@ -544,7 +550,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("CROP_Y1", crop_y1);
 	file->tag.set_property("CROP_X2", crop_x2);
 	file->tag.set_property("CROP_Y2", crop_y2);
-	file->tag.set_property("CURRENT_FOLDER", current_folder);
+	file->tag.set_property("AWINDOW_FOLDER", awindow_folder);
 	file->tag.set_property("CURSOR_ON_FRAMES", cursor_on_frames);
 	file->tag.set_property("CWINDOW_DEST", cwindow_dest);
 	file->tag.set_property("CWINDOW_MASK", cwindow_mask);
@@ -672,7 +678,7 @@ int EDLSession::copy(EDLSession *session)
 	crop_y1 = session->crop_y1;
 	crop_x2 = session->crop_x2;
 	crop_y2 = session->crop_y2;
-	strcpy(current_folder, session->current_folder);
+	awindow_folder = session->awindow_folder;
 	cursor_on_frames = session->cursor_on_frames;
 	cwindow_dest = session->cwindow_dest;
 	cwindow_mask = session->cwindow_mask;

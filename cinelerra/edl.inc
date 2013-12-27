@@ -56,17 +56,16 @@ class EDL;
 #define MOVE_EDITS_DISABLED 3
 
 
-// Mandatory folders
-#define AEFFECT_FOLDER "Audio Effects"
-#define VEFFECT_FOLDER "Video Effects"
-#define ATRANSITION_FOLDER "Audio Transitions"
-#define VTRANSITION_FOLDER "Video Transitions"
-
-#define LABEL_FOLDER "Labels"
-
-// Default folders
-#define CLIP_FOLDER "Clips"
-#define MEDIA_FOLDER "Media"
+// AWindow folders
+#define AW_NO_FOLDER         -1
+#define AW_AEFFECT_FOLDER     0
+#define AW_VEFFECT_FOLDER     1
+#define AW_ATRANSITION_FOLDER 2
+#define AW_VTRANSITION_FOLDER 3
+#define AW_LABEL_FOLDER       4
+#define AW_CLIP_FOLDER        5
+#define AW_MEDIA_FOLDER       6
+#define AWINDOW_FOLDERS       7
 
 #define AWINDOW_MODES 2
 
