@@ -1639,6 +1639,7 @@ void MWindow::toggle_label(int is_mwindow)
 	{
 		cwindow->gui->unlock_window();
 	}
+	awindow->gui->async_update_assets();
 }
 
 void MWindow::trim_selection()
