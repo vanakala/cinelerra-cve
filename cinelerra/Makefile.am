@@ -184,7 +184,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    mwindowgui.C \
 		    mwindowmove.C \
 		    new.C \
-		    newfolder.C \
 		    overlayframe.C \
 		    packagedispatcher.C \
 		    packagerenderer.C \
@@ -459,7 +458,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 mtimebar.h \
 		 mwindowgui.h \
 		 mwindow.h \
-		 newfolder.h \
 		 new.h \
 		 newpresets.h \
 		 ntsczones.h \

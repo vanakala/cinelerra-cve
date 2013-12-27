@@ -70,7 +70,7 @@ cinelerra/meterpanel.C
 cinelerra/mwindow.C
 cinelerra/mwindowedit.C
 cinelerra/new.C
-cinelerra/newfolder.C
+# cinelerra/newfolder.C
 cinelerra/packagerenderer.C
 cinelerra/patchbay.C
 cinelerra/patchgui.C

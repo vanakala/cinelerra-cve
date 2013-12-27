@@ -1684,10 +1684,6 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
 }
 
-void MWindow::new_folder(const char *new_folder)
-{
-}
-
 void MWindow::select_point(ptstime position)
 {
 	edl->local_session->set_selection(position);

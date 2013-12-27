@@ -32,7 +32,6 @@
 #include "guicast.h"
 #include "labels.h"
 #include "mwindow.inc"
-#include "newfolder.inc"
 #include "pluginserver.inc"
 
 class AWindowAssets;
