@@ -52,7 +52,6 @@ EDLSession::EDLSession(EDL *edl)
 
 	playback_config = new PlaybackConfig;
 	auto_conf = new AutoConf;
-	strcpy(vwindow_folder, "");
 	strcpy(current_folder, "");
 	strcpy(default_atransition, "");
 	strcpy(default_vtransition, "");
@@ -259,9 +258,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	vwindow_meter = defaults->get("VWINDOW_METER", 1);
 
 	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
-
-	vwindow_folder[0] = 0;
-	vwindow_source = -1;
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
 	boundaries();
 	return 0;
@@ -521,8 +517,6 @@ int EDLSession::load_xml(FileXML *file,
 		}
 		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 		vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
-		file->tag.get_property("VWINDOW_FOLDER", vwindow_folder);
-		vwindow_source = file->tag.get_property("VWINDOW_SOURCE", vwindow_source);
 		vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
 
 		decode_subtitles = file->tag.get_property("DECODE_SUBTITLES", decode_subtitles);
@@ -582,8 +576,6 @@ int EDLSession::save_xml(FileXML *file)
 	}
 	file->tag.set_property("TOOL_WINDOW", tool_window);
 	file->tag.set_property("VWINDOW_METER", vwindow_meter);
-	file->tag.set_property("VWINDOW_FOLDER", vwindow_folder);
-	file->tag.set_property("VWINDOW_SOURCE", vwindow_source);
 	file->tag.set_property("VWINDOW_ZOOM", vwindow_zoom);
 
 
@@ -749,8 +741,6 @@ int EDLSession::copy(EDLSession *session)
 	video_write_length = session->video_write_length;
 	view_follows_playback = session->view_follows_playback;
 	vwindow_meter = session->vwindow_meter;
-	strcpy(vwindow_folder, session->vwindow_folder);
-	vwindow_source = session->vwindow_source;
 	vwindow_zoom = session->vwindow_zoom;
 
 	decode_subtitles = session->decode_subtitles;

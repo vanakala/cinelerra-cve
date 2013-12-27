@@ -44,8 +44,6 @@ public:
 	void change_source(EDL *edl);
 // Change source to master EDL's vwindow EDL after a load.
 	void change_source();
-// Change source to folder and item number
-	void change_source(char *folder, int item);
 // Remove source
 	void remove_source();
 // Returns private EDL of VWindow
