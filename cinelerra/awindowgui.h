@@ -145,8 +145,6 @@ public:
 // Temporary for reading picons from files
 	VFrame *temp_picon;
 
-	int allow_iconlisting;
-
 // Function to overload to recieve customly defined atoms
 	virtual void recieve_custom_xatoms(XClientMessageEvent *event);
 	static const char *folder_names[];

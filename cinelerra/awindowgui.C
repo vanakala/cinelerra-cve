@@ -336,7 +336,6 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	this->mwindow = mwindow;
 	this->awindow = awindow;
 	temp_picon = 0;
-	allow_iconlisting = 1;
 
 SET_TRACE
 	asset_titles[0] = _("Title");
@@ -792,7 +791,6 @@ void AWindowGUI::sort_picons(ArrayList<BC_ListBoxItem*> *src)
 
 void AWindowGUI::filter_displayed_assets()
 {
-	allow_iconlisting = 1;
 	asset_titles[0] = _("Title");
 	asset_titles[1] = _("Comments");
 	switch(mwindow->edl->session->awindow_folder)
@@ -813,7 +811,6 @@ void AWindowGUI::filter_displayed_assets()
 		copy_picons(displayed_assets, &labellist, AW_NO_FOLDER);
 		asset_titles[0] = _("Time Stamps");
 		asset_titles[1] = _("Title");
-		allow_iconlisting = 0;
 		break;
 	default:
 		copy_picons(displayed_assets, &assets, mwindow->edl->session->awindow_folder);
@@ -983,7 +980,7 @@ AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, in
 		y,
 		w, 
 		h,
-		(mwindow->edl->session->assetlist_format == ASSETS_ICONS && gui->allow_iconlisting ) ? 
+		(mwindow->edl->session->assetlist_format == ASSETS_ICONS) ?
 			LISTBOX_ICONS : LISTBOX_TEXT,
 		&gui->assets,  	  // Each column has an ArrayList of BC_ListBoxItems.
 		gui->asset_titles,             // Titles for columns.  Set to 0 for no titles
