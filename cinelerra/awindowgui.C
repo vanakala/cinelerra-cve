@@ -51,6 +51,7 @@
 #include "vwindowgui.h"
 #include "vwindow.h"
 
+#include <ctype.h>
 
 const char *AWindowGUI::folder_names[] =
 {
@@ -734,7 +735,29 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 				dst[1].append(item2 = new BC_ListBoxItem(picon->edl->local_session->clip_notes));
 			else
 			if(picon->label && picon->label->textstr)
-				dst[1].append(item2 = new BC_ListBoxItem(picon->label->textstr));
+			{
+				char dststr[BCTEXTLEN];
+				int whitespace = 0;
+				char *p = dststr;
+				for(char *s = picon->label->textstr; *s; s++)
+				{
+					if(isspace(*s))
+					{
+						if(!whitespace)
+						{
+							*p++ = ' ';
+							whitespace = 1;
+						}
+					}
+					else
+					{
+						*p++ = *s;
+						whitespace = 0;
+					}
+				}
+				*p = 0;
+				dst[1].append(item2 = new BC_ListBoxItem(dststr));
+			}
 			else
 				dst[1].append(item2 = new BC_ListBoxItem(""));
 			item1->set_autoplace_text(1);
