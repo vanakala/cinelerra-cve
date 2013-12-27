@@ -127,9 +127,6 @@ public:
 	void dump(int indent = 0);
 	static int next_id();
 
-// Create a new folder if it doesn't exist already
-	void new_folder(const char *folder);
-	void delete_folder(const char *folder);
 	void modify_edithandles(ptstime oldposition,
 		ptstime newposition,
 		int currentend, 
@@ -192,8 +189,6 @@ public:
 	void output_dimensions_scaled(int &w, int &h);
 	float get_aspect_ratio();
 
-// Titles of all subfolders
-	ArrayList<char*> folders;
 // Clips
 	ArrayList<EDL*> clips;
 // VWindow

@@ -58,12 +58,6 @@ EDL::EDL(EDL *parent_edl)
 	vwindow_edl = 0;
 	vwindow_edl_shared = 0;
 
-	folders.set_array_delete();
-
-	new_folder(CLIP_FOLDER);
-
-	new_folder(MEDIA_FOLDER);
-
 	id = next_id();
 	project_path[0] = 0;
 
@@ -104,7 +98,6 @@ EDL::~EDL()
 		delete session;
 	}
 
-	folders.remove_all_objects();
 	clips.remove_all_objects();
 }
 
@@ -152,8 +145,6 @@ void EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 	int result = 0;
 // Track numbering offset for replacing undo data.
 	int track_offset = 0;
-
-	folders.remove_all_objects();
 
 // Search for start of master EDL.
 
@@ -226,13 +217,6 @@ void EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 					if((load_flags & LOAD_ACONFIG) &&
 						(load_flags & LOAD_SESSION))
 						session->load_audio_config(file, 0, load_flags);
-				}
-				else
-				if(file->tag.title_is("FOLDER"))
-				{
-					char folder[BCTEXTLEN];
-					strcpy(folder, file->read_text());
-					new_folder(folder);
 				}
 				else
 				if(file->tag.title_is("ASSETS"))
@@ -360,14 +344,6 @@ void EDL::copy_session(EDL *edl, int session_only)
 	if(!session_only)
 	{
 		strcpy(this->project_path, edl->project_path);
-
-		folders.remove_all_objects();
-		for(int i = 0; i < edl->folders.total; i++)
-		{
-			char *new_folder;
-			folders.append(new_folder = new char[strlen(edl->folders.values[i]) + 1]);
-			strcpy(new_folder, edl->folders.values[i]);
-		}
 	}
 
 	if(!parent_edl)
@@ -484,17 +460,6 @@ void EDL::copy(ptstime start,
 	session->save_xml(file);
 	session->save_video_config(file);
 	session->save_audio_config(file);
-
-// Folders
-	for(int i = 0; i < folders.total; i++)
-	{
-		file->tag.set_title("FOLDER");
-		file->append_tag();
-		file->append_text(folders.values[i]);
-		file->tag.set_title("/FOLDER");
-		file->append_tag();
-		file->append_newline();
-	}
 
 // Media
 // Don't replicate all assets for every clip.
@@ -1025,35 +990,4 @@ ptstime EDL::align_to_frame(ptstime position, int roundit)
 		temp /= session->sample_rate;
 
 	return temp;
-}
-
-void EDL::new_folder(const char *folder)
-{
-	for(int i = 0; i < folders.total; i++)
-	{
-		if(!strcasecmp(folders.values[i], folder)) return;
-	}
-
-	char *new_folder;
-	folders.append(new_folder = new char[strlen(folder) + 1]);
-	strcpy(new_folder, folder);
-}
-
-void EDL::delete_folder(const char *folder)
-{
-	int i;
-	for(i = 0; i < folders.total; i++)
-	{
-		if(!strcasecmp(folders.values[i], folder))
-		{
-			break;
-		}
-	}
-
-	if(i < folders.total) delete folders.values[i];
-
-	for( ; i < folders.total - 1; i++)
-	{
-		folders.values[i] = folders.values[i + 1];
-	}
 }

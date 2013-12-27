@@ -1686,9 +1686,6 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 
 void MWindow::new_folder(const char *new_folder)
 {
-	edl->new_folder(new_folder);
-	undo->update_undo(_("new folder"), LOAD_ALL);
-	awindow->gui->async_update_assets();
 }
 
 void MWindow::select_point(ptstime position)

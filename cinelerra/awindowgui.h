@@ -136,7 +136,6 @@ public:
 	BC_Pixmap *audio_icon;
 	BC_Pixmap *video_icon;
 	BC_Pixmap *clip_icon;
-	NewFolderThread *newfolder_thread;
 
 // Popup menus
 	AssetPopup *asset_menu;
@@ -152,7 +151,6 @@ public:
 	virtual void recieve_custom_xatoms(XClientMessageEvent *event);
 
 private:
-	void update_folder_list();
 	void update_asset_list();
 	void filter_displayed_assets();
 	Atom UpdateAssetsXAtom;
