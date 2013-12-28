@@ -37,8 +37,6 @@
 #include <unistd.h>
 
 // ====================================================== scrollbars
-
-
 BC_ListBoxYScroll::BC_ListBoxYScroll(BC_ListBox *listbox, 
 		int total_height,
 		int view_height,
@@ -52,10 +50,6 @@ BC_ListBoxYScroll::BC_ListBoxYScroll(BC_ListBox *listbox,
 	view_height)
 {
 	this->listbox = listbox;
-}
-
-BC_ListBoxYScroll::~BC_ListBoxYScroll()
-{
 }
 
 int BC_ListBoxYScroll::handle_event()
@@ -78,10 +72,6 @@ BC_ListBoxXScroll::BC_ListBoxXScroll(BC_ListBox *listbox,
 	view_width)
 {
 	this->listbox = listbox;
-}
-
-BC_ListBoxXScroll::~BC_ListBoxXScroll()
-{
 }
 
 int BC_ListBoxXScroll::handle_event()
@@ -307,7 +297,6 @@ void BC_ListBoxToggle::draw(int flash)
 
 
 // ====================================================== box
-
 BC_ListBox::BC_ListBox(int x, 
 	int y, 
 	int w, 
@@ -690,7 +679,6 @@ void BC_ListBox::calculate_last_coords_recursive(
 		}
 	}
 }
-
 
 void BC_ListBox::calculate_item_coords_recursive(
 	ArrayList<BC_ListBoxItem*> *data,
@@ -1424,7 +1412,6 @@ void BC_ListBox::set_columns(const char **column_titles,
 
 	this->columns = columns;
 }
-
 
 void BC_ListBox::update(ArrayList<BC_ListBoxItem*> *data,
 	const char **column_titles,
@@ -3846,12 +3833,10 @@ int BC_ListBox::keypress_event()
 	return result;
 }
 
-
 BC_Pixmap* BC_ListBox::get_bg_surface()
 {
 	return bg_surface;
 }
-
 
 void BC_ListBox::draw_background()
 {
@@ -4014,7 +3999,6 @@ void BC_ListBox::draw_items(int flash)
 		}
 	}
 }
-
 
 void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data, 
 	int column,

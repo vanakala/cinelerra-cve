@@ -42,7 +42,7 @@ public:
 		int total_height,
 		int view_height,
 		int position);
-	~BC_ListBoxYScroll();
+
 	int handle_event();
 
 private:
@@ -56,7 +56,7 @@ public:
 		int total_width, 
 		int view_width,
 		int position);
-	~BC_ListBoxXScroll();
+
 	int handle_event();
 
 private:
