@@ -74,16 +74,7 @@ void MainErrorGUI::create_objects()
 		y,
 		get_w() - 20,
 		button->get_y() - y - 5,
-		LISTBOX_TEXT,          // Display text list or icons
-		&thread->errors,       // Each column has an ArrayList of BC_ListBoxItems.
-		0,                     // Titles for columns.  Set to 0 for no titles
-		0,                     // width of each column
-		1,                     // Total columns.  Only 1 in icon mode
-		0,                     // Pixel of top of window.
-		0,                     // If this listbox is a popup window with a button
-		LISTBOX_SINGLE,        // Select one item or multiple items
-		ICON_LEFT,             // Position of icon relative to text of each item
-		0));
+		&thread->errors));       // Each column has an ArrayList of BC_ListBoxItems.
 	show_window();
 }
 

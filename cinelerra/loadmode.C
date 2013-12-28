@@ -144,13 +144,8 @@ LoadModeListBox::LoadModeListBox(BC_WindowBase *window,
 	y,
 	loadmode->mwindow->theme->loadmode_w,
 	150,
-	LISTBOX_TEXT,
 	(ArrayList<BC_ListBoxItem *>*)&loadmode->load_modes,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->window = window;
 	this->loadmode = loadmode;

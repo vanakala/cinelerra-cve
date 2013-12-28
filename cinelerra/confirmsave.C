@@ -134,7 +134,6 @@ int ConfirmSaveWindow::create_objects()
 		y, 
 		get_w() - x - 10,
 		get_h() - y - BC_OKButton::calculate_h() - 10,
-		LISTBOX_TEXT,
 		list));
 	y = get_h() - 40;
 	add_subwindow(new BC_OKButton(this));

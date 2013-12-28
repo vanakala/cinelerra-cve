@@ -104,16 +104,12 @@ public:
 		int y, 
 		int w, 
 		int h,
-		int display_format,                   // Display text list or icons
 		ArrayList<BC_ListBoxItem*> *data = 0, // Each column has an ArrayList of BC_ListBoxItems.
+		int options = 0,                      // Option bits (bclistbox.inc)
 		const char **column_titles = 0,       // Titles for columns.  Set to 0 for no titles
 		int *column_width = 0,                // width of each column
 		int columns = 1,                      // Total columns.  Only 1 in icon mode
-		int yposition = 0,                    // Pixel of top of window.
-		int is_popup = 0,                     // If this listbox is a popup window with a button
-		int selection_mode = LISTBOX_SINGLE,  // Select one item or multiple items
-		int icon_position = ICON_LEFT,        // Position of icon relative to text of each item
-		int allow_drag = 0);                  // Allow user to drag icons around
+		int yposition = 0);                   // Pixel of top of window.
 	virtual ~BC_ListBox();
 
 	friend class BC_ListBoxToggle;

@@ -1663,13 +1663,8 @@ BC_PopupTextBoxList::BC_PopupTextBoxList(BC_PopupTextBox *popup, int x, int y)
 	y,
 	popup->text_w + BC_WindowBase::get_resources()->listbox_button[0]->get_w(),
 	popup->list_h,
-	LISTBOX_TEXT,
 	popup->list_items,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->popup = popup;
 }

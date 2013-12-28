@@ -301,16 +301,12 @@ BC_ListBox::BC_ListBox(int x,
 	int y, 
 	int w, 
 	int h,
-	int display_format,
 	ArrayList<BC_ListBoxItem*> *data,
+	int options,
 	const char **column_titles,
 	int *column_width,
 	int columns,
-	int yposition,
-	int is_popup,
-	int selection_mode,
-	int icon_position,
-	int allow_drag)
+	int yposition)
  : BC_SubWindow(x, y, w, h, -1)
 {
 	justify = LISTBOX_RIGHT;
@@ -372,11 +368,11 @@ BC_ListBox::BC_ListBox(int x,
 	this->data = data;
 	this->columns = columns;
 	this->yposition = yposition;
-	this->is_popup = is_popup;
-	this->display_format = display_format;
-	this->selection_mode = selection_mode;
-	this->icon_position = icon_position;
-	this->allow_drag = allow_drag;
+	this->is_popup = options & LISTBOX_POPUP;
+	this->display_format = options & LISTBOX_ICONS;
+	this->selection_mode = options & LISTBOX_MULTIPLE;
+	this->icon_position = options & LISTBOX_ICON_TOP;
+	this->allow_drag = options & LISTBOX_DRAG;
 	this->column_titles = 0;
 	this->column_width = 0;
 
@@ -639,7 +635,7 @@ void BC_ListBox::calculate_last_coords_recursive(
 		if(!item->autoplace_text)
 		{
 // Lowest text coordinate
-			display_format = LISTBOX_TEXT;
+			display_format = 0;
 			current_text_y = item->text_y + 
 				get_text_height(MEDIUMFONT);
 			if(current_text_y > *next_text_y)
@@ -729,7 +725,7 @@ void BC_ListBox::calculate_item_coords_recursive(
 			BC_ListBoxItem *item = data[j].values[i];
 			if(item->autoplace_text)
 			{
-				display_format = LISTBOX_TEXT;
+				display_format = 0;
 				item->set_text_x(next_text_x);
 				item->set_text_y(*next_text_y);
 
@@ -756,7 +752,7 @@ void BC_ListBox::calculate_item_coords_recursive(
 // Increase the text vertical position
 		if(total_autoplaced_columns)
 		{
-			display_format = LISTBOX_TEXT;
+			display_format = 0;
 			*next_text_y += get_text_height(MEDIUMFONT);
 		}
 
@@ -836,7 +832,7 @@ void BC_ListBox::set_sort_order(int value, int redraw)
 
 int BC_ListBox::get_display_mode()
 {
-	return display_format;
+	return display_format ? LISTBOX_ICONS : 0;
 }
 
 int BC_ListBox::get_yposition()
@@ -856,7 +852,7 @@ int BC_ListBox::get_highlighted_item()
 
 int BC_ListBox::get_item_x(BC_ListBoxItem *item)
 {
-	if(display_format == LISTBOX_TEXT)
+	if(!display_format)
 		return item->text_x - xposition + 2;
 	else
 		return item->icon_x - xposition + 2;
@@ -865,7 +861,7 @@ int BC_ListBox::get_item_x(BC_ListBoxItem *item)
 int BC_ListBox::get_item_y(BC_ListBoxItem *item)
 {
 	int result;
-	if(display_format == LISTBOX_TEXT)
+	if(!display_format)
 		result = item->text_y - yposition + title_h + 2;
 	else
 		result = item->icon_y - yposition + title_h + 2;
@@ -874,7 +870,7 @@ int BC_ListBox::get_item_y(BC_ListBoxItem *item)
 
 int BC_ListBox::get_item_w(BC_ListBoxItem *item)
 {
-	if(display_format == LISTBOX_ICONS)
+	if(display_format)
 	{
 		int x, y, w, h;
 		get_icon_mask(item, x, y, w, h);
@@ -882,7 +878,7 @@ int BC_ListBox::get_item_w(BC_ListBoxItem *item)
 		get_text_mask(item, x, y, w, h);
 		int text_w = w;
 
-		if(icon_position == ICON_LEFT)
+		if(!icon_position)
 			return icon_w + text_w;
 		else
 			return (icon_w > text_w) ? icon_w : text_w;
@@ -895,7 +891,7 @@ int BC_ListBox::get_item_w(BC_ListBoxItem *item)
 
 int BC_ListBox::get_item_h(BC_ListBoxItem *item)
 {
-	if(display_format == LISTBOX_ICONS)
+	if(display_format)
 	{
 		int x, y, w, h;
 		get_icon_mask(item, x, y, w, h);
@@ -903,7 +899,7 @@ int BC_ListBox::get_item_h(BC_ListBoxItem *item)
 		get_text_mask(item, x, y, w, h);
 		int text_h = h;
 
-		if(icon_position == ICON_LEFT)
+		if(!icon_position)
 			return (icon_h > text_h) ? icon_h : text_h;
 		else
 			return icon_h + text_h;
@@ -930,7 +926,7 @@ int BC_ListBox::get_items_width()
 {
 	int widest = 0;
 
-	if(display_format == LISTBOX_ICONS)
+	if(display_format)
 	{
 		for(int i = 0; i < columns; i++)
 		{
@@ -943,7 +939,7 @@ int BC_ListBox::get_items_width()
 				get_icon_mask(item, x, y, w, h);
 				if(x1 + w > widest) widest = x1 + w;
 
-				if(display_format == LISTBOX_ICONS && icon_position == ICON_LEFT)
+				if(display_format && !icon_position)
 					x1 += w;
 
 				get_text_mask(item, x, y, w, h);
@@ -952,7 +948,7 @@ int BC_ListBox::get_items_width()
 		}
 	}
 	else
-	if(display_format == LISTBOX_TEXT)
+	if(!display_format)
 	{
 		return get_column_offset(columns);
 	}
@@ -977,7 +973,7 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 		int y1, x, y, w, h;
 		BC_ListBoxItem *item = data[master_column].values[j];
 
-		if(display_format == LISTBOX_ICONS)
+		if(display_format)
 		{
 			get_icon_mask(item, x, y, w, h);
 			if(y + h + yposition > highest) highest = y + h + yposition;
@@ -1000,7 +996,7 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 			}
 		}
 	}
-	if(display_format == LISTBOX_TEXT && top_level) 
+	if(!display_format && top_level) 
 	{
 		highest = LISTBOX_MARGIN + *result;
 	}
@@ -1189,7 +1185,7 @@ void BC_ListBox::get_icon_mask(BC_ListBoxItem *item,
 	int &w, 
 	int &h)
 {
-	if(display_format == LISTBOX_ICONS)
+	if(display_format)
 	{
 		x = get_item_x(item);
 		y = get_item_y(item);
@@ -1197,7 +1193,7 @@ void BC_ListBox::get_icon_mask(BC_ListBoxItem *item,
 		h = get_icon_h(item) + ICON_MARGIN * 2;
 	}
 	else
-	if(display_format == LISTBOX_TEXT)
+	if(!display_format)
 	{
 		x = y = w = h = 0;
 	}
@@ -1212,9 +1208,9 @@ void BC_ListBox::get_text_mask(BC_ListBoxItem *item,
 	x = get_item_x(item);
 	y = get_item_y(item);
 
-	if(display_format == LISTBOX_ICONS)
+	if(display_format)
 	{
-		if(icon_position == ICON_LEFT)
+		if(!icon_position)
 		{
 			x += get_icon_w(item) + ICON_MARGIN * 2;
 			y += get_icon_h(item) - get_text_height(MEDIUMFONT);
@@ -1228,7 +1224,7 @@ void BC_ListBox::get_text_mask(BC_ListBoxItem *item,
 		h = get_text_height(MEDIUMFONT) + ICON_MARGIN * 2;
 	}
 	else
-	if(display_format == LISTBOX_TEXT)
+	if(!display_format)
 	{
 		w = get_text_width(MEDIUMFONT, item->text) + LISTBOX_MARGIN * 2;
 		h = get_text_height(MEDIUMFONT);
@@ -1654,7 +1650,7 @@ int BC_ListBox::center_selection(int selection,
 		{
 			BC_ListBoxItem *top_item = this->data[master_column].values[0];
 
-			if(display_format == LISTBOX_ICONS)
+			if(display_format)
 			{
 // Icon is out of window
 				if(item->icon_y - yposition  > 
@@ -1671,7 +1667,7 @@ int BC_ListBox::center_selection(int selection,
 				}
 			}
 			else
-			if(display_format == LISTBOX_TEXT)
+			if(!display_format)
 			{
 // Text coordinate is out of window
 				if(item->text_y - yposition  > 
@@ -1958,7 +1954,7 @@ int BC_ListBox::select_rectangle(ArrayList<BC_ListBoxItem*> *data,
 		for(int j = 0; j < columns; j++)
 		{
 			BC_ListBoxItem *item = data[j].values[i];
-			if(display_format == LISTBOX_ICONS)
+			if(display_format)
 			{
 				int icon_x, icon_y, icon_w, icon_h;
 				int text_x, text_y, text_w, text_h;
@@ -2195,7 +2191,7 @@ int BC_ListBox::get_cursor_item(ArrayList<BC_ListBoxItem*> *data,
 	if(!counter) counter = &temp;
 
 // Icons are not treed
-	if(display_format == LISTBOX_ICONS)
+	if(display_format)
 	{
 		for(int j = data[master_column].total - 1; j >= 0; j--)
 		{
@@ -2217,7 +2213,7 @@ int BC_ListBox::get_cursor_item(ArrayList<BC_ListBoxItem*> *data,
 	}
 	else
 // Text is treed
-	if(display_format == LISTBOX_TEXT)
+	if(!display_format)
 	{
 // Cursor is inside items rectangle
 		if(cursor_x >= 0 && 
@@ -2754,12 +2750,12 @@ int BC_ListBox::button_press_event()
 			selection_end = -1;
 
 // Multiple item selection is possible
-			if(selection_mode == LISTBOX_MULTIPLE && 
+			if(selection_mode &&
 				(ctrl_down() || shift_down()))
 			{
 // Expand text selection.
 // Fill items between selected region and current item.
-				if(shift_down() && display_format == LISTBOX_TEXT)
+				if(shift_down() && !display_format)
 				{
 // Get first item selected
 					selection_start = get_first_selection(data);
@@ -2815,8 +2811,7 @@ int BC_ListBox::button_press_event()
 		if(data)
 // Pressed over nothing.  Start rectangle selection.
 		{
-			if(get_buttonpress() == 1 && 
-				selection_mode == LISTBOX_MULTIPLE)
+			if(get_buttonpress() == 1 && selection_mode)
 			{
 				if(!shift_down())
 				{
@@ -3003,7 +2998,7 @@ int BC_ListBox::button_release_event()
 
 int BC_ListBox::get_title_h()
 {
-	if(display_format == LISTBOX_TEXT)
+	if(!display_format)
 		return column_titles ? column_bg[0]->get_h() : 0;
 	else
 		return 0;
@@ -3224,17 +3219,16 @@ int BC_ListBox::cursor_motion_event()
 				!allow_drag &&
 				((!shift_down() &&
 					!ctrl_down()) ||
-					selection_mode == LISTBOX_SINGLE))
+					!selection_mode))
 			{
 				redraw = update_selection(data, selection_number);
 			}
 			else
-			if(selection_mode == LISTBOX_MULTIPLE &&
-					(shift_down() || ctrl_down()))
+			if(selection_mode && (shift_down() || ctrl_down()))
 // Expand multiple selection
 			{
 // Expand selected region in text mode centered around initial range
-				if(display_format == LISTBOX_TEXT && shift_down())
+				if(!display_format && shift_down())
 				{
 // Deselect everything.
 					set_all_selected(data, 0);
@@ -3340,7 +3334,7 @@ int BC_ListBox::cursor_motion_event()
 // Test if cursor moved over expander
 				if(highlighted_division < 0 && 
 					highlighted_title < 0 &&
-					display_format == LISTBOX_TEXT)
+					!display_format)
 				{
 					for(int i = 0; i < expanders.total; i++)
 					{
@@ -3539,7 +3533,7 @@ void BC_ListBox::drag_stop_event()
 			top_level->cursor_y < gui->get_h() - drag_popup->get_h() / 2)
 		{
 // Move icon
-			if(display_format == LISTBOX_ICONS)
+			if(display_format)
 			{
 				reposition_item(data, 
 					selection_number, 
@@ -3889,7 +3883,7 @@ void BC_ListBox::draw_items(int flash)
 		get_scrollbars();
 
 // Icon display
-		if(display_format == LISTBOX_ICONS)
+		if(display_format)
 		{
 			clear_listbox(2, 2 + title_h, view_w, view_h);
 
@@ -3921,10 +3915,9 @@ void BC_ListBox::draw_items(int flash)
 						gui->set_color(item_color);
 						gui->draw_box(text_x + 1, text_y + 1, text_w - 2, text_h - 2);
 
-						if(icon_position == ICON_LEFT)
+						if(!icon_position)
 							gui->draw_box(text_x - 1, text_y + 1, 2, text_h - 2);
 						else
-						if(icon_position == ICON_TOP)
 							gui->draw_line(text_x + 1, text_y, text_x + icon_w - 2, text_y);
 						if(text_x + text_w < icon_x + icon_w)
 						{
@@ -3950,7 +3943,7 @@ void BC_ListBox::draw_items(int flash)
 		}
 		else
 // Text display
-		if(display_format == LISTBOX_TEXT)
+		if(!display_format)
 		{
 // Draw one column at a time so text overruns don't go into the next column
 // clear column backgrounds
@@ -4137,7 +4130,7 @@ void BC_ListBox::draw_border(int flash)
 
 void BC_ListBox::draw_titles(int flash)
 {
-	if(column_titles && display_format == LISTBOX_TEXT)
+	if(column_titles && !display_format)
 	{
 		for(int i = 0; i < columns; i++)
 		{

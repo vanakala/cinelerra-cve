@@ -483,13 +483,8 @@ SampleRatePulldown::SampleRatePulldown(MWindow *mwindow, BC_TextBox *output, int
 	y,
 	100,
 	200,
-	LISTBOX_TEXT,
 	&mwindow->theme->sample_rates,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->mwindow = mwindow;
 	this->output = output;
@@ -556,13 +551,8 @@ FrameRatePulldown::FrameRatePulldown(MWindow *mwindow,
 	y,
 	100,
 	200,
-	LISTBOX_TEXT,
 	&mwindow->theme->frame_rates,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->mwindow = mwindow;
 	this->output = output;
@@ -585,13 +575,8 @@ FrameSizePulldown::FrameSizePulldown(MWindow *mwindow,
 	y,
 	100,
 	200,
-	LISTBOX_TEXT,
 	&mwindow->theme->frame_sizes,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->mwindow = mwindow;
 	this->output_w = output_w;
@@ -680,13 +665,8 @@ AspectPulldown::AspectPulldown(MWindow *mwindow,
 	y,
 	100,
 	200,
-	LISTBOX_TEXT,
 	&mwindow->theme->aspect_ratios,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->mwindow = mwindow;
 	this->output_w = output_w;
@@ -732,13 +712,8 @@ ColormodelPulldown::ColormodelPulldown(MWindow *mwindow,
 	y,
 	200,
 	150,
-	LISTBOX_TEXT,
 	(ArrayList<BC_ListBoxItem*>*)&mwindow->colormodels,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->mwindow = mwindow;
 	this->output_text = output_text;
@@ -783,13 +758,8 @@ InterlacemodePulldown::InterlacemodePulldown(MWindow *mwindow,
 	y,
 	200,
 	150,
-	LISTBOX_TEXT,
 	data,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	char string[BCTEXTLEN];
 	this->mwindow = mwindow;

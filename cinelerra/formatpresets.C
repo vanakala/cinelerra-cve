@@ -163,13 +163,8 @@ FormatPresetsPulldown::FormatPresetsPulldown(MWindow *mwindow,
 	y, 
 	200, 
 	250,
-	LISTBOX_TEXT,       // Display text list or icons
 	(ArrayList<BC_ListBoxItem*>*)&gui->preset_items, // Each column has an ArrayList of BC_ListBoxItems.
-	0,                  // Titles for columns.  Set to 0 for no titles
-	0,                  // width of each column
-	1,                  // Total columns.
-	0,                  // Pixel of top of window.
-	1)
+	LISTBOX_POPUP)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

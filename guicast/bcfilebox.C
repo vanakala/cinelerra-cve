@@ -42,13 +42,8 @@ BC_FileBoxRecent::BC_FileBoxRecent(BC_FileBox *filebox, int x, int y)
 	filebox->get_text_height(MEDIUMFONT) * FILEBOX_HISTORY_SIZE + 
 		BC_ScrollBar::get_span(SCROLL_HORIZ) +
 		LISTBOX_MARGIN * 2,
-	LISTBOX_TEXT, 
-	&filebox->recent_dirs, 
-	0, 
-	0, 
-	1, 
-	0, 
-	1)
+	&filebox->recent_dirs,
+	LISTBOX_POPUP)
 {
 	this->filebox = filebox;
 }
@@ -68,17 +63,13 @@ BC_FileBoxListBox::BC_FileBoxListBox(int x, int y, BC_FileBox *filebox)
 		y,
 		filebox->get_listbox_w(),
 		filebox->get_listbox_h(y),
-		filebox->get_display_mode(),
 		filebox->list_column,
+		(filebox->get_display_mode() ? LISTBOX_ICONS : 0) |
+			(filebox->select_multiple ? LISTBOX_MULTIPLE : 0),
 		filebox->column_titles,
 		filebox->column_width,
-		filebox->columns,
-		0,
-		0,
-		filebox->select_multiple ? LISTBOX_MULTIPLE : LISTBOX_SINGLE,
-		ICON_LEFT,
-		0)
-{ 
+		filebox->columns)
+{
 	this->filebox = filebox;
 	set_sort_column(filebox->sort_column);
 	set_sort_order(filebox->sort_order);
@@ -202,13 +193,8 @@ BC_FileBoxFilterMenu::BC_FileBoxFilterMenu(int x, int y, BC_FileBox *filebox)
 	y, 
 	filebox->get_w() - 30, 
 	120, 
-	LISTBOX_TEXT, 
 	&filebox->filter_list, 
-	0, 
-	0, 
-	1, 
-	0, 
-	1)
+	LISTBOX_POPUP)
 {
 	this->filebox = filebox;
 	set_tooltip(_("Change the filter"));
@@ -297,7 +283,7 @@ BC_FileBoxText::BC_FileBoxText(int x, int y, BC_FileBox *filebox)
 
 int BC_FileBoxText::handle_event()
 {
-	filebox->create_listbox(filebox->listbox->get_x(), filebox->listbox->get_y(), LISTBOX_TEXT);
+	filebox->create_listbox(filebox->listbox->get_x(), filebox->listbox->get_y(), 0);
 	return 1;
 }
 

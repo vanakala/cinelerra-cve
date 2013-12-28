@@ -35,13 +35,8 @@ FormatPopup::FormatPopup(ArrayList<PluginServer*> *plugindb,
  	y, 
 	200, 
 	200,
-	LISTBOX_TEXT,
 	0,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->plugindb = plugindb;
 	this->use_brender = use_brender;

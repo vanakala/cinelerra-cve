@@ -1122,16 +1122,11 @@ BatchRenderList::BatchRenderList(BatchRenderThread *thread,
 	y,
 	w, 
 	h, 
-	LISTBOX_TEXT,
 	thread->gui->list_columns,
+	LISTBOX_DRAG,
 	list_titles,
 	thread->column_width,
-	BATCHRENDER_COLUMNS,
-	0,
-	0,
-	LISTBOX_SINGLE,
-	ICON_LEFT,
-	1)
+	BATCHRENDER_COLUMNS)
 {
 	this->thread = thread;
 	dragging_item = 0;

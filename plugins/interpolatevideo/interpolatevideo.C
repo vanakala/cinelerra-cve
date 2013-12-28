@@ -251,13 +251,8 @@ InterpolateVideoRateMenu::InterpolateVideoRateMenu(InterpolateVideo *plugin,
 	y,
 	100,
 	200,
-	LISTBOX_TEXT,
 	&plugin->get_theme()->frame_rates,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->plugin = plugin;
 	this->gui = gui;

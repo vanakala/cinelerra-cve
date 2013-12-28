@@ -440,7 +440,7 @@ BC_Resources::BC_Resources()
 
 	filebox_margin = 110;
 	dirbox_margin = 90;
-	filebox_mode = LISTBOX_TEXT;
+	filebox_mode = 0;
 	sprintf(filebox_filter, "*");
 	filebox_w = 640;
 	filebox_h = 480;

@@ -664,7 +664,6 @@ MenuEffectWindowList::MenuEffectWindowList(MenuEffectWindow *window,
 		y,
 		w, 
 		h, 
-		LISTBOX_TEXT, 
 		plugin_list)
 { 
 	this->window = window; 

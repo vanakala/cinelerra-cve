@@ -258,13 +258,8 @@ DecimateRateMenu::DecimateRateMenu(Decimate *plugin,
 	y,
 	100,
 	200,
-	LISTBOX_TEXT,
 	&gui->frame_rates,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->plugin = plugin;
 	this->gui = gui;

@@ -928,16 +928,9 @@ AWindowFolders::AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, 
 		y,
 		w, 
 		h,
-		mwindow->edl->session->folderlist_format == ASSETS_ICONS ? 
-			LISTBOX_ICONS : LISTBOX_TEXT, 
 		&gui->folders, // Each column has an ArrayList of BC_ListBoxItems.
-		0,             // Titles for columns.  Set to 0 for no titles
-		0,                // width of each column
-		1,                      // Total columns.
-		0,                    // Pixel of top of window.
-		0,                        // If this listbox is a popup window
-		LISTBOX_SINGLE,  // Select one item or multiple items
-		ICON_TOP)        // Position of icon relative to text of each item
+		(mwindow->edl->session->folderlist_format == ASSETS_ICONS ?
+			LISTBOX_ICONS : 0) | LISTBOX_ICON_TOP)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -980,17 +973,11 @@ AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, in
 		y,
 		w, 
 		h,
-		(mwindow->edl->session->assetlist_format == ASSETS_ICONS) ?
-			LISTBOX_ICONS : LISTBOX_TEXT,
-		&gui->assets,  	  // Each column has an ArrayList of BC_ListBoxItems.
+		&gui->assets,    // Each column has an ArrayList of BC_ListBoxItems.
+		((mwindow->edl->session->assetlist_format == ASSETS_ICONS) ?
+			LISTBOX_ICONS : 0) | LISTBOX_MULTIPLE | LISTBOX_ICON_TOP | LISTBOX_DRAG,
 		gui->asset_titles,             // Titles for columns.  Set to 0 for no titles
-		mwindow->edl->session->asset_columns,                // width of each column
-		1,                      // Total columns.
-		0,                    // Pixel of top of window.
-		0,                        // If this listbox is a popup window
-		LISTBOX_MULTIPLE,  // Select one item or multiple items
-		ICON_TOP,        // Position of icon relative to text of each item
-		1)               // Allow drag
+		mwindow->edl->session->asset_columns)                // width of each column
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

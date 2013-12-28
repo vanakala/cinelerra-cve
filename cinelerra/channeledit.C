@@ -515,7 +515,6 @@ ChannelEditList::ChannelEditList(ChannelEditWindow *window, int x, int y)
 		y,
 		185,
 		window->get_h() - BC_OKButton::calculate_h() - y - 10,
-		LISTBOX_TEXT,
 		&(window->channel_list))
 {
 	this->window = window;

@@ -82,7 +82,6 @@ BC_DeleteList::BC_DeleteList(BC_FileBox *filebox,
  	y, 
 	w, 
 	h, 
-	LISTBOX_TEXT,
 	data)
 {
 	this->filebox = filebox;

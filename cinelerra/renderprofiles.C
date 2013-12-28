@@ -152,13 +152,8 @@ RenderProfileListBox::RenderProfileListBox(BC_WindowBase *window,
 	y,
 	LISTWIDTH,
 	150,
-	LISTBOX_TEXT,
 	(ArrayList<BC_ListBoxItem *>*)&renderprofile->profiles,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->window = window;
 	this->renderprofile = renderprofile;

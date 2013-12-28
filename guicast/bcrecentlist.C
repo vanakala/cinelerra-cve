@@ -31,7 +31,7 @@
 BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults, 
 			     BC_TextBox *textbox, int max, 
 			     int x, int y, int w, int h) 
-	: BC_ListBox(x, y, w, h, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1) 
+	: BC_ListBox(x, y, w, h, 0, LISTBOX_POPUP)
 {
 	this->type = type;
 	this->defaults = defaults;
@@ -42,8 +42,7 @@ BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults,
 BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults, 
 			     BC_TextBox *textbox) 
 	: BC_ListBox(textbox->get_x() + textbox->get_w(), textbox->get_y(),
-		     textbox->get_w(), RECENT_POPUP_HEIGHT,
-		     LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+		     textbox->get_w(), RECENT_POPUP_HEIGHT, 0, LISTBOX_POPUP)
 {
 	this->type = type;
 	this->defaults = defaults;
@@ -52,7 +51,7 @@ BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults,
 }
 
 BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults) 
-	: BC_ListBox(-1, -1, -1, -1, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+	: BC_ListBox(-1, -1, -1, -1, 0, LISTBOX_POPUP)
 {
 	this->type = type;
 	this->defaults = defaults;

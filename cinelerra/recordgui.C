@@ -573,16 +573,11 @@ RecordGUIBatches::RecordGUIBatches(Record *record, RecordGUI *gui, int x, int y,
 		y, 
 		w, 
 		h,
-		LISTBOX_TEXT,                   // Display text list or icons
 		gui->batches,               // Each column has an ArrayList of BC_ListBoxItems.
+		LISTBOX_DRAG,               // Allow dragging
 		gui->batch_titles,             // Titles for columns.  Set to 0 for no titles
 		gui->column_widths,                // width of each column
-		BATCH_COLUMNS,                      // Total columns.
-		0,                    // Pixel of top of window.
-		0,                        // If this listbox is a popup window
-		LISTBOX_SINGLE,  // Select one item or multiple items
-		ICON_LEFT,        // Position of icon relative to text of each item
-		1)           // Allow dragging
+		BATCH_COLUMNS)                      // Total columns.
 {
 	this->record = record;
 	this->gui = gui;

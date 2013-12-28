@@ -491,8 +491,8 @@ PrefsRenderFarmNodes::PrefsRenderFarmNodes(PreferencesWindow *pwindow,
 		y, 
 		340, 
 		230,
-		LISTBOX_TEXT,                         // Display text list or icons
 		subwindow->nodes,
+		0,
 		titles,
 		widths,
 		4)

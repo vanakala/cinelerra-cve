@@ -85,13 +85,8 @@ BitsPopupMenu::BitsPopupMenu(BitsPopup *popup, int x, int y)
  	y,
 	120,
 	100,
-	LISTBOX_TEXT,
 	&popup->bits_items,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	this->popup = popup;
 }

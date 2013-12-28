@@ -655,13 +655,8 @@ InterlacefixmethodPulldown::InterlacefixmethodPulldown(MWindow *mwindow,
 	y,
 	200,
 	150,
-	LISTBOX_TEXT,
 	data,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	char string[BCTEXTLEN];
 
@@ -722,13 +717,8 @@ AssetEditInterlacemodePulldown::AssetEditInterlacemodePulldown(MWindow *mwindow,
 	y,
 	200,
 	150,
-	LISTBOX_TEXT,
 	data,
-	0,
-	0,
-	1,
-	0,
-	1)
+	LISTBOX_POPUP)
 {
 	char string[BCTEXTLEN];
 	this->fixoption_chkbox = fixoption_chkboxw;

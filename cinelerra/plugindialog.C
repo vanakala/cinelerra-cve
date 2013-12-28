@@ -390,7 +390,6 @@ PluginDialogNew::PluginDialogNew(PluginDialog *dialog,
 	y,
 	w, 
 	h, 
-	LISTBOX_TEXT,
 	standalone_data) 
 { 
 	this->dialog = dialog; 
@@ -428,7 +427,6 @@ PluginDialogShared::PluginDialogShared(PluginDialog *dialog,
 	y,
 	w, 
 	h, 
-	LISTBOX_TEXT, 
 	shared_data) 
 { 
 	this->dialog = dialog; 
@@ -466,7 +464,6 @@ PluginDialogModules::PluginDialogModules(PluginDialog *dialog,
  	y, 
 	w, 
 	h, 
-	LISTBOX_TEXT, 
 	module_data) 
 { 
 	this->dialog = dialog; 
