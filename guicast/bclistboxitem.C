@@ -281,6 +281,15 @@ void BC_ListBoxItem::set_expand(int value)
 	expand = value;
 }
 
-
-
-
+void BC_ListBoxItem::dump(int indent)
+{
+	printf("%*sBC_ListBoxItem %p dump:\n", indent, "", this);
+	printf("%*s text (%d, %d) autoplace %d searchable %d selectable %d '%s'\n",  indent, "",
+		text_x, text_y, autoplace_text, searchable, selectable, text);
+	if(icon)
+		printf("%*s icon %p (%d, %d) autoplace %d\n", indent, "", icon,
+			icon_x, icon_y, autoplace_icon);
+	if(sublist)
+		printf("%*s sublist %p columns %d expand %d\n", indent, "",
+			sublist, columns, expand);
+}

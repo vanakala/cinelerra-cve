@@ -73,6 +73,7 @@ public:
 	int set_autoplace_text(int value);
 	void set_selectable(int value);
 	int get_selectable();
+	virtual void dump(int indent);
 
 // The item with the sublist must be in column 0.  Only this is searched by
 // BC_ListBox.

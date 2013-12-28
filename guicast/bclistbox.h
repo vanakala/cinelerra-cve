@@ -287,10 +287,7 @@ public:
 		int selection_number,
 		int *counter = 0);
 
-	static void dump(ArrayList<BC_ListBoxItem*> *data, 
-		int columns, 
-		int indent /* = 0 */,
-		int master_column);
+	virtual void dump(int indent = 0);
 
 // Draw the list items
 	void draw_items(int flash);

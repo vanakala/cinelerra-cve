@@ -4223,37 +4223,23 @@ void BC_ListBox::draw_rectangle(int flash)
 	}
 }
 
-void BC_ListBox::dump(ArrayList<BC_ListBoxItem*> *data, 
-	int columns, 
-	int indent,
-	int master_column)
+void BC_ListBox::dump(int indent)
 {
-	if(!indent)
-	{
-		printf("BC_ListBox::dump 1\n");
-	}
+	const char *sm, *df, *ip;
+
+	sm = selection_mode ? "multiple" : "single";
+	df = display_format ? "icons" : "text";
+	ip = icon_position ? "top" : "left";
+
+	printf("%*sBC_ListBox %p dump:\n", indent, "", this);
+	printf("%*s size %dx%d columns:%d master:%d popup %d drag %d disabled %d\n", indent, "",
+		get_w(), get_h(), columns, master_column, is_popup, allow_drag, disabled);
+	printf("%*s selection: %s, format: %s, position: %s\n", indent, "",
+		sm, df, ip);
 
 	for(int i = 0; i < data[master_column].total; i++)
 	{
-		for(int k = 0; k < indent; k++)
-			printf(" ");
 		for(int j = 0; j < columns; j++)
-		{
-			BC_ListBoxItem *item = data[j].values[i];
-			printf("%d,%d,%d=%s ", 
-				item->get_text_x(), 
-				item->get_text_y(),
-				item->autoplace_text, 
-				item->get_text());
-		}
-		printf("\n");
-
-		if(data[master_column].values[i]->get_sublist())
-		{
-			dump(data[master_column].values[i]->get_sublist(),
-				data[master_column].values[i]->get_columns(),
-				indent + 4,
-				master_column);
-		}
+			data[j].values[i]->dump(indent + 2);
 	}
 }
