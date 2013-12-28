@@ -930,7 +930,7 @@ AWindowFolders::AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, 
 		h,
 		&gui->folders, // Each column has an ArrayList of BC_ListBoxItems.
 		(mwindow->edl->session->folderlist_format == ASSETS_ICONS ?
-			LISTBOX_ICONS : 0) | LISTBOX_ICON_TOP)
+			LISTBOX_ICONS : 0) | LISTBOX_ICON_TOP | LISTBOX_SROW)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
