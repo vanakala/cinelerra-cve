@@ -373,6 +373,7 @@ BC_ListBox::BC_ListBox(int x,
 	this->selection_mode = options & LISTBOX_MULTIPLE;
 	this->icon_position = options & LISTBOX_ICON_TOP;
 	this->allow_drag = options & LISTBOX_DRAG;
+	single_row = options & LISTBOX_SROW;
 	this->column_titles = 0;
 	this->column_width = 0;
 
@@ -699,13 +700,16 @@ void BC_ListBox::calculate_item_coords_recursive(
 			{
 // 1 column only if icons are used
 				display_format = LISTBOX_ICONS;
+				if(!single_row)
+				{
 // Test row height
 // Start new row.
-				if(*next_icon_y + get_item_h(item) >= get_h() && 
-					*next_icon_y > 0)
-				{
-					*icon_x = *next_icon_x;
-					*next_icon_y = 0;
+					if(*next_icon_y + get_item_h(item) >= get_h() && 
+						*next_icon_y > 0)
+					{
+						*icon_x = *next_icon_x;
+						*next_icon_y = 0;
+					}
 				}
 
 				if(*icon_x + get_item_w(item) > *next_icon_x)

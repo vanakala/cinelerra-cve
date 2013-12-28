@@ -28,6 +28,7 @@
 #define LISTBOX_MULTIPLE 0x0004   // Select one item or multiple items
 #define LISTBOX_ICON_TOP 0x0008   // Position of icon relative to text of each item (left or top)
 #define LISTBOX_DRAG     0x0010   // Allow user to drag icons around
+#define LISTBOX_SROW     0x0020   // Icons should be in single vertical row
 
 // White space around text
 #define LISTBOX_MARGIN   4

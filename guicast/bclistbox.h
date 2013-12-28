@@ -450,6 +450,7 @@ private:
 	int selection_mode;
 	int display_format;
 	int icon_position;
+	int single_row;
 // Scrollbars are created as needed
 	BC_ListBoxXScroll *xscrollbar;
 	BC_ListBoxYScroll *yscrollbar;
