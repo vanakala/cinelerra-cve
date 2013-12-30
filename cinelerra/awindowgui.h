@@ -142,8 +142,6 @@ public:
 	LabelPopup *label_menu;
 	AssetListMenu *assetlist_menu;
 	FolderListMenu *folderlist_menu;
-// Temporary for reading picons from files
-	VFrame *temp_picon;
 
 // Function to overload to recieve customly defined atoms
 	virtual void recieve_custom_xatoms(XClientMessageEvent *event);

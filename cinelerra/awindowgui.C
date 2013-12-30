@@ -180,59 +180,20 @@ void AssetPicon::init_object()
 				if(file)
 				{
 					pixmap_w = pixmap_h * asset->width / asset->height;
-
-					if(gui->temp_picon && 
-						(gui->temp_picon->get_w() != asset->width ||
-						gui->temp_picon->get_h() != asset->height))
-					{
-						delete gui->temp_picon;
-						gui->temp_picon = 0;
-					}
-
-					if(!gui->temp_picon)
-					{
-						gui->temp_picon = new VFrame(0, 
-							asset->width, 
-							asset->height, 
-							BC_RGB888);
-					}
-					gui->temp_picon->clear_pts();
-					file->get_frame(gui->temp_picon);
-
+					icon_vframe = new VFrame(0, 
+						pixmap_w, 
+						pixmap_h, 
+						BC_RGB888);
+					icon_vframe->clear_pts();
+					file->get_frame(icon_vframe);
 					icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
-					icon->draw_vframe(gui->temp_picon,
+					icon->draw_vframe(icon_vframe,
 						0, 
 						0, 
 						pixmap_w, 
 						pixmap_h,
 						0,
 						0);
-					icon_vframe = new VFrame(0, 
-						pixmap_w, 
-						pixmap_h, 
-						BC_RGB888);
-					cmodel_transfer(icon_vframe->get_rows(), /* Leave NULL if non existent */
-						gui->temp_picon->get_rows(),
-						0, /* Leave NULL if non existent */
-						0,
-						0,
-						0, /* Leave NULL if non existent */
-						0,
-						0,
-						0,        /* Dimensions to capture from input frame */
-						0, 
-						gui->temp_picon->get_w(), 
-						gui->temp_picon->get_h(),
-						0,       /* Dimensions to project on output frame */
-						0, 
-						pixmap_w, 
-						pixmap_h,
-						BC_RGB888, 
-						BC_RGB888,
-						0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
-						0,       /* For planar use the luma rowspan */
-						0);     /* For planar use the luma rowspan */
-
 					mwindow->video_cache->check_in(asset);
 				}
 				else
@@ -244,7 +205,7 @@ void AssetPicon::init_object()
 			else
 			{
 				icon = gui->video_icon;
-				icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];			
+				icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
 			}
 		}
 		else
@@ -335,8 +296,6 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 
 	this->mwindow = mwindow;
 	this->awindow = awindow;
-	temp_picon = 0;
-
 SET_TRACE
 	asset_titles[0] = _("Title");
 	asset_titles[1] = _("Comments");
@@ -449,7 +408,6 @@ AWindowGUI::~AWindowGUI()
 	delete label_menu;
 	delete assetlist_menu;
 	delete folderlist_menu;
-	if(temp_picon) delete temp_picon;
 }
 
 void AWindowGUI::resize_event(int w, int h)
