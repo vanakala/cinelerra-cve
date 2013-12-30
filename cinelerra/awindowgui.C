@@ -1075,7 +1075,7 @@ void AWindowAssets::draw_background()
 	set_color(BC_WindowBase::get_resources()->audiovideo_color);
 	set_font(LARGEFONT);
 	draw_text(get_w() - 
-		get_text_width(LARGEFONT, AWindowGUI::folder_names[mwindow->edl->session->awindow_folder]) - 4,
+		get_text_width(LARGEFONT, AWindowGUI::folder_names[mwindow->edl->session->awindow_folder]) - 24,
 		30, 
 		AWindowGUI::folder_names[mwindow->edl->session->awindow_folder],
 		-1, 
