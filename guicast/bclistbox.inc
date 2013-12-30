@@ -23,12 +23,13 @@
 #define BCLISTBOX_INC
 
 // Option bits
-#define LISTBOX_ICONS    0x0001   // Display text list or icons
-#define LISTBOX_POPUP    0x0002   // If this listbox is a popup window with a button
-#define LISTBOX_MULTIPLE 0x0004   // Select one item or multiple items
-#define LISTBOX_ICON_TOP 0x0008   // Position of icon relative to text of each item (left or top)
-#define LISTBOX_DRAG     0x0010   // Allow user to drag icons around
-#define LISTBOX_SROW     0x0020   // Icons should be in single vertical row
+#define LISTBOX_ICONS     0x0001   // Display text list or icons
+#define LISTBOX_POPUP     0x0002   // If this listbox is a popup window with a button
+#define LISTBOX_MULTIPLE  0x0004   // Select one item or multiple items
+#define LISTBOX_ICON_TOP  0x0008   // Position of icon relative to text of each item (left or top)
+#define LISTBOX_DRAG      0x0010   // Allow user to drag icons around
+#define LISTBOX_SROW      0x0020   // Icons should be in single vertical row
+#define LISTBOX_SMALLFONT 0x0040   // Use small font
 
 // White space around text
 #define LISTBOX_MARGIN   4

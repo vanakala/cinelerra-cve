@@ -374,6 +374,10 @@ BC_ListBox::BC_ListBox(int x,
 	this->icon_position = options & LISTBOX_ICON_TOP;
 	this->allow_drag = options & LISTBOX_DRAG;
 	single_row = options & LISTBOX_SROW;
+	if(options & LISTBOX_SMALLFONT)
+		labelfont = SMALLFONT;
+	else
+		labelfont = MEDIUMFONT;
 	this->column_titles = 0;
 	this->column_width = 0;
 
@@ -486,7 +490,7 @@ void BC_ListBox::init_column_width()
 		int widest = 5, w;
 		for(int i = 0; i < data[0].total; i++)
 		{
-		w = get_text_width(MEDIUMFONT, data[0].values[i]->get_text()) + 2 * LISTBOX_MARGIN;
+			w = get_text_width(labelfont, data[0].values[i]->get_text()) + 2 * LISTBOX_MARGIN;
 			if(w > widest) widest = w;
 		}
 		default_column_width[0] = widest;
@@ -638,7 +642,7 @@ void BC_ListBox::calculate_last_coords_recursive(
 // Lowest text coordinate
 			display_format = 0;
 			current_text_y = item->text_y + 
-				get_text_height(MEDIUMFONT);
+				get_text_height(labelfont);
 			if(current_text_y > *next_text_y)
 				*next_text_y = current_text_y;
 
@@ -757,7 +761,7 @@ void BC_ListBox::calculate_item_coords_recursive(
 		if(total_autoplaced_columns)
 		{
 			display_format = 0;
-			*next_text_y += get_text_height(MEDIUMFONT);
+			*next_text_y += get_text_height(labelfont);
 		}
 
 // Set up a sublist
@@ -889,7 +893,7 @@ int BC_ListBox::get_item_w(BC_ListBoxItem *item)
 	}
 	else
 	{
-		return get_text_width(MEDIUMFONT, item->text) + 2 * LISTBOX_MARGIN;
+		return get_text_width(labelfont, item->text) + 2 * LISTBOX_MARGIN;
 	}
 }
 
@@ -908,7 +912,7 @@ int BC_ListBox::get_item_h(BC_ListBoxItem *item)
 		else
 			return icon_h + text_h;
 	}
-	return get_text_height(MEDIUMFONT);
+	return get_text_height(labelfont);
 }
 
 
@@ -1217,21 +1221,21 @@ void BC_ListBox::get_text_mask(BC_ListBoxItem *item,
 		if(!icon_position)
 		{
 			x += get_icon_w(item) + ICON_MARGIN * 2;
-			y += get_icon_h(item) - get_text_height(MEDIUMFONT);
+			y += get_icon_h(item) - get_text_height(labelfont);
 		}
 		else
 		{
 			y += get_icon_h(item) + ICON_MARGIN;
 		}
 
-		w = get_text_width(MEDIUMFONT, item->text) + ICON_MARGIN * 2;
-		h = get_text_height(MEDIUMFONT) + ICON_MARGIN * 2;
+		w = get_text_width(labelfont, item->text) + ICON_MARGIN * 2;
+		h = get_text_height(labelfont) + ICON_MARGIN * 2;
 	}
 	else
 	if(!display_format)
 	{
-		w = get_text_width(MEDIUMFONT, item->text) + LISTBOX_MARGIN * 2;
-		h = get_text_height(MEDIUMFONT);
+		w = get_text_width(labelfont, item->text) + LISTBOX_MARGIN * 2;
+		h = get_text_height(labelfont);
 	}
 }
 
@@ -1658,7 +1662,7 @@ int BC_ListBox::center_selection(int selection,
 			{
 // Icon is out of window
 				if(item->icon_y - yposition  > 
-					view_h - get_text_height(MEDIUMFONT) ||
+					view_h - get_text_height(labelfont) ||
 					item->icon_y - yposition < 0)
 				{
 					yposition = item->icon_y - view_h / 2;
@@ -1675,7 +1679,7 @@ int BC_ListBox::center_selection(int selection,
 			{
 // Text coordinate is out of window
 				if(item->text_y - yposition  > 
-					view_h - get_text_height(MEDIUMFONT) ||
+					view_h - get_text_height(labelfont) ||
 					item->text_y - yposition < 0)
 				{
 					yposition = item->text_y - 
@@ -3724,7 +3728,7 @@ int BC_ListBox::keypress_event()
 {
 	if(!active) return 0;
 
-	int result = 0, redraw = 0, done, view_items = view_h / get_text_height(MEDIUMFONT);
+	int result = 0, redraw = 0, done, view_items = view_h / get_text_height(labelfont);
 	int new_item = -1, new_selection = 0;
 
 	switch(top_level->get_keypress())
@@ -3860,9 +3864,17 @@ void BC_ListBox::clear_listbox(int x, int y, int w, int h)
 		y - title_h);
 }
 
-void BC_ListBox::update_format(int display_format, int redraw)
+void BC_ListBox::update_format(int options, int redraw)
 {
-	this->display_format = display_format;
+	int oldfont = labelfont;
+
+	display_format = options & LISTBOX_ICONS;
+	if(options & LISTBOX_SMALLFONT)
+		labelfont = SMALLFONT;
+	else
+		labelfont = MEDIUMFONT;
+	if(labelfont != oldfont)
+		set_autoplacement(data, 1, 1);
 	if(redraw)
 	{
 		if(gui) draw_items(1);
@@ -3871,7 +3883,7 @@ void BC_ListBox::update_format(int display_format, int redraw)
 
 int BC_ListBox::get_format()
 {
-	return display_format;
+	return display_format | (labelfont == SMALLFONT ? LISTBOX_SMALLFONT : 0);
 }
 
 void BC_ListBox::draw_items(int flash)
@@ -3891,7 +3903,7 @@ void BC_ListBox::draw_items(int flash)
 		{
 			clear_listbox(2, 2 + title_h, view_w, view_h);
 
-			set_font(MEDIUMFONT);
+			set_font(labelfont);
 			for(int i = 0; i < data[master_column].total; i++)
 			{
 				BC_ListBoxItem *item = data[master_column].values[i];
@@ -3940,7 +3952,7 @@ void BC_ListBox::draw_items(int flash)
 							icon_x + ICON_MARGIN, 
 							icon_y + ICON_MARGIN);
 					gui->draw_text(text_x + ICON_MARGIN, 
-						text_y + ICON_MARGIN + get_text_ascent(MEDIUMFONT), 
+						text_y + ICON_MARGIN + get_text_ascent(labelfont),
 						item->text);
 				}
 			}
@@ -4006,7 +4018,7 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 
 	BC_Resources *resources = get_resources();
 
-	set_font(MEDIUMFONT);
+	set_font(labelfont);
 	int subindent = 0;
 
 // Search for a branch and make room for toggle if there is one
@@ -4052,9 +4064,9 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 					x + column_width - 1, 
 					y);
 				gui->draw_line(x, 
-					y + get_text_height(MEDIUMFONT), 
+					y + get_text_height(labelfont),
 					x + column_width - 1, 
-					y + get_text_height(MEDIUMFONT));
+					y + get_text_height(labelfont));
 			}
 
 			gui->set_color(get_item_color(data, column, i));
@@ -4062,10 +4074,10 @@ void BC_ListBox::draw_text_recursive(ArrayList<BC_ListBoxItem*> *data,
 // Indent only applies to first column
 			gui->draw_text(
 				x + 
-					LISTBOX_BORDER + 
-					LISTBOX_MARGIN + 
-					(column == 0 ? indent + subindent : 0), 
-				y + get_text_ascent(MEDIUMFONT), 
+				LISTBOX_BORDER +
+				LISTBOX_MARGIN +
+				(column == 0 ? indent + subindent : 0),
+				y + get_text_ascent(labelfont),
 				item->text);
 
 // Update expander
@@ -4181,7 +4193,7 @@ void BC_ListBox::draw_titles(int flash)
 
 			gui->set_color(get_resources()->listbox_title_color);
 			gui->draw_text(x, 
-				LISTBOX_MARGIN + LISTBOX_BORDER + get_text_ascent(MEDIUMFONT), 
+				LISTBOX_MARGIN + LISTBOX_BORDER + get_text_ascent(labelfont),
 				_(column_titles[i]));
 		}
 		draw_border(0);

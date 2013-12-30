@@ -205,7 +205,7 @@ public:
 		int recalc_positions = 0,     // set all autoplace flags to 1
 		int draw = 1);
 	void center_selection();
-	void update_format(int display_format, int redraw);
+	void update_format(int options, int redraw);
 	int get_format();
 
 // Allow scrolling when dragging items
@@ -451,6 +451,7 @@ private:
 	int display_format;
 	int icon_position;
 	int single_row;
+	int labelfont;
 // Scrollbars are created as needed
 	BC_ListBoxXScroll *xscrollbar;
 	BC_ListBoxYScroll *yscrollbar;
