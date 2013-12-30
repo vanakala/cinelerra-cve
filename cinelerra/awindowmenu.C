@@ -73,7 +73,8 @@ int AssetListFormat::handle_event()
 	}
 
 	mwindow->awindow->gui->asset_list->update_format(
-		mwindow->edl->session->assetlist_format, 
+		mwindow->edl->session->assetlist_format == ASSETS_ICONS ?
+			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0,
 		1);
 
 	return 1;
@@ -132,7 +133,9 @@ int FolderListFormat::handle_event()
 		break;
 	}
 
-	mwindow->awindow->gui->folder_list->update_format(mwindow->edl->session->folderlist_format, 1);
+	mwindow->awindow->gui->folder_list->update_format(
+		mwindow->edl->session->folderlist_format == ASSETS_ICONS ?
+			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0, 1);
 	menu->update_titles();
 
 	return 1;

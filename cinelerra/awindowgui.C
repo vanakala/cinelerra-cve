@@ -824,13 +824,17 @@ void AWindowGUI::filter_displayed_assets()
 
 void AWindowGUI::update_assets()
 {
+	int current_format;
+
 	update_asset_list();
 	labellist.remove_all_objects();
 	create_label_folder();
 	filter_displayed_assets();
 
-	if(mwindow->edl->session->folderlist_format != folder_list->get_format())
-		folder_list->update_format(mwindow->edl->session->folderlist_format, 0);
+	current_format =  (folder_list->get_format() & LISTBOX_ICONS) ? ASSETS_ICONS : ASSETS_TEXT;
+	if(mwindow->edl->session->folderlist_format != current_format)
+		folder_list->update_format(mwindow->edl->session->folderlist_format ?
+				LISTBOX_SMALLFONT | LISTBOX_ICONS : 0, 0);
 	folder_list->update(&folders,
 		0,
 		0,
@@ -839,8 +843,10 @@ void AWindowGUI::update_assets()
 		folder_list->get_yposition(),
 		-1);
 
-	if(mwindow->edl->session->assetlist_format != asset_list->get_format())
-		asset_list->update_format(mwindow->edl->session->assetlist_format, 0);
+	current_format = (asset_list->get_format() & LISTBOX_ICONS) ? ASSETS_ICONS : ASSETS_TEXT;
+	if(mwindow->edl->session->assetlist_format != current_format)
+		asset_list->update_format(mwindow->edl->session->assetlist_format ?
+			LISTBOX_SMALLFONT | LISTBOX_ICONS : 0, 0);
 
 	asset_list->update(displayed_assets,
 		asset_titles,
@@ -930,7 +936,7 @@ AWindowFolders::AWindowFolders(MWindow *mwindow, AWindowGUI *gui, int x, int y, 
 		h,
 		&gui->folders, // Each column has an ArrayList of BC_ListBoxItems.
 		(mwindow->edl->session->folderlist_format == ASSETS_ICONS ?
-			LISTBOX_ICONS : 0) | LISTBOX_ICON_TOP | LISTBOX_SROW)
+			LISTBOX_ICONS | LISTBOX_SMALLFONT : 0) | LISTBOX_ICON_TOP | LISTBOX_SROW)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -974,8 +980,8 @@ AWindowAssets::AWindowAssets(MWindow *mwindow, AWindowGUI *gui, int x, int y, in
 		w, 
 		h,
 		&gui->assets,    // Each column has an ArrayList of BC_ListBoxItems.
-		((mwindow->edl->session->assetlist_format == ASSETS_ICONS) ?
-			LISTBOX_ICONS : 0) | LISTBOX_MULTIPLE | LISTBOX_ICON_TOP | LISTBOX_DRAG,
+		(mwindow->edl->session->assetlist_format == ASSETS_ICONS ?
+			(LISTBOX_ICONS | LISTBOX_SMALLFONT) : 0) | LISTBOX_MULTIPLE | LISTBOX_ICON_TOP | LISTBOX_DRAG,
 		gui->asset_titles,             // Titles for columns.  Set to 0 for no titles
 		mwindow->edl->session->asset_columns)                // width of each column
 {
