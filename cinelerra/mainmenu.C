@@ -85,7 +85,6 @@ int MainMenu::create_objects()
 
 	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(new_project = new New(mwindow));
-	new_project->create_objects();
 
 // file loaders
 	filemenu->add_item(load_file = new Load(mwindow, this));

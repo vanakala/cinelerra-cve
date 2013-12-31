@@ -38,15 +38,15 @@ class NewPresets;
 class InterlacemodePulldown;
 class ColormodelPulldown;
 
+
 class New : public BC_MenuItem
 {
 public:
 	New(MWindow *mwindow);
-	int create_objects();
 
 	int handle_event();
 	int run_script(FileXML *script);
-	int create_new_project();
+	void create_new_project();
 
 	MWindow *mwindow;
 	NewThread *thread;
@@ -57,6 +57,7 @@ private:
 	FileXML *script;
 };
 
+
 class NewThread : public Thread
 {
 public:
@@ -65,9 +66,10 @@ public:
 
 	void run();
 
-	int load_defaults();
-	int save_defaults();
-	int update_aspect();
+	void load_defaults();
+	void save_defaults();
+	void update_aspect();
+
 	int auto_aspect;
 	int auto_sizes;
 	NewWindow *nwindow;
@@ -76,13 +78,13 @@ public:
 	Mutex *window_lock;
 };
 
+
 class NewWindow : public BC_Window
 {
 public:
 	NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y);
 	~NewWindow();
 
-	void create_objects();
 	void update();
 
 	MWindow *mwindow;
@@ -101,11 +103,12 @@ public:
 	NewPresets *format_presets;
 };
 
+
 class NewPresets : public FormatPresets
 {
 public:
 	NewPresets(MWindow *mwindow, NewWindow *gui, int x, int y);
-	~NewPresets();
+
 	int handle_event();
 	EDL* get_edl();
 };
@@ -115,18 +118,20 @@ class NewSwapExtents : public BC_Button
 {
 public:
 	NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y);
+
 	int handle_event();
 	MWindow *mwindow;
 	NewWindow *gui;
 };
 
 
-
 class NewATracks : public BC_TextBox
 {
 public:
 	NewATracks(NewWindow *nwindow, const char *text, int x, int y);
+
 	int handle_event();
+
 	NewWindow *nwindow;
 };
 
@@ -134,8 +139,10 @@ class NewATracksTumbler : public BC_Tumbler
 {
 public:
 	NewATracksTumbler(NewWindow *nwindow, int x, int y);
+
 	void handle_up_event();
 	void handle_down_event();
+
 	NewWindow *nwindow;
 };
 
@@ -143,24 +150,32 @@ class NewAChannels : public BC_TextBox
 {
 public:
 	NewAChannels(NewWindow *nwindow, const char *text, int x, int y);
+
 	int handle_event();
+
 	NewWindow *nwindow;
 };
+
 
 class NewAChannelsTumbler : public BC_Tumbler
 {
 public:
 	NewAChannelsTumbler(NewWindow *nwindow, int x, int y);
+
 	void handle_up_event();
 	void handle_down_event();
+
 	NewWindow *nwindow;
 };
+
 
 class NewSampleRate : public BC_TextBox
 {
 public:
 	NewSampleRate(NewWindow *nwindow, const char *text, int x, int y);
+
 	int handle_event();
+
 	NewWindow *nwindow;
 };
 
@@ -169,7 +184,9 @@ class SampleRatePulldown : public BC_ListBox
 {
 public:
 	SampleRatePulldown(MWindow *mwindow, BC_TextBox *output, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	BC_TextBox *output;
 };
@@ -183,31 +200,41 @@ public:
 	NewWindow *nwindow;
 };
 
+
 class NewVTracksTumbler : public BC_Tumbler
 {
 public:
 	NewVTracksTumbler(NewWindow *nwindow, int x, int y);
+
 	void handle_up_event();
 	void handle_down_event();
+
 	NewWindow *nwindow;
 };
+
 
 class NewFrameRate : public BC_TextBox
 {
 public:
 	NewFrameRate(NewWindow *nwindow, const char *text, int x, int y);
+
 	int handle_event();
+
 	NewWindow *nwindow;
 };
+
 
 class FrameRatePulldown : public BC_ListBox
 {
 public:
 	FrameRatePulldown(MWindow *mwindow, BC_TextBox *output, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	BC_TextBox *output;
 };
+
 
 class FrameSizePulldown : public BC_ListBox
 {
@@ -217,52 +244,68 @@ public:
 		BC_TextBox *output_h, 
 		int x, 
 		int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	BC_TextBox *output_w;
 	BC_TextBox *output_h;
 };
 
+
 class NewOutputW : public BC_TextBox
 {
 public:
 	NewOutputW(NewWindow *nwindow, int x, int y);
+
 	int handle_event();
+
 	NewWindow *nwindow;
 };
+
 
 class NewOutputH : public BC_TextBox
 {
 public:
 	NewOutputH(NewWindow *nwindow, int x, int y);
+
 	int handle_event();
+
 	NewWindow *nwindow;
 };
+
 
 class NewAspectAuto : public BC_CheckBox
 {
 public:
 	NewAspectAuto(NewWindow *nwindow, int x, int y);
-	~NewAspectAuto();
+
 	int handle_event();
 	NewWindow *nwindow;
 };
+
 
 class NewAspectW : public BC_TextBox
 {
 public:
 	NewAspectW(NewWindow *nwindow, const char *text, int x, int y);
+
 	int handle_event();
+
 	NewWindow *nwindow;
 };
+
 
 class NewAspectH : public BC_TextBox
 {
 public:
 	NewAspectH(NewWindow *nwindow, const char *text, int x, int y);
+
 	int handle_event();
+
 	NewWindow *nwindow;
 };
+
 
 class AspectPulldown : public BC_ListBox
 {
@@ -272,18 +315,23 @@ public:
 		BC_TextBox *output_h, 
 		int x, 
 		int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	BC_TextBox *output_w;
 	BC_TextBox *output_h;
 };
 
+
 class ColormodelItem : public BC_ListBoxItem
 {
 public:
 	ColormodelItem(const char *text, int value);
+
 	int value;
 };
+
 
 class ColormodelPulldown : public BC_ListBox
 {
@@ -293,13 +341,16 @@ public:
 		int *output_value,
 		int x, 
 		int y);
+
 	int handle_event();
 	const char* colormodel_to_text();
 	void update_value(int value);
+
 	MWindow *mwindow;
 	BC_TextBox *output_text;
 	int *output_value;
 };
+
 
 class InterlacemodeItem : public BC_ListBoxItem
 {
@@ -307,6 +358,7 @@ public:
 	InterlacemodeItem(const char *text, int value);
 	int value;
 };
+
 
 class InterlacemodePulldown : public BC_ListBox
 {
@@ -317,15 +369,18 @@ public:
 				ArrayList<BC_ListBoxItem*> *data,
 				int x,
 				int y);
+
 	int handle_event();
 	char* interlacemode_to_text();
 	int update(int value);
+
 	MWindow *mwindow;
 	BC_TextBox *output_text;
 	int *output_value;
 private:
 	char string[BCTEXTLEN];
 };
+
 
 class InterlacefixmethodItem : public BC_ListBoxItem
 {
@@ -351,6 +406,5 @@ public:
 private:
 	char string[BCTEXTLEN];
 };
-
 
 #endif

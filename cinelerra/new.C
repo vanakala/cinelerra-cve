@@ -57,12 +57,7 @@ New::New(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	script = 0;
-}
-
-int New::create_objects()
-{
 	thread = new NewThread(mwindow, this);
-	return 0;
 }
 
 int New::handle_event() 
@@ -92,8 +87,7 @@ void New::create_new_edl()
 	new_edl->load_defaults(mwindow->defaults);
 }
 
-
-int New::create_new_project()
+void New::create_new_project()
 {
 	mwindow->cwindow->playback_engine->send_command(STOP);
 	mwindow->vwindow->playback_engine->send_command(STOP);
@@ -120,7 +114,6 @@ int New::create_new_project()
 	mwindow->update_project(LOADMODE_REPLACE);
 	mwindow->session->changes_made = 0;
 	mwindow->gui->unlock_window();
-	return 0;
 }
 
 NewThread::NewThread(MWindow *mwindow, New *new_project)
@@ -136,7 +129,6 @@ NewThread::~NewThread()
 	delete window_lock;
 }
 
-
 void NewThread::run()
 {
 	int result = 0;
@@ -147,13 +139,12 @@ void NewThread::run()
 
 	window_lock->lock("NewThread::run 1\n");
 	nwindow = new NewWindow(mwindow, this, x, y);
-	nwindow->create_objects();
 	window_lock->unlock();
 
 	result = nwindow->run_window();
 
 	window_lock->lock("NewThread::run 2\n");
-	delete nwindow;	
+	delete nwindow;
 	nwindow = 0;
 	window_lock->unlock();
 
@@ -171,19 +162,17 @@ void NewThread::run()
 	}
 }
 
-int NewThread::load_defaults()
+void NewThread::load_defaults()
 {
 	auto_aspect = mwindow->defaults->get("AUTOASPECT", 0);
-	return 0;
 }
 
-int NewThread::save_defaults()
+void NewThread::save_defaults()
 {
 	mwindow->defaults->update("AUTOASPECT", auto_aspect);
-	return 0;
 }
 
-int NewThread::update_aspect()
+void NewThread::update_aspect()
 {
 	if(auto_aspect)
 	{
@@ -197,7 +186,6 @@ int NewThread::update_aspect()
 		sprintf(string, "%.02f", new_project->new_edl->session->aspect_h);
 		nwindow->aspect_h_text->update(string);
 	}
-	return 0;
 }
 
 
@@ -213,20 +201,14 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 		0,
 		1)
 {
+	int  x1, y1;
+
 	this->mwindow = mwindow;
 	this->new_thread = new_thread;
 	this->new_edl = new_thread->new_project->new_edl;
-	format_presets = 0;
-}
 
-NewWindow::~NewWindow()
-{
-	if(format_presets) delete format_presets;
-}
-
-void NewWindow::create_objects()
-{
-	int x = 10, y = 10, x1, y1;
+	x = 10;
+	y = 10;
 	BC_TextBox *textbox;
 
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
@@ -358,6 +340,11 @@ void NewWindow::create_objects()
 	show_window();
 }
 
+NewWindow::~NewWindow()
+{
+	if(format_presets) delete format_presets;
+}
+
 void NewWindow::update()
 {
 	atracks->update((int64_t)new_edl->session->audio_tracks);
@@ -374,17 +361,8 @@ void NewWindow::update()
 }
 
 
-
-
-
-
-
 NewPresets::NewPresets(MWindow *mwindow, NewWindow *gui, int x, int y)
  : FormatPresets(mwindow, gui, 0, x, y)
-{
-}
-
-NewPresets::~NewPresets()
 {
 }
 
@@ -400,7 +378,6 @@ EDL* NewPresets::get_edl()
 }
 
 
-
 NewATracks::NewATracks(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
@@ -412,6 +389,7 @@ int NewATracks::handle_event()
 	nwindow->new_edl->session->audio_tracks = atol(get_text());
 	return 1;
 }
+
 
 NewATracksTumbler::NewATracksTumbler(NewWindow *nwindow, int x, int y)
  : BC_Tumbler(x, y)
@@ -433,6 +411,7 @@ void NewATracksTumbler::handle_down_event()
 	nwindow->update();
 }
 
+
 NewAChannels::NewAChannels(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
@@ -444,6 +423,7 @@ int NewAChannels::handle_event()
 	nwindow->new_edl->session->audio_channels = atol(get_text());
 	return 1;
 }
+
 
 NewAChannelsTumbler::NewAChannelsTumbler(NewWindow *nwindow, int x, int y)
  : BC_Tumbler(x, y)
@@ -478,6 +458,7 @@ int NewSampleRate::handle_event()
 	return 1;
 }
 
+
 SampleRatePulldown::SampleRatePulldown(MWindow *mwindow, BC_TextBox *output, int x, int y)
  : BC_ListBox(x,
 	y,
@@ -511,6 +492,7 @@ int NewVTracks::handle_event()
 	return 1;
 }
 
+
 NewVTracksTumbler::NewVTracksTumbler(NewWindow *nwindow, int x, int y)
  : BC_Tumbler(x, y)
 {
@@ -531,6 +513,7 @@ void NewVTracksTumbler::handle_down_event()
 	nwindow->update();
 }
 
+
 NewFrameRate::NewFrameRate(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
@@ -542,6 +525,7 @@ int NewFrameRate::handle_event()
 	nwindow->new_edl->session->frame_rate = Units::atoframerate(get_text());
 	return 1;
 }
+
 
 FrameRatePulldown::FrameRatePulldown(MWindow *mwindow, 
 	BC_TextBox *output, 
@@ -566,6 +550,7 @@ int FrameRatePulldown::handle_event()
 	return 1;
 }
 
+
 FrameSizePulldown::FrameSizePulldown(MWindow *mwindow, 
 		BC_TextBox *output_w, 
 		BC_TextBox *output_h, 
@@ -582,6 +567,7 @@ FrameSizePulldown::FrameSizePulldown(MWindow *mwindow,
 	this->output_w = output_w;
 	this->output_h = output_h;
 }
+
 
 int FrameSizePulldown::handle_event()
 {
@@ -607,6 +593,7 @@ int FrameSizePulldown::handle_event()
 	return 1;
 }
 
+
 NewOutputW::NewOutputW(NewWindow *nwindow, int x, int y)
  : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->output_w)
 {
@@ -620,17 +607,20 @@ int NewOutputW::handle_event()
 	return 1;
 }
 
+
 NewOutputH::NewOutputH(NewWindow *nwindow, int x, int y)
  : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->output_h)
 {
 	this->nwindow = nwindow;
 }
+
 int NewOutputH::handle_event()
 {
 	nwindow->new_edl->session->output_h = MAX(1, atol(get_text()));
 	nwindow->new_thread->update_aspect();
 	return 1;
 }
+
 
 NewAspectW::NewAspectW(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 70, 1, text)
@@ -697,6 +687,7 @@ int AspectPulldown::handle_event()
 	return 1;
 }
 
+
 ColormodelItem::ColormodelItem(const char *text, int value)
  : BC_ListBoxItem(text)
 {
@@ -748,6 +739,7 @@ InterlacemodeItem::InterlacemodeItem(const char *text, int value)
 	this->value = value;
 }
 
+
 InterlacemodePulldown::InterlacemodePulldown(MWindow *mwindow, 
 		BC_TextBox *output_text,
 		int *output_value,
@@ -795,17 +787,12 @@ NewAspectAuto::NewAspectAuto(NewWindow *nwindow, int x, int y)
 	this->nwindow = nwindow;
 }
 
-NewAspectAuto::~NewAspectAuto()
-{
-}
-
 int NewAspectAuto::handle_event()
 {
 	nwindow->new_thread->auto_aspect = get_value();
 	nwindow->new_thread->update_aspect();
 	return 1;
 }
-
 
 
 NewSwapExtents::NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y)
