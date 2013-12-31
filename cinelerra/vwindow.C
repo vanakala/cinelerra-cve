@@ -154,7 +154,9 @@ void VWindow::change_source(EDL *edl)
 void VWindow::remove_source()
 {
 	delete_edl();
-	gui->change_source(0, _("Viewer"));
+	gui->change_source(0, 0);
+	gui->clock->update(0);
+	gui->canvas->draw_refresh();
 }
 
 void VWindow::goto_start()

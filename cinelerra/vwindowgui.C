@@ -122,22 +122,27 @@ VWindowGUI::~VWindowGUI()
 	delete transport;
 }
 
-void VWindowGUI::change_source(EDL *edl, char *title)
+void VWindowGUI::change_source(EDL *edl, const char *title)
 {
-	update_sources(title);
+	update_sources();
 	char string[BCTEXTLEN];
-	if(title[0]) 
+	if(title && title[0])
+	{
 		sprintf(string,"%s - " PROGRAM_NAME, title);
+		strcpy(loaded_title, title);
+	}
 	else
+	{
 		strcpy(string, "Viewer - " PROGRAM_NAME);
-	strcpy(loaded_title, title);
+		loaded_title[0] = 0;
+	}
 	slider->set_position();
 	timebar->update();
 	set_title(string);
 }
 
 // Get source list from master EDL
-void VWindowGUI::update_sources(char *title)
+void VWindowGUI::update_sources()
 {
 	sources.remove_all_objects();
 
@@ -669,8 +674,6 @@ void VWindowCanvas::zoom_resize_window(float percentage)
 void VWindowCanvas::close_source()
 {
 	mwindow->vwindow->remove_source();
-	gui->clock->update(0);
-	draw_refresh();
 }
 
 void VWindowCanvas::draw_refresh()

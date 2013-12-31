@@ -62,9 +62,9 @@ public:
 	int button_release_event();
 	int cursor_motion_event();
 // Update source pulldown with new assets
-	void update_sources(char *title);
+	void update_sources();
 // Update GUI to reflect new source
-	void change_source(EDL *edl, char *title);
+	void change_source(EDL *edl, const char *title);
 	void drag_motion();
 	int drag_stop();
 
