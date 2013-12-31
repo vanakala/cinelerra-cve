@@ -91,6 +91,7 @@ void New::create_new_project()
 {
 	mwindow->cwindow->playback_engine->send_command(STOP);
 	mwindow->vwindow->playback_engine->send_command(STOP);
+	mwindow->vwindow->remove_source();
 
 	mwindow->gui->lock_window("New::create_new_project");
 	mwindow->reset_caches();
