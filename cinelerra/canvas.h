@@ -234,7 +234,6 @@ public:
 		int y,
 		int w,
 		int h);
-	~CanvasOutput();
 
 	void cursor_leave_event();
 	int cursor_enter_event();
@@ -247,20 +246,15 @@ public:
 };
 
 
-
-
 class CanvasFullScreen : public BC_FullScreen
 {
 public:
 	CanvasFullScreen(Canvas *canvas,
 		int w,
 		int h);
-	~CanvasFullScreen();
 
 	Canvas *canvas;
 };
-
-
 
 
 class CanvasXScroll : public BC_ScrollBar
@@ -274,7 +268,6 @@ public:
 		int position, 
 		int handle_length, 
 		int pixels);
-	~CanvasXScroll();
 
 	int handle_event();
 	Canvas *canvas;
@@ -292,7 +285,6 @@ public:
 		int position, 
 		int handle_length, 
 		int pixels);
-	~CanvasYScroll();
 
 	int handle_event();
 
@@ -304,16 +296,13 @@ class CanvasFullScreenPopup : public BC_PopupMenu
 {
 public:
 	CanvasFullScreenPopup(Canvas *canvas);
-
-	void create_objects();
-
-	Canvas *canvas;
 };
 
 class CanvasSubWindowItem : public BC_MenuItem
 {
 public:
 	CanvasSubWindowItem(Canvas *canvas);
+
 	int handle_event();
 	Canvas *canvas;
 };
@@ -322,19 +311,13 @@ class CanvasPopup : public BC_PopupMenu
 {
 public:
 	CanvasPopup(Canvas *canvas);
-	~CanvasPopup();
-
-	void create_objects();
-
-	Canvas *canvas;
-	CanvasToggleControls *toggle_controls;
 };
 
 class CanvasPopupSize : public BC_MenuItem
 {
 public:
 	CanvasPopupSize(Canvas *canvas, char *text, float percentage);
-	~CanvasPopupSize();
+
 	int handle_event();
 	Canvas *canvas;
 	float percentage;

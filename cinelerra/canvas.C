@@ -32,7 +32,6 @@
 #include "vframe.h"
 
 
-
 Canvas::Canvas(MWindow *mwindow,
 	BC_WindowBase *subwindow, 
 	int x, 
@@ -78,10 +77,8 @@ Canvas::Canvas(MWindow *mwindow,
 	create_canvas();
 
 	subwindow->add_subwindow(canvas_menu = new CanvasPopup(this));
-	canvas_menu->create_objects();
 
 	subwindow->add_subwindow(fullscreen_menu = new CanvasFullScreenPopup(this));
-	fullscreen_menu->create_objects();
 }
 
 Canvas::~Canvas()
@@ -110,7 +107,6 @@ int Canvas::is_locked()
 	return canvas_lock->is_locked();
 }
 
-
 BC_WindowBase* Canvas::get_canvas()
 {
 	if(get_fullscreen() && canvas_fullscreen) 
@@ -118,7 +114,6 @@ BC_WindowBase* Canvas::get_canvas()
 	else
 		return canvas_subwindow;
 }
-
 
 // Get dimensions given a zoom
 void Canvas::calculate_sizes(float aspect_ratio, 
@@ -280,8 +275,6 @@ void Canvas::output_to_canvas(EDL *edl, float &x, float &y)
 	y = (float)zoom_y * (y - get_y_offset(edl, zoom_y, conformed_w, conformed_h));
 }
 
-
-
 void Canvas::get_transfers(EDL *edl, 
 	float &output_x1, 
 	float &output_y1, 
@@ -353,7 +346,6 @@ void Canvas::get_transfers(EDL *edl,
 		canvas_y1 = out_y1;
 		canvas_x2 = out_x2;
 		canvas_y2 = out_y2;
-
 	}
 	else
 // The output frame is normalized to the canvas
@@ -621,7 +613,6 @@ void Canvas::stop_video()
 	}
 }
 
-
 void Canvas::start_fullscreen()
 {
 	set_fullscreen(1);
@@ -687,7 +678,6 @@ SET_TRACE
 	unlock_canvas();
 }
 
-
 int Canvas::cursor_leave_event_base(BC_WindowBase *caller)
 {
 	int result = 0;
@@ -747,10 +737,6 @@ CanvasOutput::CanvasOutput(Canvas *canvas,
 	this->canvas = canvas;
 }
 
-CanvasOutput::~CanvasOutput()
-{
-}
-
 void CanvasOutput::cursor_leave_event()
 {
 	canvas->cursor_leave_event_base(this);
@@ -782,7 +768,6 @@ int CanvasOutput::keypress_event()
 }
 
 
-
 CanvasFullScreen::CanvasFullScreen(Canvas *canvas,
 	int w,
 	int h)
@@ -796,11 +781,6 @@ CanvasFullScreen::CanvasFullScreen(Canvas *canvas,
 {
 	this->canvas = canvas;
 }
-
-CanvasFullScreen::~CanvasFullScreen()
-{
-}
-
 
 
 CanvasXScroll::CanvasXScroll(EDL *edl, 
@@ -820,10 +800,6 @@ CanvasXScroll::CanvasXScroll(EDL *edl,
 		handle_length)
 {
 	this->canvas = canvas;
-}
-
-CanvasXScroll::~CanvasXScroll()
-{
 }
 
 int CanvasXScroll::handle_event()
@@ -853,10 +829,6 @@ CanvasYScroll::CanvasYScroll(EDL *edl,
 	this->canvas = canvas;
 }
 
-CanvasYScroll::~CanvasYScroll()
-{
-}
-
 int CanvasYScroll::handle_event()
 {
 	canvas->update_zoom(canvas->get_xscroll(), get_value(), canvas->get_zoom());
@@ -865,22 +837,12 @@ int CanvasYScroll::handle_event()
 }
 
 
-
-
-
-
 CanvasFullScreenPopup::CanvasFullScreenPopup(Canvas *canvas)
  : BC_PopupMenu(0, 
 		0, 
 		0, 
 		"", 
 		0)
-{
-	this->canvas = canvas;
-}
-
-
-void CanvasFullScreenPopup::create_objects()
 {
 	if(canvas->use_cwindow) add_item(new CanvasPopupAuto(canvas));
 	add_item(new CanvasSubWindowItem(canvas));
@@ -909,15 +871,6 @@ CanvasPopup::CanvasPopup(Canvas *canvas)
 		"", 
 		0)
 {
-	this->canvas = canvas;
-}
-
-CanvasPopup::~CanvasPopup()
-{
-}
-
-void CanvasPopup::create_objects()
-{
 	add_item(new CanvasPopupSize(canvas, _("Zoom 25%"), 0.25));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 33%"), 0.33));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 50%"), 0.5));
@@ -932,7 +885,7 @@ void CanvasPopup::create_objects()
 		add_item(new CanvasPopupAuto(canvas));
 		add_item(new CanvasPopupResetCamera(canvas));
 		add_item(new CanvasPopupResetProjector(canvas));
-		add_item(toggle_controls = new CanvasToggleControls(canvas));
+		add_item(new CanvasToggleControls(canvas));
 	}
 	if(canvas->use_rwindow)
 	{
@@ -944,7 +897,6 @@ void CanvasPopup::create_objects()
 	}
 	add_item(new CanvasFullScreenItem(canvas));
 }
-
 
 
 CanvasPopupAuto::CanvasPopupAuto(Canvas *canvas)
@@ -967,48 +919,51 @@ CanvasPopupSize::CanvasPopupSize(Canvas *canvas, char *text, float percentage)
 	this->percentage = percentage;
 }
 
-CanvasPopupSize::~CanvasPopupSize()
-{
-}
-
 int CanvasPopupSize::handle_event()
 {
 	canvas->zoom_resize_window(percentage);
 	return 1;
 }
 
+
 CanvasPopupResetCamera::CanvasPopupResetCamera(Canvas *canvas)
  : BC_MenuItem(_("Reset camera"))
 {
 	this->canvas = canvas;
 }
+
 int CanvasPopupResetCamera::handle_event()
 {
 	canvas->reset_camera();
 	return 1;
 }
 
+
 CanvasPopupResetProjector::CanvasPopupResetProjector(Canvas *canvas)
  : BC_MenuItem(_("Reset projector"))
 {
 	this->canvas = canvas;
 }
+
 int CanvasPopupResetProjector::handle_event()
 {
 	canvas->reset_projector();
 	return 1;
 }
 
+
 CanvasPopupResetTranslation::CanvasPopupResetTranslation(Canvas *canvas)
  : BC_MenuItem(_("Reset translation"))
 {
 	this->canvas = canvas;
 }
+
 int CanvasPopupResetTranslation::handle_event()
 {
 	canvas->reset_translation();
 	return 1;
 }
+
 
 CanvasToggleControls::CanvasToggleControls(Canvas *canvas)
  : BC_MenuItem(calculate_text(canvas->get_cwindow_controls()))
@@ -1029,6 +984,7 @@ char* CanvasToggleControls::calculate_text(int cwindow_controls)
 	else
 		return _("Hide controls");
 }
+
 
 CanvasFullScreenItem::CanvasFullScreenItem(Canvas *canvas)
  : BC_MenuItem(_("Fullscreen"), "f", 'f')
