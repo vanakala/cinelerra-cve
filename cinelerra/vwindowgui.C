@@ -235,12 +235,11 @@ void VWindowGUI::translation_event()
 
 void VWindowGUI::close_event()
 {
+	vwindow->playback_engine->send_command(STOP);
 	hide_window();
 	mwindow->session->show_vwindow = 0;
 
-	mwindow->gui->lock_window("VWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_vwindow->set_checked(0);
-	mwindow->gui->unlock_window();
 
 	mwindow->save_defaults();
 }
