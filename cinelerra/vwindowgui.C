@@ -124,8 +124,8 @@ VWindowGUI::~VWindowGUI()
 
 void VWindowGUI::change_source(EDL *edl, const char *title)
 {
-	update_sources();
 	char string[BCTEXTLEN];
+
 	if(title && title[0])
 	{
 		sprintf(string,"%s - " PROGRAM_NAME, title);
@@ -139,56 +139,6 @@ void VWindowGUI::change_source(EDL *edl, const char *title)
 	slider->set_position();
 	timebar->update();
 	set_title(string);
-}
-
-// Get source list from master EDL
-void VWindowGUI::update_sources()
-{
-	sources.remove_all_objects();
-
-	for(int i = 0;
-		i < mwindow->edl->clips.total;
-		i++)
-	{
-		char *clip_title = mwindow->edl->clips.values[i]->local_session->clip_title;
-		int exists = 0;
-
-		for(int j = 0; j < sources.total; j++)
-		{
-			if(!strcasecmp(sources.values[j]->get_text(), clip_title))
-			{
-				exists = 1;
-			}
-		}
-
-		if(!exists)
-		{
-			sources.append(new BC_ListBoxItem(clip_title));
-		}
-	}
-
-	FileSystem fs;
-	for(Asset *current = mwindow->edl->assets->first; 
-		current;
-		current = NEXT)
-	{
-		char clip_title[BCTEXTLEN];
-		fs.extract_name(clip_title, current->path);
-		int exists = 0;
-		
-		for(int j = 0; j < sources.total; j++)
-		{
-			if(!strcasecmp(sources.values[j]->get_text(), clip_title))
-			{
-				exists = 1;
-			}
-		}
-		
-		if(!exists)
-		{
-			sources.append(new BC_ListBoxItem(clip_title));
-		}
-	}
 }
 
 void VWindowGUI::resize_event(int w, int h)

@@ -61,8 +61,7 @@ public:
 	int cursor_enter_event();
 	int button_release_event();
 	int cursor_motion_event();
-// Update source pulldown with new assets
-	void update_sources();
+
 // Update GUI to reflect new source
 	void change_source(EDL *edl, const char *title);
 	void drag_motion();
@@ -74,14 +73,12 @@ public:
 // Meters are numbered from right to left
 	VWindowCanvas *canvas;
 	VWindowSlider *slider;
-	BC_Title *fps_title;
 	MainClock *clock;
 	VTimeBar *timebar;
 	VWindowZoom *zoom_panel;
 	VWindowTransport *transport;
 	VWindowEditing *edit_panel;
 	VWindowMeters *meters;
-	ArrayList<BC_ListBoxItem*> sources;
 	ArrayList<LabelGUI*> labels;
 	char loaded_title[BCTEXTLEN];
 
