@@ -36,7 +36,7 @@ public:
 		int y, 
 		int w, 
 		const char *text, 
-		int use_title = 1,
+		int options = POPUPMENU_USE_TITLE,
 // Data for alternative title images
 		VFrame **data = 0,
 // Alternative text margin
@@ -44,7 +44,7 @@ public:
 	BC_PopupMenu(int x, 
 		int y, 
 		const char *text, 
-		int use_title = 1,
+		int options = POPUPMENU_USE_TITLE,
 // Data for alternative title images
 		VFrame **data = 0);
 	virtual ~BC_PopupMenu();
@@ -87,6 +87,7 @@ private:
 	int highlighted;
 	int popup_down;
 	int use_title;
+	int use_coords;
 	int button_releases;
 	BC_MenuPopup *menu_popup;
 // Remember cursor position when no title

@@ -43,7 +43,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 		int y, 
 		int w, 
 		const char *text, 
-		int use_title,
+		int options,
 		VFrame **data,
 		int margin)
  : BC_SubWindow(x, y, 0, 0, -1)
@@ -55,7 +55,8 @@ BC_PopupMenu::BC_PopupMenu(int x,
 	else
 		this->margin = BC_WindowBase::get_resources()->popupmenu_margin;
 
-	this->use_title = use_title;
+	use_title = options & POPUPMENU_USE_TITLE;
+	use_coords = options & (POPUPMENU_USE_TITLE | POPUPMENU_USE_COORDS);
 	strcpy(this->text, text);
 	for(int i = 0; i < TOTAL_IMAGES; i++)
 	{
@@ -70,13 +71,14 @@ BC_PopupMenu::BC_PopupMenu(int x,
 BC_PopupMenu::BC_PopupMenu(int x, 
 		int y, 
 		const char *text, 
-		int use_title,
+		int options,
 		VFrame **data)
  : BC_SubWindow(x, y, w, -1, -1)
 {
 	highlighted = popup_down = 0;
 	icon = 0;
-	this->use_title = use_title;
+	use_title = options & POPUPMENU_USE_TITLE;
+	use_coords = options & (POPUPMENU_USE_TITLE | POPUPMENU_USE_COORDS);
 	strcpy(this->text, text);
 	for(int i = 0; i < TOTAL_IMAGES; i++)
 	{
@@ -135,12 +137,14 @@ void BC_PopupMenu::initialize()
 	else
 // Move outside window if no title
 	{
-		x = -10;
-		y = -10;
+		if(!use_coords)
+		{
+			x = -10;
+			y = -10;
+		}
 		w = 10;
-		h = 10;
+		h = 1;
 	}
-
 	BC_SubWindow::initialize();
 
 	menu_popup->initialize(top_level, 
@@ -265,14 +269,13 @@ void BC_PopupMenu::activate_menu()
 		top_level->deactivate();
 		top_level->active_popup_menu = this;
 		top_level->lock_window("BC_PopupMenu::activate_menu");
-		if(!use_title)
+		if(!use_coords)
 		{
 			x = top_level->get_abs_cursor_x(0) - get_w();
 			y = top_level->get_abs_cursor_y(0) - get_h();
 			button_press_x = top_level->cursor_x;
 			button_press_y = top_level->cursor_y;
 		}
-
 		button_releases = 0;
 		if(use_title)
 		{
@@ -294,7 +297,10 @@ void BC_PopupMenu::activate_menu()
 				1);
 		}
 		else
+		if(!use_coords)
 			menu_popup->activate_menu(x, y, w, h, 0, 1);
+		else
+			menu_popup->activate_menu(x, y, w, h, 1, 1);
 		popup_down = 1;
 		top_level->unlock_window();
 		if(use_title) draw_title();

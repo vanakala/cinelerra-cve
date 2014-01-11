@@ -22,6 +22,10 @@
 #ifndef BCPOPUPMENU_INC
 #define BCPOPUPMENU_INC
 
+// Option bits
+#define POPUPMENU_USE_TITLE  1
+#define POPUPMENU_USE_COORDS 2
+
 class BC_PopupMenu;
 
 #endif
