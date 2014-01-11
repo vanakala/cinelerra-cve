@@ -242,6 +242,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    ruler.C \
 		    samplescroll.C \
 		    savefile.C \
+		    selection.C \
 		    setformat.C \
 		    sharedlocation.C \
 		    sighandler.C \
@@ -521,6 +522,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 ruler.h \
 		 samplescroll.h \
 		 savefile.h \
+		 selection.h \
 		 setformat.h \
 		 sharedlocation.h \
 		 sighandler.h \
