@@ -38,6 +38,7 @@
 #include "mainindexes.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "selection.h"
 #include "theme.h"
 #include "new.h"
 #include "preferences.h"
@@ -293,11 +294,11 @@ int AssetEditWindow::create_objects()
 		sprintf(string, "%d", asset->sample_rate);
 
 		x = x2;
-		BC_TextBox *textbox;
-		add_subwindow(textbox = new AssetEditRate(this, string, x, y));
-		x += textbox->get_w();
-		add_subwindow(new SampleRatePulldown(mwindow, textbox, x, y));
 
+		BC_TextBox *textbox;
+		add_subwindow(textbox = new Selection(x, y, this, mwindow->theme->sample_rates,
+			&asset->sample_rate));
+		textbox->update(asset->sample_rate);
 		y += 30;
 		x = x1;
 		if(asset->astreams)
@@ -569,18 +570,6 @@ AssetEditChannels::AssetEditChannels(AssetEditWindow *fwindow,
 int AssetEditChannels::handle_event()
 {
 	fwindow->asset->channels = atol(get_text());
-	return 1;
-}
-
-AssetEditRate::AssetEditRate(AssetEditWindow *fwindow, char *text, int x, int y)
- : BC_TextBox(x, y, 100, 1, text)
-{
-	this->fwindow = fwindow;
-}
-
-int AssetEditRate::handle_event()
-{
-	fwindow->asset->sample_rate = atol(get_text());
 	return 1;
 }
 

@@ -31,6 +31,7 @@
 #include "preferences.h"
 #include "recordconfig.h"
 #include "recordprefs.h"
+#include "selection.h"
 #include "theme.h"
 #include "vdeviceprefs.h"
 
@@ -111,15 +112,16 @@ int RecordPrefs::create_objects()
 	add_subwindow(title3 = new BC_Title(x, y + 60, _("Channels to record:")));
 	x2 = MAX(title1->get_w(), title2->get_w()) + 10;
 	x2 = MAX(x2, title3->get_w() + 10);
-
 	sprintf(string, "%d", pwindow->thread->edl->session->record_write_length);
 	add_subwindow(textbox = new RecordWriteLength(mwindow, 
 		pwindow, 
 		x2, 
 		y, 
 		string));
-	add_subwindow(textbox = new RecordSampleRate(pwindow, x2, y + 30));
-	add_subwindow(new SampleRatePulldown(mwindow, textbox, x2 + textbox->get_w(), y + 30));
+	add_subwindow(textbox = new Selection(x2, y + 30, this,
+		mwindow->theme->sample_rates,
+		&pwindow->thread->edl->session->aconfig_in->in_samplerate));
+	textbox->update(pwindow->thread->edl->session->aconfig_in->in_samplerate);
 
 	RecordChannels *channels = new RecordChannels(pwindow, this, x2, y + 60);
 
@@ -225,18 +227,6 @@ int RecordWriteLength::handle_event()
 { 
 	pwindow->thread->edl->session->record_write_length = atol(get_text());
 	return 1; 
-}
-
-RecordSampleRate::RecordSampleRate(PreferencesWindow *pwindow, int x, int y)
- : BC_TextBox(x, y, 70, 1, pwindow->thread->edl->session->aconfig_in->in_samplerate)
-{
-	this->pwindow = pwindow;
-}
-
-int RecordSampleRate::handle_event()
-{
-	pwindow->thread->edl->session->aconfig_in->in_samplerate = atol(get_text());
-	return 1;
 }
 
 RecordW::RecordW(PreferencesWindow *pwindow, int x, int y)

@@ -40,6 +40,7 @@
 #include "new.h"
 #include "preferences.h"
 #include "rotateframe.h"
+#include "selection.h"
 #include "setformat.h"
 #include "theme.h"
 #include "vframe.h"
@@ -326,13 +327,10 @@ void SetFormatWindow::create_objects()
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y,
 		_("Samplerate:")));
-	add_subwindow(sample_rate = new SetSampleRateTextBox(thread, 
-		mwindow->theme->setformat_x2, 
-		y));
-	add_subwindow(new SampleRatePulldown(mwindow, 
-		sample_rate, 
-		mwindow->theme->setformat_x2 + sample_rate->get_w(), 
-		y));
+	add_subwindow(sample_rate = new Selection(mwindow->theme->setformat_x2,
+		y, this, mwindow->theme->sample_rates,
+		&thread->new_settings->session->sample_rate));
+	sample_rate->update(thread->new_settings->session->sample_rate);
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
@@ -529,18 +527,6 @@ int SetFormatPresets::handle_event()
 EDL* SetFormatPresets::get_edl()
 {
 	return format_gui->thread->new_settings;
-}
-
-
-SetSampleRateTextBox::SetSampleRateTextBox(SetFormatThread *thread, int x, int y)
- : BC_TextBox(x, y, 100, 1, (int64_t)thread->new_settings->session->sample_rate)
-{
-	this->thread = thread;
-}
-int SetSampleRateTextBox::handle_event()
-{
-	thread->new_settings->session->sample_rate = CLIP(atol(get_text()), 1, 1000000);
-	return 1;
 }
 
 SetChannelsTextBox::SetChannelsTextBox(SetFormatThread *thread, int x, int y)

@@ -40,6 +40,7 @@
 #include "mainsession.h"
 #include "patchbay.h"
 #include "preferences.h"
+#include "selection.h"
 #include "theme.h"
 #include "vplayback.h"
 #include "vwindow.h"
@@ -250,9 +251,9 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Samplerate:")));
 	x1 += 100;
-	add_subwindow(sample_rate = new NewSampleRate(this, "", x1, y));
-	x1 += sample_rate->get_w();
-	add_subwindow(new SampleRatePulldown(mwindow, sample_rate, x1, y));
+	add_subwindow(sample_rate = new Selection(x1, y, this, 
+		mwindow->theme->sample_rates,
+		&new_edl->session->sample_rate));
 
 	x += 250;
 	y = y1;
@@ -350,7 +351,7 @@ void NewWindow::update()
 {
 	atracks->update((int64_t)new_edl->session->audio_tracks);
 	achannels->update((int64_t)new_edl->session->audio_channels);
-	sample_rate->update((int64_t)new_edl->session->sample_rate);
+	sample_rate->update(new_edl->session->sample_rate);
 	vtracks->update((int64_t)new_edl->session->video_tracks);
 	frame_rate->update((float)new_edl->session->frame_rate);
 	output_w_text->update((int64_t)new_edl->session->output_w);
@@ -445,41 +446,6 @@ void NewAChannelsTumbler::handle_down_event()
 	nwindow->new_edl->boundaries();
 	nwindow->update();
 }
-
-
-NewSampleRate::NewSampleRate(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 90, 1, text)
-{
-	this->nwindow = nwindow;
-}
-
-int NewSampleRate::handle_event()
-{
-	nwindow->new_edl->session->sample_rate = atol(get_text());
-	return 1;
-}
-
-
-SampleRatePulldown::SampleRatePulldown(MWindow *mwindow, BC_TextBox *output, int x, int y)
- : BC_ListBox(x,
-	y,
-	100,
-	200,
-	&mwindow->theme->sample_rates,
-	LISTBOX_POPUP)
-{
-	this->mwindow = mwindow;
-	this->output = output;
-}
-
-int SampleRatePulldown::handle_event()
-{
-	char *text = get_selection(0, 0)->get_text();
-	output->update(text);
-	output->handle_event();
-	return 1;
-}
-
 
 NewVTracks::NewVTracks(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)

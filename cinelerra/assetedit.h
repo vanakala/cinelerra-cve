@@ -128,14 +128,6 @@ public:
 	AssetEditWindow *fwindow;
 };
 
-class AssetEditRate : public BC_TextBox
-{
-public:
-	AssetEditRate(AssetEditWindow *fwindow, char *text, int x, int y);
-	int handle_event();
-	AssetEditWindow *fwindow;
-};
-
 class AssetEditFRate : public BC_TextBox
 {
 public:

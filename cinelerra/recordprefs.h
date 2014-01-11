@@ -59,15 +59,6 @@ public:
 };
 
 
-class RecordSampleRate : public BC_TextBox
-{
-public:
-	RecordSampleRate(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-
 class RecordSoftwareTimer : public BC_CheckBox
 {
 public:

@@ -169,29 +169,6 @@ public:
 };
 
 
-class NewSampleRate : public BC_TextBox
-{
-public:
-	NewSampleRate(NewWindow *nwindow, const char *text, int x, int y);
-
-	int handle_event();
-
-	NewWindow *nwindow;
-};
-
-
-class SampleRatePulldown : public BC_ListBox
-{
-public:
-	SampleRatePulldown(MWindow *mwindow, BC_TextBox *output, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	BC_TextBox *output;
-};
-
-
 class NewVTracks : public BC_TextBox
 {
 public:

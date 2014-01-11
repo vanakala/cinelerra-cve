@@ -28,7 +28,6 @@ class FileFormatByteOrderLOHI;
 class FileFormatByteOrderHILO;
 class FileFormatSigned;
 class FileFormatHeader;
-class FileFormatRate;
 class FileFormatChannels;
 class FileFormatBits;
 
@@ -38,6 +37,7 @@ class FileFormatBits;
 #include "file.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "selection.inc"
 
 class FileFormat : public BC_Window
 {
@@ -56,7 +56,7 @@ public:
 	FileFormatByteOrderHILO *hilo;
 	FileFormatSigned *signed_button;
 	FileFormatHeader *header_button;
-	FileFormatRate *rate_button;
+	Selection *rate_button;
 	FileFormatChannels *channels_button;
 	MWindow *mwindow;
 };
@@ -65,16 +65,6 @@ class FileFormatChannels : public BC_TumbleTextBox
 {
 public:
 	FileFormatChannels(int x, int y, FileFormat *fwindow, char *text);
-	
-	int handle_event();
-	
-	FileFormat *fwindow;
-};
-
-class FileFormatRate : public BC_TextBox
-{
-public:
-	FileFormatRate(int x, int y, FileFormat *fwindow, char *text);
 	
 	int handle_event();
 	
