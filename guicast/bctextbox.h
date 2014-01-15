@@ -73,6 +73,7 @@ public:
 	void update(int64_t value);
 	void update(int value);
 	void update(float value);
+	void update(double value);
 	void disable();
 	void enable();
 	int get_enabled();

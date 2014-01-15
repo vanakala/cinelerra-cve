@@ -231,6 +231,15 @@ void BC_TextBox::update(float value)
 	update(string);
 }
 
+void BC_TextBox::update(double value)
+{
+	char string[BCTEXTLEN];
+
+	sprintf(string, "%0.*f", precision, value);
+
+	update(string);
+}
+
 void BC_TextBox::disable()
 {
 	if(enabled)
