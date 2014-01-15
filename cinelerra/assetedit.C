@@ -296,7 +296,7 @@ int AssetEditWindow::create_objects()
 		x = x2;
 
 		BC_TextBox *textbox;
-		add_subwindow(textbox = new Selection(x, y, this, mwindow->theme->sample_rates,
+		add_subwindow(textbox = new SampleRateSelection(x, y, this,
 			&asset->sample_rate));
 		textbox->update(asset->sample_rate);
 		y += 30;
@@ -402,11 +402,10 @@ int AssetEditWindow::create_objects()
 
 		add_subwindow(new BC_Title(x, y, _("Frame rate:")));
 		x = x2;
-		sprintf(string, "%.2f", asset->frame_rate);
 		BC_TextBox *framerate;
-		add_subwindow(framerate = new AssetEditFRate(this, string, x, y));
-		x += 105;
-		add_subwindow(new FrameRatePulldown(mwindow, framerate, x, y));
+		add_subwindow(framerate = new FrameRateSelection(x, y, this, 
+			&asset->frame_rate));
+		framerate->update(asset->frame_rate);
 
 		y += 30;
 		x = x1;
@@ -570,18 +569,6 @@ AssetEditChannels::AssetEditChannels(AssetEditWindow *fwindow,
 int AssetEditChannels::handle_event()
 {
 	fwindow->asset->channels = atol(get_text());
-	return 1;
-}
-
-AssetEditFRate::AssetEditFRate(AssetEditWindow *fwindow, char *text, int x, int y)
- : BC_TextBox(x, y, 100, 1, text)
-{
-	this->fwindow = fwindow;
-}
-
-int AssetEditFRate::handle_event()
-{
-	fwindow->asset->frame_rate = atof(get_text());
 	return 1;
 }
 

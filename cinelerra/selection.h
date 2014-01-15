@@ -30,16 +30,33 @@
 #include "bcwindow.inc"
 #include "mwindow.inc"
 
+struct selection_int
+{
+	const char *text;
+	int value;
+};
+
+struct selection_double
+{
+	const char *text;
+	double value;
+};
 
 class Selection : public BC_TextBox
 {
 public:
-	Selection(int x, int y, BC_WindowBase *base, const char *texts[],
-		int *value);
+	Selection(int x, int y, BC_WindowBase *base,
+		const struct selection_int items[], int *value);
+	Selection(int x, int y, BC_WindowBase *base,
+		const struct selection_double items[], double *value);
 
 	int handle_event();
+
+	const struct selection_double *current_double;
 private:
+	BC_PopupMenu *init_objects(int x, int y, BC_WindowBase *base);
 	int *intvalue;
+	double *doublevalue;
 };
 
 class SelectionButton : public BC_Button
@@ -55,12 +72,34 @@ private:
 class SelectionItem : public BC_MenuItem
 {
 public:
-	SelectionItem(const char *text, BC_TextBox *output);
+	SelectionItem(const struct selection_int *item, Selection *output);
+	SelectionItem(const struct selection_double *item, Selection *output);
 
 	int handle_event();
 private:
-	const char *text;
-	BC_TextBox *output;
+	const struct selection_int *intitem;
+	const struct selection_double *doubleitem;
+	Selection *output;
+};
+
+
+class SampleRateSelection : public Selection
+{
+public:
+	SampleRateSelection(int x, int y, BC_WindowBase *base, int *value);
+
+private:
+	static const struct selection_int sample_rates[];
+};
+
+
+class FrameRateSelection : public Selection
+{
+public:
+	FrameRateSelection(int x, int y, BC_WindowBase *base, double *value);
+
+private:
+	static const struct selection_double frame_rates[];
 };
 
 #endif

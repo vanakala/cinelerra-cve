@@ -54,19 +54,6 @@
 #include <errno.h>
 #include <string.h>
 
-const char* Theme::sample_rates[] =
-{
-	"8000",
-	"16000",
-	"22050",
-	"32000",
-	"44100",
-	"48000",
-	"96000",
-	"192000",
-	0
-};
-
 Theme::Theme()
  : BC_Theme()
 {
@@ -106,7 +93,6 @@ Theme::~Theme()
 	flush_images();
 
 	aspect_ratios.remove_all_objects();
-	frame_rates.remove_all_objects();
 	frame_sizes.remove_all_objects();
 	zoom_values.remove_all_objects();
 }
@@ -164,20 +150,6 @@ void Theme::build_menus()
 	frame_sizes.append(new BC_ListBoxItem("960x1080"));
 	frame_sizes.append(new BC_ListBoxItem("1920x1080"));
 	frame_sizes.append(new BC_ListBoxItem("1920x1088"));
-
-	frame_rates.append(new BC_ListBoxItem("1"));
-	frame_rates.append(new BC_ListBoxItem("5"));
-	frame_rates.append(new BC_ListBoxItem("10"));
-	frame_rates.append(new BC_ListBoxItem("12"));
-	frame_rates.append(new BC_ListBoxItem("15"));
-	frame_rates.append(new BC_ListBoxItem("23.97"));
-	frame_rates.append(new BC_ListBoxItem("24"));
-	frame_rates.append(new BC_ListBoxItem("25"));
-	frame_rates.append(new BC_ListBoxItem("29.97"));
-	frame_rates.append(new BC_ListBoxItem("30"));
-	frame_rates.append(new BC_ListBoxItem("50"));
-	frame_rates.append(new BC_ListBoxItem("59.94"));
-	frame_rates.append(new BC_ListBoxItem("60"));
 
 	char string[BCTEXTLEN];
 	for(int i = 1; i < 17; i++)

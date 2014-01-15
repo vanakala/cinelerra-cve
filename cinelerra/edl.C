@@ -804,7 +804,7 @@ void EDL::dump(int indent)
 			session->audio_channels,
 			session->audio_tracks,
 			session->sample_rate);
-		printf("%*svideo_channels: %d video_tracks: %d frame_rate: %.2f frames_per_foot: %.2f\n",
+		printf("%*svideo_channels: %d video_tracks: %d frame_rate: %.6f frames_per_foot: %.2f\n",
 			indent, "",
 			session->video_channels,
 			session->video_tracks,

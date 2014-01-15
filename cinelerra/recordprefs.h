@@ -118,20 +118,6 @@ public:
 	PreferencesWindow *pwindow;
 };
 
-class RecordFrameRate : public BC_TextBox
-{
-public:
-	RecordFrameRate(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-class RecordFrameRateText : public BC_TextBox
-{
-	RecordFrameRateText(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
 
 class RecordChannels : public BC_TumbleTextBox
 {

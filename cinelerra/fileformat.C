@@ -78,7 +78,7 @@ int FileFormat::create_objects_(char *string2)
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Sample rate:")));
-	add_subwindow(rate_button = new Selection(x2, y, this, mwindow->theme->sample_rates,
+	add_subwindow(rate_button = new SampleRateSelection(x2, y, this,
 		&asset->sample_rate));
 	rate_button->update(asset->sample_rate);
 

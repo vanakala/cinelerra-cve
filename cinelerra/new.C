@@ -251,8 +251,7 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Samplerate:")));
 	x1 += 100;
-	add_subwindow(sample_rate = new Selection(x1, y, this, 
-		mwindow->theme->sample_rates,
+	add_subwindow(sample_rate = new SampleRateSelection(x1, y, this,
 		&new_edl->session->sample_rate));
 
 	x += 250;
@@ -270,9 +269,8 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Framerate:")));
 	x1 += 100;
-	add_subwindow(frame_rate = new NewFrameRate(this, "", x1, y));
-	x1 += frame_rate->get_w();
-	add_subwindow(new FrameRatePulldown(mwindow, frame_rate, x1, y));
+	add_subwindow(frame_rate = new FrameRateSelection(x1, y, this,
+		&new_edl->session->frame_rate));
 	y += frame_rate->get_h() + 5;
 
 	x1 = x;
@@ -478,43 +476,6 @@ void NewVTracksTumbler::handle_down_event()
 	nwindow->new_edl->session->video_tracks--;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
-}
-
-
-NewFrameRate::NewFrameRate(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 90, 1, text)
-{
-	this->nwindow = nwindow;
-}
-
-int NewFrameRate::handle_event()
-{
-	nwindow->new_edl->session->frame_rate = Units::atoframerate(get_text());
-	return 1;
-}
-
-
-FrameRatePulldown::FrameRatePulldown(MWindow *mwindow, 
-	BC_TextBox *output, 
-	int x, 
-	int y)
- : BC_ListBox(x,
-	y,
-	100,
-	200,
-	&mwindow->theme->frame_rates,
-	LISTBOX_POPUP)
-{
-	this->mwindow = mwindow;
-	this->output = output;
-}
-
-int FrameRatePulldown::handle_event()
-{
-	char *text = get_selection(0, 0)->get_text();
-	output->update(text);
-	output->handle_event();
-	return 1;
 }
 
 

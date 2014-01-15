@@ -327,9 +327,9 @@ void SetFormatWindow::create_objects()
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y,
 		_("Samplerate:")));
-	add_subwindow(sample_rate = new Selection(mwindow->theme->setformat_x2,
-		y, this, mwindow->theme->sample_rates,
-		&thread->new_settings->session->sample_rate));
+	add_subwindow(sample_rate = new SampleRateSelection(
+		mwindow->theme->setformat_x2, y,
+		this, &thread->new_settings->session->sample_rate));
 	sample_rate->update(thread->new_settings->session->sample_rate);
 
 	y += mwindow->theme->setformat_margin;
@@ -368,13 +368,10 @@ void SetFormatWindow::create_objects()
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
 		_("Frame rate:")));
-	add_subwindow(frame_rate = new SetFrameRateTextBox(thread, 
-		mwindow->theme->setformat_x4, 
-		y));
-	add_subwindow(new FrameRatePulldown(mwindow, 
-		frame_rate, 
-		mwindow->theme->setformat_x4 + frame_rate->get_w(), 
-		y));
+	add_subwindow(frame_rate = new FrameRateSelection(
+		mwindow->theme->setformat_x4, y, this,
+		&thread->new_settings->session->frame_rate));
+	frame_rate->update(thread->new_settings->session->frame_rate);
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
@@ -714,19 +711,6 @@ int SetChannelsCanvas::cursor_motion_event()
 		return 1;
 	}
 	return 0;
-}
-
-
-SetFrameRateTextBox::SetFrameRateTextBox(SetFormatThread *thread, int x, int y)
- : BC_TextBox(x, y, 100, 1, (float)thread->new_settings->session->frame_rate)
-{
-	this->thread = thread;
-}
-
-int SetFrameRateTextBox::handle_event()
-{
-	thread->new_settings->session->frame_rate = Units::atoframerate(get_text());
-	return 1;
 }
 
 

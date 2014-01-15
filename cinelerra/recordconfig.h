@@ -85,7 +85,7 @@ public:
 // Dimensions of captured frame
 	int w, h;
 // Frame rate of captured frames
-	float in_framerate;
+	double in_framerate;
 };
 
 

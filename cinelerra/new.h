@@ -189,30 +189,6 @@ public:
 	NewWindow *nwindow;
 };
 
-
-class NewFrameRate : public BC_TextBox
-{
-public:
-	NewFrameRate(NewWindow *nwindow, const char *text, int x, int y);
-
-	int handle_event();
-
-	NewWindow *nwindow;
-};
-
-
-class FrameRatePulldown : public BC_ListBox
-{
-public:
-	FrameRatePulldown(MWindow *mwindow, BC_TextBox *output, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	BC_TextBox *output;
-};
-
-
 class FrameSizePulldown : public BC_ListBox
 {
 public:

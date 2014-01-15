@@ -117,14 +117,6 @@ private:
 };
 
 
-class SetFrameRateTextBox : public BC_TextBox
-{
-public:
-	SetFrameRateTextBox(SetFormatThread *thread, int x, int y);
-	int handle_event();
-	SetFormatThread *thread;
-};
-
 class ScaleSizeText : public BC_TextBox
 {
 public:
@@ -220,7 +212,7 @@ public:
 	ScaleAspectText *aspect_h;
 	Selection *sample_rate;
 	SetChannelsTextBox *channels;
-	SetFrameRateTextBox *frame_rate;
+	FrameRateSelection *frame_rate;
 	ColormodelPulldown *color_model;
 	ScaleAspectAuto *auto_aspect;
 	InterlacemodePulldown *interlace_pulldown;

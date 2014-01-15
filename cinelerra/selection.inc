@@ -23,5 +23,7 @@
 #define SELECTION_INC
 
 class Selection;
+class SampleRateSelection;
+class FrameRateSelection;
 
 #endif

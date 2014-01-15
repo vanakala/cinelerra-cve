@@ -128,13 +128,6 @@ public:
 	AssetEditWindow *fwindow;
 };
 
-class AssetEditFRate : public BC_TextBox
-{
-public:
-	AssetEditFRate(AssetEditWindow *fwindow, char *text, int x, int y);
-	int handle_event();
-	AssetEditWindow *fwindow;
-};
 
 class Interlaceautofix : public BC_CheckBox
 {

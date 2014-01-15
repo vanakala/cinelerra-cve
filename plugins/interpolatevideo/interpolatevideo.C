@@ -39,7 +39,7 @@
 #include "language.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
-#include "theme.h"
+#include "selection.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -62,29 +62,19 @@ public:
 };
 
 
-class InterpolateVideoRate : public BC_TextBox
+class InterpolateVideoRate : public FrameRateSelection
 {
 public:
 	InterpolateVideoRate(InterpolateVideo *plugin, 
 		InterpolateVideoWindow *gui, 
 		int x, 
 		int y);
+
 	int handle_event();
+
 	InterpolateVideo *plugin;
-	InterpolateVideoWindow *gui;
 };
 
-class InterpolateVideoRateMenu : public BC_ListBox
-{
-public:
-	InterpolateVideoRateMenu(InterpolateVideo *plugin, 
-		InterpolateVideoWindow *gui, 
-		int x, 
-		int y);
-	int handle_event();
-	InterpolateVideo *plugin;
-	InterpolateVideoWindow *gui;
-};
 
 class InterpolateVideoKeyframes : public BC_CheckBox
 {
@@ -110,7 +100,9 @@ public:
 	ArrayList<BC_ListBoxItem*> frame_rates;
 
 	InterpolateVideoRate *rate;
+/* Pole
 	InterpolateVideoRateMenu *rate_menu;
+	*/
 	InterpolateVideoKeyframes *keyframes;
 	PLUGIN_GUI_CLASS_MEMBERS
 };
@@ -184,10 +176,7 @@ InterpolateVideoWindow::InterpolateVideoWindow(InterpolateVideo *plugin, int x, 
 		this, 
 		x, 
 		y));
-	add_subwindow(rate_menu = new InterpolateVideoRateMenu(plugin, 
-		this, 
-		x + rate->get_w() + 5, 
-		y));
+	rate->update(plugin->config.input_rate);
 	y += 30;
 	add_subwindow(keyframes = new InterpolateVideoKeyframes(plugin,
 		this,
@@ -203,7 +192,7 @@ InterpolateVideoWindow::~InterpolateVideoWindow()
 
 void InterpolateVideoWindow::update()
 {
-	rate->update((float)plugin->config.input_rate);
+	rate->update(plugin->config.input_rate);
 	keyframes->update(plugin->config.use_keyframes);
 	update_enabled();
 }
@@ -222,49 +211,21 @@ void InterpolateVideoWindow::update_enabled()
 
 
 InterpolateVideoRate::InterpolateVideoRate(InterpolateVideo *plugin, 
-	InterpolateVideoWindow *gui, 
-	int x, 
+	InterpolateVideoWindow *gui,
+	int x,
 	int y)
- : BC_TextBox(x, 
-	y, 
-	90,
-	1,
-	(float)plugin->config.input_rate)
+ : FrameRateSelection(x, y, gui, &plugin->config.input_rate)
 {
 	this->plugin = plugin;
-	this->gui = gui;
 }
 
 int InterpolateVideoRate::handle_event()
 {
-	plugin->config.input_rate = Units::atoframerate(get_text());
+	int result;
+
+	result = FrameRateSelection::handle_event();
 	plugin->send_configure_change();
-	return 1;
-}
-
-
-InterpolateVideoRateMenu::InterpolateVideoRateMenu(InterpolateVideo *plugin, 
-	InterpolateVideoWindow *gui, 
-	int x, 
-	int y)
- : BC_ListBox(x,
-	y,
-	100,
-	200,
-	&plugin->get_theme()->frame_rates,
-	LISTBOX_POPUP)
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int InterpolateVideoRateMenu::handle_event()
-{
-	char *text = get_selection(0, 0)->get_text();
-	plugin->config.input_rate = atof(text);
-	gui->rate->update(text);
-	plugin->send_configure_change();
-	return 1;
+	return result;
 }
 
 
