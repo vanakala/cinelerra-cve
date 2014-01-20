@@ -93,7 +93,6 @@ Theme::~Theme()
 	flush_images();
 
 	aspect_ratios.remove_all_objects();
-	frame_sizes.remove_all_objects();
 	zoom_values.remove_all_objects();
 }
 
@@ -136,20 +135,6 @@ void Theme::build_menus()
 	aspect_ratios.append(new BC_ListBoxItem("2.30:1"));
 	aspect_ratios.append(new BC_ListBoxItem("2.35:1"));
 	aspect_ratios.append(new BC_ListBoxItem("2.66:1"));
-
-	frame_sizes.append(new BC_ListBoxItem("160x120"));
-	frame_sizes.append(new BC_ListBoxItem("240x180"));
-	frame_sizes.append(new BC_ListBoxItem("320x240"));
-	frame_sizes.append(new BC_ListBoxItem("360x240"));
-	frame_sizes.append(new BC_ListBoxItem("400x300"));
-	frame_sizes.append(new BC_ListBoxItem("512x384"));
-	frame_sizes.append(new BC_ListBoxItem("640x480"));
-	frame_sizes.append(new BC_ListBoxItem("720x480"));
-	frame_sizes.append(new BC_ListBoxItem("720x576"));
-	frame_sizes.append(new BC_ListBoxItem("1280x720"));
-	frame_sizes.append(new BC_ListBoxItem("960x1080"));
-	frame_sizes.append(new BC_ListBoxItem("1920x1080"));
-	frame_sizes.append(new BC_ListBoxItem("1920x1088"));
 
 	char string[BCTEXTLEN];
 	for(int i = 1; i < 17; i++)

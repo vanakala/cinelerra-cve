@@ -42,6 +42,13 @@ struct selection_double
 	double value;
 };
 
+struct selection_2int
+{
+	const char *text;
+	int value1;
+	int value2;
+};
+
 class Selection : public BC_TextBox
 {
 public:
@@ -49,13 +56,20 @@ public:
 		const struct selection_int items[], int *value);
 	Selection(int x, int y, BC_WindowBase *base,
 		const struct selection_double items[], double *value);
+	Selection(int x1, int y1, int x2, int y2, BC_WindowBase *base,
+		const struct selection_2int items[],
+		int *value1, int *value2, int separator = 0);
 
 	int handle_event();
 
 	const struct selection_double *current_double;
+
+protected:
+	BC_TextBox *firstbox;
 private:
 	BC_PopupMenu *init_objects(int x, int y, BC_WindowBase *base);
 	int *intvalue;
+	int *intvalue2;
 	double *doublevalue;
 };
 
@@ -74,12 +88,17 @@ class SelectionItem : public BC_MenuItem
 public:
 	SelectionItem(const struct selection_int *item, Selection *output);
 	SelectionItem(const struct selection_double *item, Selection *output);
+	SelectionItem(const struct selection_2int *item,
+		BC_TextBox *output2, Selection *output1);
 
 	int handle_event();
 private:
 	const struct selection_int *intitem;
 	const struct selection_double *doubleitem;
+	const struct selection_2int *int2item;
+
 	Selection *output;
+	BC_TextBox *output2;
 };
 
 
@@ -100,6 +119,19 @@ public:
 
 private:
 	static const struct selection_double frame_rates[];
+};
+
+class FrameSizeSelection : public Selection
+{
+public:
+	FrameSizeSelection(int x1, int y1, int x2, int y2,
+		BC_WindowBase *base, int *value1, int *value2);
+
+	void update(int value1, int value2);
+	int calculate_width();
+
+private:
+	static const struct selection_2int frame_sizes[];
 };
 
 #endif

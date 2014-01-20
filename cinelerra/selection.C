@@ -63,6 +63,24 @@ const struct selection_double FrameRateSelection::frame_rates[] =
 	{ 0, 0 }
 };
 
+const struct selection_2int FrameSizeSelection::frame_sizes[] =
+{
+	{ "160 x 120", 160, 120 },
+	{ "240 x 180", 240, 180 },
+	{ "320 x 240", 320, 240 },
+	{ "360 x 240", 360, 240 },
+	{ "400 x 300", 400, 300 },
+	{ "512 x 384", 512, 384 },
+	{ "640 x 480", 640, 480 },
+	{ "720 x 480", 720, 480 },
+	{ "720 x 576", 720, 576 },
+	{ "1280 x 720", 1280, 720 },
+	{ "960 x 1080", 960, 1080 },
+	{ "1920 x 1080", 1920, 1080 },
+	{ "1920 x 1088", 1920, 1088 },
+	{ 0, 0, 0 }
+};
+
 SampleRateSelection::SampleRateSelection(int x, int y, BC_WindowBase *base, int *value)
  : Selection(x, y , base, sample_rates, value)
 {
@@ -73,9 +91,26 @@ FrameRateSelection::FrameRateSelection(int x, int y, BC_WindowBase *base, double
 {
 }
 
+FrameSizeSelection::FrameSizeSelection(int x1, int y1, int x2, int y2,
+    BC_WindowBase *base, int *value1, int *value2)
+ : Selection(x1, y1, x2, y2, base, frame_sizes, value1, value2, 'x')
+{
+}
+
+void FrameSizeSelection::update(int value1, int value2)
+{
+	firstbox->update(value1);
+	BC_TextBox::update(value2);
+}
+
+int FrameSizeSelection::calculate_width()
+{
+	return SELECTION_TB_WIDTH + get_resources()->listbox_button[0]->get_w();
+}
+
 Selection::Selection(int x, int y, BC_WindowBase *base,
 	const struct selection_int items[], int *value)
- : BC_TextBox(x, y, 90, 1, "")
+ : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, "")
 {
 	BC_PopupMenu *popupmenu;
 
@@ -88,7 +123,7 @@ Selection::Selection(int x, int y, BC_WindowBase *base,
 
 Selection::Selection(int x, int y, BC_WindowBase *base,
 	const struct selection_double items[], double *value)
- : BC_TextBox(x, y, 90, 1, "")
+ : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, "")
 {
 	BC_PopupMenu *popupmenu;
 
@@ -99,6 +134,37 @@ Selection::Selection(int x, int y, BC_WindowBase *base,
 
 	for(int i = 0; items[i].text; i++)
 		popupmenu->add_item(new SelectionItem(&items[i], this));
+}
+
+Selection::Selection(int x1, int y1, int x2, int y2, BC_WindowBase *base,
+	const struct selection_2int items[], int *value1, int *value2, int separator)
+ : BC_TextBox(x2, y2, SELECTION_TB_WIDTH, 1, "")
+{
+	BC_PopupMenu *popupmenu;
+
+	base->add_subwindow(firstbox = new BC_TextBox(x1, y1, SELECTION_TB_WIDTH, 1, ""));
+	popupmenu = init_objects(x2, y2, base);
+
+	intvalue = value2;
+	intvalue2 = value1;
+
+	if(separator && y1 == y2)
+	{
+		char stxt[2];
+		int tw;
+
+		stxt[0] = separator;
+		stxt[1] = 0;
+		tw = base->get_text_width(MEDIUMFONT, stxt, 1);
+
+		int vh = (x2 - x1 - SELECTION_TB_WIDTH - tw) / 2;
+
+		if(vh > 0)
+			base->add_subwindow(new BC_Title(x1 + SELECTION_TB_WIDTH + vh, y1, stxt));
+	}
+
+	for(int i = 0; items[i].text; i++)
+		popupmenu->add_item(new SelectionItem(&items[i], firstbox, this));
 }
 
 BC_PopupMenu *Selection::init_objects(int x, int y, BC_WindowBase *base)
@@ -112,6 +178,7 @@ BC_PopupMenu *Selection::init_objects(int x, int y, BC_WindowBase *base)
 		get_resources()->listbox_button));
 
 	intvalue = 0;
+	intvalue2 = 0;
 	doublevalue = 0;
 	current_double = 0;
 	return popupmenu;
@@ -121,6 +188,8 @@ int Selection::handle_event()
 {
 	if(intvalue)
 		*intvalue = atoi(get_text());
+	if(intvalue2)
+		*intvalue2 = atoi(firstbox->get_text());
 	if(doublevalue)
 	{
 		if(current_double)
@@ -143,10 +212,7 @@ SelectionButton::SelectionButton(int x, int y, BC_PopupMenu *popupmenu, VFrame *
 
 int SelectionButton::handle_event()
 {
-	popupmenu->activate_menu();
-	// simulate release - cursor is outside the popup and
-	// popup does not get the first release event
-	popupmenu->button_release_event();
+	popupmenu->activate_menu(1);
 	return 1;
 }
 
@@ -156,6 +222,7 @@ SelectionItem::SelectionItem(const struct selection_int *item, Selection *output
 {
 	this->output = output;
 	intitem = item;
+	int2item = 0;
 	doubleitem = 0;
 }
 
@@ -164,7 +231,19 @@ SelectionItem::SelectionItem(const struct selection_double *item, Selection *out
 {
 	this->output = output;
 	intitem = 0;
+	int2item = 0;
 	doubleitem = item;
+}
+
+SelectionItem::SelectionItem(const struct selection_2int *item,
+	BC_TextBox *output2, Selection *output1)
+ : BC_MenuItem(item->text)
+{
+	this->output = output1;
+	this->output2 = output2;
+	int2item = item;
+	intitem = 0;
+	doubleitem = 0;
 }
 
 int SelectionItem::handle_event()
@@ -175,6 +254,11 @@ int SelectionItem::handle_event()
 	{
 		output->update(doubleitem->text);
 		output->current_double = doubleitem;
+	}
+	if(int2item)
+	{
+		output->update(int2item->value2);
+		output2->update(int2item->value1);
 	}
 	output->handle_event();
 	return 1;

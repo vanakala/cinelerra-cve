@@ -191,9 +191,8 @@ void SetFormatThread::update()
 
 	constrain_ratio = 0;
 	dimension[0] = new_settings->session->output_w;
-	window->dimension[0]->update((int64_t)dimension[0]);
 	dimension[1] = new_settings->session->output_h;
-	window->dimension[1]->update((int64_t)dimension[1]);
+	window->framesize_selection->update(dimension[0], dimension[1]);
 	ratio[0] = (float)dimension[0] / orig_dimension[0];
 	window->ratio[0]->update(ratio[0]);
 	ratio[1] = (float)dimension[1] / orig_dimension[1];
@@ -234,10 +233,7 @@ void SetFormatThread::update_window()
 			ratio[modified_item] = (float)dimension[modified_item] / orig_dimension[modified_item];
 
 		if(ratio_modified && !constrain_ratio)
-		{
 			dimension[modified_item] = (int)(orig_dimension[modified_item] * ratio[modified_item]);
-			window->dimension[modified_item]->update((int64_t)dimension[modified_item]);
-		}
 
 		for(i = 0; i < 2; i++)
 		{
@@ -254,10 +250,10 @@ void SetFormatThread::update_window()
 				if(constrain_ratio) 
 				{
 					dimension[i] = (int)(orig_dimension[i] * ratio[modified_item]);
-					window->dimension[i]->update((int64_t)dimension[i]);
 				}
 			}
 		}
+		window->framesize_selection->update(dimension[0], dimension[1]);
 	}
 
 	update_aspect();
@@ -378,33 +374,24 @@ void SetFormatWindow::create_objects()
 		y, 
 		_("Canvas size:")));
 
-	y += mwindow->theme->setformat_margin;
+	int y0;
+	y0 = y += mwindow->theme->setformat_margin;
 	add_subwindow(title = new BC_Title(mwindow->theme->setformat_x3, y, _("Width:")));
-	add_subwindow(dimension[0] = new ScaleSizeText(mwindow->theme->setformat_x4, 
-		y, 
-		thread, 
-		&(thread->dimension[0])));
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, y, _("Height:")));
-	add_subwindow(dimension[1] = new ScaleSizeText(mwindow->theme->setformat_x4, 
-		y, 
-		thread, 
-		&(thread->dimension[1])));
 
-	x = mwindow->theme->setformat_x4 + dimension[0]->get_w();
-	FrameSizePulldown *pulldown;
-	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
-		dimension[0], 
-		dimension[1], 
-		x, 
-		y - mwindow->theme->setformat_margin));
+	add_subwindow(framesize_selection = new FrameSizeSelection(
+		mwindow->theme->setformat_x4, y0,
+		mwindow->theme->setformat_x4, y,
+		this, &(thread->dimension[0]), &(thread->dimension[1])));
+	framesize_selection->update(thread->dimension[0], thread->dimension[1]);
 
 	add_subwindow(new FormatSwapExtents(mwindow, 
 		thread, 
 		this, 
-		x + pulldown->get_w() + 5,
-		y - mwindow->theme->setformat_margin));
+		mwindow->theme->setformat_x4 + framesize_selection->calculate_width() + 5,
+		y));
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
@@ -714,30 +701,6 @@ int SetChannelsCanvas::cursor_motion_event()
 }
 
 
-ScaleSizeText::ScaleSizeText(int x, int y, SetFormatThread *thread, int *output)
- : BC_TextBox(x, y, 100, 1, *output)
-{ 
-	this->thread = thread; 
-	this->output = output; 
-}
-
-ScaleSizeText::~ScaleSizeText()
-{
-}
-
-int ScaleSizeText::handle_event()
-{
-	*output = atol(get_text());
-	*output /= 2;
-	*output *= 2;
-	if(*output <= 0) *output = 2;
-	if(*output > 10000) *output = 10000;
-	*output *= -1;
-	thread->update_window();
-}
-
-
-
 ScaleRatioText::ScaleRatioText(int x, 
 	int y, 
 	SetFormatThread *thread, 
@@ -829,8 +792,7 @@ int FormatSwapExtents::handle_event()
 	int w = thread->dimension[0];
 	int h = thread->dimension[1];
 	thread->dimension[0] = -h;
-	gui->dimension[0]->update((int64_t)h);
-	gui->dimension[1]->update((int64_t)w);
+	gui->framesize_selection->update(w, h);
 	thread->update_window();
 	thread->dimension[1] = -w;
 	thread->update_window();

@@ -275,22 +275,15 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Canvas size:")));
+
 	x1 += 100;
-	add_subwindow(output_w_text = new NewOutputW(this, x1, y));
-	x1 += output_w_text->get_w() + 2;
-	add_subwindow(new BC_Title(x1, y, "x"));
-	x1 += 10;
-	add_subwindow(output_h_text = new NewOutputH(this, x1, y));
-	x1 += output_h_text->get_w();
-	FrameSizePulldown *pulldown;
-	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
-		output_w_text, 
-		output_h_text, 
-		x1, 
-		y));
-	x1 += pulldown->get_w() + 5;
+	add_subwindow(framesize_selection = new FrameSizeSelection(x1, y,
+		x1 + SELECTION_TB_WIDTH + 10, y,
+		this, &new_edl->session->output_w, &new_edl->session->output_h));
+
+	x1 += framesize_selection->calculate_width() + SELECTION_TB_WIDTH + 5;
 	add_subwindow(new NewSwapExtents(mwindow, this, x1, y));
-	y += output_h_text->get_h() + 5;
+	y += framesize_selection->get_h() + 5;
 
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Aspect ratio:")));
@@ -352,8 +345,8 @@ void NewWindow::update()
 	sample_rate->update(new_edl->session->sample_rate);
 	vtracks->update((int64_t)new_edl->session->video_tracks);
 	frame_rate->update((float)new_edl->session->frame_rate);
-	output_w_text->update((int64_t)new_edl->session->output_w);
-	output_h_text->update((int64_t)new_edl->session->output_h);
+	framesize_selection->update(new_edl->session->output_w,
+		new_edl->session->output_h);
 	aspect_w_text->update((float)new_edl->session->aspect_w);
 	aspect_h_text->update((float)new_edl->session->aspect_h);
 	interlace_pulldown->update(new_edl->session->interlace_mode);
@@ -476,77 +469,6 @@ void NewVTracksTumbler::handle_down_event()
 	nwindow->new_edl->session->video_tracks--;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
-}
-
-
-FrameSizePulldown::FrameSizePulldown(MWindow *mwindow, 
-		BC_TextBox *output_w, 
-		BC_TextBox *output_h, 
-		int x, 
-		int y)
- : BC_ListBox(x,
-	y,
-	100,
-	200,
-	&mwindow->theme->frame_sizes,
-	LISTBOX_POPUP)
-{
-	this->mwindow = mwindow;
-	this->output_w = output_w;
-	this->output_h = output_h;
-}
-
-
-int FrameSizePulldown::handle_event()
-{
-	char *text = get_selection(0, 0)->get_text();
-	char string[BCTEXTLEN];
-	int64_t w, h;
-	char *ptr;
-
-	strcpy(string, text);
-	ptr = strrchr(string, 'x');
-	if(ptr)
-	{
-		ptr++;
-		h = atol(ptr);
-
-		*--ptr = 0;
-		w = atol(string);
-		output_w->update(w);
-		output_h->update(h);
-		output_w->handle_event();
-		output_h->handle_event();
-	}
-	return 1;
-}
-
-
-NewOutputW::NewOutputW(NewWindow *nwindow, int x, int y)
- : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->output_w)
-{
-	this->nwindow = nwindow;
-}
-
-int NewOutputW::handle_event()
-{
-	nwindow->new_edl->session->output_w = MAX(1,atol(get_text()));
-	nwindow->new_thread->update_aspect();
-	return 1;
-}
-
-
-NewOutputH::NewOutputH(NewWindow *nwindow, int x, int y)
- : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->output_h)
-{
-	this->nwindow = nwindow;
-}
-
-int NewOutputH::handle_event()
-{
-	nwindow->new_edl->session->output_h = MAX(1, atol(get_text()));
-	nwindow->new_thread->update_aspect();
-	return 1;
 }
 
 
@@ -737,8 +659,7 @@ int NewSwapExtents::handle_event()
 	int h = gui->new_edl->session->output_h;
 	gui->new_edl->session->output_w = h;
 	gui->new_edl->session->output_h = w;
-	gui->output_w_text->update((int64_t)h);
-	gui->output_h_text->update((int64_t)w);
+	gui->framesize_selection->update(h, w);
 	gui->new_thread->update_aspect();
 	return 1;
 }

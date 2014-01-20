@@ -22,8 +22,11 @@
 #ifndef SELECTION_INC
 #define SELECTION_INC
 
+#define SELECTION_TB_WIDTH 90
+
 class Selection;
 class SampleRateSelection;
 class FrameRateSelection;
+class FrameSizeSelection;
 
 #endif

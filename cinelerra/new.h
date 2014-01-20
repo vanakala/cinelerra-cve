@@ -30,6 +30,7 @@
 #include "bchash.inc"
 #include "formatpresets.h"
 #include "mwindow.inc"
+#include "selection.inc"
 #include "thread.h"
 
 class NewThread;
@@ -97,7 +98,7 @@ public:
 	BC_TextBox *vchannels;
 	BC_TextBox *frame_rate;
 	BC_TextBox *aspect_w_text, *aspect_h_text;
-	BC_TextBox *output_w_text, *output_h_text;
+	FrameSizeSelection *framesize_selection;
 	InterlacemodePulldown *interlace_pulldown;
 	ColormodelPulldown *color_model;
 	NewPresets *format_presets;
@@ -185,44 +186,6 @@ public:
 
 	void handle_up_event();
 	void handle_down_event();
-
-	NewWindow *nwindow;
-};
-
-class FrameSizePulldown : public BC_ListBox
-{
-public:
-	FrameSizePulldown(MWindow *mwindow, 
-		BC_TextBox *output_w, 
-		BC_TextBox *output_h, 
-		int x, 
-		int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	BC_TextBox *output_w;
-	BC_TextBox *output_h;
-};
-
-
-class NewOutputW : public BC_TextBox
-{
-public:
-	NewOutputW(NewWindow *nwindow, int x, int y);
-
-	int handle_event();
-
-	NewWindow *nwindow;
-};
-
-
-class NewOutputH : public BC_TextBox
-{
-public:
-	NewOutputH(NewWindow *nwindow, int x, int y);
-
-	int handle_event();
 
 	NewWindow *nwindow;
 };

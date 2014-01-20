@@ -174,17 +174,14 @@ int RecordPrefs::create_objects()
 	BC_TextBox *w_text, *h_text;
 	add_subwindow(new BC_Title(x, y, _("Size of captured frame:")));
 	x += 170;
-	add_subwindow(w_text = new RecordW(pwindow, x, y));
-	x += w_text->get_w() + 2;
-	add_subwindow(new BC_Title(x, y, "x"));
-	x += 10;
-	add_subwindow(h_text = new RecordH(pwindow, x, y));
-	x += h_text->get_w();
-	add_subwindow(new FrameSizePulldown(mwindow, 
-		w_text, 
-		h_text, 
-		x, 
-		y));
+
+	FrameSizeSelection *fselector;
+	add_subwindow(fselector = new FrameSizeSelection(x, y,
+		x + SELECTION_TB_WIDTH + 12, y, this,
+		&pwindow->thread->edl->session->vconfig_in->w,
+		&pwindow->thread->edl->session->vconfig_in->h));
+	fselector->update(pwindow->thread->edl->session->vconfig_in->w,
+		pwindow->thread->edl->session->vconfig_in->h);
 
 	y += 30;
 	x = 5;
@@ -227,30 +224,6 @@ int RecordWriteLength::handle_event()
 { 
 	pwindow->thread->edl->session->record_write_length = atol(get_text());
 	return 1; 
-}
-
-RecordW::RecordW(PreferencesWindow *pwindow, int x, int y)
- : BC_TextBox(x, y, 70, 1, pwindow->thread->edl->session->vconfig_in->w)
-{
-	this->pwindow = pwindow;
-}
-
-int RecordW::handle_event()
-{
-	pwindow->thread->edl->session->vconfig_in->w = atol(get_text());
-	return 1;
-}
-
-RecordH::RecordH(PreferencesWindow *pwindow, int x, int y)
- : BC_TextBox(x, y, 70, 1, pwindow->thread->edl->session->vconfig_in->h)
-{
-	this->pwindow = pwindow;
-}
-
-int RecordH::handle_event()
-{
-	pwindow->thread->edl->session->vconfig_in->h = atol(get_text());
-	return 1;
 }
 
 

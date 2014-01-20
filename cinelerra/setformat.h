@@ -117,17 +117,6 @@ private:
 };
 
 
-class ScaleSizeText : public BC_TextBox
-{
-public:
-	ScaleSizeText(int x, int y, SetFormatThread *thread, int *output);
-	~ScaleSizeText();
-	int handle_event();
-	SetFormatThread *thread;
-	int *output;
-};
-
-
 class ScaleRatioText : public BC_TextBox
 {
 public:
@@ -202,8 +191,8 @@ public:
 	MWindow *mwindow;
 	SetFormatThread *thread;
 	SetChannelsCanvas *canvas;
-// Screen size width, height
-	ScaleSizeText* dimension[2];
+
+	FrameSizeSelection *framesize_selection;
 	SetFormatPresets *presets;
 // Size ratio width, height
 	ScaleRatioText* ratio[2];

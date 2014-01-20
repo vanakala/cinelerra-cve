@@ -29,7 +29,7 @@
 #include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
-#include "thread.h"
+#include "selection.inc"
 #include "track.inc"
 
 
@@ -56,37 +56,12 @@ public:
 
 class ResizeTrackWindow;
 
-
-class ResizeTrackWidth : public BC_TextBox
-{
-public:
-	ResizeTrackWidth(ResizeTrackWindow *gui, 
-		ResizeTrackThread *thread,
-		int x,
-		int y);
-	int handle_event();
-	ResizeTrackWindow *gui;
-	ResizeTrackThread *thread;
-};
-
 class ResizeTrackSwap : public BC_Button
 {
 public:
 	ResizeTrackSwap(ResizeTrackWindow *gui, 
 		ResizeTrackThread *thread, 
 		int x, 
-		int y);
-	int handle_event();
-	ResizeTrackWindow *gui;
-	ResizeTrackThread *thread;
-};
-
-class ResizeTrackHeight : public BC_TextBox
-{
-public:
-	ResizeTrackHeight(ResizeTrackWindow *gui, 
-		ResizeTrackThread *thread,
-		int x,
 		int y);
 	int handle_event();
 	ResizeTrackWindow *gui;
@@ -135,8 +110,7 @@ public:
 
 	MWindow *mwindow;
 	ResizeTrackThread *thread;
-	ResizeTrackWidth *w;
-	ResizeTrackHeight *h;
+	FrameSizeSelection *framesize_selection;
 	ResizeTrackScaleW *w_scale;
 	ResizeTrackScaleH *h_scale;
 };

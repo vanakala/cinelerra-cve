@@ -28,6 +28,7 @@
 #include "mwindowgui.h"
 #include "new.h"
 #include "resizetrackthread.h"
+#include "selection.h"
 #include "theme.h"
 #include "track.h"
 #include "tracks.h"
@@ -131,27 +132,14 @@ void ResizeTrackWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Size:")));
 	x += 50;
-	add_subwindow(w = new ResizeTrackWidth(this, 
-		thread,
-		x,
-		y));
-	x += w->get_w() + 10;
-	add_subwindow(new BC_Title(x, y, _("x")));
-	x += 15;
-	add_subwindow(h = new ResizeTrackHeight(this, 
-		thread,
-		x,
-		y));
-	x += h->get_w() + 5;
-	FrameSizePulldown *pulldown;
-	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
-		w, 
-		h, 
-		x, 
-		y));
-	x += pulldown->get_w() + 5;
-	add_subwindow(new ResizeTrackSwap(this, thread, x, y));
 
+	add_subwindow(framesize_selection = new FrameSizeSelection(x, y,
+		x + SELECTION_TB_WIDTH + 25, y,
+		this, &thread->w, &thread->h));
+	framesize_selection->update(thread->w, thread->h);
+
+	x += SELECTION_TB_WIDTH + 25 + framesize_selection->calculate_width();
+	add_subwindow(new ResizeTrackSwap(this, thread, x, y));
 
 	y += 30;
 	x = 10;
@@ -183,9 +171,8 @@ void ResizeTrackWindow::update(int changed_scale,
 	if(changed_scale || changed_all)
 	{
 		thread->w = (int)(thread->w1 * thread->w_scale);
-		w->update((int64_t)thread->w);
 		thread->h = (int)(thread->h1 * thread->h_scale);
-		h->update((int64_t)thread->h);
+		framesize_selection->update(thread->w, thread->h);
 	}
 	else
 	if(changed_size || changed_all)
@@ -216,46 +203,7 @@ int ResizeTrackSwap::handle_event()
 	int h = thread->h;
 	thread->w = h;
 	thread->h = w;
-	gui->w->update((int64_t)h);
-	gui->h->update((int64_t)w);
-	gui->update(0, 1, 0);
-	return 1;
-}
-
-
-
-
-
-
-ResizeTrackWidth::ResizeTrackWidth(ResizeTrackWindow *gui, 
-	ResizeTrackThread *thread,
-	int x,
-	int y)
- : BC_TextBox(x, y, 90, 1, thread->w)
-{
-	this->gui = gui;
-	this->thread = thread;
-}
-
-int ResizeTrackWidth::handle_event()
-{
-	thread->w = atol(get_text());
-	gui->update(0, 1, 0);
-	return 1;
-}
-
-ResizeTrackHeight::ResizeTrackHeight(ResizeTrackWindow *gui, 
-	ResizeTrackThread *thread,
-	int x,
-	int y)
- : BC_TextBox(x, y, 90, 1, thread->h)
-{
-	this->gui = gui;
-	this->thread = thread;
-}
-int ResizeTrackHeight::handle_event()
-{
-	thread->h = atol(get_text());
+	gui->framesize_selection->update(thread->w, thread->h);
 	gui->update(0, 1, 0);
 	return 1;
 }

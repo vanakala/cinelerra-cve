@@ -102,22 +102,6 @@ public:
 	BC_TextBox *text;
 };
 
-class RecordW : public BC_TextBox
-{
-public:
-	RecordW(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-class RecordH : public BC_TextBox
-{
-public:
-	RecordH(PreferencesWindow *pwindow, int x, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
 
 class RecordChannels : public BC_TumbleTextBox
 {
