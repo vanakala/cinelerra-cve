@@ -65,7 +65,7 @@ public:
 	void draw_title();
 	void reposition_window(int x, int y);
 	void deactivate();
-	void activate_menu();
+	void activate_menu(int init_releases = 0);
 	void deactivate_menu();
 	void focus_out_event();
 	void repeat_event(int duration);
