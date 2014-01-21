@@ -115,17 +115,6 @@ public:
 };
 
 
-class NewSwapExtents : public BC_Button
-{
-public:
-	NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y);
-
-	int handle_event();
-	MWindow *mwindow;
-	NewWindow *gui;
-};
-
-
 class NewATracks : public BC_TextBox
 {
 public:

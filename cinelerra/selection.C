@@ -27,10 +27,13 @@
 #include "bcwindow.h"
 #include "bcwindowbase.h"
 #include "bcresources.h"
+#include "language.h"
 #include "mwindow.h"
 #include "theme.h"
 
 #include <stdlib.h>
+
+extern Theme *theme_global;
 
 const struct selection_int SampleRateSelection::sample_rates[] =
 {
@@ -92,15 +95,26 @@ FrameRateSelection::FrameRateSelection(int x, int y, BC_WindowBase *base, double
 }
 
 FrameSizeSelection::FrameSizeSelection(int x1, int y1, int x2, int y2,
-    BC_WindowBase *base, int *value1, int *value2)
+    BC_WindowBase *base, int *value1, int *value2, int swapvalues)
  : Selection(x1, y1, x2, y2, base, frame_sizes, value1, value2, 'x')
 {
+	if(swapvalues)
+	{
+		int x = x2 + SELECTION_TB_WIDTH +
+			get_resources()->listbox_button[0]->get_w();
+		base->add_subwindow(new SwapValues(x, y2, this, value1, value2));
+	}
 }
 
 void FrameSizeSelection::update(int value1, int value2)
 {
 	firstbox->update(value1);
 	BC_TextBox::update(value2);
+}
+
+void FrameSizeSelection::handle_swapvalues(int value1, int value2)
+{
+	update(value1, value2);
 }
 
 int FrameSizeSelection::calculate_width()
@@ -262,4 +276,23 @@ int SelectionItem::handle_event()
 	}
 	output->handle_event();
 	return 1;
+}
+
+
+SwapValues::SwapValues(int x, int y, FrameSizeSelection *output, int *value1, int *value2)
+ : BC_Button(x, y, theme_global->get_image_set("swap_extents"))
+{
+	this->value1 = value1;
+	this->value2 = value2;
+	this->output = output;
+	set_tooltip(_("Swap dimensions"));
+}
+
+int SwapValues::handle_event()
+{
+	int v = *value1;
+
+	*value1 = *value2;
+	*value2 = v;
+	output->handle_swapvalues(*value1, *value2);
 }

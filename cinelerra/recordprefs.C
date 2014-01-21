@@ -179,7 +179,7 @@ int RecordPrefs::create_objects()
 	add_subwindow(fselector = new FrameSizeSelection(x, y,
 		x + SELECTION_TB_WIDTH + 12, y, this,
 		&pwindow->thread->edl->session->vconfig_in->w,
-		&pwindow->thread->edl->session->vconfig_in->h));
+		&pwindow->thread->edl->session->vconfig_in->h, 0));
 	fselector->update(pwindow->thread->edl->session->vconfig_in->w,
 		pwindow->thread->edl->session->vconfig_in->h);
 

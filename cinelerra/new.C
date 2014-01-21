@@ -280,9 +280,6 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	add_subwindow(framesize_selection = new FrameSizeSelection(x1, y,
 		x1 + SELECTION_TB_WIDTH + 10, y,
 		this, &new_edl->session->output_w, &new_edl->session->output_h));
-
-	x1 += framesize_selection->calculate_width() + SELECTION_TB_WIDTH + 5;
-	add_subwindow(new NewSwapExtents(mwindow, this, x1, y));
 	y += framesize_selection->get_h() + 5;
 
 	x1 = x;
@@ -641,25 +638,5 @@ int NewAspectAuto::handle_event()
 {
 	nwindow->new_thread->auto_aspect = get_value();
 	nwindow->new_thread->update_aspect();
-	return 1;
-}
-
-
-NewSwapExtents::NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("swap_extents"))
-{
-	this->mwindow = mwindow;
-	this->gui = gui;
-	set_tooltip("Swap dimensions");
-}
-
-int NewSwapExtents::handle_event()
-{
-	int w = gui->new_edl->session->output_w;
-	int h = gui->new_edl->session->output_h;
-	gui->new_edl->session->output_w = h;
-	gui->new_edl->session->output_h = w;
-	gui->framesize_selection->update(h, w);
-	gui->new_thread->update_aspect();
 	return 1;
 }

@@ -125,13 +125,27 @@ class FrameSizeSelection : public Selection
 {
 public:
 	FrameSizeSelection(int x1, int y1, int x2, int y2,
-		BC_WindowBase *base, int *value1, int *value2);
+		BC_WindowBase *base, int *value1, int *value2, int swapvalues = 1);
 
 	void update(int value1, int value2);
+	void handle_swapvalues(int value1, int value2);
 	int calculate_width();
 
 private:
 	static const struct selection_2int frame_sizes[];
+};
+
+class SwapValues : public BC_Button
+{
+public:
+	SwapValues(int x, int y, FrameSizeSelection *output, int *value1, int *value2);
+
+	int handle_event();
+
+private:
+	int *value1;
+	int *value2;
+	FrameSizeSelection *output;
 };
 
 #endif

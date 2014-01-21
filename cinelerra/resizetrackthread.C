@@ -138,9 +138,6 @@ void ResizeTrackWindow::create_objects()
 		this, &thread->w, &thread->h));
 	framesize_selection->update(thread->w, thread->h);
 
-	x += SELECTION_TB_WIDTH + 25 + framesize_selection->calculate_width();
-	add_subwindow(new ResizeTrackSwap(this, thread, x, y));
-
 	y += 30;
 	x = 10;
 	add_subwindow(new BC_Title(x, y, _("Scale:")));
@@ -182,30 +179,6 @@ void ResizeTrackWindow::update(int changed_scale,
 		thread->h_scale = (double)thread->h / thread->h1;
 		h_scale->update((float)thread->h_scale);
 	}
-}
-
-
-
-ResizeTrackSwap::ResizeTrackSwap(ResizeTrackWindow *gui, 
-	ResizeTrackThread *thread, 
-	int x, 
-	int y)
- : BC_Button(x, y, thread->mwindow->theme->get_image_set("swap_extents"))
-{
-	this->thread = thread;
-	this->gui = gui;
-	set_tooltip("Swap dimensions");
-}
-
-int ResizeTrackSwap::handle_event()
-{
-	int w = thread->w;
-	int h = thread->h;
-	thread->w = h;
-	thread->h = w;
-	gui->framesize_selection->update(thread->w, thread->h);
-	gui->update(0, 1, 0);
-	return 1;
 }
 
 

@@ -163,20 +163,6 @@ public:
 	EDL* get_edl();
 };
 
-class FormatSwapExtents : public BC_Button
-{
-public:
-	FormatSwapExtents(MWindow *mwindow, 
-		SetFormatThread *thread,
-		SetFormatWindow *gui, 
-		int x, 
-		int y);
-	int handle_event();
-	MWindow *mwindow;
-	SetFormatThread *thread;
-	SetFormatWindow *gui;
-};
-
 class SetFormatWindow : public BC_Window
 {
 public:

@@ -56,19 +56,6 @@ public:
 
 class ResizeTrackWindow;
 
-class ResizeTrackSwap : public BC_Button
-{
-public:
-	ResizeTrackSwap(ResizeTrackWindow *gui, 
-		ResizeTrackThread *thread, 
-		int x, 
-		int y);
-	int handle_event();
-	ResizeTrackWindow *gui;
-	ResizeTrackThread *thread;
-};
-
-
 class ResizeTrackScaleW : public BC_TextBox
 {
 public:

@@ -386,13 +386,6 @@ void SetFormatWindow::create_objects()
 		mwindow->theme->setformat_x4, y,
 		this, &(thread->dimension[0]), &(thread->dimension[1])));
 	framesize_selection->update(thread->dimension[0], thread->dimension[1]);
-
-	add_subwindow(new FormatSwapExtents(mwindow, 
-		thread, 
-		this, 
-		mwindow->theme->setformat_x4 + framesize_selection->calculate_width() + 5,
-		y));
-
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
@@ -770,31 +763,5 @@ SetFormatApply::SetFormatApply(int x, int y, SetFormatThread *thread)
 int SetFormatApply::handle_event()
 {
 	thread->apply_changes();
-	return 1;
-}
-
-
-FormatSwapExtents::FormatSwapExtents(MWindow *mwindow, 
-	SetFormatThread *thread,
-	SetFormatWindow *gui, 
-	int x, 
-	int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("swap_extents"))
-{
-	this->mwindow = mwindow;
-	this->thread = thread;
-	this->gui = gui;
-	set_tooltip("Swap dimensions");
-}
-
-int FormatSwapExtents::handle_event()
-{
-	int w = thread->dimension[0];
-	int h = thread->dimension[1];
-	thread->dimension[0] = -h;
-	gui->framesize_selection->update(w, h);
-	thread->update_window();
-	thread->dimension[1] = -w;
-	thread->update_window();
 	return 1;
 }
