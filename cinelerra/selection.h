@@ -49,6 +49,8 @@ struct selection_2int
 	int value2;
 };
 
+class SelectionLeftBox;
+
 class Selection : public BC_TextBox
 {
 public:
@@ -65,7 +67,7 @@ public:
 	const struct selection_double *current_double;
 
 protected:
-	BC_TextBox *firstbox;
+	SelectionLeftBox *firstbox;
 private:
 	BC_PopupMenu *init_objects(int x, int y, BC_WindowBase *base);
 	int *intvalue;
@@ -147,5 +149,16 @@ private:
 	int *value2;
 	FrameSizeSelection *output;
 };
+
+class SelectionLeftBox : public BC_TextBox
+{
+public:
+	SelectionLeftBox(int x, int y, Selection *selection);
+
+	int handle_event();
+private:
+	Selection *selection;
+};
+
 
 #endif

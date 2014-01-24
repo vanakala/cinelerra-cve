@@ -156,7 +156,7 @@ Selection::Selection(int x1, int y1, int x2, int y2, BC_WindowBase *base,
 {
 	BC_PopupMenu *popupmenu;
 
-	base->add_subwindow(firstbox = new BC_TextBox(x1, y1, SELECTION_TB_WIDTH, 1, ""));
+	base->add_subwindow(firstbox = new SelectionLeftBox(x1, y1, this));
 	popupmenu = init_objects(x2, y2, base);
 
 	intvalue = value2;
@@ -295,4 +295,16 @@ int SwapValues::handle_event()
 	*value1 = *value2;
 	*value2 = v;
 	output->handle_swapvalues(*value1, *value2);
+}
+
+
+SelectionLeftBox::SelectionLeftBox(int x, int y, Selection *selection)
+ : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, "")
+{
+	this->selection = selection;
+}
+ 
+int SelectionLeftBox::handle_event()
+{
+	selection->handle_event();
 }
