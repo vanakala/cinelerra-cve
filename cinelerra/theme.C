@@ -91,7 +91,6 @@ Theme::Theme()
 Theme::~Theme()
 {
 	flush_images();
-	zoom_values.remove_all_objects();
 }
 
 void Theme::flush_images()
@@ -120,18 +119,6 @@ void Theme::initialize()
 	new_image("mode_replace", "mode_replace.png");
 	new_image("mode_subtract", "mode_subtract.png");
 }
-
-
-void Theme::build_menus()
-{
-	char string[BCTEXTLEN];
-	for(int i = 1; i < 17; i++)
-	{
-		sprintf(string, "%d", (int)pow(2, i));
-		zoom_values.append(new BC_ListBoxItem(string));
-	}
-}
-
 
 void Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 {

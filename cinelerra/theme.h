@@ -104,11 +104,7 @@ public:
 	virtual void get_new_sizes(NewWindow *gui) {};
 	virtual void draw_new_bg(NewWindow *gui) {};
 	virtual void draw_setformat_bg(SetFormatWindow *window) {};
-
-	virtual void build_menus();
 	void flush_images();
-
-	ArrayList<BC_ListBoxItem*> zoom_values;
 	const char *theme_title;
 
 // Tools for building widgets

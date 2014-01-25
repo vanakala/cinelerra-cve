@@ -649,8 +649,6 @@ void MWindow::init_theme()
 	theme->Theme::initialize();
 // Load user images
 	theme->initialize();
-// Create menus with user colors
-	theme->build_menus();
 	init_menus();
 
 	theme->check_used();
