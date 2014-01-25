@@ -24,12 +24,8 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "formatpresets.h"
+#include "language.h"
 #include "mwindow.h"
-#include "new.h"
-#include "setformat.h"
-#include "interlacemodes.h"
-
-
 
 
 FormatPresets::FormatPresets(MWindow *mwindow,
@@ -121,18 +117,6 @@ const char* FormatPresets::get_preset_text(EDL *edl)
 }
 
 
-int FormatPresets::handle_event()
-{
-	return 0;
-}
-
-EDL* FormatPresets::get_edl()
-{
-	return 0;
-}
-
-
-
 FormatPresetsText::FormatPresetsText(MWindow *mwindow, 
 	FormatPresets *gui,
 	int x, 
@@ -146,13 +130,6 @@ FormatPresetsText::FormatPresetsText(MWindow *mwindow,
 	this->gui =  gui;
 	this->mwindow = mwindow;
 }
-
-int FormatPresetsText::handle_event()
-{
-	return 1;
-}
-
-
 
 
 FormatPresetsPulldown::FormatPresetsPulldown(MWindow *mwindow, 

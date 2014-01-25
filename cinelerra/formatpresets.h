@@ -42,13 +42,14 @@ public:
 	virtual ~FormatPresets();
 
 	void create_objects();
+// Find the listbox item which corresponds to the values in the edl.
 	FormatPresetItem* find_preset(EDL *edl);
 	const char* get_preset_text(EDL *edl);
 
 // New preset selected
-	virtual int handle_event();
-	virtual EDL* get_edl();
-	
+	virtual int handle_event() { return 0; };
+	virtual EDL* get_edl() { return 0; };
+
 	MWindow *mwindow;
 	BC_WindowBase *gui_base;
 	NewWindow *new_gui;
@@ -60,7 +61,6 @@ public:
 };
 
 
-
 class FormatPresetsText : public BC_TextBox
 {
 public:
@@ -68,11 +68,13 @@ public:
 		FormatPresets *gui,
 		int x, 
 		int y);
-	int handle_event();
-// Find the listbox item which corresponds to the values in the edl.
+
+	int handle_event() { return 0; };
+
 	FormatPresets *gui;
 	MWindow *mwindow;
 };
+
 
 class FormatPresetsPulldown : public BC_ListBox
 {
@@ -86,6 +88,7 @@ public:
 	FormatPresets *gui;
 };
 
+
 class FormatPresetItem : public BC_ListBoxItem
 {
 public:
@@ -97,9 +100,5 @@ public:
 // Storage of the values for the preset
 	EDL *edl;
 };
-
-
-
-
 
 #endif
