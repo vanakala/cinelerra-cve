@@ -36,7 +36,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "new.h"
-#include "newpresets.h"
 #include "mainsession.h"
 #include "patchbay.h"
 #include "preferences.h"

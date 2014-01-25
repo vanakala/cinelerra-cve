@@ -460,7 +460,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 mwindowgui.h \
 		 mwindow.h \
 		 new.h \
-		 newpresets.h \
 		 ntsczones.h \
 		 overlayframe.h \
 		 packagedispatcher.h \
