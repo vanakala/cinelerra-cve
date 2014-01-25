@@ -136,16 +136,6 @@ public:
 	SetFormatThread *thread;
 };
 
-class ScaleAspectText : public BC_TextBox
-{
-public:
-	ScaleAspectText(int x, int y, SetFormatThread *thread, float *output);
-	~ScaleAspectText();
-	int handle_event();
-	SetFormatThread *thread;
-	float *output;
-};
-
 class SetFormatApply : public BC_GenericButton
 {
 public:
@@ -180,11 +170,10 @@ public:
 
 	FrameSizeSelection *framesize_selection;
 	SetFormatPresets *presets;
+
 // Size ratio width, height
 	ScaleRatioText* ratio[2];
-// Aspect ratio
-	ScaleAspectText *aspect_w;
-	ScaleAspectText *aspect_h;
+	AspectRatioSelection *aspectratio_selection;
 	Selection *sample_rate;
 	SetChannelsTextBox *channels;
 	FrameRateSelection *frame_rate;

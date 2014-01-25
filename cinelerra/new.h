@@ -97,7 +97,7 @@ public:
 	BC_TextBox *vtracks;
 	BC_TextBox *vchannels;
 	BC_TextBox *frame_rate;
-	BC_TextBox *aspect_w_text, *aspect_h_text;
+	AspectRatioSelection *aspectratio_selection;
 	FrameSizeSelection *framesize_selection;
 	InterlacemodePulldown *interlace_pulldown;
 	ColormodelPulldown *color_model;
@@ -187,45 +187,6 @@ public:
 
 	int handle_event();
 	NewWindow *nwindow;
-};
-
-
-class NewAspectW : public BC_TextBox
-{
-public:
-	NewAspectW(NewWindow *nwindow, const char *text, int x, int y);
-
-	int handle_event();
-
-	NewWindow *nwindow;
-};
-
-
-class NewAspectH : public BC_TextBox
-{
-public:
-	NewAspectH(NewWindow *nwindow, const char *text, int x, int y);
-
-	int handle_event();
-
-	NewWindow *nwindow;
-};
-
-
-class AspectPulldown : public BC_ListBox
-{
-public:
-	AspectPulldown(MWindow *mwindow, 
-		BC_TextBox *output_w, 
-		BC_TextBox *output_h, 
-		int x, 
-		int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	BC_TextBox *output_w;
-	BC_TextBox *output_h;
 };
 
 

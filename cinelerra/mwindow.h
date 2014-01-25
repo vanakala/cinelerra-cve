@@ -276,7 +276,7 @@ public:
 	void cut();
 
 // Calculate aspect ratio from pixel counts
-	static void create_aspect_ratio(float &w, float &h, int width, int height);
+	static void create_aspect_ratio(double &w, double &h, int width, int height);
 // Calculate defaults path
 	static void create_defaults_path(char *string);
 

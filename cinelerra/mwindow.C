@@ -1789,13 +1789,13 @@ void MWindow::save_backup()
 		gui->show_message(_("Couldn't open %s for writing."), path);
 }
 
-void MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
+void MWindow::create_aspect_ratio(double &w, double &h, int width, int height)
 {
 	int denominator;
 
 	if(!width || !height) return;
 
-	float fraction = (float)width / height;
+	double fraction = (double)width / height;
 
 	for(denominator = 1; 
 		denominator < 100 && 

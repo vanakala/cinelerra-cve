@@ -91,8 +91,6 @@ Theme::Theme()
 Theme::~Theme()
 {
 	flush_images();
-
-	aspect_ratios.remove_all_objects();
 	zoom_values.remove_all_objects();
 }
 
@@ -126,16 +124,6 @@ void Theme::initialize()
 
 void Theme::build_menus()
 {
-	aspect_ratios.append(new BC_ListBoxItem("3:2"));
-	aspect_ratios.append(new BC_ListBoxItem("4:3"));
-	aspect_ratios.append(new BC_ListBoxItem("16:9"));
-	aspect_ratios.append(new BC_ListBoxItem("2.10:1"));
-	aspect_ratios.append(new BC_ListBoxItem("2.20:1"));
-	aspect_ratios.append(new BC_ListBoxItem("2.25:1"));
-	aspect_ratios.append(new BC_ListBoxItem("2.30:1"));
-	aspect_ratios.append(new BC_ListBoxItem("2.35:1"));
-	aspect_ratios.append(new BC_ListBoxItem("2.66:1"));
-
 	char string[BCTEXTLEN];
 	for(int i = 1; i < 17; i++)
 	{

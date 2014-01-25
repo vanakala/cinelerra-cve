@@ -178,15 +178,13 @@ void NewThread::update_aspect()
 {
 	if(auto_aspect)
 	{
-		char string[BCTEXTLEN];
 		mwindow->create_aspect_ratio(new_project->new_edl->session->aspect_w, 
 			new_project->new_edl->session->aspect_h, 
 			new_project->new_edl->session->output_w, 
 			new_project->new_edl->session->output_h);
-		sprintf(string, "%.02f", new_project->new_edl->session->aspect_w);
-		nwindow->aspect_w_text->update(string);
-		sprintf(string, "%.02f", new_project->new_edl->session->aspect_h);
-		nwindow->aspect_h_text->update(string);
+		nwindow->aspectratio_selection->update(
+			new_project->new_edl->session->aspect_w,
+			new_project->new_edl->session->aspect_h);
 	}
 }
 
@@ -285,20 +283,12 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	x1 = x;
 	add_subwindow(new BC_Title(x1, y, _("Aspect ratio:")));
 	x1 += 100;
-	add_subwindow(aspect_w_text = new NewAspectW(this, "", x1, y));
-	x1 += aspect_w_text->get_w() + 2;
-	add_subwindow(new BC_Title(x1, y, ":"));
-	x1 += 10;
-	add_subwindow(aspect_h_text = new NewAspectH(this, "", x1, y));
-	x1 += aspect_h_text->get_w();
-	add_subwindow(new AspectPulldown(mwindow, 
-		aspect_w_text, 
-		aspect_h_text, 
-		x1, 
-		y));
 
-	x1 = aspect_w_text->get_x();
-	y += aspect_w_text->get_h() + 5;
+	add_subwindow(aspectratio_selection = new AspectRatioSelection(x1, y,
+		x1 + SELECTION_TB_WIDTH + 10, y,
+		this, &new_edl->session->aspect_w, &new_edl->session->aspect_h));
+
+	y += aspectratio_selection->get_h() + 5;
 	add_subwindow(new NewAspectAuto(this, x1, y));
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
@@ -344,8 +334,8 @@ void NewWindow::update()
 	frame_rate->update((float)new_edl->session->frame_rate);
 	framesize_selection->update(new_edl->session->output_w,
 		new_edl->session->output_h);
-	aspect_w_text->update((float)new_edl->session->aspect_w);
-	aspect_h_text->update((float)new_edl->session->aspect_h);
+	aspectratio_selection->update(new_edl->session->aspect_w,
+		new_edl->session->aspect_h);
 	interlace_pulldown->update(new_edl->session->interlace_mode);
 	color_model->update_value(new_edl->session->color_model);
 }
@@ -467,73 +457,6 @@ void NewVTracksTumbler::handle_down_event()
 	nwindow->new_edl->boundaries();
 	nwindow->update();
 }
-
-
-NewAspectW::NewAspectW(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 70, 1, text)
-{
-	this->nwindow = nwindow;
-}
-
-int NewAspectW::handle_event()
-{
-	nwindow->new_edl->session->aspect_w = atof(get_text());
-	return 1;
-}
-
-NewAspectH::NewAspectH(NewWindow *nwindow, const char *text, int x, int y)
- : BC_TextBox(x, y, 70, 1, text)
-{
-	this->nwindow = nwindow;
-}
-
-int NewAspectH::handle_event()
-{
-	nwindow->new_edl->session->aspect_h = atof(get_text());
-	return 1;
-}
-
-AspectPulldown::AspectPulldown(MWindow *mwindow, 
-		BC_TextBox *output_w, 
-		BC_TextBox *output_h, 
-		int x, 
-		int y)
- : BC_ListBox(x,
-	y,
-	100,
-	200,
-	&mwindow->theme->aspect_ratios,
-	LISTBOX_POPUP)
-{
-	this->mwindow = mwindow;
-	this->output_w = output_w;
-	this->output_h = output_h;
-}
-
-int AspectPulldown::handle_event()
-{
-	char *text = get_selection(0, 0)->get_text();
-	char string[BCTEXTLEN];
-	float w, h;
-	char *ptr;
-
-	strcpy(string, text);
-	ptr = strrchr(string, ':');
-	if(ptr)
-	{
-		ptr++;
-		h = atof(ptr);
-		
-		*--ptr = 0;
-		w = atof(string);
-		output_w->update(w);
-		output_h->update(h);
-		output_w->handle_event();
-		output_h->handle_event();
-	}
-	return 1;
-}
-
 
 ColormodelItem::ColormodelItem(const char *text, int value)
  : BC_ListBoxItem(text)

@@ -197,8 +197,8 @@ void SetFormatThread::update()
 	window->ratio[0]->update(ratio[0]);
 	ratio[1] = (float)dimension[1] / orig_dimension[1];
 	window->ratio[1]->update(ratio[1]);
-	window->aspect_w->update(new_settings->session->aspect_w);
-	window->aspect_h->update(new_settings->session->aspect_h);
+	window->aspectratio_selection->update(new_settings->session->aspect_w, 
+		new_settings->session->aspect_h);
 	window->interlace_pulldown->update(new_settings->session->interlace_mode);
 	window->color_model->update_value(new_settings->session->color_model);
 
@@ -263,15 +263,12 @@ void SetFormatThread::update_aspect()
 {
 	if(auto_aspect)
 	{
-		char string[BCTEXTLEN];
 		MWindow::create_aspect_ratio(new_settings->session->aspect_w, 
 			new_settings->session->aspect_h, 
 			dimension[0], 
 			dimension[1]);
-		sprintf(string, "%.02f", new_settings->session->aspect_w);
-		window->aspect_w->update(string);
-		sprintf(string, "%.02f", new_settings->session->aspect_h);
-		window->aspect_h->update(string);
+		window->aspectratio_selection->update(new_settings->session->aspect_w,
+			new_settings->session->aspect_h);
 	}
 }
 
@@ -427,25 +424,16 @@ void SetFormatWindow::create_objects()
 		_("Aspect ratio:")));
 	y += mwindow->theme->setformat_margin;
 	x = mwindow->theme->setformat_x3;
-	add_subwindow(aspect_w = new ScaleAspectText(x, 
-		y, 
-		thread, 
-		&(thread->new_settings->session->aspect_w)));
-	x += aspect_w->get_w() + 5;
-	add_subwindow(new BC_Title(x, y, _(":")));
-	x += 10;
-	add_subwindow(aspect_h = new ScaleAspectText(x, 
-		y, 
-		thread, 
-		&(thread->new_settings->session->aspect_h)));
-	x += aspect_h->get_w();
-	add_subwindow(new AspectPulldown(mwindow, 
-		aspect_w, 
-		aspect_h, 
-		x, 
-		y));
-	x += 30;
-	add_subwindow(auto_aspect = new ScaleAspectAuto(x, y, thread));
+	add_subwindow(aspectratio_selection = new AspectRatioSelection(x, y,
+		x + SELECTION_TB_WIDTH + 15, y, this,
+		&thread->new_settings->session->aspect_w,
+		&thread->new_settings->session->aspect_h));
+	aspectratio_selection->update(thread->new_settings->session->aspect_w,
+		thread->new_settings->session->aspect_h);
+
+	add_subwindow(auto_aspect = new ScaleAspectAuto(
+		x + aspectratio_selection->calculate_width(),
+		y, thread));
 	y += mwindow->theme->setformat_margin;
 
 // --------------------
@@ -719,7 +707,6 @@ int ScaleRatioText::handle_event()
 }
 
 
-
 ScaleAspectAuto::ScaleAspectAuto(int x, int y, SetFormatThread *thread)
  : BC_CheckBox(x, y, thread->auto_aspect, _("Auto"))
 {
@@ -734,23 +721,6 @@ int ScaleAspectAuto::handle_event()
 {
 	thread->auto_aspect = get_value();
 	thread->update_aspect();
-}
-
-ScaleAspectText::ScaleAspectText(int x, int y, SetFormatThread *thread, float *output)
- : BC_TextBox(x, y, 70, 1, *output)
-{
-	this->output = output;
-	this->thread = thread;
-}
-
-ScaleAspectText::~ScaleAspectText()
-{
-}
-
-int ScaleAspectText::handle_event()
-{
-	*output = atof(get_text());
-	return 1;
 }
 
 

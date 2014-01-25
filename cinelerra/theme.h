@@ -108,7 +108,6 @@ public:
 	virtual void build_menus();
 	void flush_images();
 
-	ArrayList<BC_ListBoxItem*> aspect_ratios;
 	ArrayList<BC_ListBoxItem*> zoom_values;
 	const char *theme_title;
 

@@ -49,6 +49,13 @@ struct selection_2int
 	int value2;
 };
 
+struct selection_2double
+{
+	const char *text;
+	double value1;
+	double value2;
+};
+
 class SelectionLeftBox;
 
 class Selection : public BC_TextBox
@@ -61,10 +68,15 @@ public:
 	Selection(int x1, int y1, int x2, int y2, BC_WindowBase *base,
 		const struct selection_2int items[],
 		int *value1, int *value2, int separator = 0);
+	Selection(int x1, int y1, int x2, int y2, BC_WindowBase *base,
+		const struct selection_2double items[],
+		double *value1, double *value2, int separator);
 
+	int calculate_width();
 	int handle_event();
 
 	const struct selection_double *current_double;
+	const struct selection_2double *current_2double;
 
 protected:
 	SelectionLeftBox *firstbox;
@@ -73,6 +85,7 @@ private:
 	int *intvalue;
 	int *intvalue2;
 	double *doublevalue;
+	double *doublevalue2;
 };
 
 class SelectionButton : public BC_Button
@@ -92,12 +105,15 @@ public:
 	SelectionItem(const struct selection_double *item, Selection *output);
 	SelectionItem(const struct selection_2int *item,
 		BC_TextBox *output2, Selection *output1);
+	SelectionItem(const struct selection_2double *item,
+		BC_TextBox *output2, Selection *output1);
 
 	int handle_event();
 private:
 	const struct selection_int *intitem;
 	const struct selection_double *doubleitem;
 	const struct selection_2int *int2item;
+	const struct selection_2double *double2item;
 
 	Selection *output;
 	BC_TextBox *output2;
@@ -131,11 +147,23 @@ public:
 
 	void update(int value1, int value2);
 	void handle_swapvalues(int value1, int value2);
-	int calculate_width();
 
 private:
 	static const struct selection_2int frame_sizes[];
 };
+
+class AspectRatioSelection : public Selection
+{
+public:
+	AspectRatioSelection(int x1, int y1, int x2, int y2,
+		BC_WindowBase *base, double *value1, double *value2);
+
+	void update(double value1, double value2);
+
+private:
+	static const struct selection_2double aspect_ratios[];
+};
+
 
 class SwapValues : public BC_Button
 {
@@ -150,6 +178,7 @@ private:
 	FrameSizeSelection *output;
 };
 
+
 class SelectionLeftBox : public BC_TextBox
 {
 public:
@@ -159,6 +188,5 @@ public:
 private:
 	Selection *selection;
 };
-
 
 #endif
