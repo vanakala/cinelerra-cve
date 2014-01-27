@@ -102,8 +102,6 @@
 #include "wavecache.h"
 #include "zoombar.h"
 #include "exportedl.h"
-
-#include "defaultformats.h"
 #include "ntsczones.h"
 
 #include <sys/types.h>
@@ -218,38 +216,6 @@ const char *MWindow::default_std()
 				return "NTSC";
 	}
 	return "PAL";
-}
-
-void MWindow::fill_preset_defaults(const char *preset, EDLSession *session)
-{
-	struct formatpresets *fpr;
-
-	for(fpr = &format_presets[0]; fpr->name; fpr++)
-	{
-		if(strcmp(fpr->name, preset) == 0)
-		{
-			session->audio_channels = fpr->audio_channels;
-			session->audio_tracks = fpr->audio_tracks;
-			session->sample_rate = fpr->sample_rate;
-			session->video_channels = fpr->video_channels;
-			session->video_tracks = fpr->video_tracks;
-			session->frame_rate = fpr->frame_rate;
-			session->output_w = fpr->output_w;
-			session->output_h = fpr->output_h;
-			session->aspect_w = fpr->aspect_w;
-			session->aspect_h = fpr->aspect_h;
-			session->interlace_mode = fpr->interlace_mode;
-			session->color_model = fpr->color_model;
-			return;
-		}
-	}
-}
-
-const char *MWindow::get_preset_name(int index)
-{
-	if(index >= MAX_NUM_PRESETS || index < 0)
-		return 0;
-	return format_presets[index].name;
 }
 
 void MWindow::init_defaults(BC_Hash* &defaults, const char *config_path)
@@ -663,7 +629,7 @@ void MWindow::init_3d()
 void MWindow::init_edl()
 {
 	edl = new EDL;
-	fill_preset_defaults(default_standard, edl->session);
+	FormatPresets::fill_preset_defaults(default_standard, edl->session);
 	edl->load_defaults(defaults);
 	edl->create_default_tracks();
 	edl->tracks->update_y_pixels(theme);

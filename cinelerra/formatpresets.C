@@ -24,9 +24,29 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "formatpresets.h"
+#include "interlacemodes.h"
 #include "language.h"
 #include "mwindow.h"
 
+struct formatpresets FormatPresets::format_presets[] =
+{
+	{ "PAL", 2, 2, 48000, 1, 1, 25, 720, 576, 4, 3, BC_ILACE_MODE_BOTTOM_FIRST, BC_YUVA8888 },
+	{ "NTSC", 2, 2, 48000, 1, 1, 30000.0 / 1001, 720, 480, 4, 3, BC_ILACE_MODE_BOTTOM_FIRST, BC_YUVA8888 },
+	{ "PAL Half", 2, 2, 48000, 1, 1, 25, 360, 288, 4, 3, BC_ILACE_MODE_NOTINTERLACED, BC_YUVA8888 },
+	{ "NTSC Half", 2, 2, 48000, 1, 1, 30000.0 / 1001, 360, 240, 4, 3, BC_ILACE_MODE_NOTINTERLACED, BC_YUVA8888 },
+	{ "NTSC Progressive", 2, 2, 48000, 1, 1, 60000.0 / 1001, 720, 480, 4, 3, BC_ILACE_MODE_NOTINTERLACED, BC_YUVA8888 },
+	{ "PAL Progressive", 2, 2, 48000, 1, 1, 25, 720, 576, 4, 3, BC_ILACE_MODE_NOTINTERLACED, BC_YUVA8888 },
+	{ "1080P/60", 2, 2, 48000, 1, 1, 60000.0 / 1001, 1920, 1080, 16, 9, BC_ILACE_MODE_NOTINTERLACED, BC_YUVA8888 },
+	{ "1080P/24", 2, 2, 48000, 1, 1, 24, 1920, 1080, 16, 9, BC_ILACE_MODE_NOTINTERLACED, BC_YUVA8888 },
+	{ "1080I", 2, 2, 48000, 1, 1, 30000.0 / 1001, 1920, 1080, 16, 9, BC_ILACE_MODE_BOTTOM_FIRST, BC_YUVA8888 },
+	{ "720P/60", 2, 2, 48000, 1, 1, 60000.0 / 1001, 1280, 720, 16, 9, BC_ILACE_MODE_NOTINTERLACED, BC_YUVA8888 },
+	{ "Internet", 2, 2, 22050, 1, 1, 15, 320, 240, 4, 3, BC_ILACE_MODE_NOTINTERLACED, BC_YUVA8888 },
+	{ "CD Audio", 2, 2, 44100, 1, 0, 30000.0 / 1001, 720, 480, 4, 3, BC_ILACE_MODE_NOTINTERLACED, BC_RGBA8888 },
+	{ "DAT Audio", 2, 2, 48000, 1, 0, 30000.0 / 1001, 720, 480, 4, 3, BC_ILACE_MODE_NOTINTERLACED, BC_RGBA8888 },
+	{ 0 }
+};
+
+#define MAX_NUM_PRESETS (sizeof(format_presets) / sizeof(struct formatpresets))
 
 FormatPresets::FormatPresets(MWindow *mwindow,
 	NewWindow *new_gui, 
@@ -61,10 +81,10 @@ void FormatPresets::create_objects()
 	item = new FormatPresetItem(mwindow, this, _("User Defined"));
 	preset_items.append(item);
 
-	for(i = 0; p = mwindow->get_preset_name(i); i++)
+	for(i = 0; p = format_presets[i].name; i++)
 	{
 		item = new FormatPresetItem(mwindow, this, p);
-		mwindow->fill_preset_defaults(p, item->edl->session);
+		fill_preset_defaults(p, item->edl->session);
 		preset_items.append(item);
 	}
 
@@ -116,6 +136,30 @@ const char* FormatPresets::get_preset_text(EDL *edl)
 		return "User Defined";
 }
 
+void FormatPresets::fill_preset_defaults(const char *preset, EDLSession *session)
+{
+	struct formatpresets *fpr;
+
+	for(fpr = &format_presets[0]; fpr->name; fpr++)
+	{
+		if(strcmp(fpr->name, preset) == 0)
+		{
+			session->audio_channels = fpr->audio_channels;
+			session->audio_tracks = fpr->audio_tracks;
+			session->sample_rate = fpr->sample_rate;
+			session->video_channels = fpr->video_channels;
+			session->video_tracks = fpr->video_tracks;
+			session->frame_rate = fpr->frame_rate;
+			session->output_w = fpr->output_w;
+			session->output_h = fpr->output_h;
+			session->aspect_w = fpr->aspect_w;
+			session->aspect_h = fpr->aspect_h;
+			session->interlace_mode = fpr->interlace_mode;
+			session->color_model = fpr->color_model;
+			return;
+		}
+	}
+}
 
 FormatPresetsText::FormatPresetsText(MWindow *mwindow, 
 	FormatPresets *gui,

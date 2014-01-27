@@ -30,6 +30,23 @@
 #include "new.inc"
 #include "setformat.inc"
 
+struct formatpresets
+{
+	const char *name;
+	int audio_channels;
+	int audio_tracks;
+	int sample_rate;
+	int video_channels;
+	int video_tracks;
+	double frame_rate;
+	int output_w;
+	int output_h;
+	int aspect_w;
+	int aspect_h;
+	int interlace_mode;
+	int color_model;
+};
+
 
 class FormatPresets
 {
@@ -46,6 +63,8 @@ public:
 	FormatPresetItem* find_preset(EDL *edl);
 	const char* get_preset_text(EDL *edl);
 
+	static void fill_preset_defaults(const char *preset, EDLSession *session);
+
 // New preset selected
 	virtual int handle_event() { return 0; };
 	virtual EDL* get_edl() { return 0; };
@@ -58,6 +77,8 @@ public:
 	FormatPresetsPulldown *pulldown;
 	int x, y;
 	ArrayList<FormatPresetItem*> preset_items;
+
+	static struct formatpresets format_presets[];
 };
 
 

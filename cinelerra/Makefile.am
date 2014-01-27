@@ -374,7 +374,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cwindowgui.h \
 		 cwindow.h \
 		 cwindowtool.h \
-		 defaultformats.h \
 		 deleteallindexes.h \
 		 devicedvbinput.h \
 		 drivesync.h \
