@@ -216,15 +216,10 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	add_subwindow(new BC_Title(x, y, _("Parameters for the new project:")));
 	y += 20;
 
-	format_presets = new NewPresets(mwindow,
-		this, 
-		x, 
-		y);
-	format_presets->create_objects();
-	x = format_presets->x;
-	y = format_presets->y;
+	format_presets = new NewPresets(this, x, y);
+	format_presets->set_edl(new_edl);
 
-	y += 40;
+	y += 60;
 	y1 = y;
 	add_subwindow(new BC_Title(x, y, _("Audio"), LARGEFONT));
 	y += 30;
@@ -340,20 +335,16 @@ void NewWindow::update()
 }
 
 
-NewPresets::NewPresets(MWindow *mwindow, NewWindow *gui, int x, int y)
- : FormatPresets(mwindow, gui, 0, x, y)
+NewPresets::NewPresets(NewWindow *gui, int x, int y)
+ : FormatPresets(gui, x, y)
 {
+	new_gui = gui;
 }
 
 int NewPresets::handle_event()
 {
 	new_gui->update();
 	return 1;
-}
-
-EDL* NewPresets::get_edl()
-{
-	return new_gui->new_edl;
 }
 
 

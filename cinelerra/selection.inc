@@ -24,6 +24,8 @@
 
 #define SELECTION_TB_WIDTH 90
 
+#define SELECTION_VARWIDTH  1
+
 class Selection;
 class SampleRateSelection;
 class FrameRateSelection;

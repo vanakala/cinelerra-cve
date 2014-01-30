@@ -301,13 +301,8 @@ void SetFormatWindow::create_objects()
 	mwindow->theme->draw_setformat_bg(this);
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 
-	presets = new SetFormatPresets(mwindow, 
-		this, 
-		x, 
-		y);
-	presets->create_objects();
-	x = presets->x;
-	y = presets->y;
+	presets = new SetFormatPresets(this, x, y);
+	presets->set_edl(thread->new_settings);
 
 	y = mwindow->theme->setformat_y2;
 
@@ -471,16 +466,10 @@ const char* SetFormatWindow::get_preset_text()
 
 
 
-SetFormatPresets::SetFormatPresets(MWindow *mwindow, 
-	SetFormatWindow *gui, 
-	int x, 
-	int y)
- : FormatPresets(mwindow, 0, gui, x, y)
+SetFormatPresets::SetFormatPresets(SetFormatWindow *gui, int x, int y)
+ : FormatPresets(gui, x, y)
 {
-}
-
-SetFormatPresets::~SetFormatPresets()
-{
+	format_gui = gui;
 }
 
 int SetFormatPresets::handle_event()
@@ -489,10 +478,6 @@ int SetFormatPresets::handle_event()
 	return 1;
 }
 
-EDL* SetFormatPresets::get_edl()
-{
-	return format_gui->thread->new_settings;
-}
 
 SetChannelsTextBox::SetChannelsTextBox(SetFormatThread *thread, int x, int y)
  : BC_TextBox(x, y, 100, 1, thread->new_settings->session->audio_channels)

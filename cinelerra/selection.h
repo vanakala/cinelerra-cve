@@ -62,7 +62,7 @@ class Selection : public BC_TextBox
 {
 public:
 	Selection(int x, int y, BC_WindowBase *base,
-		const struct selection_int items[], int *value);
+		const struct selection_int items[], int *value, int options = 0);
 	Selection(int x, int y, BC_WindowBase *base,
 		const struct selection_double items[], double *value);
 	Selection(int x1, int y1, int x2, int y2, BC_WindowBase *base,
@@ -73,7 +73,7 @@ public:
 		double *value1, double *value2, int separator);
 
 	int calculate_width();
-	int handle_event();
+	virtual int handle_event();
 
 	const struct selection_double *current_double;
 	const struct selection_2double *current_2double;

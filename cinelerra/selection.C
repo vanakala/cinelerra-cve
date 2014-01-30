@@ -145,14 +145,26 @@ void AspectRatioSelection::update(double value1, double value2)
 }
 
 Selection::Selection(int x, int y, BC_WindowBase *base,
-	const struct selection_int items[], int *value)
+	const struct selection_int items[], int *value, int options)
  : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, "")
 {
 	BC_PopupMenu *popupmenu;
+	int mxw = 0;
 
 	firstbox = 0;
-	popupmenu = init_objects(x, y, base);
 	intvalue = value;
+
+	if(options & SELECTION_VARWIDTH)
+	{
+		for(int i = 0; items[i].text; i++)
+		{
+			int w = base->get_text_width(MEDIUMFONT, items[i].text);
+			if(w > mxw)
+				mxw = w;
+		}
+		set_w(mxw + 10);
+	}
+	popupmenu = init_objects(x, y, base);
 
 	for(int i = 0; items[i].text; i++)
 		popupmenu->add_item(new SelectionItem(&items[i], this));

@@ -108,10 +108,11 @@ public:
 class NewPresets : public FormatPresets
 {
 public:
-	NewPresets(MWindow *mwindow, NewWindow *gui, int x, int y);
+	NewPresets(NewWindow *gui, int x, int y);
 
 	int handle_event();
-	EDL* get_edl();
+private:
+	NewWindow *new_gui;
 };
 
 
