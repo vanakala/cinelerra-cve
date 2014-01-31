@@ -286,13 +286,9 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 	add_subwindow(new NewAspectAuto(this, x1, y));
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
-	add_subwindow(textbox = new BC_TextBox(x + 100, y, 200, 1, ""));
-	add_subwindow(color_model = new ColormodelPulldown(mwindow, 
-		textbox, 
-		&new_edl->session->color_model,
-		x + 100 + textbox->get_w(),
-		y));
-	y += textbox->get_h() + 5;
+	cmodel_selection = new ColormodelSelection(x + 100, y, this,
+		&new_edl->session->color_model);
+	y += cmodel_selection->selection->get_h() + 5;
 
 	// --------------------
 	add_subwindow(new BC_Title(x, y, _("Interlace mode:")));
@@ -316,7 +312,8 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 
 NewWindow::~NewWindow()
 {
-	if(format_presets) delete format_presets;
+	delete format_presets;
+	delete cmodel_selection;
 }
 
 void NewWindow::update()
@@ -331,7 +328,7 @@ void NewWindow::update()
 	aspectratio_selection->update(new_edl->session->aspect_w,
 		new_edl->session->aspect_h);
 	interlace_pulldown->update(new_edl->session->interlace_mode);
-	color_model->update_value(new_edl->session->color_model);
+	cmodel_selection->update(new_edl->session->color_model);
 }
 
 
@@ -448,50 +445,6 @@ void NewVTracksTumbler::handle_down_event()
 	nwindow->update();
 }
 
-ColormodelItem::ColormodelItem(const char *text, int value)
- : BC_ListBoxItem(text)
-{
-	this->value = value;
-}
-
-ColormodelPulldown::ColormodelPulldown(MWindow *mwindow, 
-		BC_TextBox *output_text, 
-		int *output_value,
-		int x, 
-		int y)
- : BC_ListBox(x,
-	y,
-	200,
-	150,
-	(ArrayList<BC_ListBoxItem*>*)&mwindow->colormodels,
-	LISTBOX_POPUP)
-{
-	this->mwindow = mwindow;
-	this->output_text = output_text;
-	this->output_value = output_value;
-	output_text->update(colormodel_to_text());
-}
-
-int ColormodelPulldown::handle_event()
-{
-	output_text->update(get_selection(0, 0)->get_text());
-	*output_value = ((ColormodelItem*)get_selection(0, 0))->value;
-	return 1;
-}
-
-const char* ColormodelPulldown::colormodel_to_text()
-{
-	for(int i = 0; i < mwindow->colormodels.total; i++)
-		if(mwindow->colormodels.values[i]->value == *output_value) 
-			return mwindow->colormodels.values[i]->get_text();
-	return "Unknown";
-}
-
-void ColormodelPulldown::update_value(int value)
-{
-	*output_value = value;
-	output_text->update(colormodel_to_text());
-}
 
 InterlacemodeItem::InterlacemodeItem(const char *text, int value)
  : BC_ListBoxItem(text)

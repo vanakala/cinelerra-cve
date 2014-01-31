@@ -152,7 +152,6 @@ Selection::Selection(int x, int y, BC_WindowBase *base,
 	int mxw = 0;
 
 	firstbox = 0;
-	intvalue = value;
 
 	if(options & SELECTION_VARWIDTH)
 	{
@@ -165,6 +164,7 @@ Selection::Selection(int x, int y, BC_WindowBase *base,
 		set_w(mxw + 10);
 	}
 	popupmenu = init_objects(x, y, base);
+	intvalue = value;
 
 	for(int i = 0; items[i].text; i++)
 		popupmenu->add_item(new SelectionItem(&items[i], this));
@@ -265,6 +265,7 @@ BC_PopupMenu *Selection::init_objects(int x, int y, BC_WindowBase *base)
 	intvalue2 = 0;
 	doublevalue = 0;
 	doublevalue2 = 0;
+	current_int = 0;
 	current_double = 0;
 	current_2double = 0;
 	return popupmenu;
@@ -284,7 +285,15 @@ int Selection::calculate_width()
 int Selection::handle_event()
 {
 	if(intvalue)
-		*intvalue = atoi(get_text());
+	{
+		if(current_int)
+		{
+			*intvalue = current_int->value;
+			current_int = 0;
+		}
+		else
+			*intvalue = atoi(get_text());
+	}
 	if(intvalue2)
 		*intvalue2 = atoi(firstbox->get_text());
 
@@ -376,7 +385,10 @@ SelectionItem::SelectionItem(const struct selection_2double *item,
 int SelectionItem::handle_event()
 {
 	if(intitem)
+	{
 		output->update(intitem->text);
+		output->current_int = intitem;
+	}
 	if(doubleitem)
 	{
 		output->update(doubleitem->text);

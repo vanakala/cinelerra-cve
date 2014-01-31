@@ -672,20 +672,6 @@ void MWindow::init_menus()
 {
 	char string[BCTEXTLEN];
 
-	// Color Models
-	cmodel_to_text(string, BC_RGB888);
-	colormodels.append(new ColormodelItem(string, BC_RGB888));
-	cmodel_to_text(string, BC_RGBA8888);
-	colormodels.append(new ColormodelItem(string, BC_RGBA8888));
-	cmodel_to_text(string, BC_RGB_FLOAT);
-	colormodels.append(new ColormodelItem(string, BC_RGB_FLOAT));
-	cmodel_to_text(string, BC_RGBA_FLOAT);
-	colormodels.append(new ColormodelItem(string, BC_RGBA_FLOAT));
-	cmodel_to_text(string, BC_YUV888);
-	colormodels.append(new ColormodelItem(string, BC_YUV888));
-	cmodel_to_text(string, BC_YUVA8888);
-	colormodels.append(new ColormodelItem(string, BC_YUVA8888));
-
 #define ILACEPROJECTMODELISTADD(x) ilacemode_to_text(string, x); \
                            interlace_project_modes.append(new InterlacemodeItem(string, x));
 

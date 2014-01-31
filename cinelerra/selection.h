@@ -75,6 +75,7 @@ public:
 	int calculate_width();
 	virtual int handle_event();
 
+	const struct selection_int *current_int;
 	const struct selection_double *current_double;
 	const struct selection_2double *current_2double;
 

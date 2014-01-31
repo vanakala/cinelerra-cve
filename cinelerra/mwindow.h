@@ -419,7 +419,6 @@ public:
 	const char *default_standard;
 
 // Menu items
-	ArrayList<ColormodelItem*> colormodels;
 	ArrayList<InterlaceautofixoptionItem*> interlace_asset_autofixoptions;
 	ArrayList<InterlacemodeItem*>          interlace_project_modes;
 	ArrayList<InterlacemodeItem*>          interlace_asset_modes;

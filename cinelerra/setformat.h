@@ -178,7 +178,7 @@ public:
 	Selection *sample_rate;
 	SetChannelsTextBox *channels;
 	FrameRateSelection *frame_rate;
-	ColormodelPulldown *color_model;
+	ColormodelSelection *cmodel_selection;
 	ScaleAspectAuto *auto_aspect;
 	InterlacemodePulldown *interlace_pulldown;
 };

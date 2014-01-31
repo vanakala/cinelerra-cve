@@ -86,4 +86,17 @@ private:
 	static struct formatpresets format_presets[];
 };
 
+
+class ColormodelSelection
+{
+public:
+	ColormodelSelection(int x, int y, BC_WindowBase *base_gui, int *cmodel);
+
+	void update(int value);
+
+	Selection *selection;
+private:
+	static struct selection_int cmodel_selection[];
+};
+
 #endif

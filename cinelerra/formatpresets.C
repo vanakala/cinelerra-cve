@@ -49,6 +49,20 @@ struct formatpresets FormatPresets::format_presets[] =
 
 #define MAX_NUM_PRESETS (sizeof(format_presets) / sizeof(struct formatpresets))
 
+struct selection_int ColormodelSelection::cmodel_selection[] =
+{
+	{ 0, BC_RGB888 },
+	{ 0, BC_RGBA8888 },
+	{ 0, BC_RGB_FLOAT },
+	{ 0, BC_RGBA_FLOAT },
+	{ 0, BC_YUV888 },
+	{ 0, BC_YUVA8888 },
+	{ 0, 0 }
+};
+
+#define NUM_CMODEL_SELECTIONS (sizeof(cmodel_selection) / sizeof(struct selection_int) - 1)
+
+
 FormatPresets::FormatPresets(BC_WindowBase* base_gui, int x, int y)
 {
 	gui_base = base_gui;
@@ -153,4 +167,23 @@ FormatSelection::FormatSelection(int x, int y,
 int FormatSelection::handle_event()
 {
 	presets->update_edl(get_text());
+}
+
+
+ColormodelSelection::ColormodelSelection(int x, int y,
+	BC_WindowBase *base_gui, int *cmodel)
+{
+	if(!cmodel_selection[0].text)
+	{
+		for(int i = 0; i < NUM_CMODEL_SELECTIONS; i++)
+			cmodel_selection[i].text = cmodel_name(cmodel_selection[i].value);
+	}
+	base_gui->add_subwindow(selection = new Selection(x, y, base_gui,
+		cmodel_selection, cmodel, SELECTION_VARWIDTH));
+	selection->disable();
+}
+
+void ColormodelSelection::update(int value)
+{
+	selection->update(cmodel_name(value));
 }
