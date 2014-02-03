@@ -161,6 +161,7 @@ public:
 		SetFormatThread *thread,
 		int x,
 		int y);
+	~SetFormatWindow();
 
 	void create_objects();
 	const char* get_preset_text();
@@ -180,7 +181,7 @@ public:
 	FrameRateSelection *frame_rate;
 	ColormodelSelection *cmodel_selection;
 	ScaleAspectAuto *auto_aspect;
-	InterlacemodePulldown *interlace_pulldown;
+	InterlaceModeSelection *interlace_selection;
 };
 
 #endif

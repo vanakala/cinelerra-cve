@@ -28,6 +28,7 @@
 #include "bitspopup.inc"
 #include "browsebutton.h"
 #include "formatpopup.h"
+#include "formatpresets.inc"
 #include "language.h"
 #include "mwindow.h"
 #include "thread.h"
@@ -78,6 +79,7 @@ public:
 	int allow_edits;
 	MWindow *mwindow;
 	AssetEdit *asset_edit;
+	AInterlaceModeSelection *ilacemode_selection;
 };
 
 
@@ -157,36 +159,6 @@ public:
 	int handle_event();
 	int thedefault;
 	AssetEditWindow *fwindow;
-};
-
-class AssetEditILacemode : public BC_TextBox
-{
-public:
-	AssetEditILacemode(AssetEditWindow *fwindow, const char *text, 
-		int thedefault, int x, int y, int w);
-	int handle_event();
-	int thedefault;
-	AssetEditWindow *fwindow;
-};
-
-class AssetEditInterlacemodePulldown : public BC_ListBox
-{
-public:
-	AssetEditInterlacemodePulldown(MWindow *mwindow, 
-				BC_TextBox *output_text, 
-				int *output_value,
-				ArrayList<BC_ListBoxItem*> *data,
-				Interlaceautofix *fixoption_chkbox,
-				int x,
-				int y);
-	int handle_event();
-	char* interlacemode_to_text();
-	MWindow *mwindow;
-	BC_TextBox *output_text;
-	int *output_value;
-	Interlaceautofix *fixoption_chkbox;
-private:
-	char string[BCTEXTLEN];
 };
 
 class AssetEditILacefixmethod : public BC_TextBox

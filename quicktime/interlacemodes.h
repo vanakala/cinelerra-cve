@@ -83,7 +83,7 @@ void ilacefixmethod_to_text(char *string, int fixmethod);
 int  ilacefixmethod_from_text(char *text, int thedefault);
 void ilacefixmethod_to_xmltext(char *string, int fixmethod);
 int  ilacefixmethod_from_xmltext(char *text, int thedefault);
-
+const char *ilacemode_name(int ilacemode);
 
 int  ilaceautofixmethod(int projectilacemode, int assetilacemode);
 int  ilaceautofixmethod2(int projectilacemode, int assetautofixoption, int assetilacemode, int assetfixmethod);

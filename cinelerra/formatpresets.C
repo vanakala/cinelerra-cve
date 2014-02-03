@@ -62,6 +62,24 @@ struct selection_int ColormodelSelection::cmodel_selection[] =
 
 #define NUM_CMODEL_SELECTIONS (sizeof(cmodel_selection) / sizeof(struct selection_int) - 1)
 
+struct selection_int AInterlaceModeSelection::ilacemode_selection[] =
+{
+	{ 0, BC_ILACE_MODE_UNDETECTED },
+	{ 0, BC_ILACE_MODE_TOP_FIRST },
+	{ 0, BC_ILACE_MODE_BOTTOM_FIRST },
+	{ 0, BC_ILACE_MODE_NOTINTERLACED },
+	{ 0, 0 }
+};
+
+struct selection_int InterlaceModeSelection::ilacemode_selection[] =
+{
+	{ 0, BC_ILACE_MODE_TOP_FIRST },
+	{ 0, BC_ILACE_MODE_BOTTOM_FIRST },
+	{ 0, BC_ILACE_MODE_NOTINTERLACED },
+	{ 0, 0 }
+};
+
+#define NUM_ILACEMODE_SELECTIONS (sizeof(ilacemode_selection) / sizeof(struct selection_int) - 1)
 
 FormatPresets::FormatPresets(BC_WindowBase* base_gui, int x, int y)
 {
@@ -186,4 +204,36 @@ ColormodelSelection::ColormodelSelection(int x, int y,
 void ColormodelSelection::update(int value)
 {
 	selection->update(cmodel_name(value));
+}
+
+
+IlaceSelection::IlaceSelection(int x, int y,
+	BC_WindowBase *base_gui, int *value,
+	struct selection_int *menu, int menulen)
+{
+	if(!menu[0].text)
+	{
+		for(int i = 0; i < menulen; i++)
+			menu[i].text = ilacemode_name(menu[i].value);
+	}
+	base_gui->add_subwindow(selection = new Selection(x, y, base_gui,
+		menu, value, SELECTION_VARWIDTH));
+	selection->disable();
+}
+
+void IlaceSelection::update(int value)
+{
+	selection->update(ilacemode_name(value));
+}
+
+AInterlaceModeSelection::AInterlaceModeSelection(int x, int y,
+	BC_WindowBase *base_gui, int *value)
+ : IlaceSelection(x, y, base_gui, value, ilacemode_selection, NUM_ILACEMODE_SELECTIONS)
+{
+}
+
+InterlaceModeSelection::InterlaceModeSelection(int x, int y,
+	BC_WindowBase *base_gui, int *value)
+ : IlaceSelection(x, y, base_gui, value, ilacemode_selection, NUM_ILACEMODE_SELECTIONS)
+{
 }

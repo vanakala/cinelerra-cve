@@ -50,14 +50,26 @@ int ilaceautofixoption_from_text(char *text, int thedefault)
 
 void ilacemode_to_text(char *string, int ilacemode)
 {
+	strcpy(string, ilacemode_name(ilacemode));
+}
+
+const char *ilacemode_name(int ilacemode)
+{
 	switch(ilacemode)
 	{
-		case BC_ILACE_MODE_UNDETECTED:     strcpy(string, BC_ILACE_MODE_UNDETECTED_T);      break;
-		case BC_ILACE_MODE_TOP_FIRST:      strcpy(string, BC_ILACE_MODE_TOP_FIRST_T);       break;
-		case BC_ILACE_MODE_BOTTOM_FIRST:   strcpy(string, BC_ILACE_MODE_BOTTOM_FIRST_T);    break;
-		case BC_ILACE_MODE_NOTINTERLACED:  strcpy(string, BC_ILACE_MODE_NOTINTERLACED_T);   break;
-		default: strcpy(string, BC_ILACE_UNKNOWN_T); break;
+	case BC_ILACE_MODE_UNDETECTED:
+		return BC_ILACE_MODE_UNDETECTED_T;
+
+	case BC_ILACE_MODE_TOP_FIRST:
+		return BC_ILACE_MODE_TOP_FIRST_T;
+
+	case BC_ILACE_MODE_BOTTOM_FIRST:
+		return BC_ILACE_MODE_BOTTOM_FIRST_T;
+
+	case BC_ILACE_MODE_NOTINTERLACED:
+		return BC_ILACE_MODE_NOTINTERLACED_T;
 	}
+	return BC_ILACE_UNKNOWN_T;
 }
 
 int ilacemode_from_text(char *text, int thedefault)

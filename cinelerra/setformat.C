@@ -199,7 +199,7 @@ void SetFormatThread::update()
 	window->ratio[1]->update(ratio[1]);
 	window->aspectratio_selection->update(new_settings->session->aspect_w, 
 		new_settings->session->aspect_h);
-	window->interlace_pulldown->update(new_settings->session->interlace_mode);
+	window->interlace_selection->update(new_settings->session->interlace_mode);
 	window->cmodel_selection->update(new_settings->session->color_model);
 
 	window->canvas->draw();
@@ -427,17 +427,9 @@ void SetFormatWindow::create_objects()
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
 		_("Interlace mode:")));
-	add_subwindow(textbox = new BC_TextBox(mwindow->theme->setformat_x4,
-		y,
-		140, 
-		1, 
-		""));
-	add_subwindow(interlace_pulldown = new InterlacemodePulldown(mwindow, 
-		textbox,
-		&(thread->new_settings->session->interlace_mode),
-		(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
-		mwindow->theme->setformat_x4 + textbox->get_w(), 
-		y)); 
+	interlace_selection = new InterlaceModeSelection(mwindow->theme->setformat_x4,
+		y, this, &thread->new_settings->session->interlace_mode);
+	interlace_selection->update(thread->new_settings->session->interlace_mode);
 	y += mwindow->theme->setformat_margin;
 
 	BC_OKTextButton *ok;
@@ -449,6 +441,13 @@ void SetFormatWindow::create_objects()
 		thread));
 	flash();
 	show_window();
+}
+
+SetFormatWindow::~SetFormatWindow()
+{
+	delete presets;
+	delete cmodel_selection;
+	delete interlace_selection;
 }
 
 const char* SetFormatWindow::get_preset_text()

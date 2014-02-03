@@ -23,5 +23,6 @@
 #define FORMATPRESETS_INC
 
 class FormatPresets;
+class AInterlaceModeSelection;
 
 #endif

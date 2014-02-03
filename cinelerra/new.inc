@@ -22,7 +22,6 @@
 #ifndef NEW_INC
 #define NEW_INC
 
-class InterlacemodeItem;
 class New;
 class NewWindow;
 
