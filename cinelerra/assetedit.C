@@ -177,6 +177,7 @@ AssetEditWindow::~AssetEditWindow()
 {
 	if(bitspopup) delete bitspopup;
 	delete ilacemode_selection;
+	delete ilacefix_selection;
 }
 
 
@@ -473,17 +474,10 @@ int AssetEditWindow::create_objects()
 
 // --------------------
 		add_subwindow(title = new BC_Title(x1, y, _("Interlace correction:")));
-		add_subwindow(textboxw = new AssetEditILacefixmethod(this, "", BC_ILACE_FIXDEFAULT, x2, y, 200));
-		ilacefixoption_chkboxw->ilacefixmethod_textbox = textboxw;
-		add_subwindow(listboxw = new InterlacefixmethodPulldown(mwindow, 
-							textboxw,
-							&asset->interlace_fixmethod,
-							(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_asset_fixmethods,
-							x2 + textboxw->get_w(), 
-							y)); 
-		ilacefixoption_chkboxw->ilacefixmethod_listbox = listboxw;
-		ilacefixoption_chkboxw->showhideotherwidgets();
-		y += textboxw->get_h() + 5;
+		ilacefix_selection = new InterlaceFixSelection(x2, y,
+			this, &asset->interlace_fixmethod);
+		ilacefix_selection->update(asset->interlace_fixmethod);
+		y += ilacefix_selection->selection->get_h() + 5;
 
 		x = x1;
 		add_subwindow(new BC_Title(x, y, _("Reel Name:")));

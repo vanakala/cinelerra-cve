@@ -80,6 +80,7 @@ public:
 	MWindow *mwindow;
 	AssetEdit *asset_edit;
 	AInterlaceModeSelection *ilacemode_selection;
+	InterlaceFixSelection *ilacefix_selection;
 };
 
 

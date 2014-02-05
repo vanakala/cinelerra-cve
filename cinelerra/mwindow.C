@@ -615,7 +615,6 @@ void MWindow::init_theme()
 	theme->Theme::initialize();
 // Load user images
 	theme->initialize();
-	init_menus();
 
 	theme->check_used();
 	theme_global = theme;
@@ -666,18 +665,6 @@ void MWindow::init_ruler()
 void MWindow::init_channeldb()
 {
 	channeldb_v4l2jpeg->load("channeldb_v4l2jpeg");
-}
-
-void MWindow::init_menus()
-{
-	char string[BCTEXTLEN];
-
-#define ILACEFIXMETHODLISTADD(x) ilacefixmethod_to_text(string, x); \
-                           interlace_asset_fixmethods.append(new InterlacefixmethodItem(string, x));
-	// Interlacing Fixing Methods
-	ILACEFIXMETHODLISTADD(BC_ILACE_FIXMETHOD_NONE);
-	ILACEFIXMETHODLISTADD(BC_ILACE_FIXMETHOD_UPONE);
-	ILACEFIXMETHODLISTADD(BC_ILACE_FIXMETHOD_DOWNONE);
 }
 
 void MWindow::init_indexes()

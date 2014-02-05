@@ -78,8 +78,18 @@ struct selection_int InterlaceModeSelection::ilacemode_selection[] =
 	{ 0, BC_ILACE_MODE_NOTINTERLACED },
 	{ 0, 0 }
 };
-
 #define NUM_ILACEMODE_SELECTIONS (sizeof(ilacemode_selection) / sizeof(struct selection_int) - 1)
+
+
+struct selection_int InterlaceFixSelection::ilacefix_selection[] =
+{
+	{ 0, BC_ILACE_FIXMETHOD_NONE },
+	{ 0, BC_ILACE_FIXMETHOD_UPONE },
+	{ 0, BC_ILACE_FIXMETHOD_DOWNONE },
+	{ 0, 0 }
+};
+#define NUM_ILACEFIX_SELECTIONS (sizeof(ilacefix_selection) / sizeof(struct selection_int) - 1)
+
 
 FormatPresets::FormatPresets(BC_WindowBase* base_gui, int x, int y)
 {
@@ -236,4 +246,22 @@ InterlaceModeSelection::InterlaceModeSelection(int x, int y,
 	BC_WindowBase *base_gui, int *value)
  : IlaceSelection(x, y, base_gui, value, ilacemode_selection, NUM_ILACEMODE_SELECTIONS)
 {
+}
+
+InterlaceFixSelection::InterlaceFixSelection(int x, int y,
+	BC_WindowBase *base_gui, int *value)
+{
+	if(!ilacefix_selection[0].text)
+	{
+		for(int i = 0; i < NUM_ILACEFIX_SELECTIONS; i++)
+			ilacefix_selection[i].text = ilacefixmethod_name(ilacefix_selection[i].value);
+	}
+	base_gui->add_subwindow(selection = new Selection(x, y, base_gui,
+		ilacefix_selection, value, SELECTION_VARWIDTH));
+	selection->disable();
+}
+
+void InterlaceFixSelection::update(int value)
+{
+	selection->update(ilacefixmethod_name(value));
 }

@@ -128,4 +128,16 @@ private:
 	static struct selection_int ilacemode_selection[];
 };
 
+class InterlaceFixSelection
+{
+public:
+	InterlaceFixSelection(int x, int y,
+		BC_WindowBase *base_gui, int *value);
+
+	void update(int value);
+
+	Selection *selection;
+private:
+	static struct selection_int ilacefix_selection[];
+};
 #endif

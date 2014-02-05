@@ -418,10 +418,6 @@ public:
 	BRender *brender;
 	const char *default_standard;
 
-// Menu items
-	ArrayList<InterlaceautofixoptionItem*> interlace_asset_autofixoptions;
-	ArrayList<InterlacefixmethodItem*>     interlace_asset_fixmethods;
-
 	void reset_meters();
 
 // Channel DB for playback only.  Record channel DB's are in record.C
@@ -517,7 +513,6 @@ public:
 	void init_viewer();
 	void init_ruler();
 	void init_cache();
-	void init_menus();
 	void init_indexes();
 	void init_gui();
 	void init_3d();
