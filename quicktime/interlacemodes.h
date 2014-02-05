@@ -71,9 +71,11 @@
 extern "C" {
 #endif
 
+const char *ilacefix_name(int autofixoption);
 void ilaceautofixoption_to_text(char *string, int autofixoption);
 int  ilaceautofixoption_from_text(char *text, int thedefault);
 
+const char *ilacefixmethod_name(int fixmethod);
 void ilacemode_to_text(char *string, int ilacemode);
 int  ilacemode_from_text(char *text, int thedefault);
 void ilacemode_to_xmltext(char *string, int ilacemode);

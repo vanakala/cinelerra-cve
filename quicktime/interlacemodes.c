@@ -29,14 +29,21 @@
 
 // AUTO FIX METHOD ====================
 
-void ilaceautofixoption_to_text(char *string, int autofixoption)
+const char *ilacefix_name(int autofixoption)
 {
 	switch(autofixoption)
 	{
-		case BC_ILACE_AUTOFIXOPTION_AUTO:  	strcpy(string, BC_ILACE_AUTOFIXOPTION_AUTO_T);  	break;
-		case BC_ILACE_AUTOFIXOPTION_MANUAL:	strcpy(string, BC_ILACE_AUTOFIXOPTION_MANUAL_T);	break;
-		default: strcpy(string, BC_ILACE_UNKNOWN_T);	break;
+	case BC_ILACE_AUTOFIXOPTION_AUTO:
+		return BC_ILACE_AUTOFIXOPTION_AUTO_T;
+	case BC_ILACE_AUTOFIXOPTION_MANUAL:
+		return BC_ILACE_AUTOFIXOPTION_MANUAL_T;
 	}
+	return BC_ILACE_UNKNOWN_T;
+}
+
+void ilaceautofixoption_to_text(char *string, int autofixoption)
+{
+	strcpy(string, ilacefix_name(autofixoption));
 }
 
 int ilaceautofixoption_from_text(char *text, int thedefault)
@@ -104,16 +111,23 @@ int ilacemode_from_xmltext(char *text, int thedefault)
 }
 
 // INTERLACE FIX METHOD ====================
-
-void ilacefixmethod_to_text(char *string, int fixmethod)
+const char *ilacefixmethod_name(int fixmethod)
 {
 	switch(fixmethod)
 	{
-		case BC_ILACE_FIXMETHOD_NONE:   	strcpy(string, BC_ILACE_FIXMETHOD_NONE_T);   	break;
-		case BC_ILACE_FIXMETHOD_UPONE:  	strcpy(string, BC_ILACE_FIXMETHOD_UPONE_T);  	break;
-		case BC_ILACE_FIXMETHOD_DOWNONE:	strcpy(string, BC_ILACE_FIXMETHOD_DOWNONE_T);	break;
-		default: strcpy(string, BC_ILACE_UNKNOWN_T);	break;
+	case BC_ILACE_FIXMETHOD_NONE:
+		return BC_ILACE_FIXMETHOD_NONE_T;
+	case BC_ILACE_FIXMETHOD_UPONE:
+		return BC_ILACE_FIXMETHOD_UPONE_T;
+	case BC_ILACE_FIXMETHOD_DOWNONE:
+		return BC_ILACE_FIXMETHOD_DOWNONE_T;
 	}
+	return BC_ILACE_UNKNOWN_T;
+}
+
+void ilacefixmethod_to_text(char *string, int fixmethod)
+{
+	strcpy(string, ilacefixmethod_name(fixmethod));
 }
 
 int ilacefixmethod_from_text(char *text, int thedefault)
