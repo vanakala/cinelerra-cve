@@ -22,7 +22,6 @@
 #ifndef SETFORMAT_H
 #define SETFORMAT_H
 
-
 #include "edl.inc"
 #include "formatpresets.h"
 #include "guicast.h"
@@ -36,12 +35,13 @@
 class SetFormatPresets;
 
 
-
 class SetFormat : public BC_MenuItem
 {
 public:
 	SetFormat(MWindow *mwindow);
+
 	int handle_event();
+
 	SetFormatThread *thread;
 	MWindow *mwindow;
 };
@@ -61,7 +61,6 @@ public:
 	void update_aspect();
 // Update all parameters from preset menu
 	void update();
-
 
 	Mutex *window_lock;
 	SetFormatWindow *window;
@@ -97,8 +96,8 @@ public:
 		int h);
 	~SetChannelsCanvas();
 
-	int draw(int angle = -1);
-	int get_dimensions(int channel_position, int &x, int &y, int &w, int &h);
+	void draw(int angle = -1);
+	void get_dimensions(int channel_position, int &x, int &y, int &w, int &h);
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
@@ -121,28 +120,33 @@ class ScaleRatioText : public BC_TextBox
 {
 public:
 	ScaleRatioText(int x, int y, SetFormatThread *thread, float *output);
-	~ScaleRatioText();
+
 	int handle_event();
+
 	SetFormatThread *thread;
 	float *output;
 };
+
 
 class ScaleAspectAuto : public BC_CheckBox
 {
 public:
 	ScaleAspectAuto(int x, int y, SetFormatThread *thread);
-	~ScaleAspectAuto();
+
 	int handle_event();
 	SetFormatThread *thread;
 };
+
 
 class SetFormatApply : public BC_GenericButton
 {
 public:
 	SetFormatApply(int x, int y, SetFormatThread *thread);
+
 	int handle_event();
 	SetFormatThread *thread;
 };
+
 
 class SetFormatPresets : public FormatPresets
 {
@@ -154,6 +158,7 @@ private:
 	SetFormatWindow *format_gui;
 };
 
+
 class SetFormatWindow : public BC_Window
 {
 public:
@@ -162,9 +167,6 @@ public:
 		int x,
 		int y);
 	~SetFormatWindow();
-
-	void create_objects();
-	const char* get_preset_text();
 
 	MWindow *mwindow;
 	SetFormatThread *thread;

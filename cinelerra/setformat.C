@@ -48,7 +48,6 @@
 #include "vwindowgui.h"
 
 
-
 SetFormat::SetFormat(MWindow *mwindow)
  : BC_MenuItem(_("Format..."), "Shift-F", 'F')
 {
@@ -65,16 +64,10 @@ int SetFormat::handle_event()
 	}
 	else
 	{
-// window_lock has to be locked but window can't be locked until after
-// it is known to exist, so we neglect window_lock for now
+		thread->window_lock->lock("SetFormat::handle_event");
 		if(thread->window)
-		{
-			thread->window_lock->lock("SetFormat::handle_event");
-			thread->window->lock_window("SetFormat::handle_event");
 			thread->window->raise_window();
-			thread->window->unlock_window();
-			thread->window_lock->unlock();
-		}
+		thread->window_lock->unlock();
 	}
 	return 1;
 }
@@ -104,7 +97,6 @@ void SetFormatThread::run()
 
 	window_lock->lock("SetFormatThread::run 1");
 	window = new SetFormatWindow(mwindow, this, x, y);
-	window->create_objects();
 	window_lock->unlock();
 
 	int result = window->run_window();
@@ -273,7 +265,6 @@ void SetFormatThread::update_aspect()
 }
 
 
-
 SetFormatWindow::SetFormatWindow(MWindow *mwindow, 
 	SetFormatThread *thread,
 	int x,
@@ -289,17 +280,16 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	0,
 	1)
 {
-	this->mwindow = mwindow;
-	this->thread = thread;
-}
-
-void SetFormatWindow::create_objects()
-{
-	int x = 10, y = mwindow->theme->setformat_y1;
 	BC_TextBox *textbox;
 	BC_Title *title;
+
+	this->mwindow = mwindow;
+	this->thread = thread;
 	mwindow->theme->draw_setformat_bg(this);
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
+
+	x = 10;
+	y = mwindow->theme->setformat_y1;
 
 	presets = new SetFormatPresets(this, x, y);
 	presets->set_edl(thread->new_settings);
@@ -450,12 +440,6 @@ SetFormatWindow::~SetFormatWindow()
 	delete interlace_selection;
 }
 
-const char* SetFormatWindow::get_preset_text()
-{
-	return "";
-}
-
-
 
 SetFormatPresets::SetFormatPresets(SetFormatWindow *gui, int x, int y)
  : FormatPresets(gui, x, y)
@@ -524,7 +508,7 @@ SetChannelsCanvas::~SetChannelsCanvas()
 	delete rotater;
 }
 
-int SetChannelsCanvas::draw(int angle)
+void SetChannelsCanvas::draw(int angle)
 {
 	set_color(RED);
 	int real_w = get_w() - box_r * 2;
@@ -568,10 +552,9 @@ int SetChannelsCanvas::draw(int angle)
 	}
 
 	flash();
-	return 0;
 }
 
-int SetChannelsCanvas::get_dimensions(int channel_position, 
+void SetChannelsCanvas::get_dimensions(int channel_position, 
 	int &x, 
 	int &y, 
 	int &w, 
@@ -587,7 +570,6 @@ int SetChannelsCanvas::get_dimensions(int channel_position,
 	y += real_h / 2 + MARGIN / 2;
 	w = box_r * 2;
 	h = box_r * 2;
-	return 0;
 }
 
 int SetChannelsCanvas::button_press_event()
@@ -668,10 +650,6 @@ ScaleRatioText::ScaleRatioText(int x,
 	this->output = output; 
 }
 
-ScaleRatioText::~ScaleRatioText()
-{
-}
-
 int ScaleRatioText::handle_event()
 {
 	*output = atof(get_text());
@@ -687,10 +665,6 @@ ScaleAspectAuto::ScaleAspectAuto(int x, int y, SetFormatThread *thread)
  : BC_CheckBox(x, y, thread->auto_aspect, _("Auto"))
 {
 	this->thread = thread; 
-}
-
-ScaleAspectAuto::~ScaleAspectAuto()
-{
 }
 
 int ScaleAspectAuto::handle_event()
