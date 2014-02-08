@@ -66,11 +66,10 @@ public:
 	SetFormatWindow *window;
 	MWindow *mwindow;
 	EDL *new_settings;
-	float ratio[2];
+	double ratio[2];
 	int dimension[2];
 	int orig_dimension[2];
 	int auto_aspect;
-	int constrain_ratio;
 };
 
 class SetChannelsTextBox : public BC_TextBox
@@ -119,12 +118,12 @@ private:
 class ScaleRatioText : public BC_TextBox
 {
 public:
-	ScaleRatioText(int x, int y, SetFormatThread *thread, float *output);
+	ScaleRatioText(int x, int y, SetFormatThread *thread, double *output);
 
 	int handle_event();
 
 	SetFormatThread *thread;
-	float *output;
+	double *output;
 };
 
 
@@ -159,6 +158,20 @@ private:
 };
 
 
+class SetFrameSize : public FrameSizeSelection
+{
+public:
+	SetFrameSize(int x1, int y1, int x2, int y2,
+		BC_WindowBase *base, int *value1, int *value2, SetFormatThread *thread);
+
+	int handle_event();
+
+	int oldvalue1;
+	int oldvalue2;
+	SetFormatThread *thread;
+};
+
+
 class SetFormatWindow : public BC_Window
 {
 public:
@@ -172,7 +185,7 @@ public:
 	SetFormatThread *thread;
 	SetChannelsCanvas *canvas;
 
-	FrameSizeSelection *framesize_selection;
+	SetFrameSize *framesize_selection;
 	SetFormatPresets *presets;
 
 // Size ratio width, height

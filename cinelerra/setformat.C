@@ -85,7 +85,6 @@ void SetFormatThread::run()
 	orig_dimension[0] = dimension[0] = mwindow->edl->session->output_w;
 	orig_dimension[1] = dimension[1] = mwindow->edl->session->output_h;
 	auto_aspect = mwindow->defaults->get("AUTOASPECT", 0);
-	constrain_ratio = 0;
 	ratio[0] = ratio[1] = 1;
 
 	new_settings = new EDL;
@@ -181,7 +180,6 @@ void SetFormatThread::update()
 	auto_aspect = 0;
 	window->auto_aspect->update(0);
 
-	constrain_ratio = 0;
 	dimension[0] = new_settings->session->output_w;
 	dimension[1] = new_settings->session->output_h;
 	window->framesize_selection->update(dimension[0], dimension[1]);
@@ -199,56 +197,29 @@ void SetFormatThread::update()
 
 void SetFormatThread::update_window()
 {
-	int i, result, modified_item, dimension_modified = 0, ratio_modified = 0;
+	int i, dimension_modified = 0;
 
-	for(i = 0, result = 0; i < 2 && !result; i++)
+	for(i = 0; i < 2; i++)
 	{
 		if(dimension[i] < 0)
 		{
 			dimension[i] *= -1;
-			result = 1;
-			modified_item = i;
-			dimension_modified = 1;
+			ratio[i] = (double)dimension[i] / orig_dimension[i];
+			window->ratio[i]->update(ratio[i]);
 		}
-		if(ratio[i] < 0)
+		else if(ratio[i] < 0)
 		{
 			ratio[i] *= -1;
-			result = 1;
-			modified_item = i;
-			ratio_modified = 1;
+			dimension[i] = (int)(orig_dimension[i] * ratio[i]);
+			dimension_modified = 1;
 		}
 	}
 
-	if(result)
+	if(dimension_modified)
 	{
-		if(dimension_modified)
-			ratio[modified_item] = (float)dimension[modified_item] / orig_dimension[modified_item];
-
-		if(ratio_modified && !constrain_ratio)
-			dimension[modified_item] = (int)(orig_dimension[modified_item] * ratio[modified_item]);
-
-		for(i = 0; i < 2; i++)
-		{
-			if(dimension_modified ||
-				(i != modified_item && ratio_modified))
-			{
-				if(constrain_ratio) ratio[i] = ratio[modified_item];
-				window->ratio[i]->update(ratio[i]);
-			}
-
-			if(ratio_modified ||
-				(i != modified_item && dimension_modified))
-			{
-				if(constrain_ratio) 
-				{
-					dimension[i] = (int)(orig_dimension[i] * ratio[modified_item]);
-				}
-			}
-		}
 		window->framesize_selection->update(dimension[0], dimension[1]);
+		update_aspect();
 	}
-
-	update_aspect();
 }
 
 void SetFormatThread::update_aspect()
@@ -363,28 +334,28 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, y, _("Height:")));
 
-	add_subwindow(framesize_selection = new FrameSizeSelection(
+	add_subwindow(framesize_selection = new SetFrameSize(
 		mwindow->theme->setformat_x4, y0,
 		mwindow->theme->setformat_x4, y,
-		this, &(thread->dimension[0]), &(thread->dimension[1])));
+		this, &thread->dimension[0], &thread->dimension[1], thread));
 	framesize_selection->update(thread->dimension[0], thread->dimension[1]);
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
-		_("W Ratio:")));
+		_("W Scale:")));
 	add_subwindow(ratio[0] = new ScaleRatioText(mwindow->theme->setformat_x4, 
 		y, 
 		thread, 
-		&(thread->ratio[0])));
+		&thread->ratio[0]));
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
-		_("H Ratio:")));
+		_("H Scale:")));
 	add_subwindow(ratio[1] = new ScaleRatioText(mwindow->theme->setformat_x4, 
 		y, 
 		thread, 
-		&(thread->ratio[1])));
+		&thread->ratio[1]));
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
@@ -643,8 +614,8 @@ int SetChannelsCanvas::cursor_motion_event()
 ScaleRatioText::ScaleRatioText(int x, 
 	int y, 
 	SetFormatThread *thread, 
-	float *output)
- : BC_TextBox(x, y, 100, 1, *output)
+	double *output)
+ : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, (float)*output)
 { 
 	this->thread = thread; 
 	this->output = output; 
@@ -654,7 +625,7 @@ int ScaleRatioText::handle_event()
 {
 	*output = atof(get_text());
 	if(*output > 10000) *output = 10000;
-	if(*output < -10000) *output = -10000;
+	if(*output < 1) *output = 1;
 	*output *= -1;
 	thread->update_window();
 	return 1;
@@ -684,4 +655,29 @@ int SetFormatApply::handle_event()
 {
 	thread->apply_changes();
 	return 1;
+}
+
+SetFrameSize::SetFrameSize(int x1, int y1, int x2, int y2,
+	BC_WindowBase *base, int *value1, int *value2, SetFormatThread *thread)
+ : FrameSizeSelection(x1, y1, x2, y2, base, value1, value2)
+{
+	this->thread = thread;
+	oldvalue1 = *value1;
+	oldvalue2 = *value2;
+}
+
+int SetFrameSize::handle_event()
+{
+	Selection::handle_event();
+	if(oldvalue1 != *intvalue2)
+	{
+		oldvalue1 = *intvalue2;
+		*intvalue2 = -(*intvalue2);
+	}
+	if(oldvalue2 != *intvalue)
+	{
+		oldvalue2 = *intvalue;
+		*intvalue = -(*intvalue);
+	}
+	thread->update_window();
 }

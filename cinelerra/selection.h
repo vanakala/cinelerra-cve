@@ -81,10 +81,10 @@ public:
 
 protected:
 	SelectionLeftBox *firstbox;
-private:
-	BC_PopupMenu *init_objects(int x, int y, BC_WindowBase *base);
 	int *intvalue;
 	int *intvalue2;
+private:
+	BC_PopupMenu *init_objects(int x, int y, BC_WindowBase *base);
 	double *doublevalue;
 	double *doublevalue2;
 };
