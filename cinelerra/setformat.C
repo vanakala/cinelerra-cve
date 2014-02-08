@@ -322,11 +322,6 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 		&thread->new_settings->session->frame_rate));
 	frame_rate->update(thread->new_settings->session->frame_rate);
 
-	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
-		y, 
-		_("Canvas size:")));
-
 	int y0;
 	y0 = y += mwindow->theme->setformat_margin;
 	add_subwindow(title = new BC_Title(mwindow->theme->setformat_x3, y, _("Width:")));
