@@ -74,7 +74,8 @@ public:
 	void update(int value);
 	void update(float value);
 	void update(double value);
-	void disable();
+// options: do not dim the text when the box is disabled
+	void disable(int options = 0);
 	void enable();
 	int get_enabled();
 
@@ -158,6 +159,7 @@ private:
 	char text[BCTEXTLEN], text_row[BCTEXTLEN], temp_string[2];
 	int active;
 	int enabled;
+	int defaultcolor;
 	int precision;
 	int keypress_draw;
 // Cause the repeater to skip a cursor refresh if a certain event happened

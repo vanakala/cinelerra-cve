@@ -186,7 +186,7 @@ FormatSelection::FormatSelection(int x, int y,
  : Selection(x, y, base_gui, menu, 0, SELECTION_VARWIDTH)
 {
 	this->presets = presets;
-	disable();
+	disable(1);
 }
 
 int FormatSelection::handle_event()
@@ -205,7 +205,7 @@ ColormodelSelection::ColormodelSelection(int x, int y,
 	}
 	base_gui->add_subwindow(selection = new Selection(x, y, base_gui,
 		cmodel_selection, cmodel, SELECTION_VARWIDTH));
-	selection->disable();
+	selection->disable(1);
 }
 
 void ColormodelSelection::update(int value)
@@ -218,7 +218,7 @@ IlaceSelection::IlaceSelection(int x, int y,
 	BC_WindowBase *base_gui, int *value, struct selection_int *menu)
  : Selection(x, y, base_gui, menu, value, SELECTION_VARWIDTH)
 {
-	disable();
+	disable(1);
 }
 
 void IlaceSelection::update(int value)
@@ -242,7 +242,7 @@ InterlaceFixSelection::InterlaceFixSelection(int x, int y,
 	BC_WindowBase *base_gui, int *value)
  : Selection(x, y, base_gui, ilacefix_selection, value, SELECTION_VARWIDTH)
 {
-	disable();
+	disable(1);
 }
 
 void InterlaceFixSelection::update(int value)
