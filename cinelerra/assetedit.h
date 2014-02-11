@@ -28,7 +28,7 @@
 #include "bitspopup.inc"
 #include "browsebutton.h"
 #include "formatpopup.h"
-#include "formatpresets.inc"
+#include "formatpresets.h"
 #include "language.h"
 #include "mwindow.h"
 #include "thread.h"
@@ -42,6 +42,7 @@ class AssetEditByteOrderLOHI;
 class AssetEditPath;
 class AssetEditPathText;
 class AssetEditWindow;
+class AssetInterlaceMode;
 
 class AssetEdit : public Thread
 {
@@ -79,7 +80,7 @@ public:
 	int allow_edits;
 	MWindow *mwindow;
 	AssetEdit *asset_edit;
-	AInterlaceModeSelection *ilacemode_selection;
+	AssetInterlaceMode *ilacemode_selection;
 	InterlaceFixSelection *ilacefix_selection;
 };
 
@@ -136,40 +137,24 @@ class Interlaceautofix : public BC_CheckBox
 {
 public:
 	Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y);
-	~Interlaceautofix();
+
 	int handle_event();
 
 	void showhideotherwidgets();
 
 	AssetEditWindow* fwindow;
 	MWindow *mwindow;
-
-	BC_TextBox *ilacemode_textbox;
-	BC_ListBox *ilacemode_listbox;
-	BC_TextBox *ilacefixmethod_textbox;
-	BC_ListBox *ilacefixmethod_listbox;
-private:
-	char string[BCTEXTLEN];
 };
 
-class AssetEditILaceautofixoption : public BC_TextBox
+
+class AssetInterlaceMode : public AInterlaceModeSelection
 {
 public:
-	AssetEditILaceautofixoption(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w);
+	AssetInterlaceMode(int x, int y, BC_WindowBase *base_gui, int *value);
 
 	int handle_event();
-	int thedefault;
-	AssetEditWindow *fwindow;
-};
 
-class AssetEditILacefixmethod : public BC_TextBox
-{
-public:
-	AssetEditILacefixmethod(AssetEditWindow *fwindow, 
-		const char *text, int thedefault, int x, int y, int w);
-	int handle_event();
-	int thedefault;
-	AssetEditWindow *fwindow;
+	Interlaceautofix *autofix;
 };
 
 class AssetEditHeader : public BC_TextBox

@@ -292,9 +292,9 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 
 	// --------------------
 	add_subwindow(new BC_Title(x, y, _("Interlace mode:")));
-	interlace_selection = new InterlaceModeSelection(x + 100, y, this,
-		&new_edl->session->interlace_mode);
-	y += interlace_selection->selection->get_h() + 5;
+	add_subwindow(interlace_selection = new InterlaceModeSelection(x + 100, y, this,
+		&new_edl->session->interlace_mode));
+	y += interlace_selection->get_h() + 5;
 
 	add_subwindow(new BC_OKButton(this, 
 		mwindow->theme->get_image_set("new_ok_images")));
@@ -309,7 +309,6 @@ NewWindow::~NewWindow()
 {
 	delete format_presets;
 	delete cmodel_selection;
-	delete interlace_selection;
 }
 
 void NewWindow::update()

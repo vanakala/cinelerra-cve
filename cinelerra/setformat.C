@@ -383,8 +383,8 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
 		_("Interlace mode:")));
-	interlace_selection = new InterlaceModeSelection(mwindow->theme->setformat_x4,
-		y, this, &thread->new_settings->session->interlace_mode);
+	add_subwindow(interlace_selection = new InterlaceModeSelection(mwindow->theme->setformat_x4,
+		y, this, &thread->new_settings->session->interlace_mode));
 	interlace_selection->update(thread->new_settings->session->interlace_mode);
 	y += mwindow->theme->setformat_margin;
 
@@ -403,7 +403,6 @@ SetFormatWindow::~SetFormatWindow()
 {
 	delete presets;
 	delete cmodel_selection;
-	delete interlace_selection;
 }
 
 

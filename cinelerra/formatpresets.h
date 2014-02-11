@@ -24,6 +24,7 @@
 
 
 #include "edl.inc"
+#include "edlsession.inc"
 #include "formatpresets.inc"
 #include "guicast.h"
 #include "mwindow.inc"
@@ -99,15 +100,13 @@ private:
 	static struct selection_int cmodel_selection[];
 };
 
-class IlaceSelection
+class IlaceSelection : public Selection
 {
 public:
 	IlaceSelection(int x, int y, BC_WindowBase *base_gui, int *value,
-		struct selection_int *menu, int menulen);
+		struct selection_int *menu);
 
 	void update(int value);
-
-	Selection *selection;
 };
 
 class AInterlaceModeSelection : public IlaceSelection
@@ -128,7 +127,7 @@ private:
 	static struct selection_int ilacemode_selection[];
 };
 
-class InterlaceFixSelection
+class InterlaceFixSelection : public Selection
 {
 public:
 	InterlaceFixSelection(int x, int y,
@@ -136,7 +135,6 @@ public:
 
 	void update(int value);
 
-	Selection *selection;
 private:
 	static struct selection_int ilacefix_selection[];
 };
