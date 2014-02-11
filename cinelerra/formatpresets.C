@@ -95,7 +95,7 @@ FormatPresets::FormatPresets(BC_WindowBase* base_gui, int x, int y)
 	presets_menu[0].text = "User defined";
 	presets_menu[0].value = 0;
 
-	for(int i = 0; i < MAX_NUM_PRESETS + 1; i++)
+	for(int i = 0; i < MAX_NUM_PRESETS; i++)
 	{
 		presets_menu[i + 1].text = format_presets[i].name;
 		presets_menu[i + 1].value = i;
