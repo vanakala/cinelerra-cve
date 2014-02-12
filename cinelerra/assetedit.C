@@ -475,7 +475,7 @@ int AssetEditWindow::create_objects()
 		add_subwindow(title = new BC_Title(x1, y, _("Interlace correction:")));
 		add_subwindow(ilacefix_selection = new InterlaceFixSelection(x2, y,
 			this, &asset->interlace_fixmethod));
-		ilacefix_selection->update(asset->interlace_fixmethod);
+		ilacefixoption_chkboxw->showhideotherwidgets();
 		y += ilacefix_selection->get_h() + 5;
 
 		x = x1;
@@ -581,7 +581,13 @@ void Interlaceautofix::showhideotherwidgets()
 	{
 		int method = ilaceautofixmethod(mwindow->edl->session->interlace_mode,
 			fwindow->asset->interlace_mode);
+		fwindow->ilacefix_selection->disable(0);
 		fwindow->ilacefix_selection->update(method);
+	}
+	else
+	{
+		fwindow->ilacefix_selection->enable(1);
+		fwindow->ilacefix_selection->update(fwindow->asset->interlace_fixmethod);
 	}
 }
 

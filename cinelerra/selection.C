@@ -258,7 +258,7 @@ BC_PopupMenu *Selection::init_objects(int x, int y, BC_WindowBase *base)
 	int y1 = y + get_resources()->listbox_button[0]->get_h();
 
 	base->add_subwindow(popupmenu = new BC_PopupMenu(x, y1, 0, "", POPUPMENU_USE_COORDS));
-	base->add_subwindow(new SelectionButton(x1, y, popupmenu,
+	base->add_subwindow(button = new SelectionButton(x1, y, popupmenu,
 		get_resources()->listbox_button));
 
 	intvalue = 0;
@@ -280,6 +280,22 @@ int Selection::calculate_width()
 		w += get_x() - firstbox->get_x();
 
 	return w;
+}
+
+void Selection::disable(int option)
+{
+	defaultcolor = option;
+	BC_TextBox::disable(option);
+	if(!option)
+		button->disable();
+}
+
+void Selection::enable(int option)
+{
+	BC_TextBox::enable();
+	button->enable();
+	if(option)
+		BC_TextBox::disable(option);
 }
 
 int Selection::handle_event()

@@ -120,6 +120,9 @@ public:
 	int select_whole_text(int select);
 	void cycle_textboxes(int amout);
 
+protected:
+	int defaultcolor;
+
 private:
 	void reset_parameters(int rows, int has_border, int font);
 	void draw();
@@ -159,7 +162,6 @@ private:
 	char text[BCTEXTLEN], text_row[BCTEXTLEN], temp_string[2];
 	int active;
 	int enabled;
-	int defaultcolor;
 	int precision;
 	int keypress_draw;
 // Cause the repeater to skip a cursor refresh if a certain event happened

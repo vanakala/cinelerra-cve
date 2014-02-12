@@ -57,6 +57,7 @@ struct selection_2double
 };
 
 class SelectionLeftBox;
+class SelectionButton;
 
 class Selection : public BC_TextBox
 {
@@ -73,6 +74,9 @@ public:
 		double *value1, double *value2, int separator);
 
 	int calculate_width();
+// option == 1 - textbox is bright, but not modifable
+	void disable(int option = 0);
+	void enable(int option = 0);
 	virtual int handle_event();
 
 	const struct selection_int *current_int;
@@ -87,6 +91,7 @@ private:
 	BC_PopupMenu *init_objects(int x, int y, BC_WindowBase *base);
 	double *doublevalue;
 	double *doublevalue2;
+	SelectionButton *button;
 };
 
 class SelectionButton : public BC_Button
