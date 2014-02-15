@@ -33,6 +33,7 @@
 #include "overlayframe.inc"
 #include "playbackconfig.h"
 #include "recordconfig.h"
+#include "selection.h"
 #include "tracks.h"
 #include "workarounds.h"
 
@@ -398,13 +399,8 @@ void EDLSession::boundaries()
 	Workarounds::clamp(min_meter_db, -80, -20);
 	Workarounds::clamp(max_meter_db, 0, 10);
 	Workarounds::clamp(frames_per_foot, 1, 32);
-	Workarounds::clamp(output_w, 16, (int)BC_INFINITY);
-	Workarounds::clamp(output_h, 16, (int)BC_INFINITY);
 	Workarounds::clamp(video_write_length, 1, 1000);
-	output_w /= 2;
-	output_w *= 2;
-	output_h /= 2;
-	output_h *= 2;
+	FrameSizeSelection::limits(&output_w, &output_h);
 
 	Workarounds::clamp(crop_x1, 0, output_w);
 	Workarounds::clamp(crop_x2, 0, output_w);

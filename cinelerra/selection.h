@@ -153,6 +153,8 @@ public:
 
 	void update(int value1, int value2);
 	void handle_swapvalues(int value1, int value2);
+	int handle_event();
+	static int limits(int *width, int *height);
 
 private:
 	static const struct selection_2int frame_sizes[];

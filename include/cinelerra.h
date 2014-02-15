@@ -45,4 +45,10 @@
 #define MAXCHANNELS 16
 #define MAX_CHANNELS 16
 
+// Frame size limits
+#define MIN_FRAME_HEIGHT 16
+#define MAX_FRAME_HEIGHT 4096
+#define MIN_FRAME_WIDTH 16
+#define MAX_FRAME_WIDTH 4096
+
 #endif

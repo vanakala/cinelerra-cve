@@ -27,6 +27,7 @@
 #include "bcwindow.h"
 #include "bcwindowbase.h"
 #include "bcresources.h"
+#include "cinelerra.h"
 #include "language.h"
 #include "mwindow.h"
 #include "theme.h"
@@ -131,6 +132,59 @@ void FrameSizeSelection::handle_swapvalues(int value1, int value2)
 	update(value1, value2);
 }
 
+int FrameSizeSelection::handle_event()
+{
+	int result = Selection::handle_event();
+
+	if(limits(intvalue2, intvalue))
+		update(*intvalue2, *intvalue);
+
+	return result;
+}
+
+int FrameSizeSelection::limits(int *width, int *height)
+{
+	int v, result = 0;
+
+	if(width)
+	{
+		v = *width;
+		if(v > MAX_FRAME_WIDTH)
+		{
+			result = -1;
+			v = MAX_FRAME_WIDTH;
+		}
+		if(v < MIN_FRAME_WIDTH)
+		{
+			result = -1;
+			v = MIN_FRAME_WIDTH;
+		}
+		v &= ~1;
+		if(!result && v != *width)
+			result = 1;
+		*width = v;
+	}
+
+	if(height)
+	{
+		v = *height;
+		if(v < MIN_FRAME_HEIGHT)
+		{
+			result = -1;
+			v = MIN_FRAME_WIDTH;
+		}
+		if(v > MAX_FRAME_WIDTH)
+		{
+			result = -1;
+			v = MAX_FRAME_WIDTH;
+		}
+		v &= ~1;
+		if(!result && v != *height)
+			result = 1;
+		*height = v;
+	}
+	return result;
+}
 
 AspectRatioSelection::AspectRatioSelection(int x1, int y1, int x2, int y2,
 	BC_WindowBase *base, double *value1, double *value2)
