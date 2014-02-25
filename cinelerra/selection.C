@@ -28,6 +28,7 @@
 #include "bcwindowbase.h"
 #include "bcresources.h"
 #include "cinelerra.h"
+#include "clip.h"
 #include "language.h"
 #include "mwindow.h"
 #include "theme.h"
@@ -104,9 +105,58 @@ SampleRateSelection::SampleRateSelection(int x, int y, BC_WindowBase *base, int 
 {
 }
 
+int SampleRateSelection::limits(int *rate)
+{
+	int result = 0;
+
+	if(*rate < MIN_SAMPLE_RATE)
+	{
+		*rate = MIN_SAMPLE_RATE;
+		result = -1;
+	}
+
+	if(*rate > MAX_SAMPLE_RATE)
+	{
+		*rate = MAX_SAMPLE_RATE;
+		result = -1;
+	}
+	return result;
+}
+
 FrameRateSelection::FrameRateSelection(int x, int y, BC_WindowBase *base, double *value)
  : Selection(x, y , base, frame_rates, value)
 {
+}
+
+int FrameRateSelection::limits(double *rate)
+{
+	int result = 0;
+	double value = *rate;
+
+	if(value < MIN_FRAME_RATE)
+	{
+		value = MIN_FRAME_RATE;
+		result = -1;
+	}
+
+	if(value > MAX_FRAME_RATE)
+	{
+		value = MAX_FRAME_RATE;
+		result = -1;
+	}
+
+	if(value > 29.5 && value < 30)
+		value = (double)30000 / (double)1001;
+	else
+	if(value > 59.5 && value < 60)
+		value = (double)60000 / (double)1001;
+	else
+	if(value > 23.5 && value < 24)
+		value = (double)24000 / (double)1001;
+	if(!result && !EQUIV(value, *rate))
+		result = 1;
+	*rate = value;
+	return result;
 }
 
 FrameSizeSelection::FrameSizeSelection(int x1, int y1, int x2, int y2,
