@@ -50,7 +50,6 @@
 #include <string.h>
 
 
-
 AssetEdit::AssetEdit(MWindow *mwindow)
  : Thread()
 {
@@ -59,12 +58,6 @@ AssetEdit::AssetEdit(MWindow *mwindow)
 	window = 0;
 	set_synchronous(0);
 }
-
-
-AssetEdit::~AssetEdit()
-{
-}
-
 
 void AssetEdit::edit_asset(Asset *asset)
 {
@@ -76,11 +69,9 @@ void AssetEdit::edit_asset(Asset *asset)
 	}
 }
 
-
-int AssetEdit::set_asset(Asset *asset)
+void AssetEdit::set_asset(Asset *asset)
 {
 	this->asset = asset;
-	return 0;
 }
 
 void AssetEdit::run()
@@ -91,7 +82,6 @@ void AssetEdit::run()
 		*new_asset = *asset;
 		int result = 0;
 		window = new AssetEditWindow(mwindow, this);
-		window->create_objects();
 		window->raise_window();
 		result = window->run_window();
 
@@ -125,7 +115,6 @@ void AssetEdit::run()
 				}
 				mwindow->gui->unlock_window();
 
-
 				mwindow->awindow->gui->async_update_assets();
 				mwindow->vwindow->change_source();
 
@@ -141,12 +130,6 @@ void AssetEdit::run()
 }
 
 
-
-
-
-
-
-
 AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  : BC_Window("Asset Info - " PROGRAM_NAME,
 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
@@ -159,30 +142,6 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	0,
 	1)
 {
-	this->mwindow = mwindow;
-	this->asset_edit = asset_edit;
-	this->asset = asset_edit->new_asset;
-	bitspopup = 0;
-	if(asset->format == FILE_PCM)
-		allow_edits = 1;
-	else
-		allow_edits = 0;
-}
-
-
-
-
-
-AssetEditWindow::~AssetEditWindow()
-{
-	if(bitspopup) delete bitspopup;
-}
-
-
-
-
-int AssetEditWindow::create_objects()
-{
 	int y = 10, x = 10, x1 = 10, x2 = 160;
 	char string[BCTEXTLEN];
 	int vmargin;
@@ -194,10 +153,20 @@ int AssetEditWindow::create_objects()
 	BC_ListBox  *listboxw;
 	Interlaceautofix *ilacefixoption_chkboxw;
 
-	if(allow_edits) 
+	this->mwindow = mwindow;
+	this->asset_edit = asset_edit;
+	this->asset = asset_edit->new_asset;
+	bitspopup = 0;
+	if(asset->format == FILE_PCM)
+	{
+		allow_edits = 1;
 		vmargin = 30;
+	}
 	else
+	{
+		allow_edits = 0;
 		vmargin = 20;
+	}
 
 	set_icon(mwindow->theme->get_image("awindow_icon"));
 	add_subwindow(path_text = new AssetEditPathText(this, y));
@@ -535,8 +504,13 @@ int AssetEditWindow::create_objects()
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	flush();
-	return 0;
 }
+
+AssetEditWindow::~AssetEditWindow()
+{
+	if(bitspopup) delete bitspopup;
+}
+
 
 AssetEditChannels::AssetEditChannels(AssetEditWindow *fwindow, 
 	char *text, 
@@ -558,6 +532,7 @@ int AssetEditChannels::handle_event()
 	fwindow->asset->channels = atol(get_text());
 	return 1;
 }
+
 
 Interlaceautofix::Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y)
  : BC_CheckBox(x, y, fwindow->asset->interlace_autofixoption, _("Automatically Fix Interlacing"))
@@ -591,6 +566,7 @@ void Interlaceautofix::showhideotherwidgets()
 	}
 }
 
+
 AssetInterlaceMode::AssetInterlaceMode(int x, int y, BC_WindowBase *base_gui, int *value)
  : AInterlaceModeSelection(x, y, base_gui, value)
 {
@@ -619,6 +595,7 @@ int AssetEditHeader::handle_event()
 	return 1;
 }
 
+
 AssetEditByteOrderLOHI::AssetEditByteOrderLOHI(AssetEditWindow *fwindow, 
 	int value, 
 	int x,
@@ -635,6 +612,7 @@ int AssetEditByteOrderLOHI::handle_event()
 	update(1);
 	return 1;
 }
+
 
 AssetEditByteOrderHILO::AssetEditByteOrderHILO(AssetEditWindow *fwindow, 
 	int value, 
@@ -653,6 +631,7 @@ int AssetEditByteOrderHILO::handle_event()
 	return 1;
 }
 
+
 AssetEditSigned::AssetEditSigned(AssetEditWindow *fwindow, 
 	int value, 
 	int x, 
@@ -669,31 +648,25 @@ int AssetEditSigned::handle_event()
 }
 
 
-
 AssetEditPathText::AssetEditPathText(AssetEditWindow *fwindow, int y)
  : BC_TextBox(5, y, 300, 1, fwindow->asset->path) 
 {
 	this->fwindow = fwindow; 
 }
-AssetEditPathText::~AssetEditPathText() 
-{
-}
+
 int AssetEditPathText::handle_event() 
 {
 	strcpy(fwindow->asset->path, get_text());
 	return 1;
 }
 
-AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow, 
-    BC_TextBox *textbox, int y, const char *text, 
-    const char *window_title, const char *window_caption)
+AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow,
+	BC_TextBox *textbox, int y, const char *text,
+	const char *window_title, const char *window_caption)
  : BrowseButton(mwindow, fwindow, textbox, 310, y, text, window_title, window_caption, 0) 
 { 
 	this->fwindow = fwindow; 
 }
-AssetEditPath::~AssetEditPath() {}
-
-
 
 
 AssetEditFormat::AssetEditFormat(AssetEditWindow *fwindow, char* default_, int y)
@@ -701,9 +674,7 @@ AssetEditFormat::AssetEditFormat(AssetEditWindow *fwindow, char* default_, int y
 { 
 	this->fwindow = fwindow; 
 }
-AssetEditFormat::~AssetEditFormat() 
-{
-}
+
 int AssetEditFormat::handle_event()
 {
 	fwindow->asset->format = File::strtoformat(fwindow->mwindow->plugindb, get_selection(0, 0)->get_text());
@@ -711,23 +682,16 @@ int AssetEditFormat::handle_event()
 }
 
 
-
-
 AssetEditReelName::AssetEditReelName(AssetEditWindow *fwindow, int x, int y)
  : BC_TextBox(x, y, 200, 1, fwindow->asset->reel_name)
 {
 	this->fwindow = fwindow;
 }
-AssetEditReelName::~AssetEditReelName()
-{
-}
+
 int AssetEditReelName::handle_event()
 {
 	strcpy(fwindow->asset->reel_name, get_text());
 }
-
-
-
 
 
 AssetEditReelNumber::AssetEditReelNumber(AssetEditWindow *fwindow, int x, int y)
@@ -735,9 +699,7 @@ AssetEditReelNumber::AssetEditReelNumber(AssetEditWindow *fwindow, int x, int y)
 {
 	this->fwindow = fwindow;
 }
-AssetEditReelNumber::~AssetEditReelNumber()
-{
-}
+
 int AssetEditReelNumber::handle_event()
 {
 	char *text = get_text() + strlen(get_text()) - 1;
@@ -753,7 +715,6 @@ int AssetEditReelNumber::handle_event()
 }
 
 
-
 AssetEditTCStartTextBox::AssetEditTCStartTextBox(AssetEditWindow *fwindow, int value, int x, int y, int multiplier)
  : BC_TextBox(x, y, 30, 1, value)
 {
@@ -762,16 +723,13 @@ AssetEditTCStartTextBox::AssetEditTCStartTextBox(AssetEditWindow *fwindow, int v
 	previous = value;
 }
 
-AssetEditTCStartTextBox::~AssetEditTCStartTextBox()
-{
-}
-
 int AssetEditTCStartTextBox::handle_event()
 {
 	fwindow->asset->tcstart -= previous * multiplier;
 	fwindow->asset->tcstart += atoi(get_text()) * multiplier;
 	previous = atoi(get_text());
 }
+
 
 AsseteditSelect::AsseteditSelect(int x, int y, 
 	const char *text, int *output)
