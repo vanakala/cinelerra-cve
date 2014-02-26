@@ -30,6 +30,7 @@
 #include "interlacemodes.h"
 #include "language.h"
 #include "levelwindow.h"
+#include "mainerror.h"
 #include "mainundo.h"
 #include "mainmenu.h"
 #include "mutex.h"
@@ -108,6 +109,12 @@ void New::create_new_project()
 
 	mwindow->hide_plugins();
 	delete mwindow->edl;
+	if(SampleRateSelection::limits(&new_edl->session->sample_rate) < 0)
+		errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
+			MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
+	if(FrameRateSelection::limits(&new_edl->session->frame_rate) < 0)
+		errorbox(_("Frame rate is out of limits (%d..%d).\nCorrection applied."),
+			MIN_FRAME_RATE, MAX_FRAME_RATE);
 	mwindow->edl = new_edl;
 	mwindow->save_defaults();
 

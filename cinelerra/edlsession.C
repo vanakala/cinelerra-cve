@@ -392,14 +392,14 @@ void EDLSession::boundaries()
 {
 	Workarounds::clamp(audio_tracks, 0, (int)BC_INFINITY);
 	Workarounds::clamp(audio_channels, 1, MAXCHANNELS - 1);
-	Workarounds::clamp(sample_rate, 1, 1000000);
 	Workarounds::clamp(video_tracks, 0, (int)BC_INFINITY);
 	Workarounds::clamp(video_channels, 1, MAXCHANNELS - 1);
-	Workarounds::clamp(frame_rate, 1.0, (double)BC_INFINITY);
 	Workarounds::clamp(min_meter_db, -80, -20);
 	Workarounds::clamp(max_meter_db, 0, 10);
 	Workarounds::clamp(frames_per_foot, 1, 32);
 	Workarounds::clamp(video_write_length, 1, 1000);
+	SampleRateSelection::limits(&sample_rate);
+	FrameRateSelection::limits(&frame_rate);
 	FrameSizeSelection::limits(&output_w, &output_h);
 
 	Workarounds::clamp(crop_x1, 0, output_w);
@@ -408,9 +408,6 @@ void EDLSession::boundaries()
 	Workarounds::clamp(crop_y2, 0, output_h);
 	if(brender_start < 0) brender_start = 0.0;
 	Workarounds::clamp(awindow_folder, 0, AWINDOW_FOLDERS - 1);
-
-// Correct framerates
-	frame_rate = Units::fix_framerate(frame_rate);
 }
 
 

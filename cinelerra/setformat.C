@@ -122,6 +122,12 @@ void SetFormatThread::apply_changes()
 	memcpy(&mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
 		new_settings->session->achannel_positions,
 		sizeof(int) * MAXCHANNELS);
+	if(SampleRateSelection::limits(&new_settings->session->sample_rate) < 0)
+		errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
+			MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
+	if(FrameRateSelection::limits(&new_settings->session->frame_rate) < 0)
+		errorbox(_("Frame rate is out of limits (%d..%d).\nCorrection applied."),
+			MIN_FRAME_RATE, MAX_FRAME_RATE);
 
 	mwindow->edl->copy_session(new_settings, 1);
 	mwindow->edl->session->output_w = dimension[0];

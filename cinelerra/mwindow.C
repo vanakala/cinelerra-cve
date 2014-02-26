@@ -914,6 +914,9 @@ SET_TRACE
 					FileFormat fwindow(this);
 					fwindow.create_objects(new_asset, string);
 					result = fwindow.run_window();
+					if(SampleRateSelection::limits(&new_asset->sample_rate) < 0)
+						errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
+							MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
 
 					defaults->update("AUDIO_CHANNELS", new_asset->channels);
 					defaults->update("SAMPLE_RATE", new_asset->sample_rate);
