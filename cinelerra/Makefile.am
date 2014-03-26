@@ -593,6 +593,7 @@ cinelerracve_LDADD = \
 	$(SOUND_LDFLAGS) \
 	$(LIBDV_LIBS) \
 	$(OPENGL_LIBS) \
+	$(MP3LAME_LIBS) \
 	-luuid \
 	$(MJPEG_LIBS)
 

@@ -427,7 +427,8 @@ AC_SUBST(XIPH_LIBS)
 ############## LAME
 # Just test to see if we have lame installed.
 AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes])
-AC_CHECK_LIB(mp3lame,lame_init,[libmp3lame=yes],,[$XIPH_LIBS])
+AC_CHECK_LIB(mp3lame,lame_init,[MP3LAME_LIBS="-lmp3lame"; libmp3lame=yes],,[$XIPH_LIBS])
+AC_SUBST(MP3LAME_LIBS)
 # END LAME
 
 ############## OpenGL
