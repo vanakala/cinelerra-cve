@@ -594,6 +594,7 @@ cinelerracve_LDADD = \
 	$(LIBDV_LIBS) \
 	$(OPENGL_LIBS) \
 	$(MP3LAME_LIBS) \
+	$(X_PRE_LIBS) $(X_LIBS) \
 	-luuid \
 	$(MJPEG_LIBS)
 

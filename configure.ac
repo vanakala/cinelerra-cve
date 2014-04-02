@@ -74,15 +74,25 @@ AC_SUBST(fontsdir)
 
 ############## XLIB
 AC_PATH_XTRA
+AC_CHECK_HEADERS([X11/extensions/XShm.h X11/extensions/Xvlib.h X11/extensions/xf86vmode.h],,[no_x=yes],
+[ #include <X11/Xlib.h>
+#include <sys/ipc.h>
+#include <sys/shm.h> ]
+)
+AC_CHECK_LIB([Xext], [XShmAttach],,[no_x=yes])
+AC_CHECK_LIB([Xv], [XvGrabPort],,[no_x=yes])
+AC_CHECK_LIB([Xxf86vm], [XF86VidModeGetAllModeLines],,[no_x=yes])
 if test "$no_x" = yes; then
 	if test "x$have_x" = "xdisabled"; then
 		AC_MSG_WARN([Do not use --without-x or --with-x=no.])
 	else
 		AC_MSG_WARN([X Windows development tools were not found.])
-		AC_MSG_WARN([Please install xlib-dev or xorg-x11-devel.])
+		AC_MSG_WARN([Please install xlib-dev or xorg-x11-devel and])
+		AC_MSG_WARN([development packages for Xext, Xv, Xxf86vm])
 	fi
 	AC_MSG_ERROR([Cinelerra requires X Windows.])
 fi
+X_LIBS="$X_LIBS -lXxf86vm -lXv -lXext -lX11"
 AH_TEMPLATE(HAVE_LIBXXF86VM, [Define to 1 if libXxf86vm is available.])
 AC_DEFINE(HAVE_LIBXXF86VM)
 ############## END XLIB
