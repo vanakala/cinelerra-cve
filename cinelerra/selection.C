@@ -182,16 +182,6 @@ void FrameSizeSelection::handle_swapvalues(int value1, int value2)
 	update(value1, value2);
 }
 
-int FrameSizeSelection::handle_event()
-{
-	int result = Selection::handle_event();
-
-	if(limits(intvalue2, intvalue))
-		update(*intvalue2, *intvalue);
-
-	return result;
-}
-
 int FrameSizeSelection::limits(int *width, int *height)
 {
 	int v, result = 0;

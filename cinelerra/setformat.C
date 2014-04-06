@@ -128,6 +128,9 @@ void SetFormatThread::apply_changes()
 	if(FrameRateSelection::limits(&new_settings->session->frame_rate) < 0)
 		errorbox(_("Frame rate is out of limits (%d..%d).\nCorrection applied."),
 			MIN_FRAME_RATE, MAX_FRAME_RATE);
+	if(FrameSizeSelection::limits(&dimension[0], &dimension[1]) < 0)
+		errorbox(_("Frame size is out of limits (%d..%dx%d..%d).\nCorrection applied."),
+			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
 
 	mwindow->edl->copy_session(new_settings, 1);
 	mwindow->edl->session->output_w = dimension[0];
@@ -669,7 +672,7 @@ SetFrameSize::SetFrameSize(int x1, int y1, int x2, int y2,
 
 int SetFrameSize::handle_event()
 {
-	FrameSizeSelection::handle_event();
+	Selection::handle_event();
 	if(oldvalue1 != *intvalue2)
 	{
 		oldvalue1 = *intvalue2;
