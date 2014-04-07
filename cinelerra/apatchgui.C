@@ -152,7 +152,6 @@ int APatchGUI::update(int x, int y)
 
 	if(pan)
 	{
-		
 		if(h - y1 < mwindow->theme->pan_h)
 		{
 			delete pan;
@@ -188,7 +187,7 @@ int APatchGUI::update(int x, int y)
 	if(h - y1 >= mwindow->theme->pan_h)
 	{
 		int handle_x, handle_y;
-		PanAuto *previous, *next;
+		PanAuto *previous = 0, *next = 0;
 		PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
 		ptstime position = mwindow->edl->local_session->get_selectionstart(1);
 		float *values;
