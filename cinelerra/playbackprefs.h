@@ -61,7 +61,7 @@ public:
 	void delete_strategy();
 
 	void update(int interpolation);
-	int draw_framerate();
+	void draw_framerate();
 
 	ADevicePrefs *audio_device;
 	VDevicePrefs *video_device;

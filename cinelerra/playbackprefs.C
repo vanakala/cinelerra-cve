@@ -222,12 +222,11 @@ void PlaybackPrefs::update(int interpolation)
 	linear_linear->update(interpolation == LINEAR_LINEAR);
 }
 
-int PlaybackPrefs::draw_framerate()
+void PlaybackPrefs::draw_framerate()
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "%.4f", pwindow->thread->edl->session->actual_frame_rate);
 	framerate_title->update(string);
-	return 0;
 }
 
 

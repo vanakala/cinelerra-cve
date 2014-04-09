@@ -39,7 +39,6 @@ public:
 
 	int handle_event();
 
-	MWindow *mwindow;
 	PreferencesThread *thread;
 };
 
@@ -50,8 +49,8 @@ public:
 	~PreferencesThread();
 	void run();
 
-	int update_framerate();
-	int apply_settings();
+	void update_framerate();
+	void apply_settings();
 	const char* category_to_text(int category);
 	int text_to_category(char *category);
 
@@ -87,10 +86,9 @@ class PreferencesDialog : public BC_SubWindow
 {
 public:
 	PreferencesDialog(MWindow *mwindow, PreferencesWindow *pwindow);
-	virtual ~PreferencesDialog();
-	
+
 	virtual int create_objects() { return 0; };
-	virtual int draw_framerate() { return 0; };
+	virtual void draw_framerate() {};
 	PreferencesWindow *pwindow;
 	MWindow *mwindow;
 	Preferences *preferences;
@@ -108,10 +106,9 @@ public:
 		int y);
 	~PreferencesWindow();
 
-	int create_objects();
 	int delete_current_dialog();
-	int set_current_dialog(int number);
-	int update_framerate();
+	void set_current_dialog(int number);
+	void update_framerate();
 
 	MWindow *mwindow;
 	PreferencesThread *thread;
@@ -126,8 +123,7 @@ private:
 class PreferencesButton : public BC_GenericButton
 {
 public:
-	PreferencesButton(MWindow *mwindow, 
-		PreferencesThread *thread, 
+	PreferencesButton(PreferencesThread *thread,
 		int x, 
 		int y,
 		int category,
@@ -136,7 +132,6 @@ public:
 
 	int handle_event();
 
-	MWindow *mwindow;
 	PreferencesThread *thread;
 	int category;
 };
@@ -144,41 +139,43 @@ public:
 class PreferencesCategory : public BC_PopupTextBox
 {
 public:
-	PreferencesCategory(MWindow *mwindow, PreferencesThread *thread, int x, int y);
-	~PreferencesCategory();
+	PreferencesCategory(PreferencesThread *thread, int x, int y);
+
 	int handle_event();
-	MWindow *mwindow;
+private:
 	PreferencesThread *thread;
 };
 
 class PreferencesApply : public BC_GenericButton
 {
 public:
-	PreferencesApply(MWindow *mwindow, PreferencesThread *thread);
+	PreferencesApply(PreferencesThread *thread, PreferencesWindow *window);
+
 	int handle_event();
-	MWindow *mwindow;
+private:
 	PreferencesThread *thread;
 };
 
 class PreferencesOK : public BC_GenericButton
 {
 public:
-	PreferencesOK(MWindow *mwindow, PreferencesThread *thread);
+	PreferencesOK(PreferencesWindow *window);
+
 	int keypress_event();
 	int handle_event();
-	MWindow *mwindow;
-	PreferencesThread *thread;
+private:
+	PreferencesWindow *window;
 };
 
 class PreferencesCancel : public BC_GenericButton
 {
 public:
-	PreferencesCancel(MWindow *mwindow, PreferencesThread *thread);
+	PreferencesCancel(PreferencesWindow *window);
+
 	int keypress_event();
 	int handle_event();
-	MWindow *mwindow;
-	PreferencesThread *thread;
+private:
+	PreferencesWindow *window;
 };
-
 
 #endif
