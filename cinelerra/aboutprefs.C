@@ -29,24 +29,21 @@
 #include "versioninfo.h"
 
 
-
 AboutPrefs::AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
 }
 
-AboutPrefs::~AboutPrefs()
-{
-}
-
-int AboutPrefs::create_objects()
+void AboutPrefs::show()
 {
 	int x, y;
+        char strbuf[BCTEXTLEN];
 
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	x = get_w() - mwindow->theme->about_bg->get_w() - 10;
 	y = mwindow->theme->preferencesoptions_y;
+
 	BC_Pixmap *temp_pixmap = new BC_Pixmap(this, 
 		mwindow->theme->about_bg,
 		PIXMAP_ALPHA);
@@ -74,12 +71,9 @@ int AboutPrefs::create_objects()
 #endif
 	);
 
-
-
 	y += get_text_height(MEDIUMFONT) * 3;
 
-	char versions[BCTEXTLEN];
-	sprintf(versions, _("Quicktime version %d.%d.%d (%s)\n"
+	sprintf(strbuf, _("Quicktime version %d.%d.%d (%s)\n"
 		"Libmpeg3 version %d.%d.%d\n"),
 		quicktime_major(),
 		quicktime_minor(),
@@ -88,7 +82,7 @@ int AboutPrefs::create_objects()
 		mpeg3_major(),
 		mpeg3_minor(),
 		mpeg3_release());
-	draw_text(x, y, versions);
+	draw_text(x, y, strbuf);
 
 	y += get_text_height(MEDIUMFONT) * 4;
 	set_font(LARGEFONT);
@@ -96,8 +90,7 @@ int AboutPrefs::create_objects()
 	y += get_text_height(LARGEFONT);
 	set_font(MEDIUMFONT);
 
-	char credits[BCTEXTLEN];
-	sprintf(credits,
+	draw_text(x, y,
 		"Jack Crossfire\n"
 		"Richard Baverstock\n"
 		"Karl Bielefeldt\n"
@@ -115,9 +108,8 @@ int AboutPrefs::create_objects()
 		"Eric Seigne\n"
 		"Joe Stewart\n"
 		"Dan Streetman\n");
-	draw_text(x, y, credits);
 
-	sprintf(credits,
+	draw_text(x + 180, y,
 		"Gustavo I\361iguez\n"
 		"Johannes Sixt\n"
 		"Mark Taraba\n"
@@ -126,7 +118,6 @@ int AboutPrefs::create_objects()
 		"David Arendt\n"
 		"Einar R\374nkaru\n"
 		"Monty Montgomery\n");
-	draw_text(x + 180, y, credits);
 
 	y = get_h() - 135;
 
@@ -136,8 +127,7 @@ int AboutPrefs::create_objects()
 
 	set_font(MEDIUMFONT);
 
-	char license3[BCTEXTLEN];
-	sprintf(license3, _(
+	draw_text(x, y, _(
 		"This program is free software; you can redistribute it and/or modify it under the terms\n"
 		"of the GNU General Public License as published by the Free Software Foundation; either version\n"
 		"2 of the License, or (at your option) any later version.\n"
@@ -146,14 +136,10 @@ int AboutPrefs::create_objects()
 		"without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n"
 		"PURPOSE.  See the GNU General Public License for more details.\n"
 		"\n"));
-	draw_text(x, y, license3);
 
 	x += mwindow->theme->about_bg->get_w() + 10;
 	y += get_text_height(LARGEFONT) * 2;
 
 	flash();
 	flush();
-	return 0;
 }
-
-

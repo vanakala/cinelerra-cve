@@ -56,7 +56,7 @@ public:
 	PlaybackPrefs(MWindow *mwindow, PreferencesWindow *pwindow);
 	~PlaybackPrefs();
 
-	int create_objects();
+	void show();
 	static char* strategy_to_string(int strategy);
 	void delete_strategy();
 
@@ -79,6 +79,7 @@ public:
 	BC_Title *vdevice_title;
 };
 
+
 class PlaybackModuleFragment : public BC_PopupMenu
 {
 public:
@@ -87,7 +88,9 @@ public:
 		PreferencesWindow *pwindow, 
 		PlaybackPrefs *playback, 
 		const char *text);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback;
 };
@@ -99,7 +102,9 @@ public:
 		PlaybackPrefs *subwindow,
 		int x, 
 		int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback;
 };
@@ -109,25 +114,34 @@ class PlaybackViewFollows : public BC_CheckBox
 {
 public:
 	PlaybackViewFollows(PreferencesWindow *pwindow, int value, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class PlaybackSoftwareTimer : public BC_CheckBox
 {
 public:
 	PlaybackSoftwareTimer(PreferencesWindow *pwindow, int value, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class VideoAsynchronous : public BC_CheckBox
 {
 public:
 	VideoAsynchronous(PreferencesWindow *pwindow, int x, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class VideoEveryFrame : public BC_CheckBox
 {
@@ -136,7 +150,9 @@ public:
 		PlaybackPrefs *playback_prefs,
 		int x, 
 		int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback_prefs;
 };
@@ -153,6 +169,7 @@ public:
 	PlaybackPrefs *prefs;
 };
 
+
 class PlaybackLanczosLanczos : public BC_Radial
 {
 public:
@@ -164,6 +181,7 @@ public:
 	PlaybackPrefs *prefs;
 };
 
+
 class PlaybackBicubicBicubic : public BC_Radial
 {
 public:
@@ -174,6 +192,7 @@ public:
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *prefs;
 };
+
 
 class PlaybackBicubicBilinear : public BC_Radial
 {
@@ -190,6 +209,7 @@ public:
 	PlaybackPrefs *prefs;
 };
 
+
 class PlaybackBilinearBilinear : public BC_Radial
 {
 public:
@@ -205,6 +225,7 @@ public:
 	PlaybackPrefs *prefs;
 };
 
+
 class PlaybackPreload : public BC_TextBox
 {
 public:
@@ -213,20 +234,25 @@ public:
 		PreferencesWindow *pwindow, 
 		PlaybackPrefs *playback, 
 		char *text);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback;
 };
 
+
 class TimecodeOffset : public BC_TextBox
 {
-	public:
-		TimecodeOffset(int x, int y, PreferencesWindow *pwindow,
-			       PlaybackPrefs *playback, char *text, int unit);
-		int handle_event();
-		int unit;
-		PlaybackPrefs *playback;
-		PreferencesWindow *pwindow;
+public:
+	TimecodeOffset(int x, int y, PreferencesWindow *pwindow,
+		PlaybackPrefs *playback, char *text, int unit);
+
+	int handle_event();
+
+	int unit;
+	PlaybackPrefs *playback;
+	PreferencesWindow *pwindow;
 };
 
 
@@ -237,10 +263,11 @@ public:
 		int y, 
 		PreferencesWindow *pwindow, 
 		PlaybackPrefs *playback);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback;
 };
-
 
 #endif

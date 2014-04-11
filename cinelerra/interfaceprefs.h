@@ -48,10 +48,12 @@ class InterfacePrefs : public PreferencesDialog
 public:
 	InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow);
 	~InterfacePrefs();
-
+/* Pole
 	int create_objects();
+	*/
+	void show();
 // must delete each derived class
-	int update(int new_value);
+	void update(int new_value);
 	const char* behavior_to_text(int mode);
 
 	BrowseButton *ipath;
@@ -79,16 +81,22 @@ class IndexPathText : public BC_TextBox
 {
 public:
 	IndexPathText(int x, int y, PreferencesWindow *pwindow, const char *text);
+/* Pole
 	~IndexPathText();
+	*/
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class IndexSize : public BC_TextBox
 {
 public:
 	IndexSize(int x, int y, PreferencesWindow *pwindow, const char *text);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
 
@@ -97,88 +105,108 @@ class IndexCount : public BC_TextBox
 {
 public:
 	IndexCount(int x, int y, PreferencesWindow *pwindow, const char *text);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class TimeFormatHMS : public BC_Radial
 {
 public:
-	TimeFormatHMS(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
+	TimeFormatHMS(InterfacePrefs *tfwindow, int value, int x, int y);
+
 	int handle_event();
-	PreferencesWindow *pwindow;
+
 	InterfacePrefs *tfwindow;
 };
+
 
 class TimeFormatHMSF : public BC_Radial
 {
 public:
-	TimeFormatHMSF(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
+	TimeFormatHMSF(InterfacePrefs *tfwindow, int value, int x, int y);
+
 	int handle_event();
-	PreferencesWindow *pwindow;
+
 	InterfacePrefs *tfwindow;
 };
+
 
 class TimeFormatSamples : public BC_Radial
 {
 public:
-	TimeFormatSamples(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
+	TimeFormatSamples(InterfacePrefs *tfwindow, int value, int x, int y);
+
 	int handle_event();
-	PreferencesWindow *pwindow;
+
 	InterfacePrefs *tfwindow;
 };
+
 
 class TimeFormatFrames : public BC_Radial
 {
 public:
-	TimeFormatFrames(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
+	TimeFormatFrames(InterfacePrefs *tfwindow, int value, int x, int y);
+
 	int handle_event();
-	PreferencesWindow *pwindow;
+
 	InterfacePrefs *tfwindow;
 };
+
 
 class TimeFormatHex : public BC_Radial
 {
 public:
-	TimeFormatHex(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
+	TimeFormatHex(InterfacePrefs *tfwindow, int value, int x, int y);
+
 	int handle_event();
-	PreferencesWindow *pwindow;
+
 	InterfacePrefs *tfwindow;
 };
+
 
 class TimeFormatFeet : public BC_Radial
 {
 public:
-	TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
+	TimeFormatFeet(InterfacePrefs *tfwindow, int value, int x, int y);
+
 	int handle_event();
-	PreferencesWindow *pwindow;
+
 	InterfacePrefs *tfwindow;
 };
+
 
 class TimeFormatSeconds : public BC_Radial
 {
 public:
-	TimeFormatSeconds(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
+	TimeFormatSeconds(InterfacePrefs *tfwindow, int value, int x, int y);
+
 	int handle_event();
-	PreferencesWindow *pwindow;
+
 	InterfacePrefs *tfwindow;
 };
+
 
 class TimeFormatFeetSetting : public BC_TextBox
 {
 public:
 	TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, const char *string);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
-
 
 
 class MeterMinDB : public BC_TextBox
 {
 public:
 	MeterMinDB(PreferencesWindow *pwindow, const char *text, int x, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
 
@@ -187,9 +215,12 @@ class MeterMaxDB : public BC_TextBox
 {
 public:
 	MeterMaxDB(PreferencesWindow *pwindow, const char *text, int x, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class ViewBehaviourText : public BC_PopupMenu
 {
@@ -199,58 +230,65 @@ public:
 		const char *text, 
 		PreferencesWindow *pwindow, 
 		int *output);
-	~ViewBehaviourText();
 
-	int handle_event();  // user copies text to value here
-	int create_objects();         // add initial items
-	InterfacePrefs *tfwindow;
 	int *output;
 };
+
 
 class ViewBehaviourItem : public BC_MenuItem
 {
 public:
 	ViewBehaviourItem(ViewBehaviourText *popup, const char *text, int behaviour);
-	~ViewBehaviourItem();
 
 	int handle_event();
 	ViewBehaviourText *popup;
 	int behaviour;
 };
 
+
 class ViewTheme : public BC_PopupMenu
 {
 public:
 	ViewTheme(int x, int y, PreferencesWindow *pwindow);
-	~ViewTheme();
 
+/* Pole
 	void create_objects();
 	int handle_event();
+	*/
 
 	PreferencesWindow *pwindow;
 };
+
 
 class ViewThumbnails : public BC_CheckBox
 {
 public:
 	ViewThumbnails(int x, int y, PreferencesWindow *pwindow);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class ViewThemeItem : public BC_MenuItem
 {
 public:
 	ViewThemeItem(ViewTheme *popup, const char *text);
+
 	int handle_event();
+
 	ViewTheme *popup;
 };
+
 
 class UseTipWindow : public BC_CheckBox
 {
 public:
 	UseTipWindow(PreferencesWindow *pwindow, int x, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
 

@@ -389,7 +389,7 @@ void PreferencesWindow::set_current_dialog(int number)
 	{
 		dialog->draw_top_background(this, 0, 0, dialog->get_w(), dialog->get_h());
 		dialog->flash();
-		dialog->create_objects();
+		dialog->show();
 	}
 }
 

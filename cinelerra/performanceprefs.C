@@ -47,7 +47,7 @@ PerformancePrefs::~PerformancePrefs()
 	nodes[3].remove_all_objects();
 }
 
-int PerformancePrefs::create_objects()
+void PerformancePrefs::show()
 {
 	int x, y;
 	int xmargin1;
@@ -80,7 +80,6 @@ int PerformancePrefs::create_objects()
 
 	y += 35;
 
-
 // Background rendering
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
@@ -103,7 +102,6 @@ int PerformancePrefs::create_objects()
 		x + xmargin3, 
 		y + 90);
 
-
 	x += xmargin4;
 	add_subwindow(new BC_Title(x, y, _("Output for background rendering:")));
 	y += 20;
@@ -121,11 +119,9 @@ int PerformancePrefs::create_objects()
 		1); // Supply file formats for background rendering
 	x = xmargin1;
 
-
 // Renderfarm
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
-
 
 	add_subwindow(new BC_Title(x, y, _("Render Farm"), LARGEFONT, resources->text_default));
 	y += 25;
@@ -156,7 +152,6 @@ int PerformancePrefs::create_objects()
 		y);
 
 	y += 30;
-
 
 	add_subwindow(new PrefsRenderFarmReplaceNode(pwindow, 
 		this, 
@@ -191,18 +186,17 @@ int PerformancePrefs::create_objects()
 		this, 
 		x + xmargin3, 
 		y);
-	y += 55;
-
-	return 0;
 }
 
 void PerformancePrefs::generate_node_list()
 {
 	int selected_row = node_list ? node_list->get_selection_number(0, 0) : -1;
+
 	nodes[0].remove_all_objects();
 	nodes[1].remove_all_objects();
 	nodes[2].remove_all_objects();
 	nodes[3].remove_all_objects();
+
 	for(int i = 0; 
 		i < pwindow->thread->preferences->renderfarm_nodes.total; 
 		i++)
@@ -243,7 +237,6 @@ static int widths[] =
 	50
 };
 
-
 void PerformancePrefs::update_node_list()
 {
 	node_list->update(nodes,
@@ -254,7 +247,6 @@ void PerformancePrefs::update_node_list()
 			node_list->get_yposition(),
 			node_list->get_selection_number(0, 0));
 }
-
 
 
 PrefsUseBRender::PrefsUseBRender(PreferencesWindow *pwindow, 
@@ -277,18 +269,14 @@ int PrefsUseBRender::handle_event()
 }
 
 
-
-
-
-
 PrefsBRenderFragment::PrefsBRenderFragment(PreferencesWindow *pwindow, 
 	PerformancePrefs *subwindow, 
 	int x, 
 	int y)
  : BC_TumbleTextBox(subwindow, 
-	(int64_t)pwindow->thread->preferences->brender_fragment,
-	(int64_t)1, 
-	(int64_t)65535,
+	pwindow->thread->preferences->brender_fragment,
+	1,
+	65535,
 	x,
 	y,
 	100)
@@ -303,15 +291,14 @@ int PrefsBRenderFragment::handle_event()
 }
 
 
-
 CICacheSize::CICacheSize(int x, 
 	int y, 
 	PreferencesWindow *pwindow, 
 	PerformancePrefs *subwindow)
  : BC_TumbleTextBox(subwindow,
-	(int64_t)pwindow->thread->preferences->cache_size / 0x100000,
-	(int64_t)MIN_CACHE_SIZE / 0x100000,
-	(int64_t)MAX_CACHE_SIZE / 0x100000,
+	(int)(pwindow->thread->preferences->cache_size / 0x100000),
+	(int)(MIN_CACHE_SIZE / 0x100000),
+	(int)(MAX_CACHE_SIZE / 0x100000),
 	x, 
 	y, 
 	100)
@@ -322,11 +309,11 @@ CICacheSize::CICacheSize(int x,
 
 int CICacheSize::handle_event()
 {
-	int64_t result;
-	result = (int64_t)atol(get_text()) * 0x100000;
+	int result;
+
+	result = atol(get_text()) * 0x100000;
 	CLAMP(result, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 	pwindow->thread->preferences->cache_size = result;
-	return 0;
 }
 
 
@@ -346,10 +333,6 @@ PrefsRenderPreroll::PrefsRenderPreroll(PreferencesWindow *pwindow,
 	set_increment(0.1);
 }
 
-PrefsRenderPreroll::~PrefsRenderPreroll()
-{
-}
-
 int PrefsRenderPreroll::handle_event()
 {
 	pwindow->thread->preferences->render_preroll = atof(get_text());
@@ -362,9 +345,9 @@ PrefsBRenderPreroll::PrefsBRenderPreroll(PreferencesWindow *pwindow,
 		int x, 
 		int y)
  : BC_TumbleTextBox(subwindow, 
-	(int64_t)pwindow->thread->preferences->brender_preroll,
-	(int64_t)0, 
-	(int64_t)100,
+	pwindow->thread->preferences->brender_preroll,
+	0,
+	100,
 	x,
 	y,
 	100)
@@ -379,15 +362,6 @@ int PrefsBRenderPreroll::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
 PrefsRenderFarm::PrefsRenderFarm(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, 
 	y,
@@ -397,17 +371,11 @@ PrefsRenderFarm::PrefsRenderFarm(PreferencesWindow *pwindow, int x, int y)
 	this->pwindow = pwindow;
 }
 
-PrefsRenderFarm::~PrefsRenderFarm()
-{
-}
-
 int PrefsRenderFarm::handle_event()
 {
 	pwindow->thread->preferences->use_renderfarm = get_value();
 	return 1;
 }
-
-
 
 
 PrefsForceUniprocessor::PrefsForceUniprocessor(PreferencesWindow *pwindow, int x, int y)
@@ -419,20 +387,11 @@ PrefsForceUniprocessor::PrefsForceUniprocessor(PreferencesWindow *pwindow, int x
 	this->pwindow = pwindow;
 }
 
-PrefsForceUniprocessor::~PrefsForceUniprocessor()
-{
-}
-
 int PrefsForceUniprocessor::handle_event()
 {
 	pwindow->thread->preferences->force_uniprocessor = get_value();
 	return 1;
 }
-
-
-
-
-
 
 
 PrefsRenderFarmConsolidate::PrefsRenderFarmConsolidate(PreferencesWindow *pwindow, int x, int y)
@@ -444,10 +403,6 @@ PrefsRenderFarmConsolidate::PrefsRenderFarmConsolidate(PreferencesWindow *pwindo
 	this->pwindow = pwindow;
 }
 
-PrefsRenderFarmConsolidate::~PrefsRenderFarmConsolidate()
-{
-}
-
 int PrefsRenderFarmConsolidate::handle_event()
 {
 	pwindow->thread->preferences->renderfarm_consolidate = get_value();
@@ -455,17 +410,14 @@ int PrefsRenderFarmConsolidate::handle_event()
 }
 
 
-
-
-
 PrefsRenderFarmPort::PrefsRenderFarmPort(PreferencesWindow *pwindow, 
 	PerformancePrefs *subwindow, 
 	int x, 
 	int y)
  : BC_TumbleTextBox(subwindow, 
- 	(int64_t)pwindow->thread->preferences->renderfarm_port,
-	(int64_t)1, 
-	(int64_t)65535,
+	pwindow->thread->preferences->renderfarm_port,
+	1,
+	65535,
 	x,
 	y,
 	100)
@@ -473,16 +425,11 @@ PrefsRenderFarmPort::PrefsRenderFarmPort(PreferencesWindow *pwindow,
 	this->pwindow = pwindow;
 }
 
-PrefsRenderFarmPort::~PrefsRenderFarmPort()
-{
-}
-
 int PrefsRenderFarmPort::handle_event()
 {
 	pwindow->thread->preferences->renderfarm_port = atol(get_text());
 	return 1;
 }
-
 
 
 PrefsRenderFarmNodes::PrefsRenderFarmNodes(PreferencesWindow *pwindow, 
@@ -499,10 +446,6 @@ PrefsRenderFarmNodes::PrefsRenderFarmNodes(PreferencesWindow *pwindow,
 {
 	this->subwindow = subwindow;
 	this->pwindow = pwindow;
-}
-
-PrefsRenderFarmNodes::~PrefsRenderFarmNodes()
-{
 }
 
 int PrefsRenderFarmNodes::column_resize_event()
@@ -533,7 +476,7 @@ int PrefsRenderFarmNodes::handle_event()
 		subwindow->edit_node->update("");
 	}
 	return 1;
-}	
+}
 
 void PrefsRenderFarmNodes::selection_changed()
 {
@@ -548,10 +491,6 @@ PrefsRenderFarmEditNode::PrefsRenderFarmEditNode(PreferencesWindow *pwindow, Per
 	this->subwindow = subwindow;
 }
 
-PrefsRenderFarmEditNode::~PrefsRenderFarmEditNode()
-{
-}
-
 int PrefsRenderFarmEditNode::handle_event()
 {
 	return 1;
@@ -563,10 +502,6 @@ PrefsRenderFarmNewNode::PrefsRenderFarmNewNode(PreferencesWindow *pwindow, Perfo
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
-}
-
-PrefsRenderFarmNewNode::~PrefsRenderFarmNewNode()
-{
 }
 
 int PrefsRenderFarmNewNode::handle_event()
@@ -583,20 +518,11 @@ int PrefsRenderFarmNewNode::handle_event()
 }
 
 
-
-
-
-
-
 PrefsRenderFarmReplaceNode::PrefsRenderFarmReplaceNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
  : BC_GenericButton(x, y, _("Apply Changes"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
-}
-
-PrefsRenderFarmReplaceNode::~PrefsRenderFarmReplaceNode()
-{
 }
 
 int PrefsRenderFarmReplaceNode::handle_event()
@@ -614,16 +540,11 @@ int PrefsRenderFarmReplaceNode::handle_event()
 }
 
 
-
 PrefsRenderFarmDelNode::PrefsRenderFarmDelNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
  : BC_GenericButton(x, y, _("Delete Node"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
-}
-
-PrefsRenderFarmDelNode::~PrefsRenderFarmDelNode()
-{
 }
 
 int PrefsRenderFarmDelNode::handle_event()
@@ -649,10 +570,6 @@ PrefsRenderFarmSortNodes::PrefsRenderFarmSortNodes(PreferencesWindow *pwindow,
 	this->subwindow = subwindow;
 }
 
-PrefsRenderFarmSortNodes::~PrefsRenderFarmSortNodes()
-{
-}
-
 int PrefsRenderFarmSortNodes::handle_event()
 {
 	pwindow->thread->preferences->sort_nodes();
@@ -661,9 +578,6 @@ int PrefsRenderFarmSortNodes::handle_event()
 	subwindow->hot_node = -1;
 	return 1;
 }
-
-
-
 
 
 PrefsRenderFarmReset::PrefsRenderFarmReset(PreferencesWindow *pwindow, 
@@ -692,25 +606,19 @@ int PrefsRenderFarmReset::handle_event()
 }
 
 
-
-
 PrefsRenderFarmJobs::PrefsRenderFarmJobs(PreferencesWindow *pwindow, 
 		PerformancePrefs *subwindow, 
 		int x, 
 		int y)
  : BC_TumbleTextBox(subwindow, 
-	(int64_t)pwindow->thread->preferences->renderfarm_job_count,
-	(int64_t)1, 
-	(int64_t)100,
+	pwindow->thread->preferences->renderfarm_job_count,
+	1,
+	100,
 	x,
 	y,
 	100)
 {
 	this->pwindow = pwindow;
-}
-
-PrefsRenderFarmJobs::~PrefsRenderFarmJobs()
-{
 }
 
 int PrefsRenderFarmJobs::handle_event()
@@ -720,23 +628,18 @@ int PrefsRenderFarmJobs::handle_event()
 }
 
 
-
 PrefsRenderFarmMountpoint::PrefsRenderFarmMountpoint(PreferencesWindow *pwindow, 
 		PerformancePrefs *subwindow, 
 		int x, 
 		int y)
  : BC_TextBox(x, 
- 	y, 
+	y,
 	100,
 	1,
 	pwindow->thread->preferences->renderfarm_mountpoint)
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
-}
-
-PrefsRenderFarmMountpoint::~PrefsRenderFarmMountpoint()
-{
 }
 
 int PrefsRenderFarmMountpoint::handle_event()

@@ -28,9 +28,11 @@ class AboutPrefs : public PreferencesDialog
 {
 public:
 	AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow);
+/* Pole
 	~AboutPrefs();
-
 	int create_objects();
+	*/
+	void show();
 };
 
 

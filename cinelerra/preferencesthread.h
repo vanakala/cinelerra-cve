@@ -87,7 +87,7 @@ class PreferencesDialog : public BC_SubWindow
 public:
 	PreferencesDialog(MWindow *mwindow, PreferencesWindow *pwindow);
 
-	virtual int create_objects() { return 0; };
+	virtual void show() {};
 	virtual void draw_framerate() {};
 	PreferencesWindow *pwindow;
 	MWindow *mwindow;

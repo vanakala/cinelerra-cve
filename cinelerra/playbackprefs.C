@@ -36,7 +36,6 @@
 #include "videodevice.inc"
 
 
-
 PlaybackPrefs::PlaybackPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
@@ -49,7 +48,7 @@ PlaybackPrefs::~PlaybackPrefs()
 	delete video_device;
 }
 
-int PlaybackPrefs::create_objects()
+void PlaybackPrefs::show()
 {
 	int x, y, x2;
 	char string[BCTEXTLEN];
@@ -69,7 +68,6 @@ int PlaybackPrefs::create_objects()
 		LARGEFONT));
 
 	y += get_text_height(LARGEFONT) + 5;
-
 
 	BC_Title *title1, *title2;
 	add_subwindow(title2 = new BC_Title(x, y, _("Playback buffer size:"), MEDIUMFONT));
@@ -119,7 +117,7 @@ int PlaybackPrefs::create_objects()
 // Video
 	y += audio_device->get_h();
 
-	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	add_subwindow(new BC_Bar(5, y, get_w() - 10));
 	y += 5;
 
 	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT));
@@ -184,16 +182,16 @@ int PlaybackPrefs::create_objects()
 
 	x2 = x;
 	x += 370;
-	add_subwindow(new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[3]);
 	add_subwindow(new TimecodeOffset(x + 120, y, pwindow, this, string, 3));
-	add_subwindow(new BC_Title(x + 152, y, _(":"), MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x + 152, y, _(":"), MEDIUMFONT));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[2]);
 	add_subwindow(new TimecodeOffset(x + 160, y, pwindow, this, string, 2));
-	add_subwindow(new BC_Title(x + 192, y, _(":"), MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x + 192, y, _(":"), MEDIUMFONT));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[1]);
 	add_subwindow(new TimecodeOffset(x + 200, y, pwindow, this, string, 1));
-	add_subwindow(new BC_Title(x + 232, y, _(":"), MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x + 232, y, _(":"), MEDIUMFONT));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[0]);
 	add_subwindow(new TimecodeOffset(x + 240, y, pwindow, this, string, 0));
 	x = x2;
@@ -207,8 +205,6 @@ int PlaybackPrefs::create_objects()
 		0,
 		MODEPLAY);
 	video_device->initialize();
-
-	return 0;
 }
 
 
@@ -228,7 +224,6 @@ void PlaybackPrefs::draw_framerate()
 	sprintf(string, "%.4f", pwindow->thread->edl->session->actual_frame_rate);
 	framerate_title->update(string);
 }
-
 
 
 PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow, 
@@ -256,7 +251,6 @@ int PlaybackAudioOffset::handle_event()
 }
 
 
-
 PlaybackModuleFragment::PlaybackModuleFragment(int x, 
 	int y, 
 	PreferencesWindow *pwindow, 
@@ -279,8 +273,6 @@ int PlaybackModuleFragment::handle_event()
 }
 
 
-
-
 PlaybackViewFollows::PlaybackViewFollows(PreferencesWindow *pwindow, int value, int y)
  : BC_CheckBox(10, y, value, _("View follows playback"))
 { 
@@ -292,8 +284,6 @@ int PlaybackViewFollows::handle_event()
 	pwindow->thread->edl->session->view_follows_playback = get_value(); 
 	return 1;
 }
-
-
 
 
 PlaybackSoftwareTimer::PlaybackSoftwareTimer(PreferencesWindow *pwindow, int value, int y)
@@ -322,6 +312,7 @@ int PlaybackNearest::handle_event()
 	return 1;
 }
 
+
 PlaybackLanczosLanczos::PlaybackLanczosLanczos(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
  : BC_Radial(x, y, value, _("Lanczos enlarge and reduce"))
 {
@@ -334,6 +325,7 @@ int PlaybackLanczosLanczos::handle_event()
 	prefs->update(LANCZOS_LANCZOS);
 	return 1;
 }
+
 
 PlaybackBicubicBicubic::PlaybackBicubicBicubic(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
  : BC_Radial(x, y, value, _("Bicubic enlarge and reduce"))
@@ -354,6 +346,7 @@ PlaybackBicubicBilinear::PlaybackBicubicBilinear(PreferencesWindow *pwindow, Pla
 	this->pwindow = pwindow;
 	this->prefs = prefs;
 }
+
 int PlaybackBicubicBilinear::handle_event()
 {
 	prefs->update(CUBIC_LINEAR);
@@ -371,6 +364,7 @@ PlaybackBilinearBilinear::PlaybackBilinearBilinear(PreferencesWindow *pwindow,
 	this->pwindow = pwindow;
 	this->prefs = prefs;
 }
+
 int PlaybackBilinearBilinear::handle_event()
 {
 	prefs->update(LINEAR_LINEAR);
@@ -442,13 +436,12 @@ int VideoEveryFrame::handle_event()
 }
 
 
-
 PlaybackSubtitle::PlaybackSubtitle(int x, 
 	int y, 
 	PreferencesWindow *pwindow, 
 	PlaybackPrefs *playback)
  : BC_CheckBox(x, 
- 	y, 
+	y,
 	pwindow->thread->edl->session->decode_subtitles,
 	_("Enable DVD subtitles"))
 {
@@ -461,7 +454,6 @@ int PlaybackSubtitle::handle_event()
 	pwindow->thread->edl->session->decode_subtitles = get_value();
 	return 1;
 }
-
 
 
 TimecodeOffset::TimecodeOffset(int x, int y, PreferencesWindow *pwindow, 

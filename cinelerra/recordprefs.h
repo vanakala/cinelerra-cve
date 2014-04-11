@@ -41,7 +41,7 @@ public:
 	RecordPrefs(MWindow *mwindow, PreferencesWindow *pwindow);
 	~RecordPrefs();
 
-	int create_objects();
+	void show();
 
 	FormatTools *recording_format;
 	ADevicePrefs *audio_in_device;
@@ -54,7 +54,9 @@ class RecordWriteLength : public BC_TextBox
 {
 public:
 	RecordWriteLength(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y, char *text);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
 
@@ -63,7 +65,9 @@ class RecordSoftwareTimer : public BC_CheckBox
 {
 public:
 	RecordSoftwareTimer(PreferencesWindow *pwindow, int value, int x, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
 
@@ -72,32 +76,43 @@ class RecordSyncDrives : public BC_CheckBox
 {
 public:
 	RecordSyncDrives(PreferencesWindow *pwindow, int value, int x, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class VideoWriteLength : public BC_TextBox
 {
 public:
 	VideoWriteLength(PreferencesWindow *pwindow, char *text, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class VideoCaptureLength : public BC_TextBox
 {
 public:
 	VideoCaptureLength(PreferencesWindow *pwindow, char *text, int y);
+
 	int handle_event();
+
 	PreferencesWindow *pwindow;
 };
+
 
 class CaptureLengthTumbler : public BC_Tumbler
 {
 public:
 	CaptureLengthTumbler(PreferencesWindow *pwindow, BC_TextBox *text, int x, int y);
+
 	void handle_up_event();
 	void handle_down_event();
+
 	PreferencesWindow *pwindow;
 	BC_TextBox *text;
 };
@@ -110,22 +125,27 @@ public:
 		BC_SubWindow *gui, 
 		int x, 
 		int y);
+
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
+
 
 class StillImageUseDuration : public BC_CheckBox
 {
 public:
 	StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y);
+
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
+
 
 class StillImageDuration : public BC_TextBox
 {
 public:
 	StillImageDuration(PreferencesWindow *pwindow, int x, int y);
+
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

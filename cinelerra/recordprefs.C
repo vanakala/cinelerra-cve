@@ -36,8 +36,6 @@
 #include "vdeviceprefs.h"
 
 
-
-
 RecordPrefs::RecordPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
@@ -50,7 +48,7 @@ RecordPrefs::~RecordPrefs()
 	delete recording_format;
 }
 
-int RecordPrefs::create_objects()
+void RecordPrefs::show()
 {
 	int x, y, x2;
 	char string[BCTEXTLEN];
@@ -104,12 +102,13 @@ int RecordPrefs::create_objects()
 	audio_in_device->initialize(1);
 	y += audio_in_device->get_h(1);
 
-
 	BC_TextBox *textbox;
 	BC_Title *title1, *title2, *title3;
+
 	add_subwindow(title1 = new BC_Title(x, y, _("Samples to write to disk at a time:")));
 	add_subwindow(title2 = new BC_Title(x, y + 30, _("Sample rate for recording:")));
 	add_subwindow(title3 = new BC_Title(x, y + 60, _("Channels to record:")));
+
 	x2 = MAX(title1->get_w(), title2->get_w()) + 10;
 	x2 = MAX(x2, title3->get_w() + 10);
 	sprintf(string, "%d", pwindow->thread->edl->session->record_write_length);
@@ -129,7 +128,6 @@ int RecordPrefs::create_objects()
 // Video hardware
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
-
 
 	add_subwindow(new BC_Title(x, y, _("Video In"), LARGEFONT, resources->text_default));
 	y += 25;
@@ -209,8 +207,6 @@ int RecordPrefs::create_objects()
 	y += 3;
 	add_subwindow(new BC_Title(x, y, _("Seconds")));
 	y += 30;
-
-	return 0;
 }
 
 
@@ -244,7 +240,6 @@ int RecordChannels::handle_event()
 	pwindow->thread->edl->session->aconfig_in->channels = atoi(get_text());
 	return 1;
 }
-
 
 
 VideoWriteLength::VideoWriteLength(PreferencesWindow *pwindow, char *text, int y)
@@ -301,7 +296,6 @@ void CaptureLengthTumbler::handle_down_event()
 }
 
 
-
 RecordSoftwareTimer::RecordSoftwareTimer(PreferencesWindow *pwindow, int value, int x, int y)
  : BC_CheckBox(x, y, value, _("Use software for positioning information"))
 {
@@ -313,7 +307,6 @@ int RecordSoftwareTimer::handle_event()
 	pwindow->thread->edl->session->record_software_position = get_value(); 
 	return 1;
 }
-
 
 
 RecordSyncDrives::RecordSyncDrives(PreferencesWindow *pwindow, int value, int x, int y)
@@ -328,6 +321,7 @@ int RecordSyncDrives::handle_event()
 	return 1;
 }
 
+
 StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)
  : BC_CheckBox(x, y, value, _("Import images with a duration of"))
 { 
@@ -338,6 +332,7 @@ int StillImageUseDuration::handle_event()
 {
 	pwindow->thread->edl->session->si_useduration = get_value();
 }
+
 
 StillImageDuration::StillImageDuration(PreferencesWindow *pwindow, int x, int y)
  : BC_TextBox(x, y, 70, 1, pwindow->thread->edl->session->si_duration)
