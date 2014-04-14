@@ -4,7 +4,7 @@ scale_la_LIBADD =
 scale_la_SOURCES = scale.C scalewin.C 
 AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
 
-INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
+AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
 	-I$(top_srcdir)/quicktime -I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 

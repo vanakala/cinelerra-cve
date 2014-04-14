@@ -4,7 +4,7 @@
 
 noinst_LTLIBRARIES = libmpeg2enc.la
 
-INCLUDES = -I$(top_srcdir)/quicktime -I$(top_srcdir)/libmpeg3
+AM_CPPFLAGS = -I$(top_srcdir)/quicktime -I$(top_srcdir)/libmpeg3
 AM_CFLAGS = $(LARGEFILE_CFLAGS)
 
 libmpeg2enc_la_SOURCES = conform.c mpeg2enc.c putseq.c putpic.c puthdr.c putmpg.c \

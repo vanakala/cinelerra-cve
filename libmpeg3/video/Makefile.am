@@ -23,6 +23,6 @@ noinst_HEADERS = idct.h \
 
 libmpeg3_video_la_LDFLAGS=
 AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
-INCLUDES=-I$(srcdir)/..
+AM_CPPFLAGS = -I$(srcdir)/..
 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)

@@ -6,7 +6,7 @@ noinst_HEADERS = ac3.h huffman.h mpeg3audio.h tables.h
 
 AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
 AM_CXXFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
-INCLUDES=-I$(srcdir)/..
+AM_CPPFLAGS = -I$(srcdir)/..
 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)
 

@@ -120,7 +120,7 @@ noinst_HEADERS = cmodel_permutation.h \
 
 EXTRA_DIST = docs
 
-INCLUDES = -I$(top_srcdir)/libmpeg3
+AM_CPPFLAGS = -I$(top_srcdir)/libmpeg3
 
 pkgincludedir=$(includedir)/quicktime
 pkginclude_HEADERS=quicktime.h qtprivate.h

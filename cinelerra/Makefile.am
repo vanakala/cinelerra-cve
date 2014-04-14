@@ -300,7 +300,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    zoompanel.C
 
 # guicast must come first, to pick up correct workarounds.h
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)/guicast \
 	-I$(top_srcdir)/quicktime \
 	-I$(top_srcdir)/libmpeg3 \
