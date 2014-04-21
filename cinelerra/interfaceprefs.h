@@ -48,9 +48,7 @@ class InterfacePrefs : public PreferencesDialog
 public:
 	InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow);
 	~InterfacePrefs();
-/* Pole
-	int create_objects();
-	*/
+
 	void show();
 // must delete each derived class
 	void update(int new_value);
@@ -81,9 +79,7 @@ class IndexPathText : public BC_TextBox
 {
 public:
 	IndexPathText(int x, int y, PreferencesWindow *pwindow, const char *text);
-/* Pole
-	~IndexPathText();
-	*/
+
 	int handle_event();
 
 	PreferencesWindow *pwindow;
@@ -250,11 +246,6 @@ class ViewTheme : public BC_PopupMenu
 {
 public:
 	ViewTheme(int x, int y, PreferencesWindow *pwindow);
-
-/* Pole
-	void create_objects();
-	int handle_event();
-	*/
 
 	PreferencesWindow *pwindow;
 };

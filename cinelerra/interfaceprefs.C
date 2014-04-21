@@ -458,14 +458,8 @@ int MeterMaxDB::handle_event()
 ViewTheme::ViewTheme(int x, int y, PreferencesWindow *pwindow)
  : BC_PopupMenu(x, y, 200, pwindow->thread->preferences->theme, 1)
 {
-	this->pwindow = pwindow;
-/* Pole
-}
-
-void ViewTheme::create_objects()
-{
-	*/
 	ArrayList<PluginServer*> themes;
+
 	pwindow->mwindow->create_plugindb(0, 
 		0, 
 		0, 
@@ -473,6 +467,8 @@ void ViewTheme::create_objects()
 		0,
 		1,
 		themes);
+
+	this->pwindow = pwindow;
 
 	for(int i = 0; i < themes.total; i++)
 	{
