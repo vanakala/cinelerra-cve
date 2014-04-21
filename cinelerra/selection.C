@@ -50,6 +50,19 @@ const struct selection_int SampleRateSelection::sample_rates[] =
 	{ 0, 0 }
 };
 
+const struct selection_2int SampleBitsSelection::sample_bits[] =
+{
+	{ "8 Bit Linear", SBITS_LINEAR8, 8 },
+	{ "16 Bit Linear", SBITS_LINEAR16, 16 },
+	{ "24 Bit Linear", SBITS_LINEAR24, 24 },
+	{ "32 Bit Linear", SBITS_LINEAR32, 32 },
+	{ "u Law", SBITS_ULAW, SBITS_ULAW },
+	{ "IMA 4", SBITS_IMA4, SBITS_IMA4 },
+	{ "ADPCM", SBITS_ADPCM, SBITS_ADPCM },
+	{ "Float", SBITS_FLOAT, SBITS_FLOAT },
+	{ 0, 0, 0 }
+};
+
 const struct selection_double FrameRateSelection::frame_rates[] =
 {
 	{ "1", 1 },
@@ -260,8 +273,56 @@ Selection::Selection(int x, int y, BC_WindowBase *base,
 	popupmenu = init_objects(x, y, base);
 	intvalue = value;
 
-	for(int i = 0; items[i].text; i++)
-		popupmenu->add_item(new SelectionItem(&items[i], this));
+	if(options & SELECTION_VARITEMS)
+	{
+		for(int i = 0; items[i].text; i++)
+		{
+			if(items[i].value & options)
+				popupmenu->add_item(new SelectionItem(&items[i], this));
+		}
+	}
+	else
+	{
+		for(int i = 0; items[i].text; i++)
+			popupmenu->add_item(new SelectionItem(&items[i], this));
+	}
+}
+
+Selection::Selection(int x, int y, BC_WindowBase *base,
+	const struct selection_2int items[], int *value, int options)
+ : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, "")
+{
+	BC_PopupMenu *popupmenu;
+	int mxw = 0;
+
+	firstbox = 0;
+
+	if(options & SELECTION_VARWIDTH)
+	{
+		for(int i = 0; items[i].text; i++)
+		{
+			int w = base->get_text_width(MEDIUMFONT, items[i].text);
+			if(w > mxw)
+				mxw = w;
+		}
+		set_w(mxw + 10);
+	}
+	popupmenu = init_objects(x, y, base);
+	intvalue = value;
+
+	if(options & SELECTION_VARITEMS)
+	{
+		for(int i = 0; items[i].text; i++)
+		{
+			if(items[i].value1 & options)
+				popupmenu->add_item(new SelectionItem(&items[i], 0, this));
+		}
+	}
+	else
+	{
+		for(int i = 0; items[i].text; i++)
+			popupmenu->add_item(new SelectionItem(&items[i], 0, this));
+	}
 }
 
 Selection::Selection(int x, int y, BC_WindowBase *base,
@@ -345,9 +406,15 @@ Selection::Selection(int x1, int y1, int x2, int y2, BC_WindowBase *base,
 		popupmenu->add_item(new SelectionItem(&items[i], firstbox, this));
 }
 
+void Selection::delete_subwindows()
+{
+	delete button;
+	delete popupmenu;
+	delete firstbox;
+}
+
 BC_PopupMenu *Selection::init_objects(int x, int y, BC_WindowBase *base)
 {
-	BC_PopupMenu *popupmenu;
 	int x1 = x + get_w();
 	int y1 = y + get_resources()->listbox_button[0]->get_h();
 
@@ -506,8 +573,14 @@ int SelectionItem::handle_event()
 	}
 	if(int2item)
 	{
-		output->update(int2item->value2);
-		output2->update(int2item->value1);
+		output->current_2int = int2item;
+		if(output2)
+		{
+			output->update(int2item->value2);
+			output2->update(int2item->value1);
+		}
+		else
+			output->update(int2item->text);
 	}
 	if(double2item)
 	{
@@ -548,4 +621,64 @@ SelectionLeftBox::SelectionLeftBox(int x, int y, Selection *selection)
 int SelectionLeftBox::handle_event()
 {
 	selection->handle_event();
+}
+
+SampleBitsSelection::SampleBitsSelection(int x, int y, BC_WindowBase *base, int *value, int bits)
+ : Selection(x, y , base, sample_bits, value, bits | SELECTION_VARITEMS | SELECTION_VARWIDTH)
+{
+	disable(1);
+}
+
+int SampleBitsSelection::handle_event()
+{
+	if(current_2int)
+	{
+		*intvalue = current_2int->value2;
+	}
+}
+
+void SampleBitsSelection::update_size(int size)
+{
+	for(int i = 0; sample_bits[i].value2; i++)
+	{
+		if(sample_bits[i].value2 == size)
+			update(sample_bits[i].text);
+	}
+}
+
+int SampleBitsSelection::samlpesize(int flag)
+{
+	if(flag & SBITS_LINEAR8)
+		return 8;
+
+	if(flag & SBITS_LINEAR16)
+		return 16;
+
+	if(flag & SBITS_LINEAR24)
+		return 24;
+
+	if(flag & SBITS_LINEAR32)
+		return 32;
+
+	return 16;
+}
+
+int SampleBitsSelection::sampleflag(int size)
+{
+	switch(size)
+	{
+	case 8:
+		return SBITS_LINEAR8;
+
+	case 16:
+		return SBITS_LINEAR16;
+
+	case 24:
+		return SBITS_LINEAR16;
+
+	case 32:
+		return SBITS_LINEAR32;
+	}
+
+	return SBITS_LINEAR16;
 }

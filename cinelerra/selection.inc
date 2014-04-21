@@ -24,12 +24,15 @@
 
 #define SELECTION_TB_WIDTH 90
 
-#define SELECTION_VARWIDTH  1
+// Bits, lower 16 bits are in use by varitems
+#define SELECTION_VARWIDTH  0x10000
+#define SELECTION_VARITEMS  0x20000
 
 class Selection;
 class SampleRateSelection;
 class FrameRateSelection;
 class FrameSizeSelection;
 class AspectRatioSelection;
+class SampleBitsSelection;
 
 #endif

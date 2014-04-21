@@ -59,4 +59,15 @@
 #define MIN_FRAME_RATE 1
 #define MAX_FRAME_RATE 1500
 
+// Audio sample formats (must be bits)
+#define SBITS_LINEAR8    0x0001
+#define SBITS_LINEAR16   0x0002
+#define SBITS_LINEAR24   0x0004
+#define SBITS_LINEAR32   0x0008
+#define SBITS_ULAW       0x0100
+#define SBITS_IMA4       0x0200
+#define SBITS_ADPCM      0x0400
+#define SBITS_FLOAT      0x0800
+
+#define SBITS_LINEAR    (SBITS_LINEAR8 | SBITS_LINEAR16 | SBITS_LINEAR24 | SBITS_LINEAR32)
 #endif

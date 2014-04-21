@@ -66,6 +66,8 @@ public:
 		const struct selection_int items[], int *value, int options = 0);
 	Selection(int x, int y, BC_WindowBase *base,
 		const struct selection_double items[], double *value);
+	Selection(int x1, int y1, BC_WindowBase *base,
+		const struct selection_2int items[], int *value1, int options = 0);
 	Selection(int x1, int y1, int x2, int y2, BC_WindowBase *base,
 		const struct selection_2int items[],
 		int *value1, int *value2, int separator = 0);
@@ -78,8 +80,10 @@ public:
 	void disable(int option = 0);
 	void enable(int option = 0);
 	virtual int handle_event();
+	void delete_subwindows();
 
 	const struct selection_int *current_int;
+	const struct selection_2int *current_2int;
 	const struct selection_double *current_double;
 	const struct selection_2double *current_2double;
 
@@ -92,6 +96,7 @@ private:
 	double *doublevalue;
 	double *doublevalue2;
 	SelectionButton *button;
+	BC_PopupMenu *popupmenu;
 };
 
 class SelectionButton : public BC_Button
@@ -196,6 +201,22 @@ public:
 	int handle_event();
 private:
 	Selection *selection;
+};
+
+
+class SampleBitsSelection : public Selection
+{
+public:
+	SampleBitsSelection(int x, int y, BC_WindowBase *base, int *value, int bits);
+
+	int handle_event();
+	void update_size(int size);
+
+// Convert samplesize flag to sample bits
+	static int samlpesize(int flag);
+	static int sampleflag(int size);
+private:
+	static const struct selection_2int sample_bits[];
 };
 
 #endif
