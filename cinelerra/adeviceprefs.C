@@ -29,6 +29,7 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "recordconfig.h"
+#include "selection.h"
 #include <string.h>
 
 #define DEVICE_H 50
@@ -76,7 +77,7 @@ void ADevicePrefs::reset()
 int ADevicePrefs::initialize(int creation)
 {
 	int *driver;
-	delete_objects();
+	delete_objects(creation);
 
 	switch(mode)
 	{
@@ -126,16 +127,16 @@ int ADevicePrefs::get_h(int recording)
 		return DEVICE_H;
 }
 
-int ADevicePrefs::delete_objects()
+int ADevicePrefs::delete_objects(int creation)
 {
 	switch(driver)
 	{
 	case AUDIO_OSS:
 	case AUDIO_OSS_ENVY24:
-		delete_oss_objs();
+		delete_oss_objs(creation);
 		break;
 	case AUDIO_ALSA:
-		delete_alsa_objs();
+		delete_alsa_objs(creation);
 		break;
 	case AUDIO_ESOUND:
 		delete_esound_objs();
@@ -150,11 +151,15 @@ int ADevicePrefs::delete_objects()
 	return 0;
 }
 
-int ADevicePrefs::delete_oss_objs()
+int ADevicePrefs::delete_oss_objs(int creation)
 {
 	delete path_title;
 	delete bits_title;
-	delete oss_bits;
+	if(!creation && oss_bits)
+	{
+		oss_bits->delete_subwindows();
+		delete oss_bits;
+	}
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		delete oss_path[i];
@@ -172,7 +177,7 @@ int ADevicePrefs::delete_esound_objs()
 	return 0;
 }
 
-int ADevicePrefs::delete_alsa_objs()
+int ADevicePrefs::delete_alsa_objs(int creation)
 {
 #ifdef HAVE_ALSA
 	alsa_drivers->remove_all_objects();
@@ -180,7 +185,11 @@ int ADevicePrefs::delete_alsa_objs()
 	delete path_title;
 	delete bits_title;
 	delete alsa_device;
-	delete alsa_bits;
+	if(!creation && alsa_bits)
+	{
+		alsa_bits->delete_subwindows();
+		delete alsa_bits;
+	}
 	delete alsa_workaround;
 #endif
 	return 0;
@@ -234,20 +243,10 @@ int ADevicePrefs::create_oss_objs()
 				break;
 			}
 			if(i == 0) dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, resources->text_default));
-			oss_bits = new BitsPopup(dialog, 
-				x1, 
-				y1 + 20, 
-				output_int, 
-				0, 
-				0, 
-				0,
-				0,
-				1);
-			oss_bits->create_objects();
+			dialog->add_subwindow(oss_bits = new SampleBitsSelection(x1, y1 + 20,
+				dialog, output_int, SBITS_LINEAR));
+			oss_bits->update_size(*output_int);
 		}
-
-		x1 += oss_bits->get_w() + 5;
-		y1 += DEVICE_H;
 		break;
 	}
 
@@ -307,20 +306,9 @@ void ADevicePrefs::create_alsa_objs()
 		break;
 	}
 	dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, resources->text_default));
-	alsa_bits = new BitsPopup(dialog, 
-		x1, 
-		y1 + 20, 
-		output_int, 
-		0, 
-		0, 
-		0,
-		0,
-		1);
-	alsa_bits->create_objects();
-
-	y1 += alsa_bits->get_h() + 20 + 5;
-	x1 = x2;
-
+	dialog->add_subwindow(alsa_bits = new SampleBitsSelection(x1, y1 + 20, dialog,
+		output_int, SBITS_LINEAR));
+	alsa_bits->update_size(*output_int);
 #endif
 }
 
@@ -435,7 +423,7 @@ int ADriverItem::handle_event()
 {
 	popup->set_text(get_text());
 	*(popup->output) = driver;
-	popup->device_prefs->initialize();
+	popup->device_prefs->initialize(0);
 	return 1;
 }
 

@@ -73,7 +73,6 @@ public:
 	AssetEditPath *path_button;
 	AssetEditByteOrderHILO *hilo;
 	AssetEditByteOrderLOHI *lohi;
-	BitsPopup *bitspopup;
 	int allow_edits;
 	MWindow *mwindow;
 	AssetEdit *asset_edit;

@@ -52,7 +52,6 @@ FileFormat::~FileFormat()
 	delete header_button;
 	delete rate_button;
 	delete channels_button;
-	delete bitspopup;
 }
 
 int FileFormat::create_objects(Asset *asset, char *string2)
@@ -67,6 +66,8 @@ int FileFormat::create_objects_(char *string2)
 	char string[1024];
 	int x1 = 10, x2 = 180;
 	int x = x1, y = 10;
+	SampleBitsSelection *bitspopup;
+
 	add_subwindow(new BC_Title(x, y, string2));
 	y += 20;
 	add_subwindow(new BC_Title(x, y, _("Assuming raw PCM:")));
@@ -84,16 +85,9 @@ int FileFormat::create_objects_(char *string2)
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Bits:")));
-	bitspopup = new BitsPopup(this, 
-		x2, 
-		y, 
-		&asset->bits, 
-		0, 
-		1, 
-		1, 
-		0, 
-		1);
-	bitspopup->create_objects();
+	add_subwindow(bitspopup = new SampleBitsSelection(x2, y, this, &asset->bits,
+		SBITS_LINEAR| SBITS_ULAW | SBITS_ADPCM));
+	bitspopup->update_size(asset->bits);
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Header length:")));

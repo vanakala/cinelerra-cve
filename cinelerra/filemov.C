@@ -24,6 +24,7 @@
 #include "bcsignals.h"
 #include "bitspopup.h"
 #include "byteorder.h"
+#include "cinelerra.h"
 #include "condition.h"
 #include "edit.h"
 #include "file.h"
@@ -34,6 +35,7 @@
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
+#include "selection.h"
 #include "theme.h"
 
 #include <unistd.h>
@@ -1190,6 +1192,8 @@ void MOVConfigAudio::create_objects()
 void MOVConfigAudio::update_parameters()
 {
 	int x = 10, y = 70;
+	SampleBitsSelection *bitspopup;
+
 	if(bits_title) delete bits_title;
 	if(bits_popup) delete bits_popup;
 	if(dither) delete dither;
@@ -1207,16 +1211,10 @@ void MOVConfigAudio::update_parameters()
 		!strcasecmp(asset->acodec, QUICKTIME_RAW))
 	{
 		add_subwindow(bits_title = new BC_Title(x, y, _("Bits per channel:")));
-		bits_popup = new BitsPopup(this, 
-			x + 150, 
-			y, 
-			&asset->bits, 
-			0, 
-			0, 
-			0, 
-			0, 
-			0);
-		bits_popup->create_objects();
+
+		add_subwindow(bitspopup = new SampleBitsSelection(x + 150, y, this, &asset->bits,
+			SBITS_LINEAR8 | SBITS_LINEAR16 | SBITS_LINEAR24));
+		bitspopup->update_size(asset->bits);
 		y += 40;
 		add_subwindow(dither = new BC_CheckBox(x, y, &asset->dither, _("Dither")));
 	}

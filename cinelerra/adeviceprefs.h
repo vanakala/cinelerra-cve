@@ -31,6 +31,7 @@ class ALSADevice;
 #include "playbackconfig.inc"
 #include "preferencesthread.inc"
 #include "recordconfig.inc"
+#include "selection.inc"
 
 class ADriverMenu;
 class ADeviceTextBox;
@@ -51,10 +52,10 @@ public:
 	void reset();
 	static int get_h(int recording = 0);
 	int update(AudioOutConfig *out_config);
-// creation - set if this is the first initialize of the object
-//            to prevent file format from being overwritten
-	int initialize(int creation = 0);
-	int delete_objects();
+// creation - set if this is the first initialize
+//          or destruction of the object
+	int initialize(int creation = 1);
+	int delete_objects(int creation = 1);
 
 	PreferencesWindow *pwindow;
 
@@ -63,9 +64,9 @@ private:
 	int create_esound_objs();
 	void create_alsa_objs();
 
-	int delete_oss_objs();
+	int delete_oss_objs(int creation);
 	int delete_esound_objs();
-	int delete_alsa_objs();
+	int delete_alsa_objs(int creation);
 
 // The output config resolved from playback strategy and render engine.
 	AudioOutConfig *out_config;
@@ -79,12 +80,12 @@ private:
 	BC_Title *server_title, *port_title, *channel_title, *syt_title;
 	OSSEnable *oss_enable[MAXDEVICES];
 	ADeviceTextBox *oss_path[MAXDEVICES];
-	BitsPopup *oss_bits;
+	SampleBitsSelection *oss_bits;
 	ADeviceTextBox *esound_server;
 	ADeviceIntBox *esound_port;
 
 	ALSADevice *alsa_device;
-	BitsPopup *alsa_bits;
+	SampleBitsSelection *alsa_bits;
 	BC_CheckBox *alsa_workaround;
 	ArrayList<BC_ListBoxItem*> *alsa_drivers;
 

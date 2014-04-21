@@ -28,6 +28,7 @@
 #include "filesndfile.h"
 #include "language.h"
 #include "mainerror.h"
+#include "selection.h"
 #include "theme.h"
 
 extern Theme *theme_global;
@@ -86,7 +87,7 @@ void FileSndFile::asset_to_format()
 // Raw can't be float.
 	switch(asset->bits)
 	{
-	case BITSLINEAR8:
+	case 8:
 		if(asset->format == FILE_WAV)
 			fd_config.format |= SF_FORMAT_PCM_U8;
 		else
@@ -96,7 +97,7 @@ void FileSndFile::asset_to_format()
 			fd_config.format |= SF_FORMAT_PCM_U8;
 		break;
 
-	case BITSLINEAR16:
+	case 16:
 		fd_config.format |= SF_FORMAT_PCM_16;
 		if(asset->byte_order || asset->format == FILE_WAV)
 			fd_config.format |= SF_ENDIAN_LITTLE;
@@ -104,7 +105,7 @@ void FileSndFile::asset_to_format()
 			fd_config.format |= SF_ENDIAN_BIG;
 		break;
 
-	case BITSLINEAR24:
+	case 24:
 		fd_config.format |= SF_FORMAT_PCM_24;
 
 		if(asset->byte_order || asset->format == FILE_WAV)
@@ -113,7 +114,7 @@ void FileSndFile::asset_to_format()
 			fd_config.format |= SF_ENDIAN_BIG;
 		break;
 
-	case BITSLINEAR32:
+	case 32:
 		fd_config.format |= SF_FORMAT_PCM_32;
 
 		if(asset->byte_order || asset->format == FILE_WAV)
@@ -122,15 +123,15 @@ void FileSndFile::asset_to_format()
 			fd_config.format |= SF_ENDIAN_BIG;
 		break;
 
-	case BITSULAW: 
+	case SBITS_ULAW: 
 		fd_config.format |= SF_FORMAT_ULAW; 
 		break;
 
-	case BITSFLOAT: 
+	case SBITS_FLOAT:
 		fd_config.format |= SF_FORMAT_FLOAT; 
 		break;
 
-	case BITS_ADPCM: 
+	case SBITS_ADPCM:
 		if(fd_config.format == FILE_WAV)
 			fd_config.format |= SF_FORMAT_MS_ADPCM;
 		else
@@ -181,14 +182,14 @@ void FileSndFile::format_to_asset()
 		switch(fd_config.format & SF_FORMAT_SUBMASK)
 		{
 		case SF_FORMAT_FLOAT: 
-			asset->bits = BITSFLOAT; 
+			asset->bits = SBITS_FLOAT;
 			break;
 		case SF_FORMAT_ULAW: 
-			asset->bits = BITSULAW; 
+			asset->bits = SBITS_ULAW;
 			break;
 		case SF_FORMAT_IMA_ADPCM:
 		case SF_FORMAT_MS_ADPCM:
-			asset->bits = BITS_ADPCM;
+			asset->bits = SBITS_ADPCM;
 			break;
 		case SF_FORMAT_PCM_16:
 			asset->signed_ = 1;
@@ -204,11 +205,11 @@ void FileSndFile::format_to_asset()
 			break;
 		case SF_FORMAT_PCM_S8:
 			asset->signed_ = 1;
-			asset->bits = BITSLINEAR8;
+			asset->bits = 8;
 			break;
 		case SF_FORMAT_PCM_U8:
 			asset->signed_ = 0;
-			asset->bits = BITSLINEAR8;
+			asset->bits = 8;
 			break;
 		}
 
@@ -349,7 +350,7 @@ int FileSndFile::write_aframes(AFrame **frames)
 		{
 			double sample = frames[i]->buffer[j];
 // Libsndfile does not limit values
-			if(asset->bits != BITSFLOAT) CLAMP(sample, -1.0, (32767.0 / 32768.0));
+			if(asset->bits != SBITS_FLOAT) CLAMP(sample, -1.0, (32767.0 / 32768.0));
 			temp_double[j * asset->channels + i] = sample;
 		}
 	}
@@ -395,14 +396,12 @@ SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
 
 SndFileConfig::~SndFileConfig()
 {
-	if(bits_popup) delete bits_popup;
 }
 
 void SndFileConfig::create_objects()
 {
 	int x = 10, y = 10;
 
-	bits_popup = 0;
 	switch(asset->format)
 	{
 	case FILE_WAV:
@@ -410,12 +409,16 @@ void SndFileConfig::create_objects()
 	case FILE_AIFF:
 		add_tool(new BC_Title(x, y, _("Compression:")));
 		y += 25;
+
+		int bits = SBITS_LINEAR8 | SBITS_LINEAR16 | SBITS_LINEAR24;
+		SampleBitsSelection *bitspopup;
+
 		if(asset->format == FILE_WAV)
-			bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 1, 1, 0);
-		else
-			bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 0, 0, 0);
+			bits |= SBITS_ADPCM | SBITS_FLOAT;
+		add_subwindow(bitspopup = new SampleBitsSelection(x, y, this,
+			&asset->bits, bits));
+		bitspopup->update_size(asset->bits);
 		y += 40;
-		bits_popup->create_objects();
 		break;
 	}
 

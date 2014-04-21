@@ -93,8 +93,6 @@ public:
 	~SndFileConfig();
 
 	void create_objects();
-
-	BitsPopup *bits_popup;
 	SndFileHILO *hilo;
 	SndFileLOHI *lohi;
 	Asset *asset;

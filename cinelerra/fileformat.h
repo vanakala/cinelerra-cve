@@ -50,8 +50,6 @@ public:
 	int create_objects_(char *string2);
 
 	Asset *asset; 
-
-	BitsPopup *bitspopup;
 	FileFormatByteOrderLOHI *lohi;
 	FileFormatByteOrderHILO *hilo;
 	FileFormatSigned *signed_button;
