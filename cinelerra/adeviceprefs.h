@@ -26,7 +26,6 @@
 class OSSEnable;
 class ALSADevice;
 
-#include "bitspopup.inc"
 #include "guicast.h"
 #include "playbackconfig.inc"
 #include "preferencesthread.inc"
@@ -88,10 +87,6 @@ private:
 	SampleBitsSelection *alsa_bits;
 	BC_CheckBox *alsa_workaround;
 	ArrayList<BC_ListBoxItem*> *alsa_drivers;
-
-
-	BitsPopup *cine_bits;
-	ADeviceTextBox *cine_path;
 };
 
 class ADriverMenu : public BC_PopupMenu

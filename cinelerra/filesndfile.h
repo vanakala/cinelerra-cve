@@ -23,7 +23,6 @@
 #define FILESNDFILE_H
 
 #include "aframe.inc"
-#include "bitspopup.inc"
 #include "filebase.h"
 #include "filesndfile.inc"
 

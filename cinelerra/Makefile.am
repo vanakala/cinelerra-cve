@@ -77,7 +77,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    awindowmenu.C \
 		    batch.C \
 		    batchrender.C \
-		    bitspopup.C \
 		    brender.C \
 		    browsebutton.C \
 		    cache.C \
@@ -351,7 +350,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 awindowmenu.h \
 		 batch.h \
 		 batchrender.h \
-		 bitspopup.h \
 		 brender.h \
 		 browsebutton.h \
 		 byteorder.h \

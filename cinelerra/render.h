@@ -25,7 +25,6 @@
 
 #include "asset.inc"
 #include "batchrender.inc"
-#include "bitspopup.h"
 #include "browsebutton.h"
 #include "cache.inc"
 #include "condition.inc"

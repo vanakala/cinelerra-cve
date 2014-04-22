@@ -22,7 +22,6 @@
 #include "aframe.h"
 #include "asset.h"
 #include "bcsignals.h"
-#include "bitspopup.h"
 #include "byteorder.h"
 #include "cinelerra.h"
 #include "condition.h"
@@ -1140,13 +1139,11 @@ MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 MOVConfigAudio::~MOVConfigAudio()
 {
 	if(compression_popup) delete compression_popup;
-	if(bits_popup) delete bits_popup;
 	compression_items.remove_all_objects();
 }
 
 void MOVConfigAudio::reset()
 {
-	bits_popup = 0;
 	bits_title = 0;
 	dither = 0;
 	vorbis_min_bitrate = 0;
@@ -1195,7 +1192,6 @@ void MOVConfigAudio::update_parameters()
 	SampleBitsSelection *bitspopup;
 
 	if(bits_title) delete bits_title;
-	if(bits_popup) delete bits_popup;
 	if(dither) delete dither;
 	if(vorbis_min_bitrate) delete vorbis_min_bitrate;
 	if(vorbis_bitrate) delete vorbis_bitrate;

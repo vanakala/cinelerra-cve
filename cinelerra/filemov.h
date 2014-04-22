@@ -22,7 +22,6 @@
 #ifndef FILEMOV_H
 #define FILEMOV_H
 
-#include "bitspopup.inc"
 #include "condition.inc"
 #include "filebase.h"
 #include "file.inc"
@@ -168,7 +167,6 @@ public:
 
 	MOVConfigAudioPopup *compression_popup;
 	ArrayList<BC_ListBoxItem*> compression_items;
-	BitsPopup *bits_popup;
 	BC_Title *bits_title;
 	BC_CheckBox *dither;
 	Asset *asset;

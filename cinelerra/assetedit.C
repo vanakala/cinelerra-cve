@@ -24,7 +24,6 @@
 #include "awindow.h"
 #include "awindowgui.h"
 #include "bcprogressbox.h"
-#include "bitspopup.h"
 #include "cache.h"
 #include "cinelerra.h"
 #include "clip.h"

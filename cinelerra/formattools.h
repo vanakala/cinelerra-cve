@@ -24,7 +24,6 @@
 
 #include "asset.inc"
 #include "guicast.h"
-#include "bitspopup.h"
 #include "browsebutton.h"
 #include "file.inc"
 #include "formatpopup.h"

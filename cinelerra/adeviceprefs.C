@@ -22,7 +22,6 @@
 #include "adeviceprefs.h"
 #include "audioalsa.h"
 #include "audiodevice.inc"
-#include "bitspopup.h"
 #include "edl.h"
 #include "language.h"
 #include "playbackconfig.h"
@@ -69,9 +68,6 @@ void ADevicePrefs::reset()
 	alsa_device = 0;
 	alsa_bits = 0;
 	alsa_workaround = 0;
-
-	cine_bits = 0;
-	cine_path = 0;
 }
 
 int ADevicePrefs::initialize(int creation)
@@ -142,10 +138,6 @@ int ADevicePrefs::delete_objects(int creation)
 		delete_esound_objs();
 		break;
 	}
-
-	delete cine_bits;
-	delete cine_path;
-
 	reset();
 	driver = -1;
 	return 0;

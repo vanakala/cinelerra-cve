@@ -21,7 +21,6 @@
 
 #include "asset.h"
 #include "assets.h"
-#include "bitspopup.h"
 #include "fileformat.h"
 #include "language.h"
 #include "mwindow.h"

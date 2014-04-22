@@ -22,7 +22,6 @@
 #ifndef FILEMPEG_H
 #define FILEMPEG_H
 
-#include "bitspopup.inc"
 #include "condition.inc"
 #include "file.inc"
 #include "filebase.h"

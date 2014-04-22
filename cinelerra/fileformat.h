@@ -33,7 +33,6 @@ class FileFormatBits;
 
 #include "asset.inc"
 #include "assets.inc"
-#include "bitspopup.inc"
 #include "file.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"

@@ -23,7 +23,6 @@
 #include "asset.h"
 #include "bcprogressbox.h"
 #include "bcsignals.h"
-#include "bitspopup.h"
 #include "byteorder.h"
 #include "clip.h"
 #include "condition.h"

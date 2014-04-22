@@ -22,7 +22,6 @@
 #include "aframe.h"
 #include "asset.h"
 #include "bcsignals.h"
-#include "bitspopup.h"
 #include "clip.h"
 #include "file.h"
 #include "filesndfile.h"

@@ -28,7 +28,6 @@
 #include "channeldb.inc"
 #include "cinelerra.h"
 #include "guicast.h"
-#include "bitspopup.h"
 #include "browsebutton.h"
 #include "channel.inc"
 #include "bchash.inc"
