@@ -185,8 +185,6 @@ public:
 	static const char* formattostr(int format);
 	static int strtoformat(ArrayList<PluginServer*> *plugindb, char *format);
 	static const char* formattostr(ArrayList<PluginServer*> *plugindb, int format);
-	static int strtobits(char *bits);
-	static const char* bitstostr(int bits);
 
 	Asset *asset;    // Copy of asset since File outlives EDL
 	FileBase *file; // virtual class for file type

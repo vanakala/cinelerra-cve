@@ -1019,50 +1019,6 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 	}
 }
 
-int File::strtobits(char *bits)
-{
-	if(!strcasecmp(bits, _(NAME_8BIT))) return BITSLINEAR8;
-	if(!strcasecmp(bits, _(NAME_16BIT))) return BITSLINEAR16;
-	if(!strcasecmp(bits, _(NAME_24BIT))) return BITSLINEAR24;
-	if(!strcasecmp(bits, _(NAME_32BIT))) return BITSLINEAR32;
-	if(!strcasecmp(bits, _(NAME_ULAW))) return BITSULAW;
-	if(!strcasecmp(bits, _(NAME_ADPCM))) return BITS_ADPCM;
-	if(!strcasecmp(bits, _(NAME_FLOAT))) return BITSFLOAT;
-	if(!strcasecmp(bits, _(NAME_IMA4))) return BITSIMA4;
-	return BITSLINEAR16;
-}
-
-const char* File::bitstostr(int bits)
-{
-	switch(bits)
-	{
-	case BITSLINEAR8:
-		return (NAME_8BIT);
-
-	case BITSLINEAR16:
-		return (NAME_16BIT);
-
-	case BITSLINEAR24:
-		return (NAME_24BIT);
-
-	case BITSLINEAR32:
-		return (NAME_32BIT);
-
-	case BITSULAW:
-		return (NAME_ULAW);
-
-	case BITS_ADPCM:
-		return (NAME_ADPCM);
-
-	case BITSFLOAT:
-		return (NAME_FLOAT);
-
-	case BITSIMA4:
-		return (NAME_IMA4);
-	}
-	return "Unknown";
-}
-
 int File::get_best_colormodel(int driver)
 {
 	return get_best_colormodel(asset, driver);

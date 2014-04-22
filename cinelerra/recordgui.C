@@ -276,12 +276,13 @@ int RecordGUI::create_objects()
 
 	if(record->default_asset->audio_data)
 	{
+/* FIXIT - File::bitstostr - is removed
 		add_subwindow(new BC_Title(x, 
 			y, 
 			File::bitstostr(record->default_asset->bits), 
 			MEDIUMFONT, 
 			mwindow->theme->recordgui_fixed_color));
-
+	*/
 		y += pad;
 		sprintf(string, "%d", record->default_asset->sample_rate);
 		add_subwindow(new BC_Title(x, 

@@ -116,26 +116,6 @@
 #define EXR_LIST_NAME "EXR Sequence"
 #define YUV_NAME "YUV4MPEG Stream"
 
-
-#define BITSLINEAR8    8
-#define BITSLINEAR16   16
-#define BITSLINEAR24   24
-#define BITSLINEAR32   32
-#define BITS_ADPCM     252
-#define BITSFLOAT      253
-#define BITSULAW       254
-#define BITSIMA4       255
-
-
-#define NAME_8BIT "8 Bit Linear"
-#define NAME_16BIT "16 Bit Linear"
-#define NAME_24BIT "24 Bit Linear"
-#define NAME_32BIT "32 Bit Linear"
-#define NAME_ULAW "u Law"
-#define NAME_IMA4 "IMA 4"
-#define NAME_ADPCM "ADPCM"
-#define NAME_FLOAT "Float"
-
 // Video formats not part of Quicktime
 #define MOV_RGBA "RGB ALPHA"
 #define MOV_PNGA "PNG ALPHA"
