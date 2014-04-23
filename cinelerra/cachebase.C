@@ -42,14 +42,14 @@ CacheItemBase::~CacheItemBase()
 		free(path);
 }
 
-int CacheItemBase::get_size()
+size_t CacheItemBase::get_size()
 {
 	return 0;
 }
 
 void CacheItemBase::dump(int indent)
 {
-	printf("%*spos %lld pts %.3f duration %.3f size %d age %d\n", indent, "",
+	printf("%*spos %lld pts %.3f duration %.3f size %zd age %d\n", indent, "",
 		position, postime, duration, get_size(), age);
 }
 

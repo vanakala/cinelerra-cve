@@ -41,7 +41,7 @@ public:
 	CacheItemBase();
 	virtual ~CacheItemBase();
 
-	virtual int get_size();
+	virtual size_t get_size();
 	virtual void dump(int indent = 0);
 
 // asset_id - supplied by user if the cache is not part of a file.

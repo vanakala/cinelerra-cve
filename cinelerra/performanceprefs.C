@@ -309,11 +309,12 @@ CICacheSize::CICacheSize(int x,
 
 int CICacheSize::handle_event()
 {
-	int result;
+	size_t result;
 
 	result = atol(get_text()) * 0x100000;
 	CLAMP(result, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 	pwindow->thread->preferences->cache_size = result;
+	return 1;
 }
 
 

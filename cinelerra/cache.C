@@ -217,8 +217,8 @@ int CICache::age()
 	CICacheItem *current;
 
 // delete old assets if memory usage is exceeded
-	int64_t prev_memory_usage;
-	int64_t memory_usage;
+	size_t prev_memory_usage;
+	size_t memory_usage;
 	int result = 0;
 	do
 	{
@@ -235,10 +235,10 @@ int CICache::age()
 		!result);
 }
 
-int64_t CICache::get_memory_usage(int use_lock)
+size_t CICache::get_memory_usage(int use_lock)
 {
 	CICacheItem *current;
-	int64_t result = 0;
+	size_t result = 0;
 	if(use_lock) total_lock->lock("CICache::get_memory_usage");
 	for(current = first; current; current = NEXT)
 	{
@@ -315,7 +315,7 @@ int CICache::dump()
 {
 	CICacheItem *current;
 	total_lock->lock("CICache::dump");
-	printf("CICache::dump total size %lld\n", get_memory_usage(0));
+	printf("CICache::dump total size %zd\n", get_memory_usage(0));
 	for(current = first; current; current = NEXT)
 	{
 		printf("cache item %p asset %p %s age=%d\n", 

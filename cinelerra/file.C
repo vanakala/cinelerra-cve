@@ -1072,9 +1072,9 @@ int File::colormodel_supported(int colormodel)
 	return BC_RGB888;
 }
 
-int64_t File::get_memory_usage() 
+size_t File::get_memory_usage() 
 {
-	int64_t result = 0;
+	size_t result = 0;
 	if(temp_frame) result += temp_frame->get_data_size();
 	if(file) result += file->get_memory_usage();
 	result += frame_cache->get_memory_usage();

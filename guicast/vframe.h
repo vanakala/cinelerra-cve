@@ -156,12 +156,12 @@ public:
 
 
 	static int calculate_bytes_per_pixel(int colormodel);
-	static long calculate_data_size(int w, 
+	static size_t calculate_data_size(int w, 
 		int h, 
 		int bytes_per_line = -1, 
 		int color_model = BC_RGB888);
 // Get size of uncompressed frame buffer
-	long get_data_size();
+	size_t get_data_size();
 	void rotate270(void);
 	void rotate90(void);
 	void flip_vert(void);

@@ -234,12 +234,12 @@ long VFrame::get_bytes_per_line()
 	return bytes_per_line;
 }
 
-long VFrame::get_data_size()
+size_t VFrame::get_data_size()
 {
 	return calculate_data_size(w, h, bytes_per_line, color_model) - 4;
 }
 
-long VFrame::calculate_data_size(int w, int h, int bytes_per_line, int color_model)
+size_t VFrame::calculate_data_size(int w, int h, int bytes_per_line, int color_model)
 {
 	return cmodel_calculate_datasize(w, h, bytes_per_line, color_model);
 }

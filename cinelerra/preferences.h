@@ -104,7 +104,7 @@ public:
 // Size of cache in bytes.
 // Several caches of cache_size exist so multiply by 4.
 // rendering, playback, timeline, preview
-	int64_t cache_size;
+	size_t cache_size;
 
 	int use_renderfarm;
 	int renderfarm_port;

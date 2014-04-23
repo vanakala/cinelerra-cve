@@ -43,7 +43,7 @@ public:
 	FrameCacheItem();
 	~FrameCacheItem();
 
-	int get_size();
+	size_t get_size();
 	void dump(int indent = 0);
 
 	VFrame *data;

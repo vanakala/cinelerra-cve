@@ -31,7 +31,7 @@ class WaveCacheItem : public CacheItemBase
 public:
 	WaveCacheItem();
 
-	int get_size();
+	size_t get_size();
 
 	int channel;
 // End sample in asset samplerate.  Starting point is CacheItemBase::position

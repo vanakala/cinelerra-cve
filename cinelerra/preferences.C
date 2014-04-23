@@ -281,7 +281,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", 0);
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
-	cache_size = defaults->get("CACHE_SIZE", cache_size);
+	cache_size = defaults->get("CACHE_SIZE", (int64_t)cache_size);
 	local_rate = defaults->get("LOCAL_RATE", local_rate);
 	use_renderfarm = defaults->get("USE_RENDERFARM", use_renderfarm);
 	renderfarm_port = defaults->get("RENDERFARM_PORT", renderfarm_port);
@@ -330,7 +330,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 
 	defaults->update("USE_TIPWINDOW", use_tipwindow);
 
-	defaults->update("CACHE_SIZE", cache_size);
+	defaults->update("CACHE_SIZE", (int64_t)cache_size);
 	defaults->update("INDEX_DIRECTORY", index_directory);
 	defaults->update("INDEX_SIZE", index_size);
 	defaults->update("INDEX_COUNT", index_count);

@@ -58,7 +58,7 @@ public:
 
 	int read_frame(VFrame *frame);
 	int read_buffer();
-	int64_t get_memory_usage();
+	size_t get_memory_usage();
 
 // write data into next available buffer
 	int write_buffer(int size);

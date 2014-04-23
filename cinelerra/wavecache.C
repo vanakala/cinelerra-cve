@@ -30,7 +30,7 @@ WaveCacheItem::WaveCacheItem()
 {
 }
 
-int WaveCacheItem::get_size()
+size_t WaveCacheItem::get_size()
 {
 	return sizeof(WaveCacheItem) + (path ? strlen(path) : 0);
 }

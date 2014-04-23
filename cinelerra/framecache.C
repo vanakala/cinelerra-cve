@@ -44,7 +44,7 @@ FrameCacheItem::~FrameCacheItem()
 	delete data;
 }
 
-int FrameCacheItem::get_size()
+size_t FrameCacheItem::get_size()
 {
 	if(data)
 	{

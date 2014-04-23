@@ -172,7 +172,7 @@ public:
 // Based on temporary frames and a call to the file subclass.
 // The return value is limited 1MB each in case of audio file.
 // The minimum setting for cache_size should be bigger than 1MB.
-	int64_t get_memory_usage();
+	size_t get_memory_usage();
 
 	static int supports_video(ArrayList<PluginServer*> *plugindb, char *format);   // returns 1 if the format supports video or audio
 	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);

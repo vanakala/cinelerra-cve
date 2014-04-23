@@ -495,10 +495,10 @@ int FileThread::read_frame(VFrame *frame)
 	}
 }
 
-int64_t FileThread::get_memory_usage()
+size_t FileThread::get_memory_usage()
 {
 	frame_lock->lock("FileThread::get_memory_usage");
-	int64_t result = 0;
+	size_t result = 0;
 	for(int i = 0; i < MAX_READ_FRAMES; i++)
 		if(read_frames[i])
 			result += read_frames[i]->get_data_size();

@@ -1399,8 +1399,8 @@ void MWindow::sync_parameters(int change_type)
 
 void MWindow::age_caches()
 {
-	int64_t prev_memory_usage;
-	int64_t memory_usage;
+	size_t prev_memory_usage;
+	size_t memory_usage;
 	int result = 0;
 	do
 	{
