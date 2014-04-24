@@ -913,17 +913,20 @@ SET_TRACE
 
 					FileFormat fwindow(this, new_asset, string);
 					result = fwindow.run_window();
-					if(SampleRateSelection::limits(&new_asset->sample_rate) < 0)
-						errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
-							MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
+					if(!result)
+					{
+						if(SampleRateSelection::limits(&new_asset->sample_rate) < 0)
+							errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
+								MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
 
-					defaults->update("AUDIO_CHANNELS", new_asset->channels);
-					defaults->update("SAMPLE_RATE", new_asset->sample_rate);
-					defaults->update("AUDIO_BITS", new_asset->bits);
-					defaults->update("BYTE_ORDER", new_asset->byte_order);
-					defaults->update("SIGNED_", new_asset->signed_);
-					defaults->update("HEADER", new_asset->header);
-					save_defaults();
+						defaults->update("AUDIO_CHANNELS", new_asset->channels);
+						defaults->update("SAMPLE_RATE", new_asset->sample_rate);
+						defaults->update("AUDIO_BITS", new_asset->bits);
+						defaults->update("BYTE_ORDER", new_asset->byte_order);
+						defaults->update("SIGNED_", new_asset->signed_);
+						defaults->update("HEADER", new_asset->header);
+						save_defaults();
+					}
 				}
 
 // Append to list
