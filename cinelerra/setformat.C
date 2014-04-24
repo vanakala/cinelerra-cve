@@ -226,7 +226,6 @@ void SetFormatThread::update_window()
 
 	if(dimension_modified)
 	{
-		FrameSizeSelection::limits(&dimension[0], &dimension[1]);
 		window->framesize_selection->update(dimension[0], dimension[1]);
 		update_aspect();
 	}
@@ -684,4 +683,5 @@ int SetFrameSize::handle_event()
 		*intvalue = -(*intvalue);
 	}
 	thread->update_window();
+	return 1;
 }
