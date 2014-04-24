@@ -911,8 +911,7 @@ SET_TRACE
 					new_asset->signed_ = defaults->get("SIGNED_", 1);
 					new_asset->header = defaults->get("HEADER", 0);
 
-					FileFormat fwindow(this);
-					fwindow.create_objects(new_asset, string);
+					FileFormat fwindow(this, new_asset, string);
 					result = fwindow.run_window();
 					if(SampleRateSelection::limits(&new_asset->sample_rate) < 0)
 						errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),

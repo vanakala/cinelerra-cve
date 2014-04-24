@@ -30,8 +30,7 @@
 #include "new.h"
 
 
-
-FileFormat::FileFormat(MWindow *mwindow)
+FileFormat::FileFormat(MWindow *mwindow, Asset *asset, const char *string2)
  : BC_Window("File Format - " PROGRAM_NAME,
 		mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1),
@@ -40,32 +39,13 @@ FileFormat::FileFormat(MWindow *mwindow)
 		375, 
 		300)
 {
-	this->mwindow = mwindow;
-}
-
-FileFormat::~FileFormat()
-{
-	delete lohi;
-	delete hilo;
-	delete signed_button;
-	delete header_button;
-	delete rate_button;
-	delete channels_button;
-}
-
-int FileFormat::create_objects(Asset *asset, char *string2)
-{
-// ================================= copy values
-	this->asset = asset;
-	create_objects_(string2);
-}
-
-int FileFormat::create_objects_(char *string2)
-{
 	char string[1024];
 	int x1 = 10, x2 = 180;
 	int x = x1, y = 10;
 	SampleBitsSelection *bitspopup;
+
+	this->mwindow = mwindow;
+	this->asset = asset;
 
 	add_subwindow(new BC_Title(x, y, string2));
 	y += 20;
@@ -104,8 +84,18 @@ int FileFormat::create_objects_(char *string2)
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
-	return 0;
 }
+
+FileFormat::~FileFormat()
+{
+	delete lohi;
+	delete hilo;
+	delete signed_button;
+	delete header_button;
+	delete rate_button;
+	delete channels_button;
+}
+
 
 FileFormatChannels::FileFormatChannels(int x, int y, FileFormat *fwindow, char *text)
  : BC_TumbleTextBox(fwindow, 
@@ -122,8 +112,9 @@ FileFormatChannels::FileFormatChannels(int x, int y, FileFormat *fwindow, char *
 int FileFormatChannels::handle_event()
 {
 	fwindow->asset->channels = atol(get_text());
-	return 0;
+	return 1;
 }
+
 
 FileFormatHeader::FileFormatHeader(int x, int y, FileFormat *fwindow, char *text)
  : BC_TextBox(x, y, 100, 1, text)
@@ -134,8 +125,9 @@ FileFormatHeader::FileFormatHeader(int x, int y, FileFormat *fwindow, char *text
 int FileFormatHeader::handle_event()
 {
 	fwindow->asset->header = atol(get_text());
-	return 0;
+	return 1;
 }
+
 
 FileFormatByteOrderLOHI::FileFormatByteOrderLOHI(int x, int y, FileFormat *fwindow, int value)
  : BC_Radial(x, y, value, _("Lo Hi"))
@@ -151,6 +143,7 @@ int FileFormatByteOrderLOHI::handle_event()
 	return 1;
 }
 
+
 FileFormatByteOrderHILO::FileFormatByteOrderHILO(int x, int y, FileFormat *fwindow, int value)
  : BC_Radial(x, y, value, _("Hi Lo"))
 {
@@ -164,6 +157,7 @@ int FileFormatByteOrderHILO::handle_event()
 	fwindow->lohi->update(0);
 	return 1;
 }
+
 
 FileFormatSigned::FileFormatSigned(int x, int y, FileFormat *fwindow, int value)
  : BC_CheckBox(x, y, value, _("Values are signed"))
