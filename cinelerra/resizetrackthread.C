@@ -87,6 +87,7 @@ void ResizeTrackThread::run()
 
 		if(track)
 		{
+			FrameSizeSelection::limits(&w, &h);
 			mwindow->resize_track(track, w, h);
 		}
 	}
@@ -133,7 +134,7 @@ void ResizeTrackWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Size:")));
 	x += 50;
 
-	add_subwindow(framesize_selection = new FrameSizeSelection(x, y,
+	add_subwindow(framesize_selection = new SetTrackFrameSize(x, y,
 		x + SELECTION_TB_WIDTH + 25, y,
 		this, &thread->w, &thread->h));
 	framesize_selection->update(thread->w, thread->h);
@@ -213,4 +214,17 @@ int ResizeTrackScaleH::handle_event()
 	thread->h_scale = atof(get_text());
 	gui->update(1, 0, 0);
 	return 1;
+}
+
+SetTrackFrameSize::SetTrackFrameSize(int x1, int y1, int x2, int y2,
+	ResizeTrackWindow *base, int *value1, int *value2)
+ : FrameSizeSelection(x1, y1, x2, y2, base, value1, value2)
+{
+	this->gui = base;
+}
+
+int SetTrackFrameSize::handle_event()
+{
+	Selection::handle_event();
+	gui->update(0, 1, 0);
 }

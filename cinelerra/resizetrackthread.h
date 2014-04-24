@@ -29,7 +29,7 @@
 #include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
-#include "selection.inc"
+#include "selection.h"
 #include "track.inc"
 
 
@@ -102,6 +102,15 @@ public:
 	ResizeTrackScaleH *h_scale;
 };
 
+class SetTrackFrameSize : public FrameSizeSelection
+{
+public:
+	SetTrackFrameSize(int x1, int y1, int x2, int y2,
+		ResizeTrackWindow *base, int *value1, int *value2);
 
+	int handle_event();
+private:
+	ResizeTrackWindow *gui;
+};
 
 #endif
