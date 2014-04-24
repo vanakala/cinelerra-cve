@@ -48,24 +48,23 @@ public:
 		int mode);
 	~ADevicePrefs();
 
-	void reset();
 	static int get_h(int recording = 0);
 	int update(AudioOutConfig *out_config);
 // creation - set if this is the first initialize
 //          or destruction of the object
-	int initialize(int creation = 1);
-	int delete_objects(int creation = 1);
+	void initialize(int creation = 1);
+	void delete_objects(int creation = 1);
 
 	PreferencesWindow *pwindow;
 
 private:
-	int create_oss_objs();
-	int create_esound_objs();
+	void create_oss_objs();
+	void create_esound_objs();
 	void create_alsa_objs();
 
-	int delete_oss_objs(int creation);
-	int delete_esound_objs();
-	int delete_alsa_objs(int creation);
+	void delete_oss_objs(int creation);
+	void delete_esound_objs();
+	void delete_alsa_objs(int creation);
 
 // The output config resolved from playback strategy and render engine.
 	AudioOutConfig *out_config;
@@ -85,9 +84,9 @@ private:
 
 	ALSADevice *alsa_device;
 	SampleBitsSelection *alsa_bits;
-	BC_CheckBox *alsa_workaround;
 	ArrayList<BC_ListBoxItem*> *alsa_drivers;
 };
+
 
 class ADriverMenu : public BC_PopupMenu
 {
@@ -97,50 +96,55 @@ public:
 		ADevicePrefs *device_prefs, 
 		int do_input,
 		int *output);
-	~ADriverMenu();
-	
-	void create_objects();
-	char* adriver_to_string(int driver);
-	
+	const char *adriver_to_string(int driver);
+
 	int do_input;
 	int *output;
 	ADevicePrefs *device_prefs;
-	char string[BCTEXTLEN];
 };
+
 
 class ADriverItem : public BC_MenuItem
 {
 public:
 	ADriverItem(ADriverMenu *popup, const char *text, int driver);
-	~ADriverItem();
+
 	int handle_event();
+
 	ADriverMenu *popup;
 	int driver;
 };
+
 
 class OSSEnable : public BC_CheckBox
 {
 public:
 	OSSEnable(int x, int y, int *output);
+
 	int handle_event();
+
 	int *output;
 };
-
 
 
 class ADeviceTextBox : public BC_TextBox
 {
 public:
 	ADeviceTextBox(int x, int y, char *output);
+
 	int handle_event();
+
 	char *output;
 };
+
 
 class ADeviceIntBox : public BC_TextBox
 {
 public:
 	ADeviceIntBox(int x, int y, int *output);
+
 	int handle_event();
+
 	int *output;
 };
 
@@ -152,9 +156,9 @@ public:
 		int y, 
 		char *output, 
 		ArrayList<BC_ListBoxItem*> *devices);
-	~ALSADevice();
 
 	int handle_event();
+
 	char *output;
 };
 

@@ -41,7 +41,13 @@ ADevicePrefs::ADevicePrefs(int x,
 	AudioInConfig *in_config, 
 	int mode)
 {
-	reset();
+	menu = 0;
+
+	alsa_drivers = 0;
+	path_title = 0;
+	bits_title = 0;
+	alsa_device = 0;
+	alsa_bits = 0;
 	this->pwindow = pwindow;
 	this->dialog = dialog;
 	this->driver = -1;
@@ -58,19 +64,7 @@ ADevicePrefs::~ADevicePrefs()
 	if(menu) delete menu;
 }
 
-void ADevicePrefs::reset()
-{
-	menu = 0;
-
-	alsa_drivers = 0;
-	path_title = 0;
-	bits_title = 0;
-	alsa_device = 0;
-	alsa_bits = 0;
-	alsa_workaround = 0;
-}
-
-int ADevicePrefs::initialize(int creation)
+void ADevicePrefs::initialize(int creation)
 {
 	int *driver;
 	delete_objects(creation);
@@ -96,7 +90,6 @@ int ADevicePrefs::initialize(int creation)
 			this, 
 			(mode == MODERECORD),
 			driver));
-		menu->create_objects();
 	}
 
 	switch(*driver)
@@ -112,7 +105,6 @@ int ADevicePrefs::initialize(int creation)
 		create_esound_objs();
 		break;
 	}
-	return 0;
 }
 
 int ADevicePrefs::get_h(int recording)
@@ -123,7 +115,7 @@ int ADevicePrefs::get_h(int recording)
 		return DEVICE_H;
 }
 
-int ADevicePrefs::delete_objects(int creation)
+void ADevicePrefs::delete_objects(int creation)
 {
 	switch(driver)
 	{
@@ -138,57 +130,62 @@ int ADevicePrefs::delete_objects(int creation)
 		delete_esound_objs();
 		break;
 	}
-	reset();
 	driver = -1;
-	return 0;
 }
 
-int ADevicePrefs::delete_oss_objs(int creation)
+void ADevicePrefs::delete_oss_objs(int creation)
 {
 	delete path_title;
+	path_title = 0;
 	delete bits_title;
+	bits_title = 0;
 	if(!creation && oss_bits)
 	{
 		oss_bits->delete_subwindows();
 		delete oss_bits;
+		oss_bits = 0;
 	}
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		delete oss_path[i];
 		break;
 	}
-	return 0;
 }
 
-int ADevicePrefs::delete_esound_objs()
+void ADevicePrefs::delete_esound_objs()
 {
 	delete server_title;
+	server_title = 0;
 	delete port_title;
+	port_title = 0;
 	delete esound_server;
+	esound_server = 0;
 	delete esound_port;
-	return 0;
+	esound_port = 0;
 }
 
-int ADevicePrefs::delete_alsa_objs(int creation)
+void ADevicePrefs::delete_alsa_objs(int creation)
 {
 #ifdef HAVE_ALSA
 	alsa_drivers->remove_all_objects();
 	delete alsa_drivers;
+	alsa_drivers = 0;
 	delete path_title;
+	path_title = 0;
 	delete bits_title;
+	bits_title = 0;
 	delete alsa_device;
+	alsa_device = 0;
 	if(!creation && alsa_bits)
 	{
 		alsa_bits->delete_subwindows();
 		delete alsa_bits;
+		alsa_bits = 0;
 	}
-	delete alsa_workaround;
 #endif
-	return 0;
 }
 
-
-int ADevicePrefs::create_oss_objs()
+void ADevicePrefs::create_oss_objs()
 {
 	char *output_char;
 	int *output_int;
@@ -241,8 +238,6 @@ int ADevicePrefs::create_oss_objs()
 		}
 		break;
 	}
-
-	return 0;
 }
 
 void ADevicePrefs::create_alsa_objs()
@@ -304,7 +299,7 @@ void ADevicePrefs::create_alsa_objs()
 #endif
 }
 
-int ADevicePrefs::create_esound_objs()
+void ADevicePrefs::create_esound_objs()
 {
 	int x1 = x + menu->get_w() + 5;
 	char *output_char;
@@ -341,7 +336,6 @@ int ADevicePrefs::create_esound_objs()
 	x1 += esound_server->get_w() + 5;
 	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(esound_port = new ADeviceIntBox(x1, y + 20, output_int));
-	return 0;
 }
 
 ADriverMenu::ADriverMenu(int x, 
@@ -354,14 +348,6 @@ ADriverMenu::ADriverMenu(int x,
 	this->output = output;
 	this->do_input = do_input;
 	this->device_prefs = device_prefs;
-}
-
-ADriverMenu::~ADriverMenu()
-{
-}
-
-void ADriverMenu::create_objects()
-{
 	add_item(new ADriverItem(this, AUDIO_OSS_TITLE, AUDIO_OSS));
 	add_item(new ADriverItem(this, AUDIO_OSS_ENVY24_TITLE, AUDIO_OSS_ENVY24));
 
@@ -374,41 +360,37 @@ void ADriverMenu::create_objects()
 	add_item(new ADriverItem(this, AUDIO_DVB_TITLE, AUDIO_DVB));
 }
 
-char* ADriverMenu::adriver_to_string(int driver)
+const char *ADriverMenu::adriver_to_string(int driver)
 {
 	switch(driver)
 	{
-		case AUDIO_OSS:
-			sprintf(string, AUDIO_OSS_TITLE);
-			break;
-		case AUDIO_OSS_ENVY24:
-			sprintf(string, AUDIO_OSS_ENVY24_TITLE);
-			break;
-		case AUDIO_ESOUND:
-			sprintf(string, AUDIO_ESOUND_TITLE);
-			break;
-		case AUDIO_NAS:
-			sprintf(string, AUDIO_NAS_TITLE);
-			break;
-		case AUDIO_ALSA:
-			sprintf(string, AUDIO_ALSA_TITLE);
-			break;
-		case AUDIO_DVB:
-			sprintf(string, AUDIO_DVB_TITLE);
-			break;
+	case AUDIO_OSS:
+		return AUDIO_OSS_TITLE;
+
+	case AUDIO_OSS_ENVY24:
+		return AUDIO_OSS_ENVY24_TITLE;
+
+	case AUDIO_ESOUND:
+		return AUDIO_ESOUND_TITLE;
+
+	case AUDIO_NAS:
+		return AUDIO_NAS_TITLE;
+
+	case AUDIO_ALSA:
+		return AUDIO_ALSA_TITLE;
+
+	case AUDIO_DVB:
+		return AUDIO_DVB_TITLE;
 	}
-	return string;
+	return "";
 }
+
 
 ADriverItem::ADriverItem(ADriverMenu *popup, const char *text, int driver)
  : BC_MenuItem(text)
 {
 	this->popup = popup;
 	this->driver = driver;
-}
-
-ADriverItem::~ADriverItem()
-{
 }
 
 int ADriverItem::handle_event()
@@ -473,10 +455,6 @@ ALSADevice::ALSADevice(PreferencesDialog *dialog,
 	200)
 {
 	this->output = output;
-}
-
-ALSADevice::~ALSADevice()
-{
 }
 
 int ALSADevice::handle_event()
