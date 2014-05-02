@@ -143,6 +143,12 @@ BC_WindowBase::~BC_WindowBase()
 		if(smallfont_xft) 
 			XftFontClose (display, (XftFont*)smallfont_xft);
 #endif
+		if(smallfont)
+			XFreeFont(display, smallfont);
+		if(mediumfont)
+			XFreeFont(display, mediumfont);
+		if(largefont)
+			XFreeFont(display, largefont);
 		flush();
 // Can't close display if another thread is waiting for events.
 // Synchronous thread must delete display if gl_context exists.
