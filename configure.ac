@@ -526,6 +526,7 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	plugins/bandslide/Makefile
 	plugins/bandwipe/Makefile
 	plugins/blur/Makefile
+	plugins/bluebanana/Makefile
 	plugins/brightness/Makefile
 	plugins/burn/Makefile
 	plugins/parametric/Makefile

@@ -15,6 +15,7 @@ SUBDIRS= \
 	bandslide \
 	bandwipe \
 	blur \
+	bluebanana \
 	brightness \
 	burn \
 	chromakey \
