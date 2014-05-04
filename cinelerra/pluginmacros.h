@@ -274,11 +274,15 @@ void PLUGIN_CLASS::raise_window() \
 #define PLUGIN_CLASS_UPDATE_GUI \
 void PLUGIN_CLASS::update_gui() \
 { \
-	if(thread && load_configuration()) \
+	if(thread) \
 	{ \
-		thread->window->lock_window("plugin::update_gui"); \
-		thread->window->update(); \
-		thread->window->unlock_window(); \
+		force_update(); \
+		if(load_configuration()) \
+		{ \
+			thread->window->lock_window("plugin::update_gui"); \
+			thread->window->update(); \
+			thread->window->unlock_window(); \
+		} \
 	} \
 }
 #else

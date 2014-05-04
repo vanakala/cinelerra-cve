@@ -103,6 +103,7 @@ public:
 	virtual void save_data(KeyFrame *keyframe) {};    // write the plugin settings to text in text format
 	virtual void read_data(KeyFrame *keyframe) {};    // read the plugin settings from the text
 	int send_hide_gui();                                    // should be sent when the GUI recieves a close event from the user
+	virtual void force_update() {};
 
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 
