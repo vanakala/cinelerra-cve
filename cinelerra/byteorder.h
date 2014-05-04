@@ -26,7 +26,7 @@
 
 inline int get_byte_order()
 {                // 1 if little endian
-	return (*(u_int32_t*)"a   ") & 0x00000001;
+	return (*(const u_int32_t*)"a   ") & 0x00000001;
 }
 
 #define SWAP_ITERATE \

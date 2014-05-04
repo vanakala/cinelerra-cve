@@ -526,7 +526,7 @@ char* Units::print_time_format(int time_format, char *string)
 }
 
 #undef BYTE_ORDER
-#define BYTE_ORDER ((*(u_int32_t*)"a   ") & 0x00000001)
+#define BYTE_ORDER ((*(const u_int32_t*)"a   ") & 0x00000001)
 
 void* Units::int64_to_ptr(uint64_t value)
 {

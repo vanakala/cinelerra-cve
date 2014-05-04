@@ -68,7 +68,7 @@ void BC_Capture::init_window(char *display_path)
 	rootwin = RootWindow(display, screen);
 	vis = DefaultVisual(display, screen);
 	default_depth = DefaultDepth(display, screen);
-	client_byte_order = (*(u_int32_t*)"a   ") & 0x00000001;
+	client_byte_order = (*(const u_int32_t*)"a   ") & 0x00000001;
 	server_byte_order = (XImageByteOrder(display) == MSBFirst) ? 0 : 1;
 	char *data = 0;
 	XImage *ximage;
