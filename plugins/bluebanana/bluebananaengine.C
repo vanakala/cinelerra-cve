@@ -1170,8 +1170,6 @@ BluebananaEngine::~BluebananaEngine()
 	if(selection_workB) delete[] selection_workB;
 }
 
-void BluebananaEngine::init_packages() {}
-
 LoadClient* BluebananaEngine::new_client()
 {
 	return new BluebananaUnit(this, plugin);
@@ -1182,7 +1180,7 @@ LoadPackage* BluebananaEngine::new_package()
 	return new BluebananaPackage(this);
 }
 
-static float lt(float *data,float pos, int n)
+static float lt(float *data, float pos, int n)
 {
 	if(pos < 0) pos += n;
 	if(pos >= n) pos -= n;

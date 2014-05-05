@@ -187,9 +187,9 @@ int BB_Tumble::keypress_event()
 
 // --------------------------------------------------------------------------------
 //  initialization:
-//    1) create_objects() constructs sliders and readouts with
+//    1) constructor constructs sliders and readouts with
 //       limits but no values
-//    2) create_objects() then calls slider update()
+//    2) constructor then calls slider update()
 //       update computes and sets slider vals from config
 //       update computes and sets readout vals from config
 //
@@ -2723,11 +2723,6 @@ BluebananaWindow::BluebananaWindow(BluebananaMain *plugin, int x, int y)
 	leave_config_change(); // also forces render
 	plugin->server->mwindow->sync_parameters();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
-}
-
-void BluebananaWindow::close_event()
-{
-	set_done(1);
 }
 
 // adds one to config push refcount

@@ -793,7 +793,7 @@ void BluebananaMain::process_frame(VFrame *frame)
 		engine = new BluebananaEngine(this, get_project_smp() + 1,
 			get_project_smp() + 1);
 	engine->process_packages(frame);
-frame->dump(1);
+
 	// push final histograms to UI if it's up
 	send_render_gui(this);
 }

@@ -212,7 +212,6 @@ public:
 	~BluebananaEngine();
 
 	void process_packages(VFrame *data);
-	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
 
