@@ -318,7 +318,7 @@ void BluebananaMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.append_newline();
 
-	if(keyframe->pos_time == 0)
+	if(keyframe == first_keyframe())
 	{
 		// this will otherwise overwrite the nonauto information as well
 		output_nonauto(&output);
@@ -331,7 +331,7 @@ void BluebananaMain::save_data(KeyFrame *keyframe)
 // without alerting the keyframing mechanism
 void BluebananaMain::save_nonauto()
 {
-	KeyFrame *default_keyframe = prev_keyframe_pts(0);
+	KeyFrame *default_keyframe = first_keyframe();
 
 	if(default_keyframe)
 	{
@@ -380,7 +380,7 @@ void BluebananaMain::output_nonauto(FileXML *output)
 void BluebananaMain::load_nonauto()
 {
 	// nonauto data stored in the default keyframe at position 0 
-	KeyFrame *default_keyframe = prev_keyframe_pts(0);
+	KeyFrame *default_keyframe = first_keyframe();
 
 	if(default_keyframe)
 	{
