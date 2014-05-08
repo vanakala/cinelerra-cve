@@ -118,7 +118,6 @@ void BluebananaMain::load_defaults()
 {
 	// load the defaults
 	defaults = load_defaults_file("bluebanana.rc");
-	defaults->load();
 
 	config.mark = 0;
 	config.active = 1;
@@ -179,6 +178,8 @@ void BluebananaMain::load_defaults()
 
 	config.Oadj_active = defaults->get("OPACITY_ADJUST_ACTIVE", config.Oadj_active);
 	config.Oadj_val = defaults->get("OPACITY_ADJUST", config.Oadj_val);
+
+	config.ants_counter = defaults->get("ANTS_COUNTER", config.ants_counter);
 }
 
 void BluebananaMain::save_defaults()
@@ -240,6 +241,7 @@ void BluebananaMain::save_defaults()
 
 	defaults->update("OPACITY_ADJUST", config.Oadj_val);
 
+	defaults->update("ANTS_COUNTER", config.ants_counter);
 	defaults->save();
 }
 
@@ -780,7 +782,8 @@ float *BluebananaMain::fill_selection(float *in, float *work,
 
 void BluebananaMain::process_frame(VFrame *frame)
 {
-	ants_counter++;
+	ants_counter = ++config.ants_counter;
+	config.ants_counter &= 255;
 
 	load_configuration();
 	this->frame = frame;

@@ -98,6 +98,7 @@ public:
 
 	int Oadj_active;
 	float Oadj_val;
+	int ants_counter;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 

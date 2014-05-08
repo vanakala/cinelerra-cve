@@ -86,6 +86,7 @@ BluebananaConfig::BluebananaConfig()
 	Oadj_active = 0;
 	Oadj_val = 100;
 
+	ants_counter = 0;
 }
 
 int BluebananaConfig::equivalent(BluebananaConfig &that)
