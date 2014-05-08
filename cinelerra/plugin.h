@@ -102,6 +102,7 @@ public:
 // Called by PluginClient sequence to get rendering parameters
 	KeyFrame* get_prev_keyframe(ptstime postime);
 	KeyFrame* get_next_keyframe(ptstime postime);
+	KeyFrame* first_keyframe();
 // If this is a standalone plugin fill its location in the result.
 // If it's shared copy the shared location into the result
 	void get_shared_location(SharedLocation *result);

@@ -127,6 +127,7 @@ public:
 // is relative to the EDL.
 	KeyFrame* prev_keyframe_pts(ptstime postime);
 	KeyFrame* next_keyframe_pts(ptstime postime);
+	KeyFrame* first_keyframe();
 // get current camera and projector position
 	void get_camera(float *x, float *y, float *z, framenum position) __attribute__ ((deprecated));
 	void get_projector(float *x, float *y, float *z, framenum position) __attribute__ ((deprecated));

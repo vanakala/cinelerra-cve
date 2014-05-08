@@ -249,6 +249,11 @@ KeyFrame* PluginClient::next_keyframe_pts(ptstime pts)
 	return server->next_keyframe_pts(pts);
 }
 
+KeyFrame* PluginClient::first_keyframe()
+{
+	return server->first_keyframe();
+}
+
 void PluginClient::get_camera(float *x, float *y, float *z, ptstime postime)
 {
 	server->get_camera(x, y, z, postime);
