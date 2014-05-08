@@ -524,11 +524,6 @@ void BluebananaSlider::update()
 	{
 		trough = new VFrame(NULL, ntw, nth);
 	}
-
-	if(!trough)
-	{
-		fprintf(stderr, "Bluebanana: Unable to create Frame for slider\n");
-	}
 	else
 	{
 		unsigned char *data = trough->get_data();
@@ -1748,11 +1743,6 @@ void BluebananaSliderChannel::update()
 	{
 		trough = new VFrame(NULL, ntw, nth);
 	}
-
-	if(!trough)
-	{
-		fprintf(stderr, "Bluebanana: Unable to create Frame for slider\n");
-	}
 	else
 	{
 		unsigned char *data = trough->get_data();
@@ -2287,14 +2277,9 @@ void BluebananaSliderFill::update()
 	{
 		trough = new VFrame(NULL, ntw, nth);
 	}
-
-	/* Unlike the hist slider, we just drop the three pixel columns in the center */
-	if(!trough)
-	{
-		fprintf(stderr, "Bluebanana: Unable to create Frame for slider\n");
-	}
 	else
 	{
+		// Unlike the hist slider, we just drop the three pixel columns in the center
 		unsigned char *data = trough->get_data();
 		long bpr = trough->get_bytes_per_line();
 		float ha = 1.;

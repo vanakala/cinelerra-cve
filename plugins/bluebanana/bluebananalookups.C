@@ -69,20 +69,16 @@ static int select_setup(char *pattern, int change)
 			{
 				x--;
 				if(n == FSrange * 4)
-				{
-					fprintf(stderr, "Internal error; pattern array overflow\n");
 					return n;
-				}
+
 				pattern[n++] = (change > 0 ? 'H' : 'h');
 			}
 			if(!y)
 				break;
 			y--;
 			if(n == FSrange * 4)
-			{
-				fprintf(stderr, "Internal error; pattern array overflow\n");
 				return n;
-			}
+
 			pattern[n++] = (change > 0 ? 'V' : 'v');
 		}
 	}
