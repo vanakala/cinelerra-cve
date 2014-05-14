@@ -253,22 +253,25 @@ void CWindowToolGUI::get_keyframes(FloatAuto* &x_auto,
 			create_z);
 	}
 
-	if(x_auto && !PTSEQU(pos, x_auto->pos_time))
+	if(mwindow->edl->session->auto_keyframes)
 	{
-		local_x->interpolate_from(x_auto, x_auto->next, pos, 0);
-		x_auto = local_x;
-	}
+		if(x_auto && !PTSEQU(pos, x_auto->pos_time))
+		{
+			local_x->interpolate_from(x_auto, x_auto->next, pos, 0);
+			x_auto = local_x;
+		}
 
-	if(y_auto && !PTSEQU(pos, y_auto->pos_time))
-	{
-		local_y->interpolate_from(y_auto, y_auto->next, pos, 0);
-		y_auto = local_y;
-	}
+		if(y_auto && !PTSEQU(pos, y_auto->pos_time))
+		{
+			local_y->interpolate_from(y_auto, y_auto->next, pos, 0);
+			y_auto = local_y;
+		}
 
-	if(z_auto && !PTSEQU(pos, z_auto->pos_time))
-	{
-		local_z->interpolate_from(z_auto, z_auto->next, pos, 0);
-		z_auto = local_z;
+		if(z_auto && !PTSEQU(pos, z_auto->pos_time))
+		{
+			local_z->interpolate_from(z_auto, z_auto->next, pos, 0);
+			z_auto = local_z;
+		}
 	}
 }
 
