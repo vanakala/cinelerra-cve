@@ -31,32 +31,32 @@ class StringFile
 {
 public:
 	StringFile(size_t length = 0);
-	StringFile(char *filename);
+	StringFile(const char *filename);
 	virtual ~StringFile();
 
-	int readline();   // read next line from string
-	int readline(char *arg2);   // read next line from string
-	int readline(long *arg2);   // read next line from string
-	int readline(int *arg2);   // read next line from string
-	int readline(float *arg2);   // read next line from string
-	int readline(Freq *arg2);   // read next line from string
+	void readline();   // read next line from string
+	void readline(char *arg2);   // read next line from string
+	void readline(long *arg2);   // read next line from string
+	void readline(int *arg2);   // read next line from string
+	void readline(float *arg2);   // read next line from string
+	void readline(Freq *arg2);   // read next line from string
 
-	int readline(char *arg1, char *arg2);   // read next line from string
-	int readline(char *arg1, long *arg2);   // read next line from string
-	int readline(char *arg1, int *arg2);   // read next line from string
-	int readline(char *arg1, float *arg2);   // read next line from string
-	int writeline(char *arg1, int indent);   // write next line to string
-	int writeline(char *arg1, char *arg2, int indent);   // write next line to string
-	int writeline(char *arg1, long arg2, int indent);   // write next line to string
-	int writeline(char *arg1, int arg2, int indent);   // write next line to string
-	int writeline(char *arg1, float arg2, int indent);   // write next line to string
-	int writeline(char *arg1, Freq arg2, int indent);   // write next line to string
-	int backupline();       // move back one line
+	void readline(char *arg1, char *arg2);   // read next line from string
+	void readline(char *arg1, long *arg2);   // read next line from string
+	void readline(char *arg1, int *arg2);   // read next line from string
+	void readline(char *arg1, float *arg2);   // read next line from string
+	void writeline(char *arg1, int indent);   // write next line to string
+	void writeline(char *arg1, char *arg2, int indent);   // write next line to string
+	void writeline(char *arg1, long arg2, int indent);   // write next line to string
+	void writeline(char *arg1, int arg2, int indent);   // write next line to string
+	void writeline(char *arg1, float arg2, int indent);   // write next line to string
+	void writeline(char *arg1, Freq arg2, int indent);   // write next line to string
+	void backupline();       // move back one line
 
 	size_t get_length();
 	size_t get_pointer();
-	int write_to_file(char *filename);
-	int read_from_string(char *string);
+	int write_to_file(const char *filename);
+	void read_from_string(char *string);
 
 	char *string;
 	size_t pointer, length, available;
