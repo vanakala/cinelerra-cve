@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "stringfile.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,7 +30,7 @@ StringFile::StringFile(size_t length)
 	pointer = 0;
 	if(length == 0)
 	{
-		this->length = 100000;
+		this->length = 4096;
 	}
 	else
 	{
@@ -214,7 +215,7 @@ void StringFile::writeline(char *arg1, int indent)
 	int i;
 
 // reallocate the string
-	if(strlen(arg1) + indent > available - pointer)
+	if(strlen(arg1) + indent >= available - pointer)
 	{
 		char *newstring = new char[available * 2];
 		strcpy(newstring, string);
