@@ -210,7 +210,7 @@ void StringFile::readline(char *arg1, float *arg2)
 	*arg2 = atof(string1);
 }
 
-void StringFile::writeline(char *arg1, int indent)
+void StringFile::writeline(const char *arg1, int indent)
 {
 	int i;
 
@@ -230,31 +230,31 @@ void StringFile::writeline(char *arg1, int indent)
 	pointer += strlen(arg1);
 }
 
-void StringFile::writeline(char *arg1, char *arg2, int indent)
+void StringFile::writeline(const char *arg1, const char *arg2, int indent)
 {
 	sprintf(string1, "%s %s\n", arg1, arg2);
 	writeline(string1, indent);
 }
 
-void StringFile::writeline(char *arg1, long arg2, int indent)
+void StringFile::writeline(const char *arg1, long arg2, int indent)
 {
 	sprintf(string1, "%s %ld\n", arg1, arg2);
 	writeline(string1, indent);
 }
 
-void StringFile::writeline(char *arg1, int arg2, int indent)
+void StringFile::writeline(const char *arg1, int arg2, int indent)
 {
 	sprintf(string1, "%s %d\n", arg1, arg2);
 	writeline(string1, indent);
 }
 
-void StringFile::writeline(char *arg1, float arg2, int indent)
+void StringFile::writeline(const char *arg1, float arg2, int indent)
 {
 	sprintf(string1, "%s %f\n", arg1, arg2);
 	writeline(string1, indent);
 }
 
-void StringFile::writeline(char *arg1, Freq arg2, int indent)
+void StringFile::writeline(const char *arg1, Freq arg2, int indent)
 {
 	sprintf(string1, "%s %d\n", arg1, arg2.freq);
 	writeline(string1, indent);

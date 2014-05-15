@@ -45,12 +45,12 @@ public:
 	void readline(char *arg1, long *arg2);   // read next line from string
 	void readline(char *arg1, int *arg2);   // read next line from string
 	void readline(char *arg1, float *arg2);   // read next line from string
-	void writeline(char *arg1, int indent);   // write next line to string
-	void writeline(char *arg1, char *arg2, int indent);   // write next line to string
-	void writeline(char *arg1, long arg2, int indent);   // write next line to string
-	void writeline(char *arg1, int arg2, int indent);   // write next line to string
-	void writeline(char *arg1, float arg2, int indent);   // write next line to string
-	void writeline(char *arg1, Freq arg2, int indent);   // write next line to string
+	void writeline(const char *arg1, int indent);   // write next line to string
+	void writeline(const char *arg1, const char *arg2, int indent);   // write next line to string
+	void writeline(const char *arg1, long arg2, int indent);   // write next line to string
+	void writeline(const char *arg1, int arg2, int indent);   // write next line to string
+	void writeline(const char *arg1, float arg2, int indent);   // write next line to string
+	void writeline(const char *arg1, Freq arg2, int indent);   // write next line to string
 	void backupline();       // move back one line
 
 	size_t get_length();
