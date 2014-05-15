@@ -208,7 +208,6 @@ int AudioDevice::interrupt_crash()
 
 void AudioDevice::close_all()
 {
-	r = w = d = 0;
 	if(is_recording)
 	{
 		is_recording = 0;
@@ -219,6 +218,7 @@ void AudioDevice::close_all()
 	if(lowlevel_in) lowlevel_in->close_all();
 	if(lowlevel_out) lowlevel_out->close_all();
 	if(lowlevel_duplex) lowlevel_duplex->close_all();
+	r = w = d = 0;
 
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
