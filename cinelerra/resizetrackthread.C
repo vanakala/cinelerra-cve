@@ -34,10 +34,6 @@
 #include "tracks.h"
 
 
-
-
-
-
 ResizeTrackThread::ResizeTrackThread(MWindow *mwindow, int track_number)
  : Thread()
 {
@@ -49,11 +45,7 @@ ResizeTrackThread::ResizeTrackThread(MWindow *mwindow, int track_number)
 ResizeTrackThread::~ResizeTrackThread()
 {
 	if(window)
-	{
-		window->lock_window("ResizeTrackThread:Destructor");
 		window->set_done(1);
-		window->unlock_window();
-	}
 
 	Thread::join();
 }
@@ -67,19 +59,15 @@ void ResizeTrackThread::start_window(Track *track, int track_number)
 	start();
 }
 
-
 void ResizeTrackThread::run()
 {
 	ResizeTrackWindow *window = this->window = 
-		new ResizeTrackWindow(mwindow, 
-			this,
+		new ResizeTrackWindow(this,
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
-	window->create_objects();
 	int result = window->run_window();
 	this->window = 0;
 	delete window;
-
 
 	if(!result)
 	{
@@ -102,10 +90,7 @@ void ResizeTrackThread::run()
 }
 
 
-
-
-ResizeTrackWindow::ResizeTrackWindow(MWindow *mwindow, 
-	ResizeTrackThread *thread,
+ResizeTrackWindow::ResizeTrackWindow(ResizeTrackThread *thread,
 	int x,
 	int y)
  : BC_Window("Resize Track - " PROGRAM_NAME,
@@ -119,17 +104,9 @@ ResizeTrackWindow::ResizeTrackWindow(MWindow *mwindow,
 		0,
 		1)
 {
-	this->mwindow = mwindow;
 	this->thread = thread;
-}
 
-ResizeTrackWindow::~ResizeTrackWindow()
-{
-}
-
-void ResizeTrackWindow::create_objects()
-{
-	int x = 10, y = 10;
+	x = 10, y = 10;
 
 	add_subwindow(new BC_Title(x, y, _("Size:")));
 	x += 50;
@@ -163,17 +140,16 @@ void ResizeTrackWindow::create_objects()
 }
 
 void ResizeTrackWindow::update(int changed_scale, 
-	int changed_size, 
-	int changed_all)
+	int changed_size)
 {
-	if(changed_scale || changed_all)
+	if(changed_scale)
 	{
 		thread->w = (int)(thread->w1 * thread->w_scale);
 		thread->h = (int)(thread->h1 * thread->h_scale);
 		framesize_selection->update(thread->w, thread->h);
 	}
 	else
-	if(changed_size || changed_all)
+	if(changed_size)
 	{
 		thread->w_scale = (double)thread->w / thread->w1;
 		w_scale->update((float)thread->w_scale);
@@ -196,7 +172,7 @@ ResizeTrackScaleW::ResizeTrackScaleW(ResizeTrackWindow *gui,
 int ResizeTrackScaleW::handle_event()
 {
 	thread->w_scale = atof(get_text());
-	gui->update(1, 0, 0);
+	gui->update(1, 0);
 	return 1;
 }
 
@@ -212,7 +188,7 @@ ResizeTrackScaleH::ResizeTrackScaleH(ResizeTrackWindow *gui,
 int ResizeTrackScaleH::handle_event()
 {
 	thread->h_scale = atof(get_text());
-	gui->update(1, 0, 0);
+	gui->update(1, 0);
 	return 1;
 }
 
@@ -226,5 +202,5 @@ SetTrackFrameSize::SetTrackFrameSize(int x1, int y1, int x2, int y2,
 int SetTrackFrameSize::handle_event()
 {
 	Selection::handle_event();
-	gui->update(0, 1, 0);
+	gui->update(0, 1);
 }

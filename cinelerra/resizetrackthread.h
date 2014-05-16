@@ -84,23 +84,19 @@ public:
 class ResizeTrackWindow : public BC_Window
 {
 public:
-	ResizeTrackWindow(MWindow *mwindow, 
-		ResizeTrackThread *thread,
+	ResizeTrackWindow(ResizeTrackThread *thread,
 		int x,
 		int y);
-	~ResizeTrackWindow();
 
-	void create_objects();
-	void update(int changed_scale, 
-		int changed_size, 
-		int changed_all);
+	void update(int changed_scale,
+		int changed_size);
 
-	MWindow *mwindow;
 	ResizeTrackThread *thread;
 	FrameSizeSelection *framesize_selection;
 	ResizeTrackScaleW *w_scale;
 	ResizeTrackScaleH *h_scale;
 };
+
 
 class SetTrackFrameSize : public FrameSizeSelection
 {
