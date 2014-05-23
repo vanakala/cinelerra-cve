@@ -539,10 +539,6 @@ void VFrame::clear_frame(void)
 	case BC_COMPRESSED:
 		break;
 
-	case BC_YUV420P:
-		memset(data, 0, h * w * 2);
-		break;
-
 	case BC_YUV888:
 		ZERO_YUV(3, unsigned char, 0xff);
 		break;
@@ -560,7 +556,7 @@ void VFrame::clear_frame(void)
 		break;
 
 	default:
-		memset(data, 0, h * bytes_per_line);
+		memset(data, 0, calculate_data_size(w, h, bytes_per_line, color_model));
 		break;
 	}
 }
