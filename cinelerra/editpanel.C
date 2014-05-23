@@ -69,7 +69,6 @@ EditPanel::EditPanel(MWindow *mwindow,
 	splice = 0;
 	overwrite = 0;
 	cut = 0;
-	copy = 0;
 	paste = 0;
 	labelbutton = 0;
 	prevlabel = 0;
@@ -193,47 +192,6 @@ EditPanel::EditPanel(MWindow *mwindow,
 
 	subwindow->add_subwindow(mangoto = new EditManualGoto(mwindow, this, x1, y1));
 	x1 += mangoto->get_w();
-}
-
-EditPanel::~EditPanel()
-{
-	if(use_flags & EDTP_EDITING_MODE)
-	{
-		if(arrow) delete arrow;
-		if(ibeam) delete ibeam;
-	}
-
-	delete keyframe;
-
-	delete locklabels;
-
-	delete inpoint;
-	delete outpoint;
-	delete copy;
-	delete splice;
-	delete overwrite;
-	delete cut;
-	delete copy;
-	delete paste;
-
-	if(use_flags & EDTP_LABELS)
-	{
-		delete labelbutton;
-		delete prevlabel;
-		delete nextlabel;
-	}
-
-	if(use_flags & EDTP_FIT)
-	{
-		delete fit;
-		delete fit_autos;
-	}
-	if(use_flags & EDTP_UNDO)
-	{
-		delete undo;
-		delete redo;
-	}
-	delete meters;
 }
 
 void EditPanel::update()

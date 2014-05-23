@@ -284,7 +284,6 @@ public:
 		int y, 
 		int use_flags,
 		MeterPanel *meter_panel);
-	~EditPanel();
 
 	friend class IBeamButton;
 	friend class ArrowButton;
