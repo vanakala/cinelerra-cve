@@ -59,7 +59,7 @@ public:
 	void read_from_string(char *string);
 
 	char *string;
-	size_t pointer, length, available;
+	size_t pointer, length;
 	char string1[1024];      // general purpose strings
 };
 

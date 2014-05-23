@@ -25,35 +25,37 @@
 #include <stdio.h>
 #include <string.h>
 
+#define DEFAULT_BUFFER_SIZE 4096
+
 StringFile::StringFile(size_t length)
 {
 	pointer = 0;
 	if(length == 0)
 	{
-		this->length = 4096;
+		this->length = DEFAULT_BUFFER_SIZE;
 	}
 	else
 	{
 		this->length = length;
 	}
-	string = new char[this->length + 1];
-	available = this->length;
+	string = new char[this->length];
 }
 
 StringFile::StringFile(const char *filename)
 {
 	FILE *in;
+	size_t size;
 
 	if(in = fopen(filename, "rb"))
 	{
 		fseek(in, 0, SEEK_END);
-		length = ftell(in);
-		available = length;
+		size = ftell(in);
 		fseek(in, 0, SEEK_SET);
-		string = new char[length + 5];
+		length = (size + 16) & ~0xf;
+		string = new char[length];
 
-		if(fread(string, length, 1, in) == 1)
-			for(int i = 0; i < 5; i++) string[length + i] = 0;
+		if(fread(string, size, 1, in) == 1)
+			string[size] = 0;
 		else
 		{
 			delete [] string;
@@ -65,12 +67,10 @@ StringFile::StringFile(const char *filename)
 	else
 	{
 nofile:
-		length = 0;
-		available = 1;
-		string = new char[1];
+		length = DEFAULT_BUFFER_SIZE;
+		string = new char[length];
 		string[0] = 0;
 	}
-
 	pointer = 0;
 }
 
@@ -98,13 +98,13 @@ int StringFile::write_to_file(const char *filename)
 void StringFile::read_from_string(char *string)
 {
 	int i;
+	size_t size;
 
 	delete [] this->string;
-	length = strlen(string);
-	available = length;
-	this->string = new char[length + 5];
+	size = strlen(string);
+	length = (size + 16) & ~0xf;
+	this->string = new char[length];
 	strcpy(this->string, string);
-	for(i = 0; i < 5; i++) this->string[length + i] = 0;
 }
 
 size_t StringFile::get_length()
@@ -177,18 +177,18 @@ void StringFile::readline(char *arg1, char *arg2)
 
 void StringFile::backupline()
 {
-	while(string[pointer] != 10 && pointer > 0)
+	while(string[pointer] != '\n' && pointer > 0)
 	{
 		pointer--;     // first eoln
 	}
-	if(string[pointer] == 10) pointer--;        // skip eoln
+	if(string[pointer] == '\n') pointer--;        // skip eoln
 
-	while(string[pointer] != 10 && pointer > 0)
+	while(string[pointer] != '\n' && pointer > 0)
 	{
 		pointer--;     // second eoln
 	}
 
-	if(string[pointer] == 10) pointer++;      // skip eoln
+	if(string[pointer] == '\n') pointer++;      // skip eoln
 }
 
 void StringFile::readline(char *arg1, long *arg2)
@@ -215,13 +215,12 @@ void StringFile::writeline(const char *arg1, int indent)
 	int i;
 
 // reallocate the string
-	if(strlen(arg1) + indent >= available - pointer)
+	if(strlen(arg1) + indent >= length - pointer)
 	{
-		char *newstring = new char[available * 2];
-		strcpy(newstring, string);
-		delete string;
-		available *= 2;
 		length *= 2;
+		char *newstring = new char[length];
+		strcpy(newstring, string);
+		delete [] string;
 		string = newstring;
 	}
 
