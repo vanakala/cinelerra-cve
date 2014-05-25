@@ -58,11 +58,6 @@ MaskUnit::~MaskUnit()
 	}
 }
 
-#ifndef SQR
-#define SQR(x) ((x) * (x))
-#endif
-
-
 inline void MaskUnit::draw_line_clamped(
 	int draw_x1, 
 	int draw_y1, 

@@ -846,9 +846,6 @@ void CWindowCanvas::draw_crophandle(int x, int y)
 #define FIRST_CONTROL_H 20
 #undef BC_INFINITY
 #define BC_INFINITY 65536
-#ifndef SQR
-#define SQR(x) ((x) * (x))
-#endif
 
 int CWindowCanvas::do_mask(int &redraw, 
 		int &rerender, 
