@@ -847,6 +847,267 @@ void CWindowCanvas::draw_crophandle(int x, int y)
 #undef BC_INFINITY
 #define BC_INFINITY 65536
 
+#define RULERHANDLE_W 16
+#define RULERHANDLE_H 16
+
+int CWindowCanvas::do_ruler(int draw,
+	int motion,
+	int button_press,
+	int button_release)
+{
+	int result = 0;
+	float x1 = mwindow->edl->session->ruler_x1;
+	float y1 = mwindow->edl->session->ruler_y1;
+	float x2 = mwindow->edl->session->ruler_x2;
+	float y2 = mwindow->edl->session->ruler_y2;
+	float canvas_x1 = x1;
+	float canvas_y1 = y1;
+	float canvas_x2 = x2;
+	float canvas_y2 = y2;
+	float output_x = get_cursor_x();
+	float output_y = get_cursor_y();
+	float canvas_cursor_x = output_x;
+	float canvas_cursor_y = output_y;
+	float old_x1 = x1;
+	float old_x2 = x2;
+	float old_y1 = y1;
+	float old_y2 = y2;
+
+	canvas_to_output(mwindow->edl, output_x, output_y);
+	output_to_canvas(mwindow->edl, canvas_x1, canvas_y1);
+	output_to_canvas(mwindow->edl, canvas_x2, canvas_y2);
+	mwindow->session->cwindow_output_x = (int)output_x;
+	mwindow->session->cwindow_output_y = (int)output_y;
+
+	if(button_press && get_buttonpress() == 1)
+	{
+		gui->ruler_handle = -1;
+		gui->ruler_translate = 0;
+
+		if(gui->alt_down())
+		{
+			gui->ruler_translate = 1;
+			gui->ruler_origin_x = x1;
+			gui->ruler_origin_y = y1;
+		}
+		else
+		if(canvas_cursor_x >= canvas_x1 - RULERHANDLE_W / 2 &&
+			canvas_cursor_x < canvas_x1 + RULERHANDLE_W / 2 &&
+			canvas_cursor_y >= canvas_y1 - RULERHANDLE_W &&
+			canvas_cursor_y < canvas_y1 + RULERHANDLE_H / 2)
+		{
+			gui->ruler_handle = 0;
+			gui->ruler_origin_x = x1;
+			gui->ruler_origin_y = y1;
+		}
+		else
+		if(canvas_cursor_x >= canvas_x2 - RULERHANDLE_W / 2 &&
+			canvas_cursor_x < canvas_x2 + RULERHANDLE_W / 2 &&
+			canvas_cursor_y >= canvas_y2 - RULERHANDLE_W &&
+			canvas_cursor_y < canvas_y2 + RULERHANDLE_H / 2)
+		{
+			gui->ruler_handle = 1;
+			gui->ruler_origin_x = x2;
+			gui->ruler_origin_y = y2;
+		}
+
+// Start new selection
+		if(!gui->ruler_translate &&
+			(gui->ruler_handle < 0 ||
+			(EQUIV(x2 - x1, 0.0) && EQUIV(y2 - y1, 0.0))))
+		{
+// Hide previous
+			do_ruler(1, 0, 0, 0);
+			get_canvas()->flash();
+			gui->ruler_handle = 1;
+			mwindow->edl->session->ruler_x1 = output_x;
+			mwindow->edl->session->ruler_y1 = output_y;
+			mwindow->edl->session->ruler_x2 = output_x;
+			mwindow->edl->session->ruler_y2 = output_y;
+			gui->ruler_origin_x = mwindow->edl->session->ruler_x2;
+			gui->ruler_origin_y = mwindow->edl->session->ruler_y2;
+		}
+
+		gui->x_origin = output_x;
+		gui->y_origin = output_y;
+		gui->current_operation = CWINDOW_RULER;
+		gui->tool_panel->raise_window();
+		result = 1;
+	}
+	if(motion)
+	{
+		if(gui->current_operation == CWINDOW_RULER)
+		{
+			if(gui->ruler_translate)
+			{
+// Hide ruler
+				do_ruler(1, 0, 0, 0);
+				float x_difference = mwindow->edl->session->ruler_x1;
+				float y_difference = mwindow->edl->session->ruler_y1;
+				mwindow->edl->session->ruler_x1 = output_x - gui->x_origin + gui->ruler_origin_x;
+				mwindow->edl->session->ruler_y1 = output_y - gui->y_origin + gui->ruler_origin_y;
+				x_difference -= mwindow->edl->session->ruler_x1;
+				y_difference -= mwindow->edl->session->ruler_y1;
+				mwindow->edl->session->ruler_x2 -= x_difference;
+				mwindow->edl->session->ruler_y2 -= y_difference;
+// Show ruler
+				do_ruler(1, 0, 0, 0);
+				get_canvas()->flash();
+			}
+			else
+			switch(gui->ruler_handle)
+			{
+			case 0:
+				do_ruler(1, 0, 0, 0);
+				mwindow->edl->session->ruler_x1 = output_x - gui->x_origin + gui->ruler_origin_x;
+				mwindow->edl->session->ruler_y1 = output_y - gui->y_origin + gui->ruler_origin_y;
+				if(gui->alt_down() || gui->ctrl_down())
+				{
+					double angle_value = fabs(atan((mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1) /
+						(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1)) *
+							360 / 2 / M_PI);
+					double distance_value =
+						sqrt(SQR(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1) +
+						SQR(mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1));
+					if(angle_value < 22)
+						mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2;
+					else
+					if(angle_value > 67)
+						mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2;
+					else
+					if(mwindow->edl->session->ruler_x1 < mwindow->edl->session->ruler_x2 &&
+						mwindow->edl->session->ruler_y1 < mwindow->edl->session->ruler_y2)
+					{
+						mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2 - distance_value / 1.414214;
+						mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2 - distance_value / 1.414214;
+					}
+					else
+					if(mwindow->edl->session->ruler_x1 < mwindow->edl->session->ruler_x2 && 
+						mwindow->edl->session->ruler_y1 > mwindow->edl->session->ruler_y2)
+					{
+						mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2 - distance_value / 1.414214;
+						mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2 + distance_value / 1.414214;
+					}
+					else
+					if(mwindow->edl->session->ruler_x1 > mwindow->edl->session->ruler_x2 &&
+						mwindow->edl->session->ruler_y1 < mwindow->edl->session->ruler_y2)
+					{
+						mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2 + distance_value / 1.414214;
+						mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2 - distance_value / 1.414214;
+					}
+					else
+					{
+						mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2 + distance_value / 1.414214;
+						mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2 + distance_value / 1.414214;
+					}
+				}
+				do_ruler(1, 0, 0, 0);
+				get_canvas()->flash();
+				gui->update_tool();
+				break;
+
+			case 1:
+				do_ruler(1, 0, 0, 0);
+				mwindow->edl->session->ruler_x2 = output_x - gui->x_origin + gui->ruler_origin_x;
+				mwindow->edl->session->ruler_y2 = output_y - gui->y_origin + gui->ruler_origin_y;
+				if(gui->alt_down() || gui->ctrl_down())
+				{
+					double angle_value = fabs(atan((mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1) /
+						(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1)) *
+							360 / 2 / M_PI);
+					double distance_value =
+						sqrt(SQR(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1) +
+							SQR(mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1));
+					if(angle_value < 22)
+						mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1;
+					else
+					if(angle_value > 67)
+						mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1;
+					else
+					if(mwindow->edl->session->ruler_x2 < mwindow->edl->session->ruler_x1 &&
+						mwindow->edl->session->ruler_y2 < mwindow->edl->session->ruler_y1)
+					{
+						mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1 - distance_value / 1.414214;
+						mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1 - distance_value / 1.414214;
+					}
+					else
+					if(mwindow->edl->session->ruler_x2 < mwindow->edl->session->ruler_x1 &&
+						mwindow->edl->session->ruler_y2 > mwindow->edl->session->ruler_y1)
+					{
+						mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1 - distance_value / 1.414214;
+						mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1 + distance_value / 1.414214;
+					}
+					else
+					if(mwindow->edl->session->ruler_x2 > mwindow->edl->session->ruler_x1 && mwindow->edl->session->ruler_y2 < mwindow->edl->session->ruler_y1)
+					{
+						mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1 + distance_value / 1.414214;
+						mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1 - distance_value / 1.414214;
+					}
+					else
+					{
+						mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1 + distance_value / 1.414214;
+						mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1 + distance_value / 1.414214;
+					}
+				}
+				do_ruler(1, 0, 0, 0);
+				get_canvas()->flash();
+				gui->update_tool();
+				break;
+			}
+		}
+		else
+		{
+			if(canvas_cursor_x >= canvas_x1 - RULERHANDLE_W / 2 &&
+				canvas_cursor_x < canvas_x1 + RULERHANDLE_W / 2 &&
+				canvas_cursor_y >= canvas_y1 - RULERHANDLE_W &&
+				canvas_cursor_y < canvas_y1 + RULERHANDLE_H / 2)
+			{
+				set_cursor(UPRIGHT_ARROW_CURSOR);
+			}
+			else
+			if(canvas_cursor_x >= canvas_x2 - RULERHANDLE_W / 2 &&
+				canvas_cursor_x < canvas_x2 + RULERHANDLE_W / 2 &&
+				canvas_cursor_y >= canvas_y2 - RULERHANDLE_W &&
+				canvas_cursor_y < canvas_y2 + RULERHANDLE_H / 2)
+			{
+				set_cursor(UPRIGHT_ARROW_CURSOR);
+			}
+			else
+				set_cursor(CROSS_CURSOR);
+// Update current position
+			gui->update_tool();
+		}
+	}
+// Assume no ruler measurement if 0 length
+	if(draw && (x2 - x1 || y2 - y1))
+	{
+		get_canvas()->set_inverse();
+		get_canvas()->set_color(WHITE);
+		get_canvas()->draw_line((int)canvas_x1,
+			(int)canvas_y1,
+			(int)canvas_x2,
+			(int)canvas_y2);
+		get_canvas()->draw_line((int)canvas_x1 - RULERHANDLE_W / 2,
+			(int)canvas_y1,
+			(int)canvas_x1 + RULERHANDLE_W / 2,
+			(int)canvas_y1);
+		get_canvas()->draw_line((int)canvas_x1,
+			(int)canvas_y1 - RULERHANDLE_H / 2,
+			(int)canvas_x1,
+			(int)canvas_y1 + RULERHANDLE_H / 2);
+		get_canvas()->draw_line((int)canvas_x2 - RULERHANDLE_W / 2,
+			(int)canvas_y2,
+			(int)canvas_x2 + RULERHANDLE_W / 2,
+			(int)canvas_y2);
+		get_canvas()->draw_line((int)canvas_x2,
+			(int)canvas_y2 - RULERHANDLE_H / 2,
+			(int)canvas_x2,
+			(int)canvas_y2 + RULERHANDLE_H / 2);
+		get_canvas()->set_opaque();
+	}
+	return result;
+}
+
 int CWindowCanvas::do_mask(int &redraw, 
 		int &rerender, 
 		int button_press, 
@@ -1515,6 +1776,10 @@ void CWindowCanvas::draw_overlays()
 
 	case CWINDOW_MASK:
 		do_mask(temp1, temp2, 0, 0, 1);
+		break;
+
+	case CWINDOW_RULER:
+		do_ruler(1, 0, 0, 0);
 		break;
 	}
 }
@@ -2189,6 +2454,7 @@ int CWindowCanvas::cursor_enter_event()
 		set_cursor(ARROW_CURSOR);
 		break;
 	case CWINDOW_MASK:
+	case CWINDOW_RULER:
 		set_cursor(CROSS_CURSOR);
 		break;
 	case CWINDOW_EYEDROP:
@@ -2227,6 +2493,10 @@ int CWindowCanvas::cursor_motion_event()
 			break;
 		}
 
+	case CWINDOW_RULER:
+		result = do_ruler(0, 1, 0, 0);
+		break;
+
 	case CWINDOW_CAMERA:
 		result = test_bezier(0, redraw, redraw_canvas, rerender, 1);
 		break;
@@ -2261,6 +2531,10 @@ int CWindowCanvas::cursor_motion_event()
 		{
 		case CWINDOW_CROP:
 			result = test_crop(0, redraw);
+			break;
+
+		case CWINDOW_RULER:
+			result = do_ruler(0, 1, 0, 0);
 			break;
 		}
 	}
@@ -2322,6 +2596,10 @@ int CWindowCanvas::button_press_event()
 	{
 		switch(mwindow->edl->session->cwindow_operation)
 		{
+		case CWINDOW_RULER:
+			result = do_ruler(0, 0, 1, 0);
+			break;
+
 		case CWINDOW_CAMERA:
 			result = test_bezier(1, redraw, redraw_canvas, rerender, 1);
 			break;
@@ -2375,6 +2653,10 @@ int CWindowCanvas::button_release_event()
 	{
 	case CWINDOW_SCROLL:
 		result = 1;
+		break;
+
+	case CWINDOW_RULER:
+		do_ruler(0, 0, 0, 1);
 		break;
 
 	case CWINDOW_CAMERA:

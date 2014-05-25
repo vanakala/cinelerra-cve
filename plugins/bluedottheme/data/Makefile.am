@@ -296,6 +296,7 @@ resvbuttons_left.png \
 resvbuttons_right.png \
 reverse.png \
 rewind.png \
+ruler.png \
 right_justify.png \
 setformat_bg.png \
 setformat_bg2.png \

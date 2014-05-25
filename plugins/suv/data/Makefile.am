@@ -484,6 +484,7 @@ PNGS = \
 	reverse.png \
 	rewind.png \
 	right_justify.png \
+	ruler.png \
 	select_dn.png \
 	select_hi.png \
 	select_up.png \

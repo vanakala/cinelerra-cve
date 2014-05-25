@@ -244,6 +244,7 @@ resource512.png \
 resource64.png \
 reverse.png \
 rewind.png \
+ruler.png \
 right_justify.png \
 setformat_bg2.png \
 show_meters.png \

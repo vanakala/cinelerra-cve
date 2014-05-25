@@ -97,6 +97,9 @@ public:
 	ptstime drag_start_postime;
 // Records for redrawing brender position in timebar
 	ptstime brender_end;
+// Position of cursor in CWindow output.  Used by ruler.
+	int cwindow_output_x, cwindow_output_y;
+
 
 // Show controls in CWindow
 	int cwindow_controls;

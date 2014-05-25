@@ -129,6 +129,10 @@ public:
 	float crop_origin_x1, crop_origin_y1;
 	float crop_origin_x2, crop_origin_y2;
 
+	float ruler_origin_x, ruler_origin_y;
+	int ruler_handle;
+	int ruler_translate;
+
 // Origin for camera and projector operations during last button press
 	float center_x, center_y, center_z;
 	float control_in_x, control_in_y, control_out_x, control_out_y;
@@ -250,6 +254,7 @@ public:
 		int &redraw_canvas, 
 		int &rerender,
 		int do_camera);
+	int do_ruler(int draw, int motion, int button_press, int button_release);
 	void test_zoom(int &redraw);
 	void reset_camera();
 	void reset_projector();

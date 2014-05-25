@@ -49,6 +49,7 @@ public:
 
 	void run();
 	void update_show_window();
+	void raise_window();
 	void update_values();
 
 	MWindow *mwindow;
@@ -294,6 +295,20 @@ private:
 // Toggles for keyframe tangent mode (projector automation only)
 	CWindowTangentToggle *t_smooth;
 	CWindowTangentToggle *t_linear;
+};
+
+class CWindowRulerGUI : public CWindowToolGUI
+{
+public:
+	CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread);
+
+	void update();
+
+	BC_Title *current;
+	BC_Title *point1;
+	BC_Title *point2;
+	BC_Title *distance;
+	BC_Title *angle;
 };
 
 class CWindowCameraLeft : public BC_Button
