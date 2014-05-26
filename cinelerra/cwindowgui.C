@@ -876,8 +876,8 @@ int CWindowCanvas::do_ruler(int draw,
 	canvas_to_output(mwindow->edl, output_x, output_y);
 	output_to_canvas(mwindow->edl, canvas_x1, canvas_y1);
 	output_to_canvas(mwindow->edl, canvas_x2, canvas_y2);
-	mwindow->session->cwindow_output_x = (int)output_x;
-	mwindow->session->cwindow_output_y = (int)output_y;
+	mwindow->session->cwindow_output_x = roundf(output_x);
+	mwindow->session->cwindow_output_y = roundf(output_y);
 
 	if(button_press && get_buttonpress() == 1)
 	{
@@ -914,7 +914,7 @@ int CWindowCanvas::do_ruler(int draw,
 // Start new selection
 		if(!gui->ruler_translate &&
 			(gui->ruler_handle < 0 ||
-			(EQUIV(x2 - x1, 0.0) && EQUIV(y2 - y1, 0.0))))
+			(EQUIV(x2, x1) && EQUIV(y2, y1))))
 		{
 // Hide previous
 			do_ruler(1, 0, 0, 0);
@@ -1079,30 +1079,30 @@ int CWindowCanvas::do_ruler(int draw,
 		}
 	}
 // Assume no ruler measurement if 0 length
-	if(draw && (x2 - x1 || y2 - y1))
+	if(draw && (!EQUIV(x2, x1) || !EQUIV(y2, y1)))
 	{
 		get_canvas()->set_inverse();
 		get_canvas()->set_color(WHITE);
-		get_canvas()->draw_line((int)canvas_x1,
-			(int)canvas_y1,
-			(int)canvas_x2,
-			(int)canvas_y2);
-		get_canvas()->draw_line((int)canvas_x1 - RULERHANDLE_W / 2,
-			(int)canvas_y1,
-			(int)canvas_x1 + RULERHANDLE_W / 2,
-			(int)canvas_y1);
-		get_canvas()->draw_line((int)canvas_x1,
-			(int)canvas_y1 - RULERHANDLE_H / 2,
-			(int)canvas_x1,
-			(int)canvas_y1 + RULERHANDLE_H / 2);
-		get_canvas()->draw_line((int)canvas_x2 - RULERHANDLE_W / 2,
-			(int)canvas_y2,
-			(int)canvas_x2 + RULERHANDLE_W / 2,
-			(int)canvas_y2);
-		get_canvas()->draw_line((int)canvas_x2,
-			(int)canvas_y2 - RULERHANDLE_H / 2,
-			(int)canvas_x2,
-			(int)canvas_y2 + RULERHANDLE_H / 2);
+		get_canvas()->draw_line(roundf(canvas_x1),
+			roundf(canvas_y1),
+			roundf(canvas_x2),
+			roundf(canvas_y2));
+		get_canvas()->draw_line(roundf(canvas_x1 - RULERHANDLE_W / 2),
+			roundf(canvas_y1),
+			roundf(canvas_x1 + RULERHANDLE_W / 2),
+			roundf(canvas_y1));
+		get_canvas()->draw_line(roundf(canvas_x1),
+			roundf(canvas_y1 - RULERHANDLE_H / 2),
+			roundf(canvas_x1),
+			roundf(canvas_y1 + RULERHANDLE_H / 2));
+		get_canvas()->draw_line(roundf(canvas_x2 - RULERHANDLE_W / 2),
+			roundf(canvas_y2),
+			roundf(canvas_x2 + RULERHANDLE_W / 2),
+			roundf(canvas_y2));
+		get_canvas()->draw_line(roundf(canvas_x2),
+			roundf(canvas_y2 - RULERHANDLE_H / 2),
+			roundf(canvas_x2),
+			roundf(canvas_y2 + RULERHANDLE_H / 2));
 		get_canvas()->set_opaque();
 	}
 	return result;
