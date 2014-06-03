@@ -44,9 +44,6 @@
 
 #include <locale.h>
 
-#define PACKAGE "cinelerra"
-#define LOCALEDIR "/usr/share/locale"
-
 MWindow *mwindow;
 Theme *theme_global;
 
@@ -108,7 +105,7 @@ int main(int argc, char *argv[])
 
 
 
-	bindtextdomain (PACKAGE, LOCALEDIR);
+	bindtextdomain (PACKAGE, LOCALE_DIR);
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");
 	setlocale (LC_CTYPE, "");
