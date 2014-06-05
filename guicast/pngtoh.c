@@ -23,6 +23,7 @@
 
 
 
+#include <errno.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -62,20 +63,22 @@ int main(int argc, char *argv[])
 		if(suffix) *suffix = '_';
 		strcat(output_fn, ".h");
 
-		out = fopen(output_fn, "w");
-		if(!out)
-		{
-			fclose(in);
-			continue;
-		}
-
-
 // Strip leading directories for variable and header
 		prefix = strrchr(output_fn, '/');
 		if(!prefix) 
 			prefix = output_fn;
 		else
 			prefix++;
+
+		out = fopen(prefix, "w");
+		if(!out)
+		{
+			fclose(in);
+			fprintf(stderr, "error: unable to write to %s: %s\n",
+				prefix, strerror(errno));
+			continue;
+		}
+
 
 		strcpy(header_fn, prefix);
 		for(i = 0; i < strlen(header_fn); i++)
