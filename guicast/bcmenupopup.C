@@ -46,6 +46,7 @@ BC_MenuPopup::BC_MenuPopup()
 	item_bg[0] = 0;
 	item_bg[1] = 0;
 	item_bg[2] = 0;
+	top_level = 0;
 }
 
 BC_MenuPopup::~BC_MenuPopup()
