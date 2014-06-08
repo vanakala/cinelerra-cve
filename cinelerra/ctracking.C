@@ -42,6 +42,7 @@ CTracking::CTracking(MWindow *mwindow, CWindow *cwindow)
  : Tracking(mwindow)
 {
 	this->cwindow = cwindow;
+	memset(selections, 0, sizeof(selections));
 }
 
 PlaybackEngine* CTracking::get_playback_engine()
