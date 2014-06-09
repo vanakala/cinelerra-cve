@@ -179,6 +179,7 @@ int Tracks::delete_tracks(void)
 				delete_track(current);
 				total_deleted++;
 				done = 0;
+				break;
 			}
 		}
 	}
