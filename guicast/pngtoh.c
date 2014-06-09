@@ -32,7 +32,12 @@
 
 int main(int argc, char *argv[])
 {
-	if(argc < 2) return 1;
+	if(argc < 2)
+	{
+		fprintf(stderr, "Usage: %s <file.png>...\n", argv[0]);
+		fprintf(stderr, "  Convert 'file.png' file to C table 'file_png.h'.\n");
+		return 1;
+	}
 
 	for(argc--; argc > 0; argc--)
 	{
