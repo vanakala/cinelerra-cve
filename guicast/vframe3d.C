@@ -453,6 +453,7 @@ SET_TRACE
 		delete [] source_replacement;
 SET_TRACE
 	}
+	va_end(list);
 
 // Add main() function which calls all the unique main replacements in order
 	char main_function[BCTEXTLEN];

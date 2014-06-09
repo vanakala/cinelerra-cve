@@ -108,6 +108,7 @@ VFrame** BC_Theme::new_image_set_images(const char *title, int total, ...)
 	{
 		result->data[i] = va_arg(list, VFrame*);
 	}
+	va_end(list);
 	return result->data;
 }
 
