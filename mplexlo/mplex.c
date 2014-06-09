@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 	float frame_rate = 30000.0 / 1001.0;
 	float sample_rate = 48000;
 	long frames_decoded = 0;
-	float *audio_temp = malloc(1);
+	float *audio_temp = NULL;
 	long audio_temp_allocated = 0;
 	float current_time = 0, previous_time = 0;
 	int video_completed = 0;
@@ -159,7 +159,6 @@ int main(int argc, char *argv[])
 	char *output_path;
 	int old_percentage = 0;
 	
-	path = malloc(sizeof(char*) * argc);
 	mplex.derivative = 1;
 	mplex.out_file = 0;
 
@@ -170,6 +169,8 @@ int main(int argc, char *argv[])
 		printf("	-a use ac3 packet headers\n");
 		exit(1);
 	}
+
+	path = malloc(sizeof(char*) * (argc - 1));
 
 	for(i = 1; i < argc; i++)
 	{
@@ -379,8 +380,13 @@ int main(int argc, char *argv[])
 		fclose(vtracks[stream]->raw_file);
 		free(vtracks[stream]);
 	}
-	
+
 	if(mplex.out_file) fclose(mplex.out_file);
+
+	for(stream = 0; stream < streams; stream++)
+		free(path[stream]);
+	free(path);
+	free(audio_temp);
 
 	return result;
 }
