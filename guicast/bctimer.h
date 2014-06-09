@@ -47,7 +47,6 @@ public:
 private:
 	struct timeval current_time;
 	struct timeval new_time;
-	struct timeval delay_duration;
 };
 
 
