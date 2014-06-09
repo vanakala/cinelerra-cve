@@ -104,6 +104,8 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 		{
 			printf("quicktime_new_ffmpeg: avcodec_open failed.\n");
 			quicktime_delete_ffmpeg(ptr);
+			ptr = NULL;
+			break;
 		}
 		ptr->last_frame[i] = -1;
 	}
