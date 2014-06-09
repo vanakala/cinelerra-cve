@@ -506,7 +506,7 @@ SET_TRACE
 		BC_WindowBase::get_synchronous()->put_shader(result, complete_program);
 	}
 
-	delete [] complete_program;
+	free(complete_program);
 
 #endif
 	return result;
