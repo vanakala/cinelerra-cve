@@ -52,7 +52,6 @@ public:
 
 	virtual int open_input() { return 1; };
 	virtual int open_output() { return 1; };
-	virtual int open_duplex() { return 1; };
 	virtual void close_all() { return; };
 	virtual int interrupt_crash() { return 0; };
 	virtual samplenum device_position() { return -1; };
@@ -140,32 +139,22 @@ public:
 // If interrupted
 	int get_interrupted();
 	int get_device_buffer();
-// Used by video devices to share audio devices
-	AudioLowLevel* get_lowlevel_out();
-	AudioLowLevel* get_lowlevel_in();
 
 private:
 // Create a lowlevel driver out of the driver ID
 	void create_lowlevel(AudioLowLevel* &lowlevel, int driver);
 	void arm_buffer(int buffer, double **output, int samples);
-	int get_obits();
-	int get_ochannels();
-	int get_ibits();
-	int get_ichannels();
-	int get_orate();
-	int get_irate();
 
 // Override configured parameters depending on the driver
 	int in_samplerate, in_bits, in_channels, in_samples;
 	int out_samplerate, out_bits, out_channels, out_samples;
-	int duplex_samplerate, duplex_bits, duplex_channels, duplex_samples;
 
-// Access mode
-	int r, w, d;
 // Samples per buffer
-	int osamples, isamples, dsamples;
+	int osamples, isamples;
+
 // Video device to pass data to if the same device handles video
 	VideoDevice *vdevice;
+
 // OSS < 3.9   --> playback before recording
 // OSS >= 3.9  --> doesn't matter
 // Got better synchronization by starting playback first
@@ -213,8 +202,7 @@ private:
 	int driver;
 
 // Multiple data paths can be opened simultaneously by RecordEngine
-	AudioLowLevel *lowlevel_in, *lowlevel_out, *lowlevel_duplex;
-
+	AudioLowLevel *lowlevel_in, *lowlevel_out;
 	AudioOutConfig *out_config;
 	AudioInConfig *in_config;
 // Extra configuration if shared with video

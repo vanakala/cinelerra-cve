@@ -48,7 +48,6 @@ AudioDevice::AudioDevice(MWindow *mwindow)
  : Thread(THREAD_SYNCHRONOUS)
 {
 	record_before_play = 0;
-	r = w = d = 0;
 
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
@@ -67,7 +66,8 @@ AudioDevice::AudioDevice(MWindow *mwindow)
 	total_samples = 0;
 	last_position = 0;
 	interrupt = 0;
-	lowlevel_in = lowlevel_out = lowlevel_duplex = 0;
+	lowlevel_in = 0;
+	lowlevel_out = 0;
 	vdevice = 0;
 	sharing = 0;
 	total_samples_read = 0;
@@ -103,11 +103,6 @@ AudioDevice::~AudioDevice()
 		lowlevel_out = 0;
 	}
 
-	if(lowlevel_duplex)
-	{
-		delete lowlevel_duplex;
-		lowlevel_duplex = 0;
-	}
 	delete in_config;
 	delete vconfig;
 	delete startup_lock;
@@ -170,7 +165,6 @@ void AudioDevice::open_input(AudioInConfig *config,
 	int samples,
 	int channels)
 {
-	r = 1;
 	duplex_init = 0;
 	this->in_config->copy_from(config);
 	this->vconfig->copy_from(vconfig);
@@ -188,7 +182,6 @@ int AudioDevice::open_output(AudioOutConfig *config,
 	int channels)
 {
 	int ret = 0;
-	w = 1;
 	duplex_init = 0;
 	out_config = config;
 	out_samplerate = rate;
@@ -217,8 +210,6 @@ void AudioDevice::close_all()
 
 	if(lowlevel_in) lowlevel_in->close_all();
 	if(lowlevel_out) lowlevel_out->close_all();
-	if(lowlevel_duplex) lowlevel_duplex->close_all();
-	r = w = d = 0;
 
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
@@ -247,62 +238,6 @@ void AudioDevice::set_vdevice(VideoDevice *vdevice)
 	this->vdevice = vdevice;
 }
 
-int AudioDevice::get_ichannels()
-{
-	if(r) return in_channels;
-	else if(d) return duplex_channels;
-	else return 0;
-}
-
-int AudioDevice::get_ibits()
-{
-	if(r) return in_bits;
-	else if(d) return duplex_bits;
-	return 0;
-}
-
-int AudioDevice::get_obits()
-{
-	if(w) return out_bits;
-	else if(d) return duplex_bits;
-	return 0;
-}
-
-int AudioDevice::get_ochannels()
-{
-	if(w) return out_channels;
-	else if(d) return duplex_channels;
-	return 0;
-}
-
-AudioLowLevel* AudioDevice::get_lowlevel_out()
-{
-	if(w) return lowlevel_out;
-	else if(d) return lowlevel_duplex;
-	return 0;
-}
-
-AudioLowLevel* AudioDevice::get_lowlevel_in()
-{
-	if(r) return lowlevel_in;
-	else if(d) return lowlevel_duplex;
-	return 0;
-}
-
-int AudioDevice::get_irate()
-{
-	if(r) return in_samplerate;
-	else
-	if(d) return duplex_samplerate;
-}
-
-int AudioDevice::get_orate()
-{
-	if(w) return out_samplerate;
-	else if(d) return duplex_samplerate;
-	return 0;
-}
-
 int AudioDevice::get_interrupted()
 {
 	return interrupt;
@@ -315,9 +250,9 @@ int AudioDevice::get_device_buffer()
 
 void AudioDevice::run()
 {
-	if(w)
+	if(lowlevel_out)
 		run_output();
 	else
-	if(r)
+	if(lowlevel_in)
 		run_input();
 }

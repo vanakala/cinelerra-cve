@@ -21,6 +21,7 @@
 
 #include "audiodevice.h"
 #include "audiooss.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
 #include "errno.h"
@@ -172,7 +173,7 @@ AudioOSS::AudioOSS(AudioDevice *device)
 {
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
-		dsp_in[i] = dsp_out[i] = dsp_duplex[i] = -1;
+		dsp_in[i] = dsp_out[i] = -1;
 		thread[i] = 0;
 		data[i] = 0;
 		data_allocated[i] = 0;
@@ -181,6 +182,10 @@ AudioOSS::AudioOSS(AudioDevice *device)
 
 AudioOSS::~AudioOSS()
 {
+	for(int i = 0; i < MAXDEVICES; i++){
+		if(thread[i]) delete thread[i];
+		if(data[i]) delete [] data[i];
+	}
 }
 
 int AudioOSS::open_input()
@@ -204,7 +209,7 @@ int AudioOSS::open_input()
 
 			int format = get_fmt(device->in_config->oss_in_bits);
 			int buffer_info = sizetofrag(device->in_samples, 
-				device->get_ichannels(), 
+				device->in_channels,
 				device->in_config->oss_in_bits);
 
 			set_cloexec_flag(dsp_in[i], 1);
@@ -223,7 +228,7 @@ int AudioOSS::open_input()
 				close_all();
 				return 1;
 			}
-			int channels = device->get_ichannels();
+			int channels = device->in_channels;
 			if(ioctl(dsp_in[i], SNDCTL_DSP_CHANNELS, &channels) < 0){
 				errorbox("AudioOSS: SNDCTL_DSP_CHANNELS failed");
 				close_all();
@@ -275,7 +280,7 @@ int AudioOSS::open_output()
 
 			int format = get_fmt(device->out_config->oss_out_bits);
 			int buffer_info = sizetofrag(device->out_samples, 
-				device->get_ochannels(), 
+				device->out_channels,
 				device->out_config->oss_out_bits);
 			audio_buf_info playinfo;
 
@@ -295,8 +300,7 @@ int AudioOSS::open_output()
 				close_all();
 				return 1;
 			}
-			int channels = device->get_ochannels();
-			if(ioctl(dsp_out[i], SNDCTL_DSP_CHANNELS, &channels) < 0)
+			if(ioctl(dsp_out[i], SNDCTL_DSP_CHANNELS, &device->out_channels) < 0)
 			{
 				errorbox("AudioOSS output: SNDCTL_DSP_CHANNELS ioctl failed");
 				close_all();
@@ -311,78 +315,6 @@ int AudioOSS::open_output()
 			if(ioctl(dsp_out[i], SNDCTL_DSP_GETOSPACE, &playinfo))
 			{
 				errorbox("AudioOSS output: SNDCTL_DSP_GETOSPACE failed");
-				close_all();
-				return 1;
-			}
-			device->device_buffer = playinfo.bytes;
-			thread[i] = new OSSThread(this);
-			thread[i]->start();
-		}
-	}
-	return 0;
-}
-
-int AudioOSS::open_duplex()
-{
-	device->duplex_bits = device->out_config->oss_out_bits;
-	if(device->duplex_bits == 24) device->duplex_bits = 32;
-
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		if(device->out_config->oss_enable[i])
-		{
-			dsp_duplex[i] = open(device->out_config->oss_out_device[i], O_RDWR);
-			if(dsp_duplex[i] < 0){
-				errorbox("AudioOSS duplex: Failed to open %s: %m",
-					device->out_config->oss_out_device[i]);
-				close_all();
-				return 1;
-			}
-
-			int format = get_fmt(device->out_config->oss_out_bits);
-			int buffer_info = sizetofrag(device->duplex_samples, 
-				device->get_ochannels(), 
-				device->out_config->oss_out_bits);
-			audio_buf_info playinfo;
-
-			set_cloexec_flag(dsp_duplex[i], 1);
-
-// For the ice1712 the buffer must be maximum or no space will be allocated.
-			if(device->driver == AUDIO_OSS_ENVY24) buffer_info = 0x7fff000f;
-			if(ioctl(dsp_duplex[i], SNDCTL_DSP_SETFRAGMENT, &buffer_info)) 
-			{
-				errorbox("AudioOSS duplex: SNDCTL_DSP_SETFRAGMENT ioctl failed");
-				close_all();
-				return 1;
-			}
-			if(ioctl(dsp_duplex[i], SNDCTL_DSP_SETDUPLEX, 1) == -1)
-			{
-				errorbox("AudioOSS duplex: SNDCTL_DSP_SETDUPLEX ioctl failed");
-				close_all();
-				return 1;
-			}
-			if(ioctl(dsp_duplex[i], SNDCTL_DSP_SETFMT, &format) < 0)
-			{
-				errorbox("AudioOSS duplex: SNDCTL_DSP_SETFMT ioctl failed");
-				close_all();
-				return 1;
-			}
-			int channels = device->get_ochannels();
-			if(ioctl(dsp_duplex[i], SNDCTL_DSP_CHANNELS, &channels) < 0)
-			{
-				errorbox("AudioOSS duplex: SNDCTL_DSP_CHANNELS ioctl failed");
-				close_all();
-				return 1;
-			}
-			if(ioctl(dsp_duplex[i], SNDCTL_DSP_SPEED, &device->duplex_samplerate) < 0)
-			{
-				errorbox("AudioOSS duplex: SNDCTL_DSP_SPEED ioctl failed");
-				close_all();
-				return 1;
-			}
-			if(ioctl(dsp_duplex[i], SNDCTL_DSP_GETOSPACE, &playinfo))
-			{
-				errorbox("AudioOSS duplex: SNDCTL_DSP_GETOSPACE ioctl failed");
 				close_all();
 				return 1;
 			}
@@ -441,15 +373,6 @@ void AudioOSS::close_all()
 			dsp_out[i] = -1;
 		}
 
-		if(dsp_duplex[i] >= 0)
-		{
-			ioctl(dsp_duplex[i], SNDCTL_DSP_RESET, 0);
-			close(dsp_duplex[i]);
-			dsp_duplex[i] = -1;
-		}
-
-		if(thread[i]) delete thread[i];
-		if(data[i]) delete [] data[i];
 	}
 }
 
@@ -470,8 +393,8 @@ samplenum AudioOSS::device_position()
 	{
 		if (thread[i])
 			return thread[i]->device_position() /
-				device->get_ochannels() /
-				(device->get_obits()/8) +
+				device->out_channels /
+				(device->out_bits / 8) +
 				thread[i]->timer->get_scaled_difference(device->out_samplerate);
 	}
 	return 0;
@@ -491,8 +414,8 @@ void AudioOSS::interrupt_playback()
 
 int AudioOSS::read_buffer(char *buffer, int bytes)
 {
-	int sample_size = device->get_ibits() / 8;
-	int out_frame_size = device->get_ichannels() * sample_size;
+	int sample_size = device->in_bits / 8;
+	int out_frame_size = device->in_channels * sample_size;
 	int samples = bytes / out_frame_size;
 
 // Fill temp buffers
@@ -500,7 +423,7 @@ int AudioOSS::read_buffer(char *buffer, int bytes)
 	{
 		if(thread[i])
 		{
-			int in_frame_size = device->get_ichannels() * sample_size;
+			int in_frame_size = device->in_channels * sample_size;
 
 			if(data[i] && data_allocated[i] < bytes)
 			{
@@ -513,7 +436,7 @@ int AudioOSS::read_buffer(char *buffer, int bytes)
 				data_allocated[i] = bytes;
 			}
 
-			thread[i]->read_data(get_input(i), data[i], samples * in_frame_size);
+			thread[i]->read_data(dsp_in[i], data[i], samples * in_frame_size);
 		}
 	}
 
@@ -524,10 +447,10 @@ int AudioOSS::read_buffer(char *buffer, int bytes)
 			thread[i]->wait_read();
 
 			for(int in_channel = 0; 
-				in_channel < device->get_ichannels(); 
+				in_channel < device->in_channels;
 				in_channel++)
 			{
-				int in_frame_size = device->get_ichannels() * sample_size;
+				int in_frame_size = device->in_channels * sample_size;
 
 				for(int k = 0; k < samples; k++)
 				{
@@ -548,15 +471,15 @@ int AudioOSS::read_buffer(char *buffer, int bytes)
 
 int AudioOSS::write_buffer(char *buffer, int bytes)
 {
-	int sample_size = device->get_obits() / 8;
-	int in_frame_size = device->get_ochannels() * sample_size;
+	int sample_size = device->out_bits / 8;
+	int in_frame_size = device->out_channels * sample_size;
 	int samples = bytes / in_frame_size;
 
 	for(int i = 0, in_channel = 0; i < MAXDEVICES; i++)
 	{
 		if(thread[i])
 		{
-			int out_frame_size = device->get_ochannels() * sample_size;
+			int out_frame_size = device->out_channels * sample_size;
 			if(data[i] && data_allocated[i] < bytes)
 			{
 				delete [] data[i];
@@ -569,7 +492,7 @@ int AudioOSS::write_buffer(char *buffer, int bytes)
 			}
 			
 			for(int out_channel = 0;
-				out_channel < device->get_ochannels();
+				out_channel < device->out_channels;
 				out_channel++)
 			{
 				for(int k = 0; k < samples; k++)
@@ -583,7 +506,7 @@ int AudioOSS::write_buffer(char *buffer, int bytes)
 				in_channel++;
 			}
 			
-			thread[i]->write_data(get_output(i), data[i], samples * out_frame_size);
+			thread[i]->write_data(dsp_out[i], data[i], samples * out_frame_size);
 		}
 	}
 	for(int i = 0, in_channel = 0; i < MAXDEVICES; i++)
@@ -599,21 +522,7 @@ int AudioOSS::write_buffer(char *buffer, int bytes)
 void AudioOSS::flush_device()
 {
 	for(int i = 0; i < MAXDEVICES; i++)
-		if(thread[i]) ioctl(get_output(i), SNDCTL_DSP_SYNC, 0);
-}
-
-int AudioOSS::get_output(int number)
-{
-	if(device->w) return dsp_out[number];
-	else if(device->d) return dsp_duplex[number];
-	return 0;
-}
-
-int AudioOSS::get_input(int number)
-{
-	if(device->r) return dsp_in[number];
-	else if(device->d) return dsp_duplex[number];
-	return 0;
+		if(thread[i]) ioctl(dsp_out[i], SNDCTL_DSP_SYNC, 0);
 }
 
 #endif // HAVE_OSS

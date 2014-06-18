@@ -40,7 +40,6 @@ public:
 	static void list_pcm_devices(ArrayList<char*> *devices, int pcm_title = 0, int mode = MODEPLAY);
 	int open_input();
 	int open_output();
-	int open_duplex();
 	int write_buffer(char *buffer, int size);
 	int read_buffer(char *buffer, int size);
 	void close_all();
@@ -61,7 +60,7 @@ private:
 	int create_format(snd_pcm_format_t *format, int bits, int channels, int rate);
 	snd_pcm_t* get_output();
 	snd_pcm_t* get_input();
-	snd_pcm_t *dsp_in, *dsp_out, *dsp_duplex;
+	snd_pcm_t *dsp_in, *dsp_out;
 	samplenum samples_written;
 	snd_pcm_sframes_t delay;
 	int sleep_delay;

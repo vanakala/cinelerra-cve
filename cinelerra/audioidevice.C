@@ -105,8 +105,8 @@ int AudioDevice::read_buffer(double **input,
 
 	record_timer->update();
 
-	bits = get_ibits();
-	input_channels = get_ichannels();
+	bits = in_bits;
+	input_channels = in_channels;
 	frame = input_channels * bits / 8;
 
 	total_samples_read += samples;
@@ -127,7 +127,7 @@ int AudioDevice::read_buffer(double **input,
 		break;
 	}
 
-	for(i = 0; i < get_ichannels(); i++)
+	for(i = 0; i < in_channels; i++)
 	{
 		min_sample[i] = -denominator; 
 		max_sample[i] = denominator; 
@@ -187,7 +187,7 @@ int AudioDevice::read_buffer(double **input,
 				subfragment_size = *input_buffer_size;
 			int subfragment_samples = subfragment_size / frame;
 
-			for(i = 0; i < get_ichannels(); i++)
+			for(i = 0; i < in_channels; i++)
 			{
 				input_channel = &input[i][input_offset];
 
@@ -262,7 +262,7 @@ int AudioDevice::read_buffer(double **input,
 
 void AudioDevice::run_input()
 {
-	int frame = get_ichannels() * get_ibits() / 8;
+	int frame = in_channels * in_bits / 8;
 	int fragment_size = in_samples * frame;
 
 	while(is_recording)
@@ -281,7 +281,7 @@ void AudioDevice::run_input()
 			errormsg("Buffer overflow in audiodevice");
 		}
 
-		int result = get_lowlevel_in()->read_buffer(
+		int result = lowlevel_in->read_buffer(
 			input_buffer + *input_buffer_size, 
 			fragment_size);
 

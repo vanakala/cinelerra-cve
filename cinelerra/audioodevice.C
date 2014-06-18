@@ -56,7 +56,6 @@ void AudioDevice::arm_buffer(int buffer_num,
 	double **output, 
 	int samples)
 {
-	int bits;
 	int new_size;
 	int i, j;
 	int input_offset;
@@ -67,13 +66,11 @@ void AudioDevice::arm_buffer(int buffer_num,
 	int int_sample, int_sample2;
 	int dither_value;
 	int frame;
-	int device_channels = get_ochannels();
+	int device_channels = out_channels;
 	char *buffer_num_buffer;
 	double *buffer_in_channel;
 
-	bits = get_obits();
-
-	frame = device_channels * (bits / 8);
+	frame = device_channels * (out_bits / 8);
 
 	new_size = frame * samples;
 
@@ -102,7 +99,7 @@ void AudioDevice::arm_buffer(int buffer_num,
 	for(channel = 0; channel < device_channels; channel++)
 	{
 		buffer_in_channel = output[channel];
-		switch(bits)
+		switch(out_bits)
 		{
 		case 8:
 			output_advance = device_channels;
@@ -228,7 +225,7 @@ void AudioDevice::interrupt_playback()
 	{
 // cancel thread
 		is_playing_back = 0;
-		get_lowlevel_out()->interrupt_playback();
+		lowlevel_out->interrupt_playback();
 // Completion is waited for in arender
 	}
 
@@ -255,27 +252,26 @@ void AudioDevice::wait_for_completion()
 
 ptstime AudioDevice::current_postime(float speed)
 {
-	samplenum hardware_result = 0, frame;
-	if(w)
+	samplenum hardware_result = 0;
+
+	if(lowlevel_out)
 	{
-		frame = get_obits() / 8;
-		hardware_result = get_lowlevel_out()->device_position();
+		hardware_result = lowlevel_out->device_position();
 
 		if(hardware_result > 0)
 		{
 			last_position = hardware_result;
-			return (ptstime)hardware_result / get_orate() - (out_config->audio_offset / speed);
+			return (ptstime)hardware_result / out_samplerate - (out_config->audio_offset / speed);
 		}
 	}
 	else
-	if(r)
+	if(lowlevel_in)
 	{
-		int r = get_irate();
 		return (ptstime)(total_samples_read + 
-			record_timer->get_scaled_difference(r)) / r;
+			record_timer->get_scaled_difference(in_samplerate)) / in_samplerate;
 	}
 	if(last_position > 0)
-		return (ptstime)last_position / get_orate() - (out_config->audio_offset/ speed);
+		return (ptstime)last_position / out_samplerate - (out_config->audio_offset/ speed);
 	return -1;
 }
 
@@ -309,12 +305,12 @@ void AudioDevice::run_output()
 
 // get size for position information
 			timer_lock->lock("AudioDevice::run 3");
-			last_buffer_size = buffer_size[thread_buffer_num] / (get_obits() / 8) / get_ochannels();
+			last_buffer_size = buffer_size[thread_buffer_num] / (out_bits / 8) / out_channels;
 			total_samples += last_buffer_size;
 			timer_lock->unlock();
 
 // write converted buffer synchronously
-			thread_result = get_lowlevel_out()->write_buffer(
+			thread_result = lowlevel_out->write_buffer(
 				output_buffer[thread_buffer_num], 
 				buffer_size[thread_buffer_num]);
 
@@ -339,7 +335,7 @@ void AudioDevice::run_output()
 // flush the audio device
 			is_flushing = 1;
 			is_playing_back = 0;
-			get_lowlevel_out()->flush_device();
+			lowlevel_out->flush_device();
 			is_flushing = 0;
 		}
 	}

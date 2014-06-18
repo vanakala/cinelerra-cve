@@ -32,8 +32,8 @@
 
 AudioESound::AudioESound(AudioDevice *device) : AudioLowLevel(device)
 {
-	esd_in = esd_out = esd_duplex = 0;
-	esd_in_fd = esd_out_fd = esd_duplex_fd = 0;
+	esd_in = esd_out = 0;
+	esd_in_fd = esd_out_fd = 0;
 }
 
 AudioESound::~AudioESound()
@@ -133,25 +133,15 @@ int AudioESound::open_output()
 	return 0;
 }
 
-// Open both input and output in ESD
-int AudioESound::open_duplex()
-{
-	device->duplex_channels = 2;
-	device->duplex_bits = 16;
-	open_input();
-	open_output();
-	return 0;
-}
-
 void AudioESound::close_all()
 {
-	if(device->r || device->d)
-	{ 
+	if(esd_in > 0)
+	{
 		close(esd_in_fd);
 		esd_close(esd_in);
 	}
 
-	if(device->w || device->d)
+	if(esd_out > 0)
 	{
 		close(esd_out_fd);
 		esd_close(esd_out);

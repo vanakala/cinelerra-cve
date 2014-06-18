@@ -34,7 +34,6 @@ public:
 
 	int open_input();
 	int open_output();
-	int open_duplex();
 	int write_buffer(char *buffer, int size);
 	int read_buffer(char *buffer, int size);
 	void close_all();
@@ -44,8 +43,8 @@ private:
 	int get_bit_flag(int bits);
 	int get_channels_flag(int channels);
 	char* translate_device_string(char *server, int port);
-	int esd_in, esd_out, esd_duplex;
-	int esd_in_fd, esd_out_fd, esd_duplex_fd;
+	int esd_in, esd_out;
+	int esd_in_fd, esd_out_fd;
 	char device_string[1024];
 };
 

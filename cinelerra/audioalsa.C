@@ -43,6 +43,7 @@ AudioALSA::AudioALSA(AudioDevice *device)
 	timing_lock = new Mutex("AudioALSA::timing_lock");
 	interrupted = 0;
 	dsp_out = 0;
+	dsp_in = 0;
 }
 
 AudioALSA::~AudioALSA()
@@ -319,7 +320,6 @@ int AudioALSA::open_input()
 	int open_mode = 0;
 	int err;
 
-	device->in_channels = device->get_ichannels();
 	device->in_bits = device->in_config->alsa_in_bits;
 
 	if(err = snd_pcm_open(&dsp_in, device->in_config->alsa_in_device, stream, open_mode))
@@ -330,7 +330,7 @@ int AudioALSA::open_input()
 	}
 
 	if(set_params(dsp_in, 
-		device->get_ichannels(), 
+		device->in_channels,
 		device->in_config->alsa_in_bits,
 		device->in_samplerate,
 		device->in_samples))
@@ -349,7 +349,6 @@ int AudioALSA::open_output()
 	int open_mode = 0;
 	int err;
 
-	device->out_channels = device->get_ochannels();
 	device->out_bits = device->out_config->alsa_out_bits;
 
 	if((err = snd_pcm_open(&dsp_out, device->out_config->alsa_out_device, stream, open_mode)) < 0)
@@ -360,7 +359,7 @@ int AudioALSA::open_output()
 	}
 
 	if(set_params(dsp_out, 
-		device->get_ochannels(), 
+		device->out_channels,
 		device->out_config->alsa_out_bits,
 		device->out_samplerate,
 		device->out_samples))
@@ -369,18 +368,14 @@ int AudioALSA::open_output()
 		close_output();
 		return 1;
 	}
-	return 0;
-}
-
-int AudioALSA::open_duplex()
-{
-// ALSA always opens 2 devices
+	samples_written = 0;
+	delay = 0;
 	return 0;
 }
 
 void AudioALSA::close_output()
 {
-	if(device->w && dsp_out)
+	if(dsp_out)
 	{
 		snd_pcm_close(dsp_out);
 		dsp_out = 0;
@@ -389,7 +384,7 @@ void AudioALSA::close_output()
 
 void AudioALSA::close_input()
 {
-	if(device->r)
+	if(dsp_in)
 	{
 		snd_pcm_drop(dsp_in);
 		snd_pcm_drain(dsp_in);
@@ -402,12 +397,6 @@ void AudioALSA::close_all()
 {
 	close_input();
 	close_output();
-	if(device->d)
-	{
-		snd_pcm_close(dsp_duplex);
-	}
-	samples_written = 0;
-	delay = 0;
 	interrupted = 0;
 }
 
@@ -415,10 +404,16 @@ samplenum AudioALSA::device_position()
 {
 	snd_pcm_sframes_t delay;
 	samplenum result;
+	snd_pcm_t *dsp;
 
 	timing_lock->lock("AudioALSA::device_position");
-	snd_pcm_delay(get_output(), &delay);
-	result = samples_written - delay;
+	if(dsp_out)
+	{
+		snd_pcm_delay(dsp_out, &delay);
+		result = samples_written - delay;
+	}
+	else
+		result = 0;
 	timing_lock->unlock();
 	return result;
 }
@@ -428,7 +423,7 @@ int AudioALSA::read_buffer(char *buffer, int size)
 	int attempts = 0;
 	int done = 0;
 
-	if(!get_input())
+	if(!dsp_in)
 	{
 		sleep(1);
 		return 0;
@@ -436,9 +431,9 @@ int AudioALSA::read_buffer(char *buffer, int size)
 
 	while(attempts < 1 && !done)
 	{
-		if(snd_pcm_readi(get_input(), 
+		if(snd_pcm_readi(dsp_in,
 			buffer, 
-			size / (device->in_bits / 8) / device->get_ichannels()) < 0)
+			size / (device->in_bits / 8) / device->in_channels) < 0)
 		{
 			printf("AudioALSA::read_buffer overrun at sample %lld\n", 
 				device->total_samples_read);
@@ -456,29 +451,29 @@ int AudioALSA::write_buffer(char *buffer, int size)
 {
 // Don't give up and drop the buffer on the first error.
 	int attempts = 0;
-	int samplesize = (device->out_bits / 8) * device->get_ochannels();
+	int samplesize = (device->out_bits / 8) * device->out_channels;
 	snd_pcm_sframes_t samples = size / samplesize;
 	snd_pcm_sframes_t written, avail;
 	int rc;
 	char *write_pos = buffer;
 
-	if(!get_output()) return 0;
+	if(!dsp_out) return 0;
 
 	while(samples > 0 && attempts < 2 && !interrupted)
 	{
-		snd_pcm_wait(get_output(), -1);
+		snd_pcm_wait(dsp_out, -1);
 
 		timing_lock->lock("AudioALSA::write_buffer");
-		avail = snd_pcm_avail(get_output());
+		avail = snd_pcm_avail(dsp_out);
 		if(avail > samples)
 			avail = samples;
 
-		if((written = snd_pcm_writei(get_output(), write_pos, avail)) < 0)
+		if((written = snd_pcm_writei(dsp_out, write_pos, avail)) < 0)
 		{
 			if(written == -EPIPE)
 			{
 // Underrun
-				if((rc = snd_pcm_prepare(get_output())) < 0 && attempts == 0)
+				if((rc = snd_pcm_prepare(dsp_out)) < 0 && attempts == 0)
 				{
 					errorbox("ALSA write underrun at %.3f: %s. Recovery failed.",
 						device->current_postime(), snd_strerror(rc));
@@ -508,41 +503,24 @@ int AudioALSA::write_buffer(char *buffer, int size)
 
 void AudioALSA::flush_device()
 {
-	if(get_output())
-		snd_pcm_drain(get_output());
+	if(dsp_out)
+		snd_pcm_drain(dsp_out);
 }
 
 void AudioALSA::interrupt_playback()
 {
-	if(get_output()) 
+	if(dsp_out)
 	{
 		interrupted = 1;
 // Interrupts the playback but may not have caused snd_pcm_writei to exit.
 // With some soundcards it causes snd_pcm_writei to freeze for a few seconds.
 // Use lock to avoid snd_pcm_drop called during snd_pcm_writei
 		timing_lock->lock("AudioALSA::interrupt_playback");
-		snd_pcm_drop(get_output());
+		snd_pcm_drop(dsp_out);
 // Prepare is needed to end snd_pcm_drain
-		snd_pcm_prepare(get_output());
+		snd_pcm_prepare(dsp_out);
 		timing_lock->unlock();
 	}
-}
-
-
-snd_pcm_t* AudioALSA::get_output()
-{
-	if(device->w) return dsp_out;
-	else
-	if(device->d) return dsp_duplex;
-	return 0;
-}
-
-snd_pcm_t* AudioALSA::get_input()
-{
-	if(device->r) return dsp_in;
-	else
-	if(device->d) return dsp_duplex;
-	return 0;
 }
 
 void AudioALSA::dump_params(snd_pcm_t* dsp)
