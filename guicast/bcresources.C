@@ -63,15 +63,15 @@ const char* BC_Resources::medium_font2 = N_("-*-helvetica-bold-r-normal-*-14-*")
 const char* BC_Resources::large_font = N_("-*-helvetica-bold-r-normal-*-18-*");
 const char* BC_Resources::large_font2 = N_("-*-helvetica-bold-r-normal-*-20-*");
 
-const char* BC_Resources::small_fontset = "6x12,*";
-const char* BC_Resources::medium_fontset = "7x14,*";
-const char* BC_Resources::large_fontset = "8x16,*";
+const char* BC_Resources::small_fontset = "-*-helvetica-medium-r-normal-*-10-*";
+const char* BC_Resources::medium_fontset = "-*-helvetica-bold-r-normal-*-14-*";
+const char* BC_Resources::large_fontset = "-*-helvetica-bold-r-normal-*-18-*";
 
-const char* BC_Resources::small_font_xft = N_("-*-luxi sans-*-r-*-*-12-*-*-*-*-*-*-*");
+const char* BC_Resources::small_font_xft = N_("Sans-8");
+const char* BC_Resources::medium_font_xft = N_("Sans-10");
+const char* BC_Resources::large_font_xft = N_("Sans-16");
 const char* BC_Resources::small_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-const char* BC_Resources::medium_font_xft = N_("-*-luxi sans-*-r-*-*-16-*-*-*-*-*-*-*");
 const char* BC_Resources::medium_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-const char* BC_Resources::large_font_xft = N_("-*-luxi sans-bold-r-*-*-20-*-*-*-*-*-*-*");
 const char* BC_Resources::large_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
 
 suffix_to_type_t BC_Resources::suffix_to_type[] = 
@@ -490,7 +490,7 @@ BC_Resources::BC_Resources()
 
 	audiovideo_color = RED;
 
-	use_fontset = 0;
+	use_fontset = 1;
 
 // Xft has priority over font set
 #ifdef HAVE_XFT

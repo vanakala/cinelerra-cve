@@ -284,14 +284,17 @@ void BC_WindowBase::draw_xft_text(int x,
 		top_level->cmap,
 		&color,
 		&xft_color);
-
+#ifdef X_HAVE_UTF8_STRING
+	XftDrawStringUtf8(
+#else
 	XftDrawString8 (
+#endif
 		(XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
 		&xft_color,
 		top_level->get_xft_struct(top_level->current_font),
 		x2 + k, 
 		y2 + k,
-		(FcChar8*)&text[j],
+		(const FcChar8*)&text[j],
 		i - j);
 	XftColorFree(top_level->display,
 		top_level->vis,

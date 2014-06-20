@@ -1,7 +1,7 @@
 lib_LTLIBRARIES = libguicastcve.la
 noinst_PROGRAMS=bootstrap
 
-libguicastcve_la_LIBADD = $(OPENGL_LIBS) $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS)
+libguicastcve_la_LIBADD = $(OPENGL_LIBS) $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS) $(XFT_LIBS)
 libguicastcve_la_LDFLAGS = -version-info 3:0:0 
 libguicastcve_la_SOURCES = \
 	bcbar.C \

@@ -621,7 +621,11 @@ void BC_WindowBase::dispatch_event()
 	XEvent event;
 	Window tempwin;
 	KeySym keysym;
+#ifdef X_HAVE_UTF8_STRING
+	char keys_return[6];
+#else
 	char keys_return[2];
+#endif
 	int result;
 	XClientMessageEvent *ptr;
 	int temp;
@@ -818,72 +822,139 @@ void BC_WindowBase::dispatch_event()
 
 	case KeyPress:
 		get_key_masks(&event);
+
+#ifdef X_HAVE_UTF8_STRING
+		memset(keys_return, 0, sizeof(keys_return));
+		// this is routine re-adapted from xev.c - xutils
+		im = XOpenIM(display, NULL, NULL, NULL);
+		XIMStyles *xim_styles;
+		XIMStyle xim_style;
+
+		if(im == NULL)
+			printf("XOpenIM failed\n");
+
+		if(im)
+		{
+			char *imvalret;
+			imvalret = XGetIMValues(im, XNQueryInputStyle, &xim_styles, NULL);
+
+			if(imvalret != NULL || xim_styles == NULL)
+				printf("input method doesn't support any styles\n");
+
+			if(xim_styles)
+			{
+				xim_style = 0;
+				for(int z = 0;  z < xim_styles->count_styles;  z++)
+				{
+					if(xim_styles->supported_styles[z] == (XIMPreeditNothing | XIMStatusNothing))
+					{
+						xim_style = xim_styles->supported_styles[z];
+						break;
+					}
+				}
+
+				if(xim_style == 0)
+					printf("input method doesn't support the style we support\n");
+				XFree(xim_styles);
+			}
+		}
+		if(im && xim_style)
+		{
+			ic = XCreateIC(im, XNInputStyle, xim_style,
+				XNClientWindow, win,
+				XNFocusWindow, win,
+				NULL);
+			if (ic == NULL)
+				printf ("XCreateIC failed\n");
+		}
+		if(ic)
+			Xutf8LookupString(ic, (XKeyEvent*)&event, keys_return, 6, &keysym, 0);
+		else
+			XLookupString((XKeyEvent*)&event, keys_return, 6, &keysym,  0);
+#else
 		keys_return[0] = 0;
 		XLookupString((XKeyEvent*)&event, keys_return, 1, &keysym, 0);
+#endif
 
 // block out control keys
 		if(keysym > 0xffe0 && keysym < 0xffff) break;
 
-
-		switch(keysym)
+#ifdef X_HAVE_UTF8_STRING
+		//It's Ascii or UTF8?
+		if((keys_return[0] & 0xff) >= 0x7f)
 		{
+			key_pressed_utf8 = keys_return;
+			key_pressed = keysym & 0xff;
+		}
+		else
+		{
+#endif
+
+			switch(keysym)
+			{
 // block out extra keys
-		case XK_Alt_L:
-		case XK_Alt_R:
-		case XK_Shift_L:
-		case XK_Shift_R:
-		case XK_Control_L:
-		case XK_Control_R:
-			key_pressed = 0;
-			break;
+			case XK_Alt_L:
+			case XK_Alt_R:
+			case XK_Shift_L:
+			case XK_Shift_R:
+			case XK_Control_L:
+			case XK_Control_R:
+				key_pressed = 0;
+				break;
 
 // Translate key codes
-		case XK_Return:     key_pressed = RETURN;    break;
-		case XK_Up:         key_pressed = UP;        break;
-		case XK_Down:       key_pressed = DOWN;      break;
-		case XK_Left:       key_pressed = LEFT;      break;
-		case XK_Right:      key_pressed = RIGHT;     break;
-		case XK_Next:       key_pressed = PGDN;      break;
-		case XK_Prior:      key_pressed = PGUP;      break;
-		case XK_BackSpace:  key_pressed = BACKSPACE; break;
-		case XK_Escape:     key_pressed = ESC;       break;
-		case XK_Tab:
-			if(shift_down())
-				key_pressed = LEFTTAB;
-			else
-				key_pressed = TAB;
-			break;
-		case XK_ISO_Left_Tab: key_pressed = LEFTTAB; break;
-		case XK_underscore: key_pressed = '_';       break;
-		case XK_asciitilde: key_pressed = '~';       break;
-		case XK_Delete:     key_pressed = DELETE;    break;
-		case XK_Home:       key_pressed = HOME;      break;
-		case XK_End:        key_pressed = END;       break;
+			case XK_Return:     key_pressed = RETURN;    break;
+			case XK_Up:         key_pressed = UP;        break;
+			case XK_Down:       key_pressed = DOWN;      break;
+			case XK_Left:       key_pressed = LEFT;      break;
+			case XK_Right:      key_pressed = RIGHT;     break;
+			case XK_Next:       key_pressed = PGDN;      break;
+			case XK_Prior:      key_pressed = PGUP;      break;
+			case XK_BackSpace:  key_pressed = BACKSPACE; break;
+			case XK_Escape:     key_pressed = ESC;       break;
+			case XK_Tab:
+				if(shift_down())
+					key_pressed = LEFTTAB;
+				else
+					key_pressed = TAB;
+				break;
+			case XK_ISO_Left_Tab: key_pressed = LEFTTAB; break;
+			case XK_underscore: key_pressed = '_';       break;
+			case XK_asciitilde: key_pressed = '~';       break;
+			case XK_Delete:     key_pressed = DELETE;    break;
+			case XK_Home:       key_pressed = HOME;      break;
+			case XK_End:        key_pressed = END;       break;
 
 // number pad
-		case XK_KP_Enter:       key_pressed = KPENTER;   break;
-		case XK_KP_Add:         key_pressed = KPPLUS;    break;
-		case XK_KP_1:
-		case XK_KP_End:         key_pressed = KP1;       break;
-		case XK_KP_2:
-		case XK_KP_Down:        key_pressed = KP2;       break;
-		case XK_KP_3:
-		case XK_KP_Page_Down:   key_pressed = KP3;       break;
-		case XK_KP_4:
-		case XK_KP_Left:        key_pressed = KP4;       break;
-		case XK_KP_5:
-		case XK_KP_Begin:       key_pressed = KP5;       break;
-		case XK_KP_6:
-		case XK_KP_Right:       key_pressed = KP6;       break;
-		case XK_KP_0:
-		case XK_KP_Insert:      key_pressed = KPINS;     break;
-		case XK_KP_Decimal:
-		case XK_KP_Delete:      key_pressed = KPDEL;     break;
-		default:
-			key_pressed = keysym & 0xff;
-			break;
+			case XK_KP_Enter:       key_pressed = KPENTER;   break;
+			case XK_KP_Add:         key_pressed = KPPLUS;    break;
+			case XK_KP_1:
+			case XK_KP_End:         key_pressed = KP1;       break;
+			case XK_KP_2:
+			case XK_KP_Down:        key_pressed = KP2;       break;
+			case XK_KP_3:
+			case XK_KP_Page_Down:   key_pressed = KP3;       break;
+			case XK_KP_4:
+			case XK_KP_Left:        key_pressed = KP4;       break;
+			case XK_KP_5:
+			case XK_KP_Begin:       key_pressed = KP5;       break;
+			case XK_KP_6:
+			case XK_KP_Right:       key_pressed = KP6;       break;
+			case XK_KP_0:
+			case XK_KP_Insert:      key_pressed = KPINS;     break;
+			case XK_KP_Decimal:
+			case XK_KP_Delete:      key_pressed = KPDEL;     break;
+			default:
+#ifdef X_HAVE_UTF8_STRING
+				keys_return[1] = 0;
+				key_pressed_utf8 = keys_return;
+#endif
+				key_pressed = keysym & 0xff;
+				break;
+			}
+#ifdef X_HAVE_UTF8_STRING
 		}
-
+#endif
 		result = dispatch_keypress_event();
 // Handle some default keypresses
 		if(!result)
@@ -1719,35 +1790,27 @@ void BC_WindowBase::init_fonts()
 void BC_WindowBase::init_xft()
 {
 #ifdef HAVE_XFT
-	if(!(largefont_xft = XftFontOpenXlfd(display,
-			screen,
-			resources.large_font_xft)))
-		if(!(largefont_xft = XftFontOpenXlfd(display,
-				screen,
-				resources.large_font_xft2)))
-			largefont_xft = XftFontOpenXlfd(display,
-				screen,
-				"fixed");
+// Rewrite to be fonts chooser ready
+	if(resources.large_font_xft[0] == '-')
+		largefont_xft = XftFontOpenXlfd(display, screen,
+			resources.large_font_xft);
+	else
+		largefont_xft = XftFontOpenName(display, screen,
+			resources.large_font_xft);
 
-	if(!(mediumfont_xft = XftFontOpenXlfd(display,
-			screen,
-			resources.medium_font_xft)))
-		if(!(mediumfont_xft = XftFontOpenXlfd(display,
-				screen,
-				resources.medium_font_xft2)))
-			mediumfont_xft = XftFontOpenXlfd(display,
-				screen,
-				"fixed");
+	if(resources.medium_font_xft[0] == '-')
+		mediumfont_xft = XftFontOpenXlfd(display, screen,
+			resources.medium_font_xft);
+	else
+		mediumfont_xft = XftFontOpenName(display, screen,
+			resources.medium_font_xft);
 
-	if(!(smallfont_xft = XftFontOpenXlfd(display,
-			screen,
-			resources.small_font_xft)))
-		if(!(smallfont_xft = XftFontOpenXlfd(display,
-				screen,
-				resources.small_font_xft2)))
-			smallfont_xft = XftFontOpenXlfd(display,
-				screen,
-				"fixed");
+	if(resources.small_font_xft[0] == '-')
+		smallfont_xft = XftFontOpenXlfd(display, screen,
+			resources.small_font_xft);
+	else
+		smallfont_xft = XftFontOpenName(display, screen,
+			resources.small_font_xft);
 
 // Extension failed to locate fonts
 	if(!largefont_xft || !mediumfont_xft || !smallfont_xft)
@@ -2145,9 +2208,13 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	if(get_resources()->use_xft && get_xft_struct(font))
 	{
 		XGlyphInfo extents;
+#ifdef X_HAVE_UTF8_STRING
+		XftTextExtentsUtf8(top_level->display,
+#else
 		XftTextExtents8(top_level->display,
+#endif
 			get_xft_struct(font),
-			(FcChar8*)text, 
+			(const FcChar8*)text,
 			length,
 			&extents);
 		return extents.xOff;
@@ -2208,9 +2275,13 @@ int BC_WindowBase::get_text_ascent(int font)
 	if(get_resources()->use_xft && get_xft_struct(font))
 	{
 		XGlyphInfo extents;
+#ifdef X_HAVE_UTF8_STRING
+		XftTextExtentsUtf8(top_level->display,
+#else
 		XftTextExtents8(top_level->display,
+#endif
 			get_xft_struct(font),
-			(FcChar8*)"O", 
+			(const FcChar8*)"O", 
 			1,
 			&extents);
 		return extents.y + 2;
@@ -2244,9 +2315,13 @@ int BC_WindowBase::get_text_descent(int font)
 	if(get_resources()->use_xft && get_xft_struct(font))
 	{
 		XGlyphInfo extents;
+#ifdef X_HAVE_UTF8_STRING
+		XftTextExtentsUtf8(top_level->display,
+#else
 		XftTextExtents8(top_level->display,
+#endif
 			get_xft_struct(font),
-			(FcChar8*)"j", 
+			(const FcChar8*)"j", 
 			1,
 			&extents);
 		return extents.height - extents.y;
@@ -2968,6 +3043,12 @@ int BC_WindowBase::ctrl_down()
 	return top_level->ctrl_mask;
 }
 
+#ifdef X_HAVE_UTF8_STRING
+char* BC_WindowBase::get_keypress_utf8()
+{
+	return top_level->key_pressed_utf8;
+}
+#endif
 
 int BC_WindowBase::get_keypress()
 {

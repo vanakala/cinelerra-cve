@@ -78,33 +78,6 @@ int main(int argc, char *argv[])
 	Garbage::garbage = new Garbage;
 	EDL::id_lock = new Mutex("EDL::id_lock");
 
-// detect an UTF-8 locale and try to use a non-Unicode locale instead
-// <---Beginning of dirty hack
-// This hack will be removed as soon as Cinelerra is UTF-8 compliant
-    char *s, *language;
-
-// Query user locale
-    if ((s = getenv("LC_ALL"))  || 
-		(s = getenv("LC_MESSAGES")) || 
-		(s = getenv("LC_CTYPE")) || 
-		(s = getenv ("LANG")))
-    {
-// Test if user locale is set to Unicode        
-        if (strstr(s, ".UTF-8"))
-        {
-// extract language  from language-charset@variant
-          language = strtok (s, ".@");
-// set language as the default locale
-          setenv("LANG", language, 1);
-        }
-    }
-// End of dirty hack --->
-
-
-
-
-
-
 	bindtextdomain (PACKAGE, LOCALE_DIR);
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");

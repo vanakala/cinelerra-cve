@@ -99,6 +99,53 @@ AH_TEMPLATE(HAVE_LIBXXF86VM, [Define to 1 if libXxf86vm is available.])
 AC_DEFINE(HAVE_LIBXXF86VM)
 ############## END XLIB
 
+############# XFT
+AC_MSG_CHECKING([whether to use xft])
+AC_ARG_ENABLE(xft, AC_HELP_STRING([--enable-xft],
+	[use freetype/fontconfig/xft (default: on)]),
+	[enable_xft=$enableval], [enable_xft="default"])
+XFT_CFLAGS=""
+XFT_LIBS=""
+if test "$enable_xft" = "no" ; then
+	AC_MSG_RESULT([$enable_xft])
+	XFT_CFLAGS=`pkg-config xft --cflags 2>/dev/null` || found_xft="no"
+	XFT_LIBS=`pkg-config xft --libs 2>/dev/null` || found_xft="no"
+	CXXFLAGS="$XFT_CFLAGS $CXXFLAGS"
+else
+	found_xft="yes"
+	dnl make sure package configurator (pkg-config xft or pkg-config
+	dnl says that xft is present.
+	XFT_CFLAGS=`pkg-config xft --cflags 2>/dev/null` || found_xft="no"
+	XFT_LIBS=`pkg-config xft --libs 2>/dev/null` || found_xft="no"
+	if ! test "$found_xft" = "no" ; then
+		found_xft=yes
+	fi
+	AC_MSG_RESULT([$found_xft])
+	dnl print a warning if xft is unusable and was specifically requested
+	if test "$found_xft" = "no" ; then
+		if test "$enable_xft" = "yes" ; then
+			AC_MSG_WARN([Can't find xft configuration, or xft is unusable])
+		fi
+		enable_xft=no
+		XFT_CFLAGS=""
+		XFT_LIBS=""
+	else
+		enable_xft=yes
+		## To force to all project - uncomment
+		##X_EXTRA_LIBS="$XFT_LIBS $X_EXTRA_LIBS"
+		CXXFLAGS="$XFT_CFLAGS $CXXFLAGS"
+		AH_TEMPLATE(HAVE_XFT, [Define to 1 if libXft is available.])
+		AC_DEFINE(HAVE_XFT)
+		## need some fix to compile with XFT
+		AC_DEFINE(
+			[PNG_SETJMP_NOT_SUPPORTED], [1],
+			[Workaround to fix compile with xft])
+	fi
+fi
+AC_SUBST(XFT_CFLAGS)
+AC_SUBST(XFT_LIBS)
+############## END XFT
+
 ############## SOUND
 # the sound options are propagated by SOUND_CFLAGS and SOUND_LDFLAGS
 AC_ARG_ENABLE(oss,
