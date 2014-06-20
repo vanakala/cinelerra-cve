@@ -667,19 +667,22 @@ void BC_TextBox::repeat_event(int duration)
 
 void BC_TextBox::default_keypress(int &dispatch_event, int &result)
 {
+	char buffer[4];
+	char *temp_string = buffer;
+
 	if((top_level->get_keypress() == RETURN) ||
 		(top_level->get_keypress() > 30 && top_level->get_keypress() <= 255))
 	{
 // Substitute UNIX linefeed
 		if(top_level->get_keypress() == RETURN) 
 		{
-			temp_string[0] = 0xa;
+			temp_string[0] = '\n';
 			temp_string[1] = 0;
 		}
 		else
 		{
 #ifdef X_HAVE_UTF8_STRING
-			if(top_level->get_keypress_utf8() > 0)
+			if(top_level->get_keypress_utf8())
 				temp_string = top_level->get_keypress_utf8();
 			else
 			{
