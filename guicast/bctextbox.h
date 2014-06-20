@@ -99,6 +99,9 @@ public:
 	int get_text_row();
 	void reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
+#ifdef X_HAVE_UTF8_STRING
+	int utf8seek(int &seekpoint, int reverse);
+#endif
 	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
@@ -159,7 +162,8 @@ private:
 	int highlighted;
 	int high_color, back_color;
 	int background_color;
-	char text[BCTEXTLEN], text_row[BCTEXTLEN], temp_string[2];
+	char text[BCTEXTLEN], text_row[BCTEXTLEN];
+	char *temp_string;
 	int active;
 	int enabled;
 	int precision;
