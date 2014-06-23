@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 		char variable[1024], header_fn[1024], output_fn[1024], *suffix, *prefix;
 		int i;
 		int bytes_per_row = 16;
-		char row[1024], byte[1024], character;
+		char row[1024], byte[1024];
 		struct stat st;
 		long total_bytes;
 
