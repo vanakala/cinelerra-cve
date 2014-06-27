@@ -135,14 +135,7 @@ BC_WindowBase::~BC_WindowBase()
 	if(window_type == MAIN_WINDOW) 
 	{
 		XFreeGC(display, gc);
-#ifdef HAVE_XFT
-		if(largefont_xft) 
-			XftFontClose (display, (XftFont*)largefont_xft);
-		if(mediumfont_xft) 
-			XftFontClose (display, (XftFont*)mediumfont_xft);
-		if(smallfont_xft) 
-			XftFontClose (display, (XftFont*)smallfont_xft);
-#endif
+
 		if(smallfont)
 			XFreeFont(display, smallfont);
 		if(mediumfont)
