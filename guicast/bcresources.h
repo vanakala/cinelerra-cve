@@ -306,6 +306,10 @@ public:
 // This must be constitutive since applications access the private members here.
 	int use_xft;
 
+#ifdef X_HAVE_UTF8_STRING
+// Current locale is utf8
+	static int locale_utf8;
+#endif
 // Available display extensions
 	int use_shm;
 

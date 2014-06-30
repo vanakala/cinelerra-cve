@@ -41,6 +41,10 @@
 VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
 
+#ifdef X_HAVE_UTF8_STRING
+int BC_Resources::locale_utf8 = 0;
+#endif
+
 #include "images/file_film_png.h"
 #include "images/file_folder_png.h"
 #include "images/file_sound_png.h"

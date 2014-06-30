@@ -22,6 +22,7 @@
 #include "arraylist.h"
 #include "batchrender.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "edl.h"
 #include "filexml.h"
 #include "filesystem.h"
@@ -81,7 +82,17 @@ int main(int argc, char *argv[])
 	bindtextdomain (PACKAGE, LOCALE_DIR);
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");
-	setlocale (LC_CTYPE, "");
+
+	char *curlocale = setlocale(LC_CTYPE, "");
+	if(curlocale)
+	{
+		char *p;
+		if((p = strchr(curlocale, '.')) &&
+			(!strcasecmp(p, ".utf8") || !strcasecmp(p, ".utf-8")))
+				BC_Resources::locale_utf8 = 1;
+	}
+	else
+		printf(PROGRAM_NAME ": Could not set locale.\n");
 
 	for(int i = 1; i < argc; i++)
 	{
