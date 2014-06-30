@@ -90,7 +90,7 @@ void AboutPrefs::show()
 	y += get_text_height(LARGEFONT);
 	set_font(MEDIUMFONT);
 
-	draw_text(x, y,
+	draw_utf8_text(x, y,
 		"Jack Crossfire\n"
 		"Richard Baverstock\n"
 		"Karl Bielefeldt\n"
@@ -109,14 +109,22 @@ void AboutPrefs::show()
 		"Joe Stewart\n"
 		"Dan Streetman\n");
 
-	draw_text(x + 180, y,
+	draw_utf8_text(x + 180, y,
+#ifdef X_HAVE_UTF8_STRING
+		"Gustavo Iñiguez\n"
+#else
 		"Gustavo I\361iguez\n"
+#endif
 		"Johannes Sixt\n"
 		"Mark Taraba\n"
 		"Andraz Tori\n"
 		"Jonas Wulff\n"
 		"David Arendt\n"
+#ifdef X_HAVE_UTF8_STRING
+		"Einar Rünkaru\n"
+#else
 		"Einar R\374nkaru\n"
+#endif
 		"Monty Montgomery\n");
 
 	y = get_h() - 135;
