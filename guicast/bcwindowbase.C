@@ -2274,29 +2274,10 @@ int BC_WindowBase::get_text_width(int font, const char *text, int length)
 int BC_WindowBase::get_text_ascent(int font)
 {
 #ifdef HAVE_XFT
-	if(get_resources()->use_xft && get_xft_struct(font))
-	{
-		XGlyphInfo extents;
-#ifdef X_HAVE_UTF8_STRING
-		if(get_resources()->locale_utf8)
-		{
-			XftTextExtentsUtf8(top_level->display,
-				get_xft_struct(font),
-				(const FcChar8*)"O",
-				1,
-				&extents);
-		}
-		else
-#endif
-		{
-			XftTextExtents8(top_level->display,
-				get_xft_struct(font),
-				(const FcChar8*)"O",
-				1,
-				&extents);
-		}
-		return extents.y + 2;
-	}
+	XftFont *fstruct;
+
+	if(get_resources()->use_xft && (fstruct = get_xft_struct(font)))
+		return fstruct->ascent;
 	else
 #endif
 	if(get_resources()->use_fontset && top_level->get_fontset(font))
@@ -2323,20 +2304,10 @@ int BC_WindowBase::get_text_ascent(int font)
 int BC_WindowBase::get_text_descent(int font)
 {
 #ifdef HAVE_XFT
-	if(get_resources()->use_xft && get_xft_struct(font))
-	{
-		XGlyphInfo extents;
-#ifdef X_HAVE_UTF8_STRING
-		XftTextExtentsUtf8(top_level->display,
-#else
-		XftTextExtents8(top_level->display,
-#endif
-			get_xft_struct(font),
-			(const FcChar8*)"j", 
-			1,
-			&extents);
-		return extents.height - extents.y;
-	}
+	XftFont *fstruct;
+
+	if(get_resources()->use_xft && (fstruct = get_xft_struct(font)))
+		return fstruct->descent;
 	else
 #endif
 	if(get_resources()->use_fontset && top_level->get_fontset(font))
@@ -2355,7 +2326,17 @@ int BC_WindowBase::get_text_descent(int font)
 
 int BC_WindowBase::get_text_height(int font, const char *text)
 {
-	if(!text) return get_text_ascent(font) + get_text_descent(font);
+	int rowh;
+#ifdef HAVE_XFT
+	XftFont *fstruct;
+
+	if(get_resources()->use_xft && (fstruct = get_xft_struct(font)))
+		rowh = fstruct->height;
+	else
+#endif
+		rowh = get_text_ascent(font) + get_text_descent(font);
+
+	if(!text) return rowh;
 
 // Add height of lines
 	int h = 0, i, length = strlen(text);
@@ -2367,7 +2348,7 @@ int BC_WindowBase::get_text_height(int font, const char *text)
 		if(text[i] == 0)
 			h++;
 	}
-	return h * (get_text_ascent(font) + get_text_descent(font));
+	return h * rowh;
 }
 
 BC_Bitmap* BC_WindowBase::new_bitmap(int w, int h, int color_model)
