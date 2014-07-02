@@ -561,6 +561,7 @@ private:
 	void init_gc();
 	void init_fonts();
 	void init_xft();
+	void init_im();
 	int get_color_rgb8(int color);
 	int get_color_rgb16(int color);
 	int get_color_bgr16(int color);
@@ -793,10 +794,10 @@ private:
 
 #ifdef X_HAVE_UTF8_STRING
 	// Used to communicate with the input method (IM) server
-	XIM im;
+	XIM input_method;
 	// Used for retaining the state, properties, and semantics of communication with
 	//   the input method (IM) server
-	XIC ic;
+	XIC input_context;
 #endif
 
 protected:

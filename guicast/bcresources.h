@@ -309,6 +309,8 @@ public:
 #ifdef X_HAVE_UTF8_STRING
 // Current locale is utf8
 	static int locale_utf8;
+// Failed to initalize input method
+	static int missing_im;
 #endif
 // Available display extensions
 	int use_shm;

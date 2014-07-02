@@ -43,6 +43,7 @@ VFrame* BC_Resources::menu_bg = 0;
 
 #ifdef X_HAVE_UTF8_STRING
 int BC_Resources::locale_utf8 = 0;
+int BC_Resources::missing_im = 0;
 #endif
 
 #include "images/file_film_png.h"
