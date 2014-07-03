@@ -628,17 +628,10 @@ void BC_WindowBase::dispatch_event()
 	XEvent event;
 	Window tempwin;
 	KeySym keysym;
-#ifdef X_HAVE_UTF8_STRING
-	char keys_return[6];
-#else
-	char keys_return[2];
-#endif
 	int result;
 	XClientMessageEvent *ptr;
 	int temp;
 	int cancel_resize, cancel_translation;
-
-	key_pressed = 0;
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
 	if(XPending(display) ||
@@ -829,97 +822,78 @@ void BC_WindowBase::dispatch_event()
 
 	case KeyPress:
 		get_key_masks(&event);
+		key_pressed = 0;
+		memset(key_string, 0, sizeof(key_string));
 
 #ifdef X_HAVE_UTF8_STRING
-		memset(keys_return, 0, sizeof(keys_return));
 		if(input_context)
-			Xutf8LookupString(input_context, (XKeyEvent*)&event, keys_return, 6, &keysym, 0);
+			Xutf8LookupString(input_context, (XKeyEvent*)&event, key_string, 6, &keysym, 0);
 		else
-			XLookupString((XKeyEvent*)&event, keys_return, 6, &keysym,  0);
+			XLookupString((XKeyEvent*)&event, key_string, 6, &keysym,  0);
 #else
-		keys_return[0] = 0;
-		XLookupString((XKeyEvent*)&event, keys_return, 1, &keysym, 0);
+		XLookupString((XKeyEvent*)&event, key_string, 1, &keysym, 0);
 #endif
-
 // block out control keys
 		if(keysym > 0xffe0 && keysym < 0xffff) break;
 
-#ifdef X_HAVE_UTF8_STRING
-		//It's Ascii or UTF8?
-		if((keys_return[0] & 0xff) >= 0x7f)
+		switch(keysym)
 		{
-			key_pressed_utf8 = keys_return;
-			key_pressed = keysym & 0xff;
-		}
-		else
-		{
-#endif
-
-			switch(keysym)
-			{
 // block out extra keys
-			case XK_Alt_L:
-			case XK_Alt_R:
-			case XK_Shift_L:
-			case XK_Shift_R:
-			case XK_Control_L:
-			case XK_Control_R:
-				key_pressed = 0;
-				break;
+		case XK_Alt_L:
+		case XK_Alt_R:
+		case XK_Shift_L:
+		case XK_Shift_R:
+		case XK_Control_L:
+		case XK_Control_R:
+			key_pressed = 0;
+			break;
 
 // Translate key codes
-			case XK_Return:     key_pressed = RETURN;    break;
-			case XK_Up:         key_pressed = UP;        break;
-			case XK_Down:       key_pressed = DOWN;      break;
-			case XK_Left:       key_pressed = LEFT;      break;
-			case XK_Right:      key_pressed = RIGHT;     break;
-			case XK_Next:       key_pressed = PGDN;      break;
-			case XK_Prior:      key_pressed = PGUP;      break;
-			case XK_BackSpace:  key_pressed = BACKSPACE; break;
-			case XK_Escape:     key_pressed = ESC;       break;
-			case XK_Tab:
-				if(shift_down())
-					key_pressed = LEFTTAB;
-				else
-					key_pressed = TAB;
-				break;
-			case XK_ISO_Left_Tab: key_pressed = LEFTTAB; break;
-			case XK_underscore: key_pressed = '_';       break;
-			case XK_asciitilde: key_pressed = '~';       break;
-			case XK_Delete:     key_pressed = DELETE;    break;
-			case XK_Home:       key_pressed = HOME;      break;
-			case XK_End:        key_pressed = END;       break;
+		case XK_Return:     key_pressed = RETURN;    break;
+		case XK_Up:         key_pressed = UP;        break;
+		case XK_Down:       key_pressed = DOWN;      break;
+		case XK_Left:       key_pressed = LEFT;      break;
+		case XK_Right:      key_pressed = RIGHT;     break;
+		case XK_Next:       key_pressed = PGDN;      break;
+		case XK_Prior:      key_pressed = PGUP;      break;
+		case XK_BackSpace:  key_pressed = BACKSPACE; break;
+		case XK_Escape:     key_pressed = ESC;       break;
+		case XK_Tab:
+			if(shift_down())
+				key_pressed = LEFTTAB;
+			else
+				key_pressed = TAB;
+			break;
+		case XK_ISO_Left_Tab: key_pressed = LEFTTAB; break;
+		case XK_underscore: key_pressed = '_';       break;
+		case XK_asciitilde: key_pressed = '~';       break;
+		case XK_Delete:     key_pressed = DELETE;    break;
+		case XK_Home:       key_pressed = HOME;      break;
+		case XK_End:        key_pressed = END;       break;
 
 // number pad
-			case XK_KP_Enter:       key_pressed = KPENTER;   break;
-			case XK_KP_Add:         key_pressed = KPPLUS;    break;
-			case XK_KP_1:
-			case XK_KP_End:         key_pressed = KP1;       break;
-			case XK_KP_2:
-			case XK_KP_Down:        key_pressed = KP2;       break;
-			case XK_KP_3:
-			case XK_KP_Page_Down:   key_pressed = KP3;       break;
-			case XK_KP_4:
-			case XK_KP_Left:        key_pressed = KP4;       break;
-			case XK_KP_5:
-			case XK_KP_Begin:       key_pressed = KP5;       break;
-			case XK_KP_6:
-			case XK_KP_Right:       key_pressed = KP6;       break;
-			case XK_KP_0:
-			case XK_KP_Insert:      key_pressed = KPINS;     break;
-			case XK_KP_Decimal:
-			case XK_KP_Delete:      key_pressed = KPDEL;     break;
-			default:
-#ifdef X_HAVE_UTF8_STRING
-				keys_return[1] = 0;
-				key_pressed_utf8 = keys_return;
-#endif
-				key_pressed = keysym & 0xff;
-				break;
-			}
-#ifdef X_HAVE_UTF8_STRING
+		case XK_KP_Enter:       key_pressed = KPENTER;   break;
+		case XK_KP_Add:         key_pressed = KPPLUS;    break;
+		case XK_KP_1:
+		case XK_KP_End:         key_pressed = KP1;       break;
+		case XK_KP_2:
+		case XK_KP_Down:        key_pressed = KP2;       break;
+		case XK_KP_3:
+		case XK_KP_Page_Down:   key_pressed = KP3;       break;
+		case XK_KP_4:
+		case XK_KP_Left:        key_pressed = KP4;       break;
+		case XK_KP_5:
+		case XK_KP_Begin:       key_pressed = KP5;       break;
+		case XK_KP_6:
+		case XK_KP_Right:       key_pressed = KP6;       break;
+		case XK_KP_0:
+		case XK_KP_Insert:      key_pressed = KPINS;     break;
+		case XK_KP_Decimal:
+		case XK_KP_Delete:      key_pressed = KPDEL;     break;
+		default:
+			key_pressed = keysym & 0xff;
+			break;
 		}
-#endif
 		result = dispatch_keypress_event();
 // Handle some default keypresses
 		if(!result)
@@ -1798,7 +1772,7 @@ void BC_WindowBase::init_im()
 	XIMStyles *xim_styles;
 	XIMStyle xim_style;
 
-	if(get_resources()->missing_im)
+	if(get_resources()->missing_im || !get_resources()->locale_utf8)
 		return;
 
 	if(!(input_method = XOpenIM(display, NULL, NULL, NULL)))
@@ -3062,12 +3036,10 @@ int BC_WindowBase::ctrl_down()
 	return top_level->ctrl_mask;
 }
 
-#ifdef X_HAVE_UTF8_STRING
-char* BC_WindowBase::get_keypress_utf8()
+char* BC_WindowBase::get_keystring()
 {
-	return top_level->key_pressed_utf8;
+	return top_level->key_string;
 }
-#endif
 
 int BC_WindowBase::get_keypress()
 {
