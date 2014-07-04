@@ -1153,7 +1153,7 @@ int BC_TextBox::keypress_event()
 			if(ibeam_letter < text_len)
 			{
 #ifdef X_HAVE_UTF8_STRING
-				int s = utf8seek(ibeam_letter, 1);
+				int s = utf8seek(ibeam_letter, 0);
 				delete_selection(ibeam_letter, ibeam_letter + (1 + s), text_len);
 #else
 				delete_selection(ibeam_letter, ibeam_letter + 1, text_len);
