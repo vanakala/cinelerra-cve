@@ -14,14 +14,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
  * USA
  */
- 
-
-
-
-
-
-
-
 
 #include <errno.h>
 #include <ctype.h>
@@ -121,13 +113,13 @@ int main(int argc, char *argv[])
 		fprintf(out, "#ifndef %s\n"
 					 "#define %s\n"
 					 "\n"
-					 "static unsigned char %s[] = \n{\n",
+					 "static unsigned char %s[] =\n{\n",
 					 header_fn,
 					 header_fn,
 					 variable);
 
 // Print the size of the file
-		fprintf(out, "\t0x%02x, 0x%02x, 0x%02x, 0x%02x, \n",
+		fprintf(out, "\t0x%02x, 0x%02x, 0x%02x, 0x%02x,\n",
 			(int)(total_bytes >> 24) & 0xff,
 			(int)(total_bytes >> 16) & 0xff,
 			(int)(total_bytes >> 8) & 0xff,
@@ -146,7 +138,7 @@ int main(int argc, char *argv[])
 				total_bytes--;
 			}
 			if(total_bytes > 0)
-				sprintf(byte, ", \n");
+				sprintf(byte, ",\n");
 			else
 				sprintf(byte, "\n");
 
