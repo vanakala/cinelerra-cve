@@ -1230,6 +1230,10 @@ int BC_TextBox::utf8seek(int &seekpoint, int reverse)
 	int utf8pos = 0;
 	int i = seekpoint;
 	unsigned char z;
+
+	if(!get_resources()->locale_utf8)
+		return 0;
+
 	if(reverse & 1)
 	{
 		if((unsigned char)text[i-1] >= 0x80)
