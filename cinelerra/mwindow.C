@@ -607,7 +607,27 @@ void MWindow::init_theme()
 
 	if(!theme)
 	{
-		errorbox(_("Theme '%s' is not found"), preferences->theme);
+		errorbox(_("Can't find theme '%s'."), preferences->theme);
+		// Theme load fails, try default
+		strcpy(preferences->theme, DEFAULT_THEME);
+		for(int i = 0; i < plugindb->total; i++)
+		{
+			if(plugindb->values[i]->theme &&
+				!strcasecmp(preferences->theme, plugindb->values[i]->title))
+			{
+				PluginServer plugin = *plugindb->values[i];
+				plugin.open_plugin(0, preferences, 0, 0, -1);
+				theme = plugin.new_theme();
+				theme->mwindow = this;
+				strcpy(theme->path, plugin.path);
+				plugin.close_plugin();
+			}
+		}
+	}
+
+	if(!theme)
+	{
+		errorbox(_("Cant load default theme '%s'."), preferences->theme);
 		exit(1);
 	}
 
