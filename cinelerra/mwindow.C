@@ -1154,14 +1154,13 @@ void MWindow::create_objects(int want_gui,
 	remove_thread->create_objects();
 	show_splash();
 
-	init_error();
-
 	init_defaults(defaults, config_path);
 	default_standard = default_std();
 	init_preferences();
 	init_plugins(preferences, plugindb, splash_window);
 	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
 	init_theme();
+	init_error();
 // Default project created here
 	init_edl();
 
