@@ -52,6 +52,7 @@ FileList::FileList(Asset *asset,
 	writer = 0;
 	writing = 0;
 	first_number = 0;
+	path_list.set_array_delete();
 	asset->video_data = 1;
 	this->list_prefix = list_prefix;
 	this->file_extension = file_extension;
