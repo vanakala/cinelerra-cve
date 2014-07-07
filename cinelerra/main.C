@@ -39,6 +39,7 @@
 #include "theme.inc"
 #include "versioninfo.h"
 
+#include <langinfo.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,14 +84,8 @@ int main(int argc, char *argv[])
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");
 
-	char *curlocale = setlocale(LC_CTYPE, "");
-	if(curlocale)
-	{
-		char *p;
-		if((p = strchr(curlocale, '.')) &&
-			(!strcasecmp(p, ".utf8") || !strcasecmp(p, ".utf-8")))
-				BC_Resources::locale_utf8 = 1;
-	}
+	if(setlocale(LC_CTYPE, ""))
+		BC_Resources::locale_utf8 = !strcmp(nl_langinfo(CODESET), "UTF-8");
 	else
 		printf(PROGRAM_NAME ": Could not set locale.\n");
 
