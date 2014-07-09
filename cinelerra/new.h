@@ -64,11 +64,6 @@ public:
 
 	void run();
 
-	void load_defaults();
-	void save_defaults();
-	void update_aspect();
-
-	int auto_aspect;
 	int auto_sizes;
 	NewWindow *nwindow;
 	MWindow *mwindow;
@@ -174,16 +169,6 @@ public:
 	void handle_up_event();
 	void handle_down_event();
 
-	NewWindow *nwindow;
-};
-
-
-class NewAspectAuto : public BC_CheckBox
-{
-public:
-	NewAspectAuto(NewWindow *nwindow, int x, int y);
-
-	int handle_event();
 	NewWindow *nwindow;
 };
 

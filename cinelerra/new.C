@@ -144,7 +144,6 @@ NewThread::~NewThread()
 void NewThread::run()
 {
 	int result = 0;
-	load_defaults();
 
 	int x = mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2;
 	int y = mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2;
@@ -171,30 +170,6 @@ void NewThread::run()
 	else
 	{
 		new_project->create_new_project();
-	}
-}
-
-void NewThread::load_defaults()
-{
-	auto_aspect = mwindow->defaults->get("AUTOASPECT", 0);
-}
-
-void NewThread::save_defaults()
-{
-	mwindow->defaults->update("AUTOASPECT", auto_aspect);
-}
-
-void NewThread::update_aspect()
-{
-	if(auto_aspect)
-	{
-		mwindow->create_aspect_ratio(new_project->new_edl->session->aspect_w, 
-			new_project->new_edl->session->aspect_h, 
-			new_project->new_edl->session->output_w, 
-			new_project->new_edl->session->output_h);
-		nwindow->aspectratio_selection->update(
-			new_project->new_edl->session->aspect_w,
-			new_project->new_edl->session->aspect_h);
 	}
 }
 
@@ -291,11 +266,11 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 
 	add_subwindow(aspectratio_selection = new AspectRatioSelection(x1, y,
 		x1 + SELECTION_TB_WIDTH + 10, y,
-		this, &new_edl->session->aspect_w, &new_edl->session->aspect_h));
+		this, &new_edl->session->aspect_w, &new_edl->session->aspect_h,
+		&new_edl->session->output_w, &new_edl->session->output_h));
 
 	y += aspectratio_selection->get_h() + 5;
-	add_subwindow(new NewAspectAuto(this, x1, y));
-	y += 40;
+
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
 	cmodel_selection = new ColormodelSelection(x + 100, y, this,
 		&new_edl->session->color_model);
@@ -331,7 +306,7 @@ void NewWindow::update()
 	frame_rate->update((float)new_edl->session->frame_rate);
 	framesize_selection->update(new_edl->session->output_w,
 		new_edl->session->output_h);
-	aspectratio_selection->update(new_edl->session->aspect_w,
+	aspectratio_selection->update_auto(new_edl->session->aspect_w,
 		new_edl->session->aspect_h);
 	interlace_selection->update(new_edl->session->interlace_mode);
 	cmodel_selection->update(new_edl->session->color_model);
@@ -449,18 +424,4 @@ void NewVTracksTumbler::handle_down_event()
 	nwindow->new_edl->session->video_tracks--;
 	nwindow->new_edl->boundaries();
 	nwindow->update();
-}
-
-
-NewAspectAuto::NewAspectAuto(NewWindow *nwindow, int x, int y)
- : BC_CheckBox(x, y, nwindow->new_thread->auto_aspect, _("Auto aspect ratio"))
-{
-	this->nwindow = nwindow;
-}
-
-int NewAspectAuto::handle_event()
-{
-	nwindow->new_thread->auto_aspect = get_value();
-	nwindow->new_thread->update_aspect();
-	return 1;
 }

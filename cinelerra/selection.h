@@ -81,6 +81,7 @@ public:
 	void enable(int option = 0);
 	virtual int handle_event();
 	void delete_subwindows();
+	virtual void update_auto(double value1, double value2) {};
 
 	const struct selection_int *current_int;
 	const struct selection_2int *current_2int;
@@ -91,10 +92,10 @@ protected:
 	SelectionLeftBox *firstbox;
 	int *intvalue;
 	int *intvalue2;
-private:
-	BC_PopupMenu *init_objects(int x, int y, BC_WindowBase *base);
 	double *doublevalue;
 	double *doublevalue2;
+private:
+	BC_PopupMenu *init_objects(int x, int y, BC_WindowBase *base);
 	SelectionButton *button;
 	BC_PopupMenu *popupmenu;
 };
@@ -170,11 +171,14 @@ class AspectRatioSelection : public Selection
 {
 public:
 	AspectRatioSelection(int x1, int y1, int x2, int y2,
-		BC_WindowBase *base, double *value1, double *value2);
+		BC_WindowBase *base, double *value1, double *value2,
+		int *frame_w, int *frame_h);
 
-	void update(double value1, double value2);
+	void update_auto(double value1, double value2);
 
 private:
+	int *frame_w;
+	int *frame_h;
 	static const struct selection_2double aspect_ratios[];
 };
 

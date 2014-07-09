@@ -101,6 +101,7 @@ const struct selection_2int FrameSizeSelection::frame_sizes[] =
 
 const struct selection_2double AspectRatioSelection::aspect_ratios[] =
 {
+	{ "Auto", -1., -1 },
 	{ "3 : 2", 3.0, 2.0 },
 	{ "4 : 3", 4.0, 3.0 },
 	{ "16 : 9", 16.0, 9.0 },
@@ -240,13 +241,21 @@ int FrameSizeSelection::limits(int *width, int *height)
 }
 
 AspectRatioSelection::AspectRatioSelection(int x1, int y1, int x2, int y2,
-	BC_WindowBase *base, double *value1, double *value2)
+	BC_WindowBase *base, double *value1, double *value2, int *frame_w, int *frame_h)
  : Selection(x1, y1, x2, y2, base, aspect_ratios, value1, value2, ':')
 {
+	this->frame_w = frame_w;
+	this->frame_h = frame_h;
 }
 
-void AspectRatioSelection::update(double value1, double value2)
+void AspectRatioSelection::update_auto(double value1, double value2)
 {
+	if(value1 < 0 || value2 < 0)
+		MWindow::create_aspect_ratio(value1, value2, *frame_w, *frame_h);
+
+	*doublevalue = value2;
+	*doublevalue2 = value1;
+
 	firstbox->update(value1);
 	BC_TextBox::update(value2);
 }
@@ -484,11 +493,7 @@ int Selection::handle_event()
 		else if(doublevalue2)
 		{
 			if(current_2double)
-			{
-				*doublevalue = current_2double->value2;
-				*doublevalue2 = current_2double->value1;
 				current_2double = 0;
-			}
 			else
 			{
 				*doublevalue = atof(get_text());
@@ -585,8 +590,7 @@ int SelectionItem::handle_event()
 	if(double2item)
 	{
 		output->current_2double = double2item;
-		output->update(double2item->value2);
-		output2->update(double2item->value1);
+		output->update_auto(double2item->value1, double2item->value2);
 	}
 	output->handle_event();
 	return 1;

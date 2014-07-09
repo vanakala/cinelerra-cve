@@ -84,7 +84,6 @@ void SetFormatThread::run()
 {
 	orig_dimension[0] = dimension[0] = mwindow->edl->session->output_w;
 	orig_dimension[1] = dimension[1] = mwindow->edl->session->output_h;
-	auto_aspect = mwindow->defaults->get("AUTOASPECT", 0);
 	ratio[0] = ratio[1] = 1;
 
 	new_settings = new EDL;
@@ -109,8 +108,6 @@ void SetFormatThread::run()
 	{
 		apply_changes();
 	}
-
-	mwindow->defaults->update("AUTOASPECT", auto_aspect);
 	delete new_settings;
 }
 
@@ -185,10 +182,6 @@ void SetFormatThread::update()
 	window->sample_rate->update((int64_t)new_settings->session->sample_rate);
 	window->channels->update((int64_t)new_settings->session->audio_channels);
 	window->frame_rate->update((float)new_settings->session->frame_rate);
-
-	auto_aspect = 0;
-	window->auto_aspect->update(0);
-
 	dimension[0] = new_settings->session->output_w;
 	dimension[1] = new_settings->session->output_h;
 	window->framesize_selection->update(dimension[0], dimension[1]);
@@ -196,7 +189,7 @@ void SetFormatThread::update()
 	window->ratio[0]->update(ratio[0]);
 	ratio[1] = (float)dimension[1] / orig_dimension[1];
 	window->ratio[1]->update(ratio[1]);
-	window->aspectratio_selection->update(new_settings->session->aspect_w, 
+	window->aspectratio_selection->update_auto(new_settings->session->aspect_w, 
 		new_settings->session->aspect_h);
 	window->interlace_selection->update(new_settings->session->interlace_mode);
 	window->cmodel_selection->update(new_settings->session->color_model);
@@ -225,23 +218,7 @@ void SetFormatThread::update_window()
 	}
 
 	if(dimension_modified)
-	{
 		window->framesize_selection->update(dimension[0], dimension[1]);
-		update_aspect();
-	}
-}
-
-void SetFormatThread::update_aspect()
-{
-	if(auto_aspect)
-	{
-		MWindow::create_aspect_ratio(new_settings->session->aspect_w, 
-			new_settings->session->aspect_h, 
-			dimension[0], 
-			dimension[1]);
-		window->aspectratio_selection->update(new_settings->session->aspect_w,
-			new_settings->session->aspect_h);
-	}
 }
 
 
@@ -379,13 +356,10 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	add_subwindow(aspectratio_selection = new AspectRatioSelection(x, y,
 		x + SELECTION_TB_WIDTH + 15, y, this,
 		&thread->new_settings->session->aspect_w,
-		&thread->new_settings->session->aspect_h));
-	aspectratio_selection->update(thread->new_settings->session->aspect_w,
+		&thread->new_settings->session->aspect_h,
+		&thread->dimension[0], &thread->dimension[1]));
+	aspectratio_selection->update_auto(thread->new_settings->session->aspect_w,
 		thread->new_settings->session->aspect_h);
-
-	add_subwindow(auto_aspect = new ScaleAspectAuto(
-		x + aspectratio_selection->calculate_width(),
-		y, thread));
 	y += mwindow->theme->setformat_margin;
 
 // --------------------
@@ -632,19 +606,6 @@ int ScaleRatioText::handle_event()
 	*output *= -1;
 	thread->update_window();
 	return 1;
-}
-
-
-ScaleAspectAuto::ScaleAspectAuto(int x, int y, SetFormatThread *thread)
- : BC_CheckBox(x, y, thread->auto_aspect, _("Auto"))
-{
-	this->thread = thread; 
-}
-
-int ScaleAspectAuto::handle_event()
-{
-	thread->auto_aspect = get_value();
-	thread->update_aspect();
 }
 
 
