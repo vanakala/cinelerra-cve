@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libguicastcve.la
-noinst_PROGRAMS=bootstrap
+noinst_PROGRAMS = bootstrap pngtoh
 
 libguicastcve_la_LIBADD = $(OPENGL_LIBS) $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS) $(XFT_LIBS)
 libguicastcve_la_LDFLAGS = -version-info 3:0:0 
@@ -197,7 +197,8 @@ bootstrap_LDADD =
 bootstrap.$(OBJEXT): bootstrap.c
 	$(CC) $(BOOTSTRAP_CFLAGS) -c $<
 
-EXTRA_DIST = images pngtoh.c
+pngtoh_SOURCES = pngtoh.c
+EXTRA_DIST = images
 
 dist-hook:
 	-rm -rf $(distdir)/images/CVS

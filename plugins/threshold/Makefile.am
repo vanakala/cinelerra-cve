@@ -13,6 +13,12 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 noinst_HEADERS = \
 	histogramengine.h histogramengine.inc \
 	threshold.h threshold.inc \
-	thresholdwindow.h thresholdwindow.inc \
-	picon_png.h 
+	thresholdwindow.h thresholdwindow.inc
 EXTRA_DIST = picon.png
+BUILT_SOURCES = picon_png.h
+
+picon_png.h: picon.png
+	$(top_builddir)/guicast/pngtoh $^ || { rm -f $@; exit 1; }
+
+clean-local:
+	$(RM) picon_png.h

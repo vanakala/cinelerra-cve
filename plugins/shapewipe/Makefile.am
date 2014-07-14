@@ -17,5 +17,12 @@ shapewipe_DATA = \
 	tile2x2h.png \
 	tile2x2v.png
 
-noinst_HEADERS = shapewipe.h picon_png.h 
+noinst_HEADERS = shapewipe.h
 EXTRA_DIST = picon.png $(shapewipe_DATA)
+BUILT_SOURCES = picon_png.h
+
+picon_png.h: picon.png
+	$(top_builddir)/guicast/pngtoh $^ || { rm -f $@; exit 1; }
+
+clean-local:
+	$(RM) picon_png.h

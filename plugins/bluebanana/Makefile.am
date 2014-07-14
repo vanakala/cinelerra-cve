@@ -11,5 +11,12 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = \
 	bluebanana.h bluebananaconfig.h bluebananaslider.h \
-	bluebananawindow.h picon_png.h
+	bluebananawindow.h
 EXTRA_DIST = picon.png
+BUILT_SOURCES = picon_png.h
+
+picon_png.h: picon.png
+	$(top_builddir)/guicast/pngtoh $^ || { rm -f $@; exit 1; }
+
+clean-local:
+	$(RM) picon_png.h
