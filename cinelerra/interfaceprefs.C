@@ -44,6 +44,7 @@ void InterfacePrefs::show()
 	int y, x, value;
 	char string[1024];
 	BC_Resources *resources = BC_WindowBase::get_resources();
+	BC_WindowBase *win;
 
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
@@ -85,12 +86,13 @@ void InterfacePrefs::show()
 		x, 
 		y));
 
-	add_subwindow(new BC_Title(260, y, _("frames per foot")));
 	sprintf(string, "%0.2f", pwindow->thread->edl->session->frames_per_foot);
-	add_subwindow(new TimeFormatFeetSetting(pwindow, 
-		x + 155, 
-		y - 5, 
+	win = add_subwindow(new TimeFormatFeetSetting(pwindow,
+		x + feet->get_w() + 5,
+		y - 5,
 		string));
+	add_subwindow(new BC_Title(x + feet->get_w() + win->get_w() + 10,
+		y, _("frames per foot")));
 	y += 20;
 	add_subwindow(seconds = new TimeFormatSeconds(this,
 		pwindow->thread->edl->session->time_format == TIME_SECONDS, 
@@ -106,37 +108,54 @@ void InterfacePrefs::show()
 
 	add_subwindow(new BC_Title(x, y, _("Index files"), LARGEFONT, resources->text_default));
 
-	y += 35;
-	add_subwindow(new BC_Title(x, 
+	int ybix[3];
+	int w, maxw;
+
+	ybix[0] = y += 35;
+	win = add_subwindow(new BC_Title(x,
 		y + 5, 
 		_("Index files go here:"), MEDIUMFONT, resources->text_default));
-	add_subwindow(ipathtext = new IndexPathText(x + 230, 
-		y, 
+	maxw = win->get_w();
+
+	ybix[1] = y += 30;
+	win = add_subwindow(new BC_Title(x, 
+		y + 5, 
+		_("Size of index file:"), 
+		MEDIUMFONT, 
+		resources->text_default));
+	if((w = win->get_w()) > maxw)
+		maxw = w;
+
+	ybix[2] = y += 30;
+	win = add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"), MEDIUMFONT, resources->text_default));
+	if((w = win->get_w()) > maxw)
+		maxw = w;
+	maxw += x + 5;
+
+// Index path
+	add_subwindow(ipathtext = new IndexPathText(maxw,
+		ybix[0],
 		pwindow, 
 		pwindow->thread->preferences->index_directory));
 	add_subwindow(ipath = new BrowseButton(mwindow,
 		this,
 		ipathtext, 
-		x + 230 + ipathtext->get_w(), 
+		maxw + 5 + ipathtext->get_w(),
 		y, 
 		pwindow->thread->preferences->index_directory,
 		_("Index Path"), 
 		_("Select the directory for index files"),
 		1));
 
-	y += 30;
-	add_subwindow(new BC_Title(x, 
-		y + 5, 
-		_("Size of index file:"), 
-		MEDIUMFONT, 
-		resources->text_default));
+// Index file size
 	sprintf(string, "%lld", pwindow->thread->preferences->index_size);
-	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
-	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"), MEDIUMFONT, resources->text_default));
+	add_subwindow(isize = new IndexSize(maxw, ybix[1], pwindow, string));
+
+// Number of index files to keep
 	sprintf(string, "%d", pwindow->thread->preferences->index_count);
-	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
-	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 350, y));
+	add_subwindow(icount = new IndexCount(maxw, ybix[2], pwindow, string));
+	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow,
+		maxw + 10 + icount->get_w(), ybix[2]));
 
 	y += 35;
 	add_subwindow(new BC_Bar(5, y, get_w() - 10));
@@ -150,10 +169,11 @@ void InterfacePrefs::show()
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("Dragging edit boundaries does what:")));
 	y += 25;
-	add_subwindow(new BC_Title(x, y, _("Button 1:")));
+	win = add_subwindow(new BC_Title(x, y, _("Button 1:")));
+	maxw = win->get_w() + x + 10;
 
 	ViewBehaviourText *text;
-	add_subwindow(text = new ViewBehaviourText(80, 
+	add_subwindow(text = new ViewBehaviourText(maxw,
 		y - 5, 
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[0]), 
 			pwindow, 
@@ -161,7 +181,7 @@ void InterfacePrefs::show()
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Button 2:")));
-	add_subwindow(text = new ViewBehaviourText(80, 
+	add_subwindow(text = new ViewBehaviourText(maxw,
 		y - 5, 
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[1]), 
 			pwindow, 
@@ -169,7 +189,7 @@ void InterfacePrefs::show()
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Button 3:")));
-	add_subwindow(text = new ViewBehaviourText(80, 
+	add_subwindow(text = new ViewBehaviourText(maxw,
 		y - 5, 
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[2]), 
 			pwindow, 
@@ -403,7 +423,7 @@ ViewBehaviourText::ViewBehaviourText(int x,
 	const char *text, 
 	PreferencesWindow *pwindow, 
 	int *output)
- : BC_PopupMenu(x, y, 200, text)
+ : BC_PopupMenu(x, y, 300, text)
 {
 	this->output = output;
 	add_item(new ViewBehaviourItem(this, _(MOVE_ALL_EDITS_TITLE), MOVE_ALL_EDITS));
