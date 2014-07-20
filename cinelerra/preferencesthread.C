@@ -58,7 +58,7 @@
 
 #include <string.h>
 
-#define WIDTH 750
+#define WIDTH 810
 #define HEIGHT 690
 
 
