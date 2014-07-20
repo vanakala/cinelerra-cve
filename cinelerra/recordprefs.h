@@ -86,7 +86,7 @@ public:
 class VideoWriteLength : public BC_TextBox
 {
 public:
-	VideoWriteLength(PreferencesWindow *pwindow, char *text, int y);
+	VideoWriteLength(PreferencesWindow *pwindow, char *text, int x, int y);
 
 	int handle_event();
 
@@ -97,7 +97,7 @@ public:
 class VideoCaptureLength : public BC_TextBox
 {
 public:
-	VideoCaptureLength(PreferencesWindow *pwindow, char *text, int y);
+	VideoCaptureLength(PreferencesWindow *pwindow, char *text, int x, int y);
 
 	int handle_event();
 
