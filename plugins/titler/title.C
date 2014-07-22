@@ -193,7 +193,7 @@ void TitleConfig::convert_text()
 	}
 	ucs4text = new FT_ULong[tlen + 1];
 
-	FcChar32 retunucs4;
+	FcChar32 return_ucs4;
 	int count = 0;
 
 	for(int i = 0; i < text_len; i++)
@@ -216,14 +216,10 @@ void TitleConfig::convert_text()
 			x = 6;
 		if(x > 0)
 		{
-			for(int r = 0; r < 5; r++)
-				loadutf8[r] = 0;
+			memset(loadutf8, 0, sizeof(loadutf8));
 			loadutf8[0] = text[i];
-			int p = 0;
-			for(; p < x; p++ )
+			for(int p = 0; p < x; p++ )
 				loadutf8[p] = text[i + p];
-			loadutf8[p + x] = 0;
-			loadutf8[p + x + 1] = 0;
 			i += (x - 1);
 		}
 		else
@@ -231,8 +227,8 @@ void TitleConfig::convert_text()
 			loadutf8[0] = z;
 			loadutf8[1] = 0;
 		}
-		FcUtf8ToUcs4(loadutf8, &retunucs4, 6);
-		ucs4text[count] = (FT_ULong)retunucs4;
+		FcUtf8ToUcs4(loadutf8, &return_ucs4, 6);
+		ucs4text[count] = (FT_ULong)return_ucs4;
 		count++;
 	}
 }
