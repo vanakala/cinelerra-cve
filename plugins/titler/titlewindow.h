@@ -37,7 +37,9 @@ class TitleFontTumble;
 class TitleItalic;
 class TitleBold;
 class TitleSize;
+#ifndef X_HAVE_UTF8_STRING
 class TitleEncoding;
+#endif
 class TitleColorButton;
 class TitleColorStrokeButton;
 class TitleStroke;
@@ -100,7 +102,9 @@ public:
 	BC_Title *size_title;
 	BC_Title *encoding_title;
 	TitleSize *size;
+#ifndef X_HAVE_UTF8_STRING
 	TitleEncoding *encoding;
+#endif
 	TitleColorButton *color_button;
 	TitleColorThread *color_thread;
 	BC_Title *motion_title;

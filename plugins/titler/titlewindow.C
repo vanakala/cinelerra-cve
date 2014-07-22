@@ -290,8 +290,10 @@ void TitleWindow::resize_event(int w, int h)
 #endif
 	size_title->reposition_window(size_title->get_x(), size_title->get_y());
 	size->reposition_window(size->get_x(), size->get_y());
+#ifndef X_HAVE_UTF8_STRING
 	encoding_title->reposition_window(encoding_title->get_x(), encoding_title->get_y());
 	encoding->reposition_window(encoding->get_x(), encoding->get_y());
+#endif
 	color_button->reposition_window(color_button->get_x(), color_button->get_y());
 #ifdef USE_OUTLINE
 	color_stroke_button->reposition_window(color_stroke_button->get_x(), color_stroke_button->get_y());
@@ -400,7 +402,9 @@ void TitleWindow::update()
 	stroke->update(plugin->config.style & FONT_OUTLINE);
 #endif
 	size->update(plugin->config.size);
+#ifndef X_HAVE_UTF8_STRING
 	encoding->update(plugin->config.encoding);
+#endif
 	timecode->update(plugin->config.timecode);
 	timecodeformat->update(plugin->config.timecodeformat);
 	motion->update(TitleMain::motion_to_text(plugin->config.motion_strategy));
@@ -511,6 +515,7 @@ void TitleSize::update(int size)
 	BC_PopupTextBox::update(string);
 }
 
+#ifndef X_HAVE_UTF8_STRING
 TitleEncoding::TitleEncoding(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_PopupTextBox(window, 
 		&window->encodings,
@@ -534,7 +539,7 @@ int TitleEncoding::handle_event()
 	client->send_configure_change();
 	return 1;
 }
-
+#endif
 TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Color..."))
 {
