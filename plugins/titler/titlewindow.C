@@ -64,6 +64,7 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	encodings.append(new BC_ListBoxItem("ISO8859-14"));
 	encodings.append(new BC_ListBoxItem("ISO8859-15"));
 	encodings.append(new BC_ListBoxItem("KOI8"));
+	encodings.append(new BC_ListBoxItem("UTF-8"));
 
 	sizes.append(new BC_ListBoxItem("8"));
 	sizes.append(new BC_ListBoxItem("9"));
