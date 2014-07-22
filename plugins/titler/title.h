@@ -127,6 +127,9 @@ public:
 // Stamp timecode
 	int timecode;
 
+// temp utf8 text for no utf8 system
+	char *textutf8;
+
 // Text to display
 	char text[BCTEXTLEN];
 // Encoding to convert from 
@@ -136,11 +139,9 @@ public:
 // Width of the stroke
 	double stroke_width;
 
-#ifdef X_HAVE_UTF8_STRING
 	int tlen;
 	FT_ULong *ucs4text;
 	void convert_text();
-#endif
 
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
@@ -177,7 +178,7 @@ class TitleGlyph
 public:
 	TitleGlyph();
 	~TitleGlyph();
-	// character in 8 bit charset
+	// character counter
 	int c;
 	// character in UCS-4
 	FT_ULong char_code;
@@ -350,6 +351,8 @@ public:
 	int load_freetype_face(FT_Library &freetype_library,
 		FT_Face &freetype_face,
 		const char *path);
+	// backward compatibility
+	void convert_encoding();
 
 	static const char* motion_to_text(int motion);
 	static int text_to_motion(const char *text);

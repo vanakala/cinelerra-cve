@@ -161,21 +161,35 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	this->dropshadow = prev.dropshadow;
 }
 
-#ifdef X_HAVE_UTF8_STRING
 // this is a little routine that converts 8 bit string to FT_ULong array // akirad
 void TitleConfig::convert_text()
 {
-	int text_len = strlen(text);
+	int text_len;
 	int total_packages = 0;
+#ifdef X_HAVE_UTF8_STRING
+	int utf8 = 1;
+#else
+	int utf8 = 0;
+#endif
 
 	tlen = 0;
+
+	if(utf8)
+		text_len = strlen(text);
+	else
+		text_len = strlen(textutf8);
 
 	for(int i = 0; i < text_len; i++)
 	{
 		int x = 0;
-		int z = (unsigned char)text[i];
+		int z;
 
 		tlen++;
+
+		if(utf8)
+			z = text[i];
+		else
+			z = textutf8[i];
 
 		if(!(z & 0x80))
 			x = 0;
@@ -199,8 +213,13 @@ void TitleConfig::convert_text()
 	for(int i = 0; i < text_len; i++)
 	{
 		int x = 0;
-		int z = (unsigned char)text[i];
+		int z;
 		FcChar8 loadutf8[8];
+
+		if(utf8)
+			z = text[i];
+		else
+			z = textutf8[i];
 
 		if(!(z & 0x80))
 			x = 0;
@@ -218,8 +237,13 @@ void TitleConfig::convert_text()
 		{
 			memset(loadutf8, 0, sizeof(loadutf8));
 			loadutf8[0] = text[i];
-			for(int p = 0; p < x; p++ )
-				loadutf8[p] = text[i + p];
+			for(int p = 0; p < x; p++)
+			{
+				if(utf8)
+					loadutf8[p] = text[i + p];
+				else
+					loadutf8[p] = textutf8[i + p];
+			}
 			i += (x - 1);
 		}
 		else
@@ -232,7 +256,6 @@ void TitleConfig::convert_text()
 		count++;
 	}
 }
-#endif
 
 
 FontEntry::FontEntry()
@@ -645,11 +668,7 @@ void TitleEngine::init_packages()
 		TitlePackage *pkg = (TitlePackage*)get_package(current_package);
 		pkg->x = char_position->x;
 		pkg->y = char_position->y - visible_y1;
-#ifdef X_HAVE_UTF8_STRING
 		pkg->c = plugin->config.ucs4text[i];
-#else
-		pkg->c = plugin->config.text[i];
-#endif
 		current_package++;
 	}
 }
@@ -1461,11 +1480,14 @@ int TitleMain::get_char_advance(int current, int next)
 void TitleMain::draw_glyphs()
 {
 // Build table of all glyphs needed
-#ifdef X_HAVE_UTF8_STRING
 	int total_packages = 0;
 
 	// now convert text to FT_Ulong array
 	config.convert_text();
+#ifndef X_HAVE_UTF8_STRING
+	// temp conversion to utf8
+	convert_encoding();
+#endif
 
 	for(int i = 0; i < config.tlen; i++)
 	{
@@ -1473,39 +1495,7 @@ void TitleMain::draw_glyphs()
 		int c = config.ucs4text[i];
 		int exists = 0;
 		char_code = config.ucs4text[i];
-#else
-	int text_len = strlen(config.text);
-	int total_packages = 0;
-	iconv_t cd;
-	cd = iconv_open ("UCS-4", config.encoding);
-	if (cd == (iconv_t) -1)
-	{
-// Something went wrong.
-		errorbox (_("Iconv conversion from %s to Unicode UCS-4 not available"), config.encoding);
-	};
 
-	for(int i = 0; i < text_len; i++)
-	{
-		FT_ULong char_code;
-		int c = config.text[i];
-		int exists = 0;
-		/* if iconv is working ok for current encoding */
-		if (cd != (iconv_t) -1)
-		{
-
-			size_t inbytes,outbytes;
-			char inbuf;
-			char *inp = (char*)&inbuf, *outp = (char *)&char_code;
-
-			inbuf = (char)c;
-			inbytes = 1;
-			outbytes = 4;
-
-			iconv (cd, &inp, &inbytes, &outp, &outbytes);
-		} else {
-			char_code = c;
-		}
-#endif
 		for(int j = 0; j < glyphs.total; j++)
 		{
 			if(glyphs.values[j]->char_code == char_code)
@@ -1524,9 +1514,7 @@ void TitleMain::draw_glyphs()
 			glyph->char_code = char_code;
 		}
 	}
-#ifndef X_HAVE_UTF8_STRING
-	iconv_close(cd);
-#endif
+
 	if(!glyph_engine)
 		glyph_engine = new GlyphEngine(this, PluginClient::smp + 1);
 
@@ -1539,12 +1527,8 @@ void TitleMain::get_total_extents()
 // Determine extents of total text
 	int current_w = 0;
 	int row_start = 0;
-#ifdef X_HAVE_UTF8_STRING
 	text_len = config.tlen;
-#else
-	text_len = strlen(config.text);
-	const char config.ucs4text = config.text;
-#endif
+
 	if(!char_positions) char_positions = new title_char_position_t[text_len];
 	text_rows = 0;
 	text_w = 0;
@@ -2079,6 +2063,9 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
+#ifdef X_HAVE_UTF8_STRING
+	convert_encoding();
+#endif
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("TITLE");
 	output.tag.set_property("FONT", config.font);
@@ -2153,4 +2140,74 @@ void TitleMain::read_data(KeyFrame *keyframe)
 			break;
 		}
 	}
+#ifdef X_HAVE_UTF8_STRING
+	convert_encoding();
+#endif
+}
+
+void TitleMain::convert_encoding()
+{
+#ifdef X_HAVE_UTF8_STRING
+	int utf8 = 1;
+#else
+	int utf8 = 0;
+#endif
+	if(strcmp(config.encoding,"UTF-8"))
+	{
+		iconv_t cd;
+		char utf8text[sizeof(config.text) * 6];
+		FcChar8 return_utf8;
+
+		cd = iconv_open("UTF-8",config.encoding);
+		if(cd == (iconv_t)-1)
+		{
+			// Something went wrong.
+			fprintf(stderr, _("Iconv conversion from %s to UTF-8 not available\n"), config.encoding);
+		}
+
+		// if iconv is working ok for current encoding
+		if(cd != (iconv_t) -1)
+		{
+			char *inbuf = &config.text[0];
+			char *outbuf = &utf8text[0];
+			size_t inbytes = sizeof(config.text) - 1;
+			size_t outbytes = sizeof(config.text) * 6 - 1;
+			int noconv = 0;
+
+			do {
+				if(iconv(cd, &inbuf, &inbytes, &outbuf, &outbytes) == (size_t) -1)
+				{
+					printf("iconv failed!\n");
+					noconv = 1;
+					break;
+				}
+			} while(inbytes > 0 && outbytes > 0);
+
+			outbytes = 0;
+			if(!noconv || utf8)
+			{
+				if(utf8)
+				{
+					config.text[sizeof(utf8text)] = 0;
+					strcpy(config.text, utf8text);
+					strcpy(config.encoding, "UTF-8");
+				}
+				else
+				{
+					if(!noconv)
+					{
+						config.textutf8[sizeof(utf8text)] = 0;
+						strcpy(config.textutf8, utf8text);
+					}
+					else
+						config.textutf8 = config.text;
+				}
+			}
+
+			if(iconv_close(cd))
+				fprintf(stderr, "iconv_close failed: %s\n", strerror(errno));
+		}
+	}
+	else if(!utf8)
+		config.textutf8 = config.text;
 }
