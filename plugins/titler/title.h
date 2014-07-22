@@ -135,6 +135,13 @@ public:
 	char timecodeformat[BCTEXTLEN];
 // Width of the stroke
 	double stroke_width;
+
+#ifdef X_HAVE_UTF8_STRING
+	int tlen;
+	FT_ULong *ucs4text;
+	void convert_text();
+#endif
+
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 

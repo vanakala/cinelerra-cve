@@ -201,11 +201,12 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	color_x = x;
 	color_y = y + 20;
 	color_thread = new TitleColorThread(plugin, this);
-
+#ifndef X_HAVE_UTF8_STRING
 	x = 10;
 	y += 50;
 	add_tool(encoding_title = new BC_Title(x, y + 3, _("Encoding:")));
 	encoding = new TitleEncoding(plugin, this, x, y + 20);
+#endif
 
 #ifdef USE_OUTLINE
 	x += 160;

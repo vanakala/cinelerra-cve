@@ -48,6 +48,7 @@
 #include <byteswap.h>
 #include <iconv.h>
 #include <sys/stat.h>
+#include <fontconfig/fontconfig.h>
 
 #define ZERO (1.0 / 64.0)
 
@@ -155,6 +156,83 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	strcpy(timecodeformat, prev.timecodeformat);
 	this->dropshadow = prev.dropshadow;
 }
+
+#ifdef X_HAVE_UTF8_STRING
+// this is a little routine that converts 8 bit string to FT_ULong array // akirad
+void TitleConfig::convert_text()
+{
+	int text_len = strlen(text);
+	int total_packages = 0;
+
+	tlen = 0;
+
+	for(int i = 0; i < text_len; i++)
+	{
+		int x = 0;
+		int z = (unsigned char)text[i];
+
+		tlen++;
+
+		if(!(z & 0x80))
+			x = 0;
+		else if(!(z & 0x20))
+			x = 1;
+		else if(!(z & 0x10))
+			x = 2;
+		else if(!(z & 0x08))
+			x = 3;
+		else if(!(z & 0x04))
+			x = 4;
+		else if(!(z & 0x02))
+			x = 5;
+		i += x;
+	}
+	ucs4text = new FT_ULong[tlen + 1];
+
+	FcChar32 retunucs4;
+	int count = 0;
+
+	for(int i = 0; i < text_len; i++)
+	{
+		int x = 0;
+		int z = (unsigned char)text[i];
+		FcChar8 loadutf8[8];
+
+		if(!(z & 0x80))
+			x = 0;
+		else if(!(z & 0x20))
+			x = 2;
+		else if(!(z & 0x10))
+			x = 3;
+		else if(!(z & 0x08))
+			x = 4;
+		else if(!(z & 0x04))
+			x = 5;
+		else if(!(z & 0x02))
+			x = 6;
+		if(x > 0)
+		{
+			for(int r = 0; r < 5; r++)
+				loadutf8[r] = 0;
+			loadutf8[0] = text[i];
+			int p = 0;
+			for(; p < x; p++ )
+				loadutf8[p] = text[i + p];
+			loadutf8[p + x] = 0;
+			loadutf8[p + x + 1] = 0;
+			i += (x - 1);
+		}
+		else
+		{
+			loadutf8[0] = z;
+			loadutf8[1] = 0;
+		}
+		FcUtf8ToUcs4(loadutf8, &retunucs4, 6);
+		ucs4text[count] = (FT_ULong)retunucs4;
+		count++;
+	}
+}
+#endif
 
 
 FontEntry::FontEntry()
@@ -567,7 +645,11 @@ void TitleEngine::init_packages()
 		TitlePackage *pkg = (TitlePackage*)get_package(current_package);
 		pkg->x = char_position->x;
 		pkg->y = char_position->y - visible_y1;
+#ifdef X_HAVE_UTF8_STRING
+		pkg->c = plugin->config.ucs4text[i];
+#else
 		pkg->c = plugin->config.text[i];
+#endif
 		current_package++;
 	}
 }
@@ -1379,6 +1461,19 @@ int TitleMain::get_char_advance(int current, int next)
 void TitleMain::draw_glyphs()
 {
 // Build table of all glyphs needed
+#ifdef X_HAVE_UTF8_STRING
+	int total_packages = 0;
+
+	// now convert text to FT_Ulong array
+	config.convert_text();
+
+	for(int i = 0; i < config.tlen; i++)
+	{
+		FT_ULong char_code;
+		int c = config.ucs4text[i];
+		int exists = 0;
+		char_code = config.ucs4text[i];
+#else
 	int text_len = strlen(config.text);
 	int total_packages = 0;
 	iconv_t cd;
@@ -1407,13 +1502,10 @@ void TitleMain::draw_glyphs()
 			outbytes = 4;
 
 			iconv (cd, &inp, &inbytes, &outp, &outbytes);
-#if  __BYTE_ORDER == __LITTLE_ENDIAN
-				char_code = bswap_32(char_code);
-#endif                          /* Big endian.  */
 		} else {
 			char_code = c;
 		}
-
+#endif
 		for(int j = 0; j < glyphs.total; j++)
 		{
 			if(glyphs.values[j]->char_code == char_code)
@@ -1432,8 +1524,9 @@ void TitleMain::draw_glyphs()
 			glyph->char_code = char_code;
 		}
 	}
+#ifndef X_HAVE_UTF8_STRING
 	iconv_close(cd);
-
+#endif
 	if(!glyph_engine)
 		glyph_engine = new GlyphEngine(this, PluginClient::smp + 1);
 
@@ -1446,7 +1539,12 @@ void TitleMain::get_total_extents()
 // Determine extents of total text
 	int current_w = 0;
 	int row_start = 0;
+#ifdef X_HAVE_UTF8_STRING
+	text_len = config.tlen;
+#else
 	text_len = strlen(config.text);
+	const char config.ucs4text = config.text;
+#endif
 	if(!char_positions) char_positions = new title_char_position_t[text_len];
 	text_rows = 0;
 	text_w = 0;
@@ -1458,7 +1556,7 @@ void TitleMain::get_total_extents()
 	// get the number of rows first
 	for(int i = 0; i < text_len; i++)
 	{
-		if(config.text[i] == 0xa || i == text_len - 1)
+		if(config.ucs4text[i] == 0xa || i == text_len - 1)
 		{
 			text_rows++;
 		}
@@ -1471,11 +1569,11 @@ void TitleMain::get_total_extents()
 	{
 		char_positions[i].x = current_w;
 		char_positions[i].y = text_rows * get_char_height();
-		char_positions[i].w = get_char_advance(config.text[i], config.text[i + 1]);
+		char_positions[i].w = get_char_advance(config.ucs4text[i], config.ucs4text[i + 1]);
 		TitleGlyph *current_glyph = 0;
 		for(int j = 0; j < glyphs.total; j++)
 		{
-			if(glyphs.values[j]->c == config.text[i])
+			if(glyphs.values[j]->c == config.ucs4text[i])
 			{
 				current_glyph = glyphs.values[j];
 				break;
@@ -1487,7 +1585,7 @@ void TitleMain::get_total_extents()
 
 		current_w += char_positions[i].w;
 
-		if(config.text[i] == 0xa || i == text_len - 1)
+		if(config.ucs4text[i] == 0xa || i == text_len - 1)
 		{
 			text_rows++;
 			rows_bottom[text_rows] = 0;
@@ -1504,7 +1602,7 @@ void TitleMain::get_total_extents()
 	row_start = 0;
 	for(int i = 0; i < text_len; i++)
 	{
-		if(config.text[i] == 0xa || i == text_len - 1)
+		if(config.ucs4text[i] == 0xa || i == text_len - 1)
 		{
 			for(int j = row_start; j <= i; j++)
 			{
