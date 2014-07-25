@@ -87,6 +87,12 @@ TitleConfig::TitleConfig()
 	pixels_per_second = 1.0;
 	timecode = 0;
 	stroke_width = 1.0;
+	ucs4text = 0;
+}
+
+TitleConfig::~TitleConfig()
+{
+	delete [] ucs4text;
 }
 
 // Does not test equivalency but determines if redrawing text is necessary.
@@ -130,6 +136,7 @@ void TitleConfig::copy_from(TitleConfig &that)
 	strcpy(timecodeformat, that.timecodeformat);
 	strcpy(text, that.text);
 	strcpy(encoding, that.encoding);
+	ucs4text = 0;
 }
 
 void TitleConfig::interpolate(TitleConfig &prev, 
@@ -205,7 +212,8 @@ void TitleConfig::convert_text()
 			x = 5;
 		i += x;
 	}
-	ucs4text = new FT_ULong[tlen + 1];
+	if(!ucs4text)
+		ucs4text = new FT_ULong[BCTEXTLEN];
 
 	FcChar32 return_ucs4;
 	int count = 0;

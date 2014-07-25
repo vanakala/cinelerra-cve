@@ -94,6 +94,7 @@ class TitleConfig
 {
 public:
 	TitleConfig();
+	~TitleConfig();
 
 // Only used to clear glyphs
 	int equivalent(TitleConfig &that);
