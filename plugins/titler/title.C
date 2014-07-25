@@ -173,18 +173,10 @@ void TitleConfig::convert_text()
 {
 	int text_len;
 	int total_packages = 0;
-#ifdef X_HAVE_UTF8_STRING
-	int utf8 = 1;
-#else
-	int utf8 = 0;
-#endif
 
 	tlen = 0;
 
-	if(utf8)
-		text_len = strlen(text);
-	else
-		text_len = strlen(textutf8);
+	text_len = strlen(text);
 
 	for(int i = 0; i < text_len; i++)
 	{
@@ -193,10 +185,7 @@ void TitleConfig::convert_text()
 
 		tlen++;
 
-		if(utf8)
-			z = text[i];
-		else
-			z = textutf8[i];
+		z = text[i];
 
 		if(!(z & 0x80))
 			x = 0;
@@ -224,10 +213,7 @@ void TitleConfig::convert_text()
 		int z;
 		FcChar8 loadutf8[8];
 
-		if(utf8)
-			z = text[i];
-		else
-			z = textutf8[i];
+		z = text[i];
 
 		if(!(z & 0x80))
 			x = 0;
@@ -245,13 +231,9 @@ void TitleConfig::convert_text()
 		{
 			memset(loadutf8, 0, sizeof(loadutf8));
 			loadutf8[0] = text[i];
+
 			for(int p = 0; p < x; p++)
-			{
-				if(utf8)
-					loadutf8[p] = text[i + p];
-				else
-					loadutf8[p] = textutf8[i + p];
-			}
+				loadutf8[p] = text[i + p];
 			i += (x - 1);
 		}
 		else
@@ -2431,7 +2413,6 @@ void TitleMain::convert_encoding()
 		}
 		delete [] utf8text;
 	}
-	config.textutf8 = config.text;
 }
 
 // Checks if char_code is on the selected font and 

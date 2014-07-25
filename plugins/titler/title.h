@@ -127,10 +127,6 @@ public:
 	int dropshadow;
 // Stamp timecode
 	int timecode;
-
-// temp utf8 text for no utf8 system
-	char *textutf8;
-
 // Text to display
 	char text[BCTEXTLEN];
 // Encoding to convert from 
