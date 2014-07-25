@@ -2395,69 +2395,43 @@ void TitleMain::read_data(KeyFrame *keyframe)
 
 void TitleMain::convert_encoding()
 {
-#ifdef X_HAVE_UTF8_STRING
-	int utf8 = 1;
-#else
-	int utf8 = 0;
-#endif
-	if(strcmp(config.encoding,"UTF-8"))
+	if(strcmp(config.encoding, "UTF-8"))
 	{
 		iconv_t cd;
-		char utf8text[sizeof(config.text) * 6];
-		FcChar8 return_utf8;
+		char *utf8text = new char[sizeof(config.text) * 6];
 
 		cd = iconv_open("UTF-8",config.encoding);
 		if(cd == (iconv_t)-1)
 		{
 			// Something went wrong.
-			fprintf(stderr, _("Iconv conversion from %s to UTF-8 not available\n"), config.encoding);
+			errormsg(_("Iconv conversion from %s to UTF-8 not available"), config.encoding);
 		}
-
-		// if iconv is working ok for current encoding
-		if(cd != (iconv_t) -1)
+		else
 		{
-			char *inbuf = &config.text[0];
-			char *outbuf = &utf8text[0];
-			size_t inbytes = sizeof(config.text) - 1;
+		// if iconv is working ok for current encoding
+			char *inbuf = config.text;
+			char *outbuf = utf8text;
+			size_t inbytes = strlen(config.text);
 			size_t outbytes = sizeof(config.text) * 6 - 1;
 			int noconv = 0;
-
 			do {
 				if(iconv(cd, &inbuf, &inbytes, &outbuf, &outbytes) == (size_t) -1)
 				{
-					printf("iconv failed!\n");
+					errormsg("TitleMain::convert_encoding: iconv failed!");
 					noconv = 1;
 					break;
 				}
 			} while(inbytes > 0 && outbytes > 0);
 
-			outbytes = 0;
-			if(!noconv || utf8)
-			{
-				if(utf8)
-				{
-					config.text[sizeof(utf8text)] = 0;
-					strcpy(config.text, utf8text);
-					strcpy(config.encoding, "UTF-8");
-				}
-				else
-				{
-					if(!noconv)
-					{
-						config.textutf8[sizeof(utf8text)] = 0;
-						strcpy(config.textutf8, utf8text);
-					}
-					else
-						config.textutf8 = config.text;
-				}
-			}
+			*outbuf = 0;
+			strcpy(config.text, utf8text);
+			strcpy(config.encoding, "UTF-8");
 
-			if(iconv_close(cd))
-				fprintf(stderr, "iconv_close failed: %s\n", strerror(errno));
+			iconv_close(cd);
 		}
+		delete [] utf8text;
 	}
-	else if(!utf8)
-		config.textutf8 = config.text;
+	config.textutf8 = config.text;
 }
 
 // Checks if char_code is on the selected font and 
