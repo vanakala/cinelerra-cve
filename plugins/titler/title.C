@@ -1358,7 +1358,6 @@ void TitleMain::build_fonts()
 		FcConfig *config;
 		FcBool resultfc;
 		int i;
-		char tmpstring[200];
 		resultfc = FcInit();
 		config = FcConfigGetCurrent();
 		FcConfigSetRescanInterval(config, 0);
@@ -1377,26 +1376,24 @@ void TitleMain::build_fonts()
 			FcPatternGetString(font, FC_FONTFORMAT, 0, &format);
 			if((!strcmp((char *)format, "TrueType")) || limit_to_trutype) // on this point you can limit font search
 			{
-				strcpy(tmpstring, (char*)format);
-
 				FontEntry *entry = new FontEntry;
 
 				if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
 				{
-					strcpy(tmpstring, (char*)file);
-					entry->path = new char[strlen(tmpstring) + 1];
-					strcpy(entry->path, tmpstring);
+					entry->path = new char[strlen((char*)file) + 1];
+					strcpy(entry->path, (char*)file);
 				}
 
 				if(FcPatternGetString(font, FC_FOUNDRY, 0, &foundry) == FcResultMatch)
 				{
-					strcpy(tmpstring, (char *)foundry);
-					entry->foundary = new char[strlen(tmpstring) + 2];
-					strcpy(entry->foundary, tmpstring);
+					entry->foundary = new char[strlen((char*)foundry) + 2];
+					strcpy(entry->foundary, (char *)foundry);
 				}
 
 				if(FcPatternGetInteger(font, FC_WEIGHT, 0, &weight) == FcResultMatch)
 				{
+					const char *s;
+
 					switch(weight)
 					{
 					case FC_WEIGHT_THIN:
@@ -1404,142 +1401,135 @@ void TitleMain::build_fonts()
 					case FC_WEIGHT_LIGHT:
 					case FC_WEIGHT_BOOK:
 						force_style = 1;
-						entry->weight = new char[strlen("medium") + 1];
-						strcpy(entry->weight, "medium");
+						s = "medium";
 						break;
 
 					case FC_WEIGHT_NORMAL:
 					case FC_WEIGHT_MEDIUM:
 					default:
-						entry->weight = new char[strlen("medium") + 1];
-						strcpy(entry->weight, "medium");
+						s = "medium";
 						break;
 
 					case FC_WEIGHT_BLACK:
 					case FC_WEIGHT_SEMIBOLD:
 					case FC_WEIGHT_BOLD:
-						entry->weight = new char[strlen("bold") + 1];
-						strcpy(entry->weight, "bold");
+						s = "bold";
 						entry->fixed_style |= FONT_BOLD;
 						break;
 
 					case FC_WEIGHT_EXTRABOLD:
 					case FC_WEIGHT_EXTRABLACK:
 						force_style = 1;
-						entry->weight = new char[strlen("bold") + 1];
-						strcpy(entry->weight, "bold");
+						s = "bold";
 						entry->fixed_style |= FONT_BOLD;
 						break;
 					}
+					entry->weight = new char[strlen(s) + 1];
+					strcpy(entry->weight, s);
 				}
 
 				if(FcPatternGetString(font, FC_FAMILY, 0, &family) == FcResultMatch)
 				{
-					strcpy(tmpstring, (char*)family);
-					entry->family = new char[strlen(tmpstring) + 2];
-					strcpy(entry->family, tmpstring);
+					entry->family = new char[strlen((char*)family) + 2];
+					strcpy(entry->family, (char*)family);
 				}
 
 				if(FcPatternGetInteger(font, FC_SLANT, 0, &slant) == FcResultMatch)
 				{
+					int slant;
+
 					switch(slant)
 					{
 					case FC_SLANT_ROMAN:
 					default:
-						entry->slant = new char[2];
-						entry->slant[0] = 'r';
+						slant = 'r';
 						break;
 					case FC_SLANT_ITALIC:
-						entry->slant = new char[2];
-						entry->slant[0] =  'i';
+						slant =  'i';
 						entry->fixed_style |= FONT_ITALIC;
 						break;
 					case FC_SLANT_OBLIQUE:
-						entry->slant = new char[2];
-						entry->slant[0] = 'o';
+						slant = 'o';
 						entry->fixed_style |= FONT_ITALIC;
 						break;
 					}
+					entry->slant = new char[2];
+					entry->slant[0] = slant;
 					entry->slant[1] = 0;
 				}
 
 				if(FcPatternGetInteger(font, FC_WIDTH, 0, &width) == FcResultMatch)
 				{
+					const char *s;
+
 					switch(width)
 					{
 					case FC_WIDTH_ULTRACONDENSED:
-						entry->swidth = new char[strlen("ultracondensed") + 1];
-						strcpy(entry->swidth, "ultracondensed");
+						s = "ultracondensed";
 						break;
 
 					case FC_WIDTH_EXTRACONDENSED:
-						entry->swidth = new char[strlen("extracondensed") + 1];
-						strcpy(entry->swidth, "extracondensed");
+						s = "extracondensed";
 						break;
 
 					case FC_WIDTH_CONDENSED:
-						entry->swidth = new char[strlen("condensed") + 1];
-						strcpy(entry->swidth, "condensed");
+						s = "condensed";
 						break;
 
 					case FC_WIDTH_SEMICONDENSED:
-						entry->swidth = new char[strlen("semicondensed") + 1];
-						strcpy(entry->swidth, "semicondensed");
+						s = "semicondensed";
 						break;
 
 					case FC_WIDTH_NORMAL:
 					default:
-						entry->swidth = new char[strlen("normal") + 1];
-						strcpy(entry->swidth, "normal");
+						s = "normal";
 						break;
 
 					case FC_WIDTH_SEMIEXPANDED:
-						entry->swidth = new char[strlen("semiexpanded") + 1];
-						strcpy(entry->swidth, "semiexpanded");
+						s = "semiexpanded";
 						break;
 
 					case FC_WIDTH_EXPANDED:
-						entry->swidth = new char[strlen("expanded") + 1];
-						strcpy(entry->swidth, "expanded");
+						s = "expanded";
 						break;
 
 					case FC_WIDTH_EXTRAEXPANDED:
-						entry->swidth = new char[strlen("extraexpanded") + 1];
-						strcpy(entry->swidth, "extraexpanded");
+						s = "extraexpanded";
 						break;
 
 					case FC_WIDTH_ULTRAEXPANDED:
-						entry->swidth = new char[strlen("ultraexpanded") + 1];
-						strcpy(entry->swidth, "ultraexpanded");
+						s = "ultraexpanded";
 						break;
 					}
+					entry->swidth = new char[strlen(s) + 1];
+					strcpy(entry->swidth, s);
 				}
 
 				if(FcPatternGetInteger(font, FC_SPACING, 0, &spacing) == FcResultMatch)
 				{
+					int spacs;
+
 					switch(spacing)
 					{
 						case 0:
 						default:
-							entry->spacing = new char[2];
-							*entry->spacing = 'p';
-						break;
+							spacs = 'p';
+							break;
 
 						case 90:
-							entry->spacing = new char[2];
-							*entry->spacing = 'd';
+							spacs = 'd';
 							break;
 
 						case 100:
-							entry->spacing = new char[2];
-							*entry->spacing = 'm';
+							spacs = 'm';
 							break;
 
 						case 110:
-							entry->spacing = new char[2];
-							*entry->spacing = 'c';
+							spacs = 'c';
 							break;
 					}
+					entry->spacing = new char[2];
+					entry->spacing[0] = spacs;
 					entry->spacing[1] = 0;
 				}
 
@@ -1556,38 +1546,41 @@ void TitleMain::build_fonts()
 				strcpy(entry->registry, "utf");
 				entry->encoding = new char[2];
 				entry->encoding[0] = '8';
-				entry->encoding[1] = '0';
+				entry->encoding[1] = 0;
 
 				if(!FcPatternGetString(font, FC_STYLE, 0, &style) == FcResultMatch)
 					force_style = 0;
 
 				// If font has a style unmanaged by titler plugin, force style to be displayed on name
 				// in this way we can shown all available fonts styles.
+				char tmpstring[BCTEXTLEN];
+				int len;
+
 				if(force_style)
 				{
-					sprintf(tmpstring, "%s (%s)", entry->family, style);
-					entry->fixed_title = new char[strlen(tmpstring) + 1];
+					len = sprintf(tmpstring, "%s (%s)", entry->family, style);
+					entry->fixed_title = new char[len + 1];
 					strcpy(entry->fixed_title, tmpstring);
 				}
 				else
 				{
 					if(strcmp(entry->foundary, "unknown"))
 					{
-						sprintf(tmpstring, "%s (%s)", entry->family, entry->foundary);
-						entry->fixed_title = new char[strlen(tmpstring) + 1];
+						len = sprintf(tmpstring, "%s (%s)", entry->family, entry->foundary);
+						entry->fixed_title = new char[len + 1];
 						strcpy(entry->fixed_title, tmpstring);
 					}
 					else
 					{
-						sprintf(tmpstring, "%s", entry->family);
-						entry->fixed_title = new char[strlen(tmpstring) + 1];
+						len = sprintf(tmpstring, "%s", entry->family);
+						entry->fixed_title = new char[len + 1];
 						strcpy(entry->fixed_title, tmpstring);
 					}
 				}
 				fonts->append(entry);
 			}
 		}
-		if(fs) FcFontSetDestroy(fs);
+		FcFontSetDestroy(fs);
 
 		if(freetype_library) FT_Done_FreeType(freetype_library);
 	}
