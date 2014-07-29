@@ -2415,11 +2415,18 @@ int TitleMain::check_char_code_path(const char *path_old, FT_ULong &char_code,
 {
 	int result = 0;
 	int match_charset = 0;
-	int limit_to_truetype = 1; //if you want to limit search to truetype put 1
+	int limit_to_truetype = 1; // if you want to limit search to truetype put 0
 
 // Try to open char_set with ft_Library
 	FT_Library temp_freetype_library;
 	FT_Face temp_freetype_face = 0;
+
+	// Do not search for non control codes
+	if(char_code < ' ')
+	{
+		strcpy(path_new, path_old);
+		return 0;
+	}
 
 	FT_Init_FreeType(&temp_freetype_library);
 
@@ -2449,7 +2456,7 @@ int TitleMain::check_char_code_path(const char *path_old, FT_ULong &char_code,
 		os = FcObjectSetBuild(FC_FILE, FC_CHARSET, FC_FONTFORMAT, (char *)0);
 		fs = FcFontList(config, pat, os);
 
-		for(int i = 0; fs && i < fs->nfont; i++)
+		for(int i = 0; i < fs->nfont; i++)
 		{
 			FcPattern *font = fs->fonts[i];
 			FcPatternGetString(font, FC_FONTFORMAT, 0, &format);
@@ -2471,7 +2478,7 @@ int TitleMain::check_char_code_path(const char *path_old, FT_ULong &char_code,
 		}
 		FcFontSetDestroy(fs);
 	}
-	if(match_charset)
+	if(!result)
 		strcpy(path_new, path_old);
 
 	return result;
