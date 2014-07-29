@@ -2413,78 +2413,66 @@ void TitleMain::convert_encoding()
 int TitleMain::check_char_code_path(const char *path_old, FT_ULong &char_code,
 	char *path_new)
 {
+	int result = 0;
+	int match_charset = 0;
+	int limit_to_truetype = 1; //if you want to limit search to truetype put 1
+
+// Try to open char_set with ft_Library
 	FT_Library temp_freetype_library;
-	FT_Face temp_freetype_face;
-	FcPattern *pat;
-	FcFontSet *fs;
-	FcObjectSet *os;
-	FcChar8 *file, *format;
-	FcConfig *config;
-	FcBool resultfc;
-	int i;
-
-	resultfc = FcInit();
-	config = FcConfigGetCurrent();
-	FcConfigSetRescanInterval(config, 0);
-
-	pat = FcPatternCreate();
-	os = FcObjectSetBuild(FC_FILE, FC_FONTFORMAT, (char *)0);
-	fs = FcFontList(config, pat, os);
-	FcPattern *font;
-	int notfindit = 1;
-	int test = 0;
-	char tmpstring[200];
-	int limit_to_truetype = 0; //if you want to limit search to truetype put 1
+	FT_Face temp_freetype_face = 0;
 
 	FT_Init_FreeType(&temp_freetype_library);
+
 	if(!FT_New_Face(temp_freetype_library, path_old, 0, &temp_freetype_face))
 	{
-		FT_Set_Pixel_Sizes(temp_freetype_face, 128, 0);
-		int gindex = FT_Get_Char_Index(temp_freetype_face, char_code);
-		if((!gindex == 0) && (!char_code != 10)) test = 1;
+		if(FT_Get_Char_Index(temp_freetype_face, char_code))
+			match_charset = 1;
 	}
-	if(!test)
+	if(temp_freetype_face) FT_Done_Face(temp_freetype_face);
+	FT_Done_FreeType(temp_freetype_library);
+
+	if(!match_charset)
 	{
-		for(i = 0; fs && i < fs->nfont; i++)
+		FcPattern *pat;
+		FcFontSet *fs;
+		FcObjectSet *os;
+		FcChar8 *file, *format;
+		FcCharSet *fcs;
+		FcConfig *config;
+		FcBool resultfc;
+
+		resultfc = FcInit();
+		config = FcConfigGetCurrent();
+		FcConfigSetRescanInterval(config, 0);
+
+		pat = FcPatternCreate();
+		os = FcObjectSetBuild(FC_FILE, FC_CHARSET, FC_FONTFORMAT, (char *)0);
+		fs = FcFontList(config, pat, os);
+
+		for(int i = 0; fs && i < fs->nfont; i++)
 		{
-			font = fs->fonts[i];
+			FcPattern *font = fs->fonts[i];
 			FcPatternGetString(font, FC_FONTFORMAT, 0, &format);
 			if((!strcmp((char *)format, "TrueType")) || limit_to_truetype)
 			{
-				if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
+				if(FcPatternGetCharSet(font, FC_CHARSET, 0, &fcs) == FcResultMatch)
 				{
-					strcpy(tmpstring, (char *)file);
-					if(!FT_New_Face(temp_freetype_library,
-						tmpstring,
-						0,
-						&temp_freetype_face))
+					if(FcCharSetHasChar(fcs, char_code))
 					{
-						FT_Set_Pixel_Sizes(temp_freetype_face, 128, 0);
-						int gindex = FT_Get_Char_Index(temp_freetype_face, char_code);
-						if((!gindex == 0) && (!char_code != 10))
+						if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
 						{
-							strcpy(path_new, tmpstring);
-							if(!temp_freetype_library)
-								FT_Init_FreeType(&temp_freetype_library);
-							if(temp_freetype_face)
-								FT_Done_Face(temp_freetype_face);
-							temp_freetype_face = 0;
-							notfindit = 0;
-							return 0;
+							strcpy(path_new, (char*)file);
+							result = 1;
+							break;
 						}
 					}
 				}
 			}
 		}
+		FcFontSetDestroy(fs);
 	}
-
-	if(notfindit)
-	{
+	if(match_charset)
 		strcpy(path_new, path_old);
-		return 1;
-	}
 
-	if(fs) FcFontSetDestroy(fs);
-	if(temp_freetype_face) FT_Done_Face(temp_freetype_face);
-	FT_Done_FreeType(temp_freetype_library);
+	return result;
 }
