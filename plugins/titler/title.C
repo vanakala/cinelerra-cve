@@ -1207,25 +1207,25 @@ void TitleMain::build_fonts()
 
 				if(FcPatternGetInteger(font, FC_SLANT, 0, &slant) == FcResultMatch)
 				{
-					int slant;
+					int c;
 
 					switch(slant)
 					{
 					case FC_SLANT_ROMAN:
 					default:
-						slant = 'r';
+						c = 'r';
 						break;
 					case FC_SLANT_ITALIC:
-						slant =  'i';
+						c =  'i';
 						entry->fixed_style |= FONT_ITALIC;
 						break;
 					case FC_SLANT_OBLIQUE:
-						slant = 'o';
+						c = 'o';
 						entry->fixed_style |= FONT_ITALIC;
 						break;
 					}
 					entry->slant = new char[2];
-					entry->slant[0] = slant;
+					entry->slant[0] = c;
 					entry->slant[1] = 0;
 				}
 
