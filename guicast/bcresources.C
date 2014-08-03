@@ -115,6 +115,7 @@ BC_Resources::BC_Resources()
 #include "images/cancel_up_png.h"
 #include "images/cancel_hi_png.h"
 #include "images/cancel_dn_png.h"
+
 	static VFrame* default_cancel_images[] = 
 	{
 		new VFrame(cancel_up_png),
@@ -125,6 +126,7 @@ BC_Resources::BC_Resources()
 #include "images/ok_up_png.h"
 #include "images/ok_hi_png.h"
 #include "images/ok_dn_png.h"
+
 	static VFrame* default_ok_images[] = 
 	{
 		new VFrame(ok_up_png),
@@ -135,6 +137,7 @@ BC_Resources::BC_Resources()
 #include "images/usethis_up_png.h"
 #include "images/usethis_uphi_png.h"
 #include "images/usethis_dn_png.h"
+
 	static VFrame* default_usethis_images[] = 
 	{
 		new VFrame(usethis_up_png),
@@ -147,6 +150,7 @@ BC_Resources::BC_Resources()
 #include "images/checkbox_checkedhi_png.h"
 #include "images/checkbox_up_png.h"
 #include "images/checkbox_hi_png.h"
+
 	static VFrame* default_checkbox_images[] =  
 	{
 		new VFrame(checkbox_up_png),
@@ -161,6 +165,7 @@ BC_Resources::BC_Resources()
 #include "images/radial_checkedhi_png.h"
 #include "images/radial_up_png.h"
 #include "images/radial_hi_png.h"
+
 	static VFrame* default_radial_images[] =  
 	{
 		new VFrame(radial_up_png),
@@ -198,6 +203,7 @@ BC_Resources::BC_Resources()
 #include "images/file_reload_up_png.h"
 #include "images/file_reload_hi_png.h"
 #include "images/file_reload_dn_png.h"
+
 	static VFrame* default_filebox_text_images[] = 
 	{
 		new VFrame(file_text_up_png),
@@ -244,6 +250,7 @@ BC_Resources::BC_Resources()
 #include "images/listbox_button_hi_png.h"
 #include "images/listbox_button_up_png.h"
 #include "images/listbox_button_disabled_png.h"
+
 	static VFrame* default_listbox_button[] = 
 	{
 		new VFrame(listbox_button_up_png),
@@ -262,6 +269,7 @@ BC_Resources::BC_Resources()
 #include "images/listbox_expanddn_png.h"
 #include "images/listbox_expandup_png.h"
 #include "images/listbox_expanduphi_png.h"
+
 	static VFrame* default_listbox_expand[] = 
 	{
 		new VFrame(listbox_expandup_png),
@@ -275,6 +283,7 @@ BC_Resources::BC_Resources()
 #include "images/listbox_columnup_png.h"
 #include "images/listbox_columnhi_png.h"
 #include "images/listbox_columndn_png.h"
+
 	static VFrame* default_listbox_column[] = 
 	{
 		new VFrame(listbox_columnup_png),
@@ -286,6 +295,7 @@ BC_Resources::BC_Resources()
 
 #include "images/listbox_up_png.h"
 #include "images/listbox_dn_png.h"
+
 	listbox_up = new VFrame(listbox_up_png);
 	listbox_dn = new VFrame(listbox_dn_png);
 	listbox_title_margin = 0;
@@ -306,6 +316,7 @@ BC_Resources::BC_Resources()
 #include "images/pot_hi_png.h"
 #include "images/pot_up_png.h"
 #include "images/pot_dn_png.h"
+
 	static VFrame *default_pot_images[] = 
 	{
 		new VFrame(pot_up_png),
@@ -344,6 +355,7 @@ BC_Resources::BC_Resources()
 #include "images/7seg_small/f_png.h"
 #include "images/7seg_small/space_png.h"
 #include "images/7seg_small/dash_png.h"
+
 	static VFrame* default_medium_7segment[] = 
 	{
 		new VFrame(_0_png),
@@ -424,7 +436,6 @@ BC_Resources::BC_Resources()
 	text_background = WHITE;
 	text_background_hi = LTYELLOW;
 	text_background_noborder_hi = LTGREY;
-	text_background_noborder = -1;
 	text_border1 = DKGREY;
 	text_border2 = BLACK;
 	text_border2_hi = RED;
@@ -511,10 +522,6 @@ BC_Resources::BC_Resources()
 	recursive_resizing = 1;
 }
 
-BC_Resources::~BC_Resources()
-{
-}
-
 void BC_Resources::initialize_display(BC_WindowBase *window)
 {
 // Test for shm.  Must come before yuv test
@@ -567,9 +574,6 @@ void BC_Resources::init_shm(BC_WindowBase *window)
 	}
 }
 
-
-
-
 BC_Synchronous* BC_Resources::get_synchronous()
 {
 	return synchronous;
@@ -579,12 +583,6 @@ void BC_Resources::set_synchronous(BC_Synchronous *synchronous)
 {
 	this->synchronous = synchronous;
 }
-
-
-
-
-
-
 
 int BC_Resources::get_top_border()
 {
@@ -606,17 +604,30 @@ int BC_Resources::get_bottom_border()
 	return display_info->get_bottom_border();
 }
 
+int BC_Resources::get_bg_color()
+{
+	return bg_color;
+}
 
-int BC_Resources::get_bg_color() { return bg_color; }
+int BC_Resources::get_bg_shadow1()
+{
+	return bg_shadow1;
+}
 
-int BC_Resources::get_bg_shadow1() { return bg_shadow1; }
+int BC_Resources::get_bg_shadow2()
+{
+	return bg_shadow2;
+}
 
-int BC_Resources::get_bg_shadow2() { return bg_shadow2; }
+int BC_Resources::get_bg_light1()
+{
+	return bg_light1;
+}
 
-int BC_Resources::get_bg_light1() { return bg_light1; }
-
-int BC_Resources::get_bg_light2() { return bg_light2; }
-
+int BC_Resources::get_bg_light2()
+{
+	return bg_light2;
+}
 
 int BC_Resources::get_id()
 {

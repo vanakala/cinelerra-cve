@@ -45,7 +45,6 @@ class BC_Resources
 {
 public:
 	BC_Resources(); // The window parameter is used to get the display information initially
-	~BC_Resources();
 
 	void initialize_display(BC_WindowBase *window);
 
@@ -75,7 +74,6 @@ public:
 	int bg_light2;
 	int default_text_color;
 	int disabled_text_color;
-
 
 // beveled box colors
 	int button_light;
@@ -115,10 +113,8 @@ public:
 // Override the menu item background if nonzero.
 	VFrame **menu_item_bg;
 
-
 // color for progress text
 	int progress_text;
-
 
 	int menu_highlighted_fontcolor;
 
@@ -136,12 +132,12 @@ public:
 	int audiovideo_color;
 
 // default color of text
-	int text_default;      
+	int text_default;
 // background color of textboxes and list boxes
 	int text_border1;
 	int text_border2;
 	int text_border2_hi;
-	int text_background;   
+	int text_background;
 	int text_background_hi;
 	int text_background_noborder_hi;
 	int text_border3;
@@ -149,8 +145,6 @@ public:
 	int text_border4;
 	int text_highlight;
 	int text_inactive_highlight;
-// Not used
-	int text_background_noborder;
 
 // Optional background for highlighted text in toggle
 	VFrame *toggle_highlight_bg;
@@ -315,6 +309,7 @@ public:
 	static char language[LEN_LANG];
 	static char region[LEN_LANG];
 #endif
+
 // Available display extensions
 	int use_shm;
 
