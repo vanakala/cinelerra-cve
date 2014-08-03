@@ -311,6 +311,9 @@ public:
 	static int locale_utf8;
 // Failed to initalize input method
 	static int missing_im;
+// Language and region
+	static char language[LEN_LANG];
+	static char region[LEN_LANG];
 #endif
 // Available display extensions
 	int use_shm;
