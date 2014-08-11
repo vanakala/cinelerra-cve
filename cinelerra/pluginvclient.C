@@ -183,3 +183,12 @@ double PluginVClient::get_framerate()
 	return frame_rate;
 }
 
+ArrayList<BC_FontEntry*> *PluginVClient::get_fontlist()
+{
+	return BC_Resources::fontlist;
+}
+
+BC_FontEntry *PluginVClient::find_fontentry(const char *displayname, int style, int mask)
+{
+	return BC_Resources::find_fontentry(displayname, style, mask);
+}

@@ -248,58 +248,6 @@ void TitleConfig::convert_text()
 }
 
 
-FontEntry::FontEntry()
-{
-	path = 0;
-	foundary = 0;
-	family = 0;
-	weight = 0;
-	slant = 0;
-	swidth = 0;
-	adstyle = 0;
-	spacing = 0;
-	registry = 0;
-	encoding = 0;
-	fixed_title = 0;
-	fixed_style = 0;
-}
-
-FontEntry::~FontEntry()
-{
-	if(path) delete [] path;
-	if(foundary) delete [] foundary;
-	if(family) delete [] family;
-	if(weight) delete [] weight;
-	if(slant) delete [] slant;
-	if(swidth) delete [] swidth;
-	if(adstyle) delete [] adstyle;
-	if(spacing) delete [] spacing;
-	if(registry) delete [] registry;
-	if(encoding) delete [] encoding;
-	if(fixed_title) delete [] fixed_title;
-}
-
-void FontEntry::dump()
-{
-	printf("%s: %s %s %s %s %s %s %d %d %d %d %s %d %s %s\n",
-		path,
-		foundary,
-		family,
-		weight,
-		slant,
-		swidth,
-		adstyle,
-		pixelsize,
-		pointsize,
-		xres,
-		yres,
-		spacing,
-		avg_width,
-		registry,
-		encoding);
-}
-
-
 TitleGlyph::TitleGlyph()
 {
 	char_code = 0;
@@ -1070,13 +1018,10 @@ LoadPackage* TitleTranslate::new_package()
 	return new TitleTranslatePackage;
 }
 
-ArrayList<FontEntry*>* TitleMain::fonts = 0;
 
 TitleMain::TitleMain(PluginServer *server)
  : PluginVClient(server)
 {
-// Build font database
-	build_fonts();
 	text_mask = 0;
 	text_mask_stroke = 0;
 	glyph_engine = 0;
@@ -1107,254 +1052,6 @@ TitleMain::~TitleMain()
 PLUGIN_CLASS_METHODS
 
 
-void TitleMain::build_fonts()
-{
-	if(!fonts)
-	{
-		fonts = new ArrayList<FontEntry*>;
-// Construct path from location of the plugin
-		char search_path[BCTEXTLEN];
-		strcpy(search_path, PluginClient::get_path());
-		char *ptr = strrchr(search_path, '/');
-		strcpy(ptr + 1, FONT_SEARCHPATH);
-
-		FcPattern *pat;
-		FcFontSet *fs;
-		FcObjectSet *os;
-		FcChar8 *family, *file, *foundry, *style, *format;
-		int slant, spacing, width, weight;
-		int force_style = 0;
-		int limit_to_trutype = 0; // if you want limit search to TrueType put 1
-		FcConfig *config;
-		FcBool resultfc;
-		int i;
-		resultfc = FcInit();
-		FcConfigAppFontAddDir(0, (const FcChar8*)search_path);
-		config = FcConfigGetCurrent();
-		FcConfigSetRescanInterval(config, 0);
-
-		pat = FcPatternCreate();
-		os = FcObjectSetBuild(FC_FAMILY, FC_FILE, FC_FOUNDRY, FC_WEIGHT,
-			FC_WIDTH, FC_SLANT, FC_FONTFORMAT, FC_SPACING, FC_STYLE,
-			(char *)0);
-		fs = FcFontList(config, pat, os);
-		FcPattern *font;
-
-		for(i = 0; fs && i < fs->nfont; i++)
-		{
-			font = fs->fonts[i];
-			force_style = 0;
-			FcPatternGetString(font, FC_FONTFORMAT, 0, &format);
-			if((!strcmp((char *)format, "TrueType")) || limit_to_trutype) // on this point you can limit font search
-			{
-				FontEntry *entry = new FontEntry;
-
-				if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
-				{
-					entry->path = new char[strlen((char*)file) + 1];
-					strcpy(entry->path, (char*)file);
-				}
-
-				if(FcPatternGetString(font, FC_FOUNDRY, 0, &foundry) == FcResultMatch)
-				{
-					entry->foundary = new char[strlen((char*)foundry) + 2];
-					strcpy(entry->foundary, (char *)foundry);
-				}
-
-				if(FcPatternGetInteger(font, FC_WEIGHT, 0, &weight) == FcResultMatch)
-				{
-					const char *s;
-
-					switch(weight)
-					{
-					case FC_WEIGHT_THIN:
-					case FC_WEIGHT_EXTRALIGHT:
-					case FC_WEIGHT_LIGHT:
-					case FC_WEIGHT_BOOK:
-						force_style = 1;
-						s = "medium";
-						break;
-
-					case FC_WEIGHT_NORMAL:
-					case FC_WEIGHT_MEDIUM:
-					default:
-						s = "medium";
-						break;
-
-					case FC_WEIGHT_BLACK:
-					case FC_WEIGHT_SEMIBOLD:
-					case FC_WEIGHT_BOLD:
-						s = "bold";
-						entry->fixed_style |= FONT_BOLD;
-						break;
-
-					case FC_WEIGHT_EXTRABOLD:
-					case FC_WEIGHT_EXTRABLACK:
-						force_style = 1;
-						s = "bold";
-						entry->fixed_style |= FONT_BOLD;
-						break;
-					}
-					entry->weight = new char[strlen(s) + 1];
-					strcpy(entry->weight, s);
-				}
-
-				if(FcPatternGetString(font, FC_FAMILY, 0, &family) == FcResultMatch)
-				{
-					entry->family = new char[strlen((char*)family) + 2];
-					strcpy(entry->family, (char*)family);
-				}
-
-				if(FcPatternGetInteger(font, FC_SLANT, 0, &slant) == FcResultMatch)
-				{
-					int c;
-
-					switch(slant)
-					{
-					case FC_SLANT_ROMAN:
-					default:
-						c = 'r';
-						break;
-					case FC_SLANT_ITALIC:
-						c =  'i';
-						entry->fixed_style |= FONT_ITALIC;
-						break;
-					case FC_SLANT_OBLIQUE:
-						c = 'o';
-						entry->fixed_style |= FONT_ITALIC;
-						break;
-					}
-					entry->slant = new char[2];
-					entry->slant[0] = c;
-					entry->slant[1] = 0;
-				}
-
-				if(FcPatternGetInteger(font, FC_WIDTH, 0, &width) == FcResultMatch)
-				{
-					const char *s;
-
-					switch(width)
-					{
-					case FC_WIDTH_ULTRACONDENSED:
-						s = "ultracondensed";
-						break;
-
-					case FC_WIDTH_EXTRACONDENSED:
-						s = "extracondensed";
-						break;
-
-					case FC_WIDTH_CONDENSED:
-						s = "condensed";
-						break;
-
-					case FC_WIDTH_SEMICONDENSED:
-						s = "semicondensed";
-						break;
-
-					case FC_WIDTH_NORMAL:
-					default:
-						s = "normal";
-						break;
-
-					case FC_WIDTH_SEMIEXPANDED:
-						s = "semiexpanded";
-						break;
-
-					case FC_WIDTH_EXPANDED:
-						s = "expanded";
-						break;
-
-					case FC_WIDTH_EXTRAEXPANDED:
-						s = "extraexpanded";
-						break;
-
-					case FC_WIDTH_ULTRAEXPANDED:
-						s = "ultraexpanded";
-						break;
-					}
-					entry->swidth = new char[strlen(s) + 1];
-					strcpy(entry->swidth, s);
-				}
-
-				if(FcPatternGetInteger(font, FC_SPACING, 0, &spacing) == FcResultMatch)
-				{
-					int spacs;
-
-					switch(spacing)
-					{
-						case 0:
-						default:
-							spacs = 'p';
-							break;
-
-						case 90:
-							spacs = 'd';
-							break;
-
-						case 100:
-							spacs = 'm';
-							break;
-
-						case 110:
-							spacs = 'c';
-							break;
-					}
-					entry->spacing = new char[2];
-					entry->spacing[0] = spacs;
-					entry->spacing[1] = 0;
-				}
-
-				// Add fake stuff for compatibility
-				entry->adstyle = new char[2];
-				entry->adstyle[0] = ' ';
-				entry->adstyle[1] = 0;
-				entry->pixelsize = 0;
-				entry->pointsize = 0;
-				entry->xres = 0;
-				entry->yres = 0;
-				entry->avg_width = 0;
-				entry->registry = new char[strlen("utf") + 1];
-				strcpy(entry->registry, "utf");
-				entry->encoding = new char[2];
-				entry->encoding[0] = '8';
-				entry->encoding[1] = 0;
-
-				if(!FcPatternGetString(font, FC_STYLE, 0, &style) == FcResultMatch)
-					force_style = 0;
-
-				// If font has a style unmanaged by titler plugin, force style to be displayed on name
-				// in this way we can shown all available fonts styles.
-				char tmpstring[BCTEXTLEN];
-				int len;
-
-				if(force_style)
-				{
-					len = sprintf(tmpstring, "%s (%s)", entry->family, style);
-					entry->fixed_title = new char[len + 1];
-					strcpy(entry->fixed_title, tmpstring);
-				}
-				else
-				{
-					if(strcmp(entry->foundary, "unknown"))
-					{
-						len = sprintf(tmpstring, "%s (%s)", entry->family, entry->foundary);
-						entry->fixed_title = new char[len + 1];
-						strcpy(entry->fixed_title, tmpstring);
-					}
-					else
-					{
-						len = sprintf(tmpstring, "%s", entry->family);
-						entry->fixed_title = new char[len + 1];
-						strcpy(entry->fixed_title, tmpstring);
-					}
-				}
-				fonts->append(entry);
-			}
-		}
-		FcFontSetDestroy(fs);
-	}
-}
-
 int TitleMain::load_freetype_face(FT_Library &freetype_library,
 	FT_Face &freetype_face,
 	const char *path)
@@ -1380,41 +1077,17 @@ int TitleMain::load_freetype_face(FT_Library &freetype_library,
 	}
 }
 
-FontEntry* TitleMain::get_font_entry(char *title,
-	int style,
-	int size)
+BC_FontEntry* TitleMain::get_font()
 {
-	FontEntry *result = 0;
-	int got_title = 0;
+	int style = 0;
+	int mask;
 
-	for(int i = 0; i < fonts->total; i++)
-	{
-		FontEntry *entry = fonts->values[i];
+	style |= (config.style & FONT_ITALIC) ? FL_SLANT_ITALIC : FL_SLANT_ROMAN;
+	style |= (config.style & FONT_BOLD) ? FL_WEIGHT_BOLD : FL_WEIGHT_NORMAL;
 
-		if(!result) result = entry;
+	mask = FL_WEIGHT_MASK | FL_SLANT_MASK;
 
-		if(!strcmp(title, entry->fixed_title))
-		{
-			if(!got_title) result = entry;
-			got_title = 1;
-
-// Not every font has a size but every font has a style
-			if(entry->fixed_style == style)
-				result = entry;
-
-			if(entry->fixed_style == style && entry->pointsize == size) 
-				result = entry;
-		}
-	}
-	return result;
-}
-
-
-FontEntry* TitleMain::get_font()
-{
-	return get_font_entry(config.font,
-		config.style,
-		config.size);
+	return find_fontentry(config.font, style, mask);
 }
 
 
@@ -1928,13 +1601,13 @@ void TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 		if(!freetype_face)
 		{
-			FontEntry *font = get_font();
+			BC_FontEntry *font = get_font();
 			if(load_freetype_face(freetype_library,
 				freetype_face,
 				font->path))
 			{
 				errorbox("TitleMain::process_realtime %s: FT_New_Face failed.",
-					font->fixed_title);
+					font->displayname);
 				result = 1;
 			}
 

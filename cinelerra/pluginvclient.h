@@ -96,6 +96,10 @@ public:
 	double get_project_framerate();
 // Frame rate requested
 	double get_framerate();
+// Get list of system fonts
+	ArrayList<BC_FontEntry*> *get_fontlist();
+// Find font entry
+	BC_FontEntry *find_fontentry(const char *displayname, int style, int mask);
 
 // ======================== Realtime buffer pointers ===========================
 // These are provided by the plugin server for the opengl handler.

@@ -56,6 +56,7 @@ class GlyphEngine;
 class TitleTranslate;
 
 #include "bchash.h"
+#include "bcfontentry.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "mutex.h"
@@ -143,33 +144,6 @@ public:
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
-class FontEntry
-{
-public:
-	FontEntry();
-	~FontEntry();
-
-	void dump();
-
-	char *path;
-	char *foundary;
-	char *family;
-	char *weight;
-	char *slant;
-	char *swidth;
-	char *adstyle;
-	int pixelsize;
-	int pointsize;
-	int xres;
-	int yres;
-	char *spacing;
-	int avg_width;
-	char *registry;
-	char *encoding;
-	char *fixed_title;
-	int fixed_style;
-};
-
 class TitleGlyph
 {
 public:
@@ -203,7 +177,7 @@ public:
 	void process_package(LoadPackage *package);
 
 	TitleMain *plugin;
-	FontEntry *current_font;       // Current font configured by freetype
+	BC_FontEntry *current_font;       // Current font configured by freetype
 	FT_Library freetype_library;      	// Freetype library
 	FT_Face freetype_face;
 };
@@ -333,14 +307,10 @@ public:
 	void load_defaults();
 	void save_defaults();
 
-	void build_fonts();
 	void draw_glyphs();
 	int draw_mask();
 	void overlay_mask();
-	FontEntry* get_font_entry(char *title,
-		int style,
-		int size);
-	FontEntry* get_font();
+	BC_FontEntry* get_font();
 	int get_char_advance(int current, int next);
 	int get_char_height();
 	void get_total_extents();
@@ -359,8 +329,6 @@ public:
 
 // Size of window
 	int window_w, window_h;
-
-	static ArrayList<FontEntry*> *fonts;
 
 	ArrayList<TitleGlyph*> glyphs;
 	Mutex glyph_lock;
