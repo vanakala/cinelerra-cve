@@ -46,7 +46,6 @@
 #include <string.h>
 #include <endian.h>
 #include <byteswap.h>
-#include <iconv.h>
 #include <sys/stat.h>
 #include <fontconfig/fontconfig.h>
 
@@ -1814,38 +1813,12 @@ void TitleMain::convert_encoding()
 {
 	if(strcmp(config.encoding, "UTF-8"))
 	{
-		iconv_t cd;
-		char *utf8text = new char[sizeof(config.text) * 6];
+		char *utf8text = new char[sizeof(config.text)];
 
-		cd = iconv_open("UTF-8",config.encoding);
-		if(cd == (iconv_t)-1)
-		{
-			// Something went wrong.
-			errormsg(_("Iconv conversion from %s to UTF-8 not available"), config.encoding);
-		}
-		else
-		{
-		// if iconv is working ok for current encoding
-			char *inbuf = config.text;
-			char *outbuf = utf8text;
-			size_t inbytes = strlen(config.text);
-			size_t outbytes = sizeof(config.text) * 6 - 1;
-			int noconv = 0;
-			do {
-				if(iconv(cd, &inbuf, &inbytes, &outbuf, &outbytes) == (size_t) -1)
-				{
-					errormsg("TitleMain::convert_encoding: iconv failed!");
-					noconv = 1;
-					break;
-				}
-			} while(inbytes > 0 && outbytes > 0);
-
-			*outbuf = 0;
-			strcpy(config.text, utf8text);
-			strcpy(config.encoding, "UTF-8");
-
-			iconv_close(cd);
-		}
+		BC_Resources::encode(config.encoding, "UTF-8",
+			config.text, utf8text, sizeof(config.text));
+		strcpy(config.text, utf8text);
+		strcpy(config.encoding, "UTF-8");
 		delete [] utf8text;
 	}
 }
