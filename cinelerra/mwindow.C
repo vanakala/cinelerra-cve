@@ -1161,11 +1161,13 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
 	}
 }
 
+#define FONT_SEARCHPATH "fonts"
 
 void MWindow::create_objects(int want_gui, 
 	int want_new,
 	char *config_path)
 {
+	char string[BCTEXTLEN];
 	edl = 0;
 	init_signals();
 
@@ -1181,6 +1183,11 @@ void MWindow::create_objects(int want_gui,
 	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
 	init_theme();
 	init_error();
+
+	strcpy(string, preferences->global_plugin_dir);
+	strcat(string, "/" FONT_SEARCHPATH);
+	BC_Resources::init_fontconfig(string);
+
 // Default project created here
 	init_edl();
 

@@ -26,6 +26,7 @@
 
 #include "bcdisplayinfo.inc"
 #include "bcfilebox.h"
+#include "bcfontentry.inc"
 #include "bcresources.inc"
 #include "bcsignals.inc"
 #include "bcsynchronous.inc"
@@ -308,6 +309,8 @@ public:
 // Language and region
 	static char language[LEN_LANG];
 	static char region[LEN_LANG];
+	static ArrayList<BC_FontEntry*> *fontlist;
+	static int init_fontconfig(const char *search_path);
 #endif
 
 // Available display extensions
@@ -335,4 +338,5 @@ private:
 
 	int id;
 };
+
 #endif
