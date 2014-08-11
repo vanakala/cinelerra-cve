@@ -313,6 +313,8 @@ public:
 	static int init_fontconfig(const char *search_path);
 	static BC_FontEntry *find_fontentry(const char *displayname, int style, int mask);
 #endif
+	static void encode(const char *from_enc, const char *to_enc,
+		char *input, char *output, int output_length);
 
 // Available display extensions
 	int use_shm;

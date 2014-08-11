@@ -896,3 +896,36 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 }
 
 #endif
+
+void BC_Resources::encode(const char *from_enc, const char *to_enc,
+	char *input, char *output, int output_length)
+{
+	size_t inbytes;
+	iconv_t cd;
+
+	if(!from_enc || *from_enc == 0)
+		from_enc = "UTF-8";
+
+	if(!to_enc || *to_enc == 0)
+		to_enc = "UTF-8";
+
+	if(strcmp(from_enc, to_enc) && (inbytes = strlen(input)))
+	{
+		if((cd = iconv_open(to_enc, from_enc)) == (iconv_t)-1)
+		{
+			printf(_("Conversion from %s to %s is not available"),
+				from_enc, to_enc);
+			return;
+		}
+
+		size_t outbytes = output_length - 1;
+		do {
+			if(iconv(cd, &input, &inbytes, &output, &outbytes) == (size_t) -1)
+			break;
+		} while(inbytes > 0 && outbytes > 0);
+		*output = 0;
+		iconv_close(cd);
+	}
+	else
+	strcpy(input, output);
+}
