@@ -865,4 +865,34 @@ int BC_Resources::init_fontconfig(const char *search_path)
 	return 0;
 }
 
+BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, int mask)
+{
+	BC_FontEntry *entry;
+
+	if(!fontlist)
+		return 0;
+
+	if(displayname)
+	{
+		for(int i = 0; i < fontlist->total; i++)
+		{
+			entry = fontlist->values[i];
+
+			if(strcmp(entry->displayname, displayname) == 0 &&
+					(entry->style & mask) == style)
+				return entry;
+		}
+	}
+
+// FIXIT: search using fontconfig
+	for(int i = 0; i < fontlist->total; i++)
+	{
+		entry = fontlist->values[i];
+
+		if((entry->style & mask) == style)
+			return entry;
+	}
+	return 0;
+}
+
 #endif

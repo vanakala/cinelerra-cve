@@ -311,6 +311,7 @@ public:
 	static char region[LEN_LANG];
 	static ArrayList<BC_FontEntry*> *fontlist;
 	static int init_fontconfig(const char *search_path);
+	static BC_FontEntry *find_fontentry(const char *displayname, int style, int mask);
 #endif
 
 // Available display extensions
