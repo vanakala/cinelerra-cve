@@ -929,3 +929,47 @@ void BC_Resources::encode(const char *from_enc, const char *to_enc,
 	else
 	strcpy(input, output);
 }
+
+int BC_Resources::find_font_by_char(FT_ULong char_code, char *path_new)
+{
+	FcPattern *pat, *font;
+	FcFontSet *fs;
+	FcObjectSet *os;
+	FcCharSet *fcs;
+	FcChar8 *file;
+	int result = 0;
+
+	*path_new = 0;
+
+	// Do not search control codes
+	if(char_code < ' ')
+		return 0;
+
+	pat = FcPatternCreate();
+	os = FcObjectSetBuild(FC_FILE, FC_CHARSET, (char *)0);
+
+	FcPatternAddBool(pat, FC_SCALABLE, true);
+
+	fs = FcFontList(0, pat, os);
+	FcPatternDestroy(pat);
+	FcObjectSetDestroy(os);
+
+	for (int i = 0; i < fs->nfont; i++)
+	{
+		font = fs->fonts[i];
+		if(FcPatternGetCharSet(font, FC_CHARSET, 0, &fcs) == FcResultMatch)
+		{
+			if(FcCharSetHasChar(fcs, char_code))
+			{
+				if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
+				{
+					strcpy(path_new, (char*)file);
+					result = 1;
+					break;
+				}
+			}
+		}
+	}
+	FcFontSetDestroy(fs);
+	return result;
+}
