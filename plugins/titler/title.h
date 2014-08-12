@@ -95,7 +95,6 @@ class TitleConfig
 {
 public:
 	TitleConfig();
-	~TitleConfig();
 
 // Only used to clear glyphs
 	int equivalent(TitleConfig &that);
@@ -105,6 +104,7 @@ public:
 		ptstime prev_pts,
 		ptstime next_pts,
 		ptstime current_pts);
+	void text_to_ucs4();
 
 // Font information
 	char font[BCTEXTLEN];
@@ -137,9 +137,8 @@ public:
 // Width of the stroke
 	double stroke_width;
 
-	int tlen;
-	FT_ULong *ucs4text;
-	void convert_text();
+	int text_length;
+	FcChar32 ucs4text[BCTEXTLEN];
 
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };

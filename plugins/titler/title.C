@@ -86,12 +86,7 @@ TitleConfig::TitleConfig()
 	pixels_per_second = 1.0;
 	timecode = 0;
 	stroke_width = 1.0;
-	ucs4text = 0;
-}
-
-TitleConfig::~TitleConfig()
-{
-	delete [] ucs4text;
+	text_length = 0;
 }
 
 // Does not test equivalency but determines if redrawing text is necessary.
@@ -135,7 +130,8 @@ void TitleConfig::copy_from(TitleConfig &that)
 	strcpy(timecodeformat, that.timecodeformat);
 	strcpy(text, that.text);
 	strcpy(encoding, that.encoding);
-	ucs4text = 0;
+	memcpy(ucs4text, that.ucs4text, that.text_length);
+	text_length = that.text_length;
 }
 
 void TitleConfig::interpolate(TitleConfig &prev, 
@@ -167,83 +163,10 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	this->dropshadow = prev.dropshadow;
 }
 
-// this is a little routine that converts 8 bit string to FT_ULong array // akirad
-void TitleConfig::convert_text()
+void TitleConfig::text_to_ucs4()
 {
-	int text_len;
-	int total_packages = 0;
-
-	tlen = 0;
-
-	text_len = strlen(text);
-
-	for(int i = 0; i < text_len; i++)
-	{
-		int x = 0;
-		int z;
-
-		tlen++;
-
-		z = text[i];
-
-		if(!(z & 0x80))
-			x = 0;
-		else if(!(z & 0x20))
-			x = 1;
-		else if(!(z & 0x10))
-			x = 2;
-		else if(!(z & 0x08))
-			x = 3;
-		else if(!(z & 0x04))
-			x = 4;
-		else if(!(z & 0x02))
-			x = 5;
-		i += x;
-	}
-	if(!ucs4text)
-		ucs4text = new FT_ULong[BCTEXTLEN];
-
-	FcChar32 return_ucs4;
-	int count = 0;
-
-	for(int i = 0; i < text_len; i++)
-	{
-		int x = 0;
-		int z;
-		FcChar8 loadutf8[8];
-
-		z = text[i];
-
-		if(!(z & 0x80))
-			x = 0;
-		else if(!(z & 0x20))
-			x = 2;
-		else if(!(z & 0x10))
-			x = 3;
-		else if(!(z & 0x08))
-			x = 4;
-		else if(!(z & 0x04))
-			x = 5;
-		else if(!(z & 0x02))
-			x = 6;
-		if(x > 0)
-		{
-			memset(loadutf8, 0, sizeof(loadutf8));
-			loadutf8[0] = text[i];
-
-			for(int p = 0; p < x; p++)
-				loadutf8[p] = text[i + p];
-			i += (x - 1);
-		}
-		else
-		{
-			loadutf8[0] = z;
-			loadutf8[1] = 0;
-		}
-		FcUtf8ToUcs4(loadutf8, &return_ucs4, 6);
-		ucs4text[count] = (FT_ULong)return_ucs4;
-		count++;
-	}
+	text_length = BC_Resources::encode_to_ucs4(text, ucs4text,
+		sizeof(ucs4text) / sizeof(FcChar32));
 }
 
 
@@ -1153,14 +1076,10 @@ void TitleMain::draw_glyphs()
 // Build table of all glyphs needed
 	int total_packages = 0;
 
-	// now convert text to FT_Ulong array
-	config.convert_text();
-#ifndef X_HAVE_UTF8_STRING
-	// temp conversion to utf8
-	convert_encoding();
-#endif
+	// now convert text to ucs4
+	config.text_to_ucs4();
 
-	for(int i = 0; i < config.tlen; i++)
+	for(int i = 0; i < config.text_length; i++)
 	{
 		FT_ULong char_code;
 		int exists = 0;
@@ -1196,7 +1115,7 @@ void TitleMain::get_total_extents()
 // Determine extents of total text
 	int current_w = 0;
 	int row_start = 0;
-	text_len = config.tlen;
+	text_len = config.text_length;
 
 	if(!char_positions) char_positions = new title_char_position_t[text_len];
 	text_rows = 0;
