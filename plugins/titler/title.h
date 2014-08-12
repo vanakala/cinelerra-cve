@@ -318,9 +318,6 @@ public:
 	int load_freetype_face(FT_Library &freetype_library,
 		FT_Face &freetype_face,
 		const char *path);
-	int check_char_code_path(const char *path_old,
-		FT_ULong &char_code,
-		char *path_new);
 	// backward compatibility
 	void convert_encoding();
 

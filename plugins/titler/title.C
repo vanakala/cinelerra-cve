@@ -287,30 +287,38 @@ void GlyphUnit::process_package(LoadPackage *package)
 	TitleGlyph *glyph = pkg->glyph;
 	int result = 0;
 	int altfont = 0;
-	char new_path[200];
+	char new_path[BCTEXTLEN];
 
 	current_font = plugin->get_font();
-	plugin->check_char_code_path(current_font->path,
-		glyph->char_code, new_path);
 
 	if(plugin->load_freetype_face(freetype_library,
-		freetype_face, new_path))
+		freetype_face, current_font->path))
 	{
 		errormsg(_("GlyphUnit::process_package FT_New_Face failed"));
 		result = 1;
 	}
-	else
-		FT_Set_Pixel_Sizes(freetype_face, plugin->config.size, 0);
 
 	if(!result)
 	{
 		int gindex = FT_Get_Char_Index(freetype_face, glyph->char_code);
 
 // Char not found
-		if (gindex == 0) 
+		if(gindex == 0)
+		{
+			// Search replacement font
+			if(plugin->find_font_by_char(glyph->char_code, new_path))
+			{
+				plugin->load_freetype_face(freetype_library,
+					freetype_face, new_path);
+				gindex = FT_Get_Char_Index(freetype_face, glyph->char_code);
+			}
+		}
+		FT_Set_Pixel_Sizes(freetype_face, plugin->config.size, 0);
+
+		if(gindex == 0)
 		{
 // carrige return
-			if (glyph->char_code != 10)  
+			if (glyph->char_code != 10)
 				errormsg(_("GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"),
 					glyph->char_code);
 // Prevent a crash here
@@ -350,7 +358,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			FT_BBox bbox;
 			FT_Bitmap bm;
 			FT_Load_Glyph(freetype_face, gindex, FT_LOAD_DEFAULT);
-		    	FT_Get_Glyph(freetype_face->glyph, &glyph_image);
+			FT_Get_Glyph(freetype_face->glyph, &glyph_image);
 			FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph_image)->outline, &bbox);
 
 			FT_Outline_Translate(&((FT_OutlineGlyph) glyph_image)->outline,
@@ -1821,80 +1829,4 @@ void TitleMain::convert_encoding()
 		strcpy(config.encoding, "UTF-8");
 		delete [] utf8text;
 	}
-}
-
-// Checks if char_code is on the selected font and 
-//    changes font with the first compatible //Akirad
-int TitleMain::check_char_code_path(const char *path_old, FT_ULong &char_code,
-	char *path_new)
-{
-	int result = 0;
-	int match_charset = 0;
-	int limit_to_truetype = 1; // if you want to limit search to truetype put 0
-
-// Try to open char_set with ft_Library
-	FT_Library temp_freetype_library;
-	FT_Face temp_freetype_face = 0;
-
-	// Do not search for non control codes
-	if(char_code < ' ')
-	{
-		strcpy(path_new, path_old);
-		return 0;
-	}
-
-	FT_Init_FreeType(&temp_freetype_library);
-
-	if(!FT_New_Face(temp_freetype_library, path_old, 0, &temp_freetype_face))
-	{
-		if(FT_Get_Char_Index(temp_freetype_face, char_code))
-			match_charset = 1;
-	}
-	if(temp_freetype_face) FT_Done_Face(temp_freetype_face);
-	FT_Done_FreeType(temp_freetype_library);
-
-	if(!match_charset)
-	{
-		FcPattern *pat;
-		FcFontSet *fs;
-		FcObjectSet *os;
-		FcChar8 *file, *format;
-		FcCharSet *fcs;
-		FcConfig *config;
-		FcBool resultfc;
-
-		resultfc = FcInit();
-		config = FcConfigGetCurrent();
-		FcConfigSetRescanInterval(config, 0);
-
-		pat = FcPatternCreate();
-		os = FcObjectSetBuild(FC_FILE, FC_CHARSET, FC_FONTFORMAT, (char *)0);
-		fs = FcFontList(config, pat, os);
-
-		for(int i = 0; i < fs->nfont; i++)
-		{
-			FcPattern *font = fs->fonts[i];
-			FcPatternGetString(font, FC_FONTFORMAT, 0, &format);
-			if((!strcmp((char *)format, "TrueType")) || limit_to_truetype)
-			{
-				if(FcPatternGetCharSet(font, FC_CHARSET, 0, &fcs) == FcResultMatch)
-				{
-					if(FcCharSetHasChar(fcs, char_code))
-					{
-						if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
-						{
-							strcpy(path_new, (char*)file);
-							result = 1;
-							break;
-						}
-					}
-				}
-			}
-		}
-		FcFontSetDestroy(fs);
-	}
-	if(!result)
-		strcpy(path_new, path_old);
-
-	return result;
 }
