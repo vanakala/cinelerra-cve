@@ -149,8 +149,7 @@ class TitleGlyph
 public:
 	TitleGlyph();
 	~TitleGlyph();
-	// character counter
-	int c;
+
 	// character in UCS-4
 	FT_ULong char_code;
 	int width, height, pitch, advance_w, left, top, freetype_index;
@@ -198,7 +197,8 @@ class TitlePackage : public LoadPackage
 {
 public:
 	TitlePackage();
-	int x, y, c;
+	int x, y;
+	FT_ULong char_code;
 };
 
 
@@ -311,7 +311,7 @@ public:
 	int draw_mask();
 	void overlay_mask();
 	BC_FontEntry* get_font();
-	int get_char_advance(int current, int next);
+	int get_char_advance(FT_ULong current, FT_ULong next);
 	int get_char_height();
 	void get_total_extents();
 	void clear_glyphs();

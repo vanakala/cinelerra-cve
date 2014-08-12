@@ -250,7 +250,6 @@ void TitleConfig::convert_text()
 TitleGlyph::TitleGlyph()
 {
 	char_code = 0;
-	c=0;
 	data = 0;
 	data_stroke = 0;
 }
@@ -573,12 +572,12 @@ void TitleUnit::process_package(LoadPackage *package)
 {
 	TitlePackage *pkg = (TitlePackage*)package;
 
-	if(pkg->c != 0xa)
+	if(pkg->char_code != 0xa)
 	{
 		for(int i = 0; i < plugin->glyphs.total; i++)
 		{
 			TitleGlyph *glyph = plugin->glyphs.values[i];
-			if(glyph->c == pkg->c)
+			if(glyph->char_code == pkg->char_code)
 			{
 				draw_glyph(plugin->text_mask, glyph, pkg->x, pkg->y);
 				if(plugin->config.stroke_width >= ZERO &&
@@ -611,7 +610,7 @@ void TitleEngine::init_packages()
 		TitlePackage *pkg = (TitlePackage*)get_package(current_package);
 		pkg->x = char_position->x;
 		pkg->y = char_position->y - visible_y1;
-		pkg->c = plugin->config.ucs4text[i];
+		pkg->char_code = plugin->config.ucs4text[i];
 		current_package++;
 	}
 }
@@ -1106,7 +1105,7 @@ int TitleMain::get_char_height()
 	return result;
 }
 
-int TitleMain::get_char_advance(int current, int next)
+int TitleMain::get_char_advance(FT_ULong current, FT_ULong next)
 {
 	FT_Vector kerning;
 	int result = 0;
@@ -1117,7 +1116,7 @@ int TitleMain::get_char_advance(int current, int next)
 
 	for(int i = 0; i < glyphs.total; i++)
 	{
-		if(glyphs.values[i]->c == current)
+		if(glyphs.values[i]->char_code == current)
 		{
 			current_glyph = glyphs.values[i];
 			break;
@@ -1126,7 +1125,7 @@ int TitleMain::get_char_advance(int current, int next)
 
 	for(int i = 0; i < glyphs.total; i++)
 	{
-		if(glyphs.values[i]->c == next)
+		if(glyphs.values[i]->char_code == next)
 		{
 			next_glyph = glyphs.values[i];
 			break;
@@ -1164,7 +1163,6 @@ void TitleMain::draw_glyphs()
 	for(int i = 0; i < config.tlen; i++)
 	{
 		FT_ULong char_code;
-		int c = config.ucs4text[i];
 		int exists = 0;
 		char_code = config.ucs4text[i];
 
@@ -1182,7 +1180,6 @@ void TitleMain::draw_glyphs()
 			total_packages++;
 			TitleGlyph *glyph = new TitleGlyph;
 			glyphs.append(glyph);
-			glyph->c = c;
 			glyph->char_code = char_code;
 		}
 	}
@@ -1229,7 +1226,7 @@ void TitleMain::get_total_extents()
 		TitleGlyph *current_glyph = 0;
 		for(int j = 0; j < glyphs.total; j++)
 		{
-			if(glyphs.values[j]->c == config.ucs4text[i])
+			if(glyphs.values[j]->char_code == config.ucs4text[i])
 			{
 				current_glyph = glyphs.values[j];
 				break;
