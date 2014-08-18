@@ -177,7 +177,10 @@ BC_WindowBase::~BC_WindowBase()
 		get_resources()->get_synchronous()->delete_window(this);
 	}
 #endif
-
+#ifdef X_HAVE_UTF8_STRING
+	if(ucs4ptr && ucs4ptr != ucs4buffer)
+		delete [] ucs4ptr;
+#endif
 	resize_history.remove_all_objects();
 
 	UNSET_ALL_LOCKS(this)
@@ -252,6 +255,7 @@ void BC_WindowBase::initialize()
 #ifdef HAVE_GL
 	gl_win_context = 0;
 #endif
+	ucs4ptr = 0;
 }
 
 #define DEFAULT_EVENT_MASKS EnterWindowMask | \

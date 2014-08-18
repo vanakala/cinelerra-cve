@@ -364,13 +364,28 @@ void BC_WindowBase::draw_xft_text(int x,
 #ifdef X_HAVE_UTF8_STRING
 	if(get_resources()->locale_utf8)
 	{
-		XftDrawStringUtf8((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
+		int l, len;
+
+		len = i - j;
+		l = sizeof(ucs4buffer) / sizeof(FcChar32);
+		if(ucs4ptr && ucs4ptr != ucs4buffer)
+			delete [] ucs4ptr;
+		if(len < l)
+			ucs4ptr = ucs4buffer;
+		else
+		{
+			ucs4ptr = new FcChar32[len];
+			l = len;
+		}
+
+		l = BC_Resources::encode_to_ucs4(&text[j], ucs4ptr, l);
+		XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
 			&xft_color,
 			top_level->get_xft_struct(top_level->current_font),
 			x2 + k, 
 			y2 + k,
-			(const FcChar8*)&text[j],
-			i - j);
+			ucs4ptr,
+			l);
 	}
 	else
 #endif

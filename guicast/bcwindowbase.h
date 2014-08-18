@@ -794,6 +794,8 @@ private:
 	// Used for retaining the state, properties, and semantics of communication with
 	//   the input method (IM) server
 	XIC input_context;
+	FcChar32 *ucs4ptr;
+	FcChar32 ucs4buffer[BCTEXTLEN];
 #endif
 
 protected:
