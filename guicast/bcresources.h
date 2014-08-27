@@ -309,6 +309,7 @@ public:
 // Language and region
 	static char language[LEN_LANG];
 	static char region[LEN_LANG];
+	static char encoding[LEN_ENCOD];
 	static ArrayList<BC_FontEntry*> *fontlist;
 	static int init_fontconfig(const char *search_path);
 	static BC_FontEntry *find_fontentry(const char *displayname, int style, int mask);

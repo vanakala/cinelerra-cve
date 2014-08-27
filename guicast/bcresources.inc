@@ -31,6 +31,8 @@ class BC_Resources;
 // Length of language and region buffer
 // Assuming max length of both strings 3
 #define LEN_LANG 4
+// Length of encoding
+#define LEN_ENCOD 64
 
 // Icon types for each list item
 #define ICON_FOLDER      0      // Private bitmap

@@ -48,6 +48,7 @@ int BC_Resources::locale_utf8 = 0;
 int BC_Resources::missing_im = 0;
 char BC_Resources::language[LEN_LANG] = {0};
 char BC_Resources::region[LEN_LANG] = {0};
+char BC_Resources::encoding[LEN_ENCOD] = {0};
 ArrayList<BC_FontEntry*> *BC_Resources::fontlist = 0;
 #endif
 

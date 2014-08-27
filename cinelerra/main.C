@@ -87,7 +87,8 @@ int main(int argc, char *argv[])
 #ifdef X_HAVE_UTF8_STRING
 	if(char *loc = setlocale(LC_CTYPE, ""))
 	{
-		BC_Resources::locale_utf8 = !strcmp(nl_langinfo(CODESET), "UTF-8");
+		strcpy(BC_Resources::encoding, nl_langinfo(CODESET));
+		BC_Resources::locale_utf8 = !strcmp(BC_Resources::encoding, "UTF-8");
 
 		// Extract from locale language & region
 		char locbuf[32];
