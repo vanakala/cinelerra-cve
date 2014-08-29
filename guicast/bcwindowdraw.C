@@ -348,6 +348,7 @@ void BC_WindowBase::draw_xft_text(int x,
 #ifdef HAVE_XFT
 	XRenderColor color;
 	XftColor xft_color;
+	int l, len;
 	color.red = (top_level->current_color & 0xff0000) >> 16;
 	color.red |= color.red << 8;
 	color.green = (top_level->current_color & 0xff00) >> 8;
@@ -361,43 +362,41 @@ void BC_WindowBase::draw_xft_text(int x,
 		top_level->cmap,
 		&color,
 		&xft_color);
-#ifdef X_HAVE_UTF8_STRING
+
+	len = i - j;
+	l = sizeof(ucs4buffer) / sizeof(FcChar32);
+	if(ucs4ptr && ucs4ptr != ucs4buffer)
+		delete [] ucs4ptr;
+	if(len < l)
+		ucs4ptr = ucs4buffer;
+	else
+	{
+		ucs4ptr = new FcChar32[len];
+		l = len;
+	}
+
+	BC_Resources::encode(get_resources()->encoding, "UTF32LE",
+		(char*)&text[j], (char*)ucs4ptr, l * sizeof(FcChar32));
+
 	if(get_resources()->locale_utf8)
 	{
-		int l, len;
-
-		len = i - j;
-		l = sizeof(ucs4buffer) / sizeof(FcChar32);
-		if(ucs4ptr && ucs4ptr != ucs4buffer)
-			delete [] ucs4ptr;
-		if(len < l)
-			ucs4ptr = ucs4buffer;
-		else
-		{
-			ucs4ptr = new FcChar32[len];
-			l = len;
-		}
-
-		l = BC_Resources::encode_to_ucs4(&text[j], ucs4ptr, l);
-		XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
-			&xft_color,
-			top_level->get_xft_struct(top_level->current_font),
-			x2 + k, 
-			y2 + k,
-			ucs4ptr,
-			l);
+	// Correct length for utf8
+		FcChar32 *up;
+		for(up = ucs4ptr; up < &ucs4ptr[len]; up++)
+			if(*up < ' ')
+				break;
+		*up = 0;
+		len = up - ucs4ptr;
 	}
-	else
-#endif
-	{
-		XftDrawString8((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
-			&xft_color,
-			top_level->get_xft_struct(top_level->current_font),
-			x2 + k, 
-			y2 + k,
-			(const FcChar8*)&text[j],
-			i - j);
-	}
+
+	XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
+		&xft_color,
+		top_level->get_xft_struct(top_level->current_font),
+		x2 + k, 
+		y2 + k,
+		ucs4ptr,
+		len);
+
 	XftColorFree(top_level->display,
 		top_level->vis,
 		top_level->cmap,
