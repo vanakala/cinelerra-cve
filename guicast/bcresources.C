@@ -991,3 +991,51 @@ int BC_Resources::find_font_by_char(FT_ULong char_code, char *path_new)
 	FcFontSetDestroy(fs);
 	return result;
 }
+
+FcPattern* BC_Resources::find_similar_font(FT_ULong char_code, FcPattern *oldfont)
+{
+	FcPattern *pat, *font;
+	FcFontSet *fs;
+	FcObjectSet *os;
+	FcCharSet *fcs;
+	FcChar8 *file;
+	double dval;
+	int ival;
+
+	// Do not search control codes
+	if(char_code < ' ')
+		return 0;
+
+	pat = FcPatternCreate();
+	os = FcObjectSetBuild(FC_FILE, FC_CHARSET, FC_SCALABLE, FC_FAMILY,
+		FC_SLANT, FC_WEIGHT, FC_WIDTH, (char *)0);
+
+	FcPatternAddBool(pat, FC_SCALABLE, true);
+	if(FcPatternGetInteger(oldfont, FC_SLANT, 0, &ival) == FcResultMatch)
+		FcPatternAddInteger(pat, FC_SLANT, ival);
+	if(FcPatternGetInteger(oldfont, FC_WEIGHT, 0, &ival) == FcResultMatch)
+		FcPatternAddInteger(pat, FC_WEIGHT, ival);
+	if(FcPatternGetInteger(oldfont, FC_WIDTH,  0, &ival) == FcResultMatch)
+		FcPatternAddInteger(pat, FC_WIDTH, ival);
+	fs = FcFontList(0, pat, os);
+	FcPatternDestroy(pat);
+	FcObjectSetDestroy(os);
+
+	pat = 0;
+
+	for (int i = 0; i < fs->nfont; i++)
+	{
+		font = fs->fonts[i];
+		if(FcPatternGetCharSet(font, FC_CHARSET, 0, &fcs) == FcResultMatch)
+		{
+			if(FcCharSetHasChar(fcs, char_code))
+			{
+				pat =  FcPatternDuplicate(font);
+				break;
+			}
+		}
+	}
+	FcFontSetDestroy(fs);
+
+	return pat;
+}
