@@ -78,9 +78,9 @@ const char* BC_Resources::small_fontset = "-*-helvetica-medium-r-normal-*-10-*";
 const char* BC_Resources::medium_fontset = "-*-helvetica-bold-r-normal-*-14-*";
 const char* BC_Resources::large_fontset = "-*-helvetica-bold-r-normal-*-18-*";
 
-const char* BC_Resources::small_font_xft = N_("Sans-8");
-const char* BC_Resources::medium_font_xft = N_("Sans-10");
-const char* BC_Resources::large_font_xft = N_("Sans-16");
+const char* BC_Resources::small_font_xft = N_("Sans:pixelsize=10.66");
+const char* BC_Resources::medium_font_xft = N_("Sans:pixelsize=13.33");
+const char* BC_Resources::large_font_xft = N_("Sans:pixelsize=21.33");
 const char* BC_Resources::small_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
 const char* BC_Resources::medium_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
 const char* BC_Resources::large_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
