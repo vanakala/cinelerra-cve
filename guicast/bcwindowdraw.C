@@ -283,10 +283,6 @@ void BC_WindowBase::draw_utf8_text(int x,
 				if(get_resources()->use_xft && 
 					top_level->get_xft_struct(top_level->current_font))
 				{
-#ifdef X_HAVE_UTF8_STRING
-					int old_utf8 = get_resources()->locale_utf8;
-					get_resources()->locale_utf8 = 1;
-#endif
 					draw_xft_text(x,
 						y,
 						text,
@@ -296,10 +292,8 @@ void BC_WindowBase::draw_utf8_text(int x,
 						k,
 						y2,
 						j,
-						i);
-#ifdef X_HAVE_UTF8_STRING
-					get_resources()->locale_utf8 = old_utf8;
-#endif
+						i,
+						1);
 				}
 				else
 #endif
@@ -343,12 +337,20 @@ void BC_WindowBase::draw_xft_text(int x,
 	int k,
 	int y2,
 	int j,
-	int i)
+	int i,
+	int is_utf8)
 {
 #ifdef HAVE_XFT
 	XRenderColor color;
 	XftColor xft_color;
-	int l, len;
+	FcChar32 *up, *ubp;
+	int l, len, cx, cy;
+	FcPattern *newpat;
+	XftFont *curfont, *nextfont, *altfont, *basefont;
+
+	if((len = i - j) <= 0)
+		return;
+
 	color.red = (top_level->current_color & 0xff0000) >> 16;
 	color.red |= color.red << 8;
 	color.green = (top_level->current_color & 0xff00) >> 8;
@@ -363,7 +365,6 @@ void BC_WindowBase::draw_xft_text(int x,
 		&color,
 		&xft_color);
 
-	len = i - j;
 	l = sizeof(ucs4buffer) / sizeof(FcChar32);
 	if(ucs4ptr && ucs4ptr != ucs4buffer)
 		delete [] ucs4ptr;
@@ -375,27 +376,91 @@ void BC_WindowBase::draw_xft_text(int x,
 		l = len;
 	}
 
-	BC_Resources::encode(get_resources()->encoding, "UTF32LE",
+	BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding, "UTF32LE",
 		(char*)&text[j], (char*)ucs4ptr, l * sizeof(FcChar32));
 
-	if(get_resources()->locale_utf8)
-	{
 	// Correct length for utf8
-		FcChar32 *up;
-		for(up = ucs4ptr; up < &ucs4ptr[len]; up++)
-			if(*up < ' ')
-				break;
-		*up = 0;
-		len = up - ucs4ptr;
+	for(up = ucs4ptr; up < &ucs4ptr[len]; up++)
+		if(*up < ' ')
+			break;
+	*up = 0;
+	len = up - ucs4ptr;
+
+	basefont = top_level->get_xft_struct(top_level->current_font);
+
+	curfont = nextfont = basefont;
+	altfont = 0;
+	cy = y2 + k;
+	cx = x2 + k;
+	ubp = ucs4ptr;
+
+	for(up = ucs4ptr; up < &ucs4ptr[len]; up++)
+	{
+		if(XftCharExists(top_level->display, basefont, *up))
+			nextfont = basefont;
+		else if(altfont && XftCharExists(top_level->display, altfont, *up))
+			nextfont = altfont;
+		else
+		{
+			if(altfont)
+				XftFontClose(top_level->display, altfont);
+
+			if(newpat = BC_Resources::find_similar_font(*up, basefont->pattern))
+			{
+				double psize;
+
+				FcPatternGetDouble(basefont->pattern, FC_PIXEL_SIZE,
+					0, &psize);
+				FcPatternAddDouble(newpat, FC_PIXEL_SIZE, psize);
+				FcPatternDel(newpat, FC_SCALABLE);
+				altfont = XftFontOpenPattern(top_level->display,
+					newpat);
+				if(altfont)
+					nextfont = altfont;
+				FcPatternDestroy(newpat);
+			}
+			else
+			{
+				altfont = 0;
+				nextfont = basefont;
+			}
+		}
+		if(nextfont != curfont)
+		{
+			XGlyphInfo extents;
+
+			l = up - ubp;
+			XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
+				&xft_color,
+				curfont,
+				cx,
+				cy,
+				ubp,
+				l);
+			XftTextExtents32(top_level->display,
+				curfont,
+				ubp,
+				l,
+				&extents);
+			cx += extents.xOff;
+			ubp = up;
+			curfont = nextfont;
+		}
 	}
 
-	XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
-		&xft_color,
-		top_level->get_xft_struct(top_level->current_font),
-		x2 + k, 
-		y2 + k,
-		ucs4ptr,
-		len);
+	if(up > ubp)
+	{
+		XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
+			&xft_color,
+			curfont,
+			cx,
+			cy,
+			ubp,
+			up - ubp);
+	}
+
+	if(altfont)
+		XftFontClose(top_level->display, altfont);
 
 	XftColorFree(top_level->display,
 		top_level->vis,

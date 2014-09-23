@@ -334,7 +334,8 @@ public:
 		int k,
 		int y2,
 		int j,
-		int i);
+		int i,
+		int is_utf8 = 0);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
