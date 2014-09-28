@@ -253,6 +253,7 @@ C41Config::C41Config()
 	fix_min_r = fix_min_g = fix_min_b = fix_light = 0.;
 	fix_gamma_g = fix_gamma_b = fix_coef1 = fix_coef2 = 0.;
 	min_col = max_col = min_row = max_row = 0;
+	frame_max_col = frame_max_row = -1;
 }
 
 void C41Config::copy_from(C41Config &src)
@@ -274,8 +275,8 @@ void C41Config::copy_from(C41Config &src)
 	max_row = src.max_row;
 	min_col = src.min_col;
 	max_col = src.max_col;
-	frame_max_col = frame_max_col;
-	frame_max_row = frame_max_row;
+	frame_max_col = src.frame_max_col;
+	frame_max_row = src.frame_max_row;
 }
 
 int C41Config::equivalent(C41Config &src)
@@ -612,15 +613,10 @@ C41Effect::C41Effect(PluginServer *server)
 
 C41Effect::~C41Effect()
 {
-	if(tmp_frame)
-		delete tmp_frame;
-	if(blurry_frame)
-		delete blurry_frame;
-	if(pv_alloc)
-	{
-		delete pv_min;
-		delete pv_max;
-	}
+	delete tmp_frame;
+	delete blurry_frame;
+	delete [] pv_min;
+	delete [] pv_max;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
