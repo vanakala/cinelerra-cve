@@ -139,7 +139,16 @@ public:
 
 	C41Effect *plugin;
 	C41Window *window;
-	float *boxValue;
+};
+
+class C41BoxButton : public BC_GenericButton
+{
+public:
+	C41BoxButton(C41Effect *plugin, C41Window *window, int x, int y);
+	int handle_event();
+
+	C41Effect *plugin;
+	C41Window *window;
 };
 
 class C41Slider : public BC_ISlider
@@ -186,6 +195,7 @@ public:
 	C41TextBox *fix_coef1;
 	C41TextBox *fix_coef2;
 	C41Button *lock;
+	C41BoxButton *boxlock;
 	C41Slider *min_row;
 	C41Slider *max_row;
 	C41Slider *min_col;
@@ -360,7 +370,7 @@ int C41TextBox::handle_event()
 
 // C41Button
 C41Button::C41Button(C41Effect *plugin, C41Window *window, int x, int y)
- : BC_GenericButton(x, y, "Lock parameters")
+ : BC_GenericButton(x, y, _("Apply values"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -374,8 +384,29 @@ int C41Button::handle_event()
 	plugin->config.fix_light = plugin->values.light;
 	plugin->config.fix_gamma_g = plugin->values.gamma_g;
 	plugin->config.fix_gamma_b = plugin->values.gamma_b;
-	plugin->config.fix_coef1 = plugin->values.coef1;
-	plugin->config.fix_coef2 = plugin->values.coef2;
+	if(plugin->values.coef1 > 0)
+		plugin->config.fix_coef1 = plugin->values.coef1;
+	if(plugin->values.coef2 > 0)
+		plugin->config.fix_coef2 = plugin->values.coef2;
+	plugin->config.frame_max_row = plugin->values.frame_max_row;
+	plugin->config.frame_max_col = plugin->values.frame_max_col;
+
+	window->update();
+
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+C41BoxButton::C41BoxButton(C41Effect *plugin, C41Window *window, int x, int y)
+ : BC_GenericButton(x, y, _("Apply box"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int C41BoxButton::handle_event()
+{
 	plugin->config.min_row = plugin->values.shave_min_row;
 	plugin->config.max_row = plugin->values.shave_max_row;
 	plugin->config.min_col = plugin->values.shave_min_col;
@@ -463,6 +494,9 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	add_subwindow(coef2 = new BC_Title(x + 80, y, "0.0000"));
 	y += 30;
 
+	add_subwindow(lock = new C41Button(plugin, this, x, y));
+	y += 30;
+
 #define BOX_COL 120
 	add_subwindow(new BC_Title(x, y, _("Box col:")));
 	add_subwindow(box_col_min = new BC_Title(x + 80, y, 0));
@@ -474,8 +508,7 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	add_subwindow(box_row_max = new BC_Title(x + BOX_COL, y, 0));
 	y += 30;
 
-	y += 30;
-	add_subwindow(lock = new C41Button(plugin, this, x, y));
+	add_subwindow(boxlock = new C41BoxButton(plugin, this, x, y));
 
 	y = 10;
 	x = 250;
@@ -590,8 +623,12 @@ void C41Window::update_magic()
 	light->update(plugin->values.light);
 	gamma_g->update(plugin->values.gamma_g);
 	gamma_b->update(plugin->values.gamma_b);
-	coef1->update(plugin->values.coef1);
-	coef2->update(plugin->values.coef2);
+	// Avoid blinking
+	if(plugin->values.coef1 > 0 || plugin->values.coef2 > 0)
+	{
+		coef1->update(plugin->values.coef1);
+		coef2->update(plugin->values.coef2);
+	}
 	box_col_min->update(plugin->values.shave_min_col);
 	box_col_max->update(plugin->values.shave_max_col);
 	box_row_min->update(plugin->values.shave_min_row);
@@ -977,6 +1014,8 @@ void C41Effect::process_frame(VFrame *frame)
 		values.shave_max_row = shave_max_row;
 		values.frame_max_row = frame_h;
 		values.frame_max_col = frame_w;
+		values.coef1 = -1;
+		values.coef2 = -1;
 
 		// Update GUI
 		send_render_gui(&values);
