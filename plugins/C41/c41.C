@@ -232,6 +232,7 @@ public:
 	VFrame* blurry_frame;
 	struct magic values;
 
+	float pix_max;
 	float *pv_min;
 	float *pv_max;
 	int pv_alloc;
@@ -592,6 +593,7 @@ void C41Window::update()
 	fix_gamma_b->update(plugin->config.fix_gamma_b);
 	fix_coef1->update(plugin->config.fix_coef1);
 	fix_coef2->update(plugin->config.fix_coef2);
+
 	if(plugin->config.frame_max_col > 0 && plugin->config.frame_max_row > 0 &&
 			(plugin->config.frame_max_col != slider_max_col ||
 			plugin->config.frame_max_row != slider_max_row))
@@ -826,7 +828,7 @@ void C41Effect::process_frame(VFrame *frame)
 	int frame_h = frame->get_h();
 
 	// Minimum pxel value is 0
-	float pix_max = cmodel_calculate_max(frame->get_color_model());
+	pix_max = cmodel_calculate_max(frame->get_color_model());
 
 	switch(frame->get_color_model())
 	{
@@ -989,8 +991,8 @@ void C41Effect::process_frame(VFrame *frame)
 		for(int i = min_row; i < max_row; i++)
 		{
 			float *row = (float*)blurry_frame->get_rows()[i];
-			row += 3 * min_col;
-			for(int j = min_col; j < max_col; j++, row += 3)
+			row += pixlen * min_col;
+			for(int j = min_col; j < max_col; j++, row += pixlen)
 			{
 
 				if(row[0] < minima_r) minima_r = row[0];
@@ -1036,16 +1038,16 @@ void C41Effect::process_frame(VFrame *frame)
 				row[2] = normalize_pixel(C41_POW_FUNC((config.fix_min_b / row[2]), config.fix_gamma_b) - config.fix_light);
 			}
 		}
-		if(config.compute_magic)
+		if(config.compute_magic && !config.postproc)
 		{
 			float minima_r = 50., minima_g = 50., minima_b = 50.;
 			float maxima_r = 0., maxima_g = 0., maxima_b = 0.;
 
-			for(int i = shave_min_row; i < shave_max_row; i++)
+			for(int i = min_row; i < max_row; i++)
 			{
 				float *row = (float*)frame->get_rows()[i];
 				row += 3 * shave_min_col;
-				for(int j = shave_min_col; j < shave_max_col; j++, row += 3)
+				for(int j = min_col; j < max_col; j++, row += 3)
 				{
 					if(row[0] < minima_r) minima_r = row[0];
 					if(row[0] > maxima_r) maxima_r = row[0];
@@ -1074,42 +1076,42 @@ void C41Effect::process_frame(VFrame *frame)
 			values.coef1 = 0.770 / (values.coef1 - values.coef2);
 			values.coef2 = 0.065 - values.coef2 * values.coef1;
 			send_render_gui(&values);
+		}
 
-			if(config.show_box)
+		if(config.compute_magic && config.show_box)
+		{
+			if(min_row < max_row - 1)
 			{
-				if(min_row < max_row - 1)
-				{
-					float *row1 = (float *)frame->get_rows()[min_row];
-					float *row2 = (float *)frame->get_rows()[max_row - 1];
+				float *row1 = (float *)frame->get_rows()[min_row];
+				float *row2 = (float *)frame->get_rows()[max_row - 1];
 
-					for(int i = 0; i < frame_w; i++)
+				for(int i = 0; i < frame_w; i++)
+				{
+					for(int j = 0; j < 3; j++)
 					{
-						for(int j = 0; j < 3; j++)
-						{
-							row1[j] = pix_max - row1[j];
-							row2[j] = pix_max - row2[j];
-						}
-						row1 += pixlen;
-						row2 += pixlen;
+						row1[j] = pix_max - row1[j];
+						row2[j] = pix_max - row2[j];
 					}
+					row1 += pixlen;
+					row2 += pixlen;
 				}
+			}
 
-				if(min_col < max_col - 1)
+			if(min_col < max_col - 1)
+			{
+				int pix1 = pixlen * min_col;
+				int pix2 = pixlen * (max_col - 1);
+
+				for(int i = 0; i < frame_h; i++)
 				{
-					int pix1 = pixlen * min_col;
-					int pix2 = pixlen * (max_col - 1);
+					float *row = (float *)frame->get_rows()[i];
+					float *row2 = row + pix2;
+					float *row1 = row + pix1;
 
-					for(int i = 0; i < frame_h; i++)
+					for(int j = 0; j < 3; j++)
 					{
-						float *row = (float *)frame->get_rows()[i];
-						float *row2 = row + pix2;
-						float *row1 = row + pix1;
-
-						for(int j = 0; j < 3; j++)
-						{
-							row1[j] = pix_max - row1[j];
-							row2[j] = pix_max - row2[j];
-						}
+						row1[j] = pix_max - row1[j];
+						row2[j] = pix_max - row2[j];
 					}
 				}
 			}
@@ -1124,7 +1126,7 @@ float C41Effect::normalize_pixel(float ival)
 	if(config.postproc)
 		val = config.fix_coef1 * val + config.fix_coef2;
 
-	CLAMP(val, 0., 1.);
+	CLAMP(val, 0., pix_max);
 	return val;
 }
 
@@ -1140,7 +1142,7 @@ float C41Effect::fix_exepts(float ival)
 		if(ival < 0)
 			ival = 0.;
 		else
-			ival = 1.;
+			ival = pix_max;
 		break;
 	}
 	return ival;
