@@ -154,7 +154,7 @@ public:
 class C41Slider : public BC_ISlider
 {
 public:
-	C41Slider(C41Effect *plugin, int *output, int x, int y);
+	C41Slider(C41Effect *plugin, int *output, int x, int y, int max);
 
 	int handle_event();
 
@@ -421,14 +421,14 @@ int C41BoxButton::handle_event()
 }
 
 
-C41Slider::C41Slider(C41Effect *plugin, int *output, int x, int y)
+C41Slider::C41Slider(C41Effect *plugin, int *output, int x, int y, int max)
  : BC_ISlider(x,
 	y,
 	0,
 	200,
 	200,
 	0,
-	1000,
+	max > 0 ? max : 1000,
 	*output)
 {
 	this->plugin = plugin;
@@ -555,17 +555,21 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 
 	x += 40;
 	add_subwindow(new BC_Title(x - 40, y, _("Col:")));
-	add_subwindow(min_col = new C41Slider(plugin, &plugin->config.min_col, x, y));
+	add_subwindow(min_col = new C41Slider(plugin, &plugin->config.min_col, x, y,
+		plugin->config.frame_max_col));
 	y += 25;
 
-	add_subwindow(max_col = new C41Slider(plugin, &plugin->config.max_col, x, y));
+	add_subwindow(max_col = new C41Slider(plugin, &plugin->config.max_col, x, y,
+		plugin->config.frame_max_col));
 	y += 25;
 
 	add_subwindow(new BC_Title(x - 40, y, _("Row:")));
-	add_subwindow(min_row = new C41Slider(plugin, &plugin->config.min_row, x, y));
+	add_subwindow(min_row = new C41Slider(plugin, &plugin->config.min_row, x, y,
+		plugin->config.frame_max_row));
 	y += 25;
 
-	add_subwindow(max_row = new C41Slider(plugin, &plugin->config.max_row, x, y));
+	add_subwindow(max_row = new C41Slider(plugin, &plugin->config.max_row, x, y,
+		plugin->config.frame_max_row));
 	y += 25;
 
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
@@ -588,22 +592,20 @@ void C41Window::update()
 	fix_gamma_b->update(plugin->config.fix_gamma_b);
 	fix_coef1->update(plugin->config.fix_coef1);
 	fix_coef2->update(plugin->config.fix_coef2);
-	if(plugin->config.frame_max_col > 0 && plugin->config.frame_max_row > 0)
+	if(plugin->config.frame_max_col > 0 && plugin->config.frame_max_row > 0 &&
+			(plugin->config.frame_max_col != slider_max_col ||
+			plugin->config.frame_max_row != slider_max_row))
 	{
-		if(plugin->config.frame_max_col != slider_max_col ||
-			plugin->config.frame_max_row != slider_max_row)
-		{
-			min_row->update(200, plugin->config.min_row,
-				0, plugin->config.frame_max_row);
-			max_row->update(200, plugin->config.max_row,
-				0, plugin->config.frame_max_row);
-			min_col->update(200, plugin->config.min_col,
-				0, plugin->config.frame_max_col);
-			max_col->update(200, plugin->config.max_col,
-				0, plugin->config.frame_max_col);
-			slider_max_row = plugin->config.frame_max_row;
-			slider_max_col = plugin->config.frame_max_col;
-		}
+		min_row->update(200, plugin->config.min_row,
+			0, plugin->config.frame_max_row);
+		max_row->update(200, plugin->config.max_row,
+			0, plugin->config.frame_max_row);
+		min_col->update(200, plugin->config.min_col,
+			0, plugin->config.frame_max_col);
+		max_col->update(200, plugin->config.max_col,
+			0, plugin->config.frame_max_col);
+		slider_max_row = plugin->config.frame_max_row;
+		slider_max_col = plugin->config.frame_max_col;
 	}
 	else
 	{
