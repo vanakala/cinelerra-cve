@@ -27,6 +27,8 @@
 #define PLUGIN_THREAD_CLASS C41Thread
 #define PLUGIN_GUI_CLASS C41Window
 
+#define SLIDER_LENGTH 1000
+
 #include "pluginmacros.h"
 
 #include "clip.h"
@@ -429,7 +431,7 @@ C41Slider::C41Slider(C41Effect *plugin, int *output, int x, int y, int max)
 	200,
 	200,
 	0,
-	max > 0 ? max : 1000,
+	max > 0 ? max : SLIDER_LENGTH,
 	*output)
 {
 	this->plugin = plugin;
@@ -572,6 +574,9 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	add_subwindow(max_row = new C41Slider(plugin, &plugin->config.max_row, x, y,
 		plugin->config.frame_max_row));
 	y += 25;
+
+	slider_max_row = SLIDER_LENGTH;
+	slider_max_col = SLIDER_LENGTH;
 
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_magic();
