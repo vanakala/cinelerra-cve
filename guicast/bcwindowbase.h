@@ -252,6 +252,7 @@ public:
 	int get_has_focus();
 	int get_dragging();
 	char* get_keystring();
+	wchar_t* get_wkeystring(int *length = 0);
 	int get_keypress();
 // Get cursor position of last event
 	int get_cursor_x();
@@ -274,6 +275,7 @@ public:
 	int get_text_descent(int font);
 	int get_text_height(int font, const char *text = 0);
 	int get_text_width(int font, const char *text, int length = -1);
+	int get_text_width(int font, const FcChar32 *text, int length = -1);
 	BC_Clipboard* get_clipboard();
 	void set_dragging(int value);
 	int set_w(int w);
@@ -336,6 +338,8 @@ public:
 		int j,
 		int i,
 		int is_utf8 = 0);
+	void draw_wtext(int x, int y, const FcChar32 *text, int length = -1,
+		BC_Pixmap *pixmap = 0, int k = 0);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
@@ -556,6 +560,7 @@ private:
 	void create_shared_colors();
 // Get width of a single line.  Used by get_text_width
 	int get_single_text_width(int font, const char *text, int length);
+	int get_single_text_width(int font, const FcChar32 *text, int length);
 	void allocate_color_table();
 	void init_gc();
 	void init_fonts();
@@ -674,6 +679,8 @@ private:
 // Last key pressed
 	int key_pressed;
 	char key_string[6];
+	int wkey_string_length;
+	wchar_t wkey_string[4];
 // During a selection drag involving toggles, set the same value for each toggle
 	int toggle_value;
 	int toggle_drag;

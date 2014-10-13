@@ -33,6 +33,7 @@
 #include "fonts.h"
 #include "vframe.h"
 #include <string.h>
+#include <wchar.h>
 
 void BC_WindowBase::copy_area(int x1, int y1, int x2, int y2, int w, int h, BC_Pixmap *pixmap)
 {
@@ -340,30 +341,11 @@ void BC_WindowBase::draw_xft_text(int x,
 	int i,
 	int is_utf8)
 {
-#ifdef HAVE_XFT
-	XRenderColor color;
-	XftColor xft_color;
-	FcChar32 *up, *ubp;
-	int l, len, cx, cy;
-	FcPattern *newpat;
-	XftFont *curfont, *nextfont, *altfont, *basefont;
+	FcChar32 *up;
+	int l, len;
 
 	if((len = i - j) <= 0)
 		return;
-
-	color.red = (top_level->current_color & 0xff0000) >> 16;
-	color.red |= color.red << 8;
-	color.green = (top_level->current_color & 0xff00) >> 8;
-	color.green |= color.green << 8;
-	color.blue = (top_level->current_color & 0xff);
-	color.blue |= color.blue << 8;
-	color.alpha = 0xffff;
-
-	XftColorAllocValue(top_level->display,
-		top_level->vis,
-		top_level->cmap,
-		&color,
-		&xft_color);
 
 	l = sizeof(ucs4buffer) / sizeof(FcChar32);
 	if(ucs4ptr && ucs4ptr != ucs4buffer)
@@ -386,15 +368,54 @@ void BC_WindowBase::draw_xft_text(int x,
 	*up = 0;
 	len = up - ucs4ptr;
 
+	draw_wtext(x2, y2, ucs4ptr, len, pixmap, k);
+}
+
+void BC_WindowBase::draw_wtext(int x,
+	int y,
+	const FcChar32 *text,
+	int length,
+	BC_Pixmap *pixmap,
+	int k)
+{
+#ifdef HAVE_XFT
+	XRenderColor color;
+	XftColor xft_color;
+	const FcChar32 *up, *ubp;
+	int cx, cy, l;
+	FcPattern *newpat;
+	XftFont *curfont, *nextfont, *altfont, *basefont;
+
+	if(length < 0)
+		length = wcslen((wchar_t*)text);
+
+	if(!length)
+		return;
+
+	color.red = (top_level->current_color & 0xff0000) >> 16;
+	color.red |= color.red << 8;
+	color.green = (top_level->current_color & 0xff00) >> 8;
+	color.green |= color.green << 8;
+	color.blue = (top_level->current_color & 0xff);
+	color.blue |= color.blue << 8;
+	color.alpha = 0xffff;
+
+	XftColorAllocValue(top_level->display,
+		top_level->vis,
+		top_level->cmap,
+		&color,
+		&xft_color);
+
+
 	basefont = top_level->get_xft_struct(top_level->current_font);
 
 	curfont = nextfont = basefont;
 	altfont = 0;
-	cy = y2 + k;
-	cx = x2 + k;
-	ubp = ucs4ptr;
+	cy = y + k;
+	cx = x + k;
+	ubp = text;
 
-	for(up = ucs4ptr; up < &ucs4ptr[len]; up++)
+	for(up = text; up < &text[length]; up++)
 	{
 		if(XftCharExists(top_level->display, basefont, *up))
 			nextfont = basefont;

@@ -51,6 +51,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <poll.h>
+#include <wchar.h>
 
 #include <X11/extensions/Xvlib.h>
 #include <X11/extensions/shape.h>
@@ -831,7 +832,10 @@ void BC_WindowBase::dispatch_event()
 
 #ifdef X_HAVE_UTF8_STRING
 		if(input_context)
-			Xutf8LookupString(input_context, (XKeyEvent*)&event, key_string, 6, &keysym, 0);
+		{
+			wkey_string_length = XwcLookupString(input_context,
+				(XKeyEvent*)&event, wkey_string, 4, &keysym, 0);
+		}
 		else
 			XLookupString((XKeyEvent*)&event, key_string, 6, &keysym,  0);
 #else
@@ -2248,10 +2252,52 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	}
 }
 
+int BC_WindowBase::get_single_text_width(int font, const FcChar32 *text, int length)
+{
+#ifdef HAVE_XFT
+	XGlyphInfo extents;
+
+	XftTextExtents32(top_level->display,
+		get_xft_struct(font),
+		text,
+		length,
+		&extents);
+	return extents.xOff;
+#endif
+}
+
 int BC_WindowBase::get_text_width(int font, const char *text, int length)
 {
 	int i, j, w = 0, line_w = 0;
 	if(length < 0) length = strlen(text);
+
+	for(i = 0, j = 0; i <= length; i++)
+	{
+		line_w = 0;
+		if(text[i] == '\n')
+		{
+			line_w = get_single_text_width(font, &text[j], i - j);
+			j = i + 1;
+		}
+		else
+		if(text[i] == 0)
+		{
+			line_w = get_single_text_width(font, &text[j], length - j);
+		}
+		if(line_w > w) w = line_w;
+	}
+
+	if(i > length && w == 0)
+	{
+		w = get_single_text_width(font, text, length);
+	}
+	return w;
+}
+
+int BC_WindowBase::get_text_width(int font, const FcChar32 *text, int length)
+{
+	int i, j, w = 0, line_w = 0;
+	if(length < 0) length = wcslen((wchar_t*)text);
 
 	for(i = 0, j = 0; i <= length; i++)
 	{
@@ -3043,6 +3089,13 @@ int BC_WindowBase::ctrl_down()
 char* BC_WindowBase::get_keystring()
 {
 	return top_level->key_string;
+}
+
+wchar_t* BC_WindowBase::get_wkeystring(int *length)
+{
+	if(length)
+		*length = top_level->wkey_string_length;
+	return top_level->wkey_string;
 }
 
 int BC_WindowBase::get_keypress()
