@@ -39,7 +39,8 @@ public:
 		int rows, 
 		const char *text, 
 		int has_border = 1, 
-		int font = MEDIUMFONT);
+		int font = MEDIUMFONT,
+		int is_utf8 = 0);
 	BC_TextBox(int x, 
 		int y, 
 		int w, 
@@ -70,6 +71,7 @@ public:
 	virtual void motion_event() {};
 	void set_selection(int char1, int char2, int ibeam);
 	void update(const char *text);
+	void updateutf8(const char *text);
 	void update(int64_t value);
 	void update(int value);
 	void update(float value);
@@ -99,9 +101,6 @@ public:
 	int get_text_row();
 	void reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
-#ifdef X_HAVE_UTF8_STRING
-	int utf8seek(int &seekpoint, int reverse);
-#endif
 	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
@@ -127,6 +126,7 @@ protected:
 	int defaultcolor;
 
 private:
+	void convert_number();
 	void reset_parameters(int rows, int has_border, int font);
 	void draw();
 	void draw_border();
@@ -134,7 +134,8 @@ private:
 	void copy_selection(int clipboard_num);
 	void paste_selection(int clipboard_num);
 	void delete_selection(int letter1, int letter2, int text_len);
-	void insert_text(const char *string);
+	void insert_text(const wchar_t *string, int string_len = -1);
+	void update_wtext();
 // Reformat text according to separators.
 // ibeam_left causes the ibeam to move left.
 	void do_separators(int ibeam_left);
@@ -162,7 +163,9 @@ private:
 	int highlighted;
 	int high_color, back_color;
 	int background_color;
-	char text[BCTEXTLEN], text_row[BCTEXTLEN];
+	char ntext[BCTEXTLEN];
+	wchar_t wtext[BCTEXTLEN], wtext_row[BCTEXTLEN];
+	int wtext_len;
 	int active;
 	int enabled;
 	int precision;
