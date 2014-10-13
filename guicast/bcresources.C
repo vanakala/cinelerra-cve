@@ -898,11 +898,12 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 
 #endif
 
-void BC_Resources::encode(const char *from_enc, const char *to_enc,
-	char *input, char *output, int output_length)
+size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
+	char *input, char *output, int output_length, int input_length)
 {
-	size_t inbytes;
+	size_t inbytes, outbytes;
 	iconv_t cd;
+	char *outbase = output;
 
 	if(!from_enc || *from_enc == 0)
 		from_enc = "UTF-8";
@@ -910,25 +911,40 @@ void BC_Resources::encode(const char *from_enc, const char *to_enc,
 	if(!to_enc || *to_enc == 0)
 		to_enc = "UTF-8";
 
-	if(strcmp(from_enc, to_enc) && (inbytes = strlen(input)))
+	if(input_length < 0)
+		inbytes = strlen(input);
+	else
+		inbytes = input_length;
+
+	if(strcmp(from_enc, to_enc) && inbytes)
 	{
 		if((cd = iconv_open(to_enc, from_enc)) == (iconv_t)-1)
 		{
 			printf(_("Conversion from %s to %s is not available"),
 				from_enc, to_enc);
-			return;
+			return 0;
 		}
 
-		size_t outbytes = output_length - 1;
-		do {
-			if(iconv(cd, &input, &inbytes, &output, &outbytes) == (size_t) -1)
-			break;
-		} while(inbytes > 0 && outbytes > 0);
-		*output = 0;
+		outbytes = output_length - 1;
+
+		iconv(cd, &input, &inbytes, &output, &outbytes);
+
 		iconv_close(cd);
+		inbytes = output - outbase;
 	}
-	else
-	strcpy(input, output);
+	else if(inbytes)
+	{
+		memcpy(output,  input, inbytes);
+		outbytes -= inbytes;
+	}
+
+	for(int i = 0; i < 4; i++)
+	{
+		output[i] = 0;
+		if(--outbytes <= 0)
+			break;
+	}
+	return inbytes;
 }
 
 int BC_Resources::encode_to_ucs4(const char *input, FcChar32 *output, int output_length)
