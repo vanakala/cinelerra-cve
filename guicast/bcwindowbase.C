@@ -248,6 +248,10 @@ void BC_WindowBase::initialize()
 	largefont_xft = 0;
 	mediumfont_xft = 0;
 	smallfont_xft = 0;
+	bold_largefont_xft = 0;
+	bold_mediumfont_xft = 0;
+	bold_smallfont_xft = 0;
+
 #ifdef X_HAVE_UTF8_STRING
 	input_method = 0;
 	input_context = 0;
@@ -1738,37 +1742,43 @@ void BC_WindowBase::init_xft()
 {
 #ifdef HAVE_XFT
 // Rewrite to be fonts chooser ready
-	if(resources.large_font_xft[0] == '-')
-		largefont_xft = XftFontOpenXlfd(display, screen,
-			resources.large_font_xft);
-	else
-		largefont_xft = XftFontOpenName(display, screen,
-			resources.large_font_xft);
+	largefont_xft = XftFontOpenName(display, screen,
+		resources.large_font_xft);
 
-	if(resources.medium_font_xft[0] == '-')
-		mediumfont_xft = XftFontOpenXlfd(display, screen,
-			resources.medium_font_xft);
-	else
-		mediumfont_xft = XftFontOpenName(display, screen,
-			resources.medium_font_xft);
+	mediumfont_xft = XftFontOpenName(display, screen,
+		resources.medium_font_xft);
 
-	if(resources.small_font_xft[0] == '-')
-		smallfont_xft = XftFontOpenXlfd(display, screen,
-			resources.small_font_xft);
-	else
-		smallfont_xft = XftFontOpenName(display, screen,
-			resources.small_font_xft);
+	smallfont_xft = XftFontOpenName(display, screen,
+		resources.small_font_xft);
+
+	bold_largefont_xft = XftFontOpenName(display, screen,
+		resources.large_b_font_xft);
+
+	bold_mediumfont_xft = XftFontOpenName(display, screen,
+		resources.medium_b_font_xft);
+
+	bold_smallfont_xft = XftFontOpenName(display, screen,
+		resources.small_b_font_xft);
 
 // Extension failed to locate fonts
-	if(!largefont_xft || !mediumfont_xft || !smallfont_xft)
+	if(!largefont_xft || !mediumfont_xft || !smallfont_xft ||
+		!largefont_xft || !mediumfont_xft || !smallfont_xft)
 	{
-		printf("BC_WindowBase::init_fonts: no xft fonts found %s=%p %s=%p %s=%p\n",
+		printf("BC_WindowBase::init_fonts: no xft fonts found\n"
+			"    %s=%p %s=%p %s=%p\n"
+			"    %s=%p %s=%p %s=%p\n",
 			resources.large_font_xft,
 			largefont_xft,
 			resources.medium_font_xft,
 			mediumfont_xft,
 			resources.small_font_xft,
-			smallfont_xft);
+			smallfont_xft,
+			resources.large_b_font_xft,
+			bold_largefont_xft,
+			resources.medium_b_font_xft,
+			bold_mediumfont_xft,
+			resources.small_b_font_xft,
+			bold_smallfont_xft);
 		get_resources()->use_xft = 0;
 	}
 #endif
@@ -2134,9 +2144,6 @@ XFontSet BC_WindowBase::get_fontset(int font)
 #ifdef HAVE_XFT
 XftFont* BC_WindowBase::get_xft_struct(int font)
 {
-// Clear out unrelated flags
-	if(font & BOLDFACE) font ^= BOLDFACE;
-
 	switch(font)
 	{
 	case MEDIUMFONT:
@@ -2144,7 +2151,13 @@ XftFont* BC_WindowBase::get_xft_struct(int font)
 	case SMALLFONT:
 		return (XftFont*)top_level->smallfont_xft;
 	case LARGEFONT:
-		return (XftFont*)top_level->largefont_xft;  
+		return (XftFont*)top_level->largefont_xft;
+	case MEDIUMFONT_3D:
+		return (XftFont*)top_level->bold_mediumfont_xft;
+	case SMALLFONT_3D:
+		return (XftFont*)top_level->bold_smallfont_xft;
+	case LARGEFONT_3D:
+		return (XftFont*)top_level->bold_largefont_xft;
 	}
 
 	return 0;

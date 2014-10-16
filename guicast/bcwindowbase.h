@@ -332,14 +332,11 @@ public:
 		const char *text, 
 		int length, 
 		BC_Pixmap *pixmap,
-		int x2,
-		int k,
-		int y2,
 		int j,
 		int i,
 		int is_utf8 = 0);
 	void draw_wtext(int x, int y, const FcChar32 *text, int length = -1,
-		BC_Pixmap *pixmap = 0, int k = 0);
+		BC_Pixmap *pixmap = 0);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
@@ -712,6 +709,7 @@ private:
 
 // Must be void so users don't need to include the wrong libpng version.
 	void *largefont_xft, *mediumfont_xft, *smallfont_xft;
+	void *bold_largefont_xft, *bold_mediumfont_xft, *bold_smallfont_xft;
 
 	int current_color;
 // Coordinate of drag start

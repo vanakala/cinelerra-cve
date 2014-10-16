@@ -107,10 +107,8 @@ void BC_WindowBase::draw_text(int x,
 	BC_Pixmap *pixmap)
 {
 	if(length < 0) length = strlen(text);
-	int boldface = top_level->current_font & BOLDFACE;
-	int font = top_level->current_font & 0xff;
 
-	switch(font)
+	switch(top_level->current_font)
 	{
 	case MEDIUM_7SEGMENT:
 		for(int i = 0; i < length; i++)
@@ -197,86 +195,7 @@ void BC_WindowBase::draw_text(int x,
 		break;
 
 	default:
-// Set drawing color for dropshadow
-		int color = get_color();
-		if(boldface) set_color(BLACK);
-
-		for(int k = (boldface ? 1 : 0); k >= 0; k--)
-		{
-			for(int i = 0, j = 0, x2 = x, y2 = y; 
-				i <= length; 
-				i++)
-			{
-				if(text[i] == '\n' || text[i] == 0)
-				{
-#ifdef HAVE_XFT
-					if(get_resources()->use_xft && 
-						top_level->get_xft_struct(top_level->current_font))
-					{
-						draw_xft_text(x,
-							y,
-							text,
-							length,
-							pixmap,
-							x2,
-							k,
-							y2,
-							j,
-							i);
-					}
-					else
-#endif
-					if(get_resources()->use_fontset && top_level->get_curr_fontset())
-					{
-						XmbDrawString(top_level->display,
-							pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-							top_level->get_curr_fontset(),
-							top_level->gc,
-							x2 + k,
-							y2 + k,
-							&text[j],
-							i - j);
-					}
-					else
-					{
-						XDrawString(top_level->display,
-							pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-							top_level->gc,
-							x2 + k,
-							y2 + k,
-							&text[j],
-							i - j);
-					}
-
-					j = i + 1;
-					y2 += get_text_height(MEDIUMFONT);
-				}
-			}
-			if(boldface) set_color(color);
-		}
-		break;
-	}
-}
-
-void BC_WindowBase::draw_utf8_text(int x,
-	int y,
-	const char *text,
-	int length,
-	BC_Pixmap *pixmap)
-{
-	if(length < 0) length = strlen(text);
-	int boldface = top_level->current_font & BOLDFACE;
-	int font = top_level->current_font & 0xff;
-
-// Set drawing color for dropshadow
-	int color = get_color();
-	if(boldface) set_color(BLACK);
-
-	for(int k = (boldface ? 1 : 0); k >= 0; k--)
-	{
-		for(int i = 0, j = 0, x2 = x, y2 = y; 
-			i <= length; 
-			i++)
+		for(int i = 0, j = 0; i <= length; i++)
 		{
 			if(text[i] == '\n' || text[i] == 0)
 			{
@@ -289,12 +208,8 @@ void BC_WindowBase::draw_utf8_text(int x,
 						text,
 						length,
 						pixmap,
-						x2,
-						k,
-						y2,
 						j,
-						i,
-						1);
+						i);
 				}
 				else
 #endif
@@ -304,8 +219,8 @@ void BC_WindowBase::draw_utf8_text(int x,
 						pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
 						top_level->get_curr_fontset(),
 						top_level->gc,
-						x2 + k,
-						y2 + k,
+						x,
+						y,
 						&text[j],
 						i - j);
 				}
@@ -314,17 +229,72 @@ void BC_WindowBase::draw_utf8_text(int x,
 					XDrawString(top_level->display,
 						pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
 						top_level->gc,
-						x2 + k,
-						y2 + k,
+						x,
+						y,
 						&text[j],
 						i - j);
 				}
 
 				j = i + 1;
-				y2 += get_text_height(MEDIUMFONT);
+				y += get_text_height(MEDIUMFONT);
 			}
 		}
-		if(boldface) set_color(color);
+	}
+}
+
+void BC_WindowBase::draw_utf8_text(int x,
+	int y,
+	const char *text,
+	int length,
+	BC_Pixmap *pixmap)
+{
+	if(length < 0) length = strlen(text);
+	int font = top_level->current_font & 0xff;
+
+	for(int i = 0, j = 0; i <= length; i++)
+	{
+		if(text[i] == '\n' || text[i] == 0)
+		{
+#ifdef HAVE_XFT
+			if(get_resources()->use_xft && 
+				top_level->get_xft_struct(top_level->current_font))
+			{
+				draw_xft_text(x,
+					y,
+					text,
+					length,
+					pixmap,
+					j,
+					i,
+					1);
+			}
+			else
+#endif
+			if(get_resources()->use_fontset && top_level->get_curr_fontset())
+			{
+				XmbDrawString(top_level->display,
+					pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
+					top_level->get_curr_fontset(),
+					top_level->gc,
+					x,
+					y,
+					&text[j],
+					i - j);
+			}
+			else
+			{
+				XDrawString(top_level->display,
+					pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
+					top_level->gc,
+					x,
+					y,
+					&text[j],
+					i - j);
+			}
+
+			j = i + 1;
+			y += get_text_height(MEDIUMFONT);
+		}
 	}
 }
 
@@ -334,9 +304,6 @@ void BC_WindowBase::draw_xft_text(int x,
 	const char *text, 
 	int length, 
 	BC_Pixmap *pixmap,
-	int x2,
-	int k,
-	int y2,
 	int j,
 	int i,
 	int is_utf8)
@@ -368,21 +335,20 @@ void BC_WindowBase::draw_xft_text(int x,
 	*up = 0;
 	len = up - ucs4ptr;
 
-	draw_wtext(x2, y2, ucs4ptr, len, pixmap, k);
+	draw_wtext(x, y, ucs4ptr, len, pixmap);
 }
 
 void BC_WindowBase::draw_wtext(int x,
 	int y,
 	const FcChar32 *text,
 	int length,
-	BC_Pixmap *pixmap,
-	int k)
+	BC_Pixmap *pixmap)
 {
 #ifdef HAVE_XFT
 	XRenderColor color;
 	XftColor xft_color;
 	const FcChar32 *up, *ubp;
-	int cx, cy, l;
+	int l;
 	FcPattern *newpat;
 	XftFont *curfont, *nextfont, *altfont, *basefont;
 
@@ -411,8 +377,6 @@ void BC_WindowBase::draw_wtext(int x,
 
 	curfont = nextfont = basefont;
 	altfont = 0;
-	cy = y + k;
-	cx = x + k;
 	ubp = text;
 
 	for(up = text; up < &text[length]; up++)
@@ -454,8 +418,8 @@ void BC_WindowBase::draw_wtext(int x,
 			XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
 				&xft_color,
 				curfont,
-				cx,
-				cy,
+				x,
+				y,
 				ubp,
 				l);
 			XftTextExtents32(top_level->display,
@@ -463,7 +427,7 @@ void BC_WindowBase::draw_wtext(int x,
 				ubp,
 				l,
 				&extents);
-			cx += extents.xOff;
+			x += extents.xOff;
 			ubp = up;
 			curfont = nextfont;
 		}
@@ -474,8 +438,8 @@ void BC_WindowBase::draw_wtext(int x,
 		XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
 			&xft_color,
 			curfont,
-			cx,
-			cy,
+			x,
+			y,
 			ubp,
 			up - ubp);
 	}

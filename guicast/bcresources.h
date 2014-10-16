@@ -286,6 +286,9 @@ public:
 	static const char *large_font_xft;
 	static const char *medium_font_xft;
 	static const char *small_font_xft;
+	static const char *large_b_font_xft;
+	static const char *medium_b_font_xft;
+	static const char *small_b_font_xft;
 
 // Backup of fonts in case the first choices don't exist
 	static const char *large_font_xft2;
