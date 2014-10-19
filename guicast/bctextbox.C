@@ -412,6 +412,7 @@ void BC_TextBox::draw()
 	int row_begin, row_end;
 	int highlight_x1, highlight_x2;
 	int need_ibeam = 1;
+	wchar_t *wtext_row;
 	BC_Resources *resources = get_resources();
 
 // Background
@@ -442,12 +443,9 @@ void BC_TextBox::draw()
 // Draw row of text
 		if(wtext[i] == '\n') i++;
 		row_begin = i;
-		for(j = 0; wtext[i] != '\n' && i < wtext_len; j++, i++)
-		{
-			wtext_row[j] = wtext[i];
-		}
+		wtext_row = &wtext[i];
+		for(; wtext[i] != '\n' && i < wtext_len; i++);
 		row_end = i;
-		wtext_row[j] = 0;
 
 		if(k > -text_height + top_margin && k < get_h() - bottom_margin)
 		{
@@ -481,7 +479,7 @@ void BC_TextBox::draw()
 			else
 				set_color(MEGREY);
 
-			draw_wtext(text_x, k + text_ascent, wtext_row);
+			draw_wtext(text_x, k + text_ascent, wtext_row, row_end - row_begin);
 
 // Get ibeam location
 			if(ibeam_letter >= row_begin && ibeam_letter <= row_end)
@@ -1327,24 +1325,19 @@ void BC_TextBox::do_separators(int ibeam_left)
 
 void BC_TextBox::get_ibeam_position(int &x, int &y)
 {
-	int i, j, k, row_begin, row_end;
+	int i, row_begin, row_end;
 
 	y = 0;
 	x = 0;
 	for(i = 0; i < wtext_len; )
 	{
 		row_begin = i;
-		for(j = 0; wtext[i] != '\n' && i < wtext_len; j++, i++)
-		{
-			wtext_row[j] = wtext[i];
-		}
-
+		for(; wtext[i] != '\n' && i < wtext_len; i++);
 		row_end = i;
-		wtext_row[j] = 0;
 
 		if(ibeam_letter >= row_begin && ibeam_letter <= row_end)
 		{
-			x = get_text_width(font, wtext_row, ibeam_letter - row_begin);
+			x = get_text_width(font, &wtext[row_begin], ibeam_letter - row_begin);
 			return;
 		}
 
@@ -1409,7 +1402,7 @@ void BC_TextBox::find_ibeam(int dispatch_event)
 
 int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 {
-	int i, j, k, l, row_begin, row_end, text_len, result = 0, done = 0;
+	int i, j, k, l, row_begin, row_end, result = 0, done = 0;
 
 	if(cursor_y < text_y)
 	{
@@ -1420,18 +1413,14 @@ int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 	for(i = 0, k = text_y; i < wtext_len && !done; k += text_height)
 	{
 		row_begin = i;
-		for(j = 0; wtext[i] != '\n' && i < wtext_len; j++, i++)
-		{
-			wtext_row[j] = wtext[i];
-		}
+		for(; wtext[i] != '\n' && i < wtext_len; i++);
 		row_end = i;
-		wtext_row[j] = 0;
 
 		if(cursor_y >= k && cursor_y < k + text_height)
 		{
 			for(j = 0; j <= row_end - row_begin && !done; j++)
 			{
-				l = get_text_width(font, wtext_row, j) + text_x;
+				l = get_text_width(font, &wtext[row_begin], j) + text_x;
 				if(l > cursor_x)
 				{
 					result = row_begin + j - 1;

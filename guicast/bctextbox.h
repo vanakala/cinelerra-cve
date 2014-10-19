@@ -164,7 +164,7 @@ private:
 	int high_color, back_color;
 	int background_color;
 	char ntext[BCTEXTLEN];
-	wchar_t wtext[BCTEXTLEN], wtext_row[BCTEXTLEN];
+	wchar_t wtext[BCTEXTLEN];
 	int wtext_len;
 	int active;
 	int enabled;
