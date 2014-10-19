@@ -195,24 +195,22 @@ void BC_WindowBase::draw_text(int x,
 		break;
 
 	default:
+#ifdef HAVE_XFT
+		if(get_resources()->use_xft && 
+			top_level->get_xft_struct(top_level->current_font))
+		{
+			draw_xft_text(x,
+				y,
+				text,
+				length,
+				pixmap);
+			return;
+		}
+#endif
 		for(int i = 0, j = 0; i <= length; i++)
 		{
 			if(text[i] == '\n' || text[i] == 0)
 			{
-#ifdef HAVE_XFT
-				if(get_resources()->use_xft && 
-					top_level->get_xft_struct(top_level->current_font))
-				{
-					draw_xft_text(x,
-						y,
-						text,
-						length,
-						pixmap,
-						j,
-						i);
-				}
-				else
-#endif
 				if(get_resources()->use_fontset && top_level->get_curr_fontset())
 				{
 					XmbDrawString(top_level->display,
@@ -248,28 +246,26 @@ void BC_WindowBase::draw_utf8_text(int x,
 	int length,
 	BC_Pixmap *pixmap)
 {
+#ifdef HAVE_XFT
 	if(length < 0) length = strlen(text);
-	int font = top_level->current_font & 0xff;
+
+	if(get_resources()->use_xft &&
+		top_level->get_xft_struct(top_level->current_font))
+	{
+		draw_xft_text(x,
+			y,
+			text,
+			length,
+			pixmap,
+			1);
+		return;
+	}
+#endif
 
 	for(int i = 0, j = 0; i <= length; i++)
 	{
 		if(text[i] == '\n' || text[i] == 0)
 		{
-#ifdef HAVE_XFT
-			if(get_resources()->use_xft && 
-				top_level->get_xft_struct(top_level->current_font))
-			{
-				draw_xft_text(x,
-					y,
-					text,
-					length,
-					pixmap,
-					j,
-					i,
-					1);
-			}
-			else
-#endif
 			if(get_resources()->use_fontset && top_level->get_curr_fontset())
 			{
 				XmbDrawString(top_level->display,
@@ -304,38 +300,43 @@ void BC_WindowBase::draw_xft_text(int x,
 	const char *text, 
 	int length, 
 	BC_Pixmap *pixmap,
-	int j,
-	int i,
 	int is_utf8)
 {
-	FcChar32 *up;
-	int l, len;
-
-	if((len = i - j) <= 0)
-		return;
+	FcChar32 *up, *upb;
+	int l;
 
 	l = sizeof(ucs4buffer) / sizeof(FcChar32);
 	if(ucs4ptr && ucs4ptr != ucs4buffer)
+	{
 		delete [] ucs4ptr;
-	if(len < l)
+		ucs4ptr = 0;
+	}
+	if(length < l)
 		ucs4ptr = ucs4buffer;
 	else
 	{
-		ucs4ptr = new FcChar32[len];
-		l = len;
+		ucs4ptr = new FcChar32[length];
+		l = length;
 	}
 
-	BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding, "UTF32LE",
-		(char*)&text[j], (char*)ucs4ptr, l * sizeof(FcChar32));
+	length = BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding, "UTF32LE",
+		(char*)text, (char*)ucs4ptr, l * sizeof(FcChar32), length) / sizeof(FcChar32);
 
-	// Correct length for utf8
-	for(up = ucs4ptr; up < &ucs4ptr[len]; up++)
+	for(upb = up = ucs4ptr; up < &ucs4ptr[length]; up++)
+	{
 		if(*up < ' ')
-			break;
-	*up = 0;
-	len = up - ucs4ptr;
-
-	draw_wtext(x, y, ucs4ptr, len, pixmap);
+		{
+			draw_wtext(x, y, upb, up - upb, pixmap);
+			while(up < &ucs4ptr[length] && *up == '\n')
+			{
+				y += get_text_height(top_level->current_font);
+				up++;
+			}
+			upb = up;
+		}
+	}
+	if(upb < up && up <= &ucs4ptr[length])
+		draw_wtext(x, y, upb, up - upb, pixmap);
 }
 
 void BC_WindowBase::draw_wtext(int x,

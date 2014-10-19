@@ -332,8 +332,6 @@ public:
 		const char *text, 
 		int length, 
 		BC_Pixmap *pixmap,
-		int j,
-		int i,
 		int is_utf8 = 0);
 	void draw_wtext(int x, int y, const FcChar32 *text, int length = -1,
 		BC_Pixmap *pixmap = 0);
