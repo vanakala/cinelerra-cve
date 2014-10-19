@@ -2265,14 +2265,14 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	}
 }
 
-int BC_WindowBase::get_single_text_width(int font, const FcChar32 *text, int length)
+int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int length)
 {
 #ifdef HAVE_XFT
 	XGlyphInfo extents;
 
 	XftTextExtents32(top_level->display,
 		get_xft_struct(font),
-		text,
+		(const FcChar32*)text,
 		length,
 		&extents);
 	return extents.xOff;
@@ -2307,10 +2307,10 @@ int BC_WindowBase::get_text_width(int font, const char *text, int length)
 	return w;
 }
 
-int BC_WindowBase::get_text_width(int font, const FcChar32 *text, int length)
+int BC_WindowBase::get_text_width(int font, const wchar_t *text, int length)
 {
 	int i, j, w = 0, line_w = 0;
-	if(length < 0) length = wcslen((wchar_t*)text);
+	if(length < 0) length = wcslen(text);
 
 	for(i = 0, j = 0; i <= length; i++)
 	{

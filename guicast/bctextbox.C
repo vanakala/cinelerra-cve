@@ -461,12 +461,12 @@ void BC_TextBox::draw()
 					set_color(resources->text_inactive_highlight);
 
 				if(highlight_letter1 >= row_begin && highlight_letter1 < row_end)
-					highlight_x1 = get_text_width(font, (const FcChar32*)wtext_row, highlight_letter1 - row_begin);
+					highlight_x1 = get_text_width(font, wtext_row, highlight_letter1 - row_begin);
 				else
 					highlight_x1 = 0;
 
 				if(highlight_letter2 > row_begin && highlight_letter2 <= row_end)
-					highlight_x2 = get_text_width(font, (const FcChar32*)wtext_row, highlight_letter2 - row_begin);
+					highlight_x2 = get_text_width(font, wtext_row, highlight_letter2 - row_begin);
 				else
 					highlight_x2 = get_w();
 
@@ -481,14 +481,14 @@ void BC_TextBox::draw()
 			else
 				set_color(MEGREY);
 
-			draw_wtext(text_x, k + text_ascent, (FcChar32*)wtext_row);
+			draw_wtext(text_x, k + text_ascent, wtext_row);
 
 // Get ibeam location
 			if(ibeam_letter >= row_begin && ibeam_letter <= row_end)
 			{
 				need_ibeam = 0;
 				ibeam_y = k - text_y;
-				ibeam_x = get_text_width(font, (FcChar32*)wtext_row, ibeam_letter - row_begin);
+				ibeam_x = get_text_width(font, wtext_row, ibeam_letter - row_begin);
 			}
 		}
 	}
@@ -1344,7 +1344,7 @@ void BC_TextBox::get_ibeam_position(int &x, int &y)
 
 		if(ibeam_letter >= row_begin && ibeam_letter <= row_end)
 		{
-			x = get_text_width(font, (FcChar32 *)wtext_row, ibeam_letter - row_begin);
+			x = get_text_width(font, wtext_row, ibeam_letter - row_begin);
 			return;
 		}
 
@@ -1431,7 +1431,7 @@ int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 		{
 			for(j = 0; j <= row_end - row_begin && !done; j++)
 			{
-				l = get_text_width(font, (FcChar32 *)wtext_row, j) + text_x;
+				l = get_text_width(font, wtext_row, j) + text_x;
 				if(l > cursor_x)
 				{
 					result = row_begin + j - 1;

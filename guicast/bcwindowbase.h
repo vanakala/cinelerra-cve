@@ -275,7 +275,7 @@ public:
 	int get_text_descent(int font);
 	int get_text_height(int font, const char *text = 0);
 	int get_text_width(int font, const char *text, int length = -1);
-	int get_text_width(int font, const FcChar32 *text, int length = -1);
+	int get_text_width(int font, const wchar_t *text, int length = -1);
 	BC_Clipboard* get_clipboard();
 	void set_dragging(int value);
 	int set_w(int w);
@@ -333,7 +333,7 @@ public:
 		int length, 
 		BC_Pixmap *pixmap,
 		int is_utf8 = 0);
-	void draw_wtext(int x, int y, const FcChar32 *text, int length = -1,
+	void draw_wtext(int x, int y, const wchar_t *text, int length = -1,
 		BC_Pixmap *pixmap = 0);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
@@ -555,7 +555,7 @@ private:
 	void create_shared_colors();
 // Get width of a single line.  Used by get_text_width
 	int get_single_text_width(int font, const char *text, int length);
-	int get_single_text_width(int font, const FcChar32 *text, int length);
+	int get_single_text_width(int font, const wchar_t *text, int length);
 	void allocate_color_table();
 	void init_gc();
 	void init_fonts();
@@ -798,8 +798,8 @@ private:
 	// Used for retaining the state, properties, and semantics of communication with
 	//   the input method (IM) server
 	XIC input_context;
-	FcChar32 *ucs4ptr;
-	FcChar32 ucs4buffer[BCTEXTLEN];
+	wchar_t *ucs4ptr;
+	wchar_t ucs4buffer[BCTEXTLEN];
 #endif
 
 protected:

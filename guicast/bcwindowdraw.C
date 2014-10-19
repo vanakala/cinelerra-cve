@@ -302,10 +302,10 @@ void BC_WindowBase::draw_xft_text(int x,
 	BC_Pixmap *pixmap,
 	int is_utf8)
 {
-	FcChar32 *up, *upb;
+	wchar_t *up, *upb;
 	int l;
 
-	l = sizeof(ucs4buffer) / sizeof(FcChar32);
+	l = sizeof(ucs4buffer) / sizeof(wchar_t);
 	if(ucs4ptr && ucs4ptr != ucs4buffer)
 	{
 		delete [] ucs4ptr;
@@ -315,12 +315,12 @@ void BC_WindowBase::draw_xft_text(int x,
 		ucs4ptr = ucs4buffer;
 	else
 	{
-		ucs4ptr = new FcChar32[length];
+		ucs4ptr = new wchar_t[length];
 		l = length;
 	}
 
 	length = BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding, "UTF32LE",
-		(char*)text, (char*)ucs4ptr, l * sizeof(FcChar32), length) / sizeof(FcChar32);
+		(char*)text, (char*)ucs4ptr, l * sizeof(wchar_t), length) / sizeof(wchar_t);
 
 	for(upb = up = ucs4ptr; up < &ucs4ptr[length]; up++)
 	{
@@ -341,20 +341,20 @@ void BC_WindowBase::draw_xft_text(int x,
 
 void BC_WindowBase::draw_wtext(int x,
 	int y,
-	const FcChar32 *text,
+	const wchar_t *text,
 	int length,
 	BC_Pixmap *pixmap)
 {
 #ifdef HAVE_XFT
 	XRenderColor color;
 	XftColor xft_color;
-	const FcChar32 *up, *ubp;
+	const wchar_t *up, *ubp;
 	int l;
 	FcPattern *newpat;
 	XftFont *curfont, *nextfont, *altfont, *basefont;
 
 	if(length < 0)
-		length = wcslen((wchar_t*)text);
+		length = wcslen(text);
 
 	if(!length)
 		return;
@@ -421,11 +421,11 @@ void BC_WindowBase::draw_wtext(int x,
 				curfont,
 				x,
 				y,
-				ubp,
+				(const FcChar32*)ubp,
 				l);
 			XftTextExtents32(top_level->display,
 				curfont,
-				ubp,
+				(const FcChar32*)ubp,
 				l,
 				&extents);
 			x += extents.xOff;
@@ -441,7 +441,7 @@ void BC_WindowBase::draw_wtext(int x,
 			curfont,
 			x,
 			y,
-			ubp,
+			(const FcChar32*)ubp,
 			up - ubp);
 	}
 
