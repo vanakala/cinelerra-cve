@@ -798,11 +798,12 @@ private:
 	// Used for retaining the state, properties, and semantics of communication with
 	//   the input method (IM) server
 	XIC input_context;
-	wchar_t *ucs4ptr;
-	wchar_t ucs4buffer[BCTEXTLEN];
+	wchar_t *wide_text;
+	wchar_t wide_buffer[BCTEXTLEN];
 #endif
 
 protected:
+	int resize_wide_text(int length);
 	Atom create_xatom(const char *atom_name);
 	void send_custom_xatom(XClientMessageEvent *event);
 };

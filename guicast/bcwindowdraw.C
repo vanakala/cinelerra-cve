@@ -294,6 +294,23 @@ void BC_WindowBase::draw_utf8_text(int x,
 	}
 }
 
+int BC_WindowBase::resize_wide_text(int length)
+{
+	int len;
+
+	len = sizeof(wide_buffer) / sizeof(wchar_t);
+
+	if(wide_text != wide_buffer)
+		delete [] wide_text;
+
+	if(length < len)
+		wide_text = wide_buffer;
+	else {
+		wide_text = new wchar_t[length + 1];
+		len = length + 1;
+	}
+	return len;
+}
 
 void BC_WindowBase::draw_xft_text(int x, 
 	int y, 
@@ -302,32 +319,20 @@ void BC_WindowBase::draw_xft_text(int x,
 	BC_Pixmap *pixmap,
 	int is_utf8)
 {
-	wchar_t *up, *upb;
-	int l;
-
-	l = sizeof(ucs4buffer) / sizeof(wchar_t);
-	if(ucs4ptr && ucs4ptr != ucs4buffer)
-	{
-		delete [] ucs4ptr;
-		ucs4ptr = 0;
-	}
-	if(length < l)
-		ucs4ptr = ucs4buffer;
-	else
-	{
-		ucs4ptr = new wchar_t[length];
-		l = length;
-	}
+	wchar_t *up, *upb, *tx_end;
+	int l = resize_wide_text(length);
 
 	length = BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding, "UTF32LE",
-		(char*)text, (char*)ucs4ptr, l * sizeof(wchar_t), length) / sizeof(wchar_t);
+		(char*)text, (char*)wide_text, l * sizeof(wchar_t), length) / sizeof(wchar_t);
 
-	for(upb = up = ucs4ptr; up < &ucs4ptr[length]; up++)
+	tx_end = &wide_text[length];
+
+	for(upb = up = wide_text; up < tx_end; up++)
 	{
 		if(*up < ' ')
 		{
 			draw_wtext(x, y, upb, up - upb, pixmap);
-			while(up < &ucs4ptr[length] && *up == '\n')
+			while(up < tx_end && *up == '\n')
 			{
 				y += get_text_height(top_level->current_font);
 				up++;
@@ -335,7 +340,7 @@ void BC_WindowBase::draw_xft_text(int x,
 			upb = up;
 		}
 	}
-	if(upb < up && up <= &ucs4ptr[length])
+	if(upb < up && up <= tx_end)
 		draw_wtext(x, y, upb, up - upb, pixmap);
 }
 

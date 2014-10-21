@@ -179,8 +179,8 @@ BC_WindowBase::~BC_WindowBase()
 	}
 #endif
 #ifdef X_HAVE_UTF8_STRING
-	if(ucs4ptr && ucs4ptr != ucs4buffer)
-		delete [] ucs4ptr;
+	if(wide_text != wide_buffer)
+		delete [] wide_buffer;
 #endif
 	resize_history.remove_all_objects();
 
@@ -260,7 +260,7 @@ void BC_WindowBase::initialize()
 #ifdef HAVE_GL
 	gl_win_context = 0;
 #endif
-	ucs4ptr = 0;
+	wide_text = wide_buffer;
 }
 
 #define DEFAULT_EVENT_MASKS EnterWindowMask | \
