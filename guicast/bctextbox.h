@@ -145,6 +145,7 @@ private:
 	int get_cursor_letter(int cursor_x, int cursor_y);
 	int get_row_h(int rows);
 	void default_keypress(int &dispatch_event, int &result);
+	int resize_ntext(int length);
 
 // Top left of text relative to window
 	int text_x, text_y;
@@ -163,8 +164,8 @@ private:
 	int highlighted;
 	int high_color, back_color;
 	int background_color;
-	char ntext[BCTEXTLEN];
-	wchar_t wtext[BCTEXTLEN];
+	char *ntext;
+	char ntext_buffer[BCTEXTLEN];
 	int wtext_len;
 	int active;
 	int enabled;
