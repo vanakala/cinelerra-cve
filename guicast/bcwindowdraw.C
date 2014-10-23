@@ -319,11 +319,21 @@ void BC_WindowBase::draw_xft_text(int x,
 	BC_Pixmap *pixmap,
 	int is_utf8)
 {
-	wchar_t *up, *upb, *tx_end;
 	int l = resize_wide_text(length);
 
 	length = BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding, "UTF32LE",
 		(char*)text, (char*)wide_text, l * sizeof(wchar_t), length) / sizeof(wchar_t);
+
+	draw_xft_text(x, y, wide_text, length, pixmap);
+}
+
+void BC_WindowBase::draw_xft_text(int x,
+	int y,
+	const wchar_t *text,
+	int length,
+	BC_Pixmap *pixmap)
+{
+	wchar_t *up, *upb, *tx_end;
 
 	tx_end = &wide_text[length];
 
@@ -462,8 +472,23 @@ void BC_WindowBase::draw_wtext(int x,
 
 void BC_WindowBase::draw_center_text(int x, int y, const char *text, int length)
 {
+	int w, l;
+
 	if(length < 0) length = strlen(text);
-	int w = get_text_width(current_font, text, length);
+#ifdef HAVE_XFT
+	if(get_resources()->use_xft &&
+		top_level->get_xft_struct(top_level->current_font))
+	{
+		int l = resize_wide_text(length);
+		length = BC_Resources::encode(get_resources()->encoding, "UTF32LE",
+			(char*)text, (char*)wide_text, l * sizeof(wchar_t), length) / sizeof(wchar_t);
+		w = get_text_width(current_font, wide_text, length);
+		x -= w / 2;
+		draw_xft_text(x, y, wide_text, length, 0);
+		return;
+	}
+#endif
+	w = get_text_width(current_font, text, length);
 	x -= w / 2;
 	draw_text(x, y, text, length);
 }
