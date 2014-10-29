@@ -1,6 +1,4 @@
-AC_INIT(Cinelerracve, 2.1CV-einar)
-AC_PACKAGE_BUGREPORT(einarry@smail.ee)
-AC_PACKAGE_NAME(cinelerracve)
+AC_INIT(Cinelerracve, 2.1CV-einar, einarry@smail.ee)
 
 AC_CANONICAL_SYSTEM
 
