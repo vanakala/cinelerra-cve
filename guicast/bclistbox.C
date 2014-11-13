@@ -3709,6 +3709,9 @@ void BC_ListBox::activate()
 			if(new_x < 0) new_x = 0;
 			if(new_y + popup_h > top_level->get_root_h(0)) 
 				new_y -= get_h() + popup_h;
+// Avoid top going out of screen
+			if(new_y < 0)
+				new_y = 2;
 
 			add_subwindow(gui = new BC_Popup(this, 
 				new_x, 
