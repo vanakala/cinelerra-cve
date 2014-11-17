@@ -418,7 +418,6 @@ void BC_WindowBase::draw_wtext(int x,
 					newpat);
 				if(altfont)
 					nextfont = altfont;
-				FcPatternDestroy(newpat);
 			}
 			else
 			{
