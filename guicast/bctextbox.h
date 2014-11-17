@@ -41,6 +41,14 @@ public:
 		int has_border = 1, 
 		int font = MEDIUMFONT,
 		int is_utf8 = 0);
+	BC_TextBox(int x,
+		int y,
+		int w,
+		int rows,
+		const char *text,
+		const wchar_t *wtext,
+		int has_border = 1,
+		int font = MEDIUMFONT);
 	BC_TextBox(int x, 
 		int y, 
 		int w, 
@@ -71,6 +79,7 @@ public:
 	virtual void motion_event() {};
 	void set_selection(int char1, int char2, int ibeam);
 	void update(const char *text);
+	void update(const wchar_t *text);
 	void updateutf8(const char *text);
 	void update(int64_t value);
 	void update(int value);
@@ -95,6 +104,7 @@ public:
 	void activate();
 	void deactivate();
 	char* get_text();
+	wchar_t* get_wtext(int *length = 0);
 	int get_text_rows();
 // Set top left of text view
 	void set_text_row(int row);
@@ -193,11 +203,19 @@ public:
 		int w,
 		int rows,
 		const char *default_text);
+	BC_ScrollTextBox(BC_WindowBase *parent_window, 
+		int x, 
+		int y, 
+		int w,
+		int rows,
+		const wchar_t *default_text);
 	virtual ~BC_ScrollTextBox();
 
 	virtual int handle_event();
 	char* get_text();
+	wchar_t* get_wtext(int *length = 0);
 	void update(const char *text);
+	void update(const wchar_t *text);
 	void reposition_window(int x, int y, int w, int rows);
 	int get_x();
 	int get_y();
@@ -213,6 +231,7 @@ private:
 	BC_ScrollTextBoxYScroll *yscroll;
 	BC_WindowBase *parent_window;
 	const char *default_text;
+	const wchar_t *default_wtext;
 	int x, y, w, rows;
 };
 

@@ -64,6 +64,39 @@ BC_TextBox::BC_TextBox(int x,
 		"UTF32LE", ntext, (char*)wide_text, len * sizeof(wchar_t)) / sizeof(wchar_t);
 }
 
+BC_TextBox::BC_TextBox(int x,
+	int y,
+	int w,
+	int rows,
+	const char *text,
+	const wchar_t *wtext,
+	int has_border,
+	int font)
+ : BC_SubWindow(x, y, w, 0, -1)
+{
+	int len;
+
+	skip_cursor = 0;
+	reset_parameters(rows, has_border, font);
+	if(wtext)
+	{
+		wtext_len = wcslen(wtext);
+		resize_ntext(wtext_len);
+		len = resize_wide_text(wtext_len);
+		wcscpy(wide_text, wtext);
+	}
+	else
+	{
+		len = strlen(text);
+		resize_ntext(len);
+		len = resize_wide_text(len);
+		strcpy(ntext, text);
+		wtext_len = BC_Resources::encode(get_resources()->encoding,
+			"UTF32LE", ntext, (char*)wide_text,
+			len * sizeof(wchar_t)) / sizeof(wchar_t);
+	}
+}
+
 BC_TextBox::BC_TextBox(int x, 
 	int y, 
 	int w, 
@@ -273,6 +306,18 @@ void BC_TextBox::updateutf8(const char *text)
 	update_wtext();
 }
 
+void BC_TextBox::update(const wchar_t *text)
+{
+	int len;
+// Don't update if contents are the same
+	if(!wcscmp(text, wide_text)) return;
+
+	wtext_len = wcslen(text);
+	resize_wide_text(wtext_len);
+	wcscpy(wide_text, text);
+	update_wtext();
+}
+
 void BC_TextBox::update(int64_t value)
 {
 	char string[BCTEXTLEN];
@@ -362,6 +407,13 @@ char* BC_TextBox::get_text()
 	BC_Resources::encode("UTF32LE", "UTF8",
 		(char*)wide_text, ntext, BCTEXTLEN, wtext_len * sizeof(wchar_t));
 	return ntext;
+}
+
+wchar_t* BC_TextBox::get_wtext(int *length)
+{
+	if(length)
+		*length = wtext_len;
+	return wide_text;
 }
 
 int BC_TextBox::get_text_rows()
@@ -1302,6 +1354,7 @@ void BC_TextBox::insert_text(const wchar_t *string, int string_len)
 
 	ibeam_letter += string_len;
 	wtext_len += string_len;
+	wide_text[wtext_len] = 0;
 
 	do_separators(0);
 }
@@ -1573,6 +1626,25 @@ BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window,
 	this->w = w;
 	this->rows = rows;
 	this->default_text = default_text;
+	this->default_wtext = 0;
+	parent_window->add_subwindow(text = new BC_ScrollTextBoxText(this));
+	parent_window->add_subwindow(yscroll = new BC_ScrollTextBoxYScroll(this));
+}
+
+BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window, 
+	int x, 
+	int y, 
+	int w,
+	int rows,
+	const wchar_t *default_text)
+{
+	this->parent_window = parent_window;
+	this->x = x;
+	this->y = y;
+	this->w = w;
+	this->rows = rows;
+	this->default_text = 0;
+	this->default_wtext = default_text;
 	parent_window->add_subwindow(text = new BC_ScrollTextBoxText(this));
 	parent_window->add_subwindow(yscroll = new BC_ScrollTextBoxYScroll(this));
 }
@@ -1617,6 +1689,11 @@ char* BC_ScrollTextBox::get_text()
 	return text->get_text();
 }
 
+wchar_t* BC_ScrollTextBox::get_wtext(int *length)
+{
+	return text->get_wtext(length);
+}
+
 void BC_ScrollTextBox::update(const char *text)
 {
 	this->text->update(text);
@@ -1624,6 +1701,15 @@ void BC_ScrollTextBox::update(const char *text)
 		this->text->get_text_row(),
 		yscroll->get_handlelength());
 }
+
+void BC_ScrollTextBox::update(const wchar_t *text)
+{
+	this->text->update(text);
+	yscroll->update_length(this->text->get_text_rows(),
+		this->text->get_text_row(),
+		yscroll->get_handlelength());
+}
+
 
 void BC_ScrollTextBox::reposition_window(int x, int y, int w, int rows)
 {
@@ -1650,7 +1736,8 @@ BC_ScrollTextBoxText::BC_ScrollTextBoxText(BC_ScrollTextBox *gui)
 	gui->y, 
 	gui->w - get_resources()->vscroll_data[SCROLL_HANDLE_UP]->get_w(), 
 	gui->rows,
-	gui->default_text)
+	gui->default_text,
+	gui->default_wtext)
 {
 	this->gui = gui;
 }
