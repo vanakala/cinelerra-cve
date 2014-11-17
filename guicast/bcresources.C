@@ -905,7 +905,7 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
 	char *input, char *output, int output_length, int input_length)
 {
-	size_t inbytes, outbytes;
+	size_t inbytes, outbytes = 0;
 	iconv_t cd;
 	char *outbase = output;
 
