@@ -86,7 +86,7 @@ TitleConfig::TitleConfig()
 	pixels_per_second = 1.0;
 	timecode = 0;
 	stroke_width = 1.0;
-	text_length = 0;
+	wtext_length = 0;
 }
 
 // Does not test equivalency but determines if redrawing text is necessary.
@@ -105,7 +105,8 @@ int TitleConfig::equivalent(TitleConfig &that)
 		EQUIV(pixels_per_second, that.pixels_per_second) &&
 		!strcasecmp(font, that.font) &&
 		!strcasecmp(encoding, that.encoding) &&
-		!strcmp(text, that.text);
+		wtext_length == that.wtext_length &&
+		!memcmp(wtext, that.wtext, wtext_length * sizeof(wchar_t));
 }
 
 void TitleConfig::copy_from(TitleConfig &that)
@@ -128,10 +129,9 @@ void TitleConfig::copy_from(TitleConfig &that)
 	dropshadow = that.dropshadow;
 	timecode = that.timecode;
 	strcpy(timecodeformat, that.timecodeformat);
-	strcpy(text, that.text);
 	strcpy(encoding, that.encoding);
-	memcpy(ucs4text, that.ucs4text, that.text_length);
-	text_length = that.text_length;
+	memcpy(wtext, that.wtext, that.wtext_length * sizeof(wchar_t));
+	wtext_length = that.wtext_length;
 }
 
 void TitleConfig::interpolate(TitleConfig &prev, 
@@ -154,8 +154,8 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	fade_in = prev.fade_in;
 	fade_out = prev.fade_out;
 	pixels_per_second = prev.pixels_per_second;
-	strcpy(text, prev.text);
-
+	memcpy(wtext, prev.wtext, prev.wtext_length * sizeof(wchar_t));
+	wtext_length = prev.wtext_length;
 	this->x = prev.x;
 	this->y = prev.y;
 	timecode = prev.timecode;
@@ -163,10 +163,10 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	this->dropshadow = prev.dropshadow;
 }
 
-void TitleConfig::text_to_ucs4()
+void TitleConfig::text_to_ucs4(const char *from_enc)
 {
-	text_length = BC_Resources::encode_to_ucs4(text, ucs4text,
-		sizeof(ucs4text) / sizeof(FcChar32));
+	wtext_length = BC_Resources::encode(from_enc, "UTF32LE",
+		text, (char *)wtext, sizeof(wtext) / sizeof(wchar_t)) / sizeof(wchar_t);
 }
 
 
@@ -533,7 +533,7 @@ void TitleEngine::init_packages()
 		TitlePackage *pkg = (TitlePackage*)get_package(current_package);
 		pkg->x = char_position->x;
 		pkg->y = char_position->y - visible_y1;
-		pkg->char_code = plugin->config.ucs4text[i];
+		pkg->char_code = plugin->config.wtext[i];
 		current_package++;
 	}
 }
@@ -973,6 +973,7 @@ TitleMain::~TitleMain()
 	clear_glyphs();
 	if(glyph_engine) delete glyph_engine;
 	if(title_engine) delete title_engine;
+	if(freetype_face) FT_Done_Face(freetype_face);
 	if(freetype_library) FT_Done_FreeType(freetype_library);
 	if(translate) delete translate;
 	PLUGIN_DESTRUCTOR_MACRO
@@ -1076,14 +1077,11 @@ void TitleMain::draw_glyphs()
 // Build table of all glyphs needed
 	int total_packages = 0;
 
-	// now convert text to ucs4
-	config.text_to_ucs4();
-
-	for(int i = 0; i < config.text_length; i++)
+	for(int i = 0; i < config.wtext_length; i++)
 	{
-		FT_ULong char_code;
+		wchar_t char_code;
 		int exists = 0;
-		char_code = config.ucs4text[i];
+		char_code = config.wtext[i];
 
 		for(int j = 0; j < glyphs.total; j++)
 		{
@@ -1115,7 +1113,7 @@ void TitleMain::get_total_extents()
 // Determine extents of total text
 	int current_w = 0;
 	int row_start = 0;
-	text_len = config.text_length;
+	text_len = config.wtext_length;
 
 	if(!char_positions) char_positions = new title_char_position_t[text_len];
 	text_rows = 0;
@@ -1128,7 +1126,7 @@ void TitleMain::get_total_extents()
 	// get the number of rows first
 	for(int i = 0; i < text_len; i++)
 	{
-		if(config.ucs4text[i] == 0xa || i == text_len - 1)
+		if(config.wtext[i] == 0xa || i == text_len - 1)
 		{
 			text_rows++;
 		}
@@ -1141,11 +1139,11 @@ void TitleMain::get_total_extents()
 	{
 		char_positions[i].x = current_w;
 		char_positions[i].y = text_rows * get_char_height();
-		char_positions[i].w = get_char_advance(config.ucs4text[i], config.ucs4text[i + 1]);
+		char_positions[i].w = get_char_advance(config.wtext[i], config.wtext[i + 1]);
 		TitleGlyph *current_glyph = 0;
 		for(int j = 0; j < glyphs.total; j++)
 		{
-			if(glyphs.values[j]->char_code == config.ucs4text[i])
+			if(glyphs.values[j]->char_code == config.wtext[i])
 			{
 				current_glyph = glyphs.values[j];
 				break;
@@ -1157,7 +1155,7 @@ void TitleMain::get_total_extents()
 
 		current_w += char_positions[i].w;
 
-		if(config.ucs4text[i] == 0xa || i == text_len - 1)
+		if(config.wtext[i] == 0xa || i == text_len - 1)
 		{
 			text_rows++;
 			rows_bottom[text_rows] = 0;
@@ -1174,7 +1172,7 @@ void TitleMain::get_total_extents()
 	row_start = 0;
 	for(int i = 0; i < text_len; i++)
 	{
-		if(config.ucs4text[i] == 0xa || i == text_len - 1)
+		if(config.wtext[i] == 0xa || i == text_len - 1)
 		{
 			for(int j = row_start; j <= i; j++)
 			{
@@ -1602,9 +1600,15 @@ void TitleMain::load_defaults()
 		}
 		config.text[len] = 0;
 		fclose(fd);
+		config.text_to_ucs4(config.encoding);
+		strcpy(config.encoding, DEFAULT_ENCODING);
 	}
 	else
+	{
 		config.text[0] = 0;
+		config.wtext[0] = 0;
+		config.wtext_length = 0;
+	}
 }
 
 void TitleMain::save_defaults()
@@ -1636,12 +1640,15 @@ void TitleMain::save_defaults()
 
 // Store text in separate path to isolate special characters
 	FileSystem fs;
+	int txlen = BC_Resources::encode("UTF32LE", "UTF8",
+		(char*)config.wtext, config.text, BCTEXTLEN, 
+		config.wtext_length * sizeof(wchar_t));
 	sprintf(text_path, "%stitle_text.rc", plugin_conf_dir());
 	fs.complete_path(text_path);
 	FILE *fd = fopen(text_path, "wb");
 	if(fd)
 	{
-		fwrite(config.text, strlen(config.text), 1, fd);
+		fwrite(config.text, txlen, 1, fd);
 		fclose(fd);
 	}
 }
@@ -1650,10 +1657,6 @@ void TitleMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
-// cause data to be stored directly in text
-#ifdef X_HAVE_UTF8_STRING
-	convert_encoding();
-#endif
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("TITLE");
 	output.tag.set_property("FONT", config.font);
@@ -1677,9 +1680,9 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("TIMECODEFORMAT", config.timecodeformat);
 	output.append_tag();
 	output.append_newline();
-
+	BC_Resources::encode("UTF32LE", "UTF8", (char*)config.wtext,
+		config.text, BCTEXTLEN, config.wtext_length * sizeof(wchar_t));
 	output.encode_text(config.text);
-
 	output.tag.set_title("/TITLE");
 	output.append_tag();
 	output.append_newline();
@@ -1721,28 +1724,12 @@ void TitleMain::read_data(KeyFrame *keyframe)
 			config.timecode = input.tag.get_property("TIMECODE", config.timecode);
 			input.tag.get_property("TIMECODEFORMAT", config.timecodeformat);
 			strcpy(config.text, input.read_text());
+			config.text_to_ucs4(config.encoding);
 		}
 		else
 		if(input.tag.title_is("/TITLE"))
 		{
 			break;
 		}
-	}
-#ifdef X_HAVE_UTF8_STRING
-	convert_encoding();
-#endif
-}
-
-void TitleMain::convert_encoding()
-{
-	if(strcmp(config.encoding, "UTF-8"))
-	{
-		char *utf8text = new char[sizeof(config.text)];
-
-		BC_Resources::encode(config.encoding, "UTF-8",
-			config.text, utf8text, sizeof(config.text));
-		strcpy(config.text, utf8text);
-		strcpy(config.encoding, "UTF-8");
-		delete [] utf8text;
 	}
 }

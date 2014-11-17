@@ -25,6 +25,7 @@
 
 #include <string.h>
 #include <libintl.h>
+#include <wchar.h>
 
 PLUGIN_THREAD_METHODS
 
@@ -689,7 +690,7 @@ TitleText::TitleText(TitleMain *client,
 		y, 
 		w,
 		BC_TextBox::pixels_to_rows(window, MEDIUMFONT, h),
-		client->config.text)
+		client->config.wtext)
 {
 	this->client = client;
 	this->window = window;
@@ -697,7 +698,7 @@ TitleText::TitleText(TitleMain *client,
 
 int TitleText::handle_event()
 {
-	strcpy(client->config.text, get_text());
+	wcscpy(client->config.wtext, get_wtext(&client->config.wtext_length));
 	client->send_configure_change();
 	return 1;
 }

@@ -104,7 +104,7 @@ public:
 		ptstime prev_pts,
 		ptstime next_pts,
 		ptstime current_pts);
-	void text_to_ucs4();
+	void text_to_ucs4(const char *from_enc);
 
 // Font information
 	char font[BCTEXTLEN];
@@ -137,8 +137,8 @@ public:
 // Width of the stroke
 	double stroke_width;
 
-	int text_length;
-	FcChar32 ucs4text[BCTEXTLEN];
+	int wtext_length;
+	wchar_t wtext[BCTEXTLEN];
 
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
@@ -197,7 +197,7 @@ class TitlePackage : public LoadPackage
 public:
 	TitlePackage();
 	int x, y;
-	FT_ULong char_code;
+	wchar_t char_code;
 };
 
 
@@ -317,8 +317,6 @@ public:
 	int load_freetype_face(FT_Library &freetype_library,
 		FT_Face &freetype_face,
 		const char *path);
-	// backward compatibility
-	void convert_encoding();
 
 	static const char* motion_to_text(int motion);
 	static int text_to_motion(const char *text);
