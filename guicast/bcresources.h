@@ -320,7 +320,6 @@ public:
 #endif
 	static size_t encode(const char *from_enc, const char *to_enc,
 		char *input, char *output, int output_length, int input_length = -1);
-	static int encode_to_ucs4(const char *input, FcChar32 *output, int output_length);
 	static int find_font_by_char(FT_ULong char_code, char *path_new);
 
 // Available display extensions

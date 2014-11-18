@@ -955,23 +955,6 @@ size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
 	return inbytes;
 }
 
-int BC_Resources::encode_to_ucs4(const char *input, FcChar32 *output, int output_length)
-{
-	int len = strlen(input);
-	int num;
-	int count;
-
-	for(count = 0; len > 0 && output_length > 0; count++)
-	{
-		num = FcUtf8ToUcs4((const FcChar8 *)input, output, output_length);
-		output_length--;
-		output++;
-		input += num;
-		len -= num;
-	}
-	return count;
-}
-
 int BC_Resources::find_font_by_char(FT_ULong char_code, char *path_new)
 {
 	FcPattern *pat, *font;
