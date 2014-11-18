@@ -343,6 +343,7 @@ private:
 	int list_total;
 
 	Mutex *id_lock;
+	static Mutex *fontconfig_lock;
 
 	BC_Synchronous *synchronous;
 
