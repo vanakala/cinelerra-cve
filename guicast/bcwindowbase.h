@@ -336,7 +336,7 @@ public:
 	void draw_xft_text(int x, int y, const wchar_t *text,
 		int length, BC_Pixmap *pixmap);
 	void draw_wtext(int x, int y, const wchar_t *text, int length = -1,
-		BC_Pixmap *pixmap = 0);
+		BC_Pixmap *pixmap = 0, int *charpos = 0);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
@@ -570,6 +570,7 @@ private:
 	XFontStruct* get_font_struct(int font);
 #ifdef HAVE_XFT
 	XftFont* get_xft_struct(int font);
+	int wcharpos(const wchar_t *text, XftFont *font, int length, int *charpos);
 #endif
 	Cursor get_cursor_struct(int cursor);
 	XFontSet get_fontset(int font);

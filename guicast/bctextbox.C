@@ -149,6 +149,7 @@ BC_TextBox::~BC_TextBox()
 	if(skip_cursor) delete skip_cursor;
 	if(ntext != ntext_buffer)
 		delete [] ntext;
+	delete [] positions;
 }
 
 void BC_TextBox::convert_number()
@@ -184,6 +185,7 @@ void BC_TextBox::reset_parameters(int rows, int has_border, int font)
 	defaultcolor = 0;
 	wtext_len = 0;
 	ntext = ntext_buffer;
+	positions = 0;
 }
 
 void BC_TextBox::initialize()
@@ -518,6 +520,13 @@ void BC_TextBox::draw()
 
 	set_color(background_color);
 	draw_box(0, 0, w, h);
+	if(!positions)
+	{
+		if(wtext_len < BCTEXTLEN)
+			positions = new int[BCTEXTLEN+1];
+		else
+			positions = new int[wtext_len+1];
+	}
 
 // Draw text with selection
 	set_font(font);
@@ -543,12 +552,12 @@ void BC_TextBox::draw()
 					set_color(resources->text_inactive_highlight);
 
 				if(highlight_letter1 >= row_begin && highlight_letter1 < row_end)
-					highlight_x1 = get_text_width(font, wtext_row, highlight_letter1 - row_begin);
+					highlight_x1 = positions[highlight_letter1];
 				else
 					highlight_x1 = 0;
 
 				if(highlight_letter2 > row_begin && highlight_letter2 <= row_end)
-					highlight_x2 = get_text_width(font, wtext_row, highlight_letter2 - row_begin);
+					highlight_x2 = positions[highlight_letter2];
 				else
 					highlight_x2 = get_w();
 
@@ -562,15 +571,15 @@ void BC_TextBox::draw()
 				set_color(resources->text_default);
 			else
 				set_color(MEGREY);
-
-			draw_wtext(text_x, k + text_ascent, wtext_row, row_end - row_begin);
+			draw_wtext(text_x, k + text_ascent, wtext_row,
+				row_end - row_begin, 0, &positions[wtext_row - wide_text]);
 
 // Get ibeam location
 			if(ibeam_letter >= row_begin && ibeam_letter <= row_end)
 			{
 				need_ibeam = 0;
 				ibeam_y = k - text_y;
-				ibeam_x = get_text_width(font, wtext_row, ibeam_letter - row_begin);
+				ibeam_x = positions[ibeam_letter];
 			}
 		}
 	}

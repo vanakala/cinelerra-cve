@@ -177,6 +177,7 @@ private:
 	char *ntext;
 	char ntext_buffer[BCTEXTLEN];
 	int wtext_len;
+	int *positions;
 	int active;
 	int enabled;
 	int precision;

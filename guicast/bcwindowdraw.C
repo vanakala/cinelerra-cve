@@ -354,17 +354,52 @@ void BC_WindowBase::draw_xft_text(int x,
 		draw_wtext(x, y, upb, up - upb, pixmap);
 }
 
+#ifdef HAVE_XFT
+int BC_WindowBase::wcharpos(const wchar_t *text, XftFont *font, int length,
+		int *charpos)
+{
+	XGlyphInfo extents;
+	int bpos = charpos[-1];
+
+	if(charpos)
+	{
+		int bpos = charpos[-1];
+
+		for(int i = 0; i < length; i++)
+		{
+			XftTextExtents32(top_level->display,
+				font,
+				(const FcChar32*)text,
+				i + 1,
+				&extents);
+			charpos[i] = extents.xOff + bpos;
+		}
+		return charpos[length - 1] - bpos;
+	}
+	else
+	{
+		XftTextExtents32(top_level->display,
+			font,
+			(const FcChar32*)text,
+			length,
+			&extents);
+		return extents.xOff;
+	}
+}
+#endif
+
 void BC_WindowBase::draw_wtext(int x,
 	int y,
 	const wchar_t *text,
 	int length,
-	BC_Pixmap *pixmap)
+	BC_Pixmap *pixmap,
+	int *charpos)
 {
 #ifdef HAVE_XFT
 	XRenderColor color;
 	XftColor xft_color;
 	const wchar_t *up, *ubp;
-	int l;
+	int l, *cp;
 	FcPattern *newpat;
 	XftFont *curfont, *nextfont, *altfont, *basefont;
 
@@ -393,7 +428,10 @@ void BC_WindowBase::draw_wtext(int x,
 
 	curfont = nextfont = basefont;
 	altfont = 0;
+	cp = 0;
 	ubp = text;
+	if(charpos)
+		charpos[0] = 0;
 
 	for(up = text; up < &text[length]; up++)
 	{
@@ -427,7 +465,6 @@ void BC_WindowBase::draw_wtext(int x,
 		}
 		if(nextfont != curfont)
 		{
-			XGlyphInfo extents;
 
 			l = up - ubp;
 			XftDrawString32((XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
@@ -437,12 +474,11 @@ void BC_WindowBase::draw_wtext(int x,
 				y,
 				(const FcChar32*)ubp,
 				l);
-			XftTextExtents32(top_level->display,
-				curfont,
-				(const FcChar32*)ubp,
-				l,
-				&extents);
-			x += extents.xOff;
+
+			if(charpos)
+				cp = &charpos[ubp - text + 1];
+
+			x += wcharpos(ubp, curfont, l, cp);
 			ubp = up;
 			curfont = nextfont;
 		}
@@ -457,6 +493,8 @@ void BC_WindowBase::draw_wtext(int x,
 			y,
 			(const FcChar32*)ubp,
 			up - ubp);
+		if(charpos)
+			wcharpos(ubp, curfont, up - ubp, &charpos[ubp - text + 1]);
 	}
 
 	if(altfont)
