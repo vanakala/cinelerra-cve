@@ -9,6 +9,7 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_HEADER(config.h)
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.12.1)
+AM_ICONV
 AC_CONFIG_MACRO_DIR([m4])
 AM_PROG_AS
 
@@ -30,6 +31,10 @@ dnl Check for nasm
 AC_CHECK_PROG(HAVE_NASM, nasm, yes)
 if test x$HAVE_NASM != "xyes"; then
     AC_MSG_ERROR(nasm is missing. Please install it.)
+fi
+
+if test "$am_cv_func_iconv" = "yes"; then
+    funiconv=yes
 fi
 
 # hack for using nasm for .S files
@@ -97,51 +102,23 @@ AH_TEMPLATE(HAVE_LIBXXF86VM, [Define to 1 if libXxf86vm is available.])
 AC_DEFINE(HAVE_LIBXXF86VM)
 ############## END XLIB
 
-############# XFT
-AC_MSG_CHECKING([whether to use xft])
-AC_ARG_ENABLE(xft, AC_HELP_STRING([--enable-xft],
-	[use freetype/fontconfig/xft (default: on)]),
-	[enable_xft=$enableval], [enable_xft="default"])
-XFT_CFLAGS=""
-XFT_LIBS=""
-if test "$enable_xft" = "no" ; then
-	AC_MSG_RESULT([$enable_xft])
-	XFT_CFLAGS=`pkg-config xft --cflags 2>/dev/null` || found_xft="no"
-	XFT_LIBS=`pkg-config xft --libs 2>/dev/null` || found_xft="no"
-	CXXFLAGS="$XFT_CFLAGS $CXXFLAGS"
-else
-	found_xft="yes"
-	dnl make sure package configurator (pkg-config xft or pkg-config
-	dnl says that xft is present.
-	XFT_CFLAGS=`pkg-config xft --cflags 2>/dev/null` || found_xft="no"
-	XFT_LIBS=`pkg-config xft --libs 2>/dev/null` || found_xft="no"
-	if ! test "$found_xft" = "no" ; then
-		found_xft=yes
-	fi
-	AC_MSG_RESULT([$found_xft])
-	dnl print a warning if xft is unusable and was specifically requested
-	if test "$found_xft" = "no" ; then
-		if test "$enable_xft" = "yes" ; then
-			AC_MSG_WARN([Can't find xft configuration, or xft is unusable])
-		fi
-		enable_xft=no
-		XFT_CFLAGS=""
-		XFT_LIBS=""
-	else
-		enable_xft=yes
-		## To force to all project - uncomment
-		##X_EXTRA_LIBS="$XFT_LIBS $X_EXTRA_LIBS"
-		CXXFLAGS="$XFT_CFLAGS $CXXFLAGS"
-		AH_TEMPLATE(HAVE_XFT, [Define to 1 if libXft is available.])
-		AC_DEFINE(HAVE_XFT)
-		## need some fix to compile with XFT
-		AC_DEFINE(
-			[PNG_SETJMP_NOT_SUPPORTED], [1],
-			[Workaround to fix compile with xft])
-	fi
+############## UTF8 suppport
+AC_CHECK_DECL([X_HAVE_UTF8_STRING],,[no_utf=yes],[#include <X11/Xlib.h>])
+if test "$no_utf" = "yes"; then
+	AC_MSG_ERROR([Cinelerra requires utf8 support in X Windows.])
 fi
-AC_SUBST(XFT_CFLAGS)
-AC_SUBST(XFT_LIBS)
+############## UTF8 suppport
+
+############# XFT
+AH_TEMPLATE(HAVE_XFT, [Define to 1 if libXft is available.])
+PKG_CHECK_MODULES(XFT, xft, [libxft=yes],:)
+if test "$libxft" = "yes"; then
+	AC_DEFINE(HAVE_XFT)
+	AC_SUBST(XFT_CFLAGS)
+	AC_SUBST(XFT_LIBS)
+	AC_DEFINE([PNG_SETJMP_NOT_SUPPORTED], [1], [Workaround to fix compile with xft])
+	CXXFLAGS="$XFT_CFLAGS $CXXFLAGS"
+fi
 ############## END XFT
 
 ############## SOUND
@@ -693,6 +670,8 @@ RPT(libjpegh,libjpeg headers)
 RPT(libtiff,libtiff libraries)
 RPT(libtiffh,libtiff headers)
 RPT(freetype2,FreeType 2)
+RPT(libxft,libXft library)
+RPT(funiconv,iconv function)
 RPT(libx264,libx264 libraries)
 RPT(libx264h,libx264 headers)
 RPT(libuuid,libuuid libraries)
