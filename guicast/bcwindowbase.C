@@ -1543,7 +1543,6 @@ void BC_WindowBase::init_colors()
 
 		allocate_color_table();
 // No antialiasing
-		get_resources()->use_xft = 0;
 		break;
 
 	default:
@@ -1734,7 +1733,6 @@ void BC_WindowBase::init_fonts()
 
 void BC_WindowBase::init_xft()
 {
-#ifdef HAVE_XFT
 // Rewrite to be fonts chooser ready
 	largefont_xft = XftFontOpenName(display, screen,
 		resources.large_font_xft);
@@ -1773,9 +1771,8 @@ void BC_WindowBase::init_xft()
 			bold_mediumfont_xft,
 			resources.small_b_font_xft,
 			bold_smallfont_xft);
-		get_resources()->use_xft = 0;
+			exit(1);
 	}
-#endif
 }
 
 void BC_WindowBase::init_im()
@@ -2132,7 +2129,6 @@ XFontSet BC_WindowBase::get_fontset(int font)
 	return fs;
 }
 
-#ifdef HAVE_XFT
 XftFont* BC_WindowBase::get_xft_struct(int font)
 {
 	switch(font)
@@ -2153,23 +2149,10 @@ XftFont* BC_WindowBase::get_xft_struct(int font)
 
 	return 0;
 }
-#endif
 
 void BC_WindowBase::set_font(int font)
 {
 	top_level->current_font = font;
-
-#ifdef HAVE_XFT
-	if(get_resources()->use_xft)
-	{
-		;
-	}
-	else
-#endif
-	if(get_resources()->use_fontset)
-	{
-		set_fontset(font);
-	}
 
 	if(get_font_struct(font))
 	{
@@ -2210,8 +2193,7 @@ XFontSet BC_WindowBase::get_curr_fontset(void)
 
 int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 {
-#ifdef HAVE_XFT
-	if(get_resources()->use_xft && get_xft_struct(font))
+	if(get_xft_struct(font))
 	{
 		XGlyphInfo extents;
 		if(get_resources()->locale_utf8)
@@ -2233,7 +2215,6 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 		return extents.xOff;
 	}
 	else
-#endif
 	if(get_resources()->use_fontset && top_level->get_fontset(font))
 		return XmbTextEscapement(top_level->get_fontset(font), text, length);
 	else
@@ -2256,7 +2237,6 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 
 int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int length)
 {
-#ifdef HAVE_XFT
 	XGlyphInfo extents;
 
 	XftTextExtents32(top_level->display,
@@ -2265,7 +2245,6 @@ int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int leng
 		length,
 		&extents);
 	return extents.xOff;
-#endif
 }
 
 int BC_WindowBase::get_text_width(int font, const char *text, int length)
@@ -2326,13 +2305,11 @@ int BC_WindowBase::get_text_width(int font, const wchar_t *text, int length)
 
 int BC_WindowBase::get_text_ascent(int font)
 {
-#ifdef HAVE_XFT
 	XftFont *fstruct;
 
-	if(get_resources()->use_xft && (fstruct = get_xft_struct(font)))
+	if(fstruct = get_xft_struct(font))
 		return fstruct->ascent;
 	else
-#endif
 	if(get_resources()->use_fontset && top_level->get_fontset(font))
 	{
 		XFontSetExtents *extents;
@@ -2356,13 +2333,11 @@ int BC_WindowBase::get_text_ascent(int font)
 
 int BC_WindowBase::get_text_descent(int font)
 {
-#ifdef HAVE_XFT
 	XftFont *fstruct;
 
-	if(get_resources()->use_xft && (fstruct = get_xft_struct(font)))
+	if(fstruct = get_xft_struct(font))
 		return fstruct->descent;
 	else
-#endif
 	if(get_resources()->use_fontset && top_level->get_fontset(font))
 	{
 		XFontSetExtents *extents;
@@ -2380,13 +2355,11 @@ int BC_WindowBase::get_text_descent(int font)
 int BC_WindowBase::get_text_height(int font, const char *text)
 {
 	int rowh;
-#ifdef HAVE_XFT
 	XftFont *fstruct;
 
-	if(get_resources()->use_xft && (fstruct = get_xft_struct(font)))
+	if(fstruct = get_xft_struct(font))
 		rowh = fstruct->height;
 	else
-#endif
 		rowh = get_text_ascent(font) + get_text_descent(font);
 
 	if(!text) return rowh;

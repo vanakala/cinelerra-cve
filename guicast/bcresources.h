@@ -302,8 +302,6 @@ public:
 
 	int use_fontset;
 // This must be constitutive since applications access the private members here.
-	int use_xft;
-
 // Current locale is utf8
 	static int locale_utf8;
 // Failed to initalize input method

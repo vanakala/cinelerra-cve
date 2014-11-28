@@ -113,9 +113,8 @@ BC_Resources::BC_Resources()
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
 		filebox_history[i][0] = 0;
 
-#ifdef HAVE_XFT
 	XftInitFtLibrary();
-#endif
+
 	use_xvideo = display_info->test_xvext();
 
 #include "images/bar_png.h"
@@ -518,15 +517,9 @@ BC_Resources::BC_Resources()
 
 	audiovideo_color = RED;
 
-	use_fontset = 1;
+	use_fontset = 0;
 
 // Xft has priority over font set
-#ifdef HAVE_XFT
-// But Xft dies in 32 bit mode after some amount of drawing.
-	use_xft = 1;
-#else
-	use_xft = 0;
-#endif
 
 	drag_radius = 10;
 	recursive_resizing = 1;

@@ -83,9 +83,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xatom.h>
-#ifdef HAVE_XFT
 #include <X11/Xft/Xft.h>
-#endif
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
@@ -568,10 +566,8 @@ private:
 	int get_color_bgr16(int color);
 	int get_color_bgr24(int color);
 	XFontStruct* get_font_struct(int font);
-#ifdef HAVE_XFT
 	XftFont* get_xft_struct(int font);
 	int wcharpos(const wchar_t *text, XftFont *font, int length, int *charpos);
-#endif
 	Cursor get_cursor_struct(int cursor);
 	XFontSet get_fontset(int font);
 	XFontSet get_curr_fontset(void);

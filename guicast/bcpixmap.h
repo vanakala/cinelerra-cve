@@ -28,9 +28,7 @@
 #include "config.h"
 #endif
 
-#ifdef HAVE_XFT
 #include <X11/Xft/Xft.h>
-#endif
 
 #ifdef HAVE_GL
 #include <GL/glx.h>

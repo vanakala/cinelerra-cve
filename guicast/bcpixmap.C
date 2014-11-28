@@ -124,20 +124,16 @@ BC_Pixmap::~BC_Pixmap()
 	top_level->lock_window("BC_Pixmap::~BC_Pixmap");
 	if(use_opaque())
 	{
-#ifdef HAVE_XFT
 		if(opaque_xft_draw)
 			XftDrawDestroy((XftDraw*)opaque_xft_draw);
-#endif
 		XFreePixmap(top_level->display, opaque_pixmap);
 	}
 
 	if(use_alpha())
 	{
 		XFreeGC(top_level->display, alpha_gc);
-#ifdef HAVE_XFT
 		if(alpha_xft_draw)
 			XftDrawDestroy((XftDraw*)alpha_xft_draw);
-#endif
 		XFreePixmap(top_level->display, alpha_pixmap);
 	}
 
@@ -184,15 +180,10 @@ void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 			w, 
 			h, 
 			top_level->default_depth);
-#ifdef HAVE_XFT
-		if(BC_WindowBase::get_resources()->use_xft)
-		{
-			opaque_xft_draw = XftDrawCreate(top_level->display,
-				opaque_pixmap,
-				top_level->vis,
-				top_level->cmap);
-		}
-#endif
+		opaque_xft_draw = XftDrawCreate(top_level->display,
+			opaque_pixmap,
+			top_level->vis,
+			top_level->cmap);
 	}
 
 	if(use_alpha())
@@ -223,13 +214,8 @@ void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 			gcmask,
 			&gcvalues);
 
-#ifdef HAVE_XFT
-		if(BC_WindowBase::get_resources()->use_xft)
-		{
-			alpha_xft_draw = XftDrawCreateBitmap(top_level->display,
-				alpha_pixmap);
-		}
-#endif
+		alpha_xft_draw = XftDrawCreateBitmap(top_level->display,
+			alpha_pixmap);
 	}
 	top_level->unlock_window();
 }
@@ -242,16 +228,11 @@ void BC_Pixmap::resize(int w, int h)
 			w, 
 			h, 
 			top_level->default_depth);
-#ifdef HAVE_XFT
-	XftDraw *new_xft_draw;
-	if(BC_WindowBase::get_resources()->use_xft)
-	{
-		new_xft_draw = XftDrawCreate(top_level->display,
-			new_pixmap,
-			top_level->vis,
-			top_level->cmap);
-	}
-#endif
+
+	XftDraw *new_xft_draw = XftDrawCreate(top_level->display,
+		new_pixmap,
+		top_level->vis,
+		top_level->cmap);
 
 	XCopyArea(top_level->display,
 		opaque_pixmap,
@@ -265,17 +246,14 @@ void BC_Pixmap::resize(int w, int h)
 		0);
 	this->w = w;
 	this->h = h;
-#ifdef HAVE_XFT
-	if(BC_WindowBase::get_resources()->use_xft)
-		XftDrawDestroy((XftDraw*)opaque_xft_draw);
-#endif
+
+	XftDrawDestroy((XftDraw*)opaque_xft_draw);
 	XFreePixmap(top_level->display, opaque_pixmap);
 
 	opaque_pixmap = new_pixmap;
-#ifdef HAVE_XFT
-	if(BC_WindowBase::get_resources()->use_xft)
-		opaque_xft_draw = new_xft_draw;
-#endif
+
+	opaque_xft_draw = new_xft_draw;
+
 	top_level->unlock_window();
 }
 
