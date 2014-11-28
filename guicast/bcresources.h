@@ -304,7 +304,6 @@ public:
 // This must be constitutive since applications access the private members here.
 	int use_xft;
 
-#ifdef X_HAVE_UTF8_STRING
 // Current locale is utf8
 	static int locale_utf8;
 // Failed to initalize input method
@@ -317,7 +316,6 @@ public:
 	static int init_fontconfig(const char *search_path);
 	static BC_FontEntry *find_fontentry(const char *displayname, int style, int mask);
 	static FcPattern* find_similar_font(FT_ULong char_code, FcPattern *oldfont);
-#endif
 	static size_t encode(const char *from_enc, const char *to_enc,
 		char *input, char *output, int output_length, int input_length = -1);
 	static int find_font_by_char(FT_ULong char_code, char *path_new);

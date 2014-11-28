@@ -43,14 +43,12 @@
 VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
 
-#ifdef X_HAVE_UTF8_STRING
 int BC_Resources::locale_utf8 = 0;
 int BC_Resources::missing_im = 0;
 char BC_Resources::language[LEN_LANG] = {0};
 char BC_Resources::region[LEN_LANG] = {0};
 char BC_Resources::encoding[LEN_ENCOD] = {0};
 ArrayList<BC_FontEntry*> *BC_Resources::fontlist = 0;
-#endif
 
 #include "images/file_film_png.h"
 #include "images/file_folder_png.h"
@@ -649,7 +647,6 @@ int BC_Resources::get_id()
 	return result;
 }
 
-#ifdef X_HAVE_UTF8_STRING
 int BC_Resources::init_fontconfig(const char *search_path)
 {
 	if(!fontlist)
@@ -903,8 +900,6 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 	}
 	return 0;
 }
-
-#endif
 
 size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
 	char *input, char *output, int output_length, int input_length)

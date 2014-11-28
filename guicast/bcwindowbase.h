@@ -795,7 +795,6 @@ private:
 // unique ID of window.
 	int id;
 
-#ifdef X_HAVE_UTF8_STRING
 	// Used to communicate with the input method (IM) server
 	XIM input_method;
 	// Used for retaining the state, properties, and semantics of communication with
@@ -803,7 +802,6 @@ private:
 	XIC input_context;
 	wchar_t *wide_text;
 	wchar_t wide_buffer[BCTEXTLEN];
-#endif
 
 protected:
 	int resize_wide_text(int length);

@@ -50,24 +50,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	timecodeformats.append(new BC_ListBoxItem(TIME_HMSF__STR));
 	timecodeformats.append(new BC_ListBoxItem(TIME_FRAMES__STR));
 
-	encodings.append(new BC_ListBoxItem("ISO8859-1"));
-	encodings.append(new BC_ListBoxItem("ISO8859-2"));
-	encodings.append(new BC_ListBoxItem("ISO8859-3"));
-	encodings.append(new BC_ListBoxItem("ISO8859-4"));
-	encodings.append(new BC_ListBoxItem("ISO8859-5"));
-	encodings.append(new BC_ListBoxItem("ISO8859-6"));
-	encodings.append(new BC_ListBoxItem("ISO8859-7"));
-	encodings.append(new BC_ListBoxItem("ISO8859-8"));
-	encodings.append(new BC_ListBoxItem("ISO8859-9"));
-	encodings.append(new BC_ListBoxItem("ISO8859-10"));
-	encodings.append(new BC_ListBoxItem("ISO8859-11"));
-	encodings.append(new BC_ListBoxItem("ISO8859-12"));
-	encodings.append(new BC_ListBoxItem("ISO8859-13"));
-	encodings.append(new BC_ListBoxItem("ISO8859-14"));
-	encodings.append(new BC_ListBoxItem("ISO8859-15"));
-	encodings.append(new BC_ListBoxItem("KOI8"));
-	encodings.append(new BC_ListBoxItem("UTF-8"));
-
 	sizes.append(new BC_ListBoxItem("8"));
 	sizes.append(new BC_ListBoxItem("9"));
 	sizes.append(new BC_ListBoxItem("10"));
@@ -206,12 +188,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	color_x = x;
 	color_y = y + 20;
 	color_thread = new TitleColorThread(plugin, this);
-#ifndef X_HAVE_UTF8_STRING
-	x = 10;
-	y += 50;
-	add_tool(encoding_title = new BC_Title(x, y + 3, _("Encoding:")));
-	encoding = new TitleEncoding(plugin, this, x, y + 20);
-#endif
 
 #ifdef USE_OUTLINE
 	x += 160;
@@ -262,7 +238,6 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 TitleWindow::~TitleWindow()
 {
 	sizes.remove_all_objects();
-	encodings.remove_all_objects();
 	timecodeformats.remove_all_objects();
 	delete timecodeformat;
 	delete color_thread;
@@ -294,10 +269,6 @@ void TitleWindow::resize_event(int w, int h)
 #endif
 	size_title->reposition_window(size_title->get_x(), size_title->get_y());
 	size->reposition_window(size->get_x(), size->get_y());
-#ifndef X_HAVE_UTF8_STRING
-	encoding_title->reposition_window(encoding_title->get_x(), encoding_title->get_y());
-	encoding->reposition_window(encoding->get_x(), encoding->get_y());
-#endif
 	color_button->reposition_window(color_button->get_x(), color_button->get_y());
 #ifdef USE_OUTLINE
 	color_stroke_button->reposition_window(color_stroke_button->get_x(), color_stroke_button->get_y());
@@ -406,9 +377,6 @@ void TitleWindow::update()
 	stroke->update(plugin->config.style & FONT_OUTLINE);
 #endif
 	size->update(plugin->config.size);
-#ifndef X_HAVE_UTF8_STRING
-	encoding->update(plugin->config.encoding);
-#endif
 	timecode->update(plugin->config.timecode);
 	timecodeformat->update(plugin->config.timecodeformat);
 	motion->update(TitleMain::motion_to_text(plugin->config.motion_strategy));
@@ -519,31 +487,6 @@ void TitleSize::update(int size)
 	BC_PopupTextBox::update(string);
 }
 
-#ifndef X_HAVE_UTF8_STRING
-TitleEncoding::TitleEncoding(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_PopupTextBox(window, 
-		&window->encodings,
-		client->config.encoding,
-		x, 
-		y, 
-		100,
-		300)
-{
-	this->client = client;
-	this->window = window;
-}
-
-TitleEncoding::~TitleEncoding()
-{
-}
-
-int TitleEncoding::handle_event()
-{
-	strcpy(client->config.encoding, get_text());
-	client->send_configure_change();
-	return 1;
-}
-#endif
 TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Color..."))
 {

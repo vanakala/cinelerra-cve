@@ -143,7 +143,7 @@ BC_WindowBase::~BC_WindowBase()
 			XFreeFont(display, mediumfont);
 		if(largefont)
 			XFreeFont(display, largefont);
-#ifdef X_HAVE_UTF8_STRING
+
 		if(!get_resources()->missing_im)
 		{
 			if(input_context)
@@ -151,7 +151,6 @@ BC_WindowBase::~BC_WindowBase()
 			if(input_method)
 				XCloseIM(input_method);
 		}
-#endif
 		flush();
 // Can't close display if another thread is waiting for events.
 // Synchronous thread must delete display if gl_context exists.
@@ -178,10 +177,9 @@ BC_WindowBase::~BC_WindowBase()
 		get_resources()->get_synchronous()->delete_window(this);
 	}
 #endif
-#ifdef X_HAVE_UTF8_STRING
 	if(wide_text != wide_buffer)
 		delete [] wide_buffer;
-#endif
+
 	resize_history.remove_all_objects();
 
 	UNSET_ALL_LOCKS(this)
@@ -252,10 +250,9 @@ void BC_WindowBase::initialize()
 	bold_mediumfont_xft = 0;
 	bold_smallfont_xft = 0;
 
-#ifdef X_HAVE_UTF8_STRING
 	input_method = 0;
 	input_context = 0;
-#endif
+
 	cursor_timer = new Timer;
 #ifdef HAVE_GL
 	gl_win_context = 0;
@@ -834,7 +831,6 @@ void BC_WindowBase::dispatch_event()
 		key_pressed = 0;
 		memset(key_string, 0, sizeof(key_string));
 
-#ifdef X_HAVE_UTF8_STRING
 		if(input_context)
 		{
 			wkey_string_length = XwcLookupString(input_context,
@@ -842,9 +838,7 @@ void BC_WindowBase::dispatch_event()
 		}
 		else
 			XLookupString((XKeyEvent*)&event, key_string, 6, &keysym,  0);
-#else
-		XLookupString((XKeyEvent*)&event, key_string, 1, &keysym, 0);
-#endif
+
 // block out control keys
 		if(keysym > 0xffe0 && keysym < 0xffff) break;
 
@@ -1786,7 +1780,6 @@ void BC_WindowBase::init_xft()
 
 void BC_WindowBase::init_im()
 {
-#ifdef X_HAVE_UTF8_STRING
 	XIMStyles *xim_styles;
 	XIMStyle xim_style;
 
@@ -1835,9 +1828,7 @@ void BC_WindowBase::init_im()
 		printf("Failed to create input context.\n");
 		get_resources()->missing_im = 1;
 		XCloseIM(input_method);
-		return;
 	}
-#endif
 }
 
 int BC_WindowBase::get_color(int color) 
@@ -2223,7 +2214,6 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	if(get_resources()->use_xft && get_xft_struct(font))
 	{
 		XGlyphInfo extents;
-#ifdef X_HAVE_UTF8_STRING
 		if(get_resources()->locale_utf8)
 		{
 			XftTextExtentsUtf8(top_level->display,
@@ -2233,7 +2223,6 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 				&extents);
 		}
 		else
-#endif
 		{
 			XftTextExtents8(top_level->display,
 				get_xft_struct(font),

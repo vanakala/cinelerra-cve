@@ -84,7 +84,6 @@ int main(int argc, char *argv[])
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");
 
-#ifdef X_HAVE_UTF8_STRING
 	if(char *loc = setlocale(LC_CTYPE, ""))
 	{
 		strcpy(BC_Resources::encoding, nl_langinfo(CODESET));
@@ -118,9 +117,6 @@ int main(int argc, char *argv[])
 	}
 	else
 		printf(PROGRAM_NAME ": Could not set locale.\n");
-#else
-	setlocale(LC_CTYPE, "");
-#endif
 
 	for(int i = 1; i < argc; i++)
 	{

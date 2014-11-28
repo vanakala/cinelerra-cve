@@ -110,21 +110,13 @@ void AboutPrefs::show()
 		"Dan Streetman\n");
 
 	draw_utf8_text(x + 180, y,
-#ifdef X_HAVE_UTF8_STRING
 		"Gustavo Iñiguez\n"
-#else
-		"Gustavo I\361iguez\n"
-#endif
 		"Johannes Sixt\n"
 		"Mark Taraba\n"
 		"Andraz Tori\n"
 		"Jonas Wulff\n"
 		"David Arendt\n"
-#ifdef X_HAVE_UTF8_STRING
 		"Einar Rünkaru\n"
-#else
-		"Einar R\374nkaru\n"
-#endif
 		"Monty Montgomery\n");
 
 	y = get_h() - 135;

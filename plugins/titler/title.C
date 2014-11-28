@@ -53,11 +53,7 @@
 
 #define FONT_SEARCHPATH "fonts"
 //#define FONT_SEARCHPATH "/usr/X11R6/lib/X11/fonts"
-#ifdef X_HAVE_UTF8_STRING
 #define DEFAULT_ENCODING "UTF-8"
-#else
-#define DEFAULT_ENCODING "ISO8859-1"
-#endif
 #define DEFAULT_TIMECODEFORMAT "h:mm:ss:ff"
 
 
