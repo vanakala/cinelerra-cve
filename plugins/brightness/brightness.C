@@ -30,8 +30,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#define SQR(a) ((a) * (a))
-
 REGISTER_PLUGIN
 
 BrightnessConfig::BrightnessConfig()

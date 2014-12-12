@@ -34,7 +34,6 @@
 
 // 1000 corresponds to (1.0 + MAX_COLOR) * input
 #define MAX_COLOR 1.0
-#define SQR(a) ((a) * (a))
 
 
 REGISTER_PLUGIN
