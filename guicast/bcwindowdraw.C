@@ -398,6 +398,8 @@ void BC_WindowBase::draw_wtext(int x,
 	if(length < 0)
 		length = wcslen(text);
 
+	if(charpos)
+		charpos[0] = 0;
 	if(!length)
 		return;
 
@@ -422,8 +424,6 @@ void BC_WindowBase::draw_wtext(int x,
 	altfont = 0;
 	cp = 0;
 	ubp = text;
-	if(charpos)
-		charpos[0] = 0;
 
 	for(up = text; up < &text[length]; up++)
 	{
