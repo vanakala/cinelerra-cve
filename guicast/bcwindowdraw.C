@@ -316,7 +316,7 @@ void BC_WindowBase::draw_xft_text(int x,
 {
 	int l = resize_wide_text(length);
 
-	length = BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding, "UTF32LE",
+	length = BC_Resources::encode(is_utf8 ? "UTF8" : BC_Resources::encoding, BC_Resources::wide_encoding,
 		(char*)text, (char*)wide_text, l * sizeof(wchar_t), length) / sizeof(wchar_t);
 
 	draw_xft_text(x, y, wide_text, length, pixmap);
@@ -507,7 +507,7 @@ void BC_WindowBase::draw_center_text(int x, int y, const char *text, int length)
 	if(top_level->get_xft_struct(top_level->current_font))
 	{
 		int l = resize_wide_text(length);
-		length = BC_Resources::encode(get_resources()->encoding, "UTF32LE",
+		length = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
 			(char*)text, (char*)wide_text, l * sizeof(wchar_t), length) / sizeof(wchar_t);
 		w = get_text_width(current_font, wide_text, length);
 		x -= w / 2;

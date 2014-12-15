@@ -161,7 +161,7 @@ void TitleConfig::interpolate(TitleConfig &prev,
 
 void TitleConfig::text_to_ucs4(const char *from_enc)
 {
-	wtext_length = BC_Resources::encode(from_enc, "UTF32LE",
+	wtext_length = BC_Resources::encode(from_enc, BC_Resources::wide_encoding,
 		text, (char *)wtext, sizeof(wtext) / sizeof(wchar_t)) / sizeof(wchar_t);
 }
 
@@ -1636,7 +1636,7 @@ void TitleMain::save_defaults()
 
 // Store text in separate path to isolate special characters
 	FileSystem fs;
-	int txlen = BC_Resources::encode("UTF32LE", "UTF8",
+	int txlen = BC_Resources::encode(BC_Resources::wide_encoding, DEFAULT_ENCODING,
 		(char*)config.wtext, config.text, BCTEXTLEN, 
 		config.wtext_length * sizeof(wchar_t));
 	sprintf(text_path, "%stitle_text.rc", plugin_conf_dir());
@@ -1676,7 +1676,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("TIMECODEFORMAT", config.timecodeformat);
 	output.append_tag();
 	output.append_newline();
-	BC_Resources::encode("UTF32LE", "UTF8", (char*)config.wtext,
+	BC_Resources::encode(BC_Resources::wide_encoding, DEFAULT_ENCODING, (char*)config.wtext,
 		config.text, BCTEXTLEN, config.wtext_length * sizeof(wchar_t));
 	output.encode_text(config.text);
 	output.tag.set_title("/TITLE");

@@ -61,7 +61,7 @@ BC_TextBox::BC_TextBox(int x,
 	len = resize_wide_text(len);
 	strcpy(ntext, text);
 	wtext_len = BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding,
-		"UTF32LE", ntext, (char*)wide_text, len * sizeof(wchar_t)) / sizeof(wchar_t);
+		BC_Resources::wide_encoding, ntext, (char*)wide_text, len * sizeof(wchar_t)) / sizeof(wchar_t);
 }
 
 BC_TextBox::BC_TextBox(int x,
@@ -92,7 +92,7 @@ BC_TextBox::BC_TextBox(int x,
 		len = resize_wide_text(len);
 		strcpy(ntext, text);
 		wtext_len = BC_Resources::encode(get_resources()->encoding,
-			"UTF32LE", ntext, (char*)wide_text,
+			BC_Resources::wide_encoding, ntext, (char*)wide_text,
 			len * sizeof(wchar_t)) / sizeof(wchar_t);
 	}
 }
@@ -280,7 +280,7 @@ void BC_TextBox::update(const char *text)
 	resize_ntext(len);
 	strcpy(ntext, text);
 	len = resize_wide_text(len);
-	wtext_len = BC_Resources::encode(get_resources()->encoding, "UTF32LE",
+	wtext_len = BC_Resources::encode(get_resources()->encoding, BC_Resources::wide_encoding,
 		ntext, (char*)wide_text, len * sizeof(wchar_t)) / sizeof(wchar_t);
 	update_wtext();
 }
@@ -303,7 +303,7 @@ void BC_TextBox::updateutf8(const char *text)
 	resize_ntext(len);
 	strcpy(ntext, text);
 	len = resize_wide_text(len);
-	wtext_len = BC_Resources::encode("UTF8" , "UTF32LE",
+	wtext_len = BC_Resources::encode("UTF8" , BC_Resources::wide_encoding,
 		ntext, (char*)wide_text, len * sizeof(wchar_t)) / sizeof(wchar_t);
 	update_wtext();
 }
@@ -406,7 +406,7 @@ int BC_TextBox::calculate_row_h(int rows,
 
 char* BC_TextBox::get_text()
 {
-	BC_Resources::encode("UTF32LE", "UTF8",
+	BC_Resources::encode(BC_Resources::wide_encoding, "UTF8",
 		(char*)wide_text, ntext, BCTEXTLEN, wtext_len * sizeof(wchar_t));
 	return ntext;
 }
@@ -1571,7 +1571,7 @@ void BC_TextBox::copy_selection(int clipboard_num)
 		highlight_letter2 - highlight_letter1 <= 0) return;
 // Pooleli see tuleb teha locale encodingusse
 	clip_len = highlight_letter2 - highlight_letter1;
-	clip_len = BC_Resources::encode("UTF32LE", get_resources()->encoding,
+	clip_len = BC_Resources::encode(BC_Resources::wide_encoding, BC_Resources::encoding,
 		(char *)&wide_text[highlight_letter1], ntext,
 		BCTEXTLEN, clip_len * sizeof(wchar_t));
 	get_clipboard()->to_clipboard(ntext, clip_len, clipboard_num);
@@ -1585,7 +1585,7 @@ void BC_TextBox::paste_selection(int clipboard_num)
 	{
 		wchar_t *string = new wchar_t[len + 1];
 		get_clipboard()->from_clipboard(ntext, len, clipboard_num);
-		BC_Resources::encode(get_resources()->encoding, "UTF32LE",
+		BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
 			ntext, (char *)string, (len + 1) * sizeof(wchar_t));
 		insert_text(string);
 		delete [] string;
