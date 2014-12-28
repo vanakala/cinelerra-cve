@@ -693,7 +693,6 @@ void BlueDotTheme::initialize()
 	title_color = BLACK;
 	recordgui_fixed_color = BLACK;
 	recordgui_variable_color = RED;
-	resources->medium_font = N_("-*-helvetica-medium-r-normal-*-14-*");
 
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;

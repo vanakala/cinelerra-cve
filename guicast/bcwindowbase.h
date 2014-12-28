@@ -559,19 +559,14 @@ private:
 	void allocate_color_table();
 	void init_gc();
 	void init_fonts();
-	void init_xft();
 	void init_im();
 	int get_color_rgb8(int color);
 	int get_color_rgb16(int color);
 	int get_color_bgr16(int color);
 	int get_color_bgr24(int color);
-	XFontStruct* get_font_struct(int font);
 	XftFont* get_xft_struct(int font);
 	int wcharpos(const wchar_t *text, XftFont *font, int length, int *charpos);
 	Cursor get_cursor_struct(int cursor);
-	XFontSet get_fontset(int font);
-	XFontSet get_curr_fontset(void);
-	void set_fontset(int font);
 	void dispatch_event();
 	void get_key_masks(XEvent *event);
 
@@ -696,14 +691,8 @@ private:
 	int tooltip_done;
 // If the tooltip shouldn't be hidden
 	int persistant_tooltip;
-
-// Font sets
-	XFontSet largefontset, mediumfontset, smallfontset, curr_fontset;
-
 // Fonts
 	int current_font;
-	XFontStruct *largefont, *mediumfont, *smallfont;
-
 // Must be void so users don't need to include the wrong libpng version.
 	void *largefont_xft, *mediumfont_xft, *smallfont_xft;
 	void *bold_largefont_xft, *bold_mediumfont_xft, *bold_smallfont_xft;

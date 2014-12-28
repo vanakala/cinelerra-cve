@@ -67,27 +67,12 @@ VFrame* BC_Resources::type_to_icon[] =
 	new VFrame(file_column_png)
 };
 
-const char* BC_Resources::small_font = N_("-*-helvetica-medium-r-normal-*-10-*");
-const char* BC_Resources::small_font2 = N_("-*-helvetica-medium-r-normal-*-11-*");
-const char* BC_Resources::medium_font = N_("-*-helvetica-bold-r-normal-*-14-*");
-const char* BC_Resources::medium_font2 = N_("-*-helvetica-bold-r-normal-*-14-*");
-const char* BC_Resources::large_font = N_("-*-helvetica-bold-r-normal-*-18-*");
-const char* BC_Resources::large_font2 = N_("-*-helvetica-bold-r-normal-*-20-*");
-
-const char* BC_Resources::small_fontset = "-*-helvetica-medium-r-normal-*-10-*";
-const char* BC_Resources::medium_fontset = "-*-helvetica-bold-r-normal-*-14-*";
-const char* BC_Resources::large_fontset = "-*-helvetica-bold-r-normal-*-18-*";
-
 const char* BC_Resources::small_font_xft = N_("Sans:pixelsize=10.66");
 const char* BC_Resources::medium_font_xft = N_("Sans:pixelsize=13.33");
 const char* BC_Resources::large_font_xft = N_("Sans:pixelsize=21.33");
 const char* BC_Resources::small_b_font_xft = N_("Sans:bold:pixelsize=10.66");
 const char* BC_Resources::medium_b_font_xft = N_("Sans:bold:pixelsize=13.33");
 const char* BC_Resources::large_b_font_xft = N_("Sans:bold:pixelsize=21.33");
-
-const char* BC_Resources::small_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-const char* BC_Resources::medium_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-const char* BC_Resources::large_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
 
 suffix_to_type_t BC_Resources::suffix_to_type[] = 
 {
@@ -525,10 +510,6 @@ BC_Resources::BC_Resources()
 	medium_7segment = default_medium_7segment;
 
 	audiovideo_color = RED;
-
-	use_fontset = 0;
-
-// Xft has priority over font set
 
 	drag_radius = 10;
 	recursive_resizing = 1;

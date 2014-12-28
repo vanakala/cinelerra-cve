@@ -202,38 +202,6 @@ void BC_WindowBase::draw_text(int x,
 				text,
 				length,
 				pixmap);
-			return;
-		}
-
-		for(int i = 0, j = 0; i <= length; i++)
-		{
-			if(text[i] == '\n' || text[i] == 0)
-			{
-				if(get_resources()->use_fontset && top_level->get_curr_fontset())
-				{
-					XmbDrawString(top_level->display,
-						pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-						top_level->get_curr_fontset(),
-						top_level->gc,
-						x,
-						y,
-						&text[j],
-						i - j);
-				}
-				else
-				{
-					XDrawString(top_level->display,
-						pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-						top_level->gc,
-						x,
-						y,
-						&text[j],
-						i - j);
-				}
-
-				j = i + 1;
-				y += get_text_height(MEDIUMFONT);
-			}
 		}
 	}
 }
@@ -255,37 +223,6 @@ void BC_WindowBase::draw_utf8_text(int x,
 			pixmap,
 			1);
 		return;
-	}
-
-	for(int i = 0, j = 0; i <= length; i++)
-	{
-		if(text[i] == '\n' || text[i] == 0)
-		{
-			if(get_resources()->use_fontset && top_level->get_curr_fontset())
-			{
-				XmbDrawString(top_level->display,
-					pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-					top_level->get_curr_fontset(),
-					top_level->gc,
-					x,
-					y,
-					&text[j],
-					i - j);
-			}
-			else
-			{
-				XDrawString(top_level->display,
-					pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
-					top_level->gc,
-					x,
-					y,
-					&text[j],
-					i - j);
-			}
-
-			j = i + 1;
-			y += get_text_height(MEDIUMFONT);
-		}
 	}
 }
 
@@ -512,12 +449,7 @@ void BC_WindowBase::draw_center_text(int x, int y, const char *text, int length)
 		w = get_text_width(current_font, wide_text, length);
 		x -= w / 2;
 		draw_xft_text(x, y, wide_text, length, 0);
-		return;
 	}
-
-	w = get_text_width(current_font, text, length);
-	x -= w / 2;
-	draw_text(x, y, text, length);
 }
 
 void BC_WindowBase::draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap)

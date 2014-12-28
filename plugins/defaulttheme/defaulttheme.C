@@ -629,7 +629,6 @@ void BlondTheme::initialize()
 	title_color = WHITE;
 	recordgui_fixed_color = YELLOW;
 	recordgui_variable_color = RED;
-	resources->medium_font = N_("-*-helvetica-bold-r-normal-*-14-*");
 
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;

@@ -137,13 +137,6 @@ BC_WindowBase::~BC_WindowBase()
 	{
 		XFreeGC(display, gc);
 
-		if(smallfont)
-			XFreeFont(display, smallfont);
-		if(mediumfont)
-			XFreeFont(display, mediumfont);
-		if(largefont)
-			XFreeFont(display, largefont);
-
 		if(!get_resources()->missing_im)
 		{
 			if(input_context)
@@ -1667,73 +1660,17 @@ void BC_WindowBase::init_window_shape()
 void BC_WindowBase::init_gc()
 {
 	unsigned long gcmask;
-	gcmask = GCFont | GCGraphicsExposures;
+
+	gcmask = GCGraphicsExposures;
 
 	XGCValues gcvalues;
-	gcvalues.font = mediumfont->fid;        // set the font
+
 	gcvalues.graphics_exposures = 0;        // prevent expose events for every redraw
 	gc = XCreateGC(display, rootwin, gcmask, &gcvalues);
 }
 
 void BC_WindowBase::init_fonts()
 {
-	if((largefont = XLoadQueryFont(display, _(resources.large_font))) == NULL)
-		if((largefont = XLoadQueryFont(display, _(resources.large_font2))) == NULL)
-			largefont = XLoadQueryFont(display, "fixed"); 
-
-	if((mediumfont = XLoadQueryFont(display, _(resources.medium_font))) == NULL)
-		if((mediumfont = XLoadQueryFont(display, _(resources.medium_font2))) == NULL)
-			mediumfont = XLoadQueryFont(display, "fixed"); 
-
-	if((smallfont = XLoadQueryFont(display, _(resources.small_font))) == NULL)
-		if((smallfont = XLoadQueryFont(display, _(resources.small_font2))) == NULL)
-			smallfont = XLoadQueryFont(display, "fixed");
-
-	init_xft();
-	if(get_resources()->use_fontset)
-	{
-		char **m, *d;
-		int n;
-
-// FIXME: should check the m,d,n values
-		if((largefontset = XCreateFontSet(display, 
-				resources.large_fontset,
-				&m,
-				&n,
-				&d)) == 0)
-			largefontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
-
-		if((mediumfontset = XCreateFontSet(display, 
-				resources.medium_fontset,
-				&m,
-				&n,
-				&d)) == 0)
-			mediumfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
-
-		if((smallfontset = XCreateFontSet(display, 
-				resources.small_fontset,
-				&m,
-				&n,
-				&d)) == 0)
-			smallfontset = XCreateFontSet(display, "fixed,*", &m, &n, &d);
-
-		if(largefontset && mediumfontset && smallfontset)
-		{
-			curr_fontset = mediumfontset;
-			get_resources()->use_fontset = 1;
-		}
-		else
-		{
-			curr_fontset = 0;
-			get_resources()->use_fontset = 0;
-		}
-	}
-}
-
-
-void BC_WindowBase::init_xft()
-{
-// Rewrite to be fonts chooser ready
 	largefont_xft = XftFontOpenName(display, screen,
 		resources.large_font_xft);
 
@@ -2089,46 +2026,6 @@ void BC_WindowBase::stop_hourglass_recursive()
 	}
 }
 
-
-XFontStruct* BC_WindowBase::get_font_struct(int font)
-{
-// Clear out unrelated flags
-	if(font & BOLDFACE) font ^= BOLDFACE;
-
-	switch(font)
-	{
-	case MEDIUMFONT:
-		return top_level->mediumfont;
-	case SMALLFONT:
-		return top_level->smallfont;
-	case LARGEFONT:
-		return top_level->largefont;
-	}
-	return 0;
-}
-
-XFontSet BC_WindowBase::get_fontset(int font)
-{
-	XFontSet fs = 0;
-
-	if(get_resources()->use_fontset)
-	{
-		switch(font)
-		{
-		case SMALLFONT:  
-			fs = top_level->smallfontset;
-			break;
-		case LARGEFONT:
-			fs = top_level->largefontset;
-			break;
-		case MEDIUMFONT:
-			fs = top_level->mediumfontset;
-			break;
-		}
-	}
-	return fs;
-}
-
 XftFont* BC_WindowBase::get_xft_struct(int font)
 {
 	switch(font)
@@ -2153,42 +2050,6 @@ XftFont* BC_WindowBase::get_xft_struct(int font)
 void BC_WindowBase::set_font(int font)
 {
 	top_level->current_font = font;
-
-	if(get_font_struct(font))
-	{
-		XSetFont(top_level->display, top_level->gc, get_font_struct(font)->fid);
-	}
-
-	return;
-}
-
-void BC_WindowBase::set_fontset(int font)
-{
-	XFontSet fs = 0;
-
-	if(get_resources()->use_fontset)
-	{
-		switch(font)
-		{
-		case SMALLFONT:
-			fs = top_level->smallfontset;
-			break;
-		case LARGEFONT:
-			fs = top_level->largefontset;
-			break;
-		case MEDIUMFONT:
-			fs = top_level->mediumfontset;
-			break;
-		}
-	}
-	curr_fontset = fs;
-}
-
-XFontSet BC_WindowBase::get_curr_fontset(void)
-{
-	if(get_resources()->use_fontset)
-		return curr_fontset;
-	return 0;
 }
 
 int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
@@ -2215,24 +2076,9 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 		return extents.xOff;
 	}
 	else
-	if(get_resources()->use_fontset && top_level->get_fontset(font))
-		return XmbTextEscapement(top_level->get_fontset(font), text, length);
-	else
-	if(get_font_struct(font)) 
-		return XTextWidth(get_font_struct(font), text, length);
-	else
-	{
-		int w = 0;
-		switch(font)
-		{
-		case MEDIUM_7SEGMENT:
-			return get_resources()->medium_7segment[0]->get_w() * length;
-
-		default:
-			return 0;
-		}
-		return w;
-	}
+	if(font == MEDIUM_7SEGMENT)
+		return get_resources()->medium_7segment[0]->get_w() * length;
+	return 0;
 }
 
 int BC_WindowBase::get_single_text_width(int font, const wchar_t *text, int length)
@@ -2307,28 +2153,12 @@ int BC_WindowBase::get_text_ascent(int font)
 {
 	XftFont *fstruct;
 
-	if(fstruct = get_xft_struct(font))
-		return fstruct->ascent;
-	else
-	if(get_resources()->use_fontset && top_level->get_fontset(font))
-	{
-		XFontSetExtents *extents;
-
-		extents = XExtentsOfFontSet(top_level->get_fontset(font));
-		return -extents->max_logical_extent.y;
-	}
-	else
-	if(get_font_struct(font))
-		return top_level->get_font_struct(font)->ascent;
-	else
-	switch(font)
-	{
-	case MEDIUM_7SEGMENT:
+	if(font == MEDIUM_7SEGMENT)
 		return get_resources()->medium_7segment[0]->get_h();
 
-	default:
-		return 0;
-	}
+	if(fstruct = get_xft_struct(font))
+		return fstruct->ascent;
+	return 0;
 }
 
 int BC_WindowBase::get_text_descent(int font)
@@ -2337,18 +2167,6 @@ int BC_WindowBase::get_text_descent(int font)
 
 	if(fstruct = get_xft_struct(font))
 		return fstruct->descent;
-	else
-	if(get_resources()->use_fontset && top_level->get_fontset(font))
-	{
-		XFontSetExtents *extents;
-
-		extents = XExtentsOfFontSet(top_level->get_fontset(font));
-		return (extents->max_logical_extent.height
-			+ extents->max_logical_extent.y);
-	}
-	else
-	if(get_font_struct(font))
-		return top_level->get_font_struct(font)->descent;
 	return 0;
 }
 
