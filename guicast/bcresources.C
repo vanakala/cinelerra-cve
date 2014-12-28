@@ -993,6 +993,7 @@ FcPattern* BC_Resources::find_similar_font(FT_ULong char_code, FcPattern *oldfon
 	if(char_code < ' ')
 		return 0;
 
+	fontconfig_lock->lock("BC_Resources::find_similar_font");
 	pat = FcPatternCreate();
 	os = FcObjectSetBuild(FC_FILE, FC_CHARSET, FC_SCALABLE, FC_FAMILY,
 		FC_SLANT, FC_WEIGHT, FC_WIDTH, (char *)0);
@@ -1023,6 +1024,7 @@ FcPattern* BC_Resources::find_similar_font(FT_ULong char_code, FcPattern *oldfon
 		}
 	}
 	FcFontSetDestroy(fs);
+	fontconfig_lock->unlock();
 
 	return pat;
 }
