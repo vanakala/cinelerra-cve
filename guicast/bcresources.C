@@ -85,7 +85,7 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
 	{ "wav", ICON_SOUND }
 };
 
-Mutex *BC_Resources::fontconfig_lock = 0;
+Mutex BC_Resources::fontconfig_lock("BC_Resources::fonconfig_lock");
 
 BC_Resources::BC_Resources()
 {
@@ -93,8 +93,7 @@ BC_Resources::BC_Resources()
 	display_info = new BC_DisplayInfo("", 0);
 	id_lock = new Mutex("BC_Resources::id_lock");
 	create_window_lock = new Mutex("BC_Resources::create_window_lock", 1);
-	if(!fontconfig_lock)
-		fontconfig_lock = new Mutex("BC_Resources::fonconfig_lock");
+
 	id = 0;
 
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
@@ -948,7 +947,7 @@ int BC_Resources::find_font_by_char(FT_ULong char_code, char *path_new)
 	if(char_code < ' ')
 		return 0;
 
-	fontconfig_lock->lock("BC_Resources::find_font_by_char");
+	fontconfig_lock.lock("BC_Resources::find_font_by_char");
 	pat = FcPatternCreate();
 	os = FcObjectSetBuild(FC_FILE, FC_CHARSET, (char *)0);
 
@@ -975,7 +974,7 @@ int BC_Resources::find_font_by_char(FT_ULong char_code, char *path_new)
 		}
 	}
 	FcFontSetDestroy(fs);
-	fontconfig_lock->unlock();
+	fontconfig_lock.unlock();
 	return result;
 }
 
@@ -993,7 +992,7 @@ FcPattern* BC_Resources::find_similar_font(FT_ULong char_code, FcPattern *oldfon
 	if(char_code < ' ')
 		return 0;
 
-	fontconfig_lock->lock("BC_Resources::find_similar_font");
+	fontconfig_lock.lock("BC_Resources::find_similar_font");
 	pat = FcPatternCreate();
 	os = FcObjectSetBuild(FC_FILE, FC_CHARSET, FC_SCALABLE, FC_FAMILY,
 		FC_SLANT, FC_WEIGHT, FC_WIDTH, (char *)0);
@@ -1024,7 +1023,7 @@ FcPattern* BC_Resources::find_similar_font(FT_ULong char_code, FcPattern *oldfon
 		}
 	}
 	FcFontSetDestroy(fs);
-	fontconfig_lock->unlock();
+	fontconfig_lock.unlock();
 
 	return pat;
 }
