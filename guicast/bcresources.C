@@ -855,7 +855,7 @@ int BC_Resources::init_fontconfig(const char *search_path)
 
 BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, int mask)
 {
-	BC_FontEntry *entry;
+	BC_FontEntry *entry, *style_match;
 
 	if(!fontlist)
 		return 0;
@@ -872,15 +872,25 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 		}
 	}
 
-// FIXIT: search using fontconfig
+// No exact match - assume normal width font
+	style |= FL_WIDTH_NORMAL;
+	mask |= FL_WIDTH_MASK;
+	style_match = 0;
 	for(int i = 0; i < fontlist->total; i++)
 	{
 		entry = fontlist->values[i];
 
 		if((entry->style & mask) == style)
-			return entry;
+		{
+			if(!style_match)
+				style_match = entry;
+
+			if(!strncasecmp(displayname, entry->family,
+					strlen(entry->family)))
+				return entry;
+		}
 	}
-	return 0;
+	return style_match;
 }
 
 size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
