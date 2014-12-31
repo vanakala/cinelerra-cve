@@ -101,7 +101,7 @@ public:
 // Find font entry
 	BC_FontEntry *find_fontentry(const char *displayname, int style, int mask);
 // Find font path where glyph for the character_code exists
-	int find_font_by_char(FT_ULong char_code, char *path_new);
+	int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
 
 // ======================== Realtime buffer pointers ===========================
 // These are provided by the plugin server for the opengl handler.

@@ -300,7 +300,7 @@ public:
 	static FcPattern* find_similar_font(FT_ULong char_code, FcPattern *oldfont);
 	static size_t encode(const char *from_enc, const char *to_enc,
 		char *input, char *output, int output_length, int input_length = -1);
-	static int find_font_by_char(FT_ULong char_code, char *path_new);
+	static int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
 
 // Available display extensions
 	int use_shm;

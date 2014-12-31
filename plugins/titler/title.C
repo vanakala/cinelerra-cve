@@ -224,7 +224,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 		if(gindex == 0)
 		{
 			// Search replacement font
-			if(plugin->find_font_by_char(glyph->char_code, new_path))
+			if(plugin->find_font_by_char(glyph->char_code, new_path, freetype_face))
 			{
 				plugin->load_freetype_face(freetype_library,
 					freetype_face, new_path);

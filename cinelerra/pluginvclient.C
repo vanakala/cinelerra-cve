@@ -193,7 +193,7 @@ BC_FontEntry *PluginVClient::find_fontentry(const char *displayname, int style, 
 	return BC_Resources::find_fontentry(displayname, style, mask);
 }
 
-int PluginVClient::find_font_by_char(FT_ULong char_code, char *path_new)
+int PluginVClient::find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface)
 {
-	return BC_Resources::find_font_by_char(char_code, path_new);
+	return BC_Resources::find_font_by_char(char_code, path_new, oldface);
 }
