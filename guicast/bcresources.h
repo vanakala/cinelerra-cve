@@ -285,8 +285,6 @@ public:
 // This must be constitutive since applications access the private members here.
 // Current locale is utf8
 	static int locale_utf8;
-// Failed to initalize input method
-	static int missing_im;
 // Byte order is little_endian
 	static int little_endian;
 // Language and region

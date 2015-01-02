@@ -249,7 +249,6 @@ public:
 	int get_buttonpress();
 	int get_has_focus();
 	int get_dragging();
-	char* get_keystring();
 	wchar_t* get_wkeystring(int *length = 0);
 	int get_keypress();
 // Get cursor position of last event
@@ -667,7 +666,6 @@ private:
 	int button_pressed;
 // Last key pressed
 	int key_pressed;
-	char key_string[6];
 	int wkey_string_length;
 	wchar_t wkey_string[4];
 // During a selection drag involving toggles, set the same value for each toggle

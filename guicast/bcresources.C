@@ -46,7 +46,6 @@ VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
 
 int BC_Resources::locale_utf8 = 0;
-int BC_Resources::missing_im = 0;
 int BC_Resources::little_endian = 0;
 char BC_Resources::language[LEN_LANG] = {0};
 char BC_Resources::region[LEN_LANG] = {0};
