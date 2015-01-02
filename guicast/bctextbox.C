@@ -406,6 +406,13 @@ int BC_TextBox::calculate_row_h(int rows,
 
 char* BC_TextBox::get_text()
 {
+	BC_Resources::encode(BC_Resources::wide_encoding, BC_Resources::encoding,
+		(char*)wide_text, ntext, BCTEXTLEN, wtext_len * sizeof(wchar_t));
+	return ntext;
+}
+
+char* BC_TextBox::get_utf8text()
+{
 	BC_Resources::encode(BC_Resources::wide_encoding, "UTF8",
 		(char*)wide_text, ntext, BCTEXTLEN, wtext_len * sizeof(wchar_t));
 	return ntext;

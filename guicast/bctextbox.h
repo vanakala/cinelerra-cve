@@ -104,6 +104,7 @@ public:
 	void activate();
 	void deactivate();
 	char* get_text();
+	char* get_utf8text();
 	wchar_t* get_wtext(int *length = 0);
 	int get_text_rows();
 // Set top left of text view
