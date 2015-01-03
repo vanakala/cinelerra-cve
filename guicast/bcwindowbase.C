@@ -350,7 +350,6 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			this->bg_color = resources.get_bg_color();
 
 		init_fonts();
-		init_im();
 		init_gc();
 		init_cursors();
 
@@ -436,6 +435,7 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 					(unsigned char *)&XGroupLeader, 
 					true);
 		}
+		init_im();
 	}
 
 #ifdef HAVE_LIBXXF86VM
@@ -819,6 +819,8 @@ void BC_WindowBase::dispatch_event()
 	case KeyPress:
 		get_key_masks(&event);
 		key_pressed = 0;
+
+		if(XFilterEvent(&event, win)) break;
 
 		wkey_string_length = XwcLookupString(input_context,
 			(XKeyEvent*)&event, wkey_string, 4, &keysym, 0);
@@ -1740,7 +1742,7 @@ void BC_WindowBase::init_im()
 	}
 
 	input_context = XCreateIC(input_method, XNInputStyle, xim_style,
-		NULL);
+		XNClientWindow, win, XNFocusWindow, win, NULL);
 
 	if(!input_context)
 	{
