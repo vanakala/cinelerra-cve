@@ -1,6 +1,6 @@
 plugin_LTLIBRARIES = titler.la
 titler_la_LDFLAGS = -avoid-version -module -shared 
-titler_la_LIBADD = $(top_builddir)/plugins/colors/libcolors.la -lfreetype  -lfontconfig
+titler_la_LIBADD = $(top_builddir)/plugins/colors/libcolors.la
 titler_la_SOURCES = title.C titlewindow.C 
 AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
 

@@ -47,12 +47,10 @@
 #include <endian.h>
 #include <byteswap.h>
 #include <sys/stat.h>
-#include <fontconfig/fontconfig.h>
 
 #define ZERO (1.0 / 64.0)
 
 #define FONT_SEARCHPATH "fonts"
-//#define FONT_SEARCHPATH "/usr/X11R6/lib/X11/fonts"
 #define DEFAULT_ENCODING "UTF-8"
 #define DEFAULT_TIMECODEFORMAT "h:mm:ss:ff"
 
