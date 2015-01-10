@@ -86,7 +86,7 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
 	{ "wav", ICON_SOUND }
 };
 
-Mutex BC_Resources::fontconfig_lock("BC_Resources::fonconfig_lock");
+Mutex BC_Resources::fontconfig_lock("BC_Resources::fontconfig_lock");
 
 BC_Resources::BC_Resources()
 {
@@ -957,13 +957,15 @@ int BC_Resources::find_font_by_char(FT_ULong char_code, char *path_new, const FT
 
 	if(ofont = FcFreeTypeQueryFace(oldface, (const FcChar8*)"", 4097, 0))
 	{
-		font = find_similar_font(char_code, ofont);
-		if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
+		if(font = find_similar_font(char_code, ofont))
 		{
-			strcpy(path_new, (char*)file);
-			result = 1;
+			if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
+			{
+				strcpy(path_new, (char*)file);
+				result = 1;
+			}
+			FcPatternDestroy(font);
 		}
-		FcPatternDestroy(font);
 		FcPatternDestroy(ofont);
 	}
 	return result;
