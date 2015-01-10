@@ -52,6 +52,8 @@ char BC_Resources::region[LEN_LANG] = {0};
 char BC_Resources::encoding[LEN_ENCOD] = {0};
 const char *BC_Resources::wide_encoding = 0;
 ArrayList<BC_FontEntry*> *BC_Resources::fontlist = 0;
+const char *BC_Resources::fc_properties[] = { FC_SLANT, FC_WEIGHT, FC_WIDTH };
+#define LEN_FCPROP (sizeof(BC_Resources::fc_properties) / sizeof(const char*))
 
 #include "images/file_film_png.h"
 #include "images/file_folder_png.h"
@@ -991,13 +993,23 @@ FcPattern* BC_Resources::find_similar_font(FT_ULong char_code, FcPattern *oldfon
 		FC_SLANT, FC_WEIGHT, FC_WIDTH, (char *)0);
 
 	FcPatternAddBool(pat, FC_SCALABLE, true);
-	if(FcPatternGetInteger(oldfont, FC_SLANT, 0, &ival) == FcResultMatch)
-		FcPatternAddInteger(pat, FC_SLANT, ival);
-	if(FcPatternGetInteger(oldfont, FC_WEIGHT, 0, &ival) == FcResultMatch)
-		FcPatternAddInteger(pat, FC_WEIGHT, ival);
-	if(FcPatternGetInteger(oldfont, FC_WIDTH,  0, &ival) == FcResultMatch)
-		FcPatternAddInteger(pat, FC_WIDTH, ival);
+	fcs = FcCharSetCreate();
+	if(FcCharSetAddChar(fcs, char_code))
+		FcPatternAddCharSet(pat, FC_CHARSET, fcs);
+	FcCharSetDestroy(fcs);
+	for(int i = 0; i < LEN_FCPROP; i++)
+	{
+		if(FcPatternGetInteger(oldfont, fc_properties[i], 0, &ival) == FcResultMatch)
+			FcPatternAddInteger(pat, fc_properties[i], ival);
+	}
 	fs = FcFontList(0, pat, os);
+
+	for(int i = LEN_FCPROP - 1; i >= 0 && fs->nfont == 0; i--)
+	{
+		FcFontSetDestroy(fs);
+		FcPatternDel(pat, fc_properties[i]);
+		fs = FcFontList(0, pat, os);
+	}
 	FcPatternDestroy(pat);
 	FcObjectSetDestroy(os);
 

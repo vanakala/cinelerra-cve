@@ -318,6 +318,7 @@ private:
 	VFrame **list_pointers[100];
 	int list_lengths[100];
 	int list_total;
+	static const char *fc_properties[];
 
 	Mutex *id_lock;
 	static Mutex fontconfig_lock;
