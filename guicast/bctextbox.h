@@ -29,6 +29,7 @@
 #include "bctimer.inc"
 
 #define BCCURSORW 2
+#define TEXTBOXLEN (BCTEXTLEN - 1)
 
 class BC_TextBox : public BC_SubWindow
 {
@@ -156,7 +157,6 @@ private:
 	int get_cursor_letter(int cursor_x, int cursor_y);
 	int get_row_h(int rows);
 	void default_keypress(int &dispatch_event, int &result);
-	int resize_ntext(int length);
 
 // Top left of text relative to window
 	int text_x, text_y;
@@ -175,8 +175,7 @@ private:
 	int highlighted;
 	int high_color, back_color;
 	int background_color;
-	char *ntext;
-	char ntext_buffer[BCTEXTLEN];
+	char ntext[TEXTBOXLEN + 1];
 	int wtext_len;
 	int *positions;
 	int active;

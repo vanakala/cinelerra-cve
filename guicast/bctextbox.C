@@ -57,9 +57,8 @@ BC_TextBox::BC_TextBox(int x,
 	skip_cursor = 0;
 	reset_parameters(rows, has_border, font);
 	len = strlen(text);
-	resize_ntext(len);
-	len = resize_wide_text(len);
-	strcpy(ntext, text);
+	strncpy(ntext, text, TEXTBOXLEN);
+	ntext[TEXTBOXLEN] = 0;
 	wtext_len = BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding,
 		BC_Resources::wide_encoding, ntext, (char*)wide_text, len * sizeof(wchar_t)) / sizeof(wchar_t);
 }
@@ -81,16 +80,18 @@ BC_TextBox::BC_TextBox(int x,
 	if(wtext)
 	{
 		wtext_len = wcslen(wtext);
-		resize_ntext(wtext_len);
-		len = resize_wide_text(wtext_len);
-		wcscpy(wide_text, wtext);
+		if(wtext_len > TEXTBOXLEN)
+			wtext_len = TEXTBOXLEN;
+		wcsncpy(wide_text, wtext, TEXTBOXLEN);
+		wide_text[TEXTBOXLEN] = 0;
 	}
 	else
 	{
 		len = strlen(text);
-		resize_ntext(len);
-		len = resize_wide_text(len);
-		strcpy(ntext, text);
+		if(len > TEXTBOXLEN)
+			len = TEXTBOXLEN;
+		strncpy(ntext, text, TEXTBOXLEN);
+		ntext[TEXTBOXLEN] = 0;
 		wtext_len = BC_Resources::encode(get_resources()->encoding,
 			BC_Resources::wide_encoding, ntext, (char*)wide_text,
 			len * sizeof(wchar_t)) / sizeof(wchar_t);
@@ -147,8 +148,6 @@ BC_TextBox::BC_TextBox(int x,
 BC_TextBox::~BC_TextBox()
 {
 	if(skip_cursor) delete skip_cursor;
-	if(ntext != ntext_buffer)
-		delete [] ntext;
 	delete [] positions;
 }
 
@@ -184,7 +183,6 @@ void BC_TextBox::reset_parameters(int rows, int has_border, int font)
 	separators = 0;
 	defaultcolor = 0;
 	wtext_len = 0;
-	ntext = ntext_buffer;
 	positions = 0;
 }
 
@@ -232,22 +230,6 @@ void BC_TextBox::initialize()
 	set_cursor(IBEAM_CURSOR);
 }
 
-int BC_TextBox::resize_ntext(int length)
-{
-	if(ntext != ntext_buffer)
-		delete [] ntext;
-	if(length < sizeof(ntext_buffer))
-	{
-		ntext = ntext_buffer;
-		return sizeof(ntext_buffer);
-	}
-	else
-	{
-		ntext = new char[length + 1];
-		return length + 1;
-	}
-}
-
 int BC_TextBox::calculate_h(BC_WindowBase *gui, 
 	int font, 
 	int has_border,
@@ -277,9 +259,11 @@ void BC_TextBox::update(const char *text)
 // Don't update if contents are the same
 	if(!strcmp(text, ntext)) return;
 	len = strlen(text);
-	resize_ntext(len);
-	strcpy(ntext, text);
-	len = resize_wide_text(len);
+
+	if(len > TEXTBOXLEN)
+		len = TEXTBOXLEN;
+	strncpy(ntext, text, TEXTBOXLEN);
+	ntext[TEXTBOXLEN] = 0;
 	wtext_len = BC_Resources::encode(get_resources()->encoding, BC_Resources::wide_encoding,
 		ntext, (char*)wide_text, len * sizeof(wchar_t)) / sizeof(wchar_t);
 	update_wtext();
@@ -300,9 +284,9 @@ void BC_TextBox::updateutf8(const char *text)
 	if(!strcmp(text, ntext)) return;
 
 	len = strlen(text);
-	resize_ntext(len);
-	strcpy(ntext, text);
-	len = resize_wide_text(len);
+	if(len > TEXTBOXLEN)
+		len = TEXTBOXLEN;
+	strncpy(ntext, text, TEXTBOXLEN);
 	wtext_len = BC_Resources::encode("UTF8" , BC_Resources::wide_encoding,
 		ntext, (char*)wide_text, len * sizeof(wchar_t)) / sizeof(wchar_t);
 	update_wtext();
@@ -310,19 +294,20 @@ void BC_TextBox::updateutf8(const char *text)
 
 void BC_TextBox::update(const wchar_t *text)
 {
-	int len;
 // Don't update if contents are the same
 	if(!wcscmp(text, wide_text)) return;
 
 	wtext_len = wcslen(text);
-	resize_wide_text(wtext_len);
-	wcscpy(wide_text, text);
+	if(wtext_len > TEXTBOXLEN)
+		wtext_len = TEXTBOXLEN;
+	wcsncpy(wide_text, text, TEXTBOXLEN);
+	wide_text[TEXTBOXLEN] = 0;
 	update_wtext();
 }
 
 void BC_TextBox::update(int64_t value)
 {
-	char string[BCTEXTLEN];
+	char string[TEXTBOXLEN];
 	sprintf(string, "%lld", value);
 
 	update(string);
@@ -330,7 +315,7 @@ void BC_TextBox::update(int64_t value)
 
 void BC_TextBox::update(int value)
 {
-	char string[BCTEXTLEN];
+	char string[TEXTBOXLEN];
 	sprintf(string, "%d", value);
 
 	update(string);
@@ -338,7 +323,7 @@ void BC_TextBox::update(int value)
 
 void BC_TextBox::update(float value)
 {
-	char string[BCTEXTLEN];
+	char string[TEXTBOXLEN];
 
 	sprintf(string, "%0.*f", precision, value);
 
@@ -347,7 +332,7 @@ void BC_TextBox::update(float value)
 
 void BC_TextBox::update(double value)
 {
-	char string[BCTEXTLEN];
+	char string[TEXTBOXLEN];
 
 	sprintf(string, "%0.*f", precision, value);
 
@@ -407,14 +392,14 @@ int BC_TextBox::calculate_row_h(int rows,
 char* BC_TextBox::get_text()
 {
 	BC_Resources::encode(BC_Resources::wide_encoding, BC_Resources::encoding,
-		(char*)wide_text, ntext, BCTEXTLEN, wtext_len * sizeof(wchar_t));
+		(char*)wide_text, ntext, sizeof(ntext), wtext_len * sizeof(wchar_t));
 	return ntext;
 }
 
 char* BC_TextBox::get_utf8text()
 {
 	BC_Resources::encode(BC_Resources::wide_encoding, "UTF8",
-		(char*)wide_text, ntext, BCTEXTLEN, wtext_len * sizeof(wchar_t));
+		(char*)wide_text, ntext, sizeof(ntext), wtext_len * sizeof(wchar_t));
 	return ntext;
 }
 
@@ -529,10 +514,7 @@ void BC_TextBox::draw()
 	draw_box(0, 0, w, h);
 	if(!positions)
 	{
-		if(wtext_len < BCTEXTLEN)
-			positions = new int[BCTEXTLEN+1];
-		else
-			positions = new int[wtext_len+1];
+		positions = new int[TEXTBOXLEN + 2];
 	}
 
 // Draw text with selection
@@ -1362,6 +1344,13 @@ void BC_TextBox::insert_text(const wchar_t *string, int string_len)
 		highlight_letter2 = ibeam_letter = highlight_letter1;
 	}
 
+	if(wtext_len + string_len > TEXTBOXLEN)
+	{
+		string_len = TEXTBOXLEN - wtext_len;
+		if(string_len <= 0)
+			return;
+	}
+
 	for(i = wtext_len, j = wtext_len + string_len; i >= ibeam_letter; i--, j--)
 		wide_text[j] = wide_text[i];
 
@@ -1580,7 +1569,7 @@ void BC_TextBox::copy_selection(int clipboard_num)
 	clip_len = highlight_letter2 - highlight_letter1;
 	clip_len = BC_Resources::encode(BC_Resources::wide_encoding, BC_Resources::encoding,
 		(char *)&wide_text[highlight_letter1], ntext,
-		BCTEXTLEN, clip_len * sizeof(wchar_t));
+		sizeof(ntext), clip_len * sizeof(wchar_t));
 	get_clipboard()->to_clipboard(ntext, clip_len, clipboard_num);
 }
 
@@ -1590,6 +1579,8 @@ void BC_TextBox::paste_selection(int clipboard_num)
 
 	if(len)
 	{
+		if(len > TEXTBOXLEN)
+			len = TEXTBOXLEN;
 		wchar_t *string = new wchar_t[len + 1];
 		get_clipboard()->from_clipboard(ntext, len, clipboard_num);
 		BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
