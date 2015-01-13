@@ -939,7 +939,7 @@ size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
 	for(int i = 0; i < 4; i++)
 	{
 		output[i] = 0;
-		if(--outbytes <= 0)
+		if(outbytes-- == 0)
 			break;
 	}
 	return inbytes;
