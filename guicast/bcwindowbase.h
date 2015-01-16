@@ -430,6 +430,7 @@ public:
 	void set_background(VFrame *bitmap);
 // Change the window title.  The title is translated internally.
 	void set_title(const char *text);
+	void set_utf8title(const char *text);
 	char* get_title();
 	void start_video();
 	void stop_video();
@@ -534,7 +535,7 @@ private:
 				int window_type,
 				BC_Pixmap *bg_pixmap,
 				int group_it,
-				int splash = 0);
+				int options = 0);
 
 	static Display* init_display(const char *display_name);
 // Get display from top level

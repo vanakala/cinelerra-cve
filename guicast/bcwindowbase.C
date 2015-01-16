@@ -274,7 +274,7 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 				int window_type,
 				BC_Pixmap *bg_pixmap,
 				int group_it,
-				int splash)
+				int options)
 {
 	XSetWindowAttributes attr;
 	unsigned long mask;
@@ -367,7 +367,7 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		attr.colormap = cmap;
 		attr.cursor = get_cursor_struct(ARROW_CURSOR);
 
-		if(splash)
+		if(options & WINDOW_SPLASH)
 		{
 			mask |= CWOverrideRedirect;
 			attr.override_redirect = True;
@@ -402,14 +402,19 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			size_hints.y = this->y;
 		}
 
-		XSetStandardProperties(display, 
-			win, 
-			title, 
-			title, 
-			None, 
-			0, 
-			0, 
-			&size_hints);
+		char *txlist[2];
+		txlist[0] = this->title;
+		txlist[1] = 0;
+		XTextProperty titleprop;
+		if(options & WINDOW_UTF8)
+			Xutf8TextListToTextProperty(display, txlist,  1,
+				XUTF8StringStyle, &titleprop);
+		else
+			XmbTextListToTextProperty(display, txlist, 1,
+				XStdICCTextStyle, &titleprop);
+		XSetWMProperties(display, win, &titleprop, &titleprop,
+			0, 0, &size_hints, 0, 0);
+		XFree(titleprop.value);
 		get_atoms();
 
 		clipboard = new BC_Clipboard(display_name);
@@ -3013,8 +3018,37 @@ void BC_WindowBase::set_background(VFrame *bitmap)
 
 void BC_WindowBase::set_title(const char *text)
 {
-	XSetStandardProperties(top_level->display, top_level->win, text, text, None, 0, 0, 0); 
-	strcpy(this->title, _(text));
+	char *txlist[2];
+
+	strcpy(this->title, text);
+	txlist[0] = this->title;
+	txlist[1] = 0;
+	XTextProperty titleprop;
+
+	strcpy(this->title, text);
+	XmbTextListToTextProperty(top_level->display, txlist, 1,
+		XStdICCTextStyle, &titleprop);
+	XSetWMName(top_level->display, top_level->win, &titleprop);
+	XSetWMIconName(top_level->display, top_level->win, &titleprop);
+	XFree(titleprop.value);
+
+	flush();
+}
+
+void BC_WindowBase::set_utf8title(const char *text)
+{
+	char *txlist[2];
+
+	strcpy(this->title, text);
+	txlist[0] = this->title;
+	txlist[1] = 0;
+	XTextProperty titleprop;
+
+	Xutf8TextListToTextProperty(top_level->display, txlist,  1,
+		XUTF8StringStyle, &titleprop);
+	XSetWMName(top_level->display, top_level->win, &titleprop);
+	XSetWMIconName(top_level->display, top_level->win, &titleprop);
+	XFree(titleprop.value);
 	flush();
 }
 

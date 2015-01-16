@@ -43,7 +43,7 @@ SplashGUI::SplashGUI(VFrame *bg, int x, int y)
 		-1,
 		"",
 		0,
-		1)
+		WINDOW_SPLASH)
 {
 	this->bg = bg;
 }
