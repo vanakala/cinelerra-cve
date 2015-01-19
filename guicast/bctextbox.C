@@ -56,7 +56,7 @@ BC_TextBox::BC_TextBox(int x,
 	reset_parameters(rows, has_border, font);
 	strncpy(ntext, text, TEXTBOXLEN);
 	ntext[TEXTBOXLEN] = 0;
-	wtext_len = BC_Resources::encode(is_utf8 ? "UTF8" : get_resources()->encoding,
+	wtext_len = BC_Resources::encode(is_utf8 ? "UTF8" : BC_Resources::encoding,
 		BC_Resources::wide_encoding, ntext, (char*)wide_text, TEXTBOXLEN * sizeof(wchar_t)) / sizeof(wchar_t);
 }
 
@@ -84,7 +84,7 @@ BC_TextBox::BC_TextBox(int x,
 	{
 		strncpy(ntext, text, TEXTBOXLEN);
 		ntext[TEXTBOXLEN] = 0;
-		wtext_len = BC_Resources::encode(get_resources()->encoding,
+		wtext_len = BC_Resources::encode(BC_Resources::encoding,
 			BC_Resources::wide_encoding, ntext, (char*)wide_text,
 			TEXTBOXLEN * sizeof(wchar_t)) / sizeof(wchar_t);
 	}
@@ -251,7 +251,7 @@ void BC_TextBox::update(const char *text)
 	if(!strcmp(text, ntext)) return;
 	strncpy(ntext, text, TEXTBOXLEN);
 	ntext[TEXTBOXLEN] = 0;
-	wtext_len = BC_Resources::encode(get_resources()->encoding, BC_Resources::wide_encoding,
+	wtext_len = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
 		ntext, (char*)wide_text, TEXTBOXLEN * sizeof(wchar_t)) / sizeof(wchar_t);
 	update_wtext();
 }
@@ -270,6 +270,7 @@ void BC_TextBox::updateutf8(const char *text)
 	if(!strcmp(text, ntext)) return;
 
 	strncpy(ntext, text, TEXTBOXLEN);
+	ntext[TEXTBOXLEN] = 0;
 	wtext_len = BC_Resources::encode("UTF8" , BC_Resources::wide_encoding,
 		ntext, (char*)wide_text, TEXTBOXLEN * sizeof(wchar_t)) / sizeof(wchar_t);
 	update_wtext();
