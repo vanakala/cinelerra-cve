@@ -428,7 +428,7 @@ public:
 	void set_opaque();
 	void set_inverse();
 	void set_background(VFrame *bitmap);
-// Change the window title.  The title is translated internally.
+// Change the window title
 	void set_title(const char *text);
 	void set_utf8title(const char *text);
 	char* get_title();

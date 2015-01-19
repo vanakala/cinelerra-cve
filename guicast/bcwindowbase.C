@@ -3018,14 +3018,13 @@ void BC_WindowBase::set_background(VFrame *bitmap)
 
 void BC_WindowBase::set_title(const char *text)
 {
+	XTextProperty titleprop;
 	char *txlist[2];
 
 	strcpy(this->title, text);
 	txlist[0] = this->title;
 	txlist[1] = 0;
-	XTextProperty titleprop;
 
-	strcpy(this->title, text);
 	XmbTextListToTextProperty(top_level->display, txlist, 1,
 		XStdICCTextStyle, &titleprop);
 	XSetWMName(top_level->display, top_level->win, &titleprop);
@@ -3037,12 +3036,12 @@ void BC_WindowBase::set_title(const char *text)
 
 void BC_WindowBase::set_utf8title(const char *text)
 {
+	XTextProperty titleprop;
 	char *txlist[2];
 
 	strcpy(this->title, text);
 	txlist[0] = this->title;
 	txlist[1] = 0;
-	XTextProperty titleprop;
 
 	Xutf8TextListToTextProperty(top_level->display, txlist,  1,
 		XUTF8StringStyle, &titleprop);
