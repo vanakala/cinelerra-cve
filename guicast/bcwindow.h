@@ -40,7 +40,7 @@ public:
 				int bg_color = -1,
 				const char *display_name = "",
 				int group_it = 1,
-				int splash = 0);
+				int options = 0);
 	virtual ~BC_Window();
 
 private:

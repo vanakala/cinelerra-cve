@@ -37,7 +37,7 @@ BC_Window::BC_Window(const char *title,
 				int bg_color,
 				const char *display_name,
 				int group_it,
-				int splash)
+				int options)
  : BC_WindowBase()
 {
 	create_window(0,
@@ -56,7 +56,7 @@ BC_Window::BC_Window(const char *title,
 				MAIN_WINDOW,
 				0,
 				group_it,
-				splash);
+				options);
 }
 
 
