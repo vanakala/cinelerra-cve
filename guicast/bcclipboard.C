@@ -266,7 +266,7 @@ void BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 		if(type_return && temp_data)
 		{
 			strncpy(data, temp_data, maxlen);
-			data[size] = 0;
+			data[maxlen] = 0;
 		}
 		else
 			data[0] = 0;
