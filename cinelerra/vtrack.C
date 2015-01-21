@@ -98,6 +98,7 @@ void VTrack::set_default_title()
 		if(current->data_type == TRACK_VIDEO) i++;
 	}
 	sprintf(title, _("Video %d"), i);
+	BC_Resources::encode_to_utf8(title, BCTEXTLEN);
 }
 
 posnum VTrack::to_units(ptstime position, int round)

@@ -208,10 +208,14 @@ void PluginServer::set_title(const char *string)
 
 void PluginServer::generate_display_title(char *string)
 {
+	char lbuf[BCTEXTLEN];
+
+	strcpy(lbuf, _(title));
+	BC_Resources::encode_to_utf8(lbuf, BCTEXTLEN);
 	if(plugin && plugin->track) 
-		sprintf(string, "%s: %s", plugin->track->title, title);
+		sprintf(string, "%s: %s", plugin->track->title, lbuf);
 	else
-		strcpy(string, title);
+		strcpy(string, lbuf);
 }
 
 static struct oldpluginnames
