@@ -945,6 +945,17 @@ size_t BC_Resources::encode(const char *from_enc, const char *to_enc,
 	return inbytes;
 }
 
+void BC_Resources::encode_to_utf8(char *buffer, int buflen)
+{
+	char lbuf[buflen];
+
+	if(BC_Resources::locale_utf8)
+		return;
+
+	BC_Resources::encode(BC_Resources::encoding, 0, buffer, lbuf, buflen);
+	strcpy(buffer, lbuf);
+}
+
 int BC_Resources::find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface)
 {
 	FcPattern *font, *ofont;
