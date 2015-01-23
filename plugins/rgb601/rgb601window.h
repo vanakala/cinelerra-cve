@@ -30,6 +30,7 @@ class RGB601Window;
 #include "filexml.h"
 #include "mutex.h"
 #include "rgb601.h"
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
@@ -45,7 +46,7 @@ public:
 	int true_value;
 };
 
-class RGB601Window : public BC_Window
+class RGB601Window : public PluginWindow
 {
 public:
 	RGB601Window(RGB601Main *plugin, int x, int y);

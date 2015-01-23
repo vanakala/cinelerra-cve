@@ -24,8 +24,9 @@
 
 #include "normalize.h"
 #include "guicast.h"
+#include "pluginwindow.h"
 
-class NormalizeWindow : public BC_Window
+class NormalizeWindow : public PluginWindow
 {
 public:
 	NormalizeWindow(NormalizeMain *plugin, int x, int y);

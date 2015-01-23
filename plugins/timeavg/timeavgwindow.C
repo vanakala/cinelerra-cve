@@ -28,16 +28,11 @@ PLUGIN_THREAD_METHODS
 #define MAX_DURATION 4.0
 
 TimeAvgWindow::TimeAvgWindow(TimeAvgMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	210, 
-	210, 
-	200, 
-	210, 
-	0, 
-	0,
-	1)
+	210)
 { 
 	x = y = 10;
 

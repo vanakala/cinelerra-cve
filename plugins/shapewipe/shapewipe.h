@@ -35,6 +35,7 @@
 #include "language.h"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 class ShapeWipeW2B : public BC_Radial
@@ -123,7 +124,7 @@ public:
 	ShapeWipeFilename *filename;
 };
 
-class ShapeWipeWindow : public BC_Window
+class ShapeWipeWindow : public PluginWindow
 {
 public:
 	ShapeWipeWindow(ShapeWipeMain *plugin, int x, int y);

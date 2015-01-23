@@ -27,10 +27,11 @@
 #include "filexml.h"
 #include "mutex.h"
 #include "aging.h"
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
-class AgingWindow : public BC_Window
+class AgingWindow : public PluginWindow
 {
 public:
 	AgingWindow(AgingMain *plugin, int x, int y);

@@ -42,6 +42,7 @@
 #include "loadbalance.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "picon_png.h"
 
 #include <string.h>
@@ -90,7 +91,7 @@ public:
 };
 
 
-class DiffKeyGUI : public BC_Window
+class DiffKeyGUI : public PluginWindow
 {
 public:
 	DiffKeyGUI(DiffKey *plugin, int x, int y);
@@ -241,16 +242,11 @@ int DiffKeyDoValue::handle_event()
 
 
 DiffKeyGUI::DiffKeyGUI(DiffKey *plugin, int x, int y)
- : BC_Window(plugin->gui_string,
+ : PluginWindow(plugin->gui_string,
 	x,
 	y,
 	320,
-	100,
-	320,
-	100,
-	0,
-	0,
-	1)
+	100)
 {
 	BC_Title *title;
 	int x2;

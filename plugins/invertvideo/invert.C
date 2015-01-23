@@ -40,6 +40,7 @@
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 #include <stdint.h>
@@ -72,7 +73,7 @@ public:
 	int *output;
 };
 
-class InvertVideoWindow : public BC_Window
+class InvertVideoWindow : public PluginWindow
 {
 public:
 	InvertVideoWindow(InvertVideoEffect *plugin, int x, int y);
@@ -159,16 +160,11 @@ int InvertVideoEnable::handle_event()
 
 
 InvertVideoWindow::InvertVideoWindow(InvertVideoEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	260, 
-	130, 
-	260, 
-	130, 
-	0, 
-	0,
-	1)
+	130)
 {
 	x = y = 10;
 

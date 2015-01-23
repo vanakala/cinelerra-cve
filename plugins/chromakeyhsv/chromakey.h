@@ -38,6 +38,7 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 
 enum {
 	CHROMAKEY_POSTPROCESS_NONE,
@@ -205,7 +206,7 @@ public:
 };
 
 
-class ChromaKeyWindow : public BC_Window
+class ChromaKeyWindow : public PluginWindow
 {
 public:
 	ChromaKeyWindow(ChromaKeyHSV *plugin, int x, int y);

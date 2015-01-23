@@ -56,16 +56,11 @@ int NullAudioSwitch::handle_event()
  * creating the elements of gui.
  */
 NullAudioWindow::NullAudioWindow(NullAudio *plugin, int x, int y)
- : BC_Window(plugin->plugin_title(),
+ : PluginWindow(plugin->plugin_title(),
 	x,
 	y,
 	200,
-	100,
-	200,
-	100,
-	0,
-	0,
-	1)
+	100)
 {
 	x = y = 10;
 

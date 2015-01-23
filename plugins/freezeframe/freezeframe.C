@@ -61,16 +61,11 @@ void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev,
 
 
 FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *plugin, int x, int y)
- : BC_Window(plugin->get_gui_string(),
+ : PluginWindow(plugin->get_gui_string(),
 	x,
 	y,
 	200,
-	100,
-	200,
-	100,
-	0,
-	0,
-	1)
+	100)
 {
 	add_tool(enabled = new FreezeFrameToggle(plugin,
 		&plugin->config.enabled,

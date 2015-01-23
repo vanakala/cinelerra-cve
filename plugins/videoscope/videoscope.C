@@ -40,6 +40,7 @@
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "fonts.h"
 #include "vframe.h"
 
@@ -202,7 +203,7 @@ public:
 	VideoScopeEffect *plugin;
 };
 
-class VideoScopeWindow : public BC_Window
+class VideoScopeWindow : public PluginWindow
 {
 public:
 	VideoScopeWindow(VideoScopeEffect *plugin, int x, int y);
@@ -315,17 +316,11 @@ VideoScopeVectorscope::VideoScopeVectorscope(VideoScopeEffect *plugin,
 VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin, 
 	int x, 
 	int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	plugin->w, 
-	plugin->h, 
-	50, 
-	50, 
-	1, 
-	0,
-	1,
-	BLACK)
+	plugin->h)
 {
 	int w = plugin->w;
 	int h = plugin->h;

@@ -59,16 +59,11 @@ void DelayVideoConfig::interpolate(DelayVideoConfig &prev,
 
 
 DelayVideoWindow::DelayVideoWindow(DelayVideo *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	210, 
-	120, 
-	210, 
-	120, 
-	0, 
-	0,
-	1)
+	120)
 {
 	x = y = 10;
 

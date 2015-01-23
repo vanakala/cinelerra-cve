@@ -36,10 +36,11 @@
 #include "language.h"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 
 class _1080to540Option;
 
-class _1080to540Window : public BC_Window
+class _1080to540Window : public PluginWindow
 {
 public:
 	_1080to540Window(_1080to540Main *plugin, int x, int y);

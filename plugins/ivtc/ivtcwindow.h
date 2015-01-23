@@ -27,6 +27,7 @@
 #include "filexml.h"
 #include "mutex.h"
 #include "ivtc.h"
+#include "pluginwindow.h"
 
 #define TOTAL_PATTERNS 3
 
@@ -38,7 +39,7 @@ class IVTCAuto;
 class IVTCAutoThreshold;
 class IVTCPattern;
 
-class IVTCWindow : public BC_Window
+class IVTCWindow : public PluginWindow
 {
 public:
 	IVTCWindow(IVTCMain *plugin, int x, int y);

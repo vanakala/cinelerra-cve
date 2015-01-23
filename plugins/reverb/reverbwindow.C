@@ -32,16 +32,11 @@ PLUGIN_THREAD_METHODS
 
 
 ReverbWindow::ReverbWindow(Reverb *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	250, 
-	230, 
-	250, 
-	230, 
-	0, 
-	0,
-	1)
+	230)
 { 
 	x = 170;
 	y = 10;

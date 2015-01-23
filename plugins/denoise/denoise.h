@@ -35,6 +35,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 typedef enum { DECOMP, RECON } wavetype;
@@ -48,7 +49,7 @@ public:
 	DenoiseEffect *plugin;
 };
 
-class DenoiseWindow : public BC_Window
+class DenoiseWindow : public PluginWindow
 {
 public:
 	DenoiseWindow(DenoiseEffect *plugin, int x, int y);

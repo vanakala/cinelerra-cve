@@ -28,16 +28,11 @@ PLUGIN_THREAD_METHODS
 
 
 RGB601Window::RGB601Window(RGB601Main *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	210, 
-	200, 
-	210, 
-	200, 
-	0, 
-	0,
-	1)
+	200)
 {
 	x = y = 10;
 

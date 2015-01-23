@@ -39,6 +39,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 
@@ -102,7 +103,7 @@ public:
 	WhirlEffect *plugin;
 };
 
-class WhirlWindow : public BC_Window
+class WhirlWindow : public PluginWindow
 {
 public:
 	WhirlWindow(WhirlEffect *plugin, int x, int y);
@@ -212,20 +213,14 @@ void WhirlConfig::interpolate(WhirlConfig &prev,
 
 
 WhirlWindow::WhirlWindow(WhirlEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	220, 
-	200, 
-	220, 
-	200, 
-	0, 
-	0,
-	1)
+	200)
 {
 	x = y = 10;
 
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Radius")));
 	y += 20;
 	add_subwindow(radius = new WhirlRadius(plugin, x, y));

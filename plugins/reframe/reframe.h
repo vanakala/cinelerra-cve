@@ -33,7 +33,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
-
+#include "pluginwindow.h"
 
 class ReFrameOutput : public BC_TextBox
 {
@@ -44,7 +44,7 @@ public:
 };
 
 
-class ReFrameWindow : public BC_Window
+class ReFrameWindow : public PluginWindow
 {
 public:
 	ReFrameWindow(ReFrame *plugin, int x, int y);

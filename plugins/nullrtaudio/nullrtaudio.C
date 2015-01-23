@@ -61,16 +61,11 @@ int NRTAudioSwitch::handle_event()
  * creating the elements of gui.
  */
 NRTAudioWindow::NRTAudioWindow(NRTAudio *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	200,
-	50,
-	200,
-	50,
-	0,
-	0,
-	1)
+	50)
 {
 	x = y = 10;
 

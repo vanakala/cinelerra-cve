@@ -32,6 +32,7 @@
 #include "guicast.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"
+#include "pluginwindow.h"
 #include "resample.inc"
 #include "vframe.inc"
 
@@ -43,7 +44,7 @@ public:
 	ResampleEffect *plugin;
 };
 
-class ResampleWindow : public BC_Window
+class ResampleWindow : public PluginWindow
 {
 public:
 	ResampleWindow(ResampleEffect *plugin, int x, int y);

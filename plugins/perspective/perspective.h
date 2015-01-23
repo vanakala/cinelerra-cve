@@ -42,6 +42,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 
@@ -145,7 +146,7 @@ public:
 	int value;
 };
 
-class PerspectiveWindow : public BC_Window
+class PerspectiveWindow : public PluginWindow
 {
 public:
 	PerspectiveWindow(PerspectiveMain *plugin, int x, int y);

@@ -36,16 +36,11 @@ PLUGIN_THREAD_METHODS
 
 
 IVTCWindow::IVTCWindow(IVTCMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string,
+ : PluginWindow(plugin->gui_string,
 	x,
 	y,
 	210, 
-	230, 
-	210, 
-	230, 
-	0, 
-	0,
-	1)
+	230)
 {
 	x = y = 10;
 

@@ -27,10 +27,11 @@
 #include "filexml.h"
 #include "mutex.h"
 #include "burn.h"
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
-class BurnWindow : public BC_Window
+class BurnWindow : public PluginWindow
 {
 public:
 	BurnWindow(BurnMain *plugin, int x, int y);

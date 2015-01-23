@@ -25,12 +25,13 @@
 #include "gain.h"
 #include "guicast.h"
 #include "pluginclient.h"
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
 class GainLevel;
 
-class GainWindow : public BC_Window
+class GainWindow : public PluginWindow
 {
 public:
 	GainWindow(Gain *gain, int x, int y);

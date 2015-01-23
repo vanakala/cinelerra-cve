@@ -37,6 +37,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 
 #include <string.h>
 #include "picon_png.h"
@@ -61,7 +62,7 @@ public:
 };
 
 
-class ReverseVideoWindow : public BC_Window
+class ReverseVideoWindow : public PluginWindow
 {
 public:
 	ReverseVideoWindow(ReverseVideo *plugin, int x, int y);
@@ -104,16 +105,11 @@ ReverseVideoConfig::ReverseVideoConfig()
 PLUGIN_THREAD_METHODS
 
 ReverseVideoWindow::ReverseVideoWindow(ReverseVideo *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	210, 
-	160, 
-	200, 
-	160, 
-	0, 
-	0,
-	1)
+	160)
 {
 	x = y = 10;
 

@@ -30,16 +30,11 @@
 PLUGIN_THREAD_METHODS
 
 TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	plugin->window_w,
-	plugin->window_h,
-	100, 
-	100, 
-	1, 
-	0,
-	1)
+	plugin->window_h)
 {
 	x = y = 10;
 

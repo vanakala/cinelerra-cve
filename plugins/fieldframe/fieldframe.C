@@ -38,6 +38,7 @@
 #include "language.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -76,7 +77,7 @@ public:
 };
 
 
-class FieldFrameWindow : public BC_Window
+class FieldFrameWindow : public PluginWindow
 {
 public:
 	FieldFrameWindow(FieldFrame *plugin, int x, int y);
@@ -127,16 +128,11 @@ int FieldFrameConfig::equivalent(FieldFrameConfig &src)
 
 
 FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	230, 
-	100, 
-	230, 
-	100, 
-	0, 
-	0,
-	1)
+	100)
 {
 	x = y = 10;
 	add_subwindow(top = new FieldFrameTop(plugin, this, x, y));

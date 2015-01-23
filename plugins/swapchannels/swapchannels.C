@@ -61,16 +61,11 @@ void SwapConfig::copy_from(SwapConfig &that)
 
 
 SwapWindow::SwapWindow(SwapMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	250, 
-	170, 
-	250, 
-	170, 
-	0, 
-	0,
-	1)
+	170)
 {
 	int margin = 30;
 	x = y = 10;

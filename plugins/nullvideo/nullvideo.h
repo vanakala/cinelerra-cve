@@ -45,6 +45,7 @@
 
 #include "language.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 class NullVideoSwitch : public BC_Radial
@@ -61,7 +62,7 @@ public:
 /*
  * Gui of the plugin - may be omitted
  */
-class NullVideoWindow : public BC_Window
+class NullVideoWindow : public PluginWindow
 {
 public:
 	NullVideoWindow(NullVideo *plugin, int x, int y);

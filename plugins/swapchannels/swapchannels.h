@@ -40,6 +40,7 @@
 #include "language.h"
 #include "mutex.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 
@@ -90,7 +91,7 @@ public:
 	SwapMenu *menu;
 };
 
-class SwapWindow : public BC_Window
+class SwapWindow : public PluginWindow
 {
 public:
 	SwapWindow(SwapMain *plugin, int x, int y);

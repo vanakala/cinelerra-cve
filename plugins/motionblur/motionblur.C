@@ -42,6 +42,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 
@@ -86,7 +87,7 @@ public:
 };
 
 
-class MotionBlurWindow : public BC_Window
+class MotionBlurWindow : public PluginWindow
 {
 public:
 	MotionBlurWindow(MotionBlurMain *plugin, int x, int y);
@@ -207,19 +208,14 @@ void MotionBlurConfig::interpolate(MotionBlurConfig &prev,
 PLUGIN_THREAD_METHODS
 
 MotionBlurWindow::MotionBlurWindow(MotionBlurMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	260, 
-	120, 
-	260, 
-	120, 
-	0, 
-	1)
+	120)
 {
 	x = y = 10;
 
-	set_icon(new VFrame(picon_png));
 	add_subwindow(new BC_Title(x, y, _("Length:")));
 	y += 20;
 	add_subwindow(radius = new MotionBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));

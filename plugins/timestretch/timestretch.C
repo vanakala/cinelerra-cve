@@ -340,16 +340,11 @@ void TimeStretch::process_frame(AFrame *aframe)
 PLUGIN_THREAD_METHODS
 
 TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	150, 
-	50, 
-	150, 
-	50,
-	0, 
-	0,
-	1)
+	50)
 {
 	x = y = 10;
 

@@ -139,19 +139,13 @@ int DenoiseVideoToggle::handle_event()
 
 
 DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	210, 
-	240, 
-	200, 
-	240, 
-	0, 
-	0,
-	1)
+	240)
 {
 	x = y = 10;
-	set_icon(new VFrame(picon_png));
 
 	add_subwindow(new BC_Title(x, y, _("Frames to accumulate:")));
 	y += 20;

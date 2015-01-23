@@ -394,16 +394,11 @@ void Synth::reconfigure()
 PLUGIN_THREAD_METHODS
 
 SynthWindow::SynthWindow(Synth *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	440,
-	plugin->h,
-	380, 
-	10, 
-	1, 
-	0,
-	1)
+	plugin->h)
 {
 	BC_MenuBar *menu;
 	int i;

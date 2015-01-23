@@ -47,6 +47,7 @@
 #include "language.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
+#include "pluginwindow.h"
 
 class NASwitch : public BC_Radial
 {
@@ -64,7 +65,7 @@ public:
 /*
  * Gui of the plugin - may be omitted
  */
-class NATransitionWindow : public BC_Window
+class NATransitionWindow : public PluginWindow
 {
 public:
 	NATransitionWindow(NATransition *plugin, int x, int y);

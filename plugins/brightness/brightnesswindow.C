@@ -25,14 +25,10 @@ PLUGIN_THREAD_METHODS
 
 
 BrightnessWindow::BrightnessWindow(BrightnessMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, x,
+ : PluginWindow(plugin->gui_string, x,
 	y,
 	330, 
-	160, 
-	330, 
-	160, 
-	0, 
-	0)
+	160)
 {
 	x = 10;
 	y = 10;

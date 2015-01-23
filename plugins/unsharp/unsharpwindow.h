@@ -25,6 +25,7 @@
 #include "guicast.h"
 #include "unsharp.h"
 #include "unsharpwindow.inc"
+#include "pluginwindow.h"
 
 class UnsharpRadius : public BC_FPot
 {
@@ -50,7 +51,7 @@ public:
 	UnsharpMain *plugin;
 };
 
-class UnsharpWindow : public BC_Window
+class UnsharpWindow : public PluginWindow
 {
 public:
 	UnsharpWindow(UnsharpMain *plugin, int x, int y);

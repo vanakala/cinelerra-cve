@@ -101,16 +101,11 @@ int BandSlideOut::handle_event()
 
 
 BandSlideWindow::BandSlideWindow(BandSlideMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	320, 
-	100, 
-	320, 
-	100, 
-	0, 
-	0,
-	1)
+	100)
 {
 	x = y = 10;
 

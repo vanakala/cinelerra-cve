@@ -36,6 +36,7 @@
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 
@@ -47,7 +48,7 @@ public:
 	PitchEffect *plugin;
 };
 
-class PitchWindow : public BC_Window
+class PitchWindow : public PluginWindow
 {
 public:
 	PitchWindow(PitchEffect *plugin, int x, int y);

@@ -75,16 +75,11 @@ int WipeRight::handle_event()
 }
 
 WipeWindow::WipeWindow(WipeMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	320, 
-	50, 
-	320, 
-	50, 
-	0, 
-	0,
-	1)
+	50)
 {
 	x = y = 10;
 

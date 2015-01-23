@@ -61,16 +61,11 @@ void _1080to540Config::interpolate(_1080to540Config &prev,
 
 
 _1080to540Window::_1080to540Window(_1080to540Main *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	200, 
-	100, 
-	200, 
-	100, 
-	0, 
-	0,
-	1)
+	100)
 { 
 	x = 10;
 	y = 10;

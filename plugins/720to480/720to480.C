@@ -47,16 +47,11 @@ _720to480Config::_720to480Config()
 
 
 _720to480Window::_720to480Window(_720to480Main *plugin, int x, int y)
- : BC_Window(PROGRAM_NAME ": 720 to 480",
+ : PluginWindow(plugin->gui_string,
 	x,
 	y, 
 	230, 
-	150, 
-	230, 
-	150, 
-	0, 
-	0,
-	1)
+	150)
 { 
 	x = y = 10;
 

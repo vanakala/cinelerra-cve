@@ -38,6 +38,7 @@
 #include "filexml.inc"
 #include "language.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 
 class FreezeFrameConfig
 {
@@ -69,7 +70,7 @@ public:
 	int *value;
 };
 
-class FreezeFrameWindow : public BC_Window
+class FreezeFrameWindow : public PluginWindow
 {
 public:
 	FreezeFrameWindow(FreezeFrameMain *plugin, int x, int y);

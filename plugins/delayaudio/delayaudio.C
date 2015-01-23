@@ -150,16 +150,11 @@ PLUGIN_CLASS_METHODS
 PLUGIN_THREAD_METHODS;
 
 DelayAudioWindow::DelayAudioWindow(DelayAudio *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	200, 
-	80, 
-	200, 
-	80, 
-	0, 
-	0,
-	1)
+	80)
 {
 	add_subwindow(new BC_Title(10, 10, _("Delay seconds:")));
 	add_subwindow(length = new DelayAudioTextBox(plugin, 10, 40));

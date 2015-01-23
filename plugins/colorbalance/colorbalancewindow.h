@@ -34,11 +34,11 @@ class ColorBalanceReset;
 #include "mutex.h"
 #include "colorbalance.h"
 #include "pluginclient.h"
-
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
-class ColorBalanceWindow : public BC_Window
+class ColorBalanceWindow : public PluginWindow
 {
 public:
 	ColorBalanceWindow(ColorBalanceMain *plugin, int x, int y);

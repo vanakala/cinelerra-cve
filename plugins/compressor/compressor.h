@@ -38,6 +38,7 @@
 #include "language.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
+#include "pluginwindow.h"
 
 
 class CompressorCanvas : public BC_SubWindow
@@ -130,7 +131,7 @@ public:
 	CompressorEffect *plugin;
 };
 
-class CompressorWindow : public BC_Window
+class CompressorWindow : public PluginWindow
 {
 public:
 	CompressorWindow(CompressorEffect *plugin, int x, int y);

@@ -46,6 +46,7 @@
 
 #include "language.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 class NVSwitch : public BC_Radial
@@ -64,7 +65,7 @@ public:
 /*
  * Gui of the plugin - may be omitted
  */
-class NVTransitionWindow : public BC_Window
+class NVTransitionWindow : public PluginWindow
 {
 public:
 	NVTransitionWindow(NVTransition *plugin, int x, int y);

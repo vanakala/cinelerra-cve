@@ -26,12 +26,13 @@
 #include "filexml.inc"
 #include "flip.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
 class FlipToggle;
 
-class FlipWindow : public BC_Window
+class FlipWindow : public PluginWindow
 {
 public:
 	FlipWindow(FlipMain *plugin, int x, int y);

@@ -27,16 +27,11 @@
 PLUGIN_THREAD_METHODS
 
 ScaleWin::ScaleWin(ScaleMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	150, 
-	150, 
-	150, 
-	150, 
-	0, 
-	0,
-	1)
+	150)
 { 
 	x = y = 10;
 

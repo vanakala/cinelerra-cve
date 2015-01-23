@@ -33,6 +33,7 @@
 #include "pluginmacros.h"
 #include "language.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 class BandSlideCount : public BC_TumbleTextBox
@@ -75,7 +76,7 @@ public:
 };
 
 
-class BandSlideWindow : public BC_Window
+class BandSlideWindow : public PluginWindow
 {
 public:
 	BandSlideWindow(BandSlideMain *plugin, int x, int y);

@@ -40,6 +40,7 @@
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "vframe.h"
+#include "pluginwindow.h"
 
 #include <string.h>
 #include <stdint.h>
@@ -89,7 +90,7 @@ public:
 	DecimateWindow *gui;
 };
 
-class DecimateWindow : public BC_Window
+class DecimateWindow : public PluginWindow
 {
 public:
 	DecimateWindow(Decimate *plugin, int x, int y);
@@ -173,16 +174,11 @@ int DecimateConfig::equivalent(DecimateConfig *config)
 
 
 DecimateWindow::DecimateWindow(Decimate *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	210, 
-	160, 
-	200, 
-	160, 
-	0, 
-	0,
-	1)
+	160)
 {
 	x = y = 10;
 

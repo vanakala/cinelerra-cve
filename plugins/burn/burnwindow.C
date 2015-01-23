@@ -26,16 +26,11 @@ PLUGIN_THREAD_METHODS
 
 
 BurnWindow::BurnWindow(BurnMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	300, 
-	170, 
-	300, 
-	170, 
-	0, 
-	0,
-	1)
+	170)
 {
 	x = 10; 
 	y = 10;

@@ -42,6 +42,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 
@@ -98,7 +99,7 @@ public:
 	int *output;
 };
 
-class LinearBlurWindow : public BC_Window
+class LinearBlurWindow : public PluginWindow
 {
 public:
 	LinearBlurWindow(LinearBlurMain *plugin, int x, int y);
@@ -236,15 +237,11 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 PLUGIN_THREAD_METHODS
 
 LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	230, 
-	290, 
-	230, 
-	290, 
-	0, 
-	1)
+	290)
 {
 	x = y = 10;
 

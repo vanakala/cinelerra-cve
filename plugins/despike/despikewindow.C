@@ -28,16 +28,11 @@
 PLUGIN_THREAD_METHODS
 
 DespikeWindow::DespikeWindow(Despike *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	230, 
-	110, 
-	230, 
-	110, 
-	0, 
-	0,
-	1)
+	110)
 {
 	x = y = 10;
 	add_tool(new BC_Title(5, y, _("Maximum level:")));

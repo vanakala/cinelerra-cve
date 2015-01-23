@@ -30,7 +30,7 @@ class ReverbWindow;
 #include "guicast.h"
 #include "mutex.h"
 #include "reverb.h"
-
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
@@ -45,7 +45,7 @@ class ReverbLowPass1;
 class ReverbLowPass2;
 class ReverbMenu;
 
-class ReverbWindow : public BC_Window
+class ReverbWindow : public PluginWindow
 {
 public:
 	ReverbWindow(Reverb *reverb, int x, int y);

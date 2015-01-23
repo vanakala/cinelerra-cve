@@ -41,16 +41,11 @@ PLUGIN_THREAD_METHODS
 
 
 HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	440, 
-	500, 
-	440, 
-	500, 
-	0, 
-	1,
-	1)
+	500)
 {
 	int x1 = 10;
 	BC_Title *title = 0;

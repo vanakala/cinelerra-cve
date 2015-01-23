@@ -39,7 +39,7 @@
 #include "language.h"
 #include "mutex.h"
 #include "pluginaclient.h"
-
+#include "pluginwindow.h"
 
 #define TOTALOSCILLATORS 1
 #define OSCILLATORHEIGHT 40
@@ -62,7 +62,7 @@ class SynthScroll;
 class SynthSubWindow;
 class SynthWetness;
 
-class SynthWindow : public BC_Window
+class SynthWindow : public PluginWindow
 {
 public:
 	SynthWindow(Synth *plugin, int x, int y);

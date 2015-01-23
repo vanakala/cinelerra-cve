@@ -138,16 +138,11 @@ int ChromaKeyConfig::get_color()
 
 
 ChromaKeyWindow::ChromaKeyWindow(ChromaKeyHSV * plugin, int x, int y)
- : BC_Window(plugin->gui_string,
+ : PluginWindow(plugin->gui_string,
 	x,
 	y, 
 	400,
-	450,
-	400,
-	450,
-	0,
-	0,
-	1)
+	450)
 {
 	int y1, x1 = 0, x2 = 10;
 	x = 30;

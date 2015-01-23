@@ -26,13 +26,13 @@
 
 #include "translate.h"
 #include "pluginclient.h"
-
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
 class TranslateCoord;
 
-class TranslateWin : public BC_Window
+class TranslateWin : public PluginWindow
 {
 public:
 	TranslateWin(TranslateMain *plugin, int x, int y);

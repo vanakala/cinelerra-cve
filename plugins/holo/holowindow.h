@@ -26,11 +26,11 @@
 
 #include "holo.h"
 #include "pluginclient.h"
-
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
-class HoloWindow : public BC_Window
+class HoloWindow : public PluginWindow
 {
 public:
 	HoloWindow(HoloMain *plugin, int x, int y);

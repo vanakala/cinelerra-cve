@@ -181,16 +181,11 @@ ShapeWipeLoad::ShapeWipeLoad(
 }
 
 ShapeWipeWindow::ShapeWipeWindow(ShapeWipeMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	450, 
-	125, 
-	450, 
-	125, 
-	0, 
-	0,
-	1)
+	125)
 {
 	x = y = 10;
 

@@ -46,6 +46,7 @@
 #include "language.h"
 #include "pluginaclient.h"
 #include "aframe.inc"
+#include "pluginwindow.h"
 
 class NullAudioSwitch : public BC_Radial
 {
@@ -61,7 +62,7 @@ public:
 /*
  * Gui of the plugin - may be omitted
  */
-class NullAudioWindow : public BC_Window
+class NullAudioWindow : public PluginWindow
 {
 public:
 	NullAudioWindow(NullAudio *plugin, int x, int y);

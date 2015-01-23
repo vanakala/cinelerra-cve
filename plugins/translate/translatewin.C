@@ -28,16 +28,11 @@ PLUGIN_THREAD_METHODS
 
 
 TranslateWin::TranslateWin(TranslateMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	300, 
-	220, 
-	300, 
-	220, 
-	0, 
-	0,
-	1)
+	220)
 { 
 	x = y = 10;
 

@@ -39,6 +39,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 #include <math.h>
@@ -83,7 +84,7 @@ public:
 	OilEffect *plugin;
 };
 
-class OilWindow : public BC_Window
+class OilWindow : public PluginWindow
 {
 public:
 	OilWindow(OilEffect *plugin, int x, int y);
@@ -212,16 +213,11 @@ int OilIntensity::handle_event()
 PLUGIN_THREAD_METHODS
 
 OilWindow::OilWindow(OilEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	300, 
-	160, 
-	300, 
-	160, 
-	0, 
-	0,
-	1)
+	160)
 {
 	x = y = 10;
 

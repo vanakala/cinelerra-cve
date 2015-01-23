@@ -52,6 +52,7 @@
 
 #include "language.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 class NRTVideoConfig
@@ -83,7 +84,7 @@ public:
 /*
  * Gui of the plugin - may be omitted
  */
-class NRTVideoWindow : public BC_Window
+class NRTVideoWindow : public PluginWindow
 {
 public:
 	NRTVideoWindow(NRTVideo *plugin, int x, int y);

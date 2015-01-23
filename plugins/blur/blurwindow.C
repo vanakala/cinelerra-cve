@@ -26,15 +26,11 @@
 PLUGIN_THREAD_METHODS
 
 BlurWindow::BlurWindow(BlurMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string,
+ : PluginWindow(plugin->gui_string,
 	x,
 	y,
 	150, 
-	270, 
-	150, 
-	270, 
-	0, 
-	1)
+	270)
 { 
 	x = 10; 
 	y = 10;

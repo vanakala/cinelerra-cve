@@ -37,6 +37,7 @@
 #include "language.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
+#include "pluginwindow.h"
 #include "revmodel.hpp"
 #include "units.h"
 
@@ -124,7 +125,7 @@ public:
 };
 
 
-class FreeverbWindow : public BC_Window
+class FreeverbWindow : public PluginWindow
 {
 public:
 	FreeverbWindow(FreeverbEffect *plugin, int x, int y);
@@ -267,16 +268,11 @@ int FreeverbMode::handle_event()
 
 
 FreeverbWindow::FreeverbWindow(FreeverbEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	180, 
-	250, 
-	180, 
-	250,
-	0, 
-	0,
-	1)
+	250)
 {
 	int x1 = 10, x2 = 100, x3 = 135, y1 = 10, y2 = 20, margin = 30;
 

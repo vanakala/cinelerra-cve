@@ -43,6 +43,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 
@@ -100,7 +101,7 @@ public:
 	int *output;
 };
 
-class ZoomBlurWindow : public BC_Window
+class ZoomBlurWindow : public PluginWindow
 {
 public:
 	ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y);
@@ -242,15 +243,11 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 PLUGIN_THREAD_METHODS
 
 ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	230, 
-	340, 
-	230, 
-	340, 
-	0, 
-	1)
+	340)
 {
 	x = y = 10;
 

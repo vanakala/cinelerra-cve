@@ -28,14 +28,10 @@ PLUGIN_THREAD_METHODS
 
 
 GammaWindow::GammaWindow(GammaMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, x,
+ : PluginWindow(plugin->gui_string, x,
 	y,
 	400, 
-	400,
-	400, 
-	400,
-	0, 
-	0)
+	400)
 {
 	x = y = 10;
 

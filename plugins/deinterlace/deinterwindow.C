@@ -28,16 +28,11 @@ PLUGIN_THREAD_METHODS
 
 
 DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	400, 
-	200, 
-	400, 
-	200, 
-	0, 
-	0,
-	1)
+	200)
 { 
 	adaptive=0;
 	dominance_top=0;

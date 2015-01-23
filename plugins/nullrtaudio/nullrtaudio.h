@@ -53,6 +53,7 @@
 #include "language.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
+#include "pluginwindow.h"
 
 class NRTAudioConfig
 {
@@ -83,7 +84,7 @@ public:
 /*
  * Gui of the plugin - may be omitted
  */
-class NRTAudioWindow : public BC_Window
+class NRTAudioWindow : public PluginWindow
 {
 public:
 	NRTAudioWindow(NRTAudio *plugin, int x, int y);

@@ -35,7 +35,7 @@
 #include "language.h"
 #include "pluginvclient.h"
 #include "vframe.inc"
-
+#include "pluginwindow.h"
 
 class SlideLeft : public BC_Radial
 {
@@ -86,7 +86,7 @@ public:
 };
 
 
-class SlideWindow : public BC_Window
+class SlideWindow : public PluginWindow
 {
 public:
 	SlideWindow(SlideMain *plugin, int x, int y);

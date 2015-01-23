@@ -51,6 +51,7 @@ class GradientServer;
 #include "overlayframe.inc"
 #include "plugincolors.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "thread.h"
 #include "vframe.inc"
 
@@ -203,7 +204,7 @@ public:
 };
 
 
-class GradientWindow : public BC_Window
+class GradientWindow : public PluginWindow
 {
 public:
 	GradientWindow(GradientMain *plugin, int x, int y);

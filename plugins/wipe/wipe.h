@@ -34,6 +34,7 @@
 
 #include "language.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 class WipeLeft : public BC_Radial
@@ -61,7 +62,7 @@ public:
 };
 
 
-class WipeWindow : public BC_Window
+class WipeWindow : public PluginWindow
 {
 public:
 	WipeWindow(WipeMain *plugin, int x, int y);

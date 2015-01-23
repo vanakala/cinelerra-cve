@@ -28,16 +28,11 @@ PLUGIN_THREAD_METHODS
 #define MAX_DURATION 4.0
 
 SelTempAvgWindow::SelTempAvgWindow(SelTempAvgMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string,
+ : PluginWindow(plugin->gui_string,
 	x,
 	y,
 	310,
-	540,
-	300,
-	540,
-	0,
-	0,
-	1)
+	540)
 {
 	int x1 = 10, x2 = 40, x3 = 80, x4 = 175, x5 = 260;
 	y = 10;

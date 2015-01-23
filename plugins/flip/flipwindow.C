@@ -25,16 +25,11 @@ PLUGIN_THREAD_METHODS
 
 
 FlipWindow::FlipWindow(FlipMain *plugin, int x, int y)
- : BC_Window(plugin->get_gui_string(),
+ : PluginWindow(plugin->get_gui_string(),
 	x,
 	y,
 	140,
-	100,
-	140,
-	100,
-	0,
-	0,
-	1)
+	100)
 {
 	x = 10;
 	y = 10;

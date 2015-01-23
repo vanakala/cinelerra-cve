@@ -45,6 +45,7 @@ class ScaleConstrain;
 #include "mutex.h"
 #include "overlayframe.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 
 class ScaleConfig
 {
@@ -97,7 +98,7 @@ public:
 	ScaleMain *client;
 };
 
-class ScaleWin : public BC_Window
+class ScaleWin : public PluginWindow
 {
 public:
 	ScaleWin(ScaleMain *plugin, int x, int y);

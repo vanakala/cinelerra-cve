@@ -99,15 +99,11 @@ void PerspectiveConfig::interpolate(PerspectiveConfig &prev,
 PLUGIN_THREAD_METHODS
 
 PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	plugin->config.window_w, 
-	plugin->config.window_h, 
-	plugin->config.window_w,
-	plugin->config.window_h,
-	0, 
-	1)
+	plugin->config.window_h)
 {
 	x = y = 10;
 

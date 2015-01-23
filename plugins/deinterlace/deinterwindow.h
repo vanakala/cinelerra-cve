@@ -26,6 +26,7 @@
 #include "mutex.h"
 #include "deinterlace.h"
 #include "pluginclient.h"
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
@@ -36,7 +37,7 @@ class DeInterlaceDominanceBottom;
 class DeInterlaceAdaptive;
 class DeInterlaceThreshold;
 
-class DeInterlaceWindow : public BC_Window
+class DeInterlaceWindow : public PluginWindow
 {
 public:
 	DeInterlaceWindow(DeInterlaceMain *plugin, int x, int y);

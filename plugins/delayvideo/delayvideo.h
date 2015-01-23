@@ -39,6 +39,7 @@
 #include "language.h"
 #include "pluginvclient.h"
 #include "vframe.inc"
+#include "pluginwindow.h"
 
 
 class DelayVideoConfig
@@ -71,7 +72,7 @@ public:
 };
 
 
-class DelayVideoWindow : public BC_Window
+class DelayVideoWindow : public PluginWindow
 {
 public:
 	DelayVideoWindow(DelayVideo *plugin, int x, int y);

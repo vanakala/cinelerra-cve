@@ -35,6 +35,7 @@
 #include "language.h"
 #include "overlayframe.inc"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.inc"
 
 class IrisSquareIn : public BC_Radial
@@ -61,7 +62,7 @@ public:
 	IrisSquareWindow *window;
 };
 
-class IrisSquareWindow : public BC_Window
+class IrisSquareWindow : public PluginWindow
 {
 public:
 	IrisSquareWindow(IrisSquareMain *plugin, int x, int y);

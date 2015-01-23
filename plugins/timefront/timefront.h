@@ -48,6 +48,7 @@ class TimeFrontServer;
 #include "pluginvclient.h"
 #include "thread.h"
 #include "vframe.inc"
+#include "pluginwindow.h"
 
 #define MAX_TIME_RANGE 10
 #define MAX_FRAMELIST (100 * MAX_TIME_RANGE)
@@ -211,7 +212,7 @@ public:
 };
 
 
-class TimeFrontWindow : public BC_Window
+class TimeFrontWindow : public PluginWindow
 {
 public:
 	TimeFrontWindow(TimeFrontMain *plugin, int x, int y);

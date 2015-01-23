@@ -35,11 +35,11 @@ class GammaColorPicker;
 #include "mutex.h"
 #include "gamma.h"
 #include "pluginclient.h"
-
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
-class GammaWindow : public BC_Window
+class GammaWindow : public PluginWindow
 {
 public:
 	GammaWindow(GammaMain *plugin, int x, int y);

@@ -29,15 +29,11 @@ PLUGIN_THREAD_METHODS
 
 
 UnsharpWindow::UnsharpWindow(UnsharpMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	200, 
-	160, 
-	200, 
-	160, 
-	0, 
-	1)
+	160)
 {
 	BC_Title *title;
 	x = y = 10;

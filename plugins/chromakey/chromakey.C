@@ -93,16 +93,11 @@ int ChromaKeyConfig::get_color()
 
 
 ChromaKeyWindow::ChromaKeyWindow(ChromaKey *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x, 
 	y, 
 	320, 
-	220, 
-	320, 
-	220, 
-	0, 
-	0,
-	1)
+	220)
 {
 	BC_Title *title;
 	int x1 = 100;

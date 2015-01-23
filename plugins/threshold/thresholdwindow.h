@@ -25,6 +25,7 @@
 #include "colorpicker.h"
 #include "guicast.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "threshold.h"
 #include "thresholdwindow.inc"
 
@@ -145,7 +146,7 @@ public:
 	int center_x;
 };
 
-class ThresholdWindow : public BC_Window
+class ThresholdWindow : public PluginWindow
 {
 public:
 	ThresholdWindow(ThresholdMain *plugin, int x, int y);

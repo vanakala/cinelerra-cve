@@ -40,6 +40,7 @@
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 // C41_FAST_POW increases processing speed more than 10 times
@@ -164,7 +165,7 @@ public:
 	int *output;
 };
 
-class C41Window : public BC_Window
+class C41Window : public PluginWindow
 {
 public:
 	C41Window(C41Effect *plugin, int x, int y);
@@ -449,7 +450,7 @@ PLUGIN_THREAD_METHODS
 
 // C41Window
 C41Window::C41Window(C41Effect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, x, y, 500, 510, 500, 510, 1, 0, 1)
+ : PluginWindow(plugin->gui_string, x, y, 500, 510)
 {
 	x = y = 10;
 

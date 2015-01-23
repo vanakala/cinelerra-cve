@@ -39,6 +39,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 #include "picon_png.h"
 
 #include <string.h>
@@ -64,7 +65,7 @@ public:
 	LoopVideo *plugin;
 };
 
-class LoopVideoWindow : public BC_Window
+class LoopVideoWindow : public PluginWindow
 {
 public:
 	LoopVideoWindow(LoopVideo *plugin, int x, int y);
@@ -103,16 +104,11 @@ LoopVideoConfig::LoopVideoConfig()
 }
 
 LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
 	210, 
-	160, 
-	200, 
-	160, 
-	0, 
-	0,
-	1)
+	160)
 {
 	x = y = 10;
 

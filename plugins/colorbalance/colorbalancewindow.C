@@ -25,14 +25,10 @@ PLUGIN_THREAD_METHODS
 
 
 ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, x,
+ : PluginWindow(plugin->gui_string, x,
 	y,
 	330, 
-	250, 
-	330, 
-	250, 
-	0, 
-	0)
+	250)
 {
 	x = 10;
 	y = 10;

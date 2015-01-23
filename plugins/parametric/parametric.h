@@ -36,6 +36,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
+#include "pluginwindow.h"
 
 // This parametric EQ multiplies the data by a gaussian curve in frequency domain.
 // It causes significant delay but is useful.
@@ -186,7 +187,7 @@ public:
 };
 
 
-class ParametricWindow : public BC_Window
+class ParametricWindow : public PluginWindow
 {
 public:
 	ParametricWindow(ParametricEQ *plugin, int x, int y);

@@ -21,6 +21,7 @@
 
 #include "guicast.h"
 #include "motion.h"
+#include "pluginwindow.h"
 
 class MasterLayer : public BC_PopupMenu
 {
@@ -298,7 +299,7 @@ public:
 };
 
 
-class MotionWindow : public BC_Window
+class MotionWindow : public PluginWindow
 {
 public:
 	MotionWindow(MotionMain *plugin, int x, int y);

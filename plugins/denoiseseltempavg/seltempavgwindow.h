@@ -40,6 +40,7 @@ class SelTempAvgGainValue;
 #include "guicast.h"
 #include "mutex.h"
 #include "seltempavg.h"
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
@@ -59,7 +60,7 @@ enum {
 };
 
 
-class SelTempAvgWindow : public BC_Window
+class SelTempAvgWindow : public PluginWindow
 {
 public:
 	SelTempAvgWindow(SelTempAvgMain *plugin, int x, int y);

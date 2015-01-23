@@ -24,6 +24,7 @@
 #include "plugincolors.h"
 #include "pluginvclient.h"
 #include "pluginserver.h"
+#include "pluginwindow.h"
 #include "mwindow.h"
 
 class BluebananaWindow;
@@ -138,7 +139,7 @@ private:
 	float prev;
 };
 
-class BluebananaWindow : public BC_Window
+class BluebananaWindow : public PluginWindow
 {
 public:
 	BluebananaWindow(BluebananaMain *plugin, int x, int y);

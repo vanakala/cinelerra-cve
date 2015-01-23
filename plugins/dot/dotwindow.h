@@ -25,10 +25,11 @@
 #include "guicast.h"
 
 #include "dot.h"
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
-class DotWindow : public BC_Window
+class DotWindow : public PluginWindow
 {
 public:
 	DotWindow(DotMain *plugin, int x, int y);

@@ -32,10 +32,11 @@ class TimeAvgSlider;
 #include "guicast.h"
 #include "mutex.h"
 #include "timeavg.h"
+#include "pluginwindow.h"
 
 PLUGIN_THREAD_HEADER
 
-class TimeAvgWindow : public BC_Window
+class TimeAvgWindow : public PluginWindow
 {
 public:
 	TimeAvgWindow(TimeAvgMain *plugin, int x, int y);

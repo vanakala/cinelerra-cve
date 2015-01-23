@@ -111,16 +111,11 @@ int ReFrameOutput::handle_event()
 
 
 ReFrameWindow::ReFrameWindow(ReFrame *plugin, int x, int y)
- : BC_Window(plugin->plugin_title(), 
+ : PluginWindow(plugin->plugin_title(), 
 	x,
 	y, 
 	230, 
-	160, 
-	230, 
-	160, 
-	0, 
-	0,
-	1)
+	160)
 {
 	x = y = 10;
 

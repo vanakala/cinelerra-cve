@@ -34,11 +34,12 @@
 
 #include "language.h"
 #include "pluginvclient.h"
+#include "pluginwindow.h"
 
 class _720to480Main;
 class _720to480Order;
 
-class _720to480Window : public BC_Window
+class _720to480Window : public PluginWindow
 {
 public:
 	_720to480Window(_720to480Main *plugin, int x, int y);
