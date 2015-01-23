@@ -82,11 +82,11 @@ void ColorThread::run()
 	BC_DisplayInfo info;
 	char window_title[BCTEXTLEN];
 
-	strcpy(window_title, PROGRAM_NAME ": ");
 	if(title)
-		strcat(window_title, title);
+		strcpy(window_title, title);
 	else
-		strcat(window_title, _("Color Picker"));
+		strcpy(window_title, _("Color Picker"));
+	strcat(window_title, " - " PROGRAM_NAME);
 
 
 	mutex->lock("ColorThread::run 1");
