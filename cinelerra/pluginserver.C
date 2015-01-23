@@ -213,7 +213,7 @@ void PluginServer::generate_display_title(char *string)
 	strcpy(lbuf, _(title));
 	BC_Resources::encode_to_utf8(lbuf, BCTEXTLEN);
 	if(plugin && plugin->track) 
-		sprintf(string, "%s: %s", plugin->track->title, lbuf);
+		sprintf(string, "%s - %s", lbuf, plugin->track->title);
 	else
 		strcpy(string, lbuf);
 }
