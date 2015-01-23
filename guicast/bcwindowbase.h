@@ -144,6 +144,7 @@ public:
 	friend class BC_Toggle;
 	friend class BC_Tumbler;
 	friend class BC_Window;
+	friend class PluginWindow;
 
 // Main loop
 	int run_window();

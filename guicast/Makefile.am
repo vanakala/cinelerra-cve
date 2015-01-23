@@ -57,6 +57,7 @@ libguicastcve_la_SOURCES = \
 	condition.C \
 	filesystem.C \
 	mutex.C \
+	pluginwindow.C \
 	rotateframe.C \
 	sema.C \
 	stringfile.C \
@@ -174,6 +175,8 @@ noinst_HEADERS = \
 	linklist.h \
 	mutex.h \
 	mutex.inc \
+	pluginwindow.h \
+	pluginwindow.inc \
 	rotateframe.h \
 	rotateframe.inc \
 	sema.h \
