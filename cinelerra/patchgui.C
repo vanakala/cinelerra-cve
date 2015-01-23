@@ -595,7 +595,8 @@ TitlePatch::TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 		y, 
 		patch->patchbay->get_w() - 10, 
 		1,
-		patch->track->title)
+		patch->track->title,
+		1, MEDIUMFONT, 1)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -603,7 +604,7 @@ TitlePatch::TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 
 int TitlePatch::handle_event()
 {
-	strcpy(patch->track->title, get_text());
+	strcpy(patch->track->title, get_utf8text());
 	mwindow->update_plugin_titles();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
