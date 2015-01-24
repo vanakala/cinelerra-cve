@@ -106,13 +106,13 @@ LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
 
 
 LabelEditComments::LabelEditComments(LabelEditWindow *window, int x, int y, int w, int rows)
- : BC_TextBox(x, y, w, rows, window->label->textstr)
+ : BC_TextBox(x, y, w, rows, window->label->textstr, 1, MEDIUMFONT, 1)
 {
 	this->window = window;
 }
 
 int LabelEditComments::handle_event()
 {
-	strcpy(window->label->textstr, get_text());
+	strcpy(window->label->textstr, get_utf8text());
 	return 1;
 }
