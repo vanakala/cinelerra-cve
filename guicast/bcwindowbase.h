@@ -324,6 +324,7 @@ public:
 	void draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_disc(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_text(int x, int y, const char *text, int length = -1, BC_Pixmap *pixmap = 0);
+	void draw_text(int x, int y, const wchar_t *text, int length = -1, BC_Pixmap *pixmap = 0);
 	void draw_utf8_text(int x, int y, const char *text, int length = -1, BC_Pixmap *pixmap = 0);
 	void draw_xft_text(int x, 
 		int y, 

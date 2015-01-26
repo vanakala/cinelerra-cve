@@ -206,6 +206,20 @@ void BC_WindowBase::draw_text(int x,
 	}
 }
 
+void BC_WindowBase::draw_text(int x,
+	int y,
+	const wchar_t *text,
+	int length,
+	BC_Pixmap *pixmap)
+{
+	if(length < 0)
+		length = wcslen(text);
+
+	resize_wide_text(length);
+	wcscpy(wide_text, text);
+	draw_xft_text(x, y, wide_text, length, pixmap);
+}
+
 void BC_WindowBase::draw_utf8_text(int x,
 	int y,
 	const char *text,
