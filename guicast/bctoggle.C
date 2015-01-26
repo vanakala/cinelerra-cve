@@ -255,7 +255,7 @@ void BC_Toggle::set_status(int value)
 void BC_Toggle::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
-		tooltip_text[0] != 0 &&
+		tooltip_wtext &&
 		(status == BC_Toggle::TOGGLE_UPHI || status == BC_Toggle::TOGGLE_CHECKEDHI) &&
 		!tooltip_done)
 	{

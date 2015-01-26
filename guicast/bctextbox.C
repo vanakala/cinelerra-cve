@@ -743,7 +743,7 @@ void BC_TextBox::deactivate()
 void BC_TextBox::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
-		tooltip_text[0] != 0 &&
+		tooltip_wtext &&
 		highlighted)
 	{
 		show_tooltip();

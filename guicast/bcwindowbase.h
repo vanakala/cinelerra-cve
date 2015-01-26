@@ -504,7 +504,7 @@ public:
 	void set_repeat(int duration);
 // Stop a repeat event from being dispatched.
 	void unset_repeat(int duration);
-	void set_tooltip(const char *text);
+	void set_tooltip(const char *text, int is_utf8 = 0);
 	void show_tooltip(int w = -1, int h = -1);
 	void hide_tooltip();
 	void set_icon(VFrame *data);
@@ -683,7 +683,8 @@ private:
 // Array of repeaters for multiple repeating objects.
 	ArrayList<BC_Repeater*> repeaters;
 // Text for tooltip if one exists
-	char tooltip_text[BCTEXTLEN];
+	int tooltip_length;
+	wchar_t *tooltip_wtext;
 // If the current window's tooltip is visible
 	int tooltip_on;
 // Repeat ID of tooltip

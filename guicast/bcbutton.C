@@ -149,7 +149,7 @@ void BC_Button::draw_face()
 void BC_Button::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
-		tooltip_text[0] != 0 &&
+		tooltip_wtext &&
 		status == BUTTON_UPHI &&
 		!tooltip_done)
 	{

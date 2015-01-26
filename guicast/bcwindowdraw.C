@@ -1070,7 +1070,7 @@ void BC_WindowBase::draw_tooltip()
 		tooltip_popup->set_font(MEDIUMFONT);
 		tooltip_popup->draw_text(TOOLTIP_MARGIN, 
 			get_text_ascent(MEDIUMFONT) + TOOLTIP_MARGIN, 
-			tooltip_text);
+			tooltip_wtext, tooltip_length);
 	}
 }
 

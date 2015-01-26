@@ -107,7 +107,7 @@ void BC_Tumbler::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{
-		if(tooltip_text[0] != 0 &&
+		if(tooltip_wtext &&
 			status == TUMBLE_UPHI &&
 			!tooltip_done)
 		{

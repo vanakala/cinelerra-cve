@@ -2285,7 +2285,7 @@ void BC_ListBox::repeat_event(int duration)
 // Show tooltip
 		if(button_highlighted &&
 			duration == get_resources()->tooltip_delay &&
-			tooltip_text[0] != 0 &&
+			tooltip_wtext &&
 			is_popup &&
 			!tooltip_done)
 		{

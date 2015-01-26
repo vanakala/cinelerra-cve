@@ -326,7 +326,7 @@ void BC_PopupMenu::focus_out_event()
 void BC_PopupMenu::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
-		tooltip_text[0] != 0 &&
+		tooltip_wtext &&
 		status == BUTTON_HI &&
 		!tooltip_done)
 	{

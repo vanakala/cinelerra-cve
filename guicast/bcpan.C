@@ -177,7 +177,7 @@ int BC_Pan::button_release_event()
 void BC_Pan::repeat_event(int duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
-		tooltip_text[0] != 0 &&
+		tooltip_wtext &&
 		highlighted &&
 		!active &&
 		!tooltip_done)
