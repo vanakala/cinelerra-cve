@@ -105,7 +105,7 @@ void RulerGUI::draw_ruler()
 	int h, w;
 	int r_width;
 
-	th = get_text_height(SMALLFONT, "000") - 2;
+	th = get_text_height(SMALLFONT) - 2;
 	tw = get_text_width(SMALLFONT, "000");
 	set_font(SMALLFONT);
 	if(mwindow->session->ruler_orientation == RULER_HORIZ)

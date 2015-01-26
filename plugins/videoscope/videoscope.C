@@ -412,7 +412,7 @@ int VideoScopeWindow::get_widget_area_height()
 // Don't know how to get the widget height before it's drawn, so
 // instead use twice the font height as the height for where the
 // widgets are drawn.
-	return 2 * get_text_height(MEDIUMFONT, (char *) WIDGET_HSPACE_SAMPLE);
+	return 2 * get_text_height(MEDIUMFONT);
 }
 
 
