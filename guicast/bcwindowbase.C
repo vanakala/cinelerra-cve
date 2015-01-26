@@ -2162,20 +2162,36 @@ int BC_WindowBase::get_text_descent(int font)
 	return 0;
 }
 
+int BC_WindowBase::get_text_height(int font)
+{
+	return get_xft_struct(font)->height;
+}
+
 int BC_WindowBase::get_text_height(int font, const char *text)
 {
-	int rowh;
-	XftFont *fstruct;
-
-	if(fstruct = get_xft_struct(font))
-		rowh = fstruct->height;
-	else
-		rowh = get_text_ascent(font) + get_text_descent(font);
-
-	if(!text) return rowh;
+	int rowh = get_xft_struct(font)->height;
 
 // Add height of lines
 	int h = 0, i, length = strlen(text);
+
+	for(i = 0; i <= length; i++)
+	{
+		if(text[i] == '\n')
+			h++;
+		else
+		if(text[i] == 0)
+			h++;
+	}
+	return h * rowh;
+}
+
+int BC_WindowBase::get_text_height(int font, const wchar_t *text)
+{
+	int rowh = get_xft_struct(font)->height;
+
+	// Add height of lines
+	int h = 0, i, length = wcslen(text);
+
 	for(i = 0; i <= length; i++)
 	{
 		if(text[i] == '\n')
