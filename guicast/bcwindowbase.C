@@ -2177,7 +2177,13 @@ int BC_WindowBase::get_text_descent(int font)
 
 int BC_WindowBase::get_text_height(int font, const wchar_t *text)
 {
-	int rowh = get_xft_struct(font)->height;
+	XftFont *fstruct;
+	int rowh;
+
+	if(fstruct = get_xft_struct(font))
+		rowh = fstruct->height;
+	else
+		rowh = get_text_ascent(font) + get_text_descent(font);
 
 	if(!text)
 		return rowh;
