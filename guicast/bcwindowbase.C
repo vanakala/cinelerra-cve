@@ -170,8 +170,7 @@ BC_WindowBase::~BC_WindowBase()
 	if(wide_text != wide_buffer)
 		delete [] wide_buffer;
 
-	if(tooltip_wtext)
-		delete tooltip_wtext;
+	delete [] tooltip_wtext;
 
 	resize_history.remove_all_objects();
 
