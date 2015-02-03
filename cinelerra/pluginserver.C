@@ -210,8 +210,11 @@ void PluginServer::generate_display_title(char *string)
 {
 	char lbuf[BCTEXTLEN];
 
-	strcpy(lbuf, _(title));
-	BC_Resources::encode_to_utf8(lbuf, BCTEXTLEN);
+	if(BC_Resources::locale_utf8)
+		strcpy(lbuf, _(title));
+	else
+		BC_Resources::encode(BC_Resources::encoding, 0, _(title), lbuf, BCTEXTLEN);
+
 	if(plugin && plugin->track) 
 		sprintf(string, "%s - %s", lbuf, plugin->track->title);
 	else
