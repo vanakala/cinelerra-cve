@@ -21,6 +21,7 @@
 
 #include "awindow.h"
 #include "awindowgui.h"
+#include "cinelerra.h"
 #include "labeledit.h"
 #include "edl.h"
 #include "fonts.h"
@@ -28,6 +29,7 @@
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
+#include "mtimebar.h"
 #include "mwindowgui.h"
 #include "theme.h"
 #include "vwindow.h"
@@ -57,14 +59,16 @@ void LabelEdit::run()
 {
 	if(label)
 	{
-		Label *label = label;
-
 		LabelEditWindow *window = new LabelEditWindow(mwindow, this);
-		int result = window->run_window();
+		if(!window->run_window())
+		{
+			strcpy(label->textstr, window->textbox->get_utf8text());
+			if(mwindow)
+				mwindow->gui->timebar->update_labels();
+			if(awindow)
+				awindow->gui->async_update_assets();
+		}
 		delete window;
-
-		if(awindow)
-			awindow->gui->async_update_assets();
 	}
 }
 
@@ -83,7 +87,6 @@ LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
 {
 	int x = 10, y = 10;
 	int x1 = x;
-	BC_TextBox *textbox;
 	BC_TextBox *titlebox;
 	BC_Title *title;
 
@@ -108,11 +111,4 @@ LabelEditWindow::LabelEditWindow(MWindow *mwindow, LabelEdit *thread)
 LabelEditComments::LabelEditComments(LabelEditWindow *window, int x, int y, int w, int rows)
  : BC_TextBox(x, y, w, rows, window->label->textstr, 1, MEDIUMFONT, 1)
 {
-	this->window = window;
-}
-
-int LabelEditComments::handle_event()
-{
-	strcpy(window->label->textstr, get_utf8text());
-	return 1;
 }

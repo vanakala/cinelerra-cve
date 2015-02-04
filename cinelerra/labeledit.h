@@ -55,6 +55,7 @@ public:
 // Use this copy of the pointer in LabelEdit since multiple windows are possible
 	Label *label;
 	MWindow *mwindow;
+	BC_TextBox *textbox;
 };
 
 
@@ -72,9 +73,6 @@ class LabelEditComments : public BC_TextBox
 {
 public:
 	LabelEditComments(LabelEditWindow *window, int x, int y, int w, int rows);
-
-	int handle_event();
-	LabelEditWindow *window;
 };
 
 #endif

@@ -102,8 +102,6 @@ int LabelGUI::button_press_event()
 	{
 		result = BC_Toggle::button_press_event();
 	}
-	if(label)
-		set_tooltip(this->label->textstr, 1);
 	return result;
 }
 
