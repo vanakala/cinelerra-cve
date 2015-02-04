@@ -1325,12 +1325,25 @@ void BC_WindowBase::hide_tooltip()
 void BC_WindowBase::set_tooltip(const char *text, int is_utf8)
 {
 	char lbuf[BCTEXTLEN];
+	int len = strlen(text);
 
 	strncpy(lbuf, text, BCTEXTLEN - 1);
 	lbuf[BCTEXTLEN - 1] = 0;
 
-	if(!tooltip_wtext)
-		tooltip_wtext = new wchar_t[BCTEXTLEN];
+	if(len)
+	{
+		if(!tooltip_wtext)
+			tooltip_wtext = new wchar_t[BCTEXTLEN];
+	}
+	else
+	{
+		delete [] tooltip_wtext;
+		tooltip_wtext = 0;
+		tooltip_length = 0;
+		if(tooltip_on)
+			hide_tooltip();
+		return;
+	}
 
 	tooltip_length = BC_Resources::encode(is_utf8 ? "UTF8" : BC_Resources::encoding,
 		BC_Resources::wide_encoding, lbuf, (char*)tooltip_wtext,
