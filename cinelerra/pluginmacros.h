@@ -256,7 +256,7 @@ void PLUGIN_CLASS::set_string() \
 { \
 	if(thread) \
 	{ \
-		thread->window->set_title(gui_string); \
+		thread->window->set_utf8title(gui_string); \
 	} \
 }
 
