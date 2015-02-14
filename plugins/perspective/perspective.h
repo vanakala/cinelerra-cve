@@ -61,7 +61,6 @@ public:
 
 	float x1, y1, x2, y2, x3, y3, x4, y4;
 	int mode;
-	int window_w, window_h;
 	int current_point;
 	int forward;
 	PLUGIN_CONFIG_CLASS_MEMBERS

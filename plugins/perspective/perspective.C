@@ -39,8 +39,6 @@ PerspectiveConfig::PerspectiveConfig()
 	x4 = 0;
 	y4 = 100;
 	mode = AffineEngine::PERSPECTIVE;
-	window_w = 400;
-	window_h = 450;
 	current_point = 0;
 	forward = 1;
 }
@@ -71,8 +69,6 @@ void PerspectiveConfig::copy_from(PerspectiveConfig &that)
 	x4 = that.x4;
 	y4 = that.y4;
 	mode = that.mode;
-	window_w = that.window_w;
-	window_h = that.window_h;
 	current_point = that.current_point;
 	forward = that.forward;
 }
@@ -102,8 +98,8 @@ PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y,
-	plugin->config.window_w, 
-	plugin->config.window_h)
+	450,
+	400)
 {
 	x = y = 10;
 
@@ -559,8 +555,6 @@ void PerspectiveMain::load_defaults()
 
 	config.mode = defaults->get("MODE", config.mode);
 	config.forward = defaults->get("FORWARD", config.forward);
-	config.window_w = defaults->get("WINDOW_W", config.window_w);
-	config.window_h = defaults->get("WINDOW_H", config.window_h);
 }
 
 void PerspectiveMain::save_defaults()
@@ -576,8 +570,6 @@ void PerspectiveMain::save_defaults()
 
 	defaults->update("MODE", config.mode);
 	defaults->update("FORWARD", config.forward);
-	defaults->update("WINDOW_W", config.window_w);
-	defaults->update("WINDOW_H", config.window_h);
 	defaults->save();
 }
 
@@ -600,8 +592,6 @@ void PerspectiveMain::save_data(KeyFrame *keyframe)
 
 	output.tag.set_property("MODE", config.mode);
 	output.tag.set_property("FORWARD", config.forward);
-	output.tag.set_property("WINDOW_W", config.window_w);
-	output.tag.set_property("WINDOW_H", config.window_h);
 	output.append_tag();
 	output.tag.set_title("/PERSPECTIVE");
 	output.append_tag();
@@ -631,8 +621,6 @@ void PerspectiveMain::read_data(KeyFrame *keyframe)
 
 			config.mode = input.tag.get_property("MODE", config.mode);
 			config.forward = input.tag.get_property("FORWARD", config.forward);
-			config.window_w = input.tag.get_property("WINDOW_W", config.window_w);
-			config.window_h = input.tag.get_property("WINDOW_H", config.window_h);
 		}
 	}
 }
