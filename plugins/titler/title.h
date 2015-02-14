@@ -321,9 +321,6 @@ public:
 	static const char* motion_to_text(int motion);
 	static int text_to_motion(const char *text);
 
-// Size of window
-	int window_w, window_h;
-
 	ArrayList<TitleGlyph*> glyphs;
 	Mutex glyph_lock;
 

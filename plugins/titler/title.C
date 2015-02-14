@@ -1576,8 +1576,6 @@ void TitleMain::load_defaults()
 	config.dropshadow = defaults->get("DROPSHADOW", config.dropshadow);
 	config.timecode = defaults->get("TIMECODE", config.timecode);
 	defaults->get("TIMECODEFORMAT", config.timecodeformat);
-	window_w = defaults->get("WINDOW_W", 660);
-	window_h = defaults->get("WINDOW_H", 480);
 
 // Store text in separate path to isolate special characters
 	FileSystem fs;
@@ -1629,8 +1627,6 @@ void TitleMain::save_defaults()
 	defaults->update("DROPSHADOW", config.dropshadow);
 	defaults->update("TIMECODE", config.timecode);
 	defaults->update("TIMECODEFORMAT", config.timecodeformat);
-	defaults->update("WINDOW_W", window_w);
-	defaults->update("WINDOW_H", window_h);
 	defaults->save();
 
 // Store text in separate path to isolate special characters

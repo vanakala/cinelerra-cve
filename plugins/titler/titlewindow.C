@@ -33,8 +33,8 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y,
-	plugin->window_w,
-	plugin->window_h)
+	660,
+	480)
 {
 	x = y = 10;
 
@@ -242,66 +242,6 @@ TitleWindow::~TitleWindow()
 	delete title_x;
 	delete title_y;
 }
-
-void TitleWindow::resize_event(int w, int h)
-{
-	plugin->window_w = w;
-	plugin->window_h = h;
-
-	clear_box(0, 0, w, h);
-	font_title->reposition_window(font_title->get_x(), font_title->get_y());
-	font->reposition_window(font->get_x(), font->get_y());
-	font_tumbler->reposition_window(font_tumbler->get_x(), font_tumbler->get_y());
-	x_title->reposition_window(x_title->get_x(), x_title->get_y());
-	title_x->reposition_window(title_x->get_x(), title_x->get_y());
-	y_title->reposition_window(y_title->get_x(), y_title->get_y());
-	title_y->reposition_window(title_y->get_x(), title_y->get_y());
-	style_title->reposition_window(style_title->get_x(), style_title->get_y());
-	italic->reposition_window(italic->get_x(), italic->get_y());
-	bold->reposition_window(bold->get_x(), bold->get_y());
-#ifdef USE_OUTLINE
-	stroke->reposition_window(stroke->get_x(), stroke->get_y());
-#endif
-	size_title->reposition_window(size_title->get_x(), size_title->get_y());
-	size->reposition_window(size->get_x(), size->get_y());
-	color_button->reposition_window(color_button->get_x(), color_button->get_y());
-#ifdef USE_OUTLINE
-	color_stroke_button->reposition_window(color_stroke_button->get_x(), color_stroke_button->get_y());
-#endif
-	motion_title->reposition_window(motion_title->get_x(), motion_title->get_y());
-	motion->reposition_window(motion->get_x(), motion->get_y());
-	loop->reposition_window(loop->get_x(), loop->get_y());
-	dropshadow_title->reposition_window(dropshadow_title->get_x(), dropshadow_title->get_y());
-	dropshadow->reposition_window(dropshadow->get_x(), dropshadow->get_y());
-	fadein_title->reposition_window(fadein_title->get_x(), fadein_title->get_y());
-	fade_in->reposition_window(fade_in->get_x(), fade_in->get_y());
-	fadeout_title->reposition_window(fadeout_title->get_x(), fadeout_title->get_y());
-	fade_out->reposition_window(fade_out->get_x(), fade_out->get_y());
-	text_title->reposition_window(text_title->get_x(), text_title->get_y());
-#ifdef USE_OUTLINE
-	stroke_width->reposition_window(stroke_width->get_x(), stroke_width->get_y());
-	strokewidth_title->reposition_window(strokewidth_title->get_x(), strokewidth_title->get_y());
-#endif
-	timecode->reposition_window(timecode->get_x(), timecode->get_y());
-
-	text->reposition_window(text->get_x(), 
-		text->get_y(), 
-		w - text->get_x() - 10,
-		BC_TextBox::pixels_to_rows(this, MEDIUMFONT, h - text->get_y() - 10));
-
-	justify_title->reposition_window(justify_title->get_x(), justify_title->get_y());
-	left->reposition_window(left->get_x(), left->get_y());
-	center->reposition_window(center->get_x(), center->get_y());
-	right->reposition_window(right->get_x(), right->get_y());
-	top->reposition_window(top->get_x(), top->get_y());
-	mid->reposition_window(mid->get_x(), mid->get_y());
-	bottom->reposition_window(bottom->get_x(), bottom->get_y());
-	speed_title->reposition_window(speed_title->get_x(), speed_title->get_y());
-	speed->reposition_window(speed->get_x(), speed->get_y());
-	update_color();
-	flash();
-}
-
 
 void TitleWindow::previous_font()
 {

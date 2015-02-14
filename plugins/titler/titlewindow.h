@@ -67,7 +67,6 @@ public:
 	TitleWindow(TitleMain *plugin, int x, int y);
 	~TitleWindow();
 
-	void resize_event(int w, int h);
 	void update_color();
 	void update_justification();
 	void update();
