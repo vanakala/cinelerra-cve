@@ -213,7 +213,6 @@ public:
 	void calculate_sizes(int w, int h);
 	int get_label_width();
 	int get_widget_area_height();
-	void resize_event(int w, int h);
 	void allocate_bitmaps();
 	void draw_labels();
 
@@ -279,7 +278,6 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void render_gui(void *input);
 
-	int w, h;
 	VFrame *input;
 	VideoScopeEngine *engine;
 };
@@ -319,11 +317,11 @@ VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin,
  : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
-	plugin->w, 
-	plugin->h)
+	640,
+	260)
 {
-	int w = plugin->w;
-	int h = plugin->h;
+	int w = 640;
+	int h = 260;
 
 	waveform_bitmap = 0;
 	vector_bitmap = 0;
@@ -413,38 +411,6 @@ int VideoScopeWindow::get_widget_area_height()
 // instead use twice the font height as the height for where the
 // widgets are drawn.
 	return 2 * get_text_height(MEDIUMFONT);
-}
-
-
-void VideoScopeWindow::resize_event(int w, int h)
-{
-	const int widget_height = get_widget_area_height();
-
-	clear_box(0, 0, w, h);
-	plugin->w = w;
-	plugin->h = h;
-	calculate_sizes(w, h - widget_height - WIDGET_VSPACE);
-	waveform->reposition_window(wave_x, wave_y, wave_w, wave_h);
-	vectorscope->reposition_window(vector_x, vector_y, vector_w, vector_h);
-	waveform->clear_box(0, 0, wave_w, wave_h);
-	vectorscope->clear_box(0, 0, vector_w, vector_h);
-	allocate_bitmaps();
-
-	int y = h - widget_height + WIDGET_VSPACE;
-	set_color(get_resources()->get_bg_color());
-	draw_box(0, h - widget_height, w, widget_height);
-	show_709_limits->reposition_window(show_709_limits->get_x(), y);
-	show_601_limits->reposition_window(show_601_limits->get_x(), y);
-	show_IRE_limits->reposition_window(show_IRE_limits->get_x(), y);
-	draw_lines_inverse->reposition_window(draw_lines_inverse->get_x(), y);
-
-	waveform->calculate_graduations();
-	vectorscope->calculate_graduations();
-	waveform->draw_graduations();
-	vectorscope->draw_graduations();
-	draw_labels();
-
-	flash();
 }
 
 void VideoScopeWaveform::redraw()
@@ -722,8 +688,6 @@ VideoScopeEffect::VideoScopeEffect(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	w = 640;
-	h = 260;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -744,8 +708,6 @@ void VideoScopeEffect::load_defaults()
 {
 	defaults = load_defaults_file("videoscope.rc");
 
-	w = defaults->get("W", w);
-	h = defaults->get("H", h);
 	config.show_709_limits = defaults->get("SHOW_709_LIMITS", config.show_709_limits);
 	config.show_601_limits = defaults->get("SHOW_601_LIMITS", config.show_601_limits);
 	config.show_IRE_limits = defaults->get("SHOW_IRE_LIMITS", config.show_IRE_limits);
@@ -754,8 +716,6 @@ void VideoScopeEffect::load_defaults()
 
 void VideoScopeEffect::save_defaults()
 {
-	defaults->update("W", w);
-	defaults->update("H", h);
 	defaults->update("SHOW_709_LIMITS",    config.show_709_limits);
 	defaults->update("SHOW_601_LIMITS",    config.show_601_limits);
 	defaults->update("SHOW_IRE_LIMITS",    config.show_IRE_limits);
