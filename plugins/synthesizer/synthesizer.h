@@ -68,7 +68,6 @@ public:
 	SynthWindow(Synth *plugin, int x, int y);
 	~SynthWindow();
 
-	void resize_event(int w, int h);
 	void update();
 	const char *waveform_to_text(int waveform);
 	void update_scrollbar();
@@ -508,7 +507,6 @@ public:
 
 	double *dsp_buffer;
 	int need_reconfigure;
-	int w, h;
 	DB db;
 	int waveform_length;           // length of loop buffer
 	int samples_rendered;          // samples of the dsp_buffer rendered since last buffer redo

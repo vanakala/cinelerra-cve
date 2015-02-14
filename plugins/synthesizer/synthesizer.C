@@ -50,8 +50,6 @@ PLUGIN_CLASS_METHODS
 void Synth::load_defaults()
 {
 	defaults = load_defaults_file("synthesizer.rc");
-	w = defaults->get("WIDTH", 380);
-	h = defaults->get("HEIGHT", 400);
 
 	config.wetness = defaults->get("WETNESS", 0);
 	config.base_freq = defaults->get("BASEFREQ", 440);
@@ -130,8 +128,6 @@ void Synth::save_data(KeyFrame *keyframe)
 
 void Synth::save_defaults()
 {
-	defaults->update("WIDTH", w);
-	defaults->update("HEIGHT", h);
 	defaults->update("WETNESS", config.wetness);
 	defaults->update("BASEFREQ", config.base_freq);
 	defaults->update("WAVEFUNCTION", config.wavefunction);
@@ -398,7 +394,7 @@ SynthWindow::SynthWindow(Synth *plugin, int x, int y)
 	x,
 	y, 
 	440,
-	plugin->h)
+	400)
 {
 	BC_MenuBar *menu;
 	int i;
@@ -484,23 +480,6 @@ SynthWindow::SynthWindow(Synth *plugin, int x, int y)
 
 SynthWindow::~SynthWindow()
 {
-}
-
-void SynthWindow::resize_event(int w, int h)
-{
-	clear_box(0, 0, w, h);
-	subwindow->reposition_window(subwindow->get_x(), 
-		subwindow->get_y(), 
-		subwindow->get_w(), 
-		h - subwindow->get_y());
-	subwindow->clear_box(0, 0, subwindow->get_w(), subwindow->get_h());
-	scroll->reposition_window(scroll->get_x(), 
-		scroll->get_y(), 
-		h - scroll->get_y());
-	update_scrollbar();
-	update_oscillators();
-	plugin->w = w;
-	plugin->h = h;
 }
 
 void SynthWindow::update()
