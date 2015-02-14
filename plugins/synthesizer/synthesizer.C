@@ -772,29 +772,28 @@ SynthWaveForm::~SynthWaveForm()
 
 void SynthWaveForm::create_objects()
 {
-	add_item(new SynthWaveFormItem(synth, _("Sine"), SINE));
-	add_item(new SynthWaveFormItem(synth, _("Sawtooth"), SAWTOOTH));
-	add_item(new SynthWaveFormItem(synth, _("Square"), SQUARE));
-	add_item(new SynthWaveFormItem(synth, _("Triangle"), TRIANGLE));
-	add_item(new SynthWaveFormItem(synth, _("Pulse"), PULSE));
-	add_item(new SynthWaveFormItem(synth, _("Noise"), NOISE));
+	add_item(new SynthWaveFormItem(synth, this, _("Sine"), SINE));
+	add_item(new SynthWaveFormItem(synth, this, _("Sawtooth"), SAWTOOTH));
+	add_item(new SynthWaveFormItem(synth, this, _("Square"), SQUARE));
+	add_item(new SynthWaveFormItem(synth, this, _("Triangle"), TRIANGLE));
+	add_item(new SynthWaveFormItem(synth, this, _("Pulse"), PULSE));
+	add_item(new SynthWaveFormItem(synth, this, _("Noise"), NOISE));
 }
 
-SynthWaveFormItem::SynthWaveFormItem(Synth *synth, char *text, int value)
+SynthWaveFormItem::SynthWaveFormItem(Synth *synth, SynthWaveForm *form,
+	const char *text, int value)
  : BC_MenuItem(text)
 {
 	this->synth = synth;
+	this->form = form;
 	this->value = value;
-}
-
-SynthWaveFormItem::~SynthWaveFormItem()
-{
 }
 
 int SynthWaveFormItem::handle_event()
 {
 	synth->config.wavefunction = value;
 	synth->thread->window->canvas->update();
+	form->set_text(get_text());
 	synth->send_configure_change();
 	return 1;
 }

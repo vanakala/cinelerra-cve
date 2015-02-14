@@ -210,12 +210,13 @@ public:
 class SynthWaveFormItem : public BC_MenuItem
 {
 public:
-	SynthWaveFormItem(Synth *synth, char *text, int value);
-	~SynthWaveFormItem();
+	SynthWaveFormItem(Synth *synth, SynthWaveForm *form, 
+		const char *text, int value);
 
 	int handle_event();
 
 	int value;
+	SynthWaveForm *form;
 	Synth *synth;
 };
 
