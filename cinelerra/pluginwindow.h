@@ -21,12 +21,13 @@
 #ifndef PLUGINWINDOW_H
 #define PLUGINWINDOW_H
 
-#include "pluginwindow.inc"
 #include "bcwindowbase.h"
 
-class PluginWindow : public BC_WindowBase
+class PluginWindow : public BC_Window
 {
 public:
-	PluginWindow(const char *title, int x, int y, int w, int h);
+	PluginWindow(const char *title, int x, int y, int w, int h) :
+		BC_Window(title, x, y, w, h, w, h,
+			0, 0, 1, -1, 0, 1, WINDOW_UTF8) { };
 };
 #endif
