@@ -326,13 +326,7 @@ public:
 	void draw_text(int x, int y, const char *text, int length = -1, BC_Pixmap *pixmap = 0);
 	void draw_text(int x, int y, const wchar_t *text, int length = -1, BC_Pixmap *pixmap = 0);
 	void draw_utf8_text(int x, int y, const char *text, int length = -1, BC_Pixmap *pixmap = 0);
-	void draw_xft_text(int x, 
-		int y, 
-		const char *text, 
-		int length, 
-		BC_Pixmap *pixmap,
-		int is_utf8 = 0);
-	void draw_xft_text(int x, int y, const wchar_t *text,
+	void draw_wide_text(int x, int y,
 		int length, BC_Pixmap *pixmap);
 	void draw_wtext(int x, int y, const wchar_t *text, int length = -1,
 		BC_Pixmap *pixmap = 0, int *charpos = 0);

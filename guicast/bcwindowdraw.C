@@ -197,11 +197,12 @@ void BC_WindowBase::draw_text(int x,
 	default:
 		if(top_level->get_xft_struct(top_level->current_font))
 		{
-			draw_xft_text(x,
-				y,
-				text,
-				length,
-				pixmap);
+			int l = resize_wide_text(length);
+
+			length = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
+				(char*)text, (char*)wide_text, l * sizeof(wchar_t), length) / sizeof(wchar_t);
+
+			draw_wide_text(x, y, length, pixmap);
 		}
 	}
 }
@@ -217,7 +218,7 @@ void BC_WindowBase::draw_text(int x,
 
 	resize_wide_text(length);
 	wcscpy(wide_text, text);
-	draw_xft_text(x, y, wide_text, length, pixmap);
+	draw_wide_text(x, y, length, pixmap);
 }
 
 void BC_WindowBase::draw_utf8_text(int x,
@@ -230,13 +231,12 @@ void BC_WindowBase::draw_utf8_text(int x,
 
 	if(top_level->get_xft_struct(top_level->current_font))
 	{
-		draw_xft_text(x,
-			y,
-			text,
-			length,
-			pixmap,
-			1);
-		return;
+		int l = resize_wide_text(length);
+
+		length = BC_Resources::encode("UTF8", BC_Resources::wide_encoding,
+			(char*)text, (char*)wide_text, l * sizeof(wchar_t), length) / sizeof(wchar_t);
+
+		draw_wide_text(x, y, length, pixmap);
 	}
 }
 
@@ -258,24 +258,8 @@ int BC_WindowBase::resize_wide_text(int length)
 	return len;
 }
 
-void BC_WindowBase::draw_xft_text(int x, 
-	int y, 
-	const char *text, 
-	int length, 
-	BC_Pixmap *pixmap,
-	int is_utf8)
-{
-	int l = resize_wide_text(length);
-
-	length = BC_Resources::encode(is_utf8 ? "UTF8" : BC_Resources::encoding, BC_Resources::wide_encoding,
-		(char*)text, (char*)wide_text, l * sizeof(wchar_t), length) / sizeof(wchar_t);
-
-	draw_xft_text(x, y, wide_text, length, pixmap);
-}
-
-void BC_WindowBase::draw_xft_text(int x,
+void BC_WindowBase::draw_wide_text(int x,
 	int y,
-	const wchar_t *text,
 	int length,
 	BC_Pixmap *pixmap)
 {
@@ -462,7 +446,7 @@ void BC_WindowBase::draw_center_text(int x, int y, const char *text, int length)
 			(char*)text, (char*)wide_text, l * sizeof(wchar_t), length) / sizeof(wchar_t);
 		w = get_text_width(current_font, wide_text, length);
 		x -= w / 2;
-		draw_xft_text(x, y, wide_text, length, 0);
+		draw_wide_text(x, y, length, 0);
 	}
 }
 
