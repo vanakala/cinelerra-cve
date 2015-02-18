@@ -61,6 +61,7 @@ class TitleSpeed;
 class TitleTimecode;
 class TitleTimecodeFormat;
 
+
 class TitleWindow : public PluginWindow
 {
 public:

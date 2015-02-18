@@ -22,6 +22,7 @@
 #include "bcdisplayinfo.h"
 #include "titlewindow.h"
 #include "bcfontentry.h"
+#include "clip.h"
 
 #include <string.h>
 #include <libintl.h>
@@ -33,9 +34,11 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y,
-	660,
-	480)
+	770,
+	360)
 {
+	int w1, y1;
+
 	x = y = 10;
 
 	timecodeformats.append(new BC_ListBoxItem(TIME_SECONDS__STR));
@@ -121,21 +124,27 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 	add_tool(size_title = new BC_Title(x, y, _("Size:")));
 	sprintf(string, "%d", plugin->config.size);
 	size = new TitleSize(plugin, this, x, y + 20, string);
-	x += 140;
+	x += 180;
 
 	add_tool(style_title = new BC_Title(x, y, _("Style:")));
 	add_tool(italic = new TitleItalic(plugin, this, x, y + 20));
+	w1 = italic->get_w();
 	add_tool(bold = new TitleBold(plugin, this, x, y + 50));
+	w1 = MAX(bold->get_w(), w1);
 #ifdef USE_OUTLINE
 	add_tool(stroke = new TitleStroke(plugin, this, x, y + 80));
+	w1 = MAX(stroke->get_w(), w1);
 #endif
-	x += 90;
+	x += w1 + 10;
 	add_tool(justify_title = new BC_Title(x, y, _("Justify:")));
 	add_tool(left = new TitleLeft(plugin, this, x, y + 20));
+	w1 = left->get_w();
 	add_tool(center = new TitleCenter(plugin, this, x, y + 50));
+	w1 = MAX(center->get_w(), w1);
 	add_tool(right = new TitleRight(plugin, this, x, y + 80));
+	w1 = MAX(right->get_w(), w1);
 
-	x += 80;
+	x += w1 + 10;
 	add_tool(top = new TitleTop(plugin, this, x, y + 20));
 	add_tool(mid = new TitleMid(plugin, this, x, y + 50));
 	add_tool(bottom= new TitleBottom(plugin, this, x, y + 80));
@@ -164,67 +173,74 @@ TitleWindow::TitleWindow(TitleMain *plugin, int x, int y)
 
 	add_tool(dropshadow_title = new BC_Title(x, y, _("Drop shadow:")));
 	dropshadow = new TitleDropShadow(plugin, this, x, y + 20);
-	x += 100;
+	x += MAX(dropshadow_title->get_w(), dropshadow->get_w()) + 10;
 
 	add_tool(fadein_title = new BC_Title(x, y, _("Fade in (sec):")));
 	add_tool(fade_in = new TitleFade(plugin, this, &plugin->config.fade_in, x, y + 20));
-	x += 100;
+	x += MAX(fadein_title->get_w(), fade_in->get_w()) + 10;
 
 	add_tool(fadeout_title = new BC_Title(x, y, _("Fade out (sec):")));
 	add_tool(fade_out = new TitleFade(plugin, this, &plugin->config.fade_out, x, y + 20));
-	x += 110;
+	x += MAX(fadeout_title->get_w(), fade_out->get_w()) + 10;
 
 	add_tool(speed_title = new BC_Title(x, y, _("Speed:")));
 	speed = new TitleSpeed(plugin, this, x, y + 20);
-	x += 110;
+	x += MAX(speed_title->get_w(), speed->get_w()) + 10;
 
 	add_tool(color_button = new TitleColorButton(plugin, this, x, y + 20));
-	x += color_button->get_w();
+	x += color_button->get_w() + 5;
 	color_x = x;
-	color_y = y + 20;
+	color_y = y + 16;
 	color_thread = new TitleColorThread(plugin, this);
 
+	x = 10;
+	y += 50;
+#ifdef  USE_OUTLINE
+	y1 = y + 40;
+#else
+	y1 = y + 10;
+#endif
+	add_tool(text_title = new BC_Title(x, y1, _("Text:")));
+
+	x += MAX(100, text_title->get_w()) + 10;
+	add_tool(timecode = new TitleTimecode(plugin, x, y));
+
+	BC_SubWindow *thisw;
 #ifdef USE_OUTLINE
-	x += 160;
+	y1 = y + 30;
+#else
+	x += timecode->get_w() + 20;
+	y1 = y;
+#endif
+	add_tool(thisw = new BC_Title(x, y1, _("Format:")));
+	w1 = thisw->get_w() + 5;
+	timecodeformat = new TitleTimecodeFormat(plugin, this, x + w1, y1);
+
+#ifdef USE_OUTLINE
+	x += w1 + timecodeformat->get_w() + 10;
 	add_tool(strokewidth_title = new BC_Title(x, y, _("Outline width:")));
 	stroke_width = new TitleStrokeW(plugin,
 		this, 
-		x, 
-		y + 20);
-	stroke_width->create_objects();
+		x + strokewidth_title->get_w() + 10,
+		y);
 
-	x += 210;
 	add_tool(color_stroke_button = new TitleColorStrokeButton(plugin,
 		this, 
 		x, 
-		y + 20));
-	color_stroke_x = color_x;
-	color_stroke_y = y + 20;
+		y1));
+	color_stroke_x = x + color_stroke_button->get_w() + 10;
+	color_stroke_y = y1;
 	color_stroke_thread = new TitleColorStrokeThread(plugin, this);
 #endif
 
 	x = 10;
-	y += 50;
-
-	add_tool(text_title = new BC_Title(x, y + 3, _("Text:")));
-
-	x += 100;
-	add_tool(timecode = new TitleTimecode(plugin, x, y));
-
-	x += timecode->get_w() + 5;
-	BC_SubWindow *thisw;
-	add_tool(thisw = new BC_Title(x, y+4, _("Format:")));
-	x += thisw->get_w() + 5;
-	timecodeformat = new TitleTimecodeFormat(plugin, this, x, y);
-
-	x = 10;
-	y += 30;
+	y = y1 + 35;
 	text = new TitleText(plugin,
 		this, 
 		x, 
 		y, 
 		get_w() - x - 10, 
-		get_h() - y - 20 - 10);
+		get_h() - y - 10);
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 	update_color();
 
@@ -320,7 +336,7 @@ void TitleWindow::update()
 	fade_in->update((float)plugin->config.fade_in);
 	fade_out->update((float)plugin->config.fade_out);
 #ifdef USE_OUTLINE
-	stroke_width->update(plugin->config.stroke_width);
+	stroke_width->update((float)plugin->config.stroke_width);
 #endif
 	font->update(plugin->config.font);
 	text->update(plugin->config.text);
