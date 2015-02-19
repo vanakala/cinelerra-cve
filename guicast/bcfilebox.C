@@ -26,6 +26,7 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "bctitle.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
 #include "filesystem.h"
@@ -370,8 +371,8 @@ BC_FileBox::BC_FileBox(int x,
 	y,
 	BC_WindowBase::get_resources()->filebox_w, 
 	BC_WindowBase::get_resources()->filebox_h, 
-	10, 
-	10,
+	400,
+	300,
 	1,
 	0,
 	1)
