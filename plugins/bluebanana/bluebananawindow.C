@@ -2771,7 +2771,7 @@ void BluebananaWindow::leave_config_change()
 	}
 }
 
-int BluebananaWindow::flush_config_change()
+void BluebananaWindow::flush_config_change()
 {
 	unset_repeat(97);
 	if(config_pending)

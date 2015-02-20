@@ -156,7 +156,7 @@ public:
 	void enter_config_change();
 	void commit_config_change();
 	void leave_config_change();
-	int flush_config_change();
+	void flush_config_change();
 
 	int config_refcount;
 	int config_change;
