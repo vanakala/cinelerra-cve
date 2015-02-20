@@ -255,6 +255,7 @@ int BC_WindowBase::resize_wide_text(int length)
 		wide_text = new wchar_t[length + 1];
 		len = length + 1;
 	}
+	*wide_text = 0;
 	return len;
 }
 

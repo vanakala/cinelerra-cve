@@ -250,6 +250,7 @@ void BC_WindowBase::initialize()
 	gl_win_context = 0;
 #endif
 	wide_text = wide_buffer;
+	*wide_text = 0;
 }
 
 #define DEFAULT_EVENT_MASKS EnterWindowMask | \
