@@ -174,7 +174,7 @@ void PreferencesThread::apply_settings()
 
 	rerender = 
 		edl->session->need_rerender(mwindow->edl->session) ||
-		(preferences->force_uniprocessor != preferences->force_uniprocessor) ||
+		(preferences->force_uniprocessor != mwindow->preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
