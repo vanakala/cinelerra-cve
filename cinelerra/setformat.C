@@ -56,6 +56,11 @@ SetFormat::SetFormat(MWindow *mwindow)
 	thread = new SetFormatThread(mwindow);
 }
 
+SetFormat::~SetFormat()
+{
+	delete thread;
+}
+
 int SetFormat::handle_event()
 {
 	if(!thread->running())
@@ -78,6 +83,11 @@ SetFormatThread::SetFormatThread(MWindow *mwindow)
 	this->mwindow = mwindow;
 	window_lock = new Mutex("SetFormatThread::window_lock");
 	window = 0;
+}
+
+SetFormatThread::~SetFormatThread()
+{
+	delete window_lock;
 }
 
 void SetFormatThread::run()
