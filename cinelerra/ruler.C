@@ -64,7 +64,7 @@ RulerGUI::RulerGUI(MWindow *mwindow, Ruler *thread)
 	BC_WindowBase::get_resources()->bg_color, // bg_color
 	0, // display name
 	0, // group_it
-	1) // splash
+	WINDOW_SPLASH) // splash
 {
 	this->mwindow = mwindow;
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
