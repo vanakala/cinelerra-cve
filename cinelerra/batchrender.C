@@ -180,6 +180,7 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	rendering_job = -1;
 	is_rendering = 0;
 	default_job = 0;
+	plugindb = 0;
 }
 
 BatchRenderThread::BatchRenderThread()
@@ -190,6 +191,12 @@ BatchRenderThread::BatchRenderThread()
 	rendering_job = -1;
 	is_rendering = 0;
 	default_job = 0;
+	plugindb = 0;
+}
+
+BatchRenderThread::~BatchRenderThread()
+{
+	delete plugindb;
 }
 
 void BatchRenderThread::handle_close_event(int result)
@@ -451,7 +458,6 @@ void BatchRenderThread::start_rendering(char *config_path,
 	BC_Hash *boot_defaults;
 	Preferences *preferences;
 	Render *render;
-	ArrayList<PluginServer*> *plugindb;
 
 // Initialize stuff which MWindow does.
 	MWindow::init_defaults(boot_defaults, config_path);

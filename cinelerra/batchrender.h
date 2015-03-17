@@ -82,6 +82,7 @@ class BatchRenderThread : public BC_DialogThread
 public:
 	BatchRenderThread(MWindow *mwindow);
 	BatchRenderThread();
+	~BatchRenderThread();
 	void handle_close_event(int result);
 	BC_Window* new_gui();
 
@@ -119,6 +120,7 @@ public:
 	double current_end;
 	BatchRenderJob *default_job;
 	ArrayList<BatchRenderJob*> jobs;
+	ArrayList<PluginServer*> *plugindb;
 	BatchRenderGUI *gui;
 	int column_width[BATCHRENDER_COLUMNS];
 // job being edited
