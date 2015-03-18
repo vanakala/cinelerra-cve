@@ -319,14 +319,8 @@ void BC_Meter::draw_titles()
 int BC_Meter::region_pixel(int region)
 {
 	VFrame **reference_images = get_resources()->xmeter_images;
-	int result;
 
-	if(region == METER_RIGHT) 
-		result = region * reference_images[0]->get_w() / 4;
-	else
-		result = region * reference_images[0]->get_w() / 4;
-
-	return result;
+	return region * reference_images[0]->get_w() / 4;
 }
 
 int BC_Meter::region_pixels(int region)
