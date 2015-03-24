@@ -781,7 +781,6 @@ void BC_WindowBase::dispatch_event()
 		break;
 
 	case ConfigureNotify:
-		get_key_masks(&event);
 		if(win == top_level->win)
 		{
 			last_translate_x = event.xconfigure.x;
