@@ -37,6 +37,7 @@
 
 #define TEST_X 100
 #define TEST_Y 100
+#define TEST_SIZE 128
 
 int BC_DisplayInfo::top_border = -1;
 int BC_DisplayInfo::left_border = -1;
@@ -44,18 +45,6 @@ int BC_DisplayInfo::bottom_border = -1;
 int BC_DisplayInfo::right_border = -1;
 int BC_DisplayInfo::auto_reposition_x = -1;
 int BC_DisplayInfo::auto_reposition_y = -1;
-
-static struct testdata
-{
-    int w;
-    int h;
-} test_sizes[] = {
-    { 128, 128 },
-    { 164, 164 },
-    { 196, 196 }
-};
-
-#define TESTDATASIZE (sizeof(test_sizes) / sizeof(struct testdata))
 
 struct xv_adapterinfo *BC_DisplayInfo::xv_adapters = 0;
 int BC_DisplayInfo::num_adapters = -1;
@@ -89,7 +78,7 @@ void BC_DisplayInfo::parse_geometry(char *geom, int *x, int *y, int *width, int 
 }
 
 /*
- * Try to figure out how many pixels window maneger shifts window
+ * Try to figure out how many pixels window manager shifts window
  */
 void BC_DisplayInfo::test_window(int &x_out, 
 	int &y_out, 
@@ -110,81 +99,46 @@ void BC_DisplayInfo::test_window(int &x_out,
 			rootwin, 
 			TEST_X,
 			TEST_Y,
-			test_sizes[0].w,
-			test_sizes[0].h,
+			TEST_SIZE,
+			TEST_SIZE,
 			0, 
 			default_depth, 
 			InputOutput, 
 			vis, 
 			mask, 
 			&attr);
-
-	memset(&size_hints, 0, sizeof(size_hints));
-	size_hints.flags = PPosition | PSize | PMinSize | PMaxSize;
+	size_hints.flags = PPosition | PSize;
 	size_hints.x = TEST_X;
 	size_hints.y = TEST_Y;
-	size_hints.width = test_sizes[1].w;
-	size_hints.height = test_sizes[1].h;
-	size_hints.min_width = test_sizes[0].w;
-	size_hints.min_height = test_sizes[0].h;
-	size_hints.max_width = test_sizes[TESTDATASIZE - 1].w;
-	size_hints.max_height = test_sizes[TESTDATASIZE - 1].h;
+	size_hints.width = TEST_SIZE;
+	size_hints.height = TEST_SIZE;
 	XSetNormalHints(display, win, &size_hints);
-
 	XMapWindow(display, win); 
 	XFlush(display);
 	XSync(display, 0);
+	// Wait until WM reacts
+	usleep(10000);
 
-	XMoveResizeWindow(display, 
-		win, 
-		TEST_X,
-		TEST_Y,
-		test_sizes[1].w,
-		test_sizes[1].h);
-	XFlush(display);
-	XSync(display, 0);
-
-	for(int i = 2; i < TESTDATASIZE; i++)
-	{
-		XResizeWindow(display,
-			win,
-			test_sizes[i].w,
-			test_sizes[i].h);
-		XFlush(display);
-		XSync(display, 0);
-	}
-
-	int state = 0;
+	int xm = 0, ym = 0;
 	XEvent event;
-	struct testdata shfts[TESTDATASIZE];
-	memset(shfts, 0, sizeof(shfts));
-
-	do
+	while(XPending(display))
 	{
 		XNextEvent(display, &event);
 		if(event.type == ConfigureNotify && event.xany.window == win)
 		{
-			if(test_sizes[state + 1].w == event.xconfigure.width && test_sizes[state + 1].h == event.xconfigure.height)
-				state++;
-			shfts[state].w = event.xconfigure.x + event.xconfigure.border_width;
-			shfts[state].h = event.xconfigure.y + event.xconfigure.border_width;
+			if(xm < event.xconfigure.x)
+				xm = event.xconfigure.x;
+			if(ym < event.xconfigure.y)
+				ym = event.xconfigure.y;
 		}
-	}while(state < TESTDATASIZE - 1);
-
+	};
 	XDestroyWindow(display, win);
 	XFlush(display);
 	XSync(display, 0);
-// Create shift
-	x_out = shfts[0].w - TEST_X;
-	y_out = shfts[0].h - TEST_Y;
-// Reposition shift
-	x_out2 = shfts[1].w - shfts[0].w;
-	y_out2 = shfts[1].h - shfts[0].h;
 
-	CLAMP(x_out, 0, 60);
-	CLAMP(y_out, 0, 60);
-	CLAMP(x_out2, 0, 60);
-	CLAMP(y_out2, 0, 60);
+// Create shift
+	x_out = xm - TEST_X;
+	y_out = ym - TEST_Y;
 }
 
 void BC_DisplayInfo::init_borders()
