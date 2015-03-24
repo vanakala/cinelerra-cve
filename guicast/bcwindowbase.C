@@ -781,19 +781,27 @@ void BC_WindowBase::dispatch_event()
 		break;
 
 	case ConfigureNotify:
-		lock_window("BC_WindowBase::dispatch_event ConfigureNotify");
 		get_key_masks(&event);
-		XTranslateCoordinates(top_level->display,
-			top_level->win,
-			top_level->rootwin,
-			0,
-			0,
-			&last_translate_x,
-			&last_translate_y,
-			&tempwin);
+		if(win == top_level->win)
+		{
+			last_translate_x = event.xconfigure.x;
+			last_translate_y = event.xconfigure.y;
+		}
+		else
+		{
+			lock_window("BC_WindowBase::dispatch_event ConfigureNotify");
+			XTranslateCoordinates(top_level->display,
+				top_level->win,
+				top_level->rootwin,
+				0,
+				0,
+				&last_translate_x,
+				&last_translate_y,
+				&tempwin);
+			unlock_window();
+		}
 		last_resize_w = event.xconfigure.width;
 		last_resize_h = event.xconfigure.height;
-		unlock_window();
 		cancel_resize = 0;
 		cancel_translation = 0;
 
