@@ -168,7 +168,7 @@ BC_WindowBase::~BC_WindowBase()
 	}
 #endif
 	if(wide_text != wide_buffer)
-		delete [] wide_buffer;
+		delete [] wide_text;
 
 	delete [] tooltip_wtext;
 
