@@ -70,4 +70,8 @@
 #define SBITS_FLOAT      0x0800
 
 #define SBITS_LINEAR    (SBITS_LINEAR8 | SBITS_LINEAR16 | SBITS_LINEAR24 | SBITS_LINEAR32)
+
+// Font directory in plugindir
+#define FONT_SEARCHPATH "fonts"
+
 #endif
