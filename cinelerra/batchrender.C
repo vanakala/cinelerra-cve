@@ -464,12 +464,17 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 void BatchRenderThread::start_rendering(char *config_path,
 	char *batch_path)
 {
+	char string[BCTEXTLEN];
+
 // Initialize stuff which MWindow does.
 	MWindow::init_defaults(boot_defaults, config_path);
 	load_defaults(boot_defaults);
 	preferences = new Preferences;
 	preferences->load_defaults(boot_defaults);
 	MWindow::init_plugins(preferences, plugindb, 0);
+	strcpy(string, preferences->global_plugin_dir);
+	strcat(string, "/" FONT_SEARCHPATH);
+	BC_Resources::init_fontconfig(string);
 
 	load_jobs(batch_path, preferences);
 	save_jobs(batch_path);
