@@ -161,7 +161,7 @@ void TitleConfig::interpolate(TitleConfig &prev,
 void TitleConfig::text_to_ucs4(const char *from_enc)
 {
 	wtext_length = BC_Resources::encode(from_enc, BC_Resources::wide_encoding,
-		text, (char *)wtext, sizeof(wtext) / sizeof(wchar_t)) / sizeof(wchar_t);
+		text, (char *)wtext, sizeof(wtext)) / sizeof(wchar_t);
 }
 
 
