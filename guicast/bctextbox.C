@@ -646,6 +646,8 @@ int BC_TextBox::button_press_event()
 				ibeam_letter = highlight_letter1 = 
 				highlight_letter2 = cursor_letter;
 			paste_selection(PRIMARY_SELECTION);
+			skip_cursor->update();
+			handle_event();
 		}
 		else
 		{
