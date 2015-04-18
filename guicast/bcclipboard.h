@@ -55,6 +55,7 @@ private:
 	Display *in_display, *out_display;
 	Atom completion_atom, primary, secondary;
 	Atom targets_atom;
+	Atom strtype_atom;
 	Window in_win, out_win;
 	char *data[2];
 	long length[2];
