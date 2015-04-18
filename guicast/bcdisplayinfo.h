@@ -86,6 +86,12 @@ public:
 	int test_xvext();
 	static uint32_t cmodel_to_fourcc(int cmodel);
 	void dump_xvext();
+	static void dump_event(XEvent *ev);
+	static const char *event_mode_str(int mode);
+	static const char *event_detail_str(int detail);
+	static const char *event_request_str(int req);
+	static void print_event_common(XEvent *ev, const char *name);
+	static const char *atom_name_str(Display *dpy, Atom atom);
 
 // XV info
 	static struct xv_adapterinfo *xv_adapters;

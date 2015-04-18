@@ -425,3 +425,470 @@ void BC_DisplayInfo::dump_xvext()
 		putchar('\n');
 	}
 }
+
+void BC_DisplayInfo::dump_event(XEvent *ev)
+{
+	const char *mode, *det, *evtn;
+
+	switch(ev->type)
+	{
+	case KeyPress:
+		evtn = "KeyPress";
+		goto keyevt;
+
+	case KeyRelease:
+		evtn = "KeyRelease";
+keyevt:
+	{
+		XKeyEvent *kevp = (XKeyEvent*)ev;
+
+		print_event_common(ev, evtn);
+		printf(" root %#lx sub %#lx\n", kevp->root, kevp->subwindow);
+		printf(" time: %ld (%d,%d) ((%d,%d)) state %u key %#x same %c\n",
+			kevp->time, kevp->x, kevp->y, kevp->x_root, kevp->y_root,
+			kevp->state, kevp->keycode, kevp->same_screen? 'T':'f');
+		break;
+	}
+
+	case ButtonPress:
+		evtn = "ButtonPress";
+		goto butevt;
+
+	case ButtonRelease:
+		evtn = "ButtonRelease";
+butevt:
+	{
+		XButtonEvent *bevp = (XButtonEvent*)ev;
+
+		print_event_common(ev, evtn);
+		printf(" root %#lx sub %#lx\n", bevp->root, bevp->subwindow);
+		printf(" time: %ld (%d,%d) ((%d,%d)) state %u but %d same %c\n",
+			bevp->time, bevp->x, bevp->y, bevp->x_root, bevp->y_root,
+			bevp->state, bevp->button, bevp->same_screen? 'T':'f');
+		break;
+	}
+
+	case MotionNotify:
+	{
+		XMotionEvent *mevp = (XMotionEvent*)ev;
+
+		print_event_common(ev, "MotionNotify");
+		printf(" root %#lx sub %#lx\n", mevp->root, mevp->subwindow);
+		printf(" time: %ld (%d,%d) ((%d,%d)) state %u hint %d same %c\n",
+			mevp->time, mevp->x, mevp->y, mevp->x_root, mevp->y_root,
+			mevp->state, mevp->is_hint, mevp->same_screen? 'T':'f');
+		break;
+	}
+
+	case EnterNotify:
+		evtn = "EnterNotify";
+		goto croevt;
+
+	case LeaveNotify:
+		evtn = "LeaveNotify";
+croevt:
+	{
+		XCrossingEvent *cevp = (XCrossingEvent*)ev;
+
+		print_event_common(ev, evtn);
+		printf(" root %#lx sub %#lx\n", cevp->root, cevp->subwindow);
+		mode = event_mode_str(cevp->mode);
+		det = event_detail_str(cevp->detail);
+		printf(" time: %ld (%d,%d) ((%d,%d))\n",
+			cevp->time, cevp->x, cevp->y, cevp->x_root, cevp->y_root);
+		printf("  m: %s d: %s same %c focus %c state %d\n",
+			mode, det, cevp->same_screen? 'T':'f',
+			cevp->focus? 'T':'f', cevp->state);
+		break;
+	}
+
+	case FocusIn:
+		evtn = "FocusIn";
+		goto focevt;
+
+	case FocusOut:
+		evtn = "FocusOut";
+focevt:
+	{
+		XFocusChangeEvent *fevp = (XFocusChangeEvent*)ev;
+
+		print_event_common(ev, evtn);
+		mode = event_mode_str(fevp->mode);
+		det = event_detail_str(fevp->detail);
+		printf(" m: %s s: %s\n", mode, det);
+		break;
+	}
+
+	case KeymapNotify:
+	{
+		XKeymapEvent *kmevp = (XKeymapEvent*)ev;
+
+		print_event_common(ev, "KeymapNotify");
+		for(int i = 0; i < 32; i++)
+			printf(" %02x", kmevp->key_vector[i] & 0xff);
+		putchar('\n');
+		break;
+	}
+
+	case Expose:
+	{
+		XExposeEvent *eevp = (XExposeEvent*)ev;
+
+		print_event_common(ev, "Expose");
+		printf(" (%d,%d) [%d,%d] count %d\n", eevp->x, eevp->y,
+			eevp->width, eevp->height, eevp->count);
+		break;
+	}
+
+	case GraphicsExpose:
+	{
+		XGraphicsExposeEvent *geevp = (XGraphicsExposeEvent*)ev;
+
+		print_event_common(ev, "GraphicsExpose");
+		printf(" (%d,%d) [%d,%d] count %d\n", geevp->x, geevp->y,
+			geevp->width, geevp->height, geevp->count);
+		printf(" major %d minor %d\n", geevp->major_code, geevp->minor_code);
+		break;
+	}
+
+	case NoExpose:
+	{
+		XNoExposeEvent *nevp = (XNoExposeEvent*)ev;
+
+		print_event_common(ev, "NoExpose");
+		printf(" major %d minor %d\n", nevp->major_code, nevp->minor_code);
+		break;
+	}
+
+	case VisibilityNotify:
+	{
+		XVisibilityEvent *vevp = (XVisibilityEvent*)ev;
+
+		print_event_common(ev, "VisibilityNotify");
+		printf(" state %d\n", vevp->state);
+		break;
+	}
+
+	case CreateNotify:
+	{
+		XCreateWindowEvent *crevp = (XCreateWindowEvent*)ev;
+
+		print_event_common(ev, "CreateNotify");
+		printf(" created %#lx (%d,%d) [%d,%d] border %d redct %c\n",
+			crevp->window, crevp->x, crevp->y,
+			crevp->width, crevp->height, crevp->border_width,
+			crevp->override_redirect ? 'T':'f');
+		break;
+	}
+
+	case DestroyNotify:
+	{
+		XDestroyWindowEvent *devp = (XDestroyWindowEvent*)ev;
+
+		print_event_common(ev, "DestroyNotify");
+		printf(" destroyed %#lx\n", devp->window);
+		break;
+	}
+
+	case UnmapNotify:
+	{
+		XUnmapEvent *uevp = (XUnmapEvent*)ev;
+
+		print_event_common(ev, "UnmapNotify");
+		printf(" unmapped %#lx from_configure %c\n", uevp->window,
+		uevp->from_configure? 'T':'f');
+		break;
+	}
+
+	case MapNotify:
+	{
+		XMapEvent *mpevp = (XMapEvent*)ev;
+
+		print_event_common(ev, "MapNotify");
+		printf(" mapped %#lx override_redirect %c\n", mpevp->window,
+			mpevp->override_redirect? 'T':'f');
+		break;
+	}
+
+	case MapRequest:
+	{
+		XMapRequestEvent *mrevp = (XMapRequestEvent*)ev;
+
+		print_event_common(ev, "MapRequest");
+		printf(" window %#lx\n", mrevp->window);
+		break;
+	}
+
+	case ReparentNotify:
+	{
+		XReparentEvent *rpevp = (XReparentEvent*)ev;
+
+		print_event_common(ev, "ReparentNotify");
+		printf(" window %#lx (%d,%d) override_redirect %c\n", rpevp->window,
+			rpevp->x, rpevp->y, rpevp->override_redirect? 'T':'f');
+		break;
+	}
+
+	case ConfigureNotify:
+	{
+		XConfigureEvent *cfnevp = (XConfigureEvent*)ev;
+
+		print_event_common(ev, "ConfigureNotify");
+		printf(" window %#lx (%d,%d) [%d,%d] border_width: %d\n", cfnevp->window,
+			cfnevp->x, cfnevp->y, cfnevp->width, cfnevp->height,
+			cfnevp->border_width);
+		printf(" above %#lx override_redirect %c\n", cfnevp->above,
+			cfnevp->override_redirect? 'T':'f');
+		break;
+	}
+
+	case ConfigureRequest:
+	{
+		XConfigureRequestEvent *cfrevp = (XConfigureRequestEvent*)ev;
+
+		print_event_common(ev, "ConfigureRequest");
+		printf(" window %#lx (%d,%d) [%d,%d] bw: %d\n", cfrevp->window,
+			cfrevp->x, cfrevp->y, cfrevp->width, cfrevp->height,
+			cfrevp->border_width);
+		printf(" above %#lx detail %d vmask %ld\n", cfrevp->above,
+			cfrevp->detail, cfrevp->value_mask);
+		break;
+	}
+
+	case GravityNotify:
+	{
+		XGravityEvent *gvevp = (XGravityEvent*)ev;
+
+		print_event_common(ev, "GravityNotify");
+		printf(" window %#lx (%d,%d)\n", gvevp->window,
+			gvevp->x, gvevp->y);
+		break;
+	}
+
+	case ResizeRequest:
+	{
+		XResizeRequestEvent *rzevp = (XResizeRequestEvent*)ev;
+
+		print_event_common(ev, "ResizeRequest");
+		printf(" [%d,%d]\n", rzevp->width, rzevp->height);
+		break;
+	}
+
+	case CirculateNotify:
+	{
+		XCirculateEvent *cievp = (XCirculateEvent*)ev;
+
+		print_event_common(ev, "CirculateNotify");
+		printf(" window %#lx place %d\n", cievp->window,
+			cievp->place);
+		break;
+	}
+
+	case CirculateRequest:
+	{
+		XCirculateRequestEvent *cirevp = (XCirculateRequestEvent*)ev;
+
+		print_event_common(ev, "CirculateRequest");
+		printf(" window %#lx place %d\n", cirevp->window,
+			cirevp->place);
+		break;
+	}
+
+	case PropertyNotify:
+	{
+		XPropertyEvent *prcevp = (XPropertyEvent*)ev;
+
+		print_event_common(ev, "PropertyNotify");
+		printf(" atom %s, time %ld, state %d\n",
+			atom_name_str(prcevp->display, prcevp->atom),
+			prcevp->time, prcevp->state);
+		break;
+	}
+
+	case SelectionClear:
+	{
+		XSelectionClearEvent *sclevp = (XSelectionClearEvent*)ev;
+
+		print_event_common(ev, "SelectionClear");
+		printf(" selection %s, time %ld\n",
+			atom_name_str(sclevp->display, sclevp->selection),
+			sclevp->time);
+		break;
+	}
+
+	case SelectionRequest:
+	{
+		XSelectionRequestEvent *screvp = (XSelectionRequestEvent*)ev;
+
+		print_event_common(ev, "SelectionRequest");
+		printf(" reqwin %#lx selection %s, target %s\n",
+			screvp->requestor,
+			atom_name_str(screvp->display, screvp->selection),
+			atom_name_str(screvp->display, screvp->target));
+		printf(" property %s time %ld\n",
+			atom_name_str(screvp->display, screvp->property),
+			screvp->time);
+		break;
+	}
+
+	case SelectionNotify:
+	{
+		XSelectionEvent *scevp = (XSelectionEvent*)ev;
+
+		print_event_common(ev, "SelectionNotify");
+		printf(" selection %s, target %s\n",
+			atom_name_str(scevp->display, scevp->selection),
+			atom_name_str(scevp->display, scevp->target));
+		printf(" property %s time %ld\n",
+			atom_name_str(scevp->display, scevp->property),
+			scevp->time);
+		break;
+	}
+
+	case ColormapNotify:
+	{
+		XColormapEvent *cmevp = (XColormapEvent*)ev;
+
+		print_event_common(ev, "ColormapNotify");
+		printf(" colormap %#lx, new %c state %d\n",
+			cmevp->colormap, cmevp->c_new ? 'T':'f', cmevp->state);
+		break;
+	}
+
+	case ClientMessage:
+	{
+		XClientMessageEvent *clmevp = (XClientMessageEvent*)ev;
+
+		print_event_common(ev, "ClientMessage");
+		printf(" msg_type %s format %d\n",
+		atom_name_str(clmevp->display, clmevp->message_type),
+			clmevp->format);
+		switch(clmevp->format)
+		{
+		case 32:
+			for(int i = 0; i < 5; i++)
+				printf(" %ld", clmevp->data.l[i]);
+			break;
+		case 16:
+			for(int i = 0; i < 10; i++)
+				printf(" %hd", clmevp->data.s[i] & 0xffff);
+			break;
+		case 8:
+		default:
+			for(int i = 0; i < 20; i++)
+				printf(" %02x", clmevp->data.b[i] & 0xff);
+			break;
+		}
+		putchar('\n');
+		break;
+	}
+
+	case MappingNotify:
+	{
+		XMappingEvent *mpevp = (XMappingEvent*)ev;
+
+		print_event_common(ev, "MappingNotify");
+		printf("request: %s first_keycode %d, count %d\n",
+			event_request_str(mpevp->request),
+				mpevp->first_keycode, mpevp->count);
+		break;
+	}
+
+	case GenericEvent:
+	{
+		XGenericEvent *xgen = (XGenericEvent*)ev;
+
+		printf("Event '%s' dump: ", "GenericEvent");
+		printf(" %ld sent %c disp %p extension %d event %d\n", xgen->serial,
+			xgen->send_event ? 'T':'f', xgen->display,
+			xgen->extension, xgen->evtype);
+		break;
+	}
+
+	default:
+		printf("Unknown event %d\n", ev->type);
+		break;
+	}
+}
+
+const char *BC_DisplayInfo::event_mode_str(int mode)
+{
+	switch(mode)
+	{
+	case NotifyNormal:
+		return "NotifyNormal";
+
+	case NotifyWhileGrabbed:
+		return "NotifyWhileGrabbed";
+
+	case NotifyGrab:
+		return "NotifyGrab";
+
+	case NotifyUngrab:
+		return "NotifyUngrab";
+	}
+	return "Unk";
+}
+
+const char *BC_DisplayInfo::event_detail_str(int detail)
+{
+	switch(detail)
+	{
+	case NotifyAncestor:
+		return "NotifyAncestor";
+
+	case NotifyVirtual:
+		return "NotifyVirtual";
+
+	case NotifyInferior:
+		return "NotifyInferior";
+
+	case NotifyNonlinear:
+		return "NotifyNonlinear";
+
+	case NotifyNonlinearVirtual:
+		return "NotifyNonlinearVirtual";
+
+	case NotifyPointer:
+		return "NotifyPointer";
+
+	case NotifyPointerRoot:
+		return "NotifyPointerRoot";
+
+	case NotifyDetailNone:
+		return "NotifyDetailNone";
+	}
+	return "Unk";
+}
+
+const char *BC_DisplayInfo::event_request_str(int req)
+{
+	switch(req)
+	{
+	case MappingModifier:
+		return "MappingModifier";
+
+	case MappingKeyboard:
+		return "MappingKeyboard";
+
+	case MappingPointer:
+		return "MappingPointer";
+	}
+	return "Unk";
+}
+
+void BC_DisplayInfo::print_event_common(XEvent *ev, const char *name)
+{
+	XAnyEvent *aevp = (XAnyEvent*)ev;
+
+	printf("Event '%s' dump: ", name);
+	printf(" %ld sent %c disp %p win %#lx\n", aevp->serial,
+		aevp->send_event ? 'T':'f', aevp->display, aevp->window);
+}
+
+const char *BC_DisplayInfo::atom_name_str(Display *dpy, Atom atom)
+{
+	if(atom == None)
+		return "None";
+	return XGetAtomName(dpy, atom);
+}
