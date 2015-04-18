@@ -415,7 +415,7 @@ BC_FileBox::BC_FileBox(int x,
 		fs->complete_path(this->current_path);
 		fs->update(this->current_path);
 		strcpy(directory, fs->get_current_dir());
-		sprintf(filename, "");
+		filename[0] = 0;
 	}
 
 	if(h_padding == -1)
