@@ -88,6 +88,8 @@ void BC_DisplayInfo::test_window(int &x_out,
 	unsigned long mask = CWEventMask;
 	XSetWindowAttributes attr;
 	XSizeHints size_hints;
+	char *txlist[2];
+	XTextProperty titleprop;
 
 	x_out = 0;
 	y_out = 0;
@@ -112,7 +114,16 @@ void BC_DisplayInfo::test_window(int &x_out,
 	size_hints.y = TEST_Y;
 	size_hints.width = TEST_SIZE;
 	size_hints.height = TEST_SIZE;
-	XSetNormalHints(display, win, &size_hints);
+	// Set the name of the window
+	// Makes possible to create special config for the window
+	txlist[0] = (char *)"guicast_test";
+	txlist[1] = 0;
+	XmbTextListToTextProperty(display, txlist, 1,
+		XStdICCTextStyle, &titleprop);
+	XSetWMProperties(display, win, &titleprop, &titleprop,
+		0, 0, &size_hints, 0, 0);
+	XFree(titleprop.value);
+
 	XMapWindow(display, win); 
 	XFlush(display);
 	XSync(display, 0);
