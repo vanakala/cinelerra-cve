@@ -142,7 +142,7 @@ void BC_DisplayInfo::test_window(int &x_out,
 	while(XPending(display))
 	{
 		XNextEvent(display, &event);
-		if(event.type == ConfigureNotify && event.xany.window == win)
+		if(event.type == ConfigureNotify && event.xconfigure.window == win)
 		{
 			if(xm < event.xconfigure.x)
 				xm = event.xconfigure.x;
