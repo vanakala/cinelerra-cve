@@ -293,13 +293,6 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 		case DO_GUI:
 		{
 	                setlinebuf(stdout);
-// This function must be the first Xlib
-// function a multi-threaded program calls
-			if(!XInitThreads())
-			{
-				printf("Failed to init X threads\n");
-				exit(1);
-			}
 			mwindow = new MWindow;
 			mwindow->create_objects(1, 
 				!filenames.total,

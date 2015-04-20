@@ -64,6 +64,13 @@ xv_formats[] =
 
 BC_DisplayInfo::BC_DisplayInfo(const char *display_name, int show_error)
 {
+// This function must be the first Xlib
+// function a multi-threaded program calls
+	if(!XInitThreads())
+	{
+		printf("Failed to init X threads\n");
+		exit(1);
+	}
 	init_window(display_name, show_error);
 }
 
