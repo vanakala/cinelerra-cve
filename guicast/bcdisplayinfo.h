@@ -74,6 +74,8 @@ public:
 
 	int get_root_w();
 	int get_root_h();
+	void get_root_size(int *width, int *height);
+	void get_abs_cursor(int *abs_x, int *abs_y);
 	int get_abs_cursor_x();
 	int get_abs_cursor_y();
 	static void parse_geometry(char *geom, int *x, int *y, int *width, int *height);

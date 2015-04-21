@@ -230,6 +230,31 @@ int BC_DisplayInfo::get_root_h()
 	return HeightOfScreen(screen_ptr);
 }
 
+void BC_DisplayInfo::get_root_size(int *width, int *height)
+{
+	Screen *screen_ptr = XDefaultScreenOfDisplay(display);
+
+	*width = WidthOfScreen(screen_ptr);
+	*height = HeightOfScreen(screen_ptr);
+}
+
+void BC_DisplayInfo::get_abs_cursor(int *abs_x, int *abs_y)
+{
+	int win_x, win_y;
+	unsigned int temp_mask;
+	Window temp_win;
+
+	XQueryPointer(display,
+		rootwin,
+		&temp_win,
+		&temp_win,
+		abs_x,
+		abs_y,
+		&win_x,
+		&win_y,
+		&temp_mask);
+}
+
 int BC_DisplayInfo::get_abs_cursor_x()
 {
 	int abs_x, abs_y, win_x, win_y;
