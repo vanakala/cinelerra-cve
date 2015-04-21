@@ -301,6 +301,9 @@ public:
 	// encode to utf8 on place
 	static void encode_to_utf8(char *buffer, int buflen);
 	static int find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface);
+	static void get_abs_cursor(int *x, int *y);
+	static void get_root_size(int *width, int *height);
+	static void get_window_borders(int *left, int *right, int *top, int *bottom);
 
 // Available display extensions
 	int use_shm;
@@ -316,7 +319,7 @@ private:
 // Test for availability of shared memory pixmaps
 	void init_shm(BC_WindowBase *window);
 	void init_sizes(BC_WindowBase *window);
-	BC_DisplayInfo *display_info;
+	static BC_DisplayInfo *display_info;
 	VFrame **list_pointers[100];
 	int list_lengths[100];
 	int list_total;

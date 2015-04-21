@@ -55,6 +55,8 @@ ArrayList<BC_FontEntry*> *BC_Resources::fontlist = 0;
 const char *BC_Resources::fc_properties[] = { FC_SLANT, FC_WEIGHT, FC_WIDTH };
 #define LEN_FCPROP (sizeof(BC_Resources::fc_properties) / sizeof(const char*))
 
+BC_DisplayInfo *BC_Resources::display_info = 0;
+
 #include "images/file_film_png.h"
 #include "images/file_folder_png.h"
 #include "images/file_sound_png.h"
@@ -578,7 +580,6 @@ void BC_Resources::set_synchronous(BC_Synchronous *synchronous)
 {
 	this->synchronous = synchronous;
 }
-
 int BC_Resources::get_top_border()
 {
 	return display_info->get_top_border();
@@ -630,6 +631,24 @@ int BC_Resources::get_id()
 	int result = id++;
 	id_lock->unlock();
 	return result;
+}
+
+void BC_Resources::get_window_borders(int *left, int *right, int *top, int *bottom)
+{
+	*left = display_info->get_left_border();
+	*right = display_info->get_right_border();
+	*top = display_info->get_top_border();
+	*bottom = display_info->get_bottom_border();
+}
+
+void BC_Resources::get_abs_cursor(int *x, int *y)
+{
+	display_info->get_abs_cursor(x, y);
+}
+
+void BC_Resources::get_root_size(int *width, int *height)
+{
+	display_info->get_root_size(width, height);
 }
 
 int BC_Resources::init_fontconfig(const char *search_path)
