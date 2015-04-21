@@ -519,6 +519,11 @@ BC_Resources::BC_Resources()
 	recursive_resizing = 1;
 }
 
+BC_Resources::~BC_Resources()
+{
+	delete display_info;
+}
+
 void BC_Resources::initialize_display(BC_WindowBase *window)
 {
 // Test for shm.  Must come before yuv test

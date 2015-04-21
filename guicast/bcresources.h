@@ -46,6 +46,7 @@ class BC_Resources
 {
 public:
 	BC_Resources(); // The window parameter is used to get the display information initially
+	~BC_Resources();
 
 	void initialize_display(BC_WindowBase *window);
 
