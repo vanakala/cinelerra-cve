@@ -101,21 +101,15 @@ void MainSession::boundaries()
 void MainSession::default_window_positions()
 {
 // Get defaults based on root window size
-	BC_DisplayInfo display_info;
-
+	int border_left, border_right, border_top, border_bottom;
+	int root_w, root_h;
 	int root_x = 0;
 	int root_y = 0;
-	int root_w = display_info.get_root_w();
-	int root_h = display_info.get_root_h();
-	int border_left = 0;
-	int border_right = 0;
-	int border_top = 0;
-	int border_bottom = 0;
 
-	border_left = display_info.get_left_border();
-	border_top = display_info.get_top_border();
-	border_right = display_info.get_right_border();
-	border_bottom = display_info.get_bottom_border();
+	BC_Resources::get_root_size(&root_w, &root_h);
+
+	BC_Resources::get_window_borders(&border_left, &border_right,
+		&border_top, &border_bottom);
 
 // Wider than 16:9, narrower than dual head
 	if((float)root_w / root_h > 1.8) root_w /= 2;

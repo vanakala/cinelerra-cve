@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "language.h"
 #include "mainerror.h"
@@ -115,9 +114,9 @@ MainError::~MainError()
 
 BC_Window* MainError::new_gui()
 {
-	BC_DisplayInfo display_info;
-	int x = display_info.get_abs_cursor_x();
-	int y = display_info.get_abs_cursor_y();
+	int x, y;
+
+	BC_Resources::get_abs_cursor(&x, &y);
 
 	MainErrorGUI *gui = new MainErrorGUI(mwindow, this, x, y);
 	gui->create_objects();
@@ -256,12 +255,11 @@ int MainError::show_boxmsg(const char *title, const char *message, int confirm)
 {
 	char bufr[BCTEXTLEN];
 	int res;
+	int x, y;
 
 	if(main_error)
 	{
-		BC_DisplayInfo display_info;
-		int x = display_info.get_abs_cursor_x();
-		int y = display_info.get_abs_cursor_y();
+		BC_Resources::get_abs_cursor(&x, &y);
 		bufr[0] = 0;
 		if(title)
 		{

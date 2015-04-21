@@ -21,6 +21,7 @@
 
 #include "bcbutton.h"
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "bcprogress.h"
 #include "bcprogressbox.h"
 #include "bcresources.h"
@@ -35,11 +36,7 @@ BC_ProgressBox::BC_ProgressBox(int x, int y, const char *text, int64_t length)
 
 // Calculate default x, y
 	if(x < 0 || y < 0)
-	{
-		BC_DisplayInfo display_info;
-		x = display_info.get_abs_cursor_x();
-		y = display_info.get_abs_cursor_y();
-	}
+		BC_Resources::get_abs_cursor(&x, &y);
 
 	pwindow = new BC_ProgressWindow(x, y, text, length);
 	cancelled = 0;

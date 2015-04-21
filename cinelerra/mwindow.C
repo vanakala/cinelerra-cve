@@ -1234,10 +1234,12 @@ void MWindow::show_splash()
 {
 #include "data/heroine_logo12_png.h"
 	VFrame *frame = new VFrame(heroine_logo12_png);
-	BC_DisplayInfo display_info;
+	int root_w, root_h;
+
+	BC_Resources::get_root_size(&root_w, &root_h);
 	splash_window = new SplashGUI(frame, 
-		display_info.get_root_w() / 2 - frame->get_w() / 2,
-		display_info.get_root_h() / 2 - frame->get_h() / 2);
+		root_w / 2 - frame->get_w() / 2,
+		root_h / 2 - frame->get_h() / 2);
 	splash_window->create_objects();
 }
 

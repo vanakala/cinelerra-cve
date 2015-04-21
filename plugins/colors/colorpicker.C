@@ -79,8 +79,8 @@ void ColorThread::start_window(int output, int alpha)
 
 void ColorThread::run()
 {
-	BC_DisplayInfo info;
 	char window_title[BCTEXTLEN];
+	int x, y;
 
 	if(title)
 		strcpy(window_title, title);
@@ -88,11 +88,10 @@ void ColorThread::run()
 		strcpy(window_title, _("Color Picker"));
 	strcat(window_title, " - " PROGRAM_NAME);
 
-
+	BC_Resources::get_abs_cursor(&x, &y);
 	mutex->lock("ColorThread::run 1");
 	window = new ColorWindow(this, 
-		info.get_abs_cursor_x() - 200, 
-		info.get_abs_cursor_y() - 200,
+		x - 200, y - 200,
 		window_title);
 	window->create_objects();
 	mutex->unlock();

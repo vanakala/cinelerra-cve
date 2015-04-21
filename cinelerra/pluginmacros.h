@@ -292,8 +292,9 @@ void PLUGIN_CLASS::update_gui() \
 #define PLUGIN_CLASS_GET_PARAMETERS \
 int PLUGIN_CLASS::get_parameters() \
 { \
-	BC_DisplayInfo info; \
-	PLUGIN_GUI_CLASS window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y()); \
+	int x, y; \
+	BC_Resources::get_abs_cursor(&x, &y); \
+	PLUGIN_GUI_CLASS window(this, x, y); \
 	return window.run_window(); \
 }
 #else
@@ -334,10 +335,10 @@ PLUGIN_THREAD_CLASS::~PLUGIN_THREAD_CLASS() \
  \
 void PLUGIN_THREAD_CLASS::run() \
 { \
-	BC_DisplayInfo info; \
-	window = new PLUGIN_GUI_CLASS(plugin,  \
-		info.get_abs_cursor_x() - 75,  \
-		info.get_abs_cursor_y() - 65); \
+	int x, y; \
+	BC_Resources::get_abs_cursor(&x, &y); \
+	window = new PLUGIN_GUI_CLASS(plugin, \
+		x - 75, y - 65); \
  \
 /* Only set it here so tracking doesn't update it until everything is created. */ \
 	plugin->thread = this; \

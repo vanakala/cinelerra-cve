@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "keys.h"
 #include "language.h"
@@ -83,9 +82,9 @@ TipWindow::TipWindow(MWindow *mwindow)
 
 BC_Window* TipWindow::new_gui()
 {
-	BC_DisplayInfo display_info;
-	int x = display_info.get_abs_cursor_x();
-	int y = display_info.get_abs_cursor_y();
+	int x, y;
+
+	BC_Resources::get_abs_cursor(&x, &y);
 	TipWindowGUI *gui = this->gui = new TipWindowGUI(mwindow, 
 		this,
 		x,
