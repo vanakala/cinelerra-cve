@@ -595,16 +595,6 @@ int BC_Resources::get_left_border()
 	return display_info->get_left_border();
 }
 
-int BC_Resources::get_right_border()
-{
-	return display_info->get_right_border();
-}
-
-int BC_Resources::get_bottom_border()
-{
-	return display_info->get_bottom_border();
-}
-
 int BC_Resources::get_bg_color()
 {
 	return bg_color;

@@ -218,18 +218,6 @@ void BC_DisplayInfo::init_window(const char *display_name, int show_error)
 	default_depth = DefaultDepth(display, screen);
 }
 
-int BC_DisplayInfo::get_root_w()
-{
-	Screen *screen_ptr = XDefaultScreenOfDisplay(display);
-	return WidthOfScreen(screen_ptr);
-}
-
-int BC_DisplayInfo::get_root_h()
-{
-	Screen *screen_ptr = XDefaultScreenOfDisplay(display);
-	return HeightOfScreen(screen_ptr);
-}
-
 void BC_DisplayInfo::get_root_size(int *width, int *height)
 {
 	Screen *screen_ptr = XDefaultScreenOfDisplay(display);
@@ -253,42 +241,6 @@ void BC_DisplayInfo::get_abs_cursor(int *abs_x, int *abs_y)
 		&win_x,
 		&win_y,
 		&temp_mask);
-}
-
-int BC_DisplayInfo::get_abs_cursor_x()
-{
-	int abs_x, abs_y, win_x, win_y;
-	unsigned int temp_mask;
-	Window temp_win;
-
-	XQueryPointer(display,
-		rootwin,
-		&temp_win,
-		&temp_win,
-		&abs_x,
-		&abs_y,
-		&win_x,
-		&win_y,
-		&temp_mask);
-	return abs_x;
-}
-
-int BC_DisplayInfo::get_abs_cursor_y()
-{
-	int abs_x, abs_y, win_x, win_y;
-	unsigned int temp_mask;
-	Window temp_win;
-
-	XQueryPointer(display,
-		rootwin,
-		&temp_win,
-		&temp_win,
-		&abs_x,
-		&abs_y,
-		&win_x,
-		&win_y,
-		&temp_mask);
-	return abs_y;
 }
 
 int BC_DisplayInfo::test_xvext()

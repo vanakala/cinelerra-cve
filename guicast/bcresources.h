@@ -60,8 +60,6 @@ public:
 // Get window border size created by window manager
 	int get_top_border();
 	int get_left_border();
-	int get_right_border();
-	int get_bottom_border();
 // Get synchronous thread for OpenGL
 	BC_Synchronous* get_synchronous();
 // Called by user after synchronous thread is created.
