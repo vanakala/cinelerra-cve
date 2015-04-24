@@ -27,9 +27,7 @@
 
 #include <string.h>
 
-
 REGISTER_PLUGIN
-
 
 TranslateConfig::TranslateConfig()
 {
@@ -107,10 +105,6 @@ PLUGIN_CLASS_METHODS
 
 void TranslateMain::load_defaults()
 {
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%stranslate.rc", BCASTDIR);
-
 // load the defaults
 	defaults = load_defaults_file("translate.rc");
 
@@ -178,14 +172,13 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 			config.in_y = input.tag.get_property("IN_Y", config.in_y);
 			config.in_w = input.tag.get_property("IN_W", config.in_w);
 			config.in_h = input.tag.get_property("IN_H", config.in_h);
-			config.out_x =	input.tag.get_property("OUT_X", config.out_x);
-			config.out_y =	input.tag.get_property("OUT_Y", config.out_y);
-			config.out_w =	input.tag.get_property("OUT_W", config.out_w);
-			config.out_h =	input.tag.get_property("OUT_H", config.out_h);
+			config.out_x = input.tag.get_property("OUT_X", config.out_x);
+			config.out_y = input.tag.get_property("OUT_Y", config.out_y);
+			config.out_w = input.tag.get_property("OUT_W", config.out_w);
+			config.out_h = input.tag.get_property("OUT_H", config.out_h);
 		}
 	}
 }
-
 
 void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
@@ -214,17 +207,17 @@ void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	output->clear_frame();
 
-		overlayer->overlay(output, 
-			input,
-			config.in_x, 
-			config.in_y, 
-			config.in_x + config.in_w,
-			config.in_y + config.in_h,
-			config.out_x, 
-			config.out_y, 
-			config.out_x + config.out_w,
-			config.out_y + config.out_h,
-			1,
-			TRANSFER_REPLACE,
-			get_interpolation_type());
+	overlayer->overlay(output,
+		input,
+		config.in_x,
+		config.in_y,
+		config.in_x + config.in_w,
+		config.in_y + config.in_h,
+		config.out_x,
+		config.out_y,
+		config.out_x + config.out_w,
+		config.out_y + config.out_h,
+		1,
+		TRANSFER_REPLACE,
+		get_interpolation_type());
 }
