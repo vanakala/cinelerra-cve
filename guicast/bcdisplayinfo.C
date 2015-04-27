@@ -135,11 +135,15 @@ void BC_DisplayInfo::test_window(int &x_out,
 	XFlush(display);
 	XSync(display, 0);
 	// Wait until WM reacts
-	usleep(10000);
+	usleep(20000);
+	XDestroyWindow(display, win);
+	XFlush(display);
+	XSync(display, 0);
 
-	int xm = 0, ym = 0;
+	int xm = -1, ym = -1;
 	XEvent event;
-	while(XPending(display))
+
+	for(;;)
 	{
 		XNextEvent(display, &event);
 		if(event.type == ConfigureNotify && event.xconfigure.window == win)
@@ -149,14 +153,15 @@ void BC_DisplayInfo::test_window(int &x_out,
 			if(ym < event.xconfigure.y)
 				ym = event.xconfigure.y;
 		}
-	};
-	XDestroyWindow(display, win);
-	XFlush(display);
-	XSync(display, 0);
-
+		if(event.type == DestroyNotify && event.xdestroywindow.window == win)
+			break;
+	}
 // Create shift
-	x_out = xm - TEST_X;
-	y_out = ym - TEST_Y;
+	if(xm >= 0)
+	{
+		x_out = xm - TEST_X;
+		y_out = ym - TEST_Y;
+	}
 }
 
 void BC_DisplayInfo::init_borders()
