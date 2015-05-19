@@ -646,7 +646,7 @@ void BC_Resources::get_root_size(int *width, int *height)
 	display_info->get_root_size(width, height);
 }
 
-int BC_Resources::init_fontconfig(const char *search_path)
+int BC_Resources::init_fontconfig(const char *search_path, int options)
 {
 	if(!fontlist)
 	{
@@ -672,7 +672,7 @@ int BC_Resources::init_fontconfig(const char *search_path)
 
 		FcPatternAddBool(pat, FC_SCALABLE, true);
 
-		if(language[0])
+		if((options & FLFC_LANGUAGE) && language[0])
 		{
 			char langstr[LEN_LANG * 3];
 			strcpy(langstr, language);

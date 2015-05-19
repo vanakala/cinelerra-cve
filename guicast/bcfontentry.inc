@@ -60,4 +60,7 @@ class BC_FontEntry;
 #define FL_CHARCELL             0x4000000
 #define FL_SPACING_MASK         0x7800000
 
+// init_fontconfig options
+#define FLFC_LANGUAGE          1      // Filter language
+
 #endif
