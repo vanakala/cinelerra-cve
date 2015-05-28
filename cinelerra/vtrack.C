@@ -275,6 +275,8 @@ void VTrack::translate(float offset_x, float offset_y, int do_camera)
 		subscript_y = AUTOMATION_PROJECTOR_Y;
 	}
 
+	if(!automation->autos[subscript_x]->first)
+		((FloatAutos*)automation->autos[subscript_x])->insert_auto(0);
 // Translate everyone else
 	for(Auto *current = automation->autos[subscript_x]->first;
 		current; 
@@ -282,6 +284,9 @@ void VTrack::translate(float offset_x, float offset_y, int do_camera)
 	{
 		((FloatAuto*)current)->add_value(offset_x);
 	}
+
+	if(!automation->autos[subscript_y]->first)
+		((FloatAutos*)automation->autos[subscript_y])->insert_auto(0);
 
 	for(Auto *current = automation->autos[subscript_y]->first;
 		current; 
