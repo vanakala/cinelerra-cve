@@ -37,7 +37,7 @@ FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
 	control_in_pts = 0;
 	control_out_pts = 0;
 	pos_valid = -1;    // "dirty"
-	tangent_mode = TGNT_SMOOTH;
+	tangent_mode = TGNT_FREE;
 //  note: in most cases the tangent_mode-value is set
 //        by the method interpolate_from() rsp. copy_from()
 }
