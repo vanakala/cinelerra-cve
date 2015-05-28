@@ -71,18 +71,6 @@ void FloatAutos::straighten(ptstime start, ptstime end)
 	}
 }
 
-Auto* FloatAutos::add_auto(ptstime position, float value)
-{
-	FloatAuto* current = (FloatAuto*)autoof(position);
-	FloatAuto* result;
-
-	insert_before(current, result = (FloatAuto*)new_auto());
-
-	result->adjust_to_new_coordinates(position, value);
-
-	return result;
-}
-
 Auto* FloatAutos::new_auto()
 {
 	FloatAuto *result = new FloatAuto(edl, this);

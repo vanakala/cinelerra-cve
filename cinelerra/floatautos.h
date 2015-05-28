@@ -61,7 +61,6 @@ public:
 		ptstime end);
 	void straighten(ptstime start, ptstime end);
 
-	Auto* add_auto(ptstime position, float value);
 	Auto* append_auto();
 	Auto* new_auto();
 	void copy_values(Autos *autos);
