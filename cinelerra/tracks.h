@@ -89,7 +89,6 @@ public:
 	void update_y_pixels(Theme *theme);
 // Total number of tracks where the following toggles are selected
 	void select_all(int type, int value);
-	void translate_camera(float offset_x, float offset_y);
 	void translate_projector(float offset_x, float offset_y);
 	int total_of(int type);
 // add a track
