@@ -208,28 +208,55 @@ void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		overlayer = new OverlayFrame(smp + 1);
 	}
 
-	if(config.in_x < 0 || config.in_x > output->get_w())
-		config.in_x = 0;
-	if(config.in_y < 0 || config.in_y > output->get_h())
-		config.in_y = 0;
-	if(config.in_w < 0 || config.in_w > output->get_w())
-		config.in_w = output->get_w();
-	if(config.in_h < 0 || config.in_h > output->get_h())
-		config.in_h = output->get_h();
+	output->clear_frame();
 
-	if(config.in_w > 0 && config.in_h > 0)
+	if(config.in_w > EPSILON && config.in_h > EPSILON &&
+		config.out_w > EPSILON && config.out_h > EPSILON)
 	{
-		output->clear_frame();
-		cx = config.out_w / config.in_w;
-		cy = config.out_h / config.in_h;
 		ix1 = config.in_x;
-		iy1 = config.in_y;
-		ix2 = config.in_x + config.in_w;
-		iy2 = config.in_y + config.in_h;
 		ox1 = config.out_x;
+		if(ix1 < 0)
+		{
+			ox1 -= ix1;
+			ix2 = config.in_w + ix1;
+			ix1 = 0;
+		}
+		else
+			ix2 = config.in_w;
+
+		iy1 = config.in_y;
 		oy1 = config.out_y;
-		ox2 = config.out_x + config.out_w;
-		oy2 = config.out_y + config.out_h;
+		if(iy1 < 0)
+		{
+			oy1 -= iy1;
+			iy2 = config.in_h + iy1;
+			iy1 = 0;
+		}
+		else
+			iy2 = config.in_h;
+
+		if(config.in_w > output->get_w())
+		{
+			cx = config.out_w / config.in_w;
+			ox2 = ox1 + (ix2 - ix1) * cx * output->get_w() / config.in_w;
+		}
+		else
+		{
+			cx = config.out_w / output->get_w();
+			ox2 = ox1 + (ix2 - ix1) * cx;
+		}
+
+		if(config.in_h > output->get_h())
+		{
+			cy = config.out_h / config.in_h;
+			oy2 = oy1 + (iy2 - iy1) * cy * output->get_h() / config.in_h;
+		}
+		else
+		{
+			cy = config.out_h / output->get_h();
+			oy2 = oy1 + (iy2 - iy1) * cy;
+		}
+
 		if(ox1 < 0)
 		{
 			ix1 += -ox1 / cx;
@@ -250,18 +277,20 @@ void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			iy2 -= (oy2 - output->get_h()) / cy;
 			oy2 = output->get_h();
 		}
-		overlayer->overlay(output,
-			input,
-			ix1,
-			iy1,
-			ix2,
-			iy2,
-			ox1,
-			oy1,
-			ox2,
-			oy2,
-			1,
-			TRANSFER_REPLACE,
-			get_interpolation_type());
+
+		if(ix1 < ix2 && iy1 < iy2 && ox1 < ox2 && oy1 < oy2)
+			overlayer->overlay(output,
+				input,
+				ix1,
+				iy1,
+				ix2,
+				iy2,
+				ox1,
+				oy1,
+				ox2,
+				oy2,
+				1,
+				TRANSFER_REPLACE,
+				get_interpolation_type());
 	}
 }
