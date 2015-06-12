@@ -870,6 +870,9 @@ int BC_Resources::init_fontconfig(const char *search_path, int options)
 	return 0;
 }
 
+#define STYLE_MATCH(fst, stl, msk) ((fst) & (msk) & (stl)) && \
+	!((fst) & ~(style) &msk)
+
 BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, int mask)
 {
 	BC_FontEntry *entry, *style_match;
@@ -884,7 +887,7 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 			entry = fontlist->values[i];
 
 			if(strcmp(entry->displayname, displayname) == 0 &&
-					(entry->style & mask) == style)
+					STYLE_MATCH(entry->style, style, mask))
 				return entry;
 		}
 	}
@@ -897,7 +900,7 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 	{
 		entry = fontlist->values[i];
 
-		if((entry->style & mask) == style)
+		if(STYLE_MATCH(entry->style, style, mask))
 		{
 			if(!style_match)
 				style_match = entry;
