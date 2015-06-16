@@ -204,9 +204,7 @@ void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 
 	if(!overlayer)
-	{
 		overlayer = new OverlayFrame(smp + 1);
-	}
 
 	output->clear_frame();
 
@@ -215,47 +213,39 @@ void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		ix1 = config.in_x;
 		ox1 = config.out_x;
+
 		if(ix1 < 0)
 		{
 			ox1 -= ix1;
-			ix2 = config.in_w + ix1;
+			ix2 = config.in_w;
 			ix1 = 0;
 		}
 		else
-			ix2 = config.in_w;
+			ix2 = ix1 + config.in_w;
+
+		if(ix2 > output->get_w())
+			ix2 = output->get_w();
 
 		iy1 = config.in_y;
 		oy1 = config.out_y;
+
 		if(iy1 < 0)
 		{
 			oy1 -= iy1;
-			iy2 = config.in_h + iy1;
+			iy2 = config.in_h;
 			iy1 = 0;
 		}
 		else
-			iy2 = config.in_h;
+			iy2 = iy1 + config.in_h;
 
-		if(config.in_w > output->get_w())
-		{
-			cx = config.out_w / config.in_w;
-			ox2 = ox1 + (ix2 - ix1) * cx * output->get_w() / config.in_w;
-		}
-		else
-		{
-			cx = config.out_w / output->get_w();
-			ox2 = ox1 + (ix2 - ix1) * cx;
-		}
+		if(iy2 > output->get_h())
+			iy2 = output->get_h();
 
-		if(config.in_h > output->get_h())
-		{
-			cy = config.out_h / config.in_h;
-			oy2 = oy1 + (iy2 - iy1) * cy * output->get_h() / config.in_h;
-		}
-		else
-		{
-			cy = config.out_h / output->get_h();
-			oy2 = oy1 + (iy2 - iy1) * cy;
-		}
+		cx = config.out_w / config.in_w;
+		cy = config.out_h / config.in_h;
+
+		ox2 = ox1 + (ix2 - ix1) * cx;
+		oy2 = oy1 + (iy2 - iy1) * cy;
 
 		if(ox1 < 0)
 		{
