@@ -873,12 +873,16 @@ int BC_Resources::init_fontconfig(const char *search_path, int options)
 #define STYLE_MATCH(fst, stl, msk) ((fst) & (msk) & (stl)) && \
 	!((fst) & ~(style) &msk)
 
-BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, int mask)
+BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style,
+	int mask, int preferred)
 {
-	BC_FontEntry *entry, *style_match;
+	BC_FontEntry *entry, *style_match, *preferred_match;
 
 	if(!fontlist)
 		return 0;
+
+	style_match = 0;
+	preferred_match = 0;
 
 	if(displayname)
 	{
@@ -888,14 +892,26 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 
 			if(strcmp(entry->displayname, displayname) == 0 &&
 					STYLE_MATCH(entry->style, style, mask))
-				return entry;
+			{
+				if(!style_match)
+					style_match = entry;
+				if(!preferred_match && (entry->style & preferred))
+					preferred_match = entry;
+			}
 		}
+		if(preferred_match)
+			return preferred_match;
+
+		if(style_match)
+			return style_match;
 	}
 
 // No exact match - assume normal width font
 	style |= FL_WIDTH_NORMAL;
 	mask |= FL_WIDTH_MASK;
 	style_match = 0;
+	preferred_match = 0;
+
 	for(int i = 0; i < fontlist->total; i++)
 	{
 		entry = fontlist->values[i];
@@ -905,11 +921,18 @@ BC_FontEntry *BC_Resources::find_fontentry(const char *displayname, int style, i
 			if(!style_match)
 				style_match = entry;
 
+			if(!preferred_match && (entry->style & preferred))
+				preferred_match = entry;
+
 			if(!strncasecmp(displayname, entry->family,
 					strlen(entry->family)))
 				return entry;
 		}
 	}
+
+	if(preferred_match)
+		return preferred_match;
+
 	return style_match;
 }
 

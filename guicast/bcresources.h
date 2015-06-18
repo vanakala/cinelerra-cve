@@ -293,7 +293,8 @@ public:
 	static const char *wide_encoding;
 	static ArrayList<BC_FontEntry*> *fontlist;
 	static int init_fontconfig(const char *search_path, int options = 0);
-	static BC_FontEntry *find_fontentry(const char *displayname, int style, int mask);
+	static BC_FontEntry *find_fontentry(const char *displayname, int style,
+		int mask, int preferred_style = 0);
 	static FcPattern* find_similar_font(FT_ULong char_code, FcPattern *oldfont);
 	static size_t encode(const char *from_enc, const char *to_enc,
 		char *input, char *output, int output_length, int input_length = -1);

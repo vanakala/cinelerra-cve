@@ -188,9 +188,10 @@ ArrayList<BC_FontEntry*> *PluginVClient::get_fontlist()
 	return BC_Resources::fontlist;
 }
 
-BC_FontEntry *PluginVClient::find_fontentry(const char *displayname, int style, int mask)
+BC_FontEntry *PluginVClient::find_fontentry(const char *displayname, int style,
+	int mask, int preferred_style)
 {
-	return BC_Resources::find_fontentry(displayname, style, mask);
+	return BC_Resources::find_fontentry(displayname, style, mask, preferred_style);
 }
 
 int PluginVClient::find_font_by_char(FT_ULong char_code, char *path_new, const FT_Face oldface)
