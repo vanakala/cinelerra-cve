@@ -1,8 +1,8 @@
 This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
-git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
+git clone git://git.cinelerra-cv.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of October 10, 2013
+This file describes status of this branch as of June 26, 2015
 
 Contents.
 
@@ -82,7 +82,11 @@ Changes in this branch:
 - removed the check of the value in /proc/sys/kernel/shmmax,
     modern distributions should have a reasonable default there
 - new overlay engine and resampler by Monty Montgomery
-- included Hermann Vosseler's Bezier Patch 
+- included Hermann Vosseler's Bezier Patch
+- implemented UTF-8 and locale support
+- freetype2/xft is the only font rendering system
+- using improved images for cinelerra logo and icon
+- new plugin: Blue Banana color grading/correction filter
 
 Known problems (todo list)
 - FileOGG: improve audio/video interleaving
