@@ -57,7 +57,7 @@ EXTRA_DIST = FUTURE HISTORY LGPL.txt pds_subband.c
 
 AM_CFLAGS = $(LARGEFILE_CFLAGS) \
 	-fomit-frame-pointer \
-	-DNDEBUG -DINLINE=inline -DNEWENCODE -DNEWATAN
+	-DNDEBUG -DINLINE= -DNEWENCODE -DNEWATAN
 
 libtoolame_la_LDFLAGS =  -lm
 
