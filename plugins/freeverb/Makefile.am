@@ -1,20 +1,19 @@
 plugin_LTLIBRARIES = freeverb.la
 freeverb_la_LDFLAGS = -avoid-version -module -shared 
 freeverb_la_LIBADD = 
-freeverb_la_SOURCES = Components/allpass.cpp Components/comb.cpp \
-		      Components/revmodel.cpp freeverb.C
+freeverb_la_SOURCES = allpass.cpp comb.cpp revmodel.cpp freeverb.C
 AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/quicktime -I$(srcdir)/Components -I$(top_srcdir)/include
+	-I$(top_srcdir)/quicktime -I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = \
-	Components/allpass.hpp \
-	Components/comb.hpp \
-	Components/denormals.h \
-	Components/revmodel.hpp \
-	Components/tuning.h
+	allpass.hpp \
+	comb.hpp \
+	denormals.h \
+	revmodel.hpp \
+	tuning.h
 
 EXTRA_DIST = picon.png
 BUILT_SOURCES = picon_png.h
