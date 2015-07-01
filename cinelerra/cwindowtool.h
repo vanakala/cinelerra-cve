@@ -277,11 +277,12 @@ private:
 };
 
 
-class CWindowCameraGUI : public CWindowToolGUI
+class CWindowCamProjGUI : public CWindowToolGUI
 {
 public:
-	CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread);
-	~CWindowCameraGUI();
+	CWindowCamProjGUI(MWindow *mwindow, CWindowTool *thread,
+		const char *tooltitle, int camera);
+	~CWindowCamProjGUI();
 
 	void update();
 	void update_preview();
@@ -289,12 +290,92 @@ public:
 // Update the keyframe from text boxes
 	int handle_event();
 
+	int is_camera;
 	CWindowCoord *x, *y, *z;
 
 private:
 // Toggles for keyframe tangent mode (projector automation only)
 	CWindowTangentToggle *t_smooth;
 	CWindowTangentToggle *t_linear;
+};
+
+
+class CWindowCameraGUI : public CWindowCamProjGUI
+{
+public:
+	CWindowCameraGUI(MWindow *mwindow, CWindowTool *thread);
+};
+
+class CWindowProjectorGUI : public CWindowCamProjGUI
+{
+public:
+	CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread);
+};
+
+class CWindowCPLeft : public BC_Button
+{
+public:
+	CWindowCPLeft(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowCamProjGUI *gui;
+};
+
+class CWindowCPCenter : public BC_Button
+{
+public:
+	CWindowCPCenter(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowCamProjGUI *gui;
+};
+
+class CWindowCPRight : public BC_Button
+{
+public:
+	CWindowCPRight(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowCamProjGUI *gui;
+};
+
+class CWindowCPTop : public BC_Button
+{
+public:
+	CWindowCPTop(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowCamProjGUI *gui;
+};
+
+class CWindowCPMiddle : public BC_Button
+{
+public:
+	CWindowCPMiddle(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowCamProjGUI *gui;
+};
+
+class CWindowCPBottom : public BC_Button
+{
+public:
+	CWindowCPBottom(MWindow *mwindow, CWindowCamProjGUI *gui, int x, int y);
+
+	int handle_event();
+
+	MWindow *mwindow;
+	CWindowCamProjGUI *gui;
 };
 
 class CWindowRulerGUI : public CWindowToolGUI
@@ -309,151 +390,6 @@ public:
 	BC_Title *point2;
 	BC_Title *distance;
 	BC_Title *angle;
-};
-
-class CWindowCameraLeft : public BC_Button
-{
-public:
-	CWindowCameraLeft(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowCameraGUI *gui;
-};
-
-class CWindowCameraCenter : public BC_Button
-{
-public:
-	CWindowCameraCenter(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowCameraGUI *gui;
-};
-
-class CWindowCameraRight : public BC_Button
-{
-public:
-	CWindowCameraRight(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	CWindowCameraGUI *gui;
-};
-
-class CWindowCameraTop : public BC_Button
-{
-public:
-	CWindowCameraTop(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowCameraGUI *gui;
-};
-
-class CWindowCameraMiddle : public BC_Button
-{
-public:
-	CWindowCameraMiddle(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowCameraGUI *gui;
-};
-
-class CWindowCameraBottom : public BC_Button
-{
-public:
-	CWindowCameraBottom(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowCameraGUI *gui;
-};
-
-class CWindowProjectorGUI : public CWindowToolGUI
-{
-public:
-	CWindowProjectorGUI(MWindow *mwindow, CWindowTool *thread);
-	~CWindowProjectorGUI();
-
-	void update();
-	void update_preview();
-	int handle_event();
-
-	CWindowCoord *x, *y, *z;
-private:
-// Toggles for keyframe tangent mode (projector automation only)
-	CWindowTangentToggle *t_smooth;
-	CWindowTangentToggle *t_linear;
-};
-
-class CWindowProjectorLeft : public BC_Button
-{
-public:
-	CWindowProjectorLeft(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowProjectorGUI *gui;
-};
-
-class CWindowProjectorCenter : public BC_Button
-{
-public:
-	CWindowProjectorCenter(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	CWindowProjectorGUI *gui;
-};
-
-class CWindowProjectorRight : public BC_Button
-{
-public:
-	CWindowProjectorRight(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowProjectorGUI *gui;
-};
-
-class CWindowProjectorTop : public BC_Button
-{
-public:
-	CWindowProjectorTop(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowProjectorGUI *gui;
-};
-
-class CWindowProjectorMiddle : public BC_Button
-{
-public:
-	CWindowProjectorMiddle(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowProjectorGUI *gui;
-};
-
-class CWindowProjectorBottom : public BC_Button
-{
-public:
-	CWindowProjectorBottom(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	CWindowProjectorGUI *gui;
 };
 
 #endif
