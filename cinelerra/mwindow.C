@@ -1362,6 +1362,7 @@ void MWindow::set_auto_keyframes(int value)
 	gui->unlock_window();
 	cwindow->gui->lock_window("MWindow::set_auto_keyframes");
 	cwindow->gui->edit_panel->keyframe->update(value);
+	cwindow->gui->update_tool();
 	cwindow->gui->flush();
 	cwindow->gui->unlock_window();
 }
