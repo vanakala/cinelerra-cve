@@ -161,8 +161,10 @@ void CWindowTool::run()
 	}
 }
 
-void CWindowTool::update_show_window()
+int CWindowTool::update_show_window()
 {
+	int ret = 0;
+
 	tool_gui_lock->lock("CWindowTool::update_show_window");
 	if(tool_gui)
 	{
@@ -170,13 +172,14 @@ void CWindowTool::update_show_window()
 		{
 			tool_gui->update();
 			tool_gui->show_window();
+			tool_gui->raise_window();
 		}
-		else
-			tool_gui->hide_window();
 
 		tool_gui->flush();
+		ret = 1;
 	}
 	tool_gui_lock->unlock();
+	return ret;
 }
 
 void CWindowTool::raise_window()

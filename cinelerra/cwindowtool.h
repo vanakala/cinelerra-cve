@@ -48,7 +48,7 @@ public:
 	void hide_tool();
 
 	void run();
-	void update_show_window();
+	int update_show_window();
 	void raise_window();
 	void update_values();
 

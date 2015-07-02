@@ -71,6 +71,14 @@ void CPanel::reposition_buttons(int x, int y)
 
 void CPanel::set_operation(int value)
 {
+	switch(value)
+	{
+	case CWINDOW_PROTECT:
+	case CWINDOW_ZOOM:
+		mwindow->edl->session->tool_window = 0;
+		break;
+	}
+
 	for(int i = 0; i < CPANEL_OPERATIONS; i++)
 	{
 		if(i == CWINDOW_TOOL_WINDOW)
@@ -241,8 +249,10 @@ CPanelToolWindow::CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y)
 
 int CPanelToolWindow::handle_event()
 {
-	mwindow->edl->session->tool_window = get_value();
-	gui->subwindow->tool_panel->update_show_window();
+	mwindow->edl->session->tool_window = 1;
+	mwindow->edl->session->tool_window =
+		gui->subwindow->tool_panel->update_show_window();
+	set_value(mwindow->edl->session->tool_window, 0);
 	return 1;
 }
 
