@@ -34,15 +34,12 @@ class PluginPopupShow;
 #include "plugindialog.inc"
 
 
-
 class PluginPopup : public BC_PopupMenu
 {
 public:
 	PluginPopup(MWindow *mwindow, MWindowGUI *gui);
-	~PluginPopup();
 
-	void create_objects();
-	int update(Plugin *plugin);
+	void update(Plugin *plugin);
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
@@ -55,11 +52,12 @@ public:
 	PluginPopupOn *on;
 };
 
-class PluginPopupAttach : public BC_MenuItem
+
+class PluginPopupChange : public BC_MenuItem
 {
 public:
-	PluginPopupAttach(MWindow *mwindow, PluginPopup *popup);
-	~PluginPopupAttach();
+	PluginPopupChange(MWindow *mwindow, PluginPopup *popup);
+	~PluginPopupChange();
 
 	int handle_event();
 
@@ -68,72 +66,64 @@ public:
 	PluginDialogThread *dialog_thread;
 };
 
-class PluginPopupChange : public BC_MenuItem
-{
-public:
-   PluginPopupChange(MWindow *mwindow, PluginPopup *popup);
-   ~PluginPopupChange();
-
-   int handle_event();
-
-   MWindow *mwindow;
-   PluginPopup *popup;
-   PluginDialogThread *dialog_thread;
-};
 
 class PluginPopupDetach : public BC_MenuItem
 {
 public:
 	PluginPopupDetach(MWindow *mwindow, PluginPopup *popup);
-	~PluginPopupDetach();
 
 	int handle_event();
 
 	MWindow *mwindow;
 	PluginPopup *popup;
 };
+
 
 class PluginPopupShow : public BC_MenuItem
 {
 public:
 	PluginPopupShow(MWindow *mwindow, PluginPopup *popup);
-	~PluginPopupShow();
 
 	int handle_event();
 
 	MWindow *mwindow;
 	PluginPopup *popup;
 };
+
 
 class PluginPopupOn : public BC_MenuItem
 {
 public:
 	PluginPopupOn(MWindow *mwindow, PluginPopup *popup);
-	~PluginPopupOn();
 
 	int handle_event();
 
 	MWindow *mwindow;
 	PluginPopup *popup;
 };
+
 
 class PluginPopupUp : public BC_MenuItem
 {
 public:
 	PluginPopupUp(MWindow *mwindow, PluginPopup *popup);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	PluginPopup *popup;
 };
+
 
 class PluginPopupDown : public BC_MenuItem
 {
 public:
 	PluginPopupDown(MWindow *mwindow, PluginPopup *popup);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	PluginPopup *popup;
 };
-
 
 #endif

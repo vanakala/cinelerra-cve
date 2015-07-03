@@ -208,7 +208,6 @@ SET_TRACE
 	edit_menu->create_objects();
 
 	add_subwindow(plugin_menu = new PluginPopup(mwindow, this));
-	plugin_menu->create_objects();
 
 	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, this));
 	keyframe_menu->create_objects();

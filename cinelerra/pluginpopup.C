@@ -20,6 +20,7 @@
  */
 
 #include "cinelerra.h"
+#include "bcsignals.h"
 #include "language.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -28,7 +29,6 @@
 #include "plugindialog.h"
 #include "pluginpopup.h"
 #include "track.h"
-
 
 
 PluginPopup::PluginPopup(MWindow *mwindow, MWindowGUI *gui)
@@ -40,14 +40,6 @@ PluginPopup::PluginPopup(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-}
-
-PluginPopup::~PluginPopup()
-{
-}
-
-void PluginPopup::create_objects()
-{
 	add_item(change = new PluginPopupChange(mwindow, this));
 	add_item(detach = new PluginPopupDetach(mwindow, this));
 	add_item(show = new PluginPopupShow(mwindow, this));
@@ -56,12 +48,11 @@ void PluginPopup::create_objects()
 	add_item(new PluginPopupDown(mwindow, this));
 }
 
-int PluginPopup::update(Plugin *plugin)
+void PluginPopup::update(Plugin *plugin)
 {
 	on->set_checked(plugin->on);
 	show->set_checked(plugin->show);
 	this->plugin = plugin;
-	return 0;
 }
 
 
@@ -83,6 +74,7 @@ int PluginPopupChange::handle_event()
 	dialog_thread->start_window(popup->plugin->track,
 		popup->plugin,
 		"Change Effect - " PROGRAM_NAME);
+	return 1;
 }
 
 
@@ -91,10 +83,6 @@ PluginPopupDetach::PluginPopupDetach(MWindow *mwindow, PluginPopup *popup)
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-
-PluginPopupDetach::~PluginPopupDetach()
-{
 }
 
 int PluginPopupDetach::handle_event()
@@ -117,10 +105,6 @@ PluginPopupShow::PluginPopupShow(MWindow *mwindow, PluginPopup *popup)
 	this->popup = popup;
 }
 
-PluginPopupShow::~PluginPopupShow()
-{
-}
-
 int PluginPopupShow::handle_event()
 {
 	mwindow->show_plugin(popup->plugin);
@@ -133,10 +117,6 @@ PluginPopupOn::PluginPopupOn(MWindow *mwindow, PluginPopup *popup)
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-
-PluginPopupOn::~PluginPopupOn()
-{
 }
 
 int PluginPopupOn::handle_event()
@@ -161,7 +141,6 @@ int PluginPopupUp::handle_event()
 	mwindow->move_plugins_up(popup->plugin->plugin_set);
 	return 1;
 }
-
 
 
 PluginPopupDown::PluginPopupDown(MWindow *mwindow, PluginPopup *popup)
