@@ -19,16 +19,16 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "mwindow.h"
 #include "plugin.h"
 #include "plugintoggles.h"
 #include "theme.h"
 
 
-
 PluginOn::PluginOn(MWindow *mwindow, int x, int y, Plugin *plugin)
  : BC_Toggle(x, 
- 		y, 
+		y,
 		mwindow->theme->get_image_set("plugin_on"),
 		plugin->on)
 {
@@ -59,11 +59,9 @@ int PluginOn::handle_event()
 }
 
 
-
-
 PluginShow::PluginShow(MWindow *mwindow, int x, int y, Plugin *plugin)
  : BC_Toggle(x, 
- 		y, 
+		y,
 		mwindow->theme->get_image_set("plugin_show"),
 		plugin->show)
 {
@@ -93,8 +91,3 @@ int PluginShow::handle_event()
 		mwindow->hide_plugin(plugin, 1);
 	return 1;
 }
-
-
-
-
-
