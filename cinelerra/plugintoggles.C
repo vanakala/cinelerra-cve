@@ -85,9 +85,7 @@ void PluginShow::update(int x, int y, Plugin *plugin)
 
 int PluginShow::handle_event()
 {
-	if(get_value()) 
-		mwindow->show_plugin(plugin);
-	else
-		mwindow->hide_plugin(plugin, 1);
+	mwindow->show_plugin(plugin);
+	BC_Toggle::set_value(plugin->show, 0);
 	return 1;
 }

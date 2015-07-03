@@ -99,7 +99,7 @@ int PluginPopupDetach::handle_event()
 
 
 PluginPopupShow::PluginPopupShow(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem(_("Show"))
+ : BC_MenuItem(_("Window"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -107,7 +107,11 @@ PluginPopupShow::PluginPopupShow(MWindow *mwindow, PluginPopup *popup)
 
 int PluginPopupShow::handle_event()
 {
-	mwindow->show_plugin(popup->plugin);
+	if(!get_checked())
+		mwindow->show_plugin(popup->plugin);
+	else
+		mwindow->hide_plugin(popup->plugin, 1);
+	mwindow->gui->update(WUPD_CANVINCR);
 	return 1;
 }
 
