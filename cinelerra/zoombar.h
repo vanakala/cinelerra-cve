@@ -54,7 +54,6 @@ public:
 	void update();          // redraw the current values
 	void update_autozoom();
 	void update_clocks();
-	void update_playback(posnum new_position);       // update the playback position
 	void set_selection(int which_one);
 	void update_formatting(BC_TextBox *dst);
 
@@ -67,12 +66,10 @@ public:
 	AutoTypeMenu *auto_type;
 	ZoomTextBox *auto_zoom_text;
 
-	BC_Title *zoom_value, *playback_value;
 	LengthTextBox *length_value;
 	FromTextBox *from_value;
 	ToTextBox *to_value;
 	char string[256], string2[256];
-	posnum old_position;
 };
 
 

@@ -48,7 +48,6 @@ ZoomBar::ZoomBar(MWindow *mwindow, MWindowGUI *gui)
 
 	this->gui = gui;
 	this->mwindow = mwindow;
-	old_position = 0;
 }
 
 ZoomBar::~ZoomBar()
@@ -103,10 +102,6 @@ void ZoomBar::create_objects()
 	update_formatting(from_value);
 	update_formatting(length_value);
 	update_formatting(to_value);
-
-	add_subwindow(playback_value = new BC_Title(x, 100, _("--"), MEDIUMFONT, RED));
-
-	add_subwindow(zoom_value = new BC_Title(x, 100, _("--"), MEDIUMFONT, BLACK));
 	update();
 }
 
@@ -188,21 +183,6 @@ void ZoomBar::update_clocks()
 	length_value->update_position(mwindow->edl->local_session->get_selectionend(1) - 
 		mwindow->edl->local_session->get_selectionstart(1));
 	to_value->update_position(mwindow->edl->local_session->get_selectionend(1));
-}
-
-void ZoomBar::update_playback(posnum new_position)
-{
-	if(new_position != old_position)
-	{
-		Units::totext(string, 
-				new_position, 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->time_format, 
-				mwindow->edl->session->frame_rate,
-				mwindow->edl->session->frames_per_foot);
-		playback_value->update(string);
-		old_position = new_position;
-	}
 }
 
 void ZoomBar::resize_event(int w, int h)
