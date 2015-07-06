@@ -213,7 +213,6 @@ SET_TRACE
 	keyframe_menu->create_objects();
 
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, this));
-	transition_menu->create_objects();
 
 	canvas->activate();
 SET_TRACE

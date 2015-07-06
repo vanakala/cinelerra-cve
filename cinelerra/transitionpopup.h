@@ -37,10 +37,9 @@ class TransitionLengthThread : public Thread
 {
 public:
 	TransitionLengthThread(MWindow *mwindow, TransitionPopup *popup);
-	~TransitionLengthThread();
 
 	void run();
-	
+
 	MWindow *mwindow;
 	TransitionPopup *popup;
 };
@@ -50,11 +49,7 @@ class TransitionLengthDialog : public BC_Window
 {
 public:
 	TransitionLengthDialog(MWindow *mwindow, Transition *transition);
-	~TransitionLengthDialog();
-	
-	void create_objects();
-	void close_event();
-	
+
 	MWindow *mwindow;
 	Transition *transition;
 	TransitionLengthText *text;
@@ -79,8 +74,7 @@ public:
 	TransitionPopup(MWindow *mwindow, MWindowGUI *gui);
 	~TransitionPopup();
 
-	void create_objects();
-	int update(Transition *transition);
+	void update(Transition *transition);
 
 // Acquired through the update command as the plugin currently being operated on
 	Transition *transition;
@@ -101,7 +95,6 @@ class TransitionPopupDetach : public BC_MenuItem
 {
 public:
 	TransitionPopupDetach(MWindow *mwindow, TransitionPopup *popup);
-	~TransitionPopupDetach();
 
 	int handle_event();
 	MWindow *mwindow;
@@ -112,7 +105,6 @@ class TransitionPopupShow : public BC_MenuItem
 {
 public:
 	TransitionPopupShow(MWindow *mwindow, TransitionPopup *popup);
-	~TransitionPopupShow();
 
 	int handle_event();
 	MWindow *mwindow;
@@ -123,7 +115,6 @@ class TransitionPopupOn : public BC_MenuItem
 {
 public:
 	TransitionPopupOn(MWindow *mwindow, TransitionPopup *popup);
-	~TransitionPopupOn();
 
 	int handle_event();
 	MWindow *mwindow;
@@ -134,7 +125,6 @@ class TransitionPopupLength : public BC_MenuItem
 {
 public:
 	TransitionPopupLength(MWindow *mwindow, TransitionPopup *popup);
-	~TransitionPopupLength();
 
 	int handle_event();
 	MWindow *mwindow;
