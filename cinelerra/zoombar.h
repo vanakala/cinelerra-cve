@@ -26,7 +26,6 @@ class FromTextBox;
 class LengthTextBox;
 class ToTextBox;
 
-
 class SampleZoomPanel;
 class AmpZoomPanel;
 class TrackZoomPanel;
@@ -40,22 +39,23 @@ class ZoomTextBox;
 #include "vframe.inc"
 #include "zoompanel.h"
 
+
 class ZoomBar : public BC_SubWindow
 {
 public:
 	ZoomBar(MWindow *mwindow, MWindowGUI *gui);
 	~ZoomBar();
 
-	int create_objects();
+	void create_objects();
 	void resize_event();
-	int draw();
+	void draw();
 	void resize_event(int w, int h);
 	void redraw_time_dependancies();
-	int update();          // redraw the current values
+	void update();          // redraw the current values
 	void update_autozoom();
-	int update_clocks();
-	int update_playback(posnum new_position);       // update the playback position
-	int set_selection(int which_one);
+	void update_clocks();
+	void update_playback(posnum new_position);       // update the playback position
+	void set_selection(int which_one);
 	void update_formatting(BC_TextBox *dst);
 
 	MWindow *mwindow;
@@ -75,37 +75,47 @@ public:
 	posnum old_position;
 };
 
+
 class SampleZoomPanel : public ZoomPanel
 {
 public:
 	SampleZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+
 	int handle_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
+
 
 class AmpZoomPanel : public ZoomPanel
 {
 public:
 	AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
+
 
 class TrackZoomPanel : public ZoomPanel
 {
 public:
 	TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+
 	int handle_event();
+
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
+
 
 class AutoZoom : public BC_Tumbler
 {
 public:
 	AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changemax);
+
 	void handle_up_event();
 	void handle_down_event();
 	MWindow *mwindow;
@@ -121,10 +131,11 @@ public:
 		ZoomBar *zoombar,
 		int x,
 		int y);
-	void create_objects();
-	static char* to_text(int shape);
-	static int from_text(char *text);
+
+	static const char* to_text(int shape);
+	static int from_text(const char *text);
 	int handle_event();
+
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
@@ -134,8 +145,10 @@ class ZoomTextBox : public BC_TextBox
 {
 public:
 	ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, const char *text);
+
 	int button_press_event();
 	int handle_event();
+
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
@@ -145,8 +158,10 @@ class FromTextBox : public BC_TextBox
 {
 public:
 	FromTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+
 	int handle_event();
-	int update_position(double new_position);
+	void update_position(double new_position);
+
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
@@ -156,8 +171,10 @@ class LengthTextBox : public BC_TextBox
 {
 public:
 	LengthTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+
 	int handle_event();
-	int update_position(double new_position);
+	void update_position(double new_position);
+
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
@@ -166,8 +183,9 @@ class ToTextBox : public BC_TextBox
 {
 public:
 	ToTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+
 	int handle_event();
-	int update_position(double new_position);
+	void update_position(double new_position);
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };

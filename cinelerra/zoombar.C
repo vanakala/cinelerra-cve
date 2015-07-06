@@ -39,14 +39,13 @@
 #include "zoombar.h"
 
 
-
-
 ZoomBar::ZoomBar(MWindow *mwindow, MWindowGUI *gui)
  : BC_SubWindow(mwindow->theme->mzoom_x,
 	mwindow->theme->mzoom_y,
 	mwindow->theme->mzoom_w,
 	mwindow->theme->mzoom_h) 
 {
+
 	this->gui = gui;
 	this->mwindow = mwindow;
 	old_position = 0;
@@ -59,7 +58,7 @@ ZoomBar::~ZoomBar()
 	delete track_zoom;
 }
 
-int ZoomBar::create_objects()
+void ZoomBar::create_objects()
 {
 	int x = 3;
 	int y = get_h() / 2 - 
@@ -78,9 +77,7 @@ int ZoomBar::create_objects()
 	track_zoom->zoom_text->set_tooltip(_("Height of tracks in the timeline"));
 	track_zoom->zoom_tumbler->set_tooltip(_("Height of tracks in the timeline"));
 	x += track_zoom->get_w() + 10;
-
 	add_subwindow(auto_type = new AutoTypeMenu(mwindow, this, x, y));
-	auto_type->create_objects();
 	x += auto_type->get_w() + 10;
 #define DEFAULT_TEXT "000.00 to 000.00"
 	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y, 0));
@@ -111,9 +108,7 @@ int ZoomBar::create_objects()
 
 	add_subwindow(zoom_value = new BC_Title(x, 100, _("--"), MEDIUMFONT, BLACK));
 	update();
-	return 0;
 }
-
 
 void ZoomBar::update_formatting(BC_TextBox *dst)
 {
@@ -147,10 +142,9 @@ void ZoomBar::redraw_time_dependancies()
 	update_clocks();
 }
 
-int ZoomBar::draw()
+void ZoomBar::draw()
 {
 	update();
-	return 0;
 }
 
 void ZoomBar::update_autozoom()
@@ -179,26 +173,24 @@ void ZoomBar::update_autozoom()
 	auto_zoom_text->update(string);
 }
 
-int ZoomBar::update()
+void ZoomBar::update()
 {
 	sample_zoom->update(mwindow->edl->local_session->zoom_time);
 	amp_zoom->update(mwindow->edl->local_session->zoom_y);
 	track_zoom->update(mwindow->edl->local_session->zoom_track);
 	update_autozoom();
 	update_clocks();
-	return 0;
 }
 
-int ZoomBar::update_clocks()
+void ZoomBar::update_clocks()
 {
 	from_value->update_position(mwindow->edl->local_session->get_selectionstart(1));
 	length_value->update_position(mwindow->edl->local_session->get_selectionend(1) - 
 		mwindow->edl->local_session->get_selectionstart(1));
 	to_value->update_position(mwindow->edl->local_session->get_selectionend(1));
-	return 0;
 }
 
-int ZoomBar::update_playback(posnum new_position)
+void ZoomBar::update_playback(posnum new_position)
 {
 	if(new_position != old_position)
 	{
@@ -211,7 +203,6 @@ int ZoomBar::update_playback(posnum new_position)
 		playback_value->update(string);
 		old_position = new_position;
 	}
-	return 0;
 }
 
 void ZoomBar::resize_event(int w, int h)
@@ -220,18 +211,16 @@ void ZoomBar::resize_event(int w, int h)
 	reposition_window(0, h - this->get_h(), w, this->get_h());
 }
 
-
 // Values for which_one
 #define SET_FROM 1
 #define SET_LENGTH 2
 #define SET_TO 3
 
-
-int ZoomBar::set_selection(int which_one)
+void ZoomBar::set_selection(int which_one)
 {
-	double start_position = mwindow->edl->local_session->get_selectionstart(1);
-	double end_position = mwindow->edl->local_session->get_selectionend(1);
-	double length = end_position - start_position;
+	ptstime start_position = mwindow->edl->local_session->get_selectionstart(1);
+	ptstime end_position = mwindow->edl->local_session->get_selectionend(1);
+	ptstime length = end_position - start_position;
 
 // Fix bogus results
 
@@ -304,15 +293,12 @@ int ZoomBar::set_selection(int which_one)
 	mwindow->edl->local_session->set_selectionend(
 		mwindow->edl->align_to_frame(end_position));
 
-
 	mwindow->gui->timebar->update_highlights();
 	mwindow->gui->cursor->hide();
 	mwindow->gui->cursor->show();
 	update();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->gui->canvas->flash();
-
-	return 0;
 }
 
 
@@ -368,6 +354,7 @@ int AmpZoomPanel::handle_event()
 	return 1;
 }
 
+
 TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
  : ZoomPanel(mwindow, 
 	zoombar, 
@@ -392,8 +379,6 @@ int TrackZoomPanel::handle_event()
 	zoombar->amp_zoom->update(mwindow->edl->local_session->zoom_y);
 	return 1;
 }
-
-
 
 
 AutoZoom::AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changemax)
@@ -431,17 +416,12 @@ void AutoZoom::handle_down_event()
 }
 
 
-
 AutoTypeMenu::AutoTypeMenu(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 	: BC_PopupMenu(x, y, 120,to_text(mwindow->edl->local_session->zoombar_showautotype), 1)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
 	set_tooltip(_("Automation Type"));
-}
-
-void AutoTypeMenu::create_objects()
-{
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_AUDIO_FADE)));
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_VIDEO_FADE)));
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_ZOOM)));
@@ -449,7 +429,7 @@ void AutoTypeMenu::create_objects()
 	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_Y)));
 }
 
-char* AutoTypeMenu::to_text(int mode)
+const char* AutoTypeMenu::to_text(int mode)
 {
 	switch(mode)
 	{
@@ -468,7 +448,7 @@ char* AutoTypeMenu::to_text(int mode)
 	}
 }
 
-int AutoTypeMenu::from_text(char *text)
+int AutoTypeMenu::from_text(const char *text)
 {
 	if(!strcmp(text, to_text(AUTOGROUPTYPE_AUDIO_FADE)))
 		return AUTOGROUPTYPE_AUDIO_FADE;
@@ -486,6 +466,7 @@ int AutoTypeMenu::handle_event()
 {
 	mwindow->edl->local_session->zoombar_showautotype = from_text(this->get_text());
 	this->zoombar->update_autozoom();
+	return 1;
 }
 
 
@@ -527,6 +508,7 @@ int ZoomTextBox::button_press_event()
 int ZoomTextBox::handle_event()
 {
 	float min, max;
+
 	if (sscanf(this->get_text(),"%f to%f",&min, &max) == 2)
 	{
 		AUTOMATIONVIEWCLAMPS(min, mwindow->edl->local_session->zoombar_showautotype);
@@ -542,7 +524,7 @@ int ZoomTextBox::handle_event()
 		}
 	}
 	// TODO: Make the text turn red when it's a bad range..
-	return 0;
+	return 1;
 }
 
 
@@ -564,7 +546,7 @@ int FromTextBox::handle_event()
 	return 0;
 }
 
-int FromTextBox::update_position(double new_position)
+void FromTextBox::update_position(double new_position)
 {
 	char string[256];
 
@@ -577,7 +559,6 @@ int FromTextBox::update_position(double new_position)
 		mwindow->edl->session->frame_rate,
 		mwindow->edl->session->frames_per_foot);
 	update(string);
-	return 0;
 }
 
 
@@ -599,7 +580,7 @@ int LengthTextBox::handle_event()
 	return 0;
 }
 
-int LengthTextBox::update_position(double new_position)
+void LengthTextBox::update_position(double new_position)
 {
 	char string[256];
 
@@ -610,7 +591,6 @@ int LengthTextBox::update_position(double new_position)
 		mwindow->edl->session->frame_rate,
 		mwindow->edl->session->frames_per_foot);
 	update(string);
-	return 0;
 }
 
 
@@ -632,7 +612,7 @@ int ToTextBox::handle_event()
 	return 0;
 }
 
-int ToTextBox::update_position(double new_position)
+void ToTextBox::update_position(double new_position)
 {
 	char string[256];
 
@@ -645,5 +625,4 @@ int ToTextBox::update_position(double new_position)
 		mwindow->edl->session->frame_rate,
 		mwindow->edl->session->frames_per_foot);
 	update(string);
-	return 0;
 }
