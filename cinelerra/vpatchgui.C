@@ -142,7 +142,6 @@ int VPatchGUI::update(int x, int y)
 			this, 
 			x1 + x, 
 			y1 + y));
-		mode->create_objects();
 		x1 += mode->get_w() + 10;
 		patchbay->add_subwindow(nudge = new NudgePatch(mwindow,
 			this,
@@ -252,6 +251,13 @@ VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
 	this->mode = get_keyframe_value(mwindow, patch);
 	set_icon(patch->patchbay->mode_to_icon(this->mode));
 	set_tooltip("Overlay mode");
+	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_NORMAL), TRANSFER_NORMAL));
+	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_ADDITION), TRANSFER_ADDITION));
+	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_SUBTRACT), TRANSFER_SUBTRACT));
+	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MULTIPLY), TRANSFER_MULTIPLY));
+	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_DIVIDE), TRANSFER_DIVIDE));
+	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_REPLACE), TRANSFER_REPLACE));
+	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MAX), TRANSFER_MAX));
 }
 
 int VModePatch::handle_event()
@@ -288,17 +294,6 @@ int VModePatch::get_keyframe_value(MWindow *mwindow, VPatchGUI *patch)
 
 	return ((IntAutos*)patch->vtrack->automation->autos[AUTOMATION_MODE])->get_value(
 		unit_position);
-}
-
-void VModePatch::create_objects()
-{
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_NORMAL), TRANSFER_NORMAL));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_ADDITION), TRANSFER_ADDITION));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_SUBTRACT), TRANSFER_SUBTRACT));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MULTIPLY), TRANSFER_MULTIPLY));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_DIVIDE), TRANSFER_DIVIDE));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_REPLACE), TRANSFER_REPLACE));
-	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MAX), TRANSFER_MAX));
 }
 
 void VModePatch::update(int mode)

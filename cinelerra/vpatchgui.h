@@ -68,7 +68,6 @@ public:
 	VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y);
 
 	int handle_event();
-	void create_objects();         // add initial items
 	static const char* mode_to_text(int mode);
 	static int get_keyframe_value(MWindow *mwindow, VPatchGUI *patch);
 	void update(int mode);
