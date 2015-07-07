@@ -28,7 +28,6 @@
 #include <unistd.h>
 
 
-
 SplashGUI::SplashGUI(VFrame *bg, int x, int y)
  : BC_Window("Loading - " PROGRAM_NAME,
 		x,
@@ -45,16 +44,6 @@ SplashGUI::SplashGUI(VFrame *bg, int x, int y)
 		0,
 		WINDOW_SPLASH)
 {
-	this->bg = bg;
-}
-
-SplashGUI::~SplashGUI()
-{
-	delete bg;
-}
-
-void SplashGUI::create_objects()
-{
 	draw_vframe(bg, 0, 0);
 	flash();
 	show_window();
@@ -69,5 +58,3 @@ void SplashGUI::create_objects()
 			progress->get_y() - get_text_height(MEDIUMFONT) - 5,
 			_("Loading...")));
 }
-
-

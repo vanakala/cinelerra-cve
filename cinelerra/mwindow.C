@@ -1240,7 +1240,7 @@ void MWindow::show_splash()
 	splash_window = new SplashGUI(frame, 
 		root_w / 2 - frame->get_w() / 2,
 		root_h / 2 - frame->get_h() / 2);
-	splash_window->create_objects();
+	delete frame;
 }
 
 void MWindow::hide_splash()
