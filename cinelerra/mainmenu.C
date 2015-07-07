@@ -95,7 +95,7 @@ int MainMenu::create_objects()
 	filemenu->add_item(save = new Save(mwindow));
 	SaveAs *saveas;
 	filemenu->add_item(saveas = new SaveAs(mwindow));
-	save->create_objects(saveas);
+	save->set_saveas(saveas);
 	saveas->set_mainmenu(this);
 /* FIXIT - disabled: currentily recording is broken
 	filemenu->add_item(record = new RecordMenuItem(mwindow));

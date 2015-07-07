@@ -39,8 +39,6 @@
 #include <string.h>
 
 
-
-
 SaveBackup::SaveBackup(MWindow *mwindow)
  : BC_MenuItem(_("Save backup"))
 {
@@ -55,17 +53,15 @@ int SaveBackup::handle_event()
 }
 
 
-
 Save::Save(MWindow *mwindow) : BC_MenuItem(_("Save"), "s", 's')
 { 
 	this->mwindow = mwindow; 
 	quit_now = 0; 
 }
 
-int Save::create_objects(SaveAs *saveas)
+void Save::set_saveas(SaveAs *saveas)
 {
 	this->saveas = saveas;
-	return 0;
 }
 
 int Save::handle_event()
@@ -100,11 +96,10 @@ int Save::handle_event()
 	return 1;
 }
 
-int Save::save_before_quit()
+void Save::save_before_quit()
 {
 	saveas->quit_now = 1;
 	handle_event();
-	return 0;
 }
 
 SaveAs::SaveAs(MWindow *mwindow)
@@ -114,10 +109,9 @@ SaveAs::SaveAs(MWindow *mwindow)
 	quit_now = 0;
 }
 
-int SaveAs::set_mainmenu(MainMenu *mmenu)
+void SaveAs::set_mainmenu(MainMenu *mmenu)
 {
 	this->mmenu = mmenu;
-	return 0;
 }
 
 int SaveAs::handle_event() 
@@ -181,13 +175,11 @@ void SaveAs::run()
 		mwindow->gui->unlock_window();
 	}
 
-
 	mwindow->session->changes_made = 0;
 	mmenu->add_load(filename);
 	if(quit_now) mwindow->playback_3d->quit();
 	return;
 }
-
 
 
 SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
@@ -200,8 +192,3 @@ SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
 	this->mwindow = mwindow; 
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 }
-
-SaveFileWindow::~SaveFileWindow() 
-{
-}
-

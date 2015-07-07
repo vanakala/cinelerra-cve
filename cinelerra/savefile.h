@@ -31,6 +31,7 @@ class SaveBackup : public BC_MenuItem
 {
 public:
 	SaveBackup(MWindow *mwindow);
+
 	int handle_event();
 	MWindow *mwindow;
 };
@@ -39,9 +40,10 @@ class Save : public BC_MenuItem
 {
 public:
 	Save(MWindow *mwindow);
+
 	int handle_event();
-	int create_objects(SaveAs *saveas);
-	int save_before_quit();
+	void set_saveas(SaveAs *saveas);
+	void save_before_quit();
 
 	int quit_now;
 	MWindow *mwindow;
@@ -52,7 +54,8 @@ class SaveAs : public BC_MenuItem, public Thread
 {
 public:
 	SaveAs(MWindow *mwindow);
-	int set_mainmenu(MainMenu *mmenu);
+
+	void set_mainmenu(MainMenu *mmenu);
 	int handle_event();
 	void run();
 
@@ -65,7 +68,7 @@ class SaveFileWindow : public BC_FileBox
 {
 public:
 	SaveFileWindow(MWindow *mwindow, char *init_directory);
-	~SaveFileWindow();
+
 	MWindow *mwindow;
 };
 
