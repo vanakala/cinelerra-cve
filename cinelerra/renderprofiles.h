@@ -33,6 +33,7 @@ class RenderProfileItem : public BC_ListBoxItem
 {
 public:
 	RenderProfileItem(const char *text, int value);
+
 	int value;
 };
 
@@ -40,6 +41,7 @@ class SaveRenderProfileButton : public BC_GenericButton
 {
 public:
 	SaveRenderProfileButton(RenderProfile *profile, int x, int y);
+
 	int handle_event();
 	RenderProfile *profile;
 };
@@ -48,10 +50,10 @@ class DeleteRenderProfileButton : public BC_GenericButton
 {
 public:
 	DeleteRenderProfileButton(RenderProfile *profile, int x, int y);
+
 	int handle_event();
 	RenderProfile *profile;
 };
-
 
 
 class RenderProfile
@@ -64,8 +66,7 @@ public:
 		int use_nothing);
 	~RenderProfile();
 
-	int create_objects();
-	int reposition_window(int x, int y);
+	void reposition_window(int x, int y);
 	static int calculate_h(BC_WindowBase *gui);
 	int get_h();
 	int get_x();
@@ -73,20 +74,15 @@ public:
 
 	int get_profile_slot_by_name(const char *profile_name);
 	int get_new_profile_slot();
-	int save_to_slot(int profile_slot, const char *profile_name);
-	
+	void save_to_slot(int profile_slot, const char *profile_name);
+
 	BC_Title *title;
 	BC_TextBox *textbox;
 	RenderProfileListBox *listbox;
 	SaveRenderProfileButton *saveprofile;
 	DeleteRenderProfileButton *deleteprofile;
-
-
-
 	MWindow *mwindow;
-	
 	RenderWindow *rwindow;
-
 	int x;
 	int y;
 	int *output;
@@ -98,7 +94,6 @@ class RenderProfileListBox : public BC_ListBox
 {
 public:
 	RenderProfileListBox(BC_WindowBase *window, RenderProfile *renderprofile, int x, int y);
-	~RenderProfileListBox();
 
 	int handle_event();
 

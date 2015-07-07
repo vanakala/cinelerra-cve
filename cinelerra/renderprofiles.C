@@ -28,12 +28,9 @@
 #include "render.h"
 #include "asset.h"
 #include "mainerror.h"
+#include "language.h"
 #include "mwindowgui.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 #define LISTWIDTH 200
 
@@ -64,24 +61,7 @@ RenderProfile::RenderProfile(MWindow *mwindow,
 		if (strlen(name) != 0)
 			profiles.append(new RenderProfileItem(name, i));
 	}
-}
 
-RenderProfile::~RenderProfile()
-{
-	for(int i = 0; i < profiles.total; i++)
-		delete profiles.values[i];
-}
-
-
-
-int RenderProfile::calculate_h(BC_WindowBase *gui)
-{
-	return BC_TextBox::calculate_h(gui, MEDIUMFONT, 1, 1);
-}
-
-int RenderProfile::create_objects()
-{
-	int x = this->x, y = this->y;
 	const char *default_text = "";
 	rwindow->add_subwindow(new BC_Title(x, 
 		y, 
@@ -107,8 +87,17 @@ int RenderProfile::create_objects()
 	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this, 
 		x, 
 		y));
+}
 
-	return 0;
+RenderProfile::~RenderProfile()
+{
+	for(int i = 0; i < profiles.total; i++)
+		delete profiles.values[i];
+}
+
+int RenderProfile::calculate_h(BC_WindowBase *gui)
+{
+	return BC_TextBox::calculate_h(gui, MEDIUMFONT, 1, 1);
 }
 
 int RenderProfile::get_h()
@@ -129,7 +118,7 @@ int RenderProfile::get_y()
 	return y;
 }
 
-int RenderProfile::reposition_window(int x, int y)
+void RenderProfile::reposition_window(int x, int y)
 {
 	this->x = x;
 	this->y = y;
@@ -140,7 +129,6 @@ int RenderProfile::reposition_window(int x, int y)
 	listbox->reposition_window(x, 
 		y, 
 		LISTWIDTH);
-	return 0;
 }
 
 
@@ -159,10 +147,6 @@ RenderProfileListBox::RenderProfileListBox(BC_WindowBase *window,
 	this->renderprofile = renderprofile;
 }
 
-RenderProfileListBox::~RenderProfileListBox()
-{
-}
-
 int RenderProfileListBox::handle_event()
 {
 	if(get_selection(0, 0) >= 0)
@@ -172,6 +156,7 @@ int RenderProfileListBox::handle_event()
 	}
 	return 1;
 }
+
 
 int RenderProfile::get_profile_slot_by_name(const char * profile_name)
 {
@@ -203,8 +188,7 @@ int RenderProfile::get_new_profile_slot()
 	return -1;
 }
 
-
-int RenderProfile::save_to_slot(int profile_slot, const char *profile_name)
+void RenderProfile::save_to_slot(int profile_slot, const char *profile_name)
 {
 	char string_name[100];
 	sprintf(string_name, "RENDER_%i_PROFILE_NAME", profile_slot);
@@ -227,9 +211,7 @@ int RenderProfile::save_to_slot(int profile_slot, const char *profile_name)
 		1);
 
 	mwindow->save_defaults();
-	return 0;
 }
-
 
 
 SaveRenderProfileButton::SaveRenderProfileButton(RenderProfile *profile, int x, int y)
@@ -252,7 +234,6 @@ int SaveRenderProfileButton::handle_event()
 			errorbox("Maximum number of render profiles reached");
 			return 1;
 		}
-		
 		profile->profiles.append(new RenderProfileItem(profile_name, slot));
 		profile->listbox->update((ArrayList<BC_ListBoxItem *>*)&(profile->profiles), 0, 0, 1);
 	}

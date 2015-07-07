@@ -995,7 +995,7 @@ void RenderWindow::create_objects()
 	x = 5;
 
 	renderprofile = new RenderProfile(mwindow, this, x, y, 1);
-	renderprofile->create_objects();
+
 	y += 70;
 	loadmode = new LoadMode(mwindow, this, x, y, &render->load_mode, 1);
 	loadmode->create_objects();
