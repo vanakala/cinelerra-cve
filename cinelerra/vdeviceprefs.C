@@ -58,7 +58,6 @@ VDevicePrefs::VDevicePrefs(int x,
 	this->y = y;
 	menu = 0;
 	reset_objects();
-
 }
 
 VDevicePrefs::~VDevicePrefs()
@@ -84,7 +83,7 @@ void VDevicePrefs::reset_objects()
 	channel_picker = 0;
 }
 
-int VDevicePrefs::initialize(int creation)
+void VDevicePrefs::initialize(int creation)
 {
 	int *driver = 0;
 	delete_objects();
@@ -108,7 +107,6 @@ int VDevicePrefs::initialize(int creation)
 			this, 
 			(mode == MODERECORD), 
 			driver));
-		menu->create_objects();
 	}
 
 	switch(this->driver)
@@ -136,18 +134,15 @@ int VDevicePrefs::initialize(int creation)
 		break;
 	}
 
-
 // Update driver dependancies in file format
 	if(mode == MODERECORD && dialog && !creation)
 	{
 		RecordPrefs *record_prefs = (RecordPrefs*)dialog;
 		record_prefs->recording_format->update_driver(this->driver);
 	}
-
-	return 0;
 }
 
-int VDevicePrefs::delete_objects()
+void VDevicePrefs::delete_objects()
 {
 	delete output_title;
 	delete channel_picker;
@@ -163,10 +158,9 @@ int VDevicePrefs::delete_objects()
 
 	reset_objects();
 	driver = -1;
-	return 0;
 }
 
-int VDevicePrefs::create_dvb_objs()
+void VDevicePrefs::create_dvb_objs()
 {
 	int x1 = x + menu->get_w() + 5;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Host:")));
@@ -179,7 +173,7 @@ int VDevicePrefs::create_dvb_objs()
 	device_number = new VDeviceTumbleBox(this, x1, y + 20,  &in_config->dvb_in_number, 0, 16);
 }
 
-int VDevicePrefs::create_v4l_objs()
+void VDevicePrefs::create_v4l_objs()
 {
 	char *output_char;
 	BC_Resources *resources = BC_WindowBase::get_resources();
@@ -187,10 +181,9 @@ int VDevicePrefs::create_v4l_objs()
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l_in_device;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-	return 0;
 }
 
-int VDevicePrefs::create_v4l2_objs()
+void VDevicePrefs::create_v4l2_objs()
 {
 	char *output_char;
 	BC_Resources *resources = BC_WindowBase::get_resources();
@@ -198,11 +191,9 @@ int VDevicePrefs::create_v4l2_objs()
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2_in_device;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-
-	return 0;
 }
 
-int VDevicePrefs::create_v4l2jpeg_objs()
+void VDevicePrefs::create_v4l2jpeg_objs()
 {
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	char *output_char;
@@ -210,13 +201,9 @@ int VDevicePrefs::create_v4l2jpeg_objs()
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_device;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-
-	return 0;
 }
 
-
-
-int VDevicePrefs::create_screencap_objs()
+void VDevicePrefs::create_screencap_objs()
 {
 	char *output_char;
 	BC_Resources *resources = BC_WindowBase::get_resources();
@@ -224,10 +211,9 @@ int VDevicePrefs::create_screencap_objs()
 	output_char = pwindow->thread->edl->session->vconfig_in->screencapture_display;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-	return 0;
 }
 
-int VDevicePrefs::create_x11_objs()
+void VDevicePrefs::create_x11_objs()
 {
 	char *output_char;
 	BC_Resources *resources = BC_WindowBase::get_resources();
@@ -235,7 +221,6 @@ int VDevicePrefs::create_x11_objs()
 	output_char = out_config->x11_host;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display for compositor:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-	return 0;
 }
 
 
@@ -249,10 +234,29 @@ VDriverMenu::VDriverMenu(int x,
 	this->output = output;
 	this->do_input = do_input;
 	this->device_prefs = device_prefs;
-}
 
-VDriverMenu::~VDriverMenu()
-{
+	if(do_input)
+	{
+#ifdef HAVE_VIDEO4LINUX
+		add_item(new VDriverItem(this, VIDEO4LINUX_TITLE, VIDEO4LINUX));
+#endif
+#ifdef HAVE_VIDEO4LINUX2
+		add_item(new VDriverItem(this, VIDEO4LINUX2_TITLE, VIDEO4LINUX2));
+		add_item(new VDriverItem(this, VIDEO4LINUX2JPEG_TITLE, VIDEO4LINUX2JPEG));
+#endif
+		add_item(new VDriverItem(this, SCREENCAPTURE_TITLE, SCREENCAPTURE));
+		add_item(new VDriverItem(this, CAPTURE_DVB_TITLE, CAPTURE_DVB));
+	}
+	else
+	{
+		add_item(new VDriverItem(this, PLAYBACK_X11_TITLE, PLAYBACK_X11));
+		add_item(new VDriverItem(this, PLAYBACK_X11_XV_TITLE, PLAYBACK_X11_XV));
+#ifdef HAVE_GL
+// Check runtime glx version. pbuffer needs >= 1.3
+		if(get_opengl_version() >= 103)
+			add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
+#endif
+	}
 }
 
 const char* VDriverMenu::driver_to_string(int driver)
@@ -290,43 +294,12 @@ const char* VDriverMenu::driver_to_string(int driver)
 	return sp;
 }
 
-int VDriverMenu::create_objects()
-{
-	if(do_input)
-	{
-#ifdef HAVE_VIDEO4LINUX
-		add_item(new VDriverItem(this, VIDEO4LINUX_TITLE, VIDEO4LINUX));
-#endif
-#ifdef HAVE_VIDEO4LINUX2
-		add_item(new VDriverItem(this, VIDEO4LINUX2_TITLE, VIDEO4LINUX2));
-		add_item(new VDriverItem(this, VIDEO4LINUX2JPEG_TITLE, VIDEO4LINUX2JPEG));
-#endif
-		add_item(new VDriverItem(this, SCREENCAPTURE_TITLE, SCREENCAPTURE));
-		add_item(new VDriverItem(this, CAPTURE_DVB_TITLE, CAPTURE_DVB));
-	}
-	else
-	{
-		add_item(new VDriverItem(this, PLAYBACK_X11_TITLE, PLAYBACK_X11));
-		add_item(new VDriverItem(this, PLAYBACK_X11_XV_TITLE, PLAYBACK_X11_XV));
-#ifdef HAVE_GL
-// Check runtime glx version. pbuffer needs >= 1.3
-		if(get_opengl_version() >= 103)
-			add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
-#endif
-	}
-	return 0;
-}
-
 
 VDriverItem::VDriverItem(VDriverMenu *popup, const char *text, int driver)
  : BC_MenuItem(text)
 {
 	this->popup = popup;
 	this->driver = driver;
-}
-
-VDriverItem::~VDriverItem()
-{
 }
 
 int VDriverItem::handle_event()
@@ -336,8 +309,6 @@ int VDriverItem::handle_event()
 	popup->device_prefs->initialize();
 	return 1;
 }
-
-
 
 
 VDeviceTextBox::VDeviceTextBox(int x, int y, char *output)
@@ -350,6 +321,7 @@ int VDeviceTextBox::handle_event()
 { 
 	strcpy(output, get_text()); 
 }
+
 
 VDeviceTumbleBox::VDeviceTumbleBox(VDevicePrefs *prefs, 
 	int x, 
@@ -393,6 +365,7 @@ VDeviceCheckBox::VDeviceCheckBox(int x, int y, int *output, const char *text)
 {
 	this->output = output;
 }
+
 int VDeviceCheckBox::handle_event()
 {
 	*output = get_value();

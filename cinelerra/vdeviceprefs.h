@@ -57,8 +57,8 @@ public:
 
 // creation - set if this is the first initialize of the object
 //            to prevent file format from being overwritten
-	int initialize(int creation = 0);
-	int delete_objects();
+	void initialize(int creation = 0);
+	void delete_objects();
 	void reset_objects();
 
 	PreferencesWindow *pwindow;
@@ -68,12 +68,12 @@ public:
 	PrefsChannelPicker *channel_picker;
 
 private:
-	int create_v4l_objs();
-	int create_v4l2_objs();
-	int create_v4l2jpeg_objs();
-	int create_screencap_objs();
-	int create_x11_objs();
-	int create_dvb_objs();
+	void create_v4l_objs();
+	void create_v4l2_objs();
+	void create_v4l2jpeg_objs();
+	void create_screencap_objs();
+	void create_x11_objs();
+	void create_dvb_objs();
 
 	VDriverMenu *menu;
 
@@ -96,6 +96,7 @@ public:
 	VDeviceTextBox(int x, int y, char *output);
 
 	int handle_event();
+
 	char *output;
 };
 
@@ -140,11 +141,9 @@ public:
 		VDevicePrefs *device_prefs, 
 		int do_input, 
 		int *output);
-	~VDriverMenu();
-	
+
 	const char* driver_to_string(int driver);
-	int create_objects();
-	
+
 	VDevicePrefs *device_prefs;
 	int do_input;
 	int *output;
@@ -156,14 +155,11 @@ class VDriverItem : public BC_MenuItem
 {
 public:
 	VDriverItem(VDriverMenu *popup, const char *text, int driver);
-	~VDriverItem();
-	
+
 	int handle_event();
 
 	VDriverMenu *popup;
 	int driver;
 };
-
-
 
 #endif
