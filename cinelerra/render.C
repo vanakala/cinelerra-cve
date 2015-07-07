@@ -77,7 +77,6 @@
 #include <string.h>
 
 
-
 RenderItem::RenderItem(MWindow *mwindow)
  : BC_MenuItem(_("Render..."), "Shift+R", 'R')
 {
@@ -106,7 +105,6 @@ RenderProgress::~RenderProgress()
 	Thread::join();
 }
 
-
 void RenderProgress::run()
 {
 	Thread::disable_cancel();
@@ -130,12 +128,6 @@ MainPackageRenderer::MainPackageRenderer(Render *render)
 {
 	this->render = render;
 }
-
-
-MainPackageRenderer::~MainPackageRenderer()
-{
-}
-
 
 int MainPackageRenderer::get_master()
 {
@@ -189,7 +181,6 @@ void MainPackageRenderer::set_progress(ptstime value)
 			render->last_eta = current_eta;
 		}
 	}
-
 	render->counter_lock->unlock();
 }
 
@@ -198,8 +189,6 @@ int MainPackageRenderer::progress_cancelled()
 	return (render->progress && render->progress->is_cancelled()) || 
 		render->batch_cancelled;
 }
-
-
 
 
 Render::Render(MWindow *mwindow)
@@ -289,7 +278,6 @@ void Render::stop_operation()
 	}
 }
 
-
 void Render::run()
 {
 	int format_error;
@@ -299,7 +287,6 @@ void Render::run()
 	if(mode == Render::INTERACTIVE)
 	{
 // Fix the asset for rendering
-
 		Asset *asset = new Asset;
 		load_defaults(asset);
 		check_asset(mwindow->edl, *asset);
@@ -313,9 +300,9 @@ void Render::run()
 				result = 0;
 				{
 					RenderWindow window(mwindow, this, asset);
-					window.create_objects();
 					result = window.run_window();
-					if (! result) {
+					if (!result)
+					{
 						// add to recentlist only on OK
 						window.format_tools->path_recent->add_item(FILE_FORMAT_PREFIX(asset->format), asset->path);
 					}
@@ -329,7 +316,6 @@ void Render::run()
 				}
 			}while(format_error && !result);
 		}
-
 		save_defaults(asset);
 		mwindow->save_defaults();
 
@@ -360,7 +346,6 @@ void Render::run()
 				{
 					printf("Render::run: %s\n", job->edl_path);
 				}
-
 
 				FileXML *file = new FileXML;
 				EDL *edl = new EDL;
@@ -418,7 +403,6 @@ void Render::run()
 		}
 	}
 }
-
 
 int Render::check_asset(EDL *edl, Asset &asset)
 {
@@ -538,8 +522,6 @@ void Render::stop_progress()
 	}
 	progress = 0;
 }
-
-
 
 int Render::render(int test_overwrite, 
 	Asset *asset,
@@ -700,7 +682,6 @@ int Render::render(int test_overwrite,
 				package = packages->get_package(frames_per_second, -1, 1);
 			else
 				package = packages->get_package(0, -1, 1);
-
 // Exit point
 			if(!package) 
 			{
@@ -728,7 +709,6 @@ int Render::render(int test_overwrite,
 		if(result && (!progress || !progress->is_cancelled()) &&
 				!batch_cancelled)
 			errorbox(_("Error rendering data."));
-
 // Delete the progress box
 		stop_progress();
 	}
@@ -784,7 +764,6 @@ int Render::render(int test_overwrite,
 	completion->unlock();
 	return result;
 }
-
 
 void Render::create_filename(char *path, 
 	char *default_path, 
@@ -861,7 +840,6 @@ void Render::get_starting_number(char *path,
 	}
 }
 
-
 void Render::load_defaults(Asset *asset)
 {
 	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
@@ -885,7 +863,6 @@ void Render::load_profile(int profile_slot, Asset *asset)
 
 	sprintf(string_name, "RENDER_%i_RANGE_TYPE", profile_slot);
 	range_type = mwindow->defaults->get(string_name, RANGE_PROJECT);
-
 
 	sprintf(string_name, "RENDER_%i_", profile_slot);
 	asset->load_defaults(mwindow->defaults, 
@@ -912,7 +889,6 @@ void Render::save_defaults(Asset *asset)
 		1);
 }
 
-
 #define WIDTH 410
 #define HEIGHT 455
 
@@ -928,29 +904,11 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 	0,
 	1)
 {
+	int x = 5, y = 5;
+
 	this->mwindow = mwindow;
 	this->render = render;
 	this->asset = asset;
-}
-
-RenderWindow::~RenderWindow()
-{
-	delete format_tools;
-	delete loadmode;
-}
-
-
-void RenderWindow::load_profile(int profile_slot)
-{
-	render->load_profile(profile_slot, asset);
-	update_range_type(render->range_type);
-	format_tools->update(asset, &render->strategy);
-}
-
-
-void RenderWindow::create_objects()
-{
-	int x = 5, y = 5;
 
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	add_subwindow(new BC_Title(x, 
@@ -1000,11 +958,22 @@ void RenderWindow::create_objects()
 	loadmode = new LoadMode(mwindow, this, x, y, &render->load_mode, 1);
 	loadmode->create_objects();
 
-
-
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
+}
+
+RenderWindow::~RenderWindow()
+{
+	delete format_tools;
+	delete loadmode;
+}
+
+void RenderWindow::load_profile(int profile_slot)
+{
+	render->load_profile(profile_slot, asset);
+	update_range_type(render->range_type);
+	format_tools->update(asset, &render->strategy);
 }
 
 void RenderWindow::update_range_type(int range_type)

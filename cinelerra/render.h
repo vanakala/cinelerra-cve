@@ -58,15 +58,15 @@ public:
 	MWindow *mwindow;
 };
 
+
 class RenderProgress : public Thread
 {
 public:
 	RenderProgress(MWindow *mwindow, Render *render);
 	~RenderProgress();
-	
+
 	void run();
-	
-	
+
 	MWindow *mwindow;
 	Render *render;
 
@@ -74,12 +74,10 @@ public:
 };
 
 
-
 class MainPackageRenderer : public PackageRenderer
 {
 public:
 	MainPackageRenderer(Render *render);
-	~MainPackageRenderer();
 
 	int get_master();
 	int get_result();
@@ -112,7 +110,6 @@ public:
 // Called by BatchRender to stop the operation.
 	void stop_operation();
 	void run();
-
 
 // Render single job.  Used by run.
 	int render(int test_overwrite, 
@@ -185,7 +182,6 @@ public:
 // Used by batch rendering to wait until rendering is finished
 	Condition *completion;
 
-
 // Total time updated by the render farm and the local renderer.
 	ptstime total_rendered;
 // Speed for the master node
@@ -204,7 +200,6 @@ public:
 
 class RenderToTracks;
 
-
 class RenderRangeProject : public BC_Radial
 {
 public:
@@ -212,6 +207,7 @@ public:
 	int handle_event();
 	RenderWindow *rwindow;
 };
+
 
 class RenderRangeSelection : public BC_Radial
 {
@@ -237,7 +233,6 @@ public:
 	RenderWindow(MWindow *mwindow, Render *render, Asset *asset);
 	~RenderWindow();
 
-	void create_objects();
 	void update_range_type(int range_type);
 	void load_profile(int profile_slot);
 
@@ -254,7 +249,5 @@ public:
 	Render *render;
 	Asset *asset;
 };
-
-
 
 #endif
