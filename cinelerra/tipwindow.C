@@ -72,8 +72,6 @@ static const char *tips[] =
 static int total_tips = sizeof(tips) / sizeof(char*);
 
 
-
-
 TipWindow::TipWindow(MWindow *mwindow)
  : BC_DialogThread()
 {
@@ -89,7 +87,6 @@ BC_Window* TipWindow::new_gui()
 		this,
 		x,
 		y);
-	gui->create_objects();
 	return gui;
 }
 
@@ -139,11 +136,8 @@ TipWindowGUI::TipWindowGUI(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
-}
 
-void TipWindowGUI::create_objects()
-{
-	int x = 10, y = 10;
+	x = y = 10;
 	add_subwindow(tip_text = new BC_Title(x, y, thread->get_current_tip()));
 	y = get_h() - 30;
 
@@ -177,7 +171,7 @@ int TipWindowGUI::keypress_event()
 		case ESC:
 		case 'w':
 			set_done(0);
-			break;
+			return 1;
 	}
 	return 0;
 }
@@ -200,7 +194,6 @@ int TipDisable::handle_event()
 }
 
 
-
 TipNext::TipNext(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
  : BC_Button(x, 
 	y, 
@@ -210,6 +203,7 @@ TipNext::TipNext(MWindow *mwindow, TipWindowGUI *gui, int x, int y)
 	this->gui = gui;
 	set_tooltip(_("Next tip"));
 }
+
 int TipNext::handle_event()
 {
 	gui->thread->next_tip();
@@ -235,6 +229,7 @@ int TipPrev::handle_event()
 	gui->thread->prev_tip();
 	return 1;
 }
+
 int TipPrev::calculate_w(MWindow *mwindow)
 {
 	return mwindow->theme->get_image_set("prev_tip")[0]->get_w();

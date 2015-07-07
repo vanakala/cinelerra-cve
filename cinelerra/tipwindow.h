@@ -27,10 +27,7 @@
 #include "mwindow.inc"
 #include "tipwindow.inc"
 
-
-
 // Tip of the day to be run at initialization
-
 
 class TipWindow : public BC_DialogThread
 {
@@ -54,7 +51,7 @@ public:
 		TipWindow *thread,
 		int x,
 		int y);
-	void create_objects();
+
 	int keypress_event();
 	MWindow *mwindow;
 	TipWindow *thread;
@@ -100,7 +97,5 @@ public:
 	TipWindowGUI *gui;
 	MWindow *mwindow;
 };
-
-
 
 #endif
