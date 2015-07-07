@@ -32,6 +32,7 @@ RemoveThread::RemoveThread()
 {
 	input_lock = new Condition(0, "RemoveThread::input_lock", 0);
 	file_lock = new Mutex("RemoveThread::file_lock");
+	Thread::start();
 }
 
 RemoveThread::~RemoveThread()
@@ -53,11 +54,6 @@ void RemoveThread::remove_file(const char *path)
 	input_lock->unlock();
 	if(number > 100000)
 		number %= 100000;
-}
-
-void RemoveThread::create_objects()
-{
-	Thread::start();
 }
 
 void RemoveThread::run()

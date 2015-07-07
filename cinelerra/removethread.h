@@ -35,7 +35,7 @@ public:
 	~RemoveThread();
 
 	void remove_file(const char *path);
-	void create_objects();
+
 private:
 	void run();
 	Condition *input_lock;
@@ -43,7 +43,5 @@ private:
 	int number;
 	ArrayList<char*> files;
 };
-
-
 
 #endif

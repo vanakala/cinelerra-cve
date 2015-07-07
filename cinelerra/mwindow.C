@@ -1171,7 +1171,7 @@ void MWindow::create_objects(int want_gui,
 
 	init_3d();
 	remove_thread = new RemoveThread;
-	remove_thread->create_objects();
+
 	show_splash();
 
 	init_defaults(defaults, config_path);
