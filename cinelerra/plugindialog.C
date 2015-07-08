@@ -71,10 +71,8 @@ void PluginDialogThread::start_window(Track *track,
 		window_lock->lock("PluginDialogThread::start_window");
 		if(window)
 		{
-			window->lock_window("PluginDialogThread::start_window");
 			window->raise_window();
 			window->flush();
-			window->unlock_window();
 		}
 		window_lock->unlock();
 	}
@@ -104,12 +102,6 @@ void PluginDialogThread::start_window(Track *track,
 	}
 }
 
-
-int PluginDialogThread::set_dialog(Transition *transition, const char *title)
-{
-	return 0;
-}
-
 void PluginDialogThread::run()
 {
 	int result = 0;
@@ -118,9 +110,8 @@ void PluginDialogThread::run()
 	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->session->plugindialog_w / 2;
 	int y = mwindow->gui->get_abs_cursor_y(1) - mwindow->session->plugindialog_h / 2;
 
-	window_lock->lock("PluginDialogThread::run 1");	
+	window_lock->lock("PluginDialogThread::run 1");
 	window = new PluginDialog(mwindow, this, window_title, x, y);
-	window->create_objects();
 	window_lock->unlock();
 
 	result = window->run_window();
@@ -151,7 +142,6 @@ void PluginDialogThread::run()
 // Done at closing
 	if(!result)
 	{
-
 		if(plugin_type)
 		{
 			mwindow->gui->lock_window("PluginDialogThread::run 3");
@@ -204,30 +194,12 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	0,
 	1)
 {
+	int use_default = 1;
+	int module_number;
+
 	this->mwindow = mwindow;
 	this->thread = thread;
 	inoutthru = 0;
-}
-
-PluginDialog::~PluginDialog()
-{
-	int i;
-
-	standalone_data.remove_all_objects();
-	shared_data.remove_all_objects();
-	module_data.remove_all_objects();
-	plugin_locations.remove_all_objects();
-	module_locations.remove_all_objects();
-
-	delete standalone_list;
-	delete shared_list;
-	delete module_list;
-}
-
-int PluginDialog::create_objects()
-{
-	int use_default = 1;
-	int module_number;
 
 	mwindow->theme->get_plugindialog_sizes();
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
@@ -246,7 +218,6 @@ int PluginDialog::create_objects()
 
 	mwindow->edl->get_shared_tracks(thread->track,
 		&module_locations);
-
 
 // Construct listbox items
 	for(int i = 0; i < plugindb.total; i++)
@@ -292,7 +263,6 @@ int PluginDialog::create_objects()
 		mwindow->theme->plugindialog_shared_w,
 		mwindow->theme->plugindialog_shared_h));
 
-
 	add_subwindow(module_title = new BC_Title(mwindow->theme->plugindialog_module_x, 
 		mwindow->theme->plugindialog_module_y - 20, 
 		_("Shared tracks:")));
@@ -312,7 +282,19 @@ int PluginDialog::create_objects()
 
 	show_window();
 	flush();
-	return 0;
+}
+
+PluginDialog::~PluginDialog()
+{
+	standalone_data.remove_all_objects();
+	shared_data.remove_all_objects();
+	module_data.remove_all_objects();
+	plugin_locations.remove_all_objects();
+	module_locations.remove_all_objects();
+
+	delete standalone_list;
+	delete shared_list;
+	delete module_list;
 }
 
 void PluginDialog::resize_event(int w, int h)
@@ -320,7 +302,6 @@ void PluginDialog::resize_event(int w, int h)
 	mwindow->session->plugindialog_w = w;
 	mwindow->session->plugindialog_h = h;
 	mwindow->theme->get_plugindialog_sizes();
-
 
 	standalone_title->reposition_window(mwindow->theme->plugindialog_new_x, 
 		mwindow->theme->plugindialog_new_y - 20);
@@ -345,38 +326,31 @@ void PluginDialog::resize_event(int w, int h)
 	flush();
 }
 
-int PluginDialog::attach_new(int number)
+void PluginDialog::attach_new(int number)
 {
 	if(number > -1 && number < standalone_data.total) 
 	{
 		strcpy(thread->plugin_title, plugindb.values[number]->title);
 		thread->plugin_type = PLUGIN_STANDALONE;         // type is plugin
 	}
-	return 0;
 }
 
-int PluginDialog::attach_shared(int number)
+void PluginDialog::attach_shared(int number)
 {
 	if(number > -1 && number < shared_data.total) 
 	{
 		thread->plugin_type = PLUGIN_SHAREDPLUGIN;         // type is shared plugin
 		thread->shared_location = *(plugin_locations.values[number]); // copy location
 	}
-	return 0;
 }
 
-int PluginDialog::attach_module(int number)
+void PluginDialog::attach_module(int number)
 {
 	if(number > -1 && number < module_data.total) 
 	{
 		thread->plugin_type = PLUGIN_SHAREDMODULE;         // type is module
 		thread->shared_location = *(module_locations.values[number]); // copy location
 	}
-	return 0;
-}
-
-int PluginDialog::save_settings()
-{
 }
 
 
@@ -393,10 +367,6 @@ PluginDialogNew::PluginDialogNew(PluginDialog *dialog,
 	standalone_data) 
 { 
 	this->dialog = dialog; 
-}
-
-PluginDialogNew::~PluginDialogNew()
-{
 }
 
 int PluginDialogNew::handle_event() 
@@ -429,11 +399,7 @@ PluginDialogShared::PluginDialogShared(PluginDialog *dialog,
 	h, 
 	shared_data) 
 { 
-	this->dialog = dialog; 
-}
-
-PluginDialogShared::~PluginDialogShared()
-{
+	this->dialog = dialog;
 }
 
 int PluginDialogShared::handle_event()
@@ -469,10 +435,6 @@ PluginDialogModules::PluginDialogModules(PluginDialog *dialog,
 	this->dialog = dialog; 
 }
 
-PluginDialogModules::~PluginDialogModules()
-{
-}
-
 int PluginDialogModules::handle_event()
 {
 	set_done(0); 
@@ -489,5 +451,3 @@ void PluginDialogModules::selection_changed()
 	dialog->selected_available = -1;
 	dialog->selected_shared = -1;
 }
-
-

@@ -49,7 +49,6 @@ public:
 	void start_window(Track *track,
 		Plugin *plugin, 
 		const char *title);
-	int set_dialog(Transition *transition, const char *title);
 	void run();
 
 	MWindow *mwindow;
@@ -84,12 +83,9 @@ public:
 		int y);
 	~PluginDialog();
 
-	int create_objects();
-
-	int attach_new(int number);
-	int attach_shared(int number);
-	int attach_module(int number);
-	int save_settings();
+	void attach_new(int number);
+	void attach_shared(int number);
+	void attach_module(int number);
 	void resize_event(int w, int h);
 
 	BC_Title *standalone_title;
@@ -129,7 +125,6 @@ public:
 		int y,
 		int w,
 		int h);
-	~PluginDialogNew();
 
 	int handle_event();
 	void selection_changed();
@@ -145,7 +140,6 @@ public:
 		int y,
 		int w,
 		int h);
-	~PluginDialogShared();
 
 	int handle_event();
 	void selection_changed();
@@ -161,7 +155,6 @@ public:
 		int y,
 		int w,
 		int h);
-	~PluginDialogModules();
 
 	int handle_event();
 	void selection_changed();
