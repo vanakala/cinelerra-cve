@@ -39,7 +39,7 @@ class MenuEffects : public BC_MenuItem
 {
 public:
 	MenuEffects(MWindow *mwindow);
-	virtual ~MenuEffects();
+	virtual ~MenuEffects() {};
 
 	int handle_event();
 
@@ -53,7 +53,6 @@ class MenuEffectPacket
 {
 public:
 	MenuEffectPacket(const char *path, ptstime start, ptstime end);
-	~MenuEffectPacket();
 
 // Path of output without remote prefix
 	char path[BCTEXTLEN];
@@ -67,7 +66,7 @@ class MenuEffectThread : public Thread
 {
 public:
 	MenuEffectThread(MWindow *mwindow);
-	virtual ~MenuEffectThread();
+	virtual ~MenuEffectThread() {};
 
 	void run();
 	int set_title(const char *text);  // set the effect to be run by a menuitem
@@ -112,7 +111,6 @@ public:
 		Asset *asset);
 	virtual ~MenuEffectWindow();
 
-	int create_objects();
 	void resize_event(int w, int h);
 
 	BC_Title *list_title;
@@ -176,7 +174,6 @@ public:
 
 	static int calculate_w(BC_WindowBase *gui);
 	static int calculate_h(BC_WindowBase *gui);
-	int create_objects();
 
 	MenuEffectPromptOK *ok;
 	MenuEffectPromptCancel *cancel;

@@ -53,10 +53,6 @@ MenuVEffectThread::MenuVEffectThread(MWindow *mwindow)
 {
 }
 
-MenuVEffectThread::~MenuVEffectThread()
-{
-}
-
 int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 {
 	asset->layers = mwindow->edl->tracks->recordable_video_tracks();
@@ -65,7 +61,6 @@ int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 
 void MenuVEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
-
 	asset->load_defaults(defaults, 
 		"VEFFECT_",
 		1, 

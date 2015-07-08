@@ -36,11 +36,11 @@ public:
 	~MenuAEffects();
 };
 
+
 class MenuAEffectThread : public MenuEffectThread
 {
 public:
 	MenuAEffectThread(MWindow *mwindow);
-	~MenuAEffectThread();
 
 	int get_recordable_tracks(Asset *asset);
 	void get_derived_attributes(Asset *asset, BC_Hash *defaults);

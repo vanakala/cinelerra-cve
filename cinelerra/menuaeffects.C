@@ -47,12 +47,9 @@ MenuAEffects::~MenuAEffects()
 	delete thread;
 }
 
+
 MenuAEffectThread::MenuAEffectThread(MWindow *mwindow)
  : MenuEffectThread(mwindow)
-{
-}
-
-MenuAEffectThread::~MenuAEffectThread()
 {
 }
 
@@ -90,7 +87,6 @@ void MenuAEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 		1);
 }
 
-
 PluginArray* MenuAEffectThread::create_plugin_array()
 {
 	return new APluginArray();
@@ -106,7 +102,7 @@ posnum MenuAEffectThread::to_units(ptstime position, int round)
 	if(round)
 		return Units::round(position * mwindow->edl->session->sample_rate);
 	else
-		return (int64_t)(position * mwindow->edl->session->sample_rate);
+		return (posnum)(position * mwindow->edl->session->sample_rate);
 }
 
 void MenuAEffectThread::fix_menu(const char *title)

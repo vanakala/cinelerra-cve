@@ -60,10 +60,6 @@ MenuEffects::MenuEffects(MWindow *mwindow)
 	this->mwindow = mwindow;
 }
 
-MenuEffects::~MenuEffects()
-{
-}
-
 int MenuEffects::handle_event()
 {
 	thread->set_title("");
@@ -78,21 +74,12 @@ MenuEffectPacket::MenuEffectPacket(const char *path, ptstime start, ptstime end)
 	strcpy(this->path, path);
 }
 
-MenuEffectPacket::~MenuEffectPacket()
-{
-}
-
 
 MenuEffectThread::MenuEffectThread(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
-	sprintf(title, "");
+	title[0] = 0;
 }
-
-MenuEffectThread::~MenuEffectThread()
-{
-}
-
 
 int MenuEffectThread::set_title(const char *title)
 {
@@ -115,7 +102,6 @@ void MenuEffectThread::run()
 // Output
 	ArrayList<Asset*> assets;
 
-
 // check for recordable tracks
 	if(!get_recordable_tracks(default_asset))
 	{
@@ -132,7 +118,6 @@ void MenuEffectThread::run()
 		return;
 	}
 
-
 // get default attributes for output file
 // used after completion
 	get_derived_attributes(default_asset, defaults);
@@ -140,11 +125,7 @@ void MenuEffectThread::run()
 	strategy = defaults->get("RENDER_EFFECT_STRATEGY", SINGLE_PASS);
 
 // get plugin information
-	int need_plugin;
-	if(!strlen(title)) 
-		need_plugin = 1; 
-	else 
-		need_plugin = 0;
+	int need_plugin = !title[0];
 
 // generate a list of plugins for the window
 	if(need_plugin)
@@ -173,7 +154,6 @@ void MenuEffectThread::run()
 				this, 
 				need_plugin ? &plugin_list : 0, 
 				default_asset);
-			window.create_objects();
 			result = window.run_window();
 			plugin_number = window.result;
 		}
@@ -271,9 +251,9 @@ void MenuEffectThread::run()
 		if(plugin->realtime)
 		{
 // Open a prompt GUI
-			MenuEffectPrompt prompt(mwindow);
-			prompt.create_objects();
 			char title[BCTEXTLEN];
+
+			MenuEffectPrompt prompt(mwindow);
 			sprintf(title, "%s -" PROGRAM_NAME, plugin->title);
 
 // Open the plugin GUI
@@ -483,8 +463,6 @@ void MenuEffectThread::run()
 }
 
 
-
-
 MenuEffectItem::MenuEffectItem(MenuEffects *menueffect, const char *string)
  : BC_MenuItem(string)
 {
@@ -513,24 +491,13 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 		0,
 		1)
 { 
+	int x, y;
+
+	result = -1;
 	this->menueffects = menueffects; 
 	this->plugin_list = plugin_list; 
 	this->asset = asset;
 	this->mwindow = mwindow;
-}
-
-MenuEffectWindow::~MenuEffectWindow()
-{
-	delete format_tools;
-}
-
-
-
-int MenuEffectWindow::create_objects()
-{
-	int x, y;
-	result = -1;
-
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	mwindow->theme->get_menueffect_sizes(plugin_list ? 1 : 0);
 
@@ -580,7 +547,11 @@ int MenuEffectWindow::create_objects()
 	add_subwindow(new MenuEffectWindowCancel(this));
 	show_window();
 	flush();
-	return 0;
+}
+
+MenuEffectWindow::~MenuEffectWindow()
+{
+	delete format_tools;
 }
 
 void MenuEffectWindow::resize_event(int w, int h)
@@ -607,8 +578,6 @@ void MenuEffectWindow::resize_event(int w, int h)
 	loadmode->reposition_window(x, y);
 }
 
-
-
 MenuEffectWindowOK::MenuEffectWindowOK(MenuEffectWindow *window)
  : BC_OKButton(window)
 { 
@@ -633,6 +602,7 @@ int MenuEffectWindowOK::keypress_event()
 	return 0;
 }
 
+
 MenuEffectWindowCancel::MenuEffectWindowCancel(MenuEffectWindow *window)
  : BC_CancelButton(window)
 { 
@@ -653,6 +623,7 @@ int MenuEffectWindowCancel::keypress_event()
 	}
 	return 0;
 }
+
 
 MenuEffectWindowList::MenuEffectWindowList(MenuEffectWindow *window, 
 	int x, 
@@ -689,7 +660,16 @@ MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
 		0,
 		1)
 {
+	int x = 10, y = 10;
+	BC_Title *title;
+
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	add_subwindow(title = new BC_Title(x, y, PROMPT_TEXT));
+	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+	show_window();
+	raise_window();
+	flush();
 }
 
 int MenuEffectPrompt::calculate_w(BC_WindowBase *gui)
@@ -706,15 +686,3 @@ int MenuEffectPrompt::calculate_h(BC_WindowBase *gui)
 	return h;
 }
 
-int MenuEffectPrompt::create_objects()
-{
-	int x = 10, y = 10;
-	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, PROMPT_TEXT));
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
-	show_window();
-	raise_window();
-	flush();
-	return 0;
-}

@@ -35,11 +35,11 @@ public:
 	~MenuVEffects();
 };
 
+
 class MenuVEffectThread : public MenuEffectThread
 {
 public:
 	MenuVEffectThread(MWindow *mwindow);
-	~MenuVEffectThread();
 
 	int get_recordable_tracks(Asset *asset);
 	void get_derived_attributes(Asset *asset, BC_Hash *defaults);
@@ -50,6 +50,7 @@ public:
 	ptstime one_unit();
 	posnum to_units(ptstime position, int round);
 };
+
 
 class MenuVEffectItem : public MenuEffectItem
 {
