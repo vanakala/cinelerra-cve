@@ -104,8 +104,7 @@ int MainMenu::create_objects()
 	filemenu->add_item(new ExportEDLItem(mwindow));
 	filemenu->add_item(new BatchRenderMenuItem(mwindow));
 	filemenu->add_item(new BC_MenuItem("-"));
-	filemenu->add_item(quit_program = new Quit(mwindow));
-	quit_program->create_objects(save);
+	filemenu->add_item(quit_program = new Quit(mwindow, save));
 	filemenu->add_item(new DumpEDL(mwindow));
 	filemenu->add_item(new DumpPlugins(mwindow));
 	filemenu->add_item(new LoadBackup(mwindow));

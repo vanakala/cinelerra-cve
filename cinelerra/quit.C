@@ -37,16 +37,11 @@
 #include "mainsession.h"
 
 
-Quit::Quit(MWindow *mwindow)
+Quit::Quit(MWindow *mwindow, Save *save)
  : BC_MenuItem(_("Quit"), "q", 'q'), Thread() 
 { 
 	this->mwindow = mwindow; 
-}
-
-int Quit::create_objects(Save *save)
-{ 
-	this->save = save; 
-	return 0;
+	this->save = save;
 }
 
 int Quit::handle_event() 
@@ -64,7 +59,7 @@ int Quit::handle_event()
 		mwindow->interrupt_indexes();
 		mwindow->playback_3d->quit();
 	}
-	return 0;
+	return 1;
 }
 
 void Quit::run()
@@ -85,7 +80,6 @@ void Quit::run()
 		return;
 	}
 
-
 // Quit
 	{
 		QuestionWindow confirm(mwindow);
@@ -95,21 +89,19 @@ void Quit::run()
 
 	switch(result)
 	{
-		case 0:          // quit
-			if(mwindow->gui)
-			{
-				mwindow->interrupt_indexes();
-				mwindow->playback_3d->quit();
-			}
-			break;
+	case 0:          // quit
+		if(mwindow->gui)
+		{
+			mwindow->interrupt_indexes();
+			mwindow->playback_3d->quit();
+		}
+		break;
 
-		case 1:        // cancel
-			return;
-			break;
+	case 1:        // cancel
+		break;
 
-		case 2:           // save
-			save->save_before_quit(); 
-			return;
-			break;
+	case 2:        // save
+		save->save_before_quit(); 
+		break;
 	}
 }
