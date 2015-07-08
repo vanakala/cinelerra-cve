@@ -82,8 +82,8 @@ void Quit::run()
 
 // Quit
 	{
-		QuestionWindow confirm(mwindow);
-		confirm.create_objects(_("Save edit list before exiting?\n( Answering \"No\" will destroy changes )"), 1);
+		QuestionWindow confirm(mwindow, 1,
+			_("Save edit list before exiting?\n( Answering \"No\" will destroy changes )"));
 		result = confirm.run_window();
 	}
 

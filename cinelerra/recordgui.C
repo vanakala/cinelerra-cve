@@ -1080,8 +1080,8 @@ void EndRecordThread::start(int is_ok)
 
 void EndRecordThread::run()
 {
-	window = new QuestionWindow(record->mwindow);
-	window->create_objects(_("Interrupt recording in progress?"), 0);
+	window = new QuestionWindow(record->mwindow, 0,
+		_("Interrupt recording in progress?"));
 	int result = window->run_window();
 	delete window;
 	if(result == 2) gui->set_done(!is_ok);
@@ -1107,8 +1107,8 @@ RecordStartoverThread::~RecordStartoverThread()
 
 void RecordStartoverThread::run()
 {
-	window = new QuestionWindow(record->mwindow);
-	window->create_objects(_("Rewind batch and overwrite?"), 0);
+	window = new QuestionWindow(record->mwindow, 0,
+		_("Rewind batch and overwrite?"));
 	int result = window->run_window();
 	if(result == 2) record->start_over();
 	delete window;

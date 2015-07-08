@@ -28,10 +28,8 @@
 class QuestionWindow : public BC_Window
 {
 public:
-	QuestionWindow(MWindow *mwindow);
-	~QuestionWindow();
+	QuestionWindow(MWindow *mwindow, int use_cancel, const char *string);
 
-	int create_objects(const char *string, int use_cancel);
 	MWindow *mwindow;
 };
 

@@ -31,22 +31,12 @@
 #define WIDTH 375
 #define HEIGHT 160
 
-QuestionWindow::QuestionWindow(MWindow *mwindow)
+QuestionWindow::QuestionWindow(MWindow *mwindow, int use_cancel, const char *string)
  : BC_Window("Question - " PROGRAM_NAME, 
 	mwindow->gui->get_abs_cursor_x(1) - WIDTH / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - HEIGHT / 2, 
 	WIDTH, 
 	HEIGHT)
-{
-	this->mwindow = mwindow;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
-}
-
-QuestionWindow::~QuestionWindow()
-{
-}
-
-int QuestionWindow::create_objects(const char *string, int use_cancel)
 {
 	const char *btext;
 	BC_Title *title;
@@ -55,6 +45,9 @@ int QuestionWindow::create_objects(const char *string, int use_cancel)
 	const char *cancel = _("Cancel");
 
 	int x, y;
+
+	this->mwindow = mwindow;
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 
 	btext = MainError::StringBreaker(MEDIUMFONT, string, get_w() - 30, this);
 	add_subwindow(new BC_Title(get_w() / 2, 10, string, MEDIUMFONT, 
@@ -73,8 +66,6 @@ int QuestionWindow::create_objects(const char *string, int use_cancel)
 		x = get_w() - BC_GenericButton::calculate_w(this, no) - 10;
 		add_subwindow(new QuestionNoButton(this, no, x, y));
 	}
-
-	return 0;
 }
 
 QuestionYesButton::QuestionYesButton(QuestionWindow *window, const char *label, int x, int y)
