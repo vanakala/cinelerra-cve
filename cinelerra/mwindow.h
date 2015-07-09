@@ -91,13 +91,10 @@
 class MWindow : public Thread
 {
 public:
-	MWindow();
+	MWindow(const char *config_path);
 	~MWindow();
 
 // ======================================== initialization commands
-	void create_objects(int want_gui, 
-		int want_new,
-		char *config_path);
 	void show_splash();
 	void hide_splash();
 	void start();

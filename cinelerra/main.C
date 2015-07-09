@@ -293,11 +293,7 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 		case DO_GUI:
 		{
 	                setlinebuf(stdout);
-			mwindow = new MWindow;
-			mwindow->create_objects(1, 
-				!filenames.total,
-				config_path);
-
+			mwindow = new MWindow(config_path);
 // load the initial files on seperate tracks
 			if(filenames.total)
 			{

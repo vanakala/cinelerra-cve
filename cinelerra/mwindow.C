@@ -111,9 +111,11 @@
 
 extern Theme *theme_global;
 
-MWindow::MWindow()
+MWindow::MWindow(const char *config_path)
  : Thread(THREAD_SYNCHRONOUS)
 {
+	char string[BCTEXTLEN];
+
 	plugin_gui_lock = new Mutex("MWindow::plugin_gui_lock");
 	brender_lock = new Mutex("MWindow::brender_lock");
 	brender = 0;
@@ -121,6 +123,68 @@ MWindow::MWindow()
 	channeldb_v4l2jpeg = new ChannelDB;
 	dvb_input = 0;
 	dvb_input_lock = new Mutex("MWindow::dvb_input_lock");
+	edl = 0;
+	init_signals();
+
+	init_3d();
+	remove_thread = new RemoveThread;
+
+	show_splash();
+
+	init_defaults(defaults, config_path);
+	default_standard = default_std();
+	init_preferences();
+	init_plugins(preferences, plugindb, splash_window);
+	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
+	init_theme();
+	init_error();
+
+	strcpy(string, preferences->global_plugin_dir);
+	strcat(string, "/" FONT_SEARCHPATH);
+	BC_Resources::init_fontconfig(string);
+
+// Default project created here
+	init_edl();
+
+	init_awindow();
+	init_compositor();
+	init_levelwindow();
+	init_viewer();
+	init_ruler();
+	init_cache();
+	init_indexes();
+	init_channeldb();
+
+	init_gui();
+	init_gwindow();
+
+	init_render();
+	init_brender();
+	init_exportedl();
+	mainprogress = new MainProgress(this, gui);
+	undo = new MainUndo(this);
+
+	plugin_guis = new ArrayList<PluginServer*>;
+
+	if(session->show_vwindow) vwindow->gui->show_window();
+	if(session->show_cwindow) cwindow->gui->show_window();
+	if(session->show_awindow) awindow->gui->show_window();
+	if(session->show_lwindow) lwindow->gui->show_window();
+	if(session->show_gwindow) gwindow->gui->show_window();
+	if(session->show_ruler) ruler->gui->show_window();
+
+	gui->mainmenu->load_defaults(defaults);
+	gui->mainmenu->update_toggles(0);
+	gui->patchbay->update();
+	gui->canvas->draw();
+	gui->cursor->draw(1);
+	gui->show_window();
+	gui->raise_window();
+
+	if(preferences->use_tipwindow)
+		init_tipwindow();
+
+	hide_splash();
 }
 
 MWindow::~MWindow()
@@ -1159,75 +1223,6 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
 			}
 		}
 	}
-}
-
-void MWindow::create_objects(int want_gui, 
-	int want_new,
-	char *config_path)
-{
-	char string[BCTEXTLEN];
-	edl = 0;
-	init_signals();
-
-	init_3d();
-	remove_thread = new RemoveThread;
-
-	show_splash();
-
-	init_defaults(defaults, config_path);
-	default_standard = default_std();
-	init_preferences();
-	init_plugins(preferences, plugindb, splash_window);
-	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
-	init_theme();
-	init_error();
-
-	strcpy(string, preferences->global_plugin_dir);
-	strcat(string, "/" FONT_SEARCHPATH);
-	BC_Resources::init_fontconfig(string);
-
-// Default project created here
-	init_edl();
-
-	init_awindow();
-	init_compositor();
-	init_levelwindow();
-	init_viewer();
-	init_ruler();
-	init_cache();
-	init_indexes();
-	init_channeldb();
-
-	init_gui();
-	init_gwindow();
-
-	init_render();
-	init_brender();
-	init_exportedl();
-	mainprogress = new MainProgress(this, gui);
-	undo = new MainUndo(this);
-
-	plugin_guis = new ArrayList<PluginServer*>;
-
-	if(session->show_vwindow) vwindow->gui->show_window();
-	if(session->show_cwindow) cwindow->gui->show_window();
-	if(session->show_awindow) awindow->gui->show_window();
-	if(session->show_lwindow) lwindow->gui->show_window();
-	if(session->show_gwindow) gwindow->gui->show_window();
-	if(session->show_ruler) ruler->gui->show_window();
-
-	gui->mainmenu->load_defaults(defaults);
-	gui->mainmenu->update_toggles(0);
-	gui->patchbay->update();
-	gui->canvas->draw();
-	gui->cursor->draw(1);
-	gui->show_window();
-	gui->raise_window();
-
-	if(preferences->use_tipwindow)
-		init_tipwindow();
-
-	hide_splash();
 }
 
 void MWindow::show_splash()
