@@ -405,7 +405,6 @@ int RecordGUI::create_objects()
 		y, 
 		&record->load_mode, 
 		1);
-	load_mode->create_objects();
 	y += load_mode->get_h() + 5;
 
 	add_subwindow(new RecordGUIOK(record, this));

@@ -956,7 +956,6 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 
 	y += 70;
 	loadmode = new LoadMode(mwindow, this, x, y, &render->load_mode, 1);
-	loadmode->create_objects();
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));

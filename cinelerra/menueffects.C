@@ -541,7 +541,6 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 		y, 
 		&menueffects->load_mode, 
 		1);
-	loadmode->create_objects();
 
 	add_subwindow(new MenuEffectWindowOK(this));
 	add_subwindow(new MenuEffectWindowCancel(this));

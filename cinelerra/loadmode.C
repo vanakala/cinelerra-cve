@@ -23,12 +23,7 @@
 #include "loadmode.h"
 #include "mwindow.h"
 #include "theme.h"
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+#include "language.h"
 
 
 LoadModeItem::LoadModeItem(char *text, int value)
@@ -58,6 +53,16 @@ LoadMode::LoadMode(MWindow *mwindow,
 	load_modes.append(new LoadModeItem(_("Concatenate to existing tracks"), LOADMODE_CONCATENATE));
 	load_modes.append(new LoadModeItem(_("Paste at insertion point"), LOADMODE_PASTE));
 	load_modes.append(new LoadModeItem(_("Create new resources only"), LOADMODE_RESOURCESONLY));
+
+	window->add_subwindow(title = new BC_Title(x, y, _("Insertion strategy:")));
+	y += 20;
+	window->add_subwindow(textbox = new BC_TextBox(x,
+		y,
+		mwindow->theme->loadmode_w,
+		1,
+		mode_to_text()));
+	x += textbox->get_w();
+	window->add_subwindow(listbox = new LoadModeListBox(window, this, x, y));
 }
 
 LoadMode::~LoadMode()
@@ -84,25 +89,6 @@ const char* LoadMode::mode_to_text()
 	return _("Unknown");
 }
 
-int LoadMode::create_objects()
-{
-	int x = this->x, y = this->y;
-	const char *default_text;
-	default_text = mode_to_text();
-
-	window->add_subwindow(title = new BC_Title(x, y, _("Insertion strategy:")));
-	y += 20;
-	window->add_subwindow(textbox = new BC_TextBox(x, 
-		y, 
-		mwindow->theme->loadmode_w, 
-		1, 
-		default_text));
-	x += textbox->get_w();
-	window->add_subwindow(listbox = new LoadModeListBox(window, this, x, y));
-
-	return 0;
-}
-
 int LoadMode::get_h()
 {
 	int result = 0;
@@ -121,7 +107,7 @@ int LoadMode::get_y()
 	return y;
 }
 
-int LoadMode::reposition_window(int x, int y)
+void LoadMode::reposition_window(int x, int y)
 {
 	this->x = x;
 	this->y = y;
@@ -132,7 +118,6 @@ int LoadMode::reposition_window(int x, int y)
 	listbox->reposition_window(x, 
 		y, 
 		mwindow->theme->loadmode_w);
-	return 0;
 }
 
 
@@ -149,10 +134,6 @@ LoadModeListBox::LoadModeListBox(BC_WindowBase *window,
 {
 	this->window = window;
 	this->loadmode = loadmode;
-}
-
-LoadModeListBox::~LoadModeListBox()
-{
 }
 
 int LoadModeListBox::handle_event()

@@ -46,8 +46,7 @@ public:
 		int use_nothing);
 	~LoadMode();
 
-	int create_objects();
-	int reposition_window(int x, int y);
+	void reposition_window(int x, int y);
 	static int calculate_h(BC_WindowBase *gui);
 	int get_h();
 	int get_x();
@@ -71,7 +70,6 @@ class LoadModeListBox : public BC_ListBox
 {
 public:
 	LoadModeListBox(BC_WindowBase *window, LoadMode *loadmode, int x, int y);
-	~LoadModeListBox();
 
 	int handle_event();
 
