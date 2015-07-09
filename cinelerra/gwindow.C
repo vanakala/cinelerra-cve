@@ -27,19 +27,13 @@
 GWindow::GWindow(MWindow *mwindow)
  : Thread(THREAD_SYNCHRONOUS)
 {
-	this->mwindow = mwindow;
+	int w, h;
+
+	GWindowGUI::calculate_extents(mwindow->gui, &w, &h);
+	gui = new GWindowGUI(mwindow, w, h);
 }
 
 void GWindow::run()
 {
 	gui->run_window();
-}
-
-void GWindow::create_objects()
-{
-	int w, h;
-
-
-	GWindowGUI::calculate_extents(mwindow->gui, &w, &h);
-	gui = new GWindowGUI(mwindow, w, h);
 }

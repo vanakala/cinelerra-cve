@@ -642,7 +642,6 @@ void MWindow::init_awindow()
 void MWindow::init_gwindow()
 {
 	gwindow = new GWindow(this);
-	gwindow->create_objects();
 }
 
 void MWindow::init_tipwindow()
