@@ -42,5 +42,4 @@ void GWindow::create_objects()
 
 	GWindowGUI::calculate_extents(mwindow->gui, &w, &h);
 	gui = new GWindowGUI(mwindow, w, h);
-	gui->create_objects();
 }

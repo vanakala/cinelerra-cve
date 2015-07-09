@@ -37,23 +37,6 @@
 
 
 
-GWindowGUI::GWindowGUI(MWindow *mwindow,
-	int w,
-	int h)
- : BC_Window("Overlays - " PROGRAM_NAME,
-	mwindow->session->gwindow_x,
-	mwindow->session->gwindow_y,
-	w,
-	h,
-	w,
-	h,
-	0,
-	0,
-	1)
-{
-	this->mwindow = mwindow;
-}
-
 static const char *other_text[NONAUTOTOGGLES_COUNT] =
 {
 	N_("Assets"),
@@ -97,6 +80,35 @@ static toggleinfo toggle_order[] =
 	{1, AUTOMATION_PROJECTOR_Z},
 };
 
+GWindowGUI::GWindowGUI(MWindow *mwindow,
+	int w,
+	int h)
+ : BC_Window("Overlays - " PROGRAM_NAME,
+	mwindow->session->gwindow_x,
+	mwindow->session->gwindow_y,
+	w,
+	h,
+	w,
+	h,
+	0,
+	0,
+	1)
+{
+	int x = 10, y = 10;
+
+	this->mwindow = mwindow;
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
+	{
+		add_tool(toggles[i] = new GWindowToggle(mwindow,
+			this,
+			x,
+			y,
+			toggle_order[i]));
+		y += toggles[i]->get_h() + 5;
+	}
+}
+
 void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 {
 	int temp1, temp2, temp3, temp4, temp5, temp6, temp7;
@@ -124,24 +136,6 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 
 	*h += 10;
 	*w += 20;
-}
-
-
-
-void GWindowGUI::create_objects()
-{
-	int x = 10, y = 10;
-
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
-	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
-	{
-		add_tool(toggles[i] = new GWindowToggle(mwindow, 
-			this, 
-			x, 
-			y, 
-			toggle_order[i]));
-		y += toggles[i]->get_h() + 5;
-	}
 }
 
 void GWindowGUI::update_mwindow()
@@ -196,10 +190,6 @@ int GWindowGUI::keypress_event()
 }
 
 
-
-
-
-
 GWindowToggle::GWindowToggle(MWindow *mwindow, 
 	GWindowGUI *gui, 
 	int x, 
@@ -219,7 +209,6 @@ int GWindowToggle::handle_event()
 {
 	*get_main_value(mwindow, toggleinf) = get_value();
 	gui->update_mwindow();
-
 
 // Update stuff in MWindow
 	mwindow->gui->lock_window("GWindowToggle::handle_event");
@@ -261,18 +250,17 @@ int* GWindowToggle::get_main_value(MWindow *mwindow, toggleinfo toggleinf)
 	{
 		switch(toggleinf.ref)
 		{
-			case NONAUTOTOGGLES_ASSETS:
-				return &mwindow->edl->session->show_assets;
-				break;
-			case NONAUTOTOGGLES_TITLES:
-				return &mwindow->edl->session->show_titles;
-				break;
-			case NONAUTOTOGGLES_TRANSITIONS:
-				return &mwindow->edl->session->auto_conf->transitions;
-				break;
-			case NONAUTOTOGGLES_PLUGIN_AUTOS:
-				return &mwindow->edl->session->auto_conf->plugins;
-				break;
+		case NONAUTOTOGGLES_ASSETS:
+			return &mwindow->edl->session->show_assets;
+
+		case NONAUTOTOGGLES_TITLES:
+			return &mwindow->edl->session->show_titles;
+
+		case NONAUTOTOGGLES_TRANSITIONS:
+			return &mwindow->edl->session->auto_conf->transitions;
+
+		case NONAUTOTOGGLES_PLUGIN_AUTOS:
+			return &mwindow->edl->session->auto_conf->plugins;
 		}
 	}
 }
