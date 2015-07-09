@@ -42,7 +42,6 @@ public:
 	KeyframePopup(MWindow *mwindow, MWindowGUI *gui);
 	~KeyframePopup();
 
-	void create_objects();
 	void update(Plugin *plugin, KeyFrame *keyframe);
 	void update(Automation *automation, Autos *autos, Auto *auto_keyframe);
 

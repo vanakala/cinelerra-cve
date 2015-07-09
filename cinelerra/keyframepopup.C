@@ -53,6 +53,16 @@ KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
 	tan_linear = 0;
 	tan_free = 0;
 	tangent_mode_displayed = false;
+
+	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
+	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
+	delete_active = 1;
+
+	hline = new BC_MenuItem("-");
+	tan_smooth = new KeyframePopupTangentMode(mwindow, this, TGNT_SMOOTH);
+	tan_linear = new KeyframePopupTangentMode(mwindow, this, TGNT_LINEAR);
+	tan_free_t = new KeyframePopupTangentMode(mwindow, this, TGNT_TFREE);
+	tan_free = new KeyframePopupTangentMode(mwindow, this, TGNT_FREE);
 }
 
 KeyframePopup::~KeyframePopup()
@@ -68,19 +78,6 @@ KeyframePopup::~KeyframePopup()
 	if(!delete_active)
 		delete key_delete;
 } // if they are currently displayed, the menu class will delete them automatically
-
-void KeyframePopup::create_objects()
-{
-	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
-	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
-	delete_active = 1;
-
-	hline = new BC_MenuItem("-");
-	tan_smooth = new KeyframePopupTangentMode(mwindow, this, TGNT_SMOOTH);
-	tan_linear = new KeyframePopupTangentMode(mwindow, this, TGNT_LINEAR);
-	tan_free_t = new KeyframePopupTangentMode(mwindow, this, TGNT_TFREE);
-	tan_free = new KeyframePopupTangentMode(mwindow, this, TGNT_FREE);
-}
 
 void KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
 {

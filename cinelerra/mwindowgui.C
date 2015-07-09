@@ -210,7 +210,6 @@ SET_TRACE
 	add_subwindow(plugin_menu = new PluginPopup(mwindow, this));
 
 	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, this));
-	keyframe_menu->create_objects();
 
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, this));
 
