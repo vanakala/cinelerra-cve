@@ -31,11 +31,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 
-
 MainError* MainError::main_error = 0;
-
-
-
 
 
 MainErrorGUI::MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y)
@@ -55,18 +51,10 @@ MainErrorGUI::MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
-}
-
-MainErrorGUI::~MainErrorGUI()
-{
-}
-
-void MainErrorGUI::create_objects()
-{
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	BC_Button *button;
 	add_subwindow(button = new BC_OKButton(this));
-	int x = 10, y = 10;
+	x = y = 10;
 	add_subwindow(title = new BC_Title(x, y, _("The following errors occurred:")));
 	y += title->get_h() + 5;
 	add_subwindow(list = new BC_ListBox(x,
@@ -95,10 +83,6 @@ void MainErrorGUI::resize_event(int w, int h)
 }
 
 
-
-
-
-
 MainError::MainError(MWindow *mwindow)
  : BC_DialogThread()
 {
@@ -118,9 +102,7 @@ BC_Window* MainError::new_gui()
 
 	BC_Resources::get_abs_cursor(&x, &y);
 
-	MainErrorGUI *gui = new MainErrorGUI(mwindow, this, x, y);
-	gui->create_objects();
-	return gui;
+	return new MainErrorGUI(mwindow, this, x, y);
 }
 
 void MainError::append_error(const char *string)
@@ -185,7 +167,6 @@ void MainError::show_error_local(const char *string)
 		start();
 	}
 }
-
 
 void MainError::show_error(const char *string)
 {
@@ -267,8 +248,8 @@ int MainError::show_boxmsg(const char *title, const char *message, int confirm)
 			strcat(bufr, " - ");
 		}
 		strcat(bufr, PROGRAM_NAME);
-		MainErrorBox ebox(main_error->mwindow, x, y);
-		ebox.create_objects(bufr, message, confirm);
+		MainErrorBox ebox(main_error->mwindow,
+			bufr, message, confirm, x, y);
 		res = ebox.run_window();
 	}
 	else
@@ -347,20 +328,14 @@ int MainError::va_MessageBox(const char *hdr, const char *fmt, va_list ap)
 	return show_boxmsg(hdr, bufr);
 }
 
-MainErrorBox::MainErrorBox(MWindow *mwindow, int x, int y, int w, int h)
-: BC_Window(PROGRAM_NAME, x, y, w, h, w, h, 0)
+MainErrorBox::MainErrorBox(MWindow *mwindow, 
+	const char *title, const char *text, int confirm,
+	int x, int y, int w, int h)
+ : BC_Window(PROGRAM_NAME, x, y, w, h, w, h, 0)
 {
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
-}
-
-MainErrorBox::~MainErrorBox()
-{
-}
-
-int MainErrorBox::create_objects(const char *title, const char *text, int confirm)
-{
-	int x, y;
 	const char *btext;
+
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 
 	if(title)
 		set_title(title);
@@ -387,5 +362,4 @@ int MainErrorBox::create_objects(const char *title, const char *text, int confir
 		x = get_w() / 2 - 30;
 		add_tool(new BC_OKButton(x, y));
 	}
-	return 0;
 }

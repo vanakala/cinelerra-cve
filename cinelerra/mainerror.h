@@ -45,9 +45,7 @@ class MainErrorGUI : public BC_Window
 {
 public:
 	MainErrorGUI(MWindow *mwindow, MainError *thread, int x, int y);
-	~MainErrorGUI();
 
-	void create_objects();
 	void resize_event(int w, int h);
 
 	MWindow *mwindow;
@@ -106,13 +104,14 @@ private:
 class MainErrorBox : public BC_Window
 {
 public:
-	MainErrorBox(MWindow *mwindow, int x = (int)BC_INFINITY,
+	MainErrorBox(MWindow *mwindow,
+		const char *title,
+		const char *text,
+		int confirm,
+		int x = (int)BC_INFINITY,
 		int y = (int)BC_INFINITY,
 		int w = 400,
 		int h = 120);
-	virtual ~MainErrorBox();
-
-	int create_objects(const char *title, const char *text, int confirm );
 };
 
 #endif
