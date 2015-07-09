@@ -37,7 +37,6 @@ public:
 	Load(MWindow *mwindow, MainMenu *mainmenu);
 	~Load();
 
-	int create_objects();
 	int handle_event();
 
 	MWindow *mwindow;
@@ -49,7 +48,6 @@ class LoadFileThread : public Thread
 {
 public:
 	LoadFileThread(MWindow *mwindow, Load *menuitem);
-	~LoadFileThread();
 
 	void run();
 
@@ -72,7 +70,6 @@ public:
 		char *init_directory);
 	~LoadFileWindow();
 
-	void create_objects();
 	void resize_event(int w, int h);
 
 	LoadFileThread *thread;
@@ -126,28 +123,19 @@ public:
 };
 
 
-
-class LocateFileWindow : public BC_FileBox
-{
-public:
-	LocateFileWindow(MWindow *mwindow, const char *init_directory, const char *old_filename);
-	~LocateFileWindow();
-	MWindow *mwindow;
-};
-
-class LoadPrevious : public BC_MenuItem, public Thread
+class LoadPrevious : public BC_MenuItem
 {
 public:
 	LoadPrevious(MWindow *mwindow);
+
 	int handle_event();
-	void run();
-	
 	int set_path(const char *path);
-	
+
 	MWindow *mwindow;
 	Load *loadfile;
 	char path[1024];
 };
+
 
 class LoadBackup : public BC_MenuItem
 {

@@ -43,17 +43,12 @@ Load::Load(MWindow *mwindow, MainMenu *mainmenu)
 { 
 	this->mwindow = mwindow;
 	this->mainmenu = mainmenu;
+	thread = new LoadFileThread(mwindow, this);
 }
 
 Load::~Load()
 {
 	delete thread;
-}
-
-int Load::create_objects()
-{
-	thread = new LoadFileThread(mwindow, this);
-	return 0;
 }
 
 int Load::handle_event() 
@@ -73,10 +68,6 @@ LoadFileThread::LoadFileThread(MWindow *mwindow, Load *load)
 	this->load = load;
 }
 
-LoadFileThread::~LoadFileThread()
-{
-}
-
 void LoadFileThread::run()
 {
 	int result;
@@ -92,7 +83,6 @@ void LoadFileThread::run()
 
 	{
 		LoadFileWindow window(mwindow, this, default_path);
-		window.create_objects();
 		result = window.run_window();
 
 		if ((!result) && (load_mode == LOADMODE_REPLACE)) {
@@ -162,21 +152,18 @@ LoadFileWindow::LoadFileWindow(MWindow *mwindow,
 		1,
 		mwindow->theme->loadfile_pad)
 {
+	int x = get_w() / 2 - 200;
+	int y = get_cancel_button()->get_y() - 50;
+
 	this->thread = thread;
 	this->mwindow = mwindow; 
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
+	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
 }
 
 LoadFileWindow::~LoadFileWindow() 
 {
 	delete loadmode;
-}
-
-void LoadFileWindow::create_objects()
-{
-	int x = get_w() / 2 - 200;
-	int y = get_cancel_button()->get_y() - 50;
-	set_icon(mwindow->theme->get_image("mwindow_icon"));
-	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
 }
 
 void LoadFileWindow::resize_event(int w, int h)
@@ -209,6 +196,7 @@ int NewTimeline::handle_event()
 	return 1;
 }
 
+
 NewConcatenate::NewConcatenate(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
 	y,
@@ -226,6 +214,7 @@ int NewConcatenate::handle_event()
 	window->resourcesonly->set_value(0);
 	return 1;
 }
+
 
 AppendNewTracks::AppendNewTracks(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
@@ -245,6 +234,7 @@ int AppendNewTracks::handle_event()
 	return 1;
 }
 
+
 EndofTracks::EndofTracks(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
 	y,
@@ -262,6 +252,7 @@ int EndofTracks::handle_event()
 	window->resourcesonly->set_value(0);
 	return 1;
 }
+
 
 ResourcesOnly::ResourcesOnly(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
@@ -283,24 +274,8 @@ int ResourcesOnly::handle_event()
 }
 
 
-LocateFileWindow::LocateFileWindow(MWindow *mwindow, 
-	const char *init_directory, 
-	const char *old_filename)
- : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
-		mwindow->gui->get_abs_cursor_y(1), 
-		init_directory, 
-		"Locate file - " PROGRAM_NAME,
-		old_filename)
-{ 
-	this->mwindow = mwindow; 
-}
-
-LocateFileWindow::~LocateFileWindow()
-{
-}
-
 LoadPrevious::LoadPrevious(MWindow *mwindow)
- : BC_MenuItem(""), Thread()
+ : BC_MenuItem("")
 { 
 	this->mwindow = mwindow;
 	this->loadfile = loadfile; 
@@ -326,10 +301,6 @@ int LoadPrevious::handle_event()
 	return 1;
 }
 
-void LoadPrevious::run()
-{
-}
-
 int LoadPrevious::set_path(const char *path)
 {
 	strcpy(this->path, path);
@@ -351,7 +322,7 @@ int LoadBackup::handle_event()
 	strcpy(string, BACKUP_PATH);
 	FileSystem fs;
 	fs.complete_path(string);
-	
+
 	path_list.append(out_path = new char[strlen(string) + 1]);
 	strcpy(out_path, string);
 

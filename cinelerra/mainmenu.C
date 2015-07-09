@@ -88,7 +88,6 @@ int MainMenu::create_objects()
 
 // file loaders
 	filemenu->add_item(load_file = new Load(mwindow, this));
-	load_file->create_objects();
 
 // new and load can be undone so no need to prompt save
 	Save *save;                   //  affected by saveas
