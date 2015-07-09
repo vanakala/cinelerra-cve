@@ -51,16 +51,11 @@ ManualGoto::ManualGoto(MWindow *mwindow, BC_WindowBase *masterwindow)
 	window = 0;
 }
 
-ManualGoto::~ManualGoto()
-{
-}
-
 void ManualGoto::open_window()
 {
 	if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
-	   (masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
+		(masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
 	{
-	
 		position = mwindow->edl->local_session->get_selectionstart(1);
 		position += mwindow->edl->session->get_frame_offset() / 
 					 mwindow->edl->session->frame_rate;
@@ -74,6 +69,7 @@ void ManualGoto::open_window()
 	}
 	else
 		return;
+
 	if(!running())
 		start();
 	else if(window)
@@ -85,7 +81,6 @@ void ManualGoto::run()
 	int result;
 
 	window = new ManualGotoWindow(mwindow, this);
-	window->create_objects();
 	result = window->run_window();
 
 	if (result == 0) // ok button or return pressed
@@ -163,7 +158,6 @@ void ManualGoto::run()
 }
 
 
-
 ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
  : BC_Window("Goto position - " PROGRAM_NAME,
 	mwindow->gui->get_abs_cursor_x(1) - 250 / 2,
@@ -176,13 +170,70 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
 	0,
 	1)
 {
+	int x = 76, y = 5;
+	int x1 = x;
+	const char *htxt;
+	int i, j, l, max;
+
 	this->mwindow = mwindow;
 	this->thread = thread;
 	numboxes = 0;
-}
 
-ManualGotoWindow::~ManualGotoWindow()
-{
+	timeformat = mwindow->edl->session->time_format;
+
+	switch(timeformat)
+	{
+	case TIME_HMS:
+	case TIME_HMS2:
+	case TIME_HMS3:
+		htxt = _("hour  min   sec     msec");
+		break;
+	case TIME_HMSF:
+		htxt = "hour  min   sec  frames";
+		break;
+	case TIME_SECONDS:
+		htxt = "  sec         msec";
+		break;
+	case TIME_SAMPLES:
+	case TIME_SAMPLES_HEX:
+		htxt = "   Audio samples";
+		timeformat = TIME_SAMPLES;
+		break;
+	case TIME_FRAMES:
+		htxt = "   Frames";
+		break;
+	case TIME_FEET_FRAMES:
+		htxt = "   Feet frames";
+		break;
+	}
+	Units::totext(timestring,
+		(double)0,
+		timeformat,
+		mwindow->edl->session->sample_rate,
+		mwindow->edl->session->frame_rate,
+		mwindow->edl->session->frames_per_foot);
+	numboxes = split_timestr(timestring);
+
+	set_icon(thread->icon_image);
+
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x1 - 2, y, htxt, SMALLFONT));
+	y += title->get_h() + 3;
+	add_subwindow(signtitle = new BC_Title(x1 - 17, y, "=", LARGEFONT));
+	for(i = 0; i < numboxes; i++)
+	{
+		l = strlen(timeparts[i]);
+		add_subwindow(boxes[i] = new ManualGotoNumber(this, 
+			x1, y, 9 * l + 6, l));
+		x1 += boxes[i]->get_w() + 4;
+	}
+
+	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+
+	set_entered_position_sec(thread->position);
+	activate();
+	show_window();
 }
 
 double ManualGotoWindow::get_entered_position_sec()
@@ -239,7 +290,6 @@ void ManualGotoWindow::set_entered_position_sec(double position)
 
 	for(i = 0; i < numboxes; i++)
 		boxes[i]->reshape_update(timeparts[i]);
-
 }
 
 void ManualGotoWindow::activate()
@@ -253,73 +303,6 @@ void ManualGotoWindow::activate()
 		boxes[i]->deactivate();
 	boxes[0]->activate();
 }
-
-void ManualGotoWindow::create_objects()
-{
-	int x = 76, y = 5;
-	int x1 = x;
-	const char *htxt;
-	int i, j, l, max;
-
-	timeformat = mwindow->edl->session->time_format;
-
-	switch(timeformat)
-	{
-	case TIME_HMS:
-	case TIME_HMS2:
-	case TIME_HMS3:
-		htxt = _("hour  min   sec     msec");
-		break;
-	case TIME_HMSF:
-		htxt = "hour  min   sec  frames";
-		break;
-	case TIME_SECONDS:
-		htxt = "  sec         msec";
-		break;
-	case TIME_SAMPLES:
-	case TIME_SAMPLES_HEX:
-		htxt = "   Audio samples";
-		timeformat = TIME_SAMPLES;
-		break;
-	case TIME_FRAMES:
-		htxt = "   Frames";
-		break;
-	case TIME_FEET_FRAMES:
-		htxt = "   Feet frames";
-		break;
-	}
-	Units::totext(timestring,
-		(double)0,
-		timeformat,
-		mwindow->edl->session->sample_rate,
-		mwindow->edl->session->frame_rate,
-		mwindow->edl->session->frames_per_foot);
-	numboxes = split_timestr(timestring);
-
-	set_icon(thread->icon_image);
-
-	BC_Title *title;
-	add_subwindow(title = new BC_Title(x1 - 2, y, htxt, SMALLFONT));
-	y += title->get_h() + 3;
-	add_subwindow(signtitle = new BC_Title(x1 - 17, y, "=", LARGEFONT));
-	for(i = 0; i < numboxes; i++)
-	{
-		l = strlen(timeparts[i]);
-		add_subwindow(boxes[i] = new ManualGotoNumber(this, 
-		    x1, y, 9 * l + 6, l));
-		x1 += boxes[i]->get_w() + 4;
-	}
-
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
-
-	set_entered_position_sec(thread->position);
-	activate();
-	show_window();
-}
-
-
-
 
 
 ManualGotoNumber::ManualGotoNumber(ManualGotoWindow *window, int x, int y, int w, int chars)
@@ -345,7 +328,6 @@ void ManualGotoNumber::activate()
 	BC_TextBox::activate();
 	select_whole_text(1);
 }
-
 
 void ManualGotoNumber::reshape_update(char *numstr)
 {
@@ -395,7 +377,6 @@ int ManualGotoNumber::keypress_event()
 		ok_key = 0;
 
 	if (!ok_key) return 1;
-
 
 // treat dot as tab - for use from numerical keypad
 	if (key == '.') 
