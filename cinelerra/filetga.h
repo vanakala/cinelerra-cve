@@ -81,14 +81,14 @@ private:
 		VFrame *frame, 
 		int64_t &file_offset);
 	static void bgr2rgb(unsigned char *dest,
-		 unsigned char *src,
-		 int width,
-		 int bytes,
-		 int alpha);
+		unsigned char *src,
+		int width,
+		int bytes,
+		int alpha);
 	static void upsample(unsigned char *dest,
-		  unsigned char *src,
-		  int width,
-		  int bytes);
+		unsigned char *src,
+		int width,
+		int bytes);
 };
 
 class TGAUnit : public FrameWriterUnit
@@ -96,6 +96,7 @@ class TGAUnit : public FrameWriterUnit
 public:
 	TGAUnit(FileTGA *file, FrameWriter *writer);
 	~TGAUnit();
+
 	VFrame *temp;
 	FileTGA *file;
 };
@@ -105,8 +106,6 @@ class TGAConfigVideo : public BC_Window
 public:
 	TGAConfigVideo(BC_WindowBase *gui, Asset *asset);
 	~TGAConfigVideo();
-	void create_objects();
-	void close_event();
 
 	ArrayList<BC_ListBoxItem*> compression_items;
 	Asset *asset;
@@ -120,6 +119,7 @@ public:
 		int y, 
 		Asset *asset, 
 		ArrayList<BC_ListBoxItem*> *compression_items);
+
 	int handle_event();
 	Asset *asset;
 };

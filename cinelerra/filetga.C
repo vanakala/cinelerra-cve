@@ -102,7 +102,6 @@ void FileTGA::get_parameters(BC_WindowBase *parent_window,
 	{
 		TGAConfigVideo *window = new TGAConfigVideo(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -136,7 +135,7 @@ const char* FileTGA::str_to_compression(const char *string)
 	return TGA_RGB;
 }
 
-int  FileTGA::colormodel_supported(int colormodel)
+int FileTGA::colormodel_supported(int colormodel)
 {
 	return colormodel;
 }
@@ -176,9 +175,9 @@ int64_t FileTGA::get_memory_usage()
 	return result;
 }
 
-
 #define FOOTERSIZE 26
 #define HEADERSIZE 18
+
 int FileTGA::read_frame_header(const char *path)
 {
 	int result = 0;
@@ -753,7 +752,6 @@ void FileTGA::rle_write(unsigned char *buffer,
 	}
 }
 
-
 void FileTGA::bgr2rgb(unsigned char *dest,
 	unsigned char *src,
 	int width,
@@ -840,6 +838,8 @@ TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset)
 	400,
 	100)
 {
+	int x = 10, y = 10;
+
 	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 
@@ -847,16 +847,6 @@ TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset)
 	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGBA_RLE)));
 	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGB)));
 	compression_items.append(new BC_ListBoxItem(FileTGA::compression_to_str(TGA_RGBA)));
-}
-
-TGAConfigVideo::~TGAConfigVideo()
-{
-	compression_items.remove_all_objects();
-}
-
-void TGAConfigVideo::create_objects()
-{
-	int x = 10, y = 10;
 
 	add_subwindow(new BC_Title(x, y, _("Compression:")));
 	TGACompression *textbox = new TGACompression(this, 
@@ -867,9 +857,9 @@ void TGAConfigVideo::create_objects()
 	add_subwindow(new BC_OKButton(this));
 }
 
-void TGAConfigVideo::close_event()
+TGAConfigVideo::~TGAConfigVideo()
 {
-	set_done(0);
+	compression_items.remove_all_objects();
 }
 
 
