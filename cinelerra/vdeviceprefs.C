@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "cwindow.h"
 #include "channeldb.h"
 #include "channelpicker.h"
 #ifdef HAVE_CONFIG_H
@@ -253,7 +254,7 @@ VDriverMenu::VDriverMenu(int x,
 		add_item(new VDriverItem(this, PLAYBACK_X11_XV_TITLE, PLAYBACK_X11_XV));
 #ifdef HAVE_GL
 // Check runtime glx version. pbuffer needs >= 1.3
-		if(get_opengl_version() >= 103)
+		if(get_opengl_version((BC_WindowBase *)device_prefs->pwindow->mwindow->cwindow->gui) >= 103)
 			add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
 #endif
 	}

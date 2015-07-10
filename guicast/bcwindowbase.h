@@ -205,7 +205,7 @@ public:
 // Not run in OpenGL thread because it has its own lock.
 	unsigned int get_shader(char *title, int *got_it);
 	void put_shader(unsigned int handle, char *title);
-	int get_opengl_version(void);
+	int get_opengl_version(BC_WindowBase *window);
 
 	int flash(int x, int y, int w, int h, int flush = 1);
 	int flash(int flush = 1);
