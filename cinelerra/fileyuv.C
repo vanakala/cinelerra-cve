@@ -172,18 +172,17 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 	return 0;
 }
 
-
 void FileYUV::get_parameters(BC_WindowBase *parent_window, 
-				Asset *asset, 
-				BC_WindowBase* &format_window,
-				int options,
-				FormatTools *format)
+	Asset *asset,
+	BC_WindowBase* &format_window,
+	int options,
+	FormatTools *format)
 {
 	if (!(options & SUPPORTS_VIDEO)) return;
 
 	YUVConfigVideo *config = new YUVConfigVideo(parent_window, asset, format);
 	format_window = config;
-	config->create_objects();
+
 	if (config->run_window() == 0) 
 	{
 		// save the new path and pipe to the asset
@@ -228,7 +227,6 @@ int FileYUV::get_best_colormodel(Asset *asset, int driver)
 	return BC_YUV420P;
 }
 
-
 int FileYUV::colormodel_supported(int color_model) 
 {
 	return BC_YUV420P;
@@ -260,25 +258,6 @@ YUVConfigVideo::YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset, Forma
 		500,
 		240)
 {
-	set_icon(theme_global->get_image("mwindow_icon"));
-	this->asset = asset;
-	this->format = format;
-	this->defaults = format->mwindow->defaults;
-}
-
-YUVConfigVideo::~YUVConfigVideo()
-{
-	delete path_textbox;
-	delete path_recent;
-	delete pipe_checkbox;
-	delete pipe_textbox;
-	delete pipe_recent;
-	delete mpeg2enc;
-	delete ffmpeg;
-}
-
-void YUVConfigVideo::create_objects()
-{
 	BC_Title *bt;
 	int init_x = 10;
 	int init_y = 10;
@@ -286,6 +265,10 @@ void YUVConfigVideo::create_objects()
 	int x = init_x;
 	int y = init_y;
 
+	set_icon(theme_global->get_image("mwindow_icon"));
+	this->asset = asset;
+	this->format = format;
+	this->defaults = format->mwindow->defaults;
 	add_subwindow(new BC_Title(init_x, y, _("Output Path:")));
 	add_subwindow(path_textbox = new BC_TextBox(init_x + 100, y, 350, 1, asset->path));
 	add_subwindow(path_recent = new BC_RecentList("PATH", defaults, path_textbox, 10, init_x + 450, y, path_textbox->get_w(), 100));
@@ -362,7 +345,7 @@ PipePreset::PipePreset(int x, int y, const char *title, BC_TextBox *textbox, BC_
  : BC_PopupMenu(x, y, 150, title)
 {
 	this->pipe_textbox = textbox;
-	this->pipe_checkbox =checkbox;
+	this->pipe_checkbox = checkbox;
 	this->title = title;
 }
 

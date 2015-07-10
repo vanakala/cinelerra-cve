@@ -39,10 +39,10 @@ public:
 	~FileYUV();
 
 	static void get_parameters(BC_WindowBase *parent_window, 
-					Asset *asset, 
-					BC_WindowBase* &format_window,
-					int options,
-					FormatTools *format);
+		Asset *asset,
+		BC_WindowBase* &format_window,
+		int options,
+		FormatTools *format);
 
 	int open_file(int rd, int wr);
 	static int check_sig(Asset *asset);
@@ -69,9 +69,7 @@ class YUVConfigVideo : public BC_Window
 public:
 	YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 		FormatTools *format);
-	~YUVConfigVideo();
 
-	void create_objects();
 	void close_event();
 
 	Asset *asset;
@@ -91,10 +89,10 @@ class PipeCheckBox : public BC_CheckBox
 {
 public:
 	PipeCheckBox(int x, int y, int value);
+
 	int handle_event();
 	BC_TextBox *textbox;
 };
-
 
 
 class PipePreset : public BC_PopupMenu
@@ -108,6 +106,5 @@ private:
 	BC_CheckBox *pipe_checkbox;
 	const char *title;
 };
-
 
 #endif
