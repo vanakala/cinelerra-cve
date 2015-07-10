@@ -41,10 +41,6 @@ FilePNG::FilePNG(Asset *asset, File *file)
 {
 }
 
-FilePNG::~FilePNG()
-{
-}
-
 int FilePNG::check_sig(Asset *asset)
 {
 	int l;
@@ -79,7 +75,6 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 	{
 		PNGConfigVideo *window = new PNGConfigVideo(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -382,24 +377,12 @@ PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	200,
 	100)
 {
+	int x = 10, y = 10;
+
 	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
-}
-
-PNGConfigVideo::~PNGConfigVideo()
-{
-}
-
-void PNGConfigVideo::create_objects()
-{
-	int x = 10, y = 10;
 	add_subwindow(new PNGUseAlpha(this, x, y));
 	add_subwindow(new BC_OKButton(this));
-}
-
-void PNGConfigVideo::close_event()
-{
-	set_done(0);
 }
 
 

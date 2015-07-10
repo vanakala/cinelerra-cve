@@ -32,7 +32,6 @@ class FilePNG : public FileList
 {
 public:
 	FilePNG(Asset *asset, File *file);
-	~FilePNG();
 
 	static int check_sig(Asset *asset);
 	static void get_parameters(BC_WindowBase *parent_window, 
@@ -67,10 +66,6 @@ class PNGConfigVideo : public BC_Window
 {
 public:
 	PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset);
-	~PNGConfigVideo();
-
-	void create_objects();
-	void close_event();
 
 	Asset *asset;
 };
@@ -80,6 +75,7 @@ class PNGUseAlpha : public BC_CheckBox
 {
 public:
 	PNGUseAlpha(PNGConfigVideo *gui, int x, int y);
+
 	int handle_event();
 	PNGConfigVideo *gui;
 };
