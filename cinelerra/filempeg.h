@@ -173,10 +173,6 @@ class MPEGConfigAudio : public BC_Window
 {
 public:
 	MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset);
-	~MPEGConfigAudio();
-
-	void create_objects();
-	void close_event();
 
 	MPEGABitrate *bitrate;
 	char string[BCTEXTLEN];
@@ -188,7 +184,7 @@ class MPEGLayer : public BC_PopupMenu
 {
 public:
 	MPEGLayer(int x, int y, MPEGConfigAudio *gui);
-	void create_objects();
+
 	int handle_event();
 	static int string_to_layer(char *string);
 	static char* layer_to_string(int derivative);
@@ -201,7 +197,6 @@ class MPEGABitrate : public BC_PopupMenu
 public:
 	MPEGABitrate(int x, int y, MPEGConfigAudio *gui);
 
-	void create_objects();
 	void set_layer(int layer);
 
 	int handle_event();
@@ -217,7 +212,7 @@ class MPEGPreset : public BC_PopupMenu
 {
 public:
 	MPEGPreset(int x, int y, MPEGConfigVideo *gui);
-	void create_objects();
+
 	int handle_event();
 	static int string_to_value(char *string);
 	static char* value_to_string(int value);
@@ -228,7 +223,7 @@ class MPEGColorModel : public BC_PopupMenu
 {
 public:
 	MPEGColorModel(int x, int y, MPEGConfigVideo *gui);
-	void create_objects();
+
 	int handle_event();
 	static int string_to_cmodel(char *string);
 	static char* cmodel_to_string(int cmodel);
@@ -241,7 +236,7 @@ class MPEGDerivative : public BC_PopupMenu
 {
 public:
 	MPEGDerivative(int x, int y, MPEGConfigVideo *gui);
-	void create_objects();
+
 	int handle_event();
 	static int string_to_derivative(char *string);
 	static char* derivative_to_string(int derivative);
@@ -311,10 +306,7 @@ class MPEGConfigVideo : public BC_Window
 public:
 	MPEGConfigVideo(BC_WindowBase *parent_window, 
 		Asset *asset);
-	~MPEGConfigVideo();
 
-	void create_objects();
-	void close_event();
 	void delete_cmodel_objs();
 	void reset_cmodel();
 	void update_cmodel_objs();

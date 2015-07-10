@@ -129,7 +129,6 @@ void FileMPEG::get_parameters(BC_WindowBase *parent_window,
 	{
 		MPEGConfigAudio *window = new MPEGConfigAudio(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -138,7 +137,6 @@ void FileMPEG::get_parameters(BC_WindowBase *parent_window,
 	{
 		MPEGConfigVideo *window = new MPEGConfigVideo(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -1344,19 +1342,11 @@ MPEGConfigAudio::MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 	0,
 	1)
 {
-	set_icon(theme_global->get_image("mwindow_icon"));
-	this->asset = asset;
-}
-
-MPEGConfigAudio::~MPEGConfigAudio()
-{
-}
-
-void MPEGConfigAudio::create_objects()
-{
 	int x = 10, y = 10;
 	int x1 = 150;
-	MPEGLayer *layer;
+
+	set_icon(theme_global->get_image("mwindow_icon"));
+	this->asset = asset;
 
 	if(asset->format == FILE_MPEG)
 	{
@@ -1365,22 +1355,15 @@ void MPEGConfigAudio::create_objects()
 	}
 
 	add_tool(new BC_Title(x, y, _("Layer:")));
-	add_tool(layer = new MPEGLayer(x1, y, this));
-	layer->create_objects();
+	add_tool(new MPEGLayer(x1, y, this));
 
 	y += 30;
 	add_tool(new BC_Title(x, y, _("Kbits per second:")));
 	add_tool(bitrate = new MPEGABitrate(x1, y, this));
-	bitrate->create_objects();
 
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 	flush();
-}
-
-void MPEGConfigAudio::close_event()
-{
-	set_done(0);
 }
 
 
@@ -1388,10 +1371,6 @@ MPEGLayer::MPEGLayer(int x, int y, MPEGConfigAudio *gui)
  : BC_PopupMenu(x, y, 100, layer_to_string(gui->asset->ampeg_derivative))
 {
 	this->gui = gui;
-}
-
-void MPEGLayer::create_objects()
-{
 	add_item(new BC_MenuItem(layer_to_string(2)));
 	add_item(new BC_MenuItem(layer_to_string(3)));
 }
@@ -1439,10 +1418,6 @@ MPEGABitrate::MPEGABitrate(int x, int y, MPEGConfigAudio *gui)
 	bitrate_to_string(gui->string, gui->asset->ampeg_bitrate))
 {
 	this->gui = gui;
-}
-
-void MPEGABitrate::create_objects()
-{
 	set_layer(gui->asset->ampeg_derivative);
 }
 
@@ -1516,20 +1491,13 @@ MPEGConfigVideo::MPEGConfigVideo(BC_WindowBase *parent_window,
 	0,
 	1)
 {
-	set_icon(theme_global->get_image("mwindow_icon"));
-	this->asset = asset;
-	reset_cmodel();
-}
-
-MPEGConfigVideo::~MPEGConfigVideo()
-{
-}
-
-void MPEGConfigVideo::create_objects()
-{
 	int x = 10, y = 10;
 	int x1 = x + 150;
 	int x2 = x + 300;
+
+	set_icon(theme_global->get_image("mwindow_icon"));
+	this->asset = asset;
+	reset_cmodel();
 
 	if(asset->format == FILE_MPEG)
 	{
@@ -1539,7 +1507,6 @@ void MPEGConfigVideo::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
 	add_subwindow(cmodel = new MPEGColorModel(x1, y, this));
-	cmodel->create_objects();
 	y += 30;
 
 	update_cmodel_objs();
@@ -1548,12 +1515,6 @@ void MPEGConfigVideo::create_objects()
 	show_window();
 	flush();
 }
-
-void MPEGConfigVideo::close_event()
-{
-	set_done(0);
-}
-
 
 void MPEGConfigVideo::delete_cmodel_objs()
 {
@@ -1604,14 +1565,12 @@ void MPEGConfigVideo::update_cmodel_objs()
 		add_subwindow(title = new BC_Title(x, y + 5, _("Format Preset:")));
 		titles.append(title);
 		add_subwindow(preset = new MPEGPreset(x1, y, this));
-		preset->create_objects();
 		y += 30;
 	}
 
 	add_subwindow(title = new BC_Title(x, y + 5, _("Derivative:")));
 	titles.append(title);
 	add_subwindow(derivative = new MPEGDerivative(x1, y, this));
-	derivative->create_objects();
 	y += 30;
 
 	add_subwindow(title = new BC_Title(x, y + 5, _("Bitrate:")));
@@ -1654,10 +1613,6 @@ MPEGDerivative::MPEGDerivative(int x, int y, MPEGConfigVideo *gui)
  : BC_PopupMenu(x, y, 150, derivative_to_string(gui->asset->vmpeg_derivative))
 {
 	this->gui = gui;
-}
-
-void MPEGDerivative::create_objects()
-{
 	add_item(new BC_MenuItem(derivative_to_string(1)));
 	add_item(new BC_MenuItem(derivative_to_string(2)));
 }
@@ -1698,10 +1653,7 @@ MPEGPreset::MPEGPreset(int x, int y, MPEGConfigVideo *gui)
  : BC_PopupMenu(x, y, 200, value_to_string(gui->asset->vmpeg_preset))
 {
 	this->gui = gui;
-}
 
-void MPEGPreset::create_objects()
-{
 	for(int i = 0; i < 10; i++)
 	{
 		add_item(new BC_MenuItem(value_to_string(i)));
@@ -1845,10 +1797,7 @@ MPEGColorModel::MPEGColorModel(int x, int y, MPEGConfigVideo *gui)
  : BC_PopupMenu(x, y, 150, cmodel_to_string(gui->asset->vmpeg_cmodel))
 {
 	this->gui = gui;
-}
 
-void MPEGColorModel::create_objects()
-{
 	add_item(new BC_MenuItem(cmodel_to_string(0)));
 	add_item(new BC_MenuItem(cmodel_to_string(1)));
 }
