@@ -375,7 +375,6 @@ void FileSndFile::get_parameters(BC_WindowBase *parent_window,
 		{
 			SndFileConfig *window = new SndFileConfig(parent_window, asset);
 			format_window = window;
-			window->create_objects();
 		}
 		format_window->run_window();
 		delete format_window;
@@ -389,17 +388,10 @@ SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
 	250,
 	250)
 {
+	int x = 10, y = 10;
+
 	this->asset = asset;
 	set_icon(theme_global->get_image("mwindow_icon"));
-}
-
-SndFileConfig::~SndFileConfig()
-{
-}
-
-void SndFileConfig::create_objects()
-{
-	int x = 10, y = 10;
 
 	switch(asset->format)
 	{

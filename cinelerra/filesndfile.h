@@ -89,9 +89,7 @@ class SndFileConfig : public BC_Window
 {
 public:
 	SndFileConfig(BC_WindowBase *parent_window, Asset *asset);
-	~SndFileConfig();
 
-	void create_objects();
 	SndFileHILO *hilo;
 	SndFileLOHI *lohi;
 	Asset *asset;
