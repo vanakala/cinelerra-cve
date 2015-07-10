@@ -36,7 +36,6 @@ class FileTIFF : public FileList
 {
 public:
 	FileTIFF(Asset *asset, File *file);
-	~FileTIFF();
 
 	static void get_parameters(BC_WindowBase *parent_window, 
 		Asset *asset, 
@@ -94,13 +93,9 @@ class TIFFConfigVideo : public  BC_Window
 {
 public:
 	TIFFConfigVideo(BC_WindowBase *parent_window, Asset *asset);
-	~TIFFConfigVideo();
 
-	void create_objects();
-	void close_event();
 	static char* alpha_to_codec(int use_alpha);
 	static int codec_to_alpha(char *codec);
-
 	Asset *asset;
 };
 
@@ -109,9 +104,8 @@ class TIFFColorspace : public BC_PopupMenu
 {
 public:
 	TIFFColorspace(TIFFConfigVideo *gui, int x, int y, int w);
-	void create_objects();
+
 	int handle_event();
-	TIFFConfigVideo *gui;
 };
 
 
@@ -119,6 +113,7 @@ class TIFFColorspaceItem : public BC_MenuItem
 {
 public:
 	TIFFColorspaceItem(TIFFConfigVideo *gui, int value);
+
 	int handle_event();
 	TIFFConfigVideo *gui;
 	int value;
@@ -129,7 +124,7 @@ class TIFFCompression : public BC_PopupMenu
 {
 public:
 	TIFFCompression(TIFFConfigVideo *gui, int x, int y, int w);
-	void create_objects();
+
 	int handle_event();
 	TIFFConfigVideo *gui;
 };

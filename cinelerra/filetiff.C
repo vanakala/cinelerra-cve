@@ -41,10 +41,6 @@ FileTIFF::FileTIFF(Asset *asset, File *file)
 	asset->video_data = 1;
 }
 
-FileTIFF::~FileTIFF()
-{
-}
-
 void FileTIFF::get_parameters(BC_WindowBase *parent_window, 
 	Asset *asset, 
 	BC_WindowBase* &format_window,
@@ -54,7 +50,6 @@ void FileTIFF::get_parameters(BC_WindowBase *parent_window,
 	{
 		TIFFConfigVideo *window = new TIFFConfigVideo(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -583,34 +578,18 @@ TIFFConfigVideo::TIFFConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	400,
 	200)
 {
-	set_icon(theme_global->get_image("mwindow_icon"));
-	this->asset = asset;
-}
-
-TIFFConfigVideo::~TIFFConfigVideo()
-{
-}
-
-void TIFFConfigVideo::create_objects()
-{
 	int x = 10, y = 10;
 
+	set_icon(theme_global->get_image("mwindow_icon"));
+	this->asset = asset;
+
 	add_subwindow(new BC_Title(x, y, "Colorspace:"));
-	TIFFColorspace *menu1;
-	add_subwindow(menu1 = new TIFFColorspace(this, x + 150, y, 200));
-	menu1->create_objects();
+	add_subwindow(new TIFFColorspace(this, x + 150, y, 200));
 	y += 40;
 	add_subwindow(new BC_Title(x, y, "Compression:"));
-	TIFFCompression *menu2;
-	add_subwindow(menu2 = new TIFFCompression(this, x + 150, y, 200));
-	menu2->create_objects();
+	add_subwindow(new TIFFCompression(this, x + 150, y, 200));
 
 	add_subwindow(new BC_OKButton(this));
-}
-
-void TIFFConfigVideo::close_event()
-{
-	set_done(0);
 }
 
 
@@ -620,20 +599,15 @@ TIFFColorspace::TIFFColorspace(TIFFConfigVideo *gui, int x, int y, int w)
 	w,
 	FileTIFF::cmodel_to_str(gui->asset->tiff_cmodel))
 {
-	this->gui = gui;
+	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_888));
+	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_8888));
+	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_FLOAT));
+	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_FLOAT));
 }
 
 int TIFFColorspace::handle_event()
 {
 	return 1;
-}
-
-void TIFFColorspace::create_objects()
-{
-	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_888));
-	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_8888));
-	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_FLOAT));
-	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_FLOAT));
 }
 
 
@@ -650,23 +624,19 @@ int TIFFColorspaceItem::handle_event()
 	return 0;
 }
 
+
 TIFFCompression::TIFFCompression(TIFFConfigVideo *gui, int x, int y, int w)
  : BC_PopupMenu(x, y, w, FileTIFF::compression_to_str(gui->asset->tiff_compression))
 {
 	this->gui = gui;
+	add_item(new TIFFCompressionItem(gui, FileTIFF::NONE));
+	add_item(new TIFFCompressionItem(gui, FileTIFF::PACK_BITS));
 }
 
 int TIFFCompression::handle_event()
 {
 	return 1;
 }
-
-void TIFFCompression::create_objects()
-{
-	add_item(new TIFFCompressionItem(gui, FileTIFF::NONE));
-	add_item(new TIFFCompressionItem(gui, FileTIFF::PACK_BITS));
-}
-
 
 TIFFCompressionItem::TIFFCompressionItem(TIFFConfigVideo *gui, int value)
  : BC_MenuItem(FileTIFF::compression_to_str(value))
