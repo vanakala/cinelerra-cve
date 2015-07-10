@@ -91,7 +91,6 @@ void FileOGG::get_parameters(BC_WindowBase *parent_window,
 	{
 		OGGConfigAudio *window = new OGGConfigAudio(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -100,7 +99,6 @@ void FileOGG::get_parameters(BC_WindowBase *parent_window,
 	{
 		OGGConfigVideo *window = new OGGConfigVideo(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -1164,19 +1162,12 @@ OGGConfigAudio::OGGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 	350,
 	250)
 {
-	set_icon(theme_global->get_image("mwindow_icon"));
-	this->asset = asset;
-}
-
-OGGConfigAudio::~OGGConfigAudio()
-{
-}
-
-void OGGConfigAudio::create_objects()
-{
 	int x = 10, y = 10;
 	int x1 = 150;
 	char string[BCTEXTLEN];
+
+	set_icon(theme_global->get_image("mwindow_icon"));
+	this->asset = asset;
 
 	add_tool(fixed_bitrate = new OGGVorbisFixedBitrate(x, y, this));
 	add_tool(variable_bitrate = new OGGVorbisVariableBitrate(x1, y, this));
@@ -1199,11 +1190,6 @@ void OGGConfigAudio::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 	flush();
-}
-
-void OGGConfigAudio::close_event()
-{
-	set_done(0);
 }
 
 
@@ -1286,19 +1272,12 @@ OGGConfigVideo::OGGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	450,
 	220)
 {
-	set_icon(theme_global->get_image("mwindow_icon"));
-	this->asset = asset;
-}
-
-OGGConfigVideo::~OGGConfigVideo()
-{
-}
-
-void OGGConfigVideo::create_objects()
-{
 	int x = 10, y = 10;
 	int x1 = x + 150;
 	int x2 = x + 300;
+
+	set_icon(theme_global->get_image("mwindow_icon"));
+	this->asset = asset;
 
 	add_subwindow(new BC_Title(x, y + 5, _("Bitrate:")));
 	add_subwindow(new OGGTheoraBitrate(x1, y, this));
@@ -1339,11 +1318,6 @@ void OGGConfigVideo::create_objects()
 	add_subwindow(new BC_OKButton(this));
 }
 
-
-void OGGConfigVideo::close_event()
-{
-	set_done(0);
-}
 
 OGGTheoraBitrate::OGGTheoraBitrate(int x, int y, OGGConfigVideo *gui)
  : BC_TextBox(x, y, 100, 1, gui->asset->theora_bitrate)

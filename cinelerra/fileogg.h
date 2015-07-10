@@ -202,10 +202,6 @@ class OGGConfigAudio: public BC_Window
 {
 public:
 	OGGConfigAudio(BC_WindowBase *parent_window, Asset *asset);
-	~OGGConfigAudio();
-
-	void create_objects();
-	void close_event();
 
 	Asset *asset;
 	OGGVorbisFixedBitrate *fixed_bitrate;
@@ -269,10 +265,6 @@ class OGGConfigVideo: public BC_Window
 {
 public:
 	OGGConfigVideo(BC_WindowBase *parent_window, Asset *asset);
-	~OGGConfigVideo();
-
-	void create_objects();
-	void close_event();
 
 	OGGTheoraFixedBitrate *fixed_bitrate;
 	OGGTheoraFixedQuality *fixed_quality;
