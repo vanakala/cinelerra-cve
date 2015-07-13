@@ -43,62 +43,52 @@ class ExportEDLAsset
 {
 public:
 	ExportEDLAsset(MWindow *mwindow, EDL *edl);
-	~ExportEDLAsset();
+
 	// EDL being exported
 	EDL *edl;
 	// path to file
 	char path[BCTEXTLEN];
 	// type of EDL
 	int edl_type;
-	
+
 	// We are currently exporting a track at once
 	int track_number;
-	
-	
 	int export_it();
 	MWindow *mwindow;
-	
-	int load_defaults();
-	int save_defaults();
+
+	void load_defaults();
+	void save_defaults();
 private:
-	int edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sourceoutpoint, char *destinpoint, char *destoutpoint, char *reel_name);
+	void edit_to_timecodes(Edit *edit, char *sourceinpoint, char *sourceoutpoint, char *destinpoint, char *destoutpoint, char *reel_name);
 	void double_to_CMX3600(double seconds, double frame_rate, char *str);
-	
 };
 
 class ExportEDLItem : public BC_MenuItem
 {
 public:
 	ExportEDLItem(MWindow *mwindow);
+
 	int handle_event();
 	MWindow *mwindow;
 };
-
 
 
 class ExportEDL : public Thread
 {
 public:
 	ExportEDL(MWindow *mwindow);
-	~ExportEDL();
 
 	void start_interactive();
 	void run();
 
-
 // Force filename to have a 0 padded number if rendering to a list.
-
 	MWindow *mwindow;
-//	Mutex *package_lock, *counter_lock;
-// Copy of mwindow preferences
-//	Preferences *preferences;
 // Total selection to render in seconds
 	double total_start, total_end;
 
 // Current open RenderWindow
 	ExportEDLWindow *exportedl_window;
 	ExportEDLAsset *exportasset;
-
 };
 
 
@@ -106,9 +96,6 @@ class ExportEDLWindow : public BC_Window
 {
 public:
 	ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportEDLAsset *exportasset);
-	~ExportEDLWindow();
-
-	int create_objects();
 
 	ExportEDLAsset *exportasset;
 
@@ -123,16 +110,13 @@ public:
 };
 
 
-
-
-
 class ExportEDLPathText : public BC_TextBox
 {
 public:
 	ExportEDLPathText(int x, int y, ExportEDLWindow *window);
-	~ExportEDLPathText();
+
 	int handle_event();
-	
+
 	ExportEDLWindow *window;
 };
 
@@ -145,17 +129,6 @@ public:
 		int w, 
 		int h, 
 		ArrayList<BC_ListBoxItem*> *track_list);
-
-	int handle_event();
-	ExportEDLWindow *window;
 };
-
-
-
-
-
-
-
-
 
 #endif
