@@ -94,7 +94,6 @@ void FileJPEG::get_parameters(BC_WindowBase *parent_window,
 	{
 		JPEGConfigVideo *window = new JPEGConfigVideo(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -228,17 +227,9 @@ JPEGConfigVideo::JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	400,
 	100)
 {
-	set_icon(theme_global->get_image("mwindow_icon"));
-	this->asset = asset;
-}
-
-JPEGConfigVideo::~JPEGConfigVideo()
-{
-}
-
-void JPEGConfigVideo::create_objects()
-{
 	int x = 10, y = 10;
+
+	set_icon(theme_global->get_image("mwindow_icon"));
 
 	add_subwindow(new BC_Title(x, y, _("Quality:")));
 	add_subwindow(new BC_ISlider(x + 80, 
@@ -255,9 +246,3 @@ void JPEGConfigVideo::create_objects()
 
 	add_subwindow(new BC_OKButton(this));
 }
-
-void JPEGConfigVideo::close_event()
-{
-	set_done(0);
-}
-
