@@ -82,10 +82,6 @@ class EXRConfigVideo : public BC_Window
 {
 public:
 	EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset);
-	~EXRConfigVideo();
-
-	void create_objects();
-	void close_event();
 
 	Asset *asset;
 };
@@ -95,6 +91,7 @@ class EXRUseAlpha : public BC_CheckBox
 {
 public:
 	EXRUseAlpha(EXRConfigVideo *gui, int x, int y);
+
 	int handle_event();
 	EXRConfigVideo *gui;
 };
@@ -103,15 +100,15 @@ class EXRCompression : public BC_PopupMenu
 {
 public:
 	EXRCompression(EXRConfigVideo *gui, int x, int y, int w);
-	void create_objects();
+
 	int handle_event();
-	EXRConfigVideo *gui;
 };
 
 class EXRCompressionItem : public BC_MenuItem
 {
 public:
 	EXRCompressionItem(EXRConfigVideo *gui, int value);
+
 	int handle_event();
 	EXRConfigVideo *gui;
 	int value;

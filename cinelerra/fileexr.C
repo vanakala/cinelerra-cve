@@ -46,7 +46,6 @@ class EXRIStream : public Imf::IStream
 {
 public:
 	EXRIStream(char *data, int size);
-	~EXRIStream();
 
 	bool read (char c[], int n);
 	Imf::Int64 tellg ();
@@ -63,7 +62,6 @@ class EXROStream : public Imf::OStream
 {
 public:
 	EXROStream(VFrame *data);
-	~EXROStream();
 
 	virtual void write(const char c[], int n);
 	virtual Imf::Int64 tellp();
@@ -81,10 +79,6 @@ EXRIStream::EXRIStream(char *data, int size)
 	this->data = data;
 	this->size = size;
 	position = 0;
-}
-
-EXRIStream::~EXRIStream()
-{
 }
 
 bool EXRIStream::read(char c[], int n)
@@ -124,10 +118,6 @@ EXROStream::EXROStream(VFrame *data)
 {
 	this->data = data;
 	position = 0;
-}
-
-EXROStream::~EXROStream()
-{
 }
 
 void EXROStream::write(const char c[], int n)
@@ -246,7 +236,6 @@ void FileEXR::get_parameters(BC_WindowBase *parent_window,
 	{
 		EXRConfigVideo *window = new EXRConfigVideo(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -528,32 +517,19 @@ EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
 	300,
 	BC_OKButton::calculate_h() + 100)
 {
+	int x = 10, y = 10;
+
 	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
-}
 
-EXRConfigVideo::~EXRConfigVideo()
-{
-}
-
-void EXRConfigVideo::create_objects()
-{
-	int x = 10, y = 10;
 	add_subwindow(new EXRUseAlpha(this, x, y));
 	y += 30;
 	EXRCompression *menu;
 	add_subwindow(new BC_Title(x, y, "Compression:"));
 	x += 110;
 	add_subwindow(menu = new EXRCompression(this, x, y, 100));
-	menu->create_objects();
 	add_subwindow(new BC_OKButton(this));
 }
-
-void EXRConfigVideo::close_event()
-{
-	set_done(0);
-}
-
 
 EXRUseAlpha::EXRUseAlpha(EXRConfigVideo *gui, int x, int y)
  : BC_CheckBox(x, y, gui->asset->exr_use_alpha, _("Use alpha"))
@@ -572,11 +548,6 @@ EXRCompression::EXRCompression(EXRConfigVideo *gui, int x, int y, int w)
 	y,
 	w, 
 	FileEXR::compression_to_str(gui->asset->exr_compression))
-{
-	this->gui = gui;
-}
-
-void EXRCompression::create_objects()
 {
 	add_item(new EXRCompressionItem(gui, FileEXR::NONE));
 	add_item(new EXRCompressionItem(gui, FileEXR::PIZ));
