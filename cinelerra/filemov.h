@@ -160,8 +160,6 @@ public:
 	MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset);
 	~MOVConfigAudio();
 
-	void create_objects();
-	void close_event();
 	void update_parameters();
 	void reset();
 
@@ -185,6 +183,7 @@ class MOVConfigAudioPopup : public BC_PopupTextBox
 {
 public:
 	MOVConfigAudioPopup(MOVConfigAudio *popup, int x, int y);
+
 	int handle_event();
 	MOVConfigAudio *popup;
 };
@@ -198,6 +197,7 @@ public:
 		int x,
 		int y,
 		int *output);
+
 	int handle_event();
 	int *output;
 	MOVConfigAudio *popup;
@@ -213,8 +213,7 @@ public:
 		int y, 
 		int *output);
 	~MOVConfigAudioNum();
-	
-	void create_objects();
+
 	int handle_event();
 	int *output;
 	MOVConfigAudio *popup;
@@ -240,8 +239,6 @@ public:
 		const char *locked_compressor);
 	~MOVConfigVideo();
 
-	void create_objects();
-	void close_event();
 	void reset();
 
 	void update_parameters();
@@ -285,6 +282,7 @@ class MOVConfigVideoPopup : public BC_PopupTextBox
 {
 public:
 	MOVConfigVideoPopup(MOVConfigVideo *popup, int x, int y);
+
 	int handle_event();
 	MOVConfigVideo *popup;
 };
@@ -342,8 +340,7 @@ public:
 		int max,
 		int *output);
 	~MOVConfigVideoNum();
-	
-	void create_objects();
+
 	int handle_event();
 	int *output;
 	MOVConfigVideo *popup;

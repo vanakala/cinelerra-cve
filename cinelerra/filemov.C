@@ -109,7 +109,6 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 	{
 		MOVConfigAudio *window = new MOVConfigAudio(parent_window, asset);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -120,7 +119,6 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 			asset, 
 			locked_compressor);
 		format_window = window;
-		window->create_objects();
 		window->run_window();
 		delete window;
 	}
@@ -1130,34 +1128,11 @@ MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 	350,
 	250)
 {
+	int x = 10, y = 10;
+
 	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
-	compression_popup = 0;
 	reset();
-}
-
-MOVConfigAudio::~MOVConfigAudio()
-{
-	if(compression_popup) delete compression_popup;
-	compression_items.remove_all_objects();
-}
-
-void MOVConfigAudio::reset()
-{
-	bits_title = 0;
-	dither = 0;
-	vorbis_min_bitrate = 0;
-	vorbis_bitrate = 0;
-	vorbis_max_bitrate = 0;
-	vorbis_vbr = 0;
-	mp3_bitrate = 0;
-	mp4a_bitrate = 0;
-	mp4a_quantqual = 0;
-}
-
-void MOVConfigAudio::create_objects()
-{
-	int x = 10, y = 10;
 
 	if(asset->format == FILE_MOV)
 	{
@@ -1184,6 +1159,25 @@ void MOVConfigAudio::create_objects()
 	update_parameters();
 
 	add_subwindow(new BC_OKButton(this));
+}
+
+MOVConfigAudio::~MOVConfigAudio()
+{
+	if(compression_popup) delete compression_popup;
+	compression_items.remove_all_objects();
+}
+
+void MOVConfigAudio::reset()
+{
+	bits_title = 0;
+	dither = 0;
+	vorbis_min_bitrate = 0;
+	vorbis_bitrate = 0;
+	vorbis_max_bitrate = 0;
+	vorbis_vbr = 0;
+	mp3_bitrate = 0;
+	mp4a_bitrate = 0;
+	mp4a_quantqual = 0;
 }
 
 void MOVConfigAudio::update_parameters()
@@ -1227,7 +1221,6 @@ void MOVConfigAudio::update_parameters()
 			y, 
 			&asset->mp3_bitrate);
 		mp3_bitrate->set_increment(1000);
-		mp3_bitrate->create_objects();
 	}
 	else
 	if(!strcasecmp(asset->acodec, QUICKTIME_ULAW))
@@ -1262,10 +1255,6 @@ void MOVConfigAudio::update_parameters()
 			y, 
 			&asset->vorbis_max_bitrate);
 		vorbis_max_bitrate->set_increment(1000);
-
-		vorbis_min_bitrate->create_objects();
-		vorbis_bitrate->create_objects();
-		vorbis_max_bitrate->create_objects();
 	}
 	else
 	if(!strcasecmp(asset->acodec, QUICKTIME_MP4A))
@@ -1276,7 +1265,6 @@ void MOVConfigAudio::update_parameters()
 			y, 
 			&asset->mp4a_bitrate);
 		mp4a_bitrate->set_increment(1000);
-		mp4a_bitrate->create_objects();
 
 		y += 30;
 		mp4a_quantqual = new MOVConfigAudioNum(this, 
@@ -1285,13 +1273,7 @@ void MOVConfigAudio::update_parameters()
 			y, 
 			&asset->mp4a_quantqual);
 		mp4a_quantqual->set_increment(1);
-		mp4a_quantqual->create_objects();
 	}
-}
-
-void MOVConfigAudio::close_event()
-{
-	set_done(0);
 }
 
 
@@ -1326,16 +1308,12 @@ MOVConfigAudioNum::MOVConfigAudioNum(MOVConfigAudio *popup, char *title_text, in
 	this->output = output;
 	this->x = x;
 	this->y = y;
+	popup->add_subwindow(title = new BC_Title(x, y, title_text));
 }
 
 MOVConfigAudioNum::~MOVConfigAudioNum()
 {
 	if(!popup->get_deleting()) delete title;
-}
-
-void MOVConfigAudioNum::create_objects()
-{
-	popup->add_subwindow(title = new BC_Title(x, y, title_text));
 }
 
 int MOVConfigAudioNum::handle_event()
@@ -1374,23 +1352,13 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 	420,
 	420)
 {
+	int x = 10, y = 10;
 	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
 	this->locked_compressor = locked_compressor;
 	compression_popup = 0;
 
 	reset();
-}
-
-MOVConfigVideo::~MOVConfigVideo()
-{
-	if(compression_popup) delete compression_popup;
-	compression_items.remove_all_objects();
-}
-
-void MOVConfigVideo::create_objects()
-{
-	int x = 10, y = 10;
 
 	if(asset->format == FILE_MOV)
 	{
@@ -1451,11 +1419,11 @@ void MOVConfigVideo::create_objects()
 	add_subwindow(new BC_OKButton(this));
 }
 
-void MOVConfigVideo::close_event()
+MOVConfigVideo::~MOVConfigVideo()
 {
-	set_done(0);
+	if(compression_popup) delete compression_popup;
+	compression_items.remove_all_objects();
 }
-
 
 void MOVConfigVideo::reset()
 {
@@ -1525,7 +1493,6 @@ void MOVConfigVideo::update_parameters()
 
 	const char *vcodec = asset->vcodec;
 	if(locked_compressor) vcodec = locked_compressor;
-
 // H264 parameters
 	if(!strcmp(vcodec, QUICKTIME_H264) ||
 		!strcmp(vcodec, QUICKTIME_HV64))
@@ -1537,7 +1504,6 @@ void MOVConfigVideo::update_parameters()
 			y, 
 			&asset->h264_bitrate);
 		h264_bitrate->set_increment(1000000);
-		h264_bitrate->create_objects();
 		add_subwindow(h264_fix_bitrate = new MOVConfigVideoFixBitrate(x + 260, 
 				y,
 				&asset->h264_fix_bitrate,
@@ -1550,7 +1516,6 @@ void MOVConfigVideo::update_parameters()
 			0,
 			51,
 			&asset->h264_quantizer);
-		h264_quantizer->create_objects();
 		add_subwindow(h264_fix_quant = new MOVConfigVideoFixQuant(x + 260, 
 				y,
 				&asset->h264_fix_bitrate,
@@ -1570,7 +1535,6 @@ void MOVConfigVideo::update_parameters()
 			y, 
 			&asset->ms_bitrate);
 		ms_bitrate->set_increment(1000000);
-		ms_bitrate->create_objects();
 		add_subwindow(ms_fix_bitrate = new MOVConfigVideoFixBitrate(x + 260, 
 				y,
 				&asset->ms_fix_bitrate,
@@ -1582,14 +1546,12 @@ void MOVConfigVideo::update_parameters()
 			x, 
 			y, 
 			&asset->ms_bitrate_tolerance);
-		ms_bitrate_tolerance->create_objects();
 		y += 30;
 		ms_quantization = new MOVConfigVideoNum(this, 
 			_("Quantization:"), 
 			x, 
 			y, 
 			&asset->ms_quantization);
-		ms_quantization->create_objects();
 		add_subwindow(ms_fix_quant = new MOVConfigVideoFixQuant(x + 260, 
 				y,
 				&asset->ms_fix_bitrate,
@@ -1608,7 +1570,6 @@ void MOVConfigVideo::update_parameters()
 			x, 
 			y, 
 			&asset->ms_gop_size);
-		ms_gop_size->create_objects();
 	}
 	else
 // OpenDivx parameters
@@ -1623,7 +1584,6 @@ void MOVConfigVideo::update_parameters()
 			y, 
 			&asset->divx_bitrate);
 		divx_bitrate->set_increment(1000000);
-		divx_bitrate->create_objects();
 		add_subwindow(divx_fix_bitrate = 
 			new MOVConfigVideoFixBitrate(x + 260, 
 				y,
@@ -1635,7 +1595,6 @@ void MOVConfigVideo::update_parameters()
 			x, 
 			y, 
 			&asset->divx_quantizer);
-		divx_quantizer->create_objects();
 		add_subwindow(divx_fix_quant =
 			new MOVConfigVideoFixQuant(x + 260, 
 				y,
@@ -1649,49 +1608,42 @@ void MOVConfigVideo::update_parameters()
 			x, 
 			y, 
 			&asset->divx_rc_period);
-		divx_rc_period->create_objects();
 		y += 30;
 		divx_rc_reaction_ratio = new MOVConfigVideoNum(this, 
 			_("Reaction Ratio:"), 
 			x, 
 			y, 
 			&asset->divx_rc_reaction_ratio);
-		divx_rc_reaction_ratio->create_objects();
 		y += 30;
 		divx_rc_reaction_period = new MOVConfigVideoNum(this, 
 			_("Reaction Period:"), 
 			x, 
 			y, 
 			&asset->divx_rc_reaction_period);
-		divx_rc_reaction_period->create_objects();
 		y += 30;
 		divx_max_key_interval = new MOVConfigVideoNum(this, 
 			_("Max Key Interval:"), 
 			x, 
 			y, 
 			&asset->divx_max_key_interval);
-		divx_max_key_interval->create_objects();
 		y += 30;
 		divx_max_quantizer = new MOVConfigVideoNum(this, 
 			_("Max Quantizer:"), 
 			x, 
 			y, 
 			&asset->divx_max_quantizer);
-		divx_max_quantizer->create_objects();
 		y += 30;
 		divx_min_quantizer = new MOVConfigVideoNum(this, 
 			_("Min Quantizer:"), 
 			x, 
 			y, 
 			&asset->divx_min_quantizer);
-		divx_min_quantizer->create_objects();
 		y += 30;
 		divx_quality = new MOVConfigVideoNum(this, 
 			_("Quality:"), 
 			x, 
 			y, 
 			&asset->divx_quality);
-		divx_quality->create_objects();
 	}
 	else
 	if(!strcmp(vcodec, QUICKTIME_JPEG) ||
@@ -1727,6 +1679,7 @@ MOVConfigVideoNum::MOVConfigVideoNum(MOVConfigVideo *popup, char *title_text, in
 	this->output = output;
 	this->x = x;
 	this->y = y;
+	popup->add_subwindow(title = new BC_Title(x, y, title_text));
 }
 
 MOVConfigVideoNum::MOVConfigVideoNum(MOVConfigVideo *popup, 
@@ -1749,6 +1702,7 @@ MOVConfigVideoNum::MOVConfigVideoNum(MOVConfigVideo *popup,
 	this->output = output;
 	this->x = x;
 	this->y = y;
+	popup->add_subwindow(title = new BC_Title(x, y, title_text));
 }
 
 MOVConfigVideoNum::~MOVConfigVideoNum()
@@ -1756,16 +1710,12 @@ MOVConfigVideoNum::~MOVConfigVideoNum()
 	if(!popup->get_deleting()) delete title;
 }
 
-void MOVConfigVideoNum::create_objects()
-{
-	popup->add_subwindow(title = new BC_Title(x, y, title_text));
-}
-
 int MOVConfigVideoNum::handle_event()
 {
 	*output = atol(get_text());
 	return 1;
 }
+
 
 MOVConfigVideoCheckBox::MOVConfigVideoCheckBox(char *title_text, int x, int y, int *output)
  : BC_CheckBox(x, y, *output, title_text)
