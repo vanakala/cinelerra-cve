@@ -74,7 +74,6 @@ class AC3ConfigAudioBitrate : public BC_PopupMenu
 public:
 	AC3ConfigAudioBitrate(AC3ConfigAudio *gui, int x, int y);
 
-	void create_objects();
 	int handle_event();
 	static char* bitrate_to_string(char *string, int bitrate);
 

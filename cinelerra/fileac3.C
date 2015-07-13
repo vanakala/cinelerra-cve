@@ -264,7 +264,6 @@ AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 	add_tool(bitrate = new AC3ConfigAudioBitrate(this,
 			x1, 
 			y));
-	bitrate->create_objects();
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 }
@@ -278,16 +277,6 @@ AC3ConfigAudioBitrate::AC3ConfigAudioBitrate(AC3ConfigAudio *gui,
 	AC3ConfigAudioBitrate::bitrate_to_string(gui->string, gui->asset->ac3_bitrate))
 {
 	this->gui = gui;
-}
-
-char* AC3ConfigAudioBitrate::bitrate_to_string(char *string, int bitrate)
-{
-	sprintf(string, "%d", bitrate);
-	return string;
-}
-
-void AC3ConfigAudioBitrate::create_objects()
-{
 	add_item(new BC_MenuItem("32"));
 	add_item(new BC_MenuItem("40"));
 	add_item(new BC_MenuItem("48"));
@@ -307,6 +296,12 @@ void AC3ConfigAudioBitrate::create_objects()
 	add_item(new BC_MenuItem("512"));
 	add_item(new BC_MenuItem("576"));
 	add_item(new BC_MenuItem("640"));
+}
+
+char* AC3ConfigAudioBitrate::bitrate_to_string(char *string, int bitrate)
+{
+	sprintf(string, "%d", bitrate);
+	return string;
 }
 
 int AC3ConfigAudioBitrate::handle_event()
