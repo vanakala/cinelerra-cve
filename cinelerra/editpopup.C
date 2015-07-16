@@ -43,14 +43,6 @@ EditPopup::EditPopup(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-}
-
-EditPopup::~EditPopup()
-{
-}
-
-void EditPopup::create_objects()
-{
 	add_item(new EditAttachEffect(mwindow, this));
 	add_item(new EditMoveTrackUp(mwindow, this));
 	add_item(new EditMoveTrackDown(mwindow, this));
@@ -59,7 +51,7 @@ void EditPopup::create_objects()
 	resize_option = 0;
 }
 
-int EditPopup::update(Track *track, Edit *edit)
+void EditPopup::update(Track *track, Edit *edit)
 {
 	this->edit = edit;
 	this->track = track;
@@ -77,7 +69,6 @@ int EditPopup::update(Track *track, Edit *edit)
 		resize_option = 0;
 		matchsize_option = 0;
 	}
-	return 0;
 }
 
 
@@ -109,15 +100,12 @@ EditMoveTrackUp::EditMoveTrackUp(MWindow *mwindow, EditPopup *popup)
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
-EditMoveTrackUp::~EditMoveTrackUp()
-{
-}
+
 int EditMoveTrackUp::handle_event()
 {
 	mwindow->move_track_up(popup->track);
 	return 1;
 }
-
 
 
 EditMoveTrackDown::EditMoveTrackDown(MWindow *mwindow, EditPopup *popup)
@@ -126,16 +114,12 @@ EditMoveTrackDown::EditMoveTrackDown(MWindow *mwindow, EditPopup *popup)
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
-EditMoveTrackDown::~EditMoveTrackDown()
-{
-}
+
 int EditMoveTrackDown::handle_event()
 {
 	mwindow->move_track_down(popup->track);
 	return 1;
 }
-
-
 
 
 EditPopupResize::EditPopupResize(MWindow *mwindow, EditPopup *popup)
@@ -146,10 +130,6 @@ EditPopupResize::EditPopupResize(MWindow *mwindow, EditPopup *popup)
 	dialog_thread = new ResizeTrackThread(mwindow, 
 		popup->track->tracks->number_of(popup->track));
 }
-EditPopupResize::~EditPopupResize()
-{
-	delete dialog_thread;
-}
 
 int EditPopupResize::handle_event()
 {
@@ -158,18 +138,11 @@ int EditPopupResize::handle_event()
 }
 
 
-
-
-
-
 EditPopupMatchSize::EditPopupMatchSize(MWindow *mwindow, EditPopup *popup)
  : BC_MenuItem(_("Match output size"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-}
-EditPopupMatchSize::~EditPopupMatchSize()
-{
 }
 
 int EditPopupMatchSize::handle_event()
@@ -179,26 +152,18 @@ int EditPopupMatchSize::handle_event()
 }
 
 
-
-
-
-
-
 EditPopupDeleteTrack::EditPopupDeleteTrack(MWindow *mwindow, EditPopup *popup)
  : BC_MenuItem(_("Delete track"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 }
+
 int EditPopupDeleteTrack::handle_event()
 {
 	mwindow->delete_track(popup->track);
 	return 1;
 }
-
-
-
-
 
 
 EditPopupAddTrack::EditPopupAddTrack(MWindow *mwindow, EditPopup *popup)
@@ -216,76 +181,3 @@ int EditPopupAddTrack::handle_event()
 		mwindow->add_video_track_entry(popup->track);
 	return 1;
 }
-
-
-EditPopupTitleWindow::EditPopupTitleWindow (MWindow *mwindow, EditPopup *popup)
- : BC_Window ("Set edit title - " PROGRAM_NAME,
-	mwindow->gui->get_abs_cursor_x(0) - 400 / 2,
-	mwindow->gui->get_abs_cursor_y(0) - 500 / 2,
-	300,
-	100,
-	300,
-	100,
-	0,
-	0,
-	1)
-{
-	this->mwindow = mwindow;
-	this->popup = popup;
-	this->edt = this->mwindow->session->edit_highlighted;
-	if(this->edt)
-	{
-		strcpy(new_text, this->edt->user_title);
-	}
-}
-
-EditPopupTitleWindow::~EditPopupTitleWindow()
-{
-}
-
-void EditPopupTitleWindow::close_event()
-{
-	set_done(1);
-}
-
-int EditPopupTitleWindow::create_objects()
-{
-	int x = 5;
-	int y = 10;
-
-	add_subwindow (new BC_Title (x, y, _("User title")));
-	add_subwindow (title_text = new EditPopupTitleText (this,
-		mwindow, x, y + 20));
-	add_tool(new BC_OKButton(this));
-	add_tool(new BC_CancelButton(this));
-
-
-	show_window();
-	flush();
-	return 0;
-}
-
-
-EditPopupTitleText::EditPopupTitleText (EditPopupTitleWindow *window, 
-	MWindow *mwindow, int x, int y)
- : BC_TextBox(x, y, 250, 1, (char*)(window->edt ? window->edt->user_title : ""))
-{
-	this->window = window;
-	this->mwindow = mwindow;
-}
-
-EditPopupTitleText::~EditPopupTitleText() 
-{ 
-}
- 
-int EditPopupTitleText::handle_event()
-{
-	return 1;
-}
-
-
-
-
-
-
-

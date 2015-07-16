@@ -205,7 +205,6 @@ SET_TRACE
 	cursor = new MainCursor(mwindow, this);
 
 	add_subwindow(edit_menu = new EditPopup(mwindow, this));
-	edit_menu->create_objects();
 
 	add_subwindow(plugin_menu = new PluginPopup(mwindow, this));
 
