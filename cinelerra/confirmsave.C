@@ -36,10 +36,6 @@ ConfirmSave::ConfirmSave()
 {
 }
 
-ConfirmSave::~ConfirmSave()
-{
-}
-
 int ConfirmSave::test_file(const char *path)
 {
 	int result = 0;
@@ -69,7 +65,6 @@ int ConfirmSave::test_files(MWindow *mwindow,
 		if(mwindow)
 		{
 			ConfirmSaveWindow window(mwindow, &list);
-			window.create_objects();
 			window.raise_window();
 			result = window.run_window();
 		}
@@ -95,13 +90,6 @@ int ConfirmSave::test_files(MWindow *mwindow,
 }
 
 
-
-
-
-
-
-
-
 ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow, 
 	ArrayList<BC_ListBoxItem*> *list)
  : BC_Window("Files Exist - " PROGRAM_NAME,
@@ -113,15 +101,6 @@ ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->list = list;
-}
-
-ConfirmSaveWindow::~ConfirmSaveWindow()
-{
-}
-
-
-int ConfirmSaveWindow::create_objects()
-{
 	int x = 10, y = 10;
 
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
@@ -139,7 +118,6 @@ int ConfirmSaveWindow::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	x = get_w() - 100;
 	add_subwindow(new BC_CancelButton(this));
-	return 0;
 }
 
 void ConfirmSaveWindow::resize_event(int w, int h)
@@ -154,9 +132,3 @@ void ConfirmSaveWindow::resize_event(int w, int h)
 	mwindow->session->ewindow_w = w;
 	mwindow->session->ewindow_h = h;
 }
-
-
-
-
-
-

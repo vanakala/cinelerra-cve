@@ -33,7 +33,6 @@ class ConfirmSave
 {
 public:
 	ConfirmSave();
-	~ConfirmSave();
 
 // Return values:
 // 1 cancel
@@ -47,9 +46,7 @@ class ConfirmSaveWindow : public BC_Window
 {
 public:
 	ConfirmSaveWindow(MWindow *mwindow, ArrayList<BC_ListBoxItem*> *list);
-	~ConfirmSaveWindow();
 
-	int create_objects();
 	void resize_event(int w, int h);
 
 	ArrayList<BC_ListBoxItem*> *list;
