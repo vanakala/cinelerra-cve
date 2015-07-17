@@ -34,7 +34,6 @@ class ClipEdit : public Thread
 {
 public:
 	ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow);
-	~ClipEdit();
 
 	void run();
 	void edit_clip(EDL *clip);
@@ -50,16 +49,10 @@ public:
 };
 
 
-
-
 class ClipEditWindow : public BC_Window
 {
 public:
 	ClipEditWindow(MWindow *mwindow, ClipEdit *thread);
-	~ClipEditWindow();
-
-	void create_objects();
-
 
 // Use this copy of the pointer in ClipEdit since multiple windows are possible	
 	EDL *clip;
@@ -70,12 +63,13 @@ public:
 };
 
 
-
 class ClipEditTitle : public BC_TextBox
 {
 public:
 	ClipEditTitle(ClipEditWindow *window, int x, int y, int w);
+
 	int handle_event();
+
 	ClipEditWindow *window;
 };
 
@@ -84,7 +78,9 @@ class ClipEditComments : public BC_TextBox
 {
 public:
 	ClipEditComments(ClipEditWindow *window, int x, int y, int w, int rows);
+
 	int handle_event();
+
 	ClipEditWindow *window;
 };
 

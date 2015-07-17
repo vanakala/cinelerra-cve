@@ -36,7 +36,6 @@
 #include "tracks.h"
 
 
-
 ClipEdit::ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)
  : Thread()
 {
@@ -45,10 +44,6 @@ ClipEdit::ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow)
 	this->vwindow = vwindow;
 	this->clip = 0;
 	this->create_it = 0;
-}
-
-ClipEdit::~ClipEdit()
-{
 }
 
 void ClipEdit::edit_clip(EDL *clip)
@@ -85,8 +80,6 @@ void ClipEdit::run()
 		}
 
 		ClipEditWindow *window = new ClipEditWindow(mwindow, this);
-
-		window->create_objects();
 
 		int  name_ok_or_cancel = 0;
 		int result;
@@ -146,11 +139,6 @@ void ClipEdit::run()
 }
 
 
-
-
-
-
-
 ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread)
  : BC_Window("Clip Info - " PROGRAM_NAME,
 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2,
@@ -163,24 +151,15 @@ ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread)
 	0,
 	1)
 {
-	this->mwindow = mwindow;
-	this->thread = thread;
-}
-
-ClipEditWindow::~ClipEditWindow()
-{
-}
-
-
-void ClipEditWindow::create_objects()
-{
-	this->clip = thread->clip;
-	this->create_it = thread->create_it;
-
 	int x = 10, y = 10;
 	int x1 = x;
 	BC_TextBox *textbox;
 	BC_Title *title;
+
+	this->mwindow = mwindow;
+	this->thread = thread;
+	this->clip = thread->clip;
+	this->create_it = thread->create_it;
 
 	set_icon(mwindow->theme->get_image("awindow_icon"));
 	add_subwindow(title = new BC_Title(x1, y, _("Title:")));
@@ -208,9 +187,6 @@ void ClipEditWindow::create_objects()
 }
 
 
-
-
-
 ClipEditTitle::ClipEditTitle(ClipEditWindow *window, int x, int y, int w)
  : BC_TextBox(x, y, w, 1, window->clip->local_session->clip_title)
 {
@@ -222,9 +198,6 @@ int ClipEditTitle::handle_event()
 	strcpy(window->clip->local_session->clip_title, get_text());
 	return 1;
 }
-
-
-
 
 
 ClipEditComments::ClipEditComments(ClipEditWindow *window, int x, int y, int w, int rows)
