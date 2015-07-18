@@ -21,7 +21,6 @@
 
 #include "audioalsa.h"
 #include "audiodevice.h"
-#include "audiodvb.h"
 #include "audioesound.h"
 #include "audiooss.h"
 #include "bctimer.h"
@@ -151,10 +150,6 @@ void AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 			lowlevel = new AudioALSA(this);
 			break;
 #endif
-
-		case AUDIO_DVB:
-			lowlevel = new AudioDVB(this);
-			break;
 		}
 	}
 }

@@ -16,8 +16,8 @@ cinelerra/batchrender.C
 cinelerra/brender.C
 cinelerra/browsebutton.C
 cinelerra/canvas.C
-cinelerra/channeledit.C
-cinelerra/channelpicker.C
+# cinelerra/channeledit.C
+# cinelerra/channelpicker.C
 cinelerra/clipedit.C
 # cinelerra/compresspopup.C
 # cinelerra/confirmquit.C
@@ -87,14 +87,14 @@ cinelerra/preferencesthread.C
 cinelerra/question.C
 cinelerra/quit.C
 # cinelerra/recconfirmdelete.C
-cinelerra/record.C
-cinelerra/recordaudio.C
+# cinelerra/record.C
+# cinelerra/recordaudio.C
 # cinelerra/recordengine.C
-cinelerra/recordgui.C
-cinelerra/recordmonitor.C
+# cinelerra/recordgui.C
+# cinelerra/recordmonitor.C
 cinelerra/recordprefs.C
-cinelerra/recordtransport.C
-cinelerra/recordvideo.C
+# cinelerra/recordtransport.C
+# cinelerra/recordvideo.C
 # cinelerra/recordwindow.C
 # cinelerra/reindex.C
 cinelerra/render.C

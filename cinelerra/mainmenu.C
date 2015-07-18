@@ -50,7 +50,6 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "quit.h"
-#include "record.h"
 #include "render.h"
 #include "savefile.h"
 #include "setformat.h"
@@ -96,9 +95,7 @@ int MainMenu::create_objects()
 	filemenu->add_item(saveas = new SaveAs(mwindow));
 	save->set_saveas(saveas);
 	saveas->set_mainmenu(this);
-/* FIXIT - disabled: currentily recording is broken
-	filemenu->add_item(record = new RecordMenuItem(mwindow));
-	*/
+
 	filemenu->add_item(render = new RenderItem(mwindow));
 	filemenu->add_item(new ExportEDLItem(mwindow));
 	filemenu->add_item(new BatchRenderMenuItem(mwindow));

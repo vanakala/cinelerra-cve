@@ -30,7 +30,6 @@
 #endif
 
 #include "adeviceprefs.inc"
-#include "channelpicker.inc"
 #include "guicast.h"
 #include "playbackconfig.inc"
 #include "preferencesthread.inc"
@@ -65,7 +64,6 @@ public:
 	PreferencesDialog *dialog;
 	VideoOutConfig *out_config;
 	VideoInConfig *in_config;
-	PrefsChannelPicker *channel_picker;
 
 private:
 	void create_v4l_objs();

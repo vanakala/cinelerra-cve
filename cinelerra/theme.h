@@ -35,8 +35,6 @@
 #include "overlayframe.inc"
 #include "patchbay.inc"
 #include "preferencesthread.inc"
-#include "recordgui.inc"
-#include "recordmonitor.inc"
 #include "resourcepixmap.inc"
 #include "timebar.inc"
 #include "trackcanvas.inc"
@@ -74,16 +72,11 @@ public:
 		int do_interlace,
 		int do_avc,
 		int audio_channels);
-	virtual void get_recordgui_sizes(RecordGUI *gui,
-		int w,
-		int h) {};
 	virtual void get_batchrender_sizes(BatchRenderGUI *gui,
 		int w, 
 		int h);
 	virtual void get_plugindialog_sizes();
 	virtual void get_menueffect_sizes(int use_list);
-	virtual void draw_rwindow_bg(RecordGUI *gui);
-	virtual void draw_rmonitor_bg(RecordMonitorGUI *gui);
 	virtual void draw_awindow_bg(AWindowGUI *gui);
 	virtual void draw_cwindow_bg(CWindowGUI *gui);
 	virtual void draw_lwindow_bg(LevelWindowGUI *gui);

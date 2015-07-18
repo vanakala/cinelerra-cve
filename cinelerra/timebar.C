@@ -39,7 +39,6 @@
 #include "mwindowgui.h"
 #include "patchbay.h"
 #include "preferences.h"
-#include "recordlabel.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "theme.h"

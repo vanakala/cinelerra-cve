@@ -23,7 +23,6 @@
 #include "assets.h"
 #include "clip.h"
 #include "bchash.h"
-#include "dvbtune.h"
 #include "edl.h"
 #include "filesystem.h"
 #include "filexml.h"
@@ -562,9 +561,6 @@ void RenderFarmClientThread::run()
 
 	switch(command)
 	{
-		case RENDERFARM_TUNER:
-			do_tuner(socket_fd);
-			break;
 		case RENDERFARM_PACKAGES:
 			do_packages(socket_fd);
 			break;
@@ -580,15 +576,6 @@ void RenderFarmClientThread::init_client_keepalive()
 	keep_alive->start();
 	watchdog = new RenderFarmWatchdog(0, this);
 	watchdog->start();
-}
-
-
-void RenderFarmClientThread::do_tuner(int socket_fd)
-{
-// Currently only 1 tuner driver.  Maybe more someday.
-	DVBTune server(this);
-	server.main_loop();
-	::close(socket_fd);
 }
 
 

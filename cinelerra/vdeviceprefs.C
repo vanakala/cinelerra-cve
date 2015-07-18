@@ -21,8 +21,6 @@
 
 #include "bcsignals.h"
 #include "cwindow.h"
-#include "channeldb.h"
-#include "channelpicker.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -81,7 +79,6 @@ void VDevicePrefs::reset_objects()
 
 	channel_title = 0;
 	output_title = 0;
-	channel_picker = 0;
 }
 
 void VDevicePrefs::initialize(int creation)
@@ -146,7 +143,6 @@ void VDevicePrefs::initialize(int creation)
 void VDevicePrefs::delete_objects()
 {
 	delete output_title;
-	delete channel_picker;
 	delete device_title;
 	delete device_text;
 

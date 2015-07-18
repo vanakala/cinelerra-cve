@@ -23,9 +23,6 @@
 #include "assets.h"
 #include "bccapture.h"
 #include "bcsignals.h"
-#include "channel.h"
-#include "channeldb.h"
-#include "chantables.h"
 #include "file.inc"
 #include "mutex.h"
 #include "mwindow.h"
@@ -35,11 +32,6 @@
 #include "preferences.h"
 #include "quicktime.h"
 #include "recordconfig.h"
-#include "recordmonitor.h"
-#include "vdevicedvb.h"
-#include "vdevicev4l.h"
-#include "vdevicev4l2.h"
-#include "vdevicev4l2jpeg.h"
 #include "vdevicex11.h"
 #include "videodevice.h"
 #include "vframe.h"
@@ -119,9 +111,7 @@ VideoDevice::VideoDevice(MWindow *mwindow)
 	this->mwindow = mwindow;
 	in_config = new VideoInConfig;
 	out_config = 0;
-	channel = new Channel;
 	picture = new PictureConfig(mwindow ? mwindow->defaults : 0);
-	channel_lock = new Mutex("VideoDevice::channel_lock");
 	picture_lock = new Mutex("VideoDevice::picture_lock");
 	irate = 0;
 	out_w = out_h = 0;
@@ -142,18 +132,14 @@ VideoDevice::VideoDevice(MWindow *mwindow)
 	quality = 80;
 	cpus = 1;
 	single_frame = 0;
-	channel_changed = 0;
 	picture_changed = 0;
 }
 
 VideoDevice::~VideoDevice()
 {
 	close_all();
-	input_sources.remove_all_objects();
 	delete in_config;
-	delete channel;
 	delete picture;
-	delete channel_lock;
 	delete picture_lock;
 }
 
@@ -212,56 +198,10 @@ VDeviceBase* VideoDevice::new_device_base()
 {
 	switch(in_config->driver)
 	{
-#ifdef HAVE_VIDEO4LINUX
-	case VIDEO4LINUX:
-		return input_base = new VDeviceV4L(this);
-#endif
-#ifdef HAVE_VIDEO4LINUX2
-	case VIDEO4LINUX2:
-		return input_base = new VDeviceV4L2(this);
-
-	case VIDEO4LINUX2JPEG:
-		return input_base = new VDeviceV4L2JPEG(this);
-#endif
-
 	case SCREENCAPTURE:
 		return input_base = new VDeviceX11(this, 0);
-
-	case CAPTURE_DVB:
-		return input_base = new VDeviceDVB(this);
 	}
 	return 0;
-}
-
-static const char* get_channeldb_path(VideoInConfig *vconfig_in)
-{
-	const char *path = "";
-	switch(vconfig_in->driver)
-	{
-	case VIDEO4LINUX:
-		path = "channels_v4l";
-		break;
-	case VIDEO4LINUX2:
-		path = "channels_v4l2";
-		break;
-	case VIDEO4LINUX2JPEG:
-		path = "channels_v4l2jpeg";
-		break;
-	case CAPTURE_DVB:
-		path = "channels_dvb";
-		break;
-	}
-	return path;
-}
-
-void VideoDevice::load_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in)
-{
-	channeldb->load(get_channeldb_path(vconfig_in));
-}
-
-void VideoDevice::save_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in)
-{
-	channeldb->save(get_channeldb_path(vconfig_in));
 }
 
 VDeviceBase* VideoDevice::get_output_base()
@@ -359,31 +299,11 @@ void VideoDevice::close_all()
 		}
 		reading = 0;
 	}
-
-	input_sources.remove_all_objects();
 }
 
 void VideoDevice::set_adevice(AudioDevice *adevice)
 {
 	this->adevice = adevice;
-}
-
-ArrayList<Channel*>* VideoDevice::get_inputs()
-{
-	return &input_sources;
-}
-
-Channel* VideoDevice::new_input_source(char *device_name)
-{
-	for(int i = 0; i < input_sources.total; i++)
-	{
-		if(!strcmp(input_sources.values[i]->device_name, device_name))
-			return input_sources.values[i];
-	}
-	Channel *item = new Channel;
-	strcpy(item->device_name, device_name);
-	input_sources.append(item);
-	return item;
 }
 
 int VideoDevice::get_failed()
@@ -409,20 +329,6 @@ void VideoDevice::set_translation(int input_x, int input_y)
 void VideoDevice::set_field_order(int odd_field_first)
 {
 	this->odd_field_first = odd_field_first;
-}
-
-void VideoDevice::set_channel(Channel *channel)
-{
-	if(channel)
-	{
-		channel_lock->lock("VideoDevice::set_channel");
-		this->channel->copy_settings(channel);
-		channel_changed = 1;
-		channel_lock->unlock();
-
-		if(input_base) input_base->set_channel(channel);
-		if(output_base) output_base->set_channel(channel);
-	}
 }
 
 void VideoDevice::set_quality(int quality)

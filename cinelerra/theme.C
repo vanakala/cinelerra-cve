@@ -39,8 +39,6 @@
 #include "overlayframe.h"
 #include "patchbay.h"
 #include "playtransport.h"
-#include "recordgui.h"
-#include "recordmonitor.h"
 #include "resourcepixmap.h"
 #include "statusbar.h"
 #include "theme.h"
@@ -352,19 +350,6 @@ void Theme::draw_lwindow_bg(LevelWindowGUI *gui)
 {
 	gui->clear_box(0, 0, mwindow->session->lwindow_w, mwindow->session->lwindow_h);
 	gui->flash();
-}
-
-
-void Theme::draw_rmonitor_bg(RecordMonitorGUI *gui)
-{
-	gui->clear_box(0, 0, mwindow->session->rmonitor_w, mwindow->session->rmonitor_h);
-	gui->flash();
-}
-
-
-void Theme::draw_rwindow_bg(RecordGUI *gui)
-{
-	gui->clear_box(0, 0, mwindow->session->rwindow_w, mwindow->session->rwindow_h);
 }
 
 

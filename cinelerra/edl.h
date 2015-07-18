@@ -36,7 +36,6 @@
 #include "playbackconfig.h"
 #include "pluginserver.h"
 #include "preferences.inc"
-#include "recordlabel.inc"
 #include "sharedlocation.inc"
 #include "theme.inc"
 #include "tracks.inc"
@@ -171,8 +170,7 @@ public:
 // Insert the asset at a point in the EDL
 	void insert_asset(Asset *asset, 
 		double position, 
-		Track *first_track = 0, 
-		RecordLabels *labels = 0);
+		Track *first_track = 0);
 // Insert the clip at a point in the EDL
 	int insert_clips(ArrayList<EDL*> *new_edls, int load_mode, Track *first_track = 0);
 // Add a copy of EDL* to the clip array.  Returns the copy.

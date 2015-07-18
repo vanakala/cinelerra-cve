@@ -28,18 +28,14 @@
 #include "bccapture.inc"
 #include "bctimer.h"
 #include "canvas.inc"
-#include "channel.inc"
-#include "channeldb.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "mwindow.inc"
 #include "mutex.inc"
 #include "preferences.inc"
-#include "recordmonitor.inc"
 #include "thread.h"
 #include "picture.inc"
 #include "vdevicebase.inc"
-#include "vdevicev4l.inc"
 #include "vdevicex11.inc"
 
 
@@ -106,11 +102,6 @@ public:
 	static int is_compressed(int driver, int use_file, int use_fixed);
 	int is_compressed(int use_file, int use_fixed);
 
-// Load the specific channeldb for the device type
-	static void load_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in);
-	static void save_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in);
-
-
 // Return codec to store on disk if compressed
 	void fix_asset(Asset *asset, int driver);
 	static const char* drivertostr(int driver);
@@ -126,8 +117,6 @@ public:
 	int interrupt_crash();
 // Schedule capture size to be changed.
 	void set_translation(int input_x, int input_y);
-// Change the channel
-	void set_channel(Channel *channel);
 // Set the quality of the JPEG compressor
 	void set_quality(int quality);
 // Change field order
@@ -140,10 +129,6 @@ public:
 	int read_buffer(VFrame *frame);  // Read the next frame off the device
 	int has_signal();
 	int frame_to_vframe(VFrame *frame, unsigned char *input); // Translate the captured frame to a VFrame
-	ArrayList<Channel*>* get_inputs();
-// Create new input source if it doesn't match device_name.  
-// Otherwise return it.
-	Channel* new_input_source(char *device_name);
 	BC_Bitmap* get_bitmap();
 
 // Used by all devices to cause fd's to be not copied in fork operations.
@@ -211,18 +196,11 @@ public:
 	int latency_counter;
 	int capturing;
 
-// All the input sources on the device
-	ArrayList<Channel*> input_sources;
 	int odd_field_first;
 // Quality for the JPEG compressor
 	int quality;
 // Single frame mode for playback
 	int single_frame;
-// Copy of the most recent channel set by set_channel
-	Channel *channel;
-// Flag for subdevice to change channels when it has a chance
-	int channel_changed;
-	Mutex *channel_lock;
 
 // Copy of the most recent picture controls
 	int picture_changed;

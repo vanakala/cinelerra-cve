@@ -505,7 +505,6 @@ int CWindowGUI::drag_stop()
 				mwindow->edl->local_session->get_selectionstart(), 
 				LOADMODE_PASTE,
 				mwindow->session->track_highlighted,
-				0,
 				mwindow->edl->session->edit_actions(),
 				0); // overwrite
 		}

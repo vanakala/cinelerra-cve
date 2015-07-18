@@ -29,7 +29,6 @@
 #include <unistd.h>
 
 #include "audioalsa.inc"
-#include "audiodvb.inc"
 #include "audiodevice.inc"
 #include "audioesound.inc"
 #include "audiooss.inc"
@@ -39,7 +38,6 @@
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "preferences.inc"
-#include "recordgui.inc"
 #include "sema.inc"
 #include "thread.h"
 #include "videodevice.inc"

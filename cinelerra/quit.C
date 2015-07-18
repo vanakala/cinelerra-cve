@@ -31,7 +31,6 @@
 #include "playback3d.h"
 #include "quit.h"
 #include "question.h"
-#include "record.h"
 #include "render.h"
 #include "savefile.h"
 #include "mainsession.h"
@@ -47,9 +46,6 @@ Quit::Quit(MWindow *mwindow, Save *save)
 int Quit::handle_event() 
 {
 	if(mwindow->session->changes_made ||
-/* FIXIT - Record is broken
-		mwindow->gui->mainmenu->record->current_state ||
-	*/
 		mwindow->render->in_progress) 
 	{
 		start();
@@ -66,14 +62,6 @@ void Quit::run()
 {
 	int result = 0;
 // Test execution conditions
-/* FIXIT - record is broken
-	if(mwindow->gui->mainmenu->record->current_state == RECORD_CAPTURING)
-	{
-		errorbox(_("Can't quit while a recording is in progress."));
-		return;
-	}
-	else
-	*/
 	if(mwindow->render->running())
 	{
 		errorbox(_("Can't quit while a render is in progress."));

@@ -49,7 +49,6 @@ class Undo;
 #include "new.inc"
 #include "plugindialog.inc"
 #include "quit.inc"
-#include "record.inc"
 #include "render.inc"
 #include "viewmenu.inc"
 
@@ -91,9 +90,6 @@ public:
 	BC_RecentList *recent_load;
 	LoadPrevious *load[TOTAL_LOADS];
 
-/* FIXIT - disabled
-	RecordMenuItem *record;
-	*/
 	RenderItem *render;
 	New *new_project;
 	MenuAEffectItem *aeffect[TOTAL_EFFECTS];

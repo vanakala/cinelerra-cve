@@ -30,7 +30,6 @@
 #include "filexml.inc"
 #include "labels.inc"
 #include "mwindow.inc"
-#include "recordlabel.inc"
 #include "timebar.inc"
 
 #define LABELSIZE 15

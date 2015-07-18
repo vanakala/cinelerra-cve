@@ -63,7 +63,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    attachmentpoint.C \
 		    audioalsa.C \
 		    audiodevice.C \
-		    audiodvb.C \
 		    audioesound.C \
 		    audioidevice.C \
 		    audioodevice.C \
@@ -83,11 +82,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    cachebase.C \
 		    canvas.C \
 		    canvastools.C \
-		    channel.C \
-		    channeldb.C \
-		    channeledit.C \
-		    channelpicker.C \
-		    chantables.C \
 		    clipedit.C \
 		    commonrender.C \
 		    confirmsave.C \
@@ -99,9 +93,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    cwindowgui.C \
 		    cwindowtool.C \
 		    deleteallindexes.C \
-		    devicedvbinput.C \
 		    drivesync.C \
-		    dvbtune.C \
 		    edit.C \
 		    editpanel.C \
 		    editpopup.C \
@@ -218,16 +210,8 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    quit.C \
 		    recordableatracks.C \
 		    recordablevtracks.C \
-		    recordaudio.C \
-		    record.C \
 		    recordconfig.C \
-		    recordgui.C \
-		    recordlabel.C \
-		    recordmonitor.C \
 		    recordprefs.C \
-		    recordthread.C \
-		    recordtransport.C \
-		    recordvideo.C \
 		    removethread.C \
 		    render.C \
 		    renderengine.C \
@@ -260,16 +244,11 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    transition.C \
 		    transitionpopup.C \
 		    transportcommand.C \
-		    tunerserver.C \
 		    undostackitem.C \
 		    vattachmentpoint.C \
 		    vautomation.C \
 		    vdevicebase.C \
-		    vdevicedvb.C \
 		    vdeviceprefs.C \
-		    vdevicev4l.C \
-		    vdevicev4l2.C \
-		    vdevicev4l2jpeg.C \
 		    vdevicex11.C \
 		    vedit.C \
 		    vedits.C \
@@ -339,7 +318,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 attachmentpoint.h \
 		 audioalsa.h \
 		 audiodevice.h \
-		 audiodvb.h \
 		 audioesound.h \
 		 audiooss.h \
 		 autoconf.h \
@@ -358,11 +336,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cachebase.h \
 		 canvas.h \
 		 canvastools.h \
-		 channeledit.h \
-		 channel.h \
-		 channeldb.h \
-		 channelpicker.h \
-		 chantables.h \
 		 clipedit.h \
 		 commonrender.h \
 		 confirmsave.h \
@@ -374,10 +347,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cwindow.h \
 		 cwindowtool.h \
 		 deleteallindexes.h \
-		 devicedvbinput.h \
 		 drivesync.h \
 		 dv1394.h \
-		 dvbtune.h \
 		 edit.h \
 		 editpanel.h \
 		 editpopup.h \
@@ -496,17 +467,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 quit.h \
 		 recordableatracks.h \
 		 recordablevtracks.h \
-		 recordaudio.h \
 		 recordconfig.h \
-		 recordengine.h \
-		 recordgui.h \
-		 record.h \
-		 recordlabel.h \
-		 recordmonitor.h \
 		 recordprefs.h \
-		 recordthread.h \
-		 recordtransport.h \
-		 recordvideo.h \
 		 removethread.h \
 		 renderengine.h \
 		 renderfarmclient.h \
@@ -538,16 +500,11 @@ noinst_HEADERS = aattachmentpoint.h \
 		 transition.h \
 		 transitionpopup.h \
 		 transportcommand.h \
-		 tunerserver.h \
 		 undostackitem.h \
 		 vattachmentpoint.h \
 		 vautomation.h \
 		 vdevicebase.h \
-		 vdevicedvb.h \
 		 vdeviceprefs.h \
-		 vdevicev4l.h \
-		 vdevicev4l2.h \
-		 vdevicev4l2jpeg.h \
 		 vdevicex11.h \
 		 vedit.h \
 		 vedits.h \

@@ -28,8 +28,6 @@
 #include "bcsignals.h"
 #include "brender.h"
 #include "cache.h"
-#include "channel.h"
-#include "channeldb.h"
 #include "cinelerra.h"
 #include "clip.h"
 #include "colormodels.h"
@@ -38,7 +36,6 @@
 #include "cwindowgui.h"
 #include "cwindow.h"
 #include "bchash.h"
-#include "devicedvbinput.inc"
 #include "editpanel.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -76,8 +73,6 @@
 #include "pluginserver.h"
 #include "pluginset.h"
 #include "preferences.h"
-#include "record.h"
-#include "recordlabel.h"
 #include "removethread.h"
 #include "render.h"
 #include "ruler.h"
@@ -120,9 +115,6 @@ MWindow::MWindow(const char *config_path)
 	brender_lock = new Mutex("MWindow::brender_lock");
 	brender = 0;
 	session = 0;
-	channeldb_v4l2jpeg = new ChannelDB;
-	dvb_input = 0;
-	dvb_input_lock = new Mutex("MWindow::dvb_input_lock");
 	edl = 0;
 	init_signals();
 
@@ -153,7 +145,6 @@ MWindow::MWindow(const char *config_path)
 	init_ruler();
 	init_cache();
 	init_indexes();
-	init_channeldb();
 
 	init_gui();
 	init_gwindow();
@@ -743,11 +734,6 @@ void MWindow::init_cache()
 void MWindow::init_ruler()
 {
 	ruler = new Ruler(this);
-}
-
-void MWindow::init_channeldb()
-{
-	channeldb_v4l2jpeg->load("channeldb_v4l2jpeg");
 }
 
 void MWindow::init_indexes()
@@ -1629,8 +1615,7 @@ void MWindow::update_plugin_titles()
 }
 
 void MWindow::asset_to_edl(EDL *new_edl, 
-	Asset *new_asset, 
-	RecordLabels *labels)
+	Asset *new_asset)
 {
 // Keep frame rate, sample rate, and output size unchanged.
 // These parameters would revert the project if VWindow displayed an asset
@@ -1649,7 +1634,7 @@ void MWindow::asset_to_edl(EDL *new_edl,
 
 	new_edl->create_default_tracks();
 
-	new_edl->insert_asset(new_asset, 0, 0, labels);
+	new_edl->insert_asset(new_asset, 0, 0);
 
 // Align cursor on frames:: clip the new_edl to the minimum of the last joint frame.
 	if(edl->session->cursor_on_frames)

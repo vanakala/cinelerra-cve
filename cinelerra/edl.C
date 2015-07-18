@@ -42,7 +42,6 @@
 #include "plugin.h"
 #include "preferences.h"
 #include "recordconfig.h"
-#include "recordlabel.h"
 #include "sharedlocation.h"
 #include "theme.h"
 #include "tracks.h"
@@ -840,8 +839,7 @@ EDL* EDL::add_clip(EDL *edl)
 
 void EDL::insert_asset(Asset *asset, 
 	ptstime position, 
-	Track *first_track, 
-	RecordLabels *labels)
+	Track *first_track)
 {
 // Insert asset into asset table
 	Asset *new_asset = assets->update(asset);
@@ -898,14 +896,6 @@ void EDL::insert_asset(Asset *asset,
 			atrack);
 
 		atrack++;
-	}
-
-	if(labels)
-	{
-		for(RecordLabel *label = labels->first; label; label = label->next)
-		{
-			this->labels->toggle_label(label->position, label->position);
-		}
 	}
 }
 

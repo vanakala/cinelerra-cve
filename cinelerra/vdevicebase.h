@@ -24,7 +24,6 @@
 
 #include "asset.inc"
 #include "assets.inc"
-#include "channel.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "picture.inc"
@@ -44,7 +43,6 @@ public:
 	virtual int interrupt_crash() { return 0; };
 // Extra work must sometimes be done in here to set up the device.
 	virtual int get_best_colormodel(Asset *asset);
-	virtual int set_channel(Channel *channel) { return 0; };
 	virtual int set_picture(PictureConfig *picture) { return 0; };
 
 	virtual int open_output() { return 1; };

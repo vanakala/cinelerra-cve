@@ -28,7 +28,6 @@
 #include "labels.inc"
 #include "labeledit.inc"
 #include "mwindow.inc"
-#include "recordlabel.inc"
 #include "timebar.inc"
 #include "vwindowgui.inc"
 

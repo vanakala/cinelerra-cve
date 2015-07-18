@@ -27,7 +27,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"
-#include "recordlabel.h"
 #include "mainsession.h"
 #include "stringfile.h"
 #include "theme.h"

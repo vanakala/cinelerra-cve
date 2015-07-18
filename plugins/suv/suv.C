@@ -34,8 +34,6 @@
 #include "new.h"
 #include "patchbay.h"
 #include "preferencesthread.h"
-#include "recordgui.h"
-#include "recordmonitor.h"
 #include "setformat.h"
 #include "statusbar.h"
 #include "timebar.h"
@@ -740,11 +738,6 @@ void SUV::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	cdest_x = czoom_x;
 	cdest_y = czoom_y + 30;
 }
-/*
-void SUV::get_recordgui_sizes(RecordGUI *gui, int w, int h)
-{
-	
-}	*/
 
 void SUV::get_rmonitor_sizes(int do_audio, 
 	int do_video,

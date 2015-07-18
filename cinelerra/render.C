@@ -728,7 +728,6 @@ int Render::render(int test_overwrite,
 			-1, 
 			load_mode,
 			0,
-			0,
 			mwindow->edl->session->edit_actions(),
 			0); // overwrite
 		delete assets;

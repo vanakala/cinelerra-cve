@@ -83,7 +83,6 @@ public:
 	void lock(const char *location);
 	void unlock();
 
-	void do_tuner(int socket_fd);
 	void do_packages(int socket_fd);
 
 	void get_command(int socket_fd, int *command);

@@ -34,8 +34,6 @@
 #include "new.h"
 #include "patchbay.h"
 #include "preferencesthread.h"
-#include "recordgui.h"
-#include "recordmonitor.h"
 #include "setformat.h"
 #include "statusbar.h"
 #include "timebar.h"

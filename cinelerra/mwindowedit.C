@@ -58,7 +58,6 @@
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "pluginset.h"
-#include "recordlabel.h"
 #include "samplescroll.h"
 #include "trackcanvas.h"
 #include "track.h"
@@ -855,7 +854,6 @@ int MWindow::paste_assets(ptstime position, Track *dest_track, int overwrite)
 			position, 
 			LOADMODE_PASTE,
 			dest_track, 
-			0,
 			edl->session->edit_actions(),
 			overwrite);
 		result = 1;
@@ -885,7 +883,6 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 	ptstime position,
 	int load_mode,
 	Track *first_track,
-	RecordLabels *labels,
 	int actions,
 	int overwrite)
 {
@@ -900,12 +897,6 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 		new_edls.append(new_edl);
 
 		asset_to_edl(new_edl, new_assets->values[i]);
-
-		if(labels)
-			for(RecordLabel *label = labels->first; label; label = label->next)
-			{
-				new_edl->labels->toggle_label(label->position, label->position);
-			}
 	}
 
 	paste_edls(&new_edls, 

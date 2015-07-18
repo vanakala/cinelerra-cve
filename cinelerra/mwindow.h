@@ -31,12 +31,9 @@
 #include "bcwindowbase.inc"
 #include "brender.inc"
 #include "cache.inc"
-#include "channel.inc"
-#include "channeldb.inc"
 #include "cwindow.inc"
 #include "bchash.inc"
 #include "datatype.h"
-#include "devicedvbinput.inc"
 #include "edit.inc"
 #include "edl.inc"
 #include "edlsession.inc"
@@ -64,7 +61,6 @@
 #include "pluginset.inc"
 #include "preferences.inc"
 #include "preferencesthread.inc"
-#include "recordlabel.inc"
 #include "removethread.inc"
 #include "render.inc"
 #include "ruler.inc"
@@ -120,7 +116,7 @@ public:
 	void show_ruler();
 	void tile_windows();
 	void set_titles(int value);
-	void asset_to_edl(EDL *new_edl, Asset *new_asset, RecordLabels *labels = 0);
+	void asset_to_edl(EDL *new_edl, Asset *new_asset);
 
 // Entry point to insert assets and insert edls.  Called by TrackCanvas 
 // and AssetPopup when assets are dragged in from AWindow.
@@ -136,7 +132,6 @@ public:
 		ptstime position,
 		int load_mode,
 		Track *first_track,
-		RecordLabels *labels,
 		int actions,
 		int overwrite);
 	void paste_edls(ArrayList<EDL*> *new_edls, 
@@ -335,14 +330,6 @@ public:
 		ptstime end,
 		FileXML *file,
 		int actions);
-	int paste_output(int64_t startproject, 
-				int64_t endproject, 
-				int64_t startsource_sample, 
-				int64_t endsource_sample, 
-				int64_t startsource_frame,
-				int64_t endsource_frame,
-				Asset *asset, 
-				RecordLabels *new_labels);
 	void paste_silence();
 
 	void paste_transition();
@@ -417,9 +404,6 @@ public:
 
 	void reset_meters();
 
-// Channel DB for playback only.  Record channel DB's are in record.C
-	ChannelDB *channeldb_v4l2jpeg;
-
 // ====================================== plugins ==============================
 
 // Contain file descriptors for all the dlopens
@@ -463,14 +447,6 @@ public:
 // Lock during creation and destruction of brender so playback doesn't use it.
 	Mutex *brender_lock;
 
-// Single device drivers which must be shared between audio and video go here.
-// They are managed by the garbage collector.
-	DeviceDVBInput *dvb_input;
-// Must be locked before accessing dvb_input or Garbage functions in it.
-	Mutex *dvb_input_lock;
-
-// Initialize channel DB's for playback
-	void init_channeldb();
 	void init_render();
 	void init_exportedl();
 // These three happen synchronously with each other

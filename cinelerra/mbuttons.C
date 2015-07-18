@@ -34,7 +34,6 @@
 #include "playbackengine.h"
 #include "playtransport.h"
 #include "preferences.h"
-#include "record.h"
 #include "mainsession.h"
 #include "theme.h"
 #include "tracks.h"

@@ -44,7 +44,6 @@ class Paste;
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "playtransport.h"
-#include "record.inc"
 
 
 class MButtons : public BC_SubWindow

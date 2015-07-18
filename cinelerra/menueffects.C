@@ -441,7 +441,6 @@ void MenuEffectThread::run()
 			-1,
 			load_mode,
 			0,
-			0,
 			mwindow->edl->session->edit_actions(),
 			0); // overwrite
 
