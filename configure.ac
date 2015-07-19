@@ -1,4 +1,4 @@
-AC_INIT(Cinelerracve, 2.1CV-einar, einarry@smail.ee)
+AC_INIT(Cinelerracve, 2.1CV-einar, einarrunkaru@gmail.com)
 
 AC_CANONICAL_SYSTEM
 
@@ -41,20 +41,6 @@ fi
 CCAS="\$(top_srcdir)/admin/nasm"
 AC_SUBST(CCAS)
 AC_SUBST(CCASFLAGS)
-
-dnl Check for Video4Linux
-AH_TEMPLATE(HAVE_VIDEO4LINUX, [Define to 1 if Video4Linux is available.])
-AC_CHECK_HEADER([linux/videodev.h], 
-	[AC_CHECK_MEMBER(struct video_capability.type, [AC_DEFINE(HAVE_VIDEO4LINUX)], [],
-		[#include <linux/videodev.h>])],
-	[],[] )
-
-dnl Check for Video4Linux2
-AH_TEMPLATE(HAVE_VIDEO4LINUX2, [Define to 1 if Video4Linux2 is available.])
-AC_CHECK_HEADER([linux/videodev2.h], 
-	[AC_CHECK_MEMBER(struct v4l2_buffer.index, [AC_DEFINE(HAVE_VIDEO4LINUX2)], [],
-		[#include <linux/videodev2.h>])],
-	[],[] )
 
 dnl Check for ladspa
 AH_TEMPLATE(HAVE_LADSPA, [Define to 1 if ladspa-sdk is available.])
