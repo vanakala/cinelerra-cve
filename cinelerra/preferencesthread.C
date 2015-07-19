@@ -48,7 +48,6 @@
 #include "playbackengine.h"
 #include "playbackprefs.h"
 #include "preferences.h"
-#include "recordprefs.h"
 #include "recordconfig.h"
 #include "selection.h"
 #include "theme.h"
@@ -253,8 +252,6 @@ const char* PreferencesThread::category_to_text(int category)
 	{
 	case PLAYBACK:
 		return _("Playback");
-	case RECORD:
-		return _("Recording");
 	case PERFORMANCE:
 		return _("Performance");
 	case INTERFACE:
@@ -380,10 +377,6 @@ void PreferencesWindow::set_current_dialog(int number)
 	{
 	case PreferencesThread::PLAYBACK:
 		add_subwindow(dialog = new PlaybackPrefs(mwindow, this));
-		break;
-
-	case PreferencesThread::RECORD:
-		add_subwindow(dialog = new RecordPrefs(mwindow, this));
 		break;
 
 	case PreferencesThread::PERFORMANCE:

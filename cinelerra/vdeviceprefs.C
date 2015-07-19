@@ -35,7 +35,6 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "recordconfig.h"
-#include "recordprefs.h"
 #include <string.h>
 
 
@@ -130,13 +129,6 @@ void VDevicePrefs::initialize(int creation)
 	case CAPTURE_DVB:
 		create_dvb_objs();
 		break;
-	}
-
-// Update driver dependancies in file format
-	if(mode == MODERECORD && dialog && !creation)
-	{
-		RecordPrefs *record_prefs = (RecordPrefs*)dialog;
-		record_prefs->recording_format->update_driver(this->driver);
 	}
 }
 
