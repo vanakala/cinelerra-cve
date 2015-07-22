@@ -359,6 +359,7 @@ VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin,
 	vectorscope->calculate_graduations();
 	waveform->draw_graduations();
 	vectorscope->draw_graduations();
+	draw_labels();
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
