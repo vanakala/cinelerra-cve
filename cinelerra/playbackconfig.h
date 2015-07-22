@@ -33,14 +33,13 @@ class AudioOutConfig
 {
 public:
 	AudioOutConfig(int duplex);
-	~AudioOutConfig();
 
 	int operator!=(AudioOutConfig &that);
 	int operator==(AudioOutConfig &that);
 	AudioOutConfig& operator=(AudioOutConfig &that);
 	void copy_from(AudioOutConfig *src);
-	int load_defaults(BC_Hash *defaults);
-	int save_defaults(BC_Hash *defaults);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 	void set_fragment_size(const char *val);
 	void set_fragment_size(int val);
 	int get_fragment_size(int sample_rate);
@@ -72,14 +71,13 @@ class VideoOutConfig
 {
 public:
 	VideoOutConfig();
-	~VideoOutConfig();
 
 	int operator!=(VideoOutConfig &that);
 	int operator==(VideoOutConfig &that);
 	VideoOutConfig& operator=(VideoOutConfig &that);
 	void copy_from(VideoOutConfig *src);
-	int load_defaults(BC_Hash *defaults);
-	int save_defaults(BC_Hash *defaults);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 	char* get_path();
 
 	int driver;
@@ -88,6 +86,7 @@ public:
 // X11 options
 	char x11_host[BCTEXTLEN];
 	int x11_use_fields;
+
 // Values for x11_use_fields
 	enum
 	{
@@ -95,8 +94,6 @@ public:
 		USE_EVEN_FIRST,
 		USE_ODD_FIRST
 	};
-
-
 
 // Picture quality
 	int brightness;
@@ -114,8 +111,8 @@ public:
 
 	PlaybackConfig& operator=(PlaybackConfig &that);
 	void copy_from(PlaybackConfig *src);
-	int load_defaults(BC_Hash *defaults);
-	int save_defaults(BC_Hash *defaults);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 
 	char hostname[BCTEXTLEN];
 	int port;
@@ -123,6 +120,5 @@ public:
 	AudioOutConfig *aconfig;
 	VideoOutConfig *vconfig;
 };
-
 
 #endif

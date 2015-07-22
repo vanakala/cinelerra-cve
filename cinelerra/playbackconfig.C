@@ -47,18 +47,12 @@ AudioOutConfig::AudioOutConfig(int duplex)
 		sprintf(oss_out_device[i], "/dev/dsp");
 	}
 
-	sprintf(esound_out_server, "");
+	esound_out_server[0] = 0;
 	esound_out_port = 0;
 
-	sprintf(alsa_out_device, "default");
+	strcpy(alsa_out_device, "default");
 	alsa_out_bits = 16;
 }
-
-AudioOutConfig::~AudioOutConfig()
-{
-}
-
-
 
 int AudioOutConfig::operator!=(AudioOutConfig &that)
 {
@@ -67,21 +61,16 @@ int AudioOutConfig::operator!=(AudioOutConfig &that)
 
 int AudioOutConfig::operator==(AudioOutConfig &that)
 {
-	return 
-		fragment_size == that.fragment_size &&
+	return fragment_size == that.fragment_size &&
 		driver == that.driver &&
 		EQUIV(audio_offset, that.audio_offset) &&
-
 		!strcmp(oss_out_device[0], that.oss_out_device[0]) && 
 		(oss_out_bits == that.oss_out_bits) && 
-
 		!strcmp(esound_out_server, that.esound_out_server) && 
 		(esound_out_port == that.esound_out_port) && 
-
 		!strcmp(alsa_out_device, that.alsa_out_device) &&
 		(alsa_out_bits == that.alsa_out_bits);
 }
-
 
 AudioOutConfig& AudioOutConfig::operator=(AudioOutConfig &that)
 {
@@ -108,7 +97,7 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 	alsa_out_bits = src->alsa_out_bits;
 }
 
-int AudioOutConfig::load_defaults(BC_Hash *defaults)
+void AudioOutConfig::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
@@ -134,11 +123,9 @@ int AudioOutConfig::load_defaults(BC_Hash *defaults)
 	defaults->get(string, esound_out_server);
 	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
 	esound_out_port = defaults->get(string, esound_out_port);
-
-	return 0;
 }
 
-int AudioOutConfig::save_defaults(BC_Hash *defaults)
+void AudioOutConfig::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
@@ -166,7 +153,6 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults)
 	defaults->update(string, esound_out_server);
 	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
 	defaults->update(string, esound_out_port);
-	return 0;
 }
 
 void AudioOutConfig::set_fragment_size(const char *val)
@@ -204,10 +190,11 @@ const char *AudioOutConfig::fragment_size_text(void)
 	return frag_text;
 }
 
+
 VideoOutConfig::VideoOutConfig()
 {
 	driver = PLAYBACK_X11_XV;
-	sprintf(x11_host, "");
+	x11_host[0] = 0;
 	x11_use_fields = USE_NO_FIELDS;
 	brightness = 32768;
 	hue = 32768;
@@ -215,11 +202,6 @@ VideoOutConfig::VideoOutConfig()
 	contrast = 32768;
 	whiteness = 32768;
 }
-
-VideoOutConfig::~VideoOutConfig()
-{
-}
-
 
 int VideoOutConfig::operator!=(VideoOutConfig &that)
 {
@@ -237,11 +219,6 @@ int VideoOutConfig::operator==(VideoOutConfig &that)
 		(contrast == that.contrast) && 
 		(whiteness == that.whiteness);
 }
-
-
-
-
-
 
 VideoOutConfig& VideoOutConfig::operator=(VideoOutConfig &that)
 {
@@ -261,36 +238,19 @@ char* VideoOutConfig::get_path()
 	return x11_host;
 }
 
-int VideoOutConfig::load_defaults(BC_Hash *defaults)
+void VideoOutConfig::load_defaults(BC_Hash *defaults)
 {
-	char string[BCTEXTLEN];
-	sprintf(string, "VIDEO_OUT_DRIVER");
-	driver = defaults->get(string, driver);
-	sprintf(string, "X11_OUT_DEVICE");
-	defaults->get(string, x11_host);
+	driver = defaults->get("VIDEO_OUT_DRIVER", driver);
+	defaults->get("X11_OUT_DEVICE", x11_host);
 	x11_use_fields = defaults->get("X11_USE_FIELDS", x11_use_fields);
-
-	return 0;
 }
 
-int VideoOutConfig::save_defaults(BC_Hash *defaults)
+void VideoOutConfig::save_defaults(BC_Hash *defaults)
 {
-	char string[BCTEXTLEN];
-	sprintf(string, "VIDEO_OUT_DRIVER");
-	defaults->update(string, driver);
-	sprintf(string, "X11_OUT_DEVICE");
-	defaults->update(string, x11_host);
+	defaults->update("VIDEO_OUT_DRIVER", driver);
+	defaults->update("X11_OUT_DEVICE", x11_host);
 	defaults->update("X11_USE_FIELDS", x11_use_fields);
-
-	return 0;
 }
-
-
-
-
-
-
-
 
 
 PlaybackConfig::PlaybackConfig()
@@ -321,28 +281,18 @@ void PlaybackConfig::copy_from(PlaybackConfig *src)
 	port = src->port;
 }
 
-int PlaybackConfig::load_defaults(BC_Hash *defaults)
+void PlaybackConfig::load_defaults(BC_Hash *defaults)
 {
-	char string[1024];
-	sprintf(string, "PLAYBACK_HOSTNAME");
-	defaults->get(string, hostname);
-	sprintf(string, "PLAYBACK_PORT");
-	port = defaults->get(string, port);
+	defaults->get("PLAYBACK_HOSTNAME", hostname);
+	port = defaults->get("PLAYBACK_PORT", port);
 	aconfig->load_defaults(defaults);
 	vconfig->load_defaults(defaults);
-	return 0;
 }
 
-int PlaybackConfig::save_defaults(BC_Hash *defaults)
+void PlaybackConfig::save_defaults(BC_Hash *defaults)
 {
-	char string[1024];
-	sprintf(string, "PLAYBACK_HOSTNAME");
-	defaults->update(string, hostname);
-	sprintf(string, "PLAYBACK_PORT");
-	defaults->update(string, port);
+	defaults->update("PLAYBACK_HOSTNAME", hostname);
+	defaults->update("PLAYBACK_PORT", port);
 	aconfig->save_defaults(defaults);
 	vconfig->save_defaults(defaults);
-	return 0;
 }
-
-
