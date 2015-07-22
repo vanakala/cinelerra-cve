@@ -264,12 +264,6 @@ ptstime AudioDevice::current_postime(float speed)
 			return (ptstime)hardware_result / out_samplerate - (out_config->audio_offset / speed);
 		}
 	}
-	else
-	if(lowlevel_in)
-	{
-		return (ptstime)(total_samples_read + 
-			record_timer->get_scaled_difference(in_samplerate)) / in_samplerate;
-	}
 	if(last_position > 0)
 		return (ptstime)last_position / out_samplerate - (out_config->audio_offset/ speed);
 	return -1;
@@ -288,21 +282,6 @@ void AudioDevice::run_output()
 
 		if(is_playing_back && !last_buffer[thread_buffer_num])
 		{
-			if(duplex_init)
-			{
-				if(record_before_play)
-				{
-// block until recording starts
-					duplex_lock->lock("AudioDevice::run 2");
-				}
-				else
-				{
-// allow recording to start
-					duplex_lock->unlock();
-				}
-				duplex_init = 0;
-			}
-
 // get size for position information
 			timer_lock->lock("AudioDevice::run 3");
 			last_buffer_size = buffer_size[thread_buffer_num] / (out_bits / 8) / out_channels;

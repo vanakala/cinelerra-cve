@@ -31,7 +31,5 @@ class Preferences;
 class PlaybackConfig;
 class AudioOutConfig;
 class VideoOutConfig;
-class AudioInConfig;
-class VideoInConfig;
 
 #endif

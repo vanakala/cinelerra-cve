@@ -64,7 +64,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    audioalsa.C \
 		    audiodevice.C \
 		    audioesound.C \
-		    audioidevice.C \
 		    audioodevice.C \
 		    audiooss.C \
 		    auto.C \
@@ -184,7 +183,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    patchbay.C \
 		    patchgui.C \
 		    performanceprefs.C \
-		    picture.C \
 		    pipe.C \
 		    playabletracks.C \
 		    playback3d.C \
@@ -210,7 +208,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    quit.C \
 		    recordableatracks.C \
 		    recordablevtracks.C \
-		    recordconfig.C \
 		    removethread.C \
 		    render.C \
 		    renderengine.C \
@@ -438,7 +435,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 patchbay.h \
 		 patchgui.h \
 		 performanceprefs.h \
-		 picture.h \
 		 pipe.h \
 		 playabletracks.h \
 		 playback3d.h \
@@ -466,7 +462,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 quit.h \
 		 recordableatracks.h \
 		 recordablevtracks.h \
-		 recordconfig.h \
 		 removethread.h \
 		 renderengine.h \
 		 renderfarmclient.h \

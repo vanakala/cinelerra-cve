@@ -41,7 +41,6 @@
 #include "playbackconfig.h"
 #include "plugin.h"
 #include "preferences.h"
-#include "recordconfig.h"
 #include "sharedlocation.h"
 #include "theme.h"
 #include "tracks.h"

@@ -35,15 +35,12 @@ public:
 	AudioALSA(AudioDevice *device);
 	~AudioALSA();
 
-	static void list_devices(ArrayList<char*> *devices, int pcm_title = 0, int mode = MODEPLAY);
-	static void list_hw_devices(ArrayList<char*> *devices, int pcm_title = 0, int mode = MODEPLAY);
-	static void list_pcm_devices(ArrayList<char*> *devices, int pcm_title = 0, int mode = MODEPLAY);
-	int open_input();
+	static void list_devices(ArrayList<char*> *devices, int pcm_title = 0);
+	static void list_hw_devices(ArrayList<char*> *devices, int pcm_title = 0);
+	static void list_pcm_devices(ArrayList<char*> *devices, int pcm_title = 0);
 	int open_output();
 	int write_buffer(char *buffer, int size);
-	int read_buffer(char *buffer, int size);
 	void close_all();
-	void close_input();
 	posnum device_position();
 	void flush_device();
 	void interrupt_playback();

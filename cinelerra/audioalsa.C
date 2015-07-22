@@ -26,7 +26,6 @@
 #include "mutex.h"
 #include "playbackconfig.h"
 #include "preferences.h"
-#include "recordconfig.h"
 
 #include <errno.h>
 
@@ -51,12 +50,12 @@ AudioALSA::~AudioALSA()
 	delete timing_lock;
 }
 
-void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
+void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 {
-	AudioALSA::list_pcm_devices(devices, pcm_title, mode);
+	AudioALSA::list_pcm_devices(devices, pcm_title);
 }
 
-void AudioALSA::list_pcm_devices(ArrayList<char*> *devices, int pcm_title, int mode)
+void AudioALSA::list_pcm_devices(ArrayList<char*> *devices, int pcm_title)
 {
 	snd_pcm_stream_t stream;
 	snd_pcm_t *handle;
@@ -73,18 +72,9 @@ void AudioALSA::list_pcm_devices(ArrayList<char*> *devices, int pcm_title, int m
 	if(snd_device_name_hint(-1, "pcm", &hints) < 0)
 		return;
 
-	switch(mode)
-	{
-	case MODERECORD:
-		filter = "Input";
-		stream = SND_PCM_STREAM_CAPTURE;
-		break;
-	case MODEPLAY:
-	default:
-		filter = "Output";
-		stream = SND_PCM_STREAM_PLAYBACK;
-		break;
-	}
+	filter = "Output";
+	stream = SND_PCM_STREAM_PLAYBACK;
+
 	snd_pcm_hw_params_alloca(&hwparams);
 	name = 0;
 	io = 0;
@@ -123,7 +113,7 @@ do_free:
 	snd_device_name_free_hint(hints);
 }
 
-void AudioALSA::list_hw_devices(ArrayList<char*> *devices, int pcm_title, int mode)
+void AudioALSA::list_hw_devices(ArrayList<char*> *devices, int pcm_title)
 {
 	snd_ctl_t *handle;
 	int card, err, dev, idx;
@@ -132,15 +122,8 @@ void AudioALSA::list_hw_devices(ArrayList<char*> *devices, int pcm_title, int mo
 	char string[BCTEXTLEN];
 	snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
 	int error;
-	switch(mode)
-	{
-	case MODERECORD:
-		stream = SND_PCM_STREAM_CAPTURE;
-		break;
-	case MODEPLAY:
-		stream = SND_PCM_STREAM_PLAYBACK;
-		break;
-	}
+
+	stream = SND_PCM_STREAM_PLAYBACK;
 
 	snd_ctl_card_info_alloca(&info);
 	snd_pcm_info_alloca(&pcminfo);
@@ -314,35 +297,6 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 	return 0;
 }
 
-int AudioALSA::open_input()
-{
-	snd_pcm_stream_t stream = SND_PCM_STREAM_CAPTURE;
-	int open_mode = 0;
-	int err;
-
-	device->in_bits = device->in_config->alsa_in_bits;
-
-	if(err = snd_pcm_open(&dsp_in, device->in_config->alsa_in_device, stream, open_mode))
-	{
-		dsp_in = 0;
-		errorbox("Failed to open ALSA input: %s", snd_strerror(err));
-		return 1;
-	}
-
-	if(set_params(dsp_in, 
-		device->in_channels,
-		device->in_config->alsa_in_bits,
-		device->in_samplerate,
-		device->in_samples))
-	{
-		errormsg("ALSA: open_input: set_params failed. Aborting sampling.");
-		close_input();
-		return 1;
-	}
-
-	return 0;
-}
-
 int AudioALSA::open_output()
 {
 	snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
@@ -382,20 +336,8 @@ void AudioALSA::close_output()
 	}
 }
 
-void AudioALSA::close_input()
-{
-	if(dsp_in)
-	{
-		snd_pcm_drop(dsp_in);
-		snd_pcm_drain(dsp_in);
-		snd_pcm_close(dsp_in);
-		dsp_in = 0;
-	}
-}
-
 void AudioALSA::close_all()
 {
-	close_input();
 	close_output();
 	interrupted = 0;
 }
@@ -416,35 +358,6 @@ samplenum AudioALSA::device_position()
 		result = 0;
 	timing_lock->unlock();
 	return result;
-}
-
-int AudioALSA::read_buffer(char *buffer, int size)
-{
-	int attempts = 0;
-	int done = 0;
-
-	if(!dsp_in)
-	{
-		sleep(1);
-		return 0;
-	}
-
-	while(attempts < 1 && !done)
-	{
-		if(snd_pcm_readi(dsp_in,
-			buffer, 
-			size / (device->in_bits / 8) / device->in_channels) < 0)
-		{
-			printf("AudioALSA::read_buffer overrun at sample %lld\n", 
-				device->total_samples_read);
-			close_input();
-			open_input();
-			attempts++;
-		}
-		else
-			done = 1;
-	}
-	return 0;
 }
 
 int AudioALSA::write_buffer(char *buffer, int size)

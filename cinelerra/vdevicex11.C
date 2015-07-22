@@ -30,7 +30,6 @@
 #include "playback3d.h"
 #include "playbackconfig.h"
 #include "preferences.h"
-#include "recordconfig.h"
 #include "vdevicex11.h"
 #include "vframe.h"
 #include "videodevice.h"
@@ -55,7 +54,6 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
 	canvas_y1 = 0;
 	canvas_x2 = 0;
 	canvas_y2 = 0;
-	capture_bitmap = 0;
 	color_model_selected = 0;
 	is_cleared = 0;
 	gl_failed = 0;
@@ -133,17 +131,6 @@ VDeviceX11::~VDeviceX11()
 		delete output_frame;
 		output_frame = 0;
 	}
-
-	if(capture_bitmap) delete capture_bitmap;
-}
-
-int VDeviceX11::open_input()
-{
-	capture_bitmap = new BC_Capture(device->in_config->w, 
-		device->in_config->h,
-		device->in_config->screencapture_display);
-
-	return 0;
 }
 
 int VDeviceX11::open_output()
@@ -163,17 +150,6 @@ int VDeviceX11::output_visible()
 	if(!output) return 0;
 
 	return !output->get_canvas()->get_hidden();
-}
-
-int VDeviceX11::read_buffer(VFrame *frame)
-{
-	capture_bitmap->capture_frame(frame, device->input_x, device->input_y);
-	return 0;
-}
-
-int VDeviceX11::get_best_colormodel(Asset *asset)
-{
-	return BC_RGB888;
 }
 
 int VDeviceX11::get_best_colormodel(int colormodel)

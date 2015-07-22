@@ -29,7 +29,6 @@
 #include "mutex.h"
 #include "playbackconfig.h"
 #include "preferences.h"
-#include "recordconfig.h"
 #include "sema.h"
 
 
@@ -46,26 +45,20 @@ AudioLowLevel::~AudioLowLevel()
 AudioDevice::AudioDevice(MWindow *mwindow)
  : Thread(THREAD_SYNCHRONOUS)
 {
-	record_before_play = 0;
-
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
 		output_buffer[i] = 0;
-		input_buffer[i] = 0;
 		buffer_size[i] = 0;
 		last_buffer[i] = 0;
 	}
 
-	duplex_init = 0;
-	rec_dither = play_dither = 0;
+	play_dither = 0;
 	arm_buffer_num = 0;
 	is_playing_back = 0;
-	is_recording = 0;
 	last_buffer_size = 0;
 	total_samples = 0;
 	last_position = 0;
 	interrupt = 0;
-	lowlevel_in = 0;
 	lowlevel_out = 0;
 	vdevice = 0;
 	sharing = 0;
@@ -73,14 +66,9 @@ AudioDevice::AudioDevice(MWindow *mwindow)
 	read_waiting = 0;
 	this->mwindow = mwindow;
 	out_config = 0;
-	in_config = new AudioInConfig;
-	vconfig = new VideoInConfig;
 	startup_lock = new Condition(0, "AudioDevice::startup_lock");
-	duplex_lock = new Condition(0, "AudioDevice::duplex_lock");
 	timer_lock = new Mutex("AudioDevice::timer_lock");
 	buffer_lock = new Mutex("AudioDevice::buffer_lock");
-	polling_lock = new Condition(0, "AudioDevice::polling_lock");
-	record_timer = new Timer;
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
 		play_lock[i] = new Sema(0, "AudioDevice::play_lock");
@@ -90,36 +78,23 @@ AudioDevice::AudioDevice(MWindow *mwindow)
 
 AudioDevice::~AudioDevice()
 {
-	if(lowlevel_in)
-	{
-		delete lowlevel_in;
-		lowlevel_in = 0;
-	}
-
 	if(lowlevel_out)
 	{
 		delete lowlevel_out;
 		lowlevel_out = 0;
 	}
 
-	delete in_config;
-	delete vconfig;
 	delete startup_lock;
-	delete duplex_lock;
 	delete timer_lock;
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
 		delete play_lock[i];
 		delete arm_lock[i];
-		delete [] input_buffer[i];
-		input_buffer[i] = 0;
 		delete [] output_buffer[i];
 		output_buffer[i] = 0;
 		buffer_size[i] = 0;
 	}
-	delete record_timer;
 	delete buffer_lock;
-	delete polling_lock;
 }
 
 void AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
@@ -154,30 +129,12 @@ void AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 	}
 }
 
-void AudioDevice::open_input(AudioInConfig *config, 
-	VideoInConfig *vconfig, 
-	int rate, 
-	int samples,
-	int channels)
-{
-	duplex_init = 0;
-	this->in_config->copy_from(config);
-	this->vconfig->copy_from(vconfig);
-	in_samplerate = rate;
-	in_samples = samples;
-	in_channels = channels;
-	create_lowlevel(lowlevel_in, config->driver);
-	lowlevel_in->open_input();
-	record_timer->update();
-}
-
 int AudioDevice::open_output(AudioOutConfig *config, 
 	int rate, 
 	int samples, 
 	int channels)
 {
 	int ret = 0;
-	duplex_init = 0;
 	out_config = config;
 	out_samplerate = rate;
 	out_samples = samples;
@@ -188,22 +145,8 @@ int AudioDevice::open_output(AudioOutConfig *config,
 	return ret;
 }
 
-int AudioDevice::interrupt_crash()
-{
-	if(lowlevel_in) return lowlevel_in->interrupt_crash();
-	return 0;
-}
-
 void AudioDevice::close_all()
 {
-	if(is_recording)
-	{
-		is_recording = 0;
-		read_waiting = 1;
-		Thread::join();
-	}
-
-	if(lowlevel_in) lowlevel_in->close_all();
 	if(lowlevel_out) lowlevel_out->close_all();
 
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
@@ -213,7 +156,7 @@ void AudioDevice::close_all()
 		last_buffer[i] = 0;
 	}
 
-	rec_dither = play_dither = 0;
+	play_dither = 0;
 
 	is_playing_back = 0;
 	is_flushing = 0;
@@ -223,7 +166,6 @@ void AudioDevice::close_all()
 	last_position = 0;
 	interrupt = 0;
 
-	duplex_init = 0;
 	vdevice = 0;
 	sharing = 0;
 }
@@ -247,7 +189,4 @@ void AudioDevice::run()
 {
 	if(lowlevel_out)
 		run_output();
-	else
-	if(lowlevel_in)
-		run_input();
 }

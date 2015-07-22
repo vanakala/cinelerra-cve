@@ -278,8 +278,6 @@ void RenderEngine::open_output()
 				get_output_h(),
 				output,
 				command->single_frame());
-			video->set_quality(80);
-			video->set_cpus(preferences->processors);
 		}
 	}
 }

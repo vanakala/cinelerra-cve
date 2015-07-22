@@ -22,18 +22,10 @@
 #ifndef VDEVICEPREFS_H
 #define VDEVICEPREFS_H
 
-// Modes
-#ifndef MODEPLAY
-#define MODEPLAY 0
-#define MODERECORD 1
-#define MODEDUPLEX 2
-#endif
-
 #include "adeviceprefs.inc"
 #include "guicast.h"
 #include "playbackconfig.inc"
 #include "preferencesthread.inc"
-#include "recordconfig.inc"
 #include "vdeviceprefs.inc"
 
 class VDeviceCheckBox;
@@ -49,9 +41,7 @@ public:
 		int y, 
 		PreferencesWindow *pwindow, 
 		PreferencesDialog *dialog, 
-		VideoOutConfig *out_config,
-		VideoInConfig *in_config,
-		int mode);
+		VideoOutConfig *out_config);
 	~VDevicePrefs();
 
 // creation - set if this is the first initialize of the object
@@ -63,15 +53,9 @@ public:
 	PreferencesWindow *pwindow;
 	PreferencesDialog *dialog;
 	VideoOutConfig *out_config;
-	VideoInConfig *in_config;
 
 private:
-	void create_v4l_objs();
-	void create_v4l2_objs();
-	void create_v4l2jpeg_objs();
-	void create_screencap_objs();
 	void create_x11_objs();
-	void create_dvb_objs();
 
 	VDriverMenu *menu;
 
@@ -83,7 +67,7 @@ private:
 	VDeviceTextBox *device_text;
 	VDeviceTumbleBox *device_port;
 	VDeviceTumbleBox *device_number;
-	int driver, mode;
+	int driver;
 	int x;
 	int y;
 };
@@ -137,13 +121,11 @@ public:
 	VDriverMenu(int x, 
 		int y, 
 		VDevicePrefs *device_prefs, 
-		int do_input, 
 		int *output);
 
 	const char* driver_to_string(int driver);
 
 	VDevicePrefs *device_prefs;
-	int do_input;
 	int *output;
 	char string[BCTEXTLEN];
 };

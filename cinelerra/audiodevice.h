@@ -48,13 +48,10 @@ public:
 	AudioLowLevel(AudioDevice *device);
 	virtual ~AudioLowLevel();
 
-	virtual int open_input() { return 1; };
 	virtual int open_output() { return 1; };
 	virtual void close_all() { return; };
-	virtual int interrupt_crash() { return 0; };
 	virtual samplenum device_position() { return -1; };
 	virtual int write_buffer(char *buffer, int size) { return 1; };
-	virtual int read_buffer(char *buffer, int size) { return 1; };
 	virtual void flush_device() { return; };
 	virtual void interrupt_playback() { return; };
 
@@ -70,15 +67,9 @@ public:
 	~AudioDevice();
 
 	friend class AudioALSA;
-	friend class AudioDVB;
 	friend class AudioOSS;
 	friend class AudioESound;
 
-	void open_input(AudioInConfig *config,
-		VideoInConfig *vconfig,
-		int rate, 
-		int samples,
-		int channels);
 	int open_output(AudioOutConfig *config, 
 		int rate, 
 		int samples, 
@@ -86,22 +77,6 @@ public:
 	void close_all();
 // Specify a video device to pass data to if the same device handles video
 	void set_vdevice(VideoDevice *vdevice);
-
-// ================================ recording
-
-// read from the record device
-// Conversion between double and int is done in AudioDevice
-	int read_buffer(double **input, 
-		int samples, 
-		int *over, 
-		double *max, 
-		int input_offset = 0);  
-	int set_record_dither(int value);
-
-	void start_recording();
-	int stop_recording();
-// If a firewire device crashed
-	int interrupt_crash();
 
 // ================================== dc offset
 
@@ -144,25 +119,15 @@ private:
 	void arm_buffer(int buffer, double **output, int samples);
 
 // Override configured parameters depending on the driver
-	int in_samplerate, in_bits, in_channels, in_samples;
 	int out_samplerate, out_bits, out_channels, out_samples;
 
 // Samples per buffer
-	int osamples, isamples;
+	int osamples;
 
 // Video device to pass data to if the same device handles video
 	VideoDevice *vdevice;
 
-// OSS < 3.9   --> playback before recording
-// OSS >= 3.9  --> doesn't matter
-// Got better synchronization by starting playback first
-	int record_before_play;
-	Condition *duplex_lock;
 	Condition *startup_lock;
-// notify playback routines to test the duplex lock
-	int duplex_init;
-// bits in output file
-	int rec_dither;
 // 1 or 0
 	int play_dither;
 	int sharing;
@@ -172,14 +137,12 @@ private:
 	int last_buffer[TOTAL_BUFFERS];    // not written to device
 // formatted buffers for reading and writing the soundcard
 	char *output_buffer[TOTAL_BUFFERS];
-	char *input_buffer[TOTAL_BUFFERS];
 	Sema *play_lock[TOTAL_BUFFERS];
 	Sema *arm_lock[TOTAL_BUFFERS];
 	Mutex *timer_lock;
 // Get buffer_lock to delay before locking to allow read_buffer to lock it.
 	int read_waiting;
 	Mutex *buffer_lock;
-	Condition *polling_lock;
 	int arm_buffer_num;
 
 // for position information
@@ -194,17 +157,13 @@ private:
 // Current operation
 	int is_playing_back;
 	int is_flushing;
-	int is_recording;
 	int global_timer_started;
 	int interrupt;
 	int driver;
 
 // Multiple data paths can be opened simultaneously by RecordEngine
-	AudioLowLevel *lowlevel_in, *lowlevel_out;
+	AudioLowLevel *lowlevel_out;
 	AudioOutConfig *out_config;
-	AudioInConfig *in_config;
-// Extra configuration if shared with video
-	VideoInConfig *vconfig;
 
 // Buffer being used by the hardware
 	int thread_buffer_num;

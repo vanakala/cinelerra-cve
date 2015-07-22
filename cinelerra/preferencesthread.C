@@ -48,7 +48,6 @@
 #include "playbackengine.h"
 #include "playbackprefs.h"
 #include "preferences.h"
-#include "recordconfig.h"
 #include "selection.h"
 #include "theme.h"
 #include "trackcanvas.h"
@@ -177,18 +176,6 @@ void PreferencesThread::apply_settings()
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
-
-	if(SampleRateSelection::limits(&edl->session->aconfig_in->in_samplerate) < 0)
-		errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
-			MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
-
-	if(FrameSizeSelection::limits(&edl->session->vconfig_in->w, &edl->session->vconfig_in->h) < 0)
-		errorbox(_("Frame size is out of limits (%d..%dx%d..%d).\nCorrection applied."),
-			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
-
-	if(FrameRateSelection::limits(&edl->session->vconfig_in->in_framerate) < 0)
-		errorbox(_("Frame rate is out of limits (%d..%d).\nCorrection applied."),
-			MIN_FRAME_RATE, MAX_FRAME_RATE);
 
 	mwindow->edl->copy_session(edl, 1);
 	mwindow->preferences->copy_from(preferences);

@@ -112,9 +112,7 @@ void PlaybackPrefs::show()
 		y, 
 		pwindow, 
 		this, 
-		playback_config->aconfig, 
-		0,
-		MODEPLAY);
+		playback_config->aconfig);
 	audio_device->initialize();
 
 // Video
@@ -207,9 +205,7 @@ void PlaybackPrefs::show()
 		y, 
 		pwindow, 
 		this, 
-		playback_config->vconfig, 
-		0,
-		MODEPLAY);
+		playback_config->vconfig);
 	video_device->initialize();
 }
 

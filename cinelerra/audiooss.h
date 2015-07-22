@@ -37,7 +37,6 @@ public:
 
 	void run();
 	void write_data(int fd, unsigned char *data, int bytes);
-	void read_data(int fd, unsigned char *data, int bytes);
 // Must synchronize reads and writes
 	void wait_read();
 	void wait_write();
@@ -45,9 +44,8 @@ public:
 
 	Condition *input_lock;
 	Condition *output_lock;
-	Condition *read_lock;
 	Condition *write_lock;
-	int rd, wr, fd;
+	int wr, fd;
 	unsigned char *data;
 	int bytes;
 	int done;
@@ -65,10 +63,8 @@ public:
 	AudioOSS(AudioDevice *device);
 	~AudioOSS();
 
-	int open_input();
 	int open_output();
 	int write_buffer(char *buffer, int bytes);
-	int read_buffer(char *buffer, int bytes);
 	void close_all();
 	samplenum device_position();
 	void flush_device();
@@ -78,7 +74,7 @@ private:
 	int get_fmt(int bits);
 	int sizetofrag(int samples, int channels, int bits);
 	int set_cloexec_flag(int desc, int value);
-	int dsp_in[MAXDEVICES], dsp_out[MAXDEVICES];
+	int dsp_out[MAXDEVICES];
 	OSSThread *thread[MAXDEVICES];
 // Temp for each device
 	unsigned char *data[MAXDEVICES];

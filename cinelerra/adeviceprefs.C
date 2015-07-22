@@ -27,7 +27,6 @@
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "preferencesthread.h"
-#include "recordconfig.h"
 #include "selection.h"
 #include <string.h>
 
@@ -37,9 +36,7 @@ ADevicePrefs::ADevicePrefs(int x,
 	int y, 
 	PreferencesWindow *pwindow, 
 	PreferencesDialog *dialog, 
-	AudioOutConfig *out_config, 
-	AudioInConfig *in_config, 
-	int mode)
+	AudioOutConfig *out_config)
 {
 	menu = 0;
 
@@ -51,9 +48,7 @@ ADevicePrefs::ADevicePrefs(int x,
 	this->pwindow = pwindow;
 	this->dialog = dialog;
 	this->driver = -1;
-	this->mode = mode;
 	this->out_config = out_config;
-	this->in_config = in_config;
 	this->x = x;
 	this->y = y;
 }
@@ -66,33 +61,19 @@ ADevicePrefs::~ADevicePrefs()
 
 void ADevicePrefs::initialize(int creation)
 {
-	int *driver;
 	delete_objects(creation);
 
-	switch(mode)
-	{
-	case MODEPLAY:
-		driver = &out_config->driver;
-		break;
-	case MODERECORD:
-		driver = &in_config->driver;
-		break;
-	case MODEDUPLEX:
-		driver = &out_config->driver;
-		break;
-	}
-	this->driver = *driver;
+	driver = out_config->driver;
 
 	if(!menu)
 	{
 		dialog->add_subwindow(menu = new ADriverMenu(x, 
 			y + 10, 
 			this, 
-			(mode == MODERECORD),
-			driver));
+			&out_config->driver));
 	}
 
-	switch(*driver)
+	switch(driver)
 	{
 	case AUDIO_OSS:
 	case AUDIO_OSS_ENVY24:
@@ -195,18 +176,8 @@ void ADevicePrefs::create_oss_objs()
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		int x1 = x + menu->get_w() + 5;
-		switch(mode)
-		{
-		case MODEPLAY: 
-			output_char = out_config->oss_out_device[i];
-			break;
-		case MODERECORD:
-			output_char = in_config->oss_in_device[i];
-			break;
-		case MODEDUPLEX:
-			output_char = out_config->oss_out_device[i];
-			break;
-		}
+		output_char = out_config->oss_out_device[i];
+
 		if(i == 0) dialog->add_subwindow(path_title = new BC_Title(x1, 
 			y, 
 			_("Device path:"), 
@@ -219,18 +190,7 @@ void ADevicePrefs::create_oss_objs()
 		x1 += oss_path[i]->get_w() + 5;
 		if(i == 0)
 		{
-			switch(mode)
-			{
-			case MODEPLAY: 
-				output_int = &out_config->oss_out_bits;
-				break;
-			case MODERECORD:
-				output_int = &in_config->oss_in_bits;
-				break;
-			case MODEDUPLEX:
-				output_int = &out_config->oss_out_bits;
-				break;
-			}
+			output_int = &out_config->oss_out_bits;
 			if(i == 0) dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, resources->text_default));
 			dialog->add_subwindow(oss_bits = new SampleBitsSelection(x1, y1 + 20,
 				dialog, output_int, SBITS_LINEAR));
@@ -251,7 +211,7 @@ void ADevicePrefs::create_alsa_objs()
 	int x1 = x + menu->get_w() + 5;
 
 	ArrayList<char*> *alsa_titles = new ArrayList<char*>;
-	AudioALSA::list_devices(alsa_titles, 0, mode);
+	AudioALSA::list_devices(alsa_titles, 0);
 
 	alsa_drivers = new ArrayList<BC_ListBoxItem*>;
 	for(int i = 0; i < alsa_titles->total; i++)
@@ -259,18 +219,8 @@ void ADevicePrefs::create_alsa_objs()
 	alsa_titles->remove_all_objects();
 	delete alsa_titles;
 
-	switch(mode)
-	{
-	case MODEPLAY:
-		output_char = out_config->alsa_out_device;
-		break;
-	case MODERECORD:
-		output_char = in_config->alsa_in_device;
-		break;
-	case MODEDUPLEX:
-		output_char = out_config->alsa_out_device;
-		break;
-	}
+	output_char = out_config->alsa_out_device;
+
 	dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device:"), MEDIUMFONT, resources->text_default));
 	alsa_device = new ALSADevice(dialog,
 		x1, 
@@ -280,18 +230,7 @@ void ADevicePrefs::create_alsa_objs()
 	int x2 = x1;
 
 	x1 += alsa_device->get_w() + 5;
-	switch(mode)
-	{
-	case MODEPLAY:
-		output_int = &out_config->alsa_out_bits;
-		break;
-	case MODERECORD:
-		output_int = &in_config->alsa_in_bits;
-		break;
-	case MODEDUPLEX:
-		output_int = &out_config->alsa_out_bits;
-		break;
-	}
+	output_int = &out_config->alsa_out_bits;
 	dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(alsa_bits = new SampleBitsSelection(x1, y1 + 20, dialog,
 		output_int, SBITS_LINEAR));
@@ -306,33 +245,11 @@ void ADevicePrefs::create_esound_objs()
 	int *output_int;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
-	switch(mode)
-	{
-	case MODEPLAY: 
-		output_char = out_config->esound_out_server;
-		break;
-	case MODERECORD:
-		output_char = in_config->esound_in_server;
-		break;
-	case MODEDUPLEX:
-		output_char = out_config->esound_out_server;
-		break;
-	}
+	output_char = out_config->esound_out_server;
 	dialog->add_subwindow(server_title = new BC_Title(x1, y, _("Server:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(esound_server = new ADeviceTextBox(x1, y + 20, output_char));
 
-	switch(mode)
-	{
-	case MODEPLAY:
-		output_int = &out_config->esound_out_port;
-		break;
-	case MODERECORD:
-		output_int = &in_config->esound_in_port;
-		break;
-	case MODEDUPLEX:
-		output_int = &out_config->esound_out_port;
-		break;
-	}
+	output_int = &out_config->esound_out_port;
 	x1 += esound_server->get_w() + 5;
 	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(esound_port = new ADeviceIntBox(x1, y + 20, output_int));
@@ -341,12 +258,10 @@ void ADevicePrefs::create_esound_objs()
 ADriverMenu::ADriverMenu(int x, 
 	int y, 
 	ADevicePrefs *device_prefs, 
-	int do_input,
 	int *output)
  : BC_PopupMenu(x, y, 125, adriver_to_string(*output), 1)
 {
 	this->output = output;
-	this->do_input = do_input;
 	this->device_prefs = device_prefs;
 	add_item(new ADriverItem(this, AUDIO_OSS_TITLE, AUDIO_OSS));
 	add_item(new ADriverItem(this, AUDIO_OSS_ENVY24_TITLE, AUDIO_OSS_ENVY24));
@@ -355,7 +270,7 @@ ADriverMenu::ADriverMenu(int x,
 	add_item(new ADriverItem(this, AUDIO_ALSA_TITLE, AUDIO_ALSA));
 #endif
 
-	if(!do_input) add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
+	add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
 
 	add_item(new ADriverItem(this, AUDIO_DVB_TITLE, AUDIO_DVB));
 }

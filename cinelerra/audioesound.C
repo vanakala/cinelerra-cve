@@ -24,7 +24,6 @@
 #include "mainerror.h"
 #include "playbackconfig.h"
 #include "preferences.h"
-#include "recordconfig.h"
 
 #ifdef HAVE_ESOUND
 #include <esd.h>
@@ -32,8 +31,8 @@
 
 AudioESound::AudioESound(AudioDevice *device) : AudioLowLevel(device)
 {
-	esd_in = esd_out = 0;
-	esd_in_fd = esd_out_fd = 0;
+	esd_out = 0;
+	esd_out_fd = 0;
 }
 
 AudioESound::~AudioESound()
@@ -88,27 +87,6 @@ char* AudioESound::translate_device_string(char *server, int port)
 	return device_string;
 }
 
-int AudioESound::open_input()
-{
-	esd_format_t format = ESD_STREAM | ESD_RECORD;
-
-	device->in_channels = 2;
-	device->in_bits = 16;
-
-	format |= get_channels_flag(device->in_channels);
-	format |= get_bit_flag(device->in_bits);
-
-	if((esd_in = esd_open_sound(translate_device_string(device->in_config->esound_in_server, device->in_config->esound_in_port))) <= 0)
-	{
-		errorbox("Failed to open ESound input");
-		return 1;
-	}
-	esd_in_fd = esd_record_stream_fallback(format, device->in_samplerate, 
-					translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port),
-					"Cinelerra");
-	return 0;
-}
-
 int AudioESound::open_output()
 {
 	esd_format_t format = ESD_STREAM | ESD_PLAY;
@@ -135,12 +113,6 @@ int AudioESound::open_output()
 
 void AudioESound::close_all()
 {
-	if(esd_in > 0)
-	{
-		close(esd_in_fd);
-		esd_close(esd_in);
-	}
-
 	if(esd_out > 0)
 	{
 		close(esd_out_fd);
@@ -152,14 +124,6 @@ void AudioESound::close_all()
 samplenum AudioESound::device_position()
 {
 	return -1;
-}
-
-int AudioESound::read_buffer(char *buffer, int size)
-{
-	if(esd_in_fd > 0)
-		return read(esd_in_fd, buffer, size);
-	else
-		return 1;
 }
 
 int AudioESound::write_buffer(char *buffer, int size)

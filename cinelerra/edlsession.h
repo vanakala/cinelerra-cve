@@ -29,7 +29,6 @@
 #include "edl.inc"
 #include "filexml.inc"
 #include "playbackconfig.inc"
-#include "recordconfig.inc"
 
 
 // Session shared between all clips
@@ -184,11 +183,7 @@ public:
 // Location of video outs
 	int vchannel_x[MAXCHANNELS];
 	int vchannel_y[MAXCHANNELS];
-// Recording
 	int video_channels;
-	VideoInConfig *vconfig_in;
-	AudioInConfig *aconfig_in;
-	Asset *recording_format;
 // play every frame
 	int video_every_frame;
 // decode video asynchronously

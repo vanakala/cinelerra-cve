@@ -32,7 +32,6 @@
 #include "interlacemodes.h"
 #include "overlayframe.inc"
 #include "playbackconfig.h"
-#include "recordconfig.h"
 #include "selection.h"
 #include "tracks.h"
 #include "workarounds.h"
@@ -43,10 +42,7 @@ EDLSession::EDLSession(EDL *edl)
 {
 	highlighted_track = 0;
 	playback_cursor_visible = 0;
-	aconfig_in = new AudioInConfig;
 	aconfig_duplex = new AudioOutConfig(1);
-	vconfig_in = new VideoInConfig;
-	recording_format = new Asset;
 	interpolation_type = CUBIC_LINEAR;
 	test_playback_edits = 1;
 	brender_start = 0.0;
@@ -88,12 +84,9 @@ EDLSession::EDLSession(EDL *edl)
 
 EDLSession::~EDLSession()
 {
-	delete aconfig_in;
 	delete aconfig_duplex;
 	delete auto_conf;
-	delete vconfig_in;
 	delete playback_config;
-	Garbage::delete_object(recording_format);
 }
 
 
@@ -157,7 +150,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 		achannel_positions[i] = defaults->get(string, default_position);
 	}
 	aconfig_duplex->load_defaults(defaults);
-	aconfig_in->load_defaults(defaults);
 	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", (float)-1);
 	assetlist_format = defaults->get("ASSETLIST_FORMAT", ASSETS_ICONS);
 	aspect_w = defaults->get("ASPECTW", aspect_w);
@@ -224,13 +216,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	record_software_position = defaults->get("RECORD_SOFTWARE_POSITION", 1);
 	record_sync_drives = defaults->get("RECORD_SYNC_DRIVES", 0);
 	record_write_length = defaults->get("RECORD_WRITE_LENGTH", 131072);
-	recording_format->load_defaults(defaults,
-		"RECORD_", 
-		1,
-		1,
-		1,
-		1,
-		1);
 	safe_regions = defaults->get("SAFE_REGIONS", 1);
 	sample_rate = defaults->get("SAMPLERATE", sample_rate);
 	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);
@@ -245,7 +230,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 		sprintf(string, "TIMECODE_OFFSET_%d", i);
 		timecode_offset[i] = defaults->get(string, 0);
 	}
-	vconfig_in->load_defaults(defaults);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		int default_position = i * output_w;
@@ -280,7 +264,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	}
 	defaults->update("ACHANNELS", audio_channels);
 	aconfig_duplex->save_defaults(defaults);
-	aconfig_in->save_defaults(defaults);
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 	{
 		sprintf(string, "ASSET_COLUMN%d", i);
@@ -345,13 +328,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("RECORD_SOFTWARE_POSITION", record_software_position);
 	defaults->update("RECORD_SYNC_DRIVES", record_sync_drives);
 	defaults->update("RECORD_WRITE_LENGTH", record_write_length); // Heroine kernel 2.2 scheduling sucks.
-	recording_format->save_defaults(defaults,
-		"RECORD_",
-		1,
-		1,
-		1,
-		1,
-		1);
 	defaults->update("SAFE_REGIONS", safe_regions);
 	defaults->update("SAMPLERATE", sample_rate);
 	defaults->update("SCRUB_SPEED", scrub_speed);
@@ -367,7 +343,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	}
 	defaults->delete_key("NUDGE_FORMAT");
 	defaults->delete_key("TOOL_WINDOW");
-	vconfig_in->save_defaults(defaults);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		sprintf(string, "VCHANNEL_X_%d", i);
@@ -677,7 +652,6 @@ int EDLSession::copy(EDLSession *session)
 		achannel_positions[i] = session->achannel_positions[i];
 	}
 	aconfig_duplex->copy_from(session->aconfig_duplex);
-	aconfig_in->copy_from(session->aconfig_in);
 	actual_frame_rate = session->actual_frame_rate;
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 	{
@@ -742,7 +716,6 @@ int EDLSession::copy(EDLSession *session)
 	record_software_position = session->record_software_position;
 	record_sync_drives = session->record_sync_drives;
 	record_write_length = session->record_write_length;
-	recording_format->copy_from(session->recording_format, 0);
 	safe_regions = session->safe_regions;
 	sample_rate = session->sample_rate;
 	scrub_speed = session->scrub_speed;
@@ -763,7 +736,6 @@ int EDLSession::copy(EDLSession *session)
 		vchannel_y[i] = session->vchannel_y[i];
 	}
 	video_channels = session->video_channels;
-	*vconfig_in = *session->vconfig_in;
 	video_every_frame = session->video_every_frame;
 	video_asynchronous = session->video_asynchronous;
 	video_tracks = session->video_tracks;

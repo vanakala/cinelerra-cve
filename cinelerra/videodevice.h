@@ -34,42 +34,9 @@
 #include "mutex.inc"
 #include "preferences.inc"
 #include "thread.h"
-#include "picture.inc"
 #include "vdevicebase.inc"
 #include "vdevicex11.inc"
 
-
-// The keepalive thread runs continuously during recording.
-// If the recording thread doesn't reset still_alive, failed is incremented.
-// Failed is set to 0 if the recording thread resets still_alive.
-// It calls goose_input in the VideoDevice.  The input driver should
-// trap goose_input and restart itself asynchronous of the recording thread.
-
-// Number of seconds for keepalive to freak out
-#define KEEPALIVE_DELAY 0.5
-
-class VideoDevice;
-
-class KeepaliveThread : public Thread
-{
-public:
-	KeepaliveThread(VideoDevice *device);
-	~KeepaliveThread();
-
-	void run();
-	int reset_keepalive();   // Call after frame capture to reset counter
-	int get_failed();
-	int start_keepalive();
-	int stop();
-
-	Timer timer;
-	int still_alive;
-	int failed;
-	int interrupted;
-	VideoDevice *device;
-	Mutex *startup_lock;
-	int capturing;
-};
 
 class VideoDevice
 {
@@ -80,55 +47,14 @@ public:
 
 	void close_all();
 
-// ===================================== Recording
-	void open_input(VideoInConfig *config,
-		int input_x, 
-		int input_y, 
-		float input_z,
-		double frame_rate);
-
-// Call the constructor of the desired device.
-// Used by fix_asset and open_input
-	VDeviceBase* new_device_base();
-
-
 // Used for calling OpenGL functions
 	VDeviceBase* get_output_base();
 
-// Return 1 if the data is compressed.
-// Called by Record::run to determine if compression option is fixed.
-// Called by RecordVideo::rewind_file to determine if FileThread should call
-// write_compressed_frames or write_frames.
-	static int is_compressed(int driver, int use_file, int use_fixed);
-	int is_compressed(int use_file, int use_fixed);
-
-// Return codec to store on disk if compressed
-	void fix_asset(Asset *asset, int driver);
 	static const char* drivertostr(int driver);
-// Get the best colormodel for recording given the file format.
-// Must be called between open_input and read_buffer.
-	int get_best_colormodel(Asset *asset);
 
 // Specify the audio device opened concurrently with this video device
 	void set_adevice(AudioDevice *adevice);
-// Return 1 if capturing locked up
-	int get_failed();
-// Interrupt a crashed DV device
-	int interrupt_crash();
-// Schedule capture size to be changed.
-	void set_translation(int input_x, int input_y);
-// Set the quality of the JPEG compressor
-	void set_quality(int quality);
-// Change field order
-	void set_field_order(int odd_field_first);
-// Set frames to clear after translation change.
-	void set_latency_counter(int value);
-// Values from -100 to 100
-	void set_picture(PictureConfig *picture);
-	int capture_frame(int frame_number);  // Start the frame_number capturing
-	int read_buffer(VFrame *frame);  // Read the next frame off the device
-	int has_signal();
-	int frame_to_vframe(VFrame *frame, unsigned char *input); // Translate the captured frame to a VFrame
+
 	BC_Bitmap* get_bitmap();
 
 // Used by all devices to cause fd's to be not copied in fork operations.
@@ -149,7 +75,6 @@ public:
 	int wait_for_completion();
 	int output_visible();     // Whether the output is visible or not.
 	void stop_playback();
-	void goose_input();
 
 // absolute frame of last frame in buffer.
 // The EDL parameter is passed to Canvas and can be 0.
@@ -157,8 +82,6 @@ public:
 
 // Flag when output is interrupted
 	int interrupt;
-// Compression format in use by the output device
-	int output_format;
 
 // Audio device to share data with
 	AudioDevice *adevice;
@@ -172,49 +95,15 @@ public:
 // size of output frame being fed to device during playback
 	int out_w, out_h;
 // modes
-	int reading;
 	int writing;
 // time from start of previous frame to start of next frame in ms
 	int frame_delay;
-// CPU count for MJPEG compression
-	int cpus;
 
-	int is_recording; // status of thread
-	double frame_rate; // Frame rate to set in device
-// Location of input frame in captured frame
-	int frame_in_capture_x1, frame_in_capture_x2, frame_in_capture_y1, frame_in_capture_y2;
-	int capture_in_frame_x1, capture_in_frame_x2, capture_in_frame_y1, capture_in_frame_y2;
-// Size of raw captured frame
-	int capture_w, capture_h;
-	int input_x, input_y;
-	float input_z;
-// Captured frame size can only be changed when ready
-	int new_input_x, new_input_y;
-	float new_input_z;
-	int frame_resized;
-// When the frame is resized, need to clear all the buffer frames.
-	int latency_counter;
-	int capturing;
-
-	int odd_field_first;
-// Quality for the JPEG compressor
-	int quality;
 // Single frame mode for playback
 	int single_frame;
 
-// Copy of the most recent picture controls
-	int picture_changed;
-	PictureConfig *picture;
-	Mutex *picture_lock;
-
-// Change the capture size when ready
-	void update_translation();
-
-	VDeviceBase *input_base;
 	VDeviceBase *output_base;
-	VideoInConfig *in_config;
 	VideoOutConfig *out_config;
-	KeepaliveThread *keepalive;
 	MWindow *mwindow;
 };
 #endif

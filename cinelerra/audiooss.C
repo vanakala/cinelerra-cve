@@ -28,7 +28,6 @@
 #include "mainerror.h"
 #include "playbackconfig.h"
 #include "preferences.h"
-#include "recordconfig.h"
 #include "mutex.h"
 
 #include <string.h>
@@ -48,13 +47,11 @@
 OSSThread::OSSThread(AudioOSS *device)
  : Thread(THREAD_SYNCHRONOUS)
 {
-	rd = 0;
 	wr = 0;
 	done = 0;
 	this->device = device;
 	input_lock = new Condition(0, "OSSThread::input_lock");
 	output_lock = new Condition(1, "OSSThread::output_lock");
-	read_lock = new Condition(0, "OSSThread::read_lock");
 	write_lock = new Condition(0, "OSSThread::write_lock");
 
 	// delay / timing
@@ -72,7 +69,6 @@ OSSThread::~OSSThread()
 	Thread::join();
 	delete input_lock;
 	delete output_lock;
-	delete read_lock;
 	delete write_lock;
 	delete timer_lock;
 	delete timer;
@@ -85,12 +81,6 @@ void OSSThread::run()
 	while(!done)
 	{
 		input_lock->lock("OSSThread::run 1");
-		if(rd)
-		{
-			int result = read(fd, data, bytes);
-			read_lock->unlock();
-		}
-		else
 		if(wr)
 		{
 			if(done) return;
@@ -129,27 +119,10 @@ void OSSThread::write_data(int fd, unsigned char *data, int bytes)
 {
 	output_lock->lock("OSSThread::write_data");
 	wr = 1;
-	rd = 0;
 	this->data = data;
 	this->bytes = bytes;
 	this->fd = fd;
 	input_lock->unlock();
-}
-
-void OSSThread::read_data(int fd, unsigned char *data, int bytes)
-{
-	output_lock->lock("OSSThread::read_data");
-	wr = 0;
-	rd = 1;
-	this->data = data;
-	this->bytes = bytes;
-	this->fd = fd;
-	input_lock->unlock();
-}
-
-void OSSThread::wait_read()
-{
-	read_lock->lock("OSSThread::wait_read");
 }
 
 void OSSThread::wait_write()
@@ -173,7 +146,7 @@ AudioOSS::AudioOSS(AudioDevice *device)
 {
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
-		dsp_in[i] = dsp_out[i] = -1;
+		dsp_out[i] = -1;
 		thread[i] = 0;
 		data[i] = 0;
 		data_allocated[i] = 0;
@@ -186,74 +159,6 @@ AudioOSS::~AudioOSS()
 		if(thread[i]) delete thread[i];
 		if(data[i]) delete [] data[i];
 	}
-}
-
-int AudioOSS::open_input()
-{
-	device->in_bits = device->in_config->oss_in_bits;
-// 24 bits not available in OSS
-	if(device->in_bits == 24) device->in_bits = 32;
-
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		if(device->in_config->oss_enable[i])
-		{
-			dsp_in[i] = open(device->in_config->oss_in_device[i], O_RDONLY/* | O_NDELAY*/);
-			if(dsp_in[i] < 0)
-			{
-				errorbox("AudioOSS input: Failed to open %s: %m",
-					device->in_config->oss_in_device[i]);
-				close_all();
-				return 1;
-			}
-
-			int format = get_fmt(device->in_config->oss_in_bits);
-			int buffer_info = sizetofrag(device->in_samples, 
-				device->in_channels,
-				device->in_config->oss_in_bits);
-
-			set_cloexec_flag(dsp_in[i], 1);
-
-// For the ice1712 the buffer must be maximum or no space will be allocated.
-			if(device->driver == AUDIO_OSS_ENVY24) buffer_info = 0x7fff000f;
-			if(ioctl(dsp_in[i], SNDCTL_DSP_SETFRAGMENT, &buffer_info))
-			{
-				errorbox("AudioOSS input: SNDCTL_DSP_SETFRAGMENT ioctl failed.");
-				close_all();
-				return 1;
-			}
-			if(ioctl(dsp_in[i], SNDCTL_DSP_SETFMT, &format) < 0)
-			{
-				errorbox("AuidioOSS input: SNDCTL_DSP_SETFMT ioctl failed");
-				close_all();
-				return 1;
-			}
-			int channels = device->in_channels;
-			if(ioctl(dsp_in[i], SNDCTL_DSP_CHANNELS, &channels) < 0){
-				errorbox("AudioOSS: SNDCTL_DSP_CHANNELS failed");
-				close_all();
-				return 1;
-			}
-			if(ioctl(dsp_in[i], SNDCTL_DSP_SPEED, &device->in_samplerate) < 0)
-			{
-				errorbox("AudioOSS input: SNDCTL_DSP_SPEED ioctl failed");
-				close_all();
-				return 1;
-			}
-
-			audio_buf_info recinfo;
-			if(ioctl(dsp_in[i], SNDCTL_DSP_GETISPACE, &recinfo))
-			{
-				errorbox("AudioOSS input: SNDCTL_DSP_GETISPACE ioctl failed");
-				close_all();
-				return 1;
-			}
-
-			thread[i] = new OSSThread(this);
-			thread[i]->start();
-		}
-	}
-	return 0;
 }
 
 int AudioOSS::open_output()
@@ -359,13 +264,6 @@ void AudioOSS::close_all()
 {
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
-		if(dsp_in[i] >= 0)
-		{
-			ioctl(dsp_in[i], SNDCTL_DSP_RESET, 0);
-			close(dsp_in[i]);
-			dsp_in[i] = -1;
-		}
-
 		if(dsp_out[i] >= 0)
 		{
 			ioctl(dsp_out[i], SNDCTL_DSP_RESET, 0);
@@ -410,63 +308,6 @@ void AudioOSS::interrupt_playback()
 			thread[i]->write_lock->unlock();
 		}
 	}
-}
-
-int AudioOSS::read_buffer(char *buffer, int bytes)
-{
-	int sample_size = device->in_bits / 8;
-	int out_frame_size = device->in_channels * sample_size;
-	int samples = bytes / out_frame_size;
-
-// Fill temp buffers
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		if(thread[i])
-		{
-			int in_frame_size = device->in_channels * sample_size;
-
-			if(data[i] && data_allocated[i] < bytes)
-			{
-				delete [] data[i];
-				data[i] = 0;
-			}
-			if(!data[i])
-			{
-				data[i] = new unsigned char[bytes];
-				data_allocated[i] = bytes;
-			}
-
-			thread[i]->read_data(dsp_in[i], data[i], samples * in_frame_size);
-		}
-	}
-
-	for(int i = 0, out_channel = 0; i < MAXDEVICES; i++)
-	{
-		if(thread[i])
-		{
-			thread[i]->wait_read();
-
-			for(int in_channel = 0; 
-				in_channel < device->in_channels;
-				in_channel++)
-			{
-				int in_frame_size = device->in_channels * sample_size;
-
-				for(int k = 0; k < samples; k++)
-				{
-					for(int l = 0; 
-						l < sample_size;
-						l++)
-					{
-						buffer[out_channel * sample_size + k * out_frame_size + l] = 
-							data[i][in_channel * sample_size + k * in_frame_size + l];
-					}
-				}
-				out_channel++;
-			}
-		}
-	}
-	return 0;
 }
 
 int AudioOSS::write_buffer(char *buffer, int bytes)

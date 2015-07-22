@@ -29,7 +29,6 @@ class ALSADevice;
 #include "guicast.h"
 #include "playbackconfig.inc"
 #include "preferencesthread.inc"
-#include "recordconfig.inc"
 #include "selection.inc"
 
 class ADriverMenu;
@@ -43,9 +42,7 @@ public:
 		int y, 
 		PreferencesWindow *pwindow, 
 		PreferencesDialog *dialog, 
-		AudioOutConfig *out_config, 
-		AudioInConfig *in_config, 
-		int mode);
+		AudioOutConfig *out_config);
 	~ADevicePrefs();
 
 	static int get_h(int recording = 0);
@@ -68,9 +65,8 @@ private:
 
 // The output config resolved from playback strategy and render engine.
 	AudioOutConfig *out_config;
-	AudioInConfig *in_config;
 	PreferencesDialog *dialog;
-	int driver, mode;
+	int driver;
 	int x;
 	int y;
 	ADriverMenu *menu;
@@ -94,11 +90,9 @@ public:
 	ADriverMenu(int x, 
 		int y, 
 		ADevicePrefs *device_prefs, 
-		int do_input,
 		int *output);
 	const char *adriver_to_string(int driver);
 
-	int do_input;
 	int *output;
 	ADevicePrefs *device_prefs;
 };

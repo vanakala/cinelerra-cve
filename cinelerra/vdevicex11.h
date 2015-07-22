@@ -44,8 +44,6 @@ public:
 	VDeviceX11(VideoDevice *device, Canvas *output);
 	~VDeviceX11();
 
-	int open_input();
-	int read_buffer(VFrame *frame);
 // User always gets the colormodel requested
 	void new_output_buffer(VFrame **output, int colormodel);
 
@@ -54,9 +52,6 @@ public:
 
 // After loading the bitmap with a picture, write it
 	int write_buffer(VFrame *result, EDL *edl);
-// Get best colormodel for recording
-	int get_best_colormodel(Asset *asset);
-
 
 //=========================== compositing stages ===============================
 // For compositing with OpenGL, must clear the frame buffer
@@ -152,8 +147,6 @@ private:
 // Must be floats to support OpenGL
 	float output_x1, output_y1, output_x2, output_y2;
 	float canvas_x1, canvas_y1, canvas_x2, canvas_y2;
-// Screen capture
-	BC_Capture *capture_bitmap;
 // Set when OpenGL rendering has cleared the frame buffer before write_buffer
 	int is_cleared;
 // Set when OpenGL initialization failed
