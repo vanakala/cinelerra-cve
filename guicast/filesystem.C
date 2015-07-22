@@ -115,8 +115,8 @@ void FileSystem::reset_parameters()
 {
 	show_all_files = 0;
 	want_directory = 0;
-	strcpy(filter, "");
-	strcpy(current_dir, "");
+	filter[0] =  0;
+	current_dir[0] = 0;
 	sort_order = SORT_ASCENDING;
 	sort_field = SORT_PATH;
 }
@@ -672,7 +672,7 @@ void FileSystem::extract_name(char *out, const char *in, int test_dir)
 	int i;
 
 	if(test_dir && is_dir(in))
-		sprintf(out, "");    // complete string is directory
+		out[0] = 0;    // complete string is directory
 	else
 	{
 		for(i = strlen(in)-1; i > 0 && in[i] != '/'; i--)
