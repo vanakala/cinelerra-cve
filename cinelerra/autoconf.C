@@ -23,7 +23,6 @@
 #include "bchash.h"
 #include "filexml.h"
 
-
 static const char *xml_titles[] = 
 {
 	"SHOW_MUTE",
@@ -51,10 +50,12 @@ static int auto_defaults[] =
 	0,
 	1,
 	0,
+	0,
+	0,
 	0
 };
 
-int AutoConf::load_defaults(BC_Hash* defaults)
+void AutoConf::load_defaults(BC_Hash* defaults)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -62,7 +63,6 @@ int AutoConf::load_defaults(BC_Hash* defaults)
 	}
 	transitions = defaults->get("SHOW_TRANSITIONS", 1);
 	plugins = defaults->get("SHOW_PLUGINS", 1);
-	return 0;
 }
 
 void AutoConf::load_xml(FileXML *file)
@@ -75,7 +75,7 @@ void AutoConf::load_xml(FileXML *file)
 	plugins = file->tag.get_property("SHOW_PLUGINS", 1);
 }
 
-int AutoConf::save_defaults(BC_Hash* defaults)
+void AutoConf::save_defaults(BC_Hash* defaults)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -83,7 +83,6 @@ int AutoConf::save_defaults(BC_Hash* defaults)
 	}
 	defaults->update("SHOW_TRANSITIONS", transitions);
 	defaults->update("SHOW_PLUGINS", plugins);
-	return 0;
 }
 
 void AutoConf::save_xml(FileXML *file)
@@ -96,7 +95,7 @@ void AutoConf::save_xml(FileXML *file)
 	file->tag.set_property("SHOW_PLUGINS", plugins);
 }
 
-int AutoConf::set_all(int value)
+void AutoConf::set_all(int value)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -104,7 +103,6 @@ int AutoConf::set_all(int value)
 	}
 	transitions = value;
 	plugins = value;
-	return 0;
 }
 
 AutoConf& AutoConf::operator=(AutoConf &that)
