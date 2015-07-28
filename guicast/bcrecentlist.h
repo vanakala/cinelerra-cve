@@ -35,22 +35,21 @@
 
 class BC_RecentList : public BC_ListBox
 {
- public:
+public:
 	BC_RecentList(const char *type, BC_Hash *defaults, 
-		      BC_TextBox *textbox, int max,
-		      int x, int y, int w, int h);
-	BC_RecentList(const char *type, BC_Hash *defaults);
-	BC_RecentList(const char *type, BC_Hash *defaults, 
-		      BC_TextBox *textbox);
-
+		BC_TextBox *textbox, int max,
+		int x, int y, int w, int h);
 	~BC_RecentList();
 
+	BC_RecentList(const char *type, BC_Hash *defaults);
+	BC_RecentList(const char *type, BC_Hash *defaults,
+		BC_TextBox *textbox);
 	int handle_event();
 	int load_items(const char *prefix = NULL);
 	int add_item(const char *prefix, const char *text);
-	
+
 	ArrayList<BC_ListBoxItem*> items;
- private: 
+private:
 	const char *type;
 	BC_TextBox *textbox;
 	BC_Hash *defaults;
