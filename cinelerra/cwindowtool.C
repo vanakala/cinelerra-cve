@@ -645,7 +645,6 @@ void CWindowCamProjGUI::update_preview()
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 	mwindow->cwindow->gui->canvas->draw_refresh();
@@ -1411,7 +1410,6 @@ void CWindowMaskGUI::update_preview()
 {
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->cwindow->playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
 	mwindow->cwindow->gui->canvas->draw_refresh();
 }
 
