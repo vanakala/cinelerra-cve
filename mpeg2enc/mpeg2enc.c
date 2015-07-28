@@ -445,8 +445,8 @@ static void readcmdline(int argc, char *argv[])
 //printf("readcmdline 2\n");
 
 
-	sprintf(tplorg, "");
-	sprintf(out_path, "");
+	tplorg[0] = 0;
+	out_path[0] = 0;
 
 #define INTTOYES(x) ((x) ? "Yes" : "No")
 // This isn't used anymore as this is a library entry point.
