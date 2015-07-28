@@ -1325,7 +1325,8 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 	else
 		keyframe = 0;
 
-	if(keyframe && !PTSEQU(pos, keyframe->pos_time))
+	if(mwindow->edl->session->auto_keyframes && keyframe &&
+			!PTSEQU(pos, keyframe->pos_time))
 	{
 		localauto->interpolate_from(keyframe, keyframe->next, mwindow->edl->local_session->get_selectionstart(1), 0);
 		keyframe = localauto;
