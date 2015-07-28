@@ -28,7 +28,6 @@
 #include "arraylist.h"
 #include "asset.inc"
 #include "assets.inc"
-#include "batch.inc"
 #include "bchash.inc"
 #include "edl.inc"
 #include "filexml.inc"

@@ -22,7 +22,6 @@
 #include "asset.h"
 #include "assets.h"
 #include "awindowgui.inc"
-#include "batch.h"
 #include "cache.h"
 #include "bchash.h"
 #include "edl.h"
