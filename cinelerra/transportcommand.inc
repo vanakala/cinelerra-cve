@@ -48,7 +48,7 @@
 // Delete cache
 #define CHANGE_ALL            0xf
 // Delete render engines
-#define CHANGE_EDL            0x3
+#define CHANGE_EDL            0x2
 // Search EDL and synchronize parameters.
 #define CHANGE_PARAMS         0x1
 #define CHANGE_NONE           0x0
