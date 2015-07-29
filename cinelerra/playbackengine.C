@@ -344,6 +344,22 @@ void PlaybackEngine::send_command(int cmd, EDL *new_edl, int options)
 		new_cmd->set_playback_range(options & CMDOPT_USEINOUT);
 	}
 
+	// Drop previous CURRENT_FRAMEs
+	if(new_cmd->command == CURRENT_FRAME && used_cmds > 1)
+	{
+		if(cmds[used_cmds - 2]->command == CURRENT_FRAME)
+		{
+			if(new_cmd->change_type == CHANGE_NONE)
+				used_cmds--;
+			else
+			if(new_cmd->change_type >= cmds[used_cmds - 2]->change_type)
+			{
+				cmds[used_cmds - 1] = cmds[used_cmds -2];
+				cmds[used_cmds - 2] = new_cmd;
+				used_cmds--;
+			}
+		}
+	}
 	cmds_lock->unlock();
 	playback_lock->unlock();
 }
