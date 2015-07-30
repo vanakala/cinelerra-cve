@@ -105,7 +105,7 @@ void BC_MenuPopup::add_item(BC_MenuItem *item)
 	menu_items.append(item);
 	if(top_level)
 		item->initialize(top_level, menu_bar, this);
-// items unittialized here will be initalized later in initialize
+// items uninitialized here will be initalized later in initialize
 }
 
 void BC_MenuPopup::remove_item(BC_MenuItem *item)
