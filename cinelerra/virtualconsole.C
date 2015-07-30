@@ -49,25 +49,41 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 	playable_tracks = 0;
 	entry_nodes = 0;
 	debug_tree = 0;
+	interrupt = 0;
+	done = 0;
 }
-
 
 VirtualConsole::~VirtualConsole()
 {
-	delete_virtual_console();
+// delete the virtual node tree
+	for(int i = 0; i < total_exit_nodes; i++)
+		delete entry_nodes[i];
+
+	delete [] entry_nodes;
+	exit_nodes.remove_all();
 
 	delete playable_tracks;
 }
 
-
-void VirtualConsole::create_objects()
+void VirtualConsole::create_nodes()
 {
-	interrupt = 0;
-	done = 0;
-
-	get_playable_tracks();
 	total_exit_nodes = playable_tracks->total;
-	build_virtual_console(1);
+// allocate the entry nodes
+	if(!entry_nodes)
+	{
+		entry_nodes = new VirtualNode*[total_exit_nodes];
+
+		for(int i = 0; i < total_exit_nodes; i++)
+		{
+			entry_nodes[i] = new_entry_node(playable_tracks->values[i],
+				module_of(playable_tracks->values[i]), i);
+
+// Expand the trees
+			entry_nodes[i]->expand(1,
+				commonrender->current_postime);
+		}
+		commonrender->restart_plugins = 1;
+	}
 }
 
 void VirtualConsole::start_playback()
@@ -75,7 +91,6 @@ void VirtualConsole::start_playback()
 	interrupt = 0;
 	done = 0;
 }
-
 
 Module* VirtualConsole::module_of(Track *track)
 {
@@ -106,30 +121,7 @@ Module* VirtualConsole::module_number(int track_number)
 				data_type_number++;
 		}
 	}
-
-
 	return 0;
-}
-
-void VirtualConsole::build_virtual_console(int persistent_plugins)
-{
-// allocate the entry nodes
-	if(!entry_nodes)
-	{
-		entry_nodes = new VirtualNode*[total_exit_nodes];
-
-		for(int i = 0; i < total_exit_nodes; i++)
-		{
-			entry_nodes[i] = new_entry_node(playable_tracks->values[i], 
-				module_of(playable_tracks->values[i]), 
-				i);
-
-// Expand the trees
-			entry_nodes[i]->expand(persistent_plugins, 
-				commonrender->current_postime);
-		}
-		commonrender->restart_plugins = 1;
-	}
 }
 
 void VirtualConsole::append_exit_node(VirtualNode *node)
@@ -156,7 +148,6 @@ void VirtualConsole::dump()
 	for(int i = 0; i < total_exit_nodes; i++)
 		entry_nodes[i]->dump(0);
 }
-
 
 int VirtualConsole::test_reconfigure(ptstime &len,
 	int &last_playback)
@@ -194,12 +185,10 @@ int VirtualConsole::test_reconfigure(ptstime &len,
 	for(int i = 0; i < commonrender->total_modules && !result; i++)
 		result = commonrender->modules[i]->test_plugins();
 
-
 // Now get the length of time until next reconfiguration.
 // This part is not concerned with result.
 // Don't clip input length if only rendering 1 frame.
 	if(len <= track_unit) return result;
-
 
 	int direction = renderengine->command->get_direction();
 // GCC 3.2 requires this or optimization error results.
@@ -254,19 +243,3 @@ int VirtualConsole::test_reconfigure(ptstime &len,
 	}
 	return result;
 }
-
-
-void VirtualConsole::delete_virtual_console()
-{
-// delete the virtual node tree
-	for(int i = 0; i < total_exit_nodes; i++)
-	{
-		delete entry_nodes[i];
-	}
-// Seems to get allocated even if new[0].
-	if(entry_nodes) delete [] entry_nodes;
-	entry_nodes = 0;
-	exit_nodes.remove_all();
-}
-
-

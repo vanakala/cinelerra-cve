@@ -35,7 +35,6 @@ public:
 	VirtualVConsole(RenderEngine *renderengine, VRender *vrender);
 	virtual ~VirtualVConsole();
 
-	void get_playable_tracks();
 	VirtualNode* new_entry_node(Track *track, 
 		Module *module, 
 		int track_number);
@@ -43,7 +42,6 @@ public:
 	VDeviceBase* get_vdriver();
 
 // Composite a frame
-// start_position - start of buffer in project if forward. end of buffer if reverse
 	void process_buffer(ptstime input_postime);
 
 	VFrame *output_temp;

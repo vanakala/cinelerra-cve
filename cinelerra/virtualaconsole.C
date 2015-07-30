@@ -56,6 +56,9 @@ VirtualAConsole::VirtualAConsole(RenderEngine *renderengine, ARender *arender)
 	for(int i = 0; i < MAX_CHANNELS; i++)
 		audio_out_packed[i] = 0;
 	packed_buffer_len = 0;
+	playable_tracks = new PlayableTracks(renderengine, 
+		commonrender->current_postime,
+		TRACK_AUDIO, 1);
 }
 
 VirtualAConsole::~VirtualAConsole()
@@ -70,17 +73,6 @@ VirtualAConsole::~VirtualAConsole()
 	}
 }
 
-
-void VirtualAConsole::get_playable_tracks()
-{
-	if(!playable_tracks)
-		playable_tracks = new PlayableTracks(renderengine, 
-			commonrender->current_postime,
-			TRACK_AUDIO,
-			1);
-}
-
-
 VirtualNode* VirtualAConsole::new_entry_node(Track *track, 
 	Module *module,
 	int track_number)
@@ -92,8 +84,6 @@ VirtualNode* VirtualAConsole::new_entry_node(Track *track,
 		track,
 		0);
 }
-
-
 
 int VirtualAConsole::process_buffer(int len,
 	ptstime start_postime,
@@ -162,6 +152,7 @@ int VirtualAConsole::process_buffer(int len,
 		int audio_channels = renderengine->edl->session->audio_channels;
 		int direction = renderengine->command->get_direction();
 		float speed = renderengine->command->get_speed();
+
 		if(!EQUIV(speed, 1))
 		{
 			int reqlen = round((double) len / speed);

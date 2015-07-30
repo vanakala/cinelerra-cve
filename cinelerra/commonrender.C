@@ -165,8 +165,7 @@ void CommonRender::build_virtual_console()
 		vconsole = new_vconsole_object();
 	}
 
-// Create nodes
-	vconsole->create_objects();
+	vconsole->create_nodes();
 }
 
 void CommonRender::start_command()

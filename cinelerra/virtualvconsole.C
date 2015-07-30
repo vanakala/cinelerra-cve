@@ -44,28 +44,19 @@ VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
 {
 	this->vrender = vrender;
 	output_temp = 0;
+	playable_tracks = new PlayableTracks(renderengine,
+		commonrender->current_postime,
+		TRACK_VIDEO, 1);
 }
 
 VirtualVConsole::~VirtualVConsole()
 {
-	if(output_temp)
-	{
-		delete output_temp;
-	}
+	delete output_temp;
 }
 
 VDeviceBase* VirtualVConsole::get_vdriver()
 {
 	return renderengine->video->get_output_base();
-}
-
-void VirtualVConsole::get_playable_tracks()
-{
-	if(!playable_tracks)
-		playable_tracks = new PlayableTracks(renderengine, 
-			commonrender->current_postime,
-			TRACK_VIDEO,
-			1);
 }
 
 VirtualNode* VirtualVConsole::new_entry_node(Track *track, 
@@ -106,7 +97,6 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 
 // que OpenGL driver that everything is overlaid in the framebuffer
 		vrender->video_out->set_opengl_state(VFrame::SCREEN);
-
 	}
 	else
 	{
@@ -135,7 +125,6 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 			output_temp = 0;
 		}
 
-
 		if(!output_temp)
 		{
 // Texture is created on demand
@@ -156,7 +145,6 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 		output_temp->set_pts(input_postime + track->nudge);
 		node->render(output_temp,
 			use_opengl);
-
 	}
 	if(!exit_nodes.total)
 	{
@@ -164,4 +152,3 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 	}
 	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
 }
-

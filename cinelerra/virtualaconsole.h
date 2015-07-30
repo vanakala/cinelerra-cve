@@ -34,8 +34,6 @@ public:
 	VirtualAConsole(RenderEngine *renderengine, ARender *arender);
 	virtual ~VirtualAConsole();
 
-	void get_playable_tracks();
-
 // process a buffer
 	int process_buffer(int input_len,
 		ptstime input_position,

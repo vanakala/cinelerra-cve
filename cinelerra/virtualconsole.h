@@ -40,20 +40,13 @@ public:
 		int data_type);
 	virtual ~VirtualConsole();
 
-	virtual void create_objects();
-	virtual void get_playable_tracks() {};
-	int allocate_input_buffers();
-	virtual void new_input_buffer(int ring_buffer) { };
-	virtual void delete_input_buffer(int ring_buffer) { };
+	void create_nodes();
 	void start_playback();
 
 // Called during each process buffer operation to reset the status
 // of the attachments to unprocessed.
 	void reset_attachments();
 	void dump();
-
-// Build the nodes
-	void build_virtual_console(int persistent_plugins);
 
 // Create a new entry node in subclass of desired type.
 // was new_toplevel_node
@@ -87,9 +80,7 @@ public:
 	ArrayList<VirtualNode*> exit_nodes;
 
 	int data_type;
-// Store result of total_ring_buffers for destructor
-// Pull method can't use ring buffers for input.
-//	int ring_buffers;
+
 // exit conditions
 	int interrupt;
 	int done;
@@ -97,8 +88,6 @@ public:
 	int debug_tree;
 
 	PlayableTracks *playable_tracks;
-private:
-	void delete_virtual_console();
 };
 
 #endif
