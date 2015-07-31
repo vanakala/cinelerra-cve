@@ -44,9 +44,6 @@
 #include "vframe.h"
 
 
-
-
-
 static const char *list_titles[] = 
 {
 	N_("Enabled"), 
@@ -63,6 +60,7 @@ static int list_widths[] =
 	100
 };
 
+
 BatchRenderMenuItem::BatchRenderMenuItem(MWindow *mwindow)
  : BC_MenuItem(_("Batch Render..."), "Shift-B", 'B')
 {
@@ -75,7 +73,6 @@ int BatchRenderMenuItem::handle_event()
 	mwindow->batch_render->start();
 	return 1;
 }
-
 
 
 BatchRenderJob::BatchRenderJob(Preferences *preferences)
@@ -212,6 +209,7 @@ void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
 	char path[BCTEXTLEN];
+
 	path[0] = 0;
 	save_jobs(path);
 	save_defaults(mwindow->defaults);
@@ -222,11 +220,12 @@ void BatchRenderThread::handle_close_event(int result)
 
 BC_Window* BatchRenderThread::new_gui()
 {
+	char path[BCTEXTLEN];
+
 	current_start = 0.0;
 	current_end = 0.0;
 	default_job = new BatchRenderJob(mwindow->preferences);
 
-	char path[BCTEXTLEN];
 	path[0] = 0;
 	load_jobs(path, mwindow->preferences);
 	load_defaults(mwindow->defaults);
@@ -236,10 +235,8 @@ BC_Window* BatchRenderThread::new_gui()
 		mwindow->session->batchrender_y,
 		mwindow->session->batchrender_w,
 		mwindow->session->batchrender_h);
-	this->gui->create_objects();
 	return this->gui;
 }
-
 
 void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
 {
@@ -373,7 +370,6 @@ BatchRenderJob* BatchRenderThread::get_current_job()
 	return result;
 }
 
-
 Asset* BatchRenderThread::get_current_asset()
 {
 	return get_current_job()->asset;
@@ -383,7 +379,6 @@ char* BatchRenderThread::get_current_edl()
 {
 	return get_current_job()->edl_path;
 }
-
 
 // Test EDL files for existence
 int BatchRenderThread::test_edl_files()
@@ -460,7 +455,6 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 	}
 }
 
-
 void BatchRenderThread::start_rendering(char *config_path,
 	char *batch_path)
 {
@@ -483,7 +477,6 @@ void BatchRenderThread::start_rendering(char *config_path,
 // Test EDL files for existence
 	if(test_edl_files()) return;
 
-
 // Predict all destination paths
 	ArrayList<char*> paths;
 	calculate_dest_paths(&paths,
@@ -505,10 +498,10 @@ void BatchRenderThread::start_rendering(char *config_path,
 void BatchRenderThread::start_rendering()
 {
 	char path[BCTEXTLEN];
-	path[0] = 0;
 
 	if(is_rendering) return;
 	is_rendering = 1;
+	path[0] = 0;
 	save_jobs(path);
 	save_defaults(mwindow->defaults);
 	gui->new_batch->disable();
@@ -598,8 +591,6 @@ void BatchRenderThread::move_batch(int src, int dst)
 }
 
 
-
-
 BatchRenderGUI::BatchRenderGUI(MWindow *mwindow, 
 	BatchRenderThread *thread,
 	int x,
@@ -619,21 +610,12 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
-}
 
-BatchRenderGUI::~BatchRenderGUI()
-{
-	delete format_tools;
-}
-
-
-void BatchRenderGUI::create_objects()
-{
 	mwindow->theme->get_batchrender_sizes(this, get_w(), get_h());
 	create_list(0);
 
-	int x = mwindow->theme->batchrender_x1;
-	int y = 5;
+	x = mwindow->theme->batchrender_x1;
+	y = 5;
 	int x1 = mwindow->theme->batchrender_x1;
 	int x2 = mwindow->theme->batchrender_x2;
 	int x3 = mwindow->theme->batchrender_x3;
@@ -708,18 +690,20 @@ void BatchRenderGUI::create_objects()
 		xx1, 
 		yy1));
 
-
 	x = x2;
 	y = y2;
 	add_subwindow(list_title = new BC_Title(x, y, _("Batches to render:")));
 	y += 20;
+
 	add_subwindow(batch_list = new BatchRenderList(thread, 
 		x, 
 		y,
 		get_w() - x - 10,
-		get_h() - y - BC_GenericButton::calculate_h() - 15));
+		get_h() - y - BC_GenericButton::calculate_h() - 15,
+		list_columns));
 
 	y += batch_list->get_h() + 10;
+
 	add_subwindow(start_button = new BatchRenderStart(thread, 
 		x,
 		y));
@@ -736,6 +720,11 @@ void BatchRenderGUI::create_objects()
 		y));
 
 	show_window();
+}
+
+BatchRenderGUI::~BatchRenderGUI()
+{
+	delete format_tools;
 }
 
 void BatchRenderGUI::resize_event(int w, int h)
@@ -877,7 +866,6 @@ void BatchRenderGUI::change_job()
 }
 
 
-
 BatchFormat::BatchFormat(MWindow *mwindow,
 			BatchRenderGUI *gui,
 			Asset *asset,
@@ -896,16 +884,13 @@ BatchFormat::BatchFormat(MWindow *mwindow,
 	this->mwindow = mwindow;
 }
 
-BatchFormat::~BatchFormat()
-{
-}
-
-
 int BatchFormat::handle_event()
 {
 	gui->create_list(1);
 	return 1;
 }
+
+
 BatchRenderEDLPath::BatchRenderEDLPath(BatchRenderThread *thread, 
 	int x, 
 	int y, 
@@ -920,14 +905,12 @@ BatchRenderEDLPath::BatchRenderEDLPath(BatchRenderThread *thread,
 	this->thread = thread;
 }
 
-
 int BatchRenderEDLPath::handle_event()
 {
 	strcpy(thread->get_current_edl(), get_text());
 	thread->gui->create_list(1);
 	return 1;
 }
-
 
 
 BatchRenderNew::BatchRenderNew(BatchRenderThread *thread, 
@@ -944,6 +927,7 @@ int BatchRenderNew::handle_event()
 	return 1;
 }
 
+
 BatchRenderDelete::BatchRenderDelete(BatchRenderThread *thread, 
 	int x, 
 	int y)
@@ -957,7 +941,6 @@ int BatchRenderDelete::handle_event()
 	thread->delete_job();
 	return 1;
 }
-
 
 
 BatchRenderSaveList::BatchRenderSaveList(BatchRenderThread *thread, 
@@ -974,12 +957,10 @@ BatchRenderSaveList::BatchRenderSaveList(BatchRenderThread *thread,
 BatchRenderSaveList::~BatchRenderSaveList()
 {
 	startup_lock->lock("BatchRenderSaveList::~BrowseButton");
+
 	if(gui)
-	{
-		gui->lock_window("BatchRenderSaveList::destructor");
 		gui->set_done(1);
-		gui->unlock_window();
-	}
+
 	startup_lock->unlock();
 	Thread::join();
 	delete startup_lock;
@@ -990,11 +971,7 @@ int BatchRenderSaveList::handle_event()
 	if(Thread::running())
 	{
 		if(gui)
-		{
-			gui->lock_window("BatchRenderSaveList::handle_event");
 			gui->raise_window();
-			gui->unlock_window();
-		}
 		return 1;
 	}
 	startup_lock->lock("BatchRenderSaveList::handle_event 1");
@@ -1036,20 +1013,18 @@ void BatchRenderSaveList::run()
 	startup_lock->unlock();
 }
 
-int BatchRenderSaveList::keypress_event() {
+int BatchRenderSaveList::keypress_event()
+{
 	if (get_keypress() == 's' || 
 		get_keypress() == 'S') return handle_event();
 	return 0;
 }
 
 
-
-
 BatchRenderLoadList::BatchRenderLoadList(BatchRenderThread *thread, 
 	int x, 
 	int y)
-  : BC_GenericButton(x, y, _("Load List")),
-    Thread()
+ : BC_GenericButton(x, y, _("Load List")), Thread()
 {
 	this->thread = thread;
 	set_tooltip(_("Load a previously saved Batch Render List"));
@@ -1060,12 +1035,10 @@ BatchRenderLoadList::BatchRenderLoadList(BatchRenderThread *thread,
 BatchRenderLoadList::~BatchRenderLoadList()
 {
 	startup_lock->lock("BatchRenderLoadList::~BrowseButton");
+
 	if(gui)
-	{
-		gui->lock_window("BatchRenderLoadList:destructor");
 		gui->set_done(1);
-		gui->unlock_window();
-	}
+
 	startup_lock->unlock();
 	Thread::join();
 	delete startup_lock;
@@ -1076,11 +1049,7 @@ int BatchRenderLoadList::handle_event()
 	if(Thread::running())
 	{
 		if(gui)
-		{
-			gui->lock_window("BatchRenderLoadList::handle_event");
 			gui->raise_window();
-			gui->unlock_window();
-		}
 		return 1;
 	}
 	startup_lock->lock("BatchRenderLoadList::handle_event 1");
@@ -1123,22 +1092,25 @@ void BatchRenderLoadList::run()
 	startup_lock->unlock();
 }
 
-int BatchRenderLoadList::keypress_event() {
+int BatchRenderLoadList::keypress_event()
+{
 	if (get_keypress() == 'o' || 
 		get_keypress() == 'O') return handle_event();
 	return 0;
 }
 
-BatchRenderList::BatchRenderList(BatchRenderThread *thread, 
+
+BatchRenderList::BatchRenderList(BatchRenderThread *thread,
 	int x, 
 	int y,
 	int w,
-	int h)
+	int h,
+	ArrayList<BC_ListBoxItem*> *list_columns)
  : BC_ListBox(x, 
 	y,
 	w, 
 	h, 
-	thread->gui->list_columns,
+	list_columns,
 	LISTBOX_DRAG,
 	list_titles,
 	thread->column_width,
@@ -1182,7 +1154,6 @@ int BatchRenderList::drag_start_event()
 		dragging_item = 1;
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -1216,6 +1187,7 @@ int BatchRenderStart::handle_event()
 	thread->start_rendering();
 	return 1;
 }
+
 
 BatchRenderStop::BatchRenderStop(BatchRenderThread *thread, 
 	int x, 

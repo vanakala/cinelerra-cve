@@ -37,8 +37,6 @@
 #define BATCHRENDER_COLUMNS 4
 
 
-
-
 class BatchRenderMenuItem : public BC_MenuItem
 {
 public:
@@ -46,7 +44,6 @@ public:
 	int handle_event();
 	MWindow *mwindow;
 };
-
 
 
 class BatchRenderJob
@@ -72,18 +69,13 @@ public:
 };
 
 
-
-
-
-
-
-
 class BatchRenderThread : public BC_DialogThread
 {
 public:
 	BatchRenderThread(MWindow *mwindow);
 	BatchRenderThread();
 	~BatchRenderThread();
+
 	void handle_close_event(int result);
 	BC_Window* new_gui();
 
@@ -137,14 +129,6 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
 class BatchRenderEDLPath : public BC_TextBox
 {
 public:
@@ -153,6 +137,7 @@ public:
 		int y, 
 		int w, 
 		char *text);
+
 	int handle_event();
 	BatchRenderThread *thread;
 };
@@ -164,9 +149,11 @@ public:
 	BatchRenderNew(BatchRenderThread *thread, 
 		int x, 
 		int y);
+
 	int handle_event();
 	BatchRenderThread *thread;
 };
+
 
 class BatchRenderDelete : public BC_GenericButton
 {
@@ -174,10 +161,10 @@ public:
 	BatchRenderDelete(BatchRenderThread *thread, 
 		int x, 
 		int y);
+
 	int handle_event();
 	BatchRenderThread *thread;
 };
-
 
 
 class BatchRenderSaveList : public BC_GenericButton, public Thread
@@ -187,6 +174,7 @@ public:
 			int x,
 			int y);
 	~BatchRenderSaveList();
+
 	int handle_event();
 	BatchRenderThread *thread;
 	BC_FileBox *gui;
@@ -194,6 +182,7 @@ public:
 	virtual int keypress_event();
 	Mutex *startup_lock;
 };
+
 
 class BatchRenderLoadList : public BC_GenericButton, public Thread
 {
@@ -202,6 +191,7 @@ public:
 			int x,
 			int y);
 	~BatchRenderLoadList();
+
 	int handle_event();
 	BatchRenderThread *thread;
 	BC_FileBox *gui;
@@ -209,7 +199,6 @@ public:
 	virtual int keypress_event();
 	Mutex *startup_lock;
 };
-
 
 
 class BatchRenderList : public BC_ListBox
@@ -219,7 +208,9 @@ public:
 		int x, 
 		int y,
 		int w,
-		int h);
+		int h,
+		ArrayList<BC_ListBoxItem*> *list_columns);
+
 	int handle_event();
 	void selection_changed();
 	int column_resize_event();
@@ -228,6 +219,8 @@ public:
 	int dragging_item;
 	BatchRenderThread *thread;
 };
+
+
 class BatchRenderStart : public BC_GenericButton
 {
 public:
@@ -238,6 +231,7 @@ public:
 	BatchRenderThread *thread;
 };
 
+
 class BatchRenderStop : public BC_GenericButton
 {
 public:
@@ -247,6 +241,7 @@ public:
 	int handle_event();
 	BatchRenderThread *thread;
 };
+
 
 class BatchRenderCancel : public BC_GenericButton
 {
@@ -274,7 +269,6 @@ public:
 			const char *locked_compressor,
 			int recording,
 			int *strategy);
-	~BatchFormat();
 
 	int handle_event();
 
@@ -294,7 +288,6 @@ public:
 		int h);
 	~BatchRenderGUI();
 
-	void create_objects();
 	void resize_event(int w, int h);
 	void translation_event();
 	void close_event();
