@@ -671,7 +671,7 @@ AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow,
 
 
 AssetEditFormat::AssetEditFormat(AssetEditWindow *fwindow, char* default_, int y)
- : FormatPopup(fwindow->mwindow->plugindb, 90, y)
+ : FormatPopup(90, y)
 { 
 	this->fwindow = fwindow; 
 }

@@ -28,6 +28,7 @@
 #include "file.inc"
 #include "formatpopup.h"
 #include "mwindow.inc"
+#include "pluginserver.inc"
 
 class FormatAParams;
 class FormatVParams;
@@ -66,7 +67,6 @@ public:
 // depending on the driver used.
 	void update_driver(int driver);
 
-
 	void reposition_window(int &init_x, int &init_y);
 // Put new asset's parameters in and change asset.
 	void update(Asset *asset, int *strategy);
@@ -76,7 +76,7 @@ public:
 	Asset* get_asset();
 
 // Handle change in path text.  Used in BatchRender.
-	virtual int handle_event();
+	virtual int handle_event() { return 0; };
 
 	void set_audio_options();
 	void set_video_options();
@@ -123,34 +123,33 @@ public:
 };
 
 
-
 class FormatPathText : public BC_TextBox
 {
 public:
 	FormatPathText(int x, int y, FormatTools *format);
-	~FormatPathText();
+
 	int handle_event();
 
 	FormatTools *format;
 };
-
 
 
 class FormatFormat : public FormatPopup
 {
 public:
 	FormatFormat(int x, int y, FormatTools *format);
-	~FormatFormat();
 
 	int handle_event();
+
 	FormatTools *format;
 };
+
 
 class FormatAParams : public BC_Button
 {
 public:
 	FormatAParams(MWindow *mwindow, FormatTools *format, int x, int y);
-	~FormatAParams();
+
 	int handle_event();
 	FormatTools *format;
 };
@@ -159,7 +158,7 @@ class FormatVParams : public BC_Button
 {
 public:
 	FormatVParams(MWindow *mwindow, FormatTools *format, int x, int y);
-	~FormatVParams();
+
 	int handle_event();
 	FormatTools *format;
 };
@@ -193,8 +192,9 @@ class FormatAudio : public BC_CheckBox
 {
 public:
 	FormatAudio(int x, int y, FormatTools *format, int default_);
-	~FormatAudio();
+
 	int handle_event();
+
 	FormatTools *format;
 };
 
@@ -202,8 +202,9 @@ class FormatVideo : public BC_CheckBox
 {
 public:
 	FormatVideo(int x, int y, FormatTools *format, int default_);
-	~FormatVideo();
+
 	int handle_event();
+
 	FormatTools *format;
 };
 
@@ -212,8 +213,9 @@ class FormatChannels : public BC_TextBox
 {
 public:
 	FormatChannels(int x, int y, FormatTools *format);
-	~FormatChannels();
+
 	int handle_event();
+
 	FormatTools *format;
 };
 
@@ -221,8 +223,9 @@ class FormatToTracks : public BC_CheckBox
 {
 public:
 	FormatToTracks(int x, int y, int *output);
-	~FormatToTracks();
+
 	int handle_event();
+
 	int *output;
 };
 
@@ -230,9 +233,10 @@ class FormatMultiple : public BC_CheckBox
 {
 public:
 	FormatMultiple(MWindow *mwindow, int x, int y, int *output);
-	~FormatMultiple();
+
 	int handle_event();
 	void update(int *output);
+
 	int *output;
 	MWindow *mwindow;
 };

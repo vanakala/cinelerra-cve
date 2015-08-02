@@ -30,6 +30,7 @@
 #include "filexml.inc"
 #include "formattools.h"
 #include "mwindow.inc"
+#include "pluginserver.inc"
 #include "preferences.inc"
 #include "render.inc"
 #include "timeentry.h"

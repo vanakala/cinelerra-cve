@@ -139,7 +139,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 	window->add_subwindow(format_button = new FormatFormat(x, 
 		y, 
 		this));
-	format_button->create_objects();
 	x = init_x;
 	y += format_button->get_h() + 10;
 	if(do_audio)
@@ -315,11 +314,6 @@ void FormatTools::update_driver(int driver)
 	close_format_windows();
 }
 
-int FormatTools::handle_event()
-{
-	return 0;
-}
-
 Asset* FormatTools::get_asset()
 {
 	return asset;
@@ -480,10 +474,6 @@ FormatAParams::FormatAParams(MWindow *mwindow, FormatTools *format, int x, int y
 	set_tooltip(_("Configure audio compression"));
 }
 
-FormatAParams::~FormatAParams() 
-{
-}
-
 int FormatAParams::handle_event() 
 {
 	format->set_audio_options();
@@ -496,10 +486,6 @@ FormatVParams::FormatVParams(MWindow *mwindow, FormatTools *format, int x, int y
 { 
 	this->format = format; 
 	set_tooltip(_("Configure video compression"));
-}
-
-FormatVParams::~FormatVParams() 
-{
 }
 
 int FormatVParams::handle_event() 
@@ -551,10 +537,6 @@ FormatPathText::FormatPathText(int x, int y, FormatTools *format)
 	this->format = format; 
 }
 
-FormatPathText::~FormatPathText() 
-{
-}
-
 int FormatPathText::handle_event() 
 {
 	strcpy(format->asset->path, get_text());
@@ -569,10 +551,6 @@ FormatAudio::FormatAudio(int x, int y, FormatTools *format, int default_)
 	(char*)(format->recording ? _("Record audio tracks") : _("Render audio tracks")))
 { 
 	this->format = format; 
-}
-
-FormatAudio::~FormatAudio()
-{
 }
 
 int FormatAudio::handle_event()
@@ -591,10 +569,6 @@ FormatVideo::FormatVideo(int x, int y, FormatTools *format, int default_)
 	this->format = format; 
 }
 
-FormatVideo::~FormatVideo() 
-{
-}
-
 int FormatVideo::handle_event()
 {
 	format->asset->video_data = get_value();
@@ -604,16 +578,11 @@ int FormatVideo::handle_event()
 FormatFormat::FormatFormat(int x, 
 	int y, 
 	FormatTools *format)
- : FormatPopup(format->plugindb, 
-	x,
+ : FormatPopup(x,
 	y,
 	format->use_brender)
 { 
 	this->format = format; 
-}
-
-FormatFormat::~FormatFormat() 
-{
 }
 
 int FormatFormat::handle_event()
@@ -637,15 +606,10 @@ int FormatFormat::handle_event()
 }
 
 
-
 FormatChannels::FormatChannels(int x, int y, FormatTools *format)
  : BC_TextBox(x, y, 100, 1, format->asset->channels) 
 { 
 	this->format = format; 
-}
-
-FormatChannels::~FormatChannels() 
-{
 }
 
 int FormatChannels::handle_event() 
@@ -654,14 +618,11 @@ int FormatChannels::handle_event()
 	return 1;
 }
 
+
 FormatToTracks::FormatToTracks(int x, int y, int *output)
  : BC_CheckBox(x, y, *output, _("Overwrite project with output"))
 { 
 	this->output = output; 
-}
-
-FormatToTracks::~FormatToTracks() 
-{
 }
 
 int FormatToTracks::handle_event()
@@ -679,10 +640,6 @@ FormatMultiple::FormatMultiple(MWindow *mwindow, int x, int y, int *output)
 { 
 	this->output = output;
 	this->mwindow = mwindow;
-}
-
-FormatMultiple::~FormatMultiple() 
-{
 }
 
 int FormatMultiple::handle_event()

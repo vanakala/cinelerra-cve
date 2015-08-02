@@ -23,28 +23,21 @@
 #include "file.inc"
 #include "formatpopup.h"
 #include "language.h"
-#include "pluginserver.h"
 
 
-
-FormatPopup::FormatPopup(ArrayList<PluginServer*> *plugindb, 
-	int x, 
+FormatPopup::FormatPopup(int x,
 	int y,
 	int use_brender)
  : BC_ListBox(x, 
- 	y, 
+	y,
 	200, 
 	200,
 	0,
 	LISTBOX_POPUP)
 {
-	this->plugindb = plugindb;
 	this->use_brender = use_brender;
 	set_tooltip(_("Change file format"));
-}
 
-int FormatPopup::create_objects()
-{
 	if(!use_brender)
 	{
 		format_items.append(new BC_ListBoxItem(_(AC3_NAME)));
@@ -90,14 +83,9 @@ int FormatPopup::create_objects()
 		0,
 		0,
 		1);
-	return 0;
 }
 
 FormatPopup::~FormatPopup()
 {
 	for(int i = 0; i < format_items.total; i++) delete format_items.values[i];
-}
-
-int FormatPopup::handle_event()
-{
 }
