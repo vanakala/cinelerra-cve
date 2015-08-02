@@ -485,7 +485,7 @@ int BC_ListBox::query_list()
 
 void BC_ListBox::init_column_width()
 {
-	if(!column_width && data)
+	if(!column_width && data && top_level)
 	{
 		int widest = 5, w;
 		for(int i = 0; i < data[0].total; i++)
