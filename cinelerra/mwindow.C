@@ -165,7 +165,7 @@ MWindow::MWindow(const char *config_path)
 	if(session->show_ruler) ruler->gui->show_window();
 
 	gui->mainmenu->load_defaults(defaults);
-	gui->mainmenu->update_toggles(0);
+	gui->mainmenu->update_toggles();
 	gui->patchbay->update();
 	gui->canvas->draw();
 	gui->cursor->draw(1);

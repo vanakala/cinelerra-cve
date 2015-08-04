@@ -140,7 +140,7 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 
 void GWindowGUI::update_mwindow()
 {
-	mwindow->gui->mainmenu->update_toggles(1);
+	mwindow->gui->mainmenu->update_toggles();
 }
 
 void GWindowGUI::update_toggles(int use_lock)

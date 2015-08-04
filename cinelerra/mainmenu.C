@@ -67,18 +67,11 @@
 MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
  : BC_MenuBar(0, 0, gui->get_w())
 {
-	this->gui = gui;
-	this->mwindow = mwindow; 
-}
-
-MainMenu::~MainMenu()
-{
-}
-
-int MainMenu::create_objects()
-{
 	BC_Menu *viewmenu, *windowmenu, *settingsmenu, *trackmenu;
 	PreferencesMenuitem *preferences;
+
+	this->gui = gui;
+	this->mwindow = mwindow;
 
 	recent_load = new BC_RecentList("PATH", mwindow->defaults);
 
@@ -161,7 +154,6 @@ int MainMenu::create_objects()
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
 	settingsmenu->add_item(new SetBRenderStart(mwindow));
 
-
 	add_menu(viewmenu = new BC_Menu(_("View")));
 	viewmenu->add_item(show_assets = new ShowAssets(mwindow, "0"));
 	viewmenu->add_item(show_titles = new ShowTitles(mwindow, "1"));
@@ -179,7 +171,6 @@ int MainMenu::create_objects()
 	viewmenu->add_item(project_y = new ShowAutomation(mwindow, _("Projector Y"), "", AUTOMATION_PROJECTOR_Y));
 	viewmenu->add_item(project_z = new ShowAutomation(mwindow, _("Projector Z"), "", AUTOMATION_PROJECTOR_Z));
 
-
 	add_menu(windowmenu = new BC_Menu(_("Window")));
 	windowmenu->add_item(show_vwindow = new ShowVWindow(mwindow));
 	windowmenu->add_item(show_awindow = new ShowAWindow(mwindow));
@@ -188,21 +179,17 @@ int MainMenu::create_objects()
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
 	windowmenu->add_item(show_ruler = new ShowRuler(mwindow));
 	windowmenu->add_item(new TileWindows(mwindow));
-
-	return 0;
 }
 
-int MainMenu::load_defaults(BC_Hash *defaults)
+void MainMenu::load_defaults(BC_Hash *defaults)
 {
 	init_loads(defaults);
 	init_aeffects(defaults);
 	init_veffects(defaults);
-	return 0;
 }
 
-void MainMenu::update_toggles(int use_lock)
+void MainMenu::update_toggles()
 {
-	if(use_lock) mwindow->gui->lock_window("MainMenu::update_toggles");
 	labels_follow_edits->set_checked(mwindow->edl->session->labels_follow_edits);
 	plugins_follow_edits->set_checked(mwindow->edl->session->plugins_follow_edits);
 	cursor_on_frames->set_checked(mwindow->edl->session->cursor_on_frames);
@@ -221,33 +208,22 @@ void MainMenu::update_toggles(int use_lock)
 	plugin_automation->set_checked(mwindow->edl->session->auto_conf->plugins);
 	mode_automation->update_toggle();
 	mask_automation->update_toggle();
-	if(use_lock) mwindow->gui->unlock_window();
 }
 
-int MainMenu::save_defaults(BC_Hash *defaults)
+void MainMenu::save_defaults(BC_Hash *defaults)
 {
 	save_aeffects(defaults);
 	save_veffects(defaults);
-	return 0;
 }
 
-
-
-
-
-int MainMenu::quit()
+void MainMenu::quit()
 {
 	quit_program->handle_event();
-	return 0;
 }
-
-
-
-
 
 // ================================== load most recent
 
-int MainMenu::init_aeffects(BC_Hash *defaults)
+void MainMenu::init_aeffects(BC_Hash *defaults)
 {
 	total_aeffects = defaults->get("TOTAL_AEFFECTS", 0);
 
@@ -260,10 +236,9 @@ int MainMenu::init_aeffects(BC_Hash *defaults)
 		defaults->get(string, title);
 		audiomenu->add_item(aeffect[i] = new MenuAEffectItem(aeffects, title));
 	}
-	return 0;
 }
 
-int MainMenu::init_veffects(BC_Hash *defaults)
+void MainMenu::init_veffects(BC_Hash *defaults)
 {
 	total_veffects = defaults->get("TOTAL_VEFFECTS", 0);
 
@@ -276,10 +251,9 @@ int MainMenu::init_veffects(BC_Hash *defaults)
 		defaults->get(string, title);
 		videomenu->add_item(veffect[i] = new MenuVEffectItem(veffects, title));
 	}
-	return 0;
 }
 
-int MainMenu::init_loads(BC_Hash *defaults)
+void MainMenu::init_loads(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN], path[BCTEXTLEN], filename[BCTEXTLEN];
 	FileSystem dir;
@@ -298,12 +272,11 @@ int MainMenu::init_loads(BC_Hash *defaults)
 		load[i]->set_text(filename);
 		load[i]->set_path(path);
 	}
-	return 0;
 }
 
 // ============================ save most recent
 
-int MainMenu::save_aeffects(BC_Hash *defaults)
+void MainMenu::save_aeffects(BC_Hash *defaults)
 {
 	defaults->update("TOTAL_AEFFECTS", total_aeffects);
 	char string[1024];
@@ -312,10 +285,9 @@ int MainMenu::save_aeffects(BC_Hash *defaults)
 		sprintf(string, "AEFFECTRECENT%d", i);
 		defaults->update(string, aeffect[i]->get_text());
 	}
-	return 0;
 }
 
-int MainMenu::save_veffects(BC_Hash *defaults)
+void MainMenu::save_veffects(BC_Hash *defaults)
 {
 	defaults->update("TOTAL_VEFFECTS", total_veffects);
 	char string[1024];
@@ -324,12 +296,11 @@ int MainMenu::save_veffects(BC_Hash *defaults)
 		sprintf(string, "VEFFECTRECENT%d", i);
 		defaults->update(string, veffect[i]->get_text());
 	}
-	return 0;
 }
 
 // =================================== add most recent
 
-int MainMenu::add_aeffect(const char *title)
+void MainMenu::add_aeffect(const char *title)
 {
 // add bar for first effect
 	if(total_aeffects == 0)
@@ -347,7 +318,7 @@ int MainMenu::add_aeffect(const char *title)
 				aeffect[j]->set_text(aeffect[j - 1]->get_text());
 			}
 			aeffect[0]->set_text(title);
-			return 1;
+			return;
 		}
 	}
 
@@ -367,10 +338,9 @@ int MainMenu::add_aeffect(const char *title)
 
 // set up the new effect
 	aeffect[0]->set_text(title);
-	return 0;
 }
 
-int MainMenu::add_veffect(const char *title)
+void MainMenu::add_veffect(const char *title)
 {
 // add bar for first effect
 	if(total_veffects == 0)
@@ -388,7 +358,7 @@ int MainMenu::add_veffect(const char *title)
 				veffect[j]->set_text(veffect[j - 1]->get_text());
 			}
 			veffect[0]->set_text(title);
-			return 1;
+			return;
 		}
 	}
 
@@ -408,10 +378,9 @@ int MainMenu::add_veffect(const char *title)
 
 // set up the new effect
 	veffect[0]->set_text(title);
-	return 0;
 }
 
-int MainMenu::add_load(const char *new_path)
+void MainMenu::add_load(const char *new_path)
 {
 	char filename[BCTEXTLEN];
 	FileSystem dir;
@@ -442,15 +411,7 @@ int MainMenu::add_load(const char *new_path)
 		load[i]->set_text(filename);
 		load[i]->set_path(path);
 	}
-
-	return 0;
 }
-
-
-
-
-
-
 
 
 // ================================== menu items
@@ -495,6 +456,7 @@ int Undo::handle_event()
 int Undo::update_caption(const char *new_caption)
 {
 	char string[1024];
+
 	sprintf(string, _("Undo %s"), new_caption);
 	set_text(string);
 }
@@ -515,6 +477,7 @@ int Redo::handle_event()
 int Redo::update_caption(const char *new_caption)
 {
 	char string[1024];
+
 	sprintf(string, _("Redo %s"), new_caption);
 	set_text(string);
 }
@@ -528,7 +491,8 @@ CutKeyframes::CutKeyframes(MWindow *mwindow)
 
 int CutKeyframes::handle_event()
 {
-	mwindow->cut_automation(); 
+	mwindow->cut_automation();
+	return 1;
 }
 
 CopyKeyframes::CopyKeyframes(MWindow *mwindow)
@@ -627,9 +591,7 @@ Clear::Clear(MWindow *mwindow)
 
 int Clear::handle_event()
 {
-	mwindow->cwindow->gui->lock_window("Clear::handle_event");
 	mwindow->clear_entry();
-	mwindow->cwindow->gui->unlock_window();
 	return 1;
 }
 
@@ -695,16 +657,6 @@ int TrimSelection::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-
-
 // ============================================= audio
 
 AddAudioTrack::AddAudioTrack(MWindow *mwindow)
@@ -719,16 +671,6 @@ int AddAudioTrack::handle_event()
 	return 1;
 }
 
-DeleteAudioTrack::DeleteAudioTrack(MWindow *mwindow)
- : BC_MenuItem(_("Delete track"))
-{
-	this->mwindow = mwindow;
-}
-
-int DeleteAudioTrack::handle_event()
-{
-	return 1;
-}
 
 DefaultATransition::DefaultATransition(MWindow *mwindow)
  : BC_MenuItem(_("Default Transition"), "u", 'u')
@@ -767,11 +709,7 @@ int MapAudio2::handle_event()
 	return 1;
 }
 
-
-
-
 // ============================================= video
-
 
 AddVideoTrack::AddVideoTrack(MWindow *mwindow)
  : BC_MenuItem(_("Add track"), "Shift-T", 'T')
@@ -799,20 +737,6 @@ int DeleteVideoTrack::handle_event()
 }
 
 
-
-ResetTranslation::ResetTranslation(MWindow *mwindow)
- : BC_MenuItem(_("Reset Translation"))
-{
-	this->mwindow = mwindow;
-}
-
-int ResetTranslation::handle_event()
-{
-	return 1;
-}
-
-
-
 DefaultVTransition::DefaultVTransition(MWindow *mwindow)
  : BC_MenuItem(_("Default Transition"), "Shift-U", 'U')
 {
@@ -825,19 +749,6 @@ int DefaultVTransition::handle_event()
 	mwindow->paste_video_transition();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ============================================ settings
 
@@ -868,7 +779,8 @@ int DeleteTrack::handle_event()
 MoveTracksUp::MoveTracksUp(MWindow *mwindow)
  : BC_MenuItem(_("Move tracks up"), "Shift+Up", UP)
 {
-	set_shift(); this->mwindow = mwindow;
+	set_shift();
+	this->mwindow = mwindow;
 }
 
 int MoveTracksUp::handle_event()
@@ -880,7 +792,8 @@ int MoveTracksUp::handle_event()
 MoveTracksDown::MoveTracksDown(MWindow *mwindow)
  : BC_MenuItem(_("Move tracks down"), "Shift+Down", DOWN)
 {
-	set_shift(); this->mwindow = mwindow;
+	set_shift();
+	this->mwindow = mwindow;
 }
 
 int MoveTracksDown::handle_event()
@@ -888,9 +801,6 @@ int MoveTracksDown::handle_event()
 	mwindow->move_tracks_down();
 	return 1;
 }
-
-
-
 
 ConcatenateTracks::ConcatenateTracks(MWindow *mwindow)
  : BC_MenuItem(_("Concatenate tracks"))
@@ -904,10 +814,6 @@ int ConcatenateTracks::handle_event()
 	mwindow->concatenate_tracks();
 	return 1;
 }
-
-
-
-
 
 LoopPlayback::LoopPlayback(MWindow *mwindow)
  : BC_MenuItem(_("Loop Playback"), "Shift+L", 'L')
@@ -925,9 +831,6 @@ int LoopPlayback::handle_event()
 }
 
 
-
-
-
 SetBRenderStart::SetBRenderStart(MWindow *mwindow)
  : BC_MenuItem(_("Set background render"))
 {
@@ -939,11 +842,6 @@ int SetBRenderStart::handle_event()
 	mwindow->set_brender_start();
 	return 1;
 }
-
-
-
-
-
 
 
 LabelsFollowEdits::LabelsFollowEdits(MWindow *mwindow)
@@ -960,8 +858,6 @@ int LabelsFollowEdits::handle_event()
 }
 
 
-
-
 PluginsFollowEdits::PluginsFollowEdits(MWindow *mwindow)
  : BC_MenuItem(_("Edit effects")) 
 { 
@@ -974,8 +870,6 @@ int PluginsFollowEdits::handle_event()
 	set_checked(get_checked() ^ 1);
 	mwindow->edl->session->plugins_follow_edits = get_checked(); 
 }
-
-
 
 
 AutosFollowEdits::AutosFollowEdits(MWindow *mwindow)
@@ -1003,6 +897,7 @@ int CursorOnFrames::handle_event()
 {
 	mwindow->edl->session->cursor_on_frames = !mwindow->edl->session->cursor_on_frames; 
 	set_checked(mwindow->edl->session->cursor_on_frames);
+	return 1;
 }
 
 SaveSettingsNow::SaveSettingsNow(MWindow *mwindow) : BC_MenuItem(_("Save settings now")) 
@@ -1017,8 +912,6 @@ int SaveSettingsNow::handle_event()
 	mwindow->gui->show_message(_("Saved settings."));
 	return 1;
 }
-
-
 
 // ============================================ window
 
@@ -1040,6 +933,7 @@ ShowAWindow::ShowAWindow(MWindow *mwindow)
 	this->mwindow = mwindow;
 	set_checked(mwindow->session->show_awindow);
 }
+
 int ShowAWindow::handle_event()
 {
 	mwindow->show_awindow();
@@ -1052,12 +946,12 @@ ShowCWindow::ShowCWindow(MWindow *mwindow)
 	this->mwindow = mwindow;
 	set_checked(mwindow->session->show_cwindow);
 }
+
 int ShowCWindow::handle_event()
 {
 	mwindow->show_cwindow();
 	return 1;
 }
-
 
 ShowGWindow::ShowGWindow(MWindow *mwindow)
  : BC_MenuItem(_("Show Overlays"))
@@ -1065,12 +959,12 @@ ShowGWindow::ShowGWindow(MWindow *mwindow)
 	this->mwindow = mwindow;
 	set_checked(mwindow->session->show_gwindow);
 }
+
 int ShowGWindow::handle_event()
 {
 	mwindow->show_gwindow();
 	return 1;
 }
-
 
 ShowLWindow::ShowLWindow(MWindow *mwindow)
  : BC_MenuItem(_("Show Levels"))
@@ -1078,6 +972,7 @@ ShowLWindow::ShowLWindow(MWindow *mwindow)
 	this->mwindow = mwindow;
 	set_checked(mwindow->session->show_lwindow);
 }
+
 int ShowLWindow::handle_event()
 {
 	mwindow->show_lwindow();
@@ -1089,6 +984,7 @@ TileWindows::TileWindows(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 }
+
 int TileWindows::handle_event()
 {
 	mwindow->tile_windows();

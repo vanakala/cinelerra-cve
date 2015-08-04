@@ -166,7 +166,6 @@ SET_TRACE
 
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
 	mwindow->theme->draw_mwindow_bg(this);
-	mainmenu->create_objects();
 
 	add_subwindow(mbuttons = new MButtons(mwindow, this));
 	mbuttons->create_objects();
