@@ -35,7 +35,7 @@ public:
 
 	friend class BC_Menu;
 
-	int add_menu(BC_Menu* menu);
+	void add_menu(BC_Menu* menu);
 	static int calculate_height(BC_WindowBase *window);
 
 	void initialize();

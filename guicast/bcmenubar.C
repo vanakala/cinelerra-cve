@@ -59,6 +59,7 @@ BC_MenuBar::~BC_MenuBar()
 
 void BC_MenuBar::initialize()
 {
+	int x, w;
 	BC_Resources *resources = get_resources();
 // Initialize dimensions
 	h = calculate_height(this);
@@ -80,6 +81,19 @@ void BC_MenuBar::initialize()
 	if(resources->menu_bg) 
 		set_background(resources->menu_bg);
 	draw_face();
+
+	for(int i = 0; i < menu_titles.total; i++)
+	{
+		if(i == 0)
+			x = 2;
+		else
+			x = menu_titles.values[i - 1]->x +
+				menu_titles.values[i - 1]->w;
+
+		w = get_text_width(MEDIUMFONT, menu_titles.values[i]->text) + 20;
+// initialize and draw
+		menu_titles.values[i]->initialize(top_level, this, x, 2, w, get_h() - 4);
+	}
 }
 
 int BC_MenuBar::calculate_height(BC_WindowBase *window)
@@ -97,23 +111,24 @@ void BC_MenuBar::draw_items()
 	flush();
 }
 
-int BC_MenuBar::add_menu(BC_Menu* menu)
+void BC_MenuBar::add_menu(BC_Menu* menu)
 {
 	int x, w;
 
-// Get dimensions
-	if(menu_titles.total == 0)
-		x = 2;
-	else
-		x = menu_titles.values[menu_titles.total - 1]->x + 
-			menu_titles.values[menu_titles.total - 1]->w;
-
-	w = get_text_width(MEDIUMFONT, menu->text) + 20;
-// get pointer
 	menu_titles.append(menu);
+
+	if(top_level)
+	{
+		if(menu_titles.total == 0)
+			x = 2;
+		else
+			x = menu_titles.values[menu_titles.total - 1]->x +
+				menu_titles.values[menu_titles.total - 1]->w;
+
+		w = get_text_width(MEDIUMFONT, menu->text) + 20;
 // initialize and draw
-	menu->initialize(top_level, this, x, 2, w, get_h() - 4); 
-	return 0;
+		menu->initialize(top_level, this, x, 2, w, get_h() - 4);
+	}
 }
 
 void BC_MenuBar::focus_out_event()
