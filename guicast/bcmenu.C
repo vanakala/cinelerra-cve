@@ -36,6 +36,8 @@ BC_Menu::BC_Menu(char *text)
 	menu_bar = 0;
 	active = 0;
 	highlighted = 0;
+	menu_popup = new BC_MenuPopup;
+	top_level = 0;
 }
 
 BC_Menu::~BC_Menu()
@@ -56,7 +58,6 @@ void BC_Menu::initialize(BC_WindowBase *top_level,
 	this->h = h;
 	this->menu_bar = menu_bar;
 	this->top_level = top_level;
-	menu_popup = new BC_MenuPopup;
 	menu_popup->initialize(top_level, menu_bar, this, 0, 0);
 	draw_title();
 }
