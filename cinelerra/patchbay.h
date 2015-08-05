@@ -35,9 +35,10 @@ class PatchBay : public BC_SubWindow
 {
 public:
 	PatchBay(MWindow *mwindow, MWindowGUI *gui);
+	~PatchBay();
 
 	void delete_all_patches();
-	void create_objects();
+	void show();
 	void resize_event();
 	int cursor_motion_event();
 	BC_Pixmap* mode_to_icon(int mode);

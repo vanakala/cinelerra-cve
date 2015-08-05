@@ -179,7 +179,7 @@ SET_TRACE
 	timebar->update();
 
 	add_subwindow(patchbay = new PatchBay(mwindow, this));
-	patchbay->create_objects();
+	patchbay->show();
 
 	get_scrollbars();
 

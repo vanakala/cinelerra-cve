@@ -42,6 +42,7 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "vpatchgui.h"
+#include <string.h>
 
 
 PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
@@ -55,6 +56,15 @@ PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
 	button_down = 0;
 	reconfigure_trigger = 0;
 	drag_operation = Tracks::NONE;
+	memset(mode_icons, 0, sizeof(mode_icons));
+}
+
+PatchBay::~PatchBay()
+{
+	patches.remove_all_objects();
+
+	for(int i = 0; i < TRANSFER_TYPES; i++)
+		delete mode_icons[i];
 }
 
 void PatchBay::delete_all_patches()
@@ -62,11 +72,8 @@ void PatchBay::delete_all_patches()
 	patches.remove_all_objects();
 }
 
-void PatchBay::create_objects()
+void PatchBay::show()
 {
-	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-	flash();
-
 // Create icons for mode types
 	mode_icons[TRANSFER_NORMAL] = new BC_Pixmap(this, 
 		mwindow->theme->get_image("mode_normal"),
@@ -89,6 +96,9 @@ void PatchBay::create_objects()
 	mode_icons[TRANSFER_MAX] = new BC_Pixmap(this, 
 		mwindow->theme->get_image("mode_max"),
 		PIXMAP_ALPHA);
+
+	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
+	flash();
 }
 
 BC_Pixmap* PatchBay::mode_to_icon(int mode)
