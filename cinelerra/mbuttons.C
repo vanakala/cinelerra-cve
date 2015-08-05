@@ -46,6 +46,8 @@ MButtons::MButtons(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
+	transport = 0;
+	edit_panel = 0;
 }
 
 MButtons::~MButtons()
@@ -54,10 +56,9 @@ MButtons::~MButtons()
 	delete edit_panel;
 }
 
-void MButtons::create_objects()
+void MButtons::show()
 {
 	int x = 3, y = 0;
-
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	transport = new MainTransport(mwindow, this, x, y);
 	transport->set_engine(mwindow->cwindow->playback_engine);
@@ -65,7 +66,6 @@ void MButtons::create_objects()
 	x += mwindow->theme->mtransport_margin;
 
 	edit_panel = new MainEditing(mwindow, this, x, y);
-	x += edit_panel->get_w();
 	flash();
 }
 

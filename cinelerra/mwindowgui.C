@@ -168,7 +168,7 @@ SET_TRACE
 	mwindow->theme->draw_mwindow_bg(this);
 
 	add_subwindow(mbuttons = new MButtons(mwindow, this));
-	mbuttons->create_objects();
+	mbuttons->show();
 
 	add_subwindow(timebar = new MTimeBar(mwindow, 
 		this,
