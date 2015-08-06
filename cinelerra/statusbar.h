@@ -32,11 +32,10 @@ class StatusBar : public BC_SubWindow
 {
 public:
 	StatusBar(MWindow *mwindow, MWindowGUI *gui);
-	~StatusBar();
 
-	void set_message(char *text);
+	void set_message(const char *text);
 	void default_message();
-	void create_objects();
+	void show();
 	void resize_event();
 
 	MWindow *mwindow;

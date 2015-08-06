@@ -36,11 +36,7 @@ StatusBar::StatusBar(MWindow *mwindow, MWindowGUI *gui)
 	this->gui = gui;
 }
 
-StatusBar::~StatusBar()
-{
-}
-
-void StatusBar::create_objects()
+void StatusBar::show()
 {
 	int x = 10, y = 5;
 
@@ -86,7 +82,7 @@ void StatusBar::resize_event()
 	flash();
 }
 
-void StatusBar::set_message(char *text)
+void StatusBar::set_message(const char *text)
 {
 	status_text->update(text);
 }

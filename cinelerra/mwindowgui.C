@@ -190,7 +190,7 @@ SET_TRACE
 	zoombar->create_objects();
 
 	add_subwindow(statusbar = new StatusBar(mwindow, this));
-	statusbar->create_objects();
+	statusbar->show();
 
 	add_subwindow(mainclock = new MainClock(mwindow, 
 		mwindow->theme->mclock_x,
