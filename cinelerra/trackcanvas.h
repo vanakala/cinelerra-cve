@@ -49,7 +49,7 @@ public:
 	TrackCanvas(MWindow *mwindow, MWindowGUI *gui);
 	~TrackCanvas();
 
-	int create_objects();
+	void show();
 	void resize_event();
 	int drag_start_event();
 	void drag_motion_event();
@@ -186,7 +186,6 @@ public:
 		Plugin* &keyframe_plugin,
 		KeyFrame* &keyframe_instance);
 
-
 	void calculate_viewport(Track *track, 
 		ptstime &view_start,
 		ptstime &view_end,
@@ -289,7 +288,7 @@ public:
 	void start_dragscroll();
 	void stop_dragscroll();
 	int start_selection(double position);
-	int drag_motion();
+	void drag_motion();
 	int drag_stop();
 	ptstime get_drop_position (int *is_insertion, Edit *moved_edit,
 		ptstime moved_edit_length);
@@ -365,7 +364,6 @@ private:
 	int which_handle;	// 1 left or 2 right handle
 	double selection_midpoint1, selection_midpoint2;        // division between current ends
 	int region_selected;	// 1 if region selected
-
 };
 
 #endif

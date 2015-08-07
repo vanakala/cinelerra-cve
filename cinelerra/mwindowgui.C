@@ -184,7 +184,7 @@ SET_TRACE
 	get_scrollbars();
 
 	mwindow->gui->add_subwindow(canvas = new TrackCanvas(mwindow, this));
-	canvas->create_objects();
+	canvas->show();
 
 	add_subwindow(zoombar = new ZoomBar(mwindow, this));
 	zoombar->create_objects();

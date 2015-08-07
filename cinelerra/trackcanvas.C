@@ -96,8 +96,16 @@ TrackCanvas::TrackCanvas(MWindow *mwindow, MWindowGUI *gui)
 	drag_popup = 0;
 	active = 0;
 	temp_picon = 0;
-	resource_timer = new Timer;
 	hourglass_enabled = 0;
+	keyframe_pixmap = 0;
+	camerakeyframe_pixmap = 0;
+	modekeyframe_pixmap = 0;
+	pankeyframe_pixmap = 0;
+	projectorkeyframe_pixmap = 0;
+	maskkeyframe_pixmap = 0;
+	background_pixmap = 0;
+
+	resource_timer = new Timer;
 	pixmaps_lock = new Mutex("TrackCanvas::pixm_lock");
 	resource_thread = new ResourceThread(mwindow);
 }
@@ -118,7 +126,7 @@ TrackCanvas::~TrackCanvas()
 	delete resource_timer;
 }
 
-int TrackCanvas::create_objects()
+void TrackCanvas::show()
 {
 	background_pixmap = new BC_Pixmap(this, get_w(), get_h());
 	keyframe_pixmap = new BC_Pixmap(this, mwindow->theme->keyframe_data, PIXMAP_ALPHA);
@@ -130,7 +138,6 @@ int TrackCanvas::create_objects()
 	draw();
 	update_cursor();
 	flash();
-	return 0;
 }
 
 void TrackCanvas::resize_event()
@@ -139,7 +146,7 @@ void TrackCanvas::resize_event()
 	flash();
 }
 
-int TrackCanvas::drag_motion()
+void TrackCanvas::drag_motion()
 {
 	int cursor_x = get_relative_cursor_x();
 	int cursor_y = get_relative_cursor_y();
@@ -149,16 +156,14 @@ int TrackCanvas::drag_motion()
 	Plugin *over_plugin = 0;
 	int redraw = 0;
 
-
 	if(drag_popup)
 	{
 		drag_popup->cursor_motion_event();
 	}
 
-
 // there's no point in drawing highlights has until drag operation has been set
 	if (!mwindow->session->current_operation)
-		return 0;
+		return;
 
 	if(get_cursor_over_window() &&
 		cursor_x >= 0 && 
@@ -264,8 +269,6 @@ int TrackCanvas::drag_motion()
 		draw_overlays();
 		flash();
 	}
-
-	return 0;
 }
 
 int TrackCanvas::drag_start_event()
@@ -321,7 +324,6 @@ void TrackCanvas::drag_stop_event()
 	}
 }
 
-
 int TrackCanvas::drag_stop()
 {
 // In most cases the editing routine redraws and not the drag_stop
@@ -346,9 +348,6 @@ int TrackCanvas::drag_stop()
 		}
 		redraw = 1;
 		break;
-
-
-
 
 // Behavior for dragged plugins is limited by the fact that a shared plugin
 // can only refer to a standalone plugin that exists in the same position in
@@ -567,7 +566,6 @@ int TrackCanvas::drag_stop()
 	return result;
 }
 
-
 ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	Edit *moved_edit, ptstime moved_edit_length)
 {
@@ -682,8 +680,8 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 				}
 			}
 		}
-
 	}
+
 	if (PTSEQU(real_cursor_position, 0))
 	{
 		position = 0;
@@ -723,7 +721,6 @@ void TrackCanvas::update_cursor()
 	}
 }
 
-
 void TrackCanvas::test_timer()
 {
 	if(resource_timer->get_difference() > 1000 && 
@@ -733,7 +730,6 @@ void TrackCanvas::test_timer()
 		hourglass_enabled = 1;
 	}
 }
-
 
 void TrackCanvas::draw_indexes(Asset *asset)
 {
@@ -904,7 +900,6 @@ void TrackCanvas::get_pixmap_size(Edit *edit,
 {
 
 // Align x on frame boundaries
-
 	pixmap_x = edit_x;
 	pixmap_w = edit_w;
 	if(pixmap_x < 0)
@@ -952,7 +947,6 @@ void TrackCanvas::track_dimensions(Track *track,
 	y = track->y_pixel;
 	h = track->vertical_span(mwindow->theme);
 }
-
 
 void TrackCanvas::draw_paste_destination()
 {
@@ -1190,7 +1184,6 @@ int TrackCanvas::resource_h()
 
 void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 {
-
 // if we have to draw a highlighted rectangle completely on the left or completely on the right of the viewport, 
 // just draw arrows, so user has indication that something is there
 // FIXME: get better colors
@@ -1234,7 +1227,6 @@ void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 
 void TrackCanvas::draw_highlight_insertion(int x, int y, int w, int h)
 {
-
 // if we have to draw a highlighted rectangle completely on the left or completely on the right of the viewport, 
 // just draw arrows, so user has indication that something is there
 // FIXME: get better colors
@@ -1512,7 +1504,6 @@ void TrackCanvas::draw_plugins()
 	for(int i = 0; i < plugin_show_toggles.total; i++)
 		plugin_show_toggles.values[i]->in_use = 0;
 
-
 	for(Track *track = mwindow->edl->tracks->first;
 		track;
 		track = track->next)
@@ -1573,8 +1564,6 @@ void TrackCanvas::draw_plugins()
 							string,
 							strlen(string),
 							0);
-
-
 // Update plugin toggles
 						int toggle_x = total_x + total_w;
 						toggle_x = MIN(get_w() - right_margin, toggle_x);
@@ -1608,8 +1597,6 @@ void TrackCanvas::draw_plugins()
 			}
 		}
 	}
-
-
 done:
 	int i = current_toggle;
 	while(i < plugin_on_toggles.total &&
@@ -1648,7 +1635,6 @@ void TrackCanvas::draw_drag_handle()
 		set_opaque();
 	}
 }
-
 
 void TrackCanvas::draw_transitions()
 {
@@ -1813,7 +1799,6 @@ static int pre_auto_operations[] =
 	DRAG_NUDGE
 };
 
-
 int TrackCanvas::do_keyframes(int cursor_x, 
 	int cursor_y, 
 	int draw, 
@@ -1932,7 +1917,6 @@ int TrackCanvas::do_keyframes(int cursor_x,
 				}
 			}
 		}
-
 
 		if(!result && 
 			session->auto_conf->plugins &&
@@ -2468,7 +2452,6 @@ void TrackCanvas::synchronize_autos(float change,
 		mwindow->session->drag_auto_gang->remove_all();
 }
 
-
 int TrackCanvas::test_floatline(int center_pixel, 
 	FloatAutos *autos,
 	double view_start,
@@ -2623,7 +2606,6 @@ float TrackCanvas::percentage_to_value(float percentage,
 	return result;
 }
 
-
 void TrackCanvas::calculate_auto_position(double *x, 
 	double *y,
 	double *in_x,
@@ -2671,7 +2653,6 @@ void TrackCanvas::calculate_auto_position(double *x,
 			-yscale;
 	}
 }
-
 
 int TrackCanvas::do_float_autos(Track *track, 
 		Autos *autos, 
@@ -2912,7 +2893,6 @@ int TrackCanvas::do_float_autos(Track *track,
 
 	return result;
 }
-
 
 int TrackCanvas::do_toggle_autos(Track *track, 
 		Autos *autos, 
@@ -3297,7 +3277,6 @@ void TrackCanvas::draw_overlays()
 
 // Handle dragging
 	draw_drag_handle();
-
 }
 
 void TrackCanvas::activate()
@@ -3319,7 +3298,6 @@ void TrackCanvas::deactivate()
 		gui->cursor->deactivate();
 	}
 }
-
 
 void TrackCanvas::update_drag_handle()
 {
@@ -3376,7 +3354,6 @@ void TrackCanvas::update_drag_handle()
 			CLAMP(postime, min_pts, max_pts); \
 		} \
 	}
-
 
 int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 {
@@ -3553,7 +3530,6 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 			mwindow->edl->session->frames_per_foot);
 		gui->show_message("%s, %d", string, current->value);
 	}
-
 	return result;
 }
 
@@ -3847,7 +3823,6 @@ int TrackCanvas::cursor_motion_event()
 		gui->patchbay->update();
 	}
 
-
 	if(update_clock)
 	{
 		if(!mwindow->cwindow->playback_engine->is_playing_back)
@@ -3936,7 +3911,6 @@ void TrackCanvas::repeat_event(int duration)
 		}
 		break;
 	}
-
 
 	if(sample_movement)
 	{
@@ -4040,9 +4014,7 @@ int TrackCanvas::button_release_event()
 	case DRAG_AEFFECT_COPY:
 	case DRAG_VEFFECT_COPY:
 // Trap in drag stop
-
 		break;
-
 
 	default:
 		if(mwindow->session->current_operation)
@@ -4153,7 +4125,6 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 			update_overlay = 1;
 		}
 	}
-
 	return result;
 }
 
@@ -4241,16 +4212,13 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 	return result;
 }
 
-
 int TrackCanvas::do_tracks(int cursor_x, 
 		int cursor_y,
 		int button_press)
 {
 	int result = 0;
 
-
 	if(!mwindow->edl->session->show_assets) return 0;
-
 
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
@@ -4371,16 +4339,13 @@ int TrackCanvas::do_plugins(int cursor_x,
 	int x, y, w, h;
 	Track *track = 0;
 
-
 	if(!mwindow->edl->session->show_assets) return 0;
-
 
 	for(track = mwindow->edl->tracks->first;
 		track && !done;
 		track = track->next)
 	{
 		if(!track->expand_view) continue;
-
 
 		for(int i = 0; i < track->plugin_set.total && !done; i++)
 		{
@@ -4442,8 +4407,6 @@ int TrackCanvas::do_plugins(int cursor_x,
 					mwindow->session->current_operation = DRAG_VEFFECT_COPY;
 
 				mwindow->session->drag_plugin = plugin;
-
-
 // Create picon
 				switch(plugin->plugin_type)
 				{
@@ -4472,13 +4435,10 @@ int TrackCanvas::do_plugins(int cursor_x,
 						get_abs_cursor_y(0) - mwindow->theme->get_image("clip_icon")->get_h() / 2);
 					break;
 				}
-
-
 				result = 1;
 			}
 		}
 	}
-
 	return result;
 }
 
@@ -4494,7 +4454,6 @@ int TrackCanvas::do_transitions(int cursor_x,
 
 	if(!mwindow->edl->session->show_assets ||
 		!mwindow->edl->session->auto_conf->transitions) return 0;
-
 
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
@@ -4539,7 +4498,6 @@ int TrackCanvas::do_transitions(int cursor_x,
 			gui->transition_menu->activate_menu();
 		}
 	}
-
 	return result;
 }
 
@@ -4772,19 +4730,16 @@ int TrackCanvas::button_press_event()
 		if(rerender)
 		{
 			mwindow->cwindow->update(WUPD_POSITION | WUPD_TIMEBAR);
-
 // Update faders
 			mwindow->update_plugin_guis();
 			gui->patchbay->update();
 		}
-
 SET_TRACE
 		if(update_overlay)
 		{
 			draw_overlays();
 			flash();
 		}
-
 SET_TRACE
 		if(update_cursor)
 		{
@@ -4795,10 +4750,7 @@ SET_TRACE
 			flash();
 			result = 1;
 		}
-
 SET_TRACE
-
-
 	}
 	return result;
 }
@@ -4807,7 +4759,6 @@ int TrackCanvas::start_selection(double position)
 {
 	int rerender = 0;
 	position = mwindow->edl->align_to_frame(position);
-
 
 // Extend a border
 	if(shift_down())
@@ -4850,7 +4801,6 @@ void TrackCanvas::end_pluginhandle_selection()
 {
 	mwindow->modify_pluginhandles();
 }
-
 
 ptstime TrackCanvas::time_visible(void)
 {
