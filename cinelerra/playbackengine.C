@@ -65,7 +65,7 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 
 	done = 0;
 	Thread::start();
-	start_lock->lock("PlaybackEngine::create_objects");
+	start_lock->lock("PlaybackEngine::PlaybackEngine");
 }
 
 PlaybackEngine::~PlaybackEngine()
