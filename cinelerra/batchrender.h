@@ -33,7 +33,6 @@
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "render.inc"
-#include "timeentry.h"
 
 #define BATCHRENDER_COLUMNS 4
 

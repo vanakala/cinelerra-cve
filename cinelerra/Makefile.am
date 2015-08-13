@@ -228,7 +228,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    statusbar.C \
 		    theme.C \
 		    timebar.C \
-		    timeentry.C \
 		    tipwindow.C \
 		    track.C \
 		    trackcanvas.C \
@@ -481,7 +480,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 statusbar.h \
 		 theme.h \
 		 timebar.h \
-		 timeentry.h \
 		 tipwindow.h \
 		 trackcanvas.h \
 		 track.h \
