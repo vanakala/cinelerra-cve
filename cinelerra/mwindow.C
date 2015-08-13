@@ -745,7 +745,7 @@ void MWindow::init_indexes()
 void MWindow::init_gui()
 {
 	gui = new MWindowGUI(this);
-	gui->create_objects();
+	gui->show();
 	gui->load_defaults(defaults);
 }
 

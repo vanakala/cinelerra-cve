@@ -72,20 +72,30 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 		1)
 {
 	this->mwindow = mwindow;
+	mbuttons = 0;
+	statusbar = 0;
+	zoombar = 0;
 	samplescroll = 0;
 	trackscroll = 0;
 	cursor = 0;
 	canvas = 0;
+	cursor = 0;
+	patchbay = 0;
+	timebar = 0;
+	mainclock = 0;
+	edit_menu = 0;
+	plugin_menu = 0;
+	keyframe_menu = 0;
+	transition_menu = 0;
 }
-
 
 MWindowGUI::~MWindowGUI()
 {
 	delete mbuttons;
 	delete statusbar;
 	delete zoombar;
-	if(samplescroll) delete samplescroll;
-	if(trackscroll) delete trackscroll;
+	delete samplescroll;
+	delete trackscroll;
 	delete cursor;
 	delete patchbay;
 	delete timebar;
@@ -156,12 +166,10 @@ void MWindowGUI::get_scrollbars()
 	}
 }
 
-int MWindowGUI::create_objects()
+void MWindowGUI::show()
 {
-SET_TRACE
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 
-	cursor = 0;
 	add_subwindow(mainmenu = new MainMenu(mwindow, this));
 
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
@@ -212,11 +220,9 @@ SET_TRACE
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, this));
 
 	canvas->activate();
-SET_TRACE
-	return 0;
 }
 
-void MWindowGUI::update_title(char *path)
+void MWindowGUI::update_title(const char *path)
 {
 	FileSystem fs;
 	char filename[BCTEXTLEN], string[BCTEXTLEN];
@@ -238,7 +244,6 @@ void MWindowGUI::focus_out_event()
 	cursor->focus_out_event();
 }
 
-
 void MWindowGUI::resize_event(int w, int h)
 {
 	mwindow->session->mwindow_w = w;
@@ -255,7 +260,6 @@ void MWindowGUI::resize_event(int w, int h)
 	canvas->resize_event();
 	zoombar->resize_event();
 }
-
 
 void MWindowGUI::update(int options)
 {
@@ -289,8 +293,7 @@ int MWindowGUI::visible(int x1, int x2, int view_x1, int view_x2)
 		(x1 <= view_x1 && x2 >= view_x2);
 }
 
-
-int MWindowGUI::show_message(const char *fmt, ...)
+void MWindowGUI::show_message(const char *fmt, ...)
 {
 	char bufr[1024];
 	va_list ap;
@@ -301,24 +304,20 @@ int MWindowGUI::show_message(const char *fmt, ...)
 
 	statusbar->status_text->set_color(mwindow->theme->message_normal);
 	statusbar->status_text->update(bufr);
-	return 0;
 }
 
 // Drag motion called from other window
-int MWindowGUI::drag_motion()
+void MWindowGUI::drag_motion()
 {
-	if(get_hidden()) return 0;
-
-	canvas->drag_motion();
-	return 0;
+	if(!get_hidden())
+		canvas->drag_motion();
 }
 
 int MWindowGUI::drag_stop()
 {
 	if(get_hidden()) return 0;
 
-	int result = canvas->drag_stop();
-	return result;
+	return canvas->drag_stop();
 }
 
 void MWindowGUI::default_positions()
@@ -363,8 +362,6 @@ void MWindowGUI::default_positions()
 	mwindow->awindow->gui->unlock_window();
 }
 
-
-
 void MWindowGUI::repeat_event(int duration)
 {
 	cursor->repeat_event(duration);
@@ -376,8 +373,7 @@ void MWindowGUI::translation_event()
 	mwindow->session->mwindow_y = get_y();
 }
 
-
-int MWindowGUI::save_defaults(BC_Hash *defaults)
+void MWindowGUI::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("MWINDOWWIDTH", get_w());
 	defaults->update("MWINDOWHEIGHT", get_h());
@@ -595,7 +591,6 @@ int MWindowGUI::keypress_event()
 
 	return result;
 }
-
 
 void MWindowGUI::close_event() 
 {

@@ -48,7 +48,7 @@ public:
 	MWindowGUI(MWindow *mwindow);
 	~MWindowGUI();
 
-	int create_objects();
+	void show();
 	void get_scrollbars();
 
 // ======================== event handlers
@@ -69,21 +69,21 @@ public:
 //          WUPD_BUTTONBAR  - update buttonbar
 	void update(int options);
 
-	void update_title(char *path);
+	void update_title(const char *path);
 	void translation_event();
 	void resize_event(int w, int h);          // handle a resize event
 	int keypress_event();
 	void close_event();
 	int quit();
-	int save_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 	int menu_h();
 // Draw on the status bar only.
-	int show_message(const char *fmt, ...);
+	void show_message(const char *fmt, ...);
 // Pop up a box if the statusbar is taken and show an error.
 	void show_error(char *message, int color = BLACK);
 	void repeat_event(int duration);
 // Entry point for drag events in all windows
-	int drag_motion();
+	void drag_motion();
 	int drag_stop();
 	void default_positions();
 
@@ -113,8 +113,5 @@ public:
 // Dimensions of canvas minus scrollbars
 	int view_w, view_h;
 };
-
-
-
 
 #endif
