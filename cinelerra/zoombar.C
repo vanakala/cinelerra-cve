@@ -45,9 +45,11 @@ ZoomBar::ZoomBar(MWindow *mwindow, MWindowGUI *gui)
 	mwindow->theme->mzoom_w,
 	mwindow->theme->mzoom_h) 
 {
-
 	this->gui = gui;
 	this->mwindow = mwindow;
+	sample_zoom = 0;
+	amp_zoom = 0;
+	track_zoom = 0;
 }
 
 ZoomBar::~ZoomBar()
@@ -57,7 +59,7 @@ ZoomBar::~ZoomBar()
 	delete track_zoom;
 }
 
-void ZoomBar::create_objects()
+void ZoomBar::show()
 {
 	int x = 3;
 	int y = get_h() / 2 - 

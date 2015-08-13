@@ -187,7 +187,7 @@ SET_TRACE
 	canvas->show();
 
 	add_subwindow(zoombar = new ZoomBar(mwindow, this));
-	zoombar->create_objects();
+	zoombar->show();
 
 	add_subwindow(statusbar = new StatusBar(mwindow, this));
 	statusbar->show();
