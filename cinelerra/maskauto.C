@@ -277,8 +277,8 @@ void MaskAuto::interpolate_from(Auto *a1, Auto *a2, ptstime position, Auto *temp
 	double frac1 = (position - mask_auto1->pos_time) / 
 		(mask_auto2->pos_time - mask_auto1->pos_time);
 	double frac2 = 1.0 - frac1;
-	this->feather = round(mask_auto1->feather * frac1 + mask_auto2->feather * frac2);
-	this->value = round(mask_auto1->value * frac1  + mask_auto2->value * frac2);
+	this->feather = round(mask_auto1->feather * frac2 + mask_auto2->feather * frac1);
+	this->value = round(mask_auto1->value * frac2  + mask_auto2->value * frac1);
 	this->apply_before_plugins = mask_auto1->apply_before_plugins;
 	this->pos_time = position;
 	masks.remove_all_objects();
