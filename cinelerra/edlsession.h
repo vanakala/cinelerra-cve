@@ -65,7 +65,7 @@ public:
 	void dump();
 
 // calculates the frame offset for programme timecode
-	int64_t get_frame_offset();
+	ptstime get_frame_offset();
 
 // calculate actions for edit
 	int edit_actions(void);

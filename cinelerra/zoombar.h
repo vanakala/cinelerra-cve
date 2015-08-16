@@ -157,7 +157,7 @@ public:
 	FromTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
 
 	int handle_event();
-	void update_position(double new_position);
+	void update_position(ptstime new_position);
 
 	MWindow *mwindow;
 	ZoomBar *zoombar;
@@ -170,7 +170,7 @@ public:
 	LengthTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
 
 	int handle_event();
-	void update_position(double new_position);
+	void update_position(ptstime new_position);
 
 	MWindow *mwindow;
 	ZoomBar *zoombar;
@@ -182,7 +182,7 @@ public:
 	ToTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
 
 	int handle_event();
-	void update_position(double new_position);
+	void update_position(ptstime new_position);
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };

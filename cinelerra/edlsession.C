@@ -749,13 +749,12 @@ int EDLSession::copy(EDLSession *session)
 	return 0;
 }
 
-int64_t EDLSession::get_frame_offset()
+ptstime EDLSession::get_frame_offset()
 {
-	return int64_t((timecode_offset[3] * 3600 +
-				timecode_offset[2] * 60 +
-				timecode_offset[1]) *
-				frame_rate +
-				timecode_offset[0]);
+	return (ptstime)(timecode_offset[3] * 3600 +
+		timecode_offset[2] * 60 +
+		timecode_offset[1]) +
+		timecode_offset[0] / frame_rate;
 }
 
 // FIXIT: use bits instead of ..follow_edits

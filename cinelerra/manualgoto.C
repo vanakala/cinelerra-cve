@@ -56,9 +56,8 @@ void ManualGoto::open_window()
 	if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
 		(masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
 	{
-		position = mwindow->edl->local_session->get_selectionstart(1);
-		position += mwindow->edl->session->get_frame_offset() / 
-					 mwindow->edl->session->frame_rate;
+		position = mwindow->edl->local_session->get_selectionstart(1) +
+			mwindow->edl->session->get_frame_offset();
 		icon_image = mwindow->theme->get_image("mwindow_icon");
 	}
 	else
@@ -104,8 +103,8 @@ void ManualGoto::run()
 			default:
 				break;
 			}
-			new_position = mwindow->edl->align_to_frame(new_position);
-			new_position -= mwindow->edl->session->get_frame_offset() / mwindow->edl->session->frame_rate;;
+			new_position = mwindow->edl->align_to_frame(new_position) -
+				mwindow->edl->session->get_frame_offset();
 			if (new_position < 0) 
 				new_position = 0;
 			if (current_position != new_position)

@@ -415,11 +415,11 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.width = edl->session->output_w;
 		asset.height = edl->session->output_h;
 		asset.interlace_mode = edl->session->interlace_mode;
-		asset.tcstart = (int64_t) (edl->session->get_frame_offset() +
-			edl->local_session->get_selectionstart() *
+		asset.tcstart = round((edl->session->get_frame_offset() +
+			edl->local_session->get_selectionstart()) *
 				edl->session->frame_rate);
-		asset.tcend = (int64_t) (edl->session->get_frame_offset() +
-			edl->local_session->get_selectionend() *
+		asset.tcend = round((edl->session->get_frame_offset() +
+			edl->local_session->get_selectionend()) *
 				edl->session->frame_rate);
 	}
 	else
@@ -437,11 +437,11 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.audio_data = 1;
 		asset.channels = edl->session->audio_channels;
 		if(asset.format == FILE_MOV) asset.byte_order = 0;
-		asset.tcstart = (int64_t) (edl->session->get_frame_offset() +
-			edl->local_session->get_selectionstart() *
+		asset.tcstart = round((edl->session->get_frame_offset() +
+			edl->local_session->get_selectionstart()) *
 				edl->session->sample_rate);
-		asset.tcend = (int64_t) (edl->session->get_frame_offset() +
-			edl->local_session->get_selectionend() *
+		asset.tcend = round((edl->session->get_frame_offset() +
+			edl->local_session->get_selectionend()) *
 				edl->session->sample_rate);
 	}
 	else

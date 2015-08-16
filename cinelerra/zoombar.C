@@ -528,12 +528,11 @@ int FromTextBox::handle_event()
 	return 0;
 }
 
-void FromTextBox::update_position(double new_position)
+void FromTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
-	new_position += mwindow->edl->session->get_frame_offset() / 
-		mwindow->edl->session->frame_rate;;
+	new_position += mwindow->edl->session->get_frame_offset();
 	Units::totext(string, 
 		new_position, 
 		mwindow->edl->session->time_format, 
@@ -562,7 +561,7 @@ int LengthTextBox::handle_event()
 	return 0;
 }
 
-void LengthTextBox::update_position(double new_position)
+void LengthTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
@@ -594,7 +593,7 @@ int ToTextBox::handle_event()
 	return 0;
 }
 
-void ToTextBox::update_position(double new_position)
+void ToTextBox::update_position(ptstime new_position)
 {
 	char string[256];
 
