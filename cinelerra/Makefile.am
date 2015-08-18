@@ -166,6 +166,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    menueffects.C \
 		    menuveffects.C \
 		    meterpanel.C \
+		    miscprefs.C \
 		    module.C \
 		    mtimebar.C \
 		    mwindow.C \
@@ -417,6 +418,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 menueffects.h \
 		 menuveffects.h \
 		 meterpanel.h \
+		 miscprefs.h \
 		 module.h \
 		 mtimebar.h \
 		 mwindowgui.h \

@@ -71,12 +71,13 @@ public:
 	EDL *edl;
 
 // Categories
-#define CATEGORIES 4
+#define CATEGORIES 5
 	enum
 	{
 		PLAYBACK,
 		PERFORMANCE,
 		INTERFACE,
+		MISC,
 		ABOUT
 	};
 };

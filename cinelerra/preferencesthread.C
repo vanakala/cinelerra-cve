@@ -40,6 +40,7 @@
 #include "levelwindowgui.h"
 #include "mainerror.h"
 #include "meterpanel.h"
+#include "miscprefs.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -243,6 +244,8 @@ const char* PreferencesThread::category_to_text(int category)
 		return _("Performance");
 	case INTERFACE:
 		return _("Interface");
+	case MISC:
+		return _("Settings");
 	case ABOUT:
 		return _("About");
 	}
@@ -372,6 +375,10 @@ void PreferencesWindow::set_current_dialog(int number)
 
 	case PreferencesThread::INTERFACE:
 		add_subwindow(dialog = new InterfacePrefs(mwindow, this));
+		break;
+
+	case PreferencesThread::MISC:
+		add_subwindow(dialog = new MiscPrefs(mwindow, this));
 		break;
 
 	case PreferencesThread::ABOUT:
