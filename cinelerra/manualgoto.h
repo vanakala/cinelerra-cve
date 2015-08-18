@@ -45,7 +45,7 @@ public:
 	BC_WindowBase *masterwindow;
 	void open_window();
 
-	double position;
+	ptstime position;
 	VFrame *icon_image;
 	ManualGotoWindow *window;
 };
@@ -57,8 +57,8 @@ public:
 	ManualGotoWindow(MWindow *mwindow, ManualGoto *thread);
 
 	void activate();
-	double get_entered_position_sec();
-	void set_entered_position_sec(double position);
+	ptstime get_entered_position_sec();
+	void set_entered_position_sec(ptstime position);
 	int split_timestr(char *timestr);
 
 // Use this copy of the pointer in ManualGoto since multiple windows are possible

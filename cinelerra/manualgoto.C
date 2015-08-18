@@ -84,14 +84,14 @@ void ManualGoto::run()
 
 	if (result == 0) // ok button or return pressed
 	{
-		double new_position = window->get_entered_position_sec();
+		ptstime new_position = window->get_entered_position_sec();
 		char modifier = window->signtitle->get_text()[0];
 		if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
 			(masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
 		{
 			// mwindow/cwindow update
 
-			double current_position = mwindow->edl->local_session->get_selectionstart(1);
+			ptstime current_position = mwindow->edl->local_session->get_selectionstart(1);
 			switch (modifier)
 			{
 			case '+':
@@ -107,10 +107,9 @@ void ManualGoto::run()
 				mwindow->edl->session->get_frame_offset();
 			if (new_position < 0) 
 				new_position = 0;
-			if (current_position != new_position)
+			if (!PTSEQU(current_position, new_position))
 			{
-				mwindow->edl->local_session->set_selectionstart(new_position);
-				mwindow->edl->local_session->set_selectionend(new_position);
+				mwindow->edl->local_session->set_selection(new_position);
 				mwindow->gui->lock_window("ManualGoto::run 1");
 				mwindow->find_cursor();
 				mwindow->gui->update(WUPD_SCROLLBARS |
@@ -125,7 +124,7 @@ void ManualGoto::run()
 		{
 			// vwindow update
 			VWindow *vwindow = mwindow->vwindow;
-			double current_position = vwindow->get_edl()->local_session->get_selectionstart(1);
+			ptstime current_position = vwindow->get_edl()->local_session->get_selectionstart(1);
 			switch (modifier)
 			{
 			case '+':
@@ -142,10 +141,9 @@ void ManualGoto::run()
 			if (new_position < 0)
 				new_position = 0;
 			new_position = vwindow->get_edl()->align_to_frame(new_position);
-			if (current_position != new_position)
+			if (!PTSEQU(current_position, new_position))
 			{
-				vwindow->get_edl()->local_session->set_selectionstart(new_position);
-				vwindow->get_edl()->local_session->set_selectionend(new_position);
+				vwindow->get_edl()->local_session->set_selection(new_position);
 				vwindow->gui->lock_window("ManualGoto::run 2");
 				vwindow->update_position(CHANGE_NONE, 0, 1);
 					vwindow->gui->unlock_window();
@@ -235,7 +233,7 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
 	show_window();
 }
 
-double ManualGotoWindow::get_entered_position_sec()
+ptstime ManualGotoWindow::get_entered_position_sec()
 {
 	int i;
 	char *p = timestring;
@@ -246,12 +244,11 @@ double ManualGotoWindow::get_entered_position_sec()
 		*p++ = '.';
 	}
 	*--p = 0;
-	double seconds = Units::text_to_seconds(timestring,
+	return Units::text_to_seconds(timestring,
 		mwindow->edl->session->sample_rate,
 		timeformat,
 		mwindow->edl->session->frame_rate,
 		mwindow->edl->session->frames_per_foot);
-	return seconds;
 }
 
 int ManualGotoWindow::split_timestr(char *timestr)
@@ -274,7 +271,7 @@ int ManualGotoWindow::split_timestr(char *timestr)
 	return n;
 }
 
-void ManualGotoWindow::set_entered_position_sec(double position)
+void ManualGotoWindow::set_entered_position_sec(ptstime position)
 {
 	int i;
 
