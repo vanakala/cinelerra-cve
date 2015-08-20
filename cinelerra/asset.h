@@ -22,7 +22,6 @@
 #ifndef ASSET_H
 #define ASSET_H
 
-
 #include "arraylist.h"
 #include "bcwindowbase.inc"
 #include "bchash.inc"
@@ -32,7 +31,6 @@
 #include "garbage.h"
 #include "linklist.h"
 #include "pluginserver.inc"
-
 
 #include <stdint.h>
 
@@ -58,9 +56,8 @@ public:
 	Asset(Asset &asset);
 	Asset(const char *path);
 	Asset(const int plugin_type, const char *plugin_path);
-	~Asset();
 
-	int init_values();
+	void init_values();
 	void dump(int indent);
 
 	void copy_from(Asset *asset, int do_index);
@@ -89,8 +86,6 @@ public:
 	char* construct_param(const char *param, const char *prefix, 
 		char *return_value);
 
-
-
 // Executed during index building only
 	void update_index(Asset *asset);
 	int equivalent(Asset &asset, 
@@ -100,37 +95,36 @@ public:
 	int operator==(Asset &asset);
 	int operator!=(Asset &asset);
 	int test_path(const char *path);
-	int read(FileXML *file, int expand_relative = 1);
-	int read_audio(FileXML *xml);
-	int read_video(FileXML *xml);
-	int read_index(FileXML *xml);
-	int reset_index();  // When the index file is wrong, reset the asset values
+	void read(FileXML *file, int expand_relative = 1);
+	void read_audio(FileXML *xml);
+	void read_video(FileXML *xml);
+	void read_index(FileXML *xml);
+	void reset_index();  // When the index file is wrong, reset the asset values
 
-	int set_timecode(char *tc, int format, int end);
-	int reset_timecode();
-	
+	void set_timecode(char *tc, int format, int end);
+	void reset_timecode();
+
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if; complete names should be used.
-	int write(FileXML *file, 
+	void write(FileXML *file, 
 		int include_index, 
 		const char *output_path);
 // Write the index data and asset info.  Used by IndexThread.
 	void write_index(const char *path, int data_bytes);
 
-
 // Necessary for renderfarm to get encoding parameters
-	int write_audio(FileXML *xml);
-	int write_video(FileXML *xml);
-	int write_index(FileXML *xml);
-	int update_path(const char *new_path);
+	void write_audio(FileXML *xml);
+	void write_video(FileXML *xml);
+	void write_index(FileXML *xml);
+	void update_path(const char *new_path);
 
-	double total_length_framealigned(double fps);
+	ptstime total_length_framealigned(double fps);
 // Align pts to frame or sample
 	ptstime align_to_frame(ptstime pts, int type);
 
 // Path to file
 	char path[BCTEXTLEN];
-	int64_t file_length;
+	off_t file_length;
 
 // Pipe command
 	char pipe[BCTEXTLEN];
@@ -157,11 +151,7 @@ public:
 // String or FourCC describing compression
 	char acodec[MAX_LEN_CODECNAME];
 
-
 	samplenum audio_length;
-
-
-
 
 // contains video data
 	int video_data;
@@ -204,14 +194,12 @@ public:
 	int theora_keyframe_frequency;
 	int theora_keyframe_force_frequency;
 
-
 // mp3 compression
 	int mp3_bitrate;
 
 // mp4a compression
 	int mp4a_bitrate;
 	int mp4a_quantqual;
-
 
 // Set by package render during file creation. -1 means square pixels.
 	double aspect_ratio;
@@ -241,8 +229,6 @@ public:
 // top field first
 	int vmpeg_field_order;
 	int vmpeg_pframe_distance;
-
-
 
 // Divx video compression
 	int divx_bitrate;
@@ -283,10 +269,7 @@ public:
 	int ms_gop_size;
 	int ms_fix_bitrate;
 
-
 	int ac3_bitrate;
-
-
 
 // Image file sequences.  Background rendering doesn't want to write a 
 // sequence header but instead wants to start the sequence numbering at a certain

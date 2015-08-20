@@ -34,7 +34,6 @@
 #include "quicktime.h"
 #include "interlacemodes.h"
 
-
 #include <stdio.h>
 #include <string.h>
 
@@ -65,13 +64,7 @@ Asset::Asset(const int plugin_type, const char *plugin_title)
 	init_values();
 }
 
-Asset::~Asset()
-{
-// Don't delete index buffer since it is shared with the index thread.
-}
-
-
-int Asset::init_values()
+void Asset::init_values()
 {
 	path[0] = 0;
 	awindow_folder = AW_MEDIA_FOLDER;
@@ -124,11 +117,8 @@ int Asset::init_values()
 
 	mp3_bitrate = 256000;
 
-
 	mp4a_bitrate = 256000;
 	mp4a_quantqual = 100;
-
-
 
 // mpeg parameters
 	vmpeg_iframe_distance = 45;
@@ -179,7 +169,6 @@ int Asset::init_values()
 
 	use_header = 1;
 
-
 	reset_index();
 	id = EDL::next_id();
 
@@ -187,11 +176,9 @@ int Asset::init_values()
 	use_pipe = 0;
 
 	reset_timecode();
-
-	return 0;
 }
 
-int Asset::reset_index()
+void Asset::reset_index()
 {
 	index_status = INDEX_NOTTESTED;
 	index_start = old_index_end = index_end = 0;
@@ -200,18 +187,15 @@ int Asset::reset_index()
 	index_zoom = 0;
 	index_bytes = 0;
 	index_buffer = 0;
-	return 0;
 }
 
-int Asset::reset_timecode()
+void Asset::reset_timecode()
 {
 	strcpy(reel_name, "cin0000");
 	reel_number = 0;
 	tcstart = 0;
 	tcend = 0;
 	tcformat = 0;
-
-	return 0;
 }
 
 void Asset::copy_from(Asset *asset, int do_index)
@@ -265,10 +249,8 @@ void Asset::copy_format(Asset *asset, int do_index)
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
 
-
 	ampeg_bitrate = asset->ampeg_bitrate;
 	ampeg_derivative = asset->ampeg_derivative;
-
 
 	vorbis_vbr = asset->vorbis_vbr;
 	vorbis_min_bitrate = asset->vorbis_min_bitrate;
@@ -281,7 +263,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	theora_sharpness = asset->theora_sharpness;
 	theora_keyframe_frequency = asset->theora_keyframe_frequency;
 	theora_keyframe_force_frequency = asset->theora_keyframe_frequency;
-
 
 	jpeg_quality = asset->jpeg_quality;
 
@@ -299,7 +280,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	vmpeg_preset = asset->vmpeg_preset;
 	vmpeg_field_order = asset->vmpeg_field_order;
 
-
 	divx_bitrate = asset->divx_bitrate;
 	divx_rc_period = asset->divx_rc_period;
 	divx_rc_reaction_ratio = asset->divx_rc_reaction_ratio;
@@ -315,7 +295,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	h264_bitrate = asset->h264_bitrate;
 	h264_quantizer = asset->h264_quantizer;
 	h264_fix_bitrate = asset->h264_fix_bitrate;
-
 
 	ms_bitrate = asset->ms_bitrate;
 	ms_bitrate_tolerance = asset->ms_bitrate_tolerance;
@@ -366,7 +345,6 @@ Asset& Asset::operator=(Asset &asset)
 	return *this;
 }
 
-
 int Asset::equivalent(Asset &asset, 
 	int test_audio, 
 	int test_video)
@@ -386,7 +364,6 @@ int Asset::equivalent(Asset &asset,
 			current_astream == asset.current_astream &&
 			!strcmp(acodec, asset.acodec));
 	}
-
 
 	if(test_video && result)
 	{
@@ -411,10 +388,7 @@ int Asset::equivalent(Asset &asset,
 
 int Asset::operator==(Asset &asset)
 {
-
-	return equivalent(asset, 
-		1, 
-		1);
+	return equivalent(asset, 1, 1);
 }
 
 int Asset::operator!=(Asset &asset)
@@ -430,7 +404,7 @@ int Asset::test_path(const char *path)
 		return 0;
 }
 
-int Asset::read(FileXML *file, 
+void Asset::read(FileXML *file, 
 	int expand_relative)
 {
 	int result = 0;
@@ -461,7 +435,6 @@ int Asset::read(FileXML *file,
 			}
 		}
 	}
-
 
 	while(!result)
 	{
@@ -516,11 +489,9 @@ int Asset::read(FileXML *file,
 			}
 		}
 	}
-
-	return 0;
 }
 
-int Asset::read_audio(FileXML *file)
+void Asset::read_audio(FileXML *file)
 {
 	if(file->tag.title_is("AUDIO")) audio_data = 1;
 	channels = file->tag.get_property("CHANNELS", 2);
@@ -545,11 +516,9 @@ int Asset::read_audio(FileXML *file)
 		tcend = audio_length;
 		tcformat = 0;
 	}
-
-	return 0;
 }
 
-int Asset::read_video(FileXML *file)
+void Asset::read_video(FileXML *file)
 {
 	char string[BCTEXTLEN];
 
@@ -575,11 +544,9 @@ int Asset::read_video(FileXML *file)
 	tcformat = file->tag.get_property("TCFORMAT", tcformat);
 
 	active_subtitle = file->tag.get_property("SUBTITLE", -1);
-
-	return 0;
 }
 
-int Asset::read_index(FileXML *file)
+void Asset::read_index(FileXML *file)
 {
 	for(int i = 0; i < MAX_CHANNELS; i++) 
 	{
@@ -621,7 +588,6 @@ int Asset::read_index(FileXML *file)
 			}
 		}
 	}
-	return 0;
 }
 
 void Asset::write_index(const char *path, int data_bytes)
@@ -668,7 +634,7 @@ void Asset::write_index(const char *path, int data_bytes)
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if complete names should be used.
 
-int Asset::write(FileXML *file, 
+void Asset::write(FileXML *file, 
 	int include_index, 
 	const char *output_path)
 {
@@ -731,10 +697,9 @@ int Asset::write(FileXML *file,
 	file->tag.set_title("/ASSET");
 	file->append_tag();
 	file->append_newline();
-	return 0;
 }
 
-int Asset::write_audio(FileXML *file)
+void Asset::write_audio(FileXML *file)
 {
 // Let the reader know if the asset has the data by naming the block.
 	if(audio_data)
@@ -765,10 +730,9 @@ int Asset::write_audio(FileXML *file)
 		file->tag.set_title("/AUDIO_OMIT");
 	file->append_tag();
 	file->append_newline();
-	return 0;
 }
 
-int Asset::write_video(FileXML *file)
+void Asset::write_video(FileXML *file)
 {
 	char string[BCTEXTLEN];
 
@@ -790,7 +754,6 @@ int Asset::write_video(FileXML *file)
 	ilacefixmethod_to_xmltext(string, interlace_fixmethod);
 	file->tag.set_property("INTERLACE_FIXMETHOD", string);
 
-
 	file->tag.set_property("REEL_NAME", reel_name);
 
 	if(reel_number)
@@ -810,10 +773,9 @@ int Asset::write_video(FileXML *file)
 
 	file->append_tag();
 	file->append_newline();
-	return 0;
 }
 
-int Asset::write_index(FileXML *file)
+void Asset::write_index(FileXML *file)
 {
 	file->tag.set_title("INDEX");
 	file->tag.set_property("ZOOM", index_zoom);
@@ -839,11 +801,7 @@ int Asset::write_index(FileXML *file)
 	file->tag.set_title("/INDEX");
 	file->append_tag();
 	file->append_newline();
-	return 0;
 }
-
-
-
 
 char* Asset::construct_param(const char *param, const char *prefix, char *return_value)
 {
@@ -915,8 +873,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
 	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
 
-
-
 	mp3_bitrate = GET_DEFAULT("MP3_BITRATE", mp3_bitrate);
 	mp4a_bitrate = GET_DEFAULT("MP4A_BITRATE", mp4a_bitrate);
 	mp4a_quantqual = GET_DEFAULT("MP4A_QUANTQUAL", mp4a_quantqual);
@@ -946,7 +902,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	h264_quantizer = GET_DEFAULT("H264_QUANTIZER", h264_quantizer);
 	h264_fix_bitrate = GET_DEFAULT("H264_FIX_BITRATE", h264_fix_bitrate);
 
-
 	divx_bitrate = GET_DEFAULT("DIVX_BITRATE", divx_bitrate);
 	divx_rc_period = GET_DEFAULT("DIVX_RC_PERIOD", divx_rc_period);
 	divx_rc_reaction_ratio = GET_DEFAULT("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
@@ -965,7 +920,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
 	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
 	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
-
 
 	ms_bitrate = GET_DEFAULT("MS_BITRATE", ms_bitrate);
 	ms_bitrate_tolerance = GET_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
@@ -1028,7 +982,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
 		UPDATE_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
 		UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-
 
 		UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
 		UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
@@ -1108,26 +1061,25 @@ void Asset::save_defaults(BC_Hash *defaults,
 	UPDATE_DEFAULT("TCFORMAT", tcformat);
 }
 
-
-int Asset::update_path(const char *new_path)
+void Asset::update_path(const char *new_path)
 {
 	strcpy(path, new_path);
-	return 0;
 }
 
-double Asset::total_length_framealigned(double fps) 
+ptstime Asset::total_length_framealigned(double fps)
 {
-	if (video_data && audio_data) {
-		double aud = floor(( (double)audio_length / sample_rate) * fps) / fps;
-		double vid = floor(( (double)video_length / frame_rate) * fps) / fps;
-		return MIN(aud,vid);
+	if(video_data && audio_data)
+	{
+		ptstime aud = floor(( (ptstime)audio_length / sample_rate) * fps) / fps;
+		ptstime vid = floor(( (ptstime)video_length / frame_rate) * fps) / fps;
+		return MIN(aud, vid);
 	}
 
 	if (audio_data)
-		return (double)audio_length / sample_rate;
+		return (ptstime)audio_length / sample_rate;
 
 	if (video_data)
-		return (double)video_length / frame_rate;
+		return (ptstime)video_length / frame_rate;
 }
 
 ptstime Asset::align_to_frame(ptstime pts, int type)
@@ -1157,7 +1109,7 @@ void Asset::update_index(Asset *asset)
 	index_buffer = asset->index_buffer;    // pointer
 }
 
-int Asset::set_timecode(char *tc, int format, int end)
+void Asset::set_timecode(char *tc, int format, int end)
 {
 	int hr, min, sec;
 
@@ -1173,7 +1125,6 @@ int Asset::set_timecode(char *tc, int format, int end)
 		tcstart = (int64_t) (((hr * 3600) + (min * 60) + sec) * frame_rate);
 
 	tcformat = format;
-	return 0;
 }
 
 void Asset::dump(int indent)
