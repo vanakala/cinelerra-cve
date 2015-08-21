@@ -470,9 +470,8 @@ int TrackCanvas::drag_stop()
 				// we use video if we are over video and audio if we are over audio
 				if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
 				{
-					// Images have length -1
 					double video_length = asset->video_length;
-					if (video_length < 0)
+					if(asset->single_image)
 					{
 						if(mwindow->edl->session->si_useduration)
 							video_length = mwindow->edl->session->si_duration;
@@ -996,8 +995,7 @@ void TrackCanvas::draw_paste_destination()
 				paste_video_length = (double)asset->video_length / asset->frame_rate;
 			}
 
-			// Images have length -1 (they are a single image!!)
-			if (asset->video_data && asset->video_length < 0)
+			if(asset->single_image)
 			{
 				if(mwindow->edl->session->si_useduration)
 					paste_video_length = mwindow->edl->session->si_duration / asset->frame_rate;
