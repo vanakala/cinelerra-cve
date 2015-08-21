@@ -85,6 +85,7 @@ void Asset::init_values()
 	video_data = 0;
 	audio_length = 0;
 	video_length = 0;
+	single_image = 0;
 	subtitles = 0;
 	active_subtitle = -1;
 
@@ -248,6 +249,7 @@ void Asset::copy_format(Asset *asset, int do_index)
  
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
+	this->single_image = asset->single_image;
 
 	ampeg_bitrate = asset->ampeg_bitrate;
 	ampeg_derivative = asset->ampeg_derivative;
@@ -1156,9 +1158,9 @@ void Asset::dump(int indent)
 		indent, "", video_data, layers, frame_rate, width, height);
 	printf("%*s  vcodec %c%c%c%c aspect_ratio %.2f interlace_mode %s\n",
 		indent, "", vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
-	printf("%*s  length %d subtitles %d (active %d)\n", indent, "",
-		video_length, subtitles, active_subtitle);
-	printf("%*sreel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
+	printf("%*s  length %d subtitles %d (active %d) image %d\n", indent, "",
+		video_length, subtitles, active_subtitle, single_image);
+	printf("%*s  reel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
 		indent, "", reel_name, reel_number, tcstart, tcend, tcformat);
 }
 

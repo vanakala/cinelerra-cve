@@ -174,6 +174,8 @@ public:
 
 // Length in units of asset
 	framenum video_length;
+// Video is a single image
+	int single_image;
 
 // mpeg audio information
 	int ampeg_bitrate;
