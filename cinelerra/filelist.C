@@ -119,6 +119,7 @@ int FileList::open_file(int rd, int wr)
 					if(!asset->frame_rate)
 						asset->frame_rate = 1;
 					asset->video_length = 1;
+					asset->single_image = 1;
 				}
 			}
 		}
