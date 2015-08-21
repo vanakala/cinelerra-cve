@@ -976,15 +976,11 @@ int AWindowAssets::handle_event()
 		case AW_VTRANSITION_FOLDER:
 			break;
 		default:
-			mwindow->vwindow->gui->lock_window("AWindowAssets::handle_event");
-
 			if(((AssetPicon*)get_selection(0, 0))->asset)
 				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->asset);
 			else
 			if(((AssetPicon*)get_selection(0, 0))->edl)
 				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->edl);
-
-			mwindow->vwindow->gui->unlock_window();
 		}
 		return 1;
 	}
@@ -1101,17 +1097,9 @@ void AWindowAssets::drag_motion_event()
 {
 	BC_ListBox::drag_motion_event();
 
-	mwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->gui->drag_motion();
-	mwindow->gui->unlock_window();
-
-	mwindow->vwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->vwindow->gui->drag_motion();
-	mwindow->vwindow->gui->unlock_window();
-
-	mwindow->cwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->cwindow->gui->drag_motion();
-	mwindow->cwindow->gui->unlock_window();
 }
 
 void AWindowAssets::drag_stop_event()
@@ -1119,25 +1107,13 @@ void AWindowAssets::drag_stop_event()
 	int result = 0;
 
 	if(!result)
-	{
-		mwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 		result = mwindow->gui->drag_stop();
-		mwindow->gui->unlock_window();
-	}
 
-	if(!result) 
-	{
-		mwindow->vwindow->gui->lock_window("AWindowAssets::drag_stop_event");
+	if(!result)
 		result = mwindow->vwindow->gui->drag_stop();
-		mwindow->vwindow->gui->unlock_window();
-	}
 
-	if(!result) 
-	{
-		mwindow->cwindow->gui->lock_window("AWindowAssets::drag_stop_event");
+	if(!result)
 		result = mwindow->cwindow->gui->drag_stop();
-		mwindow->cwindow->gui->unlock_window();
-	}
 
 	if(result) get_drag_popup()->set_animation(0);
 
