@@ -418,8 +418,8 @@ int TrackCanvas::drag_stop()
 // Drop all the effects
 			PluginSet *plugin_set = mwindow->session->pluginset_highlighted;
 			Track *track = mwindow->session->track_highlighted;
-			double start = 0;
-			double length = track->get_length();
+			ptstime start = 0;
+			ptstime length = track->get_length();
 
 			if(mwindow->session->plugin_highlighted)
 			{
@@ -470,7 +470,7 @@ int TrackCanvas::drag_stop()
 				// we use video if we are over video and audio if we are over audio
 				if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
 				{
-					double video_length = asset->video_length;
+					ptstime video_length = asset->video_length;
 					if(asset->single_image)
 					{
 						if(mwindow->edl->session->si_useduration)
@@ -984,15 +984,15 @@ void TrackCanvas::draw_paste_destination()
 
 		if (asset)
 		{
-			double asset_length_ac = asset->total_length_framealigned(mwindow->edl->session->frame_rate);
+			ptstime asset_length_ac = asset->total_length_framealigned(mwindow->edl->session->frame_rate);
 			if (mwindow->edl->session->cursor_on_frames)
 			{
 				paste_video_length = paste_audio_length = asset_length_ac;
 			} 
 			else 
 			{
-				paste_audio_length = (double)asset->audio_length / asset->sample_rate;
-				paste_video_length = (double)asset->video_length / asset->frame_rate;
+				paste_audio_length = (ptstime)asset->audio_length / asset->sample_rate;
+				paste_video_length = (ptstime)asset->video_length / asset->frame_rate;
 			}
 
 			if(asset->single_image)
@@ -2346,7 +2346,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	FloatAuto *previous,
 	FloatAuto *next,
 	FloatAutos *autos,
-	double view_start,
+	ptstime view_start,
 	double xzoom,
 	double yscale,
 	int x1,
@@ -2452,7 +2452,7 @@ void TrackCanvas::synchronize_autos(float change,
 
 int TrackCanvas::test_floatline(int center_pixel, 
 	FloatAutos *autos,
-	double view_start,
+	ptstime view_start,
 	double xzoom,
 	double yscale,
 	int x1,
@@ -2638,7 +2638,7 @@ void TrackCanvas::calculate_auto_position(double *x,
 	}
 	if(out_x)
 	{
-		*out_x = (double)(ptr->pos_time + 
+		*out_x = (ptr->pos_time +
 			ptr->get_control_out_pts() - 
 			start) *
 			zoom;
@@ -2953,7 +2953,7 @@ int TrackCanvas::do_toggle_autos(Track *track,
 	{
 		if(current)
 		{
-			ax2 = (double)(current->pos_time - view_start) * xzoom;
+			ax2 = (current->pos_time - view_start) * xzoom;
 			ay2 = ((IntAuto*)current)->value > 0 ? high : low;
 		}
 		else
@@ -3065,9 +3065,7 @@ int TrackCanvas::do_autos(Track *track,
 	int result = 0;
 
 	ptstime view_start;
-	double unit_start;
 	ptstime view_end;
-	double unit_end;
 	double yscale;
 	int center_pixel;
 	double xzoom;
@@ -3109,8 +3107,8 @@ int TrackCanvas::do_autos(Track *track,
 						mwindow->session->drag_origin_x = cursor_x;
 						mwindow->session->drag_origin_y = cursor_y;
 
-						double position = current->pos_time;
-						double center = (mwindow->edl->local_session->get_selectionstart(1) +
+						ptstime position = current->pos_time;
+						ptstime center = (mwindow->edl->local_session->get_selectionstart(1) +
 							mwindow->edl->local_session->get_selectionend(1)) / 
 							2;
 
@@ -3149,8 +3147,8 @@ int TrackCanvas::do_plugin_autos(Track *track,
 {
 	int result = 0;
 
-	double view_start;
-	double view_end;
+	ptstime view_start;
+	ptstime view_end;
 	double yscale;
 	int center_pixel;
 	double xzoom;
@@ -3204,8 +3202,8 @@ int TrackCanvas::do_plugin_autos(Track *track,
 								mwindow->session->drag_origin_x = cursor_x;
 								mwindow->session->drag_origin_y = cursor_y;
 
-								double position = keyframe->pos_time;
-								double center = (mwindow->edl->local_session->get_selectionstart(1) +
+								ptstime position = keyframe->pos_time;
+								ptstime center = (mwindow->edl->local_session->get_selectionstart(1) +
 									mwindow->edl->local_session->get_selectionend(1)) / 
 									2;
 
@@ -3584,7 +3582,7 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 		gui->show_message(string);
 
 		ptstime position_f = current->pos_time;
-		double center_f = (mwindow->edl->local_session->get_selectionstart(1) +
+		ptstime center_f = (mwindow->edl->local_session->get_selectionstart(1) +
 			mwindow->edl->local_session->get_selectionend(1)) / 
 			2;
 		if(!shift_down())
@@ -3610,7 +3608,7 @@ int TrackCanvas::cursor_motion_event()
 	int update_cursor = 0;
 	int new_cursor = 0;
 	int rerender = 0;
-	double position = 0;
+	ptstime position = 0;
 	result = 0;
 
 // Default cursor
@@ -3879,7 +3877,7 @@ void TrackCanvas::repeat_event(int duration)
 	int track_movement = 0;
 	int x_distance = 0;
 	int y_distance = 0;
-	double position = 0;
+	ptstime position = 0;
 
 	switch(mwindow->session->current_operation)
 	{
@@ -3912,7 +3910,7 @@ void TrackCanvas::repeat_event(int duration)
 
 	if(sample_movement)
 	{
-		position = (double)(get_cursor_x() + x_distance) *
+		position = (get_cursor_x() + x_distance) *
 			mwindow->edl->local_session->zoom_time +
 			mwindow->edl->local_session->view_start_pts; 
 		position = mwindow->edl->align_to_frame(position);
@@ -4510,7 +4508,7 @@ int TrackCanvas::button_press_event()
 
 	if(is_event_win() && cursor_inside())
 	{
-		ptstime position = (double)cursor_x *
+		ptstime position = cursor_x *
 			mwindow->edl->local_session->zoom_time +
 			mwindow->edl->local_session->view_start_pts;
 		if(!active)
@@ -4753,7 +4751,7 @@ SET_TRACE
 	return result;
 }
 
-int TrackCanvas::start_selection(double position)
+int TrackCanvas::start_selection(ptstime position)
 {
 	int rerender = 0;
 	position = mwindow->edl->align_to_frame(position);
@@ -4761,7 +4759,7 @@ int TrackCanvas::start_selection(double position)
 // Extend a border
 	if(shift_down())
 	{
-		double midpoint = (mwindow->edl->local_session->get_selectionstart(1) + 
+		ptstime midpoint = (mwindow->edl->local_session->get_selectionstart(1) + 
 			mwindow->edl->local_session->get_selectionend(1)) / 2;
 
 		if(position < midpoint)

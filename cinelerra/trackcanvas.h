@@ -113,7 +113,7 @@ public:
 		FloatAuto *previous,
 		FloatAuto *current,
 		FloatAutos *autos,
-		double view_start,
+		ptstime view_start,
 		double xzoom,
 		double yscale,
 		int ax,
@@ -123,7 +123,7 @@ public:
 		int color);
 	int test_floatline(int center_pixel, 
 		FloatAutos *autos,
-		double view_start,
+		ptstime view_start,
 		double xzoom,
 		double yscale,
 		int x1,
