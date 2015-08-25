@@ -1831,7 +1831,53 @@ void MWindow::save_defaults()
 	edl->save_defaults(defaults);
 	session->save_defaults(defaults);
 	preferences->save_defaults(defaults);
-
+// Remove old defaults
+// Channel
+	defaults->delete_key("SCAN_FREQTABLE");
+	defaults->delete_key("SCAN_INPUT");
+	defaults->delete_key("SCAN_NORM");
+// Record
+	defaults->delete_key("TOTAL_BATCHES");
+	defaults->delete_keys_prefix("RECORD_");
+	defaults->delete_keys_prefix("BATCH_ENABLED_");
+	defaults->delete_key("REVERSE_INTERLACE");
+	defaults->delete_key("FILL_DROPPED_FRAMES");
+	defaults->delete_keys_prefix("BATCH_COLUMNWIDTH_");
+// PictureConfig
+	defaults->delete_key("VIDEO_BRIGHTNESS");
+	defaults->delete_key("VIDEO_HUE");
+	defaults->delete_key("VIDEO_COLOR");
+	defaults->delete_key("VIDEO_CONTRAST");
+	defaults->delete_key("VIDEO_WHITENESS");
+// AudioInConfig
+// Playbackconfig uses OSS_ENABLE_n_m - can't use delete_keys_prefix
+	defaults->delete_key("OSS_ENABLE_0");
+	defaults->delete_key("OSS_ENABLE_1");
+	defaults->delete_key("OSS_ENABLE_2");
+	defaults->delete_key("OSS_ENABLE_3");
+	defaults->delete_key("OSS_ENABLE_4");
+	defaults->delete_key("OSS_ENABLE_5");
+	defaults->delete_key("OSS_ENABLE_6");
+	defaults->delete_key("OSS_ENABLE_7");
+	defaults->delete_keys_prefix("OSS_IN_DEVICE_");
+	defaults->delete_key("OSS_IN_BITS");
+	defaults->delete_key("ESOUND_IN_SERVER");
+	defaults->delete_key("ESOUND_IN_PORT");
+	defaults->delete_key("ALSA_IN_DEVICE");
+	defaults->delete_key("ALSA_IN_BITS");
+	defaults->delete_key("IN_SAMPLERATE");
+	defaults->delete_key("IN_CHANNELS");
+// VideoInConfig
+	defaults->delete_key("VIDEO_IN_DRIVER");
+	defaults->delete_key("V4L_IN_DEVICE");
+	defaults->delete_key("V4L2_IN_DEVICE");
+	defaults->delete_key("V4L2JPEG_IN_DEVICE");
+	defaults->delete_key("SCREENCAPTURE_DISPLAY");
+	defaults->delete_key("DVB_IN_HOST");
+	defaults->delete_key("DVB_IN_PORT");
+	defaults->delete_key("DVB_IN_NUMBER");
+	defaults->delete_key("VIDEO_CAPTURE_LENGTH");
+	defaults->delete_key("IN_FRAMERATE");
 	defaults->save();
 }
 
