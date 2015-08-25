@@ -268,6 +268,28 @@ void BC_Hash::delete_key(const char *key)
 	}
 }
 
+void BC_Hash::delete_keys_prefix(const char *key)
+{
+	int j;
+	int keylen = strlen(key);
+
+	for(int i = 0; i < total; i++)
+	{
+		if(!strncmp(names[i], key, keylen))
+		{
+			delete [] values[i];
+			delete [] names[i];
+			total--;
+			for(j = i; i < total; i++)
+			{
+				names[i] = names[i + 1];
+				values[i] = values[i + 1];
+			}
+			i = j - 1;
+		}
+	}
+}
+
 void BC_Hash::copy_from(BC_Hash *src)
 {
 	reallocate_table(src->total);

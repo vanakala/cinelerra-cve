@@ -48,6 +48,7 @@ public:
 	int update(const char *name, int64_t value); // update a value if it exists
 	int update(const char *name, const char *value); // create it if it doesn't
 	void delete_key(const char *key);  // remove key
+	void delete_keys_prefix(const char *key); // remove keys starting with key
 
 	double get(const char *name, double default_value);   // retrieve a value if it exists
 	float get(const char *name, float default_value);   // retrieve a value if it exists
