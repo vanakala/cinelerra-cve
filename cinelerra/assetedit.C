@@ -56,7 +56,6 @@ AssetEdit::AssetEdit(MWindow *mwindow)
 	this->mwindow = mwindow;
 	asset = 0;
 	window = 0;
-	set_synchronous(0);
 }
 
 void AssetEdit::edit_asset(Asset *asset)
@@ -80,12 +79,10 @@ void AssetEdit::run()
 	{
 		new_asset = new Asset(asset->path);
 		*new_asset = *asset;
-		int result = 0;
 		window = new AssetEditWindow(mwindow, this);
 		window->raise_window();
-		result = window->run_window();
 
-		if(!result)
+		if(!window->run_window())
 		{
 			if(!asset->equivalent(*new_asset, 1, 1))
 			{
@@ -97,7 +94,6 @@ void AssetEdit::run()
 						MIN_FRAME_RATE, MAX_FRAME_RATE);
 				int newidx = asset->audio_data
 					&& !asset->equivalent(*new_asset, 1, 0);
-				mwindow->gui->lock_window("AssetEdit::run");
 				mwindow->remove_asset_from_caches(asset);
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.
@@ -119,7 +115,6 @@ void AssetEdit::run()
 					mwindow->mainindexes->add_next_asset(0, asset);
 					mwindow->mainindexes->start_build();
 				}
-				mwindow->gui->unlock_window();
 
 				mwindow->awindow->gui->async_update_assets();
 				mwindow->vwindow->change_source();
@@ -190,7 +185,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	x = x1;
 	y += 20;
 
-	int64_t bytes = 1;
+	off_t bytes = 1;
 	if(asset->format == FILE_MPEG &&
 		asset->video_data)
 	{
@@ -208,18 +203,18 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	y += 20;
 	x = x1;
 
-	double length;
+	ptstime length;
 	if(asset->audio_length > 0)
-		length = (double)asset->audio_length / asset->sample_rate;
+		length = (ptstime)asset->audio_length / asset->sample_rate;
 	if(asset->video_length > 0)
-		length = MAX(length, (double)asset->video_length / asset->frame_rate);
-	int64_t bitrate;
+		length = MAX(length, (ptstime)asset->video_length / asset->frame_rate);
+	uintmax_t bitrate;
 	if(!EQUIV(length, 0))
-		bitrate = (int64_t)(bytes * 8 / length);
+		bitrate = bytes / length * 8;
 	else
 		bitrate = bytes;
 	add_subwindow(new BC_Title(x, y, _("Bitrate (bits/sec):")));
-	sprintf(string, "%lld", bitrate);
+	sprintf(string, "%jd", bitrate);
 
 	Units::punctuate(string);
 	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
@@ -508,10 +503,6 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	flush();
 }
 
-AssetEditWindow::~AssetEditWindow()
-{
-}
-
 
 AssetEditChannels::AssetEditChannels(AssetEditWindow *fwindow, 
 	char *text, 
@@ -706,8 +697,8 @@ int AssetEditReelNumber::handle_event()
 	char *text = get_text() + strlen(get_text()) - 1;
 
 	// Don't let user enter an invalid character -- only numbers here
-	if(*text < 48 ||
-		*text > 57)
+	if(*text < '0' ||
+		*text > '9')
 	{
 		*text = '\0';
 	}

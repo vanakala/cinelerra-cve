@@ -65,7 +65,6 @@ class AssetEditWindow : public BC_Window
 {
 public:
 	AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit);
-	~AssetEditWindow();
 
 	Asset *asset;
 	AssetEditPathText *path_text;
