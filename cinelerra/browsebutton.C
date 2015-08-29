@@ -20,6 +20,7 @@
  */
 
 #include "browsebutton.h"
+#include "bcsignals.h"
 #include "language.h"
 #include "mutex.h"
 #include "mwindow.h"
@@ -37,7 +38,7 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	int want_directory,
 	const char *recent_prefix)
  : BC_Button(x, y, mwindow->theme->get_image_set("magnify_button")), 
-   Thread()
+   Thread(THREAD_SYNCHRONOUS)
 {
 	this->parent_window = parent_window;
 	this->want_directory = want_directory;
