@@ -56,12 +56,10 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 BrowseButton::~BrowseButton()
 {
 	startup_lock->lock("BrowseButton::~BrowseButton");
+
 	if(gui)
-	{
-		gui->lock_window("BrowseButton::destructor");
 		gui->set_done(1);
-		gui->unlock_window();
-	}
+
 	startup_lock->unlock();
 	Thread::join();
 	delete startup_lock;
@@ -72,11 +70,7 @@ int BrowseButton::handle_event()
 	if(Thread::running())
 	{
 		if(gui)
-		{
-			gui->lock_window("BrowseButton::handle_event");
 			gui->raise_window();
-			gui->unlock_window();
-		}
 		return 1;
 	}
 
@@ -101,9 +95,8 @@ void BrowseButton::run()
 		want_directory);
 	gui = &browsewindow;
 	startup_lock->unlock();
-	int result2 = browsewindow.run_window();
 
-	if(!result2)
+	if(!browsewindow.run_window())
 	{
 		textbox->update(browsewindow.get_submitted_path());
 		parent_window->flush();
@@ -137,8 +130,4 @@ BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow,
 	mwindow->theme->browse_pad)
 {
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
-}
-
-BrowseButtonWindow::~BrowseButtonWindow() 
-{
 }
