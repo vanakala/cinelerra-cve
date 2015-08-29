@@ -105,11 +105,10 @@ void Thread::cancel()
 
 void Thread::join()   // join this thread
 {
-	if(tid_valid)
+	if(tid_valid && synchronous)
 	{
 		pthread_join(tid, 0);
 	}
-
 	tid = (pthread_t)-1;
 	tid_valid = 0;
 
