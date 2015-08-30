@@ -139,16 +139,12 @@ void CTracking::update_tracker(ptstime position)
 
 	mwindow->edl->local_session->set_selection(position);
 // Update cwindow slider
-	cwindow->gui->lock_window("CTracking::update_tracker 1");
 	cwindow->gui->slider->update(position);
 
 // This is going to boost the latency but we need to update the timebar
 	cwindow->gui->timebar->update();
-	cwindow->gui->unlock_window();
 
 // Update mwindow cursor
-	mwindow->gui->lock_window("CTracking::update_tracker 2");
-
 	updated_scroll = update_scroll(position);
 
 	mwindow->gui->mainclock->update(position);
@@ -163,9 +159,7 @@ void CTracking::update_tracker(ptstime position)
 		mwindow->gui->canvas->flash();
 		mwindow->gui->flush();
 	}
-	mwindow->gui->unlock_window();
 
-// Plugin GUI's hold lock on mwindow->gui here during user interface handlers.
 	mwindow->update_plugin_guis();
 
 	update_meters(position);
