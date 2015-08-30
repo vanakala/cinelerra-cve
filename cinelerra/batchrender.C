@@ -540,7 +540,6 @@ void BatchRenderThread::stop_rendering()
 
 void BatchRenderThread::update_active(int number)
 {
-	gui->lock_window("BatchRenderThread::update_active");
 	if(number >= 0)
 	{
 		current_job = number;
@@ -552,14 +551,12 @@ void BatchRenderThread::update_active(int number)
 		is_rendering = 0;
 	}
 	gui->create_list(1);
-	gui->unlock_window();
 }
 
 void BatchRenderThread::update_done(int number, 
 	int create_list, 
 	double elapsed_time)
 {
-	gui->lock_window("BatchRenderThread::update_done");
 	if(number < 0)
 	{
 		gui->new_batch->enable();
@@ -571,7 +568,6 @@ void BatchRenderThread::update_done(int number,
 		jobs.values[number]->elapsed = elapsed_time;
 		if(create_list) gui->create_list(1);
 	}
-	gui->unlock_window();
 }
 
 void BatchRenderThread::move_batch(int src, int dst)
