@@ -63,27 +63,17 @@ AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
 void AssetPopup::paste_assets()
 {
 // Collect items into the drag vectors for temporary storage
-	gui->lock_window("AssetPopup::paste_assets");
-	mwindow->gui->lock_window("AssetPopup::paste_assets");
-	mwindow->cwindow->gui->lock_window("AssetPopup::paste_assets");
-
 	gui->collect_assets();
 	mwindow->paste_assets(mwindow->edl->local_session->get_selectionstart(1), 
 		mwindow->edl->tracks->first,
 		0);   // do not overwrite
-
-	gui->unlock_window();
-	mwindow->gui->unlock_window();
-	mwindow->cwindow->gui->unlock_window();
 }
 
 void AssetPopup::match_size()
 {
 // Collect items into the drag vectors for temporary storage
 	gui->collect_assets();
-	mwindow->gui->lock_window("AssetPopup::match_size");
 	mwindow->asset_to_size();
-	mwindow->gui->unlock_window();
 }
 
 void AssetPopup::update()
@@ -163,8 +153,6 @@ AssetPopupView::AssetPopupView(MWindow *mwindow, AssetPopup *popup)
 
 int AssetPopupView::handle_event()
 {
-	mwindow->vwindow->gui->lock_window("AssetPopupView::handle_event");
-
 	if(mwindow->session->drag_assets->total)
 		mwindow->vwindow->change_source(
 			mwindow->session->drag_assets->values[0]);
@@ -172,8 +160,6 @@ int AssetPopupView::handle_event()
 	if(mwindow->session->drag_clips->total)
 		mwindow->vwindow->change_source(
 			mwindow->session->drag_clips->values[0]);
-
-	mwindow->vwindow->gui->unlock_window();
 	return 1;
 }
 
