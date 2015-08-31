@@ -140,11 +140,9 @@ void MainError::append_error(const char *string)
 void MainError::show_error_local(const char *string)
 {
 // assume user won't get to closing the GUI here
-	lock_window("MainError::show_error_local");
 	if(get_gui())
 	{
 		MainErrorGUI *gui = (MainErrorGUI*)get_gui();
-		gui->lock_window("MainError::show_error_local");
 		append_error(string);
 		gui->list->update(&errors,
 			0,
@@ -155,13 +153,10 @@ void MainError::show_error_local(const char *string)
 			gui->list->get_highlighted_item(),  // Flat index of item cursor is over
 			0,     // set all autoplace flags to 1
 			1);
-		gui->unlock_window();
-		unlock_window();
 		start();
 	}
 	else
 	{
-		unlock_window();
 		errors.remove_all_objects();
 		append_error(string);
 		start();
