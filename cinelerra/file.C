@@ -112,9 +112,7 @@ void File::close_window()
 {
 	if(getting_options)
 	{
-		format_window->lock_window("File::close_window");
 		format_window->set_done(1);
-		format_window->unlock_window();
 		getting_options = 0;
 	}
 }
