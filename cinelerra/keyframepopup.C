@@ -141,10 +141,8 @@ void KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyf
 
 	if(!PTSEQU(current_position, new_position))
 	{
-		mwindow->gui->lock_window("KeyframePopup::update");
 		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR |
 			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
-		mwindow->gui->unlock_window();
 	}
 }
 
