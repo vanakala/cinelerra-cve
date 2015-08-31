@@ -433,8 +433,6 @@ void MenuEffectThread::run()
 // paste output to tracks
 	if(!result && load_mode != LOADMODE_NOTHING)
 	{
-		mwindow->gui->lock_window("MenuEffectThread::run");
-
 		if(load_mode == LOADMODE_PASTE)
 			mwindow->clear(0);
 		mwindow->load_assets(&assets,
@@ -452,7 +450,6 @@ void MenuEffectThread::run()
 		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
 			WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 		mwindow->sync_parameters(CHANGE_ALL);
-		mwindow->gui->unlock_window();
 	}
 
 	for(int i = 0; i < assets.total; i++)
