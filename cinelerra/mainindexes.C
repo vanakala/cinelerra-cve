@@ -204,11 +204,7 @@ void MainIndexes::run()
 				{
 // Try to create index now.
 					if(!progress)
-					{
-						if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 1");
 						progress = mwindow->mainprogress->start_progress(_("Building Indexes..."), (int64_t)1);
-						if(mwindow->gui) mwindow->gui->unlock_window();
-					}
 
 					indexfile->create_index(current_asset, progress);
 					if(progress->is_cancelled()) interrupt_flag = 1;
@@ -219,9 +215,7 @@ void MainIndexes::run()
 					if(current_asset->index_status == INDEX_NOTTESTED)
 					{
 						current_asset->index_status = INDEX_READY;
-						if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 2");
 						mwindow->edl->set_index_file(current_asset);
-						if(mwindow->gui) mwindow->gui->unlock_window();
 					}
 					indexfile->close_index();
 				}
@@ -230,10 +224,8 @@ void MainIndexes::run()
 
 		if(progress)     // progress box is only created when an index is built
 		{
-			if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 3");
 			progress->stop_progress();
 			delete progress;
-			if(mwindow->gui) mwindow->gui->unlock_window();
 			progress = 0;
 		}
 
