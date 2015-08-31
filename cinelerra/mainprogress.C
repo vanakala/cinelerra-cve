@@ -109,11 +109,7 @@ void MainProgressBar::update_current_title(const char *fmt, ...)
 	}
 	else
 	if(progress_bar)
-	{
-		mwindow->gui->lock_window("MainProgressBar::update_title");
 		mwindow->gui->show_message(bufr);
-		mwindow->gui->unlock_window();
-	}
 }
 
 void MainProgressBar::update_title(const char *fmt, ...)
@@ -133,11 +129,7 @@ void MainProgressBar::update_title(const char *fmt, ...)
 	}
 	else
 	if(progress_bar)
-	{
-		mwindow->gui->lock_window("MainProgressBar::update_title");
 		mwindow->gui->show_message(bufr);
-		mwindow->gui->unlock_window();
-	}
 }
 
 void MainProgressBar::update_length(int64_t length)
@@ -149,11 +141,7 @@ void MainProgressBar::update_length(int64_t length)
 	}
 	else
 	if(progress_bar)
-	{
-		mwindow->gui->lock_window("MainProgressBar::update_length");
 		progress_bar->update_length(length);
-		mwindow->gui->unlock_window();
-	}
 }
 
 int MainProgressBar::update(int64_t value)
@@ -194,11 +182,7 @@ int MainProgressBar::update(int64_t value)
 	}
 	else
 	if(progress_bar)
-	{
-		mwindow->gui->lock_window("MainProgressBar::update");
 		progress_bar->update(value);
-		mwindow->gui->unlock_window();
-	}
 
 	return is_cancelled();
 }
