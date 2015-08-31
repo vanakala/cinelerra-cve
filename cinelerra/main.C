@@ -297,11 +297,9 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 // load the initial files on seperate tracks
 			if(filenames.total)
 			{
-				mwindow->gui->lock_window("main");
 				mwindow->load_filenames(&filenames, LOADMODE_REPLACE);
 				if(filenames.total == 1)
 					mwindow->gui->mainmenu->add_load(filenames.values[0]);
-				mwindow->gui->unlock_window();
 			}
 
 // run the program
