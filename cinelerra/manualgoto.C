@@ -110,12 +110,10 @@ void ManualGoto::run()
 			if (!PTSEQU(current_position, new_position))
 			{
 				mwindow->edl->local_session->set_selection(new_position);
-				mwindow->gui->lock_window("ManualGoto::run 1");
 				mwindow->find_cursor();
 				mwindow->gui->update(WUPD_SCROLLBARS |
 				WUPD_CANVINCR | WUPD_TIMEBAR | WUPD_ZOOMBAR |
 				WUPD_PATCHBAY | WUPD_CLOCK);
-				mwindow->gui->unlock_window();
 				mwindow->cwindow->update(WUPD_POSITION);
 			}
 		} else
@@ -144,9 +142,7 @@ void ManualGoto::run()
 			if (!PTSEQU(current_position, new_position))
 			{
 				vwindow->get_edl()->local_session->set_selection(new_position);
-				vwindow->gui->lock_window("ManualGoto::run 2");
 				vwindow->update_position(CHANGE_NONE, 0, 1);
-					vwindow->gui->unlock_window();
 			}
 		}
 	}
