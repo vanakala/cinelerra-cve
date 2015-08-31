@@ -364,13 +364,9 @@ void IndexFile::redraw_edits(int force)
 	if(difference > 250 || force)
 	{
 		redraw_timer->update();
-// Can't lock window here since the window is only redrawn when the pixel
-// count changes.
-		mwindow->gui->lock_window("IndexFile::redraw_edits");
 		mwindow->edl->set_index_file(asset);
 		mwindow->gui->canvas->draw_indexes(asset);
 		asset->old_index_end = asset->index_end;
-		mwindow->gui->unlock_window();
 	}
 }
 
