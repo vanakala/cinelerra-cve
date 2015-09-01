@@ -149,30 +149,22 @@ void SetFormatThread::apply_changes()
 
 // Update GUIs
 	mwindow->restart_brender();
-	mwindow->gui->lock_window("SetFormatThread::apply_changes");
 	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
-	mwindow->gui->unlock_window();
 
-	mwindow->cwindow->gui->lock_window("SetFormatThread::apply_changes");
 	mwindow->cwindow->gui->resize_event(mwindow->cwindow->gui->get_w(), 
 		mwindow->cwindow->gui->get_h());
 	mwindow->cwindow->gui->meters->set_meters(new_channels, 1);
 	mwindow->cwindow->gui->slider->set_position();
 	mwindow->cwindow->gui->flush();
-	mwindow->cwindow->gui->unlock_window();
 
-	mwindow->vwindow->gui->lock_window("SetFormatThread::apply_changes");
 	mwindow->vwindow->gui->resize_event(mwindow->vwindow->gui->get_w(), 
 		mwindow->vwindow->gui->get_h());
 	mwindow->vwindow->gui->meters->set_meters(new_channels, 1);
 	mwindow->vwindow->gui->flush();
-	mwindow->vwindow->gui->unlock_window();
 
-	mwindow->lwindow->gui->lock_window("SetFormatThread::apply_changes");
 	mwindow->lwindow->gui->panel->set_meters(new_channels, 1);
 	mwindow->lwindow->gui->flush();
-	mwindow->lwindow->gui->unlock_window();
 
 // Warn user
 	if(((mwindow->edl->session->output_w % 4) ||
