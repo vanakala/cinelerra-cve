@@ -144,8 +144,6 @@ void PluginDialogThread::run()
 	{
 		if(plugin_type)
 		{
-			mwindow->gui->lock_window("PluginDialogThread::run 3");
-
 			if(plugin)
 			{
 				plugin->change_plugin(plugin_title,
@@ -170,8 +168,6 @@ void PluginDialogThread::run()
 			mwindow->sync_parameters(CHANGE_EDL);
 			mwindow->gui->update(WUPD_SCROLLBARS |
 				WUPD_CANVINCR | WUPD_PATCHBAY);
-
-			mwindow->gui->unlock_window();
 		}
 	}
 	plugin = 0;
