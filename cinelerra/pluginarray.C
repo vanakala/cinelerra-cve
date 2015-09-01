@@ -205,9 +205,7 @@ int PluginArray::run_plugins()
 		progress->stop_progress();
 		delete progress;
 
-		mwindow->gui->lock_window("PluginArray::run_plugins");
 		mwindow->gui->show_message(string2);
-		mwindow->gui->unlock_window();
 	}
 	else
 	{
