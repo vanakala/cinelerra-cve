@@ -515,10 +515,8 @@ void Render::stop_progress()
 		progress->stop_progress();
 		delete progress;
 
-		mwindow->gui->lock_window("Render::stop_progress");
 		mwindow->gui->show_message(_("Rendering took %s"), string);
 		mwindow->gui->stop_hourglass();
-		mwindow->gui->unlock_window();
 	}
 	progress = 0;
 }
@@ -621,10 +619,8 @@ int Render::render(int test_overwrite,
 // Start dispatching external jobs
 		if(mwindow)
 		{
-			mwindow->gui->lock_window("Render::render 1");
 			mwindow->gui->show_message(_("Starting render farm"));
 			mwindow->gui->start_hourglass();
-			mwindow->gui->unlock_window();
 		}
 		else
 		{
@@ -649,10 +645,8 @@ int Render::render(int test_overwrite,
 			{
 				if(mwindow)
 				{
-					mwindow->gui->lock_window("Render::render 2");
 					errorbox(_("Failed to start render farm"));
 					mwindow->gui->stop_hourglass();
-					mwindow->gui->unlock_window();
 				}
 				else
 				{
@@ -719,9 +713,8 @@ int Render::render(int test_overwrite,
 		mwindow &&
 		mode != Render::BATCH)
 	{
-		mwindow->gui->lock_window("Render::render 3");
-
 		ArrayList<Asset*> *assets = packages->get_asset_list();
+
 		if(load_mode == LOADMODE_PASTE)
 			mwindow->clear(0);
 		mwindow->load_assets(assets, 
@@ -738,16 +731,11 @@ int Render::render(int test_overwrite,
 		mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW |
 		WUPD_TIMEBAR | WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
 		mwindow->sync_parameters(CHANGE_ALL);
-		mwindow->gui->unlock_window();
 	}
 
 // Disable hourglass
 	if(mwindow)
-	{
-		mwindow->gui->lock_window("Render::render 3");
 		mwindow->gui->stop_hourglass();
-		mwindow->gui->unlock_window();
-	}
 
 // Need to restart because brender always stops before render.
 	if(mwindow)
