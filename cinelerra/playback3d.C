@@ -356,7 +356,6 @@ void Playback3D::copy_from_sync(Playback3DCommand *command)
 	BC_WindowBase *window = command->canvas->get_canvas();
 	if(window)
 	{
-		window->lock_window("Playback3D:copy_from_sync");
 		window->enable_opengl();
 
 		if(command->input->get_opengl_state() == VFrame::SCREEN &&
@@ -404,8 +403,6 @@ void Playback3D::copy_from_sync(Playback3DCommand *command)
 				command->frame->get_w(),
 				command->frame->get_h());
 		}
-
-		window->unlock_window();
 	}
 	command->canvas->unlock_canvas();
 #endif
@@ -448,7 +445,6 @@ void Playback3D::write_buffer_sync(Playback3DCommand *command)
 	if(command->canvas->get_canvas())
 	{
 		BC_WindowBase *window = command->canvas->get_canvas();
-		window->lock_window("Playback3D::write_buffer_sync");
 // Update hidden cursor
 		window->update_video_cursor();
 // Make sure OpenGL is enabled first.
@@ -473,7 +469,6 @@ void Playback3D::write_buffer_sync(Playback3DCommand *command)
 			printf("Playback3D::write_buffer_sync unknown state\n");
 			break;
 		}
-		window->unlock_window();
 	}
 
 	command->canvas->unlock_canvas();
@@ -587,7 +582,6 @@ void Playback3D::clear_output_sync(Playback3DCommand *command)
 	command->canvas->lock_canvas("Playback3D::clear_output_sync");
 	if(command->canvas->get_canvas())
 	{
-		command->canvas->get_canvas()->lock_window("Playback3D::clear_output_sync");
 // If we get here, the virtual console is being used.
 		command->canvas->get_canvas()->enable_opengl();
 
@@ -598,7 +592,6 @@ void Playback3D::clear_output_sync(Playback3DCommand *command)
 		}
 
 		init_frame(command);
-		command->canvas->get_canvas()->unlock_window();
 	}
 	command->canvas->unlock_canvas();
 }
@@ -618,12 +611,10 @@ void Playback3D::clear_input_sync(Playback3DCommand *command)
 	command->canvas->lock_canvas("Playback3D::clear_input_sync");
 	if(command->canvas->get_canvas())
 	{
-		command->canvas->get_canvas()->lock_window("Playback3D::clear_input_sync");
 		command->canvas->get_canvas()->enable_opengl();
 		command->frame->enable_opengl();
 		command->frame->clear_pbuffer();
 		command->frame->set_opengl_state(VFrame::SCREEN);
-		command->canvas->get_canvas()->unlock_window();
 	}
 	command->canvas->unlock_canvas();
 }
@@ -661,7 +652,6 @@ void Playback3D::do_camera_sync(Playback3DCommand *command)
 	command->canvas->lock_canvas("Playback3D::do_camera_sync");
 	if(command->canvas->get_canvas())
 	{
-		command->canvas->get_canvas()->lock_window("Playback3D::do_camera_sync");
 		command->canvas->get_canvas()->enable_opengl();
 
 		command->input->to_texture();
@@ -686,7 +676,6 @@ void Playback3D::do_camera_sync(Playback3DCommand *command)
 
 			command->frame->set_opengl_state(VFrame::SCREEN);
 		}
-		command->canvas->get_canvas()->unlock_window();
 	}
 	command->canvas->unlock_canvas();
 }
@@ -732,7 +721,6 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 	if(command->canvas->get_canvas())
 	{
 		BC_WindowBase *window = command->canvas->get_canvas();
-	    window->lock_window("Playback3D::overlay_sync");
 // Make sure OpenGL is enabled first.
 		window->enable_opengl();
 
@@ -891,8 +879,6 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 		}
 		glActiveTexture(GL_TEXTURE0);
 		glDisable(GL_TEXTURE_2D);
-
-		window->unlock_window();
 	}
 	command->canvas->unlock_canvas();
 #endif
@@ -978,7 +964,6 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 	if(command->canvas->get_canvas())
 	{
 		BC_WindowBase *window = command->canvas->get_canvas();
-		window->lock_window("Playback3D::do_mask_sync");
 		window->enable_opengl();
 		
 		switch(command->frame->get_opengl_state())
@@ -1248,7 +1233,6 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 
 // Default drawable
 		window->enable_opengl();
-		window->unlock_window();
 	}
 	command->canvas->unlock_canvas();
 #endif
@@ -1271,7 +1255,6 @@ void Playback3D::do_fade_sync(Playback3DCommand *command)
 	if(command->canvas->get_canvas())
 	{
 		BC_WindowBase *window = command->canvas->get_canvas();
-		window->lock_window("Playback3D::do_fade_sync");
 		window->enable_opengl();
 
 		switch(command->frame->get_opengl_state())
@@ -1342,8 +1325,6 @@ void Playback3D::do_fade_sync(Playback3DCommand *command)
 
 		glColor4f(1, 1, 1, 1);
 		glDisable(GL_BLEND);
-
-		window->unlock_window();
 	}
 	command->canvas->unlock_canvas();
 #endif
@@ -1365,12 +1346,9 @@ void Playback3D::run_plugin_sync(Playback3DCommand *command)
 	if(command->canvas->get_canvas())
 	{
 		BC_WindowBase *window = command->canvas->get_canvas();
-		window->lock_window("Playback3D::run_plugin_sync");
 		window->enable_opengl();
 
 		((PluginVClient*)command->plugin_client)->handle_opengl();
-
-		window->unlock_window();
 	}
 	command->canvas->unlock_canvas();
 }
