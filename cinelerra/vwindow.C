@@ -264,10 +264,8 @@ void VWindow::copy()
 			mwindow->plugindb,
 			"",
 			1);
-		mwindow->gui->lock_window("VWindow::copy");
 		mwindow->gui->get_clipboard()->to_clipboard(file.string,
 			strlen(file.string),
 			SECONDARY_SELECTION);
-		mwindow->gui->unlock_window();
 	}
 }
