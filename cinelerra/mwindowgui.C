@@ -322,10 +322,6 @@ int MWindowGUI::drag_stop()
 
 void MWindowGUI::default_positions()
 {
-	mwindow->vwindow->gui->lock_window("MWindowGUI::default_positions");
-	mwindow->cwindow->gui->lock_window("MWindowGUI::default_positions");
-	mwindow->awindow->gui->lock_window("MWindowGUI::default_positions");
-
 	reposition_window(mwindow->session->mwindow_x, 
 		mwindow->session->mwindow_y,
 		mwindow->session->mwindow_w, 
@@ -356,10 +352,6 @@ void MWindowGUI::default_positions()
 	mwindow->vwindow->gui->flush();
 	mwindow->cwindow->gui->flush();
 	mwindow->awindow->gui->flush();
-
-	mwindow->vwindow->gui->unlock_window();
-	mwindow->cwindow->gui->unlock_window();
-	mwindow->awindow->gui->unlock_window();
 }
 
 void MWindowGUI::repeat_event(int duration)
