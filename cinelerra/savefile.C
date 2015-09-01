@@ -169,11 +169,7 @@ void SaveAs::run()
 		return;
 	}
 	else
-	{
-		mwindow->gui->lock_window("SaveAs::run");
 		mwindow->gui->show_message(_("\"%s\" %dC written"), filename, strlen(file.string));
-		mwindow->gui->unlock_window();
-	}
 
 	mwindow->session->changes_made = 0;
 	mmenu->add_load(filename);
