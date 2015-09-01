@@ -358,21 +358,13 @@ void VWindowEditing::copy_selection()
 void VWindowEditing::splice_selection()
 {
 	if(vwindow->get_edl())
-	{
-		mwindow->gui->lock_window("VWindowEditing::splice_selection");
 		mwindow->splice(vwindow->get_edl());
-		mwindow->gui->unlock_window();
-	}
 }
 
 void VWindowEditing::overwrite_selection()
 {
 	if(vwindow->get_edl())
-	{
-		mwindow->gui->lock_window("VWindowEditing::overwrite_selection");
 		mwindow->overwrite(vwindow->get_edl());
-		mwindow->gui->unlock_window();
-	}
 }
 
 void VWindowEditing::toggle_label()
