@@ -94,9 +94,7 @@ int TransitionLengthText::handle_event()
 			mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->edl->session->default_transition_length = result;
-		mwindow->gui->lock_window("TransitionLengthText::handle_event");
 		mwindow->gui->update(WUPD_CANVINCR);
-		mwindow->gui->unlock_window();
 	}
 	return 1;
 }
