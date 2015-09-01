@@ -67,11 +67,7 @@ int New::handle_event()
 	{
 		thread->window_lock->lock("New::handle_event");
 		if(thread->nwindow)
-		{
-			thread->nwindow->lock_window("New::handle_event");
 			thread->nwindow->raise_window();
-			thread->nwindow->unlock_window();
-		}
 		thread->window_lock->unlock();
 		return 1;
 	}
@@ -94,7 +90,6 @@ void New::create_new_project()
 	mwindow->vwindow->playback_engine->send_command(STOP);
 	mwindow->vwindow->remove_source();
 
-	mwindow->gui->lock_window("New::create_new_project");
 	mwindow->reset_caches();
 
 	memcpy(new_edl->session->achannel_positions,
@@ -125,7 +120,6 @@ void New::create_new_project()
 // Load file sequence
 	mwindow->update_project(LOADMODE_REPLACE);
 	mwindow->session->changes_made = 0;
-	mwindow->gui->unlock_window();
 }
 
 NewThread::NewThread(MWindow *mwindow, New *new_project)
