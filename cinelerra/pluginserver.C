@@ -385,11 +385,7 @@ void PluginServer::client_side_close()
 		mwindow->hide_plugin(plugin, 1);
 	else
 	if(prompt)
-	{
-		prompt->lock_window("PluginServer::client_side_close");
 		prompt->set_done(1);
-		prompt->unlock_window();
-	}
 }
 
 void PluginServer::render_stop()
@@ -543,9 +539,7 @@ void PluginServer::render_gui(void *data, int size)
 
 MainProgressBar* PluginServer::start_progress(char *string, ptstime length)
 {
-	mwindow->gui->lock_window("PluginServer::start_progress");
 	MainProgressBar *result = mwindow->mainprogress->start_progress(string, length);
-	mwindow->gui->unlock_window();
 	return result;
 }
 
@@ -899,10 +893,8 @@ void PluginServer::sync_parameters()
 	mwindow->sync_parameters();
 	if(mwindow->edl->session->auto_conf->plugins)
 	{
-		mwindow->gui->lock_window("PluginServer::sync_parameters");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
-		mwindow->gui->unlock_window();
 	}
 }
 
