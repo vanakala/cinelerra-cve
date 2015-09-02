@@ -1251,22 +1251,18 @@ void MWindow::run()
 void MWindow::show_vwindow()
 {
 	session->show_vwindow = 1;
-	vwindow->gui->lock_window("MWindow::show_vwindow");
 	vwindow->gui->show_window();
 	vwindow->gui->raise_window();
 	vwindow->gui->flush();
-	vwindow->gui->unlock_window();
 	gui->mainmenu->show_vwindow->set_checked(1);
 }
 
 void MWindow::show_awindow()
 {
 	session->show_awindow = 1;
-	awindow->gui->lock_window("MWindow::show_awindow");
 	awindow->gui->show_window();
 	awindow->gui->raise_window();
 	awindow->gui->flush();
-	awindow->gui->unlock_window();
 	gui->mainmenu->show_awindow->set_checked(1);
 }
 
@@ -1281,11 +1277,9 @@ void MWindow::show_gwindow()
 {
 	session->show_gwindow = 1;
 
-	gwindow->gui->lock_window("MWindow::show_gwindow");
 	gwindow->gui->show_window();
 	gwindow->gui->raise_window();
 	gwindow->gui->flush();
-	gwindow->gui->unlock_window();
 
 	gui->mainmenu->show_gwindow->set_checked(1);
 }
@@ -1293,11 +1287,9 @@ void MWindow::show_gwindow()
 void MWindow::show_lwindow()
 {
 	session->show_lwindow = 1;
-	lwindow->gui->lock_window("MWindow::show_lwindow");
 	lwindow->gui->show_window();
 	lwindow->gui->raise_window();
 	lwindow->gui->flush();
-	lwindow->gui->unlock_window();
 	gui->mainmenu->show_lwindow->set_checked(1);
 }
 
@@ -1335,28 +1327,20 @@ void MWindow::set_titles(int value)
 
 void MWindow::set_auto_keyframes(int value)
 {
-	gui->lock_window("MWindow::set_auto_keyframes");
 	edl->session->auto_keyframes = value;
 	gui->mbuttons->edit_panel->keyframe->update(value);
 	gui->flush();
-	gui->unlock_window();
-	cwindow->gui->lock_window("MWindow::set_auto_keyframes");
 	cwindow->gui->edit_panel->keyframe->update(value);
 	cwindow->gui->update_tool();
 	cwindow->gui->flush();
-	cwindow->gui->unlock_window();
 }
 
 void MWindow::set_editing_mode(int new_editing_mode)
 {
-	gui->lock_window("MWindow::set_editing_mode");
 	edl->session->editing_mode = new_editing_mode;
 	gui->mbuttons->edit_panel->update();
 	gui->canvas->update_cursor();
-	gui->unlock_window();
-	cwindow->gui->lock_window("MWindow::set_editing_mode");
 	cwindow->gui->edit_panel->update();
-	cwindow->gui->unlock_window();
 }
 
 void MWindow::toggle_editing_mode()
@@ -1370,12 +1354,10 @@ void MWindow::toggle_editing_mode()
 
 void MWindow::set_labels_follow_edits(int value)
 {
-	gui->lock_window("MWindow::set_labels_follow_edits");
 	edl->session->labels_follow_edits = value;
 	gui->mbuttons->edit_panel->locklabels->update(value);
 	gui->mainmenu->labels_follow_edits->set_checked(value);
 	gui->flush();
-	gui->unlock_window();
 }
 
 void MWindow::sync_parameters(int change_type)
@@ -1483,9 +1465,7 @@ void MWindow::show_plugin(Plugin *plugin)
 void MWindow::hide_plugin(Plugin *plugin, int lock)
 {
 	plugin->show = 0;
-	gui->lock_window("MWindow::hide_plugin");
 	gui->update(WUPD_CANVINCR);
-	gui->unlock_window();
 
 	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
 	for(int i = 0; i < plugin_guis->total; i++)
@@ -1659,9 +1639,7 @@ void MWindow::update_project(int load_mode)
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);
 
-	cwindow->gui->lock_window("Mwindow::update_project 1");
 	cwindow->update(WUPD_TOOLWIN | WUPD_OPERATION | WUPD_TIMEBAR);
-	cwindow->gui->unlock_window();
 
 	if(load_mode == LOADMODE_REPLACE ||
 		load_mode == LOADMODE_REPLACE_CONCATENATE)
@@ -1669,10 +1647,8 @@ void MWindow::update_project(int load_mode)
 		vwindow->change_source();
 	}
 
-	cwindow->gui->lock_window("Mwindow::update_project 2");
 	cwindow->gui->slider->set_position();
 	cwindow->gui->timebar->update();
-	cwindow->gui->unlock_window();
 	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
 
 	awindow->gui->async_update_assets();
@@ -1780,21 +1756,13 @@ void MWindow::remove_assets_from_project(int push_undo)
 	for(int i = 0; i < session->drag_clips->total; i++)
 	{
 		if(session->drag_clips->values[i] == vwindow->get_edl())
-		{
-			vwindow->gui->lock_window("MWindow::remove_assets_from_project 1");
 			vwindow->remove_source();
-			vwindow->gui->unlock_window();
-		}
 	}
 
 	for(int i = 0; i < session->drag_assets->total; i++)
 	{
 		if(session->drag_assets->values[i] == vwindow->get_asset())
-		{
-			vwindow->gui->lock_window("MWindow::remove_assets_from_project 2");
 			vwindow->remove_source();
-			vwindow->gui->unlock_window();
-		}
 	}
 
 	edl->remove_from_project(session->drag_assets);
@@ -1803,10 +1771,8 @@ void MWindow::remove_assets_from_project(int push_undo)
 	if(push_undo) undo->update_undo(_("remove assets"), LOAD_ALL);
 	restart_brender();
 
-	gui->lock_window("MWindow::remove_assets_from_project 3");
 	gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_TIMEBAR |
 		WUPD_ZOOMBAR | WUPD_CLOCK);
-	gui->unlock_window();
 
 	awindow->gui->async_update_assets();
 
@@ -1979,12 +1945,10 @@ void MWindow::prev_time_format()
 
 void MWindow::time_format_common()
 {
-	gui->lock_window("MWindow::next_time_format");
 	gui->redraw_time_dependancies();
 	char string[BCTEXTLEN];
 	gui->show_message(_("Using %s."), Units::print_time_format(edl->session->time_format, string));
 	gui->flush();
-	gui->unlock_window();
 }
 
 
@@ -2036,19 +2000,8 @@ void MWindow::set_loop_boundaries()
 
 void MWindow::reset_meters()
 {
-	cwindow->gui->lock_window("MWindow::reset_meters 1");
 	cwindow->gui->meters->reset_meters();
-	cwindow->gui->unlock_window();
-
-	vwindow->gui->lock_window("MWindow::reset_meters 2");
 	vwindow->gui->meters->reset_meters();
-	vwindow->gui->unlock_window();
-
-	lwindow->gui->lock_window("MWindow::reset_meters 3");
 	lwindow->gui->panel->reset_meters();
-	lwindow->gui->unlock_window();
-
-	gui->lock_window("MWindow::reset_meters 4");
 	gui->patchbay->reset_meters();
-	gui->unlock_window();
 }
