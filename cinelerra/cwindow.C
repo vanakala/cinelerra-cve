@@ -72,12 +72,9 @@ CWindow::~CWindow()
 
 void CWindow::show_window()
 {
-	gui->lock_window("CWindow::show_cwindow");
 	gui->show_window();
 	gui->raise_window();
 	gui->flush();
-	gui->unlock_window();
-
 	gui->tool_panel->show_tool();
 }
 
@@ -85,13 +82,8 @@ void CWindow::hide_window()
 {
 	gui->hide_window();
 	gui->mwindow->session->show_cwindow = 0;
-
 	gui->tool_panel->hide_tool();
-
-	mwindow->gui->lock_window("CWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_cwindow->set_checked(0);
-	mwindow->gui->unlock_window();
-	mwindow->save_defaults();
 }
 
 Track* CWindow::calculate_affected_track()
@@ -130,10 +122,8 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 			if(created) *created = 1;
 			if(redraw)
 			{
-				mwindow->gui->lock_window("CWindow::calculate_affected_auto");
 				mwindow->gui->canvas->draw_overlays();
 				mwindow->gui->canvas->flash();
-				mwindow->gui->unlock_window();
 			}
 		}
 	}
@@ -189,9 +179,7 @@ void CWindow::update(int options)
 {
 	if(options & WUPD_POSITION)
 	{
-		gui->lock_window("CWindow::update 1");
 		gui->slider->set_position();
-		gui->unlock_window();
 
 		playback_engine->send_command(CURRENT_FRAME, mwindow->edl);
 	}
