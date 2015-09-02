@@ -51,7 +51,7 @@ public:
 	void translation_event();
 	void close_event();
 	int keypress_event();
-	void update_toggles(int use_lock);
+	void update_toggles();
 	void update_mwindow();
 
 	MWindow *mwindow;

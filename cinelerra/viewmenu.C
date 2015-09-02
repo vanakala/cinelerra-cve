@@ -45,7 +45,7 @@ int ShowAssets::handle_event()
 	set_checked(!get_checked());
 	mwindow->edl->session->show_assets = get_checked();
 	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
-	mwindow->gwindow->gui->update_toggles(1);
+	mwindow->gwindow->gui->update_toggles();
 	return 1;
 }
 
@@ -62,7 +62,7 @@ int ShowTitles::handle_event()
 	set_checked(!get_checked());
 	mwindow->edl->session->show_titles = get_checked();
 	mwindow->gui->update(WUPD_SCROLLBARS | WUPD_CANVINCR | WUPD_PATCHBAY);
-	mwindow->gwindow->gui->update_toggles(1);
+	mwindow->gwindow->gui->update_toggles();
 	return 1;
 }
 
@@ -79,7 +79,7 @@ int ShowTransitions::handle_event()
 	mwindow->edl->session->auto_conf->transitions = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
-	mwindow->gwindow->gui->update_toggles(1);
+	mwindow->gwindow->gui->update_toggles();
 	return 1;
 }
 
@@ -101,7 +101,7 @@ int ShowAutomation::handle_event()
 	mwindow->edl->session->auto_conf->autos[subscript] = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
-	mwindow->gwindow->gui->update_toggles(1);
+	mwindow->gwindow->gui->update_toggles();
 	return 1;
 }
 
@@ -123,6 +123,6 @@ int PluginAutomation::handle_event()
 	mwindow->edl->session->auto_conf->plugins = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
-	mwindow->gwindow->gui->update_toggles(1);
+	mwindow->gwindow->gui->update_toggles();
 	return 1;
 }

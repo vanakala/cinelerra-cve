@@ -143,16 +143,12 @@ void GWindowGUI::update_mwindow()
 	mwindow->gui->mainmenu->update_toggles();
 }
 
-void GWindowGUI::update_toggles(int use_lock)
+void GWindowGUI::update_toggles()
 {
-	if(use_lock) lock_window("GWindowGUI::update_toggles");
-
 	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
 	{
 		toggles[i]->update();
 	}
-
-	if(use_lock) unlock_window();
 }
 
 void GWindowGUI::translation_event()
@@ -165,11 +161,7 @@ void GWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_gwindow = 0;
-
-	mwindow->gui->lock_window("GWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_gwindow->set_checked(0);
-	mwindow->gui->unlock_window();
-
 	mwindow->save_defaults();
 }
 
@@ -211,7 +203,6 @@ int GWindowToggle::handle_event()
 	gui->update_mwindow();
 
 // Update stuff in MWindow
-	mwindow->gui->lock_window("GWindowToggle::handle_event");
 	if(toggleinf.isauto)
 	{
 		mwindow->gui->canvas->draw_overlays();
@@ -234,9 +225,6 @@ int GWindowToggle::handle_event()
 				break;
 		}
 	}
-
-	mwindow->gui->unlock_window();
-
 	return 1;
 }
 

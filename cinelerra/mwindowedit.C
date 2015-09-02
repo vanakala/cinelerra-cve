@@ -971,7 +971,7 @@ void MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		edl->copy_session(new_edls->values[0]);
 
 		gui->mainmenu->update_toggles();
-		gwindow->gui->update_toggles(1);
+		gwindow->gui->update_toggles();
 
 // Insert labels for certain modes constitutively
 		actions = EDIT_LABELS|EDIT_PLUGINS;
