@@ -127,34 +127,17 @@ void Tracking::update_meters(ptstime pts)
 	{
 		int n = get_playback_engine()->get_module_levels(module_levels, pts);
 
-		mwindow->cwindow->gui->lock_window("Tracking::update_meters 1");
 		mwindow->cwindow->gui->meters->update(output_levels);
-		mwindow->cwindow->gui->unlock_window();
-
-		mwindow->lwindow->gui->lock_window("Tracking::update_meters 2");
 		mwindow->lwindow->gui->panel->update(output_levels);
-		mwindow->lwindow->gui->unlock_window();
-
-		mwindow->gui->lock_window("Tracking::update_meters 3");
 		mwindow->gui->patchbay->update_meters(module_levels, n);
-		mwindow->gui->unlock_window();
-
 	}
 }
 
 void Tracking::stop_meters()
 {
-	mwindow->cwindow->gui->lock_window("Tracking::stop_meters 1");
 	mwindow->cwindow->gui->meters->stop_meters();
-	mwindow->cwindow->gui->unlock_window();
-
-	mwindow->gui->lock_window("Tracking::stop_meters 2");
 	mwindow->gui->patchbay->stop_meters();
-	mwindow->gui->unlock_window();
-
-	mwindow->lwindow->gui->lock_window("Tracking::stop_meters 3");
 	mwindow->lwindow->gui->panel->stop_meters();
-	mwindow->lwindow->gui->unlock_window();
 }
 
 void Tracking::set_delays(float over_delay, float peak_delay)
