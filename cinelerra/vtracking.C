@@ -56,7 +56,6 @@ PlaybackEngine* VTracking::get_playback_engine()
 void VTracking::update_tracker(ptstime position)
 {
 	Asset *asset = vwindow->get_edl()->assets->first;
-	vwindow->gui->lock_window("VTracking::update_tracker");
 	vwindow->get_edl()->local_session->set_selectionstart(position);
 	vwindow->get_edl()->local_session->set_selectionend(position);
 	vwindow->gui->slider->update(position);
@@ -69,8 +68,6 @@ void VTracking::update_tracker(ptstime position)
 // This is going to boost the latency but we need to update the timebar
 	vwindow->gui->timebar->update();
 
-	vwindow->gui->unlock_window();
-
 	update_meters(position);
 }
 
@@ -79,18 +76,12 @@ void VTracking::update_meters(ptstime pts)
 	double output_levels[MAXCHANNELS];
 
 	if(get_playback_engine()->get_output_levels(output_levels, pts))
-	{
-		vwindow->gui->lock_window("VTracking::update_meters");
 		vwindow->gui->meters->update(output_levels);
-		vwindow->gui->unlock_window();
-	}
 }
 
 void VTracking::stop_meters()
 {
-	vwindow->gui->lock_window("VTracking::stop_meters");
 	vwindow->gui->meters->stop_meters();
-	vwindow->gui->unlock_window();
 }
 
 void VTracking::set_delays(float over_delay, float peak_delay)
