@@ -1294,10 +1294,6 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 	cwindow->playback_engine->send_command(STOP);
 	vwindow->playback_engine->send_command(STOP);
 
-	cwindow->gui->lock_window("MWindow::redo_entry");
-	vwindow->gui->lock_window("MWindow::redo_entry 2");
-	gui->lock_window("MWindow::redo_entry 3");
-
 	undo->redo();
 
 	save_backup();
@@ -1308,10 +1304,6 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);
 	cwindow->update(WUPD_POSITION | WUPD_OVERLAYS | WUPD_TOOLWIN |
 		WUPD_OPERATION | WUPD_TIMEBAR);
-
-	cwindow->gui->unlock_window();
-	gui->unlock_window();
-	vwindow->gui->unlock_window();
 
 	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);
 }
@@ -1366,7 +1358,7 @@ int InPointUndoItem::get_size()
 	return 20;
 }
 
-void MWindow::set_inpoint(int is_mwindow)
+void MWindow::set_inpoint()
 {
 	InPointUndoItem *undo_item;
 
@@ -1377,27 +1369,11 @@ void MWindow::set_inpoint(int is_mwindow)
 	edl->set_inpoint(edl->local_session->get_selectionstart(1));
 	save_backup();
 
-	if(!is_mwindow)
-	{
-		gui->lock_window("MWindow::set_inpoint 1");
-	}
 	gui->timebar->update();
 	gui->flush();
-	if(!is_mwindow)
-	{
-		gui->unlock_window();
-	}
 
-	if(is_mwindow)
-	{
-		cwindow->gui->lock_window("MWindow::set_inpoint 2");
-	}
 	cwindow->gui->timebar->update();
 	cwindow->gui->flush();
-	if(is_mwindow)
-	{
-		cwindow->gui->unlock_window();
-	}
 }
 
 class OutPointUndoItem : public UndoStackItem
@@ -1435,7 +1411,7 @@ int OutPointUndoItem::get_size()
 	return 20;
 }
 
-void MWindow::set_outpoint(int is_mwindow)
+void MWindow::set_outpoint()
 {
 	OutPointUndoItem *undo_item;
 
@@ -1446,27 +1422,11 @@ void MWindow::set_outpoint(int is_mwindow)
 	edl->set_outpoint(edl->local_session->get_selectionend(1));
 	save_backup();
 
-	if(!is_mwindow)
-	{
-		gui->lock_window("MWindow::set_outpoint 1");
-	}
 	gui->timebar->update();
 	gui->flush();
-	if(!is_mwindow)
-	{
-		gui->unlock_window();
-	}
 
-	if(is_mwindow)
-	{
-		cwindow->gui->lock_window("MWindow::set_outpoint 2");
-	}
 	cwindow->gui->timebar->update();
 	cwindow->gui->flush();
-	if(is_mwindow)
-	{
-		cwindow->gui->unlock_window();
-	}
 }
 
 void MWindow::splice(EDL *source)
@@ -1608,28 +1568,12 @@ void MWindow::toggle_label(int is_mwindow)
 	edl->labels->toggle_label(position1, position2);
 	save_backup();
 
-	if(!is_mwindow)
-	{
-		gui->lock_window("MWindow::toggle_label 1");
-	}
 	gui->timebar->update();
 	gui->canvas->activate();
 	gui->flush();
-	if(!is_mwindow)
-	{
-		gui->unlock_window();
-	}
 
-	if(is_mwindow)
-	{
-		cwindow->gui->lock_window("MWindow::toggle_label 2");
-	}
 	cwindow->gui->timebar->update();
 	cwindow->gui->flush();
-	if(is_mwindow)
-	{
-		cwindow->gui->unlock_window();
-	}
 	awindow->gui->async_update_assets();
 }
 
@@ -1653,10 +1597,6 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 	cwindow->playback_engine->send_command(STOP);
 	vwindow->playback_engine->send_command(STOP);
 
-	cwindow->gui->lock_window("MWindow::undo_entry 1");
-	vwindow->gui->lock_window("MWindow::undo_entry 4");
-	gui->lock_window("MWindow::undo_entry 2");
-
 	undo->undo(); 
 
 	save_backup();
@@ -1667,10 +1607,6 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 		WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK | WUPD_BUTTONBAR);
 	cwindow->update(WUPD_POSITION | WUPD_OVERLAYS | WUPD_TOOLWIN |
 		WUPD_OPERATION | WUPD_TIMEBAR);
-
-	cwindow->gui->unlock_window();
-	gui->unlock_window();
-	vwindow->gui->unlock_window();
 
 	awindow->gui->async_update_assets();
 	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_ALL);

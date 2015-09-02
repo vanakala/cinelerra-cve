@@ -560,12 +560,12 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindowGUI *gui, MeterPanel *me
 
 void CWindowEditing::set_inpoint()
 {
-	mwindow->set_inpoint(0);
+	mwindow->set_inpoint();
 }
 
 void CWindowEditing::set_outpoint()
 {
-	mwindow->set_outpoint(0);
+	mwindow->set_outpoint();
 }
 
 

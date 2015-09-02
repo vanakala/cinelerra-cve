@@ -349,8 +349,8 @@ public:
 // Update the editing mode
 	void set_editing_mode(int new_editing_mode);
 	void toggle_editing_mode();
-	void set_inpoint(int is_mwindow);
-	void set_outpoint(int is_mwindow);
+	void set_inpoint();
+	void set_outpoint();
 	void splice(EDL *source);
 	void toggle_loop_playback();
 	void trim_selection();

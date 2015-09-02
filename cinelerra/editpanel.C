@@ -346,12 +346,12 @@ void EditPanel::copy_selection()
 
 void EditPanel::set_inpoint()
 {
-	mwindow->set_inpoint(1);
+	mwindow->set_inpoint();
 }
 
 void EditPanel::set_outpoint()
 {
-	mwindow->set_outpoint(1);
+	mwindow->set_outpoint();
 }
 
 void EditPanel::clear_inpoint()
