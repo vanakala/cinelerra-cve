@@ -278,11 +278,7 @@ void PLUGIN_CLASS::update_gui() \
 	{ \
 		force_update(); \
 		if(load_configuration()) \
-		{ \
-			thread->window->lock_window("plugin::update_gui"); \
 			thread->window->update(); \
-			thread->window->unlock_window(); \
-		} \
 	} \
 }
 #else
