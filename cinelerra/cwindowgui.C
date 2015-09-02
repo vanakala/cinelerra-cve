@@ -403,10 +403,7 @@ int CWindowGUI::keypress_event()
 			{
 				int shift_down = this->shift_down();
 				mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
-
-				mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
 				mwindow->prev_edit_handle(shift_down);
-				mwindow->gui->unlock_window();
 			}
 			else
 				mwindow->move_left(); 
@@ -421,10 +418,7 @@ int CWindowGUI::keypress_event()
 			{
 				int shift_down = this->shift_down();
 				mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
-
-				mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
 				mwindow->next_edit_handle(shift_down);
-				mwindow->gui->unlock_window();
 			}
 			else
 				mwindow->move_right(); 
@@ -536,19 +530,16 @@ int CWindowGUI::drag_stop()
 	{
 		Track *affected_track = cwindow->calculate_affected_track();
 
-		mwindow->gui->lock_window("CWindowGUI::drag_stop 3");
 		mwindow->insert_effects_cwindow(affected_track);
 		mwindow->session->current_operation = NO_OPERATION;
-		mwindow->gui->unlock_window();
 	}
 
 	if(mwindow->session->current_operation == DRAG_VTRANSITION)
 	{
 		Track *affected_track = cwindow->calculate_affected_track();
-		mwindow->gui->lock_window("CWindowGUI::drag_stop 4");
+
 		mwindow->paste_transition_cwindow(affected_track);
 		mwindow->session->current_operation = NO_OPERATION;
-		mwindow->gui->unlock_window();
 	}
 
 	return result;
@@ -652,9 +643,7 @@ int CWindowSlider::handle_event()
 {
 	cwindow->playback_engine->interrupt_playback(1);
 
-	mwindow->gui->lock_window("CWindowSlider::handle_event 2");
-	mwindow->select_point((double)get_value());
-	mwindow->gui->unlock_window();
+	mwindow->select_point(get_value());
 	return 1;
 }
 
@@ -705,19 +694,13 @@ EDL* CWindowTransport::get_edl()
 void CWindowTransport::goto_start()
 {
 	handle_transport(REWIND, 1);
-
-	mwindow->gui->lock_window("CWindowTransport::goto_start 1");
 	mwindow->goto_start();
-	mwindow->gui->unlock_window();
 }
 
 void CWindowTransport::goto_end()
 {
 	handle_transport(GOTO_END, 1);
-
-	mwindow->gui->lock_window("CWindowTransport::goto_end 1");
 	mwindow->goto_end();
-	mwindow->gui->unlock_window();
 }
 
 
@@ -2550,10 +2533,8 @@ int CWindowCanvas::cursor_motion_event()
 
 	if(redraw_canvas)
 	{
-		mwindow->gui->lock_window("CWindowCanvas::cursor_motion_event 1");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
-		mwindow->gui->unlock_window();
 	}
 
 	if(rerender)
