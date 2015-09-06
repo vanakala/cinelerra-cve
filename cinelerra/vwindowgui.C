@@ -206,10 +206,10 @@ int VWindowGUI::keypress_event()
 		result = 1;
 		break;
 	case 'z':
-		mwindow->undo_entry(this);
+		mwindow->undo_entry();
 		break;
 	case 'Z':
-		mwindow->redo_entry(this);
+		mwindow->redo_entry();
 		break;
 	case 'f':
 		if(mwindow->session->vwindow_fullscreen)

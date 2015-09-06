@@ -358,9 +358,9 @@ public:
 // operation.  Doesn't redraw anything.
 	void sync_parameters(int change_type = CHANGE_PARAMS);
 	void to_clip();
-	void toggle_label(int is_mwindow);
-	void undo_entry(BC_WindowBase *calling_window_gui);
-	void redo_entry(BC_WindowBase *calling_window_gui);
+	void toggle_label();
+	void undo_entry();
+	void redo_entry();
 
 	void cut_automation();
 	void copy_automation();

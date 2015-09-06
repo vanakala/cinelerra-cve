@@ -1289,7 +1289,7 @@ void MWindow::paste_video_transition()
 	gui->update(WUPD_CANVINCR);
 }
 
-void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
+void MWindow::redo_entry()
 {
 	cwindow->playback_engine->send_command(STOP);
 	vwindow->playback_engine->send_command(STOP);
@@ -1543,7 +1543,7 @@ int LabelUndoItem::get_size()
 }
 
 
-void MWindow::toggle_label(int is_mwindow)
+void MWindow::toggle_label()
 {
 	LabelUndoItem *undo_item;
 	ptstime position1, position2;
@@ -1592,7 +1592,7 @@ void MWindow::trim_selection()
 	cwindow->playback_engine->send_command(CURRENT_FRAME, edl, CHANGE_EDL);
 }
 
-void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
+void MWindow::undo_entry()
 {
 	cwindow->playback_engine->send_command(STOP);
 	vwindow->playback_engine->send_command(STOP);

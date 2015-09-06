@@ -449,7 +449,7 @@ Undo::Undo(MWindow *mwindow) : BC_MenuItem(_("Undo"), "z", 'z')
 
 int Undo::handle_event()
 { 
-	mwindow->undo_entry(mwindow->gui);
+	mwindow->undo_entry();
 	return 1;
 }
 
@@ -470,7 +470,7 @@ Redo::Redo(MWindow *mwindow) : BC_MenuItem(_("Redo"), "Shift+Z", 'Z')
 
 int Redo::handle_event()
 { 
-	mwindow->redo_entry(mwindow->gui);
+	mwindow->redo_entry();
 	return 1;
 }
 

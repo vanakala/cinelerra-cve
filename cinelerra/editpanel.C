@@ -206,7 +206,7 @@ void EditPanel::update()
 
 void EditPanel::toggle_label()
 {
-	mwindow->toggle_label(use_flags & EDTP_MWINDOW);
+	mwindow->toggle_label();
 }
 
 void EditPanel::prev_label()
@@ -659,7 +659,7 @@ int EditUndo::keypress_event()
 
 int EditUndo::handle_event()
 {
-	mwindow->undo_entry(panel->subwindow);
+	mwindow->undo_entry();
 	return 1;
 }
 
@@ -681,7 +681,7 @@ int EditRedo::keypress_event()
 
 int EditRedo::handle_event()
 {
-	mwindow->redo_entry(panel->subwindow);
+	mwindow->redo_entry();
 	return 1;
 };
 
