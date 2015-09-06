@@ -28,7 +28,6 @@
 #include "mwindowgui.h"
 #include "patchbay.h"
 #include "mainsession.h"
-#include "stringfile.h"
 #include "theme.h"
 #include "timebar.h"
 #include <string.h>

@@ -49,7 +49,6 @@
 #include "mutex.h"
 #include "pluginserver.h"
 #include "resample.h"
-#include "stringfile.h"
 #include "vframe.h"
 
 

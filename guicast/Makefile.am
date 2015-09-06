@@ -59,7 +59,6 @@ libguicastcve_la_SOURCES = \
 	mutex.C \
 	rotateframe.C \
 	sema.C \
-	stringfile.C \
 	thread.C \
 	units.C \
 	vframe.C \
@@ -178,8 +177,6 @@ noinst_HEADERS = \
 	rotateframe.inc \
 	sema.h \
 	sema.inc \
-	stringfile.h \
-	stringfile.inc \
 	thread.h \
 	units.h \
 	vframe.h \
