@@ -74,10 +74,7 @@ static const char *colorbalance_yuv_preserve_shader =
 		shader_stack[current_shader++] = colorbalance_get_pixel2; \
 	if(cmodel_is_yuv(get_output()->get_color_model())) \
 	{\
-		if(get_output()->get_params()->get("COLORBALANCE_PRESERVE", (int)0)) \
-			shader_stack[current_shader++] = colorbalance_yuv_preserve_shader; \
-		else \
-			shader_stack[current_shader++] = colorbalance_yuv_shader; \
+		shader_stack[current_shader++] = colorbalance_yuv_shader; \
 	} \
 	else \
 		shader_stack[current_shader++] = colorbalance_rgb_shader; \
@@ -85,9 +82,9 @@ static const char *colorbalance_yuv_preserve_shader =
 
 #define COLORBALANCE_UNIFORMS(shader) \
 	glUniform3f(glGetUniformLocation(shader, "colorbalance_scale"),  \
-		get_output()->get_params()->get("COLORBALANCE_CYAN", (float)1), \
-		get_output()->get_params()->get("COLORBALANCE_MAGENTA", (float)1), \
-		get_output()->get_params()->get("COLORBALANCE_YELLOW", (float)1));
+		(float)1, \
+		(float)1, \
+		(float)1);
 
 #endif
 

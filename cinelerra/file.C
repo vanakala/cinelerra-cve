@@ -787,7 +787,6 @@ int File::get_frame(VFrame *frame, int is_thread)
 					asset->height,
 					supported_colormodel);
 			}
-			temp_frame->copy_stacks(frame);
 			temp_frame->copy_pts(frame);
 			file->read_frame(temp_frame);
 			cmodel_transfer(frame->get_rows(), 

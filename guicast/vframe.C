@@ -54,17 +54,14 @@ public:
 VFrame::VFrame(unsigned char *png_data)
 {
 	reset_parameters(1);
-	params = new BC_Hash;
 	read_png(png_data);
 }
 
 VFrame::VFrame(VFrame &frame)
 {
 	reset_parameters(1);
-	params = new BC_Hash;
 	allocate_data(0, 0, 0, 0, frame.w, frame.h, frame.color_model, frame.bytes_per_line);
 	memcpy(data, frame.data, bytes_per_line * h);
-	copy_stacks(&frame);
 	copy_pts(&frame);
 }
 
@@ -75,7 +72,6 @@ VFrame::VFrame(unsigned char *data,
 	long bytes_per_line)
 {
 	reset_parameters(1);
-	params = new BC_Hash;
 	allocate_data(data, 0, 0, 0, w, h, color_model, bytes_per_line);
 }
 
@@ -89,7 +85,6 @@ VFrame::VFrame(unsigned char *data,
 		long bytes_per_line)
 {
 	reset_parameters(1);
-	params = new BC_Hash;
 	allocate_data(data, 
 		y_offset, 
 		u_offset, 
@@ -103,26 +98,20 @@ VFrame::VFrame(unsigned char *data,
 VFrame::VFrame()
 {
 	reset_parameters(1);
-	params = new BC_Hash;
 	this->color_model = BC_COMPRESSED;
 }
 
 VFrame::~VFrame()
 {
 	clear_objects(1);
-// Delete effect stack
-	prev_effects.remove_all_objects();
-	next_effects.remove_all_objects();
-	delete params;
 }
 
-int VFrame::equivalent(VFrame *src, int test_stacks)
+int VFrame::equivalent(VFrame *src)
 {
 	return (src->get_color_model() == get_color_model() &&
 		src->get_w() == get_w() &&
 		src->get_h() == get_h() &&
-		src->bytes_per_line == bytes_per_line &&
-		(!test_stacks || equal_stacks(src)));
+		src->bytes_per_line == bytes_per_line);
 }
 
 int VFrame::get_shared(void)
@@ -165,9 +154,6 @@ void VFrame::reset_parameters(int do_opengl)
 		pbuffer = 0;
 		texture = 0;
 	}
-
-	prev_effects.set_array_delete();
-	next_effects.set_array_delete();
 }
 
 void VFrame::clear_objects(int do_opengl)
@@ -925,104 +911,6 @@ int VFrame::pts_in_frame(ptstime pts, ptstime accuracy)
 	return 0;
 }
 
-void VFrame::push_prev_effect(const char *name)
-{
-	char *ptr;
-	prev_effects.append(ptr = new char[strlen(name) + 1]);
-	strcpy(ptr, name);
-	if(prev_effects.total > MAX_STACK_ELEMENTS) prev_effects.remove_object(0);
-}
-
-void VFrame::pop_prev_effect(void)
-{
-	if(prev_effects.total)
-		prev_effects.remove_object(prev_effects.last());
-}
-
-void VFrame::push_next_effect(const char *name)
-{
-	char *ptr;
-	next_effects.append(ptr = new char[strlen(name) + 1]);
-	strcpy(ptr, name);
-	if(next_effects.total > MAX_STACK_ELEMENTS) next_effects.remove_object(0);
-}
-
-void VFrame::pop_next_effect(void)
-{
-	if(next_effects.total)
-		next_effects.remove_object(next_effects.last());
-}
-
-const char* VFrame::get_next_effect(int number)
-{
-	if(!next_effects.total) return "";
-	else
-	if(number > next_effects.total - 1) number = next_effects.total - 1;
-
-	return next_effects.values[next_effects.total - number - 1];
-}
-
-const char* VFrame::get_prev_effect(int number)
-{
-	if(!prev_effects.total) return "";
-	else
-	if(number > prev_effects.total - 1) number = prev_effects.total - 1;
-
-	return prev_effects.values[prev_effects.total - number - 1];
-}
-
-BC_Hash* VFrame::get_params(void)
-{
-	return params;
-}
-
-void VFrame::clear_stacks(void)
-{
-	next_effects.remove_all_objects();
-	prev_effects.remove_all_objects();
-	delete params;
-	params = new BC_Hash;
-}
-
-void VFrame::copy_params(VFrame *src)
-{
-	params->copy_from(src->params);
-}
-
-void VFrame::copy_stacks(VFrame *src)
-{
-	clear_stacks();
-
-	for(int i = 0; i < src->next_effects.total; i++)
-	{
-		char *ptr;
-		next_effects.append(ptr = new char[strlen(src->next_effects.values[i]) + 1]);
-		strcpy(ptr, src->next_effects.values[i]);
-	}
-	for(int i = 0; i < src->prev_effects.total; i++)
-	{
-		char *ptr;
-		prev_effects.append(ptr = new char[strlen(src->prev_effects.values[i]) + 1]);
-		strcpy(ptr, src->prev_effects.values[i]);
-	}
-
-	params->copy_from(src->params);
-}
-
-int VFrame::equal_stacks(VFrame *src)
-{
-	for(int i = 0; i < src->next_effects.total && i < next_effects.total; i++)
-	{
-		if(strcmp(src->next_effects.values[i], next_effects.values[i])) return 0;
-	}
-	for(int i = 0; i < src->prev_effects.total && i < prev_effects.total; i++)
-	{
-		if(strcmp(src->prev_effects.values[i], prev_effects.values[i])) return 0;
-	}
-	if(!params->equivalent(src->params)) return 0;
-	return 1;
-}
-
 void VFrame::calc_minmax8(unsigned char *buf, int len, 
 		unsigned int &avg, int &min, int &max)
 {
@@ -1245,20 +1133,4 @@ void VFrame::dump_file(const char *filename)
 		}
 		return;
 	}
-}
-
-void VFrame::dump_stacks(void)
-{
-	printf("VFrame::dump_stacks\n");
-	printf("        next_effects:\n");
-	for(int i = next_effects.total - 1; i >= 0; i--)
-		printf("                %s\n", next_effects.values[i]);
-	printf("        prev_effects:\n");
-	for(int i = prev_effects.total - 1; i >= 0; i--)
-		printf("                %s\n", prev_effects.values[i]);
-}
-
-void VFrame::dump_params(void)
-{
-	params->dump();
 }

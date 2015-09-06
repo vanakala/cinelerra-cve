@@ -139,9 +139,6 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 		if(use_opengl)
 			output_temp->set_opengl_state(VFrame::RAM);
 
-// Assume openGL is used for the final stage and let console
-// disable.
-		output_temp->clear_stacks();
 		output_temp->set_pts(input_postime + track->nudge);
 		node->render(output_temp,
 			use_opengl);

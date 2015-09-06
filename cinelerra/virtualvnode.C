@@ -202,8 +202,6 @@ void VirtualVNode::render_as_module(VFrame *video_out,
 			video_out,
 			output_temp);
 
-	output_temp->push_next_effect("VirtualVNode::render_as_module");
-
 // Process last subnode.  This propogates up the chain of subnodes and finishes
 // the chain.
 	if(subnodes.total)
@@ -218,8 +216,6 @@ void VirtualVNode::render_as_module(VFrame *video_out,
 		read_data(output_temp,
 			use_opengl);
 	}
-
-	output_temp->pop_next_effect();
 
 	render_fade(output_temp,
 			track->automation->autos[AUTOMATION_FADE]);
@@ -244,8 +240,6 @@ void VirtualVNode::render_as_module(VFrame *video_out,
 		render_projector(output_temp, video_out);
 	}
 	video_out->copy_pts(output_temp);
-
-	output_temp->push_prev_effect("VirtualVNode::render_as_module");
 }
 
 void VirtualVNode::render_fade(VFrame *output,

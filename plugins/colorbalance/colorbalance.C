@@ -457,24 +457,14 @@ void ColorBalanceMain::process_frame(VFrame *frame)
 		need_reconfigure = 0;
 	}
 
-	frame->get_params()->update("COLORBALANCE_PRESERVE", config.preserve);
-	frame->get_params()->update("COLORBALANCE_CYAN", calculate_transfer(config.cyan));
-	frame->get_params()->update("COLORBALANCE_MAGENTA", calculate_transfer(config.magenta));
-	frame->get_params()->update("COLORBALANCE_YELLOW", calculate_transfer(config.yellow));
-
 	get_frame(frame, get_use_opengl());
-	int aggregate_gamma = 0;
-	get_aggregation(&aggregate_gamma);
 
 	if(!EQUIV(config.cyan, 0) || 
 		!EQUIV(config.magenta, 0) || 
-		!EQUIV(config.yellow, 0) ||
-		(get_use_opengl() && aggregate_gamma))
+		!EQUIV(config.yellow, 0))
 	{
 		if(get_use_opengl())
 		{
-// Aggregate
-			if(next_effect_is("Histogram")) return;
 			run_opengl();
 			return;
 		}
@@ -552,14 +542,6 @@ void ColorBalanceMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void ColorBalanceMain::get_aggregation(int *aggregate_gamma)
-{
-	if(!strcmp(get_output()->get_prev_effect(0), "Gamma"))
-	{
-		*aggregate_gamma = 1;
-	}
-}
-
 void ColorBalanceMain::handle_opengl()
 {
 #ifdef HAVE_GL
@@ -570,16 +552,9 @@ void ColorBalanceMain::handle_opengl()
 	unsigned int shader = 0;
 	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
-	int aggregate_gamma = 0;
-
-	get_aggregation(&aggregate_gamma);
-
-	if(aggregate_gamma)
-		GAMMA_COMPILE(shader_stack, current_shader, 0)
 
 	COLORBALANCE_COMPILE(shader_stack, 
-		current_shader, 
-		aggregate_gamma)
+		current_shader, 0)
 
 	shader = VFrame::make_shader(0, 
 		shader_stack[0], 
@@ -596,8 +571,6 @@ void ColorBalanceMain::handle_opengl()
 	{
 		glUseProgram(shader);
 		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-
-		if(aggregate_gamma) GAMMA_UNIFORMS(shader);
 
 		COLORBALANCE_UNIFORMS(shader);
 

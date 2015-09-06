@@ -267,7 +267,7 @@ void FieldFrame::process_frame(VFrame *frame)
 {
 	load_configuration();
 
-	if(input && !input->equivalent(frame, 0))
+	if(input && !input->equivalent(frame))
 	{
 		delete input;
 		input = 0;

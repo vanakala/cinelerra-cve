@@ -461,8 +461,6 @@ int FileThread::read_frame(VFrame *frame)
 			0,
 			local_frame->get_w(),
 			frame->get_w());
-// Can't copy stacks because the stack is needed by the plugin requestor.
-		frame->copy_params(local_frame);
 		frame->copy_pts(local_frame);
 
 // Recycle all frames before current one but not including current one.

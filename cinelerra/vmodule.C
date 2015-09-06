@@ -223,7 +223,6 @@ int VModule::import_frame(VFrame *output,
 						get_edl()->session->color_model,
 						-1);
 				}
-				(*input)->copy_stacks(output);
 				(*input)->copy_pts(output);
 // file -> temp
 // Cache for single frame only
@@ -296,7 +295,6 @@ int VModule::import_frame(VFrame *output,
 						get_edl()->session->interpolation_type);
 				}
 				result = 1;
-				output->copy_stacks((*input));
 				output->copy_pts((*input));
 			}
 			else

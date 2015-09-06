@@ -158,10 +158,6 @@ public:
 	BC_Texture *src_texture;
 // Signal OpenGL handler a new frame was read.
 	int new_frame;
-// Reading frames at a different rate requires us to store the aggregation
-// state when the frame isn't read.
-	int aggregate_rgb601;
-	int rgb601_direction;
 };
 
 REGISTER_PLUGIN
@@ -249,8 +245,6 @@ FrameField::FrameField(PluginServer *server)
 	current_frame_pts = -1;
 	current_frame_duration = 0;
 	src_texture = 0;
-	aggregate_rgb601 = 0;
-	rgb601_direction = 0;
 	src_frame = 0;
 	src_texture = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
@@ -624,16 +618,6 @@ void FrameField::handle_opengl()
 			0,
 			get_output()->get_w(),
 			get_output()->get_h());
-
-// Store aggregation state only when reading a frame
-		if(prev_effect_is("RGB - 601") ||
-			next_effect_is("RGB - 601"))
-		{
-			aggregate_rgb601 = 1;
-			rgb601_direction = get_output()->get_params()->get("RGB601_DIRECTION", 0);
-		}
-		else
-			aggregate_rgb601 = 0;
 	}
 	else
 	{
@@ -662,26 +646,6 @@ void FrameField::handle_opengl()
 
 	const char *shaders[3] = { 0, 0, 0 };
 	shaders[0] = field_frag;
-
-// Aggregate with other effect
-	if(aggregate_rgb601)
-	{
-		if(rgb601_direction == 1)
-		{
-			if(cmodel_is_yuv(get_output()->get_color_model()))
-				shaders[1] = yuv_to_601_frag;
-			else
-				shaders[1] = rgb_to_601_frag;
-		}
-		else
-		if(rgb601_direction == 2)
-		{
-			if(cmodel_is_yuv(get_output()->get_color_model()))
-				shaders[1] = _601_to_yuv_frag;
-			else
-				shaders[1] = _601_to_rgb_frag;
-		}
-	}
 
 	frag = VFrame::make_shader(0, shaders[0], shaders[1], shaders[2], 0);
 

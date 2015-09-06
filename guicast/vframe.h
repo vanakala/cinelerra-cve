@@ -69,7 +69,7 @@ public:
 
 // Return 1 if the colormodel and dimensions are the same
 // Used by FrameCache
-	int equivalent(VFrame *src, int test_stacks = 0);
+	int equivalent(VFrame *src);
 
 // Reallocate a frame without deleting the class
 	void reallocate(unsigned char *data, 
@@ -283,45 +283,9 @@ public:
 	static unsigned int make_shader(int x, ...);
 	static void dump_shader(int shader_id);
 
-// Because OpenGL is faster if multiple effects are combined, we need
-// to provide ways for effects to aggregate.
-// The prev_effect is the object providing the data to read_frame.
-// The next_effect is the object which called read_frame.
-// Push and pop are only called from Cinelerra internals, so
-// if an object calls read_frame with a temporary, the stack before and after
-// the temporary is lost.
-	void push_prev_effect(const char *name);
-	void pop_prev_effect(void);
-	void push_next_effect(const char *name);
-	void pop_next_effect(void);
-// These are called by plugins to determine aggregation.
-// They access any member of the stack based on the number argument.
-// next effect 0 is the one that called read_frame most recently.
-// prev effect 0 is the one that filled our call to read_frame.
-	const char* get_next_effect(int number = 0);
-	const char* get_prev_effect(int number = 0);
-
-// It isn't enough to know the name of the neighboring effects.
-// Relevant configuration parameters must be passed on.
-	BC_Hash* get_params(void);
-
-// Compare stacks and params from 2 images and return 1 if equal.
-	int equal_stacks(VFrame *src);
-
-// Copy stacks and params from another frame
-// Replaces the stacks with the src stacks but only updates the params.
-	void copy_stacks(VFrame *src);
-// Updates the params with values from src
-	void copy_params(VFrame *src);
-
-// This clears the stacks and the param table
-	void clear_stacks(void);
-
 	void dump(int minmax = 0);
 // Dump bitmamps to named file
 	void dump_file(const char *filename);
-	void dump_stacks(void);
-	void dump_params(void);
 
 	static void calc_minmax8(unsigned char *buf, int len,
 		unsigned int &avg, int &min, int &max);
@@ -408,10 +372,6 @@ private:
 
 // Location of working image if OpenGL playback
 	int opengl_state;
-
-	ArrayList<char*> prev_effects;
-	ArrayList<char*> next_effects;
-	BC_Hash *params;
 };
 
 

@@ -477,9 +477,6 @@ void PluginServer::process_buffer(VFrame **frame,
 		client->abort_plugin(_("Plugins with old API are not supported"));
 	}
 
-	for(int i = 0; i < total_in_buffers; i++)
-		frame[i]->push_prev_effect(title);
-
 	vclient->age_temp();
 	use_opengl = 0;
 }
@@ -651,9 +648,6 @@ void PluginServer::get_vframe(VFrame *buffer,
 // If we're a Module, render in the module produces the data.
 	if(!multichannel) buffer->set_layer(0);
 
-// Push our name on the next effect stack
-	buffer->push_next_effect(title);
-
 	int channel = buffer->get_layer();
 
 	if(nodes->total > channel)
@@ -673,9 +667,6 @@ void PluginServer::get_vframe(VFrame *buffer,
 		errorbox("PluginServer::get_frame no object available for channel=%d",
 			channel);
 	}
-
-// Pop our name from the next effect stack
-	buffer->pop_next_effect();
 }
 
 void PluginServer::get_aframe(AFrame *aframe)

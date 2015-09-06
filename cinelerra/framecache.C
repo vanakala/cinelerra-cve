@@ -81,7 +81,6 @@ int FrameCache::get_frame(VFrame *frame,
 		if(result->data) 
 		{
 			frame->copy_from(result->data);
-			frame->copy_stacks(result->data);
 		}
 		result->age = get_age();
 	}
@@ -177,7 +176,7 @@ int FrameCache::frame_exists(VFrame *format,
 	while(item && item->postime <= postime && item->postime + item->duration > postime)
 	{
 		if(format->get_layer() == item->layer &&
-			format->equivalent(item->data, 1) &&
+			format->equivalent(item->data) &&
 			(asset_id == -1 || item->asset_id == -1 || asset_id == item->asset_id))
 		{
 			*item_return = item;

@@ -355,9 +355,6 @@ void GammaMain::process_frame(VFrame *frame)
 	this->frame = frame;
 	load_configuration();
 
-	frame->get_params()->update("GAMMA_GAMMA", config.gamma);
-	frame->get_params()->update("GAMMA_MAX", config.max);
-
 	int use_opengl = get_use_opengl() &&
 		!config.automatic && 
 		(!config.plot || !gui_open());
@@ -366,12 +363,6 @@ void GammaMain::process_frame(VFrame *frame)
 
 	if(use_opengl)
 	{
-// Aggregate
-		if(next_effect_is("Histogram"))
-			return;
-		if(next_effect_is("Color Balance"))
-			return;
-
 		run_opengl();
 		return;
 	}

@@ -705,47 +705,7 @@ void HistogramMain::handle_opengl()
 
 	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
-	int aggregate_gamma = 0;
-	int aggregate_colorbalance = 0;
-
-// All aggregation possibilities must be accounted for because unsupported
-// effects can get in between the aggregation members.
-	if(!strcmp(get_output()->get_prev_effect(1), "Gamma") &&
-		!strcmp(get_output()->get_prev_effect(0), "Color Balance"))
-	{
-		aggregate_gamma = 1;
-		aggregate_colorbalance = 1;
-	}
-	else
-	if(!strcmp(get_output()->get_prev_effect(1), "Gamma") &&
-		!strcmp(get_output()->get_prev_effect(0), "Color Balance"))
-	{
-		aggregate_gamma = 1;
-		aggregate_colorbalance = 1;
-	}
-	else
-	if(!strcmp(get_output()->get_prev_effect(0), "Gamma"))
-		aggregate_gamma = 1;
-	else
-	if(!strcmp(get_output()->get_prev_effect(0), "Color Balance"))
-		aggregate_colorbalance = 1;
-
-// The order of processing is fixed by this sequence
-	if(aggregate_gamma)
-		GAMMA_COMPILE(shader_stack, 
-			current_shader, 
-			0)
-
-	if(aggregate_colorbalance)
-		COLORBALANCE_COMPILE(shader_stack, 
-			current_shader, 
-			aggregate_gamma)
-
-
-	if(aggregate_gamma || aggregate_colorbalance)
-		shader_stack[current_shader++] = histogram_get_pixel1;
-	else
-		shader_stack[current_shader++] = histogram_get_pixel2;
+	shader_stack[current_shader++] = histogram_get_pixel2;
 
 	unsigned int shader = 0;
 	switch(get_output()->get_color_model())
@@ -827,8 +787,6 @@ void HistogramMain::handle_opengl()
 	{
 		glUseProgram(shader);
 		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-		if(aggregate_gamma) GAMMA_UNIFORMS(shader)
-		if(aggregate_colorbalance) COLORBALANCE_UNIFORMS(shader)
 		glUniform2fv(glGetUniformLocation(shader, "input_min_r"), 1, input_min_r);
 		glUniform2fv(glGetUniformLocation(shader, "input_min_g"), 1, input_min_g);
 		glUniform2fv(glGetUniformLocation(shader, "input_min_b"), 1, input_min_b);

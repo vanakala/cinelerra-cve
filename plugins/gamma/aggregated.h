@@ -95,8 +95,8 @@ static const char *gamma_yuv_frag =
 
 #define GAMMA_UNIFORMS(frag) \
 { \
-	float max = get_output()->get_params()->get("GAMMA_MAX", (float)1); \
-	float gamma = get_output()->get_params()->get("GAMMA_GAMMA", (float)1) - 1.0; \
+	float max = 1.0; \
+	float gamma = 0; \
 	float scale = 1.0 / max; \
 	glUniform1f(glGetUniformLocation(frag, "gamma_scale"), scale); \
 	glUniform1f(glGetUniformLocation(frag, "gamma_gamma"), gamma); \
