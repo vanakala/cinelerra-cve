@@ -25,7 +25,6 @@
 // Hash table with persistent storage in stringfiles.
 
 #include "bcwindowbase.inc"
-#include "stringfile.inc"
 #include "units.h"
 
 class BC_Hash
@@ -39,8 +38,6 @@ public:
 	void save();        // save to disk file
 	void load_string(char *string);        // load from string
 	void save_string(char* &string);       // save to new string
-	void save_stringfile(StringFile *file);
-	void load_stringfile(StringFile *file);
 	int update(const char *name, Freq value); // update a value if it exists
 	int update(const char *name, double value); // update a value if it exists
 	int update(const char *name, float value); // update a value if it exists

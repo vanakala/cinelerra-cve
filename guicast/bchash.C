@@ -24,7 +24,9 @@
 #include "bchash.h"
 #include "bcsignals.h"
 #include "filesystem.h"
-#include "stringfile.h"
+
+#define HASHLINE_LEN 2048
+#define BUFFER_LENGTH 4096
 
 BC_Hash::BC_Hash()
 {
@@ -65,6 +67,10 @@ void BC_Hash::reallocate_table(int new_total)
 	if(allocated < new_total)
 	{
 		int new_allocated = new_total * 2;
+
+		if(allocated < 1 && new_allocated < 8)
+			new_allocated = 8;
+
 		char **new_names = new char*[new_allocated];
 		char **new_values = new char*[new_allocated];
 
@@ -85,54 +91,97 @@ void BC_Hash::reallocate_table(int new_total)
 
 void BC_Hash::load()
 {
-	StringFile stringfile(filename);
-	load_stringfile(&stringfile);
-}
+	FILE *in;
+	char bufr[HASHLINE_LEN];
 
-void BC_Hash::load_stringfile(StringFile *file)
-{
-	char arg1[1024], arg2[1024];
-	total = 0;
-	while(file->get_pointer() < file->get_length())
+	if(in = fopen(filename, "r"))
 	{
-		file->readline(arg1, arg2);
-		reallocate_table(total + 1);
-		names[total] = new char[strlen(arg1) + 1];
-		values[total] = new char[strlen(arg2) + 1];
-		strcpy(names[total], arg1);
-		strcpy(values[total], arg2);
-		total++;
-	}
-}
+		while(fgets(bufr, HASHLINE_LEN, in))
+			load_string(bufr);
 
-void BC_Hash::save_stringfile(StringFile *file)
-{
-	for(int i = 0; i < total; i++)
-	{
-		file->writeline(names[i], values[i], 0);
+		fclose(in);
 	}
 }
 
 void BC_Hash::save()
 {
-	StringFile stringfile;
-	save_stringfile(&stringfile);
-	stringfile.write_to_file(filename);
+	FILE *out;
+
+	if(out = fopen(filename, "w"))
+	{
+		for(int i = 0; i < total; i++)
+			fprintf(out, "%s %s\n", names[i], values[i]);
+		fclose(out);
+	}
 }
 
 void BC_Hash::load_string(char *string)
 {
-	StringFile stringfile;
-	stringfile.read_from_string(string);
-	load_stringfile(&stringfile);
+	char *p, *q, *r;
+
+	r = string;
+	while(*r)
+	{
+		for(q = p = r; *p; p++)
+		{
+			if(*p == ' ')
+			{
+				*p++ = 0;
+				q = p;
+				break;
+			}
+		}
+		if(q == r)
+			return;
+
+		reallocate_table(total + 1);
+
+		names[total] = new char[p - r];
+		strcpy(names[total], r);
+		for(; *p; p++)
+		{
+			if(*p == '\n')
+			{
+				*p = 0;
+				break;
+			}
+		}
+		if(q == p)
+		{
+			values[total] = new char[1];
+			values[total][0] = 0;
+		}
+		else
+		{
+			values[total] = new char[p - q + 1];
+			strcpy(values[total], q);
+		}
+		r = ++p;
+		total++;
+	}
 }
 
 void BC_Hash::save_string(char* &string)
 {
-	StringFile stringfile;
-	save_stringfile(&stringfile);
-	string = new char[stringfile.get_length() + 1];
-	memcpy(string, stringfile.string, stringfile.get_length() + 1);
+	int alen;
+	char *bp;
+
+	alen = BUFFER_LENGTH;
+	bp = string = new char[alen];
+
+	for(int i = 0; i < total; i++)
+	{
+		if(bp - string > alen - strlen(names[i]) - strlen(values[i]) - 5)
+		{
+			alen += BUFFER_LENGTH;
+			char *p = new char[alen];
+			strcpy(p, string);
+			bp = &p[bp - string];
+			delete [] string;
+			string = p;
+		}
+		bp += sprintf(bp, "%s %s\n", names[i], values[i]);
+	}
 }
 
 int32_t BC_Hash::get(const char *name, int32_t default_value)
@@ -312,5 +361,5 @@ void BC_Hash::dump()
 {
 	printf("BC_Hash::dump\n");
 	for(int i = 0; i < total; i++)
-		printf("       key=%s value=%s\n", names[i], values[i]);
+		printf("       %s='%s'\n", names[i], values[i]);
 }
