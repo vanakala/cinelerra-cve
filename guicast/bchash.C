@@ -94,6 +94,7 @@ void BC_Hash::load()
 	FILE *in;
 	char bufr[HASHLINE_LEN];
 
+	total = 0;
 	if(in = fopen(filename, "r"))
 	{
 		while(fgets(bufr, HASHLINE_LEN, in))
