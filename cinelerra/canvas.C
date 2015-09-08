@@ -115,6 +115,23 @@ BC_WindowBase* Canvas::get_canvas()
 		return canvas_subwindow;
 }
 
+void Canvas::clear_canvas()
+{
+	BC_WindowBase *cur_canvas;
+
+	if(get_fullscreen() && canvas_fullscreen)
+		cur_canvas = canvas_fullscreen;
+	else
+		cur_canvas =  canvas_subwindow;
+
+	if(cur_canvas)
+	{
+		cur_canvas->set_color(BLACK);
+		cur_canvas->draw_box(0, 0, cur_canvas->get_w(), cur_canvas->get_h());
+		cur_canvas->flash();
+	}
+}
+
 // Get dimensions given a zoom
 void Canvas::calculate_sizes(float aspect_ratio, 
 	int output_w, 
@@ -528,17 +545,7 @@ void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 	if(canvas_subwindow)
 	{
 		canvas_subwindow->reposition_window(view_x, view_y, view_w, view_h);
-
-// Need to clear out the garbage in the back
-		if(canvas_subwindow->get_video_on())
-		{
-			canvas_subwindow->set_color(BLACK);
-			canvas_subwindow->draw_box(0, 
-				0, 
-				get_canvas()->get_w(), 
-				get_canvas()->get_h());
-			canvas_subwindow->flash();
-		}
+		clear_canvas();
 	}
 
 	draw_refresh();
@@ -670,6 +677,7 @@ SET_TRACE
 		}
 	}
 
+	clear_canvas();
 	if(!video_on) draw_refresh();
 	if(video_on) get_canvas()->start_video();
 	unlock_canvas();
