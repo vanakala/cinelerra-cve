@@ -55,9 +55,9 @@ VAutomation::VAutomation(EDL *edl, Track *track)
 		}
 }
 
-void VAutomation::get_projector(float *x,
-	float *y,
-	float *z,
+void VAutomation::get_projector(double *x,
+	double *y,
+	double *z,
 	ptstime position)
 {
 	FloatAuto *before, *after;
@@ -78,9 +78,9 @@ void VAutomation::get_projector(float *x,
 		after);
 }
 
-void VAutomation::get_camera(float *x,
-	float *y,
-	float *z,
+void VAutomation::get_camera(double *x,
+	double *y,
+	double *z,
 	ptstime position)
 {
 	FloatAuto *before, *after;

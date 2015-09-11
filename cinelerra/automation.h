@@ -77,14 +77,14 @@ public:
 		FileXML *file);
 
 // Get projector coordinates if this is video automation
-	virtual void get_projector(float *x, 
-		float *y, 
-		float *z, 
+	virtual void get_projector(double *x,
+		double *y,
+		double *z,
 		ptstime position) {};
 // Get camera coordinates if this is video automation
-	virtual void get_camera(float *x, 
-		float *y, 
-		float *z, 
+	virtual void get_camera(double *x,
+		double *y,
+		double *z,
 		ptstime position) {};
 
 // Returns the point to restart background rendering at.

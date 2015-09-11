@@ -118,7 +118,7 @@ public:
 	float x_offset, y_offset;
 // Cursor location during the last button press relative to output
 // and offset by scroll bars
-	float x_origin, y_origin;
+	double x_origin, y_origin;
 // Crop handle being dragged
 	int crop_handle;
 // If dragging crop translation
@@ -126,10 +126,10 @@ public:
 // Origin of crop handle during last button press
 	float crop_origin_x, crop_origin_y;
 // Origin of all 4 crop points during last button press
-	float crop_origin_x1, crop_origin_y1;
-	float crop_origin_x2, crop_origin_y2;
+	double crop_origin_x1, crop_origin_y1;
+	double crop_origin_x2, crop_origin_y2;
 
-	float ruler_origin_x, ruler_origin_y;
+	double ruler_origin_x, ruler_origin_y;
 	int ruler_handle;
 	int ruler_translate;
 
@@ -226,11 +226,11 @@ public:
 	CWindowCanvas(MWindow *mwindow, CWindowGUI *gui);
 
 	void status_event();
-	void zoom_resize_window(float percentage);
-	void update_zoom(int x, int y, float zoom);
+	void zoom_resize_window(double percentage);
+	void update_zoom(int x, int y, double zoom);
 	int get_xscroll();
 	int get_yscroll();
-	float get_zoom();
+	double get_zoom();
 	int do_eyedrop(int &rerender, int button_press);
 	int do_mask(int &redraw, 
 		int &rerender, 

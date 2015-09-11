@@ -31,15 +31,15 @@ class VAutomation : public Automation
 public:
 	VAutomation(EDL *edl, Track *track);
 
-	void get_projector(float *x, 
-		float *y, 
-		float *z, 
+	void get_projector(double *x,
+		double *y,
+		double *z,
 		ptstime position);
 
 // Get camera coordinates if this is video automation
-	void get_camera(float *x, 
-		float *y, 
-		float *z, 
+	void get_camera(double *x,
+		double *y,
+		double *z,
 		ptstime position);
 };
 

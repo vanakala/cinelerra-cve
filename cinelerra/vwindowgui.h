@@ -104,7 +104,7 @@ class VWindowCanvas : public Canvas
 public:
 	VWindowCanvas(MWindow *mwindow, VWindowGUI *gui);
 
-	void zoom_resize_window(float percentage);
+	void zoom_resize_window(double percentage);
 	void draw_refresh();
 	void draw_overlays();
 	void close_source();

@@ -136,12 +136,12 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	float &out_w, 
 	float &out_h)
 {
-	float auto_x, auto_y, auto_z;
-	float camera_z = 1;
-	float camera_x = asset->width / 2;
-	float camera_y = asset->height / 2;
+	double auto_x, auto_y, auto_z;
+	double camera_z = 1;
+	double camera_x = asset->width / 2;
+	double camera_y = asset->height / 2;
 // camera and output coords
-	float z[6], x[6], y[6];
+	double z[6], x[6], y[6];
 
 // get camera center in asset
 	automation->get_camera(&auto_x, 
@@ -153,10 +153,10 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	camera_y += auto_y;
 
 // get camera coords on asset
-	x[0] = camera_x - (float)track_w / 2 / camera_z;
-	y[0] = camera_y - (float)track_h / 2 / camera_z;
-	x[1] = x[0] + (float)track_w / camera_z;
-	y[1] = y[0] + (float)track_h / camera_z;
+	x[0] = camera_x - (double)track_w / 2 / camera_z;
+	y[0] = camera_y - (double)track_h / 2 / camera_z;
+	x[1] = x[0] + (double)track_w / camera_z;
+	y[1] = y[0] + (double)track_h / camera_z;
 
 // get asset coords on camera
 	x[2] = 0;
@@ -208,8 +208,8 @@ void VTrack::calculate_output_transfer(ptstime position,
 	float &out_w, 
 	float &out_h)
 {
-	float center_x, center_y, center_z;
-	float x[4], y[4];
+	double center_x, center_y, center_z;
+	double x[4], y[4];
 	x[0] = 0;
 	y[0] = 0;
 	x[1] = track_w;

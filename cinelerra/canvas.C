@@ -133,40 +133,40 @@ void Canvas::clear_canvas()
 }
 
 // Get dimensions given a zoom
-void Canvas::calculate_sizes(float aspect_ratio, 
+void Canvas::calculate_sizes(double aspect_ratio,
 	int output_w, 
 	int output_h, 
-	float zoom, 
+	double zoom,
 	int &w, 
 	int &h)
 {
 // Horizontal stretch
-	if((float)output_w / output_h <= aspect_ratio)
+	if((double)output_w / output_h <= aspect_ratio)
 	{
-		w = (int)((float)output_h * aspect_ratio * zoom);
-		h = (int)((float)output_h * zoom);
+		w = round((double)output_h * aspect_ratio * zoom);
+		h = round((double)output_h * zoom);
 	}
 	else
 // Vertical stretch
 	{
-		h = (int)((float)output_w / aspect_ratio * zoom);
-		w = (int)((float)output_w * zoom);
+		h = round((double)output_w / aspect_ratio * zoom);
+		w = round((double)output_w * zoom);
 	}
 }
 
-float Canvas::get_x_offset(EDL *edl, 
-	float zoom_x, 
-	float conformed_w,
-	float conformed_h)
+double Canvas::get_x_offset(EDL *edl,
+	double zoom_x,
+	double conformed_w,
+	double conformed_h)
 {
 	if(use_scrollbars)
 	{
 		if(xscroll) 
 		{
-			return (float)get_xscroll();
+			return get_xscroll();
 		}
 		else
-			return ((float)-get_canvas()->get_w() / zoom_x + 
+			return ((double)-get_canvas()->get_w() / zoom_x +
 				edl->session->output_w) / 2;
 	}
 	else
@@ -177,31 +177,30 @@ float Canvas::get_x_offset(EDL *edl,
 		out_w = canvas_w;
 		out_h = canvas_h;
 
-		if((float)out_w / out_h > conformed_w / conformed_h)
+		if((double)out_w / out_h > conformed_w / conformed_h)
 		{
-			out_w = (int)(out_h * conformed_w / conformed_h + 0.5);
+			out_w = round(out_h * conformed_w / conformed_h);
 		}
 
 		if(out_w < canvas_w)
 			return -(canvas_w - out_w) / 2 / zoom_x;
 	}
-
 	return 0;
 }
 
-float Canvas::get_y_offset(EDL *edl, 
-	float zoom_y, 
-	float conformed_w,
-	float conformed_h)
+double Canvas::get_y_offset(EDL *edl,
+	double zoom_y,
+	double conformed_w,
+	double conformed_h)
 {
 	if(use_scrollbars)
 	{
 		if(yscroll)
 		{
-			return (float)get_yscroll();
+			return get_yscroll();
 		}
 		else
-			return ((float)-get_canvas()->get_h() / zoom_y + 
+			return ((double)-get_canvas()->get_h() / zoom_y + 
 				edl->session->output_h) / 2;
 	}
 	else
@@ -212,13 +211,13 @@ float Canvas::get_y_offset(EDL *edl,
 		out_w = canvas_w;
 		out_h = canvas_h;
 
-		if((float)out_w / out_h <= conformed_w / conformed_h)
+		if((double)out_w / out_h <= conformed_w / conformed_h)
 		{
-			out_h = (int)((float)out_w / (conformed_w / conformed_h) + 0.5);
+			out_h = round(out_w / (conformed_w / conformed_h));
 		}
 
 		if(out_h < canvas_h)
-			return -((float)canvas_h - out_h) / 2 / zoom_y;
+			return -(canvas_h - out_h) / 2 / zoom_y;
 	}
 
 	return 0;
@@ -233,11 +232,11 @@ void Canvas::update_scrollbars()
 	}
 }
 
-void Canvas::get_zooms(EDL *edl, 
-	float &zoom_x, 
-	float &zoom_y,
-	float &conformed_w,
-	float &conformed_h)
+void Canvas::get_zooms(EDL *edl,
+	double &zoom_x,
+	double &zoom_y,
+	double &conformed_w,
+	double &conformed_h)
 {
 	edl->calculate_conformed_dimensions(conformed_w, conformed_h);
 
@@ -259,48 +258,48 @@ void Canvas::get_zooms(EDL *edl,
 		out_w = canvas_w;
 		out_h = canvas_h;
 
-		if((float)out_w / out_h > conformed_w / conformed_h)
+		if((double)out_w / out_h > conformed_w / conformed_h)
 		{
-			out_w = (int)((float)out_h * conformed_w / conformed_h + 0.5);
+			out_w = round(out_h * conformed_w / conformed_h);
 		}
 		else
 		{
-			out_h = (int)((float)out_w / (conformed_w / conformed_h) + 0.5);
+			out_h = round(out_w / (conformed_w / conformed_h));
 		}
 
-		zoom_x = (float)out_w / edl->session->output_w;
-		zoom_y = (float)out_h / edl->session->output_h;
+		zoom_x = (double)out_w / edl->session->output_w;
+		zoom_y = (double)out_h / edl->session->output_h;
 	}
 }
 
 // Convert a coordinate on the canvas to a coordinate on the output
-void Canvas::canvas_to_output(EDL *edl, float &x, float &y)
+void Canvas::canvas_to_output(EDL *edl, double &x, double &y)
 {
-	float zoom_x, zoom_y, conformed_w, conformed_h;
+	double zoom_x, zoom_y, conformed_w, conformed_h;
 	get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
 
-	x = (float)x / zoom_x + get_x_offset(edl, zoom_x, conformed_w, conformed_h);
-	y = (float)y / zoom_y + get_y_offset(edl, zoom_y, conformed_w, conformed_h);
+	x = x / zoom_x + get_x_offset(edl, zoom_x, conformed_w, conformed_h);
+	y = y / zoom_y + get_y_offset(edl, zoom_y, conformed_w, conformed_h);
 }
 
-void Canvas::output_to_canvas(EDL *edl, float &x, float &y)
+void Canvas::output_to_canvas(EDL *edl, double &x, double &y)
 {
-	float zoom_x, zoom_y, conformed_w, conformed_h;
+	double zoom_x, zoom_y, conformed_w, conformed_h;
 	get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
 
-	x = (float)zoom_x * (x - get_x_offset(edl, zoom_x, conformed_w, conformed_h));
-	y = (float)zoom_y * (y - get_y_offset(edl, zoom_y, conformed_w, conformed_h));
+	x = zoom_x * (x - get_x_offset(edl, zoom_x, conformed_w, conformed_h));
+	y = zoom_y * (y - get_y_offset(edl, zoom_y, conformed_w, conformed_h));
 }
 
 void Canvas::get_transfers(EDL *edl, 
-	float &output_x1, 
-	float &output_y1, 
-	float &output_x2, 
-	float &output_y2,
-	float &canvas_x1, 
-	float &canvas_y1, 
-	float &canvas_x2, 
-	float &canvas_y2,
+	double &output_x1,
+	double &output_y1,
+	double &output_x2,
+	double &output_y2,
+	double &canvas_x1,
+	double &canvas_y1,
+	double &canvas_x2,
+	double &canvas_y2,
 	int canvas_w,
 	int canvas_h)
 {
@@ -311,9 +310,9 @@ void Canvas::get_transfers(EDL *edl,
 // Canvas is zoomed to a portion of the output frame
 	if(use_scrollbars)
 	{
-		float in_x1, in_y1, in_x2, in_y2;
-		float out_x1, out_y1, out_x2, out_y2;
-		float zoom_x, zoom_y, conformed_w, conformed_h;
+		double in_x1, in_y1, in_x2, in_y2;
+		double out_x1, out_y1, out_x2, out_y2;
+		double zoom_x, zoom_y, conformed_w, conformed_h;
 
 		get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
 		out_x1 = 0;
@@ -376,16 +375,16 @@ void Canvas::get_transfers(EDL *edl,
 		if(edl)
 		{
 // Use EDL aspect ratio to shrink one of the canvas dimensions
-			float out_w = canvas_x2 - canvas_x1;
-			float out_h = canvas_y2 - canvas_y1;
+			double out_w = canvas_x2 - canvas_x1;
+			double out_h = canvas_y2 - canvas_y1;
 			if(out_w / out_h > edl->get_aspect_ratio())
 			{
-				out_w = (int)(out_h * edl->get_aspect_ratio() + 0.5);
+				out_w = out_h * edl->get_aspect_ratio();
 				canvas_x1 = canvas_w / 2 - out_w / 2;
 			}
 			else
 			{
-				out_h = (int)(out_w / edl->get_aspect_ratio() + 0.5);
+				out_h = out_w / edl->get_aspect_ratio();
 				canvas_y1 = canvas_h / 2 - out_h / 2;
 			}
 			canvas_x2 = canvas_x1 + out_w;
@@ -447,7 +446,7 @@ void Canvas::get_scrollbars(EDL *edl,
 {
 	int need_xscroll = 0;
 	int need_yscroll = 0;
-	float zoom_x, zoom_y, conformed_w, conformed_h;
+	double zoom_x, zoom_y, conformed_w, conformed_h;
 
 	if(edl)
 	{
@@ -463,9 +462,6 @@ void Canvas::get_scrollbars(EDL *edl,
 		h_needed = edl->session->output_h;
 		get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
 
-		w_visible = (int)(canvas_w / zoom_x);
-		h_visible = (int)(canvas_h / zoom_y);
-
 		if(!need_xscroll)
 		{
 			need_xscroll = 1;
@@ -478,8 +474,8 @@ void Canvas::get_scrollbars(EDL *edl,
 			canvas_w -= BC_ScrollBar::get_span(SCROLL_VERT);
 		}
 
-		w_visible = (int)(canvas_w / zoom_x);
-		h_visible = (int)(canvas_h / zoom_y);
+		w_visible = round(canvas_w / zoom_x);
+		h_visible = round(canvas_h / zoom_y);
 	}
 
 	if(need_xscroll)
@@ -497,7 +493,7 @@ void Canvas::get_scrollbars(EDL *edl,
 			xscroll->reposition_window(canvas_x, canvas_y + canvas_h, canvas_w);
 
 		if(xscroll->get_length() != w_needed ||
-			xscroll->get_handlelength() != w_visible)
+				xscroll->get_handlelength() != w_visible)
 			xscroll->update_length(w_needed, get_xscroll(), w_visible);
 	}
 	else
@@ -521,7 +517,7 @@ void Canvas::get_scrollbars(EDL *edl,
 			yscroll->reposition_window(canvas_x + canvas_w, canvas_y, canvas_h);
 
 		if(yscroll->get_length() != edl->session->output_h ||
-			yscroll->get_handlelength() != h_visible)
+				yscroll->get_handlelength() != h_visible)
 			yscroll->update_length(h_needed, get_yscroll(), h_visible);
 	}
 	else
@@ -917,7 +913,7 @@ int CanvasPopupAuto::handle_event()
 }
 
 
-CanvasPopupSize::CanvasPopupSize(Canvas *canvas, char *text, float percentage)
+CanvasPopupSize::CanvasPopupSize(Canvas *canvas, char *text, double percentage)
  : BC_MenuItem(text)
 {
 	this->canvas = canvas;

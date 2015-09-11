@@ -56,10 +56,10 @@ public:
 	virtual ~Canvas();
 
 // Get dimensions given a zoom
-	void calculate_sizes(float aspect_ratio, 
+	void calculate_sizes(double aspect_ratio,
 		int output_w, 
 		int output_h, 
-		float zoom, 
+		double zoom,
 		int &w, 
 		int &h);
 // Lock access to the canvas pointer.
@@ -91,7 +91,7 @@ public:
 
 	virtual void reset_camera() {};
 	virtual void reset_projector() {};
-	virtual void zoom_resize_window(float percentage) {};
+	virtual void zoom_resize_window(double percentage) {};
 	virtual void zoom_auto() {};
 	virtual int cursor_leave_event() { return 0; };
 	virtual int cursor_enter_event() { return 0; };
@@ -117,14 +117,14 @@ public:
 // and the corresponding output coordinates on the canvas.
 // Must be floating point to support OpenGL.
 	void get_transfers(EDL *edl, 
-		float &output_x1, 
-		float &output_y1, 
-		float &output_x2, 
-		float &output_y2,
-		float &canvas_x1, 
-		float &canvas_y1, 
-		float &canvas_x2, 
-		float &canvas_y2,
+		double &output_x1,
+		double &output_y1,
+		double &output_x2,
+		double &output_y2,
+		double &canvas_x1,
+		double &canvas_y1,
+		double &canvas_x2,
+		double &canvas_y2,
 // passing -1 causes automatic size detection
 		int canvas_w = -1,
 		int canvas_h = -1);
@@ -132,38 +132,37 @@ public:
 	virtual void reset_translation() {};
 	virtual void close_source() {};
 // Updates the stores
-	virtual void update_zoom(int x, int y, float zoom) {};
+	virtual void update_zoom(int x, int y, double zoom) {};
 	void update_scrollbars();
 // Get scrollbar positions relative to output.
 // No correction is done if output is smaller than canvas
 	virtual int get_xscroll() { return 0; };
 	virtual int get_yscroll() { return 0; };
-	virtual float get_zoom() { return 0; };
+	virtual double get_zoom() { return 0; };
 // Redraws the image
 	virtual void draw_refresh() {};
 
 // Get top left offset of canvas relative to output.
 // Normally negative.  Can be positive if output is smaller than canvas.
-	float get_x_offset(EDL *edl, 
-		float zoom_x, 
-		float conformed_w,
-		float conformed_h);
-	float get_y_offset(EDL *edl, 
-		float zoom_y, 
-		float conformed_w,
-		float conformed_h);
-	void get_zooms(EDL *edl, 
-		float &zoom_x, 
-		float &zoom_y,
-		float &conformed_w,
-		float &conformed_h);
-	
-	
+	double get_x_offset(EDL *edl,
+		double zoom_x,
+		double conformed_w,
+		double conformed_h);
+	double get_y_offset(EDL *edl,
+		double zoom_y,
+		double conformed_w,
+		double conformed_h);
+	void get_zooms(EDL *edl,
+		double &zoom_x,
+		double &zoom_y,
+		double &conformed_w,
+		double &conformed_h);
+
 // Convert coord from output to canvas position, including
 // x and y scroll offsets
-	void output_to_canvas(EDL *edl, float &x, float &y);
+	void output_to_canvas(EDL *edl, double &x, double &y);
 // Convert coord from canvas to output position
-	void canvas_to_output(EDL *edl, float &x, float &y);
+	void canvas_to_output(EDL *edl, double &x, double &y);
 
 // Get dimensions of frame being sent to canvas
 	virtual int get_output_w(EDL *edl);
@@ -318,11 +317,11 @@ public:
 class CanvasPopupSize : public BC_MenuItem
 {
 public:
-	CanvasPopupSize(Canvas *canvas, char *text, float percentage);
+	CanvasPopupSize(Canvas *canvas, char *text, double percentage);
 
 	int handle_event();
 	Canvas *canvas;
-	float percentage;
+	double percentage;
 };
 
 class CanvasPopupAuto : public BC_MenuItem

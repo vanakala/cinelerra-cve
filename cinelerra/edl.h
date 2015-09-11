@@ -182,7 +182,7 @@ public:
 	int get_tracks_height(Theme *theme);
 
 // Return dimensions for canvas if smaller dimensions has zoom of 1
-	void calculate_conformed_dimensions(float &w, float &h);
+	void calculate_conformed_dimensions(double &w, double &h);
 // Get the total output size scaled to aspect ratio
 	void output_dimensions_scaled(int &w, int &h);
 	float get_aspect_ratio();

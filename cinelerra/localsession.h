@@ -99,7 +99,7 @@ public:
 	int zoombar_showautotype;
 
 // Eye dropper
-	float red, green, blue;
+	double red, green, blue;
 
 // Range for CWindow and VWindow preview in seconds.
 	ptstime preview_start;

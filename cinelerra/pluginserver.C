@@ -848,12 +848,22 @@ KeyFrame* PluginServer::get_keyframe()
 
 void PluginServer::get_camera(float *x, float *y, float *z, ptstime postime)
 {
-	plugin->track->automation->get_camera(x, y, z, postime);
+	double dx, dy, dz;
+
+	plugin->track->automation->get_camera(&dx, &dy, &dz, postime);
+	*x = dx;
+	*y = dy;
+	*z = dz;
 }
 
 void PluginServer::get_projector(float *x, float *y, float *z, ptstime postime)
 {
-	plugin->track->automation->get_projector(x, y, z, postime);
+	double dx, dy, dz;
+
+	plugin->track->automation->get_projector(&dx, &dy, &dz, postime);
+	*x = dx;
+	*y = dy;
+	*z = dz;
 }
 
 int PluginServer::get_interpolation_type()

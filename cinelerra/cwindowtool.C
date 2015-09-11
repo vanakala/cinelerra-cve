@@ -464,12 +464,12 @@ CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
 
 void CWindowEyedropGUI::update()
 {
-	red->update(mwindow->edl->local_session->red);
-	green->update(mwindow->edl->local_session->green);
-	blue->update(mwindow->edl->local_session->blue);
-	int r = (int)(CLIP(mwindow->edl->local_session->red, 0, 1) * 0xff);
-	int g = (int)(CLIP(mwindow->edl->local_session->green, 0, 1) * 0xff);
-	int b = (int)(CLIP(mwindow->edl->local_session->blue, 0, 1) * 0xff);
+	red->update((float)mwindow->edl->local_session->red);
+	green->update((float)mwindow->edl->local_session->green);
+	blue->update((float)mwindow->edl->local_session->blue);
+	int r = round(CLIP(mwindow->edl->local_session->red, 0, 1) * 0xff);
+	int g = round(CLIP(mwindow->edl->local_session->green, 0, 1) * 0xff);
+	int b = round(CLIP(mwindow->edl->local_session->blue, 0, 1) * 0xff);
 	sample->set_color((r << 16) | (g << 8) | b);
 	sample->draw_box(0, 0, sample->get_w(), sample->get_h());
 	sample->set_color(BLACK);
