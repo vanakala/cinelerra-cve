@@ -184,7 +184,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	cwindow_scrollbars = defaults->get("CWINDOW_SCROLLBARS", 0);
 	cwindow_xscroll = defaults->get("CWINDOW_XSCROLL", 0);
 	cwindow_yscroll = defaults->get("CWINDOW_YSCROLL", 0);
-	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (float)1);
+	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (double)1);
 	sprintf(default_atransition, "Crossfade");
 	defaults->get("DEFAULT_ATRANSITION", default_atransition);
 	sprintf(default_vtransition, "Dissolve");

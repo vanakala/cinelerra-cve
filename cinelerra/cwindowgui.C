@@ -595,7 +595,7 @@ CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y,
 	const char *first_item_text)
  : ZoomPanel(mwindow, 
 	gui, 
-	(double)mwindow->edl->session->cwindow_zoom, 
+	mwindow->edl->session->cwindow_zoom,
 	x, 
 	y,
 	80, 

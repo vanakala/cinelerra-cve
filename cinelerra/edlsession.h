@@ -118,7 +118,7 @@ public:
 // Scrollbar positions
 	int cwindow_xscroll;
 	int cwindow_yscroll;
-	float cwindow_zoom;
+	double cwindow_zoom;
 // Transition
 	char default_atransition[BCTEXTLEN];
 	char default_vtransition[BCTEXTLEN];
