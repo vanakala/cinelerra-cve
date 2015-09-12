@@ -125,6 +125,13 @@ void BC_Title::update(int value)
 	update(string);
 }
 
+void BC_Title::update(double value)
+{
+	char string[BCTEXTLEN];
+	sprintf(string, "%.04f", value);
+	update(string);
+}
+
 char* BC_Title::get_text()
 {
 	return text;

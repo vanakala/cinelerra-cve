@@ -53,6 +53,7 @@ public:
 	void reposition(int x, int y);
 	void set_color(int color);
 	void update(const char *text);
+	void update(double value);
 	void update(float value);
 	void update(int value);
 	char* get_text();
