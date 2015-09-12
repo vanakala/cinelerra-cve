@@ -780,7 +780,7 @@ void EDL::calculate_conformed_dimensions(double &w, double &h)
 	}
 }
 
-float EDL::get_aspect_ratio()
+double EDL::get_aspect_ratio()
 {
 	return session->aspect_w / session->aspect_h;
 }

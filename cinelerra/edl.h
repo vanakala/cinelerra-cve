@@ -185,7 +185,7 @@ public:
 	void calculate_conformed_dimensions(double &w, double &h);
 // Get the total output size scaled to aspect ratio
 	void output_dimensions_scaled(int &w, int &h);
-	float get_aspect_ratio();
+	double get_aspect_ratio();
 
 // Clips
 	ArrayList<EDL*> clips;
