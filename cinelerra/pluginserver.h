@@ -102,9 +102,9 @@ public:
 	KeyFrame* next_keyframe_pts(ptstime postime);
 	KeyFrame* first_keyframe();
 // get camera and projector positions
-	void get_camera(float *x, float *y, float *z,
+	void get_camera(double *x, double *y, double *z,
 			ptstime postime);
-	void get_projector(float *x, float *y, float *z,
+	void get_projector(double *x, double *y, double *z,
 			ptstime postime);
 // Get interpolation used by EDL
 	int get_interpolation_type();

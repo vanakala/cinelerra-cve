@@ -254,12 +254,12 @@ KeyFrame* PluginClient::first_keyframe()
 	return server->first_keyframe();
 }
 
-void PluginClient::get_camera(float *x, float *y, float *z, ptstime postime)
+void PluginClient::get_camera(double *x, double *y, double *z, ptstime postime)
 {
 	server->get_camera(x, y, z, postime);
 }
 
-void PluginClient::get_projector(float *x, float *y, float *z, ptstime postime)
+void PluginClient::get_projector(double *x, double *y, double *z, ptstime postime)
 {
 	server->get_projector(x, y, z, postime);
 }

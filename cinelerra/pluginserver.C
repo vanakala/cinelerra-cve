@@ -846,24 +846,14 @@ KeyFrame* PluginServer::get_keyframe()
 		return keyframe;
 }
 
-void PluginServer::get_camera(float *x, float *y, float *z, ptstime postime)
+void PluginServer::get_camera(double *x, double *y, double *z, ptstime postime)
 {
-	double dx, dy, dz;
-
-	plugin->track->automation->get_camera(&dx, &dy, &dz, postime);
-	*x = dx;
-	*y = dy;
-	*z = dz;
+	plugin->track->automation->get_camera(x, y, z, postime);
 }
 
-void PluginServer::get_projector(float *x, float *y, float *z, ptstime postime)
+void PluginServer::get_projector(double *x, double *y, double *z, ptstime postime)
 {
-	double dx, dy, dz;
-
-	plugin->track->automation->get_projector(&dx, &dy, &dz, postime);
-	*x = dx;
-	*y = dy;
-	*z = dz;
+	plugin->track->automation->get_projector(x, y, z, postime);
 }
 
 int PluginServer::get_interpolation_type()

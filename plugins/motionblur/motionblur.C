@@ -302,7 +302,7 @@ void MotionBlurMain::delete_tables()
 
 void MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-	float xa,ya,za,xb,yb,zb,xd,yd,zd;
+	double xa,ya,za,xb,yb,zb,xd,yd,zd;
 	ptstime frame_pts = input_ptr->get_pts();
 
 	if (frame_pts < EPSILON)
