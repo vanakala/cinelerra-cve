@@ -521,7 +521,6 @@ void HueEffect::process_frame(VFrame *frame)
 void HueEffect::load_defaults()
 {
 	defaults = load_defaults_file("huesaturation.rc");
-	defaults->load();
 	config.hue = defaults->get("HUE", config.hue);
 	config.saturation = defaults->get("SATURATION", config.saturation);
 	config.value = defaults->get("VALUE", config.value);

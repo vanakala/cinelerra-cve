@@ -370,7 +370,6 @@ void RadialBlurMain::process_frame(VFrame *frame)
 void RadialBlurMain::load_defaults()
 {
 	defaults = load_defaults_file("radialblur.rc");
-	defaults->load();
 
 	config.x = defaults->get("X", config.x);
 	config.y = defaults->get("Y", config.y);

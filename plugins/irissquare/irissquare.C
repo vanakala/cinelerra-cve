@@ -118,7 +118,6 @@ PLUGIN_CLASS_METHODS
 void IrisSquareMain::load_defaults()
 {
 	defaults = load_defaults_file("irissquare.rc");
-	defaults->load();
 
 	direction = defaults->get("DIRECTION", direction);
 }
