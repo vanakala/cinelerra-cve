@@ -83,11 +83,8 @@ public:
 // Don't call from inside the canvas
 	void create_canvas();
 
-
-
 // Processing or video playback changed.
 	virtual void status_event() {};
-
 
 	virtual void reset_camera() {};
 	virtual void reset_projector() {};
@@ -108,8 +105,6 @@ public:
 	int cursor_enter_event_base(BC_WindowBase *caller);
 	int button_press_event_base(BC_WindowBase *caller);
 	int keypress_event(BC_WindowBase *caller);
-
-
 
 // Provide canvas dimensions since a BC_Bitmap containing obsolete dimensions
 // is often the output being transferred to.
@@ -276,6 +271,7 @@ public:
 	EDL *edl;
 };
 
+
 class CanvasYScroll : public BC_ScrollBar
 {
 public:
@@ -294,11 +290,13 @@ public:
 	EDL *edl;
 };
 
+
 class CanvasFullScreenPopup : public BC_PopupMenu
 {
 public:
 	CanvasFullScreenPopup(Canvas *canvas);
 };
+
 
 class CanvasSubWindowItem : public BC_MenuItem
 {
@@ -309,11 +307,13 @@ public:
 	Canvas *canvas;
 };
 
+
 class CanvasPopup : public BC_PopupMenu
 {
 public:
 	CanvasPopup(Canvas *canvas);
 };
+
 
 class CanvasPopupSize : public BC_MenuItem
 {
@@ -325,6 +325,7 @@ public:
 	double percentage;
 };
 
+
 class CanvasPopupAuto : public BC_MenuItem
 {
 public:
@@ -332,6 +333,7 @@ public:
 	int handle_event();
 	Canvas *canvas;
 };
+
 
 class CanvasPopupResetCamera : public BC_MenuItem
 {
@@ -341,6 +343,7 @@ public:
 	Canvas *canvas;
 };
 
+
 class CanvasPopupResetProjector : public BC_MenuItem
 {
 public:
@@ -348,6 +351,7 @@ public:
 	int handle_event();
 	Canvas *canvas;
 };
+
 
 class CanvasToggleControls : public BC_MenuItem
 {
@@ -358,6 +362,7 @@ public:
 	Canvas *canvas;
 };
 
+
 class CanvasFullScreenItem : public BC_MenuItem
 {
 public:
@@ -365,6 +370,7 @@ public:
 	int handle_event();
 	Canvas *canvas;
 };
+
 
 class CanvasPopupResetTranslation : public BC_MenuItem
 {
