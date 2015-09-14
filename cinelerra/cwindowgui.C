@@ -767,9 +767,10 @@ double CWindowCanvas::get_zoom()
 
 void CWindowCanvas::draw_refresh()
 {
-	if(get_canvas() && !get_canvas()->get_video_on())
+	if(!get_canvas()->get_video_on())
 	{
 		lock_canvas("CWindowCanvas::draw_refresh");
+		clear_canvas();
 		if(refresh_frame)
 		{
 			double in_x1, in_y1, in_x2, in_y2;
@@ -783,11 +784,6 @@ void CWindowCanvas::draw_refresh()
 				out_y1, 
 				out_x2, 
 				out_y2);
-
-			get_canvas()->clear_box(0, 
-				0, 
-				get_canvas()->get_w(), 
-				get_canvas()->get_h());
 
 			if(out_x2 > out_x1 && 
 				out_y2 > out_y1 && 
