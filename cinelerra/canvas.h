@@ -216,6 +216,7 @@ public:
 	int root_h;
 
 	MWindow *mwindow;
+	EDL *edl;
 
 private:
 	void get_scrollbars(EDL *edl, 

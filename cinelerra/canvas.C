@@ -58,12 +58,13 @@ Canvas::Canvas(MWindow *mwindow,
 	if(y < 10) y = 10;
 	this->mwindow = mwindow;
 	this->subwindow = subwindow;
-	view_x = this->x = x;
-	view_y = this->y = y;
-	view_w = this->w = w;
-	view_h = this->h = h;
+	this->x = x;
+	this->y = y;
+	this->w = w;
+	this->h = h;
 	this->output_w = output_w;
 	this->output_h = output_h;
+	this->edl = edl;
 	this->use_scrollbars = use_scrollbars;
 	this->use_cwindow = use_cwindow;
 	this->use_rwindow = use_rwindow;
@@ -71,10 +72,6 @@ Canvas::Canvas(MWindow *mwindow,
 	this->root_w = subwindow->get_root_w(0, 0);
 	this->root_h = subwindow->get_root_h(0);
 	canvas_lock = new Mutex("Canvas::canvas_lock", 1);
-
-	get_scrollbars(edl, view_x, view_y, view_w, view_h);
-
-	create_canvas();
 
 	subwindow->add_subwindow(canvas_menu = new CanvasPopup(this));
 
@@ -109,6 +106,15 @@ int Canvas::is_locked()
 
 BC_WindowBase* Canvas::get_canvas()
 {
+	if(!canvas_subwindow && !canvas_fullscreen)
+	{
+		view_x = x;
+		view_y = y;
+		view_w = w;
+		view_h = h;
+		get_scrollbars(edl, view_x, view_y, view_w, view_h);
+		create_canvas();
+	}
 	if(get_fullscreen() && canvas_fullscreen) 
 		return canvas_fullscreen;
 	else
@@ -117,19 +123,11 @@ BC_WindowBase* Canvas::get_canvas()
 
 void Canvas::clear_canvas()
 {
-	BC_WindowBase *cur_canvas;
+	BC_WindowBase *cur_canvas = get_canvas();
 
-	if(get_fullscreen() && canvas_fullscreen)
-		cur_canvas = canvas_fullscreen;
-	else
-		cur_canvas =  canvas_subwindow;
-
-	if(cur_canvas)
-	{
-		cur_canvas->set_color(BLACK);
-		cur_canvas->draw_box(0, 0, cur_canvas->get_w(), cur_canvas->get_h());
-		cur_canvas->flash();
-	}
+	cur_canvas->set_color(BLACK);
+	cur_canvas->draw_box(0, 0, cur_canvas->get_w(), cur_canvas->get_h());
+	cur_canvas->flash();
 }
 
 // Get dimensions given a zoom
