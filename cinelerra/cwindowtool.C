@@ -843,7 +843,7 @@ int CWindowCPRight::handle_event()
 		}
 		else
 		{
-			x_auto->set_value(((double)track->track_w * z_auto->get_value() / 2 -
+			x_auto->set_value(-((double)track->track_w * z_auto->get_value() / 2 -
 				(double)mwindow->edl->session->output_w / 2));
 			do_update = 1;
 		}
@@ -899,14 +899,14 @@ int CWindowCPTop::handle_event()
 			{
 				y_auto->set_value((double)track->track_h /
 					z_auto->get_value() / 2 - (double)h / 2);
-				gui->update();
-				gui->update_preview();
+				do_update = 1;
 			}
 		}
 		else
 		{
 			y_auto->set_value((double)track->track_h * z_auto->get_value() / 2 -
 				(double)mwindow->edl->session->output_h / 2);
+			do_update = 1;
 		}
 
 		if(do_update)
