@@ -22,8 +22,6 @@
 #ifndef BRENDER_H
 #define BRENDER_H
 
-
-
 // The master node of the background renderer needs a separate memory space 
 // because few of the codecs are reentrant.
 
@@ -176,6 +174,5 @@ public:
 
 	int done;
 };
-
 
 #endif

@@ -52,7 +52,7 @@ extern "C"
 
 
 BRender::BRender(MWindow *mwindow)
- : Thread()
+ : Thread(THREAD_SYNCHRONOUS)
 {
 	this->mwindow = mwindow;
 	map_lock = new Mutex("BRender::map_lock");
@@ -63,7 +63,6 @@ BRender::BRender(MWindow *mwindow)
 	master_pid = -1;
 	arguments[0] = arguments[1] = arguments[2] = 0;
 	map_valid = 0;
-	set_synchronous(1);
 }
 
 BRender::~BRender()
@@ -73,7 +72,6 @@ BRender::~BRender()
 		stop();
 		delete thread;
 	}
-
 
 	if(master_pid >= 0)
 	{
@@ -120,7 +118,7 @@ void BRender::run()
 	if(fd)
 	{
 		if(fread(string, 1, BCTEXTLEN, fd) <= 0)
-			perror("BRender::fork_background: can't read /proc/self/cmdline.\n");
+			perror(_("BRender::fork_background: can't read /proc/self/cmdline.\n"));
 		fclose(fd);
 	}
 	else
@@ -243,16 +241,12 @@ void BRenderCommand::copy_from(BRenderCommand *src)
 	this->command = src->command;
 }
 
-
 void BRenderCommand::copy_edl(EDL *edl)
 {
 	this->edl = new EDL;
 	this->edl->copy_all(edl);
 	this->position = 0;
 }
-
-
-
 
 
 BRenderThread::BRenderThread(MWindow *mwindow, BRender *brender)
@@ -283,7 +277,6 @@ BRenderThread::~BRenderThread()
 	if(command_queue) delete command_queue;
 	if(preferences) delete preferences;
 }
-
 
 void BRenderThread::initialize()
 {
