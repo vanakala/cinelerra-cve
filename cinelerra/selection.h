@@ -79,6 +79,7 @@ public:
 // option == 1 - textbox is bright, but not modifable
 	void disable(int option = 0);
 	void enable(int option = 0);
+	void reposition_window(int x, int y);
 	virtual int handle_event();
 	void delete_subwindows();
 	virtual void update_auto(double value1, double value2) {};

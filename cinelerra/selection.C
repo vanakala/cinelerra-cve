@@ -468,6 +468,12 @@ void Selection::enable(int option)
 		BC_TextBox::disable(option);
 }
 
+void Selection::reposition_window(int x, int y)
+{
+	BC_TextBox::reposition_window(x, y);
+	button->reposition_window(x + get_w(), y);
+}
+
 int Selection::handle_event()
 {
 	if(intvalue)
