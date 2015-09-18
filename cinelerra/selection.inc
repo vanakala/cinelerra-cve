@@ -25,8 +25,13 @@
 #define SELECTION_TB_WIDTH 90
 
 // Bits, lower 16 bits are in use by varitems
+// Calculate the width of textbox
 #define SELECTION_VARWIDTH  0x10000
-#define SELECTION_VARITEMS  0x20000
+// Show only items with respective bit set
+// Item values are bits
+#define SELECTION_VARBITITEMS  0x20000
+// Item values are numbers 0..15
+#define SELECTION_VARNUMITEMS  0x40000
 
 class Selection;
 class SampleRateSelection;

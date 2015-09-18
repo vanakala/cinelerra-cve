@@ -282,11 +282,20 @@ Selection::Selection(int x, int y, BC_WindowBase *base,
 	popupmenu = init_objects(x, y, base);
 	intvalue = value;
 
-	if(options & SELECTION_VARITEMS)
+	if(options & SELECTION_VARBITITEMS)
 	{
 		for(int i = 0; items[i].text; i++)
 		{
 			if(items[i].value & options)
+				popupmenu->add_item(new SelectionItem(&items[i], this));
+		}
+	}
+	else
+	if(options & SELECTION_VARNUMITEMS)
+	{
+		for(int i = 0; items[i].text; i++)
+		{
+			if((1 << items[i].value) & options)
 				popupmenu->add_item(new SelectionItem(&items[i], this));
 		}
 	}
@@ -319,11 +328,20 @@ Selection::Selection(int x, int y, BC_WindowBase *base,
 	popupmenu = init_objects(x, y, base);
 	intvalue = value;
 
-	if(options & SELECTION_VARITEMS)
+	if(options & SELECTION_VARBITITEMS)
 	{
 		for(int i = 0; items[i].text; i++)
 		{
 			if(items[i].value1 & options)
+				popupmenu->add_item(new SelectionItem(&items[i], 0, this));
+		}
+	}
+	else
+	if(options & SELECTION_VARNUMITEMS)
+	{
+		for(int i = 0; items[i].text; i++)
+		{
+			if((1 << items[i].value1) & options)
 				popupmenu->add_item(new SelectionItem(&items[i], 0, this));
 		}
 	}
@@ -634,7 +652,7 @@ int SelectionLeftBox::handle_event()
 }
 
 SampleBitsSelection::SampleBitsSelection(int x, int y, BC_WindowBase *base, int *value, int bits)
- : Selection(x, y , base, sample_bits, value, bits | SELECTION_VARITEMS | SELECTION_VARWIDTH)
+ : Selection(x, y , base, sample_bits, value, bits | SELECTION_VARBITITEMS | SELECTION_VARWIDTH)
 {
 	disable(1);
 }
