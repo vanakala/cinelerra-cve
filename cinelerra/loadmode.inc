@@ -23,6 +23,7 @@
 #define LOADMODE_INC
 
 class LoadMode;
+class InsertionModeSelection;
 
 // Load modes for loading files, importing recordings, importing effects
 #define LOADMODE_NOTHING 0
@@ -32,5 +33,8 @@ class LoadMode;
 #define LOADMODE_CONCATENATE 4
 #define LOADMODE_PASTE 5
 #define LOADMODE_RESOURCESONLY 6
+
+#define LOADMODE_MASK_ALL   0x7f
+#define LOADMODE_MASK_NONO  0x7e
 
 #endif

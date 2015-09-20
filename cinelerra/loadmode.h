@@ -25,56 +25,32 @@
 #include "guicast.h"
 #include "loadmode.inc"
 #include "mwindow.inc"
-
-class LoadModeListBox;
-
-class LoadModeItem : public BC_ListBoxItem
-{
-public:
-	LoadModeItem(char *text, int value);
-	int value;
-};
+#include "selection.h"
 
 class LoadMode
 {
 public:
-	LoadMode(MWindow *mwindow,
-		BC_WindowBase *window, 
+	LoadMode(BC_WindowBase *window,
 		int x, 
 		int y, 
 		int *output,
 		int use_nothing);
-	~LoadMode();
 
 	void reposition_window(int x, int y);
-	static int calculate_h(BC_WindowBase *gui);
-	int get_h();
-	int get_x();
-	int get_y();
-
-	const char* mode_to_text();
-
 	BC_Title *title;
-	BC_TextBox *textbox;
-	LoadModeListBox *listbox;
-	MWindow *mwindow;
-	BC_WindowBase *window;
-	int x;
-	int y;
-	int *output;
-	int use_nothing;
-	ArrayList<LoadModeItem*> load_modes;
+	InsertionModeSelection *modeselection;
 };
 
-class LoadModeListBox : public BC_ListBox
+class InsertionModeSelection : public Selection
 {
 public:
-	LoadModeListBox(BC_WindowBase *window, LoadMode *loadmode, int x, int y);
+	InsertionModeSelection(int x, int y,
+		BC_WindowBase *base, int *value, int optmask);
 
-	int handle_event();
-
-	BC_WindowBase *window;
-	LoadMode *loadmode;
+	void update(int value);
+	static const char* mode_to_text(int mode);
+private:
+	static const struct selection_int insertion_modes[];
 };
 
 #endif

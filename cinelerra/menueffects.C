@@ -531,8 +531,7 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 					0,
 					&menueffects->strategy);
 
-	loadmode = new LoadMode(mwindow, 
-		this, 
+	loadmode = new LoadMode(this,
 		x, 
 		y, 
 		&menueffects->load_mode, 

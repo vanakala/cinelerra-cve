@@ -158,7 +158,7 @@ LoadFileWindow::LoadFileWindow(MWindow *mwindow,
 	this->thread = thread;
 	this->mwindow = mwindow; 
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
-	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
+	loadmode = new LoadMode(this, x, y, &thread->load_mode, 0);
 }
 
 LoadFileWindow::~LoadFileWindow() 

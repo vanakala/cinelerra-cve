@@ -2,6 +2,7 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2015 Einar Rünkaru <einarrunkaru at gmail dot com>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,129 +20,69 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "clip.h"
 #include "loadmode.h"
 #include "mwindow.h"
+#include "selection.h"
 #include "theme.h"
 #include "language.h"
 
-
-LoadModeItem::LoadModeItem(char *text, int value)
- : BC_ListBoxItem(text)
+const struct selection_int InsertionModeSelection::insertion_modes[] =
 {
-	this->value = value;
-}
+	{ N_("Insert nothing"), LOADMODE_NOTHING },
+	{ N_("Replace current project"), LOADMODE_REPLACE },
+	{ N_("Replace current project and concatenate tracks"), LOADMODE_REPLACE_CONCATENATE },
+	{ N_("Append in new tracks"), LOADMODE_NEW_TRACKS },
+	{ N_("Concatenate to existing tracks"), LOADMODE_CONCATENATE },
+	{ N_("Paste at insertion point"), LOADMODE_CONCATENATE },
+	{ N_("Create new resources only"), LOADMODE_RESOURCESONLY },
+	{ 0, 0 }
+};
+
+#define NUM_INSMODES (sizeof(InsertionModeSelection::insertion_modes) / sizeof(struct selection_int) - 1)
 
 
-LoadMode::LoadMode(MWindow *mwindow,
-	BC_WindowBase *window, 
+LoadMode::LoadMode(BC_WindowBase *window,
 	int x, 
 	int y, 
 	int *output, 
 	int use_nothing)
 {
-	this->mwindow = mwindow;
-	this->window = window;
-	this->x = x;
-	this->y = y;
-	this->output = output;
-	this->use_nothing = use_nothing;
-	if(use_nothing) load_modes.append(new LoadModeItem(_("Insert nothing"), LOADMODE_NOTHING));
-	load_modes.append(new LoadModeItem(_("Replace current project"), LOADMODE_REPLACE));
-	load_modes.append(new LoadModeItem(_("Replace current project and concatenate tracks"), LOADMODE_REPLACE_CONCATENATE));
-	load_modes.append(new LoadModeItem(_("Append in new tracks"), LOADMODE_NEW_TRACKS));
-	load_modes.append(new LoadModeItem(_("Concatenate to existing tracks"), LOADMODE_CONCATENATE));
-	load_modes.append(new LoadModeItem(_("Paste at insertion point"), LOADMODE_PASTE));
-	load_modes.append(new LoadModeItem(_("Create new resources only"), LOADMODE_RESOURCESONLY));
-
 	window->add_subwindow(title = new BC_Title(x, y, _("Insertion strategy:")));
 	y += 20;
-	window->add_subwindow(textbox = new BC_TextBox(x,
-		y,
-		mwindow->theme->loadmode_w,
-		1,
-		mode_to_text()));
-	x += textbox->get_w();
-	window->add_subwindow(listbox = new LoadModeListBox(window, this, x, y));
-}
-
-LoadMode::~LoadMode()
-{
-	delete title;
-	delete textbox;
-	delete listbox;
-	for(int i = 0; i < load_modes.total; i++)
-		delete load_modes.values[i];
-}
-
-int LoadMode::calculate_h(BC_WindowBase *gui)
-{
-	return BC_TextBox::calculate_h(gui, MEDIUMFONT, 1, 1);
-}
-
-const char* LoadMode::mode_to_text()
-{
-	for(int i = 0; i < load_modes.total; i++)
-	{
-		if(load_modes.values[i]->value == *output) 
-			return load_modes.values[i]->get_text();
-	}
-	return _("Unknown");
-}
-
-int LoadMode::get_h()
-{
-	int result = 0;
-	result = MAX(result, title->get_h());
-	result = MAX(result, textbox->get_h());
-	return result;
-}
-
-int LoadMode::get_x()
-{
-	return x;
-}
-
-int LoadMode::get_y()
-{
-	return y;
+	window->add_subwindow(modeselection = new InsertionModeSelection(x, y,
+		window, output,
+		use_nothing ? LOADMODE_MASK_ALL : LOADMODE_MASK_NONO));
+	modeselection->update(*output);
 }
 
 void LoadMode::reposition_window(int x, int y)
 {
-	this->x = x;
-	this->y = y;
 	title->reposition_window(x, y);
 	y += 20;
-	textbox->reposition_window(x, y);
-	x += textbox->get_w();
-	listbox->reposition_window(x, 
-		y, 
-		mwindow->theme->loadmode_w);
+	modeselection->reposition_window(x, y);
 }
 
-
-LoadModeListBox::LoadModeListBox(BC_WindowBase *window, 
-	LoadMode *loadmode, 
-	int x, 
-	int y)
- : BC_ListBox(x,
-	y,
-	loadmode->mwindow->theme->loadmode_w,
-	150,
-	(ArrayList<BC_ListBoxItem *>*)&loadmode->load_modes,
-	LISTBOX_POPUP)
+InsertionModeSelection::InsertionModeSelection(int x, int y,
+	BC_WindowBase *base, int *value, int optmask)
+ : Selection(x, y , base, insertion_modes, value,
+	SELECTION_VARWIDTH | SELECTION_VARNUMITEMS | optmask)
 {
-	this->window = window;
-	this->loadmode = loadmode;
+	disable(1);
 }
 
-int LoadModeListBox::handle_event()
+void InsertionModeSelection::update(int value)
 {
-	if(get_selection(0, 0) >= 0)
+	BC_TextBox::update(mode_to_text(value));
+}
+
+const char* InsertionModeSelection::mode_to_text(int mode)
+{
+	for(int i = 0; i < NUM_INSMODES; i++)
 	{
-		loadmode->textbox->update(get_selection(0, 0)->get_text());
-		*(loadmode->output) = ((LoadModeItem*)get_selection(0, 0))->value;
+		if(insertion_modes[i].value == mode)
+			return _(insertion_modes[i].text);
 	}
-	return 1;
+	return _("Unknown");
 }
