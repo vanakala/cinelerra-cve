@@ -52,14 +52,14 @@ const struct selection_int SampleRateSelection::sample_rates[] =
 
 const struct selection_2int SampleBitsSelection::sample_bits[] =
 {
-	{ "8 Bit Linear", SBITS_LINEAR8, 8 },
-	{ "16 Bit Linear", SBITS_LINEAR16, 16 },
-	{ "24 Bit Linear", SBITS_LINEAR24, 24 },
-	{ "32 Bit Linear", SBITS_LINEAR32, 32 },
-	{ "u Law", SBITS_ULAW, SBITS_ULAW },
-	{ "IMA 4", SBITS_IMA4, SBITS_IMA4 },
-	{ "ADPCM", SBITS_ADPCM, SBITS_ADPCM },
-	{ "Float", SBITS_FLOAT, SBITS_FLOAT },
+	{ N_("8 Bit Linear"), SBITS_LINEAR8, 8 },
+	{ N_("16 Bit Linear"), SBITS_LINEAR16, 16 },
+	{ N_("24 Bit Linear"), SBITS_LINEAR24, 24 },
+	{ N_("32 Bit Linear"), SBITS_LINEAR32, 32 },
+	{ N_("u Law"), SBITS_ULAW, SBITS_ULAW },
+	{ N_("IMA 4"), SBITS_IMA4, SBITS_IMA4 },
+	{ N_("ADPCM"), SBITS_ADPCM, SBITS_ADPCM },
+	{ N_("Float"), SBITS_FLOAT, SBITS_FLOAT },
 	{ 0, 0, 0 }
 };
 
@@ -273,7 +273,7 @@ Selection::Selection(int x, int y, BC_WindowBase *base,
 	{
 		for(int i = 0; items[i].text; i++)
 		{
-			int w = base->get_text_width(MEDIUMFONT, items[i].text);
+			int w = base->get_text_width(MEDIUMFONT, _(items[i].text));
 			if(w > mxw)
 				mxw = w;
 		}
@@ -319,7 +319,7 @@ Selection::Selection(int x, int y, BC_WindowBase *base,
 	{
 		for(int i = 0; items[i].text; i++)
 		{
-			int w = base->get_text_width(MEDIUMFONT, items[i].text);
+			int w = base->get_text_width(MEDIUMFONT, _(items[i].text));
 			if(w > mxw)
 				mxw = w;
 		}
@@ -545,7 +545,7 @@ int SelectionButton::handle_event()
 
 
 SelectionItem::SelectionItem(const struct selection_int *item, Selection *output)
- : BC_MenuItem(item->text)
+ : BC_MenuItem(_(item->text))
 {
 	this->output = output;
 	intitem = item;
@@ -555,7 +555,7 @@ SelectionItem::SelectionItem(const struct selection_int *item, Selection *output
 }
 
 SelectionItem::SelectionItem(const struct selection_double *item, Selection *output)
- : BC_MenuItem(item->text)
+ : BC_MenuItem(_(item->text))
 {
 	this->output = output;
 	intitem = 0;
@@ -566,7 +566,7 @@ SelectionItem::SelectionItem(const struct selection_double *item, Selection *out
 
 SelectionItem::SelectionItem(const struct selection_2int *item,
 	BC_TextBox *output2, Selection *output1)
- : BC_MenuItem(item->text)
+ : BC_MenuItem(_(item->text))
 {
 	this->output = output1;
 	this->output2 = output2;
@@ -578,7 +578,7 @@ SelectionItem::SelectionItem(const struct selection_2int *item,
 
 SelectionItem::SelectionItem(const struct selection_2double *item,
 	BC_TextBox *output2, Selection *output1)
- : BC_MenuItem(item->text)
+ : BC_MenuItem(_(item->text))
 {
 	this->output = output1;
 	this->output2 = output2;
@@ -592,12 +592,12 @@ int SelectionItem::handle_event()
 {
 	if(intitem)
 	{
-		output->update(intitem->text);
+		output->update(_(intitem->text));
 		output->current_int = intitem;
 	}
 	if(doubleitem)
 	{
-		output->update(doubleitem->text);
+		output->update(_(doubleitem->text));
 		output->current_double = doubleitem;
 	}
 	if(int2item)
