@@ -25,7 +25,6 @@
 #include "asset.inc"
 #include "browsebutton.h"
 #include "datatype.h"
-#include "formatpopup.h"
 #include "formattools.h"
 #include "loadmode.inc"
 #include "mainmenu.inc"

@@ -42,7 +42,6 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "formatcheck.h"
-#include "formatpopup.h"
 #include "formattools.h"
 #include "labels.h"
 #include "language.h"

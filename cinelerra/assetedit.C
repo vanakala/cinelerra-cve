@@ -660,20 +660,6 @@ AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow,
 	this->fwindow = fwindow; 
 }
 
-
-AssetEditFormat::AssetEditFormat(AssetEditWindow *fwindow, char* default_, int y)
- : FormatPopup(90, y)
-{ 
-	this->fwindow = fwindow; 
-}
-
-int AssetEditFormat::handle_event()
-{
-	fwindow->asset->format = File::strtoformat(fwindow->mwindow->plugindb, get_selection(0, 0)->get_text());
-	return 1;
-}
-
-
 AssetEditReelName::AssetEditReelName(AssetEditWindow *fwindow, int x, int y)
  : BC_TextBox(x, y, 200, 1, fwindow->asset->reel_name, 1, MEDIUMFONT, 1)
 {

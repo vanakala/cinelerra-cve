@@ -31,7 +31,6 @@
 #include "bchash.inc"
 #include "edit.inc"
 #include "file.inc"
-#include "formatpopup.inc"
 #include "formattools.inc"
 #include "guicast.h"
 #include "loadmode.inc"

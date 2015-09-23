@@ -26,8 +26,8 @@
 #include "guicast.h"
 #include "browsebutton.h"
 #include "file.inc"
-#include "formatpopup.h"
 #include "mwindow.inc"
+#include "selection.h"
 #include "pluginserver.inc"
 
 class FormatAParams;
@@ -37,10 +37,11 @@ class FormatVThread;
 class FormatChannels;
 class FormatPathButton;
 class FormatPathText;
-class FormatFormat;
 class FormatAudio;
 class FormatVideo;
 class FormatMultiple;
+class FormatPopup;
+class ContainerSelection;
 
 class FormatTools
 {
@@ -81,6 +82,7 @@ public:
 	void set_audio_options();
 	void set_video_options();
 	int get_w();
+	void format_changed();
 
 	BC_WindowBase *window;
 	Asset *asset;
@@ -93,8 +95,7 @@ public:
 	FormatPathText *path_textbox;
 	BC_RecentList *path_recent;
 	BC_Title *format_title;
-	FormatFormat *format_button;
-	BC_TextBox *format_text;
+	FormatPopup *format_popup;
 	BC_ITumbler *channels_tumbler;
 
 	BC_Title *audio_title;
@@ -127,17 +128,6 @@ class FormatPathText : public BC_TextBox
 {
 public:
 	FormatPathText(int x, int y, FormatTools *format);
-
-	int handle_event();
-
-	FormatTools *format;
-};
-
-
-class FormatFormat : public FormatPopup
-{
-public:
-	FormatFormat(int x, int y, FormatTools *format);
 
 	int handle_event();
 
@@ -239,6 +229,43 @@ public:
 
 	int *output;
 	MWindow *mwindow;
+};
+
+
+class FormatPopup
+{
+public:
+	FormatPopup(BC_WindowBase *parent, int x, int y,
+		int *output, FormatTools *tools, int use_brender);
+	~FormatPopup();
+
+	int get_h();
+	void update(int value);
+	void reposition_window(int x, int y);
+
+private:
+	ContainerSelection *selection;
+	static int brender_menu[];
+	static int frender_menu[];
+	struct selection_int *current_menu;
+};
+
+
+class ContainerSelection : public Selection
+{
+public:
+	ContainerSelection(int x, int y, BC_WindowBase *base,
+		selection_int *menu, int *value, FormatTools *tools);
+
+	void update(int value);
+	const char *format_to_text(int format);
+	int handle_event();
+	static const struct selection_int *get_item(int value);
+	static const char *container_to_text(int format);
+
+private:
+	FormatTools *tools;
+	static const struct selection_int media_containers[];
 };
 
 #endif

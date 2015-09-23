@@ -28,11 +28,51 @@
 #include "mwindow.h"
 #include "preferences.h"
 #include "quicktime.h"
+#include "selection.h"
 #include "theme.h"
 #include "videodevice.inc"
 #include <string.h>
 #include "pipe.h"
 
+const struct selection_int ContainerSelection::media_containers[] =
+{
+	{ N_("AC3"), FILE_AC3 },
+	{ N_("Apple/SGI AIFF"), FILE_AIFF },
+	{ N_("Sun/NeXT AU"), FILE_AU },
+	{ N_("JPEG"), FILE_JPEG },
+	{ N_("JPEG Sequence"), FILE_JPEG_LIST },
+	{ N_("Microsoft AVI"), FILE_AVI },
+	{ N_("EXR"), FILE_EXR },
+	{ N_("EXR Sequence"), FILE_EXR_LIST },
+	{ N_("YUV4MPEG Stream"), FILE_YUV },
+	{ N_("Microsoft WAV"), FILE_WAV },
+	{ N_("Quicktime for Linux"), FILE_MOV },
+	{ N_("Raw DV"), FILE_RAWDV },
+	{ N_("MPEG Audio"), FILE_AMPEG },
+	{ N_("MPEG Video"), FILE_VMPEG },
+	{ N_("OGG Theora/Vorbis"), FILE_OGG },
+	{ N_("Raw PCM"), FILE_PCM },
+	{ N_("PNG"), FILE_PNG },
+	{ N_("PNG Sequence"), FILE_PNG_LIST },
+	{ N_("TGA"), FILE_TGA },
+	{ N_("TGA Sequence"), FILE_TGA_LIST },
+	{ N_("TIFF"), FILE_TIFF },
+	{ N_("TIFF Sequence"), FILE_TIFF_LIST },
+	{ N_("MPEG"), FILE_MPEG },
+	{ N_("Unknown sound"), FILE_SND },
+	{ 0, 0 }
+};
+
+#define NUM_MEDIA_CONTANERS (sizeof(ContainerSelection::media_containers) / sizeof(struct selection_int) - 1)
+
+int FormatPopup::brender_menu[] = { FILE_JPEG_LIST, FILE_PNG_LIST, FILE_TIFF_LIST };
+int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU, FILE_JPEG,
+	FILE_JPEG_LIST, FILE_AVI, FILE_EXR, FILE_EXR_LIST,
+	FILE_YUV, FILE_WAV, FILE_MOV, FILE_RAWDV,
+	FILE_AMPEG, FILE_VMPEG, FILE_OGG, FILE_PCM,
+	FILE_PNG, FILE_PNG_LIST, FILE_TGA, FILE_TGA_LIST,
+	FILE_TIFF, FILE_TIFF_LIST
+};
 
 FormatTools::FormatTools(MWindow *mwindow,
 			BC_WindowBase *window,
@@ -130,17 +170,10 @@ FormatTools::FormatTools(MWindow *mwindow,
 
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
-	window->add_subwindow(format_text = new BC_TextBox(x, 
-		y, 
-		200, 
-		1, 
-		File::formattostr(asset->format)));
-	x += format_text->get_w();
-	window->add_subwindow(format_button = new FormatFormat(x, 
-		y, 
-		this));
+
+	format_popup = new FormatPopup(window, x, y, &asset->format, this, use_brender);
 	x = init_x;
-	y += format_button->get_h() + 10;
+	y += format_popup->get_h() + 10;
 	if(do_audio)
 	{
 		window->add_subwindow(audio_title = new BC_Title(x, y, _("Audio:"), LARGEFONT,  BC_WindowBase::get_resources()->audiovideo_color));
@@ -201,7 +234,7 @@ FormatTools::~FormatTools()
 	delete path_recent;
 	delete path_button;
 	delete path_textbox;
-	delete format_button;
+	delete format_popup;
 
 	if(aparams_button) delete aparams_button;
 	if(vparams_button) delete vparams_button;
@@ -281,10 +314,7 @@ void FormatTools::update_driver(int driver)
 // stored but don't change the asset.
 // Want to be able to revert to user settings.
 		if(asset->format != FILE_MPEG)
-		{
-			format_text->update(_("MPEG transport stream"));
-			asset->format = FILE_MPEG;
-		}
+			format_popup->update(asset->format = FILE_MPEG);
 		locked_compressor = 0;
 		audio_switch->update(1);
 		video_switch->update(1);
@@ -292,20 +322,17 @@ void FormatTools::update_driver(int driver)
 
 	case VIDEO4LINUX2JPEG:
 		if(asset->format != FILE_AVI &&
-			asset->format != FILE_MOV)
-		{
-			format_text->update(MOV_NAME);
-			asset->format = FILE_MOV;
-		}
+				asset->format != FILE_MOV)
+			format_popup->update(asset->format = FILE_MOV);
 		else
-			format_text->update(File::formattostr(asset->format));
+			format_popup->update(asset->format);
 		locked_compressor = QUICKTIME_MJPA;
 		audio_switch->update(asset->audio_data);
 		video_switch->update(asset->video_data);
 		break;
 
 	default:
-		format_text->update(File::formattostr(asset->format));
+		format_popup->update(asset->format);
 		locked_compressor = 0;
 		audio_switch->update(asset->audio_data);
 		video_switch->update(asset->video_data);
@@ -351,7 +378,7 @@ void FormatTools::update(Asset *asset, int *strategy)
 
 	if(path_textbox) 
 		path_textbox->update(asset->path);
-	format_text->update(File::formattostr(plugindb, asset->format));
+	format_popup->update(asset->format);
 	if(do_audio && audio_switch) audio_switch->update(asset->audio_data);
 	if(do_video && video_switch) video_switch->update(asset->video_data);
 	if(strategy)
@@ -388,12 +415,10 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 
 	format_title->reposition_window(x, y);
 	x += 90;
-	format_text->reposition_window(x, y);
-	x += format_text->get_w();
-	format_button->reposition_window(x, y);
+	format_popup->reposition_window(x, y);
 
 	x = init_x;
-	y += format_button->get_h() + 10;
+	y += format_popup->get_h() + 10;
 
 	if(do_audio)
 	{
@@ -466,6 +491,14 @@ void FormatTools::set_video_options()
 		vparams_thread->file->raise_window();
 }
 
+void FormatTools::format_changed()
+{
+	update_extension();
+	close_format_windows();
+	if(path_recent)
+		path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
+	enable_supported();
+}
 
 FormatAParams::FormatAParams(MWindow *mwindow, FormatTools *format, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("wrench"))
@@ -575,37 +608,6 @@ int FormatVideo::handle_event()
 }
 
 
-FormatFormat::FormatFormat(int x, 
-	int y, 
-	FormatTools *format)
- : FormatPopup(x,
-	y,
-	format->use_brender)
-{ 
-	this->format = format; 
-}
-
-int FormatFormat::handle_event()
-{
-	if(get_selection(0, 0) >= 0)
-	{
-		int new_format = File::strtoformat(format->plugindb, get_selection(0, 0)->get_text());
-		if(new_format != format->asset->format)
-		{
-			format->asset->format = new_format;
-			format->format_text->update(get_selection(0, 0)->get_text());
-			format->update_extension();
-			format->close_format_windows();
-			if (format->path_recent)
-				format->path_recent->load_items
-					(FILE_FORMAT_PREFIX(format->asset->format));
-			format->enable_supported();
-		}
-	}
-	return 1;
-}
-
-
 FormatChannels::FormatChannels(int x, int y, FormatTools *format)
  : BC_TextBox(x, y, 100, 1, format->asset->channels) 
 { 
@@ -669,4 +671,100 @@ void FormatMultiple::update(int *output)
 		set_value(1);
 	else
 		set_value(0);
+}
+
+
+FormatPopup::FormatPopup(BC_WindowBase *parent,
+	int x,
+	int y,
+	int *output,
+	FormatTools *tools,
+	int use_brender)
+{
+	int *menu;
+	int length;
+
+	if(use_brender)
+	{
+		menu = brender_menu;
+		length = sizeof(brender_menu) / sizeof(int);
+	}
+	else
+	{
+		menu = frender_menu;
+		length = sizeof(frender_menu) / sizeof(int);
+	}
+	current_menu = new struct selection_int[length + 1];
+
+	for(int i = 0; i < length; i++)
+		current_menu[i] = *ContainerSelection::get_item(menu[i]);
+	current_menu[length].text = 0;
+
+	parent->add_subwindow(selection = new ContainerSelection(x, y, parent,
+		current_menu, output, tools));
+	selection->update(*output);
+}
+
+FormatPopup::~FormatPopup()
+{
+	delete [] current_menu;
+}
+
+int FormatPopup::get_h()
+{
+	return selection->get_h();
+}
+
+void FormatPopup::update(int value)
+{
+	selection->update(value);
+}
+
+void FormatPopup::reposition_window(int x, int y)
+{
+	selection->reposition_window(x, y);
+}
+
+
+ContainerSelection::ContainerSelection(int x, int y, BC_WindowBase *base,
+	selection_int *menu, int *value, FormatTools *tools)
+ : Selection(x, y , base, menu, value, SELECTION_VARWIDTH)
+{
+	disable(1);
+	this->tools = tools;
+}
+
+void ContainerSelection::update(int value)
+{
+	BC_TextBox::update(container_to_text(value));
+}
+
+int ContainerSelection::handle_event()
+{
+	if(current_int && current_int->value != *intvalue)
+	{
+		*intvalue = current_int->value;
+		tools->format_changed();
+	}
+	return 1;
+}
+
+const char *ContainerSelection::container_to_text(int format)
+{
+	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	{
+		if(media_containers[i].value == format)
+			return _(media_containers[i].text);
+	}
+	return _("Unknown");
+}
+
+const struct selection_int *ContainerSelection::get_item(int format)
+{
+	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	{
+		if(media_containers[i].value == format)
+			return &media_containers[i];
+	}
+	return 0;
 }

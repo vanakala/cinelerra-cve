@@ -26,7 +26,6 @@
 #include "awindow.inc"
 #include "guicast.h"
 #include "browsebutton.h"
-#include "formatpopup.h"
 #include "formatpresets.h"
 #include "language.h"
 #include "mwindow.h"
@@ -98,17 +97,6 @@ class AssetEditPathText : public BC_TextBox
 {
 public:
 	AssetEditPathText(AssetEditWindow *fwindow, int y);
-
-	int handle_event();
-
-	AssetEditWindow *fwindow;
-};
-
-
-class AssetEditFormat : public FormatPopup
-{
-public:
-	AssetEditFormat(AssetEditWindow *fwindow, char* default_, int y);
 
 	int handle_event();
 
