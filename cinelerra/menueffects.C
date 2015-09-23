@@ -527,8 +527,6 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 					asset->audio_data ? SUPPORTS_AUDIO : 0 | asset->video_data ? SUPPORTS_VIDEO : 0,
 					0,
 					SUPPORTS_VIDEO,
-					0,
-					0,
 					&menueffects->strategy);
 
 	loadmode = new LoadMode(this,

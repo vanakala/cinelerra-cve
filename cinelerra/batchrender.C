@@ -630,8 +630,6 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 					SUPPORTS_AUDIO|SUPPORTS_VIDEO,
 					SUPPORTS_AUDIO|SUPPORTS_VIDEO,
 					SUPPORTS_VIDEO,
-					0,
-					0,
 					&thread->get_current_job()->strategy);
 
 	x2 = x;
@@ -870,11 +868,9 @@ BatchFormat::BatchFormat(MWindow *mwindow,
 			int support,
 			int checkbox,
 			int details,
-			const char *locked_compressor,
-			int recording,
 			int *strategy)
  : FormatTools(mwindow, gui, asset, init_x, init_y, support, checkbox, details,
-	locked_compressor, recording, strategy)
+	strategy)
 {
 	this->gui = gui;
 	this->mwindow = mwindow;

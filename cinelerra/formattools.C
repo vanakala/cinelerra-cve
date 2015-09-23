@@ -82,8 +82,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 			int support,
 			int checkbox,
 			int details,
-			const char *locked_compressor,
-			int recording,
 			int *strategy,
 			int brender,
 			int horizontal_layout)
@@ -95,8 +93,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->window = window;
 	this->asset = asset;
-	this->plugindb = mwindow->plugindb;
-
 	aparams_button = 0;
 	vparams_button = 0;
 	aparams_thread = 0;
@@ -108,9 +104,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 	path_button = 0;
 	path_recent = 0;
 	w = 0;
-
-	this->locked_compressor = locked_compressor;
-	this->recording = recording;
 	this->use_brender = brender;
 	this->do_audio = support & SUPPORTS_AUDIO;
 	this->do_video = support & SUPPORTS_VIDEO;
@@ -138,35 +131,31 @@ FormatTools::FormatTools(MWindow *mwindow,
 				*strategy = SINGLE_PASS;
 		}
 	}
-	if(!recording)
-	{
-		window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
-		x += 305;
-		path_recent = new BC_RecentList("PATH", mwindow->defaults,
-					path_textbox, 10, x, y, 300, 100);
-		window->add_subwindow(path_recent);
-		path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
 
-		x += 18;
-		window->add_subwindow(path_button = new BrowseButton(
-			mwindow,
-			window,
-			path_textbox, 
-			x, 
-			y, 
-			asset->path,
-			_("Output to file"),
-			_("Select a file to write to:"),
-			0));
+	window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
+	x += 305;
+	path_recent = new BC_RecentList("PATH", mwindow->defaults,
+		path_textbox, 10, x, y, 300, 100);
+	window->add_subwindow(path_recent);
+	path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
+
+	x += 18;
+	window->add_subwindow(path_button = new BrowseButton(
+		mwindow,
+		window,
+		path_textbox,
+		x,
+		y,
+		asset->path,
+		_("Output to file"),
+		_("Select a file to write to:"),
+		0));
 
 // Set w for user.
-		w = x + path_button->get_w() + 5;
-		x -= 305;
+	w = x + path_button->get_w() + 5;
+	x -= 305;
 
-		y += 35;
-	}
-	else
-		w = x + 305;
+	y += 35;
 
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
@@ -301,44 +290,6 @@ void FormatTools::enable_supported()
 			}
 		}
 	}
-}
-
-void FormatTools::update_driver(int driver)
-{
-	this->video_driver = driver;
-
-	switch(driver)
-	{
-	case CAPTURE_DVB:
-// Just give the user information about how the stream is going to be
-// stored but don't change the asset.
-// Want to be able to revert to user settings.
-		if(asset->format != FILE_MPEG)
-			format_popup->update(asset->format = FILE_MPEG);
-		locked_compressor = 0;
-		audio_switch->update(1);
-		video_switch->update(1);
-		break;
-
-	case VIDEO4LINUX2JPEG:
-		if(asset->format != FILE_AVI &&
-				asset->format != FILE_MOV)
-			format_popup->update(asset->format = FILE_MOV);
-		else
-			format_popup->update(asset->format);
-		locked_compressor = QUICKTIME_MJPA;
-		audio_switch->update(asset->audio_data);
-		video_switch->update(asset->video_data);
-		break;
-
-	default:
-		format_popup->update(asset->format);
-		locked_compressor = 0;
-		audio_switch->update(asset->audio_data);
-		video_switch->update(asset->video_data);
-		break;
-	}
-	close_format_windows();
 }
 
 Asset* FormatTools::get_asset()
@@ -581,7 +532,7 @@ FormatAudio::FormatAudio(int x, int y, FormatTools *format, int default_)
  : BC_CheckBox(x, 
 	y, 
 	default_, 
-	(char*)(format->recording ? _("Record audio tracks") : _("Render audio tracks")))
+	_("Render audio tracks"))
 { 
 	this->format = format; 
 }
@@ -597,7 +548,7 @@ FormatVideo::FormatVideo(int x, int y, FormatTools *format, int default_)
  : BC_CheckBox(x, 
 	y,
 	default_, 
-	(char*)(format->recording ? _("Record video tracks") : _("Render video tracks")))
+	_("Render video tracks"))
 {
 	this->format = format; 
 }

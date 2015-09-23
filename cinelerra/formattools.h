@@ -54,8 +54,6 @@ public:
 			int support,
 			int checkbox,
 			int details,
-			const char *locked_compressor,
-			int recording,
 			int *strategy,
 			int brender = 0,
 			int horizontal_layout = 0);
@@ -63,10 +61,6 @@ public:
 
 // enable/disable supported streams
 	void enable_supported();
-
-// In recording preferences, aspects of the format are locked 
-// depending on the driver used.
-	void update_driver(int driver);
 
 	void reposition_window(int &init_x, int &init_y);
 // Put new asset's parameters in and change asset.
@@ -107,11 +101,7 @@ public:
 	FormatVideo *video_switch;
 
 	FormatMultiple *multiple_files;
-
-	ArrayList<PluginServer*> *plugindb;
 	MWindow *mwindow;
-	const char *locked_compressor;
-	int recording;
 	int use_brender;
 	int do_audio;
 	int do_video;
@@ -119,8 +109,6 @@ public:
 	int details;
 	int *strategy;
 	int w;
-// Determines what the configuration buttons do.
-	int video_driver;
 };
 
 

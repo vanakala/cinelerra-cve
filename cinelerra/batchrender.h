@@ -266,8 +266,6 @@ public:
 			int support,
 			int checkbox,
 			int details,
-			const char *locked_compressor,
-			int recording,
 			int *strategy);
 
 	int handle_event();

@@ -128,8 +128,6 @@ void PerformancePrefs::show()
 		SUPPORTS_VIDEO,     // Include tools for video
 		0,
 		SUPPORTS_VIDEO,
-		0,
-		0,  // Prompt for recording options
 		0,  // If nonzero, prompt for insertion strategy
 		1); // Supply file formats for background rendering
 	x = xmargin1;

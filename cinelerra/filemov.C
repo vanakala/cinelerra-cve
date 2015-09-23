@@ -101,8 +101,7 @@ FileMOV::~FileMOV()
 void FileMOV::get_parameters(BC_WindowBase *parent_window, 
 	Asset *asset, 
 	BC_WindowBase* &format_window,
-	int options,
-	const char *locked_compressor)
+	int options)
 {
 	fix_codecs(asset);
 	if(options & SUPPORTS_AUDIO)
@@ -116,8 +115,7 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 	if(options & SUPPORTS_VIDEO)
 	{
 		MOVConfigVideo *window = new MOVConfigVideo(parent_window, 
-			asset, 
-			locked_compressor);
+			asset);
 		format_window = window;
 		window->run_window();
 		delete window;
@@ -1344,8 +1342,7 @@ int MOVConfigAudioPopup::handle_event()
 
 
 MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window, 
-	Asset *asset, 
-	const char *locked_compressor)
+	Asset *asset)
  : BC_Window("Video Compression - " PROGRAM_NAME,
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
@@ -1355,7 +1352,6 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 	int x = 10, y = 10;
 	set_icon(theme_global->get_image("mwindow_icon"));
 	this->asset = asset;
-	this->locked_compressor = locked_compressor;
 	compression_popup = 0;
 
 	reset();
@@ -1397,19 +1393,8 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 	add_subwindow(new BC_Title(x, y, _("Compression:")));
 	y += 25;
 
-	if(!locked_compressor)
-	{
-		compression_popup = new MOVConfigVideoPopup(this, x, y);
-	}
-	else
-	{
-		add_subwindow(new BC_Title(x, 
-			y, 
-			FileMOV::compressiontostr(locked_compressor),
-			MEDIUMFONT,
-			RED,
-			0));
-	}
+	compression_popup = new MOVConfigVideoPopup(this, x, y);
+
 	y += 40;
 
 	param_x = x;
@@ -1492,7 +1477,6 @@ void MOVConfigVideo::update_parameters()
 	reset();
 
 	const char *vcodec = asset->vcodec;
-	if(locked_compressor) vcodec = locked_compressor;
 // H264 parameters
 	if(!strcmp(vcodec, QUICKTIME_H264) ||
 		!strcmp(vcodec, QUICKTIME_HV64))

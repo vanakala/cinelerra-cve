@@ -913,8 +913,6 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 		SUPPORTS_AUDIO | SUPPORTS_VIDEO,
 		SUPPORTS_AUDIO | SUPPORTS_VIDEO,
 		SUPPORTS_VIDEO,
-		0,
-		0,
 		&render->strategy);
 
 	add_subwindow(new BC_Title(x, 

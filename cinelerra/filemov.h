@@ -63,8 +63,7 @@ public:
 	static void get_parameters(BC_WindowBase *parent_window, 
 		Asset *asset, 
 		BC_WindowBase* &format_window,
-		int options,
-		const char *locked_compressor);
+		int options);
 	static int check_sig(Asset *asset);
 	static int supports(int format);
 
@@ -235,8 +234,7 @@ class MOVConfigVideo : public BC_Window
 {
 public:
 	MOVConfigVideo(BC_WindowBase *parent_window, 
-		Asset *asset, 
-		const char *locked_compressor);
+		Asset *asset);
 	~MOVConfigVideo();
 
 	void reset();
@@ -247,7 +245,6 @@ public:
 	MOVConfigVideoPopup *compression_popup;
 	Asset *asset;
 	int param_x, param_y;
-	const char *locked_compressor;
 
 	BC_ISlider *jpeg_quality;
 	BC_Title *jpeg_quality_title;

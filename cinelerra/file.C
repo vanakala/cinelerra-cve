@@ -51,7 +51,8 @@
 #include "resample.h"
 #include "vframe.h"
 
-
+#include "mwindow.h"
+extern MWindow *mwindow;
 
 
 File::File()
@@ -119,7 +120,7 @@ void File::close_window()
 void File::get_options(FormatTools *format, int options)
 {
 	BC_WindowBase *parent_window = format->window;
-	ArrayList<PluginServer*> *plugindb = format->plugindb;
+	ArrayList<PluginServer*> *plugindb = mwindow->plugindb;
 	Asset *asset = format->asset;
 
 	getting_options = 1;
@@ -152,8 +153,7 @@ void File::get_options(FormatTools *format, int options)
 			FileMOV::get_parameters(parent_window, 
 				asset,
 				format_window,
-				options,
-				format->locked_compressor);
+				options);
 			break;
 		case FILE_AMPEG:
 		case FILE_VMPEG:
@@ -166,8 +166,7 @@ void File::get_options(FormatTools *format, int options)
 			FileMOV::get_parameters(parent_window, 
 				asset, 
 				format_window, 
-				options,
-				format->locked_compressor);
+				options);
 			break;
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
