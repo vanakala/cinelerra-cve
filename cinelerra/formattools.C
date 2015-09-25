@@ -34,32 +34,32 @@
 #include <string.h>
 #include "pipe.h"
 
-const struct selection_int ContainerSelection::media_containers[] =
+const struct container_type ContainerSelection::media_containers[] =
 {
-	{ N_("AC3"), FILE_AC3 },
-	{ N_("Apple/SGI AIFF"), FILE_AIFF },
-	{ N_("Sun/NeXT AU"), FILE_AU },
-	{ N_("JPEG"), FILE_JPEG },
-	{ N_("JPEG Sequence"), FILE_JPEG_LIST },
-	{ N_("Microsoft AVI"), FILE_AVI },
-	{ N_("EXR"), FILE_EXR },
-	{ N_("EXR Sequence"), FILE_EXR_LIST },
-	{ N_("YUV4MPEG Stream"), FILE_YUV },
-	{ N_("Microsoft WAV"), FILE_WAV },
-	{ N_("Quicktime for Linux"), FILE_MOV },
-	{ N_("Raw DV"), FILE_RAWDV },
-	{ N_("MPEG Audio"), FILE_AMPEG },
-	{ N_("MPEG Video"), FILE_VMPEG },
-	{ N_("OGG Theora/Vorbis"), FILE_OGG },
-	{ N_("Raw PCM"), FILE_PCM },
-	{ N_("PNG"), FILE_PNG },
-	{ N_("PNG Sequence"), FILE_PNG_LIST },
-	{ N_("TGA"), FILE_TGA },
-	{ N_("TGA Sequence"), FILE_TGA_LIST },
-	{ N_("TIFF"), FILE_TIFF },
-	{ N_("TIFF Sequence"), FILE_TIFF_LIST },
-	{ N_("MPEG"), FILE_MPEG },
-	{ N_("Unknown sound"), FILE_SND },
+	{ N_("AC3"), FILE_AC3, "AC3", "ac3" },
+	{ N_("Apple/SGI AIFF"), FILE_AIFF, "AIFF", "aif" },
+	{ N_("Sun/NeXT AU"), FILE_AU, "AU", "au" },
+	{ N_("JPEG"), FILE_JPEG, "JPEG", "jpg" },
+	{ N_("JPEG Sequence"), FILE_JPEG_LIST, "JPEG_LIST", "list" },
+	{ N_("Microsoft AVI"), FILE_AVI, "AVI", "avi" },
+	{ N_("EXR"), FILE_EXR, "EXR", "exr" },
+	{ N_("EXR Sequence"), FILE_EXR_LIST, "EXR_LIST", "list" },
+	{ N_("YUV4MPEG Stream"), FILE_YUV, "YUV", "m2v" },
+	{ N_("Microsoft WAV"), FILE_WAV, "WAV", "wav" },
+	{ N_("Quicktime for Linux"), FILE_MOV, "MOV", "mov" },
+	{ N_("Raw DV"), FILE_RAWDV, "RAWDV", "dv" },
+	{ N_("MPEG Audio"), FILE_AMPEG, "MPEG", "mp3" },
+	{ N_("MPEG Video"), FILE_VMPEG, "VMPEG", "m2v" },
+	{ N_("OGG Theora/Vorbis"), FILE_OGG, "OGG", "ogg" },
+	{ N_("Raw PCM"), FILE_PCM, "PCM", "pcm" },
+	{ N_("PNG"), FILE_PNG, "PNG", "png" },
+	{ N_("PNG Sequence"), FILE_PNG_LIST, "PNG_LIST", "list" },
+	{ N_("TGA"), FILE_TGA, "TGA", "tga" },
+	{ N_("TGA Sequence"), FILE_TGA_LIST, "TGA_LIST", "list" },
+	{ N_("TIFF"), FILE_TIFF, "TIFF", "tif" },
+	{ N_("TIFF Sequence"), FILE_TIFF_LIST, "TIFF_LIST", "list" },
+	{ N_("MPEG"), FILE_MPEG, "MPEG", "mpg" },
+	{ N_("Unknown sound"), FILE_SND, "SND", "snd"},
 	{ 0, 0 }
 };
 
@@ -137,7 +137,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 	path_recent = new BC_RecentList("PATH", mwindow->defaults,
 		path_textbox, 10, x, y, 300, 100);
 	window->add_subwindow(path_recent);
-	path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
+	path_recent->load_items(ContainerSelection::container_prefix(asset->format));
 
 	x += 18;
 	window->add_subwindow(path_button = new BrowseButton(
@@ -299,7 +299,7 @@ Asset* FormatTools::get_asset()
 
 void FormatTools::update_extension()
 {
-	const char *extension = File::get_tag(asset->format);
+	const char *extension = ContainerSelection::container_extension(asset->format);
 	if(extension)
 	{
 		char *ptr = strrchr(asset->path, '.');
@@ -447,7 +447,7 @@ void FormatTools::format_changed()
 	update_extension();
 	close_format_windows();
 	if(path_recent)
-		path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
+		path_recent->load_items(ContainerSelection::container_prefix(asset->format));
 	enable_supported();
 }
 
@@ -648,7 +648,11 @@ FormatPopup::FormatPopup(BC_WindowBase *parent,
 	current_menu = new struct selection_int[length + 1];
 
 	for(int i = 0; i < length; i++)
-		current_menu[i] = *ContainerSelection::get_item(menu[i]);
+	{
+		const struct container_type *ct = ContainerSelection::get_item(menu[i]);
+		current_menu[i].text = ct->text;
+		current_menu[i].value = ct->value;
+	}
 	current_menu[length].text = 0;
 
 	parent->add_subwindow(selection = new ContainerSelection(x, y, parent,
@@ -687,7 +691,7 @@ ContainerSelection::ContainerSelection(int x, int y, BC_WindowBase *base,
 
 void ContainerSelection::update(int value)
 {
-	BC_TextBox::update(container_to_text(value));
+	BC_TextBox::update(_(container_to_text(value)));
 }
 
 int ContainerSelection::handle_event()
@@ -705,17 +709,47 @@ const char *ContainerSelection::container_to_text(int format)
 	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
 	{
 		if(media_containers[i].value == format)
-			return _(media_containers[i].text);
+			return media_containers[i].text;
 	}
-	return _("Unknown");
+	return N_("Unknown");
 }
 
-const struct selection_int *ContainerSelection::get_item(int format)
+int ContainerSelection::text_to_container(char *string)
+{
+	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	{
+		if(!strcmp(media_containers[i].text, string))
+			return media_containers[i].value;
+	}
+	return FILE_UNKNOWN;
+}
+
+const struct container_type *ContainerSelection::get_item(int format)
 {
 	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
 	{
 		if(media_containers[i].value == format)
 			return &media_containers[i];
+	}
+	return 0;
+}
+
+const char *ContainerSelection::container_prefix(int format)
+{
+	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	{
+		if(media_containers[i].value == format)
+			return media_containers[i].prefix;
+	}
+	return "UNKNOWN";
+}
+
+const char *ContainerSelection::container_extension(int format)
+{
+	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	{
+		if(media_containers[i].value == format)
+			return media_containers[i].extension;
 	}
 	return 0;
 }

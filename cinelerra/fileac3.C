@@ -138,7 +138,7 @@ int FileAC3::open_file(int rd, int wr)
 	else
 	{
 		// Should not reach here
-		errorbox("FielAC3 does not support decoding");
+		errorbox("FileAC3 does not support decoding");
 		return 1;
 	}
 	return 0;

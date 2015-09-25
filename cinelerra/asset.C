@@ -461,7 +461,7 @@ void Asset::read(FileXML *file,
 			if(file->tag.title_is("FORMAT"))
 			{
 				char *string = file->tag.get_property("TYPE");
-				format = File::strtoformat(string);
+				format = ContainerSelection::text_to_container(string);
 				use_header = 
 					file->tag.get_property("USE_HEADER", use_header);
 			}
@@ -679,7 +679,7 @@ void Asset::write(FileXML *file,
 	file->tag.set_title("FORMAT");
 
 	file->tag.set_property("TYPE", 
-		File::formattostr(format));
+		ContainerSelection::container_to_text(format));
 	file->tag.set_property("USE_HEADER", use_header);
 
 	file->append_tag();
@@ -1138,7 +1138,7 @@ void Asset::dump(int indent)
 	printf("%*spath: %s\n", indent, "", path);
 	printf("%*sindex_status %d\n", indent, "", index_status);
 	printf("%*sfile format %s, length %lld\n", indent, "",
-		File::formattostr(format), file_length);
+		ContainerSelection::container_to_text(format), file_length);
 	printf("%*saudio_data %d channels %d samplerate %d bits %d byte_order %d\n",
 		indent, "", audio_data, channels, sample_rate, bits, byte_order);
 	printf("%*s  no of streams: %d, current %d", indent, "", astreams, current_astream);

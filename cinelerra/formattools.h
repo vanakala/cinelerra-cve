@@ -43,6 +43,15 @@ class FormatMultiple;
 class FormatPopup;
 class ContainerSelection;
 
+struct container_type
+{
+	const char *text;
+	int value;
+	const char *prefix;
+	const char *extension;
+};
+
+
 class FormatTools
 {
 public:
@@ -248,12 +257,15 @@ public:
 	void update(int value);
 	const char *format_to_text(int format);
 	int handle_event();
-	static const struct selection_int *get_item(int value);
+	static const struct container_type *get_item(int value);
 	static const char *container_to_text(int format);
+	static int text_to_container(char *string);
+	static const char *container_prefix(int format);
+	static const char *container_extension(int format);
 
 private:
 	FormatTools *tools;
-	static const struct selection_int media_containers[];
+	static const struct container_type media_containers[];
 };
 
 #endif

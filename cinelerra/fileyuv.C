@@ -193,7 +193,7 @@ void FileYUV::get_parameters(BC_WindowBase *parent_window,
 		// update the path textbox in the render window
 		format->path_textbox->update(asset->path);
 		// add the new path and pipe to the defaults list
-		const char *prefix = FILE_FORMAT_PREFIX(asset->format);
+		const char *prefix = ContainerSelection::container_prefix(asset->format);
 		config->path_recent->add_item(prefix, asset->path);
 		config->pipe_recent->add_item(prefix, asset->pipe);
 	}
@@ -272,7 +272,7 @@ YUVConfigVideo::YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset, Forma
 	add_subwindow(new BC_Title(init_x, y, _("Output Path:")));
 	add_subwindow(path_textbox = new BC_TextBox(init_x + 100, y, 350, 1, asset->path));
 	add_subwindow(path_recent = new BC_RecentList("PATH", defaults, path_textbox, 10, init_x + 450, y, path_textbox->get_w(), 100));
-	path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
+	path_recent->load_items(ContainerSelection::container_prefix(asset->format));
 
 	x = init_x;
 	y += 30;
@@ -281,7 +281,7 @@ YUVConfigVideo::YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset, Forma
 	add_subwindow(pipe_checkbox = new PipeCheckBox(init_x + bt->get_w(), y, asset->use_pipe));
 	add_subwindow(pipe_textbox = new BC_TextBox(init_x + 100, y, 350, 1, asset->pipe));
 	add_subwindow(pipe_recent = new BC_RecentList("PIPE", defaults, pipe_textbox, 10, init_x + 450, y, pipe_textbox->get_w(), 100));
-	pipe_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
+	pipe_recent->load_items(ContainerSelection::container_prefix(asset->format));
 
 	pipe_checkbox->textbox = pipe_textbox;
 	if (!asset->use_pipe) pipe_textbox->disable();

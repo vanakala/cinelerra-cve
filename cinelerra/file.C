@@ -51,10 +51,6 @@
 #include "resample.h"
 #include "vframe.h"
 
-#include "mwindow.h"
-extern MWindow *mwindow;
-
-
 File::File()
 {
 	cpus = 1;
@@ -120,7 +116,6 @@ void File::close_window()
 void File::get_options(FormatTools *format, int options)
 {
 	BC_WindowBase *parent_window = format->window;
-	ArrayList<PluginServer*> *plugindb = mwindow->plugindb;
 	Asset *asset = format->asset;
 
 	getting_options = 1;
@@ -822,65 +817,6 @@ int File::get_frame(VFrame *frame, int is_thread)
 		return 1;
 }
 
-// Fill in queries about formats when adding formats here.
-
-int File::strtoformat(char *format)
-{
-	return strtoformat(0, format);
-}
-
-int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
-{
-	if(!strcasecmp(format, _(AC3_NAME))) return FILE_AC3;
-	else
-	if(!strcasecmp(format, _(WAV_NAME))) return FILE_WAV;
-	else
-	if(!strcasecmp(format, _(PCM_NAME))) return FILE_PCM;
-	else
-	if(!strcasecmp(format, _(AU_NAME))) return FILE_AU;
-	else
-	if(!strcasecmp(format, _(AIFF_NAME))) return FILE_AIFF;
-	else
-	if(!strcasecmp(format, _(SND_NAME))) return FILE_SND;
-	else
-	if(!strcasecmp(format, _(PNG_NAME))) return FILE_PNG;
-	else
-	if(!strcasecmp(format, _(PNG_LIST_NAME))) return FILE_PNG_LIST;
-	else
-	if(!strcasecmp(format, _(TIFF_NAME))) return FILE_TIFF;
-	else
-	if(!strcasecmp(format, _(TIFF_LIST_NAME))) return FILE_TIFF_LIST;
-	else
-	if(!strcasecmp(format, _(JPEG_NAME))) return FILE_JPEG;
-	else
-	if(!strcasecmp(format, _(JPEG_LIST_NAME))) return FILE_JPEG_LIST;
-	else
-	if(!strcasecmp(format, _(EXR_NAME))) return FILE_EXR;
-	else
-	if(!strcasecmp(format, _(EXR_LIST_NAME))) return FILE_EXR_LIST;
-	else
-	if(!strcasecmp(format, _(YUV_NAME))) return FILE_YUV;
-	else
-	if(!strcasecmp(format, _(MPEG_NAME))) return FILE_MPEG;
-	else
-	if(!strcasecmp(format, _(AMPEG_NAME))) return FILE_AMPEG;
-	else
-	if(!strcasecmp(format, _(VMPEG_NAME))) return FILE_VMPEG;
-	else
-	if(!strcasecmp(format, _(TGA_NAME))) return FILE_TGA;
-	else
-	if(!strcasecmp(format, _(TGA_LIST_NAME))) return FILE_TGA_LIST;
-	else
-	if(!strcasecmp(format, _(MOV_NAME))) return FILE_MOV;
-	else
-	if(!strcasecmp(format, _(AVI_NAME))) return FILE_AVI;
-	else
-	if(!strcasecmp(format, _(OGG_NAME))) return FILE_OGG;
-	else
-	if(!strcasecmp(format, _(RAWDV_NAME))) return FILE_RAWDV;
-	return 0;
-}
-
 int File::supports(int format)
 {
 	switch(format)
@@ -926,92 +862,6 @@ int File::supports(int format)
 		return FileMOV::supports(format);
 	}
 	return (SUPPORTS_AUDIO | SUPPORTS_VIDEO);
-}
-
-const char* File::formattostr(int format)
-{
-	return formattostr(0, format);
-}
-
-const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
-{
-	switch(format)
-	{
-	case FILE_AC3:
-		return _(AC3_NAME);
-
-	case FILE_WAV:
-		return _(WAV_NAME);
-
-	case FILE_PCM:
-		return _(PCM_NAME);
-
-	case FILE_AU:
-		return _(AU_NAME);
-
-	case FILE_AIFF:
-		return _(AIFF_NAME);
-
-	case FILE_SND:
-		return _(SND_NAME);
-
-	case FILE_PNG:
-		return _(PNG_NAME);
-
-	case FILE_PNG_LIST:
-		return _(PNG_LIST_NAME);
-
-	case FILE_JPEG:
-		return _(JPEG_NAME);
-
-	case FILE_JPEG_LIST:
-		return _(JPEG_LIST_NAME);
-
-	case FILE_EXR:
-		return _(EXR_NAME);
-
-	case FILE_EXR_LIST:
-		return _(EXR_LIST_NAME);
-
-	case FILE_YUV:
-		return _(YUV_NAME);
-
-	case FILE_MPEG:
-		return _(MPEG_NAME);
-
-	case FILE_AMPEG:
-		return _(AMPEG_NAME);
-
-	case FILE_VMPEG:
-		return _(VMPEG_NAME);
-
-	case FILE_TGA:
-		return _(TGA_NAME);
-
-	case FILE_TGA_LIST:
-		return _(TGA_LIST_NAME);
-
-	case FILE_TIFF:
-		return _(TIFF_NAME);
-
-	case FILE_TIFF_LIST:
-		return _(TIFF_LIST_NAME);
-
-	case FILE_MOV:
-		return _(MOV_NAME);
-
-	case FILE_AVI:
-		return _(AVI_NAME);
-
-	case FILE_OGG:
-		return _(OGG_NAME);
-
-	case FILE_RAWDV:
-		return _(RAWDV_NAME);
-
-	default:
-		return _("Unknown");
-	}
 }
 
 int File::get_best_colormodel(int driver)
@@ -1084,20 +934,6 @@ FrameCache* File::get_frame_cache()
 	return frame_cache;
 }
 
-int File::supports_video(ArrayList<PluginServer*> *plugindb, char *format)
-{
-	int i, format_i = strtoformat(plugindb, format);
-
-	return supports_video(format_i);
-}
-
-int File::supports_audio(ArrayList<PluginServer*> *plugindb, char *format)
-{
-	int i, format_i = strtoformat(plugindb, format);
-
-	return supports_audio(format_i);
-}
-
 int File::supports_video(int format)
 {
 	switch(format)
@@ -1145,54 +981,6 @@ int File::supports_audio(int format)
 	default:
 		return 0;
 	}
-}
-
-const char* File::get_tag(int format)
-{
-	switch(format)
-	{
-	case FILE_AC3:
-		return "ac3";
-	case FILE_AIFF:
-		return "aif";
-	case FILE_AMPEG:
-		return "mp3";
-	case FILE_AU:
-		return "au";
-	case FILE_AVI:
-		return "avi";
-	case FILE_RAWDV:
-		return "dv";
-	case FILE_EXR:
-		return "exr";
-	case FILE_JPEG:
-		return "jpg";
-	case FILE_MOV:
-		return "mov";
-	case FILE_OGG:
-		return "ogg";
-	case FILE_PCM:
-		return "pcm";
-	case FILE_PNG:
-		return "png";
-	case FILE_TGA:
-		return "tga";
-	case FILE_TIFF:
-		return "tif";
-	case FILE_VMPEG:
-		return "m2v";
-	case FILE_WAV:
-		return "wav";
-	case FILE_YUV:
-		return "m2v";
-	case FILE_EXR_LIST:
-	case FILE_JPEG_LIST:
-	case FILE_TGA_LIST:
-	case FILE_TIFF_LIST:
-	case FILE_PNG_LIST:
-		return "list";
-	}
-	return 0;
 }
 
 PackagingEngine *File::new_packaging_engine(Asset *asset)

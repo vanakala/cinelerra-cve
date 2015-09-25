@@ -59,63 +59,6 @@
 #define FILE_YUV           29    // mjpegtools YUV4MPEG (aka YUV4MPEG2)
 #define FILE_RAWDV         32
 
-// For formats supported by plugins, the format number is the plugin number in the 
-// plugin list ORed with 0x8000.
-
-#define FILE_FORMAT_PREFIX(format) ( \
-	format == FILE_AIFF    ? "AIFF" :		\
-	format == FILE_AMPEG   ? "MPEG" :		\
-	format == FILE_AC3     ? "AC3" :		\
-	format == FILE_AU      ? "AU" :			\
-	format == FILE_AVI     ? "AVI" :		\
-	format == FILE_GIF     ? "GIF" :		\
-	format == FILE_JPEG    ? "JPEG" :		\
-	format == FILE_JPEG_LIST ? "JPEG_LIST" :	\
-	format == FILE_MOV     ? "MOV" :		\
-	format == FILE_MPEG    ? "MPEG" :		\
-	format == FILE_PCM     ? "PCM" :		\
-	format == FILE_PLUGIN  ? "PLUGIN" :		\
-	format == FILE_PNG     ? "PNG" :		\
-	format == FILE_PNG_LIST ? "PNG_LIST" :		\
-	format == FILE_SND     ? "SND" :		\
-	format == FILE_TGA     ? "TGA" :		\
-	format == FILE_TGA_LIST ? "TGA_LIST" :		\
-	format == FILE_TIFF    ? "TIFF" :		\
-	format == FILE_TIFF_LIST ? "TIFF_LIST" :	\
-	format == FILE_VMPEG   ? "VMPEG" :		\
-	format == FILE_WAV     ? "WAV" :		\
-	format == FILE_EXR     ? "EXR" :		\
-	format == FILE_EXR_LIST ? "EXR_LIST" :		\
-	format == FILE_RAWDV   ? "RAWDV" :		\
-	format == FILE_OGG     ? "OGG" :		\
-	format == FILE_YUV     ? "YUV" :		\
-	"UNKNOWN")
-
-#define AC3_NAME "AC3"
-#define AIFF_NAME "Apple/SGI AIFF"
-#define AMPEG_NAME "MPEG Audio"    // For encoding only
-#define AU_NAME "Sun/NeXT AU"
-#define AVI_NAME "Microsoft AVI"
-#define WAV_NAME "Microsoft WAV"
-#define RAWDV_NAME "Raw DV"
-#define OGG_NAME "OGG Theora/Vorbis"
-#define JPEG_LIST_NAME "JPEG Sequence"
-#define JPEG_NAME "JPEG"
-#define MOV_NAME "Quicktime for Linux"
-#define MPEG_NAME "MPEG"           // For decoding only
-#define PCM_NAME "Raw PCM"
-#define PNG_LIST_NAME "PNG Sequence"
-#define PNG_NAME "PNG"
-#define SND_NAME "Unknown sound"
-#define TGA_LIST_NAME "TGA Sequence"
-#define TGA_NAME "TGA"
-#define TIFF_NAME "TIFF"
-#define TIFF_LIST_NAME "TIFF Sequence"
-#define VMPEG_NAME "MPEG Video"    // For encoding only
-#define EXR_NAME "EXR"
-#define EXR_LIST_NAME "EXR Sequence"
-#define YUV_NAME "YUV4MPEG Stream"
-
 // Video formats not part of Quicktime
 #define MOV_RGBA "RGB ALPHA"
 #define MOV_PNGA "PNG ALPHA"
