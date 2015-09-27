@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
 	Garbage::garbage = new Garbage;
 	EDL::id_lock = new Mutex("EDL::id_lock");
 
-	bindtextdomain (PACKAGE, LOCALE_DIR);
-	textdomain (PACKAGE);
+	bindtextdomain (GETTEXT_PACKAGE, LOCALE_DIR);
+	textdomain (GETTEXT_PACKAGE);
 	setlocale (LC_MESSAGES, "");
 
 	if(char *loc = setlocale(LC_CTYPE, ""))
