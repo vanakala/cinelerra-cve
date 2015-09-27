@@ -1,3 +1,4 @@
 *.gmo
 cinelerra.pot
 POTFILES
+Makefile.in.in
