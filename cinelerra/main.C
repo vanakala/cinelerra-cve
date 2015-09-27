@@ -243,9 +243,11 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 	{
 		if(operation == DO_DEAMON)
 		{
-			int pid = fork();
-			if(pid)
+			pid_t pid;
+			if(pid = fork())
 			{
+				if(pid == -1)
+					fputs("Fork failed, can't daemonize\n", stderr);
 // Redhat 9 requires _exit instead of exit here.
 				_exit(0);
 			}
