@@ -80,9 +80,9 @@ int main(int argc, char *argv[])
 	Garbage::garbage = new Garbage;
 	EDL::id_lock = new Mutex("EDL::id_lock");
 
-	bindtextdomain (GETTEXT_PACKAGE, LOCALE_DIR);
-	textdomain (GETTEXT_PACKAGE);
-	setlocale (LC_MESSAGES, "");
+	bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
+	textdomain(GETTEXT_PACKAGE);
+	setlocale(LC_MESSAGES, "");
 
 	if(char *loc = setlocale(LC_CTYPE, ""))
 	{
@@ -193,14 +193,10 @@ int main(int argc, char *argv[])
 			char *new_filename;
 			new_filename = new char[1024];
 			strcpy(new_filename, argv[i]);
-            fs.complete_path(new_filename);
-
+			fs.complete_path(new_filename);
 			filenames.append(new_filename);
 		}
 	}
-
-
-
 
 	if(operation == DO_GUI || 
 		operation == DO_DEAMON || 
@@ -227,87 +223,70 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 "and you are welcome to change it and/or distribute copies of it under\n"
 "certain conditions. There is absolutely no warranty for " PROGRAM_NAME ".\n");
 
-
-
-
-
 	switch(operation)
 	{
-		case DO_USAGE:
-			printf(_("\nUsage:\n"));
-			printf(_("%s [-f] [-c configuration] [-d port] [-n nice] [-r batch file] [filenames]\n\n"), argv[0]);
-			printf(_("-d = Run in the background as renderfarm client.  The port (400) is optional.\n"));
-			printf(_("-f = Run in the foreground as renderfarm client.  Substitute for -d.\n"));
-			printf(_("-n = Nice value if running as renderfarm client. (20)\n"));
-			printf(_("-c = Configuration file to use instead of %s%s.\n"), 
-				BCASTDIR, 
-				CONFIG_FILE);
-			printf(_("-r = batch render the contents of the batch file (%s%s) with no GUI.  batch file is optional.\n"), 
-				BCASTDIR, 
-				BATCH_PATH);
-			printf(_("filenames = files to load\n\n\n"));
-			exit(0);
-			break;
+	case DO_USAGE:
+		printf(_("\nUsage:\n"));
+		printf(_("%s [-f] [-c configuration] [-d port] [-n nice] [-r batch file] [filenames]\n\n"), argv[0]);
+		printf(_("-d = Run in the background as renderfarm client.  The port (400) is optional.\n"));
+		printf(_("-f = Run in the foreground as renderfarm client.  Substitute for -d.\n"));
+		printf(_("-n = Nice value if running as renderfarm client. (20)\n"));
+		printf(_("-c = Configuration file to use instead of %s%s.\n"),
+			BCASTDIR, CONFIG_FILE);
+		printf(_("-r = batch render the contents of the batch file (%s%s) with no GUI.  batch file is optional.\n"), 
+				BCASTDIR, BATCH_PATH);
+		printf(_("filenames = files to load\n\n\n"));
+		exit(0);
 
-		case DO_DEAMON:
-		case DO_DEAMON_FG:
+	case DO_DEAMON:
+	case DO_DEAMON_FG:
+	{
+		if(operation == DO_DEAMON)
 		{
-			if(operation == DO_DEAMON)
+			int pid = fork();
+			if(pid)
 			{
-				int pid = fork();
-
-				if(pid)
-				{
 // Redhat 9 requires _exit instead of exit here.
-					_exit(0);
-				}
+				_exit(0);
 			}
-
-			RenderFarmClient client(deamon_port, 
-				0, 
-				nice_value, 
-				config_path);
-			client.main_loop();
-			break;
 		}
+
+		RenderFarmClient client(deamon_port, 0, nice_value, config_path);
+		client.main_loop();
+		break;
+	}
 
 // Same thing without detachment
-		case DO_BRENDER:
-		{
-			RenderFarmClient client(0, 
-				deamon_path, 
-				20,
-				config_path);
-			client.main_loop();
-			break;
-		}
+	case DO_BRENDER:
+	{
+		RenderFarmClient client(0, deamon_path, 20, config_path);
+		client.main_loop();
+		break;
+	}
 
-		case DO_BATCHRENDER:
-		{
-			BatchRenderThread *thread = new BatchRenderThread;
-			thread->start_rendering(config_path, 
-				batch_path);
-			break;
-		}
+	case DO_BATCHRENDER:
+	{
+		BatchRenderThread *thread = new BatchRenderThread;
+		thread->start_rendering(config_path, batch_path);
+		break;
+	}
 
-		case DO_GUI:
-		{
-	                setlinebuf(stdout);
-			mwindow = new MWindow(config_path);
+	case DO_GUI:
+		setlinebuf(stdout);
+		mwindow = new MWindow(config_path);
 // load the initial files on seperate tracks
-			if(filenames.total)
-			{
-				mwindow->load_filenames(&filenames, LOADMODE_REPLACE);
-				if(filenames.total == 1)
-					mwindow->gui->mainmenu->add_load(filenames.values[0]);
-			}
+		if(filenames.total)
+		{
+			mwindow->load_filenames(&filenames, LOADMODE_REPLACE);
+			if(filenames.total == 1)
+				mwindow->gui->mainmenu->add_load(filenames.values[0]);
+		}
 
 // run the program
-			mwindow->start();
-			mwindow->save_defaults();
+		mwindow->start();
+		mwindow->save_defaults();
 DISABLE_BUFFER
-			break;
-		}
+		break;
 	}
 
 	filenames.remove_all_objects();
