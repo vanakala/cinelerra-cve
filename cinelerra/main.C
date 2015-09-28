@@ -80,6 +80,12 @@ int main(int argc, char *argv[])
 	Garbage::garbage = new Garbage;
 	EDL::id_lock = new Mutex("EDL::id_lock");
 
+	if(!getuid() || !geteuid())
+	{
+		fprintf(stderr, "\nYou can't run " PROGRAM_NAME " as root. It is unsecure.\n");
+		exit(0);
+	}
+
 	bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
 	textdomain(GETTEXT_PACKAGE);
 	setlocale(LC_MESSAGES, "");
