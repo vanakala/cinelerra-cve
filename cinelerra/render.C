@@ -485,20 +485,11 @@ int Render::fix_strategy(int strategy, int use_renderfarm)
 
 void Render::start_progress()
 {
-	char filename[BCTEXTLEN];
-	char string[BCTEXTLEN];
-	FileSystem fs;
-
 	progress_max = packages->get_progress_max();
 	progress_timer->update();
 	last_eta = 0;
 	if(mwindow)
 	{
-// Generate the progress box
-		fs.extract_name(filename, default_asset->path);
-		sprintf(string, _("Rendering %s..."), filename);
-
-// Don't bother with the filename since renderfarm defeats the meaning
 		progress = mwindow->mainprogress->start_progress(_("Rendering..."), 
 			progress_max);
 		render_progress = new RenderProgress(mwindow, this);
