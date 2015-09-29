@@ -822,14 +822,16 @@ int File::supports(int format)
 	switch(format)
 	{
 	case FILE_JPEG:
-	case FILE_JPEG_LIST:
 	case FILE_PNG:
-	case FILE_PNG_LIST:
 	case FILE_TIFF:
-	case FILE_TIFF_LIST:
 	case FILE_EXR:
-	case FILE_EXR_LIST:
 	case FILE_TGA:
+		return SUPPORTS_VIDEO | SUPPORTS_STILL;
+
+	case FILE_JPEG_LIST:
+	case FILE_PNG_LIST:
+	case FILE_TIFF_LIST:
+	case FILE_EXR_LIST:
 	case FILE_TGA_LIST:
 		return SUPPORTS_VIDEO;
 

@@ -274,6 +274,7 @@ void FormatTools::enable_supported()
 				video_switch->set_value(0);
 				video_switch->disable();
 				asset->video_data = 0;
+				asset->single_image = 0;
 			}
 		}
 		else
@@ -282,12 +283,13 @@ void FormatTools::enable_supported()
 			if(video_switch)
 			{
 				video_switch->enable();
-				if((filesup & ~SUPPORTS_VIDEO) == 0)
+				if((filesup & ~(SUPPORTS_VIDEO|SUPPORTS_STILL)) == 0)
 				{
 					asset->video_data = 1;
 					video_switch->set_value(1);
 				}
 			}
+			asset->single_image = filesup & SUPPORTS_STILL;
 		}
 	}
 }

@@ -322,6 +322,9 @@ void Render::run()
 			preferences = new Preferences;
 		preferences->copy_from(mwindow->preferences);
 
+		if(asset->single_image)
+			range_type = RANGE_SINGLEFRAME;
+
 		if(!result) render(1, asset, mwindow->edl, strategy, range_type);
 
 		Garbage::delete_object(asset);
@@ -542,24 +545,31 @@ int Render::render(int test_overwrite,
 	command->command = NORMAL_FWD;
 	command->get_edl()->copy_all(edl);
 	command->change_type = CHANGE_ALL;
-	if (range_type == RANGE_BACKCOMPAT)
+
+	switch(range_type)
 	{
+	case RANGE_BACKCOMPAT:
 // Get highlighted playback range
 		command->set_playback_range();
 // Adjust playback range with in/out points
 		command->playback_range_adjust_inout();
-	} else
-	if (range_type == RANGE_PROJECT)
-	{
+		break;
+
+	case RANGE_PROJECT:
 		command->playback_range_project();
-	} else
-	if (range_type == RANGE_SELECTION)
-	{
+		break;
+
+	case RANGE_SINGLEFRAME:
+		command->command = CURRENT_FRAME;
+		// fall through
+
+	case RANGE_SELECTION:
 		command->set_playback_range();
-	} else
-	if (range_type == RANGE_INOUT)
-	{
+		break;
+
+	case RANGE_INOUT:
 		command->playback_range_inout();
+		break;
 	}
 	packages = new PackageDispatcher;
 
