@@ -49,6 +49,7 @@
 #include "playbackengine.h"
 #include "playbackprefs.h"
 #include "preferences.h"
+#include "question.h"
 #include "selection.h"
 #include "theme.h"
 #include "trackcanvas.h"
@@ -178,6 +179,45 @@ void PreferencesThread::apply_settings()
 		(*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
 
+	// Check index directory
+	if(strcmp(mwindow->preferences->index_directory, preferences->index_directory))
+	{
+		char new_dir[BCTEXTLEN];
+		FileSystem fs;
+		struct stat stb;
+		int nocreate = 0;
+
+		strcpy(new_dir, preferences->index_directory);
+		fs.complete_path(new_dir);
+		if(!stat(new_dir, &stb))
+		{
+			if(!S_ISDIR(stb.st_mode))
+			{
+				errormsg(_("'%s' is not a directory"),
+					preferences->index_directory);
+				nocreate = 1;
+			}
+		}
+		else
+		{
+			QuestionWindow confirm(mwindow, 0,
+				_("Index directory is missing.\nCreate the directory?"));
+			if(confirm.run_window())
+			{
+				if(mkdir(new_dir, S_IREAD | S_IWRITE | S_IEXEC))
+				{
+					errormsg(_("Can't create directory '%s': %m"),
+						preferences->index_directory);
+					nocreate = 1;
+				}
+			}
+			else
+				nocreate = 1;
+		}
+		if(nocreate)
+			strcpy(preferences->index_directory,
+				mwindow->preferences->index_directory);
+	}
 	mwindow->edl->copy_session(edl, 1);
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();
