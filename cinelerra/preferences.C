@@ -201,14 +201,15 @@ void Preferences::print_channels(char *string,
 	int *channel_positions, 
 	int channels)
 {
-	char string3[BCTEXTLEN];
+	int strpos = 0;
+
 	string[0] = 0;
 	for(int j = 0; j < channels; j++)
 	{
-		sprintf(string3, "%d", channel_positions[j]);
-		strcat(string, string3);
+		strpos += sprintf(&string[strpos], "%d", channel_positions[j]);
 		if(j < channels - 1)
-			strcat(string, ",");
+			string[strpos++] = ',';
+		string[strpos] = 0;
 	}
 }
 
