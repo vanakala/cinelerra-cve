@@ -2314,7 +2314,7 @@ int CWindowCanvas::test_bezier(int button_press,
 
 			if(gui->translating_zoom)
 			{
-				float new_z = gui->center_z +
+				double new_z = gui->center_z +
 					(cursor_y - gui->y_origin) / 128;
 
 				if(new_z < 0) new_z = 0;
@@ -2328,8 +2328,8 @@ int CWindowCanvas::test_bezier(int button_press,
 			}
 			else
 			{
-				float new_x = gui->center_x + cursor_x - gui->x_origin;
-				float new_y = gui->center_y + cursor_y - gui->y_origin;
+				double new_x = gui->center_x + cursor_x - gui->x_origin;
+				double new_y = gui->center_y + cursor_y - gui->y_origin;
 
 				if(!EQUIV(last_center_x,  new_x) ||
 					!EQUIV(last_center_y, new_y))

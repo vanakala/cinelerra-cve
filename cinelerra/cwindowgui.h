@@ -115,7 +115,7 @@ public:
 // Mask point being modified
 	int affected_point;
 // Scrollbar offsets during last button press relative to output
-	float x_offset, y_offset;
+	double x_offset, y_offset;
 // Cursor location during the last button press relative to output
 // and offset by scroll bars
 	double x_origin, y_origin;
@@ -124,7 +124,7 @@ public:
 // If dragging crop translation
 	int crop_translate;
 // Origin of crop handle during last button press
-	float crop_origin_x, crop_origin_y;
+	double crop_origin_x, crop_origin_y;
 // Origin of all 4 crop points during last button press
 	double crop_origin_x1, crop_origin_y1;
 	double crop_origin_x2, crop_origin_y2;
@@ -134,8 +134,8 @@ public:
 	int ruler_translate;
 
 // Origin for camera and projector operations during last button press
-	float center_x, center_y, center_z;
-	float control_in_x, control_in_y, control_out_x, control_out_y;
+	double center_x, center_y, center_z;
+	double control_in_x, control_in_y, control_out_x, control_out_y;
 	int current_tool;
 // Must recalculate the origin when pressing shift.
 // Switch toggle on and off to recalculate origin.
