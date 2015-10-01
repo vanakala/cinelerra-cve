@@ -30,7 +30,6 @@ class APlugin : public Plugin
 {
 public:
 	APlugin(EDL *edl, PluginSet *plugin_set);
-	~APlugin();
 };
 
 #endif
