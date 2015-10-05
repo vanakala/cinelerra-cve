@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "audiodevice.inc"
 #include "bcmeter.inc"
+#include "bcsignals.h"
 #include "cache.inc"
 #include "clip.h"
 #include "bchash.h"
@@ -43,6 +44,7 @@ Preferences::Preferences()
 	preferences_lock = new Mutex("Preferences::preferences_lock");
 	strcpy(index_directory, BCASTDIR);
 	fs.complete_path(index_directory);
+	strcpy(global_plugin_dir, PLUGIN_DIR);
 	cache_size = 0xa00000;
 	index_size = 0x300000;
 	index_count = 500;
@@ -123,7 +125,6 @@ void Preferences::copy_rates_from(Preferences *preferences)
 			}
 		}
 	}
-
 	preferences_lock->unlock();
 }
 
@@ -168,25 +169,23 @@ void Preferences::copy_from(Preferences *that)
 	*brender_asset = *that->brender_asset;
 
 // Check boundaries
+	boundaries();
+}
 
+void Preferences::boundaries()
+{
 	FileSystem fs;
 	if(strlen(index_directory))
 	{
 		fs.complete_path(index_directory);
 		fs.add_end_slash(index_directory);
 	}
-	
+
 	if(strlen(global_plugin_dir))
 	{
 		fs.complete_path(global_plugin_dir);
 		fs.add_end_slash(global_plugin_dir);
 	}
-
-	boundaries();
-}
-
-void Preferences::boundaries()
-{
 	renderfarm_job_count = MAX(renderfarm_job_count, 1);
 	CLAMP(cache_size, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 }
@@ -237,7 +236,7 @@ void Preferences::scan_channels(char *string,
 	}
 }
 
-int Preferences::load_defaults(BC_Hash *defaults)
+void Preferences::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
@@ -247,7 +246,6 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 
-	strcpy(global_plugin_dir, PLUGIN_DIR);
 	if(getenv("GLOBAL_PLUGIN_DIR"))
 	{
 		strcpy(global_plugin_dir, getenv("GLOBAL_PLUGIN_DIR"));
@@ -320,14 +318,11 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	}
 
 	boundaries();
-
-	return 0;
 }
 
-int Preferences::save_defaults(BC_Hash *defaults)
+void Preferences::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
-
 
 	defaults->update("USE_TIPWINDOW", use_tipwindow);
 
@@ -337,7 +332,6 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("INDEX_COUNT", index_count);
 	defaults->update("USE_THUMBNAILS", use_thumbnails);
 	defaults->update("THEME", theme);
-
 
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -377,9 +371,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 		sprintf(string, "RENDERFARM_RATE%d", i);
 		defaults->update(string, renderfarm_rate.values[i]);
 	}
-	return 0;
 }
-
 
 void Preferences::add_node(char *text, int port, int enabled, float rate)
 {
@@ -387,6 +379,7 @@ void Preferences::add_node(char *text, int port, int enabled, float rate)
 
 	preferences_lock->lock("Preferences::add_node");
 	char *new_item = new char[strlen(text) + 1];
+
 	strcpy(new_item, text);
 	renderfarm_nodes.append(new_item);
 	renderfarm_nodes.set_array_delete();
@@ -553,6 +546,7 @@ int Preferences::get_enabled_nodes()
 const char* Preferences::get_node_hostname(int number)
 {
 	int total = 0;
+
 	for(int i = 0; i < renderfarm_nodes.total; i++)
 	{
 		if(renderfarm_enabled.values[i])
@@ -569,6 +563,7 @@ const char* Preferences::get_node_hostname(int number)
 int Preferences::get_node_port(int number)
 {
 	int total = 0;
+
 	for(int i = 0; i < renderfarm_ports.total; i++)
 	{
 		if(renderfarm_enabled.values[i])
@@ -581,7 +576,6 @@ int Preferences::get_node_port(int number)
 	}
 	return -1;
 }
-
 
 int Preferences::calculate_processors(int interactive)
 {

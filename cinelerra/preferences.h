@@ -38,8 +38,8 @@ public:
 
 	Preferences& operator=(Preferences &that);
 	void copy_from(Preferences *that);
-	int load_defaults(BC_Hash *defaults);
-	int save_defaults(BC_Hash *defaults);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 	void boundaries();
 
 	static void print_channels(char *string, 
@@ -77,7 +77,7 @@ public:
 
 // ================================= Performance ================================
 // directory to look in for indexes
-	char index_directory[BCTEXTLEN];   
+	char index_directory[BCTEXTLEN];
 // size of index file in bytes
 	int64_t index_size;
 	int index_count;
@@ -128,7 +128,6 @@ public:
 
 // ====================================== Plugin Set ==============================
 	char global_plugin_dir[BCTEXTLEN];
-	char local_plugin_dir[BCTEXTLEN];
 
 // Required when updating renderfarm rates
 	Mutex *preferences_lock;
