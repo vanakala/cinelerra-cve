@@ -103,8 +103,7 @@ SUBDIRS= \
 	whirl \
 	wipe \
 	yuv \
-	zoomblur \
-	fonts
+	zoomblur
 
 AUTOMAKE_OPTIONS=foreign
 
