@@ -43,6 +43,10 @@ FileAC3::FileAC3(Asset *asset, File *file)
 	temp_raw_allocated = 0;
 	temp_compressed = 0;
 	compressed_allocated = 0;
+#if LIBAVCODEC_VERSION_MAJOR >= 57
+	avframe = 0;
+#endif
+
 }
 
 FileAC3::~FileAC3()
@@ -76,15 +80,17 @@ int FileAC3::open_file(int rd, int wr)
 {
 	if(wr)
 	{
+#if LIBAVCODEC_VERSION_MAJOR < 53
 		avcodec_init();
+#endif
 		avcodec_register_all();
-		codec = avcodec_find_encoder(CODEC_ID_AC3);
+		codec = avcodec_find_encoder(AV_CODEC_ID_AC3);
 		if(!codec)
 		{
 			errorbox("AC3 Codec not found.");
 			return 1;
 		}
-		codec_context = avcodec_alloc_context();
+		codec_context = avcodec_alloc_context3(codec);
 		codec_context->bit_rate = asset->ac3_bitrate * 1000;
 		codec_context->sample_rate = asset->sample_rate;
 		codec_context->channels = asset->channels;
@@ -123,7 +129,7 @@ int FileAC3::open_file(int rd, int wr)
 			break;
 		}
 #endif
-		if(avcodec_open(codec_context, codec))
+		if(avcodec_open2(codec_context, codec, NULL))
 		{
 			errorbox("Failed to open AC3 codec.");
 			return 1;
@@ -146,6 +152,35 @@ int FileAC3::open_file(int rd, int wr)
 
 void FileAC3::close_file()
 {
+#if LIBAVCODEC_VERSION_MAJOR >= 57
+	if(avframe)
+	{
+		if(fd && codec_context)
+		{
+			// get the delayed frames
+			AVPacket pkt;
+
+			for(int got_output = 1; got_output;)
+			{
+				av_init_packet(&pkt);
+				pkt.data = 0;
+				pkt.size = 0;
+				if(avcodec_encode_audio2(codec_context, &pkt, NULL, &got_output) < 0)
+				{
+					printf("Failed to encode last frame\n");
+					break;
+				}
+				if(got_output)
+				{
+					fwrite(pkt.data, 1, pkt.size, fd);
+					av_free_packet(&pkt);
+				}
+			}
+		}
+		av_frame_free(&avframe);
+		avframe = 0;
+	}
+#endif
 	if(codec_context)
 	{
 		avcodec_close(codec_context);
@@ -211,9 +246,11 @@ int FileAC3::write_aframes(AFrame **frames)
 	}
 	temp_raw_size += len;
 
-	int frame_size = codec_context->frame_size;
 	int output_size = 0;
-	int current_sample = 0;
+	int current_sample;
+
+#if LIBAVCODEC_VERSION_MAJOR < 57
+	int frame_size = codec_context->frame_size;
 	for(current_sample = 0; 
 		current_sample + frame_size <= temp_raw_size; 
 		current_sample += frame_size)
@@ -222,22 +259,77 @@ int FileAC3::write_aframes(AFrame **frames)
 			codec_context, 
 			temp_compressed + output_size, 
 			compressed_allocated - output_size, 
-		temp_raw + current_sample * asset->channels);
+			temp_raw + current_sample * asset->channels);
 		output_size += compressed_size;
 	}
+#else
+	AVPacket pkt;
+	int got_output;
 
+	if(!avframe)
+	{
+		if(!(avframe = av_frame_alloc()))
+		{
+			printf("Could not allocate audio frame\n");
+			return 1;
+		}
+	}
+	avframe->nb_samples = codec_context->frame_size;
+	avframe->format = codec_context->sample_fmt;
+	avframe->channel_layout = codec_context->channel_layout;
+	int buf_len = av_samples_get_buffer_size(NULL, codec_context->channels,
+		codec_context->frame_size, codec_context->sample_fmt, 0);
+
+	for(current_sample = 0; current_sample + avframe->nb_samples <= temp_raw_size;
+		current_sample += avframe->nb_samples)
+	{
+		got_output = 0;
+		av_init_packet(&pkt);
+		pkt.data = NULL; // packet data will be allocated by the encoder
+		pkt.size = 0;
+		if(avcodec_fill_audio_frame(avframe, codec_context->channels,
+			codec_context->sample_fmt,
+			(const uint8_t*)(temp_raw + current_sample * asset->channels),
+			buf_len, 0) < 0)
+		{
+			printf("Could not setup audio frame.\n");
+			return 1;
+		}
+
+		if(avcodec_encode_audio2(codec_context, &pkt, avframe, &got_output) < 0)
+		{
+			printf("Error encoding audio frame.\n");
+			return 1;
+		}
+
+		if(got_output)
+		{
+			int rv;
+
+			rv = fwrite(pkt.data, 1, pkt.size, fd) == pkt.size;
+			av_free_packet(&pkt);
+			if(!rv)
+			{
+				errorbox("Failed to write AC3 samples.");
+				return 1;
+			}
+		}
+	}
+#endif
 // Shift buffer back
 	memcpy(temp_raw,
 		temp_raw + current_sample * asset->channels,
 		(temp_raw_size - current_sample) * sizeof(int16_t) * asset->channels);
 	temp_raw_size -= current_sample;
 
+#if LIBAVCODEC_VERSION_MAJOR < 57
 	int bytes_written = fwrite(temp_compressed, 1, output_size, fd);
 	if(bytes_written < output_size)
 	{
 		errorbox("Failed to write AC3 samples.");
 		return 1;
 	}
+#endif
 	return 0;
 }
 

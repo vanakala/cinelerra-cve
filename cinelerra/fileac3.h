@@ -26,6 +26,15 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 };
 
+#if LIBAVCODEC_VERSION_MAJOR < 55
+#define avcodec_alloc_context3(codec) avcodec_alloc_context()
+#define avcodec_open2(context, codec, opts) avcodec_open(context, codec)
+#endif
+
+#if LIBAVCODEC_VERSION_MAJOR < 57
+#define AV_CODEC_ID_AC3 CODEC_ID_AC3
+#endif
+
 #include "filebase.h"
 #include <stdio.h>
 
@@ -49,6 +58,9 @@ public:
 private:
 	AVCodec *codec;
 	AVCodecContext *codec_context;
+#if LIBAVCODEC_VERSION_MAJOR >= 57
+	AVFrame *avframe;
+#endif
 	FILE *fd;
 	int16_t *temp_raw;
 	int temp_raw_allocated;
