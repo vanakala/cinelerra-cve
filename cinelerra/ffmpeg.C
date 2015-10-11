@@ -25,99 +25,107 @@ FFMPEG::FFMPEG(Asset *asset)
 
 int FFMPEG::init(char *codec_string)
 {
+#if LIBAVCODEC_VERSION_MAJOR < 53
 	avcodec_init();
+#endif
 	avcodec_register_all();
 
-	CodecID id = codec_id(codec_string);
+	AVCodecID id = codec_id(codec_string);
+
 	codec = avcodec_find_decoder(id);
 	if (codec == NULL) {
 		errorbox("FFMPEG::init no decoder for '%s'", codec_string);
 		return 1;
 	}
 
-	context = avcodec_alloc_context();
+	context = avcodec_alloc_context3(codec);
 
-	if (avcodec_open(context, codec)) {
+	if (avcodec_open2(context, codec, NULL)) {
 		errorbox("FFMPEG::init avcodec_open() failed\n");
 		return 1;
 	}
 
-	picture = avcodec_alloc_frame();
+	picture = av_frame_alloc();
 	return 0;
 }
 
 FFMPEG::~FFMPEG()
 {
+#if LIBAVCODEC_VERSION_MAJOR < 55
 	avcodec_close(context);
-	free(context);
-	free(picture);
+	av_free(context);
+#else
+	avcodec_free_context(&context);
+#endif
+	av_frame_free(&picture);
 }
 
 
-CodecID FFMPEG::codec_id(char *codec_string) {
+AVCodecID FFMPEG::codec_id(char *codec_string)
+{
 #define CODEC_IS(x) (! strncmp(codec_string, x, 4))
 
 	if (CODEC_IS(QUICKTIME_DV) ||
 			CODEC_IS(QUICKTIME_DVSD))
-		return CODEC_ID_DVVIDEO;
+		return AV_CODEC_ID_DVVIDEO;
 
 	if (CODEC_IS(QUICKTIME_MP4V) ||
 			CODEC_IS(QUICKTIME_DIVX))
-		return CODEC_ID_MPEG4;
+		return AV_CODEC_ID_MPEG4;
 
-	return CODEC_ID_NONE;
+	return AV_CODEC_ID_NONE;
 
 #undef CODEC_IS
 }
 
-PixelFormat FFMPEG::color_model_to_pix_fmt(int color_model)
+AVPixelFormat FFMPEG::color_model_to_pix_fmt(int color_model)
 {
 	switch (color_model) 
 	{
 	case BC_YUV422: 
-		return PIX_FMT_YUYV422;
+		return AV_PIX_FMT_YUYV422;
 	case BC_RGB888:
-		return PIX_FMT_RGB24;
+		return AV_PIX_FMT_RGB24;
 	case BC_BGR8888:  // NOTE: order flipped
-		return PIX_FMT_RGB32;
+		return AV_PIX_FMT_RGB32;
 	case BC_BGR888:
-		return PIX_FMT_BGR24;
+		return AV_PIX_FMT_BGR24;
 	case BC_YUV420P: 
-		return PIX_FMT_YUV420P;
+		return AV_PIX_FMT_YUV420P;
 	case BC_YUV422P:
-		return PIX_FMT_YUV422P;
+		return AV_PIX_FMT_YUV422P;
 	case BC_YUV444P:
-		return PIX_FMT_YUV444P;
+		return AV_PIX_FMT_YUV444P;
 	case BC_YUV411P:
-		return PIX_FMT_YUV411P;
+		return AV_PIX_FMT_YUV411P;
 	case BC_RGB565:
-		return PIX_FMT_RGB565;
+		return AV_PIX_FMT_RGB565;
 	};
 
-	return PIX_FMT_NONE;
+	return AV_PIX_FMT_NONE;
 }
 
-int FFMPEG::pix_fmt_to_color_model(PixelFormat pix_fmt)
+int FFMPEG::pix_fmt_to_color_model(AVPixelFormat pix_fmt)
 {
 	switch (pix_fmt) 
 	{
-	case PIX_FMT_YUYV422:
+	case AV_PIX_FMT_YUYV422:
 		return BC_YUV422;
-	case PIX_FMT_RGB24:
+	case AV_PIX_FMT_RGB24:
 		return BC_RGB888;
-	case PIX_FMT_RGB32:
+	case AV_PIX_FMT_RGB32:
 		return BC_BGR8888;
-	case PIX_FMT_BGR24:
+	case AV_PIX_FMT_BGR24:
 		return BC_BGR888;
-	case PIX_FMT_YUV420P:
+	case AV_PIX_FMT_YUV420P:
 		return BC_YUV420P;
-	case PIX_FMT_YUV422P:
+	case AV_PIX_FMT_YUV422P:
 		return BC_YUV422P;
-	case PIX_FMT_YUV444P:
+	case AV_PIX_FMT_YUV444P:
 		return BC_YUV444P;
-	case PIX_FMT_YUV411P:
+	case AV_PIX_FMT_YUV411P:
 		return BC_YUV411P;
-	case PIX_FMT_RGB565:
+	case AV_PIX_FMT_RGB565:
 		return BC_RGB565;
 	};
 
@@ -127,7 +135,7 @@ int FFMPEG::pix_fmt_to_color_model(PixelFormat pix_fmt)
 int FFMPEG::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 {
 	int cmodel = frame->get_color_model();
-	PixelFormat pix_fmt = color_model_to_pix_fmt(cmodel);
+	AVPixelFormat pix_fmt = color_model_to_pix_fmt(cmodel);
 
 	int size = avpicture_fill(picture, frame->get_data(), pix_fmt, 
 			frame->get_w(), frame->get_h());
@@ -144,9 +152,9 @@ int FFMPEG::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 
 int FFMPEG::convert_cmodel(VFrame *frame_in,  VFrame *frame_out)
 {
-	PixelFormat pix_fmt_in = 
+	AVPixelFormat pix_fmt_in =
 		color_model_to_pix_fmt(frame_in->get_color_model());
-	PixelFormat pix_fmt_out = 
+	AVPixelFormat pix_fmt_out =
 		color_model_to_pix_fmt(frame_out->get_color_model());
 #ifdef HAVE_SWSCALER
 	// We need a context for swscale
@@ -154,7 +162,7 @@ int FFMPEG::convert_cmodel(VFrame *frame_in,  VFrame *frame_out)
 	av_log_set_level(AV_LOG_QUIET);
 #endif
 	// do conversion within libavcodec if possible
-	if (pix_fmt_in != PIX_FMT_NONE && pix_fmt_out != PIX_FMT_NONE) {
+	if (pix_fmt_in != AV_PIX_FMT_NONE && pix_fmt_out != AV_PIX_FMT_NONE) {
 		// set up a temporary pictures from frame_in and frame_out
 		AVPicture picture_in, picture_out;
 		init_picture_from_frame(&picture_in, frame_in);
@@ -232,14 +240,14 @@ int FFMPEG::convert_cmodel_transfer(VFrame *frame_in, VFrame *frame_out)
 }
 
 
-int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
+int FFMPEG::convert_cmodel(AVPicture *picture_in, AVPixelFormat pix_fmt_in,
 		int width_in, int height_in, VFrame *frame_out)
 {
 	// set up a temporary picture_out from frame_out
 	AVPicture picture_out;
 	init_picture_from_frame(&picture_out, frame_out);
 	int cmodel_out = frame_out->get_color_model();
-	PixelFormat pix_fmt_out = color_model_to_pix_fmt(cmodel_out);
+	AVPixelFormat pix_fmt_out = color_model_to_pix_fmt(cmodel_out);
 
 #ifdef HAVE_SWSCALER
 	// We need a context for swscale
@@ -248,7 +256,7 @@ int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 	int result;
 #ifndef HAVE_SWSCALER
 	// do conversion within libavcodec if possible
-	if (pix_fmt_out != PIX_FMT_NONE) {
+	if (pix_fmt_out != AV_PIX_FMT_NONE) {
 		result = img_convert(&picture_out,
 				pix_fmt_out,
 				picture_in,
@@ -285,7 +293,7 @@ int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 	int cmodel_in = pix_fmt_to_color_model(pix_fmt_in);
 	if (cmodel_in == BC_TRANSPARENCY)
 	{
-		if (pix_fmt_in == PIX_FMT_RGB32) {
+		if (pix_fmt_in == AV_PIX_FMT_RGB32) {
 			// avoid infinite recursion if things are broken
 			printf("FFMPEG::convert_cmodel pix_fmt_in broken!\n");
 			return 1;
