@@ -4,6 +4,18 @@
 #include <string.h>
 #include "wma.h"
 
+#if LIBAVCODEC_VERSION_MAJOR <= 54
+#define avcodec_alloc_context3(codec) avcodec_alloc_context()
+#define avcodec_open2(context, codec, opts) avcodec_open(context, codec)
+#else
+#define AVCODEC_MAX_AUDIO_FRAME_SIZE   (8192 * 2)
+#endif
+
+#if LIBAVCODEC_VERSION_MAJOR < 57
+#define AV_CODEC_ID_WMAV1 CODEC_ID_WMAV1
+#define AV_CODEC_ID_WMAV2 CODEC_ID_WMAV2
+#endif
+
 /* McRowesoft media player audio */
 /* WMA derivatives */
 
@@ -67,7 +79,9 @@ static int init_decode(quicktime_audio_map_t *track_map,
 		if(!ffmpeg_initialized)
 		{
 			ffmpeg_initialized = 1;
+#if LIBAVCODEC_VERSION_MAJOR < 53
 			avcodec_init();
+#endif
 			avcodec_register_all();
 		}
 
@@ -77,10 +91,10 @@ static int init_decode(quicktime_audio_map_t *track_map,
 			printf("init_decode: avcodec_find_decoder returned NULL.\n");
 			return 1;
 		}
-		codec->decoder_context = avcodec_alloc_context();
+		codec->decoder_context = avcodec_alloc_context3(codec->decoder);
 		codec->decoder_context->sample_rate = trak->mdia.minf.stbl.stsd.table[0].sample_rate;
 		codec->decoder_context->channels = track_map->channels;
-		if(avcodec_open(codec->decoder_context, codec->decoder) < 0)
+		if(avcodec_open2(codec->decoder_context, codec->decoder, NULL) < 0)
 		{
 			printf("init_decode: avcodec_open failed.\n");
 			return 1;
@@ -109,6 +123,7 @@ static int decode(quicktime_t *file,
 	int result = 0;
 	int i, j;
 	int sample_size = 2 * track_map->channels;
+	AVFrame *avframe = NULL;
 
 	if(output_i) bzero(output_i, sizeof(int16_t) * samples);
 	if(output_f) bzero(output_f, sizeof(float) * samples);
@@ -189,7 +204,7 @@ printf("decode 2 %x %llx %llx\n", chunk_size, chunk_offset, chunk_offset + chunk
 		pthread_mutex_lock(&ffmpeg_lock);
 
 		bytes_decoded = AVCODEC_MAX_AUDIO_FRAME_SIZE;
-#if LIBAVCODEC_VERSION_INT < ((52<<16)+(26<<8)+0)
+#if LIBAVCODEC_VERSION_INT < ((53<<16)+(35<<8)+0)
 		result = avcodec_decode_audio2(codec->decoder_context,
 			(int16_t*)(codec->work_buffer + codec->output_size * sample_size),
 			&bytes_decoded,
@@ -200,10 +215,26 @@ printf("decode 2 %x %llx %llx\n", chunk_size, chunk_offset, chunk_offset + chunk
 		av_init_packet( &pkt );
 		pkt.data = codec->packet_buffer;
 		pkt.size = chunk_size;
-		result = avcodec_decode_audio3(codec->decoder_context,
-			(int16_t*)(codec->work_buffer + codec->output_size * sample_size),
-			&bytes_decoded,
+		int got_frame;
+
+		if(!avframe)
+			avframe = av_frame_alloc();
+		else
+			av_frame_unref(avframe);
+
+		result = avcodec_decode_audio4(codec->decoder_context,
+			avframe,
+			&got_frame,
 			&pkt);
+		if(got_frame)
+		{
+			bytes_decoded = avframe->nb_samples *
+				av_get_bytes_per_sample(codec->decoder_context->sample_fmt);
+			memcpy(codec->work_buffer + codec->output_size * sample_size,
+				avframe->data[0], bytes_decoded);
+		}
+		else
+			bytes_decoded = 0;
 #endif
 
 		pthread_mutex_unlock(&ffmpeg_lock);
@@ -300,7 +331,7 @@ void quicktime_init_codec_wmav1(quicktime_audio_map_t *atrack)
 	codec_base->title = "Win Media Audio 1";
 	codec_base->desc = "Win Media Audio 1";
 	codec_base->wav_id = 0x160;
-	codec->ffmpeg_id = CODEC_ID_WMAV1;
+	codec->ffmpeg_id = AV_CODEC_ID_WMAV1;
 }
 
 
@@ -315,5 +346,5 @@ void quicktime_init_codec_wmav2(quicktime_audio_map_t *atrack)
 	codec_base->title = "Win Media Audio 2";
 	codec_base->desc = "Win Media Audio 2";
 	codec_base->wav_id = 0x161;
-	codec->ffmpeg_id = CODEC_ID_WMAV2;
+	codec->ffmpeg_id = AV_CODEC_ID_WMAV2;
 }

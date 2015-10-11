@@ -39,7 +39,7 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 	ptr->height = h;
 	ptr->ffmpeg_id = ffmpeg_id;
 //printf("quicktime_new_ffmpeg 1 %d\n", ptr->ffmpeg_id);
-	if(ffmpeg_id == CODEC_ID_SVQ1)
+	if(ffmpeg_id == AV_CODEC_ID_SVQ1)
 	{
 		ptr->width_i = quicktime_quantize32(ptr->width);
 		ptr->height_i = quicktime_quantize32(ptr->height);
@@ -54,7 +54,9 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 	if(!ffmpeg_initialized)
 	{
 		ffmpeg_initialized = 1;
+#if LIBAVCODEC_VERSION_MAJOR < 53
   		avcodec_init();
+#endif
 		avcodec_register_all();
 	}
 
@@ -68,7 +70,7 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 			return 0;
 		}
 
-		AVCodecContext *context = ptr->decoder_context[i] = avcodec_alloc_context();
+		AVCodecContext *context = ptr->decoder_context[i] = avcodec_alloc_context3(ptr->decoder[i]);
 		static char fake_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		context->width = ptr->width_i;
 		context->height = ptr->height_i;
@@ -87,11 +89,13 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 			context->extradata_size = avcc->data_size;
 		}
 		if(cpus > 1 && 
-				(ffmpeg_id == CODEC_ID_MPEG4 ||
-			         ffmpeg_id == CODEC_ID_MPEG1VIDEO ||
-			         ffmpeg_id == CODEC_ID_MPEG2VIDEO ||
-			         ffmpeg_id == CODEC_ID_H263P || 
-			         ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT))
+				(ffmpeg_id == AV_CODEC_ID_MPEG4 ||
+			         ffmpeg_id == AV_CODEC_ID_MPEG1VIDEO ||
+			         ffmpeg_id == AV_CODEC_ID_MPEG2VIDEO ||
+#if LIBAVCODEC_VERSION_MAJOR < 54
+			         ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT ||
+#endif
+			         ffmpeg_id == AV_CODEC_ID_H263P))
 		{
 #if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
 			avcodec_thread_init(context, cpus);
@@ -99,8 +103,8 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 			context->thread_count = cpus;
 #endif
 		}
-		if(avcodec_open(context, 
-			ptr->decoder[i]) < 0)
+		if(avcodec_open2(context,
+			ptr->decoder[i], NULL) < 0)
 		{
 			printf("quicktime_new_ffmpeg: avcodec_open failed.\n");
 			quicktime_delete_ffmpeg(ptr);
@@ -239,16 +243,16 @@ static int get_chroma_factor(quicktime_ffmpeg_t *ffmpeg, int current_field)
 {
 	switch(ffmpeg->decoder_context[current_field]->pix_fmt)
 	{
-		case PIX_FMT_YUV420P:
+		case AV_PIX_FMT_YUV420P:
 			return 4;
 			break;
-		case PIX_FMT_YUYV422:
+		case AV_PIX_FMT_YUYV422:
 			return 2;
 			break;
-		case PIX_FMT_YUV422P:
+		case AV_PIX_FMT_YUV422P:
 			return 2;
 			break;
-		case PIX_FMT_YUV410P:
+		case AV_PIX_FMT_YUV410P:
 			return 9;
 			break;
 		default:
@@ -292,7 +296,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 //printf("quicktime_ffmpeg_decode 1 %d\n", ffmpeg->last_frame[current_field]);
 
 		if(ffmpeg->last_frame[current_field] == -1 &&
-			ffmpeg->ffmpeg_id != CODEC_ID_H264)
+			ffmpeg->ffmpeg_id != AV_CODEC_ID_H264)
 		{
 			int current_frame = vtrack->current_position;
 // For certain codecs,
@@ -438,16 +442,16 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 // Hopefully this setting will be left over if the cache was used.
 	switch(ffmpeg->decoder_context[current_field]->pix_fmt)
 	{
-		case PIX_FMT_YUV420P:
+		case AV_PIX_FMT_YUV420P:
 			input_cmodel = BC_YUV420P;
 			break;
-		case PIX_FMT_YUYV422:
+		case AV_PIX_FMT_YUYV422:
 			input_cmodel = BC_YUV422;
 			break;
-		case PIX_FMT_YUV422P:
+		case AV_PIX_FMT_YUV422P:
 			input_cmodel = BC_YUV422P;
 			break;
-		case PIX_FMT_YUV410P:
+		case AV_PIX_FMT_YUV410P:
 			input_cmodel = BC_YUV9P;
 			break;
 		default:
