@@ -17,5 +17,6 @@ Makefile.in
 /stamp-h
 /stamp-h1
 /compile
+ffmpeg
 cinelerra-cvs-current.spec
 *.data

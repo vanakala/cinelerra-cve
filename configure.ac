@@ -385,11 +385,20 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 	FFMPEG_CFLAGS="$FFMPEG_CFLAGS -D__STDC_CONSTANT_MACROS"
 	FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
+	if test ! -d ffmpeg ; then
+		FFMPEG_BRANCH="-b release/2.8"
+		if ! git clone --depth 1 $FFMPEG_BRANCH git://source.ffmpeg.org/ffmpeg.git ffmpeg ; then
+			rm -rf ffmpeg
+			echo "Failed to get a FFmpeg checkout"
+			exit 1
+		fi
+	fi
 	FFMPEG_FOLDER=ffmpeg
-	FFMPEG_CFLAGS="-I\$(top_srcdir)/quicktime/ffmpeg -DHAVE_SWSCALER"
-	FFMPEG_LIBS="-L\$(top_builddir)/quicktime/ffmpeg/libavcodec -lavcodec-cinelerra \
-		-L\$(top_builddir)/quicktime/ffmpeg/libavutil -lavutil-cinelerra \
-		-L\$(top_builddir)/quicktime/ffmpeg/libswscale -lswscale-cinelerra"
+	FFMPEG_CFLAGS="-I\$(top_srcdir)/ffmpeg -DHAVE_SWSCALER"
+	FFMPEG_LIBS="-L\$(top_builddir)/ffmpeg/libavcodec -lavcodec-cve \
+		-L\$(top_builddir)/ffmpeg/libavutil -lavutil-cve \
+		-L\$(top_builddir)/ffmpeg/libswscale -lswscale-cve \
+		-L\$(top_builddir)/ffmpeg/libswresample -lswresample-cve"
 	FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi
 
@@ -404,32 +413,24 @@ echo --- FFMPEG CONFIGURATION SECTION --------------
 if test "x$with_external_ffmpeg" = "xyes"; then
 	echo Using external ffmpeg - no configuration needed
 else
-	ff_conf_args="--disable-ffmpeg --disable-ffserver --disable-ffplay \
+	ff_conf_args="--disable-ffmpeg --disable-ffserver --disable-ffplay --disable-ffprobe \
 		--disable-static --enable-shared --enable-swscale --enable-gpl \
-		--build-suffix=-cinelerra"
-
-	if test "x$enable_mmx" = "xno"; then
-		ff_conf_args="$ff_conf_args --disable-mmx"
-	fi
-
-	# Where altivec is not present
-	if test "x$enable_altivec" = "xno"; then
-		ff_conf_args="$ff_conf_args --disable-altivec"
-	fi
+		--build-suffix=-cve"
 
 	srcdir_c=$(readlink -f $srcdir) &&
-	mkdir -p quicktime/ffmpeg/ &&
+	mkdir -p ffmpeg/ &&
 	(
-		cd quicktime/ffmpeg/
+		cd ffmpeg/
 		# if --libdir was not set, then it expands to '$exec_prefix/lib'
 		# if --exec-prefix was not set, then it expands to NONE
 		# this makes sure $libdir is expanded to a useful value
 		if test "x$exec_prefix" = xNONE; then
 			exec_prefix=$acl_final_prefix
 		fi
-		cmd="quicktime/ffmpeg/configure \$ff_conf_args \
+		cmd="ffmpeg/configure \$ff_conf_args \
 			--prefix=\"\$acl_final_prefix\" \
-			--libdir=\"$libdir\" --shlibdir=\"$libdir\""
+			--libdir=\"$libdir\" --shlibdir=\"$libdir\" \
+			--incdir=\"\$includedir\"/cinelerra-cve"
 		eval echo $cmd
 		eval \$srcdir_c/$cmd
 	)

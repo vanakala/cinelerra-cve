@@ -1,4 +1,4 @@
-SUBDIRS = encore50 @FFMPEG_FOLDER@
+SUBDIRS = encore50
 
 
 lib_LTLIBRARIES = libquicktimecve.la
