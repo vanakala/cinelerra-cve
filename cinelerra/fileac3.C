@@ -38,15 +38,9 @@ FileAC3::FileAC3(Asset *asset, File *file)
 	codec = 0;
 	codec_context = 0;
 	fd = 0;
-	temp_raw = 0;
-	temp_raw_size = 0;
-	temp_raw_allocated = 0;
-	temp_compressed = 0;
-	compressed_allocated = 0;
-#if LIBAVCODEC_VERSION_MAJOR >= 57
 	avframe = 0;
-#endif
-
+	swr_context = 0;
+	memset(resampled_data, 0, sizeof(resampled_data));
 }
 
 FileAC3::~FileAC3()
@@ -80,9 +74,6 @@ int FileAC3::open_file(int rd, int wr)
 {
 	if(wr)
 	{
-#if LIBAVCODEC_VERSION_MAJOR < 53
-		avcodec_init();
-#endif
 		avcodec_register_all();
 		codec = avcodec_find_encoder(AV_CODEC_ID_AC3);
 		if(!codec)
@@ -94,57 +85,46 @@ int FileAC3::open_file(int rd, int wr)
 		codec_context->bit_rate = asset->ac3_bitrate * 1000;
 		codec_context->sample_rate = asset->sample_rate;
 		codec_context->channels = asset->channels;
-#if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
-		codec_context->sample_fmt = SAMPLE_FMT_S16;
-#else
-		codec_context->sample_fmt = AV_SAMPLE_FMT_S16;
-		switch(asset->channels)
-		{
-		case 1:
-			codec_context->channel_layout = AV_CH_LAYOUT_MONO;
-			break;
-		case 2:
-			codec_context->channel_layout = AV_CH_LAYOUT_STEREO;
-			break;
-		case 3:
-			codec_context->channel_layout = AV_CH_LAYOUT_SURROUND;
-			break;
-		case 4:
-			codec_context->channel_layout = AV_CH_LAYOUT_QUAD;
-			break;
-		case 5:
-			codec_context->channel_layout = AV_CH_LAYOUT_5POINT0;
-			break;
-		case 6:
-			codec_context->channel_layout = AV_CH_LAYOUT_5POINT1;
-			break;
-		case 7:
-			codec_context->channel_layout = AV_CH_LAYOUT_7POINT0;
-			break;
-		case 8:
-			codec_context->channel_layout = AV_CH_LAYOUT_7POINT1;
-			break;
-		default:
-			codec_context->channel_layout = AV_CH_LAYOUT_NATIVE;
-			break;
-		}
-#endif
+		codec_context->sample_fmt = AV_SAMPLE_FMT_FLTP;
+		codec_context->channel_layout = AV_CH_FRONT_LEFT | AV_CH_FRONT_RIGHT;
+		codec_context->flags |= CODEC_CAP_SMALL_LAST_FRAME;
+
 		if(avcodec_open2(codec_context, codec, NULL))
 		{
-			errorbox("Failed to open AC3 codec.");
+			errorbox(_("FileAC3: Failed to open AC3 codec."));
 			return 1;
 		}
-
+		if(!(swr_context = swr_alloc_set_opts(NULL,
+			codec_context->channel_layout,
+			codec_context->sample_fmt,
+			codec_context->sample_rate,
+			AV_CH_FRONT_LEFT | AV_CH_FRONT_RIGHT,
+			AV_SAMPLE_FMT_DBLP,
+			asset->sample_rate, 0, 0)))
+		{
+			errorbox(_("FileAC3: Can't allocate resample context."));
+			return 1;
+		}
+		if(swr_init(swr_context))
+		{
+			errorbox(_("FileAC3: Failed to initalize resample context"));
+			return 1;
+		}
+		if(!(avframe = av_frame_alloc()))
+		{
+			errorbox(_("FileAC3: Could not allocate audio frame"));
+			return 1;
+		}
 		if(!(fd = fopen(asset->path, "w")))
 		{
-			errormsg("Error while opening \"%s\" for writing. \n%m", asset->path);
+			errormsg(_("FileAC3: Error while opening \"%s\" for writing. \n%m"), asset->path);
 			return 1;
 		}
 	}
 	else
 	{
 		// Should not reach here
-		errorbox("FileAC3 does not support decoding");
+		errorbox(_("FileAC3 does not support decoding"));
 		return 1;
 	}
 	return 0;
@@ -152,40 +132,62 @@ int FileAC3::open_file(int rd, int wr)
 
 void FileAC3::close_file()
 {
-#if LIBAVCODEC_VERSION_MAJOR >= 57
 	if(avframe)
 	{
 		if(fd && codec_context)
 		{
-			// get the delayed frames
 			AVPacket pkt;
+			int got_output;
+			int resampled_length;
 
-			for(int got_output = 1; got_output;)
+			// Get samples kept by resampler
+			while(resampled_length = swr_convert(swr_context,
+				(uint8_t**)resampled_data, resampled_alloc, 0, 0))
 			{
-				av_init_packet(&pkt);
-				pkt.data = 0;
-				pkt.size = 0;
-				if(avcodec_encode_audio2(codec_context, &pkt, NULL, &got_output) < 0)
+				if(resampled_length < 0)
 				{
-					printf("Failed to encode last frame\n");
+					errorbox(_("FileAC3: failed to resample last data"));
+					break;
+				}
+				write_samples(resampled_length);
+			}
+			// Get out samples kept in encoder
+			av_init_packet(&pkt);
+			pkt.data = 0;
+			pkt.size = 0;
+			for(got_output = 1; got_output;)
+			{
+				if(avcodec_encode_audio2(codec_context, &pkt, 0, &got_output))
+				{
+					errorbox(_("FileAC3: failed to encode last packet"));
 					break;
 				}
 				if(got_output)
 				{
-					fwrite(pkt.data, 1, pkt.size, fd);
-					av_free_packet(&pkt);
+					if(fwrite(pkt.data, 1, pkt.size, fd) != pkt.size)
+					{
+						errorbox(_("FileAC3: Failed to write last packet"));
+						break;
+					}
 				}
 			}
 		}
 		av_frame_free(&avframe);
-		avframe = 0;
 	}
-#endif
+
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		delete [] resampled_data[i];
+		resampled_data[i] = 0;
+	}
+
+	if(swr_context)
+		swr_free(&swr_context);
+
 	if(codec_context)
 	{
 		avcodec_close(codec_context);
-		free(codec_context);
-		codec_context = 0;
+		avcodec_free_context(&codec_context);
 		codec = 0;
 	}
 	if(fd)
@@ -193,144 +195,93 @@ void FileAC3::close_file()
 		fclose(fd);
 		fd = 0;
 	}
-	if(temp_raw)
-	{
-		delete [] temp_raw;
-		temp_raw = 0;
-	}
-	if(temp_compressed)
-	{
-		delete [] temp_compressed;
-		temp_compressed = 0;
-	}
 }
 
-int FileAC3::write_aframes(AFrame **frames)
+int FileAC3::write_samples(int resampled_length)
 {
-// Convert buffer to encoder format
-	int len = frames[0]->length;
-
-	if(temp_raw_size + len > temp_raw_allocated)
-	{
-		int new_allocated = temp_raw_size + len;
-		int16_t *new_raw = new int16_t[new_allocated * asset->channels];
-		if(temp_raw)
-		{
-			memcpy(new_raw, 
-				temp_raw, 
-				sizeof(int16_t) * temp_raw_size * asset->channels);
-			delete [] temp_raw;
-		}
-		temp_raw = new_raw;
-		temp_raw_allocated = new_allocated;
-	}
-
-// Allocate compressed data buffer
-	if(temp_raw_allocated * asset->channels * 2 > compressed_allocated)
-	{
-		compressed_allocated = temp_raw_allocated * asset->channels * 2;
-		delete [] temp_compressed;
-		temp_compressed = new unsigned char[compressed_allocated];
-	}
-
-// Append buffer to temp raw
-	int16_t *out_ptr = temp_raw + temp_raw_size * asset->channels;
-	for(int i = 0; i < len; i++)
-	{
-		for(int j = 0; j < asset->channels; j++)
-		{
-			int sample = (int)(frames[j]->buffer[i] * 32767);
-			CLAMP(sample, -32768, 32767);
-			*out_ptr++ = sample;
-		}
-	}
-	temp_raw_size += len;
-
-	int output_size = 0;
-	int current_sample;
-
-#if LIBAVCODEC_VERSION_MAJOR < 57
-	int frame_size = codec_context->frame_size;
-	for(current_sample = 0; 
-		current_sample + frame_size <= temp_raw_size; 
-		current_sample += frame_size)
-	{
-		int compressed_size = avcodec_encode_audio(
-			codec_context, 
-			temp_compressed + output_size, 
-			compressed_allocated - output_size, 
-			temp_raw + current_sample * asset->channels);
-		output_size += compressed_size;
-	}
-#else
 	AVPacket pkt;
-	int got_output;
+	int got_output, chan;
+	int frame_size = codec_context->frame_size;
 
-	if(!avframe)
-	{
-		if(!(avframe = av_frame_alloc()))
-		{
-			printf("Could not allocate audio frame\n");
-			return 1;
-		}
-	}
-	avframe->nb_samples = codec_context->frame_size;
-	avframe->format = codec_context->sample_fmt;
-	avframe->channel_layout = codec_context->channel_layout;
-	int buf_len = av_samples_get_buffer_size(NULL, codec_context->channels,
-		codec_context->frame_size, codec_context->sample_fmt, 0);
+	av_init_packet(&pkt);
+	pkt.data = NULL;
+	pkt.size = 0;
 
-	for(current_sample = 0; current_sample + avframe->nb_samples <= temp_raw_size;
-		current_sample += avframe->nb_samples)
+	for(int i = 0; i < resampled_length; i += frame_size)
 	{
-		got_output = 0;
-		av_init_packet(&pkt);
-		pkt.data = NULL; // packet data will be allocated by the encoder
-		pkt.size = 0;
-		if(avcodec_fill_audio_frame(avframe, codec_context->channels,
-			codec_context->sample_fmt,
-			(const uint8_t*)(temp_raw + current_sample * asset->channels),
-			buf_len, 0) < 0)
+		avframe->nb_samples = frame_size;
+		avframe->format = codec_context->sample_fmt;
+		avframe->channel_layout = codec_context->channel_layout;
+
+		for(chan = 0; chan < asset->channels; chan++)
 		{
-			printf("Could not setup audio frame.\n");
-			return 1;
+			avframe->data[chan] = (uint8_t*)&resampled_data[chan][i];
+			avframe->linesize[chan] = frame_size *
+				av_get_bytes_per_sample(codec_context->sample_fmt);
 		}
 
 		if(avcodec_encode_audio2(codec_context, &pkt, avframe, &got_output) < 0)
 		{
-			printf("Error encoding audio frame.\n");
+			errorbox(_("Failed encoding audio frame"));
 			return 1;
 		}
 
 		if(got_output)
 		{
-			int rv;
-
-			rv = fwrite(pkt.data, 1, pkt.size, fd) == pkt.size;
-			av_free_packet(&pkt);
-			if(!rv)
+			if(fwrite(pkt.data, 1, pkt.size, fd) != pkt.size)
 			{
-				errorbox("Failed to write AC3 samples.");
+				errorbox(_("Failed to write samples"));
 				return 1;
 			}
 		}
 	}
-#endif
-// Shift buffer back
-	memcpy(temp_raw,
-		temp_raw + current_sample * asset->channels,
-		(temp_raw_size - current_sample) * sizeof(int16_t) * asset->channels);
-	temp_raw_size -= current_sample;
+	av_free_packet(&pkt);
+	return 0;
+}
 
-#if LIBAVCODEC_VERSION_MAJOR < 57
-	int bytes_written = fwrite(temp_compressed, 1, output_size, fd);
-	if(bytes_written < output_size)
+int FileAC3::write_aframes(AFrame **frames)
+{
+	int chan;
+	int in_length = frames[0]->length;
+	double *in_data[MAXCHANNELS];
+	int resampled_length;
+	int rv;
+
+	if(!resampled_data[0])
 	{
-		errorbox("Failed to write AC3 samples.");
+		resampled_alloc = av_rescale_rnd(swr_get_delay(swr_context, asset->sample_rate) +
+			in_length, codec_context->sample_rate, asset->sample_rate,
+			AV_ROUND_UP);
+		resampled_alloc = resampled_alloc / codec_context->frame_size * codec_context->frame_size;
+		for(chan = 0; chan < asset->channels; chan++)
+			resampled_data[chan] = new float[resampled_alloc];
+	}
+
+// Resample the whole buffer
+	for(chan = 0; chan < asset->channels; chan++)
+		in_data[chan] = frames[chan]->buffer;
+
+	if((resampled_length = swr_convert(swr_context, (uint8_t**)resampled_data,
+		resampled_alloc, (const uint8_t**)in_data, in_length)) < 0)
+	{
+		errorbox(_("Failed to resample data"));
 		return 1;
 	}
-#endif
-	return 0;
+	rv = write_samples(resampled_length);
+
+// We put more samples into resampler than we consume,
+// get some of them to avoid resampler become too large
+	if(!rv && swr_get_out_samples(swr_context, 0) > resampled_alloc)
+	{
+		if((resampled_length = swr_convert(swr_context, (uint8_t**)resampled_data,
+			resampled_alloc, 0, 0)) < 0)
+		{
+			errorbox(_("Failed to resample data"));
+			return 1;
+		}
+		rv = write_samples(resampled_length);
+	}
+	return rv;
 }
 
 

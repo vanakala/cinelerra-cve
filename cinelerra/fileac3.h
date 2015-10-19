@@ -24,16 +24,9 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
+#include <libswresample/swresample.h>
 };
 
-#if LIBAVCODEC_VERSION_MAJOR < 55
-#define avcodec_alloc_context3(codec) avcodec_alloc_context()
-#define avcodec_open2(context, codec, opts) avcodec_open(context, codec)
-#endif
-
-#if LIBAVCODEC_VERSION_MAJOR < 57
-#define AV_CODEC_ID_AC3 CODEC_ID_AC3
-#endif
 
 #include "filebase.h"
 #include <stdio.h>
@@ -56,17 +49,15 @@ public:
 	int write_aframes(AFrame **frames);
 
 private:
+	int write_samples(int resampled_length);
+
 	AVCodec *codec;
 	AVCodecContext *codec_context;
-#if LIBAVCODEC_VERSION_MAJOR >= 57
 	AVFrame *avframe;
-#endif
+	SwrContext *swr_context;
 	FILE *fd;
-	int16_t *temp_raw;
-	int temp_raw_allocated;
-	int temp_raw_size;
-	unsigned char *temp_compressed;
-	int compressed_allocated;
+	float *resampled_data[MAXCHANNELS];
+	int resampled_alloc;
 };
 
 
