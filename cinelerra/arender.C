@@ -141,7 +141,7 @@ int ARender::process_buffer(AFrame **buffer_out)
 		else
 			this->audio_out[i] = 0;
 	}
-	while(current_postime < fragment_end)
+	while(current_postime < fragment_end - EPSILON)
 	{
 		if(vconsole->test_reconfigure(fragment_duration, last_playback))
 			restart_playback();
