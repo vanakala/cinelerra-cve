@@ -57,12 +57,6 @@ AC_ARG_WITH(plugindir,
 	[ plugindir=$withval ],
 	[ plugindir="\${exec_prefix}/lib/cinelerra-cve" ])
 AC_SUBST(plugindir)
-
-AC_ARG_WITH(fontsdir,
-	AC_HELP_STRING([--with-fontsdir], [sets the directory where the fonts should be installed]),
-	[ fontsdir=$withval ],
-	[ fontsdir="\${plugindir}/fonts" ])
-AC_SUBST(fontsdir)
 ############## END OF SPECIAL DIRECTORIES
 
 ############## XLIB
@@ -637,7 +631,6 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	plugins/zoomblur/Makefile
 	plugins/timefront/Makefile
 	plugins/diffkey/Makefile
-	plugins/fonts/Makefile
 	image/Makefile)
 
 succeeded=yes
