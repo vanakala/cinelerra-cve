@@ -376,7 +376,6 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 	else
 		PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc])
 	fi
-	FFMPEG_CFLAGS="$FFMPEG_CFLAGS -D__STDC_CONSTANT_MACROS"
 	FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
 	if test ! -d ffmpeg ; then
@@ -395,7 +394,7 @@ else
 		-L\$(top_builddir)/ffmpeg/libswresample -lswresample-cve"
 	FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi
-
+FFMPEG_CFLAGS="$FFMPEG_CFLAGS -D__STDC_CONSTANT_MACROS"
 AC_SUBST(FFMPEG_FOLDER)
 AC_SUBST(FFMPEG_CFLAGS)
 AC_SUBST(FFMPEG_LIBS)
