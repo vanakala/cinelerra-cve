@@ -27,7 +27,6 @@
 #include "filelist.h"
 #include "vframe.inc"
 #include "formattools.h"
-#include "ffmpeg.h"
 
 class PipeCheckBox;
 class PipePreset;
