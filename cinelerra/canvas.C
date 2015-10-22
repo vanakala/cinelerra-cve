@@ -452,76 +452,72 @@ void Canvas::get_scrollbars(EDL *edl,
 		h_needed = edl->session->output_h;
 		w_visible = w_needed;
 		h_visible = h_needed;
-	}
 
-	if(use_scrollbars)
-	{
-		w_needed = edl->session->output_w;
-		h_needed = edl->session->output_h;
-		get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
-
-		if(!need_xscroll)
+		if(use_scrollbars)
 		{
-			need_xscroll = 1;
-			canvas_h -= BC_ScrollBar::get_span(SCROLL_HORIZ);
-		}
+			get_zooms(edl, zoom_x, zoom_y, conformed_w, conformed_h);
 
-		if(!need_yscroll)
+			if(!need_xscroll)
+			{
+				need_xscroll = 1;
+				canvas_h -= BC_ScrollBar::get_span(SCROLL_HORIZ);
+			}
+
+			if(!need_yscroll)
+			{
+				need_yscroll = 1;
+				canvas_w -= BC_ScrollBar::get_span(SCROLL_VERT);
+			}
+
+			w_visible = round(canvas_w / zoom_x);
+			h_visible = round(canvas_h / zoom_y);
+		}
+		if(need_xscroll)
 		{
-			need_yscroll = 1;
-			canvas_w -= BC_ScrollBar::get_span(SCROLL_VERT);
+			if(!xscroll)
+				subwindow->add_subwindow(xscroll = new CanvasXScroll(edl,
+					this,
+					canvas_x,
+					canvas_y + canvas_h,
+					w_needed,
+					get_xscroll(),
+					w_visible,
+					canvas_w));
+			else
+				xscroll->reposition_window(canvas_x, canvas_y + canvas_h, canvas_w);
+
+			if(xscroll->get_length() != w_needed ||
+					xscroll->get_handlelength() != w_visible)
+				xscroll->update_length(w_needed, get_xscroll(), w_visible);
 		}
-
-		w_visible = round(canvas_w / zoom_x);
-		h_visible = round(canvas_h / zoom_y);
-	}
-
-	if(need_xscroll)
-	{
-		if(!xscroll)
-			subwindow->add_subwindow(xscroll = new CanvasXScroll(edl,
-				this, 
-				canvas_x,
-				canvas_y + canvas_h,
-				w_needed,
-				get_xscroll(),
-				w_visible,
-				canvas_w));
 		else
-			xscroll->reposition_window(canvas_x, canvas_y + canvas_h, canvas_w);
+		{
+			if(xscroll) delete xscroll;
+			xscroll = 0;
+		}
+		if(need_yscroll)
+		{
+			if(!yscroll)
+				subwindow->add_subwindow(yscroll = new CanvasYScroll(edl,
+					this,
+					canvas_x + canvas_w,
+					canvas_y,
+					h_needed,
+					get_yscroll(),
+					h_visible,
+					canvas_h));
+			else
+				yscroll->reposition_window(canvas_x + canvas_w, canvas_y, canvas_h);
 
-		if(xscroll->get_length() != w_needed ||
-				xscroll->get_handlelength() != w_visible)
-			xscroll->update_length(w_needed, get_xscroll(), w_visible);
-	}
-	else
-	{
-		if(xscroll) delete xscroll;
-		xscroll = 0;
-	}
-
-	if(need_yscroll)
-	{
-		if(!yscroll)
-			subwindow->add_subwindow(yscroll = new CanvasYScroll(edl, 
-				this,
-				canvas_x + canvas_w,
-				canvas_y,
-				h_needed,
-				get_yscroll(),
-				h_visible,
-				canvas_h));
+			if(yscroll->get_length() != edl->session->output_h ||
+					yscroll->get_handlelength() != h_visible)
+				yscroll->update_length(h_needed, get_yscroll(), h_visible);
+		}
 		else
-			yscroll->reposition_window(canvas_x + canvas_w, canvas_y, canvas_h);
-
-		if(yscroll->get_length() != edl->session->output_h ||
-				yscroll->get_handlelength() != h_visible)
-			yscroll->update_length(h_needed, get_yscroll(), h_visible);
-	}
-	else
-	{
-		if(yscroll) delete yscroll;
-		yscroll = 0;
+		{
+			if(yscroll) delete yscroll;
+			yscroll = 0;
+		}
 	}
 }
 
