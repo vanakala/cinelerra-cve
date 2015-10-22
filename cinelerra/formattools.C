@@ -63,7 +63,7 @@ const struct container_type ContainerSelection::media_containers[] =
 	{ 0, 0 }
 };
 
-#define NUM_MEDIA_CONTANERS (sizeof(ContainerSelection::media_containers) / sizeof(struct selection_int) - 1)
+#define NUM_MEDIA_CONTAINERS (sizeof(ContainerSelection::media_containers) / sizeof(struct container_type) - 1)
 
 int FormatPopup::brender_menu[] = { FILE_JPEG_LIST, FILE_PNG_LIST, FILE_TIFF_LIST };
 int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU, FILE_JPEG,
@@ -709,7 +709,7 @@ int ContainerSelection::handle_event()
 
 const char *ContainerSelection::container_to_text(int format)
 {
-	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	for(int i = 0; i < NUM_MEDIA_CONTAINERS; i++)
 	{
 		if(media_containers[i].value == format)
 			return media_containers[i].text;
@@ -719,7 +719,7 @@ const char *ContainerSelection::container_to_text(int format)
 
 int ContainerSelection::text_to_container(char *string)
 {
-	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	for(int i = 0; i < NUM_MEDIA_CONTAINERS; i++)
 	{
 		if(!strcmp(media_containers[i].text, string))
 			return media_containers[i].value;
@@ -729,7 +729,7 @@ int ContainerSelection::text_to_container(char *string)
 
 const struct container_type *ContainerSelection::get_item(int format)
 {
-	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	for(int i = 0; i < NUM_MEDIA_CONTAINERS; i++)
 	{
 		if(media_containers[i].value == format)
 			return &media_containers[i];
@@ -739,7 +739,7 @@ const struct container_type *ContainerSelection::get_item(int format)
 
 const char *ContainerSelection::container_prefix(int format)
 {
-	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	for(int i = 0; i < NUM_MEDIA_CONTAINERS; i++)
 	{
 		if(media_containers[i].value == format)
 			return media_containers[i].prefix;
@@ -749,7 +749,7 @@ const char *ContainerSelection::container_prefix(int format)
 
 const char *ContainerSelection::container_extension(int format)
 {
-	for(int i = 0; i < NUM_MEDIA_CONTANERS; i++)
+	for(int i = 0; i < NUM_MEDIA_CONTAINERS; i++)
 	{
 		if(media_containers[i].value == format)
 			return media_containers[i].extension;
