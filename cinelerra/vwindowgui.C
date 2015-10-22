@@ -584,7 +584,7 @@ VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
 	0,
 	0,
 	0,
-	mwindow->edl,
+	0,
 	0,
 	0,
 	1)
