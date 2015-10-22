@@ -157,7 +157,23 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 			(frame->get_h() != stream->get_height())) 
 		{
 			ensure_temp(asset->width, asset->height);
-			FFMPEG::convert_cmodel(frame, temp);
+			cmodel_transfer(temp->get_rows(),
+					frame->get_rows(),
+					temp->get_y(),
+					temp->get_u(),
+					temp->get_v(),
+					frame->get_y(),
+					frame->get_u(),
+					frame->get_v(),
+					0, 0,
+					frame->get_w(), frame->get_h(),
+					0, 0,
+					temp->get_w(), temp->get_h(),
+					frame->get_color_model(),
+					temp->get_color_model(),
+					0,
+					frame->get_w(), temp->get_w());
+
 			frame = temp;
 		}
 
