@@ -4,6 +4,7 @@
 /* so it does all the generic MPEG-4 encoding. */
 
 #include "libavcodec/avcodec.h"
+#include "libavcodec/motion_est.h"
 #include "colormodels.h"
 #include "funcprotos.h"
 #include "qtffmpeg.h"
@@ -508,14 +509,10 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 		else
 // ffmpeg section
 		{
-			static char *video_rc_eq="tex^qComp";
 			codec->encode_initialized[current_field] = 1;
 			if(!ffmpeg_initialized)
 			{
 				ffmpeg_initialized = 1;
-#if LIBAVCODEC_VERSION_MAJOR < 53
-				avcodec_init();
-#endif
 				avcodec_register_all();
 			}
 
@@ -536,7 +533,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			context->pix_fmt = AV_PIX_FMT_YUV420P;
 			context->bit_rate = codec->bitrate / codec->total_fields;
 			context->bit_rate_tolerance = codec->bitrate_tolerance;
-			context->rc_eq = video_rc_eq;
 			context->rc_max_rate = 0;
 			context->rc_min_rate = 0;
 			context->rc_buffer_size = 0;
@@ -544,8 +540,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 				(!codec->fix_bitrate ? codec->quantizer : 2);
 			context->qmax = 
 				(!codec->fix_bitrate ? codec->quantizer : 31);
-			context->lmin = 2 * FF_QP2LAMBDA;
-			context->lmax = 31 * FF_QP2LAMBDA;
 			context->mb_lmin = 2 * FF_QP2LAMBDA;
 			context->mb_lmax = 31 * FF_QP2LAMBDA;
 			context->max_qdiff = 3;
@@ -557,21 +551,11 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 			context->b_quant_factor = 1.25;
 			context->b_quant_offset = 1.25;
-#if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
-			context->error_resilience = FF_ER_CAREFUL;
-#else
-#if LIBAVCODEC_VERSION_MAJOR < 54
-			context->error_recognition = FF_ER_CAREFUL;
-#else
 			context->err_recognition = AV_EF_CAREFUL;
-#endif
-#endif
 			context->error_concealment = 3;
 			context->frame_skip_cmp = FF_CMP_DCTMAX;
 			context->ildct_cmp = FF_CMP_VSAD;
 			context->intra_dc_precision = 0;
-			context->intra_quant_bias = FF_DEFAULT_QUANT_BIAS;
-			context->inter_quant_bias = FF_DEFAULT_QUANT_BIAS;
 			context->i_quant_factor = -0.8;
 			context->i_quant_offset = 0.0;
 			context->mb_decision = FF_MB_DECISION_SIMPLE;
@@ -579,46 +563,29 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			context->me_sub_cmp = FF_CMP_SAD;
 			context->me_cmp = FF_CMP_SAD;
 			context->me_pre_cmp = FF_CMP_SAD;
-			context->me_method = ME_EPZS;
 			context->me_subpel_quality = 8;
 			context->me_penalty_compensation = 256;
 			context->me_range = 0;
-			context->me_threshold = 0;
-			context->mb_threshold = 0;
 			context->nsse_weight= 8;
 			context->profile= FF_PROFILE_UNKNOWN;
-			context->rc_buffer_aggressivity = 1.0;
 			context->level= FF_LEVEL_UNKNOWN;
-#if LIBAVCODEC_VERSION_MAJOR < 54
-			context->flags |= CODEC_FLAG_H263P_UMV;
-#endif
 			context->flags |= CODEC_FLAG_AC_PRED;
 
-// All the forbidden settings can be extracted from libavcodec/mpegvideo.c of ffmpeg...
-
-// Copyed from ffmpeg's mpegvideo.c... set 4MV only where it is supported
-			if(codec->ffmpeg_id == AV_CODEC_ID_MPEG4 ||
-					codec->ffmpeg_id == AV_CODEC_ID_H263 ||
-					codec->ffmpeg_id == AV_CODEC_ID_H263P ||
-					codec->ffmpeg_id == AV_CODEC_ID_FLV1)
-				context->flags |= AV_CODEC_FLAG_4MV;
-// Not compatible with Win
-//			context->flags |= CODEC_FLAG_QPEL;
+			av_opt_set(context->priv_data, "rc_eq", "tex^qComp", 0);
+			av_opt_set_int(context->priv_data, "lmin", 2 * FF_QP2LAMBDA, 0);
+			av_opt_set_int(context->priv_data, "lmax", 31 * FF_QP2LAMBDA, 0);
+			av_opt_set_int(context->priv_data, "ibias", FF_DEFAULT_QUANT_BIAS, 0);
+			av_opt_set_int(context->priv_data, "pbias", FF_DEFAULT_QUANT_BIAS, 0);
+			av_opt_set_int(context->priv_data, "motion_est", FF_ME_EPZS, 0);
+			av_opt_set_double(context->priv_data, "rc_buf_aggressivity", 1.0, 0);
 
 			if(file->cpus > 1 && 
 				(codec->ffmpeg_id == AV_CODEC_ID_MPEG4 ||
 				codec->ffmpeg_id == AV_CODEC_ID_MPEG1VIDEO ||
 				codec->ffmpeg_id == AV_CODEC_ID_MPEG2VIDEO ||
-#if LIBAVCODEC_VERSION_MAJOR < 54
-				codec->ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT ||
-#endif
 				codec->ffmpeg_id == AV_CODEC_ID_H263P))
 			{
-#if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
-				avcodec_thread_init(context, file->cpus);
-#else
 				context->thread_count = file->cpus;
-#endif
 			}
 
 			if(!codec->fix_bitrate)
@@ -631,8 +598,8 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			}
 
 			avcodec_open2(context, codec->encoder[current_field], NULL);
-#if LIBAVCODEC_VERSION_MAJOR < 57
-   			avcodec_get_frame_defaults(&codec->picture[current_field]);
+#if LIBAVCODEC_VERSION_MAJOR < 56
+			avcodec_get_frame_defaults(&codec->picture[current_field]);
 #else
 			av_frame_unref(&codec->picture[current_field]);
 #endif
@@ -772,26 +739,35 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			picture->linesize[2] = width_i / 2;
 		}
 
+		picture->format = AV_PIX_FMT_YUV420P;
+		picture->width = width_i;
+		picture->height = height_i;
 		picture->pict_type = 0;
 		picture->quality = 0;
 		picture->pts = vtrack->current_position * quicktime_frame_rate_d(file, track);
 		picture->key_frame = 0;
-#if LIBAVCODEC_VERSION_MAJOR < 57
-		bytes = avcodec_encode_video(context, 
-			codec->work_buffer, 
-			codec->buffer_size, 
-			picture);
-#else
+
 		AVPacket pkt;
 		int got_output;
+
 		av_init_packet(&pkt);
 		pkt.data = codec->work_buffer;
 		pkt.size = codec->buffer_size;
-		bytes = avcodec_encode_video2(context, &pkt, picture, &got_output);
-		if(bytes == 0 && got_output)
-			bytes = pkt.size;
-#endif
-		is_keyframe = context->coded_frame && context->coded_frame->key_frame;
+		bytes = 0;
+		is_keyframe = 0;
+		if(avcodec_encode_video2(context, &pkt, picture, &got_output) == 0)
+		{
+			if(got_output)
+			{
+				bytes = pkt.size;
+				is_keyframe = pkt.flags & AV_PKT_FLAG_KEY;
+			}
+		}
+		else
+		{
+			fprintf(stderr, "Video encoding failed.\n");
+			return 1;
+		}
 
 		if(!trak->mdia.minf.stbl.stsd.table[0].esds.mpeg4_header_size &&
 			!strcmp(((quicktime_codec_t*)vtrack->codec)->fourcc, QUICKTIME_MP4V))
