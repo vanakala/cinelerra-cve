@@ -3,10 +3,6 @@
 /* Encore50 still seemed to provide better results than ffmpeg for encoding */
 /* so it does all the generic MPEG-4 encoding. */
 
-
-
-
-
 #include "libavcodec/avcodec.h"
 #include "colormodels.h"
 #include "funcprotos.h"
@@ -14,9 +10,6 @@
 #include "quicktime.h"
 #include "workarounds.h"
 #include ENCORE_INCLUDE
-//#include DECORE_INCLUDE
-
-
 
 #include <pthread.h>
 #include <stdint.h>
@@ -29,18 +22,8 @@
 
 typedef struct
 {
-
 // Decoder side
 	quicktime_ffmpeg_t *decoder;
-
-
-
-
-
-
-
-
-
 // Encoding side
 	int encode_initialized[FIELDS];
 // Information for picking the right library routines.
@@ -51,17 +34,15 @@ typedef struct
 	int use_encore;
 
 // FFMpeg internals
-    AVCodec *encoder[FIELDS];
+	AVCodec *encoder[FIELDS];
 	AVCodecContext *encoder_context[FIELDS];
-    AVFrame picture[FIELDS];
-	
+	AVFrame picture[FIELDS];
 
 // Encore internals
 	int encode_handle[FIELDS];
 	ENC_PARAM enc_param[FIELDS];
 // Must count pframes in VBR
 	int p_count[FIELDS];
-
 
 // Encoding parameters
 	int bitrate;
@@ -81,7 +62,6 @@ typedef struct
 	int fix_bitrate;
 	int use_deblocking;
 
-
 // Temporary storage for color conversions
 	char *temp_frame;
 // Storage of compressed data
@@ -90,22 +70,11 @@ typedef struct
 	int buffer_size;
 } quicktime_mpeg4_codec_t;
 
-
-
 // Decore needs the user to specify handles
 static int decode_handle = 1;
 static int encode_handle = 0;
 
-
-
-
-
-
-
-
-
 // Direct copy routines
-
 
 // Determine of the compressed frame is a keyframe for direct copy
 int quicktime_mpeg4_is_key(unsigned char *data, long size, char *codec_id)
@@ -134,7 +103,6 @@ int quicktime_mpeg4_is_key(unsigned char *data, long size, char *codec_id)
 	return result;
 }
 
-
 // Test for VOL header in frame
 int quicktime_mpeg4_has_vol(unsigned char *data)
 {
@@ -150,8 +118,6 @@ int quicktime_mpeg4_has_vol(unsigned char *data)
 	else
 		return 0;
 }
-
-
 
 
 static void putbits(unsigned char **data, 
@@ -189,15 +155,10 @@ static void flushbits(unsigned char **data,
 	}
 }
 
-
-
-
-#define VO_START_CODE 		0x8      
-#define VO_START_CODE_LENGTH	27
-#define VOL_START_CODE 0x12             /* 25-MAR-97 JDL : according to WD2 */
+#define VO_START_CODE           0x8
+#define VO_START_CODE_LENGTH    27
+#define VOL_START_CODE          0x12      /* 25-MAR-97 JDL : according to WD2 */
 #define VOL_START_CODE_LENGTH 28
-
-
 
 int quicktime_mpeg4_write_vol(unsigned char *data_start,
 	int vol_width, 
@@ -217,7 +178,6 @@ int quicktime_mpeg4_write_vol(unsigned char *data_start,
 	vol_width = quicktime_quantize16(vol_width);
 	vol_height = quicktime_quantize16(vol_height);
 
-
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
@@ -227,7 +187,7 @@ int quicktime_mpeg4_write_vol(unsigned char *data_start,
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		5, 0);				/* vo_id = 0								*/
+		5, 0);                  /* vo_id = 0 */
 
 	putbits(&data, 
 		&bit_pos, 
@@ -235,72 +195,58 @@ int quicktime_mpeg4_write_vol(unsigned char *data_start,
 		&written,
 		VOL_START_CODE_LENGTH, VOL_START_CODE);
 
-
+	putbits(&data, 
+		&bit_pos, 
+		&bit_store, 
+		&written,
+		4, 0);                  /* vol_id = 0 */
 
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		4, 0);				/* vol_id = 0								*/
+		1, 0);                  /* random_accessible_vol = 0 */
+	putbits(&data, 
+		&bit_pos, 
+		&bit_store, 
+		&written,
+		8, 1);                  /* video_object_type_indication = 1 video */
+	putbits(&data, 
+		&bit_pos, 
+		&bit_store, 
+		&written,
+		1, 1);                  /* is_object_layer_identifier = 1 */
+	putbits(&data, 
+		&bit_pos, 
+		&bit_store, 
+		&written,
+		4, 2);                  /* visual_object_layer_ver_id = 2 */
+	putbits(&data, 
+		&bit_pos, 
+		&bit_store, 
+		&written,
+		3, 1);                  /* visual_object_layer_priority = 1 */
+	putbits(&data, 
+		&bit_pos, 
+		&bit_store, 
+		&written,
+		4, 1);                  /* aspect_ratio_info = 1 */
 
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 0);				/* random_accessible_vol = 0				*/
+		1, 0);                  /* vol_control_parameter = 0 */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		8, 1);				/* video_object_type_indication = 1 video	*/
+		2, 0);                  /* vol_shape = 0 rectangular */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 1);				/* is_object_layer_identifier = 1			*/
-	putbits(&data, 
-		&bit_pos, 
-		&bit_store, 
-		&written,
-		4, 2);				/* visual_object_layer_ver_id = 2			*/
-	putbits(&data, 
-		&bit_pos, 
-		&bit_store, 
-		&written,
-		3, 1);				/* visual_object_layer_priority = 1			*/
-	putbits(&data, 
-		&bit_pos, 
-		&bit_store, 
-		&written,
-		4, 1);				/* aspect_ratio_info = 1					*/
-
-
-
-
-
-
-
-	putbits(&data, 
-		&bit_pos, 
-		&bit_store, 
-		&written,
-		1, 0);				/* vol_control_parameter = 0				*/
-	putbits(&data, 
-		&bit_pos, 
-		&bit_store, 
-		&written,
-		2, 0);				/* vol_shape = 0 rectangular				*/
-	putbits(&data, 
-		&bit_pos, 
-		&bit_store, 
-		&written,
-		1, 1);				/* marker									*/
-
-
-
-
-
-
+		1, 1);                  /* marker */
 
 	putbits(&data, 
 		&bit_pos, 
@@ -311,20 +257,15 @@ int quicktime_mpeg4_write_vol(unsigned char *data_start,
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 1);				/* marker									*/
+		1, 1);                  /* marker */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 1);				/* fixed_vop_rate = 1						*/
-
+		1, 1);                  /* fixed_vop_rate = 1 */
 
 	bits = 1;
 	while((1 << bits) < time_increment_resolution) bits++;
-
-// Log calculation fails for some reason
-//	bits = (int)ceil(log((double)time_increment_resolution) / log(2.0));
-//    if (bits < 1) bits=1;
 
 	fixed_vop_time_increment = 
 		(int)(time_increment_resolution / frame_rate + 0.1);
@@ -339,7 +280,7 @@ int quicktime_mpeg4_write_vol(unsigned char *data_start,
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 1);				/* marker									*/
+		1, 1);                  /* marker */
 
 	putbits(&data, 
 		&bit_pos, 
@@ -350,7 +291,7 @@ int quicktime_mpeg4_write_vol(unsigned char *data_start,
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 1);				/* marker									*/
+		1, 1);                  /* marker */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
@@ -360,78 +301,66 @@ int quicktime_mpeg4_write_vol(unsigned char *data_start,
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 1);				/* marker									*/
+		1, 1);                  /* marker */
 
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 0);				/* interlaced = 0							*/
+		1, 0);                  /* interlaced = 0 */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 1);				/* OBMC_disabled = 1						*/
+		1, 1);                  /* OBMC_disabled = 1 */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		2, 0);				/* vol_sprite_usage = 0						*/
+		2, 0);                  /* vol_sprite_usage = 0 */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 0);				/* not_8_bit = 0							*/
+		1, 0);                  /* not_8_bit = 0 */
 
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 0);				/* vol_quant_type = 0						*/
+		1, 0);                  /* vol_quant_type = 0 */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 0);				/* vol_quarter_pixel = 0					*/
+		1, 0);                  /* vol_quarter_pixel = 0 */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 1);				/* complexity_estimation_disabled = 1		*/
+		1, 1);                  /* complexity_estimation_disabled = 1 */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 1);				/* resync_marker_disabled = 1				*/
+		1, 1);                  /* resync_marker_disabled = 1 */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 0);				/* data_partitioning_enabled = 0			*/
+		1, 0);                  /* data_partitioning_enabled = 0 */
 	putbits(&data, 
 		&bit_pos, 
 		&bit_store, 
 		&written,
-		1, 0);				/* scalability = 0							*/
+		1, 0);                  /* scalability = 0 */
 
 	flushbits(&data, 
 		&bit_pos,
 		&bit_store);
 
-
-/*
- * for(i = 0; i < data - data_start; i++)
- * 	for(j = 0x80; j >= 1; j /= 2)
- * 		printf("%d", (data_start[i] & j) ? 1 : 0);
- * printf("\n");
- */
-
-
-
 	return data - data_start;
 }
-
-
 
 // Create the header for the esds block which is used in mp4v.
 // Taken from libavcodec
@@ -443,34 +372,8 @@ static int write_mp4v_header(unsigned char *data,
 {
 	unsigned char *start = data;
 
-
-/*
- * 	static unsigned char test[] = 
- * 	{
- * 
- * 		0x00, 0x00, 0x01, 0xb0, 0x01, 0x00, 0x00, 0x01, 0xb5, 0x89, 0x13,
- * 		0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x20, 0x00, 0xc4, 0x8d,
- * 		0x8a, 0xee, 0x05, 0x28, 0x04, 0x5a, 0x14, 0x63, 0x00, 0x00, 0x01, 0xb2,
- * 		0x46, 0x46, 0x6d, 0x70, 0x65, 0x67, 0x43, 0x56, 0x53, 0x62, 0x34, 0x37,
- * 		0x35, 0x38
- * 
- * 	};
- * 	memcpy(data, test, sizeof(test));
- * 
- * 	return sizeof(test);
- */
-
-// From ffmpeg
-// Advanced simple level 1
-//	int profile_level = 0xf3;
-
 	int profile_level = 0x1;
-//	int vo_version_id = 5;
 	int vo_version_id = 1;
-
-
-
-
 
 // VOS startcode
 	*data++ = 0x00;
@@ -495,10 +398,6 @@ static int write_mp4v_header(unsigned char *data,
 // Stuffing
 		0x3;
 
-//	*data++ = 0x40;
-//	*data++ = 0xc0;
-//	*data++ = 0xcf;
-
 // video object
 	int vol_size = quicktime_mpeg4_write_vol(data,
 		w, 
@@ -510,14 +409,7 @@ static int write_mp4v_header(unsigned char *data,
 	return data - start;
 }
 
-
-
-
-
-
-
 // Mpeg-4 interface
-
 static int reads_colormodel(quicktime_t *file, 
 		int colormodel, 
 		int track)
@@ -528,13 +420,13 @@ static int reads_colormodel(quicktime_t *file,
 		!quicktime_match_32(QUICKTIME_SVQ1, codec->fourcc));
 }
 
+
 static int writes_colormodel(quicktime_t *file, 
 		int colormodel, 
 		int track)
 {
 	return colormodel == BC_YUV420P;
 }
-
 
 
 static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
@@ -546,7 +438,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 	int width = trak->tkhd.track_width;
 	int height = trak->tkhd.track_height;
 	int result = 0;
-
 
 	if(!codec->decoder) codec->decoder = quicktime_new_ffmpeg(
 		file->cpus,
@@ -561,7 +452,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		file, 
 		row_pointers, 
 		track);
-
 
 	return result;
 }
@@ -584,13 +474,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	int current_field = vtrack->current_position % codec->total_fields;
 	quicktime_atom_t chunk_atom;
 
-
-
-
-
 	pthread_mutex_lock(&ffmpeg_lock);
-
-
 
 	if(!codec->encode_initialized[current_field])
 	{
@@ -630,7 +514,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			{
 				ffmpeg_initialized = 1;
 #if LIBAVCODEC_VERSION_MAJOR < 53
-  				avcodec_init();
+				avcodec_init();
 #endif
 				avcodec_register_all();
 			}
@@ -653,9 +537,9 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			context->bit_rate = codec->bitrate / codec->total_fields;
 			context->bit_rate_tolerance = codec->bitrate_tolerance;
 			context->rc_eq = video_rc_eq;
-        	context->rc_max_rate = 0;
-        	context->rc_min_rate = 0;
-        	context->rc_buffer_size = 0;
+			context->rc_max_rate = 0;
+			context->rc_min_rate = 0;
+			context->rc_buffer_size = 0;
 			context->qmin = 
 				(!codec->fix_bitrate ? codec->quantizer : 2);
 			context->qmax = 
@@ -671,8 +555,8 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			context->time_base.den = quicktime_frame_rate_n(file, track);
 			context->time_base.num = quicktime_frame_rate_d(file, track);
 
-        	context->b_quant_factor = 1.25;
-        	context->b_quant_offset = 1.25;
+			context->b_quant_factor = 1.25;
+			context->b_quant_offset = 1.25;
 #if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
 			context->error_resilience = FF_ER_CAREFUL;
 #else
@@ -686,10 +570,10 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			context->frame_skip_cmp = FF_CMP_DCTMAX;
 			context->ildct_cmp = FF_CMP_VSAD;
 			context->intra_dc_precision = 0;
-        	context->intra_quant_bias = FF_DEFAULT_QUANT_BIAS;
-        	context->inter_quant_bias = FF_DEFAULT_QUANT_BIAS;
-        	context->i_quant_factor = -0.8;
-        	context->i_quant_offset = 0.0;
+			context->intra_quant_bias = FF_DEFAULT_QUANT_BIAS;
+			context->inter_quant_bias = FF_DEFAULT_QUANT_BIAS;
+			context->i_quant_factor = -0.8;
+			context->i_quant_offset = 0.0;
 			context->mb_decision = FF_MB_DECISION_SIMPLE;
 			context->mb_cmp = FF_CMP_SAD;
 			context->me_sub_cmp = FF_CMP_SAD;
@@ -702,33 +586,33 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			context->me_threshold = 0;
 			context->mb_threshold = 0;
 			context->nsse_weight= 8;
-        	context->profile= FF_PROFILE_UNKNOWN;
+			context->profile= FF_PROFILE_UNKNOWN;
 			context->rc_buffer_aggressivity = 1.0;
-        	context->level= FF_LEVEL_UNKNOWN;
+			context->level= FF_LEVEL_UNKNOWN;
 #if LIBAVCODEC_VERSION_MAJOR < 54
 			context->flags |= CODEC_FLAG_H263P_UMV;
 #endif
 			context->flags |= CODEC_FLAG_AC_PRED;
 
 // All the forbidden settings can be extracted from libavcodec/mpegvideo.c of ffmpeg...
- 			
+
 // Copyed from ffmpeg's mpegvideo.c... set 4MV only where it is supported
 			if(codec->ffmpeg_id == AV_CODEC_ID_MPEG4 ||
-			   codec->ffmpeg_id == AV_CODEC_ID_H263 ||
-			   codec->ffmpeg_id == AV_CODEC_ID_H263P ||
-			   codec->ffmpeg_id == AV_CODEC_ID_FLV1)
+					codec->ffmpeg_id == AV_CODEC_ID_H263 ||
+					codec->ffmpeg_id == AV_CODEC_ID_H263P ||
+					codec->ffmpeg_id == AV_CODEC_ID_FLV1)
 				context->flags |= AV_CODEC_FLAG_4MV;
 // Not compatible with Win
 //			context->flags |= CODEC_FLAG_QPEL;
 
 			if(file->cpus > 1 && 
 				(codec->ffmpeg_id == AV_CODEC_ID_MPEG4 ||
-			         codec->ffmpeg_id == AV_CODEC_ID_MPEG1VIDEO ||
-			         codec->ffmpeg_id == AV_CODEC_ID_MPEG2VIDEO ||
+				codec->ffmpeg_id == AV_CODEC_ID_MPEG1VIDEO ||
+				codec->ffmpeg_id == AV_CODEC_ID_MPEG2VIDEO ||
 #if LIBAVCODEC_VERSION_MAJOR < 54
-			         codec->ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT ||
+				codec->ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT ||
 #endif
-			         codec->ffmpeg_id == AV_CODEC_ID_H263P))
+				codec->ffmpeg_id == AV_CODEC_ID_H263P))
 			{
 #if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
 				avcodec_thread_init(context, file->cpus);
@@ -746,23 +630,14 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 				context->flags |= CODEC_FLAG_INTERLACED_ME;
 			}
 
-
-/*
- * printf("encode gop_size=%d fix_bitrate=%d quantizer=%d\n", 
- * codec->gop_size,
- * codec->fix_bitrate,
- * codec->quantizer);
- */
 			avcodec_open2(context, codec->encoder[current_field], NULL);
 #if LIBAVCODEC_VERSION_MAJOR < 57
    			avcodec_get_frame_defaults(&codec->picture[current_field]);
 #else
 			av_frame_unref(&codec->picture[current_field]);
 #endif
-
 		}
 	}
-
 
 	if(!codec->work_buffer)
 	{
@@ -770,15 +645,12 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 		codec->work_buffer = malloc(codec->buffer_size);
 	}
 
-
-
 // Encore section
 	if(codec->use_encore)
 	{
 // Encore section
 		ENC_FRAME encore_input;
 		ENC_RESULT encore_result;
-
 
 // Assume planes are contiguous.
 // Encode directly from function arguments
@@ -819,11 +691,8 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 				width,       /* For planar use the luma rowspan */
 				width_i);
 
-
 			encore_input.image = codec->temp_frame;
 		}
-
-
 
 		bzero(codec->work_buffer, codec->buffer_size);
 		encore_input.bitstream = codec->work_buffer;
@@ -841,9 +710,8 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 				codec->p_count[current_field] = 0;
 		}
 
-
-		encore(codec->encode_handle[current_field],	
-			0,	
+		encore(codec->encode_handle[current_field],
+			0,
 			&encore_input,
 			&encore_result);
 
@@ -904,7 +772,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			picture->linesize[2] = width_i / 2;
 		}
 
-
 		picture->pict_type = 0;
 		picture->quality = 0;
 		picture->pts = vtrack->current_position * quicktime_frame_rate_d(file, track);
@@ -912,8 +779,8 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 #if LIBAVCODEC_VERSION_MAJOR < 57
 		bytes = avcodec_encode_video(context, 
 			codec->work_buffer, 
-        	codec->buffer_size, 
-        	picture);
+			codec->buffer_size, 
+			picture);
 #else
 		AVPacket pkt;
 		int got_output;
@@ -925,11 +792,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			bytes = pkt.size;
 #endif
 		is_keyframe = context->coded_frame && context->coded_frame->key_frame;
-/*
- * printf("encode current_position=%d is_keyframe=%d\n", 
- * vtrack->current_position,
- * is_keyframe);
- */
 
 		if(!trak->mdia.minf.stbl.stsd.table[0].esds.mpeg4_header_size &&
 			!strcmp(((quicktime_codec_t*)vtrack->codec)->fourcc, QUICKTIME_MP4V))
@@ -955,11 +817,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 		}
 	}
 
-
-
-
-
-
 	pthread_mutex_unlock(&ffmpeg_lock);
 	quicktime_write_chunk_header(file, trak, &chunk_atom);
 	result = !quicktime_write_data(file, 
@@ -978,10 +835,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	vtrack->current_chunk++;
 	return result;
 }
-
-
-
-
 
 
 static void flush(quicktime_t *file, int track)
@@ -1013,12 +866,6 @@ static void flush(quicktime_t *file, int track)
 	file->moov.udta.require = strdup("QuickTime 6.0 or greater");
 	file->moov.udta.require_len = strlen(file->moov.udta.require);
 }
-
-
-
-
-
-
 
 
 static int set_parameter(quicktime_t *file, 
@@ -1097,12 +944,10 @@ static int set_parameter(quicktime_t *file,
 }
 
 
-
 static int delete_codec(quicktime_video_map_t *vtrack)
 {
 	quicktime_mpeg4_codec_t *codec;
 	int i;
-
 
 	codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	for(i = 0; i < codec->total_fields; i++)
@@ -1119,13 +964,12 @@ static int delete_codec(quicktime_video_map_t *vtrack)
 			}
 			else
 			{
-    			avcodec_close(codec->encoder_context[i]);
+				avcodec_close(codec->encoder_context[i]);
 				free(codec->encoder_context[i]);
 			}
 			pthread_mutex_unlock(&ffmpeg_lock);
 		}
 	}
-
 
 	if(codec->temp_frame) free(codec->temp_frame);
 	if(codec->work_buffer) free(codec->work_buffer);
@@ -1134,8 +978,6 @@ static int delete_codec(quicktime_video_map_t *vtrack)
 	free(codec);
 	return 0;
 }
-
-
 
 
 static quicktime_mpeg4_codec_t* init_common(quicktime_video_map_t *vtrack, 
@@ -1160,8 +1002,6 @@ static quicktime_mpeg4_codec_t* init_common(quicktime_video_map_t *vtrack,
 
 	codec = (quicktime_mpeg4_codec_t*)codec_base->priv;
 
-
-
 // Set defaults
 	codec->bitrate = 1000000;
 	codec->rc_period = 50;
@@ -1174,13 +1014,8 @@ static quicktime_mpeg4_codec_t* init_common(quicktime_video_map_t *vtrack,
 	codec->quality = 5;
 	codec->fix_bitrate = 1;
 	codec->total_fields = 1;
-
-
-
 	return codec;
 }
-
-
 
 
 // Mike Rowe Soft MPEG-4
@@ -1258,9 +1093,7 @@ void quicktime_init_codec_mp4v(quicktime_video_map_t *vtrack)
 		"MPEG4",
 		"Generic MPEG Four");
 	result->ffmpeg_id = AV_CODEC_ID_MPEG4;
-//	result->use_encore = 1;
 }
-
 
 // Mormon MPEG-4
 void quicktime_init_codec_svq1(quicktime_video_map_t *vtrack)
@@ -1283,29 +1116,29 @@ void quicktime_init_codec_svq3(quicktime_video_map_t *vtrack)
 
 void quicktime_init_codec_h263(quicktime_video_map_t *vtrack)
 {
-    quicktime_mpeg4_codec_t *result = init_common(vtrack,
-        QUICKTIME_H263,
-        "H.263",
-        "H.263");
-    result->ffmpeg_id = AV_CODEC_ID_H263;
+	quicktime_mpeg4_codec_t *result = init_common(vtrack,
+		QUICKTIME_H263,
+		"H.263",
+		"H.263");
+	result->ffmpeg_id = AV_CODEC_ID_H263;
 }
 
 void quicktime_init_codec_xvid(quicktime_video_map_t *vtrack)
 {
-    quicktime_mpeg4_codec_t *result = init_common(vtrack,
-        QUICKTIME_XVID,
-        "XVID",
-        "FFmpeg MPEG-4");
-    result->ffmpeg_id = AV_CODEC_ID_MPEG4;
+	quicktime_mpeg4_codec_t *result = init_common(vtrack,
+		QUICKTIME_XVID,
+		"XVID",
+		"FFmpeg MPEG-4");
+	result->ffmpeg_id = AV_CODEC_ID_MPEG4;
 }
 
 void quicktime_init_codec_dnxhd(quicktime_video_map_t *vtrack)
 {
-    quicktime_mpeg4_codec_t *result = init_common(vtrack,
-        QUICKTIME_DNXHD,
-        "DNXHD",
-        "DNXHD");
-    result->ffmpeg_id = AV_CODEC_ID_DNXHD;
+	quicktime_mpeg4_codec_t *result = init_common(vtrack,
+		QUICKTIME_DNXHD,
+		"DNXHD",
+		"DNXHD");
+	result->ffmpeg_id = AV_CODEC_ID_DNXHD;
 }
 
 // field based MPEG-4
@@ -1318,9 +1151,3 @@ void quicktime_init_codec_hv60(quicktime_video_map_t *vtrack)
 	result->total_fields = 2;
 	result->ffmpeg_id = AV_CODEC_ID_MPEG4;
 }
-
-
-
-
-
-
