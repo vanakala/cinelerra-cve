@@ -15,8 +15,6 @@
 // required to store interlaced video but nothing can read it but 
 // Heroine Virtual.
 
-
-
 #include "libavcodec/avcodec.h"
 #include "qtprivate.h"
 
@@ -58,11 +56,10 @@ typedef struct
     AVCodec *encoder[FIELDS];
 	AVCodecContext *encoder_context[FIELDS];
 
-
 // Decoding
-    AVCodec *decoder[FIELDS];
+	AVCodec *decoder[FIELDS];
 	AVCodecContext *decoder_context[FIELDS];
-    AVFrame picture[FIELDS];
+	AVFrame picture[FIELDS];
 
 // Last frame decoded
 	int64_t last_frame[FIELDS];
@@ -73,7 +70,6 @@ typedef struct
 	int width;
 	int height;
 	int fields;
-
 
 // Temporary storage for color conversions
 	char *temp_frame;
@@ -87,7 +83,6 @@ typedef struct
 extern int ffmpeg_initialized;
 extern pthread_mutex_t ffmpeg_lock;
 
-
 quicktime_ffmpeg_t* quicktime_new_ffmpeg(
 	int cpus,
 	int fields,
@@ -98,17 +93,8 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(
 	quicktime_stsd_table_t *stsd_table);
 void quicktime_delete_ffmpeg(quicktime_ffmpeg_t *ptr);
 int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
-	quicktime_t *file, 
-	unsigned char **row_pointers, 
+	quicktime_t *file,
+	unsigned char **row_pointers,
 	int track);
 
-
-
 #endif
-
-
-
-
-
-
-

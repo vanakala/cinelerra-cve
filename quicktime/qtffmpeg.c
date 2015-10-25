@@ -7,20 +7,8 @@
 #include <string.h>
 // FFMPEG front end for quicktime.
 
-
-
-
-
-
-
-
 int ffmpeg_initialized = 0;
 pthread_mutex_t ffmpeg_lock = PTHREAD_MUTEX_INITIALIZER;
-
-
-
-
-
 
 quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 	int fields,
@@ -38,7 +26,7 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 	ptr->width = w;
 	ptr->height = h;
 	ptr->ffmpeg_id = ffmpeg_id;
-//printf("quicktime_new_ffmpeg 1 %d\n", ptr->ffmpeg_id);
+
 	if(ffmpeg_id == AV_CODEC_ID_SVQ1)
 	{
 		ptr->width_i = quicktime_quantize32(ptr->width);
@@ -55,7 +43,7 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 	{
 		ffmpeg_initialized = 1;
 #if LIBAVCODEC_VERSION_MAJOR < 53
-  		avcodec_init();
+		avcodec_init();
 #endif
 		avcodec_register_all();
 	}
@@ -74,8 +62,6 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 		static char fake_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		context->width = ptr->width_i;
 		context->height = ptr->height_i;
-//		context->width = w;
-//		context->height = h;
 		context->extradata = fake_data;
 		context->extradata_size = 0;
 		if(esds->mpeg4_header && esds->mpeg4_header_size) 
@@ -89,13 +75,13 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 			context->extradata_size = avcc->data_size;
 		}
 		if(cpus > 1 && 
-				(ffmpeg_id == AV_CODEC_ID_MPEG4 ||
-			         ffmpeg_id == AV_CODEC_ID_MPEG1VIDEO ||
-			         ffmpeg_id == AV_CODEC_ID_MPEG2VIDEO ||
+			(ffmpeg_id == AV_CODEC_ID_MPEG4 ||
+				ffmpeg_id == AV_CODEC_ID_MPEG1VIDEO ||
+			ffmpeg_id == AV_CODEC_ID_MPEG2VIDEO ||
 #if LIBAVCODEC_VERSION_MAJOR < 54
-			         ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT ||
+			ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT ||
 #endif
-			         ffmpeg_id == AV_CODEC_ID_H263P))
+			ffmpeg_id == AV_CODEC_ID_H263P))
 		{
 #if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
 			avcodec_thread_init(context, cpus);
@@ -119,10 +105,10 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 }
 
 
-
 void quicktime_delete_ffmpeg(quicktime_ffmpeg_t *ptr)
 {
 	int i;
+
 	if(ptr)
 	{
 		pthread_mutex_lock(&ffmpeg_lock);
@@ -130,18 +116,14 @@ void quicktime_delete_ffmpeg(quicktime_ffmpeg_t *ptr)
 		{
 			if(ptr->decoder_context[i])
 			{
-	    		avcodec_close(ptr->decoder_context[i]);
+				avcodec_close(ptr->decoder_context[i]);
 				free(ptr->decoder_context[i]);
 			}
 		}
 		pthread_mutex_unlock(&ffmpeg_lock);
 
-
-
 		if(ptr->temp_frame) free(ptr->temp_frame);
 		if(ptr->work_buffer) free(ptr->work_buffer);
-
-
 		free(ptr);
 	}
 }
@@ -159,11 +141,10 @@ static int decode_wrapper(quicktime_t *file,
 	int result = 0; 
 	int bytes = 0;
 	int header_bytes = 0;
- 	char *compressor = vtrack->track->mdia.minf.stbl.stsd.table[0].format;
+	char *compressor = vtrack->track->mdia.minf.stbl.stsd.table[0].format;
 	quicktime_trak_t *trak = vtrack->track;
 	quicktime_stsd_table_t *stsd_table = &trak->mdia.minf.stbl.stsd.table[0];
 
-//printf("decode_wrapper %d\n", frame_number);
 	quicktime_set_video_position(file, frame_number, track);
 
 	bytes = quicktime_frame_size(file, frame_number, track); 
@@ -173,11 +154,11 @@ static int decode_wrapper(quicktime_t *file,
 	}
 
 	if(!ffmpeg->work_buffer || ffmpeg->buffer_size < bytes + header_bytes) 
-	{ 
-		if(ffmpeg->work_buffer) free(ffmpeg->work_buffer); 
+	{
+		if(ffmpeg->work_buffer) free(ffmpeg->work_buffer);
 		ffmpeg->buffer_size = bytes + header_bytes; 
 		ffmpeg->work_buffer = calloc(1, ffmpeg->buffer_size + 100); 
-	} 
+	}
  
 	if(header_bytes)
 		memcpy(ffmpeg->work_buffer, stsd_table->esds.mpeg4_header, header_bytes);
@@ -186,8 +167,7 @@ static int decode_wrapper(quicktime_t *file,
 		ffmpeg->work_buffer + header_bytes, 
 		bytes))
 		result = -1;
- 
- 
+
 	if(!result) 
 	{ 
 #if LIBAVCODEC_VERSION_INT >= ((52<<16)+(0<<8)+0)
@@ -211,12 +191,10 @@ static int decode_wrapper(quicktime_t *file,
 		pkt.data = ffmpeg->work_buffer;
 		pkt.size = bytes + header_bytes;
 		result = avcodec_decode_video2(ffmpeg->decoder_context[current_field], 
- 			&ffmpeg->picture[current_field], 
- 			&got_picture, 
+			&ffmpeg->picture[current_field],
+			&got_picture,
 			&pkt);
 #endif
-
-
 
 		if(ffmpeg->picture[current_field].data[0])
 		{
@@ -233,7 +211,6 @@ static int decode_wrapper(quicktime_t *file,
 		asm("emms");
 #endif
 	}
-
 	return result;
 }
 
@@ -243,24 +220,23 @@ static int get_chroma_factor(quicktime_ffmpeg_t *ffmpeg, int current_field)
 {
 	switch(ffmpeg->decoder_context[current_field]->pix_fmt)
 	{
-		case AV_PIX_FMT_YUV420P:
-			return 4;
-			break;
-		case AV_PIX_FMT_YUYV422:
-			return 2;
-			break;
-		case AV_PIX_FMT_YUV422P:
-			return 2;
-			break;
-		case AV_PIX_FMT_YUV410P:
-			return 9;
-			break;
-		default:
-			fprintf(stderr, 
-				"get_chroma_factor: unrecognized color model %d\n", 
+	case AV_PIX_FMT_YUV420P:
+		return 4;
+
+	case AV_PIX_FMT_YUYV422:
+		return 2;
+
+	case AV_PIX_FMT_YUV422P:
+		return 2;
+
+	case AV_PIX_FMT_YUV410P:
+		return 9;
+
+	default:
+		fprintf(stderr,
+			"get_chroma_factor: unrecognized color model %d\n",
 				ffmpeg->decoder_context[current_field]->pix_fmt);
-			return 9;
-			break;
+		return 9;
 	}
 }
 
@@ -291,10 +267,6 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 // Codecs which work without locking:
 // H264
 // MPEG-4
-//		pthread_mutex_lock(&ffmpeg_lock);
-
-//printf("quicktime_ffmpeg_decode 1 %d\n", ffmpeg->last_frame[current_field]);
-
 		if(ffmpeg->last_frame[current_field] == -1 &&
 			ffmpeg->ffmpeg_id != AV_CODEC_ID_H264)
 		{
@@ -313,7 +285,6 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 			quicktime_set_video_position(file, current_frame, track);
 			ffmpeg->last_frame[current_field] = current_field;
 		}
-
 
 // Handle seeking
 // Seeking requires keyframes
@@ -342,21 +313,6 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 					frame1 - 1, 
 					track);
 			}while(frame1 > 0 && (frame1 % ffmpeg->fields) != current_field);
-//printf("quicktime_ffmpeg_decode 1 %d\n", frame1);
-
-// For MPEG-4, get another keyframe before first keyframe.
-// The Sanyo tends to glitch with only 1 keyframe.
-// Not enough memory.
-			if( 0 /* frame1 > 0 && ffmpeg->ffmpeg_id == CODEC_ID_MPEG4 */)
-			{
-				do
-				{
-					frame1 = quicktime_get_keyframe_before(file,
-						frame1 - 1,
-						track);
-				}while(frame1 > 0 && (frame1 & ffmpeg->fields) != current_field);
-//printf("quicktime_ffmpeg_decode 2 %d\n", frame1);
-			}
 
 // Keyframe is before last decoded frame and current frame is after last decoded
 // frame, so instead of rerendering from the last keyframe we can rerender from
@@ -370,7 +326,6 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 
 			first_frame = frame1;
 
-//printf("quicktime_ffmpeg_decode 2 %d\n", ffmpeg->last_frame[current_field]);
 			while(frame1 <= frame2)
 			{
 				result = decode_wrapper(file, 
@@ -380,7 +335,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 					current_field, 
 					track,
 // Don't drop if we want to cache it
-					0 /* (frame1 < frame2) */);
+					0);
 
 				if(ffmpeg->picture[current_field].data[0] &&
 // FFmpeg seems to glitch out if we include the first frame.
@@ -432,34 +387,30 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 				track,
 				0);
 		}
-
-//		pthread_mutex_unlock(&ffmpeg_lock);
-
-
 		ffmpeg->last_frame[current_field] = vtrack->current_position;
 	}
 
 // Hopefully this setting will be left over if the cache was used.
 	switch(ffmpeg->decoder_context[current_field]->pix_fmt)
 	{
-		case AV_PIX_FMT_YUV420P:
-			input_cmodel = BC_YUV420P;
-			break;
-		case AV_PIX_FMT_YUYV422:
-			input_cmodel = BC_YUV422;
-			break;
-		case AV_PIX_FMT_YUV422P:
-			input_cmodel = BC_YUV422P;
-			break;
-		case AV_PIX_FMT_YUV410P:
-			input_cmodel = BC_YUV9P;
-			break;
-		default:
-			fprintf(stderr, 
-				"quicktime_ffmpeg_decode: unrecognized color model %d\n", 
-				ffmpeg->decoder_context[current_field]->pix_fmt);
-			input_cmodel = BC_YUV420P;
-			break;
+	case AV_PIX_FMT_YUV420P:
+		input_cmodel = BC_YUV420P;
+		break;
+	case AV_PIX_FMT_YUYV422:
+		input_cmodel = BC_YUV422;
+		break;
+	case AV_PIX_FMT_YUV422P:
+		input_cmodel = BC_YUV422P;
+		break;
+	case AV_PIX_FMT_YUV410P:
+		input_cmodel = BC_YUV9P;
+		break;
+	default:
+		fprintf(stderr,
+			"quicktime_ffmpeg_decode: unrecognized color model %d\n",
+			ffmpeg->decoder_context[current_field]->pix_fmt);
+		input_cmodel = BC_YUV420P;
+		break;
 	}
 
 	if(ffmpeg->picture[current_field].data[0])
@@ -470,13 +421,11 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 			malloc(sizeof(unsigned char*) * 
 			ffmpeg->decoder_context[current_field]->height);
 
-
 		for(i = 0; i < ffmpeg->decoder_context[current_field]->height; i++)
 			input_rows[i] = ffmpeg->picture[current_field].data[0] + 
 				i * 
 				ffmpeg->decoder_context[current_field]->width * 
 				cmodel_calculate_pixelsize(input_cmodel);
-
 
 		cmodel_transfer(row_pointers, /* Leave NULL if non existent */
 			input_rows,
@@ -501,13 +450,5 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 			ffmpeg->width);
 		free(input_rows);
 	}
-
-
 	return result;
 }
-
-
-
-
-
-
