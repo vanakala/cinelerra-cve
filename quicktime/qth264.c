@@ -9,7 +9,6 @@
 #include "x264.h"
 
 
-
 typedef struct
 {
 // Encoder side
@@ -37,30 +36,10 @@ typedef struct
 static pthread_mutex_t h264_lock = PTHREAD_MUTEX_INITIALIZER;
 
 
-
-
-
-
-
-
-
-
-
-
-// Direct copy routines
-int quicktime_h264_is_key(unsigned char *data, long size, char *codec_id)
-{
-	
-}
-
-
-
-
 static int delete_codec(quicktime_video_map_t *vtrack)
 {
 	quicktime_h264_codec_t *codec;
 	int i;
-
 
 	codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	for(i = 0; i < codec->total_fields; i++)
@@ -68,7 +47,6 @@ static int delete_codec(quicktime_video_map_t *vtrack)
 		if(codec->encode_initialized[i])
 		{
 			pthread_mutex_lock(&h264_lock);
-
 
 			if(codec->pic[i])
 			{
@@ -85,17 +63,13 @@ static int delete_codec(quicktime_video_map_t *vtrack)
 		}
 	}
 
-	
-
 	if(codec->temp_frame) free(codec->temp_frame);
 	if(codec->work_buffer) free(codec->work_buffer);
 	if(codec->decoder) quicktime_delete_ffmpeg(codec->decoder);
 
-
 	free(codec);
 	return 0;
 }
-
 
 
 static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
@@ -119,11 +93,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	int got_pps = 0;
 	int got_sps = 0;
 	quicktime_avcc_t *avcc = &trak->mdia.minf.stbl.stsd.table[0].avcc;
-
-
-
-
-
 
 	pthread_mutex_lock(&h264_lock);
 
@@ -149,7 +118,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			codec->param.rc.i_qp_max = default_params.rc.i_qp_max;
 		}
 
-
 		if(file->cpus > 1)
 		{
 			codec->param.i_threads = file->cpus;
@@ -157,20 +125,14 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 		codec->encoder[current_field] = x264_encoder_open(&codec->param);
 		codec->pic[current_field] = calloc(1, sizeof(x264_picture_t));
-   		x264_picture_alloc(codec->pic[current_field], 
+		x264_picture_alloc(codec->pic[current_field],
 			X264_CSP_I420, 
 			codec->param.i_width, 
 			codec->param.i_height);
 	}
 
-
-
-
-
-
 	codec->pic[current_field]->i_type = X264_TYPE_AUTO;
 	codec->pic[current_field]->i_qpplus1 = 0;
-
 
 	if(codec->header_only)
 	{
@@ -208,22 +170,10 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
 			width,       /* For planar use the luma rowspan */
 			codec->pic[current_field]->img.i_stride[0]);
-		
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-    x264_picture_t pic_out;
-    x264_nal_t *nals;
+	x264_picture_t pic_out;
+	x264_nal_t *nals;
 	int nnal;
 	x264_encoder_encode(codec->encoder[current_field], 
 		&nals, 
@@ -231,6 +181,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 		codec->pic[current_field], 
 		&pic_out);
 	int allocation = w_16 * h_16 * 3;
+
 	if(!codec->work_buffer)
 	{
 		codec->work_buffer = calloc(1, allocation);
@@ -240,8 +191,8 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	for(i = 0; i < nnal; i++)
 	{
 #if X264_BUILD >= 76
-                int size = nals[i].i_payload;
-                memcpy(codec->work_buffer + codec->buffer_size, nals[i].p_payload, nals[i].i_payload);
+		int size = nals[i].i_payload;
+		memcpy(codec->work_buffer + codec->buffer_size, nals[i].p_payload, nals[i].i_payload);
 #else
 		int size = x264_nal_encode(codec->work_buffer + codec->buffer_size, 
 			&allocation, 
@@ -254,7 +205,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 		{
 // Size of NAL for avc
 			uint64_t avc_size = size - 4;
-
 // Synthesize header.
 // Hopefully all the parameter set NAL's are present in the first frame.
 			if(!avcc->data_size)
@@ -294,16 +244,14 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 						avc_size);
 					header_size += avc_size;
 				}
-
 // Write header
 				if(got_sps && got_pps)
 				{
 					quicktime_set_avcc_header(avcc,
-		  				header, 
-		  				header_size);
+						header, 
+						header_size);
 				}
 			}
-
 
 // Convert to avc nal
 			*ptr++ = (avc_size & 0xff000000) >> 24;
@@ -317,8 +265,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	}
 
 	pthread_mutex_unlock(&h264_lock);
-
-
 
 	if(!codec->header_only)
 	{
@@ -353,8 +299,6 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 }
 
 
-
-
 static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 {
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
@@ -366,7 +310,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 	int w_16 = quicktime_quantize16(width);
 	int h_16 = quicktime_quantize16(height);
 
-
 	if(!codec->decoder) codec->decoder = quicktime_new_ffmpeg(
 		file->cpus,
 		codec->total_fields,
@@ -374,7 +317,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		width,
 		height,
 		stsd_table);
-	
 
 	if(codec->decoder) return quicktime_ffmpeg_decode(codec->decoder,
 		file, 
@@ -383,30 +325,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 	return 1;
 }
-
-// Straight out of another h264 file
-/*
- * static int write_avcc_header(unsigned char *data)
- * {
- * 	int result = 0;
- * 	unsigned char *ptr = data;
- * 
- * 
- * 	static unsigned char test[] =
- * 	{
- * 		0x01, 0x4d, 0x40, 0x1f, 0xff, 0xe1, 0x00, 0x14,
- * 		0x27, 0x4d, 0x40, 0x1f, 0xa9, 0x18, 0x0a, 0x00, 
- * 		0xb7, 0x60, 0x0d, 0x40, 0x40, 0x40, 0x4c, 0x2b, 
- * 		0x5e, 0xf7, 0xc0, 0x40, 0x01, 0x00, 0x04, 0x28, 
- * 		0xce, 0x0f, 0x88
- * 	};
- * 
- * 	memcpy(data, test, sizeof(test));
- * 	result = sizeof(test);
- * 
- * 	return result;
- * }
- */
 
 static void flush(quicktime_t *file, int track)
 {
@@ -419,22 +337,8 @@ static void flush(quicktime_t *file, int track)
 	{
 		codec->header_only = 1;
 		encode(file, 0, track);
-/*
- * 		unsigned char temp[1024];
- * 		int size = write_avcc_header(temp);
- * 		if(size)
- * 			quicktime_set_avcc_header(avcc,
- * 				temp, 
- * 				size);
- */
 	}
-/*
- * 	trak->mdia.minf.stbl.stsd.table[0].version = 1;
- * 	trak->mdia.minf.stbl.stsd.table[0].revision = 1;
- */
 }
-
-
 
 static int reads_colormodel(quicktime_t *file, 
 		int colormodel, 
@@ -445,12 +349,14 @@ static int reads_colormodel(quicktime_t *file,
 	return (colormodel == BC_YUV420P);
 }
 
+
 static int writes_colormodel(quicktime_t *file, 
 		int colormodel, 
 		int track)
 {
 	return (colormodel == BC_YUV420P);
 }
+
 
 static int set_parameter(quicktime_t *file, 
 		int track, 
@@ -508,27 +414,22 @@ static quicktime_h264_codec_t* init_common(quicktime_video_map_t *vtrack,
 	codec_base->title = title;
 	codec_base->desc = description;
 
-
 	codec = (quicktime_h264_codec_t*)codec_base->priv;
 	x264_param_default(&codec->param);
 #if X264_BUILD >= 48
 	codec->param.rc.i_rc_method = X264_RC_CQP;
 #endif
-
-
 	return codec;
 }
 
-
 void quicktime_init_codec_h264(quicktime_video_map_t *vtrack)
 {
-    quicktime_h264_codec_t *result = init_common(vtrack,
-        QUICKTIME_H264,
-        "H.264",
-        "H.264");
+	quicktime_h264_codec_t *result = init_common(vtrack,
+		QUICKTIME_H264,
+		"H.264",
+		"H.264");
 	result->total_fields = 1;
 }
-
 
 // field based H.264
 void quicktime_init_codec_hv64(quicktime_video_map_t *vtrack)
@@ -539,4 +440,3 @@ void quicktime_init_codec_hv64(quicktime_video_map_t *vtrack)
 		"H.264 with two streams alternating every other frame.  (Not standardized)");
 	result->total_fields = 2;
 }
-
