@@ -42,9 +42,6 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 	if(!ffmpeg_initialized)
 	{
 		ffmpeg_initialized = 1;
-#if LIBAVCODEC_VERSION_MAJOR < 53
-		avcodec_init();
-#endif
 		avcodec_register_all();
 	}
 
@@ -59,11 +56,9 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 		}
 
 		AVCodecContext *context = ptr->decoder_context[i] = avcodec_alloc_context3(ptr->decoder[i]);
-		static char fake_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		context->width = ptr->width_i;
 		context->height = ptr->height_i;
-		context->extradata = fake_data;
-		context->extradata_size = 0;
+
 		if(esds->mpeg4_header && esds->mpeg4_header_size) 
 		{
 			context->extradata = esds->mpeg4_header;
@@ -78,16 +73,9 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 			(ffmpeg_id == AV_CODEC_ID_MPEG4 ||
 				ffmpeg_id == AV_CODEC_ID_MPEG1VIDEO ||
 			ffmpeg_id == AV_CODEC_ID_MPEG2VIDEO ||
-#if LIBAVCODEC_VERSION_MAJOR < 54
-			ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT ||
-#endif
 			ffmpeg_id == AV_CODEC_ID_H263P))
 		{
-#if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
-			avcodec_thread_init(context, cpus);
-#else
 			context->thread_count = cpus;
-#endif
 		}
 		if(avcodec_open2(context,
 			ptr->decoder[i], NULL) < 0)
@@ -117,7 +105,9 @@ void quicktime_delete_ffmpeg(quicktime_ffmpeg_t *ptr)
 			if(ptr->decoder_context[i])
 			{
 				avcodec_close(ptr->decoder_context[i]);
-				free(ptr->decoder_context[i]);
+				ptr->decoder_context[i]->extradata = 0;
+				ptr->decoder_context[i]->extradata_size = 0;
+				avcodec_free_context(&ptr->decoder_context[i]);
 			}
 		}
 		pthread_mutex_unlock(&ffmpeg_lock);
@@ -134,8 +124,7 @@ static int decode_wrapper(quicktime_t *file,
 	quicktime_ffmpeg_t *ffmpeg,
 	int frame_number, 
 	int current_field, 
-	int track,
-	int drop_it)
+	int track)
 {
 	int got_picture = 0; 
 	int result = 0; 
@@ -144,6 +133,7 @@ static int decode_wrapper(quicktime_t *file,
 	char *compressor = vtrack->track->mdia.minf.stbl.stsd.table[0].format;
 	quicktime_trak_t *trak = vtrack->track;
 	quicktime_stsd_table_t *stsd_table = &trak->mdia.minf.stbl.stsd.table[0];
+	AVPacket pkt;
 
 	quicktime_set_video_position(file, frame_number, track);
 
@@ -163,30 +153,13 @@ static int decode_wrapper(quicktime_t *file,
 	if(header_bytes)
 		memcpy(ffmpeg->work_buffer, stsd_table->esds.mpeg4_header, header_bytes);
 
-	if(!quicktime_read_data(file, 
-		ffmpeg->work_buffer + header_bytes, 
-		bytes))
-		result = -1;
-
-	if(!result) 
+	for(got_picture = 0; !got_picture;)
 	{ 
-#if LIBAVCODEC_VERSION_INT >= ((52<<16)+(0<<8)+0)
-		AVPacket pkt;
-#endif
+		if(!quicktime_read_data(file,
+				ffmpeg->work_buffer + header_bytes, bytes))
+			result = -1;
 
-// No way to determine if there was an error based on nonzero status.
-// Need to test row pointers to determine if an error occurred.
-		if(drop_it)
-			ffmpeg->decoder_context[current_field]->skip_frame = AVDISCARD_NONREF /* AVDISCARD_BIDIR */;
-		else
-			ffmpeg->decoder_context[current_field]->skip_frame = AVDISCARD_DEFAULT;
-#if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
-		result = avcodec_decode_video(ffmpeg->decoder_context[current_field], 
-			&ffmpeg->picture[current_field], 
-			&got_picture, 
-			ffmpeg->work_buffer, 
-			bytes + header_bytes);
-#else
+
 		av_init_packet( &pkt );
 		pkt.data = ffmpeg->work_buffer;
 		pkt.size = bytes + header_bytes;
@@ -194,24 +167,9 @@ static int decode_wrapper(quicktime_t *file,
 			&ffmpeg->picture[current_field],
 			&got_picture,
 			&pkt);
-#endif
-
-		if(ffmpeg->picture[current_field].data[0])
-		{
-			result = 0;
-		}
-		else
-		{
-// ffmpeg can't recover if the first frame errored out, like in a direct copy
-// sequence.
-			result = 1;
-		}
-
-#ifdef ARCH_X86
-		asm("emms");
-#endif
+		header_bytes = 0;
 	}
-	return result;
+	return !(got_picture && result > 0);
 }
 
 // Get amount chroma planes are downsampled from luma plane.
@@ -260,31 +218,12 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 		&ffmpeg->picture[current_field].data[1],
 		&ffmpeg->picture[current_field].data[2]);
 
-
 // Didn't get frame
 	if(!result)
 	{
 // Codecs which work without locking:
 // H264
 // MPEG-4
-		if(ffmpeg->last_frame[current_field] == -1 &&
-			ffmpeg->ffmpeg_id != AV_CODEC_ID_H264)
-		{
-			int current_frame = vtrack->current_position;
-// For certain codecs,
-// must decode frame with stream header first but only the first frame in the
-// field sequence has a stream header.
-			result = decode_wrapper(file, 
-				vtrack, 
-				ffmpeg, 
-				current_field, 
-				current_field, 
-				track,
-				0);
-// Reset position because decode wrapper set it
-			quicktime_set_video_position(file, current_frame, track);
-			ffmpeg->last_frame[current_field] = current_field;
-		}
 
 // Handle seeking
 // Seeking requires keyframes
@@ -323,6 +262,8 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 				frame1 = ffmpeg->last_frame[current_field] + ffmpeg->fields;
 				do_i_frame = 0;
 			}
+			else
+				avcodec_flush_buffers(ffmpeg->decoder_context[current_field]);
 
 			first_frame = frame1;
 
@@ -333,9 +274,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 					ffmpeg, 
 					frame1, 
 					current_field, 
-					track,
-// Don't drop if we want to cache it
-					0);
+					track);
 
 				if(ffmpeg->picture[current_field].data[0] &&
 // FFmpeg seems to glitch out if we include the first frame.
@@ -363,8 +302,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 						ffmpeg, 
 						frame1, 
 						current_field, 
-						track,
-						0);
+						track);
 					do_i_frame = 0;
 				}
 				frame1 += ffmpeg->fields;
@@ -384,8 +322,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 				ffmpeg, 
 				vtrack->current_position, 
 				current_field, 
-				track,
-				0);
+				track);
 		}
 		ffmpeg->last_frame[current_field] = vtrack->current_position;
 	}
