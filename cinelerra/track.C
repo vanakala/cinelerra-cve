@@ -456,6 +456,37 @@ Plugin* Track::insert_effect(const char *title,
 	return plugin;
 }
 
+void Track::xchg_pluginsets(PluginSet *set1, PluginSet *set2)
+{
+	int si1, si2;
+
+	if(set1 == set2)
+		return;
+
+	si1 = si2 = -1;
+
+	for(int i = 0; i < plugin_set.total; i++)
+	{
+		if(plugin_set.values[i] == set1)
+			si1 = i;
+		if(plugin_set.values[i] == set2)
+			si2 = i;
+	}
+
+	if(si1 >= 0 && si2 >= 0)
+	{
+		PluginSet *temp = plugin_set.values[si1];
+		plugin_set.values[si1] = plugin_set.values[si2];
+		plugin_set.values[si2] = temp;
+
+		SharedLocation old_location, new_location;
+		new_location.module = old_location.module = tracks->number_of(this);
+		old_location.plugin = si1;
+		new_location.plugin = si2;
+		tracks->change_plugins(old_location, new_location, 1);
+	}
+}
+
 void Track::move_plugins_up(PluginSet *plugin_set)
 {
 	for(int i = 0; i < this->plugin_set.total; i++)

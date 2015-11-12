@@ -97,6 +97,7 @@ public:
 // Optimize editing
 	void optimize();
 
+	void xchg_pluginsets(PluginSet *set1, PluginSet *set2);
 	void move_plugins_up(PluginSet *plugin_set);
 	void move_plugins_down(PluginSet *plugin_set);
 	void remove_pluginset(PluginSet *plugin_set);
