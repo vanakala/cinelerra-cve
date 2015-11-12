@@ -283,15 +283,19 @@ void Tracks::move_effect(Plugin *plugin,
 {
 	Track *source_track = plugin->track;
 	Plugin *result = 0;
-
 // Insert on an existing plugin set
-	if(!dest_track && dest_plugin_set && plugin->plugin_set == dest_plugin_set)
+	if(!dest_track && dest_plugin_set)
 	{
-		ptstime opos = plugin->get_pts();
-		ptstime length = plugin->length();
-		dest_postime = plugin->set_pts(dest_postime);
-		plugin->next->set_pts(dest_postime + length);
-		plugin->shift_keyframes(dest_postime - opos);
+		if(plugin->plugin_set == dest_plugin_set)
+		{
+			ptstime opos = plugin->get_pts();
+			ptstime length = plugin->length();
+			dest_postime = plugin->set_pts(dest_postime);
+			plugin->next->set_pts(dest_postime + length);
+			plugin->shift_keyframes(dest_postime - opos);
+		}
+		else
+			source_track->xchg_pluginsets(dest_plugin_set, plugin->plugin_set);
 	}
 	else
 // Create a new plugin set
@@ -304,15 +308,15 @@ void Tracks::move_effect(Plugin *plugin,
 				plugin->length(),
 				plugin->plugin_type);
 
-	result->copy_from(plugin);
-	result->shift(dest_postime - plugin->get_pts());
+		result->copy_from(plugin);
+		result->shift(dest_postime - plugin->get_pts());
 
 // Clear new plugin from old set
-	plugin->plugin_set->clear(plugin->get_pts(),
-		plugin->end_pts());
-	}
+		plugin->plugin_set->clear(plugin->get_pts(),
+			plugin->end_pts());
 
-	source_track->optimize();
+		source_track->optimize();
+	}
 }
 
 int Tracks::concatenate_tracks(int edit_plugins)
