@@ -638,10 +638,10 @@ void BC_WindowBase::dispatch_event()
 	int cancel_resize, cancel_translation;
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
+	lock_window("BC_WindowBase::dispatch_event");
 	if(XPending(display) ||
 			(!motion_events && !resize_events && !translation_events))
 	{
-		lock_window("BC_WindowBase::dispatch_event");
 		while(!XPending(display))
 		{
 			unlock_window();
@@ -658,6 +658,7 @@ void BC_WindowBase::dispatch_event()
 	else
 // Handle compressed events
 	{
+		unlock_window();
 		get_resources()->create_window_lock->lock("BC_WindowBase::dispatch_event - compressed");
 		if(resize_events)
 			dispatch_resize_event(last_resize_w, last_resize_h);
