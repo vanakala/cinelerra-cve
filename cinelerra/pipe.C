@@ -32,16 +32,6 @@
 #include "mainerror.h"
 #include "pipe.h"
 
-extern "C" 
-{
-	int pipe_sigpipe_received;
-
-	void pipe_handle_sigpipe(int signum) 
-	{
-		printf("Received sigpipe\n");
-		pipe_sigpipe_received++;
-	}
-}
 
 Pipe::Pipe(const char *command, const char *sub_str, char sub_char) 
 {
@@ -53,8 +43,7 @@ Pipe::Pipe(const char *command, const char *sub_str, char sub_char)
 	file = NULL;
 	fd = -1;
 
-	// FUTURE: could probably set to SIG_IGN once things work
-	signal(SIGPIPE, pipe_handle_sigpipe);
+	signal(SIGPIPE, SIG_IGN);
 }
 
 Pipe::~Pipe() 
