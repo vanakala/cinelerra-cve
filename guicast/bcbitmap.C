@@ -150,6 +150,7 @@ void BC_Bitmap::allocate_data()
 {
 	int want_row_pointers = 1;
 
+	top_level->lock_window("BC_Bitmap::allocate_data");
 // Shared memory available
 	if(use_shm)
 	{
@@ -301,6 +302,7 @@ void BC_Bitmap::allocate_data()
 		bits_per_pixel = ximage[0]->bits_per_pixel;
 		bytes_per_line = ximage[0]->bytes_per_line;
 	}
+	top_level->unlock_window();
 
 // Create row pointers
 	if(want_row_pointers)
@@ -320,6 +322,7 @@ void BC_Bitmap::delete_data()
 {
 	if(data[0])
 	{
+		top_level->lock_window("BC_Bitmap::delete_data");
 		if(use_shm)
 		{
 			if(xv_image[0])
@@ -358,6 +361,7 @@ void BC_Bitmap::delete_data()
 // data is automatically freed by XDestroyImage
 		data[0] = 0;
 		last_pixmap_used = 0;
+		top_level->unlock_window();
 	}
 }
 
