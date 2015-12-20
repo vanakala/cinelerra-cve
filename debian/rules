@@ -49,8 +49,6 @@ binary-indep: checkroot build-stamp
 binary-arch: checkroot build-stamp
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 	chmod -x debian/tmp/usr/lib/cinelerra/*
-	chmod +x debian/tmp/usr/lib/cinelerra/fonts
-	chmod -x debian/tmp/usr/lib/cinelerra/fonts/*
 	dh_install --sourcedir=debian/tmp --autodest
 	dh_installdocs -XCVS
 	dh_installchangelogs -a
