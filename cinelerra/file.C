@@ -28,6 +28,7 @@
 #include "edit.h"
 #include "file.h"
 #include "fileac3.h"
+#include "fileavlibs.h"
 #include "filedv.h"
 #include "filebase.h"
 #include "fileexr.h"
@@ -373,12 +374,12 @@ int File::open_file(Preferences *preferences,
 			return FILE_IS_XML;
 		}    // can't load project file
 		else
-		if(FileMOV::check_sig(this->asset))
+		if(FileAVlibs::check_sig(this->asset))
 		{
 // MOV file
 // should be last because quicktime lacks a magic number
 			fclose(stream);
-			file = new FileMOV(this->asset, this);
+			file = new FileAVlibs(this->asset, this);
 		}
 		else
 		{
@@ -431,7 +432,7 @@ int File::open_file(Preferences *preferences,
 		break;
 
 	case FILE_MOV:
-		file = new FileMOV(this->asset, this);
+		file = new FileAVlibs(this->asset, this);
 		break;
 
 	case FILE_MPEG:
@@ -445,7 +446,7 @@ int File::open_file(Preferences *preferences,
 		break;
 
 	case FILE_AVI:
-		file = new FileMOV(this->asset, this);
+		file = new FileAVlibs(this->asset, this);
 		break;
 
 	case FILE_RAWDV:
