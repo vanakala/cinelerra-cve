@@ -389,6 +389,7 @@ else
 	FFMPEG_FOLDER=ffmpeg
 	FFMPEG_CFLAGS="-I\$(top_srcdir)/ffmpeg -DHAVE_SWSCALER"
 	FFMPEG_LIBS="-L\$(top_builddir)/ffmpeg/libavcodec -lavcodec-cve \
+		-L\$(top_builddir)/ffmpeg/libavformat -lavformat-cve \
 		-L\$(top_builddir)/ffmpeg/libavutil -lavutil-cve \
 		-L\$(top_builddir)/ffmpeg/libswscale -lswscale-cve \
 		-L\$(top_builddir)/ffmpeg/libswresample -lswresample-cve"
