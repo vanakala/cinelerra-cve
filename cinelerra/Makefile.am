@@ -110,7 +110,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    fileformat.C \
 		    filejpeg.C \
 		    filelist.C \
-		    filemov.C \
 		    filempeg.C \
 		    filepng.C \
 		    filesndfile.C \
@@ -361,7 +360,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 fileexr.h \
 		 filejpeg.h \
 		 filelist.h \
-		 filemov.h \
 		 filempeg.h \
 		 filepng.h \
 		 filesndfile.h \

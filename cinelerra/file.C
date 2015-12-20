@@ -34,7 +34,6 @@
 #include "fileexr.h"
 #include "filexml.h"
 #include "filejpeg.h"
-#include "filemov.h"
 #include "filempeg.h"
 #include "fileogg.h"
 #include "filepng.h"
@@ -146,10 +145,8 @@ void File::get_options(FormatTools *format, int options)
 				options);
 			break;
 		case FILE_MOV:
-			FileMOV::get_parameters(parent_window, 
-				asset,
-				format_window,
-				options);
+			// should not reach here
+			errorbox("File::get_options::FILE_MOV is unsupported");
 			break;
 		case FILE_AMPEG:
 		case FILE_VMPEG:
@@ -159,10 +156,8 @@ void File::get_options(FormatTools *format, int options)
 				options);
 			break;
 		case FILE_AVI:
-			FileMOV::get_parameters(parent_window, 
-				asset, 
-				format_window, 
-				options);
+			// should not reach here
+			errorbox("File::get_options::FILE_AVI is unsupported");
 			break;
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
@@ -862,7 +857,7 @@ int File::supports(int format)
 
 	case FILE_AVI:
 	case FILE_MOV:
-		return FileMOV::supports(format);
+		break;
 	}
 	return (SUPPORTS_AUDIO | SUPPORTS_VIDEO);
 }
@@ -878,12 +873,6 @@ int File::get_best_colormodel(Asset *asset, int driver)
 	{
 	case FILE_RAWDV:
 		return FileDV::get_best_colormodel(asset, driver);
-
-	case FILE_MOV:
-		return FileMOV::get_best_colormodel(asset, driver);
-
-	case FILE_AVI:
-		return FileMOV::get_best_colormodel(asset, driver);
 
 	case FILE_MPEG:
 		return FileMPEG::get_best_colormodel(asset, driver);
