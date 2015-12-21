@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <string.h>
 
 struct selection_int FileAVlibs::known_formats[] =
