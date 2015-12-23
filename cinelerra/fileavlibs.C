@@ -43,8 +43,7 @@
 struct selection_int FileAVlibs::known_formats[] =
 {
 	{ "mov,mp4,m4a,3gp,3g2,mj2", FILE_MOV },
-// avi does not work yet
-//	{ "avi", FILE_AVI },
+	{ "avi", FILE_AVI },
 	{ 0, 0 }
 };
 
