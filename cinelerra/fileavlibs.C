@@ -217,8 +217,10 @@ int FileAVlibs::open_file(int rd, int wr)
 			}
 			if(audio_index >= 0)
 			{
-				asset->audio_length = tocfile->toc_streams[audio_index].max_index -
-						tocfile->toc_streams[audio_index].min_index;
+				asset->audio_length = (samplenum)round((tocfile->toc_streams[audio_index].max_index -
+					tocfile->toc_streams[audio_index].min_index) *
+					av_q2d(context->streams[audio_index]->time_base) *
+					asset->sample_rate);
 			}
 		}
 		else
