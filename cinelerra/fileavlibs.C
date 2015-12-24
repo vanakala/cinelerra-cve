@@ -892,3 +892,103 @@ stream_params *FileAVlibs::get_track_data(int trx)
 
 	return &track_data;
 }
+
+void FileAVlibs::dump_AVFormatContext(AVFormatContext *ctx, int indent)
+{
+	char bf1[256], bf2[64];
+
+	printf("%*sAVFormatContext %p dump:\n", indent, "", ctx);
+	indent += 2;
+	printf("%*sav_class %p iformat %p oformat %p, priv_data %p\n", indent, "",
+		ctx->av_class, ctx->iformat, ctx->oformat, ctx->priv_data);
+	printf("%*siocontext %p ctx_flags %#x nb_streams %u streams %p\n", indent, "",
+		ctx->pb, ctx->ctx_flags, ctx->nb_streams, ctx->streams);
+	printf("%*sfilename '%s'\n", indent, "", ctx->filename);
+	printf("%*sstart_time %s(%.2f) duration %s(%.2f), bit_rate %d\n", indent, "",
+		dump_ts(ctx->start_time, bf1), (double)ctx->start_time / AV_TIME_BASE,
+		dump_ts(ctx->duration, bf2), (double)ctx->duration / AV_TIME_BASE, ctx->bit_rate);
+	printf("%*spacket_size %u max_delay %d flags '%s'(%#x)\n", indent, "",
+		ctx->packet_size, ctx->max_delay, dump_avfmt_flag(ctx->flags, bf1), ctx->flags);
+	printf("%*skey %p keylen %d nb_programs %d, programs %p\n", indent, "",
+		ctx->key, ctx->keylen, ctx->nb_programs, ctx->programs);
+	printf("%*saudio_codec_id %d video_codec_id %d subtitle_codec_id %d data_codec_id %d\n", indent, "",
+		ctx->audio_codec_id, ctx->video_codec_id, ctx->subtitle_codec_id, ctx->data_codec_id);
+	printf("%*smax_index_size %u max_picture_buffer %u nb_chapters %u chapters %p\n", indent, "",
+		ctx->max_index_size, ctx->max_picture_buffer, ctx->nb_chapters, ctx->chapters);
+	printf("%*smetadata %p start_time_realtime %s fps_probe_size %d error_recognition %d\n", indent, "",
+		ctx->metadata, dump_ts(ctx->start_time_realtime, bf1),
+		ctx->fps_probe_size, ctx->error_recognition);
+	printf("%*sdebug %d max_interleave_delta %lld strict_std_compliance %d\n", indent, "",
+		ctx->debug, ctx->max_interleave_delta, ctx->strict_std_compliance);
+	printf("%*smax_ts_probe %d avoid_negative_ts %d audio_preload %d max_chunk_duration %d\n", indent, "",
+		ctx->max_ts_probe, ctx->avoid_negative_ts, ctx->audio_preload, ctx->max_chunk_duration);
+	printf("%*sduration_estimation_method %d skip_initial_bytes %lld correct_ts_overflow %u\n", indent, "",
+		ctx->duration_estimation_method, ctx->skip_initial_bytes, ctx->correct_ts_overflow);
+	printf("%*sseek2any %d flush_packets %d probe_score %d format_probesize %d\n", indent, "",
+		ctx->seek2any, ctx->flush_packets, ctx->probe_score, ctx->format_probesize);
+	printf("%*scodec_whitelist %p format_whitelist %p internal %p io_repositioned %d\n", indent, "",
+		ctx->codec_whitelist, ctx->format_whitelist, ctx->internal, ctx->io_repositioned);
+	printf("%*svideo_codec %p audio_codec %p subtitle_codec %p data_codec %p\n", indent, "",
+		ctx->video_codec, ctx->audio_codec, ctx->subtitle_codec, ctx->data_codec);
+}
+
+const char *FileAVlibs::dump_ts(int64_t ts, char *obuf)
+{
+	static char lbuf[64];
+	char *bp;
+
+	if(ts == AV_NOPTS_VALUE)
+		return "<nopts>";
+
+	if(obuf)
+		bp = obuf;
+	else
+		bp = lbuf;
+
+	sprintf(bp, "%lld", ts);
+	return bp;
+}
+
+const char *FileAVlibs::dump_avfmt_flag(int flags, char *obuf)
+{
+	int l;
+
+	obuf[0] = 0;
+
+	if(flags & AVFMT_FLAG_GENPTS)
+		strcat(obuf, "genpts,");
+	if(flags & AVFMT_FLAG_IGNIDX)
+		strcat(obuf, "inidx,");
+	if(flags & AVFMT_FLAG_NONBLOCK)
+		strcat(obuf, "nonblock,");
+	if(flags & AVFMT_FLAG_IGNDTS)
+		strcat(obuf, "igndts,");
+	if(flags & AVFMT_FLAG_NOFILLIN)
+		strcat(obuf, "nofillin,");
+	if(flags & AVFMT_FLAG_NOPARSE)
+		strcat(obuf, "noparse,");
+	if(flags & AVFMT_FLAG_NOBUFFER)
+		strcat(obuf, "nobuffer,");
+	if(flags & AVFMT_FLAG_CUSTOM_IO)
+		strcat(obuf, "customio,");
+	if(flags & AVFMT_FLAG_DISCARD_CORRUPT)
+		strcat(obuf, "discardcrpt,");
+	if(flags & AVFMT_FLAG_FLUSH_PACKETS)
+		strcat(obuf, "flushpkts,");
+	if(flags & AVFMT_FLAG_BITEXACT)
+		strcat(obuf, "bitexact,");
+	if(flags & AVFMT_FLAG_MP4A_LATM)
+		strcat(obuf, "mp4alatm,");
+	if(flags & AVFMT_FLAG_SORT_DTS)
+		strcat(obuf, "sortdts,");
+	if(flags & AVFMT_FLAG_PRIV_OPT)
+		strcat(obuf, "privopt,");
+	if(flags & AVFMT_FLAG_KEEP_SIDE_DATA)
+		strcat(obuf, "keepside,");
+	if(flags & AVFMT_FLAG_FAST_SEEK)
+		strcat(obuf, "fastseek,");
+
+	if((l = strlen(obuf)) > 0)
+		obuf[l -1] = 0;
+	return obuf;
+}

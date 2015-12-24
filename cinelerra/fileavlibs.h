@@ -67,6 +67,9 @@ private:
 	void liberror(int code, const char *prefix);
 	static int init_picture_from_frame(AVPicture *picture, VFrame *frame);
 	static AVPixelFormat color_model_to_pix_fmt(int color_model);
+	static void dump_AVFormatContext(AVFormatContext *ctx, int indent = 0);
+	static const char *dump_ts(int64_t ts, char *obuf);
+	static const char *dump_avfmt_flag(int flags, char *obuf);
 
 	static struct selection_int known_formats[];
 	AVFormatContext *context;
