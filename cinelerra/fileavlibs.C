@@ -935,18 +935,15 @@ void FileAVlibs::dump_AVFormatContext(AVFormatContext *ctx, int indent)
 const char *FileAVlibs::dump_ts(int64_t ts, char *obuf)
 {
 	static char lbuf[64];
-	char *bp;
 
 	if(ts == AV_NOPTS_VALUE)
 		return "<nopts>";
 
-	if(obuf)
-		bp = obuf;
-	else
-		bp = lbuf;
+	if(!obuf)
+		obuf = lbuf;
 
-	sprintf(bp, "%lld", ts);
-	return bp;
+	sprintf(obuf, "%lld", ts);
+	return obuf;
 }
 
 const char *FileAVlibs::dump_avfmt_flag(int flags, char *obuf)
@@ -991,4 +988,62 @@ const char *FileAVlibs::dump_avfmt_flag(int flags, char *obuf)
 	if((l = strlen(obuf)) > 0)
 		obuf[l -1] = 0;
 	return obuf;
+}
+
+const char *FileAVlibs::dump_AVRational(AVRational *r, char *obuf)
+{
+	char *bp;
+	static char lbuf[64];
+
+	if(!obuf)
+		obuf = lbuf;
+	sprintf(obuf, "%d/%d", r->num, r->den);
+	return obuf;
+}
+
+void FileAVlibs::dump_AVStream(AVStream *stm, int indent)
+{
+	char bf1[64], bf2[64];
+
+	printf("%*sAVStream %p dump:\n", indent, "", stm);
+	indent += 2;
+	printf("%*sindex %d id %d codec %p priv_data %p\n", indent, "",
+		stm->index, stm->id, stm->codec, stm->priv_data);
+	printf("%*stime_base %s start_time %s duration %s frames %lld\n", indent, "",
+		dump_AVRational(&stm->time_base), dump_ts(stm->start_time, bf1),
+		dump_ts(stm->duration, bf2), stm->nb_frames);
+	printf("%*sdisposition %#x discard %d, sample_aspect_ratio %s\n", indent, "",
+		stm->disposition, stm->discard, dump_AVRational(&stm->sample_aspect_ratio));
+	printf("%*smetadata %p avg_frame_rate %s side_data %p nb_side_data %d\n", indent, "",
+		stm->metadata, dump_AVRational(&stm->avg_frame_rate),
+		stm->side_data, stm->nb_side_data);
+// FIXIT Attached_pic dump here!
+	printf("%*sevent_flags %d info %p first_dts %s cur_dts %s\n", indent, "",
+		stm->event_flags, stm->info, dump_ts(stm->first_dts, bf1),
+		dump_ts(stm->cur_dts, bf2));
+	printf("%*slast_IP_pts %s last_IP_duration %d probe_packets %d codec_info_nb_frames %d\n", indent, "",
+		dump_ts(stm->last_IP_pts), stm->last_IP_duration, stm->probe_packets,
+		stm->codec_info_nb_frames);
+	printf("%*sneed_parsing %d last_in_packet_buffer %p\n", indent, "",
+		stm->need_parsing, stm->last_in_packet_buffer);
+	printf("%*sindex_entries %p nb_index_entries %d\n", indent, "",
+		stm->index_entries, stm->nb_index_entries);
+	printf("%*sindex_entries_allocated_size %u r_frame_rate %s stream_identifier %d\n", indent, "",
+		stm->index_entries_allocated_size, dump_AVRational(&stm->r_frame_rate),
+		stm->stream_identifier);
+	printf("%*sinterleaver_chunk_size %s interleaver_chunk_duration %s request_probe %d\n", indent, "",
+		dump_ts(stm->interleaver_chunk_size, bf1),
+		dump_ts(stm->interleaver_chunk_duration, bf2), stm->request_probe);
+	printf("%*sskip_to_keyframe %d skip_samples %d start_skip_samples %lld first_discard_sample %lld\n", indent, "",
+		stm->skip_to_keyframe, stm->skip_samples, stm->start_skip_samples,
+		stm->first_discard_sample);
+	printf("%*slast_discard_sample %lld nb_decoded_frames %d mux_ts_offset %lld\n", indent, "",
+		stm->last_discard_sample, stm->nb_decoded_frames, stm->mux_ts_offset);
+	printf("%*spts_wrap_reference %s pts_wrap_behavior %d update_initial_durations_done %d\n", indent, "",
+		dump_ts(stm->pts_wrap_reference), stm->pts_wrap_behavior,
+		stm->update_initial_durations_done);
+	printf("%*sinject_global_side_data %d recommended_encoder_configuration %p\n", indent, "",
+		stm->inject_global_side_data, stm->recommended_encoder_configuration);
+	printf("%*sdisplay_aspect_ratio %s\n", indent, "",
+		dump_AVRational(&stm->display_aspect_ratio));
 }
