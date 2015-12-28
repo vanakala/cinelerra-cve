@@ -1222,3 +1222,18 @@ void FileAVlibs::dump_AVFrame(AVFrame *avf, int indent)
 	printf("%*schannels %d pkt_size %d qp_table_buf %p\n", indent, "",
 		avf->channels, avf->pkt_size, avf->qp_table_buf);
 }
+
+void FileAVlibs::dump_AVPacket(AVPacket *pkt, int indent)
+{
+	char bf1[64], bf2[64];
+
+	printf("%*sAVPacket %p dump:\n", indent, "", pkt);
+	indent += 2;
+	printf("%*sbuf %p pts %s dts %s data %p flags %#x\n", indent, "",
+		pkt->buf, dump_ts(pkt->pts, bf1), dump_ts(pkt->dts, bf2),
+		pkt->data, pkt->flags);
+	printf("%*sside_data %p side_data_elems %d duration %s pos %lld\n", indent, "",
+		pkt->side_data, pkt->side_data_elems, dump_ts(pkt->duration), pkt->pos);
+	printf("%*sconvergence_duration %s\n", indent, "",
+		dump_ts(pkt->convergence_duration));
+}
