@@ -70,6 +70,7 @@ private:
 	static void dump_AVFormatContext(AVFormatContext *ctx, int indent = 0);
 	static void dump_AVStream(AVStream *stm, int indent = 0);
 	static void dump_AVCodecContext(AVCodecContext *ctx, int indent = 0);
+	static void dump_AVFrame(AVFrame *avf, int indent = 0);
 	static const char *dump_ts(int64_t ts, char *obuf = 0);
 	static const char *dump_AVRational(AVRational *r, char *obuf = 0);
 	static const char *dump_avfmt_flag(int flags, char *obuf);

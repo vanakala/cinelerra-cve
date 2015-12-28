@@ -1172,3 +1172,53 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 	printf("%*sdump_separator %p codec_whitelist %p properties %u\n", indent, "",
 		ctx->dump_separator, ctx->codec_whitelist, ctx->properties);
 }
+
+void FileAVlibs::dump_AVFrame(AVFrame *avf, int indent)
+{
+	char bf1[64], bf2[64];
+
+	printf("%*sAVFrame %p dump:\n", indent, "", avf);
+	indent += 2;
+	printf("%*sdata: ", indent, "");
+	for(int i = 0; i < AV_NUM_DATA_POINTERS; i++)
+	{
+		printf(" %p", avf->data[i]);
+		if(i < AV_NUM_DATA_POINTERS - 1)
+			putchar(',');
+	}
+	putchar('\n');
+
+	printf("%*slinesize: ", indent, "");
+	for(int i = 0; i < AV_NUM_DATA_POINTERS; i++)
+	{
+		printf(" %d", avf->linesize[i]);
+		if(i < AV_NUM_DATA_POINTERS - 1)
+			putchar(',');
+	}
+	putchar('\n');
+
+	printf("%*sextended_data %p [%d,%d] nb_samples %d format %d\n", indent, "",
+		avf->extended_data, avf->width, avf->height, avf->nb_samples, avf->format);
+	printf("%*skey_frame %d pict_type %d sample_aspect_ratio %s pts %s\n", indent, "",
+		avf->key_frame, avf->pict_type, dump_AVRational(&avf->sample_aspect_ratio),
+		dump_ts(avf->pts));
+	printf("%*spkt_pts %s pkt_dts %s coded_picture_number %d display_picture_number %d\n", indent, "",
+		dump_ts(avf->pkt_pts, bf1), dump_ts(avf->pkt_dts, bf2),
+		avf->coded_picture_number, avf->display_picture_number);
+	printf("%*squality %d opaque %p repeat_pict %d interlaced_frame %d top_field_first %d\n", indent, "",
+		avf->quality, avf->opaque, avf->repeat_pict, avf->interlaced_frame,
+		avf->top_field_first);
+	printf("%*spalette_has_changed %d reordered_opaque %s sample_rate %d\n", indent, "",
+		avf->palette_has_changed, dump_ts(avf->reordered_opaque), avf->sample_rate);
+	printf("%*schannel_layout %#llx extended_buf %p nb_extended_buf %d\n", indent, "",
+		avf->channel_layout, avf->extended_buf, avf->nb_extended_buf);
+	printf("%*sside_data %p nb_side_data %d flags %d color_range %d color_primaries %d\n", indent, "",
+		avf->side_data, avf->nb_side_data, avf->flags, avf->color_range, avf->color_primaries);
+	printf("%*scolor_trc %d colorspace %d chroma_location %d best_effort_timestamp %s\n", indent, "",
+		avf->color_trc, avf->colorspace, avf->chroma_location, dump_ts(avf->best_effort_timestamp));
+	printf("%*spkt_pos %s pkt_duration %s metadata %p decode_error_flags %d\n", indent, "",
+		dump_ts(avf->pkt_pos, bf1), dump_ts(avf->pkt_duration, bf2),
+		avf->metadata, avf->decode_error_flags);
+	printf("%*schannels %d pkt_size %d qp_table_buf %p\n", indent, "",
+		avf->channels, avf->pkt_size, avf->qp_table_buf);
+}
