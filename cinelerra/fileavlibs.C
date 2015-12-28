@@ -1047,3 +1047,128 @@ void FileAVlibs::dump_AVStream(AVStream *stm, int indent)
 	printf("%*sdisplay_aspect_ratio %s\n", indent, "",
 		dump_AVRational(&stm->display_aspect_ratio));
 }
+
+const char *FileAVlibs::dump_fourcc(unsigned int tag)
+{
+	static char bf[6];
+
+	bf[0] = tag & 0xff;
+	bf[1] = (tag >> 8) & 0xff;
+	bf[2] = (tag >> 16) & 0xff;
+	bf[3] = (tag >> 24) & 0xff;
+	bf[4] = 0;
+
+	return bf;
+}
+
+void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
+{
+	char bf1[64], bf2[64];
+
+	printf("%*sAVCodecContext %p dump:\n", indent, "", ctx);
+	indent += 2;
+	printf("%*sav_class %p log_level_offset %d codec_type %d codec %p\n", indent, "",
+		ctx->av_class, ctx->log_level_offset, ctx->codec_type, ctx->codec);
+	printf("%*scodec_id %d fourcc %s priv_data %p, internal %p\n", indent, "",
+		ctx->codec_id, dump_fourcc(ctx->codec_tag), ctx->priv_data, ctx->internal);
+	printf("%*sopaque %p bit_rate %d bit_rate_tolerance %d global_quality %d\n", indent, "",
+		ctx->opaque, ctx->bit_rate, ctx->bit_rate_tolerance, ctx->global_quality);
+	printf("%*scompression_level %d flags %d flags2 %d extradata %p extradata_size %d\n", indent, "",
+		ctx->compression_level, ctx->flags, ctx->flags2, ctx->extradata,
+		ctx->extradata_size);
+	printf("%*stime_base %s ticks_per_frame %d delay %d w/h [%d,%d] coded [%d, %d]\n", indent, "",
+		dump_AVRational(&ctx->time_base), ctx->ticks_per_frame, ctx->delay,
+		ctx->width, ctx->height, ctx->coded_width, ctx->coded_height);
+	printf("%*sgop_size %d, pix_fmt %d draw_horiz_band %p get_format %p\n", indent, "",
+		ctx->gop_size, ctx->pix_fmt, ctx->draw_horiz_band, ctx->get_format);
+	printf("%*smax_b_frames %d b_quant_factor %.2f b_frame_strategy %d b_quant_offset %.2f\n", indent, "",
+		ctx->max_b_frames, ctx->b_quant_factor, ctx->b_frame_strategy, ctx->b_quant_offset);
+	printf("%*shas_b_frames %d mpeg_quant %d i_quant_factor %.2f i_quant_offset %.2f\n", indent, "",
+		ctx->has_b_frames, ctx->mpeg_quant, ctx->i_quant_factor, ctx->i_quant_offset);
+	printf("%*slumi_masking %.2f temporal_cplx_masking %.2f spatial_cplx_masking %.2f\n", indent, "",
+		ctx->lumi_masking, ctx->temporal_cplx_masking, ctx->spatial_cplx_masking);
+	printf("%*sp_masking %.2f dark_masking %.2f slice_count %d prediction_method %d\n", indent, "",
+		ctx->p_masking, ctx->dark_masking, ctx->slice_count, ctx->prediction_method);
+	printf("%*sslice_offset %p sample_aspect_ratio %s me_cmp %d me_sub_cmp %d\n", indent, "",
+		ctx->slice_offset, dump_AVRational(&ctx->sample_aspect_ratio),
+		ctx->me_cmp, ctx->me_sub_cmp);
+	printf("%*smb_cmp %d ildct_cmp %d dia_size %d last_predictor_count %d pre_me %d\n", indent, "",
+		ctx->mb_cmp, ctx->ildct_cmp, ctx->dia_size, ctx->last_predictor_count,
+		ctx->pre_me);
+	printf("%*sme_pre_cmp %d pre_dia_size %d me_subpel_quality %d me_range %d\n",
+		indent, "",
+		ctx->me_pre_cmp, ctx->pre_dia_size, ctx->me_subpel_quality, ctx->me_range);
+	printf("%*sslice_flags %d mb_decision %d intra_matrix %p inter_matrix %p\n", indent, "",
+		ctx->slice_flags, ctx->mb_decision, ctx->intra_matrix, ctx->inter_matrix);
+	printf("%*sscenechange_threshold %d, noise_reduction %d intra_dc_precision %d\n", indent, "",
+		ctx->scenechange_threshold, ctx->noise_reduction, ctx->intra_dc_precision);
+	printf("%*sskip_top %d skip_bottom %d mb_lmin %d mb_lmax %d me_penalty_compensation %d\n", indent, "",
+		ctx->skip_top, ctx->skip_bottom, ctx->mb_lmin, ctx->mb_lmax,
+		ctx->me_penalty_compensation);
+	printf("%*sbidir_refine %d brd_scale %d keyint_min %d refs %d chromaoffset %d\n", indent, "",
+		ctx->bidir_refine, ctx->brd_scale, ctx->keyint_min, ctx->refs,
+		ctx->chromaoffset);
+	printf("%*smv0_threshold %d b_sensitivity %d color_primaries %d color_trc %d\n", indent, "",
+		ctx->mv0_threshold, ctx->b_sensitivity, ctx->color_primaries, ctx->color_trc);
+	printf("%*scolorspace %d color_range %d chroma_sample_location %d slices %d\n", indent, "",
+		ctx->colorspace, ctx->color_range, ctx->chroma_sample_location, ctx->slices);
+	printf("%*sfield_order %d sample_rate %d channels %d, sample_fmt %d\n", indent, "",
+		ctx->field_order, ctx->sample_rate, ctx->channels, ctx->sample_fmt);
+	printf("%*sframe_size %d frame_number %d block_align %d cutoff %d\n", indent, "",
+		ctx->frame_size, ctx->frame_number, ctx->block_align, ctx->cutoff);
+	printf("%*schannel_layout %#llx request_channel_layout %#llx audio_service_type %d\n", indent, "",
+		ctx->channel_layout, ctx->request_channel_layout, ctx->audio_service_type);
+	printf("%*srequest_sample_fmt %d get_buffer2 %p refcounted_frames %d\n", indent, "",
+		ctx->request_sample_fmt, ctx->get_buffer2, ctx->refcounted_frames);
+	printf("%*sqcompress %.2f qblur %.2f qmin %d qmax %d max_qdiff %d\n", indent, "",
+		ctx->qcompress, ctx->qblur, ctx->qmin, ctx->qmax, ctx->max_qdiff);
+	printf("%*src_buffer_size %d rc_override_count %d rc_override %p\n", indent, "",
+		ctx->rc_buffer_size, ctx->rc_override_count, ctx->rc_override);
+	printf("%*src_max_rate %d rc_min_rate %d rc_max_available_vbv_use %.2f\n", indent, "",
+		ctx->rc_max_rate, ctx->rc_min_rate, ctx->rc_max_available_vbv_use);
+	printf("%*src_min_vbv_overflow_use %.2f rc_initial_buffer_occupancy %d\n", indent, "",
+		ctx->rc_min_vbv_overflow_use, ctx->rc_initial_buffer_occupancy);
+	printf("%*scoder_type %d context_model %d frame_skip_threshold %d\n", indent, "",
+		ctx->coder_type, ctx->context_model, ctx->frame_skip_threshold);
+	printf("%*sframe_skip_factor %d frame_skip_exp %d frame_skip_cmp %d\n", indent, "",
+		ctx->frame_skip_factor, ctx->frame_skip_exp, ctx->frame_skip_cmp);
+	printf("%*strellis %d min_prediction_order %d max_prediction_order %d\n", indent, "",
+		ctx->trellis, ctx->min_prediction_order, ctx->max_prediction_order);
+	printf("%*stimecode_frame_start %lld rtp_callback %p rtp_payload_size %d\n", indent, "",
+		ctx->timecode_frame_start, ctx->rtp_callback, ctx->rtp_payload_size);
+	printf("%*smv_bits %d header_bits %d i_tex_bits %d p_tex_bits %d\n", indent, "",
+		ctx->mv_bits, ctx->header_bits, ctx->i_tex_bits, ctx->p_tex_bits);
+	printf("%*si_count %d p_count %d skip_count %d misc_bits %d\n", indent, "",
+		ctx->i_count, ctx->p_count, ctx->skip_count, ctx->misc_bits);
+	printf("%*sframe_bits %d stats_out %p stats_in %p, workaround_bugs %#x\n", indent, "",
+		ctx->frame_bits, ctx->stats_out, ctx->stats_in, ctx->workaround_bugs);
+	printf("%*sstrict_std_compliance %d error_concealment %d debug %#x\n", indent, "",
+		ctx->strict_std_compliance, ctx->error_concealment, ctx->debug);
+	printf("%*serr_recognition %#x reordered_opaque %s hwaccel %p hwaccel_context %p\n", indent, "",
+		ctx->err_recognition, dump_ts(ctx->reordered_opaque), ctx->hwaccel,
+		ctx->hwaccel_context);
+	printf("%*sdct_algo %d idct_algo %d bits_per_coded_sample %d bits_per_raw_sample %d\n", indent, "",
+		ctx->dct_algo, ctx->idct_algo, ctx->bits_per_coded_sample, ctx->bits_per_raw_sample);
+	printf("%*sthread_count %d thread_type %d active_thread_type %d thread_safe_callbacks %d\n", indent, "",
+		ctx->thread_count, ctx->thread_type, ctx->active_thread_type,
+		ctx->thread_safe_callbacks);
+	printf("%*sexecute %p execute2 %p nsse_weight %d profile %d level %d\n", indent, "",
+		ctx->execute, ctx->execute2, ctx->nsse_weight, ctx->profile, ctx->level);
+	printf("%*sskip_loop_filter %d skip_idct %d skip_frame %d\n", indent, "",
+		ctx->skip_loop_filter, ctx->skip_idct, ctx->skip_frame);
+	printf("%*ssubtitle_header %p subtitle_header_size %d vbv_delay %lld\n", indent, "",
+		ctx->subtitle_header, ctx->subtitle_header_size, ctx->vbv_delay);
+	printf("%*sside_data_only_packets %d initial_padding %d framerate %s\n", indent, "",
+		ctx->side_data_only_packets, ctx->initial_padding, dump_AVRational(&ctx->framerate));
+	printf("%*ssw_pix_fmt %d pkt_timebase %s codec_descriptor %p\n", indent, "",
+		ctx->sw_pix_fmt, dump_AVRational(&ctx->pkt_timebase), ctx->codec_descriptor);
+	printf("%*spts_correction_num_faulty_pts %lld pts_correction_num_faulty_dts %lld\n", indent, "",
+		ctx->pts_correction_num_faulty_pts, ctx->pts_correction_num_faulty_dts);
+	printf("%*spts_correction_last_pts %s pts_correction_last_dts %s\n", indent, "",
+		dump_ts(ctx->pts_correction_last_pts, bf1),
+		dump_ts(ctx->pts_correction_last_dts, bf2));
+	printf("%*ssub_charenc %p sub_charenc_mode %d skip_alpha %d seek_preroll %d\n", indent, "",
+		ctx->sub_charenc, ctx->sub_charenc_mode, ctx->skip_alpha, ctx->seek_preroll);
+	printf("%*sdump_separator %p codec_whitelist %p properties %u\n", indent, "",
+		ctx->dump_separator, ctx->codec_whitelist, ctx->properties);
+}
