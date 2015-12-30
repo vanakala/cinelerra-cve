@@ -1018,7 +1018,8 @@ void FileAVlibs::dump_AVStream(AVStream *stm, int indent)
 	printf("%*smetadata %p avg_frame_rate %s side_data %p nb_side_data %d\n", indent, "",
 		stm->metadata, dump_AVRational(&stm->avg_frame_rate),
 		stm->side_data, stm->nb_side_data);
-// FIXIT Attached_pic dump here!
+	printf("%*sattached_pic:\n", indent, "");
+	dump_AVPacket(&stm->attached_pic, indent + 2);
 	printf("%*sevent_flags %d info %p first_dts %s cur_dts %s\n", indent, "",
 		stm->event_flags, stm->info, dump_ts(stm->first_dts, bf1),
 		dump_ts(stm->cur_dts, bf2));
