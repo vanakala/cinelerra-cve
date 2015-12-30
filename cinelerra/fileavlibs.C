@@ -453,8 +453,7 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 	if(rqpos != audio_pos - audio_delay)
 	{
 		itm = tocfile->get_item(audio_index, rqpos);
-
-		if(rqpos < audio_pos || itm->index < rqpos)
+		if(rqpos < audio_pos - audio_delay || rqpos > audio_pos + 10)
 		{
 			if((res = avformat_seek_file(context, audio_index,
 				INT64_MIN, itm->offset, INT64_MAX,
@@ -464,7 +463,9 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 				avlibs_lock->unlock();
 				return -1;
 			}
+			swr_init(swr_ctx);
 			avcodec_flush_buffers(decoder_context);
+			audio_delay = 0;
 			audio_pos = itm->index;
 		}
 		while(audio_pos < rqpos && av_read_frame(context, &pkt) == 0)
