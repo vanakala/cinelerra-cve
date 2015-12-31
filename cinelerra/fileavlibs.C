@@ -453,7 +453,8 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 	if(rqpos != audio_pos - audio_delay)
 	{
 		itm = tocfile->get_item(audio_index, rqpos);
-		if(rqpos < audio_pos - audio_delay || rqpos > audio_pos + 10)
+		if(rqpos < audio_pos - audio_delay || (rqpos > audio_pos + 10
+			&& audio_pos < itm->index))
 		{
 			if((res = avformat_seek_file(context, audio_index,
 				INT64_MIN, itm->offset, INT64_MAX,
