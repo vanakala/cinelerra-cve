@@ -290,7 +290,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 	{
 		itm = tocfile->get_item(video_index, rqpos);
 
-		if(rqpos < video_pos || itm->index > rqpos)
+		if(rqpos < video_pos || itm->index > video_pos)
 		{
 			if((res = avformat_seek_file(context, video_index,
 				INT64_MIN, itm->offset, INT64_MAX,
