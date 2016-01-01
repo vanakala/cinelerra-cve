@@ -363,9 +363,8 @@ int FileAVlibs::read_frame(VFrame *frame)
 			decoder_context->width, decoder_context->height, frame);
 		frame->set_source_pts(av_frame_get_best_effort_timestamp(avvframe) * av_q2d(stream->time_base));
 		frame->set_duration(av_frame_get_pkt_duration(avvframe) * av_q2d(stream->time_base));
-// see tuleb ringi teha
-		frame->set_frame_number((int)round(av_frame_get_best_effort_timestamp(avvframe)
-			* av_q2d(stream->time_base) * av_q2d(stream->avg_frame_rate)));
+		frame->set_frame_number(av_rescale_q(av_frame_get_best_effort_timestamp(avvframe),
+			stream->time_base, av_inv_q(stream->avg_frame_rate)));
 	}
 	avlibs_lock->unlock();
 
