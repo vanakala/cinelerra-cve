@@ -25,6 +25,7 @@
 
 #include "asset.inc"
 #include "aframe.inc"
+#include "cinelerra.h"
 #include "file.inc"
 #include "filebase.h"
 #include "fileavlibs.inc"
@@ -53,6 +54,7 @@ public:
 	int get_best_colormodel(Asset *asset, int driver);
 	int read_frame(VFrame *frame);
 	int read_aframe(AFrame *frame);
+	static void versionifo(int indent);
 
 // Callbacks of FileTOC
 	int get_streamcount();

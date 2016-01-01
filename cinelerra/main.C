@@ -26,6 +26,7 @@
 #include "edl.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "fileavlibs.h"
 #include "garbage.h"
 #include "language.h"
 #include "loadfile.inc"
@@ -219,15 +220,18 @@ int main(int argc, char *argv[])
 #if defined(COPYRIGHTTEXT2)
 		COPYRIGHTTEXT2 "\n"
 #endif
-		FFMPEG_EXTERNALTEXT "\n"
+		);
+	fputs(FFMPEG_EXTERNALTEXT " library versions:\n", stderr);
+	FileAVlibs::versionifo(4);
 #if defined(COMPILEDATE)
-		COMPILEDATE "\n"
+	fputs(COMPILEDATE "\n", stderr);
 #endif
-		"\n"
+	fputc('\n', stderr);
 
-PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
-"and you are welcome to change it and/or distribute copies of it under\n"
-"certain conditions. There is absolutely no warranty for " PROGRAM_NAME ".\n");
+	fputs(PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
+		"and you are welcome to change it and/or distribute copies of it under\n"
+		"certain conditions. There is absolutely no warranty for " PROGRAM_NAME ".\n",
+		stderr);
 
 	switch(operation)
 	{
