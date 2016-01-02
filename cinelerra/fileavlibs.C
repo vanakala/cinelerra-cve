@@ -1281,9 +1281,9 @@ void FileAVlibs::dump_AVPacket(AVPacket *pkt, int indent)
 
 	printf("%*sAVPacket %p dump:\n", indent, "", pkt);
 	indent += 2;
-	printf("%*sbuf %p pts %s dts %s data %p flags %#x\n", indent, "",
+	printf("%*sbuf %p pts %s dts %s data %p size %d stream_index %d flags %#x\n", indent, "",
 		pkt->buf, dump_ts(pkt->pts, bf1), dump_ts(pkt->dts, bf2),
-		pkt->data, pkt->flags);
+		pkt->data, pkt->size, pkt->stream_index, pkt->flags);
 	printf("%*sside_data %p side_data_elems %d duration %s pos %lld\n", indent, "",
 		pkt->side_data, pkt->side_data_elems, dump_ts(pkt->duration), pkt->pos);
 	printf("%*sconvergence_duration %s\n", indent, "",
