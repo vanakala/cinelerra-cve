@@ -329,8 +329,15 @@ int FileAVlibs::read_frame(VFrame *frame)
 		}
 	}
 
-	while(!(error = av_read_frame(context, &pkt)))
+	while(1)
 	{
+		error = av_read_frame(context, &pkt);
+		if(error)
+		{
+			if(error != AVERROR_EOF)
+				break;
+			error = 0;
+		}
 		if(pkt.stream_index == video_index)
 		{
 			if((res = avcodec_decode_video2(decoder_context,
