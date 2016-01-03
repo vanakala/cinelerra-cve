@@ -512,8 +512,14 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		return res;
 	}
 
-	while(!(error = av_read_frame(context, &pkt)))
+	while(1)
 	{
+		if(error = av_read_frame(context, &pkt))
+		{
+			if(error != AVERROR_EOF)
+				break;
+			error = 0;
+		}
 		if(pkt.stream_index == audio_index)
 		{
 			if((res = avcodec_decode_audio4(decoder_context,
@@ -536,15 +542,17 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 				}
 				else
 				{
-					error = res;
+					if(res < 0)
+						error = res;
 					break;
 				}
 			}
 		}
 	}
 
-	if(error && error != AVERROR_EOF)
+	if(error)
 	{
+		liberror(error, "FileAVlibs::read_aframe:");
 		avlibs_lock->unlock();
 		return error;
 	}
