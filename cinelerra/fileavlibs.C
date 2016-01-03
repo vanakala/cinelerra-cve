@@ -377,7 +377,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	if(error)
 	{
-		liberror(res, "FileAVlibs::read_frame:av_read_frame");
+		liberror(error, "FileAVlibs::read_frame:av_read_frame");
 		return 1;
 	}
 
