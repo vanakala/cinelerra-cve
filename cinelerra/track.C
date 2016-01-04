@@ -695,7 +695,7 @@ void Track::dump(int indent)
 {
 	printf("%*sTrack %p dump:\n", indent, "", this);
 	indent += 2;
-	printf("%*sData type %d\n", indent, "", data_type);
+	printf("%*sData type %d nudge %.2f\n", indent, "", data_type, nudge);
 	printf("%*sTitle %s\n", indent, "", title);
 	edits->dump(indent);
 	automation->dump(indent);
