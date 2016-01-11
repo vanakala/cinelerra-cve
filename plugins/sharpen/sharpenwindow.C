@@ -29,7 +29,7 @@ SharpenWindow::SharpenWindow(SharpenMain *plugin, int x, int y)
 	x,
 	y,
 	210, 
-	120)
+	150)
 {
 	x = y = 10;
 	add_tool(new BC_Title(x, y, _("Sharpness")));
