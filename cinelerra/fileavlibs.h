@@ -63,8 +63,8 @@ public:
 private:
 	int convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 		int width_in, int height_in, VFrame *frame_out);
+	int decode_samples(int64_t rqpos, int length);
 	int fill_buffer(AVFrame *avaframe, int ibytes = 0, int bps = 0, int planar = 0);
-	int fill_from_buffer(int64_t rqpos, AFrame *aframe);
 	static int streamformat(AVFormatContext *context);
 	void liberror(int code, const char *prefix);
 	static int init_picture_from_frame(AVPicture *picture, VFrame *frame);
@@ -101,9 +101,9 @@ private:
 	int num_buffers;
 	int buffer_len;
 	int buffer_pos;
-	int64_t buffer_pts;
+	int64_t buffer_start;
+	int64_t buffer_end;
 	double *abuffer[MAXCHANNELS];
-	int buffer_valid[MAXCHANNELS];
 };
 
 #endif
