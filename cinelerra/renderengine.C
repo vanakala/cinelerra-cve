@@ -62,7 +62,6 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	do_video = 0;
 	interrupted = 0;
 	actual_frame_rate = 0;
-	sync_basetime = 0;
 	audio_playing = 0;
 	this->preferences = new Preferences;
 	this->command = new TransportCommand;
@@ -287,7 +286,6 @@ void RenderEngine::reset_sync_postime(void)
 	timer.update();
 	if(do_audio)
 	{
-		sync_basetime = audio->current_postime(command->get_speed());
 		if(!edl->session->playback_software_position)
 			audio_playing = 1;
 	}
@@ -296,7 +294,7 @@ void RenderEngine::reset_sync_postime(void)
 ptstime RenderEngine::sync_postime(void)
 {
 	if(audio_playing)
-		return audio->current_postime(command->get_speed()) - sync_basetime;
+		return audio->current_postime(command->get_speed());
 
 	return (ptstime)timer.get_difference() / 1000;
 }

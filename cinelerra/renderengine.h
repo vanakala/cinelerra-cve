@@ -141,7 +141,6 @@ private:
 	void reset_sync_postime(void);
 // Timer for synchronization without audio
 	Timer timer;
-	ptstime sync_basetime;
 	int audio_playing;
 };
 
