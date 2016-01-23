@@ -228,16 +228,6 @@ void AudioDevice::interrupt_playback()
 		lowlevel_out->interrupt_playback();
 // Completion is waited for in arender
 	}
-
-// unlock everything
-	for(int i = 0; i < TOTAL_BUFFERS; i++)
-	{
-// When TRACE_LOCKS is enabled, this
-// locks up when run() is waiting on it at just the right time.
-// Seems there may be a cancel after the trace lock is locked.
-		play_lock[i]->unlock();
-		arm_lock[i]->unlock();
-	}
 }
 
 void AudioDevice::wait_for_startup()
