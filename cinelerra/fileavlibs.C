@@ -50,6 +50,7 @@ struct selection_int FileAVlibs::known_formats[] =
 extern "C"
 {
 #include <libswscale/swscale.h>
+#include <libavutil/opt.h>
 }
 
 Mutex* FileAVlibs::avlibs_lock = new Mutex("FileAVlibs::avlibs_lock");
@@ -66,6 +67,7 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	swr_ctx = 0;
 	temp_frame = 0;
 	tocfile = 0;
+	temp_frame = 0;
 	av_log_set_level(AV_LOG_QUIET);
 	memset(&track_data, 0, sizeof(track_data));
 	num_buffers = 0;
@@ -75,8 +77,6 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 
 FileAVlibs::~FileAVlibs()
 {
-	if(avvframe) av_frame_free(&avvframe);
-	if(avaframe) av_frame_free(&avaframe);
 	delete temp_frame;
 	for(int i = 0; i < MAXCHANNELS; i++)
 		delete [] abuffer[i];
@@ -115,8 +115,11 @@ int FileAVlibs::open_file(int rd, int wr)
 	avcodec_register_all();
 	av_register_all();
 
+	reading = rd;
+	writing = wr;
 	audio_pos = 0;
 	video_pos = 0;
+	pts_base = -1;
 
 	if(rd)
 	{
@@ -228,43 +231,175 @@ int FileAVlibs::open_file(int rd, int wr)
 			return 1;
 		}
 	}
+	else if(wr)
+	{
+		AVOutputFormat *fmt;
+		int rv;
+
+		switch(asset->format)
+		{
+		case FILE_MOV:
+			break;
+
+		default:
+			errormsg("FileAVlibs::open_file:Unsupported file type");
+			avlibs_lock->unlock();
+			return 1;
+		}
+		if((rv = avformat_alloc_output_context2(&context, NULL, NULL, asset->path)) < 0)
+		{
+			errormsg("FileAVlibs::open_file:Failed to allocate output context %d", rv);
+			avlibs_lock->unlock();
+			return 1;
+		}
+
+		fmt = context->oformat;
+
+		if(asset->video_data)
+		{
+			AVCodec *codec;
+			AVCodecContext *video_ctx;
+			AVStream *stream;
+// default video codec
+			if(fmt->video_codec != AV_CODEC_ID_NONE)
+			{
+				if(!(codec = avcodec_find_encoder(fmt->video_codec)))
+				{
+					errormsg("FileAVlibs::open_file:Could not find video codec");
+					avlibs_lock->unlock();
+					return 1;
+				}
+
+				if(!(stream = avformat_new_stream(context, codec)))
+				{
+					errormsg("FileAVlibs::open_file:Could not allocate stream");
+					avlibs_lock->unlock();
+					return 1;
+				}
+			}
+			else
+			{
+				errormsg("FileAVlibs::open_file:missing default video codec");
+				avlibs_lock->unlock();
+				return 1;
+			}
+
+			video_ctx = stream->codec;
+			video_index = context->nb_streams - 1;
+			video_ctx->bit_rate = 400000;
+			video_ctx->width = asset->width;
+			video_ctx->height = asset->height;
+			video_ctx->time_base = av_d2q(1. / asset->frame_rate, 10000);
+			stream->time_base = video_ctx->time_base;
+			video_ctx->gop_size = 10;
+			video_ctx->max_b_frames = 1;
+			video_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
+			video_ctx->sample_aspect_ratio =
+				av_mul_q(av_d2q(asset->aspect_ratio, 40),
+				(AVRational){video_ctx->height, video_ctx->width});
+			// Some formats want stream headers to be separate.
+			if(context->oformat->flags & AVFMT_GLOBALHEADER)
+				video_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
+			if(video_ctx->codec_id == AV_CODEC_ID_H264)
+				av_opt_set(video_ctx->priv_data, "preset", "slow", 0);
+
+			if(avcodec_open2(video_ctx, codec, NULL) < 0)
+			{
+				errormsg("FileAVlibs::open_file:Could not open video codec");
+				avlibs_lock->unlock();
+				return 1;
+			}
+			if(!(avvframe = av_frame_alloc()))
+			{
+				errormsg("FileAVlibs::open_file:Could not create video_frame");
+				avlibs_lock->unlock();
+				return 1;
+			}
+			avvframe->format = video_ctx->pix_fmt;
+			avvframe->width = video_ctx->width;
+			avvframe->height = video_ctx->height;
+		}
+
+		if(video_index < 0 && audio_index < 0)
+		{
+			avlibs_lock->unlock();
+			return 1;
+		}
+
+		if(!(fmt->flags & AVFMT_NOFILE))
+		{
+			if((rv = avio_open(&context->pb, context->filename, AVIO_FLAG_WRITE)) < 0)
+			{
+				errormsg("FileAVlibs::open_file:Could not open '%s': %d",
+					context->filename, rv);
+				avlibs_lock->unlock();
+				return 1;
+			}
+		}
+		if((rv = avformat_write_header(context, 0)) < 0)
+		{
+			errormsg("FileAVlibs::open_file:Failed to write header: %d", rv);
+			avlibs_lock->unlock();
+			return 1;
+		}
+	}
 	avlibs_lock->unlock();
 	return result;
 }
 
 void FileAVlibs::close_file()
 {
-	avlibs_lock->lock("FileFFMPEG::close_file");
+	avlibs_lock->lock("FileAVlibs:close_file");
 
+	if(avvframe) av_frame_free(&avvframe);
+	if(avaframe) av_frame_free(&avaframe);
 	if(context)
 	{
-		if(video_index >= 0)
+		if(reading)
 		{
-			AVStream *stream = context->streams[video_index];
-			if(stream)
+			if(video_index >= 0)
 			{
-				AVCodecContext *decoder_context = stream->codec;
-				if(decoder_context) avcodec_close(decoder_context);
+				AVStream *stream = context->streams[video_index];
+				if(stream)
+				{
+					AVCodecContext *decoder_context = stream->codec;
+					if(decoder_context) avcodec_close(decoder_context);
+				}
+				sws_freeContext(sws_ctx);
 			}
-			sws_freeContext(sws_ctx);
-		}
 
-		if(audio_index >= 0)
+			if(audio_index >= 0)
+			{
+				AVStream *stream = context->streams[audio_index];
+				if(stream)
+				{
+					AVCodecContext *decoder_context = stream->codec;
+					if(decoder_context) avcodec_close(decoder_context);
+				}
+				if(swr_ctx)
+					swr_free(&swr_ctx);
+			}
+
+			avformat_close_input(&context);
+			delete tocfile;
+			tocfile = 0;
+		}
+		else if(writing)
 		{
-			AVStream *stream = context->streams[audio_index];
-			if(stream)
-			{
-				AVCodecContext *decoder_context = stream->codec;
-				if(decoder_context) avcodec_close(decoder_context);
-			}
-			if(swr_ctx)
-				swr_free(&swr_ctx);
+			av_write_trailer(context);
+			if(video_index >= 0)
+				avcodec_close(context->streams[video_index]->codec);
+			if(audio_index >= 0)
+				avcodec_close(context->streams[audio_index]->codec);
+			if(!(context->oformat->flags & AVFMT_NOFILE))
+				avio_closep(&context->pb);
+			avformat_free_context(context);
+			context = 0;
 		}
-
-		avformat_close_input(&context);
 	}
-	delete tocfile;
-	tocfile = 0;
+	delete temp_frame;
+	temp_frame = 0;
 	avlibs_lock->unlock();
 }
 
@@ -780,6 +915,86 @@ void FileAVlibs::liberror(int code, const char *prefix)
 	len = strlen(string);
 	av_strerror(code, string, BCTEXTLEN - 1 - len);
 	errormsg("%s", string);
+}
+
+int FileAVlibs::write_frames(VFrame ***frames, int len)
+{
+	AVCodecContext *video_ctx;
+	AVStream *stream;
+	int got_it, rv;
+
+	if(video_index < 0)
+		return 1;
+
+	avlibs_lock->lock("FileAVlibs::write_frames");
+
+	stream = context->streams[video_index];
+	video_ctx = stream->codec;
+
+	for(int j = 0; j < len; j++)
+	{
+		VFrame *frame = frames[0][j];
+
+		if(pts_base < 0)
+			pts_base = frame->get_pts();
+
+		if(!temp_frame)
+		{
+			temp_frame = new VFrame (0, video_ctx->width,
+				video_ctx->height, BC_YUV420P);
+		}
+		cmodel_transfer(temp_frame->get_rows(),
+			frame->get_rows(),
+			temp_frame->get_y(),
+			temp_frame->get_u(),
+			temp_frame->get_v(),
+			frame->get_y(),
+			frame->get_u(),
+			frame->get_v(),
+			0,
+			0,
+			frame->get_w(),
+			frame->get_h(),
+			0,
+			0,
+			temp_frame->get_w(),
+			temp_frame->get_h(),
+			frame->get_color_model(),
+			BC_YUV420P,
+			0,
+			frame->get_w(),
+			temp_frame->get_w());
+		avvframe->data[0] = temp_frame->get_y();
+		avvframe->data[1] = temp_frame->get_u();
+		avvframe->data[2] = temp_frame->get_v();
+		avvframe->linesize[0] = temp_frame->get_w();
+		avvframe->linesize[1] = temp_frame->get_w() / 2;
+		avvframe->linesize[2] = temp_frame->get_w() / 2;
+		avvframe->pts = round((frame->get_pts() - pts_base) / av_q2d(video_ctx->time_base));
+
+		AVPacket pkt = {0};
+		av_init_packet(&pkt);
+		if((rv = avcodec_encode_video2(video_ctx, &pkt, avvframe, &got_it)) < 0)
+		{
+			liberror(rv, "FileAVlibs::write_frames: Failed to encode video frame");
+			avlibs_lock->unlock();
+			return 1;
+		}
+		if(got_it)
+		{
+			pkt.stream_index = stream->index;
+			av_packet_rescale_ts(&pkt, video_ctx->time_base,
+				stream->time_base);
+			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+			{
+				liberror(rv, "FileAVlibs::write_frames: Failed to write video_frame");
+				avlibs_lock->unlock();
+				return 1;
+			}
+		}
+	}
+	avlibs_lock->unlock();
+	return 0;
 }
 
 // Callbacks for TOC generation

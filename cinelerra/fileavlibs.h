@@ -54,6 +54,7 @@ public:
 	int get_best_colormodel(Asset *asset, int driver);
 	int read_frame(VFrame *frame);
 	int read_aframe(AFrame *frame);
+	int write_frames(VFrame ***frames, int len);
 	static void versionifo(int indent);
 
 // Callbacks of FileTOC
@@ -88,6 +89,9 @@ private:
 	VFrame *temp_frame;
 	FileTOC *tocfile;
 
+	int reading;
+	int writing;
+	ptstime pts_base;
 	// Streams to decode
 	int audio_index;
 	int video_index;
