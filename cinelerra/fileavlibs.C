@@ -110,6 +110,7 @@ int FileAVlibs::check_sig(Asset *asset)
 int FileAVlibs::open_file(int rd, int wr)
 {
 	int result = 0;
+	int rv;
 
 	avlibs_lock->lock("FileAVlibs::open_file");
 	avcodec_register_all();
@@ -120,6 +121,7 @@ int FileAVlibs::open_file(int rd, int wr)
 	audio_pos = 0;
 	video_pos = 0;
 	pts_base = -1;
+	headers_written = 0;
 
 	if(rd)
 	{
@@ -167,19 +169,27 @@ int FileAVlibs::open_file(int rd, int wr)
 						AVCodec *codec = avcodec_find_decoder(decoder_context->codec_id);
 						if(!codec)
 						{
-							fprintf(stderr,"FileFFMPEG::open_file: audio codec 0x%x not found.\n",
-									decoder_context->codec_id);
+							errormsg("FileAVLibs::open_file: audio codec %#x not found",
+								decoder_context->codec_id);
 							asset->audio_data = 0;
 							audio_index = -1;
 						}
 						else
 						{
-							avcodec_open2(decoder_context, codec, NULL);
+							if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
+							{
+								liberror(rv, "FileAVLibs::open_file: Failed to open audio decoder");
+								asset->audio_data = 0;
+								audio_index = -1;
+							}
+							else
+							{
+								strncpy(asset->acodec, codec->name, 4);
+								asset->bits = av_get_bytes_per_sample(decoder_context->sample_fmt) * 8;
+								audio_delay = 0;
+								buffer_start = buffer_end = 0;
+							}
 						}
-						strncpy(asset->acodec, codec->name, 4);
-						asset->bits = av_get_bytes_per_sample(decoder_context->sample_fmt) * 8;
-						audio_delay = 0;
-						buffer_start = buffer_end = 0;
 					}
 					break;
 
@@ -197,8 +207,24 @@ int FileAVlibs::open_file(int rd, int wr)
 								(double)(decoder_context->coded_width * decoder_context->sample_aspect_ratio.num) /
 								(decoder_context->coded_height * decoder_context->sample_aspect_ratio.den);
 						AVCodec *codec = avcodec_find_decoder(decoder_context->codec_id);
-						avcodec_open2(decoder_context, codec, NULL);
-						strncpy(asset->vcodec, codec->name, 4);
+						if(!codec)
+						{
+							errormsg("FileAVLibs::open_file: video codec %#x not found",
+								decoder_context->codec_id);
+							asset->video_data = 0;
+							video_index = -1;
+						}
+						else
+						{
+							if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
+							{
+								liberror(rv, "FileAVLibs::open_file: Failed to open video decoder");
+								asset->video_data = 0;
+								video_index = -1;
+							}
+							else
+								strncpy(asset->vcodec, codec->name, 4);
+						}
 					}
 					break;
 
@@ -304,9 +330,9 @@ int FileAVlibs::open_file(int rd, int wr)
 			if(video_ctx->codec_id == AV_CODEC_ID_H264)
 				av_opt_set(video_ctx->priv_data, "preset", "slow", 0);
 
-			if(avcodec_open2(video_ctx, codec, NULL) < 0)
+			if((rv = avcodec_open2(video_ctx, codec, NULL)) < 0)
 			{
-				errormsg("FileAVlibs::open_file:Could not open video codec");
+				liberror(rv, "FileAVlibs::open_file:Could not open video codec");
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -343,6 +369,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			avlibs_lock->unlock();
 			return 1;
 		}
+		headers_written = 1;
 	}
 	avlibs_lock->unlock();
 	return result;
@@ -387,7 +414,8 @@ void FileAVlibs::close_file()
 		}
 		else if(writing)
 		{
-			av_write_trailer(context);
+			if(headers_written)
+				av_write_trailer(context);
 			if(video_index >= 0)
 				avcodec_close(context->streams[video_index]->codec);
 			if(audio_index >= 0)
@@ -913,7 +941,7 @@ void FileAVlibs::liberror(int code, const char *prefix)
 	strcpy(string, prefix);
 	strcat(string, ": ");
 	len = strlen(string);
-	av_strerror(code, string, BCTEXTLEN - 1 - len);
+	av_strerror(code, &string[len], BCTEXTLEN - 1 - len);
 	errormsg("%s", string);
 }
 

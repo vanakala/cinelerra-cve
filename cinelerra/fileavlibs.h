@@ -91,6 +91,7 @@ private:
 
 	int reading;
 	int writing;
+	int headers_written;
 	ptstime pts_base;
 	// Streams to decode
 	int audio_index;
