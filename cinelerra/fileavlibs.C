@@ -1351,8 +1351,9 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 	indent += 2;
 	printf("%*sav_class %p log_level_offset %d codec_type %d codec %p\n", indent, "",
 		ctx->av_class, ctx->log_level_offset, ctx->codec_type, ctx->codec);
-	printf("%*scodec_id %d fourcc %s priv_data %p, internal %p\n", indent, "",
-		ctx->codec_id, dump_fourcc(ctx->codec_tag), ctx->priv_data, ctx->internal);
+	printf("%*scodec_id %s fourcc %s priv_data %p, internal %p\n", indent, "",
+		avcodec_get_name(ctx->codec_id), dump_fourcc(ctx->codec_tag),
+		ctx->priv_data, ctx->internal);
 	printf("%*sopaque %p bit_rate %d bit_rate_tolerance %d global_quality %d\n", indent, "",
 		ctx->opaque, ctx->bit_rate, ctx->bit_rate_tolerance, ctx->global_quality);
 	printf("%*scompression_level %d flags %d flags2 %d extradata %p extradata_size %d\n", indent, "",
