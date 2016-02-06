@@ -1062,8 +1062,6 @@ stream_params *FileAVlibs::get_track_data(int trx)
 		track_data.rate_num = stream->r_frame_rate.num;
 		track_data.rate_denom = stream->r_frame_rate.den;
 		track_data.layers = 1;
-		if(!avvframe)
-			avvframe = av_frame_alloc();
 		break;
 	}
 	track_data.id = trx;
