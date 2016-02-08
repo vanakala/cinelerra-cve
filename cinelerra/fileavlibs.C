@@ -452,7 +452,6 @@ int FileAVlibs::read_frame(VFrame *frame)
 	if(rqpos != video_pos)
 	{
 		itm = tocfile->get_item(video_index, rqpos);
-
 		if(rqpos < video_pos || itm->index > video_pos)
 		{
 			if((res = avformat_seek_file(context, video_index,
@@ -531,9 +530,12 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 		convert_cmodel((AVPicture *)avvframe, decoder_context->pix_fmt,
 			decoder_context->width, decoder_context->height, frame);
-		frame->set_source_pts(av_frame_get_best_effort_timestamp(avvframe) * av_q2d(stream->time_base));
+		frame->set_source_pts((av_frame_get_best_effort_timestamp(avvframe) -
+				tocfile->toc_streams[video_index].min_index) *
+			av_q2d(stream->time_base));
 		frame->set_duration(av_frame_get_pkt_duration(avvframe) * av_q2d(stream->time_base));
-		frame->set_frame_number(av_rescale_q(av_frame_get_best_effort_timestamp(avvframe),
+		frame->set_frame_number(av_rescale_q(av_frame_get_best_effort_timestamp(avvframe) -
+				tocfile->toc_streams[video_index].min_index,
 			stream->time_base, av_inv_q(stream->avg_frame_rate)));
 	}
 	avlibs_lock->unlock();
@@ -1067,7 +1069,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	track_data.id = trx;
 	track_data.data1 = 0;
 	track_data.data2 = 0;
-	track_data.min_index = 0;
+	track_data.min_index = INT64_MAX;
 	track_data.min_offset = 0;
 	track_data.index_correction = 0;
 	err = avformat_seek_file(context, trx, INT64_MIN, INT64_MIN, 0,
@@ -1093,7 +1095,10 @@ stream_params *FileAVlibs::get_track_data(int trx)
 				{
 					interrupt = tocfile->append_item(video_pos, pktpos);
 					if(video_pos < track_data.min_index)
+					{
 						track_data.min_index = video_pos;
+						track_data.min_offset = pktpos;
+					}
 				}
 				video_pos += pkt.duration;
 				pktpos += pkt.duration;
@@ -1109,7 +1114,10 @@ stream_params *FileAVlibs::get_track_data(int trx)
 				{
 					interrupt = tocfile->append_item(audio_pos, pktpos);
 					if(audio_pos < track_data.min_index)
+					{
 						track_data.min_index = audio_pos;
+						track_data.min_offset = pktpos;
+					}
 				}
 				audio_pos += pkt.duration;
 				pktpos += pkt.duration;
