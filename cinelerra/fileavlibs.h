@@ -56,6 +56,7 @@ public:
 	int read_aframe(AFrame *frame);
 	int write_frames(VFrame ***frames, int len);
 	static void versionifo(int indent);
+	int write_aframes(AFrame **frames);
 
 // Callbacks of FileTOC
 	int get_streamcount();
@@ -66,6 +67,7 @@ private:
 		int width_in, int height_in, VFrame *frame_out);
 	int decode_samples(int64_t rqpos, int length);
 	int fill_buffer(AVFrame *avaframe, int ibytes = 0, int bps = 0, int planar = 0);
+	int write_samples(int resampled_length, AVCodecContext *audio_ctx, ptstime pts = -1);
 	static int streamformat(AVFormatContext *context);
 	void liberror(int code, const char *prefix);
 	static int init_picture_from_frame(AVPicture *picture, VFrame *frame);
@@ -109,6 +111,8 @@ private:
 	int64_t buffer_start;
 	int64_t buffer_end;
 	double *abuffer[MAXCHANNELS];
+	uint8_t *resampled_data[MAXCHANNELS];
+	int resampled_alloc;
 };
 
 #endif
