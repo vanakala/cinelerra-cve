@@ -119,11 +119,11 @@ void BC_MenuBar::add_menu(BC_Menu* menu)
 
 	if(top_level)
 	{
-		if(menu_titles.total == 0)
+		if(menu_titles.total <= 1)
 			x = 2;
 		else
-			x = menu_titles.values[menu_titles.total - 1]->x +
-				menu_titles.values[menu_titles.total - 1]->w;
+			x = menu_titles.values[menu_titles.total - 2]->x +
+				menu_titles.values[menu_titles.total - 2]->w;
 
 		w = get_text_width(MEDIUMFONT, menu->text) + 20;
 // initialize and draw
