@@ -585,10 +585,8 @@ int Render::render(int test_overwrite,
 		total_end = command->end_position;
 
 // Nothing to render
-		if(EQUIV(total_start, total_end))
-		{
-			result = 1;
-		}
+		result = EQUIV(total_start, total_end) ||
+				total_start > edl->tracks->total_length();
 	}
 
 // Generate packages
