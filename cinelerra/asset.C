@@ -75,6 +75,7 @@ void Asset::init_values()
 	astreams = 0;
 	current_astream = 0;
 	memset(astream_channels, 0, sizeof(astream_channels));
+	memset(streams, 0, sizeof(streams));
 	sample_rate = 0;
 	bits = 0;
 	byte_order = 0;
@@ -86,6 +87,8 @@ void Asset::init_values()
 	audio_length = 0;
 	video_length = 0;
 	single_image = 0;
+	audio_duration = 0;
+	video_duration = 0;
 	subtitles = 0;
 	active_subtitle = -1;
 
@@ -250,6 +253,9 @@ void Asset::copy_format(Asset *asset, int do_index)
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
 	this->single_image = asset->single_image;
+	this->audio_duration = asset->audio_duration;
+	this->video_duration = asset->video_duration;
+	memcpy(this->streams, asset->streams, sizeof(streams));
 
 	ampeg_bitrate = asset->ampeg_bitrate;
 	ampeg_derivative = asset->ampeg_derivative;

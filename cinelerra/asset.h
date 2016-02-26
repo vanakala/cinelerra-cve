@@ -44,6 +44,17 @@
 #define TC_PAL 2
 #define TC_FILM 3
 
+struct streamdesc
+{
+	ptstime start; // lowest pts in file
+	ptstime end;   // highest pts in file
+	int options;
+};
+// Streamdesc option bits
+// Stream type
+#define STRDSC_AUDIO   1
+#define STRDSC_VIDEO   2
+
 // Asset can be one of the following:
 // 1) a pure media file
 // 2) an EDL
@@ -136,6 +147,8 @@ public:
 // Format of file.  An enumeration from file.inc.
 	int format;
 
+	struct streamdesc streams[MAXCHANNELS];
+
 // contains audio data
 	int audio_data;
 	int channels;
@@ -152,6 +165,7 @@ public:
 	char acodec[MAX_LEN_CODECNAME];
 
 	samplenum audio_length;
+	ptstime audio_duration;
 
 // contains video data
 	int video_data;
@@ -174,6 +188,9 @@ public:
 
 // Length in units of asset
 	framenum video_length;
+
+	ptstime video_duration;
+
 // Video is a single image
 	int single_image;
 
