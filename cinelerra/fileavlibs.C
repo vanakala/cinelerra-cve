@@ -241,6 +241,11 @@ int FileAVlibs::open_file(int rd, int wr)
 
 			if(video_index >= 0)
 			{
+				asset->streams[video_index].options = STRDSC_VIDEO;
+				asset->streams[video_index].start = (ptstime)tocfile->toc_streams[video_index].min_index *
+					av_q2d(context->streams[video_index]->time_base);
+				asset->streams[video_index].end = (ptstime)tocfile->toc_streams[video_index].max_index *
+					av_q2d(context->streams[video_index]->time_base);
 				asset->video_length = av_rescale_q(tocfile->toc_streams[video_index].max_index -
 						tocfile->toc_streams[video_index].min_index,
 						context->streams[video_index]->time_base,
@@ -248,11 +253,27 @@ int FileAVlibs::open_file(int rd, int wr)
 			}
 			if(audio_index >= 0)
 			{
+				asset->streams[audio_index].options = STRDSC_AUDIO;
+				asset->streams[audio_index].start = (ptstime)tocfile->toc_streams[audio_index].min_index *
+					av_q2d(context->streams[audio_index]->time_base);
+				asset->streams[audio_index].end = (ptstime)tocfile->toc_streams[audio_index].max_index *
+					av_q2d(context->streams[audio_index]->time_base);
 				asset->audio_length = (samplenum)round((tocfile->toc_streams[audio_index].max_index -
 					tocfile->toc_streams[audio_index].min_index) *
 					av_q2d(context->streams[audio_index]->time_base) *
 					asset->sample_rate);
 			}
+			for(int i = 0; i < MAXCHANNELS; i++)
+			{
+				if(asset->streams[i].options)
+				{
+					pts_base = asset->streams[i].start;
+					break;
+				}
+			}
+			for(int i = 0; i < MAXCHANNELS; i++)
+				if(asset->streams[i].options && pts_base > asset->streams[i].start)
+					pts_base = asset->streams[i].start;
 		}
 		else
 		{
