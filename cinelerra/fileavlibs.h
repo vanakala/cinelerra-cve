@@ -110,6 +110,7 @@ private:
 	int buffer_pos;
 	int64_t buffer_start;
 	int64_t buffer_end;
+	int audio_eof;
 	double *abuffer[MAXCHANNELS];
 	uint8_t *resampled_data[MAXCHANNELS];
 	int resampled_alloc;

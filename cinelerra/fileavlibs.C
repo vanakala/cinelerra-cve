@@ -62,6 +62,7 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	avaframe = 0;
 	audio_index = -1;
 	video_index = -1;
+	audio_eof = 0;
 	context = 0;
 	sws_ctx = 0;
 	swr_ctx = 0;
@@ -764,7 +765,7 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 	rqpos = round((aframe->source_pts + pts_base) / av_q2d(stream->time_base));
 	rqlen = round(aframe->source_duration / av_q2d(stream->time_base));
 
-	if(rqpos != buffer_start || rqpos + rqlen > buffer_end)
+	if(rqpos != buffer_start || (rqpos + rqlen > buffer_end  && !audio_eof))
 	{
 		buffer_start = buffer_end = rqpos;
 		buffer_pos = 0;
@@ -800,6 +801,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 	if(rqpos != audio_pos - audio_delay)
 	{
+		audio_eof = 0;
 		itm = tocfile->get_item(audio_index, rqpos);
 		if(rqpos < audio_pos - audio_delay || (rqpos > audio_pos + 10
 			&& audio_pos < itm->index))
@@ -849,14 +851,17 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	if(res < 0)
 		return res;
 
-	while(1)
+	while(!audio_eof)
 	{
 		if(error = av_read_frame(context, &pkt))
 		{
 			if(error != AVERROR_EOF)
 				break;
 			error = 0;
+			audio_eof = 1;
+			pkt.stream_index = audio_index;
 		}
+
 		if(pkt.stream_index == audio_index)
 		{
 			if((res = avcodec_decode_audio4(decoder_context,
