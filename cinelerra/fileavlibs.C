@@ -607,8 +607,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	if(!avvframe)
 		avvframe = av_frame_alloc();
-	rqpos = round(frame->get_source_pts() / av_q2d(stream->time_base)) +
-		tocfile->toc_streams[video_index].min_index;
+	rqpos = round((frame->get_source_pts() + pts_base) / av_q2d(stream->time_base));
 
 	if(rqpos != video_pos)
 	{
@@ -691,13 +690,10 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 		convert_cmodel((AVPicture *)avvframe, decoder_context->pix_fmt,
 			decoder_context->width, decoder_context->height, frame);
-		frame->set_source_pts((av_frame_get_best_effort_timestamp(avvframe) -
-				tocfile->toc_streams[video_index].min_index) *
-			av_q2d(stream->time_base));
+		frame->set_source_pts(av_frame_get_best_effort_timestamp(avvframe) *
+			av_q2d(stream->time_base) - pts_base);
 		frame->set_duration(av_frame_get_pkt_duration(avvframe) * av_q2d(stream->time_base));
-		frame->set_frame_number(av_rescale_q(av_frame_get_best_effort_timestamp(avvframe) -
-				tocfile->toc_streams[video_index].min_index,
-			stream->time_base, av_inv_q(stream->avg_frame_rate)));
+		frame->set_frame_number(round(frame->get_source_pts() * av_q2d(stream->avg_frame_rate)));
 	}
 	avlibs_lock->unlock();
 
@@ -765,8 +761,7 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 		buffer_pos = 0;
 	}
 
-	rqpos = round(aframe->source_pts / av_q2d(stream->time_base)) +
-		tocfile->toc_streams[video_index].min_index;
+	rqpos = round((aframe->source_pts + pts_base) / av_q2d(stream->time_base));
 	rqlen = round(aframe->source_duration / av_q2d(stream->time_base));
 
 	if(rqpos != buffer_start || rqpos + rqlen > buffer_end)
