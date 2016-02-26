@@ -613,6 +613,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 	if(rqpos != video_pos)
 	{
 		itm = tocfile->get_item(video_index, rqpos);
+
 		if(rqpos < video_pos || itm->index > video_pos)
 		{
 			if((res = avformat_seek_file(context, video_index,
@@ -720,12 +721,13 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 	if(!swr_ctx)
 	{
 		swr_ctx = swr_alloc_set_opts(NULL,
-			AV_CH_LAYOUT_STEREO,
-			AV_SAMPLE_FMT_DBLP,
-			aframe->samplerate,
-			AV_CH_LAYOUT_STEREO,
-			decoder_context->sample_fmt,
-			decoder_context->sample_rate, 0, 0);
+			AV_CH_LAYOUT_STEREO,          // output layout
+			AV_SAMPLE_FMT_DBLP,           // out sample format
+			aframe->samplerate,           // out samplerate
+			AV_CH_LAYOUT_STEREO,          // in ch layout
+			decoder_context->sample_fmt,  // in sample fmt
+			decoder_context->sample_rate, // in sample rate
+			0, 0);
 		if(!swr_ctx)
 		{
 			errorbox("FileAVlibs::fill_buffer: Failed to allocate resampler context");
@@ -765,7 +767,7 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 	rqpos = round((aframe->source_pts + pts_base) / av_q2d(stream->time_base));
 	rqlen = round(aframe->source_duration / av_q2d(stream->time_base));
 
-	if(rqpos != buffer_start || (rqpos + rqlen > buffer_end  && !audio_eof))
+	if(rqpos != buffer_start || (rqpos + rqlen > buffer_end && !audio_eof))
 	{
 		buffer_start = buffer_end = rqpos;
 		buffer_pos = 0;
@@ -833,7 +835,10 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				if(got_it)
 				{
 					int64_t duration = av_frame_get_pkt_duration(avaframe);
-					audio_pos = avaframe->pkt_pts + duration;
+
+					audio_pos = av_frame_get_best_effort_timestamp(avaframe) +
+						duration;
+
 					if(audio_pos > rqpos)
 					{
 						int inpos = rqpos - audio_pos + duration;
@@ -874,7 +879,8 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 			if(got_it)
 			{
-				audio_pos = avaframe->pkt_pts + av_frame_get_pkt_duration(avaframe);
+				audio_pos = av_frame_get_best_effort_timestamp(avaframe) +
+					av_frame_get_pkt_duration(avaframe);
 
 				if((res = fill_buffer(avaframe)) > 0)
 				{
@@ -907,6 +913,7 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 	int j, inpos;
 	double *obp[MAXCHANNELS];
 	const uint8_t *ibp[AV_NUM_DATA_POINTERS];
+	int out_samples, in_length;
 
 	for(int j = 0; j < num_buffers; j++)
 		obp[j] = &abuffer[j][buffer_pos];
@@ -923,11 +930,12 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 		else
 			ibp[j] = &avaframe->data[j][inpos];
 	}
-
-	int out_samples = swr_convert(swr_ctx, (uint8_t **)obp,
-		buffer_len - buffer_pos,
-		(const uint8_t **)&ibp,
-		avaframe->nb_samples - insamples);
+	in_length = av_frame_get_pkt_duration(avaframe) - insamples;
+	out_samples = swr_convert(swr_ctx,
+		(uint8_t **)obp,                   // output buffer
+		buffer_len - buffer_pos,           // output buffer in samples
+		(const uint8_t **)&ibp,            // input samples
+		in_length); // input samples
 
 	if(out_samples > 0)
 		buffer_pos += out_samples;
