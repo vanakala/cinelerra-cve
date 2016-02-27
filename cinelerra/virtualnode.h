@@ -51,7 +51,7 @@ public:
 	friend class VirtualConsole;
 
 	virtual ~VirtualNode();
-	void dump(int indent);
+	void dump(int indent = 0);
 
 
 // expand plugins

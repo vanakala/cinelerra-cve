@@ -107,7 +107,7 @@ public:
 		ptstime end,
 		int autogrouptype);
 
-	void dump(int indent);
+	void dump(int indent = 0);
 
 	Autos *autos[AUTOMATION_TOTAL];
 

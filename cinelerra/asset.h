@@ -69,7 +69,7 @@ public:
 	Asset(const int plugin_type, const char *plugin_path);
 
 	void init_values();
-	void dump(int indent);
+	void dump(int indent = 0);
 
 	void copy_from(Asset *asset, int do_index);
 	void copy_location(Asset *asset);
