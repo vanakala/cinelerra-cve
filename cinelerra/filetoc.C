@@ -103,7 +103,7 @@ FileTOC::~FileTOC()
 	for(int i = 0; i < num_streams; i++)
 	{
 		if(toc_streams[i].items)
-			delete toc_streams[i].items;
+			delete [] toc_streams[i].items;
 	}
 }
 
