@@ -194,7 +194,8 @@ void Reverb::process_realtime(AFrame **input, AFrame **output)
 
 // set random offsets after first reflection
 				ref_offsets[i][j] = ref_offsets[i][1];
-				ref_offsets[i][j] += ref_division * j - (rand() % ref_division) / 2;
+				if(ref_division > 0)
+					ref_offsets[i][j] += ref_division * j - (rand() % ref_division) / 2;
 
 // set changing levels
 				ref_levels[i][j] = db.fromdb(config.ref_level1 + (config.ref_level2 - config.ref_level1) / (config.ref_total - 1) * (j - 2));
