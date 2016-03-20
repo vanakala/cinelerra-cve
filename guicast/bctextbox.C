@@ -54,10 +54,20 @@ BC_TextBox::BC_TextBox(int x,
 {
 	skip_cursor = 0;
 	reset_parameters(rows, has_border, font);
-	strncpy(ntext, text, TEXTBOXLEN);
-	ntext[TEXTBOXLEN] = 0;
-	wtext_len = BC_Resources::encode(is_utf8 ? "UTF8" : BC_Resources::encoding,
-		BC_Resources::wide_encoding, ntext, (char*)wide_text, TEXTBOXLEN * sizeof(wchar_t)) / sizeof(wchar_t);
+	if(text)
+	{
+		strncpy(ntext, text, TEXTBOXLEN);
+		ntext[TEXTBOXLEN] = 0;
+		wtext_len = BC_Resources::encode(is_utf8 ? "UTF8" : BC_Resources::encoding,
+			BC_Resources::wide_encoding, ntext, (char*)wide_text,
+			TEXTBOXLEN * sizeof(wchar_t)) / sizeof(wchar_t);
+	}
+	else
+	{
+		ntext[0] = 0;
+		wide_text[0] = 0;
+		wtext_len = 0;
+	}
 }
 
 BC_TextBox::BC_TextBox(int x,
@@ -80,13 +90,19 @@ BC_TextBox::BC_TextBox(int x,
 		wcsncpy(wide_text, wtext, TEXTBOXLEN);
 		wide_text[TEXTBOXLEN] = 0;
 	}
-	else
+	else if(text)
 	{
 		strncpy(ntext, text, TEXTBOXLEN);
 		ntext[TEXTBOXLEN] = 0;
 		wtext_len = BC_Resources::encode(BC_Resources::encoding,
 			BC_Resources::wide_encoding, ntext, (char*)wide_text,
 			TEXTBOXLEN * sizeof(wchar_t)) / sizeof(wchar_t);
+	}
+	else
+	{
+		ntext[0] = 0;
+		wide_text[0] = 0;
+		wtext_len = 0;
 	}
 }
 
