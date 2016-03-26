@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef AVLIBS_INC
-#define AVLIBS_INC
+#ifndef FILEAVLIBS_INC
+#define FILEAVLIBS_INC
 
 class FileAVlibs;
 
