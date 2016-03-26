@@ -24,13 +24,14 @@
 
 
 #include "asset.inc"
+#include "avlibsconfig.h"
 #include "aframe.inc"
 #include "cinelerra.h"
 #include "file.inc"
 #include "filebase.h"
 #include "fileavlibs.inc"
 #include "mutex.inc"
-#include "selection.h"
+#include "paramlist.inc"
 #include "vframe.inc"
 
 extern "C"
@@ -40,11 +41,20 @@ extern "C"
 #include <libswresample/swresample.h>
 }
 
+struct avlib_formattable
+{
+	int fileformat;
+	const char *decoder;
+	const char *encoder;
+};
+
 class FileAVlibs : public FileBase
 {
 public:
 	FileAVlibs(Asset *asset, File *file);
 	~FileAVlibs();
+
+	friend class AVlibsConfig;
 
 	// Get format string for ffmpeg
 	static int check_sig(Asset *asset);
@@ -57,6 +67,9 @@ public:
 	int write_frames(VFrame ***frames, int len);
 	static void versionifo(int indent);
 	int write_aframes(AFrame **frames);
+	static void get_parameters(BC_WindowBase *parent_window,
+		Asset *asset, BC_WindowBase* &format_window, int options);
+	static const char *encoder_formatname(int fileformat);
 
 // Callbacks of FileTOC
 	int get_streamcount();
@@ -69,20 +82,34 @@ private:
 	int fill_buffer(AVFrame *avaframe, int ibytes = 0, int bps = 0, int planar = 0);
 	int write_samples(int resampled_length, AVCodecContext *audio_ctx, ptstime pts = -1);
 	static int streamformat(AVFormatContext *context);
-	void liberror(int code, const char *prefix);
+	static void liberror(int code, const char *prefix);
 	static int init_picture_from_frame(AVPicture *picture, VFrame *frame);
 	static AVPixelFormat color_model_to_pix_fmt(int color_model);
+	static Paramlist *scan_global_options(int options);
+	static Paramlist *scan_format_options(int format,
+		int options, AVOutputFormat **ofmtp);
+	static Paramlist *scan_options(const AVClass *avclass, int options,
+		const char *listname);
+	static Paramlist *scan_codecs(AVOutputFormat *oformat, int options);
+	static Paramlist *scan_encoder_opts(AVCodecID codec, int options);
+	static Param *opt2param(Paramlist *list, const AVOption *opt);
 	static void dump_AVFormatContext(AVFormatContext *ctx, int indent = 0);
 	static void dump_AVStream(AVStream *stm, int indent = 0);
 	static void dump_AVCodecContext(AVCodecContext *ctx, int indent = 0);
 	static void dump_AVFrame(AVFrame *avf, int indent = 0);
 	static void dump_AVPacket(AVPacket *pkt, int indent = 0);
 	static const char *dump_ts(int64_t ts, char *obuf = 0);
-	static const char *dump_AVRational(AVRational *r, char *obuf = 0);
+	static const char *dump_AVRational(const AVRational *r, char *obuf = 0);
 	static const char *dump_avfmt_flag(int flags, char *obuf);
 	static const char *dump_fourcc(unsigned int tag);
+	static void dump_AVCodecDescriptor(const AVCodecDescriptor *avdsc, int indent = 0);
+	static void dump_AVOutputFormat(const AVOutputFormat *ofmt, int indent = 0);
+	static void dump_AVOption(const AVOption *opt,
+		const AVClass *avclass = 0, int indent = 0);
+	static void dump_AVCodec(const AVCodec *codec, int indent = 0);
+	static const char *dump_AVMediaType(enum AVMediaType type);
 
-	static struct selection_int known_formats[];
+	static struct avlib_formattable known_formats[];
 	AVFormatContext *context;
 	AVFrame *avvframe;
 	AVFrame *avaframe;

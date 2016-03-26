@@ -70,6 +70,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    autoconf.C \
 		    automation.C \
 		    autos.C \
+		    avlibsconfig.C \
 		    awindow.C \
 		    awindowgui.C \
 		    awindowmenu.C \
@@ -319,6 +320,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 auto.h \
 		 automation.h \
 		 autos.h \
+		 avlibsconfig.h \
 		 awindowgui.h \
 		 awindow.h \
 		 awindowmenu.h \

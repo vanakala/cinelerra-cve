@@ -145,8 +145,10 @@ void File::get_options(FormatTools *format, int options)
 				options);
 			break;
 		case FILE_MOV:
-			// should not reach here
-			errorbox("File::get_options::FILE_MOV is unsupported");
+			FileAVlibs::get_parameters(parent_window,
+				asset,
+				format_window,
+				options);
 			break;
 		case FILE_AMPEG:
 		case FILE_VMPEG:

@@ -29,8 +29,10 @@
 #include "filetoc.h"
 #include "mainerror.h"
 #include "mutex.h"
+#include "paramlist.h"
 #include "preferences.h"
 #include "selection.h"
+#include "theme.h"
 #include "videodevice.inc"
 #include "vframe.h"
 
@@ -40,17 +42,21 @@
 #include <stdint.h>
 #include <string.h>
 
-struct selection_int FileAVlibs::known_formats[] =
+extern Theme *theme_global;
+
+struct  avlib_formattable FileAVlibs::known_formats[] =
 {
-	{ "mov,mp4,m4a,3gp,3g2,mj2", FILE_MOV },
-	{ "avi", FILE_AVI },
-	{ 0, 0 }
+	{ FILE_MOV, "mov,mp4,m4a,3gp,3g2,mj2", "mov" },
+	{ FILE_AVI, "avi", "avi"  },
+	{ 0 }
 };
 
 extern "C"
 {
 #include <libswscale/swscale.h>
 #include <libavutil/opt.h>
+#include <libavutil/pixdesc.h>
+#include <libavformat/internal.h>
 }
 
 Mutex* FileAVlibs::avlibs_lock = new Mutex("FileAVlibs::avlibs_lock");
@@ -1095,13 +1101,23 @@ int FileAVlibs::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 
 int FileAVlibs::streamformat(AVFormatContext *context)
 {
-	for(int i = 0; known_formats[i].text; i++)
+	for(int i = 0; known_formats[i].decoder; i++)
 	{
-		if(strncmp(context->iformat->name, known_formats[i].text,
-				strlen(known_formats[i].text)) == 0)
-			return known_formats[i].value;
+		if(strncmp(context->iformat->name, known_formats[i].decoder,
+				strlen(known_formats[i].decoder)) == 0)
+			return known_formats[i].fileformat;
 	}
 	return FILE_UNKNOWN;
+}
+
+const char *FileAVlibs::encoder_formatname(int fileformat)
+{
+	for(int i = 0; known_formats[i].encoder; i++)
+	{
+		if(known_formats[i].fileformat == fileformat)
+			return known_formats[i].encoder;
+	}
+	return 0;
 }
 
 void FileAVlibs::liberror(int code, const char *prefix)
@@ -1475,6 +1491,309 @@ void FileAVlibs::versionifo(int indent)
 #endif
 }
 
+void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
+	Asset *asset,
+	BC_WindowBase* &format_window,
+	int options)
+{
+	FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
+	avcodec_register_all();
+	av_register_all();
+	FileAVlibs::avlibs_lock->unlock();
+
+	AVlibsConfig *window = new AVlibsConfig(asset, options);
+	format_window = window;
+	window->run_window();
+	delete window;
+	errorbox("Making use of encoding parameters is not ready.\nBe patient, please.");
+}
+
+Paramlist *FileAVlibs::scan_global_options(int options)
+{
+	return scan_options(avformat_get_class(), options, "AVlibsGlobal");
+}
+
+Paramlist *FileAVlibs::scan_format_options(int format,
+	int options, AVOutputFormat **ofmtp)
+{
+	const char *name;
+	AVOutputFormat *oformat = 0;
+
+	*ofmtp = 0;
+	name = encoder_formatname(format);
+	if(name)
+	{
+		oformat = av_guess_format(name, 0, 0);
+		*ofmtp = oformat;
+		if(oformat)
+			return scan_options(oformat->priv_class, options, "AVlibsFormat");
+	}
+	return 0;
+}
+
+Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const char *listname)
+{
+	int typefl = AV_OPT_FLAG_ENCODING_PARAM;
+	const AVOption *opt = 0;
+	Param *param;
+	Paramlist *list;
+
+	list = new Paramlist(listname);
+
+	if(options & SUPPORTS_AUDIO)
+		typefl |= AV_OPT_FLAG_AUDIO_PARAM;
+	if(options & SUPPORTS_VIDEO)
+		typefl |= AV_OPT_FLAG_VIDEO_PARAM;
+
+	while(opt = av_opt_next(&avclass, opt))
+	{
+		if(opt->type == AV_OPT_TYPE_CONST)
+			continue;
+		if(opt->flags & typefl)
+		{
+			param = opt2param(list, opt);
+			if(opt->unit)
+			{
+				const AVOption *subopt = 0;
+				Paramlist *sublist = param->add_subparams(opt->name);
+
+				while(subopt = av_opt_next(&avclass, subopt))
+				{
+					if(subopt->type == AV_OPT_TYPE_CONST &&
+							subopt->type &&
+							!strcmp(subopt->unit, opt->unit))
+						opt2param(sublist, subopt);
+				}
+			}
+		}
+	}
+	return list;
+}
+
+Param *FileAVlibs::opt2param(Paramlist *list, const AVOption *opt)
+{
+	Param *param = 0;
+
+	switch(opt->type)
+	{
+	case AV_OPT_TYPE_FLAGS:
+		param = list->append_param(opt->name, (int64_t)opt->default_val.i64);
+		param->type |= PARAMTYPE_BITS;
+		break;
+	case AV_OPT_TYPE_INT:
+	case AV_OPT_TYPE_INT64:
+	case AV_OPT_TYPE_CONST:
+	case AV_OPT_TYPE_DURATION:
+	case AV_OPT_TYPE_PIXEL_FMT:
+	case AV_OPT_TYPE_SAMPLE_FMT:
+		param = list->append_param(opt->name, (int64_t)opt->default_val.i64);
+		break;
+	case AV_OPT_TYPE_DOUBLE:
+	case AV_OPT_TYPE_FLOAT:
+		param = list->append_param(opt->name, opt->default_val.dbl);
+		break;
+	case AV_OPT_TYPE_STRING:
+	case AV_OPT_TYPE_IMAGE_SIZE:
+	case AV_OPT_TYPE_VIDEO_RATE:
+	case AV_OPT_TYPE_COLOR:
+		param = list->append_param(opt->name, opt->default_val.str);
+		break;
+	default:
+		break;
+	}
+	if(param)
+		param->set_help(opt->help);
+
+	return param;
+}
+
+Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
+{
+	const struct AVCodecTag * const *ctag;
+	const struct AVCodecTag *tags;
+	AVCodec *encoder;
+	Param *param;
+	Paramlist *codecs;
+
+	codecs = new Paramlist("AVLibCodecs");
+	if(options & SUPPORTS_VIDEO)
+		codecs->selectedint = oformat->video_codec;
+	if(options & SUPPORTS_AUDIO)
+		codecs->selectedint = oformat->audio_codec;
+
+	for(ctag = oformat->codec_tag; *ctag; ctag++)
+	{
+		for(tags = *ctag; tags->id != AV_CODEC_ID_NONE; tags++)
+		{
+			encoder = avcodec_find_encoder(tags->id);
+			if(encoder)
+			{
+				if(options & SUPPORTS_AUDIO && encoder->type != AVMEDIA_TYPE_AUDIO)
+					continue;
+				if(options & SUPPORTS_VIDEO && encoder->type != AVMEDIA_TYPE_VIDEO)
+					continue;
+				if(codecs->find(encoder->name))
+					continue;
+				param = codecs->append_param(encoder->name, tags->id);
+				param->set_help(encoder->long_name);
+			}
+		}
+	}
+	return codecs;
+}
+
+Paramlist *FileAVlibs::scan_encoder_opts(AVCodecID codec, int options)
+{
+	AVCodec *encoder;
+
+	encoder = avcodec_find_encoder(codec);
+
+	if(encoder && encoder->priv_class)
+		return scan_options(encoder->priv_class, options, encoder->name);
+
+	return 0;
+}
+
+const char *FileAVlibs::dump_AVMediaType(enum AVMediaType type)
+{
+	switch(type)
+	{
+	case AVMEDIA_TYPE_UNKNOWN:
+		return "Unknown";
+
+	case AVMEDIA_TYPE_VIDEO:
+		return "Video";
+
+	case AVMEDIA_TYPE_AUDIO:
+		return "Audio";
+
+	case AVMEDIA_TYPE_DATA:
+		return "Data";
+
+	case AVMEDIA_TYPE_SUBTITLE:
+		return "Subtitle";
+
+	case AVMEDIA_TYPE_ATTACHMENT:
+		return "Attachment";
+
+	case AVMEDIA_TYPE_NB:
+		return "nb";
+	}
+	return 0;
+}
+
+void FileAVlibs::dump_AVCodec(const AVCodec *codec, int indent)
+{
+	printf("%*sAVCodec %p dump:\n", indent, "", codec);
+	indent += 2;
+	printf("%*sid %d type %s name '%s'\n", indent, "", codec->id,
+		dump_AVMediaType(codec->type), codec->name);
+	printf("%*slong_name '%s'\n", indent, "", codec->long_name);
+	printf("%*scapabilities %#x\n", indent, "", codec->capabilities);
+	if(codec->supported_framerates)
+	{
+		printf("%*sSupported framerates:\n", indent, "");
+		for(int i = 0; codec->supported_framerates[i].num; i++)
+			printf("%*s%s\n", indent + 2, "",
+				FileAVlibs::dump_AVRational(&codec->supported_framerates[i]));
+	}
+	if(codec->pix_fmts)
+	{
+		printf("%*sSupported pixel formats:\n", indent, "");
+		for(int i = 0; codec->pix_fmts[i] != -1; i++)
+			printf("%*s%s\n", indent + 2, "",
+				av_get_pix_fmt_name(codec->pix_fmts[i]));
+	}
+	if(codec->supported_samplerates)
+	{
+		printf("%*sSupported samplerates:\n", indent, "");
+		for(int i = 0; codec->supported_samplerates[i]; i++)
+			printf("%*s%d\n", indent + 2, "",
+				codec->supported_samplerates[i]);
+	}
+	if(codec->sample_fmts)
+	{
+		printf("%*sSupported sampleformats:\n", indent, "");
+		for(int i = 0; codec->sample_fmts[i]; i++)
+			printf("%*s%s\n", indent + 2, "",
+				av_get_sample_fmt_name(codec->sample_fmts[i]));
+	}
+	if(codec->channel_layouts)
+	{
+		printf("%*sChannel layouts:\n", indent, "");
+		for(int i = 0; codec->channel_layouts[i]; i++)
+			printf("%*s%#llx\n", indent + 2, "", 
+				codec->channel_layouts[i]);
+	}
+	printf("%*smax_lowres %d priv_class %p profiles %p\n", indent, "",
+		codec->max_lowres, codec->priv_class, codec->profiles);
+}
+
+void FileAVlibs::dump_AVCodecDescriptor(const AVCodecDescriptor *avdsc, int indent)
+{
+	const char *s;
+
+	printf("%*sAVCodecDescriptor %p dump:\n", indent, "", avdsc);
+	indent += 2;
+	printf("%*sid %d type %s name '%s'\n", indent, "", avdsc->id,
+		dump_AVMediaType(avdsc->type), avdsc->name);
+	printf("%*slong_name '%s'\n", indent, "", avdsc->long_name);
+}
+
+void FileAVlibs::dump_AVOutputFormat(const AVOutputFormat *ofmt, int indent)
+{
+	printf("%*sAVOutputformat %p dump:\n", indent, "", ofmt);
+	indent += 2;
+	printf("%*sname: '%s' mime_type: '%s'\n", indent, "", ofmt->name, ofmt->mime_type);
+	printf("%*slong_name '%s'\n", indent, "", ofmt->long_name);
+	printf("%*saudio_codec '%s' video_codec '%s' subtitle_codec '%s' data_codec '%s'\n", indent, "",
+		avcodec_get_name(ofmt->audio_codec), avcodec_get_name(ofmt->video_codec),
+		avcodec_get_name(ofmt->subtitle_codec), avcodec_get_name(ofmt->data_codec));
+	printf("%*sflags %#x codec_tag %p priv_class %p\n", indent, "",
+		ofmt->flags, ofmt->codec_tag, ofmt->priv_class);
+}
+
+void FileAVlibs::dump_AVOption(const AVOption *opt, const AVClass *avclass, int indent)
+{
+	printf("%*sAVOption %p dump:\n", indent, "", opt);
+	indent += 2;
+	printf("%*sname '%s' unit %s\n", indent, "", opt->name, opt->unit);
+	printf("%*shelp '%s'\n", indent, "", opt->help);
+	printf("%*soffset %d type %d flags %#x min %.3f max %.3f\n",
+		indent, "",
+		opt->offset, opt->type, opt->flags, opt->min, opt->max);
+	switch(opt->type)
+	{
+	case AV_OPT_TYPE_CONST:
+	case AV_OPT_TYPE_FLAGS:
+		printf("%*sdefault %#llx\n", indent, "", opt->default_val.i64);
+		break;
+	case AV_OPT_TYPE_INT:
+	case AV_OPT_TYPE_INT64:
+		printf("%*sdefault %lld\n", indent, "", opt->default_val.i64);
+		break;
+	case AV_OPT_TYPE_DOUBLE:
+	case AV_OPT_TYPE_FLOAT:
+		printf("%*sdefault %#.3f\n", indent, "", opt->default_val.dbl);
+		break;
+	case AV_OPT_TYPE_STRING:
+		printf("%*sdefault '%s'\n", indent, "", opt->default_val.str);
+		break;
+	}
+	if(opt->unit && avclass)
+	{
+		const AVOption *u = 0;
+
+		printf("%*sPossible values:\n", indent, "");
+		while(u = av_opt_next(&avclass, u))
+		{
+			if(u->type == AV_OPT_TYPE_CONST && u->unit && 
+					!strcmp(u->unit, opt->unit))
+				dump_AVOption(u, 0, indent + 2);
+		}
+	}
+}
+
 void FileAVlibs::dump_AVFormatContext(AVFormatContext *ctx, int indent)
 {
 	char bf1[256], bf2[64];
@@ -1572,7 +1891,7 @@ const char *FileAVlibs::dump_avfmt_flag(int flags, char *obuf)
 	return obuf;
 }
 
-const char *FileAVlibs::dump_AVRational(AVRational *r, char *obuf)
+const char *FileAVlibs::dump_AVRational(const AVRational *r, char *obuf)
 {
 	char *bp;
 	static char lbuf[64];
