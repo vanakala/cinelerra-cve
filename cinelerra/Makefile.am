@@ -178,6 +178,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    packagingengine.C \
 		    panauto.C \
 		    panautos.C \
+		    paramlist.C \
 		    patchbay.C \
 		    patchgui.C \
 		    performanceprefs.C \
@@ -225,6 +226,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    sighandler.C \
 		    splashgui.C \
 		    statusbar.C \
+		    subselection.C \
 		    theme.C \
 		    timebar.C \
 		    tipwindow.C \
@@ -427,6 +429,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 packagingengine.h \
 		 panauto.h \
 		 panautos.h \
+		 paramlist.h \
 		 patchbay.h \
 		 patchgui.h \
 		 performanceprefs.h \
@@ -476,6 +479,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 sighandler.h \
 		 splashgui.h \
 		 statusbar.h \
+		 subselection.h \
 		 theme.h \
 		 timebar.h \
 		 tipwindow.h \
