@@ -86,7 +86,7 @@ SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
 	y = canvas->get_y() + canvas->get_h() + 5;
 
 	add_subwindow(new BC_Title(x, y + 10, _("Level:")));
-	add_subwindow(level = new SpectrogramLevel(plugin, x + 50, y));
+	add_subwindow(level = new SpectrogramLevel(plugin, x + 70, y));
 	PLUGIN_GUI_CONSTRUCTOR_MACRO
 }
 
