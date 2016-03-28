@@ -107,8 +107,8 @@ ReverseAudioWindow::ReverseAudioWindow(ReverseAudio *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
-	210, 
-	160)
+	265,
+	60)
 {
 	x = y = 10;
 	add_subwindow(enabled = new ReverseAudioEnabled(plugin, 
