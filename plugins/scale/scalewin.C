@@ -30,7 +30,7 @@ ScaleWin::ScaleWin(ScaleMain *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y,
-	150, 
+	240,
 	150)
 { 
 	x = y = 10;
