@@ -31,8 +31,8 @@ RGB601Window::RGB601Window(RGB601Main *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y,
-	210, 
-	200)
+	235,
+	100)
 {
 	x = y = 10;
 
