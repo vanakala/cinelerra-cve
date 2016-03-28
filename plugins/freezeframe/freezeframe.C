@@ -64,7 +64,7 @@ FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *plugin, int x, int y)
  : PluginWindow(plugin->get_gui_string(),
 	x,
 	y,
-	200,
+	260,
 	100)
 {
 	add_tool(enabled = new FreezeFrameToggle(plugin,
