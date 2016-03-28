@@ -273,10 +273,10 @@ HueWindow::HueWindow(HueEffect *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 			x,
 			y,
-			310, 
+			345,
 			100)
 {
-	int x1 = 100;
+	int x1 = 125;
 	x = y = 10;
 
 	add_subwindow(new BC_Title(x, y, _("Hue:")));
