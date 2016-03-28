@@ -28,7 +28,7 @@ SharpenWindow::SharpenWindow(SharpenMain *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y,
-	210, 
+	230,
 	150)
 {
 	x = y = 10;
