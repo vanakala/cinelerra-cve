@@ -267,10 +267,10 @@ WaveWindow::WaveWindow(WaveEffect *plugin, int x, int y)
  : PluginWindow(plugin->gui_string, 
 	x,
 	y, 
-	320, 
+	335,
 	150)
 {
-	int x1 = 100;
+	int x1 = 115;
 	x = y = 10;
 
 	add_subwindow(new BC_Title(x, y, _("Amplitude:")));
