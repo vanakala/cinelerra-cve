@@ -28,7 +28,7 @@ FlipWindow::FlipWindow(FlipMain *plugin, int x, int y)
  : PluginWindow(plugin->get_gui_string(),
 	x,
 	y,
-	140,
+	250,
 	100)
 {
 	x = 10;
