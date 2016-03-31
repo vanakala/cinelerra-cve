@@ -92,7 +92,7 @@ int PluginClient::plugin_get_parameters()
 
 const char* PluginClient::plugin_title() 
 {
-	return _("Untitled");
+	return N_("Untitled");
 }
 
 Theme* PluginClient::get_theme()
