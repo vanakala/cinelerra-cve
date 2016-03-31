@@ -111,7 +111,7 @@ int ReFrameOutput::handle_event()
 
 
 ReFrameWindow::ReFrameWindow(ReFrame *plugin, int x, int y)
- : PluginWindow(plugin->plugin_title(), 
+ : PluginWindow(plugin->gui_string,
 	x,
 	y, 
 	230, 

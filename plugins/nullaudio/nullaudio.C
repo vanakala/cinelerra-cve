@@ -56,7 +56,7 @@ int NullAudioSwitch::handle_event()
  * creating the elements of gui.
  */
 NullAudioWindow::NullAudioWindow(NullAudio *plugin, int x, int y)
- : PluginWindow(plugin->plugin_title(),
+ : PluginWindow(plugin->gui_string,
 	x,
 	y,
 	200,
