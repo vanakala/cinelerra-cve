@@ -218,7 +218,7 @@ void PluginServer::generate_display_title(char *string)
 	if(plugin && plugin->track) 
 		sprintf(string, "%s - %s", lbuf, plugin->track->title);
 	else
-		strcpy(string, lbuf);
+		sprintf(string, "%s - %s", lbuf, PROGRAM_NAME);
 }
 
 static struct oldpluginnames

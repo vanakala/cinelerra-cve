@@ -251,11 +251,7 @@ void MenuEffectThread::run()
 		if(plugin->realtime)
 		{
 // Open a prompt GUI
-			char title[BCTEXTLEN];
-
 			MenuEffectPrompt prompt(mwindow);
-			sprintf(title, "%s -" PROGRAM_NAME, plugin->title);
-
 // Open the plugin GUI
 			plugin->set_mwindow(mwindow);
 			plugin->set_keyframe(&plugin_data);
@@ -282,6 +278,7 @@ void MenuEffectThread::run()
 		{
 			plugin->set_mwindow(mwindow);
 			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
+			plugin->update_title();
 			result = plugin->get_parameters(total_start,
 				total_end,
 				get_recordable_tracks(default_asset));
