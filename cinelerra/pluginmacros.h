@@ -164,7 +164,7 @@ PluginClient* new_plugin(PluginServer *server) \
 	load_defaults();
 
 #define PLUGIN_DESTRUCTOR_MACRO \
-	if(thread) \
+	if(thread && !thread->window->get_deleting()) \
 	{ \
 		thread->window->set_done(0); \
 	} \
