@@ -302,7 +302,7 @@ static int list_widths[] =
 };
 
 ExportEDLWindow::ExportEDLWindow(MWindow *mwindow, ExportEDL *exportedl, ExportEDLAsset *exportasset)
- : BC_Window("Export EDL - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Export EDL")),
 	mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
 	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
 	WIDTH, 

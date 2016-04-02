@@ -25,6 +25,7 @@
 #include "filetiff.h"
 #include "interlacemodes.h"
 #include "language.h"
+#include "mwindow.h"
 #include "theme.h"
 #include "vframe.h"
 #include "mainerror.h"
@@ -572,7 +573,7 @@ FileTIFFUnit::~FileTIFFUnit()
 
 
 TIFFConfigVideo::TIFFConfigVideo(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window("Video Compression - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Video Compression")),
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	400,

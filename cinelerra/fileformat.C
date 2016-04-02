@@ -31,7 +31,7 @@
 
 
 FileFormat::FileFormat(MWindow *mwindow, Asset *asset, const char *string2)
- : BC_Window("File Format - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("File Format")),
 		mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1),
 		375, 

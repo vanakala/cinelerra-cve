@@ -92,7 +92,7 @@ int ConfirmSave::test_files(MWindow *mwindow,
 
 ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow, 
 	ArrayList<BC_ListBoxItem*> *list)
- : BC_Window("Files Exist - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Files Exist")),
 		mwindow->gui->get_abs_cursor_x(1) - 160, 
 		mwindow->gui->get_abs_cursor_y(1) - 120, 
 		mwindow->session->ewindow_w,

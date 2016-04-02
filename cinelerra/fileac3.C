@@ -26,6 +26,7 @@
 #include "fileac3.h"
 #include "language.h"
 #include "mainerror.h"
+#include "mwindow.h"
 #include "theme.h"
 
 #include <string.h>
@@ -287,7 +288,7 @@ int FileAC3::write_aframes(AFrame **frames)
 
 AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 	Asset *asset)
- : BC_Window("Audio Compression - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Audio Compression")),
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	500,

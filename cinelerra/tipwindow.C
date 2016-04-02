@@ -123,7 +123,7 @@ TipWindowGUI::TipWindowGUI(MWindow *mwindow,
 	TipWindow *thread,
 	int x,
 	int y)
- : BC_Window("Tip of the day - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Tip of the day")),
 	x,
 	y,
 	640,

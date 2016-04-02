@@ -25,8 +25,10 @@
 #include "bcsignals.h"
 #include "fileavlibs.h"
 #include "formattools.h"
+#include "language.h"
 #include "mainerror.h"
 #include "mutex.h"
+#include "mwindow.h"
 #include "paramlist.h"
 #include "subselection.h"
 #include "theme.h"
@@ -40,7 +42,7 @@ extern Theme *theme_global;
 #define PARAM_WIN_MAXH 600
 
 AVlibsConfig::AVlibsConfig(Asset *asset, int options)
- : BC_Window("Compression - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Compression")),
 	100,
 	100,
 	200,

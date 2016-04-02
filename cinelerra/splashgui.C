@@ -21,7 +21,7 @@
 
 #include "bcdisplayinfo.h"
 #include "language.h"
-#include "mwindow.inc"
+#include "mwindow.h"
 #include "splashgui.h"
 #include "vframe.h"
 
@@ -29,7 +29,7 @@
 
 
 SplashGUI::SplashGUI(VFrame *bg, int x, int y)
- : BC_Window("Loading - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Loading")),
 		x,
 		y,
 		bg->get_w(),

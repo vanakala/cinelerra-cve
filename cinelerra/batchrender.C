@@ -593,7 +593,7 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 	int y,
 	int w,
 	int h)
- : BC_Window("Batch Render - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Batch Render")),
 	x,
 	y,
 	w, 

@@ -473,7 +473,7 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 	MenuEffectThread *menueffects, 
 	ArrayList<BC_ListBoxItem*> *plugin_list, 
 	Asset *asset)
- : BC_Window("Render effect - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Render effect")),
 		mwindow->gui->get_abs_cursor_x(1),
 		mwindow->gui->get_abs_cursor_y(1) - mwindow->session->menueffect_h / 2,
 		mwindow->session->menueffect_w, 
@@ -638,7 +638,7 @@ int MenuEffectWindowList::handle_event()
 #define PROMPT_TEXT _("Set up effect panel and hit \"OK\"")
 
 MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
- : BC_Window("Effect Prompt - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Effect Prompt")),
 		mwindow->gui->get_abs_cursor_x(1) - 260 / 2,
 		mwindow->gui->get_abs_cursor_y(1) - 300,
 		MenuEffectPrompt::calculate_w(mwindow->gui), 

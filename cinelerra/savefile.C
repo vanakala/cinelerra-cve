@@ -182,7 +182,7 @@ SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
  : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
 	mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
 	init_directory, 
-	"Save - " PROGRAM_NAME,
+	MWindow::create_title(N_("Save")),
 	_("Enter a filename to save as"))
 { 
 	this->mwindow = mwindow; 

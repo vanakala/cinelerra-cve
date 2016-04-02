@@ -152,7 +152,7 @@ void ManualGoto::run()
 
 
 ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
- : BC_Window("Goto position - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Goto position")),
 	mwindow->gui->get_abs_cursor_x(1) - 250 / 2,
 	mwindow->gui->get_abs_cursor_y(1) - 80 / 2,
 	250, 

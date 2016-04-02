@@ -280,7 +280,7 @@ void AssetPicon::init_object()
 
 
 AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
- : BC_Window("Resources - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Resources")),
 	mwindow->session->awindow_x, 
 	mwindow->session->awindow_y, 
 	mwindow->session->awindow_w, 

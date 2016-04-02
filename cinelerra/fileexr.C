@@ -25,6 +25,7 @@
 #include "fileexr.h"
 #include "filesystem.h"
 #include "interlacemodes.h"
+#include "mwindow.h"
 
 #include <ImathBox.h>
 #include <ImfChannelList.h>
@@ -511,7 +512,7 @@ EXRUnit::~EXRUnit()
 
 
 EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window("Video Compression - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Video Compression")),
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	300,

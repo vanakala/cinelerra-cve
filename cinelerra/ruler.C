@@ -21,6 +21,7 @@
 
 #include "bcsignals.h"
 #include "cursors.h"
+#include "language.h"
 #include "mainsession.h"
 #include "mainmenu.h"
 #include "mwindow.h"
@@ -51,7 +52,7 @@ void Ruler::run()
 }
 
 RulerGUI::RulerGUI(MWindow *mwindow, Ruler *thread)
- : BC_Window("Ruler - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Ruler")),
 	mwindow->session->ruler_x,
 	mwindow->session->ruler_y,
 	10,

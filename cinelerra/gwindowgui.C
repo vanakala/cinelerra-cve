@@ -83,7 +83,7 @@ static toggleinfo toggle_order[] =
 GWindowGUI::GWindowGUI(MWindow *mwindow,
 	int w,
 	int h)
- : BC_Window("Overlays - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Overlays")),
 	mwindow->session->gwindow_x,
 	mwindow->session->gwindow_y,
 	w,

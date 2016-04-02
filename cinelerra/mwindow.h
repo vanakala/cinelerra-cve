@@ -271,6 +271,8 @@ public:
 	static void create_aspect_ratio(double &w, double &h, int width, int height);
 // Calculate defaults path
 	static void create_defaults_path(char *string);
+// Compose standard window title
+	static char *create_title(const char *name);
 
 	void delete_inpoint();
 	void delete_outpoint();

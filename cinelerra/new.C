@@ -169,7 +169,7 @@ void NewThread::run()
 
 
 NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
- : BC_Window(_("New Project - " PROGRAM_NAME),
+ : BC_Window(MWindow::create_title(N_("New Project")),
 		x,
 		y,
 		WIDTH, 

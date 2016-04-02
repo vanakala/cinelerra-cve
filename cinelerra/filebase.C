@@ -23,6 +23,7 @@
 #include "assets.h"
 #include "file.h"
 #include "filebase.h"
+#include "mwindow.h"
 #include "theme.h"
 
 #include <stdlib.h>
@@ -57,7 +58,7 @@ int FileBase::match4(const char *in, const char *out)
 }
 
 FBConfig::FBConfig(BC_WindowBase *parent_window, int type)
- : BC_Window("Compression options - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Compression options")),
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	350,

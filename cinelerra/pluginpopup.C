@@ -73,7 +73,7 @@ int PluginPopupChange::handle_event()
 {
 	dialog_thread->start_window(popup->plugin->track,
 		popup->plugin,
-		"Change Effect - " PROGRAM_NAME);
+		MWindow::create_title(N_("Change Effect")));
 	return 1;
 }
 

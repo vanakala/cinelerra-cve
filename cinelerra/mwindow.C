@@ -273,6 +273,14 @@ const char *MWindow::default_std()
 	return "PAL";
 }
 
+char *MWindow::create_title(const char *name)
+{
+	static char title_string[BCTEXTLEN];
+
+	sprintf(title_string, "%s - " PROGRAM_NAME, _(name));
+	return title_string;
+}
+
 void MWindow::init_defaults(BC_Hash* &defaults, const char *config_path)
 {
 	char path[BCTEXTLEN];

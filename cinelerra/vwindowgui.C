@@ -55,7 +55,7 @@
 
 
 VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
- : BC_Window("Viewer - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Viewer")),
 	mwindow->session->vwindow_x,
 	mwindow->session->vwindow_y,
 	mwindow->session->vwindow_w,
@@ -133,7 +133,7 @@ void VWindowGUI::change_source(EDL *edl, const char *title)
 	}
 	else
 	{
-		strcpy(string, "Viewer - " PROGRAM_NAME);
+		strcpy(string, MWindow::create_title(N_("Viewer")));
 		loaded_title[0] = 0;
 	}
 	slider->set_position();

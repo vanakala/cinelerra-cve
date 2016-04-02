@@ -33,6 +33,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "mutex.h"
+#include "mwindow.h"
 #include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
@@ -1156,7 +1157,7 @@ int FileOGG::write_frames(VFrame ***frames, int len)
 
 
 OGGConfigAudio::OGGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window("Audio Compression - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Audio Compression")),
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	350,
@@ -1266,7 +1267,7 @@ int OGGVorbisAvgBitrate::handle_event()
 
 
 OGGConfigVideo::OGGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window("Video Compression - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Video Compression")),
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	450,

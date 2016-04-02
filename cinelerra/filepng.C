@@ -26,6 +26,7 @@
 #include "filepng.h"
 #include "interlacemodes.h"
 #include "language.h"
+#include "mwindow.h"
 #include "quicktime.h"
 #include "theme.h"
 #include "vframe.h"
@@ -371,7 +372,7 @@ PNGUnit::~PNGUnit()
 
 
 PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
- : BC_Window(PROGRAM_NAME ": Video Compression",
+ : BC_Window(MWindow::create_title(N_("Video Compression")),
 	parent_window->get_abs_cursor_x(1),
 	parent_window->get_abs_cursor_y(1),
 	200,

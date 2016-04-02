@@ -23,6 +23,7 @@
 #include "bcsignals.h"
 #include "edit.h"
 #include "filetga.h"
+#include "mwindow.h"
 #include "language.h"
 #include "theme.h"
 #include "vframe.h"
@@ -832,7 +833,7 @@ TGAUnit::~TGAUnit()
 
 
 TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset)
- : BC_Window("Video Compression - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Video Compression")),
 	gui->get_abs_cursor_x(1),
 	gui->get_abs_cursor_y(1),
 	400,

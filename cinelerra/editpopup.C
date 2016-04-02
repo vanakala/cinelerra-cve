@@ -89,7 +89,7 @@ int EditAttachEffect::handle_event()
 {
 	dialog_thread->start_window(popup->track,
 		0, 
-		"Attach Effect - " PROGRAM_NAME);
+		MWindow::create_title(N_("Attach Effect")));
 	return 1;
 }
 

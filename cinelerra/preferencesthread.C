@@ -312,7 +312,7 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	PreferencesThread *thread,
 	int x,
 	int y)
- : BC_Window("Preferences - " PROGRAM_NAME , 
+ : BC_Window(MWindow::create_title(N_("Preferences")),
 	x,
 	y,
 	WIDTH, 

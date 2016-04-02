@@ -132,7 +132,7 @@ void AssetEdit::run()
 
 
 AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
- : BC_Window("Asset Info - " PROGRAM_NAME,
+ : BC_Window(MWindow::create_title(N_("Asset Info")),
 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - 550 / 2, 
 	400, 
@@ -176,7 +176,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 		path_text, 
 		y, 
 		asset->path, 
-		"Asset path - " PROGRAM_NAME, _("Select a file for this asset:")));
+		MWindow::create_title(N_("Asset path")), _("Select a file for this asset:")));
 	y += 30;
 
 	add_subwindow(new BC_Title(x, y, _("File format:")));
