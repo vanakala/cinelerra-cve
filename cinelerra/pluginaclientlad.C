@@ -25,6 +25,7 @@
 #include "filexml.h"
 #include "language.h"
 #include "pluginaclientlad.h"
+#include "pluginwindow.h"
 #include "vframe.h"
 
 #ifdef HAVE_LADSPA
@@ -287,15 +288,11 @@ int PluginACLientFreq::handle_event()
 PluginAClientWindow::PluginAClientWindow(PluginAClientLAD *plugin, 
 	int x, 
 	int y)
- : BC_Window(plugin->gui_string, 
+ : PluginWindow(plugin->gui_string, 
 	x,
 	y,
 	500, 
-	plugin->config.total_ports * 30 + 60, 
-	500, 
-	plugin->config.total_ports * 30 + 60, 
-	0, 
-	1)
+	plugin->config.total_ports * 30 + 60)
 {
 	PluginServer *server = plugin->server;
 	char string[BCTEXTLEN];
