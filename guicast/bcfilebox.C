@@ -760,16 +760,16 @@ const char* BC_FileBox::columntype_to_text(int type)
 	switch(type)
 	{
 	case FILEBOX_NAME:
-		return FILEBOX_NAME_TEXT;
+		return _("File");
 
 	case FILEBOX_SIZE:
-		return FILEBOX_SIZE_TEXT;
+		return _("Size");
 
 	case FILEBOX_DATE:
-		return FILEBOX_DATE_TEXT;
+		return _("Date");
 
 	case FILEBOX_EXTENSION:
-		return FILEBOX_EXTENSION_TEXT;
+		return _("Ext.");
 	}
 	return "";
 }
