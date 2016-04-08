@@ -249,6 +249,7 @@ void PLUGIN_CLASS::show_gui() \
 	load_configuration(); \
 	PLUGIN_THREAD_CLASS *new_thread = new PLUGIN_THREAD_CLASS(this); \
 	new_thread->start(); \
+	thread = new_thread; \
 }
 
 #define PLUGIN_CLASS_SET_STRING \
