@@ -129,7 +129,7 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 			&temp5, 
 			&temp6,
 			&temp7, 
-			toggle_order[i].isauto ? auto_text[toggle_order[i].ref] : other_text[toggle_order[i].ref]);
+			toggle_order[i].isauto ? _(auto_text[toggle_order[i].ref]) : _(other_text[toggle_order[i].ref]));
 		*w = MAX(current_w, *w);
 		*h += current_h + 5;
 	}
@@ -190,7 +190,7 @@ GWindowToggle::GWindowToggle(MWindow *mwindow,
  : BC_CheckBox(x, 
 	y,
 	*get_main_value(mwindow, toggleinf), 
-        toggleinf.isauto ? auto_text[toggleinf.ref] : other_text[toggleinf.ref])
+	toggleinf.isauto ? _(auto_text[toggleinf.ref]) : _(other_text[toggleinf.ref]))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
