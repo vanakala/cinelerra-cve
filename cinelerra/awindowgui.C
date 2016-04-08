@@ -55,13 +55,13 @@
 
 const char *AWindowGUI::folder_names[] =
 {
-	"Audio Effects",
-	"Video Effects",
-	"Audio Transitions",
-	"Video Transitions",
-	"Labels",
-	"Clips",
-	"Media"
+	N_("Audio Effects"),
+	N_("Video Effects"),
+	N_("Audio Transitions"),
+	N_("Video Transitions"),
+	N_("Labels"),
+	N_("Clips"),
+	N_("Media")
 };
 
 
@@ -94,7 +94,7 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 AssetPicon::AssetPicon(MWindow *mwindow, 
 	AWindowGUI *gui, 
 	int folder)
- : BC_ListBoxItem(AWindowGUI::folder_names[folder], gui->folder_icon)
+ : BC_ListBoxItem(_(AWindowGUI::folder_names[folder]), gui->folder_icon)
 {
 	reset();
 	foldernum = folder;
@@ -1029,9 +1029,9 @@ void AWindowAssets::draw_background()
 	set_color(BC_WindowBase::get_resources()->audiovideo_color);
 	set_font(LARGEFONT);
 	draw_text(get_w() - 
-		get_text_width(LARGEFONT, AWindowGUI::folder_names[mwindow->edl->session->awindow_folder]) - 24,
+		get_text_width(LARGEFONT, _(AWindowGUI::folder_names[mwindow->edl->session->awindow_folder])) - 24,
 		30, 
-		AWindowGUI::folder_names[mwindow->edl->session->awindow_folder],
+		_(AWindowGUI::folder_names[mwindow->edl->session->awindow_folder]),
 		-1, 
 		get_bg_surface());
 }
