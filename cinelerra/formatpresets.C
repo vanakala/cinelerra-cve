@@ -64,26 +64,26 @@ struct selection_int ColormodelSelection::cmodel_selection[] =
 
 struct selection_int AInterlaceModeSelection::ilacemode_selection[] =
 {
-	{ BC_ILACE_MODE_UNDETECTED_T, BC_ILACE_MODE_UNDETECTED },
-	{ BC_ILACE_MODE_TOP_FIRST_T, BC_ILACE_MODE_TOP_FIRST },
-	{ BC_ILACE_MODE_BOTTOM_FIRST_T, BC_ILACE_MODE_BOTTOM_FIRST },
-	{ BC_ILACE_MODE_NOTINTERLACED_T, BC_ILACE_MODE_NOTINTERLACED },
+	{ N_("Unknown"), BC_ILACE_MODE_UNDETECTED },
+	{ N_("Top Fields First"), BC_ILACE_MODE_TOP_FIRST },
+	{ N_("Bottom Fields First"), BC_ILACE_MODE_BOTTOM_FIRST },
+	{ N_("Not Interlaced"), BC_ILACE_MODE_NOTINTERLACED },
 	{ 0, 0 }
 };
 
 struct selection_int InterlaceModeSelection::ilacemode_selection[] =
 {
-	{ BC_ILACE_MODE_TOP_FIRST_T, BC_ILACE_MODE_TOP_FIRST },
-	{ BC_ILACE_MODE_BOTTOM_FIRST_T, BC_ILACE_MODE_BOTTOM_FIRST },
-	{ BC_ILACE_MODE_NOTINTERLACED_T, BC_ILACE_MODE_NOTINTERLACED },
+	{ N_("Top Fields First"), BC_ILACE_MODE_TOP_FIRST },
+	{ N_("Bottom Fields First"), BC_ILACE_MODE_BOTTOM_FIRST },
+	{ N_("Not Interlaced"), BC_ILACE_MODE_NOTINTERLACED },
 	{ 0, 0 }
 };
 
 struct selection_int InterlaceFixSelection::ilacefix_selection[] =
 {
-	{ BC_ILACE_FIXMETHOD_NONE_T, BC_ILACE_FIXMETHOD_NONE },
-	{ BC_ILACE_FIXMETHOD_UPONE_T, BC_ILACE_FIXMETHOD_UPONE },
-	{ BC_ILACE_FIXMETHOD_DOWNONE_T, BC_ILACE_FIXMETHOD_DOWNONE },
+	{ N_("Do Nothing"), BC_ILACE_FIXMETHOD_NONE },
+	{ N_("Shift Up 1 pixel"), BC_ILACE_FIXMETHOD_UPONE },
+	{ N_("Shift Down 1 pixel"), BC_ILACE_FIXMETHOD_DOWNONE },
 	{ 0, 0 }
 };
 
