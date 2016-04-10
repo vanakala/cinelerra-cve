@@ -480,7 +480,7 @@ int EDLSession::load_xml(FileXML *file,
 		file->tag.get_property("CURRENT_FOLDER", string);
 		if(string[0])
 			awindow_folder = AWindowGUI::folder_number(string);
-		file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
+		awindow_folder = file->tag.get_property("AWINDOW_FOLDER", awindow_folder);
 		cursor_on_frames = file->tag.get_property("CURSOR_ON_FRAMES", cursor_on_frames);
 		cwindow_dest = file->tag.get_property("CWINDOW_DEST", cwindow_dest);
 		cwindow_mask = file->tag.get_property("CWINDOW_MASK", cwindow_mask);
