@@ -251,7 +251,6 @@ void BC_WindowBase::initialize()
 #endif
 	wide_text = wide_buffer;
 	*wide_text = 0;
-	done = 1;
 }
 
 #define DEFAULT_EVENT_MASKS EnterWindowMask | \
@@ -614,6 +613,7 @@ int BC_WindowBase::run_window()
 
 	unset_all_repeaters();
 	hide_tooltip();
+	done = 0;
 
 	return return_value;
 }
@@ -2446,10 +2446,6 @@ void BC_WindowBase::unlock_window()
 
 void BC_WindowBase::set_done(int return_value)
 {
-	// Do nothing if window does not run
-	if(top_level->done)
-		return;
-
 	if(window_type != MAIN_WINDOW)
 		top_level->set_done(return_value);
 	else
