@@ -11,7 +11,7 @@ cinelerra/atrack.C
 # cinelerra/avc1394transport.C
 cinelerra/awindowgui.C
 cinelerra/awindowmenu.C
-cinelerra/batch.C
+# cinelerra/batch.C
 cinelerra/batchrender.C
 cinelerra/brender.C
 cinelerra/browsebutton.C
@@ -38,7 +38,7 @@ cinelerra/file.inc
 cinelerra/fileformat.C
 cinelerra/filejpeg.C
 # cinelerra/filejpeglist.C
-cinelerra/filemov.C
+# cinelerra/filemov.C
 cinelerra/filempeg.C
 cinelerra/filepng.C
 cinelerra/filesndfile.C
@@ -48,7 +48,7 @@ cinelerra/filetiff.C
 cinelerra/fileyuv.C
 # cinelerra/flipbook.C
 cinelerra/formatcheck.C
-cinelerra/formatpopup.C
+# cinelerra/formatpopup.C
 cinelerra/formatpresets.C
 cinelerra/formattools.C
 # cinelerra/formatwindow.C
@@ -92,7 +92,7 @@ cinelerra/quit.C
 # cinelerra/recordengine.C
 # cinelerra/recordgui.C
 # cinelerra/recordmonitor.C
-cinelerra/recordprefs.C
+# cinelerra/recordprefs.C
 # cinelerra/recordtransport.C
 # cinelerra/recordvideo.C
 # cinelerra/recordwindow.C
