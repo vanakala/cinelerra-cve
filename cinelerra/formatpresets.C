@@ -92,7 +92,7 @@ FormatPresets::FormatPresets(BC_WindowBase* base_gui, int x, int y)
 {
 	gui_base = base_gui;
 	presets_menu = new selection_int[MAX_NUM_PRESETS + 1];
-	presets_menu[0].text = "User defined";
+	presets_menu[0].text = N_("User defined");
 	presets_menu[0].value = 0;
 
 	for(int i = 0; i < MAX_NUM_PRESETS; i++)
