@@ -156,6 +156,7 @@ MWindow::MWindow(const char *config_path)
 	undo = new MainUndo(this);
 
 	plugin_guis = new ArrayList<PluginServer*>;
+	removed_guis = new ArrayList<PluginServer*>;
 
 	if(session->show_vwindow) vwindow->gui->show_window();
 	if(session->show_cwindow) cwindow->gui->show_window();
@@ -208,7 +209,9 @@ MWindow::~MWindow()
 	delete cwindow;
 	delete lwindow;
 	plugin_guis->remove_all_objects();
+	removed_guis->remove_all_objects();
 	delete plugin_guis;
+	delete removed_guis;
 	delete plugin_gui_lock;
 }
 
@@ -1441,6 +1444,7 @@ void MWindow::show_plugin(Plugin *plugin)
 	int done = 0;
 
 	plugin_gui_lock->lock("MWindow::show_plugin");
+	removed_guis->remove_all_objects();
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 // Pointer comparison
@@ -1482,9 +1486,9 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 		{
 			PluginServer *ptr = plugin_guis->values[i];
 			plugin_guis->remove(ptr);
+			ptr->hide_gui();
+			removed_guis->append(ptr);
 			if(lock) plugin_gui_lock->unlock();
-// Last command executed in client side close
-			delete ptr;
 			return;
 		}
 	}
@@ -1496,6 +1500,7 @@ void MWindow::hide_plugins()
 {
 	plugin_gui_lock->lock("MWindow::hide_plugins");
 	plugin_guis->remove_all_objects();
+	removed_guis->remove_all_objects();
 	plugin_gui_lock->unlock();
 }
 
@@ -1591,6 +1596,7 @@ void MWindow::update_plugin_states()
 			i--;
 		}
 	}
+	removed_guis->remove_all_objects();
 	plugin_gui_lock->unlock();
 }
 

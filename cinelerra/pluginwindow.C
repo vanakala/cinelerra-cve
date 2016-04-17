@@ -25,20 +25,13 @@ PluginWindow::PluginWindow(const char *title, int x, int y, int w, int h)
  : BC_Window(title, x, y, w, h, w, h,
 	0, 0, 1, -1, 0, 1, WINDOW_UTF8)
 {
-tracemsg("%p '%s'", this, title);
 	window_done = 0;
 };
 
 void PluginWindow::close_event()
 {
-tracemsg("%p window_done %d", this, window_done);
 	if(window_done)
 		return;
 	window_done = 1;
 	BC_Window::close_event();
-}
-
-PluginWindow::~PluginWindow()
-{
-tracemsg("%p", this);
 }

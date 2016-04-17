@@ -60,6 +60,7 @@ class PLUGIN_THREAD_CLASS;
 	void show_gui(); \
 	void set_string(); \
 	void raise_window(); \
+	void hide_gui(); \
 	PLUGIN_CLASS_UPDATE_GUI_MEMBER \
 	PLUGIN_THREAD_CLASS *thread;
 #else
@@ -164,9 +165,13 @@ PluginClient* new_plugin(PluginServer *server) \
 	load_defaults();
 
 #define PLUGIN_DESTRUCTOR_MACRO \
-	if(thread && !thread->window->window_done) \
+	if(thread) \
 	{ \
-		thread->window->set_done(0); \
+		if(!thread->window->window_done) \
+		{ \
+			thread->window->set_done(0); \
+		} \
+		delete thread; \
 	} \
  \
 	if(defaults) { \
@@ -249,6 +254,12 @@ void PLUGIN_CLASS::show_gui() \
 	load_configuration(); \
 	PLUGIN_THREAD_CLASS *new_thread = new PLUGIN_THREAD_CLASS(this); \
 	new_thread->start(); \
+} \
+ \
+void PLUGIN_CLASS::hide_gui() \
+{ \
+	if(thread && thread->window) \
+		thread->window->close_event(); \
 }
 
 #define PLUGIN_CLASS_SET_STRING \
@@ -319,14 +330,19 @@ int PLUGIN_CLASS::get_parameters() \
 #ifdef PLUGIN_THREAD_CLASS
 #define PLUGIN_THREAD_METHODS \
 PLUGIN_THREAD_CLASS::PLUGIN_THREAD_CLASS(PLUGIN_CLASS *plugin) \
- : Thread(THREAD_AUTODELETE) \
+ : Thread(THREAD_SYNCHRONOUS) \
 { \
 	this->plugin = plugin; \
+	window = 0; \
 } \
  \
 PLUGIN_THREAD_CLASS::~PLUGIN_THREAD_CLASS() \
 { \
-	delete window; \
+	if(window) \
+	{ \
+		join(); \
+		delete window; \
+	} \
 } \
  \
 void PLUGIN_THREAD_CLASS::run() \
@@ -339,6 +355,7 @@ void PLUGIN_THREAD_CLASS::run() \
 /* Only set it here so tracking doesn't update it until everything is created. */ \
 	plugin->thread = this; \
 	int result = window->run_window(); \
+	window->hide_window(); \
 /* This is needed when the GUI is closed from itself */ \
 	if(result) plugin->client_side_close(); \
 }

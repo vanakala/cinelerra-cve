@@ -93,6 +93,7 @@ public:
 	virtual void set_string() {};
 // cause the plugin to show the gui
 	virtual void show_gui() {};
+	virtual void hide_gui() {};
 // cause the plugin to hide the gui
 	void client_side_close();
 	void update_display_title();
@@ -102,7 +103,6 @@ public:
 	virtual void update_gui() {};
 	virtual void save_data(KeyFrame *keyframe) {};    // write the plugin settings to text in text format
 	virtual void read_data(KeyFrame *keyframe) {};    // read the plugin settings from the text
-	int send_hide_gui();                                    // should be sent when the GUI recieves a close event from the user
 	virtual void force_update() {};
 
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change

@@ -27,7 +27,6 @@ class PluginWindow : public BC_Window
 {
 public:
 	PluginWindow(const char *title, int x, int y, int w, int h);
-	~PluginWindow();
 
 	void close_event();
 

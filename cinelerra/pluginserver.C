@@ -711,6 +711,12 @@ void PluginServer::show_gui()
 	client->show_gui();
 }
 
+void PluginServer::hide_gui()
+{
+	if(!plugin_open) return;
+	client->hide_gui();
+}
+
 void PluginServer::update_gui()
 {
 	if(!plugin_open || !plugin) return;
