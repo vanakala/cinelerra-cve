@@ -765,7 +765,6 @@ void MWindow::init_signals()
 	sighandler = new SigHandler;
 	sighandler->initialize();
 	sighandler->initXErrors();
-	ENABLE_BUFFER
 }
 
 void MWindow::init_render()
@@ -1243,7 +1242,6 @@ void MWindow::hide_splash()
 
 void MWindow::start()
 {
-ENABLE_BUFFER
 	vwindow->start();
 	awindow->start();
 	cwindow->start();

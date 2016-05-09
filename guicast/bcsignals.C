@@ -2,6 +2,7 @@
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2016 Einar Rünkaru <einarrunkaru at gmail dot com>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,12 +34,14 @@
 #include <stdarg.h>
 
 BC_Signals* BC_Signals::global_signals = 0;
+int BC_Signals::catch_X_errors = 0;
+int BC_Signals::X_errors = 0;
 static int signal_done = 0;
 static int table_id = 0;
 
 // After successfully locking, the table is flagged as being the owner of the lock.
 // In the unlock function, the table flagged as the owner of the lock is deleted.
-typedef struct 
+typedef struct
 {
 	void *ptr;
 	const char *title;
@@ -46,31 +49,27 @@ typedef struct
 	int is_owner;
 	int id;
 	pthread_t tid;
-        int ltype;
+	int ltype;
 } bc_locktrace_t;
 
 #ifdef ENABLE_TRACE
-
 #define TOTAL_LOCKS 100
-
 #else
-
 #define TOTAL_LOCKS 1
-
 #endif
 
 static bc_locktrace_t locktable[TOTAL_LOCKS];
 static bc_locktrace_t *lastlockt = locktable;
 
-
-static bc_locktrace_t* new_bc_locktrace(void *ptr, 
-	const char *title, 
+static bc_locktrace_t* new_bc_locktrace(void *ptr,
+	const char *title,
 	const char *location,
-        int ltype)
+	int ltype)
 {
 	bc_locktrace_t *result;
+
 	if(lastlockt >= &locktable[TOTAL_LOCKS])
-	lastlockt = locktable;
+		lastlockt = locktable;
 
 	result = lastlockt++;
 
@@ -81,6 +80,7 @@ static bc_locktrace_t* new_bc_locktrace(void *ptr,
 	result->id = table_id++;
 	result->tid = pthread_self();
 	result->ltype = ltype;
+
 	return result;
 }
 
@@ -93,13 +93,9 @@ static void clear_lock_entry(bc_locktrace_t *tbl)
 }
 
 #ifdef ENABLE_TRACE
-
 #define TOTAL_TRACES 16
-
 #else
-
 #define TOTAL_TRACES 1
-
 #endif
 
 typedef struct
@@ -113,48 +109,6 @@ typedef struct
 static bc_functrace_t functable[TOTAL_TRACES];
 static bc_functrace_t *lastfunct = functable;
 
-#ifdef TRACE_MEMORY
-
-#define TOTAL_MEMORY 16
-
-#else
-
-#define TOTAL_MEMORY 1
-
-#endif
-
-typedef struct
-{
-	int size;
-	void *ptr;
-	const char *location;
-} bc_buffertrace_t;
-
-static bc_buffertrace_t buffertable[TOTAL_MEMORY];
-static bc_buffertrace_t *lastbuffert = buffertable;
-
-static bc_buffertrace_t* new_bc_buffertrace(int size, void *ptr, const char *location)
-{
-	bc_buffertrace_t *result;
-
-	if(lastbuffert >= &buffertable[TOTAL_MEMORY])
-		lastbuffert = &buffertable[0];
-
-	result = lastbuffert++;
-	result->size = size;
-	result->ptr = ptr;
-	result->location = location;
-	return result;
-}
-
-static void clear_memory_entry(bc_buffertrace_t *tbl)
-{
-	while(++tbl < lastbuffert)
-		*tbl++ = tbl[1];
-	if(--lastbuffert < buffertable)
-		lastbuffert = buffertable;
-}
-
 #define TMP_FNAMES 10
 #define MX_TMPFNAME 256
 
@@ -165,16 +119,12 @@ static int ltmpname;
 static pthread_mutex_t lock;
 static pthread_mutex_t handler_lock;
 
-// Don't trace memory until this is true to avoid initialization
-static int trace_memory = 0;
-
 #define BACKTRACE_SIZE 40
 #define SIGHDLR_BUFL   512
 #define NUMBUFLEN 32
 
-/*
- * Convert string to hex
-  */
+
+// Convert string to hex
 static char *tohex(unsigned long val)
 {
 	static char buf[NUMBUFLEN];
@@ -189,10 +139,8 @@ static char *tohex(unsigned long val)
 	return &buf[n];
 }
 
-/*
- * Copy string
- * Returns ptr to end of buffer
-*/
+// Copy string
+// Returns ptr to end of buffer
 static char *copystr(char *dst, const char *src)
 {
 	const char *p;
@@ -200,17 +148,15 @@ static char *copystr(char *dst, const char *src)
 
 	q = dst;
 	p = src;
-
 	while(*p)
 		*q++ = *p++;
 	*q = 0;
 	return q;
 }
 
-/*
- * Signal handler
- * We try not to use 'unsafe' functions
- */
+
+// Signal handler
+// We try not to use 'unsafe' functions
 static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 {
 	void *buff[BACKTRACE_SIZE];
@@ -235,14 +181,17 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 	numbt = backtrace(buff, BACKTRACE_SIZE);
 	cur_tid = pthread_self();
 	ucp = (ucontext_t *)ucxt;
+
 	if(signum)
 		signam = strsignal(signum);
 	else
 		signam = 0;
 
-	switch(signum){
+	switch(signum)
+	{
 	case SIGILL:
-		switch(inf->si_code){
+		switch(inf->si_code)
+		{
 		case ILL_ILLOPC:
 			codnam = "Illegal opcode";
 			break;
@@ -273,7 +222,8 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 		}
 		break;
 	case SIGFPE:
-		switch(inf->si_code){
+		switch(inf->si_code)
+		{
 		case FPE_INTDIV:
 			codnam = "Integer divide by zero";
 			break;
@@ -304,7 +254,8 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 		}
 		break;
 	case SIGSEGV:
-		switch(inf->si_code){
+		switch(inf->si_code)
+		{
 		case SEGV_MAPERR:
 			codnam = "Address not mapped to object";
 			break;
@@ -317,7 +268,8 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 		}
 		break;
 	case SIGBUS:
-		switch(inf->si_code){
+		switch(inf->si_code)
+		{
 		case BUS_ADRALN:
 			codnam = "Invalid address alignment";
 			break;
@@ -336,11 +288,14 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 		codnam = 0;
 		break;
 	}
-	if(signam){
+
+	if(signam)
+	{
 		p = copystr(msgbuf, "Got signal '");
 		p = copystr(p, signam);
 		p = copystr(p, "'");
-		if(codnam){
+		if(codnam)
+		{
 			p = copystr(p, " with code '");
 			p = copystr(p, codnam);
 			p = copystr(p, "'\n");
@@ -366,7 +321,6 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 
 	BC_Signals::dump_traces();
 	BC_Signals::dump_locks();
-	BC_Signals::dump_buffers();
 	BC_Signals::delete_temps();
 
 // Call user defined signal handler
@@ -375,17 +329,14 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 	abort();
 }
 
-/*
- * X error handler
- * consider all errors as fatal now
- */
+// X error handler
 static int xerrorhdlr(Display *display, XErrorEvent *event)
 {
 	char string[1024];
 
-	if(catch_X_errors)
+	if(BC_Signals::catch_X_errors)
 	{
-		X_errors++;
+		BC_Signals::X_errors++;
 		return 0;
 	}
 
@@ -393,7 +344,7 @@ static int xerrorhdlr(Display *display, XErrorEvent *event)
 	if(event->error_code == BadWindow)
 		return 0;
 
-	XGetErrorText(event->display, event->error_code, string, 1024); 
+	XGetErrorText(event->display, event->error_code, string, 1024);
 	fprintf(stderr, "X error opcode=%d,%d: '%s'\n",
 		event->request_code,
 		event->minor_code,
@@ -402,23 +353,19 @@ static int xerrorhdlr(Display *display, XErrorEvent *event)
 	signal_entry(0, NULL, NULL);
 }
 
-/*
- * XIO error handler
- */
+// XIO error handler
 static int xioerrhdlr(Display *display)
 {
-	fprintf(stderr, "Fatal X IO error %d (%s) on X server '%s'\n", 
+	fprintf(stderr, "Fatal X IO error %d (%s) on X server '%s'\n",
 		errno, strerror(errno), DisplayString(display));
 	fprintf(stderr, "    with %d events remaining\n", QLength(display));
 	signal_entry(0, NULL, NULL);
 }
 
-/*
- * X protocol watcher
- */
+// X protocol watcher
 static int xprotowatch(Display *display)
 {
-	fprintf(stderr, "[#%08lx] xprotowatch: %p req %ld/%ld\n", 
+	fprintf(stderr, "[#%08lx] xprotowatch: %p req %ld/%ld\n",
 		pthread_self(), display,
 		display->request, display->last_request_read);
 	return 0;
@@ -446,11 +393,10 @@ int BC_Signals::reset_catch()
 	catch_X_errors = 0;
 	return oerr;
 }
-
 void BC_Signals::dump_traces()
 {
 // Dump trace table
-        printf("Execution table size %d\n", TOTAL_TRACES);
+	printf("Execution table size %d\n", TOTAL_TRACES);
 	if(TOTAL_TRACES > 1)
 	{
 		for(bc_functrace_t *tbl = functable;
@@ -460,16 +406,15 @@ void BC_Signals::dump_traces()
 			if(tbl->fname)
 			{
 				if(tbl->funct)
-					printf(" %c %#lx %s %s %d\n", 
-						c, tbl->tid, tbl->fname, 
+					printf(" %c %#lx %s %s %d\n",
+						c, tbl->tid, tbl->fname,
 						tbl->funct, tbl->line);
 				else
-					printf(" %c %#lx %s\n", 
-						c, tbl->tid, tbl->fname);
+					printf(" %c %#lx %s\n",
+					c, tbl->tid, tbl->fname);
 			}
 		}
 	}
-
 }
 
 void BC_Signals::dump_locks()
@@ -478,7 +423,7 @@ void BC_Signals::dump_locks()
 	printf("signal_entry: lock table size=%d\n", lastlockt - &locktable[0]);
 	for(bc_locktrace_t *table = &locktable[0]; table < lastlockt; table++)
 	{
-		printf(" %c%c %6d %#lx %p %s - %s\n", 
+		printf(" %c%c %6d %#lx %p %s - %s\n",
 			table->is_owner ? '*' : ' ',
 			table->ltype,
 			table->id,
@@ -487,36 +432,76 @@ void BC_Signals::dump_locks()
 			table->title,
 			table->location);
 	}
-
 }
 
-void BC_Signals::dump_buffers()
+void BC_Signals::delete_temps()
+{
+	printf("BC_Signals::delete_temps: deleting %d temp files\n", ltmpname);
+	for(int i = 0; i < ltmpname; i++)
+	{
+		printf("    %s\n", tmp_fnames[i]);
+		remove(tmp_fnames[i]);
+	}
+	pthread_mutex_unlock(&lock);
+}
+
+void BC_Signals::set_temp(const char *string)
 {
 	pthread_mutex_lock(&lock);
-// Dump buffer table
-	printf("BC_Signals::dump_buffers: buffer table size=%d\n", 
-			lastbuffert - &buffertable[0]);
-	for(bc_buffertrace_t *tbl = &buffertable[0]; tbl < lastbuffert; tbl++)
+	if(ltmpname >= TMP_FNAMES)
+		printf("Too many temp files in BC_signals\n");
+	else
+		strncpy(tmp_fnames[ltmpname++], string,  MX_TMPFNAME-1);
+	pthread_mutex_unlock(&lock);
+}
+
+
+void BC_Signals::unset_temp(const char *string)
+{
+	int i;
+
+	pthread_mutex_lock(&lock);
+	for(i = 0; i < ltmpname; i++)
 	{
-		int c = (tbl == lastbuffert)? '>' : ' ';
-		printf(" %c %d %p %s\n", c, tbl->size, tbl->ptr, tbl->location);
+		for(i++; i < ltmpname; i++)
+			strncpy(tmp_fnames[i], tmp_fnames[i+1],  MX_TMPFNAME-1);
+		ltmpname--;
+		break;
 	}
+	pthread_mutex_unlock(&lock);
+}
+
+void BC_Signals::trace_msg(const char *file, const char *func, int line, const char *fmt, ...)
+{
+	va_list ap;
+	static char msgbuf[1024];
+	int l;
+
+	pthread_mutex_lock(&lock);
+	l = sprintf(msgbuf, "[#%08lx] %s::%s(%d):", pthread_self(), file, func, line);
+	if(fmt)
+	{
+		va_start(ap, fmt);
+		l += vsnprintf(&msgbuf[l], 1020 - l, fmt, ap);
+		va_end(ap);
+		msgbuf[l++] = '\n';
+		msgbuf[l] = 0;
+	}
+	else
+		strcpy(&msgbuf[l], "===\n");
+	fputs(msgbuf, stdout);
+	fflush(stdout);
 	pthread_mutex_unlock(&lock);
 }
 
 void BC_Signals::initialize()
 {
+	struct sigaction nact;
+
 	BC_Signals::global_signals = this;
 	pthread_mutex_init(&lock, 0);
 	pthread_mutex_init(&handler_lock, 0);
 
-	initialize2();
-}
-
-
-void BC_Signals::initialize2()
-{
-	struct sigaction nact;
 	nact.sa_flags = SA_SIGINFO | SA_RESETHAND;
 	nact.sa_sigaction = signal_entry;
 	sigemptyset(&nact.sa_mask);
@@ -543,14 +528,11 @@ void BC_Signals::watchXproto(Display *dpy)
 	XSetAfterFunction(dpy, xprotowatch);
 }
 
-void BC_Signals::signal_handler(int signum)
-{
-}
-
 void BC_Signals::new_trace(const char *text)
 {
 	if(!global_signals) return;
 	pthread_mutex_lock(&lock);
+
 	bc_functrace_t *tbl = lastfunct++;
 
 // Wrap around
@@ -561,12 +543,14 @@ void BC_Signals::new_trace(const char *text)
 	tbl->funct = 0;
 	tbl->line = 0;
 	tbl->tid = pthread_self();
+
 	pthread_mutex_unlock(&lock);
 }
 
 void BC_Signals::new_trace(const char *file, const char *function, int line)
 {
 	if(!global_signals) return;
+
 	pthread_mutex_lock(&lock);
 	bc_functrace_t *tbl = lastfunct++;
 
@@ -584,8 +568,8 @@ void BC_Signals::new_trace(const char *file, const char *function, int line)
 void BC_Signals::delete_traces()
 {
 	if(!global_signals) return;
+
 	pthread_mutex_lock(&lock);
-	
 	for(bc_functrace_t *tbl = functable; tbl < &functable[TOTAL_TRACES];
 			tbl++)
 		tbl->fname = 0;
@@ -619,6 +603,7 @@ void BC_Signals::set_lock2(int table_id)
 
 	bc_locktrace_t *table;
 	pthread_mutex_lock(&lock);
+
 	for(table = lastlockt - 1; table >= &locktable[0]; table--)
 	{
 // Got it.  Hasn't been unlocked/deleted yet.
@@ -638,7 +623,6 @@ void BC_Signals::unset_lock2(int table_id)
 
 	bc_locktrace_t *table;
 	pthread_mutex_lock(&lock);
-
 	for(table = lastlockt - 1; table >= &locktable[0]; table--)
 	{
 		if(table->id == table_id)
@@ -671,10 +655,8 @@ void BC_Signals::unset_lock(void *ptr)
 			}
 		}
 	}
-
 	pthread_mutex_unlock(&lock);
 }
-
 
 void BC_Signals::unset_all_locks(void *ptr)
 {
@@ -686,162 +668,10 @@ void BC_Signals::unset_all_locks(void *ptr)
 	for(table = lastlockt - 1; table >= &locktable[0]; table--)
 	{
 		if(table->ptr == ptr)
-		{
-		        clear_lock_entry(table);
-		}
+			clear_lock_entry(table);
 	}
 	pthread_mutex_unlock(&lock);
 }
 
 
-void BC_Signals::enable_memory()
-{
-	trace_memory = 1;
-}
 
-void BC_Signals::disable_memory()
-{
-	trace_memory = 0;
-}
-
-
-void BC_Signals::set_buffer(int size, void *ptr, const char* location)
-{
-	if(!global_signals) return;
-	if(!trace_memory) return;
-
-//printf("BC_Signals::set_buffer %p %s\n", ptr, location);
-	pthread_mutex_lock(&lock);
-	new_bc_buffertrace(size, ptr, location);
-	pthread_mutex_unlock(&lock);
-}
-
-int BC_Signals::unset_buffer(void *ptr)
-{
-	if(!global_signals) return 0;
-	if(!trace_memory) return 0;
-
-	pthread_mutex_lock(&lock);
-	for(bc_buffertrace_t *tbl = buffertable; 
-		tbl < &buffertable[TOTAL_MEMORY]; tbl++)
-	{
-		if(tbl->ptr == ptr)
-		{
-//printf("BC_Signals::unset_buffer %p\n", ptr);
-		        clear_memory_entry(tbl);
-			pthread_mutex_unlock(&lock);
-			return 0;
-		}
-	}
-
-	pthread_mutex_unlock(&lock);
-//	fprintf(stderr, "BC_Signals::unset_buffer buffer %p not found.\n", ptr);
-	return 1;
-}
-
-void BC_Signals::delete_temps()
-{
-	pthread_mutex_lock(&lock);
-	printf("BC_Signals::delete_temps: deleting %d temp files\n", ltmpname);
-	for(int i = 0; i < ltmpname; i++)
-	{
-		printf("    %s\n", tmp_fnames[i]);
-		remove(tmp_fnames[i]);
-	}
-	pthread_mutex_unlock(&lock);
-}
-
-void BC_Signals::set_temp(const char *string)
-{
-	pthread_mutex_lock(&lock);
-	if(ltmpname >= TMP_FNAMES)
-		printf("Too many temp files in BC_signals\n");
-	strncpy(tmp_fnames[ltmpname++], string,  MX_TMPFNAME-1);
-	pthread_mutex_unlock(&lock);
-}
-
-void BC_Signals::unset_temp(const char *string)
-{
-	char *p;
-	int i;
-
-	pthread_mutex_lock(&lock);
-	for(i = 0; i < ltmpname; i++)
-	{
-		if(strncmp(tmp_fnames[i], string, MX_TMPFNAME-1) == 0)
-		{
-			for(i++; i < ltmpname; i++)
-				strncpy(tmp_fnames[i], tmp_fnames[i+1],  MX_TMPFNAME-1);
-			ltmpname--;
-			break;
-		}
-	}
-	pthread_mutex_unlock(&lock);
-}
-
-void BC_Signals::trace_msg(const char *file, const char *func, int line, const char *fmt, ...)
-{
-	va_list ap;
-	static char msgbuf[1024];
-	int l;
-
-	pthread_mutex_lock(&lock);
-	l = sprintf(msgbuf, "[#%08lx] %s::%s(%d):", pthread_self(), file, func, line);
-	if(fmt)
-	{
-		va_start(ap, fmt);
-		l += vsnprintf(&msgbuf[l], 1020 - l, fmt, ap);
-		va_end(ap);
-		msgbuf[l++] = '\n';
-		msgbuf[l] = 0;
-	}
-	else
-		strcpy(&msgbuf[l], "===\n");
-	fputs(msgbuf, stdout);
-	fflush(stdout);
-	pthread_mutex_unlock(&lock);
-}
-
-
-
-
-
-
-#ifdef TRACE_MEMORY
-
-// void* operator new(size_t size) 
-// {
-// //printf("new 1 %d\n", size);
-//     void *result = malloc(size);
-// 	BUFFER(size, result, "new");
-// //printf("new 2 %d\n", size);
-// 	return result;
-// }
-// 
-// void* operator new[](size_t size) 
-// {
-// //printf("new [] 1 %d\n", size);
-//     void *result = malloc(size);
-// 	BUFFER(size, result, "new []");
-// //printf("new [] 2 %d\n", size);
-// 	return result;
-// }
-// 
-// void operator delete(void *ptr) 
-// {
-// //printf("delete 1 %p\n", ptr);
-// 	UNBUFFER(ptr);
-// //printf("delete 2 %p\n", ptr);
-//     free(ptr);
-// }
-// 
-// void operator delete[](void *ptr) 
-// {
-// //printf("delete [] 1 %p\n", ptr);
-// 	UNBUFFER(ptr);
-//     free(ptr);
-// //printf("delete [] 2 %p\n", ptr);
-// }
-
-
-#endif

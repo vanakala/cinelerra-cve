@@ -297,7 +297,6 @@ int main(int argc, char *argv[])
 // run the program
 		mwindow->start();
 		mwindow->save_defaults();
-DISABLE_BUFFER
 		break;
 	}
 
