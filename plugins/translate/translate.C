@@ -183,9 +183,6 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	VFrame *input, *output;
-	float ix1, ix2, iy1, iy2;
-	float ox1, ox2, oy1, oy2;
-	float cx, cy;
 
 	input = input_ptr;
 	output = output_ptr;
@@ -208,79 +205,17 @@ void TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	output->clear_frame();
 
-	if(config.in_w > EPSILON && config.in_h > EPSILON &&
-		config.out_w > EPSILON && config.out_h > EPSILON)
-	{
-		ix1 = config.in_x;
-		ox1 = config.out_x;
-
-		if(ix1 < 0)
-		{
-			ox1 -= ix1;
-			ix2 = config.in_w;
-			ix1 = 0;
-		}
-		else
-			ix2 = ix1 + config.in_w;
-
-		if(ix2 > output->get_w())
-			ix2 = output->get_w();
-
-		iy1 = config.in_y;
-		oy1 = config.out_y;
-
-		if(iy1 < 0)
-		{
-			oy1 -= iy1;
-			iy2 = config.in_h;
-			iy1 = 0;
-		}
-		else
-			iy2 = iy1 + config.in_h;
-
-		if(iy2 > output->get_h())
-			iy2 = output->get_h();
-
-		cx = config.out_w / config.in_w;
-		cy = config.out_h / config.in_h;
-
-		ox2 = ox1 + (ix2 - ix1) * cx;
-		oy2 = oy1 + (iy2 - iy1) * cy;
-
-		if(ox1 < 0)
-		{
-			ix1 += -ox1 / cx;
-			ox1 = 0;
-		}
-		if(oy1 < 0)
-		{
-			iy1 += -oy1 / cy;
-			oy1 = 0;
-		}
-		if(ox2 > output->get_w())
-		{
-			ix2 -= (ox2 - output->get_w()) / cx;
-			ox2 = output->get_w();
-		}
-		if(oy2 > output->get_h())
-		{
-			iy2 -= (oy2 - output->get_h()) / cy;
-			oy2 = output->get_h();
-		}
-
-		if(ix1 < ix2 && iy1 < iy2 && ox1 < ox2 && oy1 < oy2)
-			overlayer->overlay(output,
-				input,
-				ix1,
-				iy1,
-				ix2,
-				iy2,
-				ox1,
-				oy1,
-				ox2,
-				oy2,
-				1,
-				TRANSFER_REPLACE,
-				get_interpolation_type());
-	}
+	overlayer->overlay(output,
+		input,
+		config.in_x,
+		config.in_y,
+		config.in_x + config.in_w,
+		config.in_y + config.in_h,
+		config.out_x,
+		config.out_y,
+		config.out_x + config.out_w,
+		config.out_y + config.out_h,
+		1,
+		TRANSFER_REPLACE,
+		get_interpolation_type());
 }
