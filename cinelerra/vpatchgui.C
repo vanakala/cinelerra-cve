@@ -250,7 +250,7 @@ VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
 	this->patch = patch;
 	this->mode = get_keyframe_value(mwindow, patch);
 	set_icon(patch->patchbay->mode_to_icon(this->mode));
-	set_tooltip("Overlay mode");
+	set_tooltip(_("Overlay mode"));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_NORMAL), TRANSFER_NORMAL));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_ADDITION), TRANSFER_ADDITION));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_SUBTRACT), TRANSFER_SUBTRACT));
