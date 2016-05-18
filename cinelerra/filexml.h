@@ -36,14 +36,14 @@ public:
 	XMLTag();
 	~XMLTag();
 
-	int set_delimiters(char left_delimiter, char right_delimiter);
-	int reset_tag();     // clear all structures
+	void set_delimiters(char left_delimiter, char right_delimiter);
+	void reset_tag();     // clear all structures
 
 	int read_tag(char *input, int &position, int length);
 
 	int title_is(const char *title);  // test against title and return 1 if they match
 	char *get_title();
-	int get_title(char *value);
+	void get_title(char *value);
 	int test_property(const char *property, char *value);
 	const char *get_property_text(int number);
 	int get_property_int(int number);
@@ -55,13 +55,13 @@ public:
 	float get_property(const char *property, float default_);
 	double get_property(const char *property, double default_);
 
-	int set_title(const char *text);       // set the title field
-	int set_property(const char *text, const char *value);
-	int set_property(const char *text, int32_t value);
-	int set_property(const char *text, int64_t value);
-	int set_property(const char *text, float value);
-	int set_property(const char *text, double value);
-	int write_tag();
+	void set_title(const char *text);       // set the title field
+	void set_property(const char *text, const char *value);
+	void set_property(const char *text, int32_t value);
+	void set_property(const char *text, int64_t value);
+	void set_property(const char *text, float value);
+	void set_property(const char *text, double value);
+	void write_tag();
 
 	char tag_title[MAX_TITLE];       // title of this tag
 
@@ -84,18 +84,18 @@ public:
 	~FileXML();
 
 	void dump();
-	int terminate_string();         // append the terminal 0
-	int append_newline();       // append a newline to string
-	int append_tag();           // append tag object
-	int append_text(const char *text);
+	void terminate_string();         // append the terminal 0
+	void append_newline();       // append a newline to string
+	void append_tag();           // append tag object
+	void append_text(const char *text);
 // add generic text to the string
-	int append_text(const char *text, int len);
+	void append_text(const char *text, int len);
 // add generic text to the string which contains <>& characters
-	int encode_text(char *text);
+	void encode_text(char *text);
 
 // Text array is dynamically allocated and deleted when FileXML is deleted
 	char* read_text();         // read text, put it in *output, and return it
-	int read_text_until(const char *tag_end, 
+	void read_text_until(const char *tag_end,
 		char *output, int max_len);     // store text in output until the tag is reached
 	int read_tag();          // read next tag from file, ignoring any text, and put it in tag
 	// return 1 on failure
@@ -104,11 +104,11 @@ public:
 	int write_to_file(FILE *file);           // write the file to disk
 	int read_from_file(const char *filename, 
 		int ignore_error = 0);          // read an entire file from disk
-	int read_from_string(const char *string);   // read from a string
+	void read_from_string(const char *string);   // read from a string
 
-	int reallocate_string(int new_available);     // change size of string to accomodate new output
-	int set_shared_string(char *shared_string, long available);    // force writing to a message buffer
-	int rewind();
+	void reallocate_string(int new_available);     // change size of string to accomodate new output
+	void set_shared_string(char *shared_string, long available);    // force writing to a message buffer
+	void rewind();
 
 	char *string;      // string that contains the actual file
 	int position;    // current position in string file
