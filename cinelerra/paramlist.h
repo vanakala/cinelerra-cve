@@ -22,6 +22,7 @@
 #ifndef PARAMLIST_H
 #define PARAMLIST_H
 
+#include "filexml.inc"
 #include "paramlist.inc"
 #include "linklist.h"
 #include "stdint.h"
@@ -33,11 +34,14 @@ public:
 	Param(const char *name, int64_t value);
 	Param(const char *name, const char *value);
 	Param(const char *name, double value);
+	Param(const char *name);
 	~Param();
 
 	void set_help(const char *txt);
 	void set_string(const char *txt);
 	Paramlist *add_subparams(const char *name);
+	void save_param(FileXML *file);
+	void load_param(FileXML *file);
 	void dump(int indent = 0);
 
 	int type;
@@ -66,7 +70,11 @@ public:
 	Param *append_param(const char *name, int value);
 	Param *append_param(const char *name, int64_t value);
 	Param *append_param(const char *name, double value);
+	Param *append_param(const char *name);
+
 	Param *find(const char *name);
+	void save_list(FileXML *file);
+	void load_list(FileXML *file);
 	void dump(int indent = 0);
 
 	char name[PARAM_NAMELEN];

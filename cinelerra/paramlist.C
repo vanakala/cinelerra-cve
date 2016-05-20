@@ -19,6 +19,8 @@
  *
  */
 
+#include "bcwindowbase.inc"
+#include "filexml.h"
 #include "paramlist.h"
 #include "bcsignals.h"
 
@@ -54,6 +56,13 @@ Param::Param(const char *name, double value)
 	initialize(name);
 	type = PARAMTYPE_DBL;
 	floatvalue = value;
+}
+
+Param::Param(const char *name)
+ : ListItem<Param>()
+{
+	initialize(name);
+	type = 0;
 }
 
 void Param::initialize(const char *name)
@@ -131,6 +140,52 @@ Paramlist *Param::add_subparams(const char *name)
 	return subparams;
 }
 
+void Param::save_param(FileXML *file)
+{
+	char string[BCTEXTLEN];
+
+	sprintf(string, "/%s", name);
+	file->tag.set_title(string + 1);
+	file->tag.set_property("type", type);
+
+	if(type & PARAMTYPE_INT)
+		file->tag.set_property("intval", intvalue);
+
+	if(type & PARAMTYPE_LNG)
+		file->tag.set_property("longval", longvalue);
+
+	if(type & PARAMTYPE_DBL)
+		file->tag.set_property("dblval", floatvalue);
+
+	file->append_tag();
+
+	if((type & PARAMTYPE_MASK) == PARAMTYPE_STR && stringvalue)
+		file->append_text(stringvalue);
+
+	file->tag.set_title(string);
+	file->append_tag();
+	file->append_newline();
+}
+
+void Param::load_param(FileXML *file)
+{
+	char *s;
+
+	type = file->tag.get_property("type", type);
+
+	if(type & PARAMTYPE_INT)
+		intvalue = file->tag.get_property("intval", intvalue);
+
+	if(type & PARAMTYPE_LNG)
+		longvalue = file->tag.get_property("longval", longvalue);
+
+	if(type & PARAMTYPE_DBL)
+		floatvalue = file->tag.get_property("dblval", floatvalue);
+
+	if(type & PARAMTYPE_STR)
+		set_string(file->read_text());
+}
+
 void Param::dump(int indent)
 {
 	printf("%*sParam %p dump:\n", indent, "", this);
@@ -190,6 +245,11 @@ Param *Paramlist::append_param(const char *name, double value)
 	return append(new Param(name, value));
 }
 
+Param *Paramlist::append_param(const char *name)
+{
+	return append(new Param(name));
+}
+
 Param *Paramlist::find(const char *name)
 {
 	Param *current;
@@ -202,11 +262,54 @@ Param *Paramlist::find(const char *name)
 	return 0;
 }
 
+void Paramlist::save_list(FileXML *file)
+{
+	Param *current;
+	char string[BCTEXTLEN];
+
+	sprintf(string, "/%s", name);
+	file->tag.set_title(string + 1);
+	file->tag.set_property("selectedint", selectedint);
+	file->append_tag();
+	file->append_newline();
+	for(current = first; current; current = current->next)
+		current->save_param(file);
+	file->tag.set_title(string);
+	file->append_tag();
+	file->append_newline();
+}
+
+void Paramlist::load_list(FileXML *file)
+{
+	Param *current;
+	const char *t;
+
+	if(file->read_tag())
+		return;
+
+	// name of the list
+	strncpy(name, file->tag.get_title(), PARAM_NAMELEN);
+	name[PARAM_NAMELEN - 1] = 0;
+	selectedint = file->tag.get_property("selectedint", 0);
+
+	while(!file->read_tag())
+	{
+		t = file->tag.get_title();
+
+		if(!strcmp(t + 1, name))
+			break;
+
+		if(*t != '/')
+		{
+			current = append_param(t);
+			current->load_param(file);
+		}
+	}
+}
 
 void Paramlist::dump(int indent)
 {
 	Param *current;
-
 	printf("%*sParamlist %s (%p) dump\n", indent, "", name, this);
 	printf("%*s Selected: int %d\n", indent, "", selectedint);
 	for(current = first; current; current = current->next)
