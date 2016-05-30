@@ -57,11 +57,12 @@ public:
 	AVlibsParamThread *fmtthread;
 	AVlibsParamThread *codecthread;
 
+	int current_codec;
+
 private:
 	int left;
 	int top;
 	int options;
-	int current_codec;
 	SubSelectionPopup *codecpopup;
 	char string[BCTEXTLEN];
 };

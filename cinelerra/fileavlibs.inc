@@ -22,6 +22,12 @@
 #ifndef FILEAVLIBS_INC
 #define FILEAVLIBS_INC
 
+#define FILEAVLIBS_GLOBAL_CONFIG "avlibsconfig"
+#define FILEAVLIBS_FORMAT_CONFIG "avlibsfmt:"
+#define FILEAVLIBS_ACODEC_CONFIG "avlibsacodec:"
+#define FILEAVLIBS_VCODEC_CONFIG "avlibsvcodec:"
+#define FILEAVLIBS_CONFIG_EXT ".xml"
+
 class FileAVlibs;
 
 #endif
