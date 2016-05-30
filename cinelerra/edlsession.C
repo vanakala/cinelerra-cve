@@ -29,6 +29,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "filesystem.h"
 #include "interlacemodes.h"
 #include "overlayframe.inc"
 #include "playbackconfig.h"
@@ -767,6 +768,15 @@ int EDLSession::edit_actions(void)
 	if(plugins_follow_edits)
 		result |= EDIT_PLUGINS;
 	return result;
+}
+
+char *EDLSession::configuration_path(const char *filename, char *outbuf)
+{
+	FileSystem fs;
+
+	strcpy(outbuf, plugin_configuration_directory);
+	fs.complete_path(outbuf);
+	strcat(outbuf, filename);
 }
 
 void EDLSession::dump()

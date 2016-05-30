@@ -56,6 +56,8 @@ public:
 //	PlaybackConfig* get_playback_config(int strategy, int head);
 //	ArrayList<PlaybackConfig*>* get_playback_config(int strategy);
 //	int get_playback_heads(int strategy);
+// Compose path of coniguration file
+	char *configuration_path(const char *filename, char *outbuf);
 
 // Called by PreferencesThread to determine if preference changes need to be
 // rendered.
