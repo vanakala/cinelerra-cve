@@ -61,6 +61,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	fmtopts = 0;
 	codecpopup = 0;
 	codecopts = 0;
+	this->options = options;
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 	{
