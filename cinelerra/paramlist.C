@@ -20,10 +20,12 @@
  */
 
 #include "bcwindowbase.inc"
+#include "clip.h"
 #include "filexml.h"
 #include "paramlist.h"
 #include "bcsignals.h"
 
+#include <math.h>
 #include <string.h>
 
 Param::Param(const char *name, int value)
@@ -186,6 +188,44 @@ void Param::load_param(FileXML *file)
 		set_string(file->read_text());
 }
 
+void Param::copy_values(Param *that)
+{
+	if(type & PARAMTYPE_INT)
+		intvalue = that->intvalue;
+
+	if(type & PARAMTYPE_LNG)
+		longvalue = that->longvalue;
+
+	if(type & PARAMTYPE_DBL)
+		floatvalue = that->floatvalue;
+
+	if(type & PARAMTYPE_STR)
+		set_string(that->stringvalue);
+}
+
+int Param::equiv_value(Param *that)
+{
+	int res = 0;
+
+	if(type & PARAMTYPE_INT)
+		res |= !(intvalue == that->intvalue);
+
+	if(type & PARAMTYPE_LNG)
+		res |= !(longvalue == that->longvalue);
+
+	if(type & PARAMTYPE_DBL)
+		res |= !EQUIV(floatvalue, that->floatvalue);
+
+	if(type & PARAMTYPE_STR)
+	{
+		if(stringvalue && that->stringvalue)
+			res |= strcmp(stringvalue, that->stringvalue);
+		else
+			res |= !(!stringvalue && !that->stringvalue);
+	}
+	return res;
+}
+
 void Param::dump(int indent)
 {
 	printf("%*sParam %p dump:\n", indent, "", this);
@@ -277,6 +317,7 @@ void Paramlist::save_list(FileXML *file)
 	file->tag.set_title(string);
 	file->append_tag();
 	file->append_newline();
+	file->terminate_string();
 }
 
 void Paramlist::load_list(FileXML *file)
@@ -303,6 +344,23 @@ void Paramlist::load_list(FileXML *file)
 		{
 			current = append_param(t);
 			current->load_param(file);
+		}
+	}
+}
+
+void Paramlist::remove_equiv(Paramlist *that)
+{
+	Param *cp1, *cp2;
+
+	if(!that)
+		return;
+
+	for(cp2 = that->first; cp2; cp2 = cp2->next)
+	{
+		if(cp1 = find(cp2->name))
+		{
+			if(!cp1->equiv_value(cp2))
+				remove(cp1);
 		}
 	}
 }

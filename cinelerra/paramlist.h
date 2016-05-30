@@ -42,6 +42,8 @@ public:
 	Paramlist *add_subparams(const char *name);
 	void save_param(FileXML *file);
 	void load_param(FileXML *file);
+	void copy_values(Param *that);
+	int equiv_value(Param *that);
 	void dump(int indent = 0);
 
 	int type;
@@ -75,6 +77,7 @@ public:
 	Param *find(const char *name);
 	void save_list(FileXML *file);
 	void load_list(FileXML *file);
+	void remove_equiv(Paramlist *that);
 	void dump(int indent = 0);
 
 	char name[PARAM_NAMELEN];
