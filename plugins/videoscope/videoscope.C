@@ -95,7 +95,6 @@ public:
 
 	int show_709_limits;   // ITU-R BT.709: HDTV and sRGB
 	int show_601_limits;   // ITU-R BT.601: Analog video and MPEG
-	int show_IRE_limits;   // Black = 7.5%
 	int draw_lines_inverse;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
@@ -132,7 +131,6 @@ public:
 
 	// Special limit lines are not always drawn, so they are separate.
 	// They don't get labels (too crowded).
-	int  limit_IRE_black;  // IRE 7.5%
 	int  limit_601_white;  // ITU-R B.601 235 = 92.2%
 	int  limit_601_black;  // ITU-R B.601  16 =  6.3%
 };
@@ -183,16 +181,6 @@ public:
 	VideoScopeEffect *plugin;
 };
 
-class VideoScopeShowIRELimits : public BC_CheckBox
-{
-public:
-	VideoScopeShowIRELimits(VideoScopeEffect *plugin,
-		int x,
-		int y);
-	int handle_event();
-	VideoScopeEffect *plugin;
-};
-
 class VideoScopeDrawLinesInverse : public BC_CheckBox
 {
 public:
@@ -220,7 +208,6 @@ public:
 	VideoScopeVectorscope *vectorscope;
 	VideoScopeShow709Limits *show_709_limits;
 	VideoScopeShow601Limits *show_601_limits;
-	VideoScopeShowIRELimits *show_IRE_limits;
 	VideoScopeDrawLinesInverse *draw_lines_inverse;
 	BC_Bitmap *waveform_bitmap;
 	BC_Bitmap *vector_bitmap;
@@ -287,7 +274,6 @@ VideoScopeConfig::VideoScopeConfig()
 {
 	show_709_limits    = 0;
 	show_601_limits    = 0;
-	show_IRE_limits    = 0;
 	draw_lines_inverse = 0;
 }
 
@@ -337,8 +323,6 @@ VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin,
 	x += show_709_limits->get_w() + widget_hspace;
 	add_subwindow(show_601_limits = new VideoScopeShow601Limits(plugin, x, y));
 	x += show_601_limits->get_w() + widget_hspace;
-	add_subwindow(show_IRE_limits = new VideoScopeShowIRELimits(plugin, x, y));
-	x += show_IRE_limits->get_w() + widget_hspace;
 	add_subwindow(draw_lines_inverse = new VideoScopeDrawLinesInverse(plugin, x, y));
 
 	calculate_sizes(w, h - widget_height - WIDGET_VSPACE);
@@ -462,7 +446,6 @@ void VideoScopeWaveform::calculate_graduations()
 	}
 
 	// Special limits.
-	limit_IRE_black = (int)round(height * (FLOAT_MAX - 0.075) / (FLOAT_MAX - FLOAT_MIN));
 	limit_601_white = (int)round(height * (FLOAT_MAX - 235.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
 	limit_601_black = (int)round(height * (FLOAT_MAX -  16.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
 }
@@ -567,11 +550,6 @@ void VideoScopeWaveform::draw_graduations()
 		draw_line(0, limit_601_white, w, limit_601_white);
 		draw_line(0, limit_601_black, w, limit_601_black);
 	}
-	if (config.show_IRE_limits)
-	{
-		set_color(WHITE);
-		draw_line(0, limit_IRE_black, w, limit_IRE_black);
-	}
 	if (config.draw_lines_inverse)  set_opaque();
 }
 
@@ -648,22 +626,6 @@ int VideoScopeShow601Limits::handle_event()
 	return 1;
 }
 
-VideoScopeShowIRELimits::VideoScopeShowIRELimits(VideoScopeEffect *plugin,
-		int x,
-		int y)
- : BC_CheckBox(x, y, plugin->config.show_IRE_limits, _("NTSC"))
-{
-	this->plugin = plugin;
-	set_tooltip("Indicate IRE 7.5% black level.");
-}
-
-int VideoScopeShowIRELimits::handle_event()
-{
-	plugin->config.show_IRE_limits = get_value();
-	plugin->thread->window->waveform->redraw();
-	return 1;
-}
-
 VideoScopeDrawLinesInverse::VideoScopeDrawLinesInverse(VideoScopeEffect *plugin,
 		int x,
 		int y)
@@ -711,7 +673,6 @@ void VideoScopeEffect::load_defaults()
 
 	config.show_709_limits = defaults->get("SHOW_709_LIMITS", config.show_709_limits);
 	config.show_601_limits = defaults->get("SHOW_601_LIMITS", config.show_601_limits);
-	config.show_IRE_limits = defaults->get("SHOW_IRE_LIMITS", config.show_IRE_limits);
 	config.draw_lines_inverse = defaults->get("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 }
 
@@ -719,7 +680,6 @@ void VideoScopeEffect::save_defaults()
 {
 	defaults->update("SHOW_709_LIMITS",    config.show_709_limits);
 	defaults->update("SHOW_601_LIMITS",    config.show_601_limits);
-	defaults->update("SHOW_IRE_LIMITS",    config.show_IRE_limits);
 	defaults->update("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	defaults->save();
 }
@@ -731,7 +691,6 @@ void VideoScopeEffect::save_data(KeyFrame *keyframe)
 	file.tag.set_title("VIDEOSCOPE");
 	file.tag.set_property("SHOW_709_LIMITS",    config.show_709_limits);
 	file.tag.set_property("SHOW_601_LIMITS",    config.show_601_limits);
-	file.tag.set_property("SHOW_IRE_LIMITS",    config.show_IRE_limits);
 	file.tag.set_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	file.append_tag();
 	file.tag.set_title("/VIDEOSCOPE");
@@ -748,7 +707,6 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 	{
 		config.show_709_limits = file.tag.get_property("SHOW_709_LIMITS", config.show_709_limits);
 		config.show_601_limits = file.tag.get_property("SHOW_601_LIMITS", config.show_601_limits);
-		config.show_IRE_limits = file.tag.get_property("SHOW_IRE_LIMITS", config.show_IRE_limits);
 		config.draw_lines_inverse = file.tag.get_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	}
 }
