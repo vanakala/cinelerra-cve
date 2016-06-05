@@ -94,7 +94,7 @@ public:
 	VideoScopeConfig();
 
 	int show_709_limits;   // ITU-R BT.709: HDTV and sRGB
-	int show_601_limits;   // ITU-R BT.601: Analog video and MPEG
+	int show_ycbcr_limits;
 	int draw_lines_inverse;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
@@ -131,8 +131,8 @@ public:
 
 	// Special limit lines are not always drawn, so they are separate.
 	// They don't get labels (too crowded).
-	int  limit_601_white;  // ITU-R B.601 235 = 92.2%
-	int  limit_601_black;  // ITU-R B.601  16 =  6.3%
+	int  limit_ycbcr_white;  // ITU-R B.601 235 = 92.2%
+	int  limit_ycbcr_black;  // ITU-R B.601  16 =  6.3%
 };
 
 
@@ -171,10 +171,10 @@ public:
 	VideoScopeEffect *plugin;
 };
 
-class VideoScopeShow601Limits : public BC_CheckBox
+class VideoScopeShowYCbCrLimits : public BC_CheckBox
 {
 public:
-	VideoScopeShow601Limits(VideoScopeEffect *plugin,
+	VideoScopeShowYCbCrLimits(VideoScopeEffect *plugin,
 		int x,
 		int y);
 	int handle_event();
@@ -207,7 +207,7 @@ public:
 	VideoScopeWaveform *waveform;
 	VideoScopeVectorscope *vectorscope;
 	VideoScopeShow709Limits *show_709_limits;
-	VideoScopeShow601Limits *show_601_limits;
+	VideoScopeShowYCbCrLimits *show_ycbcr_limits;
 	VideoScopeDrawLinesInverse *draw_lines_inverse;
 	BC_Bitmap *waveform_bitmap;
 	BC_Bitmap *vector_bitmap;
@@ -273,7 +273,7 @@ public:
 VideoScopeConfig::VideoScopeConfig()
 {
 	show_709_limits    = 0;
-	show_601_limits    = 0;
+	show_ycbcr_limits    = 0;
 	draw_lines_inverse = 0;
 }
 
@@ -321,8 +321,8 @@ VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin,
 	draw_box(0, h - widget_height, w, widget_height);
 	add_subwindow(show_709_limits = new VideoScopeShow709Limits(plugin, x, y));
 	x += show_709_limits->get_w() + widget_hspace;
-	add_subwindow(show_601_limits = new VideoScopeShow601Limits(plugin, x, y));
-	x += show_601_limits->get_w() + widget_hspace;
+	add_subwindow(show_ycbcr_limits = new VideoScopeShowYCbCrLimits(plugin, x, y));
+	x += show_ycbcr_limits->get_w() + widget_hspace;
 	add_subwindow(draw_lines_inverse = new VideoScopeDrawLinesInverse(plugin, x, y));
 
 	calculate_sizes(w, h - widget_height - WIDGET_VSPACE);
@@ -446,8 +446,8 @@ void VideoScopeWaveform::calculate_graduations()
 	}
 
 	// Special limits.
-	limit_601_white = (int)round(height * (FLOAT_MAX - 235.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
-	limit_601_black = (int)round(height * (FLOAT_MAX -  16.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
+	limit_ycbcr_white = (int)round(height * (FLOAT_MAX - 235.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
+	limit_ycbcr_black = (int)round(height * (FLOAT_MAX -  16.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
 }
 
 // Calculate graduations based on current window size.
@@ -544,11 +544,11 @@ void VideoScopeWaveform::draw_graduations()
 		int y = grads[i].y;
 		draw_line(0, y, w, y);
 	}
-	if (config.show_601_limits)
+	if (config.show_ycbcr_limits)
 	{
 		set_color(WHITE);
-		draw_line(0, limit_601_white, w, limit_601_white);
-		draw_line(0, limit_601_black, w, limit_601_black);
+		draw_line(0, limit_ycbcr_white, w, limit_ycbcr_white);
+		draw_line(0, limit_ycbcr_black, w, limit_ycbcr_black);
 	}
 	if (config.draw_lines_inverse)  set_opaque();
 }
@@ -610,18 +610,18 @@ int VideoScopeShow709Limits::handle_event()
 	return 1;
 }
 
-VideoScopeShow601Limits::VideoScopeShow601Limits(VideoScopeEffect *plugin,
+VideoScopeShowYCbCrLimits::VideoScopeShowYCbCrLimits(VideoScopeEffect *plugin,
 		int x,
 		int y)
- : BC_CheckBox(x, y, plugin->config.show_601_limits, _("MPEG"))
+ : BC_CheckBox(x, y, plugin->config.show_ycbcr_limits, _("Y'CbCr"))
 {
 	this->plugin = plugin;
-	set_tooltip("Indicate ITU-R BT.601 limits. Use when rendering to analog video and MPEG.");
+	set_tooltip(_("Indicate  Y'CbCr-range"));
 }
 
-int VideoScopeShow601Limits::handle_event()
+int VideoScopeShowYCbCrLimits::handle_event()
 {
-	plugin->config.show_601_limits = get_value();
+	plugin->config.show_ycbcr_limits = get_value();
 	plugin->thread->window->waveform->redraw();
 	return 1;
 }
@@ -672,14 +672,15 @@ void VideoScopeEffect::load_defaults()
 	defaults = load_defaults_file("videoscope.rc");
 
 	config.show_709_limits = defaults->get("SHOW_709_LIMITS", config.show_709_limits);
-	config.show_601_limits = defaults->get("SHOW_601_LIMITS", config.show_601_limits);
+	config.show_ycbcr_limits = defaults->get("SHOW_601_LIMITS", config.show_ycbcr_limits);
+	config.show_ycbcr_limits = defaults->get("SHOW_YCBCR_LIMITS", config.show_ycbcr_limits);
 	config.draw_lines_inverse = defaults->get("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 }
 
 void VideoScopeEffect::save_defaults()
 {
 	defaults->update("SHOW_709_LIMITS",    config.show_709_limits);
-	defaults->update("SHOW_601_LIMITS",    config.show_601_limits);
+	defaults->update("SHOW_YCBCR_LIMITS",    config.show_ycbcr_limits);
 	defaults->update("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	defaults->save();
 }
@@ -690,7 +691,7 @@ void VideoScopeEffect::save_data(KeyFrame *keyframe)
 	file.set_shared_string(keyframe->data, MESSAGESIZE);
 	file.tag.set_title("VIDEOSCOPE");
 	file.tag.set_property("SHOW_709_LIMITS",    config.show_709_limits);
-	file.tag.set_property("SHOW_601_LIMITS",    config.show_601_limits);
+	file.tag.set_property("SHOW_YCBCR_LIMITS", config.show_ycbcr_limits);
 	file.tag.set_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	file.append_tag();
 	file.tag.set_title("/VIDEOSCOPE");
@@ -706,7 +707,8 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 	while(!file.read_tag())
 	{
 		config.show_709_limits = file.tag.get_property("SHOW_709_LIMITS", config.show_709_limits);
-		config.show_601_limits = file.tag.get_property("SHOW_601_LIMITS", config.show_601_limits);
+		config.show_ycbcr_limits = file.tag.get_property("SHOW_601_LIMITS", config.show_ycbcr_limits);
+		config.show_ycbcr_limits = file.tag.get_property("SHOW_YCBCR_LIMITS", config.show_ycbcr_limits);
 		config.draw_lines_inverse = file.tag.get_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	}
 }
