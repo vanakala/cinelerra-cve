@@ -93,7 +93,7 @@ class VideoScopeConfig
 public:
 	VideoScopeConfig();
 
-	int show_709_limits;   // ITU-R BT.709: HDTV and sRGB
+	int show_srgb_limits;   // ITU-R BT.709: HDTV and sRGB
 	int show_ycbcr_limits;
 	int draw_lines_inverse;
 	PLUGIN_CONFIG_CLASS_MEMBERS
@@ -161,10 +161,10 @@ private:
 	} axes[Vectorscope_HSV_axes_count];
 };
 
-class VideoScopeShow709Limits : public BC_CheckBox
+class VideoScopeShowSRGBLimits : public BC_CheckBox
 {
 public:
-	VideoScopeShow709Limits(VideoScopeEffect *plugin,
+	VideoScopeShowSRGBLimits(VideoScopeEffect *plugin,
 		int x,
 		int y);
 	int handle_event();
@@ -206,7 +206,7 @@ public:
 
 	VideoScopeWaveform *waveform;
 	VideoScopeVectorscope *vectorscope;
-	VideoScopeShow709Limits *show_709_limits;
+	VideoScopeShowSRGBLimits *show_srgb_limits;
 	VideoScopeShowYCbCrLimits *show_ycbcr_limits;
 	VideoScopeDrawLinesInverse *draw_lines_inverse;
 	BC_Bitmap *waveform_bitmap;
@@ -272,7 +272,7 @@ public:
 
 VideoScopeConfig::VideoScopeConfig()
 {
-	show_709_limits    = 0;
+	show_srgb_limits    = 0;
 	show_ycbcr_limits    = 0;
 	draw_lines_inverse = 0;
 }
@@ -319,8 +319,8 @@ VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin,
 	y = h - widget_height + WIDGET_VSPACE;
 	set_color(get_resources()->get_bg_color());
 	draw_box(0, h - widget_height, w, widget_height);
-	add_subwindow(show_709_limits = new VideoScopeShow709Limits(plugin, x, y));
-	x += show_709_limits->get_w() + widget_hspace;
+	add_subwindow(show_srgb_limits = new VideoScopeShowSRGBLimits(plugin, x, y));
+	x += show_srgb_limits->get_w() + widget_hspace;
 	add_subwindow(show_ycbcr_limits = new VideoScopeShowYCbCrLimits(plugin, x, y));
 	x += show_ycbcr_limits->get_w() + widget_hspace;
 	add_subwindow(draw_lines_inverse = new VideoScopeDrawLinesInverse(plugin, x, y));
@@ -539,7 +539,7 @@ void VideoScopeWaveform::draw_graduations()
 	for (int i = 0; i < NUM_GRADS; ++i)
 	{
 		// 1 & 11 correspond to 100% & 0%.
-		set_color((config.show_709_limits && (i == 1 || i == 11))
+		set_color((config.show_srgb_limits && (i == 1 || i == 11))
 			  ? WHITE : MDGREY);
 		int y = grads[i].y;
 		draw_line(0, y, w, y);
@@ -594,18 +594,18 @@ void VideoScopeGraduation::set(const char * label, int y)
 }
 
 
-VideoScopeShow709Limits::VideoScopeShow709Limits(VideoScopeEffect *plugin,
+VideoScopeShowSRGBLimits::VideoScopeShowSRGBLimits(VideoScopeEffect *plugin,
 		int x,
 		int y)
- : BC_CheckBox(x, y, plugin->config.show_709_limits, _("HDTV"))
+ : BC_CheckBox(x, y, plugin->config.show_srgb_limits, _("sRGB-range"))
 {
 	this->plugin = plugin;
-	set_tooltip("Indicate ITU-R BT.709 limits. Use when rendering to HDTV and sRGB.");
+	set_tooltip("Indicate sRGB-range [0-255]");
 }
 
-int VideoScopeShow709Limits::handle_event()
+int VideoScopeShowSRGBLimits::handle_event()
 {
-	plugin->config.show_709_limits = get_value();
+	plugin->config.show_srgb_limits = get_value();
 	plugin->thread->window->waveform->redraw();
 	return 1;
 }
@@ -671,7 +671,8 @@ void VideoScopeEffect::load_defaults()
 {
 	defaults = load_defaults_file("videoscope.rc");
 
-	config.show_709_limits = defaults->get("SHOW_709_LIMITS", config.show_709_limits);
+	config.show_srgb_limits = defaults->get("SHOW_709_LIMITS", config.show_srgb_limits);
+	config.show_srgb_limits = defaults->get("SHOW_SRGB_LIMITS", config.show_srgb_limits);
 	config.show_ycbcr_limits = defaults->get("SHOW_601_LIMITS", config.show_ycbcr_limits);
 	config.show_ycbcr_limits = defaults->get("SHOW_YCBCR_LIMITS", config.show_ycbcr_limits);
 	config.draw_lines_inverse = defaults->get("DRAW_LINES_INVERSE", config.draw_lines_inverse);
@@ -679,7 +680,7 @@ void VideoScopeEffect::load_defaults()
 
 void VideoScopeEffect::save_defaults()
 {
-	defaults->update("SHOW_709_LIMITS",    config.show_709_limits);
+	defaults->update("SHOW_SRGB_LIMITS", config.show_srgb_limits);
 	defaults->update("SHOW_YCBCR_LIMITS",    config.show_ycbcr_limits);
 	defaults->update("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	defaults->save();
@@ -690,7 +691,7 @@ void VideoScopeEffect::save_data(KeyFrame *keyframe)
 	FileXML file;
 	file.set_shared_string(keyframe->data, MESSAGESIZE);
 	file.tag.set_title("VIDEOSCOPE");
-	file.tag.set_property("SHOW_709_LIMITS",    config.show_709_limits);
+	file.tag.set_property("SHOW_SRGB_LIMITS", config.show_srgb_limits);
 	file.tag.set_property("SHOW_YCBCR_LIMITS", config.show_ycbcr_limits);
 	file.tag.set_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	file.append_tag();
@@ -706,7 +707,8 @@ void VideoScopeEffect::read_data(KeyFrame *keyframe)
 
 	while(!file.read_tag())
 	{
-		config.show_709_limits = file.tag.get_property("SHOW_709_LIMITS", config.show_709_limits);
+		config.show_srgb_limits = file.tag.get_property("SHOW_709_LIMITS", config.show_srgb_limits);
+		config.show_srgb_limits = file.tag.get_property("SHOW_SRGB_LIMITS", config.show_srgb_limits);
 		config.show_ycbcr_limits = file.tag.get_property("SHOW_601_LIMITS", config.show_ycbcr_limits);
 		config.show_ycbcr_limits = file.tag.get_property("SHOW_YCBCR_LIMITS", config.show_ycbcr_limits);
 		config.draw_lines_inverse = file.tag.get_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
