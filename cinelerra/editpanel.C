@@ -824,7 +824,7 @@ KeyFrameButton::KeyFrameButton(MWindow *mwindow, int x, int y)
 	0)
 {
 	this->mwindow = mwindow;
-	set_tooltip(_("Generate keyframes while tweeking"));
+	set_tooltip(_("Generate keyframes while tweaking"));
 }
 
 int KeyFrameButton::handle_event()
