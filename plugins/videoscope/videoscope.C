@@ -93,7 +93,7 @@ class VideoScopeConfig
 public:
 	VideoScopeConfig();
 
-	int show_srgb_limits;   // ITU-R BT.709: HDTV and sRGB
+	int show_srgb_limits;   // sRGB
 	int show_ycbcr_limits;
 	int draw_lines_inverse;
 	PLUGIN_CONFIG_CLASS_MEMBERS
@@ -616,7 +616,7 @@ VideoScopeShowYCbCrLimits::VideoScopeShowYCbCrLimits(VideoScopeEffect *plugin,
  : BC_CheckBox(x, y, plugin->config.show_ycbcr_limits, _("Y'CbCr"))
 {
 	this->plugin = plugin;
-	set_tooltip(_("Indicate  Y'CbCr-range"));
+	set_tooltip(_("Indicate  Y'-range [16-235]"));
 }
 
 int VideoScopeShowYCbCrLimits::handle_event()
