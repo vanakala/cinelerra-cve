@@ -132,12 +132,15 @@ void FloatAuto::interpolate_from(Auto *a1, Auto *a2, ptstime pos, Auto *templ)
 	{
 		FloatAuto *left = (FloatAuto*)a1;
 		FloatAuto *right = (FloatAuto*)a2;
-		float new_value = FloatAutos::calculate_bezier(left, right, pos);
+
+		if(!PTSEQU(pos, pos_time))
+		{
+			// this may trigger smoothing
+			adjust_to_new_coordinates(pos,
+				FloatAutos::calculate_bezier(left, right, pos));
+		}
+
 		float new_slope = FloatAutos::calculate_bezier_derivation(left, right, pos);
-
-		// this may trigger smoothing
-		this->adjust_to_new_coordinates(pos, new_value);
-
 		this->set_control_in_value(new_slope * control_in_pts);
 		this->set_control_out_value(new_slope * control_out_pts);
 	}
