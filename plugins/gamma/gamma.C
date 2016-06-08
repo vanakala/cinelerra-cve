@@ -161,9 +161,12 @@ void GammaUnit::process_package(LoadPackage *package)
 			break;
 		case BC_YUVA8888:
 			HISTOGRAM_HEAD(unsigned char)
-			y = (float)row[0] / 0xff;
-			u = (float)row[1] / 0xff;
-			v = (float)row[2] / 0xff;
+			y = row[0];
+			u = row[1];
+			v = row[2];
+			y /= 0xff;
+			u = (float)((u - 0x80) / 0xff);
+			v = (float)((v - 0x80) / 0xff);
 			YUV::yuv_to_rgb_f(r, g, b, y, u, v);
 			HISTOGRAM_TAIL(4)
 			break;
