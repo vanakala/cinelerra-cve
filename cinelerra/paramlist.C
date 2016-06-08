@@ -92,6 +92,20 @@ Param::~Param()
 	}
 }
 
+void Param::copy_from(Param *that)
+{
+	type |= that->type;
+
+	if(that->type & PARAMTYPE_INT)
+		intvalue = that->intvalue;
+	if(that->type & PARAMTYPE_LNG)
+		longvalue = that->longvalue;
+	if(that->type & PARAMTYPE_DBL)
+		floatvalue = that->floatvalue;
+	if(that->type & PARAMTYPE_STR)
+		set_string(that->stringvalue);
+}
+
 void Param::set_help(const char *txt)
 {
 	int l;
@@ -257,6 +271,17 @@ Paramlist::Paramlist(const char *name)
 Paramlist::~Paramlist()
 {
 	delete_params();
+}
+
+void Paramlist::copy_from(Paramlist *that)
+{
+	Param *cur, *newparam;
+
+	for(cur = that->first; cur; cur = cur->next)
+	{
+		newparam = append_param(cur->name);
+		newparam->copy_from(cur);
+	}
 }
 
 void Paramlist::delete_params()

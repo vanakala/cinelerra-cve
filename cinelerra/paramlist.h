@@ -37,6 +37,7 @@ public:
 	Param(const char *name);
 	~Param();
 
+	void copy_from(Param *that);
 	void set_help(const char *txt);
 	void set_string(const char *txt);
 	Paramlist *add_subparams(const char *name);
@@ -68,6 +69,7 @@ public:
 	~Paramlist();
 
 	void delete_params();
+	void copy_from(Paramlist *that);
 	Param *append_param(const char *name, const char *value);
 	Param *append_param(const char *name, int value);
 	Param *append_param(const char *name, int64_t value);
