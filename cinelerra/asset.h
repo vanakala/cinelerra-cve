@@ -31,6 +31,7 @@
 #include "garbage.h"
 #include "linklist.h"
 #include "pluginserver.inc"
+#include "paramlist.inc"
 
 #include <stdint.h>
 
@@ -67,9 +68,11 @@ public:
 	Asset(Asset &asset);
 	Asset(const char *path);
 	Asset(const int plugin_type, const char *plugin_path);
+	~Asset();
 
 	void init_values();
 	void dump(int indent = 0);
+	void dump_parameters(int indent = 0);
 
 	void copy_from(Asset *asset, int do_index);
 	void copy_location(Asset *asset);
@@ -289,6 +292,12 @@ public:
 	int ms_fix_bitrate;
 
 	int ac3_bitrate;
+
+// Universal encoding parameters
+	Paramlist *library_parameters;
+	Paramlist *format_parameters;
+	Paramlist *acodec_parameters;
+	Paramlist *vcodec_parameters;
 
 // Image file sequences.  Background rendering doesn't want to write a 
 // sequence header but instead wants to start the sequence numbering at a certain

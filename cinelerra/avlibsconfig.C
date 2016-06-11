@@ -23,6 +23,9 @@
 #include "avlibsconfig.h"
 #include "bcwindow.h"
 #include "bcsignals.h"
+#include "edl.h"
+#include "edlsession.h"
+#include "filexml.h"
 #include "fileavlibs.h"
 #include "formattools.h"
 #include "language.h"
@@ -35,6 +38,7 @@
 
 #include <unistd.h>
 
+extern MWindow *mwindow;
 extern Theme *theme_global;
 
 #define PARAM_WIN_MARGIN 20
@@ -62,6 +66,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	codecpopup = 0;
 	codecopts = 0;
 	this->options = options;
+	this->asset = asset;
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 	{
@@ -71,7 +76,13 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	}
 
 	globopts = FileAVlibs::scan_global_options(options);
+	merge_saved_options(globopts, FILEAVLIBS_GLOBAL_CONFIG, 0);
+	if(asset->library_parameters)
+		globopts->copy_values(asset->library_parameters);
 	fmtopts = FileAVlibs::scan_format_options(asset->format, options, &oformat);
+	merge_saved_options(fmtopts, FILEAVLIBS_FORMAT_CONFIG, name);
+	if(asset->format_parameters)
+		fmtopts->copy_values(asset->format_parameters);
 	codecs = FileAVlibs::scan_codecs(oformat, options);
 
 	for(Param *p = codecs->first; p; p = p->next)
@@ -156,6 +167,8 @@ void AVlibsConfig::open_paramwin(Paramlist *list)
 
 int AVlibsConfig::handle_event()
 {
+	Paramlist *aparm;
+
 	if(codecopts)
 	{
 		if(codecs->selectedint == current_codec)
@@ -167,9 +180,61 @@ int AVlibsConfig::handle_event()
 	}
 	current_codec = codecs->selectedint;
 	codecopts = FileAVlibs::scan_encoder_opts((AVCodecID)current_codec, options);
+	merge_saved_options(codecopts, options & SUPPORTS_VIDEO ?
+		FILEAVLIBS_VCODEC_CONFIG : FILEAVLIBS_ACODEC_CONFIG, codecopts->name);
+	aparm = options & SUPPORTS_VIDEO ? asset->vcodec_parameters :
+		asset->vcodec_parameters;
+	if(aparm)
+		codecopts->copy_values(aparm);
 	sprintf(string, "%s options", codecopts->name);
 	codecthread->set_window_title(string);
 	return 1;
+}
+
+void AVlibsConfig::merge_saved_options(Paramlist *optlist, const char *config_name,
+	const char *suffix)
+{
+	FileXML file;
+	Paramlist *savedopts;
+
+	if(!file.read_from_file(config_path(config_name, suffix), 1) && !file.read_tag())
+	{
+		savedopts = new Paramlist("");
+		savedopts->load_list(&file);
+
+		optlist->copy_values(savedopts);
+
+		delete savedopts;
+	}
+}
+
+void AVlibsConfig::save_options(Paramlist *optlist, const char *config_name,
+	const char *suffix, Paramlist *defaults)
+{
+	FileXML file;
+
+	optlist->remove_equiv(defaults);
+
+	if(optlist->total() > 0)
+	{
+		optlist->save_list(&file);
+		file.write_to_file(config_path(config_name, suffix));
+	}
+	else
+		unlink(config_path(config_name, suffix));
+}
+
+char *AVlibsConfig::config_path(const char *config_name, const char *suffix)
+{
+	static char pathbuf[BCTEXTLEN];
+
+	mwindow->edl->session->configuration_path(config_name, pathbuf);
+
+	if(suffix)
+		strcat(pathbuf, suffix);
+
+	strcat(pathbuf, FILEAVLIBS_CONFIG_EXT);
+	return pathbuf;
 }
 
 

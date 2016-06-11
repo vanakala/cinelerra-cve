@@ -69,11 +69,6 @@ public:
 	int write_aframes(AFrame **frames);
 	static void get_parameters(BC_WindowBase *parent_window,
 		Asset *asset, BC_WindowBase* &format_window, int options);
-	static void merge_saved_options(Paramlist *optlist, const char *config_name,
-		const char *suffix);
-	static void save_options(Paramlist *optlist, const char *config_name,
-		const char *suffix, Paramlist *defaults = 0);
-	static char *config_path(const char *config_name, const char *suffix = 0);
 	static const char *encoder_formatname(int fileformat);
 
 // Callbacks of FileTOC

@@ -24,14 +24,11 @@
 #include "bcsignals.h"
 #include "byteorder.h"
 #include "clip.h"
-#include "edlsession.h"
 #include "file.h"
 #include "fileavlibs.h"
 #include "filetoc.h"
-#include "filexml.h"
 #include "mainerror.h"
 #include "mutex.h"
-#include "mwindow.h"
 #include "paramlist.h"
 #include "preferences.h"
 #include "selection.h"
@@ -45,7 +42,6 @@
 #include <stdint.h>
 #include <string.h>
 
-extern MWindow *mwindow;
 extern Theme *theme_global;
 
 struct  avlib_formattable FileAVlibs::known_formats[] =
@@ -1510,23 +1506,61 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	AVlibsConfig *window = new AVlibsConfig(asset, options);
 	format_window = window;
 	window->run_window();
-	defaults = scan_global_options(options | SUPPORTS_DEFAULT);
-	save_options(window->globopts, FILEAVLIBS_GLOBAL_CONFIG, 0, defaults);
+	defaults = scan_global_options(options);
+	window->save_options(window->globopts, FILEAVLIBS_GLOBAL_CONFIG, 0, defaults);
+	if(asset->library_parameters)
+	{
+		delete asset->library_parameters;
+		asset->library_parameters = 0;
+	}
+	if(window->globopts->total() > 0)
+	{
+		window->globopts->clean_list();
+		asset->library_parameters = window->globopts;
+		window->globopts = 0;
+	}
 	delete defaults;
 
-	defaults = scan_format_options(asset->format, options  | SUPPORTS_DEFAULT, 0);
-	save_options(window->fmtopts, FILEAVLIBS_FORMAT_CONFIG,
+	defaults = scan_format_options(asset->format, options, 0);
+	window->save_options(window->fmtopts, FILEAVLIBS_FORMAT_CONFIG,
 		window->fmtopts->name, defaults);
+	if(asset->format_parameters)
+	{
+		delete asset->format_parameters;
+		asset->format_parameters = 0;
+	}
+	if(window->fmtopts->total() > 0)
+	{
+		window->fmtopts->clean_list();
+		asset->format_parameters = window->fmtopts;
+		window->fmtopts = 0;
+	}
 	delete defaults;
 
 	if(window->codecopts)
 	{
+		Paramlist **alist;
+
 		const char *pfx = options & SUPPORTS_VIDEO ?
 				FILEAVLIBS_VCODEC_CONFIG : FILEAVLIBS_ACODEC_CONFIG;
-		defaults = scan_encoder_opts((AVCodecID)window->current_codec,
-			options | SUPPORTS_DEFAULT);
-		save_options(window->codecopts,
+		defaults = scan_encoder_opts((AVCodecID)window->current_codec, options);
+		window->save_options(window->codecopts,
 			pfx, window->codecopts->name, defaults);
+		if(options & SUPPORTS_VIDEO)
+			alist = &asset->vcodec_parameters;
+		else if(options & SUPPORTS_AUDIO)
+			alist = &asset->acodec_parameters;
+		if(*alist)
+		{
+			delete *alist;
+			*alist = 0;
+		}
+		if(window->codecopts->total() > 0)
+		{
+			window->codecopts->clean_list();
+			*alist = window->codecopts;
+			window->codecopts = 0;
+		}
 		delete defaults;
 	}
 
@@ -1534,57 +1568,9 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	errorbox("Making use of encoding parameters is not ready.\nBe patient, please.");
 }
 
-void FileAVlibs::merge_saved_options(Paramlist *optlist, const char *config_name,
-	const char *suffix)
-{
-	FileXML file;
-	Paramlist *savedopts;
-	Param *cp1, *cp2;
-
-	if(!file.read_from_file(config_path(config_name, suffix), 1) && !file.read_tag())
-	{
-		savedopts = new Paramlist("");
-		savedopts->load_list(&file);
-
-		for(cp1 = optlist->first; cp1; cp1 = cp1->next)
-		{
-			for(cp2 = savedopts->first; cp2; cp2 = cp2->next)
-			{
-				if(strcmp(cp1->name, cp2->name) == 0)
-				{
-					cp1->copy_values(cp2);
-					break;
-				}
-			}
-		}
-		delete savedopts;
-	}
-}
-
-void FileAVlibs::save_options(Paramlist *optlist, const char *config_name,
-	const char *suffix, Paramlist *defaults)
-{
-	FileXML file;
-
-	optlist->remove_equiv(defaults);
-
-	if(optlist->total() > 0)
-	{
-		optlist->save_list(&file);
-		file.write_to_file(config_path(config_name, suffix));
-	}
-	else
-		unlink(config_path(config_name, suffix));
-}
-
 Paramlist *FileAVlibs::scan_global_options(int options)
 {
-	Paramlist *libopts;
-
-	libopts = scan_options(avformat_get_class(), options, "AVlibsGlobal");
-	if(!(options & SUPPORTS_DEFAULT))
-		merge_saved_options(libopts, FILEAVLIBS_GLOBAL_CONFIG, 0);
-	return libopts;
+	return scan_options(avformat_get_class(), options, "AVlibsGlobal");
 }
 
 Paramlist *FileAVlibs::scan_format_options(int format,
@@ -1592,7 +1578,6 @@ Paramlist *FileAVlibs::scan_format_options(int format,
 {
 	const char *name;
 	AVOutputFormat *oformat = 0;
-	Paramlist *libopts;
 
 	if(ofmtp)
 		*ofmtp = 0;
@@ -1604,30 +1589,10 @@ Paramlist *FileAVlibs::scan_format_options(int format,
 		if(ofmtp)
 			*ofmtp = oformat;
 		if(oformat)
-		{
-			libopts = scan_options(oformat->priv_class, options, name);
-			if(!(options & SUPPORTS_DEFAULT))
-				merge_saved_options(libopts, FILEAVLIBS_FORMAT_CONFIG, name);
-			return libopts;
-		}
+			return scan_options(oformat->priv_class, options, name);
 	}
 	return 0;
 }
-
-char *FileAVlibs::config_path(const char *config_name, const char *suffix)
-{
-	static char pathbuf[BCTEXTLEN];
-
-	mwindow->edl->session->configuration_path(config_name, pathbuf);
-
-	if(suffix)
-		strcat(pathbuf, suffix);
-
-	strcat(pathbuf, FILEAVLIBS_CONFIG_EXT);
-
-	return pathbuf;
-}
-
 
 Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const char *listname)
 {
@@ -1748,15 +1713,7 @@ Paramlist *FileAVlibs::scan_encoder_opts(AVCodecID codec, int options)
 	encoder = avcodec_find_encoder(codec);
 
 	if(encoder && encoder->priv_class)
-	{
-		libopts = scan_options(encoder->priv_class, options, encoder->name);
-		if(!(options & SUPPORTS_DEFAULT))
-			merge_saved_options(libopts,
-				options & SUPPORTS_VIDEO ?
-					FILEAVLIBS_VCODEC_CONFIG : FILEAVLIBS_ACODEC_CONFIG,
-				libopts->name);
-		return libopts;
-	}
+		return scan_options(encoder->priv_class, options, encoder->name);
 
 	return 0;
 }

@@ -43,11 +43,15 @@ public:
 	~AVlibsConfig();
 
 	void draw_paramlist(Paramlist *params);
-
 	void open_paramwin(Paramlist *list);
-
 	int handle_event();
+	void merge_saved_options(Paramlist *optlist, const char *config_name,
+		const char *suffix);
+	void save_options(Paramlist *optlist, const char *config_name,
+		const char *suffix, Paramlist *defaults = 0);
+	char *config_path(const char *config_name, const char *suffix = 0);
 
+	Asset *asset;
 	Paramlist *globopts;
 	Paramlist *fmtopts;
 	Paramlist *codecs;
