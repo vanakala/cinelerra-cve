@@ -290,6 +290,39 @@ void Paramlist::delete_params()
 		delete last;
 }
 
+void Paramlist::clean_list()
+{
+	Param *cur;
+
+	for(cur = first; cur; cur = cur->next)
+	{
+		if(cur->subparams)
+		{
+			delete cur->subparams;
+			cur->subparams = 0;
+		}
+		if(cur->helptext)
+			cur->set_help(0);
+	}
+}
+
+void Paramlist::copy_values(Paramlist *src)
+{
+	Param *cp1, *cp2;
+
+	for(cp1 = first; cp1; cp1 = cp1->next)
+	{
+		for(cp2 = src->first; cp2; cp2 = cp2->next)
+		{
+			if(strcmp(cp1->name, cp2->name) == 0)
+			{
+				cp1->copy_values(cp2);
+				break;
+			}
+		}
+	}
+}
+
 Param *Paramlist::append_param(const char *name, const char *value)
 {
 	return append(new Param(name, value));

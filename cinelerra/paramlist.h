@@ -69,7 +69,10 @@ public:
 	~Paramlist();
 
 	void delete_params();
+	// Removes subparams and helptexts
+	void clean_list();
 	void copy_from(Paramlist *that);
+	void copy_values(Paramlist *src);
 	Param *append_param(const char *name, const char *value);
 	Param *append_param(const char *name, int value);
 	Param *append_param(const char *name, int64_t value);
