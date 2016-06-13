@@ -48,13 +48,6 @@ public:
 	friend class FileList;
 	friend class FrameWriter;
 
-	virtual void get_parameters(BC_WindowBase *parent_window, 
-			Asset *asset, 
-			BC_WindowBase **format_window,
-			int audio_options,
-			int video_options,
-			int lock_compressor) {};
-
 	virtual int get_index(const char *index_path) { return 1; };
 	virtual int open_file(int rd, int wr) { return 1; };
 	virtual void close_file() {};
