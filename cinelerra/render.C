@@ -41,7 +41,6 @@
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
-#include "formatcheck.h"
 #include "formattools.h"
 #include "labels.h"
 #include "language.h"
@@ -279,8 +278,6 @@ void Render::stop_operation()
 
 void Render::run()
 {
-	int format_error;
-
 	result = 0;
 
 	if(mode == Render::INTERACTIVE)
@@ -295,7 +292,6 @@ void Render::run()
 		{
 			do
 			{
-				format_error = 0;
 				result = 0;
 				{
 					RenderWindow window(mwindow, this, asset);
@@ -306,14 +302,7 @@ void Render::run()
 						window.format_tools->path_recent->add_item(ContainerSelection::container_prefix(asset->format), asset->path);
 					}
 				}
-
-				if(!result)
-				{
-// Check the asset format for errors.
-					FormatCheck format_check(asset);
-					format_error = format_check.check_format();
-				}
-			}while(format_error && !result);
+			}while(!result);
 		}
 		save_defaults(asset);
 		mwindow->save_defaults();

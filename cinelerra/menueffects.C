@@ -29,7 +29,6 @@
 #include "edlsession.h"
 #include "mainerror.h"
 #include "file.h"
-#include "formatcheck.h"
 #include "indexfile.h"
 #include "keyframe.h"
 #include "keys.h"
@@ -145,7 +144,7 @@ void MenuEffectThread::run()
 	}
 
 // find out which effect to run and get output file
-	int plugin_number, format_error = 0;
+	int plugin_number;
 
 	do
 	{
@@ -157,13 +156,7 @@ void MenuEffectThread::run()
 			result = window.run_window();
 			plugin_number = window.result;
 		}
-
-		if(!result)
-		{
-			FormatCheck format_check(default_asset);
-			format_error = format_check.check_format();
-		}
-	}while(format_error && !result);
+	}while(!result);
 
 // save defaults
 	save_derived_attributes(default_asset, defaults);

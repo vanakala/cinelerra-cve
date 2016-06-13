@@ -122,7 +122,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    fileyuv.C \
 		    floatauto.C \
 		    floatautos.C \
-		    formatcheck.C \
 		    formatpresets.C \
 		    formattools.C \
 		    framecache.C \
@@ -376,7 +375,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 fileyuv.h \
 		 floatauto.h \
 		 floatautos.h \
-		 formatcheck.h \
 		 formatpresets.h \
 		 formattools.h \
 		 framecache.h \
