@@ -29,6 +29,7 @@
 #include "edl.h"
 #include "file.h"
 #include "filesystem.h"
+#include "fileavlibs.h"
 #include "filexml.h"
 #include "mainerror.h"
 #include "quicktime.h"
@@ -879,15 +880,16 @@ void Asset::load_defaults(BC_Hash *defaults,
 		GET_DEFAULT("PATH", path);
 	}
 
+	if(do_format)
+	{
+		format = GET_DEFAULT("FORMAT", format);
+	}
+
 	if(do_compression)
 	{
 		GET_DEFAULT("AUDIO_CODEC", acodec);
 		GET_DEFAULT("VIDEO_CODEC", vcodec);
-	}
-
-	if(do_format)
-	{
-		format = GET_DEFAULT("FORMAT", format);
+		FileAVlibs::get_render_defaults(this);
 	}
 
 	if(do_data_types)

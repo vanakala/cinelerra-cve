@@ -1547,9 +1547,15 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 		window->save_options(window->codecopts,
 			pfx, window->codecopts->name, defaults);
 		if(options & SUPPORTS_VIDEO)
+		{
+			strcpy(asset->vcodec, window->codecopts->name);
 			alist = &asset->vcodec_parameters;
+		}
 		else if(options & SUPPORTS_AUDIO)
+		{
+			strcpy(asset->acodec, window->codecopts->name);
 			alist = &asset->acodec_parameters;
+		}
 		if(*alist)
 		{
 			delete *alist;
@@ -1566,6 +1572,41 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 
 	delete window;
 	errorbox("Making use of encoding parameters is not ready.\nBe patient, please.");
+}
+
+void FileAVlibs::get_render_defaults(Asset *asset)
+{
+	const char *name;
+	AVOutputFormat *oformat = 0;
+	AVCodec *encoder;
+
+	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
+		return;
+
+	asset->library_parameters = AVlibsConfig::load_options(FILEAVLIBS_GLOBAL_CONFIG);
+	asset->format_parameters = AVlibsConfig::load_options(FILEAVLIBS_FORMAT_CONFIG, name);
+	asset->acodec_parameters = AVlibsConfig::load_options(FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
+	asset->vcodec_parameters = AVlibsConfig::load_options(FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
+
+	if(!asset->acodec_parameters || !asset->vcodec_parameters)
+	{
+		FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
+		avcodec_register_all();
+		av_register_all();
+		FileAVlibs::avlibs_lock->unlock();
+
+		if(oformat = av_guess_format(name, 0, 0))
+		{
+			if(!asset->acodec_parameters &&
+					(encoder = avcodec_find_encoder(oformat->audio_codec)))
+				strncpy(asset->acodec, encoder->name, MAX_LEN_CODECNAME);
+			if(!asset->vcodec_parameters &&
+					(encoder = avcodec_find_encoder(oformat->video_codec)))
+				strncpy(asset->vcodec, encoder->name, MAX_LEN_CODECNAME);
+			asset->vcodec[MAX_LEN_CODECNAME - 1] = 0;
+			asset->acodec[MAX_LEN_CODECNAME - 1] = 0;
+		}
+	}
 }
 
 Paramlist *FileAVlibs::scan_global_options(int options)

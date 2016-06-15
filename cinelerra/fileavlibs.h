@@ -69,6 +69,7 @@ public:
 	int write_aframes(AFrame **frames);
 	static void get_parameters(BC_WindowBase *parent_window,
 		Asset *asset, BC_WindowBase* &format_window, int options);
+	static void get_render_defaults(Asset *asset);
 	static const char *encoder_formatname(int fileformat);
 
 // Callbacks of FileTOC

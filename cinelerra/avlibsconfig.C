@@ -57,6 +57,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	const char *name;
 	int x1, base_w;
 	int codec_w = 0;
+	Param *param;
 
 	left = 10;
 	top = 10;
@@ -110,10 +111,14 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	if(options & SUPPORTS_AUDIO)
 	{
 		win = add_subwindow(new BC_Title(x1, top, "Audio codec:"));
+		if(param = codecs->find(asset->acodec))
+			codecs->selectedint = param->intvalue;
 	}
 	else if(options & SUPPORTS_VIDEO)
 	{
 		win = add_subwindow(new BC_Title(x1, top, "Video codec:"));
+		if(param = codecs->find(asset->vcodec))
+			codecs->selectedint = param->intvalue;
 	}
 	base_w += win->get_w() + 10;
 	codecpopup = new AVlibsCodecConfigPopup(x1 + base_w,
@@ -222,6 +227,19 @@ void AVlibsConfig::save_options(Paramlist *optlist, const char *config_name,
 	}
 	else
 		unlink(config_path(config_name, suffix));
+}
+
+Paramlist *AVlibsConfig::load_options(const char *config_name, const char *suffix)
+{
+	FileXML file;
+	Paramlist *opts = 0;
+
+	if(!file.read_from_file(config_path(config_name, suffix), 1) && !file.read_tag())
+	{
+		opts = new Paramlist("");
+		opts->load_list(&file);
+	}
+	return opts;
 }
 
 char *AVlibsConfig::config_path(const char *config_name, const char *suffix)
