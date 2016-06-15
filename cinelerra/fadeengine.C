@@ -21,27 +21,15 @@
 
 #include "fadeengine.h"
 #include "vframe.h"
+#include "bcsignals.h"
 
 #include <stdint.h>
-
-
-
-
-
-
-
-
 
 FadeUnit::FadeUnit(FadeEngine *server)
  : LoadClient(server)
 {
 	this->engine = server;
 }
-
-FadeUnit::~FadeUnit()
-{
-}
-
 
 #define APPLY_FADE(equivalent, \
 	input_rows,  \
@@ -93,8 +81,6 @@ FadeUnit::~FadeUnit()
 	} \
 }
 
-
-
 void FadeUnit::process_package(LoadPackage *package)
 {
 	FadePackage *pkg = (FadePackage*)package;
@@ -111,91 +97,81 @@ void FadeUnit::process_package(LoadPackage *package)
 	{
 		switch(input->get_color_model())
 		{
-			case BC_RGB888:
-				APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 3);
-				break;
-			case BC_RGBA8888:
-				APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 4);
-				break;
-			case BC_RGB_FLOAT:
-				APPLY_FADE(1, out_rows, in_rows, 1.0, float, float, 0x0, 3);
-				break;
-			case BC_RGBA_FLOAT:
-				APPLY_FADE(1, out_rows, in_rows, 1.0, float, float, 0x0, 4);
-				break;
-			case BC_RGB161616:
-				APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 3);
-				break;
-			case BC_RGBA16161616:
-				APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 4);
-				break;
-			case BC_YUV888:
-				APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 3);
-				break;
-			case BC_YUVA8888:
-				APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 4);
-				break;
-			case BC_YUV161616:
-				APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 3);
-				break;
-			case BC_YUVA16161616:
-				APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
-				break;
+		case BC_RGB888:
+			APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 3);
+			break;
+		case BC_RGBA8888:
+			APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 4);
+			break;
+		case BC_RGB_FLOAT:
+			APPLY_FADE(1, out_rows, in_rows, 1.0, float, float, 0x0, 3);
+			break;
+		case BC_RGBA_FLOAT:
+			APPLY_FADE(1, out_rows, in_rows, 1.0, float, float, 0x0, 4);
+			break;
+		case BC_RGB161616:
+			APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 3);
+			break;
+		case BC_RGBA16161616:
+			APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 4);
+			break;
+		case BC_YUV888:
+			APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 3);
+			break;
+		case BC_YUVA8888:
+			APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 4);
+			break;
+		case BC_YUV161616:
+			APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 3);
+			break;
+		case BC_YUVA16161616:
+			APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
+			break;
 		}
 	}
 	else
 	{
 		switch(input->get_color_model())
 		{
-			case BC_RGB888:
-				APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 3);
-				break;
-			case BC_RGBA8888:
-				APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 4);
-				break;
-			case BC_RGB_FLOAT:
-				APPLY_FADE(0, out_rows, in_rows, 1.0, float, float, 0x0, 3);
-				break;
-			case BC_RGBA_FLOAT:
-				APPLY_FADE(0, out_rows, in_rows, 1.0, float, float, 0x0, 4);
-				break;
-			case BC_RGB161616:
-				APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 3);
-				break;
-			case BC_RGBA16161616:
-				APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 4);
-				break;
-			case BC_YUV888:
-				APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 3);
-				break;
-			case BC_YUVA8888:
-				APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 4);
-				break;
-			case BC_YUV161616:
-				APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 3);
-				break;
-			case BC_YUVA16161616:
-				APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
-				break;
+		case BC_RGB888:
+			APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 3);
+			break;
+		case BC_RGBA8888:
+			APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 4);
+			break;
+		case BC_RGB_FLOAT:
+			APPLY_FADE(0, out_rows, in_rows, 1.0, float, float, 0x0, 3);
+			break;
+		case BC_RGBA_FLOAT:
+			APPLY_FADE(0, out_rows, in_rows, 1.0, float, float, 0x0, 4);
+			break;
+		case BC_RGB161616:
+			APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 3);
+			break;
+		case BC_RGBA16161616:
+			APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 4);
+			break;
+		case BC_YUV888:
+			APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 3);
+			break;
+		case BC_YUVA8888:
+			APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 4);
+			break;
+		case BC_YUV161616:
+			APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 3);
+			break;
+		case BC_YUVA16161616:
+			APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
+			break;
 		}
 	}
 }
 
 
-
-
-
-
-
-
-
 FadeEngine::FadeEngine(int cpus)
  : LoadServer(cpus, cpus)
 {
-}
-
-FadeEngine::~FadeEngine()
-{
+tracemsg("%p", this);
 }
 
 void FadeEngine::do_fade(VFrame *output, VFrame *input, float alpha)
@@ -203,14 +179,13 @@ void FadeEngine::do_fade(VFrame *output, VFrame *input, float alpha)
 	this->output = output;
 	this->input = input;
 	this->alpha = alpha;
-	
+
 // Sanity
 	if(alpha == 1)
 		output->copy_from(input);
 	else
 		process_packages();
 }
-
 
 void FadeEngine::init_packages()
 {
@@ -231,9 +206,3 @@ LoadPackage* FadeEngine::new_package()
 {
 	return new FadePackage;
 }
-
-
-FadePackage::FadePackage()
-{
-}
-
