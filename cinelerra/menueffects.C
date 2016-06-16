@@ -146,17 +146,12 @@ void MenuEffectThread::run()
 // find out which effect to run and get output file
 	int plugin_number;
 
-	do
-	{
-		{
-			MenuEffectWindow window(mwindow, 
-				this, 
-				need_plugin ? &plugin_list : 0, 
-				default_asset);
-			result = window.run_window();
-			plugin_number = window.result;
-		}
-	}while(!result);
+	MenuEffectWindow window(mwindow,
+		this,
+		need_plugin ? &plugin_list : 0,
+		default_asset);
+	result = window.run_window();
+	plugin_number = window.result;
 
 // save defaults
 	save_derived_attributes(default_asset, defaults);

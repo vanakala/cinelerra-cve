@@ -288,25 +288,15 @@ void Render::run()
 		check_asset(mwindow->edl, *asset);
 
 // Get format from user
+		RenderWindow window(mwindow, this, asset);
+		result = window.run_window();
 		if(!result)
 		{
-			do
-			{
-				result = 0;
-				{
-					RenderWindow window(mwindow, this, asset);
-					result = window.run_window();
-					if (!result)
-					{
-						// add to recentlist only on OK
-						window.format_tools->path_recent->add_item(ContainerSelection::container_prefix(asset->format), asset->path);
-					}
-				}
-			}while(!result);
+			// add to recentlist only on OK
+			window.format_tools->path_recent->add_item(ContainerSelection::container_prefix(asset->format), asset->path);
 		}
 		save_defaults(asset);
 		mwindow->save_defaults();
-
 		if(!preferences)
 			preferences = new Preferences;
 		preferences->copy_from(mwindow->preferences);
