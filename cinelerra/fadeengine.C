@@ -171,7 +171,6 @@ void FadeUnit::process_package(LoadPackage *package)
 FadeEngine::FadeEngine(int cpus)
  : LoadServer(cpus, cpus)
 {
-tracemsg("%p", this);
 }
 
 void FadeEngine::do_fade(VFrame *output, VFrame *input, float alpha)
