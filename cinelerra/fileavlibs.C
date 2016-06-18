@@ -1653,7 +1653,7 @@ Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const c
 	{
 		if(opt->type == AV_OPT_TYPE_CONST)
 			continue;
-		if(opt->flags & typefl)
+		if((opt->flags & typefl) == typefl)
 		{
 			param = opt2param(list, opt);
 			if(opt->unit)
@@ -1664,7 +1664,7 @@ Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const c
 				while(subopt = av_opt_next(&avclass, subopt))
 				{
 					if(subopt->type == AV_OPT_TYPE_CONST &&
-							subopt->type &&
+							(subopt->flags & typefl) == typefl &&
 							!strcmp(subopt->unit, opt->unit))
 						opt2param(sublist, subopt);
 				}
