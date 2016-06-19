@@ -1749,7 +1749,23 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 Paramlist *FileAVlibs::scan_encoder_opts(AVCodecID codec, int options)
 {
 	AVCodec *encoder;
-	Paramlist *libopts;
+	AVCodecContext *ctx;
+	Paramlist *libopts = 0;
+	int rv;
+
+	if(!(encoder = avcodec_find_encoder(codec)))
+		return 0;
+
+	ctx = avcodec_alloc_context3(encoder);
+	if(ctx  && ctx->av_class)
+		libopts = scan_options(ctx->av_class, options, encoder->name);
+	avcodec_free_context(&ctx);
+	return libopts;
+}
+
+Paramlist *FileAVlibs::scan_encoder_private_opts(AVCodecID codec, int options)
+{
+	AVCodec *encoder;
 
 	encoder = avcodec_find_encoder(codec);
 
