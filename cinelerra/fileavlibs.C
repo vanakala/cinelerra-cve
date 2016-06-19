@@ -1611,7 +1611,7 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 
 Paramlist *FileAVlibs::scan_global_options(int options)
 {
-	return scan_options(avformat_get_class(), options, "AVlibsGlobal");
+	return scan_options(avformat_get_class(), 0, "AVlibsGlobal");
 }
 
 Paramlist *FileAVlibs::scan_format_options(int format,
@@ -1630,7 +1630,7 @@ Paramlist *FileAVlibs::scan_format_options(int format,
 		if(ofmtp)
 			*ofmtp = oformat;
 		if(oformat)
-			return scan_options(oformat->priv_class, options, name);
+			return scan_options(oformat->priv_class, 0, name);
 	}
 	return 0;
 }
