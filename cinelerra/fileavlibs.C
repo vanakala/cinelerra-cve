@@ -1862,7 +1862,7 @@ void FileAVlibs::dump_AVOption(const AVOption *opt, const AVClass *avclass, int 
 {
 	printf("%*sAVOption %p dump:\n", indent, "", opt);
 	indent += 2;
-	printf("%*sname '%s' unit %s\n", indent, "", opt->name, opt->unit);
+	printf("%*sname '%s' unit '%s'\n", indent, "", opt->name, opt->unit);
 	printf("%*shelp '%s'\n", indent, "", opt->help);
 	printf("%*soffset %d type %d flags %#x min %.3f max %.3f\n",
 		indent, "",
@@ -1892,10 +1892,23 @@ void FileAVlibs::dump_AVOption(const AVOption *opt, const AVClass *avclass, int 
 		printf("%*sPossible values:\n", indent, "");
 		while(u = av_opt_next(&avclass, u))
 		{
-			if(u->type == AV_OPT_TYPE_CONST && u->unit && 
+			if(u->type == AV_OPT_TYPE_CONST && u->unit &&
 					!strcmp(u->unit, opt->unit))
 				dump_AVOption(u, 0, indent + 2);
 		}
+	}
+}
+
+void FileAVlibs::dump_AVOptions(const AVClass *avclass, int indent)
+{
+	const AVOption *opt = 0;
+
+	printf("%*sAVOptions %p dump:\n", indent, "", avclass);
+
+	while(opt = av_opt_next(&avclass, opt))
+	{
+		if(opt->type != AV_OPT_TYPE_CONST)
+			dump_AVOption(opt, avclass, indent + 2);
 	}
 }
 
