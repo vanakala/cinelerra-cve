@@ -39,6 +39,7 @@ extern "C"
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswresample/swresample.h>
+#include <libavutil/opt.h>
 }
 
 struct avlib_formattable
@@ -108,6 +109,8 @@ private:
 	static void dump_AVOption(const AVOption *opt,
 		const AVClass *avclass = 0, int indent = 0);
 	static void dump_AVOptions(const AVClass *avclass, int indent = 0);
+	static const char *dump_AVOptionType(enum AVOptionType type);
+	static char *dump_AVOptionFlags(int flags);
 	static void dump_AVCodec(const AVCodec *codec, int indent = 0);
 	static const char *dump_AVMediaType(enum AVMediaType type);
 

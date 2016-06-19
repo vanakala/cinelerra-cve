@@ -1864,9 +1864,10 @@ void FileAVlibs::dump_AVOption(const AVOption *opt, const AVClass *avclass, int 
 	indent += 2;
 	printf("%*sname '%s' unit '%s'\n", indent, "", opt->name, opt->unit);
 	printf("%*shelp '%s'\n", indent, "", opt->help);
-	printf("%*soffset %d type %d flags %#x min %.3f max %.3f\n",
+	printf("%*soffset %d type '%s' flags '%s' min %.3f max %.3f\n",
 		indent, "",
-		opt->offset, opt->type, opt->flags, opt->min, opt->max);
+		opt->offset, dump_AVOptionType(opt->type),
+		dump_AVOptionFlags(opt->flags), opt->min, opt->max);
 	switch(opt->type)
 	{
 	case AV_OPT_TYPE_CONST:
@@ -1910,6 +1911,77 @@ void FileAVlibs::dump_AVOptions(const AVClass *avclass, int indent)
 		if(opt->type != AV_OPT_TYPE_CONST)
 			dump_AVOption(opt, avclass, indent + 2);
 	}
+}
+
+const char *FileAVlibs::dump_AVOptionType(enum AVOptionType type)
+{
+	switch(type)
+	{
+	case AV_OPT_TYPE_FLAGS:
+		return "flags";
+	case AV_OPT_TYPE_INT:
+		return "int";
+	case AV_OPT_TYPE_INT64:
+		return "int64";
+	case AV_OPT_TYPE_DOUBLE:
+		return "double";
+	case AV_OPT_TYPE_FLOAT:
+		return "float";
+	case AV_OPT_TYPE_STRING:
+		return "string";
+	case AV_OPT_TYPE_RATIONAL:
+		return "rational";
+	case AV_OPT_TYPE_BINARY:
+		return "binary";
+	case AV_OPT_TYPE_DICT:
+		return "dict";
+	case AV_OPT_TYPE_CONST:
+		return "const";
+	case AV_OPT_TYPE_IMAGE_SIZE:
+		return "image_size";
+	case AV_OPT_TYPE_PIXEL_FMT:
+		return "pixel_fmt";
+	case AV_OPT_TYPE_SAMPLE_FMT:
+		return "sample_fmt";
+	case AV_OPT_TYPE_VIDEO_RATE:
+		return "video_rate";
+	case AV_OPT_TYPE_DURATION:
+		return "duration";
+	case AV_OPT_TYPE_COLOR:
+		return "color";
+	case  AV_OPT_TYPE_CHANNEL_LAYOUT:
+		return "chnl_layout";
+	}
+	return "Unknown";
+}
+
+char *FileAVlibs::dump_AVOptionFlags(int flags)
+{
+	static char flbuf[64];
+	char *bp = flbuf;
+
+	if(flags & AV_OPT_FLAG_ENCODING_PARAM)
+		*bp++ = 'E';
+	if(flags & AV_OPT_FLAG_DECODING_PARAM)
+		*bp++ = 'D';
+#if FF_API_OPT_TYPE_METADATA
+	if(flags & AV_OPT_FLAG_METADATA)
+		*bp++ = 'M';
+#endif
+	if(flags & AV_OPT_FLAG_AUDIO_PARAM)
+		*bp++ = 'A';
+	if(flags & AV_OPT_FLAG_VIDEO_PARAM)
+		*bp++ = 'V';
+	if(flags & AV_OPT_FLAG_SUBTITLE_PARAM)
+		*bp++ = 'S';
+	if(flags & AV_OPT_FLAG_EXPORT)
+		*bp++ = 'X';
+	if(flags & AV_OPT_FLAG_READONLY)
+		*bp++ = 'R';
+	if(flags & AV_OPT_FLAG_FILTERING_PARAM)
+		*bp++ = 'F';
+	*bp++ = 0;
+	return flbuf;
 }
 
 void FileAVlibs::dump_AVFormatContext(AVFormatContext *ctx, int indent)
