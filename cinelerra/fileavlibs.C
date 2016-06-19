@@ -1651,7 +1651,7 @@ Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const c
 
 	while(opt = av_opt_next(&avclass, opt))
 	{
-		if(opt->type == AV_OPT_TYPE_CONST)
+		if(opt->type == AV_OPT_TYPE_CONST || skip_avoption(opt))
 			continue;
 		if((opt->flags & typefl) == typefl)
 		{
@@ -1664,6 +1664,7 @@ Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const c
 				while(subopt = av_opt_next(&avclass, subopt))
 				{
 					if(subopt->type == AV_OPT_TYPE_CONST &&
+							!skip_avoption(subopt) &&
 							(subopt->flags & typefl) == typefl &&
 							!strcmp(subopt->unit, opt->unit))
 						opt2param(sublist, subopt);
@@ -1711,6 +1712,13 @@ Param *FileAVlibs::opt2param(Paramlist *list, const AVOption *opt)
 	return param;
 }
 
+int FileAVlibs::skip_avoption(const AVOption *opt)
+{
+	if(opt->help && strstr(opt->help, "deprecated"))
+		return 1;
+	return 0;
+}
+
 Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 {
 	const struct AVCodecTag * const *ctag;
@@ -1755,7 +1763,6 @@ Paramlist *FileAVlibs::scan_encoder_opts(AVCodecID codec, int options)
 
 	if(!(encoder = avcodec_find_encoder(codec)))
 		return 0;
-
 	ctx = avcodec_alloc_context3(encoder);
 	if(ctx  && ctx->av_class)
 		libopts = scan_options(ctx->av_class, options, encoder->name);
