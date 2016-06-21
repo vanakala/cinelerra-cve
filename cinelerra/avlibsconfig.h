@@ -99,53 +99,6 @@ private:
 };
 
 
-class ParamlistWindow : public BC_Window
-{
-public:
-	ParamlistWindow(Paramlist *params, const char *winname);
-
-private:
-	int top;
-	int left;
-	int base_w;
-	int bottom_margin;
-	int new_column;
-};
-
-
-class Parami64Txtbx : public BC_TextBox
-{
-public:
-	Parami64Txtbx(int x, int y, Param *param, int64_t *val);
-
-	int handle_event();
-private:
-	Param *param;
-	int64_t *valptr;
-};
-
-
-class ParamStrTxtbx : public BC_TextBox
-{
-public:
-	ParamStrTxtbx(int x, int y, Param *param, const char *str);
-	~ParamStrTxtbx();
-
-private:
-	Param *param;
-};
-
-class ParamDblTxtbx : public BC_TextBox
-{
-public:
-	ParamDblTxtbx(int x, int y, Param *param, double *val);
-
-	int handle_event();
-private:
-	Param *param;
-	double *valptr;
-};
-
 class AVlibsParamThread : public Thread
 {
 public:

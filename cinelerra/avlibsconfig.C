@@ -33,6 +33,7 @@
 #include "mutex.h"
 #include "mwindow.h"
 #include "paramlist.h"
+#include "paramlistwindow.h"
 #include "subselection.h"
 #include "theme.h"
 
@@ -439,49 +440,4 @@ void AVlibsParamWindow::calc_pos(int h, int w)
 	}
 	else
 		new_column = 0;
-}
-
-
-Parami64Txtbx::Parami64Txtbx(int x, int y, Param *param, int64_t *val)
- : BC_TextBox(x, y, 100, 1, *val)
-{
-	this->param = param;
-	if(param->helptext)
-		set_tooltip(param->helptext);
-	valptr = val;
-}
-
-int Parami64Txtbx::handle_event()
-{
-	*valptr = atol(get_text());
-	return 1;
-}
-
-
-ParamStrTxtbx::ParamStrTxtbx(int x, int y, Param *param, const char *str)
- : BC_TextBox(x, y, 100, 1, str)
-{
-	this->param = param;
-	if(param->helptext)
-		set_tooltip(param->helptext);
-}
-
-ParamStrTxtbx::~ParamStrTxtbx()
-{
-	param->set_string(get_text());
-}
-
-ParamDblTxtbx::ParamDblTxtbx(int x, int y, Param *param, double *val)
- : BC_TextBox(x, y, 100, 1, (float)*val)
-{
-	this->param = param;
-	if(param->helptext)
-		set_tooltip(param->helptext);
-	valptr = val;
-}
-
-int ParamDblTxtbx::handle_event()
-{
-	*valptr = atof(get_text());
-	return 1;
 }
