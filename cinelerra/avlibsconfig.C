@@ -350,94 +350,12 @@ AVlibsParamWindow::AVlibsParamWindow(Paramlist *params, const char *winname)
 	200,
 	200)
 {
-	Param *current, *subparam;
-	BC_WindowBase *win = 0;
-	int w1 = 0, h1 = 0, tw;
-	int name_width;
+	add_subwindow(listwin = new ParamlistWindow(0, 10, PARAMLIST_WIN_MAXH, params));
+	listwin->draw_list();
 
-	top = left = 10;
-	base_w = 0;
-	base_y = top;
-	bot_max = 0;
-	new_column = 0;
-	name_width = 0;
-
-	for(current = params->first; current; current = current->next)
-	{
-		if((tw = get_text_width(MEDIUMFONT, current->name)) > name_width)
-			name_width = tw;
-	}
-	name_width += 5;
-	bottom_margin = PARAM_WIN_MAXH -
-		BC_WindowBase::get_resources()->ok_images[0]->get_h() - 40;
-
-	for(current = params->first; current; current = current->next)
-	{
-		calc_pos(h1, w1);
-		h1 = w1 = 0;
-		switch(current->type & PARAMTYPE_MASK)
-		{
-		case PARAMTYPE_LNG:
-			if(current->subparams)
-			{
-				add_subwindow(win = new SubSelection(left,
-					top, name_width - 5, this, current));
-				w1 = win->get_w();
-			}
-			else
-			{
-				add_subwindow(new BC_Title(left, top, current->name));
-				add_subwindow(win = new Parami64Txtbx(left + name_width,
-					top, current, &current->longvalue));
-				w1 = name_width + win->get_w();
-			}
-			h1 = win->get_h();
-			break;
-		case PARAMTYPE_STR:
-			add_subwindow(new BC_Title(left, top, current->name));
-			add_subwindow(win = new ParamStrTxtbx(left + name_width,
-				top, current, current->stringvalue));
-			w1 = name_width + win->get_w();
-			h1 = win->get_h();
-			break;
-		case PARAMTYPE_DBL:
-			add_subwindow(new BC_Title(left, top, current->name));
-			add_subwindow(win = new ParamDblTxtbx(left + name_width,
-				top, current, &current->floatvalue));
-			w1 = name_width + win->get_w();
-			h1 = win->get_h();
-			break;
-		default:
-			break;
-		}
-	}
-	calc_pos(h1, w1);
-
-	int w = left + base_w + PARAM_WIN_MARGIN;
-	if(new_column && left > base_w)
-		w -= base_w;
-	int h = bot_max + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 40;
+	int w = listwin->get_w() + 40;
+	int h = listwin->get_h() + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 40;
 	reposition_window((get_root_w(1) - w) / 2, (get_root_h(1) - h) / 2,
 		w, h);
 	add_subwindow(new BC_OKButton(this));
-}
-
-void AVlibsParamWindow::calc_pos(int h, int w)
-{
-	top += h + 5;
-
-	if(w > base_w)
-		base_w = w;
-
-	if(bot_max < top)
-		bot_max = top;
-
-	if(top > bottom_margin)
-	{
-		top = base_y;
-		left += base_w + 20;
-		new_column = 1;
-	}
-	else
-		new_column = 0;
 }

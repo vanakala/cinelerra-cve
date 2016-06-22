@@ -30,6 +30,7 @@
 #include "bctextbox.h"
 #include "bctoggle.h"
 #include "paramlist.h"
+#include "paramlistwindow.inc"
 #include "subselection.h"
 #include "thread.h"
 
@@ -127,13 +128,7 @@ public:
 	void calc_pos(int h, int w);
 
 private:
-	int top;
-	int left;
-	int base_w;
-	int base_y;
-	int new_column;
-	int bot_max;
-	int bottom_margin;
+	ParamlistWindow *listwin;
 };
 
 class AVlibsCodecConfigPopup : public SubSelectionPopup
