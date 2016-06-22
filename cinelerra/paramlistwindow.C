@@ -38,6 +38,8 @@ ParamlistWindow::ParamlistWindow(int x, int y, int max_h, Paramlist *params)
 {
 	this->params = params;
 	bottom_margin = max_h;
+	win_x = x;
+	win_y = y;
 }
 
 void ParamlistWindow::draw_list()
@@ -107,8 +109,8 @@ void ParamlistWindow::draw_list()
 
 	int w = left + base_w + PARAMLIST_WIN_MARGIN;
 	if(new_column && left > base_w)
-		w -= base_w;
-	reposition_window(0, 0, w, bot_max);
+		w -= base_w + PARAMLIST_WIN_MARGIN;
+	reposition_window(win_x, win_y, w, bot_max);
 }
 
 void ParamlistWindow::calc_pos(int h, int w)
@@ -124,11 +126,16 @@ void ParamlistWindow::calc_pos(int h, int w)
 	if(top > bottom_margin)
 	{
 		top = base_y;
-		left += base_w + 20;
+		left += base_w + PARAMLIST_WIN_MARGIN;
 		new_column = 1;
 	}
 	else
 		new_column = 0;
+}
+
+BC_WindowBase *ParamlistWindow::set_scrollbar(int x, int y, int w)
+{
+	return new ParamWindowScroll(this, x, y, w, get_w());
 }
 
 
@@ -173,5 +180,23 @@ ParamDblTxtbx::ParamDblTxtbx(int x, int y, Param *param, double *val)
 int ParamDblTxtbx::handle_event()
 {
 	*valptr = atof(get_text());
+	return 1;
+}
+
+
+ParamWindowScroll::ParamWindowScroll(ParamlistWindow *listwin,
+	int x, int y, int pixels, int length)
+ : BC_ScrollBar(x, y, SCROLL_HORIZ, pixels, length, 0,
+    round((double)pixels / length * pixels))
+{
+	this->paramwin = listwin;
+	param_x = paramwin->get_x();
+	param_y = paramwin->get_y();
+	zoom = (double)pixels / length;
+}
+
+int ParamWindowScroll::handle_event()
+{
+	paramwin->reposition_window(param_x - (get_value() * zoom), param_y);
 	return 1;
 }

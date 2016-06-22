@@ -38,10 +38,14 @@ public:
 	ParamlistWindow(int x, int y, int max_h, Paramlist *params);
 
 	void draw_list();
-	void calc_pos(int h, int w);
+	BC_WindowBase *set_scrollbar(int x, int y, int w);
 
 private:
+	void calc_pos(int h, int w);
+
 	Paramlist *params;
+	int win_x;
+	int win_y;
 	int top;
 	int left;
 	int base_w;
@@ -51,6 +55,20 @@ private:
 	int bot_max;
 };
 
+
+class ParamWindowScroll : public BC_ScrollBar
+{
+public:
+	ParamWindowScroll(ParamlistWindow *listwin,
+		int x, int y, int pixels, int length);
+
+	int handle_event();
+private:
+	ParamlistWindow *paramwin;
+	int param_x;
+	int param_y;
+	double zoom;
+};
 
 class Parami64Txtbx : public BC_TextBox
 {

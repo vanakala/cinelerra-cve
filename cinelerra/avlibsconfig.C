@@ -353,8 +353,15 @@ AVlibsParamWindow::AVlibsParamWindow(Paramlist *params, const char *winname)
 	add_subwindow(listwin = new ParamlistWindow(0, 10, PARAMLIST_WIN_MAXH, params));
 	listwin->draw_list();
 
-	int w = listwin->get_w() + 40;
+	int w = listwin->get_w();
 	int h = listwin->get_h() + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 40;
+
+	int max_w = get_root_w(1) - 100;
+	if(w > max_w)
+	{
+		add_subwindow(listwin->set_scrollbar(0, listwin->get_h() + 10, max_w));
+		w = max_w;
+	}
 	reposition_window((get_root_w(1) - w) / 2, (get_root_h(1) - h) / 2,
 		w, h);
 	add_subwindow(new BC_OKButton(this));
