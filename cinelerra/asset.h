@@ -39,11 +39,6 @@
 #define MAX_ASTREAMS 64 
 // Maximum length of codecname (mostly fourcc)
 #define MAX_LEN_CODECNAME  64
-// Time code formats
-#define TC_DROPFRAME 0
-#define TC_NONDROPFRAME 1
-#define TC_PAL 2
-#define TC_FILM 3
 
 struct streamdesc
 {
