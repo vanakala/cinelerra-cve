@@ -186,7 +186,7 @@ int AVlibsConfig::handle_event()
 		FILEAVLIBS_VCODEC_CONFIG : FILEAVLIBS_ACODEC_CONFIG, codecopts->name);
 	aparm = options & SUPPORTS_VIDEO ? asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] :
 		asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
-	if(aparm)
+	if(aparm && !strcmp(aparm->name, codecopts->name))
 		codecopts->copy_values(aparm);
 	sprintf(string, "%s options", codecopts->name);
 	codecthread->set_window_title(string);
