@@ -78,13 +78,9 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	}
 
 	globopts = FileAVlibs::scan_global_options(options);
-	merge_saved_options(globopts, FILEAVLIBS_GLOBAL_CONFIG, 0);
-	if(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX])
-		globopts->copy_values(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX]);
+	globopts->copy_values(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX]);
 	fmtopts = FileAVlibs::scan_format_options(asset->format, options, &oformat);
-	merge_saved_options(fmtopts, FILEAVLIBS_FORMAT_CONFIG, name);
-	if(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX])
-		fmtopts->copy_values(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
+	fmtopts->copy_values(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
 	codecs = FileAVlibs::scan_codecs(oformat, options);
 
 	for(Param *p = codecs->first; p; p = p->next)
