@@ -68,10 +68,8 @@ Asset::Asset(const int plugin_type, const char *plugin_title)
 
 Asset::~Asset()
 {
-	delete library_parameters;
-	delete format_parameters;
-	delete acodec_parameters;
-	delete vcodec_parameters;
+	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
+		delete encoder_parameters[i];
 }
 
 void Asset::init_values()
@@ -181,10 +179,7 @@ void Asset::init_values()
 	tiff_cmodel = 0;
 	tiff_compression = 0;
 
-	library_parameters = 0;
-	format_parameters = 0;
-	acodec_parameters = 0;
-	vcodec_parameters = 0;
+	memset(encoder_parameters, 0, MAX_ENC_PARAMLISTS * sizeof(Paramlist *));
 
 	use_header = 1;
 
@@ -338,28 +333,13 @@ void Asset::copy_format(Asset *asset, int do_index)
 	strcpy(pipe, asset->pipe);
 	use_pipe = asset->use_pipe;
 
-	if(asset->library_parameters)
+	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
 	{
-		library_parameters = new Paramlist(asset->library_parameters->name);
-		library_parameters->copy_from(asset->library_parameters);
-	}
-
-	if(asset->format_parameters)
-	{
-		format_parameters = new Paramlist(asset->format_parameters->name);
-		format_parameters->copy_from(format_parameters);
-	}
-
-	if(asset->acodec_parameters)
-	{
-		acodec_parameters = new Paramlist(asset->acodec_parameters->name);
-		acodec_parameters->copy_from(asset->acodec_parameters);
-	}
-
-	if(asset->vcodec_parameters)
-	{
-		vcodec_parameters = new Paramlist(asset->vcodec_parameters->name);
-		vcodec_parameters->copy_from(asset->vcodec_parameters);
+		if(asset->encoder_parameters[i])
+		{
+			encoder_parameters[i] = new Paramlist(asset->encoder_parameters[i]->name);
+			encoder_parameters[i]->copy_from(asset->encoder_parameters[i]);
+		}
 	}
 
 	strcpy(reel_name, asset->reel_name);
@@ -1214,25 +1194,14 @@ void Asset::dump_parameters(int indent)
 {
 	printf("%*sAsset %p parameters dump:\n", indent, "", this);
 	indent++;
-	if(library_parameters)
+
+	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
 	{
-		printf("%*sLibrary:\n", indent, "");
-		library_parameters->dump(indent + 2);
-	}
-	if(format_parameters)
-	{
-		printf("%*sFormat:\n", indent, "");
-		format_parameters->dump(indent + 2);
-	}
-	if(acodec_parameters)
-	{
-		printf("%*sAudio codec:\n", indent, "");
-		acodec_parameters->dump(indent + 2);
-	}
-	if(vcodec_parameters)
-	{
-		printf("%*sVideo codec:\n", indent, "");
-		vcodec_parameters->dump(indent + 2);
+		if(encoder_parameters[i])
+		{
+			printf("%*sList %d:\n", indent, "", i);
+			encoder_parameters[i]->dump(indent + 2);
+		}
 	}
 	printf("%*sEnd of Asset parameters dump\n", indent -1 , "");
 }

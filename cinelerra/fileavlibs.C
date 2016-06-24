@@ -1508,15 +1508,15 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	window->run_window();
 	defaults = scan_global_options(options);
 	window->save_options(window->globopts, FILEAVLIBS_GLOBAL_CONFIG, 0, defaults);
-	if(asset->library_parameters)
+	if(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX])
 	{
-		delete asset->library_parameters;
-		asset->library_parameters = 0;
+		delete asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX];
+		asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = 0;
 	}
 	if(window->globopts->total() > 0)
 	{
 		window->globopts->clean_list();
-		asset->library_parameters = window->globopts;
+		asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = window->globopts;
 		window->globopts = 0;
 	}
 	delete defaults;
@@ -1524,15 +1524,15 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	defaults = scan_format_options(asset->format, options, 0);
 	window->save_options(window->fmtopts, FILEAVLIBS_FORMAT_CONFIG,
 		window->fmtopts->name, defaults);
-	if(asset->format_parameters)
+	if(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX])
 	{
-		delete asset->format_parameters;
-		asset->format_parameters = 0;
+		delete asset->encoder_parameters[FILEAVLIBS_FORMAT_IX];
+		asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = 0;
 	}
 	if(window->fmtopts->total() > 0)
 	{
 		window->fmtopts->clean_list();
-		asset->format_parameters = window->fmtopts;
+		asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = window->fmtopts;
 		window->fmtopts = 0;
 	}
 	delete defaults;
@@ -1549,12 +1549,12 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 		if(options & SUPPORTS_VIDEO)
 		{
 			strcpy(asset->vcodec, window->codecopts->name);
-			alist = &asset->vcodec_parameters;
+			alist = &asset->encoder_parameters[FILEAVLIBS_VCODEC_IX];
 		}
 		else if(options & SUPPORTS_AUDIO)
 		{
 			strcpy(asset->acodec, window->codecopts->name);
-			alist = &asset->acodec_parameters;
+			alist = &asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
 		}
 		if(*alist)
 		{
@@ -1583,12 +1583,13 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 		return;
 
-	asset->library_parameters = AVlibsConfig::load_options(FILEAVLIBS_GLOBAL_CONFIG);
-	asset->format_parameters = AVlibsConfig::load_options(FILEAVLIBS_FORMAT_CONFIG, name);
-	asset->acodec_parameters = AVlibsConfig::load_options(FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
-	asset->vcodec_parameters = AVlibsConfig::load_options(FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
+	asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = AVlibsConfig::load_options(FILEAVLIBS_GLOBAL_CONFIG);
+	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(FILEAVLIBS_FORMAT_CONFIG, name);
+	asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
+	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
 
-	if(!asset->acodec_parameters || !asset->vcodec_parameters)
+	if(!asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] ||
+		!asset->encoder_parameters[FILEAVLIBS_VCODEC_IX])
 	{
 		FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
 		avcodec_register_all();
@@ -1597,10 +1598,10 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 
 		if(oformat = av_guess_format(name, 0, 0))
 		{
-			if(!asset->acodec_parameters &&
+			if(!asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] &&
 					(encoder = avcodec_find_encoder(oformat->audio_codec)))
 				strncpy(asset->acodec, encoder->name, MAX_LEN_CODECNAME);
-			if(!asset->vcodec_parameters &&
+			if(!asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] &&
 					(encoder = avcodec_find_encoder(oformat->video_codec)))
 				strncpy(asset->vcodec, encoder->name, MAX_LEN_CODECNAME);
 			asset->vcodec[MAX_LEN_CODECNAME - 1] = 0;

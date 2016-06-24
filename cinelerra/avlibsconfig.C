@@ -79,12 +79,12 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 
 	globopts = FileAVlibs::scan_global_options(options);
 	merge_saved_options(globopts, FILEAVLIBS_GLOBAL_CONFIG, 0);
-	if(asset->library_parameters)
-		globopts->copy_values(asset->library_parameters);
+	if(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX])
+		globopts->copy_values(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX]);
 	fmtopts = FileAVlibs::scan_format_options(asset->format, options, &oformat);
 	merge_saved_options(fmtopts, FILEAVLIBS_FORMAT_CONFIG, name);
-	if(asset->format_parameters)
-		fmtopts->copy_values(asset->format_parameters);
+	if(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX])
+		fmtopts->copy_values(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
 	codecs = FileAVlibs::scan_codecs(oformat, options);
 
 	for(Param *p = codecs->first; p; p = p->next)
@@ -188,8 +188,8 @@ int AVlibsConfig::handle_event()
 	codecopts = FileAVlibs::scan_encoder_opts((AVCodecID)current_codec, options);
 	merge_saved_options(codecopts, options & SUPPORTS_VIDEO ?
 		FILEAVLIBS_VCODEC_CONFIG : FILEAVLIBS_ACODEC_CONFIG, codecopts->name);
-	aparm = options & SUPPORTS_VIDEO ? asset->vcodec_parameters :
-		asset->vcodec_parameters;
+	aparm = options & SUPPORTS_VIDEO ? asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] :
+		asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
 	if(aparm)
 		codecopts->copy_values(aparm);
 	sprintf(string, "%s options", codecopts->name);

@@ -39,6 +39,8 @@
 #define MAX_ASTREAMS 64 
 // Maximum length of codecname (mostly fourcc)
 #define MAX_LEN_CODECNAME  64
+// Maximum nummber of encoder paramlists
+#define MAX_ENC_PARAMLISTS 16
 
 struct streamdesc
 {
@@ -289,10 +291,7 @@ public:
 	int ac3_bitrate;
 
 // Universal encoding parameters
-	Paramlist *library_parameters;
-	Paramlist *format_parameters;
-	Paramlist *acodec_parameters;
-	Paramlist *vcodec_parameters;
+	Paramlist *encoder_parameters[MAX_ENC_PARAMLISTS];
 
 // Image file sequences.  Background rendering doesn't want to write a 
 // sequence header but instead wants to start the sequence numbering at a certain

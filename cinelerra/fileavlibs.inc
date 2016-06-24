@@ -28,6 +28,12 @@
 #define FILEAVLIBS_VCODEC_CONFIG "avlibsvcodec:"
 #define FILEAVLIBS_CONFIG_EXT ".xml"
 
+// Indexes of encoding parameters in asset
+#define FILEAVLIBS_GLOBAL_IX 0
+#define FILEAVLIBS_FORMAT_IX 1
+#define FILEAVLIBS_ACODEC_IX 2
+#define FILEAVLIBS_VCODEC_IX 3
+
 class FileAVlibs;
 
 #endif
