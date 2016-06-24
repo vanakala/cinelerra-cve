@@ -310,6 +310,9 @@ void Paramlist::copy_values(Paramlist *src)
 {
 	Param *cp1, *cp2;
 
+	if(!src)
+		return;
+
 	for(cp1 = first; cp1; cp1 = cp1->next)
 	{
 		for(cp2 = src->first; cp2; cp2 = cp2->next)
