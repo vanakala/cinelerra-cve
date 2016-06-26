@@ -36,6 +36,7 @@
 
 class AVlibsParamThread;
 class AVlibsParamWindow;
+class AVlibsCodecConfigButton;
 
 class AVlibsConfig : public BC_Window
 {
@@ -58,10 +59,12 @@ public:
 	Paramlist *fmtopts;
 	Paramlist *codecs;
 	Paramlist *codecopts;
+	Paramlist *codec_private;
 
 	AVlibsParamThread *globthread;
 	AVlibsParamThread *fmtthread;
 	AVlibsParamThread *codecthread;
+	AVlibsParamThread *privthread;
 
 	int current_codec;
 
@@ -70,6 +73,7 @@ private:
 	int top;
 	int options;
 	SubSelectionPopup *codecpopup;
+	AVlibsCodecConfigButton *privbutton;
 	char string[BCTEXTLEN];
 };
 

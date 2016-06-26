@@ -26,6 +26,9 @@
 #define FILEAVLIBS_FORMAT_CONFIG "avlibsfmt:"
 #define FILEAVLIBS_ACODEC_CONFIG "avlibsacodec:"
 #define FILEAVLIBS_VCODEC_CONFIG "avlibsvcodec:"
+#define FILEAVLIBS_APRIVT_CONFIG "avlibsacprivate:"
+#define FILEAVLIBS_VPRIVT_CONFIG "avlibsvcprivate:"
+
 #define FILEAVLIBS_CONFIG_EXT ".xml"
 
 // Indexes of encoding parameters in asset
@@ -33,6 +36,8 @@
 #define FILEAVLIBS_FORMAT_IX 1
 #define FILEAVLIBS_ACODEC_IX 2
 #define FILEAVLIBS_VCODEC_IX 3
+#define FILEAVLIBS_APRIVT_IX 4
+#define FILEAVLIBS_VPRIVT_IX 5
 
 class FileAVlibs;
 

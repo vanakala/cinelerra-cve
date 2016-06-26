@@ -1539,7 +1539,7 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 
 	if(window->codecopts)
 	{
-		Paramlist **alist;
+		Paramlist **alist, **plist;
 
 		const char *pfx = options & SUPPORTS_VIDEO ?
 				FILEAVLIBS_VCODEC_CONFIG : FILEAVLIBS_ACODEC_CONFIG;
@@ -1550,16 +1550,23 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 		{
 			strcpy(asset->vcodec, window->codecopts->name);
 			alist = &asset->encoder_parameters[FILEAVLIBS_VCODEC_IX];
+			plist = &asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX];
 		}
 		else if(options & SUPPORTS_AUDIO)
 		{
 			strcpy(asset->acodec, window->codecopts->name);
 			alist = &asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
+			plist = &asset->encoder_parameters[FILEAVLIBS_APRIVT_IX];
 		}
 		if(*alist)
 		{
 			delete *alist;
 			*alist = 0;
+		}
+		if(*plist)
+		{
+			delete *plist;
+			*plist = 0;
 		}
 		if(window->codecopts->total() > 0)
 		{
@@ -1568,6 +1575,23 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			window->codecopts = 0;
 		}
 		delete defaults;
+		if(*plist)
+		{
+			delete *plist;
+			*plist = 0;
+		}
+		if(window->codec_private)
+		{
+			pfx = options & SUPPORTS_VIDEO ?
+				FILEAVLIBS_VPRIVT_CONFIG : FILEAVLIBS_APRIVT_CONFIG;
+			defaults = scan_encoder_private_opts((AVCodecID)window->current_codec, options);
+			window->save_options(window->codec_private,
+				pfx, window->codec_private->name, defaults);
+			window->codec_private->clean_list(),
+			*plist = window->codec_private;
+			window->codec_private = 0;
+			delete defaults;
+		}
 	}
 
 	delete window;
@@ -1587,6 +1611,8 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(FILEAVLIBS_FORMAT_CONFIG, name);
 	asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
 	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
+	asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
+	asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
 
 	if(!asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] ||
 		!asset->encoder_parameters[FILEAVLIBS_VCODEC_IX])

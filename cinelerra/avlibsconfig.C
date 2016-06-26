@@ -53,7 +53,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	200,
 	100)
 {
-	BC_WindowBase *win;
+	BC_WindowBase *win, *twin;
 	AVOutputFormat *oformat;
 	const char *name;
 	int x1, base_w;
@@ -67,6 +67,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	fmtopts = 0;
 	codecpopup = 0;
 	codecopts = 0;
+	codec_private = 0;
 	this->options = options;
 	this->asset = asset;
 
@@ -94,6 +95,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 		ContainerSelection::container_to_text(asset->format));
 	fmtthread = new AVlibsParamThread(fmtopts, string);
 	codecthread = new AVlibsParamThread(&codecopts, "Codec options");
+	privthread = new AVlibsParamThread(&codec_private, "Codec private options");
 	win = add_subwindow(new BC_Title(left, top, string));
 	top += win->get_h() + 10;
 	win = add_subwindow(new AVlibsConfigButton(left, top, globopts, this));
@@ -107,21 +109,24 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	base_w = win->get_w();
 	if(options & SUPPORTS_AUDIO)
 	{
-		win = add_subwindow(new BC_Title(x1, top, "Audio codec:"));
+		twin = add_subwindow(new BC_Title(x1, top, "Audio codec:"));
 		if(param = codecs->find(asset->acodec))
 			codecs->selectedint = param->intvalue;
 	}
 	else if(options & SUPPORTS_VIDEO)
 	{
-		win = add_subwindow(new BC_Title(x1, top, "Video codec:"));
+		twin = add_subwindow(new BC_Title(x1, top, "Video codec:"));
 		if(param = codecs->find(asset->vcodec))
 			codecs->selectedint = param->intvalue;
 	}
-	base_w += win->get_w() + 10;
+	base_w += twin->get_w() + 10;
 	codecpopup = new AVlibsCodecConfigPopup(x1 + base_w,
 		top, codec_w + 10, this, codecs);
 	top += win->get_h();
 	base_w += codecpopup->get_w() + x1;
+	add_subwindow(privbutton = new AVlibsCodecConfigButton(left, top, &codec_private, this));
+	add_subwindow(new BC_Title(x1, top, "Codec private options"));
+	top += privbutton->get_h();
 	int h = top + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 30;
 	reposition_window((get_root_w(1) - base_w) / 2, (get_root_h(1) - h) / 2,
 		base_w, h);
@@ -143,11 +148,16 @@ AVlibsConfig::~AVlibsConfig()
 		codecthread->window->set_done(1);
 	delete codecthread;
 
+	if(privthread->running())
+		privthread->window->set_done(1);
+	delete privthread;
+
 	delete globopts;
 	delete codecs;
 	delete fmtopts;
 	delete codecopts;
 	delete codecpopup;
+	delete codec_private;
 }
 
 void AVlibsConfig::open_paramwin(Paramlist *list)
@@ -160,6 +170,8 @@ void AVlibsConfig::open_paramwin(Paramlist *list)
 		thread = fmtthread;
 	if(list == codecopts)
 		thread = codecthread;
+	if(list == codec_private)
+		thread = privthread;
 
 	if(!thread->running())
 		thread->start();
@@ -179,6 +191,10 @@ int AVlibsConfig::handle_event()
 			codecthread->window->set_done(1);
 		codecthread->wait_window();
 		delete codecopts;
+		if(privthread->running())
+			privthread->window->set_done(1);
+		privthread->wait_window();
+		delete codec_private;
 	}
 	current_codec = codecs->selectedint;
 	codecopts = FileAVlibs::scan_encoder_opts((AVCodecID)current_codec, options);
@@ -190,6 +206,20 @@ int AVlibsConfig::handle_event()
 		codecopts->copy_values(aparm);
 	sprintf(string, "%s options", codecopts->name);
 	codecthread->set_window_title(string);
+	codec_private = FileAVlibs::scan_encoder_private_opts((AVCodecID)current_codec, options);
+	if(codec_private)
+	{
+		merge_saved_options(codec_private, options & SUPPORTS_VIDEO ?
+			FILEAVLIBS_VPRIVT_CONFIG : FILEAVLIBS_APRIVT_CONFIG, codec_private->name);
+		aparm = options & SUPPORTS_VIDEO ? asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] :
+			asset->encoder_parameters[FILEAVLIBS_APRIVT_IX];
+		if(aparm && !strcmp(aparm->name, codec_private->name))
+			codec_private->copy_values(aparm);
+		sprintf(string, "%s private options", codec_private->name);
+		privthread->set_window_title(string);
+		privbutton->enable();
+	} else
+		privbutton->disable();
 	return 1;
 }
 
