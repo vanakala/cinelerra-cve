@@ -317,6 +317,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			AVCodec *codec;
 			AVCodecContext *video_ctx;
 			AVStream *stream;
+			AVDictionary *dict = create_dictionary(SUPPORTS_VIDEO);
 // default video codec
 			if(fmt->video_codec != AV_CODEC_ID_NONE)
 			{
@@ -343,13 +344,10 @@ int FileAVlibs::open_file(int rd, int wr)
 
 			video_ctx = stream->codec;
 			video_index = context->nb_streams - 1;
-			video_ctx->bit_rate = 400000;
 			video_ctx->width = asset->width;
 			video_ctx->height = asset->height;
 			video_ctx->time_base = av_d2q(1. / asset->frame_rate, 10000);
 			stream->time_base = video_ctx->time_base;
-			video_ctx->gop_size = 10;
-			video_ctx->max_b_frames = 1;
 			video_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
 			video_ctx->sample_aspect_ratio =
 				av_mul_q(av_d2q(asset->aspect_ratio, 40),
@@ -361,12 +359,14 @@ int FileAVlibs::open_file(int rd, int wr)
 			if(video_ctx->codec_id == AV_CODEC_ID_H264)
 				av_opt_set(video_ctx->priv_data, "preset", "slow", 0);
 
-			if((rv = avcodec_open2(video_ctx, codec, NULL)) < 0)
+			if((rv = avcodec_open2(video_ctx, codec, &dict)) < 0)
 			{
+				av_dict_free(&dict);
 				liberror(rv, "FileAVlibs::open_file:Could not open video codec");
 				avlibs_lock->unlock();
 				return 1;
 			}
+			av_dict_free(&dict);
 			if(!(avvframe = av_frame_alloc()))
 			{
 				errormsg("FileAVlibs::open_file:Could not create video_frame");
@@ -383,6 +383,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			AVCodec *codec;
 			AVCodecContext *audio_ctx;
 			AVStream *stream;
+			AVDictionary *dict = create_dictionary(SUPPORTS_AUDIO);
 // default audio codec
 			if(fmt->audio_codec != AV_CODEC_ID_NONE)
 			{
@@ -438,13 +439,14 @@ int FileAVlibs::open_file(int rd, int wr)
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				audio_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
-			if((rv = avcodec_open2(audio_ctx, codec, NULL)) < 0)
+			if((rv = avcodec_open2(audio_ctx, codec, &dict)) < 0)
 			{
+				av_dict_free(&dict);
 				liberror(rv, _("FileAVlibs::open_file:Could not open audio codec"));
 				avlibs_lock->unlock();
 				return 1;
 			}
-
+			av_dict_free(&dict);
 			if(!(swr_ctx = swr_alloc_set_opts(NULL,
 				audio_ctx->channel_layout,
 				audio_ctx->sample_fmt,
@@ -597,6 +599,54 @@ void FileAVlibs::close_file()
 	delete temp_frame;
 	temp_frame = 0;
 	avlibs_lock->unlock();
+}
+
+AVDictionary *FileAVlibs::create_dictionary(int options)
+{
+	AVDictionary *dict = 0;
+
+	list2dictionary(&dict, asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX]);
+	list2dictionary(&dict, asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
+	if(options & SUPPORTS_AUDIO)
+	{
+		list2dictionary(&dict, asset->encoder_parameters[FILEAVLIBS_ACODEC_IX]);
+		list2dictionary(&dict, asset->encoder_parameters[FILEAVLIBS_APRIVT_IX]);
+	}
+	else if(options & SUPPORTS_VIDEO)
+	{
+		list2dictionary(&dict, asset->encoder_parameters[FILEAVLIBS_VCODEC_IX]);
+		list2dictionary(&dict, asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX]);
+	}
+	return dict;
+}
+
+void FileAVlibs::list2dictionary(AVDictionary **dict, Paramlist *params)
+{
+	Param *current;
+	char buff[BCTEXTLEN];
+
+	if(!params)
+		return;
+
+	for(current = params->first; current; current = current->next)
+	{
+		switch(current->type)
+		{
+		case PARAMTYPE_INT:
+			sprintf(buff, "%d", current->intvalue);
+			break;
+		case PARAMTYPE_LNG:
+			sprintf(buff, "%lld", current->longvalue);
+			break;
+		case PARAMTYPE_DBL:
+			sprintf(buff, "%g", current->floatvalue);
+			break;
+		}
+		if(current->type == PARAMTYPE_STR)
+			av_dict_set(dict, current->name, current->stringvalue, 0);
+		else
+			av_dict_set(dict, current->name, buff, 0);
+	}
 }
 
 int FileAVlibs::read_frame(VFrame *frame)
@@ -1595,7 +1645,6 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	}
 
 	delete window;
-	errorbox("Making use of encoding parameters is not ready.\nBe patient, please.");
 }
 
 void FileAVlibs::get_render_defaults(Asset *asset)

@@ -83,6 +83,8 @@ private:
 	int decode_samples(int64_t rqpos, int length);
 	int fill_buffer(AVFrame *avaframe, int ibytes = 0, int bps = 0, int planar = 0);
 	int write_samples(int resampled_length, AVCodecContext *audio_ctx, ptstime pts = -1);
+	AVDictionary *create_dictionary(int options);
+	void list2dictionary(AVDictionary **dict, Paramlist *params);
 	static int streamformat(AVFormatContext *context);
 	static void liberror(int code, const char *prefix);
 	static int init_picture_from_frame(AVPicture *picture, VFrame *frame);
