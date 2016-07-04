@@ -542,7 +542,6 @@ void mpeg3_slice_loop(mpeg3_slice_t *slice)
 			}
 		}
 
-		pthread_mutex_unlock(&(slice->output_lock));
 	}
 }
 
@@ -556,8 +555,6 @@ int mpeg3_new_slice_decoder(void *video, mpeg3_slice_t *slice)
 	pthread_mutexattr_init(&mutex_attr);
 	pthread_mutex_init(&(slice->input_lock), &mutex_attr);
 	pthread_mutex_lock(&(slice->input_lock));
-	pthread_mutex_init(&(slice->output_lock), &mutex_attr);
-	pthread_mutex_lock(&(slice->output_lock));
 	pthread_mutex_init(&(slice->completion_lock), &mutex_attr);
 	pthread_mutex_lock(&(slice->completion_lock));
 
@@ -573,6 +570,5 @@ int mpeg3_delete_slice_decoder(mpeg3_slice_t *slice)
 	pthread_mutex_unlock(&(slice->input_lock));
 	pthread_join(slice->tid, 0);
 	pthread_mutex_destroy(&(slice->input_lock));
-	pthread_mutex_destroy(&(slice->output_lock));
 	return 0;
 }

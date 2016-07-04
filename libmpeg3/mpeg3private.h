@@ -730,7 +730,7 @@ typedef struct
 	short block[12][64];
 	int sparse[12];
 	pthread_t tid;   /* ID of thread */
-	pthread_mutex_t input_lock, output_lock, completion_lock;
+	pthread_mutex_t input_lock, completion_lock;
 } mpeg3_slice_t;
 
 typedef struct 
