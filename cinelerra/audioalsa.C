@@ -266,10 +266,10 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		return 1;
 	}
 
-	int bufmin, bufmax, buffer_size;
+	snd_pcm_uframes_t bufmin, bufmax, buffer_size;
 
-	snd_pcm_hw_params_get_buffer_size_min(params, (snd_pcm_uframes_t *)&bufmin);
-	snd_pcm_hw_params_get_buffer_size_max(params, (snd_pcm_uframes_t *)&bufmax);
+	snd_pcm_hw_params_get_buffer_size_min(params, &bufmin);
+	snd_pcm_hw_params_get_buffer_size_max(params, &bufmax);
 
 	if(ratemin < 8000)
 	// Assume pulse
@@ -282,11 +282,11 @@ int AudioALSA::set_params(snd_pcm_t *dsp,
 		buffer_size = bufmax;
 
 	snd_pcm_hw_params_set_buffer_size_near (dsp, params, 
-		(snd_pcm_uframes_t *)&buffer_size);
+		&buffer_size);
 
 	dir = 0;
 	snd_pcm_hw_params_set_period_size(dsp, params,
-				(snd_pcm_uframes_t)buffer_size / 4, dir);
+				buffer_size / 4, dir);
 
 	if(snd_pcm_hw_params(dsp, params) < 0)
 	{
