@@ -42,6 +42,10 @@
 #include <stdint.h>
 #include <string.h>
 
+// Current codecs list in asset
+#define PARAM_CODEC_AUDIO "audio"
+#define PARAM_CODEC_VIDEO "video"
+
 extern Theme *theme_global;
 
 struct  avlib_formattable FileAVlibs::known_formats[] =
@@ -1590,6 +1594,7 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	if(window->codecopts)
 	{
 		Paramlist **alist, **plist;
+		Param *pa;
 
 		const char *pfx = options & SUPPORTS_VIDEO ?
 				FILEAVLIBS_VCODEC_CONFIG : FILEAVLIBS_ACODEC_CONFIG;
@@ -1598,12 +1603,16 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			pfx, window->codecopts->name, defaults);
 		if(options & SUPPORTS_VIDEO)
 		{
+			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(PARAM_CODEC_VIDEO, window->current_codec);
+			pa->set(window->codecopts->name);
 			strcpy(asset->vcodec, window->codecopts->name);
 			alist = &asset->encoder_parameters[FILEAVLIBS_VCODEC_IX];
 			plist = &asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX];
 		}
 		else if(options & SUPPORTS_AUDIO)
 		{
+			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(PARAM_CODEC_AUDIO, window->current_codec);
+			pa->set(window->codecopts->name);
 			strcpy(asset->acodec, window->codecopts->name);
 			alist = &asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
 			plist = &asset->encoder_parameters[FILEAVLIBS_APRIVT_IX];
@@ -1642,6 +1651,8 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			window->codec_private = 0;
 			delete defaults;
 		}
+		window->save_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX],
+			FILEAVLIBS_CODECS_CONFIG, window->fmtopts->name);
 	}
 
 	delete window;
@@ -1652,19 +1663,20 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	const char *name;
 	AVOutputFormat *oformat = 0;
 	AVCodec *encoder;
+	Param *apar;
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 		return;
 
 	asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = AVlibsConfig::load_options(FILEAVLIBS_GLOBAL_CONFIG);
 	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(FILEAVLIBS_FORMAT_CONFIG, name);
+	asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = AVlibsConfig::load_options(FILEAVLIBS_CODECS_CONFIG, name);
 	asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
 	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
 	asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
 	asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
 
-	if(!asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] ||
-		!asset->encoder_parameters[FILEAVLIBS_VCODEC_IX])
+	if(!asset->encoder_parameters[FILEAVLIBS_CODECS_IX])
 	{
 		FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
 		avcodec_register_all();
@@ -1673,12 +1685,23 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 
 		if(oformat = av_guess_format(name, 0, 0))
 		{
-			if(!asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] &&
-					(encoder = avcodec_find_encoder(oformat->audio_codec)))
+			Paramlist *codecs =
+				asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = new Paramlist("codecs");
+
+			if(oformat->audio_codec != AV_CODEC_ID_NONE &&
+				(encoder = avcodec_find_encoder(oformat->audio_codec)))
+			{
+				apar = codecs->append_param(PARAM_CODEC_AUDIO, oformat->audio_codec);
+				apar->set(encoder->name);
 				strncpy(asset->acodec, encoder->name, MAX_LEN_CODECNAME);
-			if(!asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] &&
-					(encoder = avcodec_find_encoder(oformat->video_codec)))
+			}
+			if(oformat->video_codec != AV_CODEC_ID_NONE &&
+				(encoder = avcodec_find_encoder(oformat->video_codec)))
+			{
+				apar = codecs->append_param(PARAM_CODEC_VIDEO, oformat->video_codec);
+				apar->set(encoder->name);
 				strncpy(asset->vcodec, encoder->name, MAX_LEN_CODECNAME);
+			}
 			asset->vcodec[MAX_LEN_CODECNAME - 1] = 0;
 			asset->acodec[MAX_LEN_CODECNAME - 1] = 0;
 		}
