@@ -37,6 +37,11 @@ public:
 	Param(const char *name);
 	~Param();
 
+	void set(const char *value);
+	void set(int value);
+	void set(int64_t value);
+	void set(double value);
+
 	void copy_from(Param *that);
 	void set_help(const char *txt);
 	void set_string(const char *txt);
@@ -78,6 +83,11 @@ public:
 	Param *append_param(const char *name, int64_t value);
 	Param *append_param(const char *name, double value);
 	Param *append_param(const char *name);
+
+	Param *set(const char *name, const char *value);
+	Param *set(const char *name, int value);
+	Param *set(const char *name, int64_t value);
+	Param *set(const char *name, double value);
 
 	Param *find(const char *name);
 	void save_list(FileXML *file);

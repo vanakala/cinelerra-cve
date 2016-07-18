@@ -148,6 +148,30 @@ void Param::set_string(const char *txt)
 	}
 }
 
+void Param::set(const char *value)
+{
+	type |= PARAMTYPE_STR;
+	set_string(value);
+}
+
+void Param::set(int value)
+{
+	type |= PARAMTYPE_INT;
+	intvalue = value;
+}
+
+void Param::set(int64_t value)
+{
+	type |= PARAMTYPE_LNG;
+	longvalue = value;
+}
+
+void Param::set(double value)
+{
+	type |= PARAMTYPE_DBL;
+	floatvalue = value;
+}
+
 Paramlist *Param::add_subparams(const char *name)
 {
 	if(subparams)
@@ -175,7 +199,7 @@ void Param::save_param(FileXML *file)
 
 	file->append_tag();
 
-	if((type & PARAMTYPE_MASK) == PARAMTYPE_STR && stringvalue)
+	if((type & PARAMTYPE_STR) && stringvalue)
 		file->append_text(stringvalue);
 
 	file->tag.set_title(string);
@@ -361,6 +385,50 @@ Param *Paramlist::find(const char *name)
 			return current;
 	}
 	return 0;
+}
+
+Param  *Paramlist::set(const char *name, const char *value)
+{
+	Param *pp;
+
+	if(pp = find(name))
+		pp->set(value);
+	else
+		pp = append_param(name, value);
+	return pp;
+}
+
+Param  *Paramlist::set(const char *name, int value)
+{
+	Param *pp;
+
+	if(pp = find(name))
+		pp->set(value);
+	else
+		pp = append_param(name, value);
+	return pp;
+}
+
+Param  *Paramlist::set(const char *name, int64_t value)
+{
+	Param *pp;
+
+	if(pp = find(name))
+		pp->set(value);
+	else
+		pp = append_param(name, value);
+	return pp;
+}
+
+Param  *Paramlist::set(const char *name, double value)
+{
+	Param *pp;
+
+	if(pp = find(name))
+		pp->set(value);
+	else
+		pp = append_param(name, value);
+	return pp;
 }
 
 void Paramlist::save_list(FileXML *file)
