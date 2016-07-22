@@ -197,7 +197,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 		bytes = fs.get_size(asset->path);
 	}
 	add_subwindow(new BC_Title(x, y, _("Bytes:")));
-	sprintf(string, "%lld", bytes);
+	sprintf(string, "%" PRId64, bytes);
 	Units::punctuate(string);
 
 	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
