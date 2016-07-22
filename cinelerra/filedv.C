@@ -41,6 +41,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -436,7 +437,7 @@ int FileDV::write_aframes(AFrame **frames)
 		stream_lock->lock("FileDV::write_samples 10");
 		if(fseeko(stream, (off_t) audio_frames_written * output_size, SEEK_SET) != 0)
 		{
-			errormsg("Unable to set audio write position to %lli", (off_t) audio_frames_written * output_size);
+			errormsg("Unable to set audio write position to %" PRId64, (off_t) audio_frames_written * output_size);
 
 			stream_lock->unlock();
 			return 1;
@@ -491,7 +492,7 @@ int FileDV::write_aframes(AFrame **frames)
 		stream_lock->lock("FileDV::write_samples 20");
 		if(fseeko(stream, (off_t) audio_frames_written * output_size, SEEK_SET) != 0)
 		{
-			errormsg("Unable to relocate for DV audio write to %lli\n", (off_t) audio_frames_written * output_size);
+			errormsg("Unable to relocate for DV audio write to %" PRId64, (off_t) audio_frames_written * output_size);
 			stream_lock->unlock();
 			return 1;
 		}
@@ -575,7 +576,7 @@ int FileDV::write_frames(VFrame ***frames, int len)
 		stream_lock->lock("FileDV::write_frames");
 		if(fseeko(stream, (off_t) video_position * output_size, SEEK_SET) != 0)
 		{
-			errormsg("FileDV:Unable to seek DV file to %lli", (off_t)(video_position * output_size));
+			errormsg("FileDV:Unable to seek DV file to %" PRId64, (off_t)(video_position * output_size));
 			result = 1;
 		}
 		if(fwrite(video_buffer, output_size, 1, stream) < 1)
