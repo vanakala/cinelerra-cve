@@ -26,6 +26,7 @@
 #include "mutex.h"
 
 #include <string.h>
+#include <inttypes.h>
 
 
 CacheItemBase::CacheItemBase()
@@ -49,7 +50,7 @@ size_t CacheItemBase::get_size()
 
 void CacheItemBase::dump(int indent)
 {
-	printf("%*spos %lld pts %.3f duration %.3f size %zd age %d\n", indent, "",
+	printf("%*spos %" PRId64 " pts %.3f duration %.3f size %zd age %d\n", indent, "",
 		position, postime, duration, get_size(), age);
 }
 
