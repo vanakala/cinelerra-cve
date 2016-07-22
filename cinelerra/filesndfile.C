@@ -300,7 +300,7 @@ int FileSndFile::read_aframe(AFrame *aframe)
 		if(rqpos != buf_end)
 		{
 			if(sf_seek(fd, rqpos, SEEK_SET) < 0)
-				errormsg("sf_seek() to sample %lld failed, reason: %s",
+				errormsg("sf_seek() to sample %" PRId64 " failed, reason: %s",
 					rqpos, sf_strerror(fd));
 			bufpos = rqpos;
 			buf_fill = 0;
