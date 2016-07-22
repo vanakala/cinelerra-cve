@@ -37,6 +37,7 @@
 #include "paramlist.h"
 
 #include <stdio.h>
+#include <inttypes.h>
 #include <string.h>
 
 
@@ -1163,7 +1164,7 @@ void Asset::dump(int indent)
 	indent++;
 	printf("%*spath: %s\n", indent, "", path);
 	printf("%*sindex_status %d\n", indent, "", index_status);
-	printf("%*sfile format %s, length %lld\n", indent, "",
+	printf("%*sfile format %s, length %" PRId64 "\n", indent, "",
 		ContainerSelection::container_to_text(format), file_length);
 	printf("%*saudio_data %d channels %d samplerate %d bits %d byte_order %d\n",
 		indent, "", audio_data, channels, sample_rate, bits, byte_order);
@@ -1175,7 +1176,7 @@ void Asset::dump(int indent)
 			printf(" %d", astream_channels[i]);
 	}
 	putchar('\n');
-	printf("%*s  signed %d header %d dither %d acodec %s length %lld\n", indent, "",
+	printf("%*s  signed %d header %d dither %d acodec %s length %" PRId64 "\n", indent, "",
 		signed_, header, dither, acodec, audio_length);
 
 	char string[BCTEXTLEN];
@@ -1186,7 +1187,7 @@ void Asset::dump(int indent)
 		indent, "", vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
 	printf("%*s  length %d subtitles %d (active %d) image %d\n", indent, "",
 		video_length, subtitles, active_subtitle, single_image);
-	printf("%*s  reel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
+	printf("%*s  reel_name %s reel_number %i tcstart %" PRId64 " tcend %" PRId64 " tcf %d\n",
 		indent, "", reel_name, reel_number, tcstart, tcend, tcformat);
 }
 
