@@ -21,6 +21,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -672,7 +673,7 @@ int64_t XMLTag::get_property(const char *property, int64_t default_)
 		result = default_;
 	else 
 	{
-		sscanf(temp_string, "%lld", &result);
+		sscanf(temp_string, "%" SCNd64, &result);
 	}
 	return result;
 }
@@ -710,14 +711,14 @@ void XMLTag::set_property(const char *text, int32_t value)
 
 void XMLTag::set_property(const char *text, int64_t value)
 {
-	sprintf(temp_string, "%lld", value);
+	sprintf(temp_string, "%" PRId64, value);
 	set_property(text, temp_string);
 }
 
 void XMLTag::set_property(const char *text, float value)
 {
 	if (value - (float)((int64_t)value) == 0)
-		sprintf(temp_string, "%lld", (int64_t)value);
+		sprintf(temp_string, "%" PRId64, (int64_t)value);
 	else
 		sprintf(temp_string, "%.6e", value);
 	set_property(text, temp_string);
@@ -726,7 +727,7 @@ void XMLTag::set_property(const char *text, float value)
 void XMLTag::set_property(const char *text, double value)
 {
 	if (value - (double)((int64_t)value) == 0)
-		sprintf(temp_string, "%lld", (int64_t)value);
+		sprintf(temp_string, "%" PRId64, (int64_t)value);
 	else
 		sprintf(temp_string, "%.16e", value);
 	set_property(text, temp_string);
