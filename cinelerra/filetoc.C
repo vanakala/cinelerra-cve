@@ -21,6 +21,7 @@
  */
 
 #include <libgen.h>
+#include <inttypes.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -409,10 +410,10 @@ void FileTOC::dump(int offsets)
 	{
 		printf("  Stream %d: type %d id %d layers %d\n", i,
 			toc_streams[i].type, toc_streams[i].id, toc_streams[i].layers);
-		printf("    rate num %d, denom %d, data1 %d data2 %d corr %lld\n",
+		printf("    rate num %d, denom %d, data1 %d data2 %d corr %" PRId64 "\n",
 			toc_streams[i].rate_num, toc_streams[i].rate_denom,
 			toc_streams[i].data1, toc_streams[i].data2, toc_streams[i].index_correction);
-		printf("    index %lld..%lld offset %lld..%lld, toc start %lld max_items %d items %p\n",
+		printf("    index %" PRId64 "..%" PRId64 " offset %" PRId64 "..%" PRId64 ", toc start %" PRId64 " max_items %d items %p\n",
 			toc_streams[i].min_index, toc_streams[i].max_index,
 			toc_streams[i].min_offset, toc_streams[i].max_offset,
 			toc_streams[i].toc_start, toc_streams[i].max_items,
@@ -420,7 +421,7 @@ void FileTOC::dump(int offsets)
 		if(offsets && toc_streams[i].items)
 		{
 			for(int j = 0; j < toc_streams[i].max_items; j++)
-				printf("      %5d. %6lld : %8lld\n", j,
+				printf("      %5d. %6" PRId64 " : %8" PRId64 "\n", j,
 					toc_streams[i].items[j].index,
 					toc_streams[i].items[j].offset);
 		}
