@@ -20,6 +20,7 @@
  */
 
 #include <fcntl.h>
+#include <inttypes.h>
 #include <string.h>
 #include <errno.h>
 
@@ -237,7 +238,7 @@ int YUVStream::seek_frame(framenum frame_number)
 
 	if (lseek(stream_fd, position, SEEK_SET) < 0)
 	{
-		errormsg("lseek(%lld) failed: %s\n", position, strerror(errno));
+		errormsg("lseek(%" PRId64 ") failed: %s\n", position, strerror(errno));
 		return 1;
 	}
 
