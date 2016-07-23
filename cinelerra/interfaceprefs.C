@@ -29,6 +29,8 @@
 #include "interfaceprefs.h"
 #include "theme.h"
 
+#include <inttypes.h>
+
 #define MOVE_ALL_EDITS_TITLE "Drag all following edits"
 #define MOVE_ONE_EDIT_TITLE "Drag only one edit"
 #define MOVE_NO_EDITS_TITLE "Drag source only"
@@ -148,7 +150,7 @@ void InterfacePrefs::show()
 		1));
 
 // Index file size
-	sprintf(string, "%lld", pwindow->thread->preferences->index_size);
+	sprintf(string, "%" PRId64, pwindow->thread->preferences->index_size);
 	add_subwindow(isize = new IndexSize(maxw, ybix[1], pwindow, string));
 
 // Number of index files to keep
