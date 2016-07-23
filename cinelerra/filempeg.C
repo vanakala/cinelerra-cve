@@ -42,6 +42,7 @@
 #include "vframe.h"
 #include "videodevice.inc"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -556,7 +557,7 @@ int FileMPEG::create_index()
 				int64_t eta = total_seconds - elapsed_seconds;
 				progress->update(bytes_processed, 1);
 				sprintf(string, 
-					"%sETA: %lldm%llds",
+					"%sETA: %" PRId64 "m%" PRId64 "s",
 					progress_title,
 					eta / 60,
 					eta % 60);
