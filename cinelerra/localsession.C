@@ -30,6 +30,8 @@
 #include "localsession.h"
 #include "zoompanel.h"
 
+#include <inttypes.h>
+
 static const char *xml_autogrouptypes_titlesmax[] = 
 {
 	"AUTOGROUPTYPE_AUDIO_FADE_MAX",
@@ -399,11 +401,11 @@ void LocalSession::dump(int indent)
 	indent += 2;
 	printf("%*sselections %.3f..%.3f, points in %.3f out %.3f\n", indent, "",
 		selectionstart, selectionend, in_point, out_point);
-	printf("%*strack start %lld view start %.3f preview %.3f..%.3f\n", indent, "",
+	printf("%*strack start %" PRId64 " view start %.3f preview %.3f..%.3f\n", indent, "",
 		track_start, view_start_pts, preview_start, preview_end);
 	printf("%*sloop_playback %d %.3f..%.3f\n", indent, "",
 		loop_playback, loop_start, loop_end);
-	printf("%*szoom_time %.3f zoom_y %lld zoom_track %lld showautotype %d\n",  indent, "",
+	printf("%*szoom_time %.3f zoom_y %" PRId64 " zoom_track %" PRId64 " showautotype %d\n",  indent, "",
 		zoom_time, zoom_y, zoom_track, zoombar_showautotype);
 	printf("%*seye dropper red %.3f green %.3f blue %.3f\n", indent, "",
 		red, green, blue);
