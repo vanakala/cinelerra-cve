@@ -1,6 +1,7 @@
 #include <byteswap.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -752,7 +753,7 @@ int mpeg3_read_ifo(mpeg3_t *file,
 			else
 			{
 				fprintf(stderr, 
-					"read_ifo: cell length and title length don't match! title=%d cell=%d cell_start=%llx cell_end=%llx.\n",
+					"read_ifo: cell length and title length don't match! title=%d cell=%d cell_start=%" PRIx64 " cell_end=%" PRIx64 ".\n",
 					current_title,
 					current_cell,
 					cell_start - title_start_byte,

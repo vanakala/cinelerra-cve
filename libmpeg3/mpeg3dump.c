@@ -1,5 +1,6 @@
 #include "libmpeg3.h"
 #include "mpeg3protos.h"
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
 				printf("total_sample_offsets=%d\n", file->atrack[i]->total_sample_offsets);
 				for(j = 0; j < file->atrack[i]->total_sample_offsets; j++)
 				{
-					printf("%08lld %#08llx\n", file->atrack[i]->sample_offsets[j].number, file->atrack[i]->sample_offsets[j].offset);
+					printf("%08" PRIx64 " %#08" PRIx64 "\n", file->atrack[i]->sample_offsets[j].number, file->atrack[i]->sample_offsets[j].offset);
 				}
 				printf("\n");
 			}
@@ -138,7 +139,7 @@ int main(int argc, char *argv[])
 				printf("total_frames = %d total_keyframes %d\n", file->vtrack[i]->total_frames, file->vtrack[i]->total_keyframes);
 				for(j = 0; j < file->vtrack[i]->total_keyframes; j++)
 				{
-					printf("%08lld %#08llx\n", file->vtrack[i]->keyframes[j].number, file->vtrack[i]->keyframes[j].offset);
+					printf("%08" PRIx64 " %#08" PRIx64 "\n", file->vtrack[i]->keyframes[j].number, file->vtrack[i]->keyframes[j].offset);
 				}
 			}
 		}
@@ -155,7 +156,7 @@ int main(int argc, char *argv[])
 			{
 				for(j = 0; j < strack->total_offsets; j++)
 				{
-					printf("%llx ", strack->offsets[j]);
+					printf("%" PRIx64 " ", strack->offsets[j]);
 					if(j > 0 && !(j % 8)) printf("\n");
 				}
 				printf("\n");
@@ -166,7 +167,7 @@ int main(int argc, char *argv[])
 		printf("total_titles=%d\n", file->demuxer->total_titles);
 		for(i = 0; i < file->demuxer->total_titles; i++)
 		{
-			printf("  Title path=%s total_bytes=%llx cell_table_size=%d\n", 
+			printf("  Title path=%s total_bytes=%" PRIx64 " cell_table_size=%d\n",
 				file->demuxer->titles[i]->fs->path,
 				file->demuxer->titles[i]->total_bytes, 
 				file->demuxer->titles[i]->cell_table_size);
@@ -174,7 +175,7 @@ int main(int argc, char *argv[])
 			if(print_offsets)
 			{
 				for(j = 0; j < file->demuxer->titles[i]->cell_table_size; j++)
-					printf("    Cell: %llx-%llx %llx-%llx program=%d\n", 
+					printf("    Cell: %" PRIx64 "-%" PRIx64 " %" PRIx64 "-%" PRIx64 " program=%d\n",
 						file->demuxer->titles[i]->cell_table[j].program_start, 
 						file->demuxer->titles[i]->cell_table[j].program_end,
 						file->demuxer->titles[i]->cell_table[j].title_start, 
