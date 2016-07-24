@@ -5,7 +5,7 @@
 noinst_LTLIBRARIES = libmpeg2enc.la
 
 AM_CPPFLAGS = -I$(top_srcdir)/quicktime -I$(top_srcdir)/libmpeg3
-AM_CFLAGS = $(LARGEFILE_CFLAGS)
+AM_CFLAGS = $(LARGEFILE_CFLAGS) -Wno-implicit-function-declaration
 
 libmpeg2enc_la_SOURCES = conform.c mpeg2enc.c putseq.c putpic.c puthdr.c putmpg.c \
 	 putvlc.c putbits.c predict.c readpic.c writepic.c transfrm.c \
