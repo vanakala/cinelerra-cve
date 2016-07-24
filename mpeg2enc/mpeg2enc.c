@@ -202,7 +202,7 @@ static uint8_t *bufalloc( size_t size )
 	{
 		error("malloc failed\n");
 	}
-	adjust = BUFFER_ALIGN-((int)buf)%BUFFER_ALIGN;
+	adjust = BUFFER_ALIGN-((intptr_t)buf)%BUFFER_ALIGN;
 	if( adjust == BUFFER_ALIGN )
 		adjust = 0;
 	return (uint8_t*)(buf+adjust);
