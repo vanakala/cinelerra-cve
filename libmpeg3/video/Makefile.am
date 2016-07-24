@@ -22,7 +22,7 @@ noinst_HEADERS = idct.h \
 	vlc.h
 
 libmpeg3_video_la_LDFLAGS=
-AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
+AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS) -Wno-implicit-function-declaration
 AM_CPPFLAGS = -I$(srcdir)/..
 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)

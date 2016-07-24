@@ -4,7 +4,7 @@ libmpeg3_audio_la_LDFLAGS =
 
 noinst_HEADERS = ac3.h huffman.h mpeg3audio.h tables.h
 
-AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
+AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS) -Wno-implicit-function-declaration
 AM_CXXFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
 AM_CPPFLAGS = -I$(srcdir)/..
 
