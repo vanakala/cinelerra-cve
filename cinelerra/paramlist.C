@@ -25,6 +25,7 @@
 #include "paramlist.h"
 #include "bcsignals.h"
 
+#include <inttypes.h>
 #include <math.h>
 #include <string.h>
 
@@ -269,7 +270,7 @@ void Param::dump(int indent)
 	printf("%*sParam %p dump:\n", indent, "", this);
 	indent += 2;
 	printf("%*sName: '%s' type %#x\n", indent, "", name, type);
-	printf("%*svalues int:%d long:%lld float:%.3f", indent, "",
+	printf("%*svalues int:%d long:%" PRId64 " float:%.3f", indent, "",
 		intvalue, longvalue, floatvalue);
 	if(stringvalue)
 		printf(" '%s'", stringvalue);
