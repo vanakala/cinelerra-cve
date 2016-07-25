@@ -489,7 +489,7 @@ void BC_IPot::decrease_value()
 
 const char*  BC_IPot::get_caption()
 {
-	sprintf(caption, "%lld", value);
+	sprintf(caption, "%" PRId64, value);
 	return caption;
 }
 

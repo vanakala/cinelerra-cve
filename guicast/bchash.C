@@ -19,6 +19,7 @@
  * 
  */
 
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include "bchash.h"
@@ -204,7 +205,7 @@ int64_t BC_Hash::get(const char *name, int64_t default_value)
 	{
 		if(!strcmp(names[i], name))
 		{
-			sscanf(values[i], "%lld", &result);
+			sscanf(values[i], "%" SCNd64, &result);
 			return result;
 		}
 	}
@@ -272,7 +273,7 @@ int32_t BC_Hash::update(const char *name, int32_t value) // update a value if it
 int BC_Hash::update(const char *name, int64_t value) // update a value if it exists
 {
 	char string[1024];
-	sprintf(string, "%lld", value);
+	sprintf(string, "%" PRId64, value);
 	return update(name, string);
 }
 

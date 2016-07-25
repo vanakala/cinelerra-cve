@@ -19,6 +19,7 @@
  * 
  */
 
+#include <inttypes.h>
 #include <png.h>
 #include <stdio.h>
 #include <string.h>
@@ -1101,7 +1102,7 @@ void VFrame::dump(int minmax)
 		for(int i = 0; i < anum; i++)
 			printf("    l:%d avg %d min %d max %d\n", i, aavg[i], amin[i], amax[i]);
 		for(int i = 0; i < lnum; i++)
-			printf("    l:%d avg %lld min %lld max %lld\n", i, lavg[i], lmin[i], lmax[i]);
+			printf("    l:%d avg %" PRId64 " min %" PRId64 " max %" PRId64 "\n", i, lavg[i], lmin[i], lmax[i]);
 		for(int i = 0; i < fnum; i++)
 			printf("    l:%d avg %.3f min %.3f max %.3f\n", i, favg[i], fmin[i], fmax[i]);
 	}

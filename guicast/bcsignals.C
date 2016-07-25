@@ -420,7 +420,7 @@ void BC_Signals::dump_traces()
 void BC_Signals::dump_locks()
 {
 // Dump lock table
-	printf("signal_entry: lock table size=%d\n", lastlockt - &locktable[0]);
+	printf("signal_entry: lock table size=%d\n", (int)(lastlockt - &locktable[0]));
 	for(bc_locktrace_t *table = &locktable[0]; table < lastlockt; table++)
 	{
 		printf(" %c%c %6d %#lx %p %s - %s\n",

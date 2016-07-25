@@ -22,7 +22,7 @@
 #include "bcwindowbase.inc"
 #include "units.h"
 
-
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -204,28 +204,28 @@ char* Units::totext(char *text,
 					60 + 
 					second) + 
 				0.0000001);   
-			sprintf(text, "%01d:%02d:%02d:%02lld", hour, minute, second, frame);
+			sprintf(text, "%01d:%02d:%02d:%02" PRId64, hour, minute, second, frame);
 			return text;
 		}
 
 		case TIME_SAMPLES:
-			sprintf(text, "%09lld", to_int64(seconds * sample_rate));
+			sprintf(text, "%09" PRId64, to_int64(seconds * sample_rate));
 			break;
 
 		case TIME_SAMPLES_HEX:
-			sprintf(text, "%08llx", to_int64(seconds * sample_rate));
+			sprintf(text, "%08" PRIx64, to_int64(seconds * sample_rate));
 			break;
 
 		case TIME_FRAMES:
 			frame = to_int64(seconds * frame_rate);
-			sprintf(text, "%06lld", frame);
+			sprintf(text, "%06" PRId64, frame);
 			return text;
 			break;
 
 		case TIME_FEET_FRAMES:
 			frame = to_int64(seconds * frame_rate);
 			feet = (int64_t)(frame / frames_per_foot);
-			sprintf(text, "%05lld-%02lld", 
+			sprintf(text, "%05" PRId64 "-%02" PRId64,
 				feet, 
 				(int64_t)(frame - feet * frames_per_foot));
 			return text;
@@ -334,7 +334,7 @@ int64_t Units::fromtext(const char *text,
 			break;
 
 		case TIME_SAMPLES_HEX:
-			sscanf(text, "%llx", &total_samples);
+			sscanf(text, "%" PRId64, &total_samples);
 			return total_samples;
 
 		case TIME_FRAMES:

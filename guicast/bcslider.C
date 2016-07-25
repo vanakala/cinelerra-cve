@@ -27,6 +27,7 @@
 #include "keys.h"
 #include "units.h"
 #include "vframe.h"
+#include <inttypes.h>
 #include <wctype.h>
 
 #include <string.h>
@@ -442,7 +443,7 @@ int64_t BC_ISlider::get_length()
 
 char* BC_ISlider::get_caption()
 {
-	sprintf(caption, "%lld", value);
+	sprintf(caption, "%" PRId64, value);
 	return caption;
 }
 
