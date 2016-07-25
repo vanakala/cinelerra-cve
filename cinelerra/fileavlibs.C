@@ -38,6 +38,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
@@ -640,7 +641,7 @@ void FileAVlibs::list2dictionary(AVDictionary **dict, Paramlist *params)
 			sprintf(buff, "%d", current->intvalue);
 			break;
 		case PARAMTYPE_LNG:
-			sprintf(buff, "%lld", current->longvalue);
+			sprintf(buff, "%" PRId64, current->longvalue);
 			break;
 		case PARAMTYPE_DBL:
 			sprintf(buff, "%g", current->floatvalue);
@@ -1949,7 +1950,7 @@ void FileAVlibs::dump_AVCodec(const AVCodec *codec, int indent)
 	{
 		printf("%*sChannel layouts:\n", indent, "");
 		for(int i = 0; codec->channel_layouts[i]; i++)
-			printf("%*s%#llx\n", indent + 2, "", 
+			printf("%*s%#" PRIx64 "\n", indent + 2, "",
 				codec->channel_layouts[i]);
 	}
 	printf("%*smax_lowres %d priv_class %p profiles %p\n", indent, "",
@@ -1994,11 +1995,11 @@ void FileAVlibs::dump_AVOption(const AVOption *opt, const AVClass *avclass, int 
 	{
 	case AV_OPT_TYPE_CONST:
 	case AV_OPT_TYPE_FLAGS:
-		printf("%*sdefault %#llx\n", indent, "", opt->default_val.i64);
+		printf("%*sdefault %#" PRIx64 "\n", indent, "", opt->default_val.i64);
 		break;
 	case AV_OPT_TYPE_INT:
 	case AV_OPT_TYPE_INT64:
-		printf("%*sdefault %lld\n", indent, "", opt->default_val.i64);
+		printf("%*sdefault %" PRId64 "\n", indent, "", opt->default_val.i64);
 		break;
 	case AV_OPT_TYPE_DOUBLE:
 	case AV_OPT_TYPE_FLOAT:
@@ -2131,11 +2132,11 @@ void FileAVlibs::dump_AVFormatContext(AVFormatContext *ctx, int indent)
 	printf("%*smetadata %p start_time_realtime %s fps_probe_size %d error_recognition %d\n", indent, "",
 		ctx->metadata, dump_ts(ctx->start_time_realtime, bf1),
 		ctx->fps_probe_size, ctx->error_recognition);
-	printf("%*sdebug %d max_interleave_delta %lld strict_std_compliance %d\n", indent, "",
+	printf("%*sdebug %d max_interleave_delta %" PRId64 " strict_std_compliance %d\n", indent, "",
 		ctx->debug, ctx->max_interleave_delta, ctx->strict_std_compliance);
 	printf("%*smax_ts_probe %d avoid_negative_ts %d audio_preload %d max_chunk_duration %d\n", indent, "",
 		ctx->max_ts_probe, ctx->avoid_negative_ts, ctx->audio_preload, ctx->max_chunk_duration);
-	printf("%*sduration_estimation_method %d skip_initial_bytes %lld correct_ts_overflow %u\n", indent, "",
+	printf("%*sduration_estimation_method %d skip_initial_bytes %" PRId64 " correct_ts_overflow %u\n", indent, "",
 		ctx->duration_estimation_method, ctx->skip_initial_bytes, ctx->correct_ts_overflow);
 	printf("%*sseek2any %d flush_packets %d probe_score %d format_probesize %d\n", indent, "",
 		ctx->seek2any, ctx->flush_packets, ctx->probe_score, ctx->format_probesize);
@@ -2155,7 +2156,7 @@ const char *FileAVlibs::dump_ts(int64_t ts, char *obuf)
 	if(!obuf)
 		obuf = lbuf;
 
-	sprintf(obuf, "%lld", ts);
+	sprintf(obuf, "%" PRId64, ts);
 	return obuf;
 }
 
@@ -2222,7 +2223,7 @@ void FileAVlibs::dump_AVStream(AVStream *stm, int indent)
 	indent += 2;
 	printf("%*sindex %d id %d codec %p priv_data %p\n", indent, "",
 		stm->index, stm->id, stm->codec, stm->priv_data);
-	printf("%*stime_base %s start_time %s duration %s frames %lld\n", indent, "",
+	printf("%*stime_base %s start_time %s duration %s frames %" PRId64 "\n", indent, "",
 		dump_AVRational(&stm->time_base), dump_ts(stm->start_time, bf1),
 		dump_ts(stm->duration, bf2), stm->nb_frames);
 	printf("%*sdisposition %#x discard %d, sample_aspect_ratio %s\n", indent, "",
@@ -2248,10 +2249,10 @@ void FileAVlibs::dump_AVStream(AVStream *stm, int indent)
 	printf("%*sinterleaver_chunk_size %s interleaver_chunk_duration %s request_probe %d\n", indent, "",
 		dump_ts(stm->interleaver_chunk_size, bf1),
 		dump_ts(stm->interleaver_chunk_duration, bf2), stm->request_probe);
-	printf("%*sskip_to_keyframe %d skip_samples %d start_skip_samples %lld first_discard_sample %lld\n", indent, "",
+	printf("%*sskip_to_keyframe %d skip_samples %d start_skip_samples %" PRId64 " first_discard_sample %" PRId64 "\n", indent, "",
 		stm->skip_to_keyframe, stm->skip_samples, stm->start_skip_samples,
 		stm->first_discard_sample);
-	printf("%*slast_discard_sample %lld nb_decoded_frames %d mux_ts_offset %lld\n", indent, "",
+	printf("%*slast_discard_sample %" PRId64 " nb_decoded_frames %d mux_ts_offset %" PRId64 "\n", indent, "",
 		stm->last_discard_sample, stm->nb_decoded_frames, stm->mux_ts_offset);
 	printf("%*spts_wrap_reference %s pts_wrap_behavior %d update_initial_durations_done %d\n", indent, "",
 		dump_ts(stm->pts_wrap_reference), stm->pts_wrap_behavior,
@@ -2331,7 +2332,7 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 		ctx->field_order, ctx->sample_rate, ctx->channels, ctx->sample_fmt);
 	printf("%*sframe_size %d frame_number %d block_align %d cutoff %d\n", indent, "",
 		ctx->frame_size, ctx->frame_number, ctx->block_align, ctx->cutoff);
-	printf("%*schannel_layout %#llx request_channel_layout %#llx audio_service_type %d\n", indent, "",
+	printf("%*schannel_layout %#" PRIx64 " request_channel_layout %#" PRIx64 " audio_service_type %d\n", indent, "",
 		ctx->channel_layout, ctx->request_channel_layout, ctx->audio_service_type);
 	printf("%*srequest_sample_fmt %d get_buffer2 %p refcounted_frames %d\n", indent, "",
 		ctx->request_sample_fmt, ctx->get_buffer2, ctx->refcounted_frames);
@@ -2349,7 +2350,7 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 		ctx->frame_skip_factor, ctx->frame_skip_exp, ctx->frame_skip_cmp);
 	printf("%*strellis %d min_prediction_order %d max_prediction_order %d\n", indent, "",
 		ctx->trellis, ctx->min_prediction_order, ctx->max_prediction_order);
-	printf("%*stimecode_frame_start %lld rtp_callback %p rtp_payload_size %d\n", indent, "",
+	printf("%*stimecode_frame_start %" PRId64 " rtp_callback %p rtp_payload_size %d\n", indent, "",
 		ctx->timecode_frame_start, ctx->rtp_callback, ctx->rtp_payload_size);
 	printf("%*smv_bits %d header_bits %d i_tex_bits %d p_tex_bits %d\n", indent, "",
 		ctx->mv_bits, ctx->header_bits, ctx->i_tex_bits, ctx->p_tex_bits);
@@ -2371,13 +2372,13 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 		ctx->execute, ctx->execute2, ctx->nsse_weight, ctx->profile, ctx->level);
 	printf("%*sskip_loop_filter %d skip_idct %d skip_frame %d\n", indent, "",
 		ctx->skip_loop_filter, ctx->skip_idct, ctx->skip_frame);
-	printf("%*ssubtitle_header %p subtitle_header_size %d vbv_delay %lld\n", indent, "",
+	printf("%*ssubtitle_header %p subtitle_header_size %d vbv_delay %" PRId64 "\n", indent, "",
 		ctx->subtitle_header, ctx->subtitle_header_size, ctx->vbv_delay);
 	printf("%*sside_data_only_packets %d initial_padding %d framerate %s\n", indent, "",
 		ctx->side_data_only_packets, ctx->initial_padding, dump_AVRational(&ctx->framerate));
 	printf("%*ssw_pix_fmt %d pkt_timebase %s codec_descriptor %p\n", indent, "",
 		ctx->sw_pix_fmt, dump_AVRational(&ctx->pkt_timebase), ctx->codec_descriptor);
-	printf("%*spts_correction_num_faulty_pts %lld pts_correction_num_faulty_dts %lld\n", indent, "",
+	printf("%*spts_correction_num_faulty_pts %" PRId64 " pts_correction_num_faulty_dts %" PRId64 "\n", indent, "",
 		ctx->pts_correction_num_faulty_pts, ctx->pts_correction_num_faulty_dts);
 	printf("%*spts_correction_last_pts %s pts_correction_last_dts %s\n", indent, "",
 		dump_ts(ctx->pts_correction_last_pts, bf1),
@@ -2425,7 +2426,7 @@ void FileAVlibs::dump_AVFrame(AVFrame *avf, int indent)
 		avf->top_field_first);
 	printf("%*spalette_has_changed %d reordered_opaque %s sample_rate %d\n", indent, "",
 		avf->palette_has_changed, dump_ts(avf->reordered_opaque), avf->sample_rate);
-	printf("%*schannel_layout %#llx extended_buf %p nb_extended_buf %d\n", indent, "",
+	printf("%*schannel_layout %#" PRIx64 " extended_buf %p nb_extended_buf %d\n", indent, "",
 		avf->channel_layout, avf->extended_buf, avf->nb_extended_buf);
 	printf("%*sside_data %p nb_side_data %d flags %d color_range %d color_primaries %d\n", indent, "",
 		avf->side_data, avf->nb_side_data, avf->flags, avf->color_range, avf->color_primaries);
@@ -2447,7 +2448,7 @@ void FileAVlibs::dump_AVPacket(AVPacket *pkt, int indent)
 	printf("%*sbuf %p pts %s dts %s data %p size %d stream_index %d flags %#x\n", indent, "",
 		pkt->buf, dump_ts(pkt->pts, bf1), dump_ts(pkt->dts, bf2),
 		pkt->data, pkt->size, pkt->stream_index, pkt->flags);
-	printf("%*sside_data %p side_data_elems %d duration %s pos %lld\n", indent, "",
+	printf("%*sside_data %p side_data_elems %d duration %s pos %" PRId64 "\n", indent, "",
 		pkt->side_data, pkt->side_data_elems, dump_ts(pkt->duration), pkt->pos);
 	printf("%*sconvergence_duration %s\n", indent, "",
 		dump_ts(pkt->convergence_duration));
