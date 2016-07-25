@@ -2,6 +2,7 @@
 #include "funcprotos.h"
 #include "quicktime.h"
 #include <string.h>
+#include <inttypes.h>
 #include "wma.h"
 
 #if LIBAVCODEC_VERSION_MAJOR <= 54
@@ -167,7 +168,7 @@ static int decode(quicktime_t *file,
 		int max_samples = 32768;
 		int max_bytes = max_samples * sample_size;
 		int bytes_decoded = 0;
-printf("decode 2 %x %llx %llx\n", chunk_size, chunk_offset, chunk_offset + chunk_size);
+printf("decode 2 %x %" PRIx64 " %" PRIx64 "\n", chunk_size, chunk_offset, chunk_offset + chunk_size);
 
 // Allocate packet buffer
 		if(codec->packet_allocated < chunk_size && 

@@ -3,6 +3,7 @@
 #include "interlacemodes.h"
 #include "quicktime.h"
 #include <string.h>
+#include <inttypes.h>
 #include <sys/stat.h>
 #include "workarounds.h"
 
@@ -487,7 +488,7 @@ int quicktime_set_video_position(quicktime_t *file, int64_t frame, int track)
 	if(track >= file->total_vtracks)
 	{
 		fprintf(stderr, 
-			"quicktime_set_video_position: frame=%lld track=%d >= file->total_vtracks %d\n", 
+			"quicktime_set_video_position: frame=%" PRId64 " track=%d >= file->total_vtracks %d\n",
 			frame,
 			track,
 			file->total_vtracks);
@@ -1186,8 +1187,8 @@ int quicktime_dump(quicktime_t *file)
 {
 	printf("quicktime_dump\n");
 	printf("movie data\n");
-	printf(" size %lld\n", file->mdat.atom.size);
-	printf(" start %lld\n", file->mdat.atom.start);
+	printf(" size %" PRId64 "\n", file->mdat.atom.size);
+	printf(" start %" PRId64 "\n", file->mdat.atom.start);
 	quicktime_moov_dump(&(file->moov));
 	return 0;
 }

@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include "funcprotos.h"
 #include "quicktime.h"
 
@@ -38,7 +39,7 @@ void quicktime_stco_dump(quicktime_stco_t *stco)
 	printf("      total_entries %ld\n", stco->total_entries);
 	for(i = 0; i < stco->total_entries; i++)
 	{
-		printf("       offset %d %llx\n", i, stco->table[i].offset);
+		printf("       offset %d %" PRIx64 "\n", i, stco->table[i].offset);
 	}
 }
 

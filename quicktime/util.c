@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <inttypes.h>
 #include <linux/cdrom.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -147,7 +148,7 @@ int quicktime_read_data(quicktime_t *file, char *data, int64_t size)
 		if(selection_end - selection_start > file->preload_size)
 		{
 /* Size is larger than preload size.  Should never happen. */
-printf("read data Size is larger than preload size. size=%llx preload_size=%llx\n",
+printf("read data Size is larger than preload size. size=%" PRIx64 " preload_size=%" PRIx64 "\n",
 	selection_end - selection_start, file->preload_size);
 			quicktime_fseek(file, file->file_position);
 			result = fread(data, size, 1, file->stream);

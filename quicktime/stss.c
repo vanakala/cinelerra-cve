@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include "funcprotos.h"
 #include "quicktime.h"
 
@@ -29,7 +30,7 @@ void quicktime_stss_dump(quicktime_stss_t *stss)
 	printf("      total_entries %ld\n", stss->total_entries);
 	for(i = 0; i < stss->total_entries; i++)
 	{
-		printf("       sample %llx\n", stss->table[i].sample);
+		printf("       sample %" PRIx64 "\n", stss->table[i].sample);
 	}
 }
 
