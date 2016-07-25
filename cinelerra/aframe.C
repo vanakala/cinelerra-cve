@@ -19,6 +19,7 @@
  * 
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include "aframe.h"
@@ -293,7 +294,7 @@ void AFrame::dump(int dumpdata)
 	double avg, min, max;
 
 	printf("AFrame::dump: %p\n", this);
-	printf("    pts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] chnl %d rate %d sample %lld\n",
+	printf("    pts %.3f[%.3f=%d] src:pts %.3f[%.3f=%d] chnl %d rate %d sample %" PRId64 "\n",
 		pts, duration, length, source_pts, source_duration, source_length, channel, samplerate, position);
 	printf("    buffer %p float_buffer %p buffer_length %d shared %d float_data %d\n",
 		buffer, float_buffer, buffer_length, shared, float_data);
