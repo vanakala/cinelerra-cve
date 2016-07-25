@@ -10,7 +10,7 @@ AM_CFLAGS = \
 	$(MJPEG_CFLAGS) \
 	$(LIBDV_CFLAGS) \
 	-DENCORE_INCLUDE=\"encore50/encore.h\" \
-	@FFMPEG_CFLAGS@
+	@FFMPEG_CFLAGS@ -Wno-implicit-function-declaration
 
 libquicktimecve_la_LDFLAGS = -version-info 2:0:0 -release 1.6.3 -Wl,--no-undefined 
 
