@@ -307,7 +307,8 @@ AVlibsCodecConfigButton::AVlibsCodecConfigButton(int x, int y,
 int AVlibsCodecConfigButton::handle_event()
 {
 	config->handle_event();
-	config->open_paramwin(*listp);
+	if(*listp)
+		config->open_paramwin(*listp);
 	return 1;
 }
 
