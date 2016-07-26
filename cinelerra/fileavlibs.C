@@ -1672,41 +1672,60 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = AVlibsConfig::load_options(FILEAVLIBS_GLOBAL_CONFIG);
 	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(FILEAVLIBS_FORMAT_CONFIG, name);
 	asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = AVlibsConfig::load_options(FILEAVLIBS_CODECS_CONFIG, name);
+
+	FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
+	avcodec_register_all();
+	av_register_all();
+	FileAVlibs::avlibs_lock->unlock();
+
+	if(oformat = av_guess_format(name, 0, 0))
+	{
+		Paramlist *codecs = asset->encoder_parameters[FILEAVLIBS_CODECS_IX];
+
+		if(!codecs)
+		{
+			asset->encoder_parameters[FILEAVLIBS_CODECS_IX] =
+				codecs = new Paramlist("codecs");
+		}
+		apar = 0;
+		asset->acodec[0] = 0;
+
+		if(oformat->audio_codec == AV_CODEC_ID_NONE)
+			codecs->remove_param(PARAM_CODEC_AUDIO);
+		else if(!(apar = codecs->find(PARAM_CODEC_AUDIO)) ||
+				!(encoder = avcodec_find_encoder((AVCodecID)apar->intvalue)))
+		{
+			if(encoder = avcodec_find_encoder(oformat->audio_codec))
+			{
+				apar = codecs->set(PARAM_CODEC_AUDIO, oformat->audio_codec);
+				apar->set(encoder->name);
+			}
+		}
+		if(apar)
+			strncpy(asset->acodec, encoder->name, MAX_LEN_CODECNAME);
+
+		apar = 0;
+		asset->vcodec[0] = 0;
+		if(oformat->video_codec == AV_CODEC_ID_NONE)
+			codecs->remove_param(PARAM_CODEC_VIDEO);
+		else if(!(apar = codecs->find(PARAM_CODEC_VIDEO)) ||
+				!(encoder = avcodec_find_encoder((AVCodecID)apar->intvalue)))
+		{
+			if(encoder = avcodec_find_encoder(oformat->video_codec))
+			{
+				apar = codecs->set(PARAM_CODEC_VIDEO, oformat->video_codec);
+				apar->set(encoder->name);
+			}
+		}
+		if(apar)
+			strncpy(asset->vcodec, encoder->name, MAX_LEN_CODECNAME);
+		asset->vcodec[MAX_LEN_CODECNAME - 1] = 0;
+		asset->acodec[MAX_LEN_CODECNAME - 1] = 0;
+	}
 	asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
 	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
 	asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
 	asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
-
-	if(!asset->encoder_parameters[FILEAVLIBS_CODECS_IX])
-	{
-		FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
-		avcodec_register_all();
-		av_register_all();
-		FileAVlibs::avlibs_lock->unlock();
-
-		if(oformat = av_guess_format(name, 0, 0))
-		{
-			Paramlist *codecs =
-				asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = new Paramlist("codecs");
-
-			if(oformat->audio_codec != AV_CODEC_ID_NONE &&
-				(encoder = avcodec_find_encoder(oformat->audio_codec)))
-			{
-				apar = codecs->append_param(PARAM_CODEC_AUDIO, oformat->audio_codec);
-				apar->set(encoder->name);
-				strncpy(asset->acodec, encoder->name, MAX_LEN_CODECNAME);
-			}
-			if(oformat->video_codec != AV_CODEC_ID_NONE &&
-				(encoder = avcodec_find_encoder(oformat->video_codec)))
-			{
-				apar = codecs->append_param(PARAM_CODEC_VIDEO, oformat->video_codec);
-				apar->set(encoder->name);
-				strncpy(asset->vcodec, encoder->name, MAX_LEN_CODECNAME);
-			}
-			asset->vcodec[MAX_LEN_CODECNAME - 1] = 0;
-			asset->acodec[MAX_LEN_CODECNAME - 1] = 0;
-		}
-	}
 }
 
 Paramlist *FileAVlibs::scan_global_options(int options)
