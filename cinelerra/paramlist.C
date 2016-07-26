@@ -495,6 +495,14 @@ void Paramlist::remove_equiv(Paramlist *that)
 	}
 }
 
+void Paramlist::remove_param(const char *name)
+{
+	Param *p;
+
+	if(p = find(name))
+		remove(p);
+}
+
 void Paramlist::dump(int indent)
 {
 	Param *current;
