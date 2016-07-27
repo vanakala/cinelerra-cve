@@ -127,7 +127,7 @@ void PlaybackPrefs::show()
 	win = add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
 
 	win = add_subwindow(new BC_Title(x + win->get_w() + 100, y + 2, _("Framerate achieved:")));
-	add_subwindow(framerate_title = new BC_Title(win->get_x() + win->get_w() + 10, y + 2, _("--"), MEDIUMFONT, RED));
+	add_subwindow(framerate_title = new BC_Title(win->get_x() + win->get_w() + 10, y + 2, "--", MEDIUMFONT, RED));
 	draw_framerate();
 	y += window->get_h() + 5;
 
