@@ -188,13 +188,13 @@ void PlaybackPrefs::show()
 	x += win->get_w();
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[3]);
 	win = add_subwindow(new TimecodeOffset(x, y, pwindow, this, string, 3));
-	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, _(":"), MEDIUMFONT));
+	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, ":", MEDIUMFONT));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[2]);
 	win = add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 2));
-	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, _(":"), MEDIUMFONT));
+	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, ":", MEDIUMFONT));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[1]);
 	win = add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 1));
-	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, _(":"), MEDIUMFONT));
+	win = add_subwindow(new BC_Title(win->get_x() + win->get_w(), y, ":", MEDIUMFONT));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[0]);
 	add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 0));
 	x = x2;
