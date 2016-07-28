@@ -297,6 +297,7 @@ int FileAVlibs::open_file(int rd, int wr)
 	{
 		AVOutputFormat *fmt;
 		int rv;
+		Param *aparam;
 
 		switch(asset->format)
 		{
@@ -323,26 +324,28 @@ int FileAVlibs::open_file(int rd, int wr)
 			AVCodecContext *video_ctx;
 			AVStream *stream;
 			AVDictionary *dict = create_dictionary(SUPPORTS_VIDEO);
-// default video codec
-			if(fmt->video_codec != AV_CODEC_ID_NONE)
+
+			if(asset->encoder_parameters[FILEAVLIBS_CODECS_IX] &&
+				(aparam = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(PARAM_CODEC_VIDEO)))
 			{
-				if(!(codec = avcodec_find_encoder(fmt->video_codec)))
+				if(!(codec = avcodec_find_encoder((AVCodecID)aparam->intvalue)))
 				{
-					errormsg("FileAVlibs::open_file:Could not find video codec");
+					errormsg("FileAVlibs::open_file: Could not find video codec '%s'",
+						aparam->stringvalue);
 					avlibs_lock->unlock();
 					return 1;
 				}
 
 				if(!(stream = avformat_new_stream(context, codec)))
 				{
-					errormsg("FileAVlibs::open_file:Could not allocate stream");
+					errormsg("FileAVlibs::open_file: Could not allocate video stream");
 					avlibs_lock->unlock();
 					return 1;
 				}
 			}
 			else
 			{
-				errormsg("FileAVlibs::open_file:missing default video codec");
+				errormsg("FileAVlibs::open_file:missing video codec");
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -389,12 +392,14 @@ int FileAVlibs::open_file(int rd, int wr)
 			AVCodecContext *audio_ctx;
 			AVStream *stream;
 			AVDictionary *dict = create_dictionary(SUPPORTS_AUDIO);
-// default audio codec
-			if(fmt->audio_codec != AV_CODEC_ID_NONE)
+
+			if(asset->encoder_parameters[FILEAVLIBS_CODECS_IX] &&
+				(aparam = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(PARAM_CODEC_AUDIO)))
 			{
-				if(!(codec = avcodec_find_encoder(fmt->audio_codec)))
+				if(!(codec = avcodec_find_encoder((AVCodecID)aparam->intvalue)))
 				{
-					errormsg("FileAVlibs::open_file:Could not find audio codec");
+					errormsg("FileAVlibs::open_file: Could not find audio codec '%s'",
+						aparam->stringvalue);
 					avlibs_lock->unlock();
 					return 1;
 				}
@@ -408,7 +413,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			}
 			else
 			{
-				errormsg("FileAVlibs::open_file:missing default audio codec");
+				errormsg("FileAVlibs::open_file:missing audio codec");
 				avlibs_lock->unlock();
 				return 1;
 			}
