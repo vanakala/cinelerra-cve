@@ -142,6 +142,7 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	PlaybackConfig *config = command->get_edl()->session->playback_config;
 	aconfig = new AudioOutConfig(0);
 	vconfig = new VideoOutConfig;
+	vconfig->copy_from(config->vconfig);
 
 	return result;
 }
