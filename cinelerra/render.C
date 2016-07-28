@@ -543,10 +543,6 @@ int Render::render(int test_overwrite,
 	}
 	packages = new PackageDispatcher;
 
-// Configure preview monitor
-	VideoOutConfig vconfig;
-	PlaybackConfig *playback_config = new PlaybackConfig;
-
 // Create caches
 	audio_cache = new CICache(preferences, plugindb);
 	video_cache = new CICache(preferences, plugindb);
@@ -719,7 +715,6 @@ int Render::render(int test_overwrite,
 		mwindow->restart_brender();
 	if(farm_server) delete farm_server;
 	delete command;
-	delete playback_config;
 	delete audio_cache;
 	delete video_cache;
 // Must delete packages after server
