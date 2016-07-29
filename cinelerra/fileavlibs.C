@@ -517,7 +517,6 @@ void FileAVlibs::close_file()
 {
 	avlibs_lock->lock("FileAVlibs:close_file");
 
-	if(avvframe) av_frame_free(&avvframe);
 
 	if(context)
 	{
@@ -576,7 +575,7 @@ void FileAVlibs::close_file()
 				{
 					if(avcodec_encode_audio2(audio_ctx, &pkt, 0, &got_output))
 					{
-						errormsg(_("FileAVlibs::close_file: failed to encode last packet"));
+						errormsg(_("FileAVlibs::close_file: failed to encode last audio packet"));
 						break;
 					}
 					if(got_output)
@@ -584,7 +583,35 @@ void FileAVlibs::close_file()
 						pkt.stream_index = audio_index;
 						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 						{
-							liberror(rv, _("FileAVlibs::close_file: Failed to write last packet"));
+							liberror(rv, _("FileAVlibs::close_file: Failed to write last audio packet"));
+							break;
+						}
+					}
+				}
+			}
+			if(avvframe && headers_written)
+			{
+				AVPacket pkt;
+				int got_output, rv;
+				AVCodecContext *video_ctx = context->streams[video_index]->codec;
+
+				av_init_packet(&pkt);
+				pkt.data = 0;
+				pkt.size = 0;
+
+				for(got_output = 1; got_output;)
+				{
+					if(avcodec_encode_video2(video_ctx, &pkt, 0, &got_output))
+					{
+						errormsg(_("FileAVlibs::close_file: failed to encode last audio packet"));
+						break;
+					}
+					if(got_output)
+					{
+						pkt.stream_index = video_index;
+						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+						{
+							liberror(rv, _("FileAVlibs::close_file: Failed to write last video packet"));
 							break;
 						}
 					}
@@ -602,6 +629,8 @@ void FileAVlibs::close_file()
 			context = 0;
 		}
 	}
+	if(avvframe)
+		av_frame_free(&avvframe);
 	if(avaframe)
 		av_frame_free(&avaframe);
 	if(swr_ctx)
