@@ -98,7 +98,7 @@ private:
 	static Paramlist *scan_encoder_opts(AVCodecID codec, int options);
 	static Paramlist *scan_encoder_private_opts(AVCodecID codec, int options);
 	static Param *opt2param(Paramlist *list, const AVOption *opt);
-	static int skip_avoption(const AVOption *opt);
+	static int skip_avoption(const AVOption *opt, int typefl);
 	static void dump_AVFormatContext(AVFormatContext *ctx, int indent = 0);
 	static void dump_AVStream(AVStream *stm, int indent = 0);
 	static void dump_AVCodecContext(AVCodecContext *ctx, int indent = 0);

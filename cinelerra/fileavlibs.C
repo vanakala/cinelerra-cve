@@ -1804,24 +1804,20 @@ Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const c
 
 	while(opt = av_opt_next(&avclass, opt))
 	{
-		if(opt->type == AV_OPT_TYPE_CONST || skip_avoption(opt))
+		if(opt->type == AV_OPT_TYPE_CONST || skip_avoption(opt, typefl))
 			continue;
-		if((opt->flags & typefl) == typefl)
+		param = opt2param(list, opt);
+		if(opt->unit)
 		{
-			param = opt2param(list, opt);
-			if(opt->unit)
-			{
-				const AVOption *subopt = 0;
-				Paramlist *sublist = param->add_subparams(opt->name);
+			const AVOption *subopt = 0;
+			Paramlist *sublist = param->add_subparams(opt->name);
 
-				while(subopt = av_opt_next(&avclass, subopt))
-				{
-					if(subopt->type == AV_OPT_TYPE_CONST &&
-							!skip_avoption(subopt) &&
-							(subopt->flags & typefl) == typefl &&
-							!strcmp(subopt->unit, opt->unit))
-						opt2param(sublist, subopt);
-				}
+			while(subopt = av_opt_next(&avclass, subopt))
+			{
+				if(subopt->type == AV_OPT_TYPE_CONST &&
+						!skip_avoption(subopt, typefl) &&
+						!strcmp(subopt->unit, opt->unit))
+					opt2param(sublist, subopt);
 			}
 		}
 	}
@@ -1865,8 +1861,10 @@ Param *FileAVlibs::opt2param(Paramlist *list, const AVOption *opt)
 	return param;
 }
 
-int FileAVlibs::skip_avoption(const AVOption *opt)
+int FileAVlibs::skip_avoption(const AVOption *opt, int typefl)
 {
+	if(typefl && ((opt->flags & typefl) != typefl))
+		return 1;
 	if(opt->help && strstr(opt->help, "deprecated"))
 		return 1;
 	return 0;
