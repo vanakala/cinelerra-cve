@@ -38,7 +38,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <float.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
@@ -2038,10 +2040,38 @@ void FileAVlibs::dump_AVOption(const AVOption *opt, const AVClass *avclass, int 
 	indent += 2;
 	printf("%*sname '%s' unit '%s'\n", indent, "", opt->name, opt->unit);
 	printf("%*shelp '%s'\n", indent, "", opt->help);
-	printf("%*soffset %d type '%s' flags '%s' min %.3f max %.3f\n",
+	printf("%*soffset %d type '%s' flags '%s'",
 		indent, "",
 		opt->offset, dump_AVOptionType(opt->type),
-		dump_AVOptionFlags(opt->flags), opt->min, opt->max);
+		dump_AVOptionFlags(opt->flags));
+	switch(opt->type)
+	{
+	case AV_OPT_TYPE_INT:
+		if(opt->min != INT_MIN)
+			printf(" min %.0f", opt->min);
+		if(opt->max != INT_MAX)
+			printf(" max %.0f", opt->max);
+		break;
+	case AV_OPT_TYPE_INT64:
+		if(opt->min != INT64_MIN)
+			printf(" min %.0f", opt->min);
+		if(opt->max != INT64_MAX)
+			printf(" max %.0f", opt->max);
+		break;
+	case AV_OPT_TYPE_FLOAT:
+		if(opt->min != -FLT_MAX)
+			printf(" min %.3f", opt->min);
+		if(opt->max != FLT_MAX)
+			printf(" max %.3f", opt->max);
+		break;
+	case AV_OPT_TYPE_DOUBLE:
+		if(opt->min != -DBL_MAX)
+			printf(" min %.3f", opt->min);
+		if(opt->max != DBL_MAX)
+			printf(" max %.3f", opt->max);
+		break;
+	}
+	fputc('\n', stdout);
 	switch(opt->type)
 	{
 	case AV_OPT_TYPE_CONST:
