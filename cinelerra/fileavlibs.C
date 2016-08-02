@@ -366,9 +366,6 @@ int FileAVlibs::open_file(int rd, int wr)
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				video_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
-			if(video_ctx->codec_id == AV_CODEC_ID_H264)
-				av_opt_set(video_ctx->priv_data, "preset", "slow", 0);
-
 			if((rv = avcodec_open2(video_ctx, codec, &dict)) < 0)
 			{
 				av_dict_free(&dict);
