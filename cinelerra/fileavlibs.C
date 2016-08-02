@@ -1276,7 +1276,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 		avvframe->linesize[0] = temp_frame->get_w();
 		avvframe->linesize[1] = temp_frame->get_w() / 2;
 		avvframe->linesize[2] = temp_frame->get_w() / 2;
-		avvframe->pts = round((frame->get_pts() - pts_base) / av_q2d(video_ctx->time_base));
+		avvframe->pts = round((frame->get_pts() - pts_base) / av_q2d(stream->time_base));
 
 		AVPacket pkt = {0};
 		av_init_packet(&pkt);
@@ -1289,8 +1289,6 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 		if(got_it)
 		{
 			pkt.stream_index = stream->index;
-			av_packet_rescale_ts(&pkt, video_ctx->time_base,
-				stream->time_base);
 			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 			{
 				liberror(rv, "FileAVlibs::write_frames: Failed to write video_frame");
