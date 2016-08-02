@@ -80,6 +80,7 @@ EDLSession::EDLSession(EDL *edl)
 	record_speed = 24;
 	decode_subtitles = 0;
 	tool_window = 0;
+	show_avlibsmsgs = 0;
 	cwindow_operation = CWINDOW_NONE;
 }
 
@@ -222,6 +223,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);
 	si_useduration = defaults->get("SI_USEDURATION",1);
 	si_duration = defaults->get("SI_DURATION",3);
+	show_avlibsmsgs = defaults->get("SHOW_AVLIBSMSGS", 0);
 
 	show_assets = defaults->get("SHOW_ASSETS", 1);
 	show_titles = defaults->get("SHOW_TITLES", 1);
@@ -334,6 +336,8 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("SCRUB_SPEED", scrub_speed);
 	defaults->update("SI_USEDURATION",si_useduration);
 	defaults->update("SI_DURATION",si_duration);
+	defaults->update("SHOW_AVLIBSMSGS", show_avlibsmsgs);
+
 	defaults->update("SHOW_ASSETS", show_assets);
 	defaults->update("SHOW_TITLES", show_titles);
 	defaults->update("TIME_FORMAT", time_format);
@@ -722,6 +726,7 @@ int EDLSession::copy(EDLSession *session)
 	scrub_speed = session->scrub_speed;
 	si_useduration = session->si_useduration;
 	si_duration = session->si_duration;
+	show_avlibsmsgs = session->show_avlibsmsgs;
 	show_assets = session->show_assets;
 	show_titles = session->show_titles;
 	test_playback_edits = session->test_playback_edits;

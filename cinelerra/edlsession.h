@@ -194,7 +194,8 @@ public:
 // number of frames to write to disk at a time during video recording.
 	int video_write_length;
 	int view_follows_playback;
-
+// show avlibs messages on console
+	int show_avlibsmsgs;
 // Use the vwindow meter or not
 	int vwindow_meter;
 	float vwindow_zoom;

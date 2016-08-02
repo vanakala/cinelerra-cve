@@ -48,6 +48,10 @@ void MiscPrefs::show()
 	x += win->get_w() + 10;
 	y += 3;
 	add_subwindow(new BC_Title(x, y, _("seconds")));
+	x = mwindow->theme->preferencesoptions_x;
+	y += win->get_h() + 5;
+	add_subwindow(new ToggleButton(x, y, _("Show avlibs messages in console"),
+		&pwindow->thread->edl->session->show_avlibsmsgs));
 }
 
 StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)
@@ -72,4 +76,15 @@ int StillImageDuration::handle_event()
 {
 	pwindow->thread->edl->session->si_duration = atof(get_text());
 	return 1;
+}
+
+ToggleButton::ToggleButton(int x, int y, const char *text, int *value)
+ : BC_CheckBox(x, y, *value, text)
+{
+	valueptr = value;
+}
+
+int ToggleButton::handle_event()
+{
+	*valueptr = get_value();
 }

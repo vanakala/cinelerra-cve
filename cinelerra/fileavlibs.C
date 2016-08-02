@@ -24,11 +24,13 @@
 #include "bcsignals.h"
 #include "byteorder.h"
 #include "clip.h"
+#include "edlsession.h"
 #include "file.h"
 #include "fileavlibs.h"
 #include "filetoc.h"
 #include "mainerror.h"
 #include "mutex.h"
+#include "mwindow.h"
 #include "paramlist.h"
 #include "preferences.h"
 #include "selection.h"
@@ -49,6 +51,7 @@
 #define PARAM_CODEC_AUDIO "audio"
 #define PARAM_CODEC_VIDEO "video"
 
+extern MWindow *mwindow;
 extern Theme *theme_global;
 
 struct  avlib_formattable FileAVlibs::known_formats[] =
@@ -82,7 +85,10 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	temp_frame = 0;
 	tocfile = 0;
 	temp_frame = 0;
-	av_log_set_level(AV_LOG_QUIET);
+	if(mwindow->edl->session->show_avlibsmsgs)
+		av_log_set_level(AV_LOG_INFO);
+	else
+		av_log_set_level(AV_LOG_QUIET);
 	memset(&track_data, 0, sizeof(track_data));
 	num_buffers = 0;
 	buffer_len = 0;

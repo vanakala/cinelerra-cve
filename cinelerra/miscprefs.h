@@ -54,4 +54,14 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class ToggleButton : public BC_CheckBox
+{
+public:
+	ToggleButton(int x, int y, const char *text, int *value);
+
+	int handle_event();
+
+	int *valueptr;
+};
+
 #endif
