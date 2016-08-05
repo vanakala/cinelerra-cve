@@ -1827,6 +1827,22 @@ Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const c
 	return list;
 }
 
+Paramlist *FileAVlibs::clean_list(Paramlist *list)
+{
+	Param *current;
+
+	for(current = list->first; current; current = current->next)
+	{
+		if(current->subparams && (current->subparams->total() == 0))
+		{
+			Param *np = current->next;
+			delete current;
+			current = np;
+		}
+	}
+	return list;
+}
+
 Param *FileAVlibs::opt2param(Paramlist *list, const AVOption *opt)
 {
 	Param *param = 0;
@@ -1921,7 +1937,7 @@ Paramlist *FileAVlibs::scan_encoder_opts(AVCodecID codec, int options)
 	if(ctx  && ctx->av_class)
 		libopts = scan_options(ctx->av_class, options, encoder->name);
 	avcodec_free_context(&ctx);
-	return libopts;
+	return clean_list(libopts);
 }
 
 Paramlist *FileAVlibs::scan_encoder_private_opts(AVCodecID codec, int options)
@@ -1931,7 +1947,8 @@ Paramlist *FileAVlibs::scan_encoder_private_opts(AVCodecID codec, int options)
 	encoder = avcodec_find_encoder(codec);
 
 	if(encoder && encoder->priv_class)
-		return scan_options(encoder->priv_class, options, encoder->name);
+		return clean_list(scan_options(encoder->priv_class,
+			options, encoder->name));
 
 	return 0;
 }
