@@ -50,7 +50,7 @@ QuestionWindow::QuestionWindow(MWindow *mwindow, int use_cancel, const char *str
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 
 	btext = MainError::StringBreaker(MEDIUMFONT, string, get_w() - 30, this);
-	add_subwindow(new BC_Title(get_w() / 2, 10, string, MEDIUMFONT, 
+	add_subwindow(new BC_Title(get_w() / 2, 10, btext, MEDIUMFONT,
 		get_resources()->default_text_color, 1));
 	y = get_h() - BC_GenericButton::calculate_h() - 10;
 	add_subwindow(new QuestionYesButton(this, yes, 10, y));
