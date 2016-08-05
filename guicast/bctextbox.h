@@ -39,7 +39,7 @@ public:
 		int w, 
 		int rows, 
 		const char *text, 
-		int has_border = 1, 
+		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT,
 		int is_utf8 = 0);
 	BC_TextBox(int x,
@@ -48,28 +48,28 @@ public:
 		int rows,
 		const char *text,
 		const wchar_t *wtext,
-		int has_border = 1,
+		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT);
 	BC_TextBox(int x, 
 		int y, 
 		int w, 
 		int rows, 
 		int64_t text, 
-		int has_border = 1, 
+		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT);
 	BC_TextBox(int x, 
 		int y, 
 		int w, 
 		int rows, 
 		int text, 
-		int has_border = 1, 
+		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT);
 	BC_TextBox(int x, 
 		int y, 
 		int w, 
 		int rows, 
 		float text, 
-		int has_border = 1, 
+		int options = TXTBOX_BORDER,
 		int font = MEDIUMFONT,
 		int precision = 4);
 	virtual ~BC_TextBox();
@@ -86,6 +86,9 @@ public:
 	void update(int value);
 	void update(float value);
 	void update(double value);
+	static wchar_t *wstringbreaker(int font, wchar_t *text,
+		int boxwidth, BC_WindowBase *win);
+
 // options: do not dim the text when the box is disabled
 	void disable(int options = 0);
 	void enable();
@@ -170,6 +173,7 @@ private:
 	int text_ascent, text_descent, text_height;
 	int left_margin, right_margin, top_margin, bottom_margin;
 	int has_border;
+	int break_string;
 	int font;
 	int rows;
 	int highlighted;

@@ -24,4 +24,9 @@
 
 class BC_TextBox;
 
+// Ctr options bits
+#define TXTBOX_BORDER  1
+#define TXTBOX_BREAKR  2
+#define TXTBOX_DISABLE 4
+
 #endif

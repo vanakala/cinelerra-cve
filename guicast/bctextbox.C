@@ -48,13 +48,13 @@ BC_TextBox::BC_TextBox(int x,
 	int w, 
 	int rows, 
 	const char *text, 
-	int has_border, 
+	int options,
 	int font,
 	int is_utf8)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	skip_cursor = 0;
-	reset_parameters(rows, has_border, font);
+	reset_parameters(rows, options, font);
 	if(text)
 	{
 		strncpy(ntext, text, TEXTBOXLEN);
@@ -77,12 +77,12 @@ BC_TextBox::BC_TextBox(int x,
 	int rows,
 	const char *text,
 	const wchar_t *wtext,
-	int has_border,
+	int options,
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	skip_cursor = 0;
-	reset_parameters(rows, has_border, font);
+	reset_parameters(rows, options, font);
 	if(wtext)
 	{
 		wtext_len = wcslen(wtext);
@@ -112,12 +112,12 @@ BC_TextBox::BC_TextBox(int x,
 	int w, 
 	int rows, 
 	int64_t text, 
-	int has_border, 
+	int options,
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	skip_cursor = 0;
-	reset_parameters(rows, has_border, font);
+	reset_parameters(rows, options, font);
 	sprintf(ntext, "%" PRId64, text);
 	convert_number();
 }
@@ -127,13 +127,13 @@ BC_TextBox::BC_TextBox(int x,
 	int w, 
 	int rows, 
 	float text, 
-	int has_border, 
+	int options,
 	int font,
 	int precision)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	skip_cursor = 0;
-	reset_parameters(rows, has_border, font);
+	reset_parameters(rows, options, font);
 	this->precision = precision;
 	sprintf(ntext, "%0.*f", precision, text);
 	convert_number();
@@ -144,12 +144,12 @@ BC_TextBox::BC_TextBox(int x,
 	int w, 
 	int rows, 
 	int text, 
-	int has_border, 
+	int options,
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	skip_cursor = 0;
-	reset_parameters(rows, has_border, font);
+	reset_parameters(rows, options, font);
 	sprintf(ntext, "%d", text);
 	convert_number();
 }
@@ -169,10 +169,11 @@ void BC_TextBox::convert_number()
 	wtext_len = wcp - wide_text - 1;
 }
 
-void BC_TextBox::reset_parameters(int rows, int has_border, int font)
+void BC_TextBox::reset_parameters(int rows, int options, int font)
 {
 	this->rows = rows;
-	this->has_border = has_border;
+	has_border = options & TXTBOX_BORDER;
+	break_string = options & TXTBOX_BREAKR;
 	this->font = font;
 	text_start = 0;
 	text_end = 0;
@@ -182,7 +183,16 @@ void BC_TextBox::reset_parameters(int rows, int has_border, int font)
 	active = 0;
 	text_selected = word_selected = 0;
 	text_x = 0;
-	enabled = 1;
+	if(options & TXTBOX_DISABLE)
+	{
+		enabled = 0;
+		defaultcolor = 1;
+	}
+	else
+	{
+		enabled = 1;
+		defaultcolor = 0;
+	}
 	highlighted = 0;
 	precision = 4;
 	if (!skip_cursor)
@@ -190,7 +200,6 @@ void BC_TextBox::reset_parameters(int rows, int has_border, int font)
 	keypress_draw = 1;
 	last_keypress = 0;
 	separators = 0;
-	defaultcolor = 0;
 	wtext_len = 0;
 	positions = 0;
 }
@@ -214,6 +223,11 @@ void BC_TextBox::initialize()
 	{
 		left_margin = right_margin = HORIZONTAL_MARGIN_NOBORDER;
 		top_margin = bottom_margin = VERTICAL_MARGIN_NOBORDER;
+	}
+	if(wtext_len && break_string)
+	{
+		wstringbreaker(font, wide_text,
+			get_w() - 2 * right_margin, this);
 	}
 	h = get_row_h(rows);
 	text_x = left_margin;
@@ -304,6 +318,58 @@ void BC_TextBox::update(const wchar_t *text)
 	wcsncpy(wide_text, text, TEXTBOXLEN);
 	wide_text[TEXTBOXLEN] = 0;
 	update_wtext();
+}
+
+wchar_t *BC_TextBox::wstringbreaker(int font, wchar_t *text,
+	int boxwidth, BC_WindowBase *win)
+{
+	int txlen = wcslen(text);
+	wchar_t *p, *q, *r;
+
+	if(win->get_text_width(font, text) < boxwidth)
+		return text;
+
+	p = text;
+
+	while (*p)
+	{
+		if(q = wcschr(p, '\n'))
+		{
+			if(win->get_text_width(font, p, q - p) < boxwidth)
+			{
+				p = ++q;
+				continue;
+			}
+		}
+
+		if(win->get_text_width(font, text) < boxwidth)
+			return text;
+
+		r = &text[txlen];
+		q = p;
+		while(*q)
+		{
+			// Care about ASCII spaces
+			if(*q < 128 &&  isspace(*q))
+			{
+				if(win->get_text_width(font, p, q - p) > boxwidth)
+				{
+					*r = '\n';
+					p = ++r;
+					break;
+				}
+			else
+				r = q;
+			}
+			if(*++q == 0)
+			{
+// There was a very long word if we reach here
+				*r = '\n';
+				return text;
+			}
+		}
+	}
+	return text;
 }
 
 void BC_TextBox::update(int64_t value)
