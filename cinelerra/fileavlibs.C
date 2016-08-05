@@ -61,6 +61,24 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ 0 }
 };
 
+const char *FileAVlibs::ignored[] =
+{
+	"avioflags",
+	"packetsize",
+	"fdebug",
+	"start_time_realtime",
+	"flush_packets",
+	"output_ts_offset",
+	"avoid_negative_ts",
+	"dump_separator",
+	"rtpflags",
+	"ar",
+	"ac",
+	"debug",
+	"ticks_per_frame",
+	NULL
+};
+
 extern "C"
 {
 #include <libswscale/swscale.h>
@@ -1886,6 +1904,13 @@ int FileAVlibs::skip_avoption(const AVOption *opt, int typefl)
 		return 1;
 	if(opt->help && strstr(opt->help, "deprecated"))
 		return 1;
+	for(int i = 0;;i++)
+	{
+		if(!ignored[i])
+			break;
+		if(!strcmp(opt->name, ignored[i]))
+			return 1;
+	}
 	return 0;
 }
 

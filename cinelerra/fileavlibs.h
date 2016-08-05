@@ -151,6 +151,7 @@ private:
 	double *abuffer[MAXCHANNELS];
 	uint8_t *resampled_data[MAXCHANNELS];
 	int resampled_alloc;
+	static const char *ignored[];
 };
 
 #endif
