@@ -36,6 +36,8 @@
 #endif
 
 #define TOOLTIP_MARGIN 2
+#define TOOLTIP_MAX 400
+#define TOOLTIP_MIN 100
 #define BC_INFINITY 65536
 #define CHKWLCK(win, nm) {printf("Winlock %d at %s\n", win->window_lock, nm);}
 

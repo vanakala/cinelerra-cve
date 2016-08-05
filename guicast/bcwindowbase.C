@@ -1281,18 +1281,11 @@ void BC_WindowBase::show_tooltip(int w, int h)
 
 	if(!tooltip_on && get_resources()->tooltips_enabled)
 	{
-		int i, j, x, y;
+		int x, y, rootw, rooth;
+
 		top_level->hide_tooltip();
-
 		tooltip_on = 1;
-		if(w < 0)
-			w = get_text_width(MEDIUMFONT, tooltip_wtext);
 
-		if(h < 0)
-			h = get_text_height(MEDIUMFONT, tooltip_wtext);
-
-		w += TOOLTIP_MARGIN * 2;
-		h += TOOLTIP_MARGIN * 2;
 
 		lock_window("BC_WindowBase::show_tooltip");
 		XTranslateCoordinates(top_level->display, 
@@ -1304,6 +1297,31 @@ void BC_WindowBase::show_tooltip(int w, int h)
 				&y, 
 				&tempwin);
 		unlock_window();
+
+		if(w < 0)
+		{
+			get_resources()->get_root_size(&rootw, &rooth);
+			w = TOOLTIP_MAX;
+			if(rootw - x < TOOLTIP_MAX)
+			{
+				w = rootw - x;
+				if(w < TOOLTIP_MIN)
+					w = TOOLTIP_MIN;
+			}
+			else
+				w = TOOLTIP_MAX;
+			BC_TextBox::wstringbreaker(MEDIUMFONT, tooltip_wtext,
+				w, this);
+
+			w = get_text_width(MEDIUMFONT, tooltip_wtext);
+		}
+
+		if(h < 0)
+			h = get_text_height(MEDIUMFONT, tooltip_wtext);
+
+		w += TOOLTIP_MARGIN * 2;
+		h += TOOLTIP_MARGIN * 2;
+
 		tooltip_popup = new BC_Popup(top_level, 
 					x,
 					y,
