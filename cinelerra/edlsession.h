@@ -196,6 +196,8 @@ public:
 	int view_follows_playback;
 // show avlibs messages on console
 	int show_avlibsmsgs;
+// allow experimental codecs
+	int experimental_codecs;
 // Use the vwindow meter or not
 	int vwindow_meter;
 	float vwindow_zoom;

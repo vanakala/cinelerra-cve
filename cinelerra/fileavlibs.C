@@ -390,6 +390,9 @@ int FileAVlibs::open_file(int rd, int wr)
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				video_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
+			if(mwindow->edl->session->experimental_codecs)
+				av_dict_set(&dict, "strict", "-2", 0);
+
 			if((rv = avcodec_open2(video_ctx, codec, &dict)) < 0)
 			{
 				av_dict_free(&dict);
@@ -466,8 +469,8 @@ int FileAVlibs::open_file(int rd, int wr)
 			stream->time_base = (AVRational){1, audio_ctx->sample_rate};
 			audio_ctx->time_base = stream->time_base;
 
-			// Allow the use of the experimental AAC encoder
-			audio_ctx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+			if(mwindow->edl->session->experimental_codecs)
+				av_dict_set(&dict, "strict", "-2", 0);
 
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				audio_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
@@ -1940,6 +1943,9 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 				if(options & SUPPORTS_VIDEO && encoder->type != AVMEDIA_TYPE_VIDEO)
 					continue;
 				if(codecs->find(encoder->name))
+					continue;
+				if(!mwindow->edl->session->experimental_codecs &&
+						encoder->capabilities & AV_CODEC_CAP_EXPERIMENTAL)
 					continue;
 				param = codecs->append_param(encoder->name, tags->id);
 				param->set_help(encoder->long_name);

@@ -50,8 +50,11 @@ void MiscPrefs::show()
 	add_subwindow(new BC_Title(x, y, _("seconds")));
 	x = mwindow->theme->preferencesoptions_x;
 	y += win->get_h() + 5;
-	add_subwindow(new ToggleButton(x, y, _("Show avlibs messages in console"),
+	win = add_subwindow(new ToggleButton(x, y, _("Show avlibs messages in console"),
 		&pwindow->thread->edl->session->show_avlibsmsgs));
+	y += win->get_h() + 5;
+	add_subwindow(new ToggleButton(x, y, _("Allow using experimental codecs"),
+		&pwindow->thread->edl->session->experimental_codecs));
 }
 
 StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)
