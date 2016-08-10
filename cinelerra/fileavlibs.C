@@ -1949,6 +1949,80 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 					continue;
 				param = codecs->append_param(encoder->name, tags->id);
 				param->set_help(encoder->long_name);
+				// Additional parameters
+				if(encoder->type == AVMEDIA_TYPE_VIDEO)
+				{
+					Paramlist *encoder_params = param->add_subparams(encoder->name);
+					Param *sbp;
+
+					if(encoder->pix_fmts)
+					{
+						const AVPixelFormat *pix_fmt;
+						sbp = encoder_params->append_param("pix_fmt", (int)encoder->pix_fmts[0]);
+						Paramlist *sublist = sbp->add_subparams("pix_fmt");
+
+						for(pix_fmt = encoder->pix_fmts; *pix_fmt != AV_PIX_FMT_NONE; pix_fmt++)
+						{
+							Param *p = sublist->append_param("", *pix_fmt);
+							strcpy(p->name, av_get_pix_fmt_name(*pix_fmt));
+						}
+					}
+					if(encoder->supported_framerates)
+					{
+						const AVRational *framerate;
+						sbp = encoder_params->append_param("framerate", av_q2d(encoder->supported_framerates[0]));
+						Paramlist *sublist = sbp->add_subparams("framerate");
+
+						for(framerate = encoder->supported_framerates; framerate->num != 0; framerate++)
+						{
+							Param *p = sublist->append_param("", av_q2d(*framerate));
+							sprintf(p->name, "%d/%d", framerate->num, framerate->den);
+						}
+					}
+				}
+				if(encoder->type == AVMEDIA_TYPE_AUDIO)
+				{
+					Paramlist *encoder_params = param->add_subparams(encoder->name);
+					Param *sbp;
+
+					if(encoder->supported_samplerates)
+					{
+						const int *srate;
+						sbp = encoder_params->append_param("samplerate", encoder->supported_samplerates[0]);
+						Paramlist *sublist = sbp->add_subparams("samplerate");
+
+						for(srate = encoder->supported_samplerates; *srate; srate++)
+						{
+							Param *p = sublist->append_param("", *srate);
+							sprintf(p->name, "%d", *srate);
+						}
+					}
+					if(encoder->sample_fmts)
+					{
+						const AVSampleFormat *sfmt;
+						sbp = encoder_params->append_param("sampleformat", encoder->sample_fmts[0]);
+						Paramlist *sublist = sbp->add_subparams("sampleformat");
+
+						for(sfmt = encoder->sample_fmts; *sfmt != AV_SAMPLE_FMT_NONE; sfmt++)
+						{
+							Param *p = sublist->append_param("", *sfmt);
+							strcpy(p->name, av_get_sample_fmt_name(*sfmt));
+						}
+					}
+					if(encoder->channel_layouts)
+					{
+						const uint64_t *layout;
+						sbp = encoder_params->append_param("ch_layout", (int64_t)encoder->channel_layouts[0]);
+						Paramlist *sublist = sbp->add_subparams("ch_layout");
+
+						for(layout = encoder->channel_layouts; *layout; layout++)
+						{
+							Param *p = sublist->append_param("", (int64_t)*layout);
+							av_get_channel_layout_string(p->name, PARAM_NAMELEN,
+								av_get_channel_layout_nb_channels(*layout), *layout);
+						}
+					}
+				}
 			}
 		}
 	}
