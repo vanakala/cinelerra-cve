@@ -40,6 +40,7 @@ public:
 	void draw_list();
 	BC_WindowBase *set_scrollbar(int x, int y, int w);
 
+	static int max_name_size(Paramlist *list, BC_WindowBase *win, int mxlen = 0);
 private:
 	void calc_pos(int h, int w);
 

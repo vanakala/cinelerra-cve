@@ -29,6 +29,15 @@
 #include <math.h>
 #include <string.h>
 
+const char *Param::known_properties[] =
+{
+	"intval",
+	"longval",
+	"dblval",
+	"type",
+	0
+};
+
 Param::Param(const char *name, int value)
  : ListItem<Param>()
 {
@@ -49,7 +58,6 @@ Param::Param(const char *name, const char *value)
  : ListItem<Param>()
 {
 	initialize(name);
-	type = PARAMTYPE_STR;
 	set_string(value);
 }
 
@@ -134,6 +142,7 @@ void Param::set_string(const char *txt)
 
 	if(txt && (l = strlen(txt)))
 	{
+		type |= PARAMTYPE_STR;
 		if(string_allocated && l > string_allocated - 1)
 			delete [] stringvalue;
 		l++;
@@ -143,6 +152,7 @@ void Param::set_string(const char *txt)
 	}
 	else
 	{
+		type &= ~PARAMTYPE_STR;
 		delete [] stringvalue;
 		stringvalue = 0;
 		string_allocated = 0;
@@ -151,7 +161,6 @@ void Param::set_string(const char *txt)
 
 void Param::set(const char *value)
 {
-	type |= PARAMTYPE_STR;
 	set_string(value);
 }
 
@@ -198,6 +207,18 @@ void Param::save_param(FileXML *file)
 	if(type & PARAMTYPE_DBL)
 		file->tag.set_property("dblval", floatvalue);
 
+	if(type & PARAMTYPE_CODK && subparams && !(subparams->type & PARAMTYPE_HIDN))
+	{
+		for(Param *p = subparams->first; p; p = p->next)
+		{
+			if(p->type & PARAMTYPE_INT)
+				file->tag.set_property(p->name, p->intvalue);
+			if(p->type & PARAMTYPE_LNG)
+				file->tag.set_property(p->name, p->longvalue);
+			if(p->type & PARAMTYPE_DBL)
+				file->tag.set_property(p->name, p->floatvalue);
+		}
+	}
 	file->append_tag();
 
 	if((type & PARAMTYPE_STR) && stringvalue)
@@ -210,7 +231,8 @@ void Param::save_param(FileXML *file)
 
 void Param::load_param(FileXML *file)
 {
-	char *s;
+	int i, j;
+	const char *s;
 
 	type = file->tag.get_property("type", type);
 
@@ -222,6 +244,26 @@ void Param::load_param(FileXML *file)
 
 	if(type & PARAMTYPE_DBL)
 		floatvalue = file->tag.get_property("dblval", floatvalue);
+
+	if(type & PARAMTYPE_CODK)
+	{
+		for(i = 0; i < MAX_PROPERTIES; i++)
+		{
+			s = file->tag.get_property_text(i);
+			if(*s == 0)
+				break;
+			for(j = 0; known_properties[j]; j++)
+			{
+				if(strcmp(known_properties[j], s) == 0)
+					break;
+			}
+			if(known_properties[j])
+				continue;
+			if(!subparams)
+				add_subparams(name);
+			subparams->set(s, file->tag.get_property(s));
+		}
+	}
 
 	if(type & PARAMTYPE_STR)
 		set_string(file->read_text());
@@ -267,11 +309,10 @@ int Param::equiv_value(Param *that)
 
 void Param::dump(int indent)
 {
-	printf("%*sParam %p dump:\n", indent, "", this);
+	printf("%*sParam '%s' (%p) dump:\n", indent, "", name, this);
 	indent += 2;
-	printf("%*sName: '%s' type %#x\n", indent, "", name, type);
-	printf("%*svalues int:%d long:%" PRId64 " float:%.3f", indent, "",
-		intvalue, longvalue, floatvalue);
+	printf("%*stype %#x values int:%d long:%" PRId64 " float:%.3f", indent, "",
+		type, intvalue, longvalue, floatvalue);
 	if(stringvalue)
 		printf(" '%s'", stringvalue);
 	putchar('\n');
@@ -290,7 +331,10 @@ Paramlist::Paramlist(const char *name)
 {
 	strncpy(this->name, name, PARAM_NAMELEN);
 	this->name[PARAM_NAMELEN - 1] = 0;
+	type = 0;
 	selectedint = 0;
+	selectedlong = 0;
+	selectedfloat = 0;
 }
 
 Paramlist::~Paramlist()
@@ -388,6 +432,42 @@ Param *Paramlist::find(const char *name)
 	return 0;
 }
 
+Param *Paramlist::find_value(int value)
+{
+	Param *current;
+
+	for(current = first; current; current = current->next)
+	{
+		if((current->type & PARAMTYPE_INT) && value == current->intvalue)
+			return current;
+	}
+	return 0;
+}
+
+Param *Paramlist::find_value(int64_t value)
+{
+	Param *current;
+
+	for(current = first; current; current = current->next)
+	{
+		if((current->type & PARAMTYPE_LNG) && value == current->longvalue)
+			return current;
+	}
+	return 0;
+}
+
+Param *Paramlist::find_value(double value)
+{
+	Param *current;
+
+	for(current = first; current; current = current->next)
+	{
+		if((current->type & PARAMTYPE_DBL) && EQUIV(value, current->floatvalue))
+			return current;
+	}
+	return 0;
+}
+
 Param  *Paramlist::set(const char *name, const char *value)
 {
 	Param *pp;
@@ -432,14 +512,42 @@ Param  *Paramlist::set(const char *name, double value)
 	return pp;
 }
 
+void Paramlist::set_selected(int value)
+{
+	selectedint = value;
+	type |= PARAMTYPE_INT;
+}
+
+void Paramlist::set_selected(int64_t value)
+{
+	selectedlong = value;
+	type |= PARAMTYPE_LNG;
+}
+
+void Paramlist::set_selected(double value)
+{
+	selectedfloat = value;
+	type |= PARAMTYPE_DBL;
+}
+
 void Paramlist::save_list(FileXML *file)
 {
 	Param *current;
+	char *p;
 	char string[BCTEXTLEN];
 
 	sprintf(string, "/%s", name);
 	file->tag.set_title(string + 1);
-	file->tag.set_property("selectedint", selectedint);
+	if(type)
+	{
+		file->tag.set_property("type", type);
+		if(type & PARAMTYPE_INT)
+			file->tag.set_property("selectedint", selectedint);
+		if(type & PARAMTYPE_LNG)
+			file->tag.set_property("selectedlong", selectedlong);
+		if(type & PARAMTYPE_DBL)
+			file->tag.set_property("selectedfloat", selectedfloat);
+	}
 	file->append_tag();
 	file->append_newline();
 	for(current = first; current; current = current->next)
@@ -461,8 +569,14 @@ void Paramlist::load_list(FileXML *file)
 	// name of the list
 	strncpy(name, file->tag.get_title(), PARAM_NAMELEN);
 	name[PARAM_NAMELEN - 1] = 0;
-	selectedint = file->tag.get_property("selectedint", 0);
+	type = file->tag.get_property("type", 0);
 
+	if(type)
+	{
+		selectedint = file->tag.get_property("selectedint", 0);
+		selectedlong = file->tag.get_property("selectedlong", (int64_t)0);
+		selectedfloat = file->tag.get_property("selectedfloat", (double)0);
+	}
 	while(!file->read_tag())
 	{
 		t = file->tag.get_title();
@@ -506,8 +620,9 @@ void Paramlist::remove_param(const char *name)
 void Paramlist::dump(int indent)
 {
 	Param *current;
-	printf("%*sParamlist %s (%p) dump\n", indent, "", name, this);
-	printf("%*s Selected: int %d\n", indent, "", selectedint);
+	printf("%*sParamlist '%s' (%p) dump\n", indent, "", name, this);
+	printf("%*s type: %#x Selected: int:%d long: %" PRId64 " float:%.2f\n",
+		indent, "", type, selectedint, selectedlong, selectedfloat);
 	for(current = first; current; current = current->next)
 	{
 		current->dump(indent + 2);

@@ -62,7 +62,7 @@ public:
 	int64_t longvalue;
 	double floatvalue;
 	Paramlist *subparams;
-
+	static const char *known_properties[];
 private:
 	void initialize(const char *name);
 };
@@ -88,8 +88,14 @@ public:
 	Param *set(const char *name, int value);
 	Param *set(const char *name, int64_t value);
 	Param *set(const char *name, double value);
+	void set_selected(int value);
+	void set_selected(int64_t value);
+	void set_selected(double value);
 
 	Param *find(const char *name);
+	Param *find_value(int value);
+	Param *find_value(int64_t value);
+	Param *find_value(double value);
 	void save_list(FileXML *file);
 	void load_list(FileXML *file);
 	void remove_equiv(Paramlist *that);
@@ -97,7 +103,12 @@ public:
 	void dump(int indent = 0);
 
 	char name[PARAM_NAMELEN];
+	// Type of values in use here
+	int type;
 	int selectedint;
+	int64_t selectedlong;
+	double selectedfloat;
+
 };
 
 #endif

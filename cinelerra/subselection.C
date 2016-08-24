@@ -132,7 +132,14 @@ SubSelectionPopup::SubSelectionPopup(int x, int y, int w, BC_WindowBase *base, P
 	for(current = paramlist->first; current; current = current->next)
 	{
 		codecs->append(new BC_ListBoxItem(current->name));
-		if(paramlist->selectedint == current->intvalue)
+		if(paramlist->type & current->type & PARAMTYPE_INT &&
+				paramlist->selectedint == current->intvalue)
+			update(current->name);
+		if(paramlist->type & current->type & PARAMTYPE_LNG &&
+				paramlist->selectedlong == current->longvalue)
+			update(current->name);
+		if(paramlist->type & current->type & PARAMTYPE_DBL &&
+				PTSEQU(paramlist->selectedfloat, current->floatvalue))
 			update(current->name);
 	}
 	update_list(codecs);
@@ -154,7 +161,12 @@ int SubSelectionPopup::handle_event()
 	{
 		if(i == num)
 		{
-			list->selectedint = current->intvalue;
+			if(list->type & PARAMTYPE_INT)
+				list->set_selected(current->intvalue);
+			if(list->type & PARAMTYPE_LNG)
+				list->set_selected(current->longvalue);
+			if(list->type & PARAMTYPE_DBL)
+				list->set_selected(current->floatvalue);
 			break;
 		}
 		i++;

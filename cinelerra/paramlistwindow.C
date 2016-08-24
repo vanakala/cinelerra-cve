@@ -138,6 +138,21 @@ BC_WindowBase *ParamlistWindow::set_scrollbar(int x, int y, int w)
 	return new ParamWindowScroll(this, x, y, w, get_w());
 }
 
+int ParamlistWindow::max_name_size(Paramlist *list, BC_WindowBase *win, int mxlen)
+{
+	Param *current;
+	int tw;
+
+	if(list)
+	{
+		for(current = list->first; current; current = current->next)
+		{
+			if((tw = win->get_text_width(MEDIUMFONT, current->name)) > mxlen)
+				mxlen = tw;
+		}
+	}
+	return mxlen;
+}
 
 Parami64Txtbx::Parami64Txtbx(int x, int y, Param *param, int64_t *val)
  : BC_TextBox(x, y, 100, 1, *val)
