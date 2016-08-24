@@ -47,10 +47,6 @@
 #include <stdint.h>
 #include <string.h>
 
-// Current codecs list in asset
-#define PARAM_CODEC_AUDIO "audio"
-#define PARAM_CODEC_VIDEO "video"
-
 extern MWindow *mwindow;
 extern Theme *theme_global;
 
@@ -77,6 +73,16 @@ const char *FileAVlibs::ignored[] =
 	"debug",
 	"ticks_per_frame",
 	NULL
+};
+
+struct avlib_encparams FileAVlibs::encoder_params[] =
+{
+	{ "pix_fmt", "Pixel format:", PARAMTYPE_INT },
+	{ "framerate", "Framerate:", PARAMTYPE_DBL },
+	{ "samplerate", "Samplerate:", PARAMTYPE_INT },
+	{ "sampleformat", "Sample format:", PARAMTYPE_INT },
+	{ "ch_layout", "Channel layout:", PARAMTYPE_LNG },
+	{ 0, 0, 0 }
 };
 
 extern "C"
@@ -352,7 +358,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			AVDictionary *dict = create_dictionary(SUPPORTS_VIDEO);
 
 			if(asset->encoder_parameters[FILEAVLIBS_CODECS_IX] &&
-				(aparam = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(PARAM_CODEC_VIDEO)))
+				(aparam = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_VIDEO)))
 			{
 				if(!(codec = avcodec_find_encoder((AVCodecID)aparam->intvalue)))
 				{
@@ -420,7 +426,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			AVDictionary *dict = create_dictionary(SUPPORTS_AUDIO);
 
 			if(asset->encoder_parameters[FILEAVLIBS_CODECS_IX] &&
-				(aparam = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(PARAM_CODEC_AUDIO)))
+				(aparam = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_AUDIO)))
 			{
 				if(!(codec = avcodec_find_encoder((AVCodecID)aparam->intvalue)))
 				{
@@ -1662,7 +1668,7 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			pfx, window->codecopts->name, defaults);
 		if(options & SUPPORTS_VIDEO)
 		{
-			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(PARAM_CODEC_VIDEO, window->current_codec);
+			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(AVL_PARAM_CODEC_VIDEO, window->current_codec);
 			pa->set(window->codecopts->name);
 			strcpy(asset->vcodec, window->codecopts->name);
 			alist = &asset->encoder_parameters[FILEAVLIBS_VCODEC_IX];
@@ -1670,7 +1676,7 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 		}
 		else if(options & SUPPORTS_AUDIO)
 		{
-			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(PARAM_CODEC_AUDIO, window->current_codec);
+			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(AVL_PARAM_CODEC_AUDIO, window->current_codec);
 			pa->set(window->codecopts->name);
 			strcpy(asset->acodec, window->codecopts->name);
 			alist = &asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
@@ -1710,6 +1716,27 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			window->codec_private = 0;
 			delete defaults;
 		}
+		const char *cdkn = options & SUPPORTS_VIDEO ? AVL_PARAM_CODEC_VIDEO : AVL_PARAM_CODEC_AUDIO;
+		if(Param *p = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(cdkn))
+		{
+			Param *q = window->codecs->find(p->stringvalue);
+
+			if(q && q->subparams)
+			{
+				p->add_subparams(cdkn);
+				p->type |= PARAMTYPE_CODK;
+				for(Param *r = q->subparams->first; r; r = r->next)
+				{
+					Paramlist *rs = r->subparams;
+					if(rs->type & PARAMTYPE_INT)
+						p->subparams->set(r->name, rs->selectedint);
+					if(rs->type & PARAMTYPE_LNG)
+						p->subparams->set(r->name, rs->selectedlong);
+					if(rs->type & PARAMTYPE_DBL)
+						p->subparams->set(r->name, rs->selectedfloat);
+				}
+			}
+		}
 		window->save_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX],
 			FILEAVLIBS_CODECS_CONFIG, window->fmtopts->name);
 	}
@@ -1723,6 +1750,7 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	AVOutputFormat *oformat = 0;
 	AVCodec *encoder;
 	Param *apar;
+	Paramlist *list;
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 		return;
@@ -1730,6 +1758,45 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = AVlibsConfig::load_options(FILEAVLIBS_GLOBAL_CONFIG);
 	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(FILEAVLIBS_FORMAT_CONFIG, name);
 	asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = AVlibsConfig::load_options(FILEAVLIBS_CODECS_CONFIG, name);
+
+	if(asset->encoder_parameters[FILEAVLIBS_CODECS_IX])
+	{
+		// Restore loaded options
+		for(apar = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->first;
+			apar; apar = apar->next)
+		{
+			if(list = apar->subparams)
+			{
+				for(Param *p = list->first; p; p = p->next)
+				{
+					for(int i = 0; encoder_params[i].name; i++)
+					{
+						if(strcmp(encoder_params[i].name, p->name) == 0)
+						{
+							switch(encoder_params[i].type)
+							{
+							case PARAMTYPE_INT:
+								p->set(atoi(p->stringvalue));
+								break;
+							case PARAMTYPE_LNG:
+#if __WORDSIZE == 64
+								p->set(atol(p->stringvalue));
+#else
+								p->set(atoll(p->stringvalue));
+#endif
+								break;
+							case PARAMTYPE_DBL:
+								p->set(atof(p->stringvalue));
+								break;
+							}
+							p->set_string(0);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
 
 	FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
 	avcodec_register_all();
@@ -1749,13 +1816,13 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 		asset->acodec[0] = 0;
 
 		if(oformat->audio_codec == AV_CODEC_ID_NONE)
-			codecs->remove_param(PARAM_CODEC_AUDIO);
-		else if(!(apar = codecs->find(PARAM_CODEC_AUDIO)) ||
+			codecs->remove_param(AVL_PARAM_CODEC_AUDIO);
+		else if(!(apar = codecs->find(AVL_PARAM_CODEC_AUDIO)) ||
 				!(encoder = avcodec_find_encoder((AVCodecID)apar->intvalue)))
 		{
 			if(encoder = avcodec_find_encoder(oformat->audio_codec))
 			{
-				apar = codecs->set(PARAM_CODEC_AUDIO, oformat->audio_codec);
+				apar = codecs->set(AVL_PARAM_CODEC_AUDIO, oformat->audio_codec);
 				apar->set(encoder->name);
 			}
 		}
@@ -1765,13 +1832,13 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 		apar = 0;
 		asset->vcodec[0] = 0;
 		if(oformat->video_codec == AV_CODEC_ID_NONE)
-			codecs->remove_param(PARAM_CODEC_VIDEO);
-		else if(!(apar = codecs->find(PARAM_CODEC_VIDEO)) ||
+			codecs->remove_param(AVL_PARAM_CODEC_VIDEO);
+		else if(!(apar = codecs->find(AVL_PARAM_CODEC_VIDEO)) ||
 				!(encoder = avcodec_find_encoder((AVCodecID)apar->intvalue)))
 		{
 			if(encoder = avcodec_find_encoder(oformat->video_codec))
 			{
-				apar = codecs->set(PARAM_CODEC_VIDEO, oformat->video_codec);
+				apar = codecs->set(AVL_PARAM_CODEC_VIDEO, oformat->video_codec);
 				apar->set(encoder->name);
 			}
 		}
@@ -1927,9 +1994,9 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 
 	codecs = new Paramlist("AVLibCodecs");
 	if(options & SUPPORTS_VIDEO)
-		codecs->selectedint = oformat->video_codec;
+		codecs->set_selected(oformat->video_codec);
 	if(options & SUPPORTS_AUDIO)
-		codecs->selectedint = oformat->audio_codec;
+		codecs->set_selected(oformat->audio_codec);
 
 	for(ctag = oformat->codec_tag; *ctag; ctag++)
 	{
@@ -1952,14 +2019,17 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 				// Additional parameters
 				if(encoder->type == AVMEDIA_TYPE_VIDEO)
 				{
-					Paramlist *encoder_params = param->add_subparams(encoder->name);
+					Paramlist *encparams = param->add_subparams(encoder->name);
 					Param *sbp;
 
 					if(encoder->pix_fmts)
 					{
 						const AVPixelFormat *pix_fmt;
-						sbp = encoder_params->append_param("pix_fmt", (int)encoder->pix_fmts[0]);
-						Paramlist *sublist = sbp->add_subparams("pix_fmt");
+
+						sbp = encparams->append_param(encoder_params[ENC_PIX_FMTS].name,
+							(int)encoder->pix_fmts[0]);
+						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_PIX_FMTS].name);
+						sublist->set_selected((int)encoder->pix_fmts[0]);
 
 						for(pix_fmt = encoder->pix_fmts; *pix_fmt != AV_PIX_FMT_NONE; pix_fmt++)
 						{
@@ -1970,8 +2040,12 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 					if(encoder->supported_framerates)
 					{
 						const AVRational *framerate;
-						sbp = encoder_params->append_param("framerate", av_q2d(encoder->supported_framerates[0]));
-						Paramlist *sublist = sbp->add_subparams("framerate");
+
+						sbp = encparams->append_param(encoder_params[ENC_FRAMERATES].name,
+							av_q2d(encoder->supported_framerates[0]));
+						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_FRAMERATES].name);
+						sublist->type |= PARAMTYPE_HIDN;
+						sublist->set_selected(av_q2d(encoder->supported_framerates[0]));
 
 						for(framerate = encoder->supported_framerates; framerate->num != 0; framerate++)
 						{
@@ -1982,14 +2056,17 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 				}
 				if(encoder->type == AVMEDIA_TYPE_AUDIO)
 				{
-					Paramlist *encoder_params = param->add_subparams(encoder->name);
+					Paramlist *encparams = param->add_subparams(encoder->name);
 					Param *sbp;
 
 					if(encoder->supported_samplerates)
 					{
 						const int *srate;
-						sbp = encoder_params->append_param("samplerate", encoder->supported_samplerates[0]);
-						Paramlist *sublist = sbp->add_subparams("samplerate");
+						sbp = encparams->append_param(encoder_params[ENC_SAMPLERATES].name,
+							encoder->supported_samplerates[0]);
+						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_SAMPLERATES].name);
+						sublist->type |= PARAMTYPE_HIDN;
+						sublist->set_selected(encoder->supported_samplerates[0]);
 
 						for(srate = encoder->supported_samplerates; *srate; srate++)
 						{
@@ -2000,8 +2077,11 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 					if(encoder->sample_fmts)
 					{
 						const AVSampleFormat *sfmt;
-						sbp = encoder_params->append_param("sampleformat", encoder->sample_fmts[0]);
-						Paramlist *sublist = sbp->add_subparams("sampleformat");
+
+						sbp = encparams->append_param(encoder_params[ENC_SAMPLE_FMTS].name,
+							encoder->sample_fmts[0]);
+						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_SAMPLE_FMTS].name);
+						sublist->set_selected(encoder->sample_fmts[0]);
 
 						for(sfmt = encoder->sample_fmts; *sfmt != AV_SAMPLE_FMT_NONE; sfmt++)
 						{
@@ -2012,8 +2092,12 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 					if(encoder->channel_layouts)
 					{
 						const uint64_t *layout;
-						sbp = encoder_params->append_param("ch_layout", (int64_t)encoder->channel_layouts[0]);
-						Paramlist *sublist = sbp->add_subparams("ch_layout");
+
+						sbp = encparams->append_param(encoder_params[ENC_LAYOUTS].name,
+							(int64_t)encoder->channel_layouts[0]);
+						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_LAYOUTS].name);
+						sublist->type = PARAMTYPE_HIDN;
+						sublist->set_selected((int64_t)encoder->channel_layouts[0]);
 
 						for(layout = encoder->channel_layouts; *layout; layout++)
 						{
@@ -2027,6 +2111,14 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 		}
 	}
 	return codecs;
+}
+
+const char *FileAVlibs::enc_prompt(const char *enc_name)
+{
+	for(int i = 0; encoder_params[i].name; i++)
+		if(strcmp(encoder_params[i].name, enc_name) == 0)
+			return encoder_params[i].prompt;
+	return "";
 }
 
 Paramlist *FileAVlibs::scan_encoder_opts(AVCodecID codec, int options)

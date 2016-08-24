@@ -56,9 +56,9 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	BC_WindowBase *win, *twin;
 	AVOutputFormat *oformat;
 	const char *name;
-	int x1, base_w;
+	int x1;
 	int codec_w = 0;
-	Param *param;
+	Param *param, *param2;
 
 	left = 10;
 	top = 10;
@@ -67,7 +67,11 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	fmtopts = 0;
 	codecpopup = 0;
 	codecopts = 0;
+	streamopts = 0;
 	codec_private = 0;
+	privbutton = 0;
+	privtitle = 0;
+	okbutton = 0;
 	this->options = options;
 	this->asset = asset;
 
@@ -99,38 +103,36 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	win = add_subwindow(new BC_Title(left, top, string));
 	top += win->get_h() + 10;
 	win = add_subwindow(new AVlibsConfigButton(left, top, globopts, this));
-	x1 = win->get_w() + 20;
-	add_subwindow(new BC_Title(x1, top, "Library options"));
+	base_left = win->get_w() + 20; // see
+	add_subwindow(new BC_Title(base_left, top, "Library options"));
 	top += win->get_h();
 	win = add_subwindow(new AVlibsConfigButton(left, top, fmtopts, this));
-	add_subwindow(new BC_Title(x1, top, "Format options"));
+	add_subwindow(new BC_Title(base_left, top, "Format options"));
 	top += win->get_h();
 	win = add_subwindow(new AVlibsCodecConfigButton(left, top, &codecopts, this));
 	base_w = win->get_w();
+
 	if(options & SUPPORTS_AUDIO)
 	{
-		twin = add_subwindow(new BC_Title(x1, top, "Audio codec:"));
+		twin = add_subwindow(new BC_Title(base_left, top, "Audio codec:"));
 		if(param = codecs->find(asset->acodec))
-			codecs->selectedint = param->intvalue;
+			codecs->set_selected(param->intvalue);
+		param2 = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_AUDIO);
 	}
 	else if(options & SUPPORTS_VIDEO)
 	{
-		twin = add_subwindow(new BC_Title(x1, top, "Video codec:"));
+		twin = add_subwindow(new BC_Title(base_left, top, "Video codec:"));
 		if(param = codecs->find(asset->vcodec))
-			codecs->selectedint = param->intvalue;
+			codecs->set_selected(param->intvalue);
+		param2 = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_VIDEO);
 	}
 	base_w += twin->get_w() + 10;
-	codecpopup = new AVlibsCodecConfigPopup(x1 + base_w,
+	codecpopup = new AVlibsCodecConfigPopup(base_left + base_w,
 		top, codec_w + 10, this, codecs);
 	top += win->get_h();
 	base_w += codecpopup->get_w() + x1;
-	add_subwindow(privbutton = new AVlibsCodecConfigButton(left, top, &codec_private, this));
-	add_subwindow(new BC_Title(x1, top, "Codec private options"));
-	top += privbutton->get_h();
-	int h = top + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 30;
-	reposition_window((get_root_w(1) - base_w) / 2, (get_root_h(1) - h) / 2,
-		base_w, h);
-	add_subwindow(new BC_OKButton(this));
+	tophalf_base = top;
+	draw_bottomhalf(param, param2);
 }
 
 
@@ -158,6 +160,74 @@ AVlibsConfig::~AVlibsConfig()
 	delete codecopts;
 	delete codecpopup;
 	delete codec_private;
+}
+
+void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
+{
+	Param *p1, *p2;
+	int haveopts;
+
+	if(codec && codec->subparams && defs && defs->subparams)
+	{
+		if(defs->stringvalue && !strcmp(defs->stringvalue, codec->name))
+		{
+			for(p2 = defs->subparams->first; p2; p2 = p2->next)
+			{
+				if((p1 = codec->subparams->find(p2->name)) && p1->subparams)
+				{
+					if(p2->type & PARAMTYPE_INT)
+						p1->subparams->set_selected(p2->intvalue);
+					if(p2->type & PARAMTYPE_LNG)
+						p1->subparams->set_selected(p2->longvalue);
+					if(p2->type & PARAMTYPE_DBL)
+						p1->subparams->set_selected(p2->floatvalue);
+				}
+			}
+		}
+	}
+	top = tophalf_base;
+	haveopts = 0;
+	delete streamopts;
+	streamopts = 0;
+	if(codec && codec->subparams)
+	{
+		for(p1 = codec->subparams->first; p1; p1 = p1->next)
+		{
+			if(p1->subparams && !(p1->subparams->type & PARAMTYPE_HIDN) &&
+					p1->subparams->total() > 1)
+			{
+				haveopts = 1;
+				break;
+			}
+		}
+		if(haveopts)
+		{
+			add_subwindow(streamopts = new Streamopts(base_left, top));
+			streamopts->show(codec);
+			top += streamopts->get_h();
+			if(streamopts->get_w() > base_w)
+				base_w = streamopts->get_w();
+		}
+	}
+	if(!privbutton)
+	{
+		add_subwindow(privbutton = new AVlibsCodecConfigButton(left, top, &codec_private, this));
+		add_subwindow(privtitle = new BC_Title(base_left, top, "Codec private options"));
+	}
+	else
+	{
+		privbutton->reposition_window(left, top);
+		privtitle->reposition_window(base_left, top);
+	}
+	top += privbutton->get_h();
+
+	int h = top + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 30;
+	reposition_window((get_root_w(1) - base_w) / 2, (get_root_h(1) - h) / 2,
+		base_w, h);
+	if(okbutton)
+		okbutton->reposition_window(10, top + 30);
+	else
+		add_subwindow(okbutton = new BC_OKButton(this));
 }
 
 void AVlibsConfig::open_paramwin(Paramlist *list)
@@ -220,6 +290,10 @@ int AVlibsConfig::handle_event()
 		privbutton->enable();
 	} else
 		privbutton->disable();
+
+	draw_bottomhalf(codecs->find_value(current_codec),
+		asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(options & SUPPORTS_VIDEO ?
+			AVL_PARAM_CODEC_VIDEO : AVL_PARAM_CODEC_AUDIO));
 	return 1;
 }
 
@@ -392,4 +466,48 @@ AVlibsParamWindow::AVlibsParamWindow(Paramlist *params, const char *winname)
 	reposition_window((get_root_w(1) - w) / 2, (get_root_h(1) - h) / 2,
 		w, h);
 	add_subwindow(new BC_OKButton(this));
+}
+
+Streamopts::Streamopts(int x, int y)
+ : BC_SubWindow(x, y, 1, 1)
+{
+}
+
+void Streamopts::show(Param *encoder)
+{
+	SubSelectionPopup *win;
+	Paramlist *pl;
+	int tb_width, tl_width;
+	int top, left, l;
+
+	top = left = 0;
+	tb_width = 0;
+
+	if(encoder->subparams)
+	{
+		for(int i = 0; FileAVlibs::encoder_params[i].name; i++)
+		{
+			if((l = get_text_width(MEDIUMFONT, FileAVlibs::encoder_params[i].prompt)) > left)
+				left = l;
+		}
+		left += 5;
+
+		for(Param *p = encoder->subparams->first; p; p = p->next)
+			tb_width = ParamlistWindow::max_name_size(p->subparams, this, tb_width);
+
+		tb_width += 10;
+		for(Param *p = encoder->subparams->first; p; p = p->next)
+		{
+			add_subwindow(new BC_Title(0, top + 4, FileAVlibs::enc_prompt(p->name)));
+			if(pl = p->subparams)
+			{
+				if(pl->type & PARAMTYPE_HIDN)
+					continue;
+				win = new SubSelectionPopup(left, top,
+					tb_width, this, pl);
+				top += win->get_h() + 5;
+			}
+		}
+	}
+	reposition_window(get_x(), get_y(), left + win->get_w() + 10, top);
 }

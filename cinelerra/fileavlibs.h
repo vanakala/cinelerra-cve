@@ -49,6 +49,13 @@ struct avlib_formattable
 	const char *encoder;
 };
 
+struct avlib_encparams
+{
+	const char *name;
+	const char *prompt;
+	int type;
+};
+
 class FileAVlibs : public FileBase
 {
 public:
@@ -76,6 +83,8 @@ public:
 // Callbacks of FileTOC
 	int get_streamcount();
 	stream_params* get_track_data(int trackindex);
+	static const char *enc_prompt(const char *enc_name);
+	static struct avlib_encparams encoder_params[];
 
 private:
 	int convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,

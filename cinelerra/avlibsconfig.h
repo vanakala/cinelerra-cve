@@ -37,6 +37,7 @@
 class AVlibsParamThread;
 class AVlibsParamWindow;
 class AVlibsCodecConfigButton;
+class Streamopts;
 
 class AVlibsConfig : public BC_Window
 {
@@ -69,11 +70,18 @@ public:
 	int current_codec;
 
 private:
+	void draw_bottomhalf(Param *codec, Param *defs);
 	int left;
 	int top;
 	int options;
+	int base_w;
+	int base_left;
+	int tophalf_base;
 	SubSelectionPopup *codecpopup;
 	AVlibsCodecConfigButton *privbutton;
+	BC_Title *privtitle;
+	BC_OKButton *okbutton;
+	Streamopts *streamopts;
 	char string[BCTEXTLEN];
 };
 
@@ -144,6 +152,14 @@ public:
 	int handle_event();
 private:
 	AVlibsConfig *config;
+};
+
+class Streamopts : public BC_SubWindow
+{
+public:
+	Streamopts(int x, int y);
+
+	void show(Param *encoder);
 };
 
 #endif

@@ -41,6 +41,17 @@
 #define FILEAVLIBS_APRIVT_IX 5
 #define FILEAVLIBS_VPRIVT_IX 6
 
+// Current codecs list in asset
+#define AVL_PARAM_CODEC_AUDIO "audio"
+#define AVL_PARAM_CODEC_VIDEO "video"
+
+// Some more encoder parameters
+#define ENC_PIX_FMTS     0
+#define ENC_FRAMERATES   1
+#define ENC_SAMPLERATES  2
+#define ENC_SAMPLE_FMTS  3
+#define ENC_LAYOUTS      4
+
 class FileAVlibs;
 
 #endif
