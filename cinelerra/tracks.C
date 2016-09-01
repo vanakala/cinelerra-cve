@@ -294,19 +294,27 @@ int Tracks::total_of(int type)
 
 	for(Track *current = first; current; current = NEXT)
 	{
-		ptstime start = edl->local_session->get_selectionstart(1);
-		mute_keyframe = 
-			(IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
-			start,
-			(Auto* &)mute_keyframe);
-
-		result += 
-			(current->play && type == PLAY) ||
-			(current->record && type == RECORD) ||
-			(current->gang && type == GANG) ||
-			(current->draw && type == DRAW) ||
-			(mute_keyframe->value && type == MUTE) ||
-			(current->expand_view && type == EXPAND);
+		if(type == MUTE)
+		{
+			ptstime start = edl->local_session->get_selectionstart(1);
+			mute_keyframe =
+				(IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
+				start,
+				(Auto* &)mute_keyframe);
+			if(mute_keyframe)
+				result += mute_keyframe->value != 0;
+			else
+				result += ((IntAutos*)current->automation->autos[AUTOMATION_MUTE])->default_value != 0;
+		}
+		else
+		{
+			result +=
+				(current->play && type == PLAY) ||
+				(current->record && type == RECORD) ||
+				(current->gang && type == GANG) ||
+				(current->draw && type == DRAW) ||
+				(current->expand_view && type == EXPAND);
+		}
 	}
 	return result;
 }
