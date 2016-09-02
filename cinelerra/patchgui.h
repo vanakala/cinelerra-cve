@@ -88,7 +88,7 @@ class PlayPatch : public BC_Toggle
 {
 public:
 	PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int button_press_event();
+	int handle_event();
 	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
@@ -98,7 +98,7 @@ class RecordPatch : public BC_Toggle
 {
 public:
 	RecordPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int button_press_event();
+	int handle_event();
 	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
@@ -117,7 +117,7 @@ class GangPatch : public BC_Toggle
 {
 public:
 	GangPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int button_press_event();
+	int handle_event();
 	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
@@ -127,7 +127,7 @@ class DrawPatch : public BC_Toggle
 {
 public:
 	DrawPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int button_press_event();
+	int handle_event();
 	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
@@ -137,7 +137,7 @@ class MutePatch : public BC_Toggle
 {
 public:
 	MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int button_press_event();
+	int handle_event();
 	int button_release_event();
 	static int get_keyframe_value(MWindow *mwindow, PatchGUI *patch);
 	MWindow *mwindow;
@@ -148,7 +148,7 @@ class ExpandPatch : public BC_Toggle
 {
 public:
 	ExpandPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int button_press_event();
+	int handle_event();
 	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;

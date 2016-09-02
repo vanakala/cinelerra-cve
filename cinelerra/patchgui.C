@@ -339,30 +339,19 @@ PlayPatch::PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 	set_select_drag(1);
 }
 
-int PlayPatch::button_press_event()
+int PlayPatch::handle_event()
 {
-	if(is_event_win() && get_buttonpress() == 1)
-	{
-		set_status(BC_Toggle::TOGGLE_DOWN);
-		update(!get_value());
-		patch->toggle_behavior(Tracks::PLAY,
-			get_value(),
-			this,
-			&patch->track->play);
-		return 1;
-	}
-	return 0;
+	patch->toggle_behavior(Tracks::PLAY,
+		get_value(),
+		this,
+		&patch->track->play);
+	return 1;
 }
 
 int PlayPatch::button_release_event()
 {
-	int result = BC_Toggle::button_release_event();
-
-	if(patch->patchbay->drag_operation != Tracks::NONE)
-	{
-		patch->patchbay->drag_operation = Tracks::NONE;
-	}
-	return result;
+	patch->patchbay->drag_operation = Tracks::NONE;
+	return BC_Toggle::button_release_event();;
 }
 
 
@@ -382,29 +371,19 @@ RecordPatch::RecordPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 	set_select_drag(1);
 }
 
-int RecordPatch::button_press_event()
+int RecordPatch::handle_event()
 {
-	if(is_event_win() && get_buttonpress() == 1)
-	{
-		set_status(BC_Toggle::TOGGLE_DOWN);
-		update(!get_value());
-		patch->toggle_behavior(Tracks::RECORD,
-			get_value(),
-			this,
-			&patch->track->record);
-		return 1;
-	}
-	return 0;
+	patch->toggle_behavior(Tracks::RECORD,
+		get_value(),
+		this,
+		&patch->track->record);
+	return 1;
 }
 
 int RecordPatch::button_release_event()
 {
-	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
-	{
-		patch->patchbay->drag_operation = Tracks::NONE;
-	}
-	return result;
+	patch->patchbay->drag_operation = Tracks::NONE;
+	return BC_Toggle::button_release_event();
 }
 
 
@@ -423,29 +402,19 @@ GangPatch::GangPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 	set_select_drag(1);
 }
 
-int GangPatch::button_press_event()
+int GangPatch::handle_event()
 {
-	if(is_event_win() && get_buttonpress() == 1)
-	{
-		set_status(BC_Toggle::TOGGLE_DOWN);
-		update(!get_value());
-		patch->toggle_behavior(Tracks::GANG,
-			get_value(),
-			this,
-			&patch->track->gang);
-		return 1;
-	}
-	return 0;
+	patch->toggle_behavior(Tracks::GANG,
+		get_value(),
+		this,
+		&patch->track->gang);
+	return 1;
 }
 
 int GangPatch::button_release_event()
 {
-	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
-	{
-		patch->patchbay->drag_operation = Tracks::NONE;
-	}
-	return result;
+	patch->patchbay->drag_operation = Tracks::NONE;
+	return BC_Toggle::button_release_event();
 }
 
 
@@ -464,29 +433,19 @@ DrawPatch::DrawPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 	set_select_drag(1);
 }
 
-int DrawPatch::button_press_event()
+int DrawPatch::handle_event()
 {
-	if(is_event_win() && get_buttonpress() == 1)
-	{
-		set_status(BC_Toggle::TOGGLE_DOWN);
-		update(!get_value());
-		patch->toggle_behavior(Tracks::DRAW,
-			get_value(),
-			this,
-			&patch->track->draw);
-		return 1;
-	}
-	return 0;
+	patch->toggle_behavior(Tracks::DRAW,
+		get_value(),
+		this,
+		&patch->track->draw);
+	return 1;
 }
 
 int DrawPatch::button_release_event()
 {
-	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
-	{
-		patch->patchbay->drag_operation = Tracks::NONE;
-	}
-	return result;
+	patch->patchbay->drag_operation = Tracks::NONE;
+	return BC_Toggle::button_release_event();
 }
 
 
@@ -505,43 +464,33 @@ MutePatch::MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 	set_select_drag(1);
 }
 
-int MutePatch::button_press_event()
+int MutePatch::handle_event()
 {
-	if(is_event_win() && get_buttonpress() == 1)
+	IntAuto *current;
+	ptstime position = mwindow->edl->local_session->get_selectionstart(1);
+	Autos *mute_autos = patch->track->automation->autos[AUTOMATION_MUTE];
+
+	current = (IntAuto*)mute_autos->get_auto_for_editing(position);
+
+	patch->toggle_behavior(Tracks::MUTE,
+		get_value(),
+		this,
+		&current->value);
+
+	mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
+
+	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE])
 	{
-		set_status(BC_Toggle::TOGGLE_DOWN);
-		update(!get_value());
-		IntAuto *current;
-		ptstime position = mwindow->edl->local_session->get_selectionstart(1);
-		Autos *mute_autos = patch->track->automation->autos[AUTOMATION_MUTE];
-
-		current = (IntAuto*)mute_autos->get_auto_for_editing(position);
-
-		patch->toggle_behavior(Tracks::MUTE,
-			get_value(),
-			this,
-			&current->value);
-
-		mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
-
-		if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE])
-		{
-			mwindow->gui->canvas->draw_overlays();
-			mwindow->gui->canvas->flash();
-		}
-		return 1;
+		mwindow->gui->canvas->draw_overlays();
+		mwindow->gui->canvas->flash();
 	}
-	return 0;
+	return 1;
 }
 
 int MutePatch::button_release_event()
 {
-	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
-	{
-		patch->patchbay->drag_operation = Tracks::NONE;
-	}
-	return result;
+	patch->patchbay->drag_operation = Tracks::NONE;
+	return BC_Toggle::button_release_event();
 }
 
 int MutePatch::get_keyframe_value(MWindow *mwindow, PatchGUI *patch)
@@ -569,30 +518,20 @@ ExpandPatch::ExpandPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 	set_select_drag(1);
 }
 
-int ExpandPatch::button_press_event()
+int ExpandPatch::handle_event()
 {
-	if(is_event_win() && get_buttonpress() == 1)
-	{
-		set_status(BC_Toggle::TOGGLE_DOWN);
-		update(!get_value());
-		patch->toggle_behavior(Tracks::EXPAND,
-			get_value(),
-			this,
-			&patch->track->expand_view);
-		mwindow->trackmovement(mwindow->edl->local_session->track_start);
-		return 1;
-	}
-	return 0;
+	patch->toggle_behavior(Tracks::EXPAND,
+		get_value(),
+		this,
+		&patch->track->expand_view);
+	mwindow->trackmovement(mwindow->edl->local_session->track_start);
+	return 1;
 }
 
 int ExpandPatch::button_release_event()
 {
-	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
-	{
-		patch->patchbay->drag_operation = Tracks::NONE;
-	}
-	return result;
+	patch->patchbay->drag_operation = Tracks::NONE;
+	return BC_Toggle::button_release_event();
 }
 
 
