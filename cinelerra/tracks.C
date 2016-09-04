@@ -297,14 +297,7 @@ int Tracks::total_of(int type)
 		if(type == MUTE)
 		{
 			ptstime start = edl->local_session->get_selectionstart(1);
-			mute_keyframe =
-				(IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
-				start,
-				(Auto* &)mute_keyframe);
-			if(mute_keyframe)
-				result += mute_keyframe->value != 0;
-			else
-				result += ((IntAutos*)current->automation->autos[AUTOMATION_MUTE])->default_value != 0;
+			result += ((IntAutos*)current->automation->autos[AUTOMATION_MUTE])->get_automation_constant(start, start);
 		}
 		else
 		{
