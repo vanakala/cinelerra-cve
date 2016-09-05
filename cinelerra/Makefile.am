@@ -92,7 +92,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    cwindowgui.C \
 		    cwindowtool.C \
 		    deleteallindexes.C \
-		    drivesync.C \
 		    edit.C \
 		    editpanel.C \
 		    editpopup.C \
@@ -344,7 +343,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cwindow.h \
 		 cwindowtool.h \
 		 deleteallindexes.h \
-		 drivesync.h \
 		 dv1394.h \
 		 edit.h \
 		 editpanel.h \
