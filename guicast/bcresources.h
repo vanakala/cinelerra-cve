@@ -31,6 +31,7 @@
 #include "bcsignals.inc"
 #include "bcsynchronous.inc"
 #include "bcwindowbase.inc"
+#include "hashcache.inc"
 #include "vframe.inc"
 
 #include <X11/Xlib.h>
@@ -314,6 +315,8 @@ public:
 	int use_xvideo;
 // Seems to help if only 1 window is created at a time.
 	Mutex *create_window_lock;
+//	Cache of parameters
+	static HashCache hash_cache;
 
 private:
 // Test for availability of shared memory pixmaps

@@ -25,6 +25,7 @@
 // Hash table with persistent storage in stringfiles.
 
 #include "bcwindowbase.inc"
+#include "hashcache.inc"
 #include "units.h"
 
 class BC_Hash
@@ -32,18 +33,16 @@ class BC_Hash
 public:
 	BC_Hash();
 	BC_Hash(const char *filename);
-	virtual ~BC_Hash();
 
 	void load();        // load from disk file
-	void save();        // save to disk file
+	void save();
 	void load_string(char *string);        // load from string
 	void save_string(char* &string);       // save to new string
-	int update(const char *name, Freq value); // update a value if it exists
-	int update(const char *name, double value); // update a value if it exists
-	int update(const char *name, float value); // update a value if it exists
-	int update(const char *name, int32_t value); // update a value if it exists
-	int update(const char *name, int64_t value); // update a value if it exists
-	int update(const char *name, const char *value); // create it if it doesn't
+	int update(const char *name, double value);
+	int update(const char *name, float value);
+	int update(const char *name, int32_t value);
+	int update(const char *name, int64_t value);
+	int update(const char *name, const char *value);
 	void delete_key(const char *key);  // remove key
 	void delete_keys_prefix(const char *key); // remove keys starting with key
 
@@ -59,17 +58,10 @@ public:
 // Return 1 if the tables are equivalent
 	int equivalent(BC_Hash *src);
 
-	void dump();
+	void dump(int indent = 0);
 
 private:
-// Reallocate table so at least total entries exist
-	void reallocate_table(int total);
-
-	char **names;  // list of string names
-	char **values;    // list of values
-	int total;             // number of defaults
-	int allocated;         // allocated defaults
-	char filename[BCTEXTLEN];        // filename the defaults are stored in
+	HashCacheElem *cache;
 };
 
 #endif

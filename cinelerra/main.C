@@ -28,6 +28,7 @@
 #include "filesystem.h"
 #include "fileavlibs.h"
 #include "garbage.h"
+#include "hashcache.h"
 #include "language.h"
 #include "loadfile.inc"
 #include "mainmenu.h"
@@ -301,6 +302,7 @@ int main(int argc, char *argv[])
 	}
 
 	filenames.remove_all_objects();
+	BC_Resources::hash_cache.save_changed();
 	return 0;
 }
 

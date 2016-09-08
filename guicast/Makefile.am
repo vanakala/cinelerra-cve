@@ -56,6 +56,7 @@ libguicastcve_la_SOURCES = \
 	bcwindowdraw.C \
 	condition.C \
 	filesystem.C \
+	hashcache.C \
 	mutex.C \
 	rotateframe.C \
 	sema.C \
@@ -168,6 +169,8 @@ noinst_HEADERS = \
 	filesystem.inc \
 	fonts.h \
 	guicast.h \
+	hashcache.h \
+	hashcache.inc \
 	keys.h \
 	language.h \
 	linklist.h \
