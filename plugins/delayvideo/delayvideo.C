@@ -108,7 +108,6 @@ DelayVideo::DelayVideo(PluginServer *server)
 	need_reconfigure = 1;
 	buffer = 0;
 	allocation = 0;
-	load_defaults();
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 

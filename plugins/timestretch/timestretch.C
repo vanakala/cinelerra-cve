@@ -228,7 +228,6 @@ TimeStretch::TimeStretch(PluginServer *server)
  : PluginAClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
-	load_defaults();
 	temp = 0;
 	pitch = 0;
 	resample = 0;
