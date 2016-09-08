@@ -205,7 +205,6 @@ BC_Hash* PluginClient::load_defaults_file(const char *filename)
 
 	strcpy(directory, server->plugin_conf_dir());
 	p = directory + strlen(directory);
-	*p++ = '/';
 	strcpy(p, filename);
 	defaults = new BC_Hash(directory);
 	defaults->load();
