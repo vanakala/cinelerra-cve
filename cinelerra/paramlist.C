@@ -58,6 +58,7 @@ Param::Param(const char *name, const char *value)
  : ListItem<Param>()
 {
 	initialize(name);
+	type = 0;
 	set_string(value);
 }
 
