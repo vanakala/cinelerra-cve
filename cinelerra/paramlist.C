@@ -114,6 +114,11 @@ void Param::copy_from(Param *that)
 		floatvalue = that->floatvalue;
 	if(that->type & PARAMTYPE_STR)
 		set_string(that->stringvalue);
+	if(that->subparams)
+	{
+		add_subparams(that->subparams->name);
+		subparams->copy_from(that->subparams);
+	}
 }
 
 void Param::set_help(const char *txt)
