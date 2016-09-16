@@ -177,16 +177,8 @@ void VFrame::clear_objects(int do_opengl)
 	}
 
 // Delete row pointers
-	switch(color_model)
-	{
-	case BC_COMPRESSED:
-	case BC_YUV420P:
-		break;
-
-	default:
-		delete [] rows;
-		break;
-	}
+	delete [] rows;
+	rows = 0;
 }
 
 int VFrame::get_field2_offset()
@@ -254,6 +246,18 @@ void VFrame::create_row_pointers()
 			this->y_offset = 0;
 			this->u_offset = w * h;
 			this->v_offset = w * h + w * h / 2;
+		}
+		y = this->data + this->y_offset;
+		u = this->data + this->u_offset;
+		v = this->data + this->v_offset;
+		break;
+
+	case BC_YUV444P:
+		if(!this->v_offset)
+		{
+			this->y_offset = 0;
+			this->u_offset = w * h;
+			this->v_offset = w * h + w * h;
 		}
 		y = this->data + this->y_offset;
 		u = this->data + this->u_offset;
@@ -1020,8 +1024,8 @@ void VFrame::dump(int minmax)
 	printf("VFrame %p dump\n", this);
 	printf("    pts %.3f, duration %.3f src_pts %.3f frame %d layer %d\n", 
 		pts, duration, source_pts, frame_number, layer);
-	printf("    Size %dx%d, cmodel %s offsets %ld %ld %ld\n", w, h, 
-		cmodel_name(color_model), y_offset, u_offset, v_offset);
+	printf("    Size %dx%d, cmodel %s bytes/line %d offsets %ld %ld %ld\n", w, h,
+		cmodel_name(color_model), bytes_per_line, y_offset, u_offset, v_offset);
 	printf("    data:%p rows: %p y:%p, u:%p, v:%p%s\n", data, rows,
 		y, u, v, shared ? " shared" : "");
 	printf("    compressed size %ld, compressed_allocated %ld\n",
@@ -1057,6 +1061,14 @@ void VFrame::dump(int minmax)
 			calc_minmax8(get_u(), w * h / 2, avg, min, max);
 			printf("    u: avg %d min %d max %d\n", avg, min, max);
 			calc_minmax8(get_v(), w * h / 2, avg, min, max);
+			printf("    v: avg %d min %d max %d\n", avg, min, max);
+			break;
+		case BC_YUV444P:
+			calc_minmax8(get_y(), w * h, avg, min, max);
+			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			calc_minmax8(get_u(), w * h, avg, min, max);
+			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			calc_minmax8(get_v(), w * h, avg, min, max);
 			printf("    v: avg %d min %d max %d\n", avg, min, max);
 			break;
 		case BC_RGB888:
