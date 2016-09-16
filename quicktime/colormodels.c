@@ -488,6 +488,8 @@ const char *cmodel_name(int cmodel)
 		return "YUV420P";
 	case BC_YUV422P:
 		return "YUV422P";
+	case BC_YUV444P:
+		return "YUV444P";
 	case BC_YUV422:
 		return "YUV422";
 	default:
