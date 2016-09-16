@@ -329,7 +329,7 @@ int FileAVlibs::open_file(int rd, int wr)
 	{
 		AVOutputFormat *fmt;
 		int rv;
-		Param *aparam;
+		Param *aparam, *bparam;
 
 		switch(asset->format)
 		{
@@ -388,7 +388,9 @@ int FileAVlibs::open_file(int rd, int wr)
 			video_ctx->height = asset->height;
 			video_ctx->time_base = av_d2q(1. / asset->frame_rate, 10000);
 			stream->time_base = video_ctx->time_base;
-			video_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
+			if(aparam->subparams &&
+					(bparam = aparam->subparams->find(encoder_params[ENC_PIX_FMTS].name)))
+				video_ctx->pix_fmt = (AVPixelFormat)bparam->intvalue;
 			video_ctx->sample_aspect_ratio =
 				av_mul_q(av_d2q(asset->aspect_ratio, 40),
 				(AVRational){video_ctx->height, video_ctx->width});
@@ -1190,6 +1192,20 @@ AVPixelFormat FileAVlibs::color_model_to_pix_fmt(int color_model)
 	return AV_PIX_FMT_NB;
 }
 
+int FileAVlibs::inter_color_model(int color_model)
+{
+	switch(color_model)
+	{
+	case BC_YUV888:
+	case BC_YUVA8888:
+		return BC_YUV444P;
+	case BC_RGB_FLOAT:
+	case BC_RGBA_FLOAT:
+		return BC_RGB888;
+	}
+	return color_model;
+}
+
 int FileAVlibs::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 {
 	int cmodel = frame->get_color_model();
@@ -1209,6 +1225,84 @@ int FileAVlibs::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 		picture->data[2] = frame->get_v();
 	}
 	return size;
+}
+
+int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
+	int width_out, int height_out, AVFrame *frame_out)
+{
+	int size;
+	int rv;
+	AVPicture pict;
+	AVPixelFormat pix_fmt_in = color_model_to_pix_fmt(frame_in->get_color_model());
+
+	if(pix_fmt_in != AV_PIX_FMT_NB)
+	{
+		if((size = init_picture_from_frame(&pict, frame_in)) < 0)
+			return 1;
+
+		if(!frame_out->data[0])
+		{
+			if((rv = av_frame_get_buffer(frame_out, 32)) < 0)
+			{
+				liberror(rv, "FileAVlibs::convert_cmodel:get_buffer");
+				return 1;
+			}
+		}
+
+		if((sws_ctx = sws_getCachedContext(sws_ctx, frame_in->get_w(), frame_in->get_h(),
+			pix_fmt_in, width_out, height_out, pix_fmt_out, SWS_BICUBIC,
+			0, 0, 0)) == 0)
+		{
+			errormsg("FileAVlibs::convert_cmodel: sws_getCachedContext() failed");
+			return 1;
+		}
+		if((rv = sws_scale(sws_ctx, pict.data, pict.linesize,
+			0, frame_in->get_h(), frame_out->data, frame_out->linesize)) < 0)
+		{
+			liberror(rv, "FileAVlibs::convert_cmodel:scaling");
+			return 1;
+		}
+	}
+	else
+	{
+		int cmodel = inter_color_model(frame_in->get_color_model());
+
+		if(temp_frame && (temp_frame->get_w() != frame_in->get_w() ||
+			temp_frame->get_h() != frame_in->get_h() ||
+			temp_frame->get_color_model() || cmodel))
+		{
+			delete temp_frame;
+			temp_frame = 0;
+		}
+
+		if(!temp_frame)
+			temp_frame = new VFrame(0, frame_in->get_w(),
+				frame_in->get_h(), cmodel);
+
+		cmodel_transfer(
+			// Packed data out
+			temp_frame->get_rows(),
+			// Packed data in
+			frame_in->get_rows(),
+			// Planar data out
+			temp_frame->get_y(), temp_frame->get_u(), temp_frame->get_v(),
+			// Planar data in
+			NULL, NULL, NULL,
+			// Dimensions in
+			0, 0, frame_in->get_w(), frame_in->get_h(),
+			// Dimensions out
+			0, 0, temp_frame->get_w(), temp_frame->get_h(),
+			// Color model in, color model out
+			frame_in->get_color_model(), cmodel,
+			// Background color
+			0,
+			// Rowspans in, out (of luma for YUV)
+			frame_in->get_w(), temp_frame->get_w());
+
+		return convert_cmodel(temp_frame, pix_fmt_out,
+			width_out, height_out, frame_out);
+	}
+	return 0;
 }
 
 int FileAVlibs::streamformat(AVFormatContext *context)
@@ -1265,38 +1359,12 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 		if(pts_base < 0)
 			pts_base = frame->get_pts();
 
-		if(!temp_frame)
+		if(convert_cmodel(frame, video_ctx->pix_fmt,
+				video_ctx->width, video_ctx->height, avvframe))
 		{
-			temp_frame = new VFrame (0, video_ctx->width,
-				video_ctx->height, BC_YUV420P);
+			avlibs_lock->unlock();
+			return 1;
 		}
-		cmodel_transfer(temp_frame->get_rows(),
-			frame->get_rows(),
-			temp_frame->get_y(),
-			temp_frame->get_u(),
-			temp_frame->get_v(),
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			0,
-			0,
-			frame->get_w(),
-			frame->get_h(),
-			0,
-			0,
-			temp_frame->get_w(),
-			temp_frame->get_h(),
-			frame->get_color_model(),
-			BC_YUV420P,
-			0,
-			frame->get_w(),
-			temp_frame->get_w());
-		avvframe->data[0] = temp_frame->get_y();
-		avvframe->data[1] = temp_frame->get_u();
-		avvframe->data[2] = temp_frame->get_v();
-		avvframe->linesize[0] = temp_frame->get_w();
-		avvframe->linesize[1] = temp_frame->get_w() / 2;
-		avvframe->linesize[2] = temp_frame->get_w() / 2;
 		avvframe->pts = round((frame->get_pts() - pts_base) / av_q2d(stream->time_base));
 
 		AVPacket pkt = {0};

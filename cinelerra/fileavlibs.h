@@ -89,6 +89,9 @@ public:
 private:
 	int convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 		int width_in, int height_in, VFrame *frame_out);
+	int convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
+		int width_out, int height_out, AVFrame *frame_out);
+	int inter_color_model(int color_model);
 	int decode_samples(int64_t rqpos, int length);
 	int fill_buffer(AVFrame *avaframe, int ibytes = 0, int bps = 0, int planar = 0);
 	int write_samples(int resampled_length, AVCodecContext *audio_ctx, ptstime pts = -1);
