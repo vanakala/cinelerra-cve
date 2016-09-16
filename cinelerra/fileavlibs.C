@@ -1173,28 +1173,19 @@ AVPixelFormat FileAVlibs::color_model_to_pix_fmt(int color_model)
 	case BC_YUV411P:
 		return AV_PIX_FMT_YUV411P;
 	case BC_RGB565:
-		if(get_byte_order())
-			return AV_PIX_FMT_RGB565LE;
-		else
-			return AV_PIX_FMT_RGB565LE;
+		return AV_PIX_FMT_RGB565;
 	case BC_RGBA8888:
 		return AV_PIX_FMT_RGBA;
 	case BC_RGB8:
 		return AV_PIX_FMT_RGB8;
 	case BC_BGR565:
-		if(get_byte_order())
-			return AV_PIX_FMT_BGR565LE;
-		else
-			return AV_PIX_FMT_BGR565BE;
+		return AV_PIX_FMT_BGR565;
 	case BC_ARGB8888:
 		return AV_PIX_FMT_ARGB;
 	case BC_ABGR8888:
 		return AV_PIX_FMT_ABGR;
 	case BC_RGB161616:
-		if(get_byte_order())
-			return AV_PIX_FMT_RGB48LE;
-		else
-			return AV_PIX_FMT_RGB48BE;
+		return AV_PIX_FMT_RGB48;
 	};
 	return AV_PIX_FMT_NB;
 }
