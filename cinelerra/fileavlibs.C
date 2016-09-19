@@ -1775,29 +1775,37 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			window->codec_private = 0;
 			delete defaults;
 		}
-		const char *cdkn = options & SUPPORTS_VIDEO ? AVL_PARAM_CODEC_VIDEO : AVL_PARAM_CODEC_AUDIO;
-		if(Param *p = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(cdkn))
-		{
-			Param *q = window->codecs->find(p->stringvalue);
+	}
 
-			if(q && q->subparams)
+	const char *cdkn = options & SUPPORTS_VIDEO ? AVL_PARAM_CODEC_VIDEO : AVL_PARAM_CODEC_AUDIO;
+
+	if(Param *p = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(cdkn))
+	{
+		Param *q = window->codecs->find(p->stringvalue);
+		int changed = 0;
+
+		if(q && q->subparams)
+		{
+			p->add_subparams(cdkn);
+			p->type |= PARAMTYPE_CODK;
+
+			for(Param *r = q->subparams->first; r; r = r->next)
 			{
-				p->add_subparams(cdkn);
-				p->type |= PARAMTYPE_CODK;
-				for(Param *r = q->subparams->first; r; r = r->next)
-				{
-					Paramlist *rs = r->subparams;
-					if(rs->type & PARAMTYPE_INT)
-						p->subparams->set(r->name, rs->selectedint);
-					if(rs->type & PARAMTYPE_LNG)
-						p->subparams->set(r->name, rs->selectedlong);
-					if(rs->type & PARAMTYPE_DBL)
-						p->subparams->set(r->name, rs->selectedfloat);
-				}
+				Paramlist *rs = r->subparams;
+
+				changed |= rs->type;
+				if(rs->type & PARAMTYPE_INT)
+					p->subparams->set(r->name, rs->selectedint);
+				if(rs->type & PARAMTYPE_LNG)
+					p->subparams->set(r->name, rs->selectedlong);
+				if(rs->type & PARAMTYPE_DBL)
+					p->subparams->set(r->name, rs->selectedfloat);
 			}
 		}
-		window->save_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX],
-			FILEAVLIBS_CODECS_CONFIG, window->fmtopts->name);
+
+		if(changed & PARAMTYPE_CHNG)
+			window->save_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX],
+				FILEAVLIBS_CODECS_CONFIG, window->fmtopts->name);
 	}
 
 	delete window;
