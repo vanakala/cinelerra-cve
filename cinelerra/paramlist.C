@@ -544,6 +544,7 @@ void Paramlist::save_list(FileXML *file)
 
 	sprintf(string, "/%s", name);
 	file->tag.set_title(string + 1);
+	type &= ~PARAMTYPE_CHNG;
 	if(type)
 	{
 		file->tag.set_property("type", type);
@@ -576,6 +577,7 @@ void Paramlist::load_list(FileXML *file)
 	strncpy(name, file->tag.get_title(), PARAM_NAMELEN);
 	name[PARAM_NAMELEN - 1] = 0;
 	type = file->tag.get_property("type", 0);
+	type &= ~PARAMTYPE_CHNG;
 
 	if(type)
 	{

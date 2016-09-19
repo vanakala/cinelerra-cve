@@ -167,6 +167,7 @@ int SubSelectionPopup::handle_event()
 				list->set_selected(current->longvalue);
 			if(list->type & PARAMTYPE_DBL)
 				list->set_selected(current->floatvalue);
+			list->type |= PARAMTYPE_CHNG;
 			break;
 		}
 		i++;
