@@ -454,7 +454,6 @@ int FileAVlibs::open_file(int rd, int wr)
 
 			audio_ctx = stream->codec;
 			audio_index = context->nb_streams - 1;
-			audio_ctx->bit_rate = 64000;
 			audio_ctx->sample_rate = asset->sample_rate;
 			if(codec->supported_samplerates)
 			{
@@ -473,7 +472,8 @@ int FileAVlibs::open_file(int rd, int wr)
 			audio_ctx->channels = asset->channels;
 			// FIXIT - codec supported layouts must be checked
 			audio_ctx->channel_layout = AV_CH_LAYOUT_STEREO;
-			audio_ctx->sample_fmt = codec->sample_fmts[0];
+			if(bparam = aparam->subparams->find(encoder_params[ENC_SAMPLE_FMTS].name))
+				audio_ctx->sample_fmt = (AVSampleFormat)bparam->intvalue;
 			stream->time_base = (AVRational){1, audio_ctx->sample_rate};
 			audio_ctx->time_base = stream->time_base;
 
