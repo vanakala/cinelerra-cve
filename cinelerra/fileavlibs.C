@@ -2277,7 +2277,7 @@ void FileAVlibs::dump_AVCodec(const AVCodec *codec, int indent)
 	if(codec->sample_fmts)
 	{
 		printf("%*sSupported sampleformats:\n", indent, "");
-		for(int i = 0; codec->sample_fmts[i]; i++)
+		for(int i = 0; codec->sample_fmts[i] != -1; i++)
 			printf("%*s%s\n", indent + 2, "",
 				av_get_sample_fmt_name(codec->sample_fmts[i]));
 	}
