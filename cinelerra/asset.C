@@ -870,7 +870,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 	{
 		GET_DEFAULT("AUDIO_CODEC", acodec);
 		GET_DEFAULT("VIDEO_CODEC", vcodec);
-		FileAVlibs::get_render_defaults(this);
+		format_changed();
 	}
 
 	if(do_data_types)
@@ -974,6 +974,11 @@ void Asset::load_defaults(BC_Hash *defaults,
 	tcstart = GET_DEFAULT("TCSTART", tcstart);
 	tcend = GET_DEFAULT("TCEND", tcend);
 	tcformat = GET_DEFAULT("TCFORMAT", tcformat);
+}
+
+void Asset::format_changed()
+{
+	FileAVlibs::get_render_defaults(this);
 }
 
 void Asset::save_defaults(BC_Hash *defaults, 

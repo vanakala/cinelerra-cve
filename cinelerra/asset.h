@@ -87,6 +87,7 @@ public:
 		int do_path,
 		int do_data_types,
 		int do_bits);
+	void format_changed();
 	void save_defaults(BC_Hash *defaults, 
 		const char *prefix /* = 0 */,
 		int do_format,     /* Don't save format which is autodetected by file loader */
