@@ -154,6 +154,7 @@ private:
 	// Last decoded positions
 	static Mutex *avlibs_lock;
 	stream_params track_data;
+	int input_channels;
 	int num_buffers;
 	int buffer_len;
 	int buffer_pos;
@@ -164,6 +165,7 @@ private:
 	uint8_t *resampled_data[MAXCHANNELS];
 	int resampled_alloc;
 	static const char *ignored[];
+	static const uint64_t input_layouts[];
 };
 
 #endif

@@ -85,6 +85,21 @@ struct avlib_encparams FileAVlibs::encoder_params[] =
 	{ 0, 0, 0 }
 };
 
+const uint64_t FileAVlibs::input_layouts[] =
+{
+    0,
+    AV_CH_LAYOUT_MONO,
+    AV_CH_LAYOUT_STEREO,
+    AV_CH_LAYOUT_2_1,
+    AV_CH_LAYOUT_QUAD,
+    AV_CH_LAYOUT_5POINT0,
+    AV_CH_LAYOUT_6POINT0,
+    AV_CH_LAYOUT_7POINT0,
+    AV_CH_LAYOUT_OCTAGONAL
+};
+
+#define NUM_INPUT_LAYOUTS (sizeof(input_layouts) / sizeof(uint64_t))
+
 extern "C"
 {
 #include <libswscale/swscale.h>
@@ -469,9 +484,16 @@ int FileAVlibs::open_file(int rd, int wr)
 					return 1;
 				}
 			}
-			audio_ctx->channels = asset->channels;
-			// FIXIT - codec supported layouts must be checked
-			audio_ctx->channel_layout = AV_CH_LAYOUT_STEREO;
+			if(bparam = aparam->subparams->find(encoder_params[ENC_LAYOUTS].name))
+			{
+				audio_ctx->channel_layout = bparam->longvalue;
+				audio_ctx->channels = av_get_channel_layout_nb_channels(bparam->longvalue);
+			}
+			else
+			{
+				audio_ctx->channels = asset->channels;
+				audio_ctx->channel_layout = av_get_default_channel_layout(asset->channels);
+			}
 			if(bparam = aparam->subparams->find(encoder_params[ENC_SAMPLE_FMTS].name))
 				audio_ctx->sample_fmt = (AVSampleFormat)bparam->intvalue;
 			stream->time_base = (AVRational){1, audio_ctx->sample_rate};
@@ -491,11 +513,14 @@ int FileAVlibs::open_file(int rd, int wr)
 				return 1;
 			}
 			av_dict_free(&dict);
+
+			input_channels = MIN(asset->channels, (NUM_INPUT_LAYOUTS - 1));
+
 			if(!(swr_ctx = swr_alloc_set_opts(NULL,
 				audio_ctx->channel_layout,
 				audio_ctx->sample_fmt,
 				audio_ctx->sample_rate,
-				AV_CH_FRONT_LEFT | AV_CH_FRONT_RIGHT,
+				input_layouts[input_channels],
 				AV_SAMPLE_FMT_DBLP,
 				asset->sample_rate, 0, 0)))
 			{
@@ -1429,7 +1454,7 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	}
 
 // Resample the whole buffer
-	for(chan = 0; chan < asset->channels; chan++)
+	for(chan = 0; chan < input_channels; chan++)
 		in_data[chan] = frames[chan]->buffer;
 
 	if((resampled_length = swr_convert(swr_ctx, resampled_data,
@@ -2163,7 +2188,6 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 						sbp = encparams->append_param(encoder_params[ENC_LAYOUTS].name,
 							(int64_t)encoder->channel_layouts[0]);
 						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_LAYOUTS].name);
-						sublist->type = PARAMTYPE_HIDN;
 						sublist->set_selected((int64_t)encoder->channel_layouts[0]);
 
 						for(layout = encoder->channel_layouts; *layout; layout++)
