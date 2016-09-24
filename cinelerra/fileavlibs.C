@@ -2013,12 +2013,14 @@ Paramlist *FileAVlibs::clean_list(Paramlist *list)
 
 	for(current = list->first; current; current = current->next)
 	{
-		if(current->subparams && (current->subparams->total() == 0))
+		while(current && current->subparams && (current->subparams->total() <= 1))
 		{
 			Param *np = current->next;
 			delete current;
 			current = np;
 		}
+		if(!current)
+			break;
 	}
 	return list;
 }
