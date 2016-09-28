@@ -1752,6 +1752,9 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			pfx, window->codecopts->name, defaults);
 		if(options & SUPPORTS_VIDEO)
 		{
+			if((pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_VIDEO)) &&
+					pa->intvalue != window->current_codec)
+				pa->type |= PARAMTYPE_CHNG;
 			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(AVL_PARAM_CODEC_VIDEO, window->current_codec);
 			pa->set(window->codecopts->name);
 			strcpy(asset->vcodec, window->codecopts->name);
@@ -1760,6 +1763,9 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 		}
 		else if(options & SUPPORTS_AUDIO)
 		{
+			if((pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_AUDIO)) &&
+					pa->intvalue != window->current_codec)
+				pa->type |= PARAMTYPE_CHNG;
 			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(AVL_PARAM_CODEC_AUDIO, window->current_codec);
 			pa->set(window->codecopts->name);
 			strcpy(asset->acodec, window->codecopts->name);
@@ -1807,8 +1813,14 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	if(Param *p = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(cdkn))
 	{
 		Param *q = window->codecs->find(p->stringvalue);
-		int changed = 0;
+		int changed = p->type;
 
+		if(p->type & PARAMTYPE_CHNG)
+		{
+			delete p->subparams;
+			p->subparams = 0;
+			p->type &= ~PARAMTYPE_CHNG;
+		}
 		if(q && q->subparams)
 		{
 			p->add_subparams(cdkn);
@@ -1827,7 +1839,6 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 					p->subparams->set(r->name, rs->selectedfloat);
 			}
 		}
-
 		if(changed & PARAMTYPE_CHNG)
 			window->save_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX],
 				FILEAVLIBS_CODECS_CONFIG, window->fmtopts->name);
