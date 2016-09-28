@@ -166,6 +166,7 @@ void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
 {
 	Param *p1, *p2;
 	int haveopts;
+	int subw = base_w;
 
 	if(codec && codec->subparams && defs && defs->subparams)
 	{
@@ -205,8 +206,8 @@ void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
 			add_subwindow(streamopts = new Streamopts(base_left, top));
 			streamopts->show(codec);
 			top += streamopts->get_h();
-			if(streamopts->get_w() > base_w)
-				base_w = streamopts->get_w();
+			if(streamopts->get_w() > subw)
+				subw = streamopts->get_w();
 		}
 	}
 	if(!privbutton)
@@ -222,8 +223,9 @@ void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
 	top += privbutton->get_h();
 
 	int h = top + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 30;
-	reposition_window((get_root_w(1) - base_w) / 2, (get_root_h(1) - h) / 2,
-		base_w, h);
+	subw += base_left;
+	reposition_window((get_root_w(1) - subw) / 2, (get_root_h(1) - h) / 2,
+		subw, h);
 	if(okbutton)
 		okbutton->reposition_window(10, top + 30);
 	else
