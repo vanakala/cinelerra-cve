@@ -194,11 +194,13 @@ void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
 	{
 		for(p1 = codec->subparams->first; p1; p1 = p1->next)
 		{
-			if(p1->subparams && !(p1->subparams->type & PARAMTYPE_HIDN) &&
-					p1->subparams->total() > 1)
+			if(p1->subparams)
 			{
-				haveopts = 1;
-				break;
+				if(!(p1->subparams->type & PARAMTYPE_HIDN) &&
+						p1->subparams->total() > 1)
+					haveopts = 1;
+				else
+					p1->subparams->type |= PARAMTYPE_HIDN;
 			}
 		}
 		if(haveopts)
@@ -495,7 +497,10 @@ void Streamopts::show(Param *encoder)
 		left += 5;
 
 		for(Param *p = encoder->subparams->first; p; p = p->next)
-			tb_width = ParamlistWindow::max_name_size(p->subparams, this, tb_width);
+		{
+			if(!(p->subparams->type & PARAMTYPE_HIDN))
+				tb_width = ParamlistWindow::max_name_size(p->subparams, this, tb_width);
+		}
 
 		tb_width += 10;
 		for(Param *p = encoder->subparams->first; p; p = p->next)
