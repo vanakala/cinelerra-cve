@@ -106,7 +106,7 @@ private:
 		int options, AVOutputFormat **ofmtp);
 	static Paramlist *scan_options(const AVClass *avclass, int options,
 		const char *listname);
-	static Paramlist *scan_codecs(AVOutputFormat *oformat, int options);
+	static Paramlist *scan_codecs(AVOutputFormat *oformat, Asset *asset, int options);
 	static Paramlist *scan_encoder_opts(AVCodecID codec, int options);
 	static Paramlist *scan_encoder_private_opts(AVCodecID codec, int options);
 	static Paramlist *clean_list(Paramlist *list);

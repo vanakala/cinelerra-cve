@@ -2089,7 +2089,7 @@ int FileAVlibs::skip_avoption(const AVOption *opt, int typefl)
 	return 0;
 }
 
-Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
+Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int options)
 {
 	const struct AVCodecTag * const *ctag;
 	const struct AVCodecTag *tags;
@@ -2201,7 +2201,11 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, int options)
 						sbp = encparams->append_param(encoder_params[ENC_LAYOUTS].name,
 							(int64_t)encoder->channel_layouts[0]);
 						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_LAYOUTS].name);
-						sublist->set_selected((int64_t)encoder->channel_layouts[0]);
+
+						if(asset->channels > 0 && asset->channels < NUM_INPUT_LAYOUTS)
+							sublist->set_selected((int64_t)input_layouts[asset->channels]);
+						else
+							sublist->set_selected((int64_t)encoder->channel_layouts[0]);
 
 						for(layout = encoder->channel_layouts; *layout; layout++)
 						{
