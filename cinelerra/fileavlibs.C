@@ -396,7 +396,6 @@ int FileAVlibs::open_file(int rd, int wr)
 				avlibs_lock->unlock();
 				return 1;
 			}
-
 			video_ctx = stream->codec;
 			video_index = context->nb_streams - 1;
 			video_ctx->width = asset->width;
@@ -2094,14 +2093,10 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 	const struct AVCodecTag * const *ctag;
 	const struct AVCodecTag *tags;
 	AVCodec *encoder;
-	Param *param;
+	Param *param, *sbp;
 	Paramlist *codecs;
 
 	codecs = new Paramlist("AVLibCodecs");
-	if(options & SUPPORTS_VIDEO)
-		codecs->set_selected(oformat->video_codec);
-	if(options & SUPPORTS_AUDIO)
-		codecs->set_selected(oformat->audio_codec);
 
 	for(ctag = oformat->codec_tag; *ctag; ctag++)
 	{
@@ -2134,7 +2129,6 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 						sbp = encparams->append_param(encoder_params[ENC_PIX_FMTS].name,
 							(int)encoder->pix_fmts[0]);
 						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_PIX_FMTS].name);
-						sublist->set_selected((int)encoder->pix_fmts[0]);
 
 						for(pix_fmt = encoder->pix_fmts; *pix_fmt != AV_PIX_FMT_NONE; pix_fmt++)
 						{
@@ -2150,7 +2144,6 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 							av_q2d(encoder->supported_framerates[0]));
 						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_FRAMERATES].name);
 						sublist->type |= PARAMTYPE_HIDN;
-						sublist->set_selected(av_q2d(encoder->supported_framerates[0]));
 
 						for(framerate = encoder->supported_framerates; framerate->num != 0; framerate++)
 						{
@@ -2218,6 +2211,43 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 			}
 		}
 	}
+	// Remove unusable codecs
+	for(param = codecs->first; param; param = param->next)
+	{
+		if(options & SUPPORTS_VIDEO && asset->frame_rate)
+		{
+			while(param && param->subparams &&
+				(sbp = param->subparams->find(encoder_params[ENC_FRAMERATES].name)))
+			{
+				if(!sbp->subparams->find_value(asset->frame_rate))
+				{
+					Param *np = param->next;
+					delete param;
+					param = np;
+				}
+				else
+					break;
+			}
+		}
+		if(options & SUPPORTS_AUDIO && asset->sample_rate)
+		{
+			while(param && param->subparams &&
+				(sbp = param->subparams->find(encoder_params[ENC_SAMPLERATES].name)))
+			{
+				if(!sbp->subparams->find_value(asset->sample_rate))
+				{
+					Param *np = param->next;
+					delete param;
+					param = np;
+				}
+				else
+					break;
+			}
+		}
+		if(!param)
+			break;
+	}
+	codecs->set_selected(codecs->first->intvalue);
 	return codecs;
 }
 

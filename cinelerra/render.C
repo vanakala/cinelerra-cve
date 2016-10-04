@@ -395,6 +395,7 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.layers = 1;
 		asset.width = edl->session->output_w;
 		asset.height = edl->session->output_h;
+		asset.frame_rate = edl->session->frame_rate;
 		asset.interlace_mode = edl->session->interlace_mode;
 		asset.tcstart = round((edl->session->get_frame_offset() +
 			edl->local_session->get_selectionstart()) *
@@ -417,6 +418,7 @@ int Render::check_asset(EDL *edl, Asset &asset)
 	{
 		asset.audio_data = 1;
 		asset.channels = edl->session->audio_channels;
+		asset.sample_rate = edl->session->sample_rate;
 		if(asset.format == FILE_MOV) asset.byte_order = 0;
 		asset.tcstart = round((edl->session->get_frame_offset() +
 			edl->local_session->get_selectionstart()) *
