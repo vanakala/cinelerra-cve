@@ -2008,6 +2008,10 @@ void BC_PopupTextBox::reposition_window(int x, int y)
 	listbox->reposition_window(x1, y1);
 }
 
+void BC_PopupTextBox::disable_text(int option)
+{
+	textbox->disable(option);
+}
 
 
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 

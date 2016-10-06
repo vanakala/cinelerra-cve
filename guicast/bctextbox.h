@@ -286,6 +286,7 @@ public:
 	void update_list(ArrayList<BC_ListBoxItem*> *data);
 	void reposition_widget(int x, int y, int w = -1, int h = -1);
 	void reposition_window(int x, int y);
+	void disable_text(int option);
 
 	friend class BC_PopupTextBoxText;
 	friend class BC_PopupTextBoxList;
