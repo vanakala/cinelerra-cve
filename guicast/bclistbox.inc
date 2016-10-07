@@ -30,6 +30,7 @@
 #define LISTBOX_DRAG      0x0010   // Allow user to drag icons around
 #define LISTBOX_SROW      0x0020   // Icons should be in single vertical row
 #define LISTBOX_SMALLFONT 0x0040   // Use small font
+#define LISTBOX_SHRINK    0x0080   // Shrink listbox to useful size
 
 // White space around text
 #define LISTBOX_MARGIN   4

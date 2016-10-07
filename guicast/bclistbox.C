@@ -378,6 +378,10 @@ BC_ListBox::BC_ListBox(int x,
 		labelfont = SMALLFONT;
 	else
 		labelfont = MEDIUMFONT;
+
+	shrink = options & LISTBOX_SHRINK;
+	popup_max_h = h;
+
 	this->column_titles = 0;
 	this->column_width = 0;
 
@@ -483,6 +487,18 @@ int BC_ListBox::query_list()
 	return selection_changed;
 }
 
+void BC_ListBox::shrink_height()
+{
+	int new_h;
+
+	if(shrink && data)
+	{
+		new_h = get_items_height(data, columns) + LISTBOX_MARGIN;
+		if(popup_max_h > new_h)
+			popup_h = new_h;
+	}
+}
+
 void BC_ListBox::init_column_width()
 {
 	if(!column_width && data && top_level)
@@ -545,6 +561,7 @@ void BC_ListBox::initialize()
 	BC_SubWindow::initialize();
 
 	init_column_width();
+	shrink_height();
 
 	if(top_level->get_resources()->listbox_bg)
 		bg_pixmap = new BC_Pixmap(this, 
@@ -1442,6 +1459,7 @@ void BC_ListBox::update(ArrayList<BC_ListBoxItem*> *data,
 		set_autoplacement(data, 1, 1);
 
 	init_column_width();
+	shrink_height();
 
 	if(gui && draw)
 	{

@@ -315,6 +315,7 @@ private:
 // Returns 1 if selection changed
 	int query_list();
 	void init_column_width();
+	void shrink_height();
 	void reset_cursor(int new_cursor);
 // Fix boundary conditions after resize
 	void column_width_boundaries();
@@ -452,6 +453,8 @@ private:
 	int icon_position;
 	int single_row;
 	int labelfont;
+	int shrink;
+	int popup_max_h;
 // Scrollbars are created as needed
 	BC_ListBoxXScroll *xscrollbar;
 	BC_ListBoxYScroll *yscrollbar;
