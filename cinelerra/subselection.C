@@ -29,6 +29,8 @@
 #include "subselection.h"
 #include "vframe.h"
 
+#define TEXTBOX_LIST_H 350
+
 SubSelection::SubSelection(int x, int y, int w, BC_WindowBase *base, Param *param)
  : BC_TextBox(x, y, w, 1, param->name)
 {
@@ -122,12 +124,13 @@ int SubSelectionItem::handle_event()
 }
 
 SubSelectionPopup::SubSelectionPopup(int x, int y, int w, BC_WindowBase *base, Paramlist *paramlist)
- : BC_PopupTextBox(base, 0, 0, x, y, w, 400)
+ : BC_PopupTextBox(base, 0, 0, x, y, w, TEXTBOX_LIST_H)
 {
 	Param *current;
 	codecs = new ArrayList<BC_ListBoxItem*>;
 
 	list = paramlist;
+	disable_text(1);
 
 	for(current = paramlist->first; current; current = current->next)
 	{
