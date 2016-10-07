@@ -1898,7 +1898,7 @@ BC_PopupTextBoxList::BC_PopupTextBoxList(BC_PopupTextBox *popup, int x, int y)
 	popup->text_w + BC_WindowBase::get_resources()->listbox_button[0]->get_w(),
 	popup->list_h,
 	popup->list_items,
-	LISTBOX_POPUP)
+	LISTBOX_POPUP | LISTBOX_SHRINK)
 {
 	this->popup = popup;
 }
