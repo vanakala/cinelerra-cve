@@ -2129,6 +2129,7 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 						sbp = encparams->append_param(encoder_params[ENC_PIX_FMTS].name,
 							(int)encoder->pix_fmts[0]);
 						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_PIX_FMTS].name);
+						sublist->set_selected((int)encoder->pix_fmts[0]);
 
 						for(pix_fmt = encoder->pix_fmts; *pix_fmt != AV_PIX_FMT_NONE; pix_fmt++)
 						{
@@ -2164,7 +2165,6 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 							encoder->supported_samplerates[0]);
 						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_SAMPLERATES].name);
 						sublist->type |= PARAMTYPE_HIDN;
-						sublist->set_selected(encoder->supported_samplerates[0]);
 
 						for(srate = encoder->supported_samplerates; *srate; srate++)
 						{
