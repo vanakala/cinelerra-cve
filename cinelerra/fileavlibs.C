@@ -861,6 +861,13 @@ int FileAVlibs::read_frame(VFrame *frame)
 	return error;
 }
 
+// Variables of read_aframe and its funcions:
+//   audio_pos: stream position in stream units
+//   rqpos: requested position in stream_units
+//   rqlen: requested length in stream_units
+//   buffer_start, buffer_end in stream_units
+//   buffer_pos: end of abuffer in samples of aframe
+
 int FileAVlibs::read_aframe(AFrame *aframe)
 {
 	int64_t rqpos, rqlen;
@@ -930,8 +937,8 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 			avlibs_lock->unlock();
 			return error;
 		}
-		buffer_end = (double)buffer_pos / aframe->samplerate /
-			av_q2d(stream->time_base) + buffer_start;
+		buffer_end = round((double)buffer_pos / aframe->samplerate /
+			av_q2d(stream->time_base)) + buffer_start;
 	}
 
 	int copylen = MIN(buffer_pos, aframe->fill_length());
@@ -1018,6 +1025,8 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 			error = 0;
 			audio_eof = 1;
 			pkt.stream_index = audio_index;
+			pkt.data = 0;
+			pkt.size = 0;
 		}
 
 		if(pkt.stream_index == audio_index)
@@ -1083,7 +1092,7 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 		else
 			ibp[j] = &avaframe->data[j][inpos];
 	}
-	in_length = av_frame_get_pkt_duration(avaframe) - insamples;
+	in_length = avaframe->nb_samples - insamples;
 	out_samples = swr_convert(swr_ctx,
 		(uint8_t **)obp,                   // output buffer
 		buffer_len - buffer_pos,           // output buffer in samples
