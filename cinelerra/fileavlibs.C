@@ -85,7 +85,7 @@ struct avlib_encparams FileAVlibs::encoder_params[] =
 	{ 0, 0, 0 }
 };
 
-const uint64_t FileAVlibs::input_layouts[] =
+const uint64_t FileAVlibs::internal_layouts[] =
 {
     0,
     AV_CH_LAYOUT_MONO,
@@ -98,7 +98,7 @@ const uint64_t FileAVlibs::input_layouts[] =
     AV_CH_LAYOUT_OCTAGONAL
 };
 
-#define NUM_INPUT_LAYOUTS (sizeof(input_layouts) / sizeof(uint64_t))
+#define NUM_INTERNAL_LAYOUTS (sizeof(internal_layouts) / sizeof(uint64_t))
 
 extern "C"
 {
@@ -513,13 +513,13 @@ int FileAVlibs::open_file(int rd, int wr)
 			}
 			av_dict_free(&dict);
 
-			input_channels = MIN(asset->channels, (NUM_INPUT_LAYOUTS - 1));
+			input_channels = MIN(asset->channels, (NUM_INTERNAL_LAYOUTS - 1));
 
 			if(!(swr_ctx = swr_alloc_set_opts(NULL,
 				audio_ctx->channel_layout,
 				audio_ctx->sample_fmt,
 				audio_ctx->sample_rate,
-				input_layouts[input_channels],
+				internal_layouts[input_channels],
 				AV_SAMPLE_FMT_DBLP,
 				asset->sample_rate, 0, 0)))
 			{
@@ -881,10 +881,10 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 	if(!swr_ctx)
 	{
 		swr_ctx = swr_alloc_set_opts(NULL,
-			AV_CH_LAYOUT_STEREO,          // output layout
+			internal_layouts[MIN(asset->channels, NUM_INTERNAL_LAYOUTS - 1)],
 			AV_SAMPLE_FMT_DBLP,           // out sample format
 			aframe->samplerate,           // out samplerate
-			AV_CH_LAYOUT_STEREO,          // in ch layout
+			decoder_context->channel_layout,
 			decoder_context->sample_fmt,  // in sample fmt
 			decoder_context->sample_rate, // in sample rate
 			0, 0);
@@ -1081,9 +1081,9 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 		obp[j] = &abuffer[j][buffer_pos];
 
 	inpos = insamples * bps;
-	// FIXIT - 2 channels only
+
 	if(!planar)
-		inpos *= 2;
+		inpos *= av_frame_get_channels(avaframe);
 
 	for(int j = 0; j < AV_NUM_DATA_POINTERS; j++)
 	{
@@ -2204,8 +2204,8 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 							(int64_t)encoder->channel_layouts[0]);
 						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_LAYOUTS].name);
 
-						if(asset->channels > 0 && asset->channels < NUM_INPUT_LAYOUTS)
-							sublist->set_selected((int64_t)input_layouts[asset->channels]);
+						if(asset->channels > 0 && asset->channels < NUM_INTERNAL_LAYOUTS)
+							sublist->set_selected((int64_t)internal_layouts[asset->channels]);
 						else
 							sublist->set_selected((int64_t)encoder->channel_layouts[0]);
 

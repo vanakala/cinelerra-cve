@@ -165,7 +165,7 @@ private:
 	uint8_t *resampled_data[MAXCHANNELS];
 	int resampled_alloc;
 	static const char *ignored[];
-	static const uint64_t input_layouts[];
+	static const uint64_t internal_layouts[];
 };
 
 #endif
