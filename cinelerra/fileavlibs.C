@@ -483,6 +483,7 @@ int FileAVlibs::open_file(int rd, int wr)
 					return 1;
 				}
 			}
+
 			if(bparam = aparam->subparams->find(encoder_params[ENC_LAYOUTS].name))
 			{
 				audio_ctx->channel_layout = bparam->longvalue;
@@ -527,7 +528,6 @@ int FileAVlibs::open_file(int rd, int wr)
 				avlibs_lock->unlock();
 				return 1;
 			}
-
 			if(swr_init(swr_ctx))
 			{
 				errormsg(_("FileAVlibs::open_file: Failed to initalize resample context"));
@@ -1816,41 +1816,9 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 		}
 	}
 
-	const char *cdkn = options & SUPPORTS_VIDEO ? AVL_PARAM_CODEC_VIDEO : AVL_PARAM_CODEC_AUDIO;
-
-	if(Param *p = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(cdkn))
-	{
-		Param *q = window->codecs->find(p->stringvalue);
-		int changed = p->type;
-
-		if(p->type & PARAMTYPE_CHNG)
-		{
-			delete p->subparams;
-			p->subparams = 0;
-			p->type &= ~PARAMTYPE_CHNG;
-		}
-		if(q && q->subparams)
-		{
-			p->add_subparams(cdkn);
-			p->type |= PARAMTYPE_CODK;
-
-			for(Param *r = q->subparams->first; r; r = r->next)
-			{
-				Paramlist *rs = r->subparams;
-
-				changed |= rs->type;
-				if(rs->type & PARAMTYPE_INT)
-					p->subparams->set(r->name, rs->selectedint);
-				if(rs->type & PARAMTYPE_LNG)
-					p->subparams->set(r->name, rs->selectedlong);
-				if(rs->type & PARAMTYPE_DBL)
-					p->subparams->set(r->name, rs->selectedfloat);
-			}
-		}
-		if(changed & PARAMTYPE_CHNG)
-			window->save_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX],
-				FILEAVLIBS_CODECS_CONFIG, window->fmtopts->name);
-	}
+	if(update_codeclist(asset, window->codecs, options))
+		window->save_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX],
+			FILEAVLIBS_CODECS_CONFIG, window->fmtopts->name);
 
 	delete window;
 }
@@ -1865,7 +1833,6 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 		return;
-
 	asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = AVlibsConfig::load_options(FILEAVLIBS_GLOBAL_CONFIG);
 	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(FILEAVLIBS_FORMAT_CONFIG, name);
 	asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = AVlibsConfig::load_options(FILEAVLIBS_CODECS_CONFIG, name);
@@ -1935,6 +1902,9 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 			{
 				apar = codecs->set(AVL_PARAM_CODEC_AUDIO, oformat->audio_codec);
 				apar->set(encoder->name);
+				Paramlist *cdc = scan_codecs(oformat, asset, SUPPORTS_AUDIO);
+				update_codeclist(asset, cdc, SUPPORTS_AUDIO);
+				delete cdc;
 			}
 		}
 		if(apar)
@@ -1951,6 +1921,9 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 			{
 				apar = codecs->set(AVL_PARAM_CODEC_VIDEO, oformat->video_codec);
 				apar->set(encoder->name);
+				Paramlist *cdc = scan_codecs(oformat, asset, SUPPORTS_VIDEO);
+				update_codeclist(asset, cdc, SUPPORTS_VIDEO);
+				delete cdc;
 			}
 		}
 		if(apar)
@@ -1963,6 +1936,47 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
 	asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
 }
+
+
+int FileAVlibs::update_codeclist(Asset *asset, Paramlist *codecs, int options)
+{
+	int changed = 0;
+	const char *cdkn = options & SUPPORTS_VIDEO ? AVL_PARAM_CODEC_VIDEO :
+			AVL_PARAM_CODEC_AUDIO;
+
+	if(Param *p = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(cdkn))
+	{
+		Param *q = codecs->find(p->stringvalue);
+		changed = p->type;
+
+		if(p->type & PARAMTYPE_CHNG)
+		{
+			delete p->subparams;
+			p->subparams = 0;
+			p->type &= ~PARAMTYPE_CHNG;
+		}
+		if(q && q->subparams)
+		{
+			p->add_subparams(cdkn);
+			p->type |= PARAMTYPE_CODK;
+
+			for(Param *r = q->subparams->first; r; r = r->next)
+			{
+				Paramlist *rs = r->subparams;
+
+				changed |= rs->type;
+				if(rs->type & PARAMTYPE_INT)
+					p->subparams->set(r->name, rs->selectedint);
+				if(rs->type & PARAMTYPE_LNG)
+					p->subparams->set(r->name, rs->selectedlong);
+				if(rs->type & PARAMTYPE_DBL)
+					p->subparams->set(r->name, rs->selectedfloat);
+			}
+		}
+	}
+	return changed & PARAMTYPE_CHNG;
+}
+
 
 Paramlist *FileAVlibs::scan_global_options(int options)
 {
