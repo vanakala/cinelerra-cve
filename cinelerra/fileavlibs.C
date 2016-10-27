@@ -352,6 +352,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		switch(asset->format)
 		{
 		case FILE_MOV:
+		case FILE_AVI:
 			break;
 
 		default:

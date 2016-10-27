@@ -144,6 +144,7 @@ void File::get_options(FormatTools *format, int options)
 				format_window,
 				options);
 			break;
+		case FILE_AVI:
 		case FILE_MOV:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
@@ -157,7 +158,6 @@ void File::get_options(FormatTools *format, int options)
 				format_window, 
 				options);
 			break;
-		case FILE_AVI:
 			// should not reach here
 			errorbox("File::get_options::FILE_AVI is unsupported");
 			break;
@@ -428,6 +428,7 @@ int File::open_file(Preferences *preferences,
 		file = new FileTIFF(this->asset, this);
 		break;
 
+	case FILE_AVI:
 	case FILE_MOV:
 		file = new FileAVlibs(this->asset, this);
 		break;
@@ -440,10 +441,6 @@ int File::open_file(Preferences *preferences,
 
 	case FILE_OGG:
 		file = new FileOGG(this->asset, this);
-		break;
-
-	case FILE_AVI:
-		file = new FileAVlibs(this->asset, this);
 		break;
 
 	case FILE_RAWDV:
