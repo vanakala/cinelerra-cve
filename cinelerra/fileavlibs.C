@@ -133,6 +133,9 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	buffer_len = 0;
 	memset(abuffer, 0, sizeof(abuffer));
 	resampled_alloc = 0;
+	resample_fill = 0;
+	resample_size = 0;
+	sample_bytes = 0;
 	memset(resampled_data, 0, sizeof(resampled_data));
 }
 
@@ -484,18 +487,18 @@ int FileAVlibs::open_file(int rd, int wr)
 				}
 			}
 
-			if(bparam = aparam->subparams->find(encoder_params[ENC_LAYOUTS].name))
+			audio_ctx->channels = asset->channels;
+			audio_ctx->channel_layout = av_get_default_channel_layout(asset->channels);
+			if(aparam->subparams)
 			{
-				audio_ctx->channel_layout = bparam->longvalue;
-				audio_ctx->channels = av_get_channel_layout_nb_channels(bparam->longvalue);
+				if(bparam = aparam->subparams->find(encoder_params[ENC_LAYOUTS].name))
+				{
+					audio_ctx->channel_layout = bparam->longvalue;
+					audio_ctx->channels = av_get_channel_layout_nb_channels(bparam->longvalue);
+				}
+				if(bparam = aparam->subparams->find(encoder_params[ENC_SAMPLE_FMTS].name))
+					audio_ctx->sample_fmt = (AVSampleFormat)bparam->intvalue;
 			}
-			else
-			{
-				audio_ctx->channels = asset->channels;
-				audio_ctx->channel_layout = av_get_default_channel_layout(asset->channels);
-			}
-			if(bparam = aparam->subparams->find(encoder_params[ENC_SAMPLE_FMTS].name))
-				audio_ctx->sample_fmt = (AVSampleFormat)bparam->intvalue;
 			stream->time_base = (AVRational){1, audio_ctx->sample_rate};
 			audio_ctx->time_base = stream->time_base;
 
@@ -541,6 +544,10 @@ int FileAVlibs::open_file(int rd, int wr)
 				avlibs_lock->unlock();
 				return 1;
 			}
+			avaframe->nb_samples = audio_ctx->frame_size;
+			avaframe->format = audio_ctx->sample_fmt;
+			avaframe->channel_layout = audio_ctx->channel_layout;
+			avaframe->sample_rate = audio_ctx->sample_rate;
 		}
 
 		if(video_index < 0 && audio_index < 0)
@@ -574,7 +581,6 @@ int FileAVlibs::open_file(int rd, int wr)
 void FileAVlibs::close_file()
 {
 	avlibs_lock->lock("FileAVlibs:close_file");
-
 
 	if(context)
 	{
@@ -610,25 +616,38 @@ void FileAVlibs::close_file()
 			if(avaframe && headers_written)
 			{
 				AVPacket pkt;
-				int got_output, rv;
-				int resampled_length;
+				int got_output, rv, chan;
 				AVCodecContext *audio_ctx = context->streams[audio_index]->codec;
 
-				// Get samples kept by resampler
-				while(resampled_length = swr_convert(swr_ctx,
-					resampled_data, resampled_alloc, 0, 0))
-				{
-					if(resampled_length < 0)
-					{
-						errormsg(_("FileAVlibs::close_file: failed to resample last data"));
-						break;
-					}
-					write_samples(resampled_length, audio_ctx);
-				}
-				// Get out samples kept in encoder
 				av_init_packet(&pkt);
 				pkt.data = 0;
 				pkt.size = 0;
+				// Last resampled samples
+				if(resample_fill)
+				{
+					avaframe->nb_samples = resample_fill;
+					avaframe->pts = audio_pos;
+					if(av_sample_fmt_is_planar(audio_ctx->sample_fmt))
+					{
+						for(chan = 0; chan < audio_ctx->channels; chan++)
+							avaframe->data[chan] = resampled_data[chan];
+					}
+					else
+						avaframe->data[0] = resampled_data[0];
+					if(rv = avcodec_encode_audio2(audio_ctx, &pkt, avaframe, &got_output))
+					{
+						liberror(rv, _("FileAVlibs::close_file: failed to encode last audio packet"));
+					}
+					if(!rv && got_output)
+					{
+						pkt.stream_index = audio_index;
+						av_packet_rescale_ts(&pkt, audio_ctx->time_base,
+							context->streams[audio_index]->time_base);
+						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
+							liberror(rv, _("FileAVlibs::close_file: Failed to write last audio packet"));
+					}
+				}
+				// Get out samples kept in encoder
 				for(got_output = 1; got_output;)
 				{
 					if(avcodec_encode_audio2(audio_ctx, &pkt, 0, &got_output))
@@ -639,6 +658,8 @@ void FileAVlibs::close_file()
 					if(got_output)
 					{
 						pkt.stream_index = audio_index;
+						av_packet_rescale_ts(&pkt, audio_ctx->time_base,
+							context->streams[audio_index]->time_base);
 						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 						{
 							liberror(rv, _("FileAVlibs::close_file: Failed to write last audio packet"));
@@ -1431,6 +1452,7 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	int chan;
 	int in_length = frames[0]->length;
 	double *in_data[MAXCHANNELS];
+	uint8_t *resampled_ptr[MAXCHANNELS];
 	int resampled_length;
 
 	if(audio_index < 0)
@@ -1444,14 +1466,15 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	stream = context->streams[audio_index];
 	audio_ctx = stream->codec;
 
-	if(resampled_alloc < in_length)
+	if(resample_size < in_length)
 	{
-		int sample_bytes = av_get_bytes_per_sample(audio_ctx->sample_fmt);
+		sample_bytes = av_get_bytes_per_sample(audio_ctx->sample_fmt);
 
+		resample_size = in_length + audio_ctx->frame_size;
 		resampled_alloc = av_rescale_rnd(swr_get_delay(swr_ctx, asset->sample_rate) +
-			in_length, audio_ctx->sample_rate, asset->sample_rate,
-			AV_ROUND_UP);
-		resampled_alloc = resampled_alloc / audio_ctx->frame_size * audio_ctx->frame_size;
+			resample_size,
+			audio_ctx->sample_rate, asset->sample_rate, AV_ROUND_UP);
+
 		if(av_sample_fmt_is_planar(audio_ctx->sample_fmt))
 		{
 			for(chan = 0; chan < audio_ctx->channels; chan++)
@@ -1464,56 +1487,51 @@ int FileAVlibs::write_aframes(AFrame **frames)
 // Resample the whole buffer
 	for(chan = 0; chan < input_channels; chan++)
 		in_data[chan] = frames[chan]->buffer;
+	if(av_sample_fmt_is_planar(audio_ctx->sample_fmt))
+	{
+		for(chan = 0; chan < audio_ctx->channels; chan++)
+			resampled_ptr[chan] = resampled_data[chan] + resample_fill * sample_bytes;
+	}
+	else
+		resampled_ptr[0] = resampled_data[0] + resample_fill * sample_bytes * audio_ctx->channels;
 
-	if((resampled_length = swr_convert(swr_ctx, resampled_data,
-		resampled_alloc, (const uint8_t**)in_data, in_length)) < 0)
+	if((resampled_length = swr_convert(swr_ctx, resampled_ptr,
+		resampled_alloc - resample_fill, (const uint8_t**)in_data, in_length)) < 0)
 	{
 		errormsg("FileAVlibs::write_aframes:Failed to resample data");
 		avlibs_lock->unlock();
 		return 1;
 	}
-	rv = write_samples(resampled_length, audio_ctx, frames[0]->pts - pts_base);
 
-// We put more samples into resampler than we consume,
-// get some of them to avoid resampler become too large
-	if(!rv && swr_get_out_samples(swr_ctx, 0) > resampled_alloc)
-	{
-		if((resampled_length = swr_convert(swr_ctx, resampled_data,
-			resampled_alloc, 0, 0)) < 0)
-		{
-			errorbox(_("FileAVlibs::write_aframes:Failed to resample data"));
-			avlibs_lock->unlock();
-			return 1;
-		}
-		rv = write_samples(resampled_length, audio_ctx);
-	}
+	rv = write_samples(resampled_length + resample_fill, audio_ctx, frames[0]->pts - pts_base);
 	avlibs_lock->unlock();
 	return rv;
 }
 
-int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx, ptstime pts)
+int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
+		ptstime pts)
 {
 	AVPacket pkt;
-	int got_output, chan, rv;
+	AVStream *stream;
+	int got_output, chan, rv, samples_written;
 	int frame_size = audio_ctx->frame_size;
 	int linesize;
 	int buffersize = av_samples_get_buffer_size(&linesize, audio_ctx->channels,
 		frame_size, audio_ctx->sample_fmt, 1);
 
+	stream = context->streams[audio_index];
 	av_init_packet(&pkt);
 	pkt.data = NULL;
 	pkt.size = 0;
+	samples_written = 0;
 
-	if(!(pts < 0))
+	if(audio_pos == 0)
 		audio_pos = pts / av_q2d(audio_ctx->time_base);
 
+	resampled_length -= frame_size;
+	samples_written = 0;
 	for(int i = 0; i < resampled_length; i += frame_size)
 	{
-		int sample_bytes = av_get_bytes_per_sample(audio_ctx->sample_fmt);
-
-		avaframe->nb_samples = frame_size;
-		avaframe->format = audio_ctx->sample_fmt;
-		avaframe->channel_layout = audio_ctx->channel_layout;
 		avaframe->pts = audio_pos;
 
 		if(av_sample_fmt_is_planar(audio_ctx->sample_fmt))
@@ -1532,9 +1550,13 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx, p
 			return 1;
 		}
 		audio_pos += frame_size;
+		samples_written += frame_size;
+
 		if(got_output)
 		{
 			pkt.stream_index = audio_index;
+			av_packet_rescale_ts(&pkt, audio_ctx->time_base,
+				stream->time_base);
 
 			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 			{
@@ -1544,6 +1566,17 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx, p
 		}
 	}
 	av_free_packet(&pkt);
+	if(samples_written < resampled_length + frame_size)
+	{
+		resample_fill = resampled_length + frame_size - samples_written;
+
+		for(chan = 0; chan < audio_ctx->channels; chan++)
+			memmove(resampled_data[chan], &resampled_data[chan][samples_written * sample_bytes],
+				resample_fill * sample_bytes);
+	}
+	else
+		resample_fill = 0;
+
 	return 0;
 }
 

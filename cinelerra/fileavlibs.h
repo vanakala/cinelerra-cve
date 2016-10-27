@@ -155,6 +155,8 @@ private:
 	// Last decoded positions
 	static Mutex *avlibs_lock;
 	stream_params track_data;
+
+	// decoding audio
 	int input_channels;
 	int num_buffers;
 	int buffer_len;
@@ -163,8 +165,14 @@ private:
 	int64_t buffer_end;
 	int audio_eof;
 	double *abuffer[MAXCHANNELS];
+
+	// rendering audio
 	uint8_t *resampled_data[MAXCHANNELS];
-	int resampled_alloc;
+	int resampled_alloc; // allocated buffer size in samples
+	int resample_fill;   // filled length in samples
+	int resample_size;   // base size in input samples
+	int sample_bytes;    // output sample bytes
+
 	static const char *ignored[];
 	static const uint64_t internal_layouts[];
 };
