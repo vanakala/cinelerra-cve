@@ -777,6 +777,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 	int res = 0;
 	int error = 0;
 	int got_it;
+	int video_eof;
 	int64_t rqpos;
 	stream_item *itm;
 	AVPacket pkt = {0};
@@ -832,6 +833,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 		}
 	}
 
+	video_eof = 0;
 	while(1)
 	{
 		error = av_read_frame(context, &pkt);
@@ -839,6 +841,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 		{
 			if(error != AVERROR_EOF)
 				break;
+			video_eof = 1;
 			error = 0;
 		}
 		if(pkt.stream_index == video_index)
@@ -860,6 +863,8 @@ int FileAVlibs::read_frame(VFrame *frame)
 		}
 		else
 			av_free_packet(&pkt);
+		if(video_eof)
+			break;
 	}
 
 	// Convert colormodel: Use ffmpeg, as it's not clear that the
