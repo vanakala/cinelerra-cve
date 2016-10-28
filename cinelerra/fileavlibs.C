@@ -906,11 +906,16 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 
 	if(!swr_ctx)
 	{
+		int64_t ch_layout = decoder_context->channel_layout;
+
+		if(!ch_layout)
+			ch_layout = av_get_default_channel_layout(decoder_context->channels);
+
 		swr_ctx = swr_alloc_set_opts(NULL,
 			internal_layouts[MIN(asset->channels, NUM_INTERNAL_LAYOUTS - 1)],
 			AV_SAMPLE_FMT_DBLP,           // out sample format
 			aframe->samplerate,           // out samplerate
-			decoder_context->channel_layout,
+			ch_layout,
 			decoder_context->sample_fmt,  // in sample fmt
 			decoder_context->sample_rate, // in sample rate
 			0, 0);
