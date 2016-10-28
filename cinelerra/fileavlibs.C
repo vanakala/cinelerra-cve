@@ -1136,19 +1136,44 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 	return out_samples;
 }
 
-int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
+int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 	int width_in, int height_in, VFrame *frame_out)
 {
 	// set up a temporary picture_out from frame_out
 	AVPicture picture_out;
 	int cmodel_out = frame_out->get_color_model();
 	PixelFormat pix_fmt_out = color_model_to_pix_fmt(cmodel_out);
+	PixelFormat pix_fmt_in;
 	int result = 0;
 
 	if(init_picture_from_frame(&picture_out, frame_out) >= 0)
 	{
 		if(pix_fmt_out != AV_PIX_FMT_NB)
 		{
+			switch(pix_fmt)
+			{
+			case AV_PIX_FMT_YUVJ420P:
+				pix_fmt_in = AV_PIX_FMT_YUV420P;
+				break;
+
+			case AV_PIX_FMT_YUVJ422P:
+				pix_fmt_in = AV_PIX_FMT_YUV422P;
+				break;
+
+			case AV_PIX_FMT_YUVJ444P:
+				pix_fmt_in = AV_PIX_FMT_YUV444P;
+				break;
+
+			case AV_PIX_FMT_YUVJ440P:
+				pix_fmt_in = AV_PIX_FMT_YUV440P;
+				break;
+
+			default:
+				pix_fmt_in = pix_fmt;
+				break;
+			}
+
+
 			sws_ctx = sws_getCachedContext(sws_ctx, width_in, height_in, pix_fmt_in,
 				frame_out->get_w(),frame_out->get_h(),pix_fmt_out,
 				SWS_BICUBIC, NULL, NULL, NULL);
@@ -1159,6 +1184,21 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 				return 1;
 			}
 
+			if(pix_fmt != pix_fmt_in)
+			{
+				int *inv_table, *table;
+				int srcRange, dstRange;
+				int brightness, contrast, saturation;
+
+				if(sws_getColorspaceDetails(sws_ctx, &inv_table,
+					&srcRange, &table, &dstRange,
+					&brightness, &contrast, &saturation) == 0)
+				{
+					sws_setColorspaceDetails(sws_ctx, inv_table,
+						1, table, dstRange,
+						brightness, contrast, saturation);
+				}
+			}
 			frame_out->clear_frame();
 			sws_scale(sws_ctx,
 				picture_in->data, picture_in->linesize,
