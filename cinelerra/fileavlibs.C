@@ -249,7 +249,8 @@ int FileAVlibs::open_file(int rd, int wr)
 							}
 							else
 							{
-								strncpy(asset->acodec, codec->name, 4);
+								strncpy(asset->acodec, codec->name, MAX_LEN_CODECNAME);
+								asset->acodec[MAX_LEN_CODECNAME] = 0;
 								asset->bits = av_get_bytes_per_sample(decoder_context->sample_fmt) * 8;
 								audio_delay = 0;
 								buffer_start = buffer_end = 0;
@@ -288,7 +289,10 @@ int FileAVlibs::open_file(int rd, int wr)
 								video_index = -1;
 							}
 							else
-								strncpy(asset->vcodec, codec->name, 4);
+							{
+								strncpy(asset->vcodec, codec->name, MAX_LEN_CODECNAME);
+								asset->vcodec[MAX_LEN_CODECNAME] = 0;
+							}
 						}
 					}
 					break;
