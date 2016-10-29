@@ -265,6 +265,7 @@ int Resample::resample(double *output,
 // Import new samples
 		if(out_len > 0)
 		{
+			inframe->samplerate = in_rate;
 			if(reseek)
 			{
 				inframe->set_fill_request((double)out_position / out_rate, input_size);
@@ -524,6 +525,7 @@ int Resample_float::resample(double *output,
 // Import new samples
 		if(out_len > 0)
 		{
+			inframe->samplerate = in_rate;
 			if(reseek)
 			{
 				inframe->set_fill_request((double)out_position / out_rate, input_size);
