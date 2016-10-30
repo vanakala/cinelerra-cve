@@ -54,6 +54,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 {
 	{ FILE_MOV, "mov,mp4,m4a,3gp,3g2,mj2", "mov" },
 	{ FILE_AVI, "avi", "avi"  },
+	{ FILE_AC3, "ac3", "ac3" },
 	{ 0 }
 };
 
@@ -357,6 +358,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		{
 		case FILE_MOV:
 		case FILE_AVI:
+		case FILE_AC3:
 			break;
 
 		default:

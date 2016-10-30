@@ -27,7 +27,6 @@
 #include "condition.h"
 #include "edit.h"
 #include "file.h"
-#include "fileac3.h"
 #include "fileavlibs.h"
 #include "filedv.h"
 #include "filebase.h"
@@ -122,12 +121,6 @@ void File::get_options(FormatTools *format, int options)
 	format_completion->lock("File::get_options");
 	switch(asset->format)
 	{
-		case FILE_AC3:
-			FileAC3::get_parameters(parent_window,
-				asset,
-				format_window,
-				options);
-			break;
 		case FILE_RAWDV:
 			FileDV::get_parameters(parent_window,
 				asset,
@@ -144,6 +137,7 @@ void File::get_options(FormatTools *format, int options)
 				format_window,
 				options);
 			break;
+		case FILE_AC3:
 		case FILE_AVI:
 		case FILE_MOV:
 			FileAVlibs::get_parameters(parent_window,
@@ -387,10 +381,6 @@ int File::open_file(Preferences *preferences,
 		break;
 
 // format already determined
-	case FILE_AC3:
-		file = new FileAC3(this->asset, this);
-		break;
-
 	case FILE_PCM:
 	case FILE_WAV:
 	case FILE_AU:
@@ -428,6 +418,7 @@ int File::open_file(Preferences *preferences,
 		file = new FileTIFF(this->asset, this);
 		break;
 
+	case FILE_AC3:
 	case FILE_AVI:
 	case FILE_MOV:
 		file = new FileAVlibs(this->asset, this);
@@ -830,15 +821,13 @@ int File::supports(int format)
 	case FILE_TGA_LIST:
 		return SUPPORTS_VIDEO;
 
+	case FILE_AC3:
 	case FILE_AIFF:
 	case FILE_WAV:
 	case FILE_PCM:
 	case FILE_AU:
 	case FILE_SND:
 		return SUPPORTS_AUDIO;
-
-	case FILE_AC3:
-		return FileAC3::supports(format);
 
 	case FILE_MPEG:
 	case FILE_AMPEG:
