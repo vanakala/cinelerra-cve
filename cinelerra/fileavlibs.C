@@ -2199,129 +2199,145 @@ int FileAVlibs::skip_avoption(const AVOption *opt, int typefl)
 	return 0;
 }
 
+void FileAVlibs::fill_encoder_params(Paramlist *codecs, AVCodecID codec_id,
+    Asset *asset, int options)
+{
+	AVCodec *encoder;
+	Param *param, *sbp;
+
+	if(encoder = avcodec_find_encoder(codec_id))
+	{
+		if(options & SUPPORTS_AUDIO && encoder->type != AVMEDIA_TYPE_AUDIO)
+			return;
+		if(options & SUPPORTS_VIDEO && encoder->type != AVMEDIA_TYPE_VIDEO)
+			return;
+		if(codecs->find(encoder->name))
+			return;
+		if(!mwindow->edl->session->experimental_codecs &&
+				encoder->capabilities & AV_CODEC_CAP_EXPERIMENTAL)
+			return;
+		param = codecs->append_param(encoder->name, codec_id);
+		param->set_help(encoder->long_name);
+		// Additional parameters
+		if(encoder->type == AVMEDIA_TYPE_VIDEO)
+		{
+			Paramlist *encparams = param->add_subparams(encoder->name);
+
+			if(encoder->pix_fmts)
+			{
+				const AVPixelFormat *pix_fmt;
+
+				sbp = encparams->append_param(encoder_params[ENC_PIX_FMTS].name,
+					(int)encoder->pix_fmts[0]);
+				Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_PIX_FMTS].name);
+				sublist->set_selected((int)encoder->pix_fmts[0]);
+
+				for(pix_fmt = encoder->pix_fmts; *pix_fmt != AV_PIX_FMT_NONE; pix_fmt++)
+				{
+					Param *p = sublist->append_param("", *pix_fmt);
+					strcpy(p->name, av_get_pix_fmt_name(*pix_fmt));
+				}
+			}
+			if(encoder->supported_framerates)
+			{
+				const AVRational *framerate;
+
+				sbp = encparams->append_param(encoder_params[ENC_FRAMERATES].name,
+					av_q2d(encoder->supported_framerates[0]));
+				Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_FRAMERATES].name);
+				sublist->type |= PARAMTYPE_HIDN;
+
+				for(framerate = encoder->supported_framerates; framerate->num != 0; framerate++)
+				{
+					Param *p = sublist->append_param("", av_q2d(*framerate));
+					sprintf(p->name, "%d/%d", framerate->num, framerate->den);
+				}
+			}
+		}
+		if(encoder->type == AVMEDIA_TYPE_AUDIO)
+		{
+			Paramlist *encparams = param->add_subparams(encoder->name);
+
+			if(encoder->supported_samplerates)
+			{
+				const int *srate;
+				sbp = encparams->append_param(encoder_params[ENC_SAMPLERATES].name,
+					encoder->supported_samplerates[0]);
+				Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_SAMPLERATES].name);
+				sublist->type |= PARAMTYPE_HIDN;
+
+				for(srate = encoder->supported_samplerates; *srate; srate++)
+				{
+					Param *p = sublist->append_param("", *srate);
+					sprintf(p->name, "%d", *srate);
+				}
+			}
+			if(encoder->sample_fmts)
+			{
+				const AVSampleFormat *sfmt;
+
+				sbp = encparams->append_param(encoder_params[ENC_SAMPLE_FMTS].name,
+					encoder->sample_fmts[0]);
+				Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_SAMPLE_FMTS].name);
+				sublist->set_selected(encoder->sample_fmts[0]);
+
+				for(sfmt = encoder->sample_fmts; *sfmt != AV_SAMPLE_FMT_NONE; sfmt++)
+				{
+					Param *p = sublist->append_param("", *sfmt);
+					strcpy(p->name, av_get_sample_fmt_name(*sfmt));
+				}
+			}
+			if(encoder->channel_layouts)
+			{
+				const uint64_t *layout;
+
+				sbp = encparams->append_param(encoder_params[ENC_LAYOUTS].name,
+					(int64_t)encoder->channel_layouts[0]);
+				Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_LAYOUTS].name);
+
+				if(asset->channels > 0 && asset->channels < NUM_INTERNAL_LAYOUTS)
+					sublist->set_selected((int64_t)internal_layouts[asset->channels]);
+				else
+					sublist->set_selected((int64_t)encoder->channel_layouts[0]);
+
+				for(layout = encoder->channel_layouts; *layout; layout++)
+				{
+					Param *p = sublist->append_param("", (int64_t)*layout);
+					av_get_channel_layout_string(p->name, PARAM_NAMELEN,
+						av_get_channel_layout_nb_channels(*layout), *layout);
+				}
+			}
+		}
+	}
+}
+
 Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int options)
 {
 	const struct AVCodecTag * const *ctag;
 	const struct AVCodecTag *tags;
-	AVCodec *encoder;
 	Param *param, *sbp;
 	Paramlist *codecs;
 
 	codecs = new Paramlist("AVLibCodecs");
 
-	for(ctag = oformat->codec_tag; *ctag; ctag++)
+	if(oformat->codec_tag)
 	{
-		for(tags = *ctag; tags->id != AV_CODEC_ID_NONE; tags++)
+		for(ctag = oformat->codec_tag; *ctag; ctag++)
 		{
-			encoder = avcodec_find_encoder(tags->id);
-			if(encoder)
-			{
-				if(options & SUPPORTS_AUDIO && encoder->type != AVMEDIA_TYPE_AUDIO)
-					continue;
-				if(options & SUPPORTS_VIDEO && encoder->type != AVMEDIA_TYPE_VIDEO)
-					continue;
-				if(codecs->find(encoder->name))
-					continue;
-				if(!mwindow->edl->session->experimental_codecs &&
-						encoder->capabilities & AV_CODEC_CAP_EXPERIMENTAL)
-					continue;
-				param = codecs->append_param(encoder->name, tags->id);
-				param->set_help(encoder->long_name);
-				// Additional parameters
-				if(encoder->type == AVMEDIA_TYPE_VIDEO)
-				{
-					Paramlist *encparams = param->add_subparams(encoder->name);
-					Param *sbp;
-
-					if(encoder->pix_fmts)
-					{
-						const AVPixelFormat *pix_fmt;
-
-						sbp = encparams->append_param(encoder_params[ENC_PIX_FMTS].name,
-							(int)encoder->pix_fmts[0]);
-						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_PIX_FMTS].name);
-						sublist->set_selected((int)encoder->pix_fmts[0]);
-
-						for(pix_fmt = encoder->pix_fmts; *pix_fmt != AV_PIX_FMT_NONE; pix_fmt++)
-						{
-							Param *p = sublist->append_param("", *pix_fmt);
-							strcpy(p->name, av_get_pix_fmt_name(*pix_fmt));
-						}
-					}
-					if(encoder->supported_framerates)
-					{
-						const AVRational *framerate;
-
-						sbp = encparams->append_param(encoder_params[ENC_FRAMERATES].name,
-							av_q2d(encoder->supported_framerates[0]));
-						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_FRAMERATES].name);
-						sublist->type |= PARAMTYPE_HIDN;
-
-						for(framerate = encoder->supported_framerates; framerate->num != 0; framerate++)
-						{
-							Param *p = sublist->append_param("", av_q2d(*framerate));
-							sprintf(p->name, "%d/%d", framerate->num, framerate->den);
-						}
-					}
-				}
-				if(encoder->type == AVMEDIA_TYPE_AUDIO)
-				{
-					Paramlist *encparams = param->add_subparams(encoder->name);
-					Param *sbp;
-
-					if(encoder->supported_samplerates)
-					{
-						const int *srate;
-						sbp = encparams->append_param(encoder_params[ENC_SAMPLERATES].name,
-							encoder->supported_samplerates[0]);
-						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_SAMPLERATES].name);
-						sublist->type |= PARAMTYPE_HIDN;
-
-						for(srate = encoder->supported_samplerates; *srate; srate++)
-						{
-							Param *p = sublist->append_param("", *srate);
-							sprintf(p->name, "%d", *srate);
-						}
-					}
-					if(encoder->sample_fmts)
-					{
-						const AVSampleFormat *sfmt;
-
-						sbp = encparams->append_param(encoder_params[ENC_SAMPLE_FMTS].name,
-							encoder->sample_fmts[0]);
-						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_SAMPLE_FMTS].name);
-						sublist->set_selected(encoder->sample_fmts[0]);
-
-						for(sfmt = encoder->sample_fmts; *sfmt != AV_SAMPLE_FMT_NONE; sfmt++)
-						{
-							Param *p = sublist->append_param("", *sfmt);
-							strcpy(p->name, av_get_sample_fmt_name(*sfmt));
-						}
-					}
-					if(encoder->channel_layouts)
-					{
-						const uint64_t *layout;
-
-						sbp = encparams->append_param(encoder_params[ENC_LAYOUTS].name,
-							(int64_t)encoder->channel_layouts[0]);
-						Paramlist *sublist = sbp->add_subparams(encoder_params[ENC_LAYOUTS].name);
-
-						if(asset->channels > 0 && asset->channels < NUM_INTERNAL_LAYOUTS)
-							sublist->set_selected((int64_t)internal_layouts[asset->channels]);
-						else
-							sublist->set_selected((int64_t)encoder->channel_layouts[0]);
-
-						for(layout = encoder->channel_layouts; *layout; layout++)
-						{
-							Param *p = sublist->append_param("", (int64_t)*layout);
-							av_get_channel_layout_string(p->name, PARAM_NAMELEN,
-								av_get_channel_layout_nb_channels(*layout), *layout);
-						}
-					}
-				}
-			}
+			for(tags = *ctag; tags->id != AV_CODEC_ID_NONE; tags++)
+				fill_encoder_params(codecs, tags->id, asset, options);
 		}
 	}
+	else
+	{
+		AVCodecID id;
+		if(options & SUPPORTS_VIDEO)
+			id = oformat->video_codec;
+		else if(options & SUPPORTS_AUDIO)
+			id = oformat->audio_codec;
+		fill_encoder_params(codecs, id, asset, options);
+	}
+
 	// Remove unusable codecs
 	for(param = codecs->first; param; param = param->next)
 	{
