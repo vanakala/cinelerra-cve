@@ -136,7 +136,7 @@ void SelTempAvgMain::process_frame(VFrame *frame)
 	if(!accumulation)
 	{
 		accumulation = new unsigned char[w * h *
-			cmodel_components(color_model) * sizeof(float)];
+			ColorModels::components(color_model) * sizeof(float)];
 
 		accumulation_sq = new unsigned char[w * h *
 			3 * sizeof(float)];

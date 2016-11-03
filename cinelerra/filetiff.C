@@ -521,7 +521,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 				color_model);
 		}
 
-		cmodel_transfer(tiff_unit->temp->get_rows(), 
+		ColorModels::transfer(tiff_unit->temp->get_rows(),
 			frame->get_rows(),
 			tiff_unit->temp->get_y(),
 			tiff_unit->temp->get_u(),

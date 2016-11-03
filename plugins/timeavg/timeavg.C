@@ -106,7 +106,7 @@ void TimeAvgMain::process_frame(VFrame *frame)
 	{
 		accumulation = new unsigned char[w * 
 			h * 
-			cmodel_components(color_model) *
+			ColorModels::components(color_model) *
 			MAX(sizeof(float), sizeof(int))];
 		clear_accum(w, h, color_model);
 	}

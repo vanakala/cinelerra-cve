@@ -437,7 +437,7 @@ void DiffKey::handle_opengl()
 	unsigned int shader_id = 0;
 	if(config.do_value)
 	{
-		if(cmodel_is_yuv(top_frame->get_color_model()))
+		if(ColorModels::is_yuv(top_frame->get_color_model()))
 			shader_id = VFrame::make_shader(0, 
 				diffkey_head,
 				yuv_value,
@@ -474,7 +474,7 @@ void DiffKey::handle_opengl()
 		glUniform1f(glGetUniformLocation(shader_id, "threshold_pad"), threshold_pad);
 	}
 
-	if(cmodel_components(get_output()->get_color_model()) == 3)
+	if(ColorModels::components(get_output()->get_color_model()) == 3)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -37,7 +37,6 @@
 #include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
-#include "cmodel_permutation.h"
 #include "interlacemodes.h"
 #include "mainerror.h"
 #include "theme.h"
@@ -737,7 +736,7 @@ int FileOGG::read_frame(VFrame *frame)
 	if(theora_decode_YUVout(&cur_stream->ts, &yuv))
 		return 1;
 
-	cmodel_transfer(frame->get_rows(),
+	ColorModels::transfer(frame->get_rows(),
 		0,
 		frame->get_y(),
 		frame->get_u(),
@@ -1094,7 +1093,7 @@ int FileOGG::write_frames(VFrame ***frames, int len)
 				BC_YUV420P);
 		}
 // Always convert: internally YUV420P is never used
-		cmodel_transfer(temp_frame->get_rows(),
+		ColorModels::transfer(temp_frame->get_rows(),
 			frame->get_rows(),
 			temp_frame->get_y(),
 			temp_frame->get_u(),

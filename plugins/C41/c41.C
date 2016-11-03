@@ -834,7 +834,7 @@ void C41Effect::process_frame(VFrame *frame)
 	int frame_h = frame->get_h();
 
 	// Minimum pxel value is 0
-	pix_max = cmodel_calculate_max(frame->get_color_model());
+	pix_max = ColorModels::calculate_max(frame->get_color_model());
 
 	switch(frame->get_color_model())
 	{

@@ -163,7 +163,7 @@ void SharpenMain::get_luts(int *pos_lut, int *neg_lut, int color_model)
 {
 	int i, inv_sharpness, vmax;
 
-	vmax = cmodel_calculate_max(color_model);
+	vmax = ColorModels::calculate_max(color_model);
 
 	inv_sharpness = (int)(100 - config.sharpness);
 	if(config.horizontal) inv_sharpness /= 2;

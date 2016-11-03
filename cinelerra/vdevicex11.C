@@ -194,14 +194,14 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 				}
 				if(c2 < 0)
 				{
-					if(cmodel_is_yuv(colormodel))
+					if(ColorModels::is_yuv(colormodel))
 					{
-						if(cmodel_is_yuv(xv_cmodels[i]))
+						if(ColorModels::is_yuv(xv_cmodels[i]))
 							c2 = xv_cmodels[i];
 					}
 					else
 					{
-						if(!cmodel_is_yuv(xv_cmodels[i]))
+						if(!ColorModels::is_yuv(xv_cmodels[i]))
 							c2 = xv_cmodels[i];
 					}
 				}
@@ -370,7 +370,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	{
 		if(bitmap->hardware_scaling())
 		{
-			cmodel_transfer(bitmap->get_row_pointers(), 
+			ColorModels::transfer(bitmap->get_row_pointers(),
 				output_channels->get_rows(),
 				bitmap->get_y_plane(),
 				bitmap->get_u_plane(),
@@ -394,7 +394,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 		}
 		else
 		{
-			cmodel_transfer(bitmap->get_row_pointers(), 
+			ColorModels::transfer(bitmap->get_row_pointers(),
 				output_channels->get_rows(),
 				0,
 				0,

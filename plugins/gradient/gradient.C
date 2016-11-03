@@ -561,7 +561,7 @@ void GradientMain::process_frame(VFrame *frame)
 	}
 
 	int gradient_cmodel = input->get_color_model();
-	if(need_alpha && cmodel_components(gradient_cmodel) == 3)
+	if(need_alpha && ColorModels::components(gradient_cmodel) == 3)
 	{
 		switch(gradient_cmodel)
 		{

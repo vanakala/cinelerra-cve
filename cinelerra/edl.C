@@ -812,7 +812,7 @@ void EDL::dump(int indent)
 			session->output_h,
 			session->aspect_w,
 			session->aspect_h,
-			cmodel_name(session->color_model));
+			ColorModels::name(session->color_model));
 
 		printf("%*sEDLS (total %d)\n", indent, "", clips.total);
 

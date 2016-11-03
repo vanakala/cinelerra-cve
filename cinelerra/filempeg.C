@@ -930,7 +930,7 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 								output_cmodel);
 						}
 
-						cmodel_transfer(temp_frame->get_rows(), 
+						ColorModels::transfer(temp_frame->get_rows(),
 							frame->get_rows(),
 							temp_frame->get_y(),
 							temp_frame->get_u(),
@@ -977,7 +977,7 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 								output_cmodel);
 						}
 
-						cmodel_transfer(temp_frame->get_rows(), 
+						ColorModels::transfer(temp_frame->get_rows(),
 							frame->get_rows(),
 							temp_frame->get_y(),
 							temp_frame->get_u(),
@@ -1130,7 +1130,7 @@ int FileMPEG::read_frame(VFrame *frame)
 
 			if(y && u && v)
 			{
-				cmodel_transfer(frame->get_rows(), 
+				ColorModels::transfer(frame->get_rows(),
 					0,
 					frame->get_y(),
 					frame->get_u(),

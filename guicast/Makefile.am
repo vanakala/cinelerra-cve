@@ -55,6 +55,11 @@ libguicastcve_la_SOURCES = \
 	bcwindowbase.C \
 	bcwindowdraw.C \
 	condition.C \
+	colormodels.C \
+	colormodels_default.C \
+	colormodels_float.C \
+	colormodels_yuv420p.C \
+	colormodels_yuv422.C \
 	filesystem.C \
 	hashcache.C \
 	mutex.C \
@@ -163,6 +168,8 @@ noinst_HEADERS = \
 	bcwindow.inc \
 	clip.h \
 	colors.h \
+	colormodels.h \
+	colormodels.inc \
 	condition.inc \
 	cursors.h \
 	filesystem.h \

@@ -1244,7 +1244,7 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 		return 1;  // recursed call will print error message
 
 	// if we reach here we know that cmodel_transfer() will work
-	cmodel_transfer(// Packed data out
+	ColorModels::transfer(// Packed data out
 		frame_out->get_rows(),
 		// Packed data in
 		temp_frame->get_rows(),
@@ -1327,7 +1327,7 @@ int FileAVlibs::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 
 	if(size < 0) return -1;
 
-	if(cmodel_is_planar(frame->get_color_model()))
+	if(ColorModels::is_planar(frame->get_color_model()))
 	{
 // BC_YUV420P, BC_YUV422P, BC_YUV444P, BC_YUV411P:
 		// override avpicture_fill() for planar types
@@ -1390,7 +1390,7 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 			temp_frame = new VFrame(0, frame_in->get_w(),
 				frame_in->get_h(), cmodel);
 
-		cmodel_transfer(
+		ColorModels::transfer(
 			// Packed data out
 			temp_frame->get_rows(),
 			// Packed data in

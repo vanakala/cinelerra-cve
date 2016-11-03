@@ -1108,7 +1108,7 @@ void ChromaKeyHSV::handle_opengl()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	if(cmodel_components(get_output()->get_color_model()) == 3)
+	if(ColorModels::components(get_output()->get_color_model()) == 3)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

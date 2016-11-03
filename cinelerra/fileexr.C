@@ -296,7 +296,7 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 	int dy = dw.min.y;
 	Imf::FrameBuffer framebuffer;
 	float **rows = (float**)frame->get_rows();
-	int components = cmodel_components(frame->get_color_model());
+	int components = ColorModels::components(frame->get_color_model());
 
 	if(is_yuv)
 	{
@@ -420,7 +420,7 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	data->set_compressed_size(0);
 
 	int native_cmodel = asset->exr_use_alpha ? BC_RGBA_FLOAT : BC_RGB_FLOAT;
-	int components = cmodel_components(native_cmodel);
+	int components = ColorModels::components(native_cmodel);
 
 	if(frame->get_color_model() != native_cmodel)
 	{
@@ -428,7 +428,7 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			asset->width,
 			asset->height,
 			native_cmodel);
-		cmodel_transfer(exr_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
+		ColorModels::transfer(exr_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
 			frame->get_rows(),
 			exr_unit->temp_frame->get_y(), /* Leave NULL if non existent */
 			exr_unit->temp_frame->get_u(),

@@ -521,7 +521,7 @@ void VFrame::dump_shader(int shader_id)
 void VFrame::clear_pbuffer(void)
 {
 #ifdef HAVE_GL
-	if(cmodel_is_yuv(get_color_model()))
+	if(ColorModels::is_yuv(get_color_model()))
 		glClearColor(0.0, 0.5, 0.5, 0.0);
 	else
 		glClearColor(0.0, 0.0, 0.0, 0.0);

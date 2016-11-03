@@ -440,7 +440,7 @@ int FileThread::read_frame(VFrame *frame)
 	if(local_frame)
 	{
 // Copy image
-		cmodel_transfer(frame->get_rows(), 
+		ColorModels::transfer(frame->get_rows(),
 			local_frame->get_rows(),
 			frame->get_y(),
 			frame->get_u(),

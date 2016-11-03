@@ -108,7 +108,7 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 // Set ring buffers based on total memory used.
 // The program icon must use multiple buffers but larger bitmaps may not fit
 // in memory.
-	int pixelsize = cmodel_calculate_pixelsize(color_model);
+	int pixelsize = ColorModels::calculate_pixelsize(color_model);
 	int buffer_size = w * h * pixelsize;
 
 	if(buffer_size < 0x40000)
@@ -556,7 +556,7 @@ void BC_Bitmap::read_frame(VFrame *frame,
 
 // Software only
 	default:
-		cmodel_transfer(row_data[current_ringbuffer], 
+		ColorModels::transfer(row_data[current_ringbuffer],
 			frame->get_rows(),
 			get_y_plane(),
 			get_u_plane(),
@@ -734,7 +734,7 @@ int BC_Bitmap::get_color_model()
 void BC_Bitmap::dump(int minmax)
 {
 	printf("BC_Bitmap %p dump\n", this);
-	printf("    %d x %d %s pixb %d line %ld\n", w, h, cmodel_name(color_model),
+	printf("    %d x %d %s pixb %d line %ld\n", w, h, ColorModels::name(color_model),
 		bits_per_pixel, bytes_per_line);
 	printf("    bg %06x buffers %d/%d shm %d port %d top %p\n",
 		bg_color, current_ringbuffer, ring_buffers, use_shm, xv_portid, top_level);

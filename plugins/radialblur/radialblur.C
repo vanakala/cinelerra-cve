@@ -450,7 +450,7 @@ void RadialBlurMain::handle_opengl()
 	get_output()->bind_texture(0);
 
 
-	int is_yuv = cmodel_is_yuv(get_output()->get_color_model());
+	int is_yuv = ColorModels::is_yuv(get_output()->get_color_model());
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 

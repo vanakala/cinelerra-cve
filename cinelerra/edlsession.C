@@ -167,8 +167,8 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	auto_conf->load_defaults(defaults);
 	autos_follow_edits = defaults->get("AUTOS_FOLLOW_EDITS", 1);
 	brender_start = defaults->get("BRENDER_START", brender_start);
-	cmodel_to_text(string, color_model);
-	color_model = cmodel_from_text(defaults->get("COLOR_MODEL", string));
+	ColorModels::to_text(string, color_model);
+	color_model = ColorModels::from_text(defaults->get("COLOR_MODEL", string));
 	ilacemode_to_xmltext(string, interlace_mode);
 	interlace_mode = ilacemode_from_xmltext(defaults->get("INTERLACE_MODE",string), BC_ILACE_MODE_NOTINTERLACED);
 	crop_x1 = defaults->get("CROP_X1", 0);
@@ -281,7 +281,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("ATRACKS", audio_tracks);
 	defaults->update("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	defaults->update("BRENDER_START", brender_start);
-	cmodel_to_text(string, color_model);
+	ColorModels::to_text(string, color_model);
 	defaults->update("COLOR_MODEL", string);
 	ilacemode_to_xmltext(string, interlace_mode);
 	defaults->update("INTERLACE_MODE", string);
@@ -413,8 +413,8 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	char string[1024];
 	if(append_mode) return 0;
 	interpolation_type = file->tag.get_property("INTERPOLATION_TYPE", interpolation_type);
-	cmodel_to_text(string, color_model);
-	color_model = cmodel_from_text(file->tag.get_property("COLORMODEL", string));
+	ColorModels::to_text(string, color_model);
+	color_model = ColorModels::from_text(file->tag.get_property("COLORMODEL", string));
 	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE"), BC_ILACE_MODE_NOTINTERLACED);
 	video_channels = file->tag.get_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
@@ -603,7 +603,7 @@ int EDLSession::save_video_config(FileXML *file)
 	char string[1024];
 	file->tag.set_title("VIDEO");
 	file->tag.set_property("INTERPOLATION_TYPE", interpolation_type);
-	cmodel_to_text(string, color_model);
+	ColorModels::to_text(string, color_model);
 	file->tag.set_property("COLORMODEL", string);
 	ilacemode_to_xmltext(string, interlace_mode);
 	file->tag.set_property("INTERLACE_MODE",string);

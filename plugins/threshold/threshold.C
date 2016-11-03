@@ -262,8 +262,8 @@ void ThresholdMain::handle_opengl()
 
 	unsigned int shader = 0;
 	int color_model = get_output()->get_color_model();
-	bool is_yuv = cmodel_is_yuv(color_model);
-	bool has_alpha = cmodel_has_alpha(color_model);
+	bool is_yuv = ColorModels::is_yuv(color_model);
+	bool has_alpha = ColorModels::has_alpha(color_model);
 	if(is_yuv)
 		shader = VFrame::make_shader(0, yuv_shader, 0);
 	else

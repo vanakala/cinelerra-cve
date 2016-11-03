@@ -616,7 +616,7 @@ void Overlay::handle_opengl()
 		glUseProgram(shader_id);
 		glUniform1i(glGetUniformLocation(shader_id, "src_tex"), 0);
 		glUniform1i(glGetUniformLocation(shader_id, "dst_tex"), 1);
-		if(cmodel_is_yuv(dst->get_color_model()))
+		if(ColorModels::is_yuv(dst->get_color_model()))
 			glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"), 0.0, 0.5, 0.5);
 		else
 			glUniform3f(glGetUniformLocation(shader_id, "chroma_offset"), 0.0, 0.0, 0.0);

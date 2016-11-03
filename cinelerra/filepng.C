@@ -233,7 +233,7 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			asset->height, 
 			native_cmodel);
 
-		cmodel_transfer(png_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
+		ColorModels::transfer(png_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
 			frame->get_rows(),
 			png_unit->temp_frame->get_y(), /* Leave NULL if non existent */
 			png_unit->temp_frame->get_u(),

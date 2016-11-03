@@ -1437,7 +1437,7 @@ void MotionScanUnit::process_package(LoadPackage *package)
 	int w = server->current_frame->get_w();
 	int h = server->current_frame->get_h();
 	int color_model = server->current_frame->get_color_model();
-	int pixel_size = cmodel_calculate_pixelsize(color_model);
+	int pixel_size = ColorModels::calculate_pixelsize(color_model);
 	int row_bytes = server->current_frame->get_bytes_per_line();
 
 // Single pixel
@@ -1937,7 +1937,7 @@ void RotateScanUnit::process_package(LoadPackage *package)
 	if((pkg->difference = server->get_cache(pkg->angle)) < 0)
 	{
 		int color_model = server->previous_frame->get_color_model();
-		int pixel_size = cmodel_calculate_pixelsize(color_model);
+		int pixel_size = ColorModels::calculate_pixelsize(color_model);
 		int row_bytes = server->previous_frame->get_bytes_per_line();
 
 		if(!rotater)

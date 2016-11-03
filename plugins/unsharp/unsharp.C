@@ -375,7 +375,7 @@ static void get_row(float *dst, VFrame *src, int row)
 
 static void get_column(float *dst, VFrame *src, int column)
 {
-	int components = cmodel_components(src->get_color_model());
+	int components = ColorModels::components(src->get_color_model());
 	for(int i = 0; i < src->get_h(); i++)
 	{
 		float *input_pixel = (float*)src->get_rows()[i] + column * components;
@@ -386,7 +386,7 @@ static void get_column(float *dst, VFrame *src, int column)
 
 static void put_column(float *src, VFrame *dst, int column)
 {
-	int components = cmodel_components(dst->get_color_model());
+	int components = ColorModels::components(dst->get_color_model());
 	for(int i = 0; i < dst->get_h(); i++)
 	{
 		float *output_pixel = (float*)dst->get_rows()[i] + column * components;
@@ -401,7 +401,7 @@ void UnsharpUnit::process_package(LoadPackage *package)
 	int w = server->src->get_w();
 	int h = server->src->get_h();
 	int color_model = server->src->get_color_model();
-	int components = cmodel_components(color_model);
+	int components = ColorModels::components(color_model);
 	double *cmatrix = 0;
 	int cmatrix_length = 0;
 	int padded_y1 = pkg->y1;

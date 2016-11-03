@@ -769,7 +769,7 @@ int File::get_frame(VFrame *frame, int is_thread)
 			}
 			temp_frame->copy_pts(frame);
 			file->read_frame(temp_frame);
-			cmodel_transfer(frame->get_rows(), 
+			ColorModels::transfer(frame->get_rows(),
 				temp_frame->get_rows(),
 				frame->get_y(),
 				frame->get_u(),

@@ -201,7 +201,7 @@ ColormodelSelection::ColormodelSelection(int x, int y,
 	if(!cmodel_selection[0].text)
 	{
 		for(int i = 0; i < NUM_CMODEL_SELECTIONS; i++)
-			cmodel_selection[i].text = cmodel_name(cmodel_selection[i].value);
+			cmodel_selection[i].text = ColorModels::name(cmodel_selection[i].value);
 	}
 	base_gui->add_subwindow(selection = new Selection(x, y, base_gui,
 		cmodel_selection, cmodel, SELECTION_VARWIDTH));
@@ -210,7 +210,7 @@ ColormodelSelection::ColormodelSelection(int x, int y,
 
 void ColormodelSelection::update(int value)
 {
-	selection->update(cmodel_name(value));
+	selection->update(ColorModels::name(value));
 }
 
 

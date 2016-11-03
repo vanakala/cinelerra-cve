@@ -152,12 +152,12 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 		frame = frames[n];
 
 		// process through a temp frame only if necessary
-		if (! cmodel_is_planar(frame->get_color_model()) ||
+		if (!ColorModels::is_planar(frame->get_color_model()) ||
 			(frame->get_w() != stream->get_width()) ||
 			(frame->get_h() != stream->get_height())) 
 		{
 			ensure_temp(asset->width, asset->height);
-			cmodel_transfer(temp->get_rows(),
+			ColorModels::transfer(temp->get_rows(),
 					frame->get_rows(),
 					temp->get_y(),
 					temp->get_u(),

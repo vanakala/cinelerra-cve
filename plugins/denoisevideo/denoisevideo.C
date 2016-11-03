@@ -200,15 +200,15 @@ void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 
 	if(!accumulation)
 	{
-		accumulation = new float[w * h * cmodel_components(color_model)];
-		memset(accumulation, 0, sizeof(float) * w * h * cmodel_components(color_model));
+		accumulation = new float[w * h * ColorModels::components(color_model)];
+		memset(accumulation, 0, sizeof(float) * w * h * ColorModels::components(color_model));
 	}
 
 	float *accumulation_ptr = accumulation;
 	float opacity = (float)1.0 / config.frames;
 	float transparency = 1 - opacity;
 	float threshold = (float)config.threshold * 
-		cmodel_calculate_max(color_model);
+		ColorModels::calculate_max(color_model);
 	int do_it[4] = { config.do_r, config.do_g, config.do_b, config.do_a };
 
 #define DENOISE_MACRO(type, components, max) \

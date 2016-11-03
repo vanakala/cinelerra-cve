@@ -377,7 +377,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 
 	if(output_frame != frame)
 	{
-		cmodel_transfer(frame->get_rows(), 
+		ColorModels::transfer(frame->get_rows(),
 			output_frame->get_rows(),
 			frame->get_y(),
 			frame->get_u(),
@@ -471,7 +471,7 @@ void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp
 		}
 		input_frame = temp;
 
-		cmodel_transfer(input_frame->get_rows(), 
+		ColorModels::transfer(input_frame->get_rows(),
 			frame->get_rows(),
 			input_frame->get_y(),
 			input_frame->get_u(),

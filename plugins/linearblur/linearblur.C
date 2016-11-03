@@ -455,7 +455,7 @@ void LinearBlurMain::process_frame(VFrame *frame)
 		get_project_smp() + 1);
 	if(!accum) accum = new unsigned char[frame->get_w() * 
 		frame->get_h() *
-		cmodel_components(frame->get_color_model()) *
+		ColorModels::components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float))];
 
 	this->input = frame;
@@ -471,7 +471,7 @@ void LinearBlurMain::process_frame(VFrame *frame)
 	memset(accum, 0,
 		frame->get_w() * 
 		frame->get_h() * 
-		cmodel_components(frame->get_color_model()) * 
+		ColorModels::components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
 }
@@ -563,7 +563,7 @@ void LinearBlurMain::handle_opengl()
 	get_output()->init_screen();
 	get_output()->bind_texture(0);
 
-	int is_yuv = cmodel_is_yuv(get_output()->get_color_model());
+	int is_yuv = ColorModels::is_yuv(get_output()->get_color_model());
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 

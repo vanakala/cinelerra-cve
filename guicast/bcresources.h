@@ -31,6 +31,7 @@
 #include "bcsignals.inc"
 #include "bcsynchronous.inc"
 #include "bcwindowbase.inc"
+#include "colormodels.inc"
 #include "hashcache.inc"
 #include "vframe.inc"
 
@@ -317,6 +318,8 @@ public:
 	Mutex *create_window_lock;
 //	Cache of parameters
 	static HashCache hash_cache;
+// Colorspace conversion
+	static ColorModels colormodels;
 
 private:
 // Test for availability of shared memory pixmaps

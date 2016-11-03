@@ -35,7 +35,6 @@
 #include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
-#include "cmodel_permutation.h"
 #include "mainerror.h"
 
 #include <sys/types.h>
@@ -544,7 +543,7 @@ int FileDV::write_frames(VFrame ***frames, int len)
 				temp_frame = new VFrame(0, asset->width,
 					asset->height, BC_YUV422);
 
-			cmodel_transfer(temp_frame->get_rows(),
+			ColorModels::transfer(temp_frame->get_rows(),
 				frame->get_rows(),
 				temp_frame->get_y(),
 				temp_frame->get_u(),
