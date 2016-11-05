@@ -31,8 +31,8 @@
 #include "filesystem.h"
 #include "fileavlibs.h"
 #include "filexml.h"
+#include "formatpresets.h"
 #include "mainerror.h"
-#include "quicktime.h"
 #include "interlacemodes.h"
 #include "paramlist.h"
 
@@ -105,8 +105,8 @@ void Asset::init_values()
 	frame_rate = 0;
 	width = 0;
 	height = 0;
-	strcpy(vcodec, QUICKTIME_YUV2);
-	strcpy(acodec, QUICKTIME_TWOS);
+	vcodec[0] = 0;
+	acodec[0] = 0;
 	jpeg_quality = 100;
 	aspect_ratio = -1;
 	interlace_autofixoption = BC_ILACE_AUTOFIXOPTION_AUTO;
@@ -558,12 +558,14 @@ void Asset::read_video(FileXML *file)
 		frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
 
 	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX",0);
+	strcpy(string, AInterlaceModeSelection::xml_text(BC_ILACE_MODE_NOTINTERLACED));
+	interlace_mode = AInterlaceModeSelection::xml_value(file->tag.get_property("INTERLACE_MODE",
+			string));
 
-	ilacemode_to_xmltext(string, BC_ILACE_MODE_NOTINTERLACED);
-	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE",string), BC_ILACE_MODE_NOTINTERLACED);
-
-	ilacefixmethod_to_xmltext(string, BC_ILACE_FIXMETHOD_NONE);
-	interlace_fixmethod = ilacefixmethod_from_xmltext(file->tag.get_property("INTERLACE_FIXMETHOD",string), BC_ILACE_FIXMETHOD_NONE);
+	strcpy(string, InterlaceFixSelection::xml_text(BC_ILACE_FIXMETHOD_NONE));
+	interlace_fixmethod = InterlaceFixSelection::xml_value(
+		file->tag.get_property("INTERLACE_FIXMETHOD",
+				string));
 
 	file->tag.get_property("REEL_NAME", reel_name);
 	reel_number = file->tag.get_property("REEL_NUMBER", reel_number);
@@ -762,8 +764,6 @@ void Asset::write_audio(FileXML *file)
 
 void Asset::write_video(FileXML *file)
 {
-	char string[BCTEXTLEN];
-
 	if(video_data)
 		file->tag.set_title("VIDEO");
 	else
@@ -776,11 +776,11 @@ void Asset::write_video(FileXML *file)
 
 	file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
 
-	ilacemode_to_xmltext(string, interlace_mode);
-	file->tag.set_property("INTERLACE_MODE", string);
+	file->tag.set_property("INTERLACE_MODE",
+		AInterlaceModeSelection::xml_text(interlace_mode));
 
-	ilacefixmethod_to_xmltext(string, interlace_fixmethod);
-	file->tag.set_property("INTERLACE_FIXMETHOD", string);
+	file->tag.set_property("INTERLACE_FIXMETHOD",
+		InterlaceFixSelection::xml_text(interlace_fixmethod));
 
 	file->tag.set_property("REEL_NAME", reel_name);
 
@@ -1184,12 +1184,11 @@ void Asset::dump(int indent)
 	printf("%*s  signed %d header %d dither %d acodec %s length %" PRId64 "\n", indent, "",
 		signed_, header, dither, acodec, audio_length);
 
-	char string[BCTEXTLEN];
-	ilacemode_to_xmltext(string, interlace_mode);
 	printf("%*svideo_data %d layers %d framerate %.2f width %d height %d\n",
 		indent, "", video_data, layers, frame_rate, width, height);
 	printf("%*s  vcodec %c%c%c%c aspect_ratio %.2f interlace_mode %s\n",
-		indent, "", vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
+		indent, "", vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio,
+		AInterlaceModeSelection::name(interlace_mode));
 	printf("%*s  length %d subtitles %d (active %d) image %d\n", indent, "",
 		video_length, subtitles, active_subtitle, single_image);
 	printf("%*s  reel_name %s reel_number %i tcstart %" PRId64 " tcend %" PRId64 " tcf %d\n",

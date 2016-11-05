@@ -87,6 +87,23 @@ struct selection_int InterlaceFixSelection::ilacefix_selection[] =
 	{ 0, 0 }
 };
 
+struct selection_int AInterlaceModeSelection::ilacemode_selection_xml[] =
+{
+	{ "UNKNOWN", BC_ILACE_MODE_UNDETECTED },
+	{ "TOP_FIELD_FIRST", BC_ILACE_MODE_TOP_FIRST },
+	{ "BOTTOM_FIELD_FIRST", BC_ILACE_MODE_BOTTOM_FIRST },
+	{ "NOTINTERLACED", BC_ILACE_MODE_NOTINTERLACED },
+	{ 0, 0 }
+};
+
+struct selection_int InterlaceFixSelection::ilacefix_selection_xml[] =
+{
+	{ "DO_NOTHING", BC_ILACE_FIXMETHOD_NONE },
+	{ "SHIFT_UPONE", BC_ILACE_FIXMETHOD_UPONE },
+	{ "SHIFT_DOWNONE", BC_ILACE_FIXMETHOD_DOWNONE },
+	{ 0, 0 }
+};
+
 
 FormatPresets::FormatPresets(BC_WindowBase* base_gui, int x, int y)
 {
@@ -223,13 +240,43 @@ IlaceSelection::IlaceSelection(int x, int y,
 
 void IlaceSelection::update(int value)
 {
-	BC_TextBox::update(ilacemode_name(value));
+	BC_TextBox::update(AInterlaceModeSelection::name(value));
 }
 
 AInterlaceModeSelection::AInterlaceModeSelection(int x, int y,
 	BC_WindowBase *base_gui, int *value)
  : IlaceSelection(x, y, base_gui, value, ilacemode_selection)
 {
+}
+
+const char *AInterlaceModeSelection::name(int value)
+{
+	for(int i = 0; ilacemode_selection[i].text; i++)
+	{
+		if(value == ilacemode_selection[i].value)
+			return ilacemode_selection[i].text;
+	}
+	return ilacemode_selection[0].text;
+}
+
+const char *AInterlaceModeSelection::xml_text(int value)
+{
+	for(int i = 0; ilacemode_selection_xml[i].text; i++)
+	{
+		if(value == ilacemode_selection_xml[i].value)
+			return ilacemode_selection_xml[i].text;
+	}
+	return ilacemode_selection_xml[0].text;
+}
+
+int AInterlaceModeSelection::xml_value(const char *text)
+{
+	for(int i = 0; ilacemode_selection_xml[i].text; i++)
+	{
+		if(!strcmp(ilacemode_selection_xml[i].text, text))
+			return ilacemode_selection_xml[i].value;
+	}
+	return BC_ILACE_MODE_UNDETECTED;
 }
 
 InterlaceModeSelection::InterlaceModeSelection(int x, int y,
@@ -247,5 +294,56 @@ InterlaceFixSelection::InterlaceFixSelection(int x, int y,
 
 void InterlaceFixSelection::update(int value)
 {
-	BC_TextBox::update(ilacefixmethod_name(value));
+	BC_TextBox::update(name(value));
+}
+
+const char *InterlaceFixSelection::name(int value)
+{
+	for(int i = 0; ilacefix_selection[i].text; i++)
+	{
+		if(value == ilacefix_selection[i].value)
+			return ilacefix_selection[i].text;
+	}
+	return ilacefix_selection[0].text;
+}
+
+const char *InterlaceFixSelection::xml_text(int value)
+{
+	for(int i = 0; ilacefix_selection_xml[i].text; i++)
+	{
+		if(value == ilacefix_selection_xml[i].value)
+			return ilacefix_selection_xml[i].text;
+	}
+	return ilacefix_selection_xml[0].text;
+}
+
+int InterlaceFixSelection::xml_value(const char *text)
+{
+	for(int i = 0; ilacefix_selection_xml[i].text; i++)
+	{
+		if(!strcmp(ilacefix_selection_xml[i].text, text))
+			return ilacefix_selection_xml[i].value;
+	}
+	return BC_ILACE_MODE_UNDETECTED;
+}
+
+int InterlaceFixSelection::automode(int projectmode, int assetmode)
+{
+	if(projectmode == assetmode)
+		return BC_ILACE_FIXMETHOD_NONE;
+
+	if((projectmode == BC_ILACE_MODE_BOTTOM_FIRST && assetmode == BC_ILACE_MODE_TOP_FIRST) ||
+			(projectmode == BC_ILACE_MODE_TOP_FIRST  && assetmode == BC_ILACE_MODE_BOTTOM_FIRST))
+		return BC_ILACE_FIXMETHOD_UPONE;
+
+	return BC_ILACE_FIXMETHOD_NONE;
+}
+
+int InterlaceFixSelection::automode2(int projectmode, int assetautofixoption,
+	int assetmode, int assetfixmethod)
+{
+	if(assetautofixoption)
+		return automode(projectmode, assetmode);
+	else
+		return assetfixmethod;
 }

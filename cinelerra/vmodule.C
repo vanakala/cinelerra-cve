@@ -30,6 +30,7 @@
 #include "file.h"
 #include "filexml.h"
 #include "floatautos.h"
+#include "formatpresets.h"
 #include "mainerror.h"
 #include "mwindow.h"
 #include "overlayframe.h"
@@ -163,10 +164,11 @@ int VModule::import_frame(VFrame *output,
 				out_h1);
 
 			// Determine the interlacing method to use.
-			int interlace_fixmethod = ilaceautofixmethod2(get_edl()->session->interlace_mode,
-					current_edit->asset->interlace_autofixoption,
-					current_edit->asset->interlace_mode,
-					current_edit->asset->interlace_fixmethod);
+			int interlace_fixmethod = InterlaceFixSelection::automode2(
+				get_edl()->session->interlace_mode,
+				current_edit->asset->interlace_autofixoption,
+				current_edit->asset->interlace_mode,
+				current_edit->asset->interlace_fixmethod);
 
 			// Compensate for the said interlacing...
 			switch (interlace_fixmethod) {

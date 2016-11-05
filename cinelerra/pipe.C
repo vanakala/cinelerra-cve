@@ -28,7 +28,6 @@
 #include "bcsignals.h"
 #include "file.h"
 #include "guicast.h"
-#include "interlacemodes.h"
 #include "mainerror.h"
 #include "pipe.h"
 

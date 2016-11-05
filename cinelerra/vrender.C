@@ -29,7 +29,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
-#include "interlacemodes.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"

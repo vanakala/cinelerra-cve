@@ -271,12 +271,48 @@ int YUVStream::write_header()
 
 int YUVStream::get_interlace()
 {
-	return ilace_yuv4mpeg_to_bc(y4m_si_get_interlace(&stream_info));
+	int yuvmode = y4m_si_get_interlace(&stream_info);
+
+	switch (yuvmode)
+	{
+	case Y4M_UNKNOWN:
+		return BC_ILACE_MODE_UNDETECTED;
+
+	case Y4M_ILACE_NONE:
+		return BC_ILACE_MODE_NOTINTERLACED;
+
+	case Y4M_ILACE_TOP_FIRST:
+		return BC_ILACE_MODE_TOP_FIRST;
+
+	case Y4M_ILACE_BOTTOM_FIRST:
+		return BC_ILACE_MODE_BOTTOM_FIRST;
+	}
+	return BC_ILACE_MODE_UNDETECTED;
 }
 
-void YUVStream::set_interlace(int imode) 
+void YUVStream::set_interlace(int imode)
 {
-	y4m_si_set_interlace(&stream_info, ilace_bc_to_yuv4mpeg(imode));
+	int yuvmode = Y4M_UNKNOWN;
+
+	switch (imode)
+	{
+	case BC_ILACE_MODE_UNDETECTED:
+		yuvmode = Y4M_UNKNOWN;
+		break;
+
+	case BC_ILACE_MODE_TOP_FIRST:
+		yuvmode = Y4M_ILACE_TOP_FIRST;
+		break;
+
+	case BC_ILACE_MODE_BOTTOM_FIRST:
+		yuvmode = Y4M_ILACE_BOTTOM_FIRST;
+		break;
+
+	case BC_ILACE_MODE_NOTINTERLACED:
+		yuvmode = Y4M_ILACE_NONE;
+		break;
+	}
+	y4m_si_set_interlace(&stream_info, yuvmode);
 }
 
 int YUVStream::get_width()

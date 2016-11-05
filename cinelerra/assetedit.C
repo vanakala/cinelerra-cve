@@ -32,6 +32,7 @@
 #include "file.h"
 #include "filempeg.h"
 #include "filesystem.h"
+#include "formatpresets.h"
 #include "indexfile.h"
 #include "language.h"
 #include "mainindexes.h"
@@ -42,7 +43,6 @@
 #include "theme.h"
 #include "new.h"
 #include "preferences.h"
-#include "interlacemodes.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "vwindow.h"
@@ -545,9 +545,9 @@ int Interlaceautofix::handle_event()
 
 void Interlaceautofix::showhideotherwidgets()
 {
-	if(get_value() == BC_ILACE_AUTOFIXOPTION_AUTO)
+	if(get_value())
 	{
-		int method = ilaceautofixmethod(mwindow->edl->session->interlace_mode,
+		int method = InterlaceFixSelection::automode(mwindow->edl->session->interlace_mode,
 			fwindow->asset->interlace_mode);
 		fwindow->ilacefix_selection->disable(0);
 		fwindow->ilacefix_selection->update(method);

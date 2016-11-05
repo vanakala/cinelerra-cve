@@ -27,7 +27,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
-#include "interlacemodes.h"
 #include "language.h"
 #include "levelwindow.h"
 #include "mainerror.h"

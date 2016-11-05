@@ -25,9 +25,9 @@
 #include "bcsignals.h"
 #include "edit.h"
 #include "file.h"
+#include "formatpresets.h"
 #include "guicast.h"
 #include "interlacemodes.h"
-#include "quicktime.h"
 #include "theme.h"
 #include "mainerror.h"
 #include "mwindow.h"
@@ -309,9 +309,9 @@ YUVConfigVideo::YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset, Forma
 	x = init_x + 20;
 	y += 30;
 	add_subwindow(bt = new BC_Title(x, y, _("Interlacing:")));
-	char string[BCTEXTLEN];
-	ilacemode_to_text(string,asset->interlace_mode);
-	add_subwindow(new BC_Title(x + bt->get_w() + 5, y, string, MEDIUMFONT, YELLOW));
+	add_subwindow(new BC_Title(x + bt->get_w() + 5, y,
+		AInterlaceModeSelection::name(asset->interlace_mode),
+		MEDIUMFONT, YELLOW));
 
 	x = init_x;
 	y += 30;

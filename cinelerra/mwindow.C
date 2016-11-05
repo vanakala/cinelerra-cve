@@ -47,7 +47,6 @@
 #include "gwindow.h"
 #include "gwindowgui.h"
 #include "indexfile.h"
-#include "interlacemodes.h"
 #include "language.h"
 #include "levelwindowgui.h"
 #include "levelwindow.h"

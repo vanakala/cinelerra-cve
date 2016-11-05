@@ -30,6 +30,7 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "formatpresets.h"
 #include "interlacemodes.h"
 #include "overlayframe.inc"
 #include "playbackconfig.h"
@@ -169,8 +170,8 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	brender_start = defaults->get("BRENDER_START", brender_start);
 	ColorModels::to_text(string, color_model);
 	color_model = ColorModels::from_text(defaults->get("COLOR_MODEL", string));
-	ilacemode_to_xmltext(string, interlace_mode);
-	interlace_mode = ilacemode_from_xmltext(defaults->get("INTERLACE_MODE",string), BC_ILACE_MODE_NOTINTERLACED);
+	strcpy(string, AInterlaceModeSelection::xml_text(interlace_mode));
+	interlace_mode = AInterlaceModeSelection::xml_value(defaults->get("INTERLACE_MODE", string));
 	crop_x1 = defaults->get("CROP_X1", 0);
 	crop_x2 = defaults->get("CROP_X2", 320);
 	crop_y1 = defaults->get("CROP_Y1", 0);
@@ -281,10 +282,8 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("ATRACKS", audio_tracks);
 	defaults->update("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	defaults->update("BRENDER_START", brender_start);
-	ColorModels::to_text(string, color_model);
-	defaults->update("COLOR_MODEL", string);
-	ilacemode_to_xmltext(string, interlace_mode);
-	defaults->update("INTERLACE_MODE", string);
+	defaults->update("COLOR_MODEL", ColorModels::name(color_model));
+	defaults->update("INTERLACE_MODE", AInterlaceModeSelection::xml_text(interlace_mode));
 	defaults->update("CROP_X1", crop_x1);
 	defaults->update("CROP_X2", crop_x2);
 	defaults->update("CROP_Y1", crop_y1);
@@ -415,7 +414,7 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	interpolation_type = file->tag.get_property("INTERPOLATION_TYPE", interpolation_type);
 	ColorModels::to_text(string, color_model);
 	color_model = ColorModels::from_text(file->tag.get_property("COLORMODEL", string));
-	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE"), BC_ILACE_MODE_NOTINTERLACED);
+	interlace_mode = AInterlaceModeSelection::xml_value(file->tag.get_property("INTERLACE_MODE"));
 	video_channels = file->tag.get_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
 	{
@@ -603,10 +602,9 @@ int EDLSession::save_video_config(FileXML *file)
 	char string[1024];
 	file->tag.set_title("VIDEO");
 	file->tag.set_property("INTERPOLATION_TYPE", interpolation_type);
-	ColorModels::to_text(string, color_model);
-	file->tag.set_property("COLORMODEL", string);
-	ilacemode_to_xmltext(string, interlace_mode);
-	file->tag.set_property("INTERLACE_MODE",string);
+	file->tag.set_property("COLORMODEL", ColorModels::name(color_model));
+	file->tag.set_property("INTERLACE_MODE",
+		AInterlaceModeSelection::xml_text(interlace_mode));
 	file->tag.set_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
 	{
