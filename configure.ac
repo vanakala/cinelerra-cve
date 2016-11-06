@@ -520,7 +520,6 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	guicast/Makefile
 	cinelerra/Makefile
 	cinelerra/data/Makefile
-	mplexlo/Makefile
 	plugins/colors/Makefile
 	plugins/libfourier/Makefile
 	plugins/libeffecttv/Makefile
