@@ -25,29 +25,9 @@
 #include "condition.inc"
 #include "file.inc"
 #include "filebase.h"
-#include <lame/lame.h>
 #include "libmpeg3.h"
 #include "thread.h"
 
-
-extern "C"
-{
-// Mpeg2enc prototypes
-void mpeg2enc_init_buffers();
-int mpeg2enc(int argc, char *argv[]);
-void mpeg2enc_set_w(int width);
-void mpeg2enc_set_h(int height);
-void mpeg2enc_set_rate(double rate);
-void mpeg2enc_set_input_buffers(int eof, char *y, char *u, char *v);
-
-// Toolame prototypes
-void toolame_init_buffers();
-int toolame(int argc, char **argv);
-int toolame_send_buffer(char *data, int bytes);
-}
-
-class FileMPEGVideo;
-class FileMPEGAudio;
 
 class FileMPEG : public FileBase
 {
@@ -55,29 +35,17 @@ public:
 	FileMPEG(Asset *asset, File *file);
 	~FileMPEG();
 
-	friend class FileMPEGVideo;
-	friend class FileMPEGAudio;
-
-	static void get_parameters(BC_WindowBase *parent_window, 
-		Asset *asset, 
-		BC_WindowBase* &format_window,
-		int options);
-
 	static int check_sig(Asset *asset);
-	static int supports(int format);
 
 	int open_file(int rd, int wr);
 	void close_file();
 	int create_index();
 
 	int get_index(const char *index_path);
-	int write_aframes(AFrame **buffer);
-	int write_frames(VFrame ***frames, int len);
 
 	int read_frame(VFrame *frame);
 	int read_aframe(AFrame *aframe);
 	int prefer_samples_float();
-	int from_mpeg_colormodel(int cmodel);
 	int to_mpeg_colormodel(int cmodel);
 
 	int64_t get_memory_usage();
@@ -92,242 +60,9 @@ private:
 // File descriptor for decoder
 	mpeg3_t *fd;
 
-// Thread for video encoder
-	FileMPEGVideo *video_out;
-// Command line for video encoder
-	ArrayList<char*> vcommand_line;
-	void append_vcommand_line(const char *string);
-
 // Temp buffer
 	float *temp_float;
 	int temp_float_allocated;
-
-// DVB capture
-	FILE *dvb_out;
-
-// MJPEGtools encoder
-	FILE *mjpeg_out;
-	int mjpeg_error;
-	Condition *next_frame_lock;
-	Condition *next_frame_done;
-	int mjpeg_eof;
-	int wrote_header;
-	unsigned char *mjpeg_y;	
-	unsigned char *mjpeg_u;	
-	unsigned char *mjpeg_v;	
-	char mjpeg_command[BCTEXTLEN];
-
-// Thread for audio encoder
-	FileMPEGAudio *audio_out;
-// Command line for audio encoder
-	ArrayList<char*> acommand_line;
-	void append_acommand_line(const char *string);
-
-// Temporary for color conversion
-	VFrame *temp_frame;
-
-	unsigned char *toolame_temp;
-	int toolame_allocation;
-	int toolame_result;
-
-	float *lame_temp[2];
-	int lame_allocation;
-	char *lame_output;
-	int lame_output_allocation;
-	FILE *lame_fd;
-// Lame puts 0 before stream
-	int lame_started;
-
-	lame_global_flags *lame_global;
-};
-
-
-class FileMPEGVideo : public Thread
-{
-public:
-	FileMPEGVideo(FileMPEG *file);
-	~FileMPEGVideo();
-
-	void run();
-
-	FileMPEG *file;
-};
-
-class FileMPEGAudio : public Thread
-{
-public:
-	FileMPEGAudio(FileMPEG *file);
-	~FileMPEGAudio();
-
-	void run();
-
-	FileMPEG *file;
-};
-
-
-class MPEGConfigAudioPopup;
-class MPEGABitrate;
-
-
-class MPEGConfigAudio : public BC_Window
-{
-public:
-	MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset);
-
-	MPEGABitrate *bitrate;
-	char string[BCTEXTLEN];
-	Asset *asset;
-};
-
-
-class MPEGLayer : public BC_PopupMenu
-{
-public:
-	MPEGLayer(int x, int y, MPEGConfigAudio *gui);
-
-	int handle_event();
-	static int string_to_layer(char *string);
-	static char* layer_to_string(int derivative);
-
-	MPEGConfigAudio *gui;
-};
-
-class MPEGABitrate : public BC_PopupMenu
-{
-public:
-	MPEGABitrate(int x, int y, MPEGConfigAudio *gui);
-
-	void set_layer(int layer);
-
-	int handle_event();
-	static int string_to_bitrate(char *string);
-	static char* bitrate_to_string(char *string, int bitrate);
-
-	MPEGConfigAudio *gui;
-};
-
-class MPEGConfigVideo;
-
-class MPEGPreset : public BC_PopupMenu
-{
-public:
-	MPEGPreset(int x, int y, MPEGConfigVideo *gui);
-
-	int handle_event();
-	static int string_to_value(char *string);
-	static char* value_to_string(int value);
-	MPEGConfigVideo *gui;
-};
-
-class MPEGColorModel : public BC_PopupMenu
-{
-public:
-	MPEGColorModel(int x, int y, MPEGConfigVideo *gui);
-
-	int handle_event();
-	static int string_to_cmodel(char *string);
-	static char* cmodel_to_string(int cmodel);
-
-	MPEGConfigVideo *gui;
-};
-
-
-class MPEGDerivative : public BC_PopupMenu
-{
-public:
-	MPEGDerivative(int x, int y, MPEGConfigVideo *gui);
-
-	int handle_event();
-	static int string_to_derivative(char *string);
-	static char* derivative_to_string(int derivative);
-
-	MPEGConfigVideo *gui;
-};
-
-class MPEGBitrate : public BC_TextBox
-{
-public:
-	MPEGBitrate(int x, int y, MPEGConfigVideo *gui);
-	int handle_event();
-	MPEGConfigVideo *gui;
-};
-
-class MPEGQuant : public BC_TumbleTextBox
-{
-public:
-	MPEGQuant(int x, int y, MPEGConfigVideo *gui);
-	int handle_event();
-	MPEGConfigVideo *gui;
-};
-
-class MPEGIFrameDistance : public BC_TumbleTextBox
-{
-public:
-	MPEGIFrameDistance(int x, int y, MPEGConfigVideo *gui);
-	int handle_event();
-	MPEGConfigVideo *gui;
-};
-
-class MPEGPFrameDistance : public BC_TumbleTextBox
-{
-public:
-	MPEGPFrameDistance(int x, int y, MPEGConfigVideo *gui);
-	int handle_event();
-	MPEGConfigVideo *gui;
-};
-
-class MPEGFixedBitrate : public BC_Radial
-{
-public:
-	MPEGFixedBitrate(int x, int y, MPEGConfigVideo *gui);
-	int handle_event();
-	MPEGConfigVideo *gui;
-};
-
-class MPEGFixedQuant : public BC_Radial
-{
-public:
-	MPEGFixedQuant(int x, int y, MPEGConfigVideo *gui);
-	int handle_event();
-	MPEGConfigVideo *gui;
-};
-
-class MPEGSeqCodes : public BC_CheckBox
-{
-public:
-	MPEGSeqCodes(int x, int y, MPEGConfigVideo *gui);
-	int handle_event();
-	MPEGConfigVideo *gui;
-};
-
-
-class MPEGConfigVideo : public BC_Window
-{
-public:
-	MPEGConfigVideo(BC_WindowBase *parent_window, 
-		Asset *asset);
-
-	void delete_cmodel_objs();
-	void reset_cmodel();
-	void update_cmodel_objs();
-
-	Asset *asset;
-	MPEGPreset *preset;
-	MPEGColorModel *cmodel;
-	MPEGDerivative *derivative;
-	MPEGBitrate *bitrate;
-	MPEGFixedBitrate *fixed_bitrate;
-	MPEGQuant *quant;
-	MPEGFixedQuant *fixed_quant;
-	MPEGIFrameDistance *iframe_distance;
-	MPEGPFrameDistance *pframe_distance;
-	BC_CheckBox *top_field_first;
-	BC_CheckBox *progressive;
-	BC_CheckBox *denoise;
-	BC_CheckBox *seq_codes;
-
-	ArrayList<BC_Title*> titles;
-	ArrayList<BC_SubWindow*> tools;
 };
 
 #endif

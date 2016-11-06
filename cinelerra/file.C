@@ -145,16 +145,6 @@ void File::get_options(FormatTools *format, int options)
 				format_window,
 				options);
 			break;
-		case FILE_AMPEG:
-		case FILE_VMPEG:
-			FileMPEG::get_parameters(parent_window, 
-				asset, 
-				format_window, 
-				options);
-			break;
-			// should not reach here
-			errorbox("File::get_options::FILE_AVI is unsupported");
-			break;
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
 			FileJPEG::get_parameters(parent_window, 
@@ -425,8 +415,6 @@ int File::open_file(Preferences *preferences,
 		break;
 
 	case FILE_MPEG:
-	case FILE_AMPEG:
-	case FILE_VMPEG:
 		file = new FileMPEG(this->asset, this);
 		break;
 
@@ -829,11 +817,6 @@ int File::supports(int format)
 	case FILE_SND:
 		return SUPPORTS_AUDIO;
 
-	case FILE_MPEG:
-	case FILE_AMPEG:
-	case FILE_VMPEG:
-		return FileMPEG::supports(format);
-
 	case FILE_OGG:
 		return FileOGG::supports(format);
 
@@ -931,7 +914,6 @@ int File::supports_video(int format)
 	case FILE_TGA_LIST:
 	case FILE_TIFF:
 	case FILE_TIFF_LIST:
-	case FILE_VMPEG:
 	case FILE_AVI:
 	case FILE_RAWDV:
 			return 1;
@@ -950,7 +932,6 @@ int File::supports_audio(int format)
 	case FILE_WAV:
 	case FILE_MOV:
 	case FILE_OGG:
-	case FILE_AMPEG:
 	case FILE_AU:
 	case FILE_AIFF:
 	case FILE_SND:

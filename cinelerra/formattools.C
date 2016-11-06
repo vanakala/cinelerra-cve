@@ -27,7 +27,6 @@
 #include "language.h"
 #include "mwindow.h"
 #include "preferences.h"
-#include "quicktime.h"
 #include "selection.h"
 #include "theme.h"
 #include "videodevice.inc"
@@ -48,8 +47,6 @@ const struct container_type ContainerSelection::media_containers[] =
 	{ N_("Microsoft WAV"), FILE_WAV, "WAV", "wav" },
 	{ N_("Quicktime for Linux"), FILE_MOV, "MOV", "mov" },
 	{ N_("Raw DV"), FILE_RAWDV, "RAWDV", "dv" },
-	{ N_("MPEG Audio"), FILE_AMPEG, "MPEG", "mp3" },
-	{ N_("MPEG Video"), FILE_VMPEG, "VMPEG", "m2v" },
 	{ N_("OGG Theora/Vorbis"), FILE_OGG, "OGG", "ogg" },
 	{ N_("Raw PCM"), FILE_PCM, "PCM", "pcm" },
 	{ N_("PNG"), FILE_PNG, "PNG", "png" },
@@ -73,7 +70,7 @@ int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU, FILE_JPEG,
 	FILE_YUV, FILE_WAV,
 	FILE_MOV,
 	FILE_RAWDV,
-	FILE_AMPEG, FILE_VMPEG, FILE_OGG, FILE_PCM,
+	FILE_OGG, FILE_PCM,
 	FILE_PNG, FILE_PNG_LIST, FILE_TGA, FILE_TGA_LIST,
 	FILE_TIFF, FILE_TIFF_LIST
 };
