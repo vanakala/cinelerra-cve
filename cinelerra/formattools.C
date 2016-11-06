@@ -62,9 +62,16 @@ const struct container_type ContainerSelection::media_containers[] =
 
 #define NUM_MEDIA_CONTAINERS (sizeof(ContainerSelection::media_containers) / sizeof(struct container_type) - 1)
 
-int FormatPopup::brender_menu[] = { FILE_JPEG_LIST, FILE_PNG_LIST, FILE_TIFF_LIST };
-int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU, FILE_JPEG,
+int FormatPopup::brender_menu[] = {
+/* FIXIT
+FILE_JPEG_LIST,
+	*/
+	FILE_PNG_LIST, FILE_TIFF_LIST };
+int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU,
+/* FIXIT
+	FILE_JPEG,
 	FILE_JPEG_LIST,
+	*/
 	FILE_AVI,
 	FILE_EXR, FILE_EXR_LIST,
 	FILE_YUV, FILE_WAV,

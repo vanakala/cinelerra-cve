@@ -6,7 +6,7 @@ AM_CXXFLAGS = $(LARGEFILE_CFLAGS) \
 	-DDEFAULT_SHAPE=\"$(shapewipedir)/heart.png\"
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/quicktime -I$(top_srcdir)/include
+	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 shapewipedir = $(plugindir)/shapewipe

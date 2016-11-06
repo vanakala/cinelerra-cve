@@ -32,7 +32,6 @@
 
 #define FILE_UNKNOWN       0
 #define FILE_AIFF          10
-#define FILE_AMPEG         16    // For encoding only
 #define FILE_AC3           25    // AC3 encoding
 #define FILE_AU            9
 #define FILE_AVI           24    // Heroine Virtual
@@ -51,7 +50,6 @@
 #define FILE_TGA_LIST      13
 #define FILE_TIFF          6
 #define FILE_TIFF_LIST     22
-#define FILE_VMPEG         17    // For encoding only
 #define FILE_OGG           30
 #define FILE_WAV           2
 #define FILE_EXR           26

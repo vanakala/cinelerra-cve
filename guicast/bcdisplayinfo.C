@@ -414,7 +414,7 @@ void BC_DisplayInfo::dump_xvext()
 			adp->num_ports, adp->base_port, adp->width, adp->height);
 		printf("    Supports %d colormodels:", adp->num_cmodels);
 		for(int j = 0; j < adp->num_cmodels; j++)
-			printf(" %s", cmodel_name(adp->cmodels[j]));
+			printf(" %s", ColorModels::name(adp->cmodels[j]));
 		printf("\n    Attributes:");
 		for(int j = 0; j < NUM_XV_ATTRIBUTES; j++)
 			if(adp->attributes[j].flags)

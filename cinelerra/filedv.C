@@ -32,7 +32,6 @@
 #include "interlacemodes.h"
 #include "language.h"
 #include "mutex.h"
-#include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"

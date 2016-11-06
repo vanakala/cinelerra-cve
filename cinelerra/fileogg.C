@@ -34,7 +34,6 @@
 #include "language.h"
 #include "mutex.h"
 #include "mwindow.h"
-#include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "interlacemodes.h"

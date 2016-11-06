@@ -176,7 +176,7 @@ BC_Pixmap *BC_DragWindow::prepare_frame(VFrame *frame, BC_WindowBase *parent_win
 					frame->get_h(), 
 					BC_RGBA8888); 
 
-		cmodel_transfer(temp_frame->get_rows(), 
+		ColorModels::transfer(temp_frame->get_rows(), 
 			frame->get_rows(),
 			0,
 			0,

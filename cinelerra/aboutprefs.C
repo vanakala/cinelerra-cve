@@ -23,7 +23,6 @@
 #include "language.h"
 #include "libmpeg3.h"
 #include "mwindow.h"
-#include "quicktime.h"
 #include "theme.h"
 #include "vframe.h"
 #include "versioninfo.h"
@@ -73,11 +72,7 @@ void AboutPrefs::show()
 
 	y += get_text_height(MEDIUMFONT) * 3;
 
-	sprintf(strbuf, _("Quicktime version %d.%d.%d (%s)\n"
-		"Libmpeg3 version %d.%d.%d\n"),
-		quicktime_major(),
-		quicktime_minor(),
-		quicktime_release(),
+	sprintf(strbuf, _("%s\nLibmpeg3 version %d.%d.%d\n"),
 		FFMPEG_EXTERNALTEXT,
 		mpeg3_major(),
 		mpeg3_minor(),

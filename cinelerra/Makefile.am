@@ -107,7 +107,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    fileogg.C \
 		    fileexr.C \
 		    fileformat.C \
-		    filejpeg.C \
 		    filelist.C \
 		    filempeg.C \
 		    filepng.C \
@@ -275,7 +274,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 # guicast must come first, to pick up correct workarounds.h
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/guicast \
-	-I$(top_srcdir)/quicktime \
 	-I$(top_srcdir)/libmpeg3 \
 	-I$(top_srcdir)/include
 
@@ -359,7 +357,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 filedv.h \
 		 fileogg.h \
 		 fileexr.h \
-		 filejpeg.h \
 		 filelist.h \
 		 filempeg.h \
 		 filepng.h \
@@ -526,9 +523,7 @@ noinst_HEADERS = aattachmentpoint.h \
 
 cinelerracve_LDADD = \
 	data/libimagedata.a \
-	$(top_builddir)/mpeg2enc/libmpeg2enc.la \
 	$(top_builddir)/toolame-02l/libtoolame.la \
-	$(top_builddir)/quicktime/libquicktimecve.la \
 	$(top_builddir)/guicast/libguicastcve.la \
 	$(top_builddir)/libmpeg3/libmpeg3cve.la \
 	@FFMPEG_LIBS@ \

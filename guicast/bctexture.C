@@ -87,7 +87,7 @@ void BC_Texture::create_texture(int w, int h, int colormodel)
 // Calculate dimensions of texture
 	int new_w = calculate_texture_size(w, &max_texture_size);
 	int new_h = calculate_texture_size(h, &max_texture_size);
-	int new_components = cmodel_components(colormodel);
+	int new_components = ColorModels::components(colormodel);
 
 
 	if(new_w < w || new_h < h)

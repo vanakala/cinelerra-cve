@@ -29,7 +29,6 @@
 #include "filexml.h"
 #include "filesystem.h"
 #include "indexfile.h"
-#include "quicktime.h"
 #include "mainsession.h"
 #include <string.h>
 

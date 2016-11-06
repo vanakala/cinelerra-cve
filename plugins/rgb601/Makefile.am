@@ -5,7 +5,7 @@ rgb601_la_SOURCES = rgb601.C rgb601window.C
 AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/quicktime -I$(top_srcdir)/include
+	-I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = rgb601.h rgb601window.h 

@@ -29,7 +29,6 @@
 
 #include "libmpeg3.h"
 #include "mpeg2enc.h"
-#include "quicktime.h"
 
 #include <pthread.h>
 #include <stdint.h>

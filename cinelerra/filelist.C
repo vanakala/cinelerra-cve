@@ -30,7 +30,6 @@
 #include "render.h"
 #include "vframe.h"
 #include "mainerror.h"
-#include "quicktime.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -134,10 +133,10 @@ int FileList::open_file(int rd, int wr)
 		switch(frame_type)
 		{
 		case FILE_JPEG:
-			strcpy(asset->vcodec, QUICKTIME_JPEG);
+			strcpy(asset->vcodec, "jpeg");
 			break;
 		case FILE_PNG:
-			strcpy(asset->vcodec, QUICKTIME_PNG);
+			strcpy(asset->vcodec, "png");
 			break;
 		case FILE_TIFF:
 			strcpy(asset->vcodec, "tiff");

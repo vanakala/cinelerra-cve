@@ -4,7 +4,7 @@ c41_la_LIBADD = $(top_builddir)/plugins/colors/libcolors.la
 c41_la_SOURCES = c41.C 
 AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
 
-AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/quicktime \
+AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
 	-I$(top_srcdir)/plugins/colors  -I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 

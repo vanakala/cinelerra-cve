@@ -31,7 +31,6 @@
 #include "mwindowgui.h"
 #include "menuveffects.h"
 #include "patchbay.h"
-#include "quicktime.h"
 #include "tracks.h"
 #include "units.h"
 #include "vpluginarray.h"

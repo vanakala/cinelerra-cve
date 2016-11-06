@@ -27,7 +27,6 @@
 #include "interlacemodes.h"
 #include "language.h"
 #include "mwindow.h"
-#include "quicktime.h"
 #include "theme.h"
 #include "vframe.h"
 #include "videodevice.inc"

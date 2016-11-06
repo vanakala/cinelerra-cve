@@ -32,7 +32,7 @@
 #include "filebase.h"
 #include "fileexr.h"
 #include "filexml.h"
-#include "filejpeg.h"
+// #include "filejpeg.h"
 #include "filempeg.h"
 #include "fileogg.h"
 #include "filepng.h"
@@ -145,6 +145,7 @@ void File::get_options(FormatTools *format, int options)
 				format_window,
 				options);
 			break;
+/* FIXIT:
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
 			FileJPEG::get_parameters(parent_window, 
@@ -152,6 +153,7 @@ void File::get_options(FormatTools *format, int options)
 				format_window, 
 				options);
 			break;
+	*/
 		case FILE_EXR:
 		case FILE_EXR_LIST:
 			FileEXR::get_parameters(parent_window, 
@@ -290,6 +292,7 @@ int File::open_file(Preferences *preferences,
 			file = new FilePNG(this->asset, this);
 		}
 		else
+/* FIXIT
 		if(FileJPEG::check_sig(this->asset))
 		{
 // JPEG file
@@ -297,6 +300,7 @@ int File::open_file(Preferences *preferences,
 			file = new FileJPEG(this->asset, this);
 		}
 		else
+	*/
 		if(FileEXR::check_sig(this->asset, test))
 		{
 // EXR file
@@ -383,12 +387,12 @@ int File::open_file(Preferences *preferences,
 	case FILE_PNG_LIST:
 		file = new FilePNG(this->asset, this);
 		break;
-
+/* FIXIT
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
 		file = new FileJPEG(this->asset, this);
 		break;
-
+	*/
 	case FILE_EXR:
 	case FILE_EXR_LIST:
 		file = new FileEXR(this->asset, this);
@@ -847,11 +851,11 @@ int File::get_best_colormodel(Asset *asset, int driver)
 
 	case FILE_MPEG:
 		return FileMPEG::get_best_colormodel(asset, driver);
-
+/* FIXIT
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
 		return FileJPEG::get_best_colormodel(asset, driver);
-
+	*/
 	case FILE_EXR:
 	case FILE_EXR_LIST:
 		return FileEXR::get_best_colormodel(asset, driver);

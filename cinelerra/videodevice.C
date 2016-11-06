@@ -29,7 +29,6 @@
 #include "playbackconfig.h"
 #include "playbackengine.h"
 #include "preferences.h"
-#include "quicktime.h"
 #include "vdevicex11.h"
 #include "videodevice.h"
 #include "vframe.h"

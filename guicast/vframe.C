@@ -205,7 +205,7 @@ int VFrame::get_keyframe()
 
 int VFrame::calculate_bytes_per_pixel(int color_model)
 {
-	return cmodel_calculate_pixelsize(color_model);
+	return ColorModels::calculate_pixelsize(color_model);
 }
 
 long VFrame::get_bytes_per_line()
@@ -220,7 +220,7 @@ size_t VFrame::get_data_size()
 
 size_t VFrame::calculate_data_size(int w, int h, int bytes_per_line, int color_model)
 {
-	return cmodel_calculate_datasize(w, h, bytes_per_line, color_model);
+	return ColorModels::calculate_datasize(w, h, bytes_per_line, color_model);
 }
 
 void VFrame::create_row_pointers()
@@ -1024,8 +1024,8 @@ void VFrame::dump(int minmax)
 	printf("VFrame %p dump\n", this);
 	printf("    pts %.3f, duration %.3f src_pts %.3f frame %d layer %d\n", 
 		pts, duration, source_pts, frame_number, layer);
-	printf("    Size %dx%d, cmodel %s bytes/line %d offsets %ld %ld %ld\n", w, h,
-		cmodel_name(color_model), bytes_per_line, y_offset, u_offset, v_offset);
+	printf("    Size %dx%d, cmodel %s bytes/line %ld offsets %ld %ld %ld\n", w, h,
+		ColorModels::name(color_model), bytes_per_line, y_offset, u_offset, v_offset);
 	printf("    data:%p rows: %p y:%p, u:%p, v:%p%s\n", data, rows,
 		y, u, v, shared ? " shared" : "");
 	printf("    compressed size %ld, compressed_allocated %ld\n",

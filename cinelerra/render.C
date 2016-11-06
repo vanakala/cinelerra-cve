@@ -58,7 +58,6 @@
 #include "patchbay.h"
 #include "playabletracks.h"
 #include "preferences.h"
-#include "quicktime.h"
 #include "renderfarm.h"
 #include "render.h"
 #include "statusbar.h"

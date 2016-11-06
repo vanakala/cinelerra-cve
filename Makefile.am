@@ -1,4 +1,4 @@
-SUBDIRS=libmpeg3 @FFMPEG_FOLDER@ quicktime mpeg2enc toolame-02l \
+SUBDIRS=libmpeg3 @FFMPEG_FOLDER@ toolame-02l \
 	guicast cinelerra mplexlo plugins po image m4 
 EXTRA_DIST = admin debian doc depcomp include README.BUILD LICENSE \
 	cinelerra-cvs-current.spec

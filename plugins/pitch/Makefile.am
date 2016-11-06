@@ -5,7 +5,7 @@ pitch_la_SOURCES = pitch.C
 AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra \
-	-I$(top_srcdir)/quicktime -I$(top_srcdir)/plugins/libfourier -I$(top_srcdir)/include
+	-I$(top_srcdir)/plugins/libfourier -I$(top_srcdir)/include
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = pitch.h

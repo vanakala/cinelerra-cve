@@ -476,7 +476,7 @@ void AffineUnit::process_package(LoadPackage *package)
 					(GLfloat)server->output->get_w() / server->output->get_texture_w(),
 					(GLfloat)server->output->get_h() / server->output->get_texture_h());
 				float border_color[] = { 0, 0, 0, 0 };
-				if(cmodel_is_yuv(server->output->get_color_model()))
+				if(ColorModels::is_yuv(server->output->get_color_model()))
 				{
 					border_color[1] = 0.5;
 					border_color[2] = 0.5;
