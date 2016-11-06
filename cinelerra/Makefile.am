@@ -523,7 +523,6 @@ noinst_HEADERS = aattachmentpoint.h \
 
 cinelerracve_LDADD = \
 	data/libimagedata.a \
-	$(top_builddir)/toolame-02l/libtoolame.la \
 	$(top_builddir)/guicast/libguicastcve.la \
 	$(top_builddir)/libmpeg3/libmpeg3cve.la \
 	@FFMPEG_LIBS@ \

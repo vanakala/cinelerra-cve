@@ -1,5 +1,4 @@
-SUBDIRS=libmpeg3 @FFMPEG_FOLDER@ toolame-02l \
-	guicast cinelerra mplexlo plugins po image m4 
+SUBDIRS=libmpeg3 @FFMPEG_FOLDER@ guicast cinelerra mplexlo plugins po image m4
 EXTRA_DIST = admin debian doc depcomp include README.BUILD LICENSE \
 	cinelerra-cvs-current.spec
 AUTOMAKE_OPTIONS=foreign

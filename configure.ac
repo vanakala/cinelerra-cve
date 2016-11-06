@@ -517,7 +517,6 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	libmpeg3/Makefile
 	libmpeg3/video/Makefile
 	libmpeg3/audio/Makefile
-	toolame-02l/Makefile
 	guicast/Makefile
 	cinelerra/Makefile
 	cinelerra/data/Makefile
