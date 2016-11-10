@@ -26,28 +26,24 @@
 #include "filejpeg.h"
 #include "interlacemodes.h"
 #include "language.h"
-//#include "libmjpeg.h"
 #include "mwindow.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "mainerror.h"
 #include "theme.h"
 
-extern "C" {
-#include <jpeglib.h>
-}
 
 extern Theme *theme_global;
 
 FileJPEG::FileJPEG(Asset *asset, File *file)
  : FileList(asset, file, "JPEGLIST", ".jpg", FILE_JPEG, FILE_JPEG_LIST)
 {
-	decompressor = 0;
+	temp_frame = 0;
 }
 
 FileJPEG::~FileJPEG()
 {
-	if(decompressor) mjpeg_delete((mjpeg_t*)decompressor);
+	delete temp_frame;
 }
 
 
@@ -79,7 +75,8 @@ int FileJPEG::check_sig(Asset *asset)
 	if(strlen(asset->path) > 4)
 	{
 		int len = strlen(asset->path);
-		if(!strncasecmp(asset->path + len - 4, ".jpg", 4)) return 1;
+		if(!strncasecmp(asset->path + len - 4, ".jpg", 4))
+			return 1;
 	}
 	return 0;
 }
@@ -125,6 +122,7 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 
 int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
+/* FIXIT
 	int result = 0;
 	JPEGUnit *jpeg_unit = (JPEGUnit*)unit;
 
@@ -149,21 +147,21 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		mjpeg_output_size((mjpeg_t*)jpeg_unit->compressor));
 
 	return result;
+	*/
+	return 1;
 }
 
 int FileJPEG::read_frame_header(const char *path)
 {
 	int result = 0;
 	FILE *stream;
-
+	struct jpeg_decompress_struct jpeg_decompress;
+	struct jpeg_error_mgr jpeg_error;
 	if(!(stream = fopen(path, "rb")))
 	{
 		errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 		return 1;
 	}
-
-	struct jpeg_decompress_struct jpeg_decompress;
-	struct jpeg_error_mgr jpeg_error;
 
 	jpeg_decompress.err = jpeg_std_error(&jpeg_error);
 	jpeg_create_decompress(&jpeg_decompress);
@@ -176,7 +174,7 @@ int FileJPEG::read_frame_header(const char *path)
 
 	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 
-	jpeg_destroy((j_common_ptr)&jpeg_decompress);
+	jpeg_destroy_decompress(&jpeg_decompress);
 	fclose(stream);
 
 	return result;
@@ -184,20 +182,49 @@ int FileJPEG::read_frame_header(const char *path)
 
 int FileJPEG::read_frame(VFrame *output, VFrame *input)
 {
-	if(!decompressor) decompressor = mjpeg_new(asset->width, 
-		asset->height, 
-		1);
-	mjpeg_decompress((mjpeg_t*)decompressor, 
-		input->get_data(), 
-		input->get_compressed_size(),
-		0,  
-		output->get_rows(), 
-		output->get_y(), 
-		output->get_u(), 
-		output->get_v(),
-		output->get_color_model(),
-		1);
+	struct jpeg_decompress_struct jpeg_decompress;
+	struct jpeg_error_mgr jpeg_error;
+	VFrame *work_frame;
+	JSAMPROW row_pointer[1];
 
+	if(output->get_color_model() != BC_RGB888)
+	{
+		if(temp_frame && (temp_frame->get_w() != output->get_w() ||
+			temp_frame->get_h() != output->get_h()))
+		{
+			delete temp_frame;
+			temp_frame = 0;
+		}
+		if(!temp_frame)
+			temp_frame = new VFrame(0, output->get_w(),
+				output->get_h(), BC_RGB888);
+		work_frame = temp_frame;
+	}
+	else
+		work_frame = output;
+
+	jpeg_decompress.err = jpeg_std_error(&jpeg_error);
+	jpeg_create_decompress(&jpeg_decompress);
+
+	jpeg_mem_src(&jpeg_decompress, input->get_data(),
+		input->get_compressed_size());
+
+	jpeg_decompress.output_width = work_frame->get_w();
+	jpeg_decompress.output_height = work_frame->get_h();
+	jpeg_read_header(&jpeg_decompress, TRUE);
+	jpeg_start_decompress(&jpeg_decompress);
+
+	for(int i = 0; i < jpeg_decompress.output_height; i++)
+	{
+		row_pointer[0] = work_frame->get_data() + i * work_frame->get_bytes_per_line();
+		jpeg_read_scanlines(&jpeg_decompress, row_pointer, 1);
+	}
+
+	if(work_frame != output)
+		output->transfer_from(temp_frame);
+
+	jpeg_finish_decompress(&jpeg_decompress);
+	jpeg_destroy_decompress(&jpeg_decompress);
 	return 0;
 }
 
@@ -215,7 +242,7 @@ JPEGUnit::JPEGUnit(FileJPEG *file, FrameWriter *writer)
 }
 JPEGUnit::~JPEGUnit()
 {
-	if(compressor) mjpeg_delete((mjpeg_t*)compressor);
+//	if(compressor) mjpeg_delete((mjpeg_t*)compressor);
 }
 
 

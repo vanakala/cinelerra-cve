@@ -25,6 +25,7 @@
 #include "file.inc"
 #include "filelist.h"
 #include "vframe.inc"
+#include <jpeglib.h>
 
 class FileJPEG : public FileList
 {
@@ -46,9 +47,8 @@ public:
 	int read_frame_header(const char *path);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
-	void *decompressor;
+	VFrame *temp_frame;
 };
-
 
 class JPEGUnit : public FrameWriterUnit
 {
