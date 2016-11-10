@@ -98,6 +98,8 @@ public:
 // Test if frame already matches parameters
 	int params_match(int w, int h, int color_model);
 
+// copy with color conversion and rescale
+	void transfer_from(VFrame *frame);
 // direct copy with no alpha
 	void copy_from(VFrame *frame, int do_copy_pts = 1);
 // Required for YUV
