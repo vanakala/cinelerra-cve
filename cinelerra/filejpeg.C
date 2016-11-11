@@ -122,33 +122,56 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 
 int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
-/* FIXIT
-	int result = 0;
+	VFrame *work_frame;
+	JSAMPROW row_pointer[1];
+	struct jpeg_compress_struct cinfo;
+	struct jpeg_error_mgr jerr;
+	unsigned long clength;
 	JPEGUnit *jpeg_unit = (JPEGUnit*)unit;
 
-	if(!jpeg_unit->compressor)
-		jpeg_unit->compressor = mjpeg_new(asset->width, 
-			asset->height, 
-			1);
-	mjpeg_set_quality((mjpeg_t*)jpeg_unit->compressor, asset->jpeg_quality);
+	if(frame->get_color_model() != BC_RGB888)
+	{
+		if(jpeg_unit->temp_frame && (jpeg_unit->temp_frame->get_w() != frame->get_w() ||
+			jpeg_unit->temp_frame->get_h() != frame->get_h()))
+		{
+			delete jpeg_unit->temp_frame;
+			jpeg_unit->temp_frame = 0;
+		}
+		if(!jpeg_unit->temp_frame)
+			jpeg_unit->temp_frame = new VFrame(0, frame->get_w(),
+				frame->get_h(), BC_RGB888);
+		jpeg_unit->temp_frame->transfer_from(frame);
+		work_frame = jpeg_unit->temp_frame;
+	}
+	else
+		work_frame = frame;
 
-	mjpeg_compress((mjpeg_t*)jpeg_unit->compressor, 
-		frame->get_rows(), 
-		frame->get_y(), 
-		frame->get_u(), 
-		frame->get_v(),
-		frame->get_color_model(),
-		1);
+	if(jpeg_unit->compressed)
+		free(jpeg_unit->compressed);
 
-	data->allocate_compressed_data(mjpeg_output_size((mjpeg_t*)jpeg_unit->compressor));
-	data->set_compressed_size(mjpeg_output_size((mjpeg_t*)jpeg_unit->compressor));
-	memcpy(data->get_data(), 
-		mjpeg_output_buffer((mjpeg_t*)jpeg_unit->compressor), 
-		mjpeg_output_size((mjpeg_t*)jpeg_unit->compressor));
+	cinfo.err = jpeg_std_error(&jerr);
+	jpeg_create_compress(&cinfo);
+	jpeg_unit->compressed = 0;
+	clength = 0;
+	jpeg_mem_dest(&cinfo, &jpeg_unit->compressed, &clength);
 
-	return result;
-	*/
-	return 1;
+	cinfo.image_width = work_frame->get_w();
+	cinfo.image_height = work_frame->get_h();
+	cinfo.input_components = 3;
+	cinfo.in_color_space = JCS_RGB;
+
+	jpeg_set_defaults(&cinfo);
+	jpeg_set_quality(&cinfo, asset->jpeg_quality, TRUE);
+	jpeg_start_compress(&cinfo, TRUE);
+	for(int i; i < cinfo.image_height; i++)
+	{
+		row_pointer[0] = work_frame->get_data() + i * work_frame->get_bytes_per_line();
+		jpeg_write_scanlines(&cinfo, row_pointer, 1);
+	}
+	jpeg_finish_compress(&cinfo);
+	jpeg_destroy_compress(&cinfo);
+	data->set_compressed_memory(jpeg_unit->compressed, clength, clength);
+	return 0;
 }
 
 int FileJPEG::read_frame_header(const char *path)
@@ -237,12 +260,14 @@ FrameWriterUnit* FileJPEG::new_writer_unit(FrameWriter *writer)
 JPEGUnit::JPEGUnit(FileJPEG *file, FrameWriter *writer)
  : FrameWriterUnit(writer)
 {
-	this->file = file;
-	compressor = 0;
+	temp_frame = 0;
+	compressed = 0;
 }
+
 JPEGUnit::~JPEGUnit()
 {
-//	if(compressor) mjpeg_delete((mjpeg_t*)compressor);
+	delete temp_frame;
+	free(compressed);
 }
 
 

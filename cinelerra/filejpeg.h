@@ -56,8 +56,8 @@ public:
 	JPEGUnit(FileJPEG *file, FrameWriter *writer);
 	~JPEGUnit();
 
-	FileJPEG *file;
-	void *compressor;
+	VFrame *temp_frame;
+	unsigned char *compressed;
 };
 
 class JPEGConfigVideo : public BC_Window
