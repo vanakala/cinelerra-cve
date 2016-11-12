@@ -32,8 +32,21 @@
 #include "mainerror.h"
 #include "theme.h"
 
+#include <setjmp.h>
 
 extern Theme *theme_global;
+
+struct error_mgr
+{
+	struct jpeg_error_mgr jpeglib_err;
+	jmp_buf setjmp_buffer;
+};
+
+void jpg_err_exit(j_common_ptr cinfo)
+{
+	struct error_mgr *mgp = (struct error_mgr *)cinfo->err;
+	longjmp(mgp->setjmp_buffer, 1);
+}
 
 FileJPEG::FileJPEG(Asset *asset, File *file)
  : FileList(asset, file, "JPEGLIST", ".jpg", FILE_JPEG, FILE_JPEG_LIST)
@@ -120,12 +133,20 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 	return BC_YUV420P;
 }
 
+void FileJPEG::show_jpeg_error(j_common_ptr cinfo)
+{
+	char buffer[JMSG_LENGTH_MAX];
+
+	(*cinfo->err->format_message)(cinfo, buffer);
+	errormsg("libjpeg error: %s", buffer);
+}
+
 int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
 	VFrame *work_frame;
 	JSAMPROW row_pointer[1];
 	struct jpeg_compress_struct cinfo;
-	struct jpeg_error_mgr jerr;
+	struct error_mgr jpeg_error;
 	unsigned long clength;
 	JPEGUnit *jpeg_unit = (JPEGUnit*)unit;
 
@@ -149,7 +170,16 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	if(jpeg_unit->compressed)
 		free(jpeg_unit->compressed);
 
-	cinfo.err = jpeg_std_error(&jerr);
+	cinfo.err = jpeg_std_error(&jpeg_error.jpeglib_err);
+	jpeg_error.jpeglib_err.error_exit = jpg_err_exit;
+
+	if(setjmp(jpeg_error.setjmp_buffer))
+	{
+		show_jpeg_error((j_common_ptr)&cinfo);
+		jpeg_destroy_compress(&cinfo);
+		return 1;
+	}
+
 	jpeg_create_compress(&cinfo);
 	jpeg_unit->compressed = 0;
 	clength = 0;
@@ -179,14 +209,23 @@ int FileJPEG::read_frame_header(const char *path)
 	int result = 0;
 	FILE *stream;
 	struct jpeg_decompress_struct jpeg_decompress;
-	struct jpeg_error_mgr jpeg_error;
+	struct error_mgr jpeg_error;
 	if(!(stream = fopen(path, "rb")))
 	{
 		errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 		return 1;
 	}
 
-	jpeg_decompress.err = jpeg_std_error(&jpeg_error);
+	jpeg_decompress.err = jpeg_std_error(&jpeg_error.jpeglib_err);
+	jpeg_error.jpeglib_err.error_exit = jpg_err_exit;
+
+	if(setjmp(jpeg_error.setjmp_buffer))
+	{
+		show_jpeg_error((j_common_ptr)&jpeg_decompress);
+		jpeg_destroy_decompress(&jpeg_decompress);
+		return 1;
+	}
+
 	jpeg_create_decompress(&jpeg_decompress);
 
 	jpeg_stdio_src(&jpeg_decompress, stream);
@@ -206,7 +245,7 @@ int FileJPEG::read_frame_header(const char *path)
 int FileJPEG::read_frame(VFrame *output, VFrame *input)
 {
 	struct jpeg_decompress_struct jpeg_decompress;
-	struct jpeg_error_mgr jpeg_error;
+	struct error_mgr jpeg_error;
 	VFrame *work_frame;
 	JSAMPROW row_pointer[1];
 
@@ -226,7 +265,15 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 	else
 		work_frame = output;
 
-	jpeg_decompress.err = jpeg_std_error(&jpeg_error);
+	jpeg_decompress.err = jpeg_std_error(&jpeg_error.jpeglib_err);
+	jpeg_error.jpeglib_err.error_exit = jpg_err_exit;
+
+	if(setjmp(jpeg_error.setjmp_buffer))
+	{
+		show_jpeg_error((j_common_ptr)&jpeg_decompress);
+		jpeg_destroy_decompress(&jpeg_decompress);
+		return 1;
+	}
 	jpeg_create_decompress(&jpeg_decompress);
 
 	jpeg_mem_src(&jpeg_decompress, input->get_data(),

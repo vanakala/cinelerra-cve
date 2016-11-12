@@ -47,6 +47,8 @@ public:
 	int read_frame_header(const char *path);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 
+private:
+	void show_jpeg_error(j_common_ptr cinfo);
 	VFrame *temp_frame;
 };
 
