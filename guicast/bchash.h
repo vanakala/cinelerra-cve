@@ -33,6 +33,7 @@ class BC_Hash
 public:
 	BC_Hash();
 	BC_Hash(const char *filename);
+	~BC_Hash();
 
 	void load();        // load from disk file
 	void save();

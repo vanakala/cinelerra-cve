@@ -51,6 +51,12 @@ BC_Hash::BC_Hash(const char *filename)
 	cache = BC_Resources::hash_cache.allocate_cache(fname);
 }
 
+BC_Hash::~BC_Hash()
+{
+	if(cache->no_file)
+		delete cache;
+}
+
 void BC_Hash::load()
 {
 	FILE *in;
