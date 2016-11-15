@@ -36,6 +36,65 @@
 
 extern Theme *theme_global;
 
+#if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
+struct my_src_mgr
+{
+	struct jpeg_source_mgr jpeg_src;
+	unsigned char *src_data;
+	size_t src_size;
+};
+
+struct my_dst_mgr
+{
+	struct jpeg_destination_mgr jpeg_dst;
+	unsigned char *dst_data;
+	size_t dst_size;
+	size_t dst_filled;
+};
+
+static void init_jpeg_src(j_decompress_ptr cinfo)
+{
+	struct my_src_mgr *ms = (struct my_src_mgr *)cinfo->src;
+
+	cinfo->src->next_input_byte = ms->src_data;
+	cinfo->src->bytes_in_buffer = ms->src_size;
+}
+
+static boolean fill_jpeg_src(j_decompress_ptr cinfo)
+{
+	return TRUE;
+}
+
+static void skip_jpeg_src(j_decompress_ptr cinfo, long num_bytes)
+{
+}
+
+static void term_jpeg_src(j_decompress_ptr cinfo)
+{
+}
+
+static void init_jpeg_dst(j_compress_ptr cinfo)
+{
+	struct my_dst_mgr *ms = (struct my_dst_mgr *)cinfo->dest;
+
+	cinfo->dest->next_output_byte = ms->dst_data;
+	cinfo->dest->free_in_buffer = ms->dst_size;
+	ms->dst_filled = 0;
+}
+
+static boolean empty_jpeg_dst(j_compress_ptr cinfo)
+{
+	return TRUE;
+}
+
+static void term_jpeg_dst(j_compress_ptr cinfo)
+{
+	struct my_dst_mgr *ms = (struct my_dst_mgr *)cinfo->dest;
+
+	ms->dst_filled = ms->dst_size - cinfo->dest->free_in_buffer;
+}
+#endif
+
 struct error_mgr
 {
 	struct jpeg_error_mgr jpeglib_err;
@@ -181,9 +240,24 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	}
 
 	jpeg_create_compress(&cinfo);
+
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
 	jpeg_unit->compressed = 0;
 	clength = 0;
 	jpeg_mem_dest(&cinfo, &jpeg_unit->compressed, &clength);
+#else
+	struct my_dst_mgr my_dst;
+	size_t sz = work_frame->get_w() * work_frame->get_h() * 3;
+
+	jpeg_unit->compressed = my_dst.dst_data = (unsigned char*)malloc(sz);
+	my_dst.dst_size = sz;
+
+	my_dst.jpeg_dst.init_destination = init_jpeg_dst;
+	my_dst.jpeg_dst.empty_output_buffer = empty_jpeg_dst;
+	my_dst.jpeg_dst.term_destination = term_jpeg_dst;
+
+	cinfo.dest = (jpeg_destination_mgr *)&my_dst;
+#endif
 
 	cinfo.image_width = work_frame->get_w();
 	cinfo.image_height = work_frame->get_h();
@@ -200,7 +274,13 @@ int FileJPEG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	}
 	jpeg_finish_compress(&cinfo);
 	jpeg_destroy_compress(&cinfo);
+
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
 	data->set_compressed_memory(jpeg_unit->compressed, clength, clength);
+#else
+	data->set_compressed_memory(jpeg_unit->compressed, my_dst.dst_filled,
+		my_dst.dst_size);
+#endif
 	return 0;
 }
 
@@ -276,11 +356,27 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 	}
 	jpeg_create_decompress(&jpeg_decompress);
 
+#if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
 	jpeg_mem_src(&jpeg_decompress, input->get_data(),
 		input->get_compressed_size());
+#else
+	struct my_src_mgr my_src;
+
+	my_src.src_data = input->get_data();
+	my_src.src_size = input->get_compressed_size();
+
+	my_src.jpeg_src.init_source = init_jpeg_src;
+	my_src.jpeg_src.fill_input_buffer = fill_jpeg_src;
+	my_src.jpeg_src.skip_input_data = skip_jpeg_src;
+	my_src.jpeg_src.resync_to_restart = jpeg_resync_to_restart;
+	my_src.jpeg_src.term_source = term_jpeg_src;
+
+	jpeg_decompress.src = (struct jpeg_source_mgr *)&my_src;
+#endif
 
 	jpeg_decompress.output_width = work_frame->get_w();
 	jpeg_decompress.output_height = work_frame->get_h();
+
 	jpeg_read_header(&jpeg_decompress, TRUE);
 	jpeg_start_decompress(&jpeg_decompress);
 
