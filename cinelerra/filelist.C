@@ -21,12 +21,14 @@
 
 #include "asset.h"
 #include "bcsignals.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "file.h"
 #include "filelist.h"
 #include "guicast.h"
 #include "interlacemodes.h"
 #include "mutex.h"
-#include "mwindow.inc"
+#include "mwindow.h"
 #include "render.h"
 #include "vframe.h"
 #include "mainerror.h"
@@ -37,6 +39,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+extern MWindow *mwindow;
 
 
 FileList::FileList(Asset *asset, 
@@ -314,6 +318,8 @@ int FileList::read_frame(VFrame *frame)
 			}
 			fclose(fp);
 		}
+		frame->set_duration((ptstime)1 / asset->frame_rate);
+		frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
 	}
 	else
 	{
@@ -339,7 +345,7 @@ int FileList::read_frame(VFrame *frame)
 				read_frame(frame, data);
 				break;
 			}
-
+			asset->file_length = ostat.st_size;
 			fclose(fp);
 		}
 		else
@@ -347,11 +353,15 @@ int FileList::read_frame(VFrame *frame)
 			errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 			goto noframe;
 		}
+		frame->set_source_pts(0);
+		if(mwindow->edl->session->si_useduration)
+			frame->set_duration(mwindow->edl->session->si_duration);
+		else
+			frame->set_duration((ptstime)1 / mwindow->edl->session->frame_rate);
+		asset->frame_rate = 1./ frame->get_duration();
+		asset->video_duration = frame->get_duration();
 	}
-	frame->set_source_pts((ptstime)current_frame / asset->frame_rate);
-	frame->set_duration((ptstime)1/ asset->frame_rate);
 	frame->set_frame_number(current_frame);
-
 	return result;
 
 emptyfile:
