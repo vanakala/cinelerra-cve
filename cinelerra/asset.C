@@ -95,6 +95,7 @@ void Asset::init_values()
 	video_data = 0;
 	audio_length = 0;
 	video_length = 0;
+	file_length = 0;
 	single_image = 0;
 	audio_duration = 0;
 	video_duration = 0;
@@ -1181,16 +1182,16 @@ void Asset::dump(int indent)
 			printf(" %d", astream_channels[i]);
 	}
 	putchar('\n');
-	printf("%*s  signed %d header %d dither %d acodec %s length %" PRId64 "\n", indent, "",
-		signed_, header, dither, acodec, audio_length);
+	printf("%*s  signed %d header %d dither %d acodec %s length %.2f (%" PRId64 ")\n", indent, "",
+		signed_, header, dither, acodec, audio_duration, audio_length);
 
 	printf("%*svideo_data %d layers %d framerate %.2f width %d height %d\n",
 		indent, "", video_data, layers, frame_rate, width, height);
 	printf("%*s  vcodec %c%c%c%c aspect_ratio %.2f interlace_mode %s\n",
 		indent, "", vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio,
 		AInterlaceModeSelection::name(interlace_mode));
-	printf("%*s  length %d subtitles %d (active %d) image %d\n", indent, "",
-		video_length, subtitles, active_subtitle, single_image);
+	printf("%*s  length %.2f (%d) subtitles %d (active %d) image %d\n", indent, "",
+		video_duration, video_length, subtitles, active_subtitle, single_image);
 	printf("%*s  reel_name %s reel_number %i tcstart %" PRId64 " tcend %" PRId64 " tcf %d\n",
 		indent, "", reel_name, reel_number, tcstart, tcend, tcformat);
 }
