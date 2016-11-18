@@ -428,27 +428,7 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			asset->width,
 			asset->height,
 			native_cmodel);
-		ColorModels::transfer(exr_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
-			frame->get_rows(),
-			exr_unit->temp_frame->get_y(), /* Leave NULL if non existent */
-			exr_unit->temp_frame->get_u(),
-			exr_unit->temp_frame->get_v(),
-			frame->get_y(), /* Leave NULL if non existent */
-			frame->get_u(),
-			frame->get_v(),
-			0,        /* Dimensions to capture from input frame */
-			0, 
-			asset->width, 
-			asset->height,
-			0,       /* Dimensions to project on output frame */
-			0, 
-			asset->width, 
-			asset->height,
-			frame->get_color_model(), 
-			native_cmodel,
-			0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
-			asset->width,       /* For planar use the luma rowspan */
-			asset->height);
+		exr_unit->temp_frame->transfer_from(frame);
 		output_frame = exr_unit->temp_frame;
 	}
 	else

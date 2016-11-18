@@ -541,28 +541,7 @@ int FileDV::write_frames(VFrame ***frames, int len)
 			if(!temp_frame)
 				temp_frame = new VFrame(0, asset->width,
 					asset->height, BC_YUV422);
-
-			ColorModels::transfer(temp_frame->get_rows(),
-				frame->get_rows(),
-				temp_frame->get_y(),
-				temp_frame->get_u(),
-				temp_frame->get_v(),
-				frame->get_y(),
-				frame->get_u(),
-				frame->get_v(),
-				0,
-				0,
-				frame->get_w(),
-				frame->get_h(),
-				0,
-				0,
-				temp_frame->get_w(),
-				temp_frame->get_h(),
-				frame->get_color_model(),
-				BC_YUV422,
-				0,
-				frame->get_w(),
-				temp_frame->get_w());
+			temp_frame->transfer_from(frame);
 
 			dv_encode_full_frame(encoder, temp_frame->get_rows(),
 				e_dv_color_yuv, video_buffer);

@@ -440,27 +440,7 @@ int FileThread::read_frame(VFrame *frame)
 	if(local_frame)
 	{
 // Copy image
-		ColorModels::transfer(frame->get_rows(),
-			local_frame->get_rows(),
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			local_frame->get_y(),
-			local_frame->get_u(),
-			local_frame->get_v(),
-			0,
-			0,
-			local_frame->get_w(),
-			local_frame->get_h(),
-			0,
-			0,
-			frame->get_w(),
-			frame->get_h(),
-			local_frame->get_color_model(), 
-			frame->get_color_model(),
-			0,
-			local_frame->get_w(),
-			frame->get_w());
+		frame->transfer_from(local_frame);
 		frame->copy_pts(local_frame);
 
 // Recycle all frames before current one but not including current one.

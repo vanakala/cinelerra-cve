@@ -1244,24 +1244,7 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 		return 1;  // recursed call will print error message
 
 	// if we reach here we know that cmodel_transfer() will work
-	ColorModels::transfer(// Packed data out
-		frame_out->get_rows(),
-		// Packed data in
-		temp_frame->get_rows(),
-		// Planar data out
-		frame_out->get_y(), frame_out->get_u(), frame_out->get_v(),
-		// Planar data in
-		NULL,NULL,NULL,
-		// Dimensions in
-		0, 0, temp_frame->get_w(), temp_frame->get_h(),
-		// Dimensions out
-		0, 0, temp_frame->get_w(), temp_frame->get_h(),
-		// Color model in, color model out
-		BC_RGBA8888, cmodel_out,
-		// Background color
-		0,
-		// Rowspans in, out (of luma for YUV)
-		temp_frame->get_w(), temp_frame->get_w());
+	frame_out->transfer_from(temp_frame);
 	return 0;
 }
 
@@ -1390,25 +1373,7 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 			temp_frame = new VFrame(0, frame_in->get_w(),
 				frame_in->get_h(), cmodel);
 
-		ColorModels::transfer(
-			// Packed data out
-			temp_frame->get_rows(),
-			// Packed data in
-			frame_in->get_rows(),
-			// Planar data out
-			temp_frame->get_y(), temp_frame->get_u(), temp_frame->get_v(),
-			// Planar data in
-			NULL, NULL, NULL,
-			// Dimensions in
-			0, 0, frame_in->get_w(), frame_in->get_h(),
-			// Dimensions out
-			0, 0, temp_frame->get_w(), temp_frame->get_h(),
-			// Color model in, color model out
-			frame_in->get_color_model(), cmodel,
-			// Background color
-			0,
-			// Rowspans in, out (of luma for YUV)
-			frame_in->get_w(), temp_frame->get_w());
+		temp_frame->transfer_from(frame_in);
 
 		return convert_cmodel(temp_frame, pix_fmt_out,
 			width_out, height_out, frame_out);

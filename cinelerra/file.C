@@ -756,27 +756,7 @@ int File::get_frame(VFrame *frame, int is_thread)
 			}
 			temp_frame->copy_pts(frame);
 			file->read_frame(temp_frame);
-			ColorModels::transfer(frame->get_rows(),
-				temp_frame->get_rows(),
-				frame->get_y(),
-				frame->get_u(),
-				frame->get_v(),
-				temp_frame->get_y(),
-				temp_frame->get_u(),
-				temp_frame->get_v(),
-				0, 
-				0, 
-				temp_frame->get_w(), 
-				temp_frame->get_h(),
-				0, 
-				0, 
-				frame->get_w(), 
-				frame->get_h(),
-				temp_frame->get_color_model(), 
-				frame->get_color_model(),
-				0,
-				temp_frame->get_w(),
-				frame->get_w());
+			frame->transfer_from(temp_frame);
 			frame->copy_pts(temp_frame);
 		}
 		else

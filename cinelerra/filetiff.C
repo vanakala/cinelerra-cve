@@ -521,27 +521,8 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 				color_model);
 		}
 
-		ColorModels::transfer(tiff_unit->temp->get_rows(),
-			frame->get_rows(),
-			tiff_unit->temp->get_y(),
-			tiff_unit->temp->get_u(),
-			tiff_unit->temp->get_v(),
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			0, 
-			0, 
-			frame->get_w(), 
-			frame->get_h(),
-			0, 
-			0, 
-			frame->get_w(), 
-			frame->get_h(),
-			frame->get_color_model(), 
-			color_model,
-			0,
-			frame->get_w(),
-			frame->get_w());
+		tiff_unit->temp->transfer_from(frame);
+
 		for(int i = 0; i < asset->height; i++)
 		{
 			TIFFWriteScanline(stream, tiff_unit->temp->get_rows()[i], i, 0);

@@ -231,29 +231,7 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			asset->width, 
 			asset->height, 
 			native_cmodel);
-
-		ColorModels::transfer(png_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
-			frame->get_rows(),
-			png_unit->temp_frame->get_y(), /* Leave NULL if non existent */
-			png_unit->temp_frame->get_u(),
-			png_unit->temp_frame->get_v(),
-			frame->get_y(), /* Leave NULL if non existent */
-			frame->get_u(),
-			frame->get_v(),
-			0,        /* Dimensions to capture from input frame */
-			0, 
-			asset->width, 
-			asset->height,
-			0,       /* Dimensions to project on output frame */
-			0, 
-			asset->width, 
-			asset->height,
-			frame->get_color_model(), 
-			png_unit->temp_frame->get_color_model(),
-			0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
-			asset->width,       /* For planar use the luma rowspan */
-			asset->height);
-
+		png_unit->temp_frame->transfer_from(frame);
 		output_frame = png_unit->temp_frame;
 	}
 	else
