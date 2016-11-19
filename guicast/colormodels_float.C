@@ -190,52 +190,6 @@ static inline void transfer_RGB_FLOAT_to_YUVA16161616(uint16_t *(*output),
 	*(*output)++ = 0xffff;
 }
 
-static inline void transfer_RGB_FLOAT_to_YUV101010(unsigned char *(*output), 
-	float *input)
-{
-	int r, g, b;
-	int y, u, v;
-
-	r = (int)(CLIP(input[0], 0, 1) * 0xffff);
-	g = (int)(CLIP(input[1], 0, 1) * 0xffff);
-	b = (int)(CLIP(input[2], 0, 1) * 0xffff);
-	RGB_TO_YUV16(y, u, v, r, g, b);
-	WRITE_YUV101010(y, u, v);
-}
-
-static inline void transfer_RGB_FLOAT_to_VYU888(unsigned char *(*output), 
-	float *input)
-{
-	int y, u, v, r, g, b;
-
-	r = (int)(CLIP(input[0], 0, 1) * 0xffff);
-	g = (int)(CLIP(input[1], 0, 1) * 0xffff);
-	b = (int)(CLIP(input[2], 0, 1) * 0xffff);
-
-	RGB_TO_YUV16(y, u, v, r, g, b);
-
-	*(*output)++ = v >> 8;
-	*(*output)++ = y >> 8;
-	*(*output)++ = u >> 8;
-}
-
-static inline void transfer_RGB_FLOAT_to_UYVA8888(unsigned char *(*output), 
-	float *input)
-{
-	int y, u, v, r, g, b;
-
-	r = (int)(CLIP(input[0], 0, 1) * 0xffff);
-	g = (int)(CLIP(input[1], 0, 1) * 0xffff);
-	b = (int)(CLIP(input[2], 0, 1) * 0xffff);
-
-	RGB_TO_YUV16(y, u, v, r, g, b);
-
-	*(*output)++ = u >> 8;
-	*(*output)++ = y >> 8;
-	*(*output)++ = v >> 8;
-	*(*output)++ = 0xff;
-}
-
 static inline void transfer_RGB_FLOAT_to_YUV420P_YUV422P(unsigned char *output_y, 
 	unsigned char *output_u, 
 	unsigned char *output_v, 
@@ -492,21 +446,6 @@ static inline void transfer_RGBA_FLOAT_to_YUVA16161616(uint16_t *(*output),
 	*(*output)++ = a;
 }
 
-static inline void transfer_RGBA_FLOAT_to_YUV101010(unsigned char *(*output),
-	float *input)
-{
-	int y, u, v, r, g, b, a;
-
-	a = (int)(CLIP(input[3], 0, 1) * 0x101);
-	r = (int)(CLIP(input[0], 0, 1) * 0xff * a);
-	g = (int)(CLIP(input[1], 0, 1) * 0xff * a);
-	b = (int)(CLIP(input[2], 0, 1) * 0xff * a);
-
-	RGB_TO_YUV16(y, u, v, r, g, b);
-	WRITE_YUV101010(y, u, v);
-}
-
-
 static inline void transfer_RGBA_FLOAT_to_YUV420P_YUV422P(unsigned char *output_y,
 	unsigned char *output_u,
 	unsigned char *output_v,
@@ -654,11 +593,6 @@ static inline void transfer_RGBA_FLOAT_to_YUV444P(unsigned char *output_y,
 			transfer_RGB_FLOAT_to_YUVA16161616((uint16_t**)(output), (float*)(input)); \
 			TRANSFER_FRAME_TAIL \
 			break; \
-		case BC_YUV101010: \
-			TRANSFER_FRAME_HEAD \
-			transfer_RGB_FLOAT_to_YUV101010((output), (float*)(input)); \
-			TRANSFER_FRAME_TAIL \
-			break; \
 		case BC_YUV420P: \
 			TRANSFER_YUV420P_OUT_HEAD \
 			transfer_RGB_FLOAT_to_YUV420P_YUV422P(output_y, \
@@ -755,11 +689,6 @@ static inline void transfer_RGBA_FLOAT_to_YUV444P(unsigned char *output_y,
 		case BC_YUVA16161616: \
 			TRANSFER_FRAME_HEAD \
 			transfer_RGBA_FLOAT_to_YUVA16161616((uint16_t**)(output), (float*)(input)); \
-			TRANSFER_FRAME_TAIL \
-			break; \
-		case BC_YUV101010: \
-			TRANSFER_FRAME_HEAD \
-			transfer_RGBA_FLOAT_to_YUV101010((output), (float*)(input)); \
 			TRANSFER_FRAME_TAIL \
 			break; \
 		case BC_YUV420P: \

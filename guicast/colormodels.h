@@ -126,7 +126,6 @@ private:
 	static void default_cmodel(PERMUTATION_ARGS);
 	static void float_cmodel(PERMUTATION_ARGS);
 	static void yuv420p_cmodel(PERMUTATION_ARGS);
-	static void yuv9p_cmodel(PERMUTATION_ARGS);
 	static void yuv444p_cmodel(PERMUTATION_ARGS);
 	static void yuv422_cmodel(PERMUTATION_ARGS);
 };

@@ -82,17 +82,6 @@
 	CLAMP(v, 0, 0xffff); \
 }
 
-#define WRITE_YUV101010(y, u, v) \
-{ \
-	uint32_t output_i = ((y & 0xffc0) << 16) | \
-		((u & 0xffc0) << 6) | \
-		((v & 0xffc0) >> 4); \
-	*(*output)++ = (output_i & 0xff); \
-	*(*output)++ = (output_i & 0xff00) >> 8; \
-	*(*output)++ = (output_i & 0xff0000) >> 16; \
-	*(*output)++ = (output_i & 0xff000000) >> 24; \
-}
-
 // ****************************** Pixel transfers *****************************
 
 // ****************************** ARGB8888 -> *********************************
@@ -281,41 +270,6 @@ static inline void transfer_RGB888_to_YUV888(unsigned char *(*output), unsigned 
 	*(*output)++ = y;
 	*(*output)++ = u;
 	*(*output)++ = v;
-}
-
-static inline void transfer_RGB888_to_YUV101010(unsigned char *(*output), unsigned char *input)
-{
-	int r, g, b;
-	int y, u, v;
-
-	r = ((uint16_t)input[0]) << 8;
-	g = ((uint16_t)input[1]) << 8;
-	b = ((uint16_t)input[2]) << 8;
-	RGB_TO_YUV16(y, u, v, r, g, b);
-	WRITE_YUV101010(y, u, v);
-}
-
-static inline void transfer_RGB888_to_VYU888(unsigned char *(*output), unsigned char *input)
-{
-	int y, u, v;
-
-	RGB_TO_YUV(y, u, v, input[0], input[1], input[2]);
-
-	*(*output)++ = v;
-	*(*output)++ = y;
-	*(*output)++ = u;
-}
-
-static inline void transfer_RGB888_to_UYVA8888(unsigned char *(*output), unsigned char *input)
-{
-	int y, u, v;
-
-	RGB_TO_YUV(y, u, v, input[0], input[1], input[2]);
-
-	*(*output)++ = u;
-	*(*output)++ = y;
-	*(*output)++ = v;
-	*(*output)++ = 0xff;
 }
 
 static inline void transfer_RGB888_to_YUVA8888(unsigned char *(*output), unsigned char *input)
@@ -729,46 +683,6 @@ static inline void transfer_RGBA8888_to_YUVA16161616(uint16_t *(*output), unsign
 	*(*output)++ = (((int)input[3]) << 8) | input[3];
 }
 
-static inline void transfer_RGBA8888_to_YUV101010(unsigned char *(*output), unsigned char *input)
-{
-	int r, g, b;
-	int y, u, v;
-
-	r = ((uint16_t)input[0] * input[3]) + 0x1fe;
-	g = ((uint16_t)input[1] * input[3]) + 0x1fe;
-	b = ((uint16_t)input[2] * input[3]) + 0x1fe;
-	RGB_TO_YUV16(y, u, v, r, g, b);
-	WRITE_YUV101010(y, u, v);
-}
-
-static inline void transfer_RGBA8888_to_VYU888(unsigned char *(*output), unsigned char *input)
-{
-	int y, u, v, a, r, g, b;
-
-	a = input[3];
-	r = ((input[0] * a) >> 8) + 1;
-	g = ((input[1] * a) >> 8) + 1;
-	b = ((input[2] * a) >> 8) + 1;
-
-	RGB_TO_YUV(y, u, v, input[0], input[1], input[2]);
-
-	*(*output)++ = v;
-	*(*output)++ = y;
-	*(*output)++ = u;
-}
-
-static inline void transfer_RGBA8888_to_UYVA8888(unsigned char *(*output), unsigned char *input)
-{
-	int y, u, v;
-
-	RGB_TO_YUV(y, u, v, input[0], input[1], input[2]);
-
-	*(*output)++ = u;
-	*(*output)++ = y;
-	*(*output)++ = v;
-	*(*output)++ = input[3];
-}
-
 static inline void transfer_RGBA888_to_YUV420P_YUV422P(unsigned char *output_y,
 	unsigned char *output_u, 
 	unsigned char *output_v, 
@@ -979,50 +893,6 @@ static inline void transfer_RGB161616_to_YUVA16161616(uint16_t *(*output), uint1
 	(*output)[1] = u;
 	(*output)[2] = v;
 	(*output)[3] = 0xffff;
-	(*output) += 4;
-}
-
-static inline void transfer_RGB161616_to_YUV101010(unsigned char *(*output), uint16_t *input)
-{
-	int r, g, b;
-	int y, u, v;
-
-	r = input[0];
-	g = input[1];
-	b = input[2];
-	RGB_TO_YUV16(y, u, v, r, g, b);
-	WRITE_YUV101010(y, u, v);
-}
-
-static inline void transfer_RGB161616_to_VYU888(unsigned char *(*output), uint16_t *input)
-{
-	int y, u, v, r, g, b;
-	r = input[0] >> 8;
-	g = input[1] >> 8;
-	b = input[2] >> 8;
-
-	RGB_TO_YUV(y, u, v, r, g, b);
-
-	(*output)[0] = v;
-	(*output)[1] = y;
-	(*output)[2] = u;
-	(*output) += 3;
-}
-
-static inline void transfer_RGB161616_to_UYVA8888(unsigned char *(*output), uint16_t *input)
-{
-	int y, u, v, r, g, b;
-
-	r = input[0] >> 8;
-	g = input[1] >> 8;
-	b = input[2] >> 8;
-
-	RGB_TO_YUV(y, u, v, r, g, b);
-
-	(*output)[0] = u;
-	(*output)[1] = y;
-	(*output)[2] = v;
-	(*output)[3] = 0xff;
 	(*output) += 4;
 }
 
@@ -1245,18 +1115,6 @@ static inline void transfer_RGBA16161616_to_YUVA16161616(uint16_t *(*output), ui
 	(*output)[2] = v;
 	(*output)[3] = input[3];
 	(*output) += 4;
-}
-
-static inline void transfer_RGBA16161616_to_YUV101010(unsigned char *(*output), uint16_t *input)
-{
-	uint32_t r, g, b, a, y, u, v;
-
-	a = input[3];
-	r = (uint32_t)input[0] * a / 0xffff;
-	g = (uint32_t)input[1] * a / 0xffff;
-	b = (uint32_t)input[2] * a / 0xffff;
-	RGB_TO_YUV16(y, u, v, r, g, b);
-	WRITE_YUV101010(y, u, v);
 }
 
 static inline void transfer_RGBA16161616_to_YUV420P_YUV422P(unsigned char *output_y,
@@ -1488,31 +1346,6 @@ static inline void transfer_YUV888_to_YUV888(unsigned char *(*output), unsigned 
 	(*output)[1] = input[1];
 	(*output)[2] = input[2];
 	(*output) += 3;
-}
-
-static inline void transfer_YUV888_to_VYU888(unsigned char *(*output), unsigned char *input)
-{
-	(*output)[0] = input[2];
-	(*output)[1] = input[0];
-	(*output)[2] = input[1];
-	(*output) += 3;
-}
-
-static inline void transfer_YUV888_to_UYVA8888(unsigned char *(*output), unsigned char *input)
-{
-	(*output)[0] = input[1];
-	(*output)[1] = input[0];
-	(*output)[2] = input[2];
-	(*output)[3] = 0xff;
-	(*output) += 4;
-}
-
-static inline void transfer_YUV888_to_YUV101010(unsigned char *(*output), unsigned char *input)
-{
-	uint16_t y_i = ((uint16_t)input[0]) << 8;
-	uint16_t u_i = ((uint16_t)input[1]) << 8;
-	uint16_t v_i = ((uint16_t)input[2]) << 8;
-	WRITE_YUV101010(y_i, u_i, v_i);
 }
 
 static inline void transfer_YUV888_to_YUV420P_YUV422P(unsigned char *output_y, 
@@ -1756,44 +1589,12 @@ static inline void transfer_YUVA8888_to_RGBA_FLOAT(float *(*output), unsigned ch
 	*(*output)++ = a;
 }
 
-static inline void transfer_YUVA8888_to_VYU888(unsigned char *(*output), unsigned char *input)
-{
-	int y, u, v, a, anti_a;
-
-	a = input[3];
-	anti_a = 0xff - a;
-	y = ((uint32_t)input[0] * a) / 0xff;
-	u = ((uint32_t)input[1] * a + 0x80 * anti_a) / 0xff;
-	v = ((uint32_t)input[2] * a + 0x80 * anti_a) / 0xff;
-
-	*(*output)++ = v;
-	*(*output)++ = y;
-	*(*output)++ = u;
-}
-
-
 static inline void transfer_YUVA8888_to_YUVA8888(unsigned char *(*output), unsigned char *input)
 {
 	*(*output)++ = input[0];
 	*(*output)++ = input[1];
 	*(*output)++ = input[2];
 	*(*output)++ = input[3];
-}
-
-static inline void transfer_YUVA8888_to_UYVA8888(unsigned char *(*output), unsigned char *input)
-{
-	*(*output)++ = input[1];
-	*(*output)++ = input[0];
-	*(*output)++ = input[2];
-	*(*output)++ = input[3];
-}
-
-static inline void transfer_YUVA8888_to_YUV101010(unsigned char *(*output), unsigned char *input)
-{
-	uint16_t y_i = ((uint16_t)input[0] * input[3]) + 0x1fe;
-	uint16_t u_i = ((uint16_t)input[1] * input[3]) + 0x1fe;
-	uint16_t v_i = ((uint16_t)input[2] * input[3]) + 0x1fe;
-	WRITE_YUV101010(y_i, u_i, v_i);
 }
 
 static inline void transfer_YUVA8888_to_YUV420P_YUV422P(unsigned char *output_y,
@@ -2014,32 +1815,6 @@ static inline void transfer_YUV161616_to_YUVA8888(unsigned char *(*output), uint
 	(*output)[2] = input[2] >> 8;
 	(*output)[3] = 255;
 	(*output) += 4;
-}
-
-
-static inline void transfer_YUV161616_to_VYU888(unsigned char *(*output), uint16_t *input)
-{
-	(*output)[0] = input[2] >> 8;
-	(*output)[1] = input[0] >> 8;
-	(*output)[2] = input[1] >> 8;
-	(*output) += 3;
-}
-
-static inline void transfer_YUV161616_to_UYVA8888(unsigned char *(*output), uint16_t *input)
-{
-	(*output)[0] = input[1] >> 8;
-	(*output)[1] = input[0] >> 8;
-	(*output)[2] = input[2] >> 8;
-	(*output)[3] = input[3] >> 8;
-	(*output) += 4;
-}
-
-static inline void transfer_YUV161616_to_YUV101010(unsigned char *(*output), uint16_t *input)
-{
-	uint16_t y_i = input[0];
-	uint16_t u_i = input[1];
-	uint16_t v_i = input[2];
-	WRITE_YUV101010(y_i, u_i, v_i);
 }
 
 static inline void transfer_YUV161616_to_YUV420P_YUV422P(unsigned char *output_y,
@@ -2298,22 +2073,6 @@ static inline void transfer_YUVA16161616_to_BGR8888(unsigned char *(*output),
 	(*output)++;
 }
 
-
-static inline void transfer_YUVA16161616_to_VYU888(unsigned char *(*output), uint16_t *input)
-{
-	int y, u, v, a, anti_a;
-	a = input[3];
-	anti_a = 0xffff - a;
-	y = ((uint32_t)input[0] * a) / 0xffff00;
-	u = ((uint32_t)input[1] * a + 0x8000 * anti_a) / 0xffff00;
-	v = ((uint32_t)input[2] * a + 0x8000 * anti_a) / 0xffff00;
-
-	*(*output)++ = v;
-	*(*output)++ = y;
-	*(*output)++ = u;
-}
-
-
 static inline void transfer_YUVA16161616_to_YUVA16161616(uint16_t *(*output), uint16_t *input)
 {
 	(*output)[0] = input[0];
@@ -2321,25 +2080,6 @@ static inline void transfer_YUVA16161616_to_YUVA16161616(uint16_t *(*output), ui
 	(*output)[2] = input[2];
 	(*output)[3] = input[3];
 	(*output) += 4;
-}
-
-static inline void transfer_YUVA16161616_to_UYVA8888(unsigned char *(*output), uint16_t *input)
-{
-	(*output)[0] = input[1] >> 8;
-	(*output)[1] = input[0] >> 8;
-	(*output)[2] = input[2] >> 8;
-	(*output)[3] = input[3] >> 8;
-	(*output) += 4;
-}
-
-static inline void transfer_YUVA16161616_to_YUV101010(unsigned char *(*output), uint16_t *input)
-{
-	int64_t opacity = input[3];
-	int64_t transparency = 0xffff - opacity;
-	uint16_t y_i = ((int64_t)input[0] * opacity + (int64_t)0x8000 * transparency) / 0xffff;
-	uint16_t u_i = ((int64_t)input[1] * opacity + (int64_t)0x8000 * transparency) / 0xffff;
-	uint16_t v_i = ((int64_t)input[2] * opacity + (int64_t)0x8000 * transparency) / 0xffff;
-	WRITE_YUV101010(y_i, u_i, v_i);
 }
 
 static inline void transfer_YUVA16161616_to_YUV420P_YUV422P(unsigned char *output_y,
@@ -2447,17 +2187,6 @@ static inline void transfer_YUVA16161616_to_YUV422(unsigned char *(*output),
 		unsigned char *input_v = in_v_plane + (row_table[i] / 2) * (total_in_w / 2); \
 		for(j = 0; j < out_w; j++) \
 		{
-
-#define TRANSFER_YUV9P_IN_HEAD \
-	for(i = 0; i < out_h; i++) \
-	{ \
-		unsigned char *output_row = output_rows[i + out_y] + out_x * out_pixelsize; \
-		unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
-		unsigned char *input_u = in_u_plane + (row_table[i] / 4) * (total_in_w / 4); \
-		unsigned char *input_v = in_v_plane + (row_table[i] / 4) * (total_in_w / 4); \
-		for(j = 0; j < out_w; j++) \
-		{
-
 
 #define TRANSFER_YUV422P_IN_HEAD \
 	for(i = 0; i < out_h; i++) \

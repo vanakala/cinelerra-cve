@@ -771,7 +771,6 @@ void BC_Bitmap::dump(int minmax)
 			printf("    v: avg %d min %d max %d\n", avg, min, max);
 		case BC_RGB888:
 		case BC_YUV888:
-		case BC_VYU888:
 		case BC_BGR888:
 			VFrame::calc_minmax8n(get_data(), w * h, 3, aavg, amin, amax);
 			anum = 3;
@@ -781,7 +780,6 @@ void BC_Bitmap::dump(int minmax)
 		case BC_RGBA8888:
 		case BC_BGR8888:
 		case BC_YUVA8888:
-		case BC_UYVA8888:
 			VFrame::calc_minmax8n(get_data(), w * h, 4, aavg, amin, amax);
 			anum = 4;
 			break;

@@ -47,9 +47,6 @@ class ColorModels;
 #define BC_A8           22
 #define BC_A16          23
 #define BC_A_FLOAT      31
-#define BC_YUV101010    24
-#define BC_VYU888       25
-#define BC_UYVA8888     26
 #define BC_RGB_FLOAT    29
 #define BC_RGBA_FLOAT   30
 // Planar
@@ -57,6 +54,5 @@ class ColorModels;
 #define BC_YUV422P      17
 #define BC_YUV444P      27
 #define BC_YUV411P      18
-#define BC_YUV9P        28     // Disasterous cmodel from Sorenson
 
 #endif

@@ -182,7 +182,6 @@ int ColorModels::components(int colormodel)
 	case BC_RGB888:
 	case BC_YUV888:
 	case BC_RGB161616:
-	case BC_YUV101010:
 	case BC_YUV161616:
 	case BC_RGB_FLOAT:
 		return 3;
@@ -209,7 +208,6 @@ int ColorModels::calculate_pixelsize(int colormodel)
 	case BC_YUV422P:
 	case BC_YUV444P:
 	case BC_YUV411P:
-	case BC_YUV9P:
 		return 1;
 
 	case BC_A16:
@@ -221,7 +219,6 @@ int ColorModels::calculate_pixelsize(int colormodel)
 	case BC_BGR888:
 	case BC_RGB888:
 	case BC_YUV888:
-	case BC_VYU888:
 		return 3;
 
 	case BC_A_FLOAT:
@@ -230,8 +227,6 @@ int ColorModels::calculate_pixelsize(int colormodel)
 	case BC_ABGR8888:
 	case BC_RGBA8888:
 	case BC_YUVA8888:
-	case BC_UYVA8888:
-	case BC_YUV101010:
 		return 4;
 
 	case BC_RGB161616:
@@ -412,10 +407,6 @@ void ColorModels::transfer(unsigned char **output_rows,
 	case BC_YUV420P:
 	case BC_YUV422P:
 		yuv420p_cmodel(PERMUTATION_VALUES);
-		break;
-
-	case BC_YUV9P:
-		yuv9p_cmodel(PERMUTATION_VALUES);
 		break;
 
 	case BC_YUV444P:

@@ -1085,7 +1085,6 @@ void VFrame::dump(int minmax)
 			break;
 		case BC_RGB888:
 		case BC_YUV888:
-		case BC_VYU888:
 		case BC_BGR888:
 			calc_minmax8n(data, w * h, 3, aavg, amin, amax);
 			anum = 3;
@@ -1095,7 +1094,6 @@ void VFrame::dump(int minmax)
 		case BC_RGBA8888:
 		case BC_BGR8888:
 		case BC_YUVA8888:
-		case BC_UYVA8888:
 			calc_minmax8n(data, w * h, 4, aavg, amin, amax);
 			anum = 4;
 			break;
