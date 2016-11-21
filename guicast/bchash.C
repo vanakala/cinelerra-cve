@@ -33,11 +33,7 @@
 
 BC_Hash::BC_Hash()
 {
-	char name[BCTEXTLEN];
-
-	sprintf(name, "%p", this);
-	cache = BC_Resources::hash_cache.allocate_cache(name);
-	cache->no_file = 1;
+	cache = BC_Resources::hash_cache.add_cache(this);
 }
 
 BC_Hash::BC_Hash(const char *filename)
@@ -53,8 +49,7 @@ BC_Hash::BC_Hash(const char *filename)
 
 BC_Hash::~BC_Hash()
 {
-	if(cache->no_file)
-		delete cache;
+	BC_Resources::hash_cache.delete_cache(cache);
 }
 
 void BC_Hash::load()
@@ -228,7 +223,12 @@ void BC_Hash::delete_keys_prefix(const char *key)
 
 void BC_Hash::copy_from(BC_Hash *src)
 {
-	cache = src->cache;
+	if(src->cache->no_file)
+	{
+		cache = BC_Resources::hash_cache.add_cache(this);
+		cache->copy_from(src->cache);
+	} else
+		cache = src->cache;
 }
 
 int BC_Hash::equivalent(BC_Hash *src)

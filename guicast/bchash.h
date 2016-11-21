@@ -22,8 +22,6 @@
 #ifndef BCHASH_H
 #define BCHASH_H
 
-// Hash table with persistent storage in stringfiles.
-
 #include "bcwindowbase.inc"
 #include "hashcache.inc"
 #include "units.h"

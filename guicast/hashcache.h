@@ -22,6 +22,7 @@
 #ifndef HASHCACHE_H
 #define HASHCACHE_H
 
+#include "bchash.inc"
 #include "linklist.h"
 #include "mutex.inc"
 
@@ -36,6 +37,7 @@ public:
 	char *find_value(const char *name);
 	void delete_key(const char *key);
 	void delete_keys_prefix(const char *key);
+	void copy_from(HashCacheElem *src);
 
 	int namelength;
 	char *filename;
@@ -63,8 +65,12 @@ public:
 
 	HashCacheElem *find(const char *name);
 	HashCacheElem *add_cache(const char *filename);
+	HashCacheElem *add_cache(BC_Hash *owner);
 	HashCacheElem *allocate_cache(const char *filename);
+	void delete_cache(HashCacheElem *cache);
 	void save_changed();
+
+	static Mutex listlock;
 };
 
 #endif

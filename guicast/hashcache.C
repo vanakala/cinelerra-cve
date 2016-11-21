@@ -20,8 +20,11 @@
  */
 
 #include "bcsignals.h"
+#include "bchash.h"
 #include "hashcache.h"
 #include "mutex.h"
+
+Mutex HashCache::listlock("HashCache::listlock");
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -114,6 +117,7 @@ void HashCacheElem::save_elem()
 		for(int i = 0; i < total; i++)
 			fprintf(out, "%s %s\n", names[i], values[i]);
 		fclose(out);
+		changed = 0;
 	}
 }
 
@@ -208,6 +212,11 @@ void HashCacheElem::delete_keys_prefix(const char *key)
 	elemlock->unlock();
 }
 
+void HashCacheElem::copy_from(HashCacheElem *src)
+{
+	for(int i = 0; i < src->total; i++)
+		update(src->names[i], src->values[i]);
+}
 
 HashCache::HashCache()
  : List<HashCacheElem>()
@@ -216,6 +225,7 @@ HashCache::HashCache()
 
 HashCache::~HashCache()
 {
+	save_changed();
 	while(last)
 		delete last;
 }
@@ -234,16 +244,38 @@ HashCacheElem *HashCache::find(const char *name)
 
 HashCacheElem *HashCache::add_cache(const char *filename)
 {
-	return append(new HashCacheElem(filename));
+	HashCacheElem *elem;
+
+	listlock.lock("HashCache::add_cache");
+	elem = new HashCacheElem(filename);
+	listlock.unlock();
+
+	return elem;
+}
+
+HashCacheElem *HashCache::add_cache(BC_Hash *owner)
+{
+	HashCacheElem *elem;
+	char name[BCTEXTLEN];
+
+	listlock.lock("HashCache::add_cache");
+	sprintf(name, "%p", owner);
+	elem = new HashCacheElem(name);
+	elem->no_file = 1;
+	listlock.unlock();
+
+	return elem;
 }
 
 HashCacheElem *HashCache::allocate_cache(const char *filename)
 {
 	HashCacheElem *elem;
 
-	if(elem = find(filename))
-		return elem;
-	return append(new HashCacheElem(filename));
+	listlock.lock("HashCache::allocate_cache");
+	if(!(elem = find(filename)))
+		elem = append(new HashCacheElem(filename));
+	listlock.unlock();
+	return elem;
 }
 
 void HashCache::save_changed()
@@ -256,4 +288,12 @@ void HashCache::save_changed()
 			continue;
 		cur->save_elem();
 	}
+}
+
+void HashCache::delete_cache(HashCacheElem *cache)
+{
+	listlock.lock("HashCache::delete_cache");
+	if(cache->no_file)
+		delete cache;
+	listlock.unlock();
 }
