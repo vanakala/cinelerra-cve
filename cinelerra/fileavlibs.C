@@ -1217,27 +1217,28 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 	}
 
 // we get here if there's no direct path from the FFMPEG
-// pix_fmt_in to Cineleraa's/Quicktimes frame_out colormodel.
+// pix_fmt_in to Cinelera's frame_out colormodel.
 // So-- an intermediate conversion is called for
+	int temp_cmodel = inter_color_model(cmodel_out);
 
-	if(cmodel_out == BC_RGBA8888)
+	if(cmodel_out == temp_cmodel)
 	{
 		// avoid infinite recursion if things are broken
 		errorbox("FileAVlibs::convert_cmodel pix_fmt_in broken!");
 		return 1;
 	}
 
-	if(temp_frame && (temp_frame->get_w() != frame_out->get_w() ||
+	if(temp_frame && (temp_frame->get_color_model() != temp_cmodel ||
+		temp_frame->get_w() != frame_out->get_w() ||
 		temp_frame->get_h() != frame_out->get_h()))
 	{
 		delete temp_frame;
 		temp_frame = 0;
 	}
 
-	// choose RGBA8888 as a hopefully non-lossy colormodel
 	if(!temp_frame)
 		temp_frame = new VFrame(0, frame_out->get_w(), frame_out->get_h(),
-			BC_RGBA8888);
+			temp_cmodel);
 
 	if(convert_cmodel(picture_in, pix_fmt_in,
 			width_in, height_in, temp_frame))
@@ -1282,6 +1283,12 @@ AVPixelFormat FileAVlibs::color_model_to_pix_fmt(int color_model)
 		return AV_PIX_FMT_ABGR;
 	case BC_RGB161616:
 		return AV_PIX_FMT_RGB48;
+	case BC_RGBA16161616:
+		return AV_PIX_FMT_RGBA64;
+	case BC_A8:
+		return AV_PIX_FMT_GRAY8;
+	case BC_A16:
+		return AV_PIX_FMT_GRAY16;
 	};
 	return AV_PIX_FMT_NB;
 }
@@ -1295,7 +1302,9 @@ int FileAVlibs::inter_color_model(int color_model)
 		return BC_YUV444P;
 	case BC_RGB_FLOAT:
 	case BC_RGBA_FLOAT:
-		return BC_RGB888;
+		return BC_RGBA16161616;
+	case BC_A_FLOAT:
+		return BC_A16;
 	}
 	return color_model;
 }
@@ -1319,6 +1328,11 @@ int FileAVlibs::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 		picture->data[2] = frame->get_v();
 	}
 	return size;
+}
+
+int FileAVlibs::colormodel_supported(int colormodel)
+{
+	return colormodel;
 }
 
 int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
