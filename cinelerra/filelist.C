@@ -119,8 +119,17 @@ int FileList::open_file(int rd, int wr)
 					asset->format = frame_type;
 					result = read_frame_header(asset->path);
 					asset->layers = 1;
-					if(!asset->frame_rate)
-						asset->frame_rate = 1;
+					if(mwindow->edl->session->si_useduration)
+					{
+						asset->frame_rate = 1. /
+							mwindow->edl->session->si_duration;
+						asset->video_duration = mwindow->edl->session->si_duration;
+					}
+					else
+					{
+						asset->frame_rate = mwindow->edl->session->frame_rate;
+						asset->video_duration = 1. / mwindow->edl->session->frame_rate;
+					}
 					asset->video_length = 1;
 					asset->single_image = 1;
 				}
@@ -257,6 +266,7 @@ int FileList::read_list_header()
 		asset->file_length = ftell(stream);
 		fclose(stream);
 		asset->video_length = path_list.total;
+		asset->video_duration = (ptstime)path_list.total / asset->frame_rate;
 	}
 	else
 		return 1;
@@ -358,8 +368,6 @@ int FileList::read_frame(VFrame *frame)
 			frame->set_duration(mwindow->edl->session->si_duration);
 		else
 			frame->set_duration((ptstime)1 / mwindow->edl->session->frame_rate);
-		asset->frame_rate = 1./ frame->get_duration();
-		asset->video_duration = frame->get_duration();
 	}
 	frame->set_frame_number(current_frame);
 	return result;
