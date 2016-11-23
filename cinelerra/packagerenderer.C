@@ -327,7 +327,6 @@ void PackageRenderer::do_video()
 		{
 // Try to use the rendering engine to write the frame.
 // Get a buffer for background writing.
-
 			if(video_write_position == 0)
 				video_output = file->get_video_buffer();
 
@@ -337,8 +336,11 @@ void PackageRenderer::do_video()
 
 			if(!result)
 				result = render_engine->vrender->process_buffer(video_output_ptr);
-			if((duration = video_output_ptr->get_duration()) < EPSILON)
-				duration = 1.0 / asset->frame_rate;
+
+			duration = 1.0 / asset->frame_rate;
+			video_output_ptr->set_pts(video_pts);
+			video_output_ptr->set_duration(duration);
+
 			if(!result &&
 				mwindow &&
 				video_device->output_visible())
@@ -372,7 +374,6 @@ void PackageRenderer::do_video()
 					brender_base = video_pts;
 				video_output_ptr->set_number(round(video_pts * asset->frame_rate));
 				video_write_position++;
-
 				if(video_write_position >= video_write_length)
 				{
 					result = file->write_video_buffer(video_write_position);
@@ -384,7 +385,7 @@ void PackageRenderer::do_video()
 				}
 			}
 			package->count++;
-			video_pts = video_output_ptr->get_pts() + duration;
+			video_pts += duration;
 			if(!result && get_result()) result = 1;
 			if(!result && progress_cancelled()) result = 1;
 		}
