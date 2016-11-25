@@ -69,21 +69,21 @@ VFrame::VFrame(VFrame &frame)
 VFrame::VFrame(unsigned char *data, 
 	int w, 
 	int h, 
-	int color_model, 
-	long bytes_per_line)
+	int color_model,
+	int bytes_per_line)
 {
 	reset_parameters(1);
 	allocate_data(data, 0, 0, 0, w, h, color_model, bytes_per_line);
 }
 
 VFrame::VFrame(unsigned char *data, 
-		long y_offset,
-		long u_offset,
-		long v_offset, 
+		int y_offset,
+		int u_offset,
+		int v_offset,
 		int w, 
 		int h, 
 		int color_model, 
-		long bytes_per_line)
+		int bytes_per_line)
 {
 	reset_parameters(1);
 	allocate_data(data, 
@@ -208,7 +208,7 @@ int VFrame::calculate_bytes_per_pixel(int color_model)
 	return ColorModels::calculate_pixelsize(color_model);
 }
 
-long VFrame::get_bytes_per_line()
+int VFrame::get_bytes_per_line()
 {
 	return bytes_per_line;
 }
@@ -275,13 +275,13 @@ void VFrame::create_row_pointers()
 }
 
 void VFrame::allocate_data(unsigned char *data, 
-	long y_offset,
-	long u_offset,
-	long v_offset,
+	int y_offset,
+	int u_offset,
+	int v_offset,
 	int w, 
 	int h, 
 	int color_model, 
-	long bytes_per_line)
+	int bytes_per_line)
 {
 	this->w = w;
 	this->h = h;
@@ -320,9 +320,9 @@ void VFrame::allocate_data(unsigned char *data,
 }
 
 void VFrame::set_memory(unsigned char *data, 
-		long y_offset,
-		long u_offset,
-		long v_offset)
+		int y_offset,
+		int u_offset,
+		int v_offset)
 {
 	shared = 1;
 	this->data = data;
@@ -349,13 +349,13 @@ void VFrame::set_compressed_memory(unsigned char *data,
 
 // Reallocate uncompressed buffer with or without alpha
 void VFrame::reallocate(unsigned char *data, 
-		long y_offset,
-		long u_offset,
-		long v_offset,
+		int y_offset,
+		int u_offset,
+		int v_offset,
 		int w, 
 		int h, 
 		int color_model, 
-		long bytes_per_line)
+		int bytes_per_line)
 {
 	clear_objects(0);
 	reset_parameters(0);
@@ -369,7 +369,7 @@ void VFrame::reallocate(unsigned char *data,
 		bytes_per_line);
 }
 
-void VFrame::allocate_compressed_data(long bytes)
+void VFrame::allocate_compressed_data(int bytes)
 {
 	if(bytes < 1) return;
 // Want to preserve original contents
@@ -479,17 +479,17 @@ unsigned char* VFrame::get_data()
 	return data;
 }
 
-long VFrame::get_compressed_allocated()
+int VFrame::get_compressed_allocated()
 {
 	return compressed_allocated;
 }
 
-long VFrame::get_compressed_size()
+int VFrame::get_compressed_size()
 {
 	return compressed_size;
 }
 
-void VFrame::set_compressed_size(long size)
+void VFrame::set_compressed_size(int size)
 {
 	compressed_size = size;
 }
@@ -1036,11 +1036,11 @@ void VFrame::dump(int minmax)
 	printf("VFrame %p dump\n", this);
 	printf("    pts %.3f, duration %.3f src_pts %.3f frame %d layer %d\n", 
 		pts, duration, source_pts, frame_number, layer);
-	printf("    Size %dx%d, cmodel %s bytes/line %ld offsets %ld %ld %ld\n", w, h,
+	printf("    Size %dx%d, cmodel %s bytes/line %d offsets %d %d %d\n", w, h,
 		ColorModels::name(color_model), bytes_per_line, y_offset, u_offset, v_offset);
 	printf("    data:%p rows: %p y:%p, u:%p, v:%p%s\n", data, rows,
 		y, u, v, shared ? " shared" : "");
-	printf("    compressed size %ld, compressed_allocated %ld\n",
+	printf("    compressed size %d, compressed_allocated %d\n",
 		compressed_size, compressed_allocated);
 	if(minmax)
 	{

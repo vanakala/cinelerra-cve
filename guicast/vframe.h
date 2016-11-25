@@ -49,15 +49,15 @@ public:
 		int w, 
 		int h, 
 		int color_model = BC_RGBA8888, 
-		long bytes_per_line = -1);
+		int bytes_per_line = -1);
 	VFrame(unsigned char *data, 
-		long y_offset,
-		long u_offset,
-		long v_offset,
+		int y_offset,
+		int u_offset,
+		int v_offset,
 		int w, 
 		int h, 
 		int color_model = BC_RGBA8888, 
-		long bytes_per_line = -1);
+		int bytes_per_line = -1);
 // Create a frame with the png image
 	VFrame(unsigned char *png_data);
 	VFrame(VFrame &vframe);
@@ -73,18 +73,18 @@ public:
 
 // Reallocate a frame without deleting the class
 	void reallocate(unsigned char *data, 
-		long y_offset,
-		long u_offset,
-		long v_offset,
+		int y_offset,
+		int u_offset,
+		int v_offset,
 		int w, 
 		int h, 
 		int color_model, 
-		long bytes_per_line);
+		int bytes_per_line);
 
 	void set_memory(unsigned char *data, 
-		long y_offset,
-		long u_offset,
-		long v_offset);
+		int y_offset,
+		int u_offset,
+		int v_offset);
 
 	void set_compressed_memory(unsigned char *data,
 		int data_size,
@@ -104,7 +104,7 @@ public:
 	void copy_from(VFrame *frame, int do_copy_pts = 1);
 // Required for YUV
 	void clear_frame(void);
-	void allocate_compressed_data(long bytes);
+	void allocate_compressed_data(int bytes);
 
 // Sequence number. -1 means invalid.  Passing frames to the encoder is
 // asynchronous.  The sequence number must be preserved in the image itself
@@ -131,9 +131,9 @@ public:
 	void set_duration(ptstime duration);
 	ptstime get_duration(void);
 
-	long get_compressed_allocated();
-	long get_compressed_size();
-	void set_compressed_size(long size);
+	int get_compressed_allocated();
+	int get_compressed_size();
+	void set_compressed_size(int size);
 	int get_color_model();
 // Get the data pointer
 	unsigned char* get_data();
@@ -151,7 +151,7 @@ public:
 			int in_x1, int in_y1, int in_x2, int in_y2,
 			int out_x1, int out_y1, int out_x2, int out_y2);
 	int get_bytes_per_pixel(void);
-	long get_bytes_per_line();
+	int get_bytes_per_line();
 // Return 1 if the buffer is shared.
 	int get_shared(void);
 
@@ -315,13 +315,13 @@ private:
 	void reset_parameters(int do_opengl);
 	void create_row_pointers();
 	void allocate_data(unsigned char *data, 
-		long y_offset,
-		long u_offset,
-		long v_offset,
+		int y_offset,
+		int u_offset,
+		int v_offset,
 		int w, 
 		int h, 
 		int color_model, 
-		long bytes_per_line);
+		int bytes_per_line);
 
 // Frame position in source
 	ptstime source_pts;
@@ -339,7 +339,7 @@ private:
 // Data is pointing to someone else's buffer.
 	int shared;
 // If not set by user, is calculated from color_model
-	long bytes_per_line;
+	int bytes_per_line;
 	int bytes_per_pixel;
 // Image data
 	unsigned char *data;
@@ -348,20 +348,20 @@ private:
 // One of the #defines
 	int color_model;
 // Allocated space for compressed data
-	long compressed_allocated;
+	int compressed_allocated;
 // Size of stored compressed image
-	long compressed_size;
+	int compressed_size;
 // Pointers to yuv planes
 	unsigned char *y, *u, *v;
-	long y_offset;
-	long u_offset;
-	long v_offset;
+	int y_offset;
+	int u_offset;
+	int v_offset;
 // Dimensions of frame
 	int w, h;
 // Info for reading png images
 	unsigned char *image;
-	long image_offset;
-	long image_size;
+	int image_offset;
+	int image_size;
 // For writing discontinuous frames in background rendering
 	long sequence_number;
 
