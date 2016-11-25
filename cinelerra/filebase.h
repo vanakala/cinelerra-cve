@@ -64,6 +64,8 @@ public:
 	virtual int prefer_samples_float() { return 0;};
 	virtual int read_samples_float(float *buffer, int len) { return 0; };
 
+// Can convert colormodel and size
+	virtual int converts_frame() { return 0; };
 	virtual int read_frame(VFrame *frame) { return 1; };
 
 // Callbacks for FileTOC

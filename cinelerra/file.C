@@ -734,6 +734,7 @@ int File::get_frame(VFrame *frame, int is_thread)
 			return 0;
 // Need temp
 		if(frame->get_color_model() != BC_COMPRESSED &&
+			!file->converts_frame() &&
 			(supported_colormodel != frame->get_color_model() ||
 			frame->get_w() != asset->width ||
 			frame->get_h() != asset->height))
