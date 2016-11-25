@@ -74,6 +74,7 @@ public:
 	int read_aframe(AFrame *frame);
 	int write_frames(VFrame ***frames, int len);
 	int colormodel_supported(int colormodel);
+	int converts_frame();
 	static void versionifo(int indent);
 	int write_aframes(AFrame **frames);
 	static void get_parameters(BC_WindowBase *parent_window,
