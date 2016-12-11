@@ -370,27 +370,22 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	{
 		if(bitmap->hardware_scaling())
 		{
-			ColorModels::transfer(bitmap->get_row_pointers(),
-				output_channels->get_rows(),
+			ColorModels::transfer_sws(bitmap->get_data(),
+				output_channels->get_data(),
 				bitmap->get_y_plane(),
 				bitmap->get_u_plane(),
 				bitmap->get_v_plane(),
 				output_channels->get_y(),
 				output_channels->get_u(),
 				output_channels->get_v(),
-				0, 
-				0, 
-				output_channels->get_w(), 
-				output_channels->get_h(),
-				0, 
-				0, 
-				bitmap->get_w(), 
-				bitmap->get_h(),
-				output_channels->get_color_model(), 
-				bitmap->get_color_model(),
-				0,
 				output_channels->get_w(),
-				bitmap->get_w());
+				output_channels->get_h(),
+				bitmap->get_w(),
+				bitmap->get_h(),
+				output_channels->get_color_model(),
+				bitmap->get_color_model(),
+				output_channels->get_bytes_per_line(),
+				bitmap->get_bytes_per_line());
 		}
 		else
 		{

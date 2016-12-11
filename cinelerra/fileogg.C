@@ -735,7 +735,7 @@ int FileOGG::read_frame(VFrame *frame)
 	if(theora_decode_YUVout(&cur_stream->ts, &yuv))
 		return 1;
 
-	ColorModels::transfer(frame->get_rows(),
+	ColorModels::transfer_sws(frame->get_data(),
 		0,
 		frame->get_y(),
 		frame->get_u(),
@@ -743,19 +743,14 @@ int FileOGG::read_frame(VFrame *frame)
 		yuv.y,
 		yuv.u,
 		yuv.v,
-		cur_stream->ti->offset_x,
-		cur_stream->ti->offset_y,
 		cur_stream->ti->frame_width,
 		cur_stream->ti->frame_height,
-		0,
-		0,
 		frame->get_w(),  // temp_frame can be larger than frame if width not dividable by 16
 		frame->get_h(),
 		BC_YUV420P,
 		frame->get_color_model(),
-		0,
 		yuv.y_stride,
-		frame->get_w());
+		frame->get_bytes_per_line());
 
 	next_frame_position = frame_position - 1;
 	frame->set_source_pts((ptstime)next_frame_position / asset->frame_rate);
@@ -1092,28 +1087,7 @@ int FileOGG::write_frames(VFrame ***frames, int len)
 				BC_YUV420P);
 		}
 // Always convert: internally YUV420P is never used
-		ColorModels::transfer(temp_frame->get_rows(),
-			frame->get_rows(),
-			temp_frame->get_y(),
-			temp_frame->get_u(),
-			temp_frame->get_v(),
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			0,
-			0,
-			frame->get_w(),
-			frame->get_h(),
-			cur_stream->ti->offset_x,
-			cur_stream->ti->offset_y,
-			temp_frame->get_w(),
-			temp_frame->get_h(),
-			frame->get_color_model(),
-			BC_YUV420P,
-			0,
-			frame->get_w(),
-			temp_frame->get_w());
-
+		temp_frame->transfer_from(frame);
 		h = temp_frame->get_h();
 		w = temp_frame->get_w();
 		b = temp_frame->get_bytes_per_line();

@@ -430,7 +430,6 @@ int FileMPEG::read_frame(VFrame *frame)
 	case BC_RGB888:
 	case BC_RGBA8888:
 	case BC_RGBA16161616:
-
 		mpeg3_read_frame(fd, 
 			frame->get_rows(), /* Array of pointers to the start of each output row */
 			0,                    /* Location in input frame to take picture */
@@ -470,7 +469,7 @@ int FileMPEG::read_frame(VFrame *frame)
 
 			if(y && u && v)
 			{
-				ColorModels::transfer(frame->get_rows(),
+				ColorModels::transfer_sws(frame->get_data(),
 					0,
 					frame->get_y(),
 					frame->get_u(),
@@ -478,19 +477,14 @@ int FileMPEG::read_frame(VFrame *frame)
 					(unsigned char*)y,
 					(unsigned char*)u,
 					(unsigned char*)v,
-					0,
-					0,
 					asset->width,
 					asset->height,
-					0,
-					0,
 					asset->width,
 					asset->height,
 					src_cmodel,
 					frame->get_color_model(),
-					0,
 					(asset->width + 15) & ~15,
-					frame->get_w());
+					frame->get_bytes_per_line());
 			}
 		}
 		break;

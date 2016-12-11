@@ -1152,7 +1152,8 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 	PixelFormat pix_fmt_out = color_model_to_pix_fmt(cmodel_out);
 	PixelFormat pix_fmt_in;
 	int result = 0;
-
+tracemsg("converting from '%s' to '%s'", av_get_pix_fmt_name(pix_fmt),
+    ColorModels::name(cmodel_out));
 	if(init_picture_from_frame(&picture_out, frame_out) >= 0)
 	{
 		if(pix_fmt_out != AV_PIX_FMT_NB)
@@ -1207,6 +1208,8 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 				}
 			}
 			frame_out->clear_frame();
+for(int i = 0; i < 4; i++)
+    tracemsg("  %d %p %d",  i, picture_in->data[i], picture_in->linesize[i]);
 			sws_scale(sws_ctx,
 				picture_in->data, picture_in->linesize,
 				0, height_in,
@@ -1220,7 +1223,7 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 // pix_fmt_in to Cinelera's frame_out colormodel.
 // So-- an intermediate conversion is called for
 	int temp_cmodel = inter_color_model(cmodel_out);
-
+tracemsg("temp cmodel is '%s'", ColorModels::name(temp_cmodel));
 	if(cmodel_out == temp_cmodel)
 	{
 		// avoid infinite recursion if things are broken
@@ -1316,7 +1319,7 @@ int FileAVlibs::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 
 	int size = avpicture_fill(picture, frame->get_data(), pix_fmt,
 		frame->get_w(), frame->get_h());
-
+tracemsg("size %d line %p %d", size, picture->data[0], picture->linesize[0]);
 	if(size < 0) return -1;
 
 	if(ColorModels::is_planar(frame->get_color_model()))
@@ -1326,6 +1329,9 @@ int FileAVlibs::init_picture_from_frame(AVPicture *picture, VFrame *frame)
 		picture->data[0] = frame->get_y();
 		picture->data[1] = frame->get_u();
 		picture->data[2] = frame->get_v();
+tracemsg("overrided");
+for(int i = 0; i < 4; i++)
+    tracemsg("  lz %d %d", i, picture->linesize[i]);
 	}
 	return size;
 }
