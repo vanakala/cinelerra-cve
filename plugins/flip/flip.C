@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "colormodels.h"
+#include "colormodels.inc"
 #include "bchash.h"
 #include "filexml.h"
 #include "flip.h"

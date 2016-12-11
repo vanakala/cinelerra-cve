@@ -19,7 +19,7 @@
  * 
  */
 
-#include "colormodels.h"
+#include "colormodels.inc"
 #include "effecttv.h"
 #include "plugincolors.h"
 #include "vframe.h"

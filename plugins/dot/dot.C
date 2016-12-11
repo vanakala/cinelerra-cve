@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "colormodels.h"
+#include "colormodels.inc"
 #include "picon_png.h"
 #include "dot.h"
 #include "dotwindow.h"

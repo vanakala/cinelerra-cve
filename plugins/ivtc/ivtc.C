@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "colormodels.h"
+#include "colormodels.inc"
 #include "filexml.h"
 #include "ivtc.h"
 #include "ivtcwindow.h"

@@ -25,7 +25,7 @@
 
 
 #include "clip.h"
-#include "colormodels.h"
+#include "colormodels.inc"
 #include "filexml.h"
 #include "filesystem.h"
 #include "ft2build.h"

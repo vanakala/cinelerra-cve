@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "colormodels.h"
+#include "colormodels.inc"
 #include "filexml.h"
 #include "picon_png.h"
 #include "aging.h"

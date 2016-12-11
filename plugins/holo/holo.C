@@ -20,7 +20,7 @@
  */
 
 #include "clip.h"
-#include "colormodels.h"
+#include "colormodels.inc"
 #include "effecttv.h"
 #include "holo.h"
 #include "holowindow.h"
