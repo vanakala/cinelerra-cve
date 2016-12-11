@@ -1,7 +1,7 @@
 lib_LTLIBRARIES = libguicastcve.la
 noinst_PROGRAMS = bootstrap pngtoh
 
-libguicastcve_la_LIBADD = $(OPENGL_LIBS) $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS) $(XFT_LIBS)
+libguicastcve_la_LIBADD = $(OPENGL_LIBS) $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS) $(XFT_LIBS) $(FFMPEG_SWSCALE)
 libguicastcve_la_LDFLAGS = -version-info 3:0:0 
 libguicastcve_la_SOURCES = \
 	bcbar.C \
@@ -66,6 +66,7 @@ libguicastcve_la_SOURCES = \
 	rotateframe.C \
 	sema.C \
 	thread.C \
+	tmpframecache.C \
 	units.C \
 	vframe.C \
 	vframe3d.C \
@@ -188,6 +189,7 @@ noinst_HEADERS = \
 	sema.h \
 	sema.inc \
 	thread.h \
+	tmpframecache.h \
 	units.h \
 	vframe.h \
 	vframe.inc \
@@ -195,7 +197,7 @@ noinst_HEADERS = \
 	condition.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/include
-AM_CXXFLAGS = $(LARGEFILE_CFLAGS) $(X_CFLAGS)
+AM_CXXFLAGS = $(LARGEFILE_CFLAGS) $(X_CFLAGS) $(FFMPEG_CFLAGS)
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 # special CFLAGS that can be set on the make command line
