@@ -21,6 +21,12 @@
 
 #include "colormodels.inc"
 
+extern "C"
+{
+#include <libswscale/swscale.h>
+#include <libavutil/avutil.h>
+}
+
 
 #define PERMUTATION_ARGS \
 	unsigned char **output_rows,  \
@@ -97,6 +103,24 @@ public:
 	static void to_text(char *string, int cmodel);
 	static const char *name(int cmodel);
 	static int from_text(char *text);
+	static void transfer_sws(unsigned char *output,
+		unsigned char *input,
+		unsigned char *out_y_plane,
+		unsigned char *out_u_plane,
+		unsigned char *out_v_plane,
+		unsigned char *in_y_plane,
+		unsigned char *in_u_plane,
+		unsigned char *in_v_plane,
+		int in_w,
+		int in_h,
+		int out_w,
+		int out_h,
+		int in_colormodel,
+		int out_colormodel,
+		int in_rowspan,
+		int out_rowspan);
+	static AVPixelFormat color_model_to_pix_fmt(int color_model);
+	static int inter_color_model(int color_model);
 
 	static void transfer(unsigned char **output_rows, // Leave NULL if non existent
 		unsigned char **input_rows,
@@ -123,6 +147,16 @@ public:
 	static struct yuvtables yuv_table;
 
 private:
+	static void copy_colors(int w, int h,
+		unsigned char *output, int out_colormodel, int out_rowspan,
+		unsigned char *input, int in_cmodel, int in_rowspan);
+	static void transfer_details(struct SwsContext *sws_ctx, int srange);
+	static void fill_linesizes(int colormodel, int rowspan,
+		int w, int *linesizes);
+	static void fill_data(int colormodel, unsigned char **data,
+		unsigned char *xbuf, unsigned char *y, unsigned char *u,
+		unsigned char *v);
+
 	static void default_cmodel(PERMUTATION_ARGS);
 	static void float_cmodel(PERMUTATION_ARGS);
 	static void yuv420p_cmodel(PERMUTATION_ARGS);

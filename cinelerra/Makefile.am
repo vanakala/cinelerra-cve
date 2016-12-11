@@ -528,6 +528,7 @@ cinelerracve_LDADD = \
 	$(top_builddir)/guicast/libguicastcve.la \
 	$(top_builddir)/libmpeg3/libmpeg3cve.la \
 	@FFMPEG_LIBS@ \
+	@FFMPEG_SWSCALE@ \
 	$(XIPH_LIBS) \
 	$(A52DEC_LIBS) \
 	$(OPENEXR_LIBS) \

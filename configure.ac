@@ -309,8 +309,6 @@ i586 | i686)
 
 	CPU_CFLAGS="-DX86_CPU $CPU_CFLAGS"
 
-	ffmpeg_32bit=yes
-
 	if test "x$enable_mmx" = "xyes"; then
 		CPU_CFLAGS="-DHAVE_MMX -DUSE_MMX $CPU_CFLAGS" # -D_MMX_ doesn't work
 		enable_mmx32=yes
@@ -343,7 +341,6 @@ AM_CONDITIONAL(TARGET_BUILTIN_VECTOR,test "x$enable_mmx" = "xyes")
 AM_CONDITIONAL(USE3DNOW, test "x$enable_3dnow" = "xyes")
 AM_CONDITIONAL(TARGET_ARCH_POWERPC, test "x$target_cpu" = "xpowerpc")
 AM_CONDITIONAL(TARGET_ALTIVEC, test "x$enable_altivec" = "xyes")
-AM_CONDITIONAL(FFMPEG_ARCH_32BIT, test "x$ffmpeg_32bit" = "xyes")
 AC_SUBST(LIBDECORE_LIBADD)
 AC_SUBST(CPU_CFLAGS)
 
@@ -390,15 +387,16 @@ else
 	FFMPEG_CFLAGS="-I\$(top_srcdir)/ffmpeg -DHAVE_SWSCALER"
 	FFMPEG_LIBS="-L\$(top_builddir)/ffmpeg/libavcodec -lavcodec-cve \
 		-L\$(top_builddir)/ffmpeg/libavformat -lavformat-cve \
-		-L\$(top_builddir)/ffmpeg/libavutil -lavutil-cve \
-		-L\$(top_builddir)/ffmpeg/libswscale -lswscale-cve \
 		-L\$(top_builddir)/ffmpeg/libswresample -lswresample-cve"
+	FFMPEG_SWSCALE="-L\$(top_builddir)/ffmpeg/libavutil -lavutil-cve \
+		-L\$(top_builddir)/ffmpeg/libswscale -lswscale-cve"
 	FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi
 FFMPEG_CFLAGS="$FFMPEG_CFLAGS -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS"
 AC_SUBST(FFMPEG_FOLDER)
 AC_SUBST(FFMPEG_CFLAGS)
 AC_SUBST(FFMPEG_LIBS)
+AC_SUBST(FFMPEG_SWSCALE)
 AC_SUBST(FFMPEG_EXTERNALTEXT)
 ############# END external ffmpeg
 
