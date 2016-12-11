@@ -543,6 +543,7 @@ void VFrame::clear_frame(void)
 		break;
 
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		ZERO_YUV(4, uint16_t, 0xffff);
 		break;
 
@@ -982,7 +983,7 @@ void VFrame::calc_minmax16(uint16_t *buf, int len, int pixlen,
 	for(i = 0; i < pixlen; i++)
 	{
 		max[i] = avg[i] = 0;
-		min[i] = 256;
+		min[i] = 0x10000;
 	}
 	for(i = 0; i < len; i++)
 	{
@@ -1103,6 +1104,7 @@ void VFrame::dump(int minmax)
 			lnum = 3;
 			break;
 		case BC_YUVA16161616:
+		case BC_AYUV16161616:
 		case BC_RGBA16161616:
 			calc_minmax16((uint16_t *)data, w * h, 4, lavg, lmin, lmax);
 			lnum = 4;

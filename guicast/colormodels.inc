@@ -49,6 +49,7 @@ class ColorModels;
 #define BC_A_FLOAT      31
 #define BC_RGB_FLOAT    29
 #define BC_RGBA_FLOAT   30
+#define BC_AYUV16161616 32
 // Planar
 #define BC_YUV420P      7
 #define BC_YUV422P      17
