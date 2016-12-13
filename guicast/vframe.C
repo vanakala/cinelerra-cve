@@ -629,14 +629,12 @@ void VFrame::flip_vert(void)
 
 void VFrame::transfer_from(VFrame *frame)
 {
-	ColorModels::transfer(rows,
-		frame->get_rows(),
+	ColorModels::transfer_sws(data,
+		frame->get_data(),
 		y, u, v,
 		frame->get_y(), frame->get_u(), frame->get_v(),
-		0, 0, frame->get_w(), frame->get_h(),
-		0, 0, w, h,
+		frame->get_w(), frame->get_h(), w, h,
 		frame->get_color_model(), color_model,
-		0,
 		frame->get_bytes_per_line(),
 		bytes_per_line);
 }

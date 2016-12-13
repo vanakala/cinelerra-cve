@@ -42,7 +42,9 @@ public:
 	int get_h();
 
 	int w, h, default_depth;
+/* Pole
 	unsigned char **row_data;
+	*/
 
 private:
 	void allocate_data();
@@ -89,6 +91,7 @@ private:
 	Window rootwin;
 	Visual *vis;
 	int bits_per_pixel;
+	int bytes_per_line;
 	int screen;
 	long shm_event_type;
 	int client_byte_order, server_byte_order;

@@ -135,14 +135,16 @@ void BC_Capture::allocate_data()
 
 		ximage = XCreateImage(display, vis, default_depth, ZPixmap, 0, (char*)data, w, h, 8, 0);
 	}
-
+/* Pole
 	row_data = new unsigned char*[h];
 	for(int i = 0; i < h; i++)
 	{
 		row_data[i] = &data[i * ximage->bytes_per_line];
 	}
+	*/
 // This differs from the depth parameter of the top_level.
 	bits_per_pixel = ximage->bits_per_pixel;
+	bytes_per_line = ximage->bytes_per_line;
 }
 
 void BC_Capture::delete_data()
@@ -162,7 +164,9 @@ void BC_Capture::delete_data()
 
 // data is automatically freed by XDestroyImage
 		data = 0;
+/* Pole
 		delete row_data;
+	*/
 	}
 }
 
@@ -176,7 +180,7 @@ int BC_Capture::get_h()
 {
 	return h;
 }
-
+/* Pole
 // Capture a frame from the screen
 #define CAPTURE_FRAME_HEAD \
 	for(int i = 0; i < h; i++) \
@@ -189,7 +193,7 @@ int BC_Capture::get_h()
 #define CAPTURE_FRAME_TAIL \
 		} \
 	}
-
+	*/
 
 int BC_Capture::capture_frame(VFrame *frame, int &x1, int &y1)
 {
@@ -206,28 +210,18 @@ int BC_Capture::capture_frame(VFrame *frame, int &x1, int &y1)
 	else
 		XGetSubImage(display, rootwin, x1, y1, w, h, 0xffffffff, ZPixmap, ximage, 0, 0);
 
-	ColorModels::transfer(frame->get_rows(), 
-		row_data,
+	ColorModels::transfer_sws(frame->get_data(),
+		data,
 		frame->get_y(),
 		frame->get_u(),
 		frame->get_v(),
-		0,
-		0,
-		0,
-		0, 
-		0, 
-		w, 
-		h,
-		0, 
-		0, 
-		frame->get_w(), 
-		frame->get_h(),
-		bitmap_color_model, 
+		0, 0, 0,
+		w, h,
+		frame->get_w(), frame->get_h(),
+		bitmap_color_model,
 		frame->get_color_model(),
-		0,
-		frame->get_w(),
-		w);
-
+		bytes_per_line,
+		frame->get_bytes_per_line());
 	return 0;
 }
 
