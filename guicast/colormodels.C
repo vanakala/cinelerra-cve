@@ -770,6 +770,8 @@ const char *ColorModels::name(int cmodel)
 {
 	switch(cmodel)
 	{
+	case BC_TRANSPARENCY:
+		return "Transparency";
 	case BC_RGB888:
 		return "RGB-8 Bit";
 	case BC_RGBA8888:
