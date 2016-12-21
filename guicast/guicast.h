@@ -57,6 +57,5 @@
 #include "colors.h"
 #include "fonts.h"
 #include "bctimer.h"
-#include "error.h"
 
 #endif
