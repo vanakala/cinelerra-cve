@@ -54,15 +54,13 @@ public:
 // transfer VFrame
 	void read_frame(VFrame *frame,
 		int in_x, int in_y, int in_w, int in_h,
-		int out_x, int out_y, int out_w, int out_h);
+		int out_x, int out_y, int out_w, int out_h,
+		int need_shm = -1, int cmodel = -1);
 // x1, y1, x2, y2 dimensions of output area
 	void read_frame(VFrame *frame, 
-		int x1, int y1, int x2, int y2);
-// Reset bitmap to match the new parameters
-	void match_params(int w,
-		int h, 
-		int color_model, 
-		int use_shm);
+		int x1, int y1, int x2, int y2,
+		int need_shm = -1, int cmodel = -1);
+
 // Test if bitmap already matches parameters
 	int params_match(int w, int h, int color_model, int use_shm);
 

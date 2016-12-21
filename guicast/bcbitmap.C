@@ -119,20 +119,6 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	allocate_data();
 }
 
-void BC_Bitmap::match_params(int w, int h, int color_model, int use_shm)
-{
-	if(this->w < w ||
-		this->h < h ||
-		this->color_model != color_model ||
-		this->use_shm != use_shm)
-	{
-		top_level->lock_window("BC_Bitmap::match_params");
-		delete_data();
-		initialize(parent_window, w, h, color_model, use_shm);
-		top_level->unlock_window();
-	}
-}
-
 int BC_Bitmap::params_match(int w, int h, int color_model, int use_shm)
 {
 	int result = 0;
@@ -509,11 +495,14 @@ void BC_Bitmap::read_frame(VFrame *frame,
 	int x1, 
 	int y1, 
 	int x2, 
-	int y2)
+	int y2,
+	int need_shm,
+	int cmodel)
 {
 	read_frame(frame, 
 		0, 0, frame->get_w(), frame->get_h(),
-		x1, y1, x2 - x1, y2 - y1);
+		x1, y1, x2 - x1, y2 - y1,
+		need_shm, cmodel);
 }
 
 void BC_Bitmap::read_frame(VFrame *frame, 
@@ -524,8 +513,25 @@ void BC_Bitmap::read_frame(VFrame *frame,
 	int out_x, 
 	int out_y, 
 	int out_w, 
-	int out_h)
+	int out_h,
+	int need_shm,
+	int cmodel)
 {
+	if(cmodel < 0)
+		cmodel = color_model;
+	if(need_shm < 0)
+		need_shm = use_shm;
+
+	if(w < out_w || h < out_h ||
+		color_model != cmodel ||
+		use_shm != need_shm)
+	{
+		top_level->lock_window("BC_Bitmap::read_frame");
+		delete_data();
+		initialize(parent_window, out_w, out_h, cmodel, need_shm);
+		top_level->unlock_window();
+	}
+
 	switch(color_model)
 	{
 // Hardware accelerated bitmap

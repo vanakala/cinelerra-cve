@@ -1015,11 +1015,6 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 		get_color_model(), 
 		1);
 
-	temp_bitmap->match_params(dest_w, 
-		dest_h, 
-		get_color_model(), 
-		1);
-
 	temp_bitmap->read_frame(frame, 
 		src_x, 
 		src_y, 
@@ -1028,7 +1023,8 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 		0, 
 		0, 
 		dest_w, 
-		dest_h);
+		dest_h,
+		1, get_color_model());
 
 	draw_bitmap(temp_bitmap, 
 		0, 
@@ -1242,15 +1238,13 @@ void BC_WindowBase::draw_3segmenth(int x,
 		image->get_h(), 
 		get_color_model(), 
 		0);
-	temp_bitmap->match_params(image->get_w(), 
-		image->get_h(), 
-		get_color_model(), 
-		0);
+
 	temp_bitmap->read_frame(image, 
 		0, 
 		0, 
 		image->get_w(), 
-		image->get_h());
+		image->get_h(),
+		0, get_color_model());
 
 	if(left_out_w > 0)
 	{
@@ -1530,15 +1524,13 @@ void BC_WindowBase::draw_3segmentv(int x,
 		src->get_h(), 
 		get_color_model(), 
 		0);
-	temp_bitmap->match_params(src->get_w(), 
-		src->get_h(), 
-		get_color_model(), 
-		0);
+
 	temp_bitmap->read_frame(src, 
 		0, 
 		0, 
 		src->get_w(), 
-		src->get_h());
+		src->get_h(),
+		0, get_color_model());
 
 	if(left_out_h > 0)
 	{
@@ -1874,15 +1866,13 @@ void BC_WindowBase::draw_9segment(int x,
 		src->get_h(), 
 		get_color_model(), 
 		0);
-	temp_bitmap->match_params(src->get_w(), 
-		src->get_h(), 
-		get_color_model(), 
-		0);
+
 	temp_bitmap->read_frame(src, 
 		0, 
 		0, 
 		src->get_w(), 
-		src->get_h());
+		src->get_h(),
+		0, get_color_model());
 
 // Segment 1
 	draw_bitmap(temp_bitmap,
