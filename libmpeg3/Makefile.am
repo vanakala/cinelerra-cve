@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libmpeg3cve.la
-AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS) $(CSS_CFLAGS) -Wno-implicit-function-declaration
+AM_CFLAGS = $(CPU_CFLAGS) $(CINELERRA_CFLAGS) $(CSS_CFLAGS) -Wno-implicit-function-declaration
 libmpeg3cve_la_LDFLAGS = -version-info 2:0:0 -release 1.7.5 -Wl,--no-undefined
 libmpeg3cve_la_LIBADD = -la52 video/libmpeg3_video.la audio/libmpeg3_audio.la -lm \
 		     -lpthread

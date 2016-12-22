@@ -200,8 +200,9 @@ AC_CHECK_HEADER(tiffio.h,[libtiffh=yes])
 AC_CHECK_LIB(tiff,TIFFOpen,[libtiff=yes])
 ############## END OF MISC LIBRARIES
 
-LARGEFILE_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -D__STDC_FORMAT_MACROS"
-AC_SUBST(LARGEFILE_CFLAGS)
+CINELERRA_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 \
+ -D__STDC_FORMAT_MACROS  -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS"
+AC_SUBST(CINELERRA_CFLAGS)
 
 ############## A52DEC
 AC_CHECK_LIB(a52,a52_init,[liba52=yes])
@@ -384,19 +385,17 @@ else
 		fi
 	fi
 	FFMPEG_FOLDER=ffmpeg
-	FFMPEG_CFLAGS="-I\$(top_srcdir)/ffmpeg -DHAVE_SWSCALER"
+	FFMPEG_CPPFLAGS="-I\$(top_srcdir)/ffmpeg"
 	FFMPEG_LIBS="-L\$(top_builddir)/ffmpeg/libavcodec -lavcodec-cve \
 		-L\$(top_builddir)/ffmpeg/libavformat -lavformat-cve \
-		-L\$(top_builddir)/ffmpeg/libswresample -lswresample-cve"
-	FFMPEG_SWSCALE="-L\$(top_builddir)/ffmpeg/libavutil -lavutil-cve \
+		-L\$(top_builddir)/ffmpeg/libswresample -lswresample-cve \
+		-L\$(top_builddir)/ffmpeg/libavutil -lavutil-cve \
 		-L\$(top_builddir)/ffmpeg/libswscale -lswscale-cve"
 	FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi
-FFMPEG_CFLAGS="$FFMPEG_CFLAGS -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS"
 AC_SUBST(FFMPEG_FOLDER)
-AC_SUBST(FFMPEG_CFLAGS)
+AC_SUBST(FFMPEG_CPPFLAGS)
 AC_SUBST(FFMPEG_LIBS)
-AC_SUBST(FFMPEG_SWSCALE)
 AC_SUBST(FFMPEG_EXTERNALTEXT)
 ############# END external ffmpeg
 

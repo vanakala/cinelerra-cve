@@ -276,16 +276,15 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/guicast \
 	-I$(top_srcdir)/libmpeg3 \
-	-I$(top_srcdir)/include
+	-I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
 
 AM_CXXFLAGS = \
-	$(LARGEFILE_CFLAGS) \
+	$(CINELERRA_CFLAGS) \
 	$(SOUND_CFLAGS) \
 	$(XIPH_CFLAGS) \
 	$(MJPEG_CFLAGS) \
 	$(OPENEXR_CFLAGS) \
 	$(LIBDV_CFLAGS) \
-	$(FFMPEG_CFLAGS) \
 	-DPLUGIN_DIR=\"$(plugindir)\" \
 	-DLOCALE_DIR=\"$(localedir)\"
 
@@ -528,7 +527,6 @@ cinelerracve_LDADD = \
 	$(top_builddir)/guicast/libguicastcve.la \
 	$(top_builddir)/libmpeg3/libmpeg3cve.la \
 	@FFMPEG_LIBS@ \
-	@FFMPEG_SWSCALE@ \
 	$(XIPH_LIBS) \
 	$(A52DEC_LIBS) \
 	$(OPENEXR_LIBS) \

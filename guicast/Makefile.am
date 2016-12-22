@@ -196,8 +196,8 @@ noinst_HEADERS = \
 	workarounds.h \
 	condition.h
 
-AM_CPPFLAGS = -I$(top_srcdir)/include
-AM_CXXFLAGS = $(LARGEFILE_CFLAGS) $(X_CFLAGS) $(FFMPEG_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
+AM_CXXFLAGS = $(CINELERRA_CFLAGS) $(X_CFLAGS)
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 # special CFLAGS that can be set on the make command line
