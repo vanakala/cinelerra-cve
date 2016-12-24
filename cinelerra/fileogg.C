@@ -527,7 +527,7 @@ int FileOGG::open_file(int rd, int wr)
 				asset->aspect_ratio = 
 					(double)cur_stream->ti->frame_width / cur_stream->ti->frame_height
 					* pixaspect;
-				strncpy(asset->vcodec, "theo", 4);
+				strcpy(asset->vcodec, "theo");
 			}
 			if(cur_stream->vi)
 			{
@@ -544,7 +544,7 @@ int FileOGG::open_file(int rd, int wr)
 					asset->sample_rate = cur_stream->vi->rate;
 				asset->audio_data = 1;
 
-				strncpy(asset->acodec, "vorb", 4);
+				strcpy(asset->acodec, "vorb");
 			}
 
 		if(ret)

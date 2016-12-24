@@ -260,7 +260,7 @@ int FileDV::open_file(int rd, int wr)
 
 			if(!asset->frame_rate)
 				asset->frame_rate = (isPAL ? 25 : 29.97);
-			strncpy(asset->vcodec, "dvc ", 4);
+			strcpy(asset->vcodec, "dvc");
 
 			// see if there are any audio tracks
 			asset->channels = dv_get_num_channels(decoder);
@@ -271,7 +271,7 @@ int FileDV::open_file(int rd, int wr)
 				// libdv always scales the quantization up to 16 bits for dv_decode_full_audio
 				asset->bits = 16;
 				asset->audio_length = (int64_t) (info.st_size / output_size / asset->frame_rate * asset->sample_rate);
-				strncpy(asset->acodec, "dvc ", 4);
+				strcpy(asset->acodec, "dvc");
 			}
 			else
 				asset->audio_data = 0;
