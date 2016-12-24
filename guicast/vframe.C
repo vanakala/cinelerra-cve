@@ -144,7 +144,6 @@ void VFrame::reset_parameters(int do_opengl)
 	y_offset = 0;
 	u_offset = 0;
 	v_offset = 0;
-	sequence_number = -1;
 	clear_pts();
 	is_keyframe = 0;
 
@@ -795,16 +794,6 @@ unsigned char* VFrame::get_u(void)
 unsigned char* VFrame::get_v(void)
 {
 	return v;
-}
-
-void VFrame::set_number(long number)
-{
-	sequence_number = number;
-}
-
-long VFrame::get_number(void)
-{
-	return sequence_number;
 }
 
 void VFrame::clear_pts(void)

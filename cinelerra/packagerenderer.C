@@ -372,7 +372,7 @@ void PackageRenderer::do_video()
 // Used by background render and render farm.
 				if(video_write_position == 0)
 					brender_base = video_pts;
-				video_output_ptr->set_number(round(video_pts * asset->frame_rate));
+				video_output_ptr->set_frame_number(round(video_pts * asset->frame_rate));
 				video_write_position++;
 				if(video_write_position >= video_write_length)
 				{

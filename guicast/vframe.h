@@ -106,12 +106,6 @@ public:
 	void clear_frame(void);
 	void allocate_compressed_data(int bytes);
 
-// Sequence number. -1 means invalid.  Passing frames to the encoder is
-// asynchronous.  The sequence number must be preserved in the image itself
-// to encode discontinuous frames.
-	long get_number(void);
-	void set_number(long number);
-
 // Frame number in media file
 	void set_frame_number(framenum number);
 	framenum get_frame_number(void);
@@ -362,8 +356,6 @@ private:
 	unsigned char *image;
 	int image_offset;
 	int image_size;
-// For writing discontinuous frames in background rendering
-	long sequence_number;
 
 // OpenGL support
 	int is_keyframe;

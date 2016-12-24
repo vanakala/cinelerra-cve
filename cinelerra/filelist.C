@@ -393,7 +393,7 @@ int FileList::write_frames(VFrame ***frames, int len)
 			for(int j = 0; j < len && !return_value; j++)
 			{
 				VFrame *frame = frames[i][j];
-				char *path = create_path(frame->get_number());
+				char *path = create_path(frame->get_frame_number());
 
 				FILE *fd = fopen(path, "wb");
 				if(fd)
@@ -575,7 +575,7 @@ void FrameWriter::init_packages()
 		FrameWriterPackage *package = (FrameWriterPackage*)get_package(i);
 
 		package->input = frames[layer][number];
-		package->path = file->create_path(package->input->get_number());
+		package->path = file->create_path(package->input->get_frame_number());
 		number++;
 		if(number >= len)
 		{
