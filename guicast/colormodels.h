@@ -20,6 +20,7 @@
 #define COLORMODELS_H
 
 #include "colormodels.inc"
+#include "vframe.inc"
 
 extern "C"
 {
@@ -119,6 +120,19 @@ public:
 		int out_colormodel,
 		int in_rowspan,
 		int out_rowspan);
+	static void rgba2transparency(int w, int h,
+		unsigned char *output, unsigned char *input,
+		int out_rowspan, int in_rowspan);
+	static void transfer_frame(unsigned char *output,
+		VFrame *frame,
+		unsigned char *out_y_plane,
+		unsigned char *out_u_plane,
+		unsigned char *out_v_plane,
+		int out_w,           // output width
+		int out_h,           // output height
+		int out_colormodel,
+		int out_rowspan);
+
 	static AVPixelFormat color_model_to_pix_fmt(int color_model);
 	static int inter_color_model(int color_model);
 
