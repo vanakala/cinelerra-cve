@@ -247,6 +247,7 @@ void BC_Bitmap::allocate_data()
 		if(!XShmAttach(top_level->display, &shm_info))
 		{
 			perror("BC_Bitmap::allocate_data XShmAttach");
+			abort();
 		}
 
 // This causes it to automatically delete when the program exits.
@@ -289,6 +290,7 @@ void BC_Bitmap::allocate_data()
 		bits_per_pixel = ximage[0]->bits_per_pixel;
 		bytes_per_line = ximage[0]->bytes_per_line;
 	}
+	XSync(top_level->display, False);
 	top_level->unlock_window();
 
 // Create row pointers
