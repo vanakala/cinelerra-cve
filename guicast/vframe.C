@@ -146,6 +146,7 @@ void VFrame::reset_parameters(int do_opengl)
 	v_offset = 0;
 	clear_pts();
 	is_keyframe = 0;
+	pixel_aspect = 0;
 
 	if(do_opengl)
 	{
@@ -794,6 +795,23 @@ unsigned char* VFrame::get_u(void)
 unsigned char* VFrame::get_v(void)
 {
 	return v;
+}
+
+double VFrame::get_pixel_aspect()
+{
+	return pixel_aspect;
+}
+
+void VFrame::set_pixel_aspect(double aspect, int frame_aspect)
+{
+	double asp;
+
+	if(frame_aspect)
+	{
+		pixel_aspect = aspect / ((double)w / h);
+	}
+	else
+		pixel_aspect = aspect;
 }
 
 void VFrame::clear_pts(void)
