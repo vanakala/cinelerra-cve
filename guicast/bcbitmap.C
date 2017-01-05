@@ -38,7 +38,8 @@ BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data)
 	VFrame frame;
 
 	frame.read_png(png_data);
-
+	disp_w = 0;
+	disp_h = 0;
 // Initialize the bitmap
 	initialize(parent_window, 
 		frame.get_w(), 
@@ -53,6 +54,8 @@ BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data)
 BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, VFrame *frame)
 {
 // Initialize the bitmap
+	disp_w = 0;
+	disp_h = 0;
 	initialize(parent_window, 
 		frame->get_w(), 
 		frame->get_h(), 
@@ -69,6 +72,8 @@ BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window,
 	int color_model, 
 	int use_shm)
 {
+	disp_w = 0;
+	disp_h = 0;
 	initialize(parent_window, 
 		w, 
 		h, 
@@ -105,6 +110,9 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	last_pixmap = 0;
 	current_ringbuffer = 0;
 	xv_portid = 0;
+	base_left = 0;
+	base_top = 0;
+
 // Set ring buffers based on total memory used.
 // The program icon must use multiple buffers but larger bitmaps may not fit
 // in memory.
@@ -210,7 +218,6 @@ void BC_Bitmap::allocate_data()
 				&shm_info,
 				w,
 				h);
-
 // Create shared memory
 			shm_info.shmid = shmget(IPC_PRIVATE, 
 				h * ximage[0]->bytes_per_line * ring_buffers + 4,
@@ -259,7 +266,6 @@ void BC_Bitmap::allocate_data()
 		ring_buffers = 1;
 // need to use bytes_per_line for some X servers
 		data[0] = 0;
-
 // Use RGB frame
 		ximage[0] = XCreateImage(top_level->display, 
 					top_level->vis, 
@@ -317,25 +323,25 @@ void BC_Bitmap::delete_data()
 			if(xv_image[0])
 			{
 				if(last_pixmap_used) XvStopVideo(top_level->display, xv_portid, last_pixmap);
+				XShmDetach(top_level->display, &shm_info);
+				XvUngrabPort(top_level->display, xv_portid, CurrentTime);
+				top_level->xvideo_port_id = -1;
 				for(int i = 0; i < ring_buffers; i++)
 				{
 					XFree(xv_image[i]);
 				}
-				XShmDetach(top_level->display, &shm_info);
-				XvUngrabPort(top_level->display, xv_portid, CurrentTime);
-				top_level->xvideo_port_id = -1;
 
 				shmdt(shm_info.shmaddr);
 				shmctl(shm_info.shmid, IPC_RMID, 0);
 			}
 			else
 			{
+				XShmDetach(top_level->display, &shm_info);
 				for(int i = 0; i < ring_buffers; i++)
 				{
 					XDestroyImage(ximage[i]);
 					delete [] row_data[i];
 				}
-				XShmDetach(top_level->display, &shm_info);
 
 				shmdt(shm_info.shmaddr);
 				shmctl(shm_info.shmid, IPC_RMID, 0);
@@ -449,8 +455,8 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 				pixmap, 
 				gc, 
 				ximage[current_ringbuffer], 
-				source_x, 
-				source_y, 
+				source_x + base_left,
+				source_y + base_top,
 				dest_x, 
 				dest_y, 
 				dest_w, 
@@ -468,8 +474,8 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 			pixmap, 
 			gc, 
 			ximage[current_ringbuffer], 
-			source_x, 
-			source_y, 
+			source_x + base_left,
+			source_y + base_top,
 			dest_x, 
 			dest_y, 
 			dest_w, 
@@ -524,13 +530,30 @@ void BC_Bitmap::read_frame(VFrame *frame,
 	if(need_shm < 0)
 		need_shm = use_shm;
 
-	if(w < out_w || h < out_h ||
+	if(frame->get_pixel_aspect())
+	{
+		double hcf = (double)out_h / in_h;
+		double wcf = frame->get_pixel_aspect() * hcf;
+
+		disp_w = round(frame->get_w() * wcf);
+		base_left = round(in_x * wcf);
+		base_top = round(in_y * hcf);
+		disp_h = round(frame->get_h() * wcf);
+	}
+	else
+	{
+		disp_w = out_w;
+		disp_h = out_h;
+		base_top = base_left = 0;
+	}
+
+	if(w < disp_w || h < disp_h ||
 		color_model != cmodel ||
 		use_shm != need_shm)
 	{
 		top_level->lock_window("BC_Bitmap::read_frame");
 		delete_data();
-		initialize(parent_window, out_w, out_h, cmodel, need_shm);
+		initialize(parent_window, disp_w, disp_h, cmodel, need_shm);
 		top_level->unlock_window();
 	}
 
@@ -561,34 +584,25 @@ void BC_Bitmap::read_frame(VFrame *frame,
 			memcpy(get_data(), frame->get_data(), w * h + w * h);
 			break;
 		}
-
+	case BC_TRANSPARENCY:
+		if(frame->get_color_model() == BC_RGBA8888)
+		{
+			ColorModels::rgba2transparency(out_w, out_h,
+				get_data(), frame->get_data(),
+				get_bytes_per_line(),
+				frame->get_bytes_per_line());
+			break;
+		}
 // Software only
 	default:
-		ColorModels::transfer(row_data[current_ringbuffer],
-			frame->get_rows(),
+		ColorModels::transfer_frame(get_data(),
+			frame,
 			get_y_plane(),
 			get_u_plane(),
 			get_v_plane(),
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			in_x, 
-			in_y, 
-			in_w, 
-			in_h,
-			out_x, 
-			out_y, 
-			out_w, 
-			out_h,
-			frame->get_color_model(), 
+			disp_w, disp_h,
 			color_model,
-			bg_color,
-			frame->get_w(),
-			w);
-// color model transfer_*_to_TRANSPARENCY don't care about endianness
-// so buffer bitswaped here if needed.
-		if ((color_model == BC_TRANSPARENCY) && (!top_level->server_byte_order))
-			transparency_bitswap();
+			get_bytes_per_line());
 		break;
 	}
 }
@@ -705,35 +719,6 @@ char BC_Bitmap::byte_bitswap(char src)
 	return(dst);
 }
 
-void BC_Bitmap::transparency_bitswap()
-{
-	unsigned char *buf;
-	int i, width, height;
-	int len;
-
-	buf = *row_data[current_ringbuffer];
-
-	width = w;
-	height = h;
-	if (width % 8)
-		width = width + 8 - (width % 8);
-	len = width * height / 8;
-
-	for(i=0 ; i+8<=len ; i+=8){
-		buf[i+0] = byte_bitswap(buf[i+0]);
-		buf[i+1] = byte_bitswap(buf[i+1]);
-		buf[i+2] = byte_bitswap(buf[i+2]);
-		buf[i+3] = byte_bitswap(buf[i+3]);
-		buf[i+4] = byte_bitswap(buf[i+4]);
-		buf[i+5] = byte_bitswap(buf[i+5]);
-		buf[i+6] = byte_bitswap(buf[i+6]);
-		buf[i+7] = byte_bitswap(buf[i+7]);
-	}
-	for( ; i<len ; i++){
-		buf[i+0] = byte_bitswap(buf[i+0]);
-	}
-}
-
 int BC_Bitmap::get_color_model()
 {
 	return color_model; 
@@ -748,7 +733,7 @@ void BC_Bitmap::dump(int minmax)
 		bg_color, current_ringbuffer, ring_buffers, use_shm, xv_portid, top_level);
 	for(int i = 0; i < ring_buffers; i++)
 		printf("      %d: data %p xv_image %p ximage %p row_data %p\n",
-		i, data[i], xv_image[i], ximage[i], row_data[i][0]);
+		i, data[i], xv_image[i], ximage[i], row_data[i]);
 	if(minmax)
 	{
 		int min, max;

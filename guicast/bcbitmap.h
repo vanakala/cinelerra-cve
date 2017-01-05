@@ -94,7 +94,6 @@ public:
 	int rotate_90(int side);
 	int get_w();
 	int get_h();
-	void transparency_bitswap();
 // Data pointers for current ring buffer
 	unsigned char* get_data();
 	unsigned char* get_y_plane();
@@ -150,6 +149,11 @@ private:
 	unsigned char bg_r, bg_g, bg_b;
 // For less than 8 bit depths
 	int bit_counter;
+// Area to show from bitmap
+	int base_left;
+	int base_top;
+	int disp_w;
+	int disp_h;
 
 // X11 objects
 // Need last pixmap to stop XVideo

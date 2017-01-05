@@ -792,6 +792,7 @@ void CWindowCanvas::draw_refresh()
 			{
 // Can't use OpenGL here because it is called asynchronously of the
 // playback operation.
+				refresh_frame->set_pixel_aspect(edl->get_aspect_ratio(), 1);
 				get_canvas()->draw_vframe(refresh_frame,
 						round(out_x1),
 						round(out_y1),
