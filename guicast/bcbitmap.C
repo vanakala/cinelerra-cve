@@ -31,41 +31,6 @@
 #include <unistd.h>
 #include <X11/extensions/Xvlib.h>
 
-
-BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data)
-{
-// Decompress data into a temporary vframe
-	VFrame frame;
-
-	frame.read_png(png_data);
-	disp_w = 0;
-	disp_h = 0;
-// Initialize the bitmap
-	initialize(parent_window, 
-		frame.get_w(), 
-		frame.get_h(), 
-		parent_window->get_color_model(), 
-		0);
-
-// Copy the vframe to the bitmap
-	read_frame(&frame, 0, 0, w, h);
-}
-
-BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, VFrame *frame)
-{
-// Initialize the bitmap
-	disp_w = 0;
-	disp_h = 0;
-	initialize(parent_window, 
-		frame->get_w(), 
-		frame->get_h(), 
-		parent_window->get_color_model(), 
-		0);
-
-// Copy the vframe to the bitmap
-	read_frame(frame, 0, 0, w, h);
-}
-
 BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, 
 	int w, 
 	int h, 

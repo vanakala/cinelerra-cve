@@ -33,15 +33,11 @@
 #include "colors.h"
 #include "vframe.inc"
 
-//#define BITMAP_RING 1
 #define BITMAP_RING 4
 
 class BC_Bitmap
 {
 public:
-	BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data);
-	BC_Bitmap(BC_WindowBase *parent_window, VFrame *frame);
-
 // Shared memory is a problem in X because it's asynchronous and there's
 // no easy way to join with the blitting process.
 	BC_Bitmap(BC_WindowBase *parent_window, 
