@@ -28,64 +28,6 @@ extern "C"
 #include <libavutil/avutil.h>
 }
 
-
-#define PERMUTATION_ARGS \
-	unsigned char **output_rows,  \
-	unsigned char **input_rows, \
-	unsigned char *out_y_plane, \
-	unsigned char *out_u_plane, \
-	unsigned char *out_v_plane, \
-	unsigned char *in_y_plane, \
-	unsigned char *in_u_plane, \
-	unsigned char *in_v_plane, \
-	int in_x,  \
-	int in_y,  \
-	int in_w,  \
-	int in_h, \
-	int out_x,  \
-	int out_y,  \
-	int out_w,  \
-	int out_h, \
-	int in_colormodel,  \
-	int out_colormodel, \
-	int bg_color, \
-	int total_in_w, \
-	int total_out_w, \
-	int scale, \
-	int out_pixelsize, \
-	int in_pixelsize, \
-	int *row_table, \
-	int *column_table, \
-	int bg_r, \
-	int bg_g, \
-	int bg_b
-
-	struct yuvtables
-	{
-		int rtoy_tab[0x100], gtoy_tab[0x100], btoy_tab[0x100];
-		int rtou_tab[0x100], gtou_tab[0x100], btou_tab[0x100];
-		int rtov_tab[0x100], gtov_tab[0x100], btov_tab[0x100];
-
-		int vtor_tab[0x100], vtog_tab[0x100];
-		int utog_tab[0x100], utob_tab[0x100];
-
-		short int vtor_tab8[0x100], vtog_tab8[0x100];
-		short int utog_tab8[0x100], utob_tab8[0x100];
-
-		float vtor_float_tab[0x100], vtog_float_tab[0x100];
-		float utog_float_tab[0x100], utob_float_tab[0x100];
-
-		int rtoy_tab16[0x10000], gtoy_tab16[0x10000], btoy_tab16[0x10000];
-		int rtou_tab16[0x10000], gtou_tab16[0x10000], btou_tab16[0x10000];
-		int rtov_tab16[0x10000], gtov_tab16[0x10000], btov_tab16[0x10000];
-
-		int vtor_tab16[0x10000], vtog_tab16[0x10000];
-		int utog_tab16[0x10000], utob_tab16[0x10000];
-
-		float v16tor_float_tab[0x10000], v16tog_float_tab[0x10000];
-		float u16tog_float_tab[0x10000], u16tob_float_tab[0x10000];
-	};
-
 class ColorModels
 {
 public:
@@ -136,30 +78,6 @@ public:
 	static AVPixelFormat color_model_to_pix_fmt(int color_model);
 	static int inter_color_model(int color_model);
 
-	static void transfer(unsigned char **output_rows, // Leave NULL if non existent
-		unsigned char **input_rows,
-		unsigned char *out_y_plane, // Leave NULL if non existent
-		unsigned char *out_u_plane,
-		unsigned char *out_v_plane,
-		unsigned char *in_y_plane, // Leave NULL if non existent
-		unsigned char *in_u_plane,
-		unsigned char *in_v_plane,
-		int in_x,        // Dimensions to capture from input frame
-		int in_y,
-		int in_w,
-		int in_h,
-		int out_x,       // Dimensions to project on output frame
-		int out_y,
-		int out_w, 
-		int out_h,
-		int in_colormodel,
-		int out_colormodel,
-		int bg_color,         // When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex
-		int in_rowspan,       // For planar use the luma rowspan
-		int out_rowspan);     // For planar use the luma rowspan
-
-	static struct yuvtables yuv_table;
-
 private:
 	static void copy_colors(int w, int h,
 		unsigned char *output, int out_colormodel, int out_rowspan,
@@ -170,12 +88,6 @@ private:
 	static void fill_data(int colormodel, unsigned char **data,
 		unsigned char *xbuf, unsigned char *y, unsigned char *u,
 		unsigned char *v);
-
-	static void default_cmodel(PERMUTATION_ARGS);
-	static void float_cmodel(PERMUTATION_ARGS);
-	static void yuv420p_cmodel(PERMUTATION_ARGS);
-	static void yuv444p_cmodel(PERMUTATION_ARGS);
-	static void yuv422_cmodel(PERMUTATION_ARGS);
 };
 
 #endif

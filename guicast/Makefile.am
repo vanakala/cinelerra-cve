@@ -56,10 +56,6 @@ libguicastcve_la_SOURCES = \
 	bcwindowdraw.C \
 	condition.C \
 	colormodels.C \
-	colormodels_default.C \
-	colormodels_float.C \
-	colormodels_yuv420p.C \
-	colormodels_yuv422.C \
 	filesystem.C \
 	hashcache.C \
 	mutex.C \
