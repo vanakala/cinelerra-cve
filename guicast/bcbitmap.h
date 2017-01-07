@@ -98,7 +98,6 @@ public:
 // Get the frame buffer itself
 	int get_color_model();
 	int hardware_scaling();
-	unsigned char** get_row_pointers();
 	int get_bytes_per_line();
 
 // Returns just the plane offset
@@ -109,7 +108,6 @@ public:
 // Rewing ringbuffer to the previous frame
 	void rewind_ringbuffer();
 	void set_bg_color(int color);
-	void invert();
 
 	void dump(int minmax = 0);
 
@@ -132,8 +130,7 @@ private:
 	BC_WindowBase *parent_window;
 // Points directly to the frame buffer
 	unsigned char *data[BITMAP_RING];
-// Row pointers to the frame buffer
-	unsigned char **row_data[BITMAP_RING];
+// XV port in use
 	int xv_portid;
 // This differs from the depth parameter of top_level
 	int bits_per_pixel;

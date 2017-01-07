@@ -69,7 +69,6 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 		ximage[i] = 0;
 		xv_image[i] = 0;
 		data[i] = 0;
-		row_data[i] = 0;
 	}
 	last_pixmap_used = 0;
 	last_pixmap = 0;
@@ -108,8 +107,6 @@ int BC_Bitmap::params_match(int w, int h, int color_model, int use_shm)
 
 void BC_Bitmap::allocate_data()
 {
-	int want_row_pointers = 1;
-
 	top_level->lock_window("BC_Bitmap::allocate_data");
 // Shared memory available
 	if(use_shm)
@@ -162,13 +159,11 @@ void BC_Bitmap::allocate_data()
 			{
 				bytes_per_line = w * 2;
 				bits_per_pixel = 2;
-				want_row_pointers = 1;
 			}
 			else
 			{
 				bytes_per_line = 0;
 				bits_per_pixel = 0;
-				want_row_pointers = 0;
 			}
 		}
 		else
@@ -263,19 +258,6 @@ void BC_Bitmap::allocate_data()
 	}
 	XSync(top_level->display, False);
 	top_level->unlock_window();
-
-// Create row pointers
-	if(want_row_pointers)
-	{
-		for(int j = 0; j < ring_buffers; j++)
-		{
-			row_data[j] = new unsigned char*[h];
-			for(int i = 0; i < h; i++)
-			{
-				row_data[j][i] = &data[j][i * bytes_per_line];
-			}
-		}
-	}
 }
 
 void BC_Bitmap::delete_data()
@@ -303,20 +285,14 @@ void BC_Bitmap::delete_data()
 			{
 				XShmDetach(top_level->display, &shm_info);
 				for(int i = 0; i < ring_buffers; i++)
-				{
 					XDestroyImage(ximage[i]);
-					delete [] row_data[i];
-				}
 
 				shmdt(shm_info.shmaddr);
 				shmctl(shm_info.shmid, IPC_RMID, 0);
 			}
 		}
 		else
-		{
 			XDestroyImage(ximage[0]);
-			delete [] row_data[0];
-		}
 
 // data is automatically freed by XDestroyImage
 		data[0] = 0;
@@ -336,16 +312,6 @@ int BC_Bitmap::get_default_depth()
 void BC_Bitmap::set_bg_color(int color)
 {
 	this->bg_color = color;
-}
-
-void BC_Bitmap::invert()
-{
-	for(int j = 0; j < ring_buffers; j++)
-		for(int k = 0; k < h; k++)
-			for(int i = 0; i < bytes_per_line; i++)
-			{
-				row_data[j][k][i] ^= 0xff;
-			}
 }
 
 void BC_Bitmap::write_drawable(Drawable &pixmap, 
@@ -596,11 +562,6 @@ long BC_Bitmap::get_v_offset()
 		return 0;
 }
 
-unsigned char** BC_Bitmap::get_row_pointers()
-{
-	return row_data[current_ringbuffer];
-}
-
 int BC_Bitmap::get_bytes_per_line()
 {
 	return bytes_per_line;
@@ -697,8 +658,8 @@ void BC_Bitmap::dump(int minmax)
 	printf("    bg %06x buffers %d/%d shm %d port %d top %p\n",
 		bg_color, current_ringbuffer, ring_buffers, use_shm, xv_portid, top_level);
 	for(int i = 0; i < ring_buffers; i++)
-		printf("      %d: data %p xv_image %p ximage %p row_data %p\n",
-		i, data[i], xv_image[i], ximage[i], row_data[i]);
+		printf("      %d: data %p xv_image %p ximage %p\n",
+		i, data[i], xv_image[i], ximage[i]);
 	if(minmax)
 	{
 		int min, max;
