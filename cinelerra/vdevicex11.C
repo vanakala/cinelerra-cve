@@ -389,27 +389,17 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 		}
 		else
 		{
-			ColorModels::transfer(bitmap->get_row_pointers(),
-				output_channels->get_rows(),
-				0,
-				0,
-				0,
-				output_channels->get_y(),
-				output_channels->get_u(),
-				output_channels->get_v(),
+			output_channels->set_pixel_aspect(edl->get_aspect_ratio(), 1);
+			output->get_canvas()->draw_vframe(output_channels,
+				round(canvas_x1),
+				round(canvas_y1),
+				round(canvas_x2 - canvas_x1),
+				round(canvas_y2 - canvas_y1),
 				round(output_x1),
 				round(output_y1),
 				round(output_x2 - output_x1),
 				round(output_y2 - output_y1),
-				0, 
-				0, 
-				round(canvas_x2 - canvas_x1),
-				round(canvas_y2 - canvas_y1),
-				output_channels->get_color_model(), 
-				bitmap->get_color_model(),
-				0,
-				output_channels->get_w(),
-				bitmap->get_w());
+				0);
 		}
 	}
 
@@ -448,20 +438,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 			round(output_y1),
 			round(output_x2 - output_x1),
 			round(output_y2 - output_y1),
-			0);
-	}
-	else
-	{
-		output->get_canvas()->draw_bitmap(bitmap,
-			!device->single_frame,
-			round(canvas_x1),
-			round(canvas_y1),
-			round(canvas_x2 - canvas_x1),
-			round(canvas_y2 - canvas_y1),
-			0, 
-			0, 
-			round(canvas_x2 - canvas_x1),
-			round(canvas_y2 - canvas_y1),
 			0);
 	}
 
