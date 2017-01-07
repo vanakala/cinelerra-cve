@@ -781,19 +781,23 @@ VideoScopeUnit::VideoScopeUnit(VideoScopeEffect *plugin,
 }
 
 
-static void draw_point(unsigned char **rows, 
-	int color_model, 
+static void draw_point(BC_Bitmap *bitmap,
 	int x, 
 	int y, 
 	int r, 
 	int g, 
 	int b)
 {
+
+	int color_model = bitmap->get_color_model();
+	unsigned char *pixel = bitmap->get_data() +
+		y * bitmap->get_bytes_per_line() +
+		ColorModels::calculate_pixelsize(color_model) * x;
+
 	switch(color_model)
 	{
 	case BC_BGR8888:
 	{
-		unsigned char *pixel = rows[y] + x * 4;
 		pixel[0] = b;
 		pixel[1] = g;
 		pixel[2] = r;
@@ -803,7 +807,6 @@ static void draw_point(unsigned char **rows,
 		break;
 	case BC_RGB565:
 	{
-		unsigned char *pixel = rows[y] + x * 2;
 		pixel[0] = (r & 0xf8) | (g >> 5);
 		pixel[1] = ((g & 0xfc) << 5) | (b >> 3);
 		break;
@@ -833,12 +836,8 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 	int h = plugin->input->get_h();
 	int waveform_h = window->wave_h;
 	int waveform_w = window->wave_w;
-	int waveform_cmodel = window->waveform_bitmap->get_color_model();
-	unsigned char **waveform_rows = window->waveform_bitmap->get_row_pointers();
 	int vector_h = window->vector_bitmap->get_h();
 	int vector_w = window->vector_bitmap->get_w();
-	int vector_cmodel = window->vector_bitmap->get_color_model();
-	unsigned char **vector_rows = window->vector_bitmap->get_row_pointers();
 	float radius = vector_h / 2.0;
 
 	for(int i = pkg->row1; i < pkg->row2; i++)
@@ -923,8 +922,7 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 					    waveform_h);
 			int x = j * waveform_w / w;
 			if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h)
-				draw_point(waveform_rows,
-					waveform_cmodel,
+				draw_point(window->waveform_bitmap,
 					x,
 					y,
 					ri,
@@ -935,8 +933,7 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 			polar_to_cartesian(h, s, radius, x, y);
 			CLAMP(x, 0, vector_w - 1);
 			CLAMP(y, 0, vector_h - 1);
-			draw_point(vector_rows,
-				vector_cmodel,
+			draw_point(window->vector_bitmap,
 				x,
 				y,
 				ri,
