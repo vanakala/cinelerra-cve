@@ -73,9 +73,13 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	last_pixmap_used = 0;
 	last_pixmap = 0;
 	current_ringbuffer = 0;
+	ring_buffers = 0;
 	xv_portid = 0;
 	base_left = 0;
 	base_top = 0;
+
+	if(w == 0 || h == 0)
+		return;
 
 // Set ring buffers based on total memory used.
 // The program icon must use multiple buffers but larger bitmaps may not fit
