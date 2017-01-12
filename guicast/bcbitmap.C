@@ -371,8 +371,8 @@ void BC_Bitmap::write_drawable(Drawable &pixmap,
 				pixmap, 
 				gc,
 				xv_image[current_ringbuffer], 
-				source_x, 
-				source_y, 
+				source_x + base_left,
+				source_y + base_top,
 				source_w, 
 				source_h, 
 				dest_x, 
@@ -470,10 +470,18 @@ void BC_Bitmap::read_frame(VFrame *frame,
 		double hcf = (double)out_h / in_h;
 		double wcf = frame->get_pixel_aspect() * hcf;
 
+		if(!hardware_scaling())
+		{
+			base_left = round(in_x * wcf);
+			base_top = round(in_y * hcf);
+		}
+		else
+		{
+			base_left = in_x;
+			base_top = in_y;
+		}
 		disp_w = round(frame->get_w() * wcf);
-		base_left = round(in_x * wcf);
-		base_top = round(in_y * hcf);
-		disp_h = round(frame->get_h() * wcf);
+		disp_h = round(frame->get_h() * hcf);
 	}
 	else
 	{
