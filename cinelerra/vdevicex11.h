@@ -33,10 +33,6 @@
 #include "thread.h"
 #include "vdevicebase.h"
 
-// output_frame is the same one written to device
-#define BITMAP_PRIMARY 0
-// output_frame is a temporary converted to the device format
-#define BITMAP_TEMP    1
 
 class VDeviceX11 : public VDeviceBase
 {
@@ -128,10 +124,6 @@ private:
 	BC_Bitmap *bitmap;
 // Wrapper for bitmap or intermediate buffer for user to write to
 	VFrame *output_frame;
-// Type of output_frame
-	int bitmap_type;
-// dimensions of buffers written to window
-	int bitmap_w, bitmap_h;
 // Canvas for output
 	Canvas *output;
 // Parameters the output texture conforms to, for OpenGL
@@ -140,7 +132,6 @@ private:
 	int texture_w;
 	int texture_h;
 	int color_model;
-	int color_model_selected;
 // Transfer coordinates from the output frame to the canvas 
 // for last frame rendered.
 // These stick the last frame to the display.
@@ -149,8 +140,6 @@ private:
 	double canvas_x1, canvas_y1, canvas_x2, canvas_y2;
 // Set when OpenGL rendering has cleared the frame buffer before write_buffer
 	int is_cleared;
-// Set when OpenGL initialization failed
-	int gl_failed;
 // XV accelerated colormodels
 	int accel_cmodel;
 	int num_xv_cmodels;

@@ -43,9 +43,6 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
 	output_frame = 0;
 	window_id = 0;
 	bitmap = 0;
-	bitmap_type = 0;
-	bitmap_w = 0;
-	bitmap_h = 0;
 	output_x1 = 0;
 	output_y1 = 0;
 	output_x2 = 0;
@@ -54,9 +51,7 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
 	canvas_y1 = 0;
 	canvas_x2 = 0;
 	canvas_y2 = 0;
-	color_model_selected = 0;
 	is_cleared = 0;
-	gl_failed = 0;
 	num_xv_cmodels = -1;
 	accel_cmodel = -1;
 	this->output = output;
@@ -66,71 +61,24 @@ VDeviceX11::~VDeviceX11()
 {
 	if(output && output_frame)
 	{
-// Copy our output frame buffer to the canvas's permanent frame buffer.
-// They must be different buffers because the output frame is being written
-// while the user is redrawing the canvas frame buffer over and over.
+// Use our output frame buffer as the canvas's frame buffer.
 		output->lock_canvas("VDeviceX11::~VDeviceX11");
-		int use_opengl = device->out_config->driver == PLAYBACK_X11_GL &&
-			!gl_failed &&
-			output_frame->get_opengl_state() == VFrame::SCREEN;
-		int best_color_model = output_frame->get_color_model();
 
-// OpenGL does YUV->RGB in the compositing step
-		if(use_opengl)
-			best_color_model = BC_RGB888;
-
-		if(output->refresh_frame &&
-			(output->refresh_frame->get_w() != device->out_w ||
-			output->refresh_frame->get_h() != device->out_h ||
-			output->refresh_frame->get_color_model() != best_color_model))
-		{
-			delete output->refresh_frame;
-			output->refresh_frame = 0;
-		}
-
-		if(!output->refresh_frame)
-		{
-			output->refresh_frame = new VFrame(0,
-				device->out_w,
-				device->out_h,
-				best_color_model);
-		}
-
-		if(use_opengl)
-		{
-			output->mwindow->playback_3d->copy_from(output, 
-				output->refresh_frame,
-				output_frame,
-				0);
-		}
-		else
-			output->refresh_frame->copy_from(output_frame);
+		delete output->refresh_frame;
 
 		if(!device->single_frame)
-		{
 			output->stop_video();
-		}
 		else
-		{
 			output->stop_single();
-		}
+
+		output->refresh_frame = output_frame;
 
 // Draw the first refresh with new frame.
 		output->draw_refresh();
 		output->unlock_canvas();
 	}
 
-	if(bitmap)
-	{
-		delete bitmap;
-		bitmap = 0;
-	}
-
-	if(output_frame)
-	{
-		delete output_frame;
-		output_frame = 0;
-	}
+	delete bitmap;
 }
 
 int VDeviceX11::open_output()
@@ -252,43 +200,6 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 	}
 	else
 	{
-// Conform existing bitmap to new colormodel and output size
-		if(bitmap)
-		{
-// Restart if output size changed or output colormodel changed.
-// May have to recreate if transferring between windowed and fullscreen.
-			if(!color_model_selected ||
-				(!bitmap->hardware_scaling() && 
-					(bitmap->get_w() != output->get_canvas()->get_w() ||
-					bitmap->get_h() != output->get_canvas()->get_h())) ||
-				colormodel != output_frame->get_color_model())
-			{
-				int size_change = (bitmap->get_w() != output->get_canvas()->get_w() ||
-					bitmap->get_h() != output->get_canvas()->get_h());
-				delete bitmap;
-				delete output_frame;
-				bitmap = 0;
-				output_frame = 0;
-
-// Blank only if size changed
-				if(size_change)
-				{
-					output->get_canvas()->set_color(BLACK);
-					output->get_canvas()->draw_box(0, 0, output->w, output->h);
-					output->get_canvas()->flash();
-				}
-			}
-			else
-// Update the ring buffer
-			if(bitmap_type == BITMAP_PRIMARY)
-			{
-				output_frame->set_memory((unsigned char*)bitmap->get_data(),
-							bitmap->get_y_offset(),
-							bitmap->get_u_offset(),
-							bitmap->get_v_offset());
-			}
-		}
-
 // Create new bitmap
 		if(!bitmap)
 		{
@@ -297,46 +208,19 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 				output->get_canvas()->accel_available(best_colormodel, device->out_w, device->out_h))
 			{
 				bitmap = new BC_Bitmap(output->get_canvas(), 
-					device->out_w,
-					device->out_h,
+					0,
+					0,
 					best_colormodel,
 					1);
-				if(!output->use_scrollbars && colormodel == best_colormodel)
-				{
-					output_frame = new VFrame((unsigned char*)bitmap->get_data(),
-						bitmap->get_y_offset(),
-						bitmap->get_u_offset(),
-						bitmap->get_v_offset(),
-						device->out_w,
-						device->out_h,
-						best_colormodel);
-					bitmap_type = BITMAP_PRIMARY;
-				}
-				else
-					bitmap_type = BITMAP_TEMP;
 			}
-			else
-			{
-// Try default colormodel
-				best_colormodel = output->get_canvas()->get_color_model();
-				bitmap = new BC_Bitmap(output->get_canvas(), 
-					output->get_canvas()->get_w(),
-					output->get_canvas()->get_h(),
-					best_colormodel,
-					1);
-				bitmap_type = BITMAP_TEMP;
-			}
-
-			if(bitmap_type == BITMAP_TEMP)
+			if(!output_frame)
 			{
 // Intermediate frame
 				output_frame = new VFrame(0, 
 					device->out_w,
 					device->out_h,
 					colormodel);
-				bitmap_type = BITMAP_TEMP;
 			}
-			color_model_selected = 1;
 		}
 	}
 	*result = output_frame;
@@ -360,47 +244,42 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 		canvas_x1, 
 		canvas_y1, 
 		canvas_x2, 
-		canvas_y2,
-// Canvas may be a different size than the temporary bitmap for pure software
-		(bitmap_type == BITMAP_TEMP && !bitmap->hardware_scaling()) ? bitmap->get_w() : -1,
-		(bitmap_type == BITMAP_TEMP && !bitmap->hardware_scaling()) ? bitmap->get_h() : -1);
+		canvas_y2);
 
 // Convert colormodel
-	if(bitmap_type == BITMAP_TEMP)
+	if(bitmap)
 	{
-		if(bitmap->hardware_scaling())
-		{
-			ColorModels::transfer_sws(bitmap->get_data(),
-				output_channels->get_data(),
-				bitmap->get_y_plane(),
-				bitmap->get_u_plane(),
-				bitmap->get_v_plane(),
-				output_channels->get_y(),
-				output_channels->get_u(),
-				output_channels->get_v(),
-				output_channels->get_w(),
-				output_channels->get_h(),
-				bitmap->get_w(),
-				bitmap->get_h(),
-				output_channels->get_color_model(),
-				bitmap->get_color_model(),
-				output_channels->get_bytes_per_line(),
-				bitmap->get_bytes_per_line());
-		}
-		else
-		{
-			output_channels->set_pixel_aspect(edl->get_aspect_ratio(), 1);
-			output->get_canvas()->draw_vframe(output_channels,
-				round(canvas_x1),
-				round(canvas_y1),
-				round(canvas_x2 - canvas_x1),
-				round(canvas_y2 - canvas_y1),
-				round(output_x1),
-				round(output_y1),
-				round(output_x2 - output_x1),
-				round(output_y2 - output_y1),
-				0);
-		}
+		output_channels->set_pixel_aspect(1);
+		bitmap->read_frame(output_channels,
+			0, 0,
+			output_channels->get_w(),
+			output_channels->get_h());
+
+		output->get_canvas()->draw_bitmap(bitmap,
+			!device->single_frame,
+			round(canvas_x1),
+			round(canvas_y1),
+			round(canvas_x2 - canvas_x1),
+			round(canvas_y2 - canvas_y1),
+			round(output_x1),
+			round(output_y1),
+			round(output_x2 - output_x1),
+			round(output_y2 - output_y1),
+			0);
+	}
+	else
+	{
+		output_channels->set_pixel_aspect(edl->get_aspect_ratio(), 1);
+		output->get_canvas()->draw_vframe(output_channels,
+			round(canvas_x1),
+			round(canvas_y1),
+			round(canvas_x2 - canvas_x1),
+			round(canvas_y2 - canvas_y1),
+			round(output_x1),
+			round(output_y1),
+			round(output_x2 - output_x1),
+			round(output_y2 - output_y1),
+			0);
 	}
 
 // Cause X server to display it
@@ -425,21 +304,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 			is_cleared = 0;
 		}
 	}
-	else
-	if(bitmap->hardware_scaling())
-	{
-		output->get_canvas()->draw_bitmap(bitmap,
-			!device->single_frame,
-			round(canvas_x1),
-			round(canvas_y1),
-			round(canvas_x2 - canvas_x1),
-			round(canvas_y2 - canvas_y1),
-			round(output_x1),
-			round(output_y1),
-			round(output_x2 - output_x1),
-			round(output_y2 - output_y1),
-			0);
-	}
 
 	output->unlock_canvas();
 	return 0;
@@ -449,10 +313,8 @@ int VDeviceX11::clear_output()
 {
 	is_cleared = 1;
 
-	gl_failed = output->mwindow->playback_3d->clear_output(output,
+	return output->mwindow->playback_3d->clear_output(output,
 		output->get_canvas()->get_video_on() ? 0 : output_frame);
-
-	return gl_failed;
 }
 
 void VDeviceX11::clear_input(VFrame *frame)
@@ -471,7 +333,7 @@ int VDeviceX11::do_camera(VFrame *output,
 	float out_x2, 
 	float out_y2)
 {
-	gl_failed = this->output->mwindow->playback_3d->do_camera(this->output,
+	return this->output->mwindow->playback_3d->do_camera(this->output,
 		output,
 		input,
 		in_x1, 
@@ -482,7 +344,6 @@ int VDeviceX11::do_camera(VFrame *output,
 		out_y1, 
 		out_x2, 
 		out_y2);
-	return gl_failed;
 }
 
 void VDeviceX11::do_fade(VFrame *output_temp, float fade)
