@@ -94,7 +94,6 @@ private:
 		int width_in, int height_in, VFrame *frame_out);
 	int convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 		int width_out, int height_out, AVFrame *frame_out);
-	int inter_color_model(int color_model);
 	int decode_samples(int64_t rqpos, int length);
 	int fill_buffer(AVFrame *avaframe, int ibytes = 0, int bps = 0, int planar = 0);
 	int write_samples(int resampled_length, AVCodecContext *audio_ctx, ptstime pts = -1);
@@ -102,8 +101,6 @@ private:
 	void list2dictionary(AVDictionary **dict, Paramlist *params);
 	static int streamformat(AVFormatContext *context);
 	static void liberror(int code, const char *prefix);
-	static int init_picture_from_frame(AVPicture *picture, VFrame *frame);
-	static AVPixelFormat color_model_to_pix_fmt(int color_model);
 	static Paramlist *scan_global_options(int options);
 	static Paramlist *scan_format_options(int format,
 		int options, AVOutputFormat **ofmtp);
@@ -142,7 +139,6 @@ private:
 	AVFrame *avaframe;
 	struct SwsContext *sws_ctx;
 	SwrContext *swr_ctx;
-	VFrame *temp_frame;
 	FileTOC *tocfile;
 
 	int reading;
