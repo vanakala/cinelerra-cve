@@ -220,6 +220,7 @@ void ColorModels::transfer_sws(unsigned char *output,
 		}
 		sws_scale(sws_ctx, in_data, in_linesizes,
 			0, in_h, out_data, out_linesizes);
+		sws_freeContext(sws_ctx);
 	}
 	else
 	{
@@ -300,11 +301,12 @@ void ColorModels::transfer_frame(unsigned char *output,
 
 		if(!sws_ctx)
 		{
-			printf("ColorModels::transfer_sws: swscale context initialization failed\n");
+			printf("ColorModels::transfer_frame: swscale context initialization failed\n");
 			return;
 		}
 		sws_scale(sws_ctx, in_data, in_linesizes,
 			0, frame->get_h(), out_data, out_linesizes);
+		sws_freeContext(sws_ctx);
 	}
 	else
 	{
