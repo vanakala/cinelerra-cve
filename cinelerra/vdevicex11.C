@@ -64,14 +64,16 @@ VDeviceX11::~VDeviceX11()
 // Use our output frame buffer as the canvas's frame buffer.
 		output->lock_canvas("VDeviceX11::~VDeviceX11");
 
-		delete output->refresh_frame;
-
 		if(!device->single_frame)
 			output->stop_video();
 		else
 			output->stop_single();
 
-		output->refresh_frame = output_frame;
+		if(output_frame)
+		{
+			delete output->refresh_frame;
+			output->refresh_frame = output_frame;
+		}
 
 // Draw the first refresh with new frame.
 		output->draw_refresh();
