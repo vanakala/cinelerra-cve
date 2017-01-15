@@ -55,6 +55,7 @@ AudioDevice::AudioDevice(MWindow *mwindow)
 	play_dither = 0;
 	arm_buffer_num = 0;
 	is_playing_back = 0;
+	is_flushing = 0;
 	last_buffer_size = 0;
 	total_samples = 0;
 	last_position = 0;
