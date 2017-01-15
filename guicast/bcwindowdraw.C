@@ -1010,8 +1010,7 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 	if(src_y + src_h > frame->get_h()) src_h = frame->get_h() - src_y;
 
 	if(!temp_bitmap) temp_bitmap = new BC_Bitmap(this, 
-		dest_w, 
-		dest_h, 
+		0, 0,
 		get_color_model(), 
 		1);
 
