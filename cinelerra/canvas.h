@@ -49,7 +49,6 @@ public:
 		int output_w,
 		int output_h,
 		int use_scrollbars,
-		EDL *edl,
 		int use_cwindow = 0,
 		int use_rwindow = 0,
 		int use_vwindow = 0); // Use menu different options for different windows
@@ -211,7 +210,6 @@ public:
 	int root_h;
 
 	MWindow *mwindow;
-	EDL *edl;
 
 private:
 	void get_scrollbars(EDL *edl, 

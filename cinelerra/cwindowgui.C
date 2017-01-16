@@ -714,7 +714,6 @@ CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
 	0,
 	0,
 	mwindow->edl->session->cwindow_scrollbars,
-	mwindow->edl,
 	1)
 {
 	this->mwindow = mwindow;

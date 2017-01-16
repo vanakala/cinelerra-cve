@@ -586,7 +586,6 @@ VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
 	0,
 	0,
 	0,
-	0,
 	1)
 {
 	this->mwindow = mwindow;

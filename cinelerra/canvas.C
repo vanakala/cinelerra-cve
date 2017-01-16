@@ -41,7 +41,6 @@ Canvas::Canvas(MWindow *mwindow,
 	int output_w,
 	int output_h,
 	int use_scrollbars,
-	EDL *edl,
 	int use_cwindow,
 	int use_rwindow,
 	int use_vwindow)
@@ -64,7 +63,6 @@ Canvas::Canvas(MWindow *mwindow,
 	this->h = h;
 	this->output_w = output_w;
 	this->output_h = output_h;
-	this->edl = edl;
 	this->use_scrollbars = use_scrollbars;
 	this->use_cwindow = use_cwindow;
 	this->use_rwindow = use_rwindow;
@@ -112,7 +110,7 @@ BC_WindowBase* Canvas::get_canvas()
 		view_y = y;
 		view_w = w;
 		view_h = h;
-		get_scrollbars(edl, view_x, view_y, view_w, view_h);
+		get_scrollbars(mwindow->edl, view_x, view_y, view_w, view_h);
 		create_canvas();
 	}
 	if(get_fullscreen() && canvas_fullscreen) 
