@@ -228,34 +228,20 @@ void BC_Bitmap::allocate_data()
 // Use unshared memory.
 	{
 		ring_buffers = 1;
-// need to use bytes_per_line for some X servers
-		data[0] = 0;
 // Use RGB frame
 		ximage[0] = XCreateImage(top_level->display, 
 					top_level->vis, 
 					get_default_depth(), 
 					get_default_depth() == 1 ? XYBitmap : ZPixmap, 
 					0, 
-					(char*)data[0], 
+					0,
 					w, 
 					h, 
 					8, 
 					0);
-
 		data[0] = (unsigned char*)malloc(h * ximage[0]->bytes_per_line + 4);
+		ximage[0]->data = (char *)data[0];
 
-		XDestroyImage(ximage[0]);
-
-		ximage[0] = XCreateImage(top_level->display, 
-					top_level->vis, 
-					get_default_depth(), 
-					get_default_depth() == 1 ? XYBitmap : ZPixmap, 
-					0, 
-					(char*)data[0], 
-					w, 
-					h, 
-					8, 
-					0);
 // This differs from the depth parameter of the top_level.
 		bits_per_pixel = ximage[0]->bits_per_pixel;
 		bytes_per_line = ximage[0]->bytes_per_line;
