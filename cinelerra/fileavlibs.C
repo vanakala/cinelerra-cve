@@ -36,6 +36,7 @@
 #include "selection.h"
 #include "theme.h"
 #include "tmpframecache.h"
+#include "versioninfo.h"
 #include "videodevice.inc"
 #include "vframe.h"
 
@@ -176,6 +177,7 @@ int FileAVlibs::open_file(int rd, int wr)
 {
 	int result = 0;
 	int rv;
+	char string[BCTEXTLEN];
 
 	avlibs_lock->lock("FileAVlibs::open_file");
 	avcodec_register_all();
@@ -373,6 +375,30 @@ int FileAVlibs::open_file(int rd, int wr)
 		}
 
 		fmt = context->oformat;
+
+		// Metadata
+		AVDictionary *meta = 0;
+		struct tm ctim, *ptm;
+		time_t tst;
+		strcpy(string, PROGRAM_NAME);
+		strcat(string, " ");
+		strcat(string, CINELERRA_VERSION);
+		av_dict_set(&meta, "comment", string, 0);
+		tst = time(0);
+		if((ptm = gmtime_r(&tst, &ctim)) &&
+				strftime(string, sizeof(string), "%Y-%m-%d %H:%M:%S", ptm))
+			av_dict_set(&meta, "creation_time", string, 0);
+		if(mwindow->edl->session->metadata_copyright[0])
+			av_dict_set(&meta, "copyright",
+				mwindow->edl->session->metadata_copyright, 0);
+		if(mwindow->edl->session->metadata_title[0])
+			av_dict_set(&meta, "title",
+				mwindow->edl->session->metadata_title, 0);
+		if(mwindow->edl->session->metadata_author[0])
+			av_dict_set(&meta, "author",
+				mwindow->edl->session->metadata_author, 0);
+
+		context->metadata = meta;
 
 		if(asset->video_data)
 		{

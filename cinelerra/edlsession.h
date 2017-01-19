@@ -198,6 +198,10 @@ public:
 	int show_avlibsmsgs;
 // allow experimental codecs
 	int experimental_codecs;
+// metadata for output file
+	char metadata_author[BCTEXTLEN];
+	char metadata_title[BCTEXTLEN];
+	char metadata_copyright[BCTEXTLEN];
 // Use the vwindow meter or not
 	int vwindow_meter;
 	float vwindow_zoom;

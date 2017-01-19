@@ -64,4 +64,14 @@ public:
 	int *valueptr;
 };
 
+class MiscText : public BC_TextBox
+{
+public:
+	MiscText(int x, int y, char *boxtext);
+
+	int handle_event();
+private:
+	char *str;
+};
+
 #endif

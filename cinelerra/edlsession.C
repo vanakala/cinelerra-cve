@@ -83,6 +83,9 @@ EDLSession::EDLSession(EDL *edl)
 	tool_window = 0;
 	show_avlibsmsgs = 0;
 	experimental_codecs = 1;
+	metadata_author[0] = 0;
+	metadata_title[0] = 0;
+	metadata_copyright[0] = 0;
 	cwindow_operation = CWINDOW_NONE;
 }
 
@@ -250,8 +253,11 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	video_write_length = defaults->get("VIDEO_WRITE_LENGTH", 30);
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
 	vwindow_meter = defaults->get("VWINDOW_METER", 1);
-
+	defaults->get("METADATA_AUTHOR", metadata_author);
+	defaults->get("METADATA_TITLE", metadata_title);
+	defaults->get("METADATA_COPYRIGHT", metadata_copyright);
 	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
+
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
 	boundaries();
 	return 0;
@@ -364,7 +370,9 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
 	defaults->update("VWINDOW_METER", vwindow_meter);
 	defaults->update("VWINDOW_ZOOM", vwindow_zoom);
-
+	defaults->update("METADATA_AUTHOR", metadata_author);
+	defaults->update("METADATA_TITLE", metadata_title);
+	defaults->update("METADATA_COPYRIGHT", metadata_copyright);
 	defaults->update("DECODE_SUBTITLES", decode_subtitles);
 
 
@@ -518,6 +526,9 @@ int EDLSession::load_xml(FileXML *file,
 		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 		vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
 		vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
+		file->tag.get_property("METADATA_AUTHOR", metadata_author);
+		file->tag.get_property("METADATA_TITLE", metadata_title);
+		file->tag.get_property("METADATA_COPYRIGHT", metadata_copyright);
 
 		decode_subtitles = file->tag.get_property("DECODE_SUBTITLES", decode_subtitles);
 		boundaries();
@@ -584,6 +595,9 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("VWINDOW_METER", vwindow_meter);
 	file->tag.set_property("VWINDOW_ZOOM", vwindow_zoom);
 
+	file->tag.set_property("METADATA_AUTHOR", metadata_author);
+	file->tag.set_property("METADATA_TITLE", metadata_title);
+	file->tag.set_property("METADATA_COPYRIGHT", metadata_copyright);
 
 	file->tag.set_property("DECODE_SUBTITLES", decode_subtitles);
 
@@ -750,7 +764,9 @@ int EDLSession::copy(EDLSession *session)
 	view_follows_playback = session->view_follows_playback;
 	vwindow_meter = session->vwindow_meter;
 	vwindow_zoom = session->vwindow_zoom;
-
+	strcpy(metadata_author, session->metadata_author);
+	strcpy(metadata_title, session->metadata_title);
+	strcpy(metadata_copyright, session->metadata_copyright);
 	decode_subtitles = session->decode_subtitles;
 	
 	return 0;

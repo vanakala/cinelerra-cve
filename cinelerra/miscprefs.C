@@ -26,6 +26,8 @@
 #include "preferences.h"
 #include "theme.h"
 
+#include <string.h>
+
 MiscPrefs::MiscPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
@@ -34,6 +36,7 @@ MiscPrefs::MiscPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 void MiscPrefs::show()
 {
 	BC_WindowBase *win;
+	int x0, y0, boxh;
 	int x = mwindow->theme->preferencesoptions_x;
 	int y = mwindow->theme->preferencesoptions_y;
 
@@ -46,15 +49,36 @@ void MiscPrefs::show()
 	x += win->get_w() + 10;
 	win = add_subwindow(new StillImageDuration(pwindow, x, y));
 	x += win->get_w() + 10;
+	boxh = win->get_h() + 5;
 	y += 3;
 	add_subwindow(new BC_Title(x, y, _("seconds")));
 	x = mwindow->theme->preferencesoptions_x;
 	y += win->get_h() + 5;
-	win = add_subwindow(new ToggleButton(x, y, _("Show avlibs messages in console"),
+	add_subwindow(new BC_Title(x, y, _("AVlibs"), LARGEFONT, get_resources()->text_default));
+	y += 30;
+	win = add_subwindow(new ToggleButton(x, y, _("Show messages of avlibs in console"),
 		&pwindow->thread->edl->session->show_avlibsmsgs));
 	y += win->get_h() + 5;
-	add_subwindow(new ToggleButton(x, y, _("Allow using experimental codecs"),
+	win = add_subwindow(new ToggleButton(x, y, _("Allow using experimental codecs"),
 		&pwindow->thread->edl->session->experimental_codecs));
+	y0 = y += win->get_h() + 5;
+	win = add_subwindow(new BC_Title(x, y, _("Author:")));
+	x0 = win->get_w() + 10;
+	y += boxh;
+	win = add_subwindow(new BC_Title(x, y, _("Title:")));
+	if(x0 < win->get_w() + 10)
+		x0 = win->get_w() + 10;
+	y += boxh;
+	win = add_subwindow(new BC_Title(x, y, _("Copyright:")));
+	if(x0 < win->get_w() + 10)
+		x0 = win->get_w() + 10;
+	x = x0 + mwindow->theme->preferencesoptions_x;
+	y = y0;
+	win = add_subwindow(new MiscText(x, y, pwindow->thread->edl->session->metadata_author));
+	y += boxh;
+	win = add_subwindow(new MiscText(x, y, pwindow->thread->edl->session->metadata_title));
+	y += boxh;
+	win = add_subwindow(new MiscText(x, y, pwindow->thread->edl->session->metadata_copyright));
 }
 
 StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)
@@ -90,4 +114,15 @@ ToggleButton::ToggleButton(int x, int y, const char *text, int *value)
 int ToggleButton::handle_event()
 {
 	*valueptr = get_value();
+}
+
+MiscText::MiscText(int x, int y, char *boxtext)
+ : BC_TextBox(x, y, 400, 1, boxtext)
+{
+	this->str = boxtext;
+}
+
+int MiscText::handle_event()
+{
+	strcpy(str, get_text());
 }
