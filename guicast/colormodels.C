@@ -290,7 +290,7 @@ void ColorModels::transfer_frame(unsigned char *output,
 	{
 		sws_ctx = sws_getCachedContext(sws_ctx, frame->get_w(), frame->get_h(),
 			pix_in, out_w, out_h, pix_out,
-			SWS_BICUBIC, NULL, NULL, NULL);
+			SWS_FAST_BILINEAR, NULL, NULL, NULL);
 		fill_data(frame->get_color_model(), in_data, frame->get_data(),
 			frame->get_y(), frame->get_u(), frame->get_v());
 		fill_linesizes(frame->get_color_model(), frame->get_bytes_per_line(),
