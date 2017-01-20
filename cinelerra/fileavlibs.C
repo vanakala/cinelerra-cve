@@ -1228,7 +1228,6 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 					brightness, contrast, saturation);
 			}
 		}
-		frame_out->clear_frame();
 
 		ColorModels::fill_data(frame_out->get_color_model(), out_data, frame_out->get_data(),
 			frame_out->get_y(), frame_out->get_u(), frame_out->get_v());
@@ -1265,8 +1264,10 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 		return 1;  // recursed call will print error message
 	}
 
-	// if we reach here we know that cmodel_transfer() will work
-	frame_out->transfer_from(temp_frame);
+	ColorModels::copy_colors(temp_frame->get_w(), temp_frame->get_h(),
+		frame_out->get_data(), frame_out->get_color_model(),
+		frame_out->get_bytes_per_line(),
+		temp_frame->get_data(), temp_cmodel, temp_frame->get_bytes_per_line());
 	BC_Resources::tmpframes.release_frame(temp_frame);
 	return 0;
 }
@@ -1327,7 +1328,10 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 
 		temp_frame = BC_Resources::tmpframes.get_tmpframe(frame_in->get_w(), frame_in->get_h(), cmodel);
 
-		temp_frame->transfer_from(frame_in);
+		ColorModels::copy_colors(frame_in->get_w(), frame_in->get_h(),
+			temp_frame->get_data(), cmodel, temp_frame->get_bytes_per_line(),
+			frame_in->get_data(), frame_in->get_color_model(),
+			frame_in->get_bytes_per_line());
 
 		rv = convert_cmodel(temp_frame, pix_fmt_out,
 			width_out, height_out, frame_out);

@@ -83,11 +83,10 @@ public:
 	static void fill_data(int colormodel, unsigned char **data,
 		unsigned char *xbuf, unsigned char *y, unsigned char *u,
 		unsigned char *v);
-
-private:
 	static void copy_colors(int w, int h,
 		unsigned char *output, int out_colormodel, int out_rowspan,
 		unsigned char *input, int in_cmodel, int in_rowspan);
+private:
 	static void transfer_details(struct SwsContext *sws_ctx, int srange);
 };
 
