@@ -42,9 +42,6 @@ public:
 	int get_h();
 
 	int w, h, default_depth;
-/* Pole
-	unsigned char **row_data;
-	*/
 
 private:
 	void allocate_data();

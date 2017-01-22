@@ -135,13 +135,7 @@ void BC_Capture::allocate_data()
 
 		ximage = XCreateImage(display, vis, default_depth, ZPixmap, 0, (char*)data, w, h, 8, 0);
 	}
-/* Pole
-	row_data = new unsigned char*[h];
-	for(int i = 0; i < h; i++)
-	{
-		row_data[i] = &data[i * ximage->bytes_per_line];
-	}
-	*/
+
 // This differs from the depth parameter of the top_level.
 	bits_per_pixel = ximage->bits_per_pixel;
 	bytes_per_line = ximage->bytes_per_line;
@@ -164,9 +158,6 @@ void BC_Capture::delete_data()
 
 // data is automatically freed by XDestroyImage
 		data = 0;
-/* Pole
-		delete row_data;
-	*/
 	}
 }
 
@@ -180,20 +171,6 @@ int BC_Capture::get_h()
 {
 	return h;
 }
-/* Pole
-// Capture a frame from the screen
-#define CAPTURE_FRAME_HEAD \
-	for(int i = 0; i < h; i++) \
-	{ \
-		unsigned char *input_row = row_data[i]; \
-		unsigned char *output_row = (unsigned char*)frame->get_rows()[i]; \
-		for(int j = 0; j < w; j++) \
-		{
-
-#define CAPTURE_FRAME_TAIL \
-		} \
-	}
-	*/
 
 int BC_Capture::capture_frame(VFrame *frame, int &x1, int &y1)
 {
