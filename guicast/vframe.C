@@ -643,6 +643,7 @@ void VFrame::copy_from(VFrame *frame, int do_copy_pts)
 {
 	int w = MIN(this->w, frame->get_w());
 	int h = MIN(this->h, frame->get_h());
+	int bytes = MIN(bytes_per_line, frame->get_bytes_per_line());
 
 	if(do_copy_pts)
 		copy_pts(frame);
@@ -668,10 +669,8 @@ void VFrame::copy_from(VFrame *frame, int do_copy_pts)
 		break;
 
 	default:
-		memcpy(data, frame->data, calculate_data_size(w, 
-			h, 
-			-1, 
-			frame->color_model));
+		memcpy(data, frame->data, calculate_data_size(w, h,
+			bytes, frame->color_model));
 		break;
 	}
 }
@@ -1046,8 +1045,8 @@ void VFrame::dump(int minmax)
 		ColorModels::name(color_model), bytes_per_line, y_offset, u_offset, v_offset);
 	printf("    data:%p rows: %p y:%p, u:%p, v:%p%s\n", data, rows,
 		y, u, v, shared ? " shared" : "");
-	printf("    compressed size %d, compressed_allocated %d\n",
-		compressed_size, compressed_allocated);
+	printf("    compressed %d, allocated %d pix apect %.2f\n",
+		compressed_size, compressed_allocated, pixel_aspect);
 	if(minmax)
 	{
 		int min, max;
