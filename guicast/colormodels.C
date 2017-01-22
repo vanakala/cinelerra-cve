@@ -524,7 +524,8 @@ void ColorModels::copy_colors(int w, int h,
 	case BC_YUV888:
 	case BC_YUVA8888:
 		// BC_AYUV16161616
-		wb = components(in_cmodel) * w;
+		wb = components(out_cmodel) * w;
+
 		for(int j = 0; j < h; j++)
 		{
 			unsigned char *idata = input + j * in_rowspan;
