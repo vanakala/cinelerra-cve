@@ -320,11 +320,15 @@ public:
 	static HashCache hash_cache;
 // Temporary frames
 	static TmpFrameCache tmpframes;
+// Size of RAM in kB
+	static size_t memory_size;
 
 private:
 // Test for availability of shared memory pixmaps
 	void init_shm(BC_WindowBase *window);
 	void init_sizes(BC_WindowBase *window);
+	void find_memory_size();
+
 	static BC_DisplayInfo *display_info;
 	VFrame **list_pointers[100];
 	int list_lengths[100];

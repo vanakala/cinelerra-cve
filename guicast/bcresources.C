@@ -58,6 +58,9 @@ const char *BC_Resources::fc_properties[] = { FC_SLANT, FC_WEIGHT, FC_WIDTH };
 
 BC_DisplayInfo *BC_Resources::display_info = 0;
 
+// Size of RAM in kB
+size_t BC_Resources::memory_size = 0;
+
 #include "images/file_film_png.h"
 #include "images/file_folder_png.h"
 #include "images/file_sound_png.h"
@@ -520,11 +523,36 @@ BC_Resources::BC_Resources()
 
 	drag_radius = 10;
 	recursive_resizing = 1;
+	find_memory_size();
 }
 
 BC_Resources::~BC_Resources()
 {
 	delete display_info;
+}
+
+void BC_Resources::find_memory_size()
+{
+	FILE *fp = fopen("/proc/meminfo", "r");
+	char str[256];
+	const char *keyw = "MemTotal:";
+	int l = strlen(keyw);
+
+	if(fp)
+	{
+		while(fgets(str, sizeof(str), fp))
+		{
+			if(strncmp(str, keyw, l) == 0)
+			{
+				memory_size = atoll(str + l);
+				break;
+			}
+		}
+		fclose(fp);
+	}
+	// Assume 512 Mb when size is not found
+	if(memory_size == 0)
+		memory_size = 524288;
 }
 
 void BC_Resources::initialize_display(BC_WindowBase *window)
