@@ -54,8 +54,13 @@ public:
 	void release_frame(VFrame *tmp_frame);
 	size_t get_size();
 	void dump(int indent = 0);
+private:
+	void delete_old_frames();
+	int delete_oldest();
 
 	unsigned int moment;
+	// Maximum allowed allocation
+	size_t max_alloc;
 	static Mutex listlock;
 };
 

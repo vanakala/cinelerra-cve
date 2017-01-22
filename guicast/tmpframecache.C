@@ -20,10 +20,15 @@
  */
 
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "colormodels.h"
 #include "tmpframecache.h"
 #include "mutex.h"
 #include "vframe.h"
+
+// Cache macimal size is 1% of memory
+// It is divisor here
+#define MAX_ALLOC 100
 
 Mutex TmpFrameCache::listlock("TmpFrameCache::listlock");
 
@@ -84,8 +89,13 @@ VFrame *TmpFrameCache::get_tmpframe(int w, int h, int colormodel)
 		}
 	}
 	if(!elem)
+	{
+		if(!max_alloc)
+			max_alloc = BC_Resources::memory_size / MAX_ALLOC;
+		if(get_size() > max_alloc)
+			delete_old_frames();
 		elem = append(new TmpFrameCacheElem(w, h, colormodel));
-
+	}
 	elem->in_use = 1;
 
 	listlock.unlock();
@@ -110,6 +120,36 @@ void TmpFrameCache::release_frame(VFrame *tmp_frame)
 	listlock.unlock();
 }
 
+void TmpFrameCache::delete_old_frames()
+{
+	while(get_size() > max_alloc)
+	{
+		if(delete_oldest())
+			break;
+	}
+}
+
+int TmpFrameCache::delete_oldest()
+{
+	unsigned int min_age = UINT_MAX;
+	TmpFrameCacheElem *min_elem = 0;
+
+	for(TmpFrameCacheElem *cur = first; cur; cur = cur->next)
+	{
+		if(!cur->in_use && cur->age < min_age)
+		{
+			min_age = cur->age;
+			min_elem = cur;
+		}
+	}
+
+	if(!min_elem)
+		return 1;
+
+	delete min_elem;
+	return 0;
+}
+
 size_t TmpFrameCache::get_size()
 {
 	size_t res = 0;
@@ -117,7 +157,7 @@ size_t TmpFrameCache::get_size()
 	for(TmpFrameCacheElem *cur = first; cur; cur = cur->next)
 		res += cur->get_size();
 
-	return res;
+	return res / 1024;
 }
 
 void TmpFrameCache::dump(int indent)
