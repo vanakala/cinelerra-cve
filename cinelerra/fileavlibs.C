@@ -36,7 +36,6 @@
 #include "selection.h"
 #include "theme.h"
 #include "tmpframecache.h"
-#include "versioninfo.h"
 #include "videodevice.inc"
 #include "vframe.h"
 
@@ -51,6 +50,7 @@
 
 extern MWindow *mwindow;
 extern Theme *theme_global;
+extern const char *version_name;
 
 struct  avlib_formattable FileAVlibs::known_formats[] =
 {
@@ -177,7 +177,6 @@ int FileAVlibs::open_file(int rd, int wr)
 {
 	int result = 0;
 	int rv;
-	char string[BCTEXTLEN];
 
 	avlibs_lock->lock("FileAVlibs::open_file");
 	avcodec_register_all();
@@ -380,10 +379,9 @@ int FileAVlibs::open_file(int rd, int wr)
 		AVDictionary *meta = 0;
 		struct tm ctim, *ptm;
 		time_t tst;
-		strcpy(string, PROGRAM_NAME);
-		strcat(string, " ");
-		strcat(string, CINELERRA_VERSION);
-		av_dict_set(&meta, "comment", string, 0);
+		char string[128];
+
+		av_dict_set(&meta, "comment", version_name, 0);
 		tst = time(0);
 		if((ptm = gmtime_r(&tst, &ctim)) &&
 				strftime(string, sizeof(string), "%Y-%m-%d %H:%M:%S", ptm))
