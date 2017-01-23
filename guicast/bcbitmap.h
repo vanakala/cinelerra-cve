@@ -107,7 +107,6 @@ public:
 
 // Rewing ringbuffer to the previous frame
 	void rewind_ringbuffer();
-	void set_bg_color(int color);
 
 	void dump(int minmax = 0);
 
@@ -122,8 +121,6 @@ private:
 	int w, h;
 // Color model from colormodels.h
 	int color_model;
-// Background color for using pngs
-	int bg_color;
 // Override top_level for small bitmaps
 	int use_shm;
 	BC_WindowBase *top_level;

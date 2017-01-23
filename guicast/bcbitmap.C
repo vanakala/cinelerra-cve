@@ -63,7 +63,6 @@ void BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	this->h = h;
 	this->color_model = color_model;
 	this->use_shm = use_shm ? parent_window->get_resources()->use_shm : 0;
-	this->bg_color = parent_window->bg_color;
 	for(int i = 0; i < BITMAP_RING; i++)
 	{
 		ximage[i] = 0;
@@ -297,11 +296,6 @@ int BC_Bitmap::get_default_depth()
 		return 1;
 	else
 		return top_level->default_depth;
-}
-
-void BC_Bitmap::set_bg_color(int color)
-{
-	this->bg_color = color;
 }
 
 void BC_Bitmap::write_drawable(Drawable &pixmap, 
@@ -653,8 +647,8 @@ void BC_Bitmap::dump(int minmax)
 	printf("BC_Bitmap %p dump\n", this);
 	printf("    %d x %d %s pixb %d line %ld\n", w, h, ColorModels::name(color_model),
 		bits_per_pixel, bytes_per_line);
-	printf("    bg %06x buffers %d/%d shm %d port %d top %p\n",
-		bg_color, current_ringbuffer, ring_buffers, use_shm, xv_portid, top_level);
+	printf("    buffers %d/%d shm %d port %d top %p\n",
+		current_ringbuffer, ring_buffers, use_shm, xv_portid, top_level);
 	for(int i = 0; i < ring_buffers; i++)
 		printf("      %d: data %p xv_image %p ximage %p\n",
 		i, data[i], xv_image[i], ximage[i]);
