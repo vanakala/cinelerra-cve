@@ -19,6 +19,7 @@
 
 #include "bcsignals.h"
 #include "bcresources.h"
+#include "language.h"
 #include "colormodels.h"
 #include "tmpframecache.h"
 #include "vframe.h"
@@ -30,6 +31,30 @@ extern "C"
 #include <libswscale/swscale.h>
 #include <libavutil/pixdesc.h>
 }
+
+struct cm_names ColorModels::color_model_names[] =
+{
+	{ BC_TRANSPARENCY, N_("Transparency") },
+	{ BC_RGB888, N_("RGB-8 Bit") },
+	{ BC_RGBA8888, N_("RGBA-8 Bit") },
+	{ BC_RGB161616, N_("RGB-16 Bit") },
+	{ BC_RGBA16161616, N_("RGBA-16 Bit") },
+	{ BC_BGR8888, N_("BGRA-8 Bit") },
+	{ BC_YUV888, N_("YUV-8 Bit") },
+	{ BC_YUVA8888, N_("YUVA-8 Bit") },
+	{ BC_YUV161616, N_("YUV-16 Bit") },
+	{ BC_YUVA16161616, N_("YUVA-16 Bit") },
+	{ BC_AYUV16161616, N_("AYUV-16 Bit") },
+	{ BC_RGB_FLOAT, N_("RGB-FLOAT") },
+	{ BC_RGBA_FLOAT, N_("RGBA-FLOAT") },
+	{ BC_YUV420P, N_("YUV420P") },
+	{ BC_YUV422P, N_("YUV422P") },
+	{ BC_YUV444P, N_("YUV444P") },
+	{ BC_YUV422, N_("YUV422") },
+	{ BC_COMPRESSED, N_("Compressed") },
+	{ -1, 0 }
+};
+
 
 ColorModels::ColorModels()
 {
@@ -620,68 +645,25 @@ void ColorModels::to_text(char *string, int cmodel)
 
 const char *ColorModels::name(int cmodel)
 {
-	switch(cmodel)
+	for(int i = 0;; i++)
 	{
-	case BC_TRANSPARENCY:
-		return "Transparency";
-	case BC_RGB888:
-		return "RGB-8 Bit";
-	case BC_RGBA8888:
-		return "RGBA-8 Bit";
-	case BC_RGB161616:
-		return "RGB-16 Bit";
-	case BC_RGBA16161616:
-		return "RGBA-16 Bit";
-	case BC_BGR8888:
-		return "BGRA-8 Bit";
-	case BC_YUV888:
-		return "YUV-8 Bit";
-	case BC_YUVA8888:
-		return "YUVA-8 Bit";
-	case BC_YUV161616:
-		return "YUV-16 Bit";
-	case BC_YUVA16161616:
-		return "YUVA-16 Bit";
-	case BC_AYUV16161616:
-		return "AYUV-16 Bit";
-	case BC_RGB_FLOAT:
-		return "RGB-FLOAT";
-	case BC_RGBA_FLOAT:
-		return "RGBA-FLOAT";
-	case BC_YUV420P:
-		return "YUV420P";
-	case BC_YUV422P:
-		return "YUV422P";
-	case BC_YUV444P:
-		return "YUV444P";
-	case BC_YUV422:
-		return "YUV422";
+		if(color_model_names[i].value < 0)
+			break;
+		if(color_model_names[i].value == cmodel)
+			return color_model_names[i].name;
 	}
 	return "Unknown";
 }
 
 int ColorModels::from_text(char *text)
 {
-	if(!strcasecmp(text, "RGB-8 Bit"))
-		return BC_RGB888;
-	if(!strcasecmp(text, "RGBA-8 Bit"))
-		return BC_RGBA8888;
-	if(!strcasecmp(text, "RGB-16 Bit"))
-		return BC_RGB161616;
-	if(!strcasecmp(text, "RGBA-16 Bit"))
-		return BC_RGBA16161616;
-	if(!strcasecmp(text, "RGB-FLOAT"))
-		return BC_RGB_FLOAT;
-	if(!strcasecmp(text, "RGBA-FLOAT"))
-		return BC_RGBA_FLOAT;
-	if(!strcasecmp(text, "YUV-8 Bit"))
-		return BC_YUV888;
-	if(!strcasecmp(text, "YUVA-8 Bit"))
-		return BC_YUVA8888;
-	if(!strcasecmp(text, "YUV-16 Bit"))
-		return BC_YUV161616;
-	if(!strcasecmp(text, "YUVA-16 Bit"))
-		return BC_YUVA16161616;
+	for(int i = 0;; i++)
+	{
+		if(color_model_names[i].value < 0)
+			break;
+		if(!strcasecmp(text, color_model_names[i].name))
+			return color_model_names[i].value;
+	}
 	return BC_RGB888;
 }
 

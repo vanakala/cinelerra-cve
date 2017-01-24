@@ -28,6 +28,11 @@ extern "C"
 #include <libavutil/avutil.h>
 }
 
+struct cm_names {
+    int value;
+    const char *name;
+};
+
 class ColorModels
 {
 public:
@@ -88,6 +93,7 @@ public:
 		unsigned char *input, int in_cmodel, int in_rowspan);
 private:
 	static void transfer_details(struct SwsContext *sws_ctx, int srange);
+	static struct cm_names color_model_names[];
 };
 
 #endif
