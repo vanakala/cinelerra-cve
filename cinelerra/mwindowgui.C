@@ -128,7 +128,6 @@ void MWindowGUI::get_scrollbars()
 	{
 		if(!samplescroll)
 			add_subwindow(samplescroll = new SampleScroll(mwindow, 
-				this, 
 				mwindow->theme->mhscroll_x, 
 				mwindow->theme->mhscroll_y, 
 				mwindow->theme->mhscroll_w));
@@ -154,9 +153,7 @@ void MWindowGUI::get_scrollbars()
 		else
 			trackscroll->resize_event();
 
-		trackscroll->update_length(mwindow->edl->get_tracks_height(mwindow->theme),
-			mwindow->edl->local_session->track_start,
-			view_h);
+		trackscroll->set_position(view_h);
 	}
 	else
 	{

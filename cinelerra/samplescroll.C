@@ -35,7 +35,6 @@
 #include "tracks.h"
 
 SampleScroll::SampleScroll(MWindow *mwindow, 
-	MWindowGUI *gui, 
 	int x,
 	int y,
 	int w)
@@ -47,13 +46,7 @@ SampleScroll::SampleScroll(MWindow *mwindow,
 	0, 
 	0)
 {
-	this->gui = gui;
 	this->mwindow = mwindow;
-	oldposition = 0;
-}
-
-SampleScroll::~SampleScroll()
-{
 }
 
 void SampleScroll::resize_event(void)
@@ -65,19 +58,25 @@ void SampleScroll::resize_event(void)
 
 void SampleScroll::set_position(void)
 {
-	if(!gui->canvas) return;
-	int64_t length = round(mwindow->edl->tracks->total_length() /
-		mwindow->edl->local_session->zoom_time);
-	int64_t position = round(mwindow->edl->local_session->view_start_pts /
-		mwindow->edl->local_session->zoom_time);
-	int handle_size = mwindow->theme->mcanvas_w - 
-		BC_ScrollBar::get_span(SCROLL_VERT);
+	if(mwindow->gui->canvas)
+	{
+		int64_t length = round(mwindow->edl->tracks->total_length() /
+			mwindow->edl->local_session->zoom_time);
+		int64_t position = round(mwindow->edl->local_session->view_start_pts /
+			mwindow->edl->local_session->zoom_time);
+		int handle_size = mwindow->theme->mcanvas_w -
+			BC_ScrollBar::get_span(SCROLL_VERT);
 
-	update_length(length, 
-			position, 
-			handle_size);
-
-	oldposition = position;
+		if(position > length - handle_size)
+		{
+			position = length - handle_size;
+			if(position < 0)
+				position = 0;
+			mwindow->edl->local_session->view_start_pts =
+				(ptstime)position * mwindow->edl->local_session->zoom_time;
+		}
+		update_length(length, position, handle_size);
+	}
 }
 
 int SampleScroll::handle_event()

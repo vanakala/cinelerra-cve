@@ -33,7 +33,10 @@ public:
 	TrackScroll(MWindow *mwindow, int x, int y, int h);
 
 	void resize_event();
+	void set_position(int handle_length);
 	int handle_event();
+
+private:
 	MWindow *mwindow;
 };
 

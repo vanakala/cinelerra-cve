@@ -29,20 +29,14 @@
 class SampleScroll : public BC_ScrollBar
 {
 public:
-	SampleScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int w);
-	~SampleScroll();
+	SampleScroll(MWindow *mwindow, int x, int y, int w);
 
-	int create_objects();
-	void resize_event(void);
-	void set_position(void);
+	void resize_event();
+	void set_position();
 	int handle_event();
-	double oldposition;
 
 private:
-	MWindowGUI *gui;
 	MWindow *mwindow;
 };
-
-
 
 #endif

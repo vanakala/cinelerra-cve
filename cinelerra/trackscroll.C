@@ -51,6 +51,24 @@ void TrackScroll::resize_event()
 		mwindow->theme->mvscroll_h);
 }
 
+void TrackScroll::set_position(int handle_length)
+{
+	if(mwindow->gui->canvas)
+	{
+		int64_t length = mwindow->edl->get_tracks_height(mwindow->theme);
+		int64_t position = mwindow->edl->local_session->track_start;
+
+		if(position > length - handle_length)
+		{
+			position = length - handle_length;
+			if(position < 0)
+				position = 0;
+			mwindow->edl->local_session->track_start = position;
+		}
+		update_length(length, position, handle_length);
+	}
+}
+
 int TrackScroll::handle_event()
 {
 	mwindow->edl->local_session->track_start = get_value();
