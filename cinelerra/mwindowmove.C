@@ -311,9 +311,10 @@ void MWindow::zoom_track(int64_t zoom_track)
 void MWindow::trackmovement(int track_start)
 {
 	edl->local_session->track_start = track_start;
-	if(edl->local_session->track_start < 0) edl->local_session->track_start = 0;
-	edl->tracks->update_y_pixels(theme);
+	if(edl->local_session->track_start < 0)
+		edl->local_session->track_start = 0;
 	gui->get_scrollbars();
+	edl->tracks->update_y_pixels(theme);
 	gui->canvas->draw(0, 0);
 	gui->patchbay->update();
 	gui->canvas->flash();
@@ -405,30 +406,25 @@ void MWindow::samplemovement(ptstime view_start)
 	if(edl->local_session->view_start_pts < 0)
 		edl->local_session->view_start_pts = 0;
 
+	gui->get_scrollbars();
 	gui->canvas->draw();
 	gui->cursor->show();
 	gui->canvas->flash();
 	gui->timebar->update();
 	gui->zoombar->update();
-
-	if(gui->samplescroll)
-		gui->samplescroll->set_position();
 }
 
 void MWindow::move_left(int distance)
 {
-	if(EQUIV(distance, 0))
+	if(!distance)
 		distance = gui->canvas->get_w() / 10;
-
 	edl->local_session->view_start_pts -= distance * edl->local_session->zoom_time;
-	if(edl->local_session->view_start_pts < 0)
-		edl->local_session->view_start_pts = 0;
 	samplemovement(edl->local_session->view_start_pts);
 }
 
 void MWindow::move_right(int distance)
 {
-	if(EQUIV(distance, 0))
+	if(!distance)
 		distance = gui->canvas->get_w() / 10;
 	edl->local_session->view_start_pts += distance * edl->local_session->zoom_time;
 	samplemovement(edl->local_session->view_start_pts);
