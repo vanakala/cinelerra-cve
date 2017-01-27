@@ -30,9 +30,6 @@
 
 class BC_ThemeSet;
 
-
-
-
 class BC_Theme
 {
 public:
@@ -77,7 +74,6 @@ public:
 		VFrame *checkedhi,
 		const char *title = 0);
 
-
 // The two main routines for creating images are new_image_set and new_image.
 // If the title already exists in the table, the existing entry is returned.
 // These create image sets which are stored in the set table.
@@ -94,7 +90,6 @@ public:
 	VFrame* new_image(const char *title, const char *path);
 	VFrame* new_image(const char *path);
 
-
 // These retrieve images based on case sensitive title
 	VFrame* get_image(const char *title, int use_default = 1);
 	VFrame** get_image_set(const char *title, int use_default = 1);
@@ -110,10 +105,9 @@ public:
 	BC_Resources* get_resources();
 
 private:
-	void overlay(VFrame *dst, VFrame *src, int in_x1 = -1, int in_x2 = -1, int shift = 0);
+	void overlay(VFrame *dst, VFrame *src,
+		int in_x1 = -1, int in_x2 = -1, int shift = 0);
 	void init_contents();
-
-
 
 // Decompressed image storage.
 // Sets of images.
@@ -141,7 +135,5 @@ public:
 	int total;
 	int is_reference;
 };
-
-
 
 #endif
