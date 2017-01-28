@@ -454,16 +454,15 @@ unsigned char* BC_Theme::get_image_data(const char *title)
 
 void BC_Theme::check_used()
 {
-// Can't use because some images are gotten the old fashioned way.
-return;
 	int got_it = 0;
+
 	for(int i = 0; i < used.total; i++)
 	{
 		if(!used.values[i])
 		{
 			if(!got_it)
-				printf(_("BC_Theme::check_used: Images aren't used.\n"));
-			printf("%s ", contents.values[i]);
+				printf(_("BC_Theme::check_used: Unused images:\n"));
+			printf("%s\n", contents.values[i]);
 			got_it = 1;
 		}
 	}
