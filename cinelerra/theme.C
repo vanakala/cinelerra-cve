@@ -415,62 +415,6 @@ void Theme::get_awindow_sizes(AWindowGUI *gui)
 	alist_h = afolders_h;
 }
 
-void Theme::get_rmonitor_sizes(int do_audio, 
-	int do_video,
-	int do_channel,
-	int do_interlace,
-	int do_avc,
-	int audio_channels)
-{
-	int x = 10;
-	int y = 3;
-
-	if(do_avc)
-	{
-		rmonitor_canvas_y = 30;
-		rmonitor_tx_x = 10;
-		rmonitor_tx_y = 0;
-	}
-	else
-	{
-		rmonitor_canvas_y = 0;
-		rmonitor_tx_x = 0;
-		rmonitor_tx_y = 0;
-	}
-
-	if(do_channel)
-	{
-		y = 5;
-		rmonitor_channel_x = x;
-		rmonitor_channel_y = 5;
-		x += 235;
-		rmonitor_canvas_y = 35;
-	}
-
-	if(do_interlace)
-	{
-		y = 4;
-		rmonitor_interlace_x = x;
-		rmonitor_interlace_y = y;
-	}
-
-	if(do_audio)
-	{
-		rmonitor_meter_x = mwindow->session->rmonitor_w - MeterPanel::get_meters_width(audio_channels, 1);
-		rmonitor_meter_y = 40;
-		rmonitor_meter_h = mwindow->session->rmonitor_h - 10 - rmonitor_meter_y;
-	}
-	else
-	{
-		rmonitor_meter_x = mwindow->session->rmonitor_w;
-	}
-
-	rmonitor_canvas_x = 0;
-	rmonitor_canvas_w = rmonitor_meter_x - rmonitor_canvas_x;
-	if(do_audio) rmonitor_canvas_w -= 10;
-	rmonitor_canvas_h = mwindow->session->rmonitor_h - rmonitor_canvas_y;
-}
-
 void Theme::get_batchrender_sizes(BatchRenderGUI *gui,
 	int w, 
 	int h)

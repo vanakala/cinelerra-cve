@@ -322,14 +322,6 @@ void SUV::initialize()
 		"editpanel_dn.png",
 		"swap_extents");
 
-
-// Record windows
-	rgui_batch = new_image("recordgui_batch.png");
-	rgui_controls = new_image("recordgui_controls.png");
-	rgui_list = new_image("recordgui_list.png");
-	rmonitor_panel = new_image("recordmonitor_panel.png");
-	rmonitor_meters = new_image("recordmonitor_meters.png");
-
 	preferences_category_overlap = 0;
 	preferencescategory_x = 0;
 	preferencescategory_y = 5;
@@ -354,7 +346,6 @@ void SUV::initialize()
 
 	new_image_set("zoombar_menu", 3, "zoompopup_up.png", "zoompopup_hi.png", "zoompopup_dn.png");
 	new_image_set("zoombar_tumbler", 4, "zoomtumble_up.png", "zoomtumble_hi.png", "zoomtumble_bottom.png", "zoomtumble_top.png");
-
 	new_image_set("mode_popup", 3, "mode_up.png", "mode_hi.png", "mode_dn.png");
 	new_image("mode_add", "mode_add.png");
 	new_image("mode_divide", "mode_divide.png");
@@ -363,7 +354,6 @@ void SUV::initialize()
 	new_image("mode_replace", "mode_replace.png");
 	new_image("mode_subtract", "mode_subtract.png");
 	new_image("mode_max", "mode_max.png");
-
 	new_image_set("plugin_on", 5, "plugin_on.png", "plugin_onhi.png", "plugin_onselect.png", "plugin_ondn.png", "plugin_onselecthi.png");
 	new_image_set("plugin_show", 5, "plugin_show.png", "plugin_showhi.png", "plugin_showselect.png", "plugin_showdn.png", "plugin_showselecthi.png");
 
@@ -529,8 +519,6 @@ void SUV::initialize()
 	new_button("framefwd.png", transport_up, transport_hi, transport_dn, "framefwd");
 	new_button("framerev.png", transport_up, transport_hi, transport_dn, "framerev");
 	new_button("pause.png", transport_up, transport_hi, transport_dn, "pause");
-	new_button("record.png", transport_up, transport_hi, transport_dn, "record");
-	new_button("singleframe.png", transport_up, transport_hi, transport_dn, "recframe");
 	new_button("reverse.png", transport_up, transport_hi, transport_dn, "reverse");
 	new_button("rewind.png", transport_up, transport_hi, transport_dn, "rewind");
 	new_button("stop.png", transport_up, transport_hi, transport_dn, "stop");
@@ -539,23 +527,6 @@ void SUV::initialize()
 // CWindow icons
 	new_image("cwindow_inactive", "cwindow_inactive.png");
 	new_image("cwindow_active", "cwindow_active.png");
-
-	new_image_set("batch_render_start",
-		3,
-		"batchstart_up.png",
-		"batchstart_hi.png",
-		"batchstart_dn.png");
-	new_image_set("batch_render_stop",
-		3,
-		"batchstop_up.png",
-		"batchstop_hi.png",
-		"batchstop_dn.png");
-	new_image_set("batch_render_cancel",
-		3,
-		"batchcancel_up.png",
-		"batchcancel_hi.png",
-		"batchcancel_dn.png");
-
 	new_image_set("category_button",
 		3,
 		"preferencesbutton_dn.png",
@@ -605,9 +576,6 @@ void SUV::initialize()
 
 	title_font = MEDIUMFONT_3D;
 	title_color = 0xbfbfbf;
-	recordgui_fixed_color = YELLOW;
-	recordgui_variable_color = RED;
-
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;
 
@@ -739,27 +707,6 @@ void SUV::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	cdest_y = czoom_y + 30;
 }
 
-void SUV::get_rmonitor_sizes(int do_audio, 
-	int do_video,
-	int do_channel,
-	int do_interlace,
-	int do_avc,
-	int audio_channels)
-{
-	Theme::get_rmonitor_sizes(do_audio, 
-		do_video,
-		do_channel,
-		do_interlace,
-		do_avc,
-		audio_channels);
-	if(!do_video && do_audio)
-	{
-		rmonitor_meter_y -= 30;
-		rmonitor_meter_h += 30;
-	}
-}
-
-
 void SUV::get_vwindow_sizes(VWindowGUI *gui)
 {
 	vmeter_y = 5;
@@ -818,7 +765,6 @@ void SUV::build_icons()
 void SUV::build_bg_data()
 {
 // Audio settings
-	channel_bg_data = new VFrame(get_image_data("channel_bg.png"));
 	channel_position_data = new VFrame(get_image_data("channel_position.png"));
 
 // Track bitmaps

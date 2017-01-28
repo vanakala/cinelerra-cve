@@ -66,12 +66,6 @@ public:
 	virtual void get_vwindow_sizes(VWindowGUI *gui) {};
 	virtual void get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls) {};
 	virtual void get_awindow_sizes(AWindowGUI *gui);
-	virtual void get_rmonitor_sizes(int do_audio, 
-		int do_video,
-		int do_channel,
-		int do_interlace,
-		int do_avc,
-		int audio_channels);
 	virtual void get_batchrender_sizes(BatchRenderGUI *gui,
 		int w, 
 		int h);
@@ -192,24 +186,6 @@ public:
 	int menueffect_file_x, menueffect_file_y;
 	int menueffect_tools_x, menueffect_tools_y;
 
-	int recordgui_batches_w, recordgui_batches_h;
-	int recordgui_batches_x, recordgui_batches_y;
-	int recordgui_batch_x, recordgui_batch_y, recordgui_batchcaption_x;
-	int recordgui_options_x, recordgui_options_y;
-	int recordgui_controls_x, recordgui_controls_y;
-	int recordgui_loadmode_x, recordgui_loadmode_y;
-	int recordgui_status_x, recordgui_status_y, recordgui_status_x2;
-	int recordgui_transport_x, recordgui_transport_y;
-	int recordgui_fixed_color, recordgui_variable_color;
-	int rmonitor_canvas_w, rmonitor_canvas_h;
-	int rmonitor_canvas_x, rmonitor_canvas_y;
-	int rmonitor_channel_x, rmonitor_channel_y;
-	int rmonitor_interlace_x, rmonitor_interlace_y;
-	int rmonitor_meter_h;
-	int rmonitor_meter_x, rmonitor_meter_y;
-	int rmonitor_source_x, rmonitor_source_y;
-	int rmonitor_tx_x, rmonitor_tx_y;
-
 	int batchrender_x1, batchrender_x2, batchrender_x3;
 
 	int setformat_x1, setformat_x2, setformat_x3, setformat_x4;
@@ -243,7 +219,6 @@ public:
 	VFrame *camerakeyframe_data;
 	VFrame **cancel_data;
 	VFrame **chain_data;
-	VFrame *channel_bg_data;
 	VFrame *channel_position_data;
 	VFrame **delete_all_indexes_data;
 	VFrame **deletebin_data;

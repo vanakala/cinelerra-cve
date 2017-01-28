@@ -689,8 +689,6 @@ void BlueDotTheme::initialize()
 
 	title_font = MEDIUMFONT;
 	title_color = BLACK;
-	recordgui_fixed_color = BLACK;
-	recordgui_variable_color = RED;
 
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;
@@ -877,29 +875,6 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	cdest_y = czoom_y + 30;
 }
 
-// COPIED START--------
-void BlueDotTheme::get_rmonitor_sizes(int do_audio, 
-	int do_video,
-	int do_channel,
-	int do_interlace,
-	int do_avc,
-	int audio_channels)
-{
-	Theme::get_rmonitor_sizes(do_audio, 
-		do_video,
-		do_channel,
-		do_interlace,
-		do_avc,
-		audio_channels);
-	if(!do_video && do_audio)
-	{
-		rmonitor_meter_y -= 30;
-		rmonitor_meter_h += 30;
-	}
-}
-// COPIED END--------
-
-
 void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
 {
 	vmeter_y = 5;
@@ -962,7 +937,6 @@ void BlueDotTheme::build_icons()
 void BlueDotTheme::build_bg_data()
 {
 // Audio settings
-	channel_bg_data = new VFrame(get_image_data("channel_bg.png"));
 	channel_position_data = new VFrame(get_image_data("channel_position.png"));
 
 // Track bitmaps

@@ -625,8 +625,6 @@ void BlondTheme::initialize()
 
 	title_font = MEDIUMFONT_3D;
 	title_color = WHITE;
-	recordgui_fixed_color = YELLOW;
-	recordgui_variable_color = RED;
 
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;
@@ -767,27 +765,6 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	cdest_y = czoom_y + 30;
 }
 
-
-void BlondTheme::get_rmonitor_sizes(int do_audio, 
-	int do_video,
-	int do_channel,
-	int do_interlace,
-	int do_avc,
-	int audio_channels)
-{
-	Theme::get_rmonitor_sizes(do_audio, 
-		do_video,
-		do_channel,
-		do_interlace,
-		do_avc,
-		audio_channels);
-	if(!do_video && do_audio)
-	{
-		rmonitor_meter_y -= 30;
-		rmonitor_meter_h += 30;
-	}
-}
-
 void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
 {
 	vmeter_y = 5;
@@ -847,7 +824,6 @@ void BlondTheme::build_icons()
 void BlondTheme::build_bg_data()
 {
 // Audio settings
-	channel_bg_data = new VFrame(get_image_data("channel_bg.png"));
 	channel_position_data = new VFrame(get_image_data("channel_position.png"));
 
 // Track bitmaps
