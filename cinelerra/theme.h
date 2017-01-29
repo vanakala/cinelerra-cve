@@ -44,20 +44,15 @@
 #include "vwindowgui.inc"
 #include "zoombar.inc"
 
-
-
 // Theme uses static png resources at startup.
 // The reason is GUI elements must be constructed at startup from multiple
 // pngs.
-
-
 
 class Theme : public BC_Theme
 {
 public:
 	Theme();
 	virtual ~Theme();
-
 
 	virtual void initialize();
 	virtual void get_mwindow_sizes(MWindowGUI *gui, 
@@ -94,32 +89,8 @@ public:
 	void flush_images();
 	const char *theme_title;
 
-// Tools for building widgets
-	void overlay(VFrame *dst, VFrame *src, int in_x1 = -1, int in_x2 = -1);
-	void build_transport(char *title,
-		unsigned char *png_overlay,
-		VFrame **bg_data,
-		int region);
-	void build_patches(VFrame** &data,
-		unsigned char *png_overlay,
-		VFrame **bg_data,
-		int region);
-	void build_button(VFrame** &data,
-		unsigned char *png_overlay,
-		VFrame *up_vframe,
-		VFrame *hi_vframe,
-		VFrame *dn_vframe);
-	void build_toggle(VFrame** &data,
-		unsigned char *png_overlay,
-		VFrame *up_vframe,
-		VFrame *hi_vframe,
-		VFrame *checked_vframe,
-		VFrame *dn_vframe,
-		VFrame *checkedhi_vframe);
-
 // colors for the main message text
 	int message_normal, message_error;
-
 
 // Locations
 	int abinbuttons_x, abinbuttons_y;
