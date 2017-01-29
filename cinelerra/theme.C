@@ -104,18 +104,6 @@ void Theme::initialize()
 {
 	message_normal = BLACK;
 	message_error = RED;
-
-// Force to use local data for images
-	extern unsigned char _binary_theme_data_start[];
-	set_data(_binary_theme_data_start);
-
-// Set images which weren't set by subclass
-	new_image("mode_add", "mode_add.png");
-	new_image("mode_divide", "mode_divide.png");
-	new_image("mode_multiply", "mode_multiply.png");
-	new_image("mode_normal", "mode_normal.png");
-	new_image("mode_replace", "mode_replace.png");
-	new_image("mode_subtract", "mode_subtract.png");
 }
 
 void Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
