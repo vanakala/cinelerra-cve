@@ -673,5 +673,15 @@ void BC_Signals::unset_all_locks(void *ptr)
 	pthread_mutex_unlock(&lock);
 }
 
+int BC_Signals::is_listed(void *srcptr, void **dstptrs, int count)
+{
+	if(!dstptrs || !srcptr)
+		return 0;
 
-
+	for(int i = 0; i < count; i++)
+	{
+		if(srcptr == dstptrs[i])
+			return 1;
+	}
+	return 0;
+}

@@ -131,6 +131,8 @@ public:
 	// Do not abort on X errors
 	static int set_catch_errors();
 	static int reset_catch();
+	// Compare pointers
+	static int is_listed(void *srcptr, void **dstptrs, int count);
 
 	static BC_Signals *global_signals;
 
