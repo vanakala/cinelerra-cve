@@ -662,6 +662,7 @@ void BC_Bitmap::dump(int minmax)
 		int amin[4], amax[4], aavg[4];
 		uint64_t lmin[4], lmax[4], lavg[4];
 		float fmin[4], fmax[4], favg[4];
+		unsigned char *bptr;
 
 		switch(color_model)
 		{
@@ -711,6 +712,16 @@ void BC_Bitmap::dump(int minmax)
 		case BC_RGBA_FLOAT:
 			VFrame::calc_minmaxfl((float *)get_data(), w * h, 4, favg, fmin, fmax);
 			fnum = 4;
+			break;
+		case BC_TRANSPARENCY:
+			// Transparency is 1 bit / pixel
+			for(int j = 0; j < h; j++)
+			{
+				bptr = get_data() + j * get_bytes_per_line();
+				for(int i = 0; i < get_bytes_per_line(); i++)
+					printf(" %#02x", *bptr++);
+				putchar('\n');
+			}
 			break;
 		default:
 			VFrame::calc_minmax8(get_data(), h * bytes_per_line,
