@@ -46,7 +46,9 @@ BC_Toggle::BC_Toggle(int x, int y,
 	bg_image = 0;
 	status = value ? BC_Toggle::TOGGLE_CHECKED : BC_Toggle::TOGGLE_UP;
 	this->value = value;
-	strcpy(this->caption, caption);
+	this->caption = 0;
+	if(caption && *caption)
+		this->caption = strdup(caption);
 	this->bottom_justify = bottom_justify;
 	this->font = font;
 	if(color >= 0)
@@ -61,6 +63,7 @@ BC_Toggle::BC_Toggle(int x, int y,
 
 BC_Toggle::~BC_Toggle()
 {
+	free(caption);
 	for(int i = 0; i < 5; i++) if(images[i]) delete images[i];
 	delete bg_image;
 }
@@ -81,7 +84,7 @@ void BC_Toggle::initialize()
 		&text_y,
 		&text_w,
 		&text_h, 
-		has_caption() ? caption : 0);
+		caption);
 
 // Create the subwindow
 	BC_SubWindow::initialize();
@@ -156,12 +159,15 @@ void BC_Toggle::set_images(VFrame **data)
 		if(images[i]) delete images[i];
 		images[i] = new BC_Pixmap(top_level, data[i], PIXMAP_ALPHA);
 	}
-	BC_Resources *resources = get_resources();
-	if(resources->toggle_highlight_bg)
+	if(has_caption())
 	{
-		bg_image = new BC_Pixmap(top_level, 
-			resources->toggle_highlight_bg, 
-			PIXMAP_ALPHA);
+		BC_Resources *resources = get_resources();
+		if(resources->toggle_highlight_bg)
+		{
+			bg_image = new BC_Pixmap(top_level,
+				resources->toggle_highlight_bg,
+				PIXMAP_ALPHA);
+		}
 	}
 }
 
@@ -430,10 +436,9 @@ void BC_Toggle::reposition_window(int x, int y)
 	draw_face();
 }
 
-
 int BC_Toggle::has_caption()
 {
-	return (caption != 0 && caption[0] != 0);
+	return(caption && *caption);
 }
 
 BC_Radial::BC_Radial(int x, 
