@@ -24,14 +24,10 @@ blank30x30.png \
 bottom_justify.png \
 camerakeyframe.png \
 camera.png \
-cancel_dn.png \
-cancel_hi.png \
 cancel.png \
-cancel_up.png \
 cbuttons_left.png \
 cbuttons_right.png \
 center_justify.png \
-channel_bg.png \
 channel.png \
 channel_position.png \
 checkbox_checkedhi.png \
@@ -74,11 +70,6 @@ fastrev.png \
 fileboxbutton_dn.png \
 fileboxbutton_hi.png \
 fileboxbutton_up.png \
-file_column.png \
-file_film.png \
-file_folder.png \
-file_sound.png \
-file_unknown.png \
 fitautos.png \
 fit.png \
 folder.png \
@@ -119,7 +110,6 @@ in_hi.png \
 inpoint.png \
 in_up.png \
 keyframe3.png \
-keyframe.png \
 label_checkedhi.png \
 label_checked.png \
 label.png \
