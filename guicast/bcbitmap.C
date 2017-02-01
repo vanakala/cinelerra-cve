@@ -612,31 +612,6 @@ int BC_Bitmap::get_h()
 	return h;
 }
 
-char BC_Bitmap::byte_bitswap(char src)
-{
-	int i;
-	char dst;
-
-	dst = 0;
-	if (src & 1) dst |= ((unsigned char)1 << 7);
-	src = src >> 1;
-	if (src & 1) dst |= ((unsigned char)1 << 6);
-	src = src >> 1;
-	if (src & 1) dst |= ((unsigned char)1 << 5);
-	src = src >> 1;
-	if (src & 1) dst |= ((unsigned char)1 << 4);
-	src = src >> 1;
-	if (src & 1) dst |= ((unsigned char)1 << 3);
-	src = src >> 1;
-	if (src & 1) dst |= ((unsigned char)1 << 2);
-	src = src >> 1;
-	if (src & 1) dst |= ((unsigned char)1 << 1);
-	src = src >> 1;
-	if (src & 1) dst |= ((unsigned char)1 << 0);
-
-	return(dst);
-}
-
 int BC_Bitmap::get_color_model()
 {
 	return color_model; 

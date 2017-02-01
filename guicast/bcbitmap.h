@@ -115,7 +115,6 @@ private:
 	void allocate_data();
 	void delete_data();
 	int get_default_depth();
-	char byte_bitswap(char src);
 
 	int ring_buffers, current_ringbuffer;
 	int w, h;
