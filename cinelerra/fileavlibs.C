@@ -54,9 +54,9 @@ extern const char *version_name;
 
 struct  avlib_formattable FileAVlibs::known_formats[] =
 {
-	{ FILE_MOV, "mov,mp4,m4a,3gp,3g2,mj2", "mov" },
-	{ FILE_AVI, "avi", "avi"  },
-	{ FILE_AC3, "ac3", "ac3" },
+	{ FILE_MOV, "mov,mp4,m4a,3gp,3g2,mj2", "mov", SUPPORTS_AUDIO | SUPPORTS_VIDEO},
+	{ FILE_AVI, "avi", "avi", SUPPORTS_AUDIO | SUPPORTS_VIDEO  },
+	{ FILE_AC3, "ac3", "ac3", SUPPORTS_AUDIO },
 	{ 0 }
 };
 
@@ -171,6 +171,63 @@ int FileAVlibs::check_sig(Asset *asset)
 	avlibs_lock->unlock();
 
 	return result;
+}
+
+int FileAVlibs::encoder_exists(AVOutputFormat *oformat, const char *encstr, int support)
+{
+	enum AVMediaType mtyp;
+	AVCodecID codec;
+
+	if(support & SUPPORTS_AUDIO)
+		mtyp = AVMEDIA_TYPE_AUDIO;
+	else if(support & SUPPORTS_VIDEO)
+		mtyp = AVMEDIA_TYPE_VIDEO;
+	else
+		mtyp = AVMEDIA_TYPE_UNKNOWN;
+
+	if(mtyp != AVMEDIA_TYPE_UNKNOWN)
+	{
+		codec = av_guess_codec(oformat, encstr, NULL, NULL, mtyp);
+
+		if(codec == AV_CODEC_ID_NONE ||
+				!avcodec_find_encoder(codec))
+			return 1;
+	}
+	return 0;
+}
+
+int FileAVlibs::supports(int format)
+{
+	int support = 0;
+	int i;
+	AVOutputFormat *oformat;
+	AVCodec *encoder;
+	const char *enc;
+
+	for(i = 0; known_formats[i].fileformat; i++)
+	{
+		if(format == known_formats[i].fileformat)
+		{
+			support = known_formats[i].supports;
+			break;
+		}
+	}
+	if(support)
+	{
+		enc = known_formats[i].encoder;
+		avlibs_lock->lock("FileAVlibs::supports");
+		avcodec_register_all();
+		av_register_all();
+		oformat = av_guess_format(enc, NULL, NULL);
+
+		// Check if encoder really exists
+		if(encoder_exists(oformat, enc, support & SUPPORTS_AUDIO))
+				support &= ~SUPPORTS_AUDIO;
+		if(encoder_exists(oformat, enc, support & SUPPORTS_VIDEO))
+				support &= ~SUPPORTS_VIDEO;
+		avlibs_lock->unlock();
+	}
+	return support;
 }
 
 int FileAVlibs::open_file(int rd, int wr)

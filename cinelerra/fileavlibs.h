@@ -47,6 +47,7 @@ struct avlib_formattable
 	int fileformat;
 	const char *decoder;
 	const char *encoder;
+	int supports;
 };
 
 struct avlib_encparams
@@ -66,6 +67,9 @@ public:
 
 	// Get format string for ffmpeg
 	static int check_sig(Asset *asset);
+	// Supported streams of format
+	static int supports(int format);
+
 	int open_file(int rd, int wr);
 	void close_file();
 
@@ -114,6 +118,8 @@ private:
 	static Paramlist *clean_list(Paramlist *list);
 	static Param *opt2param(Paramlist *list, const AVOption *opt);
 	static int skip_avoption(const AVOption *opt, int typefl);
+	static int encoder_exists(AVOutputFormat *oformat,
+		const char *encstr, int support);
 	static void dump_AVFormatContext(AVFormatContext *ctx, int indent = 0);
 	static void dump_AVStream(AVStream *stm, int indent = 0);
 	static void dump_AVCodecContext(AVCodecContext *ctx, int indent = 0);
