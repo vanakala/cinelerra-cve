@@ -1182,13 +1182,13 @@ void Asset::dump(int indent)
 			printf(" %d", astream_channels[i]);
 	}
 	putchar('\n');
-	printf("%*s  signed %d header %d dither %d acodec %s length %.2f (%" PRId64 ")\n", indent, "",
+	printf("%*s  signed %d header %d dither %d acodec '%s' length %.2f (%" PRId64 ")\n", indent, "",
 		signed_, header, dither, acodec, audio_duration, audio_length);
 
 	printf("%*svideo_data %d layers %d framerate %.2f width %d height %d\n",
 		indent, "", video_data, layers, frame_rate, width, height);
-	printf("%*s  vcodec %c%c%c%c aspect_ratio %.2f interlace_mode %s\n",
-		indent, "", vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio,
+	printf("%*s  vcodec '%s' aspect_ratio %.2f interlace_mode %s\n",
+		indent, "", vcodec, aspect_ratio,
 		AInterlaceModeSelection::name(interlace_mode));
 	printf("%*s  length %.2f (%d) subtitles %d (active %d) image %d\n", indent, "",
 		video_duration, video_length, subtitles, active_subtitle, single_image);
