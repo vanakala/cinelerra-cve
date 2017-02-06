@@ -115,7 +115,8 @@ int FileTOC::init_tocfile(int ftype)
 	uint64_t val1, val2;
 
 	if(!((tocfile = fopen(toc_filename, "r")) && (i = read_int32()) == TOCFILE_PREFIX &&
-			(j = read_int32()) == TOCFILE_VERSION))
+			(j = read_int32()) == TOCFILE_VERSION &&
+			(file_type = read_int32()) == ftype))
 	{
 		fileio_err = 0;
 		if(tocfile)
@@ -215,11 +216,11 @@ reindex:
 		}
 		read_int32(); // prefix
 		read_int32(); // version
+		file_type = read_int32();
 	}
 
 	memset(toc_streams, 0, sizeof(toc_streams));
 	num_streams = 0;
-	file_type = read_int32();
 
 	for(;;)
 	{
