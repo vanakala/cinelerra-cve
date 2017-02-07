@@ -34,7 +34,6 @@
 #include "filexml.h"
 #include "filejpeg.h"
 #include "filempeg.h"
-#include "fileogg.h"
 #include "filepng.h"
 #include "filesndfile.h"
 #include "filetga.h"
@@ -140,6 +139,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_AC3:
 		case FILE_AVI:
 		case FILE_MOV:
+		case FILE_OGG:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
 				format_window,
@@ -187,12 +187,7 @@ void File::get_options(FormatTools *format, int options)
 				format_window, 
 				options);
 			break;
-		case FILE_OGG:
-			FileOGG::get_parameters(parent_window,
-				asset,
-				format_window,
-				options);
-			break;
+
 		default:
 			break;
 	}
@@ -325,13 +320,6 @@ int File::open_file(Preferences *preferences,
 			file = new FileTIFF(this->asset, this);
 		}
 		else
-		if(FileOGG::check_sig(this->asset))
-		{
-// OGG file
-			fclose(stream);
-			file = new FileOGG(this->asset, this);
-		}
-		else
 		if(FileMPEG::check_sig(this->asset))
 		{
 // MPEG file
@@ -411,15 +399,12 @@ int File::open_file(Preferences *preferences,
 	case FILE_AC3:
 	case FILE_AVI:
 	case FILE_MOV:
+	case FILE_OGG:
 		file = new FileAVlibs(this->asset, this);
 		break;
 
 	case FILE_MPEG:
 		file = new FileMPEG(this->asset, this);
-		break;
-
-	case FILE_OGG:
-		file = new FileOGG(this->asset, this);
 		break;
 
 	case FILE_RAWDV:
@@ -789,7 +774,6 @@ int File::supports(int format)
 	case FILE_TGA_LIST:
 		return SUPPORTS_VIDEO;
 
-	case FILE_AC3:
 	case FILE_AIFF:
 	case FILE_WAV:
 	case FILE_PCM:
@@ -797,17 +781,17 @@ int File::supports(int format)
 	case FILE_SND:
 		return SUPPORTS_AUDIO;
 
-	case FILE_OGG:
-		return FileOGG::supports(format);
-
 	case FILE_YUV:
 		return FileYUV::supports(format);
 
 	case FILE_RAWDV:
 		return FileDV::supports(format);
 
+	case FILE_AC3:
 	case FILE_AVI:
 	case FILE_MOV:
+	case FILE_OGG:
+		return FileAVlibs::supports(format);
 		break;
 	}
 	return (SUPPORTS_AUDIO | SUPPORTS_VIDEO);

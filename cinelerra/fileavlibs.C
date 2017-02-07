@@ -57,6 +57,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_MOV, "mov,mp4,m4a,3gp,3g2,mj2", "mov", SUPPORTS_AUDIO | SUPPORTS_VIDEO},
 	{ FILE_AVI, "avi", "avi", SUPPORTS_AUDIO | SUPPORTS_VIDEO  },
 	{ FILE_AC3, "ac3", "ac3", SUPPORTS_AUDIO },
+	{ FILE_OGG, "ogg", "ogg", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ 0 }
 };
 
@@ -361,7 +362,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			}
 			tocfile = new FileTOC(this, file->preferences->index_directory,
 				asset->path, asset->file_length, stbuf.st_mtime);
-			result = tocfile->init_tocfile(TOCFILE_TYPE_MUX0);
+			result = tocfile->init_tocfile(TOCFILE_TYPE_MUX1);
 
 			if(video_index >= 0)
 			{
@@ -416,6 +417,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_MOV:
 		case FILE_AVI:
 		case FILE_AC3:
+		case FILE_OGG:
 			break;
 
 		default:
