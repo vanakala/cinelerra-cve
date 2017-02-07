@@ -1607,13 +1607,21 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 	{
 		resample_fill = resampled_length + frame_size - samples_written;
 
-		for(chan = 0; chan < audio_ctx->channels; chan++)
-			memmove(resampled_data[chan], &resampled_data[chan][samples_written * sample_bytes],
-				resample_fill * sample_bytes);
+		if(av_sample_fmt_is_planar(audio_ctx->sample_fmt))
+		{
+			for(chan = 0; chan < audio_ctx->channels; chan++)
+			{
+				memmove(resampled_data[chan], &resampled_data[chan][samples_written * sample_bytes],
+					resample_fill * sample_bytes);
+			}
+		}
+		else
+			memmove(resampled_data[0],
+				&resampled_data[0][samples_written * sample_bytes * audio_ctx->channels],
+				resample_fill * sample_bytes * audio_ctx->channels);
 	}
 	else
 		resample_fill = 0;
-
 	return 0;
 }
 
