@@ -278,18 +278,6 @@ AC_ARG_ENABLE(css,
 ############## END OF CSS SUPPORT IN LIBMPEG3
 
 
-############## libx264
-LIBX264_LIBS=""
-AC_CHECK_LIB(x264, x264_encoder_close,
-	[libx264=yes LIBX264_LIBS=-lx264],,-lpthread -lm)
-if test "x$with_pic" = "xyes"; then
-	AC_CHECK_LIB(x264_pic, x264_encoder_open,
-		[libx264=yes LIBX264_LIBS=-lx264_pic],,-lpthread -lm)
-fi
-AC_CHECK_HEADER(x264.h, [libx264h=yes])
-AC_SUBST(LIBX264_LIBS)
-##############
-
 ############## MMX / 3DNOW  POWERPC / ALTIVEC
 
 AC_ARG_ENABLE(mmx, 
@@ -649,8 +637,6 @@ RPT(libtiffh,libtiff headers)
 RPT(freetype2,FreeType 2)
 RPT(libxft,libXft library)
 RPT(funiconv,iconv function)
-RPT(libx264,libx264 libraries)
-RPT(libx264h,libx264 headers)
 RPT(libuuid,libuuid libraries)
 RPT(libuuidh,libuuid headers)
 RPT(mjpegtools,mjpegtools)
