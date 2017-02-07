@@ -133,6 +133,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	base_w += codecpopup->get_w() + x1;
 	tophalf_base = top;
 	draw_bottomhalf(param, param2);
+	handle_event();
 }
 
 
