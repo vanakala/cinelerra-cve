@@ -154,7 +154,6 @@ public:
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback
 	int can_copy_from(Edit *edit, int output_w, int output_h) { return 0; };
-	int get_render_strategy(ArrayList<int>* render_strategies);
 
 // These are separated into two routines so a file doesn't have to be
 // allocated.

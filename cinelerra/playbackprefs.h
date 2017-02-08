@@ -57,15 +57,12 @@ public:
 	~PlaybackPrefs();
 
 	void show();
-	static char* strategy_to_string(int strategy);
-	void delete_strategy();
 
 	void update(int interpolation);
 	void draw_framerate();
 
 	ADevicePrefs *audio_device;
 	VDevicePrefs *video_device;
-	ArrayList<BC_ListBoxItem*> strategies;
 
 	PlaybackConfig *playback_config;
 	BC_Title *framerate_title;
