@@ -418,18 +418,6 @@ fi
 echo --------------------------------------------------
 ############# END run ffmpeg configure to generates avconfig.h
 
-############## XIPH
-PKG_CHECK_MODULES(libogg,ogg >= 1.1,[libogg=yes],:)
-PKG_CHECK_MODULES(libvorbis,vorbis,[libvorbis=yes],:)
-PKG_CHECK_MODULES(libvorbisenc,vorbisenc,[libvorbisenc=yes],:)
-PKG_CHECK_MODULES(libvorbisfile,vorbisfile,[libvorbisfile=yes],:)
-PKG_CHECK_MODULES(libtheora,theora,[libtheora=yes],:)
-XIPH_CFLAGS="$libogg_CFLAGS $libvorbis_CFLAGS $libvorbisenc_CFLAGS $libvorbisfile_CFLAGS $libtheora_CFLAGS"
-XIPH_LIBS="$libogg_LIBS $libvorbis_LIBS $libvorbisenc_LIBS $libvorbisfile_LIBS $libtheora_LIBS"
-AC_SUBST(XIPH_CFLAGS)
-AC_SUBST(XIPH_LIBS)
-############## END OF XIPH
-
 ############## LAME
 # Just test to see if we have lame installed.
 AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes])
@@ -623,11 +611,6 @@ echo "AC_HELP_STRING($2,$status)"])
 
 echo
 echo "Summary of mandatory components:"
-RPT(libogg,libogg)
-RPT(libvorbis,libvorbis)
-RPT(libvorbisenc,libvorbisenc)
-RPT(libvorbisfile,libvorbisfile)
-RPT(libtheora,libtheora)
 RPT(libOpenEXR,OpenEXR)
 RPT(libdv,libdv)
 RPT(libpng,libpng)
