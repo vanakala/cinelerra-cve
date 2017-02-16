@@ -117,9 +117,10 @@ public:
 		int strategy,
 		int range_type);
 
+	char *profile_config_path(const char *filename, char *outpath);
 	void load_defaults(Asset *asset);
 	void save_defaults(Asset *asset);
-	void load_profile(int profile_slot, Asset *asset);
+	void load_profile(Asset *asset);
 // force asset parameters regardless of window
 // This should be integrated into the Asset Class.
 	static int check_asset(EDL *edl, Asset &asset); 
@@ -191,6 +192,8 @@ public:
 // Current open RenderWindow
 	RenderWindow *render_window;
 
+	char renderconfig_path[BCTEXTLEN];
+
 // For non interactive mode, maintain progress here.
 	ptstime progress_max;
 	Timer *progress_timer;
@@ -233,7 +236,7 @@ public:
 	~RenderWindow();
 
 	void update_range_type(int range_type);
-	void load_profile(int profile_slot);
+	void load_profile();
 
 	RenderRangeProject *rangeproject;
 	RenderRangeSelection *rangeselection;

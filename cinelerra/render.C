@@ -55,6 +55,7 @@
 #include "mwindow.h"
 #include "packagedispatcher.h"
 #include "packagerenderer.h"
+#include "paramlist.h"
 #include "patchbay.h"
 #include "playabletracks.h"
 #include "preferences.h"
@@ -802,6 +803,9 @@ void Render::get_starting_number(char *path,
 
 void Render::load_defaults(Asset *asset)
 {
+	char string[BCTEXTLEN];
+	char *p;
+
 	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
 	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
@@ -813,40 +817,75 @@ void Render::load_defaults(Asset *asset)
 		1,
 		1,
 		1);
+
+	strcpy(string, RENDERCONFIG_DFLT);
+	mwindow->defaults->get("RENDERPROFILE", string);
+	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, renderconfig_path);
+	p = &renderconfig_path[strlen(renderconfig_path)];
+	*p++ = '/';
+	strcpy(p, string);
+	load_profile(asset);
 }
 
-void Render::load_profile(int profile_slot, Asset *asset)
+char *Render::profile_config_path(const char *filename, char *outpath)
 {
-	char string_name[100];
-	sprintf(string_name, "RENDER_%i_STRATEGY", profile_slot);
-	strategy = mwindow->defaults->get(string_name, SINGLE_PASS);
+	char *p;
 
-	sprintf(string_name, "RENDER_%i_RANGE_TYPE", profile_slot);
-	range_type = mwindow->defaults->get(string_name, RANGE_PROJECT);
+	strcpy(outpath, renderconfig_path);
+	p = &outpath[strlen(outpath)];
+	*p++ = '/';
+	strcpy(p, filename);
+	return outpath;
+}
 
-	sprintf(string_name, "RENDER_%i_", profile_slot);
-	asset->load_defaults(mwindow->defaults, 
-		string_name, 
-		1,
-		1,
-		1,
-		1,
-		1);
+void Render::load_profile(Asset *asset)
+{
+	FileXML file;
+	Paramlist *dflts = 0;
+	Param *par;
+	char path[BCTEXTLEN];
+
+	if(!file.read_from_file(profile_config_path("ProfilData.xml", path), 1) && !file.read_tag())
+	{
+		dflts = new Paramlist("");
+		dflts->load_list(&file);
+
+		if(par = dflts->find("strategy"))
+			strategy = par->intvalue;
+		if(par = dflts->find("loadmode"))
+			load_mode = par->intvalue;
+		if(par = dflts->find("renderrange"))
+			range_type = par->intvalue;
+	}
 }
 
 void Render::save_defaults(Asset *asset)
 {
-	mwindow->defaults->update("RENDER_STRATEGY", strategy);
-	mwindow->defaults->update("RENDER_LOADMODE", load_mode);
-	mwindow->defaults->update("RENDER_RANGE_TYPE", range_type);
+	Paramlist params("ProfilData");
+	FileXML file;
+	char path[BCTEXTLEN];
 
-	asset->save_defaults(mwindow->defaults, 
-		"RENDER_",
-		1,
-		1,
-		1,
-		1,
-		1);
+	if(strategy != SINGLE_PASS)
+		params.append_param("strategy", strategy);
+	if(load_mode != LOADMODE_NEW_TRACKS)
+		params.append_param("loadmode", load_mode);
+	if(range_type != RANGE_PROJECT)
+		params.append_param("renderrange", range_type);
+
+	strcpy(path, renderconfig_path);
+	strcat(path, "/ProfilData.xml");
+
+	if(params.total() > 0)
+	{
+		params.save_list(&file);
+		file.write_to_file(path);
+	}
+	else
+		unlink(path);
+
+	mwindow->defaults->delete_key("RENDER_STRATEGY");
+	mwindow->defaults->delete_key("RENDER_LOADMODE");
+	mwindow->defaults->delete_key("RENDER_RANGE_TYPE");
 }
 
 #define WIDTH 410
@@ -910,7 +949,7 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 	y += 30;
 	x = 5;
 
-	renderprofile = new RenderProfile(mwindow, this, x, y, 1);
+	renderprofile = new RenderProfile(mwindow, this, x, y);
 
 	y += 70;
 	loadmode = new LoadMode(this, x, y, &render->load_mode, 1);
@@ -926,9 +965,9 @@ RenderWindow::~RenderWindow()
 	delete loadmode;
 }
 
-void RenderWindow::load_profile(int profile_slot)
+void RenderWindow::load_profile()
 {
-	render->load_profile(profile_slot, asset);
+	render->load_profile(asset);
 	update_range_type(render->range_type);
 	format_tools->update(asset, &render->strategy);
 }

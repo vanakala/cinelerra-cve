@@ -2,6 +2,7 @@
 /*
  * CINELERRA
  * Copyright (C) 2007 Andraz Tori
+ * Copyright (C) 2017 Einar Rünkaru
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +20,10 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "clip.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "renderprofiles.h"
 #include "mwindow.h"
 #include "theme.h"
@@ -31,38 +35,49 @@
 #include "language.h"
 #include "mwindowgui.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
 
 #define LISTWIDTH 200
-
-RenderProfileItem::RenderProfileItem(const char *text, int value)
- : BC_ListBoxItem(text)
-{
-	this->value = value;
-}
+#define MAX_PROFILES 16
 
 
 RenderProfile::RenderProfile(MWindow *mwindow,
 	RenderWindow *rwindow, 
 	int x, 
-	int y, 
-	int use_nothing)
+	int y)
 {
+	DIR *dir;
+	struct dirent *entry;
+	struct stat stb;
+	char string[BCTEXTLEN];
+
 	this->mwindow = mwindow;
 	this->rwindow = rwindow;
 	this->x = x;
 	this->y = y;
-	this->use_nothing = use_nothing;
-	for (int i = 1; i < MAX_PROFILES; i++)
-	{
-		char string_name[100];
-		char name[100] = "";
-		sprintf(string_name, "RENDER_%i_PROFILE_NAME", i);
-		mwindow->defaults->get(string_name, name);
-		if (strlen(name) != 0)
-			profiles.append(new RenderProfileItem(name, i));
-	}
 
-	const char *default_text = "";
+	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, string);
+	if(dir = opendir(string))
+	{
+		char *pe = &string[strlen(string)];
+		*pe++ = '/';
+
+		while(entry = readdir(dir))
+		{
+			if(entry->d_name[0] == '.')
+				continue;
+			strcpy(pe, entry->d_name);
+			if(!stat(string, &stb) && S_ISDIR(stb.st_mode))
+				merge_profile(entry->d_name);
+		}
+		closedir(dir);
+	}
+	else
+		create_profile(RENDERCONFIG_DFLT);
+
 	rwindow->add_subwindow(new BC_Title(x, 
 		y, 
 		_("RenderProfile:")));
@@ -74,7 +89,7 @@ RenderProfile::RenderProfile(MWindow *mwindow,
 		y, 
 		LISTWIDTH, 
 		1, 
-		default_text));
+		""));
 	x += textbox->get_w();
 	rwindow->add_subwindow(listbox = new RenderProfileListBox(rwindow, this, x, y));
 
@@ -87,12 +102,96 @@ RenderProfile::RenderProfile(MWindow *mwindow,
 	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this, 
 		x, 
 		y));
+	strcpy(string, RENDERCONFIG_DFLT);
+	rwindow->mwindow->defaults->get("RENDERPROFILE", string);
+	select_profile(string);
 }
 
 RenderProfile::~RenderProfile()
 {
+	char string[BCTEXTLEN];
+
 	for(int i = 0; i < profiles.total; i++)
 		delete profiles.values[i];
+	// Remove old defaults
+	for (int i = 1; i < MAX_PROFILES; i++)
+	{
+		sprintf(string, "RENDER_%i_PROFILE_NAME", i);
+		mwindow->defaults->delete_key(string);
+		sprintf(string, "RENDER_%i_STRATEGY", i);
+		mwindow->defaults->delete_key(string);
+		sprintf(string, "RENDER_%i_LOADMODE", i);
+		mwindow->defaults->delete_key(string);
+		sprintf(string, "RENDER_%i_RANGE_TYPE", i);
+		mwindow->defaults->delete_key(string);
+	}
+}
+
+int RenderProfile::create_profile(const char *profile)
+{
+	DIR *dir;
+	char *p;
+	char *config_path = rwindow->render->renderconfig_path;
+
+	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, config_path);
+	if(dir = opendir(config_path))
+		closedir(dir);
+	else
+	{
+		if(mkdir(config_path, 0755))
+			return 1;
+	}
+
+	p = &config_path[strlen(config_path)];
+	*p++ = '/';
+
+	strncpy(p, profile, BCTEXTLEN - (p - config_path) - 1);
+	config_path[BCTEXTLEN] = 0;
+
+	if(mkdir(config_path, 0755))
+		return 1;
+
+	merge_profile(profile);
+	return 0;
+}
+
+int RenderProfile::select_profile(const char *profile)
+{
+	DIR *dir;
+	char *p;
+	char *config_path = rwindow->render->renderconfig_path;
+
+	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, config_path);
+
+	p = &config_path[strlen(config_path)];
+	*p++ = '/';
+	strcpy(p, profile);
+
+	if(dir = opendir(config_path))
+	{
+		closedir(dir);
+		textbox->update(profile);
+		mwindow->defaults->update("RENDERPROFILE", profile);
+		rwindow->load_profile();
+		return 0;
+	}
+	return 1;
+}
+
+void RenderProfile::merge_profile(const char *profile)
+{
+	if(!profile || !profile[0])
+		return;
+
+	for(int i = 0; i < profiles.total; i++)
+	{
+		if(strcmp(profile, profiles.values[i]->get_text()) < 0)
+		{
+			profiles.insert(new BC_ListBoxItem(profile), i);
+			return;
+		}
+	}
+	profiles.append(new BC_ListBoxItem(profile));
 }
 
 int RenderProfile::calculate_h(BC_WindowBase *gui)
@@ -149,68 +248,9 @@ RenderProfileListBox::RenderProfileListBox(BC_WindowBase *window,
 
 int RenderProfileListBox::handle_event()
 {
-	if(get_selection(0, 0) >= 0)
-	{
-		renderprofile->textbox->update(get_selection(0, 0)->get_text());
-		renderprofile->rwindow->load_profile(((RenderProfileItem*)get_selection(0, 0))->value);
-	}
+	if(get_selection(0, 0))
+		renderprofile->select_profile(get_selection(0, 0)->get_text());
 	return 1;
-}
-
-
-int RenderProfile::get_profile_slot_by_name(const char * profile_name)
-{
-	for (int i = 1; i < MAX_PROFILES; i++)
-	{
-		char string_name[100];
-		char name[100] = "";
-		sprintf(string_name, "RENDER_%i_PROFILE_NAME", i);
-
-		mwindow->defaults->get(string_name, name);
-		if (strcmp(name, profile_name) == 0)
-			return i;
-	}
-// No free profile slots!
-	return -1;
-}
-
-int RenderProfile::get_new_profile_slot()
-{
-	for (int i = 1; i < MAX_PROFILES; i++)
-	{
-		char string_name[100];
-		char name[100] = "";
-		sprintf(string_name, "RENDER_%i_PROFILE_NAME", i);
-		mwindow->defaults->get(string_name, name);
-		if (strlen(name) == 0)
-			return i;
-	}
-	return -1;
-}
-
-void RenderProfile::save_to_slot(int profile_slot, const char *profile_name)
-{
-	char string_name[100];
-	sprintf(string_name, "RENDER_%i_PROFILE_NAME", profile_slot);
-	mwindow->defaults->update(string_name, profile_name);
-
-	sprintf(string_name, "RENDER_%i_STRATEGY", profile_slot);
-	mwindow->defaults->update(string_name, rwindow->render->strategy);
-	sprintf(string_name, "RENDER_%i_LOADMODE", profile_slot);
-	mwindow->defaults->update(string_name, rwindow->render->load_mode);
-	sprintf(string_name, "RENDER_%i_RANGE_TYPE", profile_slot);
-	mwindow->defaults->update(string_name, rwindow->render->range_type);
-
-	sprintf(string_name, "RENDER_%i_", profile_slot);
-	rwindow->asset->save_defaults(mwindow->defaults, 
-		string_name,
-		1,
-		1,
-		1,
-		1,
-		1);
-
-	mwindow->save_defaults();
 }
 
 
@@ -223,24 +263,18 @@ SaveRenderProfileButton::SaveRenderProfileButton(RenderProfile *profile, int x, 
 int SaveRenderProfileButton::handle_event()
 {
 	char *profile_name = profile->textbox->get_text();
+
 	if (strlen(profile_name) == 0)     // Don't save when name not defined
 		return 1;
-	int slot = profile->get_profile_slot_by_name(profile_name);
-	if (slot < 0)
-	{
-		slot = profile->get_new_profile_slot();
-		if (slot < 0)
-		{
-			errorbox("Maximum number of render profiles reached");
-			return 1;
-		}
-		profile->profiles.append(new RenderProfileItem(profile_name, slot));
-		profile->listbox->update((ArrayList<BC_ListBoxItem *>*)&(profile->profiles), 0, 0, 1);
-	}
 
-	if (slot >= 0)
+	if(profile->create_profile(profile_name))
 	{
-		profile->save_to_slot(slot, profile_name);
+		if(!profile->select_profile(profile_name))
+		{
+			errorbox("Failed to create new profile %s", profile_name);
+			profile->select_profile(RENDERCONFIG_DFLT);
+		}
+		return 1;
 	}
 	return 1;
 }
@@ -254,22 +288,49 @@ DeleteRenderProfileButton::DeleteRenderProfileButton(RenderProfile *profile, int
 
 int DeleteRenderProfileButton::handle_event()
 {
+	DIR *dir;
 	char *profile_name = profile->textbox->get_text();
-	int slot = profile->get_profile_slot_by_name(profile_name);
-	if (slot >= 0)
+	char *p;
+	struct dirent *entry;
+	char str[BCTEXTLEN];
+
+	// Do not delete default profile
+	if(strcmp(profile_name, RENDERCONFIG_DFLT) == 0)
+		return 0;
+	profile->mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, str);
+	p = &str[strlen(str)];
+	*p++ = '/';
+	strcpy(p, profile_name);
+	p += strlen(profile_name);
+
+	if(dir = opendir(str))
 	{
+		*p++ = '/';
+		while(entry = readdir(dir))
+		{
+			if(entry->d_name[0] == '.')
+				continue;
+			strcpy(p, entry->d_name);
+
+			if(unlink(str))
+				perror("unlink");
+		}
+		closedir(dir);
+		*--p = 0;
+
+		if(rmdir(str))
+			perror("rmdir");
 		for(int i = 0; i < profile->profiles.total; i++)
 		{
-			if(profile->profiles.values[i]->value == slot)
+			if(strcmp(profile_name, profile->profiles.values[i]->get_text())== 0)
 			{
-				profile->profiles.remove_object_number(i);
-				profile->save_to_slot(slot, "");
+				profile->profiles.remove_object(profile->profiles.values[i]);
+				if(i >= profile->profiles.total)
+					i = 0;
+				profile->select_profile(profile->profiles.values[i]->get_text());
 				break;
 			}
 		}
-		profile->listbox->update((ArrayList<BC_ListBoxItem *>*)&(profile->profiles), 0, 0, 1);
-		profile->textbox->update("");
 	}
-
 	return 1;
 }

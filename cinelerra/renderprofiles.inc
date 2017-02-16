@@ -25,5 +25,7 @@
 class RenderProfile;
 
 #define MAX_PROFILES 16
+#define RENDERCONFIG_DIR "renderprofiles"
+#define RENDERCONFIG_DFLT "default"
 
 #endif
