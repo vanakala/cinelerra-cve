@@ -846,41 +846,37 @@ char* Asset::construct_param(const char *param, const char *prefix, char *return
 
 void Asset::load_defaults(BC_Hash *defaults, 
 	const char *prefix, 
-	int do_format,
-	int do_compression,
-	int do_path,
-	int do_data_types,
-	int do_bits)
+	int options)
 {
 	char string[BCTEXTLEN];
 
 // Can't save codec here because it's specific to render, record, and effect.
 // The codec has to be UNKNOWN for file probing to work.
 
-	if(do_path)
+	if(options & ASSET_PATH)
 	{
 		GET_DEFAULT("PATH", path);
 	}
 
-	if(do_format)
+	if(options & ASSET_FORMAT)
 	{
 		format = GET_DEFAULT("FORMAT", format);
 	}
 
-	if(do_compression)
+	if(options & ASSET_COMPRESSION)
 	{
 		GET_DEFAULT("AUDIO_CODEC", acodec);
 		GET_DEFAULT("VIDEO_CODEC", vcodec);
 		format_changed();
 	}
 
-	if(do_data_types)
+	if(options & ASSET_TYPES)
 	{
 		audio_data = GET_DEFAULT("AUDIO", 1);
 		video_data = GET_DEFAULT("VIDEO", 1);
 	}
 
-	if(do_bits)
+	if(options & ASSET_BITS)
 	{
 		bits = GET_DEFAULT("BITS", 16);
 		dither = GET_DEFAULT("DITHER", 0);
@@ -984,28 +980,24 @@ void Asset::format_changed()
 
 void Asset::save_defaults(BC_Hash *defaults, 
 	const char *prefix,
-	int do_format,
-	int do_compression,
-	int do_path,
-	int do_data_types,
-	int do_bits)
+	int options)
 {
 	char string[BCTEXTLEN];
 
 	UPDATE_DEFAULT("PATH", path);
 
-	if(do_format)
+	if(options & ASSET_FORMAT)
 	{
 		UPDATE_DEFAULT("FORMAT", format);
 	}
 
-	if(do_data_types)
+	if(options & ASSET_TYPES)
 	{
 		UPDATE_DEFAULT("AUDIO", audio_data);
 		UPDATE_DEFAULT("VIDEO", video_data);
 	}
 
-	if(do_compression)
+	if(options & ASSET_COMPRESSION)
 	{
 		UPDATE_DEFAULT("AUDIO_CODEC", acodec);
 		UPDATE_DEFAULT("VIDEO_CODEC", vcodec);
@@ -1081,7 +1073,7 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("FORMAT_YUV_PIPE", pipe);
 	}
 
-	if(do_bits)
+	if(options & ASSET_BITS)
 	{
 		UPDATE_DEFAULT("BITS", bits);
 		UPDATE_DEFAULT("DITHER", dither);

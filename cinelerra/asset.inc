@@ -27,6 +27,12 @@ class Asset;
 class InterlaceautofixoptionItem;
 class InterlacefixmethodItem;
 
+#define ASSET_FORMAT       1
+#define ASSET_COMPRESSION  2
+#define ASSET_PATH         4
+#define ASSET_TYPES        8
+#define ASSET_BITS         0x10
 
+#define ASSET_ALL          0x1f
 
 #endif

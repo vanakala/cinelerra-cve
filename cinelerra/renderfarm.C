@@ -470,11 +470,7 @@ void RenderFarmServerThread::send_asset()
 // One segment is stored in the asset and contains encoding information.
 	server->default_asset->save_defaults(&defaults, 
 		0, 
-		1,
-		1,
-		1,
-		1,
-		1);
+		ASSET_ALL);
 	defaults.save_string(string1);
 	FileXML file;
 	server->default_asset->write(&file, 0, 0);

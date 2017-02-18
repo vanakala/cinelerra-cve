@@ -124,11 +124,7 @@ void BatchRenderJob::load(FileXML *file)
 			defaults.load_string(file->read_text());
 			asset->load_defaults(&defaults,
 				"",
-				0,
-				1,
-				0,
-				0,
-				0);
+				ASSET_COMPRESSION);
 		}
 	}
 }
@@ -149,11 +145,7 @@ void BatchRenderJob::save(FileXML *file)
 	BC_Hash defaults;
 	asset->save_defaults(&defaults, 
 		"",
-		0,
-		1,
-		0,
-		0,
-		0);
+		ASSET_COMPRESSION);
 	char *string;
 	defaults.save_string(string);
 	file->append_text(string);
@@ -285,11 +277,7 @@ void BatchRenderThread::load_defaults(BC_Hash *defaults)
 	{
 		default_job->asset->load_defaults(defaults,
 			"BATCHRENDER_",
-			1,
-			1,
-			1,
-			1,
-			1);
+			ASSET_ALL);
 		default_job->fix_strategy();
 	}
 
@@ -307,12 +295,8 @@ void BatchRenderThread::save_defaults(BC_Hash *defaults)
 	{
 		default_job->asset->save_defaults(defaults,
 			"BATCHRENDER_",
-			1,
-			1,
-			1,
-			1,
-			1);
-		defaults->update("BATCHRENDER_STRATEGY", default_job->strategy);
+			ASSET_ALL);
+			defaults->update("BATCHRENDER_STRATEGY", default_job->strategy);
 	}
 	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
 	{

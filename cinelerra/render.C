@@ -812,11 +812,7 @@ void Render::load_defaults(Asset *asset)
 
 	asset->load_defaults(mwindow->defaults, 
 		"RENDER_", 
-		1,
-		1,
-		1,
-		1,
-		1);
+		ASSET_ALL);
 
 	strcpy(string, RENDERCONFIG_DFLT);
 	mwindow->defaults->get("RENDERPROFILE", string);

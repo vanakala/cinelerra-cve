@@ -417,11 +417,7 @@ int RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 	defaults.load_string((char*)string1);
 	asset->load_defaults(&defaults,
 		0,
-		1,
-		1,
-		1,
-		1,
-		1);
+		ASSET_ALL);
 
 	delete [] string1;
 	delete [] string2;

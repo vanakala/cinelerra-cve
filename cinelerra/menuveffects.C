@@ -62,11 +62,7 @@ void MenuVEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->load_defaults(defaults, 
 		"VEFFECT_",
-		1, 
-		1,
-		1,
-		0,
-		0);
+		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH);
 
 // Fix asset for video only
 	if(!File::supports_video(asset->format)) asset->format = FILE_MOV;
@@ -78,11 +74,7 @@ void MenuVEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->save_defaults(defaults,
 		"VEFFECT_",
-		1,
-		1,
-		1,
-		0,
-		0);
+		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH);
 }
 
 PluginArray* MenuVEffectThread::create_plugin_array()

@@ -64,11 +64,7 @@ void MenuAEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->load_defaults(defaults, 
 		"AEFFECT_",
-		1, 
-		1,
-		1,
-		0,
-		1);
+		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 
 // Fix asset for audio only
 	if(!File::supports_audio(asset->format)) asset->format = FILE_WAV;
@@ -80,11 +76,7 @@ void MenuAEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->save_defaults(defaults, 
 		"AEFFECT_",
-		1, 
-		1,
-		1,
-		0,
-		1);
+		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 }
 
 PluginArray* MenuAEffectThread::create_plugin_array()

@@ -81,20 +81,11 @@ public:
 // Load and save parameters for a render dialog
 // Used by render, record, menueffects, preferences
 	void load_defaults(BC_Hash *defaults, 
-		const char *prefix /* = 0 */, 
-		int do_format /* = 0 */,
-		int do_compression,
-		int do_path,
-		int do_data_types,
-		int do_bits);
+		const char *prefix, int options);
 	void format_changed();
 	void save_defaults(BC_Hash *defaults, 
-		const char *prefix /* = 0 */,
-		int do_format,     /* Don't save format which is autodetected by file loader */
-		int do_compression,    /* Don't save compression which is fixed by driver */
-		int do_path,
-		int do_data_types,
-		int do_bits);
+		const char *prefix,
+		int options);
 	char* construct_param(const char *param, const char *prefix, 
 		char *return_value);
 
