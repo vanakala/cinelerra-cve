@@ -59,25 +59,6 @@ RenderProfile::RenderProfile(MWindow *mwindow,
 	this->x = x;
 	this->y = y;
 
-	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, string);
-	if(dir = opendir(string))
-	{
-		char *pe = &string[strlen(string)];
-		*pe++ = '/';
-
-		while(entry = readdir(dir))
-		{
-			if(entry->d_name[0] == '.')
-				continue;
-			strcpy(pe, entry->d_name);
-			if(!stat(string, &stb) && S_ISDIR(stb.st_mode))
-				merge_profile(entry->d_name);
-		}
-		closedir(dir);
-	}
-	else
-		create_profile(RENDERCONFIG_DFLT);
-
 	rwindow->add_subwindow(new BC_Title(x, 
 		y, 
 		_("RenderProfile:")));
@@ -102,6 +83,26 @@ RenderProfile::RenderProfile(MWindow *mwindow,
 	rwindow->add_subwindow(deleteprofile = new DeleteRenderProfileButton(this, 
 		x, 
 		y));
+
+	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, string);
+	if(dir = opendir(string))
+	{
+		char *pe = &string[strlen(string)];
+		*pe++ = '/';
+
+		while(entry = readdir(dir))
+		{
+			if(entry->d_name[0] == '.')
+				continue;
+			strcpy(pe, entry->d_name);
+			if(!stat(string, &stb) && S_ISDIR(stb.st_mode))
+				merge_profile(entry->d_name);
+		}
+		closedir(dir);
+	}
+	else
+		create_profile(RENDERCONFIG_DFLT);
+
 	strcpy(string, RENDERCONFIG_DFLT);
 	rwindow->mwindow->defaults->get("RENDERPROFILE", string);
 	select_profile(string);
@@ -176,6 +177,9 @@ int RenderProfile::select_profile(const char *profile)
 		rwindow->load_profile();
 		return 0;
 	}
+	else
+		mwindow->defaults->update("RENDERPROFILE", RENDERCONFIG_DFLT);
+
 	return 1;
 }
 
