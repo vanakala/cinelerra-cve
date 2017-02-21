@@ -88,6 +88,12 @@ public:
 	Param *set(const char *name, int value);
 	Param *set(const char *name, int64_t value);
 	Param *set(const char *name, double value);
+	Param *set(Param *param);
+	int get(const char *name, int dflt);
+	int64_t get(const char *name, int64_t dflt);
+	double get(const char *name, double dflt);
+	char *get(const char *name, char *dflt);
+
 	void set_selected(int value);
 	void set_selected(int64_t value);
 	void set_selected(double value);

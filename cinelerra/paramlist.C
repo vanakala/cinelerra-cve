@@ -518,6 +518,54 @@ Param  *Paramlist::set(const char *name, double value)
 	return pp;
 }
 
+Param *Paramlist::set(Param *param)
+{
+	Param *pp;
+
+	if(pp = find(param->name))
+		pp->type = 0;
+	else
+		pp = append_param(param->name);
+	pp->copy_values(param);
+	return pp;
+}
+
+int Paramlist::get(const char *name, int dflt)
+{
+	Param *pp;
+
+	if((pp = find(name)) && (pp->type & PARAMTYPE_INT))
+		return pp->intvalue;
+	return dflt;
+}
+
+int64_t Paramlist::get(const char *name, int64_t dflt)
+{
+	Param *pp;
+
+	if((pp = find(name)) && (pp->type & PARAMTYPE_LNG))
+		return pp->longvalue;
+	return dflt;
+}
+
+double Paramlist::get(const char *name, double dflt)
+{
+	Param *pp;
+
+	if((pp = find(name)) && (pp->type & PARAMTYPE_DBL))
+		return pp->floatvalue;
+	return dflt;
+}
+
+char *Paramlist::get(const char *name, char *dflt)
+{
+	Param *pp;
+
+	if((pp = find(name)) && (pp->type & PARAMTYPE_DBL))
+		strcpy(dflt, pp->stringvalue);
+	return dflt;
+}
+
 void Paramlist::set_selected(int value)
 {
 	selectedint = value;
