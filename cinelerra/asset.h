@@ -86,6 +86,8 @@ public:
 	void save_defaults(BC_Hash *defaults, 
 		const char *prefix,
 		int options);
+	void load_defaults(Paramlist *list, int options);
+	void save_defaults(Paramlist *list, int options);
 	char* construct_param(const char *param, const char *prefix, 
 		char *return_value);
 
@@ -281,7 +283,8 @@ public:
 	int ms_fix_bitrate;
 
 	int ac3_bitrate;
-
+// Render parameters used by render and asset
+	Paramlist *render_parameters;
 // Universal encoding parameters
 	Paramlist *encoder_parameters[MAX_ENC_PARAMLISTS];
 

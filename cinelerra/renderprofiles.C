@@ -152,6 +152,7 @@ int RenderProfile::create_profile(const char *profile)
 		return 1;
 
 	merge_profile(profile);
+	select_profile(profile);
 	return 0;
 }
 

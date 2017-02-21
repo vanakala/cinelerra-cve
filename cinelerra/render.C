@@ -202,7 +202,9 @@ Render::Render(MWindow *mwindow)
 	counter_lock = new Mutex("Render::counter_lock");
 	completion = new Condition(0, "Render::completion");
 	progress_timer = new Timer;
-	range_type = RANGE_BACKCOMPAT;
+	range_type = RANGE_PROJECT;
+	load_mode = LOADMODE_NEW_TRACKS;
+	strategy = SINGLE_PASS;
 }
 
 Render::~Render()
@@ -841,43 +843,51 @@ void Render::load_profile(Asset *asset)
 	Param *par;
 	char path[BCTEXTLEN];
 
+	if(asset->render_parameters)
+	{
+		delete asset->render_parameters;
+		asset->render_parameters = 0;
+	}
+
 	if(!file.read_from_file(profile_config_path("ProfilData.xml", path), 1) && !file.read_tag())
 	{
 		dflts = new Paramlist("");
 		dflts->load_list(&file);
 
-		if(par = dflts->find("strategy"))
-			strategy = par->intvalue;
-		if(par = dflts->find("loadmode"))
-			load_mode = par->intvalue;
-		if(par = dflts->find("renderrange"))
-			range_type = par->intvalue;
+		strategy = dflts->get("strategy", strategy);
+		load_mode = dflts->get("loadmode", load_mode);
+		range_type = dflts->get("renderrange", range_type);
+		asset->load_defaults(dflts, ASSET_ALL);
+		asset->render_parameters = dflts;
 	}
 }
 
 void Render::save_defaults(Asset *asset)
 {
 	Paramlist params("ProfilData");
+	Param *pp;
 	FileXML file;
 	char path[BCTEXTLEN];
 
-	if(strategy != SINGLE_PASS)
-		params.append_param("strategy", strategy);
-	if(load_mode != LOADMODE_NEW_TRACKS)
-		params.append_param("loadmode", load_mode);
-	if(range_type != RANGE_PROJECT)
-		params.append_param("renderrange", range_type);
+	params.append_param("strategy", strategy);
+	params.append_param("loadmode", load_mode);
+	params.append_param("renderrange", range_type);
+	asset->save_defaults(&params, ASSET_ALL);
 
-	strcpy(path, renderconfig_path);
-	strcat(path, "/ProfilData.xml");
+	if(asset->render_parameters)
+		params.remove_equiv(asset->render_parameters);
+	else
+		asset->render_parameters = new Paramlist("ProfilData");
 
 	if(params.total() > 0)
 	{
-		params.save_list(&file);
+		for(pp = params.first; pp; pp = pp->next)
+			asset->render_parameters->set(pp);
+		strcpy(path, renderconfig_path);
+		strcat(path, "/ProfilData.xml");
+		asset->render_parameters->save_list(&file);
 		file.write_to_file(path);
 	}
-	else
-		unlink(path);
 
 	mwindow->defaults->delete_key("RENDER_STRATEGY");
 	mwindow->defaults->delete_key("RENDER_LOADMODE");

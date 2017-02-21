@@ -71,6 +71,7 @@ Asset::~Asset()
 {
 	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
 		delete encoder_parameters[i];
+	delete render_parameters;
 }
 
 void Asset::init_values()
@@ -182,6 +183,7 @@ void Asset::init_values()
 	tiff_compression = 0;
 
 	memset(encoder_parameters, 0, MAX_ENC_PARAMLISTS * sizeof(Paramlist *));
+	render_parameters = 0;
 
 	use_header = 1;
 
@@ -342,6 +344,11 @@ void Asset::copy_format(Asset *asset, int do_index)
 			encoder_parameters[i] = new Paramlist(asset->encoder_parameters[i]->name);
 			encoder_parameters[i]->copy_from(asset->encoder_parameters[i]);
 		}
+	}
+	if(asset->render_parameters)
+	{
+		render_parameters = new Paramlist(asset->render_parameters->name);
+		render_parameters->copy_from(asset->render_parameters);
 	}
 
 	strcpy(reel_name, asset->reel_name);
@@ -976,6 +983,75 @@ void Asset::load_defaults(BC_Hash *defaults,
 void Asset::format_changed()
 {
 	FileAVlibs::get_render_defaults(this);
+}
+
+void Asset::load_defaults(Paramlist *list, int options)
+{
+	if(options & ASSET_PATH)
+		list->get("path", path);
+
+	if(options & ASSET_TYPES)
+	{
+		audio_data = list->get("audio", audio_data);
+		video_data = list->get("video", video_data);
+	}
+
+	if(options & ASSET_COMPRESSION)
+	{
+		list->get("audio_codec", acodec);
+		list->get("video_codec", vcodec);
+		format_changed();
+		jpeg_quality = list->get("jpeg_quality", jpeg_quality);
+		aspect_ratio = list->get("aspect_ratio", aspect_ratio);
+	}
+
+	if(options & ASSET_BITS)
+	{
+		bits = list->get("bits", bits);
+		dither = list->get("dither", dither);
+		signed_ = list->get("signed", signed_);
+		byte_order = list->get("byte_order", byte_order);
+	}
+
+	list->get("reel_name", reel_name);
+	reel_number = list->get("reel_number", reel_number);
+	tcstart = list->get("tcstart", tcstart);
+	tcend = list->get("tcend", tcend);
+	tcformat = list->get("tcformat", tcformat);
+}
+
+void Asset::save_defaults(Paramlist *list, int options)
+{
+	list->set("path", path);
+
+	if(options & ASSET_FORMAT)
+		list->set("format", format);
+
+	if(options & ASSET_TYPES)
+	{
+		list->set("audio", audio_data);
+		list->set("video", video_data);
+	}
+
+	if(options & ASSET_COMPRESSION)
+	{
+		list->set("audio_codec", acodec);
+		list->set("video_codec", vcodec);
+		list->set("jpeg_quality", jpeg_quality);
+		list->set("aspect_ratio", aspect_ratio);
+	}
+	if(options & ASSET_BITS)
+	{
+		list->set("bits", bits);
+		list->set("dither", dither);
+		list->set("signed", signed_);
+		list->set("byte_order", byte_order);
+	}
+	list->set("reel_name", reel_name);
+	list->set("reel_number", reel_number);
+	list->set("tcstart", tcstart);
+	list->set("tcend", tcend);
+	list->set("tcformat", tcformat);
 }
 
 void Asset::save_defaults(BC_Hash *defaults, 
