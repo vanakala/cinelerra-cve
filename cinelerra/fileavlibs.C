@@ -1913,9 +1913,9 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 		return;
-	asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = AVlibsConfig::load_options(FILEAVLIBS_GLOBAL_CONFIG);
-	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(FILEAVLIBS_FORMAT_CONFIG, name);
-	asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = AVlibsConfig::load_options(FILEAVLIBS_CODECS_CONFIG, name);
+	asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_GLOBAL_CONFIG);
+	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_FORMAT_CONFIG, name);
+	asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_CODECS_CONFIG, name);
 
 	if(asset->encoder_parameters[FILEAVLIBS_CODECS_IX])
 	{
@@ -2011,10 +2011,10 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 		asset->vcodec[MAX_LEN_CODECNAME - 1] = 0;
 		asset->acodec[MAX_LEN_CODECNAME - 1] = 0;
 	}
-	asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
-	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
-	asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
-	asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] = AVlibsConfig::load_options(FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
+	asset->encoder_parameters[FILEAVLIBS_ACODEC_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
+	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
+	asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
+	asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
 }
 
 

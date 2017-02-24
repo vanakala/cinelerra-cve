@@ -52,8 +52,10 @@ public:
 		const char *suffix);
 	void save_options(Paramlist *optlist, const char *config_name,
 		const char *suffix, Paramlist *defaults = 0);
-	static Paramlist *load_options(const char *config_name, const char *suffix = 0);
-	static char *config_path(const char *config_name, const char *suffix = 0);
+	static Paramlist *load_options(Asset *asset, const char *config_name,
+		const char *suffix = 0);
+	static char *config_path(Asset *asset, const char *config_name,
+		const char *suffix = 0);
 
 	Asset *asset;
 	Paramlist *globopts;

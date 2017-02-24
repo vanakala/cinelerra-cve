@@ -308,7 +308,7 @@ void AVlibsConfig::merge_saved_options(Paramlist *optlist, const char *config_na
 	FileXML file;
 	Paramlist *savedopts;
 
-	if(!file.read_from_file(config_path(config_name, suffix), 1) && !file.read_tag())
+	if(!file.read_from_file(config_path(asset, config_name, suffix), 1) && !file.read_tag())
 	{
 		savedopts = new Paramlist("");
 		savedopts->load_list(&file);
@@ -329,18 +329,19 @@ void AVlibsConfig::save_options(Paramlist *optlist, const char *config_name,
 	if(optlist->total() > 0)
 	{
 		optlist->save_list(&file);
-		file.write_to_file(config_path(config_name, suffix));
+		file.write_to_file(config_path(asset, config_name, suffix));
 	}
 	else
-		unlink(config_path(config_name, suffix));
+		unlink(config_path(asset, config_name, suffix));
 }
 
-Paramlist *AVlibsConfig::load_options(const char *config_name, const char *suffix)
+Paramlist *AVlibsConfig::load_options(Asset *asset, const char *config_name,
+	const char *suffix)
 {
 	FileXML file;
 	Paramlist *opts = 0;
 
-	if(!file.read_from_file(config_path(config_name, suffix), 1) && !file.read_tag())
+	if(!file.read_from_file(config_path(asset, config_name, suffix), 1) && !file.read_tag())
 	{
 		opts = new Paramlist("");
 		opts->load_list(&file);
@@ -348,11 +349,11 @@ Paramlist *AVlibsConfig::load_options(const char *config_name, const char *suffi
 	return opts;
 }
 
-char *AVlibsConfig::config_path(const char *config_name, const char *suffix)
+char *AVlibsConfig::config_path(Asset *asset, const char *config_name, const char *suffix)
 {
 	static char pathbuf[BCTEXTLEN];
 
-	mwindow->edl->session->configuration_path(config_name, pathbuf);
+	asset->profile_config_path(config_name, pathbuf);
 
 	if(suffix)
 		strcat(pathbuf, suffix);
