@@ -812,16 +812,16 @@ void Render::load_defaults(Asset *asset)
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
 	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
 
-	asset->load_defaults(mwindow->defaults, 
-		"RENDER_", 
-		ASSET_ALL);
-
 	strcpy(string, RENDERCONFIG_DFLT);
 	mwindow->defaults->get("RENDERPROFILE", string);
 	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, asset->renderprofile_path);
 	p = &asset->renderprofile_path[strlen(asset->renderprofile_path)];
 	*p++ = '/';
 	strcpy(p, string);
+
+	asset->load_defaults(mwindow->defaults,
+		"RENDER_",
+		ASSET_ALL);
 	load_profile(asset);
 }
 
