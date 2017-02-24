@@ -818,22 +818,11 @@ void Render::load_defaults(Asset *asset)
 
 	strcpy(string, RENDERCONFIG_DFLT);
 	mwindow->defaults->get("RENDERPROFILE", string);
-	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, renderconfig_path);
-	p = &renderconfig_path[strlen(renderconfig_path)];
+	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, asset->renderprofile_path);
+	p = &asset->renderprofile_path[strlen(asset->renderprofile_path)];
 	*p++ = '/';
 	strcpy(p, string);
 	load_profile(asset);
-}
-
-char *Render::profile_config_path(const char *filename, char *outpath)
-{
-	char *p;
-
-	strcpy(outpath, renderconfig_path);
-	p = &outpath[strlen(outpath)];
-	*p++ = '/';
-	strcpy(p, filename);
-	return outpath;
 }
 
 void Render::load_profile(Asset *asset)
@@ -849,7 +838,7 @@ void Render::load_profile(Asset *asset)
 		asset->render_parameters = 0;
 	}
 
-	if(!file.read_from_file(profile_config_path("ProfilData.xml", path), 1) && !file.read_tag())
+	if(!file.read_from_file(asset->profile_config_path("ProfilData.xml", path), 1) && !file.read_tag())
 	{
 		dflts = new Paramlist("");
 		dflts->load_list(&file);
@@ -883,12 +872,9 @@ void Render::save_defaults(Asset *asset)
 	{
 		for(pp = params.first; pp; pp = pp->next)
 			asset->render_parameters->set(pp);
-		strcpy(path, renderconfig_path);
-		strcat(path, "/ProfilData.xml");
-		asset->render_parameters->save_list(&file);
-		file.write_to_file(path);
+		file.write_to_file(asset->profile_config_path("ProfilData.xml", path));
 	}
-
+	// Delete old defaults
 	mwindow->defaults->delete_key("RENDER_STRATEGY");
 	mwindow->defaults->delete_key("RENDER_LOADMODE");
 	mwindow->defaults->delete_key("RENDER_RANGE_TYPE");

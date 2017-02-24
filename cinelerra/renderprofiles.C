@@ -132,7 +132,7 @@ int RenderProfile::create_profile(const char *profile)
 {
 	DIR *dir;
 	char *p;
-	char *config_path = rwindow->render->renderconfig_path;
+	char *config_path = rwindow->asset->renderprofile_path;
 
 	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, config_path);
 	if(dir = opendir(config_path))
@@ -147,7 +147,7 @@ int RenderProfile::create_profile(const char *profile)
 	*p++ = '/';
 
 	strncpy(p, profile, BCTEXTLEN - (p - config_path) - 1);
-	config_path[BCTEXTLEN] = 0;
+	config_path[BCTEXTLEN - 1] = 0;
 
 	if(mkdir(config_path, 0755))
 		return 1;
@@ -161,7 +161,7 @@ int RenderProfile::select_profile(const char *profile)
 {
 	DIR *dir;
 	char *p;
-	char *config_path = rwindow->render->renderconfig_path;
+	char *config_path = rwindow->asset->renderprofile_path;
 
 	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, config_path);
 
@@ -177,9 +177,11 @@ int RenderProfile::select_profile(const char *profile)
 		rwindow->load_profile();
 		return 0;
 	}
-	else
-		mwindow->defaults->update("RENDERPROFILE", RENDERCONFIG_DFLT);
-
+	else if(strcmp(profile, RENDERCONFIG_DFLT))
+	{
+		select_profile(RENDERCONFIG_DFLT);
+		return 0;
+	}
 	return 1;
 }
 
@@ -274,9 +276,9 @@ int SaveRenderProfileButton::handle_event()
 
 	if(profile->create_profile(profile_name))
 	{
-		if(!profile->select_profile(profile_name))
+		if(profile->select_profile(profile_name))
 		{
-			errorbox("Failed to create new profile %s", profile_name);
+			errorbox("Failed to create new profile '%s'", profile_name);
 			profile->select_profile(RENDERCONFIG_DFLT);
 		}
 		return 1;

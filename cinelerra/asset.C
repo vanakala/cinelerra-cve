@@ -184,6 +184,7 @@ void Asset::init_values()
 
 	memset(encoder_parameters, 0, MAX_ENC_PARAMLISTS * sizeof(Paramlist *));
 	render_parameters = 0;
+	renderprofile_path[0] = 0;
 
 	use_header = 1;
 
@@ -350,7 +351,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 		render_parameters = new Paramlist(asset->render_parameters->name);
 		render_parameters->copy_from(asset->render_parameters);
 	}
-
+	strcpy(renderprofile_path, asset->renderprofile_path);
 	strcpy(reel_name, asset->reel_name);
 	reel_number = asset->reel_number;
 	tcstart = asset->tcstart;
@@ -1052,6 +1053,17 @@ void Asset::save_defaults(Paramlist *list, int options)
 	list->set("tcstart", tcstart);
 	list->set("tcend", tcend);
 	list->set("tcformat", tcformat);
+}
+
+char *Asset::profile_config_path(const char *filename, char *outpath)
+{
+	char *p;
+
+	strcpy(outpath, renderprofile_path);
+	p = &outpath[strlen(outpath)];
+	*p++ = '/';
+	strcpy(p, filename);
+	return outpath;
 }
 
 void Asset::save_defaults(BC_Hash *defaults, 

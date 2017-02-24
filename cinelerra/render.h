@@ -117,7 +117,6 @@ public:
 		int strategy,
 		int range_type);
 
-	char *profile_config_path(const char *filename, char *outpath);
 	void load_defaults(Asset *asset);
 	void save_defaults(Asset *asset);
 	void load_profile(Asset *asset);
@@ -191,8 +190,6 @@ public:
 
 // Current open RenderWindow
 	RenderWindow *render_window;
-
-	char renderconfig_path[BCTEXTLEN];
 
 // For non interactive mode, maintain progress here.
 	ptstime progress_max;

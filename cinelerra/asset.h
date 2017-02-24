@@ -88,6 +88,7 @@ public:
 		int options);
 	void load_defaults(Paramlist *list, int options);
 	void save_defaults(Paramlist *list, int options);
+	char *profile_config_path(const char *filename, char *outpath);
 	char* construct_param(const char *param, const char *prefix, 
 		char *return_value);
 
@@ -283,6 +284,9 @@ public:
 	int ms_fix_bitrate;
 
 	int ac3_bitrate;
+
+// Render profile path
+	char renderprofile_path[BCTEXTLEN];
 // Render parameters used by render and asset
 	Paramlist *render_parameters;
 // Universal encoding parameters
