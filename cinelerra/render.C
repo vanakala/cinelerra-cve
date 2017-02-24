@@ -872,6 +872,7 @@ void Render::save_defaults(Asset *asset)
 	{
 		for(pp = params.first; pp; pp = pp->next)
 			asset->render_parameters->set(pp);
+		asset->render_parameters->save_list(&file);
 		file.write_to_file(asset->profile_config_path("ProfilData.xml", path));
 	}
 	// Delete old defaults
