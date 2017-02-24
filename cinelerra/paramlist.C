@@ -522,10 +522,9 @@ Param *Paramlist::set(Param *param)
 {
 	Param *pp;
 
-	if(pp = find(param->name))
-		pp->type = 0;
-	else
+	if(!(pp = find(param->name)))
 		pp = append_param(param->name);
+	pp->type = param->type;
 	pp->copy_values(param);
 	return pp;
 }
