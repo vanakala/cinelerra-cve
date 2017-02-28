@@ -130,18 +130,12 @@ RenderProfile::~RenderProfile()
 
 int RenderProfile::create_profile(const char *profile)
 {
-	DIR *dir;
 	char *p;
 	char *config_path = rwindow->asset->renderprofile_path;
 
 	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, config_path);
-	if(dir = opendir(config_path))
-		closedir(dir);
-	else
-	{
-		if(mkdir(config_path, 0755))
-			return 1;
-	}
+	if(chk_profile_dir(config_path))
+		return 1;
 
 	p = &config_path[strlen(config_path)];
 	*p++ = '/';
@@ -149,11 +143,22 @@ int RenderProfile::create_profile(const char *profile)
 	strncpy(p, profile, BCTEXTLEN - (p - config_path) - 1);
 	config_path[BCTEXTLEN - 1] = 0;
 
-	if(mkdir(config_path, 0755))
+	if(chk_profile_dir(config_path))
 		return 1;
 
 	merge_profile(profile);
 	select_profile(profile);
+	return 0;
+}
+
+int RenderProfile::chk_profile_dir(const char *dirname)
+{
+	DIR *dir;
+
+	if(dir = opendir(dirname))
+		closedir(dir);
+	else if(mkdir(dirname, 0755))
+		return 1;
 	return 0;
 }
 

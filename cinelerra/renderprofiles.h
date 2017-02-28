@@ -58,6 +58,8 @@ public:
 	~RenderProfile();
 
 	int create_profile(const char *profile);
+	// create directory if it does not exist
+	static int chk_profile_dir(const char *dirname);
 	int select_profile(const char *profile);
 	void merge_profile(const char *profile);
 	void reposition_window(int x, int y);
