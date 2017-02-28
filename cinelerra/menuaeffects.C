@@ -32,6 +32,7 @@
 #include "mwindowgui.h"
 #include "menuaeffects.h"
 #include "patchbay.h"
+#include "renderprofiles.inc"
 #include "tracks.h"
 
 // ============================================= audio effects
@@ -51,32 +52,15 @@ MenuAEffects::~MenuAEffects()
 MenuAEffectThread::MenuAEffectThread(MWindow *mwindow)
  : MenuEffectThread(mwindow)
 {
+	effect_type = SUPPORTS_AUDIO;
+	def_prefix = "AEFFECT_";
+	profile_name = RENDERCONFIG_AEFFECT;
 }
 
 int MenuAEffectThread::get_recordable_tracks(Asset *asset)
 {
 	asset->channels = mwindow->edl->tracks->recordable_audio_tracks();
 	return asset->channels;
-}
-
-
-void MenuAEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
-{
-	asset->load_defaults(defaults, 
-		"AEFFECT_",
-		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
-
-// Fix asset for audio only
-	if(!File::supports_audio(asset->format)) asset->format = FILE_WAV;
-	asset->audio_data = 1;
-	asset->video_data = 0;
-}
-
-void MenuAEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
-{
-	asset->save_defaults(defaults, 
-		"AEFFECT_",
-		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 }
 
 PluginArray* MenuAEffectThread::create_plugin_array()

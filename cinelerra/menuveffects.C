@@ -31,6 +31,7 @@
 #include "mwindowgui.h"
 #include "menuveffects.h"
 #include "patchbay.h"
+#include "renderprofiles.inc"
 #include "tracks.h"
 #include "units.h"
 #include "vpluginarray.h"
@@ -50,31 +51,15 @@ MenuVEffects::~MenuVEffects()
 MenuVEffectThread::MenuVEffectThread(MWindow *mwindow)
  : MenuEffectThread(mwindow)
 {
+	effect_type = SUPPORTS_VIDEO;
+	def_prefix = "VEFFECT_";
+	profile_name = RENDERCONFIG_VEFFECT;
 }
 
 int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 {
 	asset->layers = mwindow->edl->tracks->recordable_video_tracks();
 	return asset->layers;
-}
-
-void MenuVEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
-{
-	asset->load_defaults(defaults, 
-		"VEFFECT_",
-		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH);
-
-// Fix asset for video only
-	if(!File::supports_video(asset->format)) asset->format = FILE_MOV;
-	asset->audio_data = 0;
-	asset->video_data = 1;
-}
-
-void MenuVEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
-{
-	asset->save_defaults(defaults,
-		"VEFFECT_",
-		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH);
 }
 
 PluginArray* MenuVEffectThread::create_plugin_array()

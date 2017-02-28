@@ -70,8 +70,8 @@ public:
 	void run();
 	int set_title(const char *text);  // set the effect to be run by a menuitem
 	virtual int get_recordable_tracks(Asset *asset) { return 0; };
-	virtual void get_derived_attributes(Asset *asset, BC_Hash *defaults) { return; };
-	virtual void save_derived_attributes(Asset *asset, BC_Hash *defaults) { return; };
+	void get_derived_attributes(Asset *asset, BC_Hash *defaults);
+	void save_derived_attributes(Asset *asset, BC_Hash *defaults);
 	virtual PluginArray* create_plugin_array() { return 0; };
 	virtual ptstime one_unit() { return 0; };
 	virtual posnum to_units(ptstime position, int round) { return 0; };
@@ -79,6 +79,9 @@ public:
 	int test_existence(Asset *asset);
 
 	MWindow *mwindow;
+	int effect_type;
+	const char *def_prefix;
+	const char *profile_name;
 	char title[1024];
 	int dither, realtime, load_mode;
 	int strategy;

@@ -29,6 +29,7 @@
 #include "edlsession.h"
 #include "mainerror.h"
 #include "file.h"
+#include "filexml.h"
 #include "indexfile.h"
 #include "keyframe.h"
 #include "keys.h"
@@ -42,11 +43,13 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "menueffects.h"
+#include "paramlist.h"
 #include "playbackengine.h"
 #include "pluginarray.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "render.h"
+#include "renderprofiles.h"
 #include "sighandler.h"
 #include "theme.h"
 #include "tracks.h"
@@ -85,6 +88,82 @@ int MenuEffectThread::set_title(const char *title)
 	strcpy(this->title, title);
 }
 
+void MenuEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
+{
+	Paramlist *params;
+	FileXML file;
+	const char *pfname;
+	char path[BCTEXTLEN];
+
+	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, path);
+	RenderProfile::chk_profile_dir(path);
+	asset->set_renderprofile(path, profile_name);
+	RenderProfile::chk_profile_dir(asset->renderprofile_path);
+
+	asset->load_defaults(defaults, def_prefix,
+		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
+	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOADMODE_PASTE);
+	strategy = defaults->get("RENDER_EFFECT_STRATEGY", SINGLE_PASS);
+
+	delete asset->render_parameters;
+	asset->render_parameters = 0;
+
+	if(!file.read_from_file(asset->profile_config_path("ProfilData.xml", path), 1) && !file.read_tag())
+	{
+		params = new Paramlist("");
+		params->load_list(&file);
+		asset->load_defaults(params,
+			ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
+		asset->render_parameters = params;
+		load_mode = params->get("loadmode", load_mode);
+		strategy = params->get("strategy", strategy);
+	}
+	// Fix asset for media type only
+	if(effect_type & SUPPORTS_AUDIO)
+	{
+		if(!File::supports_audio(asset->format))
+			asset->format = FILE_WAV;
+		asset->audio_data = 1;
+		asset->video_data = 0;
+	}
+	else if(effect_type & SUPPORTS_VIDEO)
+	{
+		if(!File::supports_video(asset->format))
+			asset->format = FILE_MOV;
+		asset->audio_data = 0;
+		asset->video_data = 1;
+	}
+}
+
+void MenuEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
+{
+	Paramlist params("ProfilData");
+	Param *pp;
+	FileXML file;
+	char path[BCTEXTLEN];
+
+	asset->save_defaults(defaults, def_prefix,
+		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
+	asset->save_defaults(&params, ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
+	params.append_param("loadmode", load_mode);
+	params.append_param("strategy", strategy);
+	if(asset->render_parameters)
+		params.remove_equiv(asset->render_parameters);
+	else
+		asset->render_parameters = new Paramlist("ProfilData");
+
+	if(params.total() > 0)
+	{
+		for(pp = params.first; pp; pp = pp->next)
+			asset->render_parameters->set(pp);
+		asset->render_parameters->save_list(&file);
+		file.write_to_file(asset->profile_config_path("ProfilData.xml", path));
+	}
+	// Remove old version keys
+	defaults->delete_key("RENDER_EFFECT_LOADMODE");
+	defaults->delete_key("RENDER_EFFECT_STRATEGY");
+}
+
 // for recent effect menu items and running new effects
 // prompts for an effect if title is blank
 void MenuEffectThread::run()
@@ -120,8 +199,6 @@ void MenuEffectThread::run()
 // get default attributes for output file
 // used after completion
 	get_derived_attributes(default_asset, defaults);
-	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOADMODE_PASTE);
-	strategy = defaults->get("RENDER_EFFECT_STRATEGY", SINGLE_PASS);
 
 // get plugin information
 	int need_plugin = !title[0];
@@ -155,9 +232,6 @@ void MenuEffectThread::run()
 
 // save defaults
 	save_derived_attributes(default_asset, defaults);
-	defaults->update("RENDER_EFFECT_LOADMODE", load_mode);
-	defaults->update("RENDER_EFFECT_STRATEGY", strategy);
-	mwindow->save_defaults();
 
 // get plugin server to use and delete the plugin list
 	PluginServer *plugin_server = 0;

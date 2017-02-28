@@ -42,8 +42,6 @@ public:
 	MenuVEffectThread(MWindow *mwindow);
 
 	int get_recordable_tracks(Asset *asset);
-	void get_derived_attributes(Asset *asset, BC_Hash *defaults);
-	void save_derived_attributes(Asset *asset, BC_Hash *defaults);
 	PluginArray* create_plugin_array();
 	void fix_menu(const char *title);
 
