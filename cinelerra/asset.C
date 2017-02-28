@@ -1066,6 +1066,16 @@ char *Asset::profile_config_path(const char *filename, char *outpath)
 	return outpath;
 }
 
+void Asset::set_renderprofile(const char *path, const char *profilename)
+{
+	char *p;
+
+	strcpy(renderprofile_path, path);
+	p = &renderprofile_path[strlen(renderprofile_path)];
+	*p++ = '/';
+	strcpy(p, profilename);
+}
+
 void Asset::save_defaults(BC_Hash *defaults, 
 	const char *prefix,
 	int options)
