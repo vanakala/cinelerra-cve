@@ -118,6 +118,7 @@ void BC_Bitmap::allocate_data()
 		{
 			ring_buffers = BITMAP_RING;
 			xv_portid = top_level->xvideo_port_id;
+			top_level->xvideo_port_id = -1;
 // Create the X Image
 			xv_image[0] = XvShmCreateImage(top_level->display, 
 						xv_portid, 
@@ -261,7 +262,6 @@ void BC_Bitmap::delete_data()
 				if(last_pixmap_used) XvStopVideo(top_level->display, xv_portid, last_pixmap);
 				XShmDetach(top_level->display, &shm_info);
 				XvUngrabPort(top_level->display, xv_portid, CurrentTime);
-				top_level->xvideo_port_id = -1;
 				for(int i = 0; i < ring_buffers; i++)
 				{
 					XFree(xv_image[i]);
