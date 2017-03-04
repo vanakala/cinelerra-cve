@@ -285,29 +285,26 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	}
 
 // Cause X server to display it
-	if(device->out_config->driver == PLAYBACK_X11_GL)
+	if(device->out_config->driver == PLAYBACK_X11_GL &&
+		output->get_canvas()->get_video_on())
 	{
-// Output is drawn in close_all if no video.
-		if(output->get_canvas()->get_video_on())
-		{
 // Draw output frame directly.  Not used for compositing.
-			output->unlock_canvas();
-			output->mwindow->playback_3d->write_buffer(output, 
-				output_frame,
-				output_x1,
-				output_y1,
-				output_x2,
-				output_y2,
-				canvas_x1,
-				canvas_y1,
-				canvas_x2,
-				canvas_y2,
-				is_cleared);
-			is_cleared = 0;
-		}
+		output->unlock_canvas();
+		output->mwindow->playback_3d->write_buffer(output,
+			output_frame,
+			output_x1,
+			output_y1,
+			output_x2,
+			output_y2,
+			canvas_x1,
+			canvas_y1,
+			canvas_x2,
+			canvas_y2,
+			is_cleared);
+		is_cleared = 0;
 	}
-
-	output->unlock_canvas();
+	else
+		output->unlock_canvas();
 	return 0;
 }
 
