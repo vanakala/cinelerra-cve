@@ -560,7 +560,7 @@ char *Paramlist::get(const char *name, char *dflt)
 {
 	Param *pp;
 
-	if((pp = find(name)) && (pp->type & PARAMTYPE_DBL))
+	if((pp = find(name)) && (pp->type & PARAMTYPE_STR))
 		strcpy(dflt, pp->stringvalue);
 	return dflt;
 }
