@@ -162,6 +162,36 @@ int RenderProfile::chk_profile_dir(const char *dirname)
 	return 0;
 }
 
+void RenderProfile::remove_profiledir(const char *dirname)
+{
+	DIR *dir;
+	struct dirent *entry;
+	char str[BCTEXTLEN];
+	char *p;
+
+	strcpy(str, dirname);
+	p = &str[strlen(str)];
+
+	if(dir = opendir(str))
+	{
+		*p++ = '/';
+		while(entry = readdir(dir))
+		{
+			if(entry->d_name[0] == '.')
+				continue;
+			strcpy(p, entry->d_name);
+
+			if(unlink(str))
+				perror("unlink");
+		}
+		closedir(dir);
+		*--p = 0;
+
+		if(rmdir(str))
+			perror("rmdir");
+	}
+}
+
 int RenderProfile::select_profile(const char *profile)
 {
 	DIR *dir;
@@ -303,7 +333,6 @@ int DeleteRenderProfileButton::handle_event()
 	DIR *dir;
 	char *profile_name = profile->textbox->get_text();
 	char *p;
-	struct dirent *entry;
 	char str[BCTEXTLEN];
 
 	// Do not delete default profile
@@ -313,35 +342,18 @@ int DeleteRenderProfileButton::handle_event()
 	p = &str[strlen(str)];
 	*p++ = '/';
 	strcpy(p, profile_name);
-	p += strlen(profile_name);
 
-	if(dir = opendir(str))
+	RenderProfile::remove_profiledir(str);
+
+	for(int i = 0; i < profile->profiles.total; i++)
 	{
-		*p++ = '/';
-		while(entry = readdir(dir))
+		if(strcmp(profile_name, profile->profiles.values[i]->get_text())== 0)
 		{
-			if(entry->d_name[0] == '.')
-				continue;
-			strcpy(p, entry->d_name);
-
-			if(unlink(str))
-				perror("unlink");
-		}
-		closedir(dir);
-		*--p = 0;
-
-		if(rmdir(str))
-			perror("rmdir");
-		for(int i = 0; i < profile->profiles.total; i++)
-		{
-			if(strcmp(profile_name, profile->profiles.values[i]->get_text())== 0)
-			{
-				profile->profiles.remove_object(profile->profiles.values[i]);
-				if(i >= profile->profiles.total)
-					i = 0;
-				profile->select_profile(profile->profiles.values[i]->get_text());
-				break;
-			}
+			profile->profiles.remove_object(profile->profiles.values[i]);
+			if(i >= profile->profiles.total)
+				i = 0;
+			profile->select_profile(profile->profiles.values[i]->get_text());
+			break;
 		}
 	}
 	return 1;
