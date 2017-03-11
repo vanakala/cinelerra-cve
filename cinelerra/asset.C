@@ -991,6 +991,9 @@ void Asset::load_defaults(Paramlist *list, int options)
 	if(options & ASSET_PATH)
 		list->get("path", path);
 
+	if(options & ASSET_FORMAT)
+		format = list->get("format", format);
+
 	if(options & ASSET_TYPES)
 	{
 		audio_data = list->get("audio", audio_data);
