@@ -49,13 +49,14 @@ public:
 class BatchRenderJob
 {
 public:
-	BatchRenderJob(Preferences *preferences);
+	BatchRenderJob(Preferences *preferences, int jobnum);
 	~BatchRenderJob();
 
 	void copy_from(BatchRenderJob *src);
-	void load(FileXML *file);
-	void save(FileXML *file);
+	void load(const char *profile_path);
+	void save();
 	void fix_strategy();
+	void dump(int indent = 0);
 
 // Source EDL to render
 	char edl_path[BCTEXTLEN];
@@ -63,6 +64,7 @@ public:
 	Asset *asset;
 	int strategy;
 	int enabled;
+	int jobnum;
 // Amount of time elapsed in last render operation
 	double elapsed;
 	Preferences *preferences;
@@ -85,14 +87,13 @@ public:
 		ArrayList<PluginServer*> *plugindb);
 
 // Load batch rendering jobs
-	void load_jobs(char *path, Preferences *preferences);
+	void load_jobs(Preferences *preferences);
 // Not applicable to western civilizations
-	void save_jobs(char *path);
+	void save_jobs();
 	void load_defaults(BC_Hash *defaults);
 	void save_defaults(BC_Hash *defaults);
-// Create path for persistent storage functions
-	char* create_path(char *string);
-	void new_job();
+	BatchRenderJob *merge_jobs(int jnum, Preferences *preferences);
+	BatchRenderJob *new_job();
 	void delete_job();
 // Conditionally returns the job or the default job based on current_job
 	BatchRenderJob* get_current_job();
@@ -111,7 +112,6 @@ public:
 	MWindow *mwindow;
 	double current_start;
 	double current_end;
-	BatchRenderJob *default_job;
 	ArrayList<BatchRenderJob*> jobs;
 	ArrayList<PluginServer*> *plugindb;
 
@@ -126,6 +126,8 @@ public:
 // job being rendered
 	int rendering_job;
 	int is_rendering;
+	char *profile_end;
+	char profile_path[BCTEXTLEN];
 };
 
 
@@ -165,41 +167,6 @@ public:
 	int handle_event();
 	BatchRenderThread *thread;
 };
-
-
-class BatchRenderSaveList : public BC_GenericButton, public Thread
-{
-public:
-	BatchRenderSaveList(BatchRenderThread *thread, 
-			int x,
-			int y);
-	~BatchRenderSaveList();
-
-	int handle_event();
-	BatchRenderThread *thread;
-	BC_FileBox *gui;
-	void run();
-	virtual int keypress_event();
-	Mutex *startup_lock;
-};
-
-
-class BatchRenderLoadList : public BC_GenericButton, public Thread
-{
-public:
-	BatchRenderLoadList(BatchRenderThread *thread, 
-			int x,
-			int y);
-	~BatchRenderLoadList();
-
-	int handle_event();
-	BatchRenderThread *thread;
-	BC_FileBox *gui;
-	void run();
-	virtual int keypress_event();
-	Mutex *startup_lock;
-};
-
 
 class BatchRenderList : public BC_ListBox
 {
@@ -304,8 +271,6 @@ public:
 	BC_Title *list_title;
 	BatchRenderNew *new_batch;
 	BatchRenderDelete *delete_batch;
-	BatchRenderSaveList *savelist_batch;
-	BatchRenderLoadList *loadlist_batch;
 	BatchRenderList *batch_list;
 	BatchRenderStart *start_button;
 	BatchRenderStop *stop_button;

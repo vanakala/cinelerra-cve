@@ -29,5 +29,6 @@ class RenderProfile;
 #define RENDERCONFIG_DFLT    "default"
 #define RENDERCONFIG_AEFFECT "audio_effect"
 #define RENDERCONFIG_VEFFECT "video_effect"
+#define RENDERCONFIG_BATCH   "batchrender"
 
 #endif

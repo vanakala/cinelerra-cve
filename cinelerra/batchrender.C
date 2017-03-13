@@ -37,11 +37,17 @@
 #include "mwindowgui.h"
 #include "packagedispatcher.h"
 #include "packagerenderer.h"
+#include "paramlist.h"
 #include "preferences.h"
 #include "render.h"
+#include "renderprofiles.h"
 #include "theme.h"
 #include "transportcommand.h"
 #include "vframe.h"
+
+#include <string.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 
 static const char *list_titles[] = 
@@ -75,9 +81,10 @@ int BatchRenderMenuItem::handle_event()
 }
 
 
-BatchRenderJob::BatchRenderJob(Preferences *preferences)
+BatchRenderJob::BatchRenderJob(Preferences *preferences, int jobnum)
 {
 	this->preferences = preferences;
+	this->jobnum = jobnum;
 	asset = new Asset;
 	edl_path[0] = 0;
 	strategy = 0;
@@ -99,60 +106,56 @@ void BatchRenderJob::copy_from(BatchRenderJob *src)
 	elapsed = 0;
 }
 
-void BatchRenderJob::load(FileXML *file)
+void BatchRenderJob::load(const char *path)
 {
-	int result = 0;
+	FileXML file;
+	Paramlist *dflts = 0;
+	char str[BCTEXTLEN];
 
+	strcpy(asset->renderprofile_path, path);
 	edl_path[0] = 0;
-	file->tag.get_property("EDL_PATH", edl_path);
-	strategy = file->tag.get_property("STRATEGY", strategy);
-	enabled = file->tag.get_property("ENABLED", enabled);
-	elapsed = file->tag.get_property("ELAPSED", elapsed);
-	fix_strategy();
 
-	result = file->read_tag();
-	if(!result)
+	if(!file.read_from_file(asset->profile_config_path("ProfilData.xml", str), 1) &&
+		!file.read_tag())
 	{
-		if(file->tag.title_is("ASSET"))
-		{
-			file->tag.get_property("SRC", asset->path);
-			asset->read(file, 0);
-// The compression parameters are stored in the defaults to reduce
-// coding maintenance.  The defaults must now be stuffed into the XML for
-// unique storage.
-			BC_Hash defaults;
-			defaults.load_string(file->read_text());
-			asset->load_defaults(&defaults,
-				"",
-				ASSET_COMPRESSION);
-		}
+		dflts = new Paramlist("ProfilData");
+		dflts->load_list(&file);
+		strategy = dflts->get("strategy", strategy);
+		enabled = dflts->get("enabled", enabled);
+		elapsed = dflts->get("elapsed", elapsed);
+		dflts->get("EDL_path", edl_path);
+		asset->load_defaults(dflts, ASSET_ALL);
+		delete asset->render_parameters;
+		asset->render_parameters = dflts;
 	}
+	fix_strategy();
 }
 
-void BatchRenderJob::save(FileXML *file)
+void BatchRenderJob::save()
 {
-	file->tag.set_property("EDL_PATH", edl_path);
-	file->tag.set_property("STRATEGY", strategy);
-	file->tag.set_property("ENABLED", enabled);
-	file->tag.set_property("ELAPSED", elapsed);
-	file->append_tag();
-	file->append_newline();
-	asset->write(file, 0, "");
+	Paramlist params("ProfilData");
+	Param *pp;
+	FileXML file;
+	char path[BCTEXTLEN];
 
-// The compression parameters are stored in the defaults to reduce
-// coding maintenance.  The defaults must now be stuffed into the XML for
-// unique storage.
-	BC_Hash defaults;
-	asset->save_defaults(&defaults, 
-		"",
-		ASSET_COMPRESSION);
-	char *string;
-	defaults.save_string(string);
-	file->append_text(string);
-	delete [] string;
-	file->tag.set_title("/JOB");
-	file->append_tag();
-	file->append_newline();
+	params.append_param("strategy", strategy);
+	params.append_param("enabled", enabled);
+	params.append_param("elapsed", elapsed);
+	params.append_param("EDL_path", edl_path);
+	asset->save_defaults(&params, ASSET_ALL);
+
+	if(asset->render_parameters)
+		params.remove_equiv(asset->render_parameters);
+	else
+		asset->render_parameters = new Paramlist("ProfilData");
+
+	if(params.total() > 0)
+	{
+		for(pp = params.first; pp; pp = pp->next)
+			asset->render_parameters->set(pp);
+		asset->render_parameters->save_list(&file);
+		file.write_to_file(asset->profile_config_path("ProfilData.xml", path));
+	}
 }
 
 void BatchRenderJob::fix_strategy()
@@ -160,33 +163,46 @@ void BatchRenderJob::fix_strategy()
 	strategy = Render::fix_strategy(strategy, preferences->use_renderfarm);
 }
 
+void BatchRenderJob::dump(int indent)
+{
+	printf("%*sBatchRenderJob %p dump:\n", indent, "", this);
+	indent++;
+	printf("%*sstrategy %d enabled %d jobnum %d elapsed %.2f\n", indent, "",
+		strategy, enabled, jobnum, elapsed);
+	printf("%*sedl_path: '%s'\n", indent, "", edl_path);
+	asset->dump(indent + 2);
+}
 
 BatchRenderThread::BatchRenderThread(MWindow *mwindow)
  : BC_DialogThread()
 {
 	this->mwindow = mwindow;
-	current_job = 0;
+	current_job = -1;
 	rendering_job = -1;
 	is_rendering = 0;
-	default_job = 0;
 	plugindb = 0;
 	boot_defaults = 0;
 	preferences = 0;
+	gui = 0;
 	render = 0;
+	profile_end = 0;
+	profile_path[0] = 0;
 }
 
 BatchRenderThread::BatchRenderThread()
  : BC_DialogThread()
 {
 	mwindow = 0;
-	current_job = 0;
+	current_job = -1;
 	rendering_job = -1;
 	is_rendering = 0;
-	default_job = 0;
 	plugindb = 0;
 	boot_defaults = 0;
 	preferences = 0;
 	render = 0;
+	gui = 0;
+	profile_end = 0;
+	profile_path[0] = 0;
 }
 
 BatchRenderThread::~BatchRenderThread()
@@ -200,86 +216,101 @@ BatchRenderThread::~BatchRenderThread()
 void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
-	char path[BCTEXTLEN];
-
-	path[0] = 0;
-	save_jobs(path);
+	save_jobs();
 	save_defaults(mwindow->defaults);
-	delete default_job;
-	default_job = 0;
 	jobs.remove_all_objects();
 }
 
 BC_Window* BatchRenderThread::new_gui()
 {
-	char path[BCTEXTLEN];
-
 	current_start = 0.0;
 	current_end = 0.0;
-	default_job = new BatchRenderJob(mwindow->preferences);
 
-	path[0] = 0;
-	load_jobs(path, mwindow->preferences);
 	load_defaults(mwindow->defaults);
-	this->gui = new BatchRenderGUI(mwindow, 
+	load_jobs(mwindow->preferences);
+	gui = new BatchRenderGUI(mwindow,
 		this,
 		mwindow->session->batchrender_x,
 		mwindow->session->batchrender_y,
 		mwindow->session->batchrender_w,
 		mwindow->session->batchrender_h);
-	return this->gui;
+	gui->create_list(1);
+	gui->change_job();
+	return gui;
 }
 
-void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+void BatchRenderThread::load_jobs(Preferences *preferences)
 {
+	DIR *dir;
 	FileXML file;
+	char *pe, *ne;
+	long int jnum;
+	struct dirent *entry;
+	BatchRenderJob *job;
+	struct stat stb;
+
 	int result = 0;
 
 	jobs.remove_all_objects();
-	if(path[0])
-		file.read_from_file(path);
-	else
-		file.read_from_file(create_path(path));
 
-	while(!result)
+	if(dir = opendir(profile_path))
 	{
-		if(!(result = file.read_tag()))
+		pe = profile_end;
+		*pe++ = '/';
+
+		while(entry = readdir(dir))
 		{
-			if(file.tag.title_is("JOB"))
+			if(entry->d_name[0] == '.' || strlen(entry->d_name) != 4)
+				continue;
+			jnum = strtol(entry->d_name, &ne, 10);
+			strcpy(pe, entry->d_name);
+
+			if(jnum > 0 && *ne == 0 && !stat(profile_path, &stb) &&
+					S_ISDIR(stb.st_mode))
 			{
-				BatchRenderJob *job;
-				jobs.append(job = new BatchRenderJob(preferences));
-				job->load(&file);
+				job = merge_jobs(jnum, preferences);
+				job->load(profile_path);
 			}
 		}
+		if(jobs.total)
+			current_job = 0;
+		*--pe = 0;
 	}
 }
 
-void BatchRenderThread::save_jobs(char *path)
+BatchRenderJob *BatchRenderThread::merge_jobs(int jnum, Preferences *preferences)
 {
-	FileXML file;
-
+	BatchRenderJob *job = 0;
 	for(int i = 0; i < jobs.total; i++)
 	{
-		file.tag.set_title("JOB");
-		jobs.values[i]->save(&file);
+		if(jobs.values[i]->jobnum > jnum)
+		{
+			jobs.insert(job = new BatchRenderJob(preferences, jnum), i);
+			break;
+		}
 	}
+	if(!job)
+		jobs.append(job = new BatchRenderJob(preferences, jnum));
+	return job;
+}
 
-	if(path[0])
-		file.write_to_file(path);
-	else
-		file.write_to_file(create_path(path));
+void BatchRenderThread::save_jobs()
+{
+	for(int i = 0; i < jobs.total; i++)
+		jobs.values[i]->save();
 }
 
 void BatchRenderThread::load_defaults(BC_Hash *defaults)
 {
-	if(default_job)
-	{
-		default_job->asset->load_defaults(defaults,
-			"BATCHRENDER_",
-			ASSET_ALL);
-		default_job->fix_strategy();
-	}
+	char *p;
+
+	mwindow->edl->session->configuration_path(RENDERCONFIG_DIR, profile_path);
+	RenderProfile::chk_profile_dir(profile_path);
+	p = &profile_path[strlen(profile_path)];
+	*p++ = '/';
+	strcpy(p, RENDERCONFIG_BATCH);
+	RenderProfile::chk_profile_dir(profile_path);
+	profile_end = &profile_path[strlen(profile_path)];
 
 	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
 	{
@@ -291,48 +322,55 @@ void BatchRenderThread::load_defaults(BC_Hash *defaults)
 
 void BatchRenderThread::save_defaults(BC_Hash *defaults)
 {
-	if(default_job)
-	{
-		default_job->asset->save_defaults(defaults,
-			"BATCHRENDER_",
-			ASSET_ALL);
-			defaults->update("BATCHRENDER_STRATEGY", default_job->strategy);
-	}
+	char string[BCTEXTLEN];
+
 	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
 	{
-		char string[BCTEXTLEN];
 		sprintf(string, "BATCHRENDER_COLUMN%d", i);
 		defaults->update(string, column_width[i]);
 	}
+	// Remove old defaults
+	defaults->delete_key("DEFAULT_BATCHLOADPATH");
 	if(mwindow)
 		mwindow->save_defaults();
 	else
 		defaults->save();
 }
 
-char* BatchRenderThread::create_path(char *string)
+BatchRenderJob *BatchRenderThread::new_job()
 {
-	FileSystem fs;
-	strcpy(string, BCASTDIR);
-	fs.complete_path(string);
-	strcat(string, BATCH_PATH);
-	return string;
-}
+	char string[32];
+	Paramlist *plp;
+	BatchRenderJob *curjob;
+	BatchRenderJob *job = new BatchRenderJob(mwindow->preferences, jobs.total + 1);
 
-void BatchRenderThread::new_job()
-{
-	BatchRenderJob *result = new BatchRenderJob(mwindow->preferences);
-	result->copy_from(get_current_job());
-	jobs.append(result);
+	if(current_job >= 0)
+	{
+		curjob = get_current_job();
+		plp = curjob->asset->render_parameters;
+		curjob->asset->render_parameters = 0;
+		job->copy_from(get_current_job());
+		curjob->asset->render_parameters = plp;
+	}
+	jobs.append(job);
 	current_job = jobs.total - 1;
-	gui->create_list(1);
-	gui->change_job();
+	sprintf(string, "%04d", job->jobnum);
+	job->asset->set_renderprofile(profile_path, string);
+	RenderProfile::chk_profile_dir(job->asset->renderprofile_path);
+
+	if(gui)
+	{
+		gui->create_list(1);
+		gui->change_job();
+	}
+	return job;
 }
 
 void BatchRenderThread::delete_job()
 {
 	if(current_job < jobs.total && current_job >= 0)
 	{
+		RenderProfile::remove_profiledir(get_current_job()->asset->renderprofile_path);
 		jobs.remove_object_number(current_job);
 		if(current_job > 0) current_job--;
 		gui->create_list(1);
@@ -340,18 +378,11 @@ void BatchRenderThread::delete_job()
 	}
 }
 
-BatchRenderJob* BatchRenderThread::get_current_job()
+BatchRenderJob *BatchRenderThread::get_current_job()
 {
-	BatchRenderJob *result;
-	if(current_job >= jobs.total || current_job < 0)
-	{
-		result = default_job;
-	}
-	else
-	{
-		result = jobs.values[current_job];
-	}
-	return result;
+	if(current_job >= 0)
+		return jobs.values[current_job];
+	return new_job();
 }
 
 Asset* BatchRenderThread::get_current_asset()
@@ -454,8 +485,8 @@ void BatchRenderThread::start_rendering(char *config_path,
 	strcat(string, "/" FONT_SEARCHPATH);
 	BC_Resources::init_fontconfig(string);
 
-	load_jobs(batch_path, preferences);
-	save_jobs(batch_path);
+	load_jobs(preferences);
+	save_jobs();
 	save_defaults(boot_defaults);
 
 // Test EDL files for existence
@@ -486,7 +517,7 @@ void BatchRenderThread::start_rendering()
 	if(is_rendering) return;
 	is_rendering = 1;
 	path[0] = 0;
-	save_jobs(path);
+	save_jobs();
 	save_defaults(mwindow->defaults);
 	gui->new_batch->disable();
 	gui->delete_batch->disable();
@@ -592,7 +623,6 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 	this->thread = thread;
 
 	mwindow->theme->get_batchrender_sizes(this, get_w(), get_h());
-	create_list(0);
 
 	x = mwindow->theme->batchrender_x1;
 	y = 5;
@@ -660,14 +690,6 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 		xx1, 
 		y));
 
-	add_subwindow(savelist_batch = new BatchRenderSaveList(thread, 
-		x, 
-		yy1));
-
-	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, 
-		xx1, 
-		yy1));
-
 	x = x2;
 	y = y2;
 	add_subwindow(list_title = new BC_Title(x, y, _("Batches to render:")));
@@ -696,7 +718,6 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 	add_subwindow(cancel_button = new BatchRenderCancel(thread, 
 		x, 
 		y));
-
 	show_window();
 }
 
@@ -744,8 +765,6 @@ void BatchRenderGUI::resize_event(int w, int h)
 	xx = x + new_batch->get_w() + 40;
 	yy = y + new_batch->get_h() + 20;
 	delete_batch->reposition_window(xx, y);
-	savelist_batch->reposition_window(x, yy);
-	loadlist_batch->reposition_window(xx, yy);
 
 	x = x2;
 	y = y2;
@@ -916,163 +935,6 @@ int BatchRenderDelete::handle_event()
 {
 	thread->delete_job();
 	return 1;
-}
-
-
-BatchRenderSaveList::BatchRenderSaveList(BatchRenderThread *thread, 
-	int x, 
-	int y)
- : BC_GenericButton(x, y, _("Save List"))
-{
-	this->thread = thread;
-	set_tooltip(_("Save a Batch Render List"));
-	gui = 0;
-	startup_lock = new Mutex("BatchRenderSaveList::startup_lock");
-}
-
-BatchRenderSaveList::~BatchRenderSaveList()
-{
-	startup_lock->lock("BatchRenderSaveList::~BrowseButton");
-
-	if(gui)
-		gui->set_done(1);
-
-	startup_lock->unlock();
-	Thread::join();
-	delete startup_lock;
-}
-
-int BatchRenderSaveList::handle_event()
-{
-	if(Thread::running())
-	{
-		if(gui)
-			gui->raise_window();
-		return 1;
-	}
-	startup_lock->lock("BatchRenderSaveList::handle_event 1");
-	Thread::start();
-	startup_lock->lock("BatchRenderSaveList::handle_event 2");
-	startup_lock->unlock();
-	return 1;
-}
-
-void BatchRenderSaveList::run()
-{
-	char default_path[BCTEXTLEN];
-	sprintf(default_path, "~");
-	BC_FileBox filewindow(100,
-			100,
-			this->thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path),
-			_("Save Batch Render List"),
-			_("Enter a Batch Render filename to save as:"),
-			0,
-			0,
-			0,
-			0);
-
-	gui = &filewindow;
-
-	startup_lock->unlock();
-
-	int result2 = filewindow.run_window();
-
-	if(!result2)
-	{
-		this->thread->save_jobs(filewindow.get_submitted_path());
-		this->thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", filewindow.get_submitted_path());
-	}
-
-	this->thread->gui->flush();
-	startup_lock->lock("BatchRenderLoadList::run");
-	gui = 0;
-	startup_lock->unlock();
-}
-
-int BatchRenderSaveList::keypress_event()
-{
-	if (get_keypress() == 's' || 
-		get_keypress() == 'S') return handle_event();
-	return 0;
-}
-
-
-BatchRenderLoadList::BatchRenderLoadList(BatchRenderThread *thread, 
-	int x, 
-	int y)
- : BC_GenericButton(x, y, _("Load List")), Thread()
-{
-	this->thread = thread;
-	set_tooltip(_("Load a previously saved Batch Render List"));
-	gui = 0;
-	startup_lock = new Mutex("BatchRenderLoadList::startup_lock");
-}
-
-BatchRenderLoadList::~BatchRenderLoadList()
-{
-	startup_lock->lock("BatchRenderLoadList::~BrowseButton");
-
-	if(gui)
-		gui->set_done(1);
-
-	startup_lock->unlock();
-	Thread::join();
-	delete startup_lock;
-}
-
-int BatchRenderLoadList::handle_event()
-{
-	if(Thread::running())
-	{
-		if(gui)
-			gui->raise_window();
-		return 1;
-	}
-	startup_lock->lock("BatchRenderLoadList::handle_event 1");
-	Thread::start();
-	startup_lock->lock("BatchRenderLoadList::handle_event 2");
-	startup_lock->unlock();
-	return 1;
-}
-
-void BatchRenderLoadList::run()
-{
-	char default_path[BCTEXTLEN];
-	strcpy(default_path, "~");
-	BC_FileBox filewindow(100,
-			100,
-			this->thread->mwindow->defaults->get("DEFAULT_BATCHLOADPATH", default_path),
-			_("Load Batch Render List"),
-			_("Enter a Batch Render filename to load from:"),
-			0,
-			0,
-			0,
-			0);
-
-	gui = &filewindow;
-
-	startup_lock->unlock();
-
-	int result2 = filewindow.run_window();
-
-	if(!result2)
-	{
-		this->thread->load_jobs(filewindow.get_submitted_path(),this->thread->mwindow->preferences);
-		this->thread->gui->create_list(1);
-		this->thread->mwindow->defaults->update("DEFAULT_BATCHLOADPATH", filewindow.get_submitted_path());
-	}
-
-	this->thread->gui->flush();
-	startup_lock->lock("BatchRenderLoadList::run");
-	gui = 0;
-	startup_lock->unlock();
-}
-
-int BatchRenderLoadList::keypress_event()
-{
-	if (get_keypress() == 'o' || 
-		get_keypress() == 'O') return handle_event();
-	return 0;
 }
 
 
