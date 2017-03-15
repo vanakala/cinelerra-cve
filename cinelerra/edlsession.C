@@ -48,7 +48,6 @@ EDLSession::EDLSession(EDL *edl)
 	interpolation_type = CUBIC_LINEAR;
 	test_playback_edits = 1;
 	brender_start = 0.0;
-	mpeg4_deblock = 1;
 
 	playback_config = new PlaybackConfig;
 	auto_conf = new AutoConf;
@@ -124,7 +123,6 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 		session->frame_rate != frame_rate ||
 		session->color_model != color_model ||
 		session->interpolation_type != interpolation_type ||
-		session->mpeg4_deblock != mpeg4_deblock ||
 		session->decode_subtitles != decode_subtitles)
 		*result = 0;
 
@@ -211,7 +209,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	auto_keyframes = defaults->get("AUTO_KEYFRAMES", 0);
 	min_meter_db = defaults->get("MIN_METER_DB", -85);
 	max_meter_db = defaults->get("MAX_METER_DB", 6);
-	mpeg4_deblock = defaults->get("MPEG4_DEBLOCK", mpeg4_deblock);
 	output_w = defaults->get("OUTPUTW", output_w);
 	output_h = defaults->get("OUTPUTH", output_h);
 	playback_buffer = defaults->get("PLAYBACK_BUFFER", 4096);
@@ -327,7 +324,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("AUTO_KEYFRAMES", auto_keyframes);
 	defaults->update("MIN_METER_DB", min_meter_db);
 	defaults->update("MAX_METER_DB", max_meter_db);
-	defaults->update("MPEG4_DEBLOCK", mpeg4_deblock);
+	defaults->delete_key("MPEG4_DEBLOCK");
 	defaults->update("OUTPUTW", output_w);
 	defaults->update("OUTPUTH", output_h);
 	defaults->update("PLAYBACK_BUFFER", playback_buffer);
@@ -511,7 +508,6 @@ int EDLSession::load_xml(FileXML *file,
 		folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
 		highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
 		labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
-		mpeg4_deblock = file->tag.get_property("MPEG4_DEBLOCK", mpeg4_deblock);
 		plugins_follow_edits = file->tag.get_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 		playback_preload = file->tag.get_property("PLAYBACK_PRELOAD", playback_preload);
 		safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
@@ -578,7 +574,6 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
 	file->tag.set_property("HIGHLIGHTED_TRACK", highlighted_track);
 	file->tag.set_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
-	file->tag.set_property("MPEG4_DEBLOCK", mpeg4_deblock);
 	file->tag.set_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	file->tag.set_property("PLAYBACK_PRELOAD", playback_preload);
 	file->tag.set_property("SAFE_REGIONS", safe_regions);
@@ -722,7 +717,6 @@ int EDLSession::copy(EDLSession *session)
 	auto_keyframes = session->auto_keyframes;
 	min_meter_db = session->min_meter_db;
 	max_meter_db = session->max_meter_db;
-	mpeg4_deblock = session->mpeg4_deblock;
 	output_w = session->output_w;
 	output_h = session->output_h;
 	playback_buffer = session->playback_buffer;

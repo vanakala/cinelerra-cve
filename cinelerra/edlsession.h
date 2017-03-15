@@ -139,7 +139,6 @@ public:
 	int interpolation_type;
 // labels follow edits during editing
 	int labels_follow_edits;
-	int mpeg4_deblock;
 	int plugins_follow_edits;
 	float meter_over_delay;
 	float meter_peak_delay;

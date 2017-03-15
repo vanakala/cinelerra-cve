@@ -35,6 +35,7 @@
 #include "mainerror.h"
 #include "interlacemodes.h"
 #include "paramlist.h"
+#include "renderprofiles.inc"
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -115,65 +116,7 @@ void Asset::init_values()
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod = BC_ILACE_FIXMETHOD_NONE;
 
-	ampeg_bitrate = 256;
-	ampeg_derivative = 3;
-
-	vorbis_vbr = 0;
-	vorbis_min_bitrate = -1;
-	vorbis_bitrate = 128000;
-	vorbis_max_bitrate = -1;
-
-	theora_fix_bitrate = 1;
-	theora_bitrate = 860000;
-	theora_quality = 16;
-	theora_sharpness = 2;
-	theora_keyframe_frequency = 64;
-	theora_keyframe_force_frequency = 64;
-
-	mp3_bitrate = 256000;
-
-	mp4a_bitrate = 256000;
-	mp4a_quantqual = 100;
-
-// mpeg parameters
-	vmpeg_iframe_distance = 45;
-	vmpeg_pframe_distance = 0;
-	vmpeg_progressive = 0;
-	vmpeg_denoise = 1;
-	vmpeg_bitrate = 1000000;
-	vmpeg_derivative = 1;
-	vmpeg_quantization = 15;
 	vmpeg_cmodel = 0;
-	vmpeg_fix_bitrate = 0;
-	vmpeg_seq_codes = 0;
-	vmpeg_preset = 0;
-	vmpeg_field_order = 0;
-
-// Divx parameters.  BC_Hash from encore2
-	divx_bitrate = 2000000;
-	divx_rc_period = 50;
-	divx_rc_reaction_ratio = 45;
-	divx_rc_reaction_period = 10;
-	divx_max_key_interval = 250;
-	divx_max_quantizer = 31;
-	divx_min_quantizer = 1;
-	divx_quantizer = 5;
-	divx_quality = 5;
-	divx_fix_bitrate = 1;
-	divx_use_deblocking = 1;
-
-	h264_bitrate = 2000000;
-	h264_quantizer = 5;
-	h264_fix_bitrate = 0;
-
-	ms_bitrate = 1000000;
-	ms_bitrate_tolerance = 500000;
-	ms_quantization = 10;
-	ms_interlaced = 0;
-	ms_gop_size = 45;
-	ms_fix_bitrate = 1;
-
-	ac3_bitrate = 128;
 
 	png_use_alpha = 0;
 	exr_use_alpha = 0;
@@ -246,9 +189,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	signed_ = asset->signed_;
 	header = asset->header;
 	dither = asset->dither;
-	mp3_bitrate = asset->mp3_bitrate;
-	mp4a_bitrate = asset->mp4a_bitrate;
-	mp4a_quantqual = asset->mp4a_quantqual;
 	use_header = asset->use_header;
 	aspect_ratio = asset->aspect_ratio;
 	interlace_autofixoption = asset->interlace_autofixoption;
@@ -272,61 +212,9 @@ void Asset::copy_format(Asset *asset, int do_index)
 	this->video_duration = asset->video_duration;
 	memcpy(this->streams, asset->streams, sizeof(streams));
 
-	ampeg_bitrate = asset->ampeg_bitrate;
-	ampeg_derivative = asset->ampeg_derivative;
-
-	vorbis_vbr = asset->vorbis_vbr;
-	vorbis_min_bitrate = asset->vorbis_min_bitrate;
-	vorbis_bitrate = asset->vorbis_bitrate;
-	vorbis_max_bitrate = asset->vorbis_max_bitrate;
-
-	theora_fix_bitrate = asset->theora_fix_bitrate;
-	theora_bitrate = asset->theora_bitrate;
-	theora_quality = asset->theora_quality;
-	theora_sharpness = asset->theora_sharpness;
-	theora_keyframe_frequency = asset->theora_keyframe_frequency;
-	theora_keyframe_force_frequency = asset->theora_keyframe_frequency;
-
 	jpeg_quality = asset->jpeg_quality;
 
-// mpeg parameters
-	vmpeg_iframe_distance = asset->vmpeg_iframe_distance;
-	vmpeg_pframe_distance = asset->vmpeg_pframe_distance;
-	vmpeg_progressive = asset->vmpeg_progressive;
-	vmpeg_denoise = asset->vmpeg_denoise;
-	vmpeg_bitrate = asset->vmpeg_bitrate;
-	vmpeg_derivative = asset->vmpeg_derivative;
-	vmpeg_quantization = asset->vmpeg_quantization;
 	vmpeg_cmodel = asset->vmpeg_cmodel;
-	vmpeg_fix_bitrate = asset->vmpeg_fix_bitrate;
-	vmpeg_seq_codes = asset->vmpeg_seq_codes;
-	vmpeg_preset = asset->vmpeg_preset;
-	vmpeg_field_order = asset->vmpeg_field_order;
-
-	divx_bitrate = asset->divx_bitrate;
-	divx_rc_period = asset->divx_rc_period;
-	divx_rc_reaction_ratio = asset->divx_rc_reaction_ratio;
-	divx_rc_reaction_period = asset->divx_rc_reaction_period;
-	divx_max_key_interval = asset->divx_max_key_interval;
-	divx_max_quantizer = asset->divx_max_quantizer;
-	divx_min_quantizer = asset->divx_min_quantizer;
-	divx_quantizer = asset->divx_quantizer;
-	divx_quality = asset->divx_quality;
-	divx_fix_bitrate = asset->divx_fix_bitrate;
-	divx_use_deblocking = asset->divx_use_deblocking;
-
-	h264_bitrate = asset->h264_bitrate;
-	h264_quantizer = asset->h264_quantizer;
-	h264_fix_bitrate = asset->h264_fix_bitrate;
-
-	ms_bitrate = asset->ms_bitrate;
-	ms_bitrate_tolerance = asset->ms_bitrate_tolerance;
-	ms_interlaced = asset->ms_interlaced;
-	ms_quantization = asset->ms_quantization;
-	ms_gop_size = asset->ms_gop_size;
-	ms_fix_bitrate = asset->ms_fix_bitrate;
-
-	ac3_bitrate = asset->ac3_bitrate;
 
 	png_use_alpha = asset->png_use_alpha;
 	exr_use_alpha = asset->exr_use_alpha;
@@ -852,6 +740,26 @@ char* Asset::construct_param(const char *param, const char *prefix, char *return
 #define UPDATE_DEFAULT(x, y) defaults->update(construct_param(x, prefix, string), y);
 #define GET_DEFAULT(x, y) defaults->get(construct_param(x, prefix, string), y);
 
+const char *prefixes[] =
+{
+    "BRENDER_", "AEFFECT_", "BATCHRENDER_", "VEFFECT_", 0
+};
+
+void Asset::remove_prefixed_default(BC_Hash *defaults, const char *param, char *string)
+{
+	const char *ps;
+	char str[64];
+
+	for(int i = 0; ps = prefixes[i]; i++)
+		defaults->delete_key(construct_param(param, ps, string));
+
+	for(int i = 1; i < MAX_PROFILES; i++)
+	{
+		sprintf(str, "RENDER_%i_", i);
+		defaults->delete_key(construct_param(param, str, string));
+	}
+}
+
 void Asset::load_defaults(BC_Hash *defaults, 
 	const char *prefix, 
 	int options)
@@ -892,25 +800,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 		byte_order = GET_DEFAULT("BYTE_ORDER", 1);
 	}
 
-	ampeg_bitrate = GET_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
-	ampeg_derivative = GET_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
-
-	vorbis_vbr = GET_DEFAULT("VORBIS_VBR", vorbis_vbr);
-	vorbis_min_bitrate = GET_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-	vorbis_bitrate = GET_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
-	vorbis_max_bitrate = GET_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-
-	theora_fix_bitrate = GET_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
-	theora_bitrate = GET_DEFAULT("THEORA_BITRATE", theora_bitrate);
-	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
-	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
-	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
-
-	mp3_bitrate = GET_DEFAULT("MP3_BITRATE", mp3_bitrate);
-	mp4a_bitrate = GET_DEFAULT("MP4A_BITRATE", mp4a_bitrate);
-	mp4a_quantqual = GET_DEFAULT("MP4A_QUANTQUAL", mp4a_quantqual);
-
 	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
 	aspect_ratio = GET_DEFAULT("ASPECT_RATIO", aspect_ratio);
 
@@ -918,51 +807,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod    	= BC_ILACE_FIXMETHOD_UPONE;
 
-// MPEG format information
-	vmpeg_iframe_distance = GET_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
-	vmpeg_pframe_distance = GET_DEFAULT("VMPEG_PFRAME_DISTANCE", vmpeg_pframe_distance);
-	vmpeg_progressive = GET_DEFAULT("VMPEG_PROGRESSIVE", vmpeg_progressive);
-	vmpeg_denoise = GET_DEFAULT("VMPEG_DENOISE", vmpeg_denoise);
-	vmpeg_bitrate = GET_DEFAULT("VMPEG_BITRATE", vmpeg_bitrate);
-	vmpeg_derivative = GET_DEFAULT("VMPEG_DERIVATIVE", vmpeg_derivative);
-	vmpeg_quantization = GET_DEFAULT("VMPEG_QUANTIZATION", vmpeg_quantization);
 	vmpeg_cmodel = GET_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
-	vmpeg_fix_bitrate = GET_DEFAULT("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
-	vmpeg_seq_codes = GET_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
-	vmpeg_preset = GET_DEFAULT("VMPEG_PRESET", vmpeg_preset);
-	vmpeg_field_order = GET_DEFAULT("VMPEG_FIELD_ORDER", vmpeg_field_order);
-
-	h264_bitrate = GET_DEFAULT("H264_BITRATE", h264_bitrate);
-	h264_quantizer = GET_DEFAULT("H264_QUANTIZER", h264_quantizer);
-	h264_fix_bitrate = GET_DEFAULT("H264_FIX_BITRATE", h264_fix_bitrate);
-
-	divx_bitrate = GET_DEFAULT("DIVX_BITRATE", divx_bitrate);
-	divx_rc_period = GET_DEFAULT("DIVX_RC_PERIOD", divx_rc_period);
-	divx_rc_reaction_ratio = GET_DEFAULT("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
-	divx_rc_reaction_period = GET_DEFAULT("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
-	divx_max_key_interval = GET_DEFAULT("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
-	divx_max_quantizer = GET_DEFAULT("DIVX_MAX_QUANTIZER", divx_max_quantizer);
-	divx_min_quantizer = GET_DEFAULT("DIVX_MIN_QUANTIZER", divx_min_quantizer);
-	divx_quantizer = GET_DEFAULT("DIVX_QUANTIZER", divx_quantizer);
-	divx_quality = GET_DEFAULT("DIVX_QUALITY", divx_quality);
-	divx_fix_bitrate = GET_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
-	divx_use_deblocking = GET_DEFAULT("DIVX_USE_DEBLOCKING", divx_use_deblocking);
-
-	theora_fix_bitrate = GET_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
-	theora_bitrate = GET_DEFAULT("THEORA_BITRATE", theora_bitrate);
-	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
-	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
-	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
-
-	ms_bitrate = GET_DEFAULT("MS_BITRATE", ms_bitrate);
-	ms_bitrate_tolerance = GET_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
-	ms_interlaced = GET_DEFAULT("MS_INTERLACED", ms_interlaced);
-	ms_quantization = GET_DEFAULT("MS_QUANTIZATION", ms_quantization);
-	ms_gop_size = GET_DEFAULT("MS_GOP_SIZE", ms_gop_size);
-	ms_fix_bitrate = GET_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
-
-	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
 
 	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
 	exr_use_alpha = GET_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
@@ -1103,66 +948,67 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("AUDIO_CODEC", acodec);
 		UPDATE_DEFAULT("VIDEO_CODEC", vcodec);
 
-		UPDATE_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
-		UPDATE_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
+		remove_prefixed_default(defaults, "AMPEG_BITRATE", string);
+		remove_prefixed_default(defaults, "AMPEG_DERIVATIVE", string);
 
-		UPDATE_DEFAULT("VORBIS_VBR", vorbis_vbr);
-		UPDATE_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-		UPDATE_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
-		UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
+		remove_prefixed_default(defaults, "VORBIS_VBR", string);
+		remove_prefixed_default(defaults, "VORBIS_MIN_BITRATE", string);
+		remove_prefixed_default(defaults, "VORBIS_BITRATE", string);
+		remove_prefixed_default(defaults, "VORBIS_MAX_BITRATE", string);
 
-		UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
-		UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
-		UPDATE_DEFAULT("THEORA_QUALITY", theora_quality);
-		UPDATE_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
-		UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-		UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+		remove_prefixed_default(defaults, "THEORA_FIX_BITRATE", string);
+		remove_prefixed_default(defaults, "THEORA_BITRATE", string);
+		remove_prefixed_default(defaults, "THEORA_QUALITY", string);
+		remove_prefixed_default(defaults, "THEORA_SHARPNESS", string);
+		remove_prefixed_default(defaults, "THEORA_KEYFRAME_FREQUENCY", string);
+		remove_prefixed_default(defaults, "THEORA_FORCE_KEYFRAME_FEQUENCY", string);
 
-		UPDATE_DEFAULT("MP3_BITRATE", mp3_bitrate);
-		UPDATE_DEFAULT("MP4A_BITRATE", mp4a_bitrate);
-		UPDATE_DEFAULT("MP4A_QUANTQUAL", mp4a_quantqual);
+		remove_prefixed_default(defaults, "MP3_BITRATE", string);
+		remove_prefixed_default(defaults, "MP4A_BITRATE", string);
+		remove_prefixed_default(defaults, "MP4A_QUANTQUAL", string);
 
 		UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
 		UPDATE_DEFAULT("ASPECT_RATIO", aspect_ratio);
 
 // MPEG format information
-		UPDATE_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
-		UPDATE_DEFAULT("VMPEG_PFRAME_DISTANCE", vmpeg_pframe_distance);
-		UPDATE_DEFAULT("VMPEG_PROGRESSIVE", vmpeg_progressive);
-		UPDATE_DEFAULT("VMPEG_DENOISE", vmpeg_denoise);
-		UPDATE_DEFAULT("VMPEG_BITRATE", vmpeg_bitrate);
-		UPDATE_DEFAULT("VMPEG_DERIVATIVE", vmpeg_derivative);
-		UPDATE_DEFAULT("VMPEG_QUANTIZATION", vmpeg_quantization);
+		remove_prefixed_default(defaults, "VMPEG_IFRAME_DISTANCE", string);
+		remove_prefixed_default(defaults, "VMPEG_PFRAME_DISTANCE", string);
+		remove_prefixed_default(defaults, "VMPEG_PROGRESSIVE", string);
+		remove_prefixed_default(defaults, "VMPEG_DENOISE", string);
+		remove_prefixed_default(defaults, "VMPEG_BITRATE", string);
+		remove_prefixed_default(defaults, "VMPEG_DERIVATIVE", string);
+		remove_prefixed_default(defaults, "VMPEG_QUANTIZATION", string);
+		remove_prefixed_default(defaults, "VMPEG_FIX_BITRATE", string);
+		remove_prefixed_default(defaults, "VMPEG_SEQ_CODES", string);
+		remove_prefixed_default(defaults, "VMPEG_PRESET", string);
+		remove_prefixed_default(defaults, "VMPEG_FIELD_ORDER", string);
+
 		UPDATE_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
-		UPDATE_DEFAULT("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
-		UPDATE_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
-		UPDATE_DEFAULT("VMPEG_PRESET", vmpeg_preset);
-		UPDATE_DEFAULT("VMPEG_FIELD_ORDER", vmpeg_field_order);
 
-		UPDATE_DEFAULT("H264_BITRATE", h264_bitrate);
-		UPDATE_DEFAULT("H264_QUANTIZER", h264_quantizer);
-		UPDATE_DEFAULT("H264_FIX_BITRATE", h264_fix_bitrate);
+		remove_prefixed_default(defaults, "H264_BITRATE", string);
+		remove_prefixed_default(defaults, "H264_QUANTIZER", string);
+		remove_prefixed_default(defaults, "H264_FIX_BITRATE", string);
 
-		UPDATE_DEFAULT("DIVX_BITRATE", divx_bitrate);
-		UPDATE_DEFAULT("DIVX_RC_PERIOD", divx_rc_period);
-		UPDATE_DEFAULT("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
-		UPDATE_DEFAULT("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
-		UPDATE_DEFAULT("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
-		UPDATE_DEFAULT("DIVX_MAX_QUANTIZER", divx_max_quantizer);
-		UPDATE_DEFAULT("DIVX_MIN_QUANTIZER", divx_min_quantizer);
-		UPDATE_DEFAULT("DIVX_QUANTIZER", divx_quantizer);
-		UPDATE_DEFAULT("DIVX_QUALITY", divx_quality);
-		UPDATE_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
-		UPDATE_DEFAULT("DIVX_USE_DEBLOCKING", divx_use_deblocking);
+		remove_prefixed_default(defaults, "DIVX_BITRATE", string);
+		remove_prefixed_default(defaults, "DIVX_RC_PERIOD", string);
+		remove_prefixed_default(defaults, "DIVX_RC_REACTION_RATIO", string);
+		remove_prefixed_default(defaults, "DIVX_RC_REACTION_PERIOD", string);
+		remove_prefixed_default(defaults, "DIVX_MAX_KEY_INTERVAL", string);
+		remove_prefixed_default(defaults, "DIVX_MAX_QUANTIZER", string);
+		remove_prefixed_default(defaults, "DIVX_MIN_QUANTIZER", string);
+		remove_prefixed_default(defaults, "DIVX_QUANTIZER", string);
+		remove_prefixed_default(defaults, "DIVX_QUALITY", string);
+		remove_prefixed_default(defaults, "DIVX_FIX_BITRATE", string);
+		remove_prefixed_default(defaults, "DIVX_USE_DEBLOCKING", string);
 
-		UPDATE_DEFAULT("MS_BITRATE", ms_bitrate);
-		UPDATE_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
-		UPDATE_DEFAULT("MS_INTERLACED", ms_interlaced);
-		UPDATE_DEFAULT("MS_QUANTIZATION", ms_quantization);
-		UPDATE_DEFAULT("MS_GOP_SIZE", ms_gop_size);
-		UPDATE_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
+		remove_prefixed_default(defaults, "MS_BITRATE", string);
+		remove_prefixed_default(defaults, "MS_BITRATE_TOLERANCE", string);
+		remove_prefixed_default(defaults, "MS_INTERLACED", string);
+		remove_prefixed_default(defaults, "MS_QUANTIZATION", string);
+		remove_prefixed_default(defaults, "MS_GOP_SIZE", string);
+		remove_prefixed_default(defaults, "MS_FIX_BITRATE", string);
 
-		UPDATE_DEFAULT("AC3_BITRATE", ac3_bitrate);
+		remove_prefixed_default(defaults, "AC3_BITRATE", string);
 
 		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
 		UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);

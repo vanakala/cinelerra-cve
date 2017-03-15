@@ -356,9 +356,6 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 	file->set_subtitle(edl->session->decode_subtitles ? 
 		asset->active_subtitle : -1);
 
-// Copy decoding parameters from session to asset so file can see them.
-	this->asset->divx_use_deblocking = edl->session->mpeg4_deblock;
-
 	if(result = file->open_file(cache->preferences, this->asset, 1, 0, -1, -1))
 	{
 		delete file;

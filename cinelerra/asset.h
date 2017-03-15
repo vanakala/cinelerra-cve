@@ -92,7 +92,9 @@ public:
 	void set_renderprofile(const char *path, const char *profilename);
 	char* construct_param(const char *param, const char *prefix, 
 		char *return_value);
-
+// Remove old defaults with prefix
+	void remove_prefixed_default(BC_Hash *defaults,
+		const char *param, char *string);
 // Executed during index building only
 	void update_index(Asset *asset);
 	int equivalent(Asset &asset, 
@@ -190,32 +192,6 @@ public:
 // Video is a single image
 	int single_image;
 
-// mpeg audio information
-	int ampeg_bitrate;
-// 2 - 3
-	int ampeg_derivative;
-
-// Vorbis compression
-	int vorbis_min_bitrate;
-	int vorbis_bitrate;
-	int vorbis_max_bitrate;
-	int vorbis_vbr;
-
-// Theora compression
-	int theora_fix_bitrate;
-	int theora_bitrate;
-	int theora_quality;
-	int theora_sharpness;
-	int theora_keyframe_frequency;
-	int theora_keyframe_force_frequency;
-
-// mp3 compression
-	int mp3_bitrate;
-
-// mp4a compression
-	int mp4a_bitrate;
-	int mp4a_quantqual;
-
 // Set by package render during file creation. -1 means square pixels.
 	double aspect_ratio;
 
@@ -227,43 +203,7 @@ public:
 // for jpeg compression
 	int jpeg_quality;
 
-// for mpeg video compression
-	int vmpeg_iframe_distance;
-	int vmpeg_progressive;
-	int vmpeg_denoise;
-	int vmpeg_seq_codes;
-	int vmpeg_bitrate;
-// 1 - 2
-	int vmpeg_derivative;
-	int vmpeg_quantization;
 	int vmpeg_cmodel;
-	int vmpeg_fix_bitrate;
-
-// mjpegtools
-	int vmpeg_preset;
-// top field first
-	int vmpeg_field_order;
-	int vmpeg_pframe_distance;
-
-// Divx video compression
-	int divx_bitrate;
-	int divx_rc_period;
-	int divx_rc_reaction_ratio;
-	int divx_rc_reaction_period;
-	int divx_max_key_interval;
-	int divx_max_quantizer;
-	int divx_min_quantizer;
-	int divx_quantizer;
-	int divx_quality;
-	int divx_fix_bitrate;
-
-// h264 video compression
-	int h264_bitrate;
-	int h264_quantizer;
-	int h264_fix_bitrate;
-
-// Divx video decompression
-	int divx_use_deblocking;
 
 // PNG video compression
 	int png_use_alpha;
@@ -275,16 +215,6 @@ public:
 // TIFF video compression.  An enumeration from filetiff.h
 	int tiff_cmodel;
 	int tiff_compression;
-
-// Microsoft MPEG-4
-	int ms_bitrate;
-	int ms_bitrate_tolerance;
-	int ms_interlaced;
-	int ms_quantization;
-	int ms_gop_size;
-	int ms_fix_bitrate;
-
-	int ac3_bitrate;
 
 // Render profile path
 	char renderprofile_path[BCTEXTLEN];
