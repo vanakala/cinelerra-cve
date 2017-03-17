@@ -47,8 +47,6 @@ public:
 	int read_frame_header(const char *path);
 
 	int native_cmodel;
-// For decoding only
-	VFrame *temp;
 };
 
 

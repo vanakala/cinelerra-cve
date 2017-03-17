@@ -39,6 +39,7 @@ extern Theme *theme_global;
 FilePNG::FilePNG(Asset *asset, File *file)
  : FileList(asset, file, "PNGLIST", ".png", FILE_PNG, FILE_PNG_LIST)
 {
+	native_cmodel = BC_RGB888;
 }
 
 int FilePNG::check_sig(Asset *asset)
