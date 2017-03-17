@@ -27,7 +27,9 @@
 
 BC_PBuffer::BC_PBuffer(int w, int h)
 {
+#ifdef HAVE_GL
 	pbuffer = 0;
+#endif
 	window_id = -1;
 	this->w = w;
 	this->h = h;
