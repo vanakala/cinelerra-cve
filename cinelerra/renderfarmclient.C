@@ -51,8 +51,6 @@
 #include <libgen.h>
 
 
-
-
 // The render client waits for connections from the server.
 // Then it starts a thread for each connection.
 RenderFarmClient::RenderFarmClient(int port, 
@@ -82,7 +80,6 @@ RenderFarmClient::RenderFarmClient(int port,
 	BC_Resources::init_fontconfig(string);
 }
 
-
 RenderFarmClient::~RenderFarmClient()
 {
 	delete boot_defaults;
@@ -90,7 +87,6 @@ RenderFarmClient::~RenderFarmClient()
 	plugindb->remove_all_objects();
 	delete plugindb;
 }
-
 
 void RenderFarmClient::main_loop()
 {
@@ -208,8 +204,6 @@ void RenderFarmClient::kill_client()
 	}
 }
 
-
-
 // The thread requests jobs from the server until the job table is empty
 // or the server reports an error.  This thread must poll the server
 // after every frame for the error status.
@@ -231,7 +225,6 @@ RenderFarmClientThread::~RenderFarmClientThread()
 	delete watchdog;
 	delete keep_alive;
 }
-
 
 int RenderFarmClientThread::send_request_header(int request, 
 	int len)
@@ -338,7 +331,6 @@ void RenderFarmClientThread::read_string(char* &string)
 	}
 	else
 		string = 0;
-
 }
 
 void RenderFarmClientThread::abort()
@@ -371,18 +363,17 @@ void RenderFarmClientThread::get_command(int socket_fd, int *command)
 	}
 }
 
-
 void RenderFarmClientThread::read_preferences(int socket_fd, 
 	Preferences *preferences)
 {
-	lock("RenderFarmClientThread::read_preferences");
-	send_request_header(RENDERFARM_PREFERENCES, 
-		0);
-
 	char *string;
+	BC_Hash defaults;
+
+	lock("RenderFarmClientThread::read_preferences");
+	send_request_header(RENDERFARM_PREFERENCES, 0);
+
 	read_string(string);
 
-	BC_Hash defaults;
 	defaults.load_string((char*)string);
 	preferences->load_defaults(&defaults);
 
@@ -390,30 +381,25 @@ void RenderFarmClientThread::read_preferences(int socket_fd,
 	unlock();
 }
 
-
-
 int RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 {
 	char *p, strbuf[BCTEXTLEN];
+	char *string1;
+	char *string2;
+	FileXML file;
+	BC_Hash defaults;
 	int result = 0;
 
 	lock("RenderFarmClientThread::read_asset");
 	send_request_header(RENDERFARM_ASSET, 
 		0);
 
-	char *string1;
-	char *string2;
 	read_string(string1);
 	read_string(string2);
 
-
-
-	FileXML file;
 	file.read_from_string((char*)string2);
 	asset->read(&file);
 
-
-	BC_Hash defaults;
 	defaults.load_string((char*)string1);
 	asset->load_defaults(&defaults,
 		0,
@@ -434,22 +420,19 @@ int RenderFarmClientThread::read_edl(int socket_fd,
 	EDL *edl, 
 	Preferences *preferences)
 {
+	char *string;
+	FileXML file;
 	int result = 0;
 
 	lock("RenderFarmClientThread::read_edl");
-	send_request_header(RENDERFARM_EDL, 
-		0);
+	send_request_header(RENDERFARM_EDL, 0);
 
-	char *string;
 	read_string(string);
 
-	FileXML file;
 	file.read_from_string((char*)string);
 	delete [] string;
 
-	edl->load_xml(client->plugindb,
-		&file, 
-		LOAD_ALL);
+	edl->load_xml(client->plugindb, &file, LOAD_ALL);
 
 // Open assets - fill asset info
 	if(edl->assets)
@@ -515,14 +498,12 @@ int RenderFarmClientThread::send_completion(int socket_fd)
 	return result;
 }
 
-
 void RenderFarmClientThread::ping_server()
 {
 	lock("RenderFarmClientThread::ping_server");
 	send_request_header(RENDERFARM_KEEPALIVE, 0);
 	unlock();
 }
-
 
 void RenderFarmClientThread::main_loop(int socket_fd)
 {
@@ -561,10 +542,8 @@ void RenderFarmClientThread::run()
 			do_packages(socket_fd);
 			break;
 	}
-
 	_exit(0);
 }
-
 
 void RenderFarmClientThread::init_client_keepalive()
 {
@@ -574,14 +553,12 @@ void RenderFarmClientThread::init_client_keepalive()
 	watchdog->start();
 }
 
-
 void RenderFarmClientThread::do_packages(int socket_fd)
 {
 	EDL *edl;
 	RenderPackage *package;
 	Asset *default_asset;
 	Preferences *preferences;
-
 	FarmPackageRenderer package_renderer(this, socket_fd);
 	int result = 0;
 
@@ -605,7 +582,6 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	while(1)
 	{
 		result |= read_package(socket_fd, package);
-
 // Finished list
 		if(result)
 		{
@@ -615,7 +591,6 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 
 		Timer timer;
 		timer.update();
-
 // Error
 		if(package_renderer.render_package(package))
 		{
@@ -632,6 +607,7 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	delete preferences;
 }
 
+
 RenderFarmKeepalive::RenderFarmKeepalive(RenderFarmClientThread *client_thread)
  : Thread(THREAD_SYNCHRONOUS)
 {
@@ -645,7 +621,6 @@ RenderFarmKeepalive::~RenderFarmKeepalive()
 	cancel();
 	join();
 }
-
 
 void RenderFarmKeepalive::run()
 {
@@ -671,17 +646,12 @@ FarmPackageRenderer::FarmPackageRenderer(RenderFarmClientThread *thread,
 	this->socket_fd = socket_fd;
 }
 
-
-FarmPackageRenderer::~FarmPackageRenderer()
-{
-}
-
-
 int FarmPackageRenderer::get_result()
 {
+	unsigned char data[1];
+
 	thread->lock("FarmPackageRenderer::get_result");
 	thread->send_request_header(RENDERFARM_GET_RESULT, 0);
-	unsigned char data[1];
 	data[0] = 1;
 	if(thread->read_socket((char*)data, 1) != 1)
 	{
@@ -694,9 +664,10 @@ int FarmPackageRenderer::get_result()
 
 void FarmPackageRenderer::set_result(int value)
 {
+	unsigned char data[1];
+
 	thread->lock("FarmPackageRenderer::set_result");
 	thread->send_request_header(RENDERFARM_SET_RESULT, 1);
-	unsigned char data[1];
 	data[0] = value;
 	thread->write_socket((char*)data, 1);
 	thread->unlock();
@@ -728,6 +699,5 @@ void FarmPackageRenderer::set_video_map(ptstime start, ptstime end)
 	thread->write_socket((char*)datagram, l+1);
 
 	thread->read_socket(return_value, 1);
-
 	thread->unlock();
 }

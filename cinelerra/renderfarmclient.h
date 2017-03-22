@@ -48,7 +48,7 @@ public:
 
 // After a socket times out, kill the render node.
 	void kill_client();
-	
+
 	int port;
 	const char *deamon_path;
 // PID to be returned to background render object
@@ -118,7 +118,6 @@ class FarmPackageRenderer : public PackageRenderer
 public:
 	FarmPackageRenderer(RenderFarmClientThread *thread,
 		int socket_fd);
-	~FarmPackageRenderer();
 
 	int get_result();
 	void set_result(int value);
