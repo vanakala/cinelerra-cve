@@ -22,7 +22,6 @@
 #ifndef PACKAGERENDERER_H
 #define PACKAGERENDERER_H
 
-
 #include "assets.inc"
 #include "bcwindowbase.inc"
 #include "cache.inc"
@@ -41,14 +40,13 @@
 #include "vframe.inc"
 #include "videodevice.inc"
 
-
 #include <stdint.h>
 
 class RenderPackage
 {
 public:
 	RenderPackage();
-	~RenderPackage();
+
 	void dump();
 
 // Path of output without remote prefix

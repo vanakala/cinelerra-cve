@@ -56,7 +56,6 @@
 #include "vrender.h"
 
 
-
 RenderPackage::RenderPackage()
 {
 	audio_start_pts = 0;
@@ -67,10 +66,6 @@ RenderPackage::RenderPackage()
 	path[0] = 0;
 	done = 0;
 	use_brender = 0;
-}
-
-RenderPackage::~RenderPackage()
-{
 }
 
 void RenderPackage::dump()
@@ -123,7 +118,6 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	this->default_asset = default_asset;
 	this->plugindb = plugindb;
 
-
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
 	command->get_edl()->copy_all(edl);
@@ -163,14 +157,10 @@ void PackageRenderer::create_output()
 		command->get_edl()->session->sample_rate,
 		command->get_edl()->session->frame_rate);
 
-	if(result && mwindow)
-	{
-// open failed
-		errorbox(_("Couldn't open %s"), asset->path);
-	}
-	else
 	if(mwindow)
 	{
+		if(result)
+			errorbox(_("Couldn't open %s"), asset->path);
 		mwindow->sighandler->push_file(file);
 		IndexFile::delete_index(preferences, asset);
 	}
@@ -311,7 +301,6 @@ void PackageRenderer::do_audio()
 	audio_pts += (ptstime)audio_read_length / default_asset->sample_rate;
 }
 
-
 void PackageRenderer::do_video()
 {
 // Do video data
@@ -394,13 +383,11 @@ void PackageRenderer::do_video()
 		video_pts += video_read_length;
 }
 
-
 void PackageRenderer::stop_engine()
 {
 	delete render_engine;
 	delete playable_tracks;
 }
-
 
 void PackageRenderer::stop_output()
 {
@@ -428,7 +415,6 @@ void PackageRenderer::stop_output()
 		}
 	}
 }
-
 
 void PackageRenderer::close_output()
 {
@@ -464,7 +450,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 	if(!result)
 	{
 		create_engine();
-
 // Main loop
 		while((!audio_done || !video_done) && !result)
 		{
@@ -532,7 +517,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 
 		stop_engine();
 		stop_output();
-
 	}
 
 	close_output();
