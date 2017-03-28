@@ -66,18 +66,21 @@ RenderPackage::RenderPackage()
 	path[0] = 0;
 	done = 0;
 	use_brender = 0;
+	audio_do = 0;
+	video_do = 0;
 }
 
-void RenderPackage::dump()
+void RenderPackage::dump(int indent)
 {
-	printf("RenderPackage %p dump:\n", this);
+	printf("%*sRenderPackage %p dump:\n", indent, "", this);
+	indent += 2;
 	if(path[0])
-		printf("    path '%s'\n", path);
+		printf("%*spath '%s'\n", indent, "", path);
 	else
-		printf("    path is empty\n");
-	printf("    audio start %.3f, end %.3f  video start %.3f end %.3f\n",
+		printf("%*spath is empty\n", indent, "");
+	printf("%*saudio start %.3f, end %.3f  video start %.3f end %.3f\n", indent, "",
 		audio_start_pts, audio_end_pts, video_start_pts, video_end_pts);
-	printf("    use_brender %d audio_do %d video_do %d count %d\n",
+	printf("%*suse_brender %d audio_do %d video_do %d count %d\n", indent, "",
 		use_brender, audio_do, video_do, count);
 }
 

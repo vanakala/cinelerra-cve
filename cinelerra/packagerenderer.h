@@ -47,7 +47,7 @@ class RenderPackage
 public:
 	RenderPackage();
 
-	void dump();
+	void dump(int indent = 0);
 
 // Path of output without remote prefix
 	char path[BCTEXTLEN];
