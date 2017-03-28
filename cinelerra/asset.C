@@ -626,6 +626,59 @@ void Asset::write(FileXML *file,
 	file->append_newline();
 }
 
+const char paramtag[] = "EncParam";
+
+void Asset::write_params(FileXML *file)
+{
+	Paramlist parms("ProfilData");
+	char bufr[64];
+
+	save_defaults(&parms, ASSET_ALL);
+	parms.save_list(file);
+	file->position--;
+
+	for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
+	{
+		if(encoder_parameters[i])
+		{
+			sprintf(bufr, "/%s%02d", paramtag, i);
+			file->tag.set_title(bufr + 1);
+			file->append_tag();
+			file->append_newline();
+			encoder_parameters[i]->save_list(file);
+			file->position--;
+			file->tag.set_title(bufr);
+			file->append_tag();
+			file->append_newline();
+		}
+	}
+	file->terminate_string();
+}
+
+void Asset::read_params(FileXML *file)
+{
+	Paramlist parm("");
+	Paramlist *epar;
+	int num;
+
+	parm.load_list(file);
+
+	while(!file->read_tag() &&
+		!strncmp(paramtag, file->tag.get_title(), sizeof(paramtag) - 1))
+	{
+		num = atoi(file->tag.get_title() + sizeof(paramtag) - 1);
+
+		if(num >= 0 && num < MAX_ENC_PARAMLISTS)
+		{
+			epar = new Paramlist("");
+			epar->load_list(file);
+			file->read_tag();
+			encoder_parameters[num] = epar;
+		}
+	}
+	load_defaults(&parm, ASSET_ALL);
+}
+
 void Asset::write_audio(FileXML *file)
 {
 // Let the reader know if the asset has the data by naming the block.

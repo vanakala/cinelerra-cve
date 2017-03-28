@@ -121,6 +121,10 @@ public:
 // Write the index data and asset info.  Used by IndexThread.
 	void write_index(const char *path, int data_bytes);
 
+// Write/read rendering parameters to xml
+	void write_params(FileXML *file);
+	void read_params(FileXML *file);
+
 // Necessary for renderfarm to get encoding parameters
 	void write_audio(FileXML *xml);
 	void write_video(FileXML *xml);
