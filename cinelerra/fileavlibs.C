@@ -126,7 +126,7 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	sws_ctx = 0;
 	swr_ctx = 0;
 	tocfile = 0;
-	if(mwindow->edl->session->show_avlibsmsgs)
+	if(mwindow && mwindow->edl->session->show_avlibsmsgs)
 		av_log_set_level(AV_LOG_INFO);
 	else
 		av_log_set_level(AV_LOG_QUIET);
@@ -425,7 +425,8 @@ int FileAVlibs::open_file(int rd, int wr)
 			avlibs_lock->unlock();
 			return 1;
 		}
-		if((rv = avformat_alloc_output_context2(&context, NULL, NULL, asset->path)) < 0)
+		if((rv = avformat_alloc_output_context2(&context, NULL,
+				encoder_formatname(asset->format), asset->path)) < 0)
 		{
 			errormsg("FileAVlibs::open_file:Failed to allocate output context %d", rv);
 			avlibs_lock->unlock();
@@ -445,16 +446,18 @@ int FileAVlibs::open_file(int rd, int wr)
 		if((ptm = gmtime_r(&tst, &ctim)) &&
 				strftime(string, sizeof(string), "%Y-%m-%d %H:%M:%S", ptm))
 			av_dict_set(&meta, "creation_time", string, 0);
-		if(mwindow->edl->session->metadata_copyright[0])
-			av_dict_set(&meta, "copyright",
-				mwindow->edl->session->metadata_copyright, 0);
-		if(mwindow->edl->session->metadata_title[0])
-			av_dict_set(&meta, "title",
-				mwindow->edl->session->metadata_title, 0);
-		if(mwindow->edl->session->metadata_author[0])
-			av_dict_set(&meta, "author",
-				mwindow->edl->session->metadata_author, 0);
-
+		if(mwindow)
+		{
+			if(mwindow->edl->session->metadata_copyright[0])
+				av_dict_set(&meta, "copyright",
+					mwindow->edl->session->metadata_copyright, 0);
+			if(mwindow->edl->session->metadata_title[0])
+				av_dict_set(&meta, "title",
+					mwindow->edl->session->metadata_title, 0);
+			if(mwindow->edl->session->metadata_author[0])
+				av_dict_set(&meta, "author",
+					mwindow->edl->session->metadata_author, 0);
+		}
 		context->metadata = meta;
 
 		if(asset->video_data)
@@ -504,7 +507,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				video_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
-			if(mwindow->edl->session->experimental_codecs)
+			if(mwindow && mwindow->edl->session->experimental_codecs)
 				av_dict_set(&dict, "strict", "-2", 0);
 
 			if((rv = avcodec_open2(video_ctx, codec, &dict)) < 0)
@@ -591,7 +594,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			stream->time_base = (AVRational){1, audio_ctx->sample_rate};
 			audio_ctx->time_base = stream->time_base;
 
-			if(mwindow->edl->session->experimental_codecs)
+			if(mwindow && mwindow->edl->session->experimental_codecs)
 				av_dict_set(&dict, "strict", "-2", 0);
 
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
