@@ -881,7 +881,8 @@ void Asset::load_defaults(BC_Hash *defaults,
 
 void Asset::format_changed()
 {
-	FileAVlibs::get_render_defaults(this);
+	if(renderprofile_path[0])
+		FileAVlibs::get_render_defaults(this);
 }
 
 void Asset::load_defaults(Paramlist *list, int options)
