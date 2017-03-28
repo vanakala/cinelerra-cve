@@ -35,4 +35,7 @@ class Asset;
 // All bits exept ASSET_HEADER
 #define ASSET_ALL          0x1f
 
+// bits of dump options
+#define ASSETDUMP_RENDERPTRS    1
+#define ASSETDUMP_RENDERPARAMS  2
 #endif

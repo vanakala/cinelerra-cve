@@ -1162,7 +1162,7 @@ void Asset::set_timecode(char *tc, int format, int end)
 	tcformat = format;
 }
 
-void Asset::dump(int indent)
+void Asset::dump(int indent, int options)
 {
 	int i;
 
@@ -1194,6 +1194,17 @@ void Asset::dump(int indent)
 		video_duration, video_length, subtitles, active_subtitle, single_image);
 	printf("%*s  reel_name %s reel_number %i tcstart %" PRId64 " tcend %" PRId64 " tcf %d\n",
 		indent, "", reel_name, reel_number, tcstart, tcend, tcformat);
+	if(options & (ASSETDUMP_RENDERPTRS | ASSETDUMP_RENDERPARAMS))
+		printf("%*s  renderprofile: '%s'\n", indent, "", renderprofile_path);
+	if(options & ASSETDUMP_RENDERPTRS)
+	{
+		printf("%*sencoder parameters:", indent, "");
+		for(int i = 0; i < MAX_ENC_PARAMLISTS; i++)
+			printf(" %p", encoder_parameters[i]);
+		putchar('\n');
+	}
+	if(options & ASSETDUMP_RENDERPARAMS)
+		dump_parameters(indent + 1);
 }
 
 void Asset::dump_parameters(int indent)
