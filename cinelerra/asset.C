@@ -633,7 +633,7 @@ void Asset::write_params(FileXML *file)
 	Paramlist parms("ProfilData");
 	char bufr[64];
 
-	save_defaults(&parms, ASSET_ALL);
+	save_defaults(&parms, ASSET_ALL | ASSET_HEADER);
 	parms.save_list(file);
 	file->position--;
 
@@ -676,7 +676,7 @@ void Asset::read_params(FileXML *file)
 			encoder_parameters[num] = epar;
 		}
 	}
-	load_defaults(&parm, ASSET_ALL);
+	load_defaults(&parm, ASSET_ALL | ASSET_HEADER);
 }
 
 void Asset::write_audio(FileXML *file)
@@ -915,6 +915,9 @@ void Asset::load_defaults(Paramlist *list, int options)
 		byte_order = list->get("byte_order", byte_order);
 	}
 
+	if(options & ASSET_HEADER)
+		use_header = list->get("useheader", use_header);
+
 	list->get("reel_name", reel_name);
 	reel_number = list->get("reel_number", reel_number);
 	tcstart = list->get("tcstart", tcstart);
@@ -949,6 +952,10 @@ void Asset::save_defaults(Paramlist *list, int options)
 		list->set("signed", signed_);
 		list->set("byte_order", byte_order);
 	}
+
+	if(options & ASSET_HEADER)
+		list->set("useheader", use_header);
+
 	list->set("reel_name", reel_name);
 	list->set("reel_number", reel_number);
 	list->set("tcstart", tcstart);
