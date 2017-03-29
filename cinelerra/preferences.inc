@@ -25,7 +25,7 @@
 // Run-time configuration directory
 #define BCASTDIR "~/.cinelerra/"
 #define BACKUP_PATH BCASTDIR "backup.xml"
-#define DEAMON_PORT 400
+#define DEAMON_PORT 27400
 
 class Preferences;
 class PlaybackConfig;
