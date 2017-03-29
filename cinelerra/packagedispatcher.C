@@ -81,42 +81,42 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	audio_end_pts = total_end;
 	video_end_pts = total_end;
 	current_package = 0;
-
-	if(strategy == SINGLE_PASS)
+	if(strategy & RENDER_SINGLE_PASS)
 	{
-		total_len = this->total_end - this->total_start;
-		package_len = total_len;
-		min_package_len = total_len;
-		total_packages = 1;
-		total_allocated = 1;
-		packages = new RenderPackage*[total_allocated];
-		packages[0] = new RenderPackage;
-		packages[0]->audio_start_pts = audio_pts;
-		packages[0]->audio_end_pts = audio_end_pts;
-		packages[0]->video_start_pts = video_pts;
-		packages[0]->video_end_pts = video_end_pts;
-		packages[0]->audio_do = default_asset->audio_data;
-		packages[0]->video_do = default_asset->video_data;
-		strcpy(packages[0]->path, default_asset->path);
-	}
-	else
-	if(strategy == SINGLE_PASS_FARM)
-	{
-		packaging_engine = File::new_packaging_engine(default_asset);
-		packaging_engine->create_packages_single_farm(
+		if(!(strategy & RENDER_FARM))
+		{
+			total_len = this->total_end - this->total_start;
+			package_len = total_len;
+			min_package_len = total_len;
+			total_packages = 1;
+			total_allocated = 1;
+			packages = new RenderPackage*[total_allocated];
+			packages[0] = new RenderPackage;
+			packages[0]->audio_start_pts = audio_pts;
+			packages[0]->audio_end_pts = audio_end_pts;
+			packages[0]->video_start_pts = video_pts;
+			packages[0]->video_end_pts = video_end_pts;
+			packages[0]->audio_do = default_asset->audio_data;
+			packages[0]->video_do = default_asset->video_data;
+			strcpy(packages[0]->path, default_asset->path);
+		}
+		else
+		{
+			packaging_engine = File::new_packaging_engine(default_asset);
+			packaging_engine->create_packages_single_farm(
 					edl,
 					preferences,
 					default_asset, 
 					total_start, 
 					total_end);
+		}
 	}
 	else
-	if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM)
+	if(strategy & RENDER_FILE_PER_LABEL)
 	{
 		Label *label = edl->labels->first;
 		total_packages = 0;
 		packages = new RenderPackage*[edl->labels->total() + 2];
-
 		Render::get_starting_number(default_asset->path, 
 			current_number,
 			number_start, 
@@ -132,7 +132,6 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 			package->video_start_pts = video_pts;
 			package->audio_do = default_asset->audio_data;
 			package->video_do = default_asset->video_data;
-
 
 			while(label && 
 				(label->position < audio_pts ||
@@ -174,14 +173,12 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 
 			total_packages++;
 		}
-		
 		total_allocated = total_packages;
 	}
 	else
-	if(strategy == BRENDER_FARM)
+	if(strategy & RENDER_BRENDER)
 	{
 		total_len = this->total_end - this->total_start;
-
 // Create packages as they're requested.
 		total_packages = 0;
 		total_allocated = 0;
@@ -209,7 +206,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 
 // Test existence of every output file.
 // Only if this isn't a background render or non interactive.
-	if(strategy != BRENDER_FARM && 
+	if(!(strategy & (RENDER_BRENDER | RENDER_FARM)) &&
 		test_overwrite &&
 		mwindow)
 	{
@@ -223,7 +220,8 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 
 void PackageDispatcher::get_package_paths(ArrayList<char*> *path_list)
 {
-		if (strategy == SINGLE_PASS_FARM)
+		if ((strategy & (RENDER_SINGLE_PASS | RENDER_FARM)) ==
+				(RENDER_SINGLE_PASS | RENDER_FARM))
 			packaging_engine->get_package_paths(path_list);
 		else
 		{
@@ -231,7 +229,6 @@ void PackageDispatcher::get_package_paths(ArrayList<char*> *path_list)
 				path_list->append(strdup(packages[i]->path));
 			path_list->set_free();
 		}
-
 }
 
 RenderPackage* PackageDispatcher::get_package(double frames_per_second, 
@@ -245,9 +242,8 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
 	RenderPackage *result = 0;
-	if(strategy == SINGLE_PASS || 
-		strategy == FILE_PER_LABEL || 
-		strategy == FILE_PER_LABEL_FARM)
+	if((strategy & (RENDER_SINGLE_PASS | RENDER_FARM)) == RENDER_SINGLE_PASS ||
+		strategy & RENDER_FILE_PER_LABEL)
 	{
 		if(current_package < total_packages)
 		{
@@ -256,14 +252,14 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 		}
 	}
 	else
-	if(strategy == SINGLE_PASS_FARM)
+	if((strategy & (RENDER_SINGLE_PASS | RENDER_FARM)) == (RENDER_SINGLE_PASS | RENDER_FARM))
 	{
 		result = packaging_engine->get_package_single_farm(frames_per_second, 
 						client_number,
 						use_local_rate);
 	}
 	else
-	if(strategy == BRENDER_FARM)
+	if(strategy & RENDER_BRENDER)
 	{
 		if(video_pts < video_end_pts)
 		{
@@ -355,7 +351,7 @@ ArrayList<Asset*>* PackageDispatcher::get_asset_list()
 
 ptstime PackageDispatcher::get_progress_max()
 {
-	if (strategy == SINGLE_PASS_FARM)
+	if((strategy & (RENDER_SINGLE_PASS | RENDER_FARM)) == (RENDER_SINGLE_PASS | RENDER_FARM))
 		return packaging_engine->get_progress_max();
 	else
 	{

@@ -103,7 +103,7 @@ void MenuEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 	asset->load_defaults(defaults, def_prefix,
 		ASSET_FORMAT | ASSET_COMPRESSION | ASSET_PATH | ASSET_BITS);
 	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOADMODE_PASTE);
-	strategy = defaults->get("RENDER_EFFECT_STRATEGY", SINGLE_PASS);
+	strategy = defaults->get("RENDER_EFFECT_STRATEGY", RENDER_SINGLE_PASS);
 
 	delete asset->render_parameters;
 	asset->render_parameters = 0;
@@ -381,7 +381,7 @@ void MenuEffectThread::run()
 			fragment_start = fragment_end)
 		{
 // Get fragment end
-			if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM)
+			if(strategy & RENDER_FILE_PER_LABEL)
 			{
 				while(current_label  &&
 					current_label->position <= fragment_start)
@@ -398,7 +398,7 @@ void MenuEffectThread::run()
 
 // Get path
 			char path[BCTEXTLEN];
-			if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM) 
+			if(strategy & RENDER_FILE_PER_LABEL)
 				Render::create_filename(path, 
 					default_asset->path, 
 					current_number,
@@ -572,7 +572,7 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 
 	add_subwindow(file_title = new BC_Title(mwindow->theme->menueffect_file_x, 
 		mwindow->theme->menueffect_file_y, 
-		(char*)((menueffects->strategy == FILE_PER_LABEL  || menueffects->strategy == FILE_PER_LABEL_FARM) ? 
+		(char*)((menueffects->strategy & RENDER_FILE_PER_LABEL) ?
 			_("Select the first file to render to:") : 
 			_("Select a file to render to:"))));
 

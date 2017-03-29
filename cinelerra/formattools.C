@@ -113,27 +113,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 	this->details = details;
 	this->strategy = strategy;
 
-// Modify strategy depending on render farm
-	if(strategy)
-	{
-		if(mwindow->preferences->use_renderfarm)
-		{
-			if(*strategy == FILE_PER_LABEL)
-				*strategy = FILE_PER_LABEL_FARM;
-			else
-			if(*strategy == SINGLE_PASS)
-				*strategy = SINGLE_PASS_FARM;
-		}
-		else
-		{
-			if(*strategy == FILE_PER_LABEL_FARM)
-				*strategy = FILE_PER_LABEL;
-			else
-			if(*strategy == SINGLE_PASS_FARM)
-				*strategy = SINGLE_PASS;
-		}
-	}
-
 	window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
 	x += 305;
 	path_recent = new BC_RecentList("PATH", mwindow->defaults,
@@ -594,7 +573,7 @@ int FormatToTracks::handle_event()
 FormatMultiple::FormatMultiple(MWindow *mwindow, int x, int y, int *output)
  : BC_CheckBox(x, 
 	y,
-	(*output == FILE_PER_LABEL) || (*output == FILE_PER_LABEL_FARM), 
+	*output & RENDER_FILE_PER_LABEL,
 	_("Create new file at each label"))
 { 
 	this->output = output;
@@ -604,30 +583,16 @@ FormatMultiple::FormatMultiple(MWindow *mwindow, int x, int y, int *output)
 int FormatMultiple::handle_event()
 {
 	if(get_value())
-	{
-		if(mwindow->preferences->use_renderfarm)
-			*output = FILE_PER_LABEL_FARM;
-		else
-			*output = FILE_PER_LABEL;
-	}
+		*output = RENDER_FILE_PER_LABEL;
 	else
-	{
-		if(mwindow->preferences->use_renderfarm)
-			*output = SINGLE_PASS_FARM;
-		else
-			*output = SINGLE_PASS;
-	}
+		*output = RENDER_SINGLE_PASS;
 	return 1;
 }
 
 void FormatMultiple::update(int *output)
 {
 	this->output = output;
-	if(*output == FILE_PER_LABEL_FARM ||
-		*output ==FILE_PER_LABEL)
-		set_value(1);
-	else
-		set_value(0);
+	set_value(*output & RENDER_FILE_PER_LABEL);
 }
 
 

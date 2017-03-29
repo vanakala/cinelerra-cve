@@ -204,7 +204,7 @@ Render::Render(MWindow *mwindow)
 	progress_timer = new Timer;
 	range_type = RANGE_PROJECT;
 	load_mode = LOADMODE_NEW_TRACKS;
-	strategy = SINGLE_PASS;
+	strategy = RENDER_SINGLE_PASS;
 }
 
 Render::~Render()
@@ -299,6 +299,7 @@ void Render::run()
 		}
 		save_defaults(asset);
 		mwindow->save_defaults();
+
 		if(!preferences)
 			preferences = new Preferences;
 		preferences->copy_from(mwindow->preferences);
@@ -448,21 +449,10 @@ int Render::check_asset(EDL *edl, Asset &asset)
 int Render::fix_strategy(int strategy, int use_renderfarm)
 {
 	if(use_renderfarm)
-	{
-		if(strategy == FILE_PER_LABEL)
-			strategy = FILE_PER_LABEL_FARM;
-		else
-		if(strategy == SINGLE_PASS)
-			strategy = SINGLE_PASS_FARM;
-	}
+		strategy |= RENDER_FARM;
 	else
-	{
-		if(strategy == FILE_PER_LABEL_FARM)
-			strategy = FILE_PER_LABEL;
-		else
-		if(strategy == SINGLE_PASS_FARM)
-			strategy = SINGLE_PASS;
-	}
+		strategy &= ~RENDER_FARM;
+
 	return strategy;
 }
 
@@ -586,7 +576,6 @@ int Render::render(int test_overwrite,
 			total_end,
 			test_overwrite);
 	}
-
 	done = 0;
 	total_rendered = 0;
 	frames_per_second = 0;
@@ -603,8 +592,7 @@ int Render::render(int test_overwrite,
 		{
 			printf("Render::render: starting render farm\n");
 		}
-
-		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
+		if(strategy & RENDER_FARM)
 		{
 			farm_server = new RenderFarmServer(plugindb, 
 				packages,
@@ -632,45 +620,47 @@ int Render::render(int test_overwrite,
 			}
 		}
 	}
-
-// Perform local rendering
 	if(!result)
 	{
-		start_progress();
-		MainPackageRenderer package_renderer(this);
-		result = package_renderer.initialize(mwindow,
+		if(!(strategy & RENDER_FARM))
+		{
+// Perform local rendering
+			start_progress();
+			MainPackageRenderer package_renderer(this);
+			result = package_renderer.initialize(mwindow,
 				command->get_edl(),   // Copy of master EDL
 				preferences, 
 				default_asset,
 				plugindb);
 
-		while(!result)
-		{
-// Get unfinished job
-			RenderPackage *package;
-
-			if(strategy == SINGLE_PASS_FARM)
-				package = packages->get_package(frames_per_second, -1, 1);
-			else
-				package = packages->get_package(0, -1, 1);
-// Exit point
-			if(!package) 
+			while(!result)
 			{
-				done = 1;
-				break;
-			}
+// Get unfinished job
+				RenderPackage *package;
 
-			Timer timer;
-			timer.update();
+				if((strategy & RENDER_SINGLE_PASS))
+					package = packages->get_package(frames_per_second, -1, 1);
+				else
+					package = packages->get_package(0, -1, 1);
+// Exit point
+				if(!package)
+				{
+					done = 1;
+					break;
+				}
 
-			if(package_renderer.render_package(package))
-				result = 1;
+				Timer timer;
+				timer.update();
+
+				if(package_renderer.render_package(package))
+					result = 1;
 
 // Result is also set directly by the RenderFarm.
-			frames_per_second = (ptstime)package->count /
-				((double)timer.get_difference() / 1000);
-		} // file_number
-		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
+				frames_per_second = (ptstime)package->count /
+					((double)timer.get_difference() / 1000);
+			} // file_number
+		}
+		else
 		{
 			farm_server->wait_clients();
 			result |= packages->packages_are_done();
@@ -808,7 +798,7 @@ void Render::load_defaults(Asset *asset)
 	char string[BCTEXTLEN];
 	char *p;
 
-	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
+	strategy = mwindow->defaults->get("RENDER_STRATEGY", RENDER_SINGLE_PASS);
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
 	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
 
@@ -822,6 +812,9 @@ void Render::load_defaults(Asset *asset)
 	asset->load_defaults(mwindow->defaults,
 		"RENDER_",
 		ASSET_ALL);
+	// Backward compatibility
+	if(!strategy)
+		strategy = RENDER_SINGLE_PASS;
 	load_profile(asset);
 }
 
@@ -905,8 +898,7 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	add_subwindow(new BC_Title(x, 
 		y, 
-		(char*)((render->strategy == FILE_PER_LABEL || 
-				render->strategy == FILE_PER_LABEL_FARM) ? 
+		(char*)((render->strategy & RENDER_FILE_PER_LABEL) ?
 			_("Select the first file to render to:") : 
 			_("Select a file to render to:"))));
 	y += 25;

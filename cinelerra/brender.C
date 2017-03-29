@@ -439,7 +439,7 @@ void BRenderThread::start()
 		result = packages->create_packages(mwindow,
 			command->edl,
 			preferences,
-			BRENDER_FARM, 
+			RENDER_BRENDER,
 			preferences->brender_asset, 
 			start_pts,
 			end_pts,
