@@ -907,8 +907,3 @@ int File::supports_audio(int format)
 		return 0;
 	}
 }
-
-PackagingEngine *File::new_packaging_engine(Asset *asset)
-{
-	return (PackagingEngine*) new PackagingEngineDefault();
-}

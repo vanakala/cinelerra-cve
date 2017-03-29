@@ -40,7 +40,6 @@
 #include "preferences.inc"
 #include "resample.inc"
 #include "vframe.inc"
-#include "packagingengine.h"
 
 // ======================================= include file types here
 
@@ -197,8 +196,6 @@ public:
 	int playback_subtitle;
 
 	Preferences *preferences;
-
-	static PackagingEngine *new_packaging_engine(Asset *asset);
 
 private:
 	void reset_parameters();

@@ -102,7 +102,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		}
 		else
 		{
-			packaging_engine = File::new_packaging_engine(default_asset);
+			packaging_engine = (PackagingEngine*) new PackagingEngineDefault();
 			packaging_engine->create_packages_single_farm(
 					edl,
 					preferences,

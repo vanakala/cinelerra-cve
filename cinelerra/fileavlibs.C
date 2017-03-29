@@ -24,6 +24,7 @@
 #include "bcsignals.h"
 #include "byteorder.h"
 #include "clip.h"
+#include "edl.h"
 #include "edlsession.h"
 #include "file.h"
 #include "fileavlibs.h"

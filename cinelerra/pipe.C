@@ -31,6 +31,8 @@
 #include "mainerror.h"
 #include "pipe.h"
 
+#include <unistd.h>
+
 
 Pipe::Pipe(const char *command, const char *sub_str, char sub_char) 
 {
