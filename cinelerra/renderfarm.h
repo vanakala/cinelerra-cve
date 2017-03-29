@@ -245,8 +245,7 @@ public:
 	int number;
 // Rate of last job or 0
 	double frames_per_second;
-// Pointer to default asset
-	Asset *default_asset;
+
 // These objects can be left dangling of the watchdog kills the thread.
 // They are deleted in the destructor.
 	unsigned char *buffer;

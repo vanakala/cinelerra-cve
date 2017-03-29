@@ -77,7 +77,7 @@ public:
 // Return 1 if error
 	int write_int64(int64_t number);
 	int64_t read_int64(int *error = 0);
-	void read_string(char* &string);
+	int read_string(char* &string);
 	void abort();
 // Lock access to the socket during complete transactions
 	void lock(const char *location);

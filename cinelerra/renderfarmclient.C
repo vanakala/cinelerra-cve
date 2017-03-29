@@ -306,19 +306,19 @@ int64_t RenderFarmClientThread::read_int64(int *error)
 	return result;
 }
 
-void RenderFarmClientThread::read_string(char* &string)
+int RenderFarmClientThread::read_string(char* &string)
 {
 	unsigned char header[4];
 	if(read_socket((char*)header, 4) != 4)
 	{
 		string = 0;
-		return;
+		return 0;
 	}
 
-	int64_t len = (((u_int32_t)header[0]) << 24) | 
-				(((u_int32_t)header[1]) << 16) | 
-				(((u_int32_t)header[2]) << 8) | 
-				((u_int32_t)header[3]);
+	int len = (((u_int32_t)header[0]) << 24) |
+		(((u_int32_t)header[1]) << 16) |
+		(((u_int32_t)header[2]) << 8) |
+		((u_int32_t)header[3]);
 
 	if(len)
 	{
@@ -331,6 +331,10 @@ void RenderFarmClientThread::read_string(char* &string)
 	}
 	else
 		string = 0;
+
+	if(string)
+		return len;
+	return 0;
 }
 
 void RenderFarmClientThread::abort()
@@ -384,34 +388,28 @@ void RenderFarmClientThread::read_preferences(int socket_fd,
 int RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 {
 	char *p, strbuf[BCTEXTLEN];
-	char *string1;
-	char *string2;
+	char *string;
 	FileXML file;
-	BC_Hash defaults;
+	int len;
 	int result = 0;
 
 	lock("RenderFarmClientThread::read_asset");
-	send_request_header(RENDERFARM_ASSET, 
-		0);
+	send_request_header(RENDERFARM_ASSET, 0);
 
-	read_string(string1);
-	read_string(string2);
+	if(len = read_string(string))
+	{
+		file.set_shared_string(string, len);
+		asset->read_params(&file);
+		delete [] string;
 
-	file.read_from_string((char*)string2);
-	asset->read(&file);
+		strncpy(strbuf, asset->path, BCTEXTLEN);
+		p = dirname(strbuf);
+		if(result = access(p, R_OK|W_OK|X_OK))
+			errorbox("Backgrond rendering: can't write to '%s'", p);
+	}
+	else
+		result = 1;
 
-	defaults.load_string((char*)string1);
-	asset->load_defaults(&defaults,
-		0,
-		ASSET_ALL);
-
-	delete [] string1;
-	delete [] string2;
-
-	strncpy(strbuf, asset->path, BCTEXTLEN);
-	p = dirname(strbuf);
-	if(result = access(p, R_OK|W_OK|X_OK))
-		errorbox("Backgrond rendering: can't write to '%s'", p);
 	unlock();
 	return result;
 }
