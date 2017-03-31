@@ -40,6 +40,7 @@
 #define FILEAVLIBS_VCODEC_IX 4
 #define FILEAVLIBS_APRIVT_IX 5
 #define FILEAVLIBS_VPRIVT_IX 6
+#define FILEAVLIBS_METADT_IX 7
 
 // Current codecs list in asset
 #define AVL_PARAM_CODEC_AUDIO "audio"

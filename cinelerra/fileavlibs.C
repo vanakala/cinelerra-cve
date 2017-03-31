@@ -411,6 +411,7 @@ int FileAVlibs::open_file(int rd, int wr)
 	{
 		AVOutputFormat *fmt;
 		int rv;
+		Paramlist *metalist;
 		Param *aparam, *bparam;
 
 		switch(asset->format)
@@ -447,17 +448,17 @@ int FileAVlibs::open_file(int rd, int wr)
 		if((ptm = gmtime_r(&tst, &ctim)) &&
 				strftime(string, sizeof(string), "%Y-%m-%d %H:%M:%S", ptm))
 			av_dict_set(&meta, "creation_time", string, 0);
-		if(mwindow)
+		if(metalist = asset->encoder_parameters[FILEAVLIBS_METADT_IX])
 		{
-			if(mwindow->edl->session->metadata_copyright[0])
+			if(aparam = metalist->find("copyright"))
 				av_dict_set(&meta, "copyright",
-					mwindow->edl->session->metadata_copyright, 0);
-			if(mwindow->edl->session->metadata_title[0])
+					aparam->stringvalue, 0);
+			if(aparam = metalist->find("title"))
 				av_dict_set(&meta, "title",
-					mwindow->edl->session->metadata_title, 0);
-			if(mwindow->edl->session->metadata_author[0])
+					aparam->stringvalue, 0);
+			if(aparam = metalist->find("author"))
 				av_dict_set(&meta, "author",
-					mwindow->edl->session->metadata_author, 0);
+					aparam->stringvalue, 0);
 		}
 		context->metadata = meta;
 
@@ -508,8 +509,8 @@ int FileAVlibs::open_file(int rd, int wr)
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				video_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
-			if(mwindow && mwindow->edl->session->experimental_codecs)
-				av_dict_set(&dict, "strict", "-2", 0);
+			if(metalist && (aparam = metalist->find("strict")))
+				av_dict_set(&dict, "strict", aparam->stringvalue, 0);
 
 			if((rv = avcodec_open2(video_ctx, codec, &dict)) < 0)
 			{
@@ -595,8 +596,8 @@ int FileAVlibs::open_file(int rd, int wr)
 			stream->time_base = (AVRational){1, audio_ctx->sample_rate};
 			audio_ctx->time_base = stream->time_base;
 
-			if(mwindow && mwindow->edl->session->experimental_codecs)
-				av_dict_set(&dict, "strict", "-2", 0);
+			if(metalist && (aparam = metalist->find("strict")))
+				av_dict_set(&dict, "strict", aparam->stringvalue, 0);
 
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				audio_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
@@ -2019,8 +2020,29 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
 	asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
 	asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
+	if(mwindow)
+	{
+		if(!asset->encoder_parameters[FILEAVLIBS_METADT_IX])
+			asset->encoder_parameters[FILEAVLIBS_METADT_IX] = new Paramlist("metadata");
+		list = asset->encoder_parameters[FILEAVLIBS_METADT_IX];
+		if(mwindow->edl->session->metadata_copyright[0])
+			list->set("copyright", mwindow->edl->session->metadata_copyright);
+		else
+			list->remove_param("copyright");
+		if(mwindow->edl->session->metadata_title[0])
+			list->set("title", mwindow->edl->session->metadata_title);
+		else
+			list->remove_param("title");
+		if(mwindow->edl->session->metadata_author[0])
+			list->set("author", mwindow->edl->session->metadata_author);
+		else
+			list->remove_param("author");
+		if(mwindow->edl->session->experimental_codecs)
+			list->set("strict", "-2");
+		else
+			list->remove_param("strict");
+	}
 }
-
 
 int FileAVlibs::update_codeclist(Asset *asset, Paramlist *codecs, int options)
 {
