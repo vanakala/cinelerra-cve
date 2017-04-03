@@ -1071,6 +1071,14 @@ void Asset::save_defaults(BC_Hash *defaults,
 
 		remove_prefixed_default(defaults, "AC3_BITRATE", string);
 
+		for(int i = 1; i < MAX_PROFILES; i++)
+		{
+			sprintf(string, "RENDER_%d_", i);
+			defaults->delete_keys_prefix(string);
+		}
+
+		remove_prefixed_default(defaults, "PATH", string);
+
 		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
 		UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
 		UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
