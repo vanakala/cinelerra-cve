@@ -281,6 +281,9 @@ int FileAVlibs::open_file(int rd, int wr)
 			{
 				AVStream *stream = context->streams[i];
 				AVCodecContext *decoder_context = stream->codec;
+				AVCodec *codec;
+				enum AVCodecID codec_id = decoder_context->codec_id;
+
 				switch(decoder_context->codec_type)
 				{
 				case AVMEDIA_TYPE_AUDIO:
@@ -291,11 +294,11 @@ int FileAVlibs::open_file(int rd, int wr)
 						asset->channels = decoder_context->channels;
 						asset->sample_rate = decoder_context->sample_rate;
 
-						AVCodec *codec = avcodec_find_decoder(decoder_context->codec_id);
-						if(!codec)
+						if(codec_id == AV_CODEC_ID_NONE || !(codec = avcodec_find_decoder(codec_id)))
 						{
-							errormsg("FileAVLibs::open_file: audio codec %#x not found",
-								decoder_context->codec_id);
+							if(codec_id != AV_CODEC_ID_NONE)
+								errormsg("FileAVLibs::open_file: audio codec %#x not found",
+									codec_id);
 							asset->audio_data = 0;
 							audio_index = -1;
 						}
@@ -314,6 +317,7 @@ int FileAVlibs::open_file(int rd, int wr)
 								asset->bits = av_get_bytes_per_sample(decoder_context->sample_fmt) * 8;
 								audio_delay = 0;
 								buffer_start = buffer_end = 0;
+								asset->streams[audio_index].options = STRDSC_AUDIO;
 							}
 						}
 					}
@@ -332,11 +336,12 @@ int FileAVlibs::open_file(int rd, int wr)
 						asset->aspect_ratio =
 								(double)(decoder_context->coded_width * decoder_context->sample_aspect_ratio.num) /
 								(decoder_context->coded_height * decoder_context->sample_aspect_ratio.den);
-						AVCodec *codec = avcodec_find_decoder(decoder_context->codec_id);
-						if(!codec)
+						if(codec_id == AV_CODEC_ID_NONE ||
+							!(codec = avcodec_find_decoder(codec_id)))
 						{
-							errormsg("FileAVLibs::open_file: video codec %#x not found",
-								decoder_context->codec_id);
+							if(codec_id != AV_CODEC_ID_NONE)
+								errormsg("FileAVLibs::open_file: video codec %#x not found",
+									decoder_context->codec_id);
 							asset->video_data = 0;
 							video_index = -1;
 						}
@@ -352,6 +357,7 @@ int FileAVlibs::open_file(int rd, int wr)
 							{
 								strncpy(asset->vcodec, codec->name, MAX_LEN_CODECNAME);
 								asset->vcodec[MAX_LEN_CODECNAME] = 0;
+								asset->streams[video_index].options = STRDSC_VIDEO;
 							}
 						}
 					}
@@ -361,31 +367,32 @@ int FileAVlibs::open_file(int rd, int wr)
 					break;
 				}
 			}
+
 			tocfile = new FileTOC(this, file->preferences->index_directory,
 				asset->path, asset->file_length, stbuf.st_mtime);
 			result = tocfile->init_tocfile(TOCFILE_TYPE_MUX1);
 
 			if(video_index >= 0)
 			{
-				asset->streams[video_index].options = STRDSC_VIDEO;
-				asset->streams[video_index].start = (ptstime)tocfile->toc_streams[video_index].min_index *
+				int toc_ix = tocfile->id_to_index(video_index);
+				asset->streams[video_index].start = (ptstime)tocfile->toc_streams[toc_ix].min_index *
 					av_q2d(context->streams[video_index]->time_base);
-				asset->streams[video_index].end = (ptstime)tocfile->toc_streams[video_index].max_index *
+				asset->streams[video_index].end = (ptstime)tocfile->toc_streams[toc_ix].max_index *
 					av_q2d(context->streams[video_index]->time_base);
-				asset->video_length = av_rescale_q(tocfile->toc_streams[video_index].max_index -
-						tocfile->toc_streams[video_index].min_index,
+				asset->video_length = av_rescale_q(tocfile->toc_streams[toc_ix].max_index -
+						tocfile->toc_streams[toc_ix].min_index,
 						context->streams[video_index]->time_base,
 						av_inv_q(context->streams[video_index]->r_frame_rate));
 			}
 			if(audio_index >= 0)
 			{
-				asset->streams[audio_index].options = STRDSC_AUDIO;
-				asset->streams[audio_index].start = (ptstime)tocfile->toc_streams[audio_index].min_index *
+				int toc_ix = tocfile->id_to_index(audio_index);
+				asset->streams[audio_index].start = (ptstime)tocfile->toc_streams[toc_ix].min_index *
 					av_q2d(context->streams[audio_index]->time_base);
-				asset->streams[audio_index].end = (ptstime)tocfile->toc_streams[audio_index].max_index *
+				asset->streams[audio_index].end = (ptstime)tocfile->toc_streams[toc_ix].max_index *
 					av_q2d(context->streams[audio_index]->time_base);
-				asset->audio_length = (samplenum)round((tocfile->toc_streams[audio_index].max_index -
-					tocfile->toc_streams[audio_index].min_index) *
+				asset->audio_length = (samplenum)round((tocfile->toc_streams[toc_ix].max_index -
+					tocfile->toc_streams[toc_ix].min_index) *
 					av_q2d(context->streams[audio_index]->time_base) *
 					asset->sample_rate);
 			}
@@ -875,11 +882,12 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	if(!avvframe)
 		avvframe = av_frame_alloc();
+
 	rqpos = round((frame->get_source_pts() + pts_base) / av_q2d(stream->time_base));
 
 	if(rqpos != video_pos)
 	{
-		itm = tocfile->get_item(video_index, rqpos);
+		itm = tocfile->get_item(tocfile->id_to_index(video_index), rqpos);
 
 		if(rqpos < video_pos || itm->index > video_pos)
 		{
@@ -911,7 +919,6 @@ int FileAVlibs::read_frame(VFrame *frame)
 				{
 					int64_t duration = av_frame_get_pkt_duration(avvframe);
 					video_pos = avvframe->pkt_pts + duration;
-
 					// rqpos is in the middle of next frame
 					if(video_pos + duration > rqpos)
 						break;
@@ -958,7 +965,6 @@ int FileAVlibs::read_frame(VFrame *frame)
 	// quicktime code knows anything about alternate chroma siting
 	if(!error && got_it)
 	{
-		AVPicture picture_out;
 		PixelFormat pix_fmt = ColorModels::color_model_to_pix_fmt(frame->get_color_model());
 
 		convert_cmodel((AVPicture *)avvframe, decoder_context->pix_fmt,
@@ -1087,7 +1093,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	if(rqpos != audio_pos - audio_delay)
 	{
 		audio_eof = 0;
-		itm = tocfile->get_item(audio_index, rqpos);
+		itm = tocfile->get_item(tocfile->id_to_index(audio_index), rqpos);
 		if(rqpos < audio_pos - audio_delay || (rqpos > audio_pos + 10
 			&& audio_pos < itm->index))
 		{
@@ -1231,7 +1237,6 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 	int width_in, int height_in, VFrame *frame_out)
 {
-	// set up a temporary picture_out from frame_out
 	int cmodel_out = frame_out->get_color_model();
 	PixelFormat pix_fmt_out = ColorModels::color_model_to_pix_fmt(cmodel_out);
 	PixelFormat pix_fmt_in;
@@ -1635,7 +1640,14 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 // Callbacks for TOC generation
 int FileAVlibs::get_streamcount()
 {
-	return context->nb_streams;
+	int count = 0;
+
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		if(asset->streams[i].options & (STRDSC_AUDIO | STRDSC_VIDEO))
+			count++;
+	}
+	return count;
 }
 
 stream_params *FileAVlibs::get_track_data(int trx)
@@ -1647,12 +1659,24 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	int64_t pktpos;
 	int interrupt = 0;
 	int is_audio;
-	int res, err;
+	int res, err, trid;
 
-	if(trx >= context->nb_streams)
+	trid = -1;
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		if(asset->streams[i].options & (STRDSC_AUDIO | STRDSC_VIDEO))
+		{
+			if(--trx < 0)
+			{
+				trid = i;
+				break;
+			}
+		}
+	}
+	if(trid < 0)
 		return 0;
 
-	stream = context->streams[trx];
+	stream = context->streams[trid];
 	decoder_context = stream->codec;
 
 	switch(decoder_context->codec_type)
@@ -1671,13 +1695,13 @@ stream_params *FileAVlibs::get_track_data(int trx)
 		track_data.layers = 1;
 		break;
 	}
-	track_data.id = trx;
+	track_data.id = trid;
 	track_data.data1 = 0;
 	track_data.data2 = 0;
 	track_data.min_index = INT64_MAX;
 	track_data.min_offset = 0;
 	track_data.index_correction = 0;
-	err = avformat_seek_file(context, trx, INT64_MIN, INT64_MIN, 0,
+	err = avformat_seek_file(context, trid, INT64_MIN, INT64_MIN, 0,
 		AVSEEK_FLAG_ANY);
 
 	avcodec_flush_buffers(decoder_context);
@@ -1688,7 +1712,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 
 	while((err = av_read_frame(context, &pkt)) == 0)
 	{
-		if(pkt.stream_index == trx)
+		if(pkt.stream_index == trid)
 		{
 			switch(decoder_context->codec_type)
 			{
