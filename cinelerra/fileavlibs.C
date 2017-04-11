@@ -1324,7 +1324,7 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 	temp_frame = BC_Resources::tmpframes.get_tmpframe(frame_out->get_w(),
 		frame_out->get_h(), temp_cmodel);
 
-	if(convert_cmodel(picture_in, pix_fmt_in,
+	if(convert_cmodel(picture_in, pix_fmt,
 			width_in, height_in, temp_frame))
 	{
 		BC_Resources::tmpframes.release_frame(temp_frame);
