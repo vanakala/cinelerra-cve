@@ -23,6 +23,7 @@
 #include "assets.h"
 #include "file.h"
 #include "filebase.h"
+#include "language.h"
 #include "mwindow.h"
 #include "theme.h"
 

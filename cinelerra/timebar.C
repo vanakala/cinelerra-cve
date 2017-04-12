@@ -31,6 +31,7 @@
 #include "fonts.h"
 #include "labels.h"
 #include "labeledit.h"
+#include "language.h"
 #include "localsession.h"
 #include "maincursor.h"
 #include "mainundo.h"

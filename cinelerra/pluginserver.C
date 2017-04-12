@@ -31,6 +31,7 @@
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainerror.h"
 #include "mainprogress.h"

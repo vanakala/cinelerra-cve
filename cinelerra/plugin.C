@@ -26,6 +26,7 @@
 #include "filexml.h"
 #include "keyframe.h"
 #include "keyframes.h"
+#include "language.h"
 #include "localsession.h"
 #include "plugin.h"
 #include "pluginset.h"

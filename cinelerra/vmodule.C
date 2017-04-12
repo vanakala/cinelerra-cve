@@ -31,6 +31,7 @@
 #include "filexml.h"
 #include "floatautos.h"
 #include "formatpresets.h"
+#include "language.h"
 #include "mainerror.h"
 #include "mwindow.h"
 #include "overlayframe.h"

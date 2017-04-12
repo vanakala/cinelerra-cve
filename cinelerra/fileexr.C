@@ -25,6 +25,7 @@
 #include "fileexr.h"
 #include "filesystem.h"
 #include "interlacemodes.h"
+#include "language.h"
 #include "mwindow.h"
 
 #include <ImathBox.h>

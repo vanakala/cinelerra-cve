@@ -32,6 +32,7 @@
 #include "fileavlibs.h"
 #include "filexml.h"
 #include "formatpresets.h"
+#include "language.h"
 #include "mainerror.h"
 #include "interlacemodes.h"
 #include "paramlist.h"

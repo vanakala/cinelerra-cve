@@ -28,6 +28,7 @@
 #include "formatpresets.h"
 #include "guicast.h"
 #include "interlacemodes.h"
+#include "language.h"
 #include "theme.h"
 #include "mainerror.h"
 #include "mwindow.h"

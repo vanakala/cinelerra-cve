@@ -30,6 +30,7 @@
 #include "pluginmacros.h"
 #include "bchash.inc"
 #include "guicast.h"
+#include "language.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"
 #include "pluginwindow.h"

@@ -24,6 +24,7 @@
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "mainerror.h"
 #include "mwindow.h"
 #include "playabletracks.h"

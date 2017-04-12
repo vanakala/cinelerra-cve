@@ -29,6 +29,7 @@
 #include "file.h"
 #include "fileavlibs.h"
 #include "filetoc.h"
+#include "language.h"
 #include "mainerror.h"
 #include "mutex.h"
 #include "mwindow.h"
