@@ -21,6 +21,7 @@
 
 #include "automation.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "clip.h"
 #include "condition.h"
 #include "cpanel.h"

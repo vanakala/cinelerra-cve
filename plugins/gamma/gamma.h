@@ -39,7 +39,6 @@ class GammaEngine;
 #include "loadbalance.h"
 #include "language.h"
 #include "plugincolors.h"
-#include "guicast.h"
 #include "pluginvclient.h"
 
 #define HISTOGRAM_SIZE 256

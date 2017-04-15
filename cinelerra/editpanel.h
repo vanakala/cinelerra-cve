@@ -22,8 +22,9 @@
 #ifndef EDITPANEL_H
 #define EDITPANEL_H
 
+#include "bcbutton.h"
+#include "bctextbox.h"
 #include "editpanel.inc"
-#include "guicast.h"
 #include "meterpanel.inc"
 #include "mwindow.inc"
 #include "manualgoto.inc"

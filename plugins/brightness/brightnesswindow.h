@@ -28,8 +28,9 @@ class BrightnessWindow;
 class BrightnessSlider;
 class BrightnessLuma;
 
+#include "bcslider.h"
+#include "bctoggle.h"
 #include "brightness.h"
-#include "guicast.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 

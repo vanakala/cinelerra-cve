@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bctitle.h"
 #include "colorbalancewindow.h"
 
 PLUGIN_THREAD_METHODS

@@ -22,9 +22,9 @@
 #ifndef CPANEL_H
 #define CPANEL_H
 
+#include "bctoggle.h"
 #include "cwindowgui.inc"
 #include "edl.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 
 class CPanel

@@ -31,8 +31,8 @@
 #define PLUGIN_GUI_CLASS SoundLevelWindow
 
 #include "pluginmacros.h"
+#include "bcslider.h"
 #include "language.h"
-#include "guicast.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"
 

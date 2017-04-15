@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "bctitle.h"
 #include "edit.h"
 #include "file.h"
 #include "filetiff.h"

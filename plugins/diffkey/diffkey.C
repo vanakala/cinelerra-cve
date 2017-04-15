@@ -32,12 +32,16 @@
 #define PLUGIN_THREAD_CLASS DiffKeyThread
 #define PLUGIN_GUI_CLASS DiffKeyGUI
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "pluginmacros.h"
 
+#include "bcslider.h"
+#include "bctitle.h"
+#include "bctoggle.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "plugincolors.h"

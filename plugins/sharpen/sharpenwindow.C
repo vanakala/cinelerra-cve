@@ -19,7 +19,7 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bctitle.h"
 #include "sharpenwindow.h"
 
 PLUGIN_THREAD_METHODS

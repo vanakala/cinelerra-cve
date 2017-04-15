@@ -34,7 +34,6 @@
 
 #include "bchash.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"

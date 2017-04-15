@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bctitle.h"
 #include "brightnesswindow.h"
 
 PLUGIN_THREAD_METHODS

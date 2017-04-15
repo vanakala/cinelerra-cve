@@ -32,7 +32,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "labels.h"
 #include "localsession.h"
 #include "mutex.h"

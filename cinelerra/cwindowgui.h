@@ -23,6 +23,8 @@
 #define CWINDOWGUI_H
 
 #include "auto.inc"
+#include "bcslider.h"
+#include "bcwindow.h"
 #include "canvas.h"
 #include "cpanel.inc"
 #include "ctimebar.inc"
@@ -31,7 +33,6 @@
 #include "editpanel.h"
 #include "floatauto.inc"
 #include "floatautos.inc"
-#include "guicast.h"
 #include "mainclock.inc"
 #include "maskauto.inc"
 #include "meterpanel.h"

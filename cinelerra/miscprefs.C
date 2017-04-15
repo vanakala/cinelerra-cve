@@ -18,6 +18,8 @@
  *
  */
 
+#include "bctitle.h"
+#include "bcresources.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"

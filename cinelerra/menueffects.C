@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "bctitle.h"
 #include "cinelerra.h"
 #include "clip.h"
 #include "confirmsave.h"

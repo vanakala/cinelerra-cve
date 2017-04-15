@@ -22,8 +22,11 @@
 #ifndef VDEVICEPREFS_H
 #define VDEVICEPREFS_H
 
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
+#include "bctextbox.h"
+#include "bctoggle.h"
 #include "adeviceprefs.inc"
-#include "guicast.h"
 #include "playbackconfig.inc"
 #include "preferencesthread.inc"
 #include "vdeviceprefs.inc"

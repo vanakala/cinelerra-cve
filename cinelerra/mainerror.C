@@ -19,7 +19,12 @@
  * 
  */
 
+#include "bcbutton.h"
+#include "bclistbox.h"
+#include "bclistboxitem.h"
+#include "bcresources.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "language.h"
 #include "mainerror.h"
 #include "mainsession.h"

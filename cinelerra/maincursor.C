@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcresources.h"
 #include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"

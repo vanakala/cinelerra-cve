@@ -25,6 +25,7 @@
 #include "mainclock.h"
 #include "mwindow.h"
 #include "theme.h"
+#include "units.h"
 
 MainClock::MainClock(MWindow *mwindow, int x, int y, int w)
  : BC_Title(x,

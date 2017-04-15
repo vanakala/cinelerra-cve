@@ -23,8 +23,10 @@
 #define CLIPEDIT_H
 
 #include "awindow.inc"
+#include "bctextbox.h"
+#include "bcbutton.h"
+#include "bcwindow.h"
 #include "edl.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "thread.h"
 #include "vwindow.inc"

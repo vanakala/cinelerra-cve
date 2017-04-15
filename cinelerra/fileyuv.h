@@ -22,6 +22,7 @@
 #ifndef FILEYUV_H
 #define FILEYUV_H
 
+#include "bcpopupmenu.h"
 #include "yuvstream.h"
 #include "file.inc"
 #include "filelist.h"

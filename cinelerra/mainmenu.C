@@ -27,6 +27,8 @@
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "bchash.h"
+#include "bclistboxitem.h"
+#include "bcmenu.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"

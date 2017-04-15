@@ -23,7 +23,9 @@
 #include "assetedit.h"
 #include "awindow.h"
 #include "awindowgui.h"
+#include "bcbar.h"
 #include "bcprogressbox.h"
+#include "bctitle.h"
 #include "cache.h"
 #include "cinelerra.h"
 #include "clip.h"
@@ -45,6 +47,7 @@
 #include "preferences.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "units.h"
 #include "vwindow.h"
 
 #include <string.h>

@@ -20,7 +20,10 @@
  */
 
 #include "bcdelete.h"
+#include "bcfilebox.h"
+#include "bclistboxitem.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "filesystem.h"
 #include "language.h"
 

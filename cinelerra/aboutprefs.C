@@ -20,6 +20,10 @@
  */
 
 #include "aboutprefs.h"
+#include "bcwindowbase.h"
+#include "bcresources.h"
+#include "bcbitmap.h"
+#include "bcpixmap.h"
 #include "language.h"
 #include "libmpeg3.h"
 #include "mwindow.h"

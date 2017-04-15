@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "autoconf.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "cache.h"
 #include "clip.h"
 #include "datatype.h"

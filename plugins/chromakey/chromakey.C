@@ -19,12 +19,14 @@
  * 
  */
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "bcsignals.h"
 #include "chromakey.h"
 #include "clip.h"
 #include "bchash.h"
+#include "bctitle.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "keyframe.h"
 #include "loadbalance.h"
 #include "picon_png.h"

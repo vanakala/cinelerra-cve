@@ -22,7 +22,9 @@
 #include "asset.h"
 #include "avlibsconfig.h"
 #include "bcwindow.h"
+#include "bcresources.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -36,6 +38,7 @@
 #include "paramlistwindow.h"
 #include "subselection.h"
 #include "theme.h"
+#include "vframe.h"
 
 #include <unistd.h>
 

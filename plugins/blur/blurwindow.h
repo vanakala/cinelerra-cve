@@ -22,7 +22,8 @@
 #ifndef BLURWINDOW_H
 #define BLURWINDOW_H
 
-#include "guicast.h"
+#include "bctoggle.h"
+#include "bcpot.h"
 #include "blur.h"
 #include "mutex.h"
 #include "pluginwindow.h"

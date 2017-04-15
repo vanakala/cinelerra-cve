@@ -35,7 +35,7 @@
 #include "pluginmacros.h"
 
 #include "bchash.inc"
-#include "guicast.h"
+#include "bctextbox.h"
 #include "language.h"
 #include "pluginvclient.h"
 #include "vframe.inc"

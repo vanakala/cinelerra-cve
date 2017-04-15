@@ -20,10 +20,12 @@
  */
 
 #include "bcsignals.h"
+#include "bctoggle.h"
 #include "mwindow.h"
 #include "plugin.h"
 #include "plugintoggles.h"
 #include "theme.h"
+#include "vframe.h"
 
 
 PluginOn::PluginOn(MWindow *mwindow, int x, int y, Plugin *plugin)

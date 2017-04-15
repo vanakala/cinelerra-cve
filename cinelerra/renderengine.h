@@ -26,6 +26,7 @@
 class RenderEngine;
 
 #include "arender.inc"
+#include "bctimer.h"
 #include "audiodevice.inc"
 #include "cache.inc"
 #include "canvas.inc"

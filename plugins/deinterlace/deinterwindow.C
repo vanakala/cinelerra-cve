@@ -19,7 +19,8 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bcmenuitem.h"
+#include "bctitle.h"
 #include "deinterwindow.h"
 #include <string.h>
 

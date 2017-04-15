@@ -19,7 +19,7 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bctitle.h"
 #include "ivtcwindow.h"
 #include "language.h"
 

@@ -22,6 +22,7 @@
 #include "audiodevice.h"
 #include "audiooss.h"
 #include "bcsignals.h"
+#include "bctimer.h"
 #include "clip.h"
 #include "condition.h"
 #include "errno.h"

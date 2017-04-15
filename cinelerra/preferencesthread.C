@@ -22,6 +22,7 @@
 #include "aboutprefs.h"
 #include "asset.h"
 #include "audiodevice.inc"
+#include "bclistboxitem.h"
 #include "bcsignals.h"
 #include "cache.h"
 #include "cinelerra.h"

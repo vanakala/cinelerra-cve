@@ -23,7 +23,6 @@
 #define MAINCURSOR_H
 
 #include "datatype.h"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 

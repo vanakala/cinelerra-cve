@@ -20,6 +20,7 @@
  */
 
 #include "bchash.h"
+#include "bctitle.h"
 #include "language.h"
 #include "mainprogress.h"
 #include "picon_png.h"

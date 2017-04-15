@@ -19,7 +19,8 @@
  * 
  */
 
-#include "guicast.h"
+#include "bcpot.h"
+#include "bcpopupmenu.h"
 #include "motion.h"
 #include "pluginwindow.h"
 

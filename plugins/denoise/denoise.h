@@ -31,8 +31,9 @@
 #define PLUGIN_GUI_CLASS DenoiseWindow
 
 #include "pluginmacros.h"
+
+#include "bcpot.h"
 #include "bchash.inc"
-#include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"

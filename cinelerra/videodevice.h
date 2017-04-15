@@ -29,7 +29,6 @@
 #include "bctimer.h"
 #include "canvas.inc"
 #include "edl.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "mutex.inc"
 #include "preferences.inc"

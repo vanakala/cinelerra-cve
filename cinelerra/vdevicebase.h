@@ -24,8 +24,8 @@
 
 #include "asset.inc"
 #include "assets.inc"
+#include "bcbitmap.inc"
 #include "edl.inc"
-#include "guicast.h"
 #include "videodevice.inc"
 
 class VDeviceBase

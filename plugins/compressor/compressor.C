@@ -19,7 +19,9 @@
  * 
  */
 
+#include "bcmenuitem.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "clip.h"
 #include "compressor.h"
 #include "cursors.h"

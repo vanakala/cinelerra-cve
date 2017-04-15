@@ -36,7 +36,8 @@
 #include "pluginmacros.h"
 
 #include "bchash.inc"
-#include "guicast.h"
+#include "bcpopupmenu.h"
+#include "bcmenuitem.h"
 #include "language.h"
 #include "mutex.h"
 #include "pluginvclient.h"

@@ -21,6 +21,7 @@
 
 #include "browsebutton.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "language.h"
 #include "mutex.h"
 #include "mwindow.h"

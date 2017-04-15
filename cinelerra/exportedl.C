@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "bchash.h"
+#include "bctitle.h"
 #include "condition.h"
 #include "confirmsave.h"
 #include "edits.h"

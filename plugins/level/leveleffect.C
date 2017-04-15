@@ -21,6 +21,7 @@
 
 #include "clip.h"
 #include "bchash.h"
+#include "bctitle.h"
 #include "filexml.h"
 #include "language.h"
 #include "leveleffect.h"

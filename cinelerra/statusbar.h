@@ -22,7 +22,8 @@
 #ifndef STATUSBAR_H
 #define STATUSBAR_H
 
-#include "guicast.h"
+#include "bcbutton.h"
+#include "bcsubwindow.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 

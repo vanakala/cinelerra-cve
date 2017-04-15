@@ -24,7 +24,9 @@
 
 #include "arraylist.h"
 #include "bcprogressbox.inc"
-#include "guicast.h"
+#include "bcprogress.inc"
+#include "bcwindowbase.inc"
+#include "datatype.h"
 #include "mainprogress.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"

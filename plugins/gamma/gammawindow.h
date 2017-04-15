@@ -30,8 +30,10 @@ class GammaAuto;
 class GammaPlot;
 class GammaColorPicker;
 
+#include "bcslider.h"
+#include "bctextbox.h"
+#include "bctoggle.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "mutex.h"
 #include "gamma.h"
 #include "pluginclient.h"

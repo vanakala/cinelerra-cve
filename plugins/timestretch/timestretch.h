@@ -31,9 +31,10 @@
 #define PLUGIN_GUI_CLASS TimeStretchWindow
 
 #include "pluginmacros.h"
+
 #include "bchash.inc"
+#include "bcpot.h"
 #include "fourier.h"
-#include "guicast.h"
 #include "language.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"

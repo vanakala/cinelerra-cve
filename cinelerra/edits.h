@@ -26,7 +26,6 @@
 #include "asset.inc"
 #include "assets.inc"
 #include "edl.inc"
-#include "guicast.h"
 #include "edit.h"
 #include "filexml.inc"
 #include "linklist.h"

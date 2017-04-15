@@ -30,8 +30,8 @@ class PluginDialogOut;
 class PluginDialogThru;
 class PluginDialog;
 
+#include "bclistbox.h"
 #include "condition.inc"
-#include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "plugin.inc"

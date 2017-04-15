@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "bcwindowbase.h"
 #include "edl.h"
 #include "keys.h"
 #include "language.h"

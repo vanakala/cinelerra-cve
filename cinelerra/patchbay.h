@@ -22,7 +22,8 @@
 #ifndef PATCHBAY_H
 #define PATCHBAY_H
 
-#include "guicast.h"
+#include "bcsubwindow.h"
+#include "bcpixmap.h"
 #include "filexml.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"

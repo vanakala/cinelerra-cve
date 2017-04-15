@@ -22,6 +22,7 @@
 #include "bcsignals.h"
 #include "canvas.h"
 #include "clip.h"
+#include "colors.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "keys.h"

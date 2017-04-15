@@ -22,8 +22,6 @@
 #ifndef RGB601WINDOW_H
 #define RGB601WINDOW_H
 
-#include "guicast.h"
-
 class RGB601Thread;
 class RGB601Window;
 

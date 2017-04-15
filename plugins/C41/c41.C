@@ -33,9 +33,11 @@
 
 #include "clip.h"
 #include "bchash.h"
+#include "bcslider.h"
+#include "bctoggle.h"
+#include "bctitle.h"
 #include "colormodels.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"

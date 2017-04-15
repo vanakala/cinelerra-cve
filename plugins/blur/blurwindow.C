@@ -19,7 +19,7 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bctitle.h"
 #include "blur.h"
 #include "blurwindow.h"
 

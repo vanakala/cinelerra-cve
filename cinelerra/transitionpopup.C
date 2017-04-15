@@ -19,6 +19,8 @@
  * 
  */
 
+#include "bctitle.h"
+#include "bcbutton.h"
 #include "clip.h"
 #include "cinelerra.h"
 #include "edit.h"

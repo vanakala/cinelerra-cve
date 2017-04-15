@@ -22,8 +22,6 @@
 #ifndef TITLEWINDOW_H
 #define TITLEWINDOW_H
 
-#include "guicast.h"
-
 class TitleInterlace;
 
 #include "colorpicker.h"

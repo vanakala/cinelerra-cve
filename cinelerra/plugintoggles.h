@@ -22,7 +22,6 @@
 #ifndef PLUGINTOGGLES_H
 #define PLUGINTOGGLES_H
 
-#include "guicast.h"
 #include "mwindow.inc"
 #include "plugin.inc"
 

@@ -20,7 +20,10 @@
  */
 
 #include "asset.h"
+#include "bcbutton.h"
+#include "bclistbox.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "confirmsave.h"
 #include "language.h"
 #include "mainerror.h"

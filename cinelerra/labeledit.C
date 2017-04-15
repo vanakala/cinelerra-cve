@@ -21,6 +21,7 @@
 
 #include "awindow.h"
 #include "awindowgui.h"
+#include "bctitle.h"
 #include "cinelerra.h"
 #include "labeledit.h"
 #include "edl.h"

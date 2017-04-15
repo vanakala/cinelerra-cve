@@ -22,9 +22,9 @@
 #ifndef VRENDER_H
 #define VRENDER_H
 
+#include "bctimer.h"
 #include "commonrender.h"
 #include "edit.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "overlayframe.inc"
 #include "renderengine.inc"

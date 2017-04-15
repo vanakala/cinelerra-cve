@@ -19,6 +19,8 @@
  * 
  */
 
+#include "bctitle.h"
+#include "bctextbox.h"
 #include "bandwipe.h"
 #include "bchash.h"
 #include "edl.inc"

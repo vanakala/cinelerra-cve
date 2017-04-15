@@ -24,7 +24,7 @@
 
 #include "asset.inc"
 #include "awindow.inc"
-#include "guicast.h"
+#include "bcpopupmenu.h"
 #include "browsebutton.h"
 #include "formatpresets.h"
 #include "language.h"

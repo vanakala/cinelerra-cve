@@ -20,6 +20,8 @@
  */
 
 #include "bcsignals.h"
+#include "bcresources.h"
+#include "bctitle.h"
 #include "cwindow.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"

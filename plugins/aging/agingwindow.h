@@ -22,8 +22,6 @@
 #ifndef AGINGWINDOW_H
 #define AGINGWINDOW_H
 
-#include "guicast.h"
-
 #include "filexml.h"
 #include "mutex.h"
 #include "aging.h"

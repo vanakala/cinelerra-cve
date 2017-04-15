@@ -30,9 +30,12 @@
 #define PLUGIN_GUI_CLASS FreeverbWindow
 
 #include "pluginmacros.h"
-#include "clip.h"
+
 #include "bchash.h"
-#include "guicast.h"
+#include "bcpot.h"
+#include "bctitle.h"
+#include "bctoggle.h"
+#include "clip.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"

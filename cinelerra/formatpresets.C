@@ -20,6 +20,8 @@
  */
 
 #include "bcsignals.h"
+#include "bctitle.h"
+#include "colormodels.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"

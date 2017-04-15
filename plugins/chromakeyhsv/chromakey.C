@@ -18,14 +18,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
+#define GL_GLEXT_PROTOTYPES
 
-#include "bcdisplayinfo.h"
+#include "bcbar.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "chromakey.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "keyframe.h"
 #include "loadbalance.h"
 #include "picon_png.h"

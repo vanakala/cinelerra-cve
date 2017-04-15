@@ -20,6 +20,7 @@
  * 
  */
 
+#include "bctitle.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "loadmode.h"

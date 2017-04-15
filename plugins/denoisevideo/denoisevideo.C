@@ -19,11 +19,11 @@
  * 
  */
 
+#include "bctitle.h"
 #include "clip.h"
 #include "bchash.h"
 #include "denoisevideo.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "keyframe.h"
 #include "language.h"
 #include "picon_png.h"

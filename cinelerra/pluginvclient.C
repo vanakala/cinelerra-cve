@@ -21,6 +21,7 @@
 
 #include "edl.h"
 #include "edlsession.h"
+#include "bcresources.h"
 #include "cinelerra.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"

@@ -19,8 +19,10 @@
  * 
  */
 
-#include "clip.h"
+
 #include "bchash.h"
+#include "bctitle.h"
+#include "clip.h"
 #include "filexml.h"
 #include "denoise.h"
 #include "picon_png.h"

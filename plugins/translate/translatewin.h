@@ -22,8 +22,7 @@
 #ifndef TRANSLATEWIN_H
 #define TRANSLATEWIN_H
 
-#include "guicast.h"
-
+#include "bctextbox.h"
 #include "translate.h"
 #include "pluginclient.h"
 #include "pluginwindow.h"

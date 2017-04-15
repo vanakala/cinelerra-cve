@@ -22,6 +22,7 @@
 #include "clip.h"
 #include "data/lad_picon_png.h"
 #include "bchash.h"
+#include "bctitle.h"
 #include "filexml.h"
 #include "language.h"
 #include "pluginaclientlad.h"

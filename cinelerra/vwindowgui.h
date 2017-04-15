@@ -23,9 +23,10 @@
 #define VWINDOWGUI_H
 
 #include "asset.inc"
+#include "bcslider.h"
+#include "bcwindow.h"
 #include "canvas.h"
 #include "editpanel.h"
-#include "guicast.h"
 #include "mainclock.inc"
 #include "meterpanel.h"
 #include "mwindow.inc"

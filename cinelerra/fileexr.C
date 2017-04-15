@@ -20,7 +20,11 @@
  */
 
 #include "asset.h"
+#include "bcbutton.h"
+#include "bctoggle.h"
+#include "bctitle.h"
 #include "bcsignals.h"
+#include "bcpopupmenu.h"
 #include "clip.h"
 #include "fileexr.h"
 #include "filesystem.h"

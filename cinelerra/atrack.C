@@ -26,6 +26,7 @@
 #include "atrack.h"
 #include "autoconf.h"
 #include "aautomation.h"
+#include "bcresources.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"

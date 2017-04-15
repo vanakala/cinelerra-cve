@@ -25,7 +25,6 @@
 #include "edlsession.h"
 #include "file.h"
 #include "filelist.h"
-#include "guicast.h"
 #include "interlacemodes.h"
 #include "mutex.h"
 #include "mwindow.h"

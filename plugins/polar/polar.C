@@ -30,11 +30,11 @@
 
 #include "pluginmacros.h"
 
-#include "bcdisplayinfo.h"
-#include "clip.h"
 #include "bchash.h"
+#include "bcslider.h"
+#include "bctitle.h"
+#include "clip.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"

@@ -19,6 +19,8 @@
  * 
  */
 
+#include "bctitle.h"
+#include "bcmenuitem.h"
 #include "clip.h"
 #include "language.h"
 #include "motion.h"

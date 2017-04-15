@@ -22,7 +22,9 @@
 #ifndef METERPANEL_H
 #define METERPANEL_H
 
-#include "guicast.h"
+#include "bcbutton.h"
+#include "bctoggle.h"
+#include "bcmeter.h"
 #include "mwindow.inc"
 
 class MeterReset;

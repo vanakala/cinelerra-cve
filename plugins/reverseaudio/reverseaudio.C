@@ -32,7 +32,6 @@
 #include "pluginmacros.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"

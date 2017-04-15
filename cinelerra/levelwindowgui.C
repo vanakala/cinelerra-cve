@@ -21,6 +21,7 @@
 
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
 #include "mainmenu.h"

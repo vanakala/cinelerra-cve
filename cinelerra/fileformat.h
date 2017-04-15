@@ -22,8 +22,6 @@
 #ifndef FILEFORMAT_H
 #define FILEFORMAT_H
 
-#include "guicast.h"
-
 class FileFormatByteOrderLOHI;
 class FileFormatByteOrderHILO;
 class FileFormatSigned;
@@ -33,6 +31,8 @@ class FileFormatBits;
 
 #include "asset.inc"
 #include "assets.inc"
+#include "bctextbox.h"
+#include "bcwindow.h"
 #include "file.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"

@@ -22,6 +22,8 @@
 #include "adeviceprefs.h"
 #include "audioalsa.h"
 #include "audiodevice.inc"
+#include "bcresources.h"
+#include "bclistboxitem.h"
 #include "edl.h"
 #include "language.h"
 #include "playbackconfig.h"

@@ -25,6 +25,8 @@
 #include "cwindowgui.h"
 #include "datatype.h"
 #include "bchash.h"
+#include "bcpixmap.h"
+#include "bctitle.h"
 #include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"

@@ -40,7 +40,8 @@
 #include "pluginmacros.h"
 
 #include "bcdisplayinfo.h"
-#include "guicast.h"
+#include "bcpot.h"
+#include "bctoggle.h"
 #include "pluginaclient.h"
 #include "pluginaclientlad.inc"
 #include "pluginserver.h"

@@ -30,12 +30,14 @@
 #define PLUGIN_THREAD_CLASS InvertVideoThread
 #define PLUGIN_GUI_CLASS InvertVideoWindow
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "pluginmacros.h"
 
-#include "clip.h"
 #include "bchash.h"
+#include "bctoggle.h"
+#include "clip.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"

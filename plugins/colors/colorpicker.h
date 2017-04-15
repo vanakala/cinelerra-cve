@@ -22,12 +22,14 @@
 #ifndef COLORPICKER_H
 #define COLORPICKER_H
 
+#include "bcsubwindow.h"
+#include "bcslider.h"
 #include "condition.inc"
-#include "guicast.h"
 #include "mutex.inc"
 #include "thread.h"
 #include "vframe.inc"
 #include "pluginwindow.h"
+#include "thread.h"
 
 class ColorWindow;
 class PaletteWheel;

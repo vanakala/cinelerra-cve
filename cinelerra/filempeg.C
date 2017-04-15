@@ -30,7 +30,6 @@
 #include "file.h"
 #include "filempeg.h"
 #include "filesystem.h"
-#include "guicast.h"
 #include "indexfile.h"
 #include "interlacemodes.h"
 #include "language.h"
@@ -44,6 +43,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #define MPEG_YUV420 0
 #define MPEG_YUV422 1

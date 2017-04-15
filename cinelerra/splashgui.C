@@ -20,6 +20,8 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "bcprogress.h"
+#include "bcresources.h"
 #include "language.h"
 #include "mwindow.h"
 #include "splashgui.h"

@@ -22,7 +22,7 @@
 #ifndef UNSHARPWINDOW_H
 #define UNSHARPWINDOW_H
 
-#include "guicast.h"
+#include "bcpot.h"
 #include "unsharp.h"
 #include "unsharpwindow.inc"
 #include "pluginwindow.h"

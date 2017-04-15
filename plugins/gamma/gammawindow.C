@@ -19,7 +19,8 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bcsubwindow.h"
+#include "bctitle.h"
 #include "gammawindow.h"
 #include "language.h"
 

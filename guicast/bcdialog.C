@@ -20,11 +20,9 @@
  */
 
 #include "bcdialog.h"
+#include "bcwindow.h"
 #include "condition.h"
 #include "mutex.h"
-
-
-
 
 
 BC_DialogThread::BC_DialogThread()

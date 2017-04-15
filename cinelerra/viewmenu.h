@@ -22,7 +22,6 @@
 #ifndef VIEWMENU_H
 #define VIEWMENU_H
 
-#include "guicast.h"
 #include "mainmenu.inc"
 #include "mwindow.inc"
 

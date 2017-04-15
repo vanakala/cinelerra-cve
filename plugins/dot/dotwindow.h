@@ -22,8 +22,6 @@
 #ifndef DOTWINDOW_H
 #define DOTWINDOW_H
 
-#include "guicast.h"
-
 #include "dot.h"
 #include "pluginwindow.h"
 

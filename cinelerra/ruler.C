@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "cursors.h"
 #include "language.h"
 #include "mainsession.h"

@@ -20,6 +20,8 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "bcresources.h"
+#include "bctitle.h"
 #include "colorpicker.h"
 #include "condition.h"
 #include "language.h"

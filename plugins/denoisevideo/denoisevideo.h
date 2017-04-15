@@ -34,6 +34,7 @@
 
 #include "pluginmacros.h"
 
+#include "bcslider.h"
 #include "bchash.inc"
 #include "language.h"
 #include "pluginvclient.h"

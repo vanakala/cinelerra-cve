@@ -21,12 +21,15 @@
 
 #include "automation.h"
 #include "autos.h"
+#include "bcpixmap.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "cinelerra.h"
 #include "canvas.h"
 #include "clip.h"
 #include "cpanel.h"
 #include "cplayback.h"
+#include "colormodels.inc"
 #include "ctimebar.h"
 #include "cursors.h"
 #include "cwindowgui.h"
@@ -58,6 +61,7 @@
 #include "tracks.h"
 #include "transportcommand.h"
 #include "vtrack.h"
+#include "vframe.h"
 
 
 static double my_zoom_table[] = 

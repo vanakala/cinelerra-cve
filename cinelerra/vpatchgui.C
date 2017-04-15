@@ -159,7 +159,7 @@ void VPatchGUI::synchronize_fade(float value_change)
 {
 	if(fade && !change_source) 
 	{
-		fade->update(Units::to_int64(fade->get_value() + value_change));
+		fade->update(round(fade->get_value() + value_change));
 		fade->update_edl();
 	}
 }

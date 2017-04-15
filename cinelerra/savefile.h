@@ -22,7 +22,6 @@
 #ifndef SAVEFILE_H
 #define SAVEFILE_H
 
-#include "guicast.h"
 #include "mainmenu.inc"
 #include "mwindow.inc"
 #include "savefile.inc"

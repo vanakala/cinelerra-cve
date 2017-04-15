@@ -22,7 +22,9 @@
 #ifndef DEINTERWINDOW_H
 #define DEINTERWINDOW_H
 
-#include "guicast.h"
+#include "bcpot.h"
+#include "bcpopupmenu.h"
+#include "bctitle.h"
 #include "mutex.h"
 #include "deinterlace.h"
 #include "pluginclient.h"

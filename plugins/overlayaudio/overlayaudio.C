@@ -28,7 +28,11 @@
 #define PLUGIN_GUI_CLASS OverlayAudioWindow
 
 #include "pluginmacros.h"
+
 #include "bchash.h"
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
+#include "bctitle.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"

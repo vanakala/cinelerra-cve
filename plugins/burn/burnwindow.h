@@ -22,8 +22,6 @@
 #ifndef BURNWINDOW_H
 #define BURNWINDOW_H
 
-#include "guicast.h"
-
 #include "filexml.h"
 #include "mutex.h"
 #include "burn.h"

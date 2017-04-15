@@ -26,6 +26,8 @@
 #include "batchrender.h"
 #include "bcprogressbox.h"
 #include "bcsignals.h"
+#include "bctimer.h"
+#include "bctitle.h"
 #include "cache.h"
 #include "cinelerra.h"
 #include "clip.h"

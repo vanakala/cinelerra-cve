@@ -31,7 +31,6 @@
 #include "bchash.inc"
 #include "edl.inc"
 #include "filexml.inc"
-#include "guicast.h"
 #include "linklist.h"
 #include "pluginserver.inc"
 #include "sharedlocation.h"

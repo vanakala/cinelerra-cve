@@ -26,8 +26,8 @@
 #include "bcsignals.h"
 #include "datatype.h"
 #include "edl.inc"
-#include "guicast.h"
 #include "filexml.inc"
+#include "linklist.h"
 #include "autos.inc"
 
 

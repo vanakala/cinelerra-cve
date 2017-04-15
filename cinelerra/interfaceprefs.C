@@ -19,6 +19,9 @@
  * 
  */
 
+#include "bcbar.h"
+#include "bcresources.h"
+#include "bctitle.h"
 #include "deleteallindexes.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -28,6 +31,7 @@
 #include "preferencesthread.h"
 #include "interfaceprefs.h"
 #include "theme.h"
+#include "units.h"
 
 #include <inttypes.h>
 

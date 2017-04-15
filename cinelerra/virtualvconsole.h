@@ -22,7 +22,6 @@
 #ifndef VRENDERTHREAD_H
 #define VRENDERTHREAD_H
 
-#include "guicast.h"
 #include "vframe.inc"
 #include "videodevice.inc"
 #include "virtualconsole.h"

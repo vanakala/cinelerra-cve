@@ -22,11 +22,6 @@
 #ifndef RESIZETRACKTHREAD_H
 #define RESIZETRACKTHREAD_h
 
-
-
-
-
-#include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "selection.h"

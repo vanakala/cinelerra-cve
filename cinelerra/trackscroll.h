@@ -22,10 +22,8 @@
 #ifndef TRACKSCROLL_H
 #define TRACKSCROLL_H
 
-
-#include "guicast.h"
+#include "bcscrollbar.h"
 #include "mwindow.inc"
-#include "mwindowgui.inc"
 
 class TrackScroll : public BC_ScrollBar
 {

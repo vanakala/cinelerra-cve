@@ -22,8 +22,10 @@
 #ifndef THRESHOLDWINDOW_H
 #define THRESHOLDWINDOW_H
 
+#include "bcbutton.h"
+#include "bctextbox.h"
+#include "bctoggle.h"
 #include "colorpicker.h"
-#include "guicast.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "threshold.h"

@@ -34,8 +34,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "clip.h"
 #include "bchash.h"
+#include "bcslider.h"
+#include "bctitle.h"
+#include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"

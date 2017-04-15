@@ -28,7 +28,6 @@
 #include "edit.h"
 #include "file.h"
 #include "filedv.h"
-#include "guicast.h"
 #include "interlacemodes.h"
 #include "language.h"
 #include "mutex.h"

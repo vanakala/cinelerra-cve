@@ -22,9 +22,10 @@
 #ifndef MAINWINDOWGUI_H
 #define MAINWINDOWGUI_H
 
+#include "bcwindow.h"
+#include "colors.h"
 #include "datatype.h"
 #include "editpopup.inc"
-#include "guicast.h"
 #include "keyframepopup.inc"
 #include "mbuttons.inc"
 #include "mainclock.inc"

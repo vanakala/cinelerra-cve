@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "assets.h"
+#include "bctimer.h"
 #include "edl.h"
 #include "filexml.h"
 #include "mainindexes.h"

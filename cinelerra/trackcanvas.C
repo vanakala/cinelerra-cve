@@ -22,6 +22,8 @@
 #include "asset.h"
 #include "autoconf.h"
 #include "automation.h"
+#include "bcdragwindow.h"
+#include "bcresources.h"
 #include "bcsignals.h"
 #include "bctimer.h"
 #include "cinelerra.h"

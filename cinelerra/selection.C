@@ -21,6 +21,7 @@
 #include "selection.h"
 #include "bcpopupmenu.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "bctextbox.h"
 #include "bcbutton.h"
 #include "bcmenuitem.h"
@@ -32,6 +33,7 @@
 #include "language.h"
 #include "mwindow.h"
 #include "theme.h"
+#include "vframe.h"
 
 #include <stdlib.h>
 

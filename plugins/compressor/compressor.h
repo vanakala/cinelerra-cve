@@ -31,10 +31,13 @@
 #define PLUGIN_THREAD_CLASS CompressorThread
 #define PLUGIN_GUI_CLASS CompressorWindow
 
+#include "bcbutton.h"
+#include "bcpopupmenu.h"
+#include "bctextbox.h"
+#include "bctoggle.h"
 #include "pluginmacros.h"
 #include "bchash.inc"
 #include "cinelerra.h"
-#include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
 #include "vframe.inc"

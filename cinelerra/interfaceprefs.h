@@ -37,6 +37,7 @@ class MeterMaxDB;
 class ViewBehaviourText;
 class ViewThumbnails;
 
+#include "bcpopupmenu.h"
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
 #include "mwindow.inc"

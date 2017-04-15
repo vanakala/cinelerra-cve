@@ -22,7 +22,6 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
-#include "guicast.h"
 #include "edit.h"
 #include "edl.inc"
 #include "filexml.inc"

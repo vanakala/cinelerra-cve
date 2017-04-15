@@ -23,7 +23,7 @@
 #define FORMATTOOLS_H
 
 #include "asset.inc"
-#include "guicast.h"
+#include "bcrecentlist.h"
 #include "browsebutton.h"
 #include "file.inc"
 #include "mwindow.inc"

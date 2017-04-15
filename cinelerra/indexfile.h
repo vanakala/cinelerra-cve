@@ -25,7 +25,6 @@
 #include "asset.inc"
 #include "edit.inc"
 #include "file.inc"
-#include "guicast.h"
 #include "indexthread.inc"
 #include "mainprogress.inc"
 #include "mwindow.inc"

@@ -22,8 +22,9 @@
 #ifndef SRATEWINDOW_H
 #define SRATEWINDOW_H
 
+#include "bctextbox.h"
+#include "bctoggle.h"
 #include "normalize.h"
-#include "guicast.h"
 #include "pluginwindow.h"
 
 class NormalizeWindow : public PluginWindow

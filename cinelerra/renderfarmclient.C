@@ -23,6 +23,8 @@
 #include "assets.h"
 #include "clip.h"
 #include "bchash.h"
+#include "bcresources.h"
+#include "bctimer.h"
 #include "edl.h"
 #include "filesystem.h"
 #include "filexml.h"

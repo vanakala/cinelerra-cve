@@ -24,7 +24,6 @@
 
 #include "autos.h"
 #include "edl.inc"
-#include "guicast.h"
 #include "filexml.inc"
 #include "floatauto.inc"
 

@@ -28,12 +28,15 @@
 #define PLUGIN_THREAD_CLASS FrameFieldThread
 #define PLUGIN_GUI_CLASS FrameFieldWindow
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "pluginmacros.h"
 
 #include "bcsignals.h"
+#include "bctoggle.h"
+#include "bctexture.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "keyframe.h"
 #include "language.h"
 #include "picon_png.h"

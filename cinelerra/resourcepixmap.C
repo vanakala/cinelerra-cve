@@ -633,7 +633,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int mode)
 {
 // pixels spanned by a picon
-	int picon_w = Units::round(edit->picon_w());
+	int picon_w = round(edit->picon_w());
 	int picon_h = edit->picon_h();
 
 // Don't draw video if edit is tiny

@@ -21,8 +21,8 @@
 
 #include <unistd.h>
 #include <math.h>
-#include "bcdisplayinfo.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "cursors.h"
 #include "bluebanana.h"
 #include "bluebananaconfig.h"

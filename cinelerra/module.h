@@ -28,7 +28,6 @@
 #include "datatype.h"
 #include "edl.inc"
 #include "filexml.inc"
-#include "guicast.h"
 #include "module.inc"
 #include "plugin.inc"
 #include "pluginarray.inc"

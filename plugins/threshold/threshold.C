@@ -19,6 +19,8 @@
  * 
  */
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"

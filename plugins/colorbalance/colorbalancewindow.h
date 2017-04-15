@@ -29,8 +29,10 @@ class ColorBalanceLock;
 class ColorBalanceWhite;
 class ColorBalanceReset;
 
+#include "bcbutton.h"
+#include "bcslider.h"
+#include "bctoggle.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "mutex.h"
 #include "colorbalance.h"
 #include "pluginclient.h"

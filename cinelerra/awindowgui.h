@@ -23,16 +23,24 @@
 #define AWINDOWGUI_H
 
 #include "arraylist.h"
+#include "bclistbox.h"
+#include "bclistboxitem.h"
+#include "bcmenuitem.h"
+#include "bcpixmap.inc"
+#include "bcpopupmenu.h"
+#include "bcwindow.h"
+#include "bcwindow.h"
 #include "assetpopup.inc"
 #include "asset.inc"
 #include "assets.inc"
 #include "awindow.inc"
 #include "awindowmenu.inc"
 #include "edl.inc"
-#include "guicast.h"
 #include "labels.h"
 #include "mwindow.inc"
 #include "pluginserver.inc"
+
+#include <X11/Xatom.h>
 
 class AWindowAssets;
 class AWindowFolders;

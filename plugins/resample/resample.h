@@ -28,8 +28,9 @@
 #define PLUGIN_GUI_CLASS ResampleWindow
 
 #include "pluginmacros.h"
+
+#include "bctextbox.h"
 #include "bchash.inc"
-#include "guicast.h"
 #include "language.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"

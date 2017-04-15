@@ -20,6 +20,7 @@
  */
 
 #include "atrack.h"
+#include "bcpan.h"
 #include "automation.h"
 #include "bcsignals.h"
 #include "clip.h"

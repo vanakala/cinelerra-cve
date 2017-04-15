@@ -28,7 +28,6 @@
 #include "bchash.h"
 #include "file.inc"
 #include "filesystem.h"
-#include "guicast.h"
 #include "mutex.h"
 #include "preferences.h"
 #include "theme.h"

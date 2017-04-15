@@ -24,8 +24,7 @@
 
 class LevelWindowReset;
 
-#include "guicast.h"
-#include "language.h"
+#include "bcwindow.h"
 #include "levelwindow.inc"
 #include "meterpanel.inc"
 #include "mwindow.inc"

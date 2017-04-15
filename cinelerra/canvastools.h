@@ -22,8 +22,9 @@
 #ifndef CANVASTOOLS_H
 #define CANVASTOOLS_H
 
+#include "arraylist.h"
+#include "bcbutton.h"
 #include "edit.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "trackcanvas.inc"
 #include "vframe.inc"

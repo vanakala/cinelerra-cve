@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "bcsubwindow.h"
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "language.h"
 #include "paramlist.h"
 #include "paramlistwindow.h"

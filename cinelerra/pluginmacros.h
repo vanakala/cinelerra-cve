@@ -36,6 +36,8 @@
  * PLUGIN_THREAD_CLASS class_name
  * PLUGIN_GUI_CLASS class_name
  */
+#include "bcresources.h"
+
 class PLUGIN_CLASS;
 
 #ifdef PLUGIN_CONFIG_CLASS

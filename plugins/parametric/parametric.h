@@ -31,9 +31,12 @@
 #define PLUGIN_GUI_CLASS ParametricWindow
 
 #include "pluginmacros.h"
+
 #include "bchash.inc"
+#include "bcpopupmenu.h"
+#include "bcpot.h"
+#include "bctextbox.h"
 #include "fourier.h"
-#include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"

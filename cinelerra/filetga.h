@@ -22,8 +22,12 @@
 #ifndef FILETGA_H
 #define FILETGA_H
 
+#include "bcbutton.h"
+#include "bctitle.h"
+#include "bclistboxitem.h"
+#include "bctextbox.h"
+#include "bcwindow.h"
 #include "filelist.h"
-#include "guicast.h"
 
 class FileTGA : public FileList
 {

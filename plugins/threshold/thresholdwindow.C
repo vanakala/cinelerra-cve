@@ -19,7 +19,7 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bctitle.h"
 #include "histogramengine.h"
 #include "language.h"
 #include "threshold.h"

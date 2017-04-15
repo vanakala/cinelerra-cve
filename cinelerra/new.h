@@ -26,7 +26,6 @@
 #include "edl.inc"
 #include "file.inc"
 #include "filexml.inc"
-#include "guicast.h"
 #include "bchash.inc"
 #include "formatpresets.h"
 #include "mwindow.inc"

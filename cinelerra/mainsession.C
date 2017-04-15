@@ -20,11 +20,11 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "bcresources.h"
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "guicast.h"
 #include "mainsession.h"
 #include "meterpanel.h"
 #include "mwindow.h"

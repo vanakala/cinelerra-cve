@@ -24,6 +24,7 @@
 
 
 #include "bcdialog.h"
+#include "bcwindow.h"
 #include "mainerror.inc"
 #include "mutex.inc"
 #include "mwindow.inc"

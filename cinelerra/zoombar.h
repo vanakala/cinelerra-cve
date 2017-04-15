@@ -33,7 +33,8 @@ class AutoZoom;
 class AutoTypeMenu;
 class ZoomTextBox;
 
-#include "guicast.h"
+#include "bcsubwindow.h"
+#include "bctextbox.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "vframe.inc"

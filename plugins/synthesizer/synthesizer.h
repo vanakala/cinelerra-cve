@@ -32,10 +32,14 @@
 #define PLUGIN_THREAD_CLASS SynthThread
 #define PLUGIN_GUI_CLASS SynthWindow
 
-
+#include "bcbutton.h"
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
+#include "bcpot.h"
+#include "bcscrollbar.h"
+#include "bctextbox.h"
 #include "pluginmacros.h"
 #include "filexml.inc"
-#include "guicast.h"
 #include "language.h"
 #include "mutex.h"
 #include "pluginaclient.h"

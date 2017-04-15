@@ -23,12 +23,13 @@
 #define EDIT_H
 
 #include "asset.inc"
+#include "bcwindowbase.inc"
 #include "datatype.h"
 #include "edl.inc"
-#include "guicast.h"
 #include "edits.inc"
 #include "filexml.inc"
 #include "keyframe.inc"
+#include "linklist.h"
 #include "mwindow.inc"
 #include "plugin.inc"
 #include "track.inc"

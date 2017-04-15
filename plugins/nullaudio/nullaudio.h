@@ -43,6 +43,7 @@
 
 #include "pluginmacros.h"
 
+#include "bctoggle.h"
 #include "language.h"
 #include "pluginaclient.h"
 #include "aframe.inc"

@@ -22,8 +22,10 @@
 #ifndef TIMEBAR_H
 #define TIMEBAR_H
 
+#include "bctoggle.h"
+#include "bcsubwindow.h"
+#include "datatype.h"
 #include "edl.inc"
-#include "guicast.h"
 #include "filexml.inc"
 #include "labels.inc"
 #include "labeledit.inc"

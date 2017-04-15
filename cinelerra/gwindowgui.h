@@ -23,7 +23,8 @@
 #define GWINDOWGUI_H
 
 #include "automation.inc"
-#include "guicast.h"
+#include "bcwindow.h"
+#include "bctoggle.h"
 #include "mwindow.inc"
 
 class GWindowToggle;

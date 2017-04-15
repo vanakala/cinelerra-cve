@@ -22,6 +22,7 @@
 #define GL_GLEXT_PROTOTYPES
 
 #include "bcsignals.h"
+#include "bctexture.h"
 #include "bcwindowbase.h"
 #include "canvas.h"
 #include "clip.h"

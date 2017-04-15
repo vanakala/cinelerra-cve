@@ -22,7 +22,6 @@
 #ifndef QUIT_H
 #define QUIT_H
 
-#include "guicast.h"
 #include "mwindow.inc"
 #include "savefile.inc"
 

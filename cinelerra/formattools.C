@@ -21,7 +21,8 @@
 
 #include "asset.h"
 #include "bcsignals.h"
-#include "guicast.h"
+#include "bctitle.h"
+#include "bcresources.h"
 #include "file.h"
 #include "formattools.h"
 #include "language.h"

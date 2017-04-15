@@ -22,8 +22,9 @@
 #ifndef PATCHGUI_H
 #define PATCHGUI_H
 
+#include "bctoggle.h"
+#include "bctextbox.h"
 #include "datatype.h"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "patchbay.inc"
 #include "intauto.inc"

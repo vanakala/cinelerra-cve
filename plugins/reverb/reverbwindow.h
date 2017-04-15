@@ -27,7 +27,7 @@
 class ReverbThread;
 class ReverbWindow;
 
-#include "guicast.h"
+#include "bcpot.h"
 #include "mutex.h"
 #include "reverb.h"
 #include "pluginwindow.h"

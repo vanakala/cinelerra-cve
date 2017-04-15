@@ -35,7 +35,6 @@
 #include "pluginmacros.h"
 #include "filexml.h"
 #include "flipwindow.h"
-#include "guicast.h"
 #include "language.h"
 #include "pluginvclient.h"
 

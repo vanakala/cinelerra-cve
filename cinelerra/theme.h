@@ -26,7 +26,6 @@
 #include "batchrender.inc"
 #include "bctheme.h"
 #include "cwindowgui.inc"
-#include "guicast.h"
 #include "levelwindowgui.inc"
 #include "mbuttons.inc"
 #include "mwindow.inc"

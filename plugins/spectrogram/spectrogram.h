@@ -32,10 +32,10 @@
 #define PLUGIN_THREAD_CLASS SpectrogramThread
 #define PLUGIN_GUI_CLASS SpectrogramWindow
 
+#include "bcpot.h"
 #include "pluginmacros.h"
 #include "bchash.inc"
 #include "fourier.h"
-#include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"

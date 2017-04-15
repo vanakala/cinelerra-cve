@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bctitle.h"
 #include "bandslide.h"
 #include "bchash.h"
 #include "filexml.h"

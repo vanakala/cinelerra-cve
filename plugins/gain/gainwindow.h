@@ -22,8 +22,8 @@
 #ifndef GAINWINDOW_H
 #define GAINWINDOW_H
 
+#include "bcslider.h"
 #include "gain.h"
-#include "guicast.h"
 #include "pluginclient.h"
 #include "pluginwindow.h"
 

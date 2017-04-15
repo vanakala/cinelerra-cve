@@ -19,6 +19,10 @@
  * 
  */
 
+#include "bcbar.h"
+#include "bclistboxitem.h"
+#include "bcresources.h"
+#include "bctitle.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"

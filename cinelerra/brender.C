@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "bcsignals.h"
+#include "bctimer.h"
 #include "brender.h"
 #include "clip.h"
 #include "condition.h"

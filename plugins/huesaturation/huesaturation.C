@@ -28,12 +28,15 @@
 #define PLUGIN_THREAD_CLASS HueThread
 #define PLUGIN_GUI_CLASS HueWindow
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "pluginmacros.h"
 
-#include "clip.h"
 #include "bchash.h"
+#include "bcslider.h"
+#include "bctitle.h"
+#include "clip.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"

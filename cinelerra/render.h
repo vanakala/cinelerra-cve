@@ -25,6 +25,7 @@
 
 #include "asset.inc"
 #include "batchrender.inc"
+#include "bcmenuitem.h"
 #include "browsebutton.h"
 #include "cache.inc"
 #include "condition.inc"
@@ -32,7 +33,6 @@
 #include "edit.inc"
 #include "file.inc"
 #include "formattools.inc"
-#include "guicast.h"
 #include "loadmode.inc"
 #include "mainprogress.inc"
 #include "mutex.inc"

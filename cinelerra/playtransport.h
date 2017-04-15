@@ -22,8 +22,8 @@
 #ifndef PLAYTRANSPORT_H
 #define PLAYTRANSPORT_H
 
+#include "bcbutton.h"
 #include "edl.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "playbackengine.inc"
 #include "playtransport.inc"

@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcmenuitem.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -36,6 +37,7 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "units.h"
+#include "vframe.h"
 #include "zoombar.h"
 
 

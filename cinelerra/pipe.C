@@ -27,7 +27,6 @@
 #include "bchash.h"
 #include "bcsignals.h"
 #include "file.h"
-#include "guicast.h"
 #include "mainerror.h"
 #include "pipe.h"
 

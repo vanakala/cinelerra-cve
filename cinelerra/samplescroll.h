@@ -22,7 +22,7 @@
 #ifndef MAINXSCROLL_H
 #define MAINXSCROLL_H
 
-#include "guicast.h"
+#include "bcscrollbar.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 

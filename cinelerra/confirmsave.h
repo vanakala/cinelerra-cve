@@ -22,8 +22,10 @@
 #ifndef CONFIRMSAVE_H
 #define CONFIRMSAVE_H
 
+#include "arraylist.h"
 #include "asset.inc"
-#include "guicast.h"
+#include "bclistboxitem.h"
+#include "bcwindow.h"
 #include "mwindow.inc"
 
 class ConfirmSaveOkButton;

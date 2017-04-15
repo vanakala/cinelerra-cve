@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "clip.h"
 #include "cwindowgui.h"
 #include "defaulttheme.h"

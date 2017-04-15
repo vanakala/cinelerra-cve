@@ -21,6 +21,9 @@
 
 #include "clip.h"
 #include "bchash.h"
+#include "bcmenu.h"
+#include "bcmenubar.h"
+#include "bctitle.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"

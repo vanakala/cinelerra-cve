@@ -20,6 +20,7 @@
  */
 
 #include "bchash.h"
+#include "bctitle.h"
 #include "edl.inc"
 #include "filexml.h"
 #include "picon_png.h"

@@ -22,7 +22,7 @@
 #ifndef MAINCLOCK_H
 #define MAINCLOCK_H
 
-#include "guicast.h"
+#include "bctitle.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 

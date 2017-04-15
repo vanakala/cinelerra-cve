@@ -22,8 +22,6 @@
 #ifndef HOLOWINDOW_H
 #define HOLOWINDOW_H
 
-#include "guicast.h"
-
 #include "holo.h"
 #include "pluginclient.h"
 #include "pluginwindow.h"

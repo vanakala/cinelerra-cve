@@ -30,7 +30,6 @@ class AssetPopupView;
 #include "awindowgui.inc"
 #include "awindowmenu.inc"
 #include "edl.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "assets.inc"
 

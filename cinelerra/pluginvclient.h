@@ -22,10 +22,13 @@
 #ifndef PLUGINVCLIENT_H
 #define PLUGINVCLIENT_H
 
-
+#include "bcfontentry.h"
 #include "cinelerra.h"
 #include "pluginclient.h"
 #include "vframe.inc"
+
+#include <fontconfig/fontconfig.h>
+#include <fontconfig/fcfreetype.h>
 
 // Maximum dimensions for a temporary frame a plugin should retain between 
 // process_buffer calls.  This allows memory conservation.

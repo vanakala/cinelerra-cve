@@ -40,7 +40,8 @@ class ScaleHeight;
 class ScaleConstrain;
 
 #include "bchash.h"
-#include "guicast.h"
+#include "bctextbox.h"
+#include "bctoggle.h"
 #include "language.h"
 #include "mutex.h"
 #include "overlayframe.h"

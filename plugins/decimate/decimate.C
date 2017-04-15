@@ -31,10 +31,13 @@
 
 #include "pluginmacros.h"
 
+#include "bclistbox.h"
+#include "bclistboxitem.h"
+#include "bctextbox.h"
+#include "bctitle.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "keyframe.h"
 #include "language.h"
 #include "picon_png.h"

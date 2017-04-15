@@ -22,8 +22,8 @@
 #ifndef IVTCWINDOW_H
 #define IVTCWINDOW_H
 
-#include "guicast.h"
-
+#include "bctextbox.h"
+#include "bctoggle.h"
 #include "filexml.h"
 #include "mutex.h"
 #include "ivtc.h"

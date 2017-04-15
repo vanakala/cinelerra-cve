@@ -23,8 +23,8 @@
 #define BCDIALOG_H
 
 #include "bcdialog.inc"
+#include "bcwindow.inc"
 #include "condition.inc"
-#include "guicast.h"
 #include "mutex.inc"
 #include "thread.h"
 

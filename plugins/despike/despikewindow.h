@@ -22,8 +22,8 @@
 #ifndef DESPIKEWINDOW_H
 #define DESPIKEWINDOW_H
 
+#include "bcslider.h"
 #include "despike.h"
-#include "guicast.h"
 #include "mutex.h"
 #include "pluginclient.h"
 #include "pluginwindow.h"

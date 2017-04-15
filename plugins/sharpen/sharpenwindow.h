@@ -22,10 +22,10 @@
 #ifndef SHARPENWINDOW_H
 #define SHARPENWINDOW_H
 
-#include "guicast.h"
-
 class SharpenInterlace;
 
+#include "bcslider.h"
+#include "bctoggle.h"
 #include "filexml.h"
 #include "mutex.h"
 #include "sharpen.h"

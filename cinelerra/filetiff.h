@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include "datatype.h"
+#include "bcpopupmenu.h"
 #include "file.inc"
 #include "filelist.h"
 #include "mutex.inc"

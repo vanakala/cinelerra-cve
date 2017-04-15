@@ -33,8 +33,10 @@
 
 #include "pluginmacros.h"
 
+#include "bcbutton.h"
+#include "bcslider.h"
+#include "bctoggle.h"
 #include "colorpicker.h"
-#include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"

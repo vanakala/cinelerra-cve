@@ -21,6 +21,8 @@
 
 #include "asset.h"
 #include "bcsignals.h"
+#include "bcslider.h"
+#include "bctitle.h"
 #include "edit.h"
 #include "file.h"
 #include "filejpeg.h"

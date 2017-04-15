@@ -22,7 +22,10 @@
 #ifndef RENDERPROFILE_H
 #define RENDERPROFILE_H
 
-#include "guicast.h"
+#include "bcbutton.h"
+#include "bclistbox.h"
+#include "bctextbox.inc"
+#include "bctitle.inc"
 #include "render.inc"
 #include "mwindow.inc"
 #include "renderprofiles.inc"

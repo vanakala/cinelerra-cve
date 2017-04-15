@@ -39,8 +39,11 @@ class TimeFrontEngine;
 class TimeFrontServer;
 
 #include "bchash.inc"
+#include "bcpopupmenu.h"
+#include "bcpot.h"
+#include "bcslider.h"
+#include "bctoggle.h"
 #include "filexml.inc"
-#include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"

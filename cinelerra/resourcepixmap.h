@@ -23,8 +23,8 @@
 #define RESOURCEPIXMAP_H
 
 #include "bctimer.inc"
+#include "bcpixmap.h"
 #include "edit.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "trackcanvas.inc"
 

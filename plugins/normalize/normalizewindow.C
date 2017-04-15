@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bctitle.h"
 #include "language.h"
 #include "mwindow.inc"
 #include "normalizewindow.h"

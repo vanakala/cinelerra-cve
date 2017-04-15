@@ -19,10 +19,14 @@
  * 
  */
 
+#define GL_GLEXT_PROTOTYPES
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
 
+#include "bctitle.h"
+#include "bcmenuitem.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"

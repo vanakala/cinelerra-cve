@@ -35,9 +35,10 @@
 #define PLUGIN_CUSTOM_LOAD_CONFIGURATION
 
 #include "pluginmacros.h"
+
+#include "bctextbox.h"
 #include "bchash.inc"
 #include "language.h"
-#include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"

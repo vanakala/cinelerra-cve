@@ -22,14 +22,19 @@
 #ifndef PREFERENCESTHREAD_H
 #define PREFERENCESTHREAD_H
 
+#include "arraylist.h"
+#include "bcbutton.h"
+#include "bcmenuitem.h"
+#include "bcsubwindow.h"
+#include "bctextbox.h"
+#include "bcwindow.h"
 #include "edl.inc"
-#include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "preferences.inc"
 #include "preferencesthread.inc"
 #include "thread.h"
-
+#include "vframe.inc"
 
 class PreferencesMenuitem : public BC_MenuItem
 {

@@ -42,10 +42,11 @@ class GradientServer;
 
 #define MAXRADIUS 10000
 
+#include "bcpopupmenu.h"
+#include "bcpot.h"
 #include "colorpicker.h"
 #include "bchash.inc"
 #include "filexml.inc"
-#include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"

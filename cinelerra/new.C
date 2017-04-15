@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "bctitle.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"

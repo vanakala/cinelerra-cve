@@ -26,7 +26,12 @@
 class OSSEnable;
 class ALSADevice;
 
-#include "guicast.h"
+#include "arraylist.h"
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
+#include "bctitle.h"
+#include "bctoggle.h"
+#include "bctextbox.h"
 #include "playbackconfig.inc"
 #include "preferencesthread.inc"
 #include "selection.inc"

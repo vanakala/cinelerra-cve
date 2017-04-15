@@ -22,7 +22,9 @@
 #ifndef BROWSEBUTTON_H
 #define BROWSEBUTTON_H
 
-#include "guicast.h"
+#include "bcbutton.h"
+#include "bctextbox.h"
+#include "bcfilebox.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "thread.h"

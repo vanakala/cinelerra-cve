@@ -19,6 +19,8 @@
  * 
  */
 
+#include "bcmenuitem.h"
+#include "bctitle.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"

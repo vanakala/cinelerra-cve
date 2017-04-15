@@ -24,7 +24,6 @@
 
 #include "asset.inc"
 #include "edl.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "menueffects.h"
 #include "pluginserver.inc"

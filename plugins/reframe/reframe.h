@@ -30,7 +30,7 @@
 
 #include "pluginmacros.h"
 
-#include "guicast.h"
+#include "bctextbox.h"
 #include "language.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"

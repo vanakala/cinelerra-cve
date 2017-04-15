@@ -21,6 +21,7 @@
 
 #include "assets.h"
 #include "bchash.h"
+#include "bcresources.h"
 #include "edl.h"
 #include "file.h"
 #include "filesystem.h"

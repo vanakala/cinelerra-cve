@@ -22,7 +22,7 @@
 #ifndef DELETEALLINDEXES_H
 #define DELETEALLINDEXES_H
 
-#include "guicast.h"
+#include "bcbutton.h"
 #include "mwindow.inc"
 #include "preferencesthread.inc"
 #include "thread.h"

@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcwindowbase.inc"
 #include "clip.h"
 #include "filexml.h"
 #include "maskauto.h"

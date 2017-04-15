@@ -19,7 +19,7 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bctitle.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"

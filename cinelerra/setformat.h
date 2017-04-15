@@ -24,9 +24,9 @@
 
 #include "edl.inc"
 #include "formatpresets.h"
-#include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
+#include "rotateframe.inc"
 #include "setformat.inc"
 #include "selection.inc"
 #include "thread.h"

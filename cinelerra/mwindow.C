@@ -25,6 +25,8 @@
 #include "awindow.h"
 #include "batchrender.h"
 #include "bcdisplayinfo.h"
+#include "bcprogress.h"
+#include "bcresources.h"
 #include "bcsignals.h"
 #include "brender.h"
 #include "cache.h"

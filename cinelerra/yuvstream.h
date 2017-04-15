@@ -21,12 +21,8 @@
 
 #include <stdio.h>
 
-#include "guicast.h"
 #include "pipe.h"
-
-#ifndef HAVE_STDINT_H
-#define HAVE_STDINT_H
-#endif /* HAVE_STDINT_H */
+#include "vframe.h"
 
 #include <mjpegtools/yuv4mpeg.h>
 #include <mjpegtools/mpegconsts.h>

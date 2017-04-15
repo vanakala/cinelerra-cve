@@ -21,6 +21,7 @@
 
 #include "awindowgui.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "clip.h"
 #include "colors.h"
 #include "cwindowgui.h"

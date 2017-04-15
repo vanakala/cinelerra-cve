@@ -185,10 +185,10 @@ void HistogramConfig::boundaries()
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		points[i].boundaries();
-		CLAMP(output_min[i], MIN_INPUT, MAX_INPUT);
-		CLAMP(output_max[i], MIN_INPUT, MAX_INPUT);
-		output_min[i] = Units::quantize(output_min[i], PRECISION);
-		output_max[i] = Units::quantize(output_max[i], PRECISION);
+		CLAMP(output_min[i], HISTOGRAM_MIN_INPUT, HISTOGRAM_MAX_INPUT);
+		CLAMP(output_max[i], HISTOGRAM_MIN_INPUT, HISTOGRAM_MAX_INPUT);
+		output_min[i] = Units::quantize(output_min[i], HISTOGRAM_PRECISION);
+		output_max[i] = Units::quantize(output_max[i], HISTOGRAM_PRECISION);
 	}
 	CLAMP(threshold, 0, 1);
 }

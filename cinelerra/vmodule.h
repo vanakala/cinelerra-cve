@@ -22,7 +22,6 @@
 #ifndef VMODULE_H
 #define VMODULE_H
 
-#include "guicast.h"
 #include "datatype.h"
 #include "edl.inc"
 #include "floatautos.inc"

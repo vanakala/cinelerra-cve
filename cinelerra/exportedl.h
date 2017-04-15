@@ -29,7 +29,6 @@
 #include "condition.inc"
 #include "edit.inc"
 #include "file.inc"
-#include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 

@@ -20,6 +20,7 @@
  */
 
 #include "assets.h"
+#include "bcbitmap.h"
 #include "bccapture.h"
 #include "bcsignals.h"
 #include "canvas.h"

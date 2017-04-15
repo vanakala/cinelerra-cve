@@ -22,7 +22,9 @@
 #ifndef LOADFILE_H
 #define LOADFILE_H
 
-#include "guicast.h"
+#include "bcfilebox.h"
+#include "bcmenuitem.h"
+#include "bctoggle.h"
 #include "loadmode.inc"
 #include "mainmenu.inc"
 #include "mwindow.inc"

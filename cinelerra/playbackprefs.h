@@ -45,7 +45,6 @@ class TimecodeOffset;
 class VideoAsynchronous;
 
 #include "adeviceprefs.h"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "preferencesthread.h"
 #include "vdeviceprefs.h"

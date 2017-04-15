@@ -29,7 +29,6 @@
 #include "condition.h"
 #include "language.h"
 #include "loadfile.h"
-#include "guicast.h"
 #include "mainindexes.h"
 #include "mainprogress.h"
 #include "mutex.h"

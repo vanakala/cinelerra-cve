@@ -25,7 +25,6 @@
 #include "condition.inc"
 #include "cwindowgui.inc"
 #include "floatauto.inc"
-#include "guicast.h"
 #include "maskauto.inc"
 #include "mwindow.inc"
 

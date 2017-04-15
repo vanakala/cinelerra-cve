@@ -29,7 +29,7 @@ class TimeAvgParanoid;
 class TimeAvgNoSubtract;
 class TimeAvgSlider;
 
-#include "guicast.h"
+#include "bcslider.h"
 #include "mutex.h"
 #include "timeavg.h"
 #include "pluginwindow.h"

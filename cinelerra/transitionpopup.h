@@ -22,9 +22,13 @@
 #ifndef TRANSITIONPOPUP_H
 #define TRANSITIONPOPUP_H
 
-#include "guicast.h"
+#include "bcwindow.h"
+#include "bcmenuitem.h"
+#include "bctextbox.h"
+#include "bcpopupmenu.h"
 #include "mwindowgui.inc"
 #include "plugin.inc"
+#include "thread.h"
 #include "transition.inc"
 
 class TransitionPopupOn;

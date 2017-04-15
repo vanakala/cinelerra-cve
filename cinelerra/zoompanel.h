@@ -22,9 +22,10 @@
 #ifndef ZOOMPANEL_H
 #define ZOOMPANEL_H
 
-
-#include "guicast.h"
+#include "bcpopupmenu.h"
+#include "bctumble.h"
 #include "mwindow.inc"
+#include "units.h"
 #include "vframe.inc"
 
 class ZoomPopup;

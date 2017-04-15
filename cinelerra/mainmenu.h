@@ -38,8 +38,10 @@ class ShowRuler;
 class Undo;
 
 #include "arraylist.h"
-#include "guicast.h"
 #include "bchash.inc"
+#include "bcmenubar.h"
+#include "bcmenuitem.h"
+#include "bcrecentlist.h"
 #include "loadfile.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"

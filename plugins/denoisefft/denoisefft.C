@@ -29,10 +29,14 @@
 #define PLUGIN_GUI_CLASS DenoiseFFTWindow
 
 #include "pluginmacros.h"
-#include "clip.h"
+
 #include "bchash.h"
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
+#include "bctitle.h"
+#include "bcpot.h"
+#include "clip.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "language.h"
 #include "fourier.h"
 #include "picon_png.h"

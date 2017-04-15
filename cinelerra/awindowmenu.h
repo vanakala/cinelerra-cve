@@ -24,7 +24,6 @@
 
 #include "awindowgui.inc"
 #include "edl.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 
 class AssetListFormat;

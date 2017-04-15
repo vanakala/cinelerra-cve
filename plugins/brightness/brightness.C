@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
+#define GL_GLEXT_PROTOTYPES
 
 #include "clip.h"
 #include "filexml.h"
@@ -25,6 +26,7 @@
 #include "bchash.h"
 #include "language.h"
 #include "picon_png.h"
+#include "vframe.h"
 
 #include <stdio.h>
 #include <stdint.h>

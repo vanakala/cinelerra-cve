@@ -22,7 +22,8 @@
 #ifndef QUESTION_H
 #define QUESTION_H
 
-#include "guicast.h"
+#include "bcwindow.h"
+#include "bcbutton.h"
 #include "mwindow.inc"
 
 class QuestionWindow : public BC_Window

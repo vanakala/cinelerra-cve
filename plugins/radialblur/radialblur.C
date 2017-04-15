@@ -35,7 +35,8 @@
 #include <string.h>
 
 #include "../motion/affine.h"
-#include "bcdisplayinfo.h"
+#include "bcslider.h"
+#include "bctitle.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"

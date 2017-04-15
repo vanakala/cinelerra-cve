@@ -24,8 +24,11 @@
 
 #include "apatchgui.inc"
 #include "atrack.inc"
+#include "bcslider.h"
+#include "bcpan.h"
+#include "bcmeter.h"
+#include "bcwindow.h"
 #include "floatauto.inc"
-#include "guicast.h"
 #include "panauto.inc"
 #include "patchgui.h"
 

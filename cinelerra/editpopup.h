@@ -22,7 +22,8 @@
 #ifndef EDITPOPUP_H
 #define EDITPOPUP_H
 
-#include "guicast.h"
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "edit.inc"

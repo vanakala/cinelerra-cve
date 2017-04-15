@@ -21,6 +21,7 @@
 
 #include "autoconf.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "cinelerra.h"
 #include "clip.h"
 #include "edl.h"

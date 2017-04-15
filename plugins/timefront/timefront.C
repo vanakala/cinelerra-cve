@@ -23,8 +23,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "clip.h"
 #include "bchash.h"
+#include "bcmenuitem.h"
+#include "bctitle.h"
+#include "clip.h"
 #include "filexml.h"
 #include "timefront.h"
 #include "keyframe.h"

@@ -23,7 +23,6 @@
 #define PIPE_H
 
 #include <fcntl.h>
-#include "guicast.h"
 #include "asset.h"
 
 extern "C" {

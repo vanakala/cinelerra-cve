@@ -19,7 +19,6 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
 #include "language.h"
 #include "rgb601window.h"
 

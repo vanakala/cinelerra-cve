@@ -22,8 +22,10 @@
 #ifndef VPATCHGUI_H
 #define VPATCHGUI_H
 
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
+#include "bcslider.h"
 #include "floatauto.inc"
-#include "guicast.h"
 #include "patchgui.h"
 #include "vpatchgui.inc"
 #include "vtrack.inc"

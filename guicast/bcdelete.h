@@ -22,10 +22,10 @@
 #ifndef BCDELETE_H
 #define BCDELETE_H
 
-
-
 #include "bcdialog.h"
 #include "bcfilebox.inc"
+#include "bclistbox.h"
+#include "bcwindow.h"
 
 class BC_DeleteFile : public BC_Window
 {

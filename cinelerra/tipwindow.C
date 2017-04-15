@@ -20,6 +20,8 @@
  */
 
 #include "bcsignals.h"
+#include "bcresources.h"
+#include "bctitle.h"
 #include "clip.h"
 #include "keys.h"
 #include "language.h"
@@ -28,7 +30,7 @@
 #include "preferences.h"
 #include "theme.h"
 #include "tipwindow.h"
-
+#include "vframe.h"
 
 
 // Table of tips of the day

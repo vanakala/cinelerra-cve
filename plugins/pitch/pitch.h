@@ -31,9 +31,9 @@
 #define PLUGIN_GUI_CLASS PitchWindow
 
 #include "pluginmacros.h"
+#include "bcpot.h"
 #include "bchash.inc"
 #include "fourier.h"
-#include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"

@@ -31,10 +31,11 @@
 
 #include "pluginmacros.h"
 
-#include "clip.h"
+#include "bcbitmap.h"
 #include "bchash.h"
+#include "bctoggle.h"
+#include "clip.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"

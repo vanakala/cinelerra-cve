@@ -22,7 +22,8 @@
 #ifndef FILEEXR_H
 #define FILEEXR_H
 
-
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
 #include "file.inc"
 #include "filelist.h"
 #include "vframe.inc"

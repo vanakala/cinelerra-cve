@@ -20,6 +20,7 @@
  */
 
 #include "bchash.h"
+#include "bctitle.h"
 #include "gainwindow.h"
 #include "language.h"
 

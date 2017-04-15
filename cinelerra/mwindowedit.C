@@ -23,6 +23,8 @@
 #include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
+#include "bcclipboard.h"
+#include "bcpan.h"
 #include "bcsignals.h"
 #include "cinelerra.h"
 #include "cache.h"

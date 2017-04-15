@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "bcmenuitem.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"

@@ -21,6 +21,7 @@
 
 #include "adeviceprefs.h"
 #include "audiodevice.inc"
+#include "bcbar.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"

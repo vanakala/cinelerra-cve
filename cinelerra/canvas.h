@@ -22,8 +22,12 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
+#include "bcpopup.h"
+#include "bcmenuitem.h"
+#include "bcmeter.h"
+#include "bcpopupmenu.h"
+#include "bcscrollbar.h"
 #include "edl.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 
 // Output for all X11 video

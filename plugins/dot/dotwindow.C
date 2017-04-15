@@ -19,7 +19,7 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bctitle.h"
 #include "dotwindow.h"
 #include "language.h"
 #include "pluginclient.h"

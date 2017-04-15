@@ -27,7 +27,8 @@ class PluginPopupDetach;
 class PluginPopupOn;
 class PluginPopupShow;
 
-#include "guicast.h"
+#include "bcmenuitem.h"
+#include "bcpopupmenu.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "plugin.inc"

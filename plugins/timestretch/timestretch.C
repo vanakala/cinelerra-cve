@@ -21,6 +21,7 @@
 
 #include "clip.h"
 #include "bchash.h"
+#include "bctitle.h"
 #include "picon_png.h"
 #include "resample.h"
 #include "timestretch.h"

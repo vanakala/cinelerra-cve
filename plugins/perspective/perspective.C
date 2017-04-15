@@ -20,6 +20,7 @@
  */
 
 #include "../motion/affine.h"
+#include "bctitle.h"
 #include "cursors.h"
 #include "language.h"
 #include "perspective.h"

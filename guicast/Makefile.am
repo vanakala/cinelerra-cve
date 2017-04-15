@@ -172,7 +172,6 @@ noinst_HEADERS = \
 	filesystem.h \
 	filesystem.inc \
 	fonts.h \
-	guicast.h \
 	hashcache.h \
 	hashcache.inc \
 	keys.h \

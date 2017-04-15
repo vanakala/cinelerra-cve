@@ -22,7 +22,6 @@
 #ifndef LOADMODE_H
 #define LOADMODE_H
 
-#include "guicast.h"
 #include "loadmode.inc"
 #include "mwindow.inc"
 #include "selection.h"

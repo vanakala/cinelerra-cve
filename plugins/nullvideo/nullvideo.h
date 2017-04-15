@@ -43,6 +43,7 @@
 
 #include "pluginmacros.h"
 
+#include "bctoggle.h"
 #include "language.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"

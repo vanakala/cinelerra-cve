@@ -36,8 +36,9 @@ class SelTempAvgThreshSlider;
 class SelTempAvgOffsetValue;
 class SelTempAvgGainValue;
 
-
-#include "guicast.h"
+#include "bctextbox.h"
+#include "bcslider.h"
+#include "bctoggle.h"
 #include "mutex.h"
 #include "seltempavg.h"
 #include "pluginwindow.h"

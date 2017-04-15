@@ -22,8 +22,10 @@
 #ifndef TIPWINDOW_H
 #define TIPWINDOW_H
 
+#include "bcbutton.h"
 #include "bcdialog.h"
-#include "guicast.h"
+#include "bctoggle.h"
+#include "bcwindow.h"
 #include "mwindow.inc"
 #include "tipwindow.inc"
 

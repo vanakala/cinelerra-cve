@@ -19,6 +19,9 @@
  * 
  */
 
+#include "bclistboxitem.h"
+#include "bctitle.h"
+#include "bcbutton.h"
 #include "cinelerra.h"
 #include "condition.h"
 #include "edl.h"

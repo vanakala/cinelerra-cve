@@ -22,7 +22,10 @@
 #ifndef SPLASHGUI_H
 #define SPLASHGUI_H
 
-#include "guicast.h"
+#include "bctitle.h"
+#include "bcprogress.inc"
+#include "bcwindow.h"
+#include "vframe.inc"
 
 
 class SplashGUI : public BC_Window

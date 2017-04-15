@@ -22,6 +22,7 @@
 #include "awindow.h"
 #include "awindowgui.h"
 #include "clipedit.h"
+#include "bctitle.h"
 #include "edl.h"
 #include "fonts.h"
 #include "language.h"

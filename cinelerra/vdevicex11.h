@@ -26,7 +26,6 @@
 
 #include "canvas.inc"
 #include "edl.inc"
-#include "guicast.h"
 #include "maskauto.inc"
 #include "maskautos.inc"
 #include "pluginclient.inc"

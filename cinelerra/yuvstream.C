@@ -25,7 +25,6 @@
 #include <errno.h>
 
 #include "bcsignals.h"
-#include "guicast.h"
 #include "pipe.h"
 #include "yuvstream.h"
 #include "interlacemodes.h"

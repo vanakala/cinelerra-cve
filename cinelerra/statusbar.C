@@ -19,6 +19,8 @@
  * 
  */
 
+#include "bctitle.h"
+#include "bcprogress.h"
 #include "language.h"
 #include "mainprogress.h"
 #include "mwindow.h"

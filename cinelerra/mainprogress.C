@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcprogress.h"
 #include "bcprogressbox.h"
 #include "language.h"
 #include "mainprogress.h"
@@ -26,6 +27,7 @@
 #include "mwindowgui.h"
 #include "statusbar.h"
 #include "bctimer.h"
+#include "units.h"
 
 #include <string.h>
 

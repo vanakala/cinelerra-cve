@@ -21,6 +21,7 @@
 
 #include "deleteallindexes.h"
 #include "filesystem.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "preferences.h"
@@ -29,10 +30,6 @@
 #include "theme.h"
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 DeleteAllIndexes::DeleteAllIndexes(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y)
  : BC_GenericButton(x, y, _("Delete existing indexes")), Thread()

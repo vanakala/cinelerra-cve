@@ -27,7 +27,6 @@
 #include "auto.h"
 #include "edl.inc"
 #include "datatype.h"
-#include "guicast.h"
 #include "bcsignals.h"
 #include "filexml.inc"
 #include "track.inc"

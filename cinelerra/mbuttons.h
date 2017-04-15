@@ -39,7 +39,6 @@ class Paste;
 
 #include "bcsignals.h"
 #include "editpanel.h"
-#include "guicast.h"
 #include "mbuttons.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"

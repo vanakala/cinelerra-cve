@@ -22,8 +22,9 @@
 #ifndef KEYFRAMEPOPUP_H
 #define KEYFRAMEPOPUP_H
 
+#include "bcpopupmenu.h"
+#include "bcmenuitem.h"
 #include "floatauto.inc"
-#include "guicast.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "plugin.inc"

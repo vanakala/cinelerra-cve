@@ -34,9 +34,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bcsignals.h"
-#include "clip.h"
 #include "bchash.h"
+#include "bcsignals.h"
+#include "bcslider.h"
+#include "bctitle.h"
+#include "bctoggle.h"
+#include "clip.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"

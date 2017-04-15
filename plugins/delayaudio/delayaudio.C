@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bctitle.h"
 #include "clip.h"
 #include "bchash.h"
 #include "delayaudio.h"

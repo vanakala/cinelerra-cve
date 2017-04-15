@@ -19,6 +19,8 @@
  * 
  */
 
+#include "bcresources.h"
+#include "bctitle.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -32,7 +34,7 @@
 #include "theme.h"
 #include "track.h"
 #include "tracks.h"
-
+#include "vframe.h"
 
 ResizeTrackThread::ResizeTrackThread(MWindow *mwindow, int track_number)
  : Thread()

@@ -21,6 +21,9 @@
  */
 
 #include "bcsignals.h"
+#include "bctitle.h"
+#include "bclistbox.h"
+#include "bclistboxitem.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"

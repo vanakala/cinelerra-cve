@@ -31,10 +31,11 @@
 #define PLUGIN_GUI_CLASS LoopAudioWindow
 
 #include "pluginmacros.h"
-#include "clip.h"
+
 #include "bchash.h"
+#include "bctitle.h"
+#include "clip.h"
 #include "filexml.h"
-#include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
 #include "pluginwindow.h"

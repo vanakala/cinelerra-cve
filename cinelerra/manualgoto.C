@@ -21,6 +21,7 @@
 
 #include "awindow.h"
 #include "awindowgui.h"
+#include "bctitle.h"
 #include "cinelerra.h"
 #include "manualgoto.h"
 #include "edl.h"

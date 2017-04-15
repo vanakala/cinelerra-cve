@@ -19,7 +19,8 @@
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bclistboxitem.h"
+#include "bctitle.h"
 #include "titlewindow.h"
 #include "bcfontentry.h"
 #include "clip.h"

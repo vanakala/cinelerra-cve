@@ -19,6 +19,8 @@
  * 
  */
 
+#include "bcresources.h"
+#include "bctitle.h"
 #include "keys.h"
 #include "language.h"
 #include "mainerror.h"
