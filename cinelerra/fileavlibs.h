@@ -94,6 +94,7 @@ public:
 	static struct avlib_encparams encoder_params[];
 
 private:
+	int media_seek(int stream_index, int64_t rqpos, AVPacket *pkt);
 	int convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 		int width_in, int height_in, VFrame *frame_out);
 	int convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
@@ -154,11 +155,14 @@ private:
 	// Streams to decode
 	int audio_index;
 	int video_index;
-	// Next read positions
+	// Next video read position
 	int64_t video_pos;
+	int64_t vpkt_pos;
+	int video_eof;
+	// Audio positsions
 	int64_t audio_pos;
-	int64_t audio_delay;
-	// Last decoded positions
+	int64_t apkt_pos;
+	int apkt_duration;
 	static Mutex *avlibs_lock;
 	stream_params track_data;
 
@@ -167,6 +171,7 @@ private:
 	int num_buffers;
 	int buffer_len;
 	int buffer_pos;
+	int64_t audio_delay;
 	int64_t buffer_start;
 	int64_t buffer_end;
 	int audio_eof;

@@ -52,6 +52,8 @@ struct streamdesc
 // Stream type
 #define STRDSC_AUDIO   1
 #define STRDSC_VIDEO   2
+// Format allows byte seek
+#define STRDSC_SEEKBYTES 0x8000
 
 // Asset can be one of the following:
 // 1) a pure media file
