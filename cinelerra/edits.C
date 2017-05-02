@@ -171,7 +171,7 @@ Edit* Edits::insert_edit(ptstime pts, ptstime length)
 {
 	Edit *new_edit = split_edit(pts);
 
-	if(length >= track->one_unit)
+	if(length >= EPSILON)
 	{
 		ptstime end = pts + length;
 
