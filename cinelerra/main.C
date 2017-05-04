@@ -75,10 +75,8 @@ int main(int argc, char *argv[])
 	int deamon_port = DEAMON_PORT;
 	char deamon_path[BCTEXTLEN];
 	char config_path[BCTEXTLEN];
-	char batch_path[BCTEXTLEN];
 	int nice_value = 20;
 	config_path[0] = 0;
-	batch_path[0] = 0;
 	deamon_path[0] = 0;
 	Garbage::garbage = new Garbage;
 	EDL::id_lock = new Mutex("EDL::id_lock");
@@ -137,14 +135,6 @@ int main(int argc, char *argv[])
 		if(!strcmp(argv[i], "-r"))
 		{
 			operation = DO_BATCHRENDER;
-			if(argc > i + 1)
-			{
-				if(argv[i + 1][0] != '-')
-				{
-					strcpy(batch_path, argv[i + 1]);
-					i++;
-				}
-			}
 		}
 		else
 		if(!strcmp(argv[i], "-c"))
@@ -245,8 +235,7 @@ int main(int argc, char *argv[])
 		printf(_("-n = Nice value if running as renderfarm client. (20)\n"));
 		printf(_("-c = Configuration file to use instead of %s%s.\n"),
 			BCASTDIR, CONFIG_FILE);
-		printf(_("-r = batch render the contents of the batch file (%s%s) with no GUI.  batch file is optional.\n"), 
-				BCASTDIR, BATCH_PATH);
+		printf(_("-r = batch render with no GUI.\n"));
 		printf(_("filenames = files to load\n\n\n"));
 		exit(0);
 
@@ -281,7 +270,7 @@ int main(int argc, char *argv[])
 	case DO_BATCHRENDER:
 	{
 		BatchRenderThread *thread = new BatchRenderThread;
-		thread->start_rendering(config_path, batch_path);
+		thread->start_rendering(config_path);
 		break;
 	}
 

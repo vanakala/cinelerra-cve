@@ -100,7 +100,7 @@ public:
 	Asset* get_current_asset();
 	char* get_current_edl();
 // For command line usage
-	void start_rendering(char *config_path, char *batch_path);
+	void start_rendering(char *config_path);
 // For GUI usage
 	void start_rendering();
 	void stop_rendering();

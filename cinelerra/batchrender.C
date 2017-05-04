@@ -473,8 +473,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 	}
 }
 
-void BatchRenderThread::start_rendering(char *config_path,
-	char *batch_path)
+void BatchRenderThread::start_rendering(char *config_path)
 {
 	char string[BCTEXTLEN];
 
