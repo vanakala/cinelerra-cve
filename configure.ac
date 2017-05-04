@@ -1,4 +1,4 @@
-AC_INIT(Cinelerracve, 2.1CV-einar, einarrunkaru@gmail.com)
+AC_INIT(Cinelerracve, 2.3.5, einarrunkaru@gmail.com)
 
 AC_CANONICAL_SYSTEM
 
