@@ -26,8 +26,6 @@
 #include "mainerror.h"
 #include "file.h"
 #include "filexml.h"
-#include "fileformat.h"
-#include "indexfile.h"
 #include "language.h"
 #include "mainmenu.h"
 #include "mwindow.h"
