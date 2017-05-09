@@ -1189,6 +1189,8 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 					break;
 				}
 			}
+			if(audio_eof)
+				break;
 		}
 	}
 	av_free_packet(&pkt);
