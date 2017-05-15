@@ -67,7 +67,7 @@ void Mutex::lock(const char *location)
 	SET_MLOCK(this, title, location);
 #endif
 	if(rv = pthread_mutex_lock(&mutex))
-		fprintf(stderr, "%s mutex lock failed with %d", title, rv);
+		fprintf(stderr, "%s:%s mutex lock failed with %d\n", title, location, rv);
 
 // Update recursive status for the first lock
 	if(recursive)
@@ -116,7 +116,7 @@ void Mutex::unlock()
 #endif
 
 	if(rv = pthread_mutex_unlock(&mutex))
-		fprintf(stderr, "%s mutex unlock failed with %d", title, rv);
+		fprintf(stderr, "%s mutex unlock failed with %d\n", title, rv);
 }
 
 int Mutex::trylock()
