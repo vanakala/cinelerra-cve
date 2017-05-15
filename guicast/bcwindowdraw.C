@@ -339,6 +339,11 @@ void BC_WindowBase::draw_wtext(int x,
 	if(!length)
 		return;
 
+	basefont = top_level->get_xft_struct(top_level->current_font);
+
+	if(!basefont)
+		return;
+
 	color.red = (top_level->current_color & 0xff0000) >> 16;
 	color.red |= color.red << 8;
 	color.green = (top_level->current_color & 0xff00) >> 8;
@@ -352,9 +357,6 @@ void BC_WindowBase::draw_wtext(int x,
 		top_level->cmap,
 		&color,
 		&xft_color);
-
-
-	basefont = top_level->get_xft_struct(top_level->current_font);
 
 	curfont = nextfont = basefont;
 	altfont = 0;
