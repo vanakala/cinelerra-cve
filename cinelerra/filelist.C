@@ -229,7 +229,7 @@ int FileList::read_list_header()
 		do
 		{
 			if(fgets(string, BCTEXTLEN, stream) == NULL)
-				break;
+				return 1;
 		}while(string[0] == '#' || string[0] == ' ' || isalpha(string[0]));
 
 // Don't want a user configured frame rate to get destroyed
@@ -239,14 +239,14 @@ int FileList::read_list_header()
 		do
 		{
 			if(fgets(string, BCTEXTLEN, stream) == NULL)
-				break;
+				return 1;
 		}while(string[0] == '#' || string[0] == ' ');
 		asset->width = atol(string);
 
 		do
 		{
 			if(fgets(string, BCTEXTLEN, stream) == NULL)
-				break;
+				return 1;
 		}while(string[0] == '#' || string[0] == ' ');
 		asset->height = atol(string);
 
