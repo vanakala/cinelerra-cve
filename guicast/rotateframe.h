@@ -44,14 +44,14 @@ public:
 		VFrame *input, 
 		double angle, 
 		int interpolate);
-	int rotate_rightangle(VFrame *input, 
+	void rotate_rightangle(VFrame *input,
 		VFrame *output, 
 		int angle);
-	int rotate_obliqueangle(VFrame *input, 
+	void rotate_obliqueangle(VFrame *input,
 		VFrame *output, 
 		double angle,
 		int interpolate);
-	int get_rightdimensions(VFrame *frame, 
+	void get_rightdimensions(VFrame *frame,
 		int &diameter, 
 		int &in_x1, 
 		int &in_y1, 
@@ -82,18 +82,18 @@ class RotateEngine : public Thread
 public:
 	RotateEngine(RotateFrame *plugin, int row1, int row2);
 	~RotateEngine();
-	
-	int generate_matrix(int interpolate);
-	int perform_rotation(VFrame *input, 
+
+	void generate_matrix(int interpolate);
+	void perform_rotation(VFrame *input,
 		VFrame *output, 
 		int interpolate);
-	int wait_completion();
-	int create_matrix();
+	void wait_completion();
+	void create_matrix();
 	int coords_to_pixel(int &input_y, int &input_x);
-	int coords_to_pixel(SourceCoord &float_pixel, float &input_y, float &input_x);
-	int perform_rotation();
+	void coords_to_pixel(SourceCoord &float_pixel, float &input_y, float &input_x);
+	void perform_rotation();
 	void run();
-	
+
 	int row1, row2;
 	int interpolate;
 	int do_matrix, do_rotation;
