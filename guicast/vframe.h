@@ -146,6 +146,7 @@ public:
 			int out_x1, int out_y1, int out_x2, int out_y2);
 	int get_bytes_per_pixel(void);
 	int get_bytes_per_line();
+	int get_pixels_per_line();
 // Return 1 if the buffer is shared.
 	int get_shared(void);
 	double get_pixel_aspect();

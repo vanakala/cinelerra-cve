@@ -213,6 +213,11 @@ int VFrame::get_bytes_per_line()
 	return bytes_per_line;
 }
 
+int VFrame::get_pixels_per_line()
+{
+	return bytes_per_line / bytes_per_pixel;
+}
+
 size_t VFrame::get_data_size()
 {
 	return calculate_data_size(w, h, bytes_per_line, color_model) - 4;
