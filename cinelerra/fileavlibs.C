@@ -937,8 +937,13 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 		if(pkt.stream_index == video_index)
 		{
-			if(!video_eof && pkt.pts != AV_NOPTS_VALUE)
-				vpkt_pos = pkt.pts + pkt.duration;
+			if(!video_eof)
+			{
+				if(pkt.pts != AV_NOPTS_VALUE)
+					vpkt_pos = pkt.pts + pkt.duration;
+				else
+					vpkt_pos = pkt.dts + pkt.duration;
+			}
 			if((res = avcodec_decode_video2(decoder_context,
 				avvframe, &got_it, &pkt)) < 0)
 			{
@@ -1104,7 +1109,11 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 			if(pkt.stream_index == audio_index)
 			{
 				apkt_duration = pkt.duration;
-				apkt_pos = pkt.pts + pkt.duration;
+
+				if(pkt.pts != AV_NOPTS_VALUE)
+					apkt_pos = pkt.pts + pkt.duration;
+				else
+					apkt_pos = pkt.dts + pkt.duration;
 
 				if((res = avcodec_decode_audio4(decoder_context,
 					avaframe, &got_it, &pkt)) < 0)
@@ -1712,7 +1721,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	AVCodecContext *decoder_context;
 	AVPacket pkt;
 	int got_it;
-	int64_t pktpos, pktsz;
+	int64_t pktpos, pktsz, medpos;
 	int64_t maxoffs = 0;
 	int interrupt = 0;
 	int is_audio;
@@ -1778,10 +1787,15 @@ stream_params *FileAVlibs::get_track_data(int trx)
 			else
 				pktpos = pkt.dts;
 
+			if(pkt.pts != AV_NOPTS_VALUE)
+				medpos = pkt.pts;
+			else
+				medpos = pkt.dts;
+
 			switch(decoder_context->codec_type)
 			{
 			case AVMEDIA_TYPE_VIDEO:
-				video_pos = pkt.pts;
+				video_pos = medpos;
 
 				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1)
 				{
@@ -1798,7 +1812,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 				break;
 
 			case AVMEDIA_TYPE_AUDIO:
-				audio_pos = pkt.pts;
+				audio_pos = medpos;
 
 				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1)
 				{
