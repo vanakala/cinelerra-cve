@@ -195,11 +195,14 @@ int IndexFile::get_required_scale(File *source)
 // total length of input file
 	samplenum length_source = source->get_audio_length(0);
 
-	samplenum peak_count = mwindow->preferences->index_size / (2 * sizeof(float) * asset->channels);
-	for(result = 1; 
-		length_source / result > peak_count; 
-		result *= 2);
-
+	if(length_source > 0)
+	{
+		samplenum peak_count = mwindow->preferences->index_size / (2 * sizeof(float) * asset->channels);
+		for(result = 1;
+			length_source / result > peak_count;
+			result *= 2);
+	} else
+		return 0;
 // Takes too long to draw from source on a CDROM.  Make indexes for
 // everything.
 
