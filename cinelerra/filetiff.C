@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "bctitle.h"
+#include "bcsignals.h"
 #include "edit.h"
 #include "file.h"
 #include "filetiff.h"
@@ -64,12 +65,16 @@ int FileTIFF::check_sig(Asset *asset)
 
 	if(stream)
 	{
-		char test[10];
-		l = fread(test, 10, 1, stream);
+		char test[16];
+		l = fread(test, 16, 1, stream);
 		fclose(stream);
 		if(l < 1) return 0;
-		if(test[0] == 'I' && test[1] == 'I')
+		if(test[0] == 'I' && test[1] == 'I' && test[2] == 0x2a)
 		{
+			// Reject cr2, libtif fails with it
+			if(test[4] == 0x10 && !test[5] && !test[6] && !test[7] &&
+					test[8] == 'C' && test[9] == 'R')
+				return 0;
 			return 1;
 		}
 		else
