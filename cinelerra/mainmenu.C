@@ -76,6 +76,7 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	this->mwindow = mwindow;
 
 	recent_load = new BC_RecentList("PATH", mwindow->defaults);
+	recent_load->set_options(RECENT_OPT_BASEUNQ);
 
 	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(new_project = new New(mwindow));
