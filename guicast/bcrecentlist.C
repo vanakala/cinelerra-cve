@@ -20,8 +20,10 @@
  */
 
 #include <string.h>
+#include <libgen.h>
 
 #include "bchash.h"
+#include "bcsignals.h"
 #include "bctextbox.h"
 #include "bclistbox.h"
 #include "bclistboxitem.h"
@@ -36,6 +38,7 @@ BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults,
 	this->defaults = defaults;
 	this->textbox = textbox;
 	set_tooltip("Choose from recently used");
+	options = 0;
 }
 
 BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults, BC_TextBox *textbox)
@@ -46,6 +49,7 @@ BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults, BC_TextBox *te
 	this->defaults = defaults;
 	this->textbox = textbox;
 	set_tooltip("Choose from recently used");
+	options = 0;
 }
 
 BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults) 
@@ -54,6 +58,7 @@ BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults)
 	this->type = type;
 	this->defaults = defaults;
 	this->textbox = NULL;
+	options = 0;
 }
 
 BC_RecentList::~BC_RecentList()
@@ -77,6 +82,14 @@ int BC_RecentList::handle_event()
 	return 0;
 }
 
+int BC_RecentList::set_options(int opts)
+{
+	int o = options;
+
+	options = opts;
+	return o;
+}
+
 int BC_RecentList::load_items(const char *prefix)
 {
 	int count;
@@ -90,13 +103,11 @@ int BC_RecentList::load_items(const char *prefix)
 
 	for (count = 0; count < RECENT_MAX_ITEMS; count++)
 	{
-		char save[BCTEXTLEN];
-		char text[BCTEXTLEN];
-		sprintf(save, "RECENT_%s_%s_%d", prefix, type, count);
-		text[0] = 0;
-		defaults->get(save, text);
-		if (strlen(text) == 0) break;
-		items.append(new BC_ListBoxItem(text));
+		sprintf(str1, "RECENT_%s_%s_%d", prefix, type, count);
+		str2[0] = 0;
+		defaults->get(str1, str2);
+		if(str2[0] == 0) break;
+		items.append(new BC_ListBoxItem(str2));
 	}
 
 	// only update if we are part of a window
@@ -108,15 +119,40 @@ int BC_RecentList::load_items(const char *prefix)
 int BC_RecentList::add_item(const char *prefix, const char *text)
 {
 	int count;
+	char *bn1, *bn2;
 
 	if (! prefix) prefix = "ANY";
+
+	if(options & RECENT_OPT_BASEUNQ)
+	{
+		strcpy(str1, text);
+		bn1 = basename(str1);
+	}
 
 	// remove an old item if it matches the new text
 	for (int i = 0; i < items.total; i++)
 	{
 		BC_ListBoxItem *item = items.values[i];
-		if (strcmp(text, item->get_text()) == 0)
-			items.remove_object(item);
+
+		if(options & RECENT_OPT_BASEUNQ)
+		{
+			strcpy(str2, item->get_text());
+			bn2 = basename(str2);
+
+			if(strcmp(bn1, bn2) == 0)
+			{
+				items.remove_object(item);
+				i--;
+			}
+		}
+		else
+		{
+			if(strcmp(text, item->get_text()) == 0)
+			{
+				items.remove_object(item);
+				i--;
+			}
+		}
 	}
 
 	// make a new item and put it at the top of the list
@@ -126,9 +162,14 @@ int BC_RecentList::add_item(const char *prefix, const char *text)
 	for (count = 0; count < RECENT_MAX_ITEMS && count < items.total; count++)
 	{
 		BC_ListBoxItem *item = items.values[count];
-		char save[BCTEXTLEN];
-		sprintf(save, "RECENT_%s_%s_%d", prefix, type, count);
-		defaults->update(save, item->get_text());
+		sprintf(str1, "RECENT_%s_%s_%d", prefix, type, count);
+		defaults->update(str1, item->get_text());
+	}
+	// Remove rest from defaults
+	for(int i = count; i < RECENT_MAX_ITEMS; i++)
+	{
+		sprintf(str1, "RECENT_%s_%s_%d", prefix, type, count);
+		defaults->delete_key(str1);
 	}
 	return count;
 }

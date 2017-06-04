@@ -33,6 +33,8 @@
 #define RECENT_MAX_ITEMS 10
 #define RECENT_POPUP_HEIGHT 100
 
+#define RECENT_OPT_BASEUNQ   1
+
 class BC_RecentList : public BC_ListBox
 {
 public:
@@ -45,14 +47,20 @@ public:
 	BC_RecentList(const char *type, BC_Hash *defaults,
 		BC_TextBox *textbox);
 	int handle_event();
+	int set_options(int opts);
 	int load_items(const char *prefix = NULL);
 	int add_item(const char *prefix, const char *text);
 
 	ArrayList<BC_ListBoxItem*> items;
 private:
+	// option bits;
+	// 1 - unique basename
+	int options;
 	const char *type;
 	BC_TextBox *textbox;
 	BC_Hash *defaults;
+	char str1[BCTEXTLEN];
+	char str2[BCTEXTLEN];
 };
 
 #endif /* BCRECENTLIST_H */
