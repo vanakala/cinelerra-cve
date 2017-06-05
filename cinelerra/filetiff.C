@@ -196,6 +196,9 @@ int FileTIFF::read_frame_header(const char *path)
 	else
 	if(bitspersample == 8 && (components == 1 || components == 0))
 		asset->tiff_cmodel = FileTIFF::GREYSCALE;
+	else
+	if(bitspersample == 1)
+		asset->tiff_cmodel = FileTIFF::BLACKWHITE;
 
 	TIFFClose(stream);
 
@@ -208,16 +211,17 @@ int FileTIFF::colormodel_supported(int colormodel)
 {
 	switch(asset->tiff_cmodel)
 	{
+	case FileTIFF::BLACKWHITE:
 	case FileTIFF::RGB_888:
 		return BC_RGB888;
 	case FileTIFF::RGB_161616:
-		return BC_RGB_FLOAT;
+		return BC_RGB161616;
 	case FileTIFF::GREYSCALE:
 		return BC_RGB888;
 	case FileTIFF::RGBA_8888:
 		return BC_RGBA8888;
 	case FileTIFF::RGBA_16161616:
-		return BC_RGBA_FLOAT;
+		return BC_RGBA16161616;
 	case FileTIFF::RGB_FLOAT:
 		return BC_RGB_FLOAT;
 	case FileTIFF::RGBA_FLOAT:
@@ -355,35 +359,20 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 				row[j * 3 + 2] = value;
 			}
 		}
-// For the 16 bit models, the output is floating point.
 		else
-		if(asset->tiff_cmodel == FileTIFF::RGB_161616)
+		if(asset->tiff_cmodel == FileTIFF::BLACKWHITE)
 		{
-			uint16_t *input_row = (uint16_t*)output->get_rows()[i];
-			float *output_row = (float*)output->get_rows()[i];
-			for(int j = output->get_w() - 1; j >= 0; j--)
+			unsigned char *row = output->get_rows()[i];
+			for(int j = output->get_w() - 1; j >= 0;)
 			{
-				uint16_t r = input_row[j * 3];
-				uint16_t g = input_row[j * 3 + 1];
-				uint16_t b = input_row[j * 3 + 2];
-				output_row[j * 3] = (float)r / 65535;
-				output_row[j * 3 + 1] = (float)g / 65535;
-				output_row[j * 3 + 2] = (float)b / 65535;
-			}
-		}
-		else
-		if(asset->tiff_cmodel == FileTIFF::RGBA_16161616)
-		{
-			uint16_t *input_row = (uint16_t*)output->get_rows()[i];
-			float *output_row = (float*)output->get_rows()[i];
-			for(int j = output->get_w() - 1; j >= 0; j--)
-			{
-				uint16_t r = input_row[j * 4];
-				uint16_t g = input_row[j * 4 + 1];
-				uint16_t b = input_row[j * 4 + 2];
-				output_row[j * 4] = (float)r / 65535;
-				output_row[j * 4 + 1] = (float)g / 65535;
-				output_row[j * 4 + 2] = (float)b / 65535;
+				unsigned char value = row[j / 8];
+				for(int m = 1; m < 0x100; m <<= 1, j--)
+				{
+					unsigned char v = value & m ? 0 : 255;
+					row[j * 3] = v;
+					row[j * 3 + 1] = v;
+					row[j * 3 + 2] = v;
+				}
 			}
 		}
 	}

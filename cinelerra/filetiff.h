@@ -64,6 +64,7 @@ public:
 		RGB_FLOAT,
 		RGBA_FLOAT,
 		GREYSCALE,
+		BLACKWHITE,
 // values stored in Asset::tiff_compression
 // Compression types
 		LZW,
