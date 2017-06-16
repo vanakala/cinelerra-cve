@@ -41,6 +41,8 @@
 #define MAX_LEN_CODECNAME  64
 // Maximum nummber of encoder paramlists
 #define MAX_ENC_PARAMLISTS 16
+// Library & Format option lists
+#define ASSET_FMT_IX (MAX_ENC_PARAMLISTS - 1)
 
 struct streamdesc
 {

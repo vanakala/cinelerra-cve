@@ -84,6 +84,7 @@ public:
 	static void get_parameters(BC_WindowBase *parent_window,
 		Asset *asset, BC_WindowBase* &format_window, int options);
 	static void get_render_defaults(Asset *asset);
+	static void get_format_params(Asset *asset, int options);
 	static int update_codeclist(Asset *asset, Paramlist *codecs, int options);
 	static const char *encoder_formatname(int fileformat);
 

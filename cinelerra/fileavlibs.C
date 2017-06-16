@@ -2153,6 +2153,23 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	}
 }
 
+void FileAVlibs::get_format_params(Asset *asset, int options)
+{
+	Paramlist *glob, *fmt;
+	AVOutputFormat *oformat;
+
+	if(!(FileAVlibs::encoder_formatname(asset->format)))
+		return;
+
+	glob = FileAVlibs::scan_global_options(options);
+	glob->copy_values(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX]);
+	fmt = FileAVlibs::scan_format_options(asset->format, options, &oformat);
+	fmt->copy_values(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
+	fmt->join_list(glob);
+	delete asset->encoder_parameters[ASSET_FMT_IX];
+	asset->encoder_parameters[ASSET_FMT_IX] = fmt;
+}
+
 int FileAVlibs::update_codeclist(Asset *asset, Paramlist *codecs, int options)
 {
 	int changed = 0;
