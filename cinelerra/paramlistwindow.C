@@ -23,15 +23,18 @@
 #include "bcsubwindow.h"
 #include "bcsignals.h"
 #include "bctitle.h"
+#include "bcresources.h"
 #include "language.h"
+#include "mutex.h"
 #include "paramlist.h"
 #include "paramlistwindow.h"
 #include "subselection.h"
 #include "theme.h"
+#include "vframe.h"
 
 #include <unistd.h>
 
-ParamlistWindow::ParamlistWindow(int x, int y, int max_h, Paramlist *params)
+ParamlistSubWindow::ParamlistSubWindow(int x, int y, int max_h, Paramlist *params)
  : BC_SubWindow(x,
 	y,
 	200,
@@ -43,7 +46,7 @@ ParamlistWindow::ParamlistWindow(int x, int y, int max_h, Paramlist *params)
 	win_y = y;
 }
 
-void ParamlistWindow::draw_list()
+void ParamlistSubWindow::draw_list()
 {
 	Param *current, *subparam;
 	BC_WindowBase *win = 0;
@@ -114,7 +117,7 @@ void ParamlistWindow::draw_list()
 	reposition_window(win_x, win_y, w, bot_max);
 }
 
-void ParamlistWindow::calc_pos(int h, int w)
+void ParamlistSubWindow::calc_pos(int h, int w)
 {
 	top += h + 5;
 
@@ -134,12 +137,12 @@ void ParamlistWindow::calc_pos(int h, int w)
 		new_column = 0;
 }
 
-BC_WindowBase *ParamlistWindow::set_scrollbar(int x, int y, int w)
+BC_WindowBase *ParamlistSubWindow::set_scrollbar(int x, int y, int w)
 {
 	return new ParamWindowScroll(this, x, y, w, get_w());
 }
 
-int ParamlistWindow::max_name_size(Paramlist *list, BC_WindowBase *win, int mxlen)
+int ParamlistSubWindow::max_name_size(Paramlist *list, BC_WindowBase *win, int mxlen)
 {
 	Param *current;
 	int tw;
@@ -200,7 +203,7 @@ int ParamDblTxtbx::handle_event()
 }
 
 
-ParamWindowScroll::ParamWindowScroll(ParamlistWindow *listwin,
+ParamWindowScroll::ParamWindowScroll(ParamlistSubWindow *listwin,
 	int x, int y, int pixels, int length)
  : BC_ScrollBar(x, y, SCROLL_HORIZ, pixels, length, 0,
     round((double)pixels / length * pixels))
@@ -215,4 +218,78 @@ int ParamWindowScroll::handle_event()
 {
 	paramwin->reposition_window(param_x - (get_value() * zoom), param_y);
 	return 1;
+}
+
+
+ParamlistWindow::ParamlistWindow(Paramlist *params, const char *winname)
+ : BC_Window(winname,
+	200,
+	100,
+	200,
+	200)
+{
+	ParamlistSubWindow *listwin;
+
+	add_subwindow(listwin = new ParamlistSubWindow(0, 10, PARAMLIST_WIN_MAXH, params));
+	listwin->draw_list();
+
+	int w = listwin->get_w();
+	int h = listwin->get_h() + BC_OKButton::calculate_h() + 40;
+
+	int max_w = get_root_w(1) - 100;
+	if(w > max_w)
+	{
+		add_subwindow(listwin->set_scrollbar(0, listwin->get_h() + 10, max_w));
+		w = max_w;
+	}
+	reposition_window((get_root_w(1) - w) / 2, (get_root_h(1) - h) / 2,
+		w, h);
+	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+}
+
+ParamlistThread::ParamlistThread(Paramlist **paramp, const char *name)
+ : Thread()
+{
+	strcpy(window_title, name);
+	this->paramp = paramp;
+	window = 0;
+	win_result = 1;
+	window_lock = new Mutex("AVlibsParamThread::window_lock");
+}
+
+void ParamlistThread::set_window_title(const char *name)
+{
+	strcpy(window_title, name);
+}
+
+void ParamlistThread::run()
+{
+	window_lock->lock("ParamlistThread::run");
+	win_result = 1;
+	window = new ParamlistWindow(*paramp, window_title);
+	win_result = window->run_window();
+	delete window;
+	window = 0;
+	window_lock->unlock();
+}
+
+void ParamlistThread::cancel_window()
+{
+	if(running() && window)
+		window->set_done(1);
+	wait_window();
+}
+
+void ParamlistThread::wait_window()
+{
+	window_lock->lock("ParamlistThread::wait_window");
+	window_lock->unlock();
+}
+
+ParamlistThread::~ParamlistThread()
+{
+	cancel_window();
+	window_lock->lock("ParamlistThread::~AVlibsParamThread");
+	delete window_lock;
 }

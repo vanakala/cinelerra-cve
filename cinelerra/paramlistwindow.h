@@ -26,16 +26,17 @@
 #include "bcsubwindow.h"
 #include "bctextbox.h"
 #include "bctoggle.h"
+#include "bcwindow.h"
 #include "paramlist.h"
 #include "paramlistwindow.inc"
 #include "subselection.h"
 #include "thread.h"
 
 
-class ParamlistWindow : public BC_SubWindow
+class ParamlistSubWindow : public BC_SubWindow
 {
 public:
-	ParamlistWindow(int x, int y, int max_h, Paramlist *params);
+	ParamlistSubWindow(int x, int y, int max_h, Paramlist *params);
 
 	void draw_list();
 	BC_WindowBase *set_scrollbar(int x, int y, int w);
@@ -60,12 +61,12 @@ private:
 class ParamWindowScroll : public BC_ScrollBar
 {
 public:
-	ParamWindowScroll(ParamlistWindow *listwin,
+	ParamWindowScroll(ParamlistSubWindow *listwin,
 		int x, int y, int pixels, int length);
 
 	int handle_event();
 private:
-	ParamlistWindow *paramwin;
+	ParamlistSubWindow *paramwin;
 	int param_x;
 	int param_y;
 	double zoom;
@@ -102,6 +103,32 @@ public:
 private:
 	Param *param;
 	double *valptr;
+};
+
+class ParamlistWindow : public BC_Window
+{
+public:
+	ParamlistWindow(Paramlist *params, const char *winname);
+};
+
+class ParamlistThread : public Thread
+{
+public:
+	ParamlistThread(Paramlist **paramp, const char *name);
+	~ParamlistThread();
+
+	void run();
+	void cancel_window();
+	void wait_window();
+	void set_window_title(const char *name);
+
+	ParamlistWindow *window;
+	int win_result;
+
+private:
+	char window_title[BCTEXTLEN];
+	Paramlist **paramp;
+	Mutex *window_lock;
 };
 
 #endif

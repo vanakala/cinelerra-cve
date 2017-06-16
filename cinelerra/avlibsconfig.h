@@ -142,7 +142,7 @@ public:
 	void calc_pos(int h, int w);
 
 private:
-	ParamlistWindow *listwin;
+	ParamlistSubWindow *listwin;
 };
 
 class AVlibsCodecConfigPopup : public SubSelectionPopup

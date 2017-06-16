@@ -25,6 +25,8 @@
 #define PARAMLIST_WIN_MARGIN 20
 #define PARAMLIST_WIN_MAXH 600
 
+class ParamlistSubWindow;
 class ParamlistWindow;
+class ParamlistThread;
 
 #endif

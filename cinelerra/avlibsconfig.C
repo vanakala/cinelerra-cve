@@ -460,7 +460,7 @@ AVlibsParamWindow::AVlibsParamWindow(Paramlist *params, const char *winname)
 	200,
 	200)
 {
-	add_subwindow(listwin = new ParamlistWindow(0, 10, PARAMLIST_WIN_MAXH, params));
+	add_subwindow(listwin = new ParamlistSubWindow(0, 10, PARAMLIST_WIN_MAXH, params));
 	listwin->draw_list();
 
 	int w = listwin->get_w();
@@ -504,7 +504,7 @@ void Streamopts::show(Param *encoder)
 		for(Param *p = encoder->subparams->first; p; p = p->next)
 		{
 			if(!(p->subparams->type & PARAMTYPE_HIDN))
-				tb_width = ParamlistWindow::max_name_size(p->subparams, this, tb_width);
+				tb_width = ParamlistSubWindow::max_name_size(p->subparams, this, tb_width);
 		}
 
 		tb_width += 10;
