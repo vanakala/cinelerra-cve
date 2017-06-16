@@ -87,6 +87,7 @@ public:
 	void load_defaults(BC_Hash *defaults, 
 		const char *prefix, int options);
 	void format_changed();
+	void get_format_params(int options);
 	void save_defaults(BC_Hash *defaults, 
 		const char *prefix,
 		int options);
