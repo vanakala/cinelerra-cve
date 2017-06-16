@@ -672,6 +672,23 @@ void Paramlist::remove_param(const char *name)
 		remove(p);
 }
 
+void Paramlist::join_list(Paramlist *that)
+{
+	Param *p, *tp, *ttp;
+
+	for(tp = that->first; tp;)
+	{
+		if(p = find(that->name))
+			remove(p);
+
+		ttp = tp->next;
+		that->remove_pointer(tp);
+		append(tp);
+		tp = ttp;
+	}
+	delete that;
+}
+
 void Paramlist::dump(int indent)
 {
 	Param *current;

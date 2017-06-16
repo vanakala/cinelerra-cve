@@ -106,6 +106,7 @@ public:
 	void load_list(FileXML *file);
 	void remove_equiv(Paramlist *that);
 	void remove_param(const char *name);
+	void join_list(Paramlist *that);
 	void dump(int indent = 0);
 
 	char name[PARAM_NAMELEN];
