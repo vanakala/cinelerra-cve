@@ -30,6 +30,8 @@
 #define SUPPORTS_AUDIO 1
 #define SUPPORTS_VIDEO 2
 #define SUPPORTS_STILL 4
+// Library parameters
+#define SUPPORTS_LIBPARA 0x1000
 // Default parameters
 #define SUPPORTS_DEFAULT 0x8000
 

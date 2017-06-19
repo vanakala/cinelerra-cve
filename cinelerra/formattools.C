@@ -27,6 +27,7 @@
 #include "formattools.h"
 #include "language.h"
 #include "mwindow.h"
+#include "paramlistwindow.h"
 #include "preferences.h"
 #include "selection.h"
 #include "theme.h"
@@ -92,14 +93,17 @@ FormatTools::FormatTools(MWindow *mwindow,
 	int x = init_x;
 	int y = init_y;
 	int ylev = init_y;
+	int text_x = init_x;
 
 	this->mwindow = mwindow;
 	this->window = window;
 	this->asset = asset;
 	aparams_button = 0;
 	vparams_button = 0;
+	fparams_button = 0;
 	aparams_thread = 0;
 	vparams_thread = 0;
+	fparams_thread = 0;
 	channels_tumbler = 0;
 	audio_switch = 0;
 	video_switch = 0;
@@ -110,6 +114,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 	this->use_brender = brender;
 	this->do_audio = support & SUPPORTS_AUDIO;
 	this->do_video = support & SUPPORTS_VIDEO;
+	this->support = support;
 	this->checkbox = checkbox;
 	this->details = details;
 	this->strategy = strategy;
@@ -154,6 +159,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 		if(checkbox & SUPPORTS_AUDIO)
 		{
 			window->add_subwindow(audio_switch = new FormatAudio(x, y, this, asset->audio_data));
+			text_x = x + audio_switch->text_x;
 		}
 		x = init_x;
 		ylev = y;
@@ -179,6 +185,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 		if(checkbox & SUPPORTS_VIDEO)
 		{
 			window->add_subwindow(video_switch = new FormatVideo(x, y, this, asset->video_data));
+			text_x = x + video_switch->text_x;
 			y += video_switch->get_h();
 		}
 		else
@@ -188,6 +195,17 @@ FormatTools::FormatTools(MWindow *mwindow,
 
 		y += 10;
 		vparams_thread = new FormatVThread(this);
+	}
+
+	if(support & SUPPORTS_LIBPARA)
+	{
+		window->add_subwindow(fparams_button = new FormatFParams(mwindow,
+			this, init_x + 80, y));
+		window->add_subwindow(new BC_Title(text_x, y, _("Format options")));
+		y += fparams_button->get_h() + 10;
+		asset->get_format_params(support);
+		fparams_thread = new ParamlistThread(&asset->encoder_parameters[ASSET_FMT_IX],
+			_("Format options"));
 	}
 	enable_supported();
 	x = init_x;
@@ -213,6 +231,7 @@ FormatTools::~FormatTools()
 	if(video_switch) delete video_switch;
 	if(aparams_thread) delete aparams_thread;
 	if(vparams_thread) delete vparams_thread;
+	delete fparams_thread;
 	if(channels_tumbler) delete channels_tumbler;
 }
 
@@ -273,6 +292,13 @@ void FormatTools::enable_supported()
 			}
 			asset->single_image = filesup & SUPPORTS_STILL;
 		}
+	}
+	if(fparams_button)
+	{
+		if(asset->encoder_parameters[ASSET_FMT_IX])
+			fparams_button->enable();
+		else
+			fparams_button->disable();
 	}
 }
 
@@ -426,6 +452,14 @@ void FormatTools::set_video_options()
 		vparams_thread->file->raise_window();
 }
 
+void FormatTools::set_format_options()
+{
+	if(!fparams_thread->running())
+		fparams_thread->start();
+	else
+		fparams_thread->window->raise_window();
+}
+
 void FormatTools::format_changed()
 {
 	if(!use_brender)
@@ -464,6 +498,18 @@ int FormatVParams::handle_event()
 	return 1;
 }
 
+FormatFParams::FormatFParams(MWindow *mwindow, FormatTools *format, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("wrench"))
+{
+	this->format = format;
+	set_tooltip(_("Configure format"));
+}
+
+int FormatFParams::handle_event()
+{
+	format->set_format_options();
+	return 1;
+}
 
 FormatAThread::FormatAThread(FormatTools *format)
  : Thread()

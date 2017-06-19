@@ -28,10 +28,12 @@
 #include "file.inc"
 #include "mwindow.inc"
 #include "selection.h"
+#include "paramlistwindow.inc"
 #include "pluginserver.inc"
 
 class FormatAParams;
 class FormatVParams;
+class FormatFParams;
 class FormatAThread;
 class FormatVThread;
 class FormatChannels;
@@ -84,6 +86,7 @@ public:
 
 	void set_audio_options();
 	void set_video_options();
+	void set_format_options();
 	int get_w();
 	void format_changed();
 
@@ -92,8 +95,12 @@ public:
 
 	FormatAParams *aparams_button;
 	FormatVParams *vparams_button;
+	FormatFParams *fparams_button;
+
 	FormatAThread *aparams_thread;
 	FormatVThread *vparams_thread;
+	ParamlistThread *fparams_thread;
+
 	BrowseButton *path_button;
 	FormatPathText *path_textbox;
 	BC_RecentList *path_recent;
@@ -114,6 +121,7 @@ public:
 	int use_brender;
 	int do_audio;
 	int do_video;
+	int support;
 	int checkbox;
 	int details;
 	int *strategy;
@@ -150,6 +158,15 @@ public:
 	FormatTools *format;
 };
 
+class FormatFParams : public BC_Button
+{
+public:
+	FormatFParams(MWindow *mwindow, FormatTools *format, int x, int y);
+
+	int handle_event();
+private:
+	FormatTools *format;
+};
 
 class FormatAThread : public Thread
 {

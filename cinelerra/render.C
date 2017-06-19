@@ -877,7 +877,7 @@ void Render::save_defaults(Asset *asset)
 }
 
 #define WIDTH 410
-#define HEIGHT 455
+#define HEIGHT 500
 
 RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
  : BC_Window(MWindow::create_title(N_("Render")),
@@ -910,7 +910,7 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 		asset,
 		x,
 		y,
-		SUPPORTS_AUDIO | SUPPORTS_VIDEO,
+		SUPPORTS_AUDIO | SUPPORTS_VIDEO | SUPPORTS_LIBPARA,
 		SUPPORTS_AUDIO | SUPPORTS_VIDEO,
 		SUPPORTS_VIDEO,
 		&render->strategy);
