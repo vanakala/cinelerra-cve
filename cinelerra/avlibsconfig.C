@@ -285,7 +285,7 @@ void AVlibsConfig::merge_saved_options(Paramlist *optlist, const char *config_na
 
 	if(!file.read_from_file(config_path(asset, config_name, suffix), 1) && !file.read_tag())
 	{
-		savedopts = new Paramlist("");
+		savedopts = new Paramlist();
 		savedopts->load_list(&file);
 
 		optlist->copy_values(savedopts);
@@ -318,7 +318,7 @@ Paramlist *AVlibsConfig::load_options(Asset *asset, const char *config_name,
 
 	if(!file.read_from_file(config_path(asset, config_name, suffix), 1) && !file.read_tag())
 	{
-		opts = new Paramlist("");
+		opts = new Paramlist();
 		opts->load_list(&file);
 	}
 	return opts;

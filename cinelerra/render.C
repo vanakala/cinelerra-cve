@@ -835,7 +835,7 @@ void Render::load_profile(Asset *asset)
 
 	if(!file.read_from_file(asset->profile_config_path("ProfilData.xml", path), 1) && !file.read_tag())
 	{
-		dflts = new Paramlist("");
+		dflts = new Paramlist();
 		dflts->load_list(&file);
 
 		strategy = dflts->get("strategy", strategy);

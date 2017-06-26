@@ -70,7 +70,7 @@ private:
 class Paramlist : public List<Param>
 {
 public:
-	Paramlist(const char *name);
+	Paramlist(const char *name = 0);
 	~Paramlist();
 
 	void delete_params();

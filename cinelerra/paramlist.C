@@ -335,7 +335,10 @@ void Param::dump(int indent)
 Paramlist::Paramlist(const char *name)
  : List<Param>()
 {
-	strncpy(this->name, name, PARAM_NAMELEN);
+	if(name)
+		strncpy(this->name, name, PARAM_NAMELEN);
+	else
+		this->name[0] = 0;
 	this->name[PARAM_NAMELEN - 1] = 0;
 	type = 0;
 	selectedint = 0;

@@ -671,7 +671,7 @@ void Asset::read_params(FileXML *file)
 
 		if(num >= 0 && num < MAX_ENC_PARAMLISTS)
 		{
-			epar = new Paramlist("");
+			epar = new Paramlist();
 			epar->load_list(file);
 			file->read_tag();
 			encoder_parameters[num] = epar;
