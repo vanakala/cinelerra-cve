@@ -108,8 +108,8 @@ private:
 	static int streamformat(AVFormatContext *context);
 	static void liberror(int code, const char *prefix);
 	static Paramlist *scan_global_options(int options);
-	static Paramlist *scan_format_options(int format,
-		int options, AVOutputFormat **ofmtp);
+	static AVOutputFormat *output_format(int format);
+	static Paramlist *scan_format_options(int format, int options);
 	static Paramlist *scan_options(const AVClass *avclass, int options,
 		const char *listname);
 	static void fill_encoder_params(Paramlist *codecs, AVCodecID codec_id,

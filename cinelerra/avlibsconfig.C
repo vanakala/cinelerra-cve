@@ -65,9 +65,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 
 	left = 10;
 	top = 10;
-	globopts = 0;
 	codecs = 0;
-	fmtopts = 0;
 	codecpopup = 0;
 	codecopts = 0;
 	streamopts = 0;
@@ -85,10 +83,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 		return;
 	}
 
-	globopts = FileAVlibs::scan_global_options(options);
-	globopts->copy_values(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX]);
-	fmtopts = FileAVlibs::scan_format_options(asset->format, options, &oformat);
-	fmtopts->copy_values(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
+	oformat = FileAVlibs::output_format(asset->format);
 	codecs = FileAVlibs::scan_codecs(oformat, asset, options);
 
 	for(Param *p = codecs->first; p; p = p->next)
@@ -97,22 +92,15 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 			codec_w = x1;
 	}
 
-	globthread = new AVlibsParamThread(globopts, "AVlib options");
 	sprintf(string, "'%s' options",
 		ContainerSelection::container_to_text(asset->format));
-	fmtthread = new AVlibsParamThread(fmtopts, string);
 	codecthread = new AVlibsParamThread(&codecopts, "Codec options");
 	privthread = new AVlibsParamThread(&codec_private, "Codec private options");
 	win = add_subwindow(new BC_Title(left, top, string));
 	top += win->get_h() + 10;
-	win = add_subwindow(new AVlibsConfigButton(left, top, globopts, this));
-	base_left = win->get_w() + 20; // see
-	add_subwindow(new BC_Title(base_left, top, "Library options"));
-	top += win->get_h();
-	win = add_subwindow(new AVlibsConfigButton(left, top, fmtopts, this));
-	add_subwindow(new BC_Title(base_left, top, "Format options"));
-	top += win->get_h();
+
 	win = add_subwindow(new AVlibsCodecConfigButton(left, top, &codecopts, this));
+	base_left = win->get_w() + 20;
 	base_w = win->get_w();
 
 	if(options & SUPPORTS_AUDIO)
@@ -132,9 +120,8 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	base_w += twin->get_w() + 10;
 	codecpopup = new AVlibsCodecConfigPopup(base_left + base_w,
 		top, codec_w + 10, this, codecs);
-	top += win->get_h();
+	tophalf_base  = top + win->get_h() + 10;
 	base_w += codecpopup->get_w() + x1;
-	tophalf_base = top;
 	draw_bottomhalf(param, param2);
 	handle_event();
 }
@@ -142,14 +129,6 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 
 AVlibsConfig::~AVlibsConfig()
 {
-	if(globthread->running())
-		globthread->window->set_done(1);
-	delete globthread;
-
-	if(fmtthread->running())
-		globthread->window->set_done(1);
-	delete fmtthread;
-
 	if(codecthread->running())
 		codecthread->window->set_done(1);
 	delete codecthread;
@@ -157,10 +136,7 @@ AVlibsConfig::~AVlibsConfig()
 	if(privthread->running())
 		privthread->window->set_done(1);
 	delete privthread;
-
-	delete globopts;
 	delete codecs;
-	delete fmtopts;
 	delete codecopts;
 	delete codecpopup;
 	delete codec_private;
@@ -242,10 +218,6 @@ void AVlibsConfig::open_paramwin(Paramlist *list)
 {
 	AVlibsParamThread *thread;
 
-	if(list == globopts)
-		thread = globthread;
-	if(list == fmtopts)
-		thread = fmtthread;
 	if(list == codecopts)
 		thread = codecthread;
 	if(list == codec_private)
@@ -363,20 +335,6 @@ char *AVlibsConfig::config_path(Asset *asset, const char *config_name, const cha
 
 	strcat(pathbuf, FILEAVLIBS_CONFIG_EXT);
 	return pathbuf;
-}
-
-
-AVlibsConfigButton::AVlibsConfigButton(int x, int y, Paramlist *list, AVlibsConfig *cfg)
- : BC_Button(x, y, theme_global->get_image_set("wrench"))
-{
-	this->list = list;
-	config = cfg;
-}
-
-int AVlibsConfigButton::handle_event()
-{
-	config->open_paramwin(list);
-	return 1;
 }
 
 AVlibsCodecConfigButton::AVlibsCodecConfigButton(int x, int y,

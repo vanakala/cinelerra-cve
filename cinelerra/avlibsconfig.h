@@ -58,14 +58,11 @@ public:
 		const char *suffix = 0);
 
 	Asset *asset;
-	Paramlist *globopts;
-	Paramlist *fmtopts;
+
 	Paramlist *codecs;
 	Paramlist *codecopts;
 	Paramlist *codec_private;
 
-	AVlibsParamThread *globthread;
-	AVlibsParamThread *fmtthread;
 	AVlibsParamThread *codecthread;
 	AVlibsParamThread *privthread;
 
@@ -85,19 +82,6 @@ private:
 	BC_OKButton *okbutton;
 	Streamopts *streamopts;
 	char string[BCTEXTLEN];
-};
-
-
-class AVlibsConfigButton : public BC_Button
-{
-public:
-	AVlibsConfigButton(int x, int y, Paramlist *list, AVlibsConfig *cfg);
-
-	int handle_event();
-
-private:
-	Paramlist *list;
-	AVlibsConfig *config;
 };
 
 

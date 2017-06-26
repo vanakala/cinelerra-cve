@@ -1911,36 +1911,18 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	AVlibsConfig *window = new AVlibsConfig(asset, options);
 	format_window = window;
 	window->run_window();
-	defaults = scan_global_options(options);
-	window->save_options(window->globopts, FILEAVLIBS_GLOBAL_CONFIG, 0, defaults);
+
 	if(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX])
 	{
 		delete asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX];
 		asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = 0;
 	}
-	if(window->globopts->total() > 0)
-	{
-		window->globopts->clean_list();
-		asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = window->globopts;
-		window->globopts = 0;
-	}
-	delete defaults;
 
-	defaults = scan_format_options(asset->format, options, 0);
-	window->save_options(window->fmtopts, FILEAVLIBS_FORMAT_CONFIG,
-		window->fmtopts->name, defaults);
 	if(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX])
 	{
 		delete asset->encoder_parameters[FILEAVLIBS_FORMAT_IX];
 		asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = 0;
 	}
-	if(window->fmtopts->total() > 0)
-	{
-		window->fmtopts->clean_list();
-		asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = window->fmtopts;
-		window->fmtopts = 0;
-	}
-	delete defaults;
 
 	if(window->codecopts)
 	{
@@ -2009,11 +1991,6 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			delete defaults;
 		}
 	}
-
-	if(update_codeclist(asset, window->codecs, options))
-		window->save_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX],
-			FILEAVLIBS_CODECS_CONFIG, window->fmtopts->name);
-
 	delete window;
 }
 
@@ -2156,14 +2133,13 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 void FileAVlibs::get_format_params(Asset *asset, int options)
 {
 	Paramlist *glob, *fmt;
-	AVOutputFormat *oformat;
 
 	if(!(FileAVlibs::encoder_formatname(asset->format)))
 		return;
 
 	glob = FileAVlibs::scan_global_options(options);
 	glob->copy_values(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX]);
-	fmt = FileAVlibs::scan_format_options(asset->format, options, &oformat);
+	fmt = FileAVlibs::scan_format_options(asset->format, options);
 	fmt->copy_values(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
 	fmt->join_list(glob);
 	delete asset->encoder_parameters[ASSET_FMT_IX];
@@ -2215,24 +2191,24 @@ Paramlist *FileAVlibs::scan_global_options(int options)
 	return scan_options(avformat_get_class(), 0, "AVlibsGlobal");
 }
 
-Paramlist *FileAVlibs::scan_format_options(int format,
-	int options, AVOutputFormat **ofmtp)
+AVOutputFormat *FileAVlibs::output_format(int format)
 {
-	const char *name;
-	AVOutputFormat *oformat = 0;
-
-	if(ofmtp)
-		*ofmtp = 0;
-	name = encoder_formatname(format);
+	const char *name = encoder_formatname(format);
 
 	if(name)
-	{
-		oformat = av_guess_format(name, 0, 0);
-		if(ofmtp)
-			*ofmtp = oformat;
-		if(oformat)
-			return scan_options(oformat->priv_class, 0, name);
-	}
+		return av_guess_format(name, 0, 0);
+
+	return 0;
+}
+
+Paramlist *FileAVlibs::scan_format_options(int format, int options)
+{
+	AVOutputFormat *oformat;
+	const char *name = encoder_formatname(format);
+
+	if(name && (oformat = FileAVlibs::output_format(format)))
+		return scan_options(oformat->priv_class, 0, name);
+
 	return 0;
 }
 
