@@ -34,8 +34,6 @@
 #include "subselection.h"
 #include "thread.h"
 
-class AVlibsParamThread;
-class AVlibsParamWindow;
 class AVlibsCodecConfigButton;
 class Streamopts;
 
@@ -63,8 +61,8 @@ public:
 	Paramlist *codecopts;
 	Paramlist *codec_private;
 
-	AVlibsParamThread *codecthread;
-	AVlibsParamThread *privthread;
+	ParamlistThread *codecthread;
+	ParamlistThread *privthread;
 
 	int current_codec;
 
@@ -97,37 +95,6 @@ private:
 	AVlibsConfig *config;
 };
 
-
-class AVlibsParamThread : public Thread
-{
-public:
-	AVlibsParamThread(Paramlist *params, const char *name);
-	AVlibsParamThread(Paramlist **paramp, const char *name);
-	~AVlibsParamThread();
-
-	void run();
-	void wait_window();
-	void set_window_title(const char *name);
-
-	AVlibsParamWindow *window;
-
-private:
-	char window_title[BCTEXTLEN];
-	Paramlist *params;
-	Paramlist **paramp;
-	Mutex *window_lock;
-};
-
-class AVlibsParamWindow : public BC_Window
-{
-public:
-	AVlibsParamWindow(Paramlist *params, const char *winname);
-
-	void calc_pos(int h, int w);
-
-private:
-	ParamlistSubWindow *listwin;
-};
 
 class AVlibsCodecConfigPopup : public SubSelectionPopup
 {

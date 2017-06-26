@@ -94,8 +94,8 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 
 	sprintf(string, "'%s' options",
 		ContainerSelection::container_to_text(asset->format));
-	codecthread = new AVlibsParamThread(&codecopts, "Codec options");
-	privthread = new AVlibsParamThread(&codec_private, "Codec private options");
+	codecthread = new ParamlistThread(&codecopts, "Codec options");
+	privthread = new ParamlistThread(&codec_private, "Codec private options");
 	win = add_subwindow(new BC_Title(left, top, string));
 	top += win->get_h() + 10;
 
@@ -216,7 +216,7 @@ void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
 
 void AVlibsConfig::open_paramwin(Paramlist *list)
 {
-	AVlibsParamThread *thread;
+	ParamlistThread *thread;
 
 	if(list == codecopts)
 		thread = codecthread;
@@ -368,72 +368,6 @@ int AVlibsCodecConfigPopup::handle_event()
 	return rv;
 }
 
-AVlibsParamThread::AVlibsParamThread(Paramlist *params, const char *name)
- : Thread()
-{
-	strcpy(window_title, name);
-	this->params = params;
-	paramp = &this->params;
-	window_lock = new Mutex("AVlibsParamThread::window_lock");
-}
-
-AVlibsParamThread::AVlibsParamThread(Paramlist **paramp, const char *name)
- : Thread()
-{
-	strcpy(window_title, name);
-	this->paramp = paramp;
-	window_lock = new Mutex("AVlibsParamThread::window_lock");
-}
-
-void AVlibsParamThread::set_window_title(const char *name)
-{
-	strcpy(window_title, name);
-}
-
-void AVlibsParamThread::run()
-{
-	window_lock->lock("AVlibsParamThread::run");
-	window = new AVlibsParamWindow(*paramp, window_title);
-	window->run_window();
-	delete window;
-	window_lock->unlock();
-}
-
-void AVlibsParamThread::wait_window()
-{
-	window_lock->lock("AVlibsParamThread::wait_window");
-	window_lock->unlock();
-}
-
-AVlibsParamThread::~AVlibsParamThread()
-{
-	window_lock->lock("AVlibsParamThread::~AVlibsParamThread");
-	delete window_lock;
-}
-
-AVlibsParamWindow::AVlibsParamWindow(Paramlist *params, const char *winname)
- : BC_Window(winname,
-	200,
-	100,
-	200,
-	200)
-{
-	add_subwindow(listwin = new ParamlistSubWindow(0, 10, PARAMLIST_WIN_MAXH, params));
-	listwin->draw_list();
-
-	int w = listwin->get_w();
-	int h = listwin->get_h() + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 40;
-
-	int max_w = get_root_w(1) - 100;
-	if(w > max_w)
-	{
-		add_subwindow(listwin->set_scrollbar(0, listwin->get_h() + 10, max_w));
-		w = max_w;
-	}
-	reposition_window((get_root_w(1) - w) / 2, (get_root_h(1) - h) / 2,
-		w, h);
-	add_subwindow(new BC_OKButton(this));
-}
 
 Streamopts::Streamopts(int x, int y)
  : BC_SubWindow(x, y, 1, 1)
