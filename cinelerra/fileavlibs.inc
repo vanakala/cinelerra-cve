@@ -22,7 +22,6 @@
 #ifndef FILEAVLIBS_INC
 #define FILEAVLIBS_INC
 
-#define FILEAVLIBS_GLOBAL_CONFIG "avlibsconfig"
 #define FILEAVLIBS_FORMAT_CONFIG "avlibsfmt:"
 #define FILEAVLIBS_CODECS_CONFIG "avlibscdc:"
 #define FILEAVLIBS_ACODEC_CONFIG "avlibsacodec:"
@@ -33,14 +32,13 @@
 #define FILEAVLIBS_CONFIG_EXT ".xml"
 
 // Indexes of encoding parameters in asset
-#define FILEAVLIBS_GLOBAL_IX 0
-#define FILEAVLIBS_FORMAT_IX 1
-#define FILEAVLIBS_CODECS_IX 2
-#define FILEAVLIBS_ACODEC_IX 3
-#define FILEAVLIBS_VCODEC_IX 4
-#define FILEAVLIBS_APRIVT_IX 5
-#define FILEAVLIBS_VPRIVT_IX 6
-#define FILEAVLIBS_METADT_IX 7
+#define FILEAVLIBS_FORMAT_IX 0
+#define FILEAVLIBS_CODECS_IX 1
+#define FILEAVLIBS_ACODEC_IX 2
+#define FILEAVLIBS_VCODEC_IX 3
+#define FILEAVLIBS_APRIVT_IX 4
+#define FILEAVLIBS_VPRIVT_IX 5
+#define FILEAVLIBS_METADT_IX 6
 
 // Current codecs list in asset
 #define AVL_PARAM_CODEC_AUDIO "audio"

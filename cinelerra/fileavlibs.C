@@ -836,7 +836,6 @@ AVDictionary *FileAVlibs::create_dictionary(int options)
 {
 	AVDictionary *dict = 0;
 
-	list2dictionary(&dict, asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX]);
 	list2dictionary(&dict, asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
 	if(options & SUPPORTS_AUDIO)
 	{
@@ -1912,12 +1911,6 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	format_window = window;
 	window->run_window();
 
-	if(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX])
-	{
-		delete asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX];
-		asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = 0;
-	}
-
 	if(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX])
 	{
 		delete asset->encoder_parameters[FILEAVLIBS_FORMAT_IX];
@@ -2004,7 +1997,6 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 		return;
-	asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_GLOBAL_CONFIG);
 	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_FORMAT_CONFIG, name);
 	asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_CODECS_CONFIG, name);
 
@@ -2138,7 +2130,6 @@ void FileAVlibs::get_format_params(Asset *asset, int options)
 		return;
 
 	glob = FileAVlibs::scan_global_options(options);
-	glob->copy_values(asset->encoder_parameters[FILEAVLIBS_GLOBAL_IX]);
 	fmt = FileAVlibs::scan_format_options(asset->format, options);
 	fmt->copy_values(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
 	fmt->join_list(glob);
