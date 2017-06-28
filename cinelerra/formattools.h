@@ -106,7 +106,6 @@ public:
 	BC_RecentList *path_recent;
 	BC_Title *format_title;
 	FormatPopup *format_popup;
-	BC_ITumbler *channels_tumbler;
 
 	BC_Title *audio_title;
 	BC_Title *channels_title;

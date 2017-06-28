@@ -104,7 +104,6 @@ FormatTools::FormatTools(MWindow *mwindow,
 	aparams_thread = 0;
 	vparams_thread = 0;
 	fparams_thread = 0;
-	channels_tumbler = 0;
 	audio_switch = 0;
 	video_switch = 0;
 	path_textbox = 0;
@@ -225,14 +224,9 @@ FormatTools::~FormatTools()
 	delete path_textbox;
 	delete format_popup;
 
-	if(aparams_button) delete aparams_button;
-	if(vparams_button) delete vparams_button;
-	if(audio_switch) delete audio_switch;
-	if(video_switch) delete video_switch;
-	if(aparams_thread) delete aparams_thread;
-	if(vparams_thread) delete vparams_thread;
+	delete aparams_thread;
+	delete vparams_thread;
 	delete fparams_thread;
-	if(channels_tumbler) delete channels_tumbler;
 }
 
 void FormatTools::enable_supported()
@@ -396,9 +390,7 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 			channels_title->reposition_window(x, y);
 			x += 260;
 			channels_button->reposition_window(x, y);
-			x += channels_button->get_w() + 5;
-			channels_tumbler->reposition_window(x, y);
-			y += channels_button->get_h() + 20;
+			y += channels_button->get_h() + 25;
 			x = init_x;
 		}
 	}
