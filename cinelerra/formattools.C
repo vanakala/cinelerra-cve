@@ -468,6 +468,7 @@ void FormatTools::format_changed()
 	if(path_recent)
 		path_recent->load_items(ContainerSelection::container_prefix(asset->format));
 	asset->format_changed();
+	asset->get_format_params(support);
 	enable_supported();
 }
 
