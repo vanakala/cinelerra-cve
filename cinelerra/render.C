@@ -292,13 +292,15 @@ void Render::run()
 		check_asset(mwindow->edl, *asset);
 
 // Get format from user
-		RenderWindow window(mwindow, this, asset);
-		result = window.run_window();
+		RenderWindow *window = new RenderWindow(mwindow, this, asset);
+		result = window->run_window();
 		if(!result)
 		{
 			// add to recentlist only on OK
-			window.format_tools->path_recent->add_item(ContainerSelection::container_prefix(asset->format), asset->path);
+			window->format_tools->path_recent->add_item(ContainerSelection::container_prefix(asset->format), asset->path);
 		}
+		// deleting window updates the asset
+		delete window;
 		save_defaults(asset);
 		mwindow->save_defaults();
 

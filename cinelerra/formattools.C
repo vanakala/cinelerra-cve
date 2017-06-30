@@ -226,7 +226,13 @@ FormatTools::~FormatTools()
 
 	delete aparams_thread;
 	delete vparams_thread;
-	delete fparams_thread;
+	if(fparams_thread)
+	{
+		fparams_thread->cancel_window();
+		if(!fparams_thread->win_result)
+			asset->set_format_params();
+		delete fparams_thread;
+	}
 }
 
 void FormatTools::enable_supported()

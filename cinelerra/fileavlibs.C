@@ -2137,6 +2137,36 @@ void FileAVlibs::get_format_params(Asset *asset, int options)
 	asset->encoder_parameters[ASSET_FMT_IX] = fmt;
 }
 
+void FileAVlibs::set_format_params(Asset *asset)
+{
+	Paramlist *glob, *fmt;
+
+	if(!(FileAVlibs::encoder_formatname(asset->format)))
+		return;
+
+	if(!asset->encoder_parameters[ASSET_FMT_IX])
+		return;
+	glob = FileAVlibs::scan_global_options(SUPPORTS_AUDIO|SUPPORTS_VIDEO);
+	fmt = FileAVlibs::scan_format_options(asset->format,
+		SUPPORTS_AUDIO|SUPPORTS_VIDEO);
+	fmt->join_list(glob);
+	asset->encoder_parameters[ASSET_FMT_IX]->remove_equiv(fmt);
+	delete asset->encoder_parameters[FILEAVLIBS_FORMAT_IX];
+
+	if(asset->encoder_parameters[ASSET_FMT_IX]->total() > 0)
+	{
+		asset->encoder_parameters[ASSET_FMT_IX]->clean_list();
+		asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] =
+			asset->encoder_parameters[ASSET_FMT_IX];
+	}
+	else
+	{
+		delete asset->encoder_parameters[ASSET_FMT_IX];
+		asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = 0;
+	}
+	asset->encoder_parameters[ASSET_FMT_IX] = 0;
+}
+
 int FileAVlibs::update_codeclist(Asset *asset, Paramlist *codecs, int options)
 {
 	int changed = 0;
