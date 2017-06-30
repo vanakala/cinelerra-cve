@@ -859,6 +859,7 @@ void Render::save_defaults(Asset *asset)
 	params.append_param("loadmode", load_mode);
 	params.append_param("renderrange", range_type);
 	asset->save_defaults(&params, ASSET_ALL);
+	asset->save_format_params();
 
 	if(asset->render_parameters)
 		params.remove_equiv(asset->render_parameters);
