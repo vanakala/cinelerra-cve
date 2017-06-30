@@ -898,6 +898,12 @@ void Asset::set_format_params()
 		FileAVlibs::set_format_params(this);
 }
 
+void Asset::save_format_params()
+{
+	if(renderprofile_path[0])
+		FileAVlibs::save_format_params(this);
+}
+
 void Asset::load_defaults(Paramlist *list, int options)
 {
 	if(options & ASSET_PATH)
