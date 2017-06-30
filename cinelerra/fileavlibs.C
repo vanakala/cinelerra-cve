@@ -2167,6 +2167,18 @@ void FileAVlibs::set_format_params(Asset *asset)
 	asset->encoder_parameters[ASSET_FMT_IX] = 0;
 }
 
+void FileAVlibs::save_format_params(Asset *asset)
+{
+	const char *name;
+	Paramlist *tmp;
+
+	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
+		return;
+
+	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_FORMAT_IX,
+		FILEAVLIBS_FORMAT_CONFIG, name);
+}
+
 int FileAVlibs::update_codeclist(Asset *asset, Paramlist *codecs, int options)
 {
 	int changed = 0;
