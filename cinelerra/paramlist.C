@@ -313,6 +313,17 @@ int Param::equiv_value(Param *that)
 	return res;
 }
 
+int Param::equiv(Param *that)
+{
+	if(!that)
+		return 0;
+
+	if((type ^ that->type) & ~PARAMTYPE_CHNG)
+		return 0;
+
+	return !equiv_value(that);
+}
+
 void Param::dump(int indent)
 {
 	printf("%*sParam '%s' (%p) dump:\n", indent, "", name, this);
@@ -690,6 +701,33 @@ void Paramlist::join_list(Paramlist *that)
 		tp = ttp;
 	}
 	delete that;
+}
+
+int Paramlist::equiv(Paramlist *that)
+{
+	if(!that || total() != that->total() || (type ^ that->type) & ~PARAMTYPE_CHNG)
+		return 0;
+
+	if(type & ~PARAMTYPE_CHNG)
+	{
+		if(type & PARAMTYPE_INT && selectedint != that->selectedint)
+			return 0;
+		if(type & PARAMTYPE_LNG && selectedlong != that->selectedlong)
+			return 0;
+		if(type & PARAMTYPE_DBL && !EQUIV(selectedfloat, that->selectedfloat))
+			return 0;
+	}
+	for(Param *current = first; current; current = current->next)
+	{
+		Param *o = that->find(current->name);
+
+		if(!o)
+			return 0;
+
+		if(!current->equiv(o))
+			return 0;
+	}
+	return 1;
 }
 
 void Paramlist::dump(int indent)

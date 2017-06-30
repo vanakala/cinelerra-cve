@@ -50,6 +50,7 @@ public:
 	void load_param(FileXML *file);
 	void copy_values(Param *that);
 	int equiv_value(Param *that);
+	int equiv(Param *that);
 	void dump(int indent = 0);
 
 	int type;
@@ -107,6 +108,7 @@ public:
 	void remove_equiv(Paramlist *that);
 	void remove_param(const char *name);
 	void join_list(Paramlist *that);
+	int equiv(Paramlist *that);
 	void dump(int indent = 0);
 
 	char name[PARAM_NAMELEN];
