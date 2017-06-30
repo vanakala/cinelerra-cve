@@ -310,6 +310,29 @@ void AVlibsConfig::save_options(Paramlist *optlist, const char *config_name,
 		unlink(config_path(asset, config_name, suffix));
 }
 
+void AVlibsConfig::save_encoder_options(Asset *asset, int config_ix,
+	const char *config_name, const char *suffix)
+{
+	Paramlist *tmp;
+	FileXML file;
+
+	if(!asset->encoder_parameters[config_ix])
+	{
+		unlink(config_path(asset, config_name, suffix));
+		return;
+	}
+
+	tmp = load_options(asset, config_name, suffix);
+
+	if(tmp && tmp->equiv(asset->encoder_parameters[config_ix]))
+	{
+		delete tmp;
+		return;
+	}
+	asset->encoder_parameters[config_ix]->save_list(&file);
+	file.write_to_file(config_path(asset, config_name, suffix));
+}
+
 Paramlist *AVlibsConfig::load_options(Asset *asset, const char *config_name,
 	const char *suffix)
 {

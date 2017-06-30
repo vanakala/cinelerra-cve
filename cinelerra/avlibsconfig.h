@@ -50,6 +50,9 @@ public:
 		const char *suffix);
 	void save_options(Paramlist *optlist, const char *config_name,
 		const char *suffix, Paramlist *defaults = 0);
+	static void save_encoder_options(Asset *asset, int config_ix,
+		const char *config_name, const char *suffix);
+
 	static Paramlist *load_options(Asset *asset, const char *config_name,
 		const char *suffix = 0);
 	static char *config_path(Asset *asset, const char *config_name,
