@@ -293,3 +293,11 @@ ParamlistThread::~ParamlistThread()
 	window_lock->lock("ParamlistThread::~AVlibsParamThread");
 	delete window_lock;
 }
+
+void ParamlistThread::show_window()
+{
+	if(!running())
+		start();
+	else if(window)
+		window->raise_window();
+}

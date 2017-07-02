@@ -121,6 +121,7 @@ public:
 	void cancel_window();
 	void wait_window();
 	void set_window_title(const char *name);
+	void show_window();
 
 	ParamlistWindow *window;
 	int win_result;
