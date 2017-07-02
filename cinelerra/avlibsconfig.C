@@ -129,12 +129,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 
 AVlibsConfig::~AVlibsConfig()
 {
-	if(codecthread->running())
-		codecthread->window->set_done(1);
 	delete codecthread;
-
-	if(privthread->running())
-		privthread->window->set_done(1);
 	delete privthread;
 	delete codecs;
 	delete codecopts;
@@ -223,10 +218,7 @@ void AVlibsConfig::open_paramwin(Paramlist *list)
 	if(list == codec_private)
 		thread = privthread;
 
-	if(!thread->running())
-		thread->start();
-	else
-		thread->window->raise_window();
+	thread->show_window();
 }
 
 int AVlibsConfig::handle_event()
@@ -237,13 +229,9 @@ int AVlibsConfig::handle_event()
 	{
 		if(codecs->selectedint == current_codec)
 			return 0;
-		if(codecthread->running())
-			codecthread->window->set_done(1);
-		codecthread->wait_window();
+		codecthread->cancel_window();
 		delete codecopts;
-		if(privthread->running())
-			privthread->window->set_done(1);
-		privthread->wait_window();
+		privthread->cancel_window();
 		delete codec_private;
 	}
 	current_codec = codecs->selectedint;

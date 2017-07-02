@@ -452,10 +452,7 @@ void FormatTools::set_video_options()
 
 void FormatTools::set_format_options()
 {
-	if(!fparams_thread->running())
-		fparams_thread->start();
-	else
-		fparams_thread->window->raise_window();
+	fparams_thread->show_window();
 }
 
 void FormatTools::format_changed()
