@@ -35,6 +35,7 @@
 #include "mutex.h"
 #include "mwindow.h"
 #include "paramlist.h"
+#include "paramlistwindow.h"
 #include "preferences.h"
 #include "selection.h"
 #include "theme.h"
@@ -1901,85 +1902,84 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	int options)
 {
 	Paramlist *defaults;
+	int rs, rsc, rsp;
 
-	FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
+	FileAVlibs::avlibs_lock->lock("FileAVlibs::get_parameters");
 	avcodec_register_all();
 	av_register_all();
 	FileAVlibs::avlibs_lock->unlock();
-
 	AVlibsConfig *window = new AVlibsConfig(asset, options);
 	format_window = window;
-	window->run_window();
+	rs = window->run_window();
 
-	if(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX])
-	{
-		delete asset->encoder_parameters[FILEAVLIBS_FORMAT_IX];
-		asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = 0;
-	}
-
-	if(window->codecopts)
+	if(!rs && window->codecopts)
 	{
 		Paramlist **alist, **plist;
 		Param *pa;
+		int rsc, rsp;
 
-		const char *pfx = options & SUPPORTS_VIDEO ?
-				FILEAVLIBS_VCODEC_CONFIG : FILEAVLIBS_ACODEC_CONFIG;
+		rsc = window->codecthread->win_result;
+		rsp = window->privthread->win_result;
+		alist = plist = 0;
 		defaults = scan_encoder_opts((AVCodecID)window->current_codec, options);
-		window->save_options(window->codecopts,
-			pfx, window->codecopts->name, defaults);
+		window->codecopts->remove_equiv(defaults);
 		if(options & SUPPORTS_VIDEO)
 		{
 			if((pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_VIDEO)) &&
 					pa->intvalue != window->current_codec)
+			{
 				pa->type |= PARAMTYPE_CHNG;
+				rsc = rsp = 0;
+			}
 			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(AVL_PARAM_CODEC_VIDEO, window->current_codec);
 			pa->set(window->codecopts->name);
 			strcpy(asset->vcodec, window->codecopts->name);
-			alist = &asset->encoder_parameters[FILEAVLIBS_VCODEC_IX];
-			plist = &asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX];
+			if(!rsc)
+				alist = &asset->encoder_parameters[FILEAVLIBS_VCODEC_IX];
+			if(!rsp)
+				plist = &asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX];
 		}
 		else if(options & SUPPORTS_AUDIO)
 		{
 			if((pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_AUDIO)) &&
 					pa->intvalue != window->current_codec)
+			{
 				pa->type |= PARAMTYPE_CHNG;
+				rsc = rsp = 0;
+			}
 			pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->set(AVL_PARAM_CODEC_AUDIO, window->current_codec);
 			pa->set(window->codecopts->name);
 			strcpy(asset->acodec, window->codecopts->name);
-			alist = &asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
-			plist = &asset->encoder_parameters[FILEAVLIBS_APRIVT_IX];
+			if(!rsc)
+				alist = &asset->encoder_parameters[FILEAVLIBS_ACODEC_IX];
+			if(!rsp)
+				plist = &asset->encoder_parameters[FILEAVLIBS_APRIVT_IX];
 		}
-		if(*alist)
+		if(alist && *alist)
 		{
 			delete *alist;
 			*alist = 0;
 		}
-		if(*plist)
+		if(plist && *plist)
 		{
 			delete *plist;
 			*plist = 0;
 		}
-		if(window->codecopts->total() > 0)
+		if(alist && window->codecopts->total() > 0)
 		{
 			window->codecopts->clean_list();
 			*alist = window->codecopts;
 			window->codecopts = 0;
 		}
 		delete defaults;
-		if(*plist)
+
+		if(plist && window->codec_private)
 		{
-			delete *plist;
-			*plist = 0;
-		}
-		if(window->codec_private)
-		{
-			pfx = options & SUPPORTS_VIDEO ?
-				FILEAVLIBS_VPRIVT_CONFIG : FILEAVLIBS_APRIVT_CONFIG;
 			defaults = scan_encoder_private_opts((AVCodecID)window->current_codec, options);
-			window->save_options(window->codec_private,
-				pfx, window->codec_private->name, defaults);
-			window->codec_private->clean_list(),
-			*plist = window->codec_private;
+			window->codec_private->remove_equiv(defaults);
+			window->codec_private->clean_list();
+			if(window->codec_private->total() > 0)
+				*plist = window->codec_private;
 			window->codec_private = 0;
 			delete defaults;
 		}
@@ -2167,7 +2167,7 @@ void FileAVlibs::set_format_params(Asset *asset)
 	asset->encoder_parameters[ASSET_FMT_IX] = 0;
 }
 
-void FileAVlibs::save_format_params(Asset *asset)
+void FileAVlibs::save_render_options(Asset *asset)
 {
 	const char *name;
 	Paramlist *tmp;
@@ -2177,6 +2177,16 @@ void FileAVlibs::save_format_params(Asset *asset)
 
 	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_FORMAT_IX,
 		FILEAVLIBS_FORMAT_CONFIG, name);
+	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_CODECS_IX,
+		FILEAVLIBS_CODECS_CONFIG, name);
+	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_ACODEC_IX,
+		FILEAVLIBS_ACODEC_CONFIG, asset->acodec);
+	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_VCODEC_IX,
+		FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
+	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_APRIVT_IX,
+		FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
+	AVlibsConfig::save_encoder_options(asset, FILEAVLIBS_VPRIVT_IX,
+		FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
 }
 
 int FileAVlibs::update_codeclist(Asset *asset, Paramlist *codecs, int options)

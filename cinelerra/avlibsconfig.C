@@ -204,9 +204,15 @@ void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
 	reposition_window((get_root_w(1) - subw) / 2, (get_root_h(1) - h) / 2,
 		subw, h);
 	if(okbutton)
-		okbutton->reposition_window(10, top + 30);
+	{
+		okbutton->resize_event(subw, h);
+		cancelbutton->resize_event(subw, h);
+	}
 	else
+	{
 		add_subwindow(okbutton = new BC_OKButton(this));
+		add_subwindow(cancelbutton = new BC_CancelButton(this));
+	}
 }
 
 void AVlibsConfig::open_paramwin(Paramlist *list)
@@ -280,22 +286,6 @@ void AVlibsConfig::merge_saved_options(Paramlist *optlist, const char *config_na
 
 		delete savedopts;
 	}
-}
-
-void AVlibsConfig::save_options(Paramlist *optlist, const char *config_name,
-	const char *suffix, Paramlist *defaults)
-{
-	FileXML file;
-
-	optlist->remove_equiv(defaults);
-
-	if(optlist->total() > 0)
-	{
-		optlist->save_list(&file);
-		file.write_to_file(config_path(asset, config_name, suffix));
-	}
-	else
-		unlink(config_path(asset, config_name, suffix));
 }
 
 void AVlibsConfig::save_encoder_options(Asset *asset, int config_ix,

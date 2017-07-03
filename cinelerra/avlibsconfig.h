@@ -48,8 +48,6 @@ public:
 	int handle_event();
 	void merge_saved_options(Paramlist *optlist, const char *config_name,
 		const char *suffix);
-	void save_options(Paramlist *optlist, const char *config_name,
-		const char *suffix, Paramlist *defaults = 0);
 	static void save_encoder_options(Asset *asset, int config_ix,
 		const char *config_name, const char *suffix);
 
@@ -81,6 +79,7 @@ private:
 	AVlibsCodecConfigButton *privbutton;
 	BC_Title *privtitle;
 	BC_OKButton *okbutton;
+	BC_CancelButton *cancelbutton;
 	Streamopts *streamopts;
 	char string[BCTEXTLEN];
 };

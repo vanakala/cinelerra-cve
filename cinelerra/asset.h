@@ -89,7 +89,7 @@ public:
 	void format_changed();
 	void get_format_params(int options);
 	void set_format_params();
-	void save_format_params();
+	void save_render_options();
 	void save_defaults(BC_Hash *defaults, 
 		const char *prefix,
 		int options);
