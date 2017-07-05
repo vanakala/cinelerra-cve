@@ -406,8 +406,6 @@ void BC_WindowBase::draw_wtext(int x,
 
 			if(charpos)
 				cp = &charpos[ubp - text + 1];
-			else
-				cp = 0;
 
 			x += wcharpos(ubp, curfont, l, cp);
 			ubp = up;
