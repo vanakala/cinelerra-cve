@@ -213,7 +213,8 @@ void BC_TextBox::initialize()
 	text_ascent = get_text_ascent(font) + 1;
 	text_descent = get_text_descent(font) + 1;
 	text_height = text_ascent + text_descent;
-	ibeam_letter = wtext_len;
+	if(enabled)
+		ibeam_letter = wtext_len;
 	if(has_border)
 	{
 		left_margin = right_margin = HORIZONTAL_MARGIN;
