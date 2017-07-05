@@ -66,7 +66,7 @@ void ParamlistSubWindow::draw_list()
 			name_width = tw;
 	}
 
-	name_width += 5;
+	name_width += 8;
 
 	for(current = params->first; current; current = current->next)
 	{
@@ -79,7 +79,7 @@ void ParamlistSubWindow::draw_list()
 			if(current->subparams)
 			{
 				add_subwindow(win = new SubSelection(left,
-					top, name_width - 5, this, current));
+					top, name_width, this, current));
 				w1 = win->get_w();
 			}
 			else
