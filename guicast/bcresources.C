@@ -96,6 +96,7 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
 
 Mutex BC_Resources::fontconfig_lock("BC_Resources::fontconfig_lock");
 HashCache BC_Resources::hash_cache;
+char BC_Resources::working_directory[BCTEXTLEN];
 TmpFrameCache BC_Resources::tmpframes;
 
 BC_Resources::BC_Resources()
@@ -524,6 +525,12 @@ BC_Resources::BC_Resources()
 	drag_radius = 10;
 	recursive_resizing = 1;
 	find_memory_size();
+	working_directory[0] = 0;
+	if(!getcwd(working_directory, BCTEXTLEN))
+	{
+		perror("get current working directory");
+		abort();
+	}
 }
 
 BC_Resources::~BC_Resources()

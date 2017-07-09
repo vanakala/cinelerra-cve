@@ -318,6 +318,8 @@ public:
 	Mutex *create_window_lock;
 //	Cache of parameters
 	static HashCache hash_cache;
+// Current directory
+	static char working_directory[BCTEXTLEN];
 // Temporary frames
 	static TmpFrameCache tmpframes;
 // Size of RAM in kB
