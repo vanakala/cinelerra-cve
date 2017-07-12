@@ -152,6 +152,7 @@ void File::get_options(FormatTools *format, int options)
 				format_window, 
 				options);
 			break;
+#ifdef HAVE_OPENEXR
 		case FILE_EXR:
 		case FILE_EXR_LIST:
 			FileEXR::get_parameters(parent_window, 
@@ -159,6 +160,7 @@ void File::get_options(FormatTools *format, int options)
 				format_window, 
 				options);
 			break;
+#endif
 		case FILE_YUV:
 			FileYUV::get_parameters(parent_window,
 				asset,
@@ -292,6 +294,7 @@ int File::open_file(Preferences *preferences,
 			file = new FileJPEG(this->asset, this);
 		}
 		else
+#ifdef HAVE_OPENEXR
 		if(FileEXR::check_sig(this->asset, test))
 		{
 // EXR file
@@ -299,6 +302,7 @@ int File::open_file(Preferences *preferences,
 			file = new FileEXR(this->asset, this);
 		}
 		else
+#endif
 		if(FileYUV::check_sig(this->asset))
 		{
 // YUV file
@@ -376,12 +380,12 @@ int File::open_file(Preferences *preferences,
 	case FILE_JPEG_LIST:
 		file = new FileJPEG(this->asset, this);
 		break;
-
+#ifdef HAVE_OPENEXR
 	case FILE_EXR:
 	case FILE_EXR_LIST:
 		file = new FileEXR(this->asset, this);
 		break;
-
+#endif
 	case FILE_YUV:
 		file = new FileYUV(this->asset, this);
 		break;
@@ -763,14 +767,18 @@ int File::supports(int format)
 	case FILE_JPEG:
 	case FILE_PNG:
 	case FILE_TIFF:
+#ifdef HAVE_OPENEXR
 	case FILE_EXR:
+#endif
 	case FILE_TGA:
 		return SUPPORTS_VIDEO | SUPPORTS_STILL;
 
 	case FILE_JPEG_LIST:
 	case FILE_PNG_LIST:
 	case FILE_TIFF_LIST:
+#ifdef HAVE_OPENEXR
 	case FILE_EXR_LIST:
+#endif
 	case FILE_TGA_LIST:
 		return SUPPORTS_VIDEO;
 
@@ -815,11 +823,11 @@ int File::get_best_colormodel(Asset *asset, int driver)
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
 		return FileJPEG::get_best_colormodel(asset, driver);
-
+#ifdef HAVE_OPENEXR
 	case FILE_EXR:
 	case FILE_EXR_LIST:
 		return FileEXR::get_best_colormodel(asset, driver);
-
+#endif
 	case FILE_YUV:
 		return FileYUV::get_best_colormodel(asset, driver);
 
@@ -869,8 +877,10 @@ int File::supports_video(int format)
 	case FILE_MOV:
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
+#ifdef HAVE_OPENEXR
 	case FILE_EXR:
 	case FILE_EXR_LIST:
+#endif
 	case FILE_YUV:
 	case FILE_PNG:
 	case FILE_PNG_LIST:

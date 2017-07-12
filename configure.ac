@@ -222,9 +222,14 @@ AC_CHECK_HEADERS(sndfile.h,[libsndfileh=yes])
 ############## END OF LIBSNDFILE
 
 ############## OpenEXR
+AH_TEMPLATE(HAVE_OPENEXR, [Define 1 if OpenEXR is used])
 PKG_CHECK_MODULES(OPENEXR, OpenEXR,[libOpenEXR=yes],:)
-AC_SUBST(OPENEXR_CFLAGS)
-AC_SUBST(OPENEXR_LIBS)
+if test "$libOpenEXR" = "yes"; then
+    AC_SUBST(OPENEXR_CFLAGS)
+    AC_SUBST(OPENEXR_LIBS)
+    AC_DEFINE(HAVE_OPENEXR)
+fi
+AM_CONDITIONAL(NEED_OPENEXR, test "x$libOpenEXR" = "xyes")
 ############## END OF OpenEXR
 
 ############## LIBFAAD, LIBFAAC
@@ -611,7 +616,6 @@ echo "AC_HELP_STRING($2,$status)"])
 
 echo
 echo "Summary of mandatory components:"
-RPT(libOpenEXR,OpenEXR)
 RPT(libdv,libdv)
 RPT(libpng,libpng)
 RPT(libjpeg,libjpeg libraries)
@@ -653,7 +657,7 @@ ORPT(enable_opengl,Hardware acceleration using OpenGL 2.0,--disable-opengl,
 	RPT(libGL,OpenGL 2.0 libraries)
 )
 ORPT(enable_ladspa,Support of LADSPA plugins,--disable-ladspa,RPT(ladspa_h,LADSPA header))
-
+RPT(libOpenEXR,OpenEXR)
 if test "x$mandatory" = "xno"; then
 	echo
 	echo "WARNING: Mandatory components are missing; compilation may fail!"

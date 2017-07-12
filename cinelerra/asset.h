@@ -22,6 +22,7 @@
 #ifndef ASSET_H
 #define ASSET_H
 
+#include "config.h"
 #include "arraylist.h"
 #include "bcwindowbase.inc"
 #include "bchash.inc"
@@ -218,11 +219,11 @@ public:
 
 // PNG video compression
 	int png_use_alpha;
-
+#ifdef HAVE_OPENEXR
 // EXR video compression
 	int exr_use_alpha;
 	int exr_compression;
-
+#endif
 // TIFF video compression.  An enumeration from filetiff.h
 	int tiff_cmodel;
 	int tiff_compression;

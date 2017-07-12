@@ -22,6 +22,8 @@
 #ifndef FILEEXR_H
 #define FILEEXR_H
 
+#ifdef HAVE_OPENEXR
+
 #include "bcmenuitem.h"
 #include "bcpopupmenu.h"
 #include "file.inc"
@@ -115,4 +117,5 @@ public:
 	int value;
 };
 
+#endif
 #endif

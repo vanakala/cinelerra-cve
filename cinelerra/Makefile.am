@@ -1,4 +1,7 @@
 BUILDDATE=$(shell date)
+if NEED_OPENEXR
+    EXR_FILE_NAME=fileexr.C
+endif
 
 if BUILDINFO_RECOMPILE
 BUILDINFO_NONRC_S=
@@ -104,7 +107,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    filebase.C \
 		    file.C \
 		    filedv.C \
-		    fileexr.C \
+		    $(EXR_FILE_NAME) \
 		    fileformat.C \
 		    filejpeg.C \
 		    filelist.C \

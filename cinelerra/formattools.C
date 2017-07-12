@@ -43,8 +43,10 @@ const struct container_type ContainerSelection::media_containers[] =
 	{ N_("JPEG"), FILE_JPEG, "JPEG", "jpg" },
 	{ N_("JPEG Sequence"), FILE_JPEG_LIST, "JPEG_LIST", "list" },
 	{ N_("Microsoft AVI"), FILE_AVI, "AVI", "avi" },
+#ifdef HAVE_OPENEXR
 	{ N_("EXR"), FILE_EXR, "EXR", "exr" },
 	{ N_("EXR Sequence"), FILE_EXR_LIST, "EXR_LIST", "list" },
+#endif
 	{ N_("YUV4MPEG Stream"), FILE_YUV, "YUV", "m2v" },
 	{ N_("Microsoft WAV"), FILE_WAV, "WAV", "wav" },
 	{ N_("Quicktime for Linux"), FILE_MOV, "MOV", "mov" },
@@ -69,7 +71,9 @@ int FormatPopup::brender_menu[] = { FILE_JPEG_LIST,
 int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU,
 	FILE_JPEG, FILE_JPEG_LIST,
 	FILE_AVI,
+#ifdef HAVE_OPENEXR
 	FILE_EXR, FILE_EXR_LIST,
+#endif
 	FILE_YUV, FILE_WAV,
 	FILE_MOV,
 	FILE_RAWDV,
