@@ -287,8 +287,8 @@ void ColorModels::transfer_sws(unsigned char *output,
 		}
 		else
 		{
-			printf("ColorModels::transfer_sws::No colorspace conversion from '%s' to '%s'\n",
-				name(in_colormodel), name(out_colormodel));
+			slow_transfer(out_w, out_h, output, out_colormodel, out_rowspan,
+				in_w, in_h, input, in_colormodel, in_rowspan);
 		}
 	}
 }
@@ -370,8 +370,9 @@ void ColorModels::transfer_frame(unsigned char *output,
 		}
 		else
 		{
-			printf("ColorModels::transfer_frame_slice::No colorspace conversion from '%s' to '%s'\n",
-				name(frame->get_color_model()), name(out_colormodel));
+			slow_transfer(out_w, out_h, output, out_colormodel, out_rowspan,
+				frame->get_w(), frame->get_h(), frame->get_data(),
+				frame->get_color_model(), frame->get_bytes_per_line());
 		}
 	}
 }
@@ -636,6 +637,29 @@ void ColorModels::transfer_details(struct SwsContext *sws_ctx, int srange)
 			srange, table, dstRange,
 			brightness, contrast, saturation);
 	}
+}
+
+void ColorModels::slow_transfer(int out_w, int out_h,
+	unsigned char *output, int out_cmodel, int out_rowspan,
+	int in_w, int in_h,
+	unsigned char *input, int in_cmodel, int in_rowspan)
+{
+	int in_medmodel = inter_color_model(in_cmodel);
+	int out_medmodel = inter_color_model(out_cmodel);
+	VFrame *in_tmp = BC_Resources::tmpframes.get_tmpframe(in_w, in_h, in_medmodel);
+	VFrame *out_tmp = BC_Resources::tmpframes.get_tmpframe(out_w, out_h, out_medmodel);
+
+	// copy input -> in_tmp
+	copy_colors(in_w, in_h, in_tmp->get_data(), in_medmodel,
+		in_tmp->get_bytes_per_line(), input, in_cmodel, in_rowspan);
+	// in_tmp -> out_tmp
+	transfer_frame(out_tmp->get_data(), in_tmp, 0, 0, 0, out_w, out_h,
+		out_medmodel, out_tmp->get_bytes_per_line());
+	// copy out_tmp -> output
+	copy_colors(out_w, out_h, output, out_cmodel, out_rowspan,
+		out_tmp->get_data(), out_medmodel, out_tmp->get_bytes_per_line());
+	BC_Resources::tmpframes.release_frame(in_tmp);
+	BC_Resources::tmpframes.release_frame(out_tmp);
 }
 
 void ColorModels::to_text(char *string, int cmodel)

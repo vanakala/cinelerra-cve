@@ -91,6 +91,11 @@ public:
 	static void copy_colors(int w, int h,
 		unsigned char *output, int out_colormodel, int out_rowspan,
 		unsigned char *input, int in_cmodel, int in_rowspan);
+	static void slow_transfer(int out_w, int out_h,
+		unsigned char *output, int out_cmodel, int out_rowspan,
+		int in_w, int in_h,
+		unsigned char *input, int in_cmodel, int in_rowspan);
+
 private:
 	static void transfer_details(struct SwsContext *sws_ctx, int srange);
 	static struct cm_names color_model_names[];
