@@ -42,6 +42,7 @@ public:
 	BC_WindowBase *set_scrollbar(int x, int y, int w);
 
 	static int max_name_size(Paramlist *list, BC_WindowBase *win, int mxlen = 0);
+	int handle_reset();
 private:
 	void calc_pos(int h, int w);
 
@@ -130,6 +131,18 @@ private:
 	char window_title[BCTEXTLEN];
 	Paramlist **paramp;
 	Mutex *window_lock;
+};
+
+class ParamResetButton : public BC_GenericButton
+{
+public:
+	ParamResetButton(int x, int y, ParamlistSubWindow *parent);
+
+	int handle_event();
+	int keypress_event();
+
+private:
+	ParamlistSubWindow *parentwindow;
 };
 
 #endif

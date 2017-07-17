@@ -110,6 +110,12 @@ void ParamlistSubWindow::draw_list()
 		}
 	}
 	calc_pos(h1, w1);
+	add_subwindow(win = new ParamResetButton(left, top, this));
+	w1 = base_w - win->get_w() - 10;
+	if(w1 < 0)
+		w1 = 0;
+	win->reposition_window(left + w1, top + 5);
+	calc_pos(win->get_h() + 5, w1);
 
 	int w = left + base_w + PARAMLIST_WIN_MARGIN;
 	if(new_column && left > base_w)
@@ -156,6 +162,12 @@ int ParamlistSubWindow::max_name_size(Paramlist *list, BC_WindowBase *win, int m
 		}
 	}
 	return mxlen;
+}
+
+int ParamlistSubWindow::handle_reset()
+{
+	params->reset_defaults();
+	return 1;
 }
 
 Parami64Txtbx::Parami64Txtbx(int x, int y, Param *param, int64_t *val)
@@ -300,4 +312,26 @@ void ParamlistThread::show_window()
 		start();
 	else if(window)
 		window->raise_window();
+}
+
+ParamResetButton::ParamResetButton(int x, int y, ParamlistSubWindow *parent)
+ : BC_GenericButton(x, y, _("Reset"))
+{
+	parentwindow = parent;
+}
+
+int ParamResetButton::handle_event()
+{
+	return parentwindow->handle_reset();
+}
+
+int ParamResetButton::keypress_event()
+{
+
+	int k = get_keypress();
+
+	if(k == 'r' || k == 'R')
+		return handle_event();
+
+	return 0;
 }
