@@ -2133,6 +2133,7 @@ void FileAVlibs::get_format_params(Asset *asset, int options)
 	fmt = FileAVlibs::scan_format_options(asset->format, options);
 	fmt->copy_values(asset->encoder_parameters[FILEAVLIBS_FORMAT_IX]);
 	fmt->join_list(glob);
+	fmt->store_defaults();
 	delete asset->encoder_parameters[ASSET_FMT_IX];
 	asset->encoder_parameters[ASSET_FMT_IX] = fmt;
 }

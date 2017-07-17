@@ -242,6 +242,7 @@ int AVlibsConfig::handle_event()
 	}
 	current_codec = codecs->selectedint;
 	codecopts = FileAVlibs::scan_encoder_opts((AVCodecID)current_codec, options);
+	codecopts->store_defaults();
 	merge_saved_options(codecopts, options & SUPPORTS_VIDEO ?
 		FILEAVLIBS_VCODEC_CONFIG : FILEAVLIBS_ACODEC_CONFIG, codecopts->name);
 	aparm = options & SUPPORTS_VIDEO ? asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] :
@@ -253,6 +254,7 @@ int AVlibsConfig::handle_event()
 	codec_private = FileAVlibs::scan_encoder_private_opts((AVCodecID)current_codec, options);
 	if(codec_private)
 	{
+		codec_private->store_defaults();
 		merge_saved_options(codec_private, options & SUPPORTS_VIDEO ?
 			FILEAVLIBS_VPRIVT_CONFIG : FILEAVLIBS_APRIVT_CONFIG, codec_private->name);
 		aparm = options & SUPPORTS_VIDEO ? asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] :
