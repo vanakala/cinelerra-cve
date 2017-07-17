@@ -51,6 +51,8 @@ public:
 	void copy_values(Param *that);
 	int equiv_value(Param *that);
 	int equiv(Param *that);
+	void store_defaults();
+	void reset_defaults();
 	void dump(int indent = 0);
 
 	int type;
@@ -66,6 +68,12 @@ public:
 	static const char *known_properties[];
 private:
 	void initialize(const char *name);
+	// Saved defaults
+	int defaulttype;
+	int defaultint;
+	char *defaultstring;
+	int64_t defaultlong;
+	double defaultfloat;
 };
 
 class Paramlist : public List<Param>
@@ -109,6 +117,8 @@ public:
 	void remove_param(const char *name);
 	void join_list(Paramlist *that);
 	int equiv(Paramlist *that);
+	void store_defaults();
+	void reset_defaults();
 	void dump(int indent = 0);
 
 	char name[PARAM_NAMELEN];
@@ -117,7 +127,6 @@ public:
 	int selectedint;
 	int64_t selectedlong;
 	double selectedfloat;
-
 };
 
 #endif

@@ -89,6 +89,11 @@ void Param::initialize(const char *name)
 	string_allocated = 0;
 	longvalue = 0;
 	subparams = 0;
+	defaulttype = 0;
+	defaultstring = 0;
+	defaultint = 0;
+	defaultlong = 0;
+	defaultfloat = 0;
 }
 
 Param::~Param()
@@ -324,6 +329,39 @@ int Param::equiv(Param *that)
 	return !equiv_value(that);
 }
 
+void Param::store_defaults()
+{
+	defaulttype = type;
+	if(type & PARAMTYPE_INT)
+		defaultint = intvalue;
+	if(type & PARAMTYPE_LNG)
+		defaultlong = longvalue;
+	if(type & PARAMTYPE_DBL)
+		defaultfloat = floatvalue;
+	delete [] defaultstring;
+	if(type & PARAMTYPE_STR)
+	{
+		defaultstring = new char[string_allocated];
+		strcpy(defaultstring, stringvalue);
+	}
+}
+
+void Param::reset_defaults()
+{
+	if(defaulttype)
+	{
+		type = defaulttype;
+		if(type & PARAMTYPE_INT)
+			intvalue = defaultint;
+		if(type & PARAMTYPE_LNG)
+			longvalue = defaultlong;
+		if(type & PARAMTYPE_DBL)
+			floatvalue = defaultfloat;
+		if(type & PARAMTYPE_STR)
+			set_string(defaultstring);
+	}
+}
+
 void Param::dump(int indent)
 {
 	printf("%*sParam '%s' (%p) dump:\n", indent, "", name, this);
@@ -335,6 +373,14 @@ void Param::dump(int indent)
 	putchar('\n');
 	if(helptext)
 		printf("%*sHelp:'%s'\n", indent, "", helptext);
+	if(defaulttype)
+	{
+		printf("%*sdefaults type %#x values int:%d long:%" PRId64 " float:%.3f", indent, "",
+			defaulttype, defaultint, defaultlong, defaultfloat);
+		if(defaultstring)
+			printf(" '%s'", defaultstring);
+		putchar('\n');
+	}
 
 	if(subparams)
 	{
@@ -728,6 +774,22 @@ int Paramlist::equiv(Paramlist *that)
 			return 0;
 	}
 	return 1;
+}
+
+void Paramlist::store_defaults()
+{
+	Param *current;
+
+	for(current = first; current; current = current->next)
+		current->store_defaults();
+}
+
+void Paramlist::reset_defaults()
+{
+	Param *current;
+
+	for(current = first; current; current = current->next)
+		current->reset_defaults();
 }
 
 void Paramlist::dump(int indent)
