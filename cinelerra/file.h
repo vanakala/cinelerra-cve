@@ -61,8 +61,7 @@ public:
 
 // ===================================== start here
 	void set_processors(int cpus);   // Set the number of cpus for certain codecs.
-// Set the number of bytes to preload during reads for Quicktime.
-	void set_preload(int64_t size);
+
 // Set the subtitle for libmpeg3.  -1 disables subtitles.
 	void set_subtitle(int value);
 
@@ -192,7 +191,6 @@ public:
 // A binary lock won't do.  We need a FIFO lock.
 	Condition *write_lock;
 	int cpus;
-	int64_t playback_preload;
 	int playback_subtitle;
 
 	Preferences *preferences;

@@ -222,22 +222,6 @@ public:
 };
 
 
-class PlaybackPreload : public BC_TextBox
-{
-public:
-	PlaybackPreload(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PlaybackPrefs *playback, 
-		char *text);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-};
-
-
 class TimecodeOffset : public BC_TextBox
 {
 public:

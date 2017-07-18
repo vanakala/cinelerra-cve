@@ -218,11 +218,6 @@ void File::set_processors(int cpus)   // Set the number of cpus for certain code
 	this->cpus = cpus;
 }
 
-void File::set_preload(int64_t size)
-{
-	this->playback_preload = size;
-}
-
 void File::set_subtitle(int value)
 {
 	this->playback_subtitle = value;

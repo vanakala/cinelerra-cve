@@ -168,13 +168,6 @@ void PlaybackPrefs::show()
 		y));
 
 	y += 35;
-	win = add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT));
-	maxw = win->get_w() + x + 10;
-	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
-	PlaybackPreload *preload;
-	add_subwindow(preload = new PlaybackPreload(maxw, y, pwindow, this, string));
-
-	y += preload->get_h() + 5;
 
 	PlaybackSubtitle *subtitle_toggle;
 	add_subwindow(subtitle_toggle = new PlaybackSubtitle(
@@ -373,25 +366,6 @@ int PlaybackBilinearBilinear::handle_event()
 	prefs->update(LINEAR_LINEAR);
 	return 1;
 }
-
-
-PlaybackPreload::PlaybackPreload(int x, 
-	int y, 
-	PreferencesWindow *pwindow, 
-	PlaybackPrefs *playback, 
-	char *text)
- : BC_TextBox(x, y, 100, 1, text)
-{ 
-	this->pwindow = pwindow; 
-	this->playback = playback; 
-}
-
-int PlaybackPreload::handle_event() 
-{ 
-	pwindow->thread->edl->session->playback_preload = atol(get_text()); 
-	return 1;
-}
-
 
 VideoAsynchronous::VideoAsynchronous(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, 
