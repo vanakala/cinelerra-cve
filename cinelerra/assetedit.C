@@ -379,7 +379,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 
 		y += 30;
 		x = x1;
-		add_subwindow(new BC_Title(x, y, "Size:"));
+		add_subwindow(new BC_Title(x, y, _("Size:")));
 		x = x2;
 		sprintf(string, "%d x %d", asset->width, asset->height);
 		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
@@ -387,14 +387,14 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 		y += vmargin;
 		if(asset->aspect_ratio > 0){
 			x = x1;
-			add_subwindow(new BC_Title(x, y, "Aspect:"));
+			add_subwindow(new BC_Title(x, y, _("Aspect:")));
 			x = x2;
 			sprintf(string, "%2.3f", asset->aspect_ratio);
 			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 			y += title->get_h() + 5;
 		}
 		x = x1;
-		add_subwindow(new BC_Title(x, y, "Length:"));
+		add_subwindow(new BC_Title(x, y, _("Length:")));
 		x = x2;
 		sprintf(string, "%d", asset->video_length);
 		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
