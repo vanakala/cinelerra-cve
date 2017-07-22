@@ -44,6 +44,7 @@
 #define FILE_TGA_LIST      13
 #define FILE_TGA           14
 #define FILE_MPEG          15
+#define FILE_MP3           16
 #define FILE_TIFF_LIST     22
 #define FILE_PNG_LIST      23
 #define FILE_AVI           24
@@ -53,6 +54,7 @@
 #define FILE_YUV           29    // mjpegtools YUV4MPEG (aka YUV4MPEG2)
 #define FILE_OGG           30
 #define FILE_RAWDV         32
+#define FILE_IMAGE         64    // unspecified image file
 
 class File;
 
