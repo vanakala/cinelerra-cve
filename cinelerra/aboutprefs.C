@@ -85,7 +85,7 @@ void AboutPrefs::show()
 
 	y += get_text_height(MEDIUMFONT) * 4;
 	set_font(LARGEFONT);
-	draw_text(x, y, "Credits:");
+	draw_text(x, y, _("Credits:"));
 	y += get_text_height(LARGEFONT);
 	set_font(MEDIUMFONT);
 
@@ -121,7 +121,7 @@ void AboutPrefs::show()
 	y = get_h() - 135;
 
 	set_font(LARGEFONT);
-	draw_text(x, y, "License:");
+	draw_text(x, y, _("License:"));
 	y += get_text_height(LARGEFONT);
 
 	set_font(MEDIUMFONT);
