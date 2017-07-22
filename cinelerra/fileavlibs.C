@@ -62,6 +62,16 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_AVI, "avi", "avi", SUPPORTS_AUDIO | SUPPORTS_VIDEO  },
 	{ FILE_AC3, "ac3", "ac3", SUPPORTS_AUDIO },
 	{ FILE_OGG, "ogg", "ogg", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_MP3, "mp3", "mp3", SUPPORTS_AUDIO },
+	{ FILE_MPEG, "mpeg", "mpg", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_EXR, "exr_pipe", "exr_pipe", SUPPORTS_VIDEO },
+	{ FILE_TIFF, "tiff", "tiff", SUPPORTS_VIDEO },
+	{ FILE_PNG, "png_pipe", "png_pipe", SUPPORTS_VIDEO },
+	{ FILE_YUV, "yuv4mpegpipe", "yuv4mpegpipe",  SUPPORTS_VIDEO },
+	{ FILE_IMAGE, "image2", 0, SUPPORTS_VIDEO },
+	{ FILE_RAWDV, "dv", "dv", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_AU, "au", "au", SUPPORTS_AUDIO },
+	{ FILE_WAV, "wav", "wav", SUPPORTS_AUDIO },
 	{ 0 }
 };
 
@@ -175,6 +185,112 @@ int FileAVlibs::check_sig(Asset *asset)
 	avlibs_lock->unlock();
 
 	return result;
+}
+
+// Returns: -1 - cannot open
+//           0 - not avlibs file
+//           1 - avlibs file
+int FileAVlibs::probe_input(Asset *asset)
+{
+	AVFormatContext *ctx = 0;
+	struct stat stbuf;
+	enum AVCodecID codec_id;
+	AVCodec *codec;
+	AVStream *stream;
+	AVCodecContext *decoder_ctx;
+
+	if(stat(asset->path, &stbuf) < 0)
+	{
+		errorbox("Failed to stat input file %s",
+			asset->path);
+		return -1;
+	}
+	if(!S_ISREG(stbuf.st_mode))
+	{
+		errorbox("Input file '%s' is not a regular file",
+			asset->path);
+		return -1;
+	}
+	asset->file_length = stbuf.st_size;
+
+	avlibs_lock->lock("FileAVlibs::check_sig");
+	avcodec_register_all();
+	av_register_all();
+
+	if(avformat_open_input(&ctx, asset->path, 0, NULL) == 0)
+	{
+		if(avformat_find_stream_info(ctx, NULL) < 0)
+		{
+			avformat_close_input(&ctx);
+			avlibs_lock->unlock();
+			return 0;
+		}
+		asset->format = streamformat(ctx);
+		for(int i = 0; i < ctx->nb_streams; i++)
+		{
+
+			stream = ctx->streams[i];
+			decoder_ctx = stream->codec;
+			codec_id = decoder_ctx->codec_id;
+			codec = avcodec_find_decoder(codec_id);
+
+			if(codec_id == AV_CODEC_ID_NONE || !codec)
+				continue;
+
+			switch(decoder_ctx->codec_type)
+			{
+			case AVMEDIA_TYPE_AUDIO:
+				if(!asset->audio_data)
+				{
+					asset->audio_data = 1;
+					asset->channels = decoder_ctx->channels;
+					asset->sample_rate = decoder_ctx->sample_rate;
+					strncpy(asset->acodec, codec->name, MAX_LEN_CODECNAME);
+					asset->acodec[MAX_LEN_CODECNAME - 1] = 0;
+					asset->bits = av_get_bytes_per_sample(decoder_ctx->sample_fmt) * 8;
+					if(stream->duration != AV_NOPTS_VALUE)
+						asset->audio_duration = stream->duration * av_q2d(stream->time_base);
+				}
+				break;
+			case AVMEDIA_TYPE_VIDEO:
+				if(!asset->video_data)
+				{
+					asset->video_data = 1;
+					asset->layers = 1;
+					asset->width = decoder_ctx->width;
+					asset->height = decoder_ctx->height;
+					asset->frame_rate = av_q2d(stream->r_frame_rate);
+					if(decoder_ctx->coded_height && decoder_ctx->sample_aspect_ratio.den)
+						asset->aspect_ratio =
+							(double)(decoder_ctx->coded_width * decoder_ctx->sample_aspect_ratio.num) /
+							(decoder_ctx->coded_height * decoder_ctx->sample_aspect_ratio.den);
+					strncpy(asset->vcodec, codec->name, MAX_LEN_CODECNAME);
+					asset->vcodec[MAX_LEN_CODECNAME - 1] = 0;
+					asset->video_length = stream->nb_frames;
+					if(stream->duration != AV_NOPTS_VALUE)
+						asset->video_duration = stream->duration * av_q2d(stream->time_base);
+					// correct image type
+					if(asset->format == FILE_IMAGE)
+					{
+						if(codec_id == AV_CODEC_ID_TARGA)
+							asset->format = FILE_TGA;
+						else
+						if(codec_id == AV_CODEC_ID_MJPEG)
+							asset->format = FILE_JPEG;
+						else
+							asset->format = FILE_UNKNOWN;
+					}
+				}
+				break;
+			}
+		}
+	}
+	avformat_close_input(&ctx);
+	avlibs_lock->unlock();
+
+	if(asset->format != FILE_UNKNOWN && (asset->video_data || asset->audio_data))
+		return 1;
+	return 0;
 }
 
 int FileAVlibs::encoder_exists(AVOutputFormat *oformat, const char *encstr, int support)

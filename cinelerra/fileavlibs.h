@@ -67,6 +67,8 @@ public:
 
 	// Get format string for ffmpeg
 	static int check_sig(Asset *asset);
+	// Probe file and fill asset
+	static int probe_input(Asset *asset);
 	// Supported streams of format
 	static int supports(int format);
 
