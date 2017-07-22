@@ -1201,7 +1201,7 @@ void Asset::dump(int indent, int options)
 	indent++;
 	printf("%*spath: %s\n", indent, "", path);
 	printf("%*sindex_status %d\n", indent, "", index_status);
-	printf("%*sfile format %s, length %" PRId64 "\n", indent, "",
+	printf("%*sfile format '%s', length %" PRId64 "\n", indent, "",
 		ContainerSelection::container_to_text(format), file_length);
 	printf("%*saudio_data %d channels %d samplerate %d bits %d byte_order %d\n",
 		indent, "", audio_data, channels, sample_rate, bits, byte_order);
