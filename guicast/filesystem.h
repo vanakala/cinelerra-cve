@@ -131,7 +131,7 @@ private:
 // Combine the directories and files into the master list, directories first.
 	void combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *file_list);
 // Return whether or not the string is the root directory.
-	int is_root_dir(char *path);
+	static int is_root_dir(const char *path);
 // Whether or not the file passes the current filter.
 	int test_filter(FileItem *file);
 	void reset_parameters();
