@@ -241,9 +241,19 @@ int File::open_file(Preferences *preferences,
 	int base_samplerate,
 	float base_framerate)
 {
+	int probe_result, rs;
 	this->preferences = preferences;
 	this->asset->copy_from(asset, 1);
 	file = 0;
+
+	probe_result = 0;
+	if(rd && this->asset->format == FILE_UNKNOWN)
+	{
+		probe_result = FileAVlibs::probe_input(this->asset);
+
+		if(probe_result < 0)
+			return FILE_NOT_FOUND;
+	}
 
 	switch(this->asset->format)
 	{
@@ -258,103 +268,52 @@ int File::open_file(Preferences *preferences,
 		}
 
 		char test[16];
-		if(fread(test, 16, 1, stream) < 1)
-		{
-			fclose(stream);
+		rs = fread(test, 16, 1, stream) != 1;
+		fclose(stream);
+
+		if(rs)
 			return FILE_NOT_FOUND;
-		}
+
 		if(strncmp(test, "TOC ", 4) == 0)
 		{
 			errormsg(_("Can't open TOC files directly"));
 			return FILE_NOT_FOUND;
-                }
-		if(FileDV::check_sig(this->asset))
-		{
-// libdv
-			fclose(stream);
-			file = new FileDV(this->asset, this);
 		}
-		else 
 		if(FilePNG::check_sig(this->asset))
-		{
-// PNG file
-			fclose(stream);
+// PNG list
 			file = new FilePNG(this->asset, this);
-		}
 		else
 		if(FileJPEG::check_sig(this->asset))
-		{
-// JPEG file
-			fclose(stream);
+// JPEG list
 			file = new FileJPEG(this->asset, this);
-		}
 		else
 #ifdef HAVE_OPENEXR
 		if(FileEXR::check_sig(this->asset, test))
-		{
-// EXR file
-			fclose(stream);
+// EXR list
 			file = new FileEXR(this->asset, this);
-		}
 		else
 #endif
-		if(FileYUV::check_sig(this->asset))
-		{
-// YUV file
-			fclose(stream);
-			file = new FileYUV(this->asset, this);
-		}
-		else
 		if(FileTGA::check_sig(this->asset))
-		{
-// TGA file
-			fclose(stream);
+// TGA list
 			file = new FileTGA(this->asset, this);
-		}
 		else
 		if(FileTIFF::check_sig(this->asset))
-		{
-// TIFF file
-			fclose(stream);
+// TIFF list
 			file = new FileTIFF(this->asset, this);
-		}
-		else
-		if(FileMPEG::check_sig(this->asset))
-		{
-// MPEG file
-			fclose(stream);
-			file = new FileMPEG(this->asset, this);
-		}
 		else
 		if(FileSndFile::check_sig(this->asset))
 		{
 // libsndfile
-			fclose(stream);
 			file = new FileSndFile(this->asset, this);
 		}
 		else
 		if(test[0] == '<' && test[1] == 'E' && test[2] == 'D' && test[3] == 'L' && test[4] == '>' ||
 			test[0] == '<' && test[1] == 'H' && test[2] == 'T' && test[3] == 'A' && test[4] == 'L' && test[5] == '>' ||
 			test[0] == '<' && test[1] == '?' && test[2] == 'x' && test[3] == 'm' && test[4] == 'l')
-		{
 // XML file
-			fclose(stream);
 			return FILE_IS_XML;
-		}    // can't load project file
 		else
-		if(FileAVlibs::check_sig(this->asset))
-		{
-// MOV file
-// should be last because quicktime lacks a magic number
-			fclose(stream);
-			file = new FileAVlibs(this->asset, this);
-		}
-		else
-		{
-// PCM file
-			fclose(stream);
 			return FILE_UNRECOGNIZED_CODEC;
-		}   // need more info
 		break;
 
 // format already determined
@@ -410,7 +369,6 @@ int File::open_file(Preferences *preferences,
 		file = new FileDV(this->asset, this);
 		break;
 
-// try plugins
 	default:
 		return 1;
 	}
