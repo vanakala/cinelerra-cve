@@ -201,13 +201,13 @@ int FileAVlibs::probe_input(Asset *asset)
 
 	if(stat(asset->path, &stbuf) < 0)
 	{
-		errorbox("Failed to stat input file %s",
+		errormsg("Failed to stat input file %s",
 			asset->path);
 		return -1;
 	}
 	if(!S_ISREG(stbuf.st_mode))
 	{
-		errorbox("Input file '%s' is not a regular file",
+		errormsg("Input file '%s' is not a regular file",
 			asset->path);
 		return -1;
 	}
@@ -376,13 +376,13 @@ int FileAVlibs::open_file(int rd, int wr)
 		struct stat stbuf;
 		if(stat(asset->path, &stbuf) < 0)
 		{
-			errorbox("FileAVlibs::open_file:Failed to stat %s",
+			errormsg("FileAVlibs::open_file:Failed to stat %s",
 				asset->path);
 			return 1;
 		}
 		if(!S_ISREG(stbuf.st_mode))
 		{
-			errorbox("FileAVlibs::open_file::%s is not a regular file",
+			errormsg("FileAVlibs::open_file::%s is not a regular file",
 				asset->path);
 			return 1;
 		}
@@ -1138,13 +1138,13 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 			0, 0);
 		if(!swr_ctx)
 		{
-			errorbox("FileAVlibs::fill_buffer: Failed to allocate resampler context");
+			errormsg("FileAVlibs::fill_buffer: Failed to allocate resampler context");
 			avlibs_lock->unlock();
 			return -1;
 		}
 		if(error = swr_init(swr_ctx))
 		{
-			errorbox("FileAVlibs::fill_buffer: Failed to initalize resampler context (%d)", error);
+			errormsg("FileAVlibs::fill_buffer: Failed to initalize resampler context (%d)", error);
 			avlibs_lock->unlock();
 			return -1;
 		}
@@ -1408,7 +1408,7 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 
 		if(sws_ctx == NULL)
 		{
-			errorbox("FileAVlibs::convert_cmodel: swscale context initialization failed");
+			errormsg("FileAVlibs::convert_cmodel: swscale context initialization failed");
 			return 1;
 		}
 
@@ -1449,7 +1449,7 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 	if(cmodel_out == temp_cmodel)
 	{
 		// avoid infinite recursion if things are broken
-		errorbox("FileAVlibs::convert_cmodel pix_fmt_in broken!");
+		errormsg("FileAVlibs::convert_cmodel pix_fmt_in broken!");
 		return 1;
 	}
 
