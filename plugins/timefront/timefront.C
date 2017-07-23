@@ -776,12 +776,12 @@ void TimeFrontMain::process_frame(VFrame **frame)
 	{
 		if (total_in_buffers != 2)
 		{
-			abort_plugin("If you are using another track for timefront, you have to have it under shared effects");
+			abort_plugin(_("If you are using another track for timefront, you have to have it under shared effects"));
 			return;
 		}
 		if (outframes[0]->get_w() != outframes[1]->get_w() || outframes[0]->get_h() != outframes[1]->get_h())
 		{
-			abort_plugin("Sizes of master track and timefront track do not match");
+			abort_plugin(_("Sizes of master track and timefront track do not match"));
 			return;
 		}
 	}
@@ -824,7 +824,7 @@ void TimeFrontMain::process_frame(VFrame **frame)
 			break;
 
 		default:
-			abort_plugin("ALPHA used, but project color model does not have alpha");
+			abort_plugin(_("ALPHA used, but project color model does not have alpha"));
 			return;
 		}
 	}
@@ -878,13 +878,13 @@ void TimeFrontMain::process_frame(VFrame **frame)
 				break;
 
 			default:
-				abort_plugin("ALPHA track used, but project color model does not have alpha");
+				abort_plugin(_("ALPHA track used, but project color model does not have alpha"));
 				return;
 			}
 		}
 		else
 		{
-			abort_plugin("Unsupported track_usage parameter");
+			abort_plugin(_("Unsupported track_usage parameter"));
 			return;
 		}
 	}
