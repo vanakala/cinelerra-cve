@@ -52,7 +52,6 @@ class CWindowCanvas;
 class CWindowEditing;
 
 
-#define AUTO_ZOOM "Auto"
 
 class CWindowGUI : public BC_Window
 {

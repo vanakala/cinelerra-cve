@@ -162,8 +162,8 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 		this, 
 		mwindow->theme->czoom_x, 
 		mwindow->theme->czoom_y,
-		AUTO_ZOOM);
-	if(!mwindow->edl->session->cwindow_scrollbars) zoom_panel->update(AUTO_ZOOM);
+		_("Auto"));
+	if(!mwindow->edl->session->cwindow_scrollbars) zoom_panel->update(_("Auto"));
 
 // Must create after meter panel
 	tool_panel = new CWindowTool(mwindow, this);
@@ -330,7 +330,7 @@ void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 	{
 		if(do_auto)
 		{
-			zoom_panel->update(AUTO_ZOOM);
+			zoom_panel->update(_("Auto"));
 		}
 		else
 		{
@@ -614,7 +614,7 @@ CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y,
 
 int CWindowZoom::handle_event()
 {
-	if(!strcasecmp(AUTO_ZOOM, get_text()))
+	if(!strcasecmp(_("Auto"), get_text()))
 	{
 		gui->zoom_canvas(1, get_value(), 0);
 	}

@@ -209,7 +209,7 @@ void CWindow::update(int options)
 	}
 
 	if(!mwindow->edl->session->cwindow_scrollbars)
-		gui->zoom_panel->update(AUTO_ZOOM);
+		gui->zoom_panel->update(_("Auto"));
 	else
 		gui->zoom_panel->update(mwindow->edl->session->cwindow_zoom);
 
