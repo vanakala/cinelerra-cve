@@ -129,7 +129,7 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 	int layer,
 	Asset *asset)
 {
-	item_lock->lock("ResourceThread::item_lock");
+	item_lock->lock("ResourceThread::add_picon");
 
 	items.append(new VResourceThreadItem(pixmap, 
 		picon_x, 
@@ -151,7 +151,7 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 	samplenum source_start,
 	samplenum source_end)
 {
-	item_lock->lock("ResourceThread::item_lock");
+	item_lock->lock("ResourceThread::add_wave");
 
 	items.append(new AResourceThreadItem(pixmap, 
 		asset,
