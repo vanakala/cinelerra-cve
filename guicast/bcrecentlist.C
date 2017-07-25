@@ -37,7 +37,7 @@ BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults,
 	this->type = type;
 	this->defaults = defaults;
 	this->textbox = textbox;
-	set_tooltip("Choose from recently used");
+	set_tooltip(_("Choose from recently used"));
 	options = 0;
 }
 
@@ -48,7 +48,7 @@ BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults, BC_TextBox *te
 	this->type = type;
 	this->defaults = defaults;
 	this->textbox = textbox;
-	set_tooltip("Choose from recently used");
+	set_tooltip(_("Choose from recently used"));
 	options = 0;
 }
 
