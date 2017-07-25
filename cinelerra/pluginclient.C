@@ -221,7 +221,7 @@ void PluginClient::send_configure_change()
 	KeyFrame* keyframe = server->get_keyframe();
 	save_data(keyframe);
 	if(server->mwindow)
-		server->mwindow->undo->update_undo("tweak", LOAD_AUTOMATION, this);
+		server->mwindow->undo->update_undo(_("tweak"), LOAD_AUTOMATION, this);
 	server->sync_parameters();
 }
 
