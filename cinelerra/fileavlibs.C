@@ -212,8 +212,9 @@ int FileAVlibs::probe_input(Asset *asset)
 		return -1;
 	}
 	asset->file_length = stbuf.st_size;
+	asset->file_mtime = stbuf.st_mtim;
 
-	avlibs_lock->lock("FileAVlibs::check_sig");
+	avlibs_lock->lock("FileAVlibs::probe_input");
 	avcodec_register_all();
 	av_register_all();
 
@@ -287,9 +288,18 @@ int FileAVlibs::probe_input(Asset *asset)
 	}
 	avformat_close_input(&ctx);
 	avlibs_lock->unlock();
+	if(asset->format != FILE_UNKNOWN)
+	{
+		int fsup = supports(asset->format, 1);
+// disable unsupported streams
+		if(!(fsup & SUPPORTS_VIDEO))
+			asset->video_data = 0;
+		if(!(fsup & SUPPORTS_AUDIO))
+			asset->audio_data = 0;
 
-	if(asset->format != FILE_UNKNOWN && (asset->video_data || asset->audio_data))
-		return 1;
+		if(asset->video_data || asset->audio_data)
+			return 1;
+	}
 	return 0;
 }
 
@@ -316,7 +326,7 @@ int FileAVlibs::encoder_exists(AVOutputFormat *oformat, const char *encstr, int 
 	return 0;
 }
 
-int FileAVlibs::supports(int format)
+int FileAVlibs::supports(int format, int decoding)
 {
 	int support = 0;
 	int i;
@@ -332,7 +342,7 @@ int FileAVlibs::supports(int format)
 			break;
 		}
 	}
-	if(support)
+	if(support && !decoding)
 	{
 		enc = known_formats[i].encoder;
 		avlibs_lock->lock("FileAVlibs::supports");
@@ -355,6 +365,9 @@ int FileAVlibs::open_file(int rd, int wr)
 	int result = 0;
 	int rv;
 
+	if(asset->format == FILE_UNKNOWN)
+		return 1;
+
 	avlibs_lock->lock("FileAVlibs::open_file");
 	avcodec_register_all();
 	av_register_all();
@@ -373,19 +386,6 @@ int FileAVlibs::open_file(int rd, int wr)
 
 	if(rd)
 	{
-		struct stat stbuf;
-		if(stat(asset->path, &stbuf) < 0)
-		{
-			errormsg("FileAVlibs::open_file:Failed to stat %s",
-				asset->path);
-			return 1;
-		}
-		if(!S_ISREG(stbuf.st_mode))
-		{
-			errormsg("FileAVlibs::open_file::%s is not a regular file",
-				asset->path);
-			return 1;
-		}
 		if(avformat_open_input(&context, asset->path, 0, NULL) == 0)
 			result = avformat_find_stream_info(context, NULL);
 		else
@@ -393,12 +393,9 @@ int FileAVlibs::open_file(int rd, int wr)
 			avlibs_lock->unlock();
 			return 1;
 		}
-		asset->format = streamformat(context);
-
 		if(result >= 0)
 		{
 			result = 0;
-			asset->file_length = stbuf.st_size;
 
 			for(int i = 0; i < context->nb_streams; i++)
 			{
@@ -410,10 +407,9 @@ int FileAVlibs::open_file(int rd, int wr)
 				switch(decoder_context->codec_type)
 				{
 				case AVMEDIA_TYPE_AUDIO:
-					if(audio_index < 0)
+					if(asset->audio_data && audio_index < 0)
 					{
 						audio_index = i;
-						asset->audio_data = 1;
 						asset->channels = decoder_context->channels;
 						asset->sample_rate = decoder_context->sample_rate;
 
@@ -451,10 +447,9 @@ int FileAVlibs::open_file(int rd, int wr)
 					break;
 
 				case AVMEDIA_TYPE_VIDEO:
-					if(video_index < 0)
+					if(asset->video_data && video_index < 0)
 					{
 						video_index = i;
-						asset->video_data = 1;
 						asset->layers = 1;
 						asset->width = decoder_context->width;
 						asset->height = decoder_context->height;
@@ -498,9 +493,8 @@ int FileAVlibs::open_file(int rd, int wr)
 					break;
 				}
 			}
-
 			tocfile = new FileTOC(this, file->preferences->index_directory,
-				asset->path, asset->file_length, stbuf.st_mtime);
+				asset->path, asset->file_length, asset->file_mtime.tv_sec);
 			result = tocfile->init_tocfile(TOCFILE_TYPE_MUX1);
 
 			if(video_index >= 0)

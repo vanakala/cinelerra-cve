@@ -99,6 +99,7 @@ void Asset::init_values()
 	audio_length = 0;
 	video_length = 0;
 	file_length = 0;
+	memset(&file_mtime, 0, sizeof(file_mtime));
 	single_image = 0;
 	audio_duration = 0;
 	video_duration = 0;

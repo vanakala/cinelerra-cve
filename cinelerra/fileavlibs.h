@@ -70,7 +70,7 @@ public:
 	// Probe file and fill asset
 	static int probe_input(Asset *asset);
 	// Supported streams of format
-	static int supports(int format);
+	static int supports(int format, int deoding = 0);
 
 	int open_file(int rd, int wr);
 	void close_file();

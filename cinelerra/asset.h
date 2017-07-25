@@ -35,6 +35,7 @@
 #include "paramlist.inc"
 
 #include <stdint.h>
+#include <time.h>
 
 // Maximum number of audio streams
 #define MAX_ASTREAMS 64 
@@ -228,6 +229,8 @@ public:
 	int tiff_cmodel;
 	int tiff_compression;
 
+// File modification time
+	struct timespec file_mtime;
 // Render profile path
 	char renderprofile_path[BCTEXTLEN];
 // Render parameters used by render and asset
