@@ -102,7 +102,7 @@ const char* FileTIFF::compression_to_str(int value)
 	switch(value)
 	{
 	case FileTIFF::NONE:
-		return "None";
+		return _("None");
 
 	case FileTIFF::LZW:
 		return "LZW";
@@ -117,7 +117,7 @@ const char* FileTIFF::compression_to_str(int value)
 		return "JPEG";
 
 	default:
-		return "None";
+		return _("None");
 	}
 }
 
