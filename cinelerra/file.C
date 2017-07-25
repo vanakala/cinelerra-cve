@@ -318,7 +318,6 @@ int File::open_file(Preferences *preferences,
 
 // format already determined
 	case FILE_PCM:
-	case FILE_WAV:
 	case FILE_AU:
 	case FILE_AIFF:
 	case FILE_SND:
@@ -358,6 +357,8 @@ int File::open_file(Preferences *preferences,
 	case FILE_AVI:
 	case FILE_MOV:
 	case FILE_OGG:
+	case FILE_MP3:
+	case FILE_WAV:
 		file = new FileAVlibs(this->asset, this);
 		break;
 
