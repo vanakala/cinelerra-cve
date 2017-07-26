@@ -2164,7 +2164,7 @@ public:
 		this->plugin = plugin;
 		this->gui = gui;
 		this->padx = padx;
-		this->label = new BC_Title(-1, -1, " End Mask");
+		this->label = new BC_Title(-1, -1, _(" End Mask"));
 		this->x = -1;
 		this->y = -1;
 		gui->add_subwindow(this->label);
