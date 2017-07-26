@@ -390,9 +390,9 @@ const char* GradientRate::to_text(int shape)
 		case GradientConfig::LINEAR:
 			return _("Linear");
 		case GradientConfig::LOG:
-			return _("Log");
+			return _("Logarithmic");
 		default:
-			return _("Square");
+			return _("Squared");
 	}
 }
 
