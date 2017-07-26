@@ -163,7 +163,7 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	viewmenu->add_item(show_transitions = new ShowTransitions(mwindow, "2"));
 	viewmenu->add_item(fade_automation = new ShowAutomation(mwindow, _("Fade"), "3", AUTOMATION_FADE));
 	viewmenu->add_item(mute_automation = new ShowAutomation(mwindow, _("Mute"), "4", AUTOMATION_MUTE));
-	viewmenu->add_item(mode_automation = new ShowAutomation(mwindow, _("Mode"), "5", AUTOMATION_MODE));
+	viewmenu->add_item(mode_automation = new ShowAutomation(mwindow, _("Overlay mode"), "5", AUTOMATION_MODE));
 	viewmenu->add_item(pan_automation = new ShowAutomation(mwindow, _("Pan"), "6", AUTOMATION_PAN));
 	viewmenu->add_item(plugin_automation = new PluginAutomation(mwindow, "7"));
 	viewmenu->add_item(mask_automation = new ShowAutomation(mwindow, _("Mask"), "8", AUTOMATION_MASK));
