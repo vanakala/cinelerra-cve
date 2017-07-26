@@ -509,9 +509,9 @@ const char* TimeFrontRate::to_text(int shape)
 	case TimeFrontConfig::LINEAR:
 		return _("Linear");
 	case TimeFrontConfig::LOG:
-		return _("Log");
+		return _("Logarithmic");
 	default:
-		return _("Square");
+		return _("Squared");
 	}
 }
 
