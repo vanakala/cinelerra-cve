@@ -68,10 +68,10 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_TIFF, "tiff", "tiff", SUPPORTS_VIDEO },
 	{ FILE_PNG, "png_pipe", "png_pipe", SUPPORTS_VIDEO },
 	{ FILE_YUV, "yuv4mpegpipe", "yuv4mpegpipe",  SUPPORTS_VIDEO },
-	{ FILE_IMAGE, "image2", 0, SUPPORTS_VIDEO },
 	{ FILE_RAWDV, "dv", "dv", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_AU, "au", "au", SUPPORTS_AUDIO },
 	{ FILE_WAV, "wav", "wav", SUPPORTS_AUDIO },
+	{ FILE_IMAGE, "image2", 0, SUPPORTS_VIDEO },
 	{ 0 }
 };
 
@@ -558,6 +558,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_AVI:
 		case FILE_AC3:
 		case FILE_OGG:
+		case FILE_WAV:
 			break;
 
 		default:

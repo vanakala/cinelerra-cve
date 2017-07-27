@@ -127,7 +127,6 @@ void File::get_options(FormatTools *format, int options)
 				options);
 			break;
 		case FILE_PCM:
-		case FILE_WAV:
 		case FILE_AU:
 		case FILE_AIFF:
 		case FILE_SND:
@@ -140,6 +139,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_AVI:
 		case FILE_MOV:
 		case FILE_OGG:
+		case FILE_WAV:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
 				format_window,
