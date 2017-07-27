@@ -174,6 +174,7 @@ void Asset::copy_location(Asset *asset)
 	strcpy(this->path, asset->path);
 	awindow_folder = asset->awindow_folder;
 	file_length = asset->file_length;
+	file_mtime = asset->file_mtime;
 }
 
 void Asset::copy_format(Asset *asset, int do_index)
