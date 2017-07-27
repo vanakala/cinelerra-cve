@@ -199,20 +199,26 @@ int FileAVlibs::probe_input(Asset *asset)
 	AVStream *stream;
 	AVCodecContext *decoder_ctx;
 
-	if(stat(asset->path, &stbuf) < 0)
+	if(!asset->file_mtime.tv_sec || !asset->file_length)
 	{
-		errormsg("Failed to stat input file %s",
-			asset->path);
-		return -1;
+		if(stat(asset->path, &stbuf) < 0)
+		{
+			errormsg("Failed to stat input file %s",
+				asset->path);
+			return -1;
+		}
+		if(!S_ISREG(stbuf.st_mode))
+		{
+			errormsg("Input file '%s' is not a regular file",
+				asset->path);
+			return -1;
+		}
+		asset->file_length = stbuf.st_size;
+		asset->file_mtime = stbuf.st_mtim;
 	}
-	if(!S_ISREG(stbuf.st_mode))
-	{
-		errormsg("Input file '%s' is not a regular file",
-			asset->path);
-		return -1;
-	}
-	asset->file_length = stbuf.st_size;
-	asset->file_mtime = stbuf.st_mtim;
+
+	if(asset->format != FILE_UNKNOWN)
+		return 0;
 
 	avlibs_lock->lock("FileAVlibs::probe_input");
 	avcodec_register_all();

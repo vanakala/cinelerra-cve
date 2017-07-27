@@ -247,7 +247,7 @@ int File::open_file(Preferences *preferences,
 	file = 0;
 
 	probe_result = 0;
-	if(rd && this->asset->format == FILE_UNKNOWN)
+	if(rd)
 	{
 		probe_result = FileAVlibs::probe_input(this->asset);
 
