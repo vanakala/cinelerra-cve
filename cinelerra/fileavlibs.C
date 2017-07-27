@@ -776,7 +776,6 @@ int FileAVlibs::open_file(int rd, int wr)
 				avlibs_lock->unlock();
 				return 1;
 			}
-			avaframe->nb_samples = audio_ctx->frame_size;
 			avaframe->format = audio_ctx->sample_fmt;
 			avaframe->channel_layout = audio_ctx->channel_layout;
 			avaframe->sample_rate = audio_ctx->sample_rate;
@@ -1649,6 +1648,14 @@ int FileAVlibs::write_aframes(AFrame **frames)
 
 	if(resample_size < in_length)
 	{
+		if(resample_size)
+		{
+			for(chan = 0; chan < MAXCHANNELS; chan++)
+			{
+				delete [] resampled_data[chan];
+				resampled_data[chan] = 0;
+			}
+		}
 		sample_bytes = av_get_bytes_per_sample(audio_ctx->sample_fmt);
 
 		resample_size = in_length + audio_ctx->frame_size;
@@ -1696,9 +1703,16 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 	AVStream *stream;
 	int got_output, chan, rv, samples_written;
 	int frame_size = audio_ctx->frame_size;
-	int linesize;
-	int buffersize = av_samples_get_buffer_size(&linesize, audio_ctx->channels,
+	int linesize, frames;
+
+	if(frame_size == 0)
+		frame_size = resampled_length;
+
+	avaframe->nb_samples = frame_size;
+
+	av_samples_get_buffer_size(&linesize, audio_ctx->channels,
 		frame_size, audio_ctx->sample_fmt, 1);
+	frames = resampled_length / frame_size;
 
 	stream = context->streams[audio_index];
 	av_init_packet(&pkt);
@@ -1711,17 +1725,17 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 
 	resampled_length -= frame_size;
 	samples_written = 0;
-	for(int i = 0; i < resampled_length; i += frame_size)
+	for(int i = 0; i < frames; i++)
 	{
 		avaframe->pts = audio_pos;
 
 		if(av_sample_fmt_is_planar(audio_ctx->sample_fmt))
 		{
 			for(chan = 0; chan < audio_ctx->channels; chan++)
-				avaframe->data[chan] = &resampled_data[chan][i * sample_bytes];
+				avaframe->data[chan] = &resampled_data[chan][i * frame_size * sample_bytes];
 		}
 		else
-			avaframe->data[0] = &resampled_data[0][i * sample_bytes * audio_ctx->channels];
+			avaframe->data[0] = &resampled_data[0][i * frame_size * sample_bytes * audio_ctx->channels];
 
 		avaframe->linesize[0] = linesize;
 
