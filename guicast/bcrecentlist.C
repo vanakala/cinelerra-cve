@@ -28,6 +28,7 @@
 #include "bclistbox.h"
 #include "bclistboxitem.h"
 #include "bcrecentlist.h"
+#include "language.h"
 
 // NOTE: textbox can be NULL if no textbox is associated
 BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults, 
