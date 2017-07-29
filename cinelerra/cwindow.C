@@ -31,6 +31,7 @@
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainmenu.h"
 #include "mainsession.h"
