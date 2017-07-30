@@ -673,7 +673,7 @@ int Render::render(int test_overwrite,
 // Notify of error
 		if(result && (!progress || !progress->is_cancelled()) &&
 				!batch_cancelled)
-			errorbox(_("Error rendering data."));
+			errormsg(_("Error rendering data."));
 // Delete the progress box
 		stop_progress();
 	}

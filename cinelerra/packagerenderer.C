@@ -163,7 +163,7 @@ void PackageRenderer::create_output()
 	if(mwindow)
 	{
 		if(result)
-			errorbox(_("Couldn't open %s"), asset->path);
+			errormsg(_("Couldn't open output file %s"), asset->path);
 		mwindow->sighandler->push_file(file);
 		IndexFile::delete_index(preferences, asset);
 	}
