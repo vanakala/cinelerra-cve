@@ -140,6 +140,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_MOV:
 		case FILE_OGG:
 		case FILE_WAV:
+		case FILE_MP3:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
 				format_window,
@@ -745,6 +746,7 @@ int File::supports(int format)
 	case FILE_PCM:
 	case FILE_AU:
 	case FILE_SND:
+	case FILE_MP3:
 		return SUPPORTS_AUDIO;
 
 	case FILE_YUV:
@@ -869,6 +871,7 @@ int File::supports_audio(int format)
 	case FILE_SND:
 	case FILE_AVI:
 	case FILE_RAWDV:
+	case FILE_MP3:
 		return 1;
 
 	default:
