@@ -229,7 +229,7 @@ ColormodelSelection::ColormodelSelection(int x, int y,
 
 void ColormodelSelection::update(int value)
 {
-	selection->update(ColorModels::name(value));
+	selection->update(_(ColorModels::name(value)));
 }
 
 
@@ -242,7 +242,7 @@ IlaceSelection::IlaceSelection(int x, int y,
 
 void IlaceSelection::update(int value)
 {
-	BC_TextBox::update(AInterlaceModeSelection::name(value));
+	BC_TextBox::update(_(AInterlaceModeSelection::name(value)));
 }
 
 AInterlaceModeSelection::AInterlaceModeSelection(int x, int y,
@@ -296,7 +296,7 @@ InterlaceFixSelection::InterlaceFixSelection(int x, int y,
 
 void InterlaceFixSelection::update(int value)
 {
-	BC_TextBox::update(name(value));
+	BC_TextBox::update(_(name(value)));
 }
 
 const char *InterlaceFixSelection::name(int value)

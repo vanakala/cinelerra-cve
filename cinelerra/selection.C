@@ -611,7 +611,7 @@ int SelectionItem::handle_event()
 			output2->update(int2item->value1);
 		}
 		else
-			output->update(int2item->text);
+			output->update(_(int2item->text));
 	}
 	if(double2item)
 	{
