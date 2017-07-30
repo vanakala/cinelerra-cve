@@ -41,7 +41,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern Theme *theme_global;
 
 FileYUV::FileYUV(Asset *asset, File *file)
  : FileBase(asset, file)

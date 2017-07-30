@@ -36,8 +36,6 @@
 
 #include <setjmp.h>
 
-extern Theme *theme_global;
-
 #if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
 struct my_src_mgr
 {

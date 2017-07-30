@@ -52,8 +52,6 @@
 #include <stdint.h>
 #include <string.h>
 
-extern MWindow *mwindow;
-extern Theme *theme_global;
 extern const char *version_name;
 
 struct  avlib_formattable FileAVlibs::known_formats[] =
@@ -139,7 +137,7 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	sws_ctx = 0;
 	swr_ctx = 0;
 	tocfile = 0;
-	if(mwindow && mwindow->edl->session->show_avlibsmsgs)
+	if(mwindow_global && mwindow_global->edl->session->show_avlibsmsgs)
 		av_log_set_level(AV_LOG_INFO);
 	else
 		av_log_set_level(AV_LOG_QUIET);
@@ -2237,24 +2235,24 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	asset->encoder_parameters[FILEAVLIBS_VCODEC_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_VCODEC_CONFIG, asset->vcodec);
 	asset->encoder_parameters[FILEAVLIBS_APRIVT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_APRIVT_CONFIG, asset->acodec);
 	asset->encoder_parameters[FILEAVLIBS_VPRIVT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_VPRIVT_CONFIG, asset->vcodec);
-	if(mwindow)
+	if(mwindow_global)
 	{
 		if(!asset->encoder_parameters[FILEAVLIBS_METADT_IX])
 			asset->encoder_parameters[FILEAVLIBS_METADT_IX] = new Paramlist("metadata");
 		list = asset->encoder_parameters[FILEAVLIBS_METADT_IX];
-		if(mwindow->edl->session->metadata_copyright[0])
-			list->set("copyright", mwindow->edl->session->metadata_copyright);
+		if(mwindow_global->edl->session->metadata_copyright[0])
+			list->set("copyright", mwindow_global->edl->session->metadata_copyright);
 		else
 			list->remove_param("copyright");
-		if(mwindow->edl->session->metadata_title[0])
-			list->set("title", mwindow->edl->session->metadata_title);
+		if(mwindow_global->edl->session->metadata_title[0])
+			list->set("title", mwindow_global->edl->session->metadata_title);
 		else
 			list->remove_param("title");
-		if(mwindow->edl->session->metadata_author[0])
-			list->set("author", mwindow->edl->session->metadata_author);
+		if(mwindow_global->edl->session->metadata_author[0])
+			list->set("author", mwindow_global->edl->session->metadata_author);
 		else
 			list->remove_param("author");
-		if(mwindow->edl->session->experimental_codecs)
+		if(mwindow_global->edl->session->experimental_codecs)
 			list->set("strict", "-2");
 		else
 			list->remove_param("strict");
@@ -2516,7 +2514,7 @@ void FileAVlibs::fill_encoder_params(Paramlist *codecs, AVCodecID codec_id,
 			return;
 		if(codecs->find(encoder->name))
 			return;
-		if(!mwindow->edl->session->experimental_codecs &&
+		if(!mwindow_global->edl->session->experimental_codecs &&
 				encoder->capabilities & AV_CODEC_CAP_EXPERIMENTAL)
 			return;
 		param = codecs->append_param(encoder->name, codec_id);

@@ -30,7 +30,6 @@
 
 #include <stdlib.h>
 
-extern Theme *theme_global;
 
 FileBase::FileBase(Asset *asset, File *file)
 {

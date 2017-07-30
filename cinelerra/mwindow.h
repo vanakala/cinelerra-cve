@@ -81,6 +81,8 @@
 
 #include <stdint.h>
 
+extern MWindow *mwindow_global;
+
 // All entry points for commands except for window locking should be here.
 // This allows scriptability.
 

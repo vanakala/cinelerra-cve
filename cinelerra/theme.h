@@ -35,6 +35,7 @@
 #include "patchbay.inc"
 #include "preferencesthread.inc"
 #include "resourcepixmap.inc"
+#include "theme.inc"
 #include "timebar.inc"
 #include "trackcanvas.inc"
 #include "setformat.inc"
@@ -42,6 +43,8 @@
 #include "vframe.inc"
 #include "vwindowgui.inc"
 #include "zoombar.inc"
+
+extern Theme *theme_global;
 
 // Theme uses static png resources at startup.
 // The reason is GUI elements must be constructed at startup from multiple

@@ -105,7 +105,6 @@
 #include <fcntl.h>
 #include <string.h>
 
-extern Theme *theme_global;
 
 MWindow::MWindow(const char *config_path)
  : Thread(THREAD_SYNCHRONOUS)

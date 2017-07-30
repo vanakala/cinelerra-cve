@@ -46,7 +46,6 @@
 #include "theme.h"
 #include "vframe.h"
 
-extern Theme *theme_global;
 
 class EXRIStream : public Imf::IStream
 {

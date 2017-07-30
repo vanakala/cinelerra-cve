@@ -42,9 +42,6 @@
 
 #include <unistd.h>
 
-extern MWindow *mwindow;
-extern Theme *theme_global;
-
 #define PARAM_WIN_MARGIN 20
 #define PARAM_WIN_MAXW 1024
 #define PARAM_WIN_MAXH 600

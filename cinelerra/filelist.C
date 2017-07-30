@@ -39,8 +39,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-extern MWindow *mwindow;
-
 
 FileList::FileList(Asset *asset, 
 	File *file, 
@@ -119,18 +117,18 @@ int FileList::open_file(int rd, int wr)
 					result = read_frame_header(asset->path);
 					asset->layers = 1;
 
-					if(mwindow)
+					if(mwindow_global)
 					{
-						if(mwindow->edl->session->si_useduration)
+						if(mwindow_global->edl->session->si_useduration)
 						{
 							asset->frame_rate = 1. /
-								mwindow->edl->session->si_duration;
-							asset->video_duration = mwindow->edl->session->si_duration;
+								mwindow_global->edl->session->si_duration;
+							asset->video_duration = mwindow_global->edl->session->si_duration;
 						}
 						else
 						{
-							asset->frame_rate = mwindow->edl->session->frame_rate;
-							asset->video_duration = 1. / mwindow->edl->session->frame_rate;
+							asset->frame_rate = mwindow_global->edl->session->frame_rate;
+							asset->video_duration = 1. / mwindow_global->edl->session->frame_rate;
 						}
 					}
 					asset->video_length = 1;
@@ -367,12 +365,12 @@ int FileList::read_frame(VFrame *frame)
 			goto noframe;
 		}
 		frame->set_source_pts(0);
-		if(mwindow)
+		if(mwindow_global)
 		{
-			if(mwindow->edl->session->si_useduration)
-				frame->set_duration(mwindow->edl->session->si_duration);
+			if(mwindow_global->edl->session->si_useduration)
+				frame->set_duration(mwindow_global->edl->session->si_duration);
 			else
-				frame->set_duration((ptstime)1 / mwindow->edl->session->frame_rate);
+				frame->set_duration((ptstime)1 / mwindow_global->edl->session->frame_rate);
 		}
 	}
 	frame->set_frame_number(current_frame);

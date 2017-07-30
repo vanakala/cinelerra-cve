@@ -34,7 +34,6 @@
 
 #include <png.h>
 
-extern Theme *theme_global;
 
 FilePNG::FilePNG(Asset *asset, File *file)
  : FileList(asset, file, "PNGLIST", ".png", FILE_PNG, FILE_PNG_LIST)

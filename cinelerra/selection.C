@@ -37,8 +37,6 @@
 
 #include <stdlib.h>
 
-extern Theme *theme_global;
-
 const struct selection_int SampleRateSelection::sample_rates[] =
 {
 	{ "8000", 8000 },

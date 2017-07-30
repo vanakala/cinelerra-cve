@@ -32,8 +32,6 @@
 #include <string.h>
 #include <unistd.h>
 
-extern Theme *theme_global;
-
 /* Known image types. */
 #define TGA_TYPE_MAPPED      1
 #define TGA_TYPE_COLOR       2

@@ -48,7 +48,7 @@
 
 #include <locale.h>
 
-MWindow *mwindow;
+MWindow *mwindow_global;
 Theme *theme_global;
 const char *version_name = PROGRAM_NAME " " CINELERRA_VERSION;
 
@@ -276,18 +276,18 @@ int main(int argc, char *argv[])
 
 	case DO_GUI:
 		setlinebuf(stdout);
-		mwindow = new MWindow(config_path);
+		mwindow_global = new MWindow(config_path);
 // load the initial files on seperate tracks
 		if(filenames.total)
 		{
-			mwindow->load_filenames(&filenames, LOADMODE_REPLACE);
+			mwindow_global->load_filenames(&filenames, LOADMODE_REPLACE);
 			if(filenames.total == 1)
-				mwindow->gui->mainmenu->add_load(filenames.values[0]);
+				mwindow_global->gui->mainmenu->add_load(filenames.values[0]);
 		}
 
 // run the program
-		mwindow->start();
-		mwindow->save_defaults();
+		mwindow_global->start();
+		mwindow_global->save_defaults();
 		break;
 	}
 

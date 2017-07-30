@@ -32,8 +32,6 @@
 #include "vframe.h"
 #include "mainerror.h"
 
-extern Theme *theme_global;
-
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>

@@ -35,8 +35,6 @@
 #include "mainerror.h"
 #include "mainprogress.h"
 
-extern MWindow *mwindow;
-
 
 void FileTOC::put_int32(uint32_t x)
 {
@@ -149,12 +147,12 @@ reindex:
 		// Stream IDs: stream_type, stream_id
 		if(streams = media->get_streamcount())
 		{
-			if(mwindow && length > TOC_PROGRESS_LENGTH)
+			if(mwindow_global && length > TOC_PROGRESS_LENGTH)
 			{
 				canceled = 0;
 				char fnbuf[BCTEXTLEN];
 				strcpy(fnbuf, filepath);
-				progress = mwindow->mainprogress->start_progress("Generating TOC", streams * length);
+				progress = mwindow_global->mainprogress->start_progress("Generating TOC", streams * length);
 				progress->update_title("Generating TOC for %s", basename(fnbuf));
 			}
 			put_int32(TOCFILE_STREAMCOUNT);

@@ -32,7 +32,6 @@
 #include "selection.h"
 #include "theme.h"
 
-extern Theme *theme_global;
 
 FileSndFile::FileSndFile(Asset *asset, File *file)
  : FileBase(asset, file)
