@@ -95,11 +95,11 @@ const char *FileAVlibs::ignored[] =
 
 struct avlib_encparams FileAVlibs::encoder_params[] =
 {
-	{ "pix_fmt", "Pixel format:", PARAMTYPE_INT },
-	{ "framerate", "Framerate:", PARAMTYPE_DBL },
-	{ "samplerate", "Samplerate:", PARAMTYPE_INT },
-	{ "sampleformat", "Sample format:", PARAMTYPE_INT },
-	{ "ch_layout", "Channel layout:", PARAMTYPE_LNG },
+	{ "pix_fmt", N_("Pixel format:"), PARAMTYPE_INT },
+	{ "framerate", N_("Framerate:"), PARAMTYPE_DBL },
+	{ "samplerate", N_("Samplerate:"), PARAMTYPE_INT },
+	{ "sampleformat", N_("Sample format:"), PARAMTYPE_INT },
+	{ "ch_layout", N_("Channel layout:"), PARAMTYPE_LNG },
 	{ 0, 0, 0 }
 };
 
@@ -203,13 +203,13 @@ int FileAVlibs::probe_input(Asset *asset)
 	{
 		if(stat(asset->path, &stbuf) < 0)
 		{
-			errormsg("Failed to stat input file %s",
+			errormsg(_("Failed to find input file %s"),
 				asset->path);
 			return -1;
 		}
 		if(!S_ISREG(stbuf.st_mode))
 		{
-			errormsg("Input file '%s' is not a regular file",
+			errormsg(_("Input file '%s' is not a regular file"),
 				asset->path);
 			return -1;
 		}
@@ -422,7 +422,7 @@ int FileAVlibs::open_file(int rd, int wr)
 						if(codec_id == AV_CODEC_ID_NONE || !(codec = avcodec_find_decoder(codec_id)))
 						{
 							if(codec_id != AV_CODEC_ID_NONE)
-								errormsg("FileAVLibs::open_file: audio codec %#x not found",
+								errormsg(_("Audio decoder id %#x not found"),
 									codec_id);
 							asset->audio_data = 0;
 							audio_index = -1;
@@ -431,7 +431,7 @@ int FileAVlibs::open_file(int rd, int wr)
 						{
 							if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
 							{
-								liberror(rv, "FileAVLibs::open_file: Failed to open audio decoder");
+								liberror(rv, _("Failed to open audio decoder"));
 								asset->audio_data = 0;
 								audio_index = -1;
 							}
@@ -468,7 +468,7 @@ int FileAVlibs::open_file(int rd, int wr)
 							!(codec = avcodec_find_decoder(codec_id)))
 						{
 							if(codec_id != AV_CODEC_ID_NONE)
-								errormsg("FileAVLibs::open_file: video codec %#x not found",
+								errormsg(_("Video decoder id %#x not found"),
 									decoder_context->codec_id);
 							asset->video_data = 0;
 							video_index = -1;
@@ -477,7 +477,7 @@ int FileAVlibs::open_file(int rd, int wr)
 						{
 							if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
 							{
-								liberror(rv, "FileAVLibs::open_file: Failed to open video decoder");
+								liberror(rv, _("Failed to open video decoder"));
 								asset->video_data = 0;
 								video_index = -1;
 							}
@@ -563,14 +563,14 @@ int FileAVlibs::open_file(int rd, int wr)
 			break;
 
 		default:
-			errormsg("FileAVlibs::open_file:Unsupported file type");
+			errormsg(_("Unsupported file type %d for encoding"), asset->format);
 			avlibs_lock->unlock();
 			return 1;
 		}
 		if((rv = avformat_alloc_output_context2(&context, NULL,
 				encoder_formatname(asset->format), asset->path)) < 0)
 		{
-			errormsg("FileAVlibs::open_file:Failed to allocate output context %d", rv);
+			liberror(rv, _("Failed to allocate output context"));
 			avlibs_lock->unlock();
 			return 1;
 		}
@@ -614,7 +614,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			{
 				if(!(codec = avcodec_find_encoder((AVCodecID)aparam->intvalue)))
 				{
-					errormsg("FileAVlibs::open_file: Could not find video codec '%s'",
+					errormsg(_("Could not find video encoder '%s'"),
 						aparam->stringvalue);
 					avlibs_lock->unlock();
 					return 1;
@@ -622,14 +622,15 @@ int FileAVlibs::open_file(int rd, int wr)
 
 				if(!(stream = avformat_new_stream(context, codec)))
 				{
-					errormsg("FileAVlibs::open_file: Could not allocate video stream");
+					errormsg(_("Could not allocate video stream for '%s'"),
+						aparam->stringvalue);
 					avlibs_lock->unlock();
 					return 1;
 				}
 			}
 			else
 			{
-				errormsg("FileAVlibs::open_file:missing video codec");
+				errormsg("Missing video encoder");
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -655,14 +656,14 @@ int FileAVlibs::open_file(int rd, int wr)
 			if((rv = avcodec_open2(video_ctx, codec, &dict)) < 0)
 			{
 				av_dict_free(&dict);
-				liberror(rv, "FileAVlibs::open_file:Could not open video codec");
+				liberror(rv, _("Could not open video encoder"));
 				avlibs_lock->unlock();
 				return 1;
 			}
 			av_dict_free(&dict);
 			if(!(avvframe = av_frame_alloc()))
 			{
-				errormsg("FileAVlibs::open_file:Could not create video_frame");
+				errormsg(_("Could not create video_frame for encoding"));
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -683,7 +684,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			{
 				if(!(codec = avcodec_find_encoder((AVCodecID)aparam->intvalue)))
 				{
-					errormsg("FileAVlibs::open_file: Could not find audio codec '%s'",
+					errormsg(_("Could not find audio encoder '%s'"),
 						aparam->stringvalue);
 					avlibs_lock->unlock();
 					return 1;
@@ -691,14 +692,15 @@ int FileAVlibs::open_file(int rd, int wr)
 
 				if(!(stream = avformat_new_stream(context, codec)))
 				{
-					errormsg("FileAVlibs::open_file:Could not allocate allocate audio stream");
+					errormsg(_("Could not allocate allocate audio stream for '%s'"),
+						aparam->stringvalue);
 					avlibs_lock->unlock();
 					return 1;
 				}
 			}
 			else
 			{
-				errormsg("FileAVlibs::open_file:missing audio codec");
+				errormsg(_("Missing audio encoder"));
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -714,7 +716,7 @@ int FileAVlibs::open_file(int rd, int wr)
 						break;
 				if(!codec->supported_samplerates[i])
 				{
-					errormsg("FileAVlibs::open_file:Samplerate %d is not supported by audio codec",
+					errormsg(_("Samplerate %d is not supported by audio encoder"),
 						audio_ctx->sample_rate);
 					avlibs_lock->unlock();
 					return 1;
@@ -745,7 +747,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			if((rv = avcodec_open2(audio_ctx, codec, &dict)) < 0)
 			{
 				av_dict_free(&dict);
-				liberror(rv, _("FileAVlibs::open_file:Could not open audio codec"));
+				liberror(rv, _("Could not open audio encoder"));
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -761,20 +763,20 @@ int FileAVlibs::open_file(int rd, int wr)
 				AV_SAMPLE_FMT_DBLP,
 				asset->sample_rate, 0, 0)))
 			{
-				errormsg(_("FileAVlibs::open_file:Can't allocate resample context"));
+				errormsg(_("Can't allocate resample context for encoding"));
 				avlibs_lock->unlock();
 				return 1;
 			}
 			if(swr_init(swr_ctx))
 			{
-				errormsg(_("FileAVlibs::open_file: Failed to initalize resample context"));
+				errormsg(_("Failed to initalize resample context for encoding"));
 				avlibs_lock->unlock();
 				return 1;
 			}
 
 			if(!(avaframe = av_frame_alloc()))
 			{
-				errormsg(_("FileAVlibs::open_file: Could not allocate audio frame"));
+				errormsg(_("Could not allocate audio frame for encoding"));
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -793,7 +795,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		{
 			if((rv = avio_open(&context->pb, context->filename, AVIO_FLAG_WRITE)) < 0)
 			{
-				errormsg("FileAVlibs::open_file:Could not open '%s': %d",
+				errormsg(_("Could not open output file '%s': %d"),
 					context->filename, rv);
 				avlibs_lock->unlock();
 				return 1;
@@ -801,7 +803,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		}
 		if((rv = avformat_write_header(context, 0)) < 0)
 		{
-			errormsg("FileAVlibs::open_file:Failed to write header: %d", rv);
+			errormsg(_("Failed to write header: %d"), rv);
 			avlibs_lock->unlock();
 			return 1;
 		}
@@ -869,7 +871,7 @@ void FileAVlibs::close_file()
 						avaframe->data[0] = resampled_data[0];
 					if(rv = avcodec_encode_audio2(audio_ctx, &pkt, avaframe, &got_output))
 					{
-						liberror(rv, _("FileAVlibs::close_file: failed to encode last audio packet"));
+						liberror(rv, _("Failed to encode last audio packet"));
 					}
 					if(!rv && got_output)
 					{
@@ -877,7 +879,7 @@ void FileAVlibs::close_file()
 						av_packet_rescale_ts(&pkt, audio_ctx->time_base,
 							context->streams[audio_index]->time_base);
 						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
-							liberror(rv, _("FileAVlibs::close_file: Failed to write last audio packet"));
+							liberror(rv, _("Failed to write last audio packet"));
 					}
 				}
 				// Get out samples kept in encoder
@@ -885,7 +887,7 @@ void FileAVlibs::close_file()
 				{
 					if(avcodec_encode_audio2(audio_ctx, &pkt, 0, &got_output))
 					{
-						errormsg(_("FileAVlibs::close_file: failed to encode last audio packet"));
+						errormsg(_("Failed to encode last audio packet"));
 						break;
 					}
 					if(got_output)
@@ -895,7 +897,7 @@ void FileAVlibs::close_file()
 							context->streams[audio_index]->time_base);
 						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 						{
-							liberror(rv, _("FileAVlibs::close_file: Failed to write last audio packet"));
+							liberror(rv, _("Failed to write last audio packet"));
 							break;
 						}
 					}
@@ -915,7 +917,7 @@ void FileAVlibs::close_file()
 				{
 					if(avcodec_encode_video2(video_ctx, &pkt, 0, &got_output))
 					{
-						errormsg(_("FileAVlibs::close_file: failed to encode last audio packet"));
+						errormsg(_("Failed to encode last video packet"));
 						break;
 					}
 					if(got_output)
@@ -923,7 +925,7 @@ void FileAVlibs::close_file()
 						pkt.stream_index = video_index;
 						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 						{
-							liberror(rv, _("FileAVlibs::close_file: Failed to write last video packet"));
+							liberror(rv, _("Failed to write last video packet"));
 							break;
 						}
 					}
@@ -1064,7 +1066,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 			if((res = avcodec_decode_video2(decoder_context,
 				avvframe, &got_it, &pkt)) < 0)
 			{
-				liberror(res, "FileAVlibs::read_frame:avcodec_decode_video2 read");
+				liberror(res, _("Failed to decode video frame"));
 				av_free_packet(&pkt);
 				avlibs_lock->unlock();
 				return 1;
@@ -1098,7 +1100,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	if(error)
 	{
-		liberror(error, "FileAVlibs::read_frame:av_read_frame");
+		liberror(error, _("Video reading error"));
 		return 1;
 	}
 
@@ -1139,13 +1141,13 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 			0, 0);
 		if(!swr_ctx)
 		{
-			errormsg("FileAVlibs::fill_buffer: Failed to allocate resampler context");
+			errormsg(_("Failed to allocate resampler context for audio decoding"));
 			avlibs_lock->unlock();
 			return -1;
 		}
 		if(error = swr_init(swr_ctx))
 		{
-			errormsg("FileAVlibs::fill_buffer: Failed to initalize resampler context (%d)", error);
+			errormsg(_("Failed to initalize resampler context when decoding (%d)"), error);
 			avlibs_lock->unlock();
 			return -1;
 		}
@@ -1235,7 +1237,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				if((res = avcodec_decode_audio4(decoder_context,
 					avaframe, &got_it, &pkt)) < 0)
 				{
-					liberror(res, "FileAVlibs::decode_samples:avcodec_decode_audio skip");
+					liberror(res, _("Audio decoding failed when skipping"));
 					av_free_packet(&pkt);
 					return res;
 				}
@@ -1294,7 +1296,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				avaframe, &got_it, &pkt)) < 0)
 			{
 				av_free_packet(&pkt);
-				liberror(res, "FileAVlibs::decode_samples:avcodec_decode_audio read");
+				liberror(res, _("Audio decoding failed when reading"));
 				return res;
 			}
 
@@ -1323,7 +1325,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 	if(error)
 	{
-		liberror(error, "FileAVlibs::decode_samples");
+		liberror(error, _("Failed to read audio"));
 		return error;
 	}
 
@@ -1409,7 +1411,7 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 
 		if(sws_ctx == NULL)
 		{
-			errormsg("FileAVlibs::convert_cmodel: swscale context initialization failed");
+			errormsg("Swscale context initialization failed");
 			return 1;
 		}
 
@@ -1450,7 +1452,7 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 	if(cmodel_out == temp_cmodel)
 	{
 		// avoid infinite recursion if things are broken
-		errormsg("FileAVlibs::convert_cmodel pix_fmt_in broken!");
+		errormsg(_("pix_fmt_in broken while converting colormodel!"));
 		return 1;
 	}
 
@@ -1503,7 +1505,7 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 		{
 			if((rv = av_frame_get_buffer(frame_out, 32)) < 0)
 			{
-				liberror(rv, "FileAVlibs::convert_cmodel:get_buffer");
+				liberror(rv, _("Failed to get buffer for color conversion"));
 				return 1;
 			}
 		}
@@ -1512,13 +1514,13 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 			pix_fmt_in, width_out, height_out, pix_fmt_out, SWS_BICUBIC,
 			0, 0, 0)) == 0)
 		{
-			errormsg("FileAVlibs::convert_cmodel: sws_getCachedContext() failed");
+			errormsg(_("Could not get color conversion context"));
 			return 1;
 		}
 		if((rv = sws_scale(sws_ctx, in_data, in_linesizes,
 			0, frame_in->get_h(), frame_out->data, frame_out->linesize)) < 0)
 		{
-			liberror(rv, "FileAVlibs::convert_cmodel:scaling");
+			liberror(rv, _("Color conversion failed"));
 			return 1;
 		}
 	}
@@ -1607,7 +1609,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 		av_init_packet(&pkt);
 		if((rv = avcodec_encode_video2(video_ctx, &pkt, avvframe, &got_it)) < 0)
 		{
-			liberror(rv, "FileAVlibs::write_frames: Failed to encode video frame");
+			liberror(rv, _("Failed to encode video frame"));
 			avlibs_lock->unlock();
 			return 1;
 		}
@@ -1616,7 +1618,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			pkt.stream_index = stream->index;
 			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 			{
-				liberror(rv, "FileAVlibs::write_frames: Failed to write video_frame");
+				liberror(rv, _("Failed to write video packet"));
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -1688,7 +1690,7 @@ int FileAVlibs::write_aframes(AFrame **frames)
 	if((resampled_length = swr_convert(swr_ctx, resampled_ptr,
 		resampled_alloc - resample_fill, (const uint8_t**)in_data, in_length)) < 0)
 	{
-		errormsg("FileAVlibs::write_aframes:Failed to resample data");
+		errormsg(_("Failed to resample audio data"));
 		avlibs_lock->unlock();
 		return 1;
 	}
@@ -1743,7 +1745,7 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 
 		if((rv = avcodec_encode_audio2(audio_ctx, &pkt, avaframe, &got_output)) < 0)
 		{
-			liberror(rv, _("FileAVlibs::write_samples:Failed encoding audio frame"));
+			liberror(rv, _("Failed to encode audio frame"));
 			return 1;
 		}
 		audio_pos += frame_size;
@@ -1757,7 +1759,7 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 
 			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 			{
-				liberror(rv, _("FileAVlibs::write_aframes: Failed to write audio frame"));
+				liberror(rv, _("Failed to write audio packet"));
 				return 1;
 			}
 		}
@@ -1807,7 +1809,7 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt)
 		if((res = avformat_seek_file(context, stream_index,
 			INT64_MIN, itm->offset, INT64_MAX, fl)) < 0)
 		{
-			liberror(res, "FileAVlibs::media_seek:avformat_seek_file");
+			liberror(res, _("Media seeking failed"));
 			return -1;
 		}
 		avcodec_flush_buffers(context->streams[stream_index]->codec);
@@ -1816,7 +1818,7 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt)
 		{
 			if((res = av_read_frame(context, pkt)) != 0)
 			{
-				liberror(res, "FileAVlibs::media_seek:avread_frame");
+				liberror(res, _("Reading after media seek failed"));
 				return -1;
 			}
 			if(pkt->stream_index != stream_index)

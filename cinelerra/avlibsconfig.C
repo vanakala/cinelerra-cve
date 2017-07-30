@@ -77,7 +77,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, Paramlist *codecs, int options)
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 	{
-		errormsg("AVLibs does not support '%s'",
+		errormsg(_("AVLibs does not support '%s'"),
 			ContainerSelection::container_to_text(asset->format));
 		return;
 	}
@@ -88,10 +88,10 @@ AVlibsConfig::AVlibsConfig(Asset *asset, Paramlist *codecs, int options)
 			codec_w = x1;
 	}
 
-	sprintf(string, "'%s' options",
+	sprintf(string, _("'%s' options"),
 		ContainerSelection::container_to_text(asset->format));
-	codecthread = new ParamlistThread(&codecopts, "Codec options");
-	privthread = new ParamlistThread(&codec_private, "Codec private options");
+	codecthread = new ParamlistThread(&codecopts, _("Codec options"));
+	privthread = new ParamlistThread(&codec_private, _("Codec private options"));
 	win = add_subwindow(new BC_Title(left, top, string));
 	top += win->get_h() + 10;
 
@@ -101,14 +101,14 @@ AVlibsConfig::AVlibsConfig(Asset *asset, Paramlist *codecs, int options)
 
 	if(options & SUPPORTS_AUDIO)
 	{
-		twin = add_subwindow(new BC_Title(base_left, top, "Audio codec:"));
+		twin = add_subwindow(new BC_Title(base_left, top, _("Audio codec:")));
 		if(param = codecs->find(asset->acodec))
 			codecs->set_selected(param->intvalue);
 		param2 = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_AUDIO);
 	}
 	else if(options & SUPPORTS_VIDEO)
 	{
-		twin = add_subwindow(new BC_Title(base_left, top, "Video codec:"));
+		twin = add_subwindow(new BC_Title(base_left, top, _("Video codec:")));
 		if(param = codecs->find(asset->vcodec))
 			codecs->set_selected(param->intvalue);
 		param2 = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_VIDEO);
@@ -186,7 +186,7 @@ void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
 	if(!privbutton)
 	{
 		add_subwindow(privbutton = new AVlibsCodecConfigButton(left, top, &codec_private, this));
-		add_subwindow(privtitle = new BC_Title(base_left, top, "Codec private options"));
+		add_subwindow(privtitle = new BC_Title(base_left, top, _("Codec private options")));
 	}
 	else
 	{
