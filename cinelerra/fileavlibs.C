@@ -559,6 +559,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_AC3:
 		case FILE_OGG:
 		case FILE_WAV:
+		case FILE_MP3:
 			break;
 
 		default:
@@ -2034,14 +2035,19 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 {
 	Paramlist *defaults;
 	int rs, rsc, rsp;
+	AVlibsConfig *window = 0;
 
 	FileAVlibs::avlibs_lock->lock("FileAVlibs::get_parameters");
 	avcodec_register_all();
 	av_register_all();
 	FileAVlibs::avlibs_lock->unlock();
-	AVlibsConfig *window = new AVlibsConfig(asset, options);
-	format_window = window;
-	rs = window->run_window();
+	rs = 1;
+	if(defaults = scan_codecs(output_format(asset->format), asset, options))
+	{
+		window = new AVlibsConfig(asset, defaults, options);
+		format_window = window;
+		rs = window->run_window();
+	}
 
 	if(!rs && window->codecopts)
 	{
@@ -2632,7 +2638,6 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 			id = oformat->audio_codec;
 		fill_encoder_params(codecs, id, asset, options);
 	}
-
 	// Remove unusable codecs
 	for(param = codecs->first; param; param = param->next)
 	{
@@ -2669,7 +2674,14 @@ Paramlist *FileAVlibs::scan_codecs(AVOutputFormat *oformat, Asset *asset, int op
 		if(!param)
 			break;
 	}
-	codecs->set_selected(codecs->first->intvalue);
+	if(codecs->first)
+		codecs->set_selected(codecs->first->intvalue);
+	else
+	{
+		// No suitable codecs
+		delete codecs;
+		codecs = 0;
+	}
 	return codecs;
 }
 

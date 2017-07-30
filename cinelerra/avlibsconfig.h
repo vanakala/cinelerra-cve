@@ -40,7 +40,7 @@ class Streamopts;
 class AVlibsConfig : public BC_Window
 {
 public:
-	AVlibsConfig(Asset *asset, int options);
+	AVlibsConfig(Asset *asset, Paramlist *codecs, int options);
 	~AVlibsConfig();
 
 	void draw_paramlist(Paramlist *params);

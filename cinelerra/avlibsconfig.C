@@ -49,7 +49,7 @@ extern Theme *theme_global;
 #define PARAM_WIN_MAXW 1024
 #define PARAM_WIN_MAXH 600
 
-AVlibsConfig::AVlibsConfig(Asset *asset, int options)
+AVlibsConfig::AVlibsConfig(Asset *asset, Paramlist *codecs, int options)
  : BC_Window(MWindow::create_title(N_("Compression")),
 	100,
 	100,
@@ -57,7 +57,6 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	100)
 {
 	BC_WindowBase *win, *twin;
-	AVOutputFormat *oformat;
 	const char *name;
 	int x1;
 	int codec_w = 0;
@@ -65,7 +64,6 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 
 	left = 10;
 	top = 10;
-	codecs = 0;
 	codecpopup = 0;
 	codecopts = 0;
 	streamopts = 0;
@@ -75,6 +73,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 	okbutton = 0;
 	this->options = options;
 	this->asset = asset;
+	this->codecs = codecs;
 
 	if(!(name = FileAVlibs::encoder_formatname(asset->format)))
 	{
@@ -82,9 +81,6 @@ AVlibsConfig::AVlibsConfig(Asset *asset, int options)
 			ContainerSelection::container_to_text(asset->format));
 		return;
 	}
-
-	oformat = FileAVlibs::output_format(asset->format);
-	codecs = FileAVlibs::scan_codecs(oformat, asset, options);
 
 	for(Param *p = codecs->first; p; p = p->next)
 	{

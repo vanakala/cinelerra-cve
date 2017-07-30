@@ -196,11 +196,15 @@ void File::get_options(FormatTools *format, int options)
 
 	if(!format_window)
 	{
+		const char *s;
+
 		if(options & SUPPORTS_AUDIO)
-			errorbox(_("This format doesn't support audio."));
+			s = _("audio");
+		else if(options & SUPPORTS_VIDEO)
+			s = _("video");
 		else
-		if(options & SUPPORTS_VIDEO)
-			errorbox(_("This format doesn't support video."));
+			s = "";
+		errorbox(_("No suitable %s codec found."), s);
 	}
 
 	getting_options = 0;
