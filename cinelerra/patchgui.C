@@ -68,6 +68,7 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 	change_source = 0;
 	track_id = -1;
 	if(track) track_id = track->get_id();
+	patchgui_lock = new Mutex("PatchGui");
 }
 
 PatchGUI::~PatchGUI()
@@ -80,6 +81,7 @@ PatchGUI::~PatchGUI()
 	if(mute) delete mute;
 	if(expand) delete expand;
 	if(nudge) delete nudge;
+	delete patchgui_lock;
 }
 
 int PatchGUI::reposition(int x, int y)
@@ -170,6 +172,7 @@ int PatchGUI::update(int x, int y)
 			delete expand;
 			play = 0;
 			record = 0;
+			gang = 0;
 			draw = 0;
 			mute = 0;
 			expand = 0;
@@ -310,7 +313,6 @@ char* PatchGUI::calculate_nudge_text(int *changed)
 	sprintf(string_return, "%.4f", track->nudge);
 	if(changed && nudge && strcmp(nudge->get_text(), string_return))
 		*changed = 1;
-
 	return string_return;
 }
 

@@ -25,6 +25,7 @@
 #include "bctoggle.h"
 #include "bctextbox.h"
 #include "datatype.h"
+#include "mutex.h"
 #include "mwindow.inc"
 #include "patchbay.inc"
 #include "intauto.inc"
@@ -81,6 +82,8 @@ public:
 	ExpandPatch *expand;
 	NudgePatch *nudge;
 	char string_return[BCTEXTLEN];
+protected:
+	Mutex *patchgui_lock;
 };
 
 

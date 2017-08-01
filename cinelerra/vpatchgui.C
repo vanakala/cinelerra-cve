@@ -82,9 +82,13 @@ int VPatchGUI::reposition(int x, int y)
 
 int VPatchGUI::update(int x, int y)
 {
-	int h = track->vertical_span(mwindow->theme);
-	int x1 = 0;
-	int y1 = PatchGUI::update(x, y);
+	int h, x1, y1;
+
+	patchgui_lock->lock("VPatchGUI::update");
+
+	h = track->vertical_span(mwindow->theme);
+	x1 = 0;
+	y1 = PatchGUI::update(x, y);
 
 	if(fade)
 	{
@@ -152,6 +156,7 @@ int VPatchGUI::update(int x, int y)
 
 	y1 += mwindow->theme->mode_h;
 
+	patchgui_lock->unlock();
 	return y1;
 }
 
