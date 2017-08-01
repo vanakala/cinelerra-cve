@@ -9,6 +9,7 @@ cinelerra/assetpopup.C
 # cinelerra/assetremove.C
 cinelerra/atrack.C
 # cinelerra/avc1394transport.C
+cinelerra/avlibsconfig.C
 cinelerra/awindowgui.C
 cinelerra/awindowmenu.C
 # cinelerra/batch.C
@@ -24,6 +25,7 @@ cinelerra/clipedit.C
 cinelerra/confirmsave.C
 cinelerra/cpanel.C
 # cinelerra/cropvideo.C
+cinelerra/cwindow.C
 cinelerra/cwindowgui.C
 cinelerra/cwindowtool.C
 # cinelerra/dcoffset.C
@@ -35,6 +37,8 @@ cinelerra/exportedl.C
 cinelerra/file.C
 cinelerra/file.inc
 #cinelerra/fileavi.C
+cinelerra/fileavlibs.C
+cinelerra/fileexr.C
 cinelerra/fileformat.C
 cinelerra/filejpeg.C
 # cinelerra/filejpeglist.C
@@ -51,14 +55,18 @@ cinelerra/fileyuv.C
 cinelerra/formatpresets.C
 cinelerra/formattools.C
 # cinelerra/formatwindow.C
+cinelerra/gwindowgui.C
 cinelerra/indexfile.C
 cinelerra/indexthread.C
 cinelerra/interfaceprefs.C
 cinelerra/keyframepopup.C
+cinelerra/labeledit.C
 # cinelerra/labelnavigate.C
+cinelerra/levelwindowgui.C
 cinelerra/loadfile.C
 cinelerra/loadmode.C
 cinelerra/main.C
+cinelerra/mainerror.C
 cinelerra/mainindexes.C
 cinelerra/mainmenu.C
 cinelerra/mainprogress.C
@@ -68,6 +76,7 @@ cinelerra/menueffects.C
 cinelerra/meterpanel.C
 cinelerra/mwindow.C
 cinelerra/mwindowedit.C
+cinelerra/mwindowgui.C
 cinelerra/new.C
 # cinelerra/newfolder.C
 cinelerra/packagerenderer.C
@@ -104,6 +113,7 @@ cinelerra/resizetrackthread.C
 cinelerra/resourcepixmap.C
 cinelerra/savefile.C
 # cinelerra/scale.C
+cinelerra/selection.C
 cinelerra/setformat.C
 cinelerra/sharedlocation.C
 cinelerra/splashgui.C
@@ -121,8 +131,12 @@ cinelerra/vtrack.C
 cinelerra/vwindow.C
 cinelerra/vwindowgui.C
 cinelerra/zoombar.C
+guicast/bcbutton.C
 guicast/bccapture.C
+guicast/bcdelete.C
 guicast/bcfilebox.C
+guicast/bcnewfolder.C
+guicast/bcrecentlist.C
 guicast/bcresources.C
 guicast/bctheme.C
 # guicast/test.C
@@ -133,6 +147,13 @@ plugins/aging/aging.C
 plugins/aging/agingwindow.C
 plugins/bandslide/bandslide.C
 plugins/bandwipe/bandwipe.C
+plugins/bluebanana/bluebanana.C
+plugins/bluebanana/bluebanana.h
+plugins/bluebanana/bluebananaconfig.C
+plugins/bluebanana/bluebananaengine.C
+plugins/bluebanana/bluebananalookups.C
+plugins/bluebanana/bluebananaslider.C
+plugins/bluebanana/bluebananawindow.C
 plugins/blur/blur.C
 plugins/blur/blurwindow.C
 # plugins/blurzoom/blurzoom.C
@@ -178,6 +199,8 @@ plugins/freeverb/freeverb.C
 plugins/freezeframe/freezeframe.C
 plugins/gain/gain.C
 plugins/gain/gainwindow.C
+plugins/gamma/gamma.C
+plugins/gamma/gammawindow.C
 plugins/gradient/gradient.C
 plugins/histogram/histogram.C
 plugins/histogram/histogramwindow.C
@@ -216,6 +239,7 @@ plugins/polar/polar.C
 plugins/radialblur/radialblur.C
 plugins/reframe/reframe.C
 plugins/reframert/reframert.C
+plugins/reroute/reroute.C
 plugins/resample/resample.C
 plugins/reverb/reverb.C
 plugins/reverb/reverbwindow.C
