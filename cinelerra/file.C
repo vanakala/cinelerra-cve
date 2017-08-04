@@ -306,12 +306,6 @@ int File::open_file(Preferences *preferences,
 // TIFF list
 			file = new FileTIFF(this->asset, this);
 		else
-		if(FileSndFile::check_sig(this->asset))
-		{
-// libsndfile
-			file = new FileSndFile(this->asset, this);
-		}
-		else
 		if(test[0] == '<' && test[1] == 'E' && test[2] == 'D' && test[3] == 'L' && test[4] == '>' ||
 			test[0] == '<' && test[1] == 'H' && test[2] == 'T' && test[3] == 'A' && test[4] == 'L' && test[5] == '>' ||
 			test[0] == '<' && test[1] == '?' && test[2] == 'x' && test[3] == 'm' && test[4] == 'l')
