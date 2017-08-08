@@ -384,7 +384,7 @@ void Streamopts::show(Param *encoder)
 	{
 		for(int i = 0; FileAVlibs::encoder_params[i].name; i++)
 		{
-			if((l = get_text_width(MEDIUMFONT, FileAVlibs::encoder_params[i].prompt)) > left)
+			if((l = get_text_width(MEDIUMFONT, _(FileAVlibs::encoder_params[i].prompt))) > left)
 				left = l;
 		}
 		left += 5;
@@ -398,7 +398,7 @@ void Streamopts::show(Param *encoder)
 		tb_width += 10;
 		for(Param *p = encoder->subparams->first; p; p = p->next)
 		{
-			add_subwindow(new BC_Title(0, top + 4, FileAVlibs::enc_prompt(p->name)));
+			add_subwindow(new BC_Title(0, top + 4, _(FileAVlibs::enc_prompt(p->name))));
 			if(pl = p->subparams)
 			{
 				if(pl->type & PARAMTYPE_HIDN)
