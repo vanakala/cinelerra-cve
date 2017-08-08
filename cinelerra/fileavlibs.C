@@ -690,7 +690,7 @@ int FileAVlibs::open_file(int rd, int wr)
 
 				if(!(stream = avformat_new_stream(context, codec)))
 				{
-					errormsg(_("Could not allocate allocate audio stream for '%s'"),
+					errormsg(_("Could not allocate audio stream for '%s'"),
 						aparam->stringvalue);
 					avlibs_lock->unlock();
 					return 1;
