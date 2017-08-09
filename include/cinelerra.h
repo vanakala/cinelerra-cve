@@ -55,7 +55,7 @@
 #define MIN_SAMPLE_RATE 8000
 #define MAX_SAMPLE_RATE 192000
 
-// Samplerate limits
+// Framerate limits
 #define MIN_FRAME_RATE 1
 #define MAX_FRAME_RATE 1500
 
