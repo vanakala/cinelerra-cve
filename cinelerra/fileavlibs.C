@@ -69,6 +69,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_RAWDV, "dv", "dv", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_AU, "au", "au", SUPPORTS_AUDIO },
 	{ FILE_WAV, "wav", "wav", SUPPORTS_AUDIO },
+	{ FILE_FLAC, "flac", "flac", SUPPORTS_AUDIO },
 	{ FILE_IMAGE, "image2", 0, SUPPORTS_VIDEO },
 	{ 0 }
 };

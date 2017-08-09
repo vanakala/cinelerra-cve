@@ -54,6 +54,7 @@
 #define FILE_YUV           29    // mjpegtools YUV4MPEG (aka YUV4MPEG2)
 #define FILE_OGG           30
 #define FILE_RAWDV         32
+#define FILE_FLAC          33
 #define FILE_IMAGE         64    // unspecified image file
 
 class File;

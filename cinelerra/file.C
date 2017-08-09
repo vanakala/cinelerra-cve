@@ -358,6 +358,7 @@ int File::open_file(Preferences *preferences,
 	case FILE_OGG:
 	case FILE_MP3:
 	case FILE_WAV:
+	case FILE_FLAC:
 		file = new FileAVlibs(this->asset, this);
 		break;
 
