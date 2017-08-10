@@ -1545,8 +1545,7 @@ int FileAVlibs::streamformat(AVFormatContext *context)
 {
 	for(int i = 0; known_formats[i].decoder; i++)
 	{
-		if(strncmp(context->iformat->name, known_formats[i].decoder,
-				strlen(known_formats[i].decoder)) == 0)
+		if(strcmp(context->iformat->name, known_formats[i].decoder) == 0)
 			return known_formats[i].fileformat;
 	}
 	return FILE_UNKNOWN;
