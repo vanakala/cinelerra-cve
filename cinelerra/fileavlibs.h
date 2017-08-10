@@ -137,6 +137,7 @@ private:
 	static const char *dump_fourcc(unsigned int tag);
 	static void dump_AVCodecDescriptor(const AVCodecDescriptor *avdsc, int indent = 0);
 	static void dump_AVOutputFormat(const AVOutputFormat *ofmt, int indent = 0);
+	static void dump_AVInputFormat(const AVInputFormat *ifmt, int indent = 0);
 	static void dump_AVOption(const AVOption *opt,
 		const AVClass *avclass = 0, int indent = 0);
 	static void dump_AVOptions(const AVClass *avclass, int indent = 0);

@@ -234,7 +234,6 @@ int FileAVlibs::probe_input(Asset *asset)
 		asset->format = streamformat(ctx);
 		for(int i = 0; i < ctx->nb_streams; i++)
 		{
-
 			stream = ctx->streams[i];
 			decoder_ctx = stream->codec;
 			codec_id = decoder_ctx->codec_id;
@@ -2811,7 +2810,7 @@ void FileAVlibs::dump_AVCodecDescriptor(const AVCodecDescriptor *avdsc, int inde
 
 void FileAVlibs::dump_AVOutputFormat(const AVOutputFormat *ofmt, int indent)
 {
-	printf("%*sAVOutputformat %p dump:\n", indent, "", ofmt);
+	printf("%*sAVOutputFormat %p dump:\n", indent, "", ofmt);
 	indent += 2;
 	printf("%*sname: '%s' mime_type: '%s'\n", indent, "", ofmt->name, ofmt->mime_type);
 	printf("%*slong_name '%s'\n", indent, "", ofmt->long_name);
@@ -2820,6 +2819,16 @@ void FileAVlibs::dump_AVOutputFormat(const AVOutputFormat *ofmt, int indent)
 		avcodec_get_name(ofmt->subtitle_codec), avcodec_get_name(ofmt->data_codec));
 	printf("%*sflags %#x codec_tag %p priv_class %p\n", indent, "",
 		ofmt->flags, ofmt->codec_tag, ofmt->priv_class);
+}
+
+void FileAVlibs::dump_AVInputFormat(const AVInputFormat *ifmt, int indent)
+{
+	printf("%*sAVInputFormat %p dump:\n", indent, "", ifmt);
+	indent += 2;
+	printf("%*sname: '%s' mime_type: '%s'\n", indent, "", ifmt->name, ifmt->mime_type);
+	printf("%*slong_name '%s'\n", indent, "", ifmt->long_name);
+	printf("%*sflags %#x extensions '%s' codec_tag %p priv_class %p\n", indent, "",
+		ifmt->flags, ifmt->extensions, ifmt->codec_tag, ifmt->priv_class);
 }
 
 void FileAVlibs::dump_AVOption(const AVOption *opt, const AVClass *avclass, int indent)
