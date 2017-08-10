@@ -61,6 +61,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_AC3, "ac3", "ac3", SUPPORTS_AUDIO },
 	{ FILE_OGG, "ogg", "ogg", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_MP3, "mp3", "mp3", SUPPORTS_AUDIO },
+	{ FILE_MPEGTS, "mpegts", "mpg", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_MPEG, "mpeg", "mpg", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_EXR, "exr_pipe", "exr_pipe", SUPPORTS_VIDEO },
 	{ FILE_TIFF, "tiff", "tiff", SUPPORTS_VIDEO },
