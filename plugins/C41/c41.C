@@ -881,9 +881,7 @@ void C41Effect::process_frame(VFrame *frame)
 
 		for(pass = 0; pass < 10; pass++)
 		{
-			for(y = 0; y < frame_h; y++)
-				for(x = 0; x < (3 * frame_w); x++)
-					tmp_rows[y][x] = blurry_rows[y][x];
+			tmp_frame->copy_from(blurry_frame);
 			for(y = 0; y < frame_h; y++)
 			{
 				y_up = (y - boxh < 0)? 0 : y - boxh;
