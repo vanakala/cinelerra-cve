@@ -60,6 +60,8 @@
 // Shave the image in order to avoid black borders
 // The min max pixel value difference must be at least 0.05
 #define C41_SHAVE_TOLERANCE 0.05
+// Shave some amount - blurring at the edges is not good
+#define C41_SHAVE_BLUR 0.20
 
 #include <stdint.h>
 #include <string.h>
@@ -396,6 +398,15 @@ int C41Button::handle_event()
 		plugin->config.fix_coef2 = plugin->values.coef2;
 	plugin->config.frame_max_row = plugin->values.frame_max_row;
 	plugin->config.frame_max_col = plugin->values.frame_max_col;
+
+	// Set uninitalized box values
+	if(!plugin->config.max_row || !plugin->config.max_col)
+	{
+		plugin->config.min_row = plugin->values.shave_min_row;
+		plugin->config.max_row = plugin->values.shave_max_row;
+		plugin->config.min_col = plugin->values.shave_min_col;
+		plugin->config.max_col = plugin->values.shave_max_col;
+	}
 
 	window->update();
 
@@ -898,7 +909,6 @@ void C41Effect::process_frame(VFrame *frame)
 				}
 			}
 		}
-
 		// Shave image: cut off border areas where min max difference
 		// is less than C41_SHAVE_TOLERANCE
 
@@ -993,6 +1003,18 @@ void C41Effect::process_frame(VFrame *frame)
 			min_row = shave_min_row;
 			max_row = shave_max_row;
 		}
+
+		int mrg = C41_SHAVE_BLUR * frame_w;
+		if(min_col < mrg)
+			min_col = mrg;
+		if(max_col > frame_w - mrg)
+			max_col = frame_w - mrg;
+		mrg = C41_SHAVE_BLUR * frame_w;
+		if(min_row < mrg)
+			min_row = mrg;
+		if(max_row > frame_h - mrg)
+			max_row = frame_h - mrg;
+
 		for(int i = min_row; i < max_row; i++)
 		{
 			float *row = (float*)blurry_frame->get_rows()[i];
