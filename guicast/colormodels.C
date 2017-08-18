@@ -587,7 +587,7 @@ void ColorModels::copy_colors(int w, int h,
 				dp[i++] = *idata++ / pxmax;
 				dp[i++] = *idata++ / pxmax;
 				if(out_cmodel == BC_RGBA_FLOAT)
-					dp[i++] = *idata++ * pxmax;
+					dp[i++] = *idata++ / pxmax;
 				else
 					idata++;
 			}
