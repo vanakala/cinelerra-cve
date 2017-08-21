@@ -442,8 +442,8 @@ C41Slider::C41Slider(C41Effect *plugin, int *output, int x, int y, int max)
  : BC_ISlider(x,
 	y,
 	0,
-	200,
-	200,
+	180,
+	180,
 	0,
 	max > 0 ? max : SLIDER_LENGTH,
 	*output)
@@ -570,8 +570,8 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 	add_subwindow(fix_coef2 = new C41TextBox(plugin, &plugin->config.fix_coef2, x + 80, y));
 	y += 30;
 
-	x += 40;
-	add_subwindow(new BC_Title(x - 40, y, _("Col:")));
+	x += 60;
+	add_subwindow(new BC_Title(x - 60, y, _("Col:")));
 	add_subwindow(min_col = new C41Slider(plugin, &plugin->config.min_col, x, y,
 		plugin->config.frame_max_col));
 	y += 25;
@@ -580,7 +580,7 @@ C41Window::C41Window(C41Effect *plugin, int x, int y)
 		plugin->config.frame_max_col));
 	y += 25;
 
-	add_subwindow(new BC_Title(x - 40, y, _("Row:")));
+	add_subwindow(new BC_Title(x - 60, y, _("Row:")));
 	add_subwindow(min_row = new C41Slider(plugin, &plugin->config.min_row, x, y,
 		plugin->config.frame_max_row));
 	y += 25;
