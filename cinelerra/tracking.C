@@ -97,8 +97,11 @@ void Tracking::stop_playback()
 	{
 // Stop loop
 		state = DONE;
-		Thread::join();
 
+		if(tracking_rate < TRACKING_RATE_DEFAULT)
+			Thread::cancel();
+
+		Thread::join();
 // Final position is updated continuously during playback
 // Update cursor
 		update_tracker(get_tracking_position());
