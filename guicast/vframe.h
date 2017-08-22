@@ -286,11 +286,14 @@ public:
 
 	static void calc_minmax8(unsigned char *buf, int len,
 		unsigned int &avg, int &min, int &max);
-	static void calc_minmax8n(unsigned char *buf, int len, int pixlen,
+	static void calc_minmax8n(unsigned char *buf, int pixlen,
+		int width, int height, int bytes_per_line,
 		int *avg, int *min, int *max);
-	static void calc_minmax16(uint16_t *buf, int len, int pixlen,
+	static void calc_minmax16(uint16_t *buf, int pixlen,
+		int width, int height, int bytes_per_line,
 		uint64_t *avg, uint64_t *min, uint64_t *max);
-	static void calc_minmaxfl(float *buf, int len, int pixlen,
+	static void calc_minmaxfl(float *buf, int pixlen,
+		int width, int height, int bytes_per_line,
 		float *avg, float *min, float *max);
 
 private:

@@ -956,88 +956,110 @@ void VFrame::calc_minmax8(unsigned char *buf, int len,
 	avg /= len;
 }
 
-void VFrame::calc_minmax8n(unsigned char *buf, int len, int pixlen,
+void VFrame::calc_minmax8n(unsigned char *buf, int pixlen,
+		int width, int height, int bytes_per_line,
 		int *avg, int *min, int *max)
 {
-	int i, j, v;
+	int i, j, v, r;
+	unsigned char *rp;
 
 	for(i = 0; i < pixlen; i++)
 	{
 		max[i] = avg[i] = 0;
 		min[i] = 256;
 	}
-	for(i = 0; i < len; i++)
+	for(r = 0; r < height; r++)
 	{
-		for(j = 0; j < pixlen; j++)
+		rp = buf + r * bytes_per_line;
+
+		for(i = 0; i < width; i++)
 		{
-			v = *buf++;
-			avg[j] += v;
-			if(min[j] > v)
-				min[j] = v;
-			if(max[j] < v)
-				max[j] = v;
+			for(j = 0; j < pixlen; j++)
+			{
+				v = *rp++;
+				avg[j] += v;
+				if(min[j] > v)
+					min[j] = v;
+				if(max[j] < v)
+					max[j] = v;
+			}
 		}
 	}
 	for(i = 0; i < pixlen; i++)
 	{
-		avg[i] /= len;
+		avg[i] /= width * height;
 	}
 }
 
-void VFrame::calc_minmax16(uint16_t *buf, int len, int pixlen,
+void VFrame::calc_minmax16(uint16_t *buf, int pixlen,
+		int width, int height, int bytes_per_line,
 		uint64_t *avg, uint64_t *min, uint64_t *max)
 {
-	int i, j, v;
+	int i, j, v, r;
+	uint16_t *rp;
 
 	for(i = 0; i < pixlen; i++)
 	{
 		max[i] = avg[i] = 0;
 		min[i] = 0x10000;
 	}
-	for(i = 0; i < len; i++)
+	for(r = 0; r < height; r++)
 	{
-		for(j = 0; j < pixlen; j++)
+		rp = (uint16_t *)(((char *)buf) + r * bytes_per_line);
+
+		for(i = 0; i < width; i++)
 		{
-			v = *buf++;
-			avg[j] += v;
-			if(min[j] > v)
-				min[j] = v;
-			if(max[j] < v)
-				max[j] = v;
+			for(j = 0; j < pixlen; j++)
+			{
+				v = *rp++;
+				avg[j] += v;
+				if(min[j] > v)
+					min[j] = v;
+				if(max[j] < v)
+					max[j] = v;
+			}
 		}
 	}
 	for(i = 0; i < pixlen; i++)
 	{
-		avg[i] /= len;
+		avg[i] /= width * height;
 	}
 }
 
-void VFrame::calc_minmaxfl(float *buf, int len, int pixlen,
+void VFrame::calc_minmaxfl(float *buf, int pixlen,
+		int width, int height, int bytes_per_line,
 		float *avg, float *min, float *max)
 {
-	int i, j;
+	int i, j, r;
 	float v;
+	float *rp;
 
 	for(i = 0; i < pixlen; i++)
 	{
 		max[i] = avg[i] = 0;
 		min[i] = 256;
 	}
-	for(i = 0; i < len; i++)
+
+	for(r = 0; r < height; r++)
 	{
-		for(j = 0; j < pixlen; j++)
+		rp = (float *)(((char *)buf) + r * bytes_per_line);
+
+		for(i = 0; i < width; i++)
 		{
-			v = *buf++;
-			avg[j] += v;
-			if(min[j] > v)
-				min[j] = v;
-			if(max[j] < v)
-				max[j] = v;
+			for(j = 0; j < pixlen; j++)
+			{
+				v = *buf++;
+				avg[j] += v;
+				if(min[j] > v)
+					min[j] = v;
+				if(max[j] < v)
+					max[j] = v;
+			}
 		}
 	}
 	for(i = 0; i < pixlen; i++)
 	{
-		avg[i] /= len;
+		avg[i] /= width * height;
 	}
 }
 
@@ -1096,7 +1118,8 @@ void VFrame::dump(int minmax)
 		case BC_RGB888:
 		case BC_YUV888:
 		case BC_BGR888:
-			calc_minmax8n(data, w * h, 3, aavg, amin, amax);
+			calc_minmax8n(data, 3, w, h, bytes_per_line,
+				aavg, amin, amax);
 			anum = 3;
 			break;
 		case BC_ARGB8888:
@@ -1104,26 +1127,31 @@ void VFrame::dump(int minmax)
 		case BC_RGBA8888:
 		case BC_BGR8888:
 		case BC_YUVA8888:
-			calc_minmax8n(data, w * h, 4, aavg, amin, amax);
+			calc_minmax8n(data, 4, w, h, bytes_per_line,
+				aavg, amin, amax);
 			anum = 4;
 			break;
 		case BC_YUV161616:
 		case BC_RGB161616:
-			calc_minmax16((uint16_t *)data, w * h, 3, lavg, lmin, lmax);
+			calc_minmax16((uint16_t *)data, 3, w, h, bytes_per_line,
+				lavg, lmin, lmax);
 			lnum = 3;
 			break;
 		case BC_YUVA16161616:
 		case BC_AYUV16161616:
 		case BC_RGBA16161616:
-			calc_minmax16((uint16_t *)data, w * h, 4, lavg, lmin, lmax);
+			calc_minmax16((uint16_t *)data, 4, w, h, bytes_per_line,
+				lavg, lmin, lmax);
 			lnum = 4;
 			break;
 		case BC_RGB_FLOAT:
-			calc_minmaxfl((float *)data, w * h, 3, favg, fmin, fmax);
+			calc_minmaxfl((float *)data, 3, w, h, bytes_per_line,
+				favg, fmin, fmax);
 			fnum = 3;
 			break;
 		case BC_RGBA_FLOAT:
-			calc_minmaxfl((float *)data, w * h, 4, favg, fmin, fmax);
+			calc_minmaxfl((float *)data, 4, w, h, bytes_per_line,
+				favg, fmin, fmax);
 			fnum = 4;
 			break;
 		default:

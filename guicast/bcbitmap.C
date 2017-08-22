@@ -659,7 +659,8 @@ void BC_Bitmap::dump(int minmax)
 		case BC_RGB888:
 		case BC_YUV888:
 		case BC_BGR888:
-			VFrame::calc_minmax8n(get_data(), w * h, 3, aavg, amin, amax);
+			VFrame::calc_minmax8n(get_data(), 3, w, h,
+				bytes_per_line, aavg, amin, amax);
 			anum = 3;
 			break;
 		case BC_ARGB8888:
@@ -667,25 +668,30 @@ void BC_Bitmap::dump(int minmax)
 		case BC_RGBA8888:
 		case BC_BGR8888:
 		case BC_YUVA8888:
-			VFrame::calc_minmax8n(get_data(), w * h, 4, aavg, amin, amax);
+			VFrame::calc_minmax8n(get_data(), 4, w, h,
+				bytes_per_line, aavg, amin, amax);
 			anum = 4;
 			break;
 		case BC_YUV161616:
 		case BC_RGB161616:
-			VFrame::calc_minmax16((uint16_t *)get_data(), w * h, 3, lavg, lmin, lmax);
+			VFrame::calc_minmax16((uint16_t *)get_data(), 3, w, h,
+				bytes_per_line, lavg, lmin, lmax);
 			lnum = 3;
 			break;
 		case BC_YUVA16161616:
 		case BC_RGBA16161616:
-			VFrame::calc_minmax16((uint16_t *)get_data(), w * h, 4, lavg, lmin, lmax);
+			VFrame::calc_minmax16((uint16_t *)get_data(), 4, w, h,
+				bytes_per_line, lavg, lmin, lmax);
 			lnum = 4;
 			break;
 		case BC_RGB_FLOAT:
-			VFrame::calc_minmaxfl((float *)get_data(), w * h, 3, favg, fmin, fmax);
+			VFrame::calc_minmaxfl((float *)get_data(), 3, w, h,
+				bytes_per_line, favg, fmin, fmax);
 			fnum = 3;
 			break;
 		case BC_RGBA_FLOAT:
-			VFrame::calc_minmaxfl((float *)get_data(), w * h, 4, favg, fmin, fmax);
+			VFrame::calc_minmaxfl((float *)get_data(), 4, w, h,
+				bytes_per_line, favg, fmin, fmax);
 			fnum = 4;
 			break;
 		case BC_TRANSPARENCY:
