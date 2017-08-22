@@ -141,12 +141,17 @@ guicast/bcresources.C
 guicast/bctheme.C
 # guicast/test.C
 plugins/1080to540/1080to540.C
+plugins/1080to540/1080to540.h
 plugins/720to480/720to480.C
+plugins/720to480/720to480.h
 plugins/C41/c41.C
 plugins/aging/aging.C
+plugins/aging/aging.h
 plugins/aging/agingwindow.C
 plugins/bandslide/bandslide.C
+plugins/bandslide/bandslide.h
 plugins/bandwipe/bandwipe.C
+plugins/bandwipe/bandwipe.h
 plugins/bluebanana/bluebanana.C
 plugins/bluebanana/bluebanana.h
 plugins/bluebanana/bluebananaconfig.C
@@ -155,56 +160,81 @@ plugins/bluebanana/bluebananalookups.C
 plugins/bluebanana/bluebananaslider.C
 plugins/bluebanana/bluebananawindow.C
 plugins/blur/blur.C
+plugins/blur/blur.h
 plugins/blur/blurwindow.C
 # plugins/blurzoom/blurzoom.C
 # plugins/blurzoom/blurzoomwindow.C
 plugins/brightness/brightness.C
+plugins/brightness/brightness.h
 plugins/brightness/brightnesswindow.C
 plugins/burn/burn.C
+plugins/burn/burn.h
 plugins/burn/burnwindow.C
 # plugins/cdripper/cdripper.C
 # plugins/cdripper/cdripwindow.C
 plugins/chromakey/chromakey.C
+plugins/chromakey/chromakey.h
 plugins/chromakeyhsv/chromakey.C
+plugins/chromakeyhsv/chromakey.h
 plugins/colorbalance/colorbalance.C
+plugins/colorbalance/colorbalance.h
 plugins/colorbalance/colorbalancewindow.C
 plugins/colors/colorpicker.C
 plugins/compressor/compressor.C
+plugins/compressor/compressor.h
 plugins/crossfade/crossfade.C
+plugins/crossfade/crossfade.h
 plugins/decimate/decimate.C
 plugins/deinterlace/deinterlace.C
+plugins/deinterlace/deinterlace.h
 plugins/deinterlace/deinterwindow.C
 plugins/delayaudio/delayaudio.C
+plugins/delayaudio/delayaudio.h
 plugins/delayvideo/delayvideo.C
+plugins/delayvideo/delayvideo.h
 plugins/denoise/denoise.C
+plugins/denoise/denoise.h
 plugins/denoisefft/denoisefft.C
 # plugins/denoisemjpeg/denoisemjpeg.C
 plugins/denoisevideo/denoisevideo.C
 plugins/denoiseseltempavg/seltempavg.C
+plugins/denoiseseltempavg/seltempavg.h
 plugins/denoiseseltempavg/seltempavgwindow.C
 plugins/denoisevideo/denoisevideo.C
+plugins/denoisevideo/denoisevideo.h
 plugins/despike/despike.C
+plugins/despike/despike.h
 plugins/despike/despikewindow.C
 plugins/diffkey/diffkey.C
 plugins/dissolve/dissolve.C
+plugins/dissolve/dissolve.h
 plugins/dot/dot.C
+plugins/dot/dot.h
 plugins/dot/dotwindow.C
 plugins/downsample/downsample.C
 plugins/fieldframe/fieldframe.C
 plugins/flash/flash.C
+plugins/flash/flash.h
 plugins/flip/flip.C
+plugins/flip/flip.h
 plugins/flip/flipwindow.C
 plugins/framefield/framefield.C
 plugins/freeverb/freeverb.C
 plugins/freezeframe/freezeframe.C
+plugins/freezeframe/freezeframe.h
 plugins/gain/gain.C
+plugins/gain/gain.h
 plugins/gain/gainwindow.C
 plugins/gamma/gamma.C
+plugins/gamma/gamma.h
 plugins/gamma/gammawindow.C
 plugins/gradient/gradient.C
+plugins/gradient/gradient.h
 plugins/histogram/histogram.C
+plugins/histogram/histogram.h
 plugins/histogram/histogramwindow.C
 plugins/holo/holo.C
+plugins/holo/holo.h
 plugins/holo/holowindow.C
 plugins/huesaturation/huesaturation.C
 # plugins/huesaturation/huewindow.C
@@ -215,71 +245,97 @@ plugins/invertaudio/invert.C
 plugins/invertvideo/invert.C
 # plugins/invertvideo/invertwindow.C
 plugins/irissquare/irissquare.C
+plugins/irissquare/irissquare.h
 plugins/ivtc/ivtc.C
 plugins/ivtc/ivtc.h
 plugins/ivtc/ivtcwindow.C
 plugins/level/leveleffect.C
+plugins/level/leveleffect.h
 plugins/linearblur/linearblur.C
 plugins/loopaudio/loopaudio.C
 plugins/loopvideo/loopvideo.C
 plugins/motion/motion.C
+plugins/motion/motion.h
 plugins/motion/motionwindow.C
 plugins/normalize/normalize.C
+plugins/normalize/normalize.h
 plugins/normalize/normalizewindow.C
 plugins/oilpainting/oil.C
 # plugins/oilpainting/oilwindow.C
 plugins/overlay/overlay.C
 plugins/parametric/parametric.C
+plugins/parametric/parametric.h
 plugins/perspective/perspective.C
+plugins/perspective/perspective.h
 plugins/pitch/pitch.C
+plugins/pitch/pitch.h
 plugins/polar/polar.C
 # plugins/polar/polarwindow.C
 # plugins/quark/quark.C
 # plugins/quark/quarkwindow.C
 plugins/radialblur/radialblur.C
 plugins/reframe/reframe.C
+plugins/reframe/reframe.h
 plugins/reframert/reframert.C
 plugins/reroute/reroute.C
 plugins/resample/resample.C
+plugins/resample/resample.h
 plugins/reverb/reverb.C
+plugins/reverb/reverb.h
 plugins/reverb/reverbwindow.C
 plugins/reverseaudio/reverseaudio.C
 plugins/reversevideo/reversevideo.C
 plugins/rgb601/rgb601.C
+plugins/rgb601/rgb601.h
 plugins/rgb601/rgb601window.C
 plugins/rotate/rotate.C
 # plugins/rotate/rotatewindow.C
 plugins/scale/scale.C
+plugins/scale/scale.h
 plugins/scale/scalewin.C
 plugins/timeavg/timeavg.C
 plugins/timeavg/timeavgwindow.C
 plugins/shapewipe/shapewipe.C
+plugins/shapewipe/shapewipe.h
 plugins/sharpen/sharpen.C
+plugins/sharpen/sharpen.h
 plugins/sharpen/sharpenwindow.C
 plugins/shiftinterlace/shiftinterlace.C
 plugins/slide/slide.C
+plugins/slide/slide.h
 plugins/spectrogram/spectrogram.C
+plugins/spectrogram/spectrogram.h
 # plugins/svg/svg.C
 # plugins/svg/svgwin.C
 plugins/swapchannels/swapchannels.C
+plugins/swapchannels/swapchannels.h
 plugins/synthesizer/synthesizer.C
+plugins/synthesizer/synthesizer.h
 plugins/threshold/threshold.C
+plugins/threshold/threshold.h
 plugins/threshold/thresholdwindow.C
 plugins/timeavg/timeavg.C
+plugins/timeavg/timeavg.h
 plugins/timeavg/timeavgwindow.C
 plugins/timefront/timefront.C
+plugins/timefront/timefront.h
 plugins/timestretch/timestretch.C
+plugins/timestretch/timestretch.h
 plugins/titler/title.C
+plugins/titler/title.h
 plugins/titler/titlewindow.C
 plugins/translate/translate.C
+plugins/translate/translate.h
 plugins/translate/translatewin.C
 plugins/unsharp/unsharp.C
+plugins/unsharp/unsharp.h
 plugins/unsharp/unsharpwindow.C
 plugins/videoscope/videoscope.C
 plugins/wave/wave.C
 plugins/whirl/whirl.C
 # plugins/whirl/whirlwindow.C
 plugins/wipe/wipe.C
+plugins/wipe/wipe.h
 plugins/yuv/yuv.C
 # plugins/yuv/yuvwindow.C
 plugins/zoomblur/zoomblur.C

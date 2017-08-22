@@ -24,9 +24,10 @@
 
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_TRANSITION
-#define PLUGIN_TITLE "Crossfade"
+#define PLUGIN_TITLE N_("Crossfade")
 #define PLUGIN_CLASS CrossfadeMain
 
+#include "language.h"
 #include "pluginmacros.h"
 #include "overlayframe.inc"
 #include "pluginaclient.h"

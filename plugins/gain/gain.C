@@ -22,7 +22,6 @@
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
-#include "language.h"
 #include "picon_png.h"
 #include "gain.h"
 #include "gainwindow.h"

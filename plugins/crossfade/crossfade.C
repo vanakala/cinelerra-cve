@@ -20,7 +20,6 @@
  */
 
 #include "crossfade.h"
-#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 

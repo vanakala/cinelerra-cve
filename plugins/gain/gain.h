@@ -25,12 +25,13 @@
 #define PLUGIN_IS_AUDIO
 #define PLUGIN_IS_REALTIME
 
-#define PLUGIN_TITLE "Gain"
+#define PLUGIN_TITLE N_("Gain")
 #define PLUGIN_CLASS Gain
 #define PLUGIN_CONFIG_CLASS GainConfig
 #define PLUGIN_THREAD_CLASS GainThread
 #define PLUGIN_GUI_CLASS GainWindow
 
+#include "language.h"
 #include "pluginmacros.h"
 #include "gainwindow.h"
 #include "pluginaclient.h"
