@@ -2263,7 +2263,7 @@ public:
 		this->plugin = plugin;
 		this->gui = gui;
 		this->padx = padx;
-		this->label = new BC_Title(-1, -1, " Mask Selection");
+		this->label = new BC_Title(-1, -1, _(" Mask Selection"));
 		this->x = -1;
 		this->y = -1;
 		gui->add_subwindow(this->label);
@@ -2416,8 +2416,8 @@ BluebananaWindow::BluebananaWindow(BluebananaMain *plugin, int x, int y)
 
 	// window headline
 	{
-		BC_Title *l = new BC_Title(xmargin, y, "Color Selection");
-		BC_Title *l2 = new BC_Title(-1, -1, " Mark Selected Areas");
+		BC_Title *l = new BC_Title(xmargin, y, _("Color Selection"));
+		BC_Title *l2 = new BC_Title(-1, -1, _(" Mark Selected Areas"));
 
 		add_subwindow(mark = new BluebananaMark(plugin, this));
 		add_subwindow(l);
@@ -2437,7 +2437,7 @@ BluebananaWindow::BluebananaWindow(BluebananaMain *plugin, int x, int y)
 		y += l->get_h() * (row_padding + 1.);
 	}
 
-	const char *labels[11] = {"hue", "saturation", "value", "fill", "red", "green", "blue", "hue", "saturation", "value", "fade"};
+	const char *labels[11] = {_("hue"), _("saturation"), _("value"), _("fill"), _("red"), _("green"), _("blue"), _("hue"), _("saturation"), _("value"), _("fade")};
 	for(i = 0; i < 11; i++)
 	{
 		add_subwindow(slider_labels[i] = new BC_Title(-1, -1, labels[i]));
@@ -2452,7 +2452,7 @@ BluebananaWindow::BluebananaWindow(BluebananaMain *plugin, int x, int y)
 		tumbler_text_w = tumbler_text_ww * 2 / 3;
 	}
 
-	erode_label = new BC_Title(xmargin, y, "pre-erode");
+	erode_label = new BC_Title(xmargin, y, _("pre-erode"));
 	BluebananaErode *erode = new BluebananaErode(plugin, this);
 	add_subwindow(erode_label);
 	add_subwindow(erode);
@@ -2532,7 +2532,7 @@ BluebananaWindow::BluebananaWindow(BluebananaMain *plugin, int x, int y)
 			{
 				int x0 = slider_x + slider_w + padx * 2;
 				invert_selection = new BluebananaIS(plugin, this);
-				BC_Title *l = new BC_Title(xmargin, y, " Invert Selection");
+				BC_Title *l = new BC_Title(xmargin, y, _(" Invert Selection"));
 
 				add_subwindow(l);
 				add_subwindow(invert_selection);
@@ -2682,8 +2682,8 @@ BluebananaWindow::BluebananaWindow(BluebananaMain *plugin, int x, int y)
 		{
 			y += row_adv / 3;
 
-			BC_Title *l = new BC_Title(xmargin, y, "Color Adjustment");
-			BC_Title *l2 = new BC_Title(-1, -1, " Filter Active");
+			BC_Title *l = new BC_Title(xmargin, y, _("Color Adjustment"));
+			BC_Title *l2 = new BC_Title(-1, -1, _(" Filter Active"));
 
 			add_subwindow(l);
 			add_subwindow(l2);
