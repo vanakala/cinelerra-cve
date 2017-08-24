@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
 	case DO_USAGE:
 		printf(_("\nUsage:\n"));
 		printf(_("%s [-f] [-c configuration] [-d port] [-n nice] [-r batch file] [filenames]\n\n"), argv[0]);
-		printf(_("-d = Run in the background as renderfarm client.  The port (400) is optional.\n"));
+		printf(_("-d = Run in the background as renderfarm client.  The port (%d) is optional.\n"), DEAMON_PORT);
 		printf(_("-f = Run in the foreground as renderfarm client.  Substitute for -d.\n"));
 		printf(_("-n = Nice value if running as renderfarm client. (20)\n"));
 		printf(_("-c = Configuration file to use instead of %s%s.\n"),
