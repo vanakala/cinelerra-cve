@@ -74,6 +74,7 @@ cinelerra/manualgoto.C
 cinelerra/menueffects.C
 # cinelerra/messages.C
 cinelerra/meterpanel.C
+cinelerra/miscprefs.C
 cinelerra/mwindow.C
 cinelerra/mwindowedit.C
 cinelerra/mwindowgui.C
