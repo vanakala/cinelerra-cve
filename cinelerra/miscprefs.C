@@ -58,7 +58,7 @@ void MiscPrefs::show()
 	y += win->get_h() + 5;
 	add_subwindow(new BC_Title(x, y, _("AVlibs"), LARGEFONT, get_resources()->text_default));
 	y += 30;
-	win = add_subwindow(new ToggleButton(x, y, _("Show messages of avlibs in console"),
+	win = add_subwindow(new ToggleButton(x, y, _("Show messages of avlibs in terminal"),
 		&pwindow->thread->edl->session->show_avlibsmsgs));
 	y += win->get_h() + 5;
 	win = add_subwindow(new ToggleButton(x, y, _("Allow using experimental codecs"),
