@@ -186,7 +186,6 @@ public:
 	double get_project_framerate();
 // Total number of processors - 1
 	int get_project_smp();
-	int get_aspect_ratio(float &aspect_w, float &aspect_h);
 
 	virtual int plugin_get_parameters();
 	void set_interactive();

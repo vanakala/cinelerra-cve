@@ -283,7 +283,6 @@ public:
 	void delete_track(Track *track);
 	void delete_tracks();
 	void detach_transition(Transition *transition);
-	float get_aspect_ratio();
 	void insert(ptstime position, 
 		FileXML *file,
 		int actions,
