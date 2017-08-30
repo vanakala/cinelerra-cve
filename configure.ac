@@ -208,10 +208,19 @@ AC_SUBST(CINELERRA_CFLAGS)
 ############## A52DEC
 AC_CHECK_LIB(a52,a52_init,[liba52=yes])
 AC_CHECK_HEADER(a52dec/a52.h,[liba52h=yes])
+AH_TEMPLATE(A52_INIT_NEEDS_ARG, [Define to 1 if an argument must be passed to a52_init.])
 
 if test "x$liba52$liba52h" = "xyesyes"; then
 	A52DEC_CFLAGS=
 	A52DEC_LIBS=-la52
+	AC_MSG_CHECKING(whether a52_init requires an argument)
+	AC_TRY_COMPILE([
+		#include <stdint.h>
+		#include <a52dec/a52.h>],
+		[a52_init(0)],
+		a52_init_needs_arg=yes,a52_init_needs_arg=no)
+	AC_MSG_RESULT([$a52_init_needs_arg])
+	test "$a52_init_needs_arg" = yes && AC_DEFINE(A52_INIT_NEEDS_ARG)
 fi
 AC_SUBST(A52DEC_CFLAGS)
 AC_SUBST(A52DEC_LDFLAGS)
