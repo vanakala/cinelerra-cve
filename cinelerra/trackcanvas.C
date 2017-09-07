@@ -752,7 +752,6 @@ void TrackCanvas::draw_resources(int mode,
 	if(!mwindow->edl->session->show_assets) return;
 
 	pixmaps_lock->lock("TrackCanvas::draw_resources");
-
 	if((mode & (WUPD_CANVPICIGN | WUPD_INDEXES)) == 0)
 		resource_thread->stop_draw(!(mode & WUPD_INDEXES));
 
@@ -1511,6 +1510,7 @@ void TrackCanvas::draw_plugins()
 	{
 		if(track->expand_view)
 		{
+			pixmaps_lock->lock("TrackCanvas::draw_plugins");
 			for(int i = 0; i < track->plugin_set.total; i++)
 			{
 				PluginSet *pluginset = track->plugin_set.values[i];
@@ -1532,7 +1532,6 @@ void TrackCanvas::draw_plugins()
 							x = 0;
 						}
 						if(w + x > get_w()) w -= (w + x) - get_w();
-
 						draw_3segmenth(x, 
 							y, 
 							w, 
@@ -1596,6 +1595,7 @@ void TrackCanvas::draw_plugins()
 					}
 				}
 			}
+			pixmaps_lock->unlock();
 		}
 	}
 done:
@@ -1653,6 +1653,7 @@ void TrackCanvas::draw_transitions()
 		{
 			if(edit->transition)
 			{
+				pixmaps_lock->lock("TrackCanvas::draw_transitions");
 				int strip_w, strip_x, strip_y;
 				edit_dimensions(track, edit->get_pts(), edit->end_pts(),
 					x, y, w, h);
@@ -1699,8 +1700,8 @@ void TrackCanvas::draw_transitions()
 						strip_w,
 						mwindow->theme->get_image("plugin_bg_data"),
 						0);
-
 				}
+				pixmaps_lock->unlock();
 			}
 		}
 	}
@@ -1844,6 +1845,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			Autos *autos = automation->autos[i];
 			if(!result && session->auto_conf->autos[i] && autos)
 			{
+				pixmaps_lock->lock("TrackCanvas::do_keyframes");
 				switch(i)
 				{
 				case AUTOMATION_MODE:
@@ -1916,6 +1918,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 								rerender = 1; // special case: tangent mode changed
 					}
 				}
+				pixmaps_lock->unlock();
 			}
 		}
 

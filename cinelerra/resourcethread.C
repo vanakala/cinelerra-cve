@@ -243,18 +243,14 @@ void ResourceThread::run()
 void ResourceThread::do_video(VResourceThreadItem *item)
 {
 	VFrame *picon_frame = 0;
-	int cache_locked = 0;
 
-	if((picon_frame = mwindow->frame_cache->get_frame_ptr(item->postime,
+	mwindow->gui->canvas->pixmaps_lock->lock("ResourceThread::do_video");
+	if(!(picon_frame = mwindow->frame_cache->get_frame_ptr(item->postime,
 		item->layer,
 		BC_RGB888,
 		item->picon_w,
 		item->picon_h,
-		item->asset->id)) != 0)
-	{
-		cache_locked = 1;
-	}
-	else
+		item->asset->id)))
 	{
 		File *source = mwindow->video_cache->check_out(item->asset,
 			mwindow->edl);
@@ -276,8 +272,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 // Allow escape here
 	if(interrupted)
 	{
-		if(cache_locked)
-			mwindow->frame_cache->unlock();
+		mwindow->frame_cache->unlock();
 		return;
 	}
 
@@ -287,11 +282,13 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	{
 		int exists = 0;
 
-		mwindow->gui->canvas->pixmaps_lock->lock("ResourceThread::do_video");
 		for(int i = 0; i < mwindow->gui->canvas->resource_pixmaps.total; i++)
 		{
 			if(mwindow->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
+			{
 				exists = 1;
+				break;
+			}
 		}
 		if(exists)
 		{
@@ -303,11 +300,10 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 				0, 
 				0);
 		}
-		mwindow->gui->canvas->pixmaps_lock->unlock();
 	}
 
-	if(cache_locked)
-		mwindow->frame_cache->unlock();
+	mwindow->frame_cache->unlock();
+	mwindow->gui->canvas->pixmaps_lock->unlock();
 
 	if(mwindow->frame_cache->total() > 32)
 		mwindow->frame_cache->delete_oldest();

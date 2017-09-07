@@ -71,6 +71,7 @@ public:
 		int asset_id = -1);
 // Puts the frame in cache.
 // use_copy - if 1 a copy of the frame is made.  if 0 the argument is stored.
+//  if use_copy is 0, the frame cache remains locked
 // The copy of the frame is deleted by FrameCache in a future delete_oldest.
 // asset - supplied by user if the cache is not part of a file.
 	void put_frame(VFrame *frame, 

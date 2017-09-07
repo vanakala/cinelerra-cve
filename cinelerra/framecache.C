@@ -163,7 +163,9 @@ void FrameCache::put_frame(VFrame *frame,
 	item->age = get_age();
 
 	put_item(item);
-	lock->unlock();
+
+	if(use_copy)
+		lock->unlock();
 }
 
 int FrameCache::frame_exists(VFrame *format,
