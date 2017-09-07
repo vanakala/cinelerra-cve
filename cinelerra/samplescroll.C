@@ -25,6 +25,7 @@
 #include "samplescroll.h"
 #include "localsession.h"
 #include "maincursor.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"
@@ -47,6 +48,14 @@ SampleScroll::SampleScroll(MWindow *mwindow,
 	0)
 {
 	this->mwindow = mwindow;
+	lock = new Mutex("SampleScroll");
+}
+
+SampleScroll::~SampleScroll()
+{
+	lock->lock("~SampleScroll");
+	lock->unlock();
+	delete lock;
 }
 
 void SampleScroll::resize_event(void)
@@ -60,6 +69,7 @@ void SampleScroll::set_position(void)
 {
 	if(mwindow->gui->canvas)
 	{
+		lock->lock("set_position");
 		int64_t length = round(mwindow->edl->tracks->total_length() /
 			mwindow->edl->local_session->zoom_time);
 		int64_t position = round(mwindow->edl->local_session->view_start_pts /
@@ -76,11 +86,13 @@ void SampleScroll::set_position(void)
 				(ptstime)position * mwindow->edl->local_session->zoom_time;
 		}
 		update_length(length, position, handle_size);
+		lock->unlock();
 	}
 }
 
 int SampleScroll::handle_event()
 {
+	lock->lock("handle_event");
 	mwindow->edl->local_session->view_start_pts = get_value() * 
 		mwindow->edl->local_session->zoom_time;
 
@@ -90,6 +102,6 @@ int SampleScroll::handle_event()
 	mwindow->gui->canvas->flash();
 	mwindow->gui->patchbay->update();
 	mwindow->gui->timebar->update();
-
+	lock->unlock();
 	return 1;
 }

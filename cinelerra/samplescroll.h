@@ -25,11 +25,13 @@
 #include "bcscrollbar.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "mutex.inc"
 
 class SampleScroll : public BC_ScrollBar
 {
 public:
 	SampleScroll(MWindow *mwindow, int x, int y, int w);
+	~SampleScroll();
 
 	void resize_event();
 	void set_position();
@@ -37,6 +39,7 @@ public:
 
 private:
 	MWindow *mwindow;
+	Mutex *lock;
 };
 
 #endif
