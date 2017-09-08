@@ -70,7 +70,7 @@ SwapWindow::SwapWindow(SwapMain *plugin, int x, int y)
 	int margin = 30;
 	x = y = 10;
 
-	add_subwindow(new BC_Title(x, y, _("Swap channels")));
+	add_subwindow(new BC_Title(x, y, _(plugin->plugin_title())));
 	y += margin;
 	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Red")));
 	add_subwindow(red = new SwapMenu(plugin, &(plugin->config.red), x, y));

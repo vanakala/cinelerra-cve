@@ -381,7 +381,7 @@ RotateWindow::RotateWindow(RotateEffect *plugin, int x, int y)
 	BC_Title *title;
 
 	x = y = 10;
-	add_tool(new BC_Title(x, y, _("Rotate")));
+	add_tool(new BC_Title(x, y, _(plugin->plugin_title())));
 	x += 50;
 	y += 20;
 	add_tool(toggle0 = new RotateToggle(this, 

@@ -35,7 +35,7 @@ BlurWindow::BlurWindow(BlurMain *plugin, int x, int y)
 	x = 10; 
 	y = 10;
 
-	add_subwindow(new BC_Title(x, y, _("Blur")));
+	add_subwindow(new BC_Title(x, y, _(plugin->plugin_title())));
 	y += 20;
 	add_subwindow(horizontal = new BlurHorizontal(plugin, this, x, y));
 	y += 30;

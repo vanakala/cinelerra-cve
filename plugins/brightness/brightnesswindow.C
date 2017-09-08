@@ -34,7 +34,7 @@ BrightnessWindow::BrightnessWindow(BrightnessMain *plugin, int x, int y)
 	x = 10;
 	y = 10;
 
-	add_tool(new BC_Title(x, y, _("Brightness/Contrast")));
+	add_tool(new BC_Title(x, y, _(plugin->plugin_title())));
 	y += 25;
 	add_tool(new BC_Title(x, y,_("Brightness:")));
 	add_tool(brightness = new BrightnessSlider(plugin,

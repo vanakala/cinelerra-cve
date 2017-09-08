@@ -34,7 +34,7 @@ ColorBalanceWindow::ColorBalanceWindow(ColorBalanceMain *plugin, int x, int y)
 	x = 10;
 	y = 10;
 
-	add_tool(new BC_Title(x, y, _("Color Balance")));
+	add_tool(new BC_Title(x, y, _(plugin->plugin_title())));
 	y += 25;
 	add_tool(new BC_Title(x, y, _("Cyan")));
 	add_tool(cyan = new ColorBalanceSlider(plugin, &(plugin->config.cyan), x + 70, y));
