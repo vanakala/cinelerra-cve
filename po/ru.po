@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cinelerra-CV 2.3.5\n"
 "Report-Msgid-Bugs-To: cinelerra@skolelinux.no\n"
-"POT-Creation-Date: 2017-08-24 23:36+0300\n"
-"PO-Revision-Date: 2017-08-30 22:27+0300\n"
+"POT-Creation-Date: 2017-09-11 21:42+0300\n"
+"PO-Revision-Date: 2017-09-11 22:27+0300\n"
 "Last-Translator: Igor Vladimirsky aka igor_ubuntu <sitelve@gmal.com>\n"
 "Language-Team: ru <sitelve@gmail.com>\n"
 "Language: ru_RU\n"
@@ -441,8 +441,8 @@ msgid "Close"
 msgstr "Закрыть"
 
 #: ../cinelerra/batchrender.C:825 ../cinelerra/formatpresets.C:69
-#: ../cinelerra/formattools.C:737 ../cinelerra/loadmode.C:88
-#: ../plugins/timefront/timefront.C:420
+#: ../cinelerra/formattools.C:737 ../cinelerra/interfaceprefs.C:520
+#: ../cinelerra/loadmode.C:88 ../plugins/timefront/timefront.C:420
 msgid "Unknown"
 msgstr "Неизвестно"
 
@@ -1500,51 +1500,67 @@ msgstr "Создание %s."
 msgid "IndexFile::draw_index: index has 0 zoom"
 msgstr "IndexFile::draw_index: index has 0 zoom"
 
-#: ../cinelerra/interfaceprefs.C:60
+#: ../cinelerra/interfaceprefs.C:40
+msgid "Drag all following edits"
+msgstr "Правка со сдвигом"
+
+#: ../cinelerra/interfaceprefs.C:41
+msgid "Drag only one edit"
+msgstr "Правка с совмещением"
+
+#: ../cinelerra/interfaceprefs.C:42
+msgid "Drag source only"
+msgstr "Правка со скольжением"
+
+#: ../cinelerra/interfaceprefs.C:43
+msgid "No effect"
+msgstr "Не использовать"
+
+#: ../cinelerra/interfaceprefs.C:64
 msgid "Time Format"
 msgstr "Формат времени"
 
-#: ../cinelerra/interfaceprefs.C:101
+#: ../cinelerra/interfaceprefs.C:105
 msgid "frames per foot"
 msgstr "кадров на фут"
 
-#: ../cinelerra/interfaceprefs.C:115
+#: ../cinelerra/interfaceprefs.C:119
 msgid "Index files"
 msgstr "Индексные файлы"
 
-#: ../cinelerra/interfaceprefs.C:123
+#: ../cinelerra/interfaceprefs.C:127
 msgid "Index files go here:"
 msgstr "Расположение индекс. файлов:"
 
-#: ../cinelerra/interfaceprefs.C:129
+#: ../cinelerra/interfaceprefs.C:133
 msgid "Size of index file:"
 msgstr "Размер индекс файла:"
 
-#: ../cinelerra/interfaceprefs.C:136
+#: ../cinelerra/interfaceprefs.C:140
 msgid "Number of index files to keep:"
 msgstr "Сохранять индексных файлов:"
 
-#: ../cinelerra/interfaceprefs.C:152
+#: ../cinelerra/interfaceprefs.C:156
 msgid "Index Path"
 msgstr "Путь к индексным файлам"
 
-#: ../cinelerra/interfaceprefs.C:153
+#: ../cinelerra/interfaceprefs.C:157
 msgid "Select the directory for index files"
 msgstr "Выберите каталог для индексных файлов"
 
-#: ../cinelerra/interfaceprefs.C:170
+#: ../cinelerra/interfaceprefs.C:174
 msgid "Editing"
 msgstr "Редактирование"
 
-#: ../cinelerra/interfaceprefs.C:176
+#: ../cinelerra/interfaceprefs.C:180
 msgid "Dragging edit boundaries does what:"
-msgstr "Поведение кнопок мыши на границах редактирования::"
+msgstr "Поведение кнопок мыши на границах редактирования:"
 
-#: ../cinelerra/interfaceprefs.C:178
+#: ../cinelerra/interfaceprefs.C:182
 msgid "Button 1:"
 msgstr "Левая:"
 
-#: ../cinelerra/interfaceprefs.C:189
+#: ../cinelerra/interfaceprefs.C:191
 msgid "Button 2:"
 msgstr "Средняя:"
 
@@ -1552,51 +1568,51 @@ msgstr "Средняя:"
 msgid "Button 3:"
 msgstr "Правая:"
 
-#: ../cinelerra/interfaceprefs.C:207
+#: ../cinelerra/interfaceprefs.C:205
 msgid "Min DB for meter:"
 msgstr "Мин. шкалы дБ:"
 
-#: ../cinelerra/interfaceprefs.C:213
+#: ../cinelerra/interfaceprefs.C:211
 msgid "Max DB:"
 msgstr "Макс. дБ:"
 
-#: ../cinelerra/interfaceprefs.C:221
+#: ../cinelerra/interfaceprefs.C:219
 msgid "Theme:"
 msgstr "Тема:"
 
-#: ../cinelerra/interfaceprefs.C:326
+#: ../cinelerra/interfaceprefs.C:307
 msgid "Use Hours:Minutes:Seconds.xxx"
 msgstr "Часы:Мин:Сек.ххх"
 
-#: ../cinelerra/interfaceprefs.C:339
+#: ../cinelerra/interfaceprefs.C:320
 msgid "Use Hours:Minutes:Seconds:Frames"
 msgstr "Часы:Мин:Сек:Кадры"
 
-#: ../cinelerra/interfaceprefs.C:352
+#: ../cinelerra/interfaceprefs.C:333
 msgid "Use Samples"
 msgstr "Сэмплы"
 
-#: ../cinelerra/interfaceprefs.C:365
+#: ../cinelerra/interfaceprefs.C:346
 msgid "Use Frames"
 msgstr "Кадры"
 
-#: ../cinelerra/interfaceprefs.C:378
+#: ../cinelerra/interfaceprefs.C:359
 msgid "Use Hex Samples"
 msgstr "'Hex' Сэмплы"
 
-#: ../cinelerra/interfaceprefs.C:390
+#: ../cinelerra/interfaceprefs.C:371
 msgid "Use Seconds"
 msgstr "Секунды"
 
-#: ../cinelerra/interfaceprefs.C:402
+#: ../cinelerra/interfaceprefs.C:383
 msgid "Use Feet-frames"
 msgstr "Футы+кадры"
 
-#: ../cinelerra/interfaceprefs.C:526
+#: ../cinelerra/interfaceprefs.C:478
 msgid "Use thumbnails in resource window"
 msgstr "Показывать миниатюры предпросмотра в окне 'Ресурсы'"
 
-#: ../cinelerra/interfaceprefs.C:542
+#: ../cinelerra/interfaceprefs.C:494
 msgid "Show tip of the day"
 msgstr "Показывать совет дня"
 
@@ -1742,7 +1758,7 @@ msgstr ""
 #: ../cinelerra/main.C:233
 #, c-format
 msgid ""
-"-d = Run in the background as renderfarm client.  The port (400) is "
+"-d = Run in the background as renderfarm client.  The port (%d) is "
 "optional.\n"
 msgstr ""
 "-d = Запуск в фоновом режиме как клиента распределённого рендеринга.\n"
@@ -1946,7 +1962,7 @@ msgstr "Удалить дорожки"
 
 #: ../cinelerra/mainmenu.C:771
 msgid "Delete last track"
-msgstr "Удалить последнюю дорожку"
+msgstr "Удалить самую нижнюю дорожку"
 
 #: ../cinelerra/mainmenu.C:783
 msgid "Move tracks up"
@@ -2418,7 +2434,7 @@ msgid "Couldn't open output file %s"
 msgstr "Невозможно открыть выходной файл %s"
 
 #: ../cinelerra/patchbay.C:232 ../cinelerra/patchgui.C:482
-#: ../cinelerra/trackcanvas.C:4008
+#: ../cinelerra/trackcanvas.C:4011
 msgid "keyframe"
 msgstr "ключевой кадр"
 
@@ -3222,7 +3238,7 @@ msgstr "Следующий совет"
 msgid "Previous tip"
 msgstr "Предыдущий совет"
 
-#: ../cinelerra/trackcanvas.C:4023
+#: ../cinelerra/trackcanvas.C:4026
 msgid "select"
 msgstr "выделить"
 
@@ -3737,7 +3753,7 @@ msgstr ""
 msgid " Filter Active"
 msgstr "Активировать фильтры"
 
-#: ../plugins/blur/blur.h:28 ../plugins/blur/blurwindow.C:38
+#: ../plugins/blur/blur.h:28
 msgid "Blur"
 msgstr "Размытие"
 
@@ -3772,7 +3788,6 @@ msgid "Blur blue"
 msgstr "Размытие синего"
 
 #: ../plugins/brightness/brightness.h:28
-#: ../plugins/brightness/brightnesswindow.C:37
 msgid "Brightness/Contrast"
 msgstr "Яркость/Контраст"
 
@@ -3900,7 +3915,6 @@ msgid "Chroma key (HSV)"
 msgstr "Хромакей (HSV)"
 
 #: ../plugins/colorbalance/colorbalance.h:28
-#: ../plugins/colorbalance/colorbalancewindow.C:37
 msgid "Color Balance"
 msgstr "Цветовой баланс"
 
@@ -5071,7 +5085,7 @@ msgstr "RGB -> 601 сжатие"
 msgid "601 -> RGB expansion"
 msgstr "601 -> RGB расширение"
 
-#: ../plugins/rotate/rotate.C:24 ../plugins/rotate/rotate.C:384
+#: ../plugins/rotate/rotate.C:24
 msgid "Rotate"
 msgstr "Вращение"
 
@@ -5189,11 +5203,6 @@ msgstr "Замещение"
 msgid "Spectrogram"
 msgstr "Анализ спектра"
 
-#: ../plugins/swapchannels/swapchannels.C:73
-#: ../plugins/swapchannels/swapchannels.h:30
-msgid "Swap channels"
-msgstr "Смена каналов"
-
 #: ../plugins/swapchannels/swapchannels.C:75
 msgid "-> Red"
 msgstr "-> Красн."
@@ -5219,6 +5228,10 @@ msgstr "0%"
 #: ../plugins/swapchannels/swapchannels.C:355
 msgid "100%"
 msgstr "100%"
+
+#: ../plugins/swapchannels/swapchannels.h:30
+msgid "Swap channels"
+msgstr "Смена каналов"
 
 #: ../plugins/synthesizer/synthesizer.C:409
 #: ../plugins/synthesizer/synthesizer.C:465
