@@ -35,10 +35,14 @@
 
 #include <inttypes.h>
 
-#define MOVE_ALL_EDITS_TITLE "Drag all following edits"
-#define MOVE_ONE_EDIT_TITLE "Drag only one edit"
-#define MOVE_NO_EDITS_TITLE "Drag source only"
-#define MOVE_EDITS_DISABLED_TITLE "No effect"
+const struct selection_int ViewBehaviourSelection::viewbehaviour[] =
+{
+	{ N_("Drag all following edits"), MOVE_ALL_EDITS },
+	{ N_("Drag only one edit"), MOVE_ONE_EDIT},
+	{ N_("Drag source only"), MOVE_NO_EDITS },
+	{ N_("No effect"), MOVE_EDITS_DISABLED },
+	{ 0, 0 }
+};
 
 InterfacePrefs::InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
@@ -178,28 +182,22 @@ void InterfacePrefs::show()
 	win = add_subwindow(new BC_Title(x, y, _("Button 1:")));
 	maxw = win->get_w() + x + 10;
 
-	ViewBehaviourText *text;
-	add_subwindow(text = new ViewBehaviourText(maxw,
-		y - 5, 
-		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[0]), 
-			pwindow, 
-			&(pwindow->thread->edl->session->edit_handle_mode[0])));
+	ViewBehaviourSelection *selection;
+	add_subwindow(selection = new ViewBehaviourSelection(maxw, y - 5, this,
+		&pwindow->thread->edl->session->edit_handle_mode[0]));
+	selection->update(pwindow->thread->edl->session->edit_handle_mode[0]);
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Button 2:")));
-	add_subwindow(text = new ViewBehaviourText(maxw,
-		y - 5, 
-		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[1]), 
-			pwindow, 
-			&(pwindow->thread->edl->session->edit_handle_mode[1])));
+	add_subwindow(selection = new ViewBehaviourSelection(maxw, y - 5, this,
+		&pwindow->thread->edl->session->edit_handle_mode[1]));
+	selection->update(pwindow->thread->edl->session->edit_handle_mode[1]);
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Button 3:")));
-	add_subwindow(text = new ViewBehaviourText(maxw,
-		y - 5, 
-		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[2]), 
-			pwindow, 
-			&(pwindow->thread->edl->session->edit_handle_mode[2])));
+	add_subwindow(selection = new ViewBehaviourSelection(maxw, y - 5, this,
+		&pwindow->thread->edl->session->edit_handle_mode[2]));
+	selection->update(pwindow->thread->edl->session->edit_handle_mode[2]);
 
 	y += 35;
 	int x1 = x;
@@ -221,23 +219,6 @@ void InterfacePrefs::show()
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
 	x += 60;
 	add_subwindow(theme = new ViewTheme(x, y, pwindow));
-}
-
-const char* InterfacePrefs::behavior_to_text(int mode)
-{
-	switch(mode)
-	{
-	case MOVE_ALL_EDITS:
-		return _(MOVE_ALL_EDITS_TITLE);
-	case MOVE_ONE_EDIT:
-		return _(MOVE_ONE_EDIT_TITLE);
-	case MOVE_NO_EDITS:
-		return _(MOVE_NO_EDITS_TITLE);
-	case MOVE_EDITS_DISABLED:
-		return _(MOVE_EDITS_DISABLED_TITLE);
-	default:
-		return "";
-	}
 }
 
 void InterfacePrefs::update(int new_value)
@@ -424,35 +405,6 @@ int TimeFormatFeetSetting::handle_event()
 	return 1;
 }
 
-ViewBehaviourText::ViewBehaviourText(int x, 
-	int y, 
-	const char *text, 
-	PreferencesWindow *pwindow, 
-	int *output)
- : BC_PopupMenu(x, y, 300, text)
-{
-	this->output = output;
-	add_item(new ViewBehaviourItem(this, _(MOVE_ALL_EDITS_TITLE), MOVE_ALL_EDITS));
-	add_item(new ViewBehaviourItem(this, _(MOVE_ONE_EDIT_TITLE), MOVE_ONE_EDIT));
-	add_item(new ViewBehaviourItem(this, _(MOVE_NO_EDITS_TITLE), MOVE_NO_EDITS));
-	add_item(new ViewBehaviourItem(this, _(MOVE_EDITS_DISABLED_TITLE), MOVE_EDITS_DISABLED));
-}
-
-
-ViewBehaviourItem::ViewBehaviourItem(ViewBehaviourText *popup, const char *text, int behaviour)
- : BC_MenuItem(text)
-{
-	this->popup = popup;
-	this->behaviour = behaviour;
-}
-
-int ViewBehaviourItem::handle_event()
-{
-	popup->set_text(get_text());
-	*(popup->output) = behaviour;
-}
-
-
 MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 50, 1, text)
 { 
@@ -548,4 +500,27 @@ int UseTipWindow::handle_event()
 {
 	pwindow->thread->preferences->use_tipwindow = get_value();
 	return 1;
+}
+
+
+ViewBehaviourSelection::ViewBehaviourSelection(int x, int y,
+	BC_WindowBase *window, int *value)
+ : Selection(x, y, window, viewbehaviour, value, SELECTION_VARWIDTH)
+{
+	disable(1);
+}
+
+const char *ViewBehaviourSelection::name(int value)
+{
+	for(int i = 0; viewbehaviour[i].text; i++)
+	{
+		if(viewbehaviour[i].value == value)
+			return _(viewbehaviour[i].text);
+	}
+	return _("Unknown");
+}
+
+void ViewBehaviourSelection::update(int value)
+{
+	BC_TextBox::update(name(value));
 }

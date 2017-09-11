@@ -34,7 +34,6 @@ class TimeFormatFeet;
 class TimeFormatSeconds;
 class MeterMinDB;
 class MeterMaxDB;
-class ViewBehaviourText;
 class ViewThumbnails;
 
 #include "bcpopupmenu.h"
@@ -42,6 +41,7 @@ class ViewThumbnails;
 #include "deleteallindexes.inc"
 #include "mwindow.inc"
 #include "preferencesthread.h"
+#include "selection.h"
 
 
 class InterfacePrefs : public PreferencesDialog
@@ -53,8 +53,6 @@ public:
 	void show();
 // must delete each derived class
 	void update(int new_value);
-	const char* behavior_to_text(int mode);
-
 	BrowseButton *ipath;
 	IndexSize *isize;
 	IndexCount *icount;
@@ -71,7 +69,6 @@ public:
 
 	MeterMinDB *min_db;
 	MeterMaxDB *max_db;
-	ViewBehaviourText *button1, *button2, *button3;
 	ViewThumbnails *thumbnails;
 };
 
@@ -219,29 +216,17 @@ public:
 };
 
 
-class ViewBehaviourText : public BC_PopupMenu
+class ViewBehaviourSelection : public Selection
 {
 public:
-	ViewBehaviourText(int x, 
-		int y, 
-		const char *text, 
-		PreferencesWindow *pwindow, 
-		int *output);
+	ViewBehaviourSelection(int x, int y, BC_WindowBase *window,
+		int *value);
 
-	int *output;
+	void update(int value);
+	static const char *name(int value);
+private:
+	static const struct selection_int viewbehaviour[];
 };
-
-
-class ViewBehaviourItem : public BC_MenuItem
-{
-public:
-	ViewBehaviourItem(ViewBehaviourText *popup, const char *text, int behaviour);
-
-	int handle_event();
-	ViewBehaviourText *popup;
-	int behaviour;
-};
-
 
 class ViewTheme : public BC_PopupMenu
 {
