@@ -96,14 +96,6 @@ void New::create_new_project()
 		&mwindow->preferences->channel_positions[
 			MAXCHANNELS * (new_edl->session->audio_channels - 1)],
 		sizeof(int) * MAXCHANNELS);
-	new_edl->session->boundaries();
-	new_edl->create_default_tracks();
-
-	mwindow->set_filename("");
-	mwindow->undo->update_undo(_("New"), LOAD_ALL);
-
-	mwindow->hide_plugins();
-	delete mwindow->edl;
 	if(SampleRateSelection::limits(&new_edl->session->sample_rate) < 0)
 		errorbox(_("Sample rate is out of limits (%d..%d).\nCorrection applied."),
 			MIN_SAMPLE_RATE, MAX_SAMPLE_RATE);
@@ -114,6 +106,14 @@ void New::create_new_project()
 			&new_edl->session->output_h) < 0)
 		errorbox(_("Frame size is out of limits (%d..%dx%d..%d).\nCorrection applied."),
 			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
+	new_edl->session->boundaries();
+	new_edl->create_default_tracks();
+
+	mwindow->set_filename("");
+	mwindow->undo->update_undo(_("New"), LOAD_ALL);
+
+	mwindow->hide_plugins();
+	delete mwindow->edl;
 	mwindow->edl = new_edl;
 	mwindow->save_defaults();
 
