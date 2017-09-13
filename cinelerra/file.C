@@ -738,11 +738,9 @@ int File::supports(int format)
 		return SUPPORTS_VIDEO;
 
 	case FILE_AIFF:
-	case FILE_WAV:
 	case FILE_PCM:
 	case FILE_AU:
 	case FILE_SND:
-	case FILE_MP3:
 		return SUPPORTS_AUDIO;
 
 	case FILE_YUV:
@@ -755,7 +753,9 @@ int File::supports(int format)
 	case FILE_AVI:
 	case FILE_MOV:
 	case FILE_OGG:
-		return FileAVlibs::supports(format);
+	case FILE_MP3:
+	case FILE_WAV:
+		return FileAVlibs::supports(format, 0);
 		break;
 	}
 	return (SUPPORTS_AUDIO | SUPPORTS_VIDEO);
