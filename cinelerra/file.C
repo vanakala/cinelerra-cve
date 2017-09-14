@@ -758,7 +758,7 @@ int File::supports(int format)
 		return FileAVlibs::supports(format, 0);
 		break;
 	}
-	return (SUPPORTS_AUDIO | SUPPORTS_VIDEO);
+	return 0;
 }
 
 int File::get_best_colormodel(int driver)
