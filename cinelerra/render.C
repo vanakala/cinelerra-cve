@@ -396,7 +396,7 @@ int Render::check_asset(EDL *edl, Asset &asset)
 {
 	if(asset.video_data && 
 		edl->tracks->playable_video_tracks() &&
-		File::supports_video(asset.format))
+		(File::supports(asset.format) & SUPPORTS_VIDEO))
 	{
 		asset.video_data = 1;
 		asset.layers = 1;
@@ -421,7 +421,7 @@ int Render::check_asset(EDL *edl, Asset &asset)
 
 	if(asset.audio_data && 
 		edl->tracks->playable_audio_tracks() &&
-		File::supports_audio(asset.format))
+		(File::supports(asset.format) & SUPPORTS_AUDIO))
 	{
 		asset.audio_data = 1;
 		asset.channels = edl->session->audio_channels;

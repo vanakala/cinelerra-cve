@@ -171,8 +171,7 @@ public:
 // The minimum setting for cache_size should be bigger than 1MB.
 	size_t get_memory_usage();
 
-	static int supports_video(int format);   // returns 1 if the format supports video or audio
-	static int supports_audio(int format);
+// Returns SUPPORTS_* bits for format
 	static int supports(int format);
 
 	Asset *asset;    // Copy of asset since File outlives EDL

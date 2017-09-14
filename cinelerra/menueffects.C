@@ -122,14 +122,14 @@ void MenuEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 	// Fix asset for media type only
 	if(effect_type & SUPPORTS_AUDIO)
 	{
-		if(!File::supports_audio(asset->format))
+		if(!(File::supports(asset->format) & SUPPORTS_AUDIO))
 			asset->format = FILE_WAV;
 		asset->audio_data = 1;
 		asset->video_data = 0;
 	}
 	else if(effect_type & SUPPORTS_VIDEO)
 	{
-		if(!File::supports_video(asset->format))
+		if(!(File::supports(asset->format) & SUPPORTS_VIDEO))
 			asset->format = FILE_MOV;
 		asset->audio_data = 0;
 		asset->video_data = 1;
