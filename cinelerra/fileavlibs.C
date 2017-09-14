@@ -353,7 +353,12 @@ int FileAVlibs::supports(int format, int decoding)
 		avlibs_lock->lock("FileAVlibs::supports");
 		avcodec_register_all();
 		av_register_all();
-		oformat = av_guess_format(enc, NULL, NULL);
+
+		if(!(oformat = av_guess_format(enc, NULL, NULL)))
+		{
+			avlibs_lock->unlock();
+			return 0;
+		}
 
 		// Check if encoder really exists
 		if(encoder_exists(oformat, enc, support & SUPPORTS_AUDIO))
