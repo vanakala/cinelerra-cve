@@ -49,7 +49,7 @@ const struct container_type ContainerSelection::media_containers[] =
 #endif
 	{ N_("YUV4MPEG Stream"), FILE_YUV, "YUV", "m2v" },
 	{ N_("Microsoft WAV"), FILE_WAV, "WAV", "wav" },
-	{ N_("Quicktime for Linux"), FILE_MOV, "MOV", "mov" },
+	{ N_("QuickTime / MOV"), FILE_MOV, "MOV", "mov" },
 	{ N_("Raw DV"), FILE_RAWDV, "RAWDV", "dv" },
 	{ N_("OGG Theora/Vorbis"), FILE_OGG, "OGG", "ogg" },
 	{ N_("Raw PCM"), FILE_PCM, "PCM", "pcm" },
