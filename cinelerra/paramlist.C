@@ -736,6 +736,9 @@ void Paramlist::join_list(Paramlist *that)
 {
 	Param *p, *tp, *ttp;
 
+	if(!that)
+		return;
+
 	for(tp = that->first; tp;)
 	{
 		if(p = find(that->name))
