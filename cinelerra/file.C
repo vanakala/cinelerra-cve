@@ -141,6 +141,8 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_OGG:
 		case FILE_WAV:
 		case FILE_MP3:
+		case FILE_FLAC:
+		case FILE_MPEGTS:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
 				format_window,
@@ -755,6 +757,8 @@ int File::supports(int format)
 	case FILE_OGG:
 	case FILE_MP3:
 	case FILE_WAV:
+	case FILE_FLAC:
+	case FILE_MPEGTS:
 		return FileAVlibs::supports(format, 0);
 		break;
 	}

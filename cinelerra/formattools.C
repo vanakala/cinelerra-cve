@@ -84,7 +84,8 @@ int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU,
 	FILE_RAWDV,
 	FILE_OGG, FILE_PCM,
 	FILE_PNG, FILE_PNG_LIST, FILE_TGA, FILE_TGA_LIST,
-	FILE_TIFF, FILE_TIFF_LIST
+	FILE_TIFF, FILE_TIFF_LIST,
+	FILE_FLAC, FILE_MPEGTS
 };
 
 FormatTools::FormatTools(MWindow *mwindow,
