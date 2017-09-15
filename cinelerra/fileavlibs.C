@@ -1916,14 +1916,19 @@ stream_params *FileAVlibs::get_track_data(int trx)
 
 	pkt.buf = 0;
 	pkt.size = 0;
+	pktpos = -1;
+	medpos = AV_NOPTS_VALUE;
 
 	while((err = av_read_frame(context, &pkt)) == 0)
 	{
 		if(pkt.stream_index == trid)
 		{
 			if(posbytes)
-				pktpos = pkt.pos;
-			else
+			{
+				if(pkt.pos != -1)
+					pktpos = pkt.pos;
+			}
+			else if(pkt.dts != AV_NOPTS_VALUE)
 				pktpos = pkt.dts;
 
 			if(pkt.pts != AV_NOPTS_VALUE)
@@ -1934,9 +1939,10 @@ stream_params *FileAVlibs::get_track_data(int trx)
 			switch(decoder_context->codec_type)
 			{
 			case AVMEDIA_TYPE_VIDEO:
-				video_pos = medpos;
+				if(medpos != AV_NOPTS_VALUE)
+					video_pos = medpos;
 
-				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1)
+				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1 && pktpos != AV_NOPTS_VALUE)
 				{
 					interrupt = tocfile->append_item(video_pos, pktpos);
 					if(video_pos < track_data.min_index)
@@ -1951,7 +1957,8 @@ stream_params *FileAVlibs::get_track_data(int trx)
 				break;
 
 			case AVMEDIA_TYPE_AUDIO:
-				audio_pos = medpos;
+				if(medpos != AV_NOPTS_VALUE)
+					audio_pos = medpos;
 
 				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1)
 				{
