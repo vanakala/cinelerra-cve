@@ -183,15 +183,15 @@ void SetFormatThread::apply_changes()
 
 void SetFormatThread::update()
 {
-	window->sample_rate->update((int64_t)new_settings->session->sample_rate);
-	window->channels->update((int64_t)new_settings->session->audio_channels);
-	window->frame_rate->update((float)new_settings->session->frame_rate);
+	window->sample_rate->update(new_settings->session->sample_rate);
+	window->channels->update(new_settings->session->audio_channels);
+	window->frame_rate->update(new_settings->session->frame_rate);
 	dimension[0] = new_settings->session->output_w;
 	dimension[1] = new_settings->session->output_h;
 	window->framesize_selection->update(dimension[0], dimension[1]);
-	ratio[0] = (float)dimension[0] / orig_dimension[0];
+	ratio[0] = (double)dimension[0] / orig_dimension[0];
 	window->ratio[0]->update(ratio[0]);
-	ratio[1] = (float)dimension[1] / orig_dimension[1];
+	ratio[1] = (double)dimension[1] / orig_dimension[1];
 	window->ratio[1]->update(ratio[1]);
 	window->aspectratio_selection->update_auto(new_settings->session->aspect_w, 
 		new_settings->session->aspect_h);
