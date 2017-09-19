@@ -28,7 +28,6 @@
 #include "edit.h"
 #include "file.h"
 #include "fileavlibs.h"
-#include "filedv.h"
 #include "filebase.h"
 #include "fileexr.h"
 #include "filexml.h"
@@ -120,12 +119,6 @@ void File::get_options(FormatTools *format, int options)
 	format_completion->lock("File::get_options");
 	switch(asset->format)
 	{
-		case FILE_RAWDV:
-			FileDV::get_parameters(parent_window,
-				asset,
-				format_window,
-				options);
-			break;
 		case FILE_PCM:
 		case FILE_AU:
 		case FILE_AIFF:
@@ -143,6 +136,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_MP3:
 		case FILE_FLAC:
 		case FILE_MPEGTS:
+		case FILE_RAWDV:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
 				format_window,
@@ -362,15 +356,12 @@ int File::open_file(Preferences *preferences,
 	case FILE_WAV:
 	case FILE_FLAC:
 	case FILE_MPEGTS:
+	case FILE_RAWDV:
 		file = new FileAVlibs(this->asset, this);
 		break;
 
 	case FILE_MPEG:
 		file = new FileMPEG(this->asset, this);
-		break;
-
-	case FILE_RAWDV:
-		file = new FileDV(this->asset, this);
 		break;
 
 	default:
@@ -748,9 +739,6 @@ int File::supports(int format)
 	case FILE_YUV:
 		return FileYUV::supports(format);
 
-	case FILE_RAWDV:
-		return FileDV::supports(format);
-
 	case FILE_AC3:
 	case FILE_AVI:
 	case FILE_MOV:
@@ -759,6 +747,7 @@ int File::supports(int format)
 	case FILE_WAV:
 	case FILE_FLAC:
 	case FILE_MPEGTS:
+	case FILE_RAWDV:
 		return FileAVlibs::supports(format, 0);
 		break;
 	}
@@ -774,9 +763,6 @@ int File::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(asset->format)
 	{
-	case FILE_RAWDV:
-		return FileDV::get_best_colormodel(asset, driver);
-
 	case FILE_MPEG:
 		return FileMPEG::get_best_colormodel(asset, driver);
 

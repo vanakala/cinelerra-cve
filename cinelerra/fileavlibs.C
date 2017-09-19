@@ -566,6 +566,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_MP3:
 		case FILE_FLAC:
 		case FILE_MPEGTS:
+		case FILE_RAWDV:
 			break;
 
 		default:
