@@ -1,67 +1,48 @@
 cinelerra/aboutprefs.C
 cinelerra/adeviceprefs.C
 cinelerra/amodule.C
-# cinelerra/apanel.C
 cinelerra/apatchgui.C
 cinelerra/assetedit.C
 cinelerra/assetedit.h
 cinelerra/assetpopup.C
-# cinelerra/assetremove.C
 cinelerra/atrack.C
-# cinelerra/avc1394transport.C
 cinelerra/avlibsconfig.C
 cinelerra/awindowgui.C
 cinelerra/awindowmenu.C
-# cinelerra/batch.C
 cinelerra/batchrender.C
 cinelerra/brender.C
 cinelerra/browsebutton.C
 cinelerra/canvas.C
-# cinelerra/channeledit.C
-# cinelerra/channelpicker.C
 cinelerra/clipedit.C
-# cinelerra/compresspopup.C
-# cinelerra/confirmquit.C
 cinelerra/confirmsave.C
 cinelerra/cpanel.C
-# cinelerra/cropvideo.C
 cinelerra/cwindow.C
 cinelerra/cwindowgui.C
 cinelerra/cwindowtool.C
-# cinelerra/dcoffset.C
 cinelerra/deleteallindexes.C
 cinelerra/editpanel.C
 cinelerra/editpopup.C
 cinelerra/exportedl.C
-# cinelerra/featheredits.C
 cinelerra/file.C
 cinelerra/file.inc
-#cinelerra/fileavi.C
 cinelerra/fileavlibs.C
 cinelerra/fileexr.C
 cinelerra/fileformat.C
 cinelerra/filejpeg.C
-# cinelerra/filejpeglist.C
-# cinelerra/filemov.C
 cinelerra/filempeg.C
 cinelerra/filepng.C
 cinelerra/filesndfile.C
 cinelerra/filetga.C
 cinelerra/filetiff.C
-# cinelerra/filevorbis.C
 cinelerra/fileyuv.C
-# cinelerra/flipbook.C
-# cinelerra/formatpopup.C
 cinelerra/formatpresets.C
 cinelerra/formattools.C
-# cinelerra/formatwindow.C
 cinelerra/gwindowgui.C
 cinelerra/indexfile.C
 cinelerra/indexthread.C
 cinelerra/interfaceprefs.C
 cinelerra/keyframepopup.C
 cinelerra/labeledit.C
-# cinelerra/labelnavigate.C
 cinelerra/levelwindowgui.C
 cinelerra/loadfile.C
 cinelerra/loadmode.C
@@ -72,14 +53,12 @@ cinelerra/mainmenu.C
 cinelerra/mainprogress.C
 cinelerra/manualgoto.C
 cinelerra/menueffects.C
-# cinelerra/messages.C
 cinelerra/meterpanel.C
 cinelerra/miscprefs.C
 cinelerra/mwindow.C
 cinelerra/mwindowedit.C
 cinelerra/mwindowgui.C
 cinelerra/new.C
-# cinelerra/newfolder.C
 cinelerra/packagerenderer.C
 cinelerra/patchbay.C
 cinelerra/patchgui.C
@@ -91,21 +70,9 @@ cinelerra/pluginarray.C
 cinelerra/pluginclient.C
 cinelerra/plugindialog.C
 cinelerra/pluginpopup.C
-# cinelerra/pluginprefs.C
 cinelerra/preferencesthread.C
 cinelerra/question.C
 cinelerra/quit.C
-# cinelerra/recconfirmdelete.C
-# cinelerra/record.C
-# cinelerra/recordaudio.C
-# cinelerra/recordengine.C
-# cinelerra/recordgui.C
-# cinelerra/recordmonitor.C
-# cinelerra/recordprefs.C
-# cinelerra/recordtransport.C
-# cinelerra/recordvideo.C
-# cinelerra/recordwindow.C
-# cinelerra/reindex.C
 cinelerra/render.C
 cinelerra/renderfarm.C
 cinelerra/renderfarmclient.C
@@ -113,18 +80,14 @@ cinelerra/renderprofiles.C
 cinelerra/resizetrackthread.C
 cinelerra/resourcepixmap.C
 cinelerra/savefile.C
-# cinelerra/scale.C
 cinelerra/selection.C
 cinelerra/setformat.C
 cinelerra/sharedlocation.C
 cinelerra/splashgui.C
 cinelerra/statusbar.C
-# cinelerra/threadindexer.C
 cinelerra/tipwindow.C
-# cinelerra/toggleauto.C
 cinelerra/trackcanvas.C
 cinelerra/transitionpopup.C
-# cinelerra/vdevicelml.C
 cinelerra/vdeviceprefs.C
 cinelerra/viewmenu.C
 cinelerra/vpatchgui.C
@@ -140,7 +103,6 @@ guicast/bcnewfolder.C
 guicast/bcrecentlist.C
 guicast/bcresources.C
 guicast/bctheme.C
-# guicast/test.C
 plugins/1080to540/1080to540.C
 plugins/1080to540/1080to540.h
 plugins/720to480/720to480.C
@@ -163,16 +125,12 @@ plugins/bluebanana/bluebananawindow.C
 plugins/blur/blur.C
 plugins/blur/blur.h
 plugins/blur/blurwindow.C
-# plugins/blurzoom/blurzoom.C
-# plugins/blurzoom/blurzoomwindow.C
 plugins/brightness/brightness.C
 plugins/brightness/brightness.h
 plugins/brightness/brightnesswindow.C
 plugins/burn/burn.C
 plugins/burn/burn.h
 plugins/burn/burnwindow.C
-# plugins/cdripper/cdripper.C
-# plugins/cdripper/cdripwindow.C
 plugins/chromakey/chromakey.C
 plugins/chromakey/chromakey.h
 plugins/chromakeyhsv/chromakey.C
@@ -196,7 +154,6 @@ plugins/delayvideo/delayvideo.h
 plugins/denoise/denoise.C
 plugins/denoise/denoise.h
 plugins/denoisefft/denoisefft.C
-# plugins/denoisemjpeg/denoisemjpeg.C
 plugins/denoisevideo/denoisevideo.C
 plugins/denoiseseltempavg/seltempavg.C
 plugins/denoiseseltempavg/seltempavg.h
@@ -238,13 +195,9 @@ plugins/holo/holo.C
 plugins/holo/holo.h
 plugins/holo/holowindow.C
 plugins/huesaturation/huesaturation.C
-# plugins/huesaturation/huewindow.C
-# plugins/interpolate/interpolate.C
 plugins/interpolatevideo/interpolatevideo.C
-# plugins/interpolateall/interpolateall.C
 plugins/invertaudio/invert.C
 plugins/invertvideo/invert.C
-# plugins/invertvideo/invertwindow.C
 plugins/irissquare/irissquare.C
 plugins/irissquare/irissquare.h
 plugins/ivtc/ivtc.C
@@ -258,11 +211,11 @@ plugins/loopvideo/loopvideo.C
 plugins/motion/motion.C
 plugins/motion/motion.h
 plugins/motion/motionwindow.C
+plugins/motionblur/motionblur.C
 plugins/normalize/normalize.C
 plugins/normalize/normalize.h
 plugins/normalize/normalizewindow.C
 plugins/oilpainting/oil.C
-# plugins/oilpainting/oilwindow.C
 plugins/overlay/overlay.C
 plugins/parametric/parametric.C
 plugins/parametric/parametric.h
@@ -271,9 +224,6 @@ plugins/perspective/perspective.h
 plugins/pitch/pitch.C
 plugins/pitch/pitch.h
 plugins/polar/polar.C
-# plugins/polar/polarwindow.C
-# plugins/quark/quark.C
-# plugins/quark/quarkwindow.C
 plugins/radialblur/radialblur.C
 plugins/reframe/reframe.C
 plugins/reframe/reframe.h
@@ -290,7 +240,6 @@ plugins/rgb601/rgb601.C
 plugins/rgb601/rgb601.h
 plugins/rgb601/rgb601window.C
 plugins/rotate/rotate.C
-# plugins/rotate/rotatewindow.C
 plugins/scale/scale.C
 plugins/scale/scale.h
 plugins/scale/scalewin.C
@@ -306,8 +255,6 @@ plugins/slide/slide.C
 plugins/slide/slide.h
 plugins/spectrogram/spectrogram.C
 plugins/spectrogram/spectrogram.h
-# plugins/svg/svg.C
-# plugins/svg/svgwin.C
 plugins/swapchannels/swapchannels.C
 plugins/swapchannels/swapchannels.h
 plugins/synthesizer/synthesizer.C
@@ -334,11 +281,7 @@ plugins/unsharp/unsharpwindow.C
 plugins/videoscope/videoscope.C
 plugins/wave/wave.C
 plugins/whirl/whirl.C
-# plugins/whirl/whirlwindow.C
 plugins/wipe/wipe.C
 plugins/wipe/wipe.h
 plugins/yuv/yuv.C
-# plugins/yuv/yuvwindow.C
 plugins/zoomblur/zoomblur.C
-# plugins/livevideo/livevideo.C
-plugins/motionblur/motionblur.C
