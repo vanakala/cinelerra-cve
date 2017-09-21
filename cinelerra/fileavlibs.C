@@ -406,7 +406,6 @@ int FileAVlibs::open_file(int rd, int wr)
 		if(result >= 0)
 		{
 			result = 0;
-
 			for(int i = 0; i < context->nb_streams; i++)
 			{
 				AVStream *stream = context->streams[i];
@@ -1861,12 +1860,13 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	AVCodecContext *decoder_context;
 	AVPacket pkt;
 	int got_it;
-	int64_t pktpos, pktsz, medpos;
+	int64_t pktpos, pktsz, medpos, pkt_duration;
 	int64_t maxoffs = 0;
 	int interrupt = 0;
 	int is_audio;
 	int res, err, trid;
 	int posbytes;
+	int pktnum;
 
 	trid = -1;
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -1919,6 +1919,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	pkt.size = 0;
 	pktpos = -1;
 	medpos = AV_NOPTS_VALUE;
+	pktnum = 0;
 
 	while((err = av_read_frame(context, &pkt)) == 0)
 	{
@@ -1952,8 +1953,9 @@ stream_params *FileAVlibs::get_track_data(int trx)
 						track_data.min_offset = pktpos;
 					}
 				}
-				video_pos += pkt.duration;
-				pktpos += pkt.duration;
+				pkt_duration = pkt.duration;
+				video_pos += pkt_duration;
+				pktpos += pkt_duration;
 				is_audio = 0;
 				break;
 
@@ -1961,8 +1963,11 @@ stream_params *FileAVlibs::get_track_data(int trx)
 				if(medpos != AV_NOPTS_VALUE)
 					audio_pos = medpos;
 
-				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1)
+				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1 && pktpos != AV_NOPTS_VALUE)
 				{
+// Raw dv audio seeks only on frame numbers
+					if(asset->format == FILE_RAWDV)
+						pktpos = pktnum++;
 					interrupt = tocfile->append_item(audio_pos, pktpos);
 					if(audio_pos < track_data.min_index)
 					{
@@ -1970,15 +1975,18 @@ stream_params *FileAVlibs::get_track_data(int trx)
 						track_data.min_offset = pktpos;
 					}
 				}
-				audio_pos += pkt.duration;
-				pktpos += pkt.duration;
+				pkt_duration = pkt.duration;
+				audio_pos += pkt_duration;
+				if(asset->format == FILE_RAWDV)
+					pkt_duration = 1;
+				pktpos += pkt_duration;
 				is_audio = 1;
 				break;
 			}
 			if(posbytes)
 				pktsz = pkt.size;
 			else
-				pktsz = pkt.duration;
+				pktsz = pkt_duration;
 
 			if(pktpos != -1)
 				maxoffs = pktpos + pktsz;
