@@ -2056,7 +2056,7 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	BC_WindowBase* &format_window,
 	int options)
 {
-	Paramlist *defaults;
+	Paramlist *defaults, *codecs;
 	int rs, rsc, rsp;
 	AVlibsConfig *window = 0;
 
@@ -2065,9 +2065,9 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	av_register_all();
 	FileAVlibs::avlibs_lock->unlock();
 	rs = 1;
-	if(defaults = scan_codecs(output_format(asset->format), asset, options))
+	if(codecs = scan_codecs(output_format(asset->format), asset, options))
 	{
-		window = new AVlibsConfig(asset, defaults, options);
+		window = new AVlibsConfig(asset, codecs, options);
 		format_window = window;
 		rs = window->run_window();
 	}
@@ -2083,6 +2083,7 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 		alist = plist = 0;
 		defaults = scan_encoder_opts((AVCodecID)window->current_codec, options);
 		window->codecopts->remove_equiv(defaults);
+
 		if(options & SUPPORTS_VIDEO)
 		{
 			if((pa = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->find(AVL_PARAM_CODEC_VIDEO)) &&
@@ -2115,6 +2116,8 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 			if(!rsp)
 				plist = &asset->encoder_parameters[FILEAVLIBS_APRIVT_IX];
 		}
+		update_codeclist(asset, codecs, options);
+
 		if(alist && *alist)
 		{
 			delete *alist;
