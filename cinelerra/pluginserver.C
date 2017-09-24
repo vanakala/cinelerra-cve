@@ -27,6 +27,7 @@
 #include "attachmentpoint.h"
 #include "autoconf.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "edl.h"
