@@ -450,9 +450,9 @@ void AffineUnit::process_package(LoadPackage *package)
 				"}\n";
 
 			float affine_matrix[9] = {
-				m.values[0][0], m.values[1][0], m.values[2][0],
-				m.values[0][1], m.values[1][1], m.values[2][1],
-				m.values[0][2], m.values[1][2], m.values[2][2] 
+				(float)m.values[0][0], (float)m.values[1][0], (float)m.values[2][0],
+				(float)m.values[0][1], (float)m.values[1][1], (float)m.values[2][1],
+				(float)m.values[0][2], (float)m.values[1][2], (float)m.values[2][2]
 			};
 
 
