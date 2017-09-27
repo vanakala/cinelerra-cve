@@ -296,12 +296,14 @@ void AVlibsConfig::save_encoder_options(Asset *asset, int config_ix,
 	}
 
 	tmp = load_options(asset, config_name, suffix);
+	FileAVlibs::restore_codec_options(tmp);
 
-	if(tmp && tmp->equiv(asset->encoder_parameters[config_ix]))
+	if(tmp && tmp->equiv(asset->encoder_parameters[config_ix], 1))
 	{
 		delete tmp;
 		return;
 	}
+	delete tmp;
 	asset->encoder_parameters[config_ix]->save_list(&file);
 	file.write_to_file(config_path(asset, config_name, suffix));
 }
