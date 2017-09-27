@@ -2150,6 +2150,49 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 	delete window;
 }
 
+void FileAVlibs::restore_codec_options(Paramlist *codecs)
+{
+	Param *apar;
+	Paramlist *list;
+
+	if(!codecs)
+		return;
+
+	for(apar = codecs->first; apar; apar = apar->next)
+	{
+		if(list = apar->subparams)
+		{
+			for(Param *p = list->first; p; p = p->next)
+			{
+				for(int i = 0; encoder_params[i].name; i++)
+				{
+					if(strcmp(encoder_params[i].name, p->name) == 0)
+					{
+						switch(encoder_params[i].type)
+						{
+						case PARAMTYPE_INT:
+							p->set(atoi(p->stringvalue));
+							break;
+						case PARAMTYPE_LNG:
+#if __WORDSIZE == 64
+							p->set(atol(p->stringvalue));
+#else
+							p->set(atoll(p->stringvalue));
+#endif
+							break;
+						case PARAMTYPE_DBL:
+							p->set(atof(p->stringvalue));
+							break;
+						}
+						p->set_string(0);
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
 void FileAVlibs::get_render_defaults(Asset *asset)
 {
 	const char *name;
@@ -2163,44 +2206,7 @@ void FileAVlibs::get_render_defaults(Asset *asset)
 	asset->encoder_parameters[FILEAVLIBS_FORMAT_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_FORMAT_CONFIG, name);
 	asset->encoder_parameters[FILEAVLIBS_CODECS_IX] = AVlibsConfig::load_options(asset, FILEAVLIBS_CODECS_CONFIG, name);
 
-	if(asset->encoder_parameters[FILEAVLIBS_CODECS_IX])
-	{
-		// Restore loaded options
-		for(apar = asset->encoder_parameters[FILEAVLIBS_CODECS_IX]->first;
-			apar; apar = apar->next)
-		{
-			if(list = apar->subparams)
-			{
-				for(Param *p = list->first; p; p = p->next)
-				{
-					for(int i = 0; encoder_params[i].name; i++)
-					{
-						if(strcmp(encoder_params[i].name, p->name) == 0)
-						{
-							switch(encoder_params[i].type)
-							{
-							case PARAMTYPE_INT:
-								p->set(atoi(p->stringvalue));
-								break;
-							case PARAMTYPE_LNG:
-#if __WORDSIZE == 64
-								p->set(atol(p->stringvalue));
-#else
-								p->set(atoll(p->stringvalue));
-#endif
-								break;
-							case PARAMTYPE_DBL:
-								p->set(atof(p->stringvalue));
-								break;
-							}
-							p->set_string(0);
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
+	restore_codec_options(asset->encoder_parameters[FILEAVLIBS_CODECS_IX]);
 
 	FileAVlibs::avlibs_lock->lock("AVlibsConfig::AVlibsConfig");
 	avcodec_register_all();

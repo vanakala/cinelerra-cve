@@ -85,6 +85,7 @@ public:
 	int write_aframes(AFrame **frames);
 	static void get_parameters(BC_WindowBase *parent_window,
 		Asset *asset, BC_WindowBase* &format_window, int options);
+	static void restore_codec_options(Paramlist *codecs);
 	static void get_render_defaults(Asset *asset);
 	static void get_format_params(Asset *asset, int options);
 	static void set_format_params(Asset *asset);
