@@ -188,10 +188,6 @@ AC_CHECK_LIB(uuid, uuid_clear,[libuuid=yes])
 AC_CHECK_HEADER(fftw3.h,[libfftw3h=yes])
 AC_CHECK_LIB(fftw3, fftw_free,[libfftw3=yes])
 
-PKG_CHECK_MODULES(LIBDV,libdv >= 0.103,[libdv=yes],:)
-AC_SUBST(LIBDV_CFLAGS)
-AC_SUBST(LIBDV_LIBS)
-
 PKG_CHECK_MODULES(PNG,libpng,[libpng=yes],:)
 
 AC_CHECK_HEADER(jpeglib.h,[libjpegh=yes])
@@ -626,7 +622,6 @@ echo "AC_HELP_STRING($2,$status)"])
 
 echo
 echo "Summary of mandatory components:"
-RPT(libdv,libdv)
 RPT(libpng,libpng)
 RPT(libjpeg,libjpeg libraries)
 RPT(libjpegh,libjpeg headers)
