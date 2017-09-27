@@ -752,7 +752,7 @@ void Paramlist::join_list(Paramlist *that)
 	delete that;
 }
 
-int Paramlist::equiv(Paramlist *that)
+int Paramlist::equiv(Paramlist *that, int sublvl)
 {
 	if(!that || total() != that->total() || (type ^ that->type) & ~PARAMTYPE_CHNG)
 		return 0;
@@ -775,6 +775,17 @@ int Paramlist::equiv(Paramlist *that)
 
 		if(!current->equiv(o))
 			return 0;
+
+		if(sublvl > 0)
+		{
+			if(current->subparams && o->subparams)
+			{
+				if(!current->subparams->equiv(o->subparams, sublvl - 1))
+					return 0;
+			}
+			else if(!(!current->subparams && !o->subparams))
+				return 0;
+		}
 	}
 	return 1;
 }

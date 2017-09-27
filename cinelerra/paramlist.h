@@ -116,7 +116,7 @@ public:
 	void remove_equiv(Paramlist *that);
 	void remove_param(const char *name);
 	void join_list(Paramlist *that);
-	int equiv(Paramlist *that);
+	int equiv(Paramlist *that, int sublvl = 0);
 	void store_defaults();
 	void reset_defaults();
 	void dump(int indent = 0);
