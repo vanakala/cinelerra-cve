@@ -1706,24 +1706,6 @@ void MWindow::save_backup()
 		gui->show_message(_("Couldn't open %s for writing."), path);
 }
 
-void MWindow::create_aspect_ratio(double &w, double &h, int width, int height)
-{
-	int denominator;
-
-	if(!width || !height) return;
-
-	double fraction = (double)width / height;
-
-	for(denominator = 1; 
-		denominator < 100 && 
-			fabs(fraction * denominator - (int)(fraction * denominator)) > .001; 
-		denominator++)
-		;
-
-	w = denominator * width / height;
-	h = denominator;
-}
-
 void MWindow::reset_caches()
 {
 	frame_cache->remove_all();

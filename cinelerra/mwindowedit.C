@@ -144,15 +144,6 @@ void MWindow::asset_to_size()
 				"it can't be rendered by OpenGL."));
 		}
 
-// Get aspect ratio
-		if(defaults->get("AUTOASPECT", 0))
-		{
-			create_aspect_ratio(edl->session->aspect_w, 
-				edl->session->aspect_h, 
-				w, 
-				h);
-		}
-
 		save_backup();
 
 		undo->update_undo(_("asset to size"), LOAD_ALL);
@@ -323,15 +314,6 @@ void MWindow::crop_video()
 	edl->session->crop_y1 = 0;
 	edl->session->crop_x2 = edl->session->output_w;
 	edl->session->crop_y2 = edl->session->output_h;
-
-// Recalculate aspect ratio
-	if(defaults->get("AUTOASPECT", 0))
-	{
-		create_aspect_ratio(edl->session->aspect_w, 
-			edl->session->aspect_h, 
-			edl->session->output_w, 
-			edl->session->output_h);
-	}
 
 	undo->update_undo(_("crop"), LOAD_ALL);
 

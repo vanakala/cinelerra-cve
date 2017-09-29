@@ -251,13 +251,33 @@ AspectRatioSelection::AspectRatioSelection(int x1, int y1, int x2, int y2,
 void AspectRatioSelection::update_auto(double value1, double value2)
 {
 	if(value1 < 0 || value2 < 0)
-		MWindow::create_aspect_ratio(value1, value2, *frame_w, *frame_h);
+		auto_aspect_ratio(doublevalue2, doublevalue, *frame_w, *frame_h);
+	else
+	{
+		*doublevalue = value2;
+		*doublevalue2 = value1;
+	}
 
-	*doublevalue = value2;
-	*doublevalue2 = value1;
+	firstbox->update(*doublevalue2);
+	BC_TextBox::update(*doublevalue);
+}
 
-	firstbox->update(value1);
-	BC_TextBox::update(value2);
+void AspectRatioSelection::auto_aspect_ratio(double *aspect_w, double *aspect_h,
+	int width, int height)
+{
+	int denominator;
+
+	if(!width || !height) return;
+
+	double fraction = (double)width / height;
+
+	for(denominator = 1;
+		denominator < 100 &&
+			fabs(fraction * denominator - (int)(fraction * denominator)) > .001;
+		denominator++);
+
+	*aspect_w = denominator * width / height;
+	*aspect_h = denominator;
 }
 
 Selection::Selection(int x, int y, BC_WindowBase *base,

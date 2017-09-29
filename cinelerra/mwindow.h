@@ -269,8 +269,6 @@ public:
 	void copy(ptstime start, ptstime end);
 	void cut();
 
-// Calculate aspect ratio from pixel counts
-	static void create_aspect_ratio(double &w, double &h, int width, int height);
 // Calculate defaults path
 	static void create_defaults_path(char *string);
 // Compose standard window title
