@@ -176,8 +176,10 @@ public:
 		int *frame_w, int *frame_h);
 
 	void update_auto(double value1, double value2);
-	void auto_aspect_ratio(double *aspect_w, double *aspect_h,
+	static void auto_aspect_ratio(double *aspect_w, double *aspect_h,
 		int width, int height);
+	static void aspect_to_wh(double *aspect_w, double *aspect_h,
+		double aspect_ratio);
 
 private:
 	int *frame_w;

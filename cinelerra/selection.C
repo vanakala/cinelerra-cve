@@ -265,18 +265,32 @@ void AspectRatioSelection::update_auto(double value1, double value2)
 void AspectRatioSelection::auto_aspect_ratio(double *aspect_w, double *aspect_h,
 	int width, int height)
 {
-	int denominator;
 
 	if(!width || !height) return;
 
-	double fraction = (double)width / height;
+	aspect_to_wh(aspect_w, aspect_h, (double)width / height);
+}
+
+void AspectRatioSelection::aspect_to_wh(double *aspect_w, double *aspect_h,
+	double aspect_ratio)
+{
+	int denominator;
+
+	if(aspect_ratio < 0)
+		return;
+
+	if(fabsl(aspect_ratio - 1.0) < 0.001)
+	{
+		*aspect_w = *aspect_h = 1.0;
+		return;
+	}
 
 	for(denominator = 1;
 		denominator < 100 &&
-			fabs(fraction * denominator - (int)(fraction * denominator)) > .001;
+			fabsl(aspect_ratio * denominator - round(aspect_ratio * denominator)) > .001;
 		denominator++);
 
-	*aspect_w = denominator * width / height;
+	*aspect_w = denominator * aspect_ratio;
 	*aspect_h = denominator;
 }
 

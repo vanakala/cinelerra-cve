@@ -61,6 +61,7 @@
 #include "playbackengine.h"
 #include "pluginset.h"
 #include "samplescroll.h"
+#include "selection.h"
 #include "trackcanvas.h"
 #include "track.h"
 #include "tracks.h"
@@ -143,6 +144,10 @@ void MWindow::asset_to_size()
 			errormsg(_("This project's dimensions are not multiples of 4 so\n"
 				"it can't be rendered by OpenGL."));
 		}
+
+		AspectRatioSelection::aspect_to_wh(&edl->session->aspect_w,
+			&edl->session->aspect_h,
+			session->drag_assets->values[0]->aspect_ratio);
 
 		save_backup();
 
