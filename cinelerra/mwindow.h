@@ -404,6 +404,8 @@ public:
 	const char *default_standard;
 
 	void reset_meters();
+// Dumps program status to stdout
+	void show_program_status();
 
 // ====================================== plugins ==============================
 

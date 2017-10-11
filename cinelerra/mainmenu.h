@@ -577,4 +577,14 @@ public:
 	MWindow *mwindow;
 };
 
+class ShowStatus : public BC_MenuItem
+{
+public:
+	ShowStatus(MWindow *mwindow);
+
+	int handle_event();
+
+	MWindow *mwindow;
+};
+
 #endif

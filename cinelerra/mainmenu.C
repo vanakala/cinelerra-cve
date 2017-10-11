@@ -99,6 +99,7 @@ MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
 	filemenu->add_item(quit_program = new Quit(mwindow, save));
 	filemenu->add_item(new DumpEDL(mwindow));
 	filemenu->add_item(new DumpPlugins(mwindow));
+	filemenu->add_item(new ShowStatus(mwindow));
 	filemenu->add_item(new LoadBackup(mwindow));
 	filemenu->add_item(new SaveBackup(mwindow));
 
@@ -440,6 +441,18 @@ DumpPlugins::DumpPlugins(MWindow *mwindow)
 int DumpPlugins::handle_event()
 {
 	mwindow->dump_plugindb();
+	return 1;
+}
+
+ShowStatus::ShowStatus(MWindow *mwindow)
+ : BC_MenuItem(_("Show Status"))
+{
+	this->mwindow = mwindow;
+}
+
+int ShowStatus::handle_event()
+{
+	mwindow->show_program_status();
 	return 1;
 }
 

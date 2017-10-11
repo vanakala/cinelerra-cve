@@ -84,6 +84,7 @@
 #include "theme.h"
 #include "timebar.h"
 #include "tipwindow.h"
+#include "tmpframecache.h"
 #include "trackcanvas.h"
 #include "track.h"
 #include "tracking.h"
@@ -105,6 +106,7 @@
 #include <fcntl.h>
 #include <string.h>
 
+extern const char *version_name;
 
 MWindow::MWindow(const char *config_path)
  : Thread(THREAD_SYNCHRONOUS)
@@ -1998,4 +2000,30 @@ void MWindow::reset_meters()
 	vwindow->gui->meters->reset_meters();
 	lwindow->gui->panel->reset_meters();
 	gui->patchbay->reset_meters();
+}
+
+void MWindow::show_program_status()
+{
+	printf("%s status:\n", version_name);
+	if(!edl)
+	{
+		printf(" No edl");
+		return;
+	}
+	printf(" Audio channels %d tracks %d samplerate %d\n",
+		edl->session->audio_channels, edl->session->audio_tracks,
+		edl->session->sample_rate);
+	printf( " Video [%d,%d] channels %d tracks %d framerate %.2f '%s'\n",
+		edl->session->output_w,
+		edl->session->output_h,
+		edl->session->video_channels,
+		edl->session->video_tracks,
+		edl->session->frame_rate,
+		ColorModels::name(edl->session->color_model));
+	printf(" Internal encoding: '%s'\n", BC_Resources::encoding);
+	printf(" Audio cache %zu\n", audio_cache->get_memory_usage(1));
+	printf(" Video cache %zu\n", video_cache->get_memory_usage(1));
+	printf(" Frame cache %zu\n", frame_cache->get_memory_usage());
+	printf(" Wave cahce %zu\n", wave_cache->get_memory_usage());
+	printf(" Tmpframes %zuk\n", BC_Resources::tmpframes.get_size());
 }
