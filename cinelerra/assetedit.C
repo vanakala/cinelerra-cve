@@ -317,10 +317,8 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 			sprintf(string, "%d", asset->header);
 
 			x = x2;
-			if(allow_edits)
-				add_subwindow(new AssetEditHeader(this, string, x, y));
-			else
-				add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+
+			add_subwindow(new AssetEditHeader(this, string, x, y));
 
 			y += vmargin;
 			x = x1;
