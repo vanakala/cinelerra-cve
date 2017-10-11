@@ -56,7 +56,7 @@ public:
 
 // Subclass should call this to add the base class allocation.
 // Only used in read mode.
-	virtual int64_t get_memory_usage() { return 0; };
+	virtual size_t get_memory_usage() { return 0; };
 
 	virtual int write_aframes(AFrame **buffer) { return 1; };
 	virtual int write_frames(VFrame ***frames, int len) { return 0; };

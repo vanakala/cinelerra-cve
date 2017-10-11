@@ -44,7 +44,7 @@ public:
 	static const char* compression_to_str(const char *compression);
 	static const char* str_to_compression(const char *string);
 
-	int64_t get_memory_usage();
+	size_t get_memory_usage();
 // To be used in single frame FileTGA
 	static void read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
 	static void write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);

@@ -498,9 +498,9 @@ FrameWriterUnit* FileList::new_writer_unit(FrameWriter *writer)
 	return new FrameWriterUnit(writer);
 }
 
-int64_t FileList::get_memory_usage()
+size_t FileList::get_memory_usage()
 {
-	int64_t result = 0;
+	size_t result = 0;
 	if(data) result += data->get_compressed_allocated();
 	return result;
 }

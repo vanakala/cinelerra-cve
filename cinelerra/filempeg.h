@@ -48,7 +48,7 @@ public:
 	int prefer_samples_float();
 	int to_mpeg_colormodel(int cmodel);
 
-	int64_t get_memory_usage();
+	size_t get_memory_usage();
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);

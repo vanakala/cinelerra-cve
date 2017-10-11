@@ -167,9 +167,9 @@ FrameWriterUnit* FileTGA::new_writer_unit(FrameWriter *writer)
 	return new TGAUnit(this, writer);
 }
 
-int64_t FileTGA::get_memory_usage()
+size_t FileTGA::get_memory_usage()
 {
-	int64_t result = FileList::get_memory_usage();
+	size_t result = FileList::get_memory_usage();
 	if(temp) result += temp->get_data_size();
 	return result;
 }

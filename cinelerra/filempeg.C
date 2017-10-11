@@ -369,13 +369,10 @@ int FileMPEG::get_index(const char *index_path)
 	return 1;
 }
 
-int64_t FileMPEG::get_memory_usage()
+size_t FileMPEG::get_memory_usage()
 {
 	if(fd)
-	{
-		int64_t result = mpeg3_memory_usage(fd);
-		return result;
-	}
+		return mpeg3_memory_usage(fd);
 	return 0;
 }
 
