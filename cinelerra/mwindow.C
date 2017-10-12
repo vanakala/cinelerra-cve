@@ -1722,6 +1722,7 @@ void MWindow::reset_caches()
 		vwindow->playback_engine->audio_cache->remove_all();
 	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
 		vwindow->playback_engine->video_cache->remove_all();
+	BC_Resources::tmpframes.delete_unused();
 }
 
 void MWindow::remove_asset_from_caches(Asset *asset)
