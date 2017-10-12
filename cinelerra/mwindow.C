@@ -2004,25 +2004,39 @@ void MWindow::reset_meters()
 
 void MWindow::show_program_status()
 {
+	size_t mc, cc, vc;
+
 	printf("%s status:\n", version_name);
-	if(!edl)
+	if(edl)
 	{
-		printf(" No edl");
-		return;
+		printf(" Audio channels %d tracks %d samplerate %d\n",
+			edl->session->audio_channels, edl->session->audio_tracks,
+			edl->session->sample_rate);
+		printf( " Video [%d,%d] channels %d tracks %d framerate %.2f '%s'\n",
+			edl->session->output_w,
+			edl->session->output_h,
+			edl->session->video_channels,
+			edl->session->video_tracks,
+			edl->session->frame_rate,
+			ColorModels::name(edl->session->color_model));
 	}
-	printf(" Audio channels %d tracks %d samplerate %d\n",
-		edl->session->audio_channels, edl->session->audio_tracks,
-		edl->session->sample_rate);
-	printf( " Video [%d,%d] channels %d tracks %d framerate %.2f '%s'\n",
-		edl->session->output_w,
-		edl->session->output_h,
-		edl->session->video_channels,
-		edl->session->video_tracks,
-		edl->session->frame_rate,
-		ColorModels::name(edl->session->color_model));
+	else
+		printf(" No edl\n");
 	printf(" Internal encoding: '%s'\n", BC_Resources::encoding);
-	printf(" Audio cache %zu\n", audio_cache->get_memory_usage(1));
-	printf(" Video cache %zu\n", video_cache->get_memory_usage(1));
+	mc = audio_cache->get_memory_usage(1);
+	vc = cc = 0;
+	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+		vc = vwindow->playback_engine->audio_cache->get_memory_usage(1);
+	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)
+		cc = cwindow->playback_engine->audio_cache->get_memory_usage(1);
+	printf(" Audio cache %zu %zu %zu = %zu\n", mc, vc, cc, mc + vc + cc);
+	mc = video_cache->get_memory_usage(1);
+	vc = cc = 0;
+	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+		vc = vwindow->playback_engine->video_cache->get_memory_usage(1);
+	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
+		vc = cwindow->playback_engine->video_cache->get_memory_usage(1);
+	printf(" Video cache %zu %zu %zu = %zu\n", mc, vc, cc, mc + vc + cc);
 	printf(" Frame cache %zu\n", frame_cache->get_memory_usage());
 	printf(" Wave cahce %zu\n", wave_cache->get_memory_usage());
 	printf(" Tmpframes %zuk\n", BC_Resources::tmpframes.get_size());
