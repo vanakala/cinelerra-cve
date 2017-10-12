@@ -150,6 +150,23 @@ int TmpFrameCache::delete_oldest()
 	return 0;
 }
 
+void TmpFrameCache::delete_unused()
+{
+	TmpFrameCacheElem *nxt;
+
+	for(TmpFrameCacheElem *cur = first; cur;)
+	{
+		if(!cur->in_use)
+		{
+			nxt = cur->next;
+			delete cur;
+			cur = nxt;
+		}
+		else
+			cur = cur->next;
+	}
+}
+
 size_t TmpFrameCache::get_size()
 {
 	size_t res = 0;

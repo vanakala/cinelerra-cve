@@ -53,6 +53,7 @@ public:
 	VFrame *get_tmpframe(int w, int h, int colormodel);
 	void release_frame(VFrame *tmp_frame);
 	size_t get_size();
+	void delete_unused();
 	void dump(int indent = 0);
 private:
 	void delete_old_frames();
