@@ -32,23 +32,21 @@
 
 
 // Session shared between all clips
-
-
 class EDLSession
 {
 public:
 	EDLSession(EDL *edl);
 	~EDLSession();
 
-	int load_xml(FileXML *xml, int append_mode, uint32_t load_flags);
-	int save_xml(FileXML *xml);
-	int copy(EDLSession *session);
-	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
-	int save_audio_config(FileXML *xml);
-	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
-	int save_video_config(FileXML *xml);
-	int load_defaults(BC_Hash *defaults);
-	int save_defaults(BC_Hash *defaults);
+	void load_xml(FileXML *xml, int append_mode, uint32_t load_flags);
+	void save_xml(FileXML *xml);
+	void copy(EDLSession *session);
+	void load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
+	void save_audio_config(FileXML *xml);
+	void load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
+	void save_video_config(FileXML *xml);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 // Used by CWindowGUI during initialization.
 	char* get_cwindow_display();
 	void boundaries();
@@ -61,7 +59,7 @@ public:
 	int need_rerender(EDLSession *ptr);
 // Called by BRender to determine if any background rendered frames are valid.
 	void equivalent_output(EDLSession *session, double *result);
-	void dump();
+	void dump(int indent = 0);
 
 // calculates the frame offset for programme timecode
 	ptstime get_frame_offset();

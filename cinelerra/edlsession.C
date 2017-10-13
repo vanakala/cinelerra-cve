@@ -95,7 +95,6 @@ EDLSession::~EDLSession()
 	delete playback_config;
 }
 
-
 char* EDLSession::get_cwindow_display()
 {
 	if(playback_config->vconfig->x11_host[0])
@@ -118,22 +117,21 @@ int EDLSession::need_rerender(EDLSession *ptr)
 void EDLSession::equivalent_output(EDLSession *session, double *result)
 {
 	if(session->output_w != output_w ||
-		session->output_h != output_h ||
-		session->frame_rate != frame_rate ||
-		session->color_model != color_model ||
-		session->interpolation_type != interpolation_type ||
-		session->decode_subtitles != decode_subtitles)
+			session->output_h != output_h ||
+			session->frame_rate != frame_rate ||
+			session->color_model != color_model ||
+			session->interpolation_type != interpolation_type ||
+			session->decode_subtitles != decode_subtitles)
 		*result = 0;
 
 // If it's before the current brender_start, render extra data.
 // If it's after brender_start, check brender map.
 	if(brender_start != session->brender_start &&
-		(*result < 0 || *result > brender_start))
+			(*result < 0 || *result > brender_start))
 		*result = brender_start;
 }
 
-
-int EDLSession::load_defaults(BC_Hash *defaults)
+void EDLSession::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
@@ -143,13 +141,17 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 		sprintf(string, "ACHANNEL_ANGLE_%d", i);
 		int default_position = i * 30;
 
-		if(i == 0) default_position = 180;
+		if(i == 0)
+			default_position = 180;
 		else
-		if(i == 1) default_position = 0;
+		if(i == 1)
+			default_position = 0;
 		else
-		if(default_position == 90) default_position = 300;
+		if(default_position == 90)
+			default_position = 300;
 		else
-		if(default_position == 0) default_position = 330;
+		if(default_position == 0)
+			default_position = 330;
 
 		achannel_positions[i] = defaults->get(string, default_position);
 	}
@@ -255,10 +257,9 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
 	boundaries();
-	return 0;
 }
 
-int EDLSession::save_defaults(BC_Hash *defaults)
+void EDLSession::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
@@ -369,16 +370,10 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("METADATA_TITLE", metadata_title);
 	defaults->update("METADATA_COPYRIGHT", metadata_copyright);
 	defaults->update("DECODE_SUBTITLES", decode_subtitles);
-
-
-	return 0;
 }
-
-
 
 // GCC 3.0 fails to compile
 #define BC_INFINITY 65536
-
 
 void EDLSession::boundaries()
 {
@@ -404,16 +399,18 @@ void EDLSession::boundaries()
 	Workarounds::clamp(ruler_y1, 0.0, output_h);
 	Workarounds::clamp(ruler_y2, 0.0, output_h);
 
-	if(brender_start < 0) brender_start = 0.0;
+	if(brender_start < 0)
+		brender_start = 0.0;
 	Workarounds::clamp(awindow_folder, 0, AWINDOW_FOLDERS - 1);
 }
 
-
-
-int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_flags)
+void EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_flags)
 {
 	char string[1024];
-	if(append_mode) return 0;
+
+	if(append_mode)
+		return;
+
 	interpolation_type = file->tag.get_property("INTERPOLATION_TYPE", interpolation_type);
 	ColorModels::to_text(string, color_model);
 	color_model = ColorModels::from_text(file->tag.get_property("COLORMODEL", string));
@@ -434,14 +431,16 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	output_h = file->tag.get_property("OUTPUTH", output_h);
 	aspect_w = file->tag.get_property("ASPECTW", aspect_w);
 	aspect_h = file->tag.get_property("ASPECTH", aspect_h);
-	return 0;
 }
 
-int EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_flags)
+void EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_flags)
 {
 	char string[32];
+
 // load channels setting
-	if(append_mode) return 0;
+	if(append_mode)
+		return;
+
 	audio_channels = file->tag.get_property("CHANNELS", (int64_t)audio_channels);
 
 	for(int i = 0; i < audio_channels; i++)
@@ -451,19 +450,15 @@ int EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_
 	}
 
 	sample_rate = file->tag.get_property("SAMPLERATE", (int64_t)sample_rate);
-	return 0;
 }
 
-int EDLSession::load_xml(FileXML *file, 
+void EDLSession::load_xml(FileXML *file,
 	int append_mode, 
 	uint32_t load_flags)
 {
 	char string[BCTEXTLEN];
 
-	if(append_mode)
-	{
-	}
-	else
+	if(!append_mode)
 	{
 		assetlist_format = file->tag.get_property("ASSETLIST_FORMAT", assetlist_format);
 		for(int i = 0; i < ASSET_COLUMNS; i++)
@@ -526,13 +521,12 @@ int EDLSession::load_xml(FileXML *file,
 		decode_subtitles = file->tag.get_property("DECODE_SUBTITLES", decode_subtitles);
 		boundaries();
 	}
-	
-	return 0;
 }
 
-int EDLSession::save_xml(FileXML *file)
+void EDLSession::save_xml(FileXML *file)
 {
 	char string[BCTEXTLEN];
+
 	file->tag.set_title("SESSION");
 	file->tag.set_property("ASSETLIST_FORMAT", assetlist_format);
 	for(int i = 0; i < ASSET_COLUMNS; i++)
@@ -592,25 +586,24 @@ int EDLSession::save_xml(FileXML *file)
 
 	file->tag.set_property("DECODE_SUBTITLES", decode_subtitles);
 
-
-
 	file->append_tag();
 	file->tag.set_title("/SESSION");
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
-	return 0;
 }
 
-int EDLSession::save_video_config(FileXML *file)
+void EDLSession::save_video_config(FileXML *file)
 {
 	char string[1024];
+
 	file->tag.set_title("VIDEO");
 	file->tag.set_property("INTERPOLATION_TYPE", interpolation_type);
 	file->tag.set_property("COLORMODEL", ColorModels::name(color_model));
 	file->tag.set_property("INTERLACE_MODE",
 		AInterlaceModeSelection::xml_text(interlace_mode));
 	file->tag.set_property("CHANNELS", video_channels);
+
 	for(int i = 0; i < video_channels; i++)
 	{
 		sprintf(string, "VCHANNEL_X_%d", i);
@@ -630,31 +623,30 @@ int EDLSession::save_video_config(FileXML *file)
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
-	return 0;
 }
 
-int EDLSession::save_audio_config(FileXML *file)
+void EDLSession::save_audio_config(FileXML *file)
 {
 	char string[1024];
+
 	file->tag.set_title("AUDIO");
 	file->tag.set_property("SAMPLERATE", (int64_t)sample_rate);
 	file->tag.set_property("CHANNELS", (int64_t)audio_channels);
-	
+
 	for(int i = 0; i < audio_channels; i++)
 	{
 		sprintf(string, "ACHANNEL_ANGLE_%d", i);
 		file->tag.set_property(string, achannel_positions[i]);
 	}
-	
+
 	file->append_tag();
 	file->tag.set_title("/AUDIO");
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
-	return 0;
 }
 
-int EDLSession::copy(EDLSession *session)
+void EDLSession::copy(EDLSession *session)
 {
 // Audio channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -757,8 +749,6 @@ int EDLSession::copy(EDLSession *session)
 	strcpy(metadata_title, session->metadata_title);
 	strcpy(metadata_copyright, session->metadata_copyright);
 	decode_subtitles = session->decode_subtitles;
-	
-	return 0;
 }
 
 ptstime EDLSession::get_frame_offset()
@@ -790,14 +780,17 @@ char *EDLSession::configuration_path(const char *filename, char *outbuf)
 	strcat(outbuf, filename);
 }
 
-void EDLSession::dump()
+void EDLSession::dump(int indent)
 {
-	printf("EDLSession::dump\n");
-	printf("    audio_tracks=%d audio_channels=%d sample_rate=%d\n"
-			"video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f decode subtitles=%d\n", 
+	printf("%*sEDLSession %p dump\n", indent, "", this);
+	indent += 2;
+	printf("%*saudio_tracks=%d audio_channels=%d sample_rate=%d\n"
+		"%*svideo_tracks=%d frame_rate=%.2f output_w=%d output_h=%d aspect_w=%.2f aspect_h=%.2f decode subtitles=%d\n",
+		indent, "",
 		audio_tracks, 
 		audio_channels, 
 		sample_rate, 
+		indent, "",
 		video_tracks, 
 		frame_rate, 
 		output_w, 
