@@ -244,7 +244,7 @@ public:
 	int drag_radius;
 
 // Filebox
-	static suffix_to_type_t suffix_to_type[TOTAL_SUFFIXES];
+	static suffix_to_type_t suffix_to_type[];
 	static VFrame *type_to_icon[TOTAL_ICONS];
 // Display mode for fileboxes
 	int filebox_mode;
