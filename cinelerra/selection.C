@@ -37,6 +37,8 @@
 
 #include <stdlib.h>
 
+#define ASPEQU(x, y) (fabsl((x) - (y)) < 0.001)
+
 const struct selection_int SampleRateSelection::sample_rates[] =
 {
 	{ "8000", 8000 },
@@ -240,12 +242,15 @@ int FrameSizeSelection::limits(int *width, int *height)
 	return result;
 }
 
+
 AspectRatioSelection::AspectRatioSelection(int x1, int y1, int x2, int y2,
-	BC_WindowBase *base, double *value1, double *value2, int *frame_w, int *frame_h)
- : Selection(x1, y1, x2, y2, base, aspect_ratios, value1, value2, ':')
+	BC_WindowBase *base, double *aspect, int *frame_w, int *frame_h)
+ : Selection(x1, y1, x2, y2, base, aspect_ratios, &waspect, &haspect, ':')
 {
 	this->frame_w = frame_w;
 	this->frame_h = frame_h;
+	this->aspect = aspect;
+	aspect_to_wh(&waspect, &haspect, *aspect);
 }
 
 void AspectRatioSelection::update_auto(double value1, double value2)
@@ -256,10 +261,12 @@ void AspectRatioSelection::update_auto(double value1, double value2)
 	{
 		*doublevalue = value2;
 		*doublevalue2 = value1;
+		if(ASPEQU(value2, 1.0))
+			defined_aspect(doublevalue2, doublevalue);
 	}
-
 	firstbox->update(*doublevalue2);
 	BC_TextBox::update(*doublevalue);
+	*aspect = *doublevalue2 / *doublevalue;
 }
 
 void AspectRatioSelection::auto_aspect_ratio(double *aspect_w, double *aspect_h,
@@ -275,23 +282,43 @@ void AspectRatioSelection::aspect_to_wh(double *aspect_w, double *aspect_h,
 	double aspect_ratio)
 {
 	int denominator;
+	const struct selection_2double *dasp;
 
 	if(aspect_ratio < 0)
 		return;
 
-	if(fabsl(aspect_ratio - 1.0) < 0.001)
+	if(ASPEQU(aspect_ratio, 1.0))
 	{
 		*aspect_w = *aspect_h = 1.0;
 		return;
 	}
 
-	for(denominator = 1;
-		denominator < 100 &&
-			fabsl(aspect_ratio * denominator - round(aspect_ratio * denominator)) > .001;
-		denominator++);
+	if(!defined_aspect(aspect_w, aspect_h))
+	{
+		for(denominator = 1;
+			denominator < 100 &&
+				!ASPEQU(aspect_ratio * denominator, round(aspect_ratio * denominator));
+			denominator++);
+		*aspect_w = denominator * aspect_ratio;
+		*aspect_h = denominator;
+		defined_aspect(aspect_w, aspect_h);
+	}
+}
 
-	*aspect_w = denominator * aspect_ratio;
-	*aspect_h = denominator;
+int AspectRatioSelection::defined_aspect(double *aw, double *ah)
+{
+	double asp = *aw / *ah;
+
+	for(int i = 1; aspect_ratios[i].text; i++)
+	{
+		if(ASPEQU(asp, aspect_ratios[i].value1 / aspect_ratios[i].value2))
+		{
+			*aw = aspect_ratios[i].value1;
+			*ah = aspect_ratios[i].value2;
+			return 1;
+		}
+	}
+	return 0;
 }
 
 Selection::Selection(int x, int y, BC_WindowBase *base,

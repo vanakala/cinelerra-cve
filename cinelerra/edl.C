@@ -781,7 +781,7 @@ void EDL::calculate_conformed_dimensions(double &w, double &h)
 
 double EDL::get_aspect_ratio()
 {
-	return session->aspect_w / session->aspect_h;
+	return session->aspect_ratio;
 }
 
 void EDL::dump(int indent)
@@ -805,12 +805,11 @@ void EDL::dump(int indent)
 			session->video_tracks,
 			session->frame_rate,
 			session->frames_per_foot);
-		printf("%*soutput_w: %d output_h: %d aspect_w: %.3f aspect_h %.3f color_model %s\n",
+		printf("%*soutput_w: %d output_h: %d aspect_ratio %.3f color_model %s\n",
 			indent, "",
 			session->output_w,
 			session->output_h,
-			session->aspect_w,
-			session->aspect_h,
+			session->aspect_ratio,
 			ColorModels::name(session->color_model));
 
 		printf("%*sEDLS (total %d)\n", indent, "", clips.total);

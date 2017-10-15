@@ -77,8 +77,7 @@ public:
 	AutoConf *auto_conf;
 	float actual_frame_rate;
 // Aspect ratio for video
-	double aspect_w;
-	double aspect_h;
+	double aspect_ratio;
 	int audio_channels;
 	int audio_tracks;
 // automation follows edits during editing

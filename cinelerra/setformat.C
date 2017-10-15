@@ -193,8 +193,7 @@ void SetFormatThread::update()
 	window->ratio[0]->update(ratio[0]);
 	ratio[1] = (double)dimension[1] / orig_dimension[1];
 	window->ratio[1]->update(ratio[1]);
-	window->aspectratio_selection->update_auto(new_settings->session->aspect_w, 
-		new_settings->session->aspect_h);
+	window->aspectratio_selection->update_auto(new_settings->session->aspect_ratio, 1.0);
 	window->interlace_selection->update(new_settings->session->interlace_mode);
 	window->cmodel_selection->update(new_settings->session->color_model);
 
@@ -359,11 +358,9 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	x = mwindow->theme->setformat_x3;
 	add_subwindow(aspectratio_selection = new AspectRatioSelection(x, y,
 		x + SELECTION_TB_WIDTH + 15, y, this,
-		&thread->new_settings->session->aspect_w,
-		&thread->new_settings->session->aspect_h,
+		&thread->new_settings->session->aspect_ratio,
 		&thread->dimension[0], &thread->dimension[1]));
-	aspectratio_selection->update_auto(thread->new_settings->session->aspect_w,
-		thread->new_settings->session->aspect_h);
+	aspectratio_selection->update_auto(thread->new_settings->session->aspect_ratio, 1.0);
 	y += mwindow->theme->setformat_margin;
 
 // --------------------

@@ -134,6 +134,7 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 void EDLSession::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
+	double aspect_w, aspect_h;
 
 // Default channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -158,8 +159,11 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	aconfig_duplex->load_defaults(defaults);
 	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", (float)-1);
 	assetlist_format = defaults->get("ASSETLIST_FORMAT", ASSETS_ICONS);
+	aspect_w = aspect_h = 1.0;
 	aspect_w = defaults->get("ASPECTW", aspect_w);
 	aspect_h = defaults->get("ASPECTH", aspect_h);
+	aspect_ratio = aspect_w / aspect_h;
+	aspect_ratio = defaults->get("ASPECTRATIO", aspect_ratio);
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 	{
 		sprintf(string, "ASSET_COLUMN%d", i);
@@ -279,8 +283,9 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	auto_conf->save_defaults(defaults);
 	defaults->update("ACTUAL_FRAME_RATE", actual_frame_rate);
 	defaults->update("ASSETLIST_FORMAT", assetlist_format);
-	defaults->update("ASPECTW", aspect_w);
-	defaults->update("ASPECTH", aspect_h);
+	defaults->delete_key("ASPECTW");
+	defaults->delete_key("ASPECTH");
+	defaults->update("ASPECTRATIO", aspect_ratio);
 	defaults->update("ATRACKS", audio_tracks);
 	defaults->update("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	defaults->update("BRENDER_START", brender_start);
@@ -407,6 +412,7 @@ void EDLSession::boundaries()
 void EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_flags)
 {
 	char string[1024];
+	double aspect_w, aspect_h;
 
 	if(append_mode)
 		return;
@@ -429,8 +435,11 @@ void EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load
 	frames_per_foot = file->tag.get_property("FRAMES_PER_FOOT", frames_per_foot);
 	output_w = file->tag.get_property("OUTPUTW", output_w);
 	output_h = file->tag.get_property("OUTPUTH", output_h);
+	aspect_w = aspect_h = 1.0;
 	aspect_w = file->tag.get_property("ASPECTW", aspect_w);
 	aspect_h = file->tag.get_property("ASPECTH", aspect_h);
+	aspect_ratio = aspect_w / aspect_h;
+	aspect_ratio = file->tag.get_property("ASPECTRATIO", aspect_ratio);
 }
 
 void EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_flags)
@@ -616,8 +625,7 @@ void EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("FRAMES_PER_FOOT", frames_per_foot);
 	file->tag.set_property("OUTPUTW", output_w);
 	file->tag.set_property("OUTPUTH", output_h);
-	file->tag.set_property("ASPECTW", aspect_w);
-	file->tag.set_property("ASPECTH", aspect_h);
+	file->tag.set_property("ASPECTRATIO", aspect_ratio);
 	file->append_tag();
 	file->tag.set_title("/VIDEO");
 	file->append_tag();
@@ -661,8 +669,7 @@ void EDLSession::copy(EDLSession *session)
 	}
 	assetlist_format = session->assetlist_format;
 	auto_conf->copy_from(session->auto_conf);
-	aspect_w = session->aspect_w;
-	aspect_h = session->aspect_h;
+	aspect_ratio = session->aspect_ratio;
 	audio_channels = session->audio_channels;
 	audio_tracks = session->audio_tracks;
 	autos_follow_edits = session->autos_follow_edits;
@@ -785,7 +792,7 @@ void EDLSession::dump(int indent)
 	printf("%*sEDLSession %p dump\n", indent, "", this);
 	indent += 2;
 	printf("%*saudio_tracks=%d audio_channels=%d sample_rate=%d\n"
-		"%*svideo_tracks=%d frame_rate=%.2f output_w=%d output_h=%d aspect_w=%.2f aspect_h=%.2f decode subtitles=%d\n",
+		"%*svideo_tracks=%d frame_rate=%.2f output_w=%d output_h=%d aspect_ratio=%.2f decode subtitles=%d\n",
 		indent, "",
 		audio_tracks, 
 		audio_channels, 
@@ -795,7 +802,6 @@ void EDLSession::dump(int indent)
 		frame_rate, 
 		output_w, 
 		output_h, 
-		aspect_w, 
-		aspect_h,
+		aspect_ratio,
 		decode_subtitles);
 }

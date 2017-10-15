@@ -134,6 +134,7 @@ struct formatpresets *FormatPresets::find_preset(EDL *edl)
 	for(int i = 0; i < MAX_NUM_PRESETS; i++)
 	{
 		struct formatpresets *preset = &format_presets[i];
+		double ratio = (double)preset->aspect_w / preset->aspect_h;
 
 		if(edl->session->audio_tracks == preset->audio_tracks &&
 			edl->session->audio_channels == preset->audio_channels &&
@@ -142,8 +143,7 @@ struct formatpresets *FormatPresets::find_preset(EDL *edl)
 			EQUIV(edl->session->frame_rate, preset->frame_rate) &&
 			edl->session->output_w == preset->output_w &&
 			edl->session->output_h == preset->output_h &&
-			EQUIV(edl->session->aspect_w, preset->aspect_w) &&
-			EQUIV(edl->session->aspect_h, preset->aspect_h) &&
+			EQUIV(edl->session->aspect_ratio, ratio) &&
 			edl->session->interlace_mode == preset->interlace_mode &&
 			edl->session->color_model == preset->color_model)
 		{
@@ -190,8 +190,7 @@ void FormatPresets::fill_preset_defaults(const char *preset, EDLSession *session
 			session->frame_rate = fpr->frame_rate;
 			session->output_w = fpr->output_w;
 			session->output_h = fpr->output_h;
-			session->aspect_w = fpr->aspect_w;
-			session->aspect_h = fpr->aspect_h;
+			session->aspect_ratio = (double)fpr->aspect_w / fpr->aspect_h;
 			session->interlace_mode = fpr->interlace_mode;
 			session->color_model = fpr->color_model;
 			return;
