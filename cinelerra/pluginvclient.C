@@ -25,7 +25,6 @@
 #include "cinelerra.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"
-#include "selection.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -99,8 +98,7 @@ void PluginVClient::init_realtime_parameters()
 {
 	project_frame_rate = server->edl->session->frame_rate;
 	project_color_model = server->edl->session->color_model;
-	AspectRatioSelection::aspect_to_wh(&aspect_w, &aspect_h,
-		server->edl->session->aspect_ratio);
+	aspect_ratio = server->edl->session->aspect_ratio;
 }
 
 void PluginVClient::process_frame(VFrame **frame)

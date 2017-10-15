@@ -420,16 +420,16 @@ erret:
 	double row_factor, col_factor;
 	double row_offset = 0.5, col_offset = 0.5;	// for rounding
 
-	if (preserve_aspect && aspect_w != 0 && aspect_h != 0)
+	if(preserve_aspect && aspect_ratio != 0)
 	{
-		row_factor = (height-1)/aspect_h;
-		col_factor = (width-1)/aspect_w;
+		row_factor = (height-1);
+		col_factor = (width-1) / aspect_ratio;
 		if (row_factor < col_factor)
 			col_factor = row_factor;
 		else
 			row_factor = col_factor;
-		row_factor *= aspect_h/(double)(frame_height-1);
-		col_factor *= aspect_w/(double)(frame_width-1);
+		row_factor *= 1.0 / (double)(frame_height-1);
+		col_factor *= aspect_ratio / (double)(frame_width-1);
 
 		// center the pattern over the frame
 		row_offset += (height-1-(frame_height-1)*row_factor)/2;
