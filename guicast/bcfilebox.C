@@ -742,7 +742,7 @@ BC_Pixmap* BC_FileBox::get_icon(char *path, int is_dir)
 		suffix++;
 		if(*suffix != 0)
 		{
-			for(int i = 0; i < TOTAL_SUFFIXES; i++)
+			for(int i = 0; get_resources()->suffix_to_type[i].suffix; i++)
 			{
 				if(!strcasecmp(suffix, BC_WindowBase::get_resources()->suffix_to_type[i].suffix)) 
 				{

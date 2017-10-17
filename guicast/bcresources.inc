@@ -26,7 +26,6 @@
 class BC_Resources;
 
 #define TOTAL_ICONS 5
-#define TOTAL_SUFFIXES 7
 
 // Length of language and region buffer
 // Assuming max length of both strings 3
