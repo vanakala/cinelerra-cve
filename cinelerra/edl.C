@@ -794,25 +794,9 @@ void EDL::dump(int indent)
 	indent += 2;
 	if(!parent_edl)
 	{
-		printf("%*saudio_channels: %d audio_tracks: %d sample_rate: %d\n",
-			indent, "",
-			session->audio_channels,
-			session->audio_tracks,
-			session->sample_rate);
-		printf("%*svideo_channels: %d video_tracks: %d frame_rate: %.6f frames_per_foot: %.2f\n",
-			indent, "",
-			session->video_channels,
-			session->video_tracks,
-			session->frame_rate,
-			session->frames_per_foot);
-		printf("%*soutput_w: %d output_h: %d aspect_ratio %.3f color_model %s\n",
-			indent, "",
-			session->output_w,
-			session->output_h,
-			session->aspect_ratio,
-			ColorModels::name(session->color_model));
+		session->dump(indent + 1);
 
-		printf("%*sEDLS (total %d)\n", indent, "", clips.total);
+		printf("%*sEDLS (total %d)\n", indent + 1, "", clips.total);
 
 		for(int i = 0; i < clips.total; i++)
 			clips.values[i]->dump(indent + 2);

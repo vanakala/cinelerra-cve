@@ -791,17 +791,10 @@ void EDLSession::dump(int indent)
 {
 	printf("%*sEDLSession %p dump\n", indent, "", this);
 	indent += 2;
-	printf("%*saudio_tracks=%d audio_channels=%d sample_rate=%d\n"
-		"%*svideo_tracks=%d frame_rate=%.2f output_w=%d output_h=%d aspect_ratio=%.2f decode subtitles=%d\n",
-		indent, "",
-		audio_tracks, 
-		audio_channels, 
-		sample_rate, 
-		indent, "",
-		video_tracks, 
-		frame_rate, 
-		output_w, 
-		output_h, 
-		aspect_ratio,
-		decode_subtitles);
+	printf("%*saudio: tracks %d channels %d sample_rate %d\n",
+		indent, "", audio_tracks, audio_channels, sample_rate);
+	printf("%*svideo: tracks %d framerate %.2f output %dx%d aspect %.3f '%s'\n",
+		indent, "", video_tracks, frame_rate, output_w, output_h, aspect_ratio,
+		ColorModels::name(color_model));
+	printf("%*ssubtitles: decode %d\n", indent, "", decode_subtitles);
 }
