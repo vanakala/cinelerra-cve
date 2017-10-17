@@ -147,7 +147,7 @@ void MWindow::asset_to_size()
 
 		edl->session->aspect_ratio =
 			session->drag_assets->values[0]->aspect_ratio;
-
+		AspectRatioSelection::limits(&edl->session->aspect_ratio, w, h);
 		save_backup();
 
 		undo->update_undo(_("asset to size"), LOAD_ALL);

@@ -321,6 +321,19 @@ int AspectRatioSelection::defined_aspect(double *aw, double *ah)
 	return 0;
 }
 
+int AspectRatioSelection::limits(double *aspect, int w, int h)
+{
+	if(*aspect > MIN_ASPECT_RATIO && *aspect < MAX_ASPECT_RATIO)
+		return 0;
+
+	if(w > 0 && h > 0)
+		*aspect = (double) w / h;
+	else
+		*aspect = 1.0;
+
+	return 1;
+}
+
 Selection::Selection(int x, int y, BC_WindowBase *base,
 	const struct selection_int items[], int *value, int options)
  : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, "")

@@ -59,6 +59,10 @@
 #define MIN_FRAME_RATE 1
 #define MAX_FRAME_RATE 1500
 
+// Frame aspect ratio limits
+#define MIN_ASPECT_RATIO 0.001
+#define MAX_ASPECT_RATIO 100.0
+
 // Audio sample formats (must be bits)
 #define SBITS_LINEAR8    0x0001
 #define SBITS_LINEAR16   0x0002

@@ -393,6 +393,7 @@ void EDLSession::boundaries()
 	SampleRateSelection::limits(&sample_rate);
 	FrameRateSelection::limits(&frame_rate);
 	FrameSizeSelection::limits(&output_w, &output_h);
+	AspectRatioSelection::limits(&aspect_ratio, output_w, output_h);
 
 	Workarounds::clamp(crop_x1, 0, output_w);
 	Workarounds::clamp(crop_x2, 0, output_w);

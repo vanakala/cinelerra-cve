@@ -181,6 +181,7 @@ public:
 	static void aspect_to_wh(double *aspect_w, double *aspect_h,
 		double aspect_ratio);
 	static int defined_aspect(double *aw, double *ah);
+	static int limits(double *aspect, int w, int h);
 
 private:
 	int *frame_w;
