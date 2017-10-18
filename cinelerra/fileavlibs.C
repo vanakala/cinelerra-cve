@@ -270,6 +270,8 @@ int FileAVlibs::probe_input(Asset *asset)
 						asset->aspect_ratio =
 							(double)(decoder_ctx->coded_width * decoder_ctx->sample_aspect_ratio.num) /
 							(decoder_ctx->coded_height * decoder_ctx->sample_aspect_ratio.den);
+					AspectRatioSelection::limits(&asset->aspect_ratio,
+						asset->width, asset->height);
 					strncpy(asset->vcodec, codec->name, MAX_LEN_CODECNAME);
 					asset->vcodec[MAX_LEN_CODECNAME - 1] = 0;
 					asset->video_length = stream->nb_frames;
@@ -293,6 +295,7 @@ int FileAVlibs::probe_input(Asset *asset)
 	}
 	avformat_close_input(&ctx);
 	avlibs_lock->unlock();
+
 	if(asset->format != FILE_UNKNOWN)
 	{
 		int fsup = supports(asset->format, 1);
@@ -464,9 +467,12 @@ int FileAVlibs::open_file(int rd, int wr)
 						asset->height = decoder_context->height;
 
 						asset->frame_rate = av_q2d(stream->r_frame_rate);
-						asset->aspect_ratio =
+						if(decoder_context->coded_height && decoder_context->sample_aspect_ratio.den)
+							asset->aspect_ratio =
 								(double)(decoder_context->coded_width * decoder_context->sample_aspect_ratio.num) /
 								(decoder_context->coded_height * decoder_context->sample_aspect_ratio.den);
+						AspectRatioSelection::limits(&asset->aspect_ratio,
+							asset->width, asset->height);
 						if(codec_id == AV_CODEC_ID_NONE ||
 							!(codec = avcodec_find_decoder(codec_id)))
 						{
