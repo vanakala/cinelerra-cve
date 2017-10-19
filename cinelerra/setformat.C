@@ -140,6 +140,8 @@ void SetFormatThread::apply_changes()
 	if(FrameSizeSelection::limits(&dimension[0], &dimension[1]) < 0)
 		errorbox(_("Frame size is out of limits (%d..%dx%d..%d).\nCorrection applied."),
 			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
+	AspectRatioSelection::limits(&new_settings->session->aspect_ratio,
+		dimension[0], dimension[1]);
 
 	mwindow->edl->copy_session(new_settings, 1);
 	mwindow->edl->session->output_w = dimension[0];
