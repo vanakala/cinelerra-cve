@@ -381,6 +381,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 intauto.h \
 		 intautos.h \
 		 interfaceprefs.h \
+		 interlacemodes.h \
 		 keyframe.h \
 		 keyframepopup.h \
 		 keyframes.h \
