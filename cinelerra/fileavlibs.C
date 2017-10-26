@@ -572,6 +572,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_FLAC:
 		case FILE_MPEGTS:
 		case FILE_RAWDV:
+		case FILE_YUV:
 			break;
 
 		default:
@@ -655,6 +656,8 @@ int FileAVlibs::open_file(int rd, int wr)
 			if(aparam->subparams &&
 					(bparam = aparam->subparams->find(encoder_params[ENC_PIX_FMTS].name)))
 				video_ctx->pix_fmt = (AVPixelFormat)bparam->intvalue;
+			else if(video_ctx->pix_fmt == AV_PIX_FMT_NONE)
+				video_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
 			video_ctx->sample_aspect_ratio =
 				av_mul_q(av_d2q(asset->aspect_ratio, 40),
 				(AVRational){video_ctx->height, video_ctx->width});
@@ -664,7 +667,6 @@ int FileAVlibs::open_file(int rd, int wr)
 
 			if(metalist && (aparam = metalist->find("strict")))
 				av_dict_set(&dict, "strict", aparam->stringvalue, 0);
-
 			if((rv = avcodec_open2(video_ctx, codec, &dict)) < 0)
 			{
 				av_dict_free(&dict);
@@ -915,7 +917,9 @@ void FileAVlibs::close_file()
 					}
 				}
 			}
-			if(avvframe && headers_written)
+
+			if(avvframe && headers_written && !(context->oformat->flags & AVFMT_RAWPICTURE &&
+					context->streams[video_index]->codec->codec->id == AV_CODEC_ID_RAWVIDEO))
 			{
 				AVPacket pkt;
 				int got_output, rv;
@@ -1618,11 +1622,31 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 
 		AVPacket pkt = {0};
 		av_init_packet(&pkt);
-		if((rv = avcodec_encode_video2(video_ctx, &pkt, avvframe, &got_it)) < 0)
+
+		if(context->oformat->flags & AVFMT_RAWPICTURE &&
+				video_ctx->codec->id == AV_CODEC_ID_RAWVIDEO)
 		{
-			liberror(rv, _("Failed to encode video frame"));
-			avlibs_lock->unlock();
-			return 1;
+			// Avoid copy like in ffmpeg 2.8
+			if(avvframe->interlaced_frame)
+				stream->codec->field_order = avvframe->top_field_first ?
+					AV_FIELD_TB : AV_FIELD_BT;
+			else
+				stream->codec->field_order = AV_FIELD_PROGRESSIVE;
+			pkt.data = (uint8_t *)avvframe;
+			pkt.size = sizeof(AVPicture);
+			pkt.pts = av_rescale_q(avvframe->pts,
+				video_ctx->time_base, stream->time_base);
+			pkt.flags |= AV_PKT_FLAG_KEY;
+			got_it = 1;
+		}
+		else
+		{
+			if((rv = avcodec_encode_video2(video_ctx, &pkt, avvframe, &got_it)) < 0)
+			{
+				liberror(rv, _("Failed to encode video frame"));
+				avlibs_lock->unlock();
+				return 1;
+			}
 		}
 		if(got_it)
 		{
