@@ -172,7 +172,9 @@ int VModule::import_frame(VFrame *output,
 				current_edit->asset->interlace_fixmethod);
 
 			// Compensate for the said interlacing...
-			switch (interlace_fixmethod) {
+			switch(interlace_fixmethod)
+			{
+			case BC_ILACE_FIXMETHOD_NONE:
 				break;
 			case BC_ILACE_FIXMETHOD_UPONE:
 				out_y1--;
