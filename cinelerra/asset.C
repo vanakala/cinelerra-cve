@@ -930,6 +930,8 @@ void Asset::load_defaults(Paramlist *list, int options)
 		format_changed();
 		jpeg_quality = list->get("jpeg_quality", jpeg_quality);
 		aspect_ratio = list->get("aspect_ratio", aspect_ratio);
+		list->get("pipe", pipe);
+		use_pipe = list->get("use_pipe", use_pipe);
 	}
 
 	if(options & ASSET_BITS)
@@ -969,6 +971,8 @@ void Asset::save_defaults(Paramlist *list, int options)
 		list->set("video_codec", vcodec);
 		list->set("jpeg_quality", jpeg_quality);
 		list->set("aspect_ratio", aspect_ratio);
+		list->set("pipe", pipe);
+		list->set("use_pipe", use_pipe);
 	}
 	if(options & ASSET_BITS)
 	{
