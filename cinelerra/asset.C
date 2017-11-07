@@ -1223,10 +1223,12 @@ void Asset::dump(int indent, int options)
 	printf("%*s  vcodec '%s' aspect_ratio %.2f interlace_mode %s\n",
 		indent, "", vcodec, aspect_ratio,
 		AInterlaceModeSelection::name(interlace_mode));
-	printf("%*s  length %.2f (%d) subtitles %d (active %d) image %d\n", indent, "",
-		video_duration, video_length, subtitles, active_subtitle, single_image);
+	printf("%*s  length %.2f (%d) subtitles %d (active %d) image %d pipe %d\n", indent, "",
+		video_duration, video_length, subtitles, active_subtitle, single_image, use_pipe);
 	printf("%*s  reel_name %s reel_number %i tcstart %" PRId64 " tcend %" PRId64 " tcf %d\n",
 		indent, "", reel_name, reel_number, tcstart, tcend, tcformat);
+	if(use_pipe && pipe[0])
+		printf("%*s  pipe: '%s'\n", indent, "", pipe);
 	if(options & (ASSETDUMP_RENDERPTRS | ASSETDUMP_RENDERPARAMS))
 		printf("%*s  renderprofile: '%s'\n", indent, "", renderprofile_path);
 	if(options & ASSETDUMP_RENDERPTRS)
