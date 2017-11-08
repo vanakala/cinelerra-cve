@@ -36,6 +36,7 @@
 #include "mwindow.h"
 #include "paramlist.h"
 #include "paramlistwindow.h"
+#include "pipeconfig.h"
 #include "subselection.h"
 #include "theme.h"
 #include "vframe.h"
@@ -68,6 +69,7 @@ AVlibsConfig::AVlibsConfig(Asset *asset, Paramlist *codecs, int options)
 	privbutton = 0;
 	privtitle = 0;
 	okbutton = 0;
+	pipeconfig = 0;
 	this->options = options;
 	this->asset = asset;
 	this->codecs = codecs;
@@ -191,6 +193,20 @@ void AVlibsConfig::draw_bottomhalf(Param *codec, Param *defs)
 		privtitle->reposition_window(base_left, top);
 	}
 	top += privbutton->get_h();
+
+	if(asset->format == FILE_YUV)
+	{
+		add_subwindow(pipeconfig = new PipeConfigWindow(left, top, asset));
+		pipeconfig->draw_window();
+		top += pipeconfig->get_h();
+		if(pipeconfig->get_w() > subw)
+			subw = pipeconfig->get_w();
+	}
+	else
+	{
+		delete pipeconfig;
+		pipeconfig = 0;
+	}
 
 	int h = top + BC_WindowBase::get_resources()->ok_images[0]->get_h() + 30;
 	subw += base_left;

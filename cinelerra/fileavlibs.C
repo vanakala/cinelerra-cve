@@ -36,6 +36,8 @@
 #include "mwindow.h"
 #include "paramlist.h"
 #include "paramlistwindow.h"
+#include "pipe.h"
+#include "pipeconfig.h"
 #include "preferences.h"
 #include "selection.h"
 #include "theme.h"
@@ -53,6 +55,8 @@
 #include <string.h>
 
 extern const char *version_name;
+
+#define AVIO_BUFFSIZE 4096
 
 struct  avlib_formattable FileAVlibs::known_formats[] =
 {
@@ -124,6 +128,17 @@ extern "C"
 #include <libavutil/opt.h>
 #include <libavutil/pixdesc.h>
 #include <libavformat/internal.h>
+int write_io_packet(void *opaque, uint8_t *buf, int buf_size);
+}
+
+int write_io_packet(void *opaque, uint8_t *buf, int buf_size)
+{
+	int fd = *(int*)opaque;
+
+	if(write(fd, buf, buf_size) != buf_size)
+		return AVERROR(EIO);
+
+	return buf_size;
 }
 
 Mutex* FileAVlibs::avlibs_lock = new Mutex("FileAVlibs::avlibs_lock");
@@ -139,6 +154,7 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	sws_ctx = 0;
 	swr_ctx = 0;
 	tocfile = 0;
+	stream_pipe = 0;
 	if(mwindow_global && mwindow_global->edl->session->show_avlibsmsgs)
 		av_log_set_level(AV_LOG_INFO);
 	else
@@ -151,6 +167,9 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	resample_fill = 0;
 	resample_size = 0;
 	sample_bytes = 0;
+	avio_ctx = 0;
+	avio_buffer = 0;
+	avio_fd = -1;
 	memset(resampled_data, 0, sizeof(resampled_data));
 }
 
@@ -560,6 +579,8 @@ int FileAVlibs::open_file(int rd, int wr)
 		int rv;
 		Paramlist *metalist;
 		Param *aparam, *bparam;
+		const char *dstpath;
+		uint8_t *avio_buffer = 0;
 
 		switch(asset->format)
 		{
@@ -572,7 +593,19 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_FLAC:
 		case FILE_MPEGTS:
 		case FILE_RAWDV:
+			break;
 		case FILE_YUV:
+			if(asset->use_pipe && asset->pipe[0])
+			{
+				stream_pipe = new Pipe(asset->pipe, asset->path);
+				if(stream_pipe->open_write())
+				{
+					errormsg(_("Failed to create pipe"));
+					avlibs_lock->unlock();
+					return 1;
+				}
+				avio_fd = stream_pipe->fd;
+			}
 			break;
 
 		default:
@@ -580,8 +613,15 @@ int FileAVlibs::open_file(int rd, int wr)
 			avlibs_lock->unlock();
 			return 1;
 		}
+		if(avio_fd < 0)
+			dstpath = asset->path;
+		else
+		{
+			dstpath = 0;
+			avio_buffer = (uint8_t*)av_malloc(AVIO_BUFFSIZE);
+		}
 		if((rv = avformat_alloc_output_context2(&context, NULL,
-				encoder_formatname(asset->format), asset->path)) < 0)
+				encoder_formatname(asset->format), dstpath)) < 0)
 		{
 			liberror(rv, _("Failed to allocate output context"));
 			avlibs_lock->unlock();
@@ -805,6 +845,19 @@ int FileAVlibs::open_file(int rd, int wr)
 			return 1;
 		}
 
+		if(avio_buffer)
+		{
+			if(!(avio_ctx = avio_alloc_context(avio_buffer, AVIO_BUFFSIZE,
+					1, &avio_fd, 0, write_io_packet, 0)))
+			{
+				errormsg(_("Failed to allocate output IO context"));
+				avlibs_lock->unlock();
+				return 1;
+			}
+			avio_buffer = 0;
+			context->pb = avio_ctx;
+		}
+		else
 		if(!(fmt->flags & AVFMT_NOFILE))
 		{
 			if((rv = avio_open(&context->pb, context->filename, AVIO_FLAG_WRITE)) < 0)
@@ -953,9 +1006,21 @@ void FileAVlibs::close_file()
 				avcodec_close(context->streams[video_index]->codec);
 			if(audio_index >= 0)
 				avcodec_close(context->streams[audio_index]->codec);
+
+			if(avio_ctx)
+			{
+				av_freep(&avio_ctx->buffer);
+				av_freep(&avio_ctx);
+			}
+			else
+			if(avio_buffer)
+				av_freep(&avio_buffer);
+			else
 			if(!(context->oformat->flags & AVFMT_NOFILE))
 				avio_closep(&context->pb);
 			avformat_free_context(context);
+			delete stream_pipe;
+			stream_pipe = 0;
 			context = 0;
 		}
 	}
@@ -2175,6 +2240,12 @@ void FileAVlibs::get_parameters(BC_WindowBase *parent_window,
 				*plist = window->codec_private;
 			window->codec_private = 0;
 			delete defaults;
+		}
+		if(asset->format == FILE_YUV && window->pipeconfig)
+		{
+			strcpy(asset->pipe, window->pipeconfig->pipe_textbox->get_text());
+			asset->use_pipe = window->pipeconfig->pipe_checkbox->get_value();
+			window->pipeconfig->save_defaults();
 		}
 	}
 	delete window;

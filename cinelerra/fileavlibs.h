@@ -32,6 +32,7 @@
 #include "fileavlibs.inc"
 #include "mutex.inc"
 #include "paramlist.inc"
+#include "pipe.inc"
 #include "vframe.inc"
 
 extern "C"
@@ -190,6 +191,12 @@ private:
 	int resample_fill;   // filled length in samples
 	int resample_size;   // base size in input samples
 	int sample_bytes;    // output sample bytes
+
+	// IO context for pipe
+	AVIOContext *avio_ctx;
+	uint8_t *avio_buffer;
+	int avio_fd;
+	Pipe *stream_pipe;
 
 	static const char *ignored[];
 	static const uint64_t internal_layouts[];

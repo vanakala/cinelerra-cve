@@ -34,7 +34,6 @@ cinelerra/filepng.C
 cinelerra/filesndfile.C
 cinelerra/filetga.C
 cinelerra/filetiff.C
-cinelerra/fileyuv.C
 cinelerra/formatpresets.C
 cinelerra/formattools.C
 cinelerra/gwindowgui.C
@@ -63,6 +62,7 @@ cinelerra/packagerenderer.C
 cinelerra/patchbay.C
 cinelerra/patchgui.C
 cinelerra/performanceprefs.C
+cinelerra/pipe.C
 cinelerra/playbackprefs.C
 cinelerra/playtransport.C
 cinelerra/pluginaclientlad.C

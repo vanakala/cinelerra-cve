@@ -118,7 +118,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    filetiff.C \
 		    filetoc.C \
 		    filexml.C \
-		    fileyuv.C \
 		    floatauto.C \
 		    floatautos.C \
 		    formatpresets.C \
@@ -183,6 +182,7 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    patchgui.C \
 		    performanceprefs.C \
 		    pipe.C \
+		    pipeconfig.C \
 		    playabletracks.C \
 		    playback3d.C \
 		    playbackconfig.C \
@@ -269,7 +269,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    vwindow.C \
 		    vwindowgui.C \
 		    wavecache.C \
-		    yuvstream.C \
 		    zoombar.C \
 		    zoompanel.C
 
@@ -366,7 +365,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 filetiff.h \
 		 filetoc.h \
 		 filexml.h \
-		 fileyuv.h \
 		 floatauto.h \
 		 floatautos.h \
 		 formatpresets.h \
@@ -431,6 +429,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 patchgui.h \
 		 performanceprefs.h \
 		 pipe.h \
+		 pipeconfig.h \
 		 playabletracks.h \
 		 playback3d.h \
 		 playbackconfig.h \
@@ -517,7 +516,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vwindowgui.h \
 		 vwindow.h \
 		 wavecache.h \
-		 yuvstream.h \
 		 zoombar.h \
 		 zoompanel.h \
 		$(srcdir)/*.inc

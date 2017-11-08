@@ -31,6 +31,7 @@
 #include "bctoggle.h"
 #include "paramlist.h"
 #include "paramlistwindow.inc"
+#include "pipeconfig.inc"
 #include "subselection.h"
 #include "thread.h"
 
@@ -64,6 +65,7 @@ public:
 
 	ParamlistThread *codecthread;
 	ParamlistThread *privthread;
+	PipeConfigWindow *pipeconfig;
 
 	int current_codec;
 

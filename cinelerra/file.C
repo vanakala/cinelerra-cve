@@ -38,7 +38,6 @@
 #include "filetga.h"
 #include "filethread.h"
 #include "filetiff.h"
-#include "fileyuv.h"
 #include "formattools.h"
 #include "framecache.h"
 #include "language.h"
@@ -137,6 +136,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_FLAC:
 		case FILE_MPEGTS:
 		case FILE_RAWDV:
+		case FILE_YUV:
 			FileAVlibs::get_parameters(parent_window,
 				asset,
 				format_window,
@@ -158,13 +158,6 @@ void File::get_options(FormatTools *format, int options)
 				options);
 			break;
 #endif
-		case FILE_YUV:
-			FileYUV::get_parameters(parent_window,
-				asset,
-				format_window,
-				options,
-				format);
-			break;
 		case FILE_PNG:
 		case FILE_PNG_LIST:
 			FilePNG::get_parameters(parent_window, 
@@ -334,10 +327,6 @@ int File::open_file(Preferences *preferences,
 		file = new FileEXR(this->asset, this);
 		break;
 #endif
-	case FILE_YUV:
-		file = new FileYUV(this->asset, this);
-		break;
-
 	case FILE_TGA_LIST:
 	case FILE_TGA:
 		file = new FileTGA(this->asset, this);
@@ -357,6 +346,7 @@ int File::open_file(Preferences *preferences,
 	case FILE_FLAC:
 	case FILE_MPEGTS:
 	case FILE_RAWDV:
+	case FILE_YUV:
 		file = new FileAVlibs(this->asset, this);
 		break;
 
@@ -737,8 +727,6 @@ int File::supports(int format)
 		return SUPPORTS_AUDIO;
 
 	case FILE_YUV:
-		return FileYUV::supports(format);
-
 	case FILE_AC3:
 	case FILE_AVI:
 	case FILE_MOV:
@@ -774,9 +762,6 @@ int File::get_best_colormodel(Asset *asset, int driver)
 	case FILE_EXR_LIST:
 		return FileEXR::get_best_colormodel(asset, driver);
 #endif
-	case FILE_YUV:
-		return FileYUV::get_best_colormodel(asset, driver);
-
 	case FILE_PNG:
 	case FILE_PNG_LIST:
 		return FilePNG::get_best_colormodel(asset, driver);
