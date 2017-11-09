@@ -151,36 +151,6 @@ AC_SUBST(SOUND_CFLAGS)
 AC_SUBST(SOUND_LDFLAGS)
 ############### END OF SOUND
 
-############## MJPEGTOOLS (for YUV4MPEG)
-PKG_CHECK_MODULES(MJPEG, mjpegtools,[mjpegtools=yes],:)
-AC_SUBST(MJPEG_CFLAGS)
-AC_SUBST(MJPEG_LIBS)
-AC_MSG_CHECKING([for number of arguments to y4m_write_frame_header])
-# check if mjpegtools has 3 arguements for y4m_write_frame_header
-# Note: this test came from transcode...
-save_CFLAGS="$CFLAGS"
-save_LIBS="$LIBS"
-CFLAGS="$CFLAGS $MJPEG_CFLAGS"
-LIBS="$LIBS $MJPEG_LIBS"
-AC_TRY_LINK(
-[
-#include <mjpegtools/yuv4mpeg.h>
-#include <mjpegtools/mpegconsts.h>
-],
-[y4m_write_frame_header(1,NULL,NULL)],
-[
-AC_DEFINE(
-	[MJPEGTOOLS_Y4M_WRITE_FRAME_HEADER__3ARGS],
-	[1],
-	[using y4m_write_frame_header with 3 arguments]
-	)
-mjpeg_version_info="3 arguments (new versions)"],
-	[mjpeg_version_info="assuming 2 arguments (older versions)"])
-AC_MSG_RESULT($mjpeg_version_info)
-CFLAGS="$save_CFLAGS"
-LIBS="$save_LIBS"
-############## END MJPEGTOOLS
-
 ############## MISC LIBRARIES
 AC_CHECK_HEADER(uuid/uuid.h,[libuuidh=yes])
 AC_CHECK_LIB(uuid, uuid_clear,[libuuid=yes])
@@ -632,7 +602,6 @@ RPT(libxft,libXft library)
 RPT(funiconv,iconv function)
 RPT(libuuid,libuuid libraries)
 RPT(libuuidh,libuuid headers)
-RPT(mjpegtools,mjpegtools)
 RPT(libfftw3,libfftw3 libraries)
 RPT(libfftw3h,libfftw3 headers)
 RPT(liba52,liba52 libraries)
