@@ -1890,6 +1890,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 					}
 					break;
 				}
+				pixmaps_lock->unlock();
 
 				if(result)
 				{
@@ -1918,7 +1919,6 @@ int TrackCanvas::do_keyframes(int cursor_x,
 								rerender = 1; // special case: tangent mode changed
 					}
 				}
-				pixmaps_lock->unlock();
 			}
 		}
 
