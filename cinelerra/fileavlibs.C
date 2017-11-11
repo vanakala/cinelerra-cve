@@ -387,6 +387,8 @@ int FileAVlibs::supports(int format, int decoding)
 				support &= ~SUPPORTS_AUDIO;
 		if(encoder_exists(oformat, enc, support & SUPPORTS_VIDEO))
 				support &= ~SUPPORTS_VIDEO;
+		if(support)
+			support |= SUPPORTS_LIBPARA;
 		avlibs_lock->unlock();
 	}
 	return support;

@@ -305,7 +305,7 @@ void FormatTools::enable_supported()
 	}
 	if(fparams_button)
 	{
-		if(asset->encoder_parameters[ASSET_FMT_IX])
+		if((filesup & SUPPORTS_LIBPARA) && asset->encoder_parameters[ASSET_FMT_IX])
 			fparams_button->enable();
 		else
 			fparams_button->disable();
