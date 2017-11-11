@@ -1062,7 +1062,7 @@ int CWindowMaskMode::handle_event()
 		keyframe, 
 		mask,
 		point,
-		1);
+		0);
 
 	if(track)
 		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->set_mode(text_to_mode(get_text()));
