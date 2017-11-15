@@ -88,6 +88,9 @@ void Asset::init_values()
 	current_astream = 0;
 	memset(astream_channels, 0, sizeof(astream_channels));
 	memset(streams, 0, sizeof(streams));
+	memset(programs, 0, sizeof(programs));
+	nb_streams = 0;
+	nb_programs = 0;
 	sample_rate = 0;
 	bits = 0;
 	byte_order = 0;
@@ -163,6 +166,44 @@ void Asset::reset_timecode()
 	tcformat = 0;
 }
 
+void Asset::set_audio_stream(int stream)
+{
+	struct streamdesc *desc;
+
+	if(stream < 0)
+		audio_data = 0;
+	if(stream > nb_streams || !streams[stream].options)
+		return;
+	desc = &streams[stream];
+	audio_data = stream + 1;
+	channels = desc->channels;
+	sample_rate = desc->sample_rate;
+	bits = desc->bits;
+	audio_length = desc->length;
+	audio_duration = desc->end - desc->start;
+	strcpy(acodec, desc->codec);
+}
+
+void Asset::set_video_stream(int stream)
+{
+	struct streamdesc *desc;
+
+	if(stream < 0)
+		video_data = 0;
+	if(stream > nb_streams || !streams[stream].options)
+		return;
+	desc = &streams[stream];
+	video_data = stream + 1;
+	layers = 1;
+	frame_rate = desc->frame_rate;
+	aspect_ratio = desc->aspect_ratio;
+	width = desc->width;
+	height = desc->height;
+	video_length = desc->length;
+	video_duration = desc->end - desc->start;
+	strcpy(vcodec, desc->codec);
+}
+
 void Asset::copy_from(Asset *asset, int do_index)
 {
 	copy_location(asset);
@@ -214,8 +255,10 @@ void Asset::copy_format(Asset *asset, int do_index)
 	this->single_image = asset->single_image;
 	this->audio_duration = asset->audio_duration;
 	this->video_duration = asset->video_duration;
+	this->nb_streams = asset->nb_streams;
+	this->nb_programs = asset->nb_programs;
 	memcpy(this->streams, asset->streams, sizeof(streams));
-
+	memcpy(this->programs, asset->programs, sizeof(streams));
 	jpeg_quality = asset->jpeg_quality;
 
 	vmpeg_cmodel = asset->vmpeg_cmodel;
@@ -1231,6 +1274,44 @@ void Asset::dump(int indent, int options)
 		video_duration, video_length, subtitles, active_subtitle, single_image, use_pipe);
 	printf("%*s  reel_name %s reel_number %i tcstart %" PRId64 " tcend %" PRId64 " tcf %d\n",
 		indent, "", reel_name, reel_number, tcstart, tcend, tcformat);
+	if(nb_streams)
+	{
+		printf("%*s%d streams:\n", indent + 2, "", nb_streams);
+		for(int i = 0; i < nb_streams; i++)
+		{
+			if(streams[i].options & STRDSC_AUDIO)
+			{
+				printf("%*s%d. Audio %.2f..%.2f chnls: %d rate: %d  bits: %d samples %" PRId64 " codec '%s'\n",
+					indent + 4, "", streams[i].stream_index,
+					streams[i].start, streams[i].end,
+					streams[i].channels, streams[i].sample_rate,
+					streams[i].bits, streams[i].length, streams[i].codec);
+			}
+			if(streams[i].options & STRDSC_VIDEO)
+			{
+				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate: %.2f  aspect: %.2f frames: %" PRId64 " codec '%s'\n",
+					indent + 4, "", streams[i].stream_index,
+					streams[i].start, streams[i].end,
+					streams[i].width, streams[i].height,
+					streams[i].frame_rate, streams[i].aspect_ratio,
+					streams[i].length, streams[i].codec);
+			}
+		}
+	}
+	if(nb_programs)
+	{
+		printf("%*s%d programs:\n", indent + 2, "", nb_programs);
+		for(int i = 0; i < nb_programs; i++)
+		{
+			printf("%*s%d. program id %d %.2f..%.2f %d streams:",
+				indent + 4, "", programs[i].program_index,
+				programs[i].program_id, programs[i].start,
+				programs[i].end, programs[i].nb_streams);
+			for(int k = 0; k < programs[i].nb_streams; k++)
+				printf(" %d", programs[i].streams[k]);
+			putchar('\n');
+		}
+	}
 	if(use_pipe && pipe[0])
 		printf("%*s  pipe: '%s'\n", indent, "", pipe);
 	if(options & (ASSETDUMP_RENDERPTRS | ASSETDUMP_RENDERPARAMS))

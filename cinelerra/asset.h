@@ -48,10 +48,31 @@
 
 struct streamdesc
 {
-	ptstime start; // lowest pts in file
-	ptstime end;   // highest pts in file
+	int stream_index; // index of stream in file
+	ptstime start;    // lowest pts in file
+	ptstime end;      // highest pts in file
+	int channels;     // audo channels
+	int sample_rate;  // audio sample rate
+	int bits;         // bits per sample
+	int width;        // frame width
+	int height;       // frame height
+	samplenum length; // length in frames or samples
+	double frame_rate;
+	double aspect_ratio;
 	int options;
+	char codec[MAX_LEN_CODECNAME];
 };
+
+struct progdesc
+{
+	int program_index;
+	int program_id;
+	ptstime start;
+	ptstime end;
+	int nb_streams;
+	unsigned char streams[MAXCHANNELS];
+};
+
 // Streamdesc option bits
 // Stream type
 #define STRDSC_AUDIO   1
@@ -77,6 +98,8 @@ public:
 	void dump(int indent = 0, int options = 0);
 	void dump_parameters(int indent = 0);
 
+	void set_audio_stream(int stream);
+	void set_video_stream(int stream);
 	void copy_from(Asset *asset, int do_index);
 	void copy_location(Asset *asset);
 	void copy_format(Asset *asset, int do_index = 1);
@@ -157,11 +180,13 @@ public:
 
 // Format of file.  An enumeration from file.inc.
 	int format;
-
+	int nb_programs;
+	struct progdesc programs[MAXCHANNELS];
+	int nb_streams;
 	struct streamdesc streams[MAXCHANNELS];
 
 // contains audio data
-	int audio_data;
+	int audio_data; // number of active audio stream 1..n
 	int channels;
 	int sample_rate;
 	int bits;
@@ -179,7 +204,7 @@ public:
 	ptstime audio_duration;
 
 // contains video data
-	int video_data;
+	int video_data; // number of active video stream 1..n
 	int layers;
 	double frame_rate;
 // number of mpeg2 subtitles
