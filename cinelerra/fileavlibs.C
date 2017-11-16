@@ -3470,3 +3470,23 @@ void FileAVlibs::dump_AVPacket(AVPacket *pkt, int indent)
 	printf("%*sconvergence_duration %s\n", indent, "",
 		dump_ts(pkt->convergence_duration));
 }
+
+void FileAVlibs::dump_AVProgram(AVProgram *prg, int indent)
+{
+	char bf1[64], bf2[64], bf3[64];
+
+	printf("%*sAVProgram %p dump:\n", indent, "", prg);
+	indent += 2;
+	printf("%*sid %d flags %#x discard %d stream indexes %d metadata %p\n", indent, "",
+		prg->id, prg->flags, prg->discard, prg->nb_stream_indexes, prg->metadata);
+	if(prg->nb_stream_indexes > 0)
+	{
+		printf("%*sstream indexes:", indent, "");
+		for(int i = 0; i < prg->nb_stream_indexes; i++)
+			printf(" %d", prg->stream_index[i]);
+		putchar('\n');
+	}
+	printf("%*sstart %s end %s wrapref %s w_behav %d\n", indent, "",
+		dump_ts(prg->start_time, bf1), dump_ts(prg->end_time, bf2),
+		dump_ts(prg->pts_wrap_reference, bf3), prg->pts_wrap_behavior);
+}
