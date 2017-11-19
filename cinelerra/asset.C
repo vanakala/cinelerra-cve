@@ -101,6 +101,8 @@ void Asset::init_values()
 	video_data = 0;
 	audio_length = 0;
 	video_length = 0;
+	audio_streamno = 0;
+	video_streamno = 0;
 	file_length = 0;
 	memset(&file_mtime, 0, sizeof(file_mtime));
 	single_image = 0;
@@ -175,7 +177,8 @@ void Asset::set_audio_stream(int stream)
 	if(stream > nb_streams || !streams[stream].options)
 		return;
 	desc = &streams[stream];
-	audio_data = stream + 1;
+	audio_data = 1;
+	audio_streamno = stream + 1;
 	channels = desc->channels;
 	sample_rate = desc->sample_rate;
 	bits = desc->bits;
@@ -193,7 +196,8 @@ void Asset::set_video_stream(int stream)
 	if(stream > nb_streams || !streams[stream].options)
 		return;
 	desc = &streams[stream];
-	video_data = stream + 1;
+	video_data = 1;
+	video_streamno = stream + 1;
 	layers = 1;
 	frame_rate = desc->frame_rate;
 	aspect_ratio = desc->aspect_ratio;
@@ -223,6 +227,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	if(do_index) update_index(asset);
 
 	audio_data = asset->audio_data;
+	audio_streamno = asset->audio_streamno;
 	format = asset->format;
 	channels = asset->channels;
 	astreams = asset->astreams;
@@ -241,6 +246,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	interlace_fixmethod = asset->interlace_fixmethod;
 
 	video_data = asset->video_data;
+	video_streamno = asset->video_streamno;
 	layers = asset->layers;
 	frame_rate = asset->frame_rate;
 	width = asset->width;
@@ -1252,8 +1258,8 @@ void Asset::dump(int indent, int options)
 	printf("%*sindex_status %d\n", indent, "", index_status);
 	printf("%*sfile format '%s', length %" PRId64 "\n", indent, "",
 		ContainerSelection::container_to_text(format), file_length);
-	printf("%*saudio_data %d channels %d samplerate %d bits %d byte_order %d\n",
-		indent, "", audio_data, channels, sample_rate, bits, byte_order);
+	printf("%*saudio_data %d streamno %d channels %d samplerate %d bits %d byte_order %d\n",
+		indent, "", audio_data, audio_streamno, channels, sample_rate, bits, byte_order);
 	printf("%*s  no of streams: %d, current %d", indent, "", astreams, current_astream);
 	if(astreams)
 	{
@@ -1265,8 +1271,8 @@ void Asset::dump(int indent, int options)
 	printf("%*s  signed %d header %d dither %d acodec '%s' length %.2f (%" PRId64 ")\n", indent, "",
 		signed_, header, dither, acodec, audio_duration, audio_length);
 
-	printf("%*svideo_data %d layers %d framerate %.2f width %d height %d\n",
-		indent, "", video_data, layers, frame_rate, width, height);
+	printf("%*svideo_data %d streamno %d layers %d framerate %.2f width %d height %d\n",
+		indent, "", video_data, video_streamno, layers, frame_rate, width, height);
 	printf("%*s  vcodec '%s' aspect_ratio %.2f interlace_mode %s\n",
 		indent, "", vcodec, aspect_ratio,
 		AInterlaceModeSelection::name(interlace_mode));

@@ -186,7 +186,8 @@ public:
 	struct streamdesc streams[MAXCHANNELS];
 
 // contains audio data
-	int audio_data; // number of active audio stream 1..n
+	int audio_data;
+	int audio_streamno;  // number of active audio stream 1..n
 	int channels;
 	int sample_rate;
 	int bits;
@@ -204,7 +205,8 @@ public:
 	ptstime audio_duration;
 
 // contains video data
-	int video_data; // number of active video stream 1..n
+	int video_data;
+	int video_streamno; // number of active video stream 1..n
 	int layers;
 	double frame_rate;
 // number of mpeg2 subtitles
