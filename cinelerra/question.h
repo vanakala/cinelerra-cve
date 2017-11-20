@@ -34,37 +34,15 @@ public:
 	MWindow *mwindow;
 };
 
-class QuestionYesButton : public BC_GenericButton
+class QuestionButton : public BC_GenericButton
 {
 public:
-	QuestionYesButton(QuestionWindow *window, const char *label, int x, int y);
+	QuestionButton(const char *label, int value, int x, int y);
 
 	int handle_event();
 	int keypress_event();
 
-	QuestionWindow *window;
-};
-
-class QuestionNoButton : public BC_GenericButton
-{
-public:
-	QuestionNoButton(QuestionWindow *window, const char *label, int x, int y);
-
-	int handle_event();
-	int keypress_event();
-
-	QuestionWindow *window;
-};
-
-class QuestionCancelButton : public BC_GenericButton
-{
-public:
-	QuestionCancelButton(QuestionWindow *window, const char *label, int x, int y);
-
-	int handle_event();
-	int keypress_event();
-
-	QuestionWindow *window;
+	int value;
 };
 
 #endif

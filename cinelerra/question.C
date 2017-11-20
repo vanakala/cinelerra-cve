@@ -55,74 +55,55 @@ QuestionWindow::QuestionWindow(MWindow *mwindow, int use_cancel, const char *str
 	add_subwindow(new BC_Title(get_w() / 2, 10, btext, MEDIUMFONT,
 		get_resources()->default_text_color, 1));
 	y = get_h() - BC_GenericButton::calculate_h() - 10;
-	add_subwindow(new QuestionYesButton(this, yes, 10, y));
+	add_subwindow(new QuestionButton(yes, 2, 10, y));
 	if(use_cancel)
 	{
 		x = get_w() / 2 - BC_GenericButton::calculate_w(this, no) / 2;
-		add_subwindow(new QuestionNoButton(this, no, x, y));
+		add_subwindow(new QuestionButton(no, 0, x, y));
 		x = get_w() - BC_GenericButton::calculate_w(this, cancel) - 10;
-		add_subwindow(new QuestionCancelButton(this, cancel, x, y));
+		add_subwindow(new QuestionButton(cancel, 1, x, y));
 	}
 	else
 	{
 		x = get_w() - BC_GenericButton::calculate_w(this, no) - 10;
-		add_subwindow(new QuestionNoButton(this, no, x, y));
+		add_subwindow(new QuestionButton(no, 0, x, y));
 	}
 }
 
-QuestionYesButton::QuestionYesButton(QuestionWindow *window, const char *label, int x, int y)
+QuestionButton::QuestionButton(const char *label, int value, int x, int y)
  : BC_GenericButton(x, y, label)
 {
-	this->window = window;
 	set_underline(0);
+	this->value = value;
 }
 
-int QuestionYesButton::handle_event()
+int QuestionButton::handle_event()
 {
-	set_done(2);
+	set_done(value);
 	return 1;
 }
 
-int QuestionYesButton::keypress_event()
+int QuestionButton::keypress_event()
 {
-	if(get_keypress() == 'y') { return handle_event(); }
-	return 0;
-}
+	int kpr = get_keypress();
+	int fl = 0;
 
-QuestionNoButton::QuestionNoButton(QuestionWindow *window, const char *label, int x, int y)
- : BC_GenericButton(x, y, label)
-{
-	this->window = window;
-	set_underline(0);
-}
-
-int QuestionNoButton::handle_event()
-{
-	set_done(0);
-	return 1;
-}
-
-int QuestionNoButton::keypress_event()
-{
-	if(get_keypress() == 'n') { return handle_event(); }
-	return 0;
-}
-
-QuestionCancelButton::QuestionCancelButton(QuestionWindow *window, const char *label, int x, int y)
- : BC_GenericButton(x, y, label)
-{
-	this->window = window;
-	set_underline(0);
-}
-
-int QuestionCancelButton::handle_event()
-{
-	set_done(1);
-	return 1;
-}
-
-int QuestionCancelButton::keypress_event()
-{
-	if(get_keypress() == ESC) { return handle_event(); }
+	switch(value)
+	{
+	case 0:              // no
+		if(kpr == BACKSPACE || kpr == 'n')
+			fl = 1;
+		break;
+	case 1:             // cancel
+		if(kpr == ESC || kpr == 'c')
+			fl = 1;
+		break;
+	case 2:            // yes
+		if(kpr == RETURN || kpr == 'y')
+			fl = 1;
+		break;
+	}
+	if(fl)
+		return handle_event();
 	return 0;
 }
