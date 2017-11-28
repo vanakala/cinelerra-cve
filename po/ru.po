@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cinelerra-CV 2.3.5\n"
 "Report-Msgid-Bugs-To: cinelerra@skolelinux.no\n"
-"POT-Creation-Date: 2017-09-11 21:42+0300\n"
-"PO-Revision-Date: 2017-09-11 22:27+0300\n"
+"POT-Creation-Date: 2017-11-28 19:10+0200\n"
+"PO-Revision-Date: 2017-11-28 19:15+0200\n"
 "Last-Translator: Igor Vladimirsky aka igor_ubuntu <sitelve@gmal.com>\n"
 "Language-Team: ru <sitelve@gmail.com>\n"
 "Language: ru_RU\n"
@@ -88,7 +88,7 @@ msgid "fade"
 msgstr "фейд"
 
 #: ../cinelerra/apatchgui.C:317 ../cinelerra/gwindowgui.C:59
-#: ../cinelerra/mainmenu.C:167
+#: ../cinelerra/mainmenu.C:168
 msgid "Pan"
 msgstr "Панорама"
 
@@ -96,8 +96,8 @@ msgstr "Панорама"
 msgid "pan"
 msgstr "панорама"
 
-#: ../cinelerra/assetedit.C:93 ../cinelerra/mwindow.C:998
-#: ../cinelerra/new.C:108 ../cinelerra/setformat.C:135
+#: ../cinelerra/assetedit.C:93 ../cinelerra/mwindow.C:1000
+#: ../cinelerra/new.C:100 ../cinelerra/setformat.C:135
 #, c-format
 msgid ""
 "Sample rate is out of limits (%d..%d).\n"
@@ -107,7 +107,7 @@ msgstr ""
 "Будет применена коррекция до\n"
 "соответствующего максимума или минимума."
 
-#: ../cinelerra/assetedit.C:96 ../cinelerra/new.C:111
+#: ../cinelerra/assetedit.C:96 ../cinelerra/new.C:103
 #: ../cinelerra/setformat.C:138
 #, c-format
 msgid ""
@@ -142,16 +142,16 @@ msgstr "Размер (в байтах):"
 msgid "Bitrate (bits/sec):"
 msgstr "Битрейт (бит/сек):"
 
-#: ../cinelerra/assetedit.C:234 ../cinelerra/formattools.C:163
+#: ../cinelerra/assetedit.C:234 ../cinelerra/formattools.C:164
 msgid "Audio:"
 msgstr "Аудио:"
 
-#: ../cinelerra/assetedit.C:240 ../cinelerra/assetedit.C:362
+#: ../cinelerra/assetedit.C:240 ../cinelerra/assetedit.C:360
 msgid "Codec:"
 msgstr "Сжатие:"
 
 #: ../cinelerra/assetedit.C:251 ../cinelerra/fileformat.C:56
-#: ../cinelerra/new.C:216 ../cinelerra/setformat.C:277
+#: ../cinelerra/new.C:216 ../cinelerra/setformat.C:278
 msgid "Channels:"
 msgstr "Каналы:"
 
@@ -167,77 +167,77 @@ msgstr "Аудиопоток:"
 msgid "Header length:"
 msgstr "Длина заголовка:"
 
-#: ../cinelerra/assetedit.C:328 ../cinelerra/fileformat.C:79
+#: ../cinelerra/assetedit.C:326 ../cinelerra/fileformat.C:79
 #: ../cinelerra/filesndfile.C:425
 msgid "Byte order:"
 msgstr "Порядок байт:"
 
-#: ../cinelerra/assetedit.C:355 ../cinelerra/formattools.C:185
+#: ../cinelerra/assetedit.C:353 ../cinelerra/formattools.C:186
 msgid "Video:"
 msgstr "Видео:"
 
-#: ../cinelerra/assetedit.C:373 ../cinelerra/setformat.C:309
+#: ../cinelerra/assetedit.C:371 ../cinelerra/setformat.C:310
 msgid "Frame rate:"
 msgstr "Част. кадров:"
 
-#: ../cinelerra/assetedit.C:382 ../cinelerra/resizetrackthread.C:113
+#: ../cinelerra/assetedit.C:380 ../cinelerra/resizetrackthread.C:113
 #: ../plugins/titler/titlewindow.C:125
 msgid "Size:"
 msgstr "Размер:"
 
-#: ../cinelerra/assetedit.C:390
+#: ../cinelerra/assetedit.C:388
 msgid "Aspect:"
 msgstr "Пропорция:"
 
-#: ../cinelerra/assetedit.C:397 ../plugins/linearblur/linearblur.C:250
+#: ../cinelerra/assetedit.C:395 ../plugins/linearblur/linearblur.C:250
 #: ../plugins/motionblur/motionblur.C:221
 msgid "Length:"
 msgstr "Длина:"
 
-#: ../cinelerra/assetedit.C:406
+#: ../cinelerra/assetedit.C:404
 msgid "Subtitle tracks:"
 msgstr "Дорожка субтитров:"
 
 #. --------------------
-#: ../cinelerra/assetedit.C:432
+#: ../cinelerra/assetedit.C:430
 msgid "Fix interlacing:"
 msgstr "Чересстрочность:"
 
 #. --------------------
-#: ../cinelerra/assetedit.C:437
+#: ../cinelerra/assetedit.C:435
 msgid "Asset's interlacing:"
 msgstr "Чересстроч. ресурса: "
 
 #. --------------------
-#: ../cinelerra/assetedit.C:445
+#: ../cinelerra/assetedit.C:443
 msgid "Interlace correction:"
 msgstr "Ручная коррекция ч.:"
 
-#: ../cinelerra/assetedit.C:452
+#: ../cinelerra/assetedit.C:450
 msgid "Reel Name:"
 msgstr "Имя рулона:"
 
-#: ../cinelerra/assetedit.C:458
+#: ../cinelerra/assetedit.C:456
 msgid "Reel Number:"
 msgstr "Номер рулона:"
 
-#: ../cinelerra/assetedit.C:464
+#: ../cinelerra/assetedit.C:462
 msgid "Time Code Start:"
 msgstr "Старт. таймкод:"
 
-#: ../cinelerra/assetedit.C:534
+#: ../cinelerra/assetedit.C:532
 msgid "Automatically Fix Interlacing"
 msgstr "Автоматическая коррекция"
 
-#: ../cinelerra/assetedit.C:599
+#: ../cinelerra/assetedit.C:597
 msgid "Lo-Hi"
 msgstr "Lo-Hi"
 
-#: ../cinelerra/assetedit.C:617
+#: ../cinelerra/assetedit.C:615
 msgid "Hi-Lo"
 msgstr "Hi-Lo"
 
-#: ../cinelerra/assetedit.C:635 ../cinelerra/fileformat.C:164
+#: ../cinelerra/assetedit.C:633 ../cinelerra/fileformat.C:164
 msgid "Values are signed"
 msgstr "Знаковые целые"
 
@@ -261,11 +261,11 @@ msgstr "Переиндексировать"
 msgid "Sort items"
 msgstr "Упорядочить"
 
-#: ../cinelerra/assetpopup.C:148 ../cinelerra/mainmenu.C:160
+#: ../cinelerra/assetpopup.C:148 ../cinelerra/mainmenu.C:161
 msgid "View"
 msgstr "Вид"
 
-#: ../cinelerra/assetpopup.C:168 ../cinelerra/mainmenu.C:578
+#: ../cinelerra/assetpopup.C:168 ../cinelerra/mainmenu.C:591
 msgid "Paste"
 msgstr "Вставить"
 
@@ -290,33 +290,33 @@ msgstr "Удалить этот ресурс с диска ?"
 msgid "Audio %d"
 msgstr "Аудио %d"
 
-#: ../cinelerra/avlibsconfig.C:50
+#: ../cinelerra/avlibsconfig.C:51
 msgid "Compression"
 msgstr "Сжатие:"
 
-#: ../cinelerra/avlibsconfig.C:77
+#: ../cinelerra/avlibsconfig.C:79
 #, c-format
 msgid "AVLibs does not support '%s'"
 msgstr "AVLibs не поддерживает '%s'"
 
-#: ../cinelerra/avlibsconfig.C:88
+#: ../cinelerra/avlibsconfig.C:90
 #, c-format
 msgid "'%s' options"
-msgstr "%s' опции"
+msgstr "'%s' опции"
 
-#: ../cinelerra/avlibsconfig.C:90
+#: ../cinelerra/avlibsconfig.C:92
 msgid "Codec options"
 msgstr "Опции кодека"
 
-#: ../cinelerra/avlibsconfig.C:91 ../cinelerra/avlibsconfig.C:186
+#: ../cinelerra/avlibsconfig.C:93 ../cinelerra/avlibsconfig.C:188
 msgid "Codec private options"
 msgstr "Частные опции кодека (private options)"
 
-#: ../cinelerra/avlibsconfig.C:101
+#: ../cinelerra/avlibsconfig.C:103
 msgid "Audio codec:"
 msgstr "Аудиокодек:"
 
-#: ../cinelerra/avlibsconfig.C:108
+#: ../cinelerra/avlibsconfig.C:110
 msgid "Video codec:"
 msgstr "Видеокодек:"
 
@@ -441,12 +441,12 @@ msgid "Close"
 msgstr "Закрыть"
 
 #: ../cinelerra/batchrender.C:825 ../cinelerra/formatpresets.C:69
-#: ../cinelerra/formattools.C:737 ../cinelerra/interfaceprefs.C:520
+#: ../cinelerra/formattools.C:738 ../cinelerra/interfaceprefs.C:520
 #: ../cinelerra/loadmode.C:88 ../plugins/timefront/timefront.C:420
 msgid "Unknown"
 msgstr "Неизвестно"
 
-#: ../cinelerra/batchrender.C:916 ../cinelerra/new.C:103
+#: ../cinelerra/batchrender.C:916 ../cinelerra/new.C:113
 msgid "New"
 msgstr "Новый"
 
@@ -755,7 +755,7 @@ msgid "Apply mask before plugins"
 msgstr "Применять маску перед плагинами"
 
 #: ../cinelerra/cwindowtool.C:1249 ../cinelerra/gwindowgui.C:61
-#: ../cinelerra/mainmenu.C:169
+#: ../cinelerra/mainmenu.C:170
 #: ../plugins/denoiseseltempavg/seltempavgwindow.C:56
 msgid "Mask"
 msgstr "Маска"
@@ -908,12 +908,12 @@ msgstr "Изменить размер дорожки..."
 msgid "Match output size"
 msgstr "По размеру вывода"
 
-#: ../cinelerra/editpopup.C:156 ../cinelerra/mainmenu.C:732
+#: ../cinelerra/editpopup.C:156 ../cinelerra/mainmenu.C:745
 msgid "Delete track"
 msgstr "Удалить дорожку"
 
-#: ../cinelerra/editpopup.C:170 ../cinelerra/mainmenu.C:666
-#: ../cinelerra/mainmenu.C:718
+#: ../cinelerra/editpopup.C:170 ../cinelerra/mainmenu.C:679
+#: ../cinelerra/mainmenu.C:731
 msgid "Add track"
 msgstr "Добавить дорожку"
 
@@ -931,7 +931,7 @@ msgstr "№"
 
 #: ../cinelerra/exportedl.C:296
 msgid "Track name"
-msgstr "Название дорожки"
+msgstr "Имя дорожки"
 
 #: ../cinelerra/exportedl.C:306
 msgid "Export EDL"
@@ -941,11 +941,11 @@ msgstr "Экспорт EDL"
 msgid "Select a file to export to:"
 msgstr "Введите имя для экспорта EDL-файла:"
 
-#: ../cinelerra/exportedl.C:344 ../cinelerra/formattools.C:145
+#: ../cinelerra/exportedl.C:344 ../cinelerra/formattools.C:146
 msgid "Output to file"
 msgstr "Выведение в файл"
 
-#: ../cinelerra/exportedl.C:345 ../cinelerra/formattools.C:146
+#: ../cinelerra/exportedl.C:345 ../cinelerra/formattools.C:147
 msgid "Select a file to write to:"
 msgstr "Введите имя для результирующего файла:"
 
@@ -957,231 +957,239 @@ msgstr "Выберите экспортируемую дорожку:"
 msgid "Currently only CMX 3600 format is supported"
 msgstr "Поддерживается только формат CMX 3600"
 
-#: ../cinelerra/file.C:203
+#: ../cinelerra/file.C:192
 msgid "audio"
 msgstr "аудио"
 
-#: ../cinelerra/file.C:205
+#: ../cinelerra/file.C:194
 msgid "video"
 msgstr "видео"
 
-#: ../cinelerra/file.C:208
+#: ../cinelerra/file.C:197
 #, c-format
 msgid "No suitable %s codec found."
 msgstr "No suitable %s codec found."
 
-#: ../cinelerra/file.C:284
+#: ../cinelerra/file.C:273
 msgid "Can't open TOC files directly"
 msgstr "Невозможно открыть TOC файлы напрямую"
 
-#: ../cinelerra/fileavlibs.C:98
+#: ../cinelerra/fileavlibs.C:102
 msgid "Pixel format:"
 msgstr "Формат пикселя:"
 
-#: ../cinelerra/fileavlibs.C:99 ../cinelerra/new.C:242
+#: ../cinelerra/fileavlibs.C:103 ../cinelerra/new.C:242
 msgid "Framerate:"
 msgstr "Част. кадров:"
 
-#: ../cinelerra/fileavlibs.C:100 ../cinelerra/new.C:224
-#: ../cinelerra/setformat.C:268
+#: ../cinelerra/fileavlibs.C:104 ../cinelerra/new.C:224
+#: ../cinelerra/setformat.C:269
 msgid "Samplerate:"
 msgstr "Част. дискр.:"
 
-#: ../cinelerra/fileavlibs.C:101
+#: ../cinelerra/fileavlibs.C:105
 msgid "Sample format:"
 msgstr "Формат сэмпла:"
 
-#: ../cinelerra/fileavlibs.C:102
+#: ../cinelerra/fileavlibs.C:106
 msgid "Channel layout:"
 msgstr "Конфигурация каналов:"
 
-#: ../cinelerra/fileavlibs.C:206
+#: ../cinelerra/fileavlibs.C:225
 #, c-format
 msgid "Failed to find input file %s"
 msgstr "Failed to find input file %s"
 
-#: ../cinelerra/fileavlibs.C:212
+#: ../cinelerra/fileavlibs.C:231
 #, c-format
 msgid "Input file '%s' is not a regular file"
 msgstr "Input file '%s' is not a regular file"
 
-#: ../cinelerra/fileavlibs.C:424
+#: ../cinelerra/fileavlibs.C:466
 #, c-format
 msgid "Audio decoder id %#x not found"
 msgstr "Audio decoder id %#x not found"
 
-#: ../cinelerra/fileavlibs.C:433
+#: ../cinelerra/fileavlibs.C:475
 msgid "Failed to open audio decoder"
 msgstr "Failed to open audio decoder"
 
-#: ../cinelerra/fileavlibs.C:470
+#: ../cinelerra/fileavlibs.C:502
 #, c-format
 msgid "Video decoder id %#x not found"
 msgstr "Video decoder id %#x not found"
 
-#: ../cinelerra/fileavlibs.C:479
+#: ../cinelerra/fileavlibs.C:511
 msgid "Failed to open video decoder"
 msgstr "Failed to open video decoder"
 
-#: ../cinelerra/fileavlibs.C:565
+#: ../cinelerra/fileavlibs.C:606
+msgid "Failed to create pipe"
+msgstr "Failed to create pipe"
+
+#: ../cinelerra/fileavlibs.C:615
 #, c-format
 msgid "Unsupported file type %d for encoding"
 msgstr "Unsupported file type %d for encoding"
 
-#: ../cinelerra/fileavlibs.C:572
+#: ../cinelerra/fileavlibs.C:629
 msgid "Failed to allocate output context"
 msgstr "Failed to allocate output context"
 
-#: ../cinelerra/fileavlibs.C:616
+#: ../cinelerra/fileavlibs.C:673
 #, c-format
 msgid "Could not find video encoder '%s'"
 msgstr "Could not find video encoder '%s'"
 
-#: ../cinelerra/fileavlibs.C:624
+#: ../cinelerra/fileavlibs.C:681
 #, c-format
 msgid "Could not allocate video stream for '%s'"
 msgstr "Could not allocate video stream for '%s'"
 
-#: ../cinelerra/fileavlibs.C:658
+#: ../cinelerra/fileavlibs.C:716
 msgid "Could not open video encoder"
 msgstr "Could not open video encoder"
 
-#: ../cinelerra/fileavlibs.C:665
+#: ../cinelerra/fileavlibs.C:723
 msgid "Could not create video_frame for encoding"
 msgstr "Could not create video_frame for encoding"
 
-#: ../cinelerra/fileavlibs.C:686
+#: ../cinelerra/fileavlibs.C:744
 #, c-format
 msgid "Could not find audio encoder '%s'"
 msgstr "Could not find audio encoder '%s'"
 
-#: ../cinelerra/fileavlibs.C:694
+#: ../cinelerra/fileavlibs.C:752
 #, c-format
 msgid "Could not allocate audio stream for '%s'"
 msgstr "Could not allocate video stream for '%s'"
 
-#: ../cinelerra/fileavlibs.C:702
+#: ../cinelerra/fileavlibs.C:760
 msgid "Missing audio encoder"
 msgstr "Missing audio encoder"
 
-#: ../cinelerra/fileavlibs.C:718
+#: ../cinelerra/fileavlibs.C:776
 #, c-format
 msgid "Samplerate %d is not supported by audio encoder"
 msgstr "Samplerate %d is not supported by audio encoder"
 
-#: ../cinelerra/fileavlibs.C:749
+#: ../cinelerra/fileavlibs.C:807
 msgid "Could not open audio encoder"
 msgstr "Could not open audio encoder"
 
-#: ../cinelerra/fileavlibs.C:765
+#: ../cinelerra/fileavlibs.C:823
 msgid "Can't allocate resample context for encoding"
 msgstr "Can't allocate resample context for encoding"
 
-#: ../cinelerra/fileavlibs.C:771
+#: ../cinelerra/fileavlibs.C:829
 msgid "Failed to initalize resample context for encoding"
 msgstr "Failed to initalize resample context for encoding"
 
-#: ../cinelerra/fileavlibs.C:778
+#: ../cinelerra/fileavlibs.C:836
 msgid "Could not allocate audio frame for encoding"
 msgstr "Could not allocate audio frame for encoding"
 
-#: ../cinelerra/fileavlibs.C:797
+#: ../cinelerra/fileavlibs.C:856
+msgid "Failed to allocate output IO context"
+msgstr "Failed to allocate output IO context"
+
+#: ../cinelerra/fileavlibs.C:868
 #, c-format
 msgid "Could not open output file '%s': %d"
 msgstr "Could not open output file '%s': %d'"
 
-#: ../cinelerra/fileavlibs.C:805
+#: ../cinelerra/fileavlibs.C:876
 #, c-format
 msgid "Failed to write header: %d"
 msgstr "Failed to write header: %d"
 
-#: ../cinelerra/fileavlibs.C:873 ../cinelerra/fileavlibs.C:889
+#: ../cinelerra/fileavlibs.C:944 ../cinelerra/fileavlibs.C:960
 msgid "Failed to encode last audio packet"
 msgstr "Failed to encode last audio packet"
 
-#: ../cinelerra/fileavlibs.C:881 ../cinelerra/fileavlibs.C:899
+#: ../cinelerra/fileavlibs.C:952 ../cinelerra/fileavlibs.C:970
 msgid "Failed to write last audio packet"
 msgstr "Failed to write last audio packet"
 
-#: ../cinelerra/fileavlibs.C:919
+#: ../cinelerra/fileavlibs.C:992
 msgid "Failed to encode last video packet"
 msgstr "Failed to encode last video packet"
 
-#: ../cinelerra/fileavlibs.C:927
+#: ../cinelerra/fileavlibs.C:1000
 msgid "Failed to write last video packet"
 msgstr "Failed to write last video packet"
 
-#: ../cinelerra/fileavlibs.C:1068
+#: ../cinelerra/fileavlibs.C:1153
 msgid "Failed to decode video frame"
 msgstr "Failed to decode video frame"
 
-#: ../cinelerra/fileavlibs.C:1102
+#: ../cinelerra/fileavlibs.C:1187
 msgid "Video reading error"
 msgstr "Video reading error"
 
-#: ../cinelerra/fileavlibs.C:1143
+#: ../cinelerra/fileavlibs.C:1228
 msgid "Failed to allocate resampler context for audio decoding"
 msgstr "Failed to allocate resampler context for audio decoding"
 
-#: ../cinelerra/fileavlibs.C:1149
+#: ../cinelerra/fileavlibs.C:1234
 #, c-format
 msgid "Failed to initalize resampler context when decoding (%d)"
 msgstr "Failed to initalize resampler context when decoding (%d)"
 
-#: ../cinelerra/fileavlibs.C:1239
+#: ../cinelerra/fileavlibs.C:1324
 msgid "Audio decoding failed when skipping"
 msgstr "Audio decoding failed when skipping"
 
-#: ../cinelerra/fileavlibs.C:1298
+#: ../cinelerra/fileavlibs.C:1383
 msgid "Audio decoding failed when reading"
 msgstr "Audio decoding failed when reading"
 
-#: ../cinelerra/fileavlibs.C:1327
+#: ../cinelerra/fileavlibs.C:1412
 msgid "Failed to read audio"
 msgstr "Failed to read audio"
 
 #. avoid infinite recursion if things are broken
-#: ../cinelerra/fileavlibs.C:1454
+#: ../cinelerra/fileavlibs.C:1539
 msgid "pix_fmt_in broken while converting colormodel!"
 msgstr "pix_fmt_in broken while converting colormodel!"
 
-#: ../cinelerra/fileavlibs.C:1507
+#: ../cinelerra/fileavlibs.C:1592
 msgid "Failed to get buffer for color conversion"
 msgstr "Failed to get buffer for color conversion"
 
-#: ../cinelerra/fileavlibs.C:1516
+#: ../cinelerra/fileavlibs.C:1601
 msgid "Could not get color conversion context"
 msgstr "Could not get color conversion context"
 
-#: ../cinelerra/fileavlibs.C:1522
+#: ../cinelerra/fileavlibs.C:1607
 msgid "Color conversion failed"
 msgstr "Color conversion failed"
 
-#: ../cinelerra/fileavlibs.C:1610
+#: ../cinelerra/fileavlibs.C:1714
 msgid "Failed to encode video frame"
 msgstr "Failed to encode video frame"
 
-#: ../cinelerra/fileavlibs.C:1619
+#: ../cinelerra/fileavlibs.C:1724
 msgid "Failed to write video packet"
 msgstr "Failed to write video packet"
 
-#: ../cinelerra/fileavlibs.C:1691
+#: ../cinelerra/fileavlibs.C:1796
 msgid "Failed to resample audio data"
 msgstr "Failed to resample audio data"
 
-#: ../cinelerra/fileavlibs.C:1746
+#: ../cinelerra/fileavlibs.C:1851
 msgid "Failed to encode audio frame"
 msgstr "Failed to encode audio frame"
 
-#: ../cinelerra/fileavlibs.C:1760
+#: ../cinelerra/fileavlibs.C:1865
 msgid "Failed to write audio packet"
 msgstr "Failed to write audio packet"
 
-#: ../cinelerra/fileavlibs.C:1810
+#: ../cinelerra/fileavlibs.C:1915
 msgid "Media seeking failed"
 msgstr "Media seeking failed"
 
-#: ../cinelerra/fileavlibs.C:1819
+#: ../cinelerra/fileavlibs.C:1924
 msgid "Reading after media seek failed"
 msgstr "Reading after media seek failed"
 
@@ -1237,30 +1245,6 @@ msgstr "Дизеринг"
 #: ../cinelerra/filesndfile.C:423
 msgid "Signed"
 msgstr "Знаковые"
-
-#: ../cinelerra/fileyuv.C:255 ../cinelerra/formattools.C:50
-msgid "YUV4MPEG Stream"
-msgstr "YUV4MPEG Stream"
-
-#: ../cinelerra/fileyuv.C:272
-msgid "Output Path:"
-msgstr "Путь вывода:"
-
-#: ../cinelerra/fileyuv.C:280
-msgid "Use Pipe:"
-msgstr "Исп. Pipe:"
-
-#: ../cinelerra/fileyuv.C:291
-msgid "Stream Header:"
-msgstr "Заголовок потока:"
-
-#: ../cinelerra/fileyuv.C:295
-msgid "Interlacing:"
-msgstr "Интерлейсинг:"
-
-#: ../cinelerra/fileyuv.C:302
-msgid "Pipe Presets:"
-msgstr "Предустан. Pipe:"
 
 #: ../cinelerra/formatpresets.C:70 ../cinelerra/formatpresets.C:78
 msgid "Top Fields First"
@@ -1327,13 +1311,17 @@ msgstr "EXR"
 msgid "EXR Sequence"
 msgstr "EXR Sequence"
 
+#: ../cinelerra/formattools.C:50
+msgid "YUV4MPEG Stream"
+msgstr "YUV4MPEG Stream"
+
 #: ../cinelerra/formattools.C:51
 msgid "Microsoft WAV"
 msgstr "Microsoft WAV"
 
 #: ../cinelerra/formattools.C:52
-msgid "Quicktime for Linux"
-msgstr "Quicktime for Linux"
+msgid "QuickTime/MOV"
+msgstr "QuickTime/MOV"
 
 #: ../cinelerra/formattools.C:53
 msgid "Raw DV"
@@ -1395,39 +1383,39 @@ msgstr "Image2"
 msgid "Unknown sound"
 msgstr "Неизвестное аудио"
 
-#: ../cinelerra/formattools.C:155
+#: ../cinelerra/formattools.C:156
 msgid "File Format:"
 msgstr "Формат файла:"
 
-#: ../cinelerra/formattools.C:212 ../cinelerra/formattools.C:216
+#: ../cinelerra/formattools.C:213 ../cinelerra/formattools.C:217
 msgid "Format options"
 msgstr "Опции формата"
 
-#: ../cinelerra/formattools.C:483
+#: ../cinelerra/formattools.C:484
 msgid "Configure audio compression"
 msgstr "Настройки сжатия аудио"
 
-#: ../cinelerra/formattools.C:497
+#: ../cinelerra/formattools.C:498
 msgid "Configure video compression"
 msgstr "Настройки сжатия видео"
 
-#: ../cinelerra/formattools.C:510
+#: ../cinelerra/formattools.C:511
 msgid "Configure format"
 msgstr "Настройки формата"
 
-#: ../cinelerra/formattools.C:572
+#: ../cinelerra/formattools.C:573
 msgid "Render audio tracks"
 msgstr "Рендеринг аудиодорожек"
 
-#: ../cinelerra/formattools.C:588
+#: ../cinelerra/formattools.C:589
 msgid "Render video tracks"
 msgstr "Рендеринг видеодорожек"
 
-#: ../cinelerra/formattools.C:613
+#: ../cinelerra/formattools.C:614
 msgid "Overwrite project with output"
 msgstr "Перезапись проекта результатами вывода"
 
-#: ../cinelerra/formattools.C:629
+#: ../cinelerra/formattools.C:630
 msgid "Create new file at each label"
 msgstr "Создавать отдельный файл на каждую метку"
 
@@ -1447,35 +1435,35 @@ msgstr "Переходы"
 msgid "Plugin Autos"
 msgstr "Автоматизация"
 
-#: ../cinelerra/gwindowgui.C:51 ../cinelerra/mainmenu.C:165
+#: ../cinelerra/gwindowgui.C:51 ../cinelerra/mainmenu.C:166
 msgid "Mute"
 msgstr "Глушение"
 
-#: ../cinelerra/gwindowgui.C:52 ../cinelerra/mainmenu.C:170
+#: ../cinelerra/gwindowgui.C:52 ../cinelerra/mainmenu.C:171
 msgid "Camera X"
 msgstr "Камера X"
 
-#: ../cinelerra/gwindowgui.C:53 ../cinelerra/mainmenu.C:171
+#: ../cinelerra/gwindowgui.C:53 ../cinelerra/mainmenu.C:172
 msgid "Camera Y"
 msgstr "Камера Y"
 
-#: ../cinelerra/gwindowgui.C:54 ../cinelerra/mainmenu.C:172
+#: ../cinelerra/gwindowgui.C:54 ../cinelerra/mainmenu.C:173
 msgid "Camera Z"
 msgstr "Камера Z"
 
-#: ../cinelerra/gwindowgui.C:55 ../cinelerra/mainmenu.C:173
+#: ../cinelerra/gwindowgui.C:55 ../cinelerra/mainmenu.C:174
 msgid "Projector X"
 msgstr "Проектор X"
 
-#: ../cinelerra/gwindowgui.C:56 ../cinelerra/mainmenu.C:174
+#: ../cinelerra/gwindowgui.C:56 ../cinelerra/mainmenu.C:175
 msgid "Projector Y"
 msgstr "Проектор Y"
 
-#: ../cinelerra/gwindowgui.C:57 ../cinelerra/mainmenu.C:175
+#: ../cinelerra/gwindowgui.C:57 ../cinelerra/mainmenu.C:176
 msgid "Projector Z"
 msgstr "Проектор Z"
 
-#: ../cinelerra/gwindowgui.C:58 ../cinelerra/mainmenu.C:164
+#: ../cinelerra/gwindowgui.C:58 ../cinelerra/mainmenu.C:165
 msgid "Fade"
 msgstr "Фейд А./В."
 
@@ -1829,210 +1817,214 @@ msgstr "Создание индексов..."
 msgid "File"
 msgstr "Файл"
 
-#: ../cinelerra/mainmenu.C:106
+#: ../cinelerra/mainmenu.C:107
 msgid "Edit"
 msgstr "Правка"
 
-#: ../cinelerra/mainmenu.C:122
+#: ../cinelerra/mainmenu.C:123
 msgid "Keyframes"
 msgstr "Ключевые кадры"
 
-#: ../cinelerra/mainmenu.C:129 ../cinelerra/new.C:204
-#: ../cinelerra/setformat.C:262
+#: ../cinelerra/mainmenu.C:130 ../cinelerra/new.C:204
+#: ../cinelerra/setformat.C:263
 msgid "Audio"
 msgstr "Аудио"
 
-#: ../cinelerra/mainmenu.C:136 ../cinelerra/new.C:231
-#: ../cinelerra/setformat.C:303
+#: ../cinelerra/mainmenu.C:137 ../cinelerra/new.C:231
+#: ../cinelerra/setformat.C:304
 msgid "Video"
 msgstr "Видео"
 
-#: ../cinelerra/mainmenu.C:141
+#: ../cinelerra/mainmenu.C:142
 msgid "Tracks"
 msgstr "Дорожки"
 
-#: ../cinelerra/mainmenu.C:148 ../cinelerra/preferencesthread.C:289
+#: ../cinelerra/mainmenu.C:149 ../cinelerra/preferencesthread.C:289
 msgid "Settings"
 msgstr "Настройки"
 
-#: ../cinelerra/mainmenu.C:166 ../cinelerra/vpatchgui.C:258
+#: ../cinelerra/mainmenu.C:167 ../cinelerra/vpatchgui.C:258
 msgid "Overlay mode"
 msgstr "Режим наложения"
 
-#: ../cinelerra/mainmenu.C:177 ../cinelerra/pluginpopup.C:102
+#: ../cinelerra/mainmenu.C:178 ../cinelerra/pluginpopup.C:102
 #: ../cinelerra/transitionpopup.C:167
 msgid "Window"
-msgstr "Окно"
+msgstr "Окна"
 
-#: ../cinelerra/mainmenu.C:423
+#: ../cinelerra/mainmenu.C:424
 msgid "Dump EDL"
 msgstr "Выгрузка EDL"
 
-#: ../cinelerra/mainmenu.C:435
+#: ../cinelerra/mainmenu.C:436
 msgid "Dump Plugins"
 msgstr "Выгрузка списка плагинов"
 
-#. ================================================= edit
 #: ../cinelerra/mainmenu.C:448
+msgid "Show Status"
+msgstr "Показать статус"
+
+#. ================================================= edit
+#: ../cinelerra/mainmenu.C:461
 msgid "Undo"
 msgstr "Отмена"
 
-#: ../cinelerra/mainmenu.C:463
+#: ../cinelerra/mainmenu.C:476
 #, c-format
 msgid "Undo %s"
 msgstr "Отмена %s"
 
-#: ../cinelerra/mainmenu.C:468
+#: ../cinelerra/mainmenu.C:481
 msgid "Redo"
 msgstr "Повтор"
 
-#: ../cinelerra/mainmenu.C:484
+#: ../cinelerra/mainmenu.C:497
 #, c-format
 msgid "Redo %s"
 msgstr "Повтор %s"
 
-#: ../cinelerra/mainmenu.C:489
+#: ../cinelerra/mainmenu.C:502
 msgid "Cut keyframes"
 msgstr "Вырезать ключевые кадры"
 
-#: ../cinelerra/mainmenu.C:502
+#: ../cinelerra/mainmenu.C:515
 msgid "Copy keyframes"
 msgstr "Копировать ключевые кадры"
 
-#: ../cinelerra/mainmenu.C:515
+#: ../cinelerra/mainmenu.C:528
 msgid "Paste keyframes"
 msgstr "Вставить ключевые кадры"
 
-#: ../cinelerra/mainmenu.C:527
+#: ../cinelerra/mainmenu.C:540
 msgid "Clear keyframes"
 msgstr "Удалить ключевые кадры"
 
-#: ../cinelerra/mainmenu.C:541
+#: ../cinelerra/mainmenu.C:554
 msgid "Straighten curves"
 msgstr "Выровнять кривые"
 
-#: ../cinelerra/mainmenu.C:554
+#: ../cinelerra/mainmenu.C:567
 msgid "Cut"
 msgstr "Вырезать"
 
-#: ../cinelerra/mainmenu.C:566
+#: ../cinelerra/mainmenu.C:579
 msgid "Copy"
 msgstr "Копировать"
 
-#: ../cinelerra/mainmenu.C:590 ../plugins/compressor/compressor.C:1246
+#: ../cinelerra/mainmenu.C:603 ../plugins/compressor/compressor.C:1246
 #: ../plugins/synthesizer/synthesizer.C:748
 msgid "Clear"
 msgstr "Удалить"
 
-#: ../cinelerra/mainmenu.C:602
+#: ../cinelerra/mainmenu.C:615
 msgid "Paste silence"
 msgstr "Вставить пустой участок"
 
-#: ../cinelerra/mainmenu.C:615
+#: ../cinelerra/mainmenu.C:628
 msgid "Select All"
 msgstr "Выделить всё"
 
-#: ../cinelerra/mainmenu.C:626
+#: ../cinelerra/mainmenu.C:639
 msgid "Clear labels"
 msgstr "Удалить метки"
 
-#: ../cinelerra/mainmenu.C:638
+#: ../cinelerra/mainmenu.C:651
 msgid "Mute Region"
 msgstr "Заглушить выбранн. участок "
 
-#: ../cinelerra/mainmenu.C:651
+#: ../cinelerra/mainmenu.C:664
 msgid "Trim Selection"
 msgstr "Обрезать выбранный участок"
 
-#: ../cinelerra/mainmenu.C:679 ../cinelerra/mainmenu.C:744
+#: ../cinelerra/mainmenu.C:692 ../cinelerra/mainmenu.C:757
 msgid "Default Transition"
 msgstr "Стандартный переход"
 
-#: ../cinelerra/mainmenu.C:692
+#: ../cinelerra/mainmenu.C:705
 msgid "Map 1:1"
 msgstr "Сопоставить 1:1"
 
-#: ../cinelerra/mainmenu.C:704
+#: ../cinelerra/mainmenu.C:717
 msgid "Map 5.1:2"
 msgstr "Сопоставить 5.1:2"
 
-#: ../cinelerra/mainmenu.C:759
+#: ../cinelerra/mainmenu.C:772
 msgid "Delete tracks"
 msgstr "Удалить дорожки"
 
-#: ../cinelerra/mainmenu.C:771
+#: ../cinelerra/mainmenu.C:784
 msgid "Delete last track"
 msgstr "Удалить самую нижнюю дорожку"
 
-#: ../cinelerra/mainmenu.C:783
+#: ../cinelerra/mainmenu.C:796
 msgid "Move tracks up"
 msgstr "Дорожки вверх"
 
-#: ../cinelerra/mainmenu.C:796
+#: ../cinelerra/mainmenu.C:809
 msgid "Move tracks down"
 msgstr "Дорожки вниз"
 
-#: ../cinelerra/mainmenu.C:809
+#: ../cinelerra/mainmenu.C:822
 msgid "Concatenate tracks"
 msgstr "Объединить дорожки"
 
-#: ../cinelerra/mainmenu.C:822
+#: ../cinelerra/mainmenu.C:835
 msgid "Loop Playback"
 msgstr "Зациклить воспроизведение"
 
-#: ../cinelerra/mainmenu.C:838
+#: ../cinelerra/mainmenu.C:851
 msgid "Set background render"
 msgstr "Фоновый рендеринг"
 
-#: ../cinelerra/mainmenu.C:851
+#: ../cinelerra/mainmenu.C:864
 msgid "Edit labels"
 msgstr "Правка меток"
 
-#: ../cinelerra/mainmenu.C:865
+#: ../cinelerra/mainmenu.C:878
 msgid "Edit effects"
 msgstr "Правка эффектов"
 
-#: ../cinelerra/mainmenu.C:879
+#: ../cinelerra/mainmenu.C:892
 msgid "Autos follow edits"
 msgstr "Следовать за курсором"
 
-#: ../cinelerra/mainmenu.C:893
+#: ../cinelerra/mainmenu.C:906
 msgid "Align cursor on frames"
 msgstr "Выравнивать курсор по границе кадра"
 
-#: ../cinelerra/mainmenu.C:906
+#: ../cinelerra/mainmenu.C:919
 msgid "Save settings now"
 msgstr "Сохранить настройки"
 
-#: ../cinelerra/mainmenu.C:915
+#: ../cinelerra/mainmenu.C:928
 msgid "Saved settings."
-msgstr "Сохраненные настройки."
+msgstr "Настройки сохранены."
 
-#: ../cinelerra/mainmenu.C:922
+#: ../cinelerra/mainmenu.C:935
 msgid "Show Viewer"
 msgstr "Окно 'Просмотр'"
 
-#: ../cinelerra/mainmenu.C:934
+#: ../cinelerra/mainmenu.C:947
 msgid "Show Resources"
 msgstr "Окно 'Ресурсы'"
 
-#: ../cinelerra/mainmenu.C:947
+#: ../cinelerra/mainmenu.C:960
 msgid "Show Compositor"
 msgstr "Окно 'Cоставитель (Вывод)'"
 
-#: ../cinelerra/mainmenu.C:960
+#: ../cinelerra/mainmenu.C:973
 msgid "Show Overlays"
 msgstr "Окно меню 'Вид'"
 
-#: ../cinelerra/mainmenu.C:973
+#: ../cinelerra/mainmenu.C:986
 msgid "Show Levels"
 msgstr "Окно 'Уровни звука'"
 
-#: ../cinelerra/mainmenu.C:986
+#: ../cinelerra/mainmenu.C:999
 msgid "Default positions"
 msgstr "Стандартное расположение"
 
-#: ../cinelerra/mainmenu.C:998
+#: ../cinelerra/mainmenu.C:1011
 msgid "Show Ruler"
 msgstr "Окно 'Линейка'"
 
@@ -2058,7 +2050,7 @@ msgid "No recordable tracks specified."
 msgstr ""
 "Нет доступных дорожек для записи.\n"
 "Включите кнопку 'Разрешить/запретить правку'\n"
-"на панели управления соответствующей дорожки."
+"на панели управления соответствующей дорожкой."
 
 #: ../cinelerra/menueffects.C:195
 msgid "No plugins available."
@@ -2147,63 +2139,63 @@ msgstr "Авторское право:"
 msgid "Import images with a duration of"
 msgstr "Длительность импортированных изобр-й"
 
-#: ../cinelerra/mwindow.C:130
+#: ../cinelerra/mwindow.C:132
 msgid "Initializing GUI"
 msgstr "Инициализация GUI"
 
-#: ../cinelerra/mwindow.C:391
+#: ../cinelerra/mwindow.C:393
 #, c-format
 msgid "Couldn't open plugins directory '%s'"
 msgstr "Couldn't open plugins directory '%s'"
 
-#: ../cinelerra/mwindow.C:428
+#: ../cinelerra/mwindow.C:430
 #, c-format
 msgid "Couldn't open LADSPA directory '%s'"
 msgstr "Couldn't open LADSPA directory '%s'"
 
-#: ../cinelerra/mwindow.C:675
+#: ../cinelerra/mwindow.C:677
 #, c-format
 msgid "Can't find theme '%s'."
 msgstr "Can't find theme '%s'."
 
-#: ../cinelerra/mwindow.C:695
+#: ../cinelerra/mwindow.C:697
 #, c-format
 msgid "Cant load default theme '%s'."
 msgstr "Cant load default theme '%s'."
 
-#: ../cinelerra/mwindow.C:936
+#: ../cinelerra/mwindow.C:938
 #, c-format
 msgid "Failed to open %s"
 msgstr "Failed to open %s"
 
-#: ../cinelerra/mwindow.C:983
+#: ../cinelerra/mwindow.C:985
 msgid "'s format couldn't be determined."
 msgstr "'s format couldn't be determined."
 
-#: ../cinelerra/mwindow.C:1155
+#: ../cinelerra/mwindow.C:1157
 msgid "load"
 msgstr "загрузка"
 
-#: ../cinelerra/mwindow.C:1706
+#: ../cinelerra/mwindow.C:1708
 #, c-format
 msgid "Couldn't open %s for writing."
 msgstr "Couldn't open %s for writing."
 
-#: ../cinelerra/mwindow.C:1783
+#: ../cinelerra/mwindow.C:1768
 msgid "remove assets"
 msgstr "удалить ресурсы"
 
-#: ../cinelerra/mwindow.C:1962
+#: ../cinelerra/mwindow.C:1947
 #, c-format
 msgid "Using %s."
 msgstr "Используется %s."
 
-#: ../cinelerra/mwindowedit.C:83 ../cinelerra/mwindowedit.C:98
+#: ../cinelerra/mwindowedit.C:84 ../cinelerra/mwindowedit.C:99
 msgid "add track"
 msgstr "добавить дорожку"
 
-#: ../cinelerra/mwindowedit.C:143 ../cinelerra/preferencesthread.C:230
-#: ../cinelerra/setformat.C:176
+#: ../cinelerra/mwindowedit.C:144 ../cinelerra/preferencesthread.C:230
+#: ../cinelerra/setformat.C:178
 msgid ""
 "This project's dimensions are not multiples of 4 so\n"
 "it can't be rendered by OpenGL."
@@ -2211,154 +2203,154 @@ msgstr ""
 "Размер проекта не кратен 4.\n"
 "Невозможно выполнить OpenGL-рендеринг."
 
-#: ../cinelerra/mwindowedit.C:158
+#: ../cinelerra/mwindowedit.C:153
 msgid "asset to size"
 msgstr "соглас. размер"
 
-#: ../cinelerra/mwindowedit.C:170
+#: ../cinelerra/mwindowedit.C:165
 msgid "clear"
 msgstr "удалить"
 
-#: ../cinelerra/mwindowedit.C:198
+#: ../cinelerra/mwindowedit.C:193
 msgid "straighten curves"
 msgstr "выровнять кривые"
 
-#: ../cinelerra/mwindowedit.C:214
+#: ../cinelerra/mwindowedit.C:209
 msgid "clear keyframes"
 msgstr "удалить ключ. кадры"
 
-#: ../cinelerra/mwindowedit.C:229
+#: ../cinelerra/mwindowedit.C:224
 msgid "clear labels"
 msgstr "удалить метки"
 
-#: ../cinelerra/mwindowedit.C:245
+#: ../cinelerra/mwindowedit.C:240
 msgid "concatenate tracks"
 msgstr "объединить дорожки"
 
-#: ../cinelerra/mwindowedit.C:336
+#: ../cinelerra/mwindowedit.C:322
 msgid "crop"
 msgstr "обрезка"
 
-#: ../cinelerra/mwindowedit.C:355
+#: ../cinelerra/mwindowedit.C:341
 msgid "cut"
 msgstr "вырезать"
 
-#: ../cinelerra/mwindowedit.C:371
+#: ../cinelerra/mwindowedit.C:357
 msgid "cut keyframes"
 msgstr "вырезать ключ. кадры"
 
-#: ../cinelerra/mwindowedit.C:403
+#: ../cinelerra/mwindowedit.C:389
 msgid "delete tracks"
 msgstr "удалить дорожки"
 
-#: ../cinelerra/mwindowedit.C:415
+#: ../cinelerra/mwindowedit.C:401
 msgid "delete track"
 msgstr "удалить дорожку"
 
-#: ../cinelerra/mwindowedit.C:430
+#: ../cinelerra/mwindowedit.C:416
 msgid "detach transition"
 msgstr "удалить переход"
 
-#: ../cinelerra/mwindowedit.C:488 ../cinelerra/mwindowedit.C:523
+#: ../cinelerra/mwindowedit.C:474 ../cinelerra/mwindowedit.C:509
 msgid "insert effect"
 msgstr "вставить эффект"
 
-#: ../cinelerra/mwindowedit.C:593
+#: ../cinelerra/mwindowedit.C:579
 msgid "drag handle"
 msgstr "перетащить границу"
 
-#: ../cinelerra/mwindowedit.C:607
+#: ../cinelerra/mwindowedit.C:593
 msgid "match output size"
 msgstr "по размеру вывода"
 
-#: ../cinelerra/mwindowedit.C:624
+#: ../cinelerra/mwindowedit.C:610
 msgid "move edit"
 msgstr "переместить объект"
 
-#: ../cinelerra/mwindowedit.C:645
+#: ../cinelerra/mwindowedit.C:631
 msgid "move effect"
 msgstr "переместить эффект"
 
-#: ../cinelerra/mwindowedit.C:659
+#: ../cinelerra/mwindowedit.C:645
 msgid "move effect up"
 msgstr "переместить эффект вверх"
 
-#: ../cinelerra/mwindowedit.C:670
+#: ../cinelerra/mwindowedit.C:656
 msgid "move effect down"
 msgstr "переместить эффект вниз"
 
-#: ../cinelerra/mwindowedit.C:680
+#: ../cinelerra/mwindowedit.C:666
 msgid "move track down"
 msgstr "переместить дорожку вниз"
 
-#: ../cinelerra/mwindowedit.C:692
+#: ../cinelerra/mwindowedit.C:678
 msgid "move tracks down"
 msgstr "переместить дорожки вниз"
 
-#: ../cinelerra/mwindowedit.C:704
+#: ../cinelerra/mwindowedit.C:690
 msgid "move track up"
 msgstr "переместить дорожку вверх"
 
-#: ../cinelerra/mwindowedit.C:715
+#: ../cinelerra/mwindowedit.C:701
 msgid "move tracks up"
 msgstr "переместить дорожки вверх"
 
-#: ../cinelerra/mwindowedit.C:735
+#: ../cinelerra/mwindowedit.C:721
 msgid "mute"
 msgstr "заглушить участок"
 
-#: ../cinelerra/mwindowedit.C:788
+#: ../cinelerra/mwindowedit.C:774
 msgid "overwrite"
 msgstr "заменить"
 
-#: ../cinelerra/mwindowedit.C:838
+#: ../cinelerra/mwindowedit.C:824
 msgid "paste"
 msgstr "вставить"
 
-#: ../cinelerra/mwindowedit.C:877
+#: ../cinelerra/mwindowedit.C:863
 msgid "paste assets"
 msgstr "вставить ресурсы"
 
-#: ../cinelerra/mwindowedit.C:934
+#: ../cinelerra/mwindowedit.C:920
 msgid "paste keyframes"
 msgstr "вставить ключевые кадры"
 
-#: ../cinelerra/mwindowedit.C:1218
+#: ../cinelerra/mwindowedit.C:1204
 msgid "silence"
 msgstr "вставить пустой участок"
 
-#: ../cinelerra/mwindowedit.C:1239 ../cinelerra/mwindowedit.C:1250
-#: ../cinelerra/mwindowedit.C:1268 ../cinelerra/mwindowedit.C:1287
+#: ../cinelerra/mwindowedit.C:1225 ../cinelerra/mwindowedit.C:1236
+#: ../cinelerra/mwindowedit.C:1254 ../cinelerra/mwindowedit.C:1273
 msgid "transition"
 msgstr "переход"
 
-#: ../cinelerra/mwindowedit.C:1262 ../cinelerra/mwindowedit.C:1280
+#: ../cinelerra/mwindowedit.C:1248 ../cinelerra/mwindowedit.C:1266
 #, c-format
 msgid "No default transition '%s' found."
 msgstr "Переход по умолчанию (станд.) %s не найден."
 
-#: ../cinelerra/mwindowedit.C:1321
+#: ../cinelerra/mwindowedit.C:1307
 msgid "resize track"
 msgstr "изменить размер дорожки"
 
-#: ../cinelerra/mwindowedit.C:1343
+#: ../cinelerra/mwindowedit.C:1329
 msgid "in point"
 msgstr "нач. точка"
 
-#: ../cinelerra/mwindowedit.C:1396
+#: ../cinelerra/mwindowedit.C:1382
 msgid "out point"
 msgstr "кон. точка"
 
-#: ../cinelerra/mwindowedit.C:1462
+#: ../cinelerra/mwindowedit.C:1448
 msgid "splice"
 msgstr "разрезать и вставить"
 
-#: ../cinelerra/mwindowedit.C:1498 ../cinelerra/vwindowgui.C:476
+#: ../cinelerra/mwindowedit.C:1484 ../cinelerra/vwindowgui.C:476
 #, c-format
 msgid "Clip %d"
 msgstr "Клип %d"
 
-#: ../cinelerra/mwindowedit.C:1507
+#: ../cinelerra/mwindowedit.C:1493
 #, c-format
 msgid ""
 "%s\n"
@@ -2367,19 +2359,19 @@ msgstr ""
 "%s\n"
 "Создан из главного окна"
 
-#: ../cinelerra/mwindowedit.C:1531
+#: ../cinelerra/mwindowedit.C:1517
 msgid "label"
 msgstr "метка"
 
-#: ../cinelerra/mwindowedit.C:1589
+#: ../cinelerra/mwindowedit.C:1575
 msgid "trim selection"
 msgstr "обрезать выбранный участок"
 
-#: ../cinelerra/mwindowedit.C:1696
+#: ../cinelerra/mwindowedit.C:1682
 msgid "map 1:1"
 msgstr "сопоставить 1:1"
 
-#: ../cinelerra/mwindowedit.C:1696
+#: ../cinelerra/mwindowedit.C:1682
 msgid "map 5.1:2"
 msgstr "сопоставить 5.1:2"
 
@@ -2387,13 +2379,13 @@ msgstr "сопоставить 5.1:2"
 msgid "New..."
 msgstr "Новый проект ..."
 
-#: ../cinelerra/new.C:115 ../cinelerra/setformat.C:141
+#: ../cinelerra/new.C:107 ../cinelerra/setformat.C:141
 #, c-format
 msgid ""
 "Frame size is out of limits (%d..%dx%d..%d).\n"
 "Correction applied."
 msgstr ""
-"Размер кадра выходит за пределы лимитов программы (%d..%d).\n"
+"Размер кадра выходит за пределы лимитов программы (%d..%dx%d..%d).\n"
 "Будет применена коррекция до\n"
 "соответствующего максимума или минимума."
 
@@ -2413,22 +2405,22 @@ msgstr "Дорожки:"
 msgid "Canvas size:"
 msgstr "Размер холста:"
 
-#: ../cinelerra/new.C:258 ../cinelerra/setformat.C:357
+#: ../cinelerra/new.C:258 ../cinelerra/setformat.C:358
 msgid "Aspect ratio:"
 msgstr "Пропорция:"
 
-#: ../cinelerra/new.C:268 ../cinelerra/setformat.C:348
+#: ../cinelerra/new.C:268 ../cinelerra/setformat.C:349
 msgid "Color model:"
 msgstr "Цвет. модель:"
 
 #. --------------------
-#: ../cinelerra/new.C:274 ../cinelerra/setformat.C:372
+#: ../cinelerra/new.C:274 ../cinelerra/setformat.C:371
 msgid "Interlace mode:"
 msgstr ""
 "Чересстрочн.\n"
 "режим"
 
-#: ../cinelerra/packagerenderer.C:166
+#: ../cinelerra/packagerenderer.C:165
 #, c-format
 msgid "Couldn't open output file %s"
 msgstr "Невозможно открыть выходной файл %s"
@@ -2488,7 +2480,7 @@ msgstr "Включить/выключить глушение"
 
 #: ../cinelerra/patchgui.C:558
 msgid "track title"
-msgstr "название дорожки"
+msgstr "имя дорожки"
 
 #: ../cinelerra/patchgui.C:592
 msgid "nudge"
@@ -2807,7 +2799,7 @@ msgid "Preferences"
 msgstr "Параметры программы"
 
 #: ../cinelerra/preferencesthread.C:474 ../cinelerra/preferencesthread.C:476
-#: ../cinelerra/setformat.C:617
+#: ../cinelerra/setformat.C:616
 msgid "Apply"
 msgstr "Применить"
 
@@ -2826,7 +2818,7 @@ msgstr "Прервать"
 
 #: ../cinelerra/question.C:37
 msgid "Question"
-msgstr "Вопрос"
+msgstr "Подтвердите выход"
 
 #: ../cinelerra/question.C:45
 msgid "Yes"
@@ -3021,39 +3013,39 @@ msgstr "Невозможно открыть %s."
 msgid "Enter a filename to save as"
 msgstr "Введите имя файла для сохранения проекта"
 
-#: ../cinelerra/selection.C:55
+#: ../cinelerra/selection.C:57
 msgid "8 Bit Linear"
 msgstr "8 Bit Linear"
 
-#: ../cinelerra/selection.C:56
+#: ../cinelerra/selection.C:58
 msgid "16 Bit Linear"
 msgstr "16 Bit Linear"
 
-#: ../cinelerra/selection.C:57
+#: ../cinelerra/selection.C:59
 msgid "24 Bit Linear"
 msgstr "24 Bit Linear"
 
-#: ../cinelerra/selection.C:58
+#: ../cinelerra/selection.C:60
 msgid "32 Bit Linear"
 msgstr "32 Bit Linear"
 
-#: ../cinelerra/selection.C:59
+#: ../cinelerra/selection.C:61
 msgid "u Law"
 msgstr "u Law"
 
-#: ../cinelerra/selection.C:60
+#: ../cinelerra/selection.C:62
 msgid "IMA 4"
 msgstr "IMA 4"
 
-#: ../cinelerra/selection.C:61
+#: ../cinelerra/selection.C:63
 msgid "ADPCM"
 msgstr "ADPCM"
 
-#: ../cinelerra/selection.C:62
+#: ../cinelerra/selection.C:64
 msgid "Float"
 msgstr "Float"
 
-#: ../cinelerra/selection.C:630
+#: ../cinelerra/selection.C:704
 msgid "Swap dimensions"
 msgstr "Поменять местами значения"
 
@@ -3061,35 +3053,35 @@ msgstr "Поменять местами значения"
 msgid "Format..."
 msgstr "Формат проекта"
 
-#: ../cinelerra/setformat.C:150
+#: ../cinelerra/setformat.C:152
 msgid "set format"
 msgstr "формат проекта"
 
-#: ../cinelerra/setformat.C:233
+#: ../cinelerra/setformat.C:234
 msgid "Set Format"
 msgstr "Формат проекта"
 
-#: ../cinelerra/setformat.C:290
+#: ../cinelerra/setformat.C:291
 msgid "Channel positions:"
 msgstr "Расположение каналов:"
 
-#: ../cinelerra/setformat.C:317 ../plugins/freeverb/freeverb.C:302
+#: ../cinelerra/setformat.C:318 ../plugins/freeverb/freeverb.C:302
 msgid "Width:"
 msgstr "Ширина:"
 
-#: ../cinelerra/setformat.C:320
+#: ../cinelerra/setformat.C:321
 msgid "Height:"
 msgstr "Высота:"
 
-#: ../cinelerra/setformat.C:330
+#: ../cinelerra/setformat.C:331
 msgid "W Scale:"
 msgstr "Ш. Соотнош."
 
-#: ../cinelerra/setformat.C:339
+#: ../cinelerra/setformat.C:340
 msgid "H Scale:"
 msgstr "В. Соотнош."
 
-#: ../cinelerra/setformat.C:502
+#: ../cinelerra/setformat.C:501
 #, c-format
 msgid "%d degrees"
 msgstr "%d градусов"
@@ -3501,7 +3493,7 @@ msgstr "Sans:bold:pixelsize=13.33"
 msgid "Sans:bold:pixelsize=21.33"
 msgstr "Sans:bold:pixelsize=21.33"
 
-#: ../guicast/bcresources.C:999
+#: ../guicast/bcresources.C:1064
 #, c-format
 msgid "Conversion from %s to %s is not available"
 msgstr "Conversion from %s to %s is not available"
@@ -4640,8 +4632,8 @@ msgid "Linear Blur"
 msgstr "Размытие линейное"
 
 #: ../plugins/linearblur/linearblur.C:258
-#: ../plugins/radialblur/radialblur.C:253 ../plugins/zoomblur/zoomblur.C:269
 #: ../plugins/motionblur/motionblur.C:225
+#: ../plugins/radialblur/radialblur.C:253 ../plugins/zoomblur/zoomblur.C:269
 msgid "Steps:"
 msgstr "Шагов:"
 
@@ -4841,6 +4833,10 @@ msgstr "Только по вертикали"
 #: ../plugins/motion/motionwindow.C:931
 msgid "Both"
 msgstr "Оба направления"
+
+#: ../plugins/motionblur/motionblur.C:25
+msgid "Motion Blur"
+msgstr "Размытие (Камера X/Y)"
 
 #: ../plugins/normalize/normalize.h:25
 #: ../plugins/synthesizer/synthesizer.C:956
@@ -5396,7 +5392,7 @@ msgstr "Интенсивность"
 
 #: ../plugins/timefront/timefront.C:418
 msgid "Alpha mask"
-msgstr "Альфа - маска"
+msgstr "Альфа-маска"
 
 #: ../plugins/timefront/timefront.C:602
 msgid "Inversion"
@@ -5411,32 +5407,33 @@ msgid ""
 "If you are using another track for timefront, you have to have it under "
 "shared effects"
 msgstr ""
-"Ошибка: TimeFront plugin - Если Вы используете другой трек как\n"
+"Ошибка. Эффект 'Смещение во времени': если Вы используете другой трек как\n"
 "карту смещения, этот трек должен быть задействован как общий эффект."
 
 #: ../plugins/timefront/timefront.C:784
 msgid "Sizes of master track and timefront track do not match"
 msgstr ""
-"Размеры мастер - трека и трека карты смещения\n"
+"Эффект 'Смещение во времени': размеры мастер-трека и трека карты смещения\n"
 "не соответствуют друг другу."
 
 #: ../plugins/timefront/timefront.C:827
 msgid "ALPHA used, but project color model does not have alpha"
 msgstr ""
-"Ошибка: TimeFront plugin - Используется прозрачность, как карта смещения,\n"
-"но цветовая модель проекта не имеет альфа - канала."
+"Ошибка. Эффект 'Смещение во времени': используется прозрачность, как карта "
+"смещения,\n"
+"но цветовая модель проекта не имеет альфа-канала."
 
 #: ../plugins/timefront/timefront.C:881
 msgid "ALPHA track used, but project color model does not have alpha"
 msgstr ""
-"Ошибка: TimeFront plugin - Используются альфа - маска и трек, как карта "
-"смещения,\n"
+"Ошибка. Эффект 'Смещение во времени': используются альфа-маска и трек, как "
+"карта смещения,\n"
 "но цветовая модель проекта не имеет альфа - канала."
 
 #: ../plugins/timefront/timefront.C:887
 msgid "Unsupported track_usage parameter"
 msgstr ""
-"Ошибка: TimeFront plugin - используемые параметры трека\n"
+"Ошибка. Эффект 'Смещение во времени': используемые параметры трека\n"
 "не поддерживаются."
 
 #: ../plugins/timefront/timefront.h:30
@@ -5458,7 +5455,7 @@ msgstr "GlyphUnit::process_package FT_New_Face failed"
 #: ../plugins/titler/title.C:239
 #, c-format
 msgid "GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"
-msgstr "GlyphUnit::process_package FT_Load_Char failed - char: %i.\n"
+msgstr "GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"
 
 #: ../plugins/titler/title.C:994
 #, c-format
@@ -5676,7 +5673,3 @@ msgstr "V:"
 #: ../plugins/zoomblur/zoomblur.C:25
 msgid "Zoom Blur"
 msgstr "Размытие масштабом"
-
-#: ../plugins/motionblur/motionblur.C:25
-msgid "Motion Blur"
-msgstr "Размытие (Камера X/Y)"
