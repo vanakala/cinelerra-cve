@@ -212,7 +212,7 @@ const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
 		{
 			if(isspace(*q))
 			{
-				if(win->get_text_width(font, p, q - p) > boxwidth)
+				if(*r && win->get_text_width(font, p, q - p) > boxwidth)
 				{
 					*r = '\n';
 					p = ++r;
@@ -224,7 +224,6 @@ const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
 			if(*++q == 0)
 			{
 // There was a very long word if we reach here
-				*r = '\n';
 				return msgbuf;
 			}
 		}
