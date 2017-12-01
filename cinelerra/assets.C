@@ -149,22 +149,6 @@ int Assets::delete_all()
 	return 0;
 }
 
-Asset* Assets::update(const char *path)
-{
-	Asset* current = first;
-
-	while(current)
-	{
-		if(current->test_path(path)) 
-		{
-			return current;
-		}
-		current = NEXT;
-	}
-
-	return append(new Asset(path));
-}
-
 Asset* Assets::get_asset(const char *filename)
 {
 	Asset* current = first;
@@ -211,19 +195,6 @@ Asset* Assets::asset_number(int number)
 
 	return current;
 }
-
-int Assets::update_old_filename(const char *old_filename, const char *new_filename)
-{
-	for(Asset* current = first; current; current = NEXT)
-	{
-		if(!strcmp(current->path, old_filename))
-		{
-			current->update_path(new_filename);
-		}
-	}
-	return 0;
-}
-
 
 void Assets::dump(int indent)
 {
