@@ -331,16 +331,24 @@ int FileAVlibs::probe_input(Asset *asset)
 // disable unsupported streams
 		for(int i = 0; i < asset->nb_streams; i++)
 			asset->streams[i].options &= rdsc;
-
-		asset->audio_data = asset->video_data = 0;
-		for(int i = 0; i < asset->nb_streams; i++)
+		if(!asset->audio_streamno && !asset->video_streamno)
 		{
-			if((asset->streams[i].options & STRDSC_AUDIO) && !asset->audio_data)
-				asset->set_audio_stream(i);
-			if((asset->streams[i].options & STRDSC_VIDEO) && !asset->video_data)
-				asset->set_video_stream(i);
+			// Asset is completely unprobed
+			asset->audio_data = asset->video_data = 0;
+			for(int i = 0; i < asset->nb_streams; i++)
+			{
+				if((asset->streams[i].options & STRDSC_AUDIO) && !asset->audio_data)
+					asset->set_audio_stream(i);
+				if((asset->streams[i].options & STRDSC_VIDEO) && !asset->video_data)
+					asset->set_video_stream(i);
+			}
 		}
-
+		else
+		{
+			// Copy parameters from stream to asset
+			asset->set_audio_stream(asset->audio_streamno - 1);
+			asset->set_video_stream(asset->video_streamno - 1);
+		}
 		if(asset->video_data || asset->audio_data)
 			return 1;
 	}
