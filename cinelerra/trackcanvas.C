@@ -776,7 +776,7 @@ void TrackCanvas::draw_resources(int mode,
 			if(mode & WUPD_INDEXES)
 			{
 				if(edit->track->data_type != TRACK_AUDIO) continue;
-				if(!edit->asset->test_path(index_asset->path)) continue;
+				if(!edit->asset->test_path(index_asset)) continue;
 			}
 
 			int edit_x, edit_y, edit_w, edit_h;
