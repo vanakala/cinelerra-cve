@@ -83,7 +83,7 @@ public:
 // delete an entry from the cache
 // before deleting an asset, starting a new project or something
 	int delete_entry(Asset *asset);
-	int delete_entry(char *path);
+
 // Remove all entries from the cache.
 	void remove_all();
 

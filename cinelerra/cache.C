@@ -170,25 +170,6 @@ void CICache::remove_all()
 	total_lock->unlock();
 }
 
-int CICache::delete_entry(char *path)
-{
-	total_lock->lock("CICache::delete_entry");
-	for(CICacheItem *current = first; current; current = NEXT)
-	{
-		if(!strcmp(current->asset->path, path))
-		{
-			if(!current->checked_out)
-			{
-				remove_pointer(current);
-				Garbage::delete_object(current);
-				break;
-			}
-		}
-	}
-	total_lock->unlock();
-	return 0;
-}
-
 int CICache::delete_entry(Asset *asset)
 {
 	total_lock->lock("CICache::delete_entry");
