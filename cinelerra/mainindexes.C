@@ -95,10 +95,11 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 
 		char index_filename[BCTEXTLEN];
 		char source_filename[BCTEXTLEN];
+
 		IndexFile::get_index_filename(source_filename, 
 			mwindow->preferences->index_directory, 
 			index_filename, 
-			asset->path);
+			asset->path, asset->audio_streamno - 1);
 		if(!this_file->get_index(index_filename))
 		{
 			if(!indexfile.open_index(asset))

@@ -113,20 +113,22 @@ void IndexFile::delete_index(Preferences *preferences, Asset *asset)
 {
 	char index_filename[BCTEXTLEN];
 	char source_filename[BCTEXTLEN];
+
 	get_index_filename(source_filename, 
 		preferences->index_directory,
 		index_filename, 
-		asset->path);
+		asset->path, asset->audio_streamno - 1);
 	remove(index_filename);
 }
 
 int IndexFile::open_file()
 {
 	int result = 0;
+
 	get_index_filename(source_filename, 
 		mwindow->preferences->index_directory,
 		index_filename, 
-		asset->path);
+		asset->path, asset->audio_streamno - 1);
 
 	if(file = fopen(index_filename, "rb"))
 	{
@@ -212,7 +214,7 @@ int IndexFile::get_required_scale(File *source)
 void IndexFile::get_index_filename(char *source_filename, 
 	const char *index_directory,
 	char *index_filename, 
-	const char *input_filename)
+	const char *input_filename, int stream)
 {
 // Replace slashes and dots
 	int i, j;
@@ -228,6 +230,8 @@ void IndexFile::get_index_filename(char *source_filename,
 				source_filename[j++] = '_';
 		}
 	}
+	if(stream >= 0)
+		j += sprintf(&source_filename[j], ":%02d", stream);
 	source_filename[j] = 0;
 	FileSystem fs;
 	fs.join_names(index_filename, index_directory, source_filename);
@@ -255,7 +259,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	get_index_filename(source_filename, 
 		mwindow->preferences->index_directory, 
 		index_filename, 
-		asset->path);
+		asset->path, asset->audio_streamno - 1);
 
 
 // Test for index in stream table of contents
