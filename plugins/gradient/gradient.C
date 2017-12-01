@@ -283,7 +283,7 @@ GradientShape::GradientShape(GradientMain *plugin,
 	GradientWindow *gui, 
 	int x, 
 	int y)
- : BC_PopupMenu(x, y, 100, to_text(plugin->config.shape), 1)
+ : BC_PopupMenu(x, y, 120, to_text(plugin->config.shape), 1)
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -369,7 +369,7 @@ int GradientAngle::handle_event()
 GradientRate::GradientRate(GradientMain *plugin, int x, int y)
  : BC_PopupMenu(x,
 	y,
-	100,
+	155,
 	to_text(plugin->config.rate),
 	1)
 {
