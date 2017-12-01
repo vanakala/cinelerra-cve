@@ -109,10 +109,11 @@ void AssetEdit::run()
 				{
 					char source_filename[BCTEXTLEN];
 					char index_filename[BCTEXTLEN];
+
 					IndexFile::get_index_filename(source_filename, 
 						mwindow->preferences->index_directory,
 						index_filename, 
-						asset->path);
+						asset->path, asset->audio_streamno - 1);
 					remove(index_filename);
 					asset->index_status = INDEX_NOTTESTED;
 					mwindow->mainindexes->add_next_asset(0, asset);

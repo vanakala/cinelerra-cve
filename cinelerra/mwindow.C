@@ -866,8 +866,8 @@ SET_TRACE
 // Get type of file
 		File *new_file = new File;
 		Asset *new_asset = new Asset(filenames->values[i]);
-		EDL *new_edl = new EDL;
-		char string[BCTEXTLEN];
+		EDL *new_edl = 0;
+		Asset *next_asset;
 
 // Set reel name and number for the asset
 // If the user wants to overwrite the last used reel number for the clip,
@@ -884,11 +884,10 @@ SET_TRACE
 			IndexFile::get_index_filename(source_filename,
 				preferences->index_directory,
 				index_filename,
-				new_asset->path);
+				new_asset->path, new_asset->audio_streamno - 1);
 			remove(index_filename);
 			new_asset->index_status = INDEX_NOTTESTED;
 		}
-		new_edl->copy_session(edl);
 
 		gui->show_message("Loading %s", new_asset->path);
 		result = new_file->open_file(preferences, new_asset, 1, 0, 0, 0);
@@ -908,26 +907,54 @@ SET_TRACE
 						new_asset->height);
 				}
 
-				if(load_mode != LOADMODE_RESOURCESONLY)
+				if(new_asset->nb_programs)
 				{
-					asset_to_edl(new_edl, new_asset);
-					new_edls.append(new_edl);
-					Garbage::delete_object(new_asset);
-					new_asset = 0;
+					for(i = 0; i < new_asset->nb_programs; i++)
+					{
+						new_asset->set_program(i);
+
+						if(load_mode != LOADMODE_RESOURCESONLY)
+						{
+							new_edl = new EDL;
+							new_edl->copy_session(edl);
+							asset_to_edl(new_edl, new_asset);
+							new_edls.append(new_edl);
+							new_edl = 0;
+						}
+						else
+						{
+							next_asset = new Asset();
+							next_asset->copy_from(new_asset, 0);
+							new_assets.append(new_asset);
+							new_asset = next_asset;
+						}
+					}
 				}
 				else
 				{
-					new_assets.append(new_asset);
+					if(load_mode != LOADMODE_RESOURCESONLY)
+					{
+						new_edl = new EDL;
+						new_edl->copy_session(edl);
+						asset_to_edl(new_edl, new_asset);
+						new_edls.append(new_edl);
+						Garbage::delete_object(new_asset);
+						new_asset = 0;
+						new_edl = 0;
+					}
+					else
+					{
+						new_assets.append(new_asset);
+					}
 				}
-
-// Set filename to nothing for assets since save EDL would overwrite them.
 				if(load_mode == LOADMODE_REPLACE || 
 					load_mode == LOADMODE_REPLACE_CONCATENATE)
 				{
-					set_filename("");
-// Reset timeline position
-					new_edl->local_session->view_start_pts = 0;
-					new_edl->local_session->track_start = 0;
+					for(int i = 0; i < new_edls.total; i++)
+					{
+						new_edls.values[i]->local_session->view_start_pts = 0;
+						new_edls.values[i]->local_session->track_start = 0;
+					}
 				}
 
 				result = 0;
@@ -1020,10 +1047,13 @@ SET_TRACE
 
 					if(load_mode != LOADMODE_RESOURCESONLY)
 					{
+						new_edl = new EDL;
+						new_edl->copy_session(edl);
 						asset_to_edl(new_edl, new_asset);
 						new_edls.append(new_edl);
 						Garbage::delete_object(new_asset);
 						new_asset = 0;
+						new_edl = 0;
 					}
 					else
 					{
@@ -1043,11 +1073,13 @@ SET_TRACE
 				xml_file.read_from_file(filenames->values[i]);
 // Load EDL for pasting
 				result = 0;
+				new_edl = new EDL;
+				new_edl->copy_session(edl);
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
 				test_plugins(new_edl, filenames->values[i]);
 
 // We don't want a valid reel name/number for projects
-				strcpy(new_asset->reel_name, "");
+				new_asset->reel_name[0] = 0;
 				reel_number = -1;
 
 				if(load_mode == LOADMODE_REPLACE || 
@@ -1058,7 +1090,6 @@ SET_TRACE
 					if(update_filename)
 						set_filename(new_edl->local_session->clip_title);
 				}
-
 // Open media files found in xml - open fills media info
 				for(Asset *current = new_edl->assets->first; current; current = NEXT)
 				{
@@ -1071,13 +1102,15 @@ SET_TRACE
 					}
 				}
 				if(!result)
+				{
 					new_edls.append(new_edl);
+					new_edl = 0;
+				}
 				else if(update_filename)
 					set_filename("");
 				break;
 			}
 		}
-
 		if(result)
 		{
 			delete new_edl;
@@ -1680,7 +1713,8 @@ void MWindow::rebuild_indices()
 		IndexFile::get_index_filename(source_filename, 
 			preferences->index_directory,
 			index_filename, 
-			session->drag_assets->values[i]->path);
+			session->drag_assets->values[i]->path,
+			session->drag_assets->values[i]->audio_streamno - 1);
 		remove(index_filename);
 // Schedule index build
 		session->drag_assets->values[i]->index_status = INDEX_NOTTESTED;
