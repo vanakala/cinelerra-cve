@@ -91,6 +91,7 @@ void Asset::init_values()
 	memset(programs, 0, sizeof(programs));
 	nb_streams = 0;
 	nb_programs = 0;
+	program_id = 0;
 	sample_rate = 0;
 	bits = 0;
 	byte_order = 0;
@@ -208,6 +209,37 @@ void Asset::set_video_stream(int stream)
 	strcpy(vcodec, desc->codec);
 }
 
+int Asset::set_program(int pgm)
+{
+	struct progdesc *pdesc;
+	struct streamdesc *sdesc;
+	int mask;
+
+	if(pgm < 0 || pgm >= nb_programs)
+		return -1;
+
+	pdesc = &programs[pgm];
+	program_id = pdesc->program_id;
+
+	for(int i = 0; i < pdesc->nb_streams; i++)
+	{
+		int stream = pdesc->streams[i];
+		sdesc = &streams[stream];
+
+		if(sdesc->options & STRDSC_AUDIO & ~mask)
+		{
+			set_audio_stream(stream);
+			mask |= STRDSC_AUDIO;
+		}
+		if(sdesc->options & STRDSC_VIDEO & ~mask)
+		{
+			set_video_stream(stream);
+			mask |= STRDSC_VIDEO;
+		}
+	}
+	return 0;
+}
+
 void Asset::copy_from(Asset *asset, int do_index)
 {
 	copy_location(asset);
@@ -263,6 +295,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	this->video_duration = asset->video_duration;
 	this->nb_streams = asset->nb_streams;
 	this->nb_programs = asset->nb_programs;
+	this->program_id = asset->program_id;
 	memcpy(this->streams, asset->streams, sizeof(streams));
 	memcpy(this->programs, asset->programs, sizeof(streams));
 	jpeg_quality = asset->jpeg_quality;
@@ -328,7 +361,8 @@ int Asset::equivalent(Asset &asset,
 	int test_video)
 {
 	int result = (!strcmp(asset.path, path) &&
-		format == asset.format);
+		format == asset.format && nb_programs == asset.nb_programs
+		&& nb_streams == asset.nb_streams && program_id == asset.program_id);
 
 	if(test_audio && result)
 	{
@@ -1255,7 +1289,7 @@ void Asset::dump(int indent, int options)
 	printf("%*sAsset %p dump:\n", indent, "", this);
 	indent++;
 	printf("%*spath: %s\n", indent, "", path);
-	printf("%*sindex_status %d\n", indent, "", index_status);
+	printf("%*sindex_status %d id %d\n", indent, "", index_status, id);
 	printf("%*sfile format '%s', length %" PRId64 "\n", indent, "",
 		ContainerSelection::container_to_text(format), file_length);
 	printf("%*saudio_data %d streamno %d channels %d samplerate %d bits %d byte_order %d\n",
@@ -1306,7 +1340,7 @@ void Asset::dump(int indent, int options)
 	}
 	if(nb_programs)
 	{
-		printf("%*s%d programs:\n", indent + 2, "", nb_programs);
+		printf("%*s%d programs (active %d):\n", indent + 2, "", nb_programs, program_id);
 		for(int i = 0; i < nb_programs; i++)
 		{
 			printf("%*s%d. program id %d %.2f..%.2f %d streams:",

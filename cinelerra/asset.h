@@ -100,6 +100,7 @@ public:
 
 	void set_audio_stream(int stream);
 	void set_video_stream(int stream);
+	int set_program(int pgm);
 	void copy_from(Asset *asset, int do_index);
 	void copy_location(Asset *asset);
 	void copy_format(Asset *asset, int do_index = 1);
@@ -181,6 +182,7 @@ public:
 // Format of file.  An enumeration from file.inc.
 	int format;
 	int nb_programs;
+	int program_id;  // id of the active program
 	struct progdesc programs[MAXCHANNELS];
 	int nb_streams;
 	struct streamdesc streams[MAXCHANNELS];
