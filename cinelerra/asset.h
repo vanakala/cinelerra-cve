@@ -136,7 +136,8 @@ public:
 	Asset& operator=(Asset &asset);
 	int operator==(Asset &asset);
 	int operator!=(Asset &asset);
-	int test_path(const char *path);
+	int test_path(Asset *asset);
+	int test_path(const char *path, int stream = 1);
 	void read(FileXML *file, int expand_relative = 1);
 	void read_audio(FileXML *xml);
 	void read_video(FileXML *xml);

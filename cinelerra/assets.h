@@ -69,7 +69,8 @@ public:
 	void update_ptr(Asset *asset);
 
 // return the asset containing this path or 0 if not found
-	Asset* get_asset(const char *filename);
+	Asset* get_asset(const char *filename, int stream = -1);
+
 // remove asset from table
 	Asset* remove_asset(Asset *asset);
 

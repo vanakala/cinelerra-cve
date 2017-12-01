@@ -32,8 +32,6 @@
 #include "mutex.h"
 #include "preferences.h"
 
-#include <string.h>
-
 // edl came from a command which won't exist anymore
 CICache::CICache(Preferences *preferences,
 	ArrayList<PluginServer*> *plugindb)
@@ -70,7 +68,7 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 		total_lock->lock("CICache::check_out");
 		for(current = first; current && !got_it; current = NEXT)
 		{
-			if(!strcmp(current->asset->path, asset->path))
+			if(current->asset->test_path(asset))
 			{
 				got_it = 1;
 				break;
@@ -135,7 +133,7 @@ int CICache::check_in(Asset *asset)
 	{
 // Need to compare paths because
 // asset pointers are different
-		if(!strcmp(current->asset->path, asset->path))
+		if(current->asset->test_path(asset))
 		{
 			current->checked_out = 0;
 			current->GarbageObject::remove_user();
@@ -178,7 +176,7 @@ int CICache::delete_entry(Asset *asset)
 
 	for(current = first; current; current = NEXT)
 	{
-		if(!strcmp(current->asset->path, asset->path))
+		if(current->asset->test_path(asset))
 		{
 			if(!current->checked_out)
 			{

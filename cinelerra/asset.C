@@ -408,12 +408,23 @@ int Asset::operator!=(Asset &asset)
 	return !(*this == asset);
 }
 
-int Asset::test_path(const char *path)
+int Asset::test_path(Asset *asset)
 {
-	if(!strcasecmp(this->path, path)) 
-		return 1; 
-	else 
+	if(video_streamno != asset->video_streamno ||
+			audio_streamno != asset->audio_streamno)
 		return 0;
+
+	return !strcmp(asset->path, path);
+}
+
+int Asset::test_path(const char *path, int stream)
+{
+	if(stream > 0 && (stream == audio_streamno || stream == video_streamno))
+		return !strcmp(this->path, path);
+	else
+	if(stream <= 0)
+		return !strcmp(this->path, path);
+	return 0;
 }
 
 void Asset::read(FileXML *file, 

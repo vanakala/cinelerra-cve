@@ -114,7 +114,7 @@ void Assets::update_index(Asset *asset)
 {
 	for(Asset* current = first; current; current = NEXT)
 	{
-		if(current->test_path(asset->path))
+		if(current->test_path(asset))
 		{
 			current->update_index(asset);
 		}
@@ -128,12 +128,11 @@ Asset* Assets::update(Asset *asset)
 	for(Asset* current = first; current; current = NEXT)
 	{
 // Asset already exists.
-		if(current->test_path(asset->path)) 
+		if(current->test_path(asset))
 		{
 			return current;
 		}
 	}
-
 // Asset doesn't exist.
 	Asset *asset_copy = new Asset(*asset);
 	append(asset_copy);
@@ -149,14 +148,14 @@ int Assets::delete_all()
 	return 0;
 }
 
-Asset* Assets::get_asset(const char *filename)
+Asset* Assets::get_asset(const char *filename, int stream)
 {
 	Asset* current = first;
 	Asset* result = 0;
 
 	while(current)
 	{
-		if(current->test_path(filename))
+		if(current->test_path(filename, stream))
 		{
 			result = current;
 			break;
@@ -205,5 +204,3 @@ void Assets::dump(int indent)
 		current->dump(indent);
 	}
 }
-
-
