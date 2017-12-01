@@ -72,7 +72,7 @@ Edit::~Edit()
 	if(transition) delete transition;
 }
 
-void Edit::copy(FileXML *file, const char *output_path)
+void Edit::copy(FileXML *file, const char *output_path, int track_type)
 {
 	if(file)    // only if not counting
 	{
@@ -108,6 +108,8 @@ void Edit::copy(FileXML *file, const char *output_path)
 
 			file->tag.set_title("FILE");
 			file->tag.set_property("SRC", stored_path);
+			file->tag.set_property("STREAMNO", track_type == TRACK_AUDIO ?
+				asset->audio_streamno : asset->video_streamno);
 			file->append_tag();
 			file->tag.set_title("/FILE");
 			file->append_tag();

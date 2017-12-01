@@ -305,6 +305,7 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 {
 	Edit* current;
 	ptstime duration;
+	int streamno;
 
 	current = append(create_edit());
 
@@ -326,6 +327,7 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 				char filename[1024];
 				strcpy(filename, SILENCE);
 				file->tag.get_property("SRC", filename);
+				streamno = file->tag.get_property("STREAMNO", -1);
 // Extend path
 				if(strcmp(filename, SILENCE))
 				{
@@ -339,7 +341,7 @@ void Edits::load_edit(FileXML *file, ptstime &project_time, int track_offset)
 						fs.join_names(directory, edl_directory, filename);
 						strcpy(filename, directory);
 					}
-					current->asset = edl->assets->get_asset(filename);
+					current->asset = edl->assets->get_asset(filename, streamno);
 				}
 				else
 				{
@@ -427,6 +429,7 @@ Edit* Edits::get_playable_edit(ptstime postime, int use_nudge)
 void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_path)
 {
 	Edit *current_edit, *tmp_edit = 0;
+	int stream;
 
 	file->tag.set_title("EDITS");
 	file->append_tag();
@@ -442,9 +445,12 @@ void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_p
 		{
 			tmp_edit->copy_from(current_edit);
 			tmp_edit->set_pts(0);
+			stream = -1;
 			if(tmp_edit->asset)
+			{
 				tmp_edit->set_source_pts(current_edit->get_source_pts() + start - current_edit->get_pts());
-			tmp_edit->copy(file, output_path);
+			}
+			tmp_edit->copy(file, output_path, track->data_type);
 		}
 		else
 		if(current_edit->get_pts() > end && !PTSEQU(current_edit->get_pts(), end))
@@ -456,7 +462,7 @@ void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_p
 			tmp_edit->set_source_pts(0);
 			tmp_edit->transition = 0;
 			tmp_edit->channel = 0;
-			tmp_edit->copy(file, output_path);
+			tmp_edit->copy(file, output_path, track->data_type);
 			break;
 		}
 		else
@@ -467,7 +473,7 @@ void Edits::copy(ptstime start, ptstime end, FileXML *file, const char *output_p
 				tmp_edit->shift(-start);
 			}
 			else
-				current_edit->copy(file, output_path);
+				current_edit->copy(file, output_path, track->data_type);
 		}
 		if(PTSEQU(current_edit->get_pts(), end))
 			break;

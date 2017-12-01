@@ -516,9 +516,14 @@ void Asset::read(FileXML *file,
 
 void Asset::read_audio(FileXML *file)
 {
+	int streamno;
+
 	if(file->tag.title_is("AUDIO")) audio_data = 1;
 	channels = file->tag.get_property("CHANNELS", 2);
 
+	streamno = file->tag.get_property("STREAMNO", 0);
+	if(streamno > 0)
+		audio_streamno = streamno;
 // This is loaded from the index file after the EDL but this 
 // should be overridable in the EDL.
 	if(!sample_rate) 
@@ -543,10 +548,14 @@ void Asset::read_audio(FileXML *file)
 
 void Asset::read_video(FileXML *file)
 {
+	int streamno;
 	char string[BCTEXTLEN];
 
 	if(file->tag.title_is("VIDEO")) video_data = 1;
 
+	streamno = file->tag.get_property("STREAMNO", 0);
+	if(streamno > 0)
+		video_streamno = streamno;
 // This is loaded from the index file after the EDL but this 
 // should be overridable in the EDL.
 	if(!frame_rate) 
@@ -781,7 +790,10 @@ void Asset::write_audio(FileXML *file)
 {
 // Let the reader know if the asset has the data by naming the block.
 	if(audio_data)
+	{
 		file->tag.set_title("AUDIO");
+		file->tag.set_property("STREAMNO", audio_streamno);
+	}
 	else
 		file->tag.set_title("AUDIO_OMIT");
 // Necessary for PCM audio
@@ -813,7 +825,10 @@ void Asset::write_audio(FileXML *file)
 void Asset::write_video(FileXML *file)
 {
 	if(video_data)
+	{
 		file->tag.set_title("VIDEO");
+		file->tag.set_property("STREAMNO", video_streamno);
+	}
 	else
 		file->tag.set_title("VIDEO_OMIT");
 
