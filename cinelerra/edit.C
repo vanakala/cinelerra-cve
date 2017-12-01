@@ -243,9 +243,10 @@ int Edit::operator==(Edit &edit)
 
 double Edit::picon_w(void)
 {
-	return (double)edl->local_session->zoom_track * 
-		asset->width / 
-		asset->height;
+	if(asset && asset->width && asset->height)
+		return (double)edl->local_session->zoom_track *
+			asset->width / asset->height;
+	return 0.0;
 }
 
 int Edit::picon_h(void)
