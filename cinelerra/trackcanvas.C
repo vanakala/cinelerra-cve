@@ -596,7 +596,7 @@ ptstime TrackCanvas::get_drop_position(int *is_insertion,
 	int span_asset = 0;
 	int last_ignore = 0; // used to make sure we can ignore the last edit if that is what we are dragging
 
-	if (!track->edits->last)
+	if(!track || !track->edits->last)
 	{
 		// No edits -> no problems!
 		position = cursor_position;
