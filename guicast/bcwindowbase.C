@@ -81,7 +81,9 @@ BC_WindowBase::~BC_WindowBase()
 		restore_vm();
 	}
 #endif
-
+// Allow processing the remaining events
+	lock_events("BC_WindowBase::~BC_WindowBase");
+	unlock_events();
 	get_resources()->create_window_lock->lock("BC_WindowBase::~BC_WindowBase");
 	is_deleting = 1;
 
@@ -182,6 +184,7 @@ void BC_WindowBase::initialize()
 	test_keypress = 0;
 	is_deleting = 0;
 	window_lock = 0;
+	event_lock = 0;
 	x = 0; 
 	y = 0; 
 	w = 0; 
@@ -323,6 +326,7 @@ void BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	{
 		top_level = this;
 		parent_window = this;
+		event_lock = new Mutex("BC_WindowBase::event_lock");
 
 // get the display connection
 		display = init_display(display_name);
@@ -659,7 +663,7 @@ void BC_WindowBase::dispatch_event()
 // Handle compressed events
 	{
 		unlock_window();
-		get_resources()->create_window_lock->lock("BC_WindowBase::dispatch_event - compressed");
+		lock_events("BC_WindowBase::dispatch_event - compressed");
 		if(resize_events)
 			dispatch_resize_event(last_resize_w, last_resize_h);
 		else
@@ -668,7 +672,7 @@ void BC_WindowBase::dispatch_event()
 		else
 		if(translation_events)
 			dispatch_translation_event();
-		get_resources()->create_window_lock->unlock();
+		unlock_events();
 
 		return;
 	}
@@ -767,7 +771,7 @@ void BC_WindowBase::dispatch_event()
 		break;
 
 	case MotionNotify:
-		get_resources()->create_window_lock->lock("BC_WindowBase::dispatch_event MotionNotify");
+		lock_events("BC_WindowBase::dispatch_event MotionNotify");
 		get_key_masks(&event);
 // Dispatch previous motion event if this is a subsequent motion from a different window
 		if(motion_events && last_motion_win != event.xany.window)
@@ -778,7 +782,7 @@ void BC_WindowBase::dispatch_event()
 		last_motion_x = event.xmotion.x;
 		last_motion_y = event.xmotion.y;
 		last_motion_win = event.xany.window;
-		get_resources()->create_window_lock->unlock();
+		unlock_events();
 		break;
 
 	case ConfigureNotify:
@@ -2460,6 +2464,32 @@ void BC_WindowBase::unlock_window()
 	{
 		printf("BC_WindowBase::unlock_window top_level NULL\n");
 	}
+}
+
+void BC_WindowBase::lock_events(const char *location)
+{
+	if(top_level)
+	{
+		if(top_level != this)
+			top_level->lock_events(location);
+		else
+			event_lock->lock(location);
+	}
+	else
+		printf("BC_WindowBase::lock_event top_level NULL\n");
+}
+
+void BC_WindowBase::unlock_events()
+{
+	if(top_level)
+	{
+		if(top_level != this)
+			top_level->unlock_events();
+		else
+			event_lock->unlock();
+	}
+	else
+		printf("BC_WindowBase::unlock_event top_level NULL\n");
 }
 
 void BC_WindowBase::set_done(int return_value)

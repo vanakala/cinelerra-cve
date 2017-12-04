@@ -602,6 +602,8 @@ private:
 		int src_y,
 		int *dest_x_return,
 		int *dest_y_return);
+	void lock_events(const char *location);
+	void unlock_events();
 
 // Top level window above this window
 	BC_WindowBase* top_level;
@@ -790,6 +792,7 @@ protected:
 	int resize_wide_text(int length);
 	Atom create_xatom(const char *atom_name);
 	void send_custom_xatom(XClientMessageEvent *event);
+	Mutex *event_lock;
 };
 
 #endif
