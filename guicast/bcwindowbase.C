@@ -81,9 +81,12 @@ BC_WindowBase::~BC_WindowBase()
 		restore_vm();
 	}
 #endif
-// Allow processing the remaining events
-	lock_events("BC_WindowBase::~BC_WindowBase");
-	unlock_events();
+	if(window_type == MAIN_WINDOW)
+	{
+// Allow processing the pending events
+		lock_events("BC_WindowBase::~BC_WindowBase");
+		unlock_events();
+	}
 	get_resources()->create_window_lock->lock("BC_WindowBase::~BC_WindowBase");
 	is_deleting = 1;
 
