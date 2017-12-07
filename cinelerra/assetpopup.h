@@ -137,16 +137,4 @@ public:
 	AssetPopup *popup;
 };
 
-
-class AssetPopupDiskRemove : public BC_MenuItem
-{
-public:
-	AssetPopupDiskRemove(MWindow *mwindow, AssetPopup *popup);
-
-	int handle_event();
-
-	MWindow *mwindow;
-	AssetPopup *popup;
-};
-
 #endif

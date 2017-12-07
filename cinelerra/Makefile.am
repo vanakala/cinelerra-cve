@@ -208,7 +208,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    quit.C \
 		    recordableatracks.C \
 		    recordablevtracks.C \
-		    removethread.C \
 		    render.C \
 		    renderengine.C \
 		    renderfarm.C \
@@ -456,7 +455,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 quit.h \
 		 recordableatracks.h \
 		 recordablevtracks.h \
-		 removethread.h \
 		 renderengine.h \
 		 renderfarmclient.h \
 		 renderfarm.h \

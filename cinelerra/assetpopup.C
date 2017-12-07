@@ -57,7 +57,6 @@ AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
 	add_item(new AssetPopupPaste(mwindow, this));
 	add_item(new AssetMatchSize(mwindow, this));
 	add_item(new AssetPopupProjectRemove(mwindow, this));
-	add_item(new AssetPopupDiskRemove(mwindow, this));
 }
 
 void AssetPopup::paste_assets()
@@ -205,17 +204,3 @@ int AssetPopupProjectRemove::handle_event()
 	return 1;
 }
 
-
-AssetPopupDiskRemove::AssetPopupDiskRemove(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem(_("Remove from disk"))
-{
-	this->mwindow = mwindow;
-	this->popup = popup;
-}
-
-int AssetPopupDiskRemove::handle_event()
-{
-	if(!confirmbox(_("Remove this asset from disk?")))
-		mwindow->remove_assets_from_disk();
-	return 1;
-}

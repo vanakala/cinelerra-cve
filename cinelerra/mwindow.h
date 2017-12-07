@@ -61,7 +61,6 @@
 #include "pluginset.inc"
 #include "preferences.inc"
 #include "preferencesthread.inc"
-#include "removethread.inc"
 #include "render.inc"
 #include "ruler.inc"
 #include "sharedlocation.inc"
@@ -342,7 +341,6 @@ public:
 	void reset_caches();
 	void remove_asset_from_caches(Asset *asset);
 	void remove_assets_from_project(int push_undo = 0);
-	void remove_assets_from_disk();
 	void resize_track(Track *track, int w, int h);
 	void set_auto_keyframes(int value);
 	void set_labels_follow_edits(int value);
@@ -381,7 +379,6 @@ public:
 	void set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
 
 	Playback3D *playback_3d;
-	RemoveThread *remove_thread;
 
 	SplashGUI *splash_window;
 // Main undo stack

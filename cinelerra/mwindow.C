@@ -74,7 +74,6 @@
 #include "pluginserver.h"
 #include "pluginset.h"
 #include "preferences.h"
-#include "removethread.h"
 #include "render.h"
 #include "ruler.h"
 #include "samplescroll.h"
@@ -121,7 +120,6 @@ MWindow::MWindow(const char *config_path)
 	init_signals();
 
 	init_3d();
-	remove_thread = new RemoveThread;
 
 	show_splash();
 
@@ -1809,17 +1807,6 @@ void MWindow::remove_assets_from_project(int push_undo)
 
 // Removes from playback here
 	sync_parameters(CHANGE_ALL);
-}
-
-void MWindow::remove_assets_from_disk()
-{
-// Remove from disk
-	for(int i = 0; i < session->drag_assets->total; i++)
-	{
-		remove_thread->remove_file(session->drag_assets->values[i]->path);
-	}
-
-	remove_assets_from_project(1);
 }
 
 void MWindow::save_defaults()
