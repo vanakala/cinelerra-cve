@@ -69,7 +69,7 @@ public:
 // Display error message to command line or GUI, depending on what exists.
 	static void show_error(const char *string);
 // Break line to fit in window
-	static const char *StringBreaker(int font,
+	static wchar_t *StringBreaker(int font,
 		const char *text, int boxwidth, BC_Window *win);
 // Display error box with message
 	static void ErrorBoxMsg(const char *fmt, ...)

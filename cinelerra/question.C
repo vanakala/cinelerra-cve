@@ -40,7 +40,7 @@ QuestionWindow::QuestionWindow(MWindow *mwindow, int use_cancel, const char *str
 	WIDTH, 
 	HEIGHT)
 {
-	const char *btext;
+	wchar_t *btext;
 	BC_Title *title;
 	const char *yes = _("Yes");
 	const char *no = _("No");

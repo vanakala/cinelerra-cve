@@ -33,8 +33,8 @@
 #include "theme.h"
 
 #include <string.h>
-#include <ctype.h>
 #include <stdarg.h>
+#include <wchar.h>
 
 MainError* MainError::main_error = 0;
 
@@ -180,21 +180,23 @@ void MainError::show_error(const char *string)
 	}
 }
 
-const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
+wchar_t *MainError::StringBreaker(int font, const char *text, int boxwidth,
 		BC_Window *win)
 {
 	int txlen = strlen(text);
-	char *p, *q, *r;
-	static char msgbuf[BCTEXTLEN];
+	wchar_t *p, *q, *r;
+	static wchar_t msgbuf[BCTEXTLEN];
 
-	if(win->get_text_width(font, text) < boxwidth)
-		return text;
+	txlen = BC_Resources::encode(BC_Resources::encoding, BC_Resources::wide_encoding,
+		(char*)text, (char*)msgbuf, BCTEXTLEN * sizeof(wchar_t), txlen) / sizeof(wchar_t);
 
-	p = strncpy(msgbuf, text, sizeof(msgbuf)-1);
+	if(win->get_text_width(font, msgbuf) < boxwidth)
+		return msgbuf;
 
-	while (*p)
+	p = msgbuf;
+	while(*p)
 	{
-		if(q = strchr(p, '\n'))
+		if(q = wcschr(p, '\n'))
 		{
 			if(win->get_text_width(font, p, q - p) < boxwidth)
 			{
@@ -210,7 +212,7 @@ const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
 		q = p;
 		while(*q)
 		{
-			if(isspace(*q))
+			if(*q == ' ' || *q == '\t' || *q == '\n')
 			{
 				if(*r && win->get_text_width(font, p, q - p) > boxwidth)
 				{
@@ -332,7 +334,7 @@ MainErrorBox::MainErrorBox(MWindow *mwindow,
 	int x, int y, int w, int h)
  : BC_Window(PROGRAM_NAME, x, y, w, h, w, h, 0)
 {
-	const char *btext;
+	wchar_t *btext;
 
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 
