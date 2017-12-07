@@ -333,6 +333,7 @@ public:
 	void draw_wtext(int x, int y, const wchar_t *text, int length = -1,
 		BC_Pixmap *pixmap = 0, int *charpos = 0);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
+	void draw_center_text(int x, int y, const wchar_t *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
 	void draw_rectangle(int x, int y, int w, int h);
