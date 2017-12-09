@@ -46,8 +46,6 @@
 #include <unistd.h>
 #include "vframe.h"
 
-#define INDEXFILE_EXTENSION ".idx"
-
 // Use native sampling rates for files so the same index can be used in
 // multiple projects.
 

@@ -78,4 +78,8 @@
 // Font directory in plugindir
 #define FONT_SEARCHPATH "fonts"
 
+// Extensions of indexfiles
+#define INDEXFILE_EXTENSION ".idx"
+#define TOCFILE_EXTENSION   ".toc"
+
 #endif

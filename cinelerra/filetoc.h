@@ -31,7 +31,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#define TOCFILE_EXT           ".toc"
 
 #define TOCFILE_PREFIX         0x20434f54
 #define TOCFILE_VERSION        0x00001300

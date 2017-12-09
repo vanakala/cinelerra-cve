@@ -575,7 +575,7 @@ void MWindow::clean_indexes()
 	char string2[BCTEXTLEN];
 
 // Delete extra indexes
-	fs.set_filter("*.idx");
+	fs.set_filter("*" INDEXFILE_EXTENSION);
 	fs.complete_path(preferences->index_directory);
 	fs.update(preferences->index_directory);
 
@@ -627,7 +627,7 @@ void MWindow::clean_indexes()
 			char *ptr = strrchr(string2, '.');
 			if(ptr)
 			{
-				strcpy(ptr, ".toc");
+				strcpy(ptr, TOCFILE_EXTENSION);
 				remove(string2);
 			}
 		}
