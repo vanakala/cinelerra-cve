@@ -132,8 +132,8 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	default_asset->aspect_ratio = command->get_edl()->session->aspect_ratio;
 	result = Render::check_asset(edl, *default_asset);
 
-	audio_cache = new CICache(preferences, plugindb);
-	video_cache = new CICache(preferences, plugindb);
+	audio_cache = new CICache(preferences);
+	video_cache = new CICache(preferences);
 
 	PlaybackConfig *config = command->get_edl()->session->playback_config;
 	aconfig = new AudioOutConfig(0);

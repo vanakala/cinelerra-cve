@@ -33,11 +33,9 @@
 #include "preferences.h"
 
 // edl came from a command which won't exist anymore
-CICache::CICache(Preferences *preferences,
-	ArrayList<PluginServer*> *plugindb)
+CICache::CICache(Preferences *preferences)
  : List<CICacheItem>()
 {
-	this->plugindb = plugindb;
 	this->preferences = preferences;
 	check_out_lock = new Condition(0, "CICache::check_out_lock", 0);
 	total_lock = new Mutex("CICache::total_lock");

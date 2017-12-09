@@ -135,9 +135,9 @@ void PlaybackEngine::create_cache()
 	if(video_cache) delete video_cache;
 	video_cache = 0;
 	if(!audio_cache) 
-		audio_cache = new CICache(preferences, mwindow->plugindb);
+		audio_cache = new CICache(preferences);
 	if(!video_cache) 
-		video_cache = new CICache(preferences, mwindow->plugindb);
+		video_cache = new CICache(preferences);
 }
 
 void PlaybackEngine::perform_change()

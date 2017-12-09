@@ -736,8 +736,8 @@ void MWindow::init_viewer()
 
 void MWindow::init_cache()
 {
-	audio_cache = new CICache(preferences, plugindb);
-	video_cache = new CICache(preferences, plugindb);
+	audio_cache = new CICache(preferences);
+	video_cache = new CICache(preferences);
 	frame_cache = new FrameCache;
 	wave_cache = new WaveCache;
 }

@@ -68,8 +68,7 @@ private:
 class CICache : public List<CICacheItem>
 {
 public:
-	CICache(Preferences *preferences,
-		ArrayList<PluginServer*> *plugindb);
+	CICache(Preferences *preferences);
 	~CICache();
 
 	friend class CICacheItem;
@@ -104,8 +103,6 @@ public:
 	void age();
 
 	void dump(int indent = 0);
-
-	ArrayList<PluginServer*> *plugindb;
 
 private:
 // to prevent one from checking the same asset out before it's checked in
