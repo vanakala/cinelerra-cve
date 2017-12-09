@@ -46,6 +46,8 @@
 #include <unistd.h>
 #include "vframe.h"
 
+#define INDEXFILE_EXTENSION ".idx"
+
 // Use native sampling rates for files so the same index can be used in
 // multiple projects.
 
@@ -214,7 +216,8 @@ int IndexFile::get_required_scale(File *source)
 void IndexFile::get_index_filename(char *source_filename, 
 	const char *index_directory,
 	char *index_filename, 
-	const char *input_filename, int stream)
+	const char *input_filename, int stream,
+	const char *extension)
 {
 // Replace slashes and dots
 	int i, j;
@@ -235,7 +238,9 @@ void IndexFile::get_index_filename(char *source_filename,
 	source_filename[j] = 0;
 	FileSystem fs;
 	fs.join_names(index_filename, index_directory, source_filename);
-	strcat(index_filename, ".idx");
+	if(!extension)
+		extension = INDEXFILE_EXTENSION;
+	strcat(index_filename, extension);
 }
 
 void IndexFile::interrupt_index()

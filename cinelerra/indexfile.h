@@ -49,7 +49,9 @@ public:
 	static void get_index_filename(char *source_filename, 
 		const char *index_directory,
 		char *index_filename, 
-		const char *input_filename, int stream = -1);
+		const char *input_filename,
+		int stream = -1,
+		const char *extension = 0);
 	void update_edl_asset();
 	void redraw_edits(int force);
 	int draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w);

@@ -85,10 +85,8 @@ FileTOC::FileTOC(FileBase *media, const char *dirpath, const char *filepath,
 	progress = 0;
 
 	IndexFile::get_index_filename(source_filename, dirpath,
-		toc_filename, filepath);
+		toc_filename, filepath, -1, TOCFILE_EXT);
 
-	if(p = strrchr(toc_filename, '.'))
-		strcpy(p, TOCFILE_EXT);
 	items_allocated = 0;
 	items = 0;
 	num_streams = 0;
