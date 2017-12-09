@@ -290,19 +290,14 @@ int CICache::delete_oldest()
 	}
 }
 
-int CICache::dump()
+void CICache::dump(int indent)
 {
 	CICacheItem *current;
 	total_lock->lock("CICache::dump");
-	printf("CICache::dump total size %zd\n", get_memory_usage(0));
+	printf("%*sCICache %p dump total size %zd\n", indent, "",
+		this, get_memory_usage(0));
 	for(current = first; current; current = NEXT)
-	{
-		printf("cache item %p asset %p %s age=%d\n", 
-			current, 
-			current->asset,
-			current->asset->path, 
-			current->age);
-	}
+		current->dump(indent + 2);
 	total_lock->unlock();
 }
 
@@ -347,4 +342,13 @@ CICacheItem::~CICacheItem()
 	if(file) delete file;
 	if(asset) Garbage::delete_object(asset);
 	if(item_lock) delete item_lock;
+}
+
+void CICacheItem::dump(int indent)
+{
+	printf("%*sCICacheItem %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*sfile %p checked out %d age %d\n", indent, "",
+		file, checked_out, age);
+	asset->dump(indent + 2);
 }

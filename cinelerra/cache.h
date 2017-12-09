@@ -53,6 +53,8 @@ public:
 	CICacheItem();
 	~CICacheItem();
 
+	void dump(int indent = 0);
+
 	File *file;
 // Number of last get or put operation involving this object.
 	int age;
@@ -102,7 +104,7 @@ public:
 	int age();
 
 
-	int dump();
+	void dump(int indent = 0);
 
 	ArrayList<PluginServer*> *plugindb;
 
