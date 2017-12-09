@@ -314,10 +314,8 @@ public:
 	BC_DragWindow *drag_popup;
 	BC_Pixmap *transition_pixmap;
 	BC_Pixmap *keyframe_pixmap;
-	BC_Pixmap *camerakeyframe_pixmap;
 	BC_Pixmap *modekeyframe_pixmap;
 	BC_Pixmap *pankeyframe_pixmap;
-	BC_Pixmap *projectorkeyframe_pixmap;
 	BC_Pixmap *maskkeyframe_pixmap;
 
 	int active;

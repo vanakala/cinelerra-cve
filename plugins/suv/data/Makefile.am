@@ -9,7 +9,6 @@ PNGS = \
 	blank30x30.png \
 	bottom_justify.png \
 	camera.png \
-	camerakeyframe.png \
 	cancel.png \
 	cbuttons_left.png \
 	cbuttons_right.png \
@@ -202,7 +201,6 @@ PNGS = \
 	progress_bg.png \
 	progress_hi.png \
 	projector.png \
-	projectorkeyframe.png \
 	protect.png \
 	radial_checked.png \
 	radial_checkedhi.png \

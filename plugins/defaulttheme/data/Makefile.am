@@ -22,7 +22,6 @@ batchstop_hi.png \
 batchstop_up.png \
 blank30x30.png \
 bottom_justify.png \
-camerakeyframe.png \
 camera.png \
 cancel.png \
 cbuttons_left.png \
@@ -205,7 +204,6 @@ prevlabel.png \
 prevtip.png \
 progress_bg.png \
 progress_hi.png \
-projectorkeyframe.png \
 projector.png \
 protect.png \
 radial_checkedhi.png \

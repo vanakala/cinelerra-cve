@@ -189,7 +189,6 @@ public:
 	VFrame **asset_project_data;
 	VFrame **browse_data;
 	VFrame **calibrate_data;
-	VFrame *camerakeyframe_data;
 	VFrame **cancel_data;
 	VFrame **chain_data;
 	VFrame *channel_position_data;
@@ -228,7 +227,6 @@ public:
 	VFrame **presentation_data;
 	VFrame **presentation_loop;
 	VFrame **presentation_stop;
-	VFrame *projectorkeyframe_data;
 	VFrame **redrawindex_data;
 	VFrame **renamebin_data;
 	VFrame **reset_data;

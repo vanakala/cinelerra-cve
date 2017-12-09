@@ -784,11 +784,9 @@ void SUV::build_bg_data()
 void SUV::build_overlays()
 {
 	keyframe_data = new VFrame(get_image_data("keyframe3.png"));
-	camerakeyframe_data = new VFrame(get_image_data("camerakeyframe.png"));
 	maskkeyframe_data = new VFrame(get_image_data("maskkeyframe.png"));
 	modekeyframe_data = new VFrame(get_image_data("modekeyframe.png"));
 	pankeyframe_data = new VFrame(get_image_data("pankeyframe.png"));
-	projectorkeyframe_data = new VFrame(get_image_data("projectorkeyframe.png"));
 }
 
 void SUV::draw_mwindow_bg(MWindowGUI *gui)

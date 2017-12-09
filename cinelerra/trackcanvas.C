@@ -101,10 +101,8 @@ TrackCanvas::TrackCanvas(MWindow *mwindow, MWindowGUI *gui)
 	temp_picon = 0;
 	hourglass_enabled = 0;
 	keyframe_pixmap = 0;
-	camerakeyframe_pixmap = 0;
 	modekeyframe_pixmap = 0;
 	pankeyframe_pixmap = 0;
-	projectorkeyframe_pixmap = 0;
 	maskkeyframe_pixmap = 0;
 	background_pixmap = 0;
 
@@ -119,10 +117,8 @@ TrackCanvas::~TrackCanvas()
 		delete resource_pixmaps.values[i];
 	delete pixmaps_lock;
 	delete keyframe_pixmap;
-	delete camerakeyframe_pixmap;
 	delete modekeyframe_pixmap;
 	delete pankeyframe_pixmap;
-	delete projectorkeyframe_pixmap;
 	delete maskkeyframe_pixmap;
 	delete background_pixmap;
 	if(temp_picon) delete temp_picon;
@@ -133,10 +129,8 @@ void TrackCanvas::show()
 {
 	background_pixmap = new BC_Pixmap(this, get_w(), get_h());
 	keyframe_pixmap = new BC_Pixmap(this, mwindow->theme->keyframe_data, PIXMAP_ALPHA);
-	camerakeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->camerakeyframe_data, PIXMAP_ALPHA);
 	modekeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->modekeyframe_data, PIXMAP_ALPHA);
 	pankeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->pankeyframe_data, PIXMAP_ALPHA);
-	projectorkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->projectorkeyframe_data, PIXMAP_ALPHA);
 	maskkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->maskkeyframe_data, PIXMAP_ALPHA);
 	draw();
 	update_cursor();
