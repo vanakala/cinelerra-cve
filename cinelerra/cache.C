@@ -123,7 +123,7 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 	return 0;
 }
 
-int CICache::check_in(Asset *asset)
+void CICache::check_in(Asset *asset)
 {
 	CICacheItem *current;
 	int got_it = 0;
@@ -147,7 +147,6 @@ int CICache::check_in(Asset *asset)
 	check_out_lock->unlock();
 
 	age();
-	return 0;
 }
 
 void CICache::remove_all()
@@ -168,10 +167,9 @@ void CICache::remove_all()
 	total_lock->unlock();
 }
 
-int CICache::delete_entry(Asset *asset)
+void CICache::delete_entry(Asset *asset)
 {
 	total_lock->lock("CICache::delete_entry");
-	int result = 0;
 	CICacheItem *current, *temp;
 
 	for(current = first; current; current = NEXT)
@@ -188,17 +186,16 @@ int CICache::delete_entry(Asset *asset)
 	}
 
 	total_lock->unlock();
-	return 0;
 }
 
-int CICache::age()
+void CICache::age()
 {
 	CICacheItem *current;
-
-// delete old assets if memory usage is exceeded
 	size_t prev_memory_usage;
 	size_t memory_usage;
 	int result = 0;
+
+// delete old assets if memory usage is exceeded
 	do
 	{
 		memory_usage = get_memory_usage(1);
@@ -262,7 +259,6 @@ int CICache::delete_oldest()
 		}
 	}
 
-
 	if(oldest)
 	{
 // Got the oldest file.  Try requesting cache purge.
@@ -302,7 +298,6 @@ void CICache::dump(int indent)
 }
 
 
-
 CICacheItem::CICacheItem()
 : ListItem<CICacheItem>(), GarbageObject("CICacheItem")
 {
@@ -316,8 +311,6 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 	age = EDL::next_id();
 
 	this->asset = new Asset;
-
-	item_lock = new Condition(1, "CICacheItem::item_lock", 0);
 
 // Must copy Asset since this belongs to an EDL which won't exist forever.
 	*this->asset = *asset;
@@ -341,7 +334,6 @@ CICacheItem::~CICacheItem()
 {
 	if(file) delete file;
 	if(asset) Garbage::delete_object(asset);
-	if(item_lock) delete item_lock;
 }
 
 void CICacheItem::dump(int indent)

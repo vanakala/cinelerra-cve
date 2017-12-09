@@ -59,11 +59,11 @@ public:
 // Number of last get or put operation involving this object.
 	int age;
 	Asset *asset;     // Copy of asset.  CICache should outlive EDLs.
-	Condition *item_lock;
 	int checked_out;
 private:
 	CICache *cache;
 };
+
 
 class CICache : public List<CICacheItem>
 {
@@ -80,11 +80,11 @@ public:
 	File* check_out(Asset *asset, EDL *edl, int block = 1);
 
 // unlock a file from the cache
-	int check_in(Asset *asset);
+	void check_in(Asset *asset);
 
 // delete an entry from the cache
 // before deleting an asset, starting a new project or something
-	int delete_entry(Asset *asset);
+	void delete_entry(Asset *asset);
 
 // Remove all entries from the cache.
 	void remove_all();
@@ -101,19 +101,13 @@ public:
 
 // Called by check_in() and modules.
 // deletes oldest assets until under the memory limit
-	int age();
-
+	void age();
 
 	void dump(int indent = 0);
 
 	ArrayList<PluginServer*> *plugindb;
 
 private:
-
-// for deleting items
-	int lock_all();
-	int unlock_all();
-
 // to prevent one from checking the same asset out before it's checked in
 // yet without blocking the asset trying to get checked in
 // use a seperate mutex for checkouts and checkins
