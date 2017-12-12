@@ -312,7 +312,7 @@ toc_eof:
 	return 0;
 }
 
-int FileTOC::append_item(posnum index, off_t offset)
+int FileTOC::append_item(posnum index, off_t offset, off_t mdoffs)
 {
 	if(items_allocated == 0)
 	{
@@ -332,8 +332,8 @@ int FileTOC::append_item(posnum index, off_t offset)
 	items[max_items].index = index;
 	items[max_items].offset = offset;
 
-	if(progress)
-		canceled = progress->update(offset + streamnum * length);
+	if(progress && mdoffs > 0)
+		canceled = progress->update(mdoffs + streamnum * length);
 
 	max_items++;
 	return canceled;

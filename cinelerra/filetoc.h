@@ -51,7 +51,8 @@ public:
 
 	int init_tocfile(int ftype);
 	// Returns non-zero if user has canceled toc generation
-	int append_item(posnum index, off_t offset);
+	// mdoffs is position in bytes (0..file legth for every stream)
+	int append_item(posnum index, off_t offset, off_t mdoffs);
 	stream_item *get_item(int stream, posnum ix);
 	int id_to_index(int id);
 	void dump(int offsets);

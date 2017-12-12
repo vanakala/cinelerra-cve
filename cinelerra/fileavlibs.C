@@ -2051,7 +2051,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 
 				if(pkt.flags & AV_PKT_FLAG_KEY && pktpos != -1 && pktpos != AV_NOPTS_VALUE)
 				{
-					interrupt = tocfile->append_item(video_pos, pktpos);
+					interrupt = tocfile->append_item(video_pos, pktpos, pkt.pos);
 					if(video_pos < track_data.min_index)
 					{
 						track_data.min_index = video_pos;
@@ -2073,7 +2073,7 @@ stream_params *FileAVlibs::get_track_data(int trx)
 // Raw dv audio seeks only on frame numbers
 					if(asset->format == FILE_RAWDV)
 						pktpos = pktnum++;
-					interrupt = tocfile->append_item(audio_pos, pktpos);
+					interrupt = tocfile->append_item(audio_pos, pktpos, pkt.pos);
 					if(audio_pos < track_data.min_index)
 					{
 						track_data.min_index = audio_pos;
