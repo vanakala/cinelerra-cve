@@ -101,7 +101,7 @@ public:
 	static struct avlib_encparams encoder_params[];
 
 private:
-	int media_seek(int stream_index, int64_t rqpos, AVPacket *pkt);
+	int media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64_t pktpos);
 	int convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 		int width_in, int height_in, VFrame *frame_out);
 	int convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,

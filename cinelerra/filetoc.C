@@ -339,10 +339,11 @@ int FileTOC::append_item(posnum index, off_t offset, off_t mdoffs)
 	return canceled;
 }
 
-stream_item *FileTOC::get_item(int stream, posnum ix)
+stream_item *FileTOC::get_item(int stream, posnum ix, stream_item **nxitem)
 {
 	int j;
 
+	*nxitem = 0;
 	if(stream < 0 || stream >= max_items)
 		return 0;
 
@@ -374,14 +375,22 @@ stream_item *FileTOC::get_item(int stream, posnum ix)
 	}
 
 	if(ix < toc_streams[stream].min_index)
+	{
+		if(toc_streams[stream].max_items > 1)
+			*nxitem = &toc_streams[stream].items[1];
 		return &toc_streams[stream].items[0];
+	}
 	if(ix >= toc_streams[stream].max_index)
-		return &toc_streams[stream].items[toc_streams[stream].max_index - 1];
+		return &toc_streams[stream].items[toc_streams[stream].max_items - 1];
 
 	for(j = 1; j < toc_streams[stream].max_items; j++)
 	{
 		if(toc_streams[stream].items[j].index > ix)
+		{
+			if(j < toc_streams[stream].max_items)
+				*nxitem = &toc_streams[stream].items[j];
 			return &toc_streams[stream].items[j - 1];
+		}
 	}
 	return &toc_streams[stream].items[j - 1];
 }

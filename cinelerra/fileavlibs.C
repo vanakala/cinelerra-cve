@@ -1116,7 +1116,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 	sres = 0;
 	if(rqpos < video_pos || rqpos > vpkt_pos)
 	{
-		if((sres = media_seek(video_index, rqpos, &pkt)) < 0)
+		if((sres = media_seek(video_index, rqpos, &pkt, vpkt_pos)) < 0)
 		{
 			av_free_packet(&pkt);
 			avlibs_lock->unlock();
@@ -1305,7 +1305,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 	if(rqpos < audio_pos - apkt_duration || rqpos > apkt_pos + apkt_duration)
 	{
-		if((sres = media_seek(audio_index, rqpos, &pkt)) < 0)
+		if((sres = media_seek(audio_index, rqpos, &pkt, apkt_pos + apkt_duration)) < 0)
 			return -1;
 		if(sres > 0)
 		{
@@ -1899,11 +1899,13 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 	return 0;
 }
 
-int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt)
+int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64_t pktpos)
 {
 	int res, num;
 	int toc_ix = tocfile->id_to_index(stream_index);
-	stream_item *itm = tocfile->get_item(toc_ix, rqpos);
+	stream_item *itm, *nxtitm;
+
+	itm = tocfile->get_item(toc_ix, rqpos, &nxtitm);
 
 	if(itm)
 	{
@@ -1913,6 +1915,11 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt)
 			video_eof = 0;
 		if(stream_index == audio_index)
 			audio_eof = 0;
+
+		// No need to seek forward before next keyframe
+		if(nxtitm && pktpos <= nxtitm->index && pktpos > itm->index &&
+				rqpos > pktpos)
+			return 0;
 
 		if(tocfile->toc_streams[toc_ix].data1 & STRDSC_SEEKBYTES)
 			fl |= AVSEEK_FLAG_BYTE;
