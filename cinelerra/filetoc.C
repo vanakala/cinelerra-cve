@@ -150,8 +150,8 @@ reindex:
 				canceled = 0;
 				char fnbuf[BCTEXTLEN];
 				strcpy(fnbuf, filepath);
-				progress = mwindow_global->mainprogress->start_progress("Generating TOC", streams * length);
-				progress->update_title("Generating TOC for %s", basename(fnbuf));
+				progress = mwindow_global->mainprogress->start_progress(_("Generating TOC"), streams * length);
+				progress->update_title(_("Generating TOC for %s"), basename(fnbuf));
 			}
 			put_int32(TOCFILE_STREAMCOUNT);
 			put_int32(streams);
