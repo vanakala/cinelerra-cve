@@ -534,29 +534,28 @@ int FileAVlibs::open_file(int rd, int wr)
 			result = tocfile->init_tocfile(TOCFILE_TYPE_MUX1);
 			for(int i = 0; i < asset->nb_streams; i++)
 			{
-				int toc_ix = tocfile->id_to_index(i);
+				int fileix = asset->streams[i].stream_index;
 
-				asset->streams[i].start = (ptstime)tocfile->toc_streams[toc_ix].min_index *
-					av_q2d(context->streams[i]->time_base);
-				asset->streams[i].end = (ptstime)tocfile->toc_streams[toc_ix].max_index *
-					av_q2d(context->streams[i]->time_base);
+				asset->streams[i].start = (ptstime)tocfile->toc_streams[i].min_index *
+					av_q2d(context->streams[fileix]->time_base);
+				asset->streams[i].end = (ptstime)tocfile->toc_streams[i].max_index *
+					av_q2d(context->streams[fileix]->time_base);
 				if(asset->streams[i].options & STRDSC_VIDEO)
 				{
-					asset->streams[i].length = av_rescale_q(tocfile->toc_streams[toc_ix].max_index -
-						tocfile->toc_streams[toc_ix].min_index,
-						context->streams[i]->time_base,
-						av_inv_q(context->streams[i]->r_frame_rate));
+					asset->streams[i].length = av_rescale_q(tocfile->toc_streams[i].max_index -
+						tocfile->toc_streams[i].min_index,
+						context->streams[fileix]->time_base,
+						av_inv_q(context->streams[fileix]->r_frame_rate));
 				}
 				else
 				if(asset->streams[i].options & STRDSC_AUDIO)
 				{
-					asset->streams[i].length = (samplenum)round((tocfile->toc_streams[toc_ix].max_index -
-						tocfile->toc_streams[toc_ix].min_index) *
-						av_q2d(context->streams[i]->time_base) *
+					asset->streams[i].length = (samplenum)round((tocfile->toc_streams[i].max_index -
+						tocfile->toc_streams[i].min_index) *
+						av_q2d(context->streams[fileix]->time_base) *
 						asset->sample_rate);
 				}
 			}
-
 			pts_base = (ptstime)INT64_MAX;
 			// Set audio duration and length from active stream
 			if(asset->audio_data && asset->audio_streamno)
@@ -1982,19 +1981,9 @@ stream_params *FileAVlibs::get_track_data(int trx)
 	int pktnum;
 
 	trid = -1;
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
-		if(asset->streams[i].options & (STRDSC_AUDIO | STRDSC_VIDEO))
-		{
-			if(--trx < 0)
-			{
-				posbytes = asset->streams[i].options & STRDSC_SEEKBYTES;
-				trid = i;
-				break;
-			}
-		}
-	}
-	if(trid < 0)
+	if(asset->streams[trx].options & (STRDSC_AUDIO | STRDSC_VIDEO))
+		trid = asset->streams[trx].stream_index;
+	else
 		return 0;
 
 	stream = context->streams[trid];
