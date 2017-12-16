@@ -1328,7 +1328,6 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				if((res = avcodec_decode_audio4(decoder_context,
 					avaframe, &got_it, &pkt)) < 0)
 				{
-					liberror(res, _("Audio decoding failed when skipping"));
 					av_free_packet(&pkt);
 					return res;
 				}
