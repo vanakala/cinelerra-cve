@@ -32,7 +32,6 @@
 #include "fileexr.h"
 #include "filexml.h"
 #include "filejpeg.h"
-#include "filempeg.h"
 #include "filepng.h"
 #include "filesndfile.h"
 #include "filetga.h"
@@ -345,13 +344,10 @@ int File::open_file(Preferences *preferences,
 	case FILE_WAV:
 	case FILE_FLAC:
 	case FILE_MPEGTS:
+	case FILE_MPEG:
 	case FILE_RAWDV:
 	case FILE_YUV:
 		file = new FileAVlibs(this->asset, this);
-		break;
-
-	case FILE_MPEG:
-		file = new FileMPEG(this->asset, this);
 		break;
 
 	default:
@@ -751,9 +747,6 @@ int File::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(asset->format)
 	{
-	case FILE_MPEG:
-		return FileMPEG::get_best_colormodel(asset, driver);
-
 	case FILE_JPEG:
 	case FILE_JPEG_LIST:
 		return FileJPEG::get_best_colormodel(asset, driver);
