@@ -32,7 +32,6 @@
 #include "cplayback.h"
 #include "cwindow.h"
 #include "file.h"
-#include "filempeg.h"
 #include "filesystem.h"
 #include "formatpresets.h"
 #include "indexfile.h"
