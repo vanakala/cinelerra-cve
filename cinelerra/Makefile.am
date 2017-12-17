@@ -273,7 +273,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 # guicast must come first, to pick up correct workarounds.h
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/guicast \
-	-I$(top_srcdir)/libmpeg3 \
 	-I$(top_srcdir)/include $(FFMPEG_CPPFLAGS)
 
 AM_CXXFLAGS = \
@@ -519,7 +518,6 @@ noinst_HEADERS = aattachmentpoint.h \
 cinelerracve_LDADD = \
 	data/libimagedata.a \
 	$(top_builddir)/guicast/libguicastcve.la \
-	$(top_builddir)/libmpeg3/libmpeg3cve.la \
 	@FFMPEG_LIBS@ \
 	$(XIPH_LIBS) \
 	$(A52DEC_LIBS) \

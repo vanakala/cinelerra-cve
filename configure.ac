@@ -247,18 +247,6 @@ rm -f cinelerra/versioninfo.h > /dev/null 2>&1
 
 ############# END BUILDINFO display, (for displaying version / date)
 
-############# CSS SUPPORT IN LIBMPEG3
-if test "x$enable_css" = "xyes"; then
-	CSS_CFLAGS="-DHAVE_CSS"
-fi
-AC_SUBST(CSS_CFLAGS)
-AC_ARG_ENABLE(css,
-		AC_HELP_STRING([--disable-css], [disable support for css in libmpeg3 (default=enabled)]),,
-		[ enable_css=$enableval ],
-		[ enable_css=yes ])
-############## END OF CSS SUPPORT IN LIBMPEG3
-
-
 ############## MMX / 3DNOW  POWERPC / ALTIVEC
 
 AC_ARG_ENABLE(mmx, 
@@ -469,9 +457,6 @@ AC_SUBST(OBJCOPYARCH, $ocarch)
 
 AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in
 	m4/Makefile
-	libmpeg3/Makefile
-	libmpeg3/video/Makefile
-	libmpeg3/audio/Makefile
 	guicast/Makefile
 	cinelerra/Makefile
 	cinelerra/data/Makefile

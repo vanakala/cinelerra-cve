@@ -25,7 +25,6 @@
 #include "bcbitmap.h"
 #include "bcpixmap.h"
 #include "language.h"
-#include "libmpeg3.h"
 #include "mwindow.h"
 #include "theme.h"
 #include "vframe.h"
@@ -74,16 +73,16 @@ void AboutPrefs::show()
 #endif
 	);
 
-	y += get_text_height(MEDIUMFONT) * 3;
-
+	y += get_text_height(MEDIUMFONT) * 4;
+/* Pole
 	sprintf(strbuf, _("%s\nLibmpeg3 version %d.%d.%d\n"),
 		FFMPEG_EXTERNALTEXT,
 		mpeg3_major(),
 		mpeg3_minor(),
 		mpeg3_release());
 	draw_text(x, y, strbuf);
-
 	y += get_text_height(MEDIUMFONT) * 4;
+	*/
 	set_font(LARGEFONT);
 	draw_text(x, y, _("Credits:"));
 	y += get_text_height(LARGEFONT);
