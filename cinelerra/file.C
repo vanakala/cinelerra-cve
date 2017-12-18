@@ -132,6 +132,7 @@ void File::get_options(FormatTools *format, int options)
 		case FILE_WAV:
 		case FILE_MP3:
 		case FILE_FLAC:
+		case FILE_MPEG:
 		case FILE_MPEGTS:
 		case FILE_RAWDV:
 		case FILE_YUV:
@@ -724,6 +725,7 @@ int File::supports(int format)
 	case FILE_MP3:
 	case FILE_WAV:
 	case FILE_FLAC:
+	case FILE_MPEG:
 	case FILE_MPEGTS:
 	case FILE_RAWDV:
 		return FileAVlibs::supports(format, 0);

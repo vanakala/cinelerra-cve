@@ -66,7 +66,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_OGG, "ogg", "ogg", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_MP3, "mp3", "mp3", SUPPORTS_AUDIO },
 	{ FILE_MPEGTS, "mpegts", "mpegts", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
-	{ FILE_MPEG, "mpeg", "mpg", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
+	{ FILE_MPEG, "mpeg", "vob", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_EXR, "exr_pipe", "exr_pipe", SUPPORTS_VIDEO },
 	{ FILE_TIFF, "tiff", "tiff", SUPPORTS_VIDEO },
 	{ FILE_PNG, "png_pipe", "png_pipe", SUPPORTS_VIDEO },
@@ -601,6 +601,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		case FILE_WAV:
 		case FILE_MP3:
 		case FILE_FLAC:
+		case FILE_MPEG:
 		case FILE_MPEGTS:
 		case FILE_RAWDV:
 			break;
