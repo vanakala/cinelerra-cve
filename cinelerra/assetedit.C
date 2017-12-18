@@ -385,7 +385,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 		y += vmargin;
 		if(asset->aspect_ratio > 0){
 			x = x1;
-			add_subwindow(new BC_Title(x, y, _("Aspect:")));
+			add_subwindow(new BC_Title(x, y, _("Aspect ratio:")));
 			x = x2;
 			sprintf(string, "%2.3f", asset->aspect_ratio);
 			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
