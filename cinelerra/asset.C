@@ -477,7 +477,9 @@ void Asset::read(FileXML *file,
 			if(file->tag.title_is("FORMAT"))
 			{
 				char *string = file->tag.get_property("TYPE");
-				format = ContainerSelection::text_to_container(string);
+				format = ContainerSelection::prefix_to_container(string);
+				if(format == FILE_UNKNOWN)
+					format = ContainerSelection::text_to_container(string);
 				use_header = 
 					file->tag.get_property("USE_HEADER", use_header);
 			}
@@ -704,7 +706,7 @@ void Asset::write(FileXML *file,
 	file->tag.set_title("FORMAT");
 
 	file->tag.set_property("TYPE", 
-		ContainerSelection::container_to_text(format));
+		ContainerSelection::container_prefix(format));
 	file->tag.set_property("USE_HEADER", use_header);
 
 	file->append_tag();
