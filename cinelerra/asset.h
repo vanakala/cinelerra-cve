@@ -212,9 +212,6 @@ public:
 	int video_streamno; // number of active video stream 1..n
 	int layers;
 	double frame_rate;
-// number of mpeg2 subtitles
-	int subtitles;
-	int active_subtitle;
 
 // Timecode information. User setable, in case of errors in source
 	char reel_name[BCTEXTLEN];

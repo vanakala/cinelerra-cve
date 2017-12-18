@@ -317,8 +317,6 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 
 	file = new File;
 	file->set_processors(cache->preferences->processors);
-	file->set_subtitle(edl->session->decode_subtitles ? 
-		asset->active_subtitle : -1);
 
 	if(result = file->open_file(cache->preferences, this->asset, 1, 0, -1, -1))
 	{

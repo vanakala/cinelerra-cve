@@ -169,13 +169,6 @@ void PlaybackPrefs::show()
 
 	y += 35;
 
-	PlaybackSubtitle *subtitle_toggle;
-	add_subwindow(subtitle_toggle = new PlaybackSubtitle(
-		x,
-		y, 
-		pwindow, 
-		this));
-
 	x2 = x;
 	x += 370;
 	win = add_subwindow(new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT));
@@ -192,7 +185,7 @@ void PlaybackPrefs::show()
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[0]);
 	add_subwindow(new TimecodeOffset(win->get_x() + win->get_w(), y, pwindow, this, string, 0));
 	x = x2;
-	y += subtitle_toggle->get_h() + 10;
+	y += 10;
 	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
 	y += vdevice_title->get_h();
 	video_device = new VDevicePrefs(55,
@@ -411,27 +404,6 @@ int VideoEveryFrame::handle_event()
 	}
 	return 1;
 }
-
-
-PlaybackSubtitle::PlaybackSubtitle(int x, 
-	int y, 
-	PreferencesWindow *pwindow, 
-	PlaybackPrefs *playback)
- : BC_CheckBox(x, 
-	y,
-	pwindow->thread->edl->session->decode_subtitles,
-	_("Enable DVD subtitles"))
-{
-	this->pwindow = pwindow;
-	this->playback = playback;
-}
-
-int PlaybackSubtitle::handle_event()
-{
-	pwindow->thread->edl->session->decode_subtitles = get_value();
-	return 1;
-}
-
 
 TimecodeOffset::TimecodeOffset(int x, int y, PreferencesWindow *pwindow, 
       PlaybackPrefs *playback, char *text, int unit)

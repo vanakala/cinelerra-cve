@@ -109,8 +109,6 @@ void Asset::init_values()
 	single_image = 0;
 	audio_duration = 0;
 	video_duration = 0;
-	subtitles = 0;
-	active_subtitle = -1;
 
 	layers = 0;
 	frame_rate = 0;
@@ -285,8 +283,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	height = asset->height;
 	strcpy(vcodec, asset->vcodec);
 	strcpy(acodec, asset->acodec);
-	subtitles = asset->subtitles;
-	active_subtitle = asset->active_subtitle;
  
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
@@ -386,7 +382,6 @@ int Asset::equivalent(Asset &asset,
 			interlace_fixmethod     == asset.interlace_fixmethod &&
 			width == asset.width &&
 			height == asset.height &&
-			active_subtitle == asset.active_subtitle &&
 			!strcmp(vcodec, asset.vcodec) &&
 			strcmp(reel_name, asset.reel_name) == 0 &&
 			reel_number == asset.reel_number &&
@@ -576,8 +571,6 @@ void Asset::read_video(FileXML *file)
 	tcstart = file->tag.get_property("TCSTART", tcstart);
 	tcend = file->tag.get_property("TCEND", tcend);
 	tcformat = file->tag.get_property("TCFORMAT", tcformat);
-
-	active_subtitle = file->tag.get_property("SUBTITLE", -1);
 }
 
 void Asset::read_index(FileXML *file)
@@ -833,9 +826,6 @@ void Asset::write_video(FileXML *file)
 		file->tag.set_title("VIDEO_OMIT");
 
 	file->tag.set_property("FRAMERATE", frame_rate);
-
-	if(active_subtitle >= 0)
-		file->tag.set_property("SUBTITLE", active_subtitle);
 
 	file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
 
@@ -1336,8 +1326,8 @@ void Asset::dump(int indent, int options)
 	printf("%*s  vcodec '%s' aspect_ratio %.2f interlace_mode %s\n",
 		indent, "", vcodec, aspect_ratio,
 		AInterlaceModeSelection::name(interlace_mode));
-	printf("%*s  length %.2f (%d) subtitles %d (active %d) image %d pipe %d\n", indent, "",
-		video_duration, video_length, subtitles, active_subtitle, single_image, use_pipe);
+	printf("%*s  length %.2f (%d) image %d pipe %d\n", indent, "",
+		video_duration, video_length, single_image, use_pipe);
 	printf("%*s  reel_name %s reel_number %i tcstart %" PRId64 " tcend %" PRId64 " tcf %d\n",
 		indent, "", reel_name, reel_number, tcstart, tcend, tcformat);
 	if(nb_streams)

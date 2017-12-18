@@ -87,7 +87,6 @@ void File::reset_parameters()
 	resample_float = 0;
 	use_cache = 0;
 	preferences = 0;
-	playback_subtitle = -1;
 }
 
 void File::raise_window()
@@ -209,11 +208,6 @@ void File::set_asset(Asset *asset)
 void File::set_processors(int cpus)   // Set the number of cpus for certain codecs
 {
 	this->cpus = cpus;
-}
-
-void File::set_subtitle(int value)
-{
-	this->playback_subtitle = value;
 }
 
 void File::set_cache_frames(int value)

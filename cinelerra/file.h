@@ -62,9 +62,6 @@ public:
 // ===================================== start here
 	void set_processors(int cpus);   // Set the number of cpus for certain codecs.
 
-// Set the subtitle for libmpeg3.  -1 disables subtitles.
-	void set_subtitle(int value);
-
 // When loading, the asset is deleted and a copy created in the EDL.
 	void set_asset(Asset *asset);
 
@@ -190,7 +187,6 @@ public:
 // A binary lock won't do.  We need a FIFO lock.
 	Condition *write_lock;
 	int cpus;
-	int playback_subtitle;
 
 	Preferences *preferences;
 

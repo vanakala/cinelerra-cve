@@ -78,7 +78,6 @@ EDLSession::EDLSession(EDL *edl)
 	color_model = -100;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	record_speed = 24;
-	decode_subtitles = 0;
 	tool_window = 0;
 	show_avlibsmsgs = 0;
 	experimental_codecs = 1;
@@ -110,8 +109,7 @@ int EDLSession::need_rerender(EDLSession *ptr)
 		(video_asynchronous != ptr->video_asynchronous) ||
 		(playback_software_position != ptr->playback_software_position) ||
 		(test_playback_edits != ptr->test_playback_edits) ||
-		(playback_buffer != ptr->playback_buffer) ||
-		(decode_subtitles != ptr->decode_subtitles);
+		(playback_buffer != ptr->playback_buffer);
 }
 
 void EDLSession::equivalent_output(EDLSession *session, double *result)
@@ -120,8 +118,7 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 			session->output_h != output_h ||
 			session->frame_rate != frame_rate ||
 			session->color_model != color_model ||
-			session->interpolation_type != interpolation_type ||
-			session->decode_subtitles != decode_subtitles)
+			session->interpolation_type != interpolation_type)
 		*result = 0;
 
 // If it's before the current brender_start, render extra data.
@@ -257,7 +254,6 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	defaults->get("METADATA_AUTHOR", metadata_author);
 	defaults->get("METADATA_TITLE", metadata_title);
 	defaults->get("METADATA_COPYRIGHT", metadata_copyright);
-	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
 
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
 	boundaries();
@@ -374,7 +370,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("METADATA_AUTHOR", metadata_author);
 	defaults->update("METADATA_TITLE", metadata_title);
 	defaults->update("METADATA_COPYRIGHT", metadata_copyright);
-	defaults->update("DECODE_SUBTITLES", decode_subtitles);
+	defaults->delete_key("DECODE_SUBTITLES");
 }
 
 // GCC 3.0 fails to compile
@@ -528,7 +524,6 @@ void EDLSession::load_xml(FileXML *file,
 		file->tag.get_property("METADATA_TITLE", metadata_title);
 		file->tag.get_property("METADATA_COPYRIGHT", metadata_copyright);
 
-		decode_subtitles = file->tag.get_property("DECODE_SUBTITLES", decode_subtitles);
 		boundaries();
 	}
 }
@@ -593,8 +588,6 @@ void EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("METADATA_AUTHOR", metadata_author);
 	file->tag.set_property("METADATA_TITLE", metadata_title);
 	file->tag.set_property("METADATA_COPYRIGHT", metadata_copyright);
-
-	file->tag.set_property("DECODE_SUBTITLES", decode_subtitles);
 
 	file->append_tag();
 	file->tag.set_title("/SESSION");
@@ -756,7 +749,6 @@ void EDLSession::copy(EDLSession *session)
 	strcpy(metadata_author, session->metadata_author);
 	strcpy(metadata_title, session->metadata_title);
 	strcpy(metadata_copyright, session->metadata_copyright);
-	decode_subtitles = session->decode_subtitles;
 }
 
 ptstime EDLSession::get_frame_offset()
@@ -797,5 +789,4 @@ void EDLSession::dump(int indent)
 	printf("%*svideo: tracks %d framerate %.2f output %dx%d aspect %.3f '%s'\n",
 		indent, "", video_tracks, frame_rate, output_w, output_h, aspect_ratio,
 		ColorModels::name(color_model));
-	printf("%*ssubtitles: decode %d\n", indent, "", decode_subtitles);
 }

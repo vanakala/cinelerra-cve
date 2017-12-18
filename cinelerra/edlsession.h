@@ -145,7 +145,6 @@ public:
 	int output_h;
 	int playback_buffer;
 	int playback_cursor_visible;
-	int decode_subtitles;
 	int playback_software_position;
 // Use software to calculate record position
 	int record_software_position;

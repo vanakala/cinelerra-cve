@@ -398,34 +398,6 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 		y += title->get_h() + 5;
 
-		if(asset->format == FILE_MPEG)
-		{
-			x = x1;
-			add_subwindow(new BC_Title(x, y, _("Subtitle tracks:")));
-			x = x2;
-			if(asset->subtitles > 0)
-			{
-				int i;
-				if(asset->active_subtitle >= 0)
-					sprintf(string, "%3d", asset->active_subtitle);
-				else
-					strcpy(string, "-none-");
-				AsseteditSelect *sel;
-				add_subwindow(sel = new AsseteditSelect(x, y, string, &asset->active_subtitle));
-				sel->add_item(new BC_MenuItem("-none-"));
-				for(i = 0; i < asset->subtitles; i++){
-					sprintf(string, "%3d", i);
-					sel->add_item(new BC_MenuItem(string));
-				}
-				y += 30;
-			}
-			else
-			{
-				add_subwindow(title = new BC_Title(x, y, "0", MEDIUMFONT, mwindow->theme->edit_font_color));
-				y += title->get_h() + 5;
-			}
-		}
-
 // --------------------
 		add_subwindow(title = new BC_Title(x1, y, _("Fix interlacing:")));
 		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(mwindow,this, x2, y));

@@ -235,19 +235,4 @@ public:
 	PreferencesWindow *pwindow;
 };
 
-
-class PlaybackSubtitle : public BC_CheckBox
-{
-public:
-	PlaybackSubtitle(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PlaybackPrefs *playback);
-
-	int handle_event();
-
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-};
-
 #endif
