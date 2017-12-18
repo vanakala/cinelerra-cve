@@ -59,7 +59,7 @@ const struct container_type ContainerSelection::media_containers[] =
 	{ N_("TGA Sequence"), FILE_TGA_LIST, "TGA_LIST", "list" },
 	{ N_("TIFF"), FILE_TIFF, "TIFF", "tif" },
 	{ N_("TIFF Sequence"), FILE_TIFF_LIST, "TIFF_LIST", "list" },
-	{ N_("MPEG"), FILE_MPEG, "MPEG", "mpg" },
+	{ N_("MPEG2 PS"), FILE_MPEG, "MPEG", "mpg" },
 	{ N_("MPEGTS"), FILE_MPEGTS, "MPEGTS", "ts" },
 	{ N_("MPEG 2/3 audio"), FILE_MP3, "MP3", "mp3" },
 	{ N_("Raw Flac"), FILE_FLAC, "FLAC", "flac" },
@@ -85,7 +85,7 @@ int FormatPopup::frender_menu[] = { FILE_AC3 , FILE_AIFF, FILE_AU,
 	FILE_OGG, FILE_PCM,
 	FILE_PNG, FILE_PNG_LIST, FILE_TGA, FILE_TGA_LIST,
 	FILE_TIFF, FILE_TIFF_LIST,
-	FILE_FLAC, FILE_MPEGTS
+	FILE_FLAC, FILE_MPEGTS, FILE_MPEG
 };
 
 FormatTools::FormatTools(MWindow *mwindow,
@@ -738,7 +738,7 @@ const char *ContainerSelection::container_to_text(int format)
 	return N_("Unknown");
 }
 
-int ContainerSelection::text_to_container(char *string)
+int ContainerSelection::text_to_container(const char *string)
 {
 	for(int i = 0; i < NUM_MEDIA_CONTAINERS; i++)
 	{
@@ -769,6 +769,16 @@ const char *ContainerSelection::container_prefix(int format)
 			return media_containers[i].prefix;
 	}
 	return "UNKNOWN";
+}
+
+int ContainerSelection::prefix_to_container(const char *string)
+{
+	for(int i = 0; i < NUM_MEDIA_CONTAINERS; i++)
+	{
+		if(!strcmp(media_containers[i].prefix, string))
+			return media_containers[i].value;
+	}
+	return FILE_UNKNOWN;
 }
 
 const char *ContainerSelection::container_extension(int format)

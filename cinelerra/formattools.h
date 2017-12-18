@@ -275,9 +275,10 @@ public:
 	int handle_event();
 	static const struct container_type *get_item(int value);
 	static const char *container_to_text(int format);
-	static int text_to_container(char *string);
+	static int text_to_container(const char *string);
 	static const char *container_prefix(int format);
 	static const char *container_extension(int format);
+	static int prefix_to_container(const char *string);
 
 private:
 	FormatTools *tools;
