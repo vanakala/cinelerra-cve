@@ -170,6 +170,7 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	avio_ctx = 0;
 	avio_buffer = 0;
 	avio_fd = -1;
+	fresh_open = 0;
 	memset(resampled_data, 0, sizeof(resampled_data));
 }
 
@@ -576,6 +577,7 @@ int FileAVlibs::open_file(int rd, int wr)
 				if(pts_base > asset->streams[asset->video_streamno - 1].start)
 					pts_base = asset->streams[asset->video_streamno - 1].start;
 			}
+			fresh_open = 1;
 		}
 		else
 		{
@@ -1288,6 +1290,8 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 	aframe->set_filled(copylen);
 	memcpy(aframe->buffer, abuffer[aframe->channel],
 		copylen * sizeof(double));
+
+	fresh_open = 0;
 	avlibs_lock->unlock();
 	return 0;
 }
@@ -1329,8 +1333,12 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				if((res = avcodec_decode_audio4(decoder_context,
 					avaframe, &got_it, &pkt)) < 0)
 				{
-					av_free_packet(&pkt);
-					return res;
+					if(!fresh_open)
+					{
+						printf(_("Audio decoding failed when skipping"));
+						av_free_packet(&pkt);
+						return res;
+					}
 				}
 
 				if(got_it)

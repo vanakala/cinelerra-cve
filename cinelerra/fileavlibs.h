@@ -184,6 +184,7 @@ private:
 	int64_t buffer_start;
 	int64_t buffer_end;
 	int audio_eof;
+	int fresh_open;
 	double *abuffer[MAXCHANNELS];
 
 	// rendering audio
