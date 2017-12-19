@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cinelerra-CV 2.3.5\n"
 "Report-Msgid-Bugs-To: cinelerra@skolelinux.no\n"
-"POT-Creation-Date: 2017-11-28 19:10+0200\n"
+"POT-Creation-Date: 2017-12-19 22:38+0200\n"
 "PO-Revision-Date: 2017-11-28 19:15+0200\n"
 "Last-Translator: Igor Vladimirsky aka igor_ubuntu <sitelve@gmal.com>\n"
 "Language-Team: ru <sitelve@gmail.com>\n"
@@ -16,24 +16,15 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../cinelerra/aboutprefs.C:79
-#, c-format
-msgid ""
-"%s\n"
-"Libmpeg3 version %d.%d.%d\n"
-msgstr ""
-"%s\n"
-"Версия Libmpeg3 %d.%d.%d\n"
-
-#: ../cinelerra/aboutprefs.C:88
+#: ../cinelerra/aboutprefs.C:87
 msgid "Credits:"
 msgstr "Авторы:"
 
-#: ../cinelerra/aboutprefs.C:124
+#: ../cinelerra/aboutprefs.C:123
 msgid "License:"
 msgstr "Лицензия:"
 
-#: ../cinelerra/aboutprefs.C:130
+#: ../cinelerra/aboutprefs.C:129
 msgid ""
 "This program is free software; you can redistribute it and/or modify it "
 "under the terms\n"
@@ -96,7 +87,7 @@ msgstr "Панорама"
 msgid "pan"
 msgstr "панорама"
 
-#: ../cinelerra/assetedit.C:93 ../cinelerra/mwindow.C:1000
+#: ../cinelerra/assetedit.C:92 ../cinelerra/mwindow.C:1025
 #: ../cinelerra/new.C:100 ../cinelerra/setformat.C:135
 #, c-format
 msgid ""
@@ -107,7 +98,7 @@ msgstr ""
 "Будет применена коррекция до\n"
 "соответствующего максимума или минимума."
 
-#: ../cinelerra/assetedit.C:96 ../cinelerra/new.C:103
+#: ../cinelerra/assetedit.C:95 ../cinelerra/new.C:103
 #: ../cinelerra/setformat.C:138
 #, c-format
 msgid ""
@@ -185,8 +176,9 @@ msgstr "Част. кадров:"
 msgid "Size:"
 msgstr "Размер:"
 
-#: ../cinelerra/assetedit.C:388
-msgid "Aspect:"
+#: ../cinelerra/assetedit.C:388 ../cinelerra/new.C:258
+#: ../cinelerra/setformat.C:358
+msgid "Aspect ratio:"
 msgstr "Пропорция:"
 
 #: ../cinelerra/assetedit.C:395 ../plugins/linearblur/linearblur.C:250
@@ -194,50 +186,46 @@ msgstr "Пропорция:"
 msgid "Length:"
 msgstr "Длина:"
 
-#: ../cinelerra/assetedit.C:404
-msgid "Subtitle tracks:"
-msgstr "Дорожка субтитров:"
-
 #. --------------------
-#: ../cinelerra/assetedit.C:430
+#: ../cinelerra/assetedit.C:402
 msgid "Fix interlacing:"
 msgstr "Чересстрочность:"
 
 #. --------------------
-#: ../cinelerra/assetedit.C:435
+#: ../cinelerra/assetedit.C:407
 msgid "Asset's interlacing:"
 msgstr "Чересстроч. ресурса: "
 
 #. --------------------
-#: ../cinelerra/assetedit.C:443
+#: ../cinelerra/assetedit.C:415
 msgid "Interlace correction:"
 msgstr "Ручная коррекция ч.:"
 
-#: ../cinelerra/assetedit.C:450
+#: ../cinelerra/assetedit.C:422
 msgid "Reel Name:"
 msgstr "Имя рулона:"
 
-#: ../cinelerra/assetedit.C:456
+#: ../cinelerra/assetedit.C:428
 msgid "Reel Number:"
 msgstr "Номер рулона:"
 
-#: ../cinelerra/assetedit.C:462
+#: ../cinelerra/assetedit.C:434
 msgid "Time Code Start:"
 msgstr "Старт. таймкод:"
 
-#: ../cinelerra/assetedit.C:532
+#: ../cinelerra/assetedit.C:504
 msgid "Automatically Fix Interlacing"
 msgstr "Автоматическая коррекция"
 
-#: ../cinelerra/assetedit.C:597
+#: ../cinelerra/assetedit.C:569
 msgid "Lo-Hi"
 msgstr "Lo-Hi"
 
-#: ../cinelerra/assetedit.C:615
+#: ../cinelerra/assetedit.C:587
 msgid "Hi-Lo"
 msgstr "Hi-Lo"
 
-#: ../cinelerra/assetedit.C:633 ../cinelerra/fileformat.C:164
+#: ../cinelerra/assetedit.C:605 ../cinelerra/fileformat.C:164
 msgid "Values are signed"
 msgstr "Знаковые целые"
 
@@ -249,41 +237,33 @@ msgstr "Путь"
 msgid "Select a file"
 msgstr "Выбор файла"
 
-#: ../cinelerra/assetpopup.C:87
+#: ../cinelerra/assetpopup.C:86
 msgid "Info..."
 msgstr "Инфо..."
 
-#: ../cinelerra/assetpopup.C:120
+#: ../cinelerra/assetpopup.C:119
 msgid "Rebuild index"
 msgstr "Переиндексировать"
 
-#: ../cinelerra/assetpopup.C:134 ../cinelerra/awindowmenu.C:85
+#: ../cinelerra/assetpopup.C:133 ../cinelerra/awindowmenu.C:85
 msgid "Sort items"
 msgstr "Упорядочить"
 
-#: ../cinelerra/assetpopup.C:148 ../cinelerra/mainmenu.C:161
+#: ../cinelerra/assetpopup.C:147 ../cinelerra/mainmenu.C:161
 msgid "View"
 msgstr "Вид"
 
-#: ../cinelerra/assetpopup.C:168 ../cinelerra/mainmenu.C:591
+#: ../cinelerra/assetpopup.C:167 ../cinelerra/mainmenu.C:591
 msgid "Paste"
 msgstr "Вставить"
 
-#: ../cinelerra/assetpopup.C:182
+#: ../cinelerra/assetpopup.C:181
 msgid "Match project size"
 msgstr "Согласовать размер проекта"
 
-#: ../cinelerra/assetpopup.C:196
+#: ../cinelerra/assetpopup.C:195
 msgid "Remove from project"
 msgstr "Удалить из проекта"
-
-#: ../cinelerra/assetpopup.C:210
-msgid "Remove from disk"
-msgstr "Удалить с диска"
-
-#: ../cinelerra/assetpopup.C:218
-msgid "Remove this asset from disk?"
-msgstr "Удалить этот ресурс с диска ?"
 
 #: ../cinelerra/atrack.C:104
 #, c-format
@@ -957,20 +937,20 @@ msgstr "Выберите экспортируемую дорожку:"
 msgid "Currently only CMX 3600 format is supported"
 msgstr "Поддерживается только формат CMX 3600"
 
-#: ../cinelerra/file.C:192
+#: ../cinelerra/file.C:191
 msgid "audio"
 msgstr "аудио"
 
-#: ../cinelerra/file.C:194
+#: ../cinelerra/file.C:193
 msgid "video"
 msgstr "видео"
 
-#: ../cinelerra/file.C:197
+#: ../cinelerra/file.C:196
 #, c-format
 msgid "No suitable %s codec found."
 msgstr "No suitable %s codec found."
 
-#: ../cinelerra/file.C:273
+#: ../cinelerra/file.C:267
 msgid "Can't open TOC files directly"
 msgstr "Невозможно открыть TOC файлы напрямую"
 
@@ -995,201 +975,202 @@ msgstr "Формат сэмпла:"
 msgid "Channel layout:"
 msgstr "Конфигурация каналов:"
 
-#: ../cinelerra/fileavlibs.C:225
+#: ../cinelerra/fileavlibs.C:226
 #, c-format
 msgid "Failed to find input file %s"
 msgstr "Failed to find input file %s"
 
-#: ../cinelerra/fileavlibs.C:231
+#: ../cinelerra/fileavlibs.C:232
 #, c-format
 msgid "Input file '%s' is not a regular file"
 msgstr "Input file '%s' is not a regular file"
 
-#: ../cinelerra/fileavlibs.C:466
+#: ../cinelerra/fileavlibs.C:475
 #, c-format
 msgid "Audio decoder id %#x not found"
 msgstr "Audio decoder id %#x not found"
 
-#: ../cinelerra/fileavlibs.C:475
+#: ../cinelerra/fileavlibs.C:484
 msgid "Failed to open audio decoder"
 msgstr "Failed to open audio decoder"
 
-#: ../cinelerra/fileavlibs.C:502
+#: ../cinelerra/fileavlibs.C:511
 #, c-format
 msgid "Video decoder id %#x not found"
 msgstr "Video decoder id %#x not found"
 
-#: ../cinelerra/fileavlibs.C:511
+#: ../cinelerra/fileavlibs.C:520
 msgid "Failed to open video decoder"
 msgstr "Failed to open video decoder"
 
-#: ../cinelerra/fileavlibs.C:606
+#: ../cinelerra/fileavlibs.C:616
 msgid "Failed to create pipe"
 msgstr "Failed to create pipe"
 
-#: ../cinelerra/fileavlibs.C:615
+#: ../cinelerra/fileavlibs.C:625
 #, c-format
 msgid "Unsupported file type %d for encoding"
 msgstr "Unsupported file type %d for encoding"
 
-#: ../cinelerra/fileavlibs.C:629
+#: ../cinelerra/fileavlibs.C:639
 msgid "Failed to allocate output context"
 msgstr "Failed to allocate output context"
 
-#: ../cinelerra/fileavlibs.C:673
+#: ../cinelerra/fileavlibs.C:683
 #, c-format
 msgid "Could not find video encoder '%s'"
 msgstr "Could not find video encoder '%s'"
 
-#: ../cinelerra/fileavlibs.C:681
+#: ../cinelerra/fileavlibs.C:691
 #, c-format
 msgid "Could not allocate video stream for '%s'"
 msgstr "Could not allocate video stream for '%s'"
 
-#: ../cinelerra/fileavlibs.C:716
+#: ../cinelerra/fileavlibs.C:726
 msgid "Could not open video encoder"
 msgstr "Could not open video encoder"
 
-#: ../cinelerra/fileavlibs.C:723
+#: ../cinelerra/fileavlibs.C:733
 msgid "Could not create video_frame for encoding"
 msgstr "Could not create video_frame for encoding"
 
-#: ../cinelerra/fileavlibs.C:744
+#: ../cinelerra/fileavlibs.C:754
 #, c-format
 msgid "Could not find audio encoder '%s'"
 msgstr "Could not find audio encoder '%s'"
 
-#: ../cinelerra/fileavlibs.C:752
+#: ../cinelerra/fileavlibs.C:762
 #, c-format
 msgid "Could not allocate audio stream for '%s'"
 msgstr "Could not allocate video stream for '%s'"
 
-#: ../cinelerra/fileavlibs.C:760
+#: ../cinelerra/fileavlibs.C:770
 msgid "Missing audio encoder"
 msgstr "Missing audio encoder"
 
-#: ../cinelerra/fileavlibs.C:776
+#: ../cinelerra/fileavlibs.C:786
 #, c-format
 msgid "Samplerate %d is not supported by audio encoder"
 msgstr "Samplerate %d is not supported by audio encoder"
 
-#: ../cinelerra/fileavlibs.C:807
+#: ../cinelerra/fileavlibs.C:817
 msgid "Could not open audio encoder"
 msgstr "Could not open audio encoder"
 
-#: ../cinelerra/fileavlibs.C:823
+#: ../cinelerra/fileavlibs.C:833
 msgid "Can't allocate resample context for encoding"
 msgstr "Can't allocate resample context for encoding"
 
-#: ../cinelerra/fileavlibs.C:829
+#: ../cinelerra/fileavlibs.C:839
 msgid "Failed to initalize resample context for encoding"
 msgstr "Failed to initalize resample context for encoding"
 
-#: ../cinelerra/fileavlibs.C:836
+#: ../cinelerra/fileavlibs.C:846
 msgid "Could not allocate audio frame for encoding"
 msgstr "Could not allocate audio frame for encoding"
 
-#: ../cinelerra/fileavlibs.C:856
+#: ../cinelerra/fileavlibs.C:866
 msgid "Failed to allocate output IO context"
 msgstr "Failed to allocate output IO context"
 
-#: ../cinelerra/fileavlibs.C:868
+#: ../cinelerra/fileavlibs.C:878
 #, c-format
 msgid "Could not open output file '%s': %d"
 msgstr "Could not open output file '%s': %d'"
 
-#: ../cinelerra/fileavlibs.C:876
+#: ../cinelerra/fileavlibs.C:886
 #, c-format
 msgid "Failed to write header: %d"
 msgstr "Failed to write header: %d"
 
-#: ../cinelerra/fileavlibs.C:944 ../cinelerra/fileavlibs.C:960
+#: ../cinelerra/fileavlibs.C:954 ../cinelerra/fileavlibs.C:970
 msgid "Failed to encode last audio packet"
 msgstr "Failed to encode last audio packet"
 
-#: ../cinelerra/fileavlibs.C:952 ../cinelerra/fileavlibs.C:970
+#: ../cinelerra/fileavlibs.C:962 ../cinelerra/fileavlibs.C:980
 msgid "Failed to write last audio packet"
 msgstr "Failed to write last audio packet"
 
-#: ../cinelerra/fileavlibs.C:992
+#: ../cinelerra/fileavlibs.C:1002
 msgid "Failed to encode last video packet"
 msgstr "Failed to encode last video packet"
 
-#: ../cinelerra/fileavlibs.C:1000
+#: ../cinelerra/fileavlibs.C:1010
 msgid "Failed to write last video packet"
 msgstr "Failed to write last video packet"
 
-#: ../cinelerra/fileavlibs.C:1153
+#: ../cinelerra/fileavlibs.C:1163
 msgid "Failed to decode video frame"
 msgstr "Failed to decode video frame"
 
-#: ../cinelerra/fileavlibs.C:1187
+#: ../cinelerra/fileavlibs.C:1197
 msgid "Video reading error"
 msgstr "Video reading error"
 
-#: ../cinelerra/fileavlibs.C:1228
+#: ../cinelerra/fileavlibs.C:1238
 msgid "Failed to allocate resampler context for audio decoding"
 msgstr "Failed to allocate resampler context for audio decoding"
 
-#: ../cinelerra/fileavlibs.C:1234
+#: ../cinelerra/fileavlibs.C:1244
 #, c-format
 msgid "Failed to initalize resampler context when decoding (%d)"
 msgstr "Failed to initalize resampler context when decoding (%d)"
 
-#: ../cinelerra/fileavlibs.C:1324
+#: ../cinelerra/fileavlibs.C:1338
+#, c-format
 msgid "Audio decoding failed when skipping"
 msgstr "Audio decoding failed when skipping"
 
-#: ../cinelerra/fileavlibs.C:1383
+#: ../cinelerra/fileavlibs.C:1398
 msgid "Audio decoding failed when reading"
 msgstr "Audio decoding failed when reading"
 
-#: ../cinelerra/fileavlibs.C:1412
+#: ../cinelerra/fileavlibs.C:1427
 msgid "Failed to read audio"
 msgstr "Failed to read audio"
 
 #. avoid infinite recursion if things are broken
-#: ../cinelerra/fileavlibs.C:1539
+#: ../cinelerra/fileavlibs.C:1554
 msgid "pix_fmt_in broken while converting colormodel!"
 msgstr "pix_fmt_in broken while converting colormodel!"
 
-#: ../cinelerra/fileavlibs.C:1592
+#: ../cinelerra/fileavlibs.C:1607
 msgid "Failed to get buffer for color conversion"
 msgstr "Failed to get buffer for color conversion"
 
-#: ../cinelerra/fileavlibs.C:1601
+#: ../cinelerra/fileavlibs.C:1616
 msgid "Could not get color conversion context"
 msgstr "Could not get color conversion context"
 
-#: ../cinelerra/fileavlibs.C:1607
+#: ../cinelerra/fileavlibs.C:1622
 msgid "Color conversion failed"
 msgstr "Color conversion failed"
 
-#: ../cinelerra/fileavlibs.C:1714
+#: ../cinelerra/fileavlibs.C:1729
 msgid "Failed to encode video frame"
 msgstr "Failed to encode video frame"
 
-#: ../cinelerra/fileavlibs.C:1724
+#: ../cinelerra/fileavlibs.C:1739
 msgid "Failed to write video packet"
 msgstr "Failed to write video packet"
 
-#: ../cinelerra/fileavlibs.C:1796
+#: ../cinelerra/fileavlibs.C:1811
 msgid "Failed to resample audio data"
 msgstr "Failed to resample audio data"
 
-#: ../cinelerra/fileavlibs.C:1851
+#: ../cinelerra/fileavlibs.C:1866
 msgid "Failed to encode audio frame"
 msgstr "Failed to encode audio frame"
 
-#: ../cinelerra/fileavlibs.C:1865
+#: ../cinelerra/fileavlibs.C:1880
 msgid "Failed to write audio packet"
 msgstr "Failed to write audio packet"
 
-#: ../cinelerra/fileavlibs.C:1915
+#: ../cinelerra/fileavlibs.C:1937
 msgid "Media seeking failed"
 msgstr "Media seeking failed"
 
-#: ../cinelerra/fileavlibs.C:1924
+#: ../cinelerra/fileavlibs.C:1946
 msgid "Reading after media seek failed"
 msgstr "Reading after media seek failed"
 
@@ -1245,6 +1226,27 @@ msgstr "Дизеринг"
 #: ../cinelerra/filesndfile.C:423
 msgid "Signed"
 msgstr "Знаковые"
+
+#: ../cinelerra/filetoc.C:122
+msgid ""
+"TOC file already exists.\n"
+"Overwrite?"
+msgstr "TOC-файл уже существует.\n"
+"Переписать его ?"
+
+#: ../cinelerra/filetoc.C:153
+msgid "Generating TOC"
+msgstr "Создание TOC"
+
+#: ../cinelerra/filetoc.C:154
+#, c-format
+msgid "Generating TOC for %s"
+msgstr "Создание TOC для %s"
+
+#: ../cinelerra/filetoc.C:205
+#, c-format
+msgid "Failed to write tocfile for '%s'"
+msgstr "Failed to write tocfile for '%s'"
 
 #: ../cinelerra/formatpresets.C:70 ../cinelerra/formatpresets.C:78
 msgid "Top Fields First"
@@ -1360,12 +1362,12 @@ msgid "TIFF Sequence"
 msgstr "TIFF Sequence"
 
 #: ../cinelerra/formattools.C:62
-msgid "MPEG"
-msgstr "MPEG"
+msgid "MPEG2 PS"
+msgstr "MPEG2 PS"
 
 #: ../cinelerra/formattools.C:63
 msgid "MPEGTS"
-msgstr "MPEG-TS"
+msgstr "MPEGTS"
 
 #: ../cinelerra/formattools.C:64
 msgid "MPEG 2/3 audio"
@@ -1479,12 +1481,12 @@ msgstr "Смещение начала/конца дорожки"
 msgid "Overlays"
 msgstr "Вид"
 
-#: ../cinelerra/indexfile.C:281
+#: ../cinelerra/indexfile.C:288
 #, c-format
 msgid "Creating %s."
 msgstr "Создание %s."
 
-#: ../cinelerra/indexfile.C:382
+#: ../cinelerra/indexfile.C:389
 msgid "IndexFile::draw_index: index has 0 zoom"
 msgstr "IndexFile::draw_index: index has 0 zoom"
 
@@ -1797,19 +1799,19 @@ msgstr "Ошибки"
 msgid "The following errors occurred:"
 msgstr "Произошли следующие ошибки:"
 
-#: ../cinelerra/mainerror.C:287
+#: ../cinelerra/mainerror.C:288
 msgid "Error"
 msgstr "Ошибка"
 
-#: ../cinelerra/mainerror.C:309
+#: ../cinelerra/mainerror.C:310
 msgid "Message"
 msgstr "Сообщение"
 
-#: ../cinelerra/mainerror.C:320
+#: ../cinelerra/mainerror.C:321
 msgid "Confirmation"
 msgstr "Подтверждение"
 
-#: ../cinelerra/mainindexes.C:206
+#: ../cinelerra/mainindexes.C:207
 msgid "Building Indexes..."
 msgstr "Создание индексов..."
 
@@ -2139,53 +2141,53 @@ msgstr "Авторское право:"
 msgid "Import images with a duration of"
 msgstr "Длительность импортированных изобр-й"
 
-#: ../cinelerra/mwindow.C:132
+#: ../cinelerra/mwindow.C:130
 msgid "Initializing GUI"
 msgstr "Инициализация GUI"
 
-#: ../cinelerra/mwindow.C:393
+#: ../cinelerra/mwindow.C:391
 #, c-format
 msgid "Couldn't open plugins directory '%s'"
 msgstr "Couldn't open plugins directory '%s'"
 
-#: ../cinelerra/mwindow.C:430
+#: ../cinelerra/mwindow.C:428
 #, c-format
 msgid "Couldn't open LADSPA directory '%s'"
 msgstr "Couldn't open LADSPA directory '%s'"
 
-#: ../cinelerra/mwindow.C:677
+#: ../cinelerra/mwindow.C:675
 #, c-format
 msgid "Can't find theme '%s'."
 msgstr "Can't find theme '%s'."
 
-#: ../cinelerra/mwindow.C:697
+#: ../cinelerra/mwindow.C:695
 #, c-format
 msgid "Cant load default theme '%s'."
 msgstr "Cant load default theme '%s'."
 
-#: ../cinelerra/mwindow.C:938
+#: ../cinelerra/mwindow.C:963
 #, c-format
 msgid "Failed to open %s"
 msgstr "Failed to open %s"
 
-#: ../cinelerra/mwindow.C:985
+#: ../cinelerra/mwindow.C:1010
 msgid "'s format couldn't be determined."
 msgstr "'s format couldn't be determined."
 
-#: ../cinelerra/mwindow.C:1157
+#: ../cinelerra/mwindow.C:1188
 msgid "load"
 msgstr "загрузка"
 
-#: ../cinelerra/mwindow.C:1708
+#: ../cinelerra/mwindow.C:1740
 #, c-format
 msgid "Couldn't open %s for writing."
 msgstr "Couldn't open %s for writing."
 
-#: ../cinelerra/mwindow.C:1768
+#: ../cinelerra/mwindow.C:1800
 msgid "remove assets"
 msgstr "удалить ресурсы"
 
-#: ../cinelerra/mwindow.C:1947
+#: ../cinelerra/mwindow.C:1968
 #, c-format
 msgid "Using %s."
 msgstr "Используется %s."
@@ -2405,10 +2407,6 @@ msgstr "Дорожки:"
 msgid "Canvas size:"
 msgstr "Размер холста:"
 
-#: ../cinelerra/new.C:258 ../cinelerra/setformat.C:358
-msgid "Aspect ratio:"
-msgstr "Пропорция:"
-
 #: ../cinelerra/new.C:268 ../cinelerra/setformat.C:349
 msgid "Color model:"
 msgstr "Цвет. модель:"
@@ -2426,7 +2424,7 @@ msgid "Couldn't open output file %s"
 msgstr "Невозможно открыть выходной файл %s"
 
 #: ../cinelerra/patchbay.C:232 ../cinelerra/patchgui.C:482
-#: ../cinelerra/trackcanvas.C:4011
+#: ../cinelerra/trackcanvas.C:4005
 msgid "keyframe"
 msgstr "ключевой кадр"
 
@@ -2613,53 +2611,49 @@ msgstr "Достигнутая част. кадров:"
 msgid "Scaling equation:"
 msgstr "Алгоритм масштабирования:"
 
-#: ../cinelerra/playbackprefs.C:181
+#: ../cinelerra/playbackprefs.C:174
 msgid "Timecode offset:"
 msgstr "Смещение таймкода:"
 
-#: ../cinelerra/playbackprefs.C:196
+#: ../cinelerra/playbackprefs.C:189
 msgid "Video Driver:"
 msgstr "Видеодрайвер:"
 
-#: ../cinelerra/playbackprefs.C:273
+#: ../cinelerra/playbackprefs.C:266
 msgid "View follows playback"
 msgstr "Следовать за воспроизведением"
 
-#: ../cinelerra/playbackprefs.C:286
+#: ../cinelerra/playbackprefs.C:279
 msgid "Use software for positioning information"
 msgstr "Программное позиционирование"
 
-#: ../cinelerra/playbackprefs.C:299
+#: ../cinelerra/playbackprefs.C:292
 msgid "Nearest neighbor enlarge and reduce"
 msgstr "По соседним точкам (увеличение и уменьшение)"
 
-#: ../cinelerra/playbackprefs.C:313
+#: ../cinelerra/playbackprefs.C:306
 msgid "Lanczos enlarge and reduce"
 msgstr "Метод Ланцоша (увеличение и уменьшение)"
 
-#: ../cinelerra/playbackprefs.C:327
+#: ../cinelerra/playbackprefs.C:320
 msgid "Bicubic enlarge and reduce"
 msgstr "Бикубическое увеличение и бикубическое уменьшение"
 
-#: ../cinelerra/playbackprefs.C:340
+#: ../cinelerra/playbackprefs.C:333
 msgid "Bicubic enlarge and bilinear reduce"
 msgstr "Бикубическое увеличение и билинейное уменьшение"
 
-#: ../cinelerra/playbackprefs.C:358
+#: ../cinelerra/playbackprefs.C:351
 msgid "Bilinear enlarge and bilinear reduce"
 msgstr "Билинейное увеличение и билинейное уменьшение"
 
-#: ../cinelerra/playbackprefs.C:375
+#: ../cinelerra/playbackprefs.C:368
 msgid "Decode frames asynchronously"
 msgstr "Асинхронное декодирование кадров"
 
-#: ../cinelerra/playbackprefs.C:393
+#: ../cinelerra/playbackprefs.C:386
 msgid "Play every frame"
 msgstr "Воспроизводить каждый кадр"
-
-#: ../cinelerra/playbackprefs.C:423
-msgid "Enable DVD subtitles"
-msgstr "Включить DVD субтитры"
 
 #: ../cinelerra/playtransport.C:299
 msgid "Rewind ( Home )"
@@ -3230,7 +3224,7 @@ msgstr "Следующий совет"
 msgid "Previous tip"
 msgstr "Предыдущий совет"
 
-#: ../cinelerra/trackcanvas.C:4026
+#: ../cinelerra/trackcanvas.C:4020
 msgid "select"
 msgstr "выделить"
 
@@ -5673,3 +5667,28 @@ msgstr "V:"
 #: ../plugins/zoomblur/zoomblur.C:25
 msgid "Zoom Blur"
 msgstr "Размытие масштабом"
+
+#~ msgid ""
+#~ "%s\n"
+#~ "Libmpeg3 version %d.%d.%d\n"
+#~ msgstr ""
+#~ "%s\n"
+#~ "Версия Libmpeg3 %d.%d.%d\n"
+
+#~ msgid "Aspect:"
+#~ msgstr "Пропорция:"
+
+#~ msgid "Subtitle tracks:"
+#~ msgstr "Дорожка субтитров:"
+
+#~ msgid "Remove from disk"
+#~ msgstr "Удалить с диска"
+
+#~ msgid "Remove this asset from disk?"
+#~ msgstr "Удалить этот ресурс с диска ?"
+
+#~ msgid "MPEG"
+#~ msgstr "MPEG"
+
+#~ msgid "Enable DVD subtitles"
+#~ msgstr "Включить DVD субтитры"
