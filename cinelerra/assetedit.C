@@ -150,7 +150,6 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	char string[BCTEXTLEN];
 	int vmargin;
 	int hmargin1 = 180, hmargin2 = 290;
-	FileSystem fs;
 	BC_Title *title;
 	BC_TextBox  *textboxw;
 	BC_CheckBox *chkboxw;
@@ -189,18 +188,8 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	x = x1;
 	y += 20;
 
-	off_t bytes = 1;
-	if(asset->format == FILE_MPEG &&
-		asset->video_data)
-	{
-		bytes = asset->file_length;
-	}
-	else
-	{
-		bytes = fs.get_size(asset->path);
-	}
 	add_subwindow(new BC_Title(x, y, _("Bytes:")));
-	sprintf(string, "%" PRId64, bytes);
+	sprintf(string, "%" PRId64, asset->file_length);
 	Units::punctuate(string);
 
 	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
@@ -214,9 +203,9 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 		length = MAX(length, (ptstime)asset->video_length / asset->frame_rate);
 	uintmax_t bitrate;
 	if(!EQUIV(length, 0))
-		bitrate = bytes / length * 8;
+		bitrate = asset->file_length / length * 8;
 	else
-		bitrate = bytes;
+		bitrate = asset->file_length;
 	add_subwindow(new BC_Title(x, y, _("Bitrate (bits/sec):")));
 	sprintf(string, "%jd", bitrate);
 
