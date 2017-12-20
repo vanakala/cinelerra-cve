@@ -132,8 +132,6 @@ public:
 	float frames_per_foot;
 // Number of highlighted track
 	int highlighted_track;
-// Enumeration for how to scale from edl.inc.
-	int interpolation_type;
 // labels follow edits during editing
 	int labels_follow_edits;
 	int plugins_follow_edits;

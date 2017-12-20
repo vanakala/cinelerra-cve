@@ -866,7 +866,7 @@ void PluginServer::get_projector(double *x, double *y, double *z, ptstime postim
 
 int PluginServer::get_interpolation_type()
 {
-	return plugin->edl->session->interpolation_type;
+	return BC_Resources::interpolation_method;
 }
 
 Theme* PluginServer::new_theme()

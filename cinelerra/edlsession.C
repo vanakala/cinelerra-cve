@@ -26,6 +26,7 @@
 #include "colormodels.h"
 #include "bchash.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -45,7 +46,6 @@ EDLSession::EDLSession(EDL *edl)
 	highlighted_track = 0;
 	playback_cursor_visible = 0;
 	aconfig_duplex = new AudioOutConfig(1);
-	interpolation_type = CUBIC_LINEAR;
 	test_playback_edits = 1;
 	brender_start = 0.0;
 
@@ -104,8 +104,7 @@ char* EDLSession::get_cwindow_display()
 
 int EDLSession::need_rerender(EDLSession *ptr)
 {
-	return (interpolation_type != ptr->interpolation_type) ||
-		(video_every_frame != ptr->video_every_frame) ||
+	return (video_every_frame != ptr->video_every_frame) ||
 		(video_asynchronous != ptr->video_asynchronous) ||
 		(playback_software_position != ptr->playback_software_position) ||
 		(test_playback_edits != ptr->test_playback_edits) ||
@@ -117,8 +116,7 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 	if(session->output_w != output_w ||
 			session->output_h != output_h ||
 			session->frame_rate != frame_rate ||
-			session->color_model != color_model ||
-			session->interpolation_type != interpolation_type)
+			session->color_model != color_model)
 		*result = 0;
 
 // If it's before the current brender_start, render extra data.
@@ -205,7 +203,7 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	folderlist_format = defaults->get("FOLDERLIST_FORMAT", ASSETS_TEXT);
 	frame_rate = defaults->get("FRAMERATE", frame_rate);
 	frames_per_foot = defaults->get("FRAMES_PER_FOOT", (float)16);
-	interpolation_type = defaults->get("INTERPOLATION_TYPE", interpolation_type);
+	BC_Resources::interpolation_method = defaults->get("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	labels_follow_edits = defaults->get("LABELS_FOLLOW_EDITS", 1);
 	plugins_follow_edits = defaults->get("PLUGINS_FOLLOW_EDITS", 1);
 	auto_keyframes = defaults->get("AUTO_KEYFRAMES", 0);
@@ -318,7 +316,7 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("FRAMERATE", frame_rate);
 	defaults->update("FRAMES_PER_FOOT", frames_per_foot);
 	defaults->update("HIGHLIGHTED_TRACK", highlighted_track);
-	defaults->update("INTERPOLATION_TYPE", interpolation_type);
+	defaults->update("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	defaults->update("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	defaults->update("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	defaults->update("AUTO_KEYFRAMES", auto_keyframes);
@@ -414,7 +412,7 @@ void EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load
 	if(append_mode)
 		return;
 
-	interpolation_type = file->tag.get_property("INTERPOLATION_TYPE", interpolation_type);
+	BC_Resources::interpolation_method = file->tag.get_property("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	ColorModels::to_text(string, color_model);
 	color_model = ColorModels::from_text(file->tag.get_property("COLORMODEL", string));
 	interlace_mode = AInterlaceModeSelection::xml_value(file->tag.get_property("INTERLACE_MODE"));
@@ -601,7 +599,7 @@ void EDLSession::save_video_config(FileXML *file)
 	char string[1024];
 
 	file->tag.set_title("VIDEO");
-	file->tag.set_property("INTERPOLATION_TYPE", interpolation_type);
+	file->tag.set_property("INTERPOLATION_TYPE", BC_Resources::interpolation_method);
 	file->tag.set_property("COLORMODEL", ColorModels::name(color_model));
 	file->tag.set_property("INTERLACE_MODE",
 		AInterlaceModeSelection::xml_text(interlace_mode));
@@ -700,7 +698,6 @@ void EDLSession::copy(EDLSession *session)
 	frame_rate = session->frame_rate;
 	frames_per_foot = session->frames_per_foot;
 	highlighted_track = session->highlighted_track;
-	interpolation_type = session->interpolation_type;
 	labels_follow_edits = session->labels_follow_edits;
 	plugins_follow_edits = session->plugins_follow_edits;
 	auto_keyframes = session->auto_keyframes;

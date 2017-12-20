@@ -22,6 +22,7 @@
 #include "asset.h"
 #include "automation.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "clip.h"
 #include "edits.h"
 #include "edl.h"
@@ -400,7 +401,7 @@ void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 					out_y2, 
 					1,
 					mode, 
-					renderengine->edl->session->interpolation_type);
+					BC_Resources::interpolation_method);
 			}
 		}
 	}

@@ -23,13 +23,14 @@
 #include "audiodevice.inc"
 #include "bcbar.h"
 #include "bcsignals.h"
+#include "bcresources.h"
+#include "colormodels.inc"
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
 #include "mwindow.h"
-#include "overlayframe.inc"
 #include "playbackprefs.h"
 #include "preferences.h"
 #include "theme.h"
@@ -139,31 +140,31 @@ void PlaybackPrefs::show()
 	y += 20;
 	add_subwindow(lanczos_lanczos = new PlaybackLanczosLanczos(pwindow,
 		this,
-		pwindow->thread->edl->session->interpolation_type == LANCZOS_LANCZOS,
+		BC_Resources::interpolation_method == LANCZOS_LANCZOS,
 		10, 
 		y));
 	y += 20;
 	add_subwindow(cubic_cubic = new PlaybackBicubicBicubic(pwindow,
 		this, 
-		pwindow->thread->edl->session->interpolation_type == CUBIC_CUBIC,
+		BC_Resources::interpolation_method == CUBIC_CUBIC,
 		10, 
 		y));
 	y += 20;
 	add_subwindow(cubic_linear = new PlaybackBicubicBilinear(pwindow, 
 		this, 
-		pwindow->thread->edl->session->interpolation_type == CUBIC_LINEAR, 
+		BC_Resources::interpolation_method == CUBIC_LINEAR,
 		10, 
 		y));
 	y += 20;
 	add_subwindow(linear_linear = new PlaybackBilinearBilinear(pwindow, 
 		this, 
-		pwindow->thread->edl->session->interpolation_type == LINEAR_LINEAR, 
+		BC_Resources::interpolation_method == LINEAR_LINEAR,
 		10, 
 		y));
 	y += 20;
 	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 
 		this, 
-		pwindow->thread->edl->session->interpolation_type == NEAREST_NEIGHBOR, 
+		BC_Resources::interpolation_method == NEAREST_NEIGHBOR,
 		10, 
 		y));
 
@@ -199,7 +200,7 @@ void PlaybackPrefs::show()
 
 void PlaybackPrefs::update(int interpolation)
 {
-	pwindow->thread->edl->session->interpolation_type = interpolation;
+	BC_Resources::interpolation_method = interpolation;
 	nearest_neighbor->update(interpolation == NEAREST_NEIGHBOR);
 	lanczos_lanczos->update(interpolation == LANCZOS_LANCZOS);
 	cubic_cubic->update(interpolation == CUBIC_CUBIC);

@@ -23,6 +23,7 @@
 #include "bcbitmap.h"
 #include "bccapture.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "canvas.h"
 #include "colormodels.h"
 #include "edl.h"
@@ -377,8 +378,6 @@ void VDeviceX11::overlay(VFrame *output_frame,
 		int mode,
 		EDL *edl)
 {
-	int interpolation_type = edl->session->interpolation_type;
-
 // Convert node coords to canvas coords in here
 // This is the transfer from output frame to canvas
 	output->get_transfers(edl, 
@@ -407,7 +406,7 @@ void VDeviceX11::overlay(VFrame *output_frame,
 			out_y2,
 			alpha,           // 0 - 1
 			mode,
-			interpolation_type,
+			BC_Resources::interpolation_method,
 			output_frame);
 	}
 	else
@@ -472,7 +471,7 @@ void VDeviceX11::overlay(VFrame *output_frame,
 				canvas_y2,
 				alpha,          // 0 - 1
 				mode,
-				interpolation_type);
+				BC_Resources::interpolation_method);
 		}
 	}
 }

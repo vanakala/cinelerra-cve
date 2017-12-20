@@ -56,4 +56,11 @@ class ColorModels;
 #define BC_YUV444P      27
 #define BC_YUV411P      18
 
+// Interpolation types
+#define NEAREST_NEIGHBOR 0        // Nearest for enlargement and reduction
+#define CUBIC_CUBIC      1        // Bicubic enlargement and reduction
+#define CUBIC_LINEAR     2        // Bicubic enlargement and linear reduction
+#define LINEAR_LINEAR    3        // Not explicitely called but used for user
+#define LANCZOS_LANCZOS  4        // Just because we can
+
 #endif

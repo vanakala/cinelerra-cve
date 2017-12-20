@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "cache.h"
 #include "clip.h"
 #include "commonrender.h"
@@ -297,7 +298,7 @@ int VModule::import_frame(VFrame *output,
 						out_y1 + out_h1,
 						1,
 						TRANSFER_REPLACE,
-						get_edl()->session->interpolation_type);
+						BC_Resources::interpolation_method);
 				}
 				result = 1;
 				output->copy_pts((*input));

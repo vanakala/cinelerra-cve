@@ -34,15 +34,6 @@
 #define TRANSFER_REPLACE      5
 #define TRANSFER_MAX          6
 
-// Interpolation types
-
-
-#define NEAREST_NEIGHBOR 0        // Nearest for enlargement and reduction
-#define CUBIC_CUBIC      1        // Bicubic enlargement and reduction
-#define CUBIC_LINEAR     2        // Bicubic enlargement and linear reduction
-#define LINEAR_LINEAR    3        // Not explicitely called but used for user
-#define LANCZOS_LANCZOS  4        // Just because we can
-
 class OverlayFrame;
 
 #endif

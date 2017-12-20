@@ -324,6 +324,8 @@ public:
 	static TmpFrameCache tmpframes;
 // Size of RAM in kB
 	static size_t memory_size;
+// Interpolation method for scaling
+	static int interpolation_method;
 
 private:
 // Test for availability of shared memory pixmaps

@@ -27,6 +27,7 @@
 #include "bcsynchronous.h"
 #include "bcwindowbase.h"
 #include "colors.h"
+#include "colormodels.inc"
 #include "fonts.h"
 #include "language.h"
 #include "hashcache.h"
@@ -163,6 +164,7 @@ Mutex BC_Resources::fontconfig_lock("BC_Resources::fontconfig_lock");
 HashCache BC_Resources::hash_cache;
 char BC_Resources::working_directory[BCTEXTLEN];
 TmpFrameCache BC_Resources::tmpframes;
+int BC_Resources::interpolation_method = NEAREST_NEIGHBOR;
 
 BC_Resources::BC_Resources()
 {
