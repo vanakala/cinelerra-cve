@@ -284,8 +284,8 @@ int FileAVlibs::probe_input(Asset *asset)
 					asset->streams[asset->nb_streams].aspect_ratio =
 						(double)(decoder_ctx->coded_width * decoder_ctx->sample_aspect_ratio.num) /
 						(decoder_ctx->coded_height * decoder_ctx->sample_aspect_ratio.den);
-				AspectRatioSelection::limits(&asset->streams[i].aspect_ratio,
-					asset->streams[asset->nb_streams].width, asset->streams[i].height);
+				AspectRatioSelection::limits(&asset->streams[asset->nb_streams].aspect_ratio,
+					asset->streams[asset->nb_streams].width, asset->streams[asset->nb_streams].height);
 					asset->streams[asset->nb_streams].frame_rate = av_q2d(stream->r_frame_rate);
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 					asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
