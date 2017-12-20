@@ -286,7 +286,7 @@ int FileAVlibs::probe_input(Asset *asset)
 						(decoder_ctx->coded_height * decoder_ctx->sample_aspect_ratio.den);
 				AspectRatioSelection::limits(&asset->streams[asset->nb_streams].aspect_ratio,
 					asset->streams[asset->nb_streams].width, asset->streams[asset->nb_streams].height);
-					asset->streams[asset->nb_streams].frame_rate = av_q2d(stream->r_frame_rate);
+					asset->streams[asset->nb_streams].frame_rate = av_q2d(decoder_ctx->framerate);
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 					asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 				asset->streams[asset->nb_streams].options = STRDSC_VIDEO;
