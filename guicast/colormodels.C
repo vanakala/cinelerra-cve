@@ -55,6 +55,14 @@ struct cm_names ColorModels::color_model_names[] =
 	{ -1, 0 }
 };
 
+struct intp_types ColorModels::interpolation_types[] =
+{
+	{ NEAREST_NEIGHBOR, SWS_POINT },
+	{ CUBIC_CUBIC, SWS_BICUBIC },
+	{ LINEAR_LINEAR, SWS_BILINEAR },
+	{ LANCZOS_LANCZOS, SWS_LANCZOS }
+};
+
 
 ColorModels::ColorModels()
 {
@@ -230,7 +238,7 @@ void ColorModels::transfer_sws(unsigned char *output,
 	{
 		sws_ctx = sws_getCachedContext(sws_ctx, in_w, in_h, pix_in,
 			out_w, out_h, pix_out,
-			SWS_BICUBIC, NULL, NULL, NULL);
+			libinterpolate(), NULL, NULL, NULL);
 		fill_data(in_colormodel, in_data, input,
 			in_y_plane, in_u_plane, in_v_plane);
 		fill_linesizes(in_colormodel, in_rowspan, in_w, in_linesizes);
@@ -315,7 +323,7 @@ void ColorModels::transfer_frame(unsigned char *output,
 	{
 		sws_ctx = sws_getCachedContext(sws_ctx, frame->get_w(), frame->get_h(),
 			pix_in, out_w, out_h, pix_out,
-			SWS_FAST_BILINEAR, NULL, NULL, NULL);
+			libinterpolate(), NULL, NULL, NULL);
 		fill_data(frame->get_color_model(), in_data, frame->get_data(),
 			frame->get_y(), frame->get_u(), frame->get_v());
 		fill_linesizes(frame->get_color_model(), frame->get_bytes_per_line(),
@@ -726,4 +734,19 @@ int ColorModels::has_alpha(int colormodel)
 		return 1;
 	}
 	return 0;
+}
+
+int ColorModels::libinterpolate(int value)
+{
+	for(int i = 0; i < sizeof(interpolation_types) / sizeof(struct intp_types); i++)
+	{
+		if(interpolation_types[i].value == value)
+			return interpolation_types[i].libvalue;
+	}
+	return SWS_POINT;
+}
+
+int ColorModels::libinterpolate()
+{
+	return libinterpolate(BC_Resources::interpolation_method);
 }

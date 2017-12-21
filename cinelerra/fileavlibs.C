@@ -1506,7 +1506,7 @@ int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
 
 		sws_ctx = sws_getCachedContext(sws_ctx, width_in, height_in, pix_fmt_in,
 			frame_out->get_w(),frame_out->get_h(),pix_fmt_out,
-			SWS_BICUBIC, NULL, NULL, NULL);
+			ColorModels::libinterpolate(), NULL, NULL, NULL);
 
 		if(sws_ctx == NULL)
 		{
@@ -1610,7 +1610,7 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 		}
 
 		if((sws_ctx = sws_getCachedContext(sws_ctx, frame_in->get_w(), frame_in->get_h(),
-			pix_fmt_in, width_out, height_out, pix_fmt_out, SWS_BICUBIC,
+			pix_fmt_in, width_out, height_out, pix_fmt_out, ColorModels::libinterpolate(),
 			0, 0, 0)) == 0)
 		{
 			errormsg(_("Could not get color conversion context"));

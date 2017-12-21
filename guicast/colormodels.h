@@ -33,6 +33,12 @@ struct cm_names {
     const char *name;
 };
 
+struct intp_types
+{
+	int value;
+	int libvalue;
+};
+
 class ColorModels
 {
 public:
@@ -95,10 +101,13 @@ public:
 		unsigned char *output, int out_cmodel, int out_rowspan,
 		int in_w, int in_h,
 		unsigned char *input, int in_cmodel, int in_rowspan);
+	static int libinterpolate(int value);
+	static int libinterpolate();
 
 private:
 	static void transfer_details(struct SwsContext *sws_ctx, int srange);
 	static struct cm_names color_model_names[];
+	static struct intp_types interpolation_types[];
 };
 
 #endif
