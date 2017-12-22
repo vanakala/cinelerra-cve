@@ -714,6 +714,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			video_ctx->sample_aspect_ratio =
 				av_mul_q(av_d2q(asset->aspect_ratio, 40),
 				(AVRational){video_ctx->height, video_ctx->width});
+			stream->sample_aspect_ratio = video_ctx->sample_aspect_ratio;
 			// Some formats want stream headers to be separate.
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				video_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
