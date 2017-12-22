@@ -30,25 +30,23 @@ class Timer
 {
 public:
 	Timer();
-	virtual ~Timer();
-	
+	virtual ~Timer() {};
+
 // set last update to now
-	int update();
-	
+	void update();
+
 // get difference between now and last update in milliseconds
 // must be positive or error results
 	int64_t get_difference(struct timeval *result); // also stores in timeval
 	int64_t get_difference();
 
-// get difference in arbitrary units between now and last update    
-	int64_t get_scaled_difference(long denominator);        
-	static int delay(long milliseconds);
+// get difference in arbitrary units between now and last update
+	int64_t get_scaled_difference(long denominator);
+	static void delay(long milliseconds);
 
 private:
 	struct timeval current_time;
 	struct timeval new_time;
 };
-
-
 
 #endif
