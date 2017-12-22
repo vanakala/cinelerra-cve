@@ -30,6 +30,7 @@
 #include "file.h"
 #include "fileavlibs.h"
 #include "filetoc.h"
+#include "interlacemodes.h"
 #include "language.h"
 #include "mainerror.h"
 #include "mutex.h"
@@ -1703,6 +1704,19 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			return 1;
 		}
 		avvframe->pts = round((frame->get_pts() - pts_base) / av_q2d(stream->time_base));
+
+		if(asset->interlace_mode == BC_ILACE_MODE_TOP_FIRST)
+		{
+			avvframe->interlaced_frame = 1;
+			avvframe->top_field_first = 1;
+		}
+		else if(asset->interlace_mode == BC_ILACE_MODE_BOTTOM_FIRST)
+		{
+			avvframe->interlaced_frame = 1;
+			avvframe->top_field_first = 0;
+		}
+		else
+			avvframe->interlaced_frame = 0;
 
 		AVPacket pkt = {0};
 		av_init_packet(&pkt);
