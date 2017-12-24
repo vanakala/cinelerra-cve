@@ -129,7 +129,8 @@ int PackageRenderer::initialize(MWindow *mwindow,
 
 	default_asset->frame_rate = command->get_edl()->session->frame_rate;
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;
-	default_asset->aspect_ratio = command->get_edl()->session->aspect_ratio;
+	default_asset->sample_aspect_ratio =
+		command->get_edl()->session->sample_aspect_ratio;
 	result = Render::check_asset(edl, *default_asset);
 
 	audio_cache = new CICache(preferences);

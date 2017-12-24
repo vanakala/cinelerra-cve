@@ -282,12 +282,10 @@ int FileAVlibs::probe_input(Asset *asset)
 				asset->streams[asset->nb_streams].width = decoder_ctx->width;
 				asset->streams[asset->nb_streams].height = decoder_ctx->height;
 				if(decoder_ctx->coded_height && decoder_ctx->sample_aspect_ratio.den)
-					asset->streams[asset->nb_streams].aspect_ratio =
-						(double)(decoder_ctx->coded_width * decoder_ctx->sample_aspect_ratio.num) /
-						(decoder_ctx->coded_height * decoder_ctx->sample_aspect_ratio.den);
-				AspectRatioSelection::limits(&asset->streams[asset->nb_streams].aspect_ratio,
-					asset->streams[asset->nb_streams].width, asset->streams[asset->nb_streams].height);
-					asset->streams[asset->nb_streams].frame_rate = av_q2d(decoder_ctx->framerate);
+					asset->streams[asset->nb_streams].sample_aspect_ratio =
+						av_q2d(decoder_ctx->sample_aspect_ratio);
+				AspectRatioSelection::limits(&asset->streams[asset->nb_streams].sample_aspect_ratio);
+				asset->streams[asset->nb_streams].frame_rate = av_q2d(decoder_ctx->framerate);
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 					asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 				asset->streams[asset->nb_streams].options = STRDSC_VIDEO;
@@ -712,9 +710,7 @@ int FileAVlibs::open_file(int rd, int wr)
 				video_ctx->pix_fmt = (AVPixelFormat)bparam->intvalue;
 			else if(video_ctx->pix_fmt == AV_PIX_FMT_NONE)
 				video_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
-			video_ctx->sample_aspect_ratio =
-				av_mul_q(av_d2q(asset->aspect_ratio, 40),
-				(AVRational){video_ctx->height, video_ctx->width});
+			video_ctx->sample_aspect_ratio = av_d2q(asset->sample_aspect_ratio, 40);
 			stream->sample_aspect_ratio = video_ctx->sample_aspect_ratio;
 			// Some formats want stream headers to be separate.
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)

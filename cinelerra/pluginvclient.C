@@ -98,7 +98,7 @@ void PluginVClient::init_realtime_parameters()
 {
 	project_frame_rate = server->edl->session->frame_rate;
 	project_color_model = server->edl->session->color_model;
-	aspect_ratio = server->edl->session->aspect_ratio;
+	sample_aspect_ratio = server->edl->session->sample_aspect_ratio;
 }
 
 void PluginVClient::process_frame(VFrame **frame)

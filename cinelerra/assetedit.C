@@ -372,11 +372,12 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 
 		y += vmargin;
-		if(asset->aspect_ratio > 0){
+		if(asset->sample_aspect_ratio > 0)
+		{
 			x = x1;
 			add_subwindow(new BC_Title(x, y, _("Aspect ratio:")));
 			x = x2;
-			sprintf(string, "%2.3f", asset->aspect_ratio);
+			sprintf(string, "%2.3f", asset->sample_aspect_ratio * asset->width / asset->height);
 			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 			y += title->get_h() + 5;
 		}

@@ -150,7 +150,7 @@ public:
 // Return 1 if the buffer is shared.
 	int get_shared(void);
 	double get_pixel_aspect();
-	void set_pixel_aspect(double aspect, int frame_aspect = 0);
+	void set_pixel_aspect(double aspect);
 
 	static int calculate_bytes_per_pixel(int colormodel);
 	static size_t calculate_data_size(int w, 

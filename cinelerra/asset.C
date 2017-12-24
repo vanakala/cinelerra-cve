@@ -117,7 +117,7 @@ void Asset::init_values()
 	vcodec[0] = 0;
 	acodec[0] = 0;
 	jpeg_quality = 100;
-	aspect_ratio = -1;
+	sample_aspect_ratio = 1;
 	interlace_autofixoption = BC_ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	interlace_fixmethod = BC_ILACE_FIXMETHOD_NONE;
@@ -199,7 +199,7 @@ void Asset::set_video_stream(int stream)
 	video_streamno = stream + 1;
 	layers = 1;
 	frame_rate = desc->frame_rate;
-	aspect_ratio = desc->aspect_ratio;
+	sample_aspect_ratio = desc->sample_aspect_ratio;
 	width = desc->width;
 	height = desc->height;
 	video_length = desc->length;
@@ -270,7 +270,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	header = asset->header;
 	dither = asset->dither;
 	use_header = asset->use_header;
-	aspect_ratio = asset->aspect_ratio;
+	sample_aspect_ratio = asset->sample_aspect_ratio;
 	interlace_autofixoption = asset->interlace_autofixoption;
 	interlace_mode = asset->interlace_mode;
 	interlace_fixmethod = asset->interlace_fixmethod;
@@ -923,6 +923,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 	int options)
 {
 	char string[BCTEXTLEN];
+	double aspect_ratio;
 
 // Can't save codec here because it's specific to render, record, and effect.
 // The codec has to be UNKNOWN for file probing to work.
@@ -959,7 +960,13 @@ void Asset::load_defaults(BC_Hash *defaults,
 	}
 
 	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
+	aspect_ratio = -1.0;
 	aspect_ratio = GET_DEFAULT("ASPECT_RATIO", aspect_ratio);
+	if(aspect_ratio > 0 && !EQUIV(aspect_ratio, 1.0))
+		sample_aspect_ratio = aspect_ratio * height / width;
+	else
+		sample_aspect_ratio = 1.0;
+	sample_aspect_ratio = GET_DEFAULT("SAMPLEASPECT", sample_aspect_ratio);
 
 	interlace_autofixoption	= BC_ILACE_AUTOFIXOPTION_AUTO;
 	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
@@ -1030,7 +1037,7 @@ void Asset::load_defaults(Paramlist *list, int options)
 		list->get("video_codec", vcodec);
 		format_changed();
 		jpeg_quality = list->get("jpeg_quality", jpeg_quality);
-		aspect_ratio = list->get("aspect_ratio", aspect_ratio);
+		sample_aspect_ratio = list->get("sample_aspect_ratio", sample_aspect_ratio);
 		list->get("pipe", pipe);
 		use_pipe = list->get("use_pipe", use_pipe);
 	}
@@ -1071,7 +1078,7 @@ void Asset::save_defaults(Paramlist *list, int options)
 		list->set("audio_codec", acodec);
 		list->set("video_codec", vcodec);
 		list->set("jpeg_quality", jpeg_quality);
-		list->set("aspect_ratio", aspect_ratio);
+		list->set("sample_aspect_ratio", sample_aspect_ratio);
 		list->set("pipe", pipe);
 		list->set("use_pipe", use_pipe);
 	}
@@ -1157,8 +1164,10 @@ void Asset::save_defaults(BC_Hash *defaults,
 		remove_prefixed_default(defaults, "MP4A_BITRATE", string);
 		remove_prefixed_default(defaults, "MP4A_QUANTQUAL", string);
 
+		remove_prefixed_default(defaults, "ASPECT_RATIO", string);
 		UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
-		UPDATE_DEFAULT("ASPECT_RATIO", aspect_ratio);
+		UPDATE_DEFAULT("SAMPLEASPECT", sample_aspect_ratio);
+
 
 // MPEG format information
 		remove_prefixed_default(defaults, "VMPEG_IFRAME_DISTANCE", string);
@@ -1325,8 +1334,8 @@ void Asset::dump(int indent, int options)
 
 	printf("%*svideo_data %d streamno %d layers %d framerate %.2f width %d height %d\n",
 		indent, "", video_data, video_streamno, layers, frame_rate, width, height);
-	printf("%*s  vcodec '%s' aspect_ratio %.2f interlace_mode %s\n",
-		indent, "", vcodec, aspect_ratio,
+	printf("%*s  vcodec '%s' SAR %.2f interlace_mode %s\n",
+		indent, "", vcodec, sample_aspect_ratio,
 		AInterlaceModeSelection::name(interlace_mode));
 	printf("%*s  length %.2f (%d) image %d pipe %d\n", indent, "",
 		video_duration, video_length, single_image, use_pipe);
@@ -1347,11 +1356,11 @@ void Asset::dump(int indent, int options)
 			}
 			if(streams[i].options & STRDSC_VIDEO)
 			{
-				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate: %.2f  aspect: %.2f frames: %" PRId64 " codec '%s'\n",
+				printf("%*s%d. Video %.2f..%.2f [%d,%d] rate: %.2f  SAR: %.2f frames: %" PRId64 " codec '%s'\n",
 					indent + 4, "", streams[i].stream_index,
 					streams[i].start, streams[i].end,
 					streams[i].width, streams[i].height,
-					streams[i].frame_rate, streams[i].aspect_ratio,
+					streams[i].frame_rate, streams[i].sample_aspect_ratio,
 					streams[i].length, streams[i].codec);
 			}
 		}

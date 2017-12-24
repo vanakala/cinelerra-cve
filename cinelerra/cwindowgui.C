@@ -795,7 +795,7 @@ void CWindowCanvas::draw_refresh()
 			{
 // Can't use OpenGL here because it is called asynchronously of the
 // playback operation.
-				refresh_frame->set_pixel_aspect(mwindow->edl->get_aspect_ratio(), 1);
+				refresh_frame->set_pixel_aspect(mwindow->edl->get_sample_aspect_ratio());
 				get_canvas()->draw_vframe(refresh_frame,
 						round(out_x1),
 						round(out_y1),
@@ -2688,7 +2688,7 @@ void CWindowCanvas::zoom_resize_window(double percentage)
 {
 	int canvas_w, canvas_h;
 
-	calculate_sizes(mwindow->edl->get_aspect_ratio(), 
+	calculate_sizes(mwindow->edl,
 		mwindow->edl->session->output_w, 
 		mwindow->edl->session->output_h, 
 		percentage,

@@ -273,7 +273,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	}
 	else
 	{
-		output_channels->set_pixel_aspect(edl->get_aspect_ratio(), 1);
+		output_channels->set_pixel_aspect(edl->get_sample_aspect_ratio());
 		output->get_canvas()->draw_vframe(output_channels,
 			round(canvas_x1),
 			round(canvas_y1),

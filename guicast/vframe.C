@@ -806,16 +806,9 @@ double VFrame::get_pixel_aspect()
 	return pixel_aspect;
 }
 
-void VFrame::set_pixel_aspect(double aspect, int frame_aspect)
+void VFrame::set_pixel_aspect(double aspect)
 {
-	double asp;
-
-	if(frame_aspect)
-	{
-		pixel_aspect = aspect / ((double)w / h);
-	}
-	else
-		pixel_aspect = aspect;
+	pixel_aspect = aspect;
 }
 
 void VFrame::clear_pts(void)

@@ -130,24 +130,26 @@ void Canvas::clear_canvas()
 }
 
 // Get dimensions given a zoom
-void Canvas::calculate_sizes(double aspect_ratio,
+void Canvas::calculate_sizes(EDL *edl,
 	int output_w, 
 	int output_h, 
 	double zoom,
 	int &w, 
 	int &h)
 {
-// Horizontal stretch
-	if((double)output_w / output_h <= aspect_ratio)
+	double aspect = edl->session->sample_aspect_ratio *
+		edl->session->output_w / edl->session->output_h;
+	// Horizontal stretch
+	if((double)output_w / output_h <= aspect)
 	{
-		w = round((double)output_h * aspect_ratio * zoom);
-		h = round((double)output_h * zoom);
+		w = output_h * aspect * zoom;
+		h = output_h * zoom;
 	}
 	else
-// Vertical stretch
+	// Vertical stretch
 	{
-		h = round((double)output_w / aspect_ratio * zoom);
-		w = round((double)output_w * zoom);
+		h = output_w / aspect * zoom;
+		w = output_w * zoom;
 	}
 }
 
@@ -374,14 +376,16 @@ void Canvas::get_transfers(EDL *edl,
 // Use EDL aspect ratio to shrink one of the canvas dimensions
 			double out_w = canvas_x2 - canvas_x1;
 			double out_h = canvas_y2 - canvas_y1;
-			if(out_w / out_h > edl->get_aspect_ratio())
+			double aspect = edl->get_sample_aspect_ratio() *
+				edl->session->output_w / edl->session->output_h;
+			if(out_w / out_h > aspect)
 			{
-				out_w = out_h * edl->get_aspect_ratio();
+				out_w = round(out_h * aspect);
 				canvas_x1 = canvas_w / 2 - out_w / 2;
 			}
 			else
 			{
-				out_h = out_w / edl->get_aspect_ratio();
+				out_h = round(out_w / aspect);
 				canvas_y1 = canvas_h / 2 - out_h / 2;
 			}
 			canvas_x2 = canvas_x1 + out_w;

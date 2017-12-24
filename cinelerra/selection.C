@@ -250,7 +250,7 @@ AspectRatioSelection::AspectRatioSelection(int x1, int y1, int x2, int y2,
 	this->frame_w = frame_w;
 	this->frame_h = frame_h;
 	this->aspect = aspect;
-	aspect_to_wh(&waspect, &haspect, *aspect);
+	aspect_to_wh(&waspect, &haspect, *aspect, *frame_w, *frame_h);
 }
 
 void AspectRatioSelection::update_auto(double value1, double value2)
@@ -266,28 +266,33 @@ void AspectRatioSelection::update_auto(double value1, double value2)
 	}
 	firstbox->update(*doublevalue2);
 	BC_TextBox::update(*doublevalue);
-	*aspect = *doublevalue2 / *doublevalue;
+	*aspect = (*doublevalue2 / *doublevalue) * (*frame_h) / (*frame_w);
+}
+
+void AspectRatioSelection::update_sar(double sample_aspect_ratio)
+{
+	aspect_to_wh(&waspect, &haspect, *aspect, *frame_w, *frame_h);
+	update_auto(waspect, haspect);
 }
 
 void AspectRatioSelection::auto_aspect_ratio(double *aspect_w, double *aspect_h,
 	int width, int height)
 {
-
 	if(!width || !height) return;
 
-	aspect_to_wh(aspect_w, aspect_h, (double)width / height);
+	aspect_to_wh(aspect_w, aspect_h, (double)width / height, width, height);
 }
 
 void AspectRatioSelection::aspect_to_wh(double *aspect_w, double *aspect_h,
-	double aspect_ratio)
+	double sample_aspect_ratio, int frame_w, int frame_h)
 {
 	int denominator;
-	const struct selection_2double *dasp;
+	double aspect = frame_w * sample_aspect_ratio / frame_h;
 
-	if(aspect_ratio < 0)
+	if(sample_aspect_ratio < 0)
 		return;
 
-	if(ASPEQU(aspect_ratio, 1.0))
+	if(ASPEQU(aspect, 1.0))
 	{
 		*aspect_w = *aspect_h = 1.0;
 		return;
@@ -297,9 +302,9 @@ void AspectRatioSelection::aspect_to_wh(double *aspect_w, double *aspect_h,
 	{
 		for(denominator = 1;
 			denominator < 100 &&
-				!ASPEQU(aspect_ratio * denominator, round(aspect_ratio * denominator));
+				!ASPEQU(aspect * denominator, round(aspect * denominator));
 			denominator++);
-		*aspect_w = denominator * aspect_ratio;
+		*aspect_w = denominator * aspect;
 		*aspect_h = denominator;
 		defined_aspect(aspect_w, aspect_h);
 	}
@@ -321,15 +326,12 @@ int AspectRatioSelection::defined_aspect(double *aw, double *ah)
 	return 0;
 }
 
-int AspectRatioSelection::limits(double *aspect, int w, int h)
+int AspectRatioSelection::limits(double *sample_aspect)
 {
-	if(*aspect > MIN_ASPECT_RATIO && *aspect < MAX_ASPECT_RATIO)
+	if(*sample_aspect > MIN_ASPECT_RATIO && *sample_aspect < MAX_ASPECT_RATIO)
 		return 0;
 
-	if(w > 0 && h > 0)
-		*aspect = (double) w / h;
-	else
-		*aspect = 1.0;
+	*sample_aspect = 1.0;
 
 	return 1;
 }

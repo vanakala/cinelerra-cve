@@ -145,9 +145,9 @@ void MWindow::asset_to_size()
 				"it can't be rendered by OpenGL."));
 		}
 
-		edl->session->aspect_ratio =
-			session->drag_assets->values[0]->aspect_ratio;
-		AspectRatioSelection::limits(&edl->session->aspect_ratio, w, h);
+		edl->session->sample_aspect_ratio =
+			session->drag_assets->values[0]->sample_aspect_ratio;
+		AspectRatioSelection::limits(&edl->session->sample_aspect_ratio);
 		save_backup();
 
 		undo->update_undo(_("asset to size"), LOAD_ALL);

@@ -598,7 +598,7 @@ void VWindowCanvas::zoom_resize_window(double percentage)
 	if(!edl) edl = mwindow->edl;
 
 	int canvas_w, canvas_h;
-	calculate_sizes(edl->get_aspect_ratio(), 
+	calculate_sizes(edl,
 		edl->session->output_w, 
 		edl->session->output_h, 
 		percentage,

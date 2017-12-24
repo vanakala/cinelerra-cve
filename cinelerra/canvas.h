@@ -59,7 +59,7 @@ public:
 	virtual ~Canvas();
 
 // Get dimensions given a zoom
-	void calculate_sizes(double aspect_ratio,
+	void calculate_sizes(EDL *edl,
 		int output_w, 
 		int output_h, 
 		double zoom,

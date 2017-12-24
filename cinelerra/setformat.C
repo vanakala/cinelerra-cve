@@ -140,8 +140,7 @@ void SetFormatThread::apply_changes()
 	if(FrameSizeSelection::limits(&dimension[0], &dimension[1]) < 0)
 		errorbox(_("Frame size is out of limits (%d..%dx%d..%d).\nCorrection applied."),
 			MIN_FRAME_WIDTH, MAX_FRAME_WIDTH, MIN_FRAME_HEIGHT, MAX_FRAME_WIDTH);
-	AspectRatioSelection::limits(&new_settings->session->aspect_ratio,
-		dimension[0], dimension[1]);
+	AspectRatioSelection::limits(&new_settings->session->sample_aspect_ratio);
 
 	mwindow->edl->copy_session(new_settings, 1);
 	mwindow->edl->session->output_w = dimension[0];
@@ -195,7 +194,7 @@ void SetFormatThread::update()
 	window->ratio[0]->update(ratio[0]);
 	ratio[1] = (double)dimension[1] / orig_dimension[1];
 	window->ratio[1]->update(ratio[1]);
-	window->aspectratio_selection->update_auto(new_settings->session->aspect_ratio, 1.0);
+	window->aspectratio_selection->update_sar(new_settings->session->sample_aspect_ratio);
 	window->interlace_selection->update(new_settings->session->interlace_mode);
 	window->cmodel_selection->update(new_settings->session->color_model);
 
@@ -360,9 +359,9 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 	x = mwindow->theme->setformat_x3;
 	add_subwindow(aspectratio_selection = new AspectRatioSelection(x, y,
 		x + SELECTION_TB_WIDTH + 15, y, this,
-		&thread->new_settings->session->aspect_ratio,
+		&thread->new_settings->session->sample_aspect_ratio,
 		&thread->dimension[0], &thread->dimension[1]));
-	aspectratio_selection->update_auto(thread->new_settings->session->aspect_ratio, 1.0);
+	aspectratio_selection->update_sar(thread->new_settings->session->sample_aspect_ratio);
 	y += mwindow->theme->setformat_margin;
 
 // --------------------

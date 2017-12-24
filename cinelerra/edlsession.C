@@ -27,6 +27,7 @@
 #include "bchash.h"
 #include "bcsignals.h"
 #include "bcresources.h"
+#include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -75,6 +76,7 @@ EDLSession::EDLSession(EDL *edl)
 	output_w = -1000;
 	output_h = -1000;
 	video_write_length = -1000;
+	sample_aspect_ratio = 1;
 	color_model = -100;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	record_speed = 24;
@@ -129,7 +131,7 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 void EDLSession::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
-	double aspect_w, aspect_h;
+	double aspect_w, aspect_h, aspect_ratio;
 
 // Default channel positions
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -211,6 +213,9 @@ void EDLSession::load_defaults(BC_Hash *defaults)
 	max_meter_db = defaults->get("MAX_METER_DB", 6);
 	output_w = defaults->get("OUTPUTW", output_w);
 	output_h = defaults->get("OUTPUTH", output_h);
+	if(!EQUIV(aspect_ratio, 1.0))
+		sample_aspect_ratio = aspect_ratio * output_h / output_w;
+	sample_aspect_ratio = defaults->get("SAMPLEASPECT", sample_aspect_ratio);
 	playback_buffer = defaults->get("PLAYBACK_BUFFER", 4096);
 	playback_software_position = defaults->get("PLAYBACK_SOFTWARE_POSITION", 0);
 	delete playback_config;
@@ -277,9 +282,10 @@ void EDLSession::save_defaults(BC_Hash *defaults)
 	auto_conf->save_defaults(defaults);
 	defaults->update("ACTUAL_FRAME_RATE", actual_frame_rate);
 	defaults->update("ASSETLIST_FORMAT", assetlist_format);
+	defaults->update("SAMPLEASPECT", sample_aspect_ratio);
 	defaults->delete_key("ASPECTW");
 	defaults->delete_key("ASPECTH");
-	defaults->update("ASPECTRATIO", aspect_ratio);
+	defaults->delete_key("ASPECTRATIO");
 	defaults->update("ATRACKS", audio_tracks);
 	defaults->update("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	defaults->update("BRENDER_START", brender_start);
@@ -387,7 +393,7 @@ void EDLSession::boundaries()
 	SampleRateSelection::limits(&sample_rate);
 	FrameRateSelection::limits(&frame_rate);
 	FrameSizeSelection::limits(&output_w, &output_h);
-	AspectRatioSelection::limits(&aspect_ratio, output_w, output_h);
+	AspectRatioSelection::limits(&sample_aspect_ratio);
 
 	Workarounds::clamp(crop_x1, 0, output_w);
 	Workarounds::clamp(crop_x2, 0, output_w);
@@ -407,7 +413,7 @@ void EDLSession::boundaries()
 void EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_flags)
 {
 	char string[1024];
-	double aspect_w, aspect_h;
+	double aspect_w, aspect_h, aspect_ratio;
 
 	if(append_mode)
 		return;
@@ -435,6 +441,9 @@ void EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load
 	aspect_h = file->tag.get_property("ASPECTH", aspect_h);
 	aspect_ratio = aspect_w / aspect_h;
 	aspect_ratio = file->tag.get_property("ASPECTRATIO", aspect_ratio);
+	if(!EQUIV(aspect_ratio, 1.0))
+		sample_aspect_ratio = aspect_ratio * output_h / output_w;
+	sample_aspect_ratio = file->tag.get_property("SAMPLEASPECT", sample_aspect_ratio);
 }
 
 void EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_flags)
@@ -617,7 +626,7 @@ void EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("FRAMES_PER_FOOT", frames_per_foot);
 	file->tag.set_property("OUTPUTW", output_w);
 	file->tag.set_property("OUTPUTH", output_h);
-	file->tag.set_property("ASPECTRATIO", aspect_ratio);
+	file->tag.set_property("SAMPLEASPECT", sample_aspect_ratio);
 	file->append_tag();
 	file->tag.set_title("/VIDEO");
 	file->append_tag();
@@ -661,7 +670,7 @@ void EDLSession::copy(EDLSession *session)
 	}
 	assetlist_format = session->assetlist_format;
 	auto_conf->copy_from(session->auto_conf);
-	aspect_ratio = session->aspect_ratio;
+	sample_aspect_ratio = session->sample_aspect_ratio;
 	audio_channels = session->audio_channels;
 	audio_tracks = session->audio_tracks;
 	autos_follow_edits = session->autos_follow_edits;
@@ -783,7 +792,7 @@ void EDLSession::dump(int indent)
 	indent += 2;
 	printf("%*saudio: tracks %d channels %d sample_rate %d\n",
 		indent, "", audio_tracks, audio_channels, sample_rate);
-	printf("%*svideo: tracks %d framerate %.2f output %dx%d aspect %.3f '%s'\n",
-		indent, "", video_tracks, frame_rate, output_w, output_h, aspect_ratio,
+	printf("%*svideo: tracks %d framerate %.2f output %dx%d SAR %.3f '%s'\n",
+		indent, "", video_tracks, frame_rate, output_w, output_h, sample_aspect_ratio,
 		ColorModels::name(color_model));
 }

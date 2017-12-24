@@ -420,8 +420,9 @@ erret:
 	double row_factor, col_factor;
 	double row_offset = 0.5, col_offset = 0.5;	// for rounding
 
-	if(preserve_aspect && aspect_ratio != 0)
+	if(preserve_aspect && sample_aspect_ratio)
 	{
+		double aspect_ratio = sample_aspect_ratio * frame_width / frame_height;
 		row_factor = (height-1);
 		col_factor = (width-1) / aspect_ratio;
 		if (row_factor < col_factor)

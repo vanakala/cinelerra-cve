@@ -76,8 +76,8 @@ public:
 	int asset_columns[ASSET_COLUMNS];
 	AutoConf *auto_conf;
 	float actual_frame_rate;
-// Aspect ratio for video
-	double aspect_ratio;
+// Video sample aspect ratio
+	double sample_aspect_ratio;
 	int audio_channels;
 	int audio_tracks;
 // automation follows edits during editing

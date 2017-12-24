@@ -260,7 +260,7 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 
 	add_subwindow(aspectratio_selection = new AspectRatioSelection(x1, y,
 		x1 + SELECTION_TB_WIDTH + 10, y,
-		this, &new_edl->session->aspect_ratio,
+		this, &new_edl->session->sample_aspect_ratio,
 		&new_edl->session->output_w, &new_edl->session->output_h));
 
 	y += aspectratio_selection->get_h() + 5;
@@ -300,7 +300,7 @@ void NewWindow::update()
 	frame_rate->update((float)new_edl->session->frame_rate);
 	framesize_selection->update(new_edl->session->output_w,
 		new_edl->session->output_h);
-	aspectratio_selection->update_auto(new_edl->session->aspect_ratio, 1.0);
+	aspectratio_selection->update_sar(new_edl->session->sample_aspect_ratio);
 	interlace_selection->update(new_edl->session->interlace_mode);
 	cmodel_selection->update(new_edl->session->color_model);
 }

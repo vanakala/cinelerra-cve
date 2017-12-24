@@ -116,7 +116,7 @@ public:
 	int project_color_model;
 
 // Aspect ratio
-	double aspect_ratio;
+	double sample_aspect_ratio;
 
 // Tempo
 	VFrame *temp;

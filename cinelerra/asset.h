@@ -58,7 +58,7 @@ struct streamdesc
 	int height;       // frame height
 	samplenum length; // length in frames or samples
 	double frame_rate;
-	double aspect_ratio;
+	double sample_aspect_ratio;
 	int options;
 	char codec[MAX_LEN_CODECNAME];
 };
@@ -232,8 +232,8 @@ public:
 // Video is a single image
 	int single_image;
 
-// Set by package render during file creation. -1 means square pixels.
-	double aspect_ratio;
+// Pixel aspect ratio
+	double sample_aspect_ratio;
 
 // for the interlace mode 
 	int interlace_autofixoption;
