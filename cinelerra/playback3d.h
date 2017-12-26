@@ -38,22 +38,19 @@
 #include "vframe.inc"
 
 
-
-
-
 // Macros for useful fragment shaders
 #define YUV_TO_RGB_FRAG(PIXEL) \
 	PIXEL ".gb -= vec2(0.5, 0.5);\n" \
 	PIXEL ".rgb = mat3(\n" \
-	"	1,	 1,		1, \n" \
-	"	0, 	 -0.34414, 1.77200, \n" \
-	"	1.40200, -0.71414, 0) * " PIXEL ".rgb;\n"
+	"1,       1,        1, \n" \
+	"0,       -0.34414, 1.77200, \n" \
+	"1.40200, -0.71414, 0) * " PIXEL ".rgb;\n"
 
 #define RGB_TO_YUV_FRAG(PIXEL) \
 	PIXEL ".rgb = mat3(\n" \
-	"	0.29900, -0.16874, 0.50000, \n" \
-	"	0.58700, -0.33126, -0.41869, \n" \
-	"	0.11400, 0.50000,  -0.08131) * " PIXEL ".rgb;\n" \
+	" 0.29900, -0.16874,  0.50000, \n" \
+	" 0.58700, -0.33126, -0.41869, \n" \
+	" 0.11400,  0.50000, -0.08131) * " PIXEL ".rgb;\n" \
 	PIXEL ".gb += vec2(0.5, 0.5);\n"
 
 #define RGB_TO_HSV_FRAG(PIXEL) \
@@ -71,23 +68,23 @@
 	"delta = max - min;\n" \
 	"if(max != 0.0 && delta != 0.0)\n" \
 	"{\n" \
-	"	s = delta / max;\n" \
-	"	if(r == max)\n" \
-	"		h = (g - b) / delta;\n" \
-	"	else \n" \
-	"	if(g == max)\n" \
-	"		h = 2.0 + (b - r) / delta;\n" \
-	"	else\n" \
-	"		h = 4.0 + (r - g) / delta;\n" \
+		"s = delta / max;\n" \
+		"if(r == max)\n" \
+			"h = (g - b) / delta;\n" \
+		"else \n" \
+		"if(g == max)\n" \
+		"h = 2.0 + (b - r) / delta;\n" \
+		"else\n" \
+			"h = 4.0 + (r - g) / delta;\n" \
 	"\n" \
-	"	h *= 60.0;\n" \
-	"	if(h < 0.0)\n" \
-	"	h += 360.0;\n" \
+		"h *= 60.0;\n" \
+		"if(h < 0.0)\n" \
+		"h += 360.0;\n" \
 	"}\n" \
 	"else\n"  \
 	"{\n" \
 		"s = 0.0;\n" \
-	"	h = -1.0;\n" \
+		"h = -1.0;\n" \
 	"}\n" \
 	"" PIXEL ".r = h;\n" \
 	"" PIXEL ".g = s;\n" \
@@ -110,60 +107,59 @@
 	"}\n" \
 	"else\n" \
 	"{\n" \
-	"	h /= 60.0;\n" \
-	"	i = int(h);\n" \
-	"	f = h - float(i);\n" \
-	"	p = v * (1.0 - s);\n" \
-	"	q = v * (1.0 - s * f);\n" \
-	"	t = v * (1.0 - s * (1.0 - f));\n" \
+		"h /= 60.0;\n" \
+		"i = int(h);\n" \
+		"f = h - float(i);\n" \
+		"p = v * (1.0 - s);\n" \
+		"q = v * (1.0 - s * f);\n" \
+		"t = v * (1.0 - s * (1.0 - f));\n" \
 	"\n" \
-	"	if(i == 0)\n" \
-	"	{\n" \
-	"		r = v;\n" \
-	"		g = t;\n" \
-	"	b = p;\n" \
+		"if(i == 0)\n" \
+		"{\n" \
+			"r = v;\n" \
+			"g = t;\n" \
+			"b = p;\n" \
 		"}\n" \
-	"	else\n" \
-	"	if(i == 1)\n" \
-	"	{\n" \
-		"	r = q;\n" \
-		"	g = v;\n" \
-	"		b = p;\n" \
-	"	}\n" \
-	"	else\n" \
-	"	if(i == 2)\n" \
-	"	{\n" \
-	"		r = p;\n" \
-	"		g = v;\n" \
-	"		b = t;\n" \
-	"	}\n" \
-	"	else\n" \
-	"	if(i == 3)\n" \
-	"	{\n" \
-	"		r = p;\n" \
-	"		g = q;\n" \
-	"		b = v;\n" \
-	"	}\n" \
-	"	else\n" \
-	"	if(i == 4)\n" \
-	"	{\n" \
-	"		r = t;\n" \
-	"		g = p;\n" \
-	"		b = v;\n" \
-	"	}\n" \
-	"	else\n" \
-	"	if(i == 5)\n" \
-	"	{\n" \
-	"		r = v;\n" \
-	"		g = p;\n" \
-	"		b = q;\n" \
-	"	}\n" \
+		"else\n" \
+		"if(i == 1)\n" \
+		"{\n" \
+			"r = q;\n" \
+			"g = v;\n" \
+			"b = p;\n" \
+		"}\n" \
+		"else\n" \
+		"if(i == 2)\n" \
+		"{\n" \
+			"r = p;\n" \
+			"g = v;\n" \
+			"b = t;\n" \
+		"}\n" \
+		"else\n" \
+		"if(i == 3)\n" \
+		"{\n" \
+			"r = p;\n" \
+			"g = q;\n" \
+			"b = v;\n" \
+		"}\n" \
+		"else\n" \
+		"if(i == 4)\n" \
+		"{\n" \
+			"r = t;\n" \
+			"g = p;\n" \
+			"b = v;\n" \
+		"}\n" \
+		"else\n" \
+		"if(i == 5)\n" \
+		"{\n" \
+			"r = v;\n" \
+			"g = p;\n" \
+			"b = q;\n" \
+		"}\n" \
 	"}\n" \
 	"" PIXEL ".r = r;\n" \
 	"" PIXEL ".g = g;\n" \
 	"" PIXEL ".b = b;\n" \
 	"}\n"
-
 
 
 class Playback3DCommand : public BC_SynchronousCommand
@@ -217,7 +213,6 @@ class Playback3D : public BC_Synchronous
 {
 public:
 	Playback3D(MWindow *mwindow);
-	~Playback3D();
 
 	BC_SynchronousCommand* new_command();
 	void handle_command(BC_SynchronousCommand *command);
@@ -254,7 +249,6 @@ public:
 		MaskAutos *keyframe_set, 
 		MaskAuto *keyframe);
 
-
 // Overlay a virtual node on the framebuffer
 	void overlay(Canvas *canvas,
 		VFrame *input, 
@@ -271,7 +265,6 @@ public:
 		int interpolation_type,
 // supplied if rendering single frame to PBuffer.
 		VFrame *output = 0);
-
 
 	int run_plugin(Canvas *canvas, PluginClient *client);
 
