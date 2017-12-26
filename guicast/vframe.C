@@ -1058,6 +1058,8 @@ void VFrame::calc_minmaxfl(float *buf, int pixlen,
 
 void VFrame::dump(int minmax)
 {
+	const char *st;
+
 	printf("VFrame %p dump\n", this);
 	printf("    pts %.3f, duration %.3f src_pts %.3f frame %d layer %d\n", 
 		pts, duration, source_pts, frame_number, layer);
@@ -1067,6 +1069,23 @@ void VFrame::dump(int minmax)
 		y, u, v, shared ? " shared" : "");
 	printf("    compressed %d, allocated %d pix apect %.2f\n",
 		compressed_size, compressed_allocated, pixel_aspect);
+	switch(opengl_state)
+	{
+	case RAM:
+		st = "RAM";
+		break;
+	case TEXTURE:
+		st = "TEXTURE";
+		break;
+	case SCREEN:
+		st = "SCREEN";
+		break;
+	default:
+		st = "UNKNOWN";
+		break;
+	}
+	printf("    OpenGL state %s pbuffer %p texture %p\n",
+		st, pbuffer, texture);
 	if(minmax)
 	{
 		int min, max;
