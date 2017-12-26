@@ -86,8 +86,6 @@ public:
 	int first_frame;
 
 private:
-	Timer timer;
-
 // for getting actual framerate
 	int framerate_counter;
 	Timer framerate_timer;

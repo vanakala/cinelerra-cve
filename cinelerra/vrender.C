@@ -318,7 +318,7 @@ void VRender::run()
 				if(start_pts > current_pts)
 				{
 					int64_t delay_time = (int64_t)((start_pts - current_pts) * 1000);
-					timer.delay(delay_time);
+					Timer::delay(delay_time);
 				}
 // Flash frame now.
 				flash_output();
