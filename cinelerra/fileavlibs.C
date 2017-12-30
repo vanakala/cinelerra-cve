@@ -1333,7 +1333,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				{
 					if(!fresh_open)
 					{
-						printf(_("Audio decoding failed when skipping"));
+						printf(_("Audio decoding failed when skipping.\n"));
 						av_free_packet(&pkt);
 						return res;
 					}
