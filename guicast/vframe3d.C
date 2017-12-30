@@ -222,6 +222,12 @@ void VFrame::create_pbuffer(void)
 	}
 }
 
+void VFrame::delete_pbuffer()
+{
+	delete pbuffer;
+	pbuffer = 0;
+}
+
 int VFrame::enable_opengl(void)
 {
 	create_pbuffer();

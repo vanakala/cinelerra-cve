@@ -185,6 +185,10 @@ public:
 // If no textures exist, textures are created.
 // If the textures already exist, they are reused.
 // Textures are resized to match the current dimensions.
+
+// Removes pbuffer
+	void delete_pbuffer();
+
 // Must be called from a synchronous opengl thread after enable_opengl.
 	void to_texture(void);
 
