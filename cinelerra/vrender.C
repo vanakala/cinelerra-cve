@@ -88,8 +88,10 @@ Module* VRender::new_module(Track *track)
 
 int VRender::flash_output()
 {
-	flashed_pts = video_out->get_pts();
+	if(PTSEQU(video_out->get_pts(), flashed_pts))
+		return 0;
 
+	flashed_pts = video_out->get_pts();
 	return renderengine->video->write_buffer(video_out, renderengine->edl);
 }
 
