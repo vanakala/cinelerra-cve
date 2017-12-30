@@ -166,7 +166,10 @@ class Playback3DCommand : public BC_SynchronousCommand
 {
 public:
 	Playback3DCommand();
+
 	void copy_from(BC_SynchronousCommand *command);
+	void dump(int indent = 0);
+	const char *name(int cmd);
 
 // Extra commands
 	enum

@@ -35,6 +35,7 @@
 #include "playback3d.h"
 #include "pluginclient.h"
 #include "pluginvclient.h"
+#include "vpatchgui.h"
 #include "vframe.h"
 
 #if defined(HAVE_CONFIG_H)
@@ -273,6 +274,74 @@ void Playback3DCommand::copy_from(BC_SynchronousCommand *command)
 	BC_SynchronousCommand::copy_from(command);
 }
 
+void Playback3DCommand::dump(int indent)
+{
+	printf("%*sPlayback3DCommand %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*scommand %s result %d frame %p frame_return %p\n", indent, "",
+		name(command), result, frame, frame_return);
+	printf("%*scanvas %p [%d,%d] cleared %d cmodel %s\n", indent, "",
+		canvas, w, h, is_cleared, ColorModels::name(colormodel));
+	printf("%*swindow_id %d display %p win %#lx\n", indent, "",
+		window_id, display, win);
+#ifdef HAVE_GL
+	printf("%*sglx_context %p gl_pixmap %#lx\n", indent, "",
+		gl_context, gl_pixmap);
+#endif
+	printf("%*sin: (%.1f,%.1f)..(%.1f,%.1f) out:(%.1f,%.1f)..(%.1f,%.1f)\n", indent, "",
+		in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
+	printf("%*salpha %.2f mode '%s' interpolation %d input %p position %d\n", indent, "",
+		alpha, VModePatch::mode_to_text(mode), interpolation_type,
+		input, start_position_project);
+	printf("%*skeyframe_set %p keyframe %p plugin %p\n", indent, "",
+		keyframe_set, keyframe, plugin_client);
+}
+
+const char *Playback3DCommand::name(int cmd)
+{
+	switch(cmd)
+	{
+	case NONE:
+		return "NONE";
+
+	case QUIT:
+		return "QUIT";
+
+	case DELETE_WINDOW:
+		return "DELETE_WINDOW";
+
+	case DELETE_PIXMAP:
+		return "DELETE_PIXMAP";
+
+	case WRITE_BUFFER:
+		return "WRITE_BUFFER";
+
+	case CLEAR_OUTPUT:
+		return "CLEAR_OUTPUT";
+
+	case OVERLAY:
+		return "OVERLAY";
+
+	case DO_FADE:
+		return "DO_FADE";
+
+	case DO_MASK:
+		return "DO_MASK";
+
+	case PLUGIN:
+		return "PLUGIN";
+
+	case CLEAR_INPUT:
+		return "CLEAR_INPUT";
+
+	case DO_CAMERA:
+		return "DO_CAMERA";
+
+	case COPY_FROM:
+		return "COPY_FROM";
+	}
+	return "Unknown";
+}
 
 Playback3D::Playback3D(MWindow *mwindow)
  : BC_Synchronous()
