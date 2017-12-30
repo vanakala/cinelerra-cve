@@ -1086,6 +1086,14 @@ void VFrame::dump(int minmax)
 	}
 	printf("    OpenGL state %s pbuffer %p texture %p\n",
 		st, pbuffer, texture);
+	if(texture)
+		printf("      texture: winID %d textId %d [%d,%d] %s\n",
+			texture->window_id, texture->texture_id,
+			texture->texture_w, texture->texture_h,
+			ColorModels::name(texture->colormodel));
+	if(pbuffer)
+		printf("      pbuffer: winId %d [%d,%d]\n", pbuffer->window_id,
+			pbuffer->w, pbuffer->h);
 	if(minmax)
 	{
 		int min, max;
