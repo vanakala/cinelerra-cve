@@ -231,6 +231,18 @@ Playback3DCommand::Playback3DCommand()
  : BC_SynchronousCommand()
 {
 	canvas = 0;
+	in_x1 = in_y1 = in_x2 = in_y2 = 0;
+	out_x1 = out_y1 = out_x2 = out_y2 = 0;
+	alpha = 0;
+	mode = 0;
+	interpolation_type = 0;
+	input = 0;
+	want_texture = 0;
+	start_position_project = 0;
+	keyframe_set = 0;
+	keyframe = 0;
+	plugin_client = 0;
+	is_cleared = 0;
 }
 
 void Playback3DCommand::copy_from(BC_SynchronousCommand *command)
