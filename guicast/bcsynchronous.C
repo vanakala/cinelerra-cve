@@ -80,6 +80,15 @@ BC_SynchronousCommand::BC_SynchronousCommand()
 	frame = 0;
 	frame_return = 0;
 	result = 0;
+	w = 0;
+	h = 0;
+	window_id = 0;
+	display = 0;
+	win = 0;
+#ifdef HAVE_GL
+	gl_context = 0;
+	gl_pixmap = 0;
+#endif
 	command_done = new Condition(0, "BC_SynchronousCommand::command_done", 0);
 }
 
