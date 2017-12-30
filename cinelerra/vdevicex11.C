@@ -63,8 +63,23 @@ VDeviceX11::~VDeviceX11()
 {
 	if(output && output_frame)
 	{
+		int is_opengl = device->out_config->driver == PLAYBACK_X11_GL &&
+			output_frame->get_opengl_state() == VFrame::SCREEN;
+		if(is_opengl)
+		{
+			output->lock_canvas("VDeviceX11::~VDeviceX11");
+			output->unlock_canvas();
+			output->mwindow->playback_3d->copy_from(output,
+				output_frame,
+				output_frame,
+				0);
+		}
+
 // Use our output frame buffer as the canvas's frame buffer.
 		output->lock_canvas("VDeviceX11::~VDeviceX11");
+
+		if(is_opengl)
+			output_frame->delete_pbuffer();
 
 		if(!device->single_frame)
 			output->stop_video();
@@ -249,7 +264,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 		canvas_y1, 
 		canvas_x2, 
 		canvas_y2);
-
 // Convert colormodel
 	if(bitmap)
 	{
@@ -293,7 +307,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 // Draw output frame directly.  Not used for compositing.
 		output->unlock_canvas();
 		output->mwindow->playback_3d->write_buffer(output,
-			output_frame,
+			output_channels,
 			output_x1,
 			output_y1,
 			output_x2,
