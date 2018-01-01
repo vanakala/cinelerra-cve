@@ -24,6 +24,35 @@
 #include "bcsynchronous.h"
 #include "bcwindowbase.h"
 
+// You're supposed to try different configurations of decreasing overhead
+// until one works.
+// In reality, only a very specific configuration works at all.
+#define TOTAL_CONFIGS 1
+static int framebuffer_attributes[] =
+{
+	GLX_RENDER_TYPE, GLX_RGBA_BIT,
+	GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT | GLX_WINDOW_BIT,
+	GLX_DOUBLEBUFFER, False,
+	GLX_DEPTH_SIZE, 1,
+	GLX_ACCUM_RED_SIZE, 1,
+	GLX_ACCUM_GREEN_SIZE, 1,
+	GLX_ACCUM_BLUE_SIZE, 1,
+	GLX_ACCUM_ALPHA_SIZE, 1,
+	GLX_RED_SIZE, 8,
+	GLX_GREEN_SIZE, 8,
+	GLX_BLUE_SIZE, 8,
+	GLX_ALPHA_SIZE, 8,
+	None
+};
+
+static int pbuffer_attributes[] =
+{
+	GLX_PBUFFER_WIDTH, 0,
+	GLX_PBUFFER_HEIGHT, 0,
+	GLX_LARGEST_PBUFFER, False,
+	GLX_PRESERVED_CONTENTS, True,
+	None
+};
 
 BC_PBuffer::BC_PBuffer(int w, int h)
 {
@@ -71,35 +100,6 @@ void BC_PBuffer::new_pbuffer(int w, int h)
 			return;
 		}
 
-// You're supposed to try different configurations of decreasing overhead 
-// until one works.
-// In reality, only a very specific configuration works at all.
-#define TOTAL_CONFIGS 1
-		static int framebuffer_attributes[] = 
-		{
-			GLX_RENDER_TYPE, GLX_RGBA_BIT,
-			GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT | GLX_WINDOW_BIT,
-			GLX_DOUBLEBUFFER, False,
-			GLX_DEPTH_SIZE, 1,
-			GLX_ACCUM_RED_SIZE, 1,
-			GLX_ACCUM_GREEN_SIZE, 1,
-			GLX_ACCUM_BLUE_SIZE, 1,
-			GLX_ACCUM_ALPHA_SIZE, 1,
-			GLX_RED_SIZE, 8,
-			GLX_GREEN_SIZE, 8,
-			GLX_BLUE_SIZE, 8,
-			GLX_ALPHA_SIZE, 8,
-			None
-		};
-
-		static int pbuffer_attributes[] = 
-		{
-			GLX_PBUFFER_WIDTH, 0,
-			GLX_PBUFFER_HEIGHT, 0,
-			GLX_LARGEST_PBUFFER, False,
-			GLX_PRESERVED_CONTENTS, True,
-			None
-		};
 
 		pbuffer_attributes[1] = w;
 		pbuffer_attributes[3] = h;
