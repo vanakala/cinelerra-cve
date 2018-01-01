@@ -326,6 +326,8 @@ public:
 	static size_t memory_size;
 // Interpolation method for scaling
 	static int interpolation_method;
+// OpenGL version strings (version, vendor, renderer)
+	static const char *OpenGLStrings[];
 
 private:
 // Test for availability of shared memory pixmaps

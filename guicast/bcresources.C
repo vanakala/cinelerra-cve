@@ -165,6 +165,7 @@ HashCache BC_Resources::hash_cache;
 char BC_Resources::working_directory[BCTEXTLEN];
 TmpFrameCache BC_Resources::tmpframes;
 int BC_Resources::interpolation_method = NEAREST_NEIGHBOR;
+const char *BC_Resources::OpenGLStrings[3];
 
 BC_Resources::BC_Resources()
 {

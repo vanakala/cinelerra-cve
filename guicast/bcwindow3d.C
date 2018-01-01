@@ -60,7 +60,19 @@ int BC_WindowBase::enable_opengl()
 // Make the front buffer's context current.  Pixmaps don't work.
 	get_synchronous()->current_window = this;
 	if(glXMakeCurrent(top_level->display, win, gl_win_context))
+	{
+		if(!BC_Resources::OpenGLStrings[0])
+		{
+			const char *string;
+			if(string = (const char*)glGetString(GL_VERSION))
+				BC_Resources::OpenGLStrings[0] = strdup(string);
+			if(string = (const char*)glGetString(GL_VENDOR))
+				BC_Resources::OpenGLStrings[1] = strdup(string);
+			if(string = (const char*)glGetString(GL_RENDERER))
+				BC_Resources::OpenGLStrings[2] = strdup(string);
+		}
 		return 0;
+	}
 
 	glXDestroyContext(top_level->display, gl_win_context);
 	gl_win_context = 0;

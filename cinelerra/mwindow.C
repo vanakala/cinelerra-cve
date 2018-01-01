@@ -90,6 +90,7 @@
 #include "tracks.h"
 #include "transition.h"
 #include "transportcommand.h"
+#include "vdeviceprefs.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "vplayback.h"
@@ -2062,4 +2063,16 @@ void MWindow::show_program_status()
 	printf(" Frame cache %zu\n", frame_cache->get_memory_usage());
 	printf(" Wave cahce %zu\n", wave_cache->get_memory_usage());
 	printf(" Tmpframes %zuk\n", BC_Resources::tmpframes.get_size());
+	printf(" Output device: %s\n",
+		VDriverMenu::driver_to_string(edl->session->playback_config->vconfig->driver));
+	if(edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	{
+		const char **vs = BC_Resources::OpenGLStrings;
+		if(vs[0])
+			printf("  OpenGl version: %s\n", vs[0]);
+		if(vs[1])
+			printf("  OpenGl vendor: %s\n", vs[1]);
+		if(vs[2])
+			printf("  OpenGl renderer: %s\n", vs[2]);
+	}
 }

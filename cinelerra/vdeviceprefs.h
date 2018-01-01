@@ -126,7 +126,7 @@ public:
 		VDevicePrefs *device_prefs, 
 		int *output);
 
-	const char* driver_to_string(int driver);
+	static const char* driver_to_string(int driver);
 
 	VDevicePrefs *device_prefs;
 	int *output;
