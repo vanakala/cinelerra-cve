@@ -116,7 +116,6 @@ void BC_PBuffer::new_pbuffer(int w, int h)
 			return;
 		}
 
-
 		static int current_config = 0;
 
 		BC_Signals::set_catch_errors();
@@ -161,3 +160,53 @@ int BC_PBuffer::enable_opengl()
 	return 1;
 }
 
+int BC_PBuffer::GetFBConfigAttrib(Display *dpy, int screen,
+	GLXFBConfig config, int attrib)
+{
+#ifdef HAVE_GL
+	int value;
+#if defined(GLX_VERSION_1_3)
+	if(glXGetFBConfigAttrib(dpy, config, attrib, &value))
+#endif
+		value = 0;
+	return value;
+#endif
+}
+
+void BC_PBuffer::dump_FbConfig(Display *dpy, int screen, GLXFBConfig config, int indent)
+{
+#ifdef HAVE_GL
+	printf("%*sFBConfig %p (%#x) dump:\n", indent, "", config,
+		GetFBConfigAttrib(dpy, screen, config, GLX_FBCONFIG_ID));
+	indent += 2;
+	printf("%*sbuffer_size %d level %d doublebuffer %d stereo %d aux_buffers %d\n", indent, "",
+		GetFBConfigAttrib(dpy, screen, config, GLX_BUFFER_SIZE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_LEVEL),
+		GetFBConfigAttrib(dpy, screen, config, GLX_DOUBLEBUFFER),
+		GetFBConfigAttrib(dpy, screen, config, GLX_STEREO),
+		GetFBConfigAttrib(dpy, screen, config, GLX_AUX_BUFFERS));
+	printf("%*scolor sizes: red %d green %d blue %d aplha  %d depth %d stencil %d\n", indent, "",
+		GetFBConfigAttrib(dpy, screen, config, GLX_RED_SIZE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_GREEN_SIZE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_BLUE_SIZE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_ALPHA_SIZE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_DEPTH_SIZE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_STENCIL_SIZE));
+	printf("%*saccum sizes red %d green %d blue %d alpha %d\n", indent, "",
+		GetFBConfigAttrib(dpy, screen, config, GLX_ACCUM_RED_SIZE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_ACCUM_GREEN_SIZE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_ACCUM_BLUE_SIZE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_ACCUM_ALPHA_SIZE));
+	printf("%*ssample buffers %d samples %d drawable_type %d render_type %d\n", indent, "",
+		GetFBConfigAttrib(dpy, screen, config, GLX_SAMPLE_BUFFERS),
+		GetFBConfigAttrib(dpy, screen, config, GLX_SAMPLES),
+		GetFBConfigAttrib(dpy, screen, config, GLX_DRAWABLE_TYPE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_RENDER_TYPE));
+	printf("%*srenderable %d xvisual %#x max: width %d height %d pixels %d\n", indent, "",
+		GetFBConfigAttrib(dpy, screen, config, GLX_X_RENDERABLE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_X_VISUAL_TYPE),
+		GetFBConfigAttrib(dpy, screen, config, GLX_MAX_PBUFFER_WIDTH),
+		GetFBConfigAttrib(dpy, screen, config, GLX_MAX_PBUFFER_HEIGHT),
+		GetFBConfigAttrib(dpy, screen, config, GLX_MAX_PBUFFER_PIXELS));
+#endif
+}

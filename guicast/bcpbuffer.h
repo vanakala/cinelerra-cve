@@ -52,10 +52,15 @@ public:
 #ifdef HAVE_GL
 	GLXPbuffer get_pbuffer();
 #endif
-
+	void dump_FbConfig(Display *dpy, int screen,
+		GLXFBConfig config, int indent = 0);
 private:
 // Called by constructor
 	void new_pbuffer(int w, int h);
+
+// Used by dump_FbConfig
+	int GetFBConfigAttrib(Display *dpy, int screen,
+		GLXFBConfig config, int attrib);
 
 #ifdef HAVE_GL
 	GLXPbuffer pbuffer;
