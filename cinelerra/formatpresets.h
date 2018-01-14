@@ -77,7 +77,6 @@ public:
 // New preset selected
 	virtual int handle_event() { return 0; };
 private:
-	BC_WindowBase *gui_base;
 	struct selection_int *presets_menu;
 	int selection_value;
 	FormatSelection *selection;

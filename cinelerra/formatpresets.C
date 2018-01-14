@@ -109,8 +109,7 @@ struct selection_int InterlaceFixSelection::ilacefix_selection_xml[] =
 
 FormatPresets::FormatPresets(BC_WindowBase* base_gui, int x, int y)
 {
-	gui_base = base_gui;
-	presets_menu = new selection_int[MAX_NUM_PRESETS + 1];
+	presets_menu = new selection_int[MAX_NUM_PRESETS + 2];
 	presets_menu[0].text = N_("User defined");
 	presets_menu[0].value = 0;
 
@@ -119,8 +118,10 @@ FormatPresets::FormatPresets(BC_WindowBase* base_gui, int x, int y)
 		presets_menu[i + 1].text = format_presets[i].name;
 		presets_menu[i + 1].value = i;
 	}
-	gui_base->add_subwindow(new BC_Title(x, y, _("Presets:")));
-	gui_base->add_subwindow(selection = new FormatSelection(x, y + 20, gui_base,
+	presets_menu[MAX_NUM_PRESETS + 1].text = 0;
+	presets_menu[MAX_NUM_PRESETS + 1].value = 0,
+	base_gui->add_subwindow(new BC_Title(x, y, _("Presets:")));
+	base_gui->add_subwindow(selection = new FormatSelection(x, y + 20, base_gui,
 		presets_menu, this));
 }
 
