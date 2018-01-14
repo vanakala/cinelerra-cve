@@ -278,8 +278,8 @@ void Playback3DCommand::dump(int indent)
 {
 	printf("%*sPlayback3DCommand %p dump:\n", indent, "", this);
 	indent += 2;
-	printf("%*scommand %s result %d frame %p frame_return %p\n", indent, "",
-		name(command), result, frame, frame_return);
+	printf("%*scommand %s result %d frame %p frame_return %p input %p\n", indent, "",
+		name(command), result, frame, frame_return, input);
 	printf("%*scanvas %p [%d,%d] cleared %d cmodel %s\n", indent, "",
 		canvas, w, h, is_cleared, ColorModels::name(colormodel));
 	printf("%*swindow_id %d display %p win %#lx\n", indent, "",
@@ -290,9 +290,9 @@ void Playback3DCommand::dump(int indent)
 #endif
 	printf("%*sin: (%.1f,%.1f)..(%.1f,%.1f) out:(%.1f,%.1f)..(%.1f,%.1f)\n", indent, "",
 		in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
-	printf("%*salpha %.2f mode '%s' interpolation %d input %p position %d\n", indent, "",
+	printf("%*salpha %.2f mode '%s' interpolation %d position %d want_texture %d\n", indent, "",
 		alpha, VModePatch::mode_to_text(mode), interpolation_type,
-		input, start_position_project);
+		start_position_project, want_texture);
 	printf("%*skeyframe_set %p keyframe %p plugin %p\n", indent, "",
 		keyframe_set, keyframe, plugin_client);
 }
