@@ -91,44 +91,49 @@ void ResizeTrackThread::run()
 	}
 }
 
+#define TRWIN_INTERVAL 25
+#define TRWIN_BOXLEFT  75
 
 ResizeTrackWindow::ResizeTrackWindow(ResizeTrackThread *thread,
 	int x,
 	int y)
  : BC_Window(MWindow::create_title(N_("Resize Track")),
-		x - 320 / 2,
+		x - 350 / 2,
 		y - get_resources()->ok_images[0]->get_h() + 100 / 2,
-		340,
+		350,
 		get_resources()->ok_images[0]->get_h() + 100,
-		340,
+		350,
 		get_resources()->ok_images[0]->get_h() + 100,
 		0,
 		0,
 		1)
 {
+	const char *mul = "x";
+
 	this->thread = thread;
 
 	x = 10, y = 10;
 
 	add_subwindow(new BC_Title(x, y, _("Size:")));
-	x += 50;
+	x += TRWIN_BOXLEFT;
 
 	add_subwindow(framesize_selection = new SetTrackFrameSize(x, y,
-		x + SELECTION_TB_WIDTH + 25, y,
+		x + SELECTION_TB_WIDTH + TRWIN_INTERVAL, y,
 		this, &thread->w, &thread->h));
 	framesize_selection->update(thread->w, thread->h);
 
 	y += 30;
 	x = 10;
 	add_subwindow(new BC_Title(x, y, _("Scale:")));
-	x += 50;
+	x += TRWIN_BOXLEFT;
 	add_subwindow(w_scale = new ResizeTrackScaleW(this, 
 		thread,
 		x,
 		y));
-	x += 100;
-	add_subwindow(new BC_Title(x, y, _("x")));
-	x += 15;
+	int v = (TRWIN_INTERVAL - get_text_width(MEDIUMFONT, mul, 1)) / 2;
+	x += SELECTION_TB_WIDTH + v;
+	add_subwindow(new BC_Title(x, y, mul));
+	x += TRWIN_INTERVAL - v;
 	add_subwindow(h_scale = new ResizeTrackScaleH(this, 
 		thread,
 		x,
@@ -165,7 +170,7 @@ ResizeTrackScaleW::ResizeTrackScaleW(ResizeTrackWindow *gui,
 	ResizeTrackThread *thread,
 	int x,
 	int y)
- : BC_TextBox(x, y, 90, 1, (float)thread->w_scale)
+ : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, (float)thread->w_scale)
 {
 	this->gui = gui;
 	this->thread = thread;
@@ -182,7 +187,7 @@ ResizeTrackScaleH::ResizeTrackScaleH(ResizeTrackWindow *gui,
 	ResizeTrackThread *thread,
 	int x,
 	int y)
- : BC_TextBox(x, y, 90, 1, (float)thread->h_scale)
+ : BC_TextBox(x, y, SELECTION_TB_WIDTH, 1, (float)thread->h_scale)
 {
 	this->gui = gui;
 	this->thread = thread;
