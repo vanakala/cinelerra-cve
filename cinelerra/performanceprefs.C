@@ -153,10 +153,11 @@ void PerformancePrefs::show()
 		x + xmargin4, 
 		y - 5));
 
-#define MASTER_NODE_FRAMERATE_TEXT "Master node framerate: %0.3f"
-	sprintf(string, _(MASTER_NODE_FRAMERATE_TEXT), 
-		pwindow->thread->preferences->local_rate);
-	add_subwindow(master_rate = new BC_Title(x + xmargin4, y + node_list->get_h(), string));
+	add_subwindow(win = new BC_Title(x + xmargin4, y + node_list->get_h(),
+		_("Master node framerate:")));
+	add_subwindow(master_rate = new BC_Title(x + xmargin4 + win->get_w() + 6,
+		y + node_list->get_h()));
+	master_rate->update(pwindow->thread->preferences->local_rate);
 
 	y += 25;
 	add_subwindow(edit_node = new PrefsRenderFarmEditNode(pwindow, 
@@ -613,12 +614,7 @@ int PrefsRenderFarmReset::handle_event()
 	pwindow->thread->preferences->reset_rates();
 	subwindow->generate_node_list();
 	subwindow->update_node_list();
-
-	char string[BCTEXTLEN];
-	sprintf(string, 
-		MASTER_NODE_FRAMERATE_TEXT, 
-		pwindow->thread->preferences->local_rate);
-	subwindow->master_rate->update(string);
+	subwindow->master_rate->update(pwindow->thread->preferences->local_rate);
 	subwindow->hot_node = -1;
 	return 1;
 }
