@@ -43,7 +43,10 @@ BC_Title::BC_Title(int x,
 		this->color = color;
 	this->centered = centered;
 	this->fixed_w = fixed_w;
-	strcpy(this->text, text);
+	if(text)
+		strcpy(this->text, text);
+	else
+		this->text[0] = 0;
 	wide_title = 0;
 }
 
