@@ -749,7 +749,9 @@ int PluginServer::gui_open()
 
 void PluginServer::set_use_opengl(int value, VideoDevice *vdevice)
 {
-	this->use_opengl = value;
+// Disable until opengl rewrite is ready
+//	this->use_opengl = value;
+	this->use_opengl = 0;
 	this->vdevice = vdevice;
 }
 
