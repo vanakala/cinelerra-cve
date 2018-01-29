@@ -51,7 +51,7 @@ libguicastcve_la_SOURCES = \
 	bctumble.C \
 	bcwidgetgrid.C \
 	bcwindow.C \
-	bcwindow3d.C \
+	bcwindowGL.C \
 	bcwindowbase.C \
 	bcwindowdraw.C \
 	condition.C \
