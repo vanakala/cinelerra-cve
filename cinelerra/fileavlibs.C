@@ -219,6 +219,7 @@ int FileAVlibs::probe_input(Asset *asset)
 	AVCodec *codec;
 	AVStream *stream;
 	AVCodecContext *decoder_ctx;
+	AVRational usable_fr;
 
 	if(!asset->file_mtime.tv_sec || !asset->file_length)
 	{
@@ -285,7 +286,11 @@ int FileAVlibs::probe_input(Asset *asset)
 					asset->streams[asset->nb_streams].sample_aspect_ratio =
 						av_q2d(decoder_ctx->sample_aspect_ratio);
 				AspectRatioSelection::limits(&asset->streams[asset->nb_streams].sample_aspect_ratio);
-				asset->streams[asset->nb_streams].frame_rate = av_q2d(decoder_ctx->framerate);
+				if(decoder_ctx->framerate.num && decoder_ctx->framerate.den)
+					usable_fr = decoder_ctx->framerate;
+				else
+					usable_fr = av_stream_get_r_frame_rate(stream);
+				asset->streams[asset->nb_streams].frame_rate = av_q2d(usable_fr);
 				strncpy(asset->streams[asset->nb_streams].codec, codec->name, MAX_LEN_CODECNAME);
 					asset->streams[asset->nb_streams].codec[MAX_LEN_CODECNAME - 1] = 0;
 				asset->streams[asset->nb_streams].options = STRDSC_VIDEO;
