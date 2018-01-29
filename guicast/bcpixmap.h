@@ -55,8 +55,6 @@ public:
 
 	void reset();
 	void resize(int w, int h);
-// OpenGL for pixmaps doesn't seem to be accelerated so it has been discontinued.
-	void enable_opengl();
 	void copy_area(int x, int y, int w, int h, int x2, int y2);
 // Draw this pixmap onto the drawable pointed to by pixmap.
 	void write_drawable(Drawable &pixmap,
