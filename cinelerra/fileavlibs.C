@@ -286,7 +286,9 @@ int FileAVlibs::probe_input(Asset *asset)
 					asset->streams[asset->nb_streams].sample_aspect_ratio =
 						av_q2d(decoder_ctx->sample_aspect_ratio);
 				AspectRatioSelection::limits(&asset->streams[asset->nb_streams].sample_aspect_ratio);
-				if(decoder_ctx->framerate.num && decoder_ctx->framerate.den)
+				if(stream->avg_frame_rate.den && stream->avg_frame_rate.num)
+					usable_fr = stream->avg_frame_rate;
+				else if(decoder_ctx->framerate.num && decoder_ctx->framerate.den)
 					usable_fr = decoder_ctx->framerate;
 				else
 					usable_fr = av_stream_get_r_frame_rate(stream);
