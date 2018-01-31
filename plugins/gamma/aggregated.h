@@ -56,7 +56,7 @@ static const char *gamma_rgb_frag =
 	"	pixel.b = pixel.b * gamma_scale * my_pow(pixel.b, gamma_gamma, gamma_max);\n"
 	"	gl_FragColor = pixel;\n"
 	"}\n";
-
+/* FIXIT
 static const char *gamma_yuv_frag = 
 	"uniform float gamma_scale;\n"
 	"uniform float gamma_gamma;\n"
@@ -71,7 +71,7 @@ static const char *gamma_yuv_frag =
 		RGB_TO_YUV_FRAG("pixel")
 	"	gl_FragColor = pixel;\n"
 	"}\n";
-
+	*/
 #define GAMMA_COMPILE(shader_stack, current_shader, aggregate_interpolation) \
 { \
 	if(aggregate_interpolation) \

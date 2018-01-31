@@ -445,6 +445,7 @@ void RadialBlurMain::read_data(KeyFrame *keyframe)
 void RadialBlurMain::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
@@ -512,6 +513,7 @@ void RadialBlurMain::handle_opengl()
 
 	glColor4f(1, 1, 1, 1);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }
 

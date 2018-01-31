@@ -36,7 +36,6 @@
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "playback3d.h"
 #include "plugincolors.h"
 #include "vframe.h"
 #include "workarounds.h"
@@ -652,11 +651,11 @@ void HistogramMain::handle_opengl()
 
 	static const char *get_rgb_frag =
 		"	vec4 pixel = histogram_get_pixel();\n";
-
+/* FIXIT
 	static const char *get_yuv_frag =
 		"	vec4 pixel = histogram_get_pixel();\n"
 			YUV_TO_RGB_FRAG("pixel");
-
+	*/
 #define APPLY_INPUT_CURVE(PIXEL, INPUT_MIN, INPUT_MAX) \
 		"// apply input curve\n" \
 		"	if(" PIXEL " < 0.0)\n" \
@@ -696,12 +695,13 @@ void HistogramMain::handle_opengl()
 	static const char *put_rgb_frag =
 		"	gl_FragColor = pixel;\n"
 		"}\n";
-
+/* FIXIT
 	static const char *put_yuv_frag =
 			RGB_TO_YUV_FRAG("pixel")
 		"	gl_FragColor = pixel;\n"
 		"}\n";
-
+	*/
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -856,6 +856,7 @@ void HistogramMain::handle_opengl()
 	}
 
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }
 

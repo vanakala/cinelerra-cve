@@ -26,10 +26,8 @@
 #include <stdint.h>
 
 #include "bchash.h"
-#include "bcpbuffer.h"
 #include "bcsignals.h"
 #include "bcsynchronous.h"
-#include "bctexture.h"
 #include "bcwindowbase.h"
 #include "clip.h"
 #include "colormodels.h"
@@ -54,13 +52,13 @@ public:
 
 VFrame::VFrame(unsigned char *png_data)
 {
-	reset_parameters(1);
+	reset_parameters();
 	read_png(png_data);
 }
 
 VFrame::VFrame(VFrame &frame)
 {
-	reset_parameters(1);
+	reset_parameters();
 	allocate_data(0, 0, 0, 0, frame.w, frame.h, frame.color_model, frame.bytes_per_line);
 	memcpy(data, frame.data, bytes_per_line * h);
 	copy_pts(&frame);
@@ -72,7 +70,7 @@ VFrame::VFrame(unsigned char *data,
 	int color_model,
 	int bytes_per_line)
 {
-	reset_parameters(1);
+	reset_parameters();
 	allocate_data(data, 0, 0, 0, w, h, color_model, bytes_per_line);
 }
 
@@ -85,7 +83,7 @@ VFrame::VFrame(unsigned char *data,
 		int color_model, 
 		int bytes_per_line)
 {
-	reset_parameters(1);
+	reset_parameters();
 	allocate_data(data, 
 		y_offset, 
 		u_offset, 
@@ -98,13 +96,13 @@ VFrame::VFrame(unsigned char *data,
 
 VFrame::VFrame()
 {
-	reset_parameters(1);
+	reset_parameters();
 	this->color_model = BC_COMPRESSED;
 }
 
 VFrame::~VFrame()
 {
-	clear_objects(1);
+	clear_objects();
 }
 
 int VFrame::equivalent(VFrame *src)
@@ -128,7 +126,7 @@ int VFrame::params_match(int w, int h, int color_model)
 }
 
 
-void VFrame::reset_parameters(int do_opengl)
+void VFrame::reset_parameters()
 {
 	field2_offset = -1;
 	shared = 0;
@@ -145,30 +143,11 @@ void VFrame::reset_parameters(int do_opengl)
 	u_offset = 0;
 	v_offset = 0;
 	clear_pts();
-	is_keyframe = 0;
 	pixel_aspect = 0;
-
-	if(do_opengl)
-	{
-// By default, anything is going to be done in RAM
-		opengl_state = VFrame::RAM;
-		pbuffer = 0;
-		texture = 0;
-	}
 }
 
-void VFrame::clear_objects(int do_opengl)
+void VFrame::clear_objects()
 {
-// Remove texture
-	if(do_opengl)
-	{
-		delete texture;
-		texture = 0;
-
-		delete pbuffer;
-		pbuffer = 0;
-	}
-
 // Delete data
 	if(!shared)
 	{
@@ -191,17 +170,6 @@ int VFrame::set_field2_offset(int value)
 	this->field2_offset = value;
 	return 0;
 }
-
-void VFrame::set_keyframe(int value)
-{
-	this->is_keyframe = value;
-}
-
-int VFrame::get_keyframe()
-{
-	return is_keyframe;
-}
-
 
 int VFrame::calculate_bytes_per_pixel(int color_model)
 {
@@ -344,7 +312,7 @@ void VFrame::set_compressed_memory(unsigned char *data,
 	int data_size,
 	int data_allocated)
 {
-	clear_objects(0);
+	clear_objects();
 	shared = 1;
 	this->data = data;
 	this->compressed_allocated = data_allocated;
@@ -362,8 +330,8 @@ void VFrame::reallocate(unsigned char *data,
 		int color_model, 
 		int bytes_per_line)
 {
-	clear_objects(0);
-	reset_parameters(0);
+	clear_objects();
+	reset_parameters();
 	allocate_data(data, 
 		y_offset, 
 		u_offset, 
@@ -581,7 +549,7 @@ void VFrame::rotate90(void)
 	}
 
 // Swap frames
-	clear_objects(0);
+	clear_objects();
 	data = new_data;
 	rows = new_rows;
 	bytes_per_line = new_bytes_per_line;
@@ -612,7 +580,7 @@ void VFrame::rotate270(void)
 	}
 
 // Swap frames
-	clear_objects(0);
+	clear_objects();
 	data = new_data;
 	rows = new_rows;
 	bytes_per_line = new_bytes_per_line;
@@ -1069,31 +1037,7 @@ void VFrame::dump(int minmax)
 		y, u, v, shared ? " shared" : "");
 	printf("    compressed %d, allocated %d pix apect %.2f\n",
 		compressed_size, compressed_allocated, pixel_aspect);
-	switch(opengl_state)
-	{
-	case RAM:
-		st = "RAM";
-		break;
-	case TEXTURE:
-		st = "TEXTURE";
-		break;
-	case SCREEN:
-		st = "SCREEN";
-		break;
-	default:
-		st = "UNKNOWN";
-		break;
-	}
-	printf("    OpenGL state %s pbuffer %p texture %p\n",
-		st, pbuffer, texture);
-	if(texture)
-		printf("      texture: winID %d textId %d [%d,%d] %s\n",
-			texture->window_id, texture->texture_id,
-			texture->texture_w, texture->texture_h,
-			ColorModels::name(texture->colormodel));
-	if(pbuffer)
-		printf("      pbuffer: winId %d [%d,%d]\n", pbuffer->window_id,
-			pbuffer->w, pbuffer->h);
+
 	if(minmax)
 	{
 		int min, max;

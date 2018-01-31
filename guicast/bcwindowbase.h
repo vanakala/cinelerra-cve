@@ -53,7 +53,6 @@
 #include "bcmenubar.inc"
 #include "bcmeter.inc"
 #include "bcpan.inc"
-#include "bcpbuffer.inc"
 #include "bcpixmap.inc"
 #include "bcpopup.inc"
 #include "bcpopupmenu.inc"

@@ -22,6 +22,7 @@
 #include "confirmsave.h"
 #include "bchash.h"
 #include "bcresources.h"
+#include "bcsynchronous.h"
 #include "edl.h"
 #include "mainerror.h"
 #include "file.h"
@@ -30,7 +31,6 @@
 #include "mainmenu.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "playback3d.h"
 #include "savefile.h"
 #include "mainsession.h"
 #include "theme.h"
@@ -90,7 +90,8 @@ int Save::handle_event()
 			mwindow->gui->show_message(_("\"%s\" %dC written"), mwindow->session->filename, strlen(file.string));
 
 		mwindow->session->changes_made = 0;
-		if(saveas->quit_now) mwindow->playback_3d->quit();
+		if(saveas->quit_now)
+			mwindow->glthread->quit();
 	}
 	return 1;
 }
@@ -172,7 +173,8 @@ void SaveAs::run()
 
 	mwindow->session->changes_made = 0;
 	mmenu->add_load(filename);
-	if(quit_now) mwindow->playback_3d->quit();
+	if(quit_now)
+		mwindow->glthread->quit();
 	return;
 }
 

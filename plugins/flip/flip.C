@@ -257,6 +257,7 @@ void FlipMain::save_defaults()
 void FlipMain::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
@@ -299,5 +300,6 @@ void FlipMain::handle_opengl()
 	}
 
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }

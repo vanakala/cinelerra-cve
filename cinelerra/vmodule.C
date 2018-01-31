@@ -115,14 +115,6 @@ int VModule::import_frame(VFrame *output,
 	int result = 0;
 
 	VDeviceX11 *x11_device = 0;
-	if(use_opengl)
-	{
-		if(renderengine && renderengine->video)
-		{
-			x11_device = (VDeviceX11*)renderengine->video->get_output_base();
-			output->set_opengl_state(VFrame::RAM);
-		}
-	}
 
 // Load frame into output
 	if(current_edit &&
@@ -235,16 +227,10 @@ int VModule::import_frame(VFrame *output,
 				if(use_cache) source->set_cache_frames(1);
 				result = source->get_frame((*input));
 				if(use_cache) source->set_cache_frames(0);
-				(*input)->set_opengl_state(VFrame::RAM);
 
 // Find an overlayer object to perform the camera transformation
 				OverlayFrame *overlayer = 0;
 
-// OpenGL playback uses hardware
-				if(use_opengl)
-				{
-				}
-				else
 // Realtime playback
 				if(commonrender)
 				{
@@ -264,42 +250,21 @@ int VModule::import_frame(VFrame *output,
 					overlayer = overlay_temp;
 				}
 
-				if(use_opengl)
-				{
-					if(x11_device->do_camera(output,
-						(*input), 
-						in_x1,
-						in_y1,
-						in_x1 + in_w1,
-						in_y1 + in_h1,
-						out_x1,
-						out_y1,
-						out_x1 + out_w1,
-						out_y1 + out_h1))
-					{
-						use_opengl = 0;
-						renderengine->interrupt_playback();
-						errorbox(_("Unable to initialize OpenGL"));
-					}
-				}
-				else
-				{
-					output->clear_frame();
+				output->clear_frame();
 
-					overlayer->overlay(output,
-						(*input), 
-						in_x1,
-						in_y1,
-						in_x1 + in_w1,
-						in_y1 + in_h1,
-						out_x1,
-						out_y1,
-						out_x1 + out_w1,
-						out_y1 + out_h1,
-						1,
-						TRANSFER_REPLACE,
-						BC_Resources::interpolation_method);
-				}
+				overlayer->overlay(output,
+					(*input),
+					in_x1,
+					in_y1,
+					in_x1 + in_w1,
+					in_y1 + in_h1,
+					out_x1,
+					out_y1,
+					out_x1 + out_w1,
+					out_y1 + out_h1,
+					1,
+					TRANSFER_REPLACE,
+					BC_Resources::interpolation_method);
 				result = 1;
 				output->copy_pts((*input));
 			}
@@ -310,7 +275,6 @@ int VModule::import_frame(VFrame *output,
 				if(use_cache) source->set_cache_frames(1);
 				result = source->get_frame(output);
 				if(use_cache) source->set_cache_frames(0);
-				output->set_opengl_state(VFrame::RAM);
 			}
 // Set pts
 			output->set_pts(output->get_source_pts() -
@@ -321,28 +285,14 @@ int VModule::import_frame(VFrame *output,
 		}
 		else
 		{
-			if(use_opengl)
-			{
-				x11_device->clear_input(output);
-			}
-			else
-			{
-				output->clear_frame();
-			}
+			output->clear_frame();
 			result = 1;
 		}
 	}
 	else
 // Silence
 	{
-		if(use_opengl)
-		{
-			x11_device->clear_input(output);
-		}
-		else
-		{
-			output->clear_frame();
-		}
+		output->clear_frame();
 	}
 	return result;
 }

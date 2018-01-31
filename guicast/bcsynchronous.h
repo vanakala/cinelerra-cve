@@ -23,9 +23,7 @@
 #define BCSYNCHRONOUS_H
 
 #include "arraylist.h"
-#include "bcpbuffer.inc"
 #include "bcpixmap.inc"
-#include "bctexture.inc"
 #include "bcwindowbase.inc"
 #include "condition.inc"
 #include "mutex.inc"

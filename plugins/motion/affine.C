@@ -329,6 +329,7 @@ void AffineUnit::process_package(LoadPackage *package)
 		server->use_opengl)
 	{
 #ifdef HAVE_GL
+/* FIXIT
 		server->output->to_texture();
 		server->output->enable_opengl();
 		server->output->init_screen();
@@ -362,6 +363,7 @@ void AffineUnit::process_package(LoadPackage *package)
 		glEnd();
 
 		server->output->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 	}
 	else
@@ -425,6 +427,7 @@ void AffineUnit::process_package(LoadPackage *package)
 		if(server->use_opengl)
 		{
 #ifdef HAVE_GL
+/* FIXIT
 			static const char *affine_frag =
 				"uniform sampler2D tex;\n"
 				"uniform mat3 affine_matrix;\n"
@@ -494,6 +497,7 @@ void AffineUnit::process_package(LoadPackage *package)
 				server->output->set_opengl_state(VFrame::SCREEN);
 			}
 			return;
+	*/
 #endif
 		}
 

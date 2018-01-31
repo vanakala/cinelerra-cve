@@ -25,7 +25,6 @@
 #include "colorbalance.h"
 #include "bchash.h"
 #include "picon_png.h"
-#include "playback3d.h"
 
 #include "aggregated.h"
 #include "../gamma/aggregated.h"
@@ -546,7 +545,7 @@ void ColorBalanceMain::read_data(KeyFrame *keyframe)
 void ColorBalanceMain::handle_opengl()
 {
 #ifdef HAVE_GL
-
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -582,5 +581,6 @@ void ColorBalanceMain::handle_opengl()
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }

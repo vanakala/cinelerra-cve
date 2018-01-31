@@ -183,7 +183,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    pipe.C \
 		    pipeconfig.C \
 		    playabletracks.C \
-		    playback3d.C \
 		    playbackconfig.C \
 		    playbackengine.C \
 		    playbackprefs.C \
@@ -427,7 +426,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 pipe.h \
 		 pipeconfig.h \
 		 playabletracks.h \
-		 playback3d.h \
 		 playbackconfig.h \
 		 playbackengine.h \
 		 playbackprefs.h \

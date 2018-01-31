@@ -54,7 +54,6 @@
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "mwindow.h"
-#include "playback3d.h"
 #include "playtransport.h"
 #include "theme.h"
 #include "trackcanvas.h"

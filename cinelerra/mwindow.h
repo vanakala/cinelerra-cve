@@ -29,6 +29,7 @@
 #include "awindow.inc"
 #include "batchrender.inc"
 #include "bcwindowbase.inc"
+#include "bcsynchronous.inc"
 #include "brender.inc"
 #include "cache.inc"
 #include "cwindow.inc"
@@ -54,7 +55,6 @@
 #include "mwindowgui.inc"
 #include "new.inc"
 #include "patchbay.inc"
-#include "playback3d.inc"
 #include "playbackengine.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
@@ -378,9 +378,9 @@ public:
 	void select_point(ptstime position);
 	void set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
 
-	Playback3D *playback_3d;
-
 	SplashGUI *splash_window;
+	BC_Synchronous *glthread;
+
 // Main undo stack
 	MainUndo *undo;
 	BC_Hash *defaults;
@@ -490,7 +490,6 @@ public:
 	void init_cache();
 	void init_indexes();
 	void init_gui();
-	void init_3d();
 	void init_playbackcursor();
 	void delete_plugins();
 

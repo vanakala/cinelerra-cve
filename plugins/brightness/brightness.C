@@ -178,7 +178,7 @@ void BrightnessMain::handle_opengl()
 		"	rgba.rgb = yuv_to_rgb_matrix * rgba.rgb;\n"
 		"	gl_FragColor = rgba;\n"
 		"}\n";
-
+/* To be fixed
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -228,6 +228,7 @@ void BrightnessMain::handle_opengl()
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }
 

@@ -43,7 +43,7 @@ static const char *colorbalance_rgb_shader =
 	"	gl_FragColor = colorbalance_get_pixel();\n"
 	"	gl_FragColor.rgb *= colorbalance_scale;\n"
 	"}\n";
-
+/* FIXIT
 static const char *colorbalance_yuv_shader = 
 	"uniform vec3 colorbalance_scale;\n"
 	"void main()\n"
@@ -65,7 +65,7 @@ static const char *colorbalance_yuv_preserve_shader =
 	RGB_TO_YUV_FRAG("gl_FragColor")
 	"	gl_FragColor.r = y;\n"
 	"}\n";
-
+	*/
 #define COLORBALANCE_COMPILE(shader_stack, current_shader, aggregate_prev) \
 { \
 	if(aggregate_prev) \

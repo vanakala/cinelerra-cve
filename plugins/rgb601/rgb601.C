@@ -324,7 +324,7 @@ void RGB601Main::handle_opengl()
 		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(1.1644, 1.1644, 1.1644) - vec3(0.0627, 0.0627, 0.0627);\n"
 		"}\n";
 
-
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->bind_texture(0);
@@ -355,5 +355,6 @@ void RGB601Main::handle_opengl()
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }

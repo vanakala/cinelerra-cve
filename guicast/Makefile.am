@@ -25,7 +25,6 @@ libguicastcve_la_SOURCES = \
 	bcmeter.C \
 	bcnewfolder.C \
 	bcpan.C \
-	bcpbuffer.C \
 	bcpixmap.C \
 	bcpixmapsw.C \
 	bcpopup.C \
@@ -43,7 +42,6 @@ libguicastcve_la_SOURCES = \
 	bcsubwindow.C \
 	bcsynchronous.C \
 	bctextbox.C \
-	bctexture.C \
 	bctheme.C \
 	bctimer.C \
 	bctitle.C \
@@ -65,7 +63,6 @@ libguicastcve_la_SOURCES = \
 	tmpframecache.C \
 	units.C \
 	vframe.C \
-	vframe3d.C \
 	workarounds.C
 
 noinst_HEADERS = \
@@ -111,8 +108,6 @@ noinst_HEADERS = \
 	bcnewfolder.h \
 	bcnewfolder.inc \
 	bcpan.h bcpan.inc \
-	bcpbuffer.h \
-	bcpbuffer.inc \
 	bcpixmap.h \
 	bcpixmap.inc \
 	bcpixmapsw.h \
@@ -145,8 +140,6 @@ noinst_HEADERS = \
 	bcsynchronous.inc \
 	bctextbox.h \
 	bctextbox.inc \
-	bctexture.h \
-	bctexture.inc \
 	bctheme.h \
 	bctheme.inc \
 	bctimer.h \

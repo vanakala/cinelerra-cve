@@ -27,6 +27,7 @@
 #include "bcdisplayinfo.h"
 #include "bcprogress.h"
 #include "bcresources.h"
+#include "bcsynchronous.h"
 #include "bcsignals.h"
 #include "brender.h"
 #include "cache.h"
@@ -68,7 +69,6 @@
 #include "mwindow.h"
 #include "new.h"
 #include "patchbay.h"
-#include "playback3d.h"
 #include "playbackengine.h"
 #include "plugin.h"
 #include "pluginserver.h"
@@ -120,7 +120,7 @@ MWindow::MWindow(const char *config_path)
 	edl = 0;
 	init_signals();
 
-	init_3d();
+	glthread = new BC_Synchronous();
 
 	show_splash();
 
@@ -176,7 +176,6 @@ MWindow::MWindow(const char *config_path)
 
 	if(preferences->use_tipwindow)
 		init_tipwindow();
-
 	hide_splash();
 }
 
@@ -704,11 +703,6 @@ void MWindow::init_theme()
 
 	theme->check_used();
 	theme_global = theme;
-}
-
-void MWindow::init_3d()
-{
-	playback_3d = new Playback3D(this);
 }
 
 void MWindow::init_edl()
@@ -1283,7 +1277,7 @@ void MWindow::start()
 	ruler->start();
 	gwindow->start();
 	Thread::start();
-	playback_3d->start();
+	glthread->start();
 }
 
 void MWindow::run()

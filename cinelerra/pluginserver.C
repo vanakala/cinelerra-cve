@@ -762,8 +762,8 @@ int PluginServer::get_use_opengl()
 
 void PluginServer::run_opengl(PluginClient *plugin_client)
 {
-	if(vdevice)
-		((VDeviceX11*)vdevice->get_output_base())->run_plugin(plugin_client);
+	// Should not happen
+	printf("PluginServer::run_opengl called\n");
 }
 
 // ============================= queries

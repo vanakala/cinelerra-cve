@@ -29,7 +29,6 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "mwindow.h"
-#include "playback3d.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "vdevicex11.h"
@@ -43,7 +42,6 @@ VDeviceX11::VDeviceX11(VideoDevice *device, Canvas *output)
  : VDeviceBase(device)
 {
 	output_frame = 0;
-	window_id = 0;
 	bitmap = 0;
 	output_x1 = 0;
 	output_y1 = 0;
@@ -63,23 +61,8 @@ VDeviceX11::~VDeviceX11()
 {
 	if(output && output_frame)
 	{
-		int is_opengl = device->out_config->driver == PLAYBACK_X11_GL &&
-			output_frame->get_opengl_state() == VFrame::SCREEN;
-		if(is_opengl)
-		{
-			output->lock_canvas("VDeviceX11::~VDeviceX11");
-			output->unlock_canvas();
-			output->mwindow->playback_3d->copy_from(output,
-				output_frame,
-				output_frame,
-				0);
-		}
-
 // Use our output frame buffer as the canvas's frame buffer.
 		output->lock_canvas("VDeviceX11::~VDeviceX11");
-
-		if(is_opengl)
-			output_frame->delete_pbuffer();
 
 		if(!device->single_frame)
 			output->stop_video();
@@ -201,45 +184,26 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 // Get the best colormodel the display can handle.
 	int best_colormodel = get_best_colormodel(colormodel);
 
-// Only create OpenGL Pbuffer and texture.
-	if(device->out_config->driver == PLAYBACK_X11_GL)
+// Create new bitmap
+	if(!bitmap)
 	{
-// Create bitmap for initial load into texture.
-// Not necessary to do through Playback3D.....yet
+// Try hardware accelerated
+		if(device->out_config->driver == PLAYBACK_X11_XV &&
+			output->get_canvas()->accel_available(best_colormodel, device->out_w, device->out_h))
+		{
+			bitmap = new BC_Bitmap(output->get_canvas(),
+				0,
+				0,
+				best_colormodel,
+				1);
+		}
 		if(!output_frame)
 		{
-			output_frame = new VFrame(0, 
-				device->out_w, 
-				device->out_h, 
-				colormodel);
-		}
-
-		window_id = output->get_canvas()->get_id();
-		output_frame->set_opengl_state(VFrame::RAM);
-	}
-	else
-	{
-// Create new bitmap
-		if(!bitmap)
-		{
-// Try hardware accelerated
-			if(device->out_config->driver == PLAYBACK_X11_XV &&
-				output->get_canvas()->accel_available(best_colormodel, device->out_w, device->out_h))
-			{
-				bitmap = new BC_Bitmap(output->get_canvas(), 
-					0,
-					0,
-					best_colormodel,
-					1);
-			}
-			if(!output_frame)
-			{
 // Intermediate frame
-				output_frame = new VFrame(0, 
-					device->out_w,
-					device->out_h,
-					colormodel);
-			}
+			output_frame = new VFrame(0,
+				device->out_w,
+				device->out_h,
+				colormodel);
 		}
 	}
 	*result = output_frame;
@@ -299,203 +263,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 			round(output_y2 - output_y1),
 			0);
 	}
-
-// Cause X server to display it
-	if(device->out_config->driver == PLAYBACK_X11_GL &&
-		output->get_canvas()->get_video_on())
-	{
-// Draw output frame directly.  Not used for compositing.
-		output->unlock_canvas();
-		output->mwindow->playback_3d->write_buffer(output,
-			output_channels,
-			output_x1,
-			output_y1,
-			output_x2,
-			output_y2,
-			canvas_x1,
-			canvas_y1,
-			canvas_x2,
-			canvas_y2,
-			is_cleared);
-		is_cleared = 0;
-	}
-	else
-		output->unlock_canvas();
+	output->unlock_canvas();
 	return 0;
 }
 
-int VDeviceX11::clear_output()
-{
-	is_cleared = 1;
-
-	return output->mwindow->playback_3d->clear_output(output,
-		output->get_canvas()->get_video_on() ? 0 : output_frame);
-}
-
-void VDeviceX11::clear_input(VFrame *frame)
-{
-	this->output->mwindow->playback_3d->clear_input(this->output, frame);
-}
-
-int VDeviceX11::do_camera(VFrame *output,
-	VFrame *input,
-	float in_x1, 
-	float in_y1, 
-	float in_x2, 
-	float in_y2, 
-	float out_x1, 
-	float out_y1, 
-	float out_x2, 
-	float out_y2)
-{
-	return this->output->mwindow->playback_3d->do_camera(this->output,
-		output,
-		input,
-		in_x1, 
-		in_y1, 
-		in_x2, 
-		in_y2, 
-		out_x1, 
-		out_y1, 
-		out_x2, 
-		out_y2);
-}
-
-void VDeviceX11::do_fade(VFrame *output_temp, float fade)
-{
-	this->output->mwindow->playback_3d->do_fade(this->output, output_temp, fade);
-}
-
-void VDeviceX11::do_mask(VFrame *output_temp, 
-		MaskAutos *keyframe_set, 
-		MaskAuto *keyframe)
-{
-	this->output->mwindow->playback_3d->do_mask(output,
-		output_temp,
-		output_temp->get_pts() / output_temp->get_duration(),
-		keyframe_set,
-		keyframe);
-}
-
-void VDeviceX11::overlay(VFrame *output_frame,
-		VFrame *input, 
-// This is the transfer from track to output frame
-		float in_x1, 
-		float in_y1, 
-		float in_x2, 
-		float in_y2, 
-		float out_x1, 
-		float out_y1, 
-		float out_x2, 
-		float out_y2, 
-		float alpha,        // 0 - 1
-		int mode,
-		EDL *edl)
-{
-// Convert node coords to canvas coords in here
-// This is the transfer from output frame to canvas
-	output->get_transfers(edl, 
-		output_x1, 
-		output_y1, 
-		output_x2, 
-		output_y2, 
-		canvas_x1, 
-		canvas_y1, 
-		canvas_x2, 
-		canvas_y2,
-		-1,
-		-1);
-// If single frame playback, use full sized PBuffer as output.
-	if(device->single_frame)
-	{
-		output->mwindow->playback_3d->overlay(output, 
-			input,
-			in_x1, 
-			in_y1, 
-			in_x2, 
-			in_y2, 
-			out_x1,
-			out_y1,
-			out_x2,
-			out_y2,
-			alpha,           // 0 - 1
-			mode,
-			BC_Resources::interpolation_method,
-			output_frame);
-	}
-	else
-	{
-
-// Get transfer from track to canvas
-		float track_xscale = (out_x2 - out_x1) / (in_x2 - in_x1);
-		float track_yscale = (out_y2 - out_y1) / (in_y2 - in_y1);
-		float canvas_xscale = (float)(canvas_x2 - canvas_x1) / (output_x2 - output_x1);
-		float canvas_yscale = (float)(canvas_y2 - canvas_y1) / (output_y2 - output_y1);
-
-
-// Get coordinates of canvas relative to track frame
-		float track_x1 = (float)(output_x1 - out_x1) / track_xscale + in_x1;
-		float track_y1 = (float)(output_y1 - out_y1) / track_yscale + in_y1;
-		float track_x2 = (float)(output_x2 - out_x2) / track_xscale + in_x2;
-		float track_y2 = (float)(output_y2 - out_y2) / track_yscale + in_y2;
-
-// Clamp canvas coords to track boundary
-		if(track_x1 < 0)
-		{
-			float difference = -track_x1;
-			track_x1 += difference;
-			canvas_x1 += difference * track_xscale * canvas_xscale;
-		}
-		if(track_y1 < 0)
-		{
-			float difference = -track_y1;
-			track_y1 += difference;
-			canvas_y1 += difference * track_yscale * canvas_yscale;
-		}
-
-		if(track_x2 > input->get_w())
-		{
-			float difference = track_x2 - input->get_w();
-			track_x2 -= difference;
-			canvas_x2 -= difference * track_xscale * canvas_xscale;
-		}
-		if(track_y2 > input->get_h())
-		{
-			float difference = track_y2 - input->get_h();
-			track_y2 -= difference;
-			canvas_y2 -= difference * track_yscale * canvas_yscale;
-		}
-
-
-// Overlay directly from track buffer to canvas, skipping output buffer
-		if(track_x2 > track_x1 && 
-			track_y2 > track_y1 &&
-			canvas_x2 > canvas_x1 &&
-			canvas_y2 > canvas_y1)
-		{
-			output->mwindow->playback_3d->overlay(output, 
-				input,
-				track_x1, 
-				track_y1, 
-				track_x2, 
-				track_y2, 
-				canvas_x1,
-				canvas_y1,
-				canvas_x2,
-				canvas_y2,
-				alpha,          // 0 - 1
-				mode,
-				BC_Resources::interpolation_method);
-		}
-	}
-}
-
-void VDeviceX11::run_plugin(PluginClient *client)
-{
-	output->mwindow->playback_3d->run_plugin(output, client);
-}
-
-void VDeviceX11::copy_frame(VFrame *dst, VFrame *src)
-{
-	output->mwindow->playback_3d->copy_from(output, dst, src, 1);
-}

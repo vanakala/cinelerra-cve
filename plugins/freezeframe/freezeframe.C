@@ -262,11 +262,13 @@ void FreezeFrameMain::process_frame(VFrame *frame)
 void FreezeFrameMain::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	get_output()->enable_opengl();
 	get_output()->init_screen();
 	first_frame->to_texture();
 	first_frame->bind_texture(0);
 	first_frame->draw_texture();
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }

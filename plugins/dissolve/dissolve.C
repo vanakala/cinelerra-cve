@@ -135,7 +135,7 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 void DissolveMain::handle_opengl()
 {
 #ifdef HAVE_GL
-
+/* FIXIT
 // Read images from RAM
 	get_input()->to_texture();
 	get_output()->to_texture();
@@ -161,5 +161,6 @@ void DissolveMain::handle_opengl()
 
 	glDisable(GL_BLEND);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }

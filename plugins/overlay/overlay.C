@@ -531,7 +531,7 @@ void Overlay::handle_opengl()
 
 	VFrame *src = temp;
 	VFrame *dst = get_output(output_layer);
-
+/* FIXIT
 	dst->enable_opengl();
 	dst->init_screen();
 
@@ -640,6 +640,7 @@ void Overlay::handle_opengl()
 	glDisable(GL_TEXTURE_2D);
 
 	dst->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }
 

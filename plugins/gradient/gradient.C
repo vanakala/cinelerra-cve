@@ -799,6 +799,7 @@ void GradientMain::handle_opengl()
 	}
 
 	shader_stack[3] = tail_frag;
+/* FIXIT
 // Force frame to create texture without copying to it if full alpha.
 	if(config.in_a >= 0xff &&
 		config.out_a >= 0xff)
@@ -903,6 +904,7 @@ void GradientMain::handle_opengl()
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }
 

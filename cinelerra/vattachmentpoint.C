@@ -94,27 +94,6 @@ void VAttachmentPoint::render(VFrame *output,
 
 	if(plugin_server->multichannel)
 	{
-// Test against previous parameters for reuse of previous data
-		if(is_processed &&
-			PTSEQU(this->start_postime, output->get_pts()) &&
-			EQUIV(this->duration, output->get_duration()))
-		{
-// Need to copy PBuffer if OpenGL, regardless of use_opengl
-			if(buffer_vector[buffer_number]->get_opengl_state() == VFrame::RAM)
-			{
-				output->copy_from(buffer_vector[buffer_number]);
-				output->set_opengl_state(VFrame::RAM);
-			}
-			else
-			if(renderengine && renderengine->video)
-			{
-// Need to copy PBuffer to texture
-				VDeviceX11 *x11_device = (VDeviceX11*)renderengine->video->get_output_base();
-				x11_device->copy_frame(output, buffer_vector[buffer_number]);
-			}
-			return;
-		}
-
 		is_processed = 1;
 		this->start_postime = output->get_pts();
 		this->duration = output->get_duration();

@@ -30,7 +30,6 @@
 #include "keyframe.h"
 #include "loadbalance.h"
 #include "picon_png.h"
-#include "playback3d.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
@@ -659,7 +658,7 @@ void ChromaKey::handle_opengl()
 		"		alpha = (difference - threshold) / run;\n"
 		"	gl_FragColor = vec4(color.rgb, min(color.a, alpha));\n"
 		"}\n";
-
+/* To be fixed
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
@@ -738,5 +737,6 @@ void ChromaKey::handle_opengl()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glDisable(GL_BLEND);
+	*/
 #endif
 }

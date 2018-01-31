@@ -28,7 +28,6 @@
 #include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
-#include "playback3d.h"
 #include "workarounds.h"
 
 
@@ -491,7 +490,7 @@ void GammaMain::read_data(KeyFrame *keyframe)
 void GammaMain::handle_opengl()
 {
 #ifdef HAVE_GL
-
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -523,5 +522,6 @@ void GammaMain::handle_opengl()
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }

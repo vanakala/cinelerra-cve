@@ -48,68 +48,6 @@ public:
 // After loading the bitmap with a picture, write it
 	int write_buffer(VFrame *result, EDL *edl);
 
-//=========================== compositing stages ===============================
-// For compositing with OpenGL, must clear the frame buffer
-// before overlaying tracks.
-	int clear_output();
-
-// Called by VModule::import_frame
-	int do_camera(VFrame *output,
-		VFrame *input,
-		float in_x1, 
-		float in_y1, 
-		float in_x2, 
-		float in_y2, 
-		float out_x1, 
-		float out_y1, 
-		float out_x2, 
-		float out_y2);
-
-// Called by VModule::import_frame for cases with no media.
-	void clear_input(VFrame *frame);
-
-	void do_fade(VFrame *output_temp, float fade);
-
-// Hardware version of MaskEngine
-	void do_mask(VFrame *output_temp, 
-		MaskAutos *keyframe_set, 
-		MaskAuto *keyframe);
-
-// The idea is to composite directly in the frame buffer if OpenGL.
-// OpenGL can do all the blending using the frame buffer.
-// Unfortunately if the output is lower resolution than the frame buffer, the
-// rendered output is the resolution of the frame buffer, not the output.
-// Also, the frame buffer has to be copied back to textures for nonstandard
-// blending equations and blended at the framebuffer resolution.
-// If the frame buffer is higher resolution than the
-// output frame, like a 2560x1600 display, it could cause unnecessary slowness.
-// Finally, there's the problem of updating the refresh frame.
-// It requires recompositing the previous frame in software every time playback was
-// stops, a complicated operation.
-	void overlay(VFrame *output_frame,
-		VFrame *input, 
-		float in_x1, 
-		float in_y1, 
-		float in_x2, 
-		float in_y2, 
-		float out_x1, 
-		float out_y1, 
-		float out_x2, 
-		float out_y2, 
-		float alpha,        // 0 - 1
-		int mode,
-		EDL *edl);
-
-// For plugins, lock the canvas, enable opengl, and run a function in the
-// plugin client in the synchronous thread.  The user must override the
-// pluginclient function.
-	void run_plugin(PluginClient *client);
-
-// For multichannel plugins, copy from the temporary pbuffer to 
-// the plugin output texture.
-// Set the output OpenGL state to TEXTURE.
-	void copy_frame(VFrame *dst, VFrame *src);
-
 private:
 
 // Closest colormodel the hardware can do for playback.
@@ -125,11 +63,6 @@ private:
 	VFrame *output_frame;
 // Canvas for output
 	Canvas *output;
-// Parameters the output texture conforms to, for OpenGL
-// window_id is probably not going to be used
-	int window_id;
-	int texture_w;
-	int texture_h;
 	int color_model;
 // Transfer coordinates from the output frame to the canvas 
 // for last frame rendered.

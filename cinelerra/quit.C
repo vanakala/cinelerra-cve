@@ -20,6 +20,7 @@
  */
 
 #include "assets.h"
+#include "bcsynchronous.h"
 #include "mbuttons.h"
 #include "mainerror.h"
 #include "language.h"
@@ -28,7 +29,6 @@
 #include "mainmenu.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "playback3d.h"
 #include "quit.h"
 #include "question.h"
 #include "render.h"
@@ -53,7 +53,7 @@ int Quit::handle_event()
 	else 
 	{        // quit
 		mwindow->interrupt_indexes();
-		mwindow->playback_3d->quit();
+		mwindow->glthread->quit();
 	}
 	return 1;
 }
@@ -81,7 +81,7 @@ void Quit::run()
 		if(mwindow->gui)
 		{
 			mwindow->interrupt_indexes();
-			mwindow->playback_3d->quit();
+			mwindow->glthread->quit();
 		}
 		break;
 

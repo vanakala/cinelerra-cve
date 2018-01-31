@@ -20,45 +20,50 @@
  */
 
 #define GL_GLEXT_PROTOTYPES
-#include "bcpixmap.h"
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcsynchronous.h"
 #include "bcwindowbase.h"
+
+static int attrib[] =
+{
+    GLX_RGBA,
+    GLX_RED_SIZE, 1,
+    GLX_GREEN_SIZE, 1,
+    GLX_BLUE_SIZE, 1,
+    GLX_DOUBLEBUFFER,
+    None
+};
+
 
 // OpenGL functions in BC_WindowBase
 
 int BC_WindowBase::enable_opengl()
 {
 #ifdef HAVE_GL
-	XVisualInfo viproto;
 	XVisualInfo *visinfo;
-	int nvi;
 
 	top_level->sync_display();
 
 	get_synchronous()->is_pbuffer = 0;
 	if(!gl_win_context)
 	{
-		viproto.screen = top_level->screen;
-		visinfo = XGetVisualInfo(top_level->display,
-			VisualScreenMask,
-			&viproto,
-			&nvi);
-		if(visinfo)
+		if(!(visinfo = glXChooseVisual(top_level->display, top_level->screen, attrib)))
 		{
-			gl_win_context = glXCreateContext(top_level->display,
-				visinfo,
-				0,
-				1);
-			XFree(visinfo);
-		}
-		if(!gl_win_context)
+			fputs("BC_WindowBase::enable_opengl:Couldn't get visual.\n", stdout);
 			return 1;
+		}
+		if(!(gl_win_context = glXCreateContext(top_level->display,
+				visinfo, 0, GL_TRUE)))
+		{
+			fputs("BC_WindowBase::enable_opengl: Couldn't create OpenGL context.\n", stdout);
+			XFree(visinfo);
+			return 1;
+		}
+		XFree(visinfo);
 	}
 
-// Make the front buffer's context current.  Pixmaps don't work.
-	get_synchronous()->current_window = this;
+// Make the front buffer's context current.
 	if(glXMakeCurrent(top_level->display, win, gl_win_context))
 	{
 		if(!BC_Resources::OpenGLStrings[0])

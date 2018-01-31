@@ -264,12 +264,7 @@ void VirtualVNode::render_fade(VFrame *output,
 // color components by alpha.
 	if(!EQUIV(intercept / 100, 1))
 	{
-		if(((VirtualVConsole*)vconsole)->use_opengl)
-			((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_fade(
-				output, 
-				intercept / 100);
-		else
-			fader->do_fade(output, output, intercept / 100);
+		fader->do_fade(output, output, intercept / 100);
 	}
 }
 
@@ -310,19 +305,8 @@ void VirtualVNode::render_mask(VFrame *output_temp)
 		return;
 	}
 
-	if(((VirtualVConsole*)vconsole)->use_opengl)
-	{
-		((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_mask(
-			output_temp, 
-			keyframe_set, 
-			keyframe);
-	}
-	else
-	{
-// Revert to software
-		double edl_rate = renderengine->edl->session->frame_rate;
-		masker->do_mask(output_temp, keyframe_set, 0);
-	}
+	double edl_rate = renderengine->edl->session->frame_rate;
+	masker->do_mask(output_temp, keyframe_set, 0);
 }
 
 
@@ -370,39 +354,19 @@ void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 			else
 				mode = TRANSFER_NORMAL;
 
-			if(((VirtualVConsole*)vconsole)->use_opengl)
-			{
-				((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->overlay(
-					output,
-					input,
-					in_x1, 
-					in_y1, 
-					in_x2, 
-					in_y2,
-					out_x1, 
-					out_y1, 
-					out_x2, 
-					out_y2, 
-					1,
-					mode, 
-					renderengine->edl);
-			}
-			else
-			{
-				vrender->overlayer->overlay(output, 
-					input,
-					in_x1, 
-					in_y1, 
-					in_x2, 
-					in_y2,
-					out_x1, 
-					out_y1, 
-					out_x2, 
-					out_y2, 
-					1,
-					mode, 
-					BC_Resources::interpolation_method);
-			}
+			vrender->overlayer->overlay(output,
+				input,
+				in_x1,
+				in_y1,
+				in_x2,
+				in_y2,
+				out_x1,
+				out_y1,
+				out_x2,
+				out_y2,
+				1,
+				mode,
+				BC_Resources::interpolation_method);
 		}
 	}
 }

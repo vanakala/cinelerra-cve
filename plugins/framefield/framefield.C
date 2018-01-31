@@ -34,7 +34,6 @@
 
 #include "bcsignals.h"
 #include "bctoggle.h"
-#include "bctexture.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
@@ -157,8 +156,6 @@ public:
 	ptstime current_frame_duration;
 	VFrame *src_frame;
 
-// Temporary storage of input frame for OpenGL
-	BC_Texture *src_texture;
 // Signal OpenGL handler a new frame was read.
 	int new_frame;
 };
@@ -247,16 +244,13 @@ FrameField::FrameField(PluginServer *server)
 	field_number = 0;
 	current_frame_pts = -1;
 	current_frame_duration = 0;
-	src_texture = 0;
 	src_frame = 0;
-	src_texture = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 FrameField::~FrameField()
 {
 	if(src_frame) delete src_frame;
-	if(src_texture) delete src_texture;
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -588,7 +582,7 @@ void FrameField::handle_opengl()
 		"{\n"
 		"	gl_FragColor.r = gl_FragColor.r * 0.8588 + 0.0627;\n"
 		"}\n";
-
+/* FIXIT
 	if(new_frame)
 	{
 		if(get_output()->get_opengl_state() != VFrame::SCREEN)
@@ -672,7 +666,7 @@ void FrameField::handle_opengl()
 // Reset for other operations
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
+	*/
 #endif
 }
 

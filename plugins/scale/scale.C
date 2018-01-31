@@ -269,7 +269,7 @@ void ScaleMain::handle_opengl()
 		out_x2, 
 		out_y1, 
 		out_y2);
-
+/* Pole
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
@@ -284,5 +284,6 @@ void ScaleMain::handle_opengl()
 		out_x2, 
 		out_y2);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }

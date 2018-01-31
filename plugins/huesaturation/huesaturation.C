@@ -41,7 +41,6 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "plugincolors.h"
-#include "playback3d.h"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
@@ -584,7 +583,7 @@ void HueEffect::handle_opengl()
 		"	pixel.gb += vec2(0.5, 0.5);\n"
 		"	gl_FragColor = pixel;\n"
 		"}\n";
-
+/* FIXIT
 	static const char *yuv_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform float h_offset;\n"
@@ -622,7 +621,8 @@ void HueEffect::handle_opengl()
 			HSV_TO_RGB_FRAG("pixel")
 		"	gl_FragColor = pixel;\n"
 		"}\n";
-
+	*/
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -664,5 +664,6 @@ void HueEffect::handle_opengl()
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }

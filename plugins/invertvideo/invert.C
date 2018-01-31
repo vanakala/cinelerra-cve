@@ -336,7 +336,7 @@ void InvertVideoEffect::handle_opengl()
 		"	if(do_b) gl_FragColor.b = 1.0 - gl_FragColor.b;\n"
 		"	if(do_a) gl_FragColor.a = 1.0 - gl_FragColor.a;\n"
 		"}\n";
-
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -356,5 +356,6 @@ void InvertVideoEffect::handle_opengl()
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }

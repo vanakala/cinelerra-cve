@@ -35,7 +35,6 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
-#include "playback3d.h"
 #include "plugincolors.h"
 #include "vframe.h"
 #include "workarounds.h"

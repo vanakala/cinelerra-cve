@@ -84,26 +84,8 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 	if(debug_tree) 
 		printf("VirtualVConsole::process_buffer begin exit_nodes=%d\n", 
 			exit_nodes.total);
-
-
-	if(use_opengl)
-	{
-// clear hardware framebuffer
-		if(((VDeviceX11*)get_vdriver())->clear_output())
-		{
-			renderengine->interrupt_playback();
-			use_opengl = 0;
-			errorbox(_("Unable to initialize OpenGL"));
-		}
-
-// que OpenGL driver that everything is overlaid in the framebuffer
-		vrender->video_out->set_opengl_state(VFrame::SCREEN);
-	}
-	else
-	{
 // clear device buffer
-		vrender->video_out->clear_frame();
-	}
+	vrender->video_out->clear_frame();
 
 // Reset plugin rendering status
 	reset_attachments();
@@ -135,10 +117,6 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 				renderengine->edl->session->color_model,
 				-1);
 		}
-
-// Reset OpenGL state
-		if(use_opengl)
-			output_temp->set_opengl_state(VFrame::RAM);
 
 		output_temp->set_pts(input_postime + track->nudge);
 		node->render(output_temp,

@@ -428,7 +428,7 @@ void DiffKey::handle_opengl()
 		"	gl_FragColor = result;\n"
 		"}\n";
 
-
+/* FIXIT
 	top_frame->enable_opengl();
 	top_frame->init_screen();
 
@@ -491,6 +491,7 @@ void DiffKey::handle_opengl()
 // Fastest way to discard output
 	bottom_frame->set_opengl_state(VFrame::TEXTURE);
 	glDisable(GL_BLEND);
+	*/
 #endif
 }
 

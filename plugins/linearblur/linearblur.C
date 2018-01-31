@@ -560,6 +560,7 @@ static void draw_box(float x1, float y1, float x2, float y2)
 void LinearBlurMain::handle_opengl()
 {
 #ifdef HAVE_GL
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
@@ -660,6 +661,7 @@ void LinearBlurMain::handle_opengl()
 
 	glColor4f(1, 1, 1, 1);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }
 

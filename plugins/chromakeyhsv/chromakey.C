@@ -30,7 +30,6 @@
 #include "keyframe.h"
 #include "loadbalance.h"
 #include "picon_png.h"
-#include "playback3d.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
@@ -975,7 +974,7 @@ void ChromaKeyHSV::handle_opengl()
 // For macro
 	ChromaKeyHSV *plugin = this;
 	OUTER_VARIABLES
-
+/* To be fixed
 	static const char *yuv_shader = 
 		"const vec3 black = vec3(0.0, 0.5, 0.5);\n"
 		"\n"
@@ -990,7 +989,7 @@ void ChromaKeyHSV::handle_opengl()
 			RGB_TO_YUV_FRAG("color")
 		"	return color;\n"
 		"}\n";
-
+	*/
 	static const char *rgb_shader = 
 		"const vec3 black = vec3(0.0, 0.0, 0.0);\n"
 		"\n"
@@ -1002,7 +1001,7 @@ void ChromaKeyHSV::handle_opengl()
 		"{\n"
 		"	return color;\n"
 		"}\n";
-
+/* To be fixed
 	static const char *hsv_shader = 
 		"vec4 rgb_to_hsv(vec4 color)\n"
 		"{\n"
@@ -1016,7 +1015,7 @@ void ChromaKeyHSV::handle_opengl()
 		"	return color;\n"
 		"}\n"
 		"\n";
-
+	*/
 	static const char *show_rgbmask_shader = 
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
@@ -1037,7 +1036,7 @@ void ChromaKeyHSV::handle_opengl()
 
 	extern unsigned char _binary_chromakey_sl_start[];
 	static char *shader = (char*)_binary_chromakey_sl_start;
-
+/* To be fixed
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
@@ -1122,6 +1121,6 @@ void ChromaKeyHSV::handle_opengl()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glDisable(GL_BLEND);
-
+	*/
 #endif
 }

@@ -258,7 +258,7 @@ void ThresholdMain::handle_opengl()
 		"		pixel = high_color;\n"
 		"	gl_FragColor = pixel;\n"
 		"}\n";
-
+/* FIXIT
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
@@ -342,6 +342,7 @@ void ThresholdMain::handle_opengl()
 	get_output()->draw_texture();
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
+	*/
 #endif
 }
 
