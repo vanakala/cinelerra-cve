@@ -114,6 +114,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 
 	deactivate();
 	slider->activate();
+	resize_event(mwindow->session->vwindow_w, mwindow->session->vwindow_h);
 }
 
 VWindowGUI::~VWindowGUI()
