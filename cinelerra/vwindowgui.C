@@ -613,7 +613,8 @@ void VWindowCanvas::zoom_resize_window(double percentage)
 
 void VWindowCanvas::close_source()
 {
-	mwindow->vwindow->remove_source();
+	gui->vwindow->playback_engine->interrupt_playback(1);
+	gui->vwindow->remove_source();
 }
 
 void VWindowCanvas::draw_refresh()
