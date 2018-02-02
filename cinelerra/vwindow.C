@@ -97,6 +97,7 @@ Asset* VWindow::get_asset()
 
 void VWindow::change_source()
 {
+	gui->canvas->clear_canvas();
 	if(mwindow->edl->vwindow_edl)
 	{
 		gui->change_source(get_edl(), get_edl()->local_session->clip_title);
@@ -117,6 +118,7 @@ void VWindow::change_source(Asset *asset)
 	fs.extract_name(title, asset->path);
 
 	delete_edl();
+	gui->canvas->clear_canvas();
 
 // Generate EDL off of main EDL for cutting
 	this->asset = new Asset;
@@ -137,6 +139,7 @@ void VWindow::change_source(EDL *edl)
 		edl->id == mwindow->edl->vwindow_edl->id) return;
 
 	delete_edl();
+	gui->canvas->clear_canvas();
 
 	if(edl)
 	{
