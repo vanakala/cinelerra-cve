@@ -169,6 +169,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	tool_panel->Thread::start();
 
 	set_operation(mwindow->edl->session->cwindow_operation);
+	resize_event(mwindow->session->cwindow_w, mwindow->session->cwindow_h);
 }
 
 CWindowGUI::~CWindowGUI()
