@@ -72,7 +72,6 @@ BC_SynchronousCommand::BC_SynchronousCommand()
 	win = 0;
 #ifdef HAVE_GL
 	gl_context = 0;
-	gl_pixmap = 0;
 #endif
 	command_done = new Condition(0, "BC_SynchronousCommand::command_done", 0);
 }
@@ -222,10 +221,6 @@ void BC_Synchronous::handle_garbage()
 		{
 		case BC_SynchronousCommand::DELETE_WINDOW:
 			delete_window_sync(command);
-			break;
-
-		case BC_SynchronousCommand::DELETE_PIXMAP:
-			delete_pixmap_sync(command);
 			break;
 		}
 
@@ -409,37 +404,6 @@ int debug = 0;
 
 	XDestroyWindow(display, win);
 	if(gl_context) glXDestroyContext(display, gl_context);
-#endif
-}
-
-#ifdef HAVE_GL
-
-void BC_Synchronous::delete_pixmap(BC_WindowBase *window, 
-	GLXPixmap pixmap, 
-	GLXContext context)
-{
-	BC_SynchronousCommand *command = new_command();
-	command->command = BC_SynchronousCommand::DELETE_PIXMAP;
-	command->window_id = window->get_id();
-	command->display = window->get_display();
-	command->win = window->win;
-	command->gl_pixmap = pixmap;
-	command->gl_context = context;
-
-	send_garbage(command);
-}
-#endif
-
-void BC_Synchronous::delete_pixmap_sync(BC_SynchronousCommand *command)
-{
-#ifdef HAVE_GL
-	Display *display = command->display;
-	Window win = command->win;
-	glXMakeCurrent(display,
-		win,
-		command->gl_context);
-	glXDestroyContext(display, command->gl_context);
-	glXDestroyGLXPixmap(display, command->gl_pixmap);
 #endif
 }
 

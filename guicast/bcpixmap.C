@@ -135,16 +135,6 @@ BC_Pixmap::~BC_Pixmap()
 			XftDrawDestroy((XftDraw*)alpha_xft_draw);
 		XFreePixmap(top_level->display, alpha_pixmap);
 	}
-
-// Have to delete GL objects because pixmaps are deleted during resizes.
-#ifdef HAVE_GL
-	if(BC_WindowBase::get_synchronous() && gl_pixmap)
-	{
-		BC_WindowBase::get_synchronous()->delete_pixmap(parent_window,
-			gl_pixmap,
-			gl_pixmap_context);
-	}
-#endif
 	top_level->unlock_window();
 }
 
@@ -157,10 +147,6 @@ void BC_Pixmap::reset()
 	alpha_pixmap = 0;
 	opaque_xft_draw = 0;
 	alpha_xft_draw = 0;
-#ifdef HAVE_GL
-	gl_pixmap_context = 0;
-	gl_pixmap = 0;
-#endif
 }
 
 void BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)

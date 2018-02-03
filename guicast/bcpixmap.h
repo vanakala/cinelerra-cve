@@ -96,10 +96,6 @@ private:
 	BC_WindowBase *top_level;
 	Pixmap opaque_pixmap, alpha_pixmap;
 	void *opaque_xft_draw, *alpha_xft_draw;
-#ifdef HAVE_GL
-	GLXContext gl_pixmap_context;
-	GLXPixmap gl_pixmap;
-#endif
 	int w, h;
 	int mode;
 // GC's only used if alpha pixmap

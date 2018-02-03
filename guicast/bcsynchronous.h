@@ -102,7 +102,6 @@ public:
 		QUIT,
 // Used by garbage collector
 		DELETE_WINDOW,
-		DELETE_PIXMAP,
 // subclasses create new commands starting with this enumeration
 		LAST_COMMAND
 	};
@@ -123,7 +122,6 @@ public:
 	Window win;
 #ifdef HAVE_GL
 	GLXContext gl_context;
-	GLXPixmap gl_pixmap;
 #endif
 };
 
@@ -135,10 +133,6 @@ public:
 	virtual ~BC_Synchronous();
 
 	friend class BC_WindowBase;
-	friend class VFrame;
-	friend class BC_PBuffer;
-	friend class BC_Pixmap;
-	friend class BC_Texture;
 
 // Called by another thread
 // Quits the loop
@@ -176,15 +170,6 @@ public:
 // Doesn't check if it already exists.
 	void put_shader(unsigned int handle, char *source);
 	void dump_shader(unsigned int handle);
-
-#ifdef HAVE_GL
-// Schedule GL pixmap for deletion by the garbage collector.
-// Pixmaps don't wait until until the window is deleted but they must be
-// deleted before the window is deleted to have the display connection.
-	void delete_pixmap(BC_WindowBase *window, 
-		GLXPixmap pixmap, 
-		GLXContext context);
-#endif
 
 // Called by ~BC_WindowBase to delete OpenGL objects related to the window.
 // This function returns immediately instead of waiting for the synchronous
