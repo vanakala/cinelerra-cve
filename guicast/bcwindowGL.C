@@ -45,7 +45,6 @@ int BC_WindowBase::enable_opengl()
 
 	top_level->sync_display();
 
-	get_synchronous()->is_pbuffer = 0;
 	if(!gl_win_context)
 	{
 		if(!(visinfo = glXChooseVisual(top_level->display, top_level->screen, attrib)))

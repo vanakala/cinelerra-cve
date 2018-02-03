@@ -46,29 +46,7 @@
 // reliably even if MakeCurrent was used and only 1 thread at a time did 
 // anything.
 
-// Also manages texture memory.  Textures are not deleted until the gl_context
-// is deleted, so they have to be reused as much as possible.
-// Must be run as the main loop of the application.  Other threads must
-// call into it to dispatch commands.
-
 // In addition to synchronous operations, it handles global OpenGL variables.
-
-// Users should create a subclass of the command and thread components to
-// add specific commands.
-
-
-class TextureID
-{
-public:
-	TextureID(int window_id, int id, int w, int h, int components);
-	int window_id;
-	int id;
-	int w;
-	int h;
-	int components;
-	BC_WindowBase *window;
-	int in_use;
-};
 
 class ShaderID
 {
@@ -146,22 +124,6 @@ public:
 // Contains a switch statement starting with LAST_COMMAND
 	virtual void handle_command(BC_SynchronousCommand *command);
 
-// OpenGL texture removal doesn't work.  Need to store the ID's of all the deleted
-// textures in this stack and reuse them.  Also since OpenGL needs synchronous
-// commands, be sure this is always called synchronously.
-// Called when a texture is created to associate it with the current window.
-// Must be called inside synchronous loop.
-	void put_texture(int id, int w, int h, int components);
-// Search for existing texture matching the parameters and not in use 
-// and return it.  If -1 is returned, a new texture must be created.
-// Must be called inside synchronous loop.
-// If someone proves OpenGL can delete texture memory, this function can be
-// forced to always return -1.
-	int get_texture(int w, int h, int components);
-// Release a texture for use by the get_texture call.
-// Can be called outside synchronous loop.
-	void release_texture(int window_id, int id);
-
 // Get the shader by window_id and source comparison if it exists.
 // Not run in OpenGL thread because it has its own lock.
 // Sets *got_it to 1 on success.
@@ -178,7 +140,6 @@ public:
 
 	int send_command(BC_SynchronousCommand *command);
 	void send_garbage(BC_SynchronousCommand *command);
-
 
 // Get the window currently bound to the context.
 	BC_WindowBase* get_window();
@@ -211,12 +172,8 @@ private:
 	BC_WindowBase *current_window;
 
 	ArrayList<ShaderID*> shader_ids;
-	ArrayList<TextureID*> texture_ids;
 // Commands which can't be executed until the caller returns.
 	ArrayList<BC_SynchronousCommand*> garbage;
 
-// When the context is bound to a pbuffer, this
-// signals glCopyTexSubImage2D to use the front buffer.
-	int is_pbuffer;
 };
 #endif

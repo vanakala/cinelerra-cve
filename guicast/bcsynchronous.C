@@ -35,17 +35,6 @@
 
 #include <string.h>
 
-
-TextureID::TextureID(int window_id, int id, int w, int h, int components)
-{
-	this->window_id = window_id;
-	this->id = id;
-	this->w = w;
-	this->h = h;
-	this->components = components;
-	in_use = 1;
-}
-
 ShaderID::ShaderID(int window_id, unsigned int handle, const char *source)
 {
 	this->window_id = window_id;
@@ -228,81 +217,6 @@ void BC_Synchronous::handle_garbage()
 	}
 }
 
-void BC_Synchronous::put_texture(int id, int w, int h, int components)
-{
-	if(id >= 0)
-	{
-		table_lock->lock("BC_Resources::put_texture");
-// Search for duplicate
-		for(int i = 0; i < texture_ids.total; i++)
-		{
-			TextureID *ptr = texture_ids.values[i];
-			if(ptr->window_id == current_window->get_id() &&
-				ptr->id == id)
-			{
-				printf("BC_Synchronous::push_texture: texture exists\n"
-					"exists: window=%d id=%d w=%d h=%d\n"
-					"new:    window=%d id=%d w=%d h=%d\n",
-					ptr->window_id,
-					ptr->id,
-					ptr->w,
-					ptr->h,
-					current_window->get_id(),
-					id,
-					w,
-					h);
-				table_lock->unlock();
-				return;
-			}
-		}
-
-		TextureID *new_id = new TextureID(current_window->get_id(), 
-			id, 
-			w, 
-			h,
-			components);
-		texture_ids.append(new_id);
-		table_lock->unlock();
-	}
-}
-
-int BC_Synchronous::get_texture(int w, int h, int components)
-{
-	table_lock->lock("BC_Resources::get_texture");
-	for(int i = 0; i < texture_ids.total; i++)
-	{
-		if(texture_ids.values[i]->w == w &&
-			texture_ids.values[i]->h == h &&
-			texture_ids.values[i]->components == components &&
-			!texture_ids.values[i]->in_use &&
-			texture_ids.values[i]->window_id == current_window->get_id())
-		{
-			int result = texture_ids.values[i]->id;
-			texture_ids.values[i]->in_use = 1;
-			table_lock->unlock();
-			return result;
-		}
-	}
-	table_lock->unlock();
-	return -1;
-}
-
-void BC_Synchronous::release_texture(int window_id, int id)
-{
-	table_lock->lock("BC_Resources::release_texture");
-	for(int i = 0; i < texture_ids.total; i++)
-	{
-		if(texture_ids.values[i]->id == id &&
-			texture_ids.values[i]->window_id == window_id)
-		{
-			texture_ids.values[i]->in_use = 0;
-			table_lock->unlock();
-			return;
-		}
-	}
-	table_lock->unlock();
-}
-
 
 unsigned int BC_Synchronous::get_shader(char *source, int *got_it)
 {
@@ -379,16 +293,6 @@ int debug = 0;
 		gl_context);
 
 	table_lock->lock("BC_Resources::release_textures");
-	for(int i = 0; i < texture_ids.total; i++)
-	{
-		if(texture_ids.values[i]->window_id == window_id)
-		{
-			GLuint id = texture_ids.values[i]->id;
-			glDeleteTextures(1, &id);
-			texture_ids.remove_object_number(i);
-			i--;
-		}
-	}
 
 	for(int i = 0; i < shader_ids.total; i++)
 	{
