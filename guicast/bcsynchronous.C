@@ -58,21 +58,6 @@ ShaderID::~ShaderID()
 	free(source);
 }
 
-#ifdef HAVE_GL
-PBufferID::PBufferID(int window_id, 
-	GLXPbuffer pbuffer, 
-	GLXContext gl_context, 
-	int w, 
-	int h)
-{
-	this->pbuffer = pbuffer;
-	this->gl_context = gl_context;
-	this->window_id = window_id;
-	this->w = w;
-	this->h = h;
-	in_use = 1;
-}
-#endif
 
 BC_SynchronousCommand::BC_SynchronousCommand()
 {
@@ -420,19 +405,6 @@ int debug = 0;
 		}
 	}
 
-	for(int i = 0; i < pbuffer_ids.total; i++)
-	{
-		if(pbuffer_ids.values[i]->window_id == window_id)
-		{
-			glXDestroyPbuffer(display, pbuffer_ids.values[i]->pbuffer);
-			glXDestroyContext(display, pbuffer_ids.values[i]->gl_context);
-
-			pbuffer_ids.remove_object_number(i);
-			i--;
-		}
-	}
-
-
 	table_lock->unlock();
 
 	XDestroyWindow(display, win);
@@ -440,80 +412,7 @@ int debug = 0;
 #endif
 }
 
-
-
 #ifdef HAVE_GL
-void BC_Synchronous::put_pbuffer(int w, 
-	int h, 
-	GLXPbuffer pbuffer, 
-	GLXContext gl_context)
-{
-	int exists = 0;
-	table_lock->lock("BC_Resources::release_textures");
-	for(int i = 0; i < pbuffer_ids.total; i++)
-	{
-		PBufferID *ptr = pbuffer_ids.values[i];
-		if(ptr->w == w &&
-			ptr->h == h &&
-			ptr->pbuffer == pbuffer)
-		{
-// Exists
-			exists = 1;
-			break;
-		}
-	}
-
-	if(!exists)
-	{
-		PBufferID *ptr = new PBufferID(current_window->get_id(),
-			pbuffer,
-			gl_context,
-			w,
-			h);
-		pbuffer_ids.append(ptr);
-	}
-	table_lock->unlock();
-}
-
-GLXPbuffer BC_Synchronous::get_pbuffer(int w, 
-	int h, 
-	int *window_id, 
-	GLXContext *gl_context)
-{
-	table_lock->lock("BC_Resources::release_textures");
-	for(int i = 0; i < pbuffer_ids.total; i++)
-	{
-		PBufferID *ptr = pbuffer_ids.values[i];
-		if(ptr->w == w &&
-			ptr->h == h &&
-			ptr->window_id == current_window->get_id() &&
-			!ptr->in_use)
-		{
-			GLXPbuffer result = ptr->pbuffer;
-			*gl_context = ptr->gl_context;
-			*window_id = ptr->window_id;
-			ptr->in_use = 1;
-			table_lock->unlock();
-			return result;
-		}
-	}
-	table_lock->unlock();
-	return 0;
-}
-
-void BC_Synchronous::release_pbuffer(int window_id, GLXPbuffer pbuffer)
-{
-	table_lock->lock("BC_Resources::release_textures");
-	for(int i = 0; i < pbuffer_ids.total; i++)
-	{
-		PBufferID *ptr = pbuffer_ids.values[i];
-		if(ptr->window_id == window_id)
-		{
-			ptr->in_use = 0;
-		}
-	}
-	table_lock->unlock();
-}
 
 void BC_Synchronous::delete_pixmap(BC_WindowBase *window, 
 	GLXPixmap pixmap, 

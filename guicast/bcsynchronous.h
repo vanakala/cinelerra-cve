@@ -82,24 +82,6 @@ public:
 	unsigned int handle;
 };
 
-class PBufferID
-{
-public:
-	PBufferID() {};
-#ifdef HAVE_GL
-	PBufferID(int window_id, 
-		GLXPbuffer pbuffer, 
-		GLXContext gl_context, 
-		int w, 
-		int h);
-	GLXPbuffer pbuffer;
-	GLXContext gl_context;
-	int window_id;
-	int w;
-	int h;
-	int in_use;
-#endif
-};
 
 class BC_SynchronousCommand
 {
@@ -196,21 +178,6 @@ public:
 	void dump_shader(unsigned int handle);
 
 #ifdef HAVE_GL
-// Push a pbuffer when it's created.
-// Must be called inside synchronous loop.
-	void put_pbuffer(int w, 
-		int h, 
-		GLXPbuffer pbuffer, 
-		GLXContext gl_context);
-// Get the PBuffer by window_id and dimensions if it exists.
-// Must be called inside synchronous loop.
-	GLXPbuffer get_pbuffer(int w, 
-		int h, 
-		int *window_id, 
-		GLXContext *gl_context);
-// Release a pbuffer for use by get_pbuffer.
-	void release_pbuffer(int window_id, GLXPbuffer pbuffer);
-
 // Schedule GL pixmap for deletion by the garbage collector.
 // Pixmaps don't wait until until the window is deleted but they must be
 // deleted before the window is deleted to have the display connection.
@@ -260,7 +227,6 @@ private:
 
 	ArrayList<ShaderID*> shader_ids;
 	ArrayList<TextureID*> texture_ids;
-	ArrayList<PBufferID*> pbuffer_ids;
 // Commands which can't be executed until the caller returns.
 	ArrayList<BC_SynchronousCommand*> garbage;
 
