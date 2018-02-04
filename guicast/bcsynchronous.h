@@ -48,19 +48,6 @@
 
 // In addition to synchronous operations, it handles global OpenGL variables.
 
-class ShaderID
-{
-public:
-	ShaderID(int window_id, unsigned int handle, const char *source);
-	~ShaderID();
-
-// Should really use an MD5 to compare sources but this is easiest.
-	char *source;
-	int window_id;
-	unsigned int handle;
-};
-
-
 class BC_SynchronousCommand
 {
 public:
@@ -124,15 +111,6 @@ public:
 // Contains a switch statement starting with LAST_COMMAND
 	virtual void handle_command(BC_SynchronousCommand *command);
 
-// Get the shader by window_id and source comparison if it exists.
-// Not run in OpenGL thread because it has its own lock.
-// Sets *got_it to 1 on success.
-	unsigned int get_shader(char *source, int *got_it);
-// Add a new shader program by title if it doesn't exist.  
-// Doesn't check if it already exists.
-	void put_shader(unsigned int handle, char *source);
-	void dump_shader(unsigned int handle);
-
 // Called by ~BC_WindowBase to delete OpenGL objects related to the window.
 // This function returns immediately instead of waiting for the synchronous
 // part to finish.
@@ -171,7 +149,6 @@ private:
 // Set by BC_WindowBase::enable_opengl.
 	BC_WindowBase *current_window;
 
-	ArrayList<ShaderID*> shader_ids;
 // Commands which can't be executed until the caller returns.
 	ArrayList<BC_SynchronousCommand*> garbage;
 

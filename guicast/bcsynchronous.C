@@ -35,19 +35,6 @@
 
 #include <string.h>
 
-ShaderID::ShaderID(int window_id, unsigned int handle, const char *source)
-{
-	this->window_id = window_id;
-	this->handle = handle;
-	this->source = strdup(source);
-}
-
-ShaderID::~ShaderID()
-{
-	free(source);
-}
-
-
 BC_SynchronousCommand::BC_SynchronousCommand()
 {
 	command = BC_SynchronousCommand::NONE;
@@ -217,53 +204,6 @@ void BC_Synchronous::handle_garbage()
 	}
 }
 
-
-unsigned int BC_Synchronous::get_shader(char *source, int *got_it)
-{
-	table_lock->lock("BC_Resources::get_shader");
-	for(int i = 0; i < shader_ids.total; i++)
-	{
-		if(shader_ids.values[i]->window_id == current_window->get_id() &&
-			!strcmp(shader_ids.values[i]->source, source))
-		{
-			unsigned int result = shader_ids.values[i]->handle;
-			table_lock->unlock();
-			*got_it = 1;
-			return result;
-		}
-	}
-	table_lock->unlock();
-	*got_it = 0;
-	return 0;
-}
-
-void BC_Synchronous::put_shader(unsigned int handle, 
-	char *source)
-{
-	table_lock->lock("BC_Resources::put_shader");
-	shader_ids.append(new ShaderID(current_window->get_id(), handle, source));
-	table_lock->unlock();
-}
-
-void BC_Synchronous::dump_shader(unsigned int handle)
-{
-	int got_it = 0;
-	table_lock->lock("BC_Resources::dump_shader");
-	for(int i = 0; i < shader_ids.total; i++)
-	{
-		if(shader_ids.values[i]->handle == handle)
-		{
-			printf("BC_Synchronous::dump_shader\n"
-				"%s", shader_ids.values[i]->source);
-			got_it = 1;
-			break;
-		}
-	}
-	table_lock->unlock();
-	if(!got_it) printf("BC_Synchronous::dump_shader couldn't find %d\n", handle);
-}
-
-
 void BC_Synchronous::delete_window(BC_WindowBase *window)
 {
 #ifdef HAVE_GL
@@ -285,26 +225,9 @@ void BC_Synchronous::delete_window_sync(BC_SynchronousCommand *command)
 	Display *display = command->display;
 	Window win = command->win;
 	GLXContext gl_context = command->gl_context;
-int debug = 0;
 
 // texture ID's are unique to different contexts
-	glXMakeCurrent(display,
-		win,
-		gl_context);
-
-	table_lock->lock("BC_Resources::release_textures");
-
-	for(int i = 0; i < shader_ids.total; i++)
-	{
-		if(shader_ids.values[i]->window_id == window_id)
-		{
-			glDeleteShader(shader_ids.values[i]->handle);
-			shader_ids.remove_object_number(i);
-			i--;
-		}
-	}
-
-	table_lock->unlock();
+	glXMakeCurrent(display, win, gl_context);
 
 	XDestroyWindow(display, win);
 	if(gl_context) glXDestroyContext(display, gl_context);

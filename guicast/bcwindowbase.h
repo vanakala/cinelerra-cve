@@ -194,18 +194,12 @@ public:
 //============================= OpenGL functions ===============================
 // OpenGL functions must be called from inside a BC_Synchronous command.
 // Create openGL context and bind it to the current window.
-// If it's called inside start_video/stop_video, the context is bound to the window.
-// If it's called outside start_video/stop_video, the context is bound to the pixmap.
 // Must be called at the beginning of any opengl routine to make sure
 // the context is current.
 // No locking is performed.
 	int enable_opengl();
 	void flip_opengl();
 
-// Calls the BC_Synchronous version of the function with the window_id.
-// Not run in OpenGL thread because it has its own lock.
-	unsigned int get_shader(char *title, int *got_it);
-	void put_shader(unsigned int handle, char *title);
 	int get_opengl_version(BC_WindowBase *window);
 
 	int flash(int x, int y, int w, int h, int flush = 1);
