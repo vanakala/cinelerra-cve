@@ -55,17 +55,20 @@ PlaybackEngine* VTracking::get_playback_engine()
 
 void VTracking::update_tracker(ptstime position)
 {
-	Asset *asset = vwindow->get_edl()->assets->first;
-	vwindow->get_edl()->local_session->set_selectionstart(position);
-	vwindow->get_edl()->local_session->set_selectionend(position);
-	vwindow->gui->slider->update(position);
+	EDL *edl = vwindow->get_edl();
 
-	vwindow->gui->clock->update(position + 
-		asset->tcstart / (asset->video_data ?
-							asset->frame_rate :
-							asset->sample_rate));
+	if(edl)
+	{
+		Asset *asset = vwindow->get_asset();
 
-// This is going to boost the latency but we need to update the timebar
+		edl->local_session->set_selectionstart(position);
+		edl->local_session->set_selectionend(position);
+		vwindow->gui->slider->update(position);
+
+		vwindow->gui->clock->update(position +
+			asset->tcstart / (asset->video_data ?
+			asset->frame_rate : asset->sample_rate));
+	}
 	vwindow->gui->timebar->update();
 
 	update_meters(position);
