@@ -638,6 +638,7 @@ void VWindowCanvas::draw_refresh()
 				out_y1,
 				out_x2,
 				out_y2);
+			refresh_frame->set_pixel_aspect(edl->get_sample_aspect_ratio());
 			get_canvas()->draw_vframe(refresh_frame,
 				round(out_x1),
 				round(out_y1),
