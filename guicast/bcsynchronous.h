@@ -52,12 +52,8 @@ class BC_SynchronousCommand
 {
 public:
 	BC_SynchronousCommand();
-	~BC_SynchronousCommand();
 
 	virtual void copy_from(BC_SynchronousCommand *command);
-
-	Condition *command_done;
-	int result;
 	int command;
 
 // Commands
@@ -71,18 +67,8 @@ public:
 		LAST_COMMAND
 	};
 
-	int colormodel;
 	BC_WindowBase *window;
 	VFrame *frame;
-
-	VFrame *frame_return;
-
-	int id;
-	int w;
-	int h;
-
-// For garbage collection
-	int window_id;
 	Display *display;
 	Window win;
 #ifdef HAVE_GL
@@ -116,7 +102,7 @@ public:
 // part to finish.
 	void delete_window(BC_WindowBase *window);
 
-	int send_command(BC_SynchronousCommand *command);
+	void send_command(BC_SynchronousCommand *command);
 	void send_garbage(BC_SynchronousCommand *command);
 
 // Get the window currently bound to the context.

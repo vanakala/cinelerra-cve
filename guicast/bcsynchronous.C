@@ -39,37 +39,20 @@ BC_SynchronousCommand::BC_SynchronousCommand()
 {
 	command = BC_SynchronousCommand::NONE;
 	frame = 0;
-	frame_return = 0;
-	result = 0;
-	w = 0;
-	h = 0;
-	window_id = 0;
 	display = 0;
 	win = 0;
 #ifdef HAVE_GL
 	gl_context = 0;
 #endif
-	command_done = new Condition(0, "BC_SynchronousCommand::command_done", 0);
-}
-
-BC_SynchronousCommand::~BC_SynchronousCommand()
-{
-	delete command_done;
 }
 
 void BC_SynchronousCommand::copy_from(BC_SynchronousCommand *command)
 {
 	this->command = command->command;
-	this->colormodel = command->colormodel;
 	this->window = command->window;
 	this->frame = command->frame;
-	this->window_id = command->window_id;
-
-	this->frame_return = command->frame_return;
-
-	this->id = command->id;
-	this->w = command->w;
-	this->h = command->h;
+	this->display = command->display;
+	this->win = win;
 }
 
 
@@ -111,7 +94,7 @@ void BC_Synchronous::quit()
 	next_command->unlock();
 }
 
-int BC_Synchronous::send_command(BC_SynchronousCommand *command)
+void BC_Synchronous::send_command(BC_SynchronousCommand *command)
 {
 	command_lock->lock("BC_Synchronous::send_command");
 	BC_SynchronousCommand *command2 = new_command();
@@ -121,11 +104,7 @@ int BC_Synchronous::send_command(BC_SynchronousCommand *command)
 
 	next_command->unlock();
 
-// Wait for completion
-	command2->command_done->lock("BC_Synchronous::send_command");
-	int result = command2->result;
 	delete command2;
-	return result;
 }
 
 void BC_Synchronous::run()
@@ -167,11 +146,6 @@ void BC_Synchronous::handle_command_base(BC_SynchronousCommand *command)
 	}
 
 	handle_garbage();
-
-	if(command)
-	{
-		command->command_done->unlock();
-	}
 }
 
 void BC_Synchronous::handle_command(BC_SynchronousCommand *command)
@@ -209,7 +183,6 @@ void BC_Synchronous::delete_window(BC_WindowBase *window)
 #ifdef HAVE_GL
 	BC_SynchronousCommand *command = new_command();
 	command->command = BC_SynchronousCommand::DELETE_WINDOW;
-	command->window_id = window->get_id();
 	command->display = window->get_display();
 	command->win = window->win;
 	command->gl_context = window->gl_win_context;
@@ -221,7 +194,6 @@ void BC_Synchronous::delete_window(BC_WindowBase *window)
 void BC_Synchronous::delete_window_sync(BC_SynchronousCommand *command)
 {
 #ifdef HAVE_GL
-	int window_id = command->window_id;
 	Display *display = command->display;
 	Window win = command->win;
 	GLXContext gl_context = command->gl_context;
