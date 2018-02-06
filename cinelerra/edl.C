@@ -783,17 +783,15 @@ void EDL::dump(int indent)
 		printf("%*sEDL %p dump:\n", indent, "", this);
 	local_session->dump(indent + 2);
 	indent += 2;
-	if(!parent_edl)
-	{
-		session->dump(indent + 1);
+	session->dump(indent + 1);
 
-		printf("%*sEDLS (total %d)\n", indent + 1, "", clips.total);
+	printf("%*sEDLS (total %d)\n", indent + 1, "", clips.total);
 
-		for(int i = 0; i < clips.total; i++)
-			clips.values[i]->dump(indent + 2);
+	for(int i = 0; i < clips.total; i++)
+		clips.values[i]->dump(indent + 2);
 
-		assets->dump(indent + 1);
-	}
+	assets->dump(indent + 1);
+
 	labels->dump(indent + 1);
 	tracks->dump(indent + 1);
 }
