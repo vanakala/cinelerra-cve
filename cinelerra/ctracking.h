@@ -41,6 +41,10 @@ public:
 	void start_playback(ptstime new_position);
 	void stop_playback();
 
+	void update_meters(ptstime pts);
+	void stop_meters();
+	void set_delays(float over_delay, float peak_delay);
+
 private:
 	CWindow *cwindow;
 	ptstime selections[4];

@@ -45,13 +45,13 @@ public:
 
 // Called by the tracker to get the current position
 	virtual PlaybackEngine* get_playback_engine() = 0;
-	virtual ptstime get_tracking_position();
+	ptstime get_tracking_position();
 // Update position displayed
 	virtual void update_tracker(ptstime position) {};
 // Update meters
-	virtual void update_meters(ptstime pts);
-	virtual void stop_meters();
-	virtual void set_delays(float over_delay, float peak_delay);
+	virtual void update_meters(ptstime pts) {};
+	virtual void stop_meters() {};
+	virtual void set_delays(float over_delay, float peak_delay) {};
 
 	void run();
 

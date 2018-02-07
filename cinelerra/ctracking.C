@@ -27,6 +27,8 @@
 #include "cwindowgui.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "levelwindow.h"
+#include "levelwindowgui.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "maincursor.h"
@@ -163,4 +165,36 @@ void CTracking::update_tracker(ptstime position)
 	mwindow->update_plugin_guis();
 
 	update_meters(position);
+}
+
+void CTracking::update_meters(ptstime pts)
+{
+	double output_levels[MAXCHANNELS];
+	double module_levels[MAXCHANNELS];
+
+	if(get_playback_engine()->get_output_levels(output_levels, pts))
+	{
+		int n = get_playback_engine()->get_module_levels(module_levels, pts);
+
+		mwindow->cwindow->gui->meters->update(output_levels);
+		mwindow->lwindow->gui->panel->update(output_levels);
+		mwindow->gui->patchbay->update_meters(module_levels, n);
+	}
+}
+
+void CTracking::stop_meters()
+{
+	mwindow->cwindow->gui->meters->stop_meters();
+	mwindow->gui->patchbay->stop_meters();
+	mwindow->lwindow->gui->panel->stop_meters();
+}
+
+void CTracking::set_delays(float over_delay, float peak_delay)
+{
+	int over = over_delay * tracking_rate;
+	int peak = peak_delay * tracking_rate;
+
+	mwindow->cwindow->gui->meters->set_delays(over, peak);
+	mwindow->gui->patchbay->set_delays(over, peak);
+	mwindow->lwindow->gui->panel->set_delays(over, peak);
 }
