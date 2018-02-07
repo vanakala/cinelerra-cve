@@ -31,7 +31,6 @@ class VTracking : public Tracking
 {
 public:
 	VTracking(MWindow *mwindow, VWindow *vwindow);
-	~VTracking();
 
 	PlaybackEngine* get_playback_engine();
 	void update_tracker(ptstime position);

@@ -44,10 +44,6 @@ VTracking::VTracking(MWindow *mwindow, VWindow *vwindow)
 	this->vwindow = vwindow;
 }
 
-VTracking::~VTracking()
-{
-}
-
 PlaybackEngine* VTracking::get_playback_engine()
 {
 	return vwindow->playback_engine;
