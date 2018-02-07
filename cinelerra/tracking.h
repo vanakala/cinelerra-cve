@@ -44,7 +44,7 @@ public:
 	virtual void stop_playback();
 
 // Called by the tracker to get the current position
-	virtual PlaybackEngine* get_playback_engine();
+	virtual PlaybackEngine* get_playback_engine() = 0;
 	virtual ptstime get_tracking_position();
 // Update position displayed
 	virtual void update_tracker(ptstime position) {};

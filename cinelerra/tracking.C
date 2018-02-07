@@ -111,11 +111,6 @@ void Tracking::stop_playback()
 	}
 }
 
-PlaybackEngine* Tracking::get_playback_engine()
-{
-	return mwindow->cwindow->playback_engine;
-}
-
 ptstime Tracking::get_tracking_position()
 {
 	return get_playback_engine()->get_tracking_position();
