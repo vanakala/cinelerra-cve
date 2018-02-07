@@ -577,17 +577,13 @@ void VWindowTransport::goto_end()
 
 VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
  : Canvas(mwindow,
+	0,
 	gui,
 	mwindow->theme->vcanvas_x, 
 	mwindow->theme->vcanvas_y, 
 	mwindow->theme->vcanvas_w, 
 	mwindow->theme->vcanvas_h,
-	0,
-	0,
-	0,
-	0,
-	0,
-	1)
+	0)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

@@ -27,8 +27,10 @@
 #include "bcmeter.h"
 #include "bcpopupmenu.h"
 #include "bcscrollbar.h"
+#include "cwindowgui.inc"
 #include "edl.inc"
 #include "mwindow.inc"
+#include "vwindowgui.inc"
 
 // Output for all X11 video
 
@@ -45,17 +47,13 @@ class Canvas
 {
 public:
 	Canvas(MWindow *mwindow,
-		BC_WindowBase *subwindow, 
+		CWindowGUI *cwindow,
+		VWindowGUI *vwindow,
 		int x, 
 		int y, 
 		int w, 
 		int h,
-		int output_w,
-		int output_h,
-		int use_scrollbars,
-		int use_cwindow = 0,
-		int use_rwindow = 0,
-		int use_vwindow = 0); // Use menu different options for different windows
+		int use_scrollbars);
 	virtual ~Canvas();
 
 // Get dimensions given a zoom
@@ -188,11 +186,6 @@ public:
 	CanvasFullScreenPopup *fullscreen_menu;
 	int x, y, w, h;
 	int use_scrollbars;
-	int use_cwindow;
-	int use_rwindow;
-	int use_vwindow;
-// Used in record monitor
-	int output_w, output_h;
 // Last frame played is stored here in driver format for 
 // refreshes.
 	VFrame *refresh_frame;
@@ -214,6 +207,8 @@ public:
 	int root_h;
 
 	MWindow *mwindow;
+	CWindowGUI *cwindowgui;
+	VWindowGUI *vwindowgui;
 
 private:
 	void get_scrollbars(EDL *edl, 
@@ -369,15 +364,6 @@ class CanvasFullScreenItem : public BC_MenuItem
 {
 public:
 	CanvasFullScreenItem(Canvas *canvas);
-	int handle_event();
-	Canvas *canvas;
-};
-
-
-class CanvasPopupResetTranslation : public BC_MenuItem
-{
-public:
-	CanvasPopupResetTranslation(Canvas *canvas);
 	int handle_event();
 	Canvas *canvas;
 };

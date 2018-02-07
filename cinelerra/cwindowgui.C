@@ -711,14 +711,12 @@ void CWindowTransport::goto_end()
 CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
  : Canvas(mwindow,
 	gui,
+	0,
 	mwindow->theme->ccanvas_x,
 	mwindow->theme->ccanvas_y,
 	mwindow->theme->ccanvas_w,
 	mwindow->theme->ccanvas_h,
-	0,
-	0,
-	mwindow->edl->session->cwindow_scrollbars,
-	1)
+	mwindow->edl->session->cwindow_scrollbars)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

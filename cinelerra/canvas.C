@@ -23,6 +23,7 @@
 #include "canvas.h"
 #include "clip.h"
 #include "colors.h"
+#include "cwindowgui.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "keys.h"
@@ -31,20 +32,17 @@
 #include "mutex.h"
 #include "mwindow.h"
 #include "vframe.h"
+#include "vwindowgui.h"
 
 
 Canvas::Canvas(MWindow *mwindow,
-	BC_WindowBase *subwindow, 
+	CWindowGUI *cwindow,
+	VWindowGUI *vwindow,
 	int x, 
 	int y, 
 	int w, 
 	int h,
-	int output_w,
-	int output_h,
-	int use_scrollbars,
-	int use_cwindow,
-	int use_rwindow,
-	int use_vwindow)
+	int use_scrollbars)
 {
 	xscroll = 0;
 	yscroll = 0;
@@ -57,17 +55,17 @@ Canvas::Canvas(MWindow *mwindow,
 	if(x < 10) x = 10;
 	if(y < 10) y = 10;
 	this->mwindow = mwindow;
-	this->subwindow = subwindow;
+	cwindowgui = cwindow;
+	vwindowgui = vwindow;
+	if(cwindow)
+		subwindow = cwindow;
+	else
+		subwindow = vwindow;
 	this->x = x;
 	this->y = y;
 	this->w = w;
 	this->h = h;
-	this->output_w = output_w;
-	this->output_h = output_h;
 	this->use_scrollbars = use_scrollbars;
-	this->use_cwindow = use_cwindow;
-	this->use_rwindow = use_rwindow;
-	this->use_vwindow = use_vwindow;
 	this->root_w = subwindow->get_root_w(0, 0);
 	this->root_h = subwindow->get_root_h(0);
 	canvas_lock = new Mutex("Canvas::canvas_lock", 1);
@@ -396,14 +394,6 @@ void Canvas::get_transfers(EDL *edl,
 			output_y1 = 0;
 			output_x2 = get_output_w(edl);
 			output_y2 = get_output_h(edl);
-		}
-		else
-// No EDL to get aspect ratio or output frame coords from
-		{
-			output_x1 = 0;
-			output_y1 = 0;
-			output_x2 = this->output_w;
-			output_y2 = this->output_h;
 		}
 	}
 
@@ -842,7 +832,7 @@ CanvasFullScreenPopup::CanvasFullScreenPopup(Canvas *canvas)
 		"", 
 		0)
 {
-	if(canvas->use_cwindow) add_item(new CanvasPopupAuto(canvas));
+	if(canvas->cwindowgui) add_item(new CanvasPopupAuto(canvas));
 	add_item(new CanvasSubWindowItem(canvas));
 }
 
@@ -878,18 +868,14 @@ CanvasPopup::CanvasPopup(Canvas *canvas)
 	add_item(new CanvasPopupSize(canvas, _("Zoom 200%"), 2.0));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 300%"), 3.0));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 400%"), 4.0));
-	if(canvas->use_cwindow)
+	if(canvas->cwindowgui)
 	{
 		add_item(new CanvasPopupAuto(canvas));
 		add_item(new CanvasPopupResetCamera(canvas));
 		add_item(new CanvasPopupResetProjector(canvas));
 		add_item(new CanvasToggleControls(canvas));
 	}
-	if(canvas->use_rwindow)
-	{
-		add_item(new CanvasPopupResetTranslation(canvas));
-	}
-	if(canvas->use_vwindow)
+	if(canvas->vwindowgui)
 	{
 		add_item(new CanvasPopupRemoveSource(canvas));
 	}
@@ -946,19 +932,6 @@ CanvasPopupResetProjector::CanvasPopupResetProjector(Canvas *canvas)
 int CanvasPopupResetProjector::handle_event()
 {
 	canvas->reset_projector();
-	return 1;
-}
-
-
-CanvasPopupResetTranslation::CanvasPopupResetTranslation(Canvas *canvas)
- : BC_MenuItem(_("Reset translation"))
-{
-	this->canvas = canvas;
-}
-
-int CanvasPopupResetTranslation::handle_event()
-{
-	canvas->reset_translation();
 	return 1;
 }
 
