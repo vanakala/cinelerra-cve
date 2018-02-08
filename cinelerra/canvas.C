@@ -135,7 +135,7 @@ void Canvas::calculate_sizes(EDL *edl,
 	int &w, 
 	int &h)
 {
-	double aspect = edl->session->sample_aspect_ratio *
+	double aspect = sample_aspect_ratio() *
 		edl->session->output_w / edl->session->output_h;
 	// Horizontal stretch
 	if((double)output_w / output_h <= aspect)
@@ -374,7 +374,7 @@ void Canvas::get_transfers(EDL *edl,
 // Use EDL aspect ratio to shrink one of the canvas dimensions
 			double out_w = canvas_x2 - canvas_x1;
 			double out_h = canvas_y2 - canvas_y1;
-			double aspect = edl->get_sample_aspect_ratio() *
+			double aspect = sample_aspect_ratio() *
 				edl->session->output_w / edl->session->output_h;
 			if(out_w / out_h > aspect)
 			{

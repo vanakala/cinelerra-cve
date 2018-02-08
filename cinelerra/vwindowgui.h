@@ -111,6 +111,7 @@ public:
 	void close_source();
 	int get_fullscreen();
 	void set_fullscreen(int value);
+	double sample_aspect_ratio();
 
 	MWindow *mwindow;
 	VWindowGUI *gui;

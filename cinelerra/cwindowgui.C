@@ -793,7 +793,7 @@ void CWindowCanvas::draw_refresh()
 			{
 // Can't use OpenGL here because it is called asynchronously of the
 // playback operation.
-				refresh_frame->set_pixel_aspect(mwindow->edl->get_sample_aspect_ratio());
+				refresh_frame->set_pixel_aspect(sample_aspect_ratio());
 				get_canvas()->draw_vframe(refresh_frame,
 						round(out_x1),
 						round(out_y1),
@@ -2709,4 +2709,11 @@ void CWindowCanvas::toggle_controls()
 int CWindowCanvas::get_cwindow_controls()
 {
 	return mwindow->session->cwindow_controls;
+}
+
+double CWindowCanvas::sample_aspect_ratio()
+{
+	if(mwindow->edl->session->sample_aspect_ratio)
+		return mwindow->edl->session->sample_aspect_ratio;
+	return 1.0;
 }

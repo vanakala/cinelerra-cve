@@ -101,6 +101,7 @@ public:
 	virtual int get_cwindow_controls() { return 0; };
 	virtual int get_fullscreen() { return 0; }
 	virtual void set_fullscreen(int value) { };
+	virtual double sample_aspect_ratio() { return 1; };
 
 	int cursor_leave_event_base(BC_WindowBase *caller);
 	int cursor_enter_event_base(BC_WindowBase *caller);

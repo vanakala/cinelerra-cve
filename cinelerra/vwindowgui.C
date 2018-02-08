@@ -634,7 +634,7 @@ void VWindowCanvas::draw_refresh()
 				out_y1,
 				out_x2,
 				out_y2);
-			refresh_frame->set_pixel_aspect(edl->get_sample_aspect_ratio());
+			refresh_frame->set_pixel_aspect(sample_aspect_ratio());
 			get_canvas()->draw_vframe(refresh_frame,
 				round(out_x1),
 				round(out_y1),
@@ -672,4 +672,12 @@ int VWindowCanvas::get_fullscreen()
 void VWindowCanvas::set_fullscreen(int value)
 {
 	mwindow->session->vwindow_fullscreen = value;
+}
+
+double VWindowCanvas::sample_aspect_ratio()
+{
+	Asset *asset = gui->vwindow->asset;
+	if(asset && asset->sample_aspect_ratio)
+		return asset->sample_aspect_ratio;
+	return 1.0;
 }
