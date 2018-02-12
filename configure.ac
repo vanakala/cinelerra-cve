@@ -5,7 +5,7 @@ AC_CANONICAL_SYSTEM
 # Test for minimal version of autoconf
 AC_PREREQ(2.57)
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 IT_PROG_INTLTOOL
