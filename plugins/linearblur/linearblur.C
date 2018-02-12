@@ -34,6 +34,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "bchash.h"
 #include "bcslider.h"
 #include "bctitle.h"
@@ -46,6 +48,11 @@
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 #include "vframe.h"
+
+#ifdef HAVE_GL
+#include <GL/gl.h>
+#include <GL/glx.h>
+#endif
 
 
 class LinearBlurEngine;

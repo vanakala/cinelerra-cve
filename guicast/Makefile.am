@@ -40,7 +40,6 @@ libguicastcve_la_SOURCES = \
 	bcsignals.C \
 	bcslider.C  \
 	bcsubwindow.C \
-	bcsynchronous.C \
 	bctextbox.C \
 	bctheme.C \
 	bctimer.C \
@@ -55,10 +54,12 @@ libguicastcve_la_SOURCES = \
 	condition.C \
 	colormodels.C \
 	filesystem.C \
+	glthread.C \
 	hashcache.C \
 	mutex.C \
 	rotateframe.C \
 	sema.C \
+	shaders.C \
 	thread.C \
 	tmpframecache.C \
 	units.C \
@@ -136,8 +137,6 @@ noinst_HEADERS = \
 	bcslider.inc \
 	bcsubwindow.h \
 	bcsubwindow.inc \
-	bcsynchronous.h \
-	bcsynchronous.inc \
 	bctextbox.h \
 	bctextbox.inc \
 	bctheme.h \
@@ -164,6 +163,8 @@ noinst_HEADERS = \
 	cursors.h \
 	filesystem.h \
 	filesystem.inc \
+	glthread.h \
+	glthread.inc \
 	fonts.h \
 	hashcache.h \
 	hashcache.inc \
@@ -176,6 +177,8 @@ noinst_HEADERS = \
 	rotateframe.inc \
 	sema.h \
 	sema.inc \
+	shaders.h \
+	shaders.inc \
 	thread.h \
 	tmpframecache.h \
 	units.h \

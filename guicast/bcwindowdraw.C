@@ -24,7 +24,6 @@
 #include "bcpopup.h"
 #include "bcresources.h"
 #include "bcsignals.h"
-#include "bcsynchronous.h"
 #include "bctimer.h"
 #include "bcwindowbase.h"
 #include "clip.h"

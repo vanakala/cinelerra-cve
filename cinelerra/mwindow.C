@@ -27,7 +27,6 @@
 #include "bcdisplayinfo.h"
 #include "bcprogress.h"
 #include "bcresources.h"
-#include "bcsynchronous.h"
 #include "bcsignals.h"
 #include "brender.h"
 #include "cache.h"
@@ -47,6 +46,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "framecache.h"
+#include "glthread.h"
 #include "gwindow.h"
 #include "gwindowgui.h"
 #include "indexfile.h"
@@ -120,7 +120,7 @@ MWindow::MWindow(const char *config_path)
 	edl = 0;
 	init_signals();
 
-	glthread = new BC_Synchronous();
+	glthread = new GLThread();
 
 	show_splash();
 
@@ -1277,7 +1277,7 @@ void MWindow::start()
 	ruler->start();
 	gwindow->start();
 	Thread::start();
-	glthread->start();
+	glthread->run();
 }
 
 void MWindow::run()

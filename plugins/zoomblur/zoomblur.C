@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#define GL_GLEXT_PROTOTYPES
 #include "bchash.h"
 #include "bcsignals.h"
 #include "bcslider.h"
@@ -49,6 +50,10 @@
 #include "pluginwindow.h"
 #include "vframe.h"
 
+#ifdef HAVE_GL
+#include <GL/gl.h>
+#include <GL/glx.h>
+#endif
 
 class ZoomBlurEngine;
 

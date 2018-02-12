@@ -29,7 +29,6 @@
 #include "awindow.inc"
 #include "batchrender.inc"
 #include "bcwindowbase.inc"
-#include "bcsynchronous.inc"
 #include "brender.inc"
 #include "cache.inc"
 #include "cwindow.inc"
@@ -42,6 +41,7 @@
 #include "filesystem.inc"
 #include "filexml.inc"
 #include "framecache.inc"
+#include "glthread.inc"
 #include "gwindow.inc"
 #include "levelwindow.inc"
 #include "loadmode.inc"
@@ -379,7 +379,7 @@ public:
 	void set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
 
 	SplashGUI *splash_window;
-	BC_Synchronous *glthread;
+	GLThread *glthread;
 
 // Main undo stack
 	MainUndo *undo;

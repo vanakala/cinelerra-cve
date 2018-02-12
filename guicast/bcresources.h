@@ -29,10 +29,10 @@
 #include "bcfontentry.inc"
 #include "bcresources.inc"
 #include "bcsignals.inc"
-#include "bcsynchronous.inc"
 #include "bcwindowbase.inc"
-#include "tmpframecache.inc"
+#include "glthread.inc"
 #include "hashcache.inc"
+#include "tmpframecache.inc"
 #include "vframe.inc"
 
 #include <X11/Xlib.h>
@@ -62,10 +62,10 @@ public:
 // Get window border size created by window manager
 	int get_top_border();
 	int get_left_border();
-// Get synchronous thread for OpenGL
-	BC_Synchronous* get_synchronous();
+// Get GLThread for OpenGL
+	GLThread* get_glthread();
 // Called by user after synchronous thread is created.
-	void set_synchronous(BC_Synchronous *synchronous);
+	void set_glthread(GLThread *glthread);
 
 // These values should be changed before the first window is created.
 // colors
@@ -344,7 +344,7 @@ private:
 	Mutex *id_lock;
 	static Mutex fontconfig_lock;
 
-	BC_Synchronous *synchronous;
+	GLThread *glthread;
 
 	int id;
 };

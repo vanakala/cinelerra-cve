@@ -27,7 +27,6 @@
 
 #include "bchash.h"
 #include "bcsignals.h"
-#include "bcsynchronous.h"
 #include "bcwindowbase.h"
 #include "clip.h"
 #include "colormodels.h"

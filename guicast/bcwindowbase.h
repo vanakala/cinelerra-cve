@@ -64,7 +64,6 @@
 #include "bcscrollbar.inc"
 #include "bcslider.inc"
 #include "bcsubwindow.inc"
-#include "bcsynchronous.inc"
 #include "bctextbox.inc"
 #include "bctimer.inc"
 #include "bctitle.inc"
@@ -75,6 +74,7 @@
 #include "bcwindowbase.inc"
 #include "condition.inc"
 #include "bchash.inc"
+#include "glthread.inc"
 #include "linklist.h"
 #include "mutex.inc"
 #include "vframe.inc"
@@ -91,9 +91,6 @@
 #include <X11/cursorfont.h>
 #ifdef HAVE_LIBXXF86VM
 #include <X11/extensions/xf86vmode.h>
-#endif
-#ifdef HAVE_GL
-#include <GL/glx.h>
 #endif
 
 class BC_ResizeCall
@@ -139,7 +136,6 @@ public:
 	friend class BC_ScrollBar;
 	friend class BC_Slider;
 	friend class BC_SubWindow;
-	friend class BC_Synchronous;
 	friend class BC_TextBox;
 	friend class BC_Title;
 	friend class BC_Toggle;
@@ -192,7 +188,7 @@ public:
 
 
 //============================= OpenGL functions ===============================
-// OpenGL functions must be called from inside a BC_Synchronous command.
+// OpenGL functions must be called from inside a GLThread command.
 // Create openGL context and bind it to the current window.
 // Must be called at the beginning of any opengl routine to make sure
 // the context is current.
@@ -218,8 +214,8 @@ public:
 
 
 	static BC_Resources* get_resources();
-// User must create synchronous object first
-	static BC_Synchronous* get_synchronous();
+// User must create glthread object first
+	static GLThread* get_glthread();
 
 // Dimensions
 	virtual int get_w();
@@ -530,9 +526,6 @@ private:
 				int options = 0);
 
 	static Display* init_display(const char *display_name);
-// Get display from top level
-	Display* get_display();
-	int get_screen();
 	virtual void initialize();
 	void get_atoms();
 // Function to overload to recieve customly defined atoms
@@ -711,12 +704,9 @@ private:
 	Colormap cmap;
 // Display for all synchronous operations
 	Display *display;
- 	Window win;
-#ifdef HAVE_GL
-// The first context to be created and the one whose texture id 
-// space is shared with the other contexts.
-	GLXContext gl_win_context;
-#endif
+	Window win;
+// Window has gl_context
+	int have_gl_context;
 	int window_lock;
 	GC gc;
 // Depth given by the X Server

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,25 +19,26 @@
  * 
  */
 
-#ifndef BCSYNCHRONOUS_H
-#define BCSYNCHRONOUS_H
+#ifndef GLTHREAD_H
+#define GLTHREAD_H
 
-#include "arraylist.h"
-#include "bcpixmap.inc"
 #include "bcwindowbase.inc"
 #include "condition.inc"
+#include "glthread.inc"
 #include "mutex.inc"
+#include "shaders.inc"
 #include "thread.h"
 #include "vframe.inc"
 
-#if defined(HAVE_CONFIG_H)
 #include "config.h"
-#endif
 
 #ifdef HAVE_GL
 #include <GL/gl.h>
 #include <GL/glx.h>
 #endif
+
+#define GL_MAX_CONTEXTS 8
+#define GL_MAX_COMMANDS 16
 
 #include <X11/Xlib.h>
 
@@ -48,12 +49,14 @@
 
 // In addition to synchronous operations, it handles global OpenGL variables.
 
-class BC_SynchronousCommand
+class GLThreadCommand
 {
 public:
-	BC_SynchronousCommand();
+	GLThreadCommand();
 
-	virtual void copy_from(BC_SynchronousCommand *command);
+	void dump(int indent = 0, int show_frame = 0);
+	const char *name(int command);
+
 	int command;
 
 // Commands
@@ -61,82 +64,60 @@ public:
 	{
 		NONE,
 		QUIT,
-// Used by garbage collector
-		DELETE_WINDOW,
 // subclasses create new commands starting with this enumeration
 		LAST_COMMAND
 	};
 
-	BC_WindowBase *window;
 	VFrame *frame;
 	Display *display;
-	Window win;
-#ifdef HAVE_GL
-	GLXContext gl_context;
-#endif
+	int screen;
 };
 
 
-class BC_Synchronous : public Thread
+class GLThread
 {
 public:
-	BC_Synchronous();
-	virtual ~BC_Synchronous();
+	GLThread();
+	~GLThread();
 
-	friend class BC_WindowBase;
-
-// Called by another thread
-// Quits the loop
+	int initialize(Display *dpy, Window win, int screen);
 	void quit();
 
-	void start();
 	void run();
 
-	virtual BC_SynchronousCommand* new_command();
+	GLThreadCommand* new_command();
+
 // Handle extra commands not part of the base class.
 // Contains a switch statement starting with LAST_COMMAND
-	virtual void handle_command(BC_SynchronousCommand *command);
+	void handle_command(GLThreadCommand *command);
 
 // Called by ~BC_WindowBase to delete OpenGL objects related to the window.
-// This function returns immediately instead of waiting for the synchronous
-// part to finish.
-	void delete_window(BC_WindowBase *window);
-
-	void send_command(BC_SynchronousCommand *command);
-	void send_garbage(BC_SynchronousCommand *command);
-
-// Get the window currently bound to the context.
-	BC_WindowBase* get_window();
+	void delete_window(Display *dpy, int screen);
 
 private:
-	void handle_command_base(BC_SynchronousCommand *command);
-
-// Execute commands which can't be executed until the caller returns.
-	void handle_garbage();
-
-// Release OpenGL objects related to the window id.
-// Called from the garbage collector only
-	void delete_window_sync(BC_SynchronousCommand *command);
-	void delete_pixmap_sync(BC_SynchronousCommand *command);
+	void handle_command_base(GLThreadCommand *command);
+	int have_context(Display *dpy, int screen);
+	void delete_contexts();
 
 	Condition *next_command;
 	Mutex *command_lock;
 
-// Must be locked in order of current_window->lock_window, table_lock
-// or just table_lock.
-	Mutex *table_lock;
-
+	Shaders *shaders;
 // This quits the program when it's 1.
 	int done;
 // Command stack
-	ArrayList<BC_SynchronousCommand*> commands;
-	int is_running;
-// The window the opengl context is currently bound to.
-// Set by BC_WindowBase::enable_opengl.
-	BC_WindowBase *current_window;
+	int last_command;
+	GLThreadCommand *commands[GL_MAX_COMMANDS];
 
-// Commands which can't be executed until the caller returns.
-	ArrayList<BC_SynchronousCommand*> garbage;
-
+#ifdef HAVE_GL
+	int last_context;
+	struct glctx
+	{
+		Display *dpy;
+		Window win;
+		int screen;
+		GLXContext gl_context;
+	}contexts[GL_MAX_CONTEXTS];
+#endif
 };
 #endif

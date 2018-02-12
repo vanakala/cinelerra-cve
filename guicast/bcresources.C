@@ -24,11 +24,11 @@
 #include "bcfontentry.h"
 #include "bcresources.h"
 #include "bcsignals.h"
-#include "bcsynchronous.h"
 #include "bcwindowbase.h"
 #include "colors.h"
 #include "colormodels.inc"
 #include "fonts.h"
+#include "glthread.h"
 #include "language.h"
 #include "hashcache.h"
 #include "mutex.h"
@@ -169,7 +169,7 @@ const char *BC_Resources::OpenGLStrings[3];
 
 BC_Resources::BC_Resources()
 {
-	synchronous = 0;
+	glthread = 0;
 	display_info = new BC_DisplayInfo("", 0);
 	id_lock = new Mutex("BC_Resources::id_lock");
 	create_window_lock = new Mutex("BC_Resources::create_window_lock", 1);
@@ -682,15 +682,16 @@ void BC_Resources::init_shm(BC_WindowBase *window)
 	}
 }
 
-BC_Synchronous* BC_Resources::get_synchronous()
+GLThread* BC_Resources::get_glthread()
 {
-	return synchronous;
+	return glthread;
 }
 
-void BC_Resources::set_synchronous(BC_Synchronous *synchronous)
+void BC_Resources::set_glthread(GLThread *glthread)
 {
-	this->synchronous = synchronous;
+	this->glthread = glthread;
 }
+
 int BC_Resources::get_top_border()
 {
 	return display_info->get_top_border();

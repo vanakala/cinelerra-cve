@@ -1,6 +1,7 @@
 
 /*
  * CINELERRA
+ * Copyright (C) 2018 Einar Rünkaru <einarrunkaru@gmail dot com>
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -22,66 +23,25 @@
 #define GL_GLEXT_PROTOTYPES
 #include "bcresources.h"
 #include "bcsignals.h"
-#include "bcsynchronous.h"
 #include "bcwindowbase.h"
-
-static int attrib[] =
-{
-    GLX_RGBA,
-    GLX_RED_SIZE, 1,
-    GLX_GREEN_SIZE, 1,
-    GLX_BLUE_SIZE, 1,
-    GLX_DOUBLEBUFFER,
-    None
-};
-
+#include "glthread.h"
 
 // OpenGL functions in BC_WindowBase
 
 int BC_WindowBase::enable_opengl()
 {
 #ifdef HAVE_GL
-	XVisualInfo *visinfo;
-
 	top_level->sync_display();
-
-	if(!gl_win_context)
+	if(get_resources()->get_glthread()->initialize(top_level->display, win, top_level->screen))
 	{
-		if(!(visinfo = glXChooseVisual(top_level->display, top_level->screen, attrib)))
-		{
-			fputs("BC_WindowBase::enable_opengl:Couldn't get visual.\n", stdout);
+		fputs("BC_WindowBase::enable_opengl: Failed to initalize GLThread\n", stdout);
 			return 1;
-		}
-		if(!(gl_win_context = glXCreateContext(top_level->display,
-				visinfo, 0, GL_TRUE)))
-		{
-			fputs("BC_WindowBase::enable_opengl: Couldn't create OpenGL context.\n", stdout);
-			XFree(visinfo);
-			return 1;
-		}
-		XFree(visinfo);
 	}
-
-// Make the front buffer's context current.
-	if(glXMakeCurrent(top_level->display, win, gl_win_context))
-	{
-		if(!BC_Resources::OpenGLStrings[0])
-		{
-			const char *string;
-			if(string = (const char*)glGetString(GL_VERSION))
-				BC_Resources::OpenGLStrings[0] = strdup(string);
-			if(string = (const char*)glGetString(GL_VENDOR))
-				BC_Resources::OpenGLStrings[1] = strdup(string);
-			if(string = (const char*)glGetString(GL_RENDERER))
-				BC_Resources::OpenGLStrings[2] = strdup(string);
-		}
-		return 0;
-	}
-
-	glXDestroyContext(top_level->display, gl_win_context);
-	gl_win_context = 0;
-#endif
+	have_gl_context = 1;
+	return 0;
+#else
 	return 1;
+#endif
 }
 
 void BC_WindowBase::flip_opengl()
@@ -96,7 +56,7 @@ int BC_WindowBase::get_opengl_version(BC_WindowBase *window)
 {
 #ifdef HAVE_GL
 	int maj, min;
-	if(glXQueryVersion(window->get_display(), &maj, &min))
+	if(glXQueryVersion(window->top_level->display, &maj, &min))
 		return 100 * maj + min;
 #endif
 	return 0;

@@ -23,7 +23,6 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "bcsignals.h"
-#include "bcsynchronous.h"
 #include "bcwindowbase.h"
 #include "vframe.h"
 

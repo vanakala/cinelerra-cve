@@ -30,7 +30,6 @@
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcsubwindow.h"
-#include "bcsynchronous.h"
 #include "bctimer.h"
 #include "bcwidgetgrid.h"
 #include "bcwindowbase.h"
@@ -40,14 +39,12 @@
 #include "cursors.h"
 #include "bchash.h"
 #include "fonts.h"
+#include "glthread.h"
 #include "keys.h"
 #include "language.h"
 #include "mutex.h"
 #include "vframe.h"
 
-#ifdef HAVE_GL
-#include <GL/gl.h>
-#endif
 #include <string.h>
 #include <unistd.h>
 #include <poll.h>
@@ -126,17 +123,17 @@ BC_WindowBase::~BC_WindowBase()
 
 	delete pixmap;
 
-// Destroyed in synchronous thread if gl context exists.
-#ifdef HAVE_GL
-	if(!gl_win_context || !get_resources()->get_synchronous())
-#endif
-		XDestroyWindow(top_level->display, win);
+	XDestroyWindow(top_level->display, win);
 
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
 	if(icon_pixmap) delete icon_pixmap;
 	if(icon_window) delete icon_window;
 	if(temp_bitmap) delete temp_bitmap;
 	get_resources()->create_window_lock->unlock();
+
+	if(have_gl_context)
+		get_resources()->get_glthread()->delete_window(top_level->display,
+			top_level->screen);
 
 	if(window_type == MAIN_WINDOW) 
 	{
@@ -149,10 +146,7 @@ BC_WindowBase::~BC_WindowBase()
 		flush();
 // Can't close display if another thread is waiting for events.
 // Synchronous thread must delete display if gl_context exists.
-#ifdef HAVE_GL
-		if(!gl_win_context || !get_resources()->get_synchronous())
-#endif
-			XCloseDisplay(display);
+		XCloseDisplay(display);
 		clipboard->stop_clipboard();
 		delete clipboard;
 	}
@@ -164,14 +158,7 @@ BC_WindowBase::~BC_WindowBase()
 // Must be last reference to display.
 // This only works if it's a MAIN_WINDOW since the display deletion for
 // a subwindow is not determined by the subwindow.
-#ifdef HAVE_GL
-	if(gl_win_context && get_resources()->get_synchronous())
-	{
-		printf("BC_WindowBase::~BC_WindowBase window deleted but opengl deletion is not\n"
-			"implemented for BC_Pixmap.\n");
-		get_resources()->get_synchronous()->delete_window(this);
-	}
-#endif
+
 	if(wide_text != wide_buffer)
 		delete [] wide_text;
 
@@ -252,9 +239,7 @@ void BC_WindowBase::initialize()
 	input_context = 0;
 
 	cursor_timer = new Timer;
-#ifdef HAVE_GL
-	gl_win_context = 0;
-#endif
+	have_gl_context = 0;
 	wide_text = wide_buffer;
 	*wide_text = 0;
 }
@@ -587,16 +572,6 @@ Display* BC_WindowBase::init_display(const char *display_name)
 		}
 	}
 	return display;
-}
-
-Display* BC_WindowBase::get_display()
-{
-	return top_level->display;
-}
-
-int BC_WindowBase::get_screen()
-{
-	return top_level->screen;
 }
 
 int BC_WindowBase::run_window()
@@ -2610,9 +2585,9 @@ BC_Resources* BC_WindowBase::get_resources()
 	return &BC_WindowBase::resources;
 }
 
-BC_Synchronous* BC_WindowBase::get_synchronous()
+GLThread* BC_WindowBase::get_glthread()
 {
-	return BC_WindowBase::resources.get_synchronous();
+	return BC_WindowBase::resources.get_glthread();
 }
 
 int BC_WindowBase::get_bg_color()
@@ -3330,5 +3305,5 @@ int BC_WindowBase::get_id()
 
 void BC_WindowBase::set_protowatch()
 {
-	BC_Signals::watchXproto(get_display());
+	BC_Signals::watchXproto(top_level->display);
 }

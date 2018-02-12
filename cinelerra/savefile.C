@@ -22,7 +22,7 @@
 #include "confirmsave.h"
 #include "bchash.h"
 #include "bcresources.h"
-#include "bcsynchronous.h"
+#include "glthread.h"
 #include "edl.h"
 #include "mainerror.h"
 #include "file.h"
