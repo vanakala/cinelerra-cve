@@ -50,7 +50,6 @@
 #include "videodevice.h"
 #include "vmodule.h"
 #include "vrender.h"
-#include "vplugin.h"
 #include "vtrack.h"
 #include <string.h>
 #include "interlacemodes.h"

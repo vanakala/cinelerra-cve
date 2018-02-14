@@ -45,7 +45,6 @@
 #include "vedits.h"
 #include "vframe.h"
 #include "vmodule.h"
-#include "vpluginset.h"
 #include "vtrack.h"
 
 VTrack::VTrack(EDL *edl, Tracks *tracks)
@@ -83,11 +82,6 @@ int VTrack::vertical_span(Theme *theme)
 		patch_h += theme->title_h + theme->play_h + theme->fade_h + theme->mode_h;
 	}
 	return MAX(track_h, patch_h);
-}
-
-PluginSet* VTrack::new_plugins()
-{
-	return new VPluginSet(edl, this);
 }
 
 void VTrack::set_default_title()

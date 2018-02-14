@@ -39,7 +39,6 @@ public:
 	VTrack(EDL *edl, Tracks *tracks);
 
 	void set_default_title();
-	PluginSet* new_plugins();
 	void save_header(FileXML *file);
 	void copy_settings(Track *track);
 	void synchronize_params(Track *track);

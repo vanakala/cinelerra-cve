@@ -22,7 +22,6 @@
 #include "aedit.h"
 #include "aedits.h"
 #include "amodule.h"
-#include "apluginset.h"
 #include "atrack.h"
 #include "autoconf.h"
 #include "aautomation.h"
@@ -86,11 +85,6 @@ int ATrack::vertical_span(Theme *theme)
 		patch_h += theme->title_h + theme->play_h + theme->fade_h + theme->meter_h + theme->pan_h;
 	}
 	return MAX(track_h, patch_h);
-}
-
-PluginSet* ATrack::new_plugins()
-{
-	return new APluginSet(edl, this);
 }
 
 void ATrack::set_default_title()

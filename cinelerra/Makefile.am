@@ -55,8 +55,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    amodule.C \
 		    apatchgui.C \
 		    apluginarray.C \
-		    aplugin.C \
-		    apluginset.C \
 		    arender.C \
 		    asset.C \
 		    assetedit.C \
@@ -257,8 +255,6 @@ cinelerracve_SOURCES = aattachmentpoint.C \
 		    vpatchgui.C \
 		    vplayback.C \
 		    vpluginarray.C \
-		    vplugin.C \
-		    vpluginset.C \
 		    vrender.C \
 		    vtimebar.C \
 		    vtrack.C \
@@ -296,8 +292,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 amodule.h \
 		 apatchgui.h \
 		 apluginarray.h \
-		 aplugin.h \
-		 apluginset.h \
 		 arender.h \
 		 asset.h \
 		 assetedit.h \
@@ -500,8 +494,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vpatchgui.h \
 		 vplayback.h \
 		 vpluginarray.h \
-		 vplugin.h \
-		 vpluginset.h \
 		 vrender.h \
 		 vtimebar.h \
 		 vtrack.h \

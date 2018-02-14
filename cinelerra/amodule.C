@@ -23,7 +23,6 @@
 #include "aedit.h"
 #include "aframe.h"
 #include "amodule.h"
-#include "aplugin.h"
 #include "arender.h"
 #include "asset.h"
 #include "atrack.h"

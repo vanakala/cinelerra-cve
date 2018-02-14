@@ -36,8 +36,8 @@ class ATrack : public Track
 {
 public:
 	ATrack(EDL *edl, Tracks *tracks);
+
 	void set_default_title();
-	PluginSet* new_plugins();
 	int vertical_span(Theme *theme);
 	void save_header(FileXML *file);
 	void copy_settings(Track *track);
