@@ -95,11 +95,11 @@ int VRender::flash_output()
 	return renderengine->video->write_buffer(video_out, renderengine->edl);
 }
 
-int VRender::process_buffer(VFrame *video_out)
+void VRender::process_buffer(VFrame *video_out)
 {
 // process buffer for non realtime
 	int i, j;
-	ptstime render_len = fromunits(1);
+	ptstime render_len = renderengine->edl->session->frame_duration();
 	int reconfigure = 0;
 
 	this->video_out = video_out;
@@ -111,66 +111,39 @@ int VRender::process_buffer(VFrame *video_out)
 		last_playback);
 
 	if(reconfigure) restart_playback();
-	return process_buffer(current_postime);
+	process_buffer(current_postime);
 }
 
 
-int VRender::process_buffer(ptstime input_postime)
+void VRender::process_buffer(ptstime input_postime)
 {
-	Edit *playable_edit = 0;
-	int colormodel;
-	int use_vconsole = 1;
-	int use_brender = 0;
-	int result = 0;
 	int use_cache = renderengine->command->single_frame();
-	int use_asynchronous = 
-		renderengine->command->realtime && 
-		renderengine->edl->session->video_asynchronous;
-// Determine the rendering strategy for this frame.
-	use_vconsole = get_use_vconsole(playable_edit, 
-		input_postime,
-		use_brender);
-// Negotiate color model
-	colormodel = get_colormodel(playable_edit, use_vconsole, use_brender);
 
 // Get output buffer from device
 	if(renderengine->command->realtime)
-		renderengine->video->new_output_buffer(&video_out, colormodel);
+		renderengine->video->new_output_buffer(&video_out,
+			renderengine->edl->session->color_model);
 
-// Read directly from file to video_out
-	if(!use_vconsole)
+	if(renderengine->brender_available(current_postime))
 	{
-
-		if(use_brender)
+		Asset *asset = renderengine->preferences->brender_asset;
+		File *file = renderengine->get_vcache()->check_out(asset,
+			renderengine->edl);
+		if(file)
 		{
-			Asset *asset = renderengine->preferences->brender_asset;
-			File *file = renderengine->get_vcache()->check_out(asset,
-				renderengine->edl);
-			if(file)
-			{
 // Cache single frames only
-				if(use_asynchronous)
-					file->start_video_decode_thread();
-				else
-					file->stop_video_thread();
+			if(renderengine->command->realtime &&
+					renderengine->edl->session->video_asynchronous)
+				file->start_video_decode_thread();
+			else
+				file->stop_video_thread();
 
-				if(use_cache) file->set_cache_frames(1);
-				video_out->set_source_pts(current_postime);
-				file->get_frame(video_out);
-				if(use_cache) file->set_cache_frames(0);
-				video_out->set_pts(video_out->get_source_pts());
-				renderengine->get_vcache()->check_in(asset);
-			}
-		}
-		else
-		if(playable_edit)
-		{
-			result = ((VEdit*)playable_edit)->read_frame(video_out, 
-				current_postime,
-				renderengine->get_vcache(),
-				1,
-				use_cache,
-				use_asynchronous);
+			if(use_cache) file->set_cache_frames(1);
+			video_out->set_source_pts(current_postime);
+			file->get_frame(video_out);
+			if(use_cache) file->set_cache_frames(0);
+			video_out->set_pts(video_out->get_source_pts());
+			renderengine->get_vcache()->check_in(asset);
 		}
 	}
 	else
@@ -179,56 +152,6 @@ int VRender::process_buffer(ptstime input_postime)
 // process this buffer now in the virtual console
 		((VirtualVConsole*)vconsole)->process_buffer(input_postime);
 	}
-	return result;
-}
-
-// Determine if virtual console is needed
-int VRender::get_use_vconsole(Edit* &playable_edit, 
-	ptstime position,
-	int &use_brender)
-{
-	Track *playable_track;
-
-// Background rendering completed
-	if((use_brender = renderengine->brender_available(position)) != 0) 
-		return 0;
-
-	return 1;
-}
-
-
-int VRender::get_colormodel(Edit* &playable_edit, 
-	int use_vconsole,
-	int use_brender)
-{
-	int colormodel = renderengine->edl->session->color_model;
-
-	if(!use_vconsole && !renderengine->command->single_frame())
-	{
-// Get best colormodel supported by the file
-		int driver = renderengine->config->vconfig->driver;
-		File *file;
-		Asset *asset;
-
-		if(use_brender)
-		{
-			asset = renderengine->preferences->brender_asset;
-		}
-		else
-		{
-			asset = playable_edit->asset;
-		}
-
-		file = renderengine->get_vcache()->check_out(asset,
-			renderengine->edl);
-
-		if(file)
-		{
-			colormodel = file->get_best_colormodel(driver);
-			renderengine->get_vcache()->check_in(asset);
-		}
-	}
-	return colormodel;
 }
 
 void VRender::run()
@@ -238,7 +161,7 @@ void VRender::run()
 	ptstime init_pos = current_postime;
 // Number of frames before next reconfigure
 	ptstime current_input_duration;
-	ptstime len_pts = fromunits(1);
+	ptstime len_pts = renderengine->edl->session->frame_duration();
 	int direction = renderengine->command->get_direction();
 	first_frame = 1;
 
@@ -282,7 +205,7 @@ void VRender::run()
 			start_pts = current_postime;
 			if((len_pts = video_out->get_duration()) < EPSILON)
 // We have no current frame
-				len_pts = fromunits(1);
+				len_pts = renderengine->edl->session->frame_duration();
 
 // latest time at which the frame can be shown.
 			end_pts = start_pts + len_pts;
@@ -354,9 +277,6 @@ void VRender::run()
 }
 
 
-
-
-
 VRender::VRender(MWindow *mwindow, RenderEngine *renderengine)
  : CommonRender(mwindow, renderengine)
 {
@@ -369,7 +289,6 @@ int VRender::get_datatype()
 	return TRACK_VIDEO;
 }
 
-
 int VRender::start_playback()
 {
 // start reading input and sending to vrenderthread
@@ -378,17 +297,4 @@ int VRender::start_playback()
 	{
 		start();
 	}
-}
-
-posnum VRender::tounits(ptstime position, int round)
-{
-	if(round)
-		return Units::round(position * renderengine->edl->session->frame_rate);
-	else
-		return Units::to_int64(position * renderengine->edl->session->frame_rate);
-}
-
-ptstime VRender::fromunits(posnum position)
-{
-	return (ptstime)position / renderengine->edl->session->frame_rate;
 }

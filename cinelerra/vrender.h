@@ -50,22 +50,13 @@ public:
 	int get_datatype();
 
 // process frames to put in buffer_out
-	int process_buffer(VFrame *video_out);
+	void process_buffer(VFrame *video_out);
 
 // load an array of buffers for each track to send to the thread
-	int process_buffer(ptstime input_postime);
+	void process_buffer(ptstime input_postime);
+
 // Flash the output on the display
 	int flash_output();
-
-	int get_use_vconsole(Edit* &playable_edit, 
-		ptstime position,
-		int &get_use_vconsole);
-	int get_colormodel(Edit* &playable_edit, 
-		int use_vconsole,
-		int use_brender);
-
-	posnum tounits(double position, int round = 0);
-	double fromunits(posnum position);
 
 // console dimensions
 	int track_w, track_h;
