@@ -786,6 +786,11 @@ char *EDLSession::configuration_path(const char *filename, char *outbuf)
 	strcat(outbuf, filename);
 }
 
+ptstime EDLSession::frame_duration()
+{
+	return 1.0 / frame_rate;
+}
+
 void EDLSession::dump(int indent)
 {
 	printf("%*sEDLSession %p dump\n", indent, "", this);

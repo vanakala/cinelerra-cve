@@ -67,6 +67,9 @@ public:
 // calculate actions for edit
 	int edit_actions(void);
 
+// Duration of one frame
+	ptstime frame_duration();
+
 // Audio
 	int achannel_positions[MAXCHANNELS];
 	AudioOutConfig *aconfig_duplex;
