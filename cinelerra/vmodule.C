@@ -40,6 +40,7 @@
 #include "preferences.h"
 #include "renderengine.h"
 #include "sharedlocation.h"
+#include "tmpframecache.h"
 #include "transition.h"
 #include "transportcommand.h"
 #include "units.h"
@@ -64,8 +65,6 @@ VModule::VModule(RenderEngine *renderengine,
 {
 	data_type = TRACK_VIDEO;
 	overlay_temp = 0;
-	input_temp = 0;
-	transition_temp = 0;
 	if (renderengine)
 		masker = new MaskEngine(renderengine->preferences->processors);
 	else
@@ -75,8 +74,6 @@ VModule::VModule(RenderEngine *renderengine,
 VModule::~VModule()
 {
 	if(overlay_temp) delete overlay_temp;
-	if(input_temp) delete input_temp;
-	if(transition_temp) delete transition_temp;
 	delete masker;
 }
 
@@ -191,40 +188,15 @@ int VModule::import_frame(VFrame *output,
 				!EQUIV(in_h1, current_edit->asset->height))
 			{
 // Get temporary input buffer
-				VFrame **input = 0;
-// Realtime playback
-				if(commonrender)
-				{
-					VRender *vrender = (VRender*)commonrender;
-					input = &vrender->input_temp;
-				}
-				else
-// Menu effect
-				{
-					input = &input_temp;
-				}
-
-				if((*input) && 
-					((*input)->get_w() != current_edit->asset->width ||
-					(*input)->get_h() != current_edit->asset->height))
-				{
-					delete (*input);
-					(*input) = 0;
-				}
-
-				if(!(*input))
-				{
-					(*input) = new VFrame(0,
-						current_edit->asset->width,
-						current_edit->asset->height,
-						get_edl()->session->color_model,
-						-1);
-				}
-				(*input)->copy_pts(output);
+				VFrame *input_temp = BC_Resources::tmpframes.get_tmpframe(
+					current_edit->asset->width,
+					current_edit->asset->height,
+					get_edl()->session->color_model);
+				input_temp->copy_pts(output);
 // file -> temp
 // Cache for single frame only
 				if(use_cache) source->set_cache_frames(1);
-				result = source->get_frame((*input));
+				result = source->get_frame(input_temp);
 				if(use_cache) source->set_cache_frames(0);
 
 // Find an overlayer object to perform the camera transformation
@@ -252,7 +224,7 @@ int VModule::import_frame(VFrame *output,
 				output->clear_frame();
 
 				overlayer->overlay(output,
-					(*input),
+					input_temp,
 					in_x1,
 					in_y1,
 					in_x1 + in_w1,
@@ -265,7 +237,8 @@ int VModule::import_frame(VFrame *output,
 					TRANSFER_REPLACE,
 					BC_Resources::interpolation_method);
 				result = 1;
-				output->copy_pts((*input));
+				output->copy_pts(input_temp);
+				BC_Resources::tmpframes.release_frame(input_temp);
 			}
 			else
 // file -> output
@@ -320,36 +293,12 @@ int VModule::render(VFrame *output,
 	if(transition && transition->on)
 	{
 // Get temporary buffer
-		VFrame **transition_input = 0;
-		if(commonrender)
-		{
-			VRender *vrender = (VRender*)commonrender;
-			transition_input = &vrender->transition_temp;
-		}
-		else
-		{
-			transition_input = &transition_temp;
-		}
+		VFrame *transition_temp = BC_Resources::tmpframes.get_tmpframe(
+			track->track_w, track->track_h,
+			get_edl()->session->color_model);
 
-		if((*transition_input) &&
-			((*transition_input)->get_w() != track->track_w ||
-			(*transition_input)->get_h() != track->track_h))
-		{
-			delete (*transition_input);
-			(*transition_input) = 0;
-		}
-
-// Load incoming frame
-		if(!(*transition_input))
-		{
-			(*transition_input) = new VFrame(0,
-				track->track_w,
-				track->track_h,
-				get_edl()->session->color_model,
-				-1);
-		}
-		(*transition_input)->copy_pts(output);
-		result = import_frame((*transition_input), 
+		transition_temp->copy_pts(output);
+		result = import_frame(transition_temp,
 			current_edit, 
 			use_opengl);
 
@@ -362,10 +311,11 @@ int VModule::render(VFrame *output,
 // Execute plugin with transition_input and output here
 		if(renderengine) 
 			transition_server->set_use_opengl(use_opengl, renderengine->video);
-		transition_server->process_transition((*transition_input), 
+		transition_server->process_transition(transition_temp,
 			output,
 			output->get_pts() - current_edit->get_pts(),
 			transition->length());
+		BC_Resources::tmpframes.release_frame(transition_temp);
 	}
 	else
 	{

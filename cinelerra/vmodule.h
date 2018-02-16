@@ -57,11 +57,6 @@ private:
 // synchronization with tracks
 	FloatAutos* get_fade_automation();       // get the fade automation for this module
 
-// Temp frames for loading from file handlers
-	VFrame *input_temp;
-// For use when no VRender is available.
-// Temp frame for transition
-	VFrame *transition_temp;
 // Engine for transferring from file to buffer_in
 	OverlayFrame *overlay_temp;
 	MaskEngine *masker;

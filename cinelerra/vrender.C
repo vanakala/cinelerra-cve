@@ -58,15 +58,11 @@ VRender::VRender(RenderEngine *renderengine)
  : CommonRender(renderengine)
 {
 	data_type = TRACK_VIDEO;
-	transition_temp = 0;
 	overlayer = new OverlayFrame(renderengine->preferences->processors);
-	input_temp = 0;
 }
 
 VRender::~VRender()
 {
-	if(input_temp) delete input_temp;
-	if(transition_temp) delete transition_temp;
 	if(overlayer) delete overlayer;
 }
 
