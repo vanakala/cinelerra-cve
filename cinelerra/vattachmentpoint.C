@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "clip.h"
 #include "datatype.h"
 #include "edl.h"
@@ -27,6 +28,7 @@
 #include "plugin.h"
 #include "pluginserver.h"
 #include "renderengine.h"
+#include "tmpframecache.h"
 #include "vattachmentpoint.h"
 #include "vdevicex11.h"
 #include "videodevice.h"
@@ -48,7 +50,7 @@ void VAttachmentPoint::delete_buffer_vector()
 	if(buffer_vector)
 	{
 		for(int i = 0; i < virtual_plugins.total; i++)
-			delete buffer_vector[i];
+			BC_Resources::tmpframes.release_frame(buffer_vector[i]);
 		delete [] buffer_vector;
 	}
 	buffer_vector = 0;
@@ -69,11 +71,10 @@ void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 		buffer_vector = new VFrame*[virtual_plugins.total];
 		for(int i = 0; i < virtual_plugins.total; i++)
 		{
-			buffer_vector[i] = new VFrame(0,
+			buffer_vector[i] = BC_Resources::tmpframes.get_tmpframe(
 				width,
 				height,
-				colormodel,
-				-1);
+				colormodel);
 		}
 	}
 }
