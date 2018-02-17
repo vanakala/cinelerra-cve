@@ -338,9 +338,7 @@ void PackageRenderer::do_video()
 				video_device->output_visible())
 			{
 // Vector for video device
-				VFrame *preview_output;
-
-				video_device->new_output_buffer(&preview_output,
+				VFrame *preview_output = video_device->new_output_buffer(
 					command->get_edl()->session->color_model);
 
 				preview_output->copy_from(video_output_ptr);

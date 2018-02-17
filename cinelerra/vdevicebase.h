@@ -35,7 +35,7 @@ public:
 	virtual ~VDeviceBase() {};
 
 	virtual int write_buffer(VFrame *output, EDL *edl) { return 1; };
-	virtual void new_output_buffer(VFrame **output, int colormodel) {};
+	virtual VFrame *new_output_buffer(int colormodel) { return 0; };
 // Extra work must sometimes be done in here to set up the device.
 
 	virtual int open_output() { return 1; };

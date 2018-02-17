@@ -117,7 +117,7 @@ void VRender::process_buffer(ptstime input_postime)
 
 // Get output buffer from device
 	if(renderengine->command->realtime)
-		renderengine->video->new_output_buffer(&video_out,
+		video_out = renderengine->video->new_output_buffer(
 			renderengine->edl->session->color_model);
 
 	if(renderengine->brender_available(current_postime))

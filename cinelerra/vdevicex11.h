@@ -40,7 +40,7 @@ public:
 	~VDeviceX11();
 
 // User always gets the colormodel requested
-	void new_output_buffer(VFrame **output, int colormodel);
+	VFrame * new_output_buffer(int colormodel);
 
 	int open_output();
 	int output_visible();

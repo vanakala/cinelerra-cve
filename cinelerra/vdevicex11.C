@@ -185,7 +185,7 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 	return result;
 }
 
-void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
+VFrame *VDeviceX11::new_output_buffer(int colormodel)
 {
 // Get the best colormodel the display can handle.
 	int best_colormodel = get_best_colormodel(colormodel);
@@ -212,7 +212,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 				colormodel);
 		}
 	}
-	*result = output_frame;
+	return output_frame;
 }
 
 int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
