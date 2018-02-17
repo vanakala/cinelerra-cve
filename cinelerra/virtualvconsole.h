@@ -32,7 +32,6 @@ class VirtualVConsole : public VirtualConsole
 {
 public:
 	VirtualVConsole(RenderEngine *renderengine, VRender *vrender);
-	virtual ~VirtualVConsole();
 
 	VirtualNode* new_entry_node(Track *track, 
 		Module *module, 
@@ -43,7 +42,6 @@ public:
 // Composite a frame
 	void process_buffer(ptstime input_postime);
 
-	VFrame *output_temp;
 	VRender *vrender;
 // Calculated at the start of every process_buffer
 	int use_opengl;

@@ -21,6 +21,7 @@
 
 #include "bcsignals.h"
 #include "bctimer.h"
+#include "bcresources.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -31,6 +32,7 @@
 #include "preferences.h"
 #include "renderengine.h"
 #include "tracks.h"
+#include "tmpframecache.h"
 #include "vdevicex11.h"
 #include "vframe.h"
 #include "videodevice.h"
@@ -44,15 +46,9 @@ VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
  : VirtualConsole(renderengine, vrender, TRACK_VIDEO)
 {
 	this->vrender = vrender;
-	output_temp = 0;
 	playable_tracks = new PlayableTracks(renderengine,
 		commonrender->current_postime,
 		TRACK_VIDEO, 1);
-}
-
-VirtualVConsole::~VirtualVConsole()
-{
-	delete output_temp;
 }
 
 VDeviceBase* VirtualVConsole::get_vdriver()
@@ -93,31 +89,15 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 		VirtualVNode *node = (VirtualVNode*)exit_nodes.values[current_exit_node];
 		Track *track = node->track;
 
-// Create temporary output to match the track size, which is acceptable since
-// most projects don't have variable track sizes.
-// If the project has variable track sizes, this object is recreated for each track.
-
-		if(output_temp && 
-			(output_temp->get_w() != track->track_w ||
-			output_temp->get_h() != track->track_h))
-		{
-			delete output_temp;
-			output_temp = 0;
-		}
-
-		if(!output_temp)
-		{
-// Texture is created on demand
-			output_temp = new VFrame(0, 
-				track->track_w, 
-				track->track_h, 
-				renderengine->edl->session->color_model,
-				-1);
-		}
+		VFrame *output_temp = BC_Resources::tmpframes.get_tmpframe(
+			track->track_w,
+			track->track_h,
+			renderengine->edl->session->color_model);
 
 		output_temp->set_pts(input_postime + track->nudge);
-		node->render(output_temp,
-			use_opengl);
+		node->render(output_temp, use_opengl);
+
+		BC_Resources::tmpframes.release_frame(output_temp);
 	}
 	if(!exit_nodes.total)
 	{
