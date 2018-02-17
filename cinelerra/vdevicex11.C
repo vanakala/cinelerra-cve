@@ -31,6 +31,7 @@
 #include "mwindow.h"
 #include "playbackconfig.h"
 #include "preferences.h"
+#include "tmpframecache.h"
 #include "vdevicex11.h"
 #include "vframe.h"
 #include "videodevice.h"
@@ -71,7 +72,7 @@ VDeviceX11::~VDeviceX11()
 
 		if(output_frame)
 		{
-			delete output->refresh_frame;
+			BC_Resources::tmpframes.release_frame(output->refresh_frame);
 			output->refresh_frame = output_frame;
 		}
 
@@ -205,7 +206,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 		if(!output_frame)
 		{
 // Intermediate frame
-			output_frame = new VFrame(0,
+			output_frame = BC_Resources::tmpframes.get_tmpframe(
 				device->out_w,
 				device->out_h,
 				colormodel);

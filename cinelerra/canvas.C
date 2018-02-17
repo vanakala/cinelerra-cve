@@ -20,6 +20,7 @@
  */
 
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "canvas.h"
 #include "clip.h"
 #include "colors.h"
@@ -31,6 +32,7 @@
 #include "mainsession.h"
 #include "mutex.h"
 #include "mwindow.h"
+#include "tmpframecache.h"
 #include "vframe.h"
 #include "vwindowgui.h"
 
@@ -77,7 +79,7 @@ Canvas::Canvas(MWindow *mwindow,
 
 Canvas::~Canvas()
 {
-	if(refresh_frame) delete refresh_frame;
+	BC_Resources::tmpframes.release_frame(refresh_frame);
 	delete canvas_menu;
 	if(yscroll) delete yscroll;
 	if(xscroll) delete xscroll;
