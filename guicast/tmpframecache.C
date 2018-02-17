@@ -57,8 +57,8 @@ size_t TmpFrameCacheElem::get_size()
 void TmpFrameCacheElem::dump(int indent)
 {
 	printf("%*sTmpFrameCacheElem %p dump:\n", indent, "", this);
-	printf("%*s [%dx%d] '%s' in_use %d age %u\n", indent + 2, "",
-		width, height, ColorModels::name(cmodel), in_use, age);
+	printf("%*s [%dx%d] '%s' in_use %d age %u frame %p\n", indent + 2, "",
+		width, height, ColorModels::name(cmodel), in_use, age, frame);
 }
 
 TmpFrameCache::TmpFrameCache()
@@ -105,6 +105,9 @@ VFrame *TmpFrameCache::get_tmpframe(int w, int h, int colormodel)
 
 void TmpFrameCache::release_frame(VFrame *tmp_frame)
 {
+	if(!tmp_frame)
+		return;
+
 	listlock.lock("TmpFrameCache::release_frame");
 
 	for(TmpFrameCacheElem *cur = first; cur; cur = cur->next)
