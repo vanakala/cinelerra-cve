@@ -81,9 +81,6 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 	use_opengl = (renderengine->video && 
 		renderengine->video->out_config->driver == PLAYBACK_X11_GL);
 
-	if(debug_tree) 
-		printf("VirtualVConsole::process_buffer begin exit_nodes=%d\n", 
-			exit_nodes.total);
 // clear device buffer
 	vrender->video_out->clear_frame();
 
@@ -126,5 +123,4 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 	{
 		vrender->video_out->set_pts(input_postime);
 	}
-	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
 }

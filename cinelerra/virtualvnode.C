@@ -107,11 +107,6 @@ int VirtualVNode::read_data(VFrame *output_temp,
 {
 	VirtualNode *previous_plugin = 0;
 	int result = 0;
-	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::read_data position=%.3lf title=%s opengl=%d\n", 
-			output_temp->get_pts(),
-			track->title, 
-			use_opengl);
 
 // If there is a parent module but the parent module has no data source,
 // use our own data source.
@@ -178,16 +173,9 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 		!real_plugin ||
 		!real_plugin->on) return;
 
-
-	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_as_plugin title=%s use_opengl=%d\n", 
-			track->title,
-			use_opengl);
-
 	((VAttachmentPoint*)attachment)->render(
 		output_temp,
 		plugin_buffer_number,
-		vconsole->debug_tree,
 		use_opengl);
 }
 
@@ -196,13 +184,6 @@ void VirtualVNode::render_as_module(VFrame *video_out,
 	VFrame *output_temp,
 	int use_opengl)
 {
-	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_as_module title=%s use_opengl=%d video_out=%p output_temp=%p\n", 
-			track->title,
-			use_opengl,
-			video_out,
-			output_temp);
-
 // Process last subnode.  This propogates up the chain of subnodes and finishes
 // the chain.
 	if(subnodes.total)
@@ -249,9 +230,6 @@ void VirtualVNode::render_fade(VFrame *output,
 	double intercept;
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
-
-	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_fade title=%s\n", track->title);
 
 	intercept = ((FloatAutos*)autos)->get_value(output->get_pts(),
 		previous,
@@ -315,10 +293,6 @@ void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 	float in_x1, in_y1, in_x2, in_y2;
 	float out_x1, out_y1, out_x2, out_y2;
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
-
-	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_projector input=%p output=%p title=%s\n", 
-			input, output, track->title);
 
 	if(output)
 	{

@@ -48,7 +48,6 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 	total_exit_nodes = 0;
 	playable_tracks = 0;
 	entry_nodes = 0;
-	debug_tree = 0;
 	interrupt = 0;
 	done = 0;
 }

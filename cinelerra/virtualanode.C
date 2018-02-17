@@ -103,13 +103,6 @@ int VirtualANode::read_data(AFrame *aframe)
 			0);
 	}
 
-	if(vconsole->debug_tree) 
-		printf("  VirtualANode::read_data position=%.3f title=%s parent_node=%p parent_edit=%p\n", 
-				aframe->pts,
-				track->title,
-				parent_node,
-				parent_edit);
-
 // This is a plugin on parent module with a preceeding effect.
 // Get data from preceeding effect on parent module.
 	if(parent_node && 

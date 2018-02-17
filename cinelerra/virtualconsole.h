@@ -84,8 +84,6 @@ public:
 // exit conditions
 	int interrupt;
 	int done;
-// Trace the rendering path of the tree
-	int debug_tree;
 
 	PlayableTracks *playable_tracks;
 };
