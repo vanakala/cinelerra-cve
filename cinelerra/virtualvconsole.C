@@ -69,7 +69,7 @@ VirtualNode* VirtualVConsole::new_entry_node(Track *track,
 }
 
 // start of buffer in project if forward / end of buffer if reverse
-void VirtualVConsole::process_buffer(ptstime input_postime)
+VFrame *VirtualVConsole::process_buffer(VFrame *video_out, ptstime input_postime)
 {
 	int i, j, k;
 
@@ -78,7 +78,7 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 		renderengine->video->out_config->driver == PLAYBACK_X11_GL);
 
 // clear device buffer
-	vrender->video_out->clear_frame();
+	video_out->clear_frame();
 
 // Reset plugin rendering status
 	reset_attachments();
@@ -95,12 +95,13 @@ void VirtualVConsole::process_buffer(ptstime input_postime)
 			renderengine->edl->session->color_model);
 
 		output_temp->set_pts(input_postime + track->nudge);
-		node->render(output_temp, use_opengl);
+		video_out = node->render(video_out, output_temp, use_opengl);
 
 		BC_Resources::tmpframes.release_frame(output_temp);
 	}
+
 	if(!exit_nodes.total)
-	{
-		vrender->video_out->set_pts(input_postime);
-	}
+		video_out->set_pts(input_postime);
+
+	return video_out;
 }

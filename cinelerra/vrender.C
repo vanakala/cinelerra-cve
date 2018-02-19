@@ -145,8 +145,7 @@ void VRender::process_buffer(ptstime input_postime)
 	else
 // Read into virtual console
 	{
-// process this buffer now in the virtual console
-		((VirtualVConsole*)vconsole)->process_buffer(input_postime);
+		video_out = ((VirtualVConsole*)vconsole)->process_buffer(video_out, input_postime);
 	}
 }
 

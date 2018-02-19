@@ -40,7 +40,7 @@ public:
 	VDeviceBase* get_vdriver();
 
 // Composite a frame
-	void process_buffer(ptstime input_postime);
+	VFrame *process_buffer(VFrame *video_out, ptstime input_postime);
 
 	VRender *vrender;
 // Calculated at the start of every process_buffer

@@ -95,7 +95,7 @@ CICache* VModule::get_cache()
 		return cache;
 }
 
-int VModule::import_frame(VFrame *output,
+VFrame *VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
 	int use_opengl)
 {
@@ -108,7 +108,6 @@ int VModule::import_frame(VFrame *output,
 	float out_y1;
 	float out_w1;
 	float out_h1;
-	int result = 0;
 
 	VDeviceX11 *x11_device = 0;
 
@@ -196,7 +195,7 @@ int VModule::import_frame(VFrame *output,
 // file -> temp
 // Cache for single frame only
 				if(use_cache) source->set_cache_frames(1);
-				result = source->get_frame(input_temp);
+				source->get_frame(input_temp);
 				if(use_cache) source->set_cache_frames(0);
 
 // Find an overlayer object to perform the camera transformation
@@ -236,7 +235,6 @@ int VModule::import_frame(VFrame *output,
 					1,
 					TRANSFER_REPLACE,
 					BC_Resources::interpolation_method);
-				result = 1;
 				output->copy_pts(input_temp);
 				BC_Resources::tmpframes.release_frame(input_temp);
 			}
@@ -245,7 +243,7 @@ int VModule::import_frame(VFrame *output,
 			{
 // Cache single frames only
 				if(use_cache) source->set_cache_frames(1);
-				result = source->get_frame(output);
+				source->get_frame(output);
 				if(use_cache) source->set_cache_frames(0);
 			}
 // Set pts
@@ -258,7 +256,6 @@ int VModule::import_frame(VFrame *output,
 		else
 		{
 			output->clear_frame();
-			result = 1;
 		}
 	}
 	else
@@ -266,14 +263,13 @@ int VModule::import_frame(VFrame *output,
 	{
 		output->clear_frame();
 	}
-	return result;
+	return output;
 }
 
-int VModule::render(VFrame *output,
+VFrame *VModule::render(VFrame *output,
 	int use_nudge,
 	int use_opengl)
 {
-	int result = 0;
 	if(use_nudge) output->set_pts(output->get_pts() + track->nudge);
 	update_transition(output->get_pts());
 
@@ -286,7 +282,7 @@ int VModule::render(VFrame *output,
 		// We do not apply mask here, since alpha is 0, and neither substracting nor multypling changes it
 		// Another mask mode - "addition" should be added to be able to create mask from empty frames
 		// in this case we would call masking here too...
-		return 0;
+		return output;
 	}
 
 // Process transition
@@ -298,14 +294,14 @@ int VModule::render(VFrame *output,
 			get_edl()->session->color_model);
 
 		transition_temp->copy_pts(output);
-		result = import_frame(transition_temp,
+		transition_temp = import_frame(transition_temp,
 			current_edit, 
 			use_opengl);
 
 // Load transition buffer
 		previous_edit = (VEdit*)current_edit->previous;
 
-		result |= import_frame(output, 
+		output = import_frame(output,
 			previous_edit, 
 			use_opengl);
 // Execute plugin with transition_input and output here
@@ -320,12 +316,12 @@ int VModule::render(VFrame *output,
 	else
 	{
 // Load output buffer
-		result = import_frame(output, 
+		output = import_frame(output,
 			current_edit, 
 			use_opengl);
 	}
 	masker->do_mask(output, 
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
 		1);      // we are calling before plugins
-	return result;
+	return output;
 }

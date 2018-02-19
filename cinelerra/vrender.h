@@ -58,14 +58,6 @@ public:
 // Flash the output on the display
 	int flash_output();
 
-// console dimensions
-	int track_w, track_h;
-// video device dimensions
-	int output_w, output_h;
-
-// Output frame
-	VFrame *video_out;
-
 // Engine for camera and projector automation
 	OverlayFrame *overlayer;
 
@@ -73,6 +65,9 @@ public:
 	int first_frame;
 
 private:
+// Output frame
+	VFrame *video_out;
+
 // for getting actual framerate
 	int framerate_counter;
 	Timer framerate_timer;

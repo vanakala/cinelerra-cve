@@ -102,11 +102,11 @@ VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 		this);
 }
 
-int VirtualVNode::read_data(VFrame *output_temp,
+VFrame *VirtualVNode::read_data(VFrame *output_temp,
 	int use_opengl)
 {
+	VFrame *video_out = 0;
 	VirtualNode *previous_plugin = 0;
-	int result = 0;
 
 // If there is a parent module but the parent module has no data source,
 // use our own data source.
@@ -123,8 +123,8 @@ int VirtualVNode::read_data(VFrame *output_temp,
 // Get data from preceeding effect on parent module.
 	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
 	{
-		((VirtualVNode*)previous_plugin)->render(output_temp,
-			use_opengl);
+		video_out = ((VirtualVNode*)previous_plugin)->render(video_out,
+			output_temp, use_opengl);
 	}
 	else
 // The current node is the first plugin on parent module.
@@ -133,28 +133,28 @@ int VirtualVNode::read_data(VFrame *output_temp,
 // Read data from parent module
 	if(parent_node && (parent_edit || !real_module))
 	{
-		((VirtualVNode*)parent_node)->read_data(output_temp,
+		video_out = ((VirtualVNode*)parent_node)->read_data(output_temp,
 			use_opengl);
 	}
 	else
 	if(real_module)
 	{
 // This is the first node in the tree
-		result = ((VModule*)real_module)->render(output_temp,
+		video_out = ((VModule*)real_module)->render(output_temp,
 			0,
 			use_opengl);
 	}
-	return result;
+	return video_out;
 }
 
 
-void VirtualVNode::render(VFrame *output_temp, 
+VFrame *VirtualVNode::render(VFrame *video_out, VFrame *output_temp,
 	int use_opengl)
 {
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(real_module)
 	{
-		render_as_module(vrender->video_out, 
+		render_as_module(video_out,
 			output_temp,
 			use_opengl);
 	}
@@ -164,6 +164,7 @@ void VirtualVNode::render(VFrame *output_temp,
 		render_as_plugin(output_temp,
 			use_opengl);
 	}
+	return video_out;
 }
 
 void VirtualVNode::render_as_plugin(VFrame *output_temp, 
@@ -180,7 +181,7 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 }
 
 
-void VirtualVNode::render_as_module(VFrame *video_out, 
+VFrame *VirtualVNode::render_as_module(VFrame *video_out,
 	VFrame *output_temp,
 	int use_opengl)
 {
@@ -189,13 +190,12 @@ void VirtualVNode::render_as_module(VFrame *video_out,
 	if(subnodes.total)
 	{
 		VirtualVNode *node = (VirtualVNode*)subnodes.values[subnodes.total - 1];
-		node->render(output_temp,
-			use_opengl);
+		video_out = node->render(video_out, output_temp, use_opengl);
 	}
 	else
 // Read data from previous entity
 	{
-		read_data(output_temp,
+		output_temp = read_data(output_temp,
 			use_opengl);
 	}
 
@@ -222,6 +222,7 @@ void VirtualVNode::render_as_module(VFrame *video_out,
 		render_projector(output_temp, video_out);
 	}
 	video_out->copy_pts(output_temp);
+	return video_out;
 }
 
 void VirtualVNode::render_fade(VFrame *output,

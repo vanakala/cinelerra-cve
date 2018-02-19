@@ -45,12 +45,12 @@ public:
 	int get_buffer_size();
 
 	CICache* get_cache();
-	int render(VFrame *output,
+	VFrame *render(VFrame *output,
 		int use_nudge,
 		int use_opengl = 0);
 private:
 // Read frame from file and perform camera transformation
-	int import_frame(VFrame *output,
+	VFrame *import_frame(VFrame *output,
 		VEdit *current_edit,
 		int use_opengl);
 
