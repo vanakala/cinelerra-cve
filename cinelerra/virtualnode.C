@@ -67,20 +67,19 @@ VirtualNode::~VirtualNode()
 	subnodes.remove_all_objects();
 }
 
-#define PRINT_INDENT for(int j = 0; j < indent; j++) printf(" ");
-
 void VirtualNode::dump(int indent)
 {
-	PRINT_INDENT
-	printf("VirtualNode %p title=%s real_module=%p %s\n", 
+	printf("%*sVirtualNode %p track: '%s' real_module: %p %s\n", indent, "",
 		this, 
 		track->title,
 		real_module,
 		is_exit ? "*" : " ");
+	indent += 2;
+
 	if(real_module)
 	{
-		PRINT_INDENT
-		printf(" Plugins total=%d\n", subnodes.total);
+		real_module->dump(indent + 2);
+		printf("%*sTotal subnodes: %d\n", indent, "", subnodes.total);
 		for(int i = 0; i < subnodes.total; i++)
 		{
 			subnodes.values[i]->dump(indent + 2);
@@ -89,7 +88,7 @@ void VirtualNode::dump(int indent)
 	else
 	if(real_plugin)
 	{
-		printf("    Plugin %s\n", real_plugin->title);
+		printf("%*sPlugin: '%s'\n", indent, "", real_plugin->title);
 	}
 }
 
