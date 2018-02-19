@@ -219,8 +219,9 @@ int AttachmentPoint::gui_open()
 
 
 
-void AttachmentPoint::dump()
+void AttachmentPoint::dump(int indent)
 {
-	printf("    Attachmentpoint %p virtual_plugins=%d\n", this, new_virtual_plugins.total);
-	if(plugin_server) plugin_server->dump();
+	printf("%*sAttachmentpoint %p dump:\n", indent, "", this);
+	printf("%*svirtual plugins: %d\n", indent + 2, "", new_virtual_plugins.total);
+	if(plugin_server) plugin_server->dump(indent + 2);
 }

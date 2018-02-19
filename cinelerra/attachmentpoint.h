@@ -114,7 +114,7 @@ public:
 	int multichannel_shared(int search_new);
 	int singlechannel();
 
-	void dump();
+	void dump(int indent = 0);
 
 };
 
