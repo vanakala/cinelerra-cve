@@ -137,15 +137,15 @@ void VirtualConsole::reset_attachments()
 	}
 }
 
-void VirtualConsole::dump()
+void VirtualConsole::dump(int indent)
 {
-	printf("VirtualConsole\n");
-	printf(" Modules\n");
+	printf("%*sVirtualConsole %p dump:\n", indent, "", this);
+	printf("%*s%d modules:\n", indent + 1, "", commonrender->total_modules);
 	for(int i = 0; i < commonrender->total_modules; i++)
-		commonrender->modules[i]->dump();
-	printf(" Nodes\n");
+		commonrender->modules[i]->dump(indent + 2);
+	printf("%*s%d nodes:\n", indent + 1, "", total_exit_nodes);
 	for(int i = 0; i < total_exit_nodes; i++)
-		entry_nodes[i]->dump(0);
+		entry_nodes[i]->dump(indent + 2);
 }
 
 int VirtualConsole::test_reconfigure(ptstime &len,

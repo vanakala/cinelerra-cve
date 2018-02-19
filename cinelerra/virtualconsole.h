@@ -46,7 +46,7 @@ public:
 // Called during each process buffer operation to reset the status
 // of the attachments to unprocessed.
 	void reset_attachments();
-	void dump();
+	void dump(int indent = 0);
 
 // Create a new entry node in subclass of desired type.
 // was new_toplevel_node
