@@ -285,12 +285,13 @@ void Module::update_transition(ptstime current_position)
 	}
 }
 
-void Module::dump()
+void Module::dump(int indent)
 {
-	printf("  Module title=%s\n", track->title);
-	printf("   Plugins total_attachments=%d\n", total_attachments);
+	printf("%*sModule %p track: '%s' attachments: %d\n", indent, "", this,
+		track->title, total_attachments);
 	for(int i = 0; i < total_attachments; i++)
 	{
-		attachments[i]->dump();
+		if(attachments[i])
+			attachments[i]->dump(indent + 2);
 	}
 }

@@ -62,7 +62,7 @@ public:
 // Get attachment number or return 0 if out of range.
 	AttachmentPoint* get_attachment(int number);
 
-	void dump();
+	void dump(int indent = 0);
 // Start plugin rendering
 	void render_init();
 // Stop plugin rendering in case any resources have to be freed.
