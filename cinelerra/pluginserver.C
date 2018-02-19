@@ -906,7 +906,7 @@ const char *PluginServer::plugin_conf_dir()
 	return BCASTDIR;
 }
 
-void PluginServer::dump()
+void PluginServer::dump(int indent)
 {
-	printf("    PluginServer %s %s\n", path, title);
+	printf("%*sPluginServer '%s' %s\n", indent, "", title, path);
 }

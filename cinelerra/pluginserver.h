@@ -87,7 +87,7 @@ public:
 		int lad_index);
 // close the plugin
 	void close_plugin();
-	void dump();
+	void dump(int indent = 0);
 // Release any objects which are required after playback stops.
 	void render_stop();
 // Compatibility - translate plugin names
