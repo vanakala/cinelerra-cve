@@ -100,16 +100,14 @@ VFrame *VModule::import_frame(VFrame *output,
 	int use_opengl)
 {
 // Translation of edit
-	float in_x1;
-	float in_y1;
-	float in_w1;
-	float in_h1;
-	float out_x1;
-	float out_y1;
-	float out_w1;
-	float out_h1;
-
-	VDeviceX11 *x11_device = 0;
+	int in_x1;
+	int in_y1;
+	int in_w1;
+	int in_h1;
+	int out_x1;
+	int out_y1;
+	int out_w1;
+	int out_h1;
 
 // Load frame into output
 	if(current_edit &&
@@ -143,15 +141,14 @@ VFrame *VModule::import_frame(VFrame *output,
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
 				output->get_pts(),
-				in_x1, 
-				in_y1, 
-				in_w1, 
-				in_h1,
-				out_x1, 
-				out_y1, 
-				out_w1, 
-				out_h1);
-
+				&in_x1,
+				&in_y1,
+				&in_w1,
+				&in_h1,
+				&out_x1,
+				&out_y1,
+				&out_w1,
+				&out_h1);
 			// Determine the interlacing method to use.
 			int interlace_fixmethod = InterlaceFixSelection::automode2(
 				get_edl()->session->interlace_mode,
@@ -173,18 +170,15 @@ VFrame *VModule::import_frame(VFrame *output,
 			default:
 				break;
 			}
-
 // file -> temp -> output
-			if( !EQUIV(in_x1, 0) || 
-				!EQUIV(in_y1, 0) || 
-				!EQUIV(in_w1, track->track_w) || 
-				!EQUIV(in_h1, track->track_h) || 
-				!EQUIV(out_x1, 0) ||
-				!EQUIV(out_y1, 0) ||
-				!EQUIV(out_w1, track->track_w) ||
-				!EQUIV(out_h1, track->track_h) ||
-				!EQUIV(in_w1, current_edit->asset->width) ||
-				!EQUIV(in_h1, current_edit->asset->height))
+			if(in_x1 != 0 || in_y1 != 0 ||
+				in_w1 != track->track_w ||
+				in_h1 != track->track_h ||
+				out_x1 != 0 || out_y1 != 0 ||
+				out_w1 != track->track_w ||
+				out_h1 != track->track_h ||
+				in_w1 != current_edit->asset->width ||
+				in_h1 != current_edit->asset->height)
 			{
 // Get temporary input buffer
 				VFrame *input_temp = BC_Resources::tmpframes.get_tmpframe(
