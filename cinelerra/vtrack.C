@@ -194,14 +194,14 @@ void VTrack::calculate_input_transfer(Asset *asset,
 }
 
 void VTrack::calculate_output_transfer(ptstime position, 
-	float &in_x, 
-	float &in_y, 
-	float &in_w, 
-	float &in_h,
-	float &out_x, 
-	float &out_y, 
-	float &out_w, 
-	float &out_h)
+	int *in_x,
+	int *in_y,
+	int *in_w,
+	int *in_h,
+	int *out_x,
+	int *out_y,
+	int *out_w,
+	int *out_h)
 {
 	double center_x, center_y, center_z;
 	double x[4], y[4];
@@ -245,14 +245,14 @@ void VTrack::calculate_output_transfer(ptstime position,
 		y[3] = edl->session->output_h;
 	}
 
-	in_x = x[0];
-	in_y = y[0];
-	in_w = x[1] - x[0];
-	in_h = y[1] - y[0];
-	out_x = x[2];
-	out_y = y[2];
-	out_w = x[3] - x[2];
-	out_h = y[3] - y[2];
+	*in_x = round(x[0]);
+	*in_y = round(y[0]);
+	*in_w = round(x[1] - x[0]);
+	*in_h = round(y[1] - y[0]);
+	*out_x = round(x[2]);
+	*out_y = round(y[2]);
+	*out_w = round(x[3] - x[2]);
+	*out_h = round(y[3] - y[2]);
 }
 
 void VTrack::translate(float offset_x, float offset_y, int do_camera)

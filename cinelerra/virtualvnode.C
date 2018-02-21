@@ -107,7 +107,6 @@ VFrame *VirtualVNode::read_data(VFrame *output_temp,
 {
 	VFrame *video_out = 0;
 	VirtualNode *previous_plugin = 0;
-
 // If there is a parent module but the parent module has no data source,
 // use our own data source.
 // Current edit in parent track
@@ -291,21 +290,21 @@ void VirtualVNode::render_mask(VFrame *output_temp)
 
 void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 {
-	float in_x1, in_y1, in_x2, in_y2;
-	float out_x1, out_y1, out_x2, out_y2;
+	int in_x1, in_y1, in_x2, in_y2;
+	int out_x1, out_y1, out_x2, out_y2;
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 
 	if(output)
 	{
 		((VTrack*)track)->calculate_output_transfer(input->get_pts(),
-			in_x1, 
-			in_y1, 
-			in_x2, 
-			in_y2,
-			out_x1, 
-			out_y1, 
-			out_x2, 
-			out_y2);
+			&in_x1,
+			&in_y1,
+			&in_x2,
+			&in_y2,
+			&out_x1,
+			&out_y1,
+			&out_x2,
+			&out_y2);
 
 		in_x2 += in_x1;
 		in_y2 += in_y1;
