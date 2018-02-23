@@ -24,20 +24,12 @@
 #include "automation.h"
 #include "autos.h"
 #include "bcsignals.h"
-#include "floatauto.h"
-#include "floatautos.h"
 #include "intauto.h"
 #include "intautos.h"
-#include "mwindow.h"
 #include "module.h"
-#include "panauto.h"
-#include "panautos.h"
-#include "patchbay.h"
 #include "plugin.h"
-#include "pluginserver.h"
 #include "renderengine.h"
 #include "tracks.h"
-#include "transition.h"
 #include "virtualconsole.h"
 #include "virtualnode.h"
 
@@ -54,12 +46,9 @@ VirtualNode::VirtualNode(RenderEngine *renderengine,
 	this->real_plugin = real_plugin;
 	this->track = track;
 	this->parent_node = parent_node;
-	render_count = 0;
 	plugin_type = 0;
-	waiting_real_plugin = 0;
 	plugin_buffer_number = 0;
 	attachment = 0;
-	is_exit = 0;
 }
 
 VirtualNode::~VirtualNode()
@@ -69,11 +58,10 @@ VirtualNode::~VirtualNode()
 
 void VirtualNode::dump(int indent)
 {
-	printf("%*sVirtualNode %p track: '%s' real_module: %p %s\n", indent, "",
+	printf("%*sVirtualNode %p track: '%s' real_module: %p\n", indent, "",
 		this, 
 		track->title,
-		real_module,
-		is_exit ? "*" : " ");
+		real_module);
 	indent += 2;
 
 	if(real_module)
@@ -92,7 +80,7 @@ void VirtualNode::dump(int indent)
 	}
 }
 
-int VirtualNode::expand(int persistent_plugins, ptstime current_position)
+void VirtualNode::expand(int persistent_plugins, ptstime current_position)
 {
 // module needs to know where the input data for the next process is
 	if(real_module)
@@ -106,14 +94,10 @@ int VirtualNode::expand(int persistent_plugins, ptstime current_position)
 // plugin always takes data from input to output
 		expand_as_plugin(persistent_plugins);
 	}
-
-	return 0;
 }
 
 void VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 {
-	Transition *transition = 0;
-
 // create the plugins for this module
 	for(int i = 0; i < track->plugin_set.total; i++)
 	{
@@ -123,7 +107,6 @@ void VirtualNode::expand_as_module(int duplicate, ptstime current_postime)
 
 // Switch off if circular reference.  This happens if a plugin set or a track is deleted.
 		if(plugin == real_plugin) continue;
-
 
 		if(plugin && plugin->on)
 		{
@@ -181,7 +164,6 @@ void VirtualNode::expand_as_plugin(int duplicate)
 		}
 	}
 
-
 	if(plugin_type == PLUGIN_STANDALONE)
 	{
 // Get plugin server
@@ -202,7 +184,7 @@ void VirtualNode::expand_as_plugin(int duplicate)
 	}
 }
 
-int VirtualNode::attach_virtual_module(Plugin *plugin, 
+void VirtualNode::attach_virtual_module(Plugin *plugin,
 	int plugin_number, 
 	int duplicate, 
 	ptstime current_postime)
@@ -212,12 +194,13 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 		int real_module_number = plugin->shared_location.module;
 		Module *real_module = vconsole->module_number(real_module_number);
 // If a track is deleted real_module is not found
-		if(!real_module) return 1;
+		if(!real_module) return;
 
 		Track *track = real_module->track;
 
 // Switch off if circular reference.  This happens if a track is deleted.
-		if(this->real_module && track == this->real_module->track) return 1;
+		if(this->real_module && track == this->real_module->track)
+			return;
 
 		VirtualNode *virtual_module = create_module(plugin,
 			real_module,
@@ -226,18 +209,16 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 		subnodes.append(virtual_module);
 		virtual_module->expand(duplicate, current_postime);
 	}
-
-	return 0;
 }
 
-
-int VirtualNode::attach_virtual_plugin(Plugin *plugin, 
+void VirtualNode::attach_virtual_plugin(Plugin *plugin,
 	int plugin_number, 
 	int duplicate, 
 	ptstime current_postime)
 {
 // Get real plugin and test if it is on.
 	int is_on = 1;
+
 	if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN)
 	{
 		int real_module_number = plugin->shared_location.module;
@@ -265,7 +246,6 @@ int VirtualNode::attach_virtual_plugin(Plugin *plugin,
 		subnodes.append(virtual_plugin);
 		virtual_plugin->expand(duplicate, current_postime);
 	}
-	return 0;
 }
 
 VirtualNode* VirtualNode::get_previous_plugin(VirtualNode *current_node)
@@ -283,8 +263,6 @@ VirtualNode* VirtualNode::get_previous_plugin(VirtualNode *current_node)
 	}
 	return 0;
 }
-
-
 
 void VirtualNode::get_mute_fragment(ptstime input_position,
 				int &mute_constant, 

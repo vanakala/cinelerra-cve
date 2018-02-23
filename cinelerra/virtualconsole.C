@@ -125,7 +125,6 @@ Module* VirtualConsole::module_number(int track_number)
 
 void VirtualConsole::append_exit_node(VirtualNode *node)
 {
-	node->is_exit = 1;
 	exit_nodes.append(node);
 }
 
