@@ -20,27 +20,20 @@
  */
 
 #include "bcsignals.h"
-#include "bctimer.h"
 #include "bcresources.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
-#include "mainerror.h"
 #include "mwindow.h"
 #include "playabletracks.h"
-#include "preferences.h"
 #include "renderengine.h"
-#include "tracks.h"
 #include "tmpframecache.h"
-#include "vdevicex11.h"
 #include "vframe.h"
-#include "videodevice.h"
 #include "virtualvconsole.h"
 #include "virtualvnode.h"
 #include "vmodule.h"
 #include "vrender.h"
-#include "vtrack.h"
 
 VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
  : VirtualConsole(renderengine, vrender, TRACK_VIDEO)
@@ -49,11 +42,6 @@ VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
 	playable_tracks = new PlayableTracks(renderengine,
 		commonrender->current_postime,
 		TRACK_VIDEO, 1);
-}
-
-VDeviceBase* VirtualVConsole::get_vdriver()
-{
-	return renderengine->video->get_output_base();
 }
 
 VirtualNode* VirtualVConsole::new_entry_node(Track *track, 
@@ -72,10 +60,6 @@ VirtualNode* VirtualVConsole::new_entry_node(Track *track,
 VFrame *VirtualVConsole::process_buffer(VFrame *video_out, ptstime input_postime)
 {
 	int i, j, k;
-
-// The use of single frame is determined in RenderEngine::arm_command
-	use_opengl = (renderengine->video && 
-		renderengine->video->out_config->driver == PLAYBACK_X11_GL);
 
 // clear device buffer
 	video_out->clear_frame();

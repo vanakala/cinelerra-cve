@@ -23,7 +23,6 @@
 #define VRENDERTHREAD_H
 
 #include "vframe.inc"
-#include "vdevicebase.inc"
 #include "virtualconsole.h"
 #include "vrender.inc"
 #include "vtrack.inc"
@@ -37,14 +36,10 @@ public:
 		Module *module, 
 		int track_number);
 
-	VDeviceBase* get_vdriver();
-
 // Composite a frame
 	VFrame *process_buffer(VFrame *video_out, ptstime input_postime);
 
 	VRender *vrender;
-// Calculated at the start of every process_buffer
-	int use_opengl;
 };
 
 #endif
