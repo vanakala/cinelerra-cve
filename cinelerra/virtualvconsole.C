@@ -95,7 +95,7 @@ VFrame *VirtualVConsole::process_buffer(VFrame *video_out, ptstime input_postime
 			renderengine->edl->session->color_model);
 
 		output_temp->set_pts(input_postime + track->nudge);
-		video_out = node->render(video_out, output_temp, use_opengl);
+		video_out = node->render(video_out, output_temp);
 
 		BC_Resources::tmpframes.release_frame(output_temp);
 	}

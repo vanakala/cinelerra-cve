@@ -23,7 +23,7 @@
 #define VRENDERTHREAD_H
 
 #include "vframe.inc"
-#include "videodevice.inc"
+#include "vdevicebase.inc"
 #include "virtualconsole.h"
 #include "vrender.inc"
 #include "vtrack.inc"

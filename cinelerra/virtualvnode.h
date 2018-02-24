@@ -51,22 +51,16 @@ public:
 	VirtualNode* create_plugin(Plugin *real_plugin);
 
 // Called by VirtualVConsole::process_buffer to process exit nodes.
-// start_position - end of frame if reverse.  start of frame if forward.
-// frame_rate - rate start_position is relative to
 // use_opengl - if opengl is available for this step
-	VFrame *render(VFrame *video_out, VFrame *output_temp,
-		int use_opengl);
+	VFrame *render(VFrame *video_out, VFrame *output_temp);
 
 // Read data from what comes before this node.
-	VFrame *read_data(VFrame *output_temp,
-		int use_opengl);
+	VFrame *read_data(VFrame *output_temp);
 
 private:
 	VFrame *render_as_module(VFrame *video_out,
-		VFrame *output_temp,
-		int use_opengl);
-	void render_as_plugin(VFrame *output_temp, 
-		int use_opengl);
+		VFrame *output_temp);
+	void render_as_plugin(VFrame *output_temp);
 
 	void render_projector(VFrame *input,
 		VFrame *output);

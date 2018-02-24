@@ -654,8 +654,7 @@ void PluginServer::get_vframe(VFrame *buffer,
 
 	if(nodes->total > channel)
 	{
-		((VirtualVNode*)nodes->values[channel])->read_data(buffer,
-			use_opengl);
+		((VirtualVNode*)nodes->values[channel])->read_data(buffer);
 	}
 	else
 	if(modules->total > channel)

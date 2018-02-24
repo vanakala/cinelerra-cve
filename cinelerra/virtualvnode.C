@@ -19,7 +19,6 @@
  * 
  */
 
-#include "asset.h"
 #include "automation.h"
 #include "bcsignals.h"
 #include "bcresources.h"
@@ -35,18 +34,13 @@
 #include "maskauto.h"
 #include "maskautos.h"
 #include "maskengine.h"
-#include "mwindow.h"
 #include "module.h"
 #include "overlayframe.h"
-#include "playabletracks.h"
 #include "plugin.h"
 #include "preferences.h"
 #include "renderengine.h"
-#include "transition.h"
 #include "vattachmentpoint.h"
-#include "vdevicex11.h"
 #include "vframe.h"
-#include "videodevice.h"
 #include "virtualvconsole.h"
 #include "virtualvnode.h"
 #include "vmodule.h"
@@ -102,8 +96,7 @@ VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 		this);
 }
 
-VFrame *VirtualVNode::read_data(VFrame *output_temp,
-	int use_opengl)
+VFrame *VirtualVNode::read_data(VFrame *output_temp)
 {
 	VFrame *video_out = 0;
 	VirtualNode *previous_plugin = 0;
@@ -113,17 +106,16 @@ VFrame *VirtualVNode::read_data(VFrame *output_temp,
 	VEdit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		parent_edit = (VEdit*)parent_node->track->edits->editof(output_temp->get_pts(),
-			0);
+		parent_edit = (VEdit*)parent_node->track->edits->editof(
+			output_temp->get_pts(), 0);
 	}
-
 
 // This is a plugin on parent module with a preceeding effect.
 // Get data from preceeding effect on parent module.
 	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
 	{
 		video_out = ((VirtualVNode*)previous_plugin)->render(video_out,
-			output_temp, use_opengl);
+			output_temp);
 	}
 	else
 // The current node is the first plugin on parent module.
@@ -132,42 +124,34 @@ VFrame *VirtualVNode::read_data(VFrame *output_temp,
 // Read data from parent module
 	if(parent_node && (parent_edit || !real_module))
 	{
-		video_out = ((VirtualVNode*)parent_node)->read_data(output_temp,
-			use_opengl);
+		video_out = ((VirtualVNode*)parent_node)->read_data(output_temp);
 	}
 	else
 	if(real_module)
 	{
 // This is the first node in the tree
-		video_out = ((VModule*)real_module)->render(output_temp,
-			0,
-			use_opengl);
+		video_out = ((VModule*)real_module)->render(output_temp, 0, 0);
 	}
 	return video_out;
 }
 
-
-VFrame *VirtualVNode::render(VFrame *video_out, VFrame *output_temp,
-	int use_opengl)
+VFrame *VirtualVNode::render(VFrame *video_out, VFrame *output_temp)
 {
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(real_module)
 	{
 		render_as_module(video_out,
-			output_temp,
-			use_opengl);
+			output_temp);
 	}
 	else
 	if(real_plugin)
 	{
-		render_as_plugin(output_temp,
-			use_opengl);
+		render_as_plugin(output_temp);
 	}
 	return video_out;
 }
 
-void VirtualVNode::render_as_plugin(VFrame *output_temp, 
-	int use_opengl)
+void VirtualVNode::render_as_plugin(VFrame *output_temp)
 {
 	if(!attachment ||
 		!real_plugin ||
@@ -175,34 +159,29 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 
 	((VAttachmentPoint*)attachment)->render(
 		output_temp,
-		plugin_buffer_number,
-		use_opengl);
+		plugin_buffer_number, 0);
 }
 
-
 VFrame *VirtualVNode::render_as_module(VFrame *video_out,
-	VFrame *output_temp,
-	int use_opengl)
+	VFrame *output_temp)
 {
 // Process last subnode.  This propogates up the chain of subnodes and finishes
 // the chain.
 	if(subnodes.total)
 	{
 		VirtualVNode *node = (VirtualVNode*)subnodes.values[subnodes.total - 1];
-		video_out = node->render(video_out, output_temp, use_opengl);
+		video_out = node->render(video_out, output_temp);
 	}
 	else
 // Read data from previous entity
 	{
-		output_temp = read_data(output_temp,
-			use_opengl);
+		output_temp = read_data(output_temp);
 	}
 
 	render_fade(output_temp,
 			track->automation->autos[AUTOMATION_FADE]);
 
 	render_mask(output_temp);
-
 
 // overlay on the final output
 // Get mute status
@@ -246,8 +225,6 @@ void VirtualVNode::render_fade(VFrame *output,
 	}
 }
 
-
-
 void VirtualVNode::render_mask(VFrame *output_temp)
 {
 	MaskAutos *keyframe_set = 
@@ -286,7 +263,6 @@ void VirtualVNode::render_mask(VFrame *output_temp)
 	double edl_rate = renderengine->edl->session->frame_rate;
 	masker->do_mask(output_temp, keyframe_set, 0);
 }
-
 
 void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 {
@@ -344,4 +320,3 @@ void VirtualVNode::render_projector(VFrame *input, VFrame *output)
 		}
 	}
 }
-
