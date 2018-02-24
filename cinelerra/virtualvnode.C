@@ -98,7 +98,7 @@ VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 
 VFrame *VirtualVNode::read_data(VFrame *output_temp)
 {
-	VFrame *video_out = 0;
+	VFrame *video_out = output_temp;
 	VirtualNode *previous_plugin = 0;
 // If there is a parent module but the parent module has no data source,
 // use our own data source.
