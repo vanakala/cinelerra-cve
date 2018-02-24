@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "automation.h"
 #include "bcsignals.h"
 #include "bcresources.h"
 #include "cache.h"
@@ -28,34 +29,27 @@
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "file.h"
-#include "filexml.h"
-#include "floatautos.h"
 #include "formatpresets.h"
-#include "language.h"
-#include "mainerror.h"
+#include "file.h"
 #include "mwindow.h"
 #include "overlayframe.h"
 #include "pluginarray.h"
 #include "preferences.h"
 #include "renderengine.h"
-#include "sharedlocation.h"
 #include "tmpframecache.h"
 #include "transition.h"
 #include "transportcommand.h"
 #include "units.h"
 #include "vattachmentpoint.h"
-#include "vdevicex11.h"
 #include "vedit.h"
 #include "vframe.h"
-#include "videodevice.h"
 #include "vmodule.h"
 #include "vrender.h"
 #include "vtrack.h"
-#include <string.h>
 #include "interlacemodes.h"
 #include "maskengine.h"
-#include "automation.h"
+
+#include <string.h>
 
 VModule::VModule(RenderEngine *renderengine, 
 	CommonRender *commonrender, 
@@ -82,11 +76,6 @@ AttachmentPoint* VModule::new_attachment(Plugin *plugin)
 	return new VAttachmentPoint(renderengine, plugin);
 }
 
-int VModule::get_buffer_size()
-{
-	return 1;
-}
-
 CICache* VModule::get_cache()
 {
 	if(renderengine) 
@@ -96,8 +85,7 @@ CICache* VModule::get_cache()
 }
 
 VFrame *VModule::import_frame(VFrame *output,
-	VEdit *current_edit,
-	int use_opengl)
+	VEdit *current_edit)
 {
 // Translation of edit
 	int in_x1;
@@ -261,8 +249,7 @@ VFrame *VModule::import_frame(VFrame *output,
 }
 
 VFrame *VModule::render(VFrame *output,
-	int use_nudge,
-	int use_opengl)
+	int use_nudge)
 {
 	if(use_nudge) output->set_pts(output->get_pts() + track->nudge);
 	update_transition(output->get_pts());
@@ -289,18 +276,16 @@ VFrame *VModule::render(VFrame *output,
 
 		transition_temp->copy_pts(output);
 		transition_temp = import_frame(transition_temp,
-			current_edit, 
-			use_opengl);
+			current_edit);
 
 // Load transition buffer
 		previous_edit = (VEdit*)current_edit->previous;
 
-		output = import_frame(output,
-			previous_edit, 
-			use_opengl);
+		output = import_frame(output, previous_edit);
+
 // Execute plugin with transition_input and output here
 		if(renderengine) 
-			transition_server->set_use_opengl(use_opengl, renderengine->video);
+			transition_server->set_use_opengl(0, renderengine->video);
 		transition_server->process_transition(transition_temp,
 			output,
 			output->get_pts() - current_edit->get_pts(),
@@ -310,9 +295,7 @@ VFrame *VModule::render(VFrame *output,
 	else
 	{
 // Load output buffer
-		output = import_frame(output,
-			current_edit, 
-			use_opengl);
+		output = import_frame(output, current_edit);
 	}
 	masker->do_mask(output, 
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 

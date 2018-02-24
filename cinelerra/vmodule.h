@@ -23,7 +23,6 @@
 #define VMODULE_H
 
 #include "datatype.h"
-#include "edl.inc"
 #include "floatautos.inc"
 #include "module.h"
 #include "overlayframe.inc"
@@ -42,17 +41,15 @@ public:
 	virtual ~VModule();
 
 	AttachmentPoint* new_attachment(Plugin *plugin);
-	int get_buffer_size();
 
 	CICache* get_cache();
 	VFrame *render(VFrame *output,
-		int use_nudge,
-		int use_opengl = 0);
+		int use_nudge);
+
 private:
 // Read frame from file and perform camera transformation
 	VFrame *import_frame(VFrame *output,
-		VEdit *current_edit,
-		int use_opengl);
+		VEdit *current_edit);
 
 // synchronization with tracks
 	FloatAutos* get_fade_automation();       // get the fade automation for this module

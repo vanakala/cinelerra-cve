@@ -130,7 +130,7 @@ VFrame *VirtualVNode::read_data(VFrame *output_temp)
 	if(real_module)
 	{
 // This is the first node in the tree
-		video_out = ((VModule*)real_module)->render(output_temp, 0, 0);
+		video_out = ((VModule*)real_module)->render(output_temp, 0);
 	}
 	return video_out;
 }

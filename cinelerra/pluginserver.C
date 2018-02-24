@@ -659,9 +659,7 @@ void PluginServer::get_vframe(VFrame *buffer,
 	else
 	if(modules->total > channel)
 	{
-		((VModule*)modules->values[channel])->render(buffer,
-			0,
-			use_opengl);
+		((VModule*)modules->values[channel])->render(buffer, 0);
 	}
 	else
 	{
