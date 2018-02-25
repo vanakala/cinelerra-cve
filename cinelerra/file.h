@@ -72,6 +72,8 @@ public:
 // Delete oldest frame from cache.  Return 0 if successful.  Return 1 if 
 // nothing to delete.
 	int purge_cache();
+// Detect image list
+	int is_imagelist(int format);
 
 // Format may be preset if the asset format is not 0.
 	int open_file(Preferences *preferences, 

@@ -221,6 +221,19 @@ int File::purge_cache()
 	return frame_cache->delete_oldest();
 }
 
+int File::is_imagelist(int format)
+{
+	switch(format)
+	{
+	case FILE_JPEG_LIST:
+	case FILE_TGA_LIST:
+	case FILE_TIFF_LIST:
+	case FILE_PNG_LIST:
+	case FILE_EXR_LIST:
+		return 1;
+	}
+	return 0;
+}
 
 int File::open_file(Preferences *preferences, 
 	Asset *asset, 
@@ -235,7 +248,7 @@ int File::open_file(Preferences *preferences,
 	file = 0;
 
 	probe_result = 0;
-	if(rd)
+	if(rd && !is_imagelist(this->asset->format))
 	{
 		probe_result = FileAVlibs::probe_input(this->asset);
 
