@@ -55,6 +55,7 @@ public:
 	void run();
 
 	void update_framerate();
+	void update_playstatistics();
 	void apply_settings();
 	const char* category_to_text(int category);
 	int text_to_category(char *category);
@@ -94,6 +95,7 @@ public:
 
 	virtual void show() {};
 	virtual void draw_framerate() {};
+	virtual void draw_playstatistics() {};
 	PreferencesWindow *pwindow;
 	MWindow *mwindow;
 	Preferences *preferences;
@@ -114,6 +116,7 @@ public:
 	int delete_current_dialog();
 	void set_current_dialog(int number);
 	void update_framerate();
+	void update_playstatistics();
 
 	MWindow *mwindow;
 	PreferencesThread *thread;

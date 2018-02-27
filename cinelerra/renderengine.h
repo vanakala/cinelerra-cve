@@ -85,6 +85,8 @@ public:
 	ptstime sync_postime(void);
 // Update preferences window
 	void update_framerate(float framerate);
+// Update statistics
+	void update_playstatistics(int frames, int late, int delay);
 // Wait for other thread
 	void wait_another(const char *location, int type);
 

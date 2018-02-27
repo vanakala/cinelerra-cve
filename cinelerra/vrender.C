@@ -86,7 +86,7 @@ int VRender::flash_output()
 {
 	if(PTSEQU(video_out->get_pts(), flashed_pts))
 		return 0;
-
+	frame_count++;
 	flashed_pts = video_out->get_pts();
 	return renderengine->video->write_buffer(video_out, renderengine->edl);
 }
@@ -158,6 +158,11 @@ void VRender::run()
 	ptstime current_input_duration;
 	ptstime len_pts = renderengine->edl->session->frame_duration();
 	int direction = renderengine->command->get_direction();
+// Statistics
+	frame_count = 0;
+	sum_dly = 0;
+	late_frame = 0;
+
 	first_frame = 1;
 
 	framerate_counter = 0;
@@ -219,6 +224,7 @@ void VRender::run()
 // Frame rendered late. Flash it now.
 				if(!first_frame)
 					flash_output();
+				late_frame++;
 
 				if(renderengine->edl->session->video_every_frame)
 				{
@@ -239,6 +245,7 @@ void VRender::run()
 				{
 					int64_t delay_time = (int64_t)((start_pts - current_pts) * 1000);
 					Timer::delay(delay_time);
+					sum_dly += delay_time;
 				}
 // Flash frame now.
 				flash_output();
@@ -269,6 +276,10 @@ void VRender::run()
 	renderengine->stop_tracking(flashed_pts, TRACK_VIDEO);
 	renderengine->render_start_lock->unlock();
 	stop_plugins();
+
+	if(frame_count)
+		renderengine->update_playstatistics(frame_count, late_frame,
+			(int)(sum_dly / frame_count));
 }
 
 

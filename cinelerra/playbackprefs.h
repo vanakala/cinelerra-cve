@@ -59,12 +59,16 @@ public:
 
 	void update(int interpolation);
 	void draw_framerate();
+	void draw_playstatistics();
 
 	ADevicePrefs *audio_device;
 	VDevicePrefs *video_device;
 
 	PlaybackConfig *playback_config;
 	BC_Title *framerate_title;
+	BC_Title *playedframes_title;
+	BC_Title *lateframes_title;
+	BC_Title *avgdelay_title;
 	PlaybackNearest *nearest_neighbor;
 	PlaybackLanczosLanczos *lanczos_lanczos;
 	PlaybackBicubicBicubic *cubic_cubic;

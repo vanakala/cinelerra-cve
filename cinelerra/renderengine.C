@@ -360,6 +360,14 @@ void RenderEngine::update_framerate(float framerate)
 	playback_engine->mwindow->preferences_thread->update_framerate();
 }
 
+void RenderEngine::update_playstatistics(int frames, int late, int delay)
+{
+	playback_engine->mwindow->edl->session->frame_count = frames;
+	playback_engine->mwindow->edl->session->frames_late = late;
+	playback_engine->mwindow->edl->session->avg_delay = delay;
+	playback_engine->mwindow->preferences_thread->update_playstatistics();
+}
+
 void RenderEngine::wait_render_threads()
 {
 	if(do_audio)

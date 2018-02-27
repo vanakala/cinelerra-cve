@@ -52,7 +52,7 @@ PlaybackPrefs::~PlaybackPrefs()
 
 void PlaybackPrefs::show()
 {
-	int x, y, x2;
+	int x, y, y1, x2, y2, wt, wh;
 	char string[BCTEXTLEN];
 	BC_PopupTextBox *popup;
 	BC_WindowBase *window;
@@ -127,13 +127,36 @@ void PlaybackPrefs::show()
 	y += 30;
 
 	win = add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
-
-	win = add_subwindow(new BC_Title(x + win->get_w() + 100, y + 2, _("Framerate achieved:")));
-	add_subwindow(framerate_title = new BC_Title(win->get_x() + win->get_w() + 10, y + 2, "--", MEDIUMFONT, RED));
-	draw_framerate();
+	y1 = y + 2;
 	y += window->get_h() + 5;
-
 	add_subwindow(asynchronous = new VideoAsynchronous(pwindow, x, y));
+
+	y2 = y1;
+	x2 = x + asynchronous->get_w() + 40;
+	win = add_subwindow(new BC_Title(x2, y2, _("Framerate achieved:")));
+	wt = win->get_w();
+	wh = win->get_h() + 5;
+	y2 += wh;
+	win = add_subwindow(new BC_Title(x2, y2, _("Frames played:")));
+	if(win->get_w() > wt)
+		wt = win->get_w();
+	y2 += wh;
+	win = add_subwindow(new BC_Title(x2, y2, _("Late frames:")));
+	if(win->get_w() > wt)
+		wt = win->get_w();
+	y2 += wh;
+	win = add_subwindow(new BC_Title(x2, y2, _("Average delay:")));
+	y2 = y1;
+	x2 += wt + 10;
+	add_subwindow(framerate_title = new BC_Title(x2, y2, "--", MEDIUMFONT, RED));
+	y2 += wh;
+	add_subwindow(playedframes_title = new BC_Title(x2, y2, "-", MEDIUMFONT, RED));
+	y2 += wh;
+	add_subwindow(lateframes_title = new BC_Title(x2, y2, "-", MEDIUMFONT, RED));
+	y2 += wh;
+	add_subwindow(avgdelay_title = new BC_Title(x2, y2, "-", MEDIUMFONT, RED));
+	draw_framerate();
+
 	y += asynchronous->get_h() + 10;
 
 	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
@@ -215,6 +238,12 @@ void PlaybackPrefs::draw_framerate()
 	framerate_title->update(string);
 }
 
+void PlaybackPrefs::draw_playstatistics()
+{
+	playedframes_title->update(pwindow->thread->edl->session->frame_count);
+	lateframes_title->update(pwindow->thread->edl->session->frames_late);
+	avgdelay_title->update(pwindow->thread->edl->session->avg_delay);
+}
 
 PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow, 
 	PlaybackPrefs *playback, 

@@ -164,6 +164,12 @@ void PreferencesThread::update_framerate()
 	}
 }
 
+void PreferencesThread::update_playstatistics()
+{
+	if(thread_running && window)
+		window->update_playstatistics();
+}
+
 void PreferencesThread::apply_settings()
 {
 // Compare sessions
@@ -375,6 +381,21 @@ void PreferencesWindow::update_framerate()
 		thread->edl->session->actual_frame_rate = 
 			mwindow->edl->session->actual_frame_rate;
 		dialog->draw_framerate();
+		flash();
+	}
+}
+
+void PreferencesWindow::update_playstatistics()
+{
+	if(thread->current_dialog == 0)
+	{
+		thread->edl->session->frame_count =
+			mwindow->edl->session->frame_count;
+		thread->edl->session->frames_late =
+			mwindow->edl->session->frames_late;
+		thread->edl->session->avg_delay =
+			mwindow->edl->session->avg_delay;
+		dialog->draw_playstatistics();
 		flash();
 	}
 }

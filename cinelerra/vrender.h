@@ -71,6 +71,10 @@ private:
 // for getting actual framerate
 	int framerate_counter;
 	Timer framerate_timer;
+// Statistics
+	int frame_count;
+	uint64_t sum_dly;
+	int late_frame;
 
 // Last frame displayed
 	ptstime flashed_pts;

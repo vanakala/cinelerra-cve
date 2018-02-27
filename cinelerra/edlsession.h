@@ -78,7 +78,11 @@ public:
 // AWindow column widths
 	int asset_columns[ASSET_COLUMNS];
 	AutoConf *auto_conf;
+// Statistics
 	float actual_frame_rate;
+	int frame_count;
+	int frames_late;
+	int avg_delay;
 // Video sample aspect ratio
 	double sample_aspect_ratio;
 	int audio_channels;
