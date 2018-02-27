@@ -233,9 +233,7 @@ void PlaybackPrefs::update(int interpolation)
 
 void PlaybackPrefs::draw_framerate()
 {
-	char string[BCTEXTLEN];
-	sprintf(string, "%.4f", pwindow->thread->edl->session->actual_frame_rate);
-	framerate_title->update(string);
+	framerate_title->update(pwindow->thread->edl->session->actual_frame_rate);
 }
 
 void PlaybackPrefs::draw_playstatistics()
