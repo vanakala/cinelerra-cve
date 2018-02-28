@@ -64,8 +64,8 @@ VirtualVNode::VirtualVNode(RenderEngine *renderengine,
 		parent_node)
 {
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
-	fader = new FadeEngine(renderengine->preferences->processors);
-	masker = new MaskEngine(renderengine->preferences->processors);
+	fader = 0;
+	masker = 0;
 }
 
 VirtualVNode::~VirtualVNode()
@@ -221,6 +221,9 @@ void VirtualVNode::render_fade(VFrame *output,
 // color components by alpha.
 	if(!EQUIV(intercept / 100, 1))
 	{
+		if(!fader)
+			fader = new FadeEngine(renderengine->preferences->processors);
+
 		fader->do_fade(output, output, intercept / 100);
 	}
 }
@@ -260,7 +263,9 @@ void VirtualVNode::render_mask(VFrame *output_temp)
 		return;
 	}
 
-	double edl_rate = renderengine->edl->session->frame_rate;
+	if(!masker)
+		masker = new MaskEngine(renderengine->preferences->processors);
+
 	masker->do_mask(output_temp, keyframe_set, 0);
 }
 
