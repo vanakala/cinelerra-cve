@@ -284,8 +284,6 @@ VFrame *VModule::render(VFrame *output,
 		output = import_frame(output, previous_edit);
 
 // Execute plugin with transition_input and output here
-		if(renderengine) 
-			transition_server->set_use_opengl(0, renderengine->video);
 		transition_server->process_transition(transition_temp,
 			output,
 			output->get_pts() - current_edit->get_pts(),
