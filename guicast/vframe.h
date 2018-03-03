@@ -171,7 +171,7 @@ public:
 		int out_y1);
 
 // Debugging functions
-	void dump(int minmax = 0);
+	void dump(int indent = 0, int minmax = 0);
 // Dump bitmamps to named file
 	void dump_file(const char *filename);
 

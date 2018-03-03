@@ -1039,19 +1039,20 @@ void VFrame::calc_minmaxfl(float *buf, int pixlen,
 	}
 }
 
-void VFrame::dump(int minmax)
+void VFrame::dump(int indent, int minmax)
 {
 	const char *st;
 
-	printf("VFrame %p dump\n", this);
-	printf("    pts %.3f, duration %.3f src_pts %.3f frame %d layer %d\n", 
+	printf("%*sVFrame %p dump:\n", indent, "", this);
+	indent += 2;
+	printf("%*spts %.3f, duration %.3f src_pts %.3f frame %d layer %d\n", indent, "",
 		pts, duration, source_pts, frame_number, layer);
-	printf("    Size %dx%d, cmodel %s bytes/line %d offsets %d %d %d\n", w, h,
+	printf("%*s[%dx%d], '%s' bytes/line: %d offsets: %d %d %d\n", indent, "", w, h,
 		ColorModels::name(color_model), bytes_per_line, y_offset, u_offset, v_offset);
-	printf("    data:%p rows: %p y:%p, u:%p, v:%p%s\n", data, rows,
+	printf("%*sdata:%p rows: %p y:%p, u:%p, v:%p%s\n", indent, "", data, rows,
 		y, u, v, shared ? " shared" : "");
-	printf("    compressed %d, allocated %d pix apect %.2f\n",
-		compressed_size, compressed_allocated, pixel_aspect);
+	printf("%*scompressed: %d, allocated: %d SAR: %.2f status: %#x\n", indent, "",
+		compressed_size, compressed_allocated, pixel_aspect, status);
 
 	if(minmax)
 	{
@@ -1068,31 +1069,31 @@ void VFrame::dump(int minmax)
 		{
 		case BC_COMPRESSED:
 			calc_minmax8(data, compressed_size, avg, min, max);
-			printf("    avg %d min %d max %d\n", avg, min, max);
+			printf("%*savg %d min %d max %d\n", indent, "", avg, min, max);
 			break;
 		case BC_YUV420P:
 			calc_minmax8(get_y(), w * h, avg, min, max);
-			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sy: avg %d min %d max %d\n", indent, "", avg, min, max);
 			calc_minmax8(get_u(), w * h / 4, avg, min, max);
-			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			printf("%*su: avg %d min %d max %d\n", indent, "", avg, min, max);
 			calc_minmax8(get_v(), w * h / 4, avg, min, max);
-			printf("    v: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sv: avg %d min %d max %d\n", indent, "", avg, min, max);
 			break;
 		case BC_YUV422P:
 			calc_minmax8(get_y(), w * h, avg, min, max);
-			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sy: avg %d min %d max %d\n", indent, "", avg, min, max);
 			calc_minmax8(get_u(), w * h / 2, avg, min, max);
-			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			printf("%*su: avg %d min %d max %d\n", indent, "", avg, min, max);
 			calc_minmax8(get_v(), w * h / 2, avg, min, max);
-			printf("    v: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sv: avg %d min %d max %d\n", indent, "", avg, min, max);
 			break;
 		case BC_YUV444P:
 			calc_minmax8(get_y(), w * h, avg, min, max);
-			printf("    y: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sy: avg %d min %d max %d\n", indent, "", avg, min, max);
 			calc_minmax8(get_u(), w * h, avg, min, max);
-			printf("    u: avg %d min %d max %d\n", avg, min, max);
+			printf("%*su: avg %d min %d max %d\n", indent, "",avg, min, max);
 			calc_minmax8(get_v(), w * h, avg, min, max);
-			printf("    v: avg %d min %d max %d\n", avg, min, max);
+			printf("%*sv: avg %d min %d max %d\n", indent, "", avg, min, max);
 			break;
 		case BC_RGB888:
 		case BC_YUV888:
@@ -1136,15 +1137,15 @@ void VFrame::dump(int minmax)
 		default:
 			calc_minmax8(data, calculate_data_size(w, h, bytes_per_line, color_model),
 				avg, min, max);
-			printf("    avg %d min %d max %d\n", avg, min, max);
+			printf("%*savg %d min %d max %d\n", indent, "", avg, min, max);
 			break;
 		}
 		for(int i = 0; i < anum; i++)
-			printf("    l:%d avg %d min %d max %d\n", i, aavg[i], amin[i], amax[i]);
+			printf("%*sl:%d avg %d min %d max %d\n", indent, "", i, aavg[i], amin[i], amax[i]);
 		for(int i = 0; i < lnum; i++)
-			printf("    l:%d avg %" PRId64 " min %" PRId64 " max %" PRId64 "\n", i, lavg[i], lmin[i], lmax[i]);
+			printf("%*sl:%d avg %" PRId64 " min %" PRId64 " max %" PRId64 "\n", indent, "", i, lavg[i], lmin[i], lmax[i]);
 		for(int i = 0; i < fnum; i++)
-			printf("    l:%d avg %.3f min %.3f max %.3f\n", i, favg[i], fmin[i], fmax[i]);
+			printf("%*sl:%d avg %.3f min %.3f max %.3f\n", indent, "", i, favg[i], fmin[i], fmax[i]);
 	}
 }
 
