@@ -37,9 +37,10 @@ public:
 		int track_number);
 
 // Composite a frame
-	VFrame *process_buffer(VFrame *video_out, ptstime input_postime);
+	void process_buffer(ptstime input_postime);
 
 	VRender *vrender;
+	VFrame *output_temp;
 };
 
 #endif

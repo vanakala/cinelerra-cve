@@ -51,25 +51,22 @@ public:
 	VirtualNode* create_plugin(Plugin *real_plugin);
 
 // Called by VirtualVConsole::process_buffer to process exit nodes.
-// use_opengl - if opengl is available for this step
-	VFrame *render(VFrame *video_out, VFrame *output_temp);
+	void render();
 
 // Read data from what comes before this node.
-	VFrame *read_data(VFrame *output_temp);
+	void read_data();
 
 private:
-	VFrame *render_as_module(VFrame *video_out,
-		VFrame *output_temp);
-	void render_as_plugin(VFrame *output_temp);
+	void render_as_module();
+	void render_as_plugin();
 
-	void render_projector(VFrame *input,
-		VFrame *output);
+	VFrame *render_projector();
 
-	void render_fade(VFrame *output,  // start of output fragment
-		Autos *autos);
+	void render_fade(Autos *autos);
 
-	void render_mask(VFrame *output_temp);
+	void render_mask();
 
+	VRender *vrender;
 	FadeEngine *fader;
 	MaskEngine *masker;
 };

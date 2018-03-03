@@ -39,6 +39,7 @@
 #include "plugin.h"
 #include "preferences.h"
 #include "renderengine.h"
+#include "tmpframecache.h"
 #include "vattachmentpoint.h"
 #include "vframe.h"
 #include "virtualvconsole.h"
@@ -63,7 +64,7 @@ VirtualVNode::VirtualVNode(RenderEngine *renderengine,
 		track, 
 		parent_node)
 {
-	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
+	vrender = ((VirtualVConsole*)vconsole)->vrender;
 	fader = 0;
 	masker = 0;
 }
@@ -96,10 +97,11 @@ VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 		this);
 }
 
-VFrame *VirtualVNode::read_data(VFrame *output_temp)
+void VirtualVNode::read_data()
 {
-	VFrame *video_out = output_temp;
+	VFrame *output_temp = ((VirtualVConsole*)vconsole)->output_temp;
 	VirtualNode *previous_plugin = 0;
+
 // If there is a parent module but the parent module has no data source,
 // use our own data source.
 // Current edit in parent track
@@ -114,8 +116,7 @@ VFrame *VirtualVNode::read_data(VFrame *output_temp)
 // Get data from preceeding effect on parent module.
 	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
 	{
-		video_out = ((VirtualVNode*)previous_plugin)->render(video_out,
-			output_temp);
+		((VirtualVNode*)previous_plugin)->render();
 	}
 	else
 // The current node is the first plugin on parent module.
@@ -124,64 +125,58 @@ VFrame *VirtualVNode::read_data(VFrame *output_temp)
 // Read data from parent module
 	if(parent_node && (parent_edit || !real_module))
 	{
-		video_out = ((VirtualVNode*)parent_node)->read_data(output_temp);
+		((VirtualVNode*)parent_node)->read_data();
 	}
 	else
 	if(real_module)
 	{
 // This is the first node in the tree
-		video_out = ((VModule*)real_module)->render(output_temp, 0);
+		((VModule*)real_module)->render(output_temp, 0);
 	}
-	return video_out;
 }
 
-VFrame *VirtualVNode::render(VFrame *video_out, VFrame *output_temp)
+void VirtualVNode::render()
 {
-	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(real_module)
 	{
-		render_as_module(video_out,
-			output_temp);
+		render_as_module();
 	}
 	else
 	if(real_plugin)
 	{
-		render_as_plugin(output_temp);
+		render_as_plugin();
 	}
-	return video_out;
 }
 
-void VirtualVNode::render_as_plugin(VFrame *output_temp)
+void VirtualVNode::render_as_plugin()
 {
 	if(!attachment ||
 		!real_plugin ||
 		!real_plugin->on) return;
 
 	((VAttachmentPoint*)attachment)->render(
-		output_temp,
+		((VirtualVConsole*)vconsole)->output_temp,
 		plugin_buffer_number, 0);
 }
 
-VFrame *VirtualVNode::render_as_module(VFrame *video_out,
-	VFrame *output_temp)
+void VirtualVNode::render_as_module()
 {
 // Process last subnode.  This propogates up the chain of subnodes and finishes
 // the chain.
 	if(subnodes.total)
 	{
 		VirtualVNode *node = (VirtualVNode*)subnodes.values[subnodes.total - 1];
-		video_out = node->render(video_out, output_temp);
+		node->render();
 	}
 	else
 // Read data from previous entity
 	{
-		output_temp = read_data(output_temp);
+		read_data();
 	}
 
-	render_fade(output_temp,
-			track->automation->autos[AUTOMATION_FADE]);
+	render_fade(track->automation->autos[AUTOMATION_FADE]);
 
-	render_mask(output_temp);
+	render_mask();
 
 // overlay on the final output
 // Get mute status
@@ -189,26 +184,26 @@ VFrame *VirtualVNode::render_as_module(VFrame *video_out,
 	ptstime mute_fragment = 1;
 
 // Is frame muted?
-	get_mute_fragment(output_temp->get_pts(),
+	get_mute_fragment(((VirtualVConsole*)vconsole)->output_temp->get_pts(),
 		mute_constant,
 		mute_fragment,
 		(Autos*)((VTrack*)track)->automation->autos[AUTOMATION_MUTE]);
 
+	vrender->video_out->copy_pts(((VirtualVConsole*)vconsole)->output_temp);
 	if(!mute_constant)
 	{
 // Frame is playable
-		render_projector(output_temp, video_out);
+		render_projector();
 	}
-	video_out->copy_pts(output_temp);
-	return video_out;
+	return;
 }
 
-void VirtualVNode::render_fade(VFrame *output,
-			Autos *autos)
+void VirtualVNode::render_fade(Autos *autos)
 {
 	double intercept;
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
+	VFrame *output = ((VirtualVConsole*)vconsole)->output_temp;
 
 	intercept = ((FloatAutos*)autos)->get_value(output->get_pts(),
 		previous,
@@ -223,19 +218,22 @@ void VirtualVNode::render_fade(VFrame *output,
 	{
 		if(!fader)
 			fader = new FadeEngine(renderengine->preferences->processors);
-
 		fader->do_fade(output, output, intercept / 100);
+		// Colormodels with alpha - only alpha is modified
+		if(ColorModels::has_alpha(output->get_color_model()))
+			output->set_transparent();
 	}
 }
 
-void VirtualVNode::render_mask(VFrame *output_temp)
+void VirtualVNode::render_mask()
 {
+	VFrame *output = ((VirtualVConsole*)vconsole)->output_temp;
 	MaskAutos *keyframe_set = 
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
 
 	Auto *current = 0;
 
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(output_temp->get_pts(),
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(output->get_pts(),
 		current);
 
 	if(!keyframe)
@@ -259,57 +257,68 @@ void VirtualVNode::render_mask(VFrame *output_temp)
 // Fake certain masks
 	if(keyframe->value == 0 && keyframe_set->get_mode() == MASK_MULTIPLY_ALPHA)
 	{
-		output_temp->clear_frame();
+		output->clear_frame();
 		return;
 	}
 
 	if(!masker)
 		masker = new MaskEngine(renderengine->preferences->processors);
 
-	masker->do_mask(output_temp, keyframe_set, 0);
+	masker->do_mask(output, keyframe_set, 0);
+	// Colormodels with alpha - only alpha is modified
+	if(ColorModels::has_alpha(output->get_color_model()))
+		output->set_transparent();
 }
 
-void VirtualVNode::render_projector(VFrame *input, VFrame *output)
+VFrame *VirtualVNode::render_projector()
 {
 	int in_x1, in_y1, in_x2, in_y2;
 	int out_x1, out_y1, out_x2, out_y2;
-	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
+	VFrame *tmpframe;
+	VFrame *input = ((VirtualVConsole*)vconsole)->output_temp;
+	int mode;
 
-	if(output)
+	((VTrack*)track)->calculate_output_transfer(input->get_pts(),
+		&in_x1,
+		&in_y1,
+		&in_x2,
+		&in_y2,
+		&out_x1,
+		&out_y1,
+		&out_x2,
+		&out_y2);
+
+	in_x2 += in_x1;
+	in_y2 += in_y1;
+	out_x2 += out_x1;
+	out_y2 += out_y1;
+
+	if(out_x2 > out_x1 && out_y2 > out_y1 &&
+		in_x2 > in_x1 && in_y2 > in_y1)
 	{
-		((VTrack*)track)->calculate_output_transfer(input->get_pts(),
-			&in_x1,
-			&in_y1,
-			&in_x2,
-			&in_y2,
-			&out_x1,
-			&out_y1,
-			&out_x2,
-			&out_y2);
+		IntAuto *mode_keyframe = 0;
+		mode_keyframe =
+			(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
+				input->get_pts(),
+				(Auto* &)mode_keyframe);
 
-		in_x2 += in_x1;
-		in_y2 += in_y1;
-		out_x2 += out_x1;
-		out_y2 += out_y1;
+		if(mode_keyframe)
+			mode = mode_keyframe->value;
+		else
+			mode = TRANSFER_NORMAL;
 
-		if(out_x2 > out_x1 && 
-			out_y2 > out_y1 && 
-			in_x2 > in_x1 && 
-			in_y2 > in_y1)
+		if(mode == TRANSFER_NORMAL && !(input->get_status() & VFRAME_TRANSPARENT) &&
+			vconsole->current_exit_node == vconsole->total_exit_nodes - 1 &&
+			in_x1 == out_x1 && in_x2 == out_x2 &&
+			in_y1 == out_y1 && in_y2 == out_y2)
 		{
-			IntAuto *mode_keyframe = 0;
-			mode_keyframe = 
-				(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-					input->get_pts(), 
-					(Auto* &)mode_keyframe);
-
-			int mode;
-			if(mode_keyframe)
-				mode = mode_keyframe->value;
-			else
-				mode = TRANSFER_NORMAL;
-
-			vrender->overlayer->overlay(output,
+			tmpframe = vrender->video_out;
+			vrender->video_out = input;
+			((VirtualVConsole*)vconsole)->output_temp = tmpframe;
+		}
+		else
+		{
+			vrender->overlayer->overlay(vrender->video_out,
 				input,
 				in_x1,
 				in_y1,

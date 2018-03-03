@@ -61,12 +61,12 @@ public:
 // Engine for camera and projector automation
 	OverlayFrame *overlayer;
 
-// Flag first frame to unlock audio
-	int first_frame;
-
-private:
 // Output frame
 	VFrame *video_out;
+
+private:
+// Flag first frame to unlock audio
+	int first_frame;
 
 // for getting actual framerate
 	int framerate_counter;

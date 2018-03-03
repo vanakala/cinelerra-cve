@@ -642,7 +642,6 @@ void PluginServer::stop_loop()
 void PluginServer::get_vframe(VFrame *buffer,
 	int use_opengl)
 {
-	VFrame *new_buffer;
 // Data source depends on whether we're part of a virtual console or a
 // plugin array.
 //     VirtualNode
@@ -656,26 +655,17 @@ void PluginServer::get_vframe(VFrame *buffer,
 
 	if(nodes->total > channel)
 	{
-		new_buffer = ((VirtualVNode*)nodes->values[channel])->read_data(buffer);
+		((VirtualVNode*)nodes->values[channel])->read_data();
 	}
 	else
 	if(modules->total > channel)
 	{
-		new_buffer = ((VModule*)modules->values[channel])->render(buffer, 0);
+		((VModule*)modules->values[channel])->render(buffer, 0);
 	}
 	else
 	{
 		errorbox("PluginServer::get_frame no object available for channel=%d",
 			channel);
-	}
-// FIXIT: plugins should be rewritten
-	if(buffer != new_buffer)
-	{
-		fputs("PluginServer::get_vframe:: buffer changed\n", stdout);
-		// Nothing happens with buffer if it is not tmpframe
-		// new_frame is tmpframe we can release it
-		buffer->copy_from(new_buffer, 1);
-		BC_Resources::tmpframes.release_frame(new_buffer);
 	}
 }
 

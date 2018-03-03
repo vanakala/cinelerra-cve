@@ -217,6 +217,7 @@ VFrame *VDeviceX11::new_output_buffer(int colormodel)
 
 int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 {
+	output_frame = output_channels;
 // The reason for not drawing single frame is that it is _always_ drawn 
 // when drawing draw_refresh in cwindowgui and vwindowgui
 	if (device->single_frame)

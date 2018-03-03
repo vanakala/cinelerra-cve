@@ -57,12 +57,12 @@ VirtualNode* VirtualVConsole::new_entry_node(Track *track,
 }
 
 // start of buffer in project if forward / end of buffer if reverse
-VFrame *VirtualVConsole::process_buffer(VFrame *video_out, ptstime input_postime)
+void VirtualVConsole::process_buffer(ptstime input_postime)
 {
 	int i, j, k;
 
 // clear device buffer
-	video_out->clear_frame();
+	vrender->video_out->clear_frame();
 
 // Reset plugin rendering status
 	reset_attachments();
@@ -73,19 +73,19 @@ VFrame *VirtualVConsole::process_buffer(VFrame *video_out, ptstime input_postime
 		VirtualVNode *node = (VirtualVNode*)exit_nodes.values[current_exit_node];
 		Track *track = node->track;
 
-		VFrame *output_temp = BC_Resources::tmpframes.get_tmpframe(
+		output_temp = BC_Resources::tmpframes.get_tmpframe(
 			track->track_w,
 			track->track_h,
 			renderengine->edl->session->color_model);
 
 		output_temp->set_pts(input_postime + track->nudge);
-		video_out = node->render(video_out, output_temp);
+		node->render();
 
 		BC_Resources::tmpframes.release_frame(output_temp);
 	}
 
 	if(!exit_nodes.total)
-		video_out->set_pts(input_postime);
+		vrender->video_out->set_pts(input_postime);
 
-	return video_out;
+	return;
 }
