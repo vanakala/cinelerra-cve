@@ -143,6 +143,7 @@ void VFrame::reset_parameters()
 	v_offset = 0;
 	clear_pts();
 	pixel_aspect = 0;
+	status = 0;
 }
 
 void VFrame::clear_objects()
@@ -854,6 +855,21 @@ ptstime VFrame::next_pts()
 ptstime VFrame::next_source_pts()
 {
 	return source_pts + duration;
+}
+
+int VFrame::get_status()
+{
+	return status;
+}
+
+void VFrame::clear_status()
+{
+	status = 0;
+}
+
+void VFrame::set_transparent()
+{
+	status |= VFRAME_TRANSPARENT;
 }
 
 int VFrame::pts_in_frame_source(ptstime pts, ptstime accuracy)

@@ -109,6 +109,9 @@ public:
 	ptstime get_pts(void);
 	ptstime next_source_pts();
 	ptstime next_pts();
+	int get_status();
+	void clear_status();
+	void set_transparent();
 	int pts_in_frame_source(ptstime pts, ptstime accuracy = FRAME_ACCURACY);
 	int pts_in_frame(ptstime pts, ptstime accuracy = FRAME_ACCURACY);
 	void set_layer(int layer);
@@ -209,6 +212,8 @@ private:
 	int layer;
 // Pixel aspect ratio of frame (0 - not set)
 	double pixel_aspect;
+// Status of the frame: bits from vframe.inc
+	int status;
 
 // Convenience storage
 	int field2_offset;

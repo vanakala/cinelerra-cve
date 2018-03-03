@@ -24,6 +24,6 @@
 
 class VFrame;
 
-
+#define VFRAME_TRANSPARENT 1
 
 #endif

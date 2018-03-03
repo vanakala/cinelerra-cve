@@ -116,6 +116,7 @@ void TmpFrameCache::release_frame(VFrame *tmp_frame)
 		{
 			cur->in_use = 0;
 			cur->age = ++moment;
+			cur->frame->clear_status();
 			break;
 		}
 	}
