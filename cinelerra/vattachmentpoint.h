@@ -34,7 +34,7 @@ public:
 
 	void delete_buffer_vector();
 	void new_buffer_vector(int width, int height, int colormodel);
-	void render(VFrame *output, 
+	void render(VFrame **output,
 		int buffer_number,
 		int use_opengl = 0);
 	VFrame **buffer_vector;

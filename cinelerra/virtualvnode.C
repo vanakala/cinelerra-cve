@@ -161,7 +161,7 @@ void VirtualVNode::render_as_plugin()
 		!real_plugin->on) return;
 
 	((VAttachmentPoint*)attachment)->render(
-		((VirtualVConsole*)vconsole)->output_temp,
+		&((VirtualVConsole*)vconsole)->output_temp,
 		plugin_buffer_number, 0);
 }
 

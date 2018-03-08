@@ -79,54 +79,59 @@ void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 	}
 }
 
-void VAttachmentPoint::render(VFrame *output, 
+void VAttachmentPoint::render(VFrame **output,
 	int buffer_number,
 	int use_opengl)
 {
+	VFrame *frame;
 	if(!plugin_server || !plugin->on) return;
 
 	if(plugin_server->multichannel)
 	{
 		is_processed = 1;
-		this->start_postime = output->get_pts();
-		this->duration = output->get_duration();
+
+		this->start_postime = (*output)->get_pts();
+		this->duration = (*output)->get_duration();
 
 // Allocate buffer vector for subsequent render calls
-		new_buffer_vector(output->get_w(), 
-			output->get_h(), 
-			output->get_color_model());
+		new_buffer_vector((*output)->get_w(),
+			(*output)->get_h(),
+			(*output)->get_color_model());
 
-// Create temporary vector with output argument substituted in
-		VFrame **output_temp = new VFrame*[virtual_plugins.total];
+		frame = *output;
 		for(int i = 0; i < virtual_plugins.total; i++)
-		{
-			if(i == buffer_number)
-				output_temp[i] = output;
-			else
-			{
-				output_temp[i] = buffer_vector[i];
-				output_temp[i]->copy_pts(output);
-			}
-		}
+			buffer_vector[i]->copy_pts(frame);
 
+		*output = buffer_vector[buffer_number];
+		buffer_vector[buffer_number] = frame;
 // Process plugin
 		if(renderengine)
 			plugin_servers.values[0]->set_use_opengl(use_opengl,
 				renderengine->video);
-		plugin_servers.values[0]->process_buffer(output_temp,
+		plugin_servers.values[0]->process_buffer(buffer_vector,
 			plugin->length());
 
-		delete [] output_temp;
+		frame = buffer_vector[buffer_number];
+		buffer_vector[buffer_number] = *output;
+		*output = frame;
 	}
 	else
 // process single track
 	{
 		VFrame *output_temp[1];
-		output_temp[0] = output;
+
+		output_temp[0] = *output;
+		*output = BC_Resources::tmpframes.get_tmpframe(
+			output_temp[0]->get_w(),
+			output_temp[0]->get_h(),
+			output_temp[0]->get_color_model());
+		(*output)->copy_pts(output_temp[0]);
 		if(renderengine)
 			plugin_servers.values[buffer_number]->set_use_opengl(use_opengl,
 				renderengine->video);
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			plugin->length());
+		BC_Resources::tmpframes.release_frame(*output);
+		*output = output_temp[0];
 	}
 }
