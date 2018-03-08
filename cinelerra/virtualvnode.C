@@ -97,7 +97,12 @@ VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 		this);
 }
 
-void VirtualVNode::read_data()
+VFrame *VirtualVNode::get_output_temp()
+{
+	return ((VirtualVConsole*)vconsole)->output_temp;
+}
+
+VFrame *VirtualVNode::read_data()
 {
 	VFrame *output_temp = ((VirtualVConsole*)vconsole)->output_temp;
 	VirtualNode *previous_plugin = 0;
@@ -133,6 +138,7 @@ void VirtualVNode::read_data()
 // This is the first node in the tree
 		((VModule*)real_module)->render(output_temp, 0);
 	}
+	return output_temp;
 }
 
 void VirtualVNode::render()

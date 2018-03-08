@@ -54,7 +54,9 @@ public:
 	void render();
 
 // Read data from what comes before this node.
-	void read_data();
+	VFrame *read_data();
+// Get current output_temp
+	VFrame *get_output_temp();
 
 private:
 	void render_as_module();

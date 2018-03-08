@@ -642,6 +642,7 @@ void PluginServer::stop_loop()
 void PluginServer::get_vframe(VFrame *buffer,
 	int use_opengl)
 {
+	VFrame *frame;
 // Data source depends on whether we're part of a virtual console or a
 // plugin array.
 //     VirtualNode
@@ -655,7 +656,11 @@ void PluginServer::get_vframe(VFrame *buffer,
 
 	if(nodes->total > channel)
 	{
-		((VirtualVNode*)nodes->values[channel])->read_data();
+		// FIXIT: get rid of frame copy here
+		frame = ((VirtualVNode*)nodes->values[channel])->get_output_temp();
+		frame->copy_pts(buffer);
+		frame = ((VirtualVNode*)nodes->values[channel])->read_data();
+		buffer->copy_from(frame, 1);
 	}
 	else
 	if(modules->total > channel)
