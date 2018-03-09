@@ -46,7 +46,6 @@ public:
 		int data_type);
 	virtual ~AttachmentPoint();
 
-	virtual int reset_parameters();
 // Used by Module::swap_attachments before virtual console expansion.
 // Return 1 if the plugin id is the same
 	int identical(AttachmentPoint *old);
@@ -59,7 +58,7 @@ public:
 	void render_stop();
 
 // Called before every buffer processing
-	void reset_status();
+	virtual void reset_status() {};
 
 // Attach a virtual plugin for realtime playback.  Returns the number
 // of the buffer assigned to a multichannel plugin.
@@ -96,26 +95,13 @@ public:
 // ID of plugin object in EDL
 	int plugin_id;
 	RenderEngine *renderengine;
-// Current input buffer being loaded.  Determines when the plugin server is run
-//	int current_buffer;
 
-// Status of last buffer processed.
-// Used in shared multichannel plugin to tell of it's already been processed
-// or needs to be processed again for a different target.
-// start_position is the end of the range if playing in reverse.
-	ptstime start_postime;
-	posnum start_position;
-	posnum len;
-	ptstime duration;
-	int sample_rate;
-	int is_processed;
 	int data_type;
 
 	int multichannel_shared(int search_new);
 	int singlechannel();
 
 	void dump(int indent = 0);
-
 };
 
 #endif

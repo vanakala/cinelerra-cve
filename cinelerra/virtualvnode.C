@@ -162,7 +162,7 @@ void VirtualVNode::render_as_plugin()
 
 	((VAttachmentPoint*)attachment)->render(
 		&((VirtualVConsole*)vconsole)->output_temp,
-		plugin_buffer_number, 0);
+		plugin_buffer_number);
 }
 
 void VirtualVNode::render_as_module()

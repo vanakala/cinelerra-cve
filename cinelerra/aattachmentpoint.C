@@ -34,11 +34,21 @@ AAttachmentPoint::AAttachmentPoint(RenderEngine *renderengine, Plugin *plugin)
 {
 	buffer_vector = 0;
 	buffer_allocation = 0;
+	reset_status();
 }
 
 AAttachmentPoint::~AAttachmentPoint()
 {
 	delete_buffer_vector();
+}
+
+void AAttachmentPoint::reset_status()
+{
+	start_postime = 0;
+	duration = 0;
+	len = 0;
+	is_processed = 0;
+	sample_rate = 0;
 }
 
 void AAttachmentPoint::delete_buffer_vector()

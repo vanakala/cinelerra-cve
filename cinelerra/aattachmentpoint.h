@@ -31,6 +31,7 @@ public:
 	AAttachmentPoint(RenderEngine *renderengine, Plugin *plugin);
 	~AAttachmentPoint();
 
+	void reset_status();
 	void delete_buffer_vector();
 	void new_buffer_vector(int total, int size);
 	void render(AFrame *output, int buffer_number);
@@ -38,6 +39,13 @@ public:
 // Storage for multichannel plugins
 	AFrame **buffer_vector;
 	int buffer_allocation;
+
+private:
+	ptstime start_postime;
+	ptstime duration;
+	posnum len;
+	int is_processed;
+	int sample_rate;
 };
 
 #endif

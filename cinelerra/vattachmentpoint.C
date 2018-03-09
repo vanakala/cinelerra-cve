@@ -80,19 +80,13 @@ void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 }
 
 void VAttachmentPoint::render(VFrame **output,
-	int buffer_number,
-	int use_opengl)
+	int buffer_number)
 {
 	VFrame *frame;
 	if(!plugin_server || !plugin->on) return;
 
 	if(plugin_server->multichannel)
 	{
-		is_processed = 1;
-
-		this->start_postime = (*output)->get_pts();
-		this->duration = (*output)->get_duration();
-
 // Allocate buffer vector for subsequent render calls
 		new_buffer_vector((*output)->get_w(),
 			(*output)->get_h(),
@@ -105,9 +99,6 @@ void VAttachmentPoint::render(VFrame **output,
 		*output = buffer_vector[buffer_number];
 		buffer_vector[buffer_number] = frame;
 // Process plugin
-		if(renderengine)
-			plugin_servers.values[0]->set_use_opengl(use_opengl,
-				renderengine->video);
 		plugin_servers.values[0]->process_buffer(buffer_vector,
 			plugin->length());
 
@@ -126,9 +117,6 @@ void VAttachmentPoint::render(VFrame **output,
 			output_temp[0]->get_h(),
 			output_temp[0]->get_color_model());
 		(*output)->copy_pts(output_temp[0]);
-		if(renderengine)
-			plugin_servers.values[buffer_number]->set_use_opengl(use_opengl,
-				renderengine->video);
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			plugin->length());
 		BC_Resources::tmpframes.release_frame(*output);

@@ -32,12 +32,11 @@
 #include "virtualnode.h"
 
 
-
 AttachmentPoint::AttachmentPoint(RenderEngine *renderengine, 
 	Plugin *plugin,
 	int data_type)
 {
-	reset_parameters();
+	plugin_server = 0;
 	this->plugin = plugin;
 	this->plugin_id = plugin->id;
 	this->renderengine = renderengine;
@@ -52,30 +51,10 @@ AttachmentPoint::~AttachmentPoint()
 	plugin_servers.remove_all_objects();
 }
 
-
-int AttachmentPoint::reset_parameters()
-{
-	plugin_server = 0;
-	reset_status();
-	return 0;
-}
-
-
-void AttachmentPoint::reset_status()
-{
-	start_position = 0;
-	len = 0;
-	sample_rate = 0;
-	duration = 0;
-	is_processed = 0;
-}
-
-
 int AttachmentPoint::identical(AttachmentPoint *old)
 {
 	return plugin_id == old->plugin_id;
 }
-
 
 void AttachmentPoint::render_init()
 {
@@ -197,7 +176,6 @@ int AttachmentPoint::singlechannel()
 	return 0;
 }
 
-
 void AttachmentPoint::render_gui(void *data)
 {
 	if(renderengine && renderengine->mwindow)
@@ -216,8 +194,6 @@ int AttachmentPoint::gui_open()
 		return renderengine->mwindow->plugin_gui_open(plugin);
 	return 0;
 }
-
-
 
 void AttachmentPoint::dump(int indent)
 {
