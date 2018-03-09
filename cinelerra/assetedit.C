@@ -359,10 +359,9 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 
 		add_subwindow(new BC_Title(x, y, _("Frame rate:")));
 		x = x2;
-		BC_TextBox *framerate;
-		add_subwindow(framerate = new FrameRateSelection(x, y, this, 
-			&asset->frame_rate));
-		framerate->update(asset->frame_rate);
+
+		sprintf(string, "%.2f", asset->frame_rate);
+		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 
 		y += 30;
 		x = x1;
