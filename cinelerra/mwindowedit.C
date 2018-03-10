@@ -156,6 +156,26 @@ void MWindow::asset_to_size()
 	}
 }
 
+void MWindow::asset_to_rate()
+{
+	if(session->drag_assets->total &&
+		session->drag_assets->values[0]->video_data)
+	{
+		if(EQUIV(edl->session->frame_rate, session->drag_assets->values[0]->frame_rate))
+			return;
+
+		edl->session->frame_rate = session->drag_assets->values[0]->frame_rate;
+
+		save_backup();
+
+		undo->update_undo(_("asset to rate"), LOAD_ALL);
+		restart_brender();
+		gui->update(WUPD_SCROLLBARS | WUPD_CANVREDRAW | WUPD_TIMEBAR |
+			WUPD_ZOOMBAR | WUPD_PATCHBAY | WUPD_CLOCK);
+		sync_parameters(CHANGE_ALL);
+	}
+}
+
 void MWindow::clear_entry()
 {
 	clear(1);

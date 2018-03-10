@@ -56,6 +56,7 @@ AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
 	add_item(view = new AssetPopupView(mwindow, this));
 	add_item(new AssetPopupPaste(mwindow, this));
 	add_item(new AssetMatchSize(mwindow, this));
+	add_item(new AssetMatchRate(this));
 	add_item(new AssetPopupProjectRemove(mwindow, this));
 }
 
@@ -73,6 +74,13 @@ void AssetPopup::match_size()
 // Collect items into the drag vectors for temporary storage
 	gui->collect_assets();
 	mwindow->asset_to_size();
+}
+
+void AssetPopup::match_rate()
+{
+// Collect items into the drag vectors for temporary storage
+	gui->collect_assets();
+	mwindow->asset_to_rate();
 }
 
 void AssetPopup::update()
@@ -187,6 +195,19 @@ AssetMatchSize::AssetMatchSize(MWindow *mwindow, AssetPopup *popup)
 int AssetMatchSize::handle_event()
 {
 	popup->match_size();
+	return 1;
+}
+
+
+AssetMatchRate::AssetMatchRate(AssetPopup *popup)
+ : BC_MenuItem(_("Match frame rate"))
+{
+	this->popup = popup;
+}
+
+int AssetMatchRate::handle_event()
+{
+	popup->match_rate();
 	return 1;
 }
 
