@@ -211,13 +211,16 @@ int Asset::set_program(int pgm)
 {
 	struct progdesc *pdesc;
 	struct streamdesc *sdesc;
-	int mask;
+	int mask = 0;
 
 	if(pgm < 0 || pgm >= nb_programs)
 		return -1;
 
 	pdesc = &programs[pgm];
 	program_id = pdesc->program_id;
+
+	audio_data = video_data = 0;
+	audio_streamno = video_streamno = 0;
 
 	for(int i = 0; i < pdesc->nb_streams; i++)
 	{
@@ -389,7 +392,6 @@ int Asset::equivalent(Asset &asset,
 			tcend == asset.tcend &&
 			tcformat == asset.tcformat);
 	}
-
 	return result;
 }
 
