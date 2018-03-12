@@ -23,6 +23,7 @@
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcwindow.h"
+#include "clip.h"
 #include "colormodels.h"
 #include "vframe.h"
 
@@ -440,12 +441,15 @@ void BC_Bitmap::read_frame(VFrame *frame,
 	int need_shm,
 	int cmodel)
 {
+	double aspect;
+
 	if(cmodel < 0)
 		cmodel = color_model;
 	if(need_shm < 0)
 		need_shm = use_shm;
 
-	if(frame->get_pixel_aspect())
+	aspect = frame->get_pixel_aspect();
+	if(aspect && !EQUIV(aspect, 1.0))
 	{
 		double hcf = (double)out_h / in_h;
 		double wcf = frame->get_pixel_aspect() * hcf;
@@ -462,6 +466,11 @@ void BC_Bitmap::read_frame(VFrame *frame,
 		}
 		disp_w = round(frame->get_w() * wcf);
 		disp_h = round(frame->get_h() * hcf);
+
+		if(disp_w < out_w)
+			disp_w = out_w;
+		if(disp_h < out_h)
+			disp_h = out_h;
 	}
 	else
 	{
