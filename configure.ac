@@ -247,63 +247,6 @@ rm -f cinelerra/versioninfo.h > /dev/null 2>&1
 
 ############# END BUILDINFO display, (for displaying version / date)
 
-############## MMX / 3DNOW  POWERPC / ALTIVEC
-
-AC_ARG_ENABLE(mmx, 
-	AC_HELP_STRING([--enable-mmx], [enables support for mmx (default is autodetect)]),
-		[ enable_mmx=$enableval ],[ enable_mmx=auto ])
-AC_ARG_ENABLE(3dnow, 
-	AC_HELP_STRING([--enable-3dnow], [enables support for 3dnow (default is disabled)]),
-		[ enable_3dnow=$enableval ], [ enable_3dnow=no ])
-
-AC_ARG_ENABLE(altivec, 
-	AC_HELP_STRING([--enable-altivec], [enables altivec support (default is disabled)]),
-		[ enable_altivec=$enableval ],
-		[ enable_altivec=no ])
-
-case "$target_cpu" in
-i586 | i686)
-	test "x$enable_mmx" = "xauto" && enable_mmx=yes
-
-	CPU_CFLAGS="-DX86_CPU $CPU_CFLAGS"
-
-	if test "x$enable_mmx" = "xyes"; then
-		CPU_CFLAGS="-DHAVE_MMX -DUSE_MMX $CPU_CFLAGS" # -D_MMX_ doesn't work
-		enable_mmx32=yes
-	fi
-	if test "x$enable_3dnow" = "xyes"; then
-		CPU_CFLAGS="-DHAVE_3Dnow $CPU_CFLAGS" # -DUSE_3DNOW --> don't use, not compilin
-	fi
-;;
-x86_64)
-	test "x$enable_mmx" = "xauto" && enable_mmx=yes
-	CPU_CFLAGS="-DX86_CPU $CPU_CFLAGS"
-	if test "x$enable_mmx" = "xyes"; then
-		CPU_CFLAGS="-DHAVE_MMX -DUSE_MMX $CPU_CFLAGS"
-
-        fi
-;;
-powerpc)
-	CPU_CFLAGS="-mcpu=powerpc $CPU_CFLAGS"
-	if test "x$enable_altivec" = "xyes"; then
-		CPU_CFLAGS="-maltivec -mabi=altivec $CPU_CFLAGS"
-	fi
-;;
-esac
-
-test "x$enable_mmx" = "xauto" && enable_mmx=no
-
-AM_CONDITIONAL(USEMMX, test "x$enable_mmx" = "xyes")
-AM_CONDITIONAL(USEMMX32, test "x$enable_mmx32" = "xyes")
-AM_CONDITIONAL(TARGET_BUILTIN_VECTOR,test "x$enable_mmx" = "xyes")
-AM_CONDITIONAL(USE3DNOW, test "x$enable_3dnow" = "xyes")
-AM_CONDITIONAL(TARGET_ARCH_POWERPC, test "x$target_cpu" = "xpowerpc")
-AM_CONDITIONAL(TARGET_ALTIVEC, test "x$enable_altivec" = "xyes")
-AC_SUBST(LIBDECORE_LIBADD)
-AC_SUBST(CPU_CFLAGS)
-
-############## END OF MMX / 3DNOW
-
 ############ external ffmpeg
 AC_ARG_WITH([external-ffmpeg], AC_HELP_STRING([--with-external-ffmpeg], [use external ffmpeg library]))
 
