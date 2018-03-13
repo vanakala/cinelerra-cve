@@ -187,20 +187,6 @@ fi
 AM_CONDITIONAL(NEED_OPENEXR, test "x$libOpenEXR" = "xyes")
 ############## END OF OpenEXR
 
-############## LIBFAAD, LIBFAAC
-AC_CHECK_LIB(faac, faacEncOpen,[libfaac=yes])
-AC_CHECK_HEADER(faac.h,[libfaach=yes])
-
-AC_CHECK_LIB(faad, faacDecInit,[libfaad=yes],
-	AC_CHECK_LIB(faad, NeAACDecInit,[libfaad=yes]))
-AC_CHECK_HEADER(faad.h,[libfaadh=yes])
-if test "x$libfaad$libfaadh" = xyesyes; then
-	FAAD_CFLAGS=
-	FAAD_LIBS="-lfaad"
-fi
-AC_SUBST(FAAD_CFLAGS)
-AC_SUBST(FAAD_LIBS)
-############## END OF LIBFAAD, LIBFAAC
 
 ############# BUILDINFO display, (for displaying version / date)
 AC_ARG_WITH(buildinfo,
@@ -278,14 +264,62 @@ AC_SUBST(FFMPEG_LIBS)
 AC_SUBST(FFMPEG_EXTERNALTEXT)
 ############# END external ffmpeg
 
+#### Check optional components of avlibs
+AC_ARG_ENABLE([nonfree], AC_HELP_STRING([--enable-nonfree], [enable nonfree codecs of avlibs]), [avlibs_nonfree=yes])
+if test "x$avlibs_nonfree" = xyes; then
+    FFMPEG_CONF="--enable-nonfree"
+else
+    FFMPEG_CONF=""
+fi
+############## LIBFAAC
+if test "x$avlibs_nonfree" = xyes; then
+	AC_CHECK_LIB(faac, faacEncOpen,[libfaac=yes])
+	AC_CHECK_HEADER(faac.h,[libfaach=yes])
+
+	if test "x$libfaac$libfaach" = xyesyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libfaac"
+	fi
+fi
+############## End of LIBFAAC
+
+############## LAME
+# Just test to see if we have lame installed.
+AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes])
+AC_CHECK_LIB(mp3lame,lame_init,[libmp3lame=yes])
+if test "x$libmp3lame$libmp3lameh" = xyesyes; then
+    FFMPEG_CONF="$FFMPEG_CONF --enable-libmp3lame"
+fi
+############## End of LAME
+
+############## x264
+PKG_CHECK_MODULES(x264,x264,[libx264=yes])
+if test "x$libx264" = xyes; then
+    FFMPEG_CONF="$FFMPEG_CONF --enable-libx264"
+fi
+############## End of x264
+
+############## vorbis
+PKG_CHECK_MODULES(libvorbis,vorbis,[libvorbis=yes])
+if test "x$libvorbis" = xyes; then
+    FFMPEG_CONF="$FFMPEG_CONF --enable-libvorbis"
+fi
+############## End of vorbis
+
+############## theora
+PKG_CHECK_MODULES(libtheora,theora,[libtheora=yes])
+if test "x$libtheora" = xyes; then
+    FFMPEG_CONF="$FFMPEG_CONF --enable-libtheora"
+fi
+############## End of theora
+
 ############# run ffmpeg configure to generates avconfig.h
 echo --- FFMPEG CONFIGURATION SECTION --------------
 if test "x$with_external_ffmpeg" = "xyes"; then
 	echo Using external ffmpeg - no configuration needed
 else
 	ff_conf_args="--disable-ffmpeg --disable-ffserver --disable-ffplay --disable-ffprobe \
-		--disable-static --enable-shared --enable-swscale --enable-gpl --enable-libx264 \
-		--enable-libvorbis --enable-libtheora --enable-libmp3lame \
+		--disable-static --enable-shared --enable-swscale --enable-gpl \
+		$FFMPEG_CONF \
 		--build-suffix=-cve"
 
 	srcdir_c=$(readlink -f $srcdir) &&
@@ -309,12 +343,6 @@ fi
 echo --------------------------------------------------
 ############# END run ffmpeg configure to generates avconfig.h
 
-############## LAME
-# Just test to see if we have lame installed.
-AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes])
-AC_CHECK_LIB(mp3lame,lame_init,[MP3LAME_LIBS="-lmp3lame"; libmp3lame=yes],,[$XIPH_LIBS])
-AC_SUBST(MP3LAME_LIBS)
-# END LAME
 
 ############## OpenGL
 AH_TEMPLATE(HAVE_GL, [Define to 1 if OpenGL 2.0 is available.])
@@ -511,14 +539,8 @@ RPT(libuuid,libuuid libraries)
 RPT(libuuidh,libuuid headers)
 RPT(libfftw3,libfftw3 libraries)
 RPT(libfftw3h,libfftw3 headers)
-RPT(libmp3lame,libmp3lame libraries)
-RPT(libmp3lameh,libmp3lame headers)
 RPT(libsndfile,libsndfile libraries)
 RPT(libsndfileh,libsndfile headers)
-RPT(libfaac,libfaac libraries)
-RPT(libfaach,libfaac headers)
-RPT(libfaad,libfaad libraries)
-RPT(libfaadh,libfaad headers)
 mandatory="$succeeded"
 
 echo
