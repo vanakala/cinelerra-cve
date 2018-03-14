@@ -288,7 +288,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 	mwindow->session->awindow_y, 
 	mwindow->session->awindow_w, 
 	mwindow->session->awindow_h,
-	100,
+	250,
 	100,
 	1,
 	1,
