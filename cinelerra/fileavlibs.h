@@ -102,7 +102,7 @@ public:
 
 private:
 	int media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64_t pktpos);
-	int convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
+	int convert_cmodel(AVPicture *picture_in, AVPixelFormat pix_fmt_in,
 		int width_in, int height_in, VFrame *frame_out);
 	int convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 		int width_out, int height_out, AVFrame *frame_out);

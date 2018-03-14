@@ -228,7 +228,7 @@ void ColorModels::transfer_sws(unsigned char *output,
 {
 	unsigned char *in_data[4], *out_data[4];
 	int in_linesizes[4], out_linesizes[4];
-	PixelFormat pix_in, pix_out;
+	AVPixelFormat pix_in, pix_out;
 	struct SwsContext *sws_ctx = 0;
 
 	pix_in = color_model_to_pix_fmt(in_colormodel);
@@ -313,7 +313,7 @@ void ColorModels::transfer_frame(unsigned char *output,
 {
 	unsigned char *in_data[4], *out_data[4];
 	int in_linesizes[4], out_linesizes[4];
-	PixelFormat pix_in, pix_out;
+	AVPixelFormat pix_in, pix_out;
 	struct SwsContext *sws_ctx = 0;
 
 	pix_in = color_model_to_pix_fmt(frame->get_color_model());

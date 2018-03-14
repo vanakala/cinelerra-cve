@@ -1186,7 +1186,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	if(!error && got_it)
 	{
-		PixelFormat pix_fmt = ColorModels::color_model_to_pix_fmt(frame->get_color_model());
+		AVPixelFormat pix_fmt = ColorModels::color_model_to_pix_fmt(frame->get_color_model());
 
 		convert_cmodel((AVPicture *)avvframe, decoder_context->pix_fmt,
 			decoder_context->width, decoder_context->height, frame);
@@ -1473,12 +1473,12 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 	return out_samples;
 }
 
-int FileAVlibs::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt,
+int FileAVlibs::convert_cmodel(AVPicture *picture_in, AVPixelFormat pix_fmt,
 	int width_in, int height_in, VFrame *frame_out)
 {
 	int cmodel_out = frame_out->get_color_model();
-	PixelFormat pix_fmt_out = ColorModels::color_model_to_pix_fmt(cmodel_out);
-	PixelFormat pix_fmt_in;
+	AVPixelFormat pix_fmt_out = ColorModels::color_model_to_pix_fmt(cmodel_out);
+	AVPixelFormat pix_fmt_in;
 	unsigned char *out_data[4];
 	int out_linesizes[4];
 	int result = 0;
