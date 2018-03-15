@@ -317,8 +317,8 @@ echo --- FFMPEG CONFIGURATION SECTION --------------
 if test "x$with_external_ffmpeg" = "xyes"; then
 	echo Using external ffmpeg - no configuration needed
 else
-	ff_conf_args="--disable-ffmpeg --disable-ffserver --disable-ffplay --disable-ffprobe \
-		--disable-static --enable-shared --enable-swscale --enable-gpl \
+	ff_conf_args="--disable-programs --disable-doc \
+		--disable-static --enable-shared --enable-gpl \
 		$FFMPEG_CONF \
 		--build-suffix=-cve"
 
