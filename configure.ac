@@ -242,7 +242,7 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 	FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
 	if test ! -d ffmpeg ; then
-		FFMPEG_BRANCH="-b release/2.8"
+		FFMPEG_BRANCH="-b release/3.0"
 		if ! git clone --depth 1 $FFMPEG_BRANCH git://source.ffmpeg.org/ffmpeg.git ffmpeg ; then
 			rm -rf ffmpeg
 			echo "Failed to get a FFmpeg checkout"
