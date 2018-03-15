@@ -271,16 +271,16 @@ if test "x$avlibs_nonfree" = xyes; then
 else
     FFMPEG_CONF=""
 fi
-############## LIBFAAC
-if test "x$avlibs_nonfree" = xyes; then
-	AC_CHECK_LIB(faac, faacEncOpen,[libfaac=yes])
-	AC_CHECK_HEADER(faac.h,[libfaach=yes])
 
-	if test "x$libfaac$libfaach" = xyesyes; then
-		FFMPEG_CONF="$FFMPEG_CONF --enable-libfaac"
+############## LIBFDK-AAC
+if test "x$avlibs_nonfree" = xyes; then
+	PKG_CHECK_MODULES(libfdkaac,fdk-aac,[libfdkaac=yes])
+
+	if test "x$libfdkaac" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libfdk-aac"
 	fi
 fi
-############## End of LIBFAAC
+############## End of LIBFDK-AAC
 
 ############## LAME
 # Just test to see if we have lame installed.
