@@ -175,6 +175,11 @@ private:
 	static Mutex *avlibs_lock;
 	stream_params track_data;
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
+	// Codec contexts
+	AVCodecContext *codec_contexts[MAXCHANNELS];
+#endif
+
 	// decoding audio
 	int input_channels;
 	int num_buffers;
