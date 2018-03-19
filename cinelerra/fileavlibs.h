@@ -148,7 +148,9 @@ private:
 	static char *dump_AVOptionFlags(int flags);
 	static void dump_AVCodec(const AVCodec *codec, int indent = 0);
 	static const char *dump_AVMediaType(enum AVMediaType type);
-
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
+	static void dump_AVCodecParameters(AVCodecParameters *codecpar, int indent = 0);
+#endif
 	static struct avlib_formattable known_formats[];
 	AVFormatContext *context;
 	AVFrame *avvframe;

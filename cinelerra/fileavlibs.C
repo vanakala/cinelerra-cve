@@ -3664,3 +3664,32 @@ void FileAVlibs::dump_AVProgram(AVProgram *prg, int indent)
 		dump_ts(prg->start_time, bf1), dump_ts(prg->end_time, bf2),
 		dump_ts(prg->pts_wrap_reference, bf3), prg->pts_wrap_behavior);
 }
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
+void FileAVlibs::dump_AVCodecParameters(AVCodecParameters *codecpar, int indent)
+{
+	printf("%*sAVCodecParameters %p dump:\n", indent, "", codecpar);
+	indent += 2;
+	printf("%*scodec_type '%s' codec_id '%s' codec_tag '%s'\n", indent, "",
+		av_get_media_type_string(codecpar->codec_type),
+		avcodec_get_name(codecpar->codec_id), dump_fourcc(codecpar->codec_tag));
+	printf("%*sextradata %p extradata_size %d format %d\n", indent, "",
+		codecpar->extradata, codecpar->extradata_size, codecpar->format);
+	printf("%*sbit_rate %" PRId64 " bits_per_coded_sample %d bits_per_raw_sample %d\n", indent, "",
+		codecpar->bit_rate, codecpar->bits_per_coded_sample, codecpar->bits_per_raw_sample);
+	printf("%*sprofile %d level %d size [%dx%d] sample_aspect_ratio %s\n", indent, "",
+		codecpar->profile, codecpar->level, codecpar->width, codecpar->height,
+		dump_AVRational(&codecpar->sample_aspect_ratio));
+	printf("%*sfield_order %d color_range '%s' color_primaries '%s' color_trc '%s'\n", indent, "",
+		codecpar->field_order, av_color_range_name(codecpar->color_range),
+		av_color_primaries_name(codecpar->color_primaries),
+		av_color_transfer_name(codecpar->color_trc));
+	printf("%*schroma_location '%s' video_delay %d channel_layout %" PRIx64 "\n", indent, "",
+		av_chroma_location_name(codecpar->chroma_location),
+		codecpar->video_delay, codecpar->channel_layout);
+	printf("%*schannels %d sample_rate %d block_align %d frame_size %d\n", indent, "",
+		codecpar->channels, codecpar->sample_rate, codecpar->block_align, codecpar->frame_size);
+	printf("%*sinitial_padding %d trailing_padding %d seek_preroll %d\n", indent, "",
+		codecpar->initial_padding, codecpar->trailing_padding, codecpar->seek_preroll);
+}
+#endif
