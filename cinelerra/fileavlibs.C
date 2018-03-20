@@ -1240,7 +1240,11 @@ int FileAVlibs::read_frame(VFrame *frame)
 	{
 		if((sres = media_seek(video_index, rqpos, &pkt, vpkt_pos)) < 0)
 		{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 			av_free_packet(&pkt);
+#else
+			av_packet_unref(&pkt);
+#endif
 			avlibs_lock->unlock();
 			return 1;
 		}
@@ -1262,7 +1266,11 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 		if(video_eof)
 		{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 			av_free_packet(&pkt);
+#else
+			av_packet_unref(&pkt);
+#endif
 			pkt.stream_index = video_index;
 			pkt.data = 0;
 			pkt.size = 0;
@@ -1281,7 +1289,11 @@ int FileAVlibs::read_frame(VFrame *frame)
 				avvframe, &got_it, &pkt)) < 0)
 			{
 				liberror(res, _("Failed to decode video frame"));
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 				av_free_packet(&pkt);
+#else
+				av_packet_unref(&pkt);
+#endif
 				avlibs_lock->unlock();
 				return 1;
 			}
@@ -1297,7 +1309,11 @@ int FileAVlibs::read_frame(VFrame *frame)
 				break;
 		}
 	}
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 	av_free_packet(&pkt);
+#else
+	av_packet_unref(&pkt);
+#endif
 
 	if(!error && got_it)
 	{
@@ -1464,7 +1480,11 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 					if(!fresh_open)
 					{
 						printf(_("Audio decoding failed when skipping.\n"));
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 						av_free_packet(&pkt);
+#else
+						av_packet_unref(&pkt);
+#endif
 						return res;
 					}
 				}
@@ -1488,7 +1508,11 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				}
 			}
 		}
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 		av_free_packet(&pkt);
+#else
+		av_packet_unref(&pkt);
+#endif
 	}
 
 	if(res < 0)
@@ -1506,7 +1530,11 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 
 		if(audio_eof)
 		{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 			av_free_packet(&pkt);
+#else
+			av_packet_unref(&pkt);
+#endif
 			pkt.stream_index = audio_index;
 			pkt.data = 0;
 			pkt.size = 0;
@@ -1522,7 +1550,11 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 			if((res = avcodec_decode_audio4(decoder_context,
 				avaframe, &got_it, &pkt)) < 0)
 			{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 				av_free_packet(&pkt);
+#else
+				av_packet_unref(&pkt);
+#endif
 				liberror(res, _("Audio decoding failed when reading"));
 				return res;
 			}
@@ -1548,7 +1580,11 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				break;
 		}
 	}
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 	av_free_packet(&pkt);
+#else
+	av_packet_unref(&pkt);
+#endif
 
 	if(error)
 	{
@@ -2029,8 +2065,11 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 			}
 		}
 	}
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 	av_free_packet(&pkt);
-
+#else
+	av_packet_unref(&pkt);
+#endif
 	if(samples_written < resampled_length + frame_size)
 	{
 		resample_fill = resampled_length + frame_size - samples_written;
@@ -2258,7 +2297,11 @@ stream_params *FileAVlibs::get_track_data(int trx)
 			if(interrupt)
 				return 0;
 		}
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 		av_free_packet(&pkt);
+#else
+		av_packet_unref(&pkt);
+#endif
 	}
 
 	if(err != AVERROR_EOF)
