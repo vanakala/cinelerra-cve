@@ -528,6 +528,7 @@ int FileAVlibs::open_file(int rd, int wr)
 						avlibs_lock->unlock();
 						return 1;
 					}
+					avcodec_parameters_to_context(decoder_context, stream->codecpar);
 #endif
 					if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
 					{
@@ -577,8 +578,10 @@ int FileAVlibs::open_file(int rd, int wr)
 					if(!(decoder_context = avcodec_alloc_context3(codec)))
 					{
 						errormsg(_("Failed to allocate audio decoder context"));
+						avlibs_lock->unlock();
 						return 1;
 					}
+					avcodec_parameters_to_context(decoder_context, stream->codecpar);
 #endif
 					if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
 					{
@@ -1285,8 +1288,24 @@ int FileAVlibs::read_frame(VFrame *frame)
 				else
 					vpkt_pos = pkt.dts + pkt.duration;
 			}
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 			if((res = avcodec_decode_video2(decoder_context,
 				avvframe, &got_it, &pkt)) < 0)
+#else
+			if((res = avcodec_send_packet(decoder_context, &pkt)) < 0)
+			{
+				liberror(res, _("Failed to send packet to video decoder"));
+				av_packet_unref(&pkt);
+				avlibs_lock->unlock();
+				return 1;
+			}
+			got_it = 0;
+			res = avcodec_receive_frame(decoder_context, avvframe);
+			if(!res)
+				got_it = 1;
+			else
+			if(res != AVERROR(EAGAIN))
+#endif
 			{
 				liberror(res, _("Failed to decode video frame"));
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
