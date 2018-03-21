@@ -1319,7 +1319,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 	{
 		AVPixelFormat pix_fmt = ColorModels::color_model_to_pix_fmt(frame->get_color_model());
 
-		convert_cmodel((AVPicture *)avvframe, decoder_context->pix_fmt,
+		convert_cmodel(avvframe, decoder_context->pix_fmt,
 			decoder_context->width, decoder_context->height, frame);
 		frame->set_source_pts(av_frame_get_best_effort_timestamp(avvframe) *
 			av_q2d(stream->time_base) - pts_base);
@@ -1632,7 +1632,7 @@ int FileAVlibs::fill_buffer(AVFrame *avaframe, int insamples, int bps, int plana
 	return out_samples;
 }
 
-int FileAVlibs::convert_cmodel(AVPicture *picture_in, AVPixelFormat pix_fmt,
+int FileAVlibs::convert_cmodel(AVFrame *picture_in, AVPixelFormat pix_fmt,
 	int width_in, int height_in, VFrame *frame_out)
 {
 	int cmodel_out = frame_out->get_color_model();
@@ -1886,6 +1886,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 		AVPacket pkt = {0};
 		av_init_packet(&pkt);
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 		if(context->oformat->flags & AVFMT_RAWPICTURE &&
 				video_ctx->codec->id == AV_CODEC_ID_RAWVIDEO)
 		{
@@ -1903,6 +1904,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			got_it = 1;
 		}
 		else
+#endif
 		{
 			if((rv = avcodec_encode_video2(video_ctx, &pkt, avvframe, &got_it)) < 0)
 			{
