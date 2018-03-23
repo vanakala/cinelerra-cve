@@ -902,7 +902,9 @@ int FileAVlibs::open_file(int rd, int wr)
 
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				audio_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
+			avcodec_parameters_from_context(stream->codecpar, audio_ctx);
+#endif
 			if((rv = avcodec_open2(audio_ctx, codec, &dict)) < 0)
 			{
 				av_dict_free(&dict);
@@ -1055,10 +1057,19 @@ void FileAVlibs::close_file()
 					}
 					else
 						avaframe->data[0] = resampled_data[0];
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 					if(rv = avcodec_encode_audio2(audio_ctx, &pkt, avaframe, &got_output))
-					{
 						liberror(rv, _("Failed to encode last audio packet"));
-					}
+#else
+					got_output = 0;
+					if(rv = avcodec_send_frame(audio_ctx, avaframe))
+						liberror(rv, _("Failed to send last audio frame to encoder"));
+					else
+					if(rv = avcodec_receive_packet(audio_ctx, &pkt))
+						liberror(rv, _("Failed to encode last audio packet"));
+					else
+						got_output = 1;
+#endif
 					if(!rv && got_output)
 					{
 						pkt.stream_index = audio_index;
@@ -1069,13 +1080,28 @@ void FileAVlibs::close_file()
 					}
 				}
 				// Get out samples kept in encoder
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57,47,100)
+				avcodec_send_frame(audio_ctx, NULL);
+#endif
 				for(got_output = 1; got_output;)
 				{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 					if(avcodec_encode_audio2(audio_ctx, &pkt, 0, &got_output))
 					{
 						errormsg(_("Failed to encode last audio packet"));
 						break;
 					}
+#else
+					got_output = 0;
+					if(rv = avcodec_receive_packet(audio_ctx, &pkt))
+					{
+						if(rv = AVERROR_EOF)
+							break;
+						liberror(rv, _("Failed to encode last audio packet"));
+					}
+					else
+						got_output = 1;
+#endif
 					if(got_output)
 					{
 						pkt.stream_index = audio_index;
@@ -1474,6 +1500,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	{
 		if((sres = media_seek(audio_index, rqpos, &pkt, apkt_pos + apkt_duration)) < 0)
 			return -1;
+
 		if(sres > 0)
 		{
 			swr_init(swr_ctx);
@@ -1498,10 +1525,12 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 #else
 				if((res = avcodec_send_packet(decoder_context, &pkt)) < 0)
 				{
-					liberror(res, _("Failed to send packet to audio decoder"));
-					av_packet_unref(&pkt);
-					avlibs_lock->unlock();
-					return 1;
+					if(!fresh_open)
+					{
+						fputs(_("Failed to send packet to audio decoder when skiping.\n"), stdout);
+						av_packet_unref(&pkt);
+						return res;
+					}
 				}
 				got_it = 0;
 				res = avcodec_receive_frame(decoder_context, avaframe);
@@ -1513,7 +1542,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 				{
 					if(!fresh_open)
 					{
-						printf(_("Audio decoding failed when skipping.\n"));
+						printf(_("Audio decoding failed when skiping.\n"));
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
 						av_free_packet(&pkt);
 #else
@@ -1589,8 +1618,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 			{
 				liberror(res, _("Failed to send packet to audio decoder"));
 				av_packet_unref(&pkt);
-				avlibs_lock->unlock();
-				return 1;
+				return res;
 			}
 			got_it = 0;
 			res = avcodec_receive_frame(decoder_context, avaframe);
@@ -2095,12 +2123,25 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 			avaframe->data[0] = &resampled_data[0][i * frame_size * sample_bytes * audio_ctx->channels];
 
 		avaframe->linesize[0] = linesize;
-
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 		if((rv = avcodec_encode_audio2(audio_ctx, &pkt, avaframe, &got_output)) < 0)
 		{
 			liberror(rv, _("Failed to encode audio frame"));
 			return 1;
 		}
+#else
+		got_output = 0;
+		if(rv = avcodec_send_frame(audio_ctx, avaframe))
+			liberror(rv, _("Failed to send audio frame"));
+		else
+		if(rv = avcodec_receive_packet(audio_ctx, &pkt))
+		{
+			if(rv != AVERROR(EAGAIN))
+				liberror(rv, _("Failed to encode audio packet"));
+		}
+		else
+			got_output = 1;
+#endif
 		audio_pos += frame_size;
 		samples_written += frame_size;
 
