@@ -50,7 +50,7 @@ public:
 	int get_datatype();
 
 // process frames to put in buffer_out
-	void process_buffer(VFrame *video_out);
+	VFrame *process_buffer(VFrame *buffer);
 
 // load an array of buffers for each track to send to the thread
 	void process_buffer(ptstime input_postime);

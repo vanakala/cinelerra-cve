@@ -91,14 +91,14 @@ int VRender::flash_output()
 	return renderengine->video->write_buffer(video_out, renderengine->edl);
 }
 
-void VRender::process_buffer(VFrame *video_out)
+VFrame *VRender::process_buffer(VFrame *buffer)
 {
 // process buffer for non realtime
 	int i, j;
 	ptstime render_len = renderengine->edl->session->frame_duration();
 	int reconfigure = 0;
 
-	this->video_out = video_out;
+	video_out = buffer;
 
 	current_postime = video_out->get_pts();
 
@@ -108,6 +108,7 @@ void VRender::process_buffer(VFrame *video_out)
 
 	if(reconfigure) restart_playback();
 	process_buffer(current_postime);
+	return video_out;
 }
 
 

@@ -324,8 +324,8 @@ void PackageRenderer::do_video()
 			video_output_ptr = video_output[0][video_write_position];
 			video_output_ptr->set_pts(video_pts);
 			if(!result)
-				render_engine->vrender->process_buffer(video_output_ptr);
-
+				video_output[0][video_write_position] = video_output_ptr =
+					render_engine->vrender->process_buffer(video_output_ptr);
 			duration = 1.0 / asset->frame_rate;
 			video_output_ptr->set_pts(video_pts);
 			video_output_ptr->set_duration(duration);

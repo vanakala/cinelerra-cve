@@ -22,10 +22,12 @@
 #include "aframe.h"
 #include "asset.h"
 #include "bcsignals.h"
+#include "bcresources.h"
 #include "condition.h"
 #include "file.h"
 #include "filethread.h"
 #include "mutex.h"
+#include "tmpframecache.h"
 #include "vframe.h"
 #include "videodevice.inc"
 
@@ -93,7 +95,7 @@ FileThread::~FileThread()
 	for(int i = 0; i < MAX_READ_FRAMES; i++)
 	{
 		if(read_frames[i])
-			delete read_frames[i];
+			BC_Resources::tmpframes.release_frame(read_frames[i]);
 	}
 
 	delete read_wait_lock;
@@ -145,13 +147,13 @@ void FileThread::run()
 					file->asset->height,
 					supported_colormodel))
 			{
-				delete local_frame;
+				BC_Resources::tmpframes.release_frame(local_frame);
 				local_frame = 0;
 			}
 
 			if(!local_frame)
 			{
-				local_frame = new VFrame(0,
+				local_frame = BC_Resources::tmpframes.get_tmpframe(
 					file->asset->width,
 					file->asset->height,
 					supported_colormodel);
@@ -161,7 +163,6 @@ void FileThread::run()
 			local_frame->set_source_pts(end_pts);
 			local_frame->set_layer(local_layer);
 			file->get_frame(local_frame, 1);
-
 // Put frame in last position but since the last position now may be
 // lower than it was when we got the frame, swap the current
 // last position with the previous last position.
@@ -259,9 +260,8 @@ void FileThread::stop_writing()
 				for(layer = 0; layer < file->asset->layers; layer++)
 				{
 					for(frame = 0; frame < buffer_size; frame++)
-					{
-						delete video_buffer[buffer][layer][frame];
-					}
+						BC_Resources::tmpframes.release_frame(video_buffer[buffer][layer][frame]);
+
 					delete [] video_buffer[buffer][layer];
 				}
 				delete [] video_buffer[buffer];
@@ -331,7 +331,7 @@ void FileThread::start_writing(int buffer_size,
 				for(frame = 0; frame < buffer_size; frame++)
 				{
 					video_buffer[buffer][layer][frame] =
-						new VFrame(0,
+						BC_Resources::tmpframes.get_tmpframe(
 							file->asset->width,
 							file->asset->height,
 							color_model);
