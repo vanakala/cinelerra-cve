@@ -43,12 +43,9 @@ public:
 
 // ============================== writing section ==============================
 // Allocate the buffers and start loop for writing.
-// compressed - if 1 write_compressed_frames is called in the file
-//            - if 0 write_frames is called
 	void start_writing(int buffer_size, 
 			int color_model, 
-			int ring_buffers, 
-			int compressed);
+			int ring_buffers);
 	void stop_writing();
 
 // ================================ reading section ============================
@@ -88,10 +85,6 @@ public:
 	File *file;
 	int ring_buffers;
 	int buffer_size;    // Frames or samples per ring buffer
-// Color model of frames
-	int color_model;
-// Whether to use the compressed data in the frame
-	int compressed;
 
 // Mode of operation
 	int is_reading;

@@ -97,8 +97,7 @@ public:
 //              if 0 write_frames is called
 	void start_video_thread(int buffer_size, 
 		int color_model, 
-		int ring_buffers, 
-		int compressed);
+		int ring_buffers);
 	void stop_video_thread();
 
 	void start_video_decode_thread();

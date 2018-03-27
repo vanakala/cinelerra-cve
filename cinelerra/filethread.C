@@ -276,8 +276,7 @@ void FileThread::stop_writing()
 
 void FileThread::start_writing(int buffer_size, 
 		int color_model, 
-		int ring_buffers, 
-		int compressed)
+		int ring_buffers)
 {
 // allocate buffers
 	int buffer, layer, frame;
@@ -285,8 +284,6 @@ void FileThread::start_writing(int buffer_size,
 
 	this->ring_buffers = ring_buffers;
 	this->buffer_size = buffer_size;
-	this->color_model = color_model;
-	this->compressed = compressed;
 	this->current_buffer = ring_buffers - 1;
 	return_value = 0;
 	local_buffer = 0;
@@ -324,12 +321,6 @@ void FileThread::start_writing(int buffer_size,
 
 	if(do_video)
 	{
-		this->color_model = color_model;
-		bytes_per_frame = VFrame::calculate_data_size(file->asset->width,
-			file->asset->height,
-			-1,
-			color_model);
-
 		video_buffer = new VFrame***[ring_buffers];
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
@@ -339,16 +330,11 @@ void FileThread::start_writing(int buffer_size,
 				video_buffer[buffer][layer] = new VFrame*[buffer_size];
 				for(frame = 0; frame < buffer_size; frame++)
 				{
-					if(compressed)
-						video_buffer[buffer][layer][frame] = new VFrame;
-					else
-					{
-						video_buffer[buffer][layer][frame] = 
-							new VFrame(0, 
-								file->asset->width, 
-								file->asset->height, 
-								color_model);
-					}
+					video_buffer[buffer][layer][frame] =
+						new VFrame(0,
+							file->asset->width,
+							file->asset->height,
+							color_model);
 				}
 			}
 		}

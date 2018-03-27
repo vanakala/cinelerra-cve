@@ -218,15 +218,13 @@ void PackageRenderer::create_engine()
 
 	if(asset->video_data)
 	{
-		compressed_output = new VFrame;
 // The write length needs to correlate with the processor count because
 // it is passed to the file handler which usually processes frames simultaneously.
 		video_write_length = preferences->processors;
 		video_write_position = 0;
 		file->start_video_thread(video_write_length,
 			command->get_edl()->session->color_model,
-			preferences->processors > 1 ? 2 : 1,
-			0);
+			preferences->processors > 1 ? 2 : 1);
 
 		if(mwindow)
 		{
@@ -325,7 +323,6 @@ void PackageRenderer::do_video()
 // Construct layered output buffer
 			video_output_ptr = video_output[0][video_write_position];
 			video_output_ptr->set_pts(video_pts);
-
 			if(!result)
 				render_engine->vrender->process_buffer(video_output_ptr);
 
@@ -401,7 +398,6 @@ void PackageRenderer::stop_output()
 
 	if(asset->video_data)
 	{
-		delete compressed_output;
 		if(video_write_position)
 			file->write_video_buffer(video_write_position);
 		if(package->use_brender)

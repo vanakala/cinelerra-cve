@@ -122,7 +122,6 @@ public:
 	MWindow *mwindow;
 	CICache *audio_cache;
 	CICache *video_cache;
-	VFrame *compressed_output;
 	AudioOutConfig *aconfig;
 	VideoOutConfig *vconfig;
 	PlayableTracks *playable_tracks;

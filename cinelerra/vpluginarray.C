@@ -69,8 +69,7 @@ void VPluginArray::create_buffers()
 {
 	file->start_video_thread(buffer_size,
 		edl->session->color_model,
-		RING_BUFFERS,
-		0);
+		RING_BUFFERS);
 }
 
 void VPluginArray::get_buffers()
