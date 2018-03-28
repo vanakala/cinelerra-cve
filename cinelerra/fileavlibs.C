@@ -800,6 +800,9 @@ int FileAVlibs::open_file(int rd, int wr)
 
 			if(metalist && (aparam = metalist->find("strict")))
 				av_dict_set(&dict, "strict", aparam->stringvalue, 0);
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
+			avcodec_parameters_from_context(stream->codecpar, video_ctx);
+#endif
 			if((rv = avcodec_open2(video_ctx, codec, &dict)) < 0)
 			{
 				av_dict_free(&dict);
@@ -818,6 +821,7 @@ int FileAVlibs::open_file(int rd, int wr)
 			avvframe->width = video_ctx->width;
 			avvframe->height = video_ctx->height;
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
+			avvframe->sample_aspect_ratio = video_ctx->sample_aspect_ratio;
 			codec_contexts[video_index] = video_ctx;
 #endif
 		}
@@ -980,7 +984,7 @@ int FileAVlibs::open_file(int rd, int wr)
 		}
 		if((rv = avformat_write_header(context, 0)) < 0)
 		{
-			errormsg(_("Failed to write header: %d"), rv);
+			liberror(rv, _("Failed to write header"));
 			avlibs_lock->unlock();
 			return 1;
 		}
@@ -1095,7 +1099,7 @@ void FileAVlibs::close_file()
 					got_output = 0;
 					if(rv = avcodec_receive_packet(audio_ctx, &pkt))
 					{
-						if(rv = AVERROR_EOF)
+						if(rv == AVERROR_EOF)
 							break;
 						liberror(rv, _("Failed to encode last audio packet"));
 					}
@@ -1116,12 +1120,12 @@ void FileAVlibs::close_file()
 				}
 			}
 
-			if(avvframe && headers_written && !(context->oformat->flags & AVFMT_RAWPICTURE &&
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-					context->streams[video_index]->codec->codec->id == AV_CODEC_ID_RAWVIDEO))
-#else
-					codec_contexts[video_index]->codec->id == AV_CODEC_ID_RAWVIDEO))
+			if(avvframe && headers_written
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
+				&& !(context->oformat->flags & AVFMT_RAWPICTURE &&
+				context->streams[video_index]->codec->codec->id == AV_CODEC_ID_RAWVIDEO)
 #endif
+				)
 			{
 				AVPacket pkt;
 				int got_output, rv;
@@ -1134,13 +1138,29 @@ void FileAVlibs::close_file()
 				pkt.data = 0;
 				pkt.size = 0;
 
+				// Get out samples kept in encoder
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57,47,100)
+				avcodec_send_frame(video_ctx, NULL);
+#endif
 				for(got_output = 1; got_output;)
 				{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 					if(avcodec_encode_video2(video_ctx, &pkt, 0, &got_output))
 					{
 						errormsg(_("Failed to encode last video packet"));
 						break;
 					}
+#else
+					got_output = 0;
+					if(rv = avcodec_receive_packet(video_ctx, &pkt))
+					{
+						if(rv == AVERROR_EOF)
+							break;
+						liberror(rv, _("Failed to encode last video packet"));
+					}
+					else
+						got_output = 1;
+#endif
 					if(got_output)
 					{
 						pkt.stream_index = video_index;
@@ -1153,7 +1173,12 @@ void FileAVlibs::close_file()
 				}
 			}
 			if(headers_written)
-				av_write_trailer(context);
+			{
+				int rv;
+
+				if(rv = av_write_trailer(context))
+					liberror(rv, _("Failed to write trailer"));
+			}
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 			if(video_index >= 0)
 				avcodec_close(context->streams[video_index]->codec);
@@ -1984,12 +2009,26 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 		else
 #endif
 		{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
 			if((rv = avcodec_encode_video2(video_ctx, &pkt, avvframe, &got_it)) < 0)
 			{
 				liberror(rv, _("Failed to encode video frame"));
 				avlibs_lock->unlock();
 				return 1;
 			}
+#else
+			got_it = 0;
+			if(rv = avcodec_send_frame(video_ctx, avvframe))
+				liberror(rv, _("Failed to send video frame to encoder"));
+			else
+			if(rv = avcodec_receive_packet(video_ctx, &pkt))
+			{
+				if(rv != AVERROR(EAGAIN))
+					liberror(rv, _("Failed to encode video packet"));
+			}
+			else
+				got_it = 1;
+#endif
 		}
 		if(got_it)
 		{
