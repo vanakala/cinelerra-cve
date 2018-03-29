@@ -1106,7 +1106,7 @@ void FileAVlibs::close_file()
 					else
 						got_output = 1;
 #endif
-					if(got_output)
+					if(got_output && pkt.size)
 					{
 						pkt.stream_index = audio_index;
 						av_packet_rescale_ts(&pkt, audio_ctx->time_base,
