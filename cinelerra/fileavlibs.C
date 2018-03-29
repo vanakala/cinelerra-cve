@@ -2450,14 +2450,15 @@ void FileAVlibs::versionifo(int indent)
 #define PRINT_LIB_INFO(libname, LIBNAME) \
 	{ \
 		unsigned int version = libname##_version(); \
-		fprintf(stderr, "%*slib%-11s %2d.%3d.%3d / %2d.%3d.%3d\n", \
+		fprintf(stderr, "%*slib%-11s %2d.%3d.%3d / %2d.%3d.%3d%s\n", \
 			indent, "", #libname, \
 			LIB##LIBNAME##_VERSION_MAJOR, \
 			LIB##LIBNAME##_VERSION_MINOR, \
 			LIB##LIBNAME##_VERSION_MICRO, \
 			version >> 16, \
 			version >> 8 & 0xff, \
-			version & 0xff); \
+			version & 0xff, \
+			version == LIB##LIBNAME##_VERSION_INT ? "" : " mismatch"); \
 	}
 #ifdef LIBAVUTIL_VERSION
 	PRINT_LIB_INFO(avutil, AVUTIL);
