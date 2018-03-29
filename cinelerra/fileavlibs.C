@@ -2892,7 +2892,7 @@ Paramlist *FileAVlibs::scan_options(const AVClass *avclass, int options, const c
 		if(opt->type == AV_OPT_TYPE_CONST || skip_avoption(opt, typefl))
 			continue;
 		param = opt2param(list, opt);
-		if(opt->unit)
+		if(param && opt->unit)
 		{
 			const AVOption *subopt = 0;
 			Paramlist *sublist = param->add_subparams(opt->name);
