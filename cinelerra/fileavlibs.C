@@ -1061,39 +1061,27 @@ void FileAVlibs::close_file()
 					}
 					else
 						avaframe->data[0] = resampled_data[0];
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
-					if(rv = avcodec_encode_audio2(audio_ctx, &pkt, avaframe, &got_output))
-						liberror(rv, _("Failed to encode last audio packet"));
-#else
-					got_output = 0;
-					if(rv = avcodec_send_frame(audio_ctx, avaframe))
-						liberror(rv, _("Failed to send last audio frame to encoder"));
-					else
-					if(rv = avcodec_receive_packet(audio_ctx, &pkt))
-						liberror(rv, _("Failed to encode last audio packet"));
-					else
-						got_output = 1;
-#endif
-					if(!rv && got_output)
-					{
-						pkt.stream_index = audio_index;
-						av_packet_rescale_ts(&pkt, audio_ctx->time_base,
-							context->streams[audio_index]->time_base);
-						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
-							liberror(rv, _("Failed to write last audio packet"));
-					}
 				}
-				// Get out samples kept in encoder
+
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57,47,100)
+				if(resample_fill)
+					avcodec_send_frame(audio_ctx, avaframe);
+				// Send eof to encoder
 				avcodec_send_frame(audio_ctx, NULL);
 #endif
+				// Get out samples kept in encoder
 				for(got_output = 1; got_output;)
 				{
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,47,100)
-					if(avcodec_encode_audio2(audio_ctx, &pkt, 0, &got_output))
+					if(avcodec_encode_audio2(audio_ctx, &pkt, resample_fill ? avaframe : 0, &got_output))
 					{
 						errormsg(_("Failed to encode last audio packet"));
 						break;
+					}
+					if(resample_fill)
+					{
+						resample_fill = 0;
+						continue;
 					}
 #else
 					got_output = 0;
