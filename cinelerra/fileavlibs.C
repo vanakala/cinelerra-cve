@@ -3639,7 +3639,7 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 	indent += 2;
 	printf("%*sav_class %p log_level_offset %d codec_type %d codec %p\n", indent, "",
 		ctx->av_class, ctx->log_level_offset, ctx->codec_type, ctx->codec);
-	printf("%*scodec_id %s fourcc %s priv_data %p, internal %p\n", indent, "",
+	printf("%*scodec_id '%s' fourcc '%s' priv_data %p, internal %p\n", indent, "",
 		avcodec_get_name(ctx->codec_id), dump_fourcc(ctx->codec_tag),
 		ctx->priv_data, ctx->internal);
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,25,100)
@@ -3648,14 +3648,15 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 	printf("%*sopaque %p bit_rate %" PRId64 " bit_rate_tolerance %d global_quality %d\n", indent, "",
 #endif
 		ctx->opaque, ctx->bit_rate, ctx->bit_rate_tolerance, ctx->global_quality);
-	printf("%*scompression_level %d flags %d flags2 %d extradata %p extradata_size %d\n", indent, "",
+	printf("%*scompression_level %d flags %#x flags2 %d extradata %p extradata_size %d\n", indent, "",
 		ctx->compression_level, ctx->flags, ctx->flags2, ctx->extradata,
 		ctx->extradata_size);
-	printf("%*stime_base %s ticks_per_frame %d delay %d w/h [%d,%d] coded [%d, %d]\n", indent, "",
+	printf("%*stime_base %s ticks_per_frame %d delay %d w/h [%d,%d] coded [%d,%d]\n", indent, "",
 		dump_AVRational(&ctx->time_base), ctx->ticks_per_frame, ctx->delay,
 		ctx->width, ctx->height, ctx->coded_width, ctx->coded_height);
-	printf("%*sgop_size %d, pix_fmt %d draw_horiz_band %p get_format %p\n", indent, "",
-		ctx->gop_size, ctx->pix_fmt, ctx->draw_horiz_band, ctx->get_format);
+	printf("%*sgop_size %d, pix_fmt '%s' draw_horiz_band %p get_format %p\n", indent, "",
+		ctx->gop_size, av_get_pix_fmt_name(ctx->pix_fmt),
+		ctx->draw_horiz_band, ctx->get_format);
 	printf("%*smax_b_frames %d b_quant_factor %.2f b_quant_offset %.2f\n", indent, "",
 		ctx->max_b_frames, ctx->b_quant_factor, ctx->b_quant_offset);
 	printf("%*shas_b_frames %d i_quant_factor %.2f i_quant_offset %.2f\n", indent, "",
@@ -3669,29 +3670,31 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 		ctx->me_cmp, ctx->me_sub_cmp);
 	printf("%*smb_cmp %d ildct_cmp %d dia_size %d last_predictor_count %d\n", indent, "",
 		ctx->mb_cmp, ctx->ildct_cmp, ctx->dia_size, ctx->last_predictor_count);
-	printf("%*sme_pre_cmp %d pre_dia_size %d me_subpel_quality %d me_range %d\n",
-		indent, "",
+	printf("%*sme_pre_cmp %d pre_dia_size %d me_subpel_quality %d me_range %d\n", indent, "",
 		ctx->me_pre_cmp, ctx->pre_dia_size, ctx->me_subpel_quality, ctx->me_range);
 	printf("%*sslice_flags %d mb_decision %d intra_matrix %p inter_matrix %p\n", indent, "",
 		ctx->slice_flags, ctx->mb_decision, ctx->intra_matrix, ctx->inter_matrix);
-	printf("%*sintra_dc_precision %d\n", indent, "",
-		ctx->intra_dc_precision);
-	printf("%*sskip_top %d skip_bottom %d mb_lmin %d mb_lmax %d\n", indent, "",
-		ctx->skip_top, ctx->skip_bottom, ctx->mb_lmin, ctx->mb_lmax);
-	printf("%*sbidir_refine %d keyint_min %d refs %d\n", indent, "",
-		ctx->bidir_refine, ctx->keyint_min, ctx->refs);
-	printf("%*smv0_threshold %d color_primaries %d color_trc %d\n", indent, "",
-		ctx->mv0_threshold, ctx->color_primaries, ctx->color_trc);
-	printf("%*scolorspace %d color_range %d chroma_sample_location %d slices %d\n", indent, "",
-		ctx->colorspace, ctx->color_range, ctx->chroma_sample_location, ctx->slices);
-	printf("%*sfield_order %d sample_rate %d channels %d, sample_fmt %d\n", indent, "",
-		ctx->field_order, ctx->sample_rate, ctx->channels, ctx->sample_fmt);
+	printf("%*sintra_dc_precision %d skip_top %d skip_bottom %d mb_lmin %d mb_lmax %d\n", indent, "",
+		ctx->intra_dc_precision, ctx->skip_top, ctx->skip_bottom,
+		ctx->mb_lmin, ctx->mb_lmax);
+	printf("%*sbidir_refine %d keyint_min %d refs %d mv0_threshold %d\n", indent, "",
+		ctx->mv0_threshold, ctx->bidir_refine, ctx->keyint_min, ctx->refs);
+	printf("%*scolor_primaries '%s' color_trc '%s'\n", indent, "",
+		av_color_primaries_name(ctx->color_primaries),
+		av_color_transfer_name(ctx->color_trc));
+	printf("%*scolorspace '%s' color_range '%s' chroma_sample_location '%s' \n", indent, "",
+		av_color_space_name(ctx->colorspace),
+		av_color_range_name(ctx->color_range),
+		av_chroma_location_name(ctx->chroma_sample_location));
+	printf("%*sslices %d field_order %d sample_rate %d channels %d, sample_fmt '%s'\n", indent, "",
+		ctx->slices, ctx->field_order, ctx->sample_rate, ctx->channels,
+		av_get_sample_fmt_name(ctx->sample_fmt));
 	printf("%*sframe_size %d frame_number %d block_align %d cutoff %d\n", indent, "",
 		ctx->frame_size, ctx->frame_number, ctx->block_align, ctx->cutoff);
 	printf("%*schannel_layout %#" PRIx64 " request_channel_layout %#" PRIx64 " audio_service_type %d\n", indent, "",
 		ctx->channel_layout, ctx->request_channel_layout, ctx->audio_service_type);
-	printf("%*srequest_sample_fmt %d get_buffer2 %p refcounted_frames %d\n", indent, "",
-		ctx->request_sample_fmt, ctx->get_buffer2, ctx->refcounted_frames);
+	printf("%*srequest_sample_fmt %d get_buffer2 %p\n", indent, "",
+		ctx->request_sample_fmt, ctx->get_buffer2);
 	printf("%*sqcompress %.2f qblur %.2f qmin %d qmax %d max_qdiff %d\n", indent, "",
 		ctx->qcompress, ctx->qblur, ctx->qmin, ctx->qmax, ctx->max_qdiff);
 	printf("%*src_buffer_size %d rc_override_count %d rc_override %p\n", indent, "",
@@ -3704,10 +3707,8 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 		ctx->rc_max_rate, ctx->rc_min_rate, ctx->rc_max_available_vbv_use);
 	printf("%*src_min_vbv_overflow_use %.2f rc_initial_buffer_occupancy %d\n", indent, "",
 		ctx->rc_min_vbv_overflow_use, ctx->rc_initial_buffer_occupancy);
-	printf("%*strellis %d\n", indent, "",
-		ctx->trellis);
-	printf("%*sstats_out %p stats_in %p, workaround_bugs %#x\n", indent, "",
-		ctx->stats_out, ctx->stats_in, ctx->workaround_bugs);
+	printf("%*strellis %d stats_out %p stats_in %p, workaround_bugs %#x\n", indent, "",
+		ctx->trellis, ctx->stats_out, ctx->stats_in, ctx->workaround_bugs);
 	printf("%*sstrict_std_compliance %d error_concealment %d debug %#x\n", indent, "",
 		ctx->strict_std_compliance, ctx->error_concealment, ctx->debug);
 	printf("%*serr_recognition %#x reordered_opaque %s hwaccel %p hwaccel_context %p\n", indent, "",
@@ -3742,6 +3743,7 @@ void FileAVlibs::dump_AVCodecContext(AVCodecContext *ctx, int indent)
 void FileAVlibs::dump_AVFrame(AVFrame *avf, int indent)
 {
 	char bf1[64], bf2[64];
+	const char *s;
 
 	printf("%*sAVFrame %p dump:\n", indent, "", avf);
 	indent += 2;
@@ -3763,8 +3765,27 @@ void FileAVlibs::dump_AVFrame(AVFrame *avf, int indent)
 	}
 	putchar('\n');
 
-	printf("%*sextended_data %p [%d,%d] nb_samples %d format %d\n", indent, "",
-		avf->extended_data, avf->width, avf->height, avf->nb_samples, avf->format);
+	printf("%*sbuf: ", indent, "");
+	for(int i = 0; i < AV_NUM_DATA_POINTERS; i++)
+	{
+		printf(" %p", avf->buf[i]);
+		if(i < AV_NUM_DATA_POINTERS - 1)
+			putchar(',');
+	}
+	putchar('\n');
+
+	printf("%*sextended_data %p [%d,%d] nb_samples %d format ", indent, "",
+		avf->extended_data, avf->width, avf->height, avf->nb_samples);
+	if(avf->height)
+		s = av_get_pix_fmt_name((AVPixelFormat)avf->format);
+	else if(avf->sample_rate)
+		s = av_get_sample_fmt_name((AVSampleFormat)avf->format);
+	else
+		s = 0;
+	if(s)
+		printf(" '%s'\n", s);
+	else
+		printf(" %d\n", avf->format);
 	printf("%*skey_frame %d pict_type %d sample_aspect_ratio %s pts %s\n", indent, "",
 		avf->key_frame, avf->pict_type, dump_AVRational(&avf->sample_aspect_ratio),
 		dump_ts(avf->pts));
@@ -3778,10 +3799,15 @@ void FileAVlibs::dump_AVFrame(AVFrame *avf, int indent)
 		avf->palette_has_changed, dump_ts(avf->reordered_opaque), avf->sample_rate);
 	printf("%*schannel_layout %#" PRIx64 " extended_buf %p nb_extended_buf %d\n", indent, "",
 		avf->channel_layout, avf->extended_buf, avf->nb_extended_buf);
-	printf("%*sside_data %p nb_side_data %d flags %d color_range %d color_primaries %d\n", indent, "",
-		avf->side_data, avf->nb_side_data, avf->flags, avf->color_range, avf->color_primaries);
-	printf("%*scolor_trc %d colorspace %d chroma_location %d best_effort_timestamp %s\n", indent, "",
-		avf->color_trc, avf->colorspace, avf->chroma_location, dump_ts(avf->best_effort_timestamp));
+	printf("%*sside_data %p nb_side_data %d flags %d best_effort_timestamp %s\n", indent, "",
+		avf->side_data, avf->nb_side_data, avf->flags,
+		dump_ts(avf->best_effort_timestamp));
+	printf("%*scolor_range '%s' color_primaries '%s'\n", indent, "",
+		av_color_range_name(avf->color_range),
+		av_color_primaries_name(avf->color_primaries));
+	printf("%*scolor_trc '%s' colorspace '%s' chroma_location '%s'\n", indent, "",
+		av_color_transfer_name(avf->color_trc), av_color_space_name(avf->colorspace),
+		av_chroma_location_name(avf->chroma_location));
 	printf("%*spkt_pos %s pkt_duration %s metadata %p decode_error_flags %d\n", indent, "",
 		dump_ts(avf->pkt_pos, bf1), dump_ts(avf->pkt_duration, bf2),
 		avf->metadata, avf->decode_error_flags);
@@ -3825,13 +3851,33 @@ void FileAVlibs::dump_AVProgram(AVProgram *prg, int indent)
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 void FileAVlibs::dump_AVCodecParameters(AVCodecParameters *codecpar, int indent)
 {
+	const char *s;
+
 	printf("%*sAVCodecParameters %p dump:\n", indent, "", codecpar);
 	indent += 2;
 	printf("%*scodec_type '%s' codec_id '%s' codec_tag '%s'\n", indent, "",
 		av_get_media_type_string(codecpar->codec_type),
 		avcodec_get_name(codecpar->codec_id), dump_fourcc(codecpar->codec_tag));
-	printf("%*sextradata %p extradata_size %d format %d\n", indent, "",
-		codecpar->extradata, codecpar->extradata_size, codecpar->format);
+	printf("%*sextradata %p extradata_size %d format ", indent, "",
+		codecpar->extradata, codecpar->extradata_size);
+
+	switch(codecpar->codec_type)
+	{
+	case AVMEDIA_TYPE_VIDEO:
+		s = av_get_pix_fmt_name((AVPixelFormat)codecpar->format);
+		break;
+	case AVMEDIA_TYPE_AUDIO:
+		s = av_get_sample_fmt_name((AVSampleFormat)codecpar->format);
+		break;
+	default:
+		s = 0;
+		break;
+	}
+	if(s)
+		printf(" '%s'\n", s);
+	else
+		printf(" %d\n", codecpar->format);
+
 	printf("%*sbit_rate %" PRId64 " bits_per_coded_sample %d bits_per_raw_sample %d\n", indent, "",
 		codecpar->bit_rate, codecpar->bits_per_coded_sample, codecpar->bits_per_raw_sample);
 	printf("%*sprofile %d level %d size [%dx%d] sample_aspect_ratio %s\n", indent, "",
