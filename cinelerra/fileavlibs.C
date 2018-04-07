@@ -757,8 +757,11 @@ int FileAVlibs::open_file(int rd, int wr)
 					avlibs_lock->unlock();
 					return 1;
 				}
-
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				if(!(stream = avformat_new_stream(context, codec)))
+#else
+				if(!(stream = avformat_new_stream(context, 0)))
+#endif
 				{
 					errormsg(_("Could not allocate video stream for '%s'"),
 						aparam->stringvalue);
@@ -800,9 +803,7 @@ int FileAVlibs::open_file(int rd, int wr)
 
 			if(metalist && (aparam = metalist->find("strict")))
 				av_dict_set(&dict, "strict", aparam->stringvalue, 0);
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
-			avcodec_parameters_from_context(stream->codecpar, video_ctx);
-#endif
+
 			if((rv = avcodec_open2(video_ctx, codec, &dict)) < 0)
 			{
 				av_dict_free(&dict);
@@ -811,6 +812,7 @@ int FileAVlibs::open_file(int rd, int wr)
 				return 1;
 			}
 			av_dict_free(&dict);
+
 			if(!(avvframe = av_frame_alloc()))
 			{
 				errormsg(_("Could not create video_frame for encoding"));
@@ -820,9 +822,11 @@ int FileAVlibs::open_file(int rd, int wr)
 			avvframe->format = video_ctx->pix_fmt;
 			avvframe->width = video_ctx->width;
 			avvframe->height = video_ctx->height;
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 			avvframe->sample_aspect_ratio = video_ctx->sample_aspect_ratio;
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 			codec_contexts[video_index] = video_ctx;
+			if((rv = avcodec_parameters_from_context(stream->codecpar, video_ctx)) < 0)
+				liberror(rv, _("Failed to copy parameters from video context"));
 #endif
 		}
 
@@ -844,7 +848,11 @@ int FileAVlibs::open_file(int rd, int wr)
 					return 1;
 				}
 
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				if(!(stream = avformat_new_stream(context, codec)))
+#else
+				if(!(stream = avformat_new_stream(context, 0)))
+#endif
 				{
 					errormsg(_("Could not allocate audio stream for '%s'"),
 						aparam->stringvalue);
@@ -906,9 +914,7 @@ int FileAVlibs::open_file(int rd, int wr)
 
 			if(context->oformat->flags & AVFMT_GLOBALHEADER)
 				audio_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
-			avcodec_parameters_from_context(stream->codecpar, audio_ctx);
-#endif
+
 			if((rv = avcodec_open2(audio_ctx, codec, &dict)) < 0)
 			{
 				av_dict_free(&dict);
@@ -950,6 +956,8 @@ int FileAVlibs::open_file(int rd, int wr)
 			avaframe->sample_rate = audio_ctx->sample_rate;
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 			codec_contexts[audio_index] = audio_ctx;
+			if((rv = avcodec_parameters_from_context(stream->codecpar, audio_ctx)) < 0)
+				liberror(rv, _("Failed to copy parameters from audio context"));
 #endif
 		}
 
@@ -982,6 +990,7 @@ int FileAVlibs::open_file(int rd, int wr)
 				return 1;
 			}
 		}
+
 		if((rv = avformat_write_header(context, 0)) < 0)
 		{
 			liberror(rv, _("Failed to write header"));
@@ -996,6 +1005,8 @@ int FileAVlibs::open_file(int rd, int wr)
 
 void FileAVlibs::close_file()
 {
+	int rv;
+
 	avlibs_lock->lock("FileAVlibs:close_file");
 
 	if(context)
@@ -1040,7 +1051,7 @@ void FileAVlibs::close_file()
 			if(avaframe && headers_written)
 			{
 				AVPacket pkt;
-				int got_output, rv, chan;
+				int got_output, chan;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				AVCodecContext *audio_ctx = context->streams[audio_index]->codec;
 #else
@@ -1116,7 +1127,7 @@ void FileAVlibs::close_file()
 				)
 			{
 				AVPacket pkt;
-				int got_output, rv;
+				int got_output;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				AVCodecContext *video_ctx = context->streams[video_index]->codec;
 #else
@@ -1152,18 +1163,21 @@ void FileAVlibs::close_file()
 					if(got_output)
 					{
 						pkt.stream_index = video_index;
+						av_packet_rescale_ts(&pkt,
+							video_ctx->time_base,
+							context->streams[video_index]->time_base);
+
 						if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 						{
 							liberror(rv, _("Failed to write last video packet"));
 							break;
 						}
+						av_packet_unref(&pkt);
 					}
 				}
 			}
 			if(headers_written)
 			{
-				int rv;
-
 				if(rv = av_write_trailer(context))
 					liberror(rv, _("Failed to write trailer"));
 			}
@@ -1959,7 +1973,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			avlibs_lock->unlock();
 			return 1;
 		}
-		avvframe->pts = round((frame->get_pts() - pts_base) / av_q2d(stream->time_base));
+		avvframe->pts = round((frame->get_pts() - pts_base) / av_q2d(video_ctx->time_base));
 
 		if(asset->interlace_mode == BC_ILACE_MODE_TOP_FIRST)
 		{
@@ -2006,27 +2020,42 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 			}
 #else
 			got_it = 0;
+
 			if(rv = avcodec_send_frame(video_ctx, avvframe))
+			{
 				liberror(rv, _("Failed to send video frame to encoder"));
+				avlibs_lock->unlock();
+				return 1;
+			}
 			else
 			if(rv = avcodec_receive_packet(video_ctx, &pkt))
 			{
 				if(rv != AVERROR(EAGAIN))
+				{
 					liberror(rv, _("Failed to encode video packet"));
+					avlibs_lock->unlock();
+					return 1;
+				}
 			}
 			else
 				got_it = 1;
+
+			if((rv = av_frame_make_writable(avvframe)) < 0)
+				liberror(rv, _("Can't make video frame writable"));
 #endif
 		}
 		if(got_it)
 		{
 			pkt.stream_index = stream->index;
+			av_packet_rescale_ts(&pkt, video_ctx->time_base, stream->time_base);
+
 			if((rv = av_interleaved_write_frame(context, &pkt)) < 0)
 			{
 				liberror(rv, _("Failed to write video packet"));
 				avlibs_lock->unlock();
 				return 1;
 			}
+			av_packet_unref(&pkt);
 		}
 	}
 	avlibs_lock->unlock();
@@ -2159,12 +2188,18 @@ int FileAVlibs::write_samples(int resampled_length, AVCodecContext *audio_ctx,
 #else
 		got_output = 0;
 		if(rv = avcodec_send_frame(audio_ctx, avaframe))
+		{
 			liberror(rv, _("Failed to send audio frame"));
+			return 1;
+		}
 		else
 		if(rv = avcodec_receive_packet(audio_ctx, &pkt))
 		{
 			if(rv != AVERROR(EAGAIN))
+			{
 				liberror(rv, _("Failed to encode audio packet"));
+				return 1;
+			}
 		}
 		else
 			got_output = 1;
