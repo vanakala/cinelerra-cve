@@ -1862,13 +1862,14 @@ int FileAVlibs::converts_frame()
 	return 1;
 }
 
-int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
+int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt,
 	int width_out, int height_out, AVFrame *frame_out)
 {
 	int size;
 	int rv;
 	AVPixelFormat pix_fmt_in = ColorModels::color_model_to_pix_fmt(frame_in->get_color_model());
 	VFrame *temp_frame;
+	AVPixelFormat pix_fmt_out;
 	unsigned char *in_data[4];
 	int in_linesizes[4];
 
@@ -1888,6 +1889,29 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 			}
 		}
 
+		switch(pix_fmt)
+		{
+		case AV_PIX_FMT_YUVJ420P:
+			pix_fmt_out = AV_PIX_FMT_YUV420P;
+			break;
+
+		case AV_PIX_FMT_YUVJ422P:
+			pix_fmt_out = AV_PIX_FMT_YUV422P;
+			break;
+
+		case AV_PIX_FMT_YUVJ444P:
+			pix_fmt_out = AV_PIX_FMT_YUV444P;
+			break;
+
+		case AV_PIX_FMT_YUVJ440P:
+			pix_fmt_out = AV_PIX_FMT_YUV440P;
+			break;
+
+		default:
+			pix_fmt_out = pix_fmt;
+			break;
+		}
+
 		if((sws_ctx = sws_getCachedContext(sws_ctx, frame_in->get_w(), frame_in->get_h(),
 			pix_fmt_in, width_out, height_out, pix_fmt_out, ColorModels::libinterpolate(),
 			0, 0, 0)) == 0)
@@ -1895,6 +1919,23 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 			errormsg(_("Could not get color conversion context"));
 			return 1;
 		}
+
+		if(pix_fmt != pix_fmt_out)
+		{
+			int *inv_table, *table;
+			int srcRange, dstRange;
+			int brightness, contrast, saturation;
+
+			if(sws_getColorspaceDetails(sws_ctx, &inv_table,
+				&srcRange, &table, &dstRange,
+				&brightness, &contrast, &saturation) == 0)
+			{
+				sws_setColorspaceDetails(sws_ctx, inv_table,
+					srcRange, table, 1,
+					brightness, contrast, saturation);
+			}
+		}
+
 		if((rv = sws_scale(sws_ctx, in_data, in_linesizes,
 			0, frame_in->get_h(), frame_out->data, frame_out->linesize)) < 0)
 		{
@@ -1913,7 +1954,7 @@ int FileAVlibs::convert_cmodel(VFrame *frame_in, AVPixelFormat pix_fmt_out,
 			frame_in->get_data(), frame_in->get_color_model(),
 			frame_in->get_bytes_per_line());
 
-		rv = convert_cmodel(temp_frame, pix_fmt_out,
+		rv = convert_cmodel(temp_frame, pix_fmt,
 			width_out, height_out, frame_out);
 		BC_Resources::tmpframes.release_frame(temp_frame);
 		return rv;
