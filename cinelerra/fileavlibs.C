@@ -724,8 +724,9 @@ int FileAVlibs::open_file(int rd, int wr)
 		av_dict_set(&meta, "comment", version_name, 0);
 		tst = time(0);
 		if((ptm = gmtime_r(&tst, &ctim)) &&
-				strftime(string, sizeof(string), "%Y-%m-%d %H:%M:%S", ptm))
+				strftime(string, sizeof(string), "%FT%TZ", ptm))
 			av_dict_set(&meta, "creation_time", string, 0);
+
 		if(metalist = asset->encoder_parameters[FILEAVLIBS_METADT_IX])
 		{
 			if(aparam = metalist->find("copyright"))
