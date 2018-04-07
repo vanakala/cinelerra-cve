@@ -242,7 +242,7 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 	FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
 	if test ! -d ffmpeg ; then
-		FFMPEG_BRANCH="-b release/3.0"
+		FFMPEG_BRANCH="-b release/3.4"
 		if ! git clone --depth 1 $FFMPEG_BRANCH git://source.ffmpeg.org/ffmpeg.git ffmpeg ; then
 			rm -rf ffmpeg
 			echo "Failed to get a FFmpeg checkout"
@@ -318,6 +318,7 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 	echo Using external ffmpeg - no configuration needed
 else
 	ff_conf_args="--disable-programs --disable-doc \
+		--disable-postproc --disable-avfilter --disable-network \
 		--disable-static --enable-shared --enable-gpl \
 		$FFMPEG_CONF \
 		--build-suffix=-cve"
