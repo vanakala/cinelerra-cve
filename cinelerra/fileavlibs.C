@@ -1116,6 +1116,11 @@ void FileAVlibs::close_file()
 							liberror(rv, _("Failed to write last audio packet"));
 							break;
 						}
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
+						av_free_packet(&pkt);
+#else
+						av_packet_unref(&pkt);
+#endif
 					}
 				}
 			}
@@ -1173,7 +1178,11 @@ void FileAVlibs::close_file()
 							liberror(rv, _("Failed to write last video packet"));
 							break;
 						}
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57,24,102)
+						av_free_packet(&pkt);
+#else
 						av_packet_unref(&pkt);
+#endif
 					}
 				}
 			}
