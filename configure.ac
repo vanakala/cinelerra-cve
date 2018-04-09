@@ -284,6 +284,13 @@ else
 	fi
 ############## End of x264
 
+############## x265
+	PKG_CHECK_MODULES(x265,x265,[libx265=yes])
+	if test "x$libx265" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libx265"
+	fi
+############## End of x264
+
 ############## vorbis
 	PKG_CHECK_MODULES(libvorbis,vorbis,[libvorbis=yes])
 	if test "x$libvorbis" = xyes; then
