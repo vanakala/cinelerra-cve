@@ -216,29 +216,11 @@ rm -f cinelerra/versioninfo.h > /dev/null 2>&1
 AC_ARG_WITH([external-ffmpeg], AC_HELP_STRING([--with-external-ffmpeg], [use external ffmpeg library]))
 
 if test "x$with_external_ffmpeg" = "xyes"; then
-	PKG_CHECK_MODULES([FFMPEG_TEMP], [libavcodec libpostproc])
+	PKG_CHECK_MODULES([FFMPEG],
+		[libavcodec >= 56.60.100 libavformat >= 56.40.101
+			libswresample >= 1.2.101 libavutil >= 54.31.100 libswscale >= 3.1.101],
+		ffmpeg_external=yes)
 	FFMPEG_FOLDER=""
-	FFMPEG_EXTERNALTEXT="External ffmpeg"
-
-	dnl --------------------------------------------------------------
-	dnl check if libavcodec contains img_convert
-	dnl if not, that means that libswscale is compiled in
-
-	AC_MSG_CHECKING(for ffmpeg swscale support)
-	saved_LIBS="$LIBS"
-	LIBS="$saved_LIBS $FFMPEG_TEMP_LIBS"
-	AC_TRY_LINK([#include <libavcodec/avcodec.h>],
-		[img_convert(0, 0, 0,0,0,0)],
-		enable_ffmpeg_swscale=no,enable_ffmpeg_swscale=yes)
-	LIBS="$saved_LIBS"
-	AC_MSG_RESULT($enable_ffmpeg_swscale)
-	if test x"$enable_ffmpeg_swscale" = xyes; then
-		dnl AC_DEFINE(HAVE_SWSCALER)
-		PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc libswscale])
-		FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I/usr/include/libavcodec -I/usr/include/libswscale -DHAVE_SWSCALER"
-	else
-		PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc])
-	fi
 	FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
 	if test ! -d ffmpeg ; then
@@ -264,59 +246,59 @@ AC_SUBST(FFMPEG_LIBS)
 AC_SUBST(FFMPEG_EXTERNALTEXT)
 ############# END external ffmpeg
 
-#### Check optional components of avlibs
-AC_ARG_ENABLE([nonfree], AC_HELP_STRING([--enable-nonfree], [enable nonfree codecs of avlibs]), [avlibs_nonfree=yes])
-if test "x$avlibs_nonfree" = xyes; then
-    FFMPEG_CONF="--enable-nonfree"
+echo --- FFMPEG CONFIGURATION SECTION --------------
+if test "x$ffmpeg_external" = "xyes"; then
+	echo Using external ffmpeg - no configuration needed
 else
-    FFMPEG_CONF=""
-fi
+#### Check optional components of avlibs
+	AC_ARG_ENABLE([nonfree], AC_HELP_STRING([--enable-nonfree], [enable nonfree codecs of avlibs]), [avlibs_nonfree=yes])
+        if test "x$avlibs_nonfree" = xyes; then
+		FFMPEG_CONF="--enable-nonfree"
+	else
+		FFMPEG_CONF=""
+	fi
 
 ############## LIBFDK-AAC
-if test "x$avlibs_nonfree" = xyes; then
-	PKG_CHECK_MODULES(libfdkaac,fdk-aac,[libfdkaac=yes])
+	if test "x$avlibs_nonfree" = xyes; then
+		PKG_CHECK_MODULES(libfdkaac,fdk-aac,[libfdkaac=yes])
 
-	if test "x$libfdkaac" = xyes; then
-		FFMPEG_CONF="$FFMPEG_CONF --enable-libfdk-aac"
+		if test "x$libfdkaac" = xyes; then
+			FFMPEG_CONF="$FFMPEG_CONF --enable-libfdk-aac"
+		fi
 	fi
-fi
 ############## End of LIBFDK-AAC
 
 ############## LAME
-# Just test to see if we have lame installed.
-AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes])
-AC_CHECK_LIB(mp3lame,lame_init,[libmp3lame=yes])
-if test "x$libmp3lame$libmp3lameh" = xyesyes; then
-    FFMPEG_CONF="$FFMPEG_CONF --enable-libmp3lame"
-fi
+	# Just test to see if we have lame installed.
+	AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes])
+	AC_CHECK_LIB(mp3lame,lame_init,[libmp3lame=yes])
+	if test "x$libmp3lame$libmp3lameh" = xyesyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libmp3lame"
+	fi
 ############## End of LAME
 
 ############## x264
-PKG_CHECK_MODULES(x264,x264,[libx264=yes])
-if test "x$libx264" = xyes; then
-    FFMPEG_CONF="$FFMPEG_CONF --enable-libx264"
-fi
+	PKG_CHECK_MODULES(x264,x264,[libx264=yes])
+	if test "x$libx264" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libx264"
+	fi
 ############## End of x264
 
 ############## vorbis
-PKG_CHECK_MODULES(libvorbis,vorbis,[libvorbis=yes])
-if test "x$libvorbis" = xyes; then
-    FFMPEG_CONF="$FFMPEG_CONF --enable-libvorbis"
-fi
+	PKG_CHECK_MODULES(libvorbis,vorbis,[libvorbis=yes])
+	if test "x$libvorbis" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libvorbis"
+	fi
 ############## End of vorbis
 
 ############## theora
-PKG_CHECK_MODULES(libtheora,theora,[libtheora=yes])
-if test "x$libtheora" = xyes; then
-    FFMPEG_CONF="$FFMPEG_CONF --enable-libtheora"
-fi
+	PKG_CHECK_MODULES(libtheora,theora,[libtheora=yes])
+	if test "x$libtheora" = xyes; then
+		FFMPEG_CONF="$FFMPEG_CONF --enable-libtheora"
+	fi
 ############## End of theora
 
 ############# run ffmpeg configure to generates avconfig.h
-echo --- FFMPEG CONFIGURATION SECTION --------------
-if test "x$with_external_ffmpeg" = "xyes"; then
-	echo Using external ffmpeg - no configuration needed
-else
 	ff_conf_args="--disable-programs --disable-doc \
 		--disable-postproc --disable-avfilter --disable-network \
 		--disable-static --enable-shared --enable-gpl \
@@ -343,7 +325,6 @@ else
 fi
 echo --------------------------------------------------
 ############# END run ffmpeg configure to generates avconfig.h
-
 
 ############## OpenGL
 AH_TEMPLATE(HAVE_GL, [Define to 1 if OpenGL 2.0 is available.])
