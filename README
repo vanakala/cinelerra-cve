@@ -1,8 +1,8 @@
-This file contains information about my branch of Cinelerra 2.1 CV
+This file contains information about my branch of Cinelerra 2.3.5 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra-cv.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of June 26, 2015
+This file describes status of this branch as of Apr 10, 2018
 
 Contents.
 
@@ -22,10 +22,10 @@ Currently this branch is under development. There is no warranty
 that it is usable to create or finish any project. Parts of the program
 may work, parts not.
 
-This branch is developed and tested on Ubuntu 12.04 x86-32.
+This branch is developed and tested on Ubuntu 14.04 x86-32 and 
+Ubuntu 16.04 x86_64
 
-Main change in this branch is display locking. This change has hopefully 
-fixed bugs 278, 383, 406, 414, 493, 519 in bugzilla. The change was 
+Main change in this branch is display locking. The change was 
 huge and locking issues are hard to test.
 Another huge change implementation of pts based timing. This enables
 to edit media with variable framerate and get rid of assumption
@@ -36,18 +36,12 @@ official branch of Cinelerra, the result may be somehow different.
 The projects saved by this branch can not be loaded to offical Cinelerra.
 
 Changes in this branch:
-- subtitle decoding in libmpeg3
-- added defaults into libmpeg3 for subtitle color
-- index generation in libmpeg3
-- improved frame accurate seek in libmpeg3
+
 - changed size of Preferences window to fit it on 800 px height
 - edit_font_color initialization of S.U.V
 - more info in assert info window
-- audio streams and vob subtitle tracks are selectable through asset info
 - removed BC_Windowevents (now 6 threads less)
-- fix of bug 524: 'This is a very standard format mpg 
-    that is completely garbled in this player'
-- fixed most of GCC 4.3.3 warnings
+- fixed all of GCC warnings
 - fixed timebar cursor updating of viewer and compositor
 - trace subsystem was rewritten to static buffers, added backtrace
     dump on crash
@@ -59,8 +53,7 @@ Changes in this branch:
 - OpenGL is enabled while server glx version is >= 1.3
 - new one-line internal api for error messages (macros errormsg
     and errorbox)
-- cleanup: removed unused sources from cinelerra, guicast, libmpeg3, plugins
-- added SOWT audio decoder
+- cleanup: removed unused sources from cinelerra, guicast, plugins
 - multiline comments of clips and labels are not truncated
 - implemented pts based timing on video and audio making possible
     projects without constant framerate
@@ -72,10 +65,11 @@ Changes in this branch:
 - implemented new API and support macros of all plugins, removed old API
 - implemented pts in renderfarm
 - created all kind of Null plugins as templates for new plugins
-- full rewrite of FileOGG
 - removed broken plugins including plugins importing from devices
 - all configured ALSA PCM devices are selectable
 - some improvements and fixes of the build system
+- removed all input devices, only editing media from local disk
+    is supported
 - new plugin C41
 - removed confusing "default keyframe", most of its functions moved to the
     first keyframe (increased incompatibility with other branches)
@@ -87,19 +81,18 @@ Changes in this branch:
 - freetype2/xft is the only font rendering system
 - using improved images for cinelerra logo and icon
 - new plugin: Blue Banana color grading/correction filter
+- replaced all coding and encoding with AVlibs (ffmpeg libraries)
+- program may be linked to external (system) AVlibs
+- AVlibs from ffmpeg 2.8 and later are supported
+- OpenGl support is almost removed, will be rewritten
 
 Known problems (todo list)
-- FileOGG: improve audio/video interleaving
-- implement pts in encoders, decoders
-- cleanup playback, gui
+- use internally only 16bit per color colormodels
+- restore OpenGL support of playback and hopefully rendering
 - new API of plugins and macros need some documentation
-- handling input devices is buggy (only selected devices may work)
 - trimming does not work as described in manual or as expected,
     occasionally crashes
 - reel name must be read from project
-- crashes if video4linux2 size is different from 600x800
-- implement debugging system
-- test on 64bit system
 
 Bug reporting.
 I am very interested about reports of crashes and hangs.
