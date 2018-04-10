@@ -59,6 +59,8 @@ struct selection_int ColormodelSelection::cmodel_selection[] =
 	{ 0, BC_RGBA_FLOAT },
 	{ 0, BC_YUV888 },
 	{ 0, BC_YUVA8888 },
+	{ 0, BC_RGBA16161616 },
+	{ 0, BC_AYUV16161616 },
 	{ 0, 0 }
 };
 
