@@ -516,8 +516,21 @@ void VFrame::clear_frame(void)
 		break;
 
 	case BC_YUVA16161616:
-	case BC_AYUV16161616:
 		ZERO_YUV(4, uint16_t, 0xffff);
+		break;
+
+	case BC_AYUV16161616:
+		for(int i = 0; i < h; i++)
+		{
+			uint16_t *row = (uint16_t*)get_rows()[i];
+			for(int j = 0; j < w; j++)
+			{
+				row[j * 4] = 0;
+				row[j * 4 + 1] = 0;
+				row[j * 4 + 2] = 0x8000;
+				row[j * 4 + 3] = 0x8000;
+			}
+		}
 		break;
 
 	default:
