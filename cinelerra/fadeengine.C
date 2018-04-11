@@ -66,16 +66,25 @@ FadeUnit::FadeUnit(FadeEngine *server)
 			{ \
 				if(!equivalent) \
 				{ \
-					out_row[0] = in_row[0]; \
-					out_row[1] = in_row[1]; \
-					out_row[2] = in_row[2]; \
+					if(alpha_pos) \
+					{ \
+						out_row[0] = in_row[0]; \
+						out_row[1] = in_row[1]; \
+						out_row[2] = in_row[2]; \
+					} \
+					else \
+					{ \
+						out_row[1] = in_row[1]; \
+						out_row[2] = in_row[2]; \
+						out_row[3] = in_row[3]; \
+					} \
 				} \
  \
-				if(in_row[3] == max) \
-					out_row[3] = opacity; \
+				if(in_row[alpha_pos] == max) \
+					out_row[alpha_pos] = opacity; \
 				else \
-				out_row[3] =  \
-					(type)((temp_type)in_row[3] * opacity / max); \
+				out_row[alpha_pos] =  \
+					(type)((temp_type)in_row[alpha_pos] * opacity / max); \
 			} \
 		} \
 	} \
@@ -92,6 +101,7 @@ void FadeUnit::process_package(LoadPackage *package)
 	unsigned char **in_rows = input->get_rows();
 	unsigned char **out_rows = output->get_rows();
 	int width = input->get_w();
+	int alpha_pos = 3;
 
 	if(input->get_rows()[0] == output->get_rows()[0])
 	{
@@ -125,6 +135,10 @@ void FadeUnit::process_package(LoadPackage *package)
 			APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 3);
 			break;
 		case BC_YUVA16161616:
+			APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
+			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
 			APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
 			break;
 		}
@@ -161,6 +175,10 @@ void FadeUnit::process_package(LoadPackage *package)
 			APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 3);
 			break;
 		case BC_YUVA16161616:
+			APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
+			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
 			APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
 			break;
 		}
