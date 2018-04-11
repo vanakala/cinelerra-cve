@@ -335,6 +335,8 @@ void MaskUnit::process_package(LoadPackage *package)
 
 	int start_row = SHRT_MIN;         // part for which mask exists
 	int end_row;
+	int alpha_pos = 3;
+
 	if(engine->recalculate)
 	{
 		VFrame *mask;
@@ -674,7 +676,7 @@ void MaskUnit::process_package(LoadPackage *package)
 		for(int j  = 0; j < mask_w; j++) \
 		{ \
 			if(components == 4) \
-				output_row[3] = output_row[3] * (max - *mask_row) / max; \
+				output_row[alpha_pos] = output_row[alpha_pos] * (max - *mask_row) / max; \
 			else \
 			{ \
 				output_row[0] = output_row[0] * (max - *mask_row) / max; \
@@ -702,7 +704,7 @@ void MaskUnit::process_package(LoadPackage *package)
 		type *output_row = (type*)engine->output->get_rows()[i]; \
 		type *mask_row = (type*)engine->mask->get_rows()[i]; \
  \
-		if(components == 4) output_row += 3; \
+		if(components == 4 && alpha_pos) output_row += 3; \
 		for(int j = mask_w; j != 0;  j--) \
 		{ \
 			if(components == 4) \
@@ -752,6 +754,10 @@ void MaskUnit::process_package(LoadPackage *package)
 		case BC_RGBA16161616:
 			APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 4, 0);
 			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
+			APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 4, 0);
+			break;
 		case BC_RGB_FLOAT:
 			APPLY_MASK_MULTIPLY_ALPHA(float, 1.0f, 3, 0);
 			break;
@@ -782,6 +788,10 @@ void MaskUnit::process_package(LoadPackage *package)
 			break;
 		case BC_YUVA16161616:
 		case BC_RGBA16161616:
+			APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 0);
+			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
 			APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 0);
 			break;
 		case BC_RGB_FLOAT:
@@ -897,6 +907,7 @@ void MaskEngine::do_mask(VFrame *output,
 	case BC_RGBA16161616:
 	case BC_YUV161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		new_color_model = BC_A16;
 		break;
 	}
