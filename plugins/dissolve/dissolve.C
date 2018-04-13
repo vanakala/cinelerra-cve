@@ -96,6 +96,22 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			}
 			break;
 		}
+	case BC_AYUV16161616:
+		{
+			uint16_t** data_rows = (uint16_t **)outgoing->get_rows();
+			int w = outgoing->get_w();
+			int h = outgoing->get_h();
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t* alpha_chan = data_rows[i];
+				for(int j = 0; j < w; j++)
+				{
+					*alpha_chan = (uint16_t)(*alpha_chan * (1-fade));
+					alpha_chan += 4;
+				}
+			}
+			break;
+		}
 	case BC_RGBA_FLOAT:
 		{
 			float** data_rows = (float **)outgoing->get_rows();
