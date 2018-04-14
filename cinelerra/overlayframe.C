@@ -408,7 +408,6 @@ int OverlayFrame::overlay(VFrame *output,
 		if(yscale == 1. && (int)in_y1 == in_y1 && (int)in_y2 == in_y2 &&
 				(int)out_y1 == out_y1 && (int)out_y2 == out_y2)
 			ytype = DIRECT_COPY;
-
 		if(!kernel[xtype])
 			kernel[xtype] = new OverlayKernel(xtype);
 		if(!kernel[ytype])
@@ -446,7 +445,8 @@ int OverlayFrame::overlay(VFrame *output,
 
 		temp_frame->clear_frame();
 
-		if(!sample_engine) sample_engine = new SampleEngine(cpus);
+		if(!sample_engine)
+			sample_engine = new SampleEngine(cpus);
 
 		sample_engine->output = temp_frame;
 		sample_engine->input = input;
@@ -613,10 +613,25 @@ int OverlayFrame::overlay(VFrame *output,
 { \
 	temp_type r, g, b, a; \
 	temp_type pixel_opacity, pixel_transparency; \
-	temp_type output1 = output[0]; \
-	temp_type output2 = output[1]; \
-	temp_type output3 = output[2]; \
-	temp_type output4 = output[3]; \
+	temp_type output1; \
+	temp_type output2; \
+	temp_type output3; \
+	temp_type output4; \
+ \
+	if(alpha_pos) \
+	{ \
+		output1 = output[0]; \
+		output2 = output[1]; \
+		output3 = output[2]; \
+		output4 = output[3]; \
+	} \
+	else \
+	{ \
+		output4 = output[0]; \
+		output1 = output[1]; \
+		output2 = output[2]; \
+		output3 = output[3]; \
+	} \
  \
 	pixel_opacity = opacity * input4; \
 	pixel_transparency = (temp_type)max * max - pixel_opacity; \
@@ -729,10 +744,20 @@ int OverlayFrame::overlay(VFrame *output,
  \
 	if(sizeof(type) != 4) \
 	{ \
-		output[0] = (type)CLIP(r, 0, max); \
-		output[1] = (type)CLIP(g, 0, max); \
-		output[2] = (type)CLIP(b, 0, max); \
-		output[3] = (type)CLIP(a, 0, max); \
+		if(alpha_pos) \
+		{ \
+			output[0] = (type)CLIP(r, 0, max); \
+			output[1] = (type)CLIP(g, 0, max); \
+			output[2] = (type)CLIP(b, 0, max); \
+			output[3] = (type)CLIP(a, 0, max); \
+		} \
+		else \
+		{ \
+			output[0] = (type)CLIP(a, 0, max); \
+			output[1] = (type)CLIP(r, 0, max); \
+			output[2] = (type)CLIP(g, 0, max); \
+			output[3] = (type)CLIP(b, 0, max); \
+		} \
 	} \
 	else \
 	{ \
@@ -765,19 +790,30 @@ int OverlayFrame::overlay(VFrame *output,
 		for(int j = 0; j < ow; j++) \
 		{ \
 			temp_type input1, input2, input3, input4; \
-			input1 = in_row[0]; \
-			input2 = in_row[1]; \
-			input3 = in_row[2]; \
-			if(components == 4) input4 = in_row[3]; \
- \
- \
-			if(components == 3) \
+			if(components == 4) \
 			{ \
-				BLEND_3(max, temp_type, type, chroma_offset); \
+				if(alpha_pos) \
+				{ \
+					input1 = in_row[0]; \
+					input2 = in_row[1]; \
+					input3 = in_row[2]; \
+					input4 = in_row[3]; \
+				} \
+				else \
+				{ \
+					input4 = in_row[0]; \
+					input1 = in_row[1]; \
+					input2 = in_row[2]; \
+					input3 = in_row[3]; \
+				} \
+				BLEND_4(max, temp_type, type, chroma_offset); \
 			} \
 			else \
 			{ \
-				BLEND_4(max, temp_type, type, chroma_offset); \
+				input1 = in_row[0]; \
+				input2 = in_row[1]; \
+				input3 = in_row[2]; \
+				BLEND_3(max, temp_type, type, chroma_offset); \
 			} \
  \
 			in_row += components; \
@@ -825,7 +861,6 @@ int OverlayFrame::overlay(VFrame *output,
 			pixel_opacity = opacity * in_row[3]; \
 			pixel_transparency = (temp_type)max_squared - pixel_opacity; \
  \
- \
 			temp_type r,g,b; \
 			output[0] = ((temp_type)in_row[0] * pixel_opacity + \
 				(temp_type)output[0] * pixel_transparency) / max / max; \
@@ -845,6 +880,46 @@ int OverlayFrame::overlay(VFrame *output,
 	} \
 }
 
+// components is always 4, alpha is at pos 0
+#define BLEND_ONLY_4_NORMAL_A(temp_type, type, max, chroma_offset) \
+{ \
+	temp_type opacity = (temp_type)(alpha * max + 0.5); \
+	temp_type transparency = max - opacity; \
+	temp_type max_squared = ((temp_type)max) * max; \
+ \
+	type** output_rows = (type**)output->get_rows(); \
+	type** input_rows = (type**)input->get_rows(); \
+	ix *= 4; \
+	ox *= 4; \
+ \
+	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
+	{ \
+		type* in_row = input_rows[i + iy] + ix; \
+		type* output = output_rows[i] + ox; \
+ \
+		for(int j = 0; j < ow; j++) \
+		{ \
+			temp_type pixel_opacity, pixel_transparency; \
+			pixel_opacity = opacity * in_row[0]; \
+			pixel_transparency = (temp_type)max_squared - pixel_opacity; \
+ \
+			output[0] += ((temp_type)(max - output[0]) * in_row[0]) / max; \
+			output[1] = ((temp_type)in_row[1] * pixel_opacity + \
+				(temp_type)output[1] * pixel_transparency) / max / max; \
+			output[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
+				((temp_type)output[2] - chroma_offset) * pixel_transparency) \
+				/ max / max + \
+				chroma_offset; \
+			output[3] = (((temp_type)in_row[3] - chroma_offset) * pixel_opacity + \
+				((temp_type)output[3] - chroma_offset) * pixel_transparency) \
+				/ max / max + \
+				chroma_offset; \
+ \
+			in_row += 4; \
+			output += 4; \
+		} \
+	} \
+}
 
 // components is always 3
 #define BLEND_ONLY_3_NORMAL(temp_type, type, max, chroma_offset) \
@@ -901,6 +976,7 @@ void DirectUnit::process_package(LoadPackage *package)
 	int ox = engine->out_x1;
 	int ow = engine->out_x2 - ox;
 	int iy = engine->in_y1 - engine->out_y1;
+	int alpha_pos = 3;
 
 	if (mode == TRANSFER_REPLACE)
 	{
@@ -926,6 +1002,7 @@ void DirectUnit::process_package(LoadPackage *package)
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
+		case BC_AYUV16161616:
 			BLEND_ONLY_TRANSFER_REPLACE(uint16_t, 4);
 			break;
 		}
@@ -1014,6 +1091,9 @@ void DirectUnit::process_package(LoadPackage *package)
 		case BC_YUVA16161616:
 			BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
 			break;
+		case BC_AYUV16161616:
+			BLEND_ONLY_4_NORMAL_A(int64_t, uint16_t, 0xffff, 0x8000);
+			break;
 		}
 	}
 	else
@@ -1047,6 +1127,10 @@ void DirectUnit::process_package(LoadPackage *package)
 			BLEND_ONLY(int64_t, uint16_t, 0xffff, 4, 0);
 			break;
 		case BC_YUVA16161616:
+			BLEND_ONLY(int64_t, uint16_t, 0xffff, 4, 0x8000);
+			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
 			BLEND_ONLY(int64_t, uint16_t, 0xffff, 4, 0x8000);
 			break;
 		}
@@ -1142,19 +1226,26 @@ LoadPackage* DirectEngine::new_package()
 		{ \
 			temp_type input1, input2, input3, input4; \
 			in_row += *lx++; \
-			input1 = in_row[0]; \
-			input2 = in_row[1]; \
-			input3 = in_row[2]; \
- \
-			if(components == 4) \
-				input4 = in_row[3]; \
- \
+			if(alpha_pos) \
+			{ \
+				input1 = in_row[0]; \
+				input2 = in_row[1]; \
+				input3 = in_row[2]; \
+			} \
+			else \
+			{ \
+				input1 = in_row[1]; \
+				input2 = in_row[2]; \
+				input3 = in_row[3]; \
+			} \
+\
 			if(components == 3) \
 			{ \
 				BLEND_3(max, temp_type, type, chroma_offset); \
 			} \
 			else \
 			{ \
+				input4 = in_row[alpha_pos]; \
 				BLEND_4(max, temp_type, type, chroma_offset); \
 			} \
  \
@@ -1209,17 +1300,32 @@ LoadPackage* DirectEngine::new_package()
 			temp_type pixel_o, pixel_t, r, g, b; \
  \
 			in_row += *lx++; \
-			pixel_o = opacity * in_row[3]; \
+			pixel_o = opacity * in_row[alpha_pos]; \
 			pixel_t = (temp_type)max_squared - pixel_o; \
-			output[0] = ((temp_type)in_row[0] * pixel_o + \
-				(temp_type)output[0] * pixel_t) / max / max; \
-			output[1] = (((temp_type)in_row[1] - chroma_offset) * pixel_o + \
-				((temp_type)output[1] - chroma_offset) * pixel_t)  \
-				/ max / max + chroma_offset; \
-			output[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_o + \
-				((temp_type)output[2] - chroma_offset) * pixel_t) \
-				/ max / max + chroma_offset; \
-			output[3] += ((temp_type)(max - output[3]) * in_row[3]) / max; \
+			if(alpha_pos) \
+			{ \
+				output[0] = ((temp_type)in_row[0] * pixel_o + \
+					(temp_type)output[0] * pixel_t) / max / max; \
+				output[1] = (((temp_type)in_row[1] - chroma_offset) * pixel_o + \
+					((temp_type)output[1] - chroma_offset) * pixel_t)  \
+					/ max / max + chroma_offset; \
+				output[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_o + \
+					((temp_type)output[2] - chroma_offset) * pixel_t) \
+					/ max / max + chroma_offset; \
+				output[3] += ((temp_type)(max - output[3]) * in_row[3]) / max; \
+			} \
+			else \
+			{ \
+				output[0] += ((temp_type)(max - output[0]) * in_row[0]) / max; \
+				output[1] = ((temp_type)in_row[1] * pixel_o + \
+					(temp_type)output[1] * pixel_t) / max / max; \
+				output[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_o + \
+					((temp_type)output[2] - chroma_offset) * pixel_t)  \
+					/ max / max + chroma_offset; \
+				output[3] = (((temp_type)in_row[3] - chroma_offset) * pixel_o + \
+					((temp_type)output[3] - chroma_offset) * pixel_t) \
+					/ max / max + chroma_offset; \
+			} \
  \
 			output += 4; \
 		} \
@@ -1278,6 +1384,7 @@ void NNUnit::process_package(LoadPackage *package)
 	VFrame *input = engine->input;
 	float alpha = engine->alpha;
 	int mode = engine->mode;
+	int alpha_pos = 3;
 
 	int ox = engine->out_x1i;
 	int ow = engine->out_x2i - ox;
@@ -1307,6 +1414,7 @@ void NNUnit::process_package(LoadPackage *package)
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
+		case BC_AYUV16161616:
 			BLEND_NN_TRANSFER_REPLACE(uint16_t, 4);
 			break;
 		}
@@ -1401,6 +1509,10 @@ void NNUnit::process_package(LoadPackage *package)
 		case BC_YUVA16161616:
 			BLEND_NN_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
 			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
+			BLEND_NN_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
+			break;
 		}
 	}
 	else
@@ -1434,6 +1546,10 @@ void NNUnit::process_package(LoadPackage *package)
 			BLEND_NN(int64_t, uint16_t, 0xffff, 4, 0);
 			break;
 		case BC_YUVA16161616:
+			BLEND_NN(int64_t, uint16_t, 0xffff, 4, 0x8000);
+			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
 			BLEND_NN(int64_t, uint16_t, 0xffff, 4, 0x8000);
 			break;
 		}
@@ -1494,7 +1610,6 @@ void NNEngine::init_packages()
 	case BC_YUV888:
 	case BC_RGB161616:
 	case BC_YUV161616:
-	case BC_YUVA16161616:
 		components = 3;
 		break;
 
@@ -1502,6 +1617,8 @@ void NNEngine::init_packages()
 	case BC_RGBA8888:
 	case BC_YUVA8888:
 	case BC_RGBA16161616:
+	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		components = 4;
 		break;
 	}
@@ -1658,7 +1775,7 @@ LoadPackage* NNEngine::new_package()
 			temp[oh * 3 - 3] *= o2f; \
 			temp[oh * 3 - 2] *= o2f; \
 			temp[oh * 3 - 1] *= o2f; \
-			tempp=temp; \
+			tempp = temp; \
  \
 			/* blend output */ \
 			for(int j = 0; j < oh; j++) \
@@ -1675,7 +1792,7 @@ LoadPackage* NNEngine::new_package()
 
 #define SAMPLE_4(max, temp_type, type, chroma_offset, round) \
 { \
-	float temp[oh*4]; \
+	float temp[oh * 4]; \
 	type **output_rows = (type**)voutput->get_rows() + o1i; \
 	type **input_rows = (type**)vinput->get_rows(); \
 	temp_type opacity = (alpha * max + round); \
@@ -1707,12 +1824,25 @@ LoadPackage* NNEngine::new_package()
 			{ \
 				/* direct copy case */ \
 				type *ip = input + i1i * 4; \
-				for(int j = 0; j < oh; j++) \
+				if(alpha_pos) \
 				{ \
-					*tempp++ = *ip++; \
-					*tempp++ = (*ip++) - chroma_offset; \
-					*tempp++ = (*ip++) - chroma_offset; \
-					*tempp++ = *ip++; \
+					for(int j = 0; j < oh; j++) \
+					{ \
+						*tempp++ = *ip++; \
+						*tempp++ = (*ip++) - chroma_offset; \
+						*tempp++ = (*ip++) - chroma_offset; \
+						*tempp++ = *ip++; \
+					} \
+				} \
+				else \
+				{ \
+					for(int j = 0; j < oh; j++) \
+					{ \
+						*tempp++ = *ip++; \
+						*tempp++ = *ip++; \
+						*tempp++ = (*ip++) - chroma_offset; \
+						*tempp++ = (*ip++) - chroma_offset; \
+					} \
 				} \
 			} \
 			else \
@@ -1734,24 +1864,44 @@ LoadPackage* NNEngine::new_package()
 						if(x == i1i) kv *= i1f; \
 						if(x + 1 == i2i) kv *= i2f; \
  \
-						float a = ip[3] * kv; \
+						float a = ip[alpha_pos] * kv; \
 						awacc += kv; \
 						kv = a; \
 						wacc += kv; \
  \
-						racc += kv * *ip++; \
-						gacc += kv * (*ip++ - chroma_offset); \
-						bacc += kv * (*ip++ - chroma_offset); \
-						aacc += kv; ip++; \
-						ki+=kd; \
+						if(alpha_pos) \
+						{ \
+							racc += kv * *ip++; \
+							gacc += kv * (*ip++ - chroma_offset); \
+							bacc += kv * (*ip++ - chroma_offset); \
+							aacc += kv; ip++; \
+						} \
+						else \
+						{ \
+							aacc += kv; ip++; \
+							racc += kv * *ip++; \
+							gacc += kv * (*ip++ - chroma_offset); \
+							bacc += kv * (*ip++ - chroma_offset); \
+						} \
+						ki += kd; \
  \
 					} \
 					if(wacc > 0) wacc = 1. / wacc; \
 					if(awacc > 0) awacc = 1. / awacc; \
-					*tempp++ = racc * wacc; \
-					*tempp++ = gacc * wacc; \
-					*tempp++ = bacc * wacc; \
-					*tempp++ = aacc * awacc; \
+					if(alpha_pos) \
+					{ \
+						*tempp++ = racc * wacc; \
+						*tempp++ = gacc * wacc; \
+						*tempp++ = bacc * wacc; \
+						*tempp++ = aacc * awacc; \
+					} \
+					else \
+					{ \
+						*tempp++ = aacc * awacc; \
+						*tempp++ = racc * wacc; \
+						*tempp++ = gacc * wacc; \
+						*tempp++ = bacc * wacc; \
+					} \
 				} \
 			} \
  \
@@ -1764,17 +1914,32 @@ LoadPackage* NNEngine::new_package()
 			temp[oh * 4 - 3] *= o2f; \
 			temp[oh * 4 - 2] *= o2f; \
 			temp[oh * 4 - 1] *= o2f; \
-			tempp=temp; \
+			tempp = temp; \
  \
 			/* blend output */ \
-			for(int j = 0; j < oh; j++) \
+			if(alpha_pos) \
 			{ \
-				type *output = output_rows[j] + i * 4; \
-				temp_type input1 = *tempp++ + round; \
-				temp_type input2 = (*tempp++) + chroma_offset + round; \
-				temp_type input3 = (*tempp++) + chroma_offset + round; \
-				temp_type input4 = *tempp++ + round; \
-				BLEND_4(max, temp_type, type, chroma_offset); \
+				for(int j = 0; j < oh; j++) \
+				{ \
+					type *output = output_rows[j] + i * 4; \
+					temp_type input1 = *tempp++ + round; \
+					temp_type input2 = (*tempp++) + chroma_offset + round; \
+					temp_type input3 = (*tempp++) + chroma_offset + round; \
+					temp_type input4 = *tempp++ + round; \
+					BLEND_4(max, temp_type, type, chroma_offset); \
+				} \
+			} \
+			else \
+			{ \
+				for(int j = 0; j < oh; j++) \
+				{ \
+					type *output = output_rows[j] + i * 4; \
+					temp_type input4 = *tempp++ + round; \
+					temp_type input1 = *tempp++ + round; \
+					temp_type input2 = (*tempp++) + chroma_offset + round; \
+					temp_type input3 = (*tempp++) + chroma_offset + round; \
+					BLEND_4(max, temp_type, type, chroma_offset); \
+				} \
 			} \
 		} \
 	} \
@@ -1797,6 +1962,7 @@ SampleUnit::~SampleUnit()
 void SampleUnit::process_package(LoadPackage *package)
 {
 	SamplePackage *pkg = (SamplePackage*)package;
+	int alpha_pos = 3;
 
 	float i1  = engine->in1;
 	float i2  = engine->in2;
@@ -1868,6 +2034,11 @@ void SampleUnit::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 		SAMPLE_4(0xffff, int64_t, uint16_t, 32768.f, .5f);
 		break;
+	case BC_AYUV16161616:
+		alpha_pos = 0;
+		SAMPLE_4(0xffff, int64_t, uint16_t, 32768.f, .5f);
+		break;
+
 	}
 }
 
