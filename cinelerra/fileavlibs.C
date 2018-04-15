@@ -173,9 +173,7 @@ FileAVlibs::FileAVlibs(Asset *asset, File *file)
 	avio_fd = -1;
 	fresh_open = 0;
 	memset(resampled_data, 0, sizeof(resampled_data));
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 	memset(codec_contexts, 0, sizeof(codec_contexts));
-#endif
 }
 
 FileAVlibs::~FileAVlibs()
@@ -260,6 +258,7 @@ int FileAVlibs::probe_input(Asset *asset)
 			avlibs_lock->unlock();
 			return 0;
 		}
+
 		asset->format = streamformat(ctx);
 		for(int i = 0; i < ctx->nb_streams; i++)
 		{
@@ -462,6 +461,7 @@ int FileAVlibs::open_file(int rd, int wr)
 {
 	int result = 0;
 	int rv;
+	int streamno;
 
 	if(asset->format == FILE_UNKNOWN)
 		return 1;
@@ -493,43 +493,61 @@ int FileAVlibs::open_file(int rd, int wr)
 		}
 		if(result >= 0)
 		{
-			AVStream *stream;
-			AVCodecContext *decoder_context;
-			AVCodec *codec;
-			enum AVCodecID codec_id;
-
-			result = 0;
-			if(asset->audio_streamno > 0)
+			for(streamno = 0; streamno < context->nb_streams; streamno++)
 			{
-				audio_index = asset->streams[asset->audio_streamno - 1].stream_index;
+				AVStream *stream;
+				AVCodecContext *decoder_context;
+				AVCodec *codec;
+				AVMediaType codec_type;
+				enum AVCodecID codec_id;
+				const char *mediatype;
 
-				stream = context->streams[audio_index];
+				result = 0;
+
+				stream = context->streams[streamno];
+
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				decoder_context = stream->codec;
 				codec_id = decoder_context->codec_id;
+				codec_type = decoder_context->codec_type;
 #else
 				codec_id = stream->codecpar->codec_id;
+				codec_type = stream->codecpar->codec_type;
 #endif
+				switch(codec_type)
+				{
+				case AVMEDIA_TYPE_AUDIO:
+					mediatype = _("Audio");
+					break;
+				case AVMEDIA_TYPE_VIDEO:
+					mediatype = _("Video");
+					break;
+				default:
+					continue;
+				}
 				if(codec_id == AV_CODEC_ID_NONE || !(codec = avcodec_find_decoder(codec_id)))
 				{
 					if(codec_id != AV_CODEC_ID_NONE)
-						errormsg(_("Audio decoder id %#x not found"),
-							codec_id);
-						asset->audio_data = 0;
-						asset->audio_streamno = 0;
-						audio_index = -1;
+						errormsg(_("%s decoder id %#x not found"),
+							mediatype, codec_id);
+						continue;
 				}
-				else
-				{
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
-					if(!(decoder_context = avcodec_alloc_context3(codec)))
-					{
-						errormsg(_("Failed to allocate video decoder context"));
-						avlibs_lock->unlock();
-						return 1;
-					}
-					avcodec_parameters_to_context(decoder_context, stream->codecpar);
+				if(!(decoder_context = avcodec_alloc_context3(codec)))
+				{
+					errormsg(_("%s decoder context allocation failed"),
+						mediatype);
+					avlibs_lock->unlock();
+					return 1;
+				}
+				avcodec_parameters_to_context(decoder_context, stream->codecpar);
 #endif
+				codec_contexts[streamno] = decoder_context;
+
+				if(asset->audio_streamno > 0 &&
+					asset->streams[asset->audio_streamno - 1].stream_index == streamno)
+				{
+					audio_index = streamno;
 					if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
 					{
 						liberror(rv, _("Failed to open audio decoder"));
@@ -546,49 +564,17 @@ int FileAVlibs::open_file(int rd, int wr)
 							asset->streams[asset->audio_streamno - 1].options |= STRDSC_SEEKBYTES;
 #endif
 					}
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
-					codec_contexts[audio_index] = decoder_context;
-#endif
 				}
-			}
-			if(asset->video_data && asset->video_streamno > 0)
-			{
-				video_index = asset->streams[asset->video_streamno - 1].stream_index;
-				stream = context->streams[video_index];
-
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-				decoder_context = stream->codec;
-				codec_id = decoder_context->codec_id;
-#else
-				codec_id = stream->codecpar->codec_id;
-#endif
-				if(codec_id == AV_CODEC_ID_NONE ||
-					!(codec = avcodec_find_decoder(codec_id)))
+				if(asset->video_streamno > 0 &&
+					asset->streams[asset->video_streamno - 1].stream_index == streamno)
 				{
-					if(codec_id != AV_CODEC_ID_NONE)
-						errormsg(_("Video decoder id %#x not found"),
-							decoder_context->codec_id);
-						asset->video_data = 0;
-						asset->video_streamno = 0;
-						video_index = -1;
-				}
-				else
-				{
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
-					if(!(decoder_context = avcodec_alloc_context3(codec)))
-					{
-						errormsg(_("Failed to allocate audio decoder context"));
-						avlibs_lock->unlock();
-						return 1;
-					}
-					avcodec_parameters_to_context(decoder_context, stream->codecpar);
-#endif
+					video_index = streamno;
 					if((rv = avcodec_open2(decoder_context, codec, NULL)) < 0)
 					{
 						liberror(rv, _("Failed to open video decoder"));
-							asset->video_data = 0;
-							asset->video_streamno = 0;
-							video_index = -1;
+						asset->video_data = 0;
+						asset->video_streamno = 0;
+						video_index = -1;
 					}
 #ifdef AVLIBS_BYTE_SEEK
 					else
@@ -596,9 +582,6 @@ int FileAVlibs::open_file(int rd, int wr)
 						if(!(context->iformat->flags & AVFMT_NO_BYTE_SEEK))
 							asset->streams[asset_video_data - 1].options |= STRDSC_SEEKBYTES;
 					}
-#endif
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
-					codec_contexts[video_index] = decoder_context;
 #endif
 				}
 			}
@@ -824,8 +807,8 @@ int FileAVlibs::open_file(int rd, int wr)
 			avvframe->width = video_ctx->width;
 			avvframe->height = video_ctx->height;
 			avvframe->sample_aspect_ratio = video_ctx->sample_aspect_ratio;
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 			codec_contexts[video_index] = video_ctx;
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 			if((rv = avcodec_parameters_from_context(stream->codecpar, video_ctx)) < 0)
 				liberror(rv, _("Failed to copy parameters from video context"));
 #endif
@@ -955,8 +938,8 @@ int FileAVlibs::open_file(int rd, int wr)
 			avaframe->format = audio_ctx->sample_fmt;
 			avaframe->channel_layout = audio_ctx->channel_layout;
 			avaframe->sample_rate = audio_ctx->sample_rate;
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 			codec_contexts[audio_index] = audio_ctx;
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,41,100)
 			if((rv = avcodec_parameters_from_context(stream->codecpar, audio_ctx)) < 0)
 				liberror(rv, _("Failed to copy parameters from audio context"));
 #endif
@@ -1014,35 +997,19 @@ void FileAVlibs::close_file()
 	{
 		if(reading)
 		{
-			if(video_index >= 0)
+			for(int i = 0; i < context->nb_streams; i++)
 			{
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-				AVStream *stream = context->streams[video_index];
-				if(stream)
-				{
-					AVCodecContext *decoder_context = stream->codec;
-					if(decoder_context) avcodec_close(decoder_context);
-				}
+				if(codec_contexts[i])
+					avcodec_close(decoder_context);
+				codec_contexts[i] = 0;
 #else
-				avcodec_free_context(&codec_contexts[video_index]);
-#endif
-				sws_freeContext(sws_ctx);
-			}
-
-			if(audio_index >= 0)
-			{
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-				AVStream *stream = context->streams[audio_index];
-				if(stream)
-				{
-					AVCodecContext *decoder_context = stream->codec;
-					if(decoder_context) avcodec_close(decoder_context);
-				}
-#else
-				avcodec_free_context(&codec_contexts[audio_index]);
+				avcodec_free_context(&codec_contexts[i]);
 #endif
 			}
-
+			sws_freeContext(sws_ctx);
+			audio_index = -1;
+			video_index = -1;
 			avformat_close_input(&context);
 			delete tocfile;
 			tocfile = 0;
@@ -1053,11 +1020,8 @@ void FileAVlibs::close_file()
 			{
 				AVPacket pkt;
 				int got_output, chan;
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-				AVCodecContext *audio_ctx = context->streams[audio_index]->codec;
-#else
 				AVCodecContext *audio_ctx = codec_contexts[audio_index];
-#endif
+
 				av_init_packet(&pkt);
 				pkt.data = 0;
 				pkt.size = 0;
@@ -1134,11 +1098,8 @@ void FileAVlibs::close_file()
 			{
 				AVPacket pkt;
 				int got_output;
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-				AVCodecContext *video_ctx = context->streams[video_index]->codec;
-#else
 				AVCodecContext *video_ctx = codec_contexts[video_index];
-#endif
+
 				av_init_packet(&pkt);
 				pkt.data = 0;
 				pkt.size = 0;
@@ -1289,11 +1250,7 @@ int FileAVlibs::read_frame(VFrame *frame)
 
 	avlibs_lock->lock("AVlibs::read_frame");
 	AVStream *stream = context->streams[video_index];
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-	AVCodecContext *decoder_context = stream->codec;
-#else
 	AVCodecContext *decoder_context = codec_contexts[video_index];
-#endif
 
 	if(!avvframe)
 		avvframe = av_frame_alloc();
@@ -1430,11 +1387,7 @@ int FileAVlibs::read_aframe(AFrame *aframe)
 {
 	int64_t rqpos, rqlen;
 	AVStream *stream = context->streams[audio_index];
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-	AVCodecContext *decoder_context = stream->codec;
-#else
 	AVCodecContext *decoder_context = codec_contexts[audio_index];
-#endif
 	int num_ch = decoder_context->channels;
 	int error;
 
@@ -1524,11 +1477,7 @@ int FileAVlibs::decode_samples(int64_t rqpos, int length)
 	int got_it, sres;
 	int res = 0;
 	AVPacket pkt = {0};
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-	AVCodecContext *decoder_context = context->streams[audio_index]->codec;
-#else
 	AVCodecContext *decoder_context = codec_contexts[audio_index];
-#endif
 
 	if(!avaframe)
 		avaframe = av_frame_alloc();
@@ -2005,11 +1954,7 @@ int FileAVlibs::write_frames(VFrame ***frames, int len)
 
 	avlibs_lock->lock("FileAVlibs::write_frames");
 	stream = context->streams[video_index];
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-	video_ctx = stream->codec;
-#else
 	video_ctx = codec_contexts[video_index];
-#endif
 
 	for(int j = 0; j < len; j++)
 	{
@@ -2133,11 +2078,8 @@ int FileAVlibs::write_aframes(AFrame **frames)
 		pts_base = frames[0]->pts;
 
 	stream = context->streams[audio_index];
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-	audio_ctx = stream->codec;
-#else
 	audio_ctx = codec_contexts[audio_index];
-#endif
+
 	if(resample_size < in_length)
 	{
 		if(resample_size)
@@ -2329,11 +2271,8 @@ int FileAVlibs::media_seek(int stream_index, int64_t rqpos, AVPacket *pkt, int64
 			liberror(res, _("Media seeking failed"));
 			return -1;
 		}
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-		avcodec_flush_buffers(context->streams[stream_index]->codec);
-#else
 		avcodec_flush_buffers(codec_contexts[stream_index]);
-#endif
+
 		for(int i = 0; i < 3; i++)
 		{
 			if((res = av_read_frame(context, pkt)) != 0)
@@ -2390,11 +2329,8 @@ stream_params *FileAVlibs::get_track_data(int trx)
 		return 0;
 
 	stream = context->streams[trid];
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
-	decoder_context = stream->codec;
-#else
 	decoder_context = codec_contexts[trid];
-#endif
+
 	switch(decoder_context->codec_type)
 	{
 	case AVMEDIA_TYPE_AUDIO:
