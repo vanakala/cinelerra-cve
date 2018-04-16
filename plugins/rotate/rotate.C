@@ -547,6 +547,7 @@ void RotateEffect::process_frame(VFrame *frame)
 	load_configuration();
 	int w = frame->get_w();
 	int h = frame->get_h();
+	int alpha_shift = 0;
 
 	if(config.angle == 0)
 	{
@@ -586,7 +587,7 @@ void RotateEffect::process_frame(VFrame *frame)
 	if(center_x >= 0 && center_x < w || \
 		center_y >= 0 && center_y < h) \
 	{ \
-		type *hrow = rows[center_y] + components * (center_x - CENTER_W / 2); \
+		type *hrow = rows[center_y] + components * (center_x - CENTER_W / 2) + alpha_shift; \
 		for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++) \
 		{ \
 			if(i >= 0 && i < w) \
@@ -602,7 +603,7 @@ void RotateEffect::process_frame(VFrame *frame)
 		{ \
 			if(i >= 0 && i < h) \
 			{ \
-				type *vrow = rows[i] + center_x * components; \
+				type *vrow = rows[i] + center_x * components + alpha_shift; \
 				vrow[0] = max - vrow[0]; \
 				vrow[1] = max - vrow[1]; \
 				vrow[2] = max - vrow[2]; \
@@ -634,6 +635,13 @@ void RotateEffect::process_frame(VFrame *frame)
 			break;
 		case BC_YUVA8888:
 			DRAW_CENTER(4, unsigned char, 0xff)
+			break;
+		case BC_RGBA16161616:
+			DRAW_CENTER(4, uint16_t, 0xffff)
+			break;
+		case BC_AYUV16161616:
+			alpha_shift = 1;
+			DRAW_CENTER(4, uint16_t, 0xffff)
 			break;
 		}
 	}
