@@ -1233,8 +1233,123 @@ void GradientUnit::process_package(LoadPackage *package)
 		CREATE_GRADIENT(unsigned char, int, 4, 0xff)
 		break;
 	}
+
+	case BC_RGBA16161616:
+	{
+		int in1 = plugin->config.in_r << 8;
+		int in2 = plugin->config.in_g << 8;
+		int in3 = plugin->config.in_b << 8;
+		int in4 = plugin->config.in_a << 8;
+		int out1 = plugin->config.out_r << 8;
+		int out2 = plugin->config.out_g << 8;
+		int out3 = plugin->config.out_b << 8;
+		int out4 = plugin->config.out_a << 8;
+		CREATE_GRADIENT(uint16_t, int64_t, 4, 0xffff)
+		break;
 	}
 
+	case BC_AYUV16161616:
+	{
+		int in1, in2, in3, in4;
+		int out1, out2, out3, out4;
+		yuv.rgb_to_yuv_16(plugin->config.in_r << 8,
+		plugin->config.in_g << 8,
+			plugin->config.in_b << 8,
+			in1,
+			in2,
+			in3);
+		in4 = plugin->config.in_a << 8;
+		yuv.rgb_to_yuv_16(plugin->config.out_r << 8,
+			plugin->config.out_g << 8,
+			plugin->config.out_b << 8,
+			out1,
+			out2,
+			out3);
+		out4 = plugin->config.out_a << 8;
+
+		// Synthesize linear gradient for lookups
+
+		uint16_t *r_table = (uint16_t *)malloc(sizeof(uint16_t) * gradient_size);
+		uint16_t *g_table = (uint16_t *)malloc(sizeof(uint16_t) * gradient_size);
+		uint16_t *b_table = (uint16_t *)malloc(sizeof(uint16_t) * gradient_size);
+		uint16_t *a_table = (uint16_t *)malloc(sizeof(uint16_t) * gradient_size);
+
+		for(int i = 0; i < gradient_size; i++) \
+		{
+			float opacity = calculate_opacity(i, in_radius, out_radius, plugin->config.rate); \
+			float transparency = 1.0 - opacity;
+
+			r_table[i] = out1 * opacity + in1 * transparency;
+			g_table[i] = out2 * opacity + in2 * transparency;
+			b_table[i] = out3 * opacity + in3 * transparency;
+			a_table[i] = out4 * opacity + in4 * transparency;
+		}
+
+		for(int i = pkg->y1; i < pkg->y2; i++)
+		{
+			uint16_t *gradient_row = (uint16_t*)plugin->gradient->get_row_ptr(i);
+			uint16_t *out_row = (uint16_t*)plugin->get_output()->get_row_ptr(i);
+
+			switch(plugin->config.shape)
+			{
+			case GradientConfig::LINEAR:
+				for(int j = 0; j < w; j++)
+				{
+					int x = j - half_w;
+					int y = -(i - half_h);
+
+					// Rotate by effect angle */
+					int mag = (int)(gradient_size / 2 -
+						(x * sin_angle + y * cos_angle) + 0.5);
+
+					// Get gradient value from these coords
+					if(mag < 0)
+					{
+						gradient_row[1] = out1;
+						gradient_row[2] = out2;
+						gradient_row[3] = out3;
+						gradient_row[0] = out4;
+					}
+					else
+					if(mag >= gradient_size)
+					{
+						gradient_row[1] = in1;
+						gradient_row[2] = in2;
+						gradient_row[3] = in3;
+						gradient_row[0] = in4;
+					}
+					else
+					{
+						gradient_row[1] = r_table[mag];
+						gradient_row[2] = g_table[mag];
+						gradient_row[3] = b_table[mag];
+						gradient_row[0] = a_table[mag];
+					}
+					gradient_row += 4;
+				}
+				break;
+
+			case GradientConfig::RADIAL:
+				for(int j = 0; j < w; j++)
+				{
+					double x = j - center_x;
+					double y = i - center_y;
+					double magnitude = hypot(x, y);
+					int mag = (int)magnitude;
+
+					gradient_row[1] = r_table[mag];
+					gradient_row[2] = g_table[mag];
+					gradient_row[3] = b_table[mag];
+					gradient_row[0] = a_table[mag];
+
+					gradient_row += 4;
+				}
+				break;
+			}
+		}
+		break;
+	}
+	}
 	if(r_table) free(r_table);
 	if(g_table) free(g_table);
 	if(b_table) free(b_table);
