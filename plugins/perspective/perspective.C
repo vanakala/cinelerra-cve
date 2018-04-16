@@ -884,6 +884,7 @@ void PerspectiveMain::process_frame(VFrame *frame)
 			RESAMPLE(uint16_t, 3, 0x8000)
 			break;
 		case BC_YUVA16161616:
+		case BC_AYUV16161616:
 			RESAMPLE(uint16_t, 4, 0x8000)
 			break;
 		}
