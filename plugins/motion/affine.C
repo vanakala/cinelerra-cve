@@ -294,6 +294,7 @@ void AffineUnit::process_package(LoadPackage *package)
 	int miny = server->y;
 	int maxx = server->x + server->w - 1;
 	int maxy = server->y + server->h - 1;
+	int alpha_pos = 3;
 
 // Calculate real coords
 	float out_x1, out_y1, out_x2, out_y2, out_x3, out_y3, out_x4, out_y4;
@@ -595,10 +596,20 @@ void AffineUnit::process_package(LoadPackage *package)
 				else \
 /* Fill with chroma */ \
 				{ \
-					*out_row++ = 0; \
-					*out_row++ = chroma_offset; \
-					*out_row++ = chroma_offset; \
-					if(components == 4) *out_row++ = 0; \
+					if(alpha_pos) \
+					{ \
+						*out_row++ = 0; \
+						*out_row++ = chroma_offset; \
+						*out_row++ = chroma_offset; \
+						if(components == 4) *out_row++ = 0; \
+					} \
+					else \
+					{ \
+						*out_row++ = 0; \
+						*out_row++ = 0; \
+						*out_row++ = chroma_offset; \
+						*out_row++ = chroma_offset; \
+					} \
 				} \
 			} \
 			else \
@@ -633,6 +644,20 @@ void AffineUnit::process_package(LoadPackage *package)
 					type *row4_ptr = in_rows[row4]; \
 					temp_type r, g, b, a; \
  \
+					if(!alpha_pos) \
+					{ \
+						a = (temp_type)(transform_cubic(dy, \
+							CUBIC_ROW(row1_ptr, 0x0), \
+							CUBIC_ROW(row2_ptr, 0x0), \
+							CUBIC_ROW(row3_ptr, 0x0), \
+							CUBIC_ROW(row4_ptr, 0x0)) +  \
+								 round_factor); \
+						row1_ptr++; \
+						row2_ptr++; \
+						row3_ptr++; \
+						row4_ptr++; \
+					} \
+ \
 					r = (temp_type)(transform_cubic(dy, \
 						CUBIC_ROW(row1_ptr, 0x0), \
 						CUBIC_ROW(row2_ptr, 0x0), \
@@ -664,7 +689,7 @@ void AffineUnit::process_package(LoadPackage *package)
 							 round_factor); \
 					b += chroma_offset; \
  \
-					if(components == 4) \
+					if(alpha_pos && components == 4) \
 					{ \
 						row1_ptr++; \
 						row2_ptr++; \
@@ -680,10 +705,20 @@ void AffineUnit::process_package(LoadPackage *package)
  \
 					if(sizeof(type) < 4) \
 					{ \
-						*out_row++ = CLIP(r, 0, max); \
-						*out_row++ = CLIP(g, 0, max); \
-						*out_row++ = CLIP(b, 0, max); \
-						if(components == 4) *out_row++ = CLIP(a, 0, max); \
+						if(alpha_pos) \
+						{ \
+							*out_row++ = CLIP(r, 0, max); \
+							*out_row++ = CLIP(g, 0, max); \
+							*out_row++ = CLIP(b, 0, max); \
+							if(components == 4) *out_row++ = CLIP(a, 0, max); \
+						} \
+						else \
+						{ \
+							*out_row++ = CLIP(a, 0, max); \
+							*out_row++ = CLIP(r, 0, max); \
+							*out_row++ = CLIP(g, 0, max); \
+							*out_row++ = CLIP(b, 0, max); \
+						} \
 					} \
 					else \
 					{ \
@@ -696,10 +731,20 @@ void AffineUnit::process_package(LoadPackage *package)
 				else \
 /* Fill with chroma */ \
 				{ \
-					*out_row++ = 0; \
-					*out_row++ = chroma_offset; \
-					*out_row++ = chroma_offset; \
-					if(components == 4) *out_row++ = 0; \
+					if(alpha_pos) \
+					{ \
+						*out_row++ = 0; \
+						*out_row++ = chroma_offset; \
+						*out_row++ = chroma_offset; \
+						if(components == 4) *out_row++ = 0; \
+					} \
+					else \
+					{ \
+						*out_row++ = 0; \
+						*out_row++ = 0; \
+						*out_row++ = chroma_offset; \
+						*out_row++ = chroma_offset; \
+					} \
 				} \
 			} \
 			else \
@@ -745,6 +790,10 @@ void AffineUnit::process_package(LoadPackage *package)
 			TRANSFORM(3, uint16_t, int, 0x8000, 0xffff)
 			break;
 		case BC_YUVA16161616:
+			TRANSFORM(4, uint16_t, int, 0x8000, 0xffff)
+			break;
+		case BC_AYUV16161616:
+			alpha_pos = 0;
 			TRANSFORM(4, uint16_t, int, 0x8000, 0xffff)
 			break;
 		}
@@ -847,6 +896,7 @@ void AffineUnit::process_package(LoadPackage *package)
 			DO_STRETCH(uint16_t, 3)
 			break;
 		case BC_YUVA16161616:
+		case BC_AYUV16161616:
 			DO_STRETCH(uint16_t, 4)
 			break;
 		}
