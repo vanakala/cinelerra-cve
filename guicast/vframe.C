@@ -738,6 +738,11 @@ int VFrame::get_bytes_per_pixel(void)
 	return bytes_per_pixel;
 }
 
+unsigned char *VFrame::get_row_ptr(int num)
+{
+	return data + num * bytes_per_line;
+}
+
 unsigned char** VFrame::get_rows(void)
 {
 	if(rows)

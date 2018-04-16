@@ -127,6 +127,8 @@ public:
 	int get_color_model();
 // Get the data pointer
 	unsigned char* get_data();
+// return pointer to the row
+	unsigned char* get_row_ptr(int num);
 // return an array of pointers to rows
 	unsigned char** get_rows();
 // return yuv planes
