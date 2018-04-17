@@ -700,6 +700,103 @@ void RadialBlurUnit::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 		BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
 		break;
+	case BC_AYUV16161616:
+		{
+			int chroma_offset = 0x8000;
+			int steps = plugin->config.steps;
+			double step = (double)plugin->config.angle / 360 * 2 * M_PI / steps;
+
+			for(int i = pkg->y1, out_y = pkg->y1 - center_y;
+					i < pkg->y2; i++, out_y++)
+			{
+				uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(i);
+				uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(i);
+				int y_square = out_y * out_y;
+
+				for(int j = 0, out_x = -center_x; j < w; j++, out_x++)
+				{
+					double offset = 0;
+					int accum_r = 0;
+					int accum_g = 0;
+					int accum_b = 0;
+					int accum_a = 0;
+
+					// Output coordinate to polar
+					double magnitude = sqrt(y_square + out_x * out_x);
+					double angle;
+					if(out_y < 0)
+						angle = atan((double)out_x / out_y) + M_PI;
+					else
+					if(out_y > 0)
+						angle = atan((double)out_x / out_y);
+					else
+					if(out_x > 0)
+						angle = M_PI / 2;
+					else
+						angle = M_PI * 1.5;
+
+					// Overlay all steps on this pixel
+					angle -= (double)plugin->config.angle / 360 * M_PI;
+					for(int k = 0; k < steps; k++, angle += step)
+					{
+						// Polar to input coordinate
+						int in_x = (int)(magnitude * sin(angle)) + center_x;
+						int in_y = (int)(magnitude * cos(angle)) + center_y;
+						uint16_t *row = ((uint16_t*)plugin->input->get_row_ptr(in_y));
+
+						// Accumulate input coordinate
+						if(in_x >= 0 && in_x < w && in_y >= 0 && in_y < h)
+						{
+							accum_a += row[in_x * 4];
+							accum_r += row[in_x * 4 + 1];
+							accum_g += row[in_x * 4 + 2];
+							accum_b += row[in_x * 4 + 3];
+						}
+						else
+						{
+							accum_g += chroma_offset;
+							accum_b += chroma_offset;
+						}
+					}
+
+					// Accumulation to output
+					if(do_a)
+					{
+						*out_row++ = (accum_a * fraction) / 0x10000;
+						in_row++;
+					}
+					else
+					{
+						*out_row++ = *in_row++;
+					}
+
+					if(do_r)
+					{
+						*out_row++ = (accum_r * fraction) / 0x10000;
+						in_row++;
+					}
+					else
+						*out_row++ = *in_row++;
+
+					if(do_g)
+					{
+						*out_row++ = (accum_g * fraction) / 0x10000; \
+						in_row++;
+					}
+					else
+						*out_row++ = *in_row++; \
+
+					if(do_b)
+					{
+						*out_row++ = (accum_b * fraction) / 0x10000; \
+						in_row++;
+					}
+					else
+						*out_row++ = *in_row++;
+				}
+			}
+		}
+		break;
 	}
 }
 
