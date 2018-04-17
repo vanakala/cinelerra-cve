@@ -1161,6 +1161,13 @@ void MotionMain::draw_pixel(VFrame *frame, int x, int y)
 	case BC_YUVA16161616:
 		DRAW_PIXEL(x, y, 4, 1, 0xffff, uint16_t);
 		break;
+	case BC_AYUV16161616:
+		uint16_t *pix = &((uint16_t*)frame->get_row_ptr(y))[x * 4];
+		pix[0] = 0xffff;
+		pix[1] = 0xffff - pix[1];
+		pix[2] = 0x8000 - pix[2];
+		pix[3] = 0x8000 - pix[3];
+		break;
 	}
 }
 
@@ -1314,6 +1321,54 @@ int64_t MotionMain::abs_diff(unsigned char *prev_ptr,
 	case BC_YUVA16161616:
 		ABS_DIFF(uint16_t, int64_t, 1, 4)
 		break;
+	case BC_RGBA16161616:
+		for(int i = 0; i < h; i++)
+		{
+			uint16_t *prev_row = (uint16_t*)prev_ptr;
+			uint16_t *current_row = (uint16_t*)current_ptr;
+
+			for(int j = 0; j < w; j++)
+			{
+				for(int k = 0; k < 3; k++)
+				{
+					uint64_t difference;
+					difference = *prev_row++ - *current_row++;
+					if(difference < 0)
+						result -= difference;
+					else
+						result += difference;
+				}
+				prev_row++;
+				current_row++;
+			}
+			prev_ptr += row_bytes;
+			current_ptr += row_bytes;
+		}
+		break;
+	case BC_AYUV16161616:
+		for(int i = 0; i < h; i++)
+		{
+			uint16_t *prev_row = (uint16_t*)prev_ptr;
+			uint16_t *current_row = (uint16_t*)current_ptr;
+
+			for(int j = 0; j < w; j++)
+			{
+				prev_row++;
+				current_row++;
+				for(int k = 0; k < 3; k++)
+				{
+					uint64_t difference;
+					difference = *prev_row++ - *current_row++;
+					if(difference < 0)
+						result -= difference;
+					else
+						result += difference;
+				}
+			}
+			prev_ptr += row_bytes;
+			current_ptr += row_bytes;
+		}
+		break;
 	}
 	return result;
 }
@@ -1404,6 +1459,90 @@ int64_t MotionMain::abs_diff_sub(unsigned char *prev_ptr,
 		break;
 	case BC_YUVA16161616:
 		ABS_DIFF_SUB(uint16_t, int64_t, 1, 4)
+		break;
+	case BC_RGBA16161616:
+		{
+			int64_t y2_fraction = sub_y * 0x100 / OVERSAMPLE;
+			int64_t y1_fraction = 0x100 - y2_fraction;
+			int64_t x2_fraction = sub_x * 0x100 / OVERSAMPLE;
+			int64_t x1_fraction = 0x100 - x2_fraction;
+			for(int i = 0; i < h_sub; i++)
+			{
+				uint16_t *prev_row1 = (uint16_t*)prev_ptr;
+				uint16_t *prev_row2 = (uint16_t*)prev_ptr + 4;
+				uint16_t *prev_row3 = (uint16_t*)(prev_ptr + row_bytes);
+				uint16_t *prev_row4 = (uint16_t*)(prev_ptr + row_bytes) + 4;
+				uint16_t *current_row = (uint16_t*)current_ptr;
+				for(int j = 0; j < w_sub; j++)
+				{
+					for(int k = 0; k < 3; k++)
+					{
+						int64_t difference;
+						int64_t prev_value =
+							(*prev_row1++ * x1_fraction * y1_fraction + \
+							*prev_row2++ * x2_fraction * y1_fraction + \
+							*prev_row3++ * x1_fraction * y2_fraction + \
+							*prev_row4++ * x2_fraction * y2_fraction) /
+							0x100 / 0x100;
+						int64_t current_value = *current_row++;
+						difference = prev_value - current_value;
+						if(difference < 0)
+							result -= difference;
+						else
+							result += difference;
+					}
+					prev_row1++;
+					prev_row2++;
+					prev_row3++;
+					prev_row4++;
+					current_row++;
+				}
+				prev_ptr += row_bytes; \
+				current_ptr += row_bytes; \
+			}
+		}
+		break;
+	case BC_AYUV16161616:
+		{
+			int64_t y2_fraction = sub_y * 0x100 / OVERSAMPLE;
+			int64_t y1_fraction = 0x100 - y2_fraction;
+			int64_t x2_fraction = sub_x * 0x100 / OVERSAMPLE;
+			int64_t x1_fraction = 0x100 - x2_fraction;
+			for(int i = 0; i < h_sub; i++)
+			{
+				uint16_t *prev_row1 = (uint16_t*)prev_ptr;
+				uint16_t *prev_row2 = (uint16_t*)prev_ptr + 4;
+				uint16_t *prev_row3 = (uint16_t*)(prev_ptr + row_bytes);
+				uint16_t *prev_row4 = (uint16_t*)(prev_ptr + row_bytes) + 4;
+				uint16_t *current_row = (uint16_t*)current_ptr;
+				for(int j = 0; j < w_sub; j++)
+				{
+					prev_row1++;
+					prev_row2++;
+					prev_row3++;
+					prev_row4++;
+					current_row++;
+					for(int k = 0; k < 3; k++)
+					{
+						int64_t difference;
+						int64_t prev_value =
+							(*prev_row1++ * x1_fraction * y1_fraction + \
+							*prev_row2++ * x2_fraction * y1_fraction + \
+							*prev_row3++ * x1_fraction * y2_fraction + \
+							*prev_row4++ * x2_fraction * y2_fraction) /
+							0x100 / 0x100;
+						int64_t current_value = *current_row++;
+						difference = prev_value - current_value;
+						if(difference < 0)
+							result -= difference;
+						else
+							result += difference;
+					}
+				}
+				prev_ptr += row_bytes; \
+				current_ptr += row_bytes; \
+			}
+		}
 		break;
 	}
 	return result;
