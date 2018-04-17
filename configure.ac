@@ -212,7 +212,7 @@ rm -f cinelerra/versioninfo.h > /dev/null 2>&1
 
 ############# END BUILDINFO display, (for displaying version / date)
 
-############ external ffmpeg
+############ external ffmpeg libraries
 AC_ARG_WITH([external-ffmpeg], AC_HELP_STRING([--with-external-ffmpeg], [use external ffmpeg library]))
 
 if test "x$with_external_ffmpeg" = "xyes"; then
@@ -244,7 +244,7 @@ AC_SUBST(FFMPEG_FOLDER)
 AC_SUBST(FFMPEG_CPPFLAGS)
 AC_SUBST(FFMPEG_LIBS)
 AC_SUBST(FFMPEG_EXTERNALTEXT)
-############# END external ffmpeg
+############# END external ffmpeg libraries
 
 echo --- FFMPEG CONFIGURATION SECTION --------------
 if test "x$ffmpeg_external" = "xyes"; then
@@ -252,7 +252,7 @@ if test "x$ffmpeg_external" = "xyes"; then
 else
 #### Check optional components of avlibs
 	AC_ARG_ENABLE([nonfree], AC_HELP_STRING([--enable-nonfree], [enable nonfree codecs of avlibs]), [avlibs_nonfree=yes])
-        if test "x$avlibs_nonfree" = xyes; then
+	if test "x$avlibs_nonfree" = xyes; then
 		FFMPEG_CONF="--enable-nonfree"
 	else
 		FFMPEG_CONF=""
@@ -260,7 +260,7 @@ else
 
 ############## LIBFDK-AAC
 	if test "x$avlibs_nonfree" = xyes; then
-		PKG_CHECK_MODULES(libfdkaac,fdk-aac,[libfdkaac=yes])
+		PKG_CHECK_MODULES(libfdkaac,fdk-aac,[libfdkaac=yes],:)
 
 		if test "x$libfdkaac" = xyes; then
 			FFMPEG_CONF="$FFMPEG_CONF --enable-libfdk-aac"
@@ -270,42 +270,44 @@ else
 
 ############## LAME
 	# Just test to see if we have lame installed.
-	AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes])
+	AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes],:)
 	AC_CHECK_LIB(mp3lame,lame_init,[libmp3lame=yes])
 	if test "x$libmp3lame$libmp3lameh" = xyesyes; then
 		FFMPEG_CONF="$FFMPEG_CONF --enable-libmp3lame"
+	else
+		libmp3lame=no
 	fi
 ############## End of LAME
 
 ############## x264
-	PKG_CHECK_MODULES(x264,x264,[libx264=yes])
+	PKG_CHECK_MODULES(x264,x264,[libx264=yes],:)
 	if test "x$libx264" = xyes; then
 		FFMPEG_CONF="$FFMPEG_CONF --enable-libx264"
 	fi
 ############## End of x264
 
 ############## x265
-	PKG_CHECK_MODULES(x265,x265,[libx265=yes])
+	PKG_CHECK_MODULES(x265,x265,[libx265=yes],:)
 	if test "x$libx265" = xyes; then
 		FFMPEG_CONF="$FFMPEG_CONF --enable-libx265"
 	fi
-############## End of x264
+############## End of x265
 
 ############## vorbis
-	PKG_CHECK_MODULES(libvorbis,vorbis,[libvorbis=yes])
+	PKG_CHECK_MODULES(libvorbis,vorbis,[libvorbis=yes],:)
 	if test "x$libvorbis" = xyes; then
 		FFMPEG_CONF="$FFMPEG_CONF --enable-libvorbis"
 	fi
 ############## End of vorbis
 
 ############## theora
-	PKG_CHECK_MODULES(libtheora,theora,[libtheora=yes])
+	PKG_CHECK_MODULES(libtheora,theora,[libtheora=yes],:)
 	if test "x$libtheora" = xyes; then
 		FFMPEG_CONF="$FFMPEG_CONF --enable-libtheora"
 	fi
 ############## End of theora
 
-############# run ffmpeg configure to generates avconfig.h
+############# Configure internal AVlibs
 	ff_conf_args="--disable-programs --disable-doc \
 		--disable-postproc --disable-avfilter --disable-network \
 		--disable-static --enable-shared --enable-gpl \
@@ -331,7 +333,7 @@ else
 	)
 fi
 echo --------------------------------------------------
-############# END run ffmpeg configure to generates avconfig.h
+############# END of Configure internal AVlibs
 
 ############## OpenGL
 AH_TEMPLATE(HAVE_GL, [Define to 1 if OpenGL 2.0 is available.])
@@ -548,6 +550,13 @@ ORPT(enable_opengl,Hardware acceleration using OpenGL 2.0,--disable-opengl,
 )
 ORPT(enable_ladspa,Support of LADSPA plugins,--disable-ladspa,RPT(ladspa_h,LADSPA header))
 RPT(libOpenEXR,OpenEXR)
+RPT(libfdkaac,Fraunhofer FDK AAC)
+RPT(libmp3lame,LAME MP3 Encoder)
+RPT(libx264,H.264/MPEG-4 AVC)
+RPT(libx265,H.265 Video)
+RPT(libvorbis,Ogg Vorbis)
+RPT(libtheora,Theora)
+
 if test "x$mandatory" = "xno"; then
 	echo
 	echo "WARNING: Mandatory components are missing; compilation may fail!"
