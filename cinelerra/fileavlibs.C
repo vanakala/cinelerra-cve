@@ -1001,7 +1001,7 @@ void FileAVlibs::close_file()
 			{
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,41,100)
 				if(codec_contexts[i])
-					avcodec_close(decoder_context);
+					avcodec_close(codec_contexts[i]);
 				codec_contexts[i] = 0;
 #else
 				avcodec_free_context(&codec_contexts[i]);
