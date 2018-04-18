@@ -214,8 +214,8 @@ int BandSlideMain::load_configuration()
 				 \
 				if(row >= 0 && row < h) \
 				{ \
-					type *in_row = (type*)incoming->get_rows()[row]; \
-					type *out_row = (type*)outgoing->get_rows()[row]; \
+					type *in_row = (type*)incoming->get_row_ptr(row); \
+					type *out_row = (type*)outgoing->get_row_ptr(row); \
 					 \
 					if(i % 2) \
 					{ \
@@ -252,8 +252,8 @@ int BandSlideMain::load_configuration()
  \
 				if(row >= 0 && row < h) \
 				{ \
-					type *in_row = (type*)incoming->get_rows()[row]; \
-					type *out_row = (type*)outgoing->get_rows()[row]; \
+					type *in_row = (type*)incoming->get_row_ptr(row); \
+					type *out_row = (type*)outgoing->get_row_ptr(row); \
  \
 					if(i % 2) \
 					{ \
@@ -326,6 +326,7 @@ void BandSlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		BANDSLIDE(uint16_t, 4)
 		break;
 	}
