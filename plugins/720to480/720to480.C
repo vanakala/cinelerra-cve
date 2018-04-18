@@ -157,7 +157,6 @@ void _720to480Main::stop_loop()
 	}
 }
 
-#define DST_W 854
 #define DST_H 240
 
 void _720to480Main::reduce_field(VFrame *output, VFrame *input, int dest_row)
@@ -181,10 +180,10 @@ for(int i = 0; i < DST_H; i++) \
 	if(in2 >= in_h) in2 = in_h - 1; \
 	if(in3 >= in_h) in3 = in_h - 1; \
  \
-	type *out_row = (type*)output->get_rows()[output_number]; \
-	type *in_row1 = (type*)input->get_rows()[in1]; \
-	type *in_row2 = (type*)input->get_rows()[in2]; \
-	type *in_row3 = (type*)input->get_rows()[in3]; \
+	type *out_row = (type*)output->get_row_ptr(output_number); \
+	type *in_row1 = (type*)input->get_row_ptr(in1); \
+	type *in_row2 = (type*)input->get_row_ptr(in2); \
+	type *in_row3 = (type*)input->get_row_ptr(in3); \
  \
 	int w = MIN(out_w, in_w) * components; \
 	for(int j = 0; j < w; j++) \
@@ -217,6 +216,7 @@ for(int i = 0; i < DST_H; i++) \
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		REDUCE_MACRO(uint16_t, int64_t, 4);
 		break;
 	}
