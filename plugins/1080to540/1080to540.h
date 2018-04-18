@@ -34,7 +34,6 @@
 #include "pluginmacros.h"
 
 #include "language.h"
-#include "overlayframe.inc"
 #include "pluginvclient.h"
 #include "pluginwindow.h"
 

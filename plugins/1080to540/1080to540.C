@@ -22,9 +22,9 @@
 #include "1080to540.h"
 #include "clip.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "filexml.h"
 #include "keyframe.h"
-#include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
 
@@ -161,11 +161,11 @@ for(int i = 0; i < OUT_ROWS; i++) \
 	if(in_number4 >= h) in_number4 = h - 1; \
 	if(out_number >= h) out_number = h - 1; \
  \
-	type *in_row1 = (type*)input->get_rows()[in_number1]; \
-	type *in_row2 = (type*)input->get_rows()[in_number2]; \
-	type *in_row3 = (type*)input->get_rows()[in_number3]; \
-	type *in_row4 = (type*)input->get_rows()[in_number4]; \
-	type *out_row = (type*)output->get_rows()[out_number]; \
+	type *in_row1 = (type*)input->get_row_ptr(in_number1); \
+	type *in_row2 = (type*)input->get_row_ptr(in_number2); \
+	type *in_row3 = (type*)input->get_row_ptr(in_number3); \
+	type *in_row4 = (type*)input->get_row_ptr(in_number4); \
+	type *out_row = (type*)output->get_row_ptr(out_number); \
  \
 	for(int j = 0; j < w * components; j++) \
 	{ \
@@ -198,6 +198,7 @@ for(int i = 0; i < OUT_ROWS; i++) \
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		REDUCE_MACRO(uint16_t, int64_t, 4);
 		break;
 	}
@@ -214,11 +215,10 @@ void _1080to540Main::process_realtime(VFrame *input, VFrame *output)
 			input->get_color_model());
 		temp->clear_frame();
 	}
-
 	reduce_field(temp, input, config.first_field == 0 ? 0 : 1, 0);
 	reduce_field(temp, input, config.first_field == 0 ? 1 : 0, 1);
 
-	output->copy_from(temp);
+	output->copy_from(temp, 0);
 }
 
 
