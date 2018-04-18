@@ -194,6 +194,7 @@ void AgingClient::coloraging(unsigned char **output_rows,
 
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		COLORAGE(uint16_t, 4);
 		break;
 	}
