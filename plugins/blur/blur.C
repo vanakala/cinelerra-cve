@@ -418,6 +418,97 @@ void BlurEngine::run()
 		case BC_YUVA16161616:
 			BLUR(uint16_t, 0xffff, 4);
 			break;
+		case BC_AYUV16161616:
+			{
+				VFrame *cur_input = input;
+				VFrame *cur_output = output;
+
+				vmax = 0xffff;
+
+				if(plugin->config.vertical)
+				{
+					// Vertical pass
+					if(plugin->config.horizontal)
+						cur_output = plugin->temp;
+
+					for(j = 0; j < w; j++)
+					{
+						bzero(val_p, sizeof(pixel_f) * (end_in - start_in)); \
+						bzero(val_m, sizeof(pixel_f) * (end_in - start_in)); \
+
+						for(l = 0, k = start_in; k < end_in; l++, k++)
+						{
+							uint16_t *row = ((uint16_t*)cur_input->get_row_ptr(k));
+
+							if(plugin->config.a)
+								src[l].a = (float)row[j * 4];
+							if(plugin->config.r)
+								src[l].r = (float)row[j * 4 + 1];
+							if(plugin->config.g)
+								src[l].g = (float)row[j * 4 + 2];
+							if(plugin->config.b)
+								src[l].b = (float)row[j * 4 + 3];
+						}
+						blur_strip4(strip_size);
+
+						for(l = start_out - start_in, k = start_out; k < end_out; l++, k++)
+						{
+							uint16_t *row = ((uint16_t*)cur_output->get_row_ptr(k));
+
+							if(plugin->config.a)
+								row[j * 4] = (uint16_t)dst[l].a;
+							if(plugin->config.r)
+								row[j * 4 + 1] = (uint16_t)dst[l].r;
+							if(plugin->config.g)
+								row[j * 4 + 2] = (uint16_t)dst[l].g;
+							if(plugin->config.b)
+								row[j * 4 + 3] = (uint16_t)dst[l].b;
+						}
+					}
+
+					cur_input = cur_output;
+					cur_output = output;
+				}
+
+				if(plugin->config.horizontal)
+				{
+					// Horizontal pass
+					for(j = start_out; j < end_out; j++)
+					{
+						bzero(val_p, sizeof(pixel_f) * w);
+						bzero(val_m, sizeof(pixel_f) * w);
+
+						for(k = 0; k < w; k++)
+						{
+							uint16_t *row = (uint16_t*)cur_input->get_row_ptr(j);
+
+							if(plugin->config.a)
+								src[k].a = (float)row[k * 4];
+							if(plugin->config.r)
+								src[k].r = (float)row[k * 4 + 1];
+							if(plugin->config.g)
+								src[k].g = (float)row[k * 4 + 2];
+							if(plugin->config.b)
+								src[k].b = (float)row[k * 4 + 3];
+						}
+						blur_strip4(w);
+
+						for(k = 0; k < w; k++)
+						{
+							uint16_t *row = (uint16_t*)cur_output->get_row_ptr(j);
+
+							if(plugin->config.a)
+								row[k * 4] = (uint16_t)dst[k].a;
+							if(plugin->config.r)
+								row[k * 4 + 1] = (uint16_t)dst[k].r;
+							if(plugin->config.g)
+								row[k * 4 + 2] = (uint16_t)dst[k].g;
+							if(plugin->config.b)
+								row[k * 4 + 3] = (uint16_t)dst[k].b;
+						}
+					}
+				}
+			}
 		}
 
 		output_lock.unlock();
