@@ -116,9 +116,9 @@ void SharedLocation::calculate_title(char *string,
 		if(plugin)
 			plugin_title = plugin->title;
 		else
-			plugin_title = _("None");
+			plugin_title = N_("None");
 
-		sprintf(string, "%s: %s", track_title, plugin_title);
+		sprintf(string, "%s: %s", track_title, _(plugin_title));
 	}
 	else
 	if(plugin_type == PLUGIN_SHAREDMODULE)
