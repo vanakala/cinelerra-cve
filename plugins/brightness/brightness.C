@@ -638,6 +638,98 @@ void BrightnessUnit::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 		DO_BRIGHTNESS(0xffff, uint16_t, 4, 1)
 		break;
+
+	case BC_AYUV16161616:
+		{
+			VFrame *inframe = input;
+			VFrame *outframe = output;
+			int row1 = pkg->row1;
+			int row2 = pkg->row2;
+			int width = output->get_w();
+			int r, g, b;
+
+			if(!EQUIV(plugin->config.brightness, 0))
+			{
+				int offset = (int)(plugin->config.brightness / 100 * 0xffff);
+
+				for(int i = row1; i < row2; i++)
+				{
+					uint16_t *input_row = (uint16_t*)inframe->get_row_ptr(i);
+					uint16_t *output_row = (uint16_t*)outframe->get_row_ptr(i);
+
+					for(int j = 0; j < width; j++)
+					{
+						output_row[j * 4] = input_row[j * 4];
+						r = input_row[j * 4 + 1] + offset;
+
+						CLAMP(r, 0, 0xffff);
+
+						output_row[j * 4 + 1] = r;
+
+						output_row[j * 4 + 2] = input_row[j * 4 + 2];
+						output_row[j * 4 + 3] = input_row[j * 4 + 3];
+					}
+				}
+
+				// Data to be processed is now in the output buffer
+				inframe = outframe;
+			}
+
+			if(!EQUIV(plugin->config.contrast, 0))
+			{
+				float contrast = (plugin->config.contrast < 0) ?
+					(plugin->config.contrast + 100) / 100 :
+					(plugin->config.contrast + 25) / 25;
+
+				int scalar = (int)(contrast * 0x100); \
+				int offset = (0xffff << 8) / 2 - 0xffff * scalar / 2; \
+				int y, u, v;
+
+				for(int i = row1; i < row2; i++)
+				{
+					uint16_t *input_row = (uint16_t*)inframe->get_row_ptr(i);
+					uint16_t *output_row = (uint16_t*)outframe->get_row_ptr(i);
+
+					if(plugin->config.luma) \
+					{
+						for(int j = 0; j < width; j++) \
+						{
+							y = input_row[j * 4 + 1];
+							y = (y * scalar + offset) >> 8;
+							CLAMP(y, 0, 0xffff);
+
+							output_row[j * 4] = input_row[j * 4];
+							output_row[j * 4 + 1] = y;
+							output_row[j * 4 + 2] = input_row[j * 4 + 2];
+							output_row[j * 4 + 3] = input_row[j * 4 + 3];
+						}
+					}
+					else
+					{
+						for(int j = 0; j < width; j++)
+						{
+							output_row[j * 4] = input_row[j * 4];
+							r = input_row[j * 4 + 1];
+							g = input_row[j * 4 + 2];
+							b = input_row[j * 4 + 3];
+
+							r = (r * scalar + offset) >> 8;
+							g = (g * scalar + offset) >> 8;
+							b = (b * scalar + offset) >> 8;
+
+							CLAMP(r, 0, 0xffff);
+							CLAMP(g, 0, 0xffff);
+							CLAMP(b, 0, 0xffff);
+
+							output_row[j * 4 + 1] = r;
+							output_row[j * 4 + 2] = g;
+							output_row[j * 4 + 3] = b;
+						}
+					}
+				}
+			}
+		}
+		break;
 	}
 }
 
