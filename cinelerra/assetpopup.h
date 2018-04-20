@@ -25,8 +25,11 @@
 class AssetPopupInfo;
 class AssetPopupBuildIndex;
 class AssetPopupView;
+class AssetMatchRate;
+class AssetMatchSize;
 
 #include "assetedit.inc"
+#include "assetpopup.inc"
 #include "awindowgui.inc"
 #include "awindowmenu.inc"
 #include "edl.inc"
@@ -40,7 +43,7 @@ public:
 	AssetPopup(MWindow *mwindow, AWindowGUI *gui);
 
 // Set mainsession with the current selections
-	void update();
+	void update(int options);
 	void paste_assets();
 	void match_size();
 	void match_rate();
@@ -52,6 +55,8 @@ public:
 	AssetPopupBuildIndex *index;
 	AssetPopupView *view;
 	AssetListFormat *format;
+	AssetMatchRate *matchrate;
+	AssetMatchSize *matchsize;
 };
 
 

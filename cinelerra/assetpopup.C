@@ -55,9 +55,9 @@ AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
 	add_item(index = new AssetPopupBuildIndex(mwindow, this));
 	add_item(view = new AssetPopupView(mwindow, this));
 	add_item(new AssetPopupPaste(mwindow, this));
-	add_item(new AssetMatchSize(mwindow, this));
-	add_item(new AssetMatchRate(this));
 	add_item(new AssetPopupProjectRemove(mwindow, this));
+	add_item(matchsize = new AssetMatchSize(mwindow, this));
+	add_item(matchrate = new AssetMatchRate(this));
 }
 
 void AssetPopup::paste_assets()
@@ -83,8 +83,28 @@ void AssetPopup::match_rate()
 	mwindow->asset_to_rate();
 }
 
-void AssetPopup::update()
+void AssetPopup::update(int options)
 {
+	if(options & ASSETPOP_MATCHSIZE)
+	{
+		if(!matchsize)
+			add_item(matchsize = new AssetMatchSize(mwindow, this));
+	}
+	else if(matchsize)
+	{
+		remove_item(matchsize);
+		matchsize = 0;
+	}
+	if(options & ASSETPOP_MATCHRATE)
+	{
+		if(!matchrate)
+			add_item(matchrate = new AssetMatchRate(this));
+	}
+	else if(matchrate)
+	{
+		remove_item(matchrate);
+		matchrate = 0;
+	}
 	format->update();
 	gui->collect_assets();
 }

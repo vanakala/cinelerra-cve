@@ -22,6 +22,9 @@
 #ifndef ASSETPOPUP_INC
 #define ASSETPOPUP_INC
 
+#define ASSETPOP_MATCHSIZE 1
+#define ASSETPOP_MATCHRATE 2
+
 class AssetPopup;
 
 #endif
