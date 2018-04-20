@@ -869,6 +869,75 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 		TRANSLATE(uint16_t, 0xffff, 4, y, u, v);
 		break;
 	}
+	case BC_AYUV16161616:
+		{
+			uint16_t y, u, v;
+
+			yuv.rgb_to_yuv_16(
+				(r_in << 8) | r_in,
+				(g_in << 8) | g_in,
+				(b_in << 8) | b_in,
+				y, u, v);
+
+			for(int i = pkg->y1; i < pkg->y2; i++)
+			{
+				if(i + server->out_y1_int >= 0 &&
+					i + server->out_y1_int < server->output_h)
+				{
+					int in_y1, in_y2;
+					float y_fraction1, y_fraction2;
+					float y_output_fraction;
+
+					in_y1 = server->y_table[i].in_x1;
+					in_y2 = server->y_table[i].in_x2;
+					y_fraction1 = server->y_table[i].in_fraction1;
+					y_fraction2 = server->y_table[i].in_fraction2;
+					y_output_fraction = server->y_table[i].output_fraction;
+					unsigned char *in_row1 = plugin->text_mask->get_row_ptr(in_y1);
+					unsigned char *in_row2 = plugin->text_mask->get_row_ptr(in_y2);
+					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(i + server->out_y1_int);
+
+					for(int j = server->out_x1_int; j < server->out_x2_int; j++)
+					{
+						if(j >= 0 && j < server->output_w)
+						{
+							int in_x1, in_x2;
+							float x_fraction1, x_fraction2;
+							float x_output_fraction;
+
+							in_x1 = server->x_table[j - server->out_x1_int].in_x1;
+							in_x2 = server->x_table[j - server->out_x1_int].in_x2;
+							x_fraction1 = server->x_table[j - server->out_x1_int].in_fraction1;
+							x_fraction2 = server->x_table[j - server->out_x1_int].in_fraction2;
+							x_output_fraction = server->x_table[j - server->out_x1_int].output_fraction;
+
+							float fraction1 = x_fraction1 * y_fraction1;
+							float fraction2 = x_fraction2 * y_fraction1;
+							float fraction3 = x_fraction1 * y_fraction2;
+							float fraction4 = x_fraction2 * y_fraction2;
+							int input = (int)(in_row1[in_x1] * fraction1 +
+								in_row1[in_x2] * fraction2 +
+								in_row2[in_x1] * fraction3 +
+							in_row2[in_x2] * fraction4 + 0.5);
+							input *= plugin->alpha;
+							// Alpha is 0 - 256
+							input >>= 8;
+
+							int anti_input = 0xff - input;
+							out_row[j * 4] =
+								MAX((input << 8) | input, out_row[j * 4]);
+							out_row[j * 4 + 1] =
+								(y * input + out_row[j * 4 + 1] * anti_input) / 0xff;
+							out_row[j * 4 + 2] =
+								(u * input + out_row[j * 4 + 2] * anti_input) / 0xff;
+							out_row[j * 4 + 3] =
+								(v * input + out_row[j * 4 + 3] * anti_input) / 0xff;
+						}
+					}
+				}
+			}
+		}
+		break;
 	}
 }
 
