@@ -372,6 +372,43 @@ void BurnClient::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 		BURN(uint16_t, 4, 1);
 		break;
+	case BC_AYUV16161616:
+		{
+			i = 1;
+			uint16_t **rows = (uint16_t**)input_rows;
+			for(y = 0; y < height; y++)
+			{
+				for(x = 1; x < width - 1; x++)
+				{
+					a1 = ((int)rows[0][i * 4 + 1]) >> 8;
+					a2 = ((int)rows[0][i * 4 + 2]) >> 8;
+					a3 = ((int)rows[0][i * 4 + 3]) >> 8;
+					b1 = plugin->palette[0][plugin->buffer[i]];
+					b2 = plugin->palette[1][plugin->buffer[i]];
+					b3 = plugin->palette[2][plugin->buffer[i]];
+					plugin->yuv->yuv_to_rgb_8(a1, a2, a3);
+					a1 += b1;
+					a2 += b2;
+					a3 += b3;
+					b1 = a1 & 0x100;
+					b2 = a2 & 0x100;
+					b3 = a3 & 0x100;
+					a1 = (a1 | (b1 - (b1 >> 8)));
+					a2 = (a2 | (b2 - (b2 >> 8)));
+					a3 = (a3 | (b3 - (b3 >> 8)));
+					CLAMP(a1, 0, 0xff);
+					CLAMP(a2, 0, 0xff);
+					CLAMP(a3, 0, 0xff);
+					plugin->yuv->rgb_to_yuv_8(a1, a2, a3);
+					rows[0][i * 4 + 1] = a1 | (a1 << 8);
+					rows[0][i * 4 + 2] = a2 | (a2 << 8);
+					rows[0][i * 4 + 3] = a3 | (a3 << 8);
+					i++;
+				}
+				i += 2;
+			}
+		}
+		break;
 	}
 
 }
