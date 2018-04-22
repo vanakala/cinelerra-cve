@@ -491,6 +491,121 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 		CHROMAKEY(uint16_t, 4, 0xffff, 1);
 		break;
+
+	case BC_RGBA16161616:
+		for(int i = pkg->y1; i < pkg->y2; i++)
+		{
+			uint16_t *row = (uint16_t*)plugin->input->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				double a = 1;
+
+				// Test for value in range
+				if(plugin->config.use_value)
+				{
+					double current_value;
+
+					double r = (double)row[0] / 0xffff;
+					double g = (double)row[1] / 0xffff;
+					double b = (double)row[2] / 0xffff;
+					current_value = RGB_TO_VALUE(r, g, b);
+
+					// Full transparency if in range
+					if(current_value >= min_v && current_value < max_v)
+						a = 0;
+					else
+					// Phased out if below or above range
+					if(current_value < min_v)
+					{
+						if(min_v - current_value < run)
+							a = (min_v - current_value) / run;
+					}
+					else
+					if(current_value - max_v < run)
+						a = (current_value - max_v) / run;
+				}
+				else
+				// Use color cube
+				{
+					double difference;
+
+					double r = (double)row[0] / 0xffff;
+					double g = (double)row[1] / 0xffff;
+					double b = (double)row[2] / 0xffff;
+					difference = sqrt(SQR(r - r_key) +
+						SQR(g - g_key) +
+						SQR(b - b_key));
+					if(difference < threshold)
+						a = 0;
+					else
+					if(difference < threshold_run)
+						a = (difference - threshold) / run;
+				}
+
+				// Multiply alpha and put back in frame
+				row[3] = MIN((uint16_t)(a * 0xffff), row[3]);
+
+				row += 4;
+			}
+		}
+		break;
+
+	case BC_AYUV16161616:
+		for(int i = pkg->y1; i < pkg->y2; i++)
+		{
+			uint16_t *row = (uint16_t*)plugin->input->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				double a = 1;
+
+				// Test for value in range
+				if(plugin->config.use_value)
+				{
+					double current_value = (double)row[1] / 0xffff;;
+
+					// Full transparency if in range
+					if(current_value >= min_v && current_value < max_v)
+							a = 0;
+					else
+					// Phased out if below or above range
+					if(current_value < min_v)
+					{
+						if(min_v - current_value < run)
+							a = (min_v - current_value) / run;
+					}
+					else
+					if(current_value - max_v < run)
+						a = (current_value - max_v) / run;
+				}
+				else
+				// Use color cube
+				{
+					double difference;
+
+					uint16_t y = row[1];
+					uint16_t u = row[2];
+					uint16_t v = row[3];
+
+					difference = sqrt(SQR(y - y_key) +
+						SQR(u - u_key) +
+						SQR(v - v_key)) / 0xffff;
+
+					if(difference < threshold)
+						a = 0;
+					else
+					if(difference < threshold_run)
+						a = (difference - threshold) / run;
+				}
+
+				// Multiply alpha and put back in frame
+				row[0] = MIN((uint16_t)(a * 0xffff), row[0]);
+
+				row += 4;
+			}
+		}
+		break;
 	}
 }
 
