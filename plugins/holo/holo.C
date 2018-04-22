@@ -150,6 +150,32 @@ void HoloMain::add_frames(VFrame *output, VFrame *input)
 	case BC_YUVA16161616:
 		ADD_FRAMES(uint16_t, 4);
 		break;
+
+	case BC_AYUV16161616:
+		{
+			int w = input->get_w();
+			int h = input->get_h();
+
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t *output_row = (uint16_t*)output->get_row_ptr(i);
+				uint16_t *input_row = (uint16_t*)input->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					output_row++;
+					input_row++;
+					for(int k = 0; k < 3; k++)
+					{
+						*output_row = (*input_row & *output_row) +
+							((*input_row ^ *output_row) >> 1);
+						output_row++;
+						input_row++;
+					}
+				}
+			}
+		}
+		break;
 	}
 }
 
@@ -510,6 +536,137 @@ else \
 		break;
 	case BC_YUVA16161616:
 		HOLO_CORE(uint16_t, 4, 1);
+		break;
+
+	case BC_AYUV16161616:
+		for(y = 1; y < height - 1; y++)
+		{
+			uint16_t *src = (uint16_t*)input_rows[y];
+			uint16_t *bg = (uint16_t*)plugin->bgimage->get_row_ptr(y);
+			uint16_t *dest = (uint16_t*)output_rows[y];
+
+			if(((y + phase) & 0x7f) < 0x58)
+			{
+				for(x = 0 ; x < width; x++)
+				{
+					if(*diff)
+					{
+						r = (int)src[1] >> 8;
+						g = (int)src[2] >> 8;
+						b = (int)src[3] >> 8;
+						plugin->yuv->yuv_to_rgb_8(r, g, b);
+						s = (r << 16) | (g << 8) | b;
+
+						t = (s & 0xff) +
+							((s & 0xff00) >> 7) +
+							((s & 0xff0000) >> 16);
+						t += plugin->noisepattern[EffectTV::fastrand() >> 24];
+
+						r = ((s & 0xff0000) >> 17) + t;
+						g = ((s & 0xff00) >> 8) + t;
+						b = (s & 0xff) + t;
+
+						r = (r >> 1) - 100;
+						g = (g >> 1) - 100;
+						b = b >> 2;
+
+						if(r < 20) r = 20;
+						if(g < 20) g = 20;
+
+						r = (int)bg[1] >> 8;
+						g = (int)bg[2] >> 8;
+						b = (int)bg[3] >> 8;
+						plugin->yuv->yuv_to_rgb_8(r, g, b);
+						s = (r << 16) | (g << 8) | b;
+
+						r += (s & 0xff0000) >> 17;
+						g += (s & 0xff00) >> 9;
+						b += ((s & 0xff) >> 1) + 40;
+
+						if(r > 255) r = 255;
+						if(g > 255) g = 255;
+						if(b > 255) b = 255;
+
+						plugin->yuv->rgb_to_yuv_8(r, g, b);
+
+						dest[1] = (r << 8) | r; \
+						dest[2] = (g << 8) | g; \
+						dest[3] = (b << 8) | b; \
+					}
+					else
+					{
+						dest[1] = bg[1];
+						dest[2] = bg[2];
+						dest[3] = bg[3];
+					}
+
+					diff++;
+					src += 4;
+					dest += 4;
+					bg += 4;
+				}
+			}
+			else
+			{
+				for(x = 0; x < width; x++)
+				{
+					if(*diff)
+					{
+
+						r = (int)src[1] >> 8;
+						g = (int)src[2] >> 8;
+						b = (int)src[3] >> 8;
+						plugin->yuv->yuv_to_rgb_8(r, g, b);
+						s = (r << 16) | (g << 8) | b;
+
+						t = (s & 0xff) + ((s & 0xff00) >> 6) + ((s & 0xff0000) >> 16);
+						t += plugin->noisepattern[EffectTV::fastrand() >> 24];
+
+						r = ((s & 0xff0000) >> 16) + t;
+						g = ((s & 0xff00) >> 8) + t;
+						b = (s & 0xff) + t;
+
+						r = (r >> 1) - 100;
+						g = (g >> 1) - 100;
+						b = b >> 2;
+
+						if(r < 0) r = 0;
+						if(g < 0) g = 0;
+
+						r = (int)bg[1] >> 8;
+						g = (int)bg[2] >> 8;
+						b = (int)bg[3] >> 8;
+						plugin->yuv->yuv_to_rgb_8(r, g, b);
+						s = (r << 16) | (g << 8) | b;
+
+						r += ((s & 0xff0000) >> 17) + 10;
+						g += ((s & 0xff00) >> 9) + 10;
+						b += ((s & 0xff) >> 1) + 40;
+
+						if(r > 255) r = 255;
+						if(g > 255) g = 255;
+						if(b > 255) b = 255;
+
+						plugin->yuv->rgb_to_yuv_8(r, g, b);
+
+						dest[1] = (r << 8) | r;
+						dest[2] = (g << 8) | g;
+						dest[3] = (b << 8) | b;
+					}
+					else
+					{
+						dest[1] = bg[0];
+						dest[2] = bg[1];
+						dest[3] = bg[2];
+					}
+
+					diff++;
+					src += 4;
+					dest += 4;
+					bg += 4;
+				}
+			}
+		}
 		break;
 	}
 
