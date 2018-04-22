@@ -383,6 +383,100 @@ void DotClient::draw_dot(int xx,
 	case BC_YUVA16161616:
 		DRAW_DOT(uint16_t, 4, 0x8000);
 		break;
+
+	case BC_AYUV16161616:
+		{ \
+			int x, y;
+			uint32_t *pat;
+			uint16_t *output;
+			int y_total = 0;
+
+			c = (c >> (8 - plugin->config.dot_depth));
+			pat = plugin->pattern + c * plugin->dot_hsize * plugin->dot_hsize;
+			output = ((uint16_t**)output_rows)[0] + yy *
+				plugin->dot_size *
+				plugin->input_ptr->get_w() * 4 +
+				xx * plugin->dot_size * 4;
+
+			for(y = 0; y < plugin->dot_hsize && y_total < plugin->input_ptr->get_h(); y++)
+			{
+				for(x = 0; x < plugin->dot_hsize; x++)
+				{
+					output[0] = 0xffff;
+					output[1] = (*pat & 0xff0000) >> 8;
+					output[2] = 0x8000;
+					output[3] = 0x8000;
+					output += 4;
+					pat++;
+				}
+				pat -= 2;
+
+				for(x = 0; x < plugin->dot_hsize - 1; x++)
+				{
+					output[0] = 0xffff;
+					output[1] = (*pat & 0xff0000) >> 8;
+					output[2] = 0x8000;
+					output[3] = 0x8000;
+					output += 4;
+					pat--;
+				}
+
+				output += 4 * (plugin->input_ptr->get_w() - plugin->dot_size + 1);
+				pat += plugin->dot_hsize + 1;
+				y_total++;
+			}
+
+			pat -= plugin->dot_hsize * 2;
+
+			for(y = 0; y < plugin->dot_hsize && y_total < plugin->input_ptr->get_h(); y++)
+			{
+				if(y < plugin->dot_hsize - 1)
+				{
+					for(x = 0; x < plugin->dot_hsize; x++)
+					{
+						output[0] = 0xffff;
+						output[1] = (*pat & 0xff0000) >> 8;
+						output[2] = 0x8000;
+						output[3] = 0x8000;
+						output += 4;
+						pat++;
+					}
+					pat -= 2;
+
+					for(x = 0; x < plugin->dot_hsize - 1; x++)
+					{
+						output[0] = 0xffff;
+						output[1] = (*pat & 0xff0000) >> 8;
+						output[2] = 0x8000;
+						output[3] = 0x8000;
+						output += 4;
+						pat--;
+					}
+
+					output[0] = 0xffff;
+					output[1] = 0;
+					output[2] = 0x8000;
+					output[3] = 0x8000;
+
+					output += 4 * (plugin->input_ptr->get_w() - plugin->dot_size + 1);
+					pat += -plugin->dot_hsize + 1;
+				}
+				else
+				{
+					for(x = 0; x < plugin->dot_hsize * 2; x++)
+					{
+						output[0] = 0xffff;
+						output[1] = 0;
+						output[2] = 0x8000;
+						output[3] = 0x8000;
+						output += 4;
+					}
+				}
+
+				y_total++;
+			}
+		}
+		break;
 	}
 }
 
@@ -453,6 +547,12 @@ unsigned char DotClient::RGBtoY(unsigned char *row, int color_model)
 	case BC_YUVA16161616:
 		RGB_TO_Y(uint16_t, 1);
 		break;
+
+	case BC_AYUV16161616:
+		{
+			uint16_t *row_local = (uint16_t*)row;
+			i = (int)row_local[1] >> 8;
+		}
 	}
 
 	return i;
