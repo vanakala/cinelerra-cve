@@ -822,6 +822,160 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 		process_chromakey<uint16_t>(4, 0xffff, 1, pkg);
 		break;
+
+	case BC_RGBA16161616:
+		process_chromakey<uint16_t>(4, 0xffff, 0, pkg);
+		break;
+
+	case BC_AYUV16161616:
+		float red = plugin->config.red;
+		float green = plugin->config.green;
+		float blue = plugin->config.blue;
+
+		float in_slope = plugin->config.in_slope / 100;
+		float out_slope = plugin->config.out_slope / 100;
+
+		float tolerance = plugin->config.tolerance / 100;
+		float tolerance_in = tolerance - in_slope;
+		float tolerance_out = tolerance + out_slope;
+
+		float sat = plugin->config.saturation / 100;
+		float min_s = plugin->config.min_saturation / 100;
+		float min_s_in = min_s + in_slope;
+		float min_s_out = min_s - out_slope;
+
+		float min_v = plugin->config.min_brightness / 100;
+		float min_v_in = min_v + in_slope;
+		float min_v_out = min_v - out_slope;
+
+		float max_v = plugin->config.max_brightness / 100;
+		float max_v_in = max_v - in_slope;
+		float max_v_out = max_v + out_slope;
+
+		float spill_threshold = plugin->config.spill_threshold / 100;
+		float spill_amount = 1.0 - plugin->config.spill_amount / 100;
+
+		float alpha_offset = plugin->config.alpha_offset / 100;
+
+		// Convert RGB key to HSV key
+		float hue_key, saturation_key, value_key;
+		HSV::rgb_to_hsv(red, green, blue, hue_key,
+			saturation_key, value_key);
+
+		int w = plugin->input->get_w();
+
+		for(int i = pkg->y1; i < pkg->y2; i++)
+		{
+			uint16_t *row = (uint16_t*) plugin->input->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				float a = 1;
+				float h, s, v;
+				float av = 1, ah = 1, as = 1, avm = 1;
+				bool has_match = true;
+
+				HSV::yuv_to_hsv(row[1], row[2], row[3],
+					h, s, v, 0xffff);
+
+				// First, test if the hue is in range
+				if(tolerance == 0)
+					ah = 1.0;
+				else
+				if(ABS(h - hue_key) < tolerance_in * 180)
+					ah = 0;
+				else
+				if((out_slope != 0) && (ABS(h - hue_key) < tolerance * 180))
+					// we scale alpha between 0 and 1/2
+					ah = ABS(h - hue_key) / tolerance / 360;
+				else
+				if(ABS (h - hue_key) < tolerance_out * 180)
+					// we scale alpha between 1/2 and 1
+					ah = ABS(h - hue_key) / tolerance_out / 360;
+				else
+					has_match = false;
+
+				// Check if the saturation matches
+				if(has_match)
+				{
+					if(min_s == 0)
+						as = 0;
+					else if(s - sat >= min_s_in)
+						as = 0;
+					else if((out_slope != 0) && (s - sat > min_s))
+						as = (s - sat - min_s) / (min_s * 2);
+					else if(s - sat > min_s_out)
+						as = (s - sat - min_s_out) / (min_s_out * 2);
+					else
+						has_match = false;
+				}
+
+				// Check if the value is more than the minimun
+				if(has_match)
+				{
+					if(min_v == 0)
+						av = 0;
+					else if(v >= min_v_in)
+						av = 0;
+					else if((out_slope != 0) && (v > min_v))
+						av = (v - min_v) / (min_v * 2);
+					else if(v > min_v_out)
+						av = (v - min_v_out) / (min_v_out * 2);
+					else
+						has_match = false;
+				}
+
+				// Check if the value is less than the maximum
+				if(has_match)
+				{
+					if(max_v == 0)
+						avm = 1;
+					else if(v <= max_v_in)
+						avm = 0;
+					else if((out_slope != 0) && (v < max_v))
+						avm = (v - max_v) / (max_v * 2);
+					else if(v < max_v_out)
+						avm = (v - max_v_out) / (max_v_out * 2);
+					else
+						has_match = false;
+				}
+
+				// If the color is part of the key, update the alpha channel
+				if(has_match)
+					a = MAX(MAX(ah, av), MAX(as, avm));
+
+				// Spill light processing
+				if((ABS(h - hue_key) < spill_threshold * 180) ||
+					((ABS(h - hue_key) > 360)
+					&& (ABS(h - hue_key) - 360 < spill_threshold * 180)))
+				{
+					s = s * spill_amount * ABS(h - hue_key) /
+						(spill_threshold * 180);
+					int iy, iu, iv;
+
+					HSV::hsv_to_yuv(iy, iu, iv, h, s, v, 0xffff);
+					row[1] = iy;
+					row[2] = iu;
+					row[3] = iv;
+				}
+
+				a += alpha_offset;
+				CLAMP(a, 0.0, 1.0);
+
+				if(plugin->config.show_mask)
+				{
+					row[1] = (uint16_t) (a * 0xffff);
+					row[2] = 0x8000;
+					row[3] = 0x8000;
+				}
+
+				// Multiply alpha and put back in frame
+				row[0] = MIN((uint16_t) (a * 0xffff), row[0]);
+
+				row += 4;
+			}
+		}
+		break;
 	}
 }
 
