@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "colormodels.inc"
 #include "effecttv.h"
 #include "plugincolors.h"
@@ -129,6 +130,25 @@ void EffectTV::frame_to_effecttv(VFrame *frame, uint32_t *tmp)
 	case BC_YUVA16161616:
 		FRAME_TO_EFFECTTV(uint16_t, 4);
 		break;
+
+	case BC_AYUV16161616:
+		{
+			for(int i = 0; i < width; i++)
+			{
+				uint32_t *row = tmp + i * width * sizeof(uint32_t);
+				uint16_t *input_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < width; j++)
+				{
+					row[j * sizeof(uint32_t)] = ((uint32_t)input_row[1]) << 8;
+					row[j * sizeof(uint32_t)] |= ((uint32_t)input_row[2]);
+					row[j * sizeof(uint32_t)] |= input_row[3] >> 8;
+					input_row += 4;
+					row++;
+				}
+			}
+		}
+		break;
 	}
 }
 
@@ -189,6 +209,26 @@ void EffectTV::effecttv_to_frame(VFrame *frame, uint32_t *tmp)
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
 		EFFECTTV_TO_FRAME(uint16_t, 4);
+		break;
+
+	case BC_AYUV16161616:
+		{
+			for(int i = 0; i < width; i++)
+			{
+				uint32_t *row = tmp + i * width * sizeof(uint32_t);
+				uint16_t *output_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < width; j++)
+				{
+					output_row[0] = (uint16_t)0xffff;
+					output_row[1] = (row[j * sizeof(uint32_t)] & 0xff0000) >> 8;
+					output_row[2] = row[j * sizeof(uint32_t)] & 0xff00;
+					output_row[3] = (row[j * sizeof(uint32_t)] & 0xff) << 8;
+					output_row += 4;
+					row++;
+				}
+			}
+		}
 		break;
 	}
 }
@@ -353,6 +393,39 @@ unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows,
 			4,
 			1);
 		break;
+	case BC_AYUV16161616:
+		{
+			int i, j;
+			int R, G, B;
+			uint16_t *p;
+			int16_t *q;
+			unsigned char *r;
+			int v;
+
+			q = (int16_t *)background;
+			r = diff;
+
+			for(i = 0; i < h; i++)
+			{
+				p = (uint16_t*)input_rows[j];
+
+				for(j = 0; j < w; j++)
+				{
+					R = G = B = (int)p[1] >> 8;
+					R <<= 1;
+					G <<= 2;
+
+					v = (R + G + B) - (int)(*q);
+					*q = (int16_t)(R + G + B);
+					*r = ((v + y_threshold) >> 24) | ((y_threshold - v) >> 24);
+
+					p += 4;
+					q++;
+					r++;
+				}
+			}
+		}
+		break;
 	}
 
 	return diff;
@@ -461,6 +534,33 @@ unsigned char* EffectTV::image_bgsubtract_y(unsigned char **input_rows,
 		break;
 	case BC_YUVA16161616:
 		IMAGE_BGSUBTRACT_Y(uint16_t, 4, 1);
+		break;
+
+	case BC_AYUV16161616:
+		{
+			int i, j;
+			int R, G, B;
+			uint16_t *p;
+
+			for(i = 0; i < h; i++)
+			{
+				p = (uint16_t*)input_rows[i];
+
+				for(j = 0; j < w; j++)
+				{
+					R = G = B = (int)p[1] >> 8;
+					R <<= 1;
+					G <<= 2;
+
+					v = (R + G + B) - (int)(*q);
+					*r = ((v + y_threshold) >> 24) | ((y_threshold - v) >> 24);
+
+					p += 4;
+					q++;
+					r++;
+				}
+			}
+		}
 		break;
 	}
 	return diff;
@@ -613,6 +713,35 @@ void EffectTV::image_bgset_y(VFrame *frame)
 		break;
 	case BC_YUVA16161616:
 		IMAGE_BGSET_Y(uint16_t, 4, 1);
+		break;
+
+	case BC_AYUV16161616:
+		{
+			int i, j;
+			int R, G, B;
+			uint16_t *p;
+			int16_t *q;
+			int width = frame->get_w();
+			int height = frame->get_h();
+
+			q = (int16_t *)background;
+
+			for(i = 0; i < height; i++)
+			{
+				p = (uint16_t*)frame->get_row_ptr(i);
+
+				for(j = 0; j < width; j++)
+				{
+					R = G = B = (int)p[1] >> 8;
+					R <<= 1;
+					G <<= 2;
+
+					*q = (int16_t)(R + G + B);
+					p += 4;
+					q++;
+				}
+			}
+		}
 		break;
 	}
 }
