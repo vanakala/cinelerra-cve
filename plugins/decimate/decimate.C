@@ -349,9 +349,24 @@ int64_t Decimate::calculate_difference(VFrame *frame1, VFrame *frame2)
 	case BC_YUV161616:
 		DIFFERENCE_MACRO(uint16_t, int64_t, 3);
 		break;
+		DIFFERENCE_MACRO(uint16_t, int64_t, 4);
+		break;
+
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
-		DIFFERENCE_MACRO(uint16_t, int64_t, 4);
+	case BC_AYUV16161616:
+		for(int i = 0; i < h; i++)
+		{
+			uint16_t *row1 = (uint16_t*)frame1->get_row_ptr(i);
+			uint16_t *row2 = (uint16_t*)frame2->get_row_ptr(i);
+			for(int j = 0; j < w * 4; j++)
+			{
+				int64_t temp = *row1 - *row2;
+				result += (temp > 0 ? temp : -temp);
+				row1++;
+				row2++;
+			}
+		}
 		break;
 	}
 	return result;
