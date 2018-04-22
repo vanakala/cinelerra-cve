@@ -311,16 +311,74 @@ void ColorBalanceEngine::run()
 				1);
 			break;
 
-		case BC_YUVA16161616:
+		case BC_RGBA16161616:
 			PROCESS(yuv.yuv_to_rgb_16,
 				yuv.rgb_to_yuv_16,
 				r_lookup_16,
 				g_lookup_16,
 				b_lookup_16,
-				u_int16_t,
+				uint16_t,
 				0xffff,
 				4,
-				1);
+				0);
+			break;
+
+		case BC_AYUV16161616:
+			{
+				int i, j, k;
+				int y, cb, cr, r, g, b, r_n, g_n, b_n;
+				float h, s, v, h_old, s_old, r_f, g_f, b_f;
+				for(j = row_start; j < row_end; j++)
+				{
+					uint16_t *irow = (uint16_t*)input->get_row_ptr(j);
+					uint16_t *orow = (uint16_t*)output->get_row_ptr(j);
+
+					for(k = 0; k < input->get_w() * 4; k += 4)
+					{
+						y = irow[k + 1];
+						cb = irow[k + 2];
+						cr = irow[k + 3];
+						yuv.yuv_to_rgb_16(r, g, b, y, cb, cr);
+
+						r = CLAMP(r, 0, 0xfffe);
+						g = CLAMP(g, 0, 0xfffe);
+						b = CLAMP(b, 0, 0xfffe);
+
+						r_n = plugin->r_lookup_16[r];
+						g_n = plugin->g_lookup_16[g];
+						b_n = plugin->b_lookup_16[b];
+
+						if(plugin->config.preserve)
+						{
+							HSV::rgb_to_hsv((float)r_n,
+								(float)g_n, (float)b_n, h, s, v);
+							HSV::rgb_to_hsv((float)r,
+								(float)g, (float)b,
+							h_old, s_old, v);
+							HSV::hsv_to_rgb(r_f, g_f, b_f,
+								h, s, v);
+							r = (uint16_t)r_f;
+							g = (uint16_t)g_f;
+							b = (uint16_t)b_f;
+						}
+						else
+						{
+							r = r_n;
+							g = g_n;
+							b = b_n;
+						}
+
+						yuv.rgb_to_yuv_16(CLAMP(r, 0, 0xffff),
+							CLAMP(g, 0, 0xffff),
+							CLAMP(b, 0, 0xffff),
+							y, cb, cr);
+
+						orow[k + 1] = y;
+						orow[k + 2] = cb;
+						orow[k + 3] = cr;
+					}
+				}
+			}
 			break;
 		}
 
