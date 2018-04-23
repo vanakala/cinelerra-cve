@@ -681,6 +681,80 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 	case BC_YUVA8888:
 		DIFFKEY_MACRO(unsigned char, 4, 0xff, 0x80);
 		break;
+	case BC_RGBA16161616:
+		DIFFKEY_MACRO(uint16_t, 4, 0xffff, 0);
+		break;
+	case BC_AYUV16161616:
+		for(int i = pkg->row1; i < pkg->row2; i++)
+		{
+			uint16_t *top_row = (uint16_t*)plugin->top_frame->get_row_ptr(i);
+			uint16_t *bottom_row = (uint16_t*)plugin->bottom_frame->get_row_ptr(i);
+
+			for(int j = 0; j < w; j++)
+			{
+				float a = 1.0;
+
+				// Test for value in range
+				if(plugin->config.do_value)
+				{
+					float top_value;
+					float bottom_value;
+
+					// Convert pixel data into floating point value
+					top_value = (float)top_row[1] / 0xffff;
+					bottom_value = (float)bottom_row[1] / 0xffff;
+
+					float min_v = bottom_value - threshold;
+					float max_v = bottom_value + threshold;
+
+					// Full transparency if in range
+					if(top_value >= min_v && top_value < max_v)
+						a = 0;
+					else
+					// Phased out if below or above range
+					if(top_value < min_v)
+					{
+						if(min_v - top_value < pad)
+							a = (min_v - top_value) / pad;
+					}
+					else
+					if(top_value - max_v < pad)
+						a = (top_value - max_v) / pad;
+				}
+				else
+				// Use color cube
+				{
+					float top_r = (float)top_row[1] / 0xffff;
+					float top_g = (float)top_row[2] / 0xffff;
+					float top_b = (float)top_row[3] / 0xffff;
+					top_g -= (float)0x8000 / 0xffff;
+					top_b -= (float)0x8000 / 0xffff;
+
+					float bottom_r = (float)bottom_row[1] / 0xffff;
+					float bottom_g = (float)bottom_row[2] / 0xffff;
+					float bottom_b = (float)bottom_row[3] / 0xffff;
+					bottom_g -= (float)0x8000 / 0xffff;
+					bottom_b -= (float)0x8000 / 0xffff;
+
+					float difference = sqrt(SQR(top_r - bottom_r) +
+						SQR(top_g - bottom_g) +
+						SQR(top_b - bottom_b));
+
+					if(difference < threshold)
+						a = 0;
+					else
+					if(difference < threshold_pad)
+						a = (difference - threshold) / pad;
+				}
+
+				// multiply alpha
+				top_row[0] = MIN((uint16_t)(a * 0xffff), top_row[0]);
+
+				top_row += 4;
+				bottom_row += 4;
+			}
+		}
+		break;
 	}
 }
 
