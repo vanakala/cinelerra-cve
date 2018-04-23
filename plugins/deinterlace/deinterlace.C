@@ -92,9 +92,9 @@ PLUGIN_CLASS_METHODS
  \
 	for(int i = 0; i < h - 1; i += 2) \
 	{ \
-		type *input_row = (type*)input->get_rows()[dominance ? i + 1 : i]; \
-		type *output_row1 = (type*)output->get_rows()[i]; \
-		type *output_row2 = (type*)output->get_rows()[i + 1]; \
+		type *input_row = (type*)input->get_row_ptr(dominance ? i + 1 : i); \
+		type *output_row1 = (type*)output->get_row_ptr(i); \
+		type *output_row2 = (type*)output->get_row_ptr(i + 1); \
 		memcpy(output_row1, input_row, w * components * sizeof(type)); \
 		memcpy(output_row2, input_row, w * components * sizeof(type)); \
 	} \
@@ -106,8 +106,6 @@ PLUGIN_CLASS_METHODS
 	int h = input->get_h(); \
 	changed_rows = 0; \
  \
-	type **in_rows = (type**)input->get_rows(); \
-	type **out_rows = (type**)temp->get_rows(); \
 	int max_h = h - 1; \
 	temp_type abs_diff = 0, total = 0; \
  \
@@ -122,11 +120,11 @@ PLUGIN_CLASS_METHODS
 		out_number1 = MAX(out_number1, 0); \
 		out_number2 = MIN(out_number2, max_h); \
  \
-		type *input_row1 = in_rows[in_number1]; \
-		type *input_row2 = in_rows[in_number2]; \
-		type *input_row3 = in_rows[out_number2]; \
-		type *temp_row1 = out_rows[out_number1]; \
-		type *temp_row2 = out_rows[out_number2]; \
+		type *input_row1 = (type*)input->get_row_ptr(in_number1); \
+		type *input_row2 = (type*)input->get_row_ptr(in_number2); \
+		type *input_row3 = (type*)input->get_row_ptr(out_number2); \
+		type *temp_row1 = (type*)temp->get_row_ptr(out_number1); \
+		type *temp_row2 = (type*)temp->get_row_ptr(out_number2); \
 		temp_type sum = 0; \
 		temp_type accum_r, accum_b, accum_g, accum_a; \
  \
@@ -189,10 +187,10 @@ PLUGIN_CLASS_METHODS
  \
 	for(int i = 0; i < h - 1; i += 2) \
 	{ \
-		type *input_row1 = (type*)input->get_rows()[i]; \
-		type *input_row2 = (type*)input->get_rows()[i + 1]; \
-		type *output_row1 = (type*)output->get_rows()[i]; \
-		type *output_row2 = (type*)output->get_rows()[i + 1]; \
+		type *input_row1 = (type*)input->get_row_ptr(i); \
+		type *input_row2 = (type*)input->get_row_ptr(i + 1); \
+		type *output_row1 = (type*)output->get_row_ptr(i); \
+		type *output_row2 = (type*)output->get_row_ptr(i + 1); \
 		type result; \
  \
 		for(int j = 0; j < w * components; j++) \
@@ -211,10 +209,10 @@ PLUGIN_CLASS_METHODS
  \
 	for(int i = dominance; i < h - 1; i += 2) \
 	{ \
-		type *input_row1 = (type*)input->get_rows()[i]; \
-		type *input_row2 = (type*)input->get_rows()[i + 1]; \
-		type *output_row1 = (type*)output->get_rows()[i]; \
-		type *output_row2 = (type*)output->get_rows()[i + 1]; \
+		type *input_row1 = (type*)input->get_row_ptr(i); \
+		type *input_row2 = (type*)input->get_row_ptr(i + 1); \
+		type *output_row1 = (type*)output->get_row_ptr(i); \
+		type *output_row2 = (type*)output->get_row_ptr(i + 1); \
 		type temp1, temp2; \
  \
 		for(int j = 0; j < w * components; j++) \
@@ -237,17 +235,17 @@ PLUGIN_CLASS_METHODS
 	{ \
 		type *input_row1;\
 		type *input_row2; \
-		type *output_row1 = (type*)output->get_rows()[i]; \
-		type *output_row2 = (type*)output->get_rows()[i + 1]; \
+		type *output_row1 = (type*)output->get_row_ptr(i); \
+		type *output_row2 = (type*)output->get_row_ptr(i + 1); \
 		type temp1, temp2; \
 		\
 		if (dominance) { \
-			input_row1 = (type*)input->get_rows()[i]; \
-			input_row2 = (type*)prevframe->get_rows()[i+1]; \
+			input_row1 = (type*)input->get_row_ptr(i); \
+			input_row2 = (type*)prevframe->get_row_ptr(i+1); \
 		} \
 		else  {\
-			input_row1 = (type*)prevframe->get_rows()[i]; \
-			input_row2 = (type*)input->get_rows()[i+1]; \
+			input_row1 = (type*)prevframe->get_row_ptr(i); \
+			input_row2 = (type*)input->get_row_ptr(i+1); \
 		} \
  \
 		for(int j = 0; j < w * components; j++) \
@@ -290,13 +288,13 @@ Similar is defined as in abs(difference)/(sum) < threshold
 		type *input_row;\
 		type *input_row2; \
 		type *old_row; \
-		type *output_row1 = (type*)output->get_rows()[i]; \
-		type *output_row2 = (type*)output->get_rows()[i + 1]; \
+		type *output_row1 = (type*)output->get_row_ptr(i); \
+		type *output_row2 = (type*)output->get_row_ptr(i + 1); \
 		temp_type pixel, below, old, above; \
 		\
-		input_row = (type*)input->get_rows()[i]; \
-		input_row2 = (type*)input->get_rows()[i+1]; \
-		old_row = (type*)prevframe->get_rows()[i]; \
+		input_row = (type*)input->get_row_ptr(i); \
+		input_row2 = (type*)input->get_row_ptr(i + 1); \
+		old_row = (type*)prevframe->get_row_ptr(i); \
 \
 		for(int j = 0; j < w * components; j++) \
 		{ \
@@ -343,6 +341,7 @@ void DeInterlaceMain::deinterlace_top(VFrame *input, VFrame *output, int dominan
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		DEINTERLACE_TOP_MACRO(uint16_t, 4, dominance);
 		break;
 	}
@@ -372,6 +371,7 @@ void DeInterlaceMain::deinterlace_avg_top(VFrame *input, VFrame *output, int dom
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		DEINTERLACE_AVG_TOP_MACRO(uint16_t, int64_t, 4, dominance);
 		break;
 	}
@@ -401,6 +401,7 @@ void DeInterlaceMain::deinterlace_avg(VFrame *input, VFrame *output)
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		DEINTERLACE_AVG_MACRO(uint16_t, uint64_t, 4);
 		break;
 	}
@@ -430,6 +431,7 @@ void DeInterlaceMain::deinterlace_swap(VFrame *input, VFrame *output, int domina
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		DEINTERLACE_SWAP_MACRO(uint16_t, 4, dominance);
 		break;
 	}
@@ -459,6 +461,7 @@ void DeInterlaceMain::deinterlace_temporalswap(VFrame *input, VFrame *prevframe,
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		DEINTERLACE_TEMPORALSWAP_MACRO(uint16_t, 4, dominance);
 		break;
 	}
@@ -491,6 +494,7 @@ void DeInterlaceMain::deinterlace_bobweave(VFrame *input, VFrame *prevframe, VFr
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		DEINTERLACE_BOBWEAVE_MACRO(uint16_t, uint64_t, 4, dominance, threshold, noise_threshold);
 		break;
 	}
