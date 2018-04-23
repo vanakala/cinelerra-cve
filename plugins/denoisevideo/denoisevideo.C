@@ -277,6 +277,15 @@ void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 	case BC_YUVA16161616:
 		DENOISE_MACRO(uint16_t, 4, 0xffff);
 		break;
+
+	case BC_AYUV16161616:
+		// rotate do_it
+		int t = do_it[3];
+		for(int i = 3; i > 0; i--)
+			do_it[i] = do_it[i - 1];
+		do_it[0] = t;
+		DENOISE_MACRO(uint16_t, 4, 0xffff);
+		break;
 	}
 }
 
