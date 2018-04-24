@@ -584,6 +584,69 @@ void DownSampleUnit::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 		DOWNSAMPLE(uint16_t, int64_t, 4, 0xffff)
 		break;
+	case BC_AYUV16161616:
+		{
+			int64_t r;
+			int64_t g;
+			int64_t b;
+			int64_t a;
+			int do_r = plugin->config.r;
+			int do_g = plugin->config.g;
+			int do_b = plugin->config.b;
+			int do_a = plugin->config.a;
+
+			for(int i = pkg->y1; i < pkg->y2; i += plugin->config.vertical)
+			{
+				int y1 = MAX(i, 0);
+				int y2 = MIN(i + plugin->config.vertical, h);
+
+				for(int j = plugin->config.horizontal_x - plugin->config.horizontal;
+					j < w; j += plugin->config.horizontal)
+				{
+					int x1 = MAX(j, 0);
+					int x2 = MIN(j + plugin->config.horizontal, w);
+
+					int64_t scale = (x2 - x1) * (y2 - y1);
+
+					if(x2 > x1 && y2 > y1)
+					{
+						// Read in values
+						r = g = b = a = 0;
+						for(int k = y1; k < y2; k++)
+						{
+							uint16_t *row = ((uint16_t*)plugin->output->get_row_ptr(k)) + x1 * 4;
+
+							for(int l = x1; l < x2; l++)
+							{
+								if(do_a) a += *row++; else row++;
+								if(do_r) r += *row++; else row++;
+								if(do_g) g += *row++; else row++;
+								if(do_b) b += *row++; else row++;
+							}
+						}
+
+						// Write average
+						r /= scale;
+						g /= scale;
+						b /= scale;
+						a /= scale;
+
+						for(int k = y1; k < y2; k++)
+						{
+							uint16_t *row = ((uint16_t*)plugin->output->get_row_ptr(k)) + x1 * 4;
+							for(int l = x1; l < x2; l++)
+							{
+								if(do_a) *row++ = a; else row++;
+								if(do_r) *row++ = r; else row++;
+								if(do_g) *row++ = g; else row++;
+								if(do_b) *row++ = b; else row++;
+							}
+						}
+					}
+				}
+			}
+		}
+		break;
 	}
 }
 
