@@ -478,6 +478,7 @@ void FrameField::average_rows(int offset, VFrame *frame)
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		AVERAGE(uint16_t, int64_t, 4, offset);
 		break;
 	}
