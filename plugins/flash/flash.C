@@ -136,5 +136,51 @@ void FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	case BC_YUVA16161616:
 		FLASH(uint16_t, int, 4, 0xffff, 0x8000);
 		break;
+
+	case BC_AYUV16161616:
+		{
+			int foreground = (int)(fraction * 0xffff);
+			int chroma_foreground = foreground * 0x8000 / 0xffff;
+			int transparency = 0xffff - foreground;
+
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t *in_row = (uint16_t*)incoming->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)outgoing->get_row_ptr(i);
+				if(is_before)
+				{
+					for(int j = 0; j < w; j++)
+					{
+						*out_row = foreground + transparency * *out_row / 0xffff;
+						out_row++;
+						*out_row = foreground + transparency * *out_row / 0xffff;
+						out_row++;
+						*out_row = chroma_foreground + transparency * *out_row / 0xffff;
+						out_row++;
+						*out_row = chroma_foreground + transparency * *out_row / 0xffff;
+						out_row++;
+					}
+				}
+				else
+				{
+					for(int j = 0; j < w; j++)
+					{
+						*out_row = foreground + transparency * *in_row / 0xffff;
+						out_row++;
+						in_row++;
+						*out_row = foreground + transparency * *in_row / 0xffff;
+						out_row++;
+						in_row++;
+						*out_row = chroma_foreground + transparency * *in_row / 0xffff;
+						out_row++;
+						in_row++;
+						*out_row = chroma_foreground + transparency * *in_row / 0xffff;
+						out_row++;
+						in_row++;
+					}
+				}
+			}
+		}
+		break;
 	}
 }
