@@ -175,6 +175,7 @@ void FlipMain::process_frame(VFrame *frame)
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		FLIP_MACRO(uint16_t, 4);
 		break;
 	}
