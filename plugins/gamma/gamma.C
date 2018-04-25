@@ -103,7 +103,7 @@ void GammaUnit::process_package(LoadPackage *package)
 #define HISTOGRAM_HEAD(type) \
 		for(int i = pkg->start; i < pkg->end; i++) \
 		{ \
-			type *row = (type*)data->get_rows()[i]; \
+			type *row = (type*)data->get_row_ptr(i); \
 			for(int j = 0; j < w; j++) \
 			{
 
@@ -168,6 +168,24 @@ void GammaUnit::process_package(LoadPackage *package)
 			y /= 0xff;
 			u = (float)((u - 0x80) / 0xff);
 			v = (float)((v - 0x80) / 0xff);
+			YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+			HISTOGRAM_TAIL(4)
+			break;
+		case BC_RGBA16161616:
+			HISTOGRAM_HEAD(uint16_t)
+			r = (float)row[0] / 0xffff;
+			g = (float)row[1] / 0xffff;
+			b = (float)row[2] / 0xffff;
+			HISTOGRAM_TAIL(4)
+			break;
+		case BC_YUVA16161616:
+			HISTOGRAM_HEAD(uint16_t)
+			y = row[1];
+			u = row[2];
+			v = row[3];
+			y /= 0xffff;
+			u = (float)((u - 0x8000) / 0xffff);
+			v = (float)((v - 0x8000) / 0xffff);
 			YUV::yuv_to_rgb_f(r, g, b, y, u, v);
 			HISTOGRAM_TAIL(4)
 			break;
@@ -282,6 +300,36 @@ void GammaUnit::process_package(LoadPackage *package)
 			row[0] = (int)CLIP(y, 0, 0xff);
 			row[1] = (int)CLIP(u, 0, 0xff);
 			row[2] = (int)CLIP(v, 0, 0xff);
+			GAMMA_TAIL(4)
+			break;
+		case BC_RGBA16161616:
+			GAMMA_HEAD(uint16_t)
+			r = (float)row[0] / 0xffff;
+			g = (float)row[1] / 0xffff;
+			b = (float)row[2] / 0xffff;
+			GAMMA_MID
+			row[0] = (int)CLIP(r * 0xffff, 0, 0xffff);
+			row[1] = (int)CLIP(g * 0xffff, 0, 0xffff);
+			row[2] = (int)CLIP(b * 0xffff, 0, 0xffff);
+			GAMMA_TAIL(4)
+			break;
+		case BC_AYUV16161616:
+			GAMMA_HEAD(uint16_t)
+			y = row[1];
+			u = row[2];
+			v = row[3];
+			y /= 0xffff;
+			u = (float)((u - 0x8000) / 0xffff);
+			v = (float)((v - 0x8000) / 0xffff);
+			YUV::yuv_to_rgb_f(r, g, b, y, u, v);
+			GAMMA_MID
+			YUV::rgb_to_yuv_f(r, g, b, y, u, v);
+			y *= 0xffff;
+			u = u * 0xffff + 0x8000;
+			v = v * 0xffff + 0x8000;
+			row[1] = (int)CLIP(y, 0, 0xffff);
+			row[2] = (int)CLIP(u, 0, 0xffff);
+			row[3] = (int)CLIP(v, 0, 0xffff);
 			GAMMA_TAIL(4)
 			break;
 		}
