@@ -1019,6 +1019,14 @@ void HistogramUnit::process_package(LoadPackage *package)
 			plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
 			HISTOGRAM_TAIL(4)
 			break;
+		case BC_AYUV16161616:
+			HISTOGRAM_HEAD(uint16_t)
+			y = row[1];
+			u = row[2];
+			v = row[3];
+			plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+			HISTOGRAM_TAIL(4)
+			break;
 		}
 	}
 	else
@@ -1157,6 +1165,36 @@ void HistogramUnit::process_package(LoadPackage *package)
 			break;
 		case BC_YUVA16161616:
 			PROCESS_YUV(uint16_t, 4, 0xffff)
+			break;
+		case BC_AYUV16161616:
+			for(int i = pkg->start; i < pkg->end; i++)
+			{
+				uint16_t *row = (uint16_t*)input->get_row_ptr(i);
+				for(int j = 0; j < w; j++)
+				{
+					if(plugin->config.split && ((j + i * w / h) < w)) 
+						continue;
+					// Convert to 16 bit RGB
+					y = row[1];
+					u = row[2];
+					v = row[3];
+
+					plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v);
+
+					// Look up in RGB domain
+					r = lookup_r[r];
+					g = lookup_g[g];
+					b = lookup_b[b];
+
+					// Convert to 16 bit YUV
+					plugin->yuv.rgb_to_yuv_16(r, g, b, y, u, v);
+
+					row[1] = y;
+					row[2] = u;
+					row[3] = v;
+					row += 4;
+				}
+			}
 			break;
 		}
 	}
