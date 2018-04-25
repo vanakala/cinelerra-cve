@@ -174,8 +174,8 @@ int IrisSquareMain::load_configuration()
  \
 		for(int j = y1; j < y2; j++) \
 		{ \
-			type *in_row = (type*)incoming->get_rows()[j]; \
-			type *out_row = (type*)outgoing->get_rows()[j]; \
+			type *in_row = (type*)incoming->get_row_ptr(j); \
+			type *out_row = (type*)outgoing->get_row_ptr(j); \
  \
 			for(int k = x1; k < x2; k++) \
 			{ \
@@ -274,6 +274,7 @@ void IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		IRISSQUARE(uint16_t, 4)
 		break;
 	}
