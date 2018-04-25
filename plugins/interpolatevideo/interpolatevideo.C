@@ -293,9 +293,9 @@ void InterpolateVideo::fill_border(double frame_rate, ptstime start_pts)
  \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *in_row0 = (type*)frames[0]->get_rows()[i]; \
-		type *in_row1 = (type*)frames[1]->get_rows()[i]; \
-		type *out_row = (type*)frame->get_rows()[i]; \
+		type *in_row0 = (type*)frames[0]->get_row_ptr(i); \
+		type *in_row1 = (type*)frames[1]->get_row_ptr(i); \
+		type *out_row = (type*)frame->get_row_ptr(i); \
 		for(int j = 0; j < w * components; j++) \
 		{ \
 			*out_row++ = (*in_row0++ * fraction0 + *in_row1++ * fraction1) / max; \
@@ -363,6 +363,7 @@ void InterpolateVideo::process_frame(VFrame *frame)
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
+		case BC_AYUV16161616:
 			AVERAGE(uint16_t, int, 4, 0xffff);
 			break;
 		}
