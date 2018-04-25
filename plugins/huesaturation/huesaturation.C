@@ -472,6 +472,56 @@ void HueUnit::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 		HUESATURATION(uint16_t, 0xffff, 4, 1)
 		break;
+
+	case BC_AYUV16161616:
+		{
+			float h_offset = plugin->config.hue;
+			float s_offset = ((float)plugin->config.saturation -
+				MINSATURATION) / MAXSATURATION;
+			float v_offset = ((float)plugin->config.value -
+				MINVALUE) / MAXVALUE;
+			for(int i = pkg->row1; i < pkg->row2; i++)
+			{
+				uint16_t* in_row = (uint16_t*)plugin->input->get_row_ptr(i);
+				uint16_t* out_row = (uint16_t*)plugin->output->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					float h, s, va;
+					int y, u, v;
+					float r, g, b;
+					int r_i, g_i, b_i;
+
+					y = (int)in_row[1];
+					u = (int)in_row[2];
+					v = (int)in_row[3];
+					yuv.yuv_to_rgb_16(r_i, g_i, b_i, y, u, v);
+					HSV::rgb_to_hsv((float)r_i / 0xffff,
+						(float)g_i / 0xffff,
+						(float)b_i / 0xffff,
+						h, s, va);
+
+					h += h_offset;
+					s *= s_offset;
+					va *= v_offset;
+
+					if(h >= 360) h -= 360;
+					if(h < 0) h += 360;
+					if(s > 1) s = 1;
+					if(va > 1) va = 1;
+					if(s < 0) s = 0;
+					if(va < 0) va = 0;
+					HSV::hsv_to_yuv(y, u, v, h, s, va, 0xffff);
+					out_row[1] = y;
+					out_row[2] = u;
+					out_row[3] = v;
+
+					in_row += 4;
+					out_row += 4;
+				}
+			}
+		}
+		break;
 	}
 }
 
