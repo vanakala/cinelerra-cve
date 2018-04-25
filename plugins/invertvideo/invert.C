@@ -259,8 +259,8 @@ void InvertVideoEffect::read_data(KeyFrame *keyframe)
 { \
 	for(int i = 0; i < frame->get_h(); i++) \
 	{ \
-		type *in_row = (type*)frame->get_rows()[i]; \
-		type *out_row = (type*)frame->get_rows()[i]; \
+		type *in_row = (type*)frame->get_row_ptr(i); \
+		type *out_row = (type*)frame->get_row_ptr(i); \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
@@ -314,6 +314,28 @@ void InvertVideoEffect::process_frame(VFrame *frame)
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
 			INVERT_MACRO(uint16_t, 4, 0xffff)
+			break;
+		case BC_AYUV16161616:
+/* Pole
+			INVERT_MACRO(uint16_t, 4, 0xffff)
+		#define INVERT_MACRO(type, components, max) \
+	*/
+			for(int i = 0; i < frame->get_h(); i++)
+			{
+				uint16_t *in_row = (uint16_t*)frame->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)frame->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++) \
+				{
+					if(config.a) out_row[0] = 0xffff - in_row[0];
+					if(config.r) out_row[1] = 0xffff - in_row[1];
+					if(config.g) out_row[2] = 0xffff - in_row[2];
+					if(config.b) out_row[3] = 0xffff - in_row[3];
+
+					in_row += 4;
+					out_row += 4;
+				}
+			}
 			break;
 		}
 	}
