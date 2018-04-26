@@ -381,7 +381,6 @@ void LinearBlurMain::process_frame(VFrame *frame)
 	need_reconfigure |= load_configuration();
 
 	get_frame(frame, get_use_opengl());
-
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
@@ -695,7 +694,7 @@ LinearBlurUnit::LinearBlurUnit(LinearBlurEngine *server,
 		int in_y = y_table[j]; \
  \
 /* Blend image */ \
-		TYPE *in_row = (TYPE*)plugin->input->get_rows()[in_y]; \
+		TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(in_y); \
 		for(int k = 0; k < w; k++) \
 		{ \
 			int in_x = x_table[k]; \
@@ -723,8 +722,8 @@ LinearBlurUnit::LinearBlurUnit(LinearBlurEngine *server,
 		for(int j = pkg->y1; j < pkg->y2; j++) \
 		{ \
 			TEMP *in_row = (TEMP*)plugin->accum + COMPONENTS * w * j; \
-			TYPE *in_backup = (TYPE*)plugin->input->get_rows()[j]; \
-			TYPE *out_row = (TYPE*)plugin->output->get_rows()[j]; \
+			TYPE *in_backup = (TYPE*)plugin->input->get_row_ptr(j); \
+			TYPE *out_row = (TYPE*)plugin->output->get_row_ptr(j); \
 			for(int k = 0; k < w; k++) \
 			{ \
 				if(do_r) \
@@ -852,6 +851,83 @@ void LinearBlurUnit::process_package(LoadPackage *package)
 			break;
 		case BC_YUVA16161616:
 			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
+			break;
+		case BC_AYUV16161616:
+			for(int j = pkg->y1; j < pkg->y2; j++)
+			{
+				int *out_row = (int*)plugin->accum + 4 * w * j;
+				int in_y = y_table[j];
+
+				// Blend image
+				uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(in_y); \
+				for(int k = 0; k < w; k++)
+				{
+					int in_x = x_table[k];
+					// Blend pixel
+					int in_offset = in_x * 4;
+					*out_row++ += in_row[in_offset];
+					*out_row++ += in_row[in_offset + 1];
+					*out_row++ += in_row[in_offset + 2];
+					*out_row++ += in_row[in_offset + 3];
+				}
+			}
+
+			// Copy to output
+			if(i == plugin->config.steps - 1)
+			{
+				for(int j = pkg->y1; j < pkg->y2; j++)
+				{
+					int *in_row = (int*)plugin->accum + 4 * w * j;
+					uint16_t *in_backup = (uint16_t*)plugin->input->get_row_ptr(j);
+					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(j);
+					for(int k = 0; k < w; k++)
+					{
+						if(do_a)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+
+						if(do_r)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+
+						if(do_g)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+
+						if(do_b)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+					}
+				}
+			}
 			break;
 		}
 	}
