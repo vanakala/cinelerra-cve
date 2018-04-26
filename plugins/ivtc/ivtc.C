@@ -167,7 +167,7 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		input_ptr->get_color_model(),
 		-1);
 
-	int row_size = VFrame::calculate_bytes_per_pixel(input_ptr->get_color_model()) * input_ptr->get_w();
+	int row_size = input_ptr->get_bytes_per_line();
 	int64_t field1;
 	int64_t field2;
 	int64_t field1_sum;
@@ -183,20 +183,20 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // Direct copy
 		case 0:
 		case 4:
-			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+			if(input_ptr != output_ptr)
 				output_ptr->copy_from(input_ptr);
 			break;
 
 		case 1:
 			temp_frame[0]->copy_from(input_ptr);
-			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+			if(input_ptr != output_ptr)
 				output_ptr->copy_from(input_ptr);
 			break;
 
 		case 2:
 // Save one field for next frame.  Reuse previous frame.
 			temp_frame[1]->copy_from(input_ptr);
-			output_ptr->copy_from(temp_frame[0]);
+			output_ptr->copy_from(temp_frame[0], 0);
 			break;
 
 		case 3:
@@ -204,12 +204,12 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			for(int i = 0; i < input_ptr->get_h(); i++)
 			{
 				if((i + config.first_field) & 1)
-					memcpy(output_ptr->get_rows()[i], 
-						input_ptr->get_rows()[i],
+					memcpy(output_ptr->get_row_ptr(i),
+						input_ptr->get_row_ptr(i),
 						row_size);
 				else
-					memcpy(output_ptr->get_rows()[i], 
-						temp_frame[1]->get_rows()[i],
+					memcpy(output_ptr->get_row_ptr(i),
+						temp_frame[1]->get_row_ptr(i),
 						row_size);
 			}
 			break;
@@ -224,12 +224,12 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		for(int i = 0; i < input_ptr->get_h(); i++)
 		{
 			if((i + config.first_field) & 1)
-				memcpy(output_ptr->get_rows()[i], 
-					input_ptr->get_rows()[i],
+				memcpy(output_ptr->get_row_ptr(i),
+					input_ptr->get_row_ptr(i),
 					row_size);
 			else
-				memcpy(output_ptr->get_rows()[i],
-					temp_frame[0]->get_rows()[i],
+				memcpy(output_ptr->get_row_ptr(i),
+					temp_frame[0]->get_row_ptr(i),
 					row_size);
 		}
 
@@ -316,12 +316,12 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			for(int i = 0; i < input_ptr->get_h(); i++)
 			{
 				if(!(i & 1))
-					memcpy(output_ptr->get_rows()[i], 
-						temp_frame[0]->get_rows()[i],
+					memcpy(output_ptr->get_row_ptr(i),
+						temp_frame[0]->get_row_ptr(i),
 						row_size);
 				else
-					memcpy(output_ptr->get_rows()[i],
-						input_ptr->get_rows()[i],
+					memcpy(output_ptr->get_row_ptr(i),
+						input_ptr->get_row_ptr(i),
 						row_size);
 			}
 			break;
@@ -329,29 +329,30 @@ void IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			for(int i = 0; i < input_ptr->get_h(); i++)
 			{
 				if(i & 1)
-					memcpy(output_ptr->get_rows()[i], 
-						temp_frame[0]->get_rows()[i],
+					memcpy(output_ptr->get_row_ptr(i),
+						temp_frame[0]->get_row_ptr(i),
 						row_size);
 				else
-					memcpy(output_ptr->get_rows()[i],
-						input_ptr->get_rows()[i],
+					memcpy(output_ptr->get_row_ptr(i),
+						input_ptr->get_row_ptr(i),
 						row_size);
 			}
 			break;
 		case 2:
-			output_ptr->copy_from(input_ptr);
+			if(input_ptr != output_ptr)
+				output_ptr->copy_from(input_ptr);
 			break;
 		case 3:
 // Deinterlace
 			for(int i = 0; i < input_ptr->get_h(); i++)
 			{
 				if(i & 1)
-					memcpy(output_ptr->get_rows()[i], 
-						input_ptr->get_rows()[i - 1],
+					memcpy(output_ptr->get_row_ptr(i),
+						input_ptr->get_row_ptr(i - 1),
 						row_size);
 				else
-					memcpy(output_ptr->get_rows()[i],
-						input_ptr->get_rows()[i],
+					memcpy(output_ptr->get_row_ptr(i),
+						input_ptr->get_row_ptr(i),
 						row_size);
 			}
 			break;
@@ -410,11 +411,6 @@ IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
 
 #define IVTC_MACRO(type, temp_type, components, is_yuv) \
 { \
-	type **curr_rows = (type**)plugin->input->get_rows(); \
-	type **prev_rows = (type**)plugin->temp_frame[0]->get_rows(); \
-/* Components to skip for YUV */ \
-	int skip = components - 1; \
- \
 	for(int i = ptr->y1; i < ptr->y2; i++) \
 	{ \
 /* Rows to average in the input frame */ \
@@ -422,12 +418,12 @@ IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
 		int input_row2_number = i + 1; \
 		input_row1_number = MAX(0, input_row1_number); \
 		input_row2_number = MIN(h - 1, input_row2_number); \
-		type *input_row1 = curr_rows[input_row1_number]; \
-		type *input_row2 = curr_rows[input_row2_number]; \
+		type *input_row1 = (type*)plugin->input->get_row_ptr(input_row1_number); \
+		type *input_row2 = (type*)plugin->input->get_row_ptr(input_row2_number); \
  \
 /* Rows to compare the averaged rows to */ \
-		type *current_row = curr_rows[i]; \
-		type *prev_row = prev_rows[i]; \
+		type *current_row = (type*)plugin->input->get_row_ptr(i); \
+		type *prev_row = (type*)plugin->temp_frame[0]->get_row_ptr(i); \
  \
 		temp_type current_difference = 0; \
 		temp_type prev_difference = 0; \
@@ -534,6 +530,55 @@ void IVTCUnit::process_package(LoadPackage *package)
 		break;
 	case BC_YUVA16161616:
 		IVTC_MACRO(uint16_t, int, 4, 1);
+		break;
+	case BC_AYUV16161616:
+		for(int i = ptr->y1; i < ptr->y2; i++)
+		{
+			// Rows to average in the input frame
+			int input_row1_number = i - 1;
+			int input_row2_number = i + 1;
+			input_row1_number = MAX(0, input_row1_number);
+			input_row2_number = MIN(h - 1, input_row2_number);
+			uint16_t *input_row1 = (uint16_t*)plugin->input->get_row_ptr(input_row1_number);
+			uint16_t *input_row2 = (uint16_t*)plugin->input->get_row_ptr(input_row2_number);
+
+			// Rows to compare the averaged rows to
+			uint16_t *current_row = (uint16_t*)plugin->input->get_row_ptr(i);
+			uint16_t *prev_row = (uint16_t*)plugin->temp_frame[0]->get_row_ptr(i);
+
+			int current_difference = 0;
+			int prev_difference = 0;
+
+			for(int j = 0; j < w; j++)
+			{
+				// This only compares luminance
+				// Get average of current rows
+				int average = ((int)input_row1[1] + input_row2[1]) / 2;
+				// Difference between averaged current rows
+				//   and original inbetween row
+				current_difference += ABS(average - current_row[1]);
+				// Difference between averaged current rows
+				//  and previous inbetween row
+				prev_difference += ABS(average - prev_row[1]);
+
+				current_row += 4;
+				prev_row += 4;
+				input_row1 += 4;
+				input_row2 += 4;
+			}
+
+			// Store row differences in even or odd variables
+			if(i % 2)
+			{
+				odd_vs_current += (int64_t)current_difference;
+				odd_vs_prev += (int64_t)prev_difference;
+			}
+			else
+			{
+				even_vs_current += (int64_t)current_difference;
+				even_vs_prev += (int64_t)prev_difference;
+			}
+		}
 		break;
 	}
 }
