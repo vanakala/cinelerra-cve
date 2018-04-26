@@ -66,10 +66,6 @@ public:
 
 	int radius;
 	int steps;
-	int r;
-	int g;
-	int b;
-	int a;
 	PLUGIN_CONFIG_CLASS_MEMBERS
 };
 
@@ -163,31 +159,19 @@ MotionBlurConfig::MotionBlurConfig()
 {
 	radius = 10;
 	steps = 10;
-	r = 1;
-	g = 1;
-	b = 1;
-	a = 1;
 }
 
 int MotionBlurConfig::equivalent(MotionBlurConfig &that)
 {
 	return 
 		radius == that.radius &&
-		steps == that.steps &&
-		r == that.r &&
-		g == that.g &&
-		b == that.b &&
-		a == that.a;
+		steps == that.steps;
 }
 
 void MotionBlurConfig::copy_from(MotionBlurConfig &that)
 {
 	radius = that.radius;
 	steps = that.steps;
-	r = that.r;
-	g = that.g;
-	b = that.b;
-	a = that.a;
 }
 
 void MotionBlurConfig::interpolate(MotionBlurConfig &prev, 
@@ -200,10 +184,6 @@ void MotionBlurConfig::interpolate(MotionBlurConfig &prev,
 
 	this->radius = (int)(prev.radius * prev_scale + next.radius * next_scale + 0.5);
 	this->steps = (int)(prev.steps * prev_scale + next.steps * next_scale + 0.5);
-	r = prev.r;
-	g = prev.g;
-	b = prev.b;
-	a = prev.a;
 }
 
 
@@ -498,7 +478,7 @@ MotionBlurUnit::MotionBlurUnit(MotionBlurEngine *server,
 /* Blend image */ \
 		if(in_y >= 0 && in_y < h) \
 		{ \
-			TYPE *in_row = (TYPE*)plugin->input->get_rows()[in_y]; \
+			TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(in_y); \
 			for(int k = 0; k < w; k++) \
 			{ \
 				int in_x = x_table[k]; \
@@ -556,8 +536,8 @@ MotionBlurUnit::MotionBlurUnit(MotionBlurEngine *server,
 		for(int j = pkg->y1; j < pkg->y2; j++) \
 		{ \
 			TEMP *in_row = (TEMP*)plugin->accum + COMPONENTS * w * j; \
-			TYPE *in_backup = (TYPE*)plugin->input->get_rows()[j]; \
-			TYPE *out_row = (TYPE*)plugin->output->get_rows()[j]; \
+			TYPE *in_backup = (TYPE*)plugin->input->get_row_ptr(j); \
+			TYPE *out_row = (TYPE*)plugin->output->get_row_ptr(j); \
 			for(int k = 0; k < w; k++) \
 			{ \
 				*out_row++ = (*in_row++ * fraction) / 0x10000; \
@@ -632,6 +612,74 @@ void MotionBlurUnit::process_package(LoadPackage *package)
 			break;
 		case BC_YUVA16161616:
 			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
+			break;
+		case BC_AYUV16161616:
+			for(int j = pkg->y1; j < pkg->y2; j++)
+			{
+				int *out_row = (int*)plugin->accum + 4 * w * j;
+				int in_y = y_table[j];
+
+				// Blend image
+				if(in_y >= 0 && in_y < h)
+				{ \
+					uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(in_y);
+
+					for(int k = 0; k < w; k++) \
+					{
+						int in_x = x_table[k];
+						// Blend pixel
+						if(in_x >= 0 && in_x < w)
+						{
+							int in_offset = in_x * 4;
+
+							*out_row++ += in_row[in_offset];
+							*out_row++ += in_row[in_offset + 1];
+							*out_row++ += in_row[in_offset + 2];
+							*out_row++ += in_row[in_offset + 3];
+						}
+						// Blend nothing
+						else
+						{
+							out_row++;
+							out_row++;
+							*out_row++ += 0x8000;
+							*out_row++ += 0x8000;
+						}
+					}
+				}
+				else
+				{
+					for(int k = 0; k < w; k++)
+					{
+						out_row++;
+						out_row++;
+						*out_row++ += 0x8000;
+						*out_row++ += 0x8000;
+					}
+				}
+			}
+
+			// Copy to output
+			if(i == plugin->config.steps - 1)
+			{
+				for(int j = pkg->y1; j < pkg->y2; j++)
+				{
+					int *in_row = (int*)plugin->accum + 4 * w * j;
+					uint16_t *in_backup = (uint16_t*)plugin->input->get_row_ptr(j);
+					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(j);
+					for(int k = 0; k < w; k++)
+					{
+						*out_row++ = (*in_row++ * fraction) / 0x10000;
+						in_backup++;
+						*out_row++ = (*in_row++ * fraction) / 0x10000;
+						in_backup++;
+						*out_row++ = (*in_row++ * fraction) / 0x10000;
+						in_backup++;
+						*out_row++ = (*in_row++ * fraction) / 0x10000; \
+						in_backup++;
+					}
+				}
+			}
 			break;
 		}
 	}
