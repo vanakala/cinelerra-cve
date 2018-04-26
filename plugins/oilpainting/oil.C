@@ -545,6 +545,7 @@ void OilUnit::process_package(LoadPackage *package)
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		OIL_MACRO(uint16_t, 0xffff, 4)
 		break;
 	}
