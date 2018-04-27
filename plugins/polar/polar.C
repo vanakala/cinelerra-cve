@@ -755,6 +755,67 @@ void PolarUnit::process_package(LoadPackage *package)
 	case BC_YUVA16161616:
 		POLAR_MACRO(uint16_t, 0xffff, 4, 0x8000)
 		break;
+	case BC_AYUV16161616:
+		for(int y = pkg->row1; y < pkg->row2; y++)
+		{
+			double values[4];
+			uint16_t *output_row = (uint16_t*)plugin->output->get_row_ptr(y);
+
+			for(int x = 0; x < w; x++)
+			{
+				uint16_t *output_pixel = output_row + x * 4;
+
+				if(calc_undistorted_coords(x, y, w, h,
+					plugin->config.depth,
+					plugin->config.angle,
+					plugin->config.polar_to_rectangular,
+					plugin->config.backwards,
+					plugin->config.invert,
+					cen_x, cen_y, cx, cy))
+				{
+					uint16_t *pixel1 = (uint16_t *)plugin->input->get_row_ptr((int)cy) +
+						4 * CLIP((int)cx, 0, w - 1);
+					uint16_t *pixel2 = (uint16_t *)plugin->input->get_row_ptr((int)cy) +
+						4 * CLIP((int)cx + 1, 0, (w - 1));
+					uint16_t *pixel3 = (uint16_t *)plugin->input->get_row_ptr((int)cy + 1) +
+						4 * CLIP(((int)cx), 0, (w - 1));
+					uint16_t *pixel4 = (uint16_t *)plugin->input->get_row_ptr((int)cy + 1) +
+						4 * CLIP((int)cx + 1, 0, w - 1);
+
+					values[0] = pixel1[0];
+					values[1] = pixel2[0];
+					values[2] = pixel3[0];
+					values[3] = pixel4[0];
+					output_pixel[0] = (uint16_t)bilinear(cx, cy, values);
+
+					values[0] = pixel1[1];
+					values[1] = pixel2[1];
+					values[2] = pixel3[1];
+					values[3] = pixel4[1];
+					output_pixel[1] = (uint16_t)bilinear(cx, cy, values);
+
+					values[0] = pixel1[2];
+					values[1] = pixel2[2];
+					values[2] = pixel3[2];
+					values[3] = pixel4[2];
+					output_pixel[2] = (uint16_t)bilinear(cx, cy, values);
+
+					values[0] = pixel1[3];
+					values[1] = pixel2[3];
+					values[2] = pixel3[3];
+					values[3] = pixel4[3];
+					output_pixel[3] = (uint16_t)bilinear(cx, cy, values);
+				}
+				else
+				{
+					output_pixel[0] = 0xffff;
+					output_pixel[1] = 0;
+					output_pixel[2] = 0x8000;
+					output_pixel[3] = 0x8000;
+				}
+			}
+		}
+		break;
 	}
 }
 
