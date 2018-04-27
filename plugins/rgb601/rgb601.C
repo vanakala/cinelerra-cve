@@ -141,6 +141,7 @@ void RGB601Main::create_table(VFrame *input_ptr)
 	case BC_YUV161616:
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		CREATE_TABLE(0x10000);
 		break;
 	}
@@ -148,11 +149,10 @@ void RGB601Main::create_table(VFrame *input_ptr)
 
 #define PROCESS(table, type, components, yuv) \
 { \
-	int bytes = w * components; \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *in_row = (type*)input_ptr->get_rows()[i]; \
-		type *out_row = (type*)output_ptr->get_rows()[i]; \
+		type *in_row = (type*)input_ptr->get_row_ptr(i); \
+		type *out_row = (type*)output_ptr->get_row_ptr(i); \
  \
 		if(yuv) \
 		{ \
@@ -195,6 +195,23 @@ void RGB601Main::create_table(VFrame *input_ptr)
 	} \
 }
 
+#define PROCESS_A(table, type) \
+{ \
+	for(int i = 0; i < h; i++) \
+	{ \
+		type *in_row = (type*)input_ptr->get_row_ptr(i); \
+		type *out_row = (type*)output_ptr->get_row_ptr(i); \
+ \
+/* Just do Y */ \
+		for(int j = 0; j < w; j++) \
+		{ \
+			out_row[j * 4 + 1] = table[(int)in_row[j * 4 + 1]]; \
+			out_row[j * 4 + 2] = in_row[j * 4 + 2]; \
+			out_row[j * 4 + 3] = in_row[j * 4 + 3]; \
+		} \
+	} \
+}
+
 void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 {
 	int w = input_ptr->get_w();
@@ -233,6 +250,9 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 		case BC_RGBA16161616:
 			PROCESS(forward_table, u_int16_t, 4, 0);
 			break;
+		case BC_AYUV16161616:
+			PROCESS_A(forward_table, u_int16_t);
+			break;
 		}
 	else
 	if(config.direction == 2)
@@ -267,6 +287,9 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 			break;
 		case BC_RGBA16161616:
 			PROCESS(reverse_table, u_int16_t, 4, 0);
+			break;
+		case BC_AYUV16161616:
+			PROCESS_A(reverse_table, u_int16_t);
 			break;
 		}
 }
