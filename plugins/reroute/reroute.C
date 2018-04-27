@@ -335,8 +335,8 @@ void px_type<TYPE,COMPONENTS>::transfer(VFrame *source, VFrame *target, bool do_
 
 	for(int i = 0; i < h; i++)
 	{
-		TYPE *inpx  = (TYPE*)source->get_rows()[i];
-		TYPE *outpx = (TYPE*)target->get_rows()[i];
+		TYPE *inpx  = (TYPE*)source->get_row_ptr(i);
+		TYPE *outpx = (TYPE*)target->get_row_ptr(i);
 
 		for(int j = 0; j < w; j++)
 		{
@@ -432,6 +432,34 @@ void Reroute::process_frame(VFrame **frame)
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
 		px_type<uint16_t,4>::transfer(source,target, do_components,do_alpha);
+		break;
+	case BC_AYUV16161616:
+		{
+			int w = target->get_w();
+			int h = source->get_h();
+
+			for(int i = 0; i < h; i++)
+			{
+				uint16_t *inpx  = (uint16_t*)source->get_row_ptr(i);
+				uint16_t *outpx = (uint16_t*)target->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					if(do_alpha)
+						outpx[0] = inpx[0];
+
+					if(do_components)
+					{
+						outpx[1] = inpx[1];
+						outpx[2] = inpx[2];
+						outpx[3] = inpx[3];
+					}
+
+					inpx += 4;
+					outpx += 4;
+				}
+			}
+		}
 		break;
 	}
 }
