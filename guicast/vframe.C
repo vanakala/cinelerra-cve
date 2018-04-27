@@ -740,6 +740,10 @@ int VFrame::get_bytes_per_pixel(void)
 
 unsigned char *VFrame::get_row_ptr(int num)
 {
+	if(num < 0)
+		num = 0;
+	else if(num >= h)
+		num = h - 1;
 	return data + num * bytes_per_line;
 }
 
