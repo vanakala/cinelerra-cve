@@ -248,8 +248,8 @@ int SlideMain::load_configuration()
  \
 		for(int j = 0; j < h; j++) \
 		{ \
-			memcpy( ((char *)outgoing->get_rows()[j]) + out_add, \
-				((char *)incoming->get_rows()[j]) + in_add, \
+			memcpy( ((char *)outgoing->get_row_ptr(j)) + out_add, \
+				((char *)incoming->get_row_ptr(j)) + in_add, \
 				cpy_len); \
 		} \
 	} \
@@ -260,8 +260,8 @@ int SlideMain::load_configuration()
 			int x = w - (int)(round(w * source_pts / total_len_pts)); \
 			for(int j = 0; j < h; j++) \
 			{ \
-				char *in_row = (char*)incoming->get_rows()[j]; \
-				char *out_row = (char*)outgoing->get_rows()[j]; \
+				char *in_row = (char*)incoming->get_row_ptr(j); \
+				char *out_row = (char*)outgoing->get_row_ptr(j); \
 				memmove(out_row + 0, out_row + ((w - x) * components * sizeof(type)), x * components * sizeof(type)); \
 				memcpy (out_row + x * components * sizeof(type), in_row + x * components * sizeof (type), (w - x) * components * sizeof(type)); \
 			} \
@@ -271,8 +271,8 @@ int SlideMain::load_configuration()
 			int x = round(w * source_pts / total_len_pts); \
 			for(int j = 0; j < h; j++) \
 			{ \
-				char *in_row = (char*)incoming->get_rows()[j]; \
-				char *out_row = (char*)outgoing->get_rows()[j]; \
+				char *in_row = (char*)incoming->get_row_ptr(j); \
+				char *out_row = (char*)outgoing->get_row_ptr(j); \
  \
 				memmove(out_row + (x * components *sizeof(type)), out_row + 0, (w - x) * components * sizeof(type)); \
 				memcpy (out_row + 0, in_row + 0, (x) * components * sizeof(type)); \
@@ -311,6 +311,7 @@ void SlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		SLIDE(uint16_t, 4)
 		break;
 	}
