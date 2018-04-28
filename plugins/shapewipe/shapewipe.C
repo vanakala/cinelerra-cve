@@ -486,17 +486,10 @@ void ShapeWipeMain::reset_pattern_image()
 
 #define SHAPEWIPE(type, components) \
 { \
-\
-	type  **in_rows = (type**)incoming->get_rows(); \
-	type **out_rows = (type**)outgoing->get_rows(); \
-	\
-	type *in_row; \
-	type *out_row; \
-	\
 	for(j = 0; j < h; j++) \
 	{ \
-		in_row = (type*) in_rows[j]; \
-		out_row = (type*)out_rows[j]; \
+		type *in_row = (type*)incoming->get_row_ptr(j); \
+		type *out_row = (type*)outgoing->get_row_ptr(j); \
 		pattern_row = pattern_image[j]; \
 		\
 		col_offset = 0; \
@@ -535,8 +528,8 @@ void ShapeWipeMain::reset_pattern_image()
 	temp_type blend_transparency = ((temp_type)1 << bits) - blend_opacity; \
  \
 	col = y * 4; \
-	type* in_row = (type*)incoming->get_rows()[x]; \
-	type* output = (type*)outgoing->get_rows()[x]; \
+	type* in_row = (type*)incoming->get_row_ptr(x); \
+	type* output = (type*)outgoing->get_row_ptr(x); \
  \
 	output[col] = ((temp_type)in_row[col] * blend_opacity + output[col] * blend_transparency) >> bits; \
 	output[col+1] = ((temp_type)in_row[col+1] * blend_opacity + output[col+1] * blend_transparency) >> bits; \
@@ -552,8 +545,8 @@ void ShapeWipeMain::reset_pattern_image()
 	temp_type blend_transparency = ((temp_type)1 << bits) - blend_opacity; \
  \
 	col = y * 3; \
-	type* in_row = (type*)incoming->get_rows()[x]; \
-	type* output = (type*)outgoing->get_rows()[x]; \
+	type* in_row = (type*)incoming->get_row_ptr(x); \
+	type* output = (type*)outgoing->get_row_ptr(x); \
  \
 	output[col] = ((temp_type)in_row[col] * blend_opacity + output[col] * blend_transparency) >> bits; \
 	output[col+1] = ((temp_type)in_row[col+1] * blend_opacity + output[col+1] * blend_transparency) >> bits; \
@@ -574,8 +567,8 @@ void ShapeWipeMain::reset_pattern_image()
 		{ \
 		case BC_RGB_FLOAT: \
 		{ \
-			float  *in_row = (float*)incoming->get_rows()[x]; \
-			float *out_row = (float*)outgoing->get_rows()[x]; \
+			float  *in_row = (float*)incoming->get_row_ptr(x); \
+			float *out_row = (float*)outgoing->get_row_ptr(x); \
 			col = y * 3; \
 			out_row[col] = in_row[col] * pixel_opacity + \
 				out_row[col] * pixel_transparency; \
@@ -587,8 +580,8 @@ void ShapeWipeMain::reset_pattern_image()
 		} \
 		case BC_RGBA_FLOAT: \
 		{ \
-			float  *in_row = (float*)incoming->get_rows()[x]; \
-			float *out_row = (float*)outgoing->get_rows()[x]; \
+			float  *in_row = (float*)incoming->get_row_ptr(x); \
+			float *out_row = (float*)outgoing->get_row_ptr(x); \
 			col = y * 4; \
 			out_row[col] = in_row[col] * pixel_opacity + \
 				out_row[col] * pixel_transparency; \
@@ -621,6 +614,21 @@ void ShapeWipeMain::reset_pattern_image()
 			break; \
 		case BC_YUVA16161616: \
 			BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000,x,y); \
+			break; \
+		case BC_AYUV16161616: \
+			{ \
+				const int bits = sizeof(uint16_t) * 8; \
+				int64_t blend_opacity = (int64_t)(alpha * ((int64_t)1 << bits) + 0.5); \
+				int64_t blend_transparency = ((int64_t)1 << bits) - blend_opacity; \
+ \
+				col = y * 4; \
+				uint16_t* in_row = (uint16_t*)incoming->get_row_ptr(x); \
+				uint16_t* output = (uint16_t*)outgoing->get_row_ptr(x); \
+ \
+				output[col + 1] = ((int64_t)in_row[col + 1] * blend_opacity + output[col + 1] * blend_transparency) >> bits; \
+				output[col + 2] = ((int64_t)in_row[col + 2] * blend_opacity + output[col + 2] * blend_transparency) >> bits; \
+				output[col + 3] = ((int64_t)in_row[col + 3] * blend_opacity + output[col + 3] * blend_transparency) >> bits; \
+			} \
 			break; \
 		} \
 	} \
@@ -908,6 +916,7 @@ void ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
+		case BC_AYUV16161616:
 			SHAPEWIPE(uint16_t, 4)
 			break;
 		}
