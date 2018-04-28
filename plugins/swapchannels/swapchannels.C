@@ -245,8 +245,8 @@ int SwapMain::load_configuration()
  \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *inrow = (type*)input_ptr->get_rows()[i]; \
-		type *outrow = (type*)temp->get_rows()[i]; \
+		type *inrow = (type*)input_ptr->get_row_ptr(i); \
+		type *outrow = (type*)temp->get_row_ptr(i); \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
@@ -277,7 +277,15 @@ int SwapMain::load_configuration()
 		} \
 	} \
  \
-	output_ptr->copy_from(temp); \
+	output_ptr->copy_from(temp, 0); \
+}
+
+#define CORCOLOR(col) \
+{ \
+	if(col < 3) \
+		col++; \
+	else if(col == 3) \
+		col = 0; \
 }
 
 void SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
@@ -313,6 +321,53 @@ void SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
 		SWAP_CHANNELS(uint16_t, 0xffff, 4);
+		break;
+	case BC_AYUV16161616:
+		{
+			int h = input_ptr->get_h();
+			int w = input_ptr->get_w();
+			int red = config.red;
+			int green = config.green;
+			int blue = config.blue;
+			int alpha = config.alpha;
+
+			CORCOLOR(red);
+			CORCOLOR(green);
+			CORCOLOR(blue);
+			CORCOLOR(alpha);
+
+			for(int i = 0; i < h; i++) \
+			{
+				uint16_t *inrow = (uint16_t*)input_ptr->get_row_ptr(i);
+				uint16_t *outrow = (uint16_t*)temp->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					if(alpha < 4) \
+						*outrow++ = *(inrow + alpha);
+					else
+						*outrow++ = MAXMINSRC(alpha, 0xffff);
+
+					if(red < 4)
+						*outrow++ = *(inrow + red);
+					else
+						*outrow++ = MAXMINSRC(red, 0xffff);
+
+					if(green < 4)
+						*outrow++ = *(inrow + green);
+					else
+						*outrow++ = MAXMINSRC(green, 0xffff);
+
+					if(blue < 4)
+						*outrow++ = *(inrow + blue);
+					else
+						*outrow++ = MAXMINSRC(blue, 0xffff);
+
+					inrow += 4;
+				}
+			}
+			output_ptr->copy_from(temp, 0);
+		}
 		break;
 	}
 }
