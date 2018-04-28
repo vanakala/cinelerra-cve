@@ -287,8 +287,8 @@ void ShiftInterlaceMain::read_data(KeyFrame *keyframe)
 
 #define SHIFT_ROW_MACRO(components, type, chroma_offset) \
 { \
-	type *input_row = (type*)input_frame->get_rows()[row]; \
-	type *output_row = (type*)output_frame->get_rows()[row]; \
+	type *input_row = (type*)input_frame->get_row_ptr(row); \
+	type *output_row = (type*)output_frame->get_row_ptr(row); \
  \
 	if(offset < 0) \
 	{ \
@@ -372,6 +372,56 @@ void ShiftInterlaceMain::shift_row(VFrame *input_frame,
 		break;
 	case BC_YUVA16161616:
 		SHIFT_ROW_MACRO(4, uint16_t, 0x8000)
+		break;
+	case BC_AYUV16161616:
+/* Pole
+		SHIFT_ROW_MACRO(4, uint16_t, 0x8000)
+	#define SHIFT_ROW_MACRO(components, type, chroma_offset) \
+	*/
+		{
+			uint16_t *input_row = (uint16_t*)input_frame->get_row_ptr(row);
+			uint16_t *output_row = (uint16_t*)output_frame->get_row_ptr(row);
+
+			if(offset < 0)
+			{
+				int i, j;
+				for(i = 0, j = -offset; j < w; i++, j++)
+				{
+					output_row[i * 4 + 0] = input_row[j * 4 + 0];
+					output_row[i * 4 + 1] = input_row[j * 4 + 1];
+					output_row[i * 4 + 2] = input_row[j * 4 + 2];
+					output_row[i * 4 + 3] = input_row[j * 4 + 3];
+				}
+
+				for( ; i < w; i++)
+				{
+					output_row[i * 4 + 0] = 0;
+					output_row[i * 4 + 1] = 0;
+					output_row[i * 4 + 2] = 0x8000;
+					output_row[i * 4 + 3] = 0x8000;
+				}
+			}
+			else
+			{
+				int i, j;
+				for(i = w - offset - 1, j = w - 1;
+					j >= offset; i--, j--)
+				{
+					output_row[j * 4 + 0] = input_row[i * 4 + 0];
+					output_row[j * 4 + 1] = input_row[i * 4 + 1];
+					output_row[j * 4 + 2] = input_row[i * 4 + 2];
+					output_row[j * 4 + 3] = input_row[i * 4 + 3];
+				}
+
+				for( ; j >= 0; j--)
+				{
+					output_row[j * 4 + 0] = 0;
+					output_row[j * 4 + 1] = 0;
+					output_row[j * 4 + 2] = 0x8000;
+					output_row[j * 4 + 3] = 0x8000;
+				}
+			}
+		}
 		break;
 	}
 }
