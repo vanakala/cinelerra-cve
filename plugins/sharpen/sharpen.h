@@ -130,39 +130,6 @@ public:
 		float *neg1, 
 		float *neg2);
 
-
-	void filter_888(int w, 
-		unsigned char *src, 
-		unsigned char *dst,
-		int *neg0, 
-		int *neg1, 
-		int *neg2);
-	void filter_8888(int w, 
-		unsigned char *src, 
-		unsigned char *dst,
-		int *neg0, 
-		int *neg1, 
-		int *neg2);
-	void filter_161616(int w, 
-		u_int16_t *src, 
-		u_int16_t *dst,
-		int *neg0, 
-		int *neg1, 
-		int *neg2);
-	void filter_16161616(int w, 
-		u_int16_t *src, 
-		u_int16_t *dst,
-		int *neg0, 
-		int *neg1, 
-		int *neg2);
-
-	int filter(int w, 
-		unsigned char *src, 
-		unsigned char *dst, 
-		int *neg0, 
-		int *neg1, 
-		int *neg2);
-
 	float calculate_pos(float value);
 	float calculate_neg(float value);
 

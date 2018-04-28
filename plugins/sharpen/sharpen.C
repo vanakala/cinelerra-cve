@@ -636,8 +636,89 @@ void SharpenEngine::run()
 		case BC_YUVA16161616:
 			SHARPEN(4, u_int16_t, int, 0xffff);
 			break;
-		}
 
+		case BC_AYUV16161616:
+			{
+				int count, row;
+				int wordsize = sizeof(uint16_t);
+				int w = plugin->input->get_w();
+				int h = plugin->input->get_h();
+
+				src_rows[0] = src_rows[1] =
+					src_rows[2] = src_rows[3] =
+					input->get_row_ptr(field);
+
+				for(int j = 0; j < w; j++)
+				{
+					int *neg = (int*)neg_rows[0];
+					uint16_t *src = (uint16_t*)src_rows[0];
+					for(int k = 0; k < 4; k++)
+					{
+						neg[j * 4 + k] =
+							(int)plugin->neg_lut[(int)src[j * 4 + k]];
+					}
+				}
+
+				row = 1;
+				count = 1;
+
+				for(int i = field; i < h; i += plugin->row_step)
+				{
+					if((i + plugin->row_step) < h)
+					{
+						if(count >= 3) count--;
+						// Arm next row
+						src_rows[row] = input->get_row_ptr(i + plugin->row_step);
+						// Calculate neg rows
+						uint16_t *src = (uint16_t*)src_rows[row];
+						int *neg = (int*)neg_rows[row];
+
+						for(int k = 0; k < w; k++)
+						{
+							for(int j = 0; j < 4; j++)
+							{
+								neg[k * 4 + j] =
+									plugin->neg_lut[(int)src[k * 4 + j]];
+							}
+						}
+
+						count++;
+						row = (row + 1) & 3;
+					}
+					else
+						count--;
+
+					dst_row = output->get_row_ptr(i);
+					if(count == 3)
+					{
+						// Do the filter
+						if(plugin->config.horizontal)
+							filter(4, 0xffff, w,
+								(uint16_t*)src_rows[(row + 2) & 3],
+								(uint16_t*)dst_row,
+								(int*)neg_rows[(row + 2) & 3] + 4,
+								(int*)neg_rows[(row + 2) & 3] + 4,
+								(int*)neg_rows[(row + 2) & 3] + 4);
+						else
+							filter(4, 0xffff, w,
+								(uint16_t*)src_rows[(row + 2) & 3],
+								(uint16_t*)dst_row,
+								(int*)neg_rows[(row + 1) & 3] + 4,
+								(int*)neg_rows[(row + 2) & 3] + 4,
+								(int*)neg_rows[(row + 3) & 3] + 4);
+					}
+					else
+					if(count == 2)
+					{
+						if(i == 0)
+							memcpy(dst_row, src_rows[0], w * 4 * 2);
+						else
+							memcpy(dst_row, src_rows[2], w * 4 * 2);
+					}
+				}
+			}
+			break;
+		}
 		output_lock->unlock();
 	}
 }
