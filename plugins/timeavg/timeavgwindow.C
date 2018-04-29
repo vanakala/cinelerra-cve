@@ -86,7 +86,7 @@ TimeAvgSlider::~TimeAvgSlider()
 
 int TimeAvgSlider::handle_event()
 {
-	int result = get_value();
+	float result = get_value();
 	if(result < 1) result = 1.0 / MAX_DURATION;
 	client->config.duration = result;
 	client->send_configure_change();
