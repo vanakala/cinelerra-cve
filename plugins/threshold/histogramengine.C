@@ -56,7 +56,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 { \
 	for(int i = pkg->start; i < pkg->end; i++) \
 	{ \
-		type *row = (type*)data->get_rows()[i]; \
+		type *row = (type*)data->get_row_ptr(i); \
 		for(int j = 0; j < w; j++) \
 		{
 
@@ -163,6 +163,14 @@ void HistogramUnit::process_package(LoadPackage *package)
 		y = row[0];
 		u = row[1];
 		v = row[2];
+		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
+		HISTOGRAM_TAIL(4)
+		break;
+	case BC_AYUV16161616:
+		HISTOGRAM_HEAD(uint16_t)
+		y = row[1];
+		u = row[2];
+		v = row[3];
 		server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
 		HISTOGRAM_TAIL(4)
 		break;

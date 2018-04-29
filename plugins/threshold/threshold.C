@@ -455,7 +455,7 @@ void ThresholdUnit::render_data(LoadPackage *package)
 
 	for(int i = pkg->start; i < pkg->end; i++)
 	{
-		TYPE *in_row = (TYPE*)data->get_rows()[i];
+		TYPE *in_row = (TYPE*)data->get_row_ptr(i);
 		TYPE *out_row = in_row;
 		for(int j = 0; j < w; j++)
 		{
@@ -551,6 +551,82 @@ void ThresholdUnit::process_package(LoadPackage *package)
 
 		case BC_YUVA16161616:
 			render_data<uint16_t, 4, true>(package);
+			break;
+
+		case BC_RGBA16161616:
+			render_data<uint16_t, 4, false>(package);
+			break;
+
+		case BC_AYUV16161616:
+			{
+				ThresholdPackage *pkg = (ThresholdPackage*)package;
+				ThresholdConfig *config = &server->plugin->config;
+				int min = (int)(config->min * 0xffff);
+				int max = (int)(config->max * 0xffff);
+				int w = server->data->get_w();
+				int h = server->data->get_h();
+
+				uint16_t r_low = scale_to_range<uint16_t>(config->low_color.r);
+				uint16_t g_low = scale_to_range<uint16_t>(config->low_color.g);
+				uint16_t b_low = scale_to_range<uint16_t>(config->low_color.b);
+				uint16_t a_low = scale_to_range<uint16_t>(config->low_color.a);
+
+				uint16_t r_mid = scale_to_range<uint16_t>(config->mid_color.r);
+				uint16_t g_mid = scale_to_range<uint16_t>(config->mid_color.g);
+				uint16_t b_mid = scale_to_range<uint16_t>(config->mid_color.b);
+				uint16_t a_mid = scale_to_range<uint16_t>(config->mid_color.a);
+
+				uint16_t r_high = scale_to_range<uint16_t>(config->high_color.r);
+				uint16_t g_high = scale_to_range<uint16_t>(config->high_color.g);
+				uint16_t b_high = scale_to_range<uint16_t>(config->high_color.b);
+				uint16_t a_high = scale_to_range<uint16_t>(config->high_color.a);
+
+				uint16_t y_low,  u_low,  v_low;
+				uint16_t y_mid,  u_mid,  v_mid;
+				uint16_t y_high, u_high, v_high;
+
+				server->yuv->rgb_to_yuv_16(r_low, g_low, b_low,
+					y_low, u_low, v_low);
+				server->yuv->rgb_to_yuv_16(r_mid, g_mid, b_mid,
+					y_mid, u_mid, v_mid);
+				server->yuv->rgb_to_yuv_16(r_high, g_high, b_high,
+					y_high, u_high, v_high);
+
+				for(int i = pkg->start; i < pkg->end; i++)
+				{
+					uint16_t *in_row = (uint16_t*)server->data->get_row_ptr(i);
+					uint16_t *out_row = in_row;
+
+					for(int j = 0; j < w; j++)
+					{
+
+						int y = in_row[1];
+
+						if(y < min)
+						{
+							*out_row++ = a_low;
+							*out_row++ = y_low;
+							*out_row++ = u_low;
+							*out_row++ = v_low;
+						}
+						else if (y < max)
+						{
+							*out_row++ = a_mid;
+							*out_row++ = y_mid;
+							*out_row++ = u_mid;
+							*out_row++ = v_mid;
+						}
+						else
+						{
+							*out_row++ = a_high;
+							*out_row++ = y_high;
+							*out_row++ = u_high;
+							*out_row++ = v_high;
+						}
+						in_row += 4;
+					}
+				}
+			}
 			break;
 	}
 }
