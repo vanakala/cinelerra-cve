@@ -497,10 +497,9 @@ void WaveUnit::process_package(LoadPackage *package)
 #define WAVE(type, components, chroma_offset) \
 { \
 	int row_size = w * components; \
-	type **in_rows = (type**)plugin->input->get_rows(); \
 	for(int y = pkg->row1; y < pkg->row2; y++) \
 	{ \
-		type *dest = (type*)plugin->output->get_rows()[y]; \
+		type *dest = (type*)plugin->output->get_row_ptr(y); \
  \
 		for(int x = x1; x < x2; x++) \
 		{ \
@@ -555,7 +554,7 @@ void WaveUnit::process_package(LoadPackage *package)
 				} \
 			} \
  \
-			type *p = in_rows[CLIP(yi, 0, h - 1)] + \
+			type *p = (type *)plugin->input->get_row_ptr(CLIP(yi, 0, h - 1)) + \
 				CLIP(xi, 0, w - 1) * components; \
 			x1_in = WITHIN(0, xi, w - 1); \
 			y1_in = WITHIN(0, yi, h - 1); \
@@ -627,6 +626,7 @@ void WaveUnit::process_package(LoadPackage *package)
 		WAVE(uint16_t, 4, 0x0);
 		break;
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		WAVE(uint16_t, 4, 0x8000);
 		break;
 	}
