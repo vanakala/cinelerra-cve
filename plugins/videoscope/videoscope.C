@@ -843,7 +843,7 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 
 	for(int i = pkg->row1; i < pkg->row2; i++)
 	{
-		TYPE *in_row = (TYPE*)plugin->input->get_rows()[i];
+		TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(i);
 		for(int j = 0; j < w; j++)
 		{
 			TYPE *in_pixel = in_row + j * COMPONENTS;
@@ -987,6 +987,79 @@ void VideoScopeUnit::process_package(LoadPackage *package)
 
 	case BC_YUVA16161616:
 		render_data<uint16_t, int, 0xffff, 4, 1>(package);
+		break;
+
+	case BC_AYUV16161616:
+		{
+			VideoScopeWindow *window = plugin->thread->window;
+			VideoScopePackage *pkg = (VideoScopePackage*)package;
+			int w = plugin->input->get_w();
+			int h = plugin->input->get_h();
+			int waveform_h = window->wave_h;
+			int waveform_w = window->wave_w;
+			int vector_h = window->vector_bitmap->get_h();
+			int vector_w = window->vector_bitmap->get_w();
+			float radius = vector_h / 2.0;
+
+			for(int i = pkg->row1; i < pkg->row2; i++)
+			{
+				uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(i);
+
+				for(int j = 0; j < w; j++)
+				{
+					uint16_t *in_pixel = in_row + j * 4;
+					float intensity;
+
+					// Analyze pixel
+					intensity = (float)in_pixel[1] / 0xffff;
+
+					float h, s, v;
+					int r, g, b;
+
+					yuv.yuv_to_rgb_16(r, g, b,
+						in_pixel[1],
+						in_pixel[2],
+						in_pixel[3]);
+
+					HSV::rgb_to_hsv((float)r / 0xffff,
+						(float)g / 0xffff,
+						(float)b / 0xffff,
+						h, s, v);
+
+					// Calculate point's RGB, used in both
+					//  waveform and vectorscope.
+					int ri, gi, bi;
+
+					ri = (int)(r/256);
+					gi = (int)(g/256);
+					bi = (int)(b/256);
+
+					// Brighten & decrease contrast so low
+					// levels are visible against black.
+					ri = brighten(ri);
+					gi = brighten(gi);
+					bi = brighten(bi);
+
+					// Calculate waveform
+					int y = waveform_h -
+						(int)roundf((intensity - FLOAT_MIN) /
+							(FLOAT_MAX - FLOAT_MIN) *
+							waveform_h);
+
+					int x = j * waveform_w / w;
+					if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h)
+						draw_point(window->waveform_bitmap,
+							x, y, ri, gi, bi);
+
+					// Calculate vectorscope
+					polar_to_cartesian(h, s, radius, x, y);
+					CLAMP(x, 0, vector_w - 1);
+					CLAMP(y, 0, vector_h - 1);
+					draw_point(window->vector_bitmap,
+						x, y, ri, gi, bi);
+				}
+			}
+		}
 		break;
 	}
 }
