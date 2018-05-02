@@ -511,8 +511,8 @@ static float bilinear(double x, double y, double *values)
 	double values[components]; \
 	for(int row = pkg->row1; row <= (pkg->row2 + pkg->row1) / 2; row++) \
 	{ \
-		type *top_row = (type*)plugin->output->get_rows()[row]; \
-		type *bot_row = (type*)plugin->output->get_rows()[h - row - 1]; \
+		type *top_row = (type*)plugin->output->get_row_ptr(row); \
+		type *bot_row = (type*)plugin->output->get_row_ptr(h - row - 1); \
 		type *top_p = top_row; \
 		type *bot_p = bot_row + components * w - components; \
 		 \
@@ -707,6 +707,7 @@ void WhirlUnit::process_package(LoadPackage *package)
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		WHIRL_MACRO(uint16_t, 0xffff, 4);
 		break;
 	}
