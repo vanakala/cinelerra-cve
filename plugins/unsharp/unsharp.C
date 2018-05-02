@@ -338,7 +338,7 @@ static void blur_pixels(double *cmatrix,
 
 #define GET_ROW(type, components) \
 { \
-	type *in_row = (type*)src->get_rows()[row]; \
+	type *in_row = (type*)src->get_row_ptr(row); \
 	int pixels = src->get_w() * components; \
 	for(int i = 0; i < pixels; i++) \
 	{ \
@@ -368,6 +368,8 @@ static void get_row(float *dst, VFrame *src, int row)
 		GET_ROW(uint16_t, 3);
 		break;
 	case BC_YUVA16161616:
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
 		GET_ROW(uint16_t, 4);
 		break;
 	}
@@ -378,7 +380,7 @@ static void get_column(float *dst, VFrame *src, int column)
 	int components = ColorModels::components(src->get_color_model());
 	for(int i = 0; i < src->get_h(); i++)
 	{
-		float *input_pixel = (float*)src->get_rows()[i] + column * components;
+		float *input_pixel = (float*)src->get_row_ptr(i) + column * components;
 		memcpy(dst, input_pixel, sizeof(float) * components);
 		dst += components;
 	}
@@ -477,8 +479,8 @@ void UnsharpUnit::process_package(LoadPackage *package)
  \
 	for(int i = pkg->y1; i < pkg->y2; i++) \
 	{ \
-		float *blurry_row = (float*)temp->get_rows()[i - padded_y1]; \
-		type *orig_row = (type*)server->src->get_rows()[i]; \
+		float *blurry_row = (float*)temp->get_row_ptr(i - padded_y1); \
+		type *orig_row = (type*)server->src->get_row_ptr(i); \
 		for(int j = 0; j < server->src->get_w(); j++) \
 		{ \
 			for(int k = 0; k < components; k++) \
@@ -520,6 +522,8 @@ void UnsharpUnit::process_package(LoadPackage *package)
 		UNSHARPEN(uint16_t, 3, 0xffff);
 		break;
 	case BC_YUVA16161616:
+	case BC_RGBA16161616:
+	case BC_AYUV16161616:
 		UNSHARPEN(uint16_t, 4, 0xffff);
 		break;
 	}
