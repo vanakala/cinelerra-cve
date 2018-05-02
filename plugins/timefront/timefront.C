@@ -656,9 +656,9 @@ PLUGIN_CLASS_METHODS
 #define GRADIENTFROMAVG(type, inttype, components, maxval) \
 	for(int i = 0; i < tfframe->get_h(); i++) \
 	{ \
-		type *in_row = (type *)tfframe->get_rows()[i]; \
+		type *in_row = (type *)tfframe->get_row_ptr(i); \
 		int frames = config.time_range * project_frame_rate; \
-		unsigned char *grad_row = gradient->get_rows()[i]; \
+		unsigned char *grad_row = gradient->get_row_ptr(i); \
 		for(int j = 0; j < tfframe->get_w(); j++) \
 		{ \
 			inttype tmp =	(inttype) in_row[j * components] + \
@@ -674,9 +674,9 @@ PLUGIN_CLASS_METHODS
 #define GRADIENTFROMCHANNEL(type, components, max, channel) \
 	for(int i = 0; i < tfframe->get_h(); i++) \
 	{ \
-		type *in_row = (type *)tfframe->get_rows()[i]; \
+		type *in_row = (type *)tfframe->get_row_ptr(i); \
 		int frames = config.time_range * project_frame_rate; \
-		unsigned char *grad_row = gradient->get_rows()[i]; \
+		unsigned char *grad_row = gradient->get_row_ptr(i); \
 		for(int j = 0; j < tfframe->get_w(); j++) \
 		{ \
 			if (components == 3) \
@@ -689,7 +689,7 @@ PLUGIN_CLASS_METHODS
 #define SETALPHA(type, max) \
 	for(int i = 0; i < outframes[0]->get_h(); i++) \
 	{ \
-		type *out_row = (type *)outframes[0]->get_rows()[i]; \
+		type *out_row = (type *)outframes[0]->get_row_ptr(i); \
 		for(int j = 0; j < outframes[0]->get_w(); j++) \
 		{ \
 			out_row[j * 4 + 3] = max; \
@@ -699,9 +699,9 @@ PLUGIN_CLASS_METHODS
 #define GRADIENTTOPICTURE(type, inttype, components, max, invertion) \
 	for(int i = 0; i < height; i++) \
 	{ \
-		type *out_row = (type *)outframes[0]->get_rows()[i]; \
+		type *out_row = (type *)outframes[0]->get_row_ptr(i); \
 		int frames = config.time_range * project_frame_rate; \
-		unsigned char *grad_row = gradient->get_rows()[i]; \
+		unsigned char *grad_row = gradient->get_row_ptr(i); \
 		for (int j = 0; j < width; j++) \
 		{ \
 			out_row[0] = (inttype)max * (invertion grad_row[0]) / frames; \
@@ -717,9 +717,9 @@ PLUGIN_CLASS_METHODS
 #define GRADIENTTOYUVPICTURE(type, inttype, components, max, invertion) \
 	for(int i = 0; i < height; i++) \
 	{ \
-		type *out_row = (type *)outframes[0]->get_rows()[i]; \
+		type *out_row = (type *)outframes[0]->get_row_ptr(i); \
 		int frames = config.time_range * project_frame_rate; \
-		unsigned char *grad_row = gradient->get_rows()[i]; \
+		unsigned char *grad_row = gradient->get_row_ptr(i); \
 		for (int j = 0; j < width; j++) \
 		{ \
 			out_row[0] = (inttype)max * (invertion grad_row[0]) / frames; \
@@ -735,17 +735,17 @@ PLUGIN_CLASS_METHODS
 #define COMPOSITEIMAGE(type, components, invertion) \
 	for (int i = 0; i < height; i++) \
 	{ \
-		type *out_row = (type *)outframes[0]->get_rows()[i]; \
-		unsigned char *gradient_row = gradient->get_rows()[i]; \
+		type *out_row = (type *)outframes[0]->get_row_ptr(i); \
+		unsigned char *gradient_row = gradient->get_row_ptr(i); \
 		for (int j = 0; j < width; j++) \
 		{ \
 			unsigned int choice = invertion gradient_row[j]; \
 			{ \
-				out_row[0] = framelist[choice]->get_rows()[i][j * components + 0]; \
-				out_row[1] = framelist[choice]->get_rows()[i][j * components + 1]; \
-				out_row[2] = framelist[choice]->get_rows()[i][j * components + 2]; \
+				out_row[0] = framelist[choice]->get_row_ptr(i)[j * components + 0]; \
+				out_row[1] = framelist[choice]->get_row_ptr(i)[j * components + 1]; \
+				out_row[2] = framelist[choice]->get_row_ptr(i)[j * components + 2]; \
 				if (components == 4) \
-					out_row[3] = framelist[choice]->get_rows()[i][j * components + 3]; \
+					out_row[3] = framelist[choice]->get_row_ptr(i)[j * components + 3]; \
 			} \
 			out_row += components; \
 		} \
@@ -803,7 +803,6 @@ void TimeFrontMain::process_frame(VFrame **frame)
 				get_project_smp() + 1);
 			engine->process_packages();
 		}
-
 	}
 	if (config.shape == TimeFrontConfig::ALPHA)
 	{
@@ -821,6 +820,23 @@ void TimeFrontMain::process_frame(VFrame **frame)
 
 		case BC_RGBA_FLOAT:
 			GRADIENTFROMCHANNEL(float, 4, 1.0f, 3);
+			break;
+
+		case BC_RGBA16161616:
+			GRADIENTFROMCHANNEL(uint16_t, 4, 0xffff, 3);
+			break;
+
+		case BC_AYUV16161616:
+			for(int i = 0; i < tfframe->get_h(); i++)
+			{
+				uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
+				int frames = config.time_range * project_frame_rate;
+				unsigned char *grad_row = gradient->get_row_ptr(i);
+				int frame_w = tfframe->get_w();
+
+				for(int j = 0; j < frame_w; j++)
+					grad_row[j] = (unsigned char)(CLIP(frames * in_row[j * 4] * in_row[j * 4] / 0xffff / 0xffff, 0, frames));
+			}
 			break;
 
 		default:
@@ -853,12 +869,32 @@ void TimeFrontMain::process_frame(VFrame **frame)
 			case BC_RGBA_FLOAT:
 				GRADIENTFROMAVG(float, float, 4, 1.0f);
 				break;
+
+			case BC_RGBA16161616:
+				GRADIENTFROMAVG(uint16_t, int, 4, 0xffff);
+				break;
+
 // We cheat and take Y component as intensity
 			case BC_YUV888:
 				GRADIENTFROMCHANNEL(unsigned char, 3, 255, 0);
 				break;
 			case BC_YUVA8888:
 				GRADIENTFROMCHANNEL(unsigned char, 4, 255, 0);
+				break;
+
+			case BC_AYUV16161616:
+				for(int i = 0; i < tfframe->get_h(); i++)
+				{
+					uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
+					int frames = config.time_range * project_frame_rate;
+					unsigned char *grad_row = gradient->get_row_ptr(i);
+					int frame_w = tfframe->get_w();
+
+					for(int j = 0; j < frame_w; j++)
+						grad_row[j] =
+							(unsigned char)(CLIP(frames * in_row[j * 4] *
+							in_row[j * 4 + 1] / 0xffff / 0xffff, 0, frames));
+				}
 				break;
 			default:
 				break;
@@ -877,6 +913,23 @@ void TimeFrontMain::process_frame(VFrame **frame)
 				GRADIENTFROMCHANNEL(float, 4, 1.0f, 3);
 				break;
 
+			case BC_RGBA16161616:
+				GRADIENTFROMCHANNEL(uint16_t, 4, 0xffff, 3);
+				break;
+
+			case BC_AYUV16161616:
+				for(int i = 0; i < tfframe->get_h(); i++)
+				{
+					uint16_t *in_row = (uint16_t*)tfframe->get_row_ptr(i);
+					int frames = config.time_range * project_frame_rate;
+					unsigned char *grad_row = gradient->get_row_ptr(i);
+					int frame_w = tfframe->get_w();
+
+					for(int j = 0; j < frame_w; j++)
+						grad_row[j] = (unsigned char)(CLIP(frames * in_row[j * 4] * in_row[j * 4] / 0xffff / 0xffff, 0, frames));
+				}
+				break;
+
 			default:
 				abort_plugin(_("ALPHA track used, but project color model does not have alpha"));
 				return;
@@ -888,7 +941,6 @@ void TimeFrontMain::process_frame(VFrame **frame)
 			return;
 		}
 	}
-
 	if (!config.show_grayscale)
 	{
 		framelist_last = 2;
@@ -945,6 +997,27 @@ void TimeFrontMain::process_frame(VFrame **frame)
 			case BC_RGBA_FLOAT:
 				GRADIENTTOPICTURE(float, float, 4, 1.0f, );
 				break;
+			case BC_RGBA16161616:
+				GRADIENTTOPICTURE(uint16_t, unsigned int, 4, 0xffff, );
+				break;
+			case BC_AYUV16161616:
+				for(int i = 0; i < height; i++)
+				{
+					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					int frames = config.time_range * project_frame_rate;
+					unsigned char *grad_row = gradient->get_row_ptr(i);
+
+					for (int j = 0; j < width; j++)
+					{
+						out_row[0] = 0xffff;
+						out_row[1] = 0xffff * grad_row[0] / frames;
+						out_row[2] = 0x8000;
+						out_row[3] = 0x8000;
+						out_row += 4;
+						grad_row++;
+					}
+				}
+				break;
 			default:
 				break;
 			}
@@ -971,6 +1044,27 @@ void TimeFrontMain::process_frame(VFrame **frame)
 				break;
 			case BC_RGBA_FLOAT:
 				GRADIENTTOPICTURE(float, float, 4, 1.0f, pframes -);
+				break;
+			case BC_RGBA16161616:
+				GRADIENTTOPICTURE(uint16_t, unsigned int, 4, 0xffff, pframes -);
+				break;
+			case BC_AYUV16161616:
+				for(int i = 0; i < height; i++)
+				{
+					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					int frames = config.time_range * project_frame_rate;
+					unsigned char *grad_row = gradient->get_row_ptr(i);
+
+					for(int j = 0; j < width; j++)
+					{
+						out_row[3] = 0xffff;
+						out_row[0] = 0xffff * (pframes - grad_row[0]) / frames;
+						out_row[1] = 0x8000;
+						out_row[2] = 0x8000;
+						out_row += 4;
+						grad_row ++;
+					}
+				}
 				break;
 			default:
 				break;
@@ -999,6 +1093,26 @@ void TimeFrontMain::process_frame(VFrame **frame)
 		case BC_RGBA_FLOAT:
 			COMPOSITEIMAGE(float, 4, );
 			break;
+		case BC_RGBA16161616:
+		case BC_AYUV16161616:
+			for(int i = 0; i < height; i++)
+			{
+				uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+				unsigned char *gradient_row = gradient->get_row_ptr(i);
+
+				for (int j = 0; j < width; j++)
+				{
+					unsigned int choice = gradient_row[j];
+					uint16_t *row = (uint16_t*)framelist[gradient_row[j]]->get_row_ptr(i);
+
+					out_row[0] = row[j * 4 + 0];
+					out_row[1] = row[j * 4 + 1];
+					out_row[2] = row[j * 4 + 2];
+					out_row[3] = row[j * 4 + 3];
+					out_row += 4;
+				}
+			}
+			break;
 		default:
 			break;
 		}
@@ -1026,6 +1140,26 @@ void TimeFrontMain::process_frame(VFrame **frame)
 		case BC_RGBA_FLOAT:
 			COMPOSITEIMAGE(float, 4, pframes -);
 			break;
+		case BC_RGBA16161616:
+		case BC_AYUV16161616:
+			for(int i = 0; i < height; i++)
+			{
+				uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+				unsigned char *gradient_row = gradient->get_row_ptr(i);
+
+				for (int j = 0; j < width; j++)
+				{
+					unsigned int choice = pframes - gradient_row[j];
+					uint16_t *row = (uint16_t*)framelist[choice]->get_row_ptr(i);
+
+					out_row[0] = row[j * 4 + 0];
+					out_row[1] = row[j * 4 + 1];
+					out_row[2] = row[j * 4 + 2];
+					out_row[3] = row[j * 4 + 3];
+				}
+				out_row += 4;
+			}
+			break;
 		default:
 			break;
 		}
@@ -1041,6 +1175,22 @@ void TimeFrontMain::process_frame(VFrame **frame)
 			break;
 		case BC_RGBA_FLOAT:
 			SETALPHA(float, 1.0f);
+			break;
+		case BC_RGBA16161616:
+			SETALPHA(uint16_t, 0xffff);
+			break;
+		case BC_AYUV16161616:
+			{
+				int oh = outframes[0]->get_h();
+				int ow = outframes[0]->get_w();
+
+				for(int i = 0; i < oh; i++)
+				{
+					uint16_t *out_row = (uint16_t*)outframes[0]->get_row_ptr(i);
+					for(int j = 0; j < ow; j++)
+						out_row[j * 4] = 0xffff;
+				}
+			}
 			break;
 		default:
 			break;
