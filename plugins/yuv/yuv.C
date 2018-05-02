@@ -257,8 +257,8 @@ static YUV yuv_static;
 { \
 	for(int i = 0; i < input->get_h(); i++) \
 	{ \
-		type *in_row = (type*)input->get_rows()[i]; \
-		type *out_row = (type*)output->get_rows()[i]; \
+		type *in_row = (type*)input->get_row_ptr(i); \
+		type *out_row = (type*)output->get_row_ptr(i); \
 		const float round = (sizeof(type) == 4) ? 0.0 : 0.5; \
  \
 		for(int j = 0; j < w; j++) \
@@ -385,6 +385,28 @@ void YUVEffect::process_realtime(VFrame *input, VFrame *output)
 
 		case BC_YUVA16161616:
 			YUV_MACRO(uint16_t, int, 0xffff, 4, 1)
+			break;
+
+		case BC_AYUV16161616:
+			for(int i = 0; i < input->get_h(); i++)
+			{
+				uint16_t *in_row = (uint16_t*)input->get_row_ptr(i);
+				uint16_t *out_row = (uint16_t*)output->get_row_ptr(i);
+				const float round = 0.5;
+
+				for(int j = 0; j < w; j++)
+				{
+					int y = (int)((float)in_row[1] * y_scale + round);
+					int u = (int)((float)(in_row[2] - 0x8000) * u_scale + round) + 0x8000;
+					int v = (int)((float)(in_row[3] - 0x8000) * v_scale + round) + 0x8000;
+					out_row[1] = CLIP(y, 0, 0xffff);
+					out_row[2] = CLIP(u, 0, 0xffff);
+					out_row[3] = CLIP(v, 0, 0xffff);
+
+					in_row += 4;
+					out_row += 4;
+				}
+			}
 			break;
 		}
 	}
