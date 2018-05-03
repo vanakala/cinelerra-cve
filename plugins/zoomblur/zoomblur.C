@@ -719,7 +719,7 @@ ZoomBlurUnit::ZoomBlurUnit(ZoomBlurEngine *server,
 /* Blend image */ \
 		if(in_y >= 0 && in_y < h) \
 		{ \
-			TYPE *in_row = (TYPE*)plugin->input->get_rows()[in_y]; \
+			TYPE *in_row = (TYPE*)plugin->input->get_row_ptr(in_y); \
 			for(int k = 0; k < w; k++) \
 			{ \
 				int in_x = x_table[k]; \
@@ -778,8 +778,8 @@ ZoomBlurUnit::ZoomBlurUnit(ZoomBlurEngine *server,
 		for(int j = pkg->y1; j < pkg->y2; j++) \
 		{ \
 			TEMP_TYPE *in_row = (TEMP_TYPE*)plugin->accum + COMPONENTS * w * j; \
-			TYPE *in_backup = (TYPE*)plugin->input->get_rows()[j]; \
-			TYPE *out_row = (TYPE*)plugin->output->get_rows()[j]; \
+			TYPE *in_backup = (TYPE*)plugin->input->get_row_ptr(j); \
+			TYPE *out_row = (TYPE*)plugin->output->get_row_ptr(j); \
 			for(int k = 0; k < w; k++) \
 			{ \
 				if(do_r) \
@@ -907,6 +907,107 @@ void ZoomBlurUnit::process_package(LoadPackage *package)
 			break;
 		case BC_YUVA16161616:
 			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
+			break;
+		case BC_AYUV16161616:
+			for(int j = pkg->y1; j < pkg->y2; j++)
+			{
+				int *out_row = (int*)plugin->accum + 4 * w * j;
+				int in_y = y_table[j];
+
+				// Blend image
+				if(in_y >= 0 && in_y < h)
+				{
+					uint16_t *in_row = (uint16_t*)plugin->input->get_row_ptr(in_y);
+
+					for(int k = 0; k < w; k++)
+					{
+						int in_x = x_table[k];
+						// Blend pixel
+						if(in_x >= 0 && in_x < w)
+						{
+							int in_offset = in_x * 4;
+							*out_row++ += in_row[in_offset];
+							*out_row++ += in_row[in_offset + 1];
+							*out_row++ += in_row[in_offset + 2];
+							*out_row++ += in_row[in_offset + 3];
+						}
+						// Blend nothing
+						else
+						{
+							out_row++;
+							out_row++;
+							*out_row++ += 0x8000;
+							*out_row++ += 0x8000;
+						}
+					}
+				}
+				else
+				for(int k = 0; k < w; k++)
+				{
+					out_row++;
+					out_row++;
+					*out_row++ += 0x8000;
+					*out_row++ += 0x8000;
+				}
+			}
+
+			// Copy just selected blurred channels to output
+			//  and combine with original unblurred channels
+			if(i == plugin->config.steps - 1)
+			{
+				for(int j = pkg->y1; j < pkg->y2; j++)
+				{
+					int *in_row = (int*)plugin->accum + 4 * w * j;
+					uint16_t *in_backup = (uint16_t*)plugin->input->get_row_ptr(j);
+					uint16_t *out_row = (uint16_t*)plugin->output->get_row_ptr(j);
+					for(int k = 0; k < w; k++)
+					{
+						if(do_a)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+
+						if(do_r)
+						{
+							*out_row++ = (*in_row++ * fraction) / 0x10000;
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+
+						if(do_g)
+						{
+							*out_row++ = ((*in_row++ * fraction) / 0x10000);
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+
+						if(do_b)
+						{
+							*out_row++ = ((*in_row++ * fraction) / 0x10000);
+							in_backup++;
+						}
+						else
+						{
+							*out_row++ = *in_backup++;
+							in_row++;
+						}
+					}
+				}
+			}
 			break;
 		}
 	}
