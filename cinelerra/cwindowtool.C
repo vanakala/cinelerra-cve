@@ -484,7 +484,7 @@ const _TGD Camera_Tan_Smooth =
 	TGNT_SMOOTH,
 	true,
 	"tan_smooth",
-	_("\"smooth\" Tangent on current Camera Keyframes")
+	N_("\"smooth\" Tangent on current Camera Keyframes")
 };
 
 const _TGD Camera_Tan_Linear =
@@ -492,7 +492,7 @@ const _TGD Camera_Tan_Linear =
 	TGNT_LINEAR,
 	true,
 	"tan_linear",
-	_("\"linear\" Tangent on current Camera Keyframes")
+	N_("\"linear\" Tangent on current Camera Keyframes")
 };
 
 const _TGD Projector_Tan_Smooth =
@@ -500,7 +500,7 @@ const _TGD Projector_Tan_Smooth =
 	TGNT_SMOOTH,
 	false,
 	"tan_smooth",
-	_("\"smooth\" Tangent on current Projector Keyframes")
+	N_("\"smooth\" Tangent on current Projector Keyframes")
 };
 
 const _TGD Projector_Tan_Linear =
@@ -508,7 +508,7 @@ const _TGD Projector_Tan_Linear =
 	TGNT_LINEAR,
 	false,
 	"tan_linear",
-	_("\"linear\" Tangent on current Projector Keyframes")
+	N_("\"linear\" Tangent on current Projector Keyframes")
 };
 
 CWindowTangentToggle::CWindowTangentToggle(_TGD mode, MWindow *mwindow,
@@ -517,7 +517,7 @@ CWindowTangentToggle::CWindowTangentToggle(_TGD mode, MWindow *mwindow,
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
-	set_tooltip(cfg.tooltip);
+	set_tooltip(_(cfg.tooltip));
 }
 
 void CWindowTangentToggle::check_toggle_state(FloatAuto *x, FloatAuto *y, FloatAuto *z)
