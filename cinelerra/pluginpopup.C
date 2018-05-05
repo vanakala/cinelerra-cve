@@ -99,7 +99,7 @@ int PluginPopupDetach::handle_event()
 
 
 PluginPopupShow::PluginPopupShow(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem(_("Window"))
+ : BC_MenuItem(_("Parameters"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
