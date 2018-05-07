@@ -2334,6 +2334,7 @@ public:
 		case BC_YUVA8888:
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
+		case BC_AYUV16161616:
 			if(hidden != 0)
 			{
 				gui->set_color(get_resources()->get_bg_color());

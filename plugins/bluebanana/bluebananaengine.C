@@ -199,7 +199,7 @@ void BluebananaUnit::process_package(LoadPackage *package)
 
 			for(rowi = start_row; rowi < end_row; rowi++)
 			{
-				unsigned char *row = frame->get_rows()[rowi];
+				unsigned char *row = frame->get_row_ptr(rowi);
 
 				for(coli = 0; coli < w; coli += SPLIT)
 				{
@@ -232,6 +232,14 @@ void BluebananaUnit::process_package(LoadPackage *package)
 					case BC_YUVA8888:
 						yuva8_to_RGBA((unsigned char *)row, Rvec, Gvec, Bvec, Avec, todo);
 						row += todo * 4;
+						break;
+					case BC_RGBA16161616:
+						rgba16_to_RGBA((uint16_t *)row, Rvec, Gvec, Bvec, Avec, todo);
+						row += todo * 8;
+						break;
+					case BC_AYUV16161616:
+						ayuv16_to_RGBA((uint16_t *)row, Rvec, Gvec, Bvec, Avec, todo);
+						row += todo * 8;
 						break;
 					}
 
@@ -292,7 +300,7 @@ void BluebananaUnit::process_package(LoadPackage *package)
 
 		for(rowi = start_row; rowi < end_row; rowi++)
 		{
-			unsigned char *row = frame->get_rows()[rowi];
+			unsigned char *row = frame->get_row_ptr(rowi);
 
 			for(int coli=0; coli < w; coli += SPLIT)
 			{
@@ -320,6 +328,15 @@ void BluebananaUnit::process_package(LoadPackage *package)
 						pthread_mutex_unlock(&engine->copylock);
 						rgba8_to_RGBA(row_fragment, Rvec, Gvec, Bvec, Avec, todo);
 						byte_advance = todo * 4;
+						have_alpha = 1;
+						break;
+
+					case BC_RGBA16161616:
+						pthread_mutex_lock(&engine->copylock);
+						memcpy(row_fragment, row, todo * 8);
+						pthread_mutex_unlock(&engine->copylock);
+						rgba16_to_RGBA((uint16_t*)row_fragment, Rvec, Gvec, Bvec, Avec, todo);
+						byte_advance = todo * 8;
 						have_alpha = 1;
 						break;
 
@@ -356,6 +373,15 @@ void BluebananaUnit::process_package(LoadPackage *package)
 						pthread_mutex_unlock(&engine->copylock);
 						yuva8_to_RGBA(row, Rvec, Gvec, Bvec, Avec, todo);
 						byte_advance = todo * 4;
+						have_alpha = 1;
+						break;
+
+					case BC_AYUV16161616:
+						pthread_mutex_lock(&engine->copylock);
+						memcpy(row_fragment, row, todo * 8);
+						pthread_mutex_unlock(&engine->copylock);
+						ayuv16_to_RGBA((uint16_t*)row_fragment, Rvec, Gvec, Bvec, Avec, todo);
+						byte_advance = todo * 8;
 						have_alpha = 1;
 						break;
 					}
@@ -503,6 +529,12 @@ void BluebananaUnit::process_package(LoadPackage *package)
 									break;
 								case BC_YUVA8888:
 									unmask_yuva8(row_fragment, todo);
+									break;
+								case BC_AYUV16161616:
+									unmask_ayuv16((uint16_t*)row_fragment, todo);
+									break;
+								case BC_RGBA16161616:
+									unmask_rgba16((uint16_t*)row_fragment, todo);
 									break;
 								}
 								pthread_mutex_lock(&engine->copylock);
@@ -1000,6 +1032,9 @@ void BluebananaUnit::process_package(LoadPackage *package)
 					case BC_RGBA8888:
 						RGB_to_rgb8(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, row_fragment, todo, 4);
 						break;
+					case BC_RGBA16161616:
+						RGB_to_rgb16(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, (uint16_t*)row_fragment, todo, 4);
+						break;
 					case BC_RGB_FLOAT:
 						RGB_to_rgbF(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, (float *)row_fragment, todo, 3);
 						break;
@@ -1011,6 +1046,9 @@ void BluebananaUnit::process_package(LoadPackage *package)
 						break;
 					case BC_YUVA8888:
 						RGB_to_yuv8(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, row_fragment, todo, 4);
+						break;
+					case BC_AYUV16161616:
+						RGB_to_ayuv16(Rvec, Gvec, Bvec, have_selection ? selection : 0, Aal, (uint16_t*)row_fragment, todo);
 						break;
 					}
 				}
@@ -1066,6 +1104,9 @@ void BluebananaUnit::process_package(LoadPackage *package)
 					case BC_RGBA8888:
 						RGB_to_rgb8(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, row_fragment, todo, 4);
 						break;
+					case BC_RGBA16161616:
+						RGB_to_rgb16(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, (uint16_t*)row_fragment, todo, 4);
+						break;
 					case BC_RGB_FLOAT:
 						RGB_to_rgbF(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, (float *)row_fragment, todo, 3);
 						break;
@@ -1077,6 +1118,9 @@ void BluebananaUnit::process_package(LoadPackage *package)
 						break;
 					case BC_YUVA8888:
 						RGB_to_yuv8(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, row_fragment, todo, 4);
+						break;
+					case BC_AYUV16161616:
+						RGB_to_ayuv16(Rvec, Gvec, Bvec, have_selection ? selection : 0, 1.f, (uint16_t*)row_fragment, todo);
 						break;
 					}
 				}
@@ -1091,11 +1135,17 @@ void BluebananaUnit::process_package(LoadPackage *package)
 						case BC_RGBA8888:
 							unmask_rgba8(row_fragment, todo);
 							break;
+						case BC_RGBA16161616:
+							unmask_rgba16((uint16_t*)row_fragment, todo);
+							break;
 						case BC_RGBA_FLOAT:
 							unmask_rgbaF((float *)row_fragment, todo);
 							break;
 						case BC_YUVA8888:
 							unmask_yuva8(row_fragment, todo);
+							break;
+						case BC_AYUV16161616:
+							unmask_ayuv16((uint16_t*)row_fragment, todo);
 							break;
 						}
 					}

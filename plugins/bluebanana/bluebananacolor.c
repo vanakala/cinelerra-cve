@@ -39,6 +39,17 @@ static void rgba8_to_RGBA(unsigned char *row, float *R, float *G, float *B, floa
 	}
 }
 
+static void rgba16_to_RGBA(uint16_t *row, float *R, float *G, float *B, float *A, int w)
+{
+	while(w--)
+	{
+		*R++ = *row++ * .00001525902f;
+		*G++ = *row++ * .00001525902f;
+		*B++ = *row++ * .00001525902f;
+		*A++ = *row++ * .00001525902f;
+	}
+}
+
 static void rgbF_to_RGB(float *row, float *R, float *G, float *B, int w)
 {
 	while(w--)
@@ -81,6 +92,13 @@ static void rgbaF_to_RGBA(float *row, float *R, float *G, float *B, float *A, in
 #define CLAMP_LO 1
 #define CLAMP_HI 254
 #endif
+
+#define Y_SWING16 (Y_SWING * 256.f + Y_SWING)
+#define Y_SHIFT16 (Y_SHIFT << 8)
+#define C_SWING16 (C_SWING * 256.f + C_SWING)
+#define C_SHIFT16 0x8000
+#define CLAMP_LO16 (CLAMP_LO << 8)
+#define CLAMP_HI16 (CLAMP_HI << 8 | CLAMP_HI)
 
 #if 1
 // bt601
@@ -130,6 +148,20 @@ static void yuva8_to_RGBA(unsigned char *row, float *R, float *G, float *B, floa
 		*G++ = y - (Gu / C_SWING) * u - (Gv / C_SWING) * v;
 		*B++ = y + (Bu / C_SWING) * u;
 		*A++ = *row++ * (1.f / 255.f);
+	}
+}
+
+static void ayuv16_to_RGBA(uint16_t *row, float *R, float *G, float *B, float *A, int w)
+{
+	while(w--)
+	{
+		*A++ = *row++ * (1.f / 65565.f);
+		float y = (*row++ - Y_SHIFT16) * (1.f / Y_SWING16);
+		float u = (*row++ - C_SHIFT16);
+		float v = (*row++ - C_SHIFT16);
+		*R++ = y                  + (Rv / C_SWING16) * v;
+		*G++ = y - (Gu / C_SWING16) * u - (Gv / C_SWING16) * v;
+		*B++ = y + (Bu / C_SWING16) * u;
 	}
 }
 
@@ -193,6 +225,72 @@ static void RGB_to_yuv8(float *R, float *G, float *B, float *S, float F, unsigne
 					row[1] = CLAMP(u, CLAMP_LO, CLAMP_HI);
 					row[2] = CLAMP(v, CLAMP_LO, CLAMP_HI);
 					row += bpp;
+				}
+			}
+		}
+	}
+}
+
+static void RGB_to_ayuv16(float *R, float *G, float *B, float *S, float F, uint16_t *row, int w)
+{
+	if(F > SELECT_THRESH)
+	{
+		if(S)
+		{
+			if(F < 1. - SELECT_THRESH)
+			{
+				while(w--)
+				{
+					float s = *S++ * F;
+					float y = (Y_SHIFT16 + (Kr * Y_SWING16) * *R  + (Kg * Y_SWING16) * *G + (Kb * Y_SWING16) * *B - row[1]) * s + row[1] + .5f;
+					float u = (C_SHIFT16 + (Br * C_SWING16) * *R  + (Bg * C_SWING16) * *G + (Bb * C_SWING16) * *B - row[2]) * s + row[2] + .5f;
+					float v = (C_SHIFT16 + (Rr * C_SWING16) * *R++ + (Rg * C_SWING16) * *G++ + (Rb * C_SWING16) * *B++ - row[3]) * s + row[3] + .5f;
+					row[1] = CLAMP(y, CLAMP_LO16, CLAMP_HI16);
+					row[2] = CLAMP(u, CLAMP_LO16, CLAMP_HI16);
+					row[3] = CLAMP(v, CLAMP_LO16, CLAMP_HI16);
+					row += 4;
+				}
+			}
+			else
+			{
+				while(w--)
+				{
+					float y = (Y_SHIFT16 + (Kr * Y_SWING16) * *R + (Kg * Y_SWING16) * *G + (Kb * Y_SWING16) * *B - row[1]) * *S + row[1] + .5f;
+					float u = (C_SHIFT16 + (Br * C_SWING16) * *R + (Bg * C_SWING16) * *G + (Bb * C_SWING16) * *B - row[2]) * *S + row[2] + .5f;
+					float v = (C_SHIFT16 + (Rr * C_SWING16) * *R++ + (Rg * C_SWING16) * *G++ + (Rb * C_SWING16) * *B++ - row[3]) * *S++ + row[3] + .5f;
+					row[1] = CLAMP(y, CLAMP_LO16, CLAMP_HI16);
+					row[2] = CLAMP(u, CLAMP_LO16, CLAMP_HI16);
+					row[3] = CLAMP(v, CLAMP_LO16, CLAMP_HI16);
+					row += 4;
+				}
+			}
+		}
+		else
+		{
+			if(F < 1. - SELECT_THRESH)
+			{
+				while(w--)
+				{
+					float y = (Y_SHIFT16 + (Kr * Y_SWING16) * *R + (Kg * Y_SWING16) * *G + (Kb * Y_SWING16) * *B - row[1]) * F + row[1] + .5f;
+					float u = (C_SHIFT16 + (Br * C_SWING16) * *R + (Bg * C_SWING16) * *G + (Bb * C_SWING16) * *B - row[2]) * F + row[2] + .5f;
+					float v = (C_SHIFT16 + (Rr * C_SWING16) * *R++ + (Rg * C_SWING16) * *G++ + (Rb * C_SWING16) * *B++ - row[3]) * F + row[3] + .5f;
+					row[1] = CLAMP(y, CLAMP_LO16, CLAMP_HI16);
+					row[2] = CLAMP(u, CLAMP_LO16, CLAMP_HI16);
+					row[3] = CLAMP(v, CLAMP_LO16, CLAMP_HI16);
+					row += 4;
+				}
+			}
+			else
+			{
+				while(w--)
+				{
+					float y = (Y_SHIFT16 + .5f) + (Kr * Y_SWING16) * *R + (Kg * Y_SWING16) * *G + (Kb * Y_SWING16) * *B;
+					float u = (C_SHIFT16 + .5f) + (Br * C_SWING16) * *R + (Bg * C_SWING16) * *G + (Bb * C_SWING16) * *B;
+					float v = (C_SHIFT16 + .5f) + (Rr * C_SWING16) * *R++ + (Rg * C_SWING16) * *G++ + (Rb * C_SWING16) * *B++;
+					row[1] = CLAMP(y, CLAMP_LO16, CLAMP_HI16);
+					row[2] = CLAMP(u, CLAMP_LO16, CLAMP_HI16);
+					row[3] = CLAMP(v, CLAMP_LO16, CLAMP_HI16);
+					row += 4;
 				}
 			}
 		}
@@ -265,6 +363,72 @@ static void RGB_to_rgb8(float *R, float *G, float *B, float *S, float F, unsigne
 	}
 }
 
+static void RGB_to_rgb16(float *R, float *G, float *B, float *S, float F, uint16_t *row, int w, int bpp)
+{
+	if(F > SELECT_THRESH)
+	{
+		if(S)
+		{
+			if(F < 1. - SELECT_THRESH)
+			{
+				while(w--)
+				{
+					float s = *S++ * F;
+					float r = (*R++ * 65535.f - row[0]) * s + row[0] + .5f;
+					float g = (*G++ * 65535.f - row[1]) * s + row[1] + .5f;
+					float b = (*B++ * 65535.f - row[2]) * s + row[2] + .5f;
+					row[0] = CLAMP(r, 0, 65535);
+					row[1] = CLAMP(g, 0, 65535);
+					row[2] = CLAMP(b, 0, 65535);
+					row += bpp;
+				}
+			}
+			else
+			{
+				while(w--)
+				{
+					float r = (*R++ * 65535.f - row[0]) * *S +row[0] + .5f;
+					float g = (*G++ * 65535.f - row[1]) * *S +row[1] + .5f;
+					float b = (*B++ * 65535.f - row[2]) * *S++ +row[2] +.5f;
+					row[0] = CLAMP(r, 0, 65535);
+					row[1] = CLAMP(g, 0, 65535);
+					row[2] = CLAMP(b, 0, 65535);
+					row += bpp;
+				}
+			}
+		}
+		else
+		{
+			if(F < 1. - SELECT_THRESH)
+			{
+				while(w--)
+				{
+					float r = (*R++ * 65535.f - row[0]) * F + row[0] + .5f;
+					float g = (*G++ * 65535.f - row[1]) * F + row[1] + .5f;
+					float b = (*B++ * 65535.f - row[2]) * F + row[2] + .5f;
+					row[0] = CLAMP(r, 0, 65535);
+					row[1] = CLAMP(g, 0, 65535);
+					row[2] = CLAMP(b, 0, 65535);
+					row += bpp;
+				}
+			}
+			else
+			{
+				while(w--)
+				{
+					float r = *R++ * 65535.f + .5f;
+					float g = *G++ * 65535.f + .5f;
+					float b = *B++ * 65535.f + .5f;
+					row[0] = CLAMP(r, 0, 65535);
+					row[1] = CLAMP(g, 0, 65535);
+					row[2] = CLAMP(b, 0, 65535);
+					row += bpp;
+				}
+			}
+		}
+	}
+}
+
 static void RGB_to_rgbF(float *R, float *G, float *B, float *S, float F, float *row, int w, int bpp)
 {
 	if(F > SELECT_THRESH)
@@ -328,6 +492,15 @@ static void unmask_rgba8(unsigned char *row, int w)
 	}
 }
 
+static void unmask_rgba16(uint16_t *row, int w)
+{
+	while(w--)
+	{
+		row[3] = 0xffff;
+		row += 4;
+	}
+}
+
 static void unmask_rgbaF(float *row, int w)
 {
 	while(w--)
@@ -342,6 +515,15 @@ static void unmask_yuva8(unsigned char *row, int w)
 	while(w--)
 	{
 		row[3] = 255;
+		row += 4;
+	}
+}
+
+static void unmask_ayuv16(uint16_t *row, int w)
+{
+	while(w--)
+	{
+		row[0] = 0xffff;
 		row += 4;
 	}
 }
