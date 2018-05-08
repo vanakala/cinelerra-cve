@@ -133,6 +133,11 @@ int FileList::open_file(int rd, int wr)
 					}
 					asset->video_length = 1;
 					asset->single_image = 1;
+					// Fill stream info
+					int ix = asset->video_streamno - 1;
+					asset->streams[ix].end = asset->video_duration;
+					asset->streams[ix].frame_rate = asset->frame_rate;
+					asset->streams[ix].length = asset->video_length;
 				}
 			}
 		}
@@ -268,6 +273,19 @@ int FileList::read_list_header()
 		fclose(stream);
 		asset->video_length = path_list.total;
 		asset->video_duration = (ptstime)path_list.total / asset->frame_rate;
+		// Fill stream info
+		struct streamdesc *sdsc = &asset->streams[0];
+		sdsc->end = asset->video_duration;
+		sdsc->width = asset->width;
+		sdsc->height = asset->height;
+		sdsc->length = asset->video_length;
+		sdsc->frame_rate = asset->frame_rate;
+		sdsc->sample_aspect_ratio = asset->sample_aspect_ratio;
+		sdsc->options = STRDSC_VIDEO;
+		strncpy(sdsc->codec, asset->vcodec, MAX_LEN_CODECNAME);
+		asset->nb_streams = 1;
+		asset->video_streamno = 1;
+		asset->audio_streamno = 0;
 	}
 	else
 		return 1;
