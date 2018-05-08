@@ -69,7 +69,7 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_MPEGTS, "mpegts", "mpegts", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_MPEG, "mpeg", "vob", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
 	{ FILE_EXR, "exr_pipe", "exr_pipe", SUPPORTS_VIDEO },
-	{ FILE_TIFF, "tiff", "tiff", SUPPORTS_VIDEO },
+	{ FILE_TIFF, "tiff_pipe", "tiff", SUPPORTS_VIDEO },
 	{ FILE_PNG, "png_pipe", "png_pipe", SUPPORTS_VIDEO },
 	{ FILE_YUV, "yuv4mpegpipe", "yuv4mpegpipe",  SUPPORTS_VIDEO },
 	{ FILE_RAWDV, "dv", "dv", SUPPORTS_AUDIO | SUPPORTS_VIDEO },
@@ -77,6 +77,9 @@ struct  avlib_formattable FileAVlibs::known_formats[] =
 	{ FILE_WAV, "wav", "wav", SUPPORTS_AUDIO },
 	{ FILE_FLAC, "flac", "flac", SUPPORTS_AUDIO },
 	{ FILE_IMAGE, "image2", 0, SUPPORTS_VIDEO },
+// Needed for proper initalization of streams
+	{ FILE_JPEG, "mjpeg", 0, SUPPORTS_VIDEO },
+	{ FILE_TGA, "targa", 0, SUPPORTS_VIDEO },
 	{ 0 }
 };
 
