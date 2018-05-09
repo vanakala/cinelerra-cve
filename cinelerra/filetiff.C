@@ -343,12 +343,12 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 // Then it expands the input data in reverse to fill the row.
 	for(int i = 0; i < asset->height; i++)
 	{
-		TIFFReadScanline(stream, output->get_rows()[i], i, 0);
+		TIFFReadScanline(stream, output->get_row_ptr(i), i, 0);
 
 // For the greyscale model, the output is RGB888 but the input must be expanded
 		if(asset->tiff_cmodel == FileTIFF::GREYSCALE)
 		{
-			unsigned char *row = output->get_rows()[i];
+			unsigned char *row = output->get_row_ptr(i);
 			for(int j = output->get_w() - 1; j >= 0; j--)
 			{
 				unsigned char value = row[j];
@@ -360,7 +360,7 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 		else
 		if(asset->tiff_cmodel == FileTIFF::BLACKWHITE)
 		{
-			unsigned char *row = output->get_rows()[i];
+			unsigned char *row = output->get_row_ptr(i);
 			for(int j = output->get_w() - 1; j >= 0;)
 			{
 				unsigned char value = row[j / 8];
@@ -495,7 +495,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	{
 		for(int i = 0; i < asset->height; i++)
 		{
-			TIFFWriteScanline(stream, frame->get_rows()[i], i, 0);
+			TIFFWriteScanline(stream, frame->get_row_ptr(i), i, 0);
 		}
 	}
 	else
@@ -518,7 +518,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 		for(int i = 0; i < asset->height; i++)
 		{
-			TIFFWriteScanline(stream, tiff_unit->temp->get_rows()[i], i, 0);
+			TIFFWriteScanline(stream, tiff_unit->temp->get_row_ptr(i), i, 0);
 		}
 	}
 
