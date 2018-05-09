@@ -1654,7 +1654,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 
 #define GET_COLOR(type, components, max, do_yuv) \
 { \
-	type *row = (type*)(refresh_frame->get_rows()[(int)cursor_y]) + \
+	type *row = (type*)(refresh_frame->get_row_ptr((int)cursor_y)) + \
 		(int)cursor_x * components; \
 	double red = (double)*row++ / max; \
 	double green = (double)*row++ / max; \
@@ -1699,6 +1699,26 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 			case BC_RGBA_FLOAT:
 				GET_COLOR(float, 4, 1.0, 0);
 				break;
+			case BC_RGBA16161616:
+				GET_COLOR(uint16_t, 4, 0xffff, 0);
+				break;
+			case BC_AYUV16161616:
+				{
+					uint16_t *row = (uint16_t*)(refresh_frame->get_row_ptr((int)cursor_y)) +
+						(int)cursor_x * 4;
+					row++;
+					double red = (double)*row++ / 0xffff;
+					double green = (double)*row++ / 0xffff;
+					double blue = (double)*row++ / 0xffff;
+					mwindow->edl->local_session->red =
+						red + V_TO_R * (blue - 0.5);
+					mwindow->edl->local_session->green =
+						red + U_TO_G * (green - 0.5) +
+						V_TO_G * (blue - 0.5);
+					mwindow->edl->local_session->blue =
+						red + U_TO_B * (green - 0.5);
+				}
+				break;
 			}
 		}
 		else
@@ -1707,7 +1727,6 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 			mwindow->edl->local_session->green = 0;
 			mwindow->edl->local_session->blue = 0;
 		}
-
 		gui->update_tool();
 		result = 1;
 // Can't rerender since the color value is from the output of any effect it
