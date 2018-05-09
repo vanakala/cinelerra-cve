@@ -46,8 +46,8 @@ FadeUnit::FadeUnit(FadeEngine *server)
  \
 	for(int i = row1; i < row2; i++) \
 	{ \
-		type *in_row = (type*)input_rows[i]; \
-		type *out_row = (type*)output_rows[i]; \
+		type *in_row = (type*)input->get_row_ptr(i); \
+		type *out_row = (type*)output->get_row_ptr(i); \
  \
 		for(int j = 0; j < width; j++, out_row += components, in_row += components) \
 		{ \
@@ -98,12 +98,10 @@ void FadeUnit::process_package(LoadPackage *package)
 	float alpha = engine->alpha;
 	int row1 = pkg->out_row1;
 	int row2 = pkg->out_row2;
-	unsigned char **in_rows = input->get_rows();
-	unsigned char **out_rows = output->get_rows();
 	int width = input->get_w();
 	int alpha_pos = 3;
 
-	if(input->get_rows()[0] == output->get_rows()[0])
+	if(input == output)
 	{
 		switch(input->get_color_model())
 		{
