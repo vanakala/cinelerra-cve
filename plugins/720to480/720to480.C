@@ -234,6 +234,8 @@ int _720to480Main::process_loop(VFrame *output)
 
 // Step 1: Reduce vertically and put in desired fields of output
 	temp->set_pts(input_pts);
+	output->clear_frame();
+	output->set_pts(input_pts);
 	get_frame(temp);
 	reduce_field(output, temp, config.first_field == 0 ? 0 : 1);
 	input_pts = temp->next_pts();
