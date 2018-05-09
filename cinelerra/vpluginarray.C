@@ -98,18 +98,8 @@ void VPluginArray::process_realtime(int module, ptstime pts, ptstime len)
 int VPluginArray::process_loop(int module, int &write_length)
 {
 	if(!realtime_buffers) realtime_buffers = file->get_video_buffer();
-
-// Convert from array of frames to array of tracks
-	VFrame **temp_buffer;
-	temp_buffer = new VFrame*[total_tracks()];
-	for(int i = 0; i < total_tracks(); i++)
-	{
-		temp_buffer[i] = realtime_buffers[i][0];
-	}
-
 	int result = values[module]->process_loop(realtime_buffers[module]);
 	write_length = 1;
-	delete [] temp_buffer;
 	return result;
 }
 
