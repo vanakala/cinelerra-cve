@@ -342,7 +342,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 	{
 		for(int i = height - 1; i >= 0; i--)
 		{
-			read_line(output_frame->get_rows()[i], 
+			read_line(output_frame->get_row_ptr(i),
 				data->get_data(), 
 				file_offset,
 				image_type,
@@ -359,7 +359,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 	{
 		for(int i = 0; i < height; i++)
 		{
-			read_line(output_frame->get_rows()[i], 
+			read_line(output_frame->get_row_ptr(i),
 				data->get_data(), 
 				file_offset,
 				image_type,
@@ -465,7 +465,7 @@ void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp
 	unsigned char *output = new unsigned char[out_bpp * input_frame->get_w()];
 	for(int i = 0; i < input_frame->get_h(); i++)
 	{
-		bgr2rgb(output, input_frame->get_rows()[i], input_frame->get_w(), out_bpp, (out_bpp == 4));
+		bgr2rgb(output, input_frame->get_row_ptr(i), input_frame->get_w(), out_bpp, (out_bpp == 4));
 
 		if(rle)
 		{
