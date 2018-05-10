@@ -500,86 +500,86 @@ int OverlayFrame::overlay(VFrame *output,
 	switch(mode) \
 	{ \
 		case TRANSFER_DIVIDE: \
-			r = input1 ? (((temp_type)output[0] * max) / input1) : max; \
+			r = input1 ? (((temp_type)out_row[0] * max) / input1) : max; \
 			if(chroma_offset) \
 			{ \
-				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output[1] - chroma_offset) ? input2 : output[1]; \
-				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)output[2] - chroma_offset) ? input3 : output[2]; \
+				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)out_row[1] - chroma_offset) ? input2 : out_row[1]; \
+				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)out_row[2] - chroma_offset) ? input3 : out_row[2]; \
 			} \
 			else \
 			{ \
-				g = input2 ? (temp_type)output[1] * max / (temp_type)input2 : max; \
-				b = input3 ? (temp_type)output[2] * max / (temp_type)input3 : max; \
+				g = input2 ? (temp_type)out_row[1] * max / (temp_type)input2 : max; \
+				b = input3 ? (temp_type)out_row[2] * max / (temp_type)input3 : max; \
 			} \
-			r = (r * opacity + (temp_type)output[0] * transparency) / max; \
-			g = (g * opacity + (temp_type)output[1] * transparency) / max; \
-			b = (b * opacity + (temp_type)output[2] * transparency) / max; \
+			r = (r * opacity + (temp_type)out_row[0] * transparency) / max; \
+			g = (g * opacity + (temp_type)out_row[1] * transparency) / max; \
+			b = (b * opacity + (temp_type)out_row[2] * transparency) / max; \
 			break; \
 		case TRANSFER_MULTIPLY: \
-			r = ((temp_type)input1 * output[0]) / max; \
+			r = ((temp_type)input1 * out_row[0]) / max; \
 			if(chroma_offset) \
 			{ \
-				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output[1] - chroma_offset) ? input2 : output[1]; \
-				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)output[2] - chroma_offset) ? input3 : output[2]; \
+				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)out_row[1] - chroma_offset) ? input2 : out_row[1]; \
+				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)out_row[2] - chroma_offset) ? input3 : out_row[2]; \
 			} \
 			else \
 			{ \
-				g = (temp_type)input2 * (temp_type)output[1] / max; \
-				b = (temp_type)input3 * (temp_type)output[2] / max; \
+				g = (temp_type)input2 * (temp_type)out_row[1] / max; \
+				b = (temp_type)input3 * (temp_type)out_row[2] / max; \
 			} \
-			r = (r * opacity + (temp_type)output[0] * transparency) / max; \
-			g = (g * opacity + (temp_type)output[1] * transparency) / max; \
-			b = (b * opacity + (temp_type)output[2] * transparency) / max; \
+			r = (r * opacity + (temp_type)out_row[0] * transparency) / max; \
+			g = (g * opacity + (temp_type)out_row[1] * transparency) / max; \
+			b = (b * opacity + (temp_type)out_row[2] * transparency) / max; \
 			break; \
 		case TRANSFER_SUBTRACT: \
-			r = (temp_type)output[0] - (temp_type)input1; \
-			g = ((temp_type)output[1] - (temp_type)chroma_offset) - \
+			r = (temp_type)out_row[0] - (temp_type)input1; \
+			g = ((temp_type)out_row[1] - (temp_type)chroma_offset) - \
 				((temp_type)input2 - (temp_type)chroma_offset) + \
 				(temp_type)chroma_offset; \
-			b = ((temp_type)output[2] - (temp_type)chroma_offset) - \
+			b = ((temp_type)out_row[2] - (temp_type)chroma_offset) - \
 				((temp_type)input3 - (temp_type)chroma_offset) + \
 				(temp_type)chroma_offset; \
 			if(r < 0) r = 0; \
 			if(g < 0) g = 0; \
 			if(b < 0) b = 0; \
-			r = (r * opacity + output[0] * transparency) / max; \
-			g = (g * opacity + output[1] * transparency) / max; \
-			b = (b * opacity + output[2] * transparency) / max; \
+			r = (r * opacity + out_row[0] * transparency) / max; \
+			g = (g * opacity + out_row[1] * transparency) / max; \
+			b = (b * opacity + out_row[2] * transparency) / max; \
 			break; \
 		case TRANSFER_ADDITION: \
-			r = (temp_type)input1 + output[0]; \
+			r = (temp_type)input1 + out_row[0]; \
 			g = ((temp_type)input2 - chroma_offset) + \
-				((temp_type)output[1] - chroma_offset) + \
+				((temp_type)out_row[1] - chroma_offset) + \
 				(temp_type)chroma_offset; \
 			b = ((temp_type)input3 - chroma_offset) + \
-				((temp_type)output[2] - chroma_offset) + \
+				((temp_type)out_row[2] - chroma_offset) + \
 				(temp_type)chroma_offset; \
-			r = (r * opacity + output[0] * transparency) / max; \
-			g = (g * opacity + output[1] * transparency) / max; \
-			b = (b * opacity + output[2] * transparency) / max; \
+			r = (r * opacity + out_row[0] * transparency) / max; \
+			g = (g * opacity + out_row[1] * transparency) / max; \
+			b = (b * opacity + out_row[2] * transparency) / max; \
 			break; \
 		case TRANSFER_MAX: \
 		{ \
-			r = (temp_type)MAX(input1, output[0]); \
+			r = (temp_type)MAX(input1, out_row[0]); \
 			temp_type g1 = ((temp_type)input2 - chroma_offset); \
 			if(g1 < 0) g1 = -g1; \
-			temp_type g2 = ((temp_type)output[1] - chroma_offset); \
+			temp_type g2 = ((temp_type)out_row[1] - chroma_offset); \
 			if(g2 < 0) g2 = -g2; \
 			if(g1 > g2) \
 				g = input2; \
 			else \
-				g = output[1]; \
+				g = out_row[1]; \
 			temp_type b1 = ((temp_type)input3 - chroma_offset); \
 			if(b1 < 0) b1 = -b1; \
-			temp_type b2 = ((temp_type)output[2] - chroma_offset); \
+			temp_type b2 = ((temp_type)out_row[2] - chroma_offset); \
 			if(b2 < 0) b2 = -b2; \
 			if(b1 > b2) \
 				b = input3; \
 			else \
-				b = output[2]; \
-			r = (r * opacity + output[0] * transparency) / max; \
-			g = (g * opacity + output[1] * transparency) / max; \
-			b = (b * opacity + output[2] * transparency) / max; \
+				b = out_row[2]; \
+			r = (r * opacity + out_row[0] * transparency) / max; \
+			g = (g * opacity + out_row[1] * transparency) / max; \
+			b = (b * opacity + out_row[2] * transparency) / max; \
 			break; \
 		} \
 		case TRANSFER_REPLACE: \
@@ -588,23 +588,23 @@ int OverlayFrame::overlay(VFrame *output,
 			b = input3; \
 			break; \
 		case TRANSFER_NORMAL: \
-			r = ((temp_type)input1 * opacity + output[0] * transparency) / max; \
-			g = ((temp_type)input2 * opacity + output[1] * transparency) / max; \
-			b = ((temp_type)input3 * opacity + output[2] * transparency) / max; \
+			r = ((temp_type)input1 * opacity + out_row[0] * transparency) / max; \
+			g = ((temp_type)input2 * opacity + out_row[1] * transparency) / max; \
+			b = ((temp_type)input3 * opacity + out_row[2] * transparency) / max; \
 			break; \
 	} \
  \
  	if(sizeof(type) != 4) \
 	{ \
-		output[0] = (type)CLIP(r, 0, max); \
-		output[1] = (type)CLIP(g, 0, max); \
-		output[2] = (type)CLIP(b, 0, max); \
+		out_row[0] = (type)CLIP(r, 0, max); \
+		out_row[1] = (type)CLIP(g, 0, max); \
+		out_row[2] = (type)CLIP(b, 0, max); \
 	} \
 	else \
 	{ \
-		output[0] = r; \
-		output[1] = g; \
-		output[2] = b; \
+		out_row[0] = r; \
+		out_row[1] = g; \
+		out_row[2] = b; \
 	} \
 }
 
@@ -620,17 +620,17 @@ int OverlayFrame::overlay(VFrame *output,
  \
 	if(alpha_pos) \
 	{ \
-		output1 = output[0]; \
-		output2 = output[1]; \
-		output3 = output[2]; \
-		output4 = output[3]; \
+		output1 = out_row[0]; \
+		output2 = out_row[1]; \
+		output3 = out_row[2]; \
+		output4 = out_row[3]; \
 	} \
 	else \
 	{ \
-		output4 = output[0]; \
-		output1 = output[1]; \
-		output2 = output[2]; \
-		output3 = output[3]; \
+		output4 = out_row[0]; \
+		output1 = out_row[1]; \
+		output2 = out_row[2]; \
+		output3 = out_row[3]; \
 	} \
  \
 	pixel_opacity = opacity * input4; \
@@ -746,25 +746,25 @@ int OverlayFrame::overlay(VFrame *output,
 	{ \
 		if(alpha_pos) \
 		{ \
-			output[0] = (type)CLIP(r, 0, max); \
-			output[1] = (type)CLIP(g, 0, max); \
-			output[2] = (type)CLIP(b, 0, max); \
-			output[3] = (type)CLIP(a, 0, max); \
+			out_row[0] = (type)CLIP(r, 0, max); \
+			out_row[1] = (type)CLIP(g, 0, max); \
+			out_row[2] = (type)CLIP(b, 0, max); \
+			out_row[3] = (type)CLIP(a, 0, max); \
 		} \
 		else \
 		{ \
-			output[0] = (type)CLIP(a, 0, max); \
-			output[1] = (type)CLIP(r, 0, max); \
-			output[2] = (type)CLIP(g, 0, max); \
-			output[3] = (type)CLIP(b, 0, max); \
+			out_row[0] = (type)CLIP(a, 0, max); \
+			out_row[1] = (type)CLIP(r, 0, max); \
+			out_row[2] = (type)CLIP(g, 0, max); \
+			out_row[3] = (type)CLIP(b, 0, max); \
 		} \
 	} \
 	else \
 	{ \
-		output[0] = r; \
-		output[1] = g; \
-		output[2] = b; \
-		output[3] = a; \
+		out_row[0] = r; \
+		out_row[1] = g; \
+		out_row[2] = b; \
+		out_row[3] = a; \
 	} \
 }
 
@@ -777,15 +777,13 @@ int OverlayFrame::overlay(VFrame *output,
 		opacity = (temp_type)(alpha * max); \
 	temp_type transparency = max - opacity; \
  \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
 	ix *= components; \
 	ox *= components; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
-		type* in_row = input_rows[i + iy] + ix; \
-		type* output = output_rows[i] + ox; \
+		type* in_row = (type*)input->get_row_ptr(i + iy) + ix; \
+		type* out_row = (type*)output->get_row_ptr(i) + ox; \
  \
 		for(int j = 0; j < ow; j++) \
 		{ \
@@ -817,7 +815,7 @@ int OverlayFrame::overlay(VFrame *output,
 			} \
  \
 			in_row += components; \
-			output += components; \
+			out_row += components; \
 		} \
 	} \
 }
@@ -826,15 +824,14 @@ int OverlayFrame::overlay(VFrame *output,
 #define BLEND_ONLY_TRANSFER_REPLACE(type, components) \
 { \
  \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
 	int line_len = ow * sizeof(type) * components; \
 	ix *= components; \
 	ox *= components; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
-		memcpy(output_rows[i] + ox, input_rows[i + iy] + ix, line_len); \
+		memcpy((type*)output->get_row_ptr(i) + ox, \
+			(type*)input->get_row_ptr(i + iy) + ix, line_len); \
 	} \
 }
 
@@ -845,15 +842,13 @@ int OverlayFrame::overlay(VFrame *output,
 	temp_type transparency = max - opacity; \
 	temp_type max_squared = ((temp_type)max) * max; \
  \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
 	ix *= 4; \
 	ox *= 4; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
-		type* in_row = input_rows[i + iy] + ix; \
-		type* output = output_rows[i] + ox; \
+		type* in_row = (type*)input->get_row_ptr(i + iy) + ix; \
+		type* out_row = (type*)output->get_row_ptr(i) + ox; \
  \
 		for(int j = 0; j < ow; j++) \
 		{ \
@@ -862,20 +857,20 @@ int OverlayFrame::overlay(VFrame *output,
 			pixel_transparency = (temp_type)max_squared - pixel_opacity; \
  \
 			temp_type r,g,b; \
-			output[0] = ((temp_type)in_row[0] * pixel_opacity + \
-				(temp_type)output[0] * pixel_transparency) / max / max; \
-			output[1] = (((temp_type)in_row[1] - chroma_offset) * pixel_opacity + \
-				((temp_type)output[1] - chroma_offset) * pixel_transparency) \
+			out_row[0] = ((temp_type)in_row[0] * pixel_opacity + \
+				(temp_type)out_row[0] * pixel_transparency) / max / max; \
+			out_row[1] = (((temp_type)in_row[1] - chroma_offset) * pixel_opacity + \
+				((temp_type)out_row[1] - chroma_offset) * pixel_transparency) \
 				/ max / max + \
 				chroma_offset; \
-			output[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
-				((temp_type)output[2] - chroma_offset) * pixel_transparency) \
+			out_row[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
+				((temp_type)out_row[2] - chroma_offset) * pixel_transparency) \
 				/ max / max + \
 				chroma_offset; \
-			output[3] += ((temp_type)(max - output[3]) * in_row[3]) / max; \
+			out_row[3] += ((temp_type)(max - out_row[3]) * in_row[3]) / max; \
  \
 			in_row += 4; \
-			output += 4; \
+			out_row += 4; \
 		} \
 	} \
 }
@@ -887,15 +882,13 @@ int OverlayFrame::overlay(VFrame *output,
 	temp_type transparency = max - opacity; \
 	temp_type max_squared = ((temp_type)max) * max; \
  \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
 	ix *= 4; \
 	ox *= 4; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
-		type* in_row = input_rows[i + iy] + ix; \
-		type* output = output_rows[i] + ox; \
+		type* in_row = (type*)input->get_row_ptr(i + iy) + ix; \
+		type* out_row = (type*)output->get_row_ptr(i) + ox; \
  \
 		for(int j = 0; j < ow; j++) \
 		{ \
@@ -903,20 +896,20 @@ int OverlayFrame::overlay(VFrame *output,
 			pixel_opacity = opacity * in_row[0]; \
 			pixel_transparency = (temp_type)max_squared - pixel_opacity; \
  \
-			output[0] += ((temp_type)(max - output[0]) * in_row[0]) / max; \
-			output[1] = ((temp_type)in_row[1] * pixel_opacity + \
-				(temp_type)output[1] * pixel_transparency) / max / max; \
-			output[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
-				((temp_type)output[2] - chroma_offset) * pixel_transparency) \
+			out_row[0] += ((temp_type)(max - out_row[0]) * in_row[0]) / max; \
+			out_row[1] = ((temp_type)in_row[1] * pixel_opacity + \
+				(temp_type)out_row[1] * pixel_transparency) / max / max; \
+			out_row[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
+				((temp_type)out_row[2] - chroma_offset) * pixel_transparency) \
 				/ max / max + \
 				chroma_offset; \
-			output[3] = (((temp_type)in_row[3] - chroma_offset) * pixel_opacity + \
-				((temp_type)output[3] - chroma_offset) * pixel_transparency) \
+			out_row[3] = (((temp_type)in_row[3] - chroma_offset) * pixel_opacity + \
+				((temp_type)out_row[3] - chroma_offset) * pixel_transparency) \
 				/ max / max + \
 				chroma_offset; \
  \
 			in_row += 4; \
-			output += 4; \
+			out_row += 4; \
 		} \
 	} \
 }
@@ -928,21 +921,19 @@ int OverlayFrame::overlay(VFrame *output,
 	temp_type opacity = (temp_type)(alpha * ((temp_type)1 << bits) + 0.5); \
 	temp_type transparency = ((temp_type)1 << bits) - opacity; \
  \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
 	ix *= 3; \
 	ox *= 3; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
-		type* in_row = input_rows[i + iy] + ix; \
-		type* output = output_rows[i] + ox; \
+		type* in_row = (type*)input->get_row_ptr(i + iy) + ix; \
+		type* out_row = (type*)output->get_row_ptr(i) + ox; \
  \
 		for(int j = 0; j < ow * 3; j++) \
 		{ \
-			*output = ((temp_type)*in_row * opacity + *output * transparency) >> bits; \
+			*out_row = ((temp_type)*in_row * opacity + *out_row * transparency) >> bits; \
 			in_row ++; \
-			output ++; \
+			out_row ++; \
 		} \
 	} \
 }
@@ -1015,17 +1006,14 @@ void DirectUnit::process_package(LoadPackage *package)
 			float opacity = alpha;
 			float transparency = 1.0 - alpha;
 
-			float** output_rows = (float**)output->get_rows();
-			float** input_rows = (float**)input->get_rows();
-
 			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
 			{
-				float* in_row = input_rows[i + iy] + ix;
-				float* output = output_rows[i] + ox;
+				float* in_row = (float*)input->get_row_ptr(i + iy) + ix;
+				float* out_row = (float*)output->get_row_ptr(i) + ox;
 
 				for(int j = 0; j < ow * 3; j++)
 				{
-					*output = *in_row * opacity + *output * transparency;
+					*out_row = *in_row * opacity + *out_row * transparency;
 					in_row++;
 					output++;
 				}
@@ -1038,13 +1026,10 @@ void DirectUnit::process_package(LoadPackage *package)
 			float opacity = alpha;
 			float transparency = 1.0 - alpha;
 
-			float** output_rows = (float**)output->get_rows();
-			float** input_rows = (float**)input->get_rows();
-
 			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
 			{
-				float* in_row = input_rows[i + iy] + ix;
-				float* output = output_rows[i] + ox;
+				float* in_row = (float*)input->get_row_ptr(i + iy) + ix;
+				float* out_row = (float*)output->get_row_ptr(i) + ox;
 
 				for(int j = 0; j < ow; j++)
 				{
@@ -1052,16 +1037,16 @@ void DirectUnit::process_package(LoadPackage *package)
 					pixel_opacity = opacity * in_row[3];
 					pixel_transparency = 1.0 - pixel_opacity;
 
-					output[0] = in_row[0] * pixel_opacity +
-					output[0] * pixel_transparency;
-					output[1] = in_row[1] * pixel_opacity +
-						output[1] * pixel_transparency;
-					output[2] = in_row[2] * pixel_opacity +
-						output[2] * pixel_transparency;
-					output[3] += (1. - output[3]) * in_row[3];
+					out_row[0] = in_row[0] * pixel_opacity +
+						out_row[0] * pixel_transparency;
+					out_row[1] = in_row[1] * pixel_opacity +
+						out_row[1] * pixel_transparency;
+					out_row[2] = in_row[2] * pixel_opacity +
+						out_row[2] * pixel_transparency;
+					out_row[3] += (1. - out_row[3]) * in_row[3];
 
 					in_row += 4;
-					output += 4;
+					out_row += 4;
 				}
 			}
 			break;
@@ -1212,15 +1197,13 @@ LoadPackage* DirectEngine::new_package()
 		opacity = (temp_type)(alpha * max); \
 	temp_type transparency = max - opacity; \
  \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
 	ox *= components; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
 		int *lx = engine->in_lookup_x; \
-		type* in_row = input_rows[*ly++]; \
-		type* output = output_rows[i] + ox; \
+		type* in_row = (type*)input->get_row_ptr(*ly++); \
+		type* out_row = (type*)output->get_row_ptr(i) + ox; \
  \
 		for(int j = 0; j < ow; j++) \
 		{ \
@@ -1249,32 +1232,30 @@ LoadPackage* DirectEngine::new_package()
 				BLEND_4(max, temp_type, type, chroma_offset); \
 			} \
  \
-				output += components; \
+			out_row += components; \
 		} \
 	} \
 }
 
 #define BLEND_NN_TRANSFER_REPLACE(type, components) \
 { \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
 	ox *= components; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
 		int *lx = engine->in_lookup_x; \
-		type* in_row = input_rows[*ly++]; \
-		type* output = output_rows[i] + ox; \
+		type* in_row = (type*)input->get_row_ptr(*ly++); \
+		type* out_row = (type*)output->get_row_ptr(i) + ox; \
  \
 		for(int j = 0; j < ow; j++) \
 		{ \
 			in_row += *lx++; \
-			*output++ = in_row[0]; \
-			*output++ = in_row[1]; \
-			*output++ = in_row[2]; \
+			*out_row++ = in_row[0]; \
+			*out_row++ = in_row[1]; \
+			*out_row++ = in_row[2]; \
  \
 			if(components==4) \
-				*output++ = in_row[3]; \
+				*out_row++ = in_row[3]; \
 		} \
 	} \
 }
@@ -1285,15 +1266,13 @@ LoadPackage* DirectEngine::new_package()
 	temp_type transparency = max - opacity; \
 	temp_type max_squared = ((temp_type)max) * max; \
  \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
 	ox *= 4; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
 		int *lx = engine->in_lookup_x; \
-		type* in_row = input_rows[*ly++]; \
-		type* output = output_rows[i] + ox; \
+		type* in_row = (type*)input->get_row_ptr(*ly++); \
+		type* out_row = (type*)output->get_row_ptr(i) + ox; \
  \
 		for(int j = 0; j < ow; j++) \
 		{ \
@@ -1304,30 +1283,30 @@ LoadPackage* DirectEngine::new_package()
 			pixel_t = (temp_type)max_squared - pixel_o; \
 			if(alpha_pos) \
 			{ \
-				output[0] = ((temp_type)in_row[0] * pixel_o + \
-					(temp_type)output[0] * pixel_t) / max / max; \
-				output[1] = (((temp_type)in_row[1] - chroma_offset) * pixel_o + \
-					((temp_type)output[1] - chroma_offset) * pixel_t)  \
+				out_row[0] = ((temp_type)in_row[0] * pixel_o + \
+					(temp_type)out_row[0] * pixel_t) / max / max; \
+				out_row[1] = (((temp_type)in_row[1] - chroma_offset) * pixel_o + \
+					((temp_type)out_row[1] - chroma_offset) * pixel_t)  \
 					/ max / max + chroma_offset; \
-				output[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_o + \
-					((temp_type)output[2] - chroma_offset) * pixel_t) \
+				out_row[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_o + \
+					((temp_type)out_row[2] - chroma_offset) * pixel_t) \
 					/ max / max + chroma_offset; \
-				output[3] += ((temp_type)(max - output[3]) * in_row[3]) / max; \
+				out_row[3] += ((temp_type)(max - out_row[3]) * in_row[3]) / max; \
 			} \
 			else \
 			{ \
-				output[0] += ((temp_type)(max - output[0]) * in_row[0]) / max; \
-				output[1] = ((temp_type)in_row[1] * pixel_o + \
-					(temp_type)output[1] * pixel_t) / max / max; \
-				output[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_o + \
-					((temp_type)output[2] - chroma_offset) * pixel_t)  \
+				out_row[0] += ((temp_type)(max - out_row[0]) * in_row[0]) / max; \
+				out_row[1] = ((temp_type)in_row[1] * pixel_o + \
+					(temp_type)out_row[1] * pixel_t) / max / max; \
+				out_row[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_o + \
+					((temp_type)out_row[2] - chroma_offset) * pixel_t)  \
 					/ max / max + chroma_offset; \
-				output[3] = (((temp_type)in_row[3] - chroma_offset) * pixel_o + \
-					((temp_type)output[3] - chroma_offset) * pixel_t) \
+				out_row[3] = (((temp_type)in_row[3] - chroma_offset) * pixel_o + \
+					((temp_type)out_row[3] - chroma_offset) * pixel_t) \
 					/ max / max + chroma_offset; \
 			} \
  \
-			output += 4; \
+			out_row += 4; \
 		} \
 	} \
 }
@@ -1339,26 +1318,23 @@ LoadPackage* DirectEngine::new_package()
 	temp_type transparency = ((temp_type)1 << bits) - opacity; \
 	ox *= 3; \
  \
-	type** output_rows = (type**)output->get_rows(); \
-	type** input_rows = (type**)input->get_rows(); \
- \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
 		int *lx = engine->in_lookup_x; \
-		type* in_row = input_rows[*ly++]; \
-		type* output = output_rows[i]+ox; \
+		type* in_row = (type*)input->get_row_ptr(*ly++); \
+		type* out_row = (type*)output->get_row_ptr(i) + ox; \
  \
 		for(int j = 0; j < ow; j++) \
 		{ \
 			in_row += *lx++; \
-			output[0] = ((temp_type)in_row[0] * opacity + \
-				output[0] * transparency) >> bits; \
-			output[1] = ((temp_type)in_row[1] * opacity + \
-				output[1] * transparency) >> bits; \
-			output[2] = ((temp_type)in_row[2] * opacity + \
-				output[2] * transparency) >> bits; \
+			out_row[0] = ((temp_type)in_row[0] * opacity + \
+				out_row[0] * transparency) >> bits; \
+			out_row[1] = ((temp_type)in_row[1] * opacity + \
+				out_row[1] * transparency) >> bits; \
+			out_row[2] = ((temp_type)in_row[2] * opacity + \
+				out_row[2] * transparency) >> bits; \
  \
-			output += 3; \
+			out_row += 3; \
 		} \
 	} \
 }
@@ -1428,23 +1404,21 @@ void NNUnit::process_package(LoadPackage *package)
 			float opacity = alpha;
 			float transparency = 1.0 - alpha;
 
-			float** output_rows = (float**)output->get_rows();
-			float** input_rows = (float**)input->get_rows();
 			ox *= 3;
 
 			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
 			{
 				int *lx = engine->in_lookup_x;
-				float *in_row = input_rows[*ly++];
-				float* output = output_rows[i] + ox;
+				float *in_row = (float*)input->get_row_ptr(*ly++);
+				float* out_row = (float*)output->get_row_ptr(i) + ox;
 
 				for(int j = 0; j < ow; j++)
 				{
 					in_row += *lx++;
-					output[0] = in_row[0] * opacity + output[0] * transparency;
-					output[1] = in_row[1] * opacity + output[1] * transparency;
-					output[2] = in_row[2] * opacity + output[2] * transparency;
-					output += 3;
+					out_row[0] = in_row[0] * opacity + out_row[0] * transparency;
+					out_row[1] = in_row[1] * opacity + out_row[1] * transparency;
+					out_row[2] = in_row[2] * opacity + out_row[2] * transparency;
+					out_row += 3;
 				}
 			}
 			break;
@@ -1454,15 +1428,13 @@ void NNUnit::process_package(LoadPackage *package)
 			float opacity = alpha;
 			float transparency = 1.0 - alpha;
 
-			float** output_rows = (float**)output->get_rows();
-			float** input_rows = (float**)input->get_rows();
 			ox *= 4;
 
 			for(int i = pkg->out_row1; i < pkg->out_row2; i++)
 			{
 				int *lx = engine->in_lookup_x;
-				float *in_row = input_rows[*ly++];
-				float* output = output_rows[i] + ox;
+				float *in_row = (float*)input->get_row_ptr(*ly++);
+				float* out_row = (float*)output->get_row_ptr(i) + ox;
 
 				for(int j = 0; j < ow; j++)
 				{
@@ -1472,15 +1444,15 @@ void NNUnit::process_package(LoadPackage *package)
 					pixel_opacity = opacity * in_row[3];
 					pixel_transparency = 1.0 - pixel_opacity;
 
-					output[0] = in_row[0] * pixel_opacity +
-						output[0] * pixel_transparency;
-					output[1] = in_row[1] * pixel_opacity +
-						output[1] * pixel_transparency;
-					output[2] = in_row[2] * pixel_opacity +
-						output[2] * pixel_transparency;
-					output[3] += (1. - output[3]) * in_row[3];
+					out_row[0] = in_row[0] * pixel_opacity +
+						out_row[0] * pixel_transparency;
+					out_row[1] = in_row[1] * pixel_opacity +
+						out_row[1] * pixel_transparency;
+					out_row[2] = in_row[2] * pixel_opacity +
+						out_row[2] * pixel_transparency;
+					out_row[3] += (1. - out_row[3]) * in_row[3];
 
-					output += 4;
+					out_row += 4;
 				}
 			}
 			break;
@@ -1699,8 +1671,6 @@ LoadPackage* NNEngine::new_package()
 #define SAMPLE_3(max, temp_type, type, chroma_offset, round) \
 { \
 	float temp[oh*3]; \
-	type **output_rows = (type**)voutput->get_rows() + o1i; \
-	type **input_rows = (type**)vinput->get_rows(); \
 	temp_type opacity = (alpha * max + round); \
 	temp_type transparency = max - opacity; \
  \
@@ -1716,19 +1686,19 @@ LoadPackage* NNEngine::new_package()
 			temp_type input4 = 0; \
 			for(int j = 0; j < oh; j++) \
 			{ \
-				type *output = output_rows[j] + i * 4; \
+				type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 4; \
 				BLEND_4(max, temp_type, type, chroma_offset); \
 			} \
 		} \
 		else \
 		{ \
-			type *input = input_rows[i - engine->col_out1 + engine->row_in]; \
+			type *in_row = (type*)vinput->get_row_ptr(i - engine->col_out1 + engine->row_in); \
 			float *tempp = temp; \
  \
 			if(!k) \
 			{ \
 				/* direct copy case */ \
-				type *ip = input + i1i * 3; \
+				type *ip = in_row + i1i * 3; \
 				for(int j = 0; j < oh; j++) \
 				{ \
 					*tempp++ = *ip++; \
@@ -1744,7 +1714,7 @@ LoadPackage* NNEngine::new_package()
 					float racc=0.f, gacc=0.f, bacc=0.f; \
 					int ki = lookup_sk[j]; \
 					int x = lookup_sx0[j]; \
-					type *ip = input+x * 3; \
+					type *ip = in_row + x * 3; \
 					float wacc = 0; \
 					while(x++ < lookup_sx1[j]) \
 					{ \
@@ -1780,7 +1750,7 @@ LoadPackage* NNEngine::new_package()
 			/* blend output */ \
 			for(int j = 0; j < oh; j++) \
 			{ \
-				type *output = output_rows[j] + i * 3; \
+				type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 3; \
 				temp_type input1 = *tempp++ + round; \
 				temp_type input2 = (*tempp++) + chroma_offset + round; \
 				temp_type input3 = (*tempp++) + chroma_offset + round; \
@@ -1793,8 +1763,6 @@ LoadPackage* NNEngine::new_package()
 #define SAMPLE_4(max, temp_type, type, chroma_offset, round) \
 { \
 	float temp[oh * 4]; \
-	type **output_rows = (type**)voutput->get_rows() + o1i; \
-	type **input_rows = (type**)vinput->get_rows(); \
 	temp_type opacity = (alpha * max + round); \
 	temp_type transparency = max - opacity; \
  \
@@ -1811,13 +1779,13 @@ LoadPackage* NNEngine::new_package()
 			temp_type input4 = 0; \
 			for(int j = 0; j < oh; j++) \
 			{ \
-				type *output = output_rows[j] + i * 4; \
+				type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 4; \
 				BLEND_4(max, temp_type, type, chroma_offset); \
 			} \
 		} \
 		else \
 		{ \
-			type *input = input_rows[i - engine->col_out1 + engine->row_in]; \
+			type *input = (type*)vinput->get_row_ptr(i - engine->col_out1 + engine->row_in); \
 			float *tempp = temp; \
  \
 			if(!k) \
@@ -1921,7 +1889,7 @@ LoadPackage* NNEngine::new_package()
 			{ \
 				for(int j = 0; j < oh; j++) \
 				{ \
-					type *output = output_rows[j] + i * 4; \
+					type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 4; \
 					temp_type input1 = *tempp++ + round; \
 					temp_type input2 = (*tempp++) + chroma_offset + round; \
 					temp_type input3 = (*tempp++) + chroma_offset + round; \
@@ -1933,7 +1901,7 @@ LoadPackage* NNEngine::new_package()
 			{ \
 				for(int j = 0; j < oh; j++) \
 				{ \
-					type *output = output_rows[j] + i * 4; \
+					type *out_row = (type*)voutput->get_row_ptr(o1i + j) + i * 4; \
 					temp_type input4 = *tempp++ + round; \
 					temp_type input1 = *tempp++ + round; \
 					temp_type input2 = (*tempp++) + chroma_offset + round; \
