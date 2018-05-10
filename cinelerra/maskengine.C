@@ -268,8 +268,6 @@ void MaskUnit::do_feather(VFrame *output,
 	if(start_in < 0) start_in = 0; \
 	if(end_in > frame_h) end_in = frame_h; \
 	int strip_size = end_in - start_in; \
-	type **in_rows = (type**)input->get_rows(); \
-	type **out_rows = (type**)output->get_rows(); \
 	int j; \
  \
 	for(j = 0; j < frame_w; j++) \
@@ -278,31 +276,34 @@ void MaskUnit::do_feather(VFrame *output,
 		memset(val_m, 0, sizeof(float) * (end_in - start_in)); \
 		for(int l = 0, k = start_in; k < end_in; l++, k++) \
 		{ \
-			src[l] = (float)in_rows[k][j]; \
+			type *in_row = (type*)input->get_row_ptr(k); \
+			src[l] = (float)in_row[j]; \
 		} \
  \
 		blur_strip(val_p, val_m, dst, src, strip_size, max); \
  \
 		for(int l = start_out - start_in, k = start_out; k < end_out; l++, k++) \
 		{ \
-			out_rows[k][j] = (type)dst[l]; \
+			type *out_row = (type*)output->get_row_ptr(k); \
+			out_row[j] = (type)dst[l]; \
 		} \
 	} \
  \
 	for(j = start_out; j < end_out; j++) \
 	{ \
+		type *out_row = (type*)output->get_row_ptr(j); \
 		memset(val_p, 0, sizeof(float) * frame_w); \
 		memset(val_m, 0, sizeof(float) * frame_w); \
 		for(int k = 0; k < frame_w; k++) \
 		{ \
-			src[k] = (float)out_rows[j][k]; \
+			src[k] = (float)out_row[k]; \
 		} \
  \
 		blur_strip(val_p, val_m, dst, src, frame_w, max); \
  \
 		for(int k = 0; k < frame_w; k++) \
 		{ \
-			out_rows[j][k] = (type)dst[k]; \
+			out_row[k] = (type)dst[k]; \
 		} \
 	} \
  \
@@ -495,7 +496,7 @@ void MaskUnit::process_package(LoadPackage *package)
 				}
 				// we have some pixels to fill, do coverage calculation for span
 
-				void *output_row = (unsigned char*)mask->get_rows()[i];
+				void *output_row = (unsigned char*)mask->get_row_ptr(i);
 				min_x = min_x / OVERSAMPLE;
 				max_x = (max_x + OVERSAMPLE - 1) / OVERSAMPLE;
 
@@ -670,8 +671,8 @@ void MaskUnit::process_package(LoadPackage *package)
 	type chroma_offset = (max + 1) / 2; \
 	for(int i = start_row; i < end_row; i++) \
 	{ \
-		type *output_row = (type*)engine->output->get_rows()[i]; \
-		type *mask_row = (type*)engine->mask->get_rows()[i]; \
+		type *output_row = (type*)engine->output->get_row_ptr(i); \
+		type *mask_row = (type*)engine->mask->get_row_ptr(i); \
  \
 		for(int j  = 0; j < mask_w; j++) \
 		{ \
@@ -701,8 +702,8 @@ void MaskUnit::process_package(LoadPackage *package)
 	type chroma_offset = (max + 1) / 2; \
 	for(int i = ptr->row1; i < ptr->row2; i++) \
 	{ \
-		type *output_row = (type*)engine->output->get_rows()[i]; \
-		type *mask_row = (type*)engine->mask->get_rows()[i]; \
+		type *output_row = (type*)engine->output->get_row_ptr(i); \
+		type *mask_row = (type*)engine->mask->get_row_ptr(i); \
  \
 		if(components == 4 && alpha_pos) output_row += 3; \
 		for(int j = mask_w; j != 0;  j--) \
