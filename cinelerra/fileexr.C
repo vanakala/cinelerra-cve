@@ -299,7 +299,7 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 	int dx = dw.min.x;
 	int dy = dw.min.y;
 	Imf::FrameBuffer framebuffer;
-	float **rows = (float**)frame->get_rows();
+	float *row = (float*)frame->get_row_ptr(-dy);
 	int components = ColorModels::components(frame->get_color_model());
 
 	if(is_yuv)
@@ -327,15 +327,15 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 	else
 	{
 		framebuffer.insert("R", Imf::Slice(Imf::FLOAT, 
-			(char*)(&rows[-dy][-dx * components]),
+			(char*)(&row[-dx * components]),
 			sizeof(float) * components,
 			sizeof(float) * components * frame->get_w()));
 		framebuffer.insert("G", Imf::Slice(Imf::FLOAT, 
-			(char*)(&rows[-dy][-dx * components + 1]),
+			(char*)(&row[-dx * components + 1]),
 			sizeof(float) * components,
 			sizeof(float) * components * frame->get_w()));
 		framebuffer.insert("B", Imf::Slice(Imf::FLOAT, 
-			(char*)(&rows[-dy][-dx * components + 2]),
+			(char*)(&row[-dx * components + 2]),
 			sizeof(float) * components,
 			sizeof(float) * components * frame->get_w()));
 	}
@@ -344,7 +344,7 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 	if(components == 4)
 	{
 		framebuffer.insert("A", Imf::Slice(Imf::FLOAT, 
-			(char*)(&rows[-dy][-dx * components + 3]),
+			(char*)(&row[-dx * components + 3]),
 			sizeof(float) * components,
 			sizeof(float) * components * frame->get_w()));
 	}
@@ -365,8 +365,8 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 			float *y_row2 = temp_y + (i + 1) * asset->width;
 			float *u_row = temp_u + (i * asset->width / 4);
 			float *v_row = temp_v + (i * asset->width / 4);
-			float *out_row1 = rows[i];
-			float *out_row2 = rows[i + 1];
+			float *out_row1 = (float*)frame->get_row_ptr(i);
+			float *out_row2 = (float*)frame->get_row_ptr(i + 1);
 			for(int j = 0; j < asset->width - 1; j += 2)
 			{
 				float v = *u_row++;
@@ -449,26 +449,26 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	EXROStream exr_stream(data);
 	Imf::OutputFile file(exr_stream, header);
 	Imf::FrameBuffer framebuffer;
-	float **rows = (float**)output_frame->get_rows();
+	float *row = (float*)output_frame->get_row_ptr(0);
 	framebuffer.insert("R",
 		Imf::Slice(Imf::FLOAT,
-			(char*)(rows[0]),
+			(char*)row,
 			sizeof(float) * components,
 			sizeof(float) * components * output_frame->get_w()));
 	framebuffer.insert("G",
 		Imf::Slice(Imf::FLOAT,
-			(char*)(rows[0] + 1),
+			(char*)(row + 1),
 			sizeof(float) * components,
 			sizeof(float) * components * output_frame->get_w()));
 	framebuffer.insert("B",
 		Imf::Slice(Imf::FLOAT,
-			(char*)(rows[0] + 2),
+			(char*)(row + 2),
 			sizeof(float) * components,
 			sizeof(float) * components * output_frame->get_w()));
 	if(asset->exr_use_alpha)
 		framebuffer.insert("A",
 			Imf::Slice(Imf::FLOAT,
-				(char*)(rows[0] + 3),
+				(char*)(row + 3),
 				sizeof(float) * components,
 				sizeof(float) * components * output_frame->get_w()));
 	file.setFrameBuffer(framebuffer);
