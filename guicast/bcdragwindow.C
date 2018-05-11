@@ -178,7 +178,7 @@ BC_Pixmap *BC_DragWindow::prepare_frame(VFrame *frame, BC_WindowBase *parent_win
 					BC_RGBA8888); 
 		temp_frame->transfer_from(frame);
 	}
-	temp_frame->get_rows()[(temp_frame->get_h() / 2)][(temp_frame->get_w() / 2) * 4 + 3] = 0;
+	temp_frame->get_row_ptr(temp_frame->get_h() / 2)[(temp_frame->get_w() / 2) * 4 + 3] = 0;
 	my_pixmap = new BC_Pixmap(parent_window,
 			temp_frame,
 			PIXMAP_ALPHA);
