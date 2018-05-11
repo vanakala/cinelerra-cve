@@ -183,21 +183,21 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
 		htxt = _("hour  min   sec     msec");
 		break;
 	case TIME_HMSF:
-		htxt = "hour  min   sec  frames";
+		htxt = _("hour  min   sec  frames");
 		break;
 	case TIME_SECONDS:
-		htxt = "  sec         msec";
+		htxt = _("  sec         msec");
 		break;
 	case TIME_SAMPLES:
 	case TIME_SAMPLES_HEX:
-		htxt = "   Audio samples";
+		htxt = _("   Audio samples");
 		timeformat = TIME_SAMPLES;
 		break;
 	case TIME_FRAMES:
-		htxt = "   Frames";
+		htxt = _("   Frames");
 		break;
 	case TIME_FEET_FRAMES:
-		htxt = "   Feet frames";
+		htxt = _("   Feet frames");
 		break;
 	}
 	Units::totext(timestring,
