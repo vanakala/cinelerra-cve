@@ -323,9 +323,6 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2, int shift
 		w = in_x2 - in_x1;
 		h = MIN(dst->get_h(), src->get_h());
 	}
-	in_rows = src->get_rows();
-	out_rows = dst->get_rows();
-
 	switch(src->get_color_model())
 	{
 	case BC_RGBA8888:
@@ -339,13 +336,13 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2, int shift
 
 				if(!shift)
 				{
-					in_row = in_rows[i] + in_x1 * 4;
-					out_row = out_rows[i];
+					in_row = src->get_row_ptr(i) + in_x1 * 4;
+					out_row = dst->get_row_ptr(i);
 				}
 				else
 				{
-					in_row = in_rows[i - 1] + in_x1 * 4;
-					out_row = out_rows[i] + 4;
+					in_row = src->get_row_ptr(i - 1) + in_x1 * 4;
+					out_row = dst->get_row_ptr(i) + 4;
 				}
 
 				for(int j = shift; j < w; j++)
@@ -371,13 +368,13 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2, int shift
 
 				if(!shift)
 				{
-					in_row = in_rows[i] + in_x1 * 3;
-					out_row = out_rows[i];
+					in_row = src->get_row_ptr(i) + in_x1 * 3;
+					out_row = dst->get_row_ptr(i);
 				}
 				else
 				{
-					in_row = in_rows[i - 1] + in_x1 * 3;
-					out_row = out_rows[i] + 3;
+					in_row = src->get_row_ptr(i - 1) + in_x1 * 3;
+					out_row = dst->get_row_ptr(i) + 3;
 				}
 
 				for(int j = shift; j < w; j++)
