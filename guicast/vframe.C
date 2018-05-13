@@ -485,7 +485,7 @@ int VFrame::equals(VFrame *frame)
 { \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *row = (type*)get_rows()[i]; \
+		type *row = (type*)get_row_ptr(i); \
 		for(int j = 0; j < w; j++) \
 		{ \
 			row[j * components] = 0; \
@@ -522,7 +522,7 @@ void VFrame::clear_frame(void)
 	case BC_AYUV16161616:
 		for(int i = 0; i < h; i++)
 		{
-			uint16_t *row = (uint16_t*)get_rows()[i];
+			uint16_t *row = (uint16_t*)get_row_ptr(i);
 			for(int j = 0; j < w; j++)
 			{
 				row[j * 4] = 0;
@@ -664,8 +664,6 @@ void VFrame::copy_from(VFrame *frame, int do_copy_pts)
 
 #define OVERLAY(type, max, components) \
 { \
-	type **in_rows = (type**)src->get_rows(); \
-	type **out_rows = (type**)get_rows(); \
 	int in_w = src->get_w(); \
 	int in_h = src->get_h(); \
  \
@@ -673,8 +671,8 @@ void VFrame::copy_from(VFrame *frame, int do_copy_pts)
 	{ \
 		if(i + out_y1 >= 0 && i + out_y1 < h) \
 		{ \
-			type *src_row = in_rows[i]; \
-			type *dst_row = out_rows[i + out_y1] + out_x1 * components; \
+			type *src_row = (type*)get_row_ptr(i); \
+			type *dst_row = (type*)get_row_ptr(i + out_y1) + out_x1 * components; \
  \
 			for(int j = 0; j < in_w; j++) \
 			{ \
