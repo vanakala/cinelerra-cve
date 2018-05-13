@@ -131,6 +131,7 @@ public:
 	unsigned char* get_row_ptr(int num);
 // return an array of pointers to rows
 	unsigned char** get_rows();
+	void delete_rows();
 // return yuv planes
 	unsigned char* get_y(void);
 	unsigned char* get_u(void);

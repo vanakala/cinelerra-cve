@@ -236,14 +236,6 @@ void VFrame::create_row_pointers()
 		u = this->data + this->u_offset;
 		v = this->data + this->v_offset;
 		break;
-
-	default:
-		rows = new unsigned char*[h];
-		for(int i = 0; i < h; i++)
-		{
-			rows[i] = &this->data[i * this->bytes_per_line];
-		}
-		break;
 	}
 }
 
@@ -445,6 +437,7 @@ void VFrame::read_png(unsigned char *data)
 	png_read_image(png_ptr, get_rows());
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+	delete_rows();
 }
 
 unsigned char* VFrame::get_data()
@@ -606,9 +599,9 @@ void VFrame::flip_vert(void)
 	unsigned char *temp = new unsigned char[bytes_per_line];
 	for(int i = 0, j = h - 1; i < j; i++, j--)
 	{
-		memcpy(temp, rows[j], bytes_per_line);
-		memcpy(rows[j], rows[i], bytes_per_line);
-		memcpy(rows[i], temp, bytes_per_line);
+		memcpy(temp, get_row_ptr(j), bytes_per_line);
+		memcpy(get_row_ptr(j), get_row_ptr(i), bytes_per_line);
+		memcpy(get_row_ptr(i), temp, bytes_per_line);
 	}
 	delete [] temp;
 }
@@ -748,10 +741,28 @@ unsigned char *VFrame::get_row_ptr(int num)
 unsigned char** VFrame::get_rows(void)
 {
 	if(rows)
-	{
 		return rows;
+
+	switch(color_model)
+	{
+	case BC_YUV420P:
+	case BC_YUV411P:
+	case BC_YUV422P:
+	case BC_YUV444P:
+		break;
+	default:
+		rows = new unsigned char*[h];
+		for(int i = 0; i < h; i++)
+			rows[i] = &data[i * bytes_per_line];
+		break;
 	}
-	return 0;
+	return rows;
+}
+
+void VFrame::delete_rows()
+{
+	delete [] rows;
+	rows = 0;
 }
 
 int VFrame::get_w(void)
