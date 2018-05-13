@@ -158,8 +158,6 @@ public:
 		int color_model = BC_RGB888);
 // Get size of uncompressed frame buffer
 	size_t get_data_size();
-	void rotate270(void);
-	void rotate90(void);
 	void flip_vert(void);
 
 // Convenience storage.

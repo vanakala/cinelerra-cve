@@ -532,68 +532,6 @@ void VFrame::clear_frame(void)
 	}
 }
 
-void VFrame::rotate90(void)
-{
-// Allocate new frame
-	int new_w = h, new_h = w, new_bytes_per_line = bytes_per_pixel * new_w;
-	unsigned char *new_data = new unsigned char[calculate_data_size(new_w, new_h, new_bytes_per_line, color_model)];
-	unsigned char **new_rows = new unsigned char*[new_h];
-	for(int i = 0; i < new_h; i++)
-		new_rows[i] = &new_data[new_bytes_per_line * i];
-
-// Copy data
-	for(int in_y = 0, out_x = new_w - 1; in_y < h; in_y++, out_x--)
-	{
-		for(int in_x = 0, out_y = 0; in_x < w; in_x++, out_y++)
-		{
-			for(int k = 0; k < bytes_per_pixel; k++)
-			{
-				new_rows[out_y][out_x * bytes_per_pixel + k] = 
-					rows[in_y][in_x * bytes_per_pixel + k];
-			}
-		}
-	}
-
-// Swap frames
-	clear_objects();
-	data = new_data;
-	rows = new_rows;
-	bytes_per_line = new_bytes_per_line;
-	w = new_w;
-	h = new_h;
-}
-
-void VFrame::rotate270(void)
-{
-// Allocate new frame
-	int new_w = h, new_h = w, new_bytes_per_line = bytes_per_pixel * new_w;
-	unsigned char *new_data = new unsigned char[calculate_data_size(new_w, new_h, new_bytes_per_line, color_model)];
-	unsigned char **new_rows = new unsigned char*[new_h];
-	for(int i = 0; i < new_h; i++)
-		new_rows[i] = &new_data[new_bytes_per_line * i];
-
-// Copy data
-	for(int in_y = 0, out_x = 0; in_y < h; in_y++, out_x++)
-	{
-		for(int in_x = 0, out_y = new_h - 1; in_x < w; in_x++, out_y--)
-		{
-			for(int k = 0; k < bytes_per_pixel; k++)
-			{
-				new_rows[out_y][out_x * bytes_per_pixel + k] = 
-					rows[in_y][in_x * bytes_per_pixel + k];
-			}
-		}
-	}
-
-// Swap frames
-	clear_objects();
-	data = new_data;
-	rows = new_rows;
-	bytes_per_line = new_bytes_per_line;
-	w = new_w;
-	h = new_h;
-}
-
 void VFrame::flip_vert(void)
 {
 	unsigned char *temp = new unsigned char[bytes_per_line];
