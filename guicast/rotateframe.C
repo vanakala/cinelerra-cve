@@ -120,8 +120,6 @@ void RotateFrame::get_rightdimensions(VFrame *frame,
 
 #define ROTATE_RIGHTANGLE(type, components) \
 { \
-	type **input_rows = (type**)input->get_rows(); \
-	type **output_rows = (type**)output->get_rows(); \
 	int height = output->get_h(); \
 	int width = output->get_w(); \
  \
@@ -144,15 +142,24 @@ void RotateFrame::get_rightdimensions(VFrame *frame,
 			for(int i = 0; i < diameter; i++) \
 			{ \
 				type temp_pixel[components]; \
-					for(int j = 0; j < components; j++) \
-					{ \
-						temp_pixel[j] = input_rows[in_y1 + i][in_x2 * components + j]; \
+				type *inrowy1i = (type*)input->get_row_ptr(in_y1 + i); \
+				type *inrowy2mi = (type*)input->get_row_ptr(in_y2 - i); \
+				type *inrowy1 = (type*)input->get_row_ptr(in_y1); \
+				type *inrowy2 = (type*)input->get_row_ptr(in_y2); \
+				type *outrowy1i = (type*)output->get_row_ptr(in_y1 + i); \
+				type *outrowy2mi = (type*)output->get_row_ptr(in_y2 - i); \
+				type *outrowy1 = (type*)output->get_row_ptr(in_y1); \
+				type *outrowy2 = (type*)output->get_row_ptr(in_y2); \
+\
+				for(int j = 0; j < components; j++) \
+				{ \
+					temp_pixel[j] = inrowy1i[in_x2 * components + j]; \
  \
-						output_rows[in_y1 + i][in_x2 * components + j]   = input_rows[in_y1][(in_x1 + i) * components + j]; \
-						output_rows[in_y1][(in_x1 + i) * components + j] = input_rows[in_y2 - i][in_x1 * components + j]; \
-						output_rows[in_y2 - i][in_x1 * components + j]   = input_rows[in_y2][(in_x2 - i) * components + j]; \
-						output_rows[in_y2][(in_x2 - i) * components + j] = temp_pixel[j]; \
-					} \
+					outrowy1i[in_x2 * components + j] = inrowy1[(in_x1 + i) * components + j]; \
+					outrowy1[(in_x1 + i) * components + j] = inrowy2mi[in_x1 * components + j]; \
+					outrowy2mi[in_x1 * components + j] = inrowy2[(in_x2 - i) * components + j]; \
+					outrowy2[(in_x2 - i) * components + j] = temp_pixel[j]; \
+				} \
 			} \
  \
 			in_x2--; \
@@ -165,14 +172,18 @@ void RotateFrame::get_rightdimensions(VFrame *frame,
 	case 180: \
 		for(int i = 0, j = height - 1; i < j; i++, j--) \
 		{ \
+			type *inrowj = (type*)input->get_row_ptr(j); \
+			type *inrowi = (type*)input->get_row_ptr(i); \
+			type *outrowi = (type*)output->get_row_ptr(i); \
+			type *outrowj = (type*)output->get_row_ptr(j); \
 			for(int k = 0, l = width - 1; k < width; k++, l--) \
 			{ \
 				type temp_pixel[components]; \
 				for(int m = 0; m < components; m++) \
 				{ \
-					temp_pixel[m] = input_rows[j][k * components + m]; \
-					output_rows[j][k * components + m] = input_rows[i][l * components + m]; \
-					output_rows[i][l * components + m] = temp_pixel[m]; \
+					temp_pixel[m] = inrowj[k * components + m]; \
+					outrowj[k * components + m] = inrowi[l * components + m]; \
+					outrowi[l * components + m] = temp_pixel[m]; \
 				} \
 			} \
 		} \
@@ -196,13 +207,21 @@ void RotateFrame::get_rightdimensions(VFrame *frame,
 			for(int i = 0; i < diameter; i++) \
 			{ \
 				type temp_pixel[components]; \
+				type *inrowy1i = (type*)input->get_row_ptr(in_y1 + i); \
+				type *inrowy2mi = (type*)input->get_row_ptr(in_y2 - i); \
+				type *inrowy1 = (type*)input->get_row_ptr(in_y1); \
+				type *inrowy2 = (type*)input->get_row_ptr(in_y2); \
+				type *outrowy1i = (type*)output->get_row_ptr(in_y1 + i); \
+				type *outrowy2mi = (type*)output->get_row_ptr(in_y2 - i); \
+				type *outrowy1 = (type*)output->get_row_ptr(in_y1); \
+				type *outrowy2 = (type*)output->get_row_ptr(in_y2); \
 				for(int j = 0; j < components; j++) \
 				{ \
-					temp_pixel[j] = input_rows[in_y1 + i][in_x1 * components + j]; \
-					output_rows[in_y1 + i][in_x1 * components + j]   = input_rows[in_y1][(in_x2 - i) * components + j]; \
-					output_rows[in_y1][(in_x2 - i) * components + j] = input_rows[in_y2 - i][in_x2 * components + j]; \
-					output_rows[in_y2 - i][in_x2 * components + j]   = input_rows[in_y2][(in_x1 + i) * components + j]; \
-					output_rows[in_y2][(in_x1 + i) * components + j] = temp_pixel[j]; \
+					temp_pixel[j] = inrowy1i[in_x1 * components + j]; \
+					outrowy1i[in_x1 * components + j]   = inrowy1[(in_x2 - i) * components + j]; \
+					outrowy1[(in_x2 - i) * components + j] = inrowy2mi[in_x2 * components + j]; \
+					outrowy2mi[in_x2 * components + j]   = inrowy2[(in_x1 + i) * components + j]; \
+					outrowy2[(in_x1 + i) * components + j] = temp_pixel[j]; \
 				} \
 			} \
  \
@@ -258,6 +277,7 @@ void RotateFrame::rotate_rightangle(VFrame *input,
 		ROTATE_RIGHTANGLE(uint16_t, 3);
 		break;
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		ROTATE_RIGHTANGLE(uint16_t, 4);
 		break;
 	}
@@ -336,8 +356,8 @@ void RotateFrame::rotate_obliqueangle(VFrame *input,
 
 #define FILL_CENTER(type, components) \
 { \
-	type *out_pixel = ((type**)output->get_rows())[center_y] + center_x * components; \
-	type *in_pixel = ((type**)input->get_rows())[center_y] + center_x * components; \
+	type *out_pixel = ((type*)output->get_row_ptr(center_y)) + center_x * components; \
+	type *in_pixel = ((type*)input->get_row_ptr(center_y)) + center_x * components; \
  \
 	out_pixel[0] = in_pixel[0]; \
 	out_pixel[1] = in_pixel[1]; \
@@ -368,6 +388,7 @@ void RotateFrame::rotate_obliqueangle(VFrame *input,
 		break;
 	case BC_RGBA16161616:
 	case BC_YUVA16161616:
+	case BC_AYUV16161616:
 		FILL_CENTER(uint16_t, 4)
 		break;
 	}
@@ -516,23 +537,25 @@ void RotateEngine::create_matrix()
 
 #define ROTATE_NEAREST(type, components, black_chroma) \
 { \
-	type **input_rows = (type**)input->get_rows(); \
-	type **output_rows = (type**)output->get_rows(); \
+	type *input0 = (type*)input->get_row_ptr(0); \
  \
 	for(int i = row1; i < row2; i++) \
 	{ \
 		int *int_row = plugin->int_rows[i]; \
+		type *input_row = (type*)input->get_row_ptr(i); \
+		type *output_row = (type*)input->get_row_ptr(i); \
+ \
 		for(int j = 0; j < width; j++) \
 		{ \
 			if(int_row[j] < 0) \
 			{  \
 				for(int k = 0; k < components; k++) \
-					output_rows[i][j * components + k] = 0; \
+					output_row[j * components + k] = 0; \
 			} \
 			else \
 			{ \
 				for(int k = 0; k < components; k++) \
-					output_rows[i][j * components + k] = *(input_rows[0] + int_row[j] * components + k); \
+					output_row[j * components + k] = *(input0 + int_row[j] * components + k); \
 			} \
 		} \
 	} \
@@ -543,8 +566,6 @@ void RotateEngine::create_matrix()
 	type zero_pixel[] = { 0, black_chroma, black_chroma, 0 }; \
 	int i, j; \
 	float k, l; \
-	type **input_rows = (type**)input->get_rows(); \
-	type **output_rows = (type**)output->get_rows(); \
 	float x_fraction1, x_fraction2, y_fraction1, y_fraction2; \
 	float fraction1, fraction2, fraction3, fraction4; \
 	int x_pixel1, x_pixel2, y_pixel1, y_pixel2; \
@@ -553,14 +574,15 @@ void RotateEngine::create_matrix()
 	for(i = row1, k = row1; i < row2; i++, k++) \
 	{ \
 		SourceCoord *float_row = plugin->float_rows[i]; \
+		type *output_row = (type*)output->get_row_ptr(i); \
 		for(j = 0, l = 0; j < width; j++, l++) \
 		{ \
 			if(float_row[j].x < 0 || float_row[j].y < 0) \
 			{ \
-				output_rows[i][j * components + 0] = 0; \
-				output_rows[i][j * components + 1] = black_chroma; \
-				output_rows[i][j * components + 2] = black_chroma; \
-				if(components == 4) output_rows[i][j * components + 3] = 0; \
+				output_row[j * components + 0] = 0; \
+				output_row[j * components + 1] = black_chroma; \
+				output_row[j * components + 2] = black_chroma; \
+				if(components == 4) output_row[j * components + 3] = 0; \
 			} \
 			else \
 			{ \
@@ -578,14 +600,18 @@ void RotateEngine::create_matrix()
 				fraction3 = x_fraction2 * y_fraction1; \
 				fraction2 = x_fraction1 * y_fraction2; \
 				fraction1 = x_fraction2 * y_fraction2; \
-				pixel1 =                                                          &input_rows[y_pixel1][x_pixel1 * components]; \
-				pixel2 = (x_pixel2 >= width)                       ? zero_pixel : &input_rows[y_pixel1][x_pixel2 * components]; \
-				pixel3 = (y_pixel2 >= height)                      ? zero_pixel : &input_rows[y_pixel2][x_pixel1 * components]; \
-				pixel4 = (x_pixel2 >= width || y_pixel2 >= height) ? zero_pixel : &input_rows[y_pixel2][x_pixel2 * components]; \
+ \
+				type *inrowp1 = (type*)input->get_row_ptr(y_pixel1); \
+				type *inrowp2 = (type*)input->get_row_ptr(y_pixel2); \
+ \
+				pixel1 =                                                          &inrowp1[x_pixel1 * components]; \
+				pixel2 = (x_pixel2 >= width)                       ? zero_pixel : &inrowp1[x_pixel2 * components]; \
+				pixel3 = (y_pixel2 >= height)                      ? zero_pixel : &inrowp2[x_pixel1 * components]; \
+				pixel4 = (x_pixel2 >= width || y_pixel2 >= height) ? zero_pixel : &inrowp2[x_pixel2 * components]; \
  \
 				for(int m = 0; m < components; m++) \
 				{ \
-					output_rows[i][j * components + m] = \
+					output_row[j * components + m] = \
 						(type)((pixel1[m] * fraction1) + \
 							(pixel2[m] * fraction2) + \
 							(pixel3[m] * fraction3) + \
