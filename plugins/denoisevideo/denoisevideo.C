@@ -215,8 +215,8 @@ void DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 { \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *output_row = (type*)output->get_rows()[i]; \
-		type *input_row = (type*)input->get_rows()[i]; \
+		type *output_row = (type*)output->get_row_ptr(i); \
+		type *input_row = (type*)input->get_row_ptr(i); \
  \
 		for(int k = 0; k < w * components; k++) \
 		{ \
