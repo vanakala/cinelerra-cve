@@ -240,7 +240,8 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	png_write_image(png_ptr, output_frame->get_rows());
 	png_write_end(png_ptr, info_ptr);
 	png_destroy_write_struct(&png_ptr, &info_ptr);
-
+	if(output_frame == frame)
+		frame->delete_row_ptrs();
 	return result;
 }
 
@@ -325,7 +326,7 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
 	input->set_compressed_size(size);
-
+	output->delete_row_ptrs();
 	return result;
 }
 
