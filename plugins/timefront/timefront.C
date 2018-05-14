@@ -1342,7 +1342,7 @@ TimeFrontUnit::TimeFrontUnit(TimeFrontServer *server, TimeFrontMain *plugin)
  \
 	for(int i = pkg->y1; i < pkg->y2; i++) \
 	{ \
-		unsigned char *out_row = plugin->gradient->get_rows()[i]; \
+		unsigned char *out_row = plugin->gradient->get_row_ptr(i); \
  \
 		switch(plugin->config.shape) \
 		{ \
