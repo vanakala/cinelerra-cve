@@ -895,7 +895,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 { \
 	for(int i = pkg->start; i < pkg->end; i++) \
 	{ \
-		type *row = (type*)data->get_rows()[i]; \
+		type *row = (type*)data->get_row_ptr(i); \
 		for(int j = 0; j < w; j++) \
 		{
 
@@ -1037,7 +1037,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 { \
 	for(int i = pkg->start; i < pkg->end; i++) \
 	{ \
-		type *row = (type*)input->get_rows()[i]; \
+		type *row = (type*)input->get_row_ptr(i); \
 		for(int j = 0; j < w; j++) \
 		{ \
 			if ( plugin->config.split && ((j + i * w / h) < w) ) \
@@ -1054,7 +1054,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 { \
 	for(int i = pkg->start; i < pkg->end; i++) \
 	{ \
-		type *row = (type*)input->get_rows()[i]; \
+		type *row = (type*)input->get_row_ptr(i); \
 		for(int j = 0; j < w; j++) \
 		{ \
 			if ( plugin->config.split && ((j + i * w / h) < w) ) \
@@ -1104,7 +1104,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 { \
 	for(int i = pkg->start; i < pkg->end; i++) \
 	{ \
-		float *row = (float*)input->get_rows()[i]; \
+		float *row = (float*)input->get_row_ptr(i); \
 		for(int j = 0; j < w; j++) \
 		{ \
 			if ( plugin->config.split && ((j + i * w / h) < w) ) \
