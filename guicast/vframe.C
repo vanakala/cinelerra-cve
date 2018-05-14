@@ -437,7 +437,7 @@ void VFrame::read_png(unsigned char *data)
 	png_read_image(png_ptr, get_rows());
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-	delete_rows();
+	delete_row_ptrs();
 }
 
 unsigned char* VFrame::get_data()
@@ -697,7 +697,7 @@ unsigned char** VFrame::get_rows(void)
 	return rows;
 }
 
-void VFrame::delete_rows()
+void VFrame::delete_row_ptrs()
 {
 	delete [] rows;
 	rows = 0;
