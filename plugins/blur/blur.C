@@ -110,7 +110,6 @@ PLUGIN_CLASS_METHODS
 void BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	int i, j, k, l;
-	unsigned char **input_rows, **output_rows;
 
 	this->input = input_ptr;
 	this->output = output_ptr;
@@ -151,14 +150,11 @@ void BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			input_ptr->get_h(),
 			input_ptr->get_color_model());
 
-	input_rows = input_ptr->get_rows();
-	output_rows = output_ptr->get_rows();
-
 	if(config.radius < 2 || 
 		(!config.vertical && !config.horizontal))
 	{
 // Data never processed so copy if necessary
-		if(input_rows[0] != output_rows[0])
+		if(input_ptr != output_ptr)
 		{
 			output_ptr->copy_from(input_ptr);
 		}
@@ -311,19 +307,16 @@ void BlurEngine::run()
 
 #define BLUR(type, max, components) \
 { \
-	type **input_rows = (type **)input->get_rows(); \
-	type **output_rows = (type **)output->get_rows(); \
-	type **current_input = input_rows; \
-	type **current_output = output_rows; \
+	VFrame *cur_input = input; \
+	VFrame *cur_output = output; \
+ \
 	vmax = max; \
  \
 	if(plugin->config.vertical) \
 	{ \
 /* Vertical pass */ \
 		if(plugin->config.horizontal) \
-		{ \
-			current_output = (type **)plugin->temp->get_rows(); \
-		} \
+			cur_output = plugin->temp; \
  \
 		for(j = 0; j < w; j++) \
 		{ \
@@ -332,11 +325,13 @@ void BlurEngine::run()
  \
 			for(l = 0, k = start_in; k < end_in; l++, k++) \
 			{ \
-				if(plugin->config.r) src[l].r = (float)current_input[k][j * components]; \
-				if(plugin->config.g) src[l].g = (float)current_input[k][j * components + 1]; \
-				if(plugin->config.b) src[l].b = (float)current_input[k][j * components + 2]; \
+				type *row = (type*)cur_input->get_row_ptr(k); \
+ \
+				if(plugin->config.r) src[l].r = (float)row[j * components]; \
+				if(plugin->config.g) src[l].g = (float)row[j * components + 1]; \
+				if(plugin->config.b) src[l].b = (float)row[j * components + 2]; \
 				if(components == 4) \
-					if(plugin->config.a) src[l].a = (float)current_input[k][j * components + 3]; \
+					if(plugin->config.a) src[l].a = (float)row[j * components + 3]; \
 			} \
  \
 			if(components == 4) \
@@ -346,16 +341,18 @@ void BlurEngine::run()
  \
 			for(l = start_out - start_in, k = start_out; k < end_out; l++, k++) \
 			{ \
-				if(plugin->config.r) current_output[k][j * components] = (type)dst[l].r; \
-				if(plugin->config.g) current_output[k][j * components + 1] = (type)dst[l].g; \
-				if(plugin->config.b) current_output[k][j * components + 2] = (type)dst[l].b; \
+				type *row = (type*)cur_output->get_row_ptr(k); \
+ \
+				if(plugin->config.r) row[j * components] = (type)dst[l].r; \
+				if(plugin->config.g) row[j * components + 1] = (type)dst[l].g; \
+				if(plugin->config.b) row[j * components + 2] = (type)dst[l].b; \
 				if(components == 4) \
-					if(plugin->config.a) current_output[k][j * components + 3] = (type)dst[l].a; \
+					if(plugin->config.a) row[j * components + 3] = (type)dst[l].a; \
 			} \
 		} \
  \
-		current_input = current_output; \
-		current_output = output_rows; \
+		cur_input = cur_output; \
+		cur_output = output; \
 	} \
  \
  \
@@ -369,11 +366,13 @@ void BlurEngine::run()
  \
 			for(k = 0; k < w; k++) \
 			{ \
-				if(plugin->config.r) src[k].r = (float)current_input[j][k * components]; \
-				if(plugin->config.g) src[k].g = (float)current_input[j][k * components + 1]; \
-				if(plugin->config.b) src[k].b = (float)current_input[j][k * components + 2]; \
+				type *row = (type*)cur_input->get_row_ptr(j); \
+ \
+				if(plugin->config.r) src[k].r = (float)row[k * components]; \
+				if(plugin->config.g) src[k].g = (float)row[k * components + 1]; \
+				if(plugin->config.b) src[k].b = (float)row[k * components + 2]; \
 				if(components == 4) \
-					if(plugin->config.a) src[k].a = (float)current_input[j][k * components + 3]; \
+					if(plugin->config.a) src[k].a = (float)row[k * components + 3]; \
 			} \
  \
  			if(components == 4) \
@@ -383,11 +382,13 @@ void BlurEngine::run()
  \
 			for(k = 0; k < w; k++) \
 			{ \
-				if(plugin->config.r) current_output[j][k * components] = (type)dst[k].r; \
-				if(plugin->config.g) current_output[j][k * components + 1] = (type)dst[k].g; \
-				if(plugin->config.b) current_output[j][k * components + 2] = (type)dst[k].b; \
+				type *row = (type*)cur_output->get_row_ptr(j); \
+ \
+				if(plugin->config.r) row[k * components] = (type)dst[k].r; \
+				if(plugin->config.g) row[k * components + 1] = (type)dst[k].g; \
+				if(plugin->config.b) row[k * components + 2] = (type)dst[k].b; \
 				if(components == 4) \
-					if(plugin->config.a) current_output[j][k * components + 3] = (type)dst[k].a; \
+					if(plugin->config.a) row[k * components + 3] = (type)dst[k].a; \
 			} \
 		} \
 	} \
@@ -433,8 +434,8 @@ void BlurEngine::run()
 
 					for(j = 0; j < w; j++)
 					{
-						bzero(val_p, sizeof(pixel_f) * (end_in - start_in)); \
-						bzero(val_m, sizeof(pixel_f) * (end_in - start_in)); \
+						bzero(val_p, sizeof(pixel_f) * (end_in - start_in));
+						bzero(val_m, sizeof(pixel_f) * (end_in - start_in));
 
 						for(l = 0, k = start_in; k < end_in; l++, k++)
 						{
