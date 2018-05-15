@@ -299,11 +299,10 @@ void FieldFrame::process_frame(VFrame *frame)
 
 void FieldFrame::apply_field(VFrame *output, VFrame *input, int field)
 {
-	unsigned char **input_rows = input->get_rows();
-	unsigned char **output_rows = output->get_rows();
 	int row_size = VFrame::calculate_bytes_per_pixel(output->get_color_model()) * output->get_w();
+
 	for(int i = field; i < output->get_h(); i += 2)
 	{
-		memcpy(output_rows[i], input_rows[i], row_size);
+		memcpy(output->get_row_ptr(i), input->get_row_ptr(i), row_size);
 	}
 }
