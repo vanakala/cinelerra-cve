@@ -195,8 +195,8 @@ int IrisSquareMain::load_configuration()
  \
 		for(int j = 0; j < y1; j++) \
 		{ \
-			type *in_row = (type*)incoming->get_rows()[j]; \
-			type *out_row = (type*)outgoing->get_rows()[j]; \
+			type *in_row = (type*)incoming->get_row_ptr(j); \
+			type *out_row = (type*)outgoing->get_row_ptr(j); \
  \
 			for(int k = 0; k < w; k++) \
 			{ \
@@ -208,8 +208,8 @@ int IrisSquareMain::load_configuration()
 		} \
 		for(int j = y1; j < y2; j++) \
 		{ \
-			type *in_row = (type*)incoming->get_rows()[j]; \
-			type *out_row = (type*)outgoing->get_rows()[j]; \
+			type *in_row = (type*)incoming->get_row_ptr(j); \
+			type *out_row = (type*)outgoing->get_row_ptr(j); \
  \
 			for(int k = 0; k < x1; k++) \
 			{ \
@@ -228,8 +228,8 @@ int IrisSquareMain::load_configuration()
 		} \
 		for(int j = y2; j < h; j++) \
 		{ \
-			type *in_row = (type*)incoming->get_rows()[j]; \
-			type *out_row = (type*)outgoing->get_rows()[j]; \
+			type *in_row = (type*)incoming->get_row_ptr(j); \
+			type *out_row = (type*)outgoing->get_row_ptr(j); \
  \
 			for(int k = 0; k < w; k++) \
 			{ \
