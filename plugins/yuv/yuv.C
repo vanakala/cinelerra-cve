@@ -331,7 +331,7 @@ void YUVEffect::process_realtime(VFrame *input, VFrame *output)
 
 	if(EQUIV(config.y, 0) && EQUIV(config.u, 0) && EQUIV(config.v, 0))
 	{
-		if(input->get_rows()[0] != output->get_rows()[0])
+		if(input != output)
 			output->copy_from(input);
 	}
 	else
