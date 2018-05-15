@@ -166,8 +166,8 @@ int WipeMain::load_configuration()
 	{ \
 		for(int j = 0; j < h; j++) \
 		{ \
-			type *in_row = (type*)incoming->get_rows()[j]; \
-			type *out_row = (type*)outgoing->get_rows()[j]; \
+			type *in_row = (type*)incoming->get_row_ptr(j); \
+			type *out_row = (type*)outgoing->get_row_ptr(j); \
 			int x = round(w * source_pts /  total_len_pts); \
  \
 			for(int k = 0; k < x; k++) \
@@ -183,8 +183,8 @@ int WipeMain::load_configuration()
 	{ \
 		for(int j = 0; j < h; j++) \
 		{ \
-			type *in_row = (type*)incoming->get_rows()[j]; \
-			type *out_row = (type*)outgoing->get_rows()[j]; \
+			type *in_row = (type*)incoming->get_row_ptr(j); \
+			type *out_row = (type*)outgoing->get_row_ptr(j); \
 			int x = w - (int)round(w * source_pts /  total_len_pts); \
  \
 			for(int k = x; k < w; k++) \
