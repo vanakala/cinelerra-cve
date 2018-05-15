@@ -583,11 +583,10 @@ void RotateEffect::process_frame(VFrame *frame)
 #define CENTER_W 20
 #define DRAW_CENTER(components, type, max) \
 { \
-	type **rows = (type**)get_output()->get_rows(); \
 	if(center_x >= 0 && center_x < w || \
 		center_y >= 0 && center_y < h) \
 	{ \
-		type *hrow = rows[center_y] + components * (center_x - CENTER_W / 2) + alpha_shift; \
+		type *hrow = (type*)get_output()->get_row_ptr(center_y) + components * (center_x - CENTER_W / 2) + alpha_shift; \
 		for(int i = center_x - CENTER_W / 2; i <= center_x + CENTER_W / 2; i++) \
 		{ \
 			if(i >= 0 && i < w) \
@@ -603,7 +602,7 @@ void RotateEffect::process_frame(VFrame *frame)
 		{ \
 			if(i >= 0 && i < h) \
 			{ \
-				type *vrow = rows[i] + center_x * components + alpha_shift; \
+				type *vrow = (type*)get_output()->get_row_ptr(i) + center_x * components + alpha_shift; \
 				vrow[0] = max - vrow[0]; \
 				vrow[1] = max - vrow[1]; \
 				vrow[2] = max - vrow[2]; \
