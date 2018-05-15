@@ -333,12 +333,12 @@ void PolarEffect::process_realtime(VFrame *input, VFrame *output)
 
 	if(EQUIV(config.depth, 0) || EQUIV(config.angle, 0))
 	{
-		if(input->get_rows()[0] != output->get_rows()[0])
+		if(input != output)
 			output->copy_from(input);
 	}
 	else
 	{
-		if(input->get_rows()[0] == output->get_rows()[0])
+		if(input == output)
 		{
 			if(!temp_frame) temp_frame = new VFrame(0,
 				input->get_w(),
@@ -639,18 +639,16 @@ static double bilinear(double x, double y, double *values)
 	return m0 + y * (m1 - m0);
 }
 
-#define GET_PIXEL(x, y, components, input_rows) \
-	input_rows[CLIP((y), 0, ((h) - 1))] + components * CLIP((x), 0, ((w) - 1))
+#define GET_PIXEL(x, y, components, type) \
+	(type*)plugin->input->get_row_ptr(CLIP((y), 0, ((h) - 1))) + components * CLIP((x), 0, ((w) - 1))
 
 #define POLAR_MACRO(type, max, components, chroma_offset) \
 { \
-	type **in_rows = (type**)plugin->input->get_rows(); \
-	type **out_rows = (type**)plugin->output->get_rows(); \
 	double values[4]; \
  \
 	for(int y = pkg->row1; y < pkg->row2; y++) \
 	{ \
-		type *output_row = out_rows[y]; \
+		type *output_row = (type*)plugin->output->get_row_ptr(y); \
  \
 		for(int x = 0; x < w; x++) \
 		{ \
@@ -669,10 +667,10 @@ static double bilinear(double x, double y, double *values)
 				cx, \
 				cy)) \
 			{ \
-				type *pixel1 = GET_PIXEL((int)cx,     (int)cy,	 components, in_rows); \
-				type *pixel2 = GET_PIXEL((int)cx + 1, (int)cy,	 components, in_rows); \
-				type *pixel3 = GET_PIXEL((int)cx,     (int)cy + 1, components, in_rows); \
-				type *pixel4 = GET_PIXEL((int)cx + 1, (int)cy + 1, components, in_rows); \
+				type *pixel1 = GET_PIXEL((int)cx,     (int)cy,	 components, type); \
+				type *pixel2 = GET_PIXEL((int)cx + 1, (int)cy,	 components, type); \
+				type *pixel3 = GET_PIXEL((int)cx,     (int)cy + 1, components, type); \
+				type *pixel4 = GET_PIXEL((int)cx + 1, (int)cy + 1, components, type); \
  \
 				values[0] = pixel1[0]; \
 				values[1] = pixel2[0]; \
