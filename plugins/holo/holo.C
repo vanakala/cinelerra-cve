@@ -82,15 +82,13 @@ void HoloMain::reconfigure()
 
 #define ADD_FRAMES(type, components) \
 { \
-	type **input_rows = (type**)input->get_rows(); \
-	type **output_rows = (type**)output->get_rows(); \
 	int w = input->get_w(); \
 	int h = input->get_h(); \
  \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *output_row = (type*)output_rows[i]; \
-		type *input_row = (type*)input_rows[i]; \
+		type *output_row = (type*)output->get_row_ptr(i); \
+		type *input_row = (type*)input->get_row_ptr(i); \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
@@ -365,7 +363,7 @@ else \
 	for(y = 1; y < height - 1; y++) \
 	{ \
 		type *src = (type*)input_rows[y]; \
-		type *bg = (type*)plugin->bgimage->get_rows()[y]; \
+		type *bg = (type*)plugin->bgimage->get_row_ptr(y); \
 		type *dest = (type*)output_rows[y]; \
  \
 		if(((y + phase) & 0x7f) < 0x58)  \
