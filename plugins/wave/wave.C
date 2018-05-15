@@ -388,12 +388,12 @@ void WaveEffect::process_realtime(VFrame *input, VFrame *output)
 
 	if(EQUIV(config.amplitude, 0) || EQUIV(config.wavelength, 0))
 	{
-		if(input->get_rows()[0] != output->get_rows()[0])
+		if(input != output)
 			output->copy_from(input);
 	}
 	else
 	{
-		if(input->get_rows()[0] == output->get_rows()[0])
+		if(input == output)
 		{
 			if(!temp_frame) temp_frame = new VFrame(0,
 				input->get_w(),
