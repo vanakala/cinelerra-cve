@@ -770,18 +770,15 @@ void PerspectiveMain::process_frame(VFrame *frame)
 	if(config.mode == AffineEngine::PERSPECTIVE ||
 		config.mode == AffineEngine::SHEER)
 	{
-		if(frame->get_rows()[0] == frame->get_rows()[0])
+		if(!temp)
 		{
-			if(!temp) 
-			{
-				temp = new VFrame(0,
-					w,
-					h,
-					color_model);
-			}
-			temp->copy_from(input);
-			input = temp;
+			temp = new VFrame(0,
+				w,
+				h,
+				color_model);
 		}
+		temp->copy_from(input);
+		input = temp;
 		output->clear_frame();
 	}
 
@@ -807,9 +804,9 @@ void PerspectiveMain::process_frame(VFrame *frame)
 { \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *out_row = (type*)output->get_rows()[i]; \
-		type *in_row1 = (type*)temp->get_rows()[i * AFFINE_OVERSAMPLE]; \
-		type *in_row2 = (type*)temp->get_rows()[i * AFFINE_OVERSAMPLE + 1]; \
+		type *out_row = (type*)output->get_row_ptr(i); \
+		type *in_row1 = (type*)temp->get_row_ptr(i * AFFINE_OVERSAMPLE); \
+		type *in_row2 = (type*)temp->get_row_ptr(i * AFFINE_OVERSAMPLE + 1); \
 		for(int j = 0; j < w; j++) \
 		{ \
 			out_row[0] = (in_row1[0] +  \
