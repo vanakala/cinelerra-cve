@@ -358,7 +358,7 @@ void SelTempAvgMain::clear_accum(int w, int h, int color_model)
 				i * w * components; \
 			float *accum_row_sq = (float*)accumulation_sq + \
 				i * w *3; \
-			type *frame_row = (type*)frame->get_rows()[i]; \
+			type *frame_row = (type*)frame->get_row_ptr(i); \
 			float c1, c2, c3; \
 			for(int j = 0; j < w; j++) \
 			{ \
@@ -469,7 +469,7 @@ void SelTempAvgMain::subtract_accum(VFrame *frame)
 				i * w * components; \
 			float *accum_row_sq = (float*)accumulation_sq + \
 				i * w *3; \
-			type *frame_row = (type*)frame->get_rows()[i]; \
+			type *frame_row = (type*)frame->get_row_ptr(i); \
 			for(int j = 0; j < w; j++) \
 			{ \
 				c1 = ( (float)*frame_row )/max; \
@@ -585,7 +585,7 @@ void SelTempAvgMain::add_accum(VFrame *frame)
 			float *accum_row = (float*)accumulation + i * w * components; \
 			float *accum_row_sq = (float*)accumulation_sq + i * w * 3; \
 \
-			type *frame_row = (type*)frame->get_rows()[i]; \
+			type *frame_row = (type*)frame->get_row_ptr(i); \
 			for(int j = 0; j < w; j++) \
 			{ \
 				c1_now = (float)(*frame_row)/max; \
@@ -633,7 +633,7 @@ void SelTempAvgMain::add_accum(VFrame *frame)
 		for(int i = 0; i < h; i++) \
 		{ \
 			float *accum_row = (float*)accumulation + i * w * components; \
-			type *frame_row = (type*)frame->get_rows()[i]; \
+			type *frame_row = (type*)frame->get_row_ptr(i); \
 			for(int j = 0; j < w; j++) \
 			{ \
 \
@@ -654,7 +654,7 @@ void SelTempAvgMain::add_accum(VFrame *frame)
 		{ \
 			float *accum_row = (float*)accumulation + i * w * components; \
 			float *accum_row_sq = (float*)accumulation_sq + i * w * 3; \
-			type *frame_row = (type*)frame->get_rows()[i]; \
+			type *frame_row = (type*)frame->get_row_ptr(i); \
 			for(int j = 0; j < w; j++) \
 			{ \
 \
