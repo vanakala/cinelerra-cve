@@ -462,8 +462,6 @@ void TitleUnit::draw_glyph(VFrame *output, TitleGlyph *glyph, int x, int y)
 	int glyph_h = glyph->data->get_h();
 	int output_w = output->get_w();
 	int output_h = output->get_h();
-	unsigned char **in_rows = glyph->data->get_rows();
-	unsigned char **out_rows = output->get_rows();
 
 	for(int in_y = 0; in_y < glyph_h; in_y++)
 	{
@@ -471,8 +469,8 @@ void TitleUnit::draw_glyph(VFrame *output, TitleGlyph *glyph, int x, int y)
 
 		if(y_out >= 0 && y_out < output_h)
 		{
-			unsigned char *out_row = out_rows[y_out];
-			unsigned char *in_row = in_rows[in_y];
+			unsigned char *out_row = output->get_row_ptr(y_out);
+			unsigned char *in_row = glyph->data->get_row_ptr(in_y);
 			for(int in_x = 0; in_x < glyph_w; in_x++)
 			{
 				int x_out = x + glyph->left + in_x;
@@ -633,9 +631,6 @@ void TitleTranslateUnit::translation_array_f(transfer_table_f* &table,
 
 #define TRANSLATE(type, max, components, r, g, b) \
 { \
-	unsigned char **in_rows = plugin->text_mask->get_rows(); \
-	type **out_rows = (type**)plugin->output->get_rows(); \
- \
 	for(int i = pkg->y1; i < pkg->y2; i++) \
 	{ \
 		if(i + server->out_y1_int >= 0 && \
@@ -649,9 +644,9 @@ void TitleTranslateUnit::translation_array_f(transfer_table_f* &table,
 			y_fraction1 = server->y_table[i].in_fraction1; \
 			y_fraction2 = server->y_table[i].in_fraction2; \
 			y_output_fraction = server->y_table[i].output_fraction; \
-			unsigned char *in_row1 = in_rows[in_y1]; \
-			unsigned char *in_row2 = in_rows[in_y2]; \
-			type *out_row = out_rows[i + server->out_y1_int]; \
+			unsigned char *in_row1 = plugin->text_mask->get_row_ptr(in_y1); \
+			unsigned char *in_row2 = plugin->text_mask->get_row_ptr(in_y2); \
+			type *out_row = (type*)plugin->output->get_row_ptr(i + server->out_y1_int); \
  \
 			for(int j = server->out_x1_int; j < server->out_x2_int; j++) \
 			{ \
@@ -718,16 +713,13 @@ void TitleTranslateUnit::translation_array_f(transfer_table_f* &table,
 
 #define TRANSLATEA(type, max, components, r, g, b) \
 { \
-	unsigned char **in_rows = plugin->text_mask->get_rows(); \
-	type **out_rows = (type**)plugin->output->get_rows(); \
- \
 	for(int i = pkg->y1; i < pkg->y2; i++) \
 	{ \
 		if(i + server->out_y1_int >= 0 && \
 			i + server->out_y1_int < server->output_h) \
 		{ \
-			unsigned char *in_row = in_rows[i]; \
-			type *out_row = out_rows[i + server->out_y1_int]; \
+			unsigned char *in_row = plugin->text_mask->get_row_ptr(i); \
+			type *out_row = (type*)plugin->output->get_row_ptr(i + server->out_y1_int); \
  \
 			for(int j = server->out_x1; j < server->out_x2_int; j++) \
 			{ \
