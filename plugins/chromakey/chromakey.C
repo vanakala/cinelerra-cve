@@ -368,7 +368,7 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 { \
 	for(int i = pkg->y1; i < pkg->y2; i++) \
 	{ \
-		type *row = (type*)plugin->input->get_rows()[i]; \
+		type *row = (type*)plugin->input->get_row_ptr(i); \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
