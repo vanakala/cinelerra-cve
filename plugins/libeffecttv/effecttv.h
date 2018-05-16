@@ -34,16 +34,11 @@ public:
 	virtual ~EffectTV();
 
 	void image_set_threshold_y(int threshold);
-	unsigned char* image_bgsubtract_update_y(unsigned char **input_rows, 
-		unsigned char **output_rows, 
-		int color_model);
 	unsigned char* image_bgsubtract_y(unsigned char **input_rows, int color_model);
 	void image_bgset_y(VFrame *frame);
 	unsigned char* image_diff_filter(unsigned char *diff);
 
-	int yuv_init();
-	static void frame_to_effecttv(VFrame *frame, uint32_t *tmp);
-	static void effecttv_to_frame(VFrame *frame, uint32_t *tmp);
+	void yuv_init();
 
 /*
  * fastrand - fast fake random number generator
@@ -81,6 +76,7 @@ public:
 	int BtoY[0x100];
 	int BtoV[0x100];
 	YUV *yuv;
+
 };
 
 #endif
