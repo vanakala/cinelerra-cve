@@ -360,25 +360,27 @@ int PaletteWheel::create_objects()
 
 	for(y2 = 0; y2 < get_h(); y2++)
 	{
+		unsigned char *row = frame.get_row_ptr((int)y2);
+
 		for(x2 = 0; x2 < get_w(); x2++)
 		{
 			distance = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 			if(distance > x1)
 			{
-				((unsigned char*)frame.get_rows()[(int)y2])[(int)x2 * 4] = default_r;
-				((unsigned char*)frame.get_rows()[(int)y2])[(int)x2 * 4 + 1] = default_g;
-				((unsigned char*)frame.get_rows()[(int)y2])[(int)x2 * 4 + 2] = default_b;
-				((unsigned char*)frame.get_rows()[(int)y2])[(int)x2 * 4 + 3] = 0;
+				row[(int)x2 * 4] = default_r;
+				row[(int)x2 * 4 + 1] = default_g;
+				row[(int)x2 * 4 + 2] = default_b;
+				row[(int)x2 * 4 + 3] = 0;
 			}
 			else
 			{
 				h = get_angle(x1, y1, x2, y2);
 				s = distance / x1;
 				HSV::hsv_to_rgb(r, g, b, h, s, v);
-				((unsigned char*)frame.get_rows()[(int)y2])[(int)x2 * 4] = (int)(r * 255);
-				((unsigned char*)frame.get_rows()[(int)y2])[(int)x2 * 4 + 1] = (int)(g * 255);
-				((unsigned char*)frame.get_rows()[(int)y2])[(int)x2 * 4 + 2] = (int)(b * 255);
-				((unsigned char*)frame.get_rows()[(int)y2])[(int)x2 * 4 + 3] = 255;
+				row[(int)x2 * 4] = (int)(r * 255);
+				row[(int)x2 * 4 + 1] = (int)(g * 255);
+				row[(int)x2 * 4 + 2] = (int)(b * 255);
+				row[(int)x2 * 4 + 3] = 255;
 			}
 		}
 	}
@@ -537,15 +539,17 @@ int PaletteWheelValue::draw(float hue, float saturation, float value)
 	int i, j, r, g, b;
 	for(i = get_h() - 1; i >= 0; i--)
 	{
+		unsigned char *row = frame->get_row_ptr(i);
+
 		HSV::hsv_to_rgb(r_f, g_f, b_f, hue, saturation, (float)(get_h() - 1 - i) / get_h());
 		r = (int)(r_f * 255);
 		g = (int)(g_f * 255);
 		b = (int)(b_f * 255);
 		for(j = 0; j < get_w(); j++)
 		{
- 			((unsigned char*)frame->get_rows()[i])[j * 3] = r;
- 			((unsigned char*)frame->get_rows()[i])[j * 3 + 1] = g;
- 			((unsigned char*)frame->get_rows()[i])[j * 3 + 2] = b;
+			row[j * 3] = r;
+			row[j * 3 + 1] = g;
+			row[j * 3 + 2] = b;
 		}
 	}
 	draw_vframe(frame, 
