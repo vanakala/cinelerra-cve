@@ -621,7 +621,7 @@ void ChromaKeyUnit::process_chromakey(int components,
 
 	for(int i = pkg->y1; i < pkg->y2; i++)
 	{
-		component_type *row = (component_type *) plugin->input->get_rows()[i];
+		component_type *row = (component_type *) plugin->input->get_row_ptr(i);
 
 		for(int j = 0; j < w; j++)
 		{
