@@ -552,8 +552,8 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
  \
 	for(int i = pkg->row1; i < pkg->row2; i++) \
 	{ \
-		type *top_row = (type*)plugin->top_frame->get_rows()[i]; \
-		type *bottom_row = (type*)plugin->bottom_frame->get_rows()[i]; \
+		type *top_row = (type*)plugin->top_frame->get_row_ptr(i); \
+		type *bottom_row = (type*)plugin->bottom_frame->get_row_ptr(i); \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
