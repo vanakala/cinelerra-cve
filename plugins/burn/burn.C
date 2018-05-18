@@ -197,16 +197,16 @@ BurnClient::BurnClient(BurnServer *server)
 #define BURN(type, components, is_yuv) \
 { \
 	i = 1; \
-	type **rows = (type**)input_rows; \
+	type *row = (type*)input_row; \
 	for(y = 0; y < height; y++)  \
 	{ \
 		for(x = 1; x < width - 1; x++)  \
 		{ \
 			if(sizeof(type) == 4) \
 			{ \
-				a1 = (int)(rows[0][i * components] * 0xff); \
-				a2 = (int)(rows[0][i * components + 1] * 0xff); \
-				a3 = (int)(rows[0][i * components + 2] * 0xff); \
+				a1 = (int)(row[i * components] * 0xff); \
+				a2 = (int)(row[i * components + 1] * 0xff); \
+				a3 = (int)(row[i * components + 2] * 0xff); \
 				CLAMP(a1, 0, 0xff); \
 				CLAMP(a2, 0, 0xff); \
 				CLAMP(a3, 0, 0xff); \
@@ -219,16 +219,16 @@ BurnClient::BurnClient(BurnServer *server)
 				b1 = a1 & 0x100; \
 				b2 = a2 & 0x100; \
 				b3 = a3 & 0x100; \
-				rows[0][i * components] = (type)(a1 | (b1 - (b1 >> 8))) / 0xff; \
-				rows[0][i * components + 1] = (type)(a2 | (b2 - (b2 >> 8))) / 0xff; \
-				rows[0][i * components + 2] = (type)(a3 | (b3 - (b3 >> 8))) / 0xff; \
+				row[i * components] = (type)(a1 | (b1 - (b1 >> 8))) / 0xff; \
+				row[i * components + 1] = (type)(a2 | (b2 - (b2 >> 8))) / 0xff; \
+				row[i * components + 2] = (type)(a3 | (b3 - (b3 >> 8))) / 0xff; \
 			} \
 			else \
 			if(sizeof(type) == 2) \
 			{ \
-				a1 = ((int)rows[0][i * components + 0]) >> 8; \
-				a2 = ((int)rows[0][i * components + 1]) >> 8; \
-				a3 = ((int)rows[0][i * components + 2]) >> 8; \
+				a1 = ((int)row[i * components + 0]) >> 8; \
+				a2 = ((int)row[i * components + 1]) >> 8; \
+				a3 = ((int)row[i * components + 2]) >> 8; \
 				b1 = plugin->palette[0][plugin->buffer[i]]; \
 				b2 = plugin->palette[1][plugin->buffer[i]]; \
 				b3 = plugin->palette[2][plugin->buffer[i]]; \
@@ -249,15 +249,15 @@ BurnClient::BurnClient(BurnServer *server)
 					CLAMP(a3, 0, 0xff); \
 					plugin->yuv->rgb_to_yuv_8(a1, a2, a3); \
 				} \
-				rows[0][i * components + 0] = a1 | (a1 << 8); \
-				rows[0][i * components + 1] = a2 | (a2 << 8); \
-				rows[0][i * components + 2] = a3 | (a3 << 8); \
+				row[i * components + 0] = a1 | (a1 << 8); \
+				row[i * components + 1] = a2 | (a2 << 8); \
+				row[i * components + 2] = a3 | (a3 << 8); \
 			} \
 			else \
 			{ \
-				a1 = (int)rows[0][i * components + 0]; \
-				a2 = (int)rows[0][i * components + 1]; \
-				a3 = (int)rows[0][i * components + 2]; \
+				a1 = (int)row[i * components + 0]; \
+				a2 = (int)row[i * components + 1]; \
+				a3 = (int)row[i * components + 2]; \
 				b1 = plugin->palette[0][plugin->buffer[i]]; \
 				b2 = plugin->palette[1][plugin->buffer[i]]; \
 				b3 = plugin->palette[2][plugin->buffer[i]]; \
@@ -278,9 +278,9 @@ BurnClient::BurnClient(BurnServer *server)
 					CLAMP(a3, 0, 0xff); \
 					plugin->yuv->rgb_to_yuv_8(a1, a2, a3); \
 				} \
-				rows[0][i * components + 0] = a1; \
-				rows[0][i * components + 1] = a2; \
-				rows[0][i * components + 2] = a3; \
+				row[i * components + 0] = a1; \
+				row[i * components + 1] = a2; \
+				row[i * components + 2] = a3; \
 			} \
 			i++; \
 		} \
@@ -291,8 +291,8 @@ BurnClient::BurnClient(BurnServer *server)
 void BurnClient::process_package(LoadPackage *package)
 {
 	BurnPackage *local_package = (BurnPackage*)package;
-	unsigned char **input_rows = plugin->input_ptr->get_rows() + local_package->row1;
-	unsigned char **output_rows = plugin->output_ptr->get_rows() + local_package->row1;
+	unsigned char *input_row = plugin->input_ptr->get_row_ptr(local_package->row1);
+	unsigned char *output_row = plugin->output_ptr->get_row_ptr(local_package->row1);
 	int width = plugin->input_ptr->get_w();
 	int height = local_package->row2 - local_package->row1;
 	unsigned char *diff;
@@ -303,8 +303,9 @@ void BurnClient::process_package(LoadPackage *package)
 	int a2, b2, c2;
 	int a3, b3, c3;
 
-	diff = plugin->effecttv->image_bgsubtract_y(input_rows, 
-		plugin->input_ptr->get_color_model());
+	diff = plugin->effecttv->image_bgsubtract_y(input_row,
+		plugin->input_ptr->get_color_model(),
+		plugin->input_ptr->get_bytes_per_line());
 
 	for(x = 1; x < width - 1; x++)
 	{
@@ -375,14 +376,14 @@ void BurnClient::process_package(LoadPackage *package)
 	case BC_AYUV16161616:
 		{
 			i = 1;
-			uint16_t **rows = (uint16_t**)input_rows;
+			uint16_t *row = (uint16_t*)input_row;
 			for(y = 0; y < height; y++)
 			{
 				for(x = 1; x < width - 1; x++)
 				{
-					a1 = ((int)rows[0][i * 4 + 1]) >> 8;
-					a2 = ((int)rows[0][i * 4 + 2]) >> 8;
-					a3 = ((int)rows[0][i * 4 + 3]) >> 8;
+					a1 = ((int)row[i * 4 + 1]) >> 8;
+					a2 = ((int)row[i * 4 + 2]) >> 8;
+					a3 = ((int)row[i * 4 + 3]) >> 8;
 					b1 = plugin->palette[0][plugin->buffer[i]];
 					b2 = plugin->palette[1][plugin->buffer[i]];
 					b3 = plugin->palette[2][plugin->buffer[i]];
@@ -400,9 +401,9 @@ void BurnClient::process_package(LoadPackage *package)
 					CLAMP(a2, 0, 0xff);
 					CLAMP(a3, 0, 0xff);
 					plugin->yuv->rgb_to_yuv_8(a1, a2, a3);
-					rows[0][i * 4 + 1] = a1 | (a1 << 8);
-					rows[0][i * 4 + 2] = a2 | (a2 << 8);
-					rows[0][i * 4 + 3] = a3 | (a3 << 8);
+					row[i * 4 + 1] = a1 | (a1 << 8);
+					row[i * 4 + 2] = a2 | (a2 << 8);
+					row[i * 4 + 3] = a3 | (a3 << 8);
 					i++;
 				}
 				i += 2;
