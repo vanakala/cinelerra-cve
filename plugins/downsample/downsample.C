@@ -377,7 +377,7 @@ void DownSampleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	load_configuration();
 
 // Copy to destination
-	if(output->get_rows()[0] != input->get_rows()[0])
+	if(output != input)
 	{
 		output->copy_from(input);
 	}
@@ -488,7 +488,6 @@ DownSampleUnit::DownSampleUnit(DownSampleServer *server,
 	int do_g = plugin->config.g; \
 	int do_b = plugin->config.b; \
 	int do_a = plugin->config.a; \
-	type **rows = (type**)plugin->output->get_rows(); \
  \
 	for(int i = pkg->y1; i < pkg->y2; i += plugin->config.vertical) \
 	{ \
@@ -515,7 +514,8 @@ DownSampleUnit::DownSampleUnit(DownSampleServer *server,
  \
 				for(int k = y1; k < y2; k++) \
 				{ \
-					type *row = rows[k] + x1 * components; \
+					type *row = (type*)plugin->output->get_row_ptr(k) + \
+						x1 * components; \
 					for(int l = x1; l < x2; l++) \
 					{ \
 						if(do_r) r += *row++; else row++; \
@@ -532,7 +532,8 @@ DownSampleUnit::DownSampleUnit(DownSampleServer *server,
 				if(components == 4) a /= scale; \
 				for(int k = y1; k < y2; k++) \
 				{ \
-					type *row = rows[k] + x1 * components; \
+					type *row = (type*)plugin->output->get_row_ptr(k) + \
+						x1 * components; \
 					for(int l = x1; l < x2; l++) \
 					{ \
 						if(do_r) *row++ = r; else row++; \
