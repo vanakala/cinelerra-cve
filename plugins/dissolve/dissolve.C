@@ -66,12 +66,11 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	case BC_RGBA8888:
 	case BC_YUVA8888:
 		{
-			uint8_t** data_rows = (uint8_t **)outgoing->get_rows();
 			int w = outgoing->get_w();
 			int h = outgoing->get_h(); 
 			for(int i = 0; i < h; i++) 
 			{ 
-				uint8_t* alpha_chan = data_rows[i] + 3; 
+				uint8_t* alpha_chan = (uint8_t *)outgoing->get_row_ptr(i) + 3;
 				for(int j = 0; j < w; j++) 
 				{
 					*alpha_chan = (uint8_t) (*alpha_chan * (1-fade));
@@ -82,12 +81,11 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		}
 	case BC_YUVA16161616:
 		{
-			uint16_t** data_rows = (uint16_t **)outgoing->get_rows();
 			int w = outgoing->get_w();
 			int h = outgoing->get_h(); 
 			for(int i = 0; i < h; i++) 
 			{ 
-				uint16_t* alpha_chan = data_rows[i] + 3; // 3 since this is uint16_t
+				uint16_t* alpha_chan = (uint16_t*)outgoing->get_row_ptr(i) + 3; // 3 since this is uint16_t
 				for(int j = 0; j < w; j++) 
 				{
 					*alpha_chan = (uint16_t)(*alpha_chan * (1-fade));
@@ -98,12 +96,11 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		}
 	case BC_AYUV16161616:
 		{
-			uint16_t** data_rows = (uint16_t **)outgoing->get_rows();
 			int w = outgoing->get_w();
 			int h = outgoing->get_h();
 			for(int i = 0; i < h; i++)
 			{
-				uint16_t* alpha_chan = data_rows[i];
+				uint16_t* alpha_chan = (uint16_t*)outgoing->get_row_ptr(i);
 				for(int j = 0; j < w; j++)
 				{
 					*alpha_chan = (uint16_t)(*alpha_chan * (1-fade));
@@ -114,12 +111,11 @@ void DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		}
 	case BC_RGBA_FLOAT:
 		{
-			float** data_rows = (float **)outgoing->get_rows();
 			int w = outgoing->get_w();
 			int h = outgoing->get_h(); 
 			for(int i = 0; i < h; i++) 
 			{ 
-				float* alpha_chan = data_rows[i] + 3; // 3 since this is floats 
+				float* alpha_chan = (float*)outgoing->get_row_ptr(i) + 3;
 				for(int j = 0; j < w; j++) 
 				{
 					*alpha_chan = *alpha_chan * (1-fade);
