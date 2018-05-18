@@ -52,8 +52,8 @@ PLUGIN_CLASS_METHODS
  \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *in_row = (type*)incoming->get_rows()[i]; \
-		type *out_row = (type*)outgoing->get_rows()[i]; \
+		type *in_row = (type*)incoming->get_row_ptr(i); \
+		type *out_row = (type*)outgoing->get_row_ptr(i); \
 		if(is_before) \
 		{ \
 			for(int j = 0; j < w; j++) \
