@@ -100,17 +100,14 @@ PLUGIN_CLASS_METHODS
 
 #define FLIP_MACRO(type, components) \
 { \
-	type **input_rows, **output_rows; \
 	type *input_row, *output_row; \
-	input_rows = ((type**)frame->get_rows()); \
-	output_rows = ((type**)frame->get_rows()); \
  \
 	if(config.flip_vertical) \
 	{ \
 		for(i = 0, j = h - 1; i < h / 2; i++, j--) \
 		{ \
-			input_row = input_rows[i]; \
-			output_row = output_rows[j]; \
+			input_row = (type*)frame->get_row_ptr(i); \
+			output_row = (type*)frame->get_row_ptr(j); \
 			for(k = 0; k < w; k++) \
 			{ \
 				SWAP_PIXELS(type, components, output_row, input_row); \
@@ -124,8 +121,8 @@ PLUGIN_CLASS_METHODS
 	{ \
 		for(i = 0; i < h; i++) \
 		{ \
-			input_row = input_rows[i]; \
-			output_row = output_rows[i] + (w - 1) * components; \
+			input_row = (type*)frame->get_row_ptr(i); \
+			output_row = (type*)frame->get_row_ptr(i) + (w - 1) * components; \
 			for(k = 0; k < w / 2; k++) \
 			{ \
 				SWAP_PIXELS(type, components, output_row, input_row); \
