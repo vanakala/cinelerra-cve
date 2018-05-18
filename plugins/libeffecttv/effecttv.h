@@ -34,7 +34,6 @@ public:
 	virtual ~EffectTV();
 
 	void image_set_threshold_y(int threshold);
-	unsigned char* image_bgsubtract_y(unsigned char **input_rows, int color_model);
 	unsigned char* image_bgsubtract_y(unsigned char *input,
 		int color_model, int bytes_per_line);
 
