@@ -282,7 +282,7 @@ Similar is defined as in abs(difference)/(sum) < threshold
 	double exp_threshold=exp(((double)threshold - 50 )/2);\
 	int w = input->get_w(); \
 	int h = input->get_h(); \
-	type *row_above=(type*)input->get_rows()[0]; \
+	type *row_above=(type*)input->get_row_ptr(0); \
 	for(int i = dominance ?0:1; i < h - 1; i += 2) \
 	{ \
 		type *input_row;\
