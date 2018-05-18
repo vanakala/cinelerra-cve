@@ -134,26 +134,26 @@ void ColorBalanceEngine::run()
 	int i, j, k; \
 	int y, cb, cr, r, g, b, r_n, g_n, b_n; \
 	float h, s, v, h_old, s_old, r_f, g_f, b_f; \
-	type **input_rows, **output_rows; \
-	input_rows = (type**)input->get_rows(); \
-	output_rows = (type**)output->get_rows(); \
  \
 	for(j = row_start; j < row_end; j++) \
 	{ \
+		type *in_row = (type*)input->get_row_ptr(j); \
+		type *out_row = (type*)output->get_row_ptr(j); \
+ \
 		for(k = 0; k < input->get_w() * components; k += components) \
 		{ \
 			if(do_yuv) \
 			{ \
-				y = input_rows[j][k]; \
-				cb = input_rows[j][k + 1]; \
-				cr = input_rows[j][k + 2]; \
+				y = in_row[k]; \
+				cb = in_row[k + 1]; \
+				cr = in_row[k + 2]; \
 				yuvtorgb(r, g, b, y, cb, cr); \
 			} \
 			else \
 			{ \
-				r = input_rows[j][k]; \
-				g = input_rows[j][k + 1]; \
-				b = input_rows[j][k + 2]; \
+				r = in_row[k]; \
+				g = in_row[k + 1]; \
+				b = in_row[k + 2]; \
 			} \
  \
 			r = CLAMP(r, 0, max-1); g = CLAMP(g, 0, max-1); b = CLAMP(b, 0, max-1); \
@@ -180,15 +180,15 @@ void ColorBalanceEngine::run()
 			if(do_yuv) \
 			{ \
 				rgbtoyuv(CLAMP(r, 0, max), CLAMP(g, 0, max), CLAMP(b, 0, max), y, cb, cr); \
-				output_rows[j][k] = y; \
-				output_rows[j][k + 1] = cb; \
-				output_rows[j][k + 2] = cr; \
+				out_row[k] = y; \
+				out_row[k + 1] = cb; \
+				out_row[k + 2] = cr; \
 			} \
 			else \
 			{ \
-				output_rows[j][k] = CLAMP(r, 0, max); \
-				output_rows[j][k + 1] = CLAMP(g, 0, max); \
-				output_rows[j][k + 2] = CLAMP(b, 0, max); \
+				out_row[k] = CLAMP(r, 0, max); \
+				out_row[k + 1] = CLAMP(g, 0, max); \
+				out_row[k + 2] = CLAMP(b, 0, max); \
 			} \
 		} \
 	} \
@@ -199,20 +199,20 @@ void ColorBalanceEngine::run()
 	int i, j, k; \
 	float y, cb, cr, r, g, b, r_n, g_n, b_n; \
 	float h, s, v, h_old, s_old, r_f, g_f, b_f; \
-	float **input_rows, **output_rows; \
-	input_rows = (float**)input->get_rows(); \
-	output_rows = (float**)output->get_rows(); \
 	cyan_f = plugin->calculate_transfer(plugin->config.cyan); \
 	magenta_f = plugin->calculate_transfer(plugin->config.magenta); \
 	yellow_f = plugin->calculate_transfer(plugin->config.yellow); \
  \
 	for(j = row_start; j < row_end; j++) \
 	{ \
+		float *in_row = (float*)input->get_row_ptr(j); \
+		float *out_row = (float*)output->get_row_ptr(j); \
+ \
 		for(k = 0; k < input->get_w() * components; k += components) \
 		{ \
-			r = input_rows[j][k]; \
-			g = input_rows[j][k + 1]; \
-			b = input_rows[j][k + 2]; \
+			r = in_row[k]; \
+			g = in_row[k + 1]; \
+			b = in_row[k + 2]; \
  \
 			r_n = r * cyan_f; \
 			g_n = g * magenta_f; \
@@ -234,9 +234,9 @@ void ColorBalanceEngine::run()
 				b = b_n; \
 			} \
  \
-			output_rows[j][k] = r; \
-			output_rows[j][k + 1] = g; \
-			output_rows[j][k + 2] = b; \
+			out_row[k] = r; \
+			out_row[k + 1] = g; \
+			out_row[k + 2] = b; \
 		} \
 	} \
 }
