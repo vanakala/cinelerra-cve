@@ -35,6 +35,9 @@ public:
 
 	void image_set_threshold_y(int threshold);
 	unsigned char* image_bgsubtract_y(unsigned char **input_rows, int color_model);
+	unsigned char* image_bgsubtract_y(unsigned char *input,
+		int color_model, int bytes_per_line);
+
 	void image_bgset_y(VFrame *frame);
 	unsigned char* image_diff_filter(unsigned char *diff);
 
