@@ -310,8 +310,8 @@ PLUGIN_CLASS_METHODS
 	temp_type result2 = 0; \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *row1 = (type*)frame1->get_rows()[i]; \
-		type *row2 = (type*)frame2->get_rows()[i]; \
+		type *row1 = (type*)frame1->get_row_ptr(i); \
+		type *row2 = (type*)frame2->get_row_ptr(i); \
 		for(int j = 0; j < w * components; j++) \
 		{ \
 			temp_type temp = *row1 - *row2; \
@@ -442,7 +442,7 @@ void Decimate::fdct(uint16_t *block)
 	uint16_t *output = temp; \
 	for(int k = 0; k < 8; k++) \
 	{ \
-		type *input = (type*)frame->get_rows()[i + k] + j * components; \
+		type *input = (type*)frame->get_row_ptr(i + k) + j * components; \
 		for(int l = 0; l < 8; l++) \
 		{ \
 			*output = (*input << 8) | *input; \
