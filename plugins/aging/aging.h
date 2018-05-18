@@ -103,23 +103,15 @@ class AgingClient : public LoadClient
 public:
 	AgingClient(AgingServer *server);
 
-	void coloraging(unsigned char **output_ptr, 
-		unsigned char **input_ptr,
-		int color_model,
-		int w,
-		int h);
-	void scratching(unsigned char **output_ptr,
-		int color_model,
-		int w,
-		int h);
-	void pits(unsigned char **output_ptr,
-		int color_model,
-		int w,
-		int h);
-	void dusts(unsigned char **output_ptr,
-		int color_model,
-		int w,
-		int h);
+	void coloraging(VFrame *output_frame,
+		VFrame *input_frame,
+		int row1, int row2);
+	void scratching(VFrame *output_frame,
+		int row1, int row2);
+	void pits(VFrame *output_frame,
+		int row1, int row2);
+	void dusts(VFrame *output_frame,
+		int row1, int row2);
 	void process_package(LoadPackage *package);
 
 	AgingMain *plugin;

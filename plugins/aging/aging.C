@@ -125,35 +125,38 @@ AgingClient::AgingClient(AgingServer *server)
  \
 	for(i = 0; i < h; i++) \
 	{ \
+		type *inrow = (type*)input_frame->get_row_ptr(row1 + i); \
+		type *outrow = (type*)output_frame->get_row_ptr(row1 + i); \
+ \
 		for(j = 0; j < w; j++) \
 		{ \
 			for(k = 0; k < 3; k++) \
 			{ \
 				if(sizeof(type) == 4) \
 				{ \
-					a = (int)(((type**)input_rows)[i][j * components + k] * 0xffff); \
+					a = inrow[j * components + k] * 0xffff; \
 					CLAMP(a, 0, 0xffff); \
 				} \
 				else \
-					a = (int)((type**)input_rows)[i][j * components + k]; \
+					a = inrow[j * components + k]; \
  \
 				if(sizeof(type) == 4) \
 				{ \
 					b = (a & 0xffff) >> 2; \
-					((type**)output_rows)[i][j * components + k] = \
+					outrow[j * components + k] = \
 						(type)(a - b + 0x1800 + (EffectTV::fastrand() & 0x1000)) / 0xffff; \
 				} \
 				else \
 				if(sizeof(type) == 2) \
 				{ \
 					b = (a & 0xffff) >> 2; \
-					((type**)output_rows)[i][j * components + k] = \
+					outrow[j * components + k] = \
 						(type)(a - b + 0x1800 + (EffectTV::fastrand() & 0x1000)); \
 				} \
 				else \
 				{ \
 					b = (a & 0xff) >> 2; \
-					((type**)output_rows)[i][j * components + k] =  \
+					outrow[j * components + k] =  \
 						(type)(a - b + 0x18 + ((EffectTV::fastrand() >> 8) & 0x10)); \
 				} \
 			} \
@@ -161,13 +164,13 @@ AgingClient::AgingClient(AgingServer *server)
 	} \
 }
 
-void AgingClient::coloraging(unsigned char **output_rows, 
-	unsigned char **input_rows,
-	int color_model,
-	int w,
-	int h)
+void AgingClient::coloraging(VFrame *output_frame,
+	VFrame *input_frame, int row1, int row2)
 {
-	switch(color_model)
+	int h = row2 - row1;
+	int w = output_frame->get_w();
+
+	switch(output_frame->get_color_model())
 	{
 	case BC_RGB888:
 	case BC_YUV888:
@@ -206,6 +209,7 @@ void AgingClient::coloraging(unsigned char **output_rows,
 	type *p; \
 	int a, b; \
 	int w_256 = w * 256; \
+	type *row = (type*)output_frame->get_row_ptr(row1); \
  \
 	for(i = 0; i < plugin->config.scratch_lines; i++) \
 	{ \
@@ -218,7 +222,7 @@ void AgingClient::coloraging(unsigned char **output_rows,
 				break; \
 			} \
 \
-			p = (type*)output_rows[0] + \
+			p =  row + \
 				(plugin->config.scratches[i].x >> 8) * \
 				components; \
 \
@@ -295,12 +299,13 @@ void AgingClient::coloraging(unsigned char **output_rows,
 	} \
 }
 
-void AgingClient::scratching(unsigned char **output_rows,
-	int color_model,
-	int w,
-	int h)
+void AgingClient::scratching(VFrame *output_frame,
+	int row1, int row2)
 {
-	switch(color_model)
+	int h = row2 - row1;
+	int w = output_frame->get_w();
+
+	switch(output_frame->get_color_model())
 	{
 	case BC_RGB888:
 		SCRATCHES(uint8_t, 3, 0);
@@ -340,6 +345,70 @@ void AgingClient::scratching(unsigned char **output_rows,
 
 	case BC_YUVA16161616:
 		SCRATCHES(uint16_t, 4, 0x8000);
+		break;
+
+	case BC_AYUV16161616:
+		{
+			int i, j, y, y1, y2;
+			uint16_t *p;
+			int a, b;
+			int w_256 = w * 256;
+			uint16_t *row = (uint16_t*)output_frame->get_row_ptr(row1);
+
+			for(i = 0; i < plugin->config.scratch_lines; i++)
+			{
+				if(plugin->config.scratches[i].life)
+				{
+					plugin->config.scratches[i].x =
+						plugin->config.scratches[i].x +
+						plugin->config.scratches[i].dx;
+					if(plugin->config.scratches[i].x < 0 ||
+						plugin->config.scratches[i].x > w_256)
+					{
+						plugin->config.scratches[i].life = 0;
+						break;
+					}
+
+					p =  row +
+						(plugin->config.scratches[i].x >> 8) * 4;
+
+					if(plugin->config.scratches[i].init)
+					{
+						y1 = plugin->config.scratches[i].init;
+						plugin->config.scratches[i].init = 0;
+					}
+					else
+						y1 = 0;
+
+					plugin->config.scratches[i].life--;
+					if(plugin->config.scratches[i].life)
+						y2 = h;
+					else
+						y2 = EffectTV::fastrand() % h;
+
+					for(y = y1; y < y2; y++)
+					{
+						a = p[1] & 0xfeff;
+						a += 0x2000;
+						b = a & 0x10000;
+						p[1] = a | (b - (b >> 8));
+						p[2] = 0x8000;
+						p[3] = 0x8000;
+						p += w * 4;
+					}
+				}
+				else
+				{
+					if((EffectTV::fastrand() & 0xf0000000) == 0)
+					{
+						plugin->config.scratches[i].life = 2 + (EffectTV::fastrand() >> 27);
+						plugin->config.scratches[i].x = EffectTV::fastrand() % (w_256);
+						plugin->config.scratches[i].dx = ((int)EffectTV::fastrand()) >> 23;
+						plugin->config.scratches[i].init = (EffectTV::fastrand() % (h - 1)) + 1;
+					}
+				}
+			}
+		}
 		break;
 	}
 }
@@ -381,27 +450,31 @@ void AgingClient::scratching(unsigned char **output_rows,
  \
 			CLAMP(x, 0, w - 1); \
 			CLAMP(y, 0, h - 1); \
+ \
+			type *row = (type*)output_frame->get_row_ptr(row1 + y); \
+ \
 			for(k = 0; k < (chroma ? 1 : 3); k++) \
 			{ \
-				((type**)output_rows)[y][x * components + k] = luma; \
+				row[x * components + k] = luma; \
 			} \
  \
-            if(chroma) \
+			if(chroma) \
 			{ \
-				((type**)output_rows)[y][x * components + 1] = chroma; \
-				((type**)output_rows)[y][x * components + 2] = chroma; \
+				row[x * components + 1] = chroma; \
+				row[x * components + 2] = chroma; \
 			} \
  \
 		} \
 	} \
 }
 
-void AgingClient::pits(unsigned char **output_rows,
-	int color_model,
-	int w,
-	int h)
+void AgingClient::pits(VFrame *output_frame,
+	int row1, int row2)
 {
-	switch(color_model)
+	int h = row2 - row1;
+	int w = output_frame->get_w();
+
+	switch(output_frame->get_color_model())
 	{
 	case BC_RGB888:
 		PITS(uint8_t, 3, 0xc0, 0);
@@ -432,6 +505,49 @@ void AgingClient::pits(unsigned char **output_rows,
 		break;
 	case BC_YUVA16161616:
 		PITS(uint16_t, 4, 0xc000, 0x8000);
+		break;
+	case BC_AYUV16161616:
+		{
+			int i, j, k;
+			int pnum, size, pnumscale;
+			int x, y;
+
+			pnumscale = plugin->config.area_scale * 2;
+
+			if(plugin->config.pits_interval)
+			{
+				pnum = pnumscale + (EffectTV::fastrand() % pnumscale);
+				plugin->config.pits_interval--;
+			}
+			else
+			{
+				pnum = EffectTV::fastrand() % pnumscale;
+				if((EffectTV::fastrand() & 0xf8000000) == 0)
+					plugin->config.pits_interval = (EffectTV::fastrand() >> 28) + 20; \
+			}
+
+			for(i = 0; i < pnum; i++)
+			{
+				x = EffectTV::fastrand() % (w - 1);
+				y = EffectTV::fastrand() % (h - 1);
+
+				size = EffectTV::fastrand() >> 28;
+
+				for(j = 0; j < size; j++)
+				{
+					x = x + EffectTV::fastrand() % 3 - 1;
+					y = y + EffectTV::fastrand() % 3 - 1;
+
+					CLAMP(x, 0, w - 1);
+					CLAMP(y, 0, h - 1);
+					uint16_t *row = (uint16_t*)output_frame->get_row_ptr(row1 + y);
+
+					row[x * 4 + 1] = 0xc000;
+					row[x * 4 + 2] = 0x8000;
+					row[x * 4 + 2] = 0x8000;
+				}
+			}
+		}
 		break;
 	}
 }
@@ -466,15 +582,16 @@ void AgingClient::pits(unsigned char **output_rows,
 		{ \
 			CLAMP(x, 0, w - 1); \
 			CLAMP(y, 0, h - 1); \
+ \
+			type *row = (type*)output_frame->get_row_ptr(row1 + y); \
+ \
 			for(k = 0; k < (chroma ? 1 : 3); k++) \
-			{ \
-				((type**)output_rows)[y][x * components + k] = luma; \
-			} \
+				row[x * components + k] = luma; \
  \
 			if(chroma) \
 			{ \
-				((type**)output_rows)[y][x * components + 1] = chroma; \
-				((type**)output_rows)[y][x * components + 2] = chroma; \
+				row[x * components + 1] = chroma; \
+				row[x * components + 2] = chroma; \
 			} \
  \
 			y += AgingConfig::dy[d]; \
@@ -490,12 +607,13 @@ void AgingClient::pits(unsigned char **output_rows,
 	plugin->config.dust_interval--; \
 }
 
-void AgingClient::dusts(unsigned char **output_rows,
-	int color_model,
-	int w,
-	int h)
+void AgingClient::dusts(VFrame *output_frame,
+	int row1, int row2)
 {
-	switch(color_model)
+	int h = row2 - row1;
+	int w = output_frame->get_w();
+
+	switch(output_frame->get_color_model())
 	{
 	case BC_RGB888:
 		DUSTS(uint8_t, 3, 0x10, 0);
@@ -536,39 +654,80 @@ void AgingClient::dusts(unsigned char **output_rows,
 	case BC_YUVA16161616:
 		DUSTS(uint16_t, 4, 0x1000, 0x8000);
 		break;
+
+	case BC_AYUV16161616:
+		{
+			int i, j, k;
+			int dnum;
+			int d, len;
+			int x, y;
+
+			if(plugin->config.dust_interval == 0)
+			{
+				if((EffectTV::fastrand() & 0xf0000000) == 0)
+					plugin->config.dust_interval = EffectTV::fastrand() >> 29;
+				return;
+			}
+
+			dnum = plugin->config.area_scale * 4 + (EffectTV::fastrand() >> 27);
+
+			for(i = 0; i < dnum; i++)
+			{
+				x = EffectTV::fastrand() % w;
+				y = EffectTV::fastrand() % h;
+				d = EffectTV::fastrand() >> 29;
+				len = EffectTV::fastrand() % plugin->config.area_scale + 5;
+
+				for(j = 0; j < len; j++)
+				{
+					CLAMP(x, 0, w - 1);
+					CLAMP(y, 0, h - 1);
+
+					uint16_t *row = (uint16_t*)output_frame->get_row_ptr(row1 + y);
+
+					row[x * 4 + 1] = 0x1000;
+					row[x * 4 + 2] = 0x8000;
+					row[x * 4 + 3] = 0x8000;
+
+					y += AgingConfig::dy[d];
+					x += AgingConfig::dx[d];
+
+					if(x < 0 || x >= w) break;
+					if(y < 0 || y >= h) break;
+
+					d = (d + EffectTV::fastrand() % 3 - 1) & 7;
+				}
+			}
+			plugin->config.dust_interval--;
+		}
+		break;
 	}
 }
 
 void AgingClient::process_package(LoadPackage *package)
 {
 	AgingPackage *local_package = (AgingPackage*)package;
-	unsigned char **input_rows = plugin->input_ptr->get_rows() + local_package->row1;
-	unsigned char **output_rows = plugin->output_ptr->get_rows() + local_package->row1;
 
 	if(plugin->config.colorage)
-		coloraging(output_rows, 
-			input_rows, 
-			plugin->input_ptr->get_color_model(), 
-			plugin->input_ptr->get_w(), 
-			local_package->row2 - local_package->row1);
+		coloraging(plugin->output_ptr,
+			plugin->input_ptr,
+			local_package->row1,
+			local_package->row2);
 
 	if(plugin->config.scratch)
-		scratching(output_rows, 
-			plugin->input_ptr->get_color_model(), 
-			plugin->input_ptr->get_w(), 
-			local_package->row2 - local_package->row1);
+		scratching(plugin->output_ptr,
+			local_package->row1,
+			local_package->row2);
 
 	if(plugin->config.pits)
-		pits(output_rows, 
-			plugin->input_ptr->get_color_model(), 
-			plugin->input_ptr->get_w(), 
-			local_package->row2 - local_package->row1);
+		pits(plugin->output_ptr,
+			local_package->row1,
+			local_package->row2);
 
 	if(plugin->config.dust)
-		dusts(output_rows, 
-			plugin->input_ptr->get_color_model(), 
-			plugin->input_ptr->get_w(), 
-			local_package->row2 - local_package->row1);
+		dusts(plugin->output_ptr,
+			local_package->row1,
+			local_package->row2);
 }
 
 
