@@ -312,8 +312,8 @@ void BrightnessUnit::process_package(LoadPackage *package)
 
 #define DO_BRIGHTNESS(max, type, components, is_yuv) \
 { \
-	type **input_rows = (type**)input->get_rows(); \
-	type **output_rows = (type**)output->get_rows(); \
+	VFrame *inframe = input; \
+	VFrame *outframe = output; \
 	int row1 = pkg->row1; \
 	int row2 = pkg->row2; \
 	int width = output->get_w(); \
@@ -325,8 +325,8 @@ void BrightnessUnit::process_package(LoadPackage *package)
  \
 		for(int i = row1; i < row2; i++) \
 		{ \
-			type *input_row = input_rows[i]; \
-			type *output_row = output_rows[i]; \
+			type *input_row = (type*)inframe->get_row_ptr(i); \
+			type *output_row = (type*)outframe->get_row_ptr(i); \
  \
 			for(int j = 0; j < width; j++) \
 			{ \
@@ -364,7 +364,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 		} \
  \
 /* Data to be processed is now in the output buffer */ \
-		input_rows = output_rows; \
+		inframe = outframe; \
 	} \
  \
 	if(!EQUIV(plugin->config.contrast, 0)) \
@@ -379,8 +379,8 @@ void BrightnessUnit::process_package(LoadPackage *package)
  \
 		for(int i = row1; i < row2; i++) \
 		{ \
-			type *input_row = input_rows[i]; \
-			type *output_row = output_rows[i]; \
+			type *input_row = (type*)inframe->get_row_ptr(i); \
+			type *output_row = (type*)outframe->get_row_ptr(i); \
  \
 			if(plugin->config.luma) \
 			{ \
@@ -490,8 +490,8 @@ void BrightnessUnit::process_package(LoadPackage *package)
 
 #define DO_BRIGHTNESS_F(components) \
 { \
-	float **input_rows = (float**)input->get_rows(); \
-	float **output_rows = (float**)output->get_rows(); \
+	VFrame *inframe = input; \
+	VFrame *outframe = output; \
 	int row1 = pkg->row1; \
 	int row2 = pkg->row2; \
 	int width = output->get_w(); \
@@ -503,8 +503,8 @@ void BrightnessUnit::process_package(LoadPackage *package)
  \
 		for(int i = row1; i < row2; i++) \
 		{ \
-			float *input_row = input_rows[i]; \
-			float *output_row = output_rows[i]; \
+			float *input_row = (float*)inframe->get_row_ptr(i); \
+			float *output_row = (float*)outframe->get_row_ptr(i); \
  \
 			for(int j = 0; j < width; j++) \
 			{ \
@@ -521,7 +521,7 @@ void BrightnessUnit::process_package(LoadPackage *package)
 		} \
  \
 /* Data to be processed is now in the output buffer */ \
-		input_rows = output_rows; \
+		inframe = outframe; \
 	} \
  \
 	if(!EQUIV(plugin->config.contrast, 0)) \
@@ -536,8 +536,8 @@ void BrightnessUnit::process_package(LoadPackage *package)
  \
 		for(int i = row1; i < row2; i++) \
 		{ \
-			float *input_row = input_rows[i]; \
-			float *output_row = output_rows[i]; \
+			float *input_row = (float*)inframe->get_row_ptr(i); \
+			float *output_row = (float*)outframe->get_row_ptr(i); \
  \
 			if(plugin->config.luma) \
 			{ \
