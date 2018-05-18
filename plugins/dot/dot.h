@@ -89,7 +89,7 @@ public:
 	void draw_dot(int xx, 
 		int yy, 
 		unsigned char c, 
-		unsigned char **output_rows,
+		unsigned char *output_row,
 		int color_model);
 
 	unsigned char RGBtoY(unsigned char *row, int color_model);

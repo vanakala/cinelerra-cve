@@ -261,7 +261,7 @@ DotClient::DotClient(DotServer *server)
  \
 	c = (c >> (8 - plugin->config.dot_depth)); \
 	pat = plugin->pattern + c * plugin->dot_hsize * plugin->dot_hsize; \
-	output = ((type**)output_rows)[0] + \
+	output = ((type*)output_row) + \
 		yy *  \
 		plugin->dot_size *  \
 		plugin->input_ptr->get_w() * \
@@ -339,7 +339,7 @@ DotClient::DotClient(DotServer *server)
 void DotClient::draw_dot(int xx, 
 	int yy, 
 	unsigned char c, 
-	unsigned char **output_rows,
+	unsigned char *output_row,
 	int color_model)
 {
 	switch(plugin->input_ptr->get_color_model())
@@ -393,7 +393,7 @@ void DotClient::draw_dot(int xx,
 
 			c = (c >> (8 - plugin->config.dot_depth));
 			pat = plugin->pattern + c * plugin->dot_hsize * plugin->dot_hsize;
-			output = ((uint16_t**)output_rows)[0] + yy *
+			output = ((uint16_t*)output_row) + yy *
 				plugin->dot_size *
 				plugin->input_ptr->get_w() * 4 +
 				xx * plugin->dot_size * 4;
@@ -564,8 +564,6 @@ void DotClient::process_package(LoadPackage *package)
 	int x, y;
 	int sx, sy;
 	DotPackage *local_package = (DotPackage*)package;
-	unsigned char **input_rows = plugin->input_ptr->get_rows() + local_package->row1;
-	unsigned char **output_rows = plugin->output_ptr->get_rows() + local_package->row1;
 	int width = plugin->input_ptr->get_w();
 	int height = local_package->row2 - local_package->row1;
 
@@ -579,9 +577,10 @@ void DotClient::process_package(LoadPackage *package)
 
 			draw_dot(x, 
 				y,
-				RGBtoY(&input_rows[sy][sx * plugin->input_ptr->get_bytes_per_pixel()], 
+				RGBtoY(
+					&plugin->input_ptr->get_row_ptr(local_package->row1 + sy)[sx * plugin->input_ptr->get_bytes_per_pixel()],
 					plugin->input_ptr->get_color_model()),
-				output_rows,
+				plugin->output_ptr->get_row_ptr(local_package->row1),
 				plugin->input_ptr->get_color_model());
 		}
 	}
